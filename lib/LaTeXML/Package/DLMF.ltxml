@@ -156,7 +156,9 @@ DefEnvironment('{equationmix}[]',"<equationmix refnum='#refnum'>#body</equationm
 	       }
 );
 DefEnvironment('{equationmix*}[]',  "<equationmix>#body</equationmix>");
-DefEnvironment('{equationgroup}[]', "<equationgroup>#body</equationgroup>");
+# NOTE: I haven't handled the subequation case!!! (where equations themselves get numbered!0
+DefEnvironment('{equationgroup}[]', "<equationgroup refnum='#refnum'>#body</equationgroup>",
+	       properties=> { refnum=> sub { refStepCounter('equation'); }});
 DefEnvironment('{equationgroup*}[]',"<equationgroup>#body</equationgroup>");
 DefConstructor('\intertext{}',"#1");
 

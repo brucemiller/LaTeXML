@@ -48,7 +48,7 @@ sub input {
 	       map("$_/LaTeXML/Package", @INC));
   my $file = pathname_find($name,paths=>[@paths], types=>$types);
   if(! $file) {
-    Error("Cannot find LaTeXML implementation, style or tex file for $name."); }
+    Error("Cannot find file $name of type ".join(', ',@{$types||[]})." in paths ".join(', ',@paths)); }
   elsif($file =~ /\.(ltxml|latexml)$/){		# Perl module.
     return if $STATE->lookupValue($file.'_loaded');
     $STATE->assignValue($file.'_loaded'=>1,'global');
@@ -118,7 +118,7 @@ sub getLocator {
     $loc .= "\n  To be read again ".Tokens(@$pb)->untex if $long && @$pb;
     foreach my $frame ( @{$$self{mouthstack}} ){
       my($mouth,$pb)= @$frame;
-      $loc .= $mouth->getLocator($long);
+      $loc .= ' '.$mouth->getLocator($long);
       last if $loc && !$long;
       $loc .= "\n  To be read again ".Tokens(@$pb)->untex if $long && @$pb;
     }}
@@ -295,20 +295,6 @@ sub readUntil {
     if($tok->getCatcode == CC_BEGIN){ # And if it's a BEGIN, copy till balanced END
       push(@toks,$self->readBalanced->unlist,T_END); }}
   (wantarray ? (Tokens(@toks),$found) : Tokens(@toks)); }
-
-#**********************************************************************
-# Special case
-
-sub readRawLines {
-  my($self,$endline)=@_;
-  # Should check that there's no pushback !?!?
-  Fatal("Extra junk!?") if @{$$self{pushback}};
-  my $mouth = $$self{mouth};
-  my @lines = ();
-  while(my $line = $mouth->readLine){
-    push(@lines, $line); 
-    last if $line eq $endline; }
-  @lines; }
 
 #**********************************************************************
 # Higher-level readers: Read various types of things from the input:

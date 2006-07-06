@@ -23,7 +23,7 @@ sub defineExcluded {
   $STATE->installDefinition(LaTeXML::Constructor->new(T_CS("\\begin{$name}"),undef,'', untex=>'',
             afterDigest=>[sub {
 			    my($whatsit)=@_;
-			    my @lines = $GULLET->readRawLines("\\end{$name}\n");
+			    my @lines = $GULLET->getMouth->readRawLines("\\end{$name}\n",1);
 			    NoteProgress("Skipped ".scalar(@lines)." for environment $name"); }]));
   return; }
 

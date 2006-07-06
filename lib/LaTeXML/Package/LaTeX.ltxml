@@ -25,6 +25,7 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
+use LaTeXML::Util::Pathname;
 no warnings 'redefine';
 
 #**********************************************************************
@@ -382,13 +383,16 @@ DefEnvironment('{verbatim*}','<verbatim>#body</verbatim>');
 $STATE->installDefinition(LaTeXML::Constructor
 			   ->new(T_CS('\begin{verbatim}'),undef,
 				 "<verbatim font='#font'>#body</verbatim>",
-				 beforeDigest=>[sub { BGroup; MergeFont(family=>'typewriter'); }],
+				 beforeDigest=>[sub { BGroup; AssignValue(current_environment=>'verbatim'),
+							MergeFont(family=>'typewriter'); }],
 				 afterDigest=>[sub {
 						 my($whatsit)=@_;
 						 my $font = $whatsit->getFont;
 						 my $loc  = $whatsit->getLocator;
-						 my @lines = $GULLET->readRawLines("\\end{verbatim}\n");
-						 $whatsit->setBody(map(LaTeXML::Box->new($_,$font,$loc),@lines));
+						 my @lines = $GULLET->getMouth->readRawLines("\\end{verbatim}");
+						 # Note last line ends up as Whatsit's "trailer"
+						 $whatsit->setBody(map(LaTeXML::Box->new($_,$font,$loc),
+								       @lines, "\end{verbatim}"));
 						 EGroup; }]));
 
 our $EMPTY_CATTABLE=LaTeXML::State->new(catcodes=>'none');
@@ -1247,7 +1251,7 @@ sub read_pic_box_args {
 sub read_pic_line_args {
   (readPicCoordinate(),
 #   Digest($GULLET->readArg)
-   $GULLET->readNumber
+   $GULLET->readNumber # well, actually {Number}, not just Number!!
 ); }
 
 sub before_picture {
@@ -1467,8 +1471,13 @@ DefMacro('\ProvidesClass{}[]','');
 DefMacro('\ProvidesPackage{}[]','');
 DefMacro('\DeclareOption{}{}', sub {
   my($self,$option,$code)=@_;
-  DefMacro('\ds@'.$option->toString,
-	   $GULLET->expandTokens(Tokens($GULLET->neutralizeTokens($code->unlist)))); });
+#  DefMacro('\ds@'.$option->toString,
+#	   $GULLET->expandTokens(Tokens($GULLET->neutralizeTokens($code->unlist)))); });
+  $STATE->installDefinition(
+       LaTeXML::Expandable->new(T_CS('\ds@'.$option->toString),undef,
+		   $GULLET->expandTokens(Tokens($GULLET->neutralizeTokens($code->unlist)))));
+  (); });
+
 DefMacro('\ExecuteOptions{}', sub{
   my($self,$options)=@_;
   map(T_CS('\ds@'.$_),split(',',$options->toString)); });
@@ -1478,6 +1487,8 @@ DefMacro('\@ehc',"I can't help");
 sub make_message {
   my($cs,@args)=@_;
   join("\n",map($GULLET->expandTokens($_)->toString,@args)); }
+
+DefMacro('\@onlypreamble{}',''); # Don't bother enforcing this.
 
 DefMacro('\GenericError{}{}{}{}', sub{ Fatal(make_message(@_)); });
 DefMacro('\GenericWarning{}{}',         sub{ Warn(make_message(@_)); });
@@ -1611,6 +1622,28 @@ DefMacro('\@ifnextchar Token {}{}', sub {
   my $next = $GULLET->readNonSpace;
   # NOTE: Not actually substituting, but collapsing ## pairs!!!!
   ( LaTeXML::Expandable::substituteTokens($token->equals($next) ? $if : $else),$next); });
+
+DefMacro('\@ifundefined{}{}{}',sub {
+  my($ignore,$name,$if,$else)=@_;
+  my $cs = T_CS('\\'.$name->untex);
+  if($STATE->lookupMeaning($cs) ne $cs){
+   $if->unlist; }
+  else {
+   $else->unlist; }});
+
+DefMacro('\IfFileExists{}{}{}', sub{
+  my($ignore,$file,$if,$else)=@_;
+  if(pathname_find($file->toString,paths=>$STATE->lookupValue('SEARCHPATHS'))){
+   $if->unlist; }
+  else {
+   $else->unlist; }});
+
+DefMacro('\InputIfFileExists{}{}', sub{
+  my($ignore,$file,$if)=@_;
+  if(pathname_find($file->toString,paths=>$STATE->lookupValue('SEARCHPATHS'))){
+   $GULLET->input($file); 
+   $if->unlist; }
+  else { (); }});
 
 #======================================================================
 # Hair

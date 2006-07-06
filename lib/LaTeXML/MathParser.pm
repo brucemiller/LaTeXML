@@ -33,6 +33,10 @@ our %EXPORT_TAGS = (constructors => [qw(&Lookup &New &Apply &recApply &Annotate 
 					&isMatchingClose &Fence)]);
 our $nsURI = "http://dlmf.nist.gov/LaTeXML";
 our $nsXML = "http://www.w3.org/XML/1998/namespace";
+#our $DEFAULT_FONT = LaTeXML::MathFont->default();
+our $DEFAULT_FONT = LaTeXML::MathFont->new(family=>'serif', series=>'medium', shape=>'upright',
+					   size=>'normal', color=>'black');
+
 # ================================================================================
 sub new {
   my($class,%options)=@_;
@@ -93,12 +97,7 @@ sub token_prettyname {
   if(defined $name){}
   elsif($name = $node->textContent){
     my $font = $LaTeXML::MathParser::DOCUMENT->getNodeFont($node);
-    my $family = $font->getFamily;
-    my $series = $font->getSeries;
-    my $shape  = $font->getShape;
-    my $desc = join('-',grep($_,$family,
-			     ($series eq 'medium' ? '' : $series),
-			     $shape));
+    my $desc = $font->relativeTo($DEFAULT_FONT);
     $name .= "{$desc}" if $desc; }
   else {
     $name = 'Unknown';

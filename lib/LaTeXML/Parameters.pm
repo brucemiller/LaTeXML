@@ -213,6 +213,10 @@ sub readArgumentAux {
   elsif($type eq 'Glue'     ){ $GULLET->readGlue; }
   elsif($type eq 'MuGlue'   ){ $GULLET->readMuGlue; }
   elsif($type eq 'Match'    ){ $GULLET->readMatch(@{$$self{matches}}); }
+  elsif($type eq 'UntilBrace'){
+    my $value=$GULLET->readUntil(T_BEGIN);
+    $GULLET->unread(T_BEGIN); 
+    $value; }
   else { Fatal("Unknown argument type: ".join(', ',map("$_=>\"$$self{$_}\"", keys %$self))); }}
 
 # A KeyVal argument MUST be delimited by either braces or brackets (if optional)

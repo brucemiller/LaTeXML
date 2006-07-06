@@ -189,20 +189,6 @@ sub readToken {
 }
 
 #**********************************************************************
-sub readLine {
-  my($self)=@_;
-  if($$self{colno} < $$self{nchars}){
-    my $line = join('',@{$$self{chars}}[$$self{colno}..$$self{nchars}-1]);
-    $$self{colno}=$$self{nchars}; 
-    $line; }
-  else {
-    my $line = $self->getNextLine; 
-    $line =~ s/\s*$/\n/s if defined $line;	# Is this right? 
-    $$self{lineno}++;
-    $$self{chars}=[]; $$self{nchars}=0;  $$self{colno}=0;
-    $line; }}
-
-#**********************************************************************
 # Read all tokens until a token equal to $until (if given), or until exhausted.
 # Returns an empty Tokens list, if there is no input
 
@@ -215,6 +201,41 @@ sub readTokens {
   while(@tokens && $tokens[$#tokens]->getCatcode == CC_SPACE){ # Remove trailing space
     pop(@tokens); }
   Tokens(@tokens); }
+
+#**********************************************************************
+# Read raw lines, until a line matches $endline.
+# If $exact is true, the line must match $endline exactly (like comment.sty)
+# Otherwise, it $endline can be anywhere in the line (like verbatim),
+# in which case the part (if any) preceding $endline is included,
+# and any part after, remains in the input.
+sub readRawLines {
+  my($self,$endline,$exact)=@_;
+  my @lines = ();
+  while(1){
+    my $line;
+    if($$self{colno} < $$self{nchars}){
+      $line = join('',@{$$self{chars}}[$$self{colno}..$$self{nchars}-1]);
+      $$self{colno}=$$self{nchars}; }
+    else {
+      $line = $self->getNextLine; 
+      if(!defined $line){
+	Error("Fell off end trying to match a lines to \"$endline\" from ".Stringify($self));
+	last; }
+      $line =~ s/\s*$/\n/s if defined $line;	# Is this right? 
+      $$self{lineno}++;
+      $$self{chars}=[]; $$self{nchars}=0;  $$self{colno}=0; }
+    if($exact && ($line eq $endline)){ 
+      last; }
+    elsif(!$exact && ($line =~ /^(.*?)\Q$endline\E(.*)$/)){
+      my($pre,$post)=($1,$2);
+      push(@lines,$pre) if $pre;
+      $$self{chars}=[split('',$line)];
+      $$self{nchars} = scalar(@{$$self{chars}});
+      $$self{colno} = length($pre)+length($endline);
+      last; }
+    else {
+      push(@lines,$line); }}
+  @lines; }
 
 #**********************************************************************
 # LaTeXML::FileMouth
@@ -374,15 +395,19 @@ Returns whether there is more data to read.
 
 Return a description of current position in the source, for reporting errors.
 
-=item C<< $string = $mouth->readLine; >>
-
-Reads the next line of input, without tokenizing.  This is useful for
-verbatim or comment environments.
-
 =item C<< $tokens = $mouth->readTokens($until); >>
 
-Reads tokens until one matches $until (comparing the character, but not catcode).
+Reads tokens until one matches C<$until> (comparing the character, but not catcode).
 This is useful for the C<\verb> command.
+
+=item C<< $lines = $mouth->readRawLines($endline,$exact); >>
+
+Reads raw lines (not tokenized) from C<$mouth> until a line matches C<$endline>.
+If C<$exact> is true, the matching is done like with the c<comment> package;
+the ending line must match exactly, with no leading or trailing data.
+Otherwise, the match is done like with the c<verbatim> environment;
+any text preceding C<$endline> is returned as the last line, and any characters
+after C<$endline> remains in the mouth to be tokenized.
 
 =back
 

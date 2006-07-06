@@ -112,6 +112,15 @@ DefExpandable('\iffalse',sub { ifHandler(0); }, isConditional=>1);
 # \ifcase !!!!!
 
 #======================================================================
+# \newif (from plain).
+DefExpandable('\newif Token',sub {
+  my($ignore,$cs)=@_;
+  my $name = $cs->toString; $name =~ s/^\\if//;
+  DefExpandable($cs->toString, sub { ifHandler(LookupValue('Boolean:'.$name)); }, isConditional=>1);
+  DefPrimitive('\\'.$name.'true', sub { AssignValue('Boolean:'.$name => 1); });
+  DefPrimitive('\\'.$name.'false', sub { AssignValue('Boolean:'.$name => 0); });  });
+
+#======================================================================
 
 DefPrimitive('\relax',undef);
 DefExpandable('\number Number',       sub { Explode($_[1]->valueOf); });
@@ -314,14 +323,17 @@ sub readDefParameterList {
     my $t=shift(@tokens);
     if($t->getCatcode == CC_PARAM){
       $n++; $t=shift(@tokens); 
-      Fatal("Parameters for \"".ToString($cs)."\" not in order in ".join('',map(ToString($_),@copy)))
-	unless $n == (ord($t->getString)-ord('0'));
+	Fatal("Parameters for \"".ToString($cs)."\" not in order in ".join('',map(ToString($_),@copy)))
+	  unless $n == (ord($t->getString)-ord('0'));
       my @delim=();
       while(@tokens && ($tokens[0]->getCatcode != CC_PARAM)){
 	push(@delim,shift(@tokens)); }
       if(@delim){ 
 	my $expected=Tokens(@delim);
 	push(@params, LaTeXML::Parameter->new(spec=>'Until:'.$expected->toString, after=>$expected)); }
+      elsif((scalar(@tokens)==1) && ($tokens[0]->getCatcode == CC_PARAM)){ # Special case: trailing #
+	shift(@tokens);
+	push(@params, LaTeXML::Parameter->new(type=>'UntilBrace')); }
       else {
 	push(@params, LaTeXML::Parameter->new(spec=>'{}', before=>'{', after=>'}')); }}
     else {

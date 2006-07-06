@@ -173,7 +173,7 @@ sub Stringify {
       foreach my $attr ($object->attributes){
 	my $name = $attr->nodeName;
 	next if $name =~ /^_/;
-	$attributes .= ' '. $name. "=\"".$attr->getValue; }
+	$attributes .= ' '. $name. "=\"".$attr->getData."\""; }
       "<".$object->nodeName.$attributes.">";
     }
     else { "$object"; }}

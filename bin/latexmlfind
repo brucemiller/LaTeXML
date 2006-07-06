@@ -40,19 +40,24 @@ binmode(STDOUT,":utf8");	# Make sure output can handle UTF8
 my $DOC = XML::LibXML->new->parse_file($source);
 my $XPATH = XML::LibXML::XPathContext->new;
 $XPATH->registerNs(ltxml=>"http://dlmf.nist.gov/LaTeXML");
+$XPATH->registerFunction('match-font',\&LaTeXML::Font::match_font);
 
 foreach my $symbol (@symbols){
   show_matches("Symbols \"$symbol\"",
 	       "//ltxml:Math[descendant::ltxml:XMTok[\@name='$symbol' or text()='$symbol']]"); }
-foreach my $symbol (@unknowns){
-  show_matches("Unknown \"$symbol\"",
+foreach my $spec (@unknowns){
+  my $symbol = $spec;
+  my $font;
+  $font = $1 if $symbol=~ s/{(\w*)}$//;
+  show_matches("Unknown \"$spec\"",
 	       # Find Math containing an XMTok, with role=UNKNOWN
 	       "//ltxml:Math[descendant::ltxml:XMTok[\@role='UNKNOWN']"
 	       #                                    whose name or content is the requested symbol
 	       .                                   "[\@name='$symbol' or text()='$symbol']"
+	       .                                   ($font ? "[\@font='$font']" : '')
 	       #                                   BUT which isn't in presentation branch of an XMDual!!
 	       #                                   ie. no ancestor w/preceding sibling has parent = XMDual
-	       .                                   "[not(ancestor::*[preceding-sibling::*][parent::ltxml:XMDual])]"
+	       .                                   "[not(ancestor-or-self::*[preceding-sibling::*][parent::ltxml:XMDual])]"
 	       .                                   "]"); }
 
 foreach my $symbol (@posfuncs){
@@ -62,10 +67,29 @@ foreach my $symbol (@posfuncs){
 	       .                                   "]"); }
 
 #**********************************************************************
+# This matches fonts when both are converted to strings (toString),
+# such as when they are set as attributes.
+sub match_font {
+  my($font1,$font2)=@_;
+#print STDERR "Match font \"".($font1 || 'none')."\" to \"".($font2||'none')."\"\n";
+  return 0 unless $font1 && $font2;
+  $font1 =~ /^Font\[(.*)\]$/;
+  my @comp1  = split(',',$1);
+  $font2 =~ /^Font\[(.*)\]$/;
+  my @comp2  = split(',',$1);
+  while(@comp1){
+    my $c1 = shift @comp1;
+    my $c2 = shift @comp2;
+    return 0 if ($c1 ne '*') && ($c2 ne '*') && ($c1 ne $c2); }
+  return 1; }
+#**********************************************************************
+
 sub show_matches {
   my($description,$xpath)=@_;
-  print "\n".$description." appears in:\n";
-  foreach my $node ($XPATH->findnodes($xpath,$DOC)){
+  my @nodes = $XPATH->findnodes($xpath,$DOC);
+  print "\n".$description." appears in ".scalar(@nodes)." places:\n";
+  print "XPath = \"$xpath\"\n" if $verbosity > 0;
+  foreach my $node (@nodes){
     show_node($node); }}
 
 # Things to do here:
@@ -77,7 +101,7 @@ sub show_node {
   if($node->localname eq 'Math'){
     my $ptex = $node->getAttribute('tex');
     my $ctex = $node->getAttribute('content-tex');
-    if($verbosity){
+    if($verbosity > 1){
       print $node->toString."\n"; }
     else {
       print wrap("       ","       ",$ctex || $ptex)."\n";}}

@@ -26,7 +26,7 @@ our @ISA = (qw(LaTeXML::Object));
 #use LaTeXML::Document;
 
 use vars qw($VERSION);
-$VERSION = "0.3.0";
+$VERSION = "0.3.1";
 
 #**********************************************************************
 # What a Mess of Globals!
@@ -39,6 +39,7 @@ sub new {
   $state->assignValue(STRICT    => (defined $options{strict}   ? $options{strict}     : 0), 'global');
   $state->assignValue(INCLUDE_COMMENTS=>(defined $options{includeComments} ? $options{includeComments} : 1),
 		     'global');
+  $state->assignValue(SEARCHPATHS=> [ @{$options{searchpaths} || []} ],'global');
   bless {state   => $state, 
 	 model   => $options{model} || LaTeXML::Model->new(),
 	 nomathparse=>$options{nomathparse}||0,
@@ -89,6 +90,8 @@ sub digestFile {
   $STATE->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode($name))));
   $GULLET->input($pathname);
   my $list = LaTeXML::List->new($STOMACH->digestNextBody);
+  if(my $env = $STATE->lookupValue('current_environment')){
+    Error("Input ended while environment $env was open"); } 
   $GULLET->flush;
   NoteProgress(")");
   $list; }
@@ -108,6 +111,8 @@ sub digestString {
   $GULLET->openMouth(LaTeXML::Mouth->new($string),0);
   $STATE->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode("Unknown"))));
   my $list = LaTeXML::List->new($STOMACH->digestNextBody); 
+  if(my $env = $STATE->lookupValue('current_environment')){
+    Error("Input ended while environment $env was open"); } 
   $GULLET->flush;
   NoteProgress(")");
   $list; }

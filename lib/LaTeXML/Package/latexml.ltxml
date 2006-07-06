@@ -18,11 +18,11 @@ use LaTeXML::Package;
 
 # From latexml.sty
 DefConstructor('\URL[]{}',"<a href='#2'>?#1(#1)(#2)</a>");
-DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3c.org/XML/}');
-DefMacro('\SGML',    '\URL[\texttt{HTML}]{http://www.sgmlsource.com/}');
-DefMacro('\HTML',    '\URL[\texttt{HTML}]{http://www.w3c.org/HTML/}');
-DefMacro('\XHTML',   '\URL[\texttt{XHTML}]{http://www.w3c.org/XHTML/}');
-DefMacro('\MathML',  '\URL[\texttt{MathML}]{http://www.w3c.org/Math/}');
+DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
+DefMacro('\SGML',    '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
+DefMacro('\HTML',    '\URL[\texttt{HTML}]{http://www.w3.org/HTML/}');
+DefMacro('\XHTML',   '\URL[\texttt{XHTML}]{http://www.w3.org/XHTML/}');
+DefMacro('\MathML',  '\URL[\texttt{MathML}]{http://www.w3.org/Math/}');
 DefMacro('\OpenMath','\URL[\texttt{OpenMath}]{http://www.openmath.org/}');
 DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 

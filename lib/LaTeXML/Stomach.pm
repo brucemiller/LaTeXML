@@ -33,7 +33,6 @@ sub new {
 sub initialize {
   my($self)=@_;
   $$self{boxing} = [];
-  $STATE->assignValue(SEARCHPATHS=>[],'global');
   $STATE->assignValue(MODE=>'text','global');
   $STATE->assignValue(IN_MATH=>0,'global');
   $STATE->assignValue(PRESERVE_NEWLINES=>1,'global');

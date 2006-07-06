@@ -39,7 +39,7 @@ my $source = $ARGV[0];
 # Do the processing.
 print STDERR "$identity\n" unless $verbosity < 0;
 
-my $latexml= LaTeXML->new(preload=>[@preload], searchpath=>[@paths],
+my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[@paths],
 			 verbosity=>$verbosity, strict=>$strict,includeComments=>$comments,
 			 nomathparse=>$noparse);
 
