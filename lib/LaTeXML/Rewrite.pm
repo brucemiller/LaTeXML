@@ -62,6 +62,13 @@ sub applyClause {
     foreach my $node ($MODEL->getXPath->findnodes($xpath,$tree)){
       next unless $node->ownerDocument->isSameNode($tree->ownerDocument); # If still attached to original document!
       $self->applyClause($document,$node,$nnodes,@more_clauses); }}
+  elsif($op eq 'multi_select'){
+    foreach my $subpattern (@$pattern){
+      my($xpath,$nnodes)=@$subpattern;
+      print STDERR "Rewrite selecting \"$xpath\"\n" if $LaTeXML::Rewrite::DEBUG;
+      foreach my $node ($MODEL->getXPath->findnodes($xpath,$tree)){
+	next unless $node->ownerDocument->isSameNode($tree->ownerDocument); # If still attached to original document!
+	$self->applyClause($document,$node,$nnodes,@more_clauses); }}}
   elsif($op eq 'test'){
     my $nnodes = &$pattern($document,$tree);
     print STDERR "Rewrite test at ".$tree->toString.": ".($nnodes ? $nnodes." to replace" : "failed")."\n" 
@@ -121,7 +128,12 @@ sub applyClause {
 sub compileClause {
   my($self,$clause)=@_;
   my($ignore,$op,$pattern)= @$clause;
-  if   ($op eq 'scope'){
+  if   ($op eq 'label'){
+    if(ref $pattern eq 'ARRAY'){
+      $op='multi_select'; $pattern = [map(["descendant-or-self::*[\@label='$_']",1], @$pattern)]; }
+    else {
+      $op='select'; $pattern=["descendant-or-self::*[\@label='$pattern']",1]; }}
+  elsif($op eq 'scope'){
     $op='select';
     if($pattern =~ /^label:(.*)$/){
       $pattern=["descendant-or-self::*[\@label='$1']",1]; }
@@ -134,37 +146,53 @@ sub compileClause {
   elsif($op eq 'match'){
     if(ref $pattern eq 'CODE'){
       $op='test'; }
+    elsif(ref $pattern eq 'ARRAY'){ # Multiple patterns!
+      $op = 'multi_select'; 
+      $pattern = [map( (ref $_ ? $_ : $self->compile_match($_)), @$pattern)]; }
     elsif(!ref $pattern){	# Assume is TeX
-      # Digest the TeX
-      my $box = digest_rewrite(($$self{math} ? '$'.$pattern.'$' : $pattern));
-      # Create a temporary document
-      my $document = LaTeXML::Document->new();
-      my $capture = $document->openElement('_Capture_', font=>LaTeXML::Font->new());
-      $document->absorb($box);
-      $MODEL->applyRewrites($document,$document->getDocument->documentElement,$self);
-      my @nodes= ($$self{mode} eq 'math'
-		  ? $MODEL->getXPath->findnodes("//ltxml:XMath/*",$capture)
-		  : $capture->childNodes);
-      my $frag = $document->getDocument->createDocumentFragment;
-      map($frag->appendChild($_), @nodes);
-      # Convert the captured nodes to an XPath that would match them.
-      my $xpath = domToXPath($frag);
-      print STDERR "Converting \"$pattern\"\n  => xpath= \"$xpath\"\n" if $LaTeXML::Rewrite::DEBUG;
-      # Finally update the clause to match using that xpath expression.
-      $op = 'select'; $pattern=[$xpath,scalar(@nodes)]; }}
+      $op = 'select'; $pattern= $self->compile_match($pattern); }}
   elsif($op eq 'replace'){
     if(ref $pattern eq 'CODE'){}
-    elsif(!ref $pattern){	# Assume is TeX; A Constructor pattern could also make sense!
-      my $box = digest_rewrite(($$self{math} ? '$'.$pattern.'$' : $pattern));
-      $box = $box->getBody if $$self{math};
-      $pattern = sub { $_[0]->absorb($box); }}}
+    elsif(!ref $pattern){
+      $pattern = $self->compile_replacement($pattern); }}
   elsif($op eq 'regexp'){
-    my $code =  "sub { \$_[0] =~ s${pattern}g; }";
-    my $fcn = eval $code;
-    if($@){ Error("Failed to compile regexp pattern \"$pattern\" into \"$code\": $!"); }
-    else {
-      $pattern = $fcn; }}
+    $pattern = $self->compile_regexp($pattern); }
   $$clause[0]='compiled'; $$clause[1]=$op; $$clause[2]=$pattern; }
+
+#**********************************************************************
+sub compile_match {
+  my($self,$pattern)=@_;
+  # Digest the TeX
+  $pattern = '$'.$pattern.'$' if $$self{math};
+  my $box = digest_rewrite($pattern);
+  # Create a temporary document
+  my $document = LaTeXML::Document->new();
+  my $capture = $document->openElement('_Capture_', font=>LaTeXML::Font->new());
+  $document->absorb($box);
+  $MODEL->applyRewrites($document,$document->getDocument->documentElement,$self);
+  my @nodes= ($$self{mode} eq 'math'
+	      ? $MODEL->getXPath->findnodes("//ltxml:XMath/*",$capture)
+	      : $capture->childNodes);
+  my $frag = $document->getDocument->createDocumentFragment;
+  map($frag->appendChild($_), @nodes);
+  # Convert the captured nodes to an XPath that would match them.
+  my $xpath = domToXPath($frag);
+  print STDERR "Converting \"$pattern\"\n  => xpath= \"$xpath\"\n" if $LaTeXML::Rewrite::DEBUG;
+  [$xpath,scalar(@nodes)]; }
+
+sub compile_replacement {
+  my($self,$pattern)=@_;
+  $pattern = '$'.$pattern.'$' if $$self{math};
+  my $box = digest_rewrite($pattern);
+  $box = $box->getBody if $$self{math};
+  sub { $_[0]->absorb($box); }}
+
+sub compile_regexp {
+  my($self,$pattern)=@_;
+  my $code =  "sub { \$_[0] =~ s${pattern}g; }";
+  my $fcn = eval $code;
+  Error("Failed to compile regexp pattern \"$pattern\" into \"$code\": $!") if $@;
+  $fcn; }
 
 #**********************************************************************
 

@@ -30,41 +30,73 @@ RegisterNamespace(ltxml=>"http://dlmf.nist.gov/LaTeXML",1);
 #   record a flag somewhere so that \else or \fi is recognized
 #   (otherwise, they should signal an error)
 
+# Skipping for conditionals
+#   0 : skip to \fi
+#  -1 : skip to \else, if any, or \fi
+#   n : skip to n-th \or, if any, or \else, if any, or \fi.
 sub skipConditionalBody {
-  my($toelse)=@_;
-  my $fi   = T_CS('\fi')->getDefinition;
-  my $else = T_CS('\else')->getDefinition;
+  my($nskips)=@_;
+  my $fi_def   = LookupDefinition(T_CS('\fi'));
+  my $or_def   = LookupDefinition(T_CS('\or'));
+  my $else_def = LookupDefinition(T_CS('\else'));
   my $level=1;
-  my $t;
-  my $n = 0;
-  while(defined($t=$GULLET->readToken)){
-    $n++;
-    if(defined(my $defn = $t->getDefinition)){
+  my $n_ors = 0;
+  while(my $t=ReadToken){
+    if(defined(my $defn = LookupDefinition($t))){
       if($defn->isExpandable && $defn->isConditional){
 	$level++; }
-      elsif($defn eq $else){
-	last if $toelse && $level == 1; }
-      elsif($defn eq $fi){ 
-	last unless --$level; }}}
-  Fatal("Conditional fell off end") unless $t; }
+      elsif(($defn eq $fi_def) && (!--$level)){
+	fiHandler(); return; }
+      elsif($level > 1){	# Ignore nested \else,\or
+      }
+      elsif(($defn eq $or_def) && (++$n_ors == $nskips)){
+	return; }
+      elsif(($defn eq $else_def) && $nskips){
+	return; }}}
+  Fatal("Conditional fell off end"); }
 
-sub ifHandler   { skipConditionalBody(1) unless $_[0]; return; }
-sub elseHandler { skipConditionalBody(0); return; };
+# NOTE: See Definition setting current_if_level before conditionals!
+
+sub ifHandler   { 
+  AssignValue(if_level=>LookupValue('current_if_level'), 'global');
+  skipConditionalBody(-1) unless $_[0]; return; }
+
+sub elseHandler { 
+  my ($curr,$level) = (LookupValue('current_if_level'),LookupValue('if_level'));
+  if(!$curr){
+    Error("Stray \\else [$curr,$level]"); return; }
+  elsif($curr > $level){
+    (T_CS('\relax'),T_CS('\else')); }
+  else {
+    skipConditionalBody(0); return; }}
+
+sub fiHandler {
+  my ($curr,$level) = (LookupValue('current_if_level'),LookupValue('if_level'));
+  if(!$curr){
+    Error("Stray \\fi [$curr,$level]"); return; }
+  elsif($curr > $level){
+    (T_CS('\relax'),T_CS('\fi')); }
+  else {
+    AssignValue(current_if_level=>$curr-1, 'global'); 
+    AssignValue(if_level=>$curr-1, 'global'); 
+    return; }}
+
 #======================================================================
 # Should complain if we aren't actually evaluating an \if
 DefExpandable('\else', \&elseHandler);
-DefExpandable('\fi',  sub {});
+DefExpandable('\or',   \&elseHandler);
+DefExpandable('\fi',   \&fiHandler);
 
 sub compare {
   my($a,$rel,$b)=@_;
   if   ($rel->equals(T_OTHER('<'))){ $a < $b; }
-  elsif($rel->equals(T_OTHER('='))){ $a = $b; }
+  elsif($rel->equals(T_OTHER('='))){ $a == $b; }
   elsif($rel->equals(T_OTHER('>'))){ $a > $b; }
   else { Fatal("Non-relation token: ".Stringify($rel)." in comparison conditional"); }}
 
 DefExpandable('\ifnum Number Token Number', 
 	      sub { ifHandler(compare($_[1]->valueOf,$_[2],$_[3]->valueOf)); },
-	     isConditional=>1);
+	      isConditional=>1);
 DefExpandable('\ifdim Dimension Token Dimension',
 	      sub { ifHandler(compare($_[1]->valueOf,$_[2],$_[3]->valueOf)); },
 	      isConditional=>1);
@@ -87,8 +119,8 @@ DefExpandable('\ifcat XToken XToken',
 # !! ????
 DefExpandable('\ifx Token Token', sub {
   my($self,$token1,$token2)=@_;
-  my $def1=$STATE->lookupMeaning($token1);
-  my $def2=$STATE->lookupMeaning($token2);
+  my $def1=LookupMeaning($token1);
+  my $def2=LookupMeaning($token2);
   my $bool=0;
   if(defined $def1 != defined $def2){	       # Don't both have defs or not have defs
     $bool=0; }
@@ -99,17 +131,36 @@ DefExpandable('\ifx Token Token', sub {
   ifHandler($bool); },
 	      isConditional=>1);
 
-# Testing boxes ???
-# \ifvoid
-# \ifhbox
-# \ifvbox
+# Kinda rough: We don't really keep track of modes as carefully as TeX does.
+# We'll assume that a box is horizontal if there's anything at all,
+# but it's not a vbox (!?!?)
+sub classify_box {
+  my($boxnum)=@_;
+  my $box = LookupValue('box'.$boxnum->valueOf);
+  if(!$box){ undef; }
+  elsif($box->isa('LaTeXML::Whatsit') && ($box->getDefinition eq LookupDefinition(T_CS('\vbox')))){
+    'vbox'; }
+  else {
+    'hbox'; }}
 
-# \ifeof
+DefExpandable('\ifvoid Number', sub { ifHandler(!classify_box($_[1]));}, isConditional=>1);
+DefExpandable('\ifhbox Number', sub { ifHandler(classify_box($_[1]) eq 'hbox');}, isConditional=>1);
+DefExpandable('\ifvbox Number', sub { ifHandler(classify_box($_[1]) eq 'vbox');}, isConditional=>1);
+
+# Implementing this assumes we've got some notion of file numbers!!!
+# \ifeof Number
 
 DefExpandable('\iftrue', sub { ifHandler(1); }, isConditional=>1);
 DefExpandable('\iffalse',sub { ifHandler(0); }, isConditional=>1);
 
-# \ifcase !!!!!
+DefExpandable('\ifcase Number', sub {
+  my($self,$num)=@_;
+  AssignValue(if_level=>LookupValue('current_if_level'), 'global');
+  $num = $num->valueOf;
+  if($num > 0){ 
+    skipConditionalBody($num); }
+  return; },
+  isConditional=>1);
 
 #======================================================================
 # \newif (from plain).
@@ -135,16 +186,15 @@ DefExpandable('\fontname', sub { Explode("fontname not implemented"); });
 
 DefExpandable('\meaning Token',sub {
   my($self,$tok)=@_;
-  my $meaning = $STATE->lookupMeaning($tok);
+  my $meaning = LookupMeaning($tok);
   Explode(defined $meaning ? $meaning : 'undefined'); });
 
 DefExpandable('\csname',sub {
   my ($token,@toks)=();
-  while(($token = $GULLET->readXToken()) && ($token->getString ne '\endcsname')){
+  while(($token = ReadXToken()) && ($token->getString ne '\endcsname')){
     push(@toks,$token); }
   $token = T_CS("\\".Tokens(@toks)->toString);
-  $STATE->assignMeaning($token, T_CS('\relax')->getDefinition)
-    unless defined $STATE->lookupMeaning($token);
+  Let($token, T_CS('\relax')) unless defined LookupMeaning($token);
   $token;  });
 
 DefPrimitive('\endcsname', sub { Fatal("Extra \csname"); });
@@ -152,7 +202,7 @@ DefPrimitive('\endcsname', sub { Fatal("Extra \csname"); });
 DefExpandable('\expandafter Token Token',sub {
   my($self,$tok,$xtok)=@_;
   my $defn;
-  if(defined($defn=$xtok->getDefinition) && $defn->isExpandable){
+  if(defined($defn=LookupDefinition($xtok)) && $defn->isExpandable){
     ($tok,$defn->invoke); } # Expand $xtok ONCE ONLY!
   else {
     ($tok,$xtok); }});
@@ -168,24 +218,23 @@ DefExpandable('\splitbotmark',   sub { return; });
 
 DefExpandable('\input',sub {
   my ($token,@tokens)=();
-  while(($token=$GULLET->readXToken()) && ($token->getCatcode != CC_SPACE)){
+  while(($token=ReadXToken()) && ($token->getCatcode != CC_SPACE)){
     push(@tokens,$token); }
-  $GULLET->unread($token);
   my $path = Tokens(@tokens)->toString;
   $path = $1 if $path =~ /^\{(.*)\}$/; # just in case
-  $GULLET->input($path,['tex']);
+  Input($path,['tex','']);
   return; });
 
 DefExpandable('\endinput',sub { $GULLET->closeMouth(1); return; });
 
 # \the<internal quantity>
 DefExpandable('\the',sub {
-  my $defn = readVariable();
+  my($defn,@args) = @{ReadVariable()};
   my $type = $defn->isRegister;
-  if(!$type){ Fatal("You can't use ".$defn->getCS->untex." after \\the"); }
-  my $value = $defn->valueOf($defn->readArguments);
+  if(!$type){ Fatal("You can't use ".ToString($defn->getCS)." after \\the"); }
+  my $value = $defn->valueOf(@args);
   my @tokens = ($type eq 'any' ? $value->unlist : Explode($value->toString));
-  if($LaTeXML::NOEXPAND_THE){
+  if($LaTeXML::NOEXPAND_THE){	# See \the for the sense in this.
     $GULLET->neutralizeTokens(@tokens); }
   else {
     @tokens; }});
@@ -227,7 +276,8 @@ foreach my $p (keys %iparms){
 {  my ($sec,$min,$hour,$mday,$mon,$year)=localtime();
    AssignValue('\day'  =>Number($mday), 'global');
    AssignValue('\month'=>Number($mon+1), 'global');
-   AssignValue('\year' =>Number(1900+$year), 'global'); }
+   AssignValue('\year' =>Number(1900+$year), 'global'); 
+   AssignValue('\time' =>Number(60*$hour+$min),'global'); }
 
 # Read-only Integer registers
 our %ro_iparms=(lastpenalty=>0, inputlineno=>0, badness=>0);
@@ -275,7 +325,7 @@ foreach my $p (keys %gparms){
 
 #======================================================================
 # MuGlue registers; TeXBook p.274
-our %mparms=(thinmuskip=>0, medmuskip=>0, thickmuskip=>0);
+our %mparms=(thinmuskip=>'3mu', medmuskip=>'4mu', thickmuskip=>'5mu');
 foreach my $p (keys %mparms){
   DefRegister("\\$p",Glue($mparms{$p})); }
 
@@ -290,8 +340,8 @@ DefConstructor('\smallskip',"");
 DefConstructor('\medskip',"");
 DefConstructor('\bigskip',"");
 
-DefConstructor('\thinspace',"?IfMath(<XMHint name='thinspace'/>)( )");
-DefConstructor('\thickspace',"?IfMath(<XMHint name='thickspace'/>)( )");
+DefConstructor('\thinspace',"?#isMath(<XMHint name='thinspace'/>)( )");
+DefConstructor('\thickspace',"?#isMath(<XMHint name='thickspace'/>)( )");
 
 # Mostly ignorable, although it could add an attribute to an ancestor
 # to record the desired justification.
@@ -309,68 +359,57 @@ DefPrimitive('\raggedright',undef);
 # <def> = \def | \gdef | \edef | \xdef
 # <definition text> = <register text><left brace><balanced text><right brace>
 
-# Convert the register list to the internal form.
-sub readDefParameterList {
-  my($cs)=@_;
-
-  # Read tokens until a '{'
-  my ($token,@tokens)=();
-  while(defined ($token=$GULLET->readToken()) && ($token->getCatcode != CC_BEGIN)){
-    push(@tokens,$token); }
-  $GULLET->unread($token);
-
+sub parseDefParameters {
+  my($cs, $params)=@_;
+  my @tokens = $params->unlist;
   # Now, recognize parameters and delimiters.
-  my @copy = @tokens;
   my @params=();
   my $n=0;
   while(@tokens){
     my $t=shift(@tokens);
     if($t->getCatcode == CC_PARAM){
       $n++; $t=shift(@tokens); 
-	Fatal("Parameters for \"".ToString($cs)."\" not in order in ".join('',map(ToString($_),@copy)))
+	Fatal("Parameters for \"".ToString($cs)."\" not in order in ".ToSting($params))
 	  unless $n == (ord($t->getString)-ord('0'));
       my @delim=();
       while(@tokens && ($tokens[0]->getCatcode != CC_PARAM)){
 	push(@delim,shift(@tokens)); }
       if(@delim){ 
 	my $expected=Tokens(@delim);
-	push(@params, LaTeXML::Parameter->new(spec=>'Until:'.$expected->toString, after=>$expected)); }
+	push(@params, LaTeXML::Parameters::newParameter('Until','Until:'.$expected->toString, extra=>[$expected])); }
       elsif((scalar(@tokens)==1) && ($tokens[0]->getCatcode == CC_PARAM)){ # Special case: trailing #
 	shift(@tokens);
-	push(@params, LaTeXML::Parameter->new(type=>'UntilBrace')); }
+	push(@params, LaTeXML::Parameters::newParameter('UntilBrace','UntilBrace')); }
       else {
-	push(@params, LaTeXML::Parameter->new(spec=>'{}', before=>'{', after=>'}')); }}
+	push(@params, LaTeXML::Parameters::newParameter('Plain','{}')); }}
     else {
       my @lit=($t);
       while(@tokens && ($tokens[0]->getCatcode != CC_PARAM)){
 	push(@lit,shift(@tokens)); }
       my $expected = Tokens(@lit);
-      push(@params,LaTeXML::Parameter->new(spec=>'Literal:'.$expected->toString, 
-					   type=>'Match', matches=>[$expected], novalue=>1)); }
+      push(@params,LaTeXML::Parameters::newParameter('Match','Match:'.$expected->toString, extra=>[$expected],
+						     novalue=>1)); }
   }
   LaTeXML::Parameters->new(@params); }
 
-# On these, we'll parse the arguments ourselves!!
 sub do_def {
-  my($globally, $expanded)=@_;
-  my $cs     = $GULLET->readNonSpace;
-  my $params = readDefParameterList($cs);
-  my $body   = $GULLET->readArg();
+  my($globally, $expanded, $ignore,$cs,$params,$body)=@_;
+  $params = parseDefParameters($cs,$params);
   if($expanded){
     local $LaTeXML::NOEXPAND_THE = 1;
-    $body = $GULLET->expandTokens($body); }
-  $STATE->installDefinition(LaTeXML::Expandable->new($cs,$params,$body),($globally ? 'global':undef));
+    $body = Expand($body); }
+  InstallDefinition(LaTeXML::Expandable->new($cs,$params,$body),($globally ? 'global':undef));
   return; }
 
-DefPrimitive('\def',  sub { do_def(0,0); });
-DefPrimitive('\gdef', sub { do_def(1,0); });
-DefPrimitive('\edef', sub { do_def(0,1); });
-DefPrimitive('\xdef', sub { do_def(1,1); });
+DefPrimitive('\def  SkipSpaces Token UntilBrace {}', sub { do_def(0,0,@_); });
+DefPrimitive('\gdef SkipSpaces Token UntilBrace {}', sub { do_def(1,0,@_); });
+DefPrimitive('\edef SkipSpaces Token UntilBrace {}', sub { do_def(0,1,@_); });
+DefPrimitive('\xdef SkipSpaces Token UntilBrace {}', sub { do_def(1,1,@_); });
 
 # <prefix> = \global | \long | \outer
 # See Stomach.pm & Stomach.pm
-DefPrimitive('\global',sub { $STATE->setPrefix('global'); return; },isPrefix=>1);
-DefPrimitive('\long',  sub { $STATE->setPrefix('long');   return; },  isPrefix=>1);
+DefPrimitive('\global',sub { $STATE->setPrefix('global'); return; }, isPrefix=>1);
+DefPrimitive('\long',  sub { $STATE->setPrefix('long');   return; }, isPrefix=>1);
 DefPrimitive('\outer', sub { $STATE->setPrefix('outer');  return; }, isPrefix=>1);
 
 #======================================================================
@@ -396,11 +435,19 @@ DefPrimitive('\outer', sub { $STATE->setPrefix('outer');  return; }, isPrefix=>1
 # <at clause> = at <dimen> | scaled <number> | <optional spaces>
 # <code assignment> = <codename><8bit><equals><number>
 
-DefRegister('\count Number',Number(0));
-DefRegister('\dimen Number',Dimension(0));
-DefRegister('\skip Number',Glue(0));
-DefRegister('\muskip Number',MuGlue(0));
-DefRegister('\toks Number',Tokens());
+DefRegister('\count Number' => Number(0));
+DefRegister('\dimen Number' => Dimension(0));
+DefRegister('\skip Number'  => Glue(0));
+DefRegister('\muskip Number'=> MuGlue(0));
+DefRegister('\toks Number'  => Tokens());
+
+# From plain.tex
+DefPrimitive('\newcount  Token',sub { DefRegister($_[1]->toString=>Number(0));   return; });
+DefPrimitive('\newdimen  Token',sub { DefRegister($_[1]->toString=>Dimension(0));return; });
+DefPrimitive('\newskip   Token',sub { DefRegister($_[1]->toString=>Glue(0));     return; });
+DefPrimitive('\newmuskip Token',sub { DefRegister($_[1]->toString=>MuGlue(0));   return; });
+DefPrimitive('\newtoks   Token',sub { DefRegister($_[1]->toString=>Tokens(0));   return; });
+# also \newbox, \newhelp, \newread, \newwrite, \newfam, \newlanguage
 
 # <integer variable> = <integer parameter> | <countdef token> | \count<8bit>
 # <dimen var> = <dimen parameter> | <dimendef token> | \dimen<8bit>
@@ -414,47 +461,37 @@ DefRegister('\toks Number',Tokens());
 #    | \multiply <numeric variable><optional by><number>
 #    | \divide <numeric variable><optional by><number>
 
-sub readVariable {
-  my ($var,$type);
-  my $token = $GULLET->readXToken;
-  Fatal("Missing variable") unless defined $token;
-  my $defn = $token->getDefinition;
-  if((defined $defn) && $defn->isRegister && !$defn->isReadonly){
-    $defn; }
-  else {
-    $GULLET->unread($token); 
-    Fatal("Missing variable"); }}
+sub ReadVariable {
+  my $token = ReadXToken;
+  my $defn = $token && LookupDefinition($token);
+  ((defined $defn) && $defn->isRegister && !$defn->isReadonly
+   ? [$defn,$defn->readArguments] : undef); }
 
-DefPrimitive('\advance',sub {
-  my $defn = readVariable();
-  my @args = $defn->readArguments;
-  $GULLET->readKeyword('by');
+DefPrimitive('\advance Variable SkipKeyword:by',sub {
+  my($ignore,$var)=@_;
+  my($defn,@args)=@$var;
   $defn->setValue($defn->valueOf(@args)->add($GULLET->readValue($defn->isRegister)),@args); });
 
-DefPrimitive('\multiply',sub {
-  my $defn = readVariable();
-  my @args = $defn->readArguments;
-  $GULLET->readKeyword('by');
-  $defn->setValue($defn->valueOf(@args)->multiply($GULLET->readNumber->valueOf),@args); });
+DefPrimitive('\multiply Variable SkipKeyword:by Number',sub {
+  my($ignore,$var,$scale)=@_;
+  my($defn,@args)=@$var;
+  $defn->setValue($defn->valueOf(@args)->multiply($scale->valueOf),@args); });
 
-
-DefPrimitive('\divide',sub {
-  my $defn = readVariable();
-  my @args = $defn->readArguments;
-  $GULLET->readKeyword('by');
-  $defn->setValue($defn->valueOf(@args)->multiply(1/$GULLET->readNumber->valueOf),@args); });
+DefPrimitive('\divide Variable SkipKeyword:by Number',sub {
+  my($ignore,$var,$scale)=@_;
+  my($defn,@args)=@$var;
+  $defn->setValue($defn->valueOf(@args)->multiply(1/$scale->valueOf),@args); });
 
 # <let assignment> = \futurelet <control sequence><token><token> 
 #   | \let<control sequence><equals><one optional space><token>
-# DefPrimitive('\futurelet','<token><token><token>', sub { ... });
-DefPrimitive('\let Token Ignore:= Token', sub {
+DefPrimitive('\let Token SkipMatch:= Token', sub {
   my($self,$token1,$token2)=@_;
-  $STATE->assignMeaning($token1, $STATE->lookupMeaning($token2));
+  Let($token1, $token2);
   return;  });
 
 DefExpandable('\futurelet Token Token Token',sub{
   my($self,$cs,$token1,$token2)=@_;
-  $STATE->assignMeaning($cs, $STATE->lookupMeaning($token2));
+  Let($cs, $token2);
   ($token1,$token2); });
 
 # <shorthand definition> = \chardef<control sequence><equals><8bit>
@@ -463,45 +500,45 @@ DefExpandable('\futurelet Token Token Token',sub{
 # <registerdef> = \countdef | \dimendef | \skipdef | \muskipdef | toksdef
 
 # As defining a register ??
-DefPrimitive('\chardef Token Ignore:= Number', sub {
+DefPrimitive('\chardef Token SkipMatch:= Number', sub {
   my($self,$newcs,$code)=@_;
   AssignValue($newcs->getString=>Number($code));	# For when used as an integer valueOf
   my $ch = chr($code->valueOf);
-  $STATE->installDefinition(LaTeXML::Primitive->new($newcs,"",
-						    sub { InvokeToken(T_OTHER($ch)); },
-						    registerType=>'Number', readonly=>1));
+  InstallDefinition(LaTeXML::Primitive->new($newcs,"",
+					    sub { InvokeToken(T_OTHER($ch)); },
+					    registerType=>'Number', readonly=>1));
   return; });
 # \mathchardef ?
 
-DefPrimitive('\countdef Token Ignore:= Number',sub {
+DefPrimitive('\countdef Token SkipMatch:= Number',sub {
   my($self,$cs,$num)=@_;
   my $count = '\count'.$num->valueOf;
   DefRegister($cs->getString, Number(0),
 	       getter=>sub { LookupValue($count); },
 	       setter=>sub { AssignValue($count=>$_[0]); }); });
 
-DefPrimitive('\dimendef Token Ignore:= Number',sub {
+DefPrimitive('\dimendef Token SkipMatch:= Number',sub {
   my($self,$cs,$num)=@_;
   my $dimen = '\dimen'.$num->valueOf;
   DefRegister($cs->getString, Dimension(0),
 	       getter=>sub { LookupValue($dimen); },
 	       setter=>sub { AssignValue($dimen=>$_[0]); }); });
 
-DefPrimitive('\skipdef Token Ignore:= Number',sub {
+DefPrimitive('\skipdef Token SkipMatch:= Number',sub {
   my($self,$cs,$num)=@_;
   my $glue = '\skip'.$num->valueOf;
   DefRegister($cs->getString, Glue(0),
 	       getter=>sub { LookupValue($glue); },
 	       setter=>sub { AssignValue($glue=>$_[0]); }); });
 
-DefPrimitive('\muskipdef Token Ignore:= Number',sub {
+DefPrimitive('\muskipdef Token SkipMatch:= Number',sub {
   my($self,$cs,$num)=@_;
   my $muglue = '\muskip'.$num->valueOf;
   DefRegister($cs->getString, MuGlue(0),
 	       getter=>sub { LookupValue($muglue); },
 	       setter=>sub { AssignValue($muglue=>$_[0]); }); });
 
-DefPrimitive('\toksdef Token Ignore:= Number',sub {
+DefPrimitive('\toksdef Token SkipMatch:= Number',sub {
   my($self,$cs,$num)=@_;
   my $toks = '\toks'.$num->valueOf;
   DefRegister($cs->getString, Tokens(),
@@ -581,13 +618,13 @@ DefPrimitive('\char Number', sub { InvokeToken(T_OTHER(chr($_[1]->valueOf))); })
 
 # \setbox<number>=\hbox to <dimen>{<horizontal mode material>}
 
-DefPrimitive('\setbox Number Ignore:=', sub { 
-  my @stuff = InvokeToken($GULLET->readXToken);
+DefPrimitive('\setbox Number SkipMatch:=', sub { 
+  my @stuff = InvokeToken(ReadXToken);
   AssignValue('box'.$_[1]->valueOf => shift(@stuff));
   @stuff;});
 # Is this the same ??
-DefPrimitive('\sbox Number Ignore:= {}', sub { 
-  my @stuff = InvokeToken($GULLET->readXToken);
+DefPrimitive('\sbox Number SkipMatch:= {}', sub { 
+  my @stuff = InvokeToken(ReadXToken);
   AssignValue('box'.$_[1]->valueOf => shift(@stuff));
   @stuff;});
 
@@ -597,34 +634,59 @@ DefPrimitive('\box Number', sub { LookupValue('box'.$_[1]->valueOf); });
 #  Or spread Dimension and return +dimension as string.
 sub read_box_spec {
   my($whatsit)=@_;
-  if($GULLET->readKeyword('to')){ 
-    $whatsit->setProperty(to=>$GULLET->readDimension); }
-  elsif($GULLET->readKeyword('spread')){
-    $whatsit->setProperty(spread=>$GULLET->readDimension); }}
+  if(my $key = ReadKeyword('to','spread')){
+    $whatsit->setProperty($key=>ReadDimension); }}
 
 # Read a box's material, 
 sub read_box_contents {
   my($whatsit)=@_;
-  $GULLET->readUntil(T_BEGIN);
+  ReadUntil(T_BEGIN);
   BGroup;
-  $whatsit->setBody($STOMACH->digestNextBody,LaTeXML::Box->new("}")); }
+  $whatsit->setBody($STOMACH->digestNextBody,LaTeXML::Box->new("}",undef,undef,T_END)); }
 
-##Tag('hbox', autoOpen=>1, autoClose=>1); # Is this safe?
+sub revert_spec {
+  my($whatsit,$keyword)=@_;
+  my $value = $whatsit->getProperty($keyword);
+  ($value ? (Explode($keyword),$value->revert): ()); }
 
-DefConstructor('\hbox', "<hbox width='#to' pad-width='#spread'>#body</hbox>",
-	       afterDigest=>sub { read_box_spec($_[0]); read_box_contents($_[0]); });
+DefConstructor('\hbox', "<text width='#to' pad-width='#spread'>#body</text>",
+	       afterDigest=>sub { read_box_spec($_[0]); read_box_contents($_[0]); },
+	       mode=>'text',
+	       reversion=>sub { (T_CS('\hbox'),revert_spec($_[0],'to'),revert_spec($_[0],'spread'),
+				 T_BEGIN,$_[0]->getProperty('body')->revert); }); # body has }
 
 DefConstructor('\vbox', "<vbox valign='bottom' height='#to' pad-height='#spread'>#body</vbox>",
-	       afterDigest=>sub { read_box_spec($_[0]); read_box_contents($_[0]); });
+	       afterDigest=>sub { read_box_spec($_[0]); read_box_contents($_[0]); },
+	       mode=>'text',
+	       reversion=>sub { (T_CS('\vbox'),revert_spec($_[0],'to'),revert_spec($_[0],'spread'),
+				 T_BEGIN,$_[0]->getProperty('body')->revert); }); # body has }
 
 DefConstructor('\vtop', "<vbox valign='top' height='#to' pad-height='#spread'>#body</vbox>",
-	       afterDigest=>sub { read_box_spec($_[0]); read_box_contents($_[0]); });
+	       afterDigest=>sub { read_box_spec($_[0]); read_box_contents($_[0]); },
+	       mode=>'text',
+	       reversion=>sub { (T_CS('\vtop'),revert_spec($_[0],'to'),revert_spec($_[0],'spread'),
+				 T_BEGIN,$_[0]->getProperty('body')->revert); }); # body has }
 
-DefConstructor('\lower Dimension', "<hbox raise='#1'>#body</hbox>",
-	       afterDigest=>sub {  $_[0]->setArgs($_[1]->negate); read_box_contents($_[0]); });
+# \lower <dimen> <box>
+# \raise <dimen> <box>
+# But <box> apparently must really explicitly be an \hbox, \vbox or \vtop (?)
+# OR something that expands into one!!
 
-DefConstructor('\raise Dimension', "<hbox raise='#1'>#body</hbox>",
-	       afterDigest=>sub {  read_box_contents($_[0]); });
+sub read_raised_box {
+  my($cs,$sign)=@_;
+  SkipSpaces;
+  my $dim = ReadDimension();
+  my ($box,@stuff) = InvokeToken(ReadXToken);
+  Fatal("A <box> was supposed to be here.".Stringify($box))
+    unless $box && $box->isa('LaTeXML::Whatsit')
+      && ($box->getDefinition->getCSName =~ /^(\\hbox|\\vbox||\\vtop)$/);
+  unshift(@stuff, LaTeXML::Whatsit->new(LookupDefinition(T_CS($cs)),[$dim->multiply($sign),$box]));
+  @stuff; }
+
+
+DefPrimitive('\lower', sub{ read_raised_box('\@raise',-1); });
+DefPrimitive('\raise', sub{ read_raised_box('\@raise',+1); });
+DefConstructor('\@raise Dimension Token', "<text raise='#1'>#2</text>", alias=>'\raise');
 
 #======================================================================
 # Remaining Mode independent primitives in Ch.24, pp.279-280
@@ -646,11 +708,16 @@ DefPrimitive('\endgroup',  \&EndGroup);
 
 # \show, \showbox<8bit>, \showlists, \showthe<internal quantity>
 # \shipout<box>
-DefPrimitive('\ignorespaces',sub { $GULLET->skipSpaces; return; });
+DefPrimitive('\ignorespaces SkipSpaces',undef);
 # \afterassignment<token>
 # \aftergroup<token>
 # \uppercase<general text>, \lowercase<general text>
 # \message<general text>
+DefPrimitive('\message{}',sub {
+  my($self,$stuff)=@_;
+  print STDERR ToString(Expand($stuff));
+  return; });
+
 # \openin<4bit>, \closein<4bit>
 # \immediate\openout<4bit><equals><filename>
 # \immediate\closeout<4bit>
@@ -696,7 +763,9 @@ DefConstructor('\noindent', "");
 DefConstructor('\indent', "");
 
 # Remember; \par closes, not opens, paragraphs!
-DefConstructor('\par', sub { $_[0]->maybeCloseElement('p'); }, untex=>"\\par\n");
+DefConstructor('\par', sub { $_[0]->maybeCloseElement('p') && $_[0]->maybeCloseElement('para'); }, 
+	       alias=>"\\par\n");
+Tag('para', autoClose=>1, autoOpen=>1);
 Tag('p', autoClose=>1, autoOpen=>1);
 
 # {
@@ -709,13 +778,13 @@ Tag('p', autoClose=>1, autoOpen=>1);
 
 DefPrimitive('\hskip Glue',undef);
 
-DefConstructor('\hfil',"?IfMath(<XMHint name='hfil'/>)( )");
-DefConstructor('\hfill',"?IfMath(<XMHint name='hfill'/>)( )");
+DefConstructor('\hfil',"?#isMath(<XMHint name='hfil'/>)( )");
+DefConstructor('\hfill',"?#isMath(<XMHint name='hfill'/>)( )");
 # \end
 # \dump
 
 #**********************************************************************
-DefConstructor("~","?IfMath(<XMHint name='nobreakspace'/>)(\x{00A0})"); # NO-BREAK SPACE
+DefConstructor("~","?#isMath(<XMHint name='nobreakspace'/>)(\x{00A0})"); # NO-BREAK SPACE
 
 DefPrimitive('\nobreak',undef);
 
@@ -736,29 +805,31 @@ DefPrimitive('$', sub {
   my $mode = LookupValue('MODE');
   my $op = '\@@BEGININLINEMATH';
   if($mode eq 'display_math'){
-    Fatal("Missing \$") unless $GULLET->ifNext(undef,CC_MATH);
+    if(IfNext(T_MATH)){ ReadToken; }
+    else { Fatal("Missing \$"); }
     $op = '\@@ENDDISPLAYMATH'; }
   elsif($mode eq 'inline_math'){
     $op = '\@@ENDINLINEMATH'; }
-  elsif($GULLET->ifNext(undef,CC_MATH)){
+  elsif(IfNext(T_MATH)){
+    ReadToken;
     $op = '\@@BEGINDISPLAYMATH'; }
-  $GULLET->unread(T_CS($op));
-  return; });
+  InvokeToken(T_CS($op)); });
+
 
 # Effectively these are the math hooks, redefine these to do what you want with math?
 DefConstructor('\@@BEGINDISPLAYMATH',
 	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>",
-	       untex=>'$$', alias=>'$$',
+	       alias=>'$$',
 	       beforeDigest=> sub{ BeginMode('display_math'); },
 	       captureBody=>1);
-DefConstructor('\@@ENDDISPLAYMATH'  , "", untex=>'$$', alias=>'$$',
+DefConstructor('\@@ENDDISPLAYMATH'  , "", alias=>'$$',
 	       beforeDigest=> sub{ EndMode('display_math'); });
 
 DefConstructor('\@@BEGININLINEMATH', 
-	       "<Math mode='inline'><XMath>#body</XMath></Math>", untex=>'$', alias=>'$',
+	       "<Math mode='inline'><XMath>#body</XMath></Math>", alias=>'$',
 	       beforeDigest=> sub{ BeginMode('inline_math'); },
 	      captureBody=>1);
-DefConstructor('\@@ENDINLINEMATH'   ,"", untex=>'$', alias=>'$',
+DefConstructor('\@@ENDINLINEMATH'   ,"", alias=>'$',
 	       beforeDigest=> sub{ EndMode('inline_math');});
 
 # Add the TeX code from the object that created this node,
@@ -768,9 +839,9 @@ sub add_TeX {
   my($node,$thing)=@_;
   if($thing && (ref $thing eq 'LaTeXML::Whatsit') && !$thing->getProperty('_added_tex')){
     local $LaTeXML::DUAL_BRANCH = 'presentation';
-    my $tex = $thing->untex;
+    my $tex = UnTeX($thing);
     $LaTeXML::DUAL_BRANCH = 'content';
-    my $ctex = $thing->untex;
+    my $ctex = UnTeX($thing);
     $node->setAttribute('tex',$tex);
     $node->setAttribute('content-tex',$ctex) if $ctex ne $tex;
     $thing->setProperty('_added_tex',1); }}
@@ -787,9 +858,9 @@ sub add_body_TeX {
   if($thing && !$thing->getProperty('_added_body_tex')){
     if(defined(my $body = $thing->getProperty('body'))){
       local $LaTeXML::DUAL_BRANCH = 'presentation';
-      my $tex = $body->untex;
+      my $tex = UnTeX($body);
       $LaTeXML::DUAL_BRANCH = 'content';
-      my $ctex = $body->untex;
+      my $ctex = UnTeX($body);
       $node->setAttribute('tex',$tex);
       $node->setAttribute('content-tex',$ctex) if $ctex ne $tex;
     }
@@ -875,7 +946,7 @@ our %scriptstylemap=(display=>'script', text=>'script',
 
 sub scriptHandler {
   my($op)=@_;
-  $GULLET->skipSpaces;
+  SkipSpaces;
   my $cs = '\@@POST'.$op;
   # Check if preceding box is empty {}
   if(defined(my $prev = $LaTeXML::LIST[$#LaTeXML::LIST])){
@@ -885,10 +956,10 @@ sub scriptHandler {
   my $style = LookupValue('mathstyle'); # Bump the math style smaller.
   AssignValue(mathstyle=>$scriptstylemap{$style});
   # Now, get following boxes
-  my @stuff = InvokeToken($GULLET->readXToken);
+  my @stuff = InvokeToken(ReadXToken);
   Fatal("Missing { in sub/super-script argument") unless @stuff;
   my $script = shift(@stuff);	# ONLY this box is the script!
-  push(@stuff, LaTeXML::Whatsit->new(T_CS($cs)->getDefinition,[$script]))
+  unshift(@stuff, LaTeXML::Whatsit->new(LookupDefinition(T_CS($cs)),[$script]))
     if $script->toString ne '{}';    # ONLY If Script is not empty!!!
   AssignValue(mathstyle=>$style); # revert
   @stuff; }
@@ -898,29 +969,33 @@ DefPrimitive('_', sub{ scriptHandler('SUBSCRIPT'); });
 
 DefConstructor('\@@POSTSUPERSCRIPT{}',
 	       "<XMApp role='POSTSUPERSCRIPT'><XMArg rule='Superscript'>#1</XMArg></XMApp>",
-	       untex=>'^{#1}');
+	       alias=>'^');
 DefConstructor('\@@POSTSUBSCRIPT{}',
 	       "<XMApp role='POSTSUBSCRIPT'><XMArg rule='Subscript'>#1</XMArg></XMApp>",
-	       untex=>'_{#1}');
+	       alias=>'_');
 DefConstructor('\@@FLOATINGSUPERSCRIPT{}',
 	       "<XMApp role='FLOATINGSUPERSCRIPT'><XMArg rule='Superscript'>#1</XMArg></XMApp>",
-	       untex=>'{}^{#1}');
+	       alias=>'{}^');
 DefConstructor('\@@FLOATINGSUBSCRIPT{}',
 	       "<XMApp role='FLOATINGSUBSCRIPT'><XMArg rule='Subscript'>#1</XMArg></XMApp>",
-	       untex=>'{}_{#1}');
+	       alias=>'{}_');
 
 DefConstructor('\@SUPERSCRIPT{}{}', 
 	       "<XMApp><XMTok name='Superscript'/><XMArg>#1</XMArg><XMArg rule='Superscript'>#2</XMArg></XMApp>",
-	       untex=>'{#1}^{#2}');
+	       reversion=> sub {
+		 my($whatsit,$num,$denom)=@_;
+		 (T_BEGIN,$num->revert,T_END,T_SUPER,T_BEGIN,$denom->revert,T_END); });
 DefConstructor('\@SUBSCRIPT{}{}', 
 	       "<XMApp><XMTok name='Subscript'/><XMArg>#1</XMArg><XMArg rule='Subscript'>#2</XMArg></XMApp>",
-	       untex=>'{#1}_{#2}');
+	       reversion=>sub {
+		 my($whatsit,$num,$denom)=@_;
+		 (T_BEGIN,$num->revert,T_END,T_SUB,T_BEGIN,$denom->revert,T_END); });
 
 # This only becomes active in math mode.
 AssignCatcode('math:\''=>1, 'global');
 DefMacro('\'',sub{
   my $n = 1;
-  while($GULLET->ifNext(T_OTHER('\''))){ $n++; };
+  while(IfNext(T_OTHER('\''))){ ReadToken; $n++; };
   (T_SUPER,T_BEGIN,map(T_CS('\prime'), 1..$n),T_END); });
 
 # These are \let in plain
@@ -973,37 +1048,60 @@ sub chooseArgHandler {
 DefConstructor('\choose',
 	       "<XMApp><XMTok name='binomial'/><XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
 	       afterDigest=>\&chooseArgHandler,
-	       untex=>'#top \choose #bottom');
+	       reversion=>sub {
+		 my($whatsit)=@_;
+		 ($whatsit->getProperty('top')->revert,
+		  T_CS('\choose'),
+		  $whatsit->getProperty('bottom')->revert); });
 DefConstructor('\over',
 	       "<XMApp><XMTok name='/' style='over' role='MULOP'/><XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
 	       afterDigest=>\&chooseArgHandler,
-	       untex=>'#top \over #bottom');
+	       reversion=>sub {
+		 my($whatsit)=@_;
+		 ($whatsit->getProperty('top')->revert,
+		  T_CS('\over'),
+		  $whatsit->getProperty('bottom')->revert); });
 DefConstructor('\atop',
 	       "<XMApp><XMTok name='stacked'/><XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
 	       afterDigest=>\&chooseArgHandler,
-	       untex=>'#top \atop #bottom');
+	       reversion=>sub {
+		 my($whatsit)=@_;
+		 ($whatsit->getProperty('top')->revert,
+		  T_CS('\atop'),
+		  $whatsit->getProperty('bottom')->revert); });
 DefConstructor('\overwithdelims{}{}',
 	       "<XMApp open='#1' close='#2'><XMTok name='/' style='over' role='MULOP'/>"
 	       .  "<XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
 	       afterDigest=>\&chooseArgHandler,
-	       untex=>'#top \overwithdelims{#1}{#2} #bottom');
+	       reversion=> sub {
+		 my($whatsit,@args)=@_;
+		 ($whatsit->getProperty('top')->revert,
+		  $whatsit->getDefinition->invocation(@args),
+		  $whatsit->getProperty('bottom')->revert); });
 # But, wonder what the _meaning_ is!
 DefConstructor('\atopwithdelims{}{}',
 	       "<XMApp open='#1' close='#2'><XMTok name='stacked'/>"
 	       .  "<XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
 	       afterDigest=>\&chooseArgHandler,
-	       untex=>'#top \atopwithdelims{#1}{#2} #bottom');
+	       reversion=>sub {
+		 my($whatsit,@args)=@_;
+		 ($whatsit->getProperty('top')->revert,
+		  $whatsit->getDefinition->invocation(@args),
+		  $whatsit->getProperty('bottom')->revert); });
 DefConstructor('\abovewithdelims{}{}{}',
 	       "<XMApp open='#1' close='#2'><XMTok name='/' style='over' thickness='#3'/>"
 	       .  "<XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
 	       afterDigest=>\&chooseArgHandler,
-	       untex=>'#top \abovewithdelims{#1}{#2}{#3} #bottom');
-
+	       reversion=> sub {
+		 my($whatsit,@args)=@_;
+		 ($whatsit->getProperty('top')->revert,
+		  $whatsit->getDefinition->invocation(@args),
+		  $whatsit->getProperty('bottom')->revert); });
 #**********************************************************************
 # Old style font styles.
-# The trick is to create an empty Whatsit preserved till assimilation (for untex'ing)
+# The trick is to create an empty Whatsit preserved till assimilation (for reversion'ing)
 # but to change the current font used in boxes.
-Tag('textstyle',autoClose=>1);
+Tag('text',autoOpen=>1,autoClose=>1);
 
 DefConstructor('\rm', '',  beforeDigest=>sub{ MergeFont(family=>'serif'); });
 DefConstructor('\sf', '',  beforeDigest=>sub{ MergeFont(family=>'sansserif'); });
@@ -1026,7 +1124,8 @@ DefConstructor('\cal', '', beforeDigest=>sub{ RequireMath; MergeFont(family=>'ca
 
 DefConstructor('\@end@emph','</emph>');
 DefConstructor('\em',"<emph>", 
-	       afterDigest=>sub { PushValue(afterGroup=>T_CS('\@end@emph')); });
+#	       afterDigest=>sub { PushValue(afterGroup=>T_CS('\@end@emph')); });
+	       afterDigest=>sub { PushValue(beforeAfterGroup=>T_CS('\@end@emph')); });
 
 sub setMathBoldness {
   my($bold)=@_;
@@ -1118,12 +1217,12 @@ DefConstructor('&',sub { Fatal("Stray \"&\""); });
 # Spacing stuff
 DefConstructor('\@','');
 # Math spacing.
-DefConstructor('\,',"?IfMath(<XMHint name='thinspace'/>)(\x{2009})"); # THIN SPACE
-DefConstructor('\:',"?IfMath(<XMHint name='medspace'/>)(\x{2005})");  # FOUR-PER-EM SPACE
-DefConstructor('\;',"?IfMath(<XMHint name='thickspace'/>)(\x{2004})"); # THREE-PER-EM SPACE
-DefConstructor('\!',"?IfMath(<XMHint name='negthinspace'/>)()");
-DefConstructor('\ ',"?IfMath(<XMHint name='medspace'/>)(\x{2002})"); # EN SPACE
-DefConstructor('\/',"?IfMath(<XMHint name='italiccorr'/>)()");
+DefConstructor('\,',"?#isMath(<XMHint name='thinspace'/>)(\x{2009})"); # THIN SPACE
+DefConstructor('\:',"?#isMath(<XMHint name='medspace'/>)(\x{2005})");  # FOUR-PER-EM SPACE
+DefConstructor('\;',"?#isMath(<XMHint name='thickspace'/>)(\x{2004})"); # THREE-PER-EM SPACE
+DefConstructor('\!',"?#isMath(<XMHint name='negthinspace'/>)()");
+DefConstructor('\ ',"?#isMath(<XMHint name='medspace'/>)(\x{2002})"); # EN SPACE
+DefConstructor('\/',"?#isMath(<XMHint name='italiccorr'/>)()");
 DefConstructor('\frenchspacing', "");
 DefConstructor('\nonfrenchspacing',"");
 
@@ -1181,7 +1280,7 @@ our %accents
 foreach my $accent (keys %accents){
   DefConstructor($accent."{}", sub {
     my($document,$letter,$props)=@_;
-    if(my @letters = map(($_ eq '\i ' ? 'i':$_),map($_->untex,$letter->unlist))){
+    if(my @letters = map(($_ eq '\i ' ? 'i':$_),map(ToString($_),$letter->unlist))){
       # Put the accent AFTER the first char(?)
       $document->openText($letters[0].$accents{$accent}->[0].join('',@letters[1..$#letters]),
 			   $letter->getFont);}
@@ -1322,7 +1421,7 @@ DefMath('\*',"\x{2062}", role=>'MULOP'); # INVISIBLE TIMES (or MULTIPLICATION SI
 
 #DefMath('\ldots',"\x{2026}", role=>'ID'); # HORIZONTAL ELLIPSIS
 # Ah, since \ldots can appear in text....
-DefConstructor('\ldots',"?IfMath(<XMTok name='ldots' font='#font' role='ID'>\x{2026}</XMTok>)(\x{2026})",
+DefConstructor('\ldots',"?#isMath(<XMTok name='ldots' font='#font' role='ID'>\x{2026}</XMTok>)(\x{2026})",
 	      properties=>{font=>sub{ LookupValue('font')->merge(family=>'serif');}} ); # Since not DefMath!
 DefMath('\cdots',"\x{22EF}", role=>'ID'); # MIDLINE HORIZONTAL ELLIPSIS
 DefMath('\vdots',"\x{22EE}", role=>'ID'); # VERTICAL ELLIPSIS
@@ -1330,7 +1429,7 @@ DefMath('\ddots',"\x{22F1}", role=>'ID'); # DOWN RIGHT DIAGONAL ELLIPSIS
 DefMath('\colon',':');
 # Note that amsmath redefines \dots to be `smart'.
 # Aha, also can be in text...
-DefConstructor('\dots',"?IfMath(<XMTok name='dots' font='#font' role='ID'>\x{2026}</XMTok>)(\x{2026})",
+DefConstructor('\dots',"?#isMath(<XMTok name='dots' font='#font' role='ID'>\x{2026}</XMTok>)(\x{2026})",
 	      properties=>{font=>sub{ LookupValue('font')->merge(family=>'serif');}} ); # Since not DefMath!
 # And while we're at it...
 
@@ -1626,10 +1725,10 @@ DefConstructor('\Bigg Token',"<XMWrap style='Bigg'>#1</XMWrap>");
 DefMath('\vert','|', role=>'VERTBAR');
 DefMath('\Vert',"\x{2225}", role=>'VERTBAR'); # PARALLEL TO
 
-DefConstructor('\phantom{}',"?IfMath(<XMHint name='phantom'/>)()");
-DefConstructor('\hphantom{}',"?IfMath(<XMHint name='hphantom'/>)()");
-DefConstructor('\vphantom{}',"?IfMath(<XMHint name='vphantom'/>)()");
-DefConstructor('\mathstrut{}',"?IfMath(<XMHint name='mathstrut'/>)()");
+DefConstructor('\phantom{}',"?#isMath(<XMHint name='phantom'/>)()");
+DefConstructor('\hphantom{}',"?#isMath(<XMHint name='hphantom'/>)()");
+DefConstructor('\vphantom{}',"?#isMath(<XMHint name='vphantom'/>)()");
+DefConstructor('\mathstrut{}',"?#isMath(<XMHint name='mathstrut'/>)()");
 DefConstructor('\smash{}',"#1"); # well, what?
 
 #======================================================================
@@ -1649,24 +1748,48 @@ DefMath('\vec{}',       "\x{2192}", operator_role=>'OVERACCENT'); # RIGHTWARDS A
 DefMath('\dot{}',       "\x{02D9}", operator_role=>'OVERACCENT'); # DOT ABOVE
 DefMath('\ddot{}',      "\x{00A8}", operator_role=>'OVERACCENT'); # DIAERESIS
 DefMath('\overline{}',  "\x{00AF}", operator_role=>'OVERACCENT'); # MACRON
-DefMath('\overbrace{}', "\x{FE37}", operator_role=>'OVERACCENT', # PRESENTATION FORM FOR VERTICAL LEFT CURLY BRACKET
+DefMath('\overbrace{}', "\x{FE37}", operator_role=>'OVERACCENT',  # PRESENTATION FORM FOR VERTICAL LEFT CURLY BRACKET
 	stackscripts=>'yes');
 DefMath('\widehat{}',   "\x{005E}", operator_role=>'OVERACCENT'); # CIRCUMFLEX ACCENT [plain? also amsfonts]
-DefMath('\widetilde{}', "\x{007E}", operator_role=>'OVERACCENT'); # TILDE [plain? also amsfonts]
-
-DefMath('\underline{}', "\x{00AF}", operator_role=>'UNDERACCENT'); # MACRON
+DefMath('\widetilde{}', "\x{007E}", operator_role=>'OVERACCENT');  # TILDE [plain? also amsfonts]
 DefMath('\underbrace{}',"\x{FE38}", operator_role=>'UNDERACCENT', # PRESENTATION FORM FOR VERTICAL RIGHT CURLY BRACKET
 	stackscripts=>'yes');
-DefMath('\overrightarrow{}', "\x{2192}", operator_role=>'OVERACCENT');
-DefMath('\overleftarrow{}', "\x{2190}", operator_role=>'OVERACCENT');
 
+# NOTE that all the above accents REQUIRE math mode
+# EXCEPTR underline, overrightarrow and overleftarrow!
+
+DefMath('\math@underline{}', "\x{00AF}", operator_role=>'UNDERACCENT', 
+	name=>'underline', alias=>'\underline');
+DefConstructor('\text@underline{}', "<underline>#1</underline>");
+DefMath('\math@overrightarrow{}', "\x{2192}", operator_role=>'OVERACCENT', 
+	name=>'overrightarrow', alias=>'\overrightarrow');
+DefMath('\math@overleftarrow{}', "\x{2190}", operator_role=>'OVERACCENT', 
+	name=>'overleftarrow', alias=>'\overleftarrow');
+
+DefMacro('\underline{}',      '\ifmmode\math@underline{#1}\else\text@underline{#1}\fi');
+DefMacro('\overrightarrow{}', '\ifmmode\math@overrightarrow{#1}\else$\math@overrightarrow{#1}$\fi');
+DefMacro('\overleftarrow{}',  '\ifmmode\math@overleftarrow{#1}\else$\math@overleftarrow{#1}$\fi');
 #**********************************************************************
 # Stray stuff .... where to ?
 #**********************************************************************
+
+# Define plain TeX's \loop macro (p.352)
+RawTeX(' \def\loop#1\repeat{\def\body{#1}\iterate}
+         \def\iterate{\body \let\next=\iterate \else\let\next=\relax\fi \next}
+         \let\repeat=\fi ');
+
 # These 3 should have some `name' assigned ... but what???
 
-DefConstructor('\mathrel{}',"<XMWrap role='RELOP'>#1</XMWrap>");
+# NOTE that \mathord and \mathbin aren't really right here.
+# We need a finer granularity than TeX does: an ORD could be several things,
+# a BIN could be a MULOP or ADDOP.
+DefConstructor('\mathord{}',"<XMWrap role='ID'>#1</XMWrap>");
 DefConstructor('\mathop{}', "<XMWrap role='FUNCTION'>#1</XMWrap>");
+DefConstructor('\mathbin{}', "<XMWrap role='ADDOP'>#1</XMWrap>");
+DefConstructor('\mathrel{}',"<XMWrap role='RELOP'>#1</XMWrap>");
+DefConstructor('\mathopen{}', "<XMWrap role='OPEN'>#1</XMWrap>");
+DefConstructor('\mathclose{}', "<XMWrap role='CLOSE'>#1</XMWrap>");
+DefConstructor('\mathpunct{}', "<XMWrap role='PUNCT'>#1</XMWrap>");
 
 
 DefMacro('\hiderel{}', "#1"); # Just ignore, for now...
@@ -1675,8 +1798,9 @@ DefMacro('\hiderel{}', "#1"); # Just ignore, for now...
 #DefConstructor('\stacked{}{}","<STACKED/>");
 
 DefMacro('\strut','');
-DefConstructor('\quad', "?IfMath(<XMHint name='quad'/>)(\x{2001})"); # EM QUAD
-DefConstructor('\qquad',"?IfMath(<XMHint name='qquad'/>)(\x{2001}\x{2001})"); # EM QUAD
+DefConstructor('\enskip', "?#isMath(<XMHint name='enskip'/>)(\x{2000})"); # EN QUAD
+DefConstructor('\quad', "?#isMath(<XMHint name='quad'/>)(\x{2001})"); # EM QUAD
+DefConstructor('\qquad',"?#isMath(<XMHint name='qquad'/>)(\x{2001}\x{2001})"); # EM QUAD
 
 DefMath('\to',"\x{2192}", role=>'ARROW'); # RIGHTWARDS ARROW??? a bit more explicitly relation-like?
 
@@ -1719,10 +1843,9 @@ DefConstructor('\documentclass[]{}',"<?latexml class='#2' ?#1(options='#1')?>",
     $class   = $class->toString;
     $options = $options->toString if defined $options;
     my @options = grep( !$ignorable_classoptions{$_},  split(/,\s*/, $options||''));
-    Warn("Unrecognized options ".join(', ',map(Stringify($_),@options))." ignored") if @options;
     AssignValue(inPreamble=>1);	# \begin{document} will clear this.
-    $GULLET->input('LaTeX',['ltxml']);
-    $GULLET->input($class,['ltxml','cls']);
+    Input('LaTeX',['ltxml']);
+    Input($class,['ltxml','cls']);
     return;});
 
 #**********************************************************************
@@ -1730,42 +1853,38 @@ DefConstructor('\documentclass[]{}',"<?latexml class='#2' ?#1(options='#1')?>",
 #**********************************************************************
 DefConstructor('\DUAL[]{}{}',
 	       "<XMDual ?#1(role='#1')>#2<XMWrap>#3</XMWrap></XMDual>",
-	       untex=>sub {
+	       reversion=>sub {
 		 my($whatsit)=@_;
 		 my($role,$content,$presentation)=$whatsit->getArgs;
 		 if($LaTeXML::DUAL_BRANCH eq 'content'){
-		   $content->untex; }
+		   $content->revert; }
 		 elsif($LaTeXML::DUAL_BRANCH eq 'presentation'){
-		   $presentation->untex; }
+		   $presentation->revert; }
 		 else {
-		   my $untex = '\DUAL{'.(defined $role ? ToString($role):'').'}{';
-		   { local $LaTeXML::DUAL_BRANCH = 'content';
-		     $untex .= $content->untex. '}{'; }
-		   { local $LaTeXML::DUAL_BRANCH = 'presentation';
-		     $untex .= $presentation->untex .'}'; }
-		   $untex; }});
+		   $whatsit->getDefinition->invocation($role,$content,$presentation); }});
 
-DefConstructor('\FCN{}',    "<XMWrap role='FUNCTION'>#1</XMWrap>", untex=>'#1', alias=>'');
-DefConstructor('\ROLE{}{}', "<XMWrap role='#1'>#2</XMWrap>",       untex=>'#2', alias=>'');
+DefConstructor('\FCN{}',    "<XMWrap role='FUNCTION'>#1</XMWrap>", reversion=>'#1', alias=>'');
+DefConstructor('\ROLE{}{}', "<XMWrap role='#1'>#2</XMWrap>",       reversion=>'#2', alias=>'');
 
 # NOTE: work through this systematically!
-DefConstructor('\@SYMBOL{}', "<XMWrap role='ID'>#1</XMWrap>", untex=>'#1');
-DefConstructor('\@APPLY{}',  "<XMApp>#1</XMApp>", untex=>'#1');
-DefConstructor('\@WRAP{}',   "<XMWrap>#1</XMWrap>", untex=>'#1');
-DefConstructor('\@TOKEN{}',   "<XMTok name='#1'/>", untex=>'');
-DefMath('\@APPLYFUNCTION', "\x{2061}", untex=>'', name=>'', role=>'APPLYOP'); # APPLY FUNCTION
-DefMath('\@INVISIBLETIMES',"\x{2062}", untex=>'', name=>'', role=>'MULOP'); # INVISIBLE TIMES
+DefConstructor('\@SYMBOL{}', "<XMWrap role='ID'>#1</XMWrap>", reversion=>'#1');
+DefConstructor('\@APPLY{}',  "<XMApp>#1</XMApp>", reversion=>'#1');
+DefConstructor('\@WRAP{}',   "<XMWrap>#1</XMWrap>", reversion=>'#1');
+DefConstructor('\@TOKEN{}',   "<XMTok name='#1'/>", reversion=>'');
+DefMath('\@APPLYFUNCTION', "\x{2061}", reversion=>'', name=>'', role=>'APPLYOP'); # APPLY FUNCTION
+DefMath('\@INVISIBLETIMES',"\x{2062}", reversion=>'', name=>'', role=>'MULOP'); # INVISIBLE TIMES
 
 # Would be nice to make the ID argument optional, but since these can appear in
 # optional arguments to other macros, we'll end up nesting [] !!
-DefConstructor('\@XMArg{}{}',"<XMArg ?#1(xml:id='#1')>#2</XMArg>", untex=>'#2',
+DefConstructor('\@XMArg{}{}',"<XMArg ?#1(id='#1')>#2</XMArg>", reversion=>'#2',
 	       properties=>{id=>'#1'});
 DefConstructor('\@XMRef{}',"<XMRef idref='#1'/>",
-	       untex=>sub{ LookupValue('xref:'.$_[0]->getArg(1)->toString)->untex; });
+	       reversion=>sub{ LookupValue('xref:'.$_[0]->getArg(1)->toString)->revert; });
 
 DefConstructor('\@ERROR{}{}', "<ERROR type='#1'>#2</ERROR>");
 
 #**********************************************************************
+DefConstructor('\WildCard',"<_WildCard_/>");
 DefConstructor('\WildCardA',"<_WildCard_/>");
 DefConstructor('\WildCardB',"<_WildCard_/>");
 DefConstructor('\WildCardC',"<_WildCard_/>");

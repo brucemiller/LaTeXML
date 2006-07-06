@@ -17,10 +17,9 @@ use XML::LibXML::Common qw(:libxml);
 use XML::LibXML::XPathContext;
 use LaTeXML::Global;
 use LaTeXML::Font;
-use LaTeXML::Object;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Rewrite;
-our @ISA = qw(LaTeXML::Object);
+use base qw(LaTeXML::Object);
 
 #**********************************************************************
 sub new {

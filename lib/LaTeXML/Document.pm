@@ -13,11 +13,9 @@
 package LaTeXML::Document;
 use strict;
 use LaTeXML::Global;
-use LaTeXML::Object;
 use XML::LibXML;
 use Unicode::Normalize;
-
-our @ISA = qw(LaTeXML::Object);
+use base qw(LaTeXML::Object);
 
 #**********************************************************************
 
@@ -94,6 +92,7 @@ sub finalize_rec {
 	$declared_font = $font; }}}
 
   $node->removeAttribute('_font');
+  $node->removeAttribute('_fontswitch');
   $node->removeAttribute('_box');
 
 ##  # INSANE HACK for comparison! Sort the attributes!!!!
@@ -218,7 +217,8 @@ sub closeNode_internal {
   my $closeto = $node->parentNode; # Grab now in case afterClose screws the structure.
   my $n = $$self{node};
   $n = $n->parentNode if $n->nodeType == XML_TEXT_NODE;
-  while($n->nodeType != XML_DOCUMENT_NODE){
+#  while($n->nodeType != XML_DOCUMENT_NODE){
+  while($n->nodeType == XML_ELEMENT_NODE){
     if(my $post= $MODEL->getTagProperty($n->nodeName,'afterClose')){
       &$post($n,$LaTeXML::BOX); }
     last if $$node eq $$n;	# NOTE: This equality test is questionable
@@ -230,15 +230,18 @@ sub closeNode_internal {
 # returns undef if no such place
 sub floatToElement {
   my($self,$tag)=@_;
-  my $n = $$self{node};
-  $n = $n->parentNode if $n->nodeType == XML_TEXT_NODE;
+  my $node = $$self{node};
+  $node = $node->parentNode if $node->nodeType == XML_TEXT_NODE;
+  my $n = $node;
   while(($n->nodeType != XML_DOCUMENT_NODE) && ! $MODEL->canContain($n->nodeName,$tag)){
     $n = $n->parentNode; }
   if($n->nodeType != XML_DOCUMENT_NODE){
     my $savenode = $$self{node};
     $$self{node}=$n;
     $savenode; }
-  else { undef; }}
+  else { 
+    Warn("No open node \"$tag\"") unless $MODEL->canContainSomehow($node->nodeName,$tag);
+    undef; }}
 
 sub floatToAttribute {
   my($self,$key)=@_;
@@ -250,7 +253,9 @@ sub floatToAttribute {
     my $savenode = $$self{node};
     $$self{node}=$n;
     $savenode; }
-  else { undef; }}
+  else {
+    Warn("No open node can get attribute \"$key\"");
+    undef; }}
 
 # Add the given attribute to the nearest node that is allowed to have it.
 sub addAttribute {
@@ -275,12 +280,12 @@ sub addAttribute {
 # We need to find the current effective -- being the closest  _declared_ font,
 # (ie. it will appear in the elements attributes).  We may also want
 # to open/close some elements in such a way as to minimize the font switchiness.
-# I guess we should only open/close "textstyle" elements, though.
+# I guess we should only open/close "text" elements, though.
 # [Actually, we'd like the user to _declare_ what element to use....
-#  I don't like having "textstyle" built in here!
+#  I don't like having "text" built in here!
 #  AND, we've assumed that "font" names the relevant attribute!!!]
 
-our $FONTTAG = "textstyle";	# Eventually declared somewhere???
+our $FONTTAG = "text";	# Eventually declared somewhere???
 sub openText {
   my($self,$text,$font)=@_;
   return if $text=~/^\s+$/ && 
@@ -300,7 +305,7 @@ sub openText {
     last unless ($n->nodeName eq $FONTTAG);
     $n = $n->parentNode; }
   $$self{node} = $closeto if $closeto ne $startnode;	# Move to best starting point for this text.
-  $self->openElement($FONTTAG,font=>$font) if $bestdiff > 0; # Open if needed.
+  $self->openElement($FONTTAG,font=>$font,_fontswitch=>1) if $bestdiff > 0; # Open if needed.
   # Finally, insert the darned text.
   $self->openText_internal($text); }
 
@@ -339,7 +344,7 @@ sub openElement {
 
 ##  print STDERR "Open Element $tag : font attribute = ".ToString($attributes{font})." Box font = ".ToString($LaTeXML::BOX->getFont)."\n"; 
   foreach my $key (sort keys %attributes){
-    next if $key =~ /^_/;
+##    next if $key =~ /^_/;
     next if $key eq 'font';	# !!!
     next if $key eq 'locator';	# !!!
     my $value = $attributes{$key};
@@ -370,7 +375,8 @@ sub closeElement {
   $node = $node->parentNode if $node->nodeType == XML_TEXT_NODE;
   while($node->nodeType != XML_DOCUMENT_NODE){
     my $t = $node->nodeName;
-    last if $t eq $tag;
+    # autoclose until node of same name BUT also close nodes opened' for font switches!
+    last if ($t eq $tag) && !( ($t eq $FONTTAG) && $node->getAttribute('_fontswitch'));
     push(@cant_close,$t) unless $MODEL->canAutoClose($t);
     $node = $node->parentNode; }
   if($node->nodeType == XML_DOCUMENT_NODE){ # Didn't find $tag at all!!

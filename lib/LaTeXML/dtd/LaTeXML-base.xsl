@@ -32,6 +32,7 @@
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
       <style type="text/css">
 	img.math { vertical-align:middle }
+	.framed  { border:1px solid black;}
       </style>
       <xsl:if test='$CSS'>
 	<link rel='stylesheet' type="text/css" href="{$CSS}"/> 
@@ -430,28 +431,28 @@
   <a href="{@href}"><xsl:apply-templates/></a>
 </xsl:template>
 
-<xsl:template match="ltx:textstyle[@font='typewriter']">
-  <tt><xsl:apply-templates/></tt>
+
+<xsl:template match="ltx:text">
+  <xsl:choose>
+    <xsl:when test="@font='typewriter'"><tt  ><xsl:apply-templates select='.' mode='faced'/></tt  ></xsl:when>
+    <xsl:when test="@font='bold'"      ><b   ><xsl:apply-templates select='.' mode='faced'/></b   ></xsl:when>
+    <xsl:when test="@font='italic'"    ><i   ><xsl:apply-templates select='.' mode='faced'/></i   ></xsl:when>
+    <xsl:otherwise                     ><span><xsl:apply-templates select='.' mode='faced'/></span></xsl:otherwise>
+  </xsl:choose>
 </xsl:template>
 
-<xsl:template match="ltx:textstyle[@font='bold']">
-  <b><xsl:apply-templates/></b>
-</xsl:template>
-
-<xsl:template match="ltx:textstyle[@font='italic']">
-  <i><xsl:apply-templates/></i>
-</xsl:template>
-
-<xsl:template match="ltx:textstyle">
-  <span class="{@font}"><xsl:apply-templates/></span>
+<xsl:template match="ltx:text" mode='faced'>
+  <xsl:if test="@framed">
+    <xsl:attribute name='class'>framed</xsl:attribute>
+  </xsl:if>
+  <xsl:if test="@raise">
+    <xsl:attribute name='style'>position:relative; bottom:<xsl:value-of select="@raise"/></xsl:attribute>
+  </xsl:if>
+  <xsl:apply-templates/>
 </xsl:template>
 
 <xsl:template match="ltx:emph">
   <em><xsl:apply-templates/></em>
-</xsl:template>
-
-<xsl:template match="ltx:text">
-  <xsl:apply-templates/>
 </xsl:template>
 
 <xsl:template match="ltx:cite[@style='intext']">

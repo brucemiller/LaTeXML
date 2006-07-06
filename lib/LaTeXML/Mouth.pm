@@ -17,8 +17,7 @@
 package LaTeXML::Mouth;
 use strict;
 use LaTeXML::Global;
-use LaTeXML::Object;
-our @ISA = qw(LaTeXML::Object);
+use base qw(LaTeXML::Object);
 
 sub new {
   my($class,$string)=@_;
@@ -245,7 +244,7 @@ package LaTeXML::FileMouth;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::Util::Pathname;
-our @ISA = qw(LaTeXML::Mouth);
+use base qw(LaTeXML::Mouth);
 
 sub new {
   my($class,$pathname)=@_;
@@ -291,7 +290,7 @@ package LaTeXML::StyleMouth;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::Util::Pathname;
-our @ISA = qw(LaTeXML::FileMouth);
+use base qw(LaTeXML::FileMouth);
 
 sub new {
   my($class,$pathname)=@_;
@@ -321,7 +320,6 @@ package LaTeXML::PerlMouth;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::Util::Pathname;
-
 
 sub new {
   my($class,$pathname)=@_;

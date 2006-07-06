@@ -3,177 +3,195 @@
 <?latexml class="article"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <section>
-    <tabular pattern="lcccr">
-      <tr>
-        <td/>
-        <td>Letters </td>
-        <td>Greek </td>
-        <td>Symbols </td>
-        <td>Numbers</td>
-      </tr>
-      <hline/>
-      <tr>
-        <td>Default</td>
-      </tr>
-      <tr>
-        <td>-     </td>
-        <td><Math mode="inline" tex="Fff" text="F * f * f"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">F</XMTok><XMTok role="UNKNOWN" font="italic">f</XMTok><XMTok role="UNKNOWN" font="italic">f</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\alpha \Gamma " text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="[a+b\cup c]" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="123" text="123"><XMath><XMTok name="123" role="NUMBER">123</XMTok></XMath></Math> </td>
-      </tr>
-      <hline/>
-      <tr>
-        <td>Families </td>
-      </tr>
-      <tr>
-        <td>mathrm </td>
-        <td><Math mode="inline" tex="\mathrm{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN">Fff</XMTok></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathrm{\alpha \Gamma }" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathrm{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN">a</XMTok><XMTok role="UNKNOWN">b</XMTok></XMApp><XMTok role="UNKNOWN">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathrm{123}" text="123"><XMath><XMTok name="123" role="NUMBER">123</XMTok></XMath></Math> </td>
-      </tr>
-      <tr>
-        <td>mathsf </td>
-        <td><Math mode="inline" tex="\mathsf{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="sansserif">Fff</XMTok></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathsf{\alpha \Gamma }" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="sansserif">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathsf{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="sansserif">a</XMTok><XMTok role="UNKNOWN" font="sansserif">b</XMTok></XMApp><XMTok role="UNKNOWN" font="sansserif">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathsf{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="sansserif">123</XMTok></XMath></Math> </td>
-      </tr>
-      <tr>
-        <td>mathtt </td>
-        <td><Math mode="inline" tex="\mathtt{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="typewriter">Fff</XMTok></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathtt{\alpha \Gamma }" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="typewriter">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathtt{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="typewriter">a</XMTok><XMTok role="UNKNOWN" font="typewriter">b</XMTok></XMApp><XMTok role="UNKNOWN" font="typewriter">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathtt{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="typewriter">123</XMTok></XMath></Math> </td>
-      </tr>
-      <tr>
-        <td>mathcal </td>
-        <td><Math mode="inline" tex="\mathcal{Fff}" text="F * f * f"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="caligraphic">F</XMTok><XMTok role="UNKNOWN" font="caligraphic">f</XMTok><XMTok role="UNKNOWN" font="caligraphic">f</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathcal{\alpha \Gamma }" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="caligraphic">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathcal{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="caligraphic">a</XMTok><XMTok role="UNKNOWN" font="caligraphic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="caligraphic">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathcal{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="caligraphic">123</XMTok></XMath></Math> </td>
-      </tr>
-      <hline/>
-      <tr>
-        <td>Series </td>
-      </tr>
-      <tr>
-        <td>mathbf    </td>
-        <td><Math mode="inline" tex="\mathbf{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="bold">Fff</XMTok></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathbf{\alpha \Gamma }" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathbf{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="bold">a</XMTok><XMTok role="UNKNOWN" font="bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathbf{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="bold">123</XMTok></XMath></Math> </td>
-      </tr>
-      <hline/>
-      <tr>
-        <td>Shape </td>
-      </tr>
-      <tr>
-        <td>mathit    </td>
-        <td><Math mode="inline" tex="\mathit{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="italic">Fff</XMTok></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathit{\alpha \Gamma }" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="italic">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathit{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathit{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="italic">123</XMTok></XMath></Math> </td>
-      </tr>
-      <hline/>
-      <tr>
-        <td>OldStyle </td>
-      </tr>
-      <tr>
-        <td>rm     </td>
-        <td><Math mode="inline" tex="\rm Fff" text="Fff"><XMath><XMTok role="UNKNOWN">Fff</XMTok></XMath></Math> </td>
-        <td><Math mode="inline" tex="\rm \alpha \Gamma " text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\rm [a+b\cup c]" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN">a</XMTok><XMTok role="UNKNOWN">b</XMTok></XMApp><XMTok role="UNKNOWN">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\rm 123" text="123"><XMath><XMTok name="123" role="NUMBER">123</XMTok></XMath></Math> </td>
-      </tr>
-      <tr>
-        <td>bf     </td>
-        <td><Math mode="inline" tex="\bf Fff" text="Fff"><XMath><XMTok role="UNKNOWN" font="bold">Fff</XMTok></XMath></Math> </td>
-        <td><Math mode="inline" tex="\bf \alpha \Gamma " text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\bf [a+b\cup c]" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="bold">a</XMTok><XMTok role="UNKNOWN" font="bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\bf 123" text="123"><XMath><XMTok name="123" role="NUMBER" font="bold">123</XMTok></XMath></Math> </td>
-      </tr>
-      <tr>
-        <td>it     </td>
-        <td><Math mode="inline" tex="\it Fff" text="Fff"><XMath><XMTok role="UNKNOWN" font="italic">Fff</XMTok></XMath></Math> </td>
-        <td><Math mode="inline" tex="\it \alpha \Gamma " text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="italic">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\it [a+b\cup c]" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\it 123" text="123"><XMath><XMTok name="123" role="NUMBER" font="italic">123</XMTok></XMath></Math> </td>
-      </tr>
-      <hline/>
-      <tr>
-        <td>Combinations</td>
-      </tr>
-      <tr>
-        <td>mathsf/mathit </td>
-        <td><Math mode="inline" tex="\mathsf{\mathit{Fff}}" text="Fff"><XMath><XMTok role="UNKNOWN" font="italic">Fff</XMTok></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathsf{\mathit{\alpha \Gamma }}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="italic">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathsf{\mathit{[a+b\cup c]}}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathsf{\mathit{123}}" text="123"><XMath><XMTok name="123" role="NUMBER" font="italic">123</XMTok></XMath></Math> </td>
-      </tr>
-      <tr>
-        <td>mathit/mathsf </td>
-        <td><Math mode="inline" tex="\mathit{\mathsf{Fff}}" text="Fff"><XMath><XMTok role="UNKNOWN" font="sansserif">Fff</XMTok></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathit{\mathsf{\alpha \Gamma }}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="sansserif">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathit{\mathsf{[a+b\cup c]}}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="sansserif">a</XMTok><XMTok role="UNKNOWN" font="sansserif">b</XMTok></XMApp><XMTok role="UNKNOWN" font="sansserif">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathit{\mathsf{123}}" text="123"><XMath><XMTok name="123" role="NUMBER" font="sansserif">123</XMTok></XMath></Math> </td>
-      </tr>
-      <tr>
-        <td>mathsf/it     </td>
-        <td><Math mode="inline" tex="\mathsf{\it Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="italic">Fff</XMTok></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathsf{\it \alpha \Gamma }" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="italic">Γ</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathsf{\it [a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math> </td>
-        <td><Math mode="inline" tex="\mathsf{\it 123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="italic">123</XMTok></XMath></Math> </td>
-      </tr>
-      <hline/>
-      <tr>
-        <td>Boldmath</td>
-      </tr>
-      <tr>
-        <td>-     </td>
-        <td><Math mode="inline" tex="Fff" text="F * f * f"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="bold italic">F</XMTok><XMTok role="UNKNOWN" font="bold italic">f</XMTok><XMTok role="UNKNOWN" font="bold italic">f</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\alpha \Gamma " text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold">Γ</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="[a+b\cup c]" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="bold italic">a</XMTok><XMTok role="UNKNOWN" font="bold italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold italic">c</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="123" text="123"><XMath><XMTok name="123" role="NUMBER" font="bold">123</XMTok></XMath></Math> </td>
-      </tr>
-      <tr>
-        <td>mathrm  </td>
-        <td><Math mode="inline" tex="\mathrm{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="bold">Fff</XMTok></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathrm{\alpha \Gamma }" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold">Γ</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathrm{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="bold">a</XMTok><XMTok role="UNKNOWN" font="bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold">c</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathrm{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="bold">123</XMTok></XMath></Math> </td>
-      </tr>
-      <tr>
-        <td>mathsf  </td>
-        <td><Math mode="inline" tex="\mathsf{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="sansserif bold">Fff</XMTok></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathsf{\alpha \Gamma }" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="sansserif bold">Γ</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathsf{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="sansserif bold">a</XMTok><XMTok role="UNKNOWN" font="sansserif bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="sansserif bold">c</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathsf{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="sansserif bold">123</XMTok></XMath></Math> </td>
-      </tr>
-      <tr>
-        <td>mathtt  </td>
-        <td><Math mode="inline" tex="\mathtt{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="typewriter bold">Fff</XMTok></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathtt{\alpha \Gamma }" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="typewriter bold">Γ</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathtt{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="typewriter bold">a</XMTok><XMTok role="UNKNOWN" font="typewriter bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="typewriter bold">c</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathtt{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="typewriter bold">123</XMTok></XMath></Math> </td>
-      </tr>
-      <tr>
-        <td>mathcal  </td>
-        <td><Math mode="inline" tex="\mathcal{Fff}" text="F * f * f"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">F</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">f</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">f</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathcal{\alpha \Gamma }" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="caligraphic bold">Γ</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathcal{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">a</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="caligraphic bold">c</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathcal{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="caligraphic bold">123</XMTok></XMath></Math> </td>
-      </tr>
-      <tr>
-        <td>mathit  </td>
-        <td><Math mode="inline" tex="\mathit{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="bold italic">Fff</XMTok></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathit{\alpha \Gamma }" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold italic">Γ</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathit{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="bold italic">a</XMTok><XMTok role="UNKNOWN" font="bold italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold italic">c</XMTok></XMApp></XMath></Math>  </td>
-        <td><Math mode="inline" tex="\mathit{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="bold italic">123</XMTok></XMath></Math>  </td>
-      </tr>
-    </tabular>
-    <p>roman <textstyle font="italic">roman-italic</textstyle>  <textstyle font="sansserif">sans <textstyle font="slanted">sans-slant</textstyle></textstyle>
+    <para>
+      <tabular pattern="lcccr" frame="void" rules="groups">
+        <colgroup>
+          <col align="left"/>
+          <col align="center"/>
+          <col align="center"/>
+          <col align="center"/>
+          <col align="right"/>
+        </colgroup>
+        <tbody>
+          <tr>
+            <th align="left"/>
+            <th align="center">Letters </th>
+            <th align="center">Greek </th>
+            <th align="center">Symbols </th>
+            <th align="right">Numbers</th>
+          </tr>
+        </tbody>
+        <tbody>
+          <tr>
+            <td align="left">Default</td>
+          </tr>
+          <tr>
+            <td align="left">-     </td>
+            <td align="center"><Math mode="inline" tex="Fff" text="F * f * f"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">F</XMTok><XMTok role="UNKNOWN" font="italic">f</XMTok><XMTok role="UNKNOWN" font="italic">f</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\alpha\Gamma" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="[a+b\cup c]" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="123" text="123"><XMath><XMTok name="123" role="NUMBER">123</XMTok></XMath></Math> </td>
+          </tr>
+        </tbody>
+        <tbody>
+          <tr>
+            <td align="left">Families </td>
+          </tr>
+          <tr>
+            <td align="left">mathrm </td>
+            <td align="center"><Math mode="inline" tex="\mathrm{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN">Fff</XMTok></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathrm{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathrm{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN">a</XMTok><XMTok role="UNKNOWN">b</XMTok></XMApp><XMTok role="UNKNOWN">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="\mathrm{123}" text="123"><XMath><XMTok name="123" role="NUMBER">123</XMTok></XMath></Math> </td>
+          </tr>
+          <tr>
+            <td align="left">mathsf </td>
+            <td align="center"><Math mode="inline" tex="\mathsf{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="sansserif">Fff</XMTok></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathsf{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="sansserif">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathsf{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="sansserif">a</XMTok><XMTok role="UNKNOWN" font="sansserif">b</XMTok></XMApp><XMTok role="UNKNOWN" font="sansserif">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="\mathsf{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="sansserif">123</XMTok></XMath></Math> </td>
+          </tr>
+          <tr>
+            <td align="left">mathtt </td>
+            <td align="center"><Math mode="inline" tex="\mathtt{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="typewriter">Fff</XMTok></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathtt{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="typewriter">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathtt{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="typewriter">a</XMTok><XMTok role="UNKNOWN" font="typewriter">b</XMTok></XMApp><XMTok role="UNKNOWN" font="typewriter">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="\mathtt{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="typewriter">123</XMTok></XMath></Math> </td>
+          </tr>
+          <tr>
+            <td align="left">mathcal </td>
+            <td align="center"><Math mode="inline" tex="\mathcal{Fff}" text="F * f * f"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="caligraphic">F</XMTok><XMTok role="UNKNOWN" font="caligraphic">f</XMTok><XMTok role="UNKNOWN" font="caligraphic">f</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathcal{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="caligraphic">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathcal{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="caligraphic">a</XMTok><XMTok role="UNKNOWN" font="caligraphic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="caligraphic">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="\mathcal{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="caligraphic">123</XMTok></XMath></Math> </td>
+          </tr>
+        </tbody>
+        <tbody>
+          <tr>
+            <td align="left">Series </td>
+          </tr>
+          <tr>
+            <td align="left">mathbf    </td>
+            <td align="center"><Math mode="inline" tex="\mathbf{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="bold">Fff</XMTok></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathbf{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathbf{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="bold">a</XMTok><XMTok role="UNKNOWN" font="bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="\mathbf{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="bold">123</XMTok></XMath></Math> </td>
+          </tr>
+        </tbody>
+        <tbody>
+          <tr>
+            <td align="left">Shape </td>
+          </tr>
+          <tr>
+            <td align="left">mathit    </td>
+            <td align="center"><Math mode="inline" tex="\mathit{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="italic">Fff</XMTok></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathit{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="italic">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathit{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="\mathit{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="italic">123</XMTok></XMath></Math> </td>
+          </tr>
+        </tbody>
+        <tbody>
+          <tr>
+            <td align="left">OldStyle </td>
+          </tr>
+          <tr>
+            <td align="left">rm     </td>
+            <td align="center"><Math mode="inline" tex="\rm Fff" text="Fff"><XMath><XMTok role="UNKNOWN">Fff</XMTok></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\rm\alpha\Gamma" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\rm[a+b\cup c]" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN">a</XMTok><XMTok role="UNKNOWN">b</XMTok></XMApp><XMTok role="UNKNOWN">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="\rm 123" text="123"><XMath><XMTok name="123" role="NUMBER">123</XMTok></XMath></Math> </td>
+          </tr>
+          <tr>
+            <td align="left">bf     </td>
+            <td align="center"><Math mode="inline" tex="\bf Fff" text="Fff"><XMath><XMTok role="UNKNOWN" font="bold">Fff</XMTok></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\bf\alpha\Gamma" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\bf[a+b\cup c]" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="bold">a</XMTok><XMTok role="UNKNOWN" font="bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="\bf 123" text="123"><XMath><XMTok name="123" role="NUMBER" font="bold">123</XMTok></XMath></Math> </td>
+          </tr>
+          <tr>
+            <td align="left">it     </td>
+            <td align="center"><Math mode="inline" tex="\it Fff" text="Fff"><XMath><XMTok role="UNKNOWN" font="italic">Fff</XMTok></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\it\alpha\Gamma" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="italic">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\it[a+b\cup c]" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="\it 123" text="123"><XMath><XMTok name="123" role="NUMBER" font="italic">123</XMTok></XMath></Math> </td>
+          </tr>
+        </tbody>
+        <tbody>
+          <tr>
+            <td align="left">Combinations</td>
+          </tr>
+          <tr>
+            <td align="left">mathsf/mathit </td>
+            <td align="center"><Math mode="inline" tex="\mathsf{\mathit{Fff}}" text="Fff"><XMath><XMTok role="UNKNOWN" font="italic">Fff</XMTok></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathsf{\mathit{\alpha\Gamma}}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="italic">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathsf{\mathit{[a+b\cup c]}}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="\mathsf{\mathit{123}}" text="123"><XMath><XMTok name="123" role="NUMBER" font="italic">123</XMTok></XMath></Math> </td>
+          </tr>
+          <tr>
+            <td align="left">mathit/mathsf </td>
+            <td align="center"><Math mode="inline" tex="\mathit{\mathsf{Fff}}" text="Fff"><XMath><XMTok role="UNKNOWN" font="sansserif">Fff</XMTok></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathit{\mathsf{\alpha\Gamma}}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="sansserif">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathit{\mathsf{[a+b\cup c]}}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="sansserif">a</XMTok><XMTok role="UNKNOWN" font="sansserif">b</XMTok></XMApp><XMTok role="UNKNOWN" font="sansserif">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="\mathit{\mathsf{123}}" text="123"><XMath><XMTok name="123" role="NUMBER" font="sansserif">123</XMTok></XMath></Math> </td>
+          </tr>
+          <tr>
+            <td align="left">mathsf/it     </td>
+            <td align="center"><Math mode="inline" tex="\mathsf{\it Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="italic">Fff</XMTok></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathsf{\it\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="italic">Γ</XMTok></XMApp></XMath></Math> </td>
+            <td align="center"><Math mode="inline" tex="\mathsf{\it[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP">∪</XMTok><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math> </td>
+            <td align="right"><Math mode="inline" tex="\mathsf{\it 123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="italic">123</XMTok></XMath></Math> </td>
+          </tr>
+        </tbody>
+        <tbody>
+          <tr>
+            <td align="left">Boldmath</td>
+          </tr>
+          <tr>
+            <td align="left">-     </td>
+            <td align="center"><Math mode="inline" tex="Fff" text="F * f * f"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="bold italic">F</XMTok><XMTok role="UNKNOWN" font="bold italic">f</XMTok><XMTok role="UNKNOWN" font="bold italic">f</XMTok></XMApp></XMath></Math>  </td>
+            <td align="center"><Math mode="inline" tex="\alpha\Gamma" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold">Γ</XMTok></XMApp></XMath></Math>  </td>
+            <td align="center"><Math mode="inline" tex="[a+b\cup c]" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="bold italic">a</XMTok><XMTok role="UNKNOWN" font="bold italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold italic">c</XMTok></XMApp></XMath></Math>  </td>
+            <td align="right"><Math mode="inline" tex="123" text="123"><XMath><XMTok name="123" role="NUMBER" font="bold">123</XMTok></XMath></Math> </td>
+          </tr>
+          <tr>
+            <td align="left">mathrm  </td>
+            <td align="center"><Math mode="inline" tex="\mathrm{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="bold">Fff</XMTok></XMath></Math>  </td>
+            <td align="center"><Math mode="inline" tex="\mathrm{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold">Γ</XMTok></XMApp></XMath></Math>  </td>
+            <td align="center"><Math mode="inline" tex="\mathrm{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="bold">a</XMTok><XMTok role="UNKNOWN" font="bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold">c</XMTok></XMApp></XMath></Math>  </td>
+            <td align="right"><Math mode="inline" tex="\mathrm{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="bold">123</XMTok></XMath></Math> </td>
+          </tr>
+          <tr>
+            <td align="left">mathsf  </td>
+            <td align="center"><Math mode="inline" tex="\mathsf{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="sansserif bold">Fff</XMTok></XMath></Math>  </td>
+            <td align="center"><Math mode="inline" tex="\mathsf{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="sansserif bold">Γ</XMTok></XMApp></XMath></Math>  </td>
+            <td align="center"><Math mode="inline" tex="\mathsf{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="sansserif bold">a</XMTok><XMTok role="UNKNOWN" font="sansserif bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="sansserif bold">c</XMTok></XMApp></XMath></Math>  </td>
+            <td align="right"><Math mode="inline" tex="\mathsf{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="sansserif bold">123</XMTok></XMath></Math> </td>
+          </tr>
+          <tr>
+            <td align="left">mathtt  </td>
+            <td align="center"><Math mode="inline" tex="\mathtt{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="typewriter bold">Fff</XMTok></XMath></Math>  </td>
+            <td align="center"><Math mode="inline" tex="\mathtt{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="typewriter bold">Γ</XMTok></XMApp></XMath></Math>  </td>
+            <td align="center"><Math mode="inline" tex="\mathtt{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="typewriter bold">a</XMTok><XMTok role="UNKNOWN" font="typewriter bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="typewriter bold">c</XMTok></XMApp></XMath></Math>  </td>
+            <td align="right"><Math mode="inline" tex="\mathtt{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="typewriter bold">123</XMTok></XMath></Math> </td>
+          </tr>
+          <tr>
+            <td align="left">mathcal  </td>
+            <td align="center"><Math mode="inline" tex="\mathcal{Fff}" text="F * f * f"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">F</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">f</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">f</XMTok></XMApp></XMath></Math>  </td>
+            <td align="center"><Math mode="inline" tex="\mathcal{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="caligraphic bold">Γ</XMTok></XMApp></XMath></Math>  </td>
+            <td align="center"><Math mode="inline" tex="\mathcal{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">a</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="caligraphic bold">c</XMTok></XMApp></XMath></Math>  </td>
+            <td align="right"><Math mode="inline" tex="\mathcal{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="caligraphic bold">123</XMTok></XMath></Math> </td>
+          </tr>
+          <tr>
+            <td align="left">mathit  </td>
+            <td align="center"><Math mode="inline" tex="\mathit{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="bold italic">Fff</XMTok></XMath></Math>  </td>
+            <td align="center"><Math mode="inline" tex="\mathit{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold italic">Γ</XMTok></XMApp></XMath></Math>  </td>
+            <td align="center"><Math mode="inline" tex="\mathit{[a+b\cup c]}" text="(a + b) cup c"><XMath><XMApp open="[" close="]"><XMTok name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="bold italic">a</XMTok><XMTok role="UNKNOWN" font="bold italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold italic">c</XMTok></XMApp></XMath></Math>  </td>
+            <td align="right"><Math mode="inline" tex="\mathit{123}" text="123"><XMath><XMTok name="123" role="NUMBER" font="bold italic">123</XMTok></XMath></Math>  </td>
+          </tr>
+        </tbody>
+      </tabular>
+      <p>roman <text font="italic">roman-italic</text>  <text font="sansserif">sans <text font="slanted">sans-slant</text></text>
 </p>
+    </para>
   </section>
 </document>

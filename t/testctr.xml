@@ -4,120 +4,208 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <section refnum="1">
     <title>Testing Counters</title>
-    <p>Foo is 0.
+    <para>
+      <p>Foo is 0.
 </p>
-    <p>Increment foo.
+    </para>
+    <para>
+      <p>Increment foo.
 
 Now Foo is  1.
 </p>
-    <p>Set Foo to 2.
+    </para>
+    <para>
+      <p>Set Foo to 2.
 
-Now Foo is  1.
+Now Foo is  2.
 </p>
-    <p>Add ten to Foo.
+    </para>
+    <para>
+      <p>Add ten to Foo.
 
-Now Foo is  1.
+Now Foo is  12.
 </p>
-    <p>Double Foo
+    </para>
+    <para>
+      <p>Double Foo
 
-Now Foo is  1.
+Now Foo is  24.
 </p>
+    </para>
   </section>
   <section refnum="2">
     <title>Testing RefStep</title>
-    <p>Define bar to be reset within foo.
+    <para>
+      <p>Define bar to be reset within foo.
 
-Now (Foo,Bar) is (1,0)
+Now (Foo,Bar) is (24,0)
 </p>
-    <p>Refstep bar: 
-Now (Foo,Bar) is (1,1)
+    </para>
+    <para>
+      <p>Refstep bar: 
+Now (Foo,Bar) is (24,1)
 </p>
-    <p>Refstep foo: 
-Now (Foo,Bar) is (2,0)
+    </para>
+    <para>
+      <p>Refstep foo: 
+Now (Foo,Bar) is (25,0)
 </p>
+    </para>
   </section>
   <section refnum="3">
     <title>Number formatting</title>
-    <p>Fubar is 0</p>
-    <p>roman:
+    <para>
+      <p>Fubar is 6</p>
+    </para>
+    <para>
+      <p>roman:
 
-Fubar is </p>
-    <p>Roman:
+Fubar is vi</p>
+    </para>
+    <para>
+      <p>Roman:
 
-Fubar is </p>
-    <p>alph:
+Fubar is VI</p>
+    </para>
+    <para>
+      <p>alph:
 
-Fubar is `</p>
-    <p>Alph:
+Fubar is f</p>
+    </para>
+    <para>
+      <p>Alph:
 
-Fubar is @</p>
-    <p>fnsymbol:
+Fubar is F</p>
+    </para>
+    <para>
+      <p>fnsymbol:
 
-Fubar is ‡‡</p>
-    <p>How far will TeX go?
+Fubar is ∥</p>
+    </para>
+    <para>
+      <p>How far will TeX go?
 
 
-Fubar is </p>
+Fubar is mmmmmmmmmcmxcix</p>
+    </para>
   </section>
   <section refnum="4">
     <title>TeX Counters</title>
     <subsection refnum="4.1">
       <title>Integers</title>
-      <p>7 = 7.
+      <para>
+        <p>7 = 7.
 </p>
-      <p>7 = 7.
+      </para>
+      <para>
+        <p>7 = 7.
 </p>
+      </para>
     </subsection>
     <subsection refnum="4.2">
       <title>Dimensions</title>
-      <p>Dimen 1.23pt = 1.23pt.
+      <para>
+        <p>Dimen 1.23pt = 1.23pt.
 </p>
-      <p>Dimen 1.23pt = 1.23pt.
+      </para>
+      <para>
+        <p>Dimen 1.23pt = 1.23pt.
 </p>
-      <p>Dimen 1.23pt = 1.23pt.
+      </para>
+      <para>
+        <p>Dimen 1.23pt = 1.23pt.
 </p>
-      <p>count 2: 3*65536 = 196608.
+      </para>
+      <para>
+        <p>count 2: 3*65536 = 196608.
 </p>
-      <p>Now dimen: 3pt = 3pt</p>
-      <p>One em = 10pt</p>
-      <p>One ex = 4.3pt</p>
-      <p>Dimen: one ex = 4.3pt</p>
-      <p>Dimen: 1pt = 1pt</p>
-      <p>Dimen: 1pt = 1pt</p>
-      <p>8 points = 8pt</p>
-      <p>15 points = 15pt</p>
+      </para>
+      <para>
+        <p>Now dimen: 3pt = 3pt</p>
+      </para>
+      <para>
+        <p>One em = 10pt</p>
+      </para>
+      <para>
+        <p>One ex = 4.3pt</p>
+      </para>
+      <para>
+        <p>Dimen: one ex = 4.3pt</p>
+      </para>
+      <para>
+        <p>Dimen: 1pt = 1pt</p>
+      </para>
+      <para>
+        <p>Dimen: 1pt = 1pt</p>
+      </para>
+      <para>
+        <p>8 points = 8pt</p>
+      </para>
+      <para>
+        <p>15 points = 15pt</p>
+      </para>
     </subsection>
     <subsection refnum="4.3">
       <title>Glue</title>
-      <p>1pt plus 3pt = 1pt plus 3pt</p>
-      <p>1pt plus 3fil = 1pt plus 3fil</p>
-      <p>1pt plus 3fill = 1pt plus 3fill</p>
-      <p>Skip: 2pt plus 3fill = 2pt plus 3fill</p>
-      <p>0.1 plus 3fill = 0.1pt plus 3fill</p>
+      <para>
+        <p>1pt plus 3pt = 1pt plus 3pt</p>
+      </para>
+      <para>
+        <p>1pt plus 3fil = 1pt plus 3fil</p>
+      </para>
+      <para>
+        <p>1pt plus 3fill = 1pt plus 3fill</p>
+      </para>
+      <para>
+        <p>Skip: 2pt plus 3fill = 2pt plus 3fill</p>
+      </para>
+      <para>
+        <p>0.1 plus 3fill = 0.1pt plus 3fill</p>
+      </para>
     </subsection>
     <subsection refnum="4.4">
       <title>Undefined?</title>
-      <p>Unknown count: 0 = 0</p>
-      <p>Unknown dimen: 0pt = 0pt</p>
-      <p>Unknown skip: 0pt = 0pt</p>
+      <para>
+        <p>Unknown count: 0 = 0</p>
+      </para>
+      <para>
+        <p>Unknown dimen: 0pt = 0pt</p>
+      </para>
+      <para>
+        <p>Unknown skip: 0pt = 0pt</p>
+      </para>
     </subsection>
     <subsection refnum="4.5">
       <title>The</title>
-      <p>the count 0 : 0</p>
-      <p>the two (countdef 2) : 196608</p>
-      <p>Tokens: abFOOcd = abFOOcd</p>
-      <p>Catcode: 11 = 11</p>
-      <p>Catcode: 12 = 12
+      <para>
+        <p>the count 0 : 0</p>
+      </para>
+      <para>
+        <p>the two (countdef 2) : 196608</p>
+      </para>
+      <para>
+        <p>Tokens: abFOOcd = abFOOcd</p>
+      </para>
+      <para>
+        <p>Catcode: 11 = 11</p>
+      </para>
+      <para>
+        <p>Catcode: 12 = 12
 </p>
+      </para>
     </subsection>
     <subsection refnum="4.6">
       <title>New Count, etc</title>
-      <p>3 = 3</p>
+      <para>
+        <p>3 = 3</p>
+      </para>
     </subsection>
     <subsection refnum="4.7">
       <title>LaTeX style</title>
-      <p>1em = 10pt
+      <para>
+        <p>1em = 10pt
 3em = 30pt</p>
+      </para>
     </subsection>
   </section>
 </document>

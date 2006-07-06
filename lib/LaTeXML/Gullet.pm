@@ -13,10 +13,8 @@
 package LaTeXML::Gullet;
 use strict;
 use LaTeXML::Global;
-use LaTeXML::Object;
 use LaTeXML::Util::Pathname;
-our @ISA = qw(LaTeXML::Object);
-
+use base qw(LaTeXML::Object);
 #**********************************************************************
 sub new {
   my($class)=@_;
@@ -115,13 +113,13 @@ sub getLocator {
   my $loc = (defined $$self{mouth} ? $$self{mouth}->getLocator($long) : '');
   if(!$loc || $long){
     my($mouth,$pb)=($$self{mouth},$$self{pushback});
-    $loc .= "\n  To be read again ".Tokens(@$pb)->untex if $long && @$pb;
+    $loc .= "\n  To be read again ".ToString(Tokens(@$pb)) if $long && @$pb;
     foreach my $frame ( @{$$self{mouthstack}} ){
       my($mouth,$pb)= @$frame;
       my $ml = $mouth->getLocator($long);
       $loc .= ' '.$ml if $ml;
       last if $loc && !$long;
-      $loc .= "\n  To be read again ".Tokens(@$pb)->untex if $long && @$pb;
+      $loc .= "\n  To be read again ".ToString(Tokens(@$pb)) if $long && @$pb;
     }}
   $loc; }
 
@@ -129,7 +127,7 @@ sub getLocator {
 # Return $tokens with all tokens expanded
 sub expandTokens {
   my($self,$tokens)=@_;
-  $self->openMouth($tokens->clone, 1);
+  $self->openMouth((ref $tokens eq 'LaTeXML::Token' ? Tokens($tokens) : $tokens->clone),1);
   my @expanded=();
   while(defined(my $t=$self->readXToken)){
     push(@expanded,$t);}
@@ -143,9 +141,9 @@ sub neutralizeTokens {
   my($self,@tokens)=@_;
   my @result=();
   foreach my $t (@tokens){
-    if($t->getCatcode == CC_PARAM){    
+    if($t->getCatcode == CC_PARAM){
       push(@result,$t); }
-    elsif(defined(my $defn=$t->getDefinition)){
+    elsif(defined(my $defn=$STATE->lookupDefinition($t))){
       push(@result,Token('\noexpand',CC_NOTEXPANDED)); }
     push(@result,$t); }
   @result; }
@@ -192,7 +190,7 @@ sub readXToken {
     elsif($cc == CC_COMMENT){
       return $token if $toplevel;
       push(@{$$self{pending_comments}},$token); } # What to do with comments???
-    elsif(defined($defn=$token->getDefinition) && $defn->isExpandable){
+    elsif(defined($defn=$STATE->lookupDefinition($token)) && $defn->isExpandable){
       $self->unread($defn->invoke); } # Expand and push back the result (if any) and continue
     else {
       return $token; }		# just return it
@@ -244,14 +242,11 @@ sub readBalanced {
   Tokens(@tokens); }
 
 sub ifNext {
-  my($self,$string,$cc)=@_;
-  my $tok=$self->readToken();
-  if(defined $string && ref $string eq 'LaTeXML::Token'){
-    $cc=$string->getCatcode; $string=$string->getString; }
-  return $tok if (defined $tok && ((!defined $string) || ($string eq $tok->getString))
-		  && ((!defined $cc) || ($cc == $tok->getCatcode)) );
-  $self->unread($tok) if defined $tok;
-  0; }
+  my($self,$token)=@_;
+  if(my $tok=$self->readToken()){
+    $self->unread($tok);
+    $tok->equals($token); }
+  else { 0; }}
 
 # Match the input against one of the Token or Tokens in @choices; return the matching one or undef.
 sub readMatch {
@@ -273,6 +268,7 @@ sub readKeyword {
   my($self,@keywords)=@_;
   $self->skipSpaces;
   foreach my $keyword (@keywords){
+    $keyword = $keyword->toString if ref $keyword;
     my @tomatch=split('',uc($keyword));
     my @matched=();
     my $tok;
@@ -323,24 +319,6 @@ sub readOptional {
     $self->unread($tok);
     $default; }}
 
-# Like readarg, but with catcodes changed to a semi-verbatim form,
-# such as for url's and such.
-sub readSemiverbatim {
-  my($self)=@_;
-  $self->startSemiverbatim;
-  my $arg = $self->readArg;
-  $self->endSemiverbatim;
-  $arg; }
-
-sub startSemiverbatim {
-  my($self)=@_;
-  $STATE->pushFrame;
-  map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%');  # should '%' too ?
-}
-sub endSemiverbatim {
-  my($self)=@_;
-  $STATE->popFrame; }
-
 #**********************************************************************
 #  Numbers, Dimensions, Glue
 # See TeXBook, Ch.24, pp.269-271.
@@ -358,7 +336,7 @@ sub readRegisterValue {
   my($self,$type)=@_;
   my $token = $self->readXToken;
   return unless defined $token;
-  my $defn = $token->getDefinition;
+  my $defn = $STATE->lookupDefinition($token);
   if((defined $defn) && ($defn->isRegister eq $type)){
     $defn->valueOf($defn->readArguments($self)); }
   else {
@@ -443,6 +421,29 @@ sub readNormalInteger {
     $self->readInternalInteger; }}
 
 sub readInternalInteger{ $_[0]->readRegisterValue('Number'); }
+
+#======================================================================
+# Float, a floating point number.
+# Similar to factor, but does NOT accept comma!
+# This is NOT part of TeX, but is convenient.
+sub readFloat {
+  my($self)=@_;
+  my $s = $self->readOptionalSigns;
+  my $string = $self->readDigits('0-9');
+  my $token = $self->readXToken;
+  if($token && $token->getString =~ /^[\.]$/){
+    $string .= '.'.$self->readDigits('0-9'); 
+    $token = $self->readXToken; }
+  my $n;
+  if(length($string)>0){
+    $self->unread($token) if $token && $token->getCatcode!=CC_SPACE;
+    $n = $string; }
+  else {
+    $self->unread($token);
+    $n = $self->readNormalInteger;
+    $n = $n->valueOf if defined $n; }
+  (defined $n ? Float($s*$n) : undef); }
+
 #======================================================================
 # Dimensions
 #======================================================================
@@ -454,7 +455,12 @@ sub readDimension {
   my $s = $self->readOptionalSigns;
   if   (defined (my $d = $self->readInternalDimension)){ ($s < 0 ? $d->negate : $d); }
   elsif(defined (   $d = $self->readInternalGlue)     ){ Dimension($s * $d->valueOf); }
-  elsif(defined (   $d = $self->readFactor)           ){ Dimension($s * $d * $self->readUnit); }
+  elsif(defined (   $d = $self->readFactor)           ){ 
+    my $unit = $self->readUnit;
+    if(!defined $unit){
+      Warn("Illegal unit of measure (pt inserted).");
+      $unit = 65536; }
+    Dimension($s * $d * $unit); }
   else{ Warn("Missing number, treated as zero.");        Dimension(0); }}
 
 # <unit of measure> = <optional spaces><internal unit>
@@ -474,7 +480,7 @@ sub readUnit {
     $self->readKeyword('true');	# But ignore, we're not bothering with mag...
     $u = $self->readKeyword('pt','pc','in','bp','cm','mm','dd','cc','sp');
     if($u){ $self->skip1Space; $STATE->convertUnit($u); }
-    else  { Warn("Illegal unit of measure (pt inserted)."); 65536; }}}
+    else  { undef; }}}
 
 # Return a dimension value or undef
 sub readInternalDimension { $_[0]->readRegisterValue('Dimension'); }
@@ -490,7 +496,12 @@ sub readInternalDimension { $_[0]->readRegisterValue('Dimension'); }
 sub readMuDimension {
   my($self)=@_;
   my $s = $self->readOptionalSigns;
-  if   (defined (my $m = $self->readFactor        )){ MuDimension($s * $m * $self->readMuUnit); }
+  if   (defined (my $m = $self->readFactor        )){
+    my $munit = $self->readMuUnit;
+    if(!defined $munit){
+      Warn("Illegal unit of measure (mu inserted).");
+      $munit = $STATE->convertUnit('mu'); }
+    MuDimension($s * $m * $munit); }
   elsif(defined (   $m = $self->readInternalMuGlue)){ MuDimension($s * $m->valueOf); }
   else{ Warn("Expecting mudimen; assuming 0 ");       MuDimension(0); }}
 
@@ -498,7 +509,7 @@ sub readMuUnit {
   my($self)=@_;
   if   (my $m=$self->readKeyword('mu')){ $self->skip1Space; $STATE->convertUnit($m); }
   elsif($m=$self->readInternalMuGlue  ){ $m->valueOf; }
-  else { Warn("Illegal unit of measure (mu inserted)."); $STATE->convertUnit('mu'); }}
+  else { undef; }}
 
 #======================================================================
 # Glue
@@ -532,11 +543,18 @@ sub readRubber {
     ($f->valueOf * $s, 0); }
   elsif(defined(my $fil = $self->readKeyword('filll','fill','fil'))){
     ($s*$f,$FILLS{$fil}); }
-  elsif(defined(my $u = ($mu ? $self->readMuUnit : $self->readUnit))){
+  elsif($mu){
+    my $u = $self->readMuUnit;
+    if(!defined $u){
+      Warn("Illegal unit of measure (mu inserted).");
+      $u = $STATE->convertUnit('mu'); }
     ($s*$f*$u,0); }
   else {
-    Warn("Illegal unit of measure (pt inserted).");
-    ($s*$f*65536,0); }}
+    my $u = $self->readUnit;
+    if(!defined $u){
+      Warn("Illegal unit of measure (pt inserted).");
+      $u = 65536; }
+    ($s*$f*$u,0); }}
 
 # Return a glue value or undef.
 sub readInternalGlue { $_[0]->readRegisterValue('Glue'); }
@@ -677,10 +695,10 @@ Skip the next token from the input if it is a space.
 Read a sequence of tokens from the input until the balancing '}' (assuming the '{' has
 already been read). Returns a L<LaTeXML::Tokens>.
 
-=item C<< $boole = $GULLET->ifNext($string,$catcode); >>
+=item C<< $boole = $GULLET->ifNext($token); >>
 
-Returns true if the next token in the input matches the C<$string> and/or C<$catcode>.
-(either can be undef, or C<$string> can be a token).
+Returns true if the next token in the input matches C<$token>;
+the possibly matching token remains in the input.
 
 =item C<< $tokens = $GULLET->readMatch(@choices); >>
 
@@ -712,11 +730,6 @@ Read and return a TeX argument; the next Token or Tokens (if surrounded by brace
 
 Read and return a LaTeX optional argument; returns C<$default> if there is no '[',
 otherwise the contents of the [].
-
-=item C<< $tokens = $GULLET->readSemiverbatim; >>
-
-Read and return a TeX argument, but with catcodes reset so that most annoying
-characters are treated as OTHER; useful for reading pathnames, URL's, etc.
 
 =item C<< $thing = $GULLET->readValue($type); >>
 

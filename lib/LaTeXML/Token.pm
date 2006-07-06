@@ -18,8 +18,7 @@
 package LaTeXML::Token;
 use strict;
 use LaTeXML::Global;
-use LaTeXML::Object;
-our @ISA = qw(LaTeXML::Object);
+use base qw(LaTeXML::Object);
 
 #======================================================================
 # See LaTeXML::Global for constructors.
@@ -68,29 +67,22 @@ sub getCharcode{ ($_[0]->[1] == CC_CS ? 256 : ord($_[0]->[0])); }
 # Return the catcode of the token.
 sub getCatcode { $_[0]->[1]; }
 
-sub getDefinition {
-  my $defn = $STATE->lookupMeaning($_[0]); 
-  (defined $defn && $defn->isaDefinition ? $defn : undef); }
-
 # Defined so a Token or Tokens can be used interchangeably.
 sub unlist { ($_[0]); }
 sub getLocator { ''; }
 
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.
-# We'll need to be careful about using string instead of untex for internal purposes where the
+# We'll need to be careful about using string instead of reverting for internal purposes where the
 # actual character is needed.
-sub untex {
-  my($self)=@_;
-  ($standardchar[$$self[1]] || $$self[0]); }
 
+# Should revert do something with this???
+#  ($standardchar[$$self[1]] || $$self[0]); }
+
+sub revert { $_[0]; }
 sub toString { $_[0]->[0]; }
 
-# Convenience, for a CS token.
-# Return the expansion (Tokens) that would invoke it with the given args.
-sub invocation {
-  my($self,@args)=@_;
-  $self->getDefinition->invocation(@args); }
+sub beDigested { $STOMACH->digest($_[0]); }
 
 #======================================================================
 # Methods for overloaded ops.
@@ -118,8 +110,7 @@ sub stringify {
 package LaTeXML::Tokens;
 use strict;
 use LaTeXML::Global;
-use LaTeXML::Object;
-our @ISA = qw(LaTeXML::Object);
+use base qw(LaTeXML::Object);
 
 sub new {
   my($class,@tokens)=@_;
@@ -133,16 +124,19 @@ sub clone {
   my($self)=@_;
   bless [@$self], ref $self; }
 
-sub toString { join('',map($_->toString, @{$_[0]})); }
 
 # Return a string containing the TeX form of the Tokens
-sub untex {
+sub revert { @{$_[0]}; }
+
+#sub toString { join('',map($_->toString, @{$_[0]})); }
+
+sub toString {
   my($self)=@_;
   my $string = '';
   my $prevmac=0;
   foreach my $token (@$self){
     next if $token->getCatcode == CC_COMMENT;
-    my $s = $token->untex();
+    my $s = $token->toString();
     $string .= ' ' if $prevmac && ($s =~ /^\w/);
     $string .= $s;
     $prevmac = ($s  =~ /^\\/) if $s; }
@@ -162,6 +156,8 @@ sub stringify {
   my($self)=@_;
   "Tokens[".join(',',map($_->toString,@$self))."]"; }
 
+sub beDigested { $STOMACH->digest($_[0]); }
+
 #======================================================================
 # The following implements the Mouth API, so that a Token list can
 # act as a pre-tokenized source of tokens.
@@ -179,116 +175,6 @@ sub readToken {
 sub getLocator { ''; }
 
 #**********************************************************************
-package LaTeXML::Number;
-use LaTeXML::Global;
-use LaTeXML::Object;
-our @ISA = qw(LaTeXML::Object);
-use strict;
-
-sub new {
-  my($class,$number)=@_;
-  bless [$number||"0"],$class; }
-
-sub valueOf { $_[0]->[0]; }
-sub toString { $_[0]->[0]; }
-sub untex    { $_[0]->toString.'\relax'; }
-sub unlist   { $_[0]; }
-
-sub negate   { (ref $_[0])->new(- $_[0]->valueOf); }
-sub add      { (ref $_[0])->new($_[0]->valueOf + $_[1]->valueOf); }
-# arg 2 is a number
-sub multiply { (ref $_[0])->new($_[0]->valueOf * $_[1]); }
-
-sub stringify { "Number[".$_[0]->[0]."]"; }
-
-#**********************************************************************
-package LaTeXML::Dimension;
-use LaTeXML::Global;
-our @ISA=qw(LaTeXML::Number);
-use strict;
-
-sub new {
-  my($class,$sp)=@_;
-  $sp = "0" unless $sp;
-  if($sp =~ /^(\d*\.?\d*)([a-zA-Z][a-zA-Z])$/){ # Dimensions given.
-    $sp = $1 * $STATE->convertUnit($2); }
-  bless [$sp||"0"],$class; }
-
-sub toString    { ($_[0]->[0]/65536).'pt'; }
-
-sub stringify { "Dimension[".$_[0]->[0]."]"; }
-#**********************************************************************
-package LaTeXML::MuDimension;
-use LaTeXML::Global;
-our @ISA=qw(LaTeXML::Dimension);
-
-sub stringify { "MuDimension[".$_[0]->[0]."]"; }
-#**********************************************************************
-package LaTeXML::Glue;
-use LaTeXML::Global;
-our @ISA=qw(LaTeXML::Dimension);
-use strict;
-
-our %fillcode=(fil=>1,fill=>2,filll=>3);
-our @FILL=('','fil','fill','filll');
-sub new {
-  my($class,$sp,$plus,$pfill,$minus,$mfill)=@_;
-  if((!defined $plus) && (!defined $pfill) && (!defined $minus) && (!defined $mfill)){
-    if($sp =~ /^(\d*\.?\d*)$/){}
-    elsif($sp =~ /^(\d*\.?\d*)(\w\w)(\s+plus(\d*\.?\d*)(fil|fill|filll|[a-zA-Z][a-zA-Z))(\s+minus(\d*\.?\d*)(fil|fill|filll|[a-zA-Z][a-zA-Z]))?$/){
-      my($f,$u,$p,$pu,$m,$mu)=($1,$2,$4,$5,$7,$8);
-      $sp = $f * $STATE->convertUnit($u);
-      if(!$pu){}
-      elsif($fillcode{$pu}){ $plus=$p; $pfill=$pu; }
-      else { $plus = $p * $STATE->convertUnit($pu); $pfill=0; }
-      if(!$mu){}
-      elsif($fillcode{$mu}){ $minus=$m; $mfill=$mu; }
-      else { $minus = $m * $STATE->convertUnit($mu); $mfill=0; }
-    }}
-  bless [$sp||"0",$plus||"0",$pfill||0,$minus||"0",$mfill||0],$class; }
-
-#sub getStretch { $_[0]->[1]; }
-#sub getShrink  { $_[0]->[2]; }
-
-sub toString { 
-  my($self)=@_;
-  my ($sp,$plus,$pfill,$minus,$mfill)=@$self;
-  my $string = ($sp/65536)."pt";
-  $string .= ' plus '. ($pfill ? $plus .$FILL[$pfill] : ($plus/65536) .'pt') if $plus != 0;
-  $string .= ' minus '.($mfill ? $minus.$FILL[$mfill] : ($minus/65536).'pt') if $minus != 0;
-  $string; }
-sub negate      { 
-  my($pts,$p,$pf,$m,$mf)=@{$_[0]};
-  (ref $_[0])->new(-$pts,-$p,$pf,-$m,$mf); }
-
-sub add         { 
-  my($self,$other)=@_;
-  my($pts,$p,$pf,$m,$mf)=@$self;
-  if(ref $other eq 'LaTeXML::Glue'){
-    my($pts2,$p2,$pf2,$m2,$mf2)=@$other;
-    $pts += $pts2;
-    if($pf == $pf2){ $p+=$p2; }
-    elsif($pf < $pf2){ $p=$p2; $pf=$pf2; }
-    if($mf == $mf2){ $m+=$m2; }
-    elsif($mf < $mf2){ $m=$m2; $mf=$mf2; }
-    (ref $_[0])->new($pts,$p,$pf,$m,$mf); }
-  else {
-    (ref $_[0])->new($pts+$other->valueOf,$p,$pf,$m,$mf); }}
-
-sub multiply    { 
-  my($self,$other)=@_;
-  my($pts,$p,$pf,$m,$mf)=@$self;
-  (ref $_[0])->new($pts*$other,$p*$other,$pf,$m*$other,$mf); }
-
-sub stringify { "Glue[".join(',',@{$_[0]})."]"; }
-#**********************************************************************
-package LaTeXML::MuGlue;
-use LaTeXML::Global;
-our @ISA=qw(LaTeXML::Glue);
-
-sub stringify { "MuGlue[".join(',',@{$_[0]})."]"; }
-
-#**********************************************************************
 1;
 
 __END__
@@ -297,23 +183,16 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Token>, C<LaTeXML::Tokens>, C<LaTeXML::Number>, C<LaTeXML::Dimension>, etc. -- representation
-of tokens and related objects.
+C<LaTeXML::Token>, C<LaTeXML::Tokens>. -- representation of tokens.
 
 =head1 DESCRIPTION
 
 This module defines Tokens (C<LaTeXML::Token>, C<LaTeXML::Tokens>)
-and other things (C<LaTeXML::Number>, C<LaTeXML::Dimension>, C<LaTeXML::MuDimension>,
-C<LaTeXML::Glue> and  C<LaTeXML::MuGlue>)  that get created during tokenization 
-and  expansion.
+that get created during tokenization and  expansion.
 
 A C<LaTeXML::Token> represents a TeX token which is a pair of a character or string and
 a category code.  A C<LaTeXML::Tokens> is a list of tokens (and also implements the API
 of a L<LaTeXML::Mouth> so that tokens can be read from a list).
-
-The other classes (C<LaTeXML::Number>, C<LaTeXML::Dimension>, C<LaTeXML::MuDimension>,
-C<LaTeXML::Glue> and  C<LaTeXML::MuGlue>)  represent various core TeX data types that
-are parsed from tokens by the C<LaTeXML::Gullet>.
 
 =head2 Common methods
 
@@ -328,10 +207,6 @@ Return a list of the tokens making up this C<$object>.
 =item C<< $string = $object->toString; >>
 
 Return a string representing C<$object>.
-
-=item C<< $string = $object->untex; >>
-
-Return the TeX form of C<$object>, suitable (hopefully) for processing by TeX.
 
 =back
 
@@ -363,11 +238,6 @@ Return the catcode of the C<$token>.
 Return the current definition associated with C<$token> in C<$STATE>, or
 undef if none.
 
-=item C<< $tokens = $token->invocation(@args); >>
-
-Return the L<LaTeXML::Tokens> representing the invocation of C<$token> acting
-on the arguments in C<@args>.  C<$token> must have a associated definition.
-
 =back
 
 =head2 Tokens methods
@@ -384,32 +254,6 @@ Return a shallow copy of the $tokens.  This is useful before reading from a C<La
 
 Returns (and remove) the next token from $tokens.  This is part of the public API of L<LaTeXML::Mouth>
 so that a C<LaTeXML::Tokens> can serve as a L<LaTeXML::Mouth>.
-
-=back
-
-=head2 Numerics methods
-
-These methods apply to the various numeric objects
-(C<LaTeXML::Number>, C<LaTeXML::Dimension>, C<LaTeXML::MuDimension>,
-C<LaTeXML::Glue> and  C<LaTeXML::MuGlue>)
-
-=over 4
-
-=item C<< $n = $object->valueOf; >>
-
-Return the value in scaled points (ignoring shrink and stretch, if any).
-
-=item C<< $n = $object->negate; >>
-
-Return an object representing the negative of the C<$object>.
-
-=item C<< $n = $object->add($other); >>
-
-Return an object representing the sum of C<$object> and C<$other>
-
-=item C<< $n = $object->multiply($n); >>
-
-Return an object representing the product of C<$object> and C<$n> (a regular number).
 
 =back
 

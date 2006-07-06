@@ -52,7 +52,7 @@ Tag('appendix',autoClose=>1);
 DefPrimitive('\appendix',sub{
   resetCounter('section');
   DefMacro('\thesection',      '\Alph{section}');
-  DefConstructor('\section Flag:* []{}',
+  DefConstructor('\section OptionalMatch:* []{}',
       "<appendix ?#refnum(refnum='#refnum')>"
 		 ."<title>#3</title>?#2(<toctitle>#2</toctitle>)",
 		 afterDigest=> sub { my($whatsit,$star,$toctitle,$title)=@_;

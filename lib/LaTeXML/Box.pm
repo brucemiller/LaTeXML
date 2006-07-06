@@ -12,12 +12,11 @@
 package LaTeXML::Box;
 use strict;
 use LaTeXML::Global;
-use LaTeXML::Object;
-our @ISA = qw(LaTeXML::Object);
+use base qw(LaTeXML::Object);
 
 sub new {
-  my($class,$string,$font,$locator)=@_;
-  bless [$string,$font,$locator],$class; }
+  my($class,$string,$font,$locator,$token)=@_;
+  bless [$string,$font,$locator,$token],$class; }
 
 # Accessors
 sub isaBox     { 1; }
@@ -28,7 +27,7 @@ sub getLocator { $_[0][2]; }
 
 # So a Box can stand in for a List
 sub unlist     { ($_[0]); }	# Return list of the boxes
-sub untex      { $_[0][0]; }
+sub revert     { $_[0][3]; }
 sub toString   { $_[0][0]; }
 
 # Methods for overloaded operators
@@ -51,7 +50,7 @@ sub beAbsorbed { $_[1]->openText($_[0][0],$_[0][1]); }
 package LaTeXML::MathBox;
 use strict;
 use LaTeXML::Global;
-our @ISA = qw(LaTeXML::Box);
+use base qw(LaTeXML::Box);
 
 sub isMath { 1; }		# MathBoxes are math mode.
 
@@ -63,9 +62,9 @@ sub beAbsorbed { $_[1]->insertMathToken($_[0][0],font=>$_[0][1]); }
 package LaTeXML::Comment;
 use strict;
 use LaTeXML::Global;
-our @ISA = qw(LaTeXML::Box);
+use base qw(LaTeXML::Box);
 
-sub untex    { ''; }
+sub revert   { (); }
 sub toString { ''; }
 
 sub beAbsorbed { $_[1]->insertComment($_[0][0]); }
@@ -78,8 +77,7 @@ sub beAbsorbed { $_[1]->insertComment($_[0][0]); }
 package LaTeXML::List;
 use strict;
 use LaTeXML::Global;
-use LaTeXML::Object;
-our @ISA = qw(LaTeXML::Box);
+use base qw(LaTeXML::Box);
 
 sub new {
   my($class,@boxes)=@_;
@@ -90,9 +88,9 @@ sub isMath     { 0; }			# List's are text mode
 
 sub unlist { @{$_[0][0]}; }
 
-sub untex {
+sub revert {
   my($self)=@_;
-  join('', map($_->untex,$self->unlist)); }
+   map($_->revert,$self->unlist); }
 
 sub toString {
   my($self)=@_;
@@ -103,8 +101,8 @@ sub stringify {
   my($self)=@_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
-  $type.'['.join(',',map($_->toString,$self->unlist)).']'; } # Not ideal, but....
-
+#  $type.'['.join(',',map($_->toString,$self->unlist)).']'; } # Not ideal, but....
+  $type.'['.join(',',map(Stringify($_),$self->unlist)).']'; } # Not ideal, but....
 sub equals {
   my($a,$b)=@_;
   return 0 unless (defined $b) && ((ref $a) eq (ref $b));
@@ -123,7 +121,7 @@ sub beAbsorbed { map($_[1]->absorb($_), $_[0]->unlist); }
 #**********************************************************************
 package LaTeXML::MathList;
 use LaTeXML::Global;
-our @ISA = qw(LaTeXML::List);
+use base qw(LaTeXML::List);
 
 sub isMath { 1; }		# MathList's are math mode.
 
@@ -142,8 +140,7 @@ sub isMath { 1; }		# MathList's are math mode.
 package LaTeXML::Whatsit;
 use strict;
 use LaTeXML::Global;
-use LaTeXML::Object;
-our @ISA = qw(LaTeXML::Box);
+use base qw(LaTeXML::Box);
 
 # Specially recognized properties:
 #  font    : The font object
@@ -166,7 +163,15 @@ sub setFont       { $_[0]{properties}{font} = $_[1]; }
 sub getLocator    { $_[0]{properties}{locator}; }
 sub getProperty   { $_[0]{properties}{$_[1]}; }
 sub setProperty   { $_[0]{properties}{$_[1]}=$_[2]; return; }
-sub getProperties { $_[0]{properties}; }
+sub setProperties {
+    my ($self, %props) = @_;
+    while (my ($key, $value) = each %props) { 
+	$$self{properties}{$key} = $value if defined $value; }
+    return; }
+
+sub getProperties {
+  my($self,@keys)=@_;
+  map( $$self{properties}{$_}, @keys); }
 sub getArg        { $_[0]{args}->[$_[1]-1]; }
 sub getArgs       { @{$_[0]{args}}; }
 sub setArgs       { 
@@ -187,42 +192,43 @@ sub getTrailer  { $_[0]{properties}{trailer}; }
 # So a Whatsit can stand in for a List
 sub unlist  { ($_[0]); }
 
-sub untex {
+sub revert {
   my($self)=@_;
   my $defn = $self->getDefinition;
-  my $untex = $defn->getUntexSpec;
-  if((defined $untex) && (ref $untex eq 'CODE')){
-    return &$untex($self); }
+  my $spec = $defn->getReversionSpec;
+  if((defined $spec) && (ref $spec eq 'CODE')){
+    return &$spec($self,$self->getArgs); }
   else {
-    my $string = '';
-    if(defined $untex){
-      my $p;
-      $string = $untex;
-      $string =~ s/\#(\d)/ $self->getArg($1)->untex; /eg; 
-      $string =~ s/\#(\w+)/ (defined($p=$self->getProperty($1)) ? (ref $p ? $p->untex:$p):''); /eg; }
-    else {
-      $string = $defn->getAlias || $defn->getCS->untex;
-      my @args = $self->getArgs;
-      my $params = $defn->getParameters;
-      my $paramstring = ($params ? $params->untexArguments(@args) :'');
-      $string .= ' ' unless ($paramstring=~/^\W/) || ($string=~/\W$/) || !($string =~ /^\\/);
-      $string .= $paramstring;
+    my @tokens = ();
+    if(defined $spec){
+      @tokens=LaTeXML::Expandable::substituteTokens($spec,
+						    map(Tokens($_->revert),$self->getArgs)) if $spec ne '';
     }
+    else {
+      if(my $alias = $defn->getAlias){
+	push(@tokens, T_CS($alias)); }
+      else {
+	push(@tokens,$defn->getCS); }
+      if(my $parameters = $defn->getParameters){
+	push(@tokens,$parameters->revertArguments($self->getArgs)); }}
     if(defined (my $body = $self->getBody)){
-      $string .= $body->untex;
-      $string .= $self->getTrailer->untex; }
-    $string; }}
+      push(@tokens, $body->revert);
+      push(@tokens, $self->getTrailer->revert); }
+    @tokens; }}
 
-sub toString { $_[0]->untex;}
+sub toString { ToString(Tokens($_[0]->revert)); }
 
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
   my $string = "Whatsit[".join(',',$self->getDefinition->getCS->getCSName,
-			       map(ToString($_),$self->getArgs));
+#			       map(ToString($_),$self->getArgs));
+			       map(Stringify($_),$self->getArgs));
   if(defined $$self{properties}{body}){
-    $string .= $$self{properties}{body}->toString;
-    $string .= $$self{properties}{trailer}->toString; }
+#    $string .= $$self{properties}{body}->toString;
+#    $string .= $$self{properties}{trailer}->toString; }
+    $string .= Stringify($$self{properties}{body});
+    $string .= Stringify($$self{properties}{trailer}); }
   $string."]"; }
 
 sub equals {
@@ -237,7 +243,7 @@ sub equals {
 
 sub beAbsorbed {
   my($self,$document)=@_;
-  &{$self->getDefinition->getConstructor}($document,$self->getArgs,$self->getProperties);}
+  &{$self->getDefinition->getConstructor}($document,@{$$self{args}},$$self{properties});}
 
 #**********************************************************************
 1;
@@ -255,8 +261,8 @@ C<LaTeXML::MathList> and C<LaTeXML::Whatsit> -- represent digested objects.
 =head1 DESCRIPTION
 
 These represent various kinds of digested objects:
-C<LaTeXML::Box> represents a text character in a particular font;
-C<LaTeXML::MathBox> represents a math character in a particular font;
+C<LaTeXML::Box> represents text in a particular font;
+C<LaTeXML::MathBox> represents a math token in a particular font;
 C<LaTeXML::List> represents a sequence of digested things in text;
 C<LaTeXML::MathList> represents a sequence of digested things in math;
 C<LaTeXML::Whatsit> represents a digested object that can generate
@@ -287,11 +293,10 @@ return themselves) so they can stand-in for a List.
 
 Returns a string representing this C<$digested>.
 
-=item C<< $string = $digested->untex; >>
+=item C<< $string = $digested->revert; >>
 
-Returns the TeX string that corresponds to this C<$digested>
-in a form (hopefully) suitable for processing by TeX,
-if needed.
+Reverts the box to the list of C<Token>s that created (or could have
+created) it.
 
 =item C<< $string = $digested->getLocator; >>
 
@@ -335,9 +340,13 @@ Returns the value associated with C<$key> in the C<$whatsit>'s property list.
 
 Sets the C<$value> associated with the C<$key> in the C<$whatsit>'s property list.
 
-=item C<< $props = $whatsit->getProperties; >>
+=item C<< $props = $whatsit->getProperties(@keys); >>
 
-Returns the hash reference representing the property list of C<$whatsit>.
+Returns a list of the named properties.
+
+=item C<< $props = $whatsit->getProperties(%keysvalues); >>
+
+Sets several properties, like setProperty.
 
 =item C<< $list = $whatsit->getArg($n); >>
 

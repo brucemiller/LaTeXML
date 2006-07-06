@@ -1,0 +1,35 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  Dummy package for pspicture                                        | #
+# | Actual implementation in LaTeXML.ltxml                              | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+DefConstructor('\Line Pair',
+	       "<line points='#points' stroke-width='#thick'/>",
+	       afterDigest=>sub {
+		 setPicProperties($_[0],points=>'0,0 '.picScale($_[1])->ptValue()); });
+
+DefConstructor('\Vector Pair',
+	       "<line points='#points' stroke-width='#thick' terminators='->' arrowlength='#arrowlength'/>",
+	       afterDigest=>sub {
+		 setPicProperties($_[0],points=>'0,0 '.picScale($_[1])->ptValue()); });
+
+DefConstructor('\Curve Pair {Float}',
+	       "<bezier points='&ptValue(#pt)' stroke-width='#thick' />",
+	       afterDigest=>sub {
+		 setPicProperties($_[0],pt=>PairList(Pair(Dimension(0),Dimension(0)), picScale($_[1]),
+						     Pair($_[1]->getX->multiply(0.5)->add($_[1]->getY->multiply($_[2]->valueOf/10)),
+							  $_[1]->getY->multiply(0.5)->substract($_[1]->getX->multiply($_[2]->valueOf/10))))); });
+
+1;

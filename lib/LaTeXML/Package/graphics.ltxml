@@ -27,9 +27,9 @@ DefConstructor('\reflectbox{}','#1');
 DefConstructor('\resizebox{}{}{}','#3');
 
 
-DefConstructor('\graphicspath{semiverb}',"<?latexml graphicspath='#1'?>");
+DefConstructor('\graphicspath Semiverbatim',"<?latexml graphicspath='#1'?>");
 # Basically, we're transforming the graphics options into graphicx format.
-DefConstructor('\includegraphics Flag:* [][]{semiverb}', 
+DefConstructor('\includegraphics OptionalMatch:* [][] Semiverbatim', 
 	       sub {
 		 my($document,$starred,$op1,$op2,$graphic)=@_;
 		 my $bb = ($op2 ? $op1->toString." ".$op2->toString : ($op1 ? "0 0 ".$op1->toString : ''));

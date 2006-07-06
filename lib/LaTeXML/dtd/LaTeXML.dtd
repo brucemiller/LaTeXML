@@ -22,7 +22,7 @@
 <!-- Simple elements: roughly equivalent to stylized text,
      in particular, omitting math -->
 <!ENTITY % Simple.class
-        "textstyle | emph | text | cite | ref | acronym | vbox | hbox | rule">
+         "text | emph | underline | cite | ref | acronym | vbox | rule">
 
 <!ENTITY % Simple.extra ""><!--  For extension DTD's  -->
 <!ENTITY % Simple.mix
@@ -30,7 +30,7 @@
 
 <!-- Misc elements: acceptible in both Inline and Block contexts. -->
 <!ENTITY % Misc.class
-         "graphics | minipage | quote | verbatim | note | index | picture | ERROR">
+         "graphics | minipage | note | index | picture | verbatim | ERROR">
 <!ENTITY % Misc.extra   "">
 
 <!-- Inline level elements. -->
@@ -42,20 +42,33 @@
 	  | %Inline.class; %Inline.extra;
 	  | %Misc.class; %Misc.extra;">
 
+<!-- Para content; block items that appear within logical paragraphs -->
+<!ENTITY % Para.class
+	 "p | equation | equationgroup 
+	  | tabular | centering
+	  | itemize | enumerate | description | acronyms
+	  | quote">
+<!ENTITY % Para.extra "">
+<!ENTITY % Para.mix
+	 "%Para.class; %Para.extra;
+	  | %Misc.class; %Misc.extra;">
+
 <!-- Block level elements --> 
 <!ENTITY % Block.class
-         "p  | equation | equationgroup | figure | table  | tabular | centering |
-          itemize | enumerate | description | acronyms">
+         "para | figure | table">
 <!ENTITY % Block.extra  "">
+
 <!ENTITY % Block.mix 
 	 "%Block.class; %Block.extra;
 	  | %Misc.class; %Misc.extra;">
 
+
 <!-- Flow elements include all Inline and Block --> 
+<!-- I'm inclined to think that we shouldn't be using this at all.... -->
 <!ENTITY % Flow.mix
 	 "%Simple.class; %Simple.extra;
 	  | %Inline.class; %Inline.extra;
-          | %Block.class; %Block.extra;
+          |  %Block.class; %Block.extra;
 	  | %Misc.class; %Misc.extra;">
 
 <!-- Parameterized attributes -->
@@ -134,24 +147,27 @@
 <!ELEMENT p (#PCDATA | %Inline.mix;)*>
 <!ATTLIST p %Common.attr;>
 
+<!ELEMENT para (%Para.mix;)*>
+<!ATTLIST para %Common.attr; %Labelled.attr;>
+
 <!-- Equations & related; the Math element contains the math itself. -->
 <!ENTITY % Equation.extra "">
 <!ELEMENT equation (Math | tabular | punct | index | note %Equation.extra;)*>
 <!ATTLIST equation  %Common.attr; %Labelled.attr;>
 
-<!ELEMENT equationgroup (%Block.mix;)*>
+<!ELEMENT equationgroup (%Para.mix;)*>
 <!ATTLIST equationgroup %Common.attr; %Labelled.attr;>
 
 <!ENTITY % Figure.extra "">
 <!ENTITY % Table.extra "">
 
-<!ELEMENT figure (%Block.mix; | caption | toccaption %Figure.extra;)*>
+<!ELEMENT figure (%Para.mix; | caption | toccaption %Figure.extra;)*>
 <!ATTLIST figure
 	  %Common.attr; 
           %Labelled.attr;
           placement CDATA #IMPLIED>
 
-<!ELEMENT table  (%Block.mix; | caption | toccaption %Table.extra;)*>
+<!ELEMENT table  (%Para.mix; | caption | toccaption %Table.extra;)*>
 <!ATTLIST table
 	  %Common.attr; 
 	  %Labelled.attr;
@@ -236,7 +252,8 @@
 <!ELEMENT acronyms (item)*>
 <!ATTLIST acronyms %Common.attr;>
 
-<!ELEMENT item (#PCDATA | tag | %Flow.mix; )*>
+<!-- <!ELEMENT item (#PCDATA | tag | %Flow.mix; )*>-->
+<!ELEMENT item (%Para.mix; | tag)*>
 <!ATTLIST item %Common.attr;>
 
 <!ELEMENT tag (#PCDATA | %Inline.mix;)*>
@@ -280,7 +297,8 @@
           width  CDATA #IMPLIED
           height CDATA #IMPLIED>
 
-<!ENTITY % XMath.model "XMApp | XMTok | XMRef | XMHint | XMArg | XMWrap | XMDual | %Simple.class;">
+<!--<!ENTITY % XMath.model "XMApp | XMTok | XMRef | XMHint | XMArg | XMWrap | XMDual | %Simple.class;">-->
+<!ENTITY % XMath.model "XMApp | XMTok | XMRef | XMHint | XMArg | XMWrap | XMDual | text">
 <!ENTITY % XMath.attr "
          role    CDATA #IMPLIED
 	 open    CDATA #IMPLIED
@@ -288,7 +306,7 @@
 	 argopen CDATA #IMPLIED
 	 argclose CDATA #IMPLIED
 	 separators CDATA #IMPLIED
-         xml:id  ID    #IMPLIED">
+         id      ID    #IMPLIED">
 <!-- open, close can end up on most/all elements ? -->
 
 <!ELEMENT XMath (%XMath.model;)*>
@@ -354,19 +372,20 @@
      These are the lowest level inline things that are somehow reducable to plain text
      and don't include math.
      ====================================================================== -->
-<!ELEMENT textstyle (#PCDATA | %Inline.mix;)*>
-<!ATTLIST textstyle
-	  %Common.attr; 
-	  font CDATA #IMPLIED>
-
 <!ELEMENT emph (#PCDATA | %Inline.mix;)*>
 <!ATTLIST emph %Common.attr;>
+
+<!ELEMENT underline (#PCDATA | %Inline.mix;)*>
+<!ATTLIST underline %Common.attr;>
 
 <!ELEMENT text (#PCDATA | %Inline.mix;)*>
 <!ATTLIST text
 	  %Common.attr;
+	  font CDATA #IMPLIED
 	  framed CDATA #IMPLIED
-	  width CDATA #IMPLIED>
+	  width CDATA #IMPLIED
+	  pad-width CDATA #IMPLIED
+	  raise CDATA #IMPLIED>
 
 <!ELEMENT cite (citepre?,citepost?)>
 <!ATTLIST cite
@@ -386,13 +405,6 @@
 	  %Common.attr; 
 	  name CDATA #REQUIRED>
 
-<!ELEMENT hbox (#PCDATA | %Inline.mix;)*>
-<!ATTLIST hbox
-	  %Common.attr; 
-	  width CDATA #IMPLIED
-	  pad-width CDATA #IMPLIED
-	  raise CDATA #IMPLIED>
-
 <!ELEMENT vbox (#PCDATA | %Inline.mix;)*>
 <!ATTLIST vbox
 	  %Common.attr; 
@@ -401,7 +413,6 @@
 	  align  (left|center|right) #IMPLIED
 	  valign (top|middle|bottom) #IMPLIED>
 
-<!-- Need to think about some unification of hbox, vbox, text and textstyle -->
 <!-- How should rule fit here? (better name, at least) -->
 <!ELEMENT rule EMPTY>
 <!ATTLIST rule
@@ -425,10 +436,12 @@
 	  width CDATA #IMPLIED
 	  justified CDATA #IMPLIED>
 
+<!-- note covers several `out of band' annotations.
+     class could be foot, end, margin or other extensions. -->
 <!ELEMENT note  (#PCDATA | %Inline.mix;)*>
 <!ATTLIST note
 	  %Common.attr; 
-	  class (foot|end|margin) #IMPLIED
+	  class CDATA #IMPLIED
           mark CDATA #IMPLIED>
 <!-- should mark be more like label/refnum ? -->
 
@@ -441,30 +454,66 @@
      Picture; Experimental, possibly should evolve to SVG?
      ====================================================================== -->
 
-<!ENTITY % Picture.class "put | box | line | circle | oval | frame | qbezier">
+<!ENTITY % Picture.class "g | rect | line | circle | path | arc | wedge | ellipse | polygon | bezier">
+
+<!ENTITY % Picture.attr.base
+	 "x CDATA #IMPLIED y CDATA #IMPLIED r CDATA #IMPLIED
+          rx CDATA #IMPLIED ry CDATA #IMPLIED 
+          width CDATA #IMPLIED height CDATA #IMPLIED
+          fill CDATA #IMPLIED stroke CDATA #IMPLIED 
+          stroke-width CDATA #IMPLIED stroke-dasharray CDATA #IMPLIED
+          transform CDATA #IMPLIED terminators CDATA #IMPLIED arrowlength CDATA #IMPLIED
+          points CDATA #IMPLIED showpoints CDATA #IMPLIED arc CDATA #IMPLIED 
+          angle1 CDATA #IMPLIED angle2 CDATA #IMPLIED 
+          arcsepA CDATA #IMPLIED arcsepB CDATA #IMPLIED
+          curvature CDATA #IMPLIED">
+<!ENTITY % Picture.attr.extra "">
+<!ENTITY % Picture.attr
+	 "%Picture.attr.base; %Picture.attr.extra;">
+
+<!ENTITY % PictureGroup.attr "pos CDATA #IMPLIED
+                              framed (yes|no) 'no'
+                              frametype (rect|circle|oval) 'rect'
+                              fillframe (yes|no) 'no'
+                              boxsep CDATA #IMPLIED
+                              shadowbox (yes|no) 'no'
+                              doubleline (yes|no) 'no'">
+
 <!ELEMENT picture  (%Picture.class; | %Flow.mix;)*>
-<!ATTLIST picture %Common.attr;>
+<!ATTLIST picture %Common.attr; %Picture.attr; 
+                   clip (yes|no) 'no'
+                   baseline CDATA #IMPLIED 
+                   tex CDATA #IMPLIED>
 
-<!ELEMENT put      (%Picture.class; | %Flow.mix;)*>
-<!ATTLIST put    %Common.attr;>
+<!ELEMENT g  (%Picture.class; | %Flow.mix;)*>
+<!ATTLIST g %Common.attr; %Picture.attr; %PictureGroup.attr; >
 
-<!ELEMENT box      (%Picture.class; | %Flow.mix;)*>
-<!ATTLIST box    %Common.attr;>
-
-<!ELEMENT frame    (%Picture.class; | %Flow.mix;)*>
-<!ATTLIST frame %Common.attr;>
-
-<!ELEMENT qbezier EMPTY>
-<!ATTLIST qbezier %Common.attr;>
+<!ELEMENT rect    EMPTY>
+<!ATTLIST rect    %Common.attr; %Picture.attr;>
 
 <!ELEMENT line    EMPTY>
-<!ATTLIST line %Common.attr;>
+<!ATTLIST line %Common.attr; %Picture.attr;>
+
+<!ELEMENT polygon EMPTY>
+<!ATTLIST polygon %Common.attr; %Picture.attr;>
+
+<!ELEMENT wedge EMPTY>
+<!ATTLIST wedge %Common.attr; %Picture.attr;>
+
+<!ELEMENT arc EMPTY>
+<!ATTLIST arc %Common.attr; %Picture.attr;>
 
 <!ELEMENT circle  EMPTY>
-<!ATTLIST circle %Common.attr;>
+<!ATTLIST circle %Common.attr; %Picture.attr;>
 
-<!ELEMENT oval    EMPTY>
-<!ATTLIST oval %Common.attr;>
+<!ELEMENT ellipse  EMPTY>
+<!ATTLIST ellipse %Common.attr; %Picture.attr;>
+
+<!ELEMENT path    EMPTY>
+<!ATTLIST path %Common.attr; %Picture.attr;>
+
+<!ELEMENT bezier    EMPTY>
+<!ATTLIST bezier %Common.attr; %Picture.attr;>
 
 <!-- ======================================================================
      Meta data

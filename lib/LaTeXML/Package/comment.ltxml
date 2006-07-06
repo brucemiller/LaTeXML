@@ -20,7 +20,7 @@ use LaTeXML::Package;
 sub defineExcluded {
   my($ignore,$name)=@_;
   $name = $name->toString if ref $name;
-  $STATE->installDefinition(LaTeXML::Constructor->new(T_CS("\\begin{$name}"),undef,'', untex=>'',
+  InstallDefinition(LaTeXML::Constructor->new(T_CS("\\begin{$name}"),undef,'', reversion=>'',
             afterDigest=>[sub {
 			    my($whatsit)=@_;
 			    my @lines = $GULLET->getMouth->readRawLines("\\end{$name}\n",1);
@@ -32,10 +32,10 @@ sub defineIncluded {
   $name = $name->toString if ref $name;
   # Note that we define the `magic' environment control sequences,
   # but DO NOT do any of the normal environ things, like \begingroup \endgroup!
-  $STATE->installDefinition(LaTeXML::Expandable->new(T_CS("\\begin{$name}"),undef,
-					  Tokens(($before ? $before->unlist:()),T_CS('\ignorespaces'))));
-  $STATE->installDefinition(LaTeXML::Expandable->new(T_CS("\\end{$name}"),undef,
-					  Tokens(($after ? $after->unlist:()),T_CS('\ignorespaces'))));
+  InstallDefinition(LaTeXML::Expandable->new(T_CS("\\begin{$name}"),undef,
+					     Tokens(($before ? $before->unlist:()),T_CS('\ignorespaces'))));
+  InstallDefinition(LaTeXML::Expandable->new(T_CS("\\end{$name}"),undef,
+					     Tokens(($after ? $after->unlist:()),T_CS('\ignorespaces'))));
   return; }
 
 defineExcluded(undef,'comment');

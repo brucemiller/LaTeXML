@@ -55,9 +55,11 @@ else {
 binmode(STDERR,":utf8");
 if($format eq 'tex'){
   my $digested = $latexml->digestFile($source);
-  print OUT $digested->untex; }
+  local $LaTeXML::Global::STATE = $$latexml{state};
+  print OUT LaTeXML::Global::UnTeX($digested); }
 elsif($format eq 'box'){
   my $digested = $latexml->digestFile($source);
+  local $LaTeXML::Global::STATE = $$latexml{state};
   print OUT $digested->toString; }
 else {
   my $dom = $latexml->convertFile($source); 

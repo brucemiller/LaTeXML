@@ -15,13 +15,12 @@ use strict;
 use LaTeXML::Global;
 use LaTeXML::State;
 use LaTeXML::Token;
+use LaTeXML::Number;
 use LaTeXML::Box;
-use LaTeXML::Object;
 use LaTeXML::Mouth;
 use LaTeXML::Font;
 use LaTeXML::Definition;
-
-our @ISA = qw(LaTeXML::Object);
+use base qw(LaTeXML::Object);
 
 #**********************************************************************
 sub new {
@@ -119,9 +118,11 @@ sub invokeToken {
       Fatal("[Internal] ".Stringify($token)." should never reach Stomach!"); }
     elsif($STATE->lookupValue('IN_MATH')){
       my $string = $meaning->getString;
-      LaTeXML::MathBox->new($string,$STATE->lookupValue('font')->specialize($string),$GULLET->getLocator); }
+      LaTeXML::MathBox->new($string,$STATE->lookupValue('font')->specialize($string),
+			    $GULLET->getLocator,$meaning); }
     else {
-      LaTeXML::Box->new($meaning->getString, $STATE->lookupValue('font'),$GULLET->getLocator); }}
+      LaTeXML::Box->new($meaning->getString, $STATE->lookupValue('font'),
+			$GULLET->getLocator,$meaning); }}
   else {
     Fatal("[Internal] ".Stringify($meaning)." should never reach Stomach!"); }}
 
@@ -144,12 +145,15 @@ sub regurgitate {
 sub pushStackFrame {
   my($self,$nobox)=@_;
   $STATE->pushFrame;
+  $STATE->assignValue(beforeAfterGroup=>[],'local'); # ALWAYS bind this!
   $STATE->assignValue(afterGroup=>[],'local'); # ALWAYS bind this!
   push(@{$$self{boxing}},$LaTeXML::CURRENT_TOKEN) unless $nobox; # For begingroup/endgroup
 }
 
 sub popStackFrame {
   my($self,$nobox)=@_;
+  if(my $beforeafter=$STATE->lookupValue('beforeAfterGroup')){
+    push(@LaTeXML::LIST,map($_->beDigested, @$beforeafter)); }
   my $after = $STATE->lookupValue('afterGroup');
   $STATE->popFrame;
   pop(@{$$self{boxing}}) unless $nobox; # For begingroup/endgroup

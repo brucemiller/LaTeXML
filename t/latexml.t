@@ -6,10 +6,9 @@ use Test;
 our @tests;
 BEGIN { 
   @tests = ( qw( testchar testctr testexpand testif testover
-		  fonts xii verb comment simplemath scopemacro
-		 ));
-
-plan tests => 11; }
+		 fonts xii verb comment simplemath
+		 scopemacro keyval));
+plan tests => scalar(@tests); }
 
 use LaTeXML;
 

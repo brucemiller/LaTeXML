@@ -6,6 +6,10 @@ use Pod::Html;
 use Pod::Find;
 use LaTeXML;
 use LaTeXML::Post;
+use LaTeXML::Post::Graphics;
+use LaTeXML::Post::MathML;
+use LaTeXML::Post::PurgeXMath;
+use LaTeXML::Post::XSLT;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 my $LOC = $FindBin::RealBin."..";
@@ -16,8 +20,16 @@ my $PDDEST = "$DEST/perldoc";
 # Process the LaTeX documentation
 print "Generating LaTeXML documentation in $DEST\n";
 LaTeXML->new()->convertAndWriteFile('LaTeXML');
-LaTeXML::Post->new()->process('LaTeXML',destination=>"$DEST/LaTeXML.html",
-		      CSS=>'latexml.css');
+my $POST = LaTeXML::Post->new();
+my $doc = $POST->process($POST->readDocument('LaTeXML.xml'),
+			 destinationDirectory=>$DEST,
+			 format     => 'xhtml',
+			 processors=>[LaTeXML::Post::Graphics->new(),
+				      LaTeXML::Post::MathML::Presentation->new(),
+				      LaTeXML::Post::PurgeXMath->new(),
+				      LaTeXML::Post::XSLT->new(stylesheet=>"LaTeXML-xhtml.xsl")],
+			 CSS=>'latexml.css');
+$POST->writeDocument($doc,"$DEST/LaTeXML.xhtml",'xhtml');
 
 #======================================================================
 # Process the perldocs

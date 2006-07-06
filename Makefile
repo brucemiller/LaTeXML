@@ -53,11 +53,11 @@ AR_STATIC_ARGS = cr
 DIRFILESEP = /
 NAME = LaTeXML
 NAME_SYM = LaTeXML
-VERSION = 0.3.2
+VERSION = 0.4.0
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_3_2
+VERSION_SYM = 0_4_0
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.3.2
+XS_VERSION = 0.4.0
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -163,6 +163,7 @@ MAN3PODS = lib/LaTeXML.pm \
 	lib/LaTeXML/MathParser.pm \
 	lib/LaTeXML/Model.pm \
 	lib/LaTeXML/Mouth.pm \
+	lib/LaTeXML/Number.pm \
 	lib/LaTeXML/Object.pm \
 	lib/LaTeXML/Package.pm \
 	lib/LaTeXML/Parameters.pm \
@@ -204,6 +205,7 @@ TO_INST_PM = lib/LaTeXML.pm \
 	lib/LaTeXML/MathParser.pm \
 	lib/LaTeXML/Model.pm \
 	lib/LaTeXML/Mouth.pm \
+	lib/LaTeXML/Number.pm \
 	lib/LaTeXML/Object.pm \
 	lib/LaTeXML/Package.pm \
 	lib/LaTeXML/Package/DLMF.ltxml \
@@ -232,25 +234,32 @@ TO_INST_PM = lib/LaTeXML.pm \
 	lib/LaTeXML/Package/graphicx.ltxml \
 	lib/LaTeXML/Package/html.ltxml \
 	lib/LaTeXML/Package/hyperref.ltxml \
+	lib/LaTeXML/Package/keyval.ltxml \
 	lib/LaTeXML/Package/latexml.ltxml \
 	lib/LaTeXML/Package/makeidx.ltxml \
 	lib/LaTeXML/Package/mcsd.ltxml \
+	lib/LaTeXML/Package/pspicture.ltxml \
+	lib/LaTeXML/Package/pst-node.ltxml \
+	lib/LaTeXML/Package/pstricks.ltxml \
 	lib/LaTeXML/Package/url.ltxml \
 	lib/LaTeXML/Parameters.pm \
 	lib/LaTeXML/Post.pm \
 	lib/LaTeXML/Post/Graphics.pm \
-	lib/LaTeXML/Post/HTMLTable.pm \
 	lib/LaTeXML/Post/MathImages.pm \
+	lib/LaTeXML/Post/MathML.pm \
 	lib/LaTeXML/Post/OpenMath.pm \
-	lib/LaTeXML/Post/PresentationMathML.pm \
 	lib/LaTeXML/Post/PurgeXMath.pm \
+	lib/LaTeXML/Post/SVG.pm \
 	lib/LaTeXML/Post/XSLT.pm \
 	lib/LaTeXML/Rewrite.pm \
 	lib/LaTeXML/State.pm \
 	lib/LaTeXML/Stomach.pm \
 	lib/LaTeXML/Token.pm \
+	lib/LaTeXML/Util/Color.pm \
+	lib/LaTeXML/Util/Geometry.pm \
 	lib/LaTeXML/Util/LibXML.pm \
 	lib/LaTeXML/Util/Pathname.pm \
+	lib/LaTeXML/Util/Transform.pm \
 	lib/LaTeXML/dtd/DLMF.dtd \
 	lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd \
 	lib/LaTeXML/dtd/LaTeXML-MathML.dtd \
@@ -262,6 +271,8 @@ TO_INST_PM = lib/LaTeXML.pm \
 
 PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/Package/amsmath.ltxml \
+	lib/LaTeXML/Util/Color.pm \
+	blib/lib/LaTeXML/Util/Color.pm \
 	lib/LaTeXML/Model.pm \
 	blib/lib/LaTeXML/Model.pm \
 	lib/LaTeXML/Package/eufrak.ltxml \
@@ -272,10 +283,10 @@ PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/Definition.pm \
 	lib/LaTeXML/Post/MathImages.pm \
 	blib/lib/LaTeXML/Post/MathImages.pm \
-	lib/LaTeXML/Package/graphicx.ltxml \
-	blib/lib/LaTeXML/Package/graphicx.ltxml \
 	lib/LaTeXML/Package/LaTeX.ltxml \
 	blib/lib/LaTeXML/Package/LaTeX.ltxml \
+	lib/LaTeXML/Package/graphicx.ltxml \
+	blib/lib/LaTeXML/Package/graphicx.ltxml \
 	lib/LaTeXML/State.pm \
 	blib/lib/LaTeXML/State.pm \
 	lib/LaTeXML/Token.pm \
@@ -296,10 +307,14 @@ PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/dtd/catalog \
 	lib/LaTeXML/Package/amsxtra.ltxml \
 	blib/lib/LaTeXML/Package/amsxtra.ltxml \
+	lib/LaTeXML/Post/MathML.pm \
+	blib/lib/LaTeXML/Post/MathML.pm \
 	lib/LaTeXML/Package/ae.ltxml \
 	blib/lib/LaTeXML/Package/ae.ltxml \
 	lib/LaTeXML/Package/euscript.ltxml \
 	blib/lib/LaTeXML/Package/euscript.ltxml \
+	lib/LaTeXML/Package/pspicture.ltxml \
+	blib/lib/LaTeXML/Package/pspicture.ltxml \
 	lib/LaTeXML/Package/article.ltxml \
 	blib/lib/LaTeXML/Package/article.ltxml \
 	lib/LaTeXML/Package/amsfonts.ltxml \
@@ -316,26 +331,32 @@ PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/Package/hyperref.ltxml \
 	lib/LaTeXML/dtd/LaTeXML-base.xsl \
 	blib/lib/LaTeXML/dtd/LaTeXML-base.xsl \
-	lib/LaTeXML/Error.pm \
-	blib/lib/LaTeXML/Error.pm \
 	lib/LaTeXML/Package/DLMFbib.ltxml \
 	blib/lib/LaTeXML/Package/DLMFbib.ltxml \
+	lib/LaTeXML/Error.pm \
+	blib/lib/LaTeXML/Error.pm \
 	lib/LaTeXML/dtd/LaTeXML-html.xsl \
 	blib/lib/LaTeXML/dtd/LaTeXML-html.xsl \
+	lib/LaTeXML/Util/Transform.pm \
+	blib/lib/LaTeXML/Util/Transform.pm \
+	lib/LaTeXML/Package/pst-node.ltxml \
+	blib/lib/LaTeXML/Package/pst-node.ltxml \
 	lib/LaTeXML/Box.pm \
 	blib/lib/LaTeXML/Box.pm \
-	lib/LaTeXML/Post.pm \
-	blib/lib/LaTeXML/Post.pm \
 	lib/LaTeXML/Package/DLMF.ltxml \
 	blib/lib/LaTeXML/Package/DLMF.ltxml \
-	lib/LaTeXML/Post/PresentationMathML.pm \
-	blib/lib/LaTeXML/Post/PresentationMathML.pm \
+	lib/LaTeXML/Post.pm \
+	blib/lib/LaTeXML/Post.pm \
+	lib/LaTeXML/Post/SVG.pm \
+	blib/lib/LaTeXML/Post/SVG.pm \
 	lib/LaTeXML/Document.pm \
 	blib/lib/LaTeXML/Document.pm \
 	lib/LaTeXML/dtd/LaTeXML.dtd \
 	blib/lib/LaTeXML/dtd/LaTeXML.dtd \
-	lib/LaTeXML/Post/HTMLTable.pm \
-	blib/lib/LaTeXML/Post/HTMLTable.pm \
+	lib/LaTeXML/Util/Geometry.pm \
+	blib/lib/LaTeXML/Util/Geometry.pm \
+	lib/LaTeXML/Package/keyval.ltxml \
+	blib/lib/LaTeXML/Package/keyval.ltxml \
 	lib/LaTeXML/Package/comment.ltxml \
 	blib/lib/LaTeXML/Package/comment.ltxml \
 	lib/LaTeXML/Package/latexml.ltxml \
@@ -360,6 +381,8 @@ PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/Util/Pathname.pm \
 	lib/LaTeXML/Object.pm \
 	blib/lib/LaTeXML/Object.pm \
+	lib/LaTeXML/Package/pstricks.ltxml \
+	blib/lib/LaTeXML/Package/pstricks.ltxml \
 	lib/LaTeXML/Package/amsrefs.ltxml \
 	blib/lib/LaTeXML/Package/amsrefs.ltxml \
 	lib/LaTeXML/dtd/LaTeXML-MathML.dtd \
@@ -380,6 +403,8 @@ PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/Package/TeX.ltxml \
 	lib/LaTeXML/Package/DLMFmath.ltxml \
 	blib/lib/LaTeXML/Package/DLMFmath.ltxml \
+	lib/LaTeXML/Number.pm \
+	blib/lib/LaTeXML/Number.pm \
 	lib/LaTeXML/Package/graphics.ltxml \
 	blib/lib/LaTeXML/Package/graphics.ltxml \
 	lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd \
@@ -388,10 +413,10 @@ PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/Package/html.ltxml \
 	lib/LaTeXML/Post/Graphics.pm \
 	blib/lib/LaTeXML/Post/Graphics.pm \
-	lib/LaTeXML/Package/url.ltxml \
-	blib/lib/LaTeXML/Package/url.ltxml \
 	lib/LaTeXML.pm \
 	blib/lib/LaTeXML.pm \
+	lib/LaTeXML/Package/url.ltxml \
+	blib/lib/LaTeXML/Package/url.ltxml \
 	lib/LaTeXML/Package/mcsd.ltxml \
 	blib/lib/LaTeXML/Package/mcsd.ltxml
 
@@ -456,7 +481,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = LaTeXML
-DISTVNAME = LaTeXML-0.3.2
+DISTVNAME = LaTeXML-0.4.0
 
 
 # --- MakeMaker macro section:
@@ -627,6 +652,7 @@ manifypods : pure_all  \
 	lib/LaTeXML/Stomach.pm \
 	lib/LaTeXML/Token.pm \
 	lib/LaTeXML/Error.pm \
+	lib/LaTeXML/Number.pm \
 	lib/LaTeXML/Package.pm \
 	lib/LaTeXML/Global.pm \
 	lib/LaTeXML.pm \
@@ -646,6 +672,7 @@ manifypods : pure_all  \
 	lib/LaTeXML/Stomach.pm \
 	lib/LaTeXML/Token.pm \
 	lib/LaTeXML/Error.pm \
+	lib/LaTeXML/Number.pm \
 	lib/LaTeXML/Package.pm \
 	lib/LaTeXML/Global.pm \
 	lib/LaTeXML.pm \
@@ -670,6 +697,7 @@ manifypods : pure_all  \
 	  lib/LaTeXML/Stomach.pm $(INST_MAN3DIR)/LaTeXML::Stomach.$(MAN3EXT) \
 	  lib/LaTeXML/Token.pm $(INST_MAN3DIR)/LaTeXML::Token.$(MAN3EXT) \
 	  lib/LaTeXML/Error.pm $(INST_MAN3DIR)/LaTeXML::Error.$(MAN3EXT) \
+	  lib/LaTeXML/Number.pm $(INST_MAN3DIR)/LaTeXML::Number.$(MAN3EXT) \
 	  lib/LaTeXML/Package.pm $(INST_MAN3DIR)/LaTeXML::Package.$(MAN3EXT) \
 	  lib/LaTeXML/Global.pm $(INST_MAN3DIR)/LaTeXML::Global.$(MAN3EXT) \
 	  lib/LaTeXML.pm $(INST_MAN3DIR)/LaTeXML.$(MAN3EXT) \
@@ -749,19 +777,20 @@ realclean_subdirs :
 realclean purge ::  clean realclean_subdirs
 	$(RM_RF) $(INST_AUTODIR) $(INST_ARCHAUTODIR)
 	$(RM_RF) $(DISTVNAME)
-	$(RM_F)  blib/lib/LaTeXML/dtd/LaTeXML.dtd blib/lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd blib/lib/LaTeXML/State.pm blib/lib/LaTeXML/Package/amsbsy.ltxml blib/lib/LaTeXML/Post/PurgeXMath.pm
-	$(RM_F) blib/lib/LaTeXML/Package/euscript.ltxml blib/lib/LaTeXML/Package/amsmath.ltxml blib/lib/LaTeXML/Package/color.ltxml blib/lib/LaTeXML/Package/graphics.ltxml blib/lib/LaTeXML/Package/alltt.ltxml
-	$(RM_F) blib/lib/LaTeXML/Package/amsfonts.ltxml blib/lib/LaTeXML/Package/makeidx.ltxml blib/lib/LaTeXML/Package/amsopn.ltxml blib/lib/LaTeXML/Package/DLMFmath.ltxml blib/lib/LaTeXML/Package/eufrak.ltxml
-	$(RM_F) blib/lib/LaTeXML/Package/graphicx.ltxml blib/lib/LaTeXML/dtd/LaTeXML-base.xsl blib/lib/LaTeXML/Package/hyperref.ltxml blib/lib/LaTeXML/Post/Graphics.pm blib/lib/LaTeXML/Package/mcsd.ltxml
-	$(RM_F) blib/lib/LaTeXML/Parameters.pm $(MAKEFILE_OLD) blib/lib/LaTeXML/Font.pm blib/lib/LaTeXML.pm blib/lib/LaTeXML/Package/DLMF.ltxml blib/lib/LaTeXML/Package/ae.ltxml blib/lib/LaTeXML/Post/XSLT.pm
-	$(RM_F) blib/lib/LaTeXML/Post/MathImages.pm blib/lib/LaTeXML/Definition.pm blib/lib/LaTeXML/Package/latexml.ltxml blib/lib/LaTeXML/Package/comment.ltxml blib/lib/LaTeXML/Post.pm
-	$(RM_F) blib/lib/LaTeXML/Package/TeX.ltxml blib/lib/LaTeXML/Box.pm blib/lib/LaTeXML/Token.pm blib/lib/LaTeXML/Stomach.pm blib/lib/LaTeXML/dtd/LaTeXML-MathML.dtd blib/lib/LaTeXML/Post/PresentationMathML.pm
-	$(RM_F) blib/lib/LaTeXML/Error.pm blib/lib/LaTeXML/Util/Pathname.pm blib/lib/LaTeXML/Package/amstext.ltxml blib/lib/LaTeXML/Post/HTMLTable.pm blib/lib/LaTeXML/Util/LibXML.pm $(FIRST_MAKEFILE)
-	$(RM_F) blib/lib/LaTeXML/MathGrammar blib/lib/LaTeXML/Package/LaTeX.ltxml blib/lib/LaTeXML/Mouth.pm blib/lib/LaTeXML/Package.pm blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl blib/lib/LaTeXML/Package/eucal.ltxml
-	$(RM_F) blib/lib/LaTeXML/Package/url.ltxml blib/lib/LaTeXML/Global.pm blib/lib/LaTeXML/Package/DLMFbib.ltxml blib/lib/LaTeXML/dtd/LaTeXML-html.xsl blib/lib/LaTeXML/Package/html.ltxml
-	$(RM_F) blib/lib/LaTeXML/dtd/DLMF.dtd blib/lib/LaTeXML/Package/article.ltxml blib/lib/LaTeXML/Gullet.pm blib/lib/LaTeXML/Package/acronym.ltxml blib/lib/LaTeXML/Rewrite.pm blib/lib/LaTeXML/Package/amsxtra.ltxml
-	$(RM_F) blib/lib/LaTeXML/MathParser.pm blib/lib/LaTeXML/Package/amsrefs.ltxml blib/lib/LaTeXML/Package/amssymb.ltxml blib/lib/LaTeXML/dtd/catalog blib/lib/LaTeXML/Document.pm blib/lib/LaTeXML/Model.pm
-	$(RM_F) blib/lib/LaTeXML/Object.pm blib/lib/LaTeXML/Post/OpenMath.pm
+	$(RM_F)  blib/lib/LaTeXML/dtd/LaTeXML.dtd blib/lib/LaTeXML/Package/pspicture.ltxml blib/lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd blib/lib/LaTeXML/State.pm blib/lib/LaTeXML/Package/amsbsy.ltxml
+	$(RM_F) blib/lib/LaTeXML/Util/Transform.pm blib/lib/LaTeXML/Post/PurgeXMath.pm blib/lib/LaTeXML/Package/euscript.ltxml blib/lib/LaTeXML/Package/amsmath.ltxml blib/lib/LaTeXML/Package/color.ltxml
+	$(RM_F) blib/lib/LaTeXML/Util/Color.pm blib/lib/LaTeXML/Package/graphics.ltxml blib/lib/LaTeXML/Package/alltt.ltxml blib/lib/LaTeXML/Package/amsfonts.ltxml blib/lib/LaTeXML/Package/makeidx.ltxml
+	$(RM_F) blib/lib/LaTeXML/Package/amsopn.ltxml blib/lib/LaTeXML/Package/DLMFmath.ltxml blib/lib/LaTeXML/Package/eufrak.ltxml blib/lib/LaTeXML/Package/graphicx.ltxml blib/lib/LaTeXML/dtd/LaTeXML-base.xsl
+	$(RM_F) blib/lib/LaTeXML/Package/hyperref.ltxml blib/lib/LaTeXML/Post/Graphics.pm blib/lib/LaTeXML/Package/mcsd.ltxml blib/lib/LaTeXML/Parameters.pm $(MAKEFILE_OLD) blib/lib/LaTeXML/Font.pm blib/lib/LaTeXML.pm
+	$(RM_F) blib/lib/LaTeXML/Package/DLMF.ltxml blib/lib/LaTeXML/Package/ae.ltxml blib/lib/LaTeXML/Post/SVG.pm blib/lib/LaTeXML/Post/XSLT.pm blib/lib/LaTeXML/Post/MathImages.pm blib/lib/LaTeXML/Definition.pm
+	$(RM_F) blib/lib/LaTeXML/Package/latexml.ltxml blib/lib/LaTeXML/Package/comment.ltxml blib/lib/LaTeXML/Package/keyval.ltxml blib/lib/LaTeXML/Post.pm blib/lib/LaTeXML/Package/TeX.ltxml blib/lib/LaTeXML/Box.pm
+	$(RM_F) blib/lib/LaTeXML/Number.pm blib/lib/LaTeXML/Token.pm blib/lib/LaTeXML/Stomach.pm blib/lib/LaTeXML/dtd/LaTeXML-MathML.dtd blib/lib/LaTeXML/Error.pm blib/lib/LaTeXML/Util/Pathname.pm
+	$(RM_F) blib/lib/LaTeXML/Package/amstext.ltxml blib/lib/LaTeXML/Util/LibXML.pm $(FIRST_MAKEFILE) blib/lib/LaTeXML/MathGrammar blib/lib/LaTeXML/Package/LaTeX.ltxml blib/lib/LaTeXML/Post/MathML.pm
+	$(RM_F) blib/lib/LaTeXML/Mouth.pm blib/lib/LaTeXML/Package.pm blib/lib/LaTeXML/Package/pst-node.ltxml blib/lib/LaTeXML/Package/eucal.ltxml blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl
+	$(RM_F) blib/lib/LaTeXML/Package/url.ltxml blib/lib/LaTeXML/Global.pm blib/lib/LaTeXML/Package/pstricks.ltxml blib/lib/LaTeXML/Package/DLMFbib.ltxml blib/lib/LaTeXML/dtd/LaTeXML-html.xsl
+	$(RM_F) blib/lib/LaTeXML/Package/html.ltxml blib/lib/LaTeXML/dtd/DLMF.dtd blib/lib/LaTeXML/Package/article.ltxml blib/lib/LaTeXML/Gullet.pm blib/lib/LaTeXML/Package/acronym.ltxml blib/lib/LaTeXML/Rewrite.pm
+	$(RM_F) blib/lib/LaTeXML/Package/amsxtra.ltxml blib/lib/LaTeXML/MathParser.pm blib/lib/LaTeXML/Package/amsrefs.ltxml blib/lib/LaTeXML/Package/amssymb.ltxml blib/lib/LaTeXML/dtd/catalog
+	$(RM_F) blib/lib/LaTeXML/Document.pm blib/lib/LaTeXML/Util/Geometry.pm blib/lib/LaTeXML/Model.pm blib/lib/LaTeXML/Object.pm blib/lib/LaTeXML/Post/OpenMath.pm
 
 
 # --- MakeMaker metafile section:
@@ -769,7 +798,7 @@ metafile :
 	$(NOECHO) $(ECHO) '# http://module-build.sourceforge.net/META-spec.html' > META.yml
 	$(NOECHO) $(ECHO) '#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#' >> META.yml
 	$(NOECHO) $(ECHO) 'name:         LaTeXML' >> META.yml
-	$(NOECHO) $(ECHO) 'version:      0.3.2' >> META.yml
+	$(NOECHO) $(ECHO) 'version:      0.4.0' >> META.yml
 	$(NOECHO) $(ECHO) 'version_from: lib/LaTeXML.pm' >> META.yml
 	$(NOECHO) $(ECHO) 'installdirs:  site' >> META.yml
 	$(NOECHO) $(ECHO) 'requires:' >> META.yml
@@ -1042,7 +1071,7 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd:
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,3,2,0">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,4,0,0">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <TITLE>$(DISTNAME)</TITLE>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT></ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Bruce Miller &lt;bruce.miller@nist.gov&gt;</AUTHOR>' >> $(DISTNAME).ppd
@@ -1064,13 +1093,14 @@ ppd:
 pm_to_blib: $(TO_INST_PM)
 	$(NOECHO) $(PERLRUN) -MExtUtils::Install -e 'pm_to_blib({@ARGV}, '\''$(INST_LIB)/auto'\'', '\''$(PM_FILTER)'\'')'\
 	  lib/LaTeXML/Package/amsmath.ltxml blib/lib/LaTeXML/Package/amsmath.ltxml \
+	  lib/LaTeXML/Util/Color.pm blib/lib/LaTeXML/Util/Color.pm \
 	  lib/LaTeXML/Model.pm blib/lib/LaTeXML/Model.pm \
 	  lib/LaTeXML/Package/eufrak.ltxml blib/lib/LaTeXML/Package/eufrak.ltxml \
 	  lib/LaTeXML/MathGrammar blib/lib/LaTeXML/MathGrammar \
 	  lib/LaTeXML/Definition.pm blib/lib/LaTeXML/Definition.pm \
 	  lib/LaTeXML/Post/MathImages.pm blib/lib/LaTeXML/Post/MathImages.pm \
-	  lib/LaTeXML/Package/graphicx.ltxml blib/lib/LaTeXML/Package/graphicx.ltxml \
 	  lib/LaTeXML/Package/LaTeX.ltxml blib/lib/LaTeXML/Package/LaTeX.ltxml \
+	  lib/LaTeXML/Package/graphicx.ltxml blib/lib/LaTeXML/Package/graphicx.ltxml \
 	  lib/LaTeXML/State.pm blib/lib/LaTeXML/State.pm \
 	  lib/LaTeXML/Token.pm blib/lib/LaTeXML/Token.pm \
 	  lib/LaTeXML/Package/amstext.ltxml blib/lib/LaTeXML/Package/amstext.ltxml \
@@ -1081,8 +1111,10 @@ pm_to_blib: $(TO_INST_PM)
 	  lib/LaTeXML/Package/amssymb.ltxml blib/lib/LaTeXML/Package/amssymb.ltxml \
 	  lib/LaTeXML/dtd/catalog blib/lib/LaTeXML/dtd/catalog \
 	  lib/LaTeXML/Package/amsxtra.ltxml blib/lib/LaTeXML/Package/amsxtra.ltxml \
+	  lib/LaTeXML/Post/MathML.pm blib/lib/LaTeXML/Post/MathML.pm \
 	  lib/LaTeXML/Package/ae.ltxml blib/lib/LaTeXML/Package/ae.ltxml \
 	  lib/LaTeXML/Package/euscript.ltxml blib/lib/LaTeXML/Package/euscript.ltxml \
+	  lib/LaTeXML/Package/pspicture.ltxml blib/lib/LaTeXML/Package/pspicture.ltxml \
 	  lib/LaTeXML/Package/article.ltxml blib/lib/LaTeXML/Package/article.ltxml \
 	  lib/LaTeXML/Package/amsfonts.ltxml blib/lib/LaTeXML/Package/amsfonts.ltxml \
 	  lib/LaTeXML/Font.pm blib/lib/LaTeXML/Font.pm \
@@ -1091,16 +1123,19 @@ pm_to_blib: $(TO_INST_PM)
 	  lib/LaTeXML/Gullet.pm blib/lib/LaTeXML/Gullet.pm \
 	  lib/LaTeXML/Package/hyperref.ltxml blib/lib/LaTeXML/Package/hyperref.ltxml \
 	  lib/LaTeXML/dtd/LaTeXML-base.xsl blib/lib/LaTeXML/dtd/LaTeXML-base.xsl \
-	  lib/LaTeXML/Error.pm blib/lib/LaTeXML/Error.pm \
 	  lib/LaTeXML/Package/DLMFbib.ltxml blib/lib/LaTeXML/Package/DLMFbib.ltxml \
+	  lib/LaTeXML/Error.pm blib/lib/LaTeXML/Error.pm \
 	  lib/LaTeXML/dtd/LaTeXML-html.xsl blib/lib/LaTeXML/dtd/LaTeXML-html.xsl \
+	  lib/LaTeXML/Util/Transform.pm blib/lib/LaTeXML/Util/Transform.pm \
+	  lib/LaTeXML/Package/pst-node.ltxml blib/lib/LaTeXML/Package/pst-node.ltxml \
 	  lib/LaTeXML/Box.pm blib/lib/LaTeXML/Box.pm \
-	  lib/LaTeXML/Post.pm blib/lib/LaTeXML/Post.pm \
 	  lib/LaTeXML/Package/DLMF.ltxml blib/lib/LaTeXML/Package/DLMF.ltxml \
-	  lib/LaTeXML/Post/PresentationMathML.pm blib/lib/LaTeXML/Post/PresentationMathML.pm \
+	  lib/LaTeXML/Post.pm blib/lib/LaTeXML/Post.pm \
+	  lib/LaTeXML/Post/SVG.pm blib/lib/LaTeXML/Post/SVG.pm \
 	  lib/LaTeXML/Document.pm blib/lib/LaTeXML/Document.pm \
 	  lib/LaTeXML/dtd/LaTeXML.dtd blib/lib/LaTeXML/dtd/LaTeXML.dtd \
-	  lib/LaTeXML/Post/HTMLTable.pm blib/lib/LaTeXML/Post/HTMLTable.pm \
+	  lib/LaTeXML/Util/Geometry.pm blib/lib/LaTeXML/Util/Geometry.pm \
+	  lib/LaTeXML/Package/keyval.ltxml blib/lib/LaTeXML/Package/keyval.ltxml \
 	  lib/LaTeXML/Package/comment.ltxml blib/lib/LaTeXML/Package/comment.ltxml \
 	  lib/LaTeXML/Package/latexml.ltxml blib/lib/LaTeXML/Package/latexml.ltxml \
 	  lib/LaTeXML/MathParser.pm blib/lib/LaTeXML/MathParser.pm \
@@ -1113,6 +1148,7 @@ pm_to_blib: $(TO_INST_PM)
 	  lib/LaTeXML/Global.pm blib/lib/LaTeXML/Global.pm \
 	  lib/LaTeXML/Util/Pathname.pm blib/lib/LaTeXML/Util/Pathname.pm \
 	  lib/LaTeXML/Object.pm blib/lib/LaTeXML/Object.pm \
+	  lib/LaTeXML/Package/pstricks.ltxml blib/lib/LaTeXML/Package/pstricks.ltxml \
 	  lib/LaTeXML/Package/amsrefs.ltxml blib/lib/LaTeXML/Package/amsrefs.ltxml \
 	  lib/LaTeXML/dtd/LaTeXML-MathML.dtd blib/lib/LaTeXML/dtd/LaTeXML-MathML.dtd \
 	  lib/LaTeXML/Parameters.pm blib/lib/LaTeXML/Parameters.pm \
@@ -1123,12 +1159,13 @@ pm_to_blib: $(TO_INST_PM)
 	  lib/LaTeXML/Package/eucal.ltxml blib/lib/LaTeXML/Package/eucal.ltxml \
 	  lib/LaTeXML/Package/TeX.ltxml blib/lib/LaTeXML/Package/TeX.ltxml \
 	  lib/LaTeXML/Package/DLMFmath.ltxml blib/lib/LaTeXML/Package/DLMFmath.ltxml \
+	  lib/LaTeXML/Number.pm blib/lib/LaTeXML/Number.pm \
 	  lib/LaTeXML/Package/graphics.ltxml blib/lib/LaTeXML/Package/graphics.ltxml \
 	  lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd blib/lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd \
 	  lib/LaTeXML/Package/html.ltxml blib/lib/LaTeXML/Package/html.ltxml \
 	  lib/LaTeXML/Post/Graphics.pm blib/lib/LaTeXML/Post/Graphics.pm \
-	  lib/LaTeXML/Package/url.ltxml blib/lib/LaTeXML/Package/url.ltxml \
 	  lib/LaTeXML.pm blib/lib/LaTeXML.pm \
+	  lib/LaTeXML/Package/url.ltxml blib/lib/LaTeXML/Package/url.ltxml \
 	  lib/LaTeXML/Package/mcsd.ltxml blib/lib/LaTeXML/Package/mcsd.ltxml 
 	$(NOECHO) $(TOUCH) $@
 

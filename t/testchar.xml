@@ -4,41 +4,59 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <section refnum="1">
     <title>Testing</title>
-    <p>Testing raw tex macros:
+    <para>
+      <p>Testing raw tex macros:
 Expect inline math: xx<Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math>xx
 </p>
-    <p>Expect display math: xx</p>
-    <equation>
-      <Math mode="display" tex="a+b" text="a + b">
-        <XMath>
-          <XMApp>
-            <XMTok role="ADDOP">+</XMTok>
-            <XMTok role="UNKNOWN" font="italic">a</XMTok>
-            <XMTok role="UNKNOWN" font="italic">b</XMTok>
-          </XMApp>
-        </XMath>
-      </Math>
-    </equation>
-    <p>xx
+    </para>
+    <para>
+      <p>Expect display math: xx</p>
+      <equation>
+        <Math mode="display" tex="a+b" text="a + b">
+          <XMath>
+            <XMApp>
+              <XMTok role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" font="italic">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <p>xx
 </p>
-    <p>Expect 2 empty maths: xxa+bxx
+    </para>
+    <para>
+      <p>Expect 2 empty maths: xxa+bxx
 </p>
-    <p>Testing latex macros
+    </para>
+    <para>
+      <p>Testing latex macros
 Expect (onearg: one) (onearg: one)
 Expect (twoarg: one two) (twoarg: one ; two)
 Expect (twoargopt: one ; two) (twoargopt: one ; two)
 Expect (twoargopt: missing ; two)(twoargopt: missing ; two)
 </p>
-    <p>Testing whitespace:
+    </para>
+    <para>
+      <p>Testing whitespace:
 Expect (twoarg: a ; b) (twoarg: a ; b)
 Expect (textwoarg: a ; b) (textwoarg: a ; b)
 Expect (twoargopt: a ; b) (twoargopt: a ; b)
 </p>
-    <p>Expecting (beep) : (beep)
+    </para>
+    <para>
+      <p>Expecting (beep) : (beep)
 </p>
-    <p>Expecting (foo) : (foo)</p>
-    <p>Expect [[x]] : [[x]]Expect (y(x)y) : (y(x)y)
+    </para>
+    <para>
+      <p>Expecting (foo) : (foo)</p>
+    </para>
+    <para>
+      <p>Expect [[x]] : [[x]]Expect (y(x)y) : (y(x)y)
 Expect [[x]] : [[x]]</p>
-    <p>Expect NOW a LATER b MUCHLATER c: NOW a LATER b MUCHLATER c</p>
+    </para>
+    <para>
+      <p>Expect NOW a LATER b MUCHLATER c: NOW a LATER b MUCHLATER c</p>
+    </para>
   </section>
 </document>

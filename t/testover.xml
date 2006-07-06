@@ -4,122 +4,124 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <section refnum="1">
     <title>Testing Over</title>
-    <equation>
-      <Math mode="display" tex="abc \over def" text="(a * b * c) / (d * e * f)">
-        <XMath>
-          <XMApp>
-            <XMTok name="/" role="MULOP" style="over"/>
+    <para>
+      <equation>
+        <Math mode="display" tex="abc\over def" text="(a * b * c) / (d * e * f)">
+          <XMath>
+            <XMApp>
+              <XMTok name="/" role="MULOP" style="over"/>
+              <XMApp>
+                <XMTok role="MULOP">⁢</XMTok>
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="MULOP">⁢</XMTok>
+                <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                <XMTok role="UNKNOWN" font="italic">f</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation>
+        <Math mode="display" tex="a{bc\over de}f" text="a * ((b * c) / (d * e)) * f">
+          <XMath>
             <XMApp>
               <XMTok role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-              <XMTok role="UNKNOWN" font="italic">c</XMTok>
-            </XMApp>
-            <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
-              <XMTok role="UNKNOWN" font="italic">d</XMTok>
-              <XMTok role="UNKNOWN" font="italic">e</XMTok>
+              <XMApp>
+                <XMTok name="/" role="MULOP" style="over"/>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                </XMApp>
+              </XMApp>
               <XMTok role="UNKNOWN" font="italic">f</XMTok>
             </XMApp>
-          </XMApp>
-        </XMath>
-      </Math>
-    </equation>
-    <equation>
-      <Math mode="display" tex="a{bc \over de}f" text="a * ((b * c) / (d * e)) * f">
-        <XMath>
-          <XMApp>
-            <XMTok role="MULOP">⁢</XMTok>
-            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+          </XMath>
+        </Math>
+      </equation>
+      <equation>
+        <Math mode="display" tex="a{bc\over de}f" text="a * ((b * c) / (d * e)) * f">
+          <XMath>
             <XMApp>
-              <XMTok name="/" role="MULOP" style="over"/>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok role="MULOP">⁢</XMTok>
-                <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMTok name="/" role="MULOP" style="over"/>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                </XMApp>
               </XMApp>
-              <XMApp>
-                <XMTok role="MULOP">⁢</XMTok>
-                <XMTok role="UNKNOWN" font="italic">d</XMTok>
-                <XMTok role="UNKNOWN" font="italic">e</XMTok>
-              </XMApp>
+              <XMTok role="UNKNOWN" font="italic">f</XMTok>
             </XMApp>
-            <XMTok role="UNKNOWN" font="italic">f</XMTok>
-          </XMApp>
-        </XMath>
-      </Math>
-    </equation>
-    <equation>
-      <Math mode="display" tex="a{bc \over de}f" text="a * ((b * c) / (d * e)) * f">
-        <XMath>
-          <XMApp>
-            <XMTok role="MULOP">⁢</XMTok>
-            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+          </XMath>
+        </Math>
+      </equation>
+      <equation>
+        <Math mode="display" tex="a{bc\over de}f" text="a * ((b * c) / (d * e)) * f">
+          <XMath>
             <XMApp>
-              <XMTok name="/" role="MULOP" style="over"/>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok role="MULOP">⁢</XMTok>
-                <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMTok name="/" role="MULOP" style="over"/>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                </XMApp>
               </XMApp>
-              <XMApp>
-                <XMTok role="MULOP">⁢</XMTok>
-                <XMTok role="UNKNOWN" font="italic">d</XMTok>
-                <XMTok role="UNKNOWN" font="italic">e</XMTok>
-              </XMApp>
+              <XMTok role="UNKNOWN" font="italic">f</XMTok>
             </XMApp>
-            <XMTok role="UNKNOWN" font="italic">f</XMTok>
-          </XMApp>
-        </XMath>
-      </Math>
-    </equation>
-    <equation>
-      <Math mode="display" tex="a{bc \over de}f" text="a * ((b * c) / (d * e)) * f">
-        <XMath>
-          <XMApp>
-            <XMTok role="MULOP">⁢</XMTok>
-            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+          </XMath>
+        </Math>
+      </equation>
+      <equation>
+        <Math mode="display" tex="a{bc\over de}f" text="a * ((b * c) / (d * e)) * f">
+          <XMath>
             <XMApp>
-              <XMTok name="/" role="MULOP" style="over"/>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok role="MULOP">⁢</XMTok>
-                <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMTok name="/" role="MULOP" style="over"/>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                </XMApp>
               </XMApp>
-              <XMApp>
-                <XMTok role="MULOP">⁢</XMTok>
-                <XMTok role="UNKNOWN" font="italic">d</XMTok>
-                <XMTok role="UNKNOWN" font="italic">e</XMTok>
-              </XMApp>
+              <XMTok role="UNKNOWN" font="italic">f</XMTok>
             </XMApp>
-            <XMTok role="UNKNOWN" font="italic">f</XMTok>
-          </XMApp>
-        </XMath>
-      </Math>
-    </equation>
-    <equation>
-      <Math mode="display" tex="a{bc \over de}f" text="a * ((b * c) / (d * e)) * f">
-        <XMath>
-          <XMApp>
-            <XMTok role="MULOP">⁢</XMTok>
-            <XMTok role="UNKNOWN" font="italic">a</XMTok>
-            <XMApp>
-              <XMTok name="/" role="MULOP" style="over"/>
-              <XMApp>
-                <XMTok role="MULOP">⁢</XMTok>
-                <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
-              </XMApp>
-              <XMApp>
-                <XMTok role="MULOP">⁢</XMTok>
-                <XMTok role="UNKNOWN" font="italic">d</XMTok>
-                <XMTok role="UNKNOWN" font="italic">e</XMTok>
-              </XMApp>
-            </XMApp>
-            <XMTok role="UNKNOWN" font="italic">f</XMTok>
-          </XMApp>
-        </XMath>
-      </Math>
-    </equation>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
   </section>
 </document>

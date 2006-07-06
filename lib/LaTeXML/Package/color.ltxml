@@ -13,6 +13,7 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
+use LaTeXML::Util::Color;
 #********************************************************************************
 # Most of this should use the color properties in fonts (See LaTeXML::Font)
 # but hasn't been done yet.
@@ -22,23 +23,70 @@ use LaTeXML::Package;
 #        <number> for gray
 #        colorname for named
 # \definecolor{name}{model}{spec}
-DefMacro('\definecolor{}{}{}','');
+
+# NOTE: color names not present in SVG:
+# Dandelion, Apricot, Peach, Mellon, ...
+# see:
+# http://tex.loria.fr/graph-pack/grf/grf.pdf
+# http://www.december.com/html/spec/colorsvg.html
+
+DefMacro('\definecolor{}{}{}', sub {
+	   AssignValue('color_'.$_[1]->toString, ConvertColor($_[2]->toString, $_[3]->toString));
+	   return; });
+
+sub getColor {
+  my ($model, $spec) = @_; $spec = $spec->toString;
+  $model?ConvertColor($model->toString, $spec):(LookupValue('color_'.$spec) || $spec); }
+
 # \color{name}
-DefMacro('\color[]{}','');
+DefMacro('\color[]{}', sub {
+	   my $color = getColor($_[1], $_[2]);
+	   AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
+	   MergeFont(color=>$color);
+	   return; });
+
+DefMacro('\normalcolor', sub {
+	   my $color = (LookupValue('preambleTextcolor') || 'black');
+	   MergeFont(color=>$color);
+	   return; });
+
 #\textcolor{name}{text}
 #\textcolor[model]{spec}{text}
-DefMacro('\textcolor[]{}{}','#3');
+DefMacro('\textcolor[]{}{}', sub { 
+	   my ($ignore, $model, $spec, $text) = @_;
+	   my @equiv = (T_BEGIN, T_CS('\color'));
+	   push(@equiv, T_OTHER('['), $model->unlist, T_OTHER(']')) if $model;
+	   push(@equiv, T_BEGIN, $spec->unlist, T_END, $text->unlist, T_END);
+	   @equiv; });
+
 #\pagecolor{name}
 #\pagecolor[model]{spec}
-DefMacro('\pagecolor[]{}','');
+DefMacro('\pagecolor[]{}', sub {
+	   AssignValue('pagecolor', getColor($_[1], $_[2]));
+	   return; });
+
+
+# NOTE: textstyle does not enclose the next 2 tags; also, assigned values are not visible unless
+# defined as global
+
 #\colorbox{name}{text}
 #\colorbox[model]{spec}{text}
-DefMacro('\colorbox[]{}{}','#3');
+DefConstructor('\colorbox[]{}{}',"<text backgroundcolor='#bcolor'>#3</text>",
+	       afterDigest=> sub {
+		 $_[0]->setProperty('bcolor', getColor($_[0]->getArg(1),$_[0]->getArg(2)));
+		 return; },
+	       mode=>'text');
+
 #\fcolorbox{name}{text}
 #\fcolorbox[model]{spec}{text}
-DefMacro('\fcolorbox[]{}{}','#3');
+DefConstructor('\fcolorbox[]{}{}{}',"<text framed='yes' framecolor='#fcolor' ".
+	       "backgroundcolor='#bcolor'>#4</text>",
+	       afterDigest=> sub {
+		 $_[0]->setProperties(bcolor=>getColor($_[0]->getArg(1),$_[0]->getArg(2)),
+				      fcolor=>getColor($_[0]->getArg(1),$_[0]->getArg(3)));
+		 return; },
+	       mode=>'text');
 
 
-# Need some work here!?!?
 #********************************************************************************
 1;

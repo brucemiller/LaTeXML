@@ -1,6 +1,6 @@
 # /=====================================================================\ #
-# |  LaTeXML::Post::PresentationMathML                                  | #
-# | Presentation MathML generator for LaTeXML                           | #
+# |  LaTeXML::Post::OpenMath                                            | #
+# | OpenMath generator for LaTeXML                                      | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
@@ -38,7 +38,7 @@ sub process {
   $self->Progress("Converting ".scalar(@math)." formulae");
   foreach my $math (@math){
     my ($xmath) = $math->getChildrenByTagNameNS($self->getNamespace,'XMath');
-    my $ommath = $self->toOpenMath($xmath);
+    my $ommath = $self->processNode($xmath);
     $math->appendChild($ommath); }
   $doc; }
 
@@ -49,7 +49,7 @@ sub find_math_nodes {
 
 # ================================================================================
 
-sub toOpenMath {
+sub processNode {
   my($self,$math)=@_;
   my $ommath=new_node($omURI,'OMOBJ',[]);
 
@@ -58,6 +58,8 @@ sub toOpenMath {
   append_nodes($ommath, map(Expr($_), @nodes));
 
   $ommath; }
+
+sub getEncodingName { 'OpenMath'; }
 # ================================================================================
 
 sub getTokenName {

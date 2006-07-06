@@ -25,6 +25,8 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
+use XML::LibXML;
+use LaTeXML::Util::LibXML;
 use LaTeXML::Util::Pathname;
 no warnings 'redefine';
 
@@ -55,7 +57,7 @@ no warnings 'redefine';
 DefExpandable('\begin{}',sub { 
   my($self,$env)=@_;
   my $name = $env->toString;
-  if(T_CS("\\begin{$name}")->getDefinition){
+  if(LookupDefinition(T_CS("\\begin{$name}"))){
     T_CS("\\begin{$name}"); } # Magic cs!
   else {			# If not defined, let stomach handle it.
     (T_CS('\begingroup'),T_CS("\\$name")); }});
@@ -64,8 +66,8 @@ DefExpandable('\end{}',  sub {
   my($self,$env)=@_;
   my $name = $env->toString;
   my $t;
-  if   (($t=T_CS("\\end{$name}"))->getDefinition){ $t; } # Magic CS!
-  elsif(($t=T_CS("\\end$name"))->getDefinition)  { ($t, T_CS('\endgroup')); }
+  if   (LookupDefinition($t=T_CS("\\end{$name}"))){ $t; } # Magic CS!
+  elsif(LookupDefinition($t=T_CS("\\end$name")))  { ($t, T_CS('\endgroup')); }
   else { ( T_CS('\endgroup')); }});
 
 #======================================================================
@@ -89,7 +91,7 @@ DefExpandable('\protect',undef);
 # C.1.6 The \\ Command
 #======================================================================
 # In math, \\ is just a formatting hint, unless within an array, cases, .. environment.
-DefConstructor("\\\\ Flag:* []", "?IfMath(<XMHint name='\\'/>)(\n)", untex=>"\\\\\n");
+DefConstructor("\\\\ OptionalMatch:* []", "?#isMath(<XMHint name='\\'/>)(\n)", alias=>"\\\\\n");
 
 #**********************************************************************
 # C.2. The Structure of the Document
@@ -182,7 +184,7 @@ DefPrimitive('\footnoterule',undef);
 # but we have to know it before we digest the title, since \label can be there!
 foreach my $sec (qw(part chapter section subsection subsubsection paragraph subparagraph)){
   Tag($sec, autoClose=>1);
-  DefExpandable('\\'.$sec.' Flag:*',
+  DefExpandable('\\'.$sec.' OptionalMatch:*',
 		sub { 
 		  my($self,$flag)=@_;
 		  if($flag){
@@ -380,33 +382,25 @@ DefEnvironment('{verbatim*}','<verbatim>#body</verbatim>');
 # verbatim is a bit of special case;
 # We're going to sidestep the Gullet for inputting, 
 # and also the usual environment capture.
-$STATE->installDefinition(LaTeXML::Constructor
-			   ->new(T_CS('\begin{verbatim}'),undef,
-				 "<verbatim font='#font'>#body</verbatim>",
-				 beforeDigest=>[sub { BGroup; AssignValue(current_environment=>'verbatim'),
-							MergeFont(family=>'typewriter'); 
-						      Digest(T_CS('\par')); }],
-				 afterDigest=>[sub {
-						 my($whatsit)=@_;
-						 my $font = $whatsit->getFont;
-						 my $loc  = $whatsit->getLocator;
-						 my @lines = $GULLET->getMouth->readRawLines("\\end{verbatim}");
-						 # Note last line ends up as Whatsit's "trailer"
-						 $whatsit->setBody(map(LaTeXML::Box->new($_,$font,$loc),
-								       @lines, "\end{verbatim}"));
-						 EGroup; }]));
+InstallDefinition(LaTeXML::Constructor
+		  ->new(T_CS('\begin{verbatim}'),undef,
+			"<verbatim font='#font'>#body</verbatim>",
+			beforeDigest=>[sub { BGroup; AssignValue(current_environment=>'verbatim'),
+					       MergeFont(family=>'typewriter'); 
+					     Digest(T_CS('\par')); }],
+			afterDigest=>[sub {
+					my($whatsit)=@_;
+					my $font = $whatsit->getFont;
+					my $loc  = $whatsit->getLocator;
+					my @lines = $GULLET->getMouth->readRawLines("\\end{verbatim}");
+					# Note last line ends up as Whatsit's "trailer"
+					$whatsit->setBody(map(LaTeXML::Box->new($_,$font,$loc,T_OTHER($_)),
+							      @lines, "\end{verbatim}"));
+					EGroup; }]));
 
 # Hmm, this should really be constructor or something so that at least typewriter font
 # is used, if not wrapped in a <verb> something???
 our $EMPTY_CATTABLE=LaTeXML::State->new(catcodes=>'none');
-DefExpandable('\verb', sub { 
-  my $mouth = $GULLET->getMouth;
-  local $STATE = $EMPTY_CATTABLE;
-  my $init = $mouth->readToken;
-  $init = $mouth->readToken if $init->toString eq '*'; # Should I bother handling \verb* ?
-  my $verb = $mouth->readTokens($init);
-  $verb->unlist; });
-
 DefConstructor('\verb', "<verbatim font='#font'>#body</verbatim>",
 	       beforeDigest=>[sub { BGroup; MergeFont(family=>'typewriter'); }],
 	       afterDigest=>sub { 
@@ -418,9 +412,12 @@ DefConstructor('\verb', "<verbatim font='#font'>#body</verbatim>",
 		 local $STATE = $EMPTY_CATTABLE;
 		 my $init = $mouth->readToken;
 		 $init = $mouth->readToken if $init->toString eq '*'; # Should I bother handling \verb* ?
-		 $whatsit->setBody(map(LaTeXML::Box->new($_->toString,$font,$loc),
-				       $mouth->readTokens($init),$init));
-	       });
+		 $whatsit->setBody(map(LaTeXML::Box->new($_->toString,$font,$loc,$_),
+				       $mouth->readTokens($init)->unlist,$init));
+	       },
+	       reversion=>sub { (T_CS('\verb'),$_[0]->getTrailer->revert,
+				 $_[0]->getBody->revert,$_[0]->getTrailer->revert); }
+);
 
 # This is defined by the alltt package.
 # Environment('alltt', ?);
@@ -615,24 +612,24 @@ DefConstructor('\mathscr{}', '#1',
 # C.8.1 Defining Commands
 #======================================================================
 
-DefPrimitive('\newcommand Flag:* {Token}[][]{}', sub {
+DefPrimitive('\newcommand OptionalMatch:* {Token}[][]{}', sub {
   my($self,$star,$cs,$nargs,$opt,$body)=@_;
-  Fatal(Stringify($cs)." is already defined") if $cs->getDefinition;
+  Fatal(Stringify($cs)." is already defined") if LookupDefinition($cs);
   DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body); });
 
-DefPrimitive('\renewcommand Flag:* {Token}[][]{}', sub {
+DefPrimitive('\renewcommand OptionalMatch:* {Token}[][]{}', sub {
   my($self,$star,$cs,$nargs,$opt,$body)=@_;
   DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body); });
 
-DefPrimitive('\providecommand Flag:* {Token}[][]{}', sub {
+DefPrimitive('\providecommand OptionalMatch:* {Token}[][]{}', sub {
   my($self,$star,$cs,$nargs,$opt,$body)=@_;
-  return if $cs->getDefinition;
+  return if LookupDefinition($cs);
   DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body); });
 
 # Need to figure out exactly what `robust' means to LaTeXML...
-DefPrimitive('\DeclareRobustCommand Flag:* {Token}[][]{}', sub {
+DefPrimitive('\DeclareRobustCommand OptionalMatch:* {Token}[][]{}', sub {
   my($self,$star,$cs,$nargs,$opt,$body)=@_;
-  return if $cs->getDefinition;
+  return if LookupDefinition($cs);
   DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body); });
 
 #======================================================================
@@ -641,14 +638,14 @@ DefPrimitive('\DeclareRobustCommand Flag:* {Token}[][]{}', sub {
 # Note that \env & \endenv defined by \newenvironment CAN be 
 # invoked directly.
 
-DefPrimitive('\newenvironment Flag:* {}[][]{}{}', sub {
+DefPrimitive('\newenvironment OptionalMatch:* {}[][]{}{}', sub {
   my($self,$star,$name,$nargs,$opt,$begin,$end)=@_;
   $name = $name->toString;
-  Fatal("Environment $name is already defined") if T_CS("\\$name")->getDefinition;
+  Fatal("Environment $name is already defined") if LookupDefinition(T_CS("\\$name"));
   DefMacro(join('','\\',$name, convertLaTeXArgs($nargs,$opt)),$begin);
   DefMacro(join('','\\end',$name),$end); });
 
-DefPrimitive('\renewenvironment Flag:* {}[][]{}{}', sub {
+DefPrimitive('\renewenvironment OptionalMatch:* {}[][]{}{}', sub {
   my($self,$star,$name,$nargs,$opt,$begin,$end)=@_;
   $name = $name->toString;
   DefMacro(join('','\\',$name, convertLaTeXArgs($nargs,$opt)),$begin);
@@ -688,8 +685,8 @@ sub stepCounter {
 sub refStepCounter {
   my($ctr)=@_;
   stepCounter($ctr);
-  my $v = $GULLET->expandTokens(Tokens(T_CS("\\the$ctr")));
-  $STATE->installDefinition(LaTeXML::Expandable->new(T_CS('\@currentlabel'),undef,$v));
+  my $v = Expand(T_CS("\\the$ctr"));
+  InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentlabel'),undef,$v));
   # Any scopes activated for previous value of this counter (& any nested counters) must be removed.
   # This may also include scopes activated for \label
   deactivateCounterScope($ctr);
@@ -714,18 +711,16 @@ sub resetCounter {
 
 DefPrimitive('\newcounter{}[]',sub { shift; NewCounter(map($_ && $_->toString,@_)); });
 
-DefPrimitive('\setcounter{}{}',sub {
+DefPrimitive('\setcounter{}{Number}',sub {
   my($self,$ctr,$value)=@_;
-  $ctr=$ctr->toString;
-  $GULLET->unread(@$value,T_CS('\relax')); # Put back, so we can read as <number>
-  AssignValue("c\@$ctr",$GULLET->readNumber(),'global'); 
+  $ctr="\\c\@".$ctr->toString;
+  AssignValue($ctr=>$value,'global');
   return});
 
-DefPrimitive('\addtocounter{}{}',sub {
+DefPrimitive('\addtocounter{}{Number}',sub {
   my($self,$ctr,$value)=@_;
-  $ctr=$ctr->toString;
-  $GULLET->unread(@$value,T_CS('\relax')); # Put back, so we can read as <number>
-  AssignValue("c\@$ctr",LookupValue("c\@$ctr")->add($GULLET->readNumber),'global'); });
+  $ctr="\\c\@".$ctr->toString;
+  AssignValue($ctr=>LookupValue($ctr)->add($value),'global'); });
 
 DefPrimitive('\stepcounter{}',   sub { stepCounter($_[1]->toString); });
 DefPrimitive('\refstepcounter{}',sub { refStepCounter($_[1]->toString); return; });
@@ -742,11 +737,10 @@ DefExpandable('\alph{}',  sub {
   T_OTHER(chr(LookupValue('\c@'.$_[1]->toString)->valueOf+ord('a')-1));});
 DefExpandable('\Alph{}',  sub {
   T_OTHER(chr(LookupValue('\c@'.$_[1]->toString)->valueOf+ord('A')-1));});
-our @fnsymbols=(T_OTHER('*'), T_CS('\dag'), T_CS('\ddag'), T_CS('\S'), T_CS('\P'),
-		T_CS('\Vert'), T_OTHER('**'), Tokens(T_CS('\dag'),T_CS('\dag')),
-		Tokens(T_CS('\ddag'),T_CS('\ddag')));
+our @fnsymbols=("*", "\x{2020}", "\x{2021}", "\x{00A7}", "\x{00B6}",
+		"\x{2225}", "**", "\x{2020}\x{2020}","\x{2021}\x{2021}");
 DefExpandable('\fnsymbol{}',sub { 
-  $fnsymbols[LookupValue('\c@'.$_[1]->toString)->valueOf-1]->unlist;});
+		T_OTHER($fnsymbols[LookupValue('\c@'.$_[1]->toString)->valueOf-1]);});
 
 #======================================================================
 # C.8.5 The ifthen Package.
@@ -835,8 +829,8 @@ sub before_tabular {
   # NOTE: It needs to be generalized for different sorts of arrays, etc.
   DefConstructor('&',sub {   $_[0]->maybeCloseElement('td') || $_[0]->insertElement('td'); },
 		 beforeDigest=>\&EGroup, afterDigest=>\&BGroup );
-  DefConstructor("\\\\ Flag:* []", sub { $_[0]->maybeCloseElement('tr'); },
-		 untex=>"\\\\\n",
+  DefConstructor("\\\\ OptionalMatch:* []", sub { $_[0]->maybeCloseElement('tr'); },
+		 alias=>"\\\\\n",
 		 beforeDigest=>\&EGroup, afterDigest=>\&BGroup );
   BGroup; }
 
@@ -856,14 +850,186 @@ DefEnvironment('{tabular*}{}[]{}', "^<tabular pattern='#2'>#body</tabular>",
 # Open, but don't close, so "&" can operate correctly.
 DefConstructor('\multicolumn{}{}{}',"<td colspan='#1' pattern='#2'>#3");
 DefConstructor('\hline',"<hline/>");
-
-# NOTE: \vline, \cline{c1-c2}
+DefConstructor('\cline{}',"<hline cols='#1'/>");
+DefConstructor('\vline',"");	# ???
 DefRegister('\arraycolsep',Dimension(0));
 DefRegister('\tabcolsep',Dimension(0));
 DefRegister('\arrayrulewidth',Dimension(0));
 DefMacro('\extracolsep{}','');
 DefMacro('\arraystretch',"1");
 
+#======================================================================
+# 
+Tag('tabular', afterClose=>\&process_tabular);
+
+our @framespec=qw(void above below hsides
+		  lhs above below box
+		  rhs above below box
+		  vsides box box box);
+
+sub process_tabular {
+  my($tabular)=@_;
+  my $nsURI = $MODEL->getNamespace('ltxml');
+  # --- Analyze Table ----
+  # Split columns & rows into groups separated by | or hlines, resp.
+  # Each is alternating list of counts (of hlines or |) and arrays of alignments or rows.
+  my @colgroups = group_tabular_cols($tabular->getAttribute('pattern'));
+  my @rowgroups = group_tabular_rows(element_nodes($tabular));
+  my @cols = map(@$_, grep(ref $_, @colgroups));
+  my @rows = map(@$_, grep(ref $_, @rowgroups));
+
+  # Determine the outer frame, based on leading/trailing vbars/hlines (numbers)
+  # remove the item, while we're at it.
+  my $frame = $framespec[(!ref $rowgroups[0]           ? (shift(@rowgroups),1) : 0)+
+			 (!ref $rowgroups[$#rowgroups] ? (pop(@rowgroups),  2) : 0)+
+			 (!ref $colgroups[0]           ? (shift(@colgroups),4) : 0)+
+			 (!ref $colgroups[$#colgroups] ? (pop(@colgroups),  8) : 0)];
+
+  # Count rows|columns and groups of them.
+  my $ncols      = scalar(@cols);
+  my $ncolgroups = scalar(grep(ref $_, @colgroups));
+  my $nrows      = scalar(@rows);
+  my $nrowgroups = scalar(grep(ref $_, @rowgroups));
+
+  # Determine inner rules based on grouping.
+  # Particularly, whether each col|row is a group to itself, or all are in a single group.
+  my $rules = 'groups';
+  if   (($ncolgroups == $ncols) && ($nrowgroups == $nrows)){ $rules='all'; }
+  elsif(($ncolgroups == $ncols) && ($nrowgroups == 1)     ){ $rules='cols'; }
+  elsif(($ncolgroups == 1)      && ($nrowgroups == $nrows)){ $rules='rows'; }
+  elsif(($ncolgroups == 1)      && ($nrowgroups == 1)     ){ $rules='none'; }
+
+  my $row_headers = guess_tabular_header(@rowgroups) || 0;
+  my $col_headers = guess_tabular_header(@colgroups) || 0;
+#  print STDERR "Table:\n"
+#    ." cols: ".join(', ',map(ref $_ ? join(', ',@$_) : "$_ lines", @colgroups))."\n"
+#    ." rows: ".join(', ',map(ref $_ ? scalar(@$_)." rows" : "$_ lines",@rowgroups))."\n"
+#    ." => frame=$frame, rules=>$rules\n"
+#    ." row headers: $row_headers\n"
+#    ." col headers: $col_headers\n";
+
+  # --- Clear and Rebuild the Table ----
+  # So far, there should be ONLY tr and hline elements. Remove hlines!
+  map($tabular->removeChild($_), 
+      $tabular->getChildrenByTagNameNS($nsURI,'hline'));
+  # Add computed frame & rule to the tabular, and alignment attr. to the cells
+  $tabular->setAttribute(frame=>$frame);
+  $tabular->setAttribute(rules=>$rules);
+
+  my $i=0;
+  foreach my $row (@rows){
+    my $j=0;
+    foreach my $cell ($row->getChildrenByTagNameNS($nsURI,'td')){
+      $cell = rename_node($cell,'th',$nsURI) if ($i < $row_headers) || ($j < $col_headers);
+      if(my $span = $cell->getAttribute('colspan')){ # From \multicolumn
+	$cell->setAttribute(align=>map(@$_, grep(ref $_,
+						 group_tabular_cols($cell->getAttribute('pattern')))));
+	$cell->removeAttribute('pattern');
+	$j += $span; }
+      else {
+	$cell->setAttribute(align=>$cols[$j++]); }}
+    $i++; }
+
+  # Add column groups, if there is non-trivial grouping
+  if($rules eq 'groups'){
+    foreach my $cols (grep(ref $_, @colgroups)){
+      my $cg = $tabular->addNewChild($nsURI,'colgroup');
+      $tabular->insertBefore($cg,$rows[0]);
+      if(!grep($cols->[0] ne $_, @$cols)){ # All alignments are same?
+	$cg->setAttribute(span=>scalar(@$cols));
+	$cg->setAttribute(align=>$cols->[0]); }
+      else {			# Else, add individual cols
+	foreach my $c (@$cols){
+#	  $cg->appendChild(new_node($nsURI,'col',undef,align=>$c)); }
+	  $cg->addNewChild($nsURI,'col')->setAttribute(align=>$c); }
+      }}}
+
+  # Finally (possibly) group the rows into tbody's
+  if($rules eq 'groups'){
+    foreach my $rg (@rowgroups){
+      if(ref $rg){
+	my $g = $tabular->addNewChild($nsURI,'tbody');
+	$tabular->insertBefore($g,$rg->[0]); 
+	map($g->appendChild($_),@$rg); }}
+  }
+}
+
+#======================================================================
+# Parse a tabular column specification, returning an alternating list of:
+#   number: representing the repeat count of '|'
+#   ARRAY : representing the sequence of column alignments: (right|left|center|justify)
+sub group_tabular_cols {
+  my($pattern)=@_;
+  my (@groups,@group);
+  while($pattern){
+    if   ($pattern =~ s/^(\|+)//){ 
+      push(@groups,[@group]) if @group; @group=();
+      push(@groups,length($1));  }
+    elsif($pattern =~ s/^r// ){ push(@group,'right'); }
+    elsif($pattern =~ s/^l// ){ push(@group,'left'); }
+    elsif($pattern =~ s/^c// ){ push(@group,'center'); }
+    elsif($pattern =~ s/^p//){ 	# Paragraph: p{width}
+      my $ignore;
+      ($ignore,$pattern)=Text::Balanced::extract_bracketed($pattern,"{}");
+      push(@group,'justify'); }
+    elsif($pattern =~ s/^\*\{(\d+)\}//){ # Repeated pattern: *{n}{subpattern}; expand & put back
+      my $n=$1;
+      my ($sub,$rest)=Text::Balanced::extract_bracketed($pattern,"{}");
+      $pattern=join('',map($sub,1..$n),$rest); }
+    elsif($pattern =~ s/^\@//){	# Insertion between columns: Ignore it!!!
+      my $ignore;
+      ($ignore,$pattern)=Text::Balanced::extract_bracketed($pattern,"{}"); }
+  }
+  push(@groups,[@group]) if @group;
+  @groups; }
+
+# Group the tabular rows, returning an alternating list of:
+#   number : representing the repeat count of <hline/>'s
+#   ARRAY  : being the sequence of <tr>..</tr> between sets of <hlines/>
+sub group_tabular_rows {
+  my(@rows)=@_;
+  my (@groups,@group);
+  my $prevhline;
+  foreach my $row (@rows){
+    my $type = $row->nodeName;
+    if($type eq 'hline'){ 
+      if($prevhline){ $groups[$#groups]++; }
+      else {
+	push(@groups,[@group]) if @group; @group=();
+	push(@groups,1); 
+	$prevhline=1;}}
+    elsif($type eq 'tr'){
+      $prevhline=undef;
+      push(@group,$row); }
+    else {
+      warn("What's a <$type> doing in a tabular?"); }
+  }
+  push(@groups,[@group]) if @group;
+  @groups; }
+
+#======================================================================
+# Given an alternating set of rows/cols and # of hlines or |'s, 
+# (leading & trailing lines removed)
+# GUESS whether the 1st might be a header.
+sub guess_tabular_header {
+  my(@groups)=@_;
+  my $n = scalar(@groups);
+  if($n < 3){ 0; }		# only one group? Who Knows??
+  elsif(scalar(@{$groups[0]})>2){ 0;} # More than 3 rows in 1st group? Dubious...
+  elsif($n == 3){		# 2 groups, 2nd group is bigger, maybe 1st is header?
+    (scalar(@{$groups[0]}) < scalar(@{$groups[2]})) && scalar(@{$groups[0]}); }
+  else {			# Multiple groups, doubled lines only after 1st?
+    my $row1   = scalar(@{shift(@groups)});
+    my $lines1 = shift(@groups);
+    my($rows_check,$lines_check)=(1,1);
+    while(@groups){
+      my $rown   = scalar(@{shift(@groups)});
+      my $linesn = shift(@groups)||0;
+      $rows_check  &&= $row1 < $rown;
+      $lines_check &&= $lines1 > $linesn; }
+    ($rows_check || $lines_check) && $row1; }}
+
+#======================================================================
 # Array and similar environments
 # Since in Math, we're using XMTok and XMApp generically, rather than specific <tr>,<td> etc.
 # we have to do all the `automatic' open/close manually.
@@ -953,7 +1119,7 @@ sub matharray_cr {
 sub before_matharray {
   DefConstructor('&', \&matharray_align,
 		 beforeDigest=>\&EGroup, afterDigest=>\&BGroup );
-  DefConstructor("\\\\ Flag:* []", \&matharray_cr,
+  DefConstructor("\\\\ OptionalMatch:* []", \&matharray_cr,
 		 beforeDigest=>\&EGroup, afterDigest=>\&BGroup );
   # Hmm... So, if we've got \hlines, it's more like a table than a matrix,....
   DefConstructor('\hline',"<XMHint name='hline'/>");
@@ -978,7 +1144,33 @@ DefPrimitive('\nofiles',undef);
 # C.11.2 Cross-References
 #======================================================================
 # add a label id to nearest labelable element.
-DefConstructor('\label{semiverb}',"^ label='#1'",  untex=>'',
+#DefConstructor('\label Semiverbatim',"^ label='#1'",  reversion=>'',
+#	       afterDigest=>sub {
+#		 my $label = $_[1]->toString;
+#		 my $scope = 'label:'.$label;
+#		 unshift(@{LookupValue('scopes_for_counter:'.LookupValue('current_counter'))},
+#		      $scope);
+#		 $STATE->activateScope($scope);
+#		 BeginMode('text');
+#		 AssignValue('LABEL@'.$_[1]->toString, Digest(T_CS('\@currentlabel')),'global');
+#		 EndMode('text'); });
+
+# \label attaches a label to the nearest parent that can accept a label attribute
+# EXCEPT the special case <para>, which should get a computed label.
+DefConstructor('\label Semiverbatim',
+	       sub {
+		 my($doc,$label)=@_;
+		 my $n = $doc->getNode;
+		 $n = $n->parentNode if $n->nodeType == XML_TEXT_NODE;
+		 while(($n->nodeType != XML_DOCUMENT_NODE)
+		       && (($n->localname eq 'para')|| ! $MODEL->canHaveAttribute($n->nodeName,'label'))){
+		   $n = $n->parentNode; }
+		 if($n->nodeType != XML_DOCUMENT_NODE){
+		   $n->setAttribute(label=>$label->toString); }
+		 else {
+		   Warn("No open node can get a label attribute"); }
+		 undef; },
+	       reversion=>'',
 	       afterDigest=>sub {
 		 my $label = $_[1]->toString;
 		 my $scope = 'label:'.$label;
@@ -989,8 +1181,8 @@ DefConstructor('\label{semiverb}',"^ label='#1'",  untex=>'',
 		 AssignValue('LABEL@'.$_[1]->toString, Digest(T_CS('\@currentlabel')),'global');
 		 EndMode('text'); });
 
-DefConstructor('\ref{semiverb}', "<ref labelref='#1'>VALUE('LABEL@#1')</ref>");
-DefConstructor('\pageref{semiverb}', "<ref labelref='#1'>VALUE('LABEL@#1')</ref>"); # Same??
+DefConstructor('\ref Semiverbatim', "<ref labelref='#1'>&LookupValue('LABEL@#1')</ref>");
+DefConstructor('\pageref Semiverbatim', "<ref labelref='#1'>&LookupValue('LABEL@#1')</ref>"); # Same??
 #======================================================================
 # C.11.3 Bibliography and Citation
 #======================================================================
@@ -1014,12 +1206,12 @@ sub makecite {
   $document->closeElement('cite'); }
 
 # Most of this is really natbib style.
-DefConstructor('\cite[][]{semiverb}',       sub { makecite('intext','all',@_); });
-DefConstructor('\citet[][]{semiverb}',      sub { makecite('intext','all',@_); });
-DefConstructor('\citep[][]{semiverb}',      sub { makecite('parenthetic','all',@_); });
-DefConstructor('\citeauthor[][]{semiverb}', sub { makecite('intext','author',@_); });
-DefConstructor('\citeyear[][]{semiverb}',   sub { makecite('intext','year',@_); });
-DefConstructor('\citeyearpar[][]{semiverb}',sub { makecite('parenthetic','year',@_); });
+DefConstructor('\cite[][] Semiverbatim',       sub { makecite('intext','all',@_); });
+DefConstructor('\citet[][] Semiverbatim',      sub { makecite('intext','all',@_); });
+DefConstructor('\citep[][] Semiverbatim',      sub { makecite('parenthetic','all',@_); });
+DefConstructor('\citeauthor[][] Semiverbatim', sub { makecite('intext','author',@_); });
+DefConstructor('\citeyear[][] Semiverbatim',   sub { makecite('intext','year',@_); });
+DefConstructor('\citeyearpar[][] Semiverbatim',sub { makecite('parenthetic','year',@_); });
 
 
 #======================================================================
@@ -1028,15 +1220,14 @@ DefConstructor('\citeyearpar[][]{semiverb}',sub { makecite('parenthetic','year',
 # LaTeX's \input is a bit different...
 DefPrimitive('\input', sub {
   my ($tok,$file);
-  if($tok=$GULLET->ifNext('{',CC_BEGIN)){ # Read LaTeX style
-    $GULLET->unread($tok);
-    $file=$GULLET->expandTokens($GULLET->readArg()); }
+  if(IfNext(T_BEGIN)){ # Read LaTeX style
+    $file=Expand(ReadArg()); }
   else {			# Read TeX style.
     my ($token,@tokens)=();
-    while(($token=$GULLET->readXToken()) && ($token->getCatcode != CC_SPACE)){
+    while(($token=ReadXToken()) && ($token->getCatcode != CC_SPACE)){
       push(@tokens,$token); }
     $file = Tokens(@tokens); }
-  $GULLET->input($file,['tex']);
+  Input($file,['tex','']);
   return; });
 
 # Note that even excluded files SHOULD have the effects of their inclusion
@@ -1046,7 +1237,7 @@ DefPrimitive('\include{}',sub {
   my($self,$file)=@_;
   $file = $file->toString;
   my $table = LookupValue('including@only');
-  $GULLET->input($file,['tex']) if !$table || $$table{$file};
+  Input($file,['tex','']) if !$table || $$table{$file};
   return;});
 
 DefPrimitive('\includeonly{}',sub {
@@ -1106,7 +1297,7 @@ DefExpandable('\index{}',sub {
   push(@expansion,T_END);
   @expansion; });
 
-DefConstructor('\@index{}',"^<index>#1</index>", mode=>'text', untex=>'');
+DefConstructor('\@index{}',"^<index>#1</index>", mode=>'text', reversion=>'');
 DefConstructor('\@indexphrase{}',"<indexphrase>#1</indexphrase>");
 
 # NOTE:
@@ -1117,11 +1308,11 @@ DefConstructor('\@indexphrase{}',"<indexphrase>#1</indexphrase>");
 
 DefPrimitive('\typeout{}',sub {
   my($self,$stuff)=@_;
-  print STDERR $GULLET->expandTokens($stuff)->untex;
+  print STDERR ToString(Expand($stuff));
   return; });
 
 #DefPrimitive('\typein[]{}',sub {
-#  print STDERR $_[2]->untex; 
+#  print STDERR ToString($_[2]); 
 #  # Then setValue $_[1] to read ???
 #	       });
 
@@ -1147,7 +1338,7 @@ DefPrimitive('\fussy',undef);
 #======================================================================
 DefPrimitive('\pagebreak[]',undef);
 DefPrimitive('\nopagebreak[]',undef);
-DefPrimitive('\enlargethispage Flag:* {}',undef);
+DefPrimitive('\enlargethispage OptionalMatch:* {}',undef);
 
 DefPrimitive('\clearpage',undef); # Could possibly mean something?
 DefPrimitive('\cleardoublepage',undef);
@@ -1175,11 +1366,11 @@ DefPrimitive('\newlength{Token}',sub {
 # \setlength{cmd}{len}
 DefPrimitive('\setlength{Token}{Dimension}',sub{
   my($self,$cmd,$dimen)=@_;
-  $cmd->getDefinition->setValue($dimen);});
+  LookupDefinition($cmd)->setValue($dimen);});
 # \addtolength{cmd}{len}
 DefPrimitive('\addtolength{Token}{Dimension}',sub{
   my($self,$cmd,$dimen)=@_;
-  my $register =  $cmd->getDefinition;
+  my $register =  LookupDefinition($cmd);
   $register->setValue($register->valueOf->add($dimen));});
 # \settowidth{cmd}{text}
 # \settoheight{cmd}{text}
@@ -1197,8 +1388,8 @@ DefPrimitive('\newtoks{Token}',  sub { DefRegister($_[1]->toString,Tokens()); })
 #======================================================================
 # C.13.2 Space
 #======================================================================
-DefPrimitive('\hspace Flag:* {}',undef);
-DefPrimitive('\vspace Flag:* {}',undef);
+DefPrimitive('\hspace OptionalMatch:* {}',undef);
+DefPrimitive('\vspace OptionalMatch:* {}',undef);
 # \bigskip, \medskip, \smallskip
 # \addvspace{len}
 # \hfill, \vfill
@@ -1230,7 +1421,7 @@ DefEnvironment('{minipage}[]{Dimension}',
 	       mode=>'text');
 DefConstructor('\rule[Dimension]{Dimension}{Dimension}', 
 	       "<rule ?#1(raise='#1') width='#2' height='#3'/>");
-DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',"<hbox raise='#1'>#4</hbox>");
+DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',"<text raise='#1'>#4</text>");
 
 #**********************************************************************
 # C.14 Pictures and Color
@@ -1238,136 +1429,202 @@ DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',"<hbox raise='#1'>
 #======================================================================
 # C.14.1 The picture environment
 #======================================================================
-DefRegister('\unitlength',Dimension('1pt'));
 
-sub readPicCoordinate {
-  if($GULLET->ifNext(T_OTHER('('))){
-    my $x = LookupValue('\unitlength')->multiply($GULLET->readUntil(T_OTHER(','))->toString);
-    my $y = LookupValue('\unitlength')->multiply($GULLET->readUntil(T_OTHER(')'))->toString);
-    ($x,$y); }
+#----------------------------------------------------------------------
+
+sub ResolveReader {
+  my ($itemtype) = @_;
+  if(ref $itemtype eq 'CODE'){ $itemtype; }
   else {
-    (undef,undef); }}
+    $itemtype = $itemtype->toString if ref $itemtype;
+    LaTeXML::Parameters::checkReaderFunction('Read'.$itemtype); }}
 
-sub readPicCoordinate {
-  if($GULLET->ifNext(T_OTHER('('))){
-    $GULLET->skipSpaces;
-    my $x = $GULLET->readNumber;
-    $GULLET->skipSpaces;
-    $GULLET->readUntil(T_OTHER(','));
-    $GULLET->skipSpaces;
-    my $y = $GULLET->readNumber;
-    $GULLET->skipSpaces;
-    $GULLET->readUntil(T_OTHER(')'));
+sub ReadPair {
+  my($itemtype, $xarg, $yarg)=@_;
+  my $itemreader;
+  if(!$itemtype){ $itemreader=\&ReadFloat; }
+  else { $itemreader = ResolveReader($itemtype); }
+  if(!$itemreader){ Error("Cannot find reader for Pair items from $itemtype"); }
+  SkipSpaces;
+  if(IfNext(T_OTHER('('))){
+    ReadToken;  SkipSpaces;
+    my $x = &$itemreader($xarg);
+    SkipSpaces; ReadUntil(T_OTHER(',')); SkipSpaces;
+    my $y = &$itemreader($yarg);
+    SkipSpaces; ReadUntil(T_OTHER(')')); SkipSpaces;
+    Pair($x,$y); }}
 
-    $x = LookupValue('\unitlength')->multiply($x->valueOf);
-    $y = LookupValue('\unitlength')->multiply($y->valueOf);
-    ($x,$y); }
-  else {
-    (undef,undef); }}
+sub ReadFloat() { SkipSpaces; $GULLET->readFloat; }
 
-sub read_pic_box_args {
-  (readPicCoordinate(),
-   Digest($GULLET->readOptional),
-   Digest($GULLET->readArg)); }
+sub ptValue { $_[0]?$_[0]->ptValue:undef; }
 
-sub read_pic_line_args {
-  (readPicCoordinate(),
-#   Digest($GULLET->readArg)
-   $GULLET->readNumber # well, actually {Number}, not just Number!!
-); }
+# This eases conversion of a Pair to 2 attributes.
+sub PairAttr {
+  my($pair,$xattr,$yattr)=@_;
+  ($pair ? { $xattr=>ptValue($pair->getX), $yattr=>ptValue($pair->getY) } : {}); }
 
+sub SimplePairAttr {
+  my($pair,$xattr,$yattr)=@_;
+  ($pair ? { $xattr=>$pair->getX, $yattr=>$pair->getY } : {}); }
+
+#----------------------------------------------------------------------
+# Picture parameters.
+DefRegister('\unitlength', Dimension('1pt'));
+DefPrimitive('\thinlines', sub { AssignValue('\@wholewidth',Dimension('0.4pt')); });
+DefPrimitive('\thicklines', sub { AssignValue('\@wholewidth',Dimension('0.8pt')); });
+DefRegister('\@wholewidth'=>Dimension('0.4pt'));
+DefMacro('\linethickness{}', '\@wholewidth #1\relax');
+
+DefPrimitive('\arrowlength{Dimension}', sub { AssignValue('\arrowlength',$_[1]); });
+
+#----------------------------------------------------------------------
+# Picture transformation support
+sub slopeToPicCoord {
+  my ($slope,$xlength) = @_;
+  my($mx,$my)=($slope->getX,$slope->getY);
+  my $s = $mx->sign();
+  $xlength = picScale($xlength);
+  Pair($xlength->multiply($s),
+       $xlength->multiply(($s==0)?$my->sign():
+			  $my->valueOf/$mx->absolute->valueOf)); }
+
+sub setPicProperties {
+  my ($whatsit,%props) = @_;
+  if(($props{stroke}||'black') ne 'none'){
+    $props{thick}=ptValue(LookupValue('\@wholewidth')); }
+  if (my $arrowlength=LookupValue('\arrowlength')){
+    $props{arrowlength}=ptValue($arrowlength); }
+  $whatsit->setProperties(%props);
+  return; }
+
+sub picScale {
+  ($_[0] ? $_[0]->multiply(LookupValue('\unitlength')): undef); }
+
+#----------------------------------------------------------------------
+# the code
 sub before_picture {
-  DefConstructor('\makebox',
-		 "<box width='#1' height='#2' position='#3'>#4</box>",
-		 beforeDigest=>\&BGroup, 
-		 nargs=>4, afterDigest=>sub { $_[0]->setArgs(read_pic_box_args()); EGroup; }); 
-  DefConstructor('\framebox',
-		 "<box frame='yes' width='#1' height='#2' position='#3'>#4</box>",
-		 beforeDigest=>\&BGroup,
-		 nargs=>4, afterDigest=>sub { $_[0]->setArgs(read_pic_box_args()); EGroup; }); 
-  DefConstructor('\dashbox',
-		 "<box dash-spacing='#1' width='#2' height='#3' position='#4'>#5</box>",
-		 beforeDigest=>\&BGroup,
-		 nargs=>5, afterDigest=>sub { $_[0]->setArgs(Digest($GULLET->readArg),
-							     read_pic_box_args()); EGroup; });
-  DefConstructor('\line',
-		 "<line x-slope='#1' y-slope='#2' length='#3'/>",
-		 nargs=>3, afterDigest=>sub { $_[0]->setArgs(read_pic_line_args()); });
-  DefConstructor('\vector',
-		 "<line x-slope='#1' y-slope='#2' length='#3' arrowhead='yes'/>",
-		 nargs=>3, afterDigest=>sub { $_[0]->setArgs(read_pic_line_args()); });
-  DefConstructor('\circle Flag:* {}', "<circle filled='#1' diameter='#2'/>");
-  DefConstructor('\oval',
-		 "<oval radius='#1' width='#2' height='#3' part='#4'/>",
-		 nargs=>4, afterDigest=>sub {
-		   $_[0]->setArgs(Digest($GULLET->readArg),
-				  read_pic_line_args(),
-				  Digest($GULLET->readOptional)); });
-  DefConstructor('\frame{}', "<frame>#1</frame>");
-#  DefConstructor('\shortstack{}', "<box>#1</box>");
+  Let(T_CS('\line'),     T_CS('\pic@line'));
+  Let(T_CS('\vector'),   T_CS('\pic@vector'));
+  Let(T_CS('\circle'),   T_CS('\pic@circle'));
+  Let(T_CS('\oval'),     T_CS('\pic@oval'));
+  Let(T_CS('\qbezier'),  T_CS('\pic@qbezier'));
+  Let(T_CS('\makebox'),  T_CS('\pic@makebox'));
+  Let(T_CS('\framebox'), T_CS('\pic@framebox'));
+  Let(T_CS('\dashbox'),  T_CS('\pic@dashbox'));
+  Let(T_CS('\frame'),    T_CS('\pic@frame'));
 }
 
 sub after_picture {}
 
-DefConstructor('\shortstack[]{}', "<vbox align='#1'><hbox>#2</hbox></vbox>",
-	       beforeDigest=>sub{BGroup; 
-				 DefConstructor("\\\\ Flag:* []", "</hbox><hbox>",
-						#sub { $_[0]->maybeCloseElement('hbox'); },
-						untex=>"\\\\\n",
-						#beforeDigest=>\&EGroup, afterDigest=>\&BGroup 
-					       ); },
+# NOTE: Untex should prefix a setting of unitlength!!!
+DefEnvironment('{picture} Pair OptionalPair',
+	       "<picture %&SimplePairAttr(#size,width,height) fill='black' stroke='black'>#body</picture>",
+	       beforeDigest=>\&before_picture,
+	       afterDigestBegin=>sub { setPicProperties($_[0],size=>picScale($_[1])); },
+	       afterDigest=>\&after_picture);
+
+DefConstructor('\put Pair {}',"<g transform='#pos'>#2</g>",
+	       afterDigest=>sub { $_[0]->setProperty(pos=>'translate('.ptValue(picScale($_[1])).')'); });
+
+DefConstructor('\pic@line Pair {Float}',
+	       "<line points='#points' stroke-width='#thick'/>",
+	       alias=>'\line',
+	       afterDigest=>sub {
+		 setPicProperties($_[0],points=>'0,0 '.slopeToPicCoord($_[1],$_[2])->ptValue()); });
+
+DefConstructor('\pic@vector Pair {Float}',
+	       "<line points='#points' stroke-width='#thick' terminators='->' arrowlength='#arrowlength'/>",
+	       alias=>'\vector',
+	       afterDigest=>sub {
+		 setPicProperties($_[0],points=>'0,0 '.slopeToPicCoord($_[1],$_[2])->ptValue()); });
+
+DefConstructor('\pic@circle OptionalMatch:* {Float}',
+	       "<circle x='0' y='0' r='&ptValue(#radius)' fill='#fill' stroke='#stroke' ".
+	       "stroke-width='#thick'/>",
+	       alias=>'\circle',
+	       afterDigest=>sub {
+		 my ($whatsit,$filled,$dia) = @_;
+		 $dia=picScale($dia);
+		 $dia=$dia->add(LookupValue('\@wholewidth')) unless $filled;
+		 setPicProperties($whatsit,radius=>$dia->multiply(0.5),
+				  ($filled ? 'stroke' : 'fill')=>'none'); });
+
+DefConstructor('\pic@oval [Float] Pair []',
+	       "<rect %&PairAttr(#pos,x,y) %&PairAttr(#size,width,height) rx='&ptValue(#radius)' fill='none' part='#3' stroke-width='#thick'/>",
+	       alias=>'\oval',
+	       afterDigest=>sub {
+		 my ($whatsit,$r,$size,$part) = @_;
+		 $size = picScale($size);
+		 my $halfsize = $size->multiply(0.5);
+		 my $pos = Pair($halfsize->getX->negate,$halfsize->getY->negate);
+		 $r = ($r ? picScale($r) : Dimension('40pt'));
+		 $r=$r->smaller($halfsize->getX->absolute);
+		 $r=$r->smaller($halfsize->getY->absolute);
+		 setPicProperties($whatsit,size=>$size, pos=>$pos, radius=>$r); });
+
+DefConstructor('\pic@qbezier [Number] Pair Pair Pair',
+               "<bezier ?#1(displayedpoints='#1') points='&ptValue(#pt)' stroke-width='#thick' />",
+	       alias=>'\qbezier',
+	       afterDigest=>sub {
+		 setPicProperties($_[0],pt=>PairList(picScale($_[2]),picScale($_[3]),picScale($_[4]))); });
+
+DefConstructor('\pic@makebox Pair []{}',
+	       "<g %&PairAttr(#size,width,height) pos='#2'>#3</g>",
+	       alias=>'\makebox',
+	       afterDigest=>sub { setPicProperties($_[0],size=>picScale($_[1])); });
+
+DefConstructor('\pic@framebox Pair []{}',
+	       "<rect x='0' y='0' %&PairAttr(#size,width,height) stroke-width='#thick' fill='none'/>".
+	       "<g %&PairAttr(#size,width,height) pos='#2'> #3 </g>",
+	       alias=>'\framebox',
+	       afterDigest=>sub {
+		 setPicProperties($_[0],size=>picScale($_[1])); });
+
+DefConstructor('\pic@dashbox {Float} Pair [] {}',
+	       "<rect x='0' y='0' %&PairAttr(#size,width,height) stroke-width='#thick' stroke-dasharray='&ptValue(#dash)' fill='none'/>".
+	       "<g %&PairAttr(#size,width,height) pos='#3'> #4 </g>",
+	       alias=>'\dashbox',
+	       afterDigest=>sub {
+		 setPicProperties($_[0],dash=>picScale($_[1]),size=>picScale($_[2])); });
+
+DefConstructor('\pic@frame{}',
+	       "<g frame='yes' stroke-width='#thick'>#1</g>",
+	       alias=>'\frame',
+	       afterDigest=>sub { setPicProperties($_[0]); });
+
+DefConstructor('\shortstack[]{}', "<vbox align='#1'><text>#2</text></vbox>",
+	       beforeDigest=>sub{BGroup;
+				 DefConstructor("\\\\ OptionalMatch:* []", "</text><text>", alias=>"\\\\\n"); },
 	       afterDigest=>sub { EGroup; },
 	       mode=>'text');
 
-DefEnvironment('{picture}',
-	       "<picture width='#1' height='#2' xoff='#3' yoff='#4'>#body</picture>",
-	       nargs=>4,
-	       beforeDigest=>\&before_picture,
-	       afterDigestBegin=>sub {
-		 my($whatsit)=@_;
-		 $whatsit->setArgs(readPicCoordinate(),
-				   readPicCoordinate()); 
-		 return; },
-	       afterDigest=>\&after_picture);
-DefConstructor('\put',
-	       "<put x='#1' y='#2'>#3</put>",
-	       nargs=>3, beforeDigest=>\&BGroup,
-	       afterDigest=>sub { $_[0]->setArgs(readPicCoordinate(),
-						 Digest($GULLET->readArg)); EGroup; }); 
+DefMacro('\multiput Pair Pair {}{}',  sub {
+	   my($ignore,$pos,$d,$n,$body)=@_;
+	   my($x,$y,$dx,$dy,$n)=map($_->toString, ($pos->getX,$pos->getY,$d->getX,$d->getY,$n));
+	   my @exp=();
+	   for(my $i=0; $i<$n; $i++){
+	     push(@exp,T_CS('\put'),T_OTHER('('),Explode($x),T_OTHER(','),Explode($y),T_OTHER(')'),
+		  T_BEGIN,$body->unlist,T_END);
+	     $x += $dx; $y+=$dy; }
+	   @exp; });
 
-Tag('put',afterClose=>sub {
-      my($node)=@_;
-      my($x,$y)=map($node->getAttribute($_),qw(x y));
-      my $parent=$node->parentNode;
-      foreach my $child ($node->childNodes){
-	$child->setAttribute(x=>$x);
-	$child->setAttribute(y=>$y);
-	$parent->insertBefore($child,$node); }
-      $parent->removeChild($node);
-});
+sub add_picture_TeX {
+  my($node,$thing)=@_;
+  if($thing && !$thing->getProperty('_added_tex')){
+    local $LaTeXML::PICTURE_SCALE = Dimension('1pt')->valueOf;
+    my $tex = ToString(Tokens($thing->revert));
+    $node->setAttribute(tex=>$tex); }
+  $thing->setProperty('_added_tex',1); }
 
-DefMacro('\multiput Literal:( Until:, Until:) Literal:( Until:, Until:) {}{}',
-	 sub{ my($ignore,$x,$y,$dx,$dy,$n,$body)=@_;
-	      ($x,$y,$dx,$dy,$n)=map($_->toString,$x,$y,$dx,$dy,$n);
-	      my @exp=();
-	      for(my $i=0; $i<$n; $i++){
-		push(@exp,T_CS('\put'),T_OTHER('('),Explode($x),T_OTHER(','),Explode($y),T_OTHER(')'),
-		     T_BEGIN,$body->unlist,T_END); 
-		$x += $dx; $y+=$dy; }
-	      @exp; });
+Tag('picture',   afterOpen=>\&add_picture_TeX);
 
-DefConstructor('\qbezier',
-	       "<qbezier spacing='#1' x0='#2' y0='#3' x1='#4' y1='#5' x2='#6' y2='#7'/>",
-	       nargs=>7,
-	       afterDigest=>sub { $_[0]->setArgs(Digest($GULLET->readOptional), 
-						 readPicCoordinate(),
-						 readPicCoordinate(),
-						 readPicCoordinate()); });
+Tag('g', afterClose=> sub {
+      my ($node) = @_;
+      return if $node->hasChildNodes;
+      my $parent = $node->parentNode;
+      $parent->removeChild($node); });
 
 # \savebox -- already defined differntly in C.13 above ? 
-DefPrimitive('\thinlines',undef);
-DefPrimitive('\thicklines',undef);
-DefPrimitive('\linethickness{}',undef);
 
 #**********************************************************************
 # C.15 Font Selection
@@ -1396,32 +1653,32 @@ DefConstructor('\normalfont', '', beforeDigest=>sub{ MergeFont(family=>'serif', 
 DefConstructor('\verbatim@font', '', beforeDigest=>sub{ MergeFont(family=>'typewriter', series=>'medium', shape=>'upright');});
 
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
-DefConstructor('\textmd{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+DefConstructor('\textmd{}', "?#isMath(<text>#1</text>)(#1)", mode=>'text',
 	       beforeDigest=>sub{ BGroup; MergeFont(series=>'medium'); },
 	       afterDigest=>\&EGroup);
-DefConstructor('\textbf{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+DefConstructor('\textbf{}', "?#isMath(<text>#1</text>)(#1)", mode=>'text',
 	       beforeDigest=>sub{ BGroup; MergeFont(series=>'bold');},
 	       afterDigest=>\&EGroup);
-DefConstructor('\textrm{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+DefConstructor('\textrm{}', "?#isMath(<text>#1</text>)(#1)", mode=>'text',
 	       beforeDigest=>sub{ BGroup; MergeFont(family=>'serif');},
 	       afterDigest=>\&EGroup);
-DefConstructor('\textsf{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+DefConstructor('\textsf{}', "?#isMath(<text>#1</text>)(#1)", mode=>'text',
 	       beforeDigest=>sub{ BGroup; MergeFont(family=>'sansserif');},
 	       afterDigest=>\&EGroup);
-DefConstructor('\texttt{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+DefConstructor('\texttt{}', "?#isMath(<text>#1</text>)(#1)", mode=>'text',
 	       beforeDigest=>sub{ BGroup; MergeFont(family=>'typewriter'); },
 	       afterDigest=>\&EGroup);
 
-DefConstructor('\textup{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+DefConstructor('\textup{}', "?#isMath(<text>#1</text>)(#1)", mode=>'text',
 	       beforeDigest=>sub{ BGroup; MergeFont(shape=>'upright'); },
 	       afterDigest=>\&EGroup);
-DefConstructor('\textit{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+DefConstructor('\textit{}', "?#isMath(<text>#1</text>)(#1)", mode=>'text',
 	       beforeDigest=>sub{ BGroup; MergeFont(shape=>'italic'); },
 	       afterDigest=>\&EGroup);
-DefConstructor('\textsl{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+DefConstructor('\textsl{}', "?#isMath(<text>#1</text>)(#1)", mode=>'text',
 	       beforeDigest=>sub{ BGroup; MergeFont(shape=>'slanted'); },
 	       afterDigest=>\&EGroup);
-DefConstructor('\textsc{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+DefConstructor('\textsc{}', "?#isMath(<text>#1</text>)(#1)", mode=>'text',
 	       beforeDigest=>sub{ BGroup; MergeFont(shape=>'smallcaps'); },
 	       afterDigest=>\&EGroup);
 
@@ -1481,7 +1738,7 @@ DefConstructor('\textvisiblespace',"\x{2420}"); # SYMBOL FOR SPACE;  Not really 
 DefConstructor('\textellipsis',"\x{2026}"); # HORIZONTAL ELLIPSIS
 DefConstructor('\textregistered',"\x{00AE}"); # REGISTERED SIGN
 DefConstructor('\texttrademark',"\x{2122}");  # TRADE MARK SIGN
-DefConstructor('\textsuperscript{}',"<hbox raised='0.5em'>#1</hbox>");
+DefConstructor('\textsuperscript{}',"<text raised='0.5em'>#1</text>");
 DefConstructor('\textordfeminine',"\x{00AA}"); # FEMININE ORDINAL INDICATOR
 DefConstructor('\textordmasculine',"\x{00BA}"); # MASCULINE ORDINAL INDICATOR
 
@@ -1507,11 +1764,9 @@ DefMacro('\ProvidesClass{}[]','');
 DefMacro('\ProvidesPackage{}[]','');
 DefMacro('\DeclareOption{}{}', sub {
   my($self,$option,$code)=@_;
-#  DefMacro('\ds@'.$option->toString,
-#	   $GULLET->expandTokens(Tokens($GULLET->neutralizeTokens($code->unlist)))); });
-  $STATE->installDefinition(
+  InstallDefinition(
        LaTeXML::Expandable->new(T_CS('\ds@'.$option->toString),undef,
-		   $GULLET->expandTokens(Tokens($GULLET->neutralizeTokens($code->unlist)))));
+		   Expand(Tokens($GULLET->neutralizeTokens($code->unlist)))));
   (); });
 
 DefMacro('\ExecuteOptions{}', sub{
@@ -1522,7 +1777,7 @@ DefMacro('\@ehc',"I can't help");
 
 sub make_message {
   my($cs,@args)=@_;
-  join("\n",map($GULLET->expandTokens($_)->toString,@args)); }
+  join("\n",map(Expand($_)->toString,@args)); }
 
 DefMacro('\@onlypreamble{}',''); # Don't bother enforcing this.
 
@@ -1661,23 +1916,23 @@ DefMacro('\@ifnextchar Token {}{}', sub {
 
 DefMacro('\@ifundefined{}{}{}',sub {
   my($ignore,$name,$if,$else)=@_;
-  my $cs = T_CS('\\'.$name->untex);
-  if($STATE->lookupMeaning($cs) ne $cs){
+  my $cs = T_CS('\\'.ToString($name));
+  if(LookupMeaning($cs) ne $cs){
    $if->unlist; }
   else {
    $else->unlist; }});
 
 DefMacro('\IfFileExists{}{}{}', sub{
   my($ignore,$file,$if,$else)=@_;
-  if(pathname_find($file->toString,paths=>$STATE->lookupValue('SEARCHPATHS'))){
+  if(pathname_find($file->toString,paths=>LookupValue('SEARCHPATHS'))){
    $if->unlist; }
   else {
    $else->unlist; }});
 
 DefMacro('\InputIfFileExists{}{}', sub{
   my($ignore,$file,$if)=@_;
-  if(pathname_find($file->toString,paths=>$STATE->lookupValue('SEARCHPATHS'))){
-   $GULLET->input($file); 
+  if(pathname_find($file->toString,paths=>LookupValue('SEARCHPATHS'))){
+   Input($file);
    $if->unlist; }
   else { (); }});
 

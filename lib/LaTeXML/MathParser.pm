@@ -18,8 +18,7 @@ use strict;
 use Parse::RecDescent;
 use LaTeXML::Global;
 use XML::LibXML;
-use Exporter;
-our @ISA = (qw(Exporter));
+use base (qw(Exporter));
 
 our @EXPORT_OK = (qw(&Lookup &New &Apply &recApply &Annotate &InvisibleTimes
 		     &NewFormulae &NewFormula &NewCollection  &ApplyDelimited &NewScripts
@@ -54,11 +53,11 @@ sub parseMath {
   $self->clear;			# Not reentrant!
   my $xmldoc = $doc->getDocument;
   $$self{idcache}={};
-  foreach my $node ($xmldoc->findnodes("//*[attribute::*[local-name()='xml:id']]")){
-    $$self{idcache}{$node->getAttribute('xml:id')} = $node; }
+  foreach my $node ($xmldoc->findnodes("//*[\@id]")){
+    $$self{idcache}{$node->getAttribute('id')} = $node; }
 
   my @math =  $MODEL->getXPath->findnodes('descendant-or-self::ltxml:XMath',$xmldoc);
-  NoteProgress("\n(Math Parsing: ".scalar(@math)." formulae");
+  NoteProgress("\n(Math Parsing: ".scalar(@math)." formulae ");
 
   if(@math){
     local $LaTeXML::MathParser::CAPTURE = $xmldoc->documentElement->addNewChild($nsURI,'XMath');
@@ -89,6 +88,7 @@ sub clear {
   $$self{failed}={XMath=>0,XMArg=>0,XMWrap=>0};
   $$self{unknowns}={};
   $$self{maybe_functions}={};
+  $$self{n_parsed}=0;
 }
 
 sub token_prettyname {
@@ -176,7 +176,7 @@ sub node_string {
 #  ($node->getAttribute('role')||'Unknown').'['.$string.']'; }
   my $role = $node->getAttribute('role') || 'UNKNOWN';
   my $box = $document->getNodeBox($node);
-  ($box ? $box->untex : text_form($node)). "[[$role]]"; }
+  ($box ? ToString($box) : text_form($node)). "[[$role]]"; }
 
 sub node_location {
   my($node)=@_;
@@ -208,6 +208,7 @@ sub parse {
     $xnode->parentNode->setAttribute('text',text_form($result)); }
 }
 
+our %TAG_FEEDBACK=(XMArg=>'a',XMWrap=>'w');
 # Recursively parse a node with some internal structure
 # by first parsing any structured children, then it's content.
 sub parse_rec {
@@ -219,17 +220,23 @@ sub parse_rec {
   if(my $result= $self->parse_internal($node,$doc,$rule)){
     $$self{passed}{$tag}++;
    if($tag eq 'XMath'){	# Replace content of XMath
-      map($node->removeChild($_),element_nodes($node));
-      append_nodes($node,$result); }
+     NoteProgress('['.++$$self{n_parsed}.']');
+     map($node->removeChild($_),element_nodes($node));
+     append_nodes($node,$result); }
     else {			# Replace node for XMArg, XMWrap; preserve some attributes
+      NoteProgress($TAG_FEEDBACK{$tag}||'.');
       if(my $role = $node->getAttribute('role')){
 	$result->setAttribute('role',$role); }
-      if(my $id = $node->getAttribute('xml:id')){ # Update the node associated w/ id
-	$result->setAttribute('xml:id'=>$id);
+      if(my $id = $node->getAttribute('id')){ # Update the node associated w/ id
+	$result->setAttribute('id'=>$id);
 	$$self{idcache}{$id} = $result; }
       $node->parentNode->replaceChild($result,$node); }
     $result; }
   else {
+    if($tag eq 'XMath'){
+     NoteProgress('[F'.++$$self{n_parsed}.']'); }
+    elsif($tag eq 'XMArg'){
+      NoteProgress('-a'); }
     $$self{failed}{$tag}++;
     undef; }}
 
@@ -271,6 +278,10 @@ sub parse_internal {
   elsif($nnodes == 1){		# One node? What's to parse?
     $result = $nodes[0]; }
   else {
+    if($LaTeXML::MathParser::DEBUG){
+      if(my $string = join(' ',map(node_string($_,$doc),@nodes))){
+	print STDERR "Parsing \"$string\"\n"; }}
+
     # Generate a textual token for each node; The parser operates on this encoded string.
     local $LaTeXML::MathParser::LEXEMES = {};
     my $i = 0;
@@ -279,7 +290,7 @@ sub parse_internal {
       my $tag = $node->localname;
       my $rnode = $node;
       if($tag eq 'XMRef'){
-	if(my $id = $node->getAttribute('xml:id')){
+	if(my $id = $node->getAttribute('id')){
 	  $rnode = $$self{idcache}{$id};
 	  $tag = $rnode->localname; }}
       my $name = getTokenName($rnode);
@@ -306,7 +317,7 @@ sub parse_internal {
       if(! $LaTeXML::MathParser::WARNED){
 	$LaTeXML::MathParser::WARNED=1;
 	my $box = $doc->getNodeBox($LaTeXML::MathParser::XNODE);
-	Warn("In formula \"".$box->untex." from ".$box->getLocator); }
+	Warn("In formula \"".ToString($box)." from ".$box->getLocator); }
       $textified =~ s/^\s*//;
       my @rest=split(/ /,$textified);
       my $pos = scalar(@nodes) - scalar(@rest);

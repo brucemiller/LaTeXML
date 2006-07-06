@@ -1,0 +1,806 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# | pstricks.tex                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML                                                     | #
+# |                                                                     | #
+# |---------------------------------------------------------------------| #
+# | Implementation of the pstricks package. (incomplete)                | #
+# | missing: \psgrid is missing most attributes                         | #
+# |          shadow, doubleline and border support                      | #
+# |          some special attributes for arrows                         | #
+# |          fillstyle is assumed solid or none                         | #
+# |          \pscustom and its special commands (chapters 20, 21, 22)   | #
+# |          \SpecialCoor is not supported                              | #
+# |          overlays are not supported                                 | #
+# |          special box commands (Help part A, ...)                    | #
+# |                                                                     | #
+# |---------------------------------------------------------------------| #
+# | Ioan Alexandru Sucan <i.sucan@iu-bremen.de>                 #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+use LaTeXML::Util::Color;
+use LaTeXML::Util::Transform;
+use LaTeXML::Util::Geometry;
+RequirePackage('keyval');
+
+##############################################################
+##  Parameter type definitions
+##############################################################
+
+sub ReadPSDimension {
+  my $scale = $_[0] || LookupValue('\psunit');
+  my $s = $GULLET->readOptionalSigns;
+  if   (defined (my $d = $GULLET->readInternalDimension)){ ($s < 0 ? $d->negate : $d); }
+  elsif(defined (   $d = $GULLET->readInternalGlue)     ){ Dimension($s * $d->valueOf); }
+  elsif(defined (   $d = $GULLET->readFloat)            ){ if(my $unit = $GULLET->readUnit)
+							     { Dimension($s * $d->valueOf * $unit); }
+							   else
+							     { $scale->multiply($s * $d->valueOf); }}
+  else{ Warn("Missing number, treated as zero.");          Dimension(0); }}
+
+sub b_reversion { $_[0] ? (T_BEGIN, $_[0]->revert, T_END) :(); }
+
+# reads {PSDimension} and does not complain if argument is missing
+sub ReadBracketedPSDimension {
+  SkipSpaces;
+  if (IfNext(T_BEGIN)) {
+    ReadToken; SkipSpaces;
+    my $r = ReadPSDimension(@_);
+    SkipSpaces; ReadToken;
+    $r; }
+  else { return; }}
+DefParameterType('BracketedPSDimension',\&ReadBracketedPSDimension,
+		 reversion=>\&b_reversion, optional=>1);
+
+# reads {} and does not complain if argument is missing
+sub ReadOptionalBracketed {
+  my ($itemtype) = @_;
+  SkipSpaces;
+  if (IfNext(T_BEGIN)) {
+    my $itemreader;
+    if (!$itemtype) { $itemreader = \&ReadBalanced; }
+    else { $itemreader = ResolveReader($itemtype); }
+    if(!$itemreader){ Error("Cannot find reader for optional curly-bracketed argument from $itemtype"); }
+    ReadToken; SkipSpaces;
+    my $item = &$itemreader();
+    SkipSpaces;
+    ReadToken if IfNext(T_END);
+    $item; }
+  else { return; }}
+DefParameterType('OptionalBracketed',\&ReadOptionalBracketed,
+		 reversion=>\&b_reversion, optional=>1);
+
+# read a Dimension scaled to 1cm insetad of \psunit
+sub ReadPSRegisterDimension { ReadPSDimension(Dimension('1cm')); }
+
+# when redefining the origin, a coordinate is given as {x,y}
+sub ReadPSOrigin {
+  SkipSpaces;
+  if (IfNext(T_BEGIN)){
+    ReadToken; SkipSpaces;
+    my $x = ReadPSDimension(LookupValue('\psxunit'));
+    SkipSpaces; ReadUntil(T_OTHER(',')); SkipSpaces;
+    my $y = ReadPSDimension(LookupValue('\psyunit'));
+    SkipSpaces; ReadUntil(T_END);
+    ($x && $y) ? Pair($x->negate, $y->negate) : undef; }
+  else { return; }}
+DefParameterType('PSOrigin',\&ReadPSOrigin,
+		 reversion=>sub { ($_[0] ? (T_BEGIN, $_[0]->getX->negate->revert,T_OTHER(','),
+					    $_[0]->getY->negate->revert,T_END) :()); });
+
+sub ReadPSCoord { ReadPair('PSDimension',LookupValue('\psxunit'), LookupValue('\psyunit')); }
+
+sub ReadZeroPSCoord { ReadPSCoord() || ZeroPair(); }
+sub ReadPSCoordList {
+  my @coord = ();
+  while (my $c = ReadPSCoord()) { push(@coord, $c); }
+  PairList(@coord); }
+
+sub ZeroPair { Pair(Dimension(0), Dimension(0)); }
+
+# if read the next {} argument only if it encloses arrow characters
+# also return the default arrows ('\psarrows') if no argument found
+sub ReadArrows {
+  my $a = ReadOptionalBracketed(); my $st = $a->toString if $a;
+  if ($a && ($st =~ /[^\(\)\s\-\>\<\|cCo\*\[\]]/ || $st !~ /\-/)) {
+    $GULLET->unread(T_BEGIN, $a->unlist, T_END);
+    $a = undef; }
+  $a || LookupValue('\psarrows'); }
+DefParameterType('Arrows',\&ReadArrows,
+		 reversion=>\&b_reversion, optional=>1);
+
+# reading angles is a problem; there can be * or : preceding an angle value
+# and an angle value can be N, S, E, W, U, D, L, R or a float;
+# the following package turns the read angle into a value that looks like a
+# float and returns almost what was read when reversion is called;
+# since \degrees and \radians no longer appear in the reverted tex, all angles
+# are scaled to 360 (tex default);
+# \?put rotations are acumulated in _psActiveSRotation
+# translations that occur after a * angle need to be rotated by previous angle
+# so the undone rotation value is kept in _psUndoneSRotation
+{ package LaTeXML::PSAngle;
+  use LaTeXML::Global;
+  use LaTeXML::Package;
+  use base qw(LaTeXML::Object);
+
+  our %angleVals = (N=>0, W=>90, S=>180, E=>270, U=>0, L=>90, D=>180, R=>270,
+		    r=>0, u=>90, l=>180, d=>270, ur=>45, ul=>135, dl=>225, dr=>315,
+		    ru=>45, lu=>135, ld=>225, rd=>315);
+  sub new {
+    my ($class, $number, $pre) = @_;
+    $pre = '' unless $pre;
+    $number = Float(0) unless $number;
+    my $starred = ($pre =~ /\*/); my $value;
+    if (ref $number) {
+      $number = $number->multiply(360/LookupValue('\degrees')->valueOf);
+      $value = $number; }
+    else {
+      $starred =  ($number =~ /N|W|S|E/) || $starred;
+      $value = $angleVals{$number} || 0;
+      $value = Float($value); }
+    if ($starred) {
+      $value = $value->substract(Float(LookupValue('_psActiveSRotation')));
+      LaTeXML::Package::Pool::t_undoSRotation(); }
+    bless([$value, $number, $pre], $class); }
+
+  sub starred    { $_[0][2] =~ /\*/; }
+  sub labelRight { $_[0][2] =~ /\:/; }
+
+  sub valueOf    { $_[0][0]->valueOf;  }
+  sub toString   { $_[0][0]->toString; }
+  sub ptValue    { $_[0][0]->ptValue;  }
+
+  sub revert     { (Explode($_[0][2]), (ref $_[0][1] ? $_[0][1]->revert() : Explode($_[0][1]))); }
+
+  1; }
+sub ReadPSAngle {
+  SkipSpaces; my $pre = '';
+  foreach my $p(qw(: *)){
+    if (IfNext(T_OTHER($p))){
+      ReadToken; SkipSpaces;
+      $pre .= $p; }}
+  my $angle = '';
+  foreach my $letter(qw(N W S E U L D R u d l r u d)) {
+    if (IfNext(T_LETTER($letter))) {
+      ReadToken; SkipSpaces; $angle .= $letter;
+    }}
+  if ($angle) { LaTeXML::PSAngle->new($angle, $pre); }
+  elsif ($angle = ReadFloat()) { LaTeXML::PSAngle->new($angle, $pre); }
+  else { return; }}
+
+# reads a PSAngle that is between curly brackets
+sub ReadBracketedPSAngle { ReadOptionalBracketed('PSAngle'); }
+DefParameterType('BracketedPSAngle',\&ReadBracketedPSAngle,
+		 reversion=>\&b_reversion, optional=>1);
+
+# read a pair of a dimension followed by a float, separated by space
+sub ReadPSDimFloat {
+  SkipSpaces; my $dim = ReadPSDimension();
+  SkipSpaces; my $f = ReadFloat();
+  SkipSpaces; ($dim && $f) ? Pair($dim, $f) : undef; }
+DefParameterType('PSDimFloat',\&ReadPSDimFloat,
+		 reversion=>sub { ($_[0] ? ($_[0]->getX->revert, T_SPACE, $_[0]->getY->revert) :()); });
+
+# read a pair of a dimensions, separated by space; if only one dimension is found,
+# returns a pair where both members are the same
+sub ReadPSDimDim {
+  SkipSpaces; my $dim1 = ReadPSDimension();
+  SkipSpaces; my $dim2 = ReadPSDimension();
+  SkipSpaces; $dim1 ? Pair($dim1, $dim2 || $dim1) : undef; }
+DefParameterType('PSDimDim',\&ReadPSDimDim,
+		 reversion=>sub { ($_[0] ? ($_[0]->getX->revert, T_SPACE, $_[0]->getY->revert) :()); });
+
+
+##############################################################################
+##  Internal variables used in coordinate transforms
+##############################################################################
+
+sub ActiveTransform { LookupValue('_psActiveTransform'); }
+
+# this holds the current nested transformations
+AssignValue('_psActiveTransform', Transform());
+# this holds the transforms for coordinate changing only
+AssignValue('_psActiveCCTransform', Transform());
+# this holds the rotations that must be undone when * is found in an angle
+AssignValue('_psActiveSRotation', 0);
+
+# functions for keeping internal variables up to date
+sub ackTransform     { AssignValue('_psActiveTransform', LookupValue('_psActiveTransform')->addPost(Transform($_[0]))); }
+sub ackStarRotation  { AssignValue('_psActiveSRotation', LookupValue('_psActiveSRotation') + $_[0] || 0); }
+sub t_Rotation {
+  my ($r, $star) = @_; $r = $r->valueOf if ref $r;
+  if ($r) { ackStarRotation($r) if $star;
+	    ackTransform("rotate($r)"); }
+  return; }
+
+sub t_undoSRotation {
+  my $r = LookupValue('_psActiveSRotation'); t_Rotation(-$r, 1);
+  AssignValue('_psUndoneSRotation', (LookupValue('_psUndoneSRotation') || 0) + $r); }
+
+sub t_Translation {
+  my ($t) = @_;
+  if (my $r = LookupValue('_psUndoneSRotation')) {
+    $t = Transform("rotate($r)")->apply($t) if $t; }
+  my ($x, $y) = ($t->getX->valueOf, $t->getY->valueOf) if $t;
+  ackTransform('translate('.($x || 0).','.($y || 0).')') if ($x || $y);
+  return; }
+
+##############################################################################
+## Helper constants & functions for setting default parameters
+##############################################################################
+our %KeyAsValue; our %PSobjAttributes; our %KeyHasABVariants; our $PSLineAttr; our $PSArrow;
+
+$PSLineAttr = "stroke='#linecolor' stroke-width='&ptValue(#linewidth)' stroke-dasharray='&ptValue(#dash)'";
+$PSArrow = "terminators='#terminators' arrowlength='#arrowlength'";
+
+# when storing in memory, store as token, not as string:
+%KeyAsValue = (linewidth=>1, linearc=>1, framearc=>1, framesep=>1, labelsep=>1,
+	       unit=>1, xunit=>1, yunit=>1, runit=>1, arcsep=>1, arcsepA=>1,
+	       arcsepB=>1, arrows=>1, origin=>1, dash=>1, doublesep=>1, arrowsize=>1,
+	       arrowinset=>1, arrowlength=>1, dotsize=>1, tbarsize=>1, dotangle=>1,
+	       dotsep=>1);
+
+%KeyHasABVariants = (arcsep=>1);
+
+sub setGraphParams {
+  my (%params) = @_;
+  if (my $style = $params{'style'}) {
+    delete $params{'style'};
+    if (((ref $style) || '') eq 'ARRAY') { $style = ${$style}[$#{$style}]; }
+    $style = LookupValue('psstyle_'.$style->toString) if $style;
+    %params = (%params, %{$style}) if $style; }
+
+  while (my ($_key, $value) = each %params) {
+    if (((ref $value) || '') eq 'ARRAY') { $value = ${$value}[$#{$value}]; }
+    my $strval = $value->toString;
+    my @keys = $KeyHasABVariants{$_key} ? ($_key, $_key.'A', $_key.'B') : ($_key);
+    foreach my $key(@keys) {
+      if ($key eq 'unit') {
+	AssignValue('\psunit',  $value);
+	AssignValue('\psxunit', $value);
+	AssignValue('\psyunit', $value);
+	AssignValue('\psrunit', $value); }
+      elsif ($key =~ /color/) {
+	AssignValue('\ps'.$key, LookupValue('pscolor_'.$strval) || $strval); }
+      else {
+	AssignValue('\ps'.$key, $KeyAsValue{$key} ? $value : $strval); }}
+  }}
+
+sub psGetDash {
+  my ($whatsit, $used) = @_; my $d;
+  if (my $dash = LookupValue('\psdash')) { $d = $dash; }
+  elsif (my $linestyle = LookupValue('\pslinestyle')) {
+    if ($linestyle eq 'dashed') { $d = Pair(Dimension('5pt'),Dimension('3pt')); }
+    elsif ($linestyle eq 'dotted') { $d = Pair(Dimension('1pt'), (LookupValue('\psdotsep') || Dimension('3pt'))); }}
+  $whatsit->setProperty(dash=>$d) if $d; $$used{dash} = 1; }
+
+sub psGetLinecolor {
+  $_[0]->setProperty(linecolor=>(LookupValue('\pslinestyle') || '') eq 'none' ? 'none' : LookupValue('\pslinecolor'));
+  $_[1]->{linecolor} = 1; }
+
+sub psGetFill {
+  my ($whatsit, $used) = @_;
+  my $star = $whatsit->getArg(1) ? ($whatsit->getArg(1)->toString eq '*' ? 1 : 0) : 0;
+  if ($star) {
+    $whatsit->setProperties(fill=>LookupValue('\pslinecolor'),linecolor=>'none',linewidth=>undef); }
+  else {
+    $whatsit->setProperties(fill=>((LookupValue('\psfillstyle') || '') eq 'none') ? 'none' :
+			    LookupValue('\psfillcolor'), linewidth=>LookupValue('\pslinewidth'));
+    psGetLinecolor($whatsit, $used); }
+  map($$used{$_} = 1, qw(fill linecolor linewidth fillstyle fillcolor)); }
+
+sub psDefaultParameters {
+  my ($whatsit) = @_;
+  my $cmd = $whatsit->getDefinition->getCS->getCSName(); chop($cmd);
+  AssignValue('_ps@LastPSCmd', $cmd, 'global');
+  my @params = @{$PSobjAttributes{$cmd} || []};
+  my %used = ();
+  foreach my $param(@params) {
+    next if $used{$param};
+    my $getter = 'psGet'.(ucfirst($param));
+    if (defined &$getter) {
+      local *call = $getter;
+      call($whatsit, \%used); }
+    elsif (my $value = LookupValue('\ps'.$param)) {
+      $whatsit->setProperty($param, $value); }}
+  return; }
+
+##############################################################################
+##  Default pstricks parameters and dimensions
+##############################################################################
+
+AssignValue('\degrees', Float(360));
+AssignValue('\psarrowsize', Pair(Dimension('2pt'), Float(3)));
+AssignValue('\psarrowlength', Float(1.4));
+AssignValue('\psarrowinset', Float(0.4));
+
+AssignValue('\pslinecolor', 'black');
+AssignValue('\psfillstyle', 'none');
+AssignValue('\psfillcolor', 'none');
+AssignValue('\psdoublesep', Dimension('1pt')); # 1.25 * linewidth
+
+AssignValue('\pscornersize', 'relative');
+AssignValue('\pscurvature', '1 0.1 0');
+AssignValue('\psdotstyle', '*');
+
+# registers
+DefRegister('\pslinewidth'=>Dimension('0.8pt'));
+DefRegister('\psframesep'=>Dimension('3pt'));
+DefRegister('\pslabelsep'=>Dimension('5pt'));
+
+# unit registers
+DefRegister('\psunit' =>Dimension('1cm'));
+DefRegister('\psxunit'=>Dimension('1cm'));
+DefRegister('\psyunit'=>Dimension('1cm'));
+DefRegister('\psrunit'=>Dimension('1cm'));
+
+##############################################################################
+## Helper functions for setting specific parameters
+##############################################################################
+
+sub trunc2 { $_[0] ? trunc(2, ref $_[0] ? $_[0]->valueOf : $_[0]) : undef; }
+
+# computes the value of the arc if framearc is to be used
+sub arcValue {
+  my ($cs, $fa, $la) = map(LookupValue($_), qw(\pscornersize \psframearc \pslinearc));
+  ($cs && $fa) ? ptValue(($cs eq 'relative') ? ($_[0]->getX->smaller($_[0]->getY)->
+						multiply($fa->multiply(0.5))): $la) : undef; }
+sub arrowLength {
+  my ($asz, $lw, $al) = map(LookupValue($_), qw(\psarrowsize \pslinewidth \psarrowlength));
+  ($asz && $lw && $al) ? ptValue($lw->multiply($asz->getY)->add($asz->getX)->multiply($al)) : undef; }
+
+# example: "{->}" becomes "{<-}"
+our %arrow_reverse = ('>'=>'<','<'=>'>','['=>']',']'=>'[','('=>')',')'=>'(');
+sub reverseArrow {
+  my ($a) = @_;
+  $a = $a->toString if ref $a;
+  return unless $a;
+  if ($a =~ /([^\-]+)-([^\-]+)/) { $a = "$2-$1"; }
+  join('', map($arrow_reverse{$_} || $_, split(//,$a))); }
+
+sub psTerminators {
+  my ($whatsit, $term) = @_;
+  if (ref $term) { $term = $term->toString; }
+  if ($term) {
+    $term =~ s/\s//g; $term = '' if $term eq '-';
+    $whatsit->setProperties(terminators=>$term, arrowlength=>arrowLength()) if $term; }
+  return; }
+
+# for setting user-defined colors
+sub defineColor {
+  AssignValue('pscolor_'.$_[1]->toString, ConvertColor($_[0]->toString, $_[2]->toString));
+  return; }
+
+####################################################################################
+## Special constructor; this will automatically handle the optional argument for
+## setting graphis parameters by changing it into a properly nested \psset
+####################################################################################
+
+sub afterPSObject  { psDefaultParameters($_[0]); LookupDefinition(T_END)->invoke; }
+
+sub DefPSConstructor {
+  my ($cmd, $args, $replacement, %options) = @_;
+  my @after = $options{afterDigest} ? ($options{afterDigest}) : ();
+  if ($replacement =~ s/\#\!ARROWS/$PSArrow/) {
+    push(@after, sub { psTerminators($_[0], $_[2]); });
+    $args = 'Arrows '.$args; }
+  push(@after, \&afterPSObject);
+  $options{afterDigest} =  \@after;
+  DefMacro($cmd.' OptionalMatch:* []', sub {
+	     my @exp = (T_BEGIN);
+	     push(@exp, T_CS('\psset'), T_BEGIN, $_[2]->unlist, T_END) if $_[2];
+	     push(@exp, T_CS($_[0]->getCS->getCSName().'@'));
+	     push(@exp, T_OTHER('*')) if $_[1];
+	     @exp; });
+  if ($options{attributes}) { $PSobjAttributes{$cmd} = $options{attributes}; delete $options{attributes}; }
+  DefConstructor($cmd.'@ OptionalMatch:* '.$args, $replacement, alias=>$cmd, %options); }
+
+sub DefSimplePSConstructor {
+  my ($cmd, $arg, $replacement, %options) = @_;
+  my @after = $options{afterDigest} ? ($options{afterDigest}, \&psDefaultParameters) : (\&psDefaultParameters);
+  if ($options{attributes}) { $PSobjAttributes{$cmd} = $options{attributes}; delete $options{attributes}; }
+  DefConstructor($cmd.' '.$arg, $replacement, %options); }
+
+
+####################################################################################
+## PS Tricks environment
+####################################################################################
+
+DefEnvironment('{pspicture} OptionalMatch:* [Float] PSCoord PSCoord',
+	       "<picture baseline='#2' ?#1(clip='yes') %&SimplePairAttr(#c1,width,height)> #body </picture>",
+	       afterDigestBegin=> sub {
+		 my ($c0, $c1) = ($_[3], $_[4]);
+		 $_[0]->setProperty(c1=>$c1 ? Pair($c1->getX->substract($c0->getX),
+						   $c1->getY->substract($c0->getY)) : $c0);
+		 return; });
+
+##########################################################################################
+## 2 Color
+##########################################################################################
+
+DefMacro('\newgray{}{}', \&defineColor);
+DefMacro('\newrgbcolor{}{}', \&defineColor);
+DefMacro('\newhsbcolor{}{}', \&defineColor);
+DefMacro('\newcmykcolor{}{}', \&defineColor);
+
+##########################################################################################
+## 3 Setting graphics Parameters
+##########################################################################################
+
+# parameter types for keyvals:
+DefKeyVal('pstricks', 'dotsize',   'PSDimFloat' );
+DefKeyVal('pstricks', 'tbarsize',  'PSDimFloat' );
+DefKeyVal('pstricks', 'dotangle',  'PSAngle'    );
+
+DefKeyVal('pstricks', 'arrowsize', 'PSDimFloat' );
+DefKeyVal('pstricks', 'arrowlength', 'Float'    );
+DefKeyVal('pstricks', 'arrowinset','Float'      );
+
+DefKeyVal('pstricks', 'dotsep',    'PSDimension');
+DefKeyVal('pstricks', 'dash',      'PSDimDim'   );
+DefKeyVal('pstricks', 'linewidth', 'PSDimension');
+DefKeyVal('pstricks', 'linearc',   'PSDimension');
+DefKeyVal('pstricks', 'framearc',  'Float'      );
+DefKeyVal('pstricks', 'origin',    'PSOrigin'   );
+
+DefKeyVal('pstricks', 'framesep',  'PSDimension');
+DefKeyVal('pstricks', 'labelsep',  'PSDimension');
+DefKeyVal('pstricks', 'doublesep', 'PSDimension');
+
+DefKeyVal('pstricks', 'arcsep',    'PSDimension');
+DefKeyVal('pstricks', 'arcsepA',   'PSDimension');
+DefKeyVal('pstricks', 'arcsepB',   'PSDimension');
+
+DefKeyVal('pstricks', 'unit',      'PSDimension');
+DefKeyVal('pstricks', 'xunit',     'PSRegisterDimension');
+DefKeyVal('pstricks', 'yunit',     'PSRegisterDimension');
+DefKeyVal('pstricks', 'runit',     'PSDimension');
+
+# ------- trick to get automatic grouping of transforms -------
+# ------- for coordinate changing parameters            -------
+
+AssignValue('\psorigin', Pair(Dimension(0), Dimension(0)));
+AssignValue('\psswapaxes', 'false');
+
+sub getNecessaryTransform {
+  my ($transf, $value) = ('');
+  $value = LookupValue('\psorigin'); my ($x, $y) = ($value->getX->valueOf, $value->getY->valueOf);
+  $transf .= "translate($x,$y) " if ($x || $y);
+  $value = LookupValue('\psswapaxes');
+  $transf .= 'rotate(-90) scale(-1,1) ' if ($value eq 'true');
+  Transform($transf); }
+
+DefConstructor('\psset RequiredKeyVals:pstricks', "?#need(<g transform='#transform'>)",
+	       afterDigest=> sub {
+		 my($whatsit, $kv)=@_;
+		 setGraphParams(%{KeyVals($kv)});
+		 my ($need, $have) = (getNecessaryTransform(), LookupValue('_psActiveCCTransform'));
+		 if (!$need->equals($have)) {
+		   AssignValue('_psActiveCCTransform', $need);
+		   my $diff = $have->differenceTo($need); ackTransform($diff);
+		   $whatsit->setProperties(need=>1, transform=>$diff->ptValue);
+		   PushValue(beforeAfterGroup=>T_CS('\@end@transform@g')); }
+		 return; });
+
+DefConstructor('\@end@transform@g', "</g>", reversion=>'');
+
+##########################################################################################
+## 4 Dimensions, coordinates, and angles
+##########################################################################################
+
+DefPrimitive('\pssetlength{Token}{PSDimension}', sub {
+	       my($self,$cmd,$dimen)=@_;
+	       LookupDefinition($cmd)->setValue($dimen);});
+
+DefPrimitive('\psaddtolength{Token}{PSDimension}', sub {
+	       my($self,$cmd,$dimen)=@_;
+	       my $register = LookupDefinition($cmd);
+	       $register->setValue($register->valueOf->add($dimen)); });
+
+DefPrimitive('\degrees [Float]', sub { AssignValue('\degrees', $_[1]); });
+DefPrimitive('\radians', sub { AssignValue('\degrees', Float(6.28319)); });
+
+
+##########################################################################################
+## II Basic Graphics Objects
+## 6 Lines and Polygons
+##########################################################################################
+
+DefPSConstructor('\psline', 'PSCoordList',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth linearc dash showpoints)],
+		 afterDigest=>sub { $_[0]->setProperties(points=>($_[3]->getCount<2) ? PairList(ZeroPair, $_[3]->getPairs) : $_[3]); });
+
+DefSimplePSConstructor('\qline', 'PSCoordList', "<line points='&ptValue(#1)' ".$PSLineAttr." />", attributes=>[qw(linecolor linewidth dash)]);
+
+DefPSConstructor('\pspolygon', 'PSCoordList',
+		 "<polygon $PSLineAttr arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill' showpoints='#showpoints' />",
+		 attributes=>[qw(fill linecolor linewidth linearc dash showpoints)],
+		 afterDigest=> sub { $_[0]->setProperty(points=>($_[2]->getCount<3) ? PairList(ZeroPair, $_[2]->getPairs) : $_[2]); });
+
+DefPSConstructor('\psframe','PSCoordList',
+		 "<rect $PSLineAttr %&PairAttr(#c0,x,y) %&PairAttr(#c1,width,height) rx='#arcval' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash)],
+		 afterDigest=>sub {
+		   my ($c0, $c1) = $_[2]->getPairs;
+		   my ($p0, $p1) = $c1 ? ($c0, Pair($c1->getX->substract($c0->getX),
+						    $c1->getY->substract($c0->getY))) : (ZeroPair, $c0);
+		   $_[0]->setProperties(c0=>$p0, c1=>$p1, arcval=>arcValue($p1)); });
+
+
+##########################################################################################
+## 7 Arcs, circles and ellipses
+##########################################################################################
+
+DefPSConstructor('\pscircle', 'ZeroPSCoord {PSDimension}',
+		 "<circle $PSLineAttr %&PairAttr(#2,x,y) r='&ptValue(#3)' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash)]);
+
+# set fill like this to prevent linestyle from influencing it
+DefConstructor('\qdisk PSCoord {PSDimension}',
+	       "<circle %&PairAttr(#1,x,y) r='&ptValue(#2)' fill='#myfill' stroke='none' />",
+	       afterDigest=>sub { $_[0]->setProperty(myfill=>LookupValue('\pslinecolor')); });
+
+DefPSConstructor('\pswedge', 'ZeroPSCoord {PSDimension} {PSAngle} {PSAngle}',
+		 "<wedge $PSLineAttr %&PairAttr(#2,x,y) r='&ptValue(#3)' angle1='&trunc2(#4)' angle2='&trunc2(#5)' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash)]);
+
+DefPSConstructor('\psellipse', 'PSCoord PSCoord',
+		 "<ellipse $PSLineAttr %&PairAttr(#center,x,y) %&PairAttr(#radii,rx,ry) fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash)],
+		 afterDigest=>sub {  $_[3] ? $_[0]->setProperties(center=>$_[2], radii=>$_[3]) :
+				       $_[0]->setProperties(center=>ZeroPair, radii=>$_[2]); });
+
+DefPSConstructor('\psarc', 'ZeroPSCoord {PSDimension} {PSAngle} {PSAngle}',
+		 "<arc $PSLineAttr #!ARROWS %&PairAttr(#3,x,y) r='&ptValue(#4)' angle1='&trunc2(#5)' ".
+		 "angle2='&trunc2(#6)' arcsepA='&ptValue(#arcsepA)' arcsepB='&ptValue(#arcsepB)' fill='#fill' showpoints='#showpoints'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints arcsepA arcsepB)]);
+
+DefPSConstructor('\psarcn', 'Arrows ZeroPSCoord {PSDimension} {PSAngle} {PSAngle}',
+		 "<arc $PSLineAttr $PSArrow %&PairAttr(#3,x,y) r='&ptValue(#4)' angle1='&trunc2(#6)' ".
+		 "angle2='&trunc2(#5)' arcsepA='&ptValue(#arcsepB)' arcsepB='&ptValue(#arcsepA)' fill='#fill' showpoints='#showpoints'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints arcsepA arcsepB)],
+		 afterDigest=>sub { psTerminators($_[0], reverseArrow($_[2])); });
+
+##########################################################################################
+## 8 Curves
+##########################################################################################
+
+DefPSConstructor('\psbezier', 'PSCoordList',
+		 "<bezier $PSLineAttr #!ARROWS showpoints='#showpoints' points='&ptValue(#pt)' />",
+		 attributes=>[qw(linecolor linewidth dash showpoints)],
+		 afterDigest=>sub {
+		   my $pt = ($_[3]->getCount < 4) ? PairList(ZeroPair(), $_[3]->getPairs()) : $_[3];
+		   $_[0]->setProperty(pt=>$pt); });
+
+DefPSConstructor('\parabola', 'PSCoord PSCoord',
+		 "<parabola $PSLineAttr #!ARROWS %&PairAttr(#3,x0,y0) %&PairAttr(#4,x1,y1) />",
+		 attributes=>[qw(linecolor linewidth dash)]);
+
+DefPSConstructor('\pscurve', 'PSCoordList',
+		 "<curve $PSLineAttr #!ARROWS points='&ptValue(#3)' showpoints='#showpoints' curvature='#curvature' />",
+		 attributes=>[qw(linecolor linewidth dash showpoints curvature)]);
+
+DefPSConstructor('\psecurve', 'PSCoordList',
+		 "<curve $PSLineAttr #!ARROWS points='&ptValue(#3)' showpoints='#showpoints' curvature='#curvature' noendpoints='yes' />",
+		 attributes=>[qw(linecolor linewidth dash showpoints curvature)]);
+
+DefPSConstructor('\psccurve', 'PSCoordList',
+		 "<curve $PSLineAttr #!ARROWS points='&ptValue(#3)' showpoints='#showpoints' curvature='#curvature' closed='yes' />",
+		 attributes=>[qw(linecolor linewidth dash showpoints curvature)]);
+
+##########################################################################################
+## 9 Dots
+##########################################################################################
+
+DefPSConstructor('\psdots', 'PSCoordList',
+		 "<dots dotstyle='#dotstyle' dotsize='&ptValue(#sz)' dotangle='&trunc2(#dotangle)' dotscale='#dotscale' showpoints='#showpoints' points='&ptValue(#2)'/>",
+		 attributes=>[qw(dotstyle dotscale dotangle showpoints)],
+		 afterDigest=>sub {
+		   $_[0]->setProperty(sz=>(LookupValue('\psdotstyle') || '') eq '|' ?
+				      LookupValue('\pstbarsize') : LookupValue('\psdotsize')); });
+
+##########################################################################################
+## 10 Grids
+##########################################################################################
+
+# NOTE: ignores gridwidth, gridcolor, griddots, gridlabels, gridlabelcolor, subgriddiv,
+#       subgridwidth, subgridcolor, subgriddots
+DefSimplePSConstructor('\psgrid', 'PSCoord PSCoord PSCoord',
+		       "<grid %&PairAttr(#p0,x0,y0) %&PairAttr(#p1,x1,y1) %&PairAttr(#p2,x2,y2) xunit='&ptValue(#xunit)' yunit='&ptValue(#yunit)' />",
+		       attributes=>[qw(xunit yunit gridwidth gridcolor griddots gridlabels gridlabelcolor subgriddiv subgridwidth subgridcolor subgriddots)],
+		       afterDigest=> sub {
+			 my ($p0, $p1, $p2) = ($_[1], $_[2], $_[3]);
+			 if (!$p0) { $p0 = ZeroPair; $p1 = $p0; $p2 =Pair(LookupValue('\psxunit')->multiply(10),
+									  LookupValue('\psyunit')->multiply(10)); }
+			 elsif (!$p1 && $p0) { $p2 = $p0; $p0 = ZeroPair; $p1 = $p0; }
+			 elsif (!$p2 && $p1) { $p2 = $p1; $p1 = $p0; }
+			 $_[0]->setProperties(p0=>$p0, p1=>$p1, p2=>$p2); });
+
+##########################################################################################
+## 16 Custom styles
+##########################################################################################
+
+DefMacro('\newpsobject {} {} {}', sub {
+	   my ($newName, $oldName, $keyval) = ("\\".$_[1]->toString, "\\".$_[2]->toString, $_[3]->toString);
+	   DefMacro($newName.' OptionalMatch:* []', sub {
+		      my ($name, $thiskey) = ($_[0]->getCS->getCSName, $_[2]);
+		      my ($old, $key) = map(LookupValue('psobject_'.$name.$_), qw(old key));
+		      $thiskey = $thiskey ? $thiskey->toString : '';
+		      $key .= ',' if $key && $thiskey; $key .= $thiskey;
+		      my @exp = (T_CS($old));  push(@exp, T_OTHER('*')) if $_[1];
+		      push(@exp, T_OTHER('['), Explode($key), T_OTHER(']')) if $key;
+		      @exp; });
+	   AssignValue('psobject_'.$newName.'old', $oldName);
+	   AssignValue('psobject_'.$newName.'key', $keyval);
+	   return; });
+
+DefMacro('\newpsstyle {} RequiredKeyVals:pstricks', sub {
+	   AssignValue('psstyle_'.$_[1]->toString, KeyVals($_[2]));
+	   return; });
+
+##########################################################################################
+## 24 Placing and rotating whatever
+##########################################################################################
+
+sub finishLabelPut {
+  my ($whatsit, $angle, $p) = @_;
+  my $t = Transform('translate('.($p->getX->valueOf).' '.($p->getY->valueOf).')'.($angle ? ' rotate('. $angle->valueOf.')' : ''));
+  $whatsit->setProperties(transform=>$t, fillcolor=>LookupValue('\psfillcolor'));
+  t_Translation($p); t_Rotation($angle, 1);  }
+
+DefMacro('\rput OptionalMatch:* [] OptionalBracketed ZeroPSCoord', sub {
+	   (T_BEGIN, T_CS('\rput@start'), $_[1] ? T_OTHER('*') : (), $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
+	    $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (), T_OTHER('('), Explode($_[4]->toString), T_OTHER(')'), T_CS('\put@end')); });
+
+DefConstructor('\rput@start OptionalMatch:* [] BracketedPSAngle PSCoord',
+	       "<g transform='&ptValue(#transform)' pos='#2' ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       afterDigest=>sub { finishLabelPut($_[0], $_[3], $_[4]); },
+	       alias=>'\rput');
+
+DefConstructor('\put@end {}', "#1 </g>", afterDigest=>sub { LookupDefinition(T_END)->invoke; }, alias=>' ');
+
+DefMacro('\uput OptionalMatch:* OptionalBracketed [] OptionalBracketed ZeroPSCoord', sub {
+	   (T_BEGIN, T_CS('\uput@start'), $_[1] ? T_OTHER('*') : (), $_[2] ? (T_BEGIN, $_[2]->unlist, T_END) : (), $_[3] ?
+	    (T_OTHER('['), $_[3]->unlist(), T_OTHER(']')) : (), $_[4] ? (T_BEGIN, $_[4]->unlist, T_END) : (), T_OTHER('('),
+	    Explode($_[5]->toString), T_OTHER(')'), T_CS('\put@end')); });
+
+DefConstructor('\uput@start OptionalMatch:* BracketedPSDimension [PSAngle] BracketedPSAngle PSCoord',
+	       "<g transform='&ptValue(#transform)' ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       afterDigest=>sub {
+		 my $pz = $_[5];
+		 if ($_[3]) {
+		   my ($ra, $dim) = (radians($_[3]->valueOf), $_[2] || LookupValue('\pslabelsep'));
+		   $pz = Pair($pz->getX->add($dim->multiply(cos($ra))), $pz->getY->add($dim->multiply(sin($ra)))); }
+		 finishLabelPut($_[0], $_[4], $pz); },
+	       alias=>'\uput');
+
+our %rput2uput = (l=>'r', b=>'u', r=>'l', t=>'d', bl=>'ur', br=>'ul', tr=>'dr', rl=>'dl',
+                  lb=>'ur', rb=>'ul', rt=>'dr', lr=>'dl');
+DefMacro('\Rput OptionalMatch:* OptionalBracketed [] OptionalBracketed ZeroPSCoord', sub {
+	   my ($ignore, $star, $labelsep, $refangle, $rotation, $pos) = @_;
+	   if ($refangle) { $refangle = $rput2uput{$refangle->toString}; }
+	   my @exp = (T_CS('\uput'), $star ? T_OTHER('*') : (), $labelsep ? (T_BEGIN, $labelsep->unlist, T_END) : (),
+		      $refangle ? (T_OTHER('['), Explode($refangle), T_OTHER(']')) : ());
+	   push(@exp, T_BEGIN, $rotation->unlist, T_END) if $rotation;
+	   push(@exp, T_OTHER('('), Explode($pos->toString), T_OTHER(')'));
+	   @exp; });
+
+sub getPutExp {
+  my ($st, $dt, $no, $body, @rp) = @_; my @exp = ();
+  for (my $i = 0; $i < $no; $i++) {
+    push(@exp, @rp, T_OTHER('('), Explode($st->toString), T_OTHER(')'), T_BEGIN, $body->unlist, T_END);
+    $st = Pair($st->getX->add($dt->getX), $st->getY->add($dt->getY)); }
+  @exp; }
+
+DefMacro('\multirput OptionalMatch:* [] OptionalBracketed PSCoord PSCoord {Number} {}', sub {
+	   my @rp = (T_CS('\rput'));
+	   push(@rp, T_OTHER('*')) if $_[1];
+	   push(@rp, T_OTHER('['), $_[2]->unlist, T_OTHER(']')) if $_[2];
+	   push(@rp, T_BEGIN, $_[3]->unlist, T_END) if $_[3];
+	   my ($no, $body) = ($_[6]->valueOf, $_[7]);
+	   my ($st, $dt) = $_[5] ? ($_[4], $_[5]) : (ZeroPair, $_[4]);
+	   getPutExp($st, $dt, $no, $body, @rp); });
+
+DefMacro('\multips OptionalBracketed PSCoord PSCoord {Number} {}', sub {
+	   my @rp = (T_CS('\rput'));
+	   push(@rp, T_BEGIN, $_[1]->unlist, T_END) if $_[1];
+	   my ($no, $body) = ($_[4]->valueOf, $_[5]);
+	   my ($st, $dt) = $_[3] ? ($_[2], $_[3]) : (ZeroPair, $_[2]);
+	   getPutExp($st, $dt, $no, $body, @rp); });
+
+##########################################################################################
+## VI Text Tricks
+## 27 Framed boxes
+##########################################################################################
+
+DefPSConstructor('\psframebox', '{}',
+		 "<g framed='yes' fillframe='yes' fill='#fillcolor' ?#1(stroke='#fillcolor')(stroke='#linecolor')>#2</g>",
+		 attributes=>[qw(linecolor fillcolor)]);
+
+DefPSConstructor('\psdblframebox', '{}',
+		 "<g framed='yes' fillframe='yes' doubleline='true' doublesep='#linewidth' fill='#fillcolor' ?#1(stroke='#fillcolor')(stroke='#linecolor')>#2</g>",
+		 attributes=>[qw(linecolor fillcolor)]);
+
+DefPSConstructor('\psshadowbox', '{}',
+		 "<g framed='yes' fillframe='yes' shadowbox='true' fill='#fillcolor' ?#1(stroke='#fillcolor')(stroke='#linecolor')>#2</g>",
+		 attributes=>[qw(linecolor fillcolor)]);
+
+DefPSConstructor('\pscirclebox', '{}',
+		 "<g framed='yes' fillframe='yes' frametype='circle' fill='#fillcolor' ?#1(stroke='#fillcolor')(stroke='#linecolor')>#2</g>",
+		 attributes=>[qw(linecolor fillcolor)]);
+
+DefPSConstructor('\psovalbox', '{}',
+		 "<g framed='yes' fillframe='yes' frametype='oval' fill='#fillcolor' ?#1(stroke='#fillcolor')(stroke='#linecolor')>#2</g>",
+		 attributes=>[qw(linecolor fillcolor)]);
+
+DefMacro('\cput OptionalMatch:* [] OptionalBracketed PSCoord {}', sub {
+	   my ($ignore, $star, $par, $angle, $coord, $body) = @_;
+	   my @exp = (T_CS('\rput'));
+	   push(@exp, T_BEGIN, $angle->unlist, T_END) if $angle;
+	   push(@exp, T_OTHER('('), Explode($coord->toString), T_OTHER(')'), T_BEGIN, T_CS('\pscirclebox'));
+	   push(@exp, T_OTHER('*')) if $star;
+	   push(@exp, T_OTHER('['), $par->unlist, T_OTHER(']')) if $par;
+	   push(@exp, T_BEGIN, $body->unlist, T_END, T_END);
+	   @exp; });
+
+##########################################################################################
+## 28 Clipping
+##########################################################################################
+
+DefConstructor('\clipbox [PSDimension] {}',"<g bclip='&ptValue(#1)'>#2</g>");
+DefEnvironment('{psclip} {}', '<clip> <clippath> #1 </clippath> #body </clip>');
+
+##########################################################################################
+## 29 Rotation and scaling boxes
+##########################################################################################
+
+DefConstructor('\rotateleft {}', "<g transform='rotate(90)'> #1 </g>",
+	       beforeDigest=>sub { BGroup; ackTransform('rotate(90)'); },
+	       afterDigest=>\&EGroup);
+DefConstructor('\rotateright {}', "<g transform='rotate(-90)'> #1 </g>",
+	       beforeDigest=>sub { BGroup; ackTransform('rotate(-90)'); },
+	       afterDigest=>\&EGroup);
+DefConstructor('\rotatedown {}', "<g transform='rotate(180)'> #1 </g>",
+	       beforeDigest=>sub { BGroup; ackTransform('rotate(180)'); },
+	       afterDigest=>\&EGroup);
+
+DefConstructor('\scalebox {} {}', "<g transform='scale(#1)'> #2 </g>", 
+	       beforeDigest=>sub { ackTransform('scale('.$_[1]->toString.')'); },
+	       afterDigest=>\&EGroup);
+
+DefConstructor('\scaleboxto PSCoord {}',"<g scaleto='&ptValue(#1)'>#2</g>");
+
+
+##########################################################################################
+##                           The following is incomplete                                ##
+##########################################################################################
+
+
+##########################################################################################
+## IV Custom Graphics
+## 19 Graphics objects
+##########################################################################################
+
+sub beforePSCustom {
+  # define special path commands that appear only in \pscustom
+}
+
+# NOTE: colors in contents of g may be wrong; more constructors need to be defined
+DefPSConstructor('\pscustom', '{}', "<g> #3 </g>",
+		 beforeDigest=> sub { beforePSCustom; });
+
+##########################################################################################
+## Special coordinates
+##########################################################################################
+
+DefMacro('\SpecialCoor', '');
+DefMacro('\NormalCoor',  '');
+DefMacro('\PSTricksOff', '');
+
+1;

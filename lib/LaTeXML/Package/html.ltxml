@@ -20,12 +20,12 @@ DefMacro('\latextohtml','\LaTeX2\texttt{HTML}');
 DefMacro('\htmladdnormallinkfoot{}{}','\footnote{\href{#2}{#1}}');
 DefMacro('\htmladdnormallink{}{}','\href{#2}{#1}');
 DefMacro('\htmladdimg{}','\hyperimage{#1}');
-DefMacro('\externallabels{semiverb}{semiverb}','');
+DefMacro('\externallabels Semiverbatim Semiverbatim','');
 DefMacro('\externalref{}',''); # ???
 DefMacro('\externalcite','\nocite');
 DefMacro('\htmladdTOClink[]{}{}{}', '');
-DefConstructor('\htmlrule Flag:*','<rule/>');
-DefConstructor('\HTMLrule Flag:*','<rule/>');
+DefConstructor('\htmlrule OptionalMatch:*','<rule/>');
+DefConstructor('\HTMLrule OptionalMatch:*','<rule/>');
 DefConstructor('\htmlclear','<br/>');
 DefMacro('\bodytext{}','');
 DefMacro('\htmlbody','');
@@ -49,8 +49,8 @@ DefEnvironment('{latexonly}','#body'); # Include this (?)
 DefMacro('\latexhtml{}{}','#1');
 
 DefMacro('\strikeout{}','');
-DefMacro('\url{semiverb}','');
-DefMacro('\htmlurl{semiverb}','');
+DefMacro('\url Semiverbatim','');
+DefMacro('\htmlurl Semiverbatim','');
 
 DefMacro('\HTMLset{}{}','');
 DefMacro('\htmlinfo','');

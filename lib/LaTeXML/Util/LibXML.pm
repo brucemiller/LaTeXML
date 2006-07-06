@@ -18,7 +18,16 @@ use strict;
 use XML::LibXML;
 use Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT= (qw(&element_nodes &new_node &append_nodes &clear_node &maybe_clone));
+our @EXPORT= (qw(&element_nodes &text_in_node &new_node &append_nodes &clear_node &maybe_clone 
+		 &valid_attributes &copy_attributes &rename_attribute &rename_node &remove_attr
+		 &get_attr &isTextNode &isElementNode
+		 &CA_KEEP &CA_OVERWRITE &CA_MERGE &CA_EXCEPT));
+
+# attribute copying modes
+use constant CA_KEEP => 1;
+use constant CA_OVERWRITE => 2;
+use constant CA_MERGE => 4;
+use constant CA_EXCEPT => 128;
 
 #======================================================================
 # XML Utilities
@@ -26,10 +35,18 @@ sub element_nodes {
   my($node)=@_;
   grep( $_->nodeType == XML_ELEMENT_NODE, $node->childNodes); }
 
+sub text_in_node {
+  my($node)=@_;
+  join("\n", map($_->data, grep($_->nodeType == XML_TEXT_NODE, $node->childNodes))); }
+
+sub isTextNode { $_[0]->nodeType == XML_TEXT_NODE; }
+sub isElementNode { $_[0]->nodeType == XML_ELEMENT_NODE; }
+
 sub new_node {
   my($nsURI,$tag,$children,%attributes)=@_;
-  $tag =~ /^(\w+):(.*)$/;
-  my($nspre,$rawtag)=($1,$2 || $tag);
+#  print "\n\n\nnsURI: $nsURI, tag: $tag, children: $children\n";
+  my ($nspre,$rawtag) = (undef, $tag);
+  if ($tag =~ /^(\w+):(.*)$/) { ($nspre,$rawtag)=($1,$2 || $tag); }
   my $node=XML::LibXML::Element->new($rawtag);
 #  my $node=$LaTeXML::Post::DOC->createElement($tag);
 #  my $node=$LaTeXML::Post::DOC->createElementNS($nsURI,$tag);
@@ -49,14 +66,14 @@ sub append_nodes {
   foreach my $child (@children){
     if(ref $child eq 'ARRAY'){ 
       append_nodes($node,@$child); }
-    elsif(ref $child eq 'XML::LibXML::Element'){ 
+    elsif(ref $child ){#eq 'XML::LibXML::Element'){ 
 #      $node->appendChild(maybe_clone($child)); }
       my $new = maybe_clone($child);
       $node->appendChild($new);
 #      normalize_node($new);
     }
-    elsif(ref $child){
-      die "Attept to append $child to $node\n"; }
+#    elsif(ref $child){
+#      die "Attempt to append $child to $node\n"; }
     elsif(defined $child){ 
       $node->appendText($child); }}
   $node; }
@@ -75,6 +92,51 @@ sub maybe_clone {
   my($node)=@_;
   ($node->parentNode ? $node->cloneNode(1) : $node); }
 
+sub rename_node {
+    my ($node, $newName,$newNSURI) = @_;
+    my @children = $node->childNodes;
+#    my $newNode = new_node($newNSURI, $newName, \@children);
+    my $newNode = $node->parentNode->addNewChild($newNSURI,$newName);
+    map($newNode->appendChild($_), @children);
+    copy_attributes($newNode, $node);
+    $node->replaceNode($newNode);
+    $newNode; }
+
+# the attributes list may contain undefined values
+# and attributes with no name (?)
+sub valid_attributes {    
+    my($node)=@_;
+    grep($_ && $_->getName, $node->attributes); }
+
+# copy @attr attributes from $from to $to
+sub copy_attributes {
+    my ($to, $from, $mode, @attr) = @_;
+    $mode = CA_OVERWRITE unless defined $mode;
+    if ($mode & CA_EXCEPT) {
+	my %ex; map($ex{$_}=1, @attr); $mode &= !CA_EXCEPT; $mode = CA_OVERWRITE unless $mode;
+	@attr = map($_->getName, grep(!$ex{$_->getName}, valid_attributes($from))); }
+    else { @attr = map($_->getName, valid_attributes($from)) unless @attr; }
+    foreach my $attr(@attr){
+	my $at = $from->getAttribute($attr);
+	next if ((!defined $at) || (($mode == CA_KEEP) && $to->hasAttribute($attr)));
+	if ($mode == CA_MERGE) {
+	    my $old = $to->getAttribute($attr);
+	    $at = "$old $at" if $old; }
+	$to->setAttribute($attr, $at); }
+}
+
+sub rename_attribute {
+    my ($node, $from, $to) = @_;
+    $node->setAttribute($to, $node->getAttribute($from));
+    $node->removeAttribute($from); }
+
+sub remove_attr {
+    my ($node, @attr) = @_;
+    map($node->removeAttribute($_), @attr); }
+
+sub get_attr {
+    my ($node, @attr) = @_;
+    map($node->getAttribute($_), @attr); }
 
 sub normalize_node {
   my($node)=@_;

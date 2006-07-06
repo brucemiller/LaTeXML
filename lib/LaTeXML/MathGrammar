@@ -80,7 +80,8 @@ extendFormula :
 # maybeRHS[$expr,(punct,$expr)*]; 
 #    Could have RELOP Expression (which means the (collected LHS) relation RHS)
 #    or done (just collection)
-maybeRHS : relop Expression                     { NewFormula(NewCollection(@arg), $item[1], $item[2]); }
+#maybeRHS : relop Expression                     { NewFormula(NewCollection(@arg), $item[1], $item[2]); }
+maybeRHS : relopExpr(s)                         { NewFormula(NewCollection(@arg),map(@$_,@{$item[1]})); }
 	|   	                                { NewCollection(@arg); }
 # --- either line could be followed by (>0)
 # For the latter, does a,b,c (<0) mean c<0 or all of them are <0 ????
@@ -110,7 +111,9 @@ relopExpr : relop Expression			{ [$item[1],$item[2]]; }
 # `Modifier' formula, things like $<0$, that might follow another formula or text.
 # Empty is a placeholder for the missing thing... (?)
 
-modifierFormula : relopExpr(s) { NewFormula(New('Empty'),map(@{$_},@{$item[1]})); }
+#modifierFormula : relopExpr(s) { NewFormula(New('Empty'),map(@{$_},@{$item[1]})); }
+modifierFormula : relop Expression punctExpr(s?) 
+		 { NewFormula(New('Empty'),$item[1],NewCollection($item[2],map(@$_,@{$item[3]})));}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Expressions; sums of terms
@@ -150,13 +153,14 @@ Factor	:
 	| preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
 	| preScripted['UNKNOWN'] doubtArgs[$item[1]]
 	| NUMBER   addScripts[$item[1]]
+	| SCRIPTOPEN scriptFactorOpen[$item[1]]
 	| OPEN factorOpen[$item[1]]
 #	| bigop addScripts[$item[1]] Term   { Apply($item[2],$item[3]); }
 	| bigop addScripts[$item[1]] addTerm[$item[2]]
 	| VERTBAR Expression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
 #	| OPERATOR addScripts[$item[1]] addOperatorArg[$item[2]]
 	| OPERATOR addScripts[$item[1]] nestOperators[$item[2]] addArgs[$item[3]]
-        | DIFF addScripts[$item[1]]
+##        | DIFF addScripts[$item[1]]
 
 ATOM_OR_ID : ATOM | ID
 
@@ -239,13 +243,24 @@ factorOpenExpr :
 	# 2nd expression; some kind of pair, interval, set, whatever
          (PUNCT Expression { [$item[1],$item[2]]; })(s)  CLOSE
 		  addScripts[Fence($arg[0],$arg[1],map(@$_,@{$item[1]}),$item[2])]
-        # A conditionalized set
-	| MIDDLE Formulae CLOSE 
-	  {  ApplyDelimited(New('Set',undef,role=>'FENCED'),
-	                    $arg[0], $arg[1], $item[1], $item[2], $item[3]); }
+        # A conditionalized set (Can I check for an explicit { here??)
+#	| setBar Formulae CLOSE 
+#	  {  ApplyDelimited(New('Set',undef,role=>'FENCED'),
+#	                    $arg[0], $arg[1], $item[1], $item[2], $item[3]); }
 	# parenthesized expression.
 	| balancedClose[$arg[0]] addScripts[Fence($arg[0],$arg[1],$item[1])]
 
+# ================================================================================
+# Sets special cases
+# A conditionalized set
+scriptFactorOpen : Formula setBar Formulae balancedClose[$arg[0]]
+	  {  ApplyDelimited(New('ConditionalSet',undef,role=>'FENCED'),
+	                    $arg[0], $item[1],$item[2], $item[3],$item[4]); }
+        # Else fall through to normal factorOpen
+        | factorOpen[$arg[0]]
+
+# The bar that can appear in a set.
+setBar : MIDDLE | VERTBAR
 # ================================================================================
 # Function args, etc.
 
@@ -318,12 +333,11 @@ addConstraint :
 #  Useful combinations of terminals.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-#anyop   : relop | METARELOP | ARROW | ADDOP | MULOP | BIGOP | LIMITOP | INTOP | DIFFOP
 anyop   : relop | METARELOP | ARROW | ADDOP | MULOP 
 	| bigop addScripts[$item[1]] 
 	| OPERATOR addScripts[$item[1]]
 
-QOp     : relop | ADDOP | MULOP | ATOM		{ $item[1]; }
+##QOp     : relop | ADDOP | MULOP | ATOM		{ $item[1]; }
 
 relop	: RELOP | ARROW
 
@@ -359,14 +373,16 @@ ADDOP		: /ADDOP:\S*:\d+/ 	    { Lookup($item[1]); }
 MULOP		: /MULOP:\S*:\d+/ 	    { Lookup($item[1]); }
 SUPOP		: /SUPOP:\S*:\d+/ 	    { Lookup($item[1]); }
 OPEN		: /OPEN:\S*:\d+/ 	    { Lookup($item[1]); }
+SCRIPTOPEN	: /OPEN:\{:\d+/ 	    { Lookup($item[1]); }
 CLOSE		: /CLOSE:\S*:\d+/ 	    { Lookup($item[1]); }
 MIDDLE		: /MIDDLE:\S*:\d+/ 	    { Lookup($item[1]); }
 BIGOP		: /BIGOP:\S*:\d+/ 	    { Lookup($item[1]); }
 SUMOP		: /SUMOP:\S*:\d+/ 	    { Lookup($item[1]); }
 INTOP		: /INTOP:\S*:\d+/ 	    { Lookup($item[1]); }
 LIMITOP		: /LIMITOP:\S*:\d+/ 	    { Lookup($item[1]); }
+DIFFOP		: /DIFFOP:\S*:\d+/ 	    { Lookup($item[1]); }
 OPERATOR	: /OPERATOR:\S*:\d+/ 	    { Lookup($item[1]); }
-DIFF		: /DIFF:\S*:\d+/ 	    { Lookup($item[1]); }
+##DIFF		: /DIFF:\S*:\d+/ 	    { Lookup($item[1]); }
 VERTBAR		: /VERTBAR:\S*:\d+/ 	    { Lookup($item[1]); }
 FUNCTION        : /FUNCTION:\S*:\d+/ 	    { Lookup($item[1]); }
 NUMBER      	: /NUMBER:\S*:\d+/ 	    { Lookup($item[1]); }
@@ -375,7 +391,6 @@ POSTSUBSCRIPT   : /POSTSUBSCRIPT:\S*:\d+/   { Lookup($item[1]); }
 FLOATINGSUPERSCRIPT  : /FLOATINGSUPERSCRIPT:\S*:\d+/  { Lookup($item[1]); }
 FLOATINGSUBSCRIPT    : /FLOATINGSUBSCRIPT:\S*:\d+/    { Lookup($item[1]); }
 POSTFIX		: /POSTFIX:\S*:\d+/ 	    { Lookup($item[1]); }
-PRIME		: /PRIME:\S*:\d+/ 	    { Lookup($item[1]); }
-DIFFOP		: /DIFFOP:\S*:\d+/ 	    { Lookup($item[1]); }
+##PRIME		: /PRIME:\S*:\d+/ 	    { Lookup($item[1]); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

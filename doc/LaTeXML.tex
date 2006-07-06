@@ -44,17 +44,18 @@
 \begin{document}
 \maketitle
 \section{Introduction}
-For many, \LaTeX\ is the prefered format for document authoring, particularly when
-significant mathematical content and quality typesetting is involved.
+For many, \LaTeX\ is the prefered format for document authoring, particularly those
+involving significant mathematical content and where quality typesetting is desired.
 On the other hand, content-oriented \XML\ is an extremely useful representation for documents,
 allowing them to be used, and reused, for a variety of purposes, not least, 
-presentation on the Web.  Both of these representations were natural and uncontroversial
-choices for the corresponding phases of
-the \URL[Digital Library of Mathematical Functions]{http://dlmf.nist.gov}.
-Yet, the style and intent of \LaTeX\ markup, as compared to \XML\
-markup, presents difficulties in converting from the former to the latter.
-Perhaps ironically, these difficulties are worst for mathematical material, where
-there is a tendency with \LaTeX\ to focus on appearance rather than meaning.
+presentation on the Web. Yet, the style and intent of \LaTeX\ markup, as compared to \XML\
+markup, not to mention its programmability, presents difficulties in converting
+documents from the former format to the latter.
+Perhaps ironically, these difficulties can be particularly large for mathematical material, 
+where there is a tendency for the markup to focus on appearance rather than meaning.
+
+The choice of \LaTeX\ for authoring, and \XML\ for delivery were natural and uncontroversial
+choices for the \URL[Digital Library of Mathematical Functions]{http://dlmf.nist.gov}.
 Faced with the need to perform this conversion and the lack of suitable tools to perform it, 
 the DLMF project proceeded to develop thier own tool, \LaTeXML, for this purpose.
 This document describes a \emph{preview} release of \LaTeXML.
@@ -72,7 +73,7 @@ The idealistic goals of \LaTeXML\ are:
 As these goals are not entirely practical, or even somewhat contradictory,
 they are implicitly modified by ``as much as possible.''
 Completely mimicing \TeX's behaviour would seem to require the sneakiest modifications
-to \TeX, itself.  `Ease of use,' of course, is in the eye of the beholder.
+to \TeX, itself.  `Ease of use' is, of course, in the eye of the beholder.
 More significantly, few documents are likely to have completely unambiguous
 mathematics markup; human understanding of both the topic and the surrounding 
 text is needed to properly interpret any particular fragment.
@@ -120,9 +121,10 @@ and description of command options\footnote{Use \texttt{latexml --help} or
 \texttt{perldoc latexml} to view the documentation}.
 
 \section{Architectural Overview}\label{sec:architecture}
-Like \TeX, \LaTeXML\ is data-driven: the text and control sequences (ie.~macros and primitives)
+Like \TeX, \LaTeXML\ is data-driven: the text and executable control
+sequences (ie.~macros and primitives)
 in the source file (and any packages loaded) direct the processing.
-The user exerts control over the processing, and customizes it, by 
+The user exerts control over the conversion, and customizes it, by 
 providing alternative \LaTeXML-specific implementations of the control sequences and packages,
 by declaring properties of the desired document structure,
 and by defining rewrite rules to be applied to the constructed document tree.
@@ -220,7 +222,8 @@ The exceptions are where the mathematical structure is clear from the markup its
 such as \verb|\frac| or sub- and superscripts, where a generalized \emph{application} (\tag{XMApp})
 is constructed.  The substructures will typically play no role in the parsing of the upper 
 layer of tokens; they are wrapped (in an \tag{XMArg} or \tag{XMWrap} element) and parsed
-as separate subexpressions.  Thus we speak of \LaTeXML\ as being a \emph{structure preserving lexer}.  
+as separate subexpressions.  At this level, we can think of \LaTeXML\ as being
+a \emph{structure preserving} lexer.  
 
 The parser, invoked by the postprocessor, works only with the top-level lists of lexical tokens,
 or with those sublists contained in an \tag{XMArg}.  The grammar works primarily through
@@ -312,6 +315,147 @@ during parsing, but probably shouldn't.
   \end{description}
 \end{description}
 }
+\section{Math Details}\label{app:math}
+\LaTeXML\ processes mathematical material by proceeding through several stages:
+\begin{itemize}
+\item Basic processing of macros, primitives and constructors resulting in
+   an XML document; the math is primarily represented by a sequence of
+   tokens (\tag{XMTok}) or structured items (\tag{XMApp}, \tag{XMDual}) and
+   hints (\tag{XMHint}, which are ignored).
+\item Document tree rewriting, where rules are applied to modify the document tree.
+   User supplied rules can be used here to clarify the intent of markup used in the document.
+\item Math Parsing; a grammar based parser is applied, depth first, to each level of the math.
+   In particular, at the top level of each math expression, as well as each
+   subexpression within structured items (these will have been contained in
+   an \tag{XMArg} or \tag{XMWrap} element).  This results in an expression tree
+   that will hopefully be an accurate representation of the expression's structure,
+   but may be ambigous in specifics (eg.`what the meaning of a superscript is).
+\item \emph{Not yet implemented} a following stage must be developed to resolve
+   the semantic ambiguities by analyzing and augmenting the expression tree.
+\item Target conversion: from the internal \tag{XM} representation to
+   \MathML\ or \OpenMath.
+\end{itemize}
+
+The \tag{Math} element is a top-level container for any math mode material; it
+serves as the container for the various representations of the math, including
+images (through attributes \attr{mathimage}, \attr{width} and \attr{height}), 
+textual (through attributes \attr{tex}, \attr{content-tex} and \attr{text}),
+\MathML\ and the internal representation itself.  
+The \attr{mode} attribute specifies whether the math should be in display or inline mode.
+
+\subsection{Internal Math Resentation}\label{app:mathrep}
+The \tag{XMath} element is the container for the internal representation
+
+The following attributes can appear on all \tag{XM} elements:
+\begin{description}
+\item[\attr{role}] the grammatical role that this element plays 
+\item[\attr{open}, \attr{close}] parenthese or delimiters that were used to wrap the
+   expression represented by this element.
+\item[\attr{argopen}, \attr{argclose}, \attr{separators}] delimiters on an function or operator
+   (the first element of an \tag{XMApp})  that were used to delimit the arguments of the function.
+    The separators is a string of the punctuation characters used to separate arguments.
+\item[\attr{xml:id}] a unique identifier to allow reference (\tag{XMRef}) to this element.
+\end{description}
+
+\paragraph{Math Tags} The following tags are used for the intermediate math representation:
+\begin{description}
+\item[\tag{XMTok}] represents a math token. It may contain text for presentation.
+   Additional attributes are:
+  \begin{description}
+   \item[\attr{name}] the name that represents the `meaning' of the token; this overrides
+      the content for identifying the token.
+   \item[\attr{omcd}] the \OpenMath\ content dictionary that the name belongs to.
+   \item[\attr{font}] the font to be used for presenting the content.
+   \item[\attr{style}] ?
+   \item[\attr{size}] ?
+   \item[\attr{stackscripts}] whether scripts should be stacked above/below the item, instead
+     of the usual script position.
+  \end{description}
+\item[\tag{XMApp}] represents the generalized application of some function or operator to arguments.
+   The first child element is the operator, the remainig elements are the arguments.
+   Additional attributes:
+  \begin{description}
+    \item[\attr{name}] the name that represents the meaning of the construct as a whole.
+    \item[\attr{stackscripts}] ?
+  \end{description}
+\item[\tag{XMDual}] combines representations of the content (the first child) and presentation
+   (the second child), useful when the two structures are not easily related.
+\item[\tag{XMHint}] represents spacing or other apparent purely presentation material.
+  \begin{description}
+    \item[\attr{name}] names the effect that the hint was intended to achieve.
+    \item[\attr{style}] ?
+  \end{description}
+\item[\tag{XMWrap}] serves to assert the expected type or role of a subexpression that
+  may otherwise be difficult to interpret --- the parser is more forgiving about these.
+  \begin{description}
+    \item[\attr{name}] ?
+    \item[\attr{style}] ?
+  \end{description}
+\item[\tag{XMArg}] serves to wrap individual arguments or subexpressions, created by
+  structured markup, such as \verb|\frac|.  These subexpressions can be parsed individually.
+  \begin{description}
+    \item[\attr{rule}] the grammar rule that this subexpression should match.
+  \end{description}
+\item[\tag{XMRef}] refers to another subexpression,.  This is used to avoid duplicating
+  arguments when constructing an \tag{XMDual} to represent a function application, for example.  
+  The arguments will be placed in the content branch (wrapped in an \tag{XMArg}) while
+  \tag{XMRef}'s will be placed in the presentation branch.
+  \begin{description}
+    \item[\attr{idref}] the identifier of the referenced math subexpression.
+  \end{description}
+\end{description}
+
+\subsection{Grammatical Roles}\label{app:mathroles}
+The following grammatical roles are recognized by the math parser.
+These values can be specified in the \attr{role} attribute during the initial 
+document construction or by rewrite rules.  Although the precedence of operators
+is loosely described in the following, since the grammar contains various special
+case productions, no rigidly ordered precedence is given.
+\begin{description}
+\item[\code{ATOM}] a general atomic subexpression.
+\item[\code{ID}] a variable-like token, whether scalar or otherwise.
+\item[\code{PUNCT}] punctuation.
+\item[\code{APPLYOP}] an explicit infix application operator (high precedence).
+\item[\code{RELOP}] a relational operator, loosely binding.
+\item[\code{ARROW}] an arrow operator (with little semantic significance).
+  treated equivalently to \code{RELOP}.
+\item[\code{METARELOP}] an operator used for relations between relations, with lower precedence.
+\item[\code{ADDOP}] an addition operator, precedence between relational and multiplicative operators.
+\item[\code{MULOP}] a multiplicative operator, high precedence.
+\item[\code{SUPOP}] An operator appearing in a superscript, such as a collection of primes.
+\item[\code{OPEN}] an open delimiter.
+\item[\code{CLOSE}] a close delimiter.
+\item[\code{MIDDLE}] a middle operator used to group items between an \code{OPEN}, \code{CLOSE} pair.
+\item[\code{OPERATOR}] a general operator; higher precedence than function application.
+  For example, for an operator $A$, and function $F$, $A F x$ would be interpretted as $(A(F))(x)$.
+\item[\code{SUMOP}] a summation/union operator.
+\item[\code{INTOP}] an integral operator.
+\item[\code{LIMITOP}] a limiting operator.
+\item[\code{DIFFOP}] a differential operator.
+\item[\code{BIGOP}] a general operator, but lower precedence, such as a $P$ preceding
+  an integral to denote the principal value.
+ Note that \code{SUMOP}, \code{INTOP}, \code{LIMITOP}, \code{DIFFOP} and \code{BIGOP} are treated
+ equivalently by the grammar, but are distinguished to facilitate (\emph{eventually!}) 
+ analyzing the argument structure (eg bound variables and differentials within an integral).
+ \textbf{Note} are \code{SUMOP} and \code{LIMITOP} significantly different in this sense?
+\item[\code{VERTBAR}]
+\item[\code{FUNCTION}] a function which (may) apply to following arguments with higher
+   precedence than addition and multiplication, or parenthesized arguments.
+\item[\code{NUMBER}] a number.
+\item[\code{POSTSUPERSCRIPT}] the usual superscript, where the script is treated as
+  an argument, but the base will be determined by parsing. Note that this is not
+  necessarily assumed to be a power. Very high precedence.
+\item[\code{POSTSUBSCRIPT}] Similar to \code{POSTSUPERSCRIPT} for subscripts.
+\item[\code{FLOATINGSUPERSCRIPT}] A special case for a superscript on an empty base,
+  ie. \verb|{}^{x}|.  This is often used to place a pre-superscript or for
+  non-math uses (eg. \verb|10${}^{th}|).
+\item[\code{FLOATINGSUBSCRIPT}] Similar to \code{POSTSUPERSCRIPT} for subscripts.
+\item[\code{POSTFIX}] for a postfix operator
+\item[\code{UNKNOWN}] an unknown expression. This is the default for token elements,
+  and generates a warning if the unknown seems to be used as a function.
+\end{description}
+
+% Some 
 \section{Issues and ToDo}\label{app:todo}
 Lots\ldots!
 \begin{itemize}

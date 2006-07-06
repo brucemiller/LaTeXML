@@ -140,7 +140,10 @@ sub pathname_copy {
 #  * If $pathname is a not an absolute pathname (it may still have directory components)
 #    then if search $paths are given, search for it relative to each of the directories in $paths,
 #    else search for it relative to the current working directory.
-#  * If a pathname is not found, and 'types' is given, search for the pathname with 
+#  * If types is given, then search (in each searched directory) for the first
+#    file with the given extension.  The extension "" (empty string0 is treated specially,
+#    it searches for the exact name.
+#   If types is not given, search for the exact named file without additional extension.
 #    each type (extension) added.
 #    Note that if 'types' is given, it may find the file name w/o any extension.
 #    If a specific extension is required, use pathname_find(name="foo.type")
@@ -149,17 +152,17 @@ sub pathname_find {
   my $paths = $options{paths};
   my $types = $options{types};
   if(pathname_is_absolute($pathname)){
-    if(-f $pathname){ return $pathname; }
-    elsif($types){
+    if($types){
       foreach my $type (@$types){
-	my $fullpath = $pathname . "." . $type;
+	my $fullpath = $pathname;
+	$fullpath .= '.'.$type unless ($type eq '') || ($pathname=~/\.\Q$type\E$/);
 	return pathname_canonical($fullpath) if -f $fullpath; }}
+    elsif(-f $pathname){ return $pathname; }
     return undef; }
   elsif($paths){
     foreach my $path (@$paths){
-      # make sure each $path is absolute ?
-      my $fullpath = pathname_find(pathname_concat($path,$pathname),types=>$types);
-      return $fullpath if $fullpath; }}
+      if(my $found = pathname_find(pathname_concat($path,$pathname),types=>$types)){
+	return $found; }}}
   else {
     pathname_find(pathname_concat(pathname_cwd(),$pathname),types=>$types); }}
 

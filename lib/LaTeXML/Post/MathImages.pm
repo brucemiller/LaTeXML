@@ -24,7 +24,7 @@ our @ISA = (qw(LaTeXML::Post::Processor));
 our $MATHIMAGE_SUBDIR = 'math';
 # Other silly constants that might want changing?
 our $TMP = '/tmp';
-our $LATEXCMD='elatex';
+our $LATEXCMD='latex'; #(or elatex)
 
 # Usefull DVIPS options:
 #  -q  : run quietly
@@ -111,7 +111,7 @@ sub process {
 
     # === Run LaTeX on the file.
     system("cd $workdir ; $LATEXCMD $jobname > $jobname.output") == 0
-      or return $self->Error("Couldn't execute latex for math images: See $workdir/$jobname.log");
+      or return $self->Error("Couldn't execute latex for math images: $@\n See $workdir/$jobname.log");
     if(! -f "$workdir/$jobname.dvi"){
       return $self->Error("LaTeX somehow failed: See $workdir/$jobname.log"); }
     # === Run dvips to extract individual postscript files.

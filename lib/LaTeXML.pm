@@ -26,7 +26,7 @@ our @ISA = (qw(LaTeXML::Object));
 #use LaTeXML::Document;
 
 use vars qw($VERSION);
-$VERSION = "0.3.2";
+$VERSION = "0.4.0";
 
 #**********************************************************************
 # What a Mess of Globals!
@@ -78,12 +78,13 @@ sub digestFile {
   local $MODEL    = $$self{model};   # The document model.
   # And, set fancy error handler for ANY die!
   local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
+  local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',@_)); }; # ??
 
   NoteProgress("\n(Digesting $file...");
   $STOMACH->initialize;
   map($GULLET->input($_,['ltxml','latexml']), 'TeX', @{$$self{preload} || []} );
 
-  my $pathname = pathname_find($file,types=>['tex']);
+  my $pathname = pathname_find($file,types=>['tex','']);
   Fatal("Cannot find TeX file $file") unless $pathname;
   my($dir,$name,$ext)=pathname_split($pathname);
   $STATE->pushValue(SEARCHPATHS=>$dir);
@@ -104,6 +105,7 @@ sub digestString {
   local $MODEL    = $$self{model};   # The document model.
   # And, set fancy error handler for ANY die!
   local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
+  local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',@_)); }; # ??
 
   NoteProgress("\n(Digesting string...");
   $STOMACH->initialize;
@@ -126,6 +128,7 @@ sub convertDocument {
 
   # And, set fancy error handler for ANY die!
   local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
+  local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',@_)); }; # ??
 
   local $LaTeXML::DUAL_BRANCH= '';
   my $document  = LaTeXML::Document->new();

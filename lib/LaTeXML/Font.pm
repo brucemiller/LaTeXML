@@ -13,8 +13,7 @@
 package LaTeXML::Font;
 use strict;
 use LaTeXML::Global;
-use LaTeXML::Object;
-our @ISA = qw(LaTeXML::Object);
+use base qw(LaTeXML::Object);
 
 our $DEFFAMILY = 'serif';
 our $DEFSERIES = 'medium';
@@ -47,7 +46,6 @@ sub getSize   { $_[0]->[3]; }
 sub getColor  { $_[0]->[4]; }
 
 sub toString { "Font[".join(',',map($_ || '*', @{$_[0]}))."]"; }
-sub untex    { $_[0]->toString; }
 sub stringify{ $_[0]->toString; }
 
 sub equals {
@@ -129,7 +127,7 @@ sub match_font {
 package LaTeXML::MathFont;
 use strict;
 use LaTeXML::Global;
-our @ISA = qw(LaTeXML::Font);
+use base qw(LaTeXML::Font);
 
 our $DEFFAMILY = 'serif';
 our $DEFSERIES = 'medium';

@@ -31,22 +31,31 @@ our @ISA = (qw(LaTeXML::Post::Processor));
 #   background      : background color when filling or transparency.
 #   type_map        : hash of types=>hash.
 #        The hash for each type can have the following 
-#           type   : the type to convert the file to.
+#           type        : the type to convert the file to.
 #           transparent : if true, the background color will be made transparent.
 #           quality     : the `quality' used for the image.
 #           ncolors     : the image will be quantized to ncolors.
+#           prescale    : If true, and there are leading (or only) scaling commands,
+#                         compute the new image size and re-read the image into that size
+#                         This is useful for getting the best antialiasing for postscript, eg.
 sub new {
   my($class,%options)=@_;
   my $self = bless {dppt              => (($options{dpi}||100)/72.0), # Dots per point.
 		    ignoreOptions     => $options{ignoreOptions}   || [],
 		    trivial_scaling   => $options{trivial_scaling}  || 1,
 		    graphicsSourceTypes => $options{graphicsSourceTypes} || [qw(png gif jpg jpeg eps ps)],
-		    type_map          => $options{type_map} || { ps  =>{type=>'png', transparent=>1},
-								 eps =>{type=>'png', transparent=>1},
-								 jpg =>{type=>'jpg'},
-								 jpeg=>{type=>'jpeg'},
-								 gif =>{type=>'gif', transparent=>1},
-								 png =>{type=>'png', transparent=>1}},
+		    type_map          => $options{type_map} || { ps  =>{type=>'png', prescale=>1,
+									transparent=>1, ncolors=>'400%',
+									quality=>90},
+								 eps =>{type=>'png', prescale=>1,
+									transparent=>1, ncolors=>'400%',
+									quality=>90},
+								 jpg =>{type=>'jpg',ncolors=>'400%'},
+								 jpeg=>{type=>'jpeg', ncolors=>'400%'},
+								 gif =>{type=>'gif', 
+									transparent=>1, ncolors=>'400%'},
+								 png =>{type=>'png', transparent=>1,
+									ncolors=>'400%'}},
 		    background        => $options{background}       || "#FFFFFF",
 		   },$class; 
   $self->init(%options); 
@@ -111,13 +120,6 @@ sub setGraphicsSrc {
   $node->setAttribute('height',$height);
 }
 
-sub postprocess_image {
-  my($self,$image,$map)=@_;
-  $image->Quantize(colors=>$$map{ncolors}) if $$map{ncolors}; # Or a factor*original colors?
-  $image->Transparent($$self{background}) if $$map{transparent};
-  $image->Set('quality',$$map{quality}) if $$map{quality};
-  $image; }
-
 sub processGraphic {
   my($self,$node)=@_;
   my $source = $self->findGraphicsFile($node);
@@ -144,19 +146,18 @@ sub transformGraphic {
   if(my $prev = $self->cacheLookup($key)){	# Image was processed on previous run?
     $prev =~ /^(.*?)\|(\d+)\|(\d+)$/;
     my ($cached,$width,$height)=($1,$2,$3);
-    $self->ProgressDetailed(">> Reuse $cached $width x $height"); 
+    $self->ProgressDetailed(">> Reuse $cached @ $width x $height"); 
     ($cached,$width,$height); }
   # Trivial scaling case: Use original image with different width & height.
   elsif($$self{trivial_scaling} && ($newtype eq $type) && !grep(!($_->[0]=~/^scale/),@$transform)){
     my ($width,$height)=$self->trivial_scaling($source,$transform);
     my $copy = $self->copyFile($source);
-    $self->ProgressDetailed(">> Trivial scaling: Copy to $copy @ $width x $height");
+    $self->ProgressDetailed(">> Copied to $copy for $width x $height");
     $self->cacheStore($key,"$copy|$width|$height");
+    $self->ProgressDetailed(">> done with $key");
     ($copy,$width,$height); }
   else {
-    my ($image,$width,$height) =$self->complex_transform($source,$transform);
-    $image = $self->postprocess_image($image,$map);
-
+    my ($image,$width,$height) =$self->complex_transform($source,$transform, $map);
     my $N = $self->cacheLookup('_max_image_') || 0;
     my $newname = "$name-GEN". ++$N;
     $self->cacheStore('_max_image_',$N);
@@ -165,11 +166,12 @@ sub transformGraphic {
     pathname_mkdir($destdir) 
       or return $self->Error("Could not create relative directory $destdir: $!");
     my $dest = pathname_make(dir=>$destdir,name=>$newname,type=>$newtype);
+    $self->ProgressDetailed(">> Writing to $dest ");
     my $reldest = pathname_make(dir=>$reldir,name=>$newname,type=>$newtype);
     $image->Write(filename=>$dest) and warn "Couldn't write image $dest: $!";
 
-    $self->ProgressDetailed(">> Transform to $dest $width x $height ");
     $self->cacheStore($key,"$reldest|$width|$height");
+    $self->ProgressDetailed(">> done with $key");
     ($reldest,$width,$height); }
 }
 
@@ -180,6 +182,7 @@ sub trivial_scaling {
 
   my $image = Image::Magick->new(); 
   if(!$image->Read($source)){}	# ????
+#  $image->
   my($w,$h) = $image->Get('width','height');
 
   foreach my $trans (@$transform){
@@ -195,7 +198,7 @@ sub trivial_scaling {
 
 # Transform the image, returning (image,width,height);
 sub complex_transform {
-  my($self,$source,$transform)=@_;
+  my($self,$source,$transform, $map)=@_;
   my $image = Image::Magick->new(); 
   $image->Set(antialias=>1);
   if(!$image->Read($source)){
@@ -203,13 +206,15 @@ sub complex_transform {
 #    warn("Failed to read image $source"); 
 #    return; 
 }
+  my $orig_ncolors = $image->Get('colors');
   my ($w,$h) = $image->Get('width','height');
   my @transform = @$transform;
-  # But for postscript, we want to do as much scaling as possible BEFORE loading.
-  if($source =~ /\.e?ps$/){
-#    print STDERR "Prescaling postscript image from $w x $h\n";
+
+  # For prescaling, compute the desired size and re-read the image into that size,
+  # with an appropriate density set.  This will give much better anti-aliasing.
+  # Actually, we'll set the density & size up a further factor of $F, and then downscale.
+  if($$map{prescale}){
     my($w0,$h0)=($w,$h);
-    $w *=$$self{dppt}; $h *=$$self{dppt};		# Force to desired dpi ??
     while(@transform && ($transform[0]->[0] =~ /^scale/)){
       my($op,$a1,$a2,$a3,$a4)=@{shift(@transform)};
       if($op eq 'scale'){	# $a1 => scale
@@ -220,24 +225,23 @@ sub complex_transform {
 	  if($a1/$w < $a2/$h) { $a2 = $h*$a1/$w; }
 	  else                { $a1 = $w*$a2/$h; }}
 	($w,$h)=(ceil($a1*$$self{dppt}),ceil($a2*$$self{dppt})); }}
-    if(($w != $w0) || ($h != $h0)){
-#      print STDERR "postscript target size $w x $h\n";
-#      my($xr,$yr)=($image->Get('x-resolution')||72,$image->Get('y-resolution')||72);
-      my($xr,$yr)=(72,72);
-#      print STDERR "postscript resolution $xr x $yr\n";
-      $image = Image::Magick->new(); 
-      $image->Set(antialias=>1);
-      $image->Set(density=>int($w*$xr/$w0).'x'.int($h*$yr/$h0)); 
-      $image->Read($source);
-      ($w,$h) = $image->Get('width','height');
- }}	# RELOAD!!!
+    my $X = 4;			# Expansion factor
+    my($dx,$dy)=(int($X * 72 * $w/$w0),int($X * 72 * $h/$h0)); 
+    $self->ProgressDetailed(">> reloading to desired size $w x $h (density = $dx x $dy)");
+    $image = Image::Magick->new();
+    $image->Set(antialias=>1);
+    $image->Set(density=>$dx.'x'.$dy); # Load at prescaled, higher density
+    $image->Read($source);
+    $image->Set(colorspace=>'RGB');
+    $image->Scale(geometry=>int(100/$X)."%"); # Now downscale.
+    ($w,$h) = $image->Get('width','height'); }
 
-#  print STDERR "Image is $w x $h\n";
+  my $notes='';
   foreach my $trans (@transform){
     my($op,$a1,$a2,$a3,$a4)=@$trans;
     if($op eq 'scale'){		# $a1 => scale
       ($w,$h)=(ceil($w*$a1),ceil($h*$a1));
-#      print STDERR "Scale $a1 x $a2 => $w x $h\n";
+      $notes .= " scale to $w x $h";
       $image->Scale(width=>$w,height=>$h); }
     elsif($op eq 'scale-to'){ 
       # $a1 => width, $a2 => height, $a3 => preserve aspect ratio.
@@ -245,19 +249,12 @@ sub complex_transform {
 	if($a1/$w < $a2/$h) { $a2 = $h*$a1/$w; }
 	else                { $a1 = $w*$a2/$h; }}
       ($w,$h)=(ceil($a1*$$self{dppt}),ceil($a2*$$self{dppt}));
-#      print STDERR "Scale-to $a1 x $a2 => $w x $h\n";
+      $notes .= " scale-to $w x $h";
       $image->Scale(width=>$w,height=>$h); }
     elsif($op eq 'rotate'){
       $image->Rotate(degrees=>-$a1,color=>$$self{background});
       ($w,$h) = $image->Get('width','height'); 
-#      print STDERR "Rotate by $a1 => $w x $h\n";
-      # Note: This re-composing didn't used to be necessary!
-      my $nimage = Image::Magick->new();
-      $nimage->Set('size',"$w x $h");
-      $nimage->Read("xc:$$self{background}");
-      $nimage->Composite(image=>$image, compose=>'over', x=>0, y=>0);
-      $image=$nimage; 
-    }
+      $notes .= " rotate $a1 to $w x $h"; }
     # In the following two, note that TeX's coordinates are relative to lower left corner,
     # but ImageMagick's coordinates are relative to upper left.
     elsif(($op eq 'trim') || ($op eq 'clip')){
@@ -265,38 +262,44 @@ sub complex_transform {
       if($op eq 'trim'){ # Amount to trim: a1=left, a2=bottom, a3=right, a4=top
 	($x0,$y0,$ww,$hh)=( floor($a1*$$self{dppt}),             floor($a4*$$self{dppt}),
 			    ceil($w - ($a1 + $a3)*$$self{dppt}), ceil($h - ($a4 + $a2)*$$self{dppt})); 
-#      print STDERR "Trim $a1 $a2 $a3 $a4 => $x0,$y0 $ww x $hh\n";
-      }
+	$notes .= " trim to $ww x $hh @ $x0,$y0"; }
       else {			# BBox: a1=left, a2=bottom, a3=right, a4=top
 	($x0,$y0,$ww,$hh)=( floor($a1*$$self{dppt}),        floor($h - $a4*$$self{dppt}),
 			    ceil(($a3 - $a1)*$$self{dppt}), ceil(($a4 - $a2)*$$self{dppt})); 
-#      print STDERR "Clip $a1 $a2 $a3 $a4 => $x0,$y0 $ww x $hh\n";
-      }
+	$notes .= " clip to $ww x $hh @ $x0,$y0"; }
 
       if(($x0 > 0) || ($y0 > 0) || ($x0+$ww < $w) || ($y0+$hh < $h)){
 	my $x0p=max($x0,0); $x0 = min($x0,0);
 	my $y0p=max($y0,0); $y0 = min($y0,0);
 	$image->Crop(x=>$x0p, width =>min($ww,$w-$x0p),
 		     y=>$y0p, height=>min($hh,$h-$y0p));
-#      print STDERR "Crop x=>".$x0p." width =>".min($ww,$w-$x0p).
-#	           " y=>".$y0p." height=>".min($hh,$h-$y0p)."\n";
-
 	$w = min($ww+$x0, $w-$x0p);
-	$h = min($hh+$y0, $h-$y0p); }
-# Hmm, this set seems necessary even when no padding required? 
-# (were there changes in ImageMagick?)
-#      if(($x0 < 0) || ($y0 < 0) || ($ww > $w) || ($hh > $h)){
-      {
-	# No direct `padding' operation in ImageMagick
-	my $nimage = Image::Magick->new();
-	$nimage->Set('size',"$ww x $hh");
-	$nimage->Read("xc:$$self{background}");
-	$nimage->Composite(image=>$image, compose=>'over', x=>-$x0, y=>-$y0);
-	$image=$nimage; 
-	($w,$h)=($ww,$hh);
-      }
-#      print STDERR "Trim/Clip => $w x $h\n";
-  }}
+	$h = min($hh+$y0, $h-$y0p); 
+	$notes .= " crop $w x $h @ $x0p,$y0p"; }
+      # No direct `padding' operation in ImageMagick
+      my $nimage = Image::Magick->new();
+      $nimage->Set('size',"$ww x $hh");
+      $nimage->Read("xc:$$self{background}");
+      $nimage->Composite(image=>$image, compose=>'over', x=>-$x0, y=>-$y0);
+      $image=$nimage; 
+      ($w,$h)=($ww,$hh);
+    }}
+  if(my $trans = $$map{transparent}){
+    $notes .= " transparent=$$self{background}"; 
+    $image->Transparent($$self{background}); }
+
+  my $curr_ncolors = $image->Get('colors');
+  if(my $req_ncolors = $$map{ncolors}){
+    $req_ncolors = int($orig_ncolors * $1/ 100) if $req_ncolors =~ /^([\d]*)\%$/;
+    if($req_ncolors < $curr_ncolors){
+    $notes .= " quantize $orig_ncolors => $req_ncolors";
+    $image->Quantize(colors=>$req_ncolors);  }}
+
+  if(my $quality = $$map{quality}){
+    $notes .= " quality=$quality";
+    $image->Set('quality',$$map{quality}); }
+
+  $self->ProgressDetailed(">> Transformed : $notes") if $notes;
   ($image,$w,$h); }
 
 sub min { ($_[0] < $_[1] ? $_[0] : $_[1]); }

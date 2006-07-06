@@ -73,7 +73,7 @@ DefConstructor('\Sci{}{}',sub {
   my($document,$mantissa,$exponent,$props)=@_;
   my $string = convert_sci($mantissa,$exponent);
   ($$props{isMath} 
-   ? $document->insertMathToken($string,font=>$$props{font})
+   ? $document->insertMathToken($string,font=>$$props{font},role=>'NUMBER')
    : $document->openText($string,$$props{font})); });
 
 # Worry about alignment later...
@@ -107,6 +107,9 @@ DefConstructor('\diff[]{}',
 	       "<XMApp><XMTok name='diff'/><XMArg>#2</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
 DefConstructor('\pdiff[]{}',
 	       "<XMApp><XMTok name='pdiff'/><XMArg>#2</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
+DefConstructor('\qdiff{}{}',
+	       "<XMApp><XMTok name='qdiff'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+
 
 #**********************************************************************
 DefMath('\pvint',  "\x{2A0D}", name=>'PrincipalValueIntegral', role=>'INTOP'); # FINITE PART INTEGRAL
@@ -115,9 +118,10 @@ DefMath('\Residue', "res",     name=>"Residue", role=>'LIMITOP');
 #**********************************************************************
 # Types
 
-# Missing something critical here....
-DefMacro('\Vector{}','\boldsymbol{#1}');
-DefMacro('\Matrix{}','\boldsymbol{#1}');
+DefMath('\Vector{}','\boldsymbol{#1}', role=>'ID');
+DefMath('\Matrix{}','\boldsymbol{#1}', role=>'ID');
+DefMacro('\Vector{}','\ROLE{ID}{\boldsymbol{#1}}');
+DefMacro('\Matrix{}','\ROLE{ID}{\boldsymbol{#1}}');
 
 DefMath('\divergence', "div",  role=>'DIFFOP');
 DefMath('\curl',       "curl", role=>'DIFFOP');
@@ -126,9 +130,14 @@ DefMath('\transpose{}','#1^{\mathrm{T}}');
 
 #**********************************************************************
 # Combinatorics
-DefMath('\multinomial{}{}', '', name=>'multinomial');
-DefMath('\pochhammer{}{}',  '', name=>'pochhammer');
 DefMath('\binomial{}{}',    '', name=>'binomial');
+DefMath('\multinomial{}{}', '\left(#1;#2\right)');
+DefMath('\pochhammer{}{}',  '\left(#1\right)_{#2}');
+DefMath('\wigner{}{}{}{}{}{}', '\left(#1 #2 #3 #4 | #1 #2 #5 #6\right)');
+
+
+DefMath('\qFactorial{}{}{}','\left(#1;#2\right)_{#3}');
+DefMath('\qBinomial{}{}{}', '\genfrac[]\z@{}{#1}{#2}_{#3}');
 
 #**********************************************************************
 # Constants
@@ -143,7 +152,7 @@ DefPrimitive('\specFunObsolete{}{}',sub {
 sub count_tokens {
   my($token)=@_;
   my $n=0;
-  while($GULLET->readMatch($token)){ $n++; }
+  while(ReadMatch($token)){ $n++; }
   $n; }
 
 #**********************************************************************
@@ -161,20 +170,20 @@ DefPrimitive('\defSpecFun{}[][]{}{}', sub {
 
   # Read any argument formats & generate args macros
   my @argfmts=();
-  while(my $af = $GULLET->readOptional){
+  while(my $af = ReadOptional){
     push(@argfmts,$af); }
   push(@argfmts, Tokenize("\\!\\left(".join(',',map("#$_",1..$nargs))."\\right)"))
     unless @argfmts;
   for(my $i=0; $i <= $#argfmts; $i++){
     DefMacro(join('',$cs,'@args',('@' x ($i+1)),('{}' x $nargs)),$argfmts[$i]->toString); }
 
-  $GULLET->skipSpaces();
+  SkipSpaces();
   return; });
 
 DefConstructor('\sf@apply{}{}', "<XMApp>#1#2</XMApp>",
-  untex => sub {
+  reversion => sub {
     my($fcn,$args) = $_[0]->getArgs;
-    $fcn->untex . "@" . join('',map("{".$_->untex."}", $args->unlist)); });
+    ($fcn->revert,T_OTHER("@"),map( (T_BEGIN,$_->revert,T_END), $args->unlist)); });
 
 DefExpandable('\@PRIMES{}',sub { ((T_CS('\prime')) x $_[1]->toString); });
 DefMath('\diffop{}{}','{{#1}^{\@PRIMES{#2}}}');
@@ -183,32 +192,34 @@ DefMath('\power{}{}',"{#1^{#2}}");
 sub expand_specfun {
   my($cs,$nargs,$self,@params)=@_;
   my($cparams,$pparams)=dualize_arglist(@params);
-  my $ccall = T_CS($cs.'@content')->invocation(@$cparams);
-  my $pcall = T_CS($cs.'@presentation')->invocation(@$pparams);
-
+  my $ccall = Invocation(T_CS($cs.'@content'),@$cparams);
+  my $pcall = Invocation(T_CS($cs.'@presentation'),@$pparams);
+  SkipSpaces;
   # Check for following primes and superscripts, and wrap the function appropriately.
-  while(my $op = $GULLET->readMatch(T_OTHER("'"),T_SUPER)){ # Hmm, ' is active only in math?
+  while(my $op = ReadMatch(T_OTHER("'"),T_SUPER)){ # Hmm, ' is active only in math?
     if($op->equals(T_SUPER)){
       # NOTE: Before I go assuming that ^{x} is a power, consider analyzing for things like ^{(n)} !!!
-      my($cpower,$ppower) = dualize_arglist($GULLET->readArg); # Should do xmref here too!!!
-      $ccall = T_CS('\power@content')->invocation($ccall,@$cpower);
-      $pcall = T_CS('\power@presentation')->invocation($pcall,@$ppower); }
+      my($cpower,$ppower) = dualize_arglist(ReadArg); # Should do xmref here too!!!
+      $ccall = Invocation(T_CS('\power@content'),$ccall,@$cpower);
+      $pcall = Invocation(T_CS('\power@presentation'),$pcall,@$ppower); }
     else{
       my $n = 1+count_tokens($op);
-      $ccall = T_CS('\diffop@content')->invocation($ccall,T_OTHER($n));
-      $pcall = T_CS('\diffop@presentation')->invocation($pcall,T_OTHER($n));}}
-
+      $ccall = Invocation(T_CS('\diffop@content'),$ccall,T_OTHER($n));
+      $pcall = Invocation(T_CS('\diffop@presentation'),$pcall,T_OTHER($n));}}
+  SkipSpaces;
   # Check for function arguments
   if(my $variant = count_tokens(T_OTHER('@'))){
-    my $argsmacro = T_CS($cs.'@args'.('@' x $variant))->getDefinition;
+    my $argsmacro = LookupDefinition(T_CS($cs.'@args'.('@' x $variant)));
     my($cargs,$pargs)=dualize_arglist($argsmacro->readArguments);
-    T_CS('\DUAL')->invocation(T_OTHER('ATOM'),
-			      T_CS('\sf@apply')->invocation($ccall,Tokens(map((@$_),@$cargs))),
-			      Tokens(@$pcall,T_CS('\@APPLYFUNCTION'),
-				     $argsmacro->invocation(@$pargs)->unlist)
-			     )->unlist; }
+    Invocation(T_CS('\DUAL'),
+	       T_OTHER('ATOM'),
+	       Invocation(T_CS('\sf@apply'),$ccall,Tokens(map((@$_),@$cargs))),
+	       Tokens($pcall->unlist,T_CS('\@APPLYFUNCTION'),
+		      $argsmacro->invocation(@$pargs))
+		  )->unlist; }
   else {
-    T_CS('\DUAL')->invocation(T_OTHER(($nargs ? 'FUNCTION' : 'ATOM')), $ccall, $pcall)->unlist}; }
+    Invocation(T_CS('\DUAL'),
+	       T_OTHER(($nargs ? 'FUNCTION' : 'ATOM')), $ccall, $pcall)->unlist}; }
 
 #**********************************************************************
 1;

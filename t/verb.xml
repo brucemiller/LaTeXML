@@ -4,8 +4,10 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <section refnum="1">
     <title>Testing Verbatim</title>
-    <p>Normal <textstyle font="bold">Bold</textstyle> stuff.
+    <para>
+      <p>Normal <text font="bold">Bold</text> stuff.
 </p>
+    </para>
     <verbatim font="typewriter">
 AbNormal {\bf NonBold} stuff.
 </verbatim>
@@ -13,14 +15,22 @@ AbNormal {\bf NonBold} stuff.
 AbNormal {\bf NonBold} stuff.
 xxx    
 </verbatim>
-    <p>yyy
-More Normal <textstyle font="bold">Bold</textstyle> stuff.
+    <para>
+      <p>yyy
+More Normal <text font="bold">Bold</text> stuff.
 </p>
-    <p>Some inline <verbatim font="typewriter">\verb</verbatim> verbatim.
+    </para>
+    <para>
+      <p>Some inline <verbatim font="typewriter">\verb</verbatim> verbatim.
 </p>
-    <p><hbox>More inline <verbatim font="typewriter">\verb</verbatim> verbatim.</hbox>
+    </para>
+    <para>
+      <p><text>More inline <verbatim font="typewriter">\verb</verbatim> verbatim.</text>
 </p>
-    <p>x<hbox width="144.54pt"><textstyle font="bold">x<verbatim font="typewriter">\verb</verbatim>y.</textstyle></hbox>y
+    </para>
+    <para>
+      <p>x<text width="144.54pt"><text font="bold">x<verbatim font="typewriter">\verb</verbatim>y.</text></text>y
 </p>
+    </para>
   </section>
 </document>

@@ -14,7 +14,8 @@
 -->
 
 <!ENTITY % Inline.extra "| email | VRML | GAMS">
-<!ENTITY % Block.extra  "| figuregroup | equationmix | begin_onecolumn | end_onecolumn">
+<!ENTITY % Para.extra "| equationmix">
+<!ENTITY % Block.extra  "| figuregroup | begin_onecolumn | end_onecolumn">
 <!ENTITY % Misc.extra   "| electroniconly | printonly">
 <!ENTITY % Frontmatter.extra "| affiliation | acknowledgements | sidebar | gallery | copyright
                               | origref">
@@ -36,12 +37,12 @@
 <!ELEMENT subsection    ((%Sectitle.mix;)*, (%Block.mix; | subsubsection | paragraph)*)>
 <!ELEMENT subsubsection ((%Sectitle.mix;)*, (%Block.mix; | paragraph)*)>
 <!ELEMENT paragraph     ((%Sectitle.mix;)*, (%Block.mix;)*)>
-<!ATTLIST chapter       %Common.attr; %Section.attr;>
-<!ATTLIST part          %Common.attr; %Section.attr;>
-<!ATTLIST section       %Common.attr; %Section.attr;>
-<!ATTLIST subsection    %Common.attr; %Section.attr;>
-<!ATTLIST subsubsection %Common.attr; %Section.attr;>
-<!ATTLIST paragraph     %Common.attr; %Section.attr;>
+<!ATTLIST chapter       %Common.attr; %Labelled.attr; %Section.attr;>
+<!ATTLIST part          %Common.attr; %Labelled.attr; %Section.attr;>
+<!ATTLIST section       %Common.attr; %Labelled.attr; %Section.attr;>
+<!ATTLIST subsection    %Common.attr; %Labelled.attr; %Section.attr;>
+<!ATTLIST subsubsection %Common.attr; %Labelled.attr; %Section.attr;>
+<!ATTLIST paragraph     %Common.attr; %Labelled.attr; %Section.attr;>
 
 <!-- Redefined document structure -->
 
@@ -69,9 +70,7 @@
           name  CDATA #REQUIRED
 	  label CDATA #IMPLIED>
 <!ELEMENT equationmix (#PCDATA | %Inline.mix; | punct | origref | constraint)*>
-<!ATTLIST equationmix
-          label ID #IMPLIED
-          refnum CDATA #IMPLIED>
+<!ATTLIST equationmix  %Labelled.attr;>
 <!ELEMENT constraint (#PCDATA | Math)*>
 <!ATTLIST constraint 
           hidden (yes|no) #IMPLIED>

@@ -1,0 +1,464 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# | pst-node.tex                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML                                                     | #
+# |                                                                     | #
+# |---------------------------------------------------------------------| #
+# | Ioan Alexandru Sucan <i.sucan@iu-bremen.de>                 #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+RequirePackage('pstricks');
+
+our $PSLineAttr;
+
+##############################################################
+##  Parameter type definitions
+##############################################################
+
+sub ReadRoundParenFloat {
+  SkipSpaces;
+  if (IfNext(T_OTHER('('))) {
+    ReadToken; SkipSpaces;
+    my $f = ReadFloat();
+    SkipSpaces; ReadToken;
+    $f; }
+  else { return; }}
+
+DefParameterType('RoundParenFloat',\&ReadRoundParenFloat,
+		 reversion=>sub { ($_[0] ? (T_OTHER('('),$_[0]->revert,T_OTHER(')')) :()); },
+		 optional=>1);
+
+###########################################################################
+## Functions for node positions storage / retrieval
+###########################################################################
+
+sub storeNode {
+  my ($name, $address) = @_;
+  $name = $name->toString if ref $name;
+  AssignValue('_psNODE'.$name, ActiveTransform->apply($address || ZeroPair()), 'global'); }
+sub getNode { ActiveTransform->unapply(LookupValue('_psNODE'.$_[0]->toString) || ZeroPair()); }
+
+sub nConnShiftUp {
+  my ($p) = @_;
+  if (my $off = LookupValue('\psoffset')) { Pair($p->getX, $p->getY->add($off)); }
+  else { $p }; }
+
+sub nConnShiftDown {
+  my ($p) = @_;
+  if (my $off = LookupValue('\psoffset')) { Pair($p->getX, $p->getY->substract($off)); }
+  else { $p }; }
+
+# should also handle nodesep when boundary of text can be determined
+sub getANode { nConnShiftUp(getNode($_[0])); }
+sub getBNode { nConnShiftDown(getNode($_[0])); }
+
+###########################################################################
+## Default values for attributes referring to pst-node
+###########################################################################
+our %KeyAsValue; our %KeyHasABVariants;
+%KeyAsValue = (%KeyAsValue, radius=>1, vref=>1,nodesep=>1, offset=>1, arm=>1, armA=>1, armB=>1,
+	       loopsize=>1, framesize=>1);
+%KeyHasABVariants = (%KeyHasABVariants, angle=>1, arcangle=>1, arm=>1, nodesep=>1, ncurv=>1);
+
+DefKeyVal('pstricks', 'angle',    'PSAngle'    );
+DefKeyVal('pstricks', 'angleA',   'PSAngle'    );
+DefKeyVal('pstricks', 'angleB',   'PSAngle'    );
+DefKeyVal('pstricks', 'arcangle', 'PSAngle'    );
+DefKeyVal('pstricks', 'arcangleA','PSAngle'    );
+DefKeyVal('pstricks', 'arcangleB','PSAngle'    );
+DefKeyVal('pstricks', 'nodesep',  'PSDimension');
+DefKeyVal('pstricks', 'nodesepA', 'PSDimension');
+DefKeyVal('pstricks', 'nodesepB', 'PSDimension');
+DefKeyVal('pstricks', 'offset',   'PSDimension');
+DefKeyVal('pstricks', 'arm',      'PSDimension');
+DefKeyVal('pstricks', 'armA',     'PSDimension');
+DefKeyVal('pstricks', 'armB',     'PSDimension');
+DefKeyVal('pstricks', 'ncurv',    'Float'      );
+DefKeyVal('pstricks', 'loopsize', 'PSDimension');
+DefKeyVal('pstricks', 'radius',   'PSDimension');
+DefKeyVal('pstricks', 'framesize','PSDimDim'   );
+
+AssignValue('\psarm',      Dimension('10pt'));
+AssignValue('\psarmA',     Dimension('10pt'));
+AssignValue('\psarmB',     Dimension('10pt'));
+AssignValue('\psangle',    0);
+AssignValue('\psangleA',   0);
+AssignValue('\psangleB',   0);
+AssignValue('\psarcangle', 8);
+AssignValue('\psarcangleA',8);
+AssignValue('\psarcangleB',8);
+AssignValue('\psnodesep',  0);
+AssignValue('\psnodesepA', 0);
+AssignValue('\psnodesepB', 0);
+AssignValue('\psloopsize', Dimension('1cm'));
+AssignValue('\psradius',   Dimension('2pt'));
+AssignValue('\psncurv',    0.67);
+AssignValue('\psncurvA',   0.67);
+AssignValue('\psncurvB',   0.67);
+AssignValue('\pshref',     0);
+AssignValue('\psvref',     Dimension('0.7ex'));
+AssignValue('\psframesize',Pair(Dimension('10pt'), Dimension('10pt')));
+
+###########################################################################
+## Functions for computing node connections
+###########################################################################
+
+sub nodeConnection {
+  my @nodes = @_; my $nc = PairList(@nodes);
+  AssignValue('_ps@LastNodeConnection', $nc, 'global'); $nc; }
+sub getLastConnection { LookupValue('_ps@LastNodeConnection') || PairList(ZeroPair()); }
+
+our %defaultLabelPos = (bar=>1.5, diag=>1.5, angle=>1.5, angles=>1.5, loop=>2.5, circle=>1.5);
+sub getDefaultLabelPos {
+  my $cmd = LookupValue('_ps@LastPSCmd') || '';
+  return 0 unless $cmd =~ s/^\\(n|p)c//;
+  $defaultLabelPos{$cmd} || 0.5; }
+
+sub nodeExt {
+  my ($N, $arm, $angle) = @_; $angle = radians($angle);
+  Pair($N->getX->add($arm->multiply(cos($angle))), $N->getY->add($arm->multiply(sin($angle)))); }
+sub nodeExtA { nodeExt($_[0], LookupValue('\psarmA'), LookupValue('\psangleA')); }
+sub nodeExtB { nodeExt($_[0], LookupValue('\psarmB'), LookupValue('\psangleB')); }
+
+###########################################################################
+## Constructors
+###########################################################################
+
+DefConstructor('\rnode [] {} {}', '#3',
+	       afterDigest=> sub { storeNode($_[2]); });
+
+DefMacro('\Rnode PSCoord', sub {
+	   my $coord;
+	   if ($_[1]) { $coord = $_[1]->toString; }
+	   else { my $rref = LookupDefinition(T_CS('\RnodeRef'));
+		  my @rref = $rref->invoke if $rref;
+		  $coord = join('', map($_->toString, @rref)) if @rref;
+		  $coord = (LookupValue('\pshref')).','.(LookupValue('\psvref')->toString) unless $coord; }
+	   (T_CS('\@Rnode'), T_OTHER('('), Explode($coord), T_OTHER(')')); });
+
+DefConstructor('\@Rnode PSCoord {} {}', '#3',
+	       alias=>'\Rnode',
+	       afterDigest=> sub { storeNode($_[2], $_[1]); });
+
+DefConstructor('\pnode ZeroPSCoord {}', '',
+	       afterDigest=> sub { storeNode($_[2], $_[1]); });
+
+DefPSConstructor('\cnode', 'ZeroPSCoord {PSDimension} {}',
+		 "<circle ".$PSLineAttr."%&PairAttr(#2,x,y) r='&ptValue(#3)' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash)],
+		 afterDigest=>sub { storeNode($_[4], $_[2]); });
+
+DefPSConstructor('\Cnode', 'ZeroPSCoord {}',
+		 "<circle ".$PSLineAttr."%&PairAttr(#2,x,y) r='&ptValue(#radius)' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash radius)],
+		 afterDigest=>sub { storeNode($_[4], $_[2]); });
+
+DefPSConstructor('\circlenode', '{} {}',
+		 "<g framed='yes' fillframe='yes' frametype='circle' fill='#fillcolor' ?#1(stroke='#fillcolor')(stroke='#linecolor')> #3 </g>",
+		 attributes=>[qw(linecolor fillcolor)],
+		 afterDigest=>sub { storeNode($_[2]); });
+
+DefPSConstructor('\fnode', 'ZeroPSCoord {}',
+		 "<rect $PSLineAttr %&PairAttr(#pz,x,y) %&PairAttr(#framesize,width,height) rx='#arcval' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash framesize)],
+		 afterDigest=>sub {
+		   my $fs = LookupValue('\psframesize'); my $dt = $fs->multiply(-0.5);
+		   my $pz = Pair($_[2]->getX->add($dt->getX), $_[2]->getY->add($dt->getY));
+		   storeNode($_[3], $_[2]);
+		   $_[0]->setProperties(pz=>$pz, arcval=>arcValue($fs)); });
+
+DefMacro('\cnodeput OptionalMatch:* [] OptionalBracketed ZeroPSCoord {} {}', sub {
+	   my ($ignore, $star, $par, $angle, $coord, $name, $body) = @_;
+	   my @exp = (T_CS('\rput'));
+	   push(@exp, T_BEGIN, $angle->unlist, T_END) if $angle;
+	   push(@exp, T_OTHER('('), Explode($coord->toString), T_OTHER(')'), T_BEGIN, T_CS('\circlenode'));
+	   push(@exp, T_OTHER('*')) if $star;
+	   push(@exp, T_OTHER('['), $par->unlist, T_OTHER(']')) if $par;
+	   push(@exp, T_BEGIN, $name->unlist, T_END, T_BEGIN, $body->unlist, T_END, T_END);
+	   @exp; });
+
+DefPSConstructor('\ovalnode', '{} {}',
+		 "<g framed='yes' fillframe='yes' frametype='oval' fill='#fillcolor' ?#1(stroke='#fillcolor')(stroke='#linecolor')> #3 </g>",
+		 attributes=>[qw(linecolor fillcolor)],
+		 afterDigest=>sub { storeNode($_[2]); });
+
+DefPSConstructor('\ncline', '{} {}',
+		 "<line $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints)],
+		 afterDigest=>sub { $_[0]->setProperty(points=>nodeConnection(getANode($_[3]), getBNode($_[4]))); });
+
+DefPSConstructor('\pcline', 'PSCoord PSCoord',
+		 "<line $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints)],
+		 afterDigest=>sub { $_[0]->setProperty(points=>nodeConnection($_[3], $_[4])); });
+
+DefPSConstructor('\ncLine', '{} {}',
+		 "<line $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints)],
+		 afterDigest=>sub { $_[0]->setProperties(points=>nodeConnection(getANode($_[3]), getBNode($_[4]))); });
+
+sub curvePoints {
+  my ($A, $B) = @_;
+  my ($na, $nb, $aa, $ab) = map(LookupValue($_), qw(\psncurvA \psncurvB \psangleA \psangleB));
+  my $d = pointPointDist($A, $B);
+  my $A1 = nodeExt($A, Dimension($d*$na*0.5), $aa);
+  my $B1 = nodeExt($B, Dimension($d*$nb*0.5), $ab);
+  ($A, $A1, $B1, $B); }
+
+DefPSConstructor('\nccurve', '{} {}',
+		 "<bezier $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash)],
+		 afterDigest=>sub { $_[0]->setProperties(points=>nodeConnection(curvePoints(getANode($_[3]), getBNode($_[4])))); });
+
+DefPSConstructor('\pccurve', 'PSCoord PSCoord',
+		 "<bezier $PSLineAttr #!ARROWS points='&ptValue(#points)' angleA='#angleA' angleB='#angleB' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash nodesep offset ncurv angleA angleB)],
+		 afterDigest=>sub { $_[0]->setProperties(points=>nodeConnection(curvePoints($_[3], $_[4]))); });
+
+sub carcPoints {
+  my ($A, $B) = @_;
+  my ($na, $nb, $aa, $ab) = map(LookupValue($_), qw(\psncurvA \psncurvB \psarcangleA \psarcangleB));
+  my $d = pointPointDist($A, $B); my $a = lineAngle($A, $B);
+  my $A1 = nodeExt($A, Dimension($d*$na*0.5), $a + $aa);
+  my $B1 = nodeExt($B, Dimension($d*$nb*0.5), $a + 180 - $ab);
+  ($A, $A1, $B1, $B); }
+
+DefPSConstructor('\ncarc', '{} {}',
+		 "<bezier $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash)],
+		 afterDigest=>sub { $_[0]->setProperties(points=>nodeConnection(carcPoints(getANode($_[3]), getBNode($_[4])))); });
+
+DefPSConstructor('\pcarc', 'PSCoord PSCoord',
+		 "<bezier $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
+		 attributes=>[qw(fill linecolor linewidth dash)],
+		 afterDigest=>sub { $_[0]->setProperties(points=>nodeConnection(carcPoints($_[3], $_[4]))); });
+
+sub after_ncbar {
+  my ($whatsit, $A, $B) = @_;
+  my ($armA, $armB, $angle) = map(LookupValue($_), qw(\psarmA \psarmB \psangleA));
+  my ($A1, $B1) = (nodeExt($A, $armA, $angle), nodeExt($B, $armB, $angle));
+  my (@l1, @l2);
+  @l1 = lineParams($A1, $angle); @l2 = lineParams($B1, $angle, 1);
+  my $A1E = lineIntersect(\@l1, \@l2);
+  @l1 = lineParams($A1, $angle, 1); @l2 = lineParams($B1, $angle);
+  my $B1E = lineIntersect(\@l1, \@l2);
+  if (pointPointDist($A, $A1E) > pointPointDist($A1, $A1E))
+    { $A1 = $A1E; } else { $B1 = $B1E; }
+  $whatsit->setProperty(points=>nodeConnection($A, $A1, $B1, $B)); }
+
+DefPSConstructor('\ncbar', '{} {}',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints linearc)],
+		 afterDigest=>sub { after_ncbar($_[0], getANode($_[3]), getBNode($_[4])); });
+
+DefPSConstructor('\pcbar', 'PSCoord PSCoord',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints linearc)],
+		 afterDigest=> sub { after_ncbar($_[0], $_[3], $_[4]); });
+
+DefPSConstructor('\ncdiag', '{} {}',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints linearc)],
+		 afterDigest=>sub {
+		   my ($whatsit, $A, $B) = ($_[0], getANode($_[3]), getBNode($_[4]));
+		   $whatsit->setProperty(points=>nodeConnection($A, nodeExtA($A), nodeExtB($B), $B)); });
+
+DefPSConstructor('\pcdiag', 'PSCoord PSCoord',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints linearc)],
+		 afterDigest=>sub {
+		   my ($whatsit, $A, $B) = ($_[0], $_[3], $_[4]);
+		   $whatsit->setProperty(points=>nodeConnection($A, nodeExtA($A), nodeExtB($B), $B)); });
+
+DefPSConstructor('\ncdiagg', '{} {}',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints linearc)],
+		 afterDigest=>sub {
+		   my ($whatsit, $A, $B) = ($_[0], getANode($_[3]), getBNode($_[4]));
+		   $whatsit->setProperty(points=>nodeConnection($A, nodeExtA($A), $B)); });
+
+DefPSConstructor('\pcdiagg', 'PSCoord PSCoord',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints linearc)],
+		 afterDigest=>sub {
+		   my ($whatsit, $A, $B) = ($_[0], $_[3], $_[4]);
+		   $whatsit->setProperty(points=>nodeConnection($A, nodeExtA($A), $B)); });
+
+sub after_ncangle {
+  my ($whatsit, $A, $B) = @_;
+  my $angleA = LookupValue('\psangleA'); my $B1 = nodeExtB($B);
+  my @l1 = lineParams($A, $angleA); my @l2 = lineParams($B1, $angleA, 1);
+  $whatsit->setProperty(points=>nodeConnection($B, $B1, lineIntersect(\@l1, \@l2), $A)); }
+
+DefPSConstructor('\ncangle', '{} {}',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints linearc)],
+		 afterDigest=>sub { after_ncangle($_[0], getANode($_[3]), getBNode($_[4])); });
+
+DefPSConstructor('\pcangle', 'PSCoord PSCoord',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints linearc)],
+		 afterDigest=>sub { after_ncangle($_[0], $_[3], $_[4]); });
+
+sub after_ncangles {
+  my ($whatsit, $A, $B) = @_;
+  my ($A1, $B1) = (nodeExtA($A), nodeExtB($B)); my $angleA = LookupValue('\psangleA');
+  my @l1 = lineParams($A1, $angleA, 1);  my @l2 = lineParams($B1, $angleA);
+  $whatsit->setProperty(points=>nodeConnection($B, $B1, lineIntersect(\@l1, \@l2), $A1, $A)); }
+
+DefPSConstructor('\ncangles', '{} {}',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints linearc)],
+		 afterDigest=>sub { after_ncangles($_[0], getANode($_[3]), getBNode($_[4])); });
+
+DefPSConstructor('\pcangles', 'PSCoord PSCoord',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints linearc)],
+		 afterDigest=>sub { after_ncangles($_[0], $_[3], $_[4]); });
+
+sub after_ncloop {
+  my ($whatsit, $A, $B) = @_;
+  my ($angleA, $loop) = map(LookupValue($_), qw(\psangleA \psloopsize));
+  my ($A1, $B1) = (nodeExtA($A), nodeExtB($B));
+  my @l1 = lineParams($A1, $angleA, 1);
+  my ($x0, $y0) = ($A1->getX->valueOf, $A1->getY->valueOf); my $absq = $l1[0]**2+$l1[1]**2;
+  my $sgn = ($angleA>270 || $angleA <= 90) ? 1 : -1;
+  my $D = $sgn*sqrt($absq*($loop->valueOf()**2) - ($l1[0]*$x0 + $l1[1]*$y0 + $l1[2])**2);
+  $absq = 1/$absq;
+  my $L = Pair(Dimension($absq*($l1[1]**2*$x0 - $l1[0]*($l1[2]+$l1[1]*$y0) - $l1[1]*$D)),
+	       Dimension($absq*($l1[0]**2*$y0 - $l1[1]*($l1[2]+$l1[0]*$x0) + $l1[0]*$D)));
+  @l1 = lineParams($B1, $angleA, 1); my @l2 = lineParams($L, $angleA);
+  $whatsit->setProperty(points=>nodeConnection($A, $A1, $L, lineIntersect(\@l1, \@l2), $B1, $B)); }
+
+DefPSConstructor('\ncloop', '{} {}',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints linearc)],
+		 afterDigest=>sub { after_ncloop($_[0], getANode($_[3]), getBNode($_[4])); });
+
+DefPSConstructor('\pcloop', 'PSCoord PSCoord',
+		 "<line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)' points='&ptValue(#points)' fill='#fill'/>",
+		 attributes=>[qw(fill linecolor linewidth dash showpoints linearc)],
+		 afterDigest=>sub { after_ncloop($_[0], $_[3], $_[4]); });
+
+DefPSConstructor('\nccircle', '{} {PSDimension}',
+		 "<arc $PSLineAttr #!ARROWS %&PairAttr(#pz,x,y) r='&ptValue(#4)' angle1='&trunc2(#angleA)' ".
+		 "angle2='360' fill='#fill' />",
+		 attributes=>[qw(linecolor linewidth dash angleA)],
+		 afterDigest=>sub { my $nd = getNode($_[3]); nodeConnection($nd);
+				    $_[0]->setProperty(pz=>$nd); });
+
+############################################################
+## Positioning macros
+############################################################
+
+sub computeLabelPos {
+  my ($pos) = @_;
+  my ($lp, $nc) = ($pos ? $pos->valueOf : getDefaultLabelPos(), getLastConnection());
+  my ($n, $s) = ($nc->getCount(), int($lp)); my $f = $lp - $s; my $p;
+  if ($n == 1) { $p = $nc->getPair(0); }
+  else { $s = $n-2 if $s+1 >= $n;
+	 my ($na, $nb) = ($nc->getPair($s), $nc->getPair($s+1));
+	 my $dx = $nb->getX->substract($na->getX)->multiply($f);
+	 my $dy = $nb->getY->substract($na->getY)->multiply($f);
+	 $p = Pair($na->getX->add($dx), $na->getY->add($dy)); }
+  $p; }
+
+DefMacro('\lput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
+	   (T_BEGIN, T_CS('\lput@start'), $_[1] ? T_OTHER('*') : (), $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
+	    $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (), $_[4] ? (T_OTHER('('), Explode($_[4]->toString), T_OTHER(')')) : (),
+	    T_CS('\put@end')); });
+
+DefConstructor('\lput@start OptionalMatch:* [] BracketedPSAngle RoundParenFloat',
+	       "<g transform='&ptValue(#transform)' pos='#2' ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       afterDigest=>sub { finishLabelPut($_[0], $_[3], computeLabelPos($_[4])); },
+	       alias=>'\lput');
+
+DefMacro('\aput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
+	   (T_BEGIN, T_CS('\aput@start'), $_[1] ? T_OTHER('*') : (), $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
+	    $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (), $_[4] ? (T_OTHER('('), Explode($_[4]->toString), T_OTHER(')')) : (),
+	    T_CS('\put@end')); });
+
+DefConstructor('\aput@start OptionalMatch:* [PSDimension] BracketedPSAngle RoundParenFloat',
+	       "<g transform='&ptValue(#transform)' ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       afterDigest=>sub {
+		 my ($whatsit, $labelsep, $angle, $pos) = ($_[0], $_[2], $_[3], $_[4]);
+		 my $p = computeLabelPos($pos);
+		 $labelsep = $labelsep || LookupValue('\pslabelsep');
+		 $p = Pair($p->getX->add($labelsep), $p->getY->add($labelsep));
+		 finishLabelPut($whatsit, $angle, $p); },
+	       alias=>'\aput');
+
+DefMacro('\bput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
+	   (T_BEGIN, T_CS('\bput@start'), $_[1] ? T_OTHER('*') : (), $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
+	    $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (), $_[4] ? (T_OTHER('('), Explode($_[4]->toString), T_OTHER(')')) : (),
+	    T_CS('\put@end')); });
+
+DefConstructor('\bput@start OptionalMatch:* [PSDimension] BracketedPSAngle RoundParenFloat',
+	       "<g transform='&ptValue(#transform)' ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       afterDigest=>sub {
+		 my ($whatsit, $labelsep, $angle, $pos) = ($_[0], $_[2], $_[3], $_[4]);
+		 my $p = computeLabelPos($pos);
+		 $labelsep = $labelsep || LookupValue('\pslabelsep');
+		 $p = Pair($p->getX->substract($labelsep), $p->getY->substract($labelsep));
+		 finishLabelPut($whatsit, $angle, $p); },
+	       alias=>'\bput');
+
+DefMacro('\mput OptionalMatch:* []', sub {
+	   (T_BEGIN, T_CS('\mput@start'), $_[1] ? T_OTHER('*') : (), $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
+	    T_CS('\put@end')); });
+
+DefConstructor('\mput@start OptionalMatch:* []',
+	       "<g transform='&ptValue(#transform)' pos='#2' ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       afterDigest=>sub { finishLabelPut($_[0], undef, computeLabelPos()); },
+	       alias=>'\mput');
+
+DefMacro('\Aput OptionalMatch:* []', sub {
+	   (T_BEGIN, T_CS('\Aput@start'), $_[1] ? T_OTHER('*') : (), $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
+	    T_CS('\put@end')); });
+
+DefConstructor('\Aput@start OptionalMatch:* [PSDimension]',
+	       "<g transform='&ptValue(#transform)' ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       afterDigest=>sub {
+		 my ($whatsit, $labelsep) = ($_[0], $_[2]);
+		 my $p = computeLabelPos();
+		 $labelsep = $labelsep || LookupValue('\pslabelsep');
+		 $p = Pair($p->getX->add($labelsep), $p->getY->add($labelsep));
+		 finishLabelPut($whatsit, undef, $p); },
+	       alias=>'\Aput');
+
+DefMacro('\Bput OptionalMatch:* []', sub {
+	   (T_BEGIN, T_CS('\Bput@start'), $_[1] ? T_OTHER('*') : (), $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
+	    T_CS('\put@end')); });
+
+DefConstructor('\Bput@start OptionalMatch:* [PSDimension]',
+	       "<g transform='&ptValue(#transform)' ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       afterDigest=>sub {
+		 my ($whatsit, $labelsep) = ($_[0], $_[2]);
+		 my $p = computeLabelPos();
+		 $labelsep = $labelsep || LookupValue('\pslabelsep');
+		 $p = Pair($p->getX->substract($labelsep), $p->getY->substract($labelsep));
+		 finishLabelPut($whatsit, undef, $p); },
+	       alias=>'\Bput');
+
+# some obsolete macros:
+
+# reduce Lput to lput and Rput; Rput will get reduced to uput in some later stage
+DefMacro('\Lput OptionalMatch:* OptionalBracketed [] OptionalBracketed RoundParenFloat {}', sub {
+	   my ($ignore, $star, $labelsep, $refpoint, $rotation, $pos, $stuff) = @_;
+	   (T_CS('\lput'), $star ? T_OTHER('*') : (), $pos ? (T_OTHER('('), Explode($pos->toString), T_OTHER(')')) : (),
+	    T_BEGIN, T_CS('\Rput'), $labelsep ? (T_BEGIN, $labelsep->unlist, T_END) : (),
+	    $refpoint ? (T_OTHER('['), $refpoint->unlist, T_OTHER(']')) : (),
+	    $rotation ? (T_BEGIN, $rotation->unlist, T_END) : (),
+	    T_OTHER('('), Explode(ZeroPair->toString), T_OTHER(')'),
+	    T_BEGIN, $stuff->unlist, T_END, T_END); });
+
+DefMacro('\Mput', '\Lput'); # Lput code is general enough to work for Mput too
+
+
+1;

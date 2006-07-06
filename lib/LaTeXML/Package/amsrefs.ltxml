@@ -10,23 +10,24 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-package LaTeXML::Package::Pool::amsrefs;
+package LaTeXML::Package::Pool;
 use LaTeXML::Package;
 
+RequirePackage('keyval');
 #**********************************************************************
 # \bib{key}{type}{keyval pairs}
 
 #our %equivs = (booktitle=>'title', place=>'address', year=>'date');
 our %equivs = (place=>'address', year=>'date');
 
-DefKeyVal('amsrefs','url','semiverb');
-DefKeyVal('amsrefs','code_url','semiverb');
+DefKeyVal('amsrefs','url','Semiverbatim');
+DefKeyVal('amsrefs','code_url','Semiverbatim');
 
 # \bib{key}{type}{keyval-pairs}
-DefConstructor('\bib{any}{any}{KeyVal:amsrefs}', sub {
+DefConstructor('\bib{}{} RequiredKeyVals:amsrefs', sub {
   my($document,$key,$type,$fields)=@_;
   $document->openElement('bibentry',key=>$key, type=>$type);
-  my @pairs = $fields->getKeyVals;
+  my @pairs = $fields->getPairs;
   while(@pairs){
     my($field,$value)=(shift(@pairs),shift(@pairs));
     $field=lc($field);
@@ -41,12 +42,12 @@ DefEnvironment('{biblist}',"<biblist>#body</biblist>");
 #**********************************************************************
 # Other Defns (presumably from textcmds?)
 
-DefConstructor('\MR{any}',sub {
+DefConstructor('\MR{}',sub {
   my($document,$mrnumber)=@_;
   # Patch up old-style MathReviews numbers
   my $id = $mrnumber->toString;
   $id =~ s/\s+\\\#\s*/:/;
-  $document->insertElement('bib-mr',LaTeXML::Box->new($id,$mrnumber->getFont,$mrnumber->getLocator)); });
+  $document->insertElement('bib-mr',LaTeXML::Box->new($id,$mrnumber->getFont,$mrnumber->getLocator,T_OTHER($id))); });
 
 DefConstructor('\ndash',"\x{2013}"); # EN DASH
 DefConstructor('\mdash',"\x{2014}"); # EM DASH

@@ -22,6 +22,8 @@ use LaTeXML::Package;
 #  \reflectbox{text}
 #  \resizebox{hlength}{vlength}{text}
 
+RequirePackage('keyval');
+
 # Unimplemented, for now: What should be the result?
 # Would seem to require different treatment if the content was ONLY \includegraphic,
 # or more general text.
@@ -31,17 +33,17 @@ DefConstructor('\reflectbox{}','#1');
 DefConstructor('\resizebox{}{}{}','#3');
 
 
-DefConstructor('\graphicspath{semiverb}',"<?latexml graphicspath='#1'?>");
+DefConstructor('\graphicspath Semiverbatim',"<?latexml graphicspath='#1'?>");
 
 DefKeyVal('Gin','width','Dimension');
 DefKeyVal('Gin','height','Dimension');
 DefKeyVal('Gin','keepaspectratio','','true');
 DefKeyVal('Gin','clip','','true');
 
-DefKeyVal('Gin','vrml','semiverb');
+DefKeyVal('Gin','vrml','Semiverbatim');
 DefKeyVal('Gin','magnifiable','','true');
 
-DefConstructor('\includegraphics Flag:* [KeyVal:Gin]{semiverb}',
+DefConstructor('\includegraphics OptionalMatch:* OptionalKeyVals:Gin Semiverbatim',
 	       "<graphics graphic='#3' options='#2?#1(,clip=true)'/>");
 
 # Also unimplemented... probably nothing useful to pass thru anyway?

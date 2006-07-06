@@ -16,27 +16,36 @@ use Exporter;
 use LaTeXML::Global;
 use LaTeXML::Definition;
 use LaTeXML::Parameters;
-our @ISA = qw(Exporter);
+use base qw(Exporter);
 our @EXPORT = (qw(&DefExpandable &DefMacro
 		  &DefPrimitive  &DefRegister
 		  &DefConstructor &DefMath &dualize_arglist
 		  &DefEnvironment
-		  &DefKeyVal
 		  &DefRewrite &DefMathRewrite
-		  &Let
 		  &RequirePackage
 		  &RawTeX
 		  &Tag &DocType &RegisterNamespace
-		  &convertLaTeXArgs
+		  &convertLaTeXArgs),
 
-		  &BGroup &EGroup &BeginGroup &EndGroup &BeginMode &EndMode
-
-		  &LookupValue &AssignValue &PushValue
+	       # Lower-level support for writing definitions.
+	       # Grouping support
+	       qw(&BGroup &EGroup &BeginGroup &EndGroup &BeginMode &EndMode),
+	       # Access to State
+	       qw(&LookupValue &AssignValue &PushValue
 		  &LookupCatcode &AssignCatcode
-
-		  &MergeFont &RequireMath &ForbidMath
-		  &InvokeToken &Digest
-		  &roman &Roman),
+		 &LookupMeaning &LookupDefinition &InstallDefinition &Let),
+	       # Math & font state.
+	       qw(&MergeFont &RequireMath &ForbidMath),
+	       # Explicit digestion
+	       qw(&InvokeToken &Digest),
+	       # Random low-level token operations.
+	       qw(&roman &Roman),
+	       # Support for structured/argument readers
+	       qw(&DefParameterType
+		 &ReadToken &ReadXToken &ReadNumber &ReadDimension &ReadGlue &ReadMuDimension &ReadMuGlue
+		 &ReadArg &ReadOptional &SkipSpaces &ReadMatch &ReadUntil &ReadKeyword &ReadUntilBrace
+		  &ReadBalanced &StartSemiverbatim &EndSemiverbatim &ReadSemiverbatim
+		 &IfNext &Input &Expand &Invocation),
 	       @LaTeXML::Global::EXPORT);
 
 #**********************************************************************
@@ -56,7 +65,7 @@ sub parsePrototype {
   $proto =~ s/^(\\?[a-zA-Z@]+|\\?.)//; # Match a cs, env name,...
   my($cs,@junk) = TokenizeInternal($1)->unlist;
   Fatal("Definition prototype doesn't have proper control sequence:"
-	.($cs?$cs->toString:'')." then ".join('',map($_->untex,@junk))." in \"$oproto\" ") if @junk;
+	.($cs?$cs->toString:'')." then ".join('',map(ToString($_),@junk))." in \"$oproto\" ") if @junk;
   $proto =~ s/^\s*//;
   ($cs, parseParameters($proto,$cs)); }
 
@@ -76,6 +85,16 @@ sub CheckOptions {
   Error($operation." does not accept options:".join(', ',@badops)) if @badops;
 }
 
+
+  my($name,%options)=@_;
+
+our $parameter_options = {nargs=>1,reversion=>1,optional=>1,novalue=>1};
+sub DefParameterType {
+  my($type,$reader,%options)=@_;
+  CheckOptions("DefParameterType $type",$parameter_options,%options);
+  $LaTeXML::Parameters::PARAMETER_TABLE{$type}={reader=>$reader,%options};
+  return; }
+
 #======================================================================
 # Convenience functions for writing definitions.
 #======================================================================
@@ -92,6 +111,16 @@ sub AssignValue  { $STATE->assignValue(@_); return; }
 sub PushValue    { $STATE->pushValue(@_);  return; }
 sub LookupCatcode{ $STATE->lookupCatcode(@_); }
 sub AssignCatcode{ $STATE->assignCatcode(@_); return; }
+
+sub LookupMeaning      { $STATE->lookupMeaning(@_); }
+sub LookupDefinition   { $STATE->lookupDefinition(@_); }
+sub InstallDefinition  { $STATE->installDefinition(@_); }
+sub Let {
+  my($token1,$token2)=@_;
+  ($token1)=TokenizeInternal($token1)->unlist unless ref $token1;
+  ($token2)=TokenizeInternal($token2)->unlist unless ref $token2;
+  $STATE->assignMeaning($token1,$STATE->lookupMeaning($token2)); 
+  return; }
 
 sub InvokeToken  { $STOMACH->invokeToken(@_); }
 sub Digest       { $STOMACH->digest(@_); }
@@ -128,6 +157,53 @@ sub roman_aux {
 sub roman { Explode(roman_aux(@_)); }
 # Convert the number to upper case roman numerals, returning a list of LaTeXML::Token
 sub Roman { Explode(uc(roman_aux(@_))); }
+
+#======================================================================
+# Readers for reading various data types
+#======================================================================
+
+sub ReadToken()       { $GULLET->readToken; }
+sub ReadXToken()      { $GULLET->readXToken; }
+sub ReadNumber()      { $GULLET->readNumber; }
+sub ReadDimension()   { $GULLET->readDimension; }
+sub ReadGlue()        { $GULLET->readGlue; }
+sub ReadMuDimension() { $GULLET->readMuDimension; }
+sub ReadMuGlue()      { $GULLET->readMuGlue; }
+sub ReadUntilBrace()  {
+  my $value=ReadUntil(T_BEGIN);
+  $GULLET->unread(T_BEGIN);
+  $value; }
+
+sub ReadArg()         { $GULLET->readArg;}
+sub ReadOptional()    { $GULLET->readOptional; }
+
+sub StartSemiverbatim() {
+  $STATE->pushFrame;
+  map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%');}  # should '%' too ?
+sub EndSemiverbatim() {  $STATE->popFrame; }
+
+sub ReadSemiverbatim {
+  StartSemiverbatim; 
+  my $arg = ReadArg;
+  EndSemiverbatim;
+  $arg; }
+
+
+# Other reader support
+sub SkipSpaces()      { $GULLET->skipSpaces; }
+sub ReadKeyword       { $GULLET->readKeyword(@_); }
+sub ReadMatch         { $GULLET->readMatch(@_); }
+sub ReadUntil         { $GULLET->readUntil(@_); }
+sub ReadBalanced()    { $GULLET->readBalanced; }
+
+sub Input             { $GULLET->input(@_); }
+sub IfNext            { $GULLET->ifNext(@_); }
+
+sub Expand            { $GULLET->expandTokens(@_); }
+
+sub Invocation        {
+  my($token,@args)=@_;
+  Tokens(LookupDefinition($token)->invocation(@args)); }
 
 #**********************************************************************
 # Definitions
@@ -226,14 +302,14 @@ sub flatten {
 #
 # Options are:
 #   mode            : causes a switch into the given mode during the Whatsit building in the stomach.
-#   untex           : a string representing the preferred TeX form of the invocation.
+#   reversion       : a string representing the preferred TeX form of the invocation.
 #   beforeDigest    : code to be executed (in the stomach) before parsing & constructing the Whatsit.
 #                     Can be used for changing modes, beginning groups, etc.
 #   afterDigest     : code to be executed (in the stomach) after parsing & constructing the Whatsit.
 #                     useful for setting Whatsit properties,
 #   properties      : a hashref listing default values of properties to assign to the Whatsit.
 #                     These properties can be used in the constructor.
-our $constructor_options = {mode=>1, untex=>1, properties=>1, alias=>1, nargs=>1,
+our $constructor_options = {mode=>1, reversion=>1, properties=>1, alias=>1, nargs=>1,
 			    beforeDigest=>1, afterDigest=>1,
 			    captureBody=>1, scope=>1};
 sub DefConstructor {
@@ -249,7 +325,8 @@ sub DefConstructor {
 							 ($mode ? (sub { EndMode($mode) }):())),
 				  nargs       => $options{nargs},
 				  alias       => $options{alias},
-				  untex       => $options{untex},
+				  reversion   => ($options{reversion} && !ref $options{reversion} 
+						  ? Tokenize($options{reversion}) : $options{reversion}),
 				  captureBody => $options{captureBody},
 				  properties  => $options{properties}||{}),
 			    $options{scope});
@@ -270,11 +347,11 @@ sub DefConstructor {
 # HMM.... Still fishy.
 # When to make a dual ?
 # If the $presentation seems to be TeX (ie. it involves #1... but not ONLY!)
-our $math_options = {name=>1, omcd=>1, untex=>1, alias=>1,
+our $math_options = {name=>1, omcd=>1, reversion=>1, alias=>1,
 		     role=>1, operator_role=>1,
 		     style=>1, size=>1, 
 		     stackscripts=>1,operator_stackscripts=>1,
-		     beforeDigest=>1, afterDigest=>1, scope=>1};
+		     beforeDigest=>1, afterDigest=>1, scope=>1, nogroup=>1};
 our $XMID=0;
 sub next_id {
   "LXID".$XMID++; }
@@ -285,8 +362,8 @@ sub dualize_arglist {
   foreach my $arg (@args){
     if(defined $arg){
       my $id = next_id();
-      push(@cargs, T_CS('\@XMArg')->invocation(T_OTHER($id),$arg));
-      push(@pargs, T_CS('\@XMRef')->invocation(T_OTHER($id))); }
+      push(@cargs, Invocation(T_CS('\@XMArg'),T_OTHER($id),$arg));
+      push(@pargs, Invocation(T_CS('\@XMRef'),T_OTHER($id))); }
     else {
       push(@cargs,undef);
       push(@pargs,undef); }}
@@ -307,11 +384,15 @@ sub DefMath {
   my $attr="name='#name' omcd='#omcd' style='#style' size='#size'";
   $options{role} = 'UNKNOWN' if ($nargs == 0) && !defined $options{role};
   $options{operator_role} = 'UNKNOWN' if ($nargs > 0) && !defined $options{operator_role};
+  $options{reversion} = Tokenize($options{reversion})
+    if $options{reversion} && !ref $options{reversion};
   my %common =(alias=>$options{alias}||$cs->getString,
-	       (defined $options{untex} ? (untex=>$options{untex}) : ()),
+	       (defined $options{reversion} ? (reversion=>$options{reversion}) : ()),
 	       beforeDigest=> flatten(sub{ RequireMath;},
+				      ($options{nogroup} ? ():(\&BGroup)),
 				      $options{beforeDigest}),
-	       afterDigest => flatten($options{afterDigest}),
+	       afterDigest => flatten($options{afterDigest},
+				      ($options{nogroup} ? ():(\&EGroup))),
 	       properties => {name=>$name, omcd=>$options{omcd},
 			      role => $options{role}, operator_role=>$options{operator_role},
 			      style=>$options{style}, size=>$options{size},
@@ -329,9 +410,10 @@ sub DefMath {
     $STATE->installDefinition(LaTeXML::Expandable->new($cs,$paramlist, sub {
          my($self,@args)=@_;
 	 my($cargs,$pargs)=dualize_arglist(@args);
-	 T_CS('\DUAL')->invocation(($options{role} ? T_OTHER($options{role}):undef),
-				   $cont_cs->invocation(@$cargs),
-				   $pres_cs->invocation(@$pargs) )->unlist;}),
+	 Invocation(T_CS('\DUAL'),
+		    ($options{role} ? T_OTHER($options{role}):undef),
+		    Invocation($cont_cs,@$cargs),
+		    Invocation($pres_cs,@$pargs) )->unlist; }),
       $options{scope});
     # Make the presentation macro.
     $STATE->installDefinition(LaTeXML::Expandable->new($pres_cs, $paramlist,
@@ -437,14 +519,7 @@ our $require_options = {options=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
-  $GULLET->input($package,['ltxml','sty'],%options); 
-  return; }
-
-sub Let {
-  my($token1,$token2)=@_;
-  ($token1)=TokenizeInternal($token1)->unlist unless ref $token1;
-  ($token2)=TokenizeInternal($token2)->unlist unless ref $token2;
-  $STATE->assignMeaning($token1,$STATE->lookupMeaning($token2)); 
+  Input($package,['ltxml','sty'],%options); 
   return; }
 
 sub RawTeX {
@@ -453,23 +528,9 @@ sub RawTeX {
   return; }
 
 #======================================================================
-# Support for KeyVal type constructs.
-# Note that LaTeXML can (surprisingly) read the keyval.sty package, so
-# usages within LaTeX can just use that.
-# Here we define perl-level declarations so that keyval args can be handled
-sub DefKeyVal {
-  my($keyset,$key,$type,$default)=@_;
-  my $paramlist=parseParameters($type,"KeyVal $key in set $keyset");
-  AssignValue('KEYVAL@'.$keyset.'@'.$key => $paramlist->[0]); 
-  AssignValue('KEYVAL@'.$keyset.'@'.$key.'@default' => Tokenize($default)) 
-    if defined $default; 
-  return; }
-
-
-#======================================================================
 # Defining Rewrite rules that act on the DOM
 
-our $rewrite_options = {scope=>1, xpath=>1, match=>1,
+our $rewrite_options = {label=>1,scope=>1, xpath=>1, match=>1,
 			 attributes=>1, replace=>1, regexp=>1};
 sub DefRewrite {
   my(@specs)=@_;
@@ -492,21 +553,28 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Package> -- Support for package implementations.
+C<LaTeXML::Package> -- Support for package implementations and document customization.
 
 =head1 SYNOPSIS
 
-To implement a LaTeXML version of a LaTeX package C<somepackage.sty>, 
+This package defines and exports most of the procedures users will need
+to customize or extend LaTeXML.
+
+To implement the LaTeXML version of a LaTeX package C<somepackage.sty>, 
 such that C<\usepackage{somepackage}> would load your custom implementation,
 you would need to create the file C<somepackage.ltxml> (It can be anywhere
 perl searches for modules [ie the list of directories C<@INC>, which typically
 includes the working directory] or in any of those directories with
 C<"LaTeXML/Package"> appended).
-It's contents would be something like the following code, which
-contains random `illustrative' samples collected from the TeX
-and LaTeX packages.
 
-A relatively simple package might look something like this:
+To customize the processing of a specific document, say
+C<mydoc.tex>, you would create the file C<mydoc.latexml>
+(sought in the same search path as above, but most likely in the
+same directory as the document).
+
+The contents of these packages would be something like the following code, 
+which contains random `illustrative' samples collected from the TeX
+and LaTeX packages.
 
   use LaTeXML::Package;
   use strict;
@@ -514,32 +582,38 @@ A relatively simple package might look something like this:
   # Load "anotherpackage"
   RequirePackage('anotherpackage');
 
-  # A simple macro, should act just like in TeX
+  # A simple macro, should act just like in TeX, replacing the
+  # token and its arguments, by another sequence of tokens.
   # For example, to change the style of section numbering
   DefMacro('\thesection', '\thechapter.\roman{section}');
 
-  # A simple case: Define \thanks to add a thanks element
-  # with the constructor's argument as content.
+  # A constructor defines how a control sequence will generate
+  # an XML tree fragment.
+  # This \thanks{text} to add a thanks element
+  # with the argument as its content.
   DefConstructor('\thanks{}', "<thanks>#1</thanks>");
-
-  # Define a new math relational symbol.
-  # This will create a `dual' whose presentation is a bold 'x', 
-  # but whose content form is the name 'myrel'.
-  DefMath('\myrel', "\mathbf{x}", role=>'RELOP');
-
-  # Define the negation of myrel.
-  DefMath('\notmyrel',  "\mathbf{not x}", role=>'RELOP');
-  # and define a Filter that combines \not and \in.
-  DefMathRewrite(match=>'\not\myrel',replace=>'\notmyrel');
 
   # To define a symbol \Real to stand for the Reals, 
   # using double struck capital R for presentation
   # It plays a grammatical role as an ID (identifier).
   DefMath('\Real', "\x{211D}", role=>'ID');
 
-  # To define a function \realpart,
-  # using BLACK-LETTER CAPITAL R for presentation
+  # To define a function \realpart.
+  # This creates a `dual' whose presentation 
+  # places BLACK-LETTER CAPITAL R in front of the argument,
+  # and whose content representation applies a token
+  # with name `realpart' to the argument.
   DefMath('\realpart{}', "\x{211C}");
+
+  # Define a new math relational symbol.
+  # This will create a `dual' whose presentation is a bold 'x', 
+  # but whose content form has the name 'myrel'.
+  DefMath('\myrel', "\mathbf{x}", role=>'RELOP');
+
+  # Define the negation of myrel.
+  DefMath('\notmyrel',  "\mathbf{not x}", role=>'RELOP');
+  # and define a rewriter that combines \not and \in.
+  DefMathRewrite(match=>'\not\myrel',replace=>'\notmyrel');
 
   # To define a floor function with the conventional presentation,
   # but still assuring the content form is unambiguous:
@@ -626,15 +700,16 @@ control.
 
 =head3 Control of Scoping
 
-Most defining commands accept an option  C<<scope=>$scope>> which affects how the
+Most defining commands accept an option  C<< scope=>$scope >> which affects how the
 definition is stored: C<$scope> can be 'global' for global definitions,
 'local', to be stored in the current stack frame, or a string naming a I<scope>.
 A scope saves a set of definitions and values that can be activated at a later time.
 
 Particularly interesting forms of scope are those that get automatically activated
 upon changes of counter and label.  For example, definitions that have
-C<<scope=>'section:1.1'>>  will be activated when the section number is "1.1",
+C<< scope=>'section:1.1' >>  will be activated when the section number is "1.1",
 and will be deactivated when the section ends.
+
 
 =head3 Control Sequence Prototypes
 
@@ -651,7 +726,7 @@ If type is empty in the above (ie. "{}" or "[]"), no parsing of the argument is 
 and the argument value is simply the Tokens (or undef for [] when no option was provided).
 The remaining recognized types are
 
-  semiverb      : Like {} but with many catcodes disabled.
+  Semiverbatim  : Like {} but with many catcodes disabled.
   Token         : Read a single Token.
   XToken        : Read the next unexpandable Token after expandable 
                   ones have been expanded.
@@ -680,6 +755,7 @@ sequences of characters.  The input is expected to match one of the character se
   Literal:...   : Like Keyword, but doesn't contribute an item
                   to the argument list; like TeX's delimted parameters.
 
+
 Each item above, unless otherwise noted, contribute an item to the argument list.
 
 =over 4
@@ -688,17 +764,17 @@ Each item above, unless otherwise noted, contribute an item to the argument list
 
 Defines an expandable control sequence. The C<$expansion> should be a CODE ref that will take
 the Gullet and any macro arguments as arguments.  It should return the result as a list
-of Token's.  The only option is C<isConditional> which should be true, for conditional
+of Token's.  The only option, other than C<scope>, is C<isConditional> which should be true, for conditional
 control sequences (TeX uses these to keep track of conditional nesting when skipping
 to \else or \fi).
 
-=item C<< DefMacro($proto,$expansion); >>
+=item C<< DefMacro($proto,$expansion,%options); >>
 
 Defines the macro expansion for C<$proto>.  C<$expansion> can be a string (which will be tokenized
 at definition time) or a LaTeXML::Tokens; any macro arguments will be substituted for parameter
 indicators (eg #1) and the result is used as the expansion of the control sequence.
 If $expansion is a CODE ref, it will be called with the Gullet and any macro arguments, as arguments,
-and it should return a list of Token's.
+and it should return a list of Token's. The only option is C<scope>.
 
 =item C<< DefPrimitive($proto,$replacement,%options); >>
 
@@ -738,19 +814,25 @@ The pattern is simply a bit of XML as a string with certain substitutions made.
 Generally, #1, #2 ... is replaced by the corresponding argument (turned into
 a string when it appears as an attribute, or recursively processed when it appears as
 content). #name stands for named properties stored in the Whatsit. 
-The properties font, body and trailer are defined by default (the latter two
-only when captureBody is true).  Other properties can be added to Whatsits (how?).
+Another form of substituted value is prefixed with C<&> which invokes a function,
+say C< &func(values) > which returns a string (or an object which will be converted
+using C<toString>).
+
 Additionally, the pattern can be conditionallized by surrounding portions of
 the pattern by the IF construct ?#1(...) or IF-ELSE ?#1(...)(...) for inclusion 
 only when the argument is defined.   Currently, conditionals can NOT be nested.
 If the constuctor begins with '^', the XML fragment is allowed to `float up' to
 a parent node that is allowed to contain it, according to the Document Type.
 
+The Whatsit properties font, body and trailer are defined by default (the latter two
+only when captureBody is true).  Other properties can be added to Whatsits
+by using C<< $whatsit->setProperty(key=>$value); >> within C<afterDigest>.
+
 DefConstructor options are
 
   mode           : Changes to this mode (text, display_math 
                    or inline_math) during digestion.
-  untex          : Specifies a pattern for untex'ing the 
+  reversion      : Specifies a pattern for reversion'ing the 
                    contstructor, if the default is not appropriate. 
                    A string (that can include #1,#2...) or code 
                    called with the $whatsit as argument.
@@ -783,7 +865,7 @@ modifiers without concern for puting something awkward into the List being built
 A common shorthand constructor; it defines a control sequence that creates a mathematical object,
 such as a symbol, function or operator application.  It generates an XMDual using the replacement
 $tex for the presentation.  The content information is drawn from the name and options
-The untex option is the same as for DefConstructor; the remaining options clarify
+The reversion option is the same as for DefConstructor; the remaining options clarify
 the semantics of the object:
 
   style : adds a style attribute to the object.
@@ -817,7 +899,13 @@ Options are:
   afterDigestBegin : code to execute after digesting C<\begin{env}>.
   afterDigest      : code to execute after digesting C<\end{env}>.
 
+
+=item C<< Let($token1,$token2); >>
+
+Gives C<$token1> the same `meaning' (definition) as C<$token2>; like TeX's \let.
+
 =back
+
 
 =head2 Document Declarations
 
@@ -848,47 +936,59 @@ The autoOpen and autoClose properties help match the more  SGML-like LaTeX to XM
 Declares the expected rootelement, the public and system ID's of the document type
 to be used in the final document, and the default namespace URI.
 
-=item C<< RequirePackage($package); >>
+=item C<< RegisterNamespace($prefix,$URL,$default); >>
 
-Finds an implementation (either TeX or LaTeXML) for the named C<$package>, and loads it
-as appropriate.
+Declares the C<$prefix> to be associated with the given C<$URL>.
+If C<$default> is true, then all created xml elements (eg. within constructors)
+without a specific namespace prefix will be assumed to use this prefix.
 
 =back
+
+
+=head2 Document Rewriting
+
+=over 4
+
+=item C<< DefRewrite(%specification); >>
+
+=item C<< DefMathRewrite(%specification); >>
+
+These two declarations define document rewrite rules that are applied to the
+document tree after it has been constructed, but before math parsing, or
+any other postprocessing, is done.  The C<%specification> consists of a 
+seqeuence of key/value pairs with the initial specs successively narrowing the
+selection of document nodes, and the remaining specs indicating how
+to modify or replace the selected nodes.
+
+The following select portions of the document:
+
+   label =>$label   Selects the part of the document with label=$label
+   scope =>$scope   The $scope could be "label:foo" or "section:1.2.3" or something
+                    similar. These select a subtree labelled 'foo', or
+                    a section with reference number "1.2.3"
+   xpath =>$xpath   Select those nodes matching an explicit xpath expression.
+   match =>$TeX     Selects nodes that look like what the processing of $TeX 
+                    would produce.
+   regexp=>$regexp  Selects text nodes that match the regular expression.
+
+The following act upon the selected node:
+
+   attributes => $hash Adds the attributes given in the hash reference 
+                    to the node.
+   replace =>$replacement Interprets the $replacement as TeX code to generate
+                    nodes that will replace the selected nodes.
+
+=back
+
 
 =head2 Other useful operations
 
 =over 4
 
-=item C<< Let($token1,$token2); >>
+=item C<< RequirePackage($package); >>
 
-Gives C<$token1> the same `meaning' (definition) as C<$token2>; like TeX's \let.
-
-=item C<< DefKeyVal($keyset,$key,$type); >>
-
-Defines the type of value expected for the key $key when parsed in part
-of a KeyVal using C<$keyset>.  C<$type> would be something like 'any' or 'Number', but
-I'm still working on this.
-
-=item C<< DefTextFilter($pattern,$replacement, %options); >>
-
-=item C<< DefMathFilter($pattern,$replacement, %options); >>
-
-REWRITE THIS FOR DOM REWRITE RULES!!!
-
-These define filters to apply in text and math.  The C<$pattern> and C<$replacement>
-are strings which will be digested to obtain the sequence of boxes.  
-The C<$pattern> boxes will be matched against the boxes during digestion; if they
-match they will be replaced by the boxes from $replacement.  The following 
-two examples replace doubled quotes by the appropriate quotation marks:
-
-  DefTextFilter("``","\N{LEFT DOUBLE QUOTATION MARK}");
-  DefTextFilter("''","\N{RIGHT DOUBLE QUOTATION MARK}");
-
-The options are 
-
-    initial the initial character that triggers matching this filter.
-            This is required if the pattern is a CODE, rather than tokens.
-    scope   The scope in which this pattern is applied (default is global).
+Finds an implementation (either TeX or LaTeXML) for the named C<$package>, and loads it
+as appropriate.
 
 =item C<< RawTeX('... tex code ...'); >>
 
@@ -897,6 +997,7 @@ in a Package implementation.  It is useful for copying portions of the normal
 implementation that can be handled simply using macros and primitives.
 
 =back
+
 
 =head2 Convenience Functions
 
@@ -958,6 +1059,7 @@ the value, which should be a LIST reference.
 Scoping is not handled here (yet?), it simply pushes the value
 onto the last binding of C<$name>.
 
+
 =item C<< $value = LookupCatcode($char); >>
 
 Lookup the current catcode associated with the the character C<$char>.
@@ -970,6 +1072,31 @@ according to the given scoping rule.
 This method is also used to specify whether a given character is
 active in math mode, by using C<math:$char> for the character,
 and using a value of 1 to specify that it is active.
+
+=item C<< $meaning = LookupMeaning($token); >>
+
+Looks up the current meaning of the given C<$token> which may be a
+Definition, another token, or the token itself if it has not
+otherwise been defined.
+
+=item C<< $defn = LookupDefinition($token); >>
+
+Looks up the current definition, if any, of the C<$token>.
+
+=item C<< InstallDefinition($defn); >>
+
+Install the Definition C<$defn> into C<$STATE> under its
+control sequence.
+
+=item C<< $boxes = InvokeToken($token); >>
+
+Invoke the definition of the given C<$token>, possibly reading
+arguments from the current C<$GULLET>.
+
+=item C<< $boxes = Digest($tokens); >>
+
+Processes and digestes the C<$tokens>.  Any arguments needed by
+control sequences in C<$tokens> must be contained within the C<$tokens> itself.
 
 =item C<< RequireMath; >>
 
@@ -1000,6 +1127,90 @@ Formats the C<$number> in (lowercase) roman numerals, returning a list of the to
 =item C<< @tokens = Roman($number); >>
 
 Formats the C<$number> in (uppercase) roman numerals, returning a list of the tokens.
+
+=item C<< $token = ReadToken; >>
+
+Reads a Token from the Gullet.  This allows 'Token' to be used as a parameter spec.
+
+=item C<< $token = ReadXToken; >>
+
+Reads a Tokens from the Gullet and expands them until an unexpandable token is found.
+This allows 'XToken' to be used as a parameter spec.
+
+=item C<< $number = ReadNumber; >>
+=item C<< $dimen = ReadDimension; >>
+=item C<< $skip  = ReadGlue; >>
+=item C<< $mudimen = ReadMuDimension; >>
+=item C<< $muskip = ReadMuGlue; >>
+
+Reads a Number, Dimension, Glue, MuDimension, MuGlue from the Gullet, following
+TeX's rules.
+This allows these types to be used as parameter specs.
+
+=item C<< $tokens = ReadUntilBrace; >>
+
+Reads tokens until a open brace C<{> is found; this is used for some
+TeX definitions like C<\hbox>.  
+This allows 'UntilBrace' to be used as a parameter spec.
+
+=item C<< SkipSpaces(); >>
+
+Skips any spaces in the input.
+This allows 'SkipSpaces' to be used in a parameter spec, without
+contributing an argument.
+
+=item C<< $tokens = ReadMatch($keyword,...); >>
+
+Matches the input against any of the given C<$keywords> (each is a Tokens),
+returning the matching one, if any.
+This allows something like 'Keyword:foo:bar' to be used as a parameter spec.
+
+=item C<< $tokens = ReadKeyword($keyword,...); >>
+
+Similar to ReadMatch, but the keywords are strings and the matching
+ignores category codes.
+
+=item C<< $tokens = ReadUntil($keyword,...); >>
+
+Reads input until matching one of the C<$keyword>s.
+
+=item C<< Input($path,$types); >>
+
+Reads and processes an input file at C<$path>. Unless C<$path> is found
+under that name, C<$types> is an array of allowed extensions.
+Reasonable choices are C<tex>, C<sty>, C<ltxml>, C<latexml>.
+
+=item C<< $boolean = IfNext($token); >>
+
+Returns true if the next token on input is equal to $token;
+it does I<not> remove the token.
+
+=item C<< $tokens = Expand($tokens); >>
+
+Expands the given C<$tokens> according to current definitions.
+
+=item C<< @tokens = Invocation($cs,@args); >>
+
+Constructs a sequence of tokens that would invoke the token C<$cs>
+on the arguments.
+
+=item C<< $tokens = ReadArg(); >>
+
+Reads a regular TeX argument; tokens delimted by braces or a single token.
+
+=item C<< $tokens = ReadOptional(); >>
+
+Reads a LaTeX-style optional argument, delimited by square brackets, if any.
+
+=item C<< StartSemiVerbatim(); ... ; EndSemiVerbatim(); >>
+
+Reads an argument delimted by braces, while disabling most TeX catcodes.
+
+=item C<< $tokens = ReadBalanced(); >>
+
+Reads a a sequence of tokens balanced in C<{}>; assumes the initial
+C<{> has already been read.
+
 
 =back
 

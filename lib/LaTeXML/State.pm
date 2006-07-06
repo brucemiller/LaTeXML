@@ -112,6 +112,11 @@ sub assignMeaning {
   my($self,$token,$definition,$scope)=@_;
   assign_internal($self,'meaning:'.$token->getCSName => $definition, $scope); }
 
+sub lookupDefinition {
+  my($self,$token)=@_;
+  my $defn = $self->lookupMeaning($token);
+  (defined $defn && $defn->isaDefinition ? $defn : undef); }
+
 # And a shorthand for installing definitions
 sub installDefinition {
   my($self,$definition,$scope)=@_;

@@ -42,6 +42,15 @@ sub isaToken      { 0; }
 sub isaBox        { 0; }
 sub isaDefinition { 0; }
 
+# These should really only make sense for Data objects within the
+# processing stream.
+# Defaults (probably poor)
+sub beDigested { $_[0]; }
+sub beAbsorbed {
+  my($self,$document)=@_;
+  $document->openText($self->toString,$document->getNodeFont($document->getElement)); }
+
+sub unlist { $_[0];}
 #**********************************************************************
 1;
 
@@ -66,12 +75,12 @@ to beautify error reporting.
 
 =item C<< $string = $object->stringify; >>
 
-Returns a hopefully readable representation of C<$object>,
+Returns a readable representation of C<$object>,
 useful for debugging.
 
 =item C<< $string = $object->toString; >>
 
-Returns the string content of  C<$object>;
+Returns the string content of C<$object>;
 most useful for extracting a usable string from tokens or boxes 
 that might representing a filename or such.
 
@@ -89,6 +98,17 @@ for object identity.
 
 Returns whether C<$object> is of the type indicated; L<LaTeXML::Token>,
 L<LaTeXML::Box> or L<LaTeXML::Definition>.
+
+=item C<< $digested = $object->beDigested; >>
+
+Does whatever is needed to digest the object, and
+return the digested representation.  Tokens would be digested
+into boxes; Some objects, such as numbers can just return themselves.
+
+=item C<< $object->beAbsorbed($document); >>
+
+Do whatever is needed (typically by invoking appropriate methods on
+the C<$document>) to absorb the C<$object> into the C<$document>.
 
 =back
 

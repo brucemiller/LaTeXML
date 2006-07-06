@@ -4,58 +4,76 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <section refnum="1">
     <title>One</title>
-    <p>Expect Section 1:Section 1.
+    <para>
+      <p>Expect Section 1:Section 1.
 </p>
+    </para>
   </section>
   <section refnum="2">
     <title>Two</title>
-    <p>Expect Unknown: Unknown.
+    <para>
+      <p>Expect Unknown: Unknown.
 </p>
-    <equation refnum="1">
-      <Math mode="display" tex="\mbox{Equation 1}=\mbox{Equation 1}" text="[Equation 1] = [Equation 1]">
-        <XMath>
-          <XMApp>
-            <XMTok role="RELOP">=</XMTok>
-            <text>Equation 1</text>
-            <text>Equation 1</text>
-          </XMApp>
-        </XMath>
-      </Math>
-    </equation>
-    <p>Expect Unknown: Unknown.
+      <equation refnum="1">
+        <Math mode="display" tex="\mbox{Equation 1}=\mbox{Equation 1}" text="[Equation 1] = [Equation 1]">
+          <XMath>
+            <XMApp>
+              <XMTok role="RELOP">=</XMTok>
+              <text>Equation 1</text>
+              <text>Equation 1</text>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <p>Expect Unknown: Unknown.
 </p>
+    </para>
     <subsection refnum="2.1">
       <title>Two pt one</title>
-      <p>Expect Subsection 2.1: Subsection 2.1</p>
+      <para>
+        <p>Expect Subsection 2.1: Subsection 2.1</p>
+      </para>
     </subsection>
     <subsection refnum="2.2">
       <title>Two point two</title>
-      <p>Expect Unknown: Unknown.
+      <para>
+        <p>Expect Unknown: Unknown.
 </p>
+      </para>
     </subsection>
     <subsection refnum="2.3" label="labelled">
       <title>Two point three</title>
-      <p>Expect Labelled subsection: Labelled subsection</p>
+      <para>
+        <p>Expect Labelled subsection: Labelled subsection</p>
+      </para>
     </subsection>
     <subsection refnum="2.4">
       <title>Two point four</title>
-      <p>Expect Unknown: Unknown.
+      <para>
+        <p>Expect Unknown: Unknown.
 </p>
+      </para>
     </subsection>
   </section>
   <section refnum="3">
     <title>Three</title>
-    <p>Expect Section 3:Section 3.
+    <para>
+      <p>Expect Section 3:Section 3.
 </p>
+    </para>
     <subsection refnum="3.1">
       <title>Three point one</title>
-      <p>Expect Section 3: Section 3.
+      <para>
+        <p>Expect Section 3: Section 3.
 </p>
+      </para>
     </subsection>
   </section>
   <section refnum="4">
     <title>Four</title>
-    <p>Expect Unknown: Unknown.
+    <para>
+      <p>Expect Unknown: Unknown.
 </p>
+    </para>
   </section>
 </document>

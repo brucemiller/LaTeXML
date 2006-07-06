@@ -29,14 +29,28 @@ RequirePackage('comment');
 
 
 # If we get this, we're doing a "chapter"
+#DefPrimitive('\thischapter{}', sub {
+#  my($self,$ch)=@_;
+#  $ch=$ch->toString;
+#  DefMacro('\thechapter',$ch); 
+#  DefEnvironment('{document}',"<chapter refnum='#refnum' label='#label'>#body</chapter>",
+#		 beforeDigest=> sub { AssignValue(inPreamble=>0); },
+#		 afterDigest=>sub { $GULLET->flush; return; },
+#		 properties=>{refnum=>$ch, label=>"ch:$ch"}); });
+
 DefPrimitive('\thischapter{}', sub {
   my($self,$ch)=@_;
   $ch=$ch->toString;
   DefMacro('\thechapter',$ch); 
-  DefEnvironment('{document}',"<chapter refnum='#refnum' label='#label'>#body</chapter>",
-		 beforeDigest=> sub { AssignValue(inPreamble=>0); },
-		 afterDigest=>sub { $GULLET->flush; return; },
-		 properties=>{refnum=>$ch, label=>"ch:$ch"}); });
+  AssignValue(Chapter=>$ch,'global');
+  AssignValue(ChapterLabel=>"ch:$ch",'global');  });
+
+DefEnvironment('{document}',
+	       "?&LookupValue(Chapter)"
+	       ."(<chapter refnum='&LookupValue(Chapter)' label='&LookupValue(ChapterLabel)'>#body</chapter>)"
+	       ."(<document>#body</document>)",
+	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
+	       afterDigest=> sub { $GULLET->flush; return; });
 
 #======================================================================
 # DLMF's Numbering scheme.
@@ -85,10 +99,10 @@ DefConstructor('\fmt@acknowledgements{}', "<acknowledgements>#1</acknowledgement
 
 Tag('gallery', autoClose=>1, autoOpen=>1);
 DefMacro('\@galleryitems','');
-DefMacro('\galleryitem{semiverb}{semiverb}',
+DefMacro('\galleryitem Semiverbatim Semiverbatim',
 	 '\xdef\@galleryitems{\@galleryitems\fmt@galleryitem{sb:\thechapter.#1}{#2}}');
 
-DefConstructor('\fmt@galleryitem{semiverb}{semiverb}',
+DefConstructor('\fmt@galleryitem Semiverbatim Semiverbatim',
 	       "<galleryitem labelref='#1' graphic='#2'/>");
 
 DefMacro('\maketitle', 
@@ -128,8 +142,8 @@ DefEnvironment('{sidebar}{}{}{}',
 
 #**********************************************************************
 # Metadata
-DefConstructor('\note{}', "^<note>#1</note>", mode=>'text', untex=>'');
-DefConstructor('\origref[]{}', "^<origref ref='#2'>#1</origref>", mode=>'text', untex=>'');
+DefConstructor('\note{}', "^<note>#1</note>", mode=>'text', reversion=>'');
+DefConstructor('\origref[]{}', "^<origref ref='#2'>#1</origref>", mode=>'text', reversion=>'');
 
 #**********************************************************************
 # More Math environments.
@@ -162,15 +176,16 @@ DefEnvironment('{equationgroup}[]', "<equationgroup refnum='#refnum'>#body</equa
 DefEnvironment('{equationgroup*}[]',"<equationgroup>#body</equationgroup>");
 DefConstructor('\intertext{}',"#1");
 
-DefConstructor('\@constraint Flag:* {}',"^<constraint hidden='?#1(yes)(no)'>#2</constraint>",
-	       mode=>'text', untex=>'');
+DefConstructor('\@constraint OptionalMatch:* {}',"^<constraint hidden='?#1(yes)(no)'>#2</constraint>",
+	       mode=>'text', reversion=>'');
 
-DefExpandable('\constraint Flag:* [Default:,]{}',sub { 
+DefExpandable('\constraint OptionalMatch:* [Default:,]{}',sub { 
   my($self,$starred,$punct,$constraint)=@_;
   if($starred){			# hidden.
     (T_CS('\@constraint'),T_OTHER('*'),T_BEGIN,$constraint->unlist,T_END); }
   else {
-    my $ppunct = $GULLET->readMatch(T_OTHER('.'),T_OTHER(','),T_OTHER(';')) || Tokens();
+    SkipSpaces();
+    my $ppunct = ReadMatch(T_OTHER('.'),T_OTHER(','),T_OTHER(';')) || Tokens();
     ($punct->unlist, T_CS('\@constraint'), T_BEGIN,$constraint->unlist,$ppunct->unlist,T_END); }});
 
 #**********************************************************************

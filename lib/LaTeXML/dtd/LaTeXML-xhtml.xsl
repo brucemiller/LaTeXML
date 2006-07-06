@@ -17,6 +17,7 @@
   version     = "1.0"
   xmlns:xhtml = "http://www.w3.org/1999/xhtml"
   xmlns:m     = "http://www.w3.org/1998/Math/MathML"
+  xmlns:svg   = "http://www.w3.org/2000/svg"
   xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
   exclude-result-prefixes = "xhtml m ltx"
 >
@@ -34,15 +35,25 @@
     <xsl:apply-templates select="m:math"/>
   </xsl:template>
 
-  <!-- Some kinda confusion about namespaces here! -->
-  <xsl:template match="m:math">
-    <math xmlns="http://www.w3.org/1998/Math/MathML" display="{@display}">
-      <xsl:apply-templates/>
-    </math>
+  <xsl:template match="ltx:Math">
+    <xsl:apply-templates select="m:math"/>
   </xsl:template>
 
+  <!-- Copy MathML, as is -->
   <xsl:template match="*[namespace-uri() = 'http://www.w3.org/1998/Math/MathML']">
-    <xsl:element name="{local-name()}">
+    <xsl:element name="{name()}" namespace='http://www.w3.org/1998/Math/MathML'>
+      <xsl:for-each select="@*">
+        <xsl:attribute name="{name()}">
+          <xsl:value-of select="."/>
+        </xsl:attribute>
+      </xsl:for-each>
+      <xsl:apply-templates/>
+    </xsl:element>
+  </xsl:template>
+
+  <!-- Copy SVG, as is -->
+  <xsl:template match="*[namespace-uri() = 'http://www.w3.org/2000/svg']">
+    <xsl:element name="{name()}" namespace='http://www.w3.org/2000/svg'>
       <xsl:for-each select="@*">
         <xsl:attribute name="{name()}">
           <xsl:value-of select="."/>

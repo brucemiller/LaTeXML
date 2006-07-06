@@ -16,6 +16,7 @@
 #======================================================================
 use LaTeXML::Package;
 
+RequirePackage('keyval');
 # From latexml.sty
 DefConstructor('\URL[]{}',"<a href='#2'>?#1(#1)(#2)</a>");
 DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
@@ -35,7 +36,7 @@ DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 # an expansion for \name used for the presentation.
 # The content keywords are used to define the semantics of the object.
 # See DefMath in LaTeXML::Package for more information.
-DefPrimitive('\LXMathDef{}[][]{}[KeyVal:XMath]', sub {
+DefPrimitive('\LXMathDef{}[][]{} OptionalKeyVals:XMath', sub {
   my($self,$cs,$nargs,$opt,$presentation,$params)=@_;
   my($name,$cd,$role)=$params && map($_ && $_->toString,map($params->getValue($_), qw(name cd role)));
   DefMath($cs->toString.convertLaTeXArgs($nargs,$opt),$presentation,

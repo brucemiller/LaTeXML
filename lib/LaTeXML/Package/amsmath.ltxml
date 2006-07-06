@@ -98,11 +98,11 @@ DefConstructor('\@@gather@newline',
 	       "</XMath></Math></equation>"
 	       ."<equation refnum='#refnum'><Math mode='display'><XMath>",
 	       properties=> {refnum=>sub { refStepCounter('equation'); }},
-	       untex=>'\\');
+	       alias=>'\\');
 DefConstructor('\@@gather@newline@nonum',
 	       "</XMath></Math></equation>"
 	       ."<equation><Math mode='display'><XMath>",
-	       untex=>'\\');
+	       alias=>'\\');
 
 # gather collects several equations, separated by \\
 # NOTE: This gets the structure right, but the addition of tex property isn't cooperating.
@@ -133,20 +133,20 @@ DefConstructor('\@@align@newline',
 	       ."<equation refnum='#refnum'><Math mode='display'><XMath>",
 	       properties=> {refnum=>sub { refStepCounter('equation'); }},
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); },
-	       untex=>'\\');
+	       alias=>'\\');
 DefConstructor('\@@align@newline@nonum',
 	       "</XMath></Math></equation>"
 	       ."<equation><Math mode='display'><XMath>",
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); },
-	       untex=>'\\');
+	       alias=>'\\');
 DefConstructor('\@@align@odd',"<XMHint name='align'/>",
 	       afterDigest=>sub{ Let('&','\@@align@even'); },
-	       untex=>'&');
+	       alias=>'&');
 DefConstructor('\@@align@even',
 	       "</XMath></Math></equation>"
 	       ."<equation><Math mode='display'><XMath>",
 	       afterDigest=>sub{ Let('&','\@@align@odd'); },
-	       untex=>'&');
+	       alias=>'&');
 
 # Question: Should the extra "equations" in each row be <equation> or just <Math> ????
 DefEnvironment('{align}',
@@ -248,7 +248,7 @@ DefPrimitive('\numberwithin{}{}',sub {
   NewCounter($counter->toString,$within->toString); });
 
 # Section 3.11.2 Cross references to equation numbers
-DefConstructor('\eqref{semiverb}', "(<ref labelref='#1'>VALUE('LABEL@#1')</ref>)");
+DefConstructor('\eqref Semiverbatim', "(<ref labelref='#1'>&LookupValue('LABEL@#1')</ref>)");
 
 # Section 3.11.3 Subordinate numbering sequences.
 DefEnvironment('{subequations}',"<equationgroup refnum='#refnum'>#body</equationgroup>",
@@ -259,7 +259,7 @@ DefEnvironment('{subequations}',"<equationgroup refnum='#refnum'>#body</equation
 				   Let('\theparentequation','\theequation');
 				   DefMacro('\theequation','\theparentequation\alph{equation}'); },
 	       afterDigest =>sub{ AssignValue("\\c\@equation"=>LookupValue("\\c\@parentequation")); },
-	       properties=> {refnum=>sub {  $GULLET->expandTokens(Tokens(T_CS("\\theparentequation"))); }});
+	       properties=> {refnum=>sub {  Expand(T_CS("\\theparentequation")); }});
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 4: Miscellaneous mathematical features
@@ -299,11 +299,12 @@ DefEnvironment('{Vmatrix}',
 # \negmedspace
 # \negthickspace
 # I think only these are new
-DefConstructor('\medspace',"?IfMath(<XMHint name='medspace'/>)(\x{2005})");  # FOUR-PER-EM SPACE
-DefConstructor('\negthinspace',"?IfMath(<XMHint name='negthinspace'/>)()");
-DefConstructor('\negmedspace',"?IfMath(<XMHint name='negmedspace'/>)()");
-DefConstructor('\negthickspace',"?IfMath(<XMHint name='negthickspace'/>)()");
+DefConstructor('\medspace',"?#isMath(<XMHint name='medspace'/>)(\x{2005})");  # FOUR-PER-EM SPACE
+DefConstructor('\negthinspace',"?#isMath(<XMHint name='negthinspace'/>)()");
+DefConstructor('\negmedspace',"?#isMath(<XMHint name='negmedspace'/>)()");
+DefConstructor('\negthickspace',"?#isMath(<XMHint name='negthickspace'/>)()");
 
+DefConstructor('\mspace{MuDimension}',"<XMHint name='#1'/>");
 #======================================================================
 # Section 4.3 Dots
 # Nice idea, but not sure what I really should do about it.
@@ -381,7 +382,7 @@ DefMath('\tbinom{}{}','', name=>'binomial', style=>'text');
 DefMath('\dbinom{}{}','', name=>'binomial', style=>'display');
 
 # Section 4.11.3 The \genfrac command
-DefConstructor('\genfrac{}{}{}{}{}{}',
+DefConstructor('\genfrac{}{}{Dimension}{}{}{}',
 	       "<XMApp open='#1' close='#2'><XMTok name='stacked' thickness='#3' style='?#4(#4)(normal)'/>"
 	       .  "<XMArg>#5</XMArg><XMArg>#6</XMArg></XMApp>");
 

@@ -6,6 +6,7 @@ use Test;
 BEGIN { plan tests => 1; }
 
 use LaTeXML::Post;
+use LaTeXML::Post::MathML;
 
 # For each test $name there should be $name.tex and $name.xml
 # (the latter from a previous `good' run of latexml $name).
@@ -23,17 +24,22 @@ dotest('simplemath');
 sub dotest{
   my($name)=@_;
 
-  my $processor = LaTeXML::Post->new();
-  return ok(0,1,"Couldn't instanciate LaTeXML::Post") unless $processor;
+  my $POST = LaTeXML::Post->new();
+  my $procs = [LaTeXML::Post::MathML::Presentation->new()];
 
-  my $doc = $processor->process("t/$name.xml",
-				format    => 'xml',
-				verbosity => -1,
-				toString  => 1);
+  return ok(0,1,"Couldn't instanciate LaTeXML::Post") unless $POST;
+
+  my $source = $POST->readDocument("t/$name.xml");
+  my $doc = $POST->process($source,
+			   format    => 'xml',
+			   verbosity => -1,
+			   processors=>$procs);
+  $POST->adjust_latexml_doctype($doc,'MathML');
+  my $output = $POST->toString($doc);
 
   return ok(0,1,"Couldn't process $name.xml") unless $doc;
 
-  my @lines = split('\n',$doc);
+  my @lines = split('\n',$output);
 
   open(IN,"<:utf8","t/$name-post.xml") || return ok(0,1,"Couldn't read $name-post.xml");
   my($n,$new,$old)=(0,undef,undef);

@@ -14,9 +14,8 @@ package LaTeXML::Definition;
 use strict;
 use LaTeXML::Global;
 use Exporter;
-use LaTeXML::Object;
 use LaTeXML::Parameters;
-our @ISA = qw(LaTeXML::Object);
+use base qw(LaTeXML::Object);
 
 #**********************************************************************
 
@@ -31,12 +30,7 @@ sub getLocator   { $_[0]->{locator}; }
 sub readArguments {
   my($self)=@_;
   my $params = $$self{parameters};
-  ($params ? $params->readArguments : ()); }
-
-sub showInvocation {
-  my($self,@args)=@_;
-  my $params = $$self{parameters};
-  ($params ? $$self{cs}->untex.$params->untexArguments(@args) : $$self{cs}->untex); }
+  ($params ? $params->readArguments($self) : ()); }
 
 sub getParameters { $_[0]->{parameters}; }
 #======================================================================
@@ -49,19 +43,19 @@ sub stringify {
 
 sub toString {
   my($self)=@_;
-  $$self{cs}->toString.($$self{parameters} ||''); }
+  $$self{cs}->toString.' '.ToString($$self{parameters} ||''); }
 
 # Return the Tokens that would invoke the given definition with arguments.
 sub invocation {
   my($self,@args)=@_;
-  Tokens($$self{cs},$$self{parameters}->invocationArguments(@args)); }
+  ($$self{cs},$$self{parameters}->revertArguments(@args)); }
 
 #**********************************************************************
 # Expandable control sequences (& Macros);  Expanded in the Gullet.
 #**********************************************************************
 package LaTeXML::Expandable;
 use LaTeXML::Global;
-our @ISA = qw(LaTeXML::Definition);
+use base qw(LaTeXML::Definition);
 
 # Known traits:
 #    isConditional: whether this expandable is some form of \ifxxx
@@ -74,7 +68,7 @@ sub new {
     foreach my $t ($expansion->unlist){
       $level++ if $t->equals(T_BEGIN);
       $level-- if $t->equals(T_END); }
-    Fatal("Defining Macro ".Stringify($cs).": replacement has unbalanced {}: ".$expansion->untex) if $level;  }
+    Fatal("Defining Macro ".Stringify($cs).": replacement has unbalanced {}: ".ToString($expansion)) if $level;  }
   bless {cs=>$cs, parameters=>$parameters, expansion=>$expansion,
 	 locator=>"defined ".$GULLET->getLocator,
 	 %traits}, $class; }
@@ -85,6 +79,8 @@ sub isConditional { $_[0]->{isConditional}; }
 # Expand the expandable control sequence. This should be carried out by the Gullet.
 sub invoke {
   my($self)=@_;
+  if($self->isConditional){
+    $STATE->assignValue(current_if_level=>($STATE->lookupValue('current_if_level')||0)+1, 'global'); }
   my @args = $self->readArguments;
   my $expansion = $$self{expansion};
   (ref $expansion eq 'CODE' 
@@ -117,7 +113,7 @@ sub equals {
 
 package LaTeXML::Primitive;
 use LaTeXML::Global;
-our @ISA = qw(LaTeXML::Definition);
+use base qw(LaTeXML::Definition);
 
 # Known traits:
 #    isPrefix : whether this primitive is a TeX prefix, \global, etc.
@@ -126,7 +122,6 @@ sub new {
   # Could conceivably have $replacement being a List or Box?
   Fatal("Defining Primitive ".Stringify($cs)." but replacement is not CODE: $replacement.")
     unless ref $replacement eq 'CODE';
-#  $cs = $cs->untex if ref $cs;
   bless {cs=>$cs, parameters=>$parameters, replacement=>$replacement,
 	 locator=>"defined ".$GULLET->getLocator, %traits}, $class; }
 
@@ -163,7 +158,7 @@ sub equals {
 # eventually things like catcode, 
 package LaTeXML::Register;
 use LaTeXML::Global;
-our @ISA = qw(LaTeXML::Primitive);
+use base qw(LaTeXML::Primitive);
 
 # Known Traits:
 #    beforeDigest, afterDigest : code for before/after digestion daemons
@@ -206,11 +201,11 @@ sub invoke {
 package LaTeXML::Constructor;
 use strict;
 use LaTeXML::Global;
-our @ISA = qw(LaTeXML::Primitive);
+use base qw(LaTeXML::Primitive);
 
 # Known traits:
 #    beforeDigest, afterDigest : code for before/after digestion daemons
-#    untex : pattern for reverting to TeX form
+#    reversion : CODE or TOKENS for reverting to TeX form
 #    captureBody : whether to capture the following List as a `body` 
 #        (for environments, math modes)
 #    properties : a hash of default values for properties to store in the Whatsit.
@@ -220,9 +215,11 @@ sub new {
     unless (defined $replacement) && (!(ref $replacement) || (ref $replacement eq 'CODE'));
   bless {cs=>$cs, parameters=>$parameters, replacement=>$replacement,
 	 locator=>"defined ".$GULLET->getLocator, %traits,
+#	 nargs =>(defined $traits{nargs} ? $traits{nargs}
+#		  : ($parameters ? scalar(grep(! $_->getNoValue, $parameters->getParameters))
+#		     : 0))}, $class; }
 	 nargs =>(defined $traits{nargs} ? $traits{nargs}
-		  : ($parameters ? scalar(grep(! $_->getNoValue, $parameters->getParameters))
-		     : 0))}, $class; }
+		  : ($parameters ? $parameters->getNumArgs : 0))}, $class; }
 
 sub getConstructor {
   my($self)=@_;
@@ -234,7 +231,7 @@ sub getConstructor {
 							 $$self{nargs});}
   $replacement; }
 
-sub getUntexSpec { $_[0]->{untex}; }
+sub getReversionSpec { $_[0]->{reversion}; }
 sub getAlias     { $_[0]->{alias}; }
 
 # Digest the constructor; This should occur in the Stomach to create a Whatsit.
@@ -244,9 +241,12 @@ sub invoke {
   # Call any `Before' code.
   my @pre = $self->executeBeforeDigest;
   # Parse AND digest the arguments to the Constructor
-  my @args = $self->readArguments;
-  if(my $params = $$self{parameters}){
-    @args = $params->digestArguments(@args); }
+#  my @args = $self->readArguments;
+#  if(my $params = $$self{parameters}){
+#    @args = $params->digestArguments(@args); }
+  my $params = $$self{parameters};
+  my @args = ($params ? $params->readArgumentsAndDigest($self) : ());
+
   @args = @args[0..$$self{nargs}-1];
   my %props = %{$$self{properties} || {} };
   foreach my $key (keys %props){
@@ -267,10 +267,11 @@ sub invoke {
 package LaTeXML::ConstructorCompiler;
 use strict;
 use LaTeXML::Global;
-our $VALUE_RE = "(\\#|VALUE\\()";
-our $COND_RE  = "\\?($VALUE_RE|IfMath)";
+
+our $VALUE_RE = "(\\#|\\&[\\w\\:]*\\()";
+our $COND_RE  = "\\?$VALUE_RE";
 our $QNAME_RE = "([\\w\\-_:]+)";
-our $TEXT_RE  = "(.[^\\#<\\?]*)";
+our $TEXT_RE  = "(.[^\\#<\\?\\)\\&\\,]*)";
 
 our $GEN=0;
 sub compileConstructor {
@@ -290,6 +291,8 @@ sub compileConstructor {
 	. $body
 	  . ($floats ? "\$document->setNode(\$savenode) if defined \$savenode;\n" : '')
 	    . "}\n" ;
+###print STDERR "Compilation of \"$constructor\" => \n$code\n";
+
   eval $code;
   Fatal("Compilation of \"$constructor\" => \n$code\nFailed; $@") if $@; 
   \&$name; }
@@ -344,27 +347,37 @@ sub slashify {
 # parse a conditional in a constructor
 # Conditionals are of the form ?value(...)(...),
 # Return the translated condition, along with the strings for the if and else clauses.
-# It does NOT handled nested conditionals!!! (yet...)
+use Text::Balanced;
 sub parse_conditional {
   s/^\?//;			# Remove leading "?"
-  my $bool = (s/^IfMath// ? '$$prop{isMath}'
-	      : 'ToString('.translate_value().')' );
-  if(s/^\((.*?)\)(\((.*?)\))?//s){
-    ($bool,$1,$3); }
+  my $bool =  'ToString('.translate_value().')';
+##  if(s/^\((.*?)\)(\((.*?)\))?//s){
+##    ($bool,$1,$3); }
+  if(my $if = Text::Balanced::extract_bracketed($_,'()')){
+    $if =~ s/^\(//;    $if =~ s/\)$//;
+    my $else = Text::Balanced::extract_bracketed($_,'()');
+    $else =~ s/^\(// if $else;    $else =~ s/\)$// if $else;
+    ($bool,$if,$else); }
   else {
     Fatal("Unbalanced conditional in constructor template \"$_\""); }}
 
 # Parse a substitutable value from the constructor (in $_)
-# Recognizes the #1, %prop, possibly followed by {foo}, for KeyVals,
-# Future enhancements? array ref, &foo(xxx) for function calls, ...
+# Recognizes the #1, #prop, and also &function(args,...)
 sub translate_value {
   my $value;
-  if   (s/^VALUE\(//     ){
-    my $key = translate_string();
-    Error("Missing ')' in VALUE(...) in constructor pattern for $LaTeXML::ConstructorCompiler::NAME")
+  if(s/^\&([\w\:]*)\(//){	# Recognize a function call, w/args
+    my $fcn = $1;
+    # Hack: If no explict package, assume name it must be accessible via Pool
+    $fcn = "LaTeXML::Package::Pool::$fcn" unless $fcn =~/:/;
+    my @args = ();
+    while(! /^\s*\)/){
+      if(/^\s*([\'\"])/){ push(@args,translate_string()); }
+      else              { push(@args,translate_value()); }
+      last unless s/^\s*\,\s*//; }
+    Error("Missing ')' in &$fcn(...) in constructor pattern for $LaTeXML::ConstructorCompiler::NAME")
       unless s/\)//;
-    $value = "LaTeXML::ConstructorCompiler::valueLookup($key)"; }
-  elsif(s/^\#(\d+)//     ){
+    $value = "$fcn(".join(',',@args).")"; }
+  elsif(s/^\#(\d+)//     ){	# Recognize an explicit #1 for whatsit args
     my $n = $1;
     if(($n < 1) || ($n > $LaTeXML::ConstructorCompiler::NARGS)){
       Error("Illegal argument number $n in constructor for "
@@ -372,13 +385,8 @@ sub translate_value {
       $value = "\"Missing\""; }
     else {
       $value = "\$arg$n" }}
-  elsif(s/^\#([\w\-_]+)//){ $value = "\$\$prop{'$1'}"; }
+  elsif(s/^\#([\w\-_]+)//){ $value = "\$\$prop{'$1'}"; } # Recognize #prop for whatsit properties
   elsif(s/$TEXT_RE//so    ){ $value = "'".slashify($1)."'"; }
-  # &foo(...) ? Function (but not &foo; !!!)
-  # Maybe shouldn't give an error?????
-  if(s/^\{$QNAME_RE\}//o){				       # Then accept {key} modifier.
-    $value = "((defined $value)&& $value->getValue('$1'))"; }
-  # Array???
   $value; }
 
 # Parse a delimited string from the constructor (in $_), 
@@ -422,13 +430,9 @@ sub translate_avpairs {
       { local $_=$else; $code .= translate_avpairs() if $else; }
       $code .= "))";
       push(@avs,$code); }
-    elsif(s/^\#(\d+)//){ 	# Stand alone value better be a KeyVal
-      my $n = $1;
-      if(($n < 1) || ($n > $LaTeXML::ConstructorCompiler::NARGS)){
-	Error("Illegal argument number $n in constructor for "
-	      ."$LaTeXML::ConstructorCompiler::NAME which takes $LaTeXML::ConstructorCompiler::NARGS args");}
-      else {
-	push(@avs,"LaTeXML::ConstructorCompiler::keyvalAttributes(\$arg$n)"); }}
+    elsif(/^%$VALUE_RE/){	# Hash?  Assume the value can be turned into a hash!
+      s/^%//;			# Eat the "%" 
+      push(@avs,'%{'.translate_value().'}'); }
     elsif(s|^$QNAME_RE\s*=\s*||o){
       my ($key,$value) = ($1,translate_string());
       push(@avs,"'$key'=>$value"); } # if defined $value; }
@@ -436,21 +440,6 @@ sub translate_avpairs {
     s|^\s*||; }
   join(', ',@avs); }
 
-# These are invoked at runtime.
-sub valueLookup {
-  my($key)=@_;
-  my $value = $STATE->lookupValue($key); 
-  Warn("No value for $key") unless defined $value;
-  $value; }
-
-sub keyvalAttributes {
-  my($kv)=@_;
-  if(!defined $kv){ (); }
-  elsif(!(ref $kv) || !$kv->isa('LaTeXML::KeyVals')){
-    Error("Argument \"".Stringify($kv)."\" used as KeyVals in constructor pattern");
-    (); }
-  else {
-    map( ($_=>$kv->getValue($_)), $kv->getKeys); }}
 #**********************************************************************
 1;
 
@@ -466,6 +455,7 @@ C<LaTeXML::Register>, C<LaTeXML::Constructor> -- Control sequence definitions.
 =head1 DESCRIPTION
 
 These represent the various executables corresponding to control sequences.
+See L<LaTeXML::Package> for the most convenient means of creating them.
 
 =over 4
 
@@ -505,10 +495,30 @@ More documentation needed, but see LaTeXML::Package for the main user access to 
 
 =over 4
 
+=item C<< $token = $defn->getCS; >>
+
+Returns the (main) token that is bound to this definition.
+
+=item C<< $string = $defn->getCSName; >>
+
+Returns the string form of the token bound to this definition,
+taking into account any alias for this definition.
+
 =item C<< $defn->readArguments; >>
 
 Reads the arguments for this C<$defn> from the current C<$GULLET>,
 returning a list of L<LaTeXML::Tokens>.
+
+=item C<< $parameters = $defn->getParameters; >>
+
+Return the C<LaTeXML::Parameters> object representing the formal parameters
+of the definition.
+
+=item C<< @tokens = $defn->invocation(@args); >>
+
+Return the tokens that would invoke the given definition with the
+provided arguments.  This is used to recreate the TeX code (or it's
+equivalent).
 
 =item C<< $defn->invoke; >>
 
@@ -524,13 +534,38 @@ that are executed before and after digestion.  These can be useful for changing 
 
 =back
 
+=head2 More about Primitives
+
+Primitive definitions may have lists of subroutines, C<beforeDigest> and C<afterDigest>,
+that are executed before (and before the arguments are read) and after digestion.
+These should either end with C<return;>, C<()>, or return a list of digested 
+objects (L<LaTeXML::Box> or similar) that will be contributed to the current list.
+
+=head2 More about Registers
+
+Registers generally store some value in the current C<LaTeXML::State>, but are not
+required to. Like TeX's registers, when they are digested, they expect an optional
+C<=>, and then a value of the appropriate type. Register definitions support these
+additional methods:
+
+=over 4
+
+=item C<< $value = $register->valueOf(@args); >>
+
+Return the value associated with the register, by invoking it's C<getter> function.
+The additional args are used by some registers
+to index into a set, such as the index to C<\count>.
+
+=item C<< $register->setValue($value,@args); >>
+
+Assign a value to the register, by invoking it's C<setter> function.
+
 =head2 More about Constructors
 
 A constructor has as it's C<replacement> either a subroutine, or a string pattern representing
 the XML fragment it should generate.  In the case of a string pattern, the pattern is
 compiled into a subroutine on first usage by the internal class C<LaTeXML::ConstructorCompiler>.
-See L<LaTeXML::Package> for a full description of the syntax.
-
+Like primitives, constructors may have C<beforeDigest> and C<afterDigest>.
 
 =head1 AUTHOR
 

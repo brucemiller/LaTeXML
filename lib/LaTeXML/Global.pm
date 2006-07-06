@@ -21,9 +21,8 @@
 #======================================================================
 package LaTeXML::Global;
 use strict;
-use Exporter;
 use XML::LibXML;
-our @ISA = qw(Exporter);
+use base qw(Exporter);
 our @EXPORT = ( 
 	       # Global State accessors; These variables get bound by LaTeXML.pm
 	       qw( *STATE *GULLET *STOMACH *MODEL),
@@ -37,9 +36,9 @@ our @EXPORT = (
 	       qw( &T_BEGIN &T_END &T_MATH &T_ALIGN &T_PARAM &T_SUB &T_SUPER &T_SPACE 
 		   &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
 		   &Token &Tokens
-		   &Tokenize &TokenizeInternal &Explode ),
+		   &Tokenize &TokenizeInternal &Explode &UnTeX),
 	       # Number & Dimension constructors
-	       qw( &Number &Dimension &MuDimension &Glue &MuGlue),
+	       qw( &Number &Float &Dimension &MuDimension &Glue &MuGlue &Pair &PairList),
 	       # Error & Progress reporting
 	       qw( &NoteProgress &Fatal &Error &Warn ),
 	       # And some generics
@@ -110,15 +109,21 @@ sub Explode {
   my($string)=@_;
   map(($_ eq ' ' ? T_SPACE() : T_OTHER($_)),split('',$string)); }
 
+sub UnTeX {
+  my($thing)=@_;
+  ToString(Tokens(ref $thing ? $thing->revert : Explode($thing))); }
+
 #======================================================================
 # Constructors for number and dimension types.
 
 sub Number      { LaTeXML::Number->new(@_); }
+sub Float       { LaTeXML::Float->new(@_); }
 sub Dimension   { LaTeXML::Dimension->new(@_); }
 sub MuDimension { LaTeXML::MuDimension->new(@_); }
 sub Glue        { LaTeXML::Glue->new(@_); }
 sub MuGlue      { LaTeXML::MuGlue->new(@_); }
-
+sub Pair        { LaTeXML::Pair->new(@_); }
+sub PairList    { LaTeXML::PairList->new(@_); }
 #**********************************************************************
 # Error & Progress reporting.
 
@@ -268,6 +273,11 @@ Returns a list of the tokens corresponding to the characters in C<$string>.
 
 Creates a Number object representing C<$num>.
 
+=item C<< $number = Float($num); >>
+
+Creates a floating point object representing C<$num>;
+This is not part of TeX, but useful.
+
 =item C<< $dimension = Dimension($dim); >>
 
 Creates a Dimension object.  C<$num> can be a string with the number and units
@@ -293,6 +303,18 @@ or 1,2,3 for fil, fill or filll.
 =item C<< $glue = MuGlue($sp,$plus,$pfill,$minus,$mfill); >>
 
 Creates a MuGlue object, similar to Glue.
+
+
+=item C<< $pair = Pair($num1,$num2); >>
+
+Creates an object representing a pair of numbers;
+Not a part of TeX, but useful for graphical objects.
+The two components can be any numerical object.
+
+=item C<< $pair = PairList(@pairs); >>
+
+Creates an object representing a list of pairs of numbers;
+Not a part of TeX, but useful for graphical objects.
 
 =back
 

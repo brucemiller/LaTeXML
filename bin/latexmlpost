@@ -2,56 +2,202 @@
 use strict;
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
+use File::Spec;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use LaTeXML;
 use LaTeXML::Post;
 
-#**********************************************************************
+#======================================================================
 # Parse command line.
-
+#======================================================================
 my $identity = "latexmlpost (LaTeXML version $LaTeXML::VERSION)";
-my($source,$destination)=(".","");
-my($help,$showversion)=(0,0);
-my $format=undef;
-my($mathml,$openmath,$keepXMath);
-my $verbosity=0;
-my $stylesheet;
-GetOptions("destination=s"=>\$destination,
-	   "source=s"     =>\$source,
-	   "verbose+"     =>\$verbosity,
-	   "stylesheet:s" =>\$stylesheet,
-	   "format=s"     =>\$format,
+
+my($help,$showversion,$verbosity,$validate)=(0,0,0,1);
+
+# initialize these undefined!!!
+# undef => unspecified; 0 = NO, 1 = YES
+my($sourcedir,$destination);
+my($format,$parallelmath,$mathimages,$svg,$keepXMath,$stylesheet,$css);
+my($dographics,$destdir);
+
+my @math_formats =();
+my %removed_math_formats=();
+
+# Get the command line arguments.
+GetOptions("destination=s"=>sub { $destination = $_[1];
+				  if(!defined $format){
+				    $format='xhtml' if $destination=~/\.xhtml$/;
+				    $format='html'  if $destination=~/\.html$/; }},
+	   "sourcedirectory=s"     =>\$sourcedir,
+	   "verbose+"              =>\$verbosity,
+	   "stylesheet=s"          =>\$stylesheet,
+	   "css=s"                 =>\$css,
+	   "format=s"              =>\$format,
+	   "validate!"             =>\$validate,
+
+	   # Various choices for math processing.
+	   # Note: Could want OM embedded in mml annotation, too.
+	   # In general, could(?) want multiple math reps within <Math>
+	   # OR, multiple math reps combined with <mml:sematics>
+	   #   or, in fact, _other_ parallel means? (om?, omdoc? ...)
+	   # So, need to separate multiple transformations from the combination.
+	   # However, IF combining, then will need to support a id/ref mechanism.
+#	   "mathml|mml!"  =>\$mathml,
+	   "parallelmath!"               => \$parallelmath,
+	   "mathimages!"                 => \$mathimages,
+	   "presentationmathml|pmml"     => sub { addMathFormat('pmml'); },
+	   "contentmathml|cmml"          => sub { addMathFormat('cmml'); },
+	   "openmath|om"                 => sub { addMathFormat('om'); },
+	   "nopresentationmathml|nopmml" => sub { removeMathFormat('pmml'); },
+	   "nocontentmathml|nocmml"      => sub { removeMathFormat('cmml'); },
+	   "noopenmath|noom"             => sub { removeMathFormat('om'); },
+	   "keepXMath"                   =>\$keepXMath,
+
+	   # For graphics: vaguely similar issues, but more limited.
+	   # includegraphics images (eg. ps) can be converted to webimages (eg.png)
+	   # picture/pstricks images can be converted to png or possibly svg.
+	   "graphicimages!"=>\$dographics,
+	   "svg!"          =>\$svg,
+
 	   "VERSION"      =>\$showversion,
-	   "mathml"       =>\$mathml,
-	   "openmath"     =>\$openmath,
-	   "keepXMath"    =>\$keepXMath,
 	   "help|?"       =>\$help,
 	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
 if($showversion){ print STDERR "$identity\n"; exit(1); }
-pod2usage(-message=>"$identity\nMissing input xmlfile", 
-	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
-my $xmlfile = shift(@ARGV);
 
-#**********************************************************************
+# Get the requested XML file
+Error("Missing input xmlfile") unless @ARGV;
+my $xmlfile = shift(@ARGV);
+$xmlfile .= '.xml' unless -f $xmlfile;
+Error("No input file \"$xmlfile\" found") unless -f $xmlfile;
+
+#======================================================================
+# Sanity check and Completion of options.
+#======================================================================
+if(!defined $sourcedir){
+  my($vol,$dir,$name) = File::Spec->splitpath($xmlfile);
+  $sourcedir = $dir || '.'; }
+if((defined $destination) && (!defined $destdir)){
+  my($vol,$dir,$name)=File::Spec->splitpath($destination);
+  $destdir = $dir; }
+$sourcedir = '.' unless defined $sourcedir;
+$destdir   = '.' unless defined $destdir;
+
+# Sanity check & option completion for known output formats.
+if(!defined $format){}
+elsif($format eq 'html'){
+  Error("Default html stylesheet only supports math images")
+    if (!defined $stylesheet) && ($parallelmath || scalar(@math_formats));
+  Error("Default html stylesheet does not support SVG") if $svg;
+
+  $mathimages = 1 unless defined $mathimages;
+  $keepXMath  = 0;
+  $dographics = 1 unless defined $dographics;
+  $stylesheet = "LaTeXML-html.xsl" unless defined $stylesheet; }
+elsif($format eq 'xhtml'){
+  Error("Default xhtml stylesheet does not support math images")
+    if (!defined $stylesheet) && $mathimages;
+  $parallelmath = 1 if (!defined $parallelmath) && (scalar(@math_formats)>1);
+  Error("Default xhtml stylesheet only supports OpenMath in parallel with MathMl")
+    if (!defined $stylesheet) && !$parallelmath && grep($_ eq 'om',@math_formats);
+  if(!@math_formats){		# No math format specified?
+    addMathFormat('pmml');
+    addMathFormat('cmml') if $parallelmath || !@math_formats; }
+  $keepXMath  = 0;
+  $svg        = 1 unless defined $svg;
+  $dographics = 1 unless defined $dographics;
+  $stylesheet = "LaTeXML-xhtml.xsl" unless defined $stylesheet; }
+
+Error("Parallel math markup needs at least two formats")
+  if $parallelmath && (scalar(@math_formats) < 2);
+Error("Parallel math markup can only be based on MathML") 
+  if $parallelmath && ($math_formats[0] !~ /^(cmml|pmml)$/);
+
+#======================================================================
 # Do the processing.
+#======================================================================
+
 binmode(STDERR,":utf8");
 binmode(STDOUT,":utf8");
 print STDERR "$identity\n" if $verbosity > 0;
 
-my $doc = LaTeXML::Post->new()->process($xmlfile, 
-					sourceDirectory=> $source,
-					destination    => $destination,
-					format         => $format,
-					mathml         => $mathml,
-					openmath       => $openmath,
-					keepXMath      => $keepXMath,
-					stylesheet     => $stylesheet,
-					verbosity      => $verbosity,
-					toString       => !$destination);
+# Create destination directory if needed,
+if($destdir && !-d $destdir){
+    (mkdir $destdir
+     or die "Couldn't create destination dir \"$destdir\": $!"); }
 
-print $doc unless $destination;
+# Create the processors:
+my @procs = ();
+if($mathimages){
+  require 'LaTeXML/Post/MathImages.pm';
+  push(@procs,LaTeXML::Post::MathImages->new()); }
+if($dographics){
+  require 'LaTeXML/Post/Graphics.pm';
+  push(@procs,LaTeXML::Post::Graphics->new()); }
+if($svg){
+  require 'LaTeXML/Post/SVG.pm';
+  push(@procs,LaTeXML::Post::SVG->new()); }
+if(@math_formats){
+  my @mprocs=();
+  foreach my $fmt (@math_formats){
+    if($fmt eq 'pmml'){
+      require 'LaTeXML/Post/MathML.pm';
+      push(@mprocs,LaTeXML::Post::MathML::Presentation->new()); }
+    elsif($fmt eq 'cmml'){
+      require 'LaTeXML/Post/MathML.pm';
+      push(@mprocs,LaTeXML::Post::MathML::Content->new()); }
+    elsif($fmt eq 'om'){
+      require 'LaTeXML/Post/OpenMath.pm';
+      push(@mprocs,LaTeXML::Post::OpenMath->new()); }}
+  if($parallelmath){
+    require 'LaTeXML/Post/MathML.pm';
+    push(@procs,LaTeXML::Post::MathML::Parallel->new(math_processors=>[@mprocs])); }
+  else {
+    push(@procs,@mprocs); }}
+if($keepXMath){
+  require 'LaTeXML/Post/PurgeXMath.pm';
+  push(@procs,LaTeXML::Post::PurgeXMath->new()); }
+if($stylesheet){
+  require 'LaTeXML/Post/XSLT.pm'; 
+  push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet)); }
+
+my $POST = LaTeXML::Post->new();
+my $indoc = $POST->readDocument($xmlfile,validate=>$validate);
+my $doc = $POST->process($indoc, 
+			 processors     => [@procs],
+			 sourceDirectory=> $sourcedir,
+			 destinationDirectory=>$destdir,
+			 format         => $format,
+			 stylesheet     => $stylesheet,
+			 CSS            => $css,
+			 verbosity      => $verbosity);
+if(!$stylesheet){      # If no XSL, we'll munge our own DTD for now...
+  my @addns=( (grep(/^(pmml|cmml)$/,@math_formats) ? ('MathML'):()),
+	      (grep(/^(om)$/,       @math_formats) ? ('OpenMath'):()),
+	      ($svg ? ('SVG'):()) );
+  $POST->adjust_latexml_doctype($doc,@addns) if @addns; }
+
+if($destination){ 
+  $POST->writeDocument($doc,$destination,$format); }
+else {
+  print $POST->toString($doc,$format); }
+
+#======================================================================
+# helpers
+#======================================================================
+sub Error {
+  my($message)=@_;
+  pod2usage(-message=>"$identity\n$message",-exitval=>1, -verbose=>0,-output=>\*STDERR); }
+
+sub addMathFormat {
+  my($fmt)=@_;
+  push(@math_formats,$fmt) 
+    unless grep($_ eq $fmt,@math_formats) || $removed_math_formats{$fmt}; }
+sub removeMathFormat {
+  my($fmt)=@_;
+  @math_formats = grep($_ ne $fmt, @math_formats);
+  $removed_math_formats{$fmt}=1; }
 
 #**********************************************************************
 __END__
@@ -70,7 +216,12 @@ latexmlpost [options] xmlfile
    --stylesheet=xslfile       requests the XSL transform of the document using the given
                               xslfile as stylesheet.
    --mathml                   requests conversion of the math to Presentation MathML
+   --presentationmathml       requests conversion of the math to Presentation MathML
+   --nopresentationmathml     requests no conversion of the math to Presentation MathML
+   --contentmathml            requests conversion of the math to Content MathML
+   --nocontentmathml          requests no conversion of the math to Content MathML
    --openmath                 requests conversion of the math to OpenMath
+   --svg                      requests conversion of the pictures to SVG
    --keepXMath                preserves the intermediate XMath representation
    --verbose                  prints progress messages during processing.
    --VERSION                  show version number.
@@ -104,18 +255,33 @@ the B<--stylesheet> option.
 Specifies an XSLT stylesheet for transforming the xml.
 
 =item B<--mathml>
+=item B<--presentationmathml>
+=item B<--contentmathml>
+=item B<--nopresentationmathml>
+=item B<--nocontentmathml>
 
-Requests that the mathematical material be parsed, and converted to
-Presentation MathML.
+Requests that the mathematical material be converted to MathML, either
+Presentation MathML, Content MathML or both.  If both presentation and
+content are requested, the first request will be the primary one,
+with the second being an C<annotation>.
+Presentation MathML.  If a value is given to the option it must be one
+of: presentation, content, presentation+content (presentation annotated with content)
+or content+presentation (content annotated with presentation).
 
 =item B<--openmath>
 
 Requests that the mathematical material be parsed, and converted to
 OpenMath.  This is currently a very naive conversion.
 
+=item B<--svg>
+
+Requests that the picture and pstricks material be parsed and converted to SVG.
+
 =item B<--keepXMath>
 
-By default, when either --mathml
+By default, when either of the C<--mathml> or C<--openmath> conversions
+is used, the intermediate math representation will be removed;  
+this option preserves it.
 
 =item B<--source>=I<source>
 

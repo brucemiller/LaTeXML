@@ -42,14 +42,19 @@ my $XPATH = XML::LibXML::XPathContext->new;
 $XPATH->registerNs(ltxml=>"http://dlmf.nist.gov/LaTeXML");
 $XPATH->registerFunction('match-font',\&LaTeXML::Font::match_font);
 
+# Objects being labelled sections, equations, etc.
+our %OBJECTS=();
+our $ROOT_OBJECT = {label=>'Document',
+		    subobjects=>[], items=>[]};
+
 foreach my $symbol (@symbols){
-  show_matches("Symbols \"$symbol\"",
+  collect_matches("Symbols \"$symbol\"",
 	       "//ltxml:Math[descendant::ltxml:XMTok[\@name='$symbol' or text()='$symbol']]"); }
 foreach my $spec (@unknowns){
   my $symbol = $spec;
   my $font;
-  $font = $1 if $symbol=~ s/{(\w*)}$//;
-  show_matches("Unknown \"$spec\"",
+  $font = $1 if $symbol=~ s/{([\w\s]*)}$//;
+  collect_matches("Unknown \"$spec\"",
 	       # Find Math containing an XMTok, with role=UNKNOWN
 	       "//ltxml:Math[descendant::ltxml:XMTok[\@role='UNKNOWN']"
 	       #                                    whose name or content is the requested symbol
@@ -61,10 +66,12 @@ foreach my $spec (@unknowns){
 	       .                                   "]"); }
 
 foreach my $symbol (@posfuncs){
-  show_matches("Possible function \"$symbol\"",
+  collect_matches("Possible function \"$symbol\"",
 	       "//ltxml:Math[descendant::ltxml:XMTok[\@possibleFunction='yes']"
 	       .                                   "[\@name='$symbol' or text()='$symbol']"
 	       .                                   "]"); }
+
+show_matches($ROOT_OBJECT);
 
 #**********************************************************************
 # This matches fonts when both are converted to strings (toString),
@@ -84,43 +91,54 @@ sub match_font {
   return 1; }
 #**********************************************************************
 
-sub show_matches {
+sub collect_matches {
   my($description,$xpath)=@_;
   my @nodes = $XPATH->findnodes($xpath,$DOC);
-  print "\n".$description." appears in ".scalar(@nodes)." places:\n";
-  print "XPath = \"$xpath\"\n" if $verbosity > 0;
+  print "Query $description appears in ".scalar(@nodes)." places\n";
+  print "  [XPath = \"$xpath\"]\n" if $verbosity > 0;
   foreach my $node (@nodes){
-    show_node($node); }}
+    my $object = labelled_object($node);
+    push( @{ $$object{items} }, $node); }}
 
-# Things to do here:
-#   find a labelled parent.
-#   find a nearby comment (for linenumber).
-sub show_node {
+sub labelled_object {
   my($node)=@_;
-  print "  In ".ancestry($node).":\n";
+  my $label;
+  while(1){
+    $node = $node->parentNode;
+    return $ROOT_OBJECT if $node->nodeType != XML_ELEMENT_NODE;
+    last if $label = $node->getAttribute('label'); }
+  if(my $object = $OBJECTS{$label}){
+    return $object; }
+  else {
+    my $parent_object = labelled_object($node);
+    $OBJECTS{$label}=$object
+      = {label=>$label, refnum=>$node->getAttribute('refnum'),
+	 children=>[], items=>[]};
+    push(@{$$parent_object{children}}, $object);
+    $object; }}
+
+sub show_matches {
+  my($object,$indent)=@_;
+  $indent = '' unless defined $indent;
+  print $indent."Label=$$object{label}".($$object{refnum} ? " ($$object{refnum})":'')."\n";
+  foreach my $item (@{ $$object{items} }){
+    show_node($item,$indent.'  '); }
+  foreach my $child (@{ $$object{children}}){
+    show_matches($child, $indent.'  '); }
+}
+
+sub show_node {
+  my($node,$indent)=@_;
   if($node->localname eq 'Math'){
     my $ptex = $node->getAttribute('tex');
     my $ctex = $node->getAttribute('content-tex');
     if($verbosity > 1){
-      print $node->toString."\n"; }
+      print $indent.$node->toString."\n"; }
     else {
-      print wrap("       ","       ",$ctex || $ptex)."\n";}}
+      print wrap($indent,$indent,$ctex || $ptex)."\n";}}
   else {
-    print $node->toString."\n"; }
+    print $indent.$node->toString."\n"; }
 }
-
-sub ancestry {
-  my($node)=@_;
-  my $ancestry = '';
-  while($node && ($node->nodeType == XML_ELEMENT_NODE)){
-    my $label  = $node->getAttribute('label') || '';
-    my $refnum = $node->getAttribute('refnum') || '';
-    if($label || $refnum){
-      $ancestry .= " < "            if $ancestry;
-      $ancestry .= $label           if $label;
-      $ancestry .= " [".$refnum."]" if $refnum; }
-    $node = $node->parentNode; }
-  $ancestry; }
 
 #**********************************************************************
 __END__

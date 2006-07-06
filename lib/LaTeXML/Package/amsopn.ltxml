@@ -17,7 +17,7 @@
 use strict;
 use LaTeXML::Package;
 
-DefPrimitive('\DeclareMathOperator Flag:* {Token}{}',sub{
+DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}',sub{
   my($ignore,$star,$cs,$text)=@_;
   DefMath($cs->toString,$text,stackscripts=>$star); }); # Hmm, is this right?
 
@@ -32,12 +32,15 @@ DefMath('\varliminf', '\underline{\lim}',      role=>'LIMITOP');
 DefMath('\varinjlim', '\uderrightarrow{\lim}', role=>'LIMITOP');
 DefMath('\varprojlim','\underleftarrow{\lim}', role=>'LIMITOP');
 
-#DefPrimitive('\operatorname Flag:* {}',sub{
+#DefPrimitive('\operatorname OptionalMatch:* {}',sub{
 #  my($ignore,$star,$name)=@_;
 #  DefMath(T_CS("\\".$name->toString),$name,stackscripts=>$star); }); # Hmm, is this right?
 
 # Hmm... OPERATOR or LIMITOP ??
-DefConstructor('\operatorname Flag:* {}',"<XMWrap role='OPERATOR' stackscripts='#1'>#2</XMWrap>");
+DefConstructor('\operatorname OptionalMatch:* {}',"<XMWrap role='OPERATOR' stackscripts='#1'>#2</XMWrap>",
+	       beforeDigest=>sub{ RequireMath; BGroup; MergeFont(family=>'serif'); },
+	       afterDigest=>\&EGroup);
+
 
 #**********************************************************************
 1;
