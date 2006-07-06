@@ -35,7 +35,7 @@ DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 # The content keywords are used to define the semantics of the object.
 # See DefMath in LaTeXML::Package for more information.
 DefPrimitive('\LXMathDef{}[][]{}[KeyVal:XMath]', sub {
-  my(self,$cs,$nargs,$opt,$presentation,$params)=@_;
+  my($self,$cs,$nargs,$opt,$presentation,$params)=@_;
   my($name,$cd,$role)=$params && map($_ && $_->toString,map($params->getValue($_), qw(name cd role)));
   DefMath($cs->toString.convertLaTeXArgs($nargs,$opt),$presentation,
 	  name=>$name, omcd=>$cd, role=>$role);

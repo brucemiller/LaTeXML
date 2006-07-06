@@ -1,6 +1,6 @@
 # -*- CPERL -*-
 # /=====================================================================\ #
-# |  DLMFbib                                                            | #
+# |  amsbsy                                                             | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -10,23 +10,21 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-package LaTeXML::Package::Pool;
+
+#**********************************************************************
+# See amsldoc
+#**********************************************************************
 use strict;
 use LaTeXML::Package;
 
-RequirePackage('LaTeX');
-#**********************************************************************
-# Document
-#**********************************************************************
-DocType("bibliography","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
-	"http://dlmf.nist.gov/LaTeXML");
-DefEnvironment('{document}',"<bibliography>#body</bibliography>",
-		 beforeDigest=> sub { $STOMACH->setInPreamble(0); });
+DefConstructor('\boldsymbol{}', '#1',
+	       beforeDigest=>sub { requireMath; $STOMACH->bgroup; $STOMACH->setFont(forcebold=>1); },
+	       afterDigest =>sub { $STOMACH->egroup; });
 
-# Load special functions & other required packages.
-RequirePackage('DLMFmath');
-RequirePackage('amsrefs');
-RequirePackage('url');
+# I think the intent is that you use \pmb to get bold, but your current font doesn't supply
+# a bold for those glyphs.  Since we're just forcing the glyph to be bold, 
+# \pmb is probably \boldsymbol. or... ??
+Let('\pmb','\boldsymbol');
 
 #**********************************************************************
 1;

@@ -268,11 +268,13 @@ sub toXML {
   my $doc = XML::LibXML::Document->new('1.0','UTF-8');
   my @content = @{$$self{content}};
   my @roots = grep(ref $_ eq 'LaTeXML::Node', @content);
+  Error("Document is Empty! ") if scalar(@roots)==0;
   Error("Document must have exactly 1 root element; it has ".
 	join(', ',map(Stringify($_),@roots)))
-    if (scalar(@roots) != 1);
+    if (scalar(@roots) > 1);
   $doc->createInternalSubset($roots[0]->getNodeName,
-			     $self->getAttribute('publicID'),$self->getAttribute('systemID'));
+			     $self->getAttribute('publicID'),$self->getAttribute('systemID'))
+    if(@roots);
   foreach my $node (@content){
     foreach my $item ($node->toXML($doc,undef)){
       if($item->nodeType == XML_ELEMENT_NODE){

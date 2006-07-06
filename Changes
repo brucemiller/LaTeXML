@@ -1,3 +1,17 @@
+0.2.1 2005-01-10
+      - Bug fixes to stylesheet LaTeXML-xhtml,
+      	Thanks Yann Golanski
+      - A few rearrangements and renamings to make a simple
+        top-level 'digest from string' alternative.
+ 	[  $latexml->readAndDigestString($string) ]
+	Also, renamed the slightly misnamed Stomach methods:
+          readAndDigestChunk => digestNextChunk
+          readAndDigestBody => digestNextBody
+      - A few typos in Stomach fixed
+      - Almost complete implementation of the various AMS
+        packages:amsbsy,amsfonts,amsmath,amsopn,amssymb,amstext,amsxtra
+        Still need to complete and test the various alignment environments
+
 0.2.0 2004-12-25
       Extensive changes, so incrementing minor version, but
       not robust enough for major version!

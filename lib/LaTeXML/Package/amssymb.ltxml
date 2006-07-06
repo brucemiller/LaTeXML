@@ -10,19 +10,255 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-#**********************************************************************
-# Currently only a random collection of things I need for DLMF chapters.
-# Eventually, go through the doc and implement it all.
-#**********************************************************************
-package LaTeXML::Package::Pool;
+#
+# See amsfndoc
+# Compiled from tables in Section 7
+#
 use strict;
 use LaTeXML::Package;
 
-DefConstructor('\mathbb{}', '#1',
-	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'blackboard'); },
-	       afterDigest=>sub{$STOMACH->egroup; });
+RequirePackage('amsfonts');
 
+#======================================================================
+# Lowercase Greek letters
+DefMath('\digamma',            "\x{03DD}"); # GREEK SMALL LETTER DIGAMMA
+DefMath('\varkappa',           "\x{03F0}"); # GREEK KAPPA SYMBOL
 
-#**********************************************************************
+#======================================================================
+# Hebrew
+DefMath('\beth',               "\x{2136}"); # BET SYMBOL
+DefMath('\daleth',             "\x{2138}"); # DALET SYMBOL
+DefMath('\gimel',              "\x{2137}"); # GIMEL SYMBOL
+
+#======================================================================
+# Miscellaneous
+# \hbar  in LaTeX
+DefMath('\hslash',             "\x{210F}"); # PLANCK CONSTANT OVER TWO PI; == \hbar !!
+DefMath('\vartriangle',        "\x{25B3}"); # WHITE UP-POINTING TRIANGLE
+DefMath('\triangledown',       "\x{25BD}"); # WHITE DOWN-POINTING TRIANGLE
+# \square, \lozenge in amsfonts
+DefMath('\circledS',           "\x{24C8}"); # CIRCLED LATIN CAPITAL LETTER S
+# \angle in tex
+DefMath('\measuredangle',      "\x{2221}"); # MEASURED ANGLE
+DefMath('\nexists',            "\x{2204}"); # THERE DOES NOT EXIST
+# \mho in latex
+DefMath('\Finv',               "\x{2132}"); # TURNED CAPITAL F
+DefMath('\Game',               "\x{2141}"); # TURNED SANS-SERIF CAPITAL g
+DefMath('\Bbbk',              "\x{1D55C}"); # MATHEMATICAL DOUBLE-STRUCK SMALL K !!!!
+DefMath('\backprime',          "\x{2035}"); # REVERSED PRIME
+DefMath('\varnothing',         "\x{2205}"); # EMPTY SET
+DefMath('\blacktriangle',      "\x{25B2}"); # BLACK UP-POINTING TRIANGLE
+DefMath('\blacktriangledown',  "\x{25BC}"); # BLACK DOWN-POINTING TRIANGLE
+DefMath('\blacksquare',        "\x{25A0}"); # BLACK SQUARE
+DefMath('\blacklozenge',       "\x{25C6}"); # BLACK DIAMOND
+DefMath('\bigstar',            "\x{2605}"); # BLACK STAR
+DefMath('\sphericalangle',     "\x{2222}"); # SPHERICAL ANGLE
+DefMath('\complement',         "\x{2201}"); # COMPLEMENT
+DefMath('\eth',                "\x{00D0}"); # LATIN CAPITAL LETTER ETH
+DefMath('\diagup',             "\x{2571}"); # BOX DRAWINGS LIGHT DIAGONAL UPPER RIGHT TO LOWER LEFT ???
+DefMath('\diagdown',           "\x{2572}"); # BOX DRAWINGS LIGHT DIAGONAL UPPER LEFT TO LOWER RIGHT ???
+
+#======================================================================
+# Binary operators
+DefMath('\dotplus',            "\x{2214}"); # DOT PLUS
+DefMath('\smallsetminus',      "\x{2216}"); # SET MINUS
+DefMath('\Cap',                "\x{22D2}"); # DOUBLE INTERSECTION
+DefMath('\doublecap',          "\x{22D2}"); # DOUBLE INTERSECTION
+DefMath('\Cup',                "\x{22D3}"); # DOUBLE UNION
+DefMath('\doublecup',          "\x{22D3}"); # DOUBLE UNION
+DefMath('\barwedge',           "\x{22BC}"); # NAND
+DefMath('\veebar',             "\x{22BB}"); # XOR
+DefMath('\doublebarwedge',     "\x{2A5E}"); # LOGICAL AND WITH DOUBLE OVERBAR
+DefMath('\boxminus',           "\x{229F}"); # SQUARED MINUS
+DefMath('\boxtimes',           "\x{22A0}"); # SQUARED TIMES
+DefMath('\boxdot',             "\x{22A1}"); # SQUARED DOT OPERATOR
+DefMath('\boxplus',            "\x{229E}"); # SQUARED PLUS
+DefMath('\divideontimes',      "\x{22C7}"); # DIVISION TIMES
+DefMath('\ltimes',             "\x{22C9}"); # LEFT NORMAL FACTOR SEMIDIRECT PRODUCT
+DefMath('\rtimes',             "\x{22CA}"); # RIGHT NORMAL FACTOR SEMIDIRECT PRODUCT
+DefMath('\leftthreetimes',     "\x{22CB}"); # LEFT SEMIDIRECT PRODUCT
+DefMath('\rightthreetimes',    "\x{22CC}"); # RIGHT SEMIDIRECT PRODUCT
+DefMath('\curlywdge',          "\x{22CF}"); # CURLY LOGICAL AND
+DefMath('\curlyvee',           "\x{22CE}"); # CURLY LOGICAL OR
+DefMath('\circleddash',        "\x{229D}"); # CIRCLED DASH
+DefMath('\circledast',         "\x{229B}"); # CIRCLED ASTERISK OPERATOR
+DefMath('\circledcirc',        "\x{229A}"); # CIRCLED RING OPERATOR
+DefMath('\centerdot',          "\x{2299}"); # CIRCLED DOT OPERATOR
+DefMath('\intercal',           "\x{22BA}"); # INTERCALATE
+
+#======================================================================
+# Binary relations
+DefMath('\leqq',               "\x{2266}"); # LESS-THAN OVER EQUAL TO
+DefMath('\leqslant',           "\x{2A7D}"); # LESS-THAN OR SLANTED EQUAL TO
+DefMath('\eqslantless',        "\x{2A95}"); # SLANTED EQUAL TO OR LESS-THAN
+DefMath('\lesssim',            "\x{2272}"); # LESS-THAN OR EQUIVALENT TO
+DefMath('\lessapprox',         "\x{2A85}"); # LESS-THAN OR APPROXIMATE
+DefMath('\approxeq',           "\x{224A}"); # ALMOST EQUAL OR EQUAL TO
+DefMath('\lessdot',            "\x{22D6}"); # LESS-THAN WITH DOT
+DefMath('\lll',                "\x{22D8}"); # VERY MUCH LESS-THAN
+DefMath('\llless',             "\x{22D8}"); # VERY MUCH LESS-THAN
+DefMath('\lessgtr',            "\x{2276}"); # LESS-THAN OR GREATER-THAN
+DefMath('\lesseqgtr',          "\x{22DA}"); # LESS-THAN EQUAL TO OR GREATER-THAN
+DefMath('\lesseqqgtr',         "\x{2A8B}"); # LESS-THAN ABOVE DOUBLE-LINE EQUAL ABOVE GREATER-THAN
+DefMath('\doteqdot',           "\x{2251}"); # GEOMETRICALLY EQUAL TO
+DefMath('\Doteq',              "\x{2251}"); # GEOMETRICALLY EQUAL TO
+DefMath('\risingdotseq',       "\x{2253}"); # IMAGE OF OR APPROXIMATELY EQUAL TO
+DefMath('\fallingdotseq',      "\x{2252}"); # APPROXIMATELY EQUAL TO OR THE IMAGE OF
+DefMath('\backsim',            "\x{223D}"); # REVERSED TILDE
+DefMath('\backsimeq',          "\x{224C}"); # ALL EQUAL TO; Note: this has double rather than single bar!!!
+DefMath('\subseteqq',          "\x{2286}"); # SUBSET OF OR EQUAL TO
+DefMath('\Subset',             "\x{22D0}"); # DOUBLE SUBSET
+# \sqsubset in tex
+DefMath('\preccurlyeq',        "\x{227C}"); # PRECEDES OR EQUAL TO
+DefMath('\curlyeqprec',        "\x{22DE}"); # EQUAL TO OR PRECEDES
+DefMath('\precsim',            "\x{227E}"); # PRECEDES OR EQUIVALENT TO
+DefMath('\precapprox',         "\x{2AB7}"); # PRECEDES ABOVE ALMOST EQUAL TO
+# \vartriangleleft, trianglelefteq in amsfonts
+DefMath('\vDash',              "\x{22A8}"); # TRUE
+DefMath('\Vvdash',             "\x{22AA}"); # TRIPLE VERTICAL BAR RIGHT TURNSTILE
+DefMath('\smallsmile',         "\x{2323}"); # SMILE (small ?)
+DefMath('\smallfrown',         "\x{2322}"); # FROWN (small ?)
+DefMath('\bumpeq',             "\x{224F}"); # DIFFERENCE BETWEEN
+DefMath('\Bumpeq',             "\x{224E}"); # GEOMETRICALLY EQUIVALENT TO
+DefMath('\geqq',               "\x{2267}"); # GREATER-THAN OVER EQUAL TO
+DefMath('\geqslant',           "\x{2A7E}"); # GREATER-THAN OR SLANTED EQUAL TO
+DefMath('\eqslantgtr',         "\x{2A96}"); # SLANTED EQUAL TO OR GREATER-THAN
+DefMath('\gtrsim',             "\x{2273}"); # GREATER-THAN OR EQUIVALENT TO
+DefMath('\gtrapprox',          "\x{2A86}"); # GREATER-THAN OR APPROXIMATE
+DefMath('\eqsim',              "\x{2242}"); # MINUS TILDE
+DefMath('\gtrdot',             "\x{22D7}"); # GREATER-THAN WITH DOT
+DefMath('\ggg',                "\x{22D9}"); # VERY MUCH GREATER-THAN
+DefMath('\gggtr',              "\x{22D9}"); # VERY MUCH GREATER-THAN
+DefMath('\gtrless',            "\x{2277}"); # GREATER-THAN OR less-THAN
+DefMath('\gtreqless',          "\x{22DB}"); # GREATER-THAN EQUAL TO OR LESS-THAN
+DefMath('\gtreqqless',         "\x{2A8C}"); # GREATER-THAN ABOVE DOUBLE-LINE EQUAL ABOVE LESS-THAN
+DefMath('\eqcirc',             "\x{2256}"); # RING IN EQUAL TO
+DefMath('\circeq',             "\x{2257}"); # RING EQUAL TO
+DefMath('\triangleq',          "\x{225C}"); # DELTA EQUAL TO
+DefMath('\thicksim',           "\x{223C}"); # TILDE OPERATOR; Not thick!!!
+DefMath('\thickapprox',        "\x{2248}"); # ALMOST EQUAL TO; Not thick!!!
+DefMath('\supseteqq',          "\x{2287}"); # SUPERSET OF OR EQUAL TO
+DefMath('\Supset',             "\x{22D1}"); # DOUBLE SUPERSET
+# \sqsupset in TeX
+DefMath('\succurlyeq',         "\x{227D}"); # SUCCEDES OR EQUAL TO
+DefMath('\curlyeqsucc',        "\x{22DF}"); # EQUAL TO OR SUCCEDES
+DefMath('\succsim',            "\x{227F}"); # SUCCEDES OR EQUIVALENT TO
+DefMath('\succapprox',         "\x{2AB8}"); # SUCCEDES ABOVE ALMOST EQUAL TO
+# \vartriangleright, \trianglerighteq in amsfonts
+DefMath('\Vdash',              "\x{22A9}"); # FORCES
+DefMath('\shortmid',           "\x{2223}"); # DIVIDES (is this `short' enough?)
+DefMath('\shortparallel',      "\x{2225}"); # PARALLEL TO
+DefMath('\between',            "\x{226C}"); # BETWEEN
+DefMath('\pitchfork',          "\x{22D4}"); # PITCHFORK
+DefMath('\varpropto',          "\x{221D}"); # PROPORTIONAL TO
+DefMath('\blacktriangleleft',  "\x{25C0}"); # BLACK LEFT-POINTING TRIANGLE
+DefMath('\therefore',          "\x{2234}"); # THEREFORE
+DefMath('\backepsilon',        "\x{03F6}"); # GREEK REVERSED LUNATE EPSILON SYMBOL
+DefMath('\blacktriangleright', "\x{25B6}"); # BLACK RIGHT-POINTING TRIANGLE
+DefMath('\because',            "\x{2235}"); # BECAUSE
+
+#======================================================================
+# Negated relations
+# NOTE: There are several here that I couldn't find, but all
+# were negations of other symbols. I've used 0338 COMBINING LONG SOLIDUS OVERLAY
+# to create them, but I don't know if that's right.
+
+DefMath('\nless',              "\x{226E}"); # NOT LESS-THAN
+DefMath('\nleq',               "\x{2270}"); # NEITHER LESS-THAN NOR EQUAL TO
+DefMath('\nleqslant',          "\x{2A7D}\x{0338}");
+DefMath('\nleqq',              "\x{2266}\x{0338}");
+DefMath('\lneq',               "\x{2A87}"); # LESS-THAN AND SINGLE-LINE NOT EQUAL TO
+DefMath('\lneqq',              "\x{2268}"); # LESS-THAN BUT NOT EQUAL TO
+DefMath('\lvertneqq',          "\x{2268}"); # LESS-THAN BUT NOT EQUAL TO; Note: no vert!!!
+DefMath('\lnsim',              "\x{22E6}"); # LESS THAN BUT NOT EQUIVALENT TO
+DefMath('\lnapprox',           "\x{2A89}"); # LESS-THAN AND NOT APPROXIMATE
+DefMath('\nprec',              "\x{2280}"); # DOES NOT PRECEDE
+DefMath('\npreceq',            "\x{22E0}"); # Using slant equals?
+DefMath('\precneqq',           "\x{2AB5}"); # PRECEDES ABOVE NOT EQUAL TO
+DefMath('\precnsim',           "\x{22E8}"); # PRECEDES BUT NOT EQUIVALENT TO
+DefMath('\precnapprox',        "\x{2AB9}"); # PRECEDES ABOVE NOT ALMOST EQUAL TO
+DefMath('\nsim',               "\x{2241}"); # NOTE TILDE
+DefMath('\nshortmid',          "\x{2224}"); # DOES NOT DIVIDE; Note: not short!
+DefMath('\nmid',               "\x{2224}"); # DOES NOT DIVIDE
+DefMath('\nvdash',             "\x{22AC}"); # DOES NOT PROVE
+DefMath('\nVdash',             "\x{22AE}"); # DOES NOT FORCE
+DefMath('\ntriangleleft',      "\x{22EA}"); # NOT NORMAL SUBGROUP OF
+DefMath('\ntrianglelefteq',    "\x{22EC}"); # NOT NORMAL SUBGROUP OF OR EQUAL TO
+DefMath('\nsubseteq',          "\x{2288}"); # NEITHER A SUBSET OF NOR EQUAL TO
+DefMath('\nsubseteqq',         "\x{2286}\x{0338}");
+DefMath('\subsetneq',          "\x{228A}"); # SUBSET OF WITH NOT EQUAL TO
+DefMath('\varsubsetneq',       "\x{228A}"); # SUBSET OF WITH NOT EQUAL TO
+DefMath('\subsetneqq',         "\x{2ACB}"); # SUBSET OF ABOVE NOT EQUAL TO
+DefMath('\varsubsetneqq',      "\x{2ACB}"); # SUBSET OF ABOVE NOT EQUAL TO; (same)
+DefMath('\ngtr',               "\x{226F}"); # NOT GREATER-THAN
+DefMath('\ngeq',               "\x{2271}"); # NEITHER GREATER-THAN NOR EQUAL TO
+DefMath('\ngeqslant',          "\x{2A7E}\x{0338}");
+DefMath('\ngeqq',              "\x{2267}\x{0338}");
+DefMath('\gneq',               "\x{2A88}"); # GREATER-THAN AND SINGLE-LINE NOT EQUAL TO
+DefMath('\gneqq',              "\x{2269}"); # GREATER-THAN BUT NOT EQUAL TO
+DefMath('\gvertneqq',          "\x{2269}"); # GREATER-THAN BUT NOT EQUAL TO; no vert!
+DefMath('\gnsim',              "\x{22E7}"); # GREATER THAN BUT NOT EQUIVALENT TO
+DefMath('\gnapprox',           "\x{2A8A}"); # GREATER-THAN AND NOT APPROXIMATE
+DefMath('\nsucc',              "\x{2281}"); # DOES NOT SUCCEED
+DefMath('\nsucceq',            "\x{22E1}"); # Using slant equals?
+DefMath('\succneqq',           "\x{2AB6}"); # SUCCEDES ABOVE NOT EQUAL TO
+DefMath('\sucnsim',            "\x{22E9}"); # SUCCEDES BUT NOT EQUIVALENT TO
+DefMath('\succnapprox',        "\x{2ABA}"); # SUCCEDES ABOVE NOT ALMOST EQUAL TO
+DefMath('\ncong',              "\x{2247}"); # NEITHER APPROXIMATELY NOR ACTUALLY EQUAL TO
+DefMath('\nshortparallel',     "\x{2226}"); # NOT PARALLEL TO; Note: not short!!
+DefMath('\nparallel',          "\x{2226}"); # NOT PARALLEL TO
+DefMath('\nvDash',             "\x{22AD}"); # NOT TRUE
+DefMath('\nVDash',             "\x{22AF}"); # NEGATED DOUBLE VERTICAL BAR DOUBLE RIGHT TURNSTILE
+DefMath('\ntriangleright',     "\x{22EB}"); # DOES NOT CONTAIN AS NORMAL SUBGROUP
+DefMath('\ntrianglrighteq',    "\x{22ED}"); # DOES NOT CONTAIN AS NORMAL SUBGROUP OR EQUAL
+DefMath('\nsupseteq',          "\x{2289}"); # NEITHER A SUPERSET OF NOR EQUAL TO
+DefMath('\nsupseteqq',         "\x{2287}\x{0338}");
+DefMath('\subsetneq',          "\x{228B}"); # SUPERSET OF WITH NOT EQUAL TO
+DefMath('\varsubsetneq',       "\x{228B}"); # SUPERSET OF WITH NOT EQUAL TO
+DefMath('\supsetneqq',         "\x{2ACC}"); # SUPERSET OF ABOVE NOT EQUAL TO
+DefMath('\varsubsetneqq',      "\x{2ACC}"); # SUPERSET OF ABOVE NOT EQUAL TO; (same)
+
+# Arrows
+DefMath('\leftleftarrows',     "\x{21C7}"); # LEFTWARDS PAIRED ARROWS
+DefMath('\leftrightarrows',    "\x{21C6}"); # LEFTWARDS ARROW OVER RIGHTWARDS ARROW
+DefMath('\Lleftarrow',         "\x{21DA}"); # LEFTWARDS TRIPLE ARROW
+DefMath('\twoheadleftarrow',   "\x{219E}"); # LEFTWARDS TWHO HEADED ARROW
+DefMath('\leftarrowtail',      "\x{21A2}"); # LEFTWARDS ARROW WITH TAIL
+DefMath('\looparrowleft',      "\x{21AB}"); # leftwards arrow with loop
+DefMath('\leftrightharpoons',  "\x{21CB}"); # LEFTWARDS HARPOON OVER RIGHTWARDS HARPOON
+DefMath('\curvearrowleft',     "\x{21B6}"); # ANTICLOCKWISE TOP SEMICIRCLE ARROW
+DefMath('\circlearrowleft',    "\x{21BA}"); # ANTICLOCKWISE OPEN CIRCLE ARROW
+DefMath('\Lsh',                "\x{21B0}"); # UPWAARDS ARROW WITH TIP LEFTWARDS
+DefMath('\upuparrows',         "\x{21C8}"); # UPWARDS PAIRED ARROWS
+DefMath('\upharpoonleft',      "\x{21BF}"); # UPWARDS HARPOON WITH BARB LEFTWARDS
+DefMath('\rightrightarrows',   "\x{21C9}"); # RIGHTWARDS PAIRED ARROWS
+DefMath('\rightleftarrows',    "\x{21C4}"); # RIGHTWARDS ARROW OVER LEFTWARD ARROW
+DefMath('\Rrightarrow',        "\x{21DB}"); # RIGHTWARDS TRIPLE ARROW
+DefMath('\twoheadrightarrow',  "\x{21A0}"); # RIGHTWARDS TWO HEADED ARROW
+DefMath('\rightarrowtail',     "\x{21A3}"); # RIGHTWARDS ARROW WITH TAIL
+DefMath('\looparrowright',     "\x{21AC}"); # RIGHTWARDS ARROW WITH LOOP
+# \rightleftharpoons  21CC # RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON ; in amsfonts
+DefMath('\curvearrowright',    "\x{21B7}"); # CLOCKWISE TOP SEMICIRCLE ARROW
+DefMath('\circlearrowright',   "\x{21BB}"); # CLOCKWISE OPEN CIRCLE ARROW
+DefMath('\Rsh',                "\x{21B1}"); # UPWAARDS ARROW WITH TIP RIGHTWARDS
+DefMath('\downdownarrows',     "\x{21CA}"); # DOWNWARDS PAIRED ARROWS
+DefMath('\upharpoonright',     "\x{21BE}"); # UPWARDS HARPOON WITH BARB RIGHTWARDS
+DefMath('\restriction',        "\x{21BE}"); # UPWARDS HARPOON WITH BARB RIGHTWARDS 
+				# (same as \upharpoonright)
+DefMath('\downharpoonleft',    "\x{21C3}"); # DOWNWARDS HARPOON WITH BARB LEFTWARDS
+DefMath('\multimap',           "\x{22B8}"); # MULTIMAP
+DefMath('\leftrightsquigarrow', "\x{21AD}"); # LEFT RIGHT WAVE ARROW
+DefMath('\downharpoonright',   "\x{21C2}"); # DOWNWARDS HARPOON WITH BARB RIGHTWARDS
+# \rightsquigarrow amsfonts
+
+#======================================================================
+# Negated arrows
+DefMath('\nleftarrow',         "\x{219A}"); # LEFTWARDS ARROW WITH STROKE
+DefMath('\nLeftarrow',         "\x{21CD}"); # LEFTWARDS DOUBLE ARROW WITH STROKE
+DefMath('\nleftrightarrow',    "\x{21AE}"); # LEFT RIGHT ARROW WITH STROKE
+DefMath('\nrightarrow',        "\x{219B}"); # RIGHTWARDS ARROW WITH STROKE
+DefMath('\nRightarrow',        "\x{21CF}"); # LEFTWARDS DOUBLE ARROW WITH STROKE
+DefMath('\nLeftrightarrow',    "\x{21CE}"); # LEFT RIGHT DOUBLE ARROW WITH STROKE
+
+#======================================================================
 1;

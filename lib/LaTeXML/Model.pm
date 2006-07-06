@@ -80,7 +80,8 @@ sub canContain {
   return 0 if $tag eq '_Comment_';
   return 1 if $childtag eq '_Comment_';
   return 1 if $childtag eq '_ProcessingInstruction_';
-  return 1 if $$self{permissive}; # No DTD? Punt!
+#  return 1 if $$self{permissive}; # No DTD? Punt!
+  return 1 if $$self{permissive} && ($tag eq '_Document_') && ($childtag ne '#PCDATA'); # No DTD? Punt!
   # Else query tag properties.
   my $model = $$self{tagprop}{$tag}{model};
   $$model{ANY} || $$model{$childtag}; }
@@ -124,10 +125,12 @@ sub loadDocType {
   $$self{doctype_loaded}=1;
   if(!$$self{system_id}){
     Warn("No DTD declared...assuming LaTeXML!");
+    # article ??? or what ? undef gives problems!
     $self->setDocType(undef,"-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd',
 		      "http://dlmf.nist.gov/LaTeXML");
     $$self{permissive}=1;	# Actually, they could have declared all sorts of Tags....
-    return; }
+#    return; 
+  }
   # Parse the DTD
   foreach my $dir (@INC){	# Load catalog (all, 1st only ???)
     next unless -f "$dir/LaTeXML/dtd/catalog";
@@ -179,6 +182,10 @@ sub loadDocType {
     local %::DESC=();
     computeDescendents($self,$tag,''); 
     $$self{tagprop}{$tag}{indirect_model}={%::DESC}; }
+  # PATCHUP
+  if($$self{permissive}){
+    $$self{tagprop}{_Document_}{indirect_model}{'#PCDATA'}='p'; }
+
   if(0){
     print STDERR "Doctype\n";
     foreach my $tag (sort keys %{$$self{tagprop}}){

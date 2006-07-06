@@ -140,8 +140,10 @@ sub pathname_copy {
 #  * If $pathname is a not an absolute pathname (it may still have directory components)
 #    then if search $paths are given, search for it relative to each of the directories in $paths,
 #    else search for it relative to the current working directory.
-#  * If a pathname is not found, and $types is given, search for the pathname with 
+#  * If a pathname is not found, and 'types' is given, search for the pathname with 
 #    each type (extension) added.
+#    Note that if 'types' is given, it may find the file name w/o any extension.
+#    If a specific extension is required, use pathname_find(name="foo.type")
 sub pathname_find {
   my($pathname,%options)=@_;
   my $paths = $options{paths};

@@ -277,7 +277,7 @@ sub invoke {
   if(my $id = $props{id}){
     $STOMACH->recordID($id,$whatsit); }
   if($$self{captureBody}){
-    $whatsit->setBody(@post,$STOMACH->readAndDigestBody); @post=(); }
+    $whatsit->setBody(@post,$STOMACH->digestNextBody); @post=(); }
   (@pre,$whatsit,@post); }
 
 #**********************************************************************
@@ -380,7 +380,7 @@ sub translate_value {
   # &foo(...) ? Function (but not &foo; !!!)
   # Maybe shouldn't give an error?????
   if(s/^\{$QNAME_RE\}//o){				       # Then accept {key} modifier.
-    $value = "((defined $value)&& $value->getValue('$1')"; }
+    $value = "((defined $value)&& $value->getValue('$1'))"; }
   # Array???
   $value; }
 

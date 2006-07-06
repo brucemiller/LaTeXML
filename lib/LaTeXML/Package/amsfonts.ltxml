@@ -1,0 +1,63 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  amsfonts                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+#
+# See amsfndoc
+#
+DefConstructor('\mathbb{}', '#1',
+	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'blackboard'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
+DefMacro('\Bbb{}','\mathbb{#1}');
+DefMacro('\bold{}','\mathbb{#1}');
+# Also defined in eufrak
+DefConstructor('\mathfrak{}','#1',
+	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'fraktur'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
+DefMacro('\frak{}','\mathfrak{#1}');
+
+# Not necessarily math
+DefConstructor('\checkmark',"\x{2713}"); # CHECK MARK
+DefConstructor('\circledR',"\x{00AE}"); # REGISTERED SIGN
+DefConstructor('\maltese',"\x{2720}"); # MALTESE CROSs
+DefConstructor('\yen',"\x{00A5}"); # YEN SIGN
+
+# Math
+
+# These are delimiters, but open or close??
+DefMath('\ulcorner',"\x{231C}"); # TOP LEFT CORNER
+DefMath('\urcorner',"\x{231D}"); # TOP RIGHT CORNER 
+DefMath('\llcorner',"\x{231E}"); # BOTTOM LEFT CORNER 
+DefMath('\lrcorner',"\x{231F}"); # BOTTOM RIGHT CORNER
+
+DefMath('\dashrightarrow',"\x{21E2}", role=>'ARROW'); # RIGHTWARDS DASHED ARROW
+DefMath('\dashleftarrow', "\x{21E0}", role=>'ARROW'); # LEFTWARDS DASHED ARROW
+DefMath('\dasharrow',     "\x{21E2}", role=>'ARROW'); # RIGHTWARDS DASHED ARROW
+
+DefMath('\square',"\x{25A1}");			      # WHITE SQUARE
+DefMath('\lozenge',"\x{25C6}");			      # WHITE DIAMOND
+
+DefMath('\vartriangleright',"\x{22B3}"); # CONTAINS AS NORMAL SUBGROUP (\rhd)
+DefMath('\vartriangleleft',"\x{22B2}"); # NORMAL SUBGROUP OF (\lhd)
+
+DefMath('\trianglerighteq',"\x{22B5}"); # CONTAINS AS NORMAL SUBGROUP OR EQUAL TO (\unrhd)
+DefMath('\trianglelefteq',"\x{22B4}");	# NORMAL SUBGROUP OF OR EQUAL TO (\unlhd)
+DefMath('\rightsquigarrow',"\x{219D}", role=>'ARROW'); # RIGHTWARDS WAVE ARROW
+
+# amsfonts redefines various symbols already in TeX & LaTeX
+# \widehat, \widetilde, \rightleftharpoons,\angle 
+# \hbar, \sqsubset, \sqsupset, \mho
+
+# amsfonts also redefines these, unless latexsym is loaded.
+# However, all these are already defined in TeX (from plain?)
+# \Box, \Diamond, \leadsto, \lhd, \unlhd, \rhd, \unrhd
+
+1;

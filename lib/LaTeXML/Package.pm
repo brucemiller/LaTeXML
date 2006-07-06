@@ -354,6 +354,7 @@ sub RequirePackage {
 sub Let {
   my($token1,$token2)=@_;
   ($token1)=Tokenize($token1)->unlist unless ref $token1;
+  ($token2)=Tokenize($token2)->unlist unless ref $token2;
   $STOMACH->assignMeaning($token1,$STOMACH->lookupMeaning($token2)); }
 
 sub RawTeX {

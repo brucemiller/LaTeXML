@@ -22,7 +22,7 @@ our @ISA = (qw(LaTeXML::Object));
 #use LaTeXML::Intestine;
 
 use vars qw($VERSION);
-$VERSION = "0.2.0";
+$VERSION = "0.2.1";
 
 #**********************************************************************
 sub new {
@@ -49,21 +49,48 @@ sub digestFile {
 
 sub convertFile {
   my($self,$name)=@_;
+
   $name =~ s/\.tex$//;
-  my $digested = $self->digestFile($name);
-  return unless $digested;
-  require LaTeXML::Intestine;
+
   local $LaTeXML::Global::VERBOSITY  = $$self{verbosity};
   local $LaTeXML::Global::STRICT     = $$self{strict};
+  local $GULLET     = LaTeXML::Gullet->new();
   local $STOMACH    = $$self{stomach}; # The current Stomach; all state is stored here.
   local $MODEL      = $$self{model};   # The document model.
-  local $INTESTINE  = LaTeXML::Intestine->new($$self{stomach});
-  local $LaTeXML::DUAL_BRANCH= '';
   # And, set fancy error handler for ANY die!
   local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
 
+  my $digested = $$self{stomach}->readAndDigestFile($name);
+  return unless $digested;
+
+  require LaTeXML::Intestine;
+  local $INTESTINE  = LaTeXML::Intestine->new($$self{stomach});
+  local $LaTeXML::DUAL_BRANCH= '';
+
   $LaTeXML::MODEL->loadDocType([$LaTeXML::STOMACH->getSearchPaths]); # If needed?
   $LaTeXML::INTESTINE->buildDOM($digested); }
+
+sub convertString {
+  my($self,$string)=@_;
+
+  local $LaTeXML::Global::VERBOSITY  = $$self{verbosity};
+  local $LaTeXML::Global::STRICT     = $$self{strict};
+  local $GULLET     = LaTeXML::Gullet->new();
+  local $STOMACH    = $$self{stomach}; # The current Stomach; all state is stored here.
+  local $MODEL      = $$self{model};   # The document model.
+  # And, set fancy error handler for ANY die!
+  local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
+
+  my $digested = $$self{stomach}->readAndDigestString($string);
+  return unless $digested;
+
+  require LaTeXML::Intestine;
+  local $INTESTINE  = LaTeXML::Intestine->new($$self{stomach});
+  local $LaTeXML::DUAL_BRANCH= '';
+
+  $LaTeXML::MODEL->loadDocType([$LaTeXML::STOMACH->getSearchPaths]); # If needed?
+  $LaTeXML::INTESTINE->buildDOM($digested); }
+
 
 sub convertAndWriteFile {
   my($self,$name)=@_;

@@ -75,8 +75,9 @@
 	<xsl:attribute name="id"><xsl:value-of select="@label"/></xsl:attribute>
       </xsl:when>
       <xsl:otherwise>
-	<xsl:attribute name="id"><xsl:value-of select="generate_id()"/></xsl:attribute>
+	<xsl:attribute name="id"><xsl:value-of select="generate-id()"/></xsl:attribute>
       </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:include href="LaTeXML-base.xsl"/>

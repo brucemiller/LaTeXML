@@ -45,36 +45,42 @@ sub new {
 # Top level operation
 #  to be invoked from LaTeXML
 #**********************************************************************
+
+# Read and digest the contents of a file, returning the digested list.
 sub readAndDigestFile {
   my($self,$file)=@_;
   $self->initialize;
-  $self->initializeFile($file);
-  NoteProgress("\n(Digesting file $file...");
-  my $list = List($self->readAndDigestBody); 
-  NoteProgress(')');
-  $list; }
 
-#**********************************************************************
-sub initializeFile {
-  my($self,$file)=@_;
   my $pathname = pathname_find($file,types=>['tex']);
   Fatal("Cannot find TeX file $file") unless $pathname;
   my($dir,$name,$ext)=pathname_split($pathname);
   $self->addSearchPath($dir);	# Shouldn't permanently change!! ?
   $GULLET->openMouth(LaTeXML::FileMouth->new($pathname,includeComments=>$$self{includeComments}));
-  $self->assignMeaning(T_CS('\jobname'),
-		       LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode($name))));
-  $self->input('TeX');
-  my ($sec,$min,$hour,$mday,$mon,$year)=localtime();
-  assign_internal($self,'value_theday',  Number($mday));
-  assign_internal($self,'value_themonth',Number($mon));
-  assign_internal($self,'value_theyear', Number(1900+$year));
-  map($self->input($_), @{$$self{preload}}) if $$self{preload};
+  $self->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode($name))));
   # Is this the best time for this? [Or do I need an AtDocumentBegin?]
   $self->input("$name.latexml") if $self->findInput("$name.latexml");
-}
 
-# Initialize various parameters, etc.
+  NoteProgress("\n(Digesting file $file...");
+  my $list = List($self->digestNextBody);
+  NoteProgress(')');
+  $list; }
+
+# Read and digest a string, which should be a complete TeX document,
+# returning the digested list.
+sub readAndDigestString {
+  my($self,$string)=@_;
+  $self->initialize;
+
+  $GULLET->openMouth(LaTeXML::Mouth->new($string,includeComments=>$$self{includeComments}));
+  $self->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode("Unknown"))));
+  NoteProgress("\n(Digesting from <string>...");
+
+  my $list = List($self->digestNextBody); 
+  NoteProgress(')');
+  $list; }
+
+#**********************************************************************
+# Initialize various parameters, preload, etc.
 sub initialize {
   my($self)=@_;
   $$self{symboltable}={};
@@ -91,6 +97,8 @@ sub initialize {
   assign_internal($self,'value_default@mathfont', 
 		  MathFont(family=>'math',series=>'medium',shape=>'italic',
 			   size=>'normal',color=>'black',forcebold=>0));
+  $self->input('TeX');
+  map($self->input($_), @{$$self{preload}}) if $$self{preload};
 }
 
 #**********************************************************************
@@ -99,9 +107,9 @@ sub initialize {
 # NOTE: Worry about whether the $autoflush thing is right?
 # It puts a lot of cruft in Gullet; Should we just create a new Gullet?
 
-sub readAndDigestBody {
+sub digestNextBody {
   my($self)=@_;
-  $self->applyFilters($self->readAndDigestChunk(1)); }
+  $self->applyFilters($self->digestNextChunk(1)); }
 
 # Digest a list of tokens independent from any current Gullet.
 # Typically used to digest arguments to primitives or constructors.
@@ -113,7 +121,7 @@ sub digest {
   $GULLET->openMouth((ref $tokens eq 'LaTeXML::Token' ? Tokens($tokens) : $tokens->clone));
   $self->clearPrefixes; # prefixes shouldn't apply here.
   my $ismath = $self->inMath;
-  my @chunk = $self->readAndDigestChunk(0);
+  my @chunk = $self->digestNextChunk(0);
   @chunk = $self->applyFilters(@chunk) unless $nofilter;
   my $list = (scalar(@chunk) == 1 ? $chunk[0] 
 	      : ($ismath ? MathList(@chunk) : List(@chunk)));
@@ -125,7 +133,7 @@ sub digest {
 # until the current mode is done.  Returns () when the source is exhausted.
 # If $autoflush is true, when a source is exhausted, it gets flushed
 # and we continue to read from the containing source.
-sub readAndDigestChunk {
+sub digestNextChunk {
   my($self,$autoflush)=@_;
   my $depth  = $$self{boxingDepth};
   local @LaTeXML::LIST=();
@@ -465,7 +473,7 @@ sub installDefinition {
   if(defined(my $stash = $options{stash})){
     my $stashname = 'value_'.ToString($stash);
     assign_internal($self,$stashname,[],1) unless $$self{symboltable}{$stashname}[0];
-    push(@{ $$self{symboltable}{$stashname} }, $definition); }}
+    push(@{ $$self{symboltable}{$stashname}[0] }, $definition); }}
 
 sub useStash {
   my($self,$stash)=@_;
@@ -681,21 +689,48 @@ maintains all of the state relevant during the overall process
 of digestion (including tokenization and expansion;
 see L<LaTeXML::Mouth> and L<LaTeXML::Gullet>)
 
+=head2 Top-level Methods
+
+=over 4
+
+=item C<< $list = $STOMACH->readAndDigestFile($pathname); >>
+
+Reads and digests the contents of the file, returning the
+digested list.  This is a top-level method of C<LaTeXML::Stomach>,
+but should be invoked from within a L<LaTeXML> object, which
+binds the appropriate globals.
+
+
+=item C<< $list = $STOMACH->readAndDigestString($string); >>
+
+Reads and digests a string, which should contain a complete Tex
+document returning the digested list.  This is a top-level 
+method of C<LaTeXML::Stomach>, but should be invoked from within 
+a L<LaTeXML> object, which binds the appropriate globals.
+
 =head2 Methods dealing with digestion
 
 =over 4
 
-=item C<< $list = $STOMACH->readAndDigestBody; >>
+=item C<< $list = $STOMACH->digestNextBody; >>
 
 Return the digested L<LaTeXML::List> after reading and digesting a `body'
 from the current Gullet.  The body extends until the current
-level of boxing or environment is closed.
+level of boxing or environment is closed.  This uses C<digestNextChunk>,
+but applies filters to the resulting list.
 
 =item C<< $list = $STOMACH->digest($tokens,$nofilter); >>
 
 Return the L<LaTeXML::List> resuting from digesting the given tokens.
 This is typically used to digest arguments to primitives or
 constructors. If C<$nofilter> is true, filters will not be applied.
+
+=item C<< $list = $STOMACH->digestNextChunk; >>
+
+Return the digested L<LaTeXML::List> after reading and digesting a 
+the next `chunk' (essentially an environment body or math mode list)
+from the current Gullet.  The chunk extends until the current
+level of boxing or environment is closed.
 
 =item C<< @boxes = $STOMACH->invokeToken($token); >>
 

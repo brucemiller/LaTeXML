@@ -1,6 +1,6 @@
 # -*- CPERL -*-
 # /=====================================================================\ #
-# |  DLMFbib                                                            | #
+# |  amstext                                                            | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -10,23 +10,16 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-package LaTeXML::Package::Pool;
+
+#**********************************************************************
+# See amsldoc
+#**********************************************************************
 use strict;
 use LaTeXML::Package;
 
-RequirePackage('LaTeX');
-#**********************************************************************
-# Document
-#**********************************************************************
-DocType("bibliography","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
-	"http://dlmf.nist.gov/LaTeXML");
-DefEnvironment('{document}',"<bibliography>#body</bibliography>",
-		 beforeDigest=> sub { $STOMACH->setInPreamble(0); });
+DefConstructor('\text{}', "<text>#1</text>", mode=>'text');
 
-# Load special functions & other required packages.
-RequirePackage('DLMFmath');
-RequirePackage('amsrefs');
-RequirePackage('url');
-
+# There's also redefinitions of \stepcounter & \addtocounter
+# that I can't quite seethe point of including here...
 #**********************************************************************
 1;

@@ -12,6 +12,8 @@
 # \=========================================================ooo==U==ooo=/ #
 
 #**********************************************************************
+# See amsldoc
+
 # Currently only a random collection of things I need for DLMF chapters.
 # Eventually, go through the doc and implement it all.
 #**********************************************************************
@@ -19,12 +21,217 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-#**********************************************************************
+# TODO:
+#   Interesting options for limits placement
+#   And TESTING!!!!!
 
+# sub-packages:
+RequirePackage('amsbsy');
+RequirePackage('amstext');
+RequirePackage('amsopn');
+
+# Optional packages
+#   amscd
+#   amsxtra
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Section 3:  Displayed equations
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# Section 3.1 introduction
+# TODO
+#   equation equation*
+#   gather   gather*
+#   align    align*
+#   flalign  flalign*
+#   alignat  alignat*
+#   split
+
+# ?? Of course, I have to figure out how to represent them....
+#DefConstructor('\gather',   "<XMTok name='gather'>", environment=>'gather');
+#DefConstructor('\endgather',"<XMTok ?? />", end_environment=>'gather');
+DefEnvironment('{gather}',
+	       "<XMApp><XMTok name='gather'/>#body</XMApp>");
+
+# Same as equation; \\ gives an XMHint. 
+# Probably need to carry some styling info so mathml can align?
+DefEnvironment('{multiline}',
+	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>", 
+	       mode=>'display_math',
+	       properties=> {refnum=>sub { $STOMACH->refStepCounter('equation'); }});
+DefEnvironment('{multiline*}',
+	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>", 
+	       mode=>'display_math');
+
+#======================================================================
+# Section 3.2 Single equations
+
+# Used for single equations:
+#  equation, equation*, split, multiline
+#======================================================================
+# Section 3.3 Split equations without alignment
+
+#======================================================================
+# Section 3.4 Split equations with alignment
+
+#======================================================================
+# Section 3.5 Equation groups without alignment
+
+#======================================================================
+# Section 3.6 Equation groups with mutual alignment
+
+#======================================================================
+# Section 3.7. Alignmnet building blocks
+#    gathered, aligned alignedat
+
+#======================================================================
+# Section 3.8 Adjusting tag placement
+DefMacro('\raisetag{Dimension}',''); # Ignorable
+
+#======================================================================
+# Section 3.9 Vertical spacing and page breaks in multiline display
+DefMacro('\displaybreak[]','');	# Ignorable
+
+#======================================================================
+# Section 3.10 Interrupting a display
+#   \intertext
+
+# TODO
+
+#======================================================================
+# Section 3.11 Equation numbering
+
+# Section 3.11.1 Numbering hierarchy
+DefPrimitive('\numberwithin{}{}',sub {
+  my($ignore,$counter,$within)=@_;
+  NewCounter($counter,$within); });
+
+# Section 3.11.2 Cross references to equation numbers
 DefMacro('\eqref{semiverb}', '(\@REF{#1}{\@VALUE{LABEL@#1}})');
 
-#**********************************************************************
-# Fractions
+# Section 3.11.3 Subordinate numbering sequences.
+DefEnvironment('{subequations}',"<subequations refnum='#refnum'>#body</subequations>",
+	       beforeDigest=>sub { NewCounter('parentequation');
+				   $STOMACH->refStepCounter('equation');
+				   $STOMACH->assignValue("\\c\@parentequation",
+							 $STOMACH->lookupValue("\\c\@equation"));
+				   $STOMACH->assignValue("\\c\@equation",Number(0));
+				   Let('\theparentequation','\theequation');
+				   DefMacro('\theequation','\theparentequation\alph{equation}'); },
+	       afterDigest =>sub{ $STOMACH->assignValue("\\c\@equation",
+						     $STOMACH->lookupValue("\\c\@parentequation")); },
+	       properties=> {refnum=>sub {  $GULLET->expandTokens(Tokens(T_CS("\\theparentequation"))); }});
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Section 4: Miscellaneous mathematical features
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# Section 4.1 Matrices
+DefEnvironment('{cases}',
+	       sub { matharray('',$_[1], 'Cases','Case','Cell');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+
+DefEnvironment('{matrix}',
+	       sub { matharray('',$_[1], 'Matrix','Row','Cell');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+
+DefEnvironment('{pmatrix}',
+	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'(',close=>')');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+DefEnvironment('{bmatrix}',
+	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'[',close=>']');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+DefEnvironment('{Bmatrix}',
+	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'{',close=>'}');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+DefEnvironment('{vmatrix}',
+	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'|',close=>'|');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+DefEnvironment('{Vmatrix}',
+	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>"\x{2225}",close=>"\x{2225}");},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+
+#======================================================================
+# Section 4.2 Math spacing commands
+# \, == \thinspace
+# \: == \medspace
+# \; == \thickspace
+# \quad
+# \qquad
+# \! == \negthinspace
+# \negmedspace
+# \negthickspace
+# I think only these are new
+DefConstructor('\medspace',"?IfMath(<XMHint name='medspace'/>)(\x{2005})");  # FOUR-PER-EM SPACE
+DefConstructor('\negthinspace',"?IfMath(<XMHint name='negthinspace'/>)()");
+DefConstructor('\negmedspace',"?IfMath(<XMHint name='negmedspace'/>)()");
+DefConstructor('\negthickspace',"?IfMath(<XMHint name='negthickspace'/>)()");
+
+#======================================================================
+# Section 4.3 Dots
+# Nice idea, but not sure what I really should do about it.
+# In principle, a processor has access to the context....
+DefMacro('\dotsc','\ldots');	# Dots with commas
+DefMacro('\dotsb','\cdots');	# Dots with binary operators/relations
+DefMacro('\dotsm','\cdots');	# multiplication dots
+DefMacro('\dotsi','\cdots');	# Dots with integrals
+DefMacro('\dotso','\ldots');	# other dots (??)
+
+#======================================================================
+# Section 4.4 Nonbreaking dashes
+# \nobreakdash
+DefMacro('\nobreakdash','');	# Ignorable
+#======================================================================
+# Section 4.5 Accents in math
+DefMath('\dddot{}', "\x{02D9}\x{02D9}\x{02D9}",         operator_role=>'OVERACCENT'); # DOT ABOVE
+DefMath('\ddddot{}',"\x{02D9}\x{02D9}\x{02D9}\x{02D9}", operator_role=>'OVERACCENT'); # DOT ABOVE
+
+# In amsxtra
+#  \sphat \sptilde
+
+#======================================================================
+# Section 4.6 Roots
+# It would be nice to carry this info through to mathml, but ignore for now.
+DefMacro('\leftroot{}','');
+DefMacro('\uproot{}','');
+
+#======================================================================
+# Section 4.7 Boxed formulas
+
+DefConstructor('\boxed{}',"<XMWrap style='boxed'><XMArg>#1</XMArg></XMWrap>");
+
+#======================================================================
+# Section 4.8 Over and under arrows
+
+# Should be in LaTeX (& TeX): \overrightarrow, \overleftarrow
+DefMath('\underrightarrow{}',    "\x{2192}", operator_role=>'UNDERACCENT');
+DefMath('\underleftarrow{}',     "\x{2190}", operator_role=>'UNDERACCENT');
+DefMath('\overleftrightarrow{}', "\x{2194}", operator_role=>'OVERACCENT');
+DefMath('\underlefrighttarrow{}',"\x{2194}", operator_role=>'UNDERACCENT');
+
+#======================================================================
+# Section 4.9 Extensible arrows
+#  \xleftarrow, \xrightarrow
+
+DefConstructor('\xleftarrow[]{}',
+	       "<XMApp role='ARROW'><XMTok name='stacked'/><XMArg>#2</XMArg><XMTok>\x{2190}</XMTok>"
+	       . "?#1(<XMArg>#1</XMArg>)</XMApp>");
+DefConstructor('\xrightarrow[]{}',
+	       "<XMApp role='ARROW'><XMTok name='stacked'/><XMArg>#2</XMArg><XMTok>\x{2192}</XMTok>"
+	       . "?#1(<XMArg>#1</XMArg>)</XMApp>");
+
+#======================================================================
+# Section 4.10 Affixing symbols to other symbols
+
+DefConstructor('\overset{}{}',"<XMApp><XMWrap role='OVERACCENT>#1</XMWrap><XMArg>#2</XMArg></XMApp>");
+DefConstructor('\underset{}{}',"<XMApp><XMWrap role='UNDERACCENT>#1</XMWrap><XMArg>#2</XMArg></XMApp>");
+
+#======================================================================
+# Section 4.11 Fractions and related commands
+
+# Section 4.11.1 The \frac, \dfrac, and \tfrac commands
 DefMath('\dfrac{}{}','/', style=>'display', name=>"/", operator_role=>'MULOP',
 	beforeDigest=>sub { $STOMACH->bgroup; $STOMACH->setMathStyle('text'); },
 	afterDigest =>sub { $STOMACH->egroup; });
@@ -33,24 +240,76 @@ DefMath('\tfrac{}{}','/', style=>'text',    name=>"/", operator_role=>'MULOP',
 	afterDigest =>sub { $STOMACH->egroup; });
 DefMath('\ifrac{}{}','/', style=>'inline',  name=>"/", operator_role=>'MULOP');
 
-#**********************************************************************
+# Section 4.11.2 The \binom, \dbinom, and \tbinom commands
+DefMath('\binom{}{}', '', name=>'binomial');
+DefMath('\tbinom{}{}','', name=>'binomial', style=>'text');
+DefMath('\dbinom{}{}','', name=>'binomial', style=>'display');
+
+# Section 4.11.3 The \genfrac command
+DefConstructor('\genfrac{}{}{}{}{}{}',
+	       "<XMApp open='#1' close='#2'><XMTok name='stacked' thickness='#3' style='?#4(#4)(normal)'/>"
+	       .  "<XMArg>#5</XMArg><XMArg>#6</XMArg></XMApp>");
+
+#======================================================================
+# Section 4.12 Continued fractions
 # Is \cfracstyle my own invention? (I know I've redefined \cfrac in DLMFmath)
 DefConstructor('\cfrac{}{}',
 	       "<XMApp><XMTok>cfrac</XMTok><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
 # This should get incorporated into any \cfrac's that are constructed in scope.
 DefConstructor('\cfracstyle{}',''); # "<XMHint name='cfracstyle'/>");
 
-#**********************************************************************
-# Integrals
-DefMath('\iint', "\x{222C}", name=>'DoubleIntegral', role=>'INTOP'); # DOUBLE INTEGRAL
-DefMath('\iiint',"\x{222D}", name=>'TripleIntegral', role=>'INTOP'); # TRIPLE INTEGRAL
+#======================================================================
+# Section 4.13 Smash options
+DefConstructor('\smash[]{}',"#2"); # well, what?
 
-#**********************************************************************
-# Accents
-DefMath('\dddot{}', "\x{02D9}\x{02D9}\x{02D9}",         operator_role=>'OVERACCENT'); # DOT ABOVE
-DefMath('\ddddot{}',"\x{02D9}\x{02D9}\x{02D9}\x{02d9}", operator_role=>'OVERACCENT'); # DOT ABOVE
+#======================================================================
+# Section 4.14 Delimiters
 
-#**********************************************************************
+# Section 4.14.1 Delimiter sizes
+# Redefinitions(?) of \bigl, \bigr, \Bigl,\Bigr, \biggl, \biggr, \Biggl, \Biggr
+
+# Section 4.14.2 Vertical bar notations
+DefMath('\lvert','|', role=>'OPEN');
+DefMath('\lVert',"\x{2225}", role=>'OPEN'); # PARALLEL TO
+DefMath('\rvert','|', role=>'CLOSE');
+DefMath('\rVert',"\x{2225}", role=>'CLOSE'); # PARALLEL TO
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Section 5  Operator names
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# Section 5.1 Defining new operator names
+
+# See package amsopn (included by default)
+
+#======================================================================
+# Section 5.2 \mod and it's relatives
+#  \mod, \bmod, \pmod which are already in LaTeX
+DefMath('\pod{}', '(#1)', role=>'POSTFIX'); # Well, sorta postfix..
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Section 6 The \text command
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# See package amstext, included by default.
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Section 7 Integrals and sums
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# Section 7.1 Multiline subscripts and superscripts
+#  \substack, \begin{subarray}
+
+DefConstructor('\substack{}',"<XMApp><XMTok name='Collection'/><XMArg>#1</XMArg></XMApp>",
+	       beforeDigest=>sub{ $STOMACH->bgroup; DefConstructor("\\\\","</XMArg><XMArg>"); },
+	       afterDigest =>sub{ $STOMACH->egroup; });
+DefEnvironment('{subarray}[]',"<XMApp><XMTok name='Collection' alignment='#1'/><XMArg>#body</XMArg></XMApp>",
+	       beforeDigest=>sub{ DefConstructor("\\\\","</XMArg><XMArg>"); });
+
+#======================================================================
+# Section 7.2 the \sideset command
+
 # This is intended to be a modifier for \sum or \prod
 # NOTE that there can be at most one subscript in each of the pre & post, ditto for superscript.
 # Thus, our representation is: sideset(presub,presup,postsub,postsup,object)
@@ -82,44 +341,53 @@ DefConstructor('\sideset{}{}{}', sub {
   $INTESTINE->closeElement('XMApp');
 });
 
-#**********************************************************************
-DefEnvironment('{cases}',
-	       sub { matharray('',$_[1], 'Cases','Case','Cell');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+#======================================================================
+# Section 7.3 Placement of subscripts and limits
+# \limits and \nolimits; already in TeX
 
-DefEnvironment('{matrix}',
-	       sub { matharray('',$_[1], 'Matrix','Row','Cell');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+#======================================================================
+# Section 7.4 Multiple integral signs
 
-DefEnvironment('{pmatrix}',
-	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'(',close=>')');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
-DefEnvironment('{bmatrix}',
-	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'[',close=>']');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
-DefEnvironment('{Bmatrix}',
-	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'{',close=>'}');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
-DefEnvironment('{vmatrix}',
-	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'|',close=>'|');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
-DefEnvironment('{Vmatrix}',
-	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>"\x{2225}",close=>"\x{2225}");},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+DefMath('\iint', "\x{222C}", name=>'DoubleIntegral', role=>'INTOP'); # DOUBLE INTEGRAL
+DefMath('\iiint',"\x{222D}", name=>'TripleIntegral', role=>'INTOP'); # TRIPLE INTEGRAL
+DefMath('\iiiint',"\x{222C}\x{222C}", name=>'QuadrupleIntegral', role=>'INTOP'); # 2 "DOUBLE INTEGRAL"s ??
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Section 8 Commutative diagrams
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Separately in amscd
+# CD environment
+# with commands @>.., @<<<, @VVV, @AAA to give right, left, down, up arrows...
 
-# ?? Of course, I have to figure out how to represent them....
-#DefConstructor('\gather',   "<XMTok name='gather'>", environment=>'gather');
-#DefConstructor('\endgather',"<XMTok ?? />", end_environment=>'gather');
-DefEnvironment('{gather}',
-	       "<XMApp><XMTok name='gather'/>#body</XMApp>");
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Section 9 Using math fonts
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DefConstructor('\boldsymbol{}', '#1',
-	       beforeDigest=>sub { requireMath; $STOMACH->bgroup; $STOMACH->setFont(forcebold=>1); },
-	       afterDigest =>sub { $STOMACH->egroup; });
+#======================================================================
+# Section 9.1 Introduction
+# See amsfonts, euscript
 
-# Actually in amsfonts (but obsolete??)
-DefMacro('\bold{}','\mathbf{#1}');
-#**********************************************************************
+#======================================================================
+# Section 9.2 Recommended use of math font commands
+
+#======================================================================
+# Section 9.3 Bold math symbols
+# See package amsbsy (included by default)
+
+#======================================================================
+# Section 9.4 Italic Greek letters
+# I think this is sufficient:
+DefMacro('\varGamma',   '\mathit{\Gamma}');
+DefMacro('\varSigma',   '\mathit{\Sigma}');
+DefMacro('\varDelta',   '\mathit{\Delta}');
+DefMacro('\varUpsilon', '\mathit{\Upsilon}');
+DefMacro('\varTheta',   '\mathit{\Theta}');
+DefMacro('\varPhi',     '\mathit{\Phi}');
+DefMacro('\varLambda',  '\mathit{\Lambda}');
+DefMacro('\varPsi',     '\mathit{\Psi}');
+DefMacro('\varXi',      '\mathit{\Xi}');
+DefMacro('\varOmega',   '\mathit{\Omega}');
+DefMacro('\varPi',      '\mathit{\Pi}');
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
 

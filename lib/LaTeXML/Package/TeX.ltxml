@@ -210,6 +210,11 @@ our %iparms= (pretolerance=>0, tolerance=>0, hbadness=>0, vbadness=>0, linepenal
 foreach my $p (keys %iparms){
   DefRegister("\\$p",Number($iparms{$p})); }
 
+{  my ($sec,$min,$hour,$mday,$mon,$year)=localtime();
+   $STOMACH->assignValue('\day'  =>Number($mday));
+   $STOMACH->assignValue('\month'=>Number($mon+1));
+   $STOMACH->assignValue('\year' =>Number(1900+$year)); }
+
 # Read-only Integer registers
 our %ro_iparms=(lastpenalty=>0, inputlineno=>0, badness=>0);
 foreach my $p (keys %ro_iparms){
@@ -880,7 +885,7 @@ sub chooseArgHandler {
   $STOMACH->setMathStyle($fracstylemap{$style}); # Bump the style smaller.
   # Unfortunately, the way we've done it, it's too late for the numerator!!!
   my @top = $STOMACH->regurgitate;
-  my @bot = $STOMACH->readAndDigestBody;
+  my @bot = $STOMACH->digestNextBody;
   my $closing = pop(@bot);	# We'll leave whatever closed the list (endmath, endgroup...)
 #  $whatsit->setArgs(MathList(@top),MathList(@bot));
   $whatsit->setProperty(top=>MathList(@top));
@@ -900,6 +905,22 @@ DefConstructor('\atop',
 	       "<XMApp><XMTok name='stacked'/><XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
 	       afterDigest=>\&chooseArgHandler,
 	       untex=>'#top \atop #bottom');
+DefConstructor('\overwithdelims{}{}',
+	       "<XMApp open='#1' close='#2'><XMTok name='/' style='over'/>"
+	       .  "<XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
+	       afterDigest=>\&chooseArgHandler,
+	       untex=>'#top \overwithdelims{#1}{#2} #bottom');
+# But, wonder what the _meaning_ is!
+DefConstructor('\atopwithdelims{}{}',
+	       "<XMApp open='#1' close='#2'><XMTok name='stacked'/>"
+	       .  "<XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
+	       afterDigest=>\&chooseArgHandler,
+	       untex=>'#top \atopwithdelims{#1}{#2} #bottom');
+DefConstructor('\abovewithdelims{}{}{}',
+	       "<XMApp open='#1' close='#2'><XMTok name='/' style='over' thickness='#3'/>"
+	       .  "<XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
+	       afterDigest=>\&chooseArgHandler,
+	       untex=>'#top \abovewithdelims{#1}{#2}{#3} #bottom');
 
 #**********************************************************************
 # Old style font styles.
@@ -1127,7 +1148,7 @@ DefConstructor('\#',   '#');
 DefConstructor('\&',   '&amp;');
 #DefConstructor('\%',   '%');
 DefMacro('\%',Tokens(T_OTHER('%')));
-DefConstructor("\\\$", '$');
+DefConstructor("\\\$", "\$");
 DefConstructor('\_',   '_');
 
 #======================================================================
@@ -1306,6 +1327,8 @@ DefMathFilter('\not\in','\notin');
 # Have to synthesize various not-operators (a nice shorthand?)
 # I've basically put in every `not' form from Unicode 2200-226C, for which there is 
 # a corresponding TeX operator.
+# BUT note that most of these are also defined in amssymb!
+# .. I'd just as soon define them here, but shouldn't steal the symbols!
 DefMath('\@not@lt', "\x{226E}", role=>'RELOP', untex=>'\not<'); # NOT LESS-THAN
 DefMathFilter('\not<','\@not@lt');
 DefMath('\@not@gt', "\x{226F}", role=>'RELOP', untex=>'\not>'); # NOT GREATER-THAN
@@ -1508,9 +1531,9 @@ DefMath('\inf',    "inf", role=>'LIMITOP', stackscripts=>\&doStackscripts);
 DefMath('\ker',    "ker", role=>'FUNCTION');
 DefMath('\lg',     "lg",  role=>'FUNCTION');
 DefMath('\lim',    "lim", role=>'LIMITOP', stackscripts=>\&doStackscripts);
-DefMath('\liminf', "liminf", role=>'LIMITOP', stackscripts=>\&doStackscripts);
+DefMath('\liminf', "lim inf", role=>'LIMITOP', stackscripts=>\&doStackscripts);
 
-DefMath('\limsup', "limsup", role=>'LIMITOP', stackscripts=>\&doStackscripts);
+DefMath('\limsup', "lim sup", role=>'LIMITOP', stackscripts=>\&doStackscripts);
 DefMath('\ln',     "ln",  role=>'FUNCTION');
 DefMath('\log',    "log", role=>'FUNCTION');
 DefMath('\max',    "max", role=>'LIMITOP', stackscripts=>\&doStackscripts);
@@ -1573,6 +1596,10 @@ DefMath('\vert','|', role=>'VERTBAR');
 DefMath('\Vert',"\x{2225}", role=>'VERTBAR'); # PARALLEL TO
 
 DefConstructor('\phantom{}',"?IfMath(<XMHint name='phantom'/>)()");
+DefConstructor('\hphantom{}',"?IfMath(<XMHint name='hphantom'/>)()");
+DefConstructor('\vphantom{}',"?IfMath(<XMHint name='vphantom'/>)()");
+DefConstructor('\mathstrut{}',"?IfMath(<XMHint name='mathstrut'/>)()");
+DefConstructor('\smash{}',"#1"); # well, what?
 
 #======================================================================
 # Math Accents.
@@ -1592,11 +1619,15 @@ DefMath('\dot{}',       "\x{02D9}", operator_role=>'OVERACCENT'); # DOT ABOVE
 DefMath('\ddot{}',      "\x{00A8}", operator_role=>'OVERACCENT'); # DIAERESIS
 DefMath('\overline{}',  "\x{2212}", operator_role=>'OVERACCENT'); # MINUS SIGN
 DefMath('\overbrace{}', "\x{FE37}", operator_role=>'OVERACCENT'); # PRESENTATION FORM FOR VERTICAL LEFT CURLY BRACKET
-DefMath('\widehat{}',   "\x{005E}", operator_role=>'OVERACCENT'); # CIRCUMFLEX ACCENT
-DefMath('\widetilde{}', "\x{007E}", operator_role=>'OVERACCENT'); # TILDE
+DefMath('\widehat{}',   "\x{005E}", operator_role=>'OVERACCENT'); # CIRCUMFLEX ACCENT [plain? also amsfonts]
+DefMath('\widetilde{}', "\x{007E}", operator_role=>'OVERACCENT'); # TILDE [plain? also amsfonts]
 
 DefMath('\underline{}', "\x{2212}", operator_role=>'UNDERACCENT'); # MINUS SIGN
 DefMath('\underbrace{}',"\x{FE38}", operator_role=>'UNDERACCENT'); # PRESENTATION FORM FOR VERTICAL RIGHT CURLY BRACKET
+
+DefMath('\overrightarrow{}', "\x{2192}", operator_role=>'OVERACCENT');
+DefMath('\overleftarrow{}', "\x{2190}", operator_role=>'OVERACCENT');
+
 #**********************************************************************
 # Stray stuff .... where to ?
 #**********************************************************************

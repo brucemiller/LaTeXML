@@ -127,9 +127,9 @@ DefConstructor('\LaTeX', 'LaTeX');
 our @MonthNames=(qw( January February March April May June
 		     July August September October November December));
 DefExpandable('\today',sub { 
-   Explode($MonthNames[$STOMACH->lookupValue('themonth')->getValue]
-	   ." ".$STOMACH->lookupValue('theday')->getValue
-	   .', '.$STOMACH->lookupValue('theyear')->getValue); });
+   Explode($MonthNames[$STOMACH->lookupValue('\month')->getValue-1]
+	   ." ".$STOMACH->lookupValue('\day')->getValue
+	   .', '.$STOMACH->lookupValue('\year')->getValue); });
 
 DefConstructor('\emph{}', "<emph>#1</emph>", mode=>'text');
 Tag('text', autoClose=>1, autoOpen=>1); # ???
@@ -446,13 +446,35 @@ DefExpandable('\ensuremath{}', sub {
 
 # NOTE: The numbering isn't right.
 # And the parseability will have to be worked on!
+#DefEnvironment('{eqnarray}',
+#	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>", 
+#	       mode=>'display_math',
+#	       properties=> {refnum=>sub { $STOMACH->refStepCounter('equation'); }});
+#DefEnvironment('{eqnarray*}',
+#	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>", 
 DefEnvironment('{eqnarray}',
-	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>", 
+	       sub { 
+		 $INTESTINE->openElement('equation',refnum=>'#refnum');
+		 $INTESTINE->openElement('Math',mode=>'display');
+		 $INTESTINE->openElement('XMath');
+		 matharray('',$_[1], 'Matrix','Row','Cell');
+		 $INTESTINE->closeElement('XMath');
+		 $INTESTINE->closeElement('Math');
+		 $INTESTINE->closeElement('equation'); },
 	       mode=>'display_math',
-	       properties=> {refnum=>sub { $STOMACH->refStepCounter('equation'); }});
+	       properties=> {refnum=>sub { $STOMACH->refStepCounter('equation'); }},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 DefEnvironment('{eqnarray*}',
-	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>", 
-	       mode=>'display_math');
+	       sub { 
+		 $INTESTINE->openElement('equation');
+		 $INTESTINE->openElement('Math',mode=>'display');
+		 $INTESTINE->openElement('XMath');
+		 matharray('',$_[1], 'Matrix','Row','Cell');
+		 $INTESTINE->closeElement('XMath');
+		 $INTESTINE->closeElement('Math');
+		 $INTESTINE->closeElement('equation'); },
+	       mode=>'display_math',
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 
 # Style Parameters
 #  \abovedisplayskip \abovedisplayshortskip are in Primitives.pm
@@ -495,8 +517,8 @@ DefConstructor('\sqrt[]{}',
 # Modulo
 
 DefMath('\mod',    'mod');
-DefMath('\pmod{}', 'pmod');	# Role ???
-DefMath('\bmod',   'bnod', role=>'ADDOP');
+DefMath('\pmod{}', '(\textrm{mod} #1)', role=>'POSTFIX'); # Well, sorta postfix..
+DefMath('\bmod',   'mod', role=>'ADDOP');
 
 #======================================================================
 # C.7.4 Arrays
@@ -545,9 +567,6 @@ DefConstructor('\mathtt{}',  '#1',
 	       afterDigest=>sub{$STOMACH->egroup; });
 DefConstructor('\mathcal{}', '#1',
 	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'caligraphic'); },
-	       afterDigest=>sub{$STOMACH->egroup; });
-DefConstructor('\mathfrak{}','#1',
-	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'fraktur'); },
 	       afterDigest=>sub{$STOMACH->egroup; });
 DefConstructor('\mathscr{}', '#1',
 	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'script'); },
@@ -1179,7 +1198,6 @@ DefConstructor('\textsc{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
 DefConstructor('\textnormal{}','#1',
 	       beforeDigest=>sub{ $STOMACH->bgroup; $STOMACH->setFont(family=>'serif',series=>'medium',shape=>'upright'); },
 	       afterDigest=>sub{$STOMACH->egroup; });
-DefConstructor('\text{}', "<text>#1</text>", mode=>'text');
 
 DefPrimitive('\mathversion{}',sub {
   my($self,$version)=@_;
@@ -1199,6 +1217,7 @@ DefPrimitive('\mathversion{}',sub {
 #======================================================================
 # \symbol{num} ????
 
+# These in LaTeX, but not in the book...
 DefConstructor('\textdollar',"\$");
 DefConstructor('\textemdash',"\x{2014}"); # EM DASH
 DefConstructor('\textendash',"\x{2013}"); # EN DASH
@@ -1385,8 +1404,6 @@ DefPrimitive('\makeatletter',sub { $STOMACH->assignCatcode(CC_LETTER,'@'); retur
 DefPrimitive('\makeatother', sub { $STOMACH->assignCatcode(CC_OTHER,'@'); return; });
 
 #**********************************************************************
-DefMath('\binom{}{}', '', name=>'binomial');
-
 #**********************************************************************
 # Sundry (is this ams ?)
 DefConstructor('\textprime',"\x{00B4}"); # ACUTE ACCENT

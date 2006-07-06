@@ -55,7 +55,7 @@ if($format eq 'tex'){
   print OUT $digested->untex; }
 elsif($format eq 'box'){
   my $digested = $latexml->digestFile($source);
-  print OUT $digested; }
+  print OUT $digested->toString; }
 else {
   my $dom = $latexml->convertFile($source); 
   print OUT $dom->toString(1);

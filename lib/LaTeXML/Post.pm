@@ -171,7 +171,7 @@ our %ID_MAP =("-//NIST LaTeXML//LaTeXML article"=>
 sub adjust_doctype {
   my($self,$doc,%options)=@_;
   my $processors = $options{processors};
-  print STDERR "Processors: ".join(', ',@$processors)."\n";
+#  print STDERR "Processors: ".join(', ',@$processors)."\n";
   
   my $mathml   = (grep($_->isa('LaTeXML::Post::PresentationMathML'),@$processors) ? 1 : 0);
   my $openmath = (grep($_->isa('LaTeXML::Post::OpenMath'),@$processors) ? 1 : 0);
@@ -180,7 +180,7 @@ sub adjust_doctype {
   if(my $dtd = $doc->internalSubset){
     if($dtd->toString =~/^<!DOCTYPE\s+(\w+)\s+PUBLIC\s+(\"|\')([^\"]*)\2\s+(\"|\')([^\"]*)\4>$/){
       my ($root,$pubid) = ($1,$3);
-      print STDERR "Got Doctype root=$root, id=\"$pubid\" mathml=$mathml, openmath=$openmath\n";
+#      print STDERR "Got Doctype root=$root, id=\"$pubid\" mathml=$mathml, openmath=$openmath\n";
       
       my $entry = $ID_MAP{$pubid};
       if($entry && $idx){
@@ -231,7 +231,7 @@ sub Error {
 
 sub Warn {
   my($self,$msg)=@_;
-  warn "".(ref $self)." Warning: $msg"; }
+  warn "".(ref $self)." Warning: $msg" if $$self{verbosity}>-1; }
 
 sub Progress {
   my($self,$msg)=@_;

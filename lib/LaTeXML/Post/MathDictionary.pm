@@ -77,8 +77,9 @@ sub getNodeDictionary {
 # ================================================================================
 sub loadDocumentDictionary {
   my($dict,$doc,$pathname)=@_;
+  return unless $pathname;
   my($dir,$name,$ext)=pathname_split($pathname);
-  if(my $docdictpath = pathname_find($name,paths=>[$dir], types=>['dict'])){
+  if(my $docdictpath = pathname_find("$name.dict",paths=>[$dir])){
 #    print STDERR "loading dictionary: $docdictpath\n";
     local $LaTeXML::DOCUMENT = $doc;
     if(!defined(do $docdictpath)){

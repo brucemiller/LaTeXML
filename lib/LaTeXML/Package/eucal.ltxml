@@ -1,6 +1,6 @@
 # -*- CPERL -*-
 # /=====================================================================\ #
-# |  DLMFbib                                                            | #
+# |  eucal                                                              | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -10,23 +10,10 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-package LaTeXML::Package::Pool;
-use strict;
-use LaTeXML::Package;
+#
+# See amsfndoc
+#
+# eucal basically redefines \mathcal to use an Euler script.
+# There's really nothing to do for LaTeXML.
 
-RequirePackage('LaTeX');
-#**********************************************************************
-# Document
-#**********************************************************************
-DocType("bibliography","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
-	"http://dlmf.nist.gov/LaTeXML");
-DefEnvironment('{document}',"<bibliography>#body</bibliography>",
-		 beforeDigest=> sub { $STOMACH->setInPreamble(0); });
-
-# Load special functions & other required packages.
-RequirePackage('DLMFmath');
-RequirePackage('amsrefs');
-RequirePackage('url');
-
-#**********************************************************************
 1;

@@ -53,6 +53,41 @@ DefMath('\floor{}','\left\lfloor#1\right\rfloor');
 DefMath('\ceiling{}','\left\lceil#1\right\rceil');
 
 #**********************************************************************
+# Numbers
+#   \Sci{mantisa}{exponent}
+my %SUPDIGITS = (0=>"\x{2070}",1=>"\x{00b9}",2=>"\x{00b2}",3=>"\x{00b3}",4=>"\x{2074}",
+		 5=>"\x{2075}",6=>"\x{2076}",7=>"\x{2077}",8=>"\x{2078}",9=>"\x{2079}",
+		'+'=>"\x{207a}", '-'=>"\x{207b}");
+sub convert_sci {
+  my($mantissa,$exponent)=@_;
+  $mantissa = $mantissa->toString;
+  $exponent = $exponent->toString;
+  ($exponent ? join('',$mantissa,"\x{00D7}10",map($SUPDIGITS{$_}||'?',split('',$exponent))) : $mantissa); }
+
+DefConstructor('\Sci{}{}',sub {
+  my($whatsit,$mantissa,$exponent)=@_;
+  my $string = convert_sci($mantissa,$exponent);
+  ($whatsit->isMath 
+   ? $INTESTINE->insertMathToken($string,font=>$whatsit->getFont)
+   : $INTESTINE->openText($string,$whatsit->getFont)); });
+
+# In table variant: uses r@{}l for column spec.
+#   \TSci{mantisa}{exponent}
+#DefConstructor('\TSci{}{}',sub {
+#  my($whatsit,$mantissa,$exponent)=@_;
+#  my $savenode = $INTESTINE->floatToAttribute('colspan');
+#  $INTESTINE->getNode->setAttribute(colspan=>2);
+#  $INTESTINE->setNode($savenode);
+#  my $string = convert_sci($mantissa,$exponent);
+#  ($whatsit->isMath ? $INTESTINE->openText($string,$whatsit->getFont)
+#   : $INTESTINE->insertMathToken($string,font=>$whatsit->getFont)); });
+
+# Worry about alignment later...
+DefMacro('\TSci{}{}','\multicolumn{2}{c}{\Sci{#1}{#2}}');
+
+DefConstructor('\thinhline',"<hline size='thin'/>"); # ?
+
+#**********************************************************************
 # Calculus
 # Handled as general constructors since empty numerator is effectively a differential
 # operator, instead of a derivative.
@@ -97,8 +132,6 @@ DefMath('\transpose{}','#1^{\mathrm{T}}');
 
 #**********************************************************************
 # Combinatorics
-DefMath('\tbinom{}{}',      '', name=>'binomial', style=>'text');
-DefMath('\dbinom{}{}',      '', name=>'binomial', style=>'display');
 DefMath('\multinomial{}{}', '', name=>'multinomial');
 DefMath('\pochhammer{}{}',  '', name=>'pochhammer');
 DefMath('\binomial{}{}',    '', name=>'binomial');

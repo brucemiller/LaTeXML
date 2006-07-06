@@ -1,6 +1,6 @@
 # -*- CPERL -*-
 # /=====================================================================\ #
-# |  DLMFbib                                                            | #
+# |  amsopn                                                             | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -10,23 +10,31 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-package LaTeXML::Package::Pool;
+
+#**********************************************************************
+# See amsldoc
+#**********************************************************************
 use strict;
 use LaTeXML::Package;
 
-RequirePackage('LaTeX');
-#**********************************************************************
-# Document
-#**********************************************************************
-DocType("bibliography","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
-	"http://dlmf.nist.gov/LaTeXML");
-DefEnvironment('{document}',"<bibliography>#body</bibliography>",
-		 beforeDigest=> sub { $STOMACH->setInPreamble(0); });
+DefPrimitive('\DeclareMathOperator Flag:* {Token}{}',sub{
+  my($ignore,$star,$cs,$text)=@_;
+  DefMath($cs->toString,$text,stackscripts=>$star); }); # Hmm, is this right?
 
-# Load special functions & other required packages.
-RequirePackage('DLMFmath');
-RequirePackage('amsrefs');
-RequirePackage('url');
+# See p.18
+# New functions (most are already in TeX)
+DefMath('\injlim', "inj lim",   role=>'LIMITOP', stackscripts=>\&doStackscripts);
+DefMath('\projlim', "proj lim", role=>'LIMITOP', stackscripts=>\&doStackscripts);
+
+
+DefMath('\varlimsup', '\overline{\lim}',       role=>'LIMITOP');
+DefMath('\varliminf', '\underline{\lim}',      role=>'LIMITOP');
+DefMath('\varinjlim', '\uderrightarrow{\lim}', role=>'LIMITOP');
+DefMath('\varprojlim','\underleftarrow{\lim}', role=>'LIMITOP');
+
+DefPrimitive('\operatorname Flag:* {}',sub{
+  my($ignore,$star,$name)=@_;
+  DefMath(T_CS("\\".$name->toString),$name,stackscripts=>$star); }); # Hmm, is this right?
 
 #**********************************************************************
 1;
