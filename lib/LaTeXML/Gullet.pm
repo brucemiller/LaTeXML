@@ -14,19 +14,59 @@ package LaTeXML::Gullet;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::Object;
+use LaTeXML::Util::Pathname;
 our @ISA = qw(LaTeXML::Object);
-
-#=head1 LaTeXML::Gullet
-
-#LaTeXML::Gullet  corresponds to TeX's Gullet.
-
-#=cut
 
 #**********************************************************************
 sub new {
   my($class)=@_;
-  bless {mouth=>undef, mouthstack=>[], pushback=>[], pending_comments=>[]
+  bless {mouth=>undef, mouthstack=>[], pushback=>[], autoclose=>1, pending_comments=>[]
 	}, $class; }
+
+#**********************************************************************
+# Hmm, we should record in the output which files were included/required/etc.
+# This is for the benefit of anything wanting to interpret the Math/TeX ???
+# In which case, *.tex files that are included should probably be ignored
+# (they're output will already be incorporated),
+# But *.sty, *.cls etc, (or the *.pm equivalents) should be noted.
+# However, if things are included via some other `package', presumably
+# that package will be responsible for loading those extra pacakges, so
+# they should be ignored too, right?
+# NOTE: options from usepackage, etc, get carried to here.
+# For latexml implementations, the global $LaTeXML::PACKAGE_OPTIONS gets 
+# bound to them, but NOTHING is done to pass them to TeX style files!
+
+# HMM: the packageLoaded check only makes sense for style files, and
+# is probably only important for latexml implementations?
+sub input {
+  my($self,$name,$types,%options)=@_;
+  $name = $name->toString if ref $name;
+  # Try to find a Package implementing $name.
+  local @LaTeXML::PACKAGE_OPTIONS = @{$options{options}||[]};
+  $name = $1 if $name =~ /^\{(.*)\}$/; # just in case
+  my @paths = (@{ $STATE->lookupValue('SEARCHPATHS') },
+	       map("$_/LaTeXML/Package", @INC));
+  my $file = pathname_find($name,paths=>[@paths], types=>$types);
+  if(! $file) {
+    Error("Cannot find LaTeXML implementation, style or tex file for $name."); }
+  elsif($file =~ /\.(ltxml|latexml)$/){		# Perl module.
+    return if $STATE->lookupValue($file.'_loaded');
+    $STATE->assignValue($file.'_loaded'=>1,'global');
+    my($dir,$modname)=pathname_split($file);
+    $self->openMouth(LaTeXML::PerlMouth->new($file),0);
+    do $file; 
+    Fatal("Package $name had an error:\n  $@") if $@; }
+  elsif($file =~ /\.sty$/){	# (attempt to) interpret a style file.
+    return if $STATE->lookupValue($file.'_loaded');
+    $STATE->assignValue($file.'_loaded'=>1,'global');
+    $self->openMouth(LaTeXML::StyleMouth->new($file), 0);  }
+  else {			# Else read as an included file.
+    $self->openMouth(LaTeXML::FileMouth->new($file) ,0);  
+    # AND if there are file-specific declarations, deal with those first!
+    $file =~ s/\.tex//;
+    if(my $conf = pathname_find("$file.latexml",paths=>$STATE->lookupValue('SEARCHPATHS'))){
+      $self->input($conf); }
+  }}
 
 #**********************************************************************
 # Start reading tokens from a new Mouth.
@@ -36,31 +76,38 @@ sub new {
 # Exception: if $toplevel=1, readXToken will step to next source
 # Note that a Tokens can act as a Mouth.
 sub openMouth {
-  my($self,$mouth)=@_;
+  my($self,$mouth,$noautoclose)=@_;
   return unless $mouth;
-  unshift(@{$$self{mouthstack}},$$self{pushback},$$self{mouth}) if $$self{mouth};
+  unshift(@{$$self{mouthstack}},[$$self{mouth},$$self{pushback},$$self{autoclose}]) if $$self{mouth};
+  $$self{mouth}=$mouth; 
   $$self{pushback}=[];
-  $$self{mouth}=$mouth; }
+  $$self{autoclose}=!$noautoclose; }
 
 sub closeMouth {
   my($self,$forced)=@_;
   if(!$forced && (@{$$self{pushback}} || $$self{mouth}->hasMoreInput)){
-    Warn("Closing mouth with input remaining: ".Stringify($self->readToken)); }
+    Error("Closing mouth with input remaining: ".Stringify($self->readToken)); }
+  $$self{mouth}->finish;
   if(@{$$self{mouthstack}}){
-    $$self{pushback}= shift(@{$$self{mouthstack}}); 
-    $$self{mouth}   = shift(@{$$self{mouthstack}}); }
+    ($$self{mouth},$$self{pushback},$$self{autoclose}) = @{ shift(@{$$self{mouthstack}}) }; }
   else {
     $$self{pushback}=[];
-    $$self{mouth}=Tokens(); }}
+    $$self{mouth}=Tokens(); 
+    $$self{autoclose}=1; }}
 
 sub getMouth { $_[0]->{mouth}; }
 # Obscure, but the only way I can think of to End!! (see \bye or \end{document})
 # Flush all sources (close all pending mouth's)
 sub flush {
   my($self)=@_;
+  $$self{mouth}->finish;
+  foreach my $entry (@{$$self{mouthstack}}){
+    $entry->[0]->finish; }
   $$self{pushback}=[];
   $$self{mouth}=Tokens();
+  $$self{autoclose}=1;
   $$self{mouthstack}=[]; }
+
 
 # User feedback for where something (error?) occurred.
 sub getLocator {
@@ -69,10 +116,8 @@ sub getLocator {
   if(!$loc || $long){
     my($mouth,$pb)=($$self{mouth},$$self{pushback});
     $loc .= "\n  To be read again ".Tokens(@$pb)->untex if $long && @$pb;
-    my @mouths = @{$$self{mouthstack}};
-    while(@mouths){
-      $pb = shift(@mouths);
-      $mouth = shift(@mouths);
+    foreach my $frame ( @{$$self{mouthstack}} ){
+      my($mouth,$pb)= @$frame;
       $loc .= $mouth->getLocator($long);
       last if $loc && !$long;
       $loc .= "\n  To be read again ".Tokens(@$pb)->untex if $long && @$pb;
@@ -83,7 +128,7 @@ sub getLocator {
 # Return $tokens with all tokens expanded
 sub expandTokens {
   my($self,$tokens)=@_;
-  $self->openMouth($tokens->clone);
+  $self->openMouth($tokens->clone, 1);
   my @expanded=();
   while(defined(my $t=$self->readXToken)){
     push(@expanded,$t);}
@@ -129,11 +174,15 @@ sub unread {
 # if one is available, and will also pass comments.
 sub readXToken {
   my($self,$toplevel)=@_;
+####$toplevel=1;
   return shift(@{$$self{pending_comments}}) if $toplevel && @{$$self{pending_comments}};
   my($token,$cc,$defn);
   while(1){
     if(!defined($token = (@{$$self{pushback}} ? shift(@{$$self{pushback}}) : $$self{mouth}->readToken() ))){
-      return undef unless $toplevel && @{$$self{mouthstack}};
+      return undef unless $$self{autoclose} && $toplevel && @{$$self{mouthstack}};
+
+#      print STDERR "Closing ".Stringify($$self{mouth})."\n ".LaTeXML::Error::stacktrace()."\n";
+
       $self->closeMouth; }		# Next input stream.
     elsif(($cc = $$token[1]) == CC_NOTEXPANDED){ # NOTE: Inlined ->getCatcode
       # Should only occur IMMEDIATELY after expanding \noexpand (by readXToken),
@@ -298,12 +347,12 @@ sub readSemiverbatim {
 
 sub startSemiverbatim {
   my($self)=@_;
-  $STOMACH->bgroup(1);
-  map($STATE->assign('catcode',$_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%');  # should '%' too ?
+  $STATE->pushFrame;
+  map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%');  # should '%' too ?
 }
 sub endSemiverbatim {
   my($self)=@_;
-  $STOMACH->egroup(1); }
+  $STATE->popFrame; }
 
 #**********************************************************************
 #  Numbers, Dimensions, Glue
@@ -542,21 +591,38 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Gullet
+=head1 NAME
 
-=head2 DESCRIPTION
+C<LaTeXML::Gullet> -- expands expandable tokens and parses common token sequences.
 
-C<LaTeXML::Gullet> reads tokens (L<LaTeXML::Token>) from a L<LaTeXML::Mouth> 
-and (possibly) expands them.  It also provides a variety of methods for reading 
-various types of input such as arguments, optional arguments, Numbers, etc.
+=head1 DESCRIPTION
 
-=head2 Methods for managing input streams
+The C<LaTeXML::Gullet> reads tokens (L<LaTeXML::Token>) from a L<LaTeXML::Mouth>.
+It is responsible for expanding macros and expandable control sequences,
+if the current definition associated with the token in the L<LaTeXML::State>
+is an L<LaTeXML::Expandable> definition. The C<LaTeXML::Gullet> also provides a
+variety of methods for reading  various types of input such as arguments, optional arguments,
+as well as for parsing L<LaTeXML::Number>, L<LaTeXML::Dimension>, etc, according
+to TeX's rules.
+
+=head2 Managing Input
 
 =over 4
 
-=item C<< $GULLET->openMouth($mouth); >>
+=item C<< $GULLET->input($name,$types,%options); >>
+
+Input the file named C<$name>; Searches for matching files in the
+current C<searchpath> with an extension being one of  C<$types> (an array
+of strings). If the found file has a perl extension (pm, ltxml, or latexml), 
+it will be executed (loaded).  If the found file has a TeX extension
+(tex, sty, cls) it will be opened and latexml will prepare to read
+from it.
+
+=item C<< $GULLET->openMouth($mouth, $noautoclose); >>
 
 Is this public? Prepares to read tokens from C<$mouth>.
+If $noautoclose is true, the Mouth will not be automatically closed
+when it is exhausted.
 
 =item C<< $GULLET->closeMouth; >>
 
@@ -573,7 +639,7 @@ Returns a string describing the current location in the input stream.
 
 =back
 
-=head2 Low-level methods 
+=head2 Low-level methods
 
 =over 4
 
@@ -603,7 +669,7 @@ Push the C<@tokens> back into the input stream to be re-read.
 
 =back
 
-=head2 Medium-level methods. 
+=head2 Mid-level methods
 
 =over 4
 
@@ -647,7 +713,7 @@ in C<@delims>.  In a list context, it also returns which of the delimiters ended
 
 =back
 
-=head2 Higher-level methods used for parsing control sequence arguments. 
+=head2 High-level methods
 
 =over 4
 
@@ -700,3 +766,15 @@ Read a L<LaTeXML::MuGlue> according to TeX's rules of the various things that
 can be used as a muglue value.
 
 =back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut
+

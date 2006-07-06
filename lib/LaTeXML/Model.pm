@@ -158,8 +158,9 @@ sub canHaveAttribute {
 # to create & insert, and insert the #PCDATA into it.
 
 sub loadDocType {
-  my($self,$searchpaths)=@_;
+  my($self)=@_;
   $$self{doctype_loaded}=1;
+  NoteProgress("\n(Loading DocType ");
   if(!$$self{system_id}){
     Warn("No DTD declared...assuming LaTeXML!");
     # article ??? or what ? undef gives problems!
@@ -171,32 +172,35 @@ sub loadDocType {
   # Parse the DTD
   foreach my $dir (@INC){	# Load catalog (all, 1st only ???)
     next unless -f "$dir/LaTeXML/dtd/catalog";
-    NoteProgress("\n(Loading XML Catalog $dir/LaTeXML/dtd/catalog)");
+    NoteProgress("\n(Loading XML Catalog $dir/LaTeXML/dtd/catalog");
     XML::LibXML->load_catalog("$dir/LaTeXML/dtd/catalog"); 
+    NoteProgress(")");
     last; }
+  NoteProgress("\n(Loading DTD for $$self{public_id} $$self{system_id}");
   my $dtd = XML::LibXML::Dtd->new($$self{public_id},$$self{system_id});
   if($dtd){
-    NoteProgress("\n(Loaded DTD for $$self{public_id} $$self{system_id})"); }
+    NoteProgress("via catalog "); }
   else { # Couldn't find dtd in catalog, try finding the file. (search path?)
-    my @paths = @$searchpaths;
-    @paths = (map("$_/dtd",@paths),@paths);
+    my @paths = (@{ $STATE->lookupValue('SEARCHPATHS') },
+		 map("$_/dtd", @INC));
     my $dtdfile = pathname_find($$self{system_id},paths=>[@paths]);
     if($dtdfile){
       { local $/=undef;
-	NoteProgress("\n(Loading DTD from $dtdfile");
+	NoteProgress("from $dtdfile ");
 	if(open(DTD,$dtdfile)){
 	  my $dtdtext = <DTD>;
 	  close(DTD);
 	  $dtd = XML::LibXML::Dtd->parse_string($dtdtext); 
-	  Error("Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed") unless $dtd;
-	  NoteProgress(")"); }
+	  Error("Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed") unless $dtd; }
 	else {
 	  Error("Couldn't read DTD from $dtdfile"); }}}
     else {
-      Error("Couldn't find DTD \"$$self{public_id}\" \"$$self{system_id}\" failed"); }};
+      Error("Couldn't find DTD \"$$self{public_id}\" \"$$self{system_id}\" failed"); }}
+  NoteProgress(")");		# Done reading DTD
   return unless $dtd;
+
   $$self{dtd}=$dtd;
-  NoteProgress("\nAnalyzing DTD \"$$self{public_id}\" \"$$self{system_id}\"");
+  NoteProgress("(Analyzing DTD");
   # Extract all possible children for each tag.
   foreach my $node ($dtd->childNodes()){
     if($node->nodeType() == XML_ELEMENT_DECL()){
@@ -222,6 +226,7 @@ sub loadDocType {
   # PATCHUP
   if($$self{permissive}){
     $$self{tagprop}{_Document_}{indirect_model}{'#PCDATA'}='p'; }
+  NoteProgress(")");		# Done analyzing
 
   if(0){
     print STDERR "Doctype\n";
@@ -229,6 +234,7 @@ sub loadDocType {
       print STDERR "$tag can contain ".join(', ',sort keys %{$$self{tagprop}{$tag}{model}})."\n"; 
       print STDERR "$tag can indirectly contain ".
 	join(', ',sort keys %{$$self{tagprop}{$tag}{indirect_model}})."\n";  }}
+  NoteProgress(")");		# done Loading
 }
 
 sub computeDescendents {
@@ -262,9 +268,11 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Model
+=head1 NAME
 
-=head2 DESCRIPTION
+C<LaTeXML::Model> -- represents the Document Model
+
+=head1 DESCRIPTION
 
 C<LaTeXML::Model> encapsulates information about the document model to be used
 in converting a digested document into XML by the L<LaTeXML::Document>.
@@ -282,35 +290,103 @@ stored model is only approximate.  For example, we only record that
 certain elements can appear within another; we don't preserve any
 information about required order or number of instances.
 
-=head2 Methods of LaTeXML::Model
+=head2 Model Creation
 
 =over 4
 
-=item C<< $model = LaTeXML::Model->new(%options); >>
+=item C<< $MODEL = LaTeXML::Model->new(%options); >>
 
 Creates a new model.  The only useful option is
 C<< permissive=>1 >> which ignores any DTD and allows the
 document to be built without following any particular content model.
 
-=item C<< $name = $model->getRootName; >>
+=back
+
+=head2 Document Type
+
+=over 4
+
+=item C<< $name = $MODEL->getRootName; >>
 
 Return the name of the expected root element.
 
-=item C<< $publicid = $model->getPublicID; >>
+=item C<< $publicid = $MODEL->getPublicID; >>
 
 Return the public identifier for the document type.
 
-=item C<< $systemid = $model->getSystemID; >>
+=item C<< $systemid = $MODEL->getSystemID; >>
 
 Return the system identifier for the document type
 (typically a filename for the DTD).
 
-=item C<< $model->setDocType($rootname,$publicid,$systemid,$namespace); >>
+=item C<< $MODEL->setDocType($rootname,$publicid,$systemid,$namespace); >>
 
 Sets the root element name and the public and system identifiers
 for the desired document type, as well as the default namespace URI.
 
-=item C<< $value = $model->getTagProperty($tag,$property); >>
+=back
+
+=head2 Namespaces
+
+=over 4
+
+=item C<< $namespace = $MODEL->getDefaultNamespace; >>
+
+Return the default namespace url.
+
+=item C<< $MODEL->registerNamespace($prefix,$namespace_url,$default); >>
+
+Register C<$prefix> to stand for the namespace C<$namespace_url>.
+If C<$default> is true, make this namespace the default one.
+This will be used as the namespace for any unprefixed tags.
+
+=item C<< $MODEL->getNamespacePrefix($namespace); >>
+
+Return the prefix to use for the given C<$namespace>.
+
+=item C<< $MODEL->getNamespace($prefix); >>
+
+Return the namespace url for the given C<$prefix>.
+
+=back
+
+=head2 Model queries
+
+=over 2
+
+=item C<< $boole = $MODEL->canContain($tag,$childtag); >>
+
+Returns whether an element C<$tag> can contain an element C<$childtag>.
+The element names #PCDATA, _Comment_ and _ProcessingInstruction_
+are specially recognized.
+
+=item C<< $auto = $MODEL->canContainIndirect($tag,$childtag); >>
+
+Checks whether an element C<$tag> could contain an element C<$childtag>,
+provided an `autoOpen'able element C<$auto> were inserted in C<$tag>.
+
+=item C<< $boole = $MODEL->canContainSomehow($tag,$childtag); >>
+
+Returns whether an element C<$tag> could contain an element C<$childtag>,
+either directly or indirectly.
+
+=item C<< $boole = $MODEL->canAutoClose($tag); >>
+
+Returns whether an element C<$tag> is allowed to be closed automatically,
+if needed.
+
+=item C<< $boole = $MODEL->canHaveAttribute($tag,$attribute); >>
+
+Returns whether an element C<$tag> is allowed to have an attribute
+with the given name.
+
+=back
+
+=head2 Tag Properties
+
+=over 2
+
+=item C<< $value = $MODEL->getTagProperty($tag,$property); >>
 
 Gets the value of the $property associated with the element name C<$tag>.
 Known properties are:
@@ -332,31 +408,37 @@ Known properties are:
                 created node and the responsible digested object
                 as arguments.
 
-=item C<< $model->setTagProperty($tag,$property,$value); >>
+=item C<< $MODEL->setTagProperty($tag,$property,$value); >>
 
 sets the value of the C<$property> associated with the element name C<$tag> to C<$value>.
 
-=item C<< $boole = $model->canContain($tag,$childtag); >>
+=back
 
-Returns whether an element C<$tag> can contain an element C<$childtag>.
-The element names #PCDATA, _Comment_ and _ProcessingInstruction_
-are specially recognized.
+=head2 Rewrite Rules
 
-=item C<< $auto = $model->canContainIndirect($tag,$childtag); >>
+=over 2
 
-Checks whether an element C<$tag> could contain an element C<$childtag>,
-provided an `autoOpen'able element C<$auto> were inserted in C<$tag>.
+=item C<< $MODEL->addRewriteRule($mode,@specs); >>
 
-=item C<< $boole = $model->canAutoClose($tag); >>
+Install a new rewrite rule with the given C<@specs> to be used 
+in C<$mode> (being either C<math> or C<text>).
+See L<LaTeXML::Rewrite> for a description of the specifications.
 
-Returns whether an element C<$tag> is allowed to be closed automatically,
-if needed.
+=item C<< $MODEL->applyRewrites($document,$node,$until_rule); >>
 
-=item C<< $boole = $model->canHaveAttribute($tag,$attribute); >>
-
-Returns whether an element C<$tag> is allowed to have an attribute
-with the given name.
+Apply all matching rewrite rules to C<$node> in the given document.
+If C<$until_rule> is define, apply all those rules that were defined
+before it, otherwise, all rules
 
 =back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
 
 =cut

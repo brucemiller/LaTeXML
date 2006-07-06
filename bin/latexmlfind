@@ -46,11 +46,20 @@ foreach my $symbol (@symbols){
 	       "//ltxml:Math[descendant::ltxml:XMTok[\@name='$symbol' or text()='$symbol']]"); }
 foreach my $symbol (@unknowns){
   show_matches("Unknown \"$symbol\"",
-	       "//ltxml:Math[descendant::ltxml:XMTok[\@role='UNKNOWN'][\@name='$symbol' or text()='$symbol']]"); }
+	       # Find Math containing an XMTok, with role=UNKNOWN
+	       "//ltxml:Math[descendant::ltxml:XMTok[\@role='UNKNOWN']"
+	       #                                    whose name or content is the requested symbol
+	       .                                   "[\@name='$symbol' or text()='$symbol']"
+	       #                                   BUT which isn't in presentation branch of an XMDual!!
+	       #                                   ie. no ancestor w/preceding sibling has parent = XMDual
+	       .                                   "[not(ancestor::*[preceding-sibling::*][parent::ltxml:XMDual])]"
+	       .                                   "]"); }
 
 foreach my $symbol (@posfuncs){
   show_matches("Possible function \"$symbol\"",
-	       "//ltxml:Math[descendant::ltxml:XMTok[\@possibleFunction='yes'][\@name='$symbol' or text()='$symbol']]"); }
+	       "//ltxml:Math[descendant::ltxml:XMTok[\@possibleFunction='yes']"
+	       .                                   "[\@name='$symbol' or text()='$symbol']"
+	       .                                   "]"); }
 
 #**********************************************************************
 sub show_matches {

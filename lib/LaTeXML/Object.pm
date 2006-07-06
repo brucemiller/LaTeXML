@@ -14,7 +14,8 @@
 #  Base object for all LaTeXML Objects; 
 # Defines basic default methods for comparison, printing
 # Tried to use overloading, but the Magic methods lead to hard-to-find
-# performance issues -- at least, if you try to have stringify do too much.
+# (and occasionally quite serious) performance issues -- at least, if you
+# try to have stringify do too much.
 #**********************************************************************
 package LaTeXML::Object;
 use strict;
@@ -40,7 +41,6 @@ sub notequals {
 sub isaToken      { 0; }
 sub isaBox        { 0; }
 sub isaDefinition { 0; }
-sub isaNode       { 0; }
 
 #**********************************************************************
 1;
@@ -49,9 +49,11 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Object
+=head1 NAME
 
-=head2 DESCRIPTION
+C<LaTeXML::Object> -- abstract base class for most LaTeXML objects.
+
+=head1 DESCRIPTION
 
 C<LaTeXML::Object> serves as an abstract base class for all other objects (both the
 data objects and control objects).  It provides for common methods for
@@ -85,10 +87,19 @@ for object identity.
 
 =item C<< $boole = $object->isaDefinition; >>
 
-=item C<< $boole = $object->isaNode; >>
-
 Returns whether C<$object> is of the type indicated; L<LaTeXML::Token>,
-L<LaTeXML::Box>, L<LaTeXML::Definition> or L<LaTeXML::Node>.
+L<LaTeXML::Box> or L<LaTeXML::Definition>.
 
 =back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut
 

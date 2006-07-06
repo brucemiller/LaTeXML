@@ -74,7 +74,7 @@ DefExpandable('\ifodd Number',
 
 # \ifvmode
 # \ifhmode
-DefExpandable('\ifmmode',sub { ifHandler($STOMACH->inMath); }, isConditional=>1);
+DefExpandable('\ifmmode',sub { ifHandler(LookupValue('IN_MATH')); }, isConditional=>1);
 
 # \ifinner
 DefExpandable('\if XToken XToken',
@@ -151,21 +151,23 @@ DefExpandable('\expandafter Token Token',sub {
 # Insert magic token that Gullet knows not to expand the next one.
 DefExpandable('\noexpand',sub { Token('',CC_NOTEXPANDED); });
 
-DefExpandable('\topmark',        sub { $STOMACH->mark_register('topmark'); return; });
-DefExpandable('\firstmark',      sub { $STOMACH->mark_register('firstmark'); return;});
-DefExpandable('\botmark',        sub { $STOMACH->mark_register('botmark'); return;});
-DefExpandable('\splitfirstmark', sub { $STOMACH->mark_register('splitfirstmark'); return;});
-DefExpandable('\splitbotmark',   sub { $STOMACH->mark_register('splitbotmark'); return;});
+DefExpandable('\topmark',        sub { return; });
+DefExpandable('\firstmark',      sub { return; });
+DefExpandable('\botmark',        sub { return; });
+DefExpandable('\splitfirstmark', sub { return; });
+DefExpandable('\splitbotmark',   sub { return; });
 
 DefExpandable('\input',sub {
   my ($token,@tokens)=();
   while(($token=$GULLET->readXToken()) && ($token->getCatcode != CC_SPACE)){
     push(@tokens,$token); }
   $GULLET->unread($token);
-  $STOMACH->input(Tokens(@tokens));
+  my $path = Tokens(@tokens)->toString;
+  $path = $1 if $path =~ /^\{(.*)\}$/; # just in case
+  $GULLET->input($path,['tex']);
   return; });
 
-DefExpandable('\endinput',sub { $STOMACH->closeMouth(1); return; });
+DefExpandable('\endinput',sub { $GULLET->closeMouth(1); return; });
 
 # \the<internal quantity>
 DefExpandable('\the',sub {
@@ -214,9 +216,9 @@ foreach my $p (keys %iparms){
   DefRegister("\\$p",Number($iparms{$p})); }
 
 {  my ($sec,$min,$hour,$mday,$mon,$year)=localtime();
-   Assign('value','\day'  =>Number($mday), 'global');
-   Assign('value','\month'=>Number($mon+1), 'global');
-   Assign('value','\year' =>Number(1900+$year), 'global'); }
+   AssignValue('\day'  =>Number($mday), 'global');
+   AssignValue('\month'=>Number($mon+1), 'global');
+   AssignValue('\year' =>Number(1900+$year), 'global'); }
 
 # Read-only Integer registers
 our %ro_iparms=(lastpenalty=>0, inputlineno=>0, badness=>0);
@@ -447,10 +449,10 @@ DefExpandable('\futurelet Token Token Token',sub{
 # As defining a register ??
 DefPrimitive('\chardef Token Ignore:= Number', sub {
   my($self,$newcs,$code)=@_;
-  Assign('value',$newcs->getString=>Number($code));	# For when used as an integer valueOf
+  AssignValue($newcs->getString=>Number($code));	# For when used as an integer valueOf
   my $ch = chr($code->valueOf);
-  $STOMACH->instalDefinition(LaTeXML::Primitive->new($newcs,"",
-						    sub { $STOMACH->digest(T_OTHER($ch)); },
+  $STATE->installDefinition(LaTeXML::Primitive->new($newcs,"",
+						    sub { InvokeToken(T_OTHER($ch)); },
 						    registerType=>'Number', readonly=>1));
   return; });
 # \mathchardef ?
@@ -459,42 +461,36 @@ DefPrimitive('\countdef Token Ignore:= Number',sub {
   my($self,$cs,$num)=@_;
   my $count = '\count'.$num->valueOf;
   DefRegister($cs->getString, Number(0),
-	       getter=>sub { Lookup('value',$count); },
-	       setter=>sub { Assign('value',$count=>$_[0]); });
-  return; });
+	       getter=>sub { LookupValue($count); },
+	       setter=>sub { AssignValue($count=>$_[0]); }); });
 
 DefPrimitive('\dimendef Token Ignore:= Number',sub {
   my($self,$cs,$num)=@_;
   my $dimen = '\dimen'.$num->valueOf;
   DefRegister($cs->getString, Dimension(0),
-	       getter=>sub { Lookup('value',$dimen); },
-	       setter=>sub { Assign('value',$dimen=>$_[0]); });
-  return; });
+	       getter=>sub { LookupValue($dimen); },
+	       setter=>sub { AssignValue($dimen=>$_[0]); }); });
 
 DefPrimitive('\skipdef Token Ignore:= Number',sub {
   my($self,$cs,$num)=@_;
   my $glue = '\skip'.$num->valueOf;
   DefRegister($cs->getString, Glue(0),
-	       getter=>sub { Lookup('value',$glue); },
-	       setter=>sub { Assign('value',$glue=>$_[0]); });
-  return; });
+	       getter=>sub { LookupValue($glue); },
+	       setter=>sub { AssignValue($glue=>$_[0]); }); });
 
 DefPrimitive('\muskipdef Token Ignore:= Number',sub {
   my($self,$cs,$num)=@_;
   my $muglue = '\muskip'.$num->valueOf;
   DefRegister($cs->getString, MuGlue(0),
-	       getter=>sub { Lookup('value',$muglue); },
-	       setter=>sub { Assign('value',$muglue=>$_[0]); });
-
- return; });
+	       getter=>sub { LookupValue($muglue); },
+	       setter=>sub { AssignValue($muglue=>$_[0]); }); });
 
 DefPrimitive('\toksdef Token Ignore:= Number',sub {
   my($self,$cs,$num)=@_;
   my $toks = '\toks'.$num->valueOf;
   DefRegister($cs->getString, Tokens(),
-	       getter=>sub { Lookup('value',$toks); },
-	       setter=>sub { Assign('value',$toks=>$_[0]); });
-  return; });
+	       getter=>sub { LookupValue($toks); },
+	       setter=>sub { AssignValue($toks=>$_[0]); }); });
 
 
 # NOTE: Get all these handled as registers
@@ -506,10 +502,10 @@ DefPrimitive('\toksdef Token Ignore:= Number',sub {
 # <codename> = \catcode | \mathcode | \lccode | \uccode | \sfcode | \delcode
 
 DefRegister('\catcode Number',Number(0),
-	     getter=>sub { my $cc = Lookup('catcode',chr($_[0]->valueOf));
+	     getter=>sub { my $cc = LookupCatcode(chr($_[0]->valueOf));
 			   $cc = CC_OTHER unless defined $cc;
 			   Number($cc); },
-	     setter=>sub { Assign('catcode',chr($_[1]->valueOf) => $_[0]->valueOf); });
+	     setter=>sub { AssignCatcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
 # \mathcode
 # \lccode
 # \uccode
@@ -560,7 +556,7 @@ DefRegister('\dp Number',Dimension(0));
 # <intimate assignment> = <special integer><equals><number>
 #   | <special dimension><equals><dimen>
 
-DefPrimitive('\char Number', sub { $STOMACH->digest(T_OTHER(chr($_[1]->valueOf))); });
+DefPrimitive('\char Number', sub { InvokeToken(T_OTHER(chr($_[1]->valueOf))); });
 # <box> = \box <8bit> | \copy <8bit> | \lastbox | \vsplit <8bit> to <dimen>
 #   | \hbox <box specification>{<horizontal mode material>}
 #   | \vbox <box specification>{<vertical mode material>}
@@ -569,13 +565,21 @@ DefPrimitive('\char Number', sub { $STOMACH->digest(T_OTHER(chr($_[1]->valueOf))
 
 # \setbox<number>=\hbox to <dimen>{<horizontal mode material>}
 
-DefPrimitive('\setbox Number Ignore:= {}', sub { Assign('value','box'.$_[1]->valueOf =>$_[2]); return;});
+DefPrimitive('\setbox Number Ignore:=', sub { 
+  my @stuff = InvokeToken($GULLET->readXToken);
+  AssignValue('box'.$_[1]->valueOf => shift(@stuff));
+  @stuff;});
 # Is this the same ??
-DefPrimitive('\sbox Number Ignore:= {}', sub { Assign('value','box'.$_[1]->valueOf =>$_[2]);return; });
+DefPrimitive('\sbox Number Ignore:= {}', sub { 
+  my @stuff = InvokeToken($GULLET->readXToken);
+  AssignValue('box'.$_[1]->valueOf => shift(@stuff));
+  @stuff;});
 
-DefPrimitive('\hbox{Keyword:to|spread} Dimension {}', sub { $STOMACH->digest($_[3]); });
-DefPrimitive('\vbox{Keyword:to|spread} Dimension {}', sub { $STOMACH->digest($_[3]); });
-DefPrimitive('\vtop{Keyword:to|spread} Dimension {}', sub { $STOMACH->digest($_[3]); });
+DefPrimitive('\box Number', sub { LookupValue('box'.$_[1]->valueOf); });
+
+DefPrimitive('\hbox{Keyword:to|spread} Dimension {}', sub { Digest($_[3]); });
+DefPrimitive('\vbox{Keyword:to|spread} Dimension {}', sub { Digest($_[3]); });
+DefPrimitive('\vtop{Keyword:to|spread} Dimension {}', sub { Digest($_[3]); });
 
 # Ignore, but leave the box!
 DefPrimitive('\lower Dimension', undef);
@@ -610,7 +614,7 @@ DefPrimitive('\ignorespaces',sub { $GULLET->skipSpaces; return; });
 # \immediate\closeout<4bit>
 # \immediate\write<number><general text>
 
-DefPrimitive('\aftergroup Token', sub { $STOMACH->pushAfterGroup($_[1]); });
+DefPrimitive('\aftergroup Token', sub { PushValue(afterGroup=>$_[1]); });
 
 #======================================================================
 # Remaining semi- Vertical Mode primitives in Ch.24, pp.280--281
@@ -622,7 +626,7 @@ DefPrimitive('\aftergroup Token', sub { $STOMACH->pushAfterGroup($_[1]); });
 # \mark{general text}
 # \insert<8bit><filler>{<vertical mode material>}
 # \vadjust<filler>{<vertical mode material>}
-
+DefPrimitive('\mark{}',undef);
 DefPrimitive('\penalty Number',undef);
 DefPrimitive('\kern Dimension',undef);
 DefPrimitive('\mkern MuGlue',undef);
@@ -687,7 +691,7 @@ DefMacro('\newpage','');
 # Decide whether we're going into or out of math, inline or display.
 
 DefPrimitive('$', sub {
-  my $mode = $STOMACH->getMode;
+  my $mode = LookupValue('MODE');
   my $op = '\@@BEGININLINEMATH';
   if($mode eq 'display_math'){
     Fatal("Missing \$") unless $GULLET->ifNext(undef,CC_MATH);
@@ -798,8 +802,7 @@ sub collapse_XMWrap {
       if($attribute->nodeType == XML_ATTRIBUTE_NODE){
 	my $attr = $attribute->nodeName;
 	$node->setAttribute($attr,$attribute->getValue) unless $attr =~ /^_/; }}
-    $wrap->parentNode->replaceChild($node,$wrap); }
-  return; }
+    $wrap->parentNode->replaceChild($node,$wrap); } }
 
 
 #======================================================================
@@ -837,15 +840,15 @@ sub scriptHandler {
     if($prev->toString eq '{}'){
       pop(@LaTeXML::LIST);
       $cs = '\@@FLOATING'.$op; }}
-  my $style = Lookup('value','mathstyle'); # Bump the math style smaller.
-  Assign('value',mathstyle=>$scriptstylemap{$style});
+  my $style = LookupValue('mathstyle'); # Bump the math style smaller.
+  AssignValue(mathstyle=>$scriptstylemap{$style});
   # Now, get following boxes
-  my @stuff = $STOMACH->invokeToken($GULLET->readXToken);
+  my @stuff = InvokeToken($GULLET->readXToken);
   Fatal("Missing { in sub/super-script argument") unless @stuff;
   my $script = shift(@stuff);	# ONLY this box is the script!
   push(@stuff, LaTeXML::Whatsit->new(T_CS($cs)->getDefinition,[$script]))
     if $script->toString ne '{}';    # ONLY If Script is not empty!!!
-  Assign('value',mathstyle=>$style); # revert
+  AssignValue(mathstyle=>$style); # revert
   @stuff; }
 
 DefPrimitive('^', sub{ scriptHandler('SUPERSCRIPT'); });
@@ -872,7 +875,7 @@ DefConstructor('\@SUBSCRIPT{}{}',
 	       untex=>'{#1}_{#2}');
 
 # This only becomes active in math mode.
-Assign('mathactive', "'"=>1, 'global');
+AssignCatcode('math:\''=>1, 'global');
 DefMacro('\'',sub{
   my $n = 1;
   while($GULLET->ifNext(T_OTHER('\''))){ $n++; };
@@ -909,8 +912,8 @@ our %fracstylemap=(display=>'text', text=>'script',
 		   script=>'scriptscript', scriptscript=>'scriptscript');
 sub chooseArgHandler {
   my($whatsit)=@_;
-  my $style = Lookup('value','mathstyle');
-  Assign('value',mathstyle=>$fracstylemap{$style}); # Bump the style smaller.
+  my $style = LookupValue('mathstyle');
+  AssignValue(mathstyle=>$fracstylemap{$style}); # Bump the style smaller.
   # Unfortunately, the way we've done it, it's too late for the numerator!!!
   my @top = $STOMACH->regurgitate;
   my @bot = $STOMACH->digestNextBody;
@@ -918,7 +921,7 @@ sub chooseArgHandler {
 #  $whatsit->setArgs(LaTeXML::MathList->new(@top),LaTeXML::MathList->new(@bot));
   $whatsit->setProperty(top=>LaTeXML::MathList->new(@top));
   $whatsit->setProperty(bottom=>LaTeXML::MathList->new(@bot));
-  Assign('value',mathstyle=>$style);
+  AssignValue(mathstyle=>$style);
   $closing; }			# leave the closing bit
 
 # WHY did I change to top/bottom instead of #1,#2 ????
@@ -980,14 +983,13 @@ DefConstructor('\Huge',          '', beforeDigest=>sub{ MergeFont(size=>'Huge');
 DefConstructor('\cal', '', beforeDigest=>sub{ RequireMath; MergeFont(family=>'caligraphic'); });
 
 DefConstructor('\@end@emph','</emph>');
-DefConstructor('\em',"<emph>", afterDigest=>sub { $STOMACH->pushAfterGroup(T_CS('\@end@emph')); });
+DefConstructor('\em',"<emph>", 
+	       afterDigest=>sub { PushValue(afterGroup=>T_CS('\@end@emph')); });
 
 sub setMathBoldness {
   my($bold)=@_;
   ForbidMath;
-  Assign('value', mathfont=>Lookup('value','mathfont')->merge(forcebold=>$bold),
-		 'local');
-  return; }
+  AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>$bold), 'local'); }
 
 DefPrimitive('\boldmath',  sub { setMathBoldness(1); });
 DefPrimitive('\unboldmath',sub { setMathBoldness(0); });
@@ -1084,10 +1086,10 @@ DefConstructor('\frenchspacing', "");
 DefConstructor('\nonfrenchspacing',"");
 
 # Math style.
-DefConstructor('\displaystyle','',afterDigest=>sub { Assign('value',mathstyle=>'display'); return; });
-DefConstructor('\textstyle',   '',afterDigest=>sub { Assign('value',mathstyle=>'text'); return;});
-DefConstructor('\scriptstyle', '',afterDigest=>sub { Assign('value',mathstyle=>'script'); return;});
-DefConstructor('\scriptscriptstyle','',afterDigest=>sub { Assign('value',mathstyle=>'scriptscript'); return;});
+DefConstructor('\displaystyle','',afterDigest=>sub { AssignValue(mathstyle=>'display'); });
+DefConstructor('\textstyle',   '',afterDigest=>sub { AssignValue(mathstyle=>'text'); });
+DefConstructor('\scriptstyle', '',afterDigest=>sub { AssignValue(mathstyle=>'script'); });
+DefConstructor('\scriptscriptstyle','',afterDigest=>sub { AssignValue(mathstyle=>'scriptscript'); });
 
 #**********************************************************************
 # MATH representation
@@ -1279,7 +1281,7 @@ DefMath('\*',"\x{2062}", role=>'MULOP'); # INVISIBLE TIMES (or MULTIPLICATION SI
 #DefMath('\ldots',"\x{2026}", role=>'ID'); # HORIZONTAL ELLIPSIS
 # Ah, since \ldots can appear in text....
 DefConstructor('\ldots',"?IfMath(<XMTok name='ldots' font='#font' role='ID'>\x{2026}</XMTok>)(\x{2026})",
-	      properties=>{font=>sub{ Lookup('value','font')->merge(family=>'serif');}} ); # Since not DefMath!
+	      properties=>{font=>sub{ LookupValue('font')->merge(family=>'serif');}} ); # Since not DefMath!
 DefMath('\cdots',"\x{22EF}", role=>'ID'); # MIDLINE HORIZONTAL ELLIPSIS
 DefMath('\vdots',"\x{22EE}", role=>'ID'); # VERTICAL ELLIPSIS
 DefMath('\ddots',"\x{22F1}", role=>'ID'); # DOWN RIGHT DIAGONAL ELLIPSIS
@@ -1287,7 +1289,7 @@ DefMath('\colon',':');
 # Note that amsmath redefines \dots to be `smart'.
 # Aha, also can be in text...
 DefConstructor('\dots',"?IfMath(<XMTok name='dots' font='#font' role='ID'>\x{2026}</XMTok>)(\x{2026})",
-	      properties=>{font=>sub{ Lookup('value','font')->merge(family=>'serif');}} ); # Since not DefMath!
+	      properties=>{font=>sub{ LookupValue('font')->merge(family=>'serif');}} ); # Since not DefMath!
 # And while we're at it...
 
 # Pretest for XMath to keep from interpreting math that the DOM may not allow!!
@@ -1468,7 +1470,7 @@ DefMath('\spadesuit',"\x{2660}");	# BLACK SPADE SUIT
 # are currently in displaystyle!
 # IE. we need to evaluate the properties in the digestion context!!!!
 
-sub doStackscripts { (Lookup('value','mathstyle') eq 'display' ? 'yes' : undef); }
+sub doStackscripts { (LookupValue('mathstyle') eq 'display' ? 'yes' : undef); }
 
 DefMath('\sum',      "\x{2211}", role=>'SUMOP', stackscripts=>\&doStackscripts); # N-ARY SUMMATION
 DefMath('\prod',     "\x{220F}", role=>'SUMOP', stackscripts=>\&doStackscripts); # N-ARY PRODUCT
@@ -1666,12 +1668,13 @@ our %ignorable_classoptions
 DefConstructor('\documentclass[]{}',"<?latexml class='#2' ?#1(options='#1')?>",
   afterDigest=>sub {
     my($whatsit,$options,$class)=@_;
+    $class   = $class->toString;
     $options = $options->toString if defined $options;
     my @options = grep( !$ignorable_classoptions{$_},  split(/,\s*/, $options||''));
     Warn("Unrecognized options ".join(', ',map(Stringify($_),@options))." ignored") if @options;
-    $STOMACH->setInPreamble(1);	# \begin{document} will clear this.
-    $STOMACH->input('LaTeX');
-    $STOMACH->input($class); 
+    AssignValue(inPreamble=>1);	# \begin{document} will clear this.
+    $GULLET->input('LaTeX',['ltxml']);
+    $GULLET->input($class,['ltxml','cls']);
     return;});
 
 #**********************************************************************
@@ -1710,8 +1713,7 @@ DefMath('\@INVISIBLETIMES',"\x{2062}", untex=>'', name=>'', role=>'MULOP'); # IN
 DefConstructor('\@XMArg{}{}',"<XMArg ?#1(xml:id='#1')>#2</XMArg>", untex=>'#2',
 	       properties=>{id=>'#1'});
 DefConstructor('\@XMRef{}',"<XMRef idref='#1'/>",
-	       untex=>sub{ ($STOMACH ? $STOMACH->lookupID($_[0]->getArg(1)->toString)->untex
-			    : '\@XMRef{#1}'); });
+	       untex=>sub{ LookupValue('xref:'.$_[0]->getArg(1)->toString)->untex; });
 
 DefConstructor('\@ERROR{}{}', "<ERROR type='#1'>#2</ERROR>");
 
@@ -1720,11 +1722,11 @@ DefConstructor('\@ERROR{}{}', "<ERROR type='#1'>#2</ERROR>");
 DefConstructor('\@VALUE{}', sub {
   my($document,$key,$props)=@_;
   $key = $key->toString;
-  my $value = Lookup('value',$key);
+  my $value = LookupValue($key);
   if(!$value){
     Warn("Missing value for \"$key\"");
     $value = LaTeXML::Box->new("??",$$props{font},$$props{locator}); 
-    Assign('value',$key=>$value); } # Go ahead and set it to inhibit more messages.
+    AssignValue($key=>$value); } # Go ahead and set it to inhibit more messages.
   $document->absorb($value); });
 
 #**********************************************************************

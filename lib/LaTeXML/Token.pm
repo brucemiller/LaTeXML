@@ -166,6 +166,7 @@ sub stringify {
 # The following implements the Mouth API, so that a Token list can
 # act as a pre-tokenized source of tokens.
 
+sub finish {}
 sub hasMoreInput {
   my($self)=@_;
   scalar(@$self); }
@@ -294,18 +295,29 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Token, LaTeXML::Tokens, LaTeXML::Number, LaTeXML::Dimension, etc.
+=head1 NAME
 
-=head2 DESCRIPTION
+C<LaTeXML::Token>, C<LaTeXML::Tokens>, C<LaTeXML::Number>, C<LaTeXML::Dimension>, etc. -- representation
+of tokens and related objects.
+
+=head1 DESCRIPTION
 
 This module defines Tokens (C<LaTeXML::Token>, C<LaTeXML::Tokens>)
 and other things (C<LaTeXML::Number>, C<LaTeXML::Dimension>, C<LaTeXML::MuDimension>,
 C<LaTeXML::Glue> and  C<LaTeXML::MuGlue>)  that get created during tokenization 
 and  expansion.
-C<LaTeXML::Token> represents a TeX token. C<LaTeXML::Tokens> represents a sequence of tokens.
-Both packages extend L<LaTeXML::Object> and implement the methods for the overloaded operators.
 
-=head2 Methods common to all Token level objects.
+A C<LaTeXML::Token> represents a TeX token which is a pair of a character or string and
+a category code.  A C<LaTeXML::Tokens> is a list of tokens (and also implements the API
+of a L<LaTeXML::Mouth> so that tokens can be read from a list).
+
+The other classes (C<LaTeXML::Number>, C<LaTeXML::Dimension>, C<LaTeXML::MuDimension>,
+C<LaTeXML::Glue> and  C<LaTeXML::MuGlue>)  represent various core TeX data types that
+are parsed from tokens by the C<LaTeXML::Gullet>.
+
+=head2 Common methods
+
+The following methods apply to all objects.
 
 =over 4
 
@@ -323,7 +335,9 @@ Return the TeX form of C<$object>, suitable (hopefully) for processing by TeX.
 
 =back
 
-=head2 Methods specific to LaTeXML::Token
+=head2 Token methods
+
+The following methods are specific to C<LaTeXML::Token>.
 
 =over 4
 
@@ -356,7 +370,9 @@ on the arguments in C<@args>.  C<$token> must have a associated definition.
 
 =back
 
-=head2 Methods specific to LaTeXML::Tokens
+=head2 Tokens methods
+
+The following methods are specific to C<LaTeXML::Tokens>.
 
 =over 4
 
@@ -371,7 +387,11 @@ so that a C<LaTeXML::Tokens> can serve as a L<LaTeXML::Mouth>.
 
 =back
 
-=head2 Methods that apply to the numeric objects
+=head2 Numerics methods
+
+These methods apply to the various numeric objects
+(C<LaTeXML::Number>, C<LaTeXML::Dimension>, C<LaTeXML::MuDimension>,
+C<LaTeXML::Glue> and  C<LaTeXML::MuGlue>)
 
 =over 4
 
@@ -390,6 +410,17 @@ Return an object representing the sum of C<$object> and C<$other>
 =item C<< $n = $object->multiply($n); >>
 
 Return an object representing the product of C<$object> and C<$n> (a regular number).
+
+=back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
 
 =cut
 

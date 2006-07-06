@@ -65,7 +65,7 @@ DefExpandable('\end{}',  sub {
   my $t;
   if   (($t=T_CS("\\end{$name}"))->getDefinition){ $t; } # Magic CS!
   elsif(($t=T_CS("\\end$name"))->getDefinition)  { ($t, T_CS('\endgroup')); }
-  else { (); }});
+  else { ( T_CS('\endgroup')); }});
 
 #======================================================================
 # C.1.3 Fragile Commands
@@ -100,7 +100,7 @@ DefConstructor("\\\\ Flag:* []", "?IfMath(<XMHint name='\\'/>)(\n)", untex=>"\\\
 #   \end{document}
 
 DefEnvironment('{document}','<document>#body</document>',
-	       beforeDigest=> sub { $STOMACH->setInPreamble(0); },
+	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
 	       afterDigest=> sub { $GULLET->flush; return; });
 
 #**********************************************************************
@@ -128,9 +128,9 @@ DefConstructor('\LaTeX', 'LaTeX');
 our @MonthNames=(qw( January February March April May June
 		     July August September October November December));
 DefExpandable('\today',sub { 
-   Explode($MonthNames[Lookup('value','\month')->valueOf-1]
-	   ." ".Lookup('value','\day')->valueOf
-	   .', '.Lookup('value','\year')->valueOf); });
+   Explode($MonthNames[LookupValue('\month')->valueOf-1]
+	   ." ".LookupValue('\day')->valueOf
+	   .', '.LookupValue('\year')->valueOf); });
 
 DefConstructor('\emph{}', "<emph>#1</emph>", mode=>'text');
 Tag('text', autoClose=>1, autoOpen=>1); # ???
@@ -250,18 +250,16 @@ DefConstructor('\usepackage[]{}',"<?latexml package='#2' ?#1(options='#1')?>",
 	       afterDigest=>sub { my($whatsit,$options,$packages)=@_;
 				  my @pkgs = split(',',$packages->toString);
 				  $options = [($options ? split(',',($options->toString)) :())];
-				  map($STOMACH->input($_, options=>$options),@pkgs);
-				  return; });
+				  map(RequirePackage($_,options=>$options),@pkgs);
+				  return});
 DefConstructor('\RequirePackage[]{}',"<?latexml package='#2' ?#1(options='#1')?>",
 	       afterDigest=>sub { my($whatsit,$options,$package)=@_;
 				  $options = [($options ? split(',',($options->toString)) :())];
-				  $STOMACH->input(ToString($package), options=>$options);
-				  return; });
+				  RequirePackage(ToString($package), options=>$options); });
 DefConstructor('\LoadClass[]{}',"<?latexml class='#2' ?#1(options='#1')?>",
 	       afterDigest=>sub { my($whatsit,$options,$class)=@_;
 				  $options = [($options ? split(',',($options->toString)) :())];
-				  $STOMACH->input(ToString($class), options=>$options);
-				  return; });
+				  RequirePackage(ToString($class), options=>$options); });
 
 #======================================================================
 # C.5.3 Page Styles
@@ -446,7 +444,7 @@ DefConstructor('\)'   ,"", beforeDigest=> sub{ EndMode('inline_math'); });
 #DefConstructor('\ensuremath{}', '#1', mode=>'inline_math');
 DefExpandable('\ensuremath{}', sub {
   my($self,$stuff)=@_;
-  if($STOMACH->inMath){ @$stuff; }
+  if(LookupValue('IN_MATH')){ @$stuff; }
   else { (T_MATH,@$stuff,T_MATH); }});
 
 # NOTE: Implement these
@@ -473,7 +471,7 @@ DefEnvironment('{eqnarray}',
 		 $document->closeElement('equation'); },
 	       mode=>'display_math',
 	       properties=> {refnum=>sub { refStepCounter('equation'); }},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 DefEnvironment('{eqnarray*}',
 	       sub { 
 		 my($document)=@_;
@@ -485,7 +483,7 @@ DefEnvironment('{eqnarray*}',
 		 $document->closeElement('Math');
 		 $document->closeElement('equation'); },
 	       mode=>'display_math',
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 
 # Style Parameters
 #  \abovedisplayskip \abovedisplayshortskip are in Primitives.pm
@@ -505,11 +503,9 @@ DefRegister('\belowdisplayshortskip' => Glue(0));
 our %fracstylemap=(display=>'text', text=>'script',
 		   script=>'scriptscript', scriptscript=>'scriptscript');
 sub beforeFrac { BGroup; 
-		 Assign('value',mathstyle=>$fracstylemap{Lookup('value','mathstyle')}); 
-		 return; }
+		 AssignValue(mathstyle=>$fracstylemap{LookupValue('mathstyle')}); }
 sub afterFrac  { EGroup;
-		 $_[0]->setProperty('style',Lookup('value','mathstyle'));
-		 return; }
+		 $_[0]->setProperty('style',LookupValue('mathstyle')); }
 DefMath('\frac{}{}','/', name=>"/", operator_role=>'MULOP',
 	beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
 
@@ -594,29 +590,25 @@ DefConstructor('\mathscr{}', '#1',
 # C.8.1 Defining Commands
 #======================================================================
 
-DefPrimitive('\newcommand{Token}[][]{}', sub {
-  my($self,$cs,$nargs,$opt,$body)=@_;
+DefPrimitive('\newcommand Flag:* {Token}[][]{}', sub {
+  my($self,$star,$cs,$nargs,$opt,$body)=@_;
   Fatal(Stringify($cs)." is already defined") if $cs->getDefinition;
-  DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body);
-  return; });
+  DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body); });
 
-DefPrimitive('\renewcommand{Token}[][]{}', sub {
-  my($self,$cs,$nargs,$opt,$body)=@_;
-  DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body);
-  return; });
+DefPrimitive('\renewcommand Flag:* {Token}[][]{}', sub {
+  my($self,$star,$cs,$nargs,$opt,$body)=@_;
+  DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body); });
 
-DefPrimitive('\providecommand{Token}[][]{}', sub {
-  my($self,$cs,$nargs,$opt,$body)=@_;
+DefPrimitive('\providecommand Flag:* {Token}[][]{}', sub {
+  my($self,$star,$cs,$nargs,$opt,$body)=@_;
   return if $cs->getDefinition;
-  DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body);
-  return; });
+  DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body); });
 
 # Need to figure out exactly what `robust' means to LaTeXML...
-DefPrimitive('\DeclareRobustCommand{Token}[][]{}', sub {
-  my($self,$cs,$nargs,$opt,$body)=@_;
+DefPrimitive('\DeclareRobustCommand Flag:* {Token}[][]{}', sub {
+  my($self,$star,$cs,$nargs,$opt,$body)=@_;
   return if $cs->getDefinition;
-  DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body);
-  return; });
+  DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body); });
 
 #======================================================================
 # C.8.2 Defining Environments
@@ -624,20 +616,18 @@ DefPrimitive('\DeclareRobustCommand{Token}[][]{}', sub {
 # Note that \env & \endenv defined by \newenvironment CAN be 
 # invoked directly.
 
-DefPrimitive('\newenvironment{}[][]{}{}', sub {
-  my($self,$name,$nargs,$opt,$begin,$end)=@_;
+DefPrimitive('\newenvironment Flag:* {}[][]{}{}', sub {
+  my($self,$star,$name,$nargs,$opt,$begin,$end)=@_;
   $name = $name->toString;
   Fatal("Environment $name is already defined") if T_CS("\\$name")->getDefinition;
   DefMacro(join('','\\',$name, convertLaTeXArgs($nargs,$opt)),$begin);
-  DefMacro(join('','\\end',$name),$end);
-  return; });
+  DefMacro(join('','\\end',$name),$end); });
 
-DefPrimitive('\renewenvironment{}[][]{}{}', sub {
-  my($self,$name,$nargs,$opt,$begin,$end)=@_;
+DefPrimitive('\renewenvironment Flag:* {}[][]{}{}', sub {
+  my($self,$star,$name,$nargs,$opt,$begin,$end)=@_;
   $name = $name->toString;
   DefMacro(join('','\\',$name, convertLaTeXArgs($nargs,$opt)),$begin);
-  DefMacro(join('','\\end',$name),$end);
-  return; });
+  DefMacro(join('','\\end',$name),$end); });
 
 #======================================================================
 # C.8.3 Theorem-like Environments
@@ -653,23 +643,22 @@ DefPrimitive('\renewenvironment{}[][]{}{}', sub {
 sub NewCounter { 
   my($ctr,$within,@inner)=@_;
   DefRegister("\\c\@$ctr",Number(0));
-  Assign('value', "\\c\@$ctr"=>Number(0),'global');
-  Assign('value', "\\cl\@$ctr"=>Tokens(),'global');
-  Assign('value', 
-		 "\\cl\@$within" =>
-		 Tokens(T_CS($ctr),Lookup('value',"\\cl\@$within")->unlist),'global')
+  AssignValue("\\c\@$ctr"=>Number(0),'global');
+  AssignValue("\\cl\@$ctr"=>Tokens(),'global');
+  AssignValue("\\cl\@$within" =>
+	      Tokens(T_CS($ctr),LookupValue("\\cl\@$within")->unlist),'global')
     if $within;
-  Assign('value', 'nested_counters_'.$ctr =>[@inner]) if @inner;
+  AssignValue('nested_counters_'.$ctr =>[@inner]) if @inner;
   DefMacro("\\the$ctr","\\arabic{$ctr}");
   }
 
 sub stepCounter {
   my($ctr)=@_;
-  Assign('value',"\\c\@$ctr"=>Lookup('value',"\\c\@$ctr")->add(Number(1)),'global');
+  AssignValue("\\c\@$ctr"=>LookupValue("\\c\@$ctr")->add(Number(1)),'global');
   # and reset any within counters!
-  foreach my $c (Lookup('value',"\\cl\@$ctr")->unlist){
+  foreach my $c (LookupValue("\\cl\@$ctr")->unlist){
     resetCounter($c->toString); }
-}
+  return; }
 
 sub refStepCounter {
   my($ctr)=@_;
@@ -680,60 +669,59 @@ sub refStepCounter {
   # This may also include scopes activated for \label
   deactivateCounterScope($ctr);
   # And install the scope (if any) for this reference number.
-  Assign('value',current_counter=>$ctr,'local');
-  Assign('value','scopes_for_counter:'.$ctr => [$ctr.':'.ToString($v)],'local');
+  AssignValue(current_counter=>$ctr,'local');
+  AssignValue('scopes_for_counter:'.$ctr => [$ctr.':'.ToString($v)],'local');
   $STATE->activateScope($ctr.':'.ToString($v));
   $v; }
 
 sub deactivateCounterScope {
   my($ctr)=@_;
 #  print STDERR "Unusing scopes for $ctr\n";
- if(my $scopes = Lookup('value','scopes_for_counter:'.$ctr)){
+ if(my $scopes = LookupValue('scopes_for_counter:'.$ctr)){
     map($STATE->deactivateScope($_), @$scopes); }
-  foreach my $inner_ctr (@{Lookup('value','nested_counters_'.$ctr) || []}){
+  foreach my $inner_ctr (@{LookupValue('nested_counters_'.$ctr) || []}){
     deactivateCounterScope($inner_ctr); }}
 
 sub resetCounter {
   my($ctr)=@_;
-  Assign('value','\c@'.$ctr => Number(0),'global'); }
+  AssignValue('\c@'.$ctr => Number(0),'global'); }
 
 
-DefPrimitive('\newcounter{}[]',sub { shift; NewCounter(map($_ && $_->toString,@_)); return; });
+DefPrimitive('\newcounter{}[]',sub { shift; NewCounter(map($_ && $_->toString,@_)); });
 
 DefPrimitive('\setcounter{}{}',sub {
   my($self,$ctr,$value)=@_;
   $ctr=$ctr->toString;
   $GULLET->unread(@$value,T_CS('\relax')); # Put back, so we can read as <number>
-  Assign('value',"c\@$ctr",$GULLET->readNumber(),'global'); 
+  AssignValue("c\@$ctr",$GULLET->readNumber(),'global'); 
   return});
 
 DefPrimitive('\addtocounter{}{}',sub {
   my($self,$ctr,$value)=@_;
   $ctr=$ctr->toString;
   $GULLET->unread(@$value,T_CS('\relax')); # Put back, so we can read as <number>
-  Assign('value',"c\@$ctr",Lookup('value',"c\@$ctr")->add($GULLET->readNumber),'global');
-  return; });
+  AssignValue("c\@$ctr",LookupValue("c\@$ctr")->add($GULLET->readNumber),'global'); });
 
-DefPrimitive('\stepcounter{}',   sub { stepCounter($_[1]->toString); return; });
+DefPrimitive('\stepcounter{}',   sub { stepCounter($_[1]->toString); });
 DefPrimitive('\refstepcounter{}',sub { refStepCounter($_[1]->toString); return; });
 
 DefExpandable('\value{}', sub {
-  Explode(Lookup('value','\c@'.$_[1]->toString)->valueOf);});
+  Explode(LookupValue('\c@'.$_[1]->toString)->valueOf);});
 DefExpandable('\arabic{}',sub {
-  Explode(Lookup('value','\c@'.$_[1]->toString)->valueOf); });
+  Explode(LookupValue('\c@'.$_[1]->toString)->valueOf); });
 DefExpandable('\roman{}', sub {
-  roman(Lookup('value','\c@'.$_[1]->toString)->valueOf); });
+  roman(LookupValue('\c@'.$_[1]->toString)->valueOf); });
 DefExpandable('\Roman{}', sub {
-  Roman(Lookup('value','\c@'.$_[1]->toString)->valueOf); });
+  Roman(LookupValue('\c@'.$_[1]->toString)->valueOf); });
 DefExpandable('\alph{}',  sub {
-  T_OTHER(chr(Lookup('value','\c@'.$_[1]->toString)->valueOf+ord('a')-1));});
+  T_OTHER(chr(LookupValue('\c@'.$_[1]->toString)->valueOf+ord('a')-1));});
 DefExpandable('\Alph{}',  sub {
-  T_OTHER(chr(Lookup('value','\c@'.$_[1]->toString)->valueOf+ord('A')-1));});
+  T_OTHER(chr(LookupValue('\c@'.$_[1]->toString)->valueOf+ord('A')-1));});
 our @fnsymbols=(T_OTHER('*'), T_CS('\dag'), T_CS('\ddag'), T_CS('\S'), T_CS('\P'),
 		T_CS('\Vert'), T_OTHER('**'), Tokens(T_CS('\dag'),T_CS('\dag')),
 		Tokens(T_CS('\ddag'),T_CS('\ddag')));
 DefExpandable('\fnsymbol{}',sub { 
-  $fnsymbols[Lookup('value','\c@'.$_[1]->toString)->valueOf-1]->unlist;});
+  $fnsymbols[LookupValue('\c@'.$_[1]->toString)->valueOf-1]->unlist;});
 
 #======================================================================
 # C.8.5 The ifthen Package.
@@ -812,45 +800,33 @@ DefRegister('\marginparpush',Dimension(0));
 Tag('tr', autoOpen=>1, autoClose=>1);
 Tag('td', autoOpen=>1, autoClose=>1);
 
-# Note grouping nastiness!
-# Note: we allow a tabular to float up to where it is allowed!
+# These two can be used as the beforeDigest and afterDigest of tabular-like environments.
+# They setup the appropriate definitions and such for constructing tabulars, dealing with 
+# rows & columns.
+sub before_tabular {
+  # This handles & in tables.
+  # If there is an open td or multicolumn, close it,
+  # Otherwise, we need to open a td first, then close it!
+  # NOTE: It needs to be generalized for different sorts of arrays, etc.
+  DefConstructor('&',sub {   $_[0]->maybeCloseElement('td') || $_[0]->insertElement('td'); },
+		 beforeDigest=>\&EGroup, afterDigest=>\&BGroup );
+  DefConstructor("\\\\ Flag:* []", sub { $_[0]->maybeCloseElement('tr'); },
+		 untex=>"\\\\\n",
+		 beforeDigest=>\&EGroup, afterDigest=>\&BGroup );
+  BGroup; }
+
+sub after_tabular {
+  EGroup; }
+
+# Note: we allow a tabular to float up to where it is allowed (it's sometimes inside equation)
 DefEnvironment('{tabular}[]{}', "^<tabular pattern='#2'>#body</tabular>",
-  beforeDigest=> sub {
-      DefConstructor('&',sub { close_table_cell($_[0]); },
-		    beforeDigest=>\&EGroup, afterDigest=>\&BGroup );
-      DefConstructor("\\\\ Flag:* []", sub { $_[0]->maybeCloseElement('tr'); },
-		     untex=>"\\\\\n",
-		     beforeDigest=>\&EGroup, afterDigest=>\&BGroup );
-      BGroup; },
-  afterDigest=> \&EGroup,
+  beforeDigest=> \&before_tabular, afterDigest=> \&after_tabular,
   mode=>'text');
 
 # ignore width(#1), and pos(#2)
 DefEnvironment('{tabular*}{}[]{}', "^<tabular pattern='#2'>#body</tabular>",
-  beforeDigest=> sub {
-      DefConstructor('&',sub { close_table_cell($_[0]); },
-		    beforeDigest=>\&EGroup, afterDigest=>\&BGroup );
-      DefConstructor("\\\\ Flag:* []", sub { $_[0]->maybeCloseElement('tr'); },
-		     untex=>"\\\\\n",
-		     beforeDigest=>\&EGroup, afterDigest=>\&BGroup );
-      BGroup; },
-  afterDigest=> \&EGroup,
+  beforeDigest=> \&before_tabular, afterDigest=> \&after_tabular,
   mode=>'text');
-
-# This handles & in tables.
-# If there is an open td or multicolumn, close it,
-# Otherwise, we need to open a td first, then close it!
-# NOTE: It needs to be generalized for different sorts of arrays, etc.
-sub close_table_cell {
-  my($document)=@_;
-  my $n = $document->getNode;
-  while($n && $MODEL->canAutoClose($n->nodeName)){
-    if ($n->nodeName eq 'td'){
-      $document->closeElement('td');
-      return; }
-    $n=$n->parentNode; }
-  # Didn't find anything...
-  $document->insertElement('td'); }
 
 # Open, but don't close, so "&" can operate correctly.
 DefConstructor('\multicolumn{}{}{}',"<td colspan='#1' pattern='#2'>#3");
@@ -947,7 +923,9 @@ sub matharray_cr {
 }
 
 
-sub matharray_defs {
+# The next two can serve as the beforeDigest and afterDigest for array-like environments.
+# They set up things for constructing the array, rows and colums.
+sub before_matharray {
   DefConstructor('&', \&matharray_align,
 		 beforeDigest=>\&EGroup, afterDigest=>\&BGroup );
   DefConstructor("\\\\ Flag:* []", \&matharray_cr,
@@ -955,10 +933,12 @@ sub matharray_defs {
   # Hmm... So, if we've got \hlines, it's more like a table than a matrix,....
   DefConstructor('\hline',"<XMHint name='hline'/>");
   BGroup; }
-sub matharray_end {
+
+sub after_matharray {
   EGroup; }
+
 DefEnvironment('{array}[]{}',sub { matharray($_[0],$_[2],$_[3], 'Array','Row','Cell');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 
 #**********************************************************************
 # C.11 Moving Information Around
@@ -977,14 +957,12 @@ DefConstructor('\label{semiverb}',"^ label='#1'",  untex=>'',
 	       afterDigest=>sub {
 		 my $label = $_[1]->toString;
 		 my $scope = 'label:'.$label;
-		 unshift(@{Lookup('value','scopes_for_counter:'.Lookup('value','current_counter'))},
+		 unshift(@{LookupValue('scopes_for_counter:'.LookupValue('current_counter'))},
 		      $scope);
 		 $STATE->activateScope($scope);
 		 BeginMode('text');
-		 Assign('value','LABEL@'.$_[1]->toString, 
-				       $STOMACH->digest(T_CS('\@currentlabel')),'global');
-		 EndMode('text');  
-                 return;});
+		 AssignValue('LABEL@'.$_[1]->toString, Digest(T_CS('\@currentlabel')),'global');
+		 EndMode('text'); });
 
 DefMacro('\ref{semiverb}', '\@REF{#1}{\@VALUE{LABEL@#1}}');
 DefMacro('\pageref{semiverb}', '\@REF{#1}{\@VALUE{LABEL@#1}}'); # Any sense in distinguishing?
@@ -1035,7 +1013,7 @@ DefPrimitive('\input', sub {
     while(($token=$GULLET->readXToken()) && ($token->getCatcode != CC_SPACE)){
       push(@tokens,$token); }
     $file = Tokens(@tokens); }
-  $STOMACH->input($file);
+  $GULLET->input($file,['tex']);
   return; });
 
 # Note that even excluded files SHOULD have the effects of their inclusion
@@ -1044,15 +1022,15 @@ DefPrimitive('\input', sub {
 DefPrimitive('\include{}',sub { 
   my($self,$file)=@_;
   $file = $file->toString;
-  my $table = Lookup('value','including@only');
-  $STOMACH->input($file) if !$table || $$table{$file};
+  my $table = LookupValue('including@only');
+  $GULLET->input($file,['tex']) if !$table || $$table{$file};
   return;});
 
 DefPrimitive('\includeonly{}',sub {
   my($self,$files)=@_;
   $files = $files->toString;
-  my $table = Lookup('value','including@only');
-  Assign('value','including@only', $table = {}, 'global') unless $table;
+  my $table = LookupValue('including@only');
+  AssignValue('including@only', $table = {}, 'global') unless $table;
   map( $$table{$_}=1, split(',',$files));
   return; });
 
@@ -1211,23 +1189,149 @@ DefConstructor('\makebox[Dimension][]{}',"<text ?#1(width='#1') ?#2(pos='#2')>#3
 DefConstructor('\fbox{}',"<text framed='yes'>#1</text>", mode=>'text');
 DefConstructor('\framebox[Dimension][]{}',"<text ?#1(width='#1') ?#2(pos='#2') framed='yes'>#3</text>",
 	       mode=>'text');
-DefPrimitive('\newsavebox{Token}',sub { Assign('value','box'.$_[1]->toString, LaTeXML::List->new()); return;});
+DefPrimitive('\newsavebox{Token}',sub { AssignValue('box'.$_[1]->toString, LaTeXML::List->new()); });
 DefPrimitive('\sbox{Token}{}',sub {
-   Assign('value','box'.$_[1]->toString, $STOMACH->digest($_[2])); return;});
+   AssignValue('box'.$_[1]->toString, Digest($_[2])); return;});
 DefPrimitive('\savebox{Token}[][]{}',sub {
-   Assign('value','box'.$_[1]->toString, $STOMACH->digest($_[4])); return;});
+   AssignValue('box'.$_[1]->toString, Digest($_[4])); return;});
 DefEnvironment('{lrbox}{Token}','',
   afterDigest=>sub{ 
     my($whatsit,$name)=@_;
-    Assign('value','box'.$name->toString, $whatsit->getProperty('body'));
-    return; });
-DefPrimitive('\usebox{Token}', sub { Lookup('value','box'.$_[1]->toString);});
+    AssignValue('box'.$name->toString, $whatsit->getProperty('body')); });
+DefPrimitive('\usebox{Token}', sub { LookupValue('box'.$_[1]->toString);});
 
 DefConstructor('\parbox[][Dimension]{}',"<minipage ?#2(width='#2') ?#1(pos='#1') justified='yes'>#3</minipage>",
 	       mode=>'text');
 DefEnvironment('{minipage}[]{Dimension}',"<minipage ?#2(width='#2') ?#1(pos='#1') justified='yes'>#body</minipage>",
 	       mode=>'text');
 DefConstructor('\rule[]{}{}', "<rule ?#1(raise='#1') width='#2' height='#3'/>");
+
+#**********************************************************************
+# C.14 Pictures and Color
+#**********************************************************************
+#======================================================================
+# C.14.1 The picture environment
+#======================================================================
+DefRegister('\unitlength',Dimension('1pt'));
+
+sub readPicCoordinate {
+  if($GULLET->ifNext(T_OTHER('('))){
+    my $x = LookupValue('\unitlength')->multiply($GULLET->readUntil(T_OTHER(','))->toString);
+    my $y = LookupValue('\unitlength')->multiply($GULLET->readUntil(T_OTHER(')'))->toString);
+    ($x,$y); }
+  else {
+    (undef,undef); }}
+
+sub readPicCoordinate {
+  if($GULLET->ifNext(T_OTHER('('))){
+    $GULLET->skipSpaces;
+    my $x = $GULLET->readNumber;
+    $GULLET->skipSpaces;
+    $GULLET->readUntil(T_OTHER(','));
+    $GULLET->skipSpaces;
+    my $y = $GULLET->readNumber;
+    $GULLET->skipSpaces;
+    $GULLET->readUntil(T_OTHER(')'));
+
+    $x = LookupValue('\unitlength')->multiply($x->valueOf);
+    $y = LookupValue('\unitlength')->multiply($y->valueOf);
+    ($x,$y); }
+  else {
+    (undef,undef); }}
+
+sub read_pic_box_args {
+  (readPicCoordinate(),
+   Digest($GULLET->readOptional),
+   Digest($GULLET->readArg)); }
+
+sub read_pic_line_args {
+  (readPicCoordinate(),
+#   Digest($GULLET->readArg)
+   $GULLET->readNumber
+); }
+
+sub before_picture {
+  DefConstructor('\makebox',
+		 "<box width='#1' height='#2' position='#3'>#4</box>",
+		 beforeDigest=>\&BGroup, 
+		 nargs=>4, afterDigest=>sub { $_[0]->setArgs(read_pic_box_args()); EGroup; }); 
+  DefConstructor('\framebox',
+		 "<box frame='yes' width='#1' height='#2' position='#3'>#4</box>",
+		 beforeDigest=>\&BGroup,
+		 nargs=>4, afterDigest=>sub { $_[0]->setArgs(read_pic_box_args()); EGroup; }); 
+  DefConstructor('\dashbox',
+		 "<box dash-spacing='#1' width='#2' height='#3' position='#4'>#5</box>",
+		 beforeDigest=>\&BGroup,
+		 nargs=>5, afterDigest=>sub { $_[0]->setArgs(Digest($GULLET->readArg),
+							     read_pic_box_args()); EGroup; });
+  DefConstructor('\line',
+		 "<line x-slope='#1' y-slope='#2' length='#3'/>",
+		 nargs=>3, afterDigest=>sub { $_[0]->setArgs(read_pic_line_args()); });
+  DefConstructor('\vector',
+		 "<line x-slope='#1' y-slope='#2' length='#3' arrowhead='yes'/>",
+		 nargs=>3, afterDigest=>sub { $_[0]->setArgs(read_pic_line_args()); });
+  DefConstructor('\circle Flag:* {}', "<circle filled='#1' diameter='#2'/>");
+  DefConstructor('\oval',
+		 "<oval radius='#1' width='#2' height='#3' part='#4'/>",
+		 nargs=>4, afterDigest=>sub {
+		   $_[0]->setArgs(Digest($GULLET->readArg),
+				  read_pic_line_args(),
+				  Digest($GULLET->readOptional)); });
+  DefConstructor('\frame{}', "<frame>#1</frame>");
+  DefConstructor('\shortstack{}', "<box>#1</box>");
+}
+sub after_picture {}
+
+
+DefEnvironment('{picture}',
+	       "<picture width='#1' height='#2' xoff='#3' yoff='#4'>#body</picture>",
+	       nargs=>4,
+	       beforeDigest=>\&before_picture,
+	       afterDigestBegin=>sub {
+		 my($whatsit)=@_;
+		 $whatsit->setArgs(readPicCoordinate(),
+				   readPicCoordinate()); 
+		 return; },
+	       afterDigest=>\&after_picture);
+DefConstructor('\put',
+	       "<put x='#1' y='#2'>#3</put>",
+	       nargs=>3, beforeDigest=>\&BGroup,
+	       afterDigest=>sub { $_[0]->setArgs(readPicCoordinate(),
+						 Digest($GULLET->readArg)); EGroup; }); 
+
+Tag('put',afterClose=>sub {
+      my($node)=@_;
+      my($x,$y)=map($node->getAttribute($_),qw(x y));
+      my $parent=$node->parentNode;
+      foreach my $child ($node->childNodes){
+	$child->setAttribute(x=>$x);
+	$child->setAttribute(y=>$y);
+	$parent->insertBefore($child,$node); }
+      $parent->removeChild($node);
+});
+
+DefMacro('\multiput Literal:( Until:, Until:) Literal:( Until:, Until:) {}{}',
+	 sub{ my($ignore,$x,$y,$dx,$dy,$n,$body)=@_;
+	      ($x,$y,$dx,$dy,$n)=map($_->toString,$x,$y,$dx,$dy,$n);
+	      my @exp=();
+	      for(my $i=0; $i<$n; $i++){
+		push(@exp,T_CS('\put'),T_OTHER('('),Explode($x),T_OTHER(','),Explode($y),T_OTHER(')'),
+		     T_BEGIN,$body->unlist,T_END); 
+		$x += $dx; $y+=$dy; }
+	      @exp; });
+
+DefConstructor('\qbezier',
+	       "<qbezier spacing='#1' x0='#2' y0='#3' x1='#4' y1='#5' x2='#6' y2='#7'/>",
+	       nargs=>7,
+	       afterDigest=>sub { $_[0]->setArgs(Digest($GULLET->readOptional), 
+						 readPicCoordinate(),
+						 readPicCoordinate(),
+						 readPicCoordinate()); });
+
+# \savebox -- already defined differntly in C.13 above ? 
+DefPrimitive('\thinlines',undef);
+DefPrimitive('\thicklines',undef);
+DefPrimitive('\linethickness{}',undef);
 
 #**********************************************************************
 # C.15 Font Selection
@@ -1252,6 +1356,8 @@ DefConstructor('\slshape',  '', beforeDigest=>sub{ ForbidMath; MergeFont(shape=>
 DefConstructor('\scshape',  '', beforeDigest=>sub{ ForbidMath; MergeFont(shape=>'smallcaps');});
 
 DefConstructor('\normalfont', '', beforeDigest=>sub{ MergeFont(family=>'serif', series=>'medium', shape=>'upright');});
+
+DefConstructor('\verbatim@font', '', beforeDigest=>sub{ MergeFont(family=>'typewriter', series=>'medium', shape=>'upright');});
 
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
 DefConstructor('\textmd{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
@@ -1508,8 +1614,8 @@ DefMacro('\@ifnextchar Token {}{}', sub {
 
 #======================================================================
 # Hair
-DefPrimitive('\makeatletter',sub { Assign('catcode','@'=>CC_LETTER,'local'); return; });
-DefPrimitive('\makeatother', sub { Assign('catcode','@'=>CC_OTHER, 'local'); return; });
+DefPrimitive('\makeatletter',sub { AssignCatcode('@'=>CC_LETTER,'local'); });
+DefPrimitive('\makeatother', sub { AssignCatcode('@'=>CC_OTHER, 'local'); });
 
 #**********************************************************************
 #**********************************************************************

@@ -21,8 +21,8 @@ use LaTeXML::Object;
 our @ISA = qw(LaTeXML::Object);
 
 sub new {
-  my($class,$string, %options)=@_;
-  my $self = {string=>$string,source=>"Anonmymous String", includeComments=>0, %options};
+  my($class,$string)=@_;
+  my $self = {string=>$string,source=>"Anonmymous String"};
   $$self{buffer}=[split("\n",$string)];
   bless $self,$class;
   $self->initialize;
@@ -32,7 +32,15 @@ sub initialize {
   my($self)=@_;
   $$self{lineno}=0;
   $$self{colno}=0;
-  $$self{coloffset}=0;
+  $$self{chars}=[];
+  $$self{nchars}=0;
+}
+
+sub finish {
+  my($self)=@_;
+  $$self{buffer}=[];
+  $$self{lineno}=0;
+  $$self{colno}=0;
   $$self{chars}=[];
   $$self{nchars}=0;
 }
@@ -55,14 +63,14 @@ sub getNextChar {
   my($self)=@_;
   if($$self{colno} < $$self{nchars}){
     my $ch = $$self{chars}->[$$self{colno}++];
-    my $cc = $STATE->lookup('catcode',$ch);
+    my $cc = $STATE->lookupCatcode($ch);
     if((defined $cc) && ($cc == CC_SUPER)	# Possible convert ^^x
        && ($$self{colno}+1 < $$self{nchars}) && ($ch eq $$self{chars}->[$$self{colno}])){
       my $c=ord($$self{chars}->[$$self{colno}+1]);
       $ch = chr($c + ($c > 64 ? -64 : 64));
       splice(@{$$self{chars}},$$self{colno}-1,3,$ch);
       $$self{nchars} -= 2;
-       $cc = $STATE->lookup('catcode',$ch); }
+       $cc = $STATE->lookupCatcode($ch); }
     $cc=CC_OTHER unless defined $cc;
     ($ch,$cc); }
   else {
@@ -75,13 +83,14 @@ sub stringify {
 #**********************************************************************
 sub getLocator {
   my($self,$long)=@_;
-  my($l,$c)=($$self{lineno},($$self{colno}+$$self{coloffset}));
+  my($l,$c)=($$self{lineno},$$self{colno});
   my $msg =  "at $$self{source}; line $l col $c";
   if($long && (defined $l || defined $c)){
     my $chars=$$self{chars};
-    my $n = scalar(@$chars);
-    my $p1 = join('',@$chars[0..$c-1]); chomp($p1);
-    my $p2 = join('',@$chars[$c..$n-1]); chomp($p2);
+    my $n = $$self{nchars}; 
+    $c=$n-1 if $c >=$n;
+    my $p1 = join('',@$chars[0..$c-1])||''; chomp($p1);
+    my $p2 = join('',@$chars[$c..$n-1])||''; chomp($p2);
     $msg .="\n  ".$p1."\n  ".(' ' x $c).'^'.' '.$p2; }
   $msg; }
 
@@ -110,7 +119,7 @@ sub handle_escape {		# Read control sequence
 sub handle_EOL {
   my($self)=@_;
   ($$self{colno}==1 ? T_CS('\par') 
-   : ($STATE->lookup('value','preserveNewLines') ? Token("\n",CC_SPACE) : T_SPACE)); 
+   : ($STATE->lookupValue('PRESERVE_NEWLINES') ? Token("\n",CC_SPACE) : T_SPACE)); 
 }
 
 sub handle_comment {
@@ -119,7 +128,7 @@ sub handle_comment {
   $$self{colno} = $$self{nchars};
   my $comment = join('',@{$$self{chars}}[$n..$$self{nchars}-1]);
   $comment =~ s/^\s+//; $comment =~ s/\s+$//;
-  ($$self{includeComments} && $comment ? T_COMMENT($comment) : $self->readToken); }
+  ($comment && $STATE->lookupValue('INCLUDE_COMMENTS') ? T_COMMENT($comment) : $self->readToken); }
 
 # Some caches
 my %LETTER =();
@@ -160,16 +169,18 @@ sub readToken {
       $$self{chars}=[];
       $$self{nchars}=0;
       return undef;  }
-    $line =~ s/^(\s+)//; $$self{coloffset}=($1 ? length($1) :0);
     $line =~ s/\s*$/\n/s;
     $$self{chars}=[split('',$line)];
     $$self{nchars} = scalar(@{$$self{chars}});
+    while(($$self{colno} < $$self{nchars})
+	  && (($STATE->lookupCatcode($$self{chars}->[$$self{colno}])||CC_OTHER)==CC_SPACE)){
+      $$self{colno}++; }
+
     # Sneak a comment out, every so often.
     if(!($$self{lineno} % 25)){
       NoteProgress("[#$$self{lineno}]");
       return T_COMMENT("**** $$self{source} Line $$self{lineno} ****")
-	if $$self{includeComments};
-    }
+	if $STATE->lookupValue('INCLUDE_COMMENTS'); }
   }
   # ==== Extract next token from line.
   my($ch,$cc)=$self->getNextChar;
@@ -186,9 +197,9 @@ sub readLine {
     $line; }
   else {
     my $line = $self->getNextLine; 
-    $line =~ s/\s*$/\n/s;	# Is this right? 
-    $$self{lineno}++; #$$self{colno}=length($line)+1;
-    $$self{chars}=[]; $$self{nchars}=0; $$self{colno}=0;
+    $line =~ s/\s*$/\n/s if defined $line;	# Is this right? 
+    $$self{lineno}++;
+    $$self{chars}=[]; $$self{nchars}=0;  $$self{colno}=0;
     $line; }}
 
 #**********************************************************************
@@ -215,14 +226,21 @@ use LaTeXML::Global;
 our @ISA = qw(LaTeXML::Mouth);
 
 sub new {
-  my($class,$pathname, %options)=@_;
+  my($class,$pathname)=@_;
   local *IN;
   open(IN,$pathname) || Fatal("Can't read from $pathname");
-  my $self = {pathname=>$pathname, source=>$pathname,
-	      IN => *IN, includeComments=>1, %options};
+  my $self = {pathname=>$pathname, source=>$pathname, IN => *IN};
   bless $self,$class;
   $self->initialize;
+  NoteProgress("\n(Processing $pathname");
   $self;  }
+
+sub finish {
+  my($self)=@_;
+  $self->SUPER::finish;
+  if($$self{IN}){
+    close( \*{$$self{IN}}); $$self{IN}=undef; }
+  NoteProgress(")");}
 
 sub hasMoreInput {
   my($self)=@_;
@@ -234,15 +252,68 @@ sub getNextLine {
   my $fh = \*{$$self{IN}};
   my $line = <$fh>;
   if(! defined $line){
-    close($fh); $$self{IN}=undef;
-    $line = $$self{after}; $$self{after}=undef; }
-#  close(IN) unless defined $l;
-#  $l || "\\endinput"; }
+    close($fh); $$self{IN}=undef; }
   $line; }
 
 sub stringify {
   my($self)=@_;
   "FileMouth[$$self{pathname}\@$$self{lineno}x$$self{colno}]"; }
+
+#**********************************************************************
+# LaTeXML::StyleMouth
+#    Read TeX Tokens from a style file.
+#**********************************************************************
+
+package LaTeXML::StyleMouth;
+use strict;
+use LaTeXML::Global;
+our @ISA = qw(LaTeXML::FileMouth);
+
+sub new {
+  my($class,$pathname)=@_;
+  local *IN;
+  open(IN,$pathname) || Fatal("Can't read from $pathname");
+  my $self = {pathname=>$pathname, source=>$pathname, IN => *IN};
+  bless $self,$class;
+  $self->initialize;
+  NoteProgress("\n(Style $pathname");
+  $$self{saved_at_cc} = $STATE->lookupCatcode('@');
+  $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
+  $STATE->assignCatcode('@'=>CC_LETTER);
+  $STATE->assignValue(INCLUDE_COMMENTS=>0);
+  $self;  }
+
+sub finish {
+  my($self)=@_;
+  $STATE->assignCatcode('@'=> $$self{saved_at_cc});
+  $STATE->assignValue(INCLUDE_COMMENTS=>$$self{SAVED_INCLUDE_COMMENTS});
+  $self->SUPER::finish; }
+
+#**********************************************************************
+# A fake mouth provides a hook for getting the Locator of anything
+# defined in a perl module (*.pm, *.ltxml, *.latexml...)
+package LaTeXML::PerlMouth;
+use strict;
+use LaTeXML::Global;
+
+sub new {
+  my($class,$file)=@_;
+  my $self = bless {file=>$file},$class;
+  NoteProgress("\n(Loading $file");
+  $self; }
+
+sub finish {
+  NoteProgress(")"); }
+
+# Evolve to figure out if this gets dynamic location!
+sub getLocator {
+  my($self)=@_;
+  my $file = $$self{file};
+  my $line = LaTeXML::Error::line_in_file($file);
+  $file.($line ? " line $line":''); }
+
+sub hasMoreInput { 0; }
+sub readToken { undef; }
 
 #**********************************************************************
 1;
@@ -252,32 +323,76 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Mouth and LaTeXML::FileMouth
+=head1 NAME
 
-=head2 DESCRIPTION
+C<LaTeXML::Mouth>, C<LaTeXML::FileMouth> and C<LaTeXML::StyleMouth> -- tokenize
+the input.
 
-C<LaTeXML::Mouth> tokenizes a string according to the catcodes in the C<LaTeXML::State>.
+=head1 DESCRIPTION
+
+A C<LaTeXML::Mouth> (and subclasses) is responsible for I<tokenizing>, ie.
+converting plain text and strings into L<LaTeXML::Token>s according to the
+current category codes (catcodes) stored in the C<LaTeXML::State>.
 C<LaTeXML::FileMouth> specializes C<LaTeXML::Mouth> to tokenize from a file.
+C<LaTeXML::StyleMouth> further specializes C<LaTeXML::FileMouth> for processing
+style files, setting the catcode for C<@> and ignoring comments.
 
-=head2 Methods of LaTeXML::Mouth
+C<LaTeXML::PerlMouth> is not really a Mouth in the above sense, but is used
+to definitions from perl modules with exensions C<.ltxml> and C<.latexml>.
+
+=head2 Creating Mouths
 
 =over 4
 
-=item C<< $mouth = LaTeXML::Mouth->new($string,%options); >>
+=item C<< $mouth = LaTeXML::Mouth->new($string); >>
 
 Creates a new Mouth reading from C<$string>.
 
-=item C<< $mouth = LaTeXML::FileMouth->new($pathname,$state,%options); >>
+=item C<< $mouth = LaTeXML::FileMouth->new($pathname); >>
 
 Creates a new FileMouth to read from the given file.
 
-=item C<< $token = $tokens->readToken; >>
+=item C<< $mouth = LaTeXML::StyleMouth->new($pathname); >>
 
-Returns the next L<LaTeXML::Token> from the source.
-
-=item C<< $string = $tokens->getLocator($long); >>
-
-Return a description of current position in the source, for reporting errors.
+Creates a new StyleMouth to read from the given style file.
 
 =back
 
+=head2 Methods
+
+=over 4
+
+=item C<< $token = $mouth->readToken; >>
+
+Returns the next L<LaTeXML::Token> from the source.
+
+=item C<< $boole = $mouth->hasMoreInput; >>
+
+Returns whether there is more data to read.
+
+=item C<< $string = $mouth->getLocator($long); >>
+
+Return a description of current position in the source, for reporting errors.
+
+=item C<< $string = $mouth->readLine; >>
+
+Reads the next line of input, without tokenizing.  This is useful for
+verbatim or comment environments.
+
+=item C<< $tokens = $mouth->readTokens($until); >>
+
+Reads tokens until one matches $until (comparing the character, but not catcode).
+This is useful for the C<\verb> command.
+
+=back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut

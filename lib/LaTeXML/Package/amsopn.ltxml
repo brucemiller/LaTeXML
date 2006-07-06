@@ -32,9 +32,12 @@ DefMath('\varliminf', '\underline{\lim}',      role=>'LIMITOP');
 DefMath('\varinjlim', '\uderrightarrow{\lim}', role=>'LIMITOP');
 DefMath('\varprojlim','\underleftarrow{\lim}', role=>'LIMITOP');
 
-DefPrimitive('\operatorname Flag:* {}',sub{
-  my($ignore,$star,$name)=@_;
-  DefMath(T_CS("\\".$name->toString),$name,stackscripts=>$star); }); # Hmm, is this right?
+#DefPrimitive('\operatorname Flag:* {}',sub{
+#  my($ignore,$star,$name)=@_;
+#  DefMath(T_CS("\\".$name->toString),$name,stackscripts=>$star); }); # Hmm, is this right?
+
+# Hmm... OPERATOR or LIMITOP ??
+DefConstructor('\operatorname Flag:* {}',"<XMWrap role='OPERATOR' stackscripts='#1'>#2</XMWrap>");
 
 #**********************************************************************
 1;

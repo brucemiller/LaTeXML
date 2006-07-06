@@ -44,16 +44,10 @@ sub new {
   }
   if($options{catcodes} eq 'style'){
     $$self{table}{'catcode:@'} = [CC_LETTER]; }
-#  $$self{table}{'internal:active_stashes'} = [{}];
   $self; }
 
-sub lookup {
-  my($self,$type,$name)=@_;
-  $$self{table}{$type.':'.$name}[0]; }
-
-sub assign {
-  my($self,$type,$name,$value,$scope)=@_;
-  my $key = $type.':'.$name; 
+sub assign_internal {
+  my($self,$key,$value,$scope)=@_;
   $scope = ($$self{prefixes}{global} ? 'global' : 'local') unless defined $scope;
   if($scope eq 'global'){
     foreach my $undo (@{$$self{undo}}){ # These no longer should get undone.
@@ -65,16 +59,34 @@ sub assign {
   else {
     my $stash = 'stash:'.$scope;
     # print STDERR "Assigning $key in stash $stash\n";
-    assign($self,'stash',$scope,[],'global') unless $$self{table}{$stash}[0];
+    assign_internal($self,$stash,[],'global') unless $$self{table}{$stash}[0];
     push(@{ $$self{table}{$stash}[0] }, [$key,$value]); 
-    assign($self,$type,$name,$value,'local') 
-      if $$self{table}{'internal:stash_active_'.$scope}[0];
-#      if $$self{table}{'internal:active_stashes'}[0]{$scope};
+    assign_internal($self,$key,$value,'local') 
+      if $$self{table}{'stash_active_'.$scope}[0];
   }}
 
-sub push {
-  my($self,$type,$name,@values)=@_;
-  unshift(@{$$self{table}{$type.':'.$name}[0]},@values); }
+#======================================================================
+
+# Lookup & assign a general Value
+sub lookupValue { $_[0]->{table}{'value:'.$_[1]}[0]; }
+sub assignValue { assign_internal($_[0],'value:'.$_[1], $_[2],$_[3]); }
+
+sub pushValue {
+  my($self,$name,$value)=@_;
+  unshift(@{$$self{table}{'value:'.$name}[0]},$value); }
+
+#======================================================================
+# Was $name bound?  If  $frame is given, check only whether it is bound in 
+# that frame (0 is the topmost).
+sub isValueBound {
+  my($self,$name,$frame)=@_;
+  my $key = 'value:'.$name;
+  (defined $frame ? $$self{undo}[$frame]{$key} : defined $$self{table}{$key}[0]); }
+
+#======================================================================
+# Lookup & assign a character's Catcode
+sub lookupCatcode { $_[0]->{table}{'catcode:'.$_[1]}[0]; }
+sub assignCatcode { assign_internal($_[0],'catcode:'.$_[1], $_[2],$_[3]); }
 
 #======================================================================
 # Specialized versions of lookup & assign for dealing with definitions
@@ -90,25 +102,19 @@ sub lookupMeaning {
   my $cs = $$token[0];
   my $cc = $$token[1];
   if($executable_cc[$cc]
-     || ($self->lookup('internal','math_mode') &&  $self->lookup('mathactive',$cs))){
-    $self->lookup('binding',$token->getCSName) }
+     || ($$self{table}{'value:IN_MATH'}[0] && $$self{table}{'catcode:math:'.$cs}[0])){
+    $$self{table}{'meaning:'.$token->getCSName}[0]; }
   else {
     $token; }}
 
 sub assignMeaning {
   my($self,$token,$definition,$scope)=@_;
-  $self->assign('binding', $token->getCSName => $definition, $scope); }
+  assign_internal($self,'meaning:'.$token->getCSName => $definition, $scope); }
 
 # And a shorthand for installing definitions
 sub installDefinition {
   my($self,$definition,$scope)=@_;
-  $self->assign('binding',$definition->getCS->getCSName => $definition, $scope); }
-
-#======================================================================
-# Was $key bound in the $frame-th frame from the top? (default: top frame)
-sub boundInFrame {
-  my($self,$type,$name,$frame)=@_;
-  $$self{undo}[$frame || 0]{$type.':'.$name}; }
+  assign_internal($self,'meaning:'.$definition->getCS->getCSName => $definition, $scope); }
 
 #======================================================================
 sub pushFrame {
@@ -132,9 +138,8 @@ sub clearPrefixes { $_[0]->{prefixes} = {}; }
 
 sub activateScope {
   my($self,$scope)=@_;
-#  if(! $$self{table}{'internal:active_stashes'}[0]{$scope}){
-  if(! $$self{table}{'internal:stash_active_'.$scope}[0]){
-    $self->assign('internal','stash_active_'.$scope, 1, 'local');
+  if(! $$self{table}{'stash_active_'.$scope}[0]){
+    assign_internal($self,'stash_active_'.$scope, 1, 'local');
     if(defined (my $defns = $$self{table}{'stash:'.$scope}[0])){
       foreach my $entry (@$defns){
 	my($key,$value)=@$entry;
@@ -143,11 +148,8 @@ sub activateScope {
 
 sub deactivateScope {
   my($self,$scope)=@_;
-#  if( $$self{table}{'internal:active_stashes'}[0]{$scope}){
-  if( $$self{table}{'internal:stash_active_'.$scope}[0]){
-    $self->assign('internal','stash_active_'.$scope, 0, 'global');
-  #   print STDERR "DEActivating stash $key: ".join(', ',map($_->[0]."=>".$_->[1], @{$$self{table}{$key}[0] || []}))."\n";
-#    delete $$self{table}{'internal:active_stashes'}[0]{$scope};
+  if( $$self{table}{'stash_active_'.$scope}[0]){
+    assign_internal($self,'stash_active_'.$scope, 0, 'global');
     if(defined (my $defns = $$self{table}{'stash:'.$scope}[0])){
       foreach my $entry (@$defns){
 	my($key,$value)=@$entry;
@@ -187,14 +189,113 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::State
+=head1 NAME
 
-=head2 DESCRIPTION
+C<LaTeXML::State> - stores the current state of processing.
 
-C<LaTeXML::State> stores the current state of processing during expansion and
-digestion.
+=head1 DESCRIPTION
 
-=head2 Methods
+A C<LaTeXML::State> object stores the current state of processing.
+It recording catcodes, variables values, definitions and so forth,
+as well as mimicing TeX's scoping rules.
+
+=head2 Scoping
+
+The assignment methods, described below, generally take a C<$scope> argument, which
+determines how the assignment is made.  The allowed values and thier implications are:
+
+   global   : global assignment.
+   local    : local assignment, within the current grouping.
+   undef    : (or if omitted) global if \global preceded, else local
+   <name>   : stores the assignment in a `scope' which
+               can be loaded later.
+
+If no scoping is specified, then the assignment will be global
+if a preceding C<\global> has set the global flag, otherwise
+the value will be assigned within the current grouping.
+
+=item Low Level
+
+=over 4
+
+=item C<< $STATE->pushFrame; >>
+
+Starts a new level of grouping.
+Note that this is lower level than C<\bgroup>; See L<LaTeXML::Stomach>.
+
+=item C<< $STATE->popFrame; >>
+
+Ends the current level of grouping.
+Note that this is lower level than C<\egroup>; See L<LaTeXML::Stomach>.
+
+=item C<< $STATE->setPrefix($prefix); >>
+
+Sets a prefix (eg. C<global> for C<\global>, etc) for the next operation, if applicable.
+
+=item C<< $STATE->clearPrefixes; >>
+
+Clears any prefixes.
+
+=back
+
+=head2 Values
+
+=over 4
+
+=item C<< $value = $STATE->lookupValue($name); >>
+
+Lookup the current value associated with the the string C<$name>.
+
+=item C<< $STATE->assignValue($name,$value,$scope); >>
+
+Assign $value to be associated with the the string C<$name>, according
+to the given scoping rule.
+
+Values are also used to specify most configuration parameters (which can
+therefor also be scoped).  The recognized configuration parameters are:
+
+  VERBOSITY         : the level of verbosity for debugging output, with 0 being default.
+  STRICT            : whether errors (such as undefined macros) are fatal.
+  INCLUDE_COMMENTS  : whether to preserve comments in the source, and to add
+                      occasional line-number comments.  Default does include them.
+  PRESERVE_NEWLINES : whether newlines in the source should be preserved (not 100% TeX-like).
+                      By default this is true.
+  SEARCHPATHS       : a list of directories to search for sources, implementations, dtds, and such.
+
+=item C<< $STATE->pushValue($name,$value); >>
+
+This is like C<< ->assign >>, but pushes a value onto the end of the stored value,
+which should be a LIST reference.
+Scoping is not handled here (yet?), it simply pushes the value
+onto the last binding of C<$name>.
+
+=item C<< $boole = $STATE->isValuebound($type,$name,$frame); >>
+
+Returns whether the value C<$name> is bound. If  C<$frame> is given, check
+whether it is bound in the C<$frame>-th frame, with 0 being the top frame.
+
+=back
+
+=head2 Category Codes
+
+=over 4
+
+=item C<< $value = $STATE->lookupCatcode($char); >>
+
+Lookup the current catcode associated with the the character C<$char>.
+
+=item C<< $STATE->assignCatcode($char,$catcode,$scope); >>
+
+Set C<$char> to have the given C<$catcode>, with the assignment made
+according to the given scoping rule.
+
+This method is also used to specify whether a given character is
+active in math mode, by using C<math:$char> for the character,
+and using a value of 1 to specify that it is active.
+
+=back
+
+=head2 Definitions
 
 =over 4
 
@@ -216,7 +317,45 @@ rather than bound within the current group.
 
 Install the definition into the current stack frame under its normal control sequence.
 
+=back
+
+=head2 Named Scopes
+
+Named scopes can be used to set variables or redefine control sequences within
+a scope other than the standard TeX grouping. For example, the LaTeX implementation
+will automatically activate any definitions that were defined with a named
+scope of, say "section:4", during the portion of the document that has
+the section counter equal to 4.  Similarly, a scope named "label:foo" will
+be activated in portions of the document where C<\label{foo}> is in effect.
+
+=over 4
+
+=item C<< $STATE->activateScope($scope); >>
+
+Installs any definitions that were associated with the named C<$scope>.
+Note that these are placed in the current grouping frame and will disappear when that
+grouping ends.
+
+=item C<< $STATE->deactivateScope($scope); >>
+
+Removes any definitions that were associated with the named C<$scope>.
+Normally not needed, since a scopes definitions are locally bound anyway.
+
+=item C<< $sp = $STATE->convertUnit($unit); >>
+
+Converts a TeX unit of the form C<'10em'> (or whatever TeX unit) into
+scaled points.  (Defined here since in principle it could track the
+size of ems and so forth (but currently doesn't))
 
 =back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
 
 =cut

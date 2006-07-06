@@ -3,16 +3,7 @@
 # Collected separately so I can override for LaTeXML
 #======================================================================
 use LaTeXML::Package;
-# From latexml.sty
-DefConstructor('\URL[]{}',"<a href='#2'>?#1(#1)(#2)</a>");
-DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3c.org/XML/}');
-DefMacro('\HTML',    '\URL[\texttt{HTML}]{http://www.w3c.org/HTML/}');
-DefMacro('\XHTML',   '\URL[\texttt{XHTML}]{http://www.w3c.org/XHTML/}');
-DefMacro('\MathML',  '\URL[\texttt{MathML}]{http://www.w3c.org/Math/}');
-DefMacro('\OpenMath','\URL[\texttt{OpenMath}]{http://www.openmath.org/}');
-DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
-
-
+RequirePackage('latexml');
 RequirePackage('graphicx');
 
 # Various other typographic bits

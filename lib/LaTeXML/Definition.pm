@@ -56,7 +56,6 @@ sub invocation {
   my($self,@args)=@_;
   Tokens($$self{cs},$$self{parameters}->invocationArguments(@args)); }
 
-
 #**********************************************************************
 # Expandable control sequences (& Macros);  Expanded in the Gullet.
 #**********************************************************************
@@ -219,20 +218,20 @@ sub new {
   my($class,$cs,$parameters,$replacement,%traits)=@_;
   Fatal("Defining Constructor ".Stringify($cs)." but replacement is not a string or CODE: $replacement")
     unless (defined $replacement) && (!(ref $replacement) || (ref $replacement eq 'CODE'));
-#  if(!ref $replacement){
-#    $replacement = LaTeXML::ConstructorCompiler::compileConstructor($replacement,$cs
-#								    ($parameters ? $parameters->getNArgs:0));}
   bless {cs=>$cs, parameters=>$parameters, replacement=>$replacement,
-	 locator=>"defined ".$GULLET->getLocator, %traits}, $class; }
+	 locator=>"defined ".$GULLET->getLocator, %traits,
+	 nargs =>(defined $traits{nargs} ? $traits{nargs}
+		  : ($parameters ? scalar(grep(! $_->getNoValue, $parameters->getParameters))
+		     : 0))}, $class; }
 
-#sub getConstructor { $_[0]->{replacement}; }
 sub getConstructor {
   my($self)=@_;
   my $replacement = $$self{replacement};
   if(!ref $replacement){
     $$self{replacement} = $replacement 
       = LaTeXML::ConstructorCompiler::compileConstructor($replacement,$self->getCS,
-							 ($$self{parameters} ? $$self{parameters}->getNArgs:0));}
+#							 ($$self{parameters} ? $$self{parameters}->getNArgs:0));}
+							 $$self{nargs});}
   $replacement; }
 
 sub getUntexSpec { $_[0]->{untex}; }
@@ -248,6 +247,7 @@ sub invoke {
   my @args = $self->readArguments;
   if(my $params = $$self{parameters}){
     @args = $params->digestArguments(@args); }
+  @args = @args[0..$$self{nargs}-1];
   my %props = %{$$self{properties} || {} };
   foreach my $key (keys %props){
     my $value = $props{$key};
@@ -258,7 +258,7 @@ sub invoke {
   my $whatsit = LaTeXML::Whatsit->new($self,[@args],%props);
   my @post = $self->executeAfterDigest($whatsit,@args);
   if(my $id = $props{id}){
-    $STOMACH->recordID($id,$whatsit); }
+    $STATE->assignValue('xref:'.$id=>$whatsit,'global'); }
   if($$self{captureBody}){
     $whatsit->setBody(@post,$STOMACH->digestNextBody); @post=(); }
   (@pre,$whatsit,@post); }
@@ -359,12 +359,14 @@ sub parse_conditional {
 # Future enhancements? array ref, &foo(xxx) for function calls, ...
 sub translate_value {
   my $value;
-  if   (s/^\#(\d+)//     ){ 
+  if   (s/^\#(\d+)//     ){
     my $n = $1;
-    Fatal("Illegal argument number $n in constructor for "
-	  ."$LaTeXML::ConstructorCompiler::NAME which takes $LaTeXML::ConstructorCompiler::NARGS args")
-      if(($n < 1) || ($n > $LaTeXML::ConstructorCompiler::NARGS));
-    $value = "\$arg$n" }
+    if(($n < 1) || ($n > $LaTeXML::ConstructorCompiler::NARGS)){
+      Error("Illegal argument number $n in constructor for "
+	    ."$LaTeXML::ConstructorCompiler::NAME which takes $LaTeXML::ConstructorCompiler::NARGS args");
+      $value = "\"Missing\""; }
+    else {
+      $value = "\$arg$n" }}
   elsif(s/^\#([\w\-_]+)//){ $value = "\$\$prop{'$1'}"; }
   elsif(s/$TEXT_RE//so    ){ $value = "'".slashify($1)."'"; }
   # &foo(...) ? Function (but not &foo; !!!)
@@ -415,6 +417,13 @@ sub translate_avpairs {
       { local $_=$else; $code .= translate_avpairs() if $else; }
       $code .= "))";
       push(@avs,$code); }
+    elsif(s/^\#(\d+)//){ 	# Stand alone value better be a KeyVal
+      my $n = $1;
+      if(($n < 1) || ($n > $LaTeXML::ConstructorCompiler::NARGS)){
+	Error("Illegal argument number $n in constructor for "
+	      ."$LaTeXML::ConstructorCompiler::NAME which takes $LaTeXML::ConstructorCompiler::NARGS args");}
+      else {
+	push(@avs,"LaTeXML::ConstructorCompiler::keyvalAttributes(\$arg$n)"); }}
     elsif(s|^$QNAME_RE\s*=\s*||o){
       my ($key,$value) = ($1,translate_string());
       push(@avs,"'$key'=>$value"); } # if defined $value; }
@@ -422,6 +431,14 @@ sub translate_avpairs {
     s|^\s*||; }
   join(', ',@avs); }
 
+sub keyvalAttributes {
+  my($kv)=@_;
+  if(!defined $kv){ (); }
+  elsif(!(ref $kv) || !$kv->isa('LaTeXML::KeyVals')){
+    Error("Argument \"".Stringify($kv)."\" used as KeyVals in constructor pattern");
+    (); }
+  else {
+    map( ($_=>$kv->getValue($_)), $kv->getKeys); }}
 #**********************************************************************
 1;
 
@@ -429,19 +446,46 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Definition, LaTeXML::Expandable, LaTeXML::Primitive, LaTeXML::Register, LaTeXML::Constructor.
+=head1 NAME
 
-=head2 DESCRIPTION
+C<LaTeXML::Definition>, C<LaTeXML::Expandable>, C<LaTeXML::Primitive>, 
+C<LaTeXML::Register>, C<LaTeXML::Constructor> -- Control sequence definitions.
+
+=head1 DESCRIPTION
 
 These represent the various executables corresponding to control sequences.
-C<LaTeXML::Expandable> represents macros and other expandable control sequences like \if, etc
-that are carried out in the Gullet during expansion.
-C<LaTeXML::Primitive> represents primitive control sequences that are primarily carried out
-for side effect during digestion in the Stomach.
-C<LaTeXML::Register> is set up as a speciallized primitive with a getter and setter
+
+=over 4
+
+=item C<LaTeXML::Expandable>
+
+ represents macros and other expandable control sequences like C<\if>, etc
+that are carried out in the Gullet during expansion. The results of invoking an
+C<LaTeXML::Expandable> should result in a list of C<LaTeXML::Token>s.
+
+=item C<LaTeXML::Primitive>
+
+represents primitive control sequences that are primarily carried out
+for side effect during digestion in the L<LaTeXML::Stomach> and for changing
+the L<LaTeXML::State>.  The results of invoking a C<LaTeXML::Primitive>, if any, 
+should be a list of C<LaTeXML::Box>s, C<LaTeXML::List>'s
+or C<LaTeXML::Whatsit>s.
+
+=item C<LaTeXML::Register>
+
+is set up as a speciallized primitive with a getter and setter
 to access and store values in the Stomach.
-C<LaTeXML::Constructor> represents control sequences that contribute arbitrary XML fragments
-to the document tree.
+
+=item C<LaTeXML::Constructor>
+
+represents control sequences that contribute arbitrary XML fragments
+to the document tree.  During digestion, these control sequences record the arguments 
+used in the invokation to produce a L<LaTeXML::Whatsit>.  The resulting L<LaTeXML::Whatsit>
+(usually) generates an XML document fragment when absorbed by an instance of L<LaTeXML::Document>.
+Additionally, a C<LaTeXML::Constructor> may have beforeDigest and afterDigest daemons
+defined which are executed for side effect, or for adding additional boxes to the output.
+
+=back
 
 More documentation needed, but see LaTeXML::Package for the main user access to these.
 
@@ -474,5 +518,15 @@ A constructor has as it's C<replacement> either a subroutine, or a string patter
 the XML fragment it should generate.  In the case of a string pattern, the pattern is
 compiled into a subroutine on first usage by the internal class C<LaTeXML::ConstructorCompiler>.
 See L<LaTeXML::Package> for a full description of the syntax.
+
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
 
 =cut

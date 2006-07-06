@@ -30,8 +30,12 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 		  &convertLaTeXArgs
 
 		  &BGroup &EGroup &BeginGroup &EndGroup &BeginMode &EndMode
-		  &Lookup &Assign
+
+		  &LookupValue &AssignValue &PushValue
+		  &LookupCatcode &AssignCatcode
+
 		  &MergeFont &RequireMath &ForbidMath
+		  &InvokeToken &Digest
 		  &roman &Roman),
 	       @LaTeXML::Global::EXPORT);
 
@@ -83,22 +87,25 @@ sub EndGroup()   { $STOMACH->egroup(1); }
 sub BeginMode    { $STOMACH->beginMode(@_); }
 sub EndMode      { $STOMACH->endMode(@_); }
 
-sub Lookup       { $STATE->lookup(@_); }
-sub Assign       { $STATE->assign(@_); }
+sub LookupValue  { $STATE->lookupValue(@_); }
+sub AssignValue  { $STATE->assignValue(@_); return; }
+sub PushValue    { $STATE->pushValue(@_);  return; }
+sub LookupCatcode{ $STATE->lookupCatcode(@_); }
+sub AssignCatcode{ $STATE->assignCatcode(@_); return; }
+
+sub InvokeToken  { $STOMACH->invokeToken(@_); }
+sub Digest       { $STOMACH->digest(@_); }
 
 sub RequireMath() {
-  Fatal("Current operation can only appear in math mode") unless $STATE->lookup('internal','math_mode');
+  Fatal("Current operation can only appear in math mode") unless LookupValue('IN_MATH');
   return; }
 
 sub ForbidMath() {
-  Fatal("Current operation can not appear in math mode") if $STATE->lookup('internal','math_mode');
+  Fatal("Current operation can not appear in math mode") if LookupValue('IN_MATH');
   return; }
 
 # Merge the current font with the style specifications
-sub MergeFont {
-  my(%style)=@_;
-  $STATE->assign('value', font=>$STATE->lookup('value','font')->merge(%style), 'local');
-  return; }
+sub MergeFont { AssignValue(font=>LookupValue('font')->merge(@_), 'local'); }
 
 # Dumb place for this, but where else...
 # The TeX way! (bah!! hint: try a large number)
@@ -190,15 +197,15 @@ sub DefRegister {
   my ($cs,$paramlist)=parsePrototype($proto);
   my $name = $cs->toString;
   my $getter = $options{getter} 
-    || sub { my(@args)=@_;  
-	     $STATE->lookup('value',join('',$name,map($_->toString,@args))) || $value; };
+    || sub { LookupValue(join('',$name,map($_->toString,@_))) || $value; };
   my $setter = $options{setter} 
     || sub { my($value,@args)=@_; 
-	     $STATE->assign('value',join('',$name,map($_->toString,@args)) => $value); };
+	     AssignValue(join('',$name,map($_->toString,@args)) => $value); };
   # Not really right to set the value!
-  $STATE->assign('value',$cs->toString =>$value) if defined $value;
-  $STATE->assignMeaning($cs,LaTeXML::Register->new($cs,$paramlist, $type,$getter,$setter,
-						   readonly=>$options{readonly}));
+  AssignValue($cs->toString =>$value) if defined $value;
+  $STATE->installDefinition(LaTeXML::Register->new($cs,$paramlist, $type,$getter,$setter,
+						   readonly=>$options{readonly}),
+			   'global');
   return; }
 
 sub flatten {
@@ -226,7 +233,7 @@ sub flatten {
 #                     useful for setting Whatsit properties,
 #   properties      : a hashref listing default values of properties to assign to the Whatsit.
 #                     These properties can be used in the constructor.
-our $constructor_options = {mode=>1, untex=>1, properties=>1, alias=>1,
+our $constructor_options = {mode=>1, untex=>1, properties=>1, alias=>1, nargs=>1,
 			    beforeDigest=>1, afterDigest=>1,
 			    captureBody=>1, scope=>1};
 sub DefConstructor {
@@ -236,10 +243,11 @@ sub DefConstructor {
   my $mode = $options{mode};
   $STATE->installDefinition(LaTeXML::Constructor
 			    ->new($cs,$paramlist,$replacement,
-				  beforeDigest=> flatten(($mode ? (sub { $STOMACH->beginMode($mode); }):()),
+				  beforeDigest=> flatten(($mode ? (sub { BeginMode($mode); }):()),
 							 $options{beforeDigest}),
 				  afterDigest => flatten($options{afterDigest},
-							 ($mode ? (sub { $STOMACH->endMode($mode) }):())),
+							 ($mode ? (sub { EndMode($mode) }):())),
+				  nargs       => $options{nargs},
 				  alias       => $options{alias},
 				  untex       => $options{untex},
 				  captureBody => $options{captureBody},
@@ -312,7 +320,7 @@ sub DefMath {
 	       scope=>$options{scope});
   # If single character, Make the character active in math.
   if(length($csname) == 1){
-    $STATE->assign('mathactive', $csname=>1, $options{scope}); }
+    AssignCatcode('math:'.$csname=>1, $options{scope}); }
 
   if((ref $presentation) || ($presentation =~ /\#\d|\\./)){	      # Seems to have TeX! => XMDual
     my $cont_cs = T_CS($csname."\@content");
@@ -340,7 +348,7 @@ sub DefMath {
          %common), $options{scope}); }
   else {
     my $end_tok = (defined $presentation ? ">$presentation</XMTok>" : "/>");
-    $common{properties}{font} = sub { $STATE->lookup('value','font')->specialize($presentation); };
+    $common{properties}{font} = sub { LookupValue('font')->specialize($presentation); };
     $STATE->installDefinition(LaTeXML::Constructor->new($cs,$paramlist,
          ($nargs == 0 
 	  ? "<XMTok role='#role' stackscripts='#stackscripts' font='#font' $attr$end_tok"
@@ -355,51 +363,52 @@ sub DefMath {
 #======================================================================
 # Define a LaTeX environment
 # Note that the body of the environment is treated is the 'body' parameter in the constructor.
-our $environment_options = {mode=>1, properties=>1,
+our $environment_options = {mode=>1, properties=>1, nargs=>1,
 			    beforeDigest=>1, afterDigest=>1,
 			    afterDigestBegin=>1, #beforeDigestEnd=>1
 			    scope=>1};
 sub DefEnvironment {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefEnvironment ($proto)",$environment_options,%options);
-  $proto =~ s/^\{([^\}]+)\}//; # Pull off the environment name as {name}
+  $proto =~ s/^\{([^\}]+)\}\s*//; # Pull off the environment name as {name}
   my $name = $1;
   my $paramlist=parseParameters($proto,"Environment $name");
   my $mode = $options{mode};
   # This is for the common case where the environment is opened by \begin{env}
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\begin{$name}"), $paramlist,$replacement,
-				   beforeDigest=>flatten(($mode ? (sub { $STOMACH->beginMode($mode);})
+				   beforeDigest=>flatten(($mode ? (sub { BeginMode($mode);})
 							  : (\&BGroup)),
-							 sub { $STATE->assign('value',current_environment=>$name);
-							       return; },
+							 sub { AssignValue(current_environment=>$name); },
 							 $options{beforeDigest}),
 				   afterDigest =>flatten($options{afterDigestBegin}),
+				   nargs=>$options{nargs},
 				   captureBody=>1, 
 				   properties=>$options{properties}||{}),
 			     $options{scope});
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\end{$name}"),"","",
 				   afterDigest=>flatten($options{afterDigest},
-							sub { my $env = $STATE->lookup('value','current_environment');
+							sub { my $env = LookupValue('current_environment');
 							      Error("Cannot close environment $name; current is $env")
 								unless $name eq $env; 
 							    return; },
-							($mode ? (sub { $STOMACH->endMode($mode);})
+							($mode ? (sub { EndMode($mode);})
 							 :(\&EGroup)))),
 			     $options{scope});
   # For the uncommon case opened by \csname env\endcsname
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\$name"), $paramlist,$replacement,
-				   beforeDigest=>flatten(($mode ? (sub { $STOMACH->beginMode($mode);}):()),
+				   beforeDigest=>flatten(($mode ? (sub { BeginMode($mode);}):()),
 							 $options{beforeDigest}),
+				   nargs=>$options{nargs},
 				   captureBody=>1,
 				   properties=>$options{properties}||{}),
 			     $options{scope});
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\end$name"),"","",
 				   afterDigest=>flatten($options{afterDigest},
-							($mode ? (sub { $STOMACH->endMode($mode);}):()))),
+							($mode ? (sub { EndMode($mode);}):()))),
 			     $options{scope});
   return; }
 
@@ -421,13 +430,14 @@ sub DocType {
 
 sub RegisterNamespace {
   my($prefix,$namespace,$default)=@_;
-  $MODEL->registerNamespace($prefix,$namespace,$default); }
+  $MODEL->registerNamespace($prefix,$namespace,$default);
+  return; }
 
 our $require_options = {options=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
-  $STOMACH->input($package,%options); 
+  $GULLET->input($package,['ltxml','sty'],%options); 
   return; }
 
 sub Let {
@@ -439,7 +449,8 @@ sub Let {
 
 sub RawTeX {
   my($text)=@_;
-  $STOMACH->digest(TokenizeInternal($text)); }
+  Digest(TokenizeInternal($text));
+  return; }
 
 #======================================================================
 # Support for KeyVal type constructs.
@@ -449,9 +460,10 @@ sub RawTeX {
 sub DefKeyVal {
   my($keyset,$key,$type,$default)=@_;
   my $paramlist=parseParameters($type,"KeyVal $key in set $keyset");
-  $STATE->assign('value','KEYVAL@'.$keyset.'@'.$key => $paramlist->[0]); 
-  $STATE->assign('value','KEYVAL@'.$keyset.'@'.$key.'@default' => Tokenize($default)) 
-    if defined $default; }
+  AssignValue('KEYVAL@'.$keyset.'@'.$key => $paramlist->[0]); 
+  AssignValue('KEYVAL@'.$keyset.'@'.$key.'@default' => Tokenize($default)) 
+    if defined $default; 
+  return; }
 
 
 #======================================================================
@@ -462,12 +474,14 @@ our $rewrite_options = {scope=>1, xpath=>1, match=>1,
 sub DefRewrite {
   my(@specs)=@_;
   CheckOptions("DefRewrite",$rewrite_options,@specs);
-  $MODEL->addRewriteRule('text',@specs); }
+  $MODEL->addRewriteRule('text',@specs); 
+  return; }
 
 sub DefMathRewrite {
   my(@specs)=@_;
   CheckOptions("DefRewrite",$rewrite_options,@specs);
-  $MODEL->addRewriteRule('math',@specs); }
+  $MODEL->addRewriteRule('math',@specs); 
+  return; }
 
 #**********************************************************************
 1;
@@ -476,18 +490,11 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Package
+=head1 NAME
 
-=head2 Description
+C<LaTeXML::Package> -- Support for package implementations.
 
-You import (use) C<LaTeXML::Package> when implementing a C<Package>; 
-the LaTeXML implementation of a LaTeX package.
-It exports various declarations and defining forms that allow you to specify what should 
-be done with various control sequences, whether there is special treatment of document elements,
-and so forth.  Using C<LaTeXML::Package> also imports the functions and variables
-defined in L<LaTeXML::Global>, so see that documentation as well.
-
-=head2 SYNOPSIS
+=head1 SYNOPSIS
 
 To implement a LaTeXML version of a LaTeX package C<somepackage.sty>, 
 such that C<\usepackage{somepackage}> would load your custom implementation,
@@ -562,9 +569,9 @@ various packages in LaTeXML.
   # These primitives implement LaTeX's \makeatletter and \makeatother.
   # They change the catcode but return nothing to the digested list.
   DefPrimitive('\makeatletter',sub { 
-    $STATE->assign('catcode','@'=>CC_LETTER,'local'); return; });
+    AssignCatcode('@'=>CC_LETTER,'local'); });
   DefPrimitive('\makeatother', sub { 
-    $STATE->assign('catcode','@'=>CC_OTHER, 'local'); return; });
+    AssignCatcode('@'=>CC_OTHER, 'local');  });
 
   # Some frontmatter examples.
 
@@ -589,14 +596,24 @@ various packages in LaTeXML.
   # The constructor pattern uses a conditional clause ?#1(...) that includes the
   # attribute options only if the first (optional) argument is non-empty.
   DefConstructor('\usepackage[]{}',"<?latexml package='#2' ?#1(options='#1')?>",
-  	         afterDigest=>sub { $STOMACH->input($_[2]->toString); return;  });
+  	         afterDigest=>sub { RequirePackage($_[2]->toString); });
   # If you prefer to be a little less perl-cryptic, you could write
   DefConstructor('\usepackage[]{}',"<?latexml package='#2' ?#1(options='#1')?>",
   	         afterDigest=>sub { my($whatsit,$options,$package)=@_;
-                                    $STOMACH->input($package->toString); return;  });
+                                    RequirePackage($package->toString);  });
 
   # Don't forget this; it tells perl the package loaded successfully.
   1;
+
+
+=head1 DESCRIPTION
+
+You import (use) C<LaTeXML::Package> when implementing a C<Package>; 
+the LaTeXML implementation of a LaTeX package.
+It exports various declarations and defining forms that allow you to specify what should 
+be done with various control sequences, whether there is special treatment of document elements,
+and so forth.  Using C<LaTeXML::Package> also imports the functions and variables
+defined in L<LaTeXML::Global>, so see that documentation as well.
 
 =head2 Control Sequence Definitions
 
@@ -756,6 +773,11 @@ DefConstructor options are
                    accumulated into a `body' until the current grouping 
                    level is reverted. This is used by environments and math.
 
+Note that all of these procedures exported by this module return nothing, 
+except for those that are used to explicitly get something.  
+They can thus be safely used in beforeDigest/afterDigest
+modifiers without concern for puting something awkward into the List being built.
+
 =item C<< DefMath($proto,$tex,%options); >>
 
 A common shorthand constructor; it defines a control sequence that creates a mathematical object,
@@ -882,20 +904,72 @@ The following are exported as a convenience when writing definitions.
 
 =over 4
 
-=over 4
+=item C<< BGroup; >>
 
-=item C<< BGroup($nobox); >>
+Begin a new level of binding and boxing by pushing a new stack frame, like C<\bgroup>.
 
-Begin a new level of binding by pushing a new stack frame.
-If C<$nobox> is true, no new level of boxing will be created
-(such as for \begingroup).
+=item C<< EGroup; >>
 
-=item C<< EGroup($nobox); >>
+End a level of binding and boxing by popping the last stack frame,
+undoing whatever bindings appeared there, like C<\egroup>.
+
+=item C<< BeginGroup; >>
+
+Begin a new level of binding by pushing a new stack frame, like C<\begingroup>.
+
+=item C<< EndGroup; >>
 
 End a level of binding by popping the last stack frame,
-undoing whatever bindings appeared there.
-If C<$nobox> is true, the level of boxing will not be decremented
-(such as for \endgroup).
+undoing whatever bindings appeared there, like C<\endgroup>.
+
+=item C<< BeginMode($mode); >>
+
+Begin with C<$mode>, begining a new level of grouping, switching fonts as needed.
+C<$mode> should be one of C<display_math>, C<inline_math> or C<text>.
+
+=item C<< EndMode($mode); >>
+
+End C<$mode> which should be the current mode.
+
+=item C<< $value = LookupValue($name); >>
+
+Lookup the current value associated with the the string C<$name>.
+
+=item C<< AssignValue($name,$value,$scope); >>
+
+Assign $value to be associated with the the string C<$name>, according
+to the given scoping rule.
+
+Values are also used to specify most configuration parameters (which can
+therefor also be scoped).  The recognized configuration parameters are:
+
+  VERBOSITY         : the level of verbosity for debugging output, with 0 being default.
+  STRICT            : whether errors (such as undefined macros) are fatal.
+  INCLUDE_COMMENTS  : whether to preserve comments in the source, and to add
+                      occasional line-number comments.  Default does include them.
+  PRESERVE_NEWLINES : whether newlines in the source should be preserved (not 100% TeX-like).
+                      By default this is true.
+  SEARCHPATHS       : a list of directories to search for sources, implementations, dtds, and such.
+
+=item C<< PushValue($type,$name,$value); >>
+
+This is like C<< ->assign >>, but pushes a value onto 
+the value, which should be a LIST reference.
+Scoping is not handled here (yet?), it simply pushes the value
+onto the last binding of C<$name>.
+
+=item C<< $value = LookupCatcode($char); >>
+
+Lookup the current catcode associated with the the character C<$char>.
+
+=item C<< AssignCatcode($char,$catcode,$scope); >>
+
+Set C<$char> to have the given C<$catcode>, with the assignment made
+according to the given scoping rule.
+
+This method is also used to specify whether a given character is
+active in math mode, by using C<math:$char> for the character,
+and using a value of 1 to specify that it is active.
 
 =item C<< RequireMath; >>
 
@@ -928,5 +1002,14 @@ Formats the C<$number> in (lowercase) roman numerals, returning a list of the to
 Formats the C<$number> in (uppercase) roman numerals, returning a list of the tokens.
 
 =back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
 
 =cut

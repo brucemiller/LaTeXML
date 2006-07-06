@@ -2,6 +2,7 @@
 \usepackage{latexmldoc}
 \newcommand{\LTXLaTeXML}{\pkg{LaTeXML}}
 \newcommand{\LTXObject}{\pkg{LaTeXML::Object}}
+\newcommand{\LTXState}{\pkg{LaTeXML::State}}
 \newcommand{\LTXToken}{\pkg{LaTeXML::Token}}
 \newcommand{\LTXTokens}{\pkg[LaTeXML::Token]{LaTeXML::Tokens}}
 \newcommand{\LTXNumber}{\pkg[LaTeXML::Token]{LaTeXML::Number}}
@@ -17,11 +18,7 @@
 \newcommand{\LTXWhatsit}{\pkg[LaTeXML::Box]{LaTeXML::Whatsit}}
 \newcommand{\LTXFont}{\pkg{LaTeXML::Font}}
 \newcommand{\LTXMathFont}{\pkg[LaTeXML::Font]{LaTeXML::MathFont}}
-\newcommand{\LTXNode}{\pkg{LaTeXML::Node}}
-\newcommand{\TextNode}{\pkg[LaTeXML::Node]{LaTeXML::TextNode}}
-\newcommand{\LTXCommentNode}{\pkg[LaTeXML::Node]{LaTeXML::CommentNode}}
-\newcommand{\LTXProcessingInstruction}{\pkg[Node]{LaTeXML::ProcessingInstruction}}
-\newcommand{\LTXDocument}{\pkg[LaTeXML::Node]{LaTeXML::Document}}
+\newcommand{\LTXDocument}{\pkg{LaTeXML::Document}}
 \newcommand{\LTXDefinition}{\pkg{LaTeXML::Definition}}
 \newcommand{\LTXExpandable}{\pkg[LaTeXML::Definition]{LaTeXML::Expandable}}
 \newcommand{\LTXPrimitive}{\pkg[LaTeXML::Definition]{LaTeXML::Primitive}}
@@ -32,25 +29,34 @@
 \newcommand{\LTXKeyVals}{\pkg[LaTeXML::Parameter]{LaTeXML::KeyVals}}
 \newcommand{\LTXMouth}{\pkg{LaTeXML::Mouth}}
 \newcommand{\LTXFileMouth}{\pkg[LaTeXML::Mouth]{LaTeXML::FileMouth}}
+\newcommand{\LTXStyleMouth}{\pkg[LaTeXML::Mouth]{LaTeXML::StyleMouth}}
+\newcommand{\LTXPerlMouth}{\pkg[LaTeXML::Mouth]{LaTeXML::PerlMouth}}
 \newcommand{\LTXGullet}{\pkg{LaTeXML::Gullet}}
 \newcommand{\LTXStomach}{\pkg{LaTeXML::Stomach}}
 \newcommand{\LTXIntestine}{\pkg{LaTeXML::Intestine}}
 \newcommand{\LTXModel}{\pkg{LaTeXML::Model}}
+\newcommand{\LTXRewrite}{\pkg{LaTeXML::Rewrite}}
+\newcommand{\LTXMathParser}{\pkg{LaTeXML::MathParser}}
 
-\title{\LaTeXML: a \LaTeX\ to \XML\ Converter; \emph{Preview}}
+\title{\LaTeXML: a \LaTeX\ to \XML\ Converter; \\
+       \emph{Preview Version 0.3.0}}
 \author{Bruce R.~Miller}
 \begin{document}
 \maketitle
-\section{Overview}
-For many, \LaTeX\ is the prefered means for document authoring, particularly when
-significant mathematical content is involved.
-On the other hand, content-oriented \XML\ is an extremely useful storage format
-allowing documents to be used, and reused, for a variety of purposes, not least, 
-presentation on the Web.  Given the rough mismatch between the two,
-particularly for mathematics, conversion  from \LaTeX\ to \XML\ is a bit tricky.
-Faced with this situation, and the lack of other suitable tools at that time,
-the \URL[Digital Library of Mathematical Functions]{http://dlmf.nist.gov}
-proceeded to develop thier own tool, \LaTeXML, to fill this need.
+\section{Introduction}
+For many, \LaTeX\ is the prefered format for document authoring, particularly when
+significant mathematical content and quality typesetting is involved.
+On the other hand, content-oriented \XML\ is an extremely useful representation for documents,
+allowing them to be used, and reused, for a variety of purposes, not least, 
+presentation on the Web.  Both of these representations were natural and uncontroversial
+choices for the corresponding phases of
+the \URL[Digital Library of Mathematical Functions]{http://dlmf.nist.gov}.
+Yet, the style and intent of \LaTeX\ markup, as compared to \XML\
+markup, presents difficulties in converting from the former to the latter.
+Perhaps ironically, these difficulties are worst for mathematical material, where
+there is a tendency with \LaTeX\ to focus on appearance rather than meaning.
+Faced with the need to perform this conversion and the lack of suitable tools to perform it, 
+the DLMF project proceeded to develop thier own tool, \LaTeXML, for this purpose.
 This document describes a \emph{preview} release of \LaTeXML.
 
 The idealistic goals of \LaTeXML\ are:
@@ -63,28 +69,31 @@ The idealistic goals of \LaTeXML\ are:
     (Content \MathML, \emph{Good} Presentation \MathML, eventually \OpenMath).
 \end{itemize}
 
-As these goals are not entirely practical, or somewhat contradictory,
+As these goals are not entirely practical, or even somewhat contradictory,
 they are implicitly modified by ``as much as possible.''
 Completely mimicing \TeX's behaviour would seem to require the sneakiest modifications
 to \TeX, itself.  `Ease of use,' of course, is in the eye of the beholder.
-Few documents are likely to have completely unambiguous mathematics markup; 
-human understanding of both the topic and the surrounding text is needed to
-properly interpret any particular mathematical fragment.
-Thus, we expect that document-specific declarations or tuning to be necessary
-to faithfully convert mathematical documents, rather than presuming to
-provide a `turn-key' solution. At the same time, we would encourage
-a more content-oriented mathematical markup style, than a presentation-oriented style.
+More significantly, few documents are likely to have completely unambiguous
+mathematics markup; human understanding of both the topic and the surrounding 
+text is needed to properly interpret any particular fragment.
+Thus, rather than pretend to provide a `turn-key' solution,
+we expect that document-specific declarations or tuning to be necessary
+to faithfully convert documents.  Towards this end, we provide a variety
+of means to customize the processing and declare the author's intent.
+At the same time, especially for new documents, we encourage a more logical, 
+content-oriented markup style, over a purely presentation-oriented style.
 
 \medskip
 This document continues with an overview of the usage of \LaTeXML (\S\ref{sec:usage})
 and its architecture (\S\ref{sec:architecture}).   
 In \S\ref{sec:packages}, an overview of customizing \LaTeXML\ is given.
 How mathematics is converted to content-oriented forms is discussed in \S\ref{sec:math}.
-Finally, Appendix \ref{app:architecture} gives slightly more details about the architecture,
-Appendix \ref{app:hierarchy} shows an object hierarchy of the system
+Finally, Appendix \ref{app:hierarchy} shows an object hierarchy of the system
 and Appendix \ref{app:todo} lists the main problem areas and unfinished features.
+
 In general, for more detail, you should see the perl documentation of various
-\LaTeXML\ Packages, or the source code and examples, themselves.
+\LaTeXML\ Packages (using, for example, the command \texttt{perldoc LaTeXML}),
+or the source code itself, and the examples.
 
 \section{Using \LaTeXML}\label{sec:usage}
 The basic conversion to \XML\ (using the \LaTeXML\ DTD, by default) is carried out
@@ -92,107 +101,87 @@ by the command:
 \begin{quote}
  \cmd{latexml \textit{options} document.tex > document.xml}
 \end{quote}
-The more useful command options are
-\begin{description}
-\item[\cmd{--output}=\textit{outputfile}]
-Specifies the output file; by default the XML is written to stdout.
+This command reads and processes the \TeX\ document \texttt{document.tex},
+along with any document-specific customization (see \S\ref{sec:packages})
+in \texttt{document.latexml}, if present,
+and constructs an \XML\ document from it.  The document tree is then subjected to various 
+rewriting before being passed to the mathematics parser.  The parser applies a grammar based
+recursive descent parser to the mathematical content in an attempt to convert
+to semantic forms.  (Or, at least to structure consistent with the semantics).
 
-\item[\cmd{--preload}=\textit{module}]
-Requests the loading of an optional module or package.  This may be useful if the TeX code
-does not specificly require the module (eg. through input or usepackage).
-
-\item[\cmd{--path}=\textit{dir}]
-Add \textit{dir} to the search paths used when searching for files, modules, style files, etc;
-somewhat like TEXINPUTS.  This option can be repeated.
-
-\item[\cmd{--quiet}]
-Reduces the verbosity of output during processing, used twice is pretty silent.
-
-\item[\cmd{--verbose}]
-Increases the verbosity of output during processing, used twice is pretty chatty.
-Can be useful for getting more details when errors occur.
-
-\item[\cmd{--strict}]
-Specifies a strict processing mode. By default, undefined control sequences and
-invalid document constructs (that violate the DTD) give warning messages, but attempt
-to continue processing.  Using \cmd{--strict} makes them generate fatal errors.
-
-\item[\cmd{--VERSION}]
-Shows the version number of the LaTeXML package..
-\end{description}
-See \cmd{latexml --help} for other options that may be useful for debugging.
-
-Additional transformations, particularly the parsing of mathematical content, are carried out
-by the postprocessor \cmd{latexmlpost}:
+Additional transformations, such as to \HTML, \MathML\ or other formats, are carried out
+by stylesheets or postprocessing modules in the postprocessor \cmd{latexmlpost}:
 \begin{quote}
 \cmd{latexmlpost \textit{options} document.xml}
 \end{quote}
-where the options are:
-\begin{description}
-\item[\cmd{--stylesheet=\textit{stylesheet}}] requests an \texttt{XSLT} transformation of
-    the \XML\  using the given stylesheet.
-\item[\cmd{--format=(html|xhtml)}]  Specifies the format for conversion. Default
-    is to leave as \XML.
-\item[\cmd{--destination=\textit{file}}]  Specifies the file to write the output.
-    If the file has either an html or xhtml extension, that format is assumed.
-\item[\cmd{--source=\textit{dir}}] Some postprocessing (eg. transforming graphics files)
-     may need access to the directory  where the original \TeX\ file resided 
-     (if it isn't the current working directory).
-\item[\cmd{--verbose}] Increases the amount of messages about the progress of processing.
-\item[\cmd{--help}] Prints a brief description of the command and options.
-\end{description}
-Transforming to html format involves parsing math formula and converting them to Presentation MathML,
-transforming tables into an HTML consistent format, converting graphics files and applying 
-an XSLT transformation.
-Transforming to html format is similar, but math formula are converted to images.
-If no format is specified, only math parsing and conversion is done.
 
-\section{Architecture}\label{sec:architecture}
-Like \TeX, \LaTeXML\ is data-driven: the text and control sequences\footnote{\TeX's name
-for the backslashed commands; ie.~macros, primitives and so forth}
-in the source file (and packages used, being simply collections of macros)
-direct the processing.
-You exert control over the processing, and customize it, by 
-the \emph{implementation} of the control sequences (or packages).
-That, or by postprocessing --- all the heavy-lifting that implements parsing 
-of mathematics is carried out in postprocessing\footnote{But note that it is planned,
-in the next version, to move the parsing, along with dealing with math declarations, 
-back into \cmd{latexml}; Then \cmd{latexmlpost} will only deal with XSLT and transformations
-of the format of math (eg. MathML)}; See \S\ref{sec:math}.
+See the documentation for the commands \pkg{latexml} and \pkg{latexmlpost} for details
+and description of command options\footnote{Use \texttt{latexml --help} or 
+\texttt{perldoc latexml} to view the documentation}.
 
+\section{Architectural Overview}\label{sec:architecture}
+Like \TeX, \LaTeXML\ is data-driven: the text and control sequences (ie.~macros and primitives)
+in the source file (and any packages loaded) direct the processing.
+The user exerts control over the processing, and customizes it, by 
+providing alternative \LaTeXML-specific implementations of the control sequences and packages,
+by declaring properties of the desired document structure,
+and by defining rewrite rules to be applied to the constructed document tree.
 
 \begin{figure}[tb]
 \includegraphics[width=\columnwidth]{dataflow}
 \caption{Flow of data through \LaTeXML's digestive tract.\label{fig:dataflow}}
 \end{figure}
-The top-level class, \LTXLaTeXML, manages the processing.
-Roughly, \TeX's digestive tract is emulated as follows; See Figure \ref{fig:dataflow}.
-The processing is broken into two phases; digestion and construction.
-The \emph{Stomach}  maintains the current state of processing during digestion;
-The \LaTeXML\ object sets up a chain consisting of a stomach, a 
-\emph{Mouth} (to convert characters from the file into \emph{Tokens}; see \ref{sec:tokenization}) 
-and a \emph{Gullet} (to read tokens from that Mouth, expanding any macro or expandible
-tokens in the process; see \ref{sec:expansion}).
-The stomach then reads tokens from the gullet and digests them
-(executing \emph{Primitives} and  converting the remaining tokens into \emph{Boxes},
-\emph{Lists} and \emph{Whatsits}; see \ref{sec:digestion}).
-These three components operate in \emph{pull mode}, each pulling data from the previous.
+The top-level class, \LTXLaTeXML, manages the processing, providing several methods
+for converting a \TeX\ document or string into an \XML\ document, with varying degrees
+of postprocessing and optionally writing the document to file.
+A \LTXState\ object maintains the current state
+of processing, current definitions for control sequences and emulates the
+\TeX's scoping rules.
+The processing is broken into two phases; the \TeX-like digestion phase and
+the \XML\ construction phase; See Figure \ref{fig:dataflow}.
 
-Document construction is carried out by the \emph{Intestine}, which recursively traverses 
-the digested boxes constructing an intermediate tree representing the \XML\ document tree.
-As a last step, the intermediate tree is converted to an \code{XML::LibXML} document,
-which can be output or processed further.
+\emph{Digestion} is carried out primarily in a \emph{pull} mode, with the \LTXStomach\
+pulling expanded  \LTXToken's from a \LTXGullet, which, itself pulls tokens from 
+a \LTXMouth.  The \LTXMouth\ converts characters from the plain text input into tokens according
+to the current category codes assigned to them (in the \LTXState).  
+The \LTXGullet\ is responsible for expanding any macro or expandible
+tokens (when the current binding of the token in the \LTXState\ is an \LTXExpandable\ definition), 
+and for parsing sequences of tokens into common core datatypes (numbers, dimensions, etc.).
+The \LTXStomach\ digests these tokens by executing \LTXPrimitive\ control 
+sequences (generally for side effect), converting control sequences bound
+to \LTXConstructor's into \LTXWhatsit's, and converting the remaining tokens
+into a recursive structure of \LTXList's and \LTXBox's.
 
-The key features for generating \XML, are the control sequences that we
-call \emph{Constructors} which encode the construction of arbitrary \XML\ fragments,
-and our extension of the concept of a Whatsit to represent the digested form of constructors.
+The main (intentional) deviation of \LaTeXML's digestion from that of \TeX\ is in the
+extension of control sequences to include \LTXConstructor's responsible for constructing
+\XML\ document fragments, and \LTXWhatsit's to represent thier digested form including
+whatever arguments were passed to the control sequence.
 
-This process is described in slightly more detail in Appendix \ref{app:architecture}, but
-see the perl documentation \cmd{perldoc} for the modules for the APIs, and, ultimately,
-the source for full details.
+\emph{Construction} of the document thus consists of creating an \LTXDocument, containing
+an \code{XML::LibXML::Document} structure, and having it absorb the digested lists, boxes
+and whatsits.  Generally, boxes represent text which is converted to text nodes within the
+document. Whatsits generally create a document fragment involving elements, attributes
+and text.  
 
+A \LTXModel\ is maintained througout the digestion phase which accumulates
+any document model declarations in particular the document type (currently only
+the DTD, but eventually may be RelaxNG based).  As \LaTeX\ markup is more
+like \SGML\ than \XML, declarations may be used to indicate which elements may
+be automatically opened or closed when needed to build a document tree that matches
+the document type.  As an example, a \verb|<subsection>| will automaticall be closed
+when a \verb|<section>| is begun.
 
-\section{Packages: Implementing Control Sequences}\label{sec:packages}
+Once the basic document is constructed, \LTXRewrite\ rules are applied which can
+perform various functions. Ligatures and combining mathematics digits and letters (in certain fonts)
+into composite math tokens are handled this way.  Additionally, declarations
+of the type or grammatical role of math tokens can be applied here.
+Finally, the \LTXMathParser\ is invoked which attempts to understand the mathematical
+content;  See \ref{sec:math} for more details.
+
+The \LTXLaTeXML\ object binds \verb|$STATE|, \verb|$GULLET|, \verb|$STOMACH|,
+and \verb|$MODEL| to corresponding active objects during processing.
+
+\section{Implementation and Customization}\label{sec:packages}
 The processsing of the \LaTeX\ document and its  conversion into \XML\ is affected
 by the definitions of control sequences, either as macros, primitives or constructors, 
 and other declarations specifying the document type, properties of \XML\ tags, ligatures, \ldots.
@@ -247,101 +236,8 @@ the semantic and presentational forms.
 during parsing, but probably shouldn't.
 
 \appendix
-\section{Architectural Details}\label{app:architecture}
-\subsection{Tokenization}\label{sec:tokenization}
-
-\paragraph{\LTXMouth}
-Given a string or file, a mouth tokenizes the input text according to
-the current category codes in the \LTXStomach. Category codes distinguish classes of characters
-such as plain characters, control sequences,  active characters and \TeX's special characters  
-for grouping,  sub- and super-script and math mode.  The main method is \method{readToken}, which
-returns the next \LTXToken\ from the input.  A \LTXFileMouth\ is a mouth for reading from a file.
-
-
-\paragraph{\LTXToken, \LTXTokens} These packages represent a Token (a pair containing a character
-or string and the category code), and a list of tokens, respectively.  The latter responds to the same
-interface as \LTXMouth, so it can also be read from.
-
-\subsection{Expansion}\label{sec:expansion}
-
-\paragraph{\LTXGullet}
-The gullet reads tokens from the mouth, possibly expanding them.
-The main methods are \method{readToken} and  \method{readXToken}.
-The latter returns the next unexpandable token from the input;
-if the token's current meaning in the \LTXStomach\ is an \LTXExpandable\ (a macro
-or other expandable control sequences),
-it is expanded and its expansion is replaced in the input before retrying.
-The driving \LTXLaTeXML\ instance binds the exported variable \code{\$GULLET} to the current gullet.
-
-\paragraph{\LTXExpandable} Instances (subclass of \LTXDefinition)
-represent the expansions of control sequences. Expandables typically are used for
-conditionals (like \verb|\if|, \verb|\ifx|, \ldots) and built-in control sequences that expand 
-into sequences of tokens (such as \verb|\jobname|). The arguments are read from the gullet,
-and used in generating the replacement tokens.
-
-\subsection{Digestion}\label{sec:digestion}
-\paragraph{\LTXStomach}  The Stomach maintains global state during digestion and carries 
-out the digestion of tokens. The top-level method \method{readAndDigestFile(\$file)} 
-sets up the initial state and stack, pre-loads packages (at least \code{TeX}), and then digests
-all available input, returning the digested \LTXList.
-The driving \LTXLaTeXML\ instance binds the exported variable \code{\$GULLET} to the current gullet.
-
-The mouth and gullet refer to the stomach to set or access the mode, various values and
-definitions. To mimic \TeX's binding of definitions and values scoped by grouping, 
-the stomach maintains a stack of the active bindings for each control sequence, along with the
-bindings to be undone on the next end-group; this allows the most common operations to be carried
-out in linear time.
-
-Basically, there are four cases when digesting a \LTXToken:
- \begin{itemize}
-  \item A plain character is simply converted to a \LTXBox (or \LTXMathBox\ in math mode), 
-   recording the current \LTXFont.
-  \item If a control sequence represents \LTXPrimitive, the primitive is invoked, executing its
-   stored subroutine.  This is typically done for side effect (changing the state in the stomach), 
-   although they may also contribute digested material.
-   As with macros, any arguments to the primitive are read from the gullet.
-  \item Grouping (or environment bodies) are collected into a \LTXList\ (or \LTXMathList\ in math mode).
-  \item A special class of control sequence, called a \LTXConstructor\ produces a 
-   \LTXWhatsit\ which remembers the control sequence and arguments that
-   created it, and defines its own translation into \XML\ elements, attributes and data.
-   Arguments to a constructor are read from the gullet and also digested.
- \end{itemize}
-Finally, \code{Filter}s are applied to the resulting lists (see below).
-
-\paragraph{\LTXBox, \LTXMathBox, \LTXList, \LTXMathList, \LTXWhatsit} Instances of
-these classes represent the digested objects: boxes being characters; lists being sequences
-of digested objects; whatsits representing some sort of document fragment.
-Note that, currently, Although \verb|\par| tends to do the `right thing', there 
-is no real notion of horizontal or vertical mode.
-
-\paragraph{\LTXPrimitive, \LTXConstructor} These subclasses of \LTXDefinition are carried out
-(at least partly) in the stomach. They may have before and after daemons; little bits
-of code that affect the state.  A primitive is carried out for only side-effect,
-but a constructor generates a whatsit that survives to the \LTXIntestine.
-
-\paragraph{\code{Filter}} Filters are roughly a generalization of ligatures. They are matched
-against sequences of digested items during digestion; if they pattern is matched, it is substituted
-by the replacement.  They are currently defined for the kinds of substitutions that would
-make sense for \XML; namely repeated characters like \texttt{-} or \texttt{`} are replaced by 
-the appropriate unicode. Also, in math, patterns of digits or letters (in non-mathitalic fonts) 
-are combined as one would expect.  On the other hand, ligatures like \texttt{ffi} do not
-really seem appropriate here --- or do they? --- they would be easily implemented, but
-they might adversely affect search.
-
-\subsection{Construction}\label{sec:construction}
-\paragraph{\LTXIntestine}
-The intestine traverses the recursive \LTXList\ of digested \LTXList s, 
-\LTXBox es and \LTXWhatsit s, constructing a (\LTXDocument),
-according to the current \LTXModel.  Generally, a \LTXBox\ gives rise to text data, whereas
-a \LTXWhatsit\ describes a document fragment (consisting of elements, thier attributes and or content).
-At each insertion, the \LTXModel\ is consulted to determine if the insertion is allowed at the
-current point, or if intermediate elements may need to be opened or closed.
-This allows the document structure of sections and paragraphs to be automatically
-constructed, for example, even though \LaTeX\ doesn't explicitly close \verb|\section|,
-nor open \verb|\par|.
-(See \perldoc{LaTeXML::Intestine},  \perldoc{LaTeXML::Node},  \perldoc{LaTeXML::Model}).
-
 \section{Object Hierarchy}\label{app:hierarchy}
+{\small
 \begin{description}
   \item[\LTXObject]: Abstract base class.
   \begin{description}
@@ -377,13 +273,7 @@ nor open \verb|\par|.
       \item[\LTXMathFont]: A font in math; special rules for merging.
     \end{description}
     % In Node.pm
-    \item[\LTXNode]:  Intermediate representation of an XML element (also base class).
-    \begin{description}
-      \item[\TextNode]: a text node. 
-      \item[\LTXCommentNode]: a comment node.
-      \item[\LTXProcessingInstruction]: a processing instruction
-      \item[\LTXDocument]: the root document object.
-    \end{description}
+    \item[\LTXDocument]: A representation of the document under construction.
     % In Definition.pm
     \item[\LTXDefinition]: Represents the action of executable control sequences
     \begin{description}
@@ -403,6 +293,10 @@ nor open \verb|\par|.
     \item[\LTXMouth]: The organ that converts characters (eg.~from files) into \LTXToken s.
     \begin{description}
       \item[\LTXFileMouth]: A mouth that tokenizes input from a file.
+      \begin{description}      
+        \item[\LTXStyleMouth]: A file mouth for reading style files.
+      \end{description}
+      \item[\LTXPerlMouth]: A fake mouth for reading perl modules.
     \end{description}
     % In Gullet.pm
     \item[\LTXGullet]: The organ that expands \LTXToken s into other sequences of tokens;
@@ -417,7 +311,7 @@ nor open \verb|\par|.
     \item[\LTXModel]: Represents the model of the document, extracted from the DTD.
   \end{description}
 \end{description}
-
+}
 \section{Issues and ToDo}\label{app:todo}
 Lots\ldots!
 \begin{itemize}

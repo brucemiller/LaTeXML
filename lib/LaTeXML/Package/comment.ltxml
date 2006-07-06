@@ -18,35 +18,27 @@ use LaTeXML::Package;
 # Define \name and \begin{name} to start an ignored section
 # until \endname or \end{name}, respectively
 sub defineExcluded {
-  my($self,$name)=@_;
+  my($ignore,$name)=@_;
   $name = $name->toString if ref $name;
-  my $defn = LaTeXML::Constructor->new(T_CS("\\begin{$name}"),undef,'', untex=>'',
-                   afterDigest=>[sub {
-				   my($whatsit)=@_;
-				   my @lines = $GULLET->readRawLines("\\end{$name}\n");
-				   NoteProgress("Skipped ".scalar(@lines)." for environment $name");
-				   return; }]);
-
-  $STATE->assignMeaning(T_CS("\\begin{$name}"),$defn);
-  $STATE->assignMeaning(T_CS("\\$name"),$defn);
+  $STATE->installDefinition(LaTeXML::Constructor->new(T_CS("\\begin{$name}"),undef,'', untex=>'',
+            afterDigest=>[sub {
+			    my($whatsit)=@_;
+			    my @lines = $GULLET->readRawLines("\\end{$name}\n");
+			    NoteProgress("Skipped ".scalar(@lines)." for environment $name"); }]));
   return; }
 
 sub defineIncluded {
-  my($self,$name,$before,$after)=@_;
+  my($ignore,$name,$before,$after)=@_;
   $name = $name->toString if ref $name;
   # Note that we define the `magic' environment control sequences,
   # but DO NOT do any of the normal environ things, like \begingroup \endgroup!
-  my $bdefn = LaTeXML::Expandable->new("\\begin{$name}",undef,
-				       Tokens(($before ? $before->unlist:()),T_CS('\ignorespaces')));
-  $STATE->assignMeaning(T_CS("\\$name"),$bdefn);
-  $STATE->assignMeaning(T_CS("\\begin{$name}"),$bdefn);
-  my $edefn = LaTeXML::Expandable->new("\\end{$name}",undef,
-				       Tokens(($after ? $after->unlist:()),T_CS('\ignorespaces')));
-  $STATE->assignMeaning(T_CS("\\end{$name}"),$edefn);
-  $STATE->assignMeaning(T_CS("\\end$name"),$edefn);
+  $STATE->installDefinition(LaTeXML::Expandable->new(T_CS("\\begin{$name}"),undef,
+					  Tokens(($before ? $before->unlist:()),T_CS('\ignorespaces'))));
+  $STATE->installDefinition(LaTeXML::Expandable->new(T_CS("\\end{$name}"),undef,
+					  Tokens(($after ? $after->unlist:()),T_CS('\ignorespaces'))));
   return; }
 
-defineExcluded($STOMACH,'comment');
+defineExcluded(undef,'comment');
 
 DefPrimitive('\includecomment{}',\&defineIncluded);
 DefPrimitive('\excludecomment{}',\&defineExcluded);

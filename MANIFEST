@@ -5,10 +5,7 @@ bin/latexmlpost
 Changes
 doc/dataflow.dia
 doc/dataflow.eps
-doc/LaTeXML.dvi
-doc/latexml.sty
 doc/LaTeXML.tex
-doc/LaTeXML.xml
 doc/latexmldoc.ltxml
 doc/latexmldoc.sty
 doc/makehtml
@@ -37,6 +34,7 @@ lib/LaTeXML/Object.pm
 lib/LaTeXML/Package.pm
 lib/LaTeXML/Package/acronym.ltxml
 lib/LaTeXML/Package/ae.ltxml
+lib/LaTeXML/Package/alltt.ltxml
 lib/LaTeXML/Package/amsbsy.ltxml
 lib/LaTeXML/Package/amsfonts.ltxml
 lib/LaTeXML/Package/amsmath.ltxml
@@ -85,6 +83,8 @@ MANIFEST			This list of files
 MANIFEST.SKIP
 META.yml
 README
+t/alltt.tex
+t/alltt.xml
 t/comment.tex
 t/comment.xml
 t/fonts.dvi

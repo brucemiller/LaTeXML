@@ -36,9 +36,8 @@ DefPrimitive('\acrodef{}[]{}', sub {
   my($self,$id,$short,$long)=@_;
   $short = $id unless $short && $short->toString;
   $id = $id->toString;
-  Assign('value','ACRONYM@short@'.$id => $STOMACH->digest($short),'global');
-  Assign('value','ACRONYM@long@'.$id  => $STOMACH->digest($long),'global'); 
-  return; });
+  AssignValue('ACRONYM@short@'.$id => Digest($short),'global');
+  AssignValue('ACRONYM@long@'.$id  => Digest($long),'global'); });
 
 
 # \@ACR@{id}{text}
@@ -47,10 +46,10 @@ DefConstructor('\@ACRO@{}{}',"<acronym name='#1'>#2</acronym>");
 DefExpandable('\@AC@if{}{}{}', sub { 
   my($self,$id,$short,$long)=@_;
   my $key = 'ACROUSED@'.$_[1]->toString;
-  if(Lookup('value',$key)){
+  if(LookupValue($key)){
     $short->unlist; }
   else {
-    Assign('value',$key=>1, 'global');
+    AssignValue($key=>1, 'global');
     $long->unlist; }});
 
 

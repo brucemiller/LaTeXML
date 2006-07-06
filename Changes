@@ -1,7 +1,22 @@
+0.3.0  2005-05-06
+      - Release 0.3.0
+      - Some speculative code on handling the picture environment,
+        along with pstricks, but not yet settled.
+      - More exports from Package for common operations there,
+        and hopefully reduce the usage of global $STOMACH, etc.
+      - Improved and updated documentation.
+      	Still need to document the new Rewrite facilities
+	(but would like to make API more concise)
+
+0.2.99x 2005-04-13
+      - Allow * flag (ignored) on \newcommand, et.al.
+      - Fixed some problems with fake environments
+        (ie. \begin{small}...\end{small})
+
 0.2.99 2005-04-07
-       - Released as 0.2.99 so the Bremen folks can get
-       	 some work done.  Documentation update is needed
-	 for 0.3.0 release.
+      - Released as 0.2.99 so the Bremen folks can get
+        some work done.  Documentation update is needed
+	for 0.3.0 release.
 
 0.2.xx 2005-03-17
       - Bigger changes, increment version.

@@ -22,8 +22,7 @@ use LaTeXML::Package;
 # Load special functions & other required packages.
 RequirePackage('amssymb');
 
-$STOMACH->addSearchPath("$ENV{HOME}/dlmf/styles/DLMFtex/");
-
+PushValue(SEARCHPATHS=>"$ENV{HOME}/dlmf/styles/DLMFtex/");
 RequirePackage('DLMFfcns');
 
 #**********************************************************************

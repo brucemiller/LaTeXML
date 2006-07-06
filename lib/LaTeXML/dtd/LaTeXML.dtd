@@ -23,7 +23,7 @@
          "p  | equation | equationgroup | figure | table  | tabular | centering |
           itemize | enumerate | description | verbatim | acronyms">
 <!ENTITY % Misc.class
-         "graphics | minipage | quote | footnote | index | ERROR">
+         "graphics | minipage | quote | footnote | index | picture | ERROR">
 
 <!-- These can be overridden to add more elements. -->
 <!ENTITY % Simple.extra "">
@@ -247,7 +247,7 @@
 
 <!ELEMENT hline EMPTY>
 
-<!ELEMENT verbatim (#PCDATA)*>
+<!ELEMENT verbatim (#PCDATA | %Flow.mix;)*>
 <!ATTLIST verbatim
 	  %Common.attr; 
 	  font CDATA #IMPLIED>
@@ -322,6 +322,19 @@
 <!ATTLIST ERROR
 	  type CDATA #IMPLIED>
 
+<!-- ======================================================================
+     Picture; Experimental, possibly should evolve to SVG?
+     ====================================================================== -->
+
+<!ENTITY % Picture.class "put | box | line | circle | oval | frame | qbezier">
+<!ELEMENT picture  (%Picture.class; | %Flow.mix;)*>
+<!ELEMENT put      (%Picture.class; | %Flow.mix;)*>
+<!ELEMENT box      (%Picture.class; | %Flow.mix;)*>
+<!ELEMENT frame    (%Picture.class; | %Flow.mix;)*>
+<!ELEMENT qbezier EMPTY>
+<!ELEMENT line    EMPTY>
+<!ELEMENT circle  EMPTY>
+<!ELEMENT oval    EMPTY>
 <!-- ======================================================================
      Meta data
      ====================================================================== -->

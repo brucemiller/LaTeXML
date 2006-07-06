@@ -54,6 +54,12 @@ sub getDocument { $_[0]->{document}; }
 sub getNode     { $_[0]->{node}; }
 sub setNode     { $_[0]->{node} = $_[1]; }
 
+sub getElement {
+  my($self)=@_;
+  my $node = $$self{node};
+  $node = $node->parentNode if $node->getType == XML_TEXT_NODE;
+  ($node->getType == XML_DOCUMENT_NODE ? undef : $node); }
+  
 # And some utilities
 sub getNodePath {
   my($self)=@_;
@@ -335,7 +341,7 @@ sub openElement {
     next if $key eq 'locator';	# !!!
     my $value = $attributes{$key};
     $value = ToString($value) if ref $value;
-    next unless $value;
+    next if (!defined $value) || ($value eq ''); # Skip if `empty'; but 0 is OK!
 #    if($key=~/^xml:(.*)$/){
 #      $node->setAttributeNS($MODEL->getNamespace('xml'),$key=>$value); }
 #    els
@@ -394,8 +400,9 @@ sub isCloseable {
 # Close $tag, if it is closeable.
 sub maybeCloseElement {
   my($self,$tag)=@_;
-  my $node = $self->isCloseable($tag);
-  $self->closeNode_internal($node) if $node; }
+  if(my $node = $self->isCloseable($tag)){
+    $self->closeNode_internal($node);
+    1; }}
 
 # Shorthand
 sub insertElement {
@@ -451,18 +458,27 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Document
+=head1 NAME
 
-=head2 DESCRIPTION
+C<LaTeXML::Document> -- represents an XML document under construction.
 
-C<LaTeXML::Document> carries out the construction of the document tree by traversing 
-the digested L<LaTeXML::List> coming from the L<LaTeXML::Stomach>.  It is primarily
-the L<LaTeXML::Constructor> patterns encoded in L<LaTeXML::Whatsit>s that generate the
-interesting structure.  An intermediate representation of the document tree
-using L<LaTeXML::Node> is first built, which is then converted
-to an L<XML::LibXML::Document>.
+=head1 DESCRIPTION
 
-=head2 Accessing the Document's state
+Given the L<LaTeXML::List> containing the digested  created by the L<LaTeXML::Stomach>,
+a C<LaTeXML::Document> is created absorb this digested material, and
+generate an L<XML::LibXML::Document>.  Generally, the 
+L<LaTeXML::Box>s and L<LaTeXML::List>s create text nodes, whereas
+the L<LaTeXML::Whatsit>s create C<XML> document fragments (elements, attributes and so forth)
+according to the defining L<LaTeXML::Constructor>.
+
+The C<LaTeXML::Document> maintains a current insertion point for where material will
+be added. The L<LaTeXML::Model>, derived from various declarations and document type, 
+is consulted to determine whether an insertion is allowed and when elements may need
+to be automatically opened or closed in order to carry out a given insertion.
+For example, a C<subsection> element will typically be closed automatically when it
+is attempted to open a C<section> element.
+
+=head2 Accessors
 
 =over 4
 
@@ -474,22 +490,22 @@ Returns the C<XML::LibXML::Document> currently being constructed.
 
 Returns the node at the current insertion point during construction.  This node
 is considered still to be `open'; any insertions will go into it (if possible).
+The node will be an C<XML::LibXML::Element>, C<XML::LibXML::Text>
+or, initially, C<XML::LibXML::Document>.
+
+=item C<< $node = $document->getElement; >>
+
+Returns the closest ancestor to the current insertion point that is an Element.
 
 =item C<< $document->setNode($node); >>
 
-Sets C<$node> to be the current insertion point during construction.
+Sets the current insertion point to be  C<$node>.
 This should be rarely used, if at all; The construction methods of document
 generally maintain the notion of insertion point automatically.
 
-=item C<< $node = $document->isCloseable($tag); >>
-
-Check whether it is possible to close a C<$tag> element,
-returning the node that would be closed if possible,
-otherwise undef.
-
 =back
 
-=head2 Methods useful for Document Construction
+=head2 Construction Methods
 
 =over 4
 
@@ -499,6 +515,11 @@ Absorb the C<$digested> object into the document at the current insertion point
 according to its type.  Various of the the other methods are invoked as needed,
 and document nodes may be automatically opened or closed according to the document
 model.
+
+=item C<< $xmldoc = $document->finalize; >>
+
+This method finalizes the document by cleaning up various temporary
+attributes, and returns the L<XML::LibXML::Document> that was constructed.
 
 =item C<< $document->openText($text,$font); >>
 
@@ -526,13 +547,16 @@ Close the closest open element named C<$tag> including any intermedate nodes tha
 may be automatically closed.  If that is not possible, signal an error.
 The closed node's parent becomes the current node.
 
-=item C<< $document->insertComment($text); >>
+=item C<< $node = $document->isCloseable($tag); >>
 
-Insert a comment with the given C<$text> into the current node.
+Check whether it is possible to close a C<$tag> element,
+returning the node that would be closed if possible,
+otherwise undef.
 
-=item C<< $document->insertPI($op,%attributes); >>
+=item C<< $document->maybeCloseElement($tag); >>
 
-Insert a ProcessingInstruction into the current node.
+Close a C<$tag> element, if it is possible to do so,
+returning whether or not it closed the element.
 
 =item C<< $document->insertElement($tag,$content,%attributes); >>
 
@@ -541,11 +565,29 @@ absorbing C<$content> from within that new node, and then closing it.
 The C<$content> must be digested material, either a single box, or
 an array of boxes.
 
+=item C<< $document->insertComment($text); >>
+
+Insert a comment with the given C<$text> into the current node.
+
+=item C<< $document->insertPI($op,%attributes); >>
+
+Insert a ProcessingInstruction into the current node.
+
+
 =item C<< $document->addAttribute($key=>$value); >>
 
 Add the given attribute to the nearest node that is allowed to have it.
 
--back
+=back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
 
 =cut
 

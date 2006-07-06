@@ -223,9 +223,11 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Font and LaTeXML::MathFont
+=head1 NAME
 
-=head2 DESCRIPTION
+C<LaTeXML::Font> and C<LaTeXML::MathFont> -- representation of fonts.
+
+=head1 DESCRIPTION
 
 This module defines Font objects.
 I'm not completely happy with the arrangement, or
@@ -251,5 +253,15 @@ C<$font> is active; This (attempts to) handle the curious ways that lower case
 greek often doesn't get a different font.  In particular, it recognizes the
 following classes of strings: single latin letter, single uppercase greek character,
 single lowercase greek character, digits, and others.
+
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
 
 =cut

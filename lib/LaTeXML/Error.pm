@@ -22,8 +22,8 @@ use LaTeXML::Global;
 sub generateMessage {
   my($type,$message,$long,@extra)=@_;
   my @lines=("\n".$type.": ".$message);
-  $long = 0 if $LaTeXML::Global::VERBOSITY < -1;
-  $long = 1 if $LaTeXML::Global::VERBOSITY > +1;
+  $long = 0 if $STATE->lookupValue('VERBOSITY') < -1;
+  $long = 1 if $STATE->lookupValue('VERBOSITY') > +1;
   if(my @objects = objectStack( ($long ? undef : 1))){
     my $top = shift(@objects);
     push(@lines,"In ".trim(Stringify($top)).' '.Stringify(Locator($top)));
@@ -34,6 +34,12 @@ sub generateMessage {
 sub Locator {
   my($object)=@_;
   ($object->can('getLocator') ? $object->getLocator :  "???"); }
+
+sub callerInfo {
+  my($frame)=@_;
+  my %info = caller_info( ($frame || 0) + 2);
+  "$info{call} @ $info{file} line $info{line}"; }
+
 #======================================================================
 # This portion adapted from Carp; simplified (but hopefully still correct),
 # allow stringify overload, handle methods, make more concise!
@@ -121,12 +127,13 @@ sub objectStack {
     next if ($info{sub} eq '(eval)') || !$info{has_args} || !@args;
     my $self = $args[0];
     # If $arg[0] is blessed, and `can' do $method, then we'll guess it's a method call?
+    # We'll collect such objects provided they can ->getLocator
     if((ref $self) && ((ref $self) !~ /^(SCALAR|ARRAY|HASH|CODE|REF|GLOB|LVALUE)$/)){
       my $method = $info{sub};
       $method =~ s/^.*:://;
-#      if($self->can($method) && ($self->isa('XML::LibXML::Node')||$self->isaBox || $self->isaNode || $self->isaDefinition)){
       if($self->can($method)){
 	next if @objects && ($self eq $objects[$#objects]);
+	next unless $self->can('getLocator');
 	push(@objects,$self);
 	last if $maxdepth && (scalar(@objects) >= $maxdepth); }}}
   @objects; }
@@ -146,15 +153,58 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Error
+=head1 NAME
 
-=head2 DESCRIPTION
+C<LaTeXML::Error> -- Error reporting code.
+
+=head1 DESCRIPTION
 
 C<LaTeXML::Error> does some simple stack analysis to generate more informative, readable,
 error messages for LaTeXML.  Its routines are used by the error reporting methods
 from L<LaTeXML::Global>, namely C<Warn>, C<Error> and C<Fatal>.
 
-No user serviceable parts inside.
+No user serviceable parts inside.  No symbols are exported.
+
+=head2 Functions
+
+=over 4
+
+=item C<< $string = LaTeXML::Error::generateMessage($type,$message,$long,@extra); >>
+
+Constructs an error or warning message based on the current stack and
+the current location in the document.
+C<$type> is a short string characterizing the type of message, such as "Error".  
+C<$message> is the error message itself. If C<$long> is true, will generate a
+more verbose message; this also uses the VERBOSITY set in the C<$STATE>.
+Longer messages will show a trace of the objects invoked on the stack,
+C<@extra> are additional strings to include in the message.
+
+=item C<< $string = LaTeXML::Error::stacktrace; >>
+
+Return a formatted string showing a trace of the stackframes up until this
+function was invoked.
+
+=item C<< @objects = LaTeXML::Error::objectStack; >>
+
+Return a list of objects invoked on the stack.  This procedure only
+considers those stackframes which involve methods, and the objects are
+those (unique) objects that the method was called on.
+
+=item C<< $line = LaTeXML::Error:line_in_file($file); >>
+
+This returns the line number in $file that is currently being executed,
+assuming that some stackframe is invoking code defined in that file.
+
+=back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
 
 =cut
 

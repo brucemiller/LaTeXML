@@ -80,6 +80,8 @@ sub Token {
 
 our $STD_CATTABLE;
 our $STY_CATTABLE;
+# Note that we are overriding $STATE, which normally contains ALL the bindings, etc.
+# But, since we are just tokenizing, only the catcode bindings matter.
 
 # Tokenize($string); Tokenizes the string using the standard cattable, returning a LaTeXML::Tokens
 sub Tokenize         {
@@ -120,34 +122,38 @@ sub MuGlue      { LaTeXML::MuGlue->new(@_); }
 #**********************************************************************
 # Error & Progress reporting.
 
-$LaTeXML::Global::VERBOSITY = 0;
 
 sub NoteProgress { 
-  print STDERR @_ unless $LaTeXML::Global::VERBOSITY < 0; }
+  print STDERR @_ if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0;
+  return; }
 
 sub Fatal { 
   my($message)=@_;
   if(!$LaTeXML::Error::InHandler && defined($^S)){
     $message
       = LaTeXML::Error::generateMessage("Fatal",$message,1,
-		       ($LaTeXML::Global::VERBOSITY > 0 ? ("Stack Trace:",LaTeXML::Error::stacktrace()):()));
+		       ($LaTeXML::Global::STATE->lookupValue('VERBOSITY') > 0
+			? ("Stack Trace:",LaTeXML::Error::stacktrace()):()));
   }
   local $LaTeXML::Error::InHandler=1;
-  die $message; }
+  die $message; 
+  return; }
 
 # Should be fatal if strict is set, else warn.
 sub Error {
   my($msg)=@_;
-  if($LaTeXML::Global::STRICT){
+  if($LaTeXML::Global::STATE->lookupValue('STRICT')){
     Fatal($msg); }
   else {
-    print STDERR LaTeXML::Error::generateMessage("Error",$msg,0,"Continuing... Expect trouble.\n")
-      unless $LaTeXML::Global::VERBOSITY < -1; }}
+    print STDERR LaTeXML::Error::generateMessage("Error",$msg,1,"Continuing... Expect trouble.\n")
+      unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -1; }
+  return; }
 
 sub Warn {
   my($msg)=@_;
   print STDERR LaTeXML::Error::generateMessage("Warning",$msg,0)
-    unless $LaTeXML::Global::VERBOSITY < 0; }
+    unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < 0; 
+  return; }
 
 #**********************************************************************
 # Generic functions
@@ -159,8 +165,17 @@ sub Stringify {
   elsif(!ref $object){ $object; }
   elsif($NOBLESS{ref $object}){ "$object"; }
   elsif($object->can('stringify')){ $object->stringify; }
+  # Have to handle LibXML stuff explicitly (unless we want to add methods...?)
   elsif($object->isa('XML::LibXML::Node')){
-    if($object->nodeType == XML_ELEMENT_NODE){ "$object"."[".$object->nodeName."]"; }
+    if($object->nodeType == XML_ELEMENT_NODE){ 
+#      "$object"."[".$object->nodeName."]";
+      my $attributes ='';
+      foreach my $attr ($object->attributes){
+	my $name = $attr->nodeName;
+	next if $name =~ /^_/;
+	$attributes .= ' '. $name. "=\"".$attr->getValue; }
+      "<".$object->nodeName.$attributes.">";
+    }
     else { "$object"; }}
   else { "$object"; }}
 #  (defined $object ? (((ref $object) && !$NOBLESS{ref $object}) && $object->can('stringify') ? $object->stringify : "$object")
@@ -183,13 +198,15 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Global
+=head1 NAME
 
-=head2 SYNOPSIS
+C<LaTeXML::Global> -- global exports used within LaTeXML, and in Packages.
+
+=head1 SYNOPSIS
 
 use LaTeXML::Global;
 
-=head2 DESCRIPTION
+=head1 DESCRIPTION
 
 This module exports the various constants and constructors that are useful
 throughout LaTeXML, and in Package implementations.
@@ -198,14 +215,14 @@ throughout LaTeXML, and in Package implementations.
 
 =over 4
 
-=item C<< $STATE,$GULLET, $STOMACH, $MODEL; >>
+=item C<< $STATE, $GULLET, $STOMACH, $MODEL; >>
 
 These are bound to the currently active L<LaTeXML::State>, L<LaTeXML::Gullet>, L<LaTeXML::Stomach>
 and L<LaTeXML::Model> by an instance of L<LaTeXML> during processing.
 
 =back 
 
-=head2 Token related exports
+=head2 Tokens
 
 =over 4
 
@@ -241,6 +258,12 @@ returning a L<LaTeXML::Tokens>.
 
 Returns a list of the tokens corresponding to the characters in C<$string>.
 
+=back
+
+=head2 Numbers, etc.
+
+=over 4
+
 =item C<< $number = Number($num); >>
 
 Creates a Number object representing C<$num>.
@@ -271,58 +294,9 @@ or 1,2,3 for fil, fill or filll.
 
 Creates a MuGlue object, similar to Glue.
 
-=item C<< $cattable = getStandardCattable; >>
-
-Returns the standard cattable; a reference to a hash mapping characters to catcodes.
-
-=item C<< $cattable = getInternalCattable; >>
-
-Returns the internal cattable; a reference to a hash mapping characters to catcodes.
-This is the same as the standard cattable, but treats @ as a letter.
-
 =back
 
-=head2 Box related exports
-
-=over 4
-
-=item C<< $box = Box($string,$font,$locator); >>
-
-Create a L<LaTeXML::Box> for the given C<$string>, in the given C<$font>.
-C<$locator> is a string indicating where the C<$string> came from
-(eg C<$GULLET->getLocator>).
-
-=item C<< $mathbox = MathBox($string,$font,$locator); >>
-
-Create a  L<LaTeXML::MathBox> for the given $string, in the given $font.
-C<$locator> is a string indicating where the C<$string> came from
-(eg C<$GULLET->getLocator>).
-
-=item C<< $list = List(@boxes); >>
-
-Create a L<LaTeXML::List> containing the given C<@boxes>.
-
-=item C<< $mathlist = MathList(@mathboxes); >>
-
-Create a L<LaTeXML::MathList> containing the given C<@mathboxes>.
-
-=item C<< $whatsit = Whatsit($defn,$args,%properties); >>
-
-Create a L<LaTeXML::Whatsit> according to C<$defn> (a L<LaTeXML::Constructor>),
-with the given C<$args> (an array reference containing the arguments) 
-and any extra C<%properties>.
-Specially recognized properties are:
-
-   font   : the font object for any contained text.
-   isMath : whether it represents a math object.
-   locator: string indicating where in the source this was created
-
-If the properties are not supplied, then the data is obtained from 
-the current execution environment.
-
-=back
-
-=head2 Error and Progress reporting procedures
+=head2 Error Reporting
 
 =over 4
 
@@ -372,5 +346,15 @@ but invokes the equals method on blessed objects, which does a
 deep comparison of the two objects.
 
 =back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
 =cut
 

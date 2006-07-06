@@ -171,8 +171,8 @@ sub compileClause {
 sub digest_rewrite {
   my($string)=@_;
   $STOMACH->bgroup;
-  $STATE->assign('value',font=>LaTeXML::Font->new(), 'local');  # Use empty font, so eventual insertion merges.
-  $STATE->assign('value',mathfont=>LaTeXML::MathFont->new(), 'local');
+  $STATE->assignValue(font=>LaTeXML::Font->new(), 'local');  # Use empty font, so eventual insertion merges.
+  $STATE->assignValue(mathfont=>LaTeXML::MathFont->new(), 'local');
   my $box = $STOMACH->digest(TokenizeInternal($string),0);
   $STOMACH->egroup;
   $box; }
@@ -225,3 +225,35 @@ sub domToXPath_seq {
 
 #**********************************************************************
 1;
+
+
+__END__
+
+=pod 
+
+=head1 NAME
+
+C<LaTeXML::Rewrite> -- rewrite rules for modifying the XML document.
+
+=head1 DESCRIPTION
+
+C<LaTeXML::Rewrite> implements rewrite rules for modifying the XML document.
+
+=head2 Methods
+
+=over 4
+
+=item C<< $rule->rewrite($document,$node); >>
+
+=back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut

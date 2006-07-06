@@ -46,6 +46,7 @@ sub new {
 
 sub parseMath {
   my($self,$doc,%options)=@_;
+  local $LaTeXML::MathParser::DOCUMENT = $doc;
   $self->clear;			# Not reentrant!
   my $xmldoc = $doc->getDocument;
   $$self{idcache}={};
@@ -53,27 +54,28 @@ sub parseMath {
     $$self{idcache}{$node->getAttribute('xml:id')} = $node; }
 
   my @math =  $MODEL->getXPath->findnodes('descendant-or-self::ltxml:XMath',$xmldoc);
-  NoteProgress("\n(Parsing ".scalar(@math)." formulae");
+  NoteProgress("\n(Math Parsing: ".scalar(@math)." formulae");
 
-  local $LaTeXML::MathParser::CAPTURE = $xmldoc->documentElement->addNewChild($nsURI,'XMath');
+  if(@math){
+    local $LaTeXML::MathParser::CAPTURE = $xmldoc->documentElement->addNewChild($nsURI,'XMath');
+    foreach my $math (@math){
+      $self->parse($math,$doc); }
 
-  foreach my $math (@math){
-    $self->parse($math,$doc); }
+    $LaTeXML::MathParser::CAPTURE->parentNode->removeChild($LaTeXML::MathParser::CAPTURE);
 
-  $LaTeXML::MathParser::CAPTURE->parentNode->removeChild($LaTeXML::MathParser::CAPTURE);
-
-  NoteProgress("\nMath parsing succeeded:"
-	       .join('',map( "\n   $_: ".$$self{passed}{$_}."/".($$self{passed}{$_}+$$self{failed}{$_}),
-			     grep( $$self{passed}{$_}+$$self{failed}{$_},
-				   keys %{$$self{passed}})))."\n");
-  if(my @unk = keys %{$$self{unknowns}}){
-    NoteProgress("Symbols assumed as simple identifiers (with # of occurences):\n   "
-		.join(', ',map("'$_' ($$self{unknowns}{$_})",sort @unk))."\n"); }
-  if(my @funcs = keys %{$$self{maybe_functions}}){
-    NoteProgress("Possibly used as functions?\n  "
-		.join(', ',map("'$_' ($$self{maybe_functions}{$_}/$$self{unknowns}{$_} usages)",
-			       sort @funcs))."\n"); }
-
+    NoteProgress("\nMath parsing succeeded:"
+		 .join('',map( "\n   $_: ".$$self{passed}{$_}."/".($$self{passed}{$_}+$$self{failed}{$_}),
+			       grep( $$self{passed}{$_}+$$self{failed}{$_},
+				     keys %{$$self{passed}})))."\n");
+    if(my @unk = keys %{$$self{unknowns}}){
+      NoteProgress("Symbols assumed as simple identifiers (with # of occurences):\n   "
+		   .join(', ',map("'$_' ($$self{unknowns}{$_})",sort @unk))."\n"); }
+    if(my @funcs = keys %{$$self{maybe_functions}}){
+      NoteProgress("Possibly used as functions?\n  "
+		   .join(', ',map("'$_' ($$self{maybe_functions}{$_}/$$self{unknowns}{$_} usages)",
+				  sort @funcs))."\n"); }
+  }
+  NoteProgress(")");
   $doc; }
 
 # ================================================================================
@@ -85,9 +87,28 @@ sub clear {
   $$self{maybe_functions}={};
 }
 
+sub token_prettyname {
+  my($node)=@_;
+  my $name = $node->getAttribute('name');
+  if(defined $name){}
+  elsif($name = $node->textContent){
+    my $font = $LaTeXML::MathParser::DOCUMENT->getNodeFont($node);
+    my $family = $font->getFamily;
+    my $series = $font->getSeries;
+    my $shape  = $font->getShape;
+    my $desc = join('-',grep($_,$family,
+			     ($series eq 'medium' ? '' : $series),
+			     $shape));
+    $name .= "{$desc}" if $desc; }
+  else {
+    $name = 'Unknown';
+    Warn("MathParser: What is this: \"".$node->toString."\"?"); }
+  $name; }
+
 sub note_unknown {
-  my($self,$name)=@_;
-  $$self{unknowns}{$name}++ if $LaTeXML::MathParser::STRICT; }
+  my($self,$node)=@_;
+  my $name = token_prettyname($node);
+  $$self{unknowns}{$name}++; }
 
 # ================================================================================
 # Some more XML utilities, but math specific (?)
@@ -268,10 +289,8 @@ sub parse_internal {
       $role = ($tag eq 'XMTok' ? 'UNKNOWN' : 'ATOM') unless defined $role;
       my $lexeme      = $role.":".$name.":".++$i;
       $lexeme =~ s/\s//g;
-      if(($role eq 'UNKNOWN') && $LaTeXML::MathParser::STRICT){
-	$self->note_unknown($name);
-	if($name eq 'Unknown'){
-	  Warn("MathParser: What is this: \"".$node->toString."\"?"); }}
+      $self->note_unknown($rnode)
+	if ($role eq 'UNKNOWN') && $LaTeXML::MathParser::STRICT;
       $$LaTeXML::MathParser::LEXEMES{$lexeme} = $node;
       $textified .= ' '.$lexeme; }
 
@@ -284,7 +303,7 @@ sub parse_internal {
   # Failure: report on what/where
   # NOTE: Should do script hack??
   if((! defined $result) || $textified){
-    if($LaTeXML::MathParser::STRICT || (($LaTeXML::Global::VERBOSITY||0)>1)){
+    if($LaTeXML::MathParser::STRICT || (($STATE->lookupValue('VERBOSITY')||0)>1)){
       if(! $LaTeXML::MathParser::WARNED){
 	$LaTeXML::MathParser::WARNED=1;
 	my $box = $doc->getNodeBox($LaTeXML::MathParser::XNODE);
@@ -547,7 +566,7 @@ sub NewCollection {
 
 # Given alternation of expr (addop expr)*, compose the tree (left recursive),
 # flattenning portions that have the same operator
-# ie. a + b + c - c  =>  (- (+ a b c) d)
+# ie. a + b + c - d  =>  (- (+ a b c) d)
 sub LeftRec {
   my($arg1,@more)=@_;
   if(@more){
@@ -592,7 +611,7 @@ sub MaybeFunction {
   my $self = $LaTeXML::MathParser::PARSER;
   while($token->localname eq 'XMApp'){
     $token = Arg($token,1); }
-  my $name = getTokenName($token);
+  my $name = token_prettyname($token);
   $token->setAttribute('possibleFunction','yes');
   $$self{maybe_functions}{$name}++ 
     unless !$LaTeXML::MathParser::STRICT or   $$self{suspicious_tokens}{$token};
@@ -600,3 +619,127 @@ sub MaybeFunction {
 
 # ================================================================================
 1;
+
+__END__
+
+=pod 
+
+=head1 NAME
+
+C<LaTeXML::MathParser> - parses mathematics content
+
+=head1 DESCRIPTION
+
+C<LaTeXML::MathParser> parses the mathematical content of a document.
+It uses L<Parse::RecDescent> and a grammar C<MathGrammar>.
+
+=head2 Math Representation
+
+Needs description.
+
+=head2 Possibile Customizations
+
+Needs description.
+
+=head2 Convenience functions
+
+The following functions are exported for convenience in writing the
+grammar productions.
+
+=over 4
+
+=item C<< $node = New($name,$content,%attributes); >>
+
+Creates a new C<XMTok> node with given C<$name> (a string or undef),
+and C<$content> (a string or undef) (but at least one of name or content should be provided),
+and attributes.
+
+=item C<< $node = Arg($node,$n); >>
+
+Returns the C<$n>-th argument of an C<XMApp> node;
+0 is the operator node.
+
+=item C<< Annotate($node,%attributes); >>
+
+Add attributes to C<$node>.
+
+=item C<< $node = Apply($op,@args); >>
+
+Create a new C<XMApp> node representing the application of the node
+C<$op> to the nodes C<@args>.
+
+=item C<< $node = ApplyDelimited($op,@stuff); >>
+
+Create a new C<XMApp> node representing the application of the node
+C<$op> to the arguments found in C<@stuff>.  C<@stuff> are 
+delimited arguments in the sense that the leading and trailing nodes
+should represent open and close delimiters and the arguments are
+seperated by punctuation nodes.  The text of these delimiters and
+punctuation are used to annotate the operator node with
+C<argopen>, C<argclose> and C<separator> attributes.
+
+=item C<< $node = recApply(@ops,$arg); >>
+
+Given a sequence of operators and an argument, forms the nested
+application C<op(op(...(arg)))>>.
+
+=item C<< $node = InvisibleTimes; >>
+
+Creates an invisible times operator.
+
+=item C<< $boole = isMatchingClose($open,$close); >>
+
+Checks whether C<$open> and C<$close> form a `normal' pair of
+delimiters, or if either is ".".
+
+=item C<< $node=>Fence(@stuff); >>
+
+Given a delimited sequence of nodes, starting and ending with open/close delimiters,
+and with intermediate nodes separated by punctuation or such, attempt to guess what
+type of thing is represented such as a set, absolute value, interval, and so on.
+If nothing specific is recognized, creates the application of C<FENCED> to the arguments.
+
+This would be a good candidate for customization!
+
+=item C<< $node = NewFormulae(@stuff); >>
+
+Given a set of formulas, construct a C<Formulae> application, if there are more than one,
+else just return the first.
+
+=item C<< $node = NewCollection(@stuff); >>
+
+Given a set of expressions, construct a C<Collection> application, if there are more than one,
+else just return the first.
+
+=item C<< $node = LeftRec($arg1,@more); >>
+
+Given an expr followed by repeated (op expr), compose the left recursive tree.
+For example C<a + b + c - d> would give C<(- (+ a b c) d)>>
+
+=item C<< $node = NewScripts($base, $postsub, $postsup, $presub, $presup); >>
+
+Given a base and collection of following and/or preceding sub and/or superscripts
+(any of which may be undef), construct an appropriate sub or superscript application.
+
+=item C<< Problem($text); >>
+
+Warn of a potential math parsing problem.
+
+=item C<< MaybeFunction($token); >>
+
+Note the possible use of C<$token> as a function, which may cause incorrect parsing.
+This is used to generate warning messages.
+
+=back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut
+

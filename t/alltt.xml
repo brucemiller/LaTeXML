@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<?latexml package="alltt"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section>
+    <p>Spacing
+</p>
+    <verbatim font="typewriter">
+Word
+  Word
+    Word
+  Word
+Word
+</verbatim>
+    <p>OK
+</p>
+    <p>Funny Characters
+</p>
+    <verbatim font="typewriter">
+a  b $ c &amp; d # e ^ f _ g % h ~ i
+</verbatim>
+    <p>With math?
+</p>
+    <verbatim font="typewriter">
+a+b <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok role="ADDOP" font="serif">+</XMTok><XMTok role="UNKNOWN" font="serif italic">a</XMTok><XMTok role="UNKNOWN" font="serif italic">b</XMTok></XMApp></XMath></Math> a+b
+</verbatim>
+  </section>
+</document>

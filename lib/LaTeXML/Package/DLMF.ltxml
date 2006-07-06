@@ -34,10 +34,9 @@ DefPrimitive('\thischapter{}', sub {
   $ch=$ch->toString;
   DefMacro('\thechapter',$ch); 
   DefEnvironment('{document}',"<chapter refnum='#refnum' label='#label'>#body</chapter>",
-		 beforeDigest=> sub { $STOMACH->setInPreamble(0); },
+		 beforeDigest=> sub { AssignValue(inPreamble=>0); },
 		 afterDigest=>sub { $GULLET->flush; return; },
-		 properties=>{refnum=>$ch, label=>"ch:$ch"});
-  return; });
+		 properties=>{refnum=>$ch, label=>"ch:$ch"}); });
 
 #======================================================================
 # DLMF's Numbering scheme.
@@ -68,7 +67,7 @@ DefMacro('\thetable',   '\thesection.\arabic{table}');
 
 # NOTE: Need to redo author & affiliation to handle multiple authors.
 # Need to handle token lists ??
-DefPrimitive('\status{}', sub{ my $status=$_[1]; return;});
+DefPrimitive('\status{}', sub{ AssignValue(chapter_status=>$_[1]); });
 
 DefMacro('\@authorinfo','');
 # Let \author & \affiliation simply collect the constructors, in order.
@@ -123,7 +122,7 @@ DefEnvironment('{sidebar}{}{}{}',
 	       "<sidebar name='#1' label='#label'><title>#2</title><author>#3</author>#body</sidebar>",
 	       afterDigestBegin=> sub { 
 		 my($whatsit,$name,$title,$author)=@_;
-		 my $label = "sb:".$STOMACH->digest(T_CS('\thechapter'))->toString
+		 my $label = "sb:".Digest(T_CS('\thechapter'))->toString
 		   .".".$name->toString;
 		 $whatsit->setProperty(label=>$label); });
 
@@ -153,8 +152,8 @@ DefEnvironment('{equationmix}[]',"<equationmix refnum='#refnum'>#body</equationm
 	       beforeDigest => sub {
 		 DefEnvironment('{math}',"<Math mode='inline'><XMath>#body</XMath></Math>",
 				mode=>'inline_math',
-				beforeDigest=>sub { Assign('value',mathstyle=>'display'); return;});
-			       return; }
+				beforeDigest=>sub { AssignValue(mathstyle=>'display'); });
+	       }
 );
 DefEnvironment('{equationmix*}[]',  "<equationmix>#body</equationmix>");
 DefEnvironment('{equationgroup}[]', "<equationgroup>#body</equationgroup>");

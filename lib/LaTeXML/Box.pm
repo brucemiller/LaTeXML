@@ -154,9 +154,9 @@ our @ISA = qw(LaTeXML::Box);
 #  trailer
 sub new {
   my($class,$defn,$args,%properties)=@_;
-  $properties{font}    = $STATE->lookup('value','font')   unless defined $properties{font};
+  $properties{font}    = $STATE->lookupValue('font')   unless defined $properties{font};
   $properties{locator} = $GULLET->getLocator unless defined $properties{locator};
-  $properties{isMath}  = $STOMACH->inMath    unless defined $properties{isMath};
+  $properties{isMath}  = $STATE->lookupValue('IN_MATH') unless defined $properties{isMath};
   bless {definition=>$defn, args=>$args||[], properties=>{%properties}},$class; }
 
 sub getDefinition { $_[0]{definition}; }
@@ -246,9 +246,12 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Box, LaTeXML::MathBox, LaTeXML::Comment, LaTeXML::List, LaTeXML::MathList and LaTeXML::Whatsit.
+=head1 NAME
 
-=head2 DESCRIPTION
+C<LaTeXML::Box>, C<LaTeXML::MathBox>, C<LaTeXML::Comment>, C<LaTeXML::List>, 
+C<LaTeXML::MathList> and C<LaTeXML::Whatsit> -- represent digested objects.
+
+=head1 DESCRIPTION
 
 These represent various kinds of digested objects:
 C<LaTeXML::Box> represents a text character in a particular font;
@@ -258,9 +261,7 @@ C<LaTeXML::MathList> represents a sequence of digested things in math;
 C<LaTeXML::Whatsit> represents a digested object that can generate
 arbitrary elements in the XML Document.
 
-See L<LaTeXML::Global> for convenient constructors for these objects.
-
-=head2 Common Methods for all digested objects.
+=head2 Common Methods
 
 All these classes extend L<LaTeXML::Object> and so implement
 the C<stringify> and C<equals> operations.
@@ -303,7 +304,9 @@ is apppropriate.
 
 =back
 
-=head2 Methods specific of C<LaTeXML::Box> and C<LaTeXML::MathBox>
+=head2 Box Methods
+
+The following methods are specific to C<LaTeXML::Box> and C<LaTeXML::MathBox>.
 
 =over 4
 
@@ -313,7 +316,7 @@ Returns the string part of the C<$box>.
 
 =back
 
-=head2 Methods specific to C<LaTeXML::Whatsit>
+=head2 Whatsit Methods
 
 Note that the font is stored in the data properties under 'font'.
 
@@ -365,5 +368,14 @@ under 'trailer'.
 Return the trailer for this C<$whatsit>. See C<setBody>.
 
 =back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
 
 =cut

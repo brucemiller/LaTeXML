@@ -1,22 +1,26 @@
 #!/usr/bin/perl -w
-
-# RUN THIS IN THE distribution/docs directory!!
 use strict;
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use Pod::Html;
+use Pod::Find;
 use LaTeXML;
 use LaTeXML::Post;
 
-my $LIB = "../lib";
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+my $LOC = $FindBin::RealBin."..";
 my $DEST= "/local/www/site/htdocs/DigitalMathLib/LaTeXML";
 my $PDDEST = "$DEST/perldoc";
 
+#======================================================================
 # Process the LaTeX documentation
+print "Generating LaTeXML documentation in $DEST\n";
 LaTeXML->new()->convertAndWriteFile('LaTeXML');
 LaTeXML::Post->new()->process('LaTeXML',destination=>"$DEST/LaTeXML.html",
-			      CSS=>'latexml.css');
+		      CSS=>'latexml.css');
 
+#======================================================================
+# Process the perldocs
 # This indicates which packages are actually contained in modules (in addition to the expected one).
 our %GLOMPED = (Box       =>[qw(MathBox Comment List MathList Whatsit)],
 		Definition=>[qw(Expandable Primitive Parameter Constructor)],
@@ -28,76 +32,64 @@ our %REDIRECT =(
 foreach my $homepkg (keys %GLOMPED){
   foreach my $subpkg (@{$GLOMPED{$homepkg}}){
     $REDIRECT{"LaTeXML/$subpkg.html"} = "LaTeXML/$homepkg.html"; }}
+our @MISSED = (qw(latexml latexmlpost LaTeXML));
 
-process_pkgs('LaTeXML');
+print "Generating perldocs in $PDDEST\n";
+process_dir("$LOC/lib");
+process_dir("$LOC/bin");
 
 unlink('pod2htmd.tmp');
 unlink('pod2htmi.tmp');
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sub process_dir {
+  my($dir)=@_;
+  my %pods = Pod::Find::pod_find($dir);
+  while(my($podfile,$object) = each %pods){
+    my $file = $podfile;
+    $file =~ s|^\Q$dir/\E||;
+    my @subdir = split('/',$file);
+    my $name = pop(@subdir);
+    my $type='Command';
+    if   ($name =~ s/\.pm$//)   { $type = "Module"; }
+    elsif($name =~ s/\.ltxml$//){ $type = "Package Implementation"; }
+    my $toroot = join('/',map("..",@subdir)) || '.';
+    my $htmlfile= join('/',@subdir,$name).".html";
+
+    print "$object => $htmlfile\n";
+
+    foreach my $i (-1..$#subdir){
+      my $dir = join('/',$PDDEST,@subdir[0..$i]);
+      mkdir($dir) unless -d $dir; }
+
+    pod2html(
+	     "--css=../$toroot/latexml.css",
+	     "--podroot=$dir",
+	     "--title=$object documentation",
+	     "--infile=$podfile",
+	     "--outfile=$PDDEST/$htmlfile",
+	     "--htmldir=$PDDEST",
+	     "--norecurse",
+	    ); 
+    # Hmm, annoying pattern (or my usage thereof).
+    open(HTML,"$PDDEST/$htmlfile");
+    local $/=undef;
+    my $doc = <HTML>;
+    close(HTML);
+    # MUNGY Rewriting!!!
+    $doc =~ s/\>the\s+([\w\:]*)\s+manpage\</\>$1\</g;
+    $doc =~ s|<(/?)h(\d)>| {"<$1h".($2+1).">"}|ge;
+    $doc =~ s|<!-- INDEX BEGIN -->|<div class="nav"><b>$object documentation</b>|;
+    $doc =~ s|<!-- INDEX END -->|</div><div class="main"><h1><tt>$type: $object</tt></h1>|;
+    $doc =~ s|</body>|</div></body>|;
+    $doc =~ s|<hr\s*/>||g;
+    $doc =~ s|<p>\s*</p>||g;
+    foreach my $child (keys %REDIRECT){
+      $doc =~ s/$child/$REDIRECT{$child}/g; }
+    foreach my $missed (@MISSED){
+      $doc =~ s|<em>$missed</em>|<a href='$toroot/$missed.html'>$missed</a>|g; }
+    open(HTML,">$PDDEST/$htmlfile");
+    print HTML $doc;
+    close(HTML);
+  }}
 #======================================================================
-# Generate HTML from POD's
-
-sub process_pkgs {
-  my(@components)=@_;
-  my $name = join('/',$LIB,@components);
-  if(-f "$name.pm"){
-    process_pkg(@components); }
-  if(-d $name){
-    print "Scanning $name\n";
-    opendir(DIR,$name);
-    my @files =  readdir(DIR);
-    closedir(DIR);
-    foreach my $file (@files){
-      if($file =~ /^\./){}
-      elsif($file =~ s/\.pm$//){
-	process_pkg(@components,$file); }
-      elsif(-d "$name/$file"){
-	process_pkgs(@components,$file); }
-    }}}
-
-sub process_pkg {
-  my(@components)=@_;
-  my $name = pop(@components);
-  my $podfile = join('/',$LIB,@components,$name).".pm";
-  my $htmlfile= join('/',$PDDEST,@components,$name).".html";
-  my $pkg = join('::',@components,$name);
-  my $stuff = `perldoc $pkg`;	# Any easier way to check if there is POD?
-  return unless $stuff;
-  print "$pkg => $htmlfile\n";
-  my $dir = join('/',$DEST,@components);
-  my $dd=$PDDEST;
-  mkdir($dd) unless -d $dd;
-  foreach my $sub (@components){
-    $dd .= '/'.$sub;
-    mkdir($dd) unless -d $dd; }
-  pod2html(
-	    "--css=".join('/',map("..",@components,$name))."/latexml.css",
-#	   "--noindex",
-	   # "--header",
-	   "--podroot=$LIB",
-	   "--title=$pkg",
-	   "--infile=$podfile",
-	   "--outfile=$htmlfile",
-	   "--htmldir=$DEST/perldoc",
-#	   (@components ? "--htmlroot=".join('/',map("..",@components)) : '.'),
-	   ); 
-  # Hmm, annoying pattern (or my usage thereof).
-  open(HTML,$htmlfile);
-  local $/=undef;
-  my $doc = <HTML>;
-  close(HTML);
-  # MUNGY Rewriting!!!
-  $doc =~ s/\>the\s+([\w\:]*)\s+manpage\</\>$1\</g;
-  $doc =~ s|<!-- INDEX BEGIN -->|<div class="nav">|;
-  $doc =~ s|<!-- INDEX END -->|</div><div class="main">|;
-  $doc =~ s|</body>|</div></body>|;
-  $doc =~ s|<hr\s*/>||g;
-  $doc =~ s|<p>\s*</p>||g;
-  foreach my $child (keys %REDIRECT){
-    $doc =~ s/$child/$REDIRECT{$child}/g; }
-  open(HTML,">$htmlfile");
-  print HTML $doc;
-  close(HTML);
-}
-#======================================================================
-

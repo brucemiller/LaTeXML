@@ -98,10 +98,6 @@ sub parseParameters {
 
 sub getParameters { @{$_[0]}; }
 
-sub getNArgs {
-  my($self)=@_;
-  scalar(grep(!$$_{noValue}, @{$self})); }
-
 sub stringify {
   my($self)=@_;
   my $string='';
@@ -119,7 +115,7 @@ sub untexArguments {
   my($self,@args)=@_;
   my $string = '';
   foreach my $spec (@$self){
-    if($$spec{noValue}){ $string .= $$spec{matches}->[0]->untex; }
+    if($spec->getNoValue){ $string .= $$spec{matches}->[0]->untex; }
     elsif(defined(my $arg = shift(@args))){
       if(my $before = $$spec{before}){
 	$string .= (ref $before ? $before->untex : $before); }
@@ -133,7 +129,7 @@ sub invocationArguments {
   my($self,@args)=@_;
   my @tokens = ();
   foreach my $spec (@$self){
-    if($$spec{noValue}){ push(@tokens, $$spec{matches}->[0]->unlist); }
+    if($spec->getNoValue){ push(@tokens, $$spec{matches}->[0]->unlist); }
     elsif(defined(my $arg = shift(@args))){
       my($b,$a)=($$spec{before},$$spec{after});
       push(@tokens,($b eq '{' ? T_BEGIN : T_OTHER($b))) if $b;
@@ -147,7 +143,7 @@ sub readArguments {
   my @args=();
   foreach my $spec (@$self){
     my $value = $spec->readArgument;
-    push(@args,$value) unless $$spec{noValue}; }
+    push(@args,$value) unless $spec->getNoValue; }
   @args; }
 
 
@@ -155,7 +151,7 @@ sub digestArguments {
   my($self,@args)=@_;
   my @dargs=();
   foreach my $spec (@$self){
-    if(!$$spec{noValue}){
+    if(!$spec->getNoValue){
       push(@dargs,$spec->digestArgument(shift(@args))); }}
   @dargs; }
 
@@ -169,9 +165,11 @@ sub new {
   my($class,%options)=@_;
   bless {%options}, $class; }
 
+sub getNoValue { $_[0]->{noValue}; }
+
 sub stringify {
   my($self)=@_;
-  ($$self{open}||'').$$self{spec}.($$self{close}||''); }
+  ($$self{open}||'').($$self{spec}||'any').($$self{close}||''); }
 
 sub readArgument {
   my($self)=@_;
@@ -196,11 +194,13 @@ sub readArgument {
 
 sub reparseArgument {
   my($self,$value)=@_;
-  $GULLET->openMouth($value);
-  $value = $self->readArgumentAux;
-  $GULLET->skipSpaces;
-  Fatal("Left over stuff in argument") if $GULLET->readToken;
-  $GULLET->closeMouth; 
+  if(defined $value){
+    $GULLET->openMouth($value,1);
+    $value = $self->readArgumentAux;
+    $GULLET->skipSpaces;
+    if(my $junk =$GULLET->readToken){
+      Fatal("Left over stuff in argument:".Stringify($junk)); }
+    $GULLET->closeMouth;  }
   $value; }
 
 sub readArgumentAux {
@@ -213,7 +213,7 @@ sub readArgumentAux {
   elsif($type eq 'Glue'     ){ $GULLET->readGlue; }
   elsif($type eq 'MuGlue'   ){ $GULLET->readMuGlue; }
   elsif($type eq 'Match'    ){ $GULLET->readMatch(@{$$self{matches}}); }
-  else { Fatal("Unknown argument type $$self{spec}"); }}
+  else { Fatal("Unknown argument type: ".join(', ',map("$_=>\"$$self{$_}\"", keys %$self))); }}
 
 # A KeyVal argument MUST be delimited by either braces or brackets (if optional)
 # This method reads the keyval pairs INCLUDING the delimiters, (rather than parsing
@@ -243,7 +243,7 @@ sub readKeyVal {
 Fatal("What's up?") unless $ktoks;
     my $key= $ktoks->toString; $key=~s/\s//g;
     if($key){
-      my $keydef=$STATE->lookup('value','KEYVAL@'.$keyset.'@'.$key) || {};
+      my $keydef=$STATE->lookupValue('KEYVAL@'.$keyset.'@'.$key) || {};
       my $value;
       if($delim->equals($T_EQ)){	# Got =, so read the value
 	$GULLET->startSemiverbatim if $$keydef{verbatim};
@@ -252,7 +252,7 @@ Fatal("What's up?") unless $ktoks;
 	$value = $keydef->reparseArgument($value) if $$keydef{type};
       }
       else {			# Else, get default value.
-	$value = $STATE->lookup('value','KEYVAL@'.$keyset.'@'.$key.'@default'); }
+	$value = $STATE->lookupValue('KEYVAL@'.$keyset.'@'.$key.'@default'); }
       push(@kv,$key);
       push(@kv,$value); }
     last if $delim->equals($close); }
@@ -324,7 +324,7 @@ sub digestValues {
   while(@kv){
     my($key,$value)=(shift(@kv),shift(@kv));
     push(@dkv,$key); 
-    my $keydef=$STATE->lookup('value','KEYVAL@'.$keyset.'@'.$key);
+    my $keydef=$STATE->lookupValue('KEYVAL@'.$keyset.'@'.$key);
     if($keydef){
       push(@dkv,$keydef->digestArgument($value)); }
     else {
@@ -358,11 +358,13 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Parameters, LaTeXML::Parameter, LaTeXML::KeyVal
+=head1 NAME
 
-=head2 DESCRIPTION
+C<LaTeXML::Parameters>, C<LaTeXML::Parameter>, C<LaTeXML::KeyVal> -- formal parameters
 
-Provides a representation for the parameter lists of L<LaTeXML::Definition>s.
+=head1 DESCRIPTION
+
+Provides a representation for the formal parameters of L<LaTeXML::Definition>s.
 C<LaTeXML::Parameters> represents the complete parameter list, 
 C<LaTeXML::Parameter> represents a single parameter,
 C<LaTeXML::KeyVal> represents parameters handled by LaTeX's keyval package.
@@ -438,5 +440,15 @@ Return the alternating keys and values bound in the C<$keyval>.
 Return a new C<LaTeXML::KeyVals> object with all values digested as appropriate.
 
 =back
+
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
 
 =cut

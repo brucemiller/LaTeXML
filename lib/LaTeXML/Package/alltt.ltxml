@@ -1,6 +1,6 @@
 # -*- CPERL -*-
 # /=====================================================================\ #
-# |  DLMFbib                                                            | #
+# |  alltt                                                              | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -14,19 +14,22 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-RequirePackage('LaTeX');
 #**********************************************************************
-# Document
-#**********************************************************************
-DocType("bibliography","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
-	"http://dlmf.nist.gov/LaTeXML");
-DefEnvironment('{document}',"<bibliography>#body</bibliography>",
-		 beforeDigest=> sub { AssignValue(inPreamble=>0); });
 
-# Load special functions & other required packages.
-RequirePackage('DLMFmath');
-RequirePackage('amsrefs');
-RequirePackage('url');
+DefEnvironment('{alltt}',"<verbatim font='#font'>#body</verbatim>",
+	      beforeDigest=>\&before_alltt, afterDigest=>\&after_alltt);
+
+sub before_alltt {
+  my($defn)=@_;
+  MergeFont(family=>'typewriter', series=>'medium', shape=>'upright');
+  foreach my $ch (' ', '$', '&', '#', '^', '_', '%', '~'){
+    AssignCatcode($ch=>CC_OTHER); }
+  AssignValue(PRESERVE_NEWLINES=>1);
+  # \@noligs: This SHOULD inhibit ligature substitution! (eg quotes, dots, etc!!!)
+  # \frenchspacing\@vobeyspaces
+}
+
+sub after_alltt {}
 
 #**********************************************************************
 1;

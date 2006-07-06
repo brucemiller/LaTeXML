@@ -223,7 +223,7 @@ DefEnvironment('{alignedat}{}[]',
 
 DefEnvironment('{cases}',
 	       sub { matharray($_[0],'',$_[1], 'Cases','Case','Cell');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 
 #======================================================================
 # Section 3.8 Adjusting tag placement
@@ -254,13 +254,11 @@ DefMacro('\eqref{semiverb}', '(\@REF{#1}{\@VALUE{LABEL@#1}})');
 DefEnvironment('{subequations}',"<subequations refnum='#refnum'>#body</subequations>",
 	       beforeDigest=>sub { NewCounter('parentequation');
 				   refStepCounter('equation');
-				   Assign('value',"\\c\@parentequation"=>Lookup('value',"\\c\@equation"));
-				   Assign('value',"\\c\@equation",Number(0));
+				   AssignValue("\\c\@parentequation"=>LookupValue("\\c\@equation"));
+				   AssignValue("\\c\@equation",Number(0));
 				   Let('\theparentequation','\theequation');
-				   DefMacro('\theequation','\theparentequation\alph{equation}'); 
-				   return; },
-	       afterDigest =>sub{ Assign('value',"\\c\@equation"=>Lookup('value',"\\c\@parentequation"));
-				  return; },
+				   DefMacro('\theequation','\theparentequation\alph{equation}'); },
+	       afterDigest =>sub{ AssignValue("\\c\@equation"=>LookupValue("\\c\@parentequation")); },
 	       properties=> {refnum=>sub {  $GULLET->expandTokens(Tokens(T_CS("\\theparentequation"))); }});
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -272,23 +270,23 @@ DefEnvironment('{subequations}',"<subequations refnum='#refnum'>#body</subequati
 
 DefEnvironment('{matrix}',
 	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 
 DefEnvironment('{pmatrix}',
 	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>'(',close=>')');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 DefEnvironment('{bmatrix}',
 	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>'[',close=>']');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 DefEnvironment('{Bmatrix}',
 	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>'{',close=>'}');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 DefEnvironment('{vmatrix}',
 	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>'|',close=>'|');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 DefEnvironment('{Vmatrix}',
 	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>"\x{2225}",close=>"\x{2225}");},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 
 #======================================================================
 # Section 4.2 Math spacing commands
@@ -370,10 +368,10 @@ DefConstructor('\underset{}{}',"<XMApp><XMWrap role='UNDERACCENT>#1</XMWrap><XMA
 
 # Section 4.11.1 The \frac, \dfrac, and \tfrac commands
 DefMath('\dfrac{}{}','/', style=>'display', name=>"/", operator_role=>'MULOP',
-	beforeDigest=>sub { BGroup; Assign('value',mathstyle=>'text'); return; },
+	beforeDigest=>sub { BGroup; AssignValue(mathstyle=>'text'); },
 	afterDigest =>\&EGroup);
 DefMath('\tfrac{}{}','/', style=>'text',    name=>"/", operator_role=>'MULOP',
-	beforeDigest=>sub { BGroup; Assign('value',mathstyle=>'script'); return; },
+	beforeDigest=>sub { BGroup; AssignValue(mathstyle=>'script'); },
 	afterDigest =>\&EGroup);
 DefMath('\ifrac{}{}','/', style=>'inline',  name=>"/", operator_role=>'MULOP');
 

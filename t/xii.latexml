@@ -6,7 +6,7 @@ use LaTeXML::Package;
 
 RegisterNamespace(undef,undef,1); # No namespace
 # Don't need to respect source newlines
-$STATE->assign('value',preserveNewLines=>0);
+AssignValue(PRESERVE_NEWLINES=>0);
 
 # We'll use a DTD for a (trivial) Song, containing verses with lines.
 DocType("song","-//NIST LaTeXML//LaTeXML Poem",'xii.dtd');
