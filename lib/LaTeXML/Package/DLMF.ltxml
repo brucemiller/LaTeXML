@@ -175,6 +175,15 @@ DefConstructor('\origref[]{}', "^<ltx:origref ref='#2'>#1</ltx:origref>", mode=>
 # New form of \index allows * (to hide from printed index)
 DefExpandable('\index OptionalMatch:*{}', sub { my($gullet,$star,$phrases)=@_;
 						process_index_phrases($gullet,$phrases); });
+
+# NOTE: the "^" prefix allows these to float up out of math mode.
+DefConstructor('\MarkDefn []{}',
+	       "^<ltx:mark type='definition'>?#1(<ltx:tag>#1</ltx:tag>)#2</ltx:mark>",
+	       mode=>'text', reversion=>'');
+DefConstructor('\MarkNotation {}{}',
+	       "^<ltx:mark type='notation'><ltx:tag>#1</ltx:tag>#2</ltx:mark>",
+	       mode=>'text', reversion=>'');
+
 #**********************************************************************
 # More Math environments.
 

@@ -16,7 +16,7 @@
 # ================================================================================
 # Startup actions: import the constructors
 { BEGIN{ use LaTeXML::MathParser qw(:constructors); 
-#$::RD_TRACE=1;
+### $::RD_TRACE=1;
 }}
   
 # Rules section
@@ -30,9 +30,16 @@
 #   moreFoos[$foo] : Looks for more Foo's w/appropriate punctuation or operators, 
 #     whatever is appropriate, and combines it with whatever was passed in as pattern arg.
 #   addFoo[$bar]  : Check for a following Foo and add it, as appropriate to the $bar.
+# ========================================
+# Note that Parse:RecDescent does NOT backtrack within a rule:
+#  If a given production succeeds, the rule succeeds, but even if the ultimate
+# parse fails, the parser will NOT go back and try another production within that rule!!!
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Top Level expressions; Just about anything?
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# In particular, many inline formula contain `half' a formula, with the lead-in
+# text effectively being the LHS. 
 
 Start	: Anything /^\Z/			{ $item[1]; }
 
@@ -40,6 +47,8 @@ Anything : Formulae
 	 | OPEN Formulae CLOSE		  { Fence($item[1],$item[2],$item[3]); }
 	 | modifierFormula
 	 | OPEN modifierFormula CLOSE	  { Fence($item[1],$item[2],$item[3]); }
+         | MODIFIER
+ 	 | MODIFIEROP Expression          { Apply($item[1],New('Empty'),$item[2]); }
 	 | anyop
 
 # a top level rule for sub and superscripts that can accept all sorts of junk.
@@ -55,18 +64,16 @@ Superscript : Formulae | relop | ADDOP | MULOP | supops
 # and group them into Formulae (collections of relations), including relations which have
 # punctuated collections of Expression(s) on either the LHS or RHS, 
 # as well as `MultiRelation' like a = b = c, or simply punctuated collections of Expression(s)
-# NOTE: also constraints [parenthesized modifier formulae like (>0)] could be sprinkled throughout.
-#  I'm trying to figure out _where_; they probably should `end' a formula in some sense?
-#  If I can fit it in here, perhaps addConstraint shouldn't be used on the lower level patterns?
-#  BUT, the constraint presumably only applies to the preceding RHS?
-# HOWEVER: sometimes such a thing would mean an alternative, or "respectively": Consider $a < 0 (> 0)$!!!
 
 Formulae : Formula moreFormulae[$item[1]]
 
 # moreFormulae[$formula]; Got a Formula, what can follow?
-moreFormulae : (PUNCT Formula { [$item[1],$item[2]]; })(s) { NewFormulae($arg[0],map(@$_,@{$item[1]})); }
+moreFormulae : (endPunct Formula { [$item[1],$item[2]]; })(s) { NewFormulae($arg[0],map(@$_,@{$item[1]})); }
 	     | METARELOP Formula                           { Apply($item[1],$arg[0],$item[2]); }
              |         	                                   { $arg[0]; }
+
+# Punctuation that ends a formula
+endPunct : PUNCT | PERIOD
 
 Formula : Expression extendFormula[$item[1]]
 
@@ -80,15 +87,14 @@ extendFormula :
 # maybeRHS[$expr,(punct,$expr)*]; 
 #    Could have RELOP Expression (which means the (collected LHS) relation RHS)
 #    or done (just collection)
-#maybeRHS : relop Expression                     { NewFormula(NewCollection(@arg), $item[1], $item[2]); }
-maybeRHS : relopExpr(s)                         { NewFormula(NewCollection(@arg),map(@$_,@{$item[1]})); }
-	|   	                                { NewCollection(@arg); }
+maybeRHS : relopExpr(s) { NewFormula(NewCollection(@arg),map(@$_,@{$item[1]})); }
+	| { NewCollection(@arg); }
 # --- either line could be followed by (>0)
 # For the latter, does a,b,c (<0) mean c<0 or all of them are <0 ????
 
 # moreRHS[$expr,$relop,$expr]; Could have more (relop Expression) or (punct Expression)*
 moreRHS : PUNCT Expression maybeColRHS[@arg,$item[1],$item[2]]
-	| relopExpr(s?)		{ NewFormula($arg[0],$arg[1],$arg[2],map(@$_,@{$item[1]})); }
+	| relopExpr(s?) { NewFormula($arg[0],$arg[1],$arg[2],map(@$_,@{$item[1]})); }
 # --- 1st line could be preceded by (>0) IF it ends up end of formula
 # --- 2nd line could be followed by (>0)
 
@@ -98,7 +104,7 @@ maybeColRHS :
         relop Expression moreRHS[$arg[$#arg],$item[1],$item[2]]
 	 { NewFormulae(NewFormula($arg[0],$arg[1],NewCollection(@arg[2..$#arg-2])),$arg[$#arg-1],$item[3]); }
 	| PUNCT Expression maybeColRHS[@arg,$item[1],$item[2]]
-	| 	     { NewFormula($arg[0],$arg[1],NewCollection(@arg[2..$#arg])); }
+	| { NewFormula($arg[0],$arg[1],NewCollection(@arg[2..$#arg])); }
 # --- 1st line handles it through more RHS ???
 # --- 2nd line could be preceded by (>0) if it ends formula
 # --- 3rd line could be followed by (>0)
@@ -122,7 +128,7 @@ modifierFormula : relop Expression punctExpr(s?)
 
 Expressions : Expression punctExpr(s?)		{ NewCollection($item[1],map(@$_,@{$item[2]})); }
 
-Expression  : SignedTerm moreTerms[[],$item[1]]
+Expression  : SignedTerm moreTerms[[],$item[1]] addExpressionModifier[$item[2]]
 
 # moreTerms[ [($term,$addop)*], $term];  Check for more addop & term's
 moreTerms    : ADDOP moreTerms2[$arg[0],$arg[1],$item[1]]
@@ -133,6 +139,22 @@ moreTerms    : ADDOP moreTerms2[$arg[0],$arg[1],$item[1]]
 moreTerms2   : Term moreTerms[ [@{$arg[0]},$arg[1],$arg[2]],$item[1] ]
 	    | { LeftRec(@{$arg[0]},Apply(New('LimitFrom'),$arg[1],$arg[2])); }
 
+
+addExpressionModifier :
+	  PUNCT(?) OPEN relop Expression balancedClose[$item[2]]
+	    { Apply(New('Annotated'),$arg[0],
+ 		    Fence($item[2], Apply($item[3],New('Empty'),$item[4]),$item[5])); }
+        | PUNCT(?) OPEN Expression relop Expression moreRHS[$item[3],$item[4],$item[5]] balancedClose[$item[2]]
+            { Apply(New('Annotated'),$arg[0],Fence($item[2],$item[6],$item[7])); }
+	| PUNCT(?) OPEN MODIFIEROP Expression balancedClose[$item[2]]
+            { Apply($item[3],$arg[0],$item[4]); }
+        | MODIFIER
+            { Apply(New('Annotated'),$arg[0],$item[1]); }
+	| MODIFIEROP Expression
+            { Apply($item[1],$arg[0],$item[2]); }
+	| { $arg[0]; }
+
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Terms: products of factors
 # Abstractly, things combined by operators binding tighter than addition
@@ -140,8 +162,18 @@ moreTerms2   : Term moreTerms[ [@{$arg[0]},$arg[1],$arg[2]],$item[1] ]
 
 SignedTerm : ADDOP Term				{ Apply($item[1],$item[2]); }
         | Term
-Term	: Factor (MULOP(?) Factor { [$item[1]->[0] || InvisibleTimes(), $item[2]]; })(s?)
-						{ LeftRec($item[1],map(@$_,@{$item[2]})); }
+
+### Term	: Factor (MULOP(?) Factor { [$item[1]->[0] || InvisibleTimes(), $item[2]]; })(s?)
+###					{ LeftRec($item[1],map(@$_,@{$item[2]})); }
+
+Term    : Factor moreFactors[$item[1]]
+moreFactors : MULOP Factor moreFactors[ApplyNary($item[1],$arg[0],$item[2])]
+###	    | evalAtOp POSTSUBSCRIPT moreFactors[Apply(New('AT'),$arg[0],Arg($item[2],0))]
+	    | { ($forbidEvalAt ? undef : 1); }
+	      evalAtOp POSTSUBSCRIPT moreFactors[Apply(New('AT'),$arg[0],Arg($item[3],0))]
+	    | Factor moreFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
+	    | { $arg[0]; }
+
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Factors: function applications, postfix on atoms, etc.
@@ -149,29 +181,62 @@ Term	: Factor (MULOP(?) Factor { [$item[1]->[0] || InvisibleTimes(), $item[2]]; 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Factor	: 
-	  preScripted['FUNCTION'] addArgs[$item[1]]
+	# These 2nd two are Iffy; hopefully the 1st rule will protect from backtrack?
+	  OPEN ARRAY CLOSE  { Fence($item[1],$item[2],$item[3]); }
+	| OPEN ARRAY  { Apply(New('LCases',undef,open=>$item[1]),$item[2]); }
+	| ARRAY CLOSE { Apply(New('RCases',undef,close=>$item[2]),$item[1]); }
+	| preScripted['FUNCTION'] addArgs[$item[1]]
+	| preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
+	| preScripted['TRIGFUNCTION'] addTrigFunArgs[$item[1]]
 	| preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
 	| preScripted['UNKNOWN'] doubtArgs[$item[1]]
 	| NUMBER   addScripts[$item[1]]
 	| SCRIPTOPEN scriptFactorOpen[$item[1]]
 	| OPEN factorOpen[$item[1]]
 #	| bigop addScripts[$item[1]] Term   { Apply($item[2],$item[3]); }
-	| bigop addScripts[$item[1]] addTerm[$item[2]]
-	| VERTBAR Expression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
-#	| OPERATOR addScripts[$item[1]] addOperatorArg[$item[2]]
-	| OPERATOR addScripts[$item[1]] nestOperators[$item[2]] addArgs[$item[3]]
-##        | DIFF addScripts[$item[1]]
+	| bigop addScripts[$item[1]] addOpArgs[$item[2]]
+	| VERTBAR absExpression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
+	| VERTBAR VERTBAR absExpression VERTBAR VERTBAR 
+             addScripts[Fence('||',$item[2],'||')]
+	| OPERATOR addScripts[$item[1]] nestOperators[$item[2]] addOpFunArgs[$item[3]]
 
-ATOM_OR_ID : ATOM | ID
+ATOM_OR_ID : ATOM | ID | ARRAY
+
+# Expression within Abs; inhibit |_{x} suffix (AT) 
+# since we can't backtrack to the close of the abs!!
+absExpression : <rulevar: local $forbidEvalAt = 1>
+absExpression : Expression
 
 # A restricted sort of Factor for the unparenthesized argument to a function.
 # Note f g h => f*g*h, but f g h x => f(g(h(x)))  Seems like what people mean...
 # Should there be a special case for trigs?
-barearg	: 
-	  preScripted['FUNCTION'] APPLYOP(?) requireArgs[$item[1]]
+barearg : aBarearg moreBareargs[$item[1]]
+aBarearg	: 
+	  preScripted['FUNCTION'] addArgs[$item[1]]
+	| preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
+	| preScripted['TRIGFUNCTION'] addTrigFunArgs[$item[1]]
 	| preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
 	| preScripted['UNKNOWN'] doubtArgs[$item[1]]
 	| NUMBER   addScripts[$item[1]]
+	| VERTBAR Expression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
+
+moreBareargs : MULOP aBarearg moreBareargs[ApplyNary($item[1],$arg[0],$item[2])]
+	    | aBarearg moreBareargs[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
+	    | { $arg[0]; }
+
+# A variation that does not allow a bare trig function
+trigBarearg : aTrigBarearg moreTrigBareargs[$item[1]]
+aTrigBarearg	: 
+	  preScripted['FUNCTION'] addArgs[$item[1]]
+	| preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
+	| preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
+	| preScripted['UNKNOWN'] doubtArgs[$item[1]]
+	| NUMBER   addScripts[$item[1]]
+	| VERTBAR Expression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
+moreTrigBareargs : MULOP aTrigBarearg moreTrigBareargs[ApplyNary($item[1],$arg[0],$item[2])]
+	    | aTrigBarearg moreTrigBareargs[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
+	    | { $arg[0]; }
+
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Adding pre|post sub|super scripts to various things.
@@ -182,8 +247,7 @@ addScripts :
           POSTSUBSCRIPT   addScriptsA[$arg[0],$item[1]]
 	| POSTSUPERSCRIPT addScriptsB[$arg[0],$item[1]]
 	| POSTFIX addScripts[Apply($item[1],$arg[0])]
-	| VERTBAR POSTSUBSCRIPT { Apply(New('AT'),$arg[0],Arg($item[2],0)); }
-#        | PRIME  addScripts[Apply($item[1],$arg[0])]
+####	| evalAtOp POSTSUBSCRIPT { Apply(New('AT'),$arg[0],Arg($item[2],0)); }
 	| { $arg[0]; }
 
 # addScriptsA[$base,$sub]
@@ -225,12 +289,13 @@ moreScriptsB : POSTSUBSCRIPT   addScripts[NewScripts($arg[0],$item[1],$arg[3],$a
 # ================================================================================
 # Factors that begin with OPEN; grouped expressions and objects like sets, intervals, etc.
 # factorOpen[$open] : Dealing with various things that start with an open.
-factorOpen : ADDOP balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1],$item[2])] # For (-) !?!?
-        # Parenthesized differential op possibly w/scripts
+factorOpen :
+	  ADDOP balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1],$item[2])] # For (-)
+        # Parenthesized Operator possibly w/scripts
         | bigop addScripts[$item[1]] balancedClose[$arg[0]] 
 	  	 addScripts[Fence($arg[0],$item[2],$item[3])] Factor
             { Apply($item[4],$item[5]); }
-	# Parenthesized differential op including a pre-factor
+	# Parenthesized Operator including a pre-factor
 	| Factor bigop addScripts[$item[2]] balancedClose[$arg[0]] 
 	     addScripts[Fence($arg[0],Apply(InvisibleTimes(),$item[1],$item[3]),$item[4])] Factor
           { Apply($item[5],$item[6]); }
@@ -243,30 +308,29 @@ factorOpenExpr :
 	# 2nd expression; some kind of pair, interval, set, whatever
          (PUNCT Expression { [$item[1],$item[2]]; })(s)  CLOSE
 		  addScripts[Fence($arg[0],$arg[1],map(@$_,@{$item[1]}),$item[2])]
-        # A conditionalized set (Can I check for an explicit { here??)
-#	| setBar Formulae CLOSE 
-#	  {  ApplyDelimited(New('Set',undef,role=>'FENCED'),
-#	                    $arg[0], $arg[1], $item[1], $item[2], $item[3]); }
 	# parenthesized expression.
 	| balancedClose[$arg[0]] addScripts[Fence($arg[0],$arg[1],$item[1])]
 
 # ================================================================================
 # Sets special cases
 # A conditionalized set
-scriptFactorOpen : Formula setBar Formulae balancedClose[$arg[0]]
-	  {  ApplyDelimited(New('ConditionalSet',undef,role=>'FENCED'),
-	                    $arg[0], $item[1],$item[2], $item[3],$item[4]); }
+scriptFactorOpen : Formula suchThatOp Formulae balancedClose[$arg[0]]
+###	  {  ApplyDelimited(New('ConditionalSet',undef,role=>'FENCED'),
+###	                    $arg[0], $item[1],$item[2], $item[3],$item[4]); }
+	  addScripts[ApplyDelimited(New('ConditionalSet',undef,role=>'FENCED'),
+	                            $arg[0], $item[1],$item[2], $item[3],$item[4])]
         # Else fall through to normal factorOpen
         | factorOpen[$arg[0]]
 
-# The bar that can appear in a set.
-setBar : MIDDLE | VERTBAR
+# The "such that" that can appear in a sets like {a "such that" predicate(a)}
+# accept vertical bars, and colon
+suchThatOp : MIDDLE | VERTBAR 
+	 | /METARELOP:colon:\d+/ { Lookup($item[1]); }
 # ================================================================================
 # Function args, etc.
 
 # maybeArgs[$function] ; Add arguments to an identifier, if made explict.
 maybeArgs : APPLYOP requireArgs[$arg[0]]
- 	  | OPEN addConstraint[$arg[0],$item[1]]
 	  | { $arg[0]; }
 
 # doubtArgs[$unknown]; Check for apparent arguments following an Unknown (unclassified) item.
@@ -279,65 +343,86 @@ doubtArgs : APPLYOP requireArgs[$arg[0]]
 #    If the following seems to be an argument list, warn.
 forbidArgs : Expression (PUNCT Expression)(s) balancedClose[$arg[1]] { MaybeFunction($arg[0]); undef; }
 	| Term balancedClose[$arg[1]]		{ MaybeFunction($arg[0]); undef; }
-	| addConstraint[$arg[0],$arg[1]]
 
 # requireArgs[$function]; Add arguments following a function, failing if it isn't there!
+# Typically this follows an explicit applyop
 requireArgs : OPEN Expression (argPunct Expression {[$item[1],$item[2]];})(s?) balancedClose[$item[1]]
  	  	  { ApplyDelimited($arg[0],$item[1],$item[2],map(@$_,@{$item[3]}),$item[4]); }
+        # Hmm, should only be applicable to _some_ functions ???		  
 	| barearg				{ Apply($arg[0],$item[1]); }
 
-# addArgs[$function]; Add following arguments to a function, if present.
-addArgs : APPLYOP(?) OPEN Expression (argPunct Expression {[$item[1],$item[2]];})(s?) balancedClose[$item[2]]
- 	  	  { ApplyDelimited($arg[0],$item[2],$item[3],map(@$_,@{$item[4]}),$item[5]); }
+# addArgs[$function]; We've got a function; Add following arguments to a function, if present.
+#    Also recognizes compostion type ops (something combining two functions into a function)
+addArgs : addEasyArgs[$arg[0]]
+	# Accept bare arg (w/o parens) ONLY if an explicit APPLYOP
+	| APPLYOP barearg				{ Apply($arg[0],$item[2]); }
+	| { $arg[0]; }   # Just return the function itself,then.
+
+# addOpFunArgs[$function]; Same as above but for functions classified as OPFUNCTION
+#  Ie operator-like functions such as \sin, that don't absolutely require parens around args.
+addOpFunArgs :
+          addEasyArgs[$arg[0]]
+        # Accept bare arg (w/o parens) for this class of functions.
 	| APPLYOP(?) barearg				{ Apply($arg[0],$item[2]); }
+	| { $arg[0]; }   # Just return the function itself,then.
+
+# addTrigFunArgs[$function]; Yet another variation;
+#   It differs in the barearg is restricted to non-trig
+addTrigFunArgs :
+          addEasyArgs[$arg[0]]
+        # Accept bare arg (w/o parens) for this class of functions.
+	| APPLYOP(?) trigBarearg			{ Apply($arg[0],$item[2]); }
+	| { $arg[0]; }   # Just return the function itself,then.
+
+# addEasyArgs[$function]; gets unambiguous compositions or parenthesized arguments
+#  These are the "easy" cases for addArgs and addOpFunArgs.
+addEasyArgs :
+	  COMPOSEOP preScripted['FUNCTION'] addArgs[Apply($item[1],$arg[0],$item[2])]
+		   { $item[3]; }
+        | COMPOSEOP preScripted['OPFUNCTION'] addOpFunArgs[Apply($item[1],$arg[0],$item[2])]
+		   { $item[3]; }
+        | COMPOSEOP preScripted['TRIGFUNCTION'] addTrigFunArgs[Apply($item[1],$arg[0],$item[2])]
+		   { $item[3]; }
+        |  APPLYOP(?) OPEN Expression (argPunct Expression {[$item[1],$item[2]];})(s?)
+                   balancedClose[$item[2]]
+ 	  	  { ApplyDelimited($arg[0],$item[2],$item[3],map(@$_,@{$item[4]}),$item[5]); }
+
+
+# addOpArgs[$bigop]; Add following Term to a bigop, if present.
+addOpArgs : APPLYOP(?) Factor moreOpArgFactors[$item[2]]	{ Apply($arg[0],$item[3]); }
 	| { $arg[0]; }
 
-# addTerm[$bigop]; Add following Term to a bigop, if present.
-addTerm : APPLYOP(?) Term				{ Apply($arg[0],$item[2]); }
-	| { $arg[0]; }
+# moreOpArgFactors[$factor1] : Similar to moreFactors, 
+#   but w/o evalAtOp since that most likely belongs to the operator, not the factors.
+moreOpArgFactors : MULOP Factor moreOpArgFactors[ApplyNary($item[1],$arg[0],$item[2])]
+	    | Factor moreOpArgFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
+	    | { $arg[0]; }
+
 
 # Punctuation separating function arguments; things marked MIDDLE could also separate arguments
 argPunct : PUNCT | MIDDLE
 
 # ================================================================================
-# Function args, etc.
-
-# addOperatorArg[$operator]; Add arguments to an operator, if present.
-addOperatorArg :
-	  OPERATOR addScripts[$item[1]] addOperatorArg[Apply($arg[0],$item[2])]
-	| FUNCTION addScripts[$item[1]] addArgs[Apply($arg[0],$item[2])]
-	| OPEN Expression balancedClose[$item[1]] addArgs[ApplyDelimited($arg[0],$item[1],$item[2],$item[3])]
-	| { $arg[0]; }
+# Operator args, etc.
 
 # nestOperators[$operator*]; Nest a possible sequence of operators
 nestOperators :
 	  OPERATOR addScripts[$item[1]] nestOperators[@arg,$item[2]]
 	| FUNCTION addScripts[$item[1]] { recApply(@arg,$item[2]); }
+	| OPFUNCTION addScripts[$item[1]] { recApply(@arg,$item[2]); }
+	| TRIGFUNCTION addScripts[$item[1]] { recApply(@arg,$item[2]); }
 	| OPEN Expression balancedClose[$item[1]] 
                { recApply(@arg[0..$#arg-1],ApplyDelimited($arg[$#arg],$item[1],$item[2],$item[3])); }
 	| { recApply(@arg); }
 
-# ================================================================================
-
-# addConstraint[$expr,$open]; An open followed expr, check if it is a `constraint'
-#   of the form (>0) or (a>b)
-addConstraint :
-	  relop Expression balancedClose[$arg[1]]
-	    { Apply(New('Annotated'),$arg[0],
- 		    Fence($arg[1], Apply($item[1],New('Empty'),$item[2]),$item[3])); }
-        | Expression relop Expression moreRHS[$item[1],$item[2],$item[3]] balancedClose[$arg[1]]
-            { Apply(New('Annotated'),$arg[0],Fence($arg[1],$item[4],$item[5])); }
-
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Pseudo-Terminals. 
-#  Useful combinations of terminals.
+#  Useful combinations or subsets of terminals.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 anyop   : relop | METARELOP | ARROW | ADDOP | MULOP 
 	| bigop addScripts[$item[1]] 
 	| OPERATOR addScripts[$item[1]]
-
-##QOp     : relop | ADDOP | MULOP | ATOM		{ $item[1]; }
 
 relop	: RELOP | ARROW
 
@@ -346,11 +431,20 @@ relop	: RELOP | ARROW
 bigop   : BIGOP | SUMOP | INTOP | LIMITOP | DIFFOP
 operator: OPERATOR
 
+# SUPOP is really only \prime(s) (?)
 supops   : SUPOP(s)				{ New('prime'.scalar(@{$item[1]}),
 	   					      join('',map($_->textContent,@{$item[1]}))); }
 
+# ================================================================================
+# And some special cases...
+
 # Match a CLOSE that `corresponds' to the OPEN
 balancedClose : CLOSE { isMatchingClose($arg[0],$item[1]) && $item[1]; }
+
+# The "evaluated at" operator, typically a vertical bar followed by a subscript equation
+# But it is ofen used in \left. \right| pairs!
+evalAtOp : VERTBAR
+	 | /CLOSE:\|:\d+/  { Lookup($item[1]); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Terminals.
@@ -364,18 +458,29 @@ balancedClose : CLOSE { isMatchingClose($arg[0],$item[1]) && $item[1]; }
 ATOM     	: /ATOM:\S*:\d+/            { Lookup($item[1]); }
 UNKNOWN		: /UNKNOWN:\S*:\d+/ 	    { Lookup($item[1]); }
 ID		: /ID:\S*:\d+/ 		    { Lookup($item[1]); }
+ARRAY		: /ARRAY:\S*:\d+/	    { Lookup($item[1]); }
+NUMBER      	: /NUMBER:\S*:\d+/ 	    { Lookup($item[1]); }
 PUNCT		: /PUNCT:\S*:\d+/ 	    { Lookup($item[1]); }
-APPLYOP		: /APPLYOP:\S*:\d+/ 	    { Lookup($item[1]); }
+PERIOD		: /PERIOD:\S*:\d+/ 	    { Lookup($item[1]); }
 RELOP		: /RELOP:\S*:\d+/ 	    { Lookup($item[1]); }
 METARELOP	: /METARELOP:\S*:\d+/ 	    { Lookup($item[1]); }
+MODIFIEROP      : /MODIFIEROP:\S*:\d+/ 	    { Lookup($item[1]); }
+MODIFIER        : /MODIFIER:\S*:\d+/ 	    { Lookup($item[1]); }
 ARROW		: /ARROW:\S*:\d+/ 	    { Lookup($item[1]); }
 ADDOP		: /ADDOP:\S*:\d+/ 	    { Lookup($item[1]); }
 MULOP		: /MULOP:\S*:\d+/ 	    { Lookup($item[1]); }
+POSTFIX		: /POSTFIX:\S*:\d+/ 	    { Lookup($item[1]); }
+FUNCTION        : /FUNCTION:\S*:\d+/ 	    { Lookup($item[1]); }
+OPFUNCTION      : /OPFUNCTION:\S*:\d+/ 	    { Lookup($item[1]); }
+TRIGFUNCTION    : /TRIGFUNCTION:\S*:\d+/    { Lookup($item[1]); }
+APPLYOP		: /APPLYOP:\S*:\d+/ 	    { Lookup($item[1]); }
+COMPOSEOP	: /COMPOSEOP:\S*:\d+/ 	    { Lookup($item[1]); }
 SUPOP		: /SUPOP:\S*:\d+/ 	    { Lookup($item[1]); }
 OPEN		: /OPEN:\S*:\d+/ 	    { Lookup($item[1]); }
 SCRIPTOPEN	: /OPEN:\{:\d+/ 	    { Lookup($item[1]); }
 CLOSE		: /CLOSE:\S*:\d+/ 	    { Lookup($item[1]); }
 MIDDLE		: /MIDDLE:\S*:\d+/ 	    { Lookup($item[1]); }
+VERTBAR		: /VERTBAR:\S*:\d+/ 	    { Lookup($item[1]); }
 BIGOP		: /BIGOP:\S*:\d+/ 	    { Lookup($item[1]); }
 SUMOP		: /SUMOP:\S*:\d+/ 	    { Lookup($item[1]); }
 INTOP		: /INTOP:\S*:\d+/ 	    { Lookup($item[1]); }
@@ -383,14 +488,9 @@ LIMITOP		: /LIMITOP:\S*:\d+/ 	    { Lookup($item[1]); }
 DIFFOP		: /DIFFOP:\S*:\d+/ 	    { Lookup($item[1]); }
 OPERATOR	: /OPERATOR:\S*:\d+/ 	    { Lookup($item[1]); }
 ##DIFF		: /DIFF:\S*:\d+/ 	    { Lookup($item[1]); }
-VERTBAR		: /VERTBAR:\S*:\d+/ 	    { Lookup($item[1]); }
-FUNCTION        : /FUNCTION:\S*:\d+/ 	    { Lookup($item[1]); }
-NUMBER      	: /NUMBER:\S*:\d+/ 	    { Lookup($item[1]); }
 POSTSUPERSCRIPT : /POSTSUPERSCRIPT:\S*:\d+/ { Lookup($item[1]); }
 POSTSUBSCRIPT   : /POSTSUBSCRIPT:\S*:\d+/   { Lookup($item[1]); }
 FLOATINGSUPERSCRIPT  : /FLOATINGSUPERSCRIPT:\S*:\d+/  { Lookup($item[1]); }
 FLOATINGSUBSCRIPT    : /FLOATINGSUBSCRIPT:\S*:\d+/    { Lookup($item[1]); }
-POSTFIX		: /POSTFIX:\S*:\d+/ 	    { Lookup($item[1]); }
-##PRIME		: /PRIME:\S*:\d+/ 	    { Lookup($item[1]); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

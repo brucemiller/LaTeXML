@@ -61,13 +61,15 @@ DefMacro('\theenumiv',          '\Alph{enumiv}');
 
 Tag('ltx:appendix',autoClose=>1);
 DefPrimitive('\appendix',sub{
-  resetCounter('section');
-  DefMacro('\thesection',      '\Alph{section}');
-  DefConstructor('\section OptionalMatch:* []{}',
-		 "<ltx:appendix ?#refnum(refnum='#refnum')>"
-		 .  "<ltx:title>#3</ltx:title>"
-		 .  "?#2(<ltx:toctitle>#2</ltx:toctitle>)",
-		 properties => { refnum => sub{ $_[1] && refStepCounter('section'); }}); });
+  NewCounter('section', undef, idprefix=>'A',nested=>['subsection']);
+  Let('\\@@section'=>'\\@@appendix');
+ });
+DefConstructor('\\@@appendix[][][]{}',
+	       "<ltx:appendix ?#1(refnum='#1') id='#2'>"
+	       . "<ltx:title>#4</ltx:title>"
+	       . "?#3(<ltx:toctitle>#3</ltx:toctitle>)",
+	       bounded=>1);
+
 
 #**********************************************************************
 1;

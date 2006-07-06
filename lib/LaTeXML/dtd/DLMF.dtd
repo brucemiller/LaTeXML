@@ -43,6 +43,7 @@
 <!ENTITY % LaTeXML.origref.qname          "%LaTeXML.pfx;origref">
 <!ENTITY % LaTeXML.constraint.qname       "%LaTeXML.pfx;constraint">
 <!ENTITY % LaTeXML.declare.qname          "%LaTeXML.pfx;declare">
+<!ENTITY % LaTeXML.mark.qname             "%LaTeXML.pfx;mark">
 <!ENTITY % LaTeXML.bib-links.qname        "%LaTeXML.pfx;bib-links">
 
 <!ENTITY % LaTeXML-extra.Inline.class
@@ -52,7 +53,8 @@
 <!ENTITY % LaTeXML-extra.Misc.class
 	 "| %LaTeXML.electroniconly.qname; | %LaTeXML.printonly.qname;">
 <!ENTITY % LaTeXML-extra.Meta.class
-	 "| %LaTeXML.origref.qname; | %LaTeXML.constraint.qname; | %LaTeXML.declare.qname;">
+	 "| %LaTeXML.origref.qname; | %LaTeXML.constraint.qname;
+	  | %LaTeXML.declare.qname;  | %LaTeXML.mark.qname; ">
 <!ENTITY % LaTeXML-extra.Bibentry.class
 	 "| %LaTeXML.bib-links.qname;">
 
@@ -60,6 +62,8 @@
 	 "| %LaTeXML.affiliation.qname; | %LaTeXML.acknowledgements.qname;
 	  | %LaTeXML.sidebar.qname; | %LaTeXML.gallery.qname; | %LaTeXML.copyright.qname;">
 
+<!ENTITY % LaTeXML-extra.XMath.attrib
+	 " dec_id CDATA #IMPLIED">
 <!-- We're going to redefine the document structure, but we'll need the qnames.-->
 <!ENTITY % LaTeXML-structure.module  "IGNORE" >
 <!ENTITY % LaTeXML-structure-qname.mod   SYSTEM "LaTeXML-structure-qname-1.mod">
@@ -70,9 +74,10 @@
 %LaTeXML.dtd; 
 
 <!-- Redefined document structure -->
+<!-- ??	  (%LaTeXML.part.qname; | %LaTeXML.note.qname;)*, -->
 <!ELEMENT %LaTeXML.chapter.qname;
           ((%LaTeXML.FrontMatter.class; %LaTeXML.Meta.class;)*, 
-	  (%LaTeXML.part.qname; | %LaTeXML.note.qname;)*,
+	  (%LaTeXML.part.qname;)*,
 	  (%LaTeXML.BackMatter.class;)*)>
 <!ELEMENT %LaTeXML.part.qname;
           ((%LaTeXML.SectionalFrontMatter.class;)*,
@@ -170,6 +175,10 @@
 <!ELEMENT %LaTeXML.origref.qname; %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.origref.qname;
           ref CDATA #IMPLIED>
+
+<!ELEMENT %LaTeXML.mark.qname;   ((%LaTeXML.tag.qname;)?, %LaTeXML.text.qname;)>
+<!ATTLIST %LaTeXML.mark.qname;
+	  type CDATA #REQUIRED>
 
 <!ELEMENT %LaTeXML.declare.qname; (%LaTeXML.tag.qname;)?>
 <!ATTLIST %LaTeXML.declare.qname;

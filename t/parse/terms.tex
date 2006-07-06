@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage{latexml}
+\begin{document}
+\lxDeclare[role=ID]{$a$}%
+\lxDeclare[role=ID]{$b$}%
+\lxDeclare[role=ID]{$c$}%
+\lxDeclare[role=ID]{$d$}%
+\lxDeclare[role=ID]{$e$}%
+
+\section{Basic math}
+\[ a + b + c - d + e \]
+\[ a + b c - d  e \]
+\[ a b c / d e \]
+\[ a \times b \times c / d \times e \]
+
+\section{Evaluate At}
+\[  a |_\infty \]
+\[ a b |_{a=0} c d |_{c=0} e \]
+
+\section{Absolute values}
+\[  |a| \]
+\[ ||a|| \]
+\[  |a |_\infty \]
+\[  |a + b| \]
+\[  |a - |b|| \]
+
+\section{Failures w/o Backtracking}
+\[  ||a| - |b|| \]
+\[ ||a|-b| \]
+\[  |a | b |_\infty \]
+\[  |a b |_\infty c | \]
+
+\end{document}

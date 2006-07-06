@@ -1,0 +1,35 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{amsmath}
+\lxDeclare[role=ID]{$a$}%
+\lxDeclare[role=ID]{$b$}%
+\lxDeclare[role=ID]{$c$}%
+\lxDeclare[role=ID]{$d$}%
+\lxDeclare[role=ID]{$e$}%
+\begin{document}
+
+\section{Grouping in multi-relations}
+\[ a=b=c=d=e \]
+\[ a=b,c=d   \]
+\[ a=b,c,d,e \]
+\[ a=b,c,d=e \]
+\[ a=b>c\le d=e \]
+
+\paragraph{But period is somewhat different!}
+\[ a=b,c.d=e \]
+\[ a=b.c,d=e \]
+
+
+\section{Arrows as meta-relation}
+\[ a=b \rightarrow c\le d=e \]
+\[ a=b,c \rightarrow d=e \]
+\[ a=b \leftrightarrow c\le d=e \]
+\[ a=b,c \leftrightarrow d=e \]
+
+\section{Other Meta relations}
+\[ a (< e) \]
+\[ a; (< e) \]
+\[ a = b + c + d (< e) \]
+\[ a = b + c + d \mod e \]
+ 
+\end{document}

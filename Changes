@@ -1,7 +1,28 @@
-0.5.0  2006-04-22
+0.5.1  2006-04-27
+     - Release 0.5.1
+
+0.5.x  2006-04-24
+     - Refined the math grammar, added some test cases.
+
+0.5.x  2006-04-09
+     - Fixed up some math grammatical quirks, 
+       redefined default role for :, \mid
+
+     - Corrected handling of \left.,\right.
+
+     - Fixed up Presentation MathML handling of unsuccessfully
+       parsed math.
+
+0.5.x  2006-03-28
+     - straightened out some namespace mismatches in DTD's
+
+     - Updated documentation to reflect current commands & API's
+
+
+0.5.0  2006-03-22
      - Release 0.4.0
 
-0.4.x  2006-04-18
+0.4.x  2006-03-18
      - Defined \LXDeclMath for "Math Declarations" in latexml package.
        These declarations can be embedded in the TeX Source.
        Basically these define patterns to match to scoped portions

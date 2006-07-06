@@ -524,8 +524,9 @@ DefMath('\rVert',"\x{2225}", role=>'CLOSE'); # PARALLEL TO
 
 #======================================================================
 # Section 5.2 \mod and it's relatives
-#  \mod, \bmod, \pmod which are already in LaTeX
-DefMath('\pod{}', '(#1)', role=>'POSTFIX'); # Well, sorta postfix..
+# \bmod, \pmod which are already in LaTeX
+DefMath('\mod',    'mod', role=>'MODIFIEROP');
+DefMath('\pod{}', '(#1)', role=>'MODIFIER'); # Well, sorta postfix..
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 6 The \text command

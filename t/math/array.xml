@@ -8,41 +8,41 @@
       <equation id="Ex1">
         <Math mode="display" tex="\begin{array}{ccc}a&amp;b&amp;c\\ c&amp;&amp;d\\\\ e&amp;f\\\end{array}" text="Array@(Row@(Cell@(a), Cell@(b), Cell@(c)), Row@(Cell@(c), Cell@(d)), Row@(Cell@(e), Cell@(f)))">
           <XMath>
-            <XMApp>
+            <XMApp role="ARRAY">
               <XMTok name="Array"/>
-              <XMApp>
+              <XMApp role="ARRAY">
                 <XMTok name="Row"/>
-                <XMApp>
+                <XMApp role="ARRAY">
                   <XMTok name="Cell"/>
                   <XMTok role="UNKNOWN" font="italic">a</XMTok>
                 </XMApp>
-                <XMApp>
+                <XMApp role="ARRAY">
                   <XMTok name="Cell"/>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>
                 </XMApp>
-                <XMApp>
+                <XMApp role="ARRAY">
                   <XMTok name="Cell"/>
                   <XMTok role="UNKNOWN" font="italic">c</XMTok>
                 </XMApp>
               </XMApp>
-              <XMApp>
+              <XMApp role="ARRAY">
                 <XMTok name="Row"/>
-                <XMApp>
+                <XMApp role="ARRAY">
                   <XMTok name="Cell"/>
                   <XMTok role="UNKNOWN" font="italic">c</XMTok>
                 </XMApp>
-                <XMApp>
+                <XMApp role="ARRAY">
                   <XMTok name="Cell"/>
                   <XMTok role="UNKNOWN" font="italic">d</XMTok>
                 </XMApp>
               </XMApp>
-              <XMApp>
+              <XMApp role="ARRAY">
                 <XMTok name="Row"/>
-                <XMApp>
+                <XMApp role="ARRAY">
                   <XMTok name="Cell"/>
                   <XMTok role="UNKNOWN" font="italic">e</XMTok>
                 </XMApp>
-                <XMApp>
+                <XMApp role="ARRAY">
                   <XMTok name="Cell"/>
                   <XMTok role="UNKNOWN" font="italic">f</XMTok>
                 </XMApp>

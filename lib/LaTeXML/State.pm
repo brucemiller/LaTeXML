@@ -81,8 +81,16 @@ sub lookupValue { $_[0]->{table}{'value:'.$_[1]}[0]; }
 sub assignValue { assign_internal($_[0],'value:'.$_[1], $_[2],$_[3]); }
 
 sub pushValue {
-  my($self,$name,$value)=@_;
-  unshift(@{$$self{table}{'value:'.$name}[0]},$value); }
+  my($self,$name,@values)=@_;
+  my $key = 'value:'.$name;
+  assign_internal($self,$key,[],'global') unless $$self{table}{$key}[0];
+  push(@{$$self{table}{$key}[0]},@values); }
+
+sub unshiftValue {
+  my($self,$name,@values)=@_;
+  my $key = 'value:'.$name;
+  assign_internal($self,$key,[],'global') unless $$self{table}{$key}[0];
+  unshift(@{$$self{table}{$key}[0]},@values); }
 
 #======================================================================
 # Was $name bound?  If  $frame is given, check only whether it is bound in 

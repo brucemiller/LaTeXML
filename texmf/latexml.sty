@@ -45,8 +45,8 @@
 % Define a math function such that the TeX output is what you might
 % expect, while providing the semantic hooks for generating useful xml.
 
-% \LXMathDef{cmd}[nargs][optional]{expansion}[semanticprops]
-\providecommand{\LXMathDef}{\lx@mathdef}
+% \lxMathDef{cmd}[nargs][optional]{expansion}[semanticprops]
+\providecommand{\lxMathDef}{\lx@mathdef}
 \def\lx@mathdef#1{%
   \@ifnextchar[{\lx@mathdef@a{#1}}{\lx@mathdef@a{#1}[]}}
 \def\lx@mathdef@a#1[#2]{%
@@ -59,15 +59,15 @@
   \@ifnextchar[{\lx@@skipopt}{}}
 \def\lx@@skipopt[#1]{}
 
-% \LXDeclMath[declarations]{match}
-\newcommand{\LXDeclMath}[2][]{}%
-% \LXDeclRef{label}
-\newcommand{\LXDeclRef}[1]{}%
-% \LXMathDef{\cs}[nargs][optargs]{presentation}[declarations]
-\def\LXDefMath#1{\@ifnextchar[{\LXDefMath@}{\LXDefMath@[]}}%
-\def\LXDefMath@[#1]{\@ifnextchar[{\LXDefMath@@}{\LXDefMath@@[]}}%
-\def\LXDefMath@@[#1]#2{\@ifnextchar[{\LXDefMath@@@}{}}%
-\def\LXDefMath@@@[#1]{}%
+% \lxDeclare[declarations]{match}
+\newcommand{\lxDeclare}[2][]{}%
+% \LxDeclRef{label}
+\newcommand{\lxRefDeclaration}[1]{}%
+% \LxMathDef{\cs}[nargs][optargs]{presentation}[declarations]
+\def\lxDefMath#1{\@ifnextchar[{\LxDefMath@}{\LxDefMath@[]}}%
+\def\lxDefMath@[#1]{\@ifnextchar[{\LxDefMath@@}{\LxDefMath@@[]}}%
+\def\lxDefMath@@[#1]#2{\@ifnextchar[{\LxDefMath@@@}{}}%
+\def\lxDefMath@@@[#1]{}%
 
 % NOTE: It would be good to incorporate Scoping into this macro.
 % As defined, it obeys TeX's usual grouping scope.
@@ -87,3 +87,7 @@
 % Expose other declarative macros
 \def\LXMID#1#2{\expandafter\gdef\csname xmarg#1\endcsname{#2}\csname xmarg#1\endcsname}
 \def\LXMRef#1{\csname xmarg#1\endcsname}
+\providecommand{\lxFcn}[1]{#1}
+\providecommand{\lxID}[1]{#1}
+\providecommand{\lxPunct}[1]{#1}
+

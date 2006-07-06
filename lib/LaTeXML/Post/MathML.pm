@@ -142,6 +142,7 @@ sub pmml_internal {
   my($node)=@_;
   return ['merror',{},['mtext',{},"Missing Subexpression"]] unless $node;
   my $tag = $node->nodeName;
+  my $role = $node->getAttribute('role');
   if($tag eq 'XMath'){
     pmml_row(map(pmml($_), element_nodes($node))); } # Really multiple nodes???
   elsif($tag eq 'XMDual'){
@@ -153,13 +154,15 @@ sub pmml_internal {
     my($op,@args) = element_nodes($node);
     if(!$op){
       ['merror',{},['mtext',{},"Missing Operator"]]; }
+    elsif($role && ($role =~ /^POST(SUB|SUPER)SCRIPT$/)){
+      pmml_unparsed_script($role,$op); }
     else {
       $op = realize($op);		# NOTE: Could loose open/close on XMRef ???
       &{ lookupPresenter('Apply',$op->getAttribute('role'),getTokenName($op)) }($op,@args); }}
   elsif($tag eq 'XMTok'){
-    &{ lookupPresenter('Token',$node->getAttribute('role'),getTokenName($node)) }($node); }
+    &{ lookupPresenter('Token',$role,getTokenName($node)) }($node); }
   elsif($tag eq 'XMHint'){
-    &{ lookupPresenter('Hint',$node->getAttribute('role'),getTokenName($node)) }($node); }
+    &{ lookupPresenter('Hint',$role,getTokenName($node)) }($node); }
   else {
     ['mtext',{},$node->textContent]; }}
 
@@ -245,6 +248,14 @@ sub pmml_mo {
 	 (((ref $op && $op->getAttribute('stackscripts'))||'no') eq 'yes' ? (movablelimits=>'false'):())},
    $content]; }
 
+## POSTSUBSCRIPT | POSTSUPERSCRIPT should not remain in successfully parsed math.
+# This gives something `presentable', though not correct.
+# What to use for base? I can't reasonably go up & grap the preceding token...
+# I doubt an empty <mi/> is valid, but what is?
+sub pmml_unparsed_script {
+  my($type,$script)=@_;
+  [ ($type eq 'POSTSUBSCRIPT' ? 'msub' : 'msup' ), {}, ['mi'],pmml($script)]; }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Support functions for Content MathML
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -319,6 +330,7 @@ DefMathML("Token:RELOP:leq",     undef,     sub { ['leq'];}); # NOTE: Unify \le 
 DefMathML("Token:RELOP:geq",     undef,     sub { ['geq'];}); # NOTE: Unify \ge and \geq
 
 DefMathML("Token:PUNCT:?",       \&pmml_mo);
+DefMathML("Token:PERIOD:?",      \&pmml_mo);
 DefMathML("Token:SUMOP:?",       \&pmml_mo);
 DefMathML("Token:INTOP:?",       \&pmml_mo);
 DefMathML("Token:LIMITOP:?",     \&pmml_mo);
@@ -339,33 +351,33 @@ DefMathML("Token:?:\x{2061}", \&pmml_mo); # FUNCTION APPLICATION
 DefMathML("Token:?:\x{2062}", \&pmml_mo); # INVISIBLE TIMES
 
 
-DefMathML("Token:FUNCTION:exp",      undef, sub { ['exp']; });
-DefMathML("Token:FUNCTION:ln",       undef, sub { ['ln']; });
-DefMathML("Token:FUNCTION:log",      undef, sub { ['log']; });
-DefMathML("Token:FUNCTION:sin",      undef, sub { ['sin']; });
-DefMathML("Token:FUNCTION:cos",      undef, sub { ['cos']; });
-DefMathML("Token:FUNCTION:tan",      undef, sub { ['tan']; });
-DefMathML("Token:FUNCTION:sec",      undef, sub { ['sec']; });
-DefMathML("Token:FUNCTION:csc",      undef, sub { ['csc']; });
-DefMathML("Token:FUNCTION:cot",      undef, sub { ['cot']; });
-DefMathML("Token:FUNCTION:sinh",     undef, sub { ['sinh']; });
-DefMathML("Token:FUNCTION:cosh",     undef, sub { ['cosh']; });
-DefMathML("Token:FUNCTION:tanh",     undef, sub { ['tanh']; });
-DefMathML("Token:FUNCTION:sech",     undef, sub { ['sech']; });
-DefMathML("Token:FUNCTION:csch",     undef, sub { ['csch']; });
-DefMathML("Token:FUNCTION:coth",     undef, sub { ['coth']; });
-DefMathML("Token:FUNCTION:arcsin",   undef, sub { ['arcsin']; });
-DefMathML("Token:FUNCTION:arccos",   undef, sub { ['arccos']; });
-DefMathML("Token:FUNCTION:arctan",   undef, sub { ['arctan']; });
-DefMathML("Token:FUNCTION:arccosh",  undef, sub { ['arccosh']; });
-DefMathML("Token:FUNCTION:arccot",   undef, sub { ['arccot']; });
-DefMathML("Token:FUNCTION:arccoth",  undef, sub { ['arccoth']; });
-DefMathML("Token:FUNCTION:arccsc",   undef, sub { ['arcscsc']; });
-DefMathML("Token:FUNCTION:arccsch",  undef, sub { ['arccsch']; });
-DefMathML("Token:FUNCTION:arcsec",   undef, sub { ['arcsec']; });
-DefMathML("Token:FUNCTION:arcsech",  undef, sub { ['arcsech']; });
-DefMathML("Token:FUNCTION:arcsinh",  undef, sub { ['arcsinh']; });
-DefMathML("Token:FUNCTION:arctanh",  undef, sub { ['arctanh']; });
+DefMathML("Token:OPFUNCTION:exp",      undef, sub { ['exp']; });
+DefMathML("Token:OPFUNCTION:ln",       undef, sub { ['ln']; });
+DefMathML("Token:OPFUNCTION:log",      undef, sub { ['log']; });
+DefMathML("Token:TRIGFUNCTION:sin",    undef, sub { ['sin']; });
+DefMathML("Token:TRIGFUNCTION:cos",    undef, sub { ['cos']; });
+DefMathML("Token:TRIGFUNCTION:tan",    undef, sub { ['tan']; });
+DefMathML("Token:TRIGFUNCTION:sec",    undef, sub { ['sec']; });
+DefMathML("Token:TRIGFUNCTION:csc",    undef, sub { ['csc']; });
+DefMathML("Token:TRIGFUNCTION:cot",    undef, sub { ['cot']; });
+DefMathML("Token:TRIGFUNCTION:sinh",   undef, sub { ['sinh']; });
+DefMathML("Token:TRIGFUNCTION:cosh",   undef, sub { ['cosh']; });
+DefMathML("Token:TRIGFUNCTION:tanh",   undef, sub { ['tanh']; });
+DefMathML("Token:TRIGFUNCTION:sech",   undef, sub { ['sech']; });
+DefMathML("Token:TRIGFUNCTION:csch",   undef, sub { ['csch']; });
+DefMathML("Token:TRIGFUNCTION:coth",   undef, sub { ['coth']; });
+DefMathML("Token:OPFUNCTION:arcsin",   undef, sub { ['arcsin']; });
+DefMathML("Token:OPFUNCTION:arccos",   undef, sub { ['arccos']; });
+DefMathML("Token:OPFUNCTION:arctan",   undef, sub { ['arctan']; });
+DefMathML("Token:OPFUNCTION:arccosh",  undef, sub { ['arccosh']; });
+DefMathML("Token:OPFUNCTION:arccot",   undef, sub { ['arccot']; });
+DefMathML("Token:OPFUNCTION:arccoth",  undef, sub { ['arccoth']; });
+DefMathML("Token:OPFUNCTION:arccsc",   undef, sub { ['arcscsc']; });
+DefMathML("Token:OPFUNCTION:arccsch",  undef, sub { ['arccsch']; });
+DefMathML("Token:OPFUNCTION:arcsec",   undef, sub { ['arcsec']; });
+DefMathML("Token:OPFUNCTION:arcsech",  undef, sub { ['arcsech']; });
+DefMathML("Token:OPFUNCTION:arcsinh",  undef, sub { ['arcsinh']; });
+DefMathML("Token:OPFUNCTION:arctanh",  undef, sub { ['arctanh']; });
 
 
 # Token elements:
@@ -527,6 +539,14 @@ DefMathML('Apply:?:pdiff', sub {
 DefMathML('Apply:?:Cases', sub {
   my($op,@cases)=@_;
   ['mrow',{},pmml_mo('{'), ['mtable',{},map(pmml($_),@cases)]]; });
+
+DefMathML('Apply:?:RCases', sub {
+  my($op,$array)=@_;
+  pmml_parenthesize(pmml($array),undef,$op->getAttribute('close')); });
+
+DefMathML('Apply:?:LCases', sub {
+  my($op,$array)=@_;
+  pmml_parenthesize(pmml($array),$op->getAttribute('open'),undef); });
 
 DefMathML('Apply:?:Case',sub {
   my($op,@cells)=@_;

@@ -55,7 +55,7 @@ sub MY::postamble {
 sub compile_MathGrammar {
   push(@EXCLUSIONS,'blib/lib/LaTeXML/MathGrammar');
   $MORE_MAKERULES .= <<'MakeGrammar';
-all :: blib/lib/LaTeXML/MathGrammar.pm
+pure_all :: blib/lib/LaTeXML/MathGrammar.pm
 
 blib/lib/LaTeXML/MathGrammar.pm: lib/LaTeXML/MathGrammar
 	$(PERLRUN) -MParse::RecDescent - lib/LaTeXML/MathGrammar LaTeXML::MathGrammar

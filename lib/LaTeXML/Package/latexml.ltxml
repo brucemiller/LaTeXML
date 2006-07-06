@@ -16,6 +16,7 @@
 #======================================================================
 package LaTeXML::Package::Pool;
 use LaTeXML::Package;
+no warnings 'redefine';
 
 RequirePackage('keyval');
 
@@ -42,14 +43,22 @@ DefMacro('\LXMID{}{}','\@XMArg{#1}{#2}');
 # In content situations, an XMRef is generated.
 DefMacro('\LXMRef{}','\@XMRef{#1}');
 
+# \LxFcn{f} treat f as a function here (only).
+DefConstructor('\lxFcn{}',"<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", 
+	       requireMath=>1, reversion=>'#1', alias=>'');
+DefConstructor('\lxID{}',  "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>", 
+	       requireMath=>1, reversion=>'#1', alias=>'');
+DefConstructor('\lxPunct{}',"<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>", 
+	       requireMath=>1, reversion=>'#1', alias=>'');
+
 #======================================================================
 # Define a mathematical object with both presentation & content information
-#   \LXDefMath{\name}[nargs][optional]{presentation body}[content keywords]
+#   \lxDefMath{\name}[nargs][optional]{presentation body}[content keywords]
 #  The first part is essentially equivalent to \newcommand, it defines
 # an expansion for \name used for the presentation.
 # The content keywords are used to define the semantics of the object.
 # See DefMath in LaTeXML::Package for more information.
-DefPrimitive('\LXDefMath{}[][]{} OptionalKeyVals:XMath', sub {
+DefPrimitive('\lxDefMath{}[][]{} OptionalKeyVals:XMath', sub {
   my($stomach,$cs,$nargs,$opt,$presentation,$params)=@_;
   my($name,$cd,$role)=$params && map($_ && $_->toString,map($params->getValue($_), qw(name cd role)));
   DefMath($cs->toString.convertLaTeXArgs($nargs,$opt),$presentation,
@@ -69,7 +78,7 @@ DefPrimitive('\LXDefMath{}[][]{} OptionalKeyVals:XMath', sub {
 #            If unspecified, the declaration is scoped to the current unit.
 #            Note that this applies to equations, as well.
 #    label=<label> : assigns a label to the declaration so that it can be reused
-#            at another point in the document (with \LXDeclRef), particularly when
+#            at another point in the document (with \lxRefDeclaration), particularly when
 #            that point is not otherwise within the scope of the original declaration.
 # To effect the declaration:
 #    role=<role>  : Assigns a grammatical role to the matched item for parsing.
@@ -83,8 +92,17 @@ DefPrimitive('\LXDefMath{}[][]{} OptionalKeyVals:XMath', sub {
 
 DefKeyVal('Declare','wrap','{}',1);
 DefKeyVal('Declare','trace','{}',1);
-DefConstructor('\LXDeclMath OptionalMatch:* OptionalKeyVals:Declare {}',
-	       "^<ltx:declare id='#id'>?&KeyVal(#2,tag)(<ltx:tag>&KeyVal(#2,tag)</ltx:tag>)</ltx:declare>",
+our $declare_keys = {scope=>1,role=>1,tag=>1,name=>1,trace=>1,wrap=>1,replace=>1,label=>1};
+DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
+##	       "^<ltx:declare id='#id'>?&KeyVal(#2,tag)(<ltx:tag>&KeyVal(#2,tag)</ltx:tag>)</ltx:declare>",
+	       sub { my($document,$flag,$kv,$pattern,%props)=@_;
+		     if(my $id = $props{id}){
+		       my $save = $document->floatToElement('ltx:declare');
+		       $document->openElement('ltx:declare',id=>$id);
+		       if(my $tag = $kv->getValue('tag')){
+			 $document->insertElement('ltx:tag',$tag); }
+		       $document->closeElement('ltx:declare');
+		       $document->setNode($save); }},
 	       mode=>'text',
 	       # Screwy bit to `neutralize' the font in the matches.
 	       beforeDigest=>sub { AssignValue(font=>LaTeXML::Font->new(),'local');
@@ -93,23 +111,32 @@ DefConstructor('\LXDeclMath OptionalMatch:* OptionalKeyVals:Declare {}',
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my($star,$keys,$pattern)=$whatsit->getArgs;
 				  return unless $keys;
+				  CheckOptions("\\lxDeclare keys",$declare_keys,%{$keys->getKeyVals});
+				  foreach my $key (qw(role tag name replace)){
+				    if(my $value = $keys->getValue($key)){
+				      Warn("Repeated $key: ".join('; ',map(Stringify($_),@$value)))
+					if ref $value eq 'ARRAY'; }}
+				  my $id = ($keys->getValue('tag') ? next_declaration_id() : undef);
+				  if($id && LookupValue('InPreamble')){
+				    Warn("Declaration with tag cannot appear in preamble"
+					 .Stringify($whatsit)); }
 				  $whatsit->setProperties(scope   => getDeclarationScope($keys),
 							  role    => ToString($keys->getValue('role')),
 							  name    => ToString($keys->getValue('name')),
 							  trace   => defined $keys->getValue('trace'),
 							  wrap    => defined $keys->getValue('wrap'),
-							  id      => next_declaration_id(),
+							  id      => $id,
 							  match   => $pattern,
 							  replace => $keys->getValue('replace'));
 				  if(my $label = ToString($keys->getValue('label'))){
-				    AssignValue("Declaration_$label"=>$whatsit,'global'); }
+				    PushValue("Declaration_$label",$whatsit); }
 				  return; },
 	       afterConstruct=>sub { my($document,$whatsit)=@_;
 				     my $scope = $whatsit->getProperty('scope');
 				     createDeclarationRewrite($document,$scope,$whatsit); },
 	       reversion=>'');
 
-DefConstructor('\LXDeclRef OptionalKeyVals:Declare {}','',
+DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}','',
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my($keys,$labels)=$whatsit->getArgs;
 				  $whatsit->setProperties(scope=>getDeclarationScope($keys),
@@ -118,10 +145,11 @@ DefConstructor('\LXDeclRef OptionalKeyVals:Declare {}','',
 				     my $scope  = $whatsit->getProperty('scope');
 				     foreach my $label (@{$whatsit->getProperty('labels')}){
 				       if(my $declaration = LookupValue("Declaration_$label")){
-					 createDeclarationRewrite($document,$scope,$declaration); }
+					 map(createDeclarationRewrite($document,$scope,$_),
+					     @$declaration); }
 				       else {
-					 Warn("No Declaration with label=$label was found"); }}}
-	     );
+					 Warn("No Declaration with label=$label was found"); }}},
+	       reversion=>'');
 
 our $XMDeclID=0;
 sub next_declaration_id {

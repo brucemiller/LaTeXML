@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section id="S1" refnum="1">
+    <title>Basic math</title>
+    <para id="S1.p1">
+      <equation id="Ex1">
+        <Math mode="display" tex="((a+b)-c)" text="(a + b) - c">
+          <XMath>
+            <XMApp open="(" close=")">
+              <XMTok role="ADDOP">-</XMTok>
+              <XMApp open="(" close=")">
+                <XMTok role="ADDOP">+</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
+              <XMTok role="ID" font="italic">c</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex2">
+        <Math mode="display" tex="(a+(b-c))" text="a + (b - c)">
+          <XMath>
+            <XMApp open="(" close=")">
+              <XMTok role="ADDOP">+</XMTok>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMApp open="(" close=")">
+                <XMTok role="ADDOP">-</XMTok>
+                <XMTok role="ID" font="italic">b</XMTok>
+                <XMTok role="ID" font="italic">c</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section id="S2" refnum="2">
+    <title>Intervals</title>
+    <para id="S2.p1">
+      <equation id="Ex3">
+        <Math mode="display" tex="(a,b)" text="OpenInterval@(a, b)">
+          <XMath>
+            <XMApp>
+              <XMTok name="OpenInterval" role="FENCED" argclose=")" argopen="(" separators=","/>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMTok role="ID" font="italic">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex4">
+        <Math mode="display" tex="[a,b)" text="OpenRightInterval@(a, b)">
+          <XMath>
+            <XMApp>
+              <XMTok name="OpenRightInterval" role="FENCED" argclose=")" argopen="[" separators=","/>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMTok role="ID" font="italic">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex5">
+        <Math mode="display" tex="(a,b]" text="OpenLeftInterval@(a, b)">
+          <XMath>
+            <XMApp>
+              <XMTok name="OpenLeftInterval" role="FENCED" argclose="]" argopen="(" separators=","/>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMTok role="ID" font="italic">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex6">
+        <Math mode="display" tex="[a,b]" text="ClosedInterval@(a, b)">
+          <XMath>
+            <XMApp>
+              <XMTok name="ClosedInterval" role="FENCED" argclose="]" argopen="[" separators=","/>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMTok role="ID" font="italic">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section id="S3" refnum="3">
+    <title>Cases</title>
+    <para id="S3.p1">
+      <equation id="Ex7">
+        <Math mode="display" tex="\left.\begin{array}{l}a\\ b\end{array}\right\}=\left\{\begin{array}{l}c\\ d\end{array}\right." text="RCases@(Array@(Row@(Cell@(a)), Row@(Cell@(b)))) = LCases@(Array@(Row@(Cell@(c)), Row@(Cell@(d))))">
+          <XMath>
+            <XMApp>
+              <XMTok role="RELOP">=</XMTok>
+              <XMApp>
+                <XMTok close="}" name="RCases"/>
+                <XMApp role="ARRAY">
+                  <XMTok name="Array"/>
+                  <XMApp role="ARRAY">
+                    <XMTok name="Row"/>
+                    <XMApp role="ARRAY">
+                      <XMTok name="Cell"/>
+                      <XMTok role="ID" font="italic">a</XMTok>
+                    </XMApp>
+                  </XMApp>
+                  <XMApp role="ARRAY">
+                    <XMTok name="Row"/>
+                    <XMApp role="ARRAY">
+                      <XMTok name="Cell"/>
+                      <XMTok role="ID" font="italic">b</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok name="LCases" open="{"/>
+                <XMApp role="ARRAY">
+                  <XMTok name="Array"/>
+                  <XMApp role="ARRAY">
+                    <XMTok name="Row"/>
+                    <XMApp role="ARRAY">
+                      <XMTok name="Cell"/>
+                      <XMTok role="ID" font="italic">c</XMTok>
+                    </XMApp>
+                  </XMApp>
+                  <XMApp role="ARRAY">
+                    <XMTok name="Row"/>
+                    <XMApp role="ARRAY">
+                      <XMTok name="Cell"/>
+                      <XMTok role="ID" font="italic">d</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <para id="S3.p2">
+      <equation id="Ex8">
+        <Math mode="display" tex="\left(\begin{array}{l}c\\ d\end{array}\right)" text="Array@(Row@(Cell@(c)), Row@(Cell@(d)))">
+          <XMath>
+            <XMApp role="ARRAY" open="(" close=")">
+              <XMTok name="Array"/>
+              <XMApp role="ARRAY">
+                <XMTok name="Row"/>
+                <XMApp role="ARRAY">
+                  <XMTok name="Cell"/>
+                  <XMTok role="ID" font="italic">c</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp role="ARRAY">
+                <XMTok name="Row"/>
+                <XMApp role="ARRAY">
+                  <XMTok name="Cell"/>
+                  <XMTok role="ID" font="italic">d</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex9">
+        <Math mode="display" tex="(a+\left(\begin{array}{l}c\\ d\end{array}\right)+b)" text="a + Array@(Row@(Cell@(c)), Row@(Cell@(d))) + b">
+          <XMath>
+            <XMApp open="(" close=")">
+              <XMTok role="ADDOP">+</XMTok>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMApp role="ARRAY" open="(" close=")">
+                <XMTok name="Array"/>
+                <XMApp role="ARRAY">
+                  <XMTok name="Row"/>
+                  <XMApp role="ARRAY">
+                    <XMTok name="Cell"/>
+                    <XMTok role="ID" font="italic">c</XMTok>
+                  </XMApp>
+                </XMApp>
+                <XMApp role="ARRAY">
+                  <XMTok name="Row"/>
+                  <XMApp role="ARRAY">
+                    <XMTok name="Cell"/>
+                    <XMTok role="ID" font="italic">d</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+              <XMTok role="ID" font="italic">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+</document>

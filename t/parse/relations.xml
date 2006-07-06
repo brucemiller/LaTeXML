@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml package="amsmath"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section id="S1" refnum="1">
+    <title>Grouping in multi-relations</title>
+    <para id="S1.p1">
+      <equation id="Ex1">
+        <Math mode="display" tex="a=b=c=d=e" text="a = b = c = d = e">
+          <XMath>
+            <XMApp>
+              <XMTok name="MultiRelation"/>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMTok role="RELOP">=</XMTok>
+              <XMTok role="ID" font="italic">b</XMTok>
+              <XMTok role="RELOP">=</XMTok>
+              <XMTok role="ID" font="italic">c</XMTok>
+              <XMTok role="RELOP">=</XMTok>
+              <XMTok role="ID" font="italic">d</XMTok>
+              <XMTok role="RELOP">=</XMTok>
+              <XMTok role="ID" font="italic">e</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex2">
+        <Math mode="display" tex="a=b,c=d" text="Formulae@(a = b, c = d)">
+          <XMath>
+            <XMApp>
+              <XMTok name="Formulae" separators=","/>
+              <XMApp>
+                <XMTok role="RELOP">=</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="RELOP">=</XMTok>
+                <XMTok role="ID" font="italic">c</XMTok>
+                <XMTok role="ID" font="italic">d</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex3">
+        <Math mode="display" tex="a=b,c,d,e" text="a = Collection@(b, c, d, e)">
+          <XMath>
+            <XMApp>
+              <XMTok role="RELOP">=</XMTok>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok name="Collection" role="FENCED" separators=",,,"/>
+                <XMTok role="ID" font="italic">b</XMTok>
+                <XMTok role="ID" font="italic">c</XMTok>
+                <XMTok role="ID" font="italic">d</XMTok>
+                <XMTok role="ID" font="italic">e</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex4">
+        <Math mode="display" tex="a=b,c,d=e" text="Formulae@(a = Collection@(b, c), d = e)">
+          <XMath>
+            <XMApp>
+              <XMTok name="Formulae" separators=","/>
+              <XMApp>
+                <XMTok role="RELOP">=</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMApp>
+                  <XMTok name="Collection" role="FENCED" separators=","/>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                  <XMTok role="ID" font="italic">c</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="RELOP">=</XMTok>
+                <XMTok role="ID" font="italic">d</XMTok>
+                <XMTok role="ID" font="italic">e</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex5">
+        <Math mode="display" tex="a=b&gt;c\le d=e" text="a = b &gt; c le d = e">
+          <XMath>
+            <XMApp>
+              <XMTok name="MultiRelation"/>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMTok role="RELOP">=</XMTok>
+              <XMTok role="ID" font="italic">b</XMTok>
+              <XMTok role="RELOP">&gt;</XMTok>
+              <XMTok role="ID" font="italic">c</XMTok>
+              <XMTok name="le" role="RELOP">≤</XMTok>
+              <XMTok role="ID" font="italic">d</XMTok>
+              <XMTok role="RELOP">=</XMTok>
+              <XMTok role="ID" font="italic">e</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <paragraph id="S1.SS0.SSS0.P1">
+      <title>But period is somewhat different!</title>
+      <para id="S1.SS0.SSS0.P1.p1">
+        <equation id="Ex6">
+          <Math mode="display" tex="a=b,c.d=e" text="Formulae@(a = Collection@(b, c), d = e)">
+            <XMath>
+              <XMApp>
+                <XMTok name="Formulae" separators="."/>
+                <XMApp>
+                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMApp>
+                    <XMTok name="Collection" role="FENCED" separators=","/>
+                    <XMTok role="ID" font="italic">b</XMTok>
+                    <XMTok role="ID" font="italic">c</XMTok>
+                  </XMApp>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok role="ID" font="italic">d</XMTok>
+                  <XMTok role="ID" font="italic">e</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+        <equation id="Ex7">
+          <Math mode="display" tex="a=b.c,d=e" text="Formulae@(a = b, Collection@(c, d) = e)">
+            <XMath>
+              <XMApp>
+                <XMTok name="Formulae" separators="."/>
+                <XMApp>
+                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="RELOP">=</XMTok>
+                  <XMApp>
+                    <XMTok name="Collection" role="FENCED" separators=","/>
+                    <XMTok role="ID" font="italic">c</XMTok>
+                    <XMTok role="ID" font="italic">d</XMTok>
+                  </XMApp>
+                  <XMTok role="ID" font="italic">e</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+      </para>
+    </paragraph>
+  </section>
+  <section id="S2" refnum="2">
+    <title>Arrows as meta-relation</title>
+    <para id="S2.p1">
+      <equation id="Ex8">
+        <Math mode="display" tex="a=b\rightarrow c\le d=e" text="a = b rightarrow c le d = e">
+          <XMath>
+            <XMApp>
+              <XMTok name="MultiRelation"/>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMTok role="RELOP">=</XMTok>
+              <XMTok role="ID" font="italic">b</XMTok>
+              <XMTok name="rightarrow" role="ARROW">→</XMTok>
+              <XMTok role="ID" font="italic">c</XMTok>
+              <XMTok name="le" role="RELOP">≤</XMTok>
+              <XMTok role="ID" font="italic">d</XMTok>
+              <XMTok role="RELOP">=</XMTok>
+              <XMTok role="ID" font="italic">e</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex9">
+        <Math mode="display" tex="a=b,c\rightarrow d=e" text="Formulae@(a = b, c rightarrow d = e)">
+          <XMath>
+            <XMApp>
+              <XMTok name="Formulae" separators=","/>
+              <XMApp>
+                <XMTok role="RELOP">=</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok name="MultiRelation"/>
+                <XMTok role="ID" font="italic">c</XMTok>
+                <XMTok name="rightarrow" role="ARROW">→</XMTok>
+                <XMTok role="ID" font="italic">d</XMTok>
+                <XMTok role="RELOP">=</XMTok>
+                <XMTok role="ID" font="italic">e</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex10">
+        <Math mode="display" tex="a=b\leftrightarrow c\le d=e" text="a = b leftrightarrow c le d = e">
+          <XMath>
+            <XMApp>
+              <XMTok name="leftrightarrow" role="METARELOP">↔</XMTok>
+              <XMApp>
+                <XMTok role="RELOP">=</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok name="MultiRelation"/>
+                <XMTok role="ID" font="italic">c</XMTok>
+                <XMTok name="le" role="RELOP">≤</XMTok>
+                <XMTok role="ID" font="italic">d</XMTok>
+                <XMTok role="RELOP">=</XMTok>
+                <XMTok role="ID" font="italic">e</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex11">
+        <Math mode="display" tex="a=b,c\leftrightarrow d=e" text="a = Collection@(b, c) leftrightarrow d = e">
+          <XMath>
+            <XMApp>
+              <XMTok name="leftrightarrow" role="METARELOP">↔</XMTok>
+              <XMApp>
+                <XMTok role="RELOP">=</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMApp>
+                  <XMTok name="Collection" role="FENCED" separators=","/>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                  <XMTok role="ID" font="italic">c</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="RELOP">=</XMTok>
+                <XMTok role="ID" font="italic">d</XMTok>
+                <XMTok role="ID" font="italic">e</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section id="S3" refnum="3">
+    <title>Other Meta relations</title>
+    <para id="S3.p1">
+      <equation id="Ex12">
+        <Math mode="display" tex="a(&lt;e)" text="Annotated@(a, Empty LessThan e)">
+          <XMath>
+            <XMApp>
+              <XMTok name="Annotated"/>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMApp open="(" close=")">
+                <XMTok role="RELOP">&lt;</XMTok>
+                <XMTok name="Empty"/>
+                <XMTok role="ID" font="italic">e</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex13">
+        <Math mode="display" tex="a;(&lt;e)" text="Annotated@(a, Empty LessThan e)">
+          <XMath>
+            <XMApp>
+              <XMTok name="Annotated"/>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMApp open="(" close=")">
+                <XMTok role="RELOP">&lt;</XMTok>
+                <XMTok name="Empty"/>
+                <XMTok role="ID" font="italic">e</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex14">
+        <Math mode="display" tex="a=b+c+d(&lt;e)" text="a = Annotated@(b + c + d, Empty LessThan e)">
+          <XMath>
+            <XMApp>
+              <XMTok role="RELOP">=</XMTok>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok name="Annotated"/>
+                <XMApp>
+                  <XMTok role="ADDOP">+</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                  <XMTok role="ID" font="italic">c</XMTok>
+                  <XMTok role="ID" font="italic">d</XMTok>
+                </XMApp>
+                <XMApp open="(" close=")">
+                  <XMTok role="RELOP">&lt;</XMTok>
+                  <XMTok name="Empty"/>
+                  <XMTok role="ID" font="italic">e</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex15">
+        <Math mode="display" tex="a=b+c+d\mod e" text="a = mod@(b + c + d, e)">
+          <XMath>
+            <XMApp>
+              <XMTok role="RELOP">=</XMTok>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok role="MODIFIEROP">mod</XMTok>
+                <XMApp>
+                  <XMTok role="ADDOP">+</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                  <XMTok role="ID" font="italic">c</XMTok>
+                  <XMTok role="ID" font="italic">d</XMTok>
+                </XMApp>
+                <XMTok role="ID" font="italic">e</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+</document>

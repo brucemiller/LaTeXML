@@ -21,8 +21,9 @@ use LaTeXML::Package;
 #**********************************************************************
 # Load special functions & other required packages.
 RequirePackage('amssymb');
+RequirePackage('keyval');
 
-PushValue(SEARCHPATHS=>"$ENV{HOME}/dlmf/styles/DLMFtex/");
+UnshiftValue(SEARCHPATHS=>"$ENV{HOME}/dlmf/styles/DLMFtex/");
 RequirePackage('DLMFfcns');
 
 #**********************************************************************
@@ -36,8 +37,8 @@ DefMath('\Rational',  "\x{211A}", role=>'ID'); # DOUBLE-STRUCK CAPITAL Q
 DefMath('\Polynomial',"\x{2119}", role=>'ID'); # DOUBLE-STRUCK CAPITAL P
 
 # Redefined here, since Frank doesn't like the Fraktur.
-DefMath('\Re',       "Re", role=>'FUNCTION');
-DefMath('\Im',       "Im", role=>'FUNCTION');
+DefMath('\Re',       "Re", role=>'OPFUNCTION');
+DefMath('\Im',       "Im", role=>'OPFUNCTION');
 
 DefMath('\realpart{}', "\x{211C}");	# BLACK-LETTER CAPITAL R
 DefMath('\imagpart{}', "\x{2111}");	# BLACK-LETTER CAPITAL I
@@ -166,6 +167,10 @@ DefConstructor('\qdiff{}{}',
 	       ."</ltx:XMApp>");
 
 
+# Forward, Backward and Central differences operator
+DefMath('\fDiff []','\Delta_{#1}',role=>'DIFFOP');
+DefMath('\bDiff []','\nabla_{#1}',role=>'DIFFOP');
+DefMath('\cDiff []','\delta_{#1}',role=>'DIFFOP');
 #**********************************************************************
 DefMath('\pvint',  "\x{2A0D}", name=>'PrincipalValueIntegral', role=>'INTOP'); # FINITE PART INTEGRAL
 DefMath('\Residue', "res",     name=>"Residue", role=>'LIMITOP');
@@ -182,17 +187,41 @@ DefMath('\divergence', "div",  role=>'DIFFOP');
 DefMath('\curl',       "curl", role=>'DIFFOP');
 DefMath('\gradient',   "grad", role=>'DIFFOP');
 DefMath('\transpose{}','#1^{\mathrm{T}}');
+DefMath('\trace',      "tr",   role=>'LIMITOP');
+DefMath('\diag',       "diag", role=>'LIMITOP');
 
 #**********************************************************************
 # Combinatorics
 DefMath('\binomial{}{}',    '', name=>'binomial');
 DefMath('\multinomial{}{}', '\left(#1;#2\right)');
 DefMath('\pochhammer{}{}',  '\left(#1\right)_{#2}');
+DefMath('\psfactorial{}{}',  '\left[#1\right]_{#2}');
 DefMath('\wigner{}{}{}{}{}{}', '\left(#1 #2 #3 #4 | #1 #2 #5 #6\right)');
-
 
 DefMath('\qFactorial{}{}{}','\left(#1;#2\right)_{#3}');
 DefMath('\qBinomial{}{}{}', '\genfrac[]\z@{}{#1}{#2}_{#3}');
+
+DefExpandable('\threej OptionalKeyword:@',
+	      sub { my($gullet,$at)=@_;
+		    ($at ? (T_CS('\threej@args')):(T_CS('\threej@text'))); });
+DefExpandable('\sixj OptionalKeyword:@',
+	      sub { my($gullet,$at)=@_;
+		    ($at ? (T_CS('\sixj@args')):(T_CS('\sixj@text'))); });
+DefExpandable('\ninej OptionalKeyword:@',
+	      sub { my($gullet,$at)=@_;
+		    ($at ? (T_CS('\ninej@args')):(T_CS('\ninej@text'))); });
+DefMath('\threej@text','3j', role=>'ID', reversion=>'3j',name=>'threej');
+DefMath('\sixj@text',  '6j', role=>'ID', reversion=>'6j',name=>'sixj');
+DefMath('\ninej@text', '9j', role=>'ID', reversion=>'9j',name=>'ninej');
+DefMath('\threej@args {}{}{}{}{}{}',
+	'\begin{pmatrix}#1&#2&#3\\\\#4&#5&#6\end{pmatrix}',
+	name=>'threej');
+DefMath('\sixj@args {}{}{}{}{}{}',
+	'\begin{Bmatrix}#1&#2&#3\\\\#4&#5&#6\end{Bmatrix}',
+	name=>'sixj');
+DefMath('\ninej@args {}{}{}{}{}{}{}{}{}',
+	'\begin{Bmatrix}#1&#2&#3\\\\#4&#5&#6\\\\#7&#8&#9\end{Bmatrix}',
+	name=>'ninej');
 
 #**********************************************************************
 # Constants
@@ -212,18 +241,20 @@ sub count_tokens {
 
 #**********************************************************************
 
-DefPrimitive('\defSpecFun{}[][]{}{}', sub {
-  my($stomach,$name,$nparam,$optparam,$formatter,$nargs)=@_;
+DefPrimitive('\defSpecFun{}[][]{} OptionalKeyVals:DefSpecFun {}', sub {
+  my($stomach,$name,$nparam,$optparam,$formatter,$keys,$nargs)=@_;
   my $gullet = $stomach->getGullet;
   $name=$name->toString;
   my $cs = '\\'.$name;
   $nargs  = $nargs->toString;
-
+  my $role = ($keys && ToString($keys->getValue('role'))) || 'FUNCTION';
+  DefExpandable($cs.'@role',Tokens(T_OTHER($role)));
   # Define with DefMath to create presentation & content cs's
   DefMath($cs . convertLaTeXArgs($nparam,$optparam), $formatter, 
-	  role=>'FUNCTION',operator_role=>'FUNCTION', omcd=>'dlmf');
+	  role=>$role, operator_role=>$role, omcd=>'dlmf');
   # Then, redefine top-level macro to check for powers, args, etc.
-  DefExpandable($cs.convertLaTeXArgs($nparam,$optparam),  sub { expand_specfun($cs,$nargs,@_); });
+  DefExpandable($cs.convertLaTeXArgs($nparam,$optparam),
+		sub { expand_specfun($cs,$nargs,@_); });
 
   # Read any argument formats & generate args macros
   my @argfmts=();
@@ -275,8 +306,9 @@ sub expand_specfun {
 		      $argsmacro->invocation(@$pargs))
 		  )->unlist; }
   else {
-    Invocation(T_CS('\DUAL'),
-	       T_OTHER(($nargs ? 'FUNCTION' : 'ATOM')), $ccall, $pcall)->unlist}; }
+##    Invocation(T_CS('\DUAL'),
+##	       T_OTHER(($nargs ? 'FUNCTION' : 'ATOM')), $ccall, $pcall)->unlist}; }
+    Invocation(T_CS('\DUAL'),T_CS($cs.'@role'), $ccall, $pcall)->unlist}; }
 
 #**********************************************************************
 1;

@@ -749,7 +749,7 @@ DefPrimitive('\message{}',sub {
 # \immediate\closeout<4bit>
 # \immediate\write<number><general text>
 
-DefPrimitive('\aftergroup Token', sub { PushValue(afterGroup=>$_[1]); });
+DefPrimitive('\aftergroup Token', sub { UnshiftValue(afterGroup=>$_[1]); });
 
 #======================================================================
 # Remaining semi- Vertical Mode primitives in Ch.24, pp.280--281
@@ -1167,7 +1167,7 @@ DefConstructor('\cal', '', requireMath=>1, font=>{family=>'caligraphic'});
 
 DefConstructor('\@end@emph','</ltx:emph>');
 DefConstructor('\em',"<ltx:emph>", 
-	       afterDigest=>sub { PushValue(beforeAfterGroup=>T_CS('\@end@emph')); });
+	       afterDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@end@emph')); });
 
 # Change math font while still in text!
 DefPrimitive('\boldmath',  sub { AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>1), 'local'); },
@@ -1205,8 +1205,9 @@ DefMath('*','*', role=>'MULOP');
 DefMath('/','/', role=>'MULOP', style=>'inline');
 DefMath('!','!', role=>'POSTFIX');
 DefMath(',',',', role=>'PUNCT');
-DefMath('.','.', role=>'PUNCT');
+DefMath('.','.', role=>'PERIOD');
 DefMath(';',';', role=>'PUNCT');
+DefMath(':',';', role=>'METARELOP', name=>'colon'); # Seems like good default role
 DefMath('(','(', role=>'OPEN'); DefMath(')',')', role=>'CLOSE');
 DefMath('[','[', role=>'OPEN'); DefMath(']',']', role=>'CLOSE');
 DefMath('|','|', role=>'VERTBAR');
@@ -1214,24 +1215,6 @@ DefMath('|','|', role=>'VERTBAR');
 #======================================================================
 # Combine letters, when the fonts are right. (sorta related to mathcode)
 
-sub match_letter_tokens {
-  my($document,$node)=@_;
-  my $font = $document->getNodeFont($node);
-  return 0 unless $font->isSticky;
-  my $i=0;
-  while($node	# (comment nodes??)
-	&& ($document->getNodeQName($node) eq 'ltx:XMTok')
-	&& ($node->textContent =~ /^[a-zA-Z]$/)
-	&& ($document->getNodeFont($node)->equals($font))){
-    $i++; $node = $node->nextSibling; }
-  (($i > 1) ? $i : 0); }
-
-sub construct_multiletter_token {
-  my($document,@nodes)=@_;
-  $document->insertMathToken(join('',map($_->textContent,@nodes)), font=>$document->getNodeFont($nodes[0])); }
-
-##DefRewrite(xpath=>"descendant-or-self::ltx:XMTok[contains('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',text())]",
-##	   match=>\&match_letter_tokens, replace=>\&construct_multiletter_token);
 DefMathLigature(sub { my($document,@nodes)=@_;
 		      my @chars = ();
 		      my $font = $document->getNodeFont($nodes[$#nodes]);
@@ -1255,43 +1238,8 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 foreach my $digit (qw(0 1 2 3 4 5 6 7 8 9)){
   DefMath($digit,$digit, role=>'NUMBER'); }
 
-sub match_digit_tokens {
-  my($document,$node)=@_;
-  my $font = $node->getAttribute('_font');
-  my $string = $node->textContent;
-  my $prev = $node;
-  my $i=1;
-  while(my $n = $prev->nextSibling){
-    $prev = $n;
-    next if $n->nodeType == XML_COMMENT_NODE;
-    my $tag = $document->getNodeQName($n);
-    if($tag eq 'ltx:XMHint'){
-      last unless ($n->getAttribute('name')||'') =~/^(negthinspace|thinspace|medspace|thickspace)$/; }
-    elsif(($tag eq 'ltx:XMTok') && ($n->getAttribute('_font') eq $font)){
-      my $s = $n->textContent;
-      last unless $s =~ /^(\.|\d)$/;
-      last unless ($string .= $s) =~ /^\d*\.?\d*$/; }
-    else { last; }
-    $i++;  }
-  (($i > 1) && ($string =~ /\d/) ? $i : 0); }
-
-our %space_chars = (negthinspace=>'', thinspace=>"\x{2009}", medspace=>"\x{2005}", thickspace=>"\x{2004}");
-sub construct_number {
-  my($document,@nodes)=@_;
-  my $string = '';
-  my $value = '';
-  foreach my $node (@nodes){
-    next if $node->nodeType == XML_COMMENT_NODE;
-    if($document->getNodeQName($node) eq 'ltx:XMTok'){
-      my $s = $node->textContent;
-      $string .= $s; $value .= $s; }
-    else {
-      $string .= $space_chars{$node->getAttribute('name')}; }}
-  $document->insertMathToken($string, name=>$value, role=>'NUMBER', font=>$document->getNodeFont($nodes[0])); }
-
-# Match initial digit or .
-##DefRewrite(xpath=>"descendant-or-self::ltx:XMTok[(\@role='NUMBER' or \@role='PUNCT') and contains('.0123456789',text())]",
-##	  match=>\&match_digit_tokens, replace=>\&construct_number);
+our %space_chars = (negthinspace=>'', thinspace=>"\x{2009}",
+		    medspace=>"\x{2005}", thickspace=>"\x{2004}");
 
 DefMathLigature(sub { my($document,@nodes)=@_;
 		      my @chars = ();
@@ -1307,8 +1255,9 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 				 || (($document->getNodeQName($node) eq 'ltx:XMHint')
 				     && ($s = $space_chars{$node->getAttribute('name')||''})))){
 			$n++; 
-			if(($string=$s.$string)
-			   =~ /^(\d|\x{2009}|\x{2005}|\x{2004})+\.?(\d|\x{2009}|\x{2005}|\x{2004})*$/){
+			if((($string=$s.$string)
+			    =~ /^(\d|\x{2009}|\x{2005}|\x{2004})*\.?(\d|\x{2009}|\x{2005}|\x{2004})*$/)
+			   && ($string =~/\d/)){ # MUST have at least one digit!
 			  $best = $string, $nbest = $n; }}
 		      if($nbest > 1){
 			my $name = $best; $name =~ s/[^.\d]//g;
@@ -1545,7 +1494,7 @@ our %accents
 foreach my $accent (keys %accents){
   DefConstructor($accent."{}", sub {
     my($document,$letter,%props)=@_;
-    if(my @letters = map(($_ eq '\i ' ? 'i':$_),map(ToString($_),$letter->unlist))){
+    if(my @letters = map(($_ eq '\i' ? 'i':$_),map(ToString($_),$letter->unlist))){
       # Put the accent AFTER the first char(?)
       $document->openText($letters[0].$accents{$accent}->[0].join('',@letters[1..$#letters]),
 			   $letter->getFont);}
@@ -1692,7 +1641,7 @@ DefConstructor('\ldots',
 DefMath('\cdots',"\x{22EF}", role=>'ID'); # MIDLINE HORIZONTAL ELLIPSIS
 DefMath('\vdots',"\x{22EE}", role=>'ID'); # VERTICAL ELLIPSIS
 DefMath('\ddots',"\x{22F1}", role=>'ID'); # DOWN RIGHT DIAGONAL ELLIPSIS
-DefMath('\colon',':');
+DefMath('\colon',':',        role=>'METARELOP'); # Seems like good default role
 # Note that amsmath redefines \dots to be `smart'.
 # Aha, also can be in text...
 DefConstructor('\dots',
@@ -1760,7 +1709,7 @@ DefMath('\notin',     "\x{2209}", role=>'RELOP'); # NOT AN ELEMENT OF
 
 DefMath('\models',    "\x{22A7}", role=>'RELOP'); # MODELS
 DefMath('\perp',      "\x{22A5}", role=>'RELOP'); # UP TACK
-DefMath('\mid',       "\x{2223}", role=>'RELOP'); # DIVIDES
+DefMath('\mid',       "\x{2223}", role=>'VERTBAR'); # DIVIDES (RELOP?) ?? well, sometimes...
 DefMath('\parallel',  "\x{2225}", role=>'VERTBAR'); # PARALLEL TO
 DefMath('\bowtie',    "\x{22C8}", role=>'RELOP');   # BOWTIE
 DefMath('\Join',      "\x{2A1D}", role=>'RELOP');   # JOIN
@@ -1858,14 +1807,14 @@ DefMath('\imath',    "\x{0131}");   # LATIN SMALL LETTER DOTLESS I
 DefMath('\jmath',    "j");	    # Unicode?
 DefMath('\ell',      "\x{2113}");   # SCRIPT SMALL L
 DefMath('\wp',       "\x{2118}", name=>'Weierstrassp'); # SCRIPT CAPITAL P
-DefMath('\Re',       "\x{211C}", role=>'FUNCTION'); # BLACK LETTER CAPITAL R
-DefMath('\Im',       "\x{2111}", role=>'FUNCTION'); # BLACK LETTER CAPITAL I
+DefMath('\Re',       "\x{211C}", role=>'OPFUNCTION'); # BLACK LETTER CAPITAL R
+DefMath('\Im',       "\x{2111}", role=>'OPFUNCTION'); # BLACK LETTER CAPITAL I
 DefMath('\mho',      "\x{2127}");   # INVERTED OHM SIGN
 
 DefMath('\prime',    "\x{2032}", role=>'SUPOP');    # PRIME
 DefMath('\emptyset', "\x{2205}", role=>'ID');	    # EMPTY SET
-DefMath('\nabla',    "\x{2207}", role=>'FUNCTION'); # NABLA
-DefMath('\surd',     "\x{221A}", role=>'FUNCTION');  # SQUARE ROOT
+DefMath('\nabla',    "\x{2207}", role=>'OPERATOR'); # NABLA
+DefMath('\surd',     "\x{221A}", role=>'OPERATOR');  # SQUARE ROOT
 DefMath('\top',      "\x{22A4}");		     # DOWN TACK
 DefMath('\bot',      "\x{22A5}");		     # UP TACK
 DefMath('\|',        "\x{2225}", role=>'VERTBAR'); # PARALLEL TO
@@ -1873,14 +1822,14 @@ DefMath('\angle',    "\x{2220}");		   # ANGLE
 
 # NOTE: This is probably the wrong role.
 # Also, should probably carry info about Binding for OpenMath
-DefMath('\forall',   "\x{2200}", role=>'FUNCTION'); # FOR ALL
-DefMath('\exists',   "\x{2203}", role=>'FUNCTION'); # THERE EXISTS
+DefMath('\forall',   "\x{2200}", role=>'BIGOP'); # FOR ALL
+DefMath('\exists',   "\x{2203}", role=>'BIGOP'); # THERE EXISTS
 DefMath('\neg',      "\x{00AC}", role=>'FUNCTION'); # NOT SIGN
 DefMath('\flat',     "\x{266D}"); # MUSIC FLAT SIGN
 DefMath('\natural',  "\x{266E}"); # MUSIC NATURAL SIGN
 DefMath('\sharp',    "\x{266F}"); # MUSIC SHARP SIGN
 DefMath('\backslash',"\x{005C}", role=>'MULOP');    # REVERSE SOLIDUS
-DefMath('\partial',  "\x{2202}", role=>'FUNCTION'); # PARTIAL DIFFERENTIAL
+DefMath('\partial',  "\x{2202}", role=>'OPERATOR'); # PARTIAL DIFFERENTIAL
 
 DefMath('\infty',    "\x{221E}", role=>'ID', name=>'Infinity'); # INFINITY
 DefMath('\Box',      "\x{25A1}");  # WHITE SQUARE
@@ -1926,45 +1875,45 @@ DefConstructor('\nolimits',sub { $_[0]->getNode->lastChild->setAttribute(stacksc
 # LaTeX; Table 3.9. Log-like Functions, p.44.
 #======================================================================
 # NOTE: Classifying some as TRIGFUNCTION might clarify 'pi' ambiguities ?
-DefMath('\arccos', "arccos", role=>'FUNCTION');
-DefMath('\arcsin', "arcsin", role=>'FUNCTION');
-DefMath('\arctan', "arctan", role=>'FUNCTION');
-DefMath('\arg',    "arg", role=>'FUNCTION');
+DefMath('\arccos', "arccos", role=>'OPFUNCTION');
+DefMath('\arcsin', "arcsin", role=>'OPFUNCTION');
+DefMath('\arctan', "arctan", role=>'OPFUNCTION');
+DefMath('\arg',    "arg", role=>'OPFUNCTION');
 
-DefMath('\cos',    "cos",  role=>'FUNCTION');
-DefMath('\cosh',   "cosh", role=>'FUNCTION');
-DefMath('\cot',    "cot",  role=>'FUNCTION');
-DefMath('\coth',   "coth", role=>'FUNCTION');
+DefMath('\cos',    "cos",  role=>'TRIGFUNCTION');
+DefMath('\cosh',   "cosh", role=>'TRIGFUNCTION');
+DefMath('\cot',    "cot",  role=>'TRIGFUNCTION');
+DefMath('\coth',   "coth", role=>'TRIGFUNCTION');
 
-DefMath('\csc',    "csc", role=>'FUNCTION');
-DefMath('\deg',    "deg", role=>'FUNCTION');
+DefMath('\csc',    "csc", role=>'TRIGFUNCTION');
+DefMath('\deg',    "deg", role=>'OPFUNCTION');
 DefMath('\det',    "det", role=>'LIMITOP', stackscripts=>\&doStackscripts);
 DefMath('\dim',    "dim", role=>'LIMITOP');
 
-DefMath('\exp',    "exp", role=>'FUNCTION');
-DefMath('\gcd',    "gcd", role=>'FUNCTION', stackscripts=>\&doStackscripts);
-DefMath('\hom',    "hom", role=>'FUNCTION');
+DefMath('\exp',    "exp", role=>'OPFUNCTION');
+DefMath('\gcd',    "gcd", role=>'OPFUNCTION', stackscripts=>\&doStackscripts);
+DefMath('\hom',    "hom", role=>'OPFUNCTION');
 DefMath('\inf',    "inf", role=>'LIMITOP', stackscripts=>\&doStackscripts);
 
-DefMath('\ker',    "ker", role=>'FUNCTION');
-DefMath('\lg',     "lg",  role=>'FUNCTION');
+DefMath('\ker',    "ker", role=>'OPFUNCTION');
+DefMath('\lg',     "lg",  role=>'OPFUNCTION');
 DefMath('\lim',    "lim", role=>'LIMITOP', stackscripts=>\&doStackscripts);
 DefMath('\liminf', "lim inf", role=>'LIMITOP', stackscripts=>\&doStackscripts);
 
 DefMath('\limsup', "lim sup", role=>'LIMITOP', stackscripts=>\&doStackscripts);
-DefMath('\ln',     "ln",  role=>'FUNCTION');
-DefMath('\log',    "log", role=>'FUNCTION');
+DefMath('\ln',     "ln",  role=>'OPFUNCTION');
+DefMath('\log',    "log", role=>'OPFUNCTION');
 DefMath('\max',    "max", role=>'LIMITOP', stackscripts=>\&doStackscripts);
 
 DefMath('\min',    "min", role=>'LIMITOP', stackscripts=>\&doStackscripts);
-DefMath('\Pr',     "Pr",  role=>'FUNCTION', stackscripts=>\&doStackscripts);
-DefMath('\sec',    "sec", role=>'FUNCTION');
-DefMath('\sin',    "sin", role=>'FUNCTION');
+DefMath('\Pr',     "Pr",  role=>'OPFUNCTION', stackscripts=>\&doStackscripts);
+DefMath('\sec',    "sec", role=>'TRIGFUNCTION');
+DefMath('\sin',    "sin", role=>'TRIGFUNCTION');
 
-DefMath('\sinh',   "sinh", role=>'FUNCTION');
+DefMath('\sinh',   "sinh", role=>'TRIGFUNCTION');
 DefMath('\sup',    "sup",  role=>'LIMITOP', stackscripts=>\&doStackscripts);
-DefMath('\tan',    "tan",  role=>'FUNCTION');
-DefMath('\tanh',   "tanh", role=>'FUNCTION');
+DefMath('\tan',    "tan",  role=>'TRIGFUNCTION');
+DefMath('\tanh',   "tanh", role=>'TRIGFUNCTION');
 
 #======================================================================
 # LaTeX; Table 3.10. Delimiters, p.47
@@ -1984,31 +1933,60 @@ DefMath('\rceil',    "\x{2309}", role=>'CLOSE'); # RIGHT CEILING
 DefMath('\rangle',   "\x{232A}", role=>'CLOSE');	# RIGHT-POINTING ANGLE BRACKET
 # Note that a variety of other arrows are also defined as delimiters,
 # as far as TeX is concerned (See p.146).
+sub addDelimiterRole {
+  my($document,$role)=@_;
+  my $node=$document->getNode->lastChild; # This should be the wrapper just added.
+  my $delim_role = ($node->firstChild->getAttribute('role') || '');
+  my $wrapper_role = ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR)$/ ? $role : $delim_role);
+  $node->setAttribute(role=>$wrapper_role) if $wrapper_role; }
+
 # However, it isn't clear that these should get roles of OPEN|CLOSE (?)
-DefConstructor('\left Token ',"<ltx:XMWrap role='OPEN'>#1</ltx:XMWrap>");
-DefConstructor('\right Token ',"<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>");
+DefConstructor('\left Token ',"?#nodot(<ltx:XMWrap role='OPEN'>#1</ltx:XMWrap>)",
+	       afterDigest=>sub { $_[1]->setProperty(nodot=>(ToString($_[1]->getArg(1)) ne '.')); },
+	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN')
+				       if $_[1]->getProperty('nodot'); });
+DefConstructor('\right Token ',"?#nodot(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)",
+	       afterDigest=>sub { $_[1]->setProperty(nodot=>(ToString($_[1]->getArg(1)) ne '.')); },
+	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE')
+				       if $_[1]->getProperty('nodot'); });
 
 # Defined in e-Tex and other places.
-DefConstructor('\middle Token ',"<ltx:XMWrap role='MIDDLE' style='stretchy'>#1</ltx:XMWrap>");
-
-DefConstructor('\bigl Token',"<ltx:XMWrap role='OPEN' style='big'>#1</ltx:XMWrap>");
-DefConstructor('\bigm Token',"<ltx:XMWrap role='MIDDLE' style='big'>#1</ltx:XMWrap>");
-DefConstructor('\bigr Token',"<ltx:XMWrap role='CLOSE' style='big'>#1</ltx:XMWrap>");
-DefConstructor('\Bigl Token',"<ltx:XMWrap role='OPEN' style='Big'>#1</ltx:XMWrap>");
-DefConstructor('\Bigm Token',"<ltx:XMWrap role='MIDDLE' style='Big'>#1</ltx:XMWrap>");
-DefConstructor('\Bigr Token',"<ltx:XMWrap role='CLOSE' style='Big'>#1</ltx:XMWrap>");
-DefConstructor('\biggl Token',"<ltx:XMWrap role='OPEN' style='bigg'>#1</ltx:XMWrap>");
-DefConstructor('\biggm Token',"<ltx:XMWrap role='MIDDLE' style='bigg'>#1</ltx:XMWrap>");
-DefConstructor('\biggr Token',"<ltx:XMWrap role='CLOSE' style='bigg'>#1</ltx:XMWrap>");
-DefConstructor('\Biggl Token',"<ltx:XMWrap role='OPEN' style='Bigg'>#1</ltx:XMWrap>");
-DefConstructor('\Biggm Token',"<ltx:XMWrap role='MIDDLE' style='Bigg'>#1</ltx:XMWrap>");
-DefConstructor('\Biggr Token',"<ltx:XMWrap role='CLOSE' style='Bigg'>#1</ltx:XMWrap>");
+DefConstructor('\middle Token ',"<ltx:XMWrap style='stretchy'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
+DefConstructor('\bigl Token',"<ltx:XMWrap style='big'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); });
+DefConstructor('\bigm Token',"<ltx:XMWrap style='big'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
+DefConstructor('\bigr Token',"<ltx:XMWrap style='big'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); });
+DefConstructor('\Bigl Token',"<ltx:XMWrap style='Big'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); });
+DefConstructor('\Bigm Token',"<ltx:XMWrap style='Big'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
+DefConstructor('\Bigr Token',"<ltx:XMWrap style='Big'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); });
+DefConstructor('\biggl Token',"<ltx:XMWrap style='bigg'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); });
+DefConstructor('\biggm Token',"<ltx:XMWrap style='bigg'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
+DefConstructor('\biggr Token',"<ltx:XMWrap style='bigg'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); });
+DefConstructor('\Biggl Token',"<ltx:XMWrap style='Bigg'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); });
+DefConstructor('\Biggm Token',"<ltx:XMWrap style='Bigg'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
+DefConstructor('\Biggr Token',"<ltx:XMWrap style='Bigg'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); });
 
 # ?
-DefConstructor('\big Token',"<ltx:XMWrap style='big'>#1</ltx:XMWrap>");
-DefConstructor('\Big Token',"<ltx:XMWrap style='Big'>#1</ltx:XMWrap>");
-DefConstructor('\bigg Token',"<ltx:XMWrap style='bigg'>#1</ltx:XMWrap>");
-DefConstructor('\Bigg Token',"<ltx:XMWrap style='Bigg'>#1</ltx:XMWrap>");
+DefConstructor('\big Token',"<ltx:XMWrap style='big'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0]); });
+DefConstructor('\Big Token',"<ltx:XMWrap style='Big'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0]); });
+DefConstructor('\bigg Token',"<ltx:XMWrap style='bigg'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0]); });
+DefConstructor('\Bigg Token',"<ltx:XMWrap style='Bigg'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0]); });
 
 DefMath('\vert','|', role=>'VERTBAR');
 DefMath('\Vert',"\x{2225}", role=>'VERTBAR'); # PARALLEL TO

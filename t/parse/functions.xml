@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section id="S1" refnum="1">
+    <title>Basic Functions</title>
+    <para id="S1.p1">
+      <equation id="Ex1">
+        <Math mode="display" tex="g(a)=g(b)" text="g@(a) = g@(b)">
+          <XMath>
+            <XMApp>
+              <XMTok role="RELOP">=</XMTok>
+              <XMApp>
+                <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">g</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">g</XMTok>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex2">
+        <Math mode="display" tex="f(a)=g(h(c))" text="f@(a) = g@(h@(c))">
+          <XMath>
+            <XMApp>
+              <XMTok role="RELOP">=</XMTok>
+              <XMApp>
+                <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">f</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">g</XMTok>
+                <XMApp>
+                  <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">h</XMTok>
+                  <XMTok role="ID" font="italic">c</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex3">
+        <Math mode="display" tex="h(c)=\sin a^{2}" text="h@(c) = sin@(a ^ 2)">
+          <XMath>
+            <XMApp>
+              <XMTok role="RELOP">=</XMTok>
+              <XMApp>
+                <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">h</XMTok>
+                <XMTok role="ID" font="italic">c</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="TRIGFUNCTION">sin</XMTok>
+                <XMApp>
+                  <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex4">
+        <Math mode="display" tex="\sin f(a)" text="sin@(f@(a))">
+          <XMath>
+            <XMApp>
+              <XMTok role="TRIGFUNCTION">sin</XMTok>
+              <XMApp>
+                <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">f</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section id="S2" refnum="2">
+    <title>Trigonometric functions</title>
+    <para id="S2.p1">
+      <equation id="Ex5">
+        <Math mode="display" tex="\sin a+\tan b" text="sin@(a) + tan@(b)">
+          <XMath>
+            <XMApp>
+              <XMTok role="ADDOP">+</XMTok>
+              <XMApp>
+                <XMTok role="TRIGFUNCTION">sin</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="TRIGFUNCTION">tan</XMTok>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex6">
+        <Math mode="display" tex="\sin a\cos b\neq\sin(a\cos b)" text="sin@(a) * cos@(b) neq sin@(a * cos@(b))">
+          <XMath>
+            <XMApp>
+              <XMTok name="neq" role="RELOP">≠</XMTok>
+              <XMApp>
+                <XMTok role="MULOP">⁢</XMTok>
+                <XMApp>
+                  <XMTok role="TRIGFUNCTION">sin</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="TRIGFUNCTION">cos</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="TRIGFUNCTION" argclose=")" argopen="(">sin</XMTok>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMApp>
+                    <XMTok role="TRIGFUNCTION">cos</XMTok>
+                    <XMTok role="ID" font="italic">b</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex7">
+        <Math mode="display" tex="\sin 2\pi\neq\log 2x^{2}" text="sin@(2 * pi) neq log@(2 * x ^ 2)">
+          <XMath>
+            <XMApp>
+              <XMTok name="neq" role="RELOP">≠</XMTok>
+              <XMApp>
+                <XMTok role="TRIGFUNCTION">sin</XMTok>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok role="NUMBER">2</XMTok>
+                  <XMTok name="pi" role="UNKNOWN" font="italic">π</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="OPFUNCTION">log</XMTok>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok role="NUMBER">2</XMTok>
+                  <XMApp>
+                    <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                    <XMTok role="UNKNOWN" font="italic">x</XMTok>
+                    <XMTok role="NUMBER">2</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section id="S3" refnum="3">
+    <title>Missing arguments</title>
+    <para id="S3.p1">
+      <equation id="Ex8">
+        <Math mode="display" tex="fgh" text="f * g * h">
+          <XMath>
+            <XMApp>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok role="FUNCTION" font="italic">f</XMTok>
+              <XMTok role="FUNCTION" font="italic">g</XMTok>
+              <XMTok role="FUNCTION" font="italic">h</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex9">
+        <Math mode="display" tex="fgha" text="f * g * h * a">
+          <XMath>
+            <XMApp>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok role="FUNCTION" font="italic">f</XMTok>
+              <XMTok role="FUNCTION" font="italic">g</XMTok>
+              <XMTok role="FUNCTION" font="italic">h</XMTok>
+              <XMTok role="ID" font="italic">a</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section id="S4" refnum="4">
+    <title>Operator-like functions</title>
+    <para id="S4.p1">
+      <equation id="Ex10">
+        <Math mode="display" tex="FGH" text="F@(G@(H))">
+          <XMath>
+            <XMApp>
+              <XMTok role="OPFUNCTION" font="italic">F</XMTok>
+              <XMApp>
+                <XMTok role="OPFUNCTION" font="italic">G</XMTok>
+                <XMTok role="OPFUNCTION" font="italic">H</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex11">
+        <Math mode="display" tex="FGHa" text="F@(G@(H@(a)))">
+          <XMath>
+            <XMApp>
+              <XMTok role="OPFUNCTION" font="italic">F</XMTok>
+              <XMApp>
+                <XMTok role="OPFUNCTION" font="italic">G</XMTok>
+                <XMApp>
+                  <XMTok role="OPFUNCTION" font="italic">H</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <para id="S4.p2">
+      <equation id="Ex12">
+        <Math mode="display" tex="f^{{\prime}}(a)=a^{2}" text="(f ^ prime)@(a) = a ^ 2">
+          <XMath>
+            <XMApp>
+              <XMTok role="RELOP">=</XMTok>
+              <XMApp>
+                <XMApp argclose=")" argopen="(">
+                  <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                  <XMTok role="FUNCTION" font="italic">f</XMTok>
+                  <XMTok name="prime" role="SUPOP">′</XMTok>
+                </XMApp>
+                <XMTok role="ID" font="italic">a</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMTok role="NUMBER">2</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex13">
+        <Math mode="display" tex="f^{2}(a)=g^{b}(2)" text="(f ^ 2)@(a) = (g ^ b)@(2)">
+          <XMath>
+            <XMApp>
+              <XMTok role="RELOP">=</XMTok>
+              <XMApp>
+                <XMApp argclose=")" argopen="(">
+                  <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                  <XMTok role="FUNCTION" font="italic">f</XMTok>
+                  <XMTok role="NUMBER">2</XMTok>
+                </XMApp>
+                <XMTok role="ID" font="italic">a</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMApp argclose=")" argopen="(">
+                  <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                  <XMTok role="FUNCTION" font="italic">g</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="NUMBER">2</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section id="S5" refnum="5">
+    <title>Scripts</title>
+    <para id="S5.p1">
+      <equation id="Ex14">
+        <Math mode="display" tex="\ln a=\log _{e}a=\ln _{{+}}b" text="ln@(a) = (log _ e)@(a) = (ln _ +)@(b)">
+          <XMath>
+            <XMApp>
+              <XMTok name="MultiRelation"/>
+              <XMApp>
+                <XMTok role="OPFUNCTION">ln</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+              </XMApp>
+              <XMTok role="RELOP">=</XMTok>
+              <XMApp>
+                <XMApp>
+                  <XMTok name="Subscript" role="SUBSCRIPT"/>
+                  <XMTok role="OPFUNCTION">log</XMTok>
+                  <XMTok role="ID" font="italic">e</XMTok>
+                </XMApp>
+                <XMTok role="ID" font="italic">a</XMTok>
+              </XMApp>
+              <XMTok role="RELOP">=</XMTok>
+              <XMApp>
+                <XMApp>
+                  <XMTok name="Subscript" role="SUBSCRIPT"/>
+                  <XMTok role="OPFUNCTION">ln</XMTok>
+                  <XMTok role="ADDOP">+</XMTok>
+                </XMApp>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+</document>

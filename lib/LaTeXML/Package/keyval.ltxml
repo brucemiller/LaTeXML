@@ -13,6 +13,7 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
+no warnings 'redefine';
 
 #======================================================================
 # New Readers for required and optional KeyVal sets.

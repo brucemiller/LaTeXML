@@ -7,7 +7,7 @@
   <title><a href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></a>: a LaTeX to <a href="http://www.w3.org/XML/"><text font="typewriter">XML</text></a> Converter; 
 <emph>Preview Version 0.3.0</emph></title>
   <author>Bruce R. Miller</author>
-  <creationdate>March 22, 2006</creationdate>
+  <creationdate>March 26, 2006</creationdate>
   <section id="S1" refnum="1">
     <title>Introduction</title>
     <para id="S1.p1">
@@ -68,8 +68,8 @@ content-oriented markup style, over a purely presentation-oriented style.</p>
 and its architecture (§<ref labelref="sec:architecture">3</ref>).
 In §<ref labelref="sec:packages">4</ref>, an overview of customizing <a href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></a> is given.
 How mathematics is converted to content-oriented forms is discussed in §<ref labelref="sec:math">5</ref>.
-Finally, Appendix <ref labelref="app:hierarchy">5</ref> shows an object hierarchy of the system
-and Appendix <ref labelref="app:todo">@.2</ref> lists the main problem areas and unfinished features.</p>
+Finally, Appendix <ref labelref="app:hierarchy">1</ref> shows an object hierarchy of the system
+and Appendix <ref labelref="app:todo">3</ref> lists the main problem areas and unfinished features.</p>
     </para>
     <para id="S1.p6">
       <p>In general, for more detail, you should see the perl documentation of various
@@ -252,9 +252,9 @@ the semantic and presentational forms.
 during parsing, but probably shouldn't.</p>
     </para>
   </section>
-  <appendix label="app:hierarchy">
+  <appendix id="A1" refnum="1" label="app:hierarchy">
     <title>Object Hierarchy</title>
-    <para id="p1">
+    <para id="A1.p1">
       <description id="I3">
         <item id="I3.1">
           <tag>
@@ -564,9 +564,9 @@ Vaguely analogous to TeX's output routine, but runs at end of document, rather t
       </description>
     </para>
   </appendix>
-  <appendix label="app:math">
+  <appendix id="A2" refnum="2" label="app:math">
     <title>Math Details</title>
-    <para id="p1">
+    <para id="A2.p1">
       <p><a href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></a> processes mathematical material by proceeding through several stages:</p>
       <itemize id="I15">
         <item id="I15.1">
@@ -598,7 +598,7 @@ the semantic ambiguities by analyzing and augmenting the expression tree.</p>
         </item>
       </itemize>
     </para>
-    <para id="p2">
+    <para id="A2.p2">
       <p>The <text font="typewriter">Math</text> element is a top-level container for any math mode material; it
 serves as the container for the various representations of the math, including
 images (through attributes <text font="typewriter">mathimage</text>, <text font="typewriter">width</text> and <text font="typewriter">height</text>),
@@ -606,12 +606,12 @@ textual (through attributes <text font="typewriter">tex</text>, <text font="type
 <a href="http://www.w3.org/Math/"><text font="typewriter">MathML</text></a> and the internal representation itself.
 The <text font="typewriter">mode</text> attribute specifies whether the math should be in display or inline mode.</p>
     </para>
-    <subsection id="S5.SS1" refnum="@.1" label="app:mathrep">
+    <subsection id="A2.SS1" refnum="2.1" label="app:mathrep">
       <title>Internal Math Resentation</title>
-      <para id="S5.SS1.p1">
+      <para id="A2.SS1.p1">
         <p>The <text font="typewriter">XMath</text> element is the container for the internal representation</p>
       </para>
-      <para id="S5.SS1.p2">
+      <para id="A2.SS1.p2">
         <p>The following attributes can appear on all <text font="typewriter">XM</text> elements:
 <!-- %**** LaTeXML.tex Line 350 **** --></p>
         <description id="I16">
@@ -640,9 +640,9 @@ The separators is a string of the punctuation characters used to separate argume
           </item>
         </description>
       </para>
-      <paragraph id="S5.SS1.SSS0.P1">
+      <paragraph id="A2.SS1.SSS0.P1">
         <title>Math Tags</title>
-        <para id="S5.SS1.SSS0.P1.p1">
+        <para id="A2.SS1.SSS0.P1.p1">
           <p>The following tags are used for the intermediate math representation:</p>
           <description id="I17">
             <item id="I17.1">
@@ -798,9 +798,9 @@ The arguments will be placed in the content branch (wrapped in an <text font="ty
         </para>
       </paragraph>
     </subsection>
-    <subsection id="S5.SS2" refnum="@.2" label="app:mathroles">
+    <subsection id="A2.SS2" refnum="2.2" label="app:mathroles">
       <title>Grammatical Roles</title>
-      <para id="S5.SS2.p1">
+      <para id="A2.SS2.p1">
         <p>The following grammatical roles are recognized by the math parser.
 These values can be specified in the <text font="typewriter">role</text> attribute during the initial
 document construction or by rewrite rules.  Although the precedence of operators
@@ -993,9 +993,9 @@ and generates a warning if the unknown seems to be used as a function.</p>
 <!-- %Some -->
     </subsection>
   </appendix>
-  <appendix label="app:todo">
+  <appendix id="A3" refnum="3" label="app:todo">
     <title>Issues and ToDo</title>
-    <para id="p1">
+    <para id="A3.p1">
       <p>Lots…!</p>
       <itemize id="I25">
         <item id="I25.1">

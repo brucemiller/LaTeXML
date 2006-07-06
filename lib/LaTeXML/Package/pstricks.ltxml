@@ -496,7 +496,7 @@ DefConstructor('\psset RequiredKeyVals:pstricks', "?#need(<ltx:g transform='#tra
 		   AssignValue('_psActiveCCTransform', $need);
 		   my $diff = $have->differenceTo($need); ackTransform($diff);
 		   $whatsit->setProperties(need=>1, transform=>$diff->ptValue);
-		   PushValue(beforeAfterGroup=>T_CS('\@end@transform@g')); }
+		   UnshiftValue(beforeAfterGroup=>T_CS('\@end@transform@g')); }
 		 return; });
 
 DefConstructor('\@end@transform@g', "</ltx:g>", reversion=>'');

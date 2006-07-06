@@ -193,6 +193,7 @@ sub absorb {
   # The following handle inserting raw strings, presumably within the context of some constructor?
   elsif(!$LaTeXML::BOX->isMath){
     $self->openText_internal($box); }
+###    $self->openText($box,$LaTeXML::BOX->getFont); }
   # Note that in math mode text nodes appear ONLY in <XMTok> or <text>!!!
   elsif($self->getNodeQName($$self{node}) eq $MATH_TOKEN_NAME){ # Already in a XMTok, just insert the text
     print STDERR "Appending text \"$box\" to $MATH_TOKEN_NAME ".Stringify($$self{node})."\n"
@@ -205,14 +206,32 @@ sub absorb {
 
 #**********************************************************************
 # Low level internal interface
+sub XXXopenText_internal {
+  my($self,$text)=@_;
+  my $qname;
+  if($$self{node}->nodeType == XML_TEXT_NODE){ # current node already is a text node.
+    print STDERR "Appending text \"$text\" to ".Stringify($$self{node})."\n"  if $LaTeXML::Document::DEBUG;
+    $$self{node}->appendData(NFC($text)); }
+  else{
+    if(!($qname = $self->getNodeQName($$self{node})) # No text allowed here!
+       || !$$self{model}->canContain($qname,'#PCDATA')){
+      return $$self{node} unless $text =~/\S/; # But ignore whitespace
+      Error("Text \"$text\" is not allowed in ".Stringify($$self{node})); }
+    my $point = $self->find_insertion_point('#PCDATA');
+    my $node = $$self{document}->createTextNode(NFC($text));
+    print STDERR "Inserting text node for \"$text\" into ".Stringify($point)."\n"
+       if $LaTeXML::Document::DEBUG;
+    $point->appendChild($node);
+    $$self{node} = $node; }}
+
 sub openText_internal {
   my($self,$text)=@_;
   my $qname;
   if($$self{node}->nodeType == XML_TEXT_NODE){ # current node already is a text node.
     print STDERR "Appending text \"$text\" to ".Stringify($$self{node})."\n"  if $LaTeXML::Document::DEBUG;
     $$self{node}->appendData(NFC($text)); }
-  elsif(($text =~/\S/)						   # For non whitespace (unless allowed)
-	|| (($qname = $self->getNodeQName($$self{node}))
+  elsif(($text =~/\S/)					# If non space
+	|| (($qname = $self->getNodeQName($$self{node})) # or text allowed here
 	    && $$self{model}->canContain($qname,'#PCDATA'))){
     my $point = $self->find_insertion_point('#PCDATA');
     my $node = $$self{document}->createTextNode(NFC($text));

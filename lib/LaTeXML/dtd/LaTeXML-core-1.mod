@@ -14,11 +14,11 @@
 
 <!ENTITY % NS.prefixed "IGNORE">
 <!ENTITY % LaTeXML.prefixed "%NS.prefixed;">
-<!ENTITY % LaTeXML.xmlns "http://dlmf.nist.gov/LaTeXML/">
+<!ENTITY % LaTeXML.xmlns "http://dlmf.nist.gov/LaTeXML">
 <!ENTITY % LaTeXML.prefix "ltxml">
 
 <![%LaTeXML.prefixed;[
-<!ENTITY % LaTeXML.pfx "%LaTeXML.prefix;"">
+<!ENTITY % LaTeXML.pfx "%LaTeXML.prefix;:">
 <!ENTITY % LaTeXML.xmlns.extra.attrib
   	 "xmlns:%LaTeXML.prefix; CDATA #FIXED '%LaTeXML.xmlns;'">
 ]]>
@@ -43,7 +43,7 @@
          %LaTeXML.ID.attrib.base; %LaTeXML.ID.attrib.extra;">
 
 <!ENTITY % LaTeXML.IDREF.attrib.base
-	 "idref  IDREF #REQUIRED">
+	 "idref  IDREF #IMPLIED">
 <!ENTITY % LaTeXML.IDREF.attrib.extra "">
 <!ENTITY % LaTeXML.IDREF.attrib "
          %LaTeXML.IDREF.attrib.base; %LaTeXML.IDREF.attrib.extra;">

@@ -20,12 +20,12 @@ use LaTeXML::Global;
 use XML::LibXML;
 use base (qw(Exporter));
 
-our @EXPORT_OK = (qw(&Lookup &New &Apply &recApply &Annotate &InvisibleTimes
+our @EXPORT_OK = (qw(&Lookup &New &Apply &ApplyNary &recApply &Annotate &InvisibleTimes
 		     &NewFormulae &NewFormula &NewCollection  &ApplyDelimited &NewScripts
 		     &LeftRec
 		     &Arg &Problem &MaybeFunction
 		     &isMatchingClose &Fence));
-our %EXPORT_TAGS = (constructors => [qw(&Lookup &New &Apply &recApply &Annotate &InvisibleTimes
+our %EXPORT_TAGS = (constructors => [qw(&Lookup &New &Apply &ApplyNary &recApply &Annotate &InvisibleTimes
 					&NewFormulae &NewFormula &NewCollection  &ApplyDelimited &NewScripts
 					&LeftRec
 					&Arg &Problem &MaybeFunction 
@@ -143,7 +143,11 @@ sub insert_clone {
   my($parent,$node)=@_;
   my $new = $parent->addNewChild($node->namespaceURI,$node->localname);
   foreach my $attr ($node->attributes){
-    $new->setAttribute($attr->nodeName,$attr->getValue); } # NS????
+    if($attr->nodeType == XML_ATTRIBUTE_NODE){
+      if(my $ns = $attr->namespaceURI){
+	$new->setAttributeNS($ns,$attr->localname,$attr->getValue); }
+      else {
+	$new->setAttribute($attr->localname,$attr->getValue); }}}
   foreach my $child ($node->childNodes){
     my $type = $child->nodeType;
     if   ($type == XML_ELEMENT_NODE){ insert_clone($new,$child); }
@@ -265,7 +269,7 @@ sub parse_internal {
     my ($x,$r) = ($nodes[$#nodes]);
     $punct = ($x && ($x->localname eq 'XMTok')
 	      && ($r = $x->getAttribute('role'))
-	      && ($r eq 'PUNCT')
+	      && (($r eq 'PUNCT')||($r eq 'PERIOD'))
 	      ? pop(@nodes) : ''); }
   my $nnodes = scalar(@nodes);
   
@@ -427,7 +431,10 @@ sub New {
   $node->appendText($content) if $content;
   $attributes{name} = $name if $name;
   foreach my $key (sort keys %attributes){
-    $node->setAttribute($key, $attributes{$key}) if defined $attributes{$key}; }
+    my $value = $attributes{$key};
+    if(defined $value){
+      $value = getTokenName($value) if ref $value;
+      $node->setAttribute($key, $value); }}
   $node; }
 
 
@@ -585,6 +592,29 @@ sub LeftRec {
     LeftRec(Apply($op,@args),@more); }
   else {
     $arg1; }}
+
+# Like apply, but if ops in $arg1 or $arg2 are the same, then combine as nary.
+sub ApplyNary {
+  my($op,$arg1,$arg2)=@_;
+  my $opname = getTokenName($op);  
+  my @args = ();
+  if($arg1->localname eq 'XMApp'){
+    my($op1,@args1)=element_nodes($arg1);
+    if(getTokenName($op1) eq $opname){
+      push(@args,@args1); }
+    else {
+      push(@args,$arg1); }}
+  else {
+    push(@args,$arg1); }
+  if($arg2->localname eq 'XMApp'){
+    my($op2,@args2)=element_nodes($arg2);
+    if(getTokenName($op2) eq $opname){
+      push(@args,@args2); }
+    else {
+      push(@args,$arg2); }}
+  else {
+    push(@args,$arg2); }
+  Apply($op,@args); }
 
 # ================================================================================
 # Construct an appropriate application of sub/superscripts

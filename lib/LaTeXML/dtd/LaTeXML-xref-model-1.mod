@@ -16,12 +16,12 @@
 <!ATTLIST %LaTeXML.ref.qname;
 	  %LaTeXML.Common.attrib; 
 	  %LaTeXML.IDREF.attrib; 
-          labelref CDATA #REQUIRED>
+          labelref CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.cite.qname; ((%LaTeXML.citepre.qname;)?, (%LaTeXML.citepost.qname;)?)>
 <!ATTLIST %LaTeXML.cite.qname;
 	  %LaTeXML.Common.attrib; 
-          ref CDATA #REQUIRED
+          ref CDATA #IMPLIED
           style (intext|parenthetic) #IMPLIED
           show CDATA #IMPLIED>
 

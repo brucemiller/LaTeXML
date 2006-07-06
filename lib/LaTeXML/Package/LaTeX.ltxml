@@ -636,9 +636,8 @@ DefConstructor('\sqrt[]{}',
 #======================================================================
 # Modulo
 
-DefMath('\mod',    'mod');
-DefMath('\pmod{}', '(\textrm{mod} #1)', role=>'POSTFIX'); # Well, sorta postfix..
-DefMath('\bmod',   'mod', role=>'ADDOP');
+DefMath('\pmod{}', '(\textrm{mod} #1)', role=>'MODIFIER');
+DefMath('\bmod',   'mod', role=>'MODIFIEROP');
 
 #======================================================================
 # C.7.4 Arrays
@@ -1553,14 +1552,15 @@ sub close_matharray_arg {
   my($document)=@_;
   my $node = $document->closeElement('ltx:XMArg');
   # If XMArg is (except for comments) empty, remove it, but move it's comments up.
-  if(grep(ref $_ ne 'LaTeXML::CommentNode', $node->childNodes) == 0){ # No non-comment => `empty'
+  if(grep($_->nodeType != XML_COMMENT_NODE, $node->childNodes) == 0){ # No non-comment => `empty'
     $node->getParentNode->removeChild($node);
-    map($node->getParentNode->insert($_),grep(ref $_ eq 'LaTeXML::CommentNode', $node->childNodes)); }
+    map($node->getParentNode->appendChild($_),
+	grep($_->nodeType == XML_COMMENT_NODE, $node->childNodes)); }
 }
 
 sub open_matharray_level {
   my($document,$levelname,%attributes)=@_;
-  $document->openElement('ltx:XMApp'); 
+  $document->openElement('ltx:XMApp',role=>'ARRAY'); # Is this right?
   $document->insertElement('ltx:XMTok',undef,name=>$levelname,%attributes); }
 
 sub close_matharray_level {
@@ -1568,9 +1568,10 @@ sub close_matharray_level {
   # If XMApp is empty (except for the Array/Row/Cell operator and comments), remove it,
   # but preserve the commetns.
   my $node = $document->closeElement('ltx:XMApp');
-  if(grep(ref $_ ne 'LaTeXML::CommentNode', $node->childNodes) == 1){ # Only 1 non-comment => `empty'
+  if(grep($_->nodeType != XML_COMMENT_NODE, $node->childNodes) == 1){ # Only 1 non-comment => `empty'
     $node->getParentNode->removeChild($node);
-    map($node->getParentNode->insert($_),grep(ref $_ eq 'LaTeXML::CommentNode', $node->childNodes)); }
+    map($node->getParentNode->appendChild($_),
+	grep($_->nodeType == XML_COMMENT_NODE, $node->childNodes)); }
 }
 
 # Note: The next two worry me abit.

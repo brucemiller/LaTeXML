@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section id="S1" refnum="1">
+    <title>Integration and Summation</title>
+    <para id="S1.p1">
+      <equation id="Ex1">
+        <Math mode="display" tex="\sum _{{a=0}}^{\infty}f_{a}(c^{a})" text="(SubSuperscript@(sum, a = 0, Infinity))@((f _ a)@(c ^ a))">
+          <XMath>
+            <XMApp>
+              <XMApp>
+                <XMTok name="SubSuperscript"/>
+                <XMTok name="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
+                <XMApp>
+                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="NUMBER">0</XMTok>
+                </XMApp>
+                <XMTok name="Infinity" role="ID">∞</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMApp argclose=")" argopen="(">
+                  <XMTok name="Subscript" role="SUBSCRIPT"/>
+                  <XMTok role="FUNCTION" font="italic">f</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                  <XMTok role="ID" font="italic">c</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex2">
+        <Math mode="display" tex="\sum _{{a=0}}^{\infty}\sum _{{b=-a}}^{a}f_{a}(c^{a})g_{b}(c^{b})" text="(SubSuperscript@(sum, a = 0, Infinity))@((SubSuperscript@(sum, b = - a, a))@((f _ a)@(c ^ a) * (g _ b)@(c ^ b)))">
+          <XMath>
+            <XMApp>
+              <XMApp>
+                <XMTok name="SubSuperscript"/>
+                <XMTok name="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
+                <XMApp>
+                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="NUMBER">0</XMTok>
+                </XMApp>
+                <XMTok name="Infinity" role="ID">∞</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMApp>
+                  <XMTok name="SubSuperscript"/>
+                  <XMTok name="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
+                  <XMApp>
+                    <XMTok role="RELOP">=</XMTok>
+                    <XMTok role="ID" font="italic">b</XMTok>
+                    <XMApp>
+                      <XMTok role="ADDOP">-</XMTok>
+                      <XMTok role="ID" font="italic">a</XMTok>
+                    </XMApp>
+                  </XMApp>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMApp>
+                    <XMApp argclose=")" argopen="(">
+                      <XMTok name="Subscript" role="SUBSCRIPT"/>
+                      <XMTok role="FUNCTION" font="italic">f</XMTok>
+                      <XMTok role="ID" font="italic">a</XMTok>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                      <XMTok role="ID" font="italic">c</XMTok>
+                      <XMTok role="ID" font="italic">a</XMTok>
+                    </XMApp>
+                  </XMApp>
+                  <XMApp>
+                    <XMApp argclose=")" argopen="(">
+                      <XMTok name="Subscript" role="SUBSCRIPT"/>
+                      <XMTok role="FUNCTION" font="italic">g</XMTok>
+                      <XMTok role="ID" font="italic">b</XMTok>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                      <XMTok role="ID" font="italic">c</XMTok>
+                      <XMTok role="ID" font="italic">b</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex3">
+        <Math mode="display" tex="\sum _{{a=0}}^{\infty}\sum _{{b=-a}}^{a}\lim _{{c\rightarrow 0}}f_{a}(c^{a})g_{b}(c^{b})" text="(SubSuperscript@(sum, a = 0, Infinity))@((SubSuperscript@(sum, b = - a, a))@((lim _ (c rightarrow 0))@((f _ a)@(c ^ a) * (g _ b)@(c ^ b))))">
+          <XMath>
+            <XMApp>
+              <XMApp>
+                <XMTok name="SubSuperscript"/>
+                <XMTok name="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
+                <XMApp>
+                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="NUMBER">0</XMTok>
+                </XMApp>
+                <XMTok name="Infinity" role="ID">∞</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMApp>
+                  <XMTok name="SubSuperscript"/>
+                  <XMTok name="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
+                  <XMApp>
+                    <XMTok role="RELOP">=</XMTok>
+                    <XMTok role="ID" font="italic">b</XMTok>
+                    <XMApp>
+                      <XMTok role="ADDOP">-</XMTok>
+                      <XMTok role="ID" font="italic">a</XMTok>
+                    </XMApp>
+                  </XMApp>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMApp>
+                    <XMTok name="Subscript" role="SUBSCRIPT"/>
+                    <XMTok role="LIMITOP" stackscripts="yes">lim</XMTok>
+                    <XMApp>
+                      <XMTok name="rightarrow" role="ARROW">→</XMTok>
+                      <XMTok role="ID" font="italic">c</XMTok>
+                      <XMTok role="NUMBER">0</XMTok>
+                    </XMApp>
+                  </XMApp>
+                  <XMApp>
+                    <XMTok role="MULOP">⁢</XMTok>
+                    <XMApp>
+                      <XMApp argclose=")" argopen="(">
+                        <XMTok name="Subscript" role="SUBSCRIPT"/>
+                        <XMTok role="FUNCTION" font="italic">f</XMTok>
+                        <XMTok role="ID" font="italic">a</XMTok>
+                      </XMApp>
+                      <XMApp>
+                        <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                        <XMTok role="ID" font="italic">c</XMTok>
+                        <XMTok role="ID" font="italic">a</XMTok>
+                      </XMApp>
+                    </XMApp>
+                    <XMApp>
+                      <XMApp argclose=")" argopen="(">
+                        <XMTok name="Subscript" role="SUBSCRIPT"/>
+                        <XMTok role="FUNCTION" font="italic">g</XMTok>
+                        <XMTok role="ID" font="italic">b</XMTok>
+                      </XMApp>
+                      <XMApp>
+                        <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                        <XMTok role="ID" font="italic">c</XMTok>
+                        <XMTok role="ID" font="italic">b</XMTok>
+                      </XMApp>
+                    </XMApp>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section id="S2" refnum="2">
+    <title>Operators</title>
+    <para id="S2.p1">
+      <equation id="Ex4">
+        <Math mode="display" tex="Da" text="D@(a)">
+          <XMath>
+            <XMApp>
+              <XMTok role="OPERATOR" font="italic">D</XMTok>
+              <XMTok role="ID" font="italic">a</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex5">
+        <Math mode="display" tex="Df" text="D@(f)">
+          <XMath>
+            <XMApp>
+              <XMTok role="OPERATOR" font="italic">D</XMTok>
+              <XMTok role="FUNCTION" font="italic">f</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex6">
+        <Math mode="display" tex="Df(a)" text="(D@(f))@(a)">
+          <XMath>
+            <XMApp>
+              <XMApp argclose=")" argopen="(">
+                <XMTok role="OPERATOR" font="italic">D</XMTok>
+                <XMTok role="FUNCTION" font="italic">f</XMTok>
+              </XMApp>
+              <XMTok role="ID" font="italic">a</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex7">
+        <Math mode="display" tex="DGHf" text="D@(G@(H@(f)))">
+          <XMath>
+            <XMApp>
+              <XMTok role="OPERATOR" font="italic">D</XMTok>
+              <XMApp>
+                <XMTok role="OPERATOR" font="italic">G</XMTok>
+                <XMApp>
+                  <XMTok role="OPERATOR" font="italic">H</XMTok>
+                  <XMTok role="FUNCTION" font="italic">f</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex8">
+        <Math mode="display" tex="DGHf(a)" text="(D@(G@(H@(f))))@(a)">
+          <XMath>
+            <XMApp>
+              <XMApp argclose=")" argopen="(">
+                <XMTok role="OPERATOR" font="italic">D</XMTok>
+                <XMApp>
+                  <XMTok role="OPERATOR" font="italic">G</XMTok>
+                  <XMApp>
+                    <XMTok role="OPERATOR" font="italic">H</XMTok>
+                    <XMTok role="FUNCTION" font="italic">f</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+              <XMTok role="ID" font="italic">a</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex9">
+        <Math mode="display" tex="D(a)(b)" text="(D@(a))@(b)">
+          <XMath>
+            <XMApp>
+              <XMApp argclose=")" argopen="(">
+                <XMTok role="OPERATOR" argclose=")" argopen="(" font="italic">D</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+              </XMApp>
+              <XMTok role="ID" font="italic">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+</document>

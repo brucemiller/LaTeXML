@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section>
+    <para id="p1">
+      <equation id="Ex1">
+        <Math mode="display" tex="\{ a\}" text="Set@(a)">
+          <XMath>
+            <XMApp>
+              <XMTok name="Set" role="FENCED" argclose="}" argopen="{"/>
+              <XMTok role="ID" font="italic">a</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex2">
+        <Math mode="display" tex="\{ a:a\in b\}" text="ConditionalSet@(a, a in b)">
+          <XMath>
+            <XMApp>
+              <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators=";"/>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok name="in" role="RELOP">∈</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex3">
+        <Math mode="display" tex="\{ a|a\in b\}" text="ConditionalSet@(a, a in b)">
+          <XMath>
+            <XMApp>
+              <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators="|"/>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok name="in" role="RELOP">∈</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <para id="p2">
+      <equation id="Ex4">
+        <Math mode="display" tex="\{ a|a\in b\} _{{c=0}}" text="(ConditionalSet@(a, a in b)) _ (c = 0)">
+          <XMath>
+            <XMApp>
+              <XMTok name="Subscript" role="SUBSCRIPT"/>
+              <XMApp>
+                <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators="|"/>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMApp>
+                  <XMTok name="in" role="RELOP">∈</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="RELOP">=</XMTok>
+                <XMTok role="ID" font="italic">c</XMTok>
+                <XMTok role="NUMBER">0</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+</document>

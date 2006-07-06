@@ -1,0 +1,27 @@
+\documentclass{article}
+\usepackage{latexml}
+\begin{document}
+\lxDeclare[role=ID]{$a$}%
+\lxDeclare[role=ID]{$b$}%
+\lxDeclare[role=ID]{$c$}%
+\lxDeclare[role=ID]{$d$}%
+\lxDeclare[role=ID]{$e$}%
+
+\section{Basic math}
+\[ ((a + b) - c) \]
+\[ (a + (b - c)) \]
+
+\section{Intervals}
+\[ (a,b) \]
+\[ [a,b) \]
+\[ (a,b] \]
+\[ [a,b] \]
+
+\section{Cases}
+
+\[ \left.\begin{array}{l} a \\ b \end{array}\right\}
+  = \left\{\begin{array}{l} c\\ d\end{array}\right. \]
+
+\[ \left(\begin{array}{l} c\\ d\end{array}\right) \]
+\[ (a + \left(\begin{array}{l} c\\ d\end{array}\right) + b) \]
+\end{document}

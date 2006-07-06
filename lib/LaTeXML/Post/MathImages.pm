@@ -159,7 +159,7 @@ sub find_math_nodes {
 sub extract_tex {
   my($self,$node)=@_;
   my $mode = $node->getAttribute('mode')||'inline';
-  my $tex = $node->getAttribute('tex');
+  my $tex = $node->getAttribute('tex') || '';
   $tex =~ s/\%[^\n]*\n//gs;	# Strip comments
   $tex =~ s/\n//g;		# and stray CR's
   ($mode, $tex); }
