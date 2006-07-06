@@ -877,6 +877,8 @@ sub matharray_defs {
   DefConstructor("\\\\ Flag:* []", \&matharray_cr,
 		 beforeDigest=>sub { $STOMACH->egroup; },
 		 afterDigest=>sub { $STOMACH->bgroup; } );
+  # Hmm... So, if we've got \hlines, it's more like a table than a matrix,....
+  DefConstructor('\hline',"<XMHint name='hline'/>");
   $STOMACH->bgroup;
   return; }
 sub matharray_end {
@@ -1123,9 +1125,9 @@ DefEnvironment('{lrbox}{Token}','',
     return; });
 DefPrimitive('\usebox{Token}', sub { $STOMACH->lookupValue('box'.$_[1]->toString);});
 
-DefConstructor('\parbox[][]{}',"<text ?#2(width='#2') ?#1(pos='#1') justified='yes'>#3</text>",
+DefConstructor('\parbox[][]{}',"<minipage ?#2(width='#2') ?#1(pos='#1') justified='yes'>#3</minipage>",
 	       mode=>'text');
-DefEnvironment('{minipage}[]{}',"<text ?#2(width='#1') justified='yes'>#2</text>",
+DefEnvironment('{minipage}[]{}',"<minipage ?#2(width='#2') ?#1(pos='#1') justified='yes'>#body</minipage>",
 	       mode=>'text');
 DefConstructor('\rule[]{}{}', "<rule ?#1(raise='#1') width='#2' height='#3'/>");
 
@@ -1378,6 +1380,26 @@ DefMacro('\voidb@x','');
 
 # \newread
 # \newwrite
+
+#======================================================================
+# Some control structure from latex.ltx
+# (amazing that it actually works!)
+# How much of this control struture will I need?
+RawTeX(<<'EOTeX');
+\def\@nnil{\@nil}
+\def\@empty{}
+\def\@fornoop#1\@@#2#3{}
+\long\def\@for#1:=#2\do#3{%
+  \expandafter\def\expandafter\@fortmp\expandafter{#2}%
+  \ifx\@fortmp\@empty \else
+    \expandafter\@forloop#2,\@nil,\@nil\@@#1{#3}\fi}
+\long\def\@forloop#1,#2,#3\@@#4#5{\def#4{#1}\ifx #4\@nnil \else
+       #5\def#4{#2}\ifx #4\@nnil \else#5\@iforloop #3\@@#4{#5}\fi\fi}
+\long\def\@iforloop#1,#2\@@#3#4{\def#3{#1}\ifx #3\@nnil
+       \expandafter\@fornoop \else
+      #4\relax\expandafter\@iforloop\fi#2\@@#3{#4}}
+
+EOTeX
 
 #======================================================================
 DefMacro('\check@mathfonts','');

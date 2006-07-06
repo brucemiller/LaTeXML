@@ -14,7 +14,7 @@ my $identity = "latexmlpost (LaTeXML version $LaTeXML::VERSION)";
 my($source,$destination)=(".","");
 my($help,$showversion)=(0,0);
 my $format=undef;
-my($mathml,$openmath);
+my($mathml,$openmath,$keepXMath);
 my $verbosity=0;
 my $stylesheet;
 GetOptions("destination=s"=>\$destination,
@@ -25,6 +25,7 @@ GetOptions("destination=s"=>\$destination,
 	   "VERSION"      =>\$showversion,
 	   "mathml"       =>\$mathml,
 	   "openmath"     =>\$openmath,
+	   "keepXMath"    =>\$keepXMath,
 	   "help|?"       =>\$help,
 	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
@@ -45,6 +46,7 @@ my $doc = LaTeXML::Post->new()->process($xmlfile,
 					format         => $format,
 					mathml         => $mathml,
 					openmath       => $openmath,
+					keepXMath      => $keepXMath,
 					stylesheet     => $stylesheet,
 					verbosity      => $verbosity,
 					toString       => !$destination);
@@ -64,13 +66,16 @@ such ad convert math to images and processing graphics inclusions for the web.
 latexmlpost [options] xmlfile
 
   Options:
-   --source=sourcedir         specifies directory of source TeX file.
-   --destination=outputfile   specifies output file (and directory).
-   --format=html|xhtml        requests processing for html(+images), or xhtml(+MathML) respectively
+   --format=html|xhtml|xml    requests the output format.
    --stylesheet=xslfile       requests the XSL transform of the document using the given
                               xslfile as stylesheet.
+   --mathml                   requests conversion of the math to Presentation MathML
+   --openmath                 requests conversion of the math to OpenMath
+   --keepXMath                preserves the intermediate XMath representation
    --verbose                  prints progress messages during processing.
    --VERSION                  show version number.
+   --source=sourcedir         specifies directory of source TeX file.
+   --destination=outputfile   specifies output file (and directory).
    --help                     shows help message.
 
 =head1 OPTIONS AND ARGUMENTS
@@ -82,10 +87,35 @@ xml data is read from standard input.
 
 =over 4
 
-=item B<--destination=>I<destination>
+=item B<--format>=I<html|xhtml|xml>
 
-Specifies the destination file and directory.  The directory is needed for
-mathimages and graphics processing.
+Specifies the output format for post processing. 
+html format converts the material to html and the mathematics to png images.
+xhtml format converts to xhtml and uses presentation MathML (after attempting
+to parse the mathematics) for representing the math.  In both cases, any
+graphics will be converted to web-friendly formats and/or copied to the
+destination directory.  By default, the output is left in LaTeXML's xml,
+but the math is parsed and converted to presentation MathML.
+For html and xhtml, a default stylesheet is provided, but see
+the B<--stylesheet> option.
+
+=item B<--stylesheet>=I<stylesheet>
+
+Specifies an XSLT stylesheet for transforming the xml.
+
+=item B<--mathml>
+
+Requests that the mathematical material be parsed, and converted to
+Presentation MathML.
+
+=item B<--openmath>
+
+Requests that the mathematical material be parsed, and converted to
+OpenMath.  This is currently a very naive conversion.
+
+=item B<--keepXMath>
+
+By default, when either --mathml
 
 =item B<--source>=I<source>
 
@@ -93,12 +123,18 @@ Specifies the directory where the original latex source is located.
 Unless latexmlpost is run from that directory, it may be necessary
 to specify this option in order to find graphics and style files.
 
+=item B<--destination=>I<destination>
+
+Specifies the destination file and directory.  The directory is needed for
+mathimages and graphics processing.
+
+
 =item B<--stylesheet>=I<xslfile>
 
 Requests the XSL transformation of the document using the given xslfile as stylesheet.
 If the stylesheet is omitted, a `standard' one will be used (C<dtd/LaTeXML.xsl>).
 
-=item B<--version>
+=item B<--VERSION>
 
 Shows the version number of the LaTeXML package..
 

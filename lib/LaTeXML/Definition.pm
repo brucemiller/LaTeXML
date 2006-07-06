@@ -202,6 +202,7 @@ sub invoke {
 # in the Stomach.
 #**********************************************************************
 package LaTeXML::Constructor;
+use strict;
 use LaTeXML::Global;
 our @ISA = qw(LaTeXML::Primitive);
 
@@ -242,7 +243,7 @@ sub untex {
       my $p;
       $string = $untex;
       $string =~ s/#(\d)/ $whatsit->getArg($1)->untex; /eg; 
-      $string =~ s/#(\w+)/ (ref($p=$whatsit->getProperty($1))?$p->untex:$p); /eg; }
+      $string =~ s/#(\w+)/ (defined($p=$whatsit->getProperty($1)) ? (ref $p ? $p->untex:$p):''); /eg; }
     else {
       $string= $$self{alias}||$$self{cs}->untex;
       my @args = $whatsit->getArgs;
@@ -282,6 +283,7 @@ sub invoke {
 
 #**********************************************************************
 package LaTeXML::ConstructorCompiler;
+use strict;
 use LaTeXML::Global;
 our $VALUE_RE = "(\\#)";
 our $COND_RE  = "\\?($VALUE_RE|IfMath)";
@@ -293,6 +295,8 @@ sub compileConstructor {
   my($constructor,$cs,$nargs)=@_;
   return sub {} unless $constructor;
   my $name = $cs->getCSName;
+  local $LaTeXML::ConstructorCompiler::NAME = $name;
+  local $LaTeXML::ConstructorCompiler::NARGS = $nargs;
   $name =~ s/\W//g;
   $name = "constructor_".$name.'_'.$GEN++;
   my $floats = ($constructor =~ s/^\^\s*//);	# Grab float marker.
@@ -374,7 +378,12 @@ sub parse_conditional {
 # Future enhancements? array ref, &foo(xxx) for function calls, ...
 sub translate_value {
   my $value;
-  if   (s/^\#(\d+)//     ){ $value = "\$arg$1" }
+  if   (s/^\#(\d+)//     ){ 
+    my $n = $1;
+    Fatal("Illegal argument number $n in constructor for "
+	  ."$LaTeXML::ConstructorCompiler::NAME which takes $LaTeXML::ConstructorCompiler::NARGS args")
+      if(($n < 1) || ($n > $LaTeXML::ConstructorCompiler::NARGS));
+    $value = "\$arg$n" }
   elsif(s/^\#([\w\-_]+)//){ $value = "\$\$prop{'$1'}"; }
   elsif(s/$TEXT_RE//so    ){ $value = "'".slashify($1)."'"; }
   # &foo(...) ? Function (but not &foo; !!!)

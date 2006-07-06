@@ -206,8 +206,10 @@ sub DefConstructor {
 # HMM.... Still fishy.
 # When to make a dual ?
 # If the $presentation seems to be TeX (ie. it involves #1... but not ONLY!)
-our $math_options = {name=>1, omcd=>1, untex=>1, alias=>1, role=>1, operator_role=>1,
-		     style=>1, size=>1, stackscripts=>1,
+our $math_options = {name=>1, omcd=>1, untex=>1, alias=>1,
+		     role=>1, operator_role=>1,
+		     style=>1, size=>1, 
+		     stackscripts=>1,operator_stackscripts=>1,
 		     beforeDigest=>1, afterDigest=>1, stash=>1};
 our $XMID=0;
 sub next_id {
@@ -235,8 +237,7 @@ sub DefMath {
   $name =~ s/^\\//;
   $name = $options{name} if defined $options{name};
   $name = undef if (defined $name) && (($name eq $presentation) || ($name eq ''));
-  my $attr="name='#name' omcd='#omcd' style='#style' size='#size'"
-    ." stackscripts='#stackscripts'";
+  my $attr="name='#name' omcd='#omcd' style='#style' size='#size'";
   my %common =(alias=>$options{alias}||$cs->getString,
 	       (defined $options{untex} ? (untex=>$options{untex}) : ()),
 	       beforeDigest=> flatten(sub{ requireMath;},
@@ -245,7 +246,8 @@ sub DefMath {
 	       properties => {name=>$name, omcd=>$options{omcd},
 			      role => $options{role}, operator_role=>$options{operator_role},
 			      style=>$options{style}, size=>$options{size},
-			      stackscripts=>$options{stackscripts}},
+			      stackscripts=>$options{stackscripts},
+			      operator_stackscripts=>$options{operator_stackscripts}},
 	       stash=>$options{stash});
 
   if((ref $presentation) || ($presentation =~ /\#\d|\\./)){	      # Seems to have TeX! => XMDual
@@ -262,9 +264,9 @@ sub DefMath {
 	     stash=>$options{stash});
     DefConstructor($cont_cs . $paramlist->stringify,
 		   ($nargs == 0 
-		    ? "<XMTok $attr role='#role'/>"
-		    : "<XMApp role='#role'>"
-		    .  "<XMTok $attr role='#operator_role'/>"
+		    ? "<XMTok $attr role='#role' stackscripts='#stackscripts'/>"
+		    : "<XMApp role='#role' stackscripts='#stackscripts'>"
+		    .  "<XMTok $attr role='#operator_role' stackscripts='#operator_stackscripts'/>"
 		    .   join('',map("#$_", 1..$nargs))
 		    ."</XMApp>"),
 		   %common); }
@@ -273,9 +275,10 @@ sub DefMath {
     $common{properties}{font} = sub { $STOMACH->getFont->specialize($presentation); };
     DefConstructor($proto,
 		   ($nargs == 0 
-		    ? "<XMTok role='#role' font='#font' $attr$end_tok"
-		    : "<XMApp role='#role'>"
-		    .  "<XMTok $attr font='#font' role='#operator_role'$end_tok"
+		    ? "<XMTok role='#role' stackscripts='#stackscripts' font='#font' $attr$end_tok"
+		    : "<XMApp role='#role' stackscripts='#stackscripts'>"
+		    .  "<XMTok $attr font='#font' role='#operator_role' stackscripts='#operator_stackscripts'"
+		    .  " $end_tok"
 		    .   join('',map("<XMArg>#$_</XMArg>", 1..$nargs))
 		    ."</XMApp>"),
 		   %common); }

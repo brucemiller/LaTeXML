@@ -257,7 +257,7 @@ sub Stringify {
 
 sub ToString {
   my($object)=@_;
-  ( (defined $object && (ref $object) && !$NOBLESS{ref $object}) ? $object->toString : "$object"); }
+  (defined $object ? (((ref $object) && !$NOBLESS{ref $object}) ? $object->toString : "$object"):''); }
 
 sub Equals {
   my($a,$b)=@_;

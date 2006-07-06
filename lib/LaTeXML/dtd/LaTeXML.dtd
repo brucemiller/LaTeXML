@@ -20,10 +20,10 @@
 
 <!-- kinda concerned about equation being only block -->
 <!ENTITY % Block.class
-         "p  | equation | figure | table  | tabular | centering | 
+         "p  | equation | figure | table  | tabular | centering |
           itemize | enumerate | description | verbatim | acronyms">
 <!ENTITY % Misc.class
-         "graphics | quote | footnote | index | ERROR">
+         "graphics | minipage | quote | footnote | index | ERROR">
 
 <!-- These can be overridden to add more elements. -->
 <!ENTITY % Simple.extra "">
@@ -300,6 +300,14 @@
      ====================================================================== -->
 
 <!ELEMENT quote  (#PCDATA | %Inline.mix;)*>
+
+<!ELEMENT minipage (%Block.mix;)*>
+<!ATTLIST minipage
+	  %Common.attr;
+	  pos CDATA #IMPLIED
+	  width CDATA #IMPLIED
+	  justified CDATA #IMPLIED>
+
 <!ELEMENT footnote  (#PCDATA | %Inline.mix;)*>
 <!ATTLIST footnote
 	  %Common.attr; 

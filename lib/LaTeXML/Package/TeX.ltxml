@@ -1613,18 +1613,19 @@ DefMath('\breve{}',     "\x{02D8}", operator_role=>'OVERACCENT'); # BREVE
 DefMath('\acute{}',     "\x{00B4}", operator_role=>'OVERACCENT'); # ACUTE ACCENT
 DefMath('\grave{}',     "\x{0060}", operator_role=>'OVERACCENT'); # GRAVE ACCENT
 DefMath('\tilde{}',     "\x{007E}", operator_role=>'OVERACCENT'); # TILDE
-DefMath('\bar{}',       "\x{2212}", operator_role=>'OVERACCENT'); # MINUS SIGN
+DefMath('\bar{}',       "\x{00AF}", operator_role=>'OVERACCENT'); # MACRON
 DefMath('\vec{}',       "\x{2192}", operator_role=>'OVERACCENT'); # RIGHTWARDS ARROW
 DefMath('\dot{}',       "\x{02D9}", operator_role=>'OVERACCENT'); # DOT ABOVE
 DefMath('\ddot{}',      "\x{00A8}", operator_role=>'OVERACCENT'); # DIAERESIS
-DefMath('\overline{}',  "\x{2212}", operator_role=>'OVERACCENT'); # MINUS SIGN
-DefMath('\overbrace{}', "\x{FE37}", operator_role=>'OVERACCENT'); # PRESENTATION FORM FOR VERTICAL LEFT CURLY BRACKET
+DefMath('\overline{}',  "\x{00AF}", operator_role=>'OVERACCENT'); # MACRON
+DefMath('\overbrace{}', "\x{FE37}", operator_role=>'OVERACCENT', # PRESENTATION FORM FOR VERTICAL LEFT CURLY BRACKET
+	stackscripts=>'yes');
 DefMath('\widehat{}',   "\x{005E}", operator_role=>'OVERACCENT'); # CIRCUMFLEX ACCENT [plain? also amsfonts]
 DefMath('\widetilde{}', "\x{007E}", operator_role=>'OVERACCENT'); # TILDE [plain? also amsfonts]
 
-DefMath('\underline{}', "\x{2212}", operator_role=>'UNDERACCENT'); # MINUS SIGN
-DefMath('\underbrace{}',"\x{FE38}", operator_role=>'UNDERACCENT'); # PRESENTATION FORM FOR VERTICAL RIGHT CURLY BRACKET
-
+DefMath('\underline{}', "\x{00AF}", operator_role=>'UNDERACCENT'); # MACRON
+DefMath('\underbrace{}',"\x{FE38}", operator_role=>'UNDERACCENT', # PRESENTATION FORM FOR VERTICAL RIGHT CURLY BRACKET
+	stackscripts=>'yes');
 DefMath('\overrightarrow{}', "\x{2192}", operator_role=>'OVERACCENT');
 DefMath('\overleftarrow{}', "\x{2190}", operator_role=>'OVERACCENT');
 

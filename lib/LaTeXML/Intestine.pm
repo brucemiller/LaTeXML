@@ -32,6 +32,15 @@ sub getNode     { $_[0]->{node}; }
 sub setNode     { $_[0]->{node} = $_[1]; }
 
 # Note: $node->getNodeNmme gets invoked so often, we're inlining => $$node{tag};
+
+sub getNodePath {
+  my($self)=@_;
+  my $node = $$self{node};
+  my $path = $$node{tag};
+  while($node = $node->getParentNode){
+    $path .= " < ".$$node{tag}; }
+  $path; }
+
 #**********************************************************************
 # Record nodes by id
 sub recordID {
@@ -68,7 +77,8 @@ sub absorb {
   elsif($$self{node}{tag} eq 'XMTok'){ # Already in a XMTok, just insert the text
     $$self{node}->insert(LaTeXML::TextNode->new($box,_locator=>$box)); } # Should be safe...
   else {			# Shouldn't happen?  Should I distinguish space from `real' stuff?
-    Warn("Inserting raw text \"$box\" within math ".Stringify($$self{node})."; Converting to XMTok");
+# No, maybe this is `normal' after all...
+#    Warn("Inserting raw text \"$box\" within math ".Stringify($$self{node})."; Converting to XMTok");
     $self->insertMathToken($box,font=>$LaTeXML::BOX->getFont); }}
 
 #**********************************************************************
@@ -144,7 +154,7 @@ sub floatToAttribute {
     $savenode = $$self{node};
     $$self{node}=$n; }
   else {
-    Error("No open node can accept attribute $key"); }
+    Error("No open node can accept attribute $key; in ".$self->getNodePath); }
   $savenode; }
 
 #**********************************************************************
@@ -208,7 +218,7 @@ sub closeElement {
     push(@cant_close,$node) unless $MODEL->canAutoClose($t);
     $node = $node->getParentNode; }
   if(!defined $node){		# Didn't find an open $tag at all!
-    Error("Attempt to close $tag, which isn't open"); }
+    Error("Attempt to close $tag, which isn't open; in ".$self->getNodePath); }
   else {
     # Found node, but has intervening non-auto-closeable parents
     # Will go ahead and close them anyway, unless Error ends up a Fatal error.

@@ -253,6 +253,8 @@ DefMathML('Token:MIDDLE:?', \&to_mo);
 DefMathML('Token:VERTBAR:?', \&to_mo);
 DefMathML('Token:ARROW:?', \&to_mo);
 DefMathML('Token:METARELOP:?', \&to_mo);
+DefMathML('Token:OVERACCENT:?', \&to_mo);
+DefMathML('Token:UNDERACCENT:?', \&to_mo);
 
 DefMathML('Token:NUMBER:?',sub { Node('mn',$_[0]->textContent); });
 DefMathML('Token:?:Empty', sub { Node('none')} );

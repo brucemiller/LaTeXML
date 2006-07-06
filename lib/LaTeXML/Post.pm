@@ -106,33 +106,34 @@ sub completeOptions {
       $options{format} = 'xhtml' if $options{destination} =~ /\.xhtml$/; }
     else {
       $options{format} = 'xml'; }}
+  my $keepXMath = $options{keepXMath};
 
   # Determine the set of post processors to apply, based on format.
   if($options{processors}){	# Explicitly requested list.
-  }
+    $keepXMath=1;  }
   elsif($options{format} eq 'html'){
     $options{processors} = [qw(LaTeXML::Post::MathImages
 			       LaTeXML::Post::Graphics
-			       LaTeXML::Post::HTMLTable
-			       LaTeXML::Post::XSLT)];  }
+			       LaTeXML::Post::HTMLTable)];
+    $options{stylesheet} = "LaTeXML-html.xsl" unless $options{stylesheet}; }
   elsif($options{format} eq 'xhtml'){
     $options{processors} = [qw(LaTeXML::Post::MathParser
 			       LaTeXML::Post::PresentationMathML
 			       LaTeXML::Post::Graphics
-			       LaTeXML::Post::HTMLTable
-			       LaTeXML::Post::XSLT)];  }
+			       LaTeXML::Post::HTMLTable)];
+    $options{stylesheet} = "LaTeXML-xhtml.xsl" unless $options{stylesheet}; }
   elsif($options{mathml}) {
     $options{processors} = [qw(LaTeXML::Post::MathParser
-			       LaTeXML::Post::PresentationMathML)];
-    push(@{$options{processors}},'LaTeXML::Post::XSLT') if $options{stylesheet}; }
+			       LaTeXML::Post::PresentationMathML)]; }
   elsif($options{openmath}) {
     $options{processors} = [qw(LaTeXML::Post::MathParser
-			       LaTeXML::Post::OpenMath)];
-    push(@{$options{processors}},'LaTeXML::Post::XSLT') if $options{stylesheet}; }
+			       LaTeXML::Post::OpenMath)]; }
   else {			# Else do sensible minimal XML stuff?
+    $keepXMath=1;
     $options{processors} = [qw(LaTeXML::Post::MathParser
-			       LaTeXML::Post::PresentationMathML)];
-    push(@{$options{processors}},'LaTeXML::Post::XSLT') if $options{stylesheet}; }
+			       LaTeXML::Post::PresentationMathML)]; }
+  push(@{$options{processors}},'LaTeXML::Post::PurgeXMath') unless $keepXMath;
+  push(@{$options{processors}},'LaTeXML::Post::XSLT') if $options{stylesheet};
 
   # Get complete source, destination and corresponding directories.
   if($options{source} && !$options{sourceDirectory}){
