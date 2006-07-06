@@ -228,7 +228,7 @@ sub readRawLines {
       last; }
     elsif(!$exact && ($line =~ /^(.*?)\Q$endline\E(.*)$/)){
       my($pre,$post)=($1,$2);
-      push(@lines,$pre) if $pre;
+      push(@lines,$pre."\n") if $pre;
       $$self{chars}=[split('',$line)];
       $$self{nchars} = scalar(@{$$self{chars}});
       $$self{colno} = length($pre)+length($endline);
@@ -244,16 +244,18 @@ sub readRawLines {
 package LaTeXML::FileMouth;
 use strict;
 use LaTeXML::Global;
+use LaTeXML::Util::Pathname;
 our @ISA = qw(LaTeXML::Mouth);
 
 sub new {
   my($class,$pathname)=@_;
   local *IN;
   open(IN,$pathname) || Fatal("Can't read from $pathname");
-  my $self = {pathname=>$pathname, source=>$pathname, IN => *IN};
+  my $shortpath=pathname_relative($pathname,pathname_cwd);
+  my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN};
   bless $self,$class;
   $self->initialize;
-  NoteProgress("\n(Processing $pathname");
+  NoteProgress("\n(Processing $shortpath");
   $self;  }
 
 sub finish {
@@ -288,16 +290,18 @@ sub stringify {
 package LaTeXML::StyleMouth;
 use strict;
 use LaTeXML::Global;
+use LaTeXML::Util::Pathname;
 our @ISA = qw(LaTeXML::FileMouth);
 
 sub new {
   my($class,$pathname)=@_;
   local *IN;
   open(IN,$pathname) || Fatal("Can't read from $pathname");
-  my $self = {pathname=>$pathname, source=>$pathname, IN => *IN};
+  my $shortpath=pathname_relative($pathname,pathname_cwd);
+  my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN};
   bless $self,$class;
   $self->initialize;
-  NoteProgress("\n(Style $pathname");
+  NoteProgress("\n(Style $shortpath");
   $$self{saved_at_cc} = $STATE->lookupCatcode('@');
   $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
   $STATE->assignCatcode('@'=>CC_LETTER);
@@ -316,11 +320,14 @@ sub finish {
 package LaTeXML::PerlMouth;
 use strict;
 use LaTeXML::Global;
+use LaTeXML::Util::Pathname;
+
 
 sub new {
-  my($class,$file)=@_;
-  my $self = bless {file=>$file},$class;
-  NoteProgress("\n(Loading $file");
+  my($class,$pathname)=@_;
+  my $shortpath=pathname_relative($pathname,pathname_cwd);
+  my $self = bless {pathname=>$pathname, source=>$shortpath},$class;
+  NoteProgress("\n(Loading $shortpath");
   $self; }
 
 sub finish {
@@ -329,9 +336,9 @@ sub finish {
 # Evolve to figure out if this gets dynamic location!
 sub getLocator {
   my($self)=@_;
-  my $file = $$self{file};
-  my $line = LaTeXML::Error::line_in_file($file);
-  $file.($line ? " line $line":''); }
+  my $path = $$self{pathname};
+  my $line = LaTeXML::Error::line_in_file($path);
+  $path.($line ? " line $line":''); }
 
 sub hasMoreInput { 0; }
 sub readToken { undef; }

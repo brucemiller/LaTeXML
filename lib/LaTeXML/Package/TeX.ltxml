@@ -292,6 +292,10 @@ DefConstructor('\bigskip',"");
 
 DefConstructor('\thinspace',"?IfMath(<XMHint name='thinspace'/>)( )");
 DefConstructor('\thickspace',"?IfMath(<XMHint name='thickspace'/>)( )");
+
+# Mostly ignorable, although it could add an attribute to an ancestor
+# to record the desired justification.
+DefPrimitive('\raggedright',undef);
 #======================================================================
 # Assignment, TeXBook Ch.24, p.275
 #======================================================================
@@ -589,13 +593,39 @@ DefPrimitive('\sbox Number Ignore:= {}', sub {
 
 DefPrimitive('\box Number', sub { LookupValue('box'.$_[1]->valueOf); });
 
-DefPrimitive('\hbox{Keyword:to|spread} Dimension {}', sub { Digest($_[3]); });
-DefPrimitive('\vbox{Keyword:to|spread} Dimension {}', sub { Digest($_[3]); });
-DefPrimitive('\vtop{Keyword:to|spread} Dimension {}', sub { Digest($_[3]); });
+# Read to Dimension and return the dimension as string,
+#  Or spread Dimension and return +dimension as string.
+sub read_box_spec {
+  my($whatsit)=@_;
+  if($GULLET->readKeyword('to')){ 
+    $whatsit->setProperty(to=>$GULLET->readDimension); }
+  elsif($GULLET->readKeyword('spread')){
+    $whatsit->setProperty(spread=>$GULLET->readDimension); }}
 
-# Ignore, but leave the box!
-DefPrimitive('\lower Dimension', undef);
-DefPrimitive('\raise Dimension', undef);
+# Read a box's material, 
+sub read_box_contents {
+  my($whatsit)=@_;
+  $GULLET->readUntil(T_BEGIN);
+  BGroup;
+  $whatsit->setBody($STOMACH->digestNextBody,LaTeXML::Box->new("}")); }
+
+##Tag('hbox', autoOpen=>1, autoClose=>1); # Is this safe?
+
+DefConstructor('\hbox', "<hbox width='#to' pad-width='#spread'>#body</hbox>",
+	       afterDigest=>sub { read_box_spec($_[0]); read_box_contents($_[0]); });
+
+DefConstructor('\vbox', "<vbox valign='bottom' height='#to' pad-height='#spread'>#body</vbox>",
+	       afterDigest=>sub { read_box_spec($_[0]); read_box_contents($_[0]); });
+
+DefConstructor('\vtop', "<vbox valign='top' height='#to' pad-height='#spread'>#body</vbox>",
+	       afterDigest=>sub { read_box_spec($_[0]); read_box_contents($_[0]); });
+
+DefConstructor('\lower Dimension', "<hbox raise='#1'>#body</hbox>",
+	       afterDigest=>sub {  $_[0]->setArgs($_[1]->negate); read_box_contents($_[0]); });
+
+DefConstructor('\raise Dimension', "<hbox raise='#1'>#body</hbox>",
+	       afterDigest=>sub {  read_box_contents($_[0]); });
+
 #======================================================================
 # Remaining Mode independent primitives in Ch.24, pp.279-280
 # \relax was done as expandable (isn't that right?)
@@ -1644,7 +1674,6 @@ DefMacro('\hiderel{}', "#1"); # Just ignore, for now...
 # See amsmath's \genfrac
 #DefConstructor('\stacked{}{}","<STACKED/>");
 
-DefConstructor('\hbox{}', "<text>#1</text>", mode=>'text');
 DefMacro('\strut','');
 DefConstructor('\quad', "?IfMath(<XMHint name='quad'/>)(\x{2001})"); # EM QUAD
 DefConstructor('\qquad',"?IfMath(<XMHint name='qquad'/>)(\x{2001}\x{2001})"); # EM QUAD
@@ -1663,6 +1692,13 @@ DefConstructor('\j',"j");	# Apparently, no Unicode equivalent...
 
 
 DefConstructor('\>',"<XMHint name='\>'/>");	# ??
+
+DefConstructor('\buildrel Until:\over {}',
+	       "<XMApp role='RELOP'>"
+	       .  "<XMTok name='Superscript'/>"
+	       .  "<XMWrap stackscripts='yes'>#2</XMWrap>"
+	       .  "<XMWrap>#1</XMWrap>"
+	       ."</XMApp>");
 
 #**********************************************************************
 # LaTeX Hook
@@ -1728,18 +1764,6 @@ DefConstructor('\@XMRef{}',"<XMRef idref='#1'/>",
 	       untex=>sub{ LookupValue('xref:'.$_[0]->getArg(1)->toString)->untex; });
 
 DefConstructor('\@ERROR{}{}', "<ERROR type='#1'>#2</ERROR>");
-
-#**********************************************************************
-# Support for defered values (not known till after digestion.
-DefConstructor('\@VALUE{}', sub {
-  my($document,$key,$props)=@_;
-  $key = $key->toString;
-  my $value = LookupValue($key);
-  if(!$value){
-    Warn("Missing value for \"$key\"");
-    $value = LaTeXML::Box->new("??",$$props{font},$$props{locator}); 
-    AssignValue($key=>$value); } # Go ahead and set it to inhibit more messages.
-  $document->absorb($value); });
 
 #**********************************************************************
 DefConstructor('\WildCardA',"<_WildCard_/>");

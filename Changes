@@ -1,3 +1,15 @@
+0.3.2  2005-05-16
+      - Cleanup of LaTeXML.dtd; to be make sure all elements get
+        appropriate attributes defined (should validate mostly).
+      - More tweaks & tuning for more understandable error messages.
+      - implemented \raggedright, \raisebox,\buildrel,\stackrel
+      - New functionality in Constructor patterns:
+        VALUE('keyword') can be used where a value is expected
+        to lookup a value in the state. Also allows args & such,
+        So \ref ends up defined as <ref labelref='#1'>VALUE('LABEL@#1')</ref>
+        This also means that the constructors \@VALUE and \REF are no longer
+        needed, so they're removed.
+
 0.3.1  2005-05-10
       - Improved mismatched environment reporting.
       - More faithful implementation of verbatim & comment environments

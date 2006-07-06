@@ -148,11 +148,11 @@ Tag('text', autoClose=>1, autoOpen=>1); # ???
 # C.3.3 Footnotes
 #======================================================================
 # NOTE: probably should default the mark to some counter?
-DefConstructor('\footnote[]{}',"<footnote ?#1(footnotemark='#1')>#2</footnote>");
+DefConstructor('\footnote[]{}',"<note class='foot' ?#1(mark='#1')>#2</note>");
 # NOTE: DOM should reattach the footnotetext to the footnotemark ?
 #  Hmm, in general the mark & text _could_ come in either order...
 DefConstructor('\footnotemark[]',""); # ????
-DefConstructor('\footnotetext[]{}',"<footnote ?#1(footnotemark='#1')>#2</footnote>");
+DefConstructor('\footnotetext[]{}',"<note class='foot' ?#1(mark='#1')>#2</note>");
 
 # Style parameters
 DefRegister('\footnotesep' => Dimension(0));
@@ -384,7 +384,8 @@ $STATE->installDefinition(LaTeXML::Constructor
 			   ->new(T_CS('\begin{verbatim}'),undef,
 				 "<verbatim font='#font'>#body</verbatim>",
 				 beforeDigest=>[sub { BGroup; AssignValue(current_environment=>'verbatim'),
-							MergeFont(family=>'typewriter'); }],
+							MergeFont(family=>'typewriter'); 
+						      Digest(T_CS('\par')); }],
 				 afterDigest=>[sub {
 						 my($whatsit)=@_;
 						 my $font = $whatsit->getFont;
@@ -395,6 +396,8 @@ $STATE->installDefinition(LaTeXML::Constructor
 								       @lines, "\end{verbatim}"));
 						 EGroup; }]));
 
+# Hmm, this should really be constructor or something so that at least typewriter font
+# is used, if not wrapped in a <verb> something???
 our $EMPTY_CATTABLE=LaTeXML::State->new(catcodes=>'none');
 DefExpandable('\verb', sub { 
   my $mouth = $GULLET->getMouth;
@@ -403,6 +406,21 @@ DefExpandable('\verb', sub {
   $init = $mouth->readToken if $init->toString eq '*'; # Should I bother handling \verb* ?
   my $verb = $mouth->readTokens($init);
   $verb->unlist; });
+
+DefConstructor('\verb', "<verbatim font='#font'>#body</verbatim>",
+	       beforeDigest=>[sub { BGroup; MergeFont(family=>'typewriter'); }],
+	       afterDigest=>sub { 
+		 my($whatsit)=@_;
+		 EGroup; 
+		 my $font = $whatsit->getFont;
+		 my $loc  = $whatsit->getLocator;
+		 my $mouth = $GULLET->getMouth;
+		 local $STATE = $EMPTY_CATTABLE;
+		 my $init = $mouth->readToken;
+		 $init = $mouth->readToken if $init->toString eq '*'; # Should I bother handling \verb* ?
+		 $whatsit->setBody(map(LaTeXML::Box->new($_->toString,$font,$loc),
+				       $mouth->readTokens($init),$init));
+	       });
 
 # This is defined by the alltt package.
 # Environment('alltt', ?);
@@ -444,8 +462,6 @@ DefConstructor('\(' ,
 	       captureBody=>1);
 DefConstructor('\)'   ,"", beforeDigest=> sub{ EndMode('inline_math'); });
 
-# Can just enter math, can't we?
-#DefConstructor('\ensuremath{}', '#1', mode=>'inline_math');
 DefExpandable('\ensuremath{}', sub {
   my($self,$stuff)=@_;
   if(LookupValue('IN_MATH')){ @$stuff; }
@@ -544,7 +560,12 @@ DefMath('\bmod',   'mod', role=>'ADDOP');
 #======================================================================-
 # All this is already in Primitives.pm
 
-DefMath('\stackrel{}{}','');
+DefConstructor('\stackrel{}{}',
+	       "<XMApp role='RELOP'>"
+	       .  "<XMTok name='Superscript'/>"
+	       .  "<XMWrap stackscripts='yes'>#2</XMWrap>"
+	       .  "<XMWrap>#1</XMWrap>"
+	       ."</XMApp>");
 #======================================================================-
 # C.7.6 Putting One Thing Above Another
 #======================================================================-
@@ -778,7 +799,7 @@ DefRegister('\dbltextfloatsep',Glue(0));
 # C.9.2 Marginal Notes
 #======================================================================
 
-DefConstructor('\marginpar[]{}', "<marginpar>#2</marginpar>");
+DefConstructor('\marginpar[]{}', "<note class='margin'>#2</note>");
 DefPrimitive('\reversemarginpar',undef);
 DefPrimitive('\normalmarginpar', undef);
 DefRegister('\marginparpush',Dimension(0));
@@ -908,7 +929,7 @@ sub matharray_align {
     close_matharray_level($document,$LaTeXML::cellname);
     open_matharray_level($document,$LaTeXML::cellname);
     open_matharray_arg($document); }
-  else { Error("Unable to insert array align in unclosed ".$document->getNodePath);}
+  else { Error("Unable to insert array align in unclosed ".$document->getNodePath(4));}
 }
 
 sub matharray_cr {
@@ -923,7 +944,7 @@ sub matharray_cr {
     open_matharray_level($document,$LaTeXML::rowname);
     open_matharray_level($document,$LaTeXML::cellname);
     open_matharray_arg($document); }
-  else { Error("Unable to insert array cr in unclosed ".$document->getNodePath);}
+  else { Error("Unable to insert array cr in unclosed ".$document->getNodePath(4));}
 }
 
 
@@ -968,10 +989,8 @@ DefConstructor('\label{semiverb}',"^ label='#1'",  untex=>'',
 		 AssignValue('LABEL@'.$_[1]->toString, Digest(T_CS('\@currentlabel')),'global');
 		 EndMode('text'); });
 
-DefMacro('\ref{semiverb}', '\@REF{#1}{\@VALUE{LABEL@#1}}');
-DefMacro('\pageref{semiverb}', '\@REF{#1}{\@VALUE{LABEL@#1}}'); # Any sense in distinguishing?
-DefConstructor('\@REF{}{}', "<ref labelref='#1'>#2</ref>");
-
+DefConstructor('\ref{semiverb}', "<ref labelref='#1'>VALUE('LABEL@#1')</ref>");
+DefConstructor('\pageref{semiverb}', "<ref labelref='#1'>VALUE('LABEL@#1')</ref>"); # Same??
 #======================================================================
 # C.11.3 Bibliography and Citation
 #======================================================================
@@ -1206,9 +1225,12 @@ DefPrimitive('\usebox{Token}', sub { LookupValue('box'.$_[1]->toString);});
 
 DefConstructor('\parbox[][Dimension]{}',"<minipage ?#2(width='#2') ?#1(pos='#1') justified='yes'>#3</minipage>",
 	       mode=>'text');
-DefEnvironment('{minipage}[]{Dimension}',"<minipage ?#2(width='#2') ?#1(pos='#1') justified='yes'>#body</minipage>",
+DefEnvironment('{minipage}[]{Dimension}',
+	       "<minipage ?#2(width='#2') ?#1(pos='#1') justified='yes'>#body</minipage>",
 	       mode=>'text');
-DefConstructor('\rule[]{}{}', "<rule ?#1(raise='#1') width='#2' height='#3'/>");
+DefConstructor('\rule[Dimension]{Dimension}{Dimension}', 
+	       "<rule ?#1(raise='#1') width='#2' height='#3'/>");
+DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',"<hbox raise='#1'>#4</hbox>");
 
 #**********************************************************************
 # C.14 Pictures and Color
@@ -1282,10 +1304,20 @@ sub before_picture {
 				  read_pic_line_args(),
 				  Digest($GULLET->readOptional)); });
   DefConstructor('\frame{}', "<frame>#1</frame>");
-  DefConstructor('\shortstack{}', "<box>#1</box>");
+#  DefConstructor('\shortstack{}', "<box>#1</box>");
 }
+
 sub after_picture {}
 
+DefConstructor('\shortstack[]{}', "<vbox align='#1'><hbox>#2</hbox></vbox>",
+	       beforeDigest=>sub{BGroup; 
+				 DefConstructor("\\\\ Flag:* []", "</hbox><hbox>",
+						#sub { $_[0]->maybeCloseElement('hbox'); },
+						untex=>"\\\\\n",
+						#beforeDigest=>\&EGroup, afterDigest=>\&BGroup 
+					       ); },
+	       afterDigest=>sub { EGroup; },
+	       mode=>'text');
 
 DefEnvironment('{picture}',
 	       "<picture width='#1' height='#2' xoff='#3' yoff='#4'>#body</picture>",
@@ -1424,10 +1456,10 @@ DefConstructor('\textquotedblleft',"\x{201C}"); # LEFT DOUBLE QUOTATION MARK
 DefConstructor('\textquotedblright',"\x{201D}"); # RIGHT DOUBLE QUOTATION MARK
 DefConstructor('\textquoteleft',"\x{2018}");     # LEFT SINGLE QUOTATION MARK
 DefConstructor('\textquoteright',"\x{2019}");    # RIGHT SINGLE QUOTATION MARK
-#DefConstructor('\textsterling',"\x{}");
-#DefConstructor('\textasteriskcentered',"\x{}");
+DefConstructor('\textsterling',"\x{OOA3}");	 # POUND SIGN
+DefConstructor('\textasteriskcentered',"*");
 DefConstructor('\textbackslash',"\x{005C}"); # REVERSE SOLIDUS
-#DefConstructor('\textbar',"\x{}");
+DefConstructor('\textbar',"|");
 DefConstructor('\textbraceleft',"{");
 DefConstructor('\textbraceright',"}");
 DefConstructor('\textbullet',"\x{2022}");    # BULLET
@@ -1436,19 +1468,23 @@ DefConstructor('\textdagger',"\x{2021}");    # DAGGER
 DefConstructor('\textparagraph',"\x{00B6}"); # PILCROW SIGN
 DefConstructor('\textperiodcentered',"\x{22C5}"); # DOT OPERATOR
 DefConstructor('\textsection',"\x{00A7}");	      # SECTION SIGN
+# Ideally there would be an accent for circling?
+#DefConstructor('\textcircled{}',
 DefConstructor('\textless',"<");
 DefConstructor('\textgreater',">");
 DefConstructor('\textcopyright',"\x{00A9}"); # COPYRIGHT SIGN
 DefConstructor('\textasciicircum',"^");
 DefConstructor('\textasciitilde',"~");
-#DefConstructor('\textcompwordmark',"\leavevmode\kern\z@}
+DefConstructor('\textcompwordmark',""); # ???
 DefConstructor('\textunderscore',"_");
-DefConstructor('\textvisiblespace'," ");
+DefConstructor('\textvisiblespace',"\x{2420}"); # SYMBOL FOR SPACE;  Not really the right symbol!
 DefConstructor('\textellipsis',"\x{2026}"); # HORIZONTAL ELLIPSIS
-#defconstructor('\textregistered',"\textcircled{\scshape r}}
-#DefConstructor('\texttrademark',"\textsuperscript{TM}}
-DefConstructor('\textsuperscript{}',"<textsup>#1</textsup>");
-#DefConstructor('\textcircled{}',
+DefConstructor('\textregistered',"\x{00AE}"); # REGISTERED SIGN
+DefConstructor('\texttrademark',"\x{2122}");  # TRADE MARK SIGN
+DefConstructor('\textsuperscript{}',"<hbox raised='0.5em'>#1</hbox>");
+DefConstructor('\textordfeminine',"\x{00AA}"); # FEMININE ORDINAL INDICATOR
+DefConstructor('\textordmasculine',"\x{00BA}"); # MASCULINE ORDINAL INDICATOR
+
 
 #**********************************************************************
 # Other stuff

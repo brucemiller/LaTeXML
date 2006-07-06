@@ -84,6 +84,8 @@ sub parseParameters {
     elsif($type eq 'semiverb'){
       push(@params,LaTeXML::Parameter->new(spec=>$spec, verbatim=>1,
 					   before=>$open, after=>$close, optional=>$opt)); }
+    elsif($type eq 'UntilBrace'){
+      push(@params,LaTeXML::Parameter->new(type=>'UntilBrace')); }
     elsif($type =~ /^(Token|XToken)$/){
       push(@params,LaTeXML::Parameter->new(spec=>$spec, type=>$type,
 					   before=>$open, after=>$close, optional=>$opt)); }

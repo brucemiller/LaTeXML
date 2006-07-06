@@ -62,11 +62,12 @@ sub getElement {
   
 # And some utilities
 sub getNodePath {
-  my($self)=@_;
+  my($self,$levels)=@_;
   my $node = $$self{node};
-  my $path = ($node->getType == XML_TEXT_NODE ? "_Text_" : $node->nodeName);
+  my $path = Stringify($node);
   while($node = $node->parentNode){
-    $path .= " < ".($node->getType == XML_DOCUMENT_NODE ? "_Document_" : $node->nodeName); }
+    if((defined $levels) && (--$levels <= 0)){ $path = '...'.$path; last; }
+    $path = Stringify($node).$path; }
   $path; }
 
 #**********************************************************************
@@ -208,7 +209,7 @@ sub find_insertion_point {
       $self->closeNode_internal($closeto); # Close the auto closeable nodes.
       $self->find_insertion_point($tag); }	    # Then retry, possibly w/auto open's
     else {					    # Didn't find a legit place.
-      Error("$tag isn't allowed in ".Stringify($$self{node}));
+      Error(($tag eq '#PCDATA' ? $tag : '<'.$tag.'>')." isn't allowed in ".Stringify($$self{node}));
       $$self{node}; }}}	# But we'll do it anyway, unless Error => Fatal.
 
 # No checking! Use this when you've already verified that the $tag can be closed.
@@ -282,7 +283,9 @@ sub addAttribute {
 our $FONTTAG = "textstyle";	# Eventually declared somewhere???
 sub openText {
   my($self,$text,$font)=@_;
-  return if $text=~/^\s+$/ && $$self{node}->nodeType == XML_DOCUMENT_NODE; # Ignore initial whitespace
+  return if $text=~/^\s+$/ && 
+    (($$self{node}->nodeType == XML_DOCUMENT_NODE) # Ignore initial whitespace
+     || (($$self{node}->nodeType == XML_ELEMENT_NODE) && !$MODEL->canContain($$self{node}->nodeName,'#PCDATA')));
   print STDERR "Insert text \"$text\" at ".Stringify($$self{node})."\n" if $LaTeXML::Document::DEBUG;
   my $startnode = $$self{node};
   $startnode = $startnode->parentNode if $startnode->nodeType == XML_TEXT_NODE;
@@ -371,10 +374,10 @@ sub closeElement {
     push(@cant_close,$t) unless $MODEL->canAutoClose($t);
     $node = $node->parentNode; }
   if($node->nodeType == XML_DOCUMENT_NODE){ # Didn't find $tag at all!!
-    Error("Attempt to close $tag, which isn't open; in ".$self->getNodePath); }
+    Error("Attempt to close ".($tag eq '#PCDATA' ? $tag : '</'.$tag.'>').", which isn't open; in ".$self->getNodePath); }
   else {			# Found node.
     # Intervening non-auto-closeable nodes!!
-    Error("Closing $tag whose open descendents (".
+    Error("Closing ".($tag eq '#PCDATA' ? $tag : '</'.$tag.'>')." whose open descendents (".
 	  join(', ',map(Stringify($_),@cant_close)).") dont auto-close")
       if @cant_close;
     # So, now close up to the desired node.

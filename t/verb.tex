@@ -2,8 +2,25 @@
 \begin{document}
 \section{Testing Verbatim}
 Normal {\bf Bold} stuff.
+
 \begin{verbatim}
 AbNormal {\bf NonBold} stuff.
 \end{verbatim}
+
+\begin{verbatim} xxx
+AbNormal {\bf NonBold} stuff.
+xxx    \end{verbatim} yyy
 More Normal {\bf Bold} stuff.
+
+% NOT allowed
+%\section{Inline \verb|\verb| verbatim.}
+
+Some inline \verb|\verb| verbatim.
+
+% But this IS allowed!
+\hbox{More inline \verb|\verb| verbatim.}
+
+% and this:
+x\hbox to 2in  {\bf x\verb|\verb|y.}y
+
 \end{document}

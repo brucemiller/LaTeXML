@@ -248,10 +248,10 @@ DefPrimitive('\numberwithin{}{}',sub {
   NewCounter($counter->toString,$within->toString); });
 
 # Section 3.11.2 Cross references to equation numbers
-DefMacro('\eqref{semiverb}', '(\@REF{#1}{\@VALUE{LABEL@#1}})');
+DefConstructor('\eqref{semiverb}', "(<ref labelref='#1'>VALUE('LABEL@#1')</ref>)");
 
 # Section 3.11.3 Subordinate numbering sequences.
-DefEnvironment('{subequations}',"<subequations refnum='#refnum'>#body</subequations>",
+DefEnvironment('{subequations}',"<equationgroup refnum='#refnum'>#body</equationgroup>",
 	       beforeDigest=>sub { NewCounter('parentequation');
 				   refStepCounter('equation');
 				   AssignValue("\\c\@parentequation"=>LookupValue("\\c\@equation"));

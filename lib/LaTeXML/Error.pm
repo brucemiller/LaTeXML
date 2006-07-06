@@ -23,10 +23,12 @@ sub generateMessage {
   my($type,$message,$long,@extra)=@_;
   my @lines=("\n".$type.": ".$message);
   $long = 0 if $STATE->lookupValue('VERBOSITY') < -1;
-  $long = 1 if $STATE->lookupValue('VERBOSITY') > +1;
-  if(my @objects = objectStack( ($long ? undef : 1))){
+  $long ++  if $STATE->lookupValue('VERBOSITY') > +1;
+  my $nstack =  ($long > 1 ? undef : ($long ? 4 : 1));
+  if(my @objects = objectStack($nstack)){
     my $top = shift(@objects);
     push(@lines,"In ".trim(Stringify($top)).' '.Stringify(Locator($top)));
+    push(@objects,'...') if @objects && defined $nstack;
     push(@lines,join('',map(' <= '.trim(Stringify($_)),@objects))) if @objects; }
   push(@lines,$GULLET->getLocator($long)) if $GULLET;
   join("\n",grep($_,@lines, @extra)); }
@@ -50,6 +52,7 @@ our $MAXLEN=40;			# Or more?
 sub trim {
   my($string)=@_;
   substr($string,$MAXLEN-3) = "..." if(length($string) > $MAXLEN);
+  $string =~ s/\n/\x{240D}/gs;	# symbol for CR 
   $string; }
 
 sub caller_info {

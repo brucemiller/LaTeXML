@@ -9,7 +9,18 @@
     <verbatim font="typewriter">
 AbNormal {\bf NonBold} stuff.
 </verbatim>
-    <p>More Normal <textstyle font="bold">Bold</textstyle> stuff.
+    <verbatim font="typewriter"> xxx
+AbNormal {\bf NonBold} stuff.
+xxx    
+</verbatim>
+    <p>yyy
+More Normal <textstyle font="bold">Bold</textstyle> stuff.
+</p>
+    <p>Some inline <verbatim font="typewriter">\verb</verbatim> verbatim.
+</p>
+    <p><hbox>More inline <verbatim font="typewriter">\verb</verbatim> verbatim.</hbox>
+</p>
+    <p>x<hbox width="144.54pt"><textstyle font="bold">x<verbatim font="typewriter">\verb</verbatim>y.</textstyle></hbox>y
 </p>
   </section>
 </document>

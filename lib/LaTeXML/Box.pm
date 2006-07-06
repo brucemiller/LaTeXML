@@ -203,9 +203,10 @@ sub untex {
     else {
       $string = $defn->getAlias || $defn->getCS->untex;
       my @args = $self->getArgs;
-      $string .= ' ' unless scalar(@args) || ($string=~/\W$/) || !($string =~ /^\\/);
       my $params = $defn->getParameters;
-      $string .= $params->untexArguments(@args) if $params;
+      my $paramstring = ($params ? $params->untexArguments(@args) :'');
+      $string .= ' ' unless ($paramstring=~/^\W/) || ($string=~/\W$/) || !($string =~ /^\\/);
+      $string .= $paramstring;
     }
     if(defined (my $body = $self->getBody)){
       $string .= $body->untex;

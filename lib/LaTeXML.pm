@@ -26,7 +26,7 @@ our @ISA = (qw(LaTeXML::Object));
 #use LaTeXML::Document;
 
 use vars qw($VERSION);
-$VERSION = "0.3.1";
+$VERSION = "0.3.2";
 
 #**********************************************************************
 # What a Mess of Globals!

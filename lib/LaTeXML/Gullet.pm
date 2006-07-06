@@ -118,7 +118,8 @@ sub getLocator {
     $loc .= "\n  To be read again ".Tokens(@$pb)->untex if $long && @$pb;
     foreach my $frame ( @{$$self{mouthstack}} ){
       my($mouth,$pb)= @$frame;
-      $loc .= ' '.$mouth->getLocator($long);
+      my $ml = $mouth->getLocator($long);
+      $loc .= ' '.$ml if $ml;
       last if $loc && !$long;
       $loc .= "\n  To be read again ".Tokens(@$pb)->untex if $long && @$pb;
     }}

@@ -19,13 +19,10 @@ DefMacro('\acsfont{}','#1');
 DefMacro('\acffont{}','#1');
 DefMacro('\acfsfont{}','#1');
 
-DefMacro('\ac{}',
-	 '\@ACRO@{#1}{\@AC@if{#1}{\acsfont{\@VALUE{ACRONYM@short@#1}}}'
-	 .'{\acffont{\@VALUE{ACRONYM@long@#1}}\acfsfont{(\acsfont{\@VALUE{ACRONYM@short@#1}})}}}');
-DefMacro('\acs{}','\@ACRO@{#1}{\acsfont{\@VALUE{ACRONYM@short@#1}}}');
-DefMacro('\acl{}','\@ACRO@{#1}{\acffont{\@VALUE{ACRONYM@long@#1}}}');
-DefMacro('\acf{}',
-	 '\@ACRO@{#1}{\acffont{\@VALUE{ACRONYM@long@#1}}\acfsfont{(\acsfont{\@VALUE{ACRONYM@short@#1}})}}');
+DefMacro('\ac{}', '\@AC@if{#1}{\acs{#1}}{\acf{#1}}');
+DefMacro('\acs{}','\@ACRO@{#1}{\acsfont{\@AC@short{#1}}}');
+DefMacro('\acl{}','\@ACRO@{#1}{\acffont{\@AC@long{#1}}}');
+DefMacro('\acf{}','\@ACRO@{#1}{\acffont{\@AC@long{#1}}\acfsfont{(\@AC@short{#1})}}');
 
 
 DefEnvironment('{acronym}','<acronyms>#body</acronyms>',
@@ -39,7 +36,8 @@ DefPrimitive('\acrodef{}[]{}', sub {
   AssignValue('ACRONYM@short@'.$id => Digest($short),'global');
   AssignValue('ACRONYM@long@'.$id  => Digest($long),'global'); });
 
-
+DefConstructor('\@AC@short{}',"VALUE('ACRONYM\@short\@#1')");
+DefConstructor('\@AC@long{}',"VALUE('ACRONYM\@long\@#1')");
 # \@ACR@{id}{text}
 DefConstructor('\@ACRO@{}{}',"<acronym name='#1'>#2</acronym>");
 

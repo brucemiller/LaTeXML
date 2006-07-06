@@ -267,7 +267,7 @@ sub invoke {
 package LaTeXML::ConstructorCompiler;
 use strict;
 use LaTeXML::Global;
-our $VALUE_RE = "(\\#)";
+our $VALUE_RE = "(\\#|VALUE\\()";
 our $COND_RE  = "\\?($VALUE_RE|IfMath)";
 our $QNAME_RE = "([\\w\\-_:]+)";
 our $TEXT_RE  = "(.[^\\#<\\?]*)";
@@ -359,7 +359,12 @@ sub parse_conditional {
 # Future enhancements? array ref, &foo(xxx) for function calls, ...
 sub translate_value {
   my $value;
-  if   (s/^\#(\d+)//     ){
+  if   (s/^VALUE\(//     ){
+    my $key = translate_string();
+    Error("Missing ')' in VALUE(...) in constructor pattern for $LaTeXML::ConstructorCompiler::NAME")
+      unless s/\)//;
+    $value = "LaTeXML::ConstructorCompiler::valueLookup($key)"; }
+  elsif(s/^\#(\d+)//     ){
     my $n = $1;
     if(($n < 1) || ($n > $LaTeXML::ConstructorCompiler::NARGS)){
       Error("Illegal argument number $n in constructor for "
@@ -430,6 +435,13 @@ sub translate_avpairs {
     else { last; }
     s|^\s*||; }
   join(', ',@avs); }
+
+# These are invoked at runtime.
+sub valueLookup {
+  my($key)=@_;
+  my $value = $STATE->lookupValue($key); 
+  Warn("No value for $key") unless defined $value;
+  $value; }
 
 sub keyvalAttributes {
   my($kv)=@_;

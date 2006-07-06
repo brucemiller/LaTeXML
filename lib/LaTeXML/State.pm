@@ -31,6 +31,7 @@ use LaTeXML::Global;
 sub new {
   my($class, %options)=@_;
   my $self = bless {table=>{}, undo=>[{}], prefixes=>{} }, $class; 
+  $$self{table}{'value:VERBOSITY'}=[0];
   if($options{catcodes} =~ /^(standard|style)/){
     # Setup default catcodes.
     my %std = ( "\\"=>   CC_ESCAPE, "{"=>    CC_BEGIN,  "}"=>    CC_END,   "\$"=>   CC_MATH,

@@ -15,13 +15,13 @@
 
 <!ENTITY % Inline.extra "| email | VRML | GAMS">
 <!ENTITY % Block.extra  "| figuregroup | equationmix | begin_onecolumn | end_onecolumn">
-<!ENTITY % Misc.extra   "| electroniconly | printonly | note">
+<!ENTITY % Misc.extra   "| electroniconly | printonly">
 <!ENTITY % Frontmatter.extra "| affiliation | acknowledgements | sidebar | gallery | copyright
                               | origref">
 <!ENTITY % Sectitle.extra "">
 
 <!ENTITY % define.structure  "IGNORE" >
-<!ENTITY % Equation.extra "| note | origref | constraint">
+<!ENTITY % Equation.extra "| origref | constraint">
 <!-- figure & table already contain Misc.extra -->
 <!ENTITY % Figure.extra "| origref">
 <!ENTITY % Table.extra "| origref">
@@ -79,7 +79,6 @@
 <!ELEMENT origref (#PCDATA | %Inline.mix;)*>
 <!ATTLIST origref
           ref CDATA #IMPLIED>
-<!ELEMENT note (#PCDATA | %Flow.mix;)*>
 
 <!ELEMENT VRML EMPTY>
 <!ATTLIST VRML
