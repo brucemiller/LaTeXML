@@ -1,0 +1,172 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  DLMF                                                               | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Token;
+use LaTeXML::Package;
+RequirePackage('LaTeX');
+
+#**********************************************************************
+# Document
+#**********************************************************************
+DocType("chapter","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd');
+
+RequirePackage('graphicx');
+RequirePackage('DLMFmath');
+
+
+# If we get this, we're doing a "chapter"
+DefPrimitive('\thischapter{}', sub {
+  my($stomach,$ch)=@_;
+  $ch=$ch->untex;
+  DefMacro('\thechapter',$ch); 
+  DefEnvironment('{document}',"<chapter refnum='%refnum' label='%label'>%body</chapter>",
+		 afterDigestBegin=>sub{ $_[1]->setProperty(refnum=>$ch);
+					$_[1]->setProperty(label=>"ch:$ch"); },
+		 afterDigest=>sub { $_[0]->getGullet->flush; return; }
+);
+  return; });
+
+#======================================================================
+# DLMF's Numbering scheme.
+NewCounter('part');
+NewCounter('section');
+NewCounter('subsection','section');
+NewCounter('subsubsection','subsection');
+NewCounter('paragraph','subsubsection');
+NewCounter('subparagraph','paragraph');
+
+DefMacro('\thechapter',      'XX');
+DefMacro('\thepart',         '');
+DefMacro('\thesection',      '\thechapter.\arabic{section}');
+DefMacro('\thesubsection',   '\thesection(\roman{subsection})');
+DefMacro('\thesubsubsection','\thesubsection(\roman{subsubsection})');
+DefMacro('\theparagraph',    '');
+DefMacro('\thesubparagraph', '');
+
+NewCounter('equation', 'section');
+NewCounter('figure',   'section');
+NewCounter('table',    'section');
+DefMacro('\theequation','\thesection.\arabic{equation}');
+DefMacro('\thefigure',  '\thesection.\arabic{figure}');
+DefMacro('\thetable',   '\thesection.\arabic{table}');
+
+#**********************************************************************
+# Frontmatter
+
+# NOTE: Need to redo author & affiliation to handle multiple authors.
+# Need to handle token lists ??
+DefPrimitive('\status{}', sub{ my $status=$_[1]; return;});
+
+DefMacro('\@authorinfo','');
+# Let \author & \affiliation simply collect the constructors, in order.
+DefMacro('\author{}', '\xdef\@authorinfo{\@authorinfo\fmt@author{#1}}');
+DefMacro('\affiliation{}', '\xdef\@authorinfo{\@authorinfo\fmt@affiliation{#1}}');
+
+DefConstructor('\fmt@affiliation{}',"<affiliation>#1</affiliation>");
+
+DefConstructor('\email{}', "<email>#1</email>");
+DefConstructor('\addCopyright{}{}','');#"<copyright year='#1'>#2</copyright>");
+
+DefPrimitive('\acknowledgements{}', sub { DefMacro('\@acknowledgements',$_[1])});
+DefConstructor('\fmt@acknowledgements{}', "<acknowledgements>#1</acknowledgements>");
+
+Tag('gallery', autoClose=>1, autoOpen=>1);
+DefMacro('\@galleryitems','');
+DefMacro('\galleryitem{semiverb}{semiverb}',
+	 '\xdef\@galleryitems{\@galleryitems\fmt@galleryitem{#1}{#2}}');
+
+DefConstructor('\fmt@galleryitem{semiverb}{semiverb}',
+	       "<galleryitem name='#1' graphic='#2'/>");
+
+DefMacro('\maketitle', 
+	 '\fmt@title{\@title}\@authorinfo'
+	 .'\fmt@date{\@date}'
+         .'\fmt@acknowledgements{\@acknowledgements}'
+	 .'\@galleryitems');
+
+#**********************************************************************
+# More environments.
+DefEnvironment('{figuregroup}', "<figuregroup>%body</figuregroup>");
+DefEnvironment('{figuregroup*}',"<figuregroup>%body</figuregroup>");
+
+#**********************************************************************
+# Pseudo environments.
+# Not really environments that transform to elements, since they
+# don't necessarily nest properly with the more important document structure.
+DefEnvironment('{onecolumn}', "<begin_onecolumn/>%body<end_onecolumn/>");
+# Oh, what the heck, strip out printonly, and make electroniconly disappear!
+DefEnvironment('{printonly}', "<printonly>%body</printonly>");
+Tag('printonly', afterClose=>sub { $_[0]->getParentNode->removeChild($_[0]); });
+DefConstructor('\onlyprint{}', "");
+
+DefEnvironment('{electroniconly}','%body');
+DefConstructor('\onlyelectronic{}',"#1");
+
+DefEnvironment('{sidebar}{}{}{}',
+	       "<sidebar name='#1'><title>#2</title><author>#3</author>%body</sidebar>");
+
+# Use same trick.
+DefEnvironment('{comment}', "<printonly>%body</printonly>");
+
+#**********************************************************************
+# Metadata
+DefConstructor('\note{}', "<note>#1</note>", mode=>'text', floats=>1);
+DefConstructor('\origref[]{}', "<origref ref='#2'>#1</origref>", mode=>'text', floats=>1);
+
+#**********************************************************************
+# More Math environments.
+
+# Redefine to accept optional (ignored) arg.
+DefEnvironment('{equation}[]',
+	       "<equation refnum='%refnum'><XMath mode='display'>%body</XMath></equation>",
+	       mode=>'display_math',
+	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); });
+DefEnvironment('{equation*}[]',
+	       "<equation><XMath mode='display'>%body</XMath></equation>",
+	       mode=>'display_math');
+
+# equationmix contains several math environments, 
+# Each math produces inline math, BUT we've set displaystyle in them!
+DefEnvironment('{equationmix}',"<equationmix refnum='%refnum'>%body</equationmix>",
+	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); },
+	       # NOTE: We'd like to have displaystyle (but NOT mode=display!) for enclosed math env!
+	       # Use displaystyles for math environments within here.
+	       beforeDigest => sub { DefEnvironment('{math}',"<XMath mode='inline'>%body</XMath>",
+						    mode=>'inline_math',
+						    beforeDigest=>sub {$_[0]->setMathStyle('display');});
+			       return; }
+);
+DefEnvironment('{equationmix*}',  "<equationmix>%body</equationmix>");
+DefEnvironment('{equationgroup}', "<equationgroup>%body</equationgroup>");
+DefEnvironment('{equationgroup*}',"<equationgroup>%body</equationgroup>");
+DefConstructor('\intertext{}',"#1");
+
+DefConstructor('\@constraint Flag:* {}',"<constraint ?#1(hidden='yes')!#1(hidden='no')>#2</constraint>",
+	       mode=>'text', floats=>1);
+
+DefExpandable('\constraint Flag:* [Default:,]{}',sub { 
+  my($gullet,$starred,$punct,$constraint)=@_;
+  if($starred){			# hidden.
+    (T_CS('\@constraint'),T_OTHER('*'),T_BEGIN,$constraint->unlist,T_END); }
+  else {
+    my $ppunct = $gullet->readMatch(T_OTHER('.'),T_OTHER(','),T_OTHER(';')) || Tokens();
+    ($punct->unlist, T_CS('\@constraint'), T_BEGIN,$constraint->unlist,$ppunct->unlist,T_END); }});
+
+#**********************************************************************
+DefConstructor('\URL[]{}',"<a href='#2'>?#1(#1)!#1(#2)</a>");
+DefConstructor('\VRML{}', "<VRML href='#1'/>");
+DefConstructor('\GAMSclasspackage{}{}',"<GAMS class='#1' package='#2'/>");
+
+#**********************************************************************
+1;

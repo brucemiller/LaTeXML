@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /=====================================================================\ 
+ |  LaTeXML.dtd                                                        |
+ | Document Type for LaTeXML generated documents                       |
+ |=====================================================================|
+ | Part of LaTeXML:                                                    |
+ |  Public domain software, produced as part of work done by the       |
+ |  United States Government & not subject to copyright in the US.     |
+ |=====================================================================|
+ | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+ | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+ \=========================================================ooo==U==ooo=/
+-->
+
+<!ENTITY % Simple.class
+        "textstyle | textup | textit | textsl | textsc | textmd | textbf | textrm | textsf | texttt 
+         | emph | textsize | text | cite | ref ">
+<!ENTITY % Inline.class
+         "a | XMath">
+
+<!-- kinda concerned about equation being only block -->
+<!ENTITY % Block.class
+         "p  | equation | figure | table  | tabular | centering | 
+          itemize | enumerate | description">
+<!ENTITY % Misc.class
+         " graphics | quote | footnote | index">
+
+<!-- These can be overridden to add more elements. -->
+<!ENTITY % Simple.extra "">
+<!ENTITY % Inline.extra "">
+<!ENTITY % Block.extra  "">
+<!ENTITY % Misc.extra   "">
+
+<!ENTITY % Simple.mix
+      "%Simple.class; %Simple.extra;">
+<!ENTITY % Inline.mix
+      "%Simple.class; %Simple.extra; | %Inline.class; %Inline.extra; | %Misc.class; %Misc.extra;">
+<!ENTITY % Block.mix "%Block.class; %Block.extra; | %Misc.class; %Misc.extra;">
+<!ENTITY % Flow.mix
+       "%Simple.class; %Simple.extra; | %Inline.class; %Inline.extra;
+        | %Block.class; %Block.extra; | %Misc.class; %Misc.extra;">
+
+<!-- ======================================================================
+     Math level
+     Really MathML !!!
+     ====================================================================== -->
+<!-- Include MathML 2 -->
+
+
+<!ENTITY % NS.prefixed "INCLUDE">
+<!ENTITY % NamespaceDecl.attrib "xmlns:m CDATA #IMPLIED"> <!-- ??? -->
+<!ENTITY % MathML.dtd PUBLIC "-//W3C//DTD MathML 2.0//EN" "mathml2.dtd">
+%MathML.dtd;
+
+<!ENTITY % Equation.extra "">
+
+<!ELEMENT equation (XMath | tabular | punct | index %Equation.extra;)*>
+<!ATTLIST equation
+          label ID #IMPLIED
+          refnum CDATA #IMPLIED>
+
+<!-- Hmm, tabular ? -->
+<!ENTITY % XMath.model "XMApp | XMTok | XMHint | XMArg | XMWrap | XMDual | %Simple.class;">
+<!ELEMENT XMath (%XMath.model; | tabular | m:math)*>
+<!ATTLIST XMath
+          mode (display|inline) #IMPLIED
+          tex CDATA #IMPLIED
+          prefix CDATA #IMPLIED
+          mathimage CDATA #IMPLIED
+          width  CDATA #IMPLIED
+          height CDATA #IMPLIED>
+
+<!ELEMENT PMNode (%XMath.model;)*>
+<!ATTLIST PMNode
+          class CDATA #REQUIRED
+          value CDATA #IMPLIED>
+
+
+<!ELEMENT XMApp (%XMath.model;)*>
+<!ATTLIST XMApp
+          POS     CDATA #IMPLIED
+          name    CDATA #IMPLIED
+	  stackscripts CDATA #IMPLIED
+          tex     CDATA #IMPLIED>
+<!ELEMENT XMDual ((%XMath.model;), (%XMath.model;))>
+<!ATTLIST XMDual
+          POS     CDATA #IMPLIED
+          tex     CDATA #IMPLIED>
+<!ELEMENT XMTok (#PCDATA)*>
+<!ATTLIST XMTok
+          name    CDATA #IMPLIED
+          POS     CDATA #IMPLIED
+          font    CDATA #IMPLIED
+          style   CDATA #IMPLIED
+          size    CDATA #IMPLIED
+          tex     CDATA #IMPLIED
+	  stackscripts CDATA #IMPLIED>
+
+<!ELEMENT XMHint EMPTY>
+<!ATTLIST XMHint
+          name    CDATA #IMPLIED
+          POS     CDATA #IMPLIED
+          style   CDATA #IMPLIED
+          tex     CDATA #IMPLIED>
+
+<!ELEMENT XMWrap (%XMath.model;)*>
+<!ATTLIST XMWrap
+          name    CDATA #IMPLIED
+          POS     CDATA #IMPLIED
+          style   CDATA #IMPLIED
+          tex     CDATA #IMPLIED>
+<!ELEMENT XMArg (%XMath.model;)*>
+<!ATTLIST XMArg
+          rule   CDATA #IMPLIED>
+
+<!ELEMENT style (#PCDATA)*>
+<!ATTLIST style
+          style CDATA #IMPLIED>
+<!ELEMENT punct (#PCDATA)*>
+<!-- ======================================================================
+     Document Structure
+     ====================================================================== -->
+
+<!ENTITY % Frontmatter.class "title | toctitle | author | creationdate">
+<!ENTITY % Frontmatter.extra "">
+<!ENTITY % Frontmatter.mix "%Frontmatter.class; %Frontmatter.extra;">
+
+<!ENTITY % Sectitle.class "title | toctitle | author">
+<!ENTITY % Sectitle.extra "">
+<!ENTITY % Sectitle.mix "%Sectitle.class; %Sectitle.extra;">
+
+
+<!-- If you want to rearrange the overall document structure define
+     define.structure to be IGNORE, then include a modified version of
+     the following. -->
+<!ENTITY % define.structure  "INCLUDE" >
+<![%define.structure;[
+
+<!ELEMENT document ((%Frontmatter.mix;)*, section*, bibliography?, appendix*)>
+<!ELEMENT section       ((%Sectitle.mix;)*, (%Block.mix; | subsection | paragraph)*)>
+<!ELEMENT appendix      ((%Sectitle.mix;)*, (%Block.mix; | subsection | paragraph)*)>
+<!ELEMENT subsection    ((%Sectitle.mix;)*, (%Block.mix; | subsubsection | paragraph)*)>
+<!ELEMENT subsubsection ((%Sectitle.mix;)*, (%Block.mix; | paragraph)*)>
+<!ELEMENT paragraph     ((%Sectitle.mix;)*, (%Block.mix;)*)>
+
+]]>
+
+<!ELEMENT title    (#PCDATA | %Inline.mix;)* >
+<!ELEMENT toctitle (#PCDATA | %Inline.mix;)* >
+<!ELEMENT author   (#PCDATA | %Inline.mix;)* >
+<!ELEMENT creationdate (#PCDATA | %Inline.mix;)* >
+
+<!ELEMENT p        (#PCDATA | %Inline.mix;)*>
+
+<!ENTITY % section-attr "
+          label ID #IMPLIED
+          refnum CDATA #IMPLIED">
+
+<!ATTLIST document %section-attr;>
+<!ATTLIST chapter %section-attr;>
+<!ATTLIST part %section-attr;>
+<!ATTLIST section %section-attr;>
+<!ATTLIST appendix %section-attr;>
+<!ATTLIST subsection %section-attr;>
+<!ATTLIST subsubsection %section-attr;>
+<!ATTLIST paragraph %section-attr;>
+<!-- <!ATTLIST p %section-attr;> -->
+
+<!-- ======================================================================
+     Block Elements
+     ====================================================================== -->
+<!ELEMENT figure (%Block.mix; | caption | toccaption)*>
+<!ELEMENT table (%Block.mix; | caption | toccaption)*>
+<!ATTLIST figure
+          label  ID #IMPLIED
+          placement CDATA #IMPLIED
+          refnum CDATA #IMPLIED>
+<!ATTLIST table
+          label  ID #IMPLIED
+          placement CDATA #IMPLIED
+          refnum CDATA #IMPLIED>
+<!ELEMENT caption (#PCDATA | %Inline.mix;)*>
+<!ELEMENT toccaption (#PCDATA | %Inline.mix;)*>
+
+<!-- tabular is basically cribbed from HTML4's table -->
+<!ELEMENT tabular ((col*|colgroup*), thead?, tfoot?, (tbody | tr | hline)*)>
+<!ATTLIST tabular
+          pattern CDATA #IMPLIED
+          frame   CDATA #IMPLIED
+          rules   CDATA #IMPLIED>
+<!ELEMENT colgroup (col)*>
+<!ATTLIST colgroup
+          span  CDATA #IMPLIED
+          align CDATA #IMPLIED>
+<!ATTLIST col
+          span  CDATA #IMPLIED
+          align CDATA #IMPLIED>
+
+<!ELEMENT thead (tr)*>
+<!ELEMENT tfoot (tr)*>
+<!ELEMENT tbody (tr)*>
+<!ELEMENT tr (td | th)*>
+
+<!ELEMENT th (#PCDATA | %Inline.mix;)*>
+<!ATTLIST th
+          rowpan CDATA #IMPLIED
+          colspan CDATA #IMPLIED
+          align CDATA #IMPLIED
+          pattern CDATA #IMPLIED>
+
+<!ELEMENT td (#PCDATA | %Inline.mix;)*>
+<!ATTLIST td
+          rowspan CDATA #IMPLIED
+          colspan CDATA #IMPLIED
+          align CDATA #IMPLIED
+          pattern CDATA #IMPLIED>
+
+<!ELEMENT hline EMPTY>
+
+<!ELEMENT centering (%Flow.mix;)*>
+<!ELEMENT itemize (item)*>
+<!ELEMENT enumerate (item)*>
+<!ELEMENT description (item)*>
+<!ELEMENT item (#PCDATA | tag | %Flow.mix; )*>
+<!ELEMENT tag (#PCDATA | %Inline.mix;)*>
+
+<!ELEMENT graphics EMPTY>
+<!ATTLIST graphics
+          graphic CDATA #REQUIRED
+          options CDATA #IMPLIED
+          src     CDATA #IMPLIED
+          width   CDATA #IMPLIED
+          height  CDATA #IMPLIED>
+
+<!-- ======================================================================
+     Inline Elements
+     ====================================================================== -->
+<!ELEMENT textstyle (#PCDATA | %Inline.mix;)*>
+<!ATTLIST textstyle
+	  font CDATA #IMPLIED>
+
+<!ELEMENT textup (#PCDATA | %Inline.mix;)*>
+<!ELEMENT textit (#PCDATA | %Inline.mix;)*>
+<!ELEMENT emph   (#PCDATA | %Inline.mix;)*>
+<!ELEMENT textsl (#PCDATA | %Inline.mix;)*>
+<!ELEMENT textsc (#PCDATA | %Inline.mix;)*>
+<!ELEMENT textmd (#PCDATA | %Inline.mix;)*>
+<!ELEMENT textbf (#PCDATA | %Inline.mix;)*>
+<!ELEMENT textrm (#PCDATA | %Inline.mix;)*>
+<!ELEMENT textsf (#PCDATA | %Inline.mix;)*>
+<!ELEMENT texttt (#PCDATA | %Inline.mix;)*>
+<!ELEMENT text (#PCDATA | %Inline.mix;)*>
+<!ELEMENT textsize (#PCDATA | %Inline.mix;)*>
+<!ATTLIST textsize
+          size CDATA #REQUIRED>
+
+
+<!ELEMENT cite (citepre?,citepost?)>
+<!ATTLIST cite
+          ref CDATA #REQUIRED
+          style (intext|parenthetic) #IMPLIED
+          show CDATA #IMPLIED>
+<!ELEMENT citepre (#PCDATA | %Inline.mix;)*>
+<!ELEMENT citepost (#PCDATA | %Inline.mix;)*>
+
+<!ELEMENT a  (#PCDATA | %Inline.mix;)*>
+<!ATTLIST a
+          href CDATA #REQUIRED>
+<!-- ======================================================================
+     Misc Elements
+     can appear in block or inline contexts
+     ====================================================================== -->
+
+<!ELEMENT quote  (#PCDATA | %Inline.mix;)*>
+<!ELEMENT footnote  (#PCDATA | %Inline.mix;)*>
+<!ATTLIST footnote
+          footnotemark CDATA #IMPLIED>
+<!-- ======================================================================
+     Meta data
+     ====================================================================== -->
+
+<!ELEMENT ref   EMPTY>
+<!ATTLIST ref
+          labelref CDATA #REQUIRED>
+<!ELEMENT index (indexphrase*)>
+<!ELEMENT indexphrase (#PCDATA | %Inline.mix;)*>
+
+<!-- ======================================================================
+     Bibliography
+     ====================================================================== -->
+
+
+<!ELEMENT bibliography (biblist*)>
+<!ATTLIST bibliography
+          files CDATA #REQUIRED>
+
+<!ELEMENT biblist (bibentry)*>
+<!-- prefix all elements with bib- to avoid conflicts
+     Alternatively, separate DTD/namespace ? -->
+   
+<!ELEMENT bibentry (bib-author | bib-editor | bib-translator |
+               bib-title | bib-subtitle | bib-booktitle |
+               bib-journal | bib-series | bib-conference | bib-publisher |
+               bib-organization | bib-institution | bib-address |
+               bib-volume | bib-number | bib-pages | bib-part | bib-date | bib-edition |
+               bib-status | bib-type |
+               bib-issn | bib-doi | bib-isbn | bib-review | bib-mrnumber |
+               bib-language |
+               bib-url | bib-code_url | bib-eprint | bib-preprint | bib-note )*>
+<!ATTLIST bibentry
+          key CDATA #REQUIRED
+          type CDATA #REQUIRED>
+<!-- hyphenation |  xref | label | setup | name  -->
+
+<!--
+<!ELEMENT bib-author (surname, givenname?, giveninitials?, jrname?)>
+<!ELEMENT bib-editor (surname, givenname?, giveninitials?, jrname?)>
+<!ELEMENT surname (#PCDATA | %Inline.mix;)*>
+<!ELEMENT givenname (#PCDATA | %Inline.mix;)*>
+<!ELEMENT giveninitials (#PCDATA | %Inline.mix;)*>
+<!ELEMENT jrname (#PCDATA | %Inline.mix;)*>
+-->
+<!ELEMENT bib-author (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-editor (#PCDATA | %Inline.mix;)*>
+
+<!ELEMENT bib-translator (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-title (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-subtitle (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-booktitle (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-journal (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-series (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-conference (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-publisher (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-organization (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-institution (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-address (#PCDATA | %Inline.mix;)*>
+
+<!ELEMENT bib-volume (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-number (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-pages (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-part (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-date (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-edition (#PCDATA | %Inline.mix;)*>
+
+<!ELEMENT bib-status (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-type (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-issn (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-isbn (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-doi (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-review (#PCDATA | %Inline.mix; | bib-mr)*>
+<!ELEMENT bib-mr (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-mrnumber (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-language (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-url (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-code_url (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-eprint (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-preprint (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-note (#PCDATA | %Inline.mix;)*>

@@ -1,0 +1,24 @@
+#**********************************************************************
+# LaTeXML Declaration for David Carlisle's xii.tex
+#**********************************************************************
+use strict;
+use LaTeXML::Package;
+
+# We'll use a DTD for a (trivial) Song, containing verses with lines.
+DocType("song","-//NIST LaTeXML//LaTeXML Poem",'xii.dtd');
+
+# There's no explicit \begin{document}, so let the poem automatically open.
+Tag('song', autoOpen=>1);
+
+# Make \bigskip initiate a <verse>, closeable when needed.
+Tag('verse', autoClose=>1);
+DefConstructor('\bigskip',"<verse>");
+
+# David ends each line with \par; redefine \par to close an auto-opened <line>
+DefConstructor('\par',sub{ 
+  my($intestine)=@_;
+  $intestine->closeElement('line') if $intestine->getNode->canAutoClose('line'); });
+
+Tag('line', autoClose=>1, autoOpen=>1);
+#**********************************************************************
+1;

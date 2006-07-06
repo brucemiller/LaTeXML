@@ -1,0 +1,64 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  article                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use strict;
+use LaTeXML::Package;
+
+RequirePackage('LaTeX');
+#**********************************************************************
+# Document structure.
+
+DocType("document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd');
+
+#**********************************************************************
+# The core sectioning commands are defined in LaTeX.pm
+# but the counter setup, etc, depends on article
+NewCounter('part');
+NewCounter('section');
+NewCounter('subsection','section');
+NewCounter('subsubsection','subsection');
+NewCounter('paragraph','subsubsection');
+NewCounter('subparagraph','paragraph');
+
+NewCounter('equation');
+NewCounter('figure');
+NewCounter('table');
+
+DefMacro('\thepart',         '\Roman{part}');
+DefMacro('\thesection',      '\arabic{section}');
+DefMacro('\thesubsection',   '\thesection.\arabic{subsection}');
+DefMacro('\thesubsubsection','\thesubsection.\arabic{subsubsection}');
+#DefMacro('\theparagraph',    '\thesubsubsection.\arabic{paragraph}');
+#DefMacro('\thesubparagraph', '\theparagraph.\arabic{subparagraph}');
+DefMacro('\theparagraph',    '');
+DefMacro('\thesubparagraph', '');
+
+
+DefMacro('\theequation','\arabic{equation}');
+DefMacro('\thefigure',  '\arabic{figure}');
+DefMacro('\thetable',   '\arabic{table}');
+
+Tag('appendix',autoClose=>1);
+DefPrimitive('\appendix',sub{
+  $_[0]->resetCounter('section');
+  DefMacro('\thesection',      '\Alph{section}');
+  DefConstructor('\section Flag:* []{}',
+      "<appendix ?%refnum(refnum='%refnum')>"
+		 ."<title>#3</title>?#2(<toctitle>#2</toctitle>)",
+		 afterDigest=> sub { my($stomach,$whatsit)=@_;
+				     if(!$whatsit->getArg(1)){ # if not starred
+				       $whatsit->setProperty('refnum',
+							     $stomach->refStepCounter('section')->untex); }
+				     return; }); });
+
+#**********************************************************************
+1;

@@ -1,0 +1,13 @@
+\documentclass{article}
+\def\eatone#1{}
+\begin{document}
+\section{Testing}
+\expandafter\def\expandafter\baz\eatone##1{(#1)}
+
+Expecting (beep) : \baz{beep}
+
+\expandafter\def\expandafter\bloop\expandafter{\baz{foo}}
+
+Expecting (foo) : \bloop
+
+\end{document}

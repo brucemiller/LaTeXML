@@ -1,0 +1,30 @@
+\documentclass{article}
+% Did you know?
+% Mathmode and things like \hbox actually corresponds to groups!
+\begin{document}
+\def\foo{Original}
+Expect Original : \foo
+
+Expect a + Original: $ a + \mbox{\foo}$
+
+Expect Original : \foo
+
+Expect InBox + Original:  \hbox{\def\foo{InBox}\foo} + \foo
+
+Expect Original : \foo
+
+
+Expect a + InlineMath: $ \def\foo{InlineMath}  a + \hbox{\foo}$
+
+Expect Original : \foo
+
+Expect a + DisplayMath : \[ \def\foo{DisplayMath}  a + \hbox{\foo}\]
+
+Expect Original : \foo
+
+% Note that text mode inside mathmode groups a 2nd level!
+Expect a + InText + InlineMath: $ \def\foo{InlineMath}  a + \hbox{\def\foo{InText}\foo} + \hbox {\foo}$
+
+Expect Original : \foo
+
+\end{document}

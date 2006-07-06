@@ -1,0 +1,44 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  color                                                              | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+#********************************************************************************
+# Most of this should use the color properties in fonts (See LaTeXML::Font)
+# but hasn't been done yet.
+# model=rgb, cmyk, gray or named
+# spec = <number>,<number>,<number> for rgb
+#        <number>,<number>,<number>,<number> for cmyk
+#        <number> for gray
+#        colorname for named
+# \definecolor{name}{model}{spec}
+DefMacro('\definecolor{}{}{}','');
+# \color{name}
+DefMacro('\color[]{}','');
+#\textcolor{name}{text}
+#\textcolor[model]{spec}{text}
+DefMacro('\textcolor[]{}{}','#3');
+#\pagecolor{name}
+#\pagecolor[model]{spec}
+DefMacro('\pagecolor[]{}','');
+#\colorbox{name}{text}
+#\colorbox[model]{spec}{text}
+DefMacro('\colorbox[]{}{}','#3');
+#\fcolorbox{name}{text}
+#\fcolorbox[model]{spec}{text}
+DefMacro('\fcolorbox[]{}{}','#3');
+
+
+# Need some work here!?!?
+#********************************************************************************
+1;

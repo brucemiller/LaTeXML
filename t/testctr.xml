@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class='article'?>
+<document>
+  <section refnum='1'>
+    <title>Testing Counters</title>
+    <p>Foo is 0. </p>
+    <p>Increment foo.  Now Foo is  1. </p>
+    <p>Set Foo to 2.  Now Foo is  1. </p>
+    <p>Add ten to Foo.  Now Foo is  1. </p>
+    <p>Double Foo  Now Foo is  1. </p>
+  </section>
+  <section refnum='2'>
+    <title>Testing RefStep</title>
+    <p>Define bar to be reset within foo.  Now (Foo,Bar) is (1,0) </p>
+    <p>Refstep bar:  Now (Foo,Bar) is (1,1) </p>
+    <p>Refstep foo:  Now (Foo,Bar) is (2,0) </p>
+  </section>
+  <section refnum='3'>
+    <title>Number formatting</title>
+    <p>Fubar is 0</p>
+    <p>roman:  Fubar is </p>
+    <p>Roman:  Fubar is </p>
+    <p>alph:  Fubar is `</p>
+    <p>Alph:  Fubar is @</p>
+    <p>fnsymbol:  Fubar is ‡‡</p>
+    <p>How far will TeX go?   Fubar is </p>
+  </section>
+  <section refnum='4'>
+    <title>TeX Counters</title>
+    <subsection refnum='4.1'>
+      <title>Integers</title>
+      <p>7 = 7. </p>
+      <p>7 = 7. </p>
+    </subsection>
+    <subsection refnum='4.2'>
+      <title>Dimensions</title>
+      <p>Dimen 1.23pt = 1.23pt. </p>
+      <p>Dimen 1.23pt = 1.23pt. </p>
+      <p>Dimen 1.23pt = 1.23pt. </p>
+      <p>count 2: 3*65536 = 196608. </p>
+      <p>Now dimen: 3pt = 3pt</p>
+      <p>One em = 10pt</p>
+      <p>One ex = 4.3pt</p>
+      <p>Dimen: one ex = 4.3pt</p>
+      <p>Dimen: 1pt = 1pt</p>
+      <p>Dimen: 1pt = 1pt</p>
+      <p>8 points = 8pt</p>
+      <p>15 points = 15pt</p>
+    </subsection>
+    <subsection refnum='4.3'>
+      <title>Glue</title>
+      <p>1pt plus 3pt = 1pt plus 3pt</p>
+      <p>1pt plus 3fil = 1pt plus 3fil</p>
+      <p>1pt plus 3fill = 1pt plus 3fill</p>
+      <p>Skip: 2pt plus 3fill = 2pt plus 3fill</p>
+      <p>0.1 plus 3fill = 0.1pt plus 3fill</p>
+    </subsection>
+    <subsection refnum='4.4'>
+      <title>Undefined?</title>
+      <p>Unknown count: 0 = 0</p>
+      <p>Unknown dimen: 0pt = 0pt</p>
+      <p>Unknown skip: 0pt = 0pt</p>
+    </subsection>
+    <subsection refnum='4.5'>
+      <title>The</title>
+      <p>the count 0 : 0</p>
+      <p>the two (countdef 2) : 196608</p>
+      <p>Tokens: abFOOcd = abFOOcd</p>
+      <p>Catcode: 11 = 11</p>
+      <p>Catcode: 12 = 12 </p>
+    </subsection>
+    <subsection refnum='4.6'>
+      <title>New Count, etc</title>
+      <p>3 = 3</p>
+    </subsection>
+    <subsection refnum='4.7'>
+      <title>LaTeX style</title>
+      <p>1em = 10pt 3em = 30pt</p>
+    </subsection>
+  </section>
+</document>

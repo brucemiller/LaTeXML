@@ -1,0 +1,90 @@
+#!/usr/bin/perl -w
+
+# RUN THIS IN THE distribution/docs directory!!
+use strict;
+use Pod::Html;
+use LaTeXML;
+use LaTeXML::Post;
+
+my $LIB = "../lib";
+my $DEST= "/local/www/site/htdocs/DigitalMathLib/LaTeXML";
+my $PDDEST = "$DEST/perldoc";
+
+# Process the LaTeX documentation
+LaTeXML->new()->convertAndWriteFile('LaTeXML');
+LaTeXML::Post->new()->process('LaTeXML',destination=>"$DEST/LaTeXML.html",
+			      CSS=>'latexml.css');
+
+# This indicates which packages are actually contained in modules (in addition to the expected one).
+our %GLOMPED = (Box       =>[qw(MathBox Comment List MathList Whatsit)],
+		Definition=>[qw(Expandable Primitive Parameter Constructor)],
+		DOM       =>[qw(DOM/Node DOM/Text DOM/Comment DOM/ProcessingInstruction DOM/Document)],
+		Font      =>[qw(MathFont)],
+		Token     =>[qw(Tokens Number Dimension MuDimension Glue MuGlue KeyVals)]
+	       );
+our %REDIRECT =();
+foreach my $homepkg (keys %GLOMPED){
+  foreach my $subpkg (@{$GLOMPED{$homepkg}}){
+    $REDIRECT{"LaTeXML/$subpkg.html"} = "LaTeXML/$homepkg.html"; }}
+
+process_pkgs('LaTeXML');
+
+unlink('pod2htmd.tmp');
+unlink('pod2htmi.tmp');
+
+#======================================================================
+# Generate HTML from POD's
+sub process_pkgs {
+  my(@components)=@_;
+  my $name = join('/',$LIB,@components);
+  if(-f "$name.pm"){
+    process_pkg(@components); }
+  if(-d $name){
+    print "Scanning $name\n";
+    opendir(DIR,$name);
+    my @files =  readdir(DIR);
+    closedir(DIR);
+    foreach my $file (@files){
+      if($file =~ /^\./){}
+      elsif($file =~ s/\.pm$//){
+	process_pkg(@components,$file); }
+      elsif(-d "$name/$file"){
+	process_pkgs(@components,$file); }
+    }}}
+
+sub process_pkg {
+  my(@components)=@_;
+  my $name = pop(@components);
+  my $podfile = join('/',$LIB,@components,$name).".pm";
+  my $htmlfile= join('/',$PDDEST,@components,$name).".html";
+  my $pkg = join('::',@components,$name);
+  my $stuff = `perldoc $pkg`;	# Any easier way to check if there is POD?
+  return unless $stuff;
+  print "Generating $htmlfile for $pkg\n";
+  my $dir = join('/',$DEST,@components);
+  my $dd=$PDDEST;
+  mkdir($dd) unless -d $dd;
+  foreach my $sub (@components){
+    $dd .= '/'.$sub;
+    mkdir($dd) unless -d $dd; }
+  pod2html(
+	   # "--css=stylesheet",
+	   # "--header",
+	   "--title=$pkg",
+	   "--infile=$podfile",
+	   "--outfile=$htmlfile",
+	   (@components ? "--htmlroot=".join('/',map("..",@components)) : ''),
+	   ); 
+  # Hmm, annoying pattern (or my usage thereof).
+  open(HTML,$htmlfile);
+  local $/=undef;
+  my $doc = <HTML>;
+  close(HTML);
+  $doc =~ s/\>the\s+([\w\:]*)\s+manpage\</\>$1\</g;
+  foreach my $child (keys %REDIRECT){
+    $doc =~ s/$child/$REDIRECT{$child}/g; }
+  open(HTML,">$htmlfile");
+  print HTML $doc;
+  close(HTML);
+}
+#======================================================================

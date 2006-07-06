@@ -1,0 +1,48 @@
+\documentclass{article}
+%\usepackage{amsmath}
+%\def\boldsymbol#1{#1}
+%\usepackage{tmmath}
+\def\ltrs{Fff}
+\def\grk{\alpha \Gamma}
+\def\sym{[+\cup]}
+\def\num{123}
+\begin{document}
+\begin{tabular}{lcccr}
+      & Letters & Greek & Symbols & Numbers\\\hline
+Default\\
+ -     &  $\ltrs$ & $\grk$ & $\sym$ & $\num$ \\
+\hline
+Families \\
+mathrm &  $\mathrm{\ltrs}$ & $\mathrm{\grk}$ & $\mathrm{\sym}$ & $\mathrm{\num}$ \\
+mathsf &  $\mathsf{\ltrs}$ & $\mathsf{\grk}$ & $\mathsf{\sym}$ & $\mathsf{\num}$ \\
+mathtt &  $\mathtt{\ltrs}$ & $\mathtt{\grk}$ & $\mathtt{\sym}$ & $\mathtt{\num}$ \\
+matcal &  $\mathcal{\ltrs}$ & $\mathcal{\grk}$ & $\mathcal{\sym}$ & $\mathcal{\num}$ \\
+\hline
+Series \\
+mathbf    &  $\mathbf{\ltrs}$ & $\mathbf{\grk}$ & $\mathbf{\sym}$ & $\mathbf{\num}$ \\
+\hline
+Shape \\
+mathit    &  $\mathit{\ltrs}$ & $\mathit{\grk}$ & $\mathit{\sym}$ & $\mathit{\num}$ \\
+%mathsl   &  $\mathsl{\ltrs}$ & $\mathsl{\grk}$ & $\mathsl{\sym}$ & $\mathsl{\num}$ \\
+\hline
+OldStyle \\
+rm     &  $\rm \ltrs$ & $\rm \grk$ & $\rm \sym$ & $\rm \num$ \\
+bf     &  $\bf \ltrs$ & $\bf \grk$ & $\bf \sym$ & $\bf \num$ \\
+it     &  $\it \ltrs$ & $\it \grk$ & $\it \sym$ & $\it \num$ \\
+\hline
+Combinations\\
+mathsf/mathit &  $\mathsf{\mathit{\ltrs}}$ & $\mathsf{\mathit{\grk}}$ & $\mathsf{\mathit{\sym}}$ & $\mathsf{\mathit{\num}}$ \\
+mathit/mathsf &  $\mathit{\mathsf{\ltrs}}$ & $\mathit{\mathsf{\grk}}$ & $\mathit{\mathsf{\sym}}$ & $\mathit{\mathsf{\num}}$ \\
+mathsf/it     &  $\mathsf{\it \ltrs}$ & $\mathsf{\it\grk}$ & $\mathsf{\it\sym}$ & $\mathsf{\it \num}$ \\
+\hline
+Boldmath\\
+ -     &  {\boldmath $\ltrs$ } & {\boldmath  $\grk$ } & {\boldmath  $\sym$ } & {\boldmath  $\num$} \\
+mathrm  & {\boldmath   $\mathrm{\ltrs}$ } & {\boldmath  $\mathrm{\grk}$ } & {\boldmath  $\mathrm{\sym}$ } & {\boldmath  $\mathrm{\num}$ }\\
+mathsf  & {\boldmath   $\mathsf{\ltrs}$ } & {\boldmath  $\mathsf{\grk}$ } & {\boldmath  $\mathsf{\sym}$ } & {\boldmath  $\mathsf{\num}$ }\\
+mathtt  & {\boldmath   $\mathtt{\ltrs}$ } & {\boldmath  $\mathtt{\grk}$ } & {\boldmath  $\mathtt{\sym}$ } & {\boldmath  $\mathtt{\num}$ }\\
+matcal  & {\boldmath   $\mathcal{\ltrs}$ } & {\boldmath  $\mathcal{\grk}$ } & {\boldmath  $\mathcal{\sym}$ } & {\boldmath  $\mathcal{\num}$ }\\
+mathit  & {\boldmath   $\mathit{\ltrs}$ } & {\boldmath  $\mathit{\grk}$ } & {\boldmath  $\mathit{\sym}$ } & {\boldmath  $\mathit{\num}$ } \\
+\end{tabular}
+
+{\rm roman {\it roman-italic}}  {\sffamily sans {\slshape sans-slant}}
+\end{document}

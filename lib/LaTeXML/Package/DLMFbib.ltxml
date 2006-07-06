@@ -1,0 +1,34 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  DLMFbib                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use charnames ":full";
+use LaTeXML::Package;
+
+RequirePackage('LaTeX');
+#**********************************************************************
+# Document
+#**********************************************************************
+DocType("bibliography","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd');
+DefEnvironment('{document}',"<bibliography>%body</bibliography>");
+
+# Load special functions & other required packages.
+RequirePackage('DLMFmath');
+RequirePackage('amsrefs');
+
+#**********************************************************************
+# Where does this belong?
+DefConstructor('\circledR',"\N{REGISTERED SIGN}");
+
+#**********************************************************************
+1;

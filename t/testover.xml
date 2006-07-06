@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class='article'?>
+<document>
+  <section refnum='1'>
+    <title>Testing Over</title>
+    <p><XMath mode='inline' tex='abc \over def'>
+        <XMApp tex='abc \over def'>
+          <XMTok name='/' style='over'/>
+          <XMArg>
+            <XMTok font='italic'>a</XMTok>
+            <XMTok font='italic'>b</XMTok>
+            <XMTok font='italic'>c</XMTok>
+          </XMArg>
+          <XMArg>
+            <XMTok font='italic'>d</XMTok>
+            <XMTok font='italic'>e</XMTok>
+            <XMTok font='italic'>f</XMTok>
+          </XMArg>
+        </XMApp>
+      </XMath> </p>
+    <p><XMath mode='inline' tex='a{bc \over de}f'>
+        <XMTok font='italic'>a</XMTok>
+        <XMApp tex='bc \over de'>
+          <XMTok name='/' style='over'/>
+          <XMArg>
+            <XMTok font='italic'>b</XMTok>
+            <XMTok font='italic'>c</XMTok>
+          </XMArg>
+          <XMArg>
+            <XMTok font='italic'>d</XMTok>
+            <XMTok font='italic'>e</XMTok>
+          </XMArg>
+        </XMApp>
+        <XMTok font='italic'>f</XMTok>
+      </XMath> </p>
+    <p><XMath mode='inline' tex='a{bc \over de}f'>
+        <XMTok font='italic'>a</XMTok>
+        <XMApp tex='bc \over de'>
+          <XMTok name='/' style='over'/>
+          <XMArg>
+            <XMTok font='italic'>b</XMTok>
+            <XMTok font='italic'>c</XMTok>
+          </XMArg>
+          <XMArg>
+            <XMTok font='italic'>d</XMTok>
+            <XMTok font='italic'>e</XMTok>
+          </XMArg>
+        </XMApp>
+        <XMTok font='italic'>f</XMTok>
+      </XMath> </p>
+    <p><XMath mode='inline' tex='a{bc \over de}f'>
+        <XMTok font='italic'>a</XMTok>
+        <XMApp tex='bc \over de'>
+          <XMTok name='/' style='over'/>
+          <XMArg>
+            <XMTok font='italic'>b</XMTok>
+            <XMTok font='italic'>c</XMTok>
+          </XMArg>
+          <XMArg>
+            <XMTok font='italic'>d</XMTok>
+            <XMTok font='italic'>e</XMTok>
+          </XMArg>
+        </XMApp>
+        <XMTok font='italic'>f</XMTok>
+      </XMath> </p>
+    <p><XMath mode='inline' tex='a{bc \over de}f'>
+        <XMTok font='italic'>a</XMTok>
+        <XMApp tex='bc \over de'>
+          <XMTok name='/' style='over'/>
+          <XMArg>
+            <XMTok font='italic'>b</XMTok>
+            <XMTok font='italic'>c</XMTok>
+          </XMArg>
+          <XMArg>
+            <XMTok font='italic'>d</XMTok>
+            <XMTok font='italic'>e</XMTok>
+          </XMArg>
+        </XMApp>
+        <XMTok font='italic'>f</XMTok>
+      </XMath> </p>
+    <p><XMath mode='inline' tex='a{bc \over d \over e}f'>
+        <XMTok font='italic'>a</XMTok>
+        <XMApp tex='bc \over d \over e'>
+          <XMTok name='/' style='over'/>
+          <XMArg>
+            <XMTok font='italic'>b</XMTok>
+            <XMTok font='italic'>c</XMTok>
+          </XMArg>
+          <XMArg>
+            <XMApp tex='d \over e'>
+              <XMTok name='/' style='over'/>
+              <XMArg>
+                <XMTok font='italic'>d</XMTok>
+              </XMArg>
+              <XMArg>
+                <XMTok font='italic'>e</XMTok>
+              </XMArg>
+            </XMApp>
+          </XMArg>
+        </XMApp>
+        <XMTok font='italic'>f</XMTok>
+      </XMath> <XMath mode='inline' tex='\{a\}'>
+        <XMTok tex='\{'>{</XMTok>
+        <XMTok font='italic'>a</XMTok>
+        <XMTok tex='\}'>}</XMTok>
+      </XMath> <XMath mode='inline' tex='\left\{a\right\}'>
+        <XMTok POS='OPEN' tex='\left\{'>{</XMTok>
+        <XMTok font='italic'>a</XMTok>
+        <XMTok POS='CLOSE' tex='\right\}'>}</XMTok>
+      </XMath> </p>
+  </section>
+</document>

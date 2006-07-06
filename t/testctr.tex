@@ -1,0 +1,161 @@
+\documentclass{article}
+\begin{document}
+\section{Testing Counters}
+\newcounter{foo}
+Foo is \thefoo.
+
+Increment foo.
+\stepcounter{foo}
+Now Foo is  \thefoo.
+
+
+Set Foo to 2.
+\setcounter{foo}{2}
+Now Foo is  \thefoo.
+
+Add ten to Foo.
+\addtocounter{foo}{10}
+Now Foo is  \thefoo.
+
+Double Foo
+\addtocounter{foo}{\value{foo}}
+Now Foo is  \thefoo.
+
+\section{Testing RefStep}
+Define bar to be reset within foo.
+\newcounter{bar}[foo]
+Now (Foo,Bar) is (\thefoo,\thebar)
+
+Refstep bar: \refstepcounter{bar}
+Now (Foo,Bar) is (\thefoo,\thebar)
+
+Refstep foo: \refstepcounter{foo}
+Now (Foo,Bar) is (\thefoo,\thebar)
+
+\section{Number formatting}
+\newcounter{fubar}
+\setcounter{fubar}{6}
+Fubar is \thefubar
+
+roman:
+\renewcommand{\thefubar}{\roman{fubar}}
+Fubar is \thefubar
+
+Roman:
+\renewcommand{\thefubar}{\Roman{fubar}}
+Fubar is \thefubar
+
+alph:
+\renewcommand{\thefubar}{\alph{fubar}}
+Fubar is \thefubar
+
+Alph:
+\renewcommand{\thefubar}{\Alph{fubar}}
+Fubar is \thefubar
+
+fnsymbol:
+\renewcommand{\thefubar}{\fnsymbol{fubar}}
+Fubar is \thefubar
+
+How far will \TeX\ go?
+\renewcommand{\thefubar}{\roman{fubar}}
+\setcounter{fubar}{9999}
+Fubar is \thefubar
+
+\section{TeX Counters}
+\subsection{Integers}
+\countdef\two=2
+\two=7\relax
+7 = \the\two.
+
+7 = \the\count2.
+
+\subsection{Dimensions}
+\dimen7= 1.23 pt\relax
+Dimen 1.23pt = \the\dimen7.
+
+Dimen 1.23pt = \the\dimen\two.
+
+Dimen 1.23pt = \the\dimen\count2.
+
+\two=65536\relax\multiply\two3\relax
+count 2: 3*65536 = \the\two.
+
+\dimen7= 1\count2\relax
+Now dimen: 3pt = \the\dimen7
+
+\dimen7 = 1em\relax
+One em = \the\dimen7
+
+\dimen7 = 1ex\relax
+One ex = \the\dimen7
+
+\dimendef\dseven7
+Dimen: one ex = \the\dseven
+
+\dseven1pt\relax
+Dimen: 1pt = \the\dseven
+
+Dimen: 1pt = \the\dimen7
+
+\dseven'10pt\relax
+8 points = \the\dimen7
+
+\dseven"Fpt\relax
+15 points = \the\dimen7
+
+\subsection{Glue}
+\skip7 = 1pt plus 3pt\relax
+1pt plus 3pt = \the\skip7
+
+\skip7 = 1pt plus 3fil\relax
+1pt plus 3fil = \the\skip7
+
+\skip8 = 1pt plus 3fill\relax
+1pt plus 3fill = \the\skip8
+
+\advance\skip7\skip8
+Skip: 2pt plus 3fill = \the\skip7
+
+\skip8 = .1pt plus 3fill\relax
+0.1 plus 3fill = \the\skip8
+
+\subsection{Undefined?}
+
+Unknown count: 0 = \the\count128\relax
+
+Unknown dimen: 0pt = \the\dimen128\relax
+
+Unknown skip: 0pt = \the\skip128\relax
+
+\subsection{The}
+the count 0 : \the\count0
+
+the two (countdef 2) : \the\two
+
+
+\def\foo{FOO}
+%the macro foo : \the\foo
+
+%the primitive def : \the\def
+
+\toks2={ab\foo cd}
+Tokens: abFOOcd = \the\toks2
+
+Catcode: 11 = \the\catcode`\A
+
+Catcode: 12 = \the\catcode`\@
+
+
+\subsection{New Count, etc}
+\newcount\foo
+\foo3\relax
+3 = \the\foo
+
+\subsection{\LaTeX\ style}
+\newlength{\foolen}
+\setlength{\foolen}{1em}
+1em = \the\foolen
+\addtolength{\foolen}{2em}
+3em = \the\foolen
+\end{document}

@@ -1,0 +1,121 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  amsmath                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+#**********************************************************************
+# Currently only a random collection of things I need for DLMF chapters.
+# Eventually, go through the doc and implement it all.
+#**********************************************************************
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+use charnames ":full";
+
+#**********************************************************************
+
+DefConstructor('\eqref{}', "(<ref labelref='#1'/>)");
+
+
+# Where's this defined ? (amsmath ??)
+DefConstructor('\iff',"<XMTok>iff</XMTok>");
+
+#**********************************************************************
+# Fractions
+DefConstructor('\dfrac{}{}',
+  "<XMApp><XMTok style='over' size='display'>/</XMTok><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+DefConstructor('\tfrac{}{}',
+  "<XMApp><XMTok style='over' size='text'>/</XMTok><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+DefConstructor('\ifrac{}{}',
+  "<XMApp><XMTok>/</XMTok><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+
+#**********************************************************************
+# Is \cfracstyle my own invention? (I know I've redefined \cfrac in DLMFmath)
+DefConstructor('\cfrac{}{}',
+	       "<XMApp><XMTok>cfrac</XMTok><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+# This should get incorporated into any \cfrac's that are constructed in scope.
+DefConstructor('\cfracstyle{}',''); # "<XMHint name='cfracstyle'/>");
+
+#**********************************************************************
+# Integrals
+DefSymbol('\iint',"\N{DOUBLE INTEGRAL}",'DoubleIntegral');
+DefSymbol('\iiint',"\N{TRIPLE INTEGRAL}",'TripleIntegral');
+
+#**********************************************************************
+# This is intended to be a modifier for \sum or \prod
+# NOTE that there can be at most one subscript in each of the pre & post, ditto for superscript.
+# Thus, our representation is: sideset(presub,presup,postsub,postsup,object)
+# Note, also, that this is quite ugly, but since it is a rather peculiar special case.... ?
+DefConstructor('\sideset{}{}{}', sub {
+  my($intestine,$pre,$post,$ob)=@_;
+  my @scripts = (undef,undef,undef,undef);
+
+  my $node=$intestine->openElement('XMApp');
+  my $phase=0;
+  foreach my $group ($pre,$post){
+    $group->absorb($intestine);
+    foreach my $p ($node->childNodes){
+      my $type = $p->getAttribute('name')||'';
+      if   ($type eq 'PostSubscript'  ){ $scripts[$phase+0] = $p->firstChild; }
+      elsif($type eq 'PostSuperscript'){ $scripts[$phase+1] = $p->firstChild; }
+      else { warn("Non sub/superscript in \\sideset: $p"); }
+      $node->removeChild($p); }
+    $phase +=2;  }
+
+  # And finally build it.
+  $intestine->insertElement('XMTok',undef,name=>'sideset');
+  foreach my $script (@scripts){
+    if($script){
+      $intestine->getNode->insert($script); }
+    else {
+      $intestine->insertElement('XMTok',undef,name=>'Empty'); }}
+  $intestine->insertElement('XMArg',$ob);
+  $intestine->closeElement('XMApp');
+});
+
+#**********************************************************************
+DefEnvironment('{cases}',
+	       sub { matharray($_[0],'',$_[1], 'Cases','Case','Cell');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+
+DefEnvironment('{matrix}',
+	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+DefEnvironment('{pmatrix}',
+	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+DefEnvironment('{bmatrix}',
+	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+DefEnvironment('{Bmatrix}',
+	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+DefEnvironment('{vmatrix}',
+	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+DefEnvironment('{Vmatrix}',
+	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+
+
+# ?? Of course, I have to figure out how to represent them....
+#DefConstructor('\gather',   "<XMTok name='gather'>", environment=>'gather');
+#DefConstructor('\endgather',"<XMTok ?? />", end_environment=>'gather');
+DefEnvironment('{gather}',
+	       "<XMApp><XMTok name='gather'/>%body</XMApp>");
+
+DefConstructor('\boldsymbol{}', '#1',
+	       beforeDigest=>sub { $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(forcebold=>1); },
+	       afterDigest =>sub { $_[0]->egroup; });
+
+#**********************************************************************
+1;
+

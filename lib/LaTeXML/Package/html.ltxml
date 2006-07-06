@@ -1,0 +1,59 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  html                                                               | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#**********************************************************************
+DefMacro('\latextohtml','\LaTeX2\texttt{HTML}');
+# Load hyperref ?
+DefMacro('\htmladdnormallinkfoot{}{}','\footnote{\href{#2}{#1}}');
+DefMacro('\htmladdnormallink{}{}','\href{#2}{#1}');
+DefMacro('\htmladdimg{}','\hyperimage{#1}');
+DefMacro('\externallabels{semiverb}{semiverb}','');
+DefMacro('\externalref{}',''); # ???
+DefMacro('\externalcite','\nocite');
+DefMacro('\htmladdTOClink[]{}{}{}', '');
+DefConstructor('\htmlrule Flag:*','<rule/>');
+DefConstructor('\HTMLrule Flag:*','<rule/>');
+DefConstructor('\htmlclear','<br/>');
+DefMacro('\bodytext{}','');
+DefMacro('\htmlbody','');
+DefMacro('\hyperrefhyper{}{}{}{}','');
+DefMacro('\hyperrefdef{}{}{}{}','');
+DefMacro('\hyperrefpagedef{}{}{}{}','');
+DefMacro('\hyperrefnodef{}{}{}{}','');
+DefMacro('\hypercite{}','');
+DefMacro('\htmlcite{}{}','');
+DefMacro('\htmlimage{}','');
+DefMacro('\htmlborder{}','');
+DefEnvironment('{makeimage}','%body');
+DefEnvironment('{tex2html_deferred}','%body');
+DefMacro('\htmladdtonavigation{}','');
+
+# These get excluded, since we probably don't even want to try to include html?
+DefEnvironment('{rawhtml}','');
+DefEnvironment('{htmlonly}','');
+DefMacro('\html{}','');
+DefEnvironment('{latexonly}','%body'); # Include this (?)
+DefMacro('\latexhtml{}{}','#1');
+
+DefMacro('\strikeout{}','');
+DefMacro('\url{semiverb}','');
+DefMacro('\htmlurl{semiverb}','');
+
+DefMacro('\HTMLset{}{}','');
+DefMacro('\htmlinfo','');
+# Not implemented!
+#**********************************************************************
+1;

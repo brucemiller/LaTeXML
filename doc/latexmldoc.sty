@@ -1,0 +1,19 @@
+%======================================================================
+% Collected separately so I can override for LaTeXML
+%======================================================================
+\usepackage{latexml}
+\usepackage{url}
+
+\def\URL{\@ifnextchar[{\@URL}{\@@URL}}%]
+\def\@@URL{\begingroup\Url}
+\def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\texttt{##1}}}\Url}
+
+\usepackage{graphicx}
+\newcommand{\pkg}[1]{\texttt{#1}}
+\newcommand{\lpkg}[1]{\texttt{LaTeXML::#1}}
+\newcommand{\cmd}[1]{\texttt{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\method}[1]{\texttt{->#1}}
+\newcommand{\tag}[1]{\texttt{#1}}
+\newcommand{\perldoc}[1]{\texttt{perldoc #1}}
+%======================================================================

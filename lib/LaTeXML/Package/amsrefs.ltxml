@@ -1,0 +1,83 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  amsrefs                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool::amsrefs;
+Use;
+use charnames ":full";
+use LaTeXML::Token;
+use LaTeXML::Package;
+use LaTeXML::Box;
+#**********************************************************************
+# \bib{key}{type}{keyval pairs}
+
+#our %equivs = (booktitle=>'title', place=>'address', year=>'date');
+our %equivs = (place=>'address', year=>'date');
+
+# \bib{key}{type}{keyval-pairs}
+# We'll parse keyval pairs by hand; some need special treatment (eg URL types).
+# We construct a Whatsit to store the data.
+# NOTE: As it stands, this Whatsit isn't really revertable.
+# We could construct a dummy 3rd arg, as we parse the fields, for that purpose, though.
+# NOTE: Could this be handled more cleanly with a keyval argtype ?
+# [We'd need to specify what value type is associated with each key].
+# ... and we'll need to anyway, eventually...
+DefPrimitive('\bib{any}{any}', sub {
+  my($stomach,$key,$type)=@_;
+  my $gullet = $stomach->getGullet;
+  $key = $stomach->digestTokens($key);
+  $type = $stomach->digestTokens($type);
+  Error("Missing key-value pairs") unless $gullet->ifNext('{',CC_BEGIN);
+  $gullet->skipSpaces;
+  my $defn = $stomach->getMeaning(T_CS('\parsed@bib'));
+  my($field,$value,@fields)=('','');
+  while(!$gullet->ifNext('}',CC_END)){
+    $field = $gullet->readUntil(T_OTHER('='))->untex;
+    $field =~ s/\s//g; $field=lc($field);
+    $field=$equivs{$field} if $equivs{$field};
+    if($field =~ /url$/){
+      $value = $stomach->digestTokens($gullet->readSemiverbatim,1); }
+    else {
+      $value = $stomach->digestTokens($gullet->readArg); }
+    push(@fields,[$field,$value]);
+    $gullet->skipSpaces; 
+    $gullet->readMatch(T_OTHER(','));
+    $gullet->skipSpaces; }
+  Whatsit($defn,$stomach,[$key,$type], fields=>[@fields]); });
+
+DefConstructor('\parsed@bib{any}{any}',sub {
+  my($intestine,$key,$type,$properties)=@_;
+  $intestine->openElement('bibentry',key=>$key, type=>$type);
+  foreach my $pair (@{$$properties{fields}}){
+    my($field,$value)=@$pair;
+    if($intestine->getNode->canContain("bib-$field")){
+      $intestine->insertElement("bib-$field",$value);  }
+    else {
+      Warn("Ignoring unknown bib field $field"); }}
+  $intestine->closeElement('bibentry'); });
+
+DefEnvironment('{bibdiv}','%body');
+DefEnvironment('{biblist}',"<biblist>%body</biblist>");
+
+#**********************************************************************
+# Other Defns (presumably from textcmds?)
+
+DefConstructor('\MR{any}',sub {
+  my($intestine,$mrnumber)=@_;
+  # Patch up old-style MathReviews numbers
+  my $id = $mrnumber->untex;
+  $id =~ s/\s+\\\#\s*/:/;
+  $intestine->insertElement('bib-mr',Box($id,$mrnumber->getFont)); });
+
+DefConstructor('\ndash',"\N{EN DASH}");
+DefConstructor('\mdash',"\N{EM DASH}");
+#**********************************************************************
+1;

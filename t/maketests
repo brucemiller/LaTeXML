@@ -1,0 +1,16 @@
+#!/usr/bin/perl -w
+#**********************************************************************
+# Prepare the test suite using a (hopefully) good version of LaTeXML.
+# Generate XML files for each TeX file on the command line.
+# test.t compares these to the xml generated on a test system.
+#**********************************************************************
+use LaTeXML;
+
+foreach my $name (@ARGV){
+  $name =~ s/\.tex$//;
+  my $latexml= LaTeXML->new(preload=>[], searchpath=>[], includeComments=>0);
+  $latexml->convertAndWriteFile("$name")
+    or die "Failed to create $name.xml: $!"
+}
+#**********************************************************************
+

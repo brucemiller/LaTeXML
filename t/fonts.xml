@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class='article'?>
+<document>
+  <section>
+    <tabular pattern='lcccr'>
+      <tr>
+        <td/>
+        <td>Letters </td>
+        <td>Greek </td>
+        <td>Symbols </td>
+        <td>Numbers</td>
+      </tr>
+      <hline/>
+      <tr>
+        <td>Default</td>
+      </tr>
+      <tr>
+        <td>-     </td>
+        <td><XMath mode='inline' tex='Fff'>
+            <XMTok font='italic'>F</XMTok>
+            <XMTok font='italic'>f</XMTok>
+            <XMTok font='italic'>f</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\alpha \Gamma '>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='[+\cup ]'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='123'>
+            <XMTok name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <hline/>
+      <tr>
+        <td>Families </td>
+      </tr>
+      <tr>
+        <td>mathrm </td>
+        <td><XMath mode='inline' tex='\mathrm{Fff}'>
+            <XMTok>Fff</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathrm{\alpha \Gamma }'>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathrm{[+\cup ]}'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathrm{123}'>
+            <XMTok name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <tr>
+        <td>mathsf </td>
+        <td><XMath mode='inline' tex='\mathsf{Fff}'>
+            <XMTok font='sansserif'>Fff</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathsf{\alpha \Gamma }'>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='sansserif' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathsf{[+\cup ]}'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathsf{123}'>
+            <XMTok font='sansserif' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <tr>
+        <td>mathtt </td>
+        <td><XMath mode='inline' tex='\mathtt{Fff}'>
+            <XMTok font='typewriter'>Fff</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathtt{\alpha \Gamma }'>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='typewriter' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathtt{[+\cup ]}'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathtt{123}'>
+            <XMTok font='typewriter' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <tr>
+        <td>matcal </td>
+        <td><XMath mode='inline' tex='\mathcal{Fff}'>
+            <XMTok font='caligraphic'>F</XMTok>
+            <XMTok font='caligraphic'>f</XMTok>
+            <XMTok font='caligraphic'>f</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathcal{\alpha \Gamma }'>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='caligraphic' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathcal{[+\cup ]}'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathcal{123}'>
+            <XMTok font='caligraphic' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <hline/>
+      <tr>
+        <td>Series </td>
+      </tr>
+      <tr>
+        <td>mathbf    </td>
+        <td><XMath mode='inline' tex='\mathbf{Fff}'>
+            <XMTok font='bold'>Fff</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathbf{\alpha \Gamma }'>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='bold' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathbf{[+\cup ]}'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathbf{123}'>
+            <XMTok font='bold' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <hline/>
+      <tr>
+        <td>Shape </td>
+      </tr>
+      <tr>
+        <td>mathit    </td>
+        <td><XMath mode='inline' tex='\mathit{Fff}'>
+            <XMTok font='italic'>Fff</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathit{\alpha \Gamma }'>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='italic' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathit{[+\cup ]}'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathit{123}'>
+            <XMTok font='italic' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <hline/>
+      <tr>
+        <td>OldStyle </td>
+      </tr>
+      <tr>
+        <td>rm     </td>
+        <td><XMath mode='inline' tex='\rm Fff'>
+            <XMTok>Fff</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\rm \alpha \Gamma '>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\rm [+\cup ]'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\rm 123'>
+            <XMTok name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <tr>
+        <td>bf     </td>
+        <td><XMath mode='inline' tex='\bf Fff'>
+            <XMTok font='bold'>Fff</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\bf \alpha \Gamma '>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='bold' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\bf [+\cup ]'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\bf 123'>
+            <XMTok font='bold' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <tr>
+        <td>it     </td>
+        <td><XMath mode='inline' tex='\it Fff'>
+            <XMTok font='italic'>Fff</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\it \alpha \Gamma '>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='italic' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\it [+\cup ]'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\it 123'>
+            <XMTok font='italic' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <hline/>
+      <tr>
+        <td>Combinations</td>
+      </tr>
+      <tr>
+        <td>mathsf/mathit </td>
+        <td><XMath mode='inline' tex='\mathsf{\mathit{Fff}}'>
+            <XMTok font='italic'>Fff</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathsf{\mathit{\alpha \Gamma }}'>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='italic' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathsf{\mathit{[+\cup ]}}'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathsf{\mathit{123}}'>
+            <XMTok font='italic' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <tr>
+        <td>mathit/mathsf </td>
+        <td><XMath mode='inline' tex='\mathit{\mathsf{Fff}}'>
+            <XMTok font='sansserif'>Fff</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathit{\mathsf{\alpha \Gamma }}'>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='sansserif' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathit{\mathsf{[+\cup ]}}'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathit{\mathsf{123}}'>
+            <XMTok font='sansserif' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <tr>
+        <td>mathsf/it     </td>
+        <td><XMath mode='inline' tex='\mathsf{\it Fff}'>
+            <XMTok font='italic'>Fff</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathsf{\it \alpha \Gamma }'>
+            <XMTok font='italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='italic' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathsf{\it [+\cup ]}'>
+            <XMTok>[</XMTok>
+            <XMTok>+</XMTok>
+            <XMTok name='Union' tex='\cup '>∪</XMTok>
+            <XMTok>]</XMTok>
+          </XMath> </td>
+        <td><XMath mode='inline' tex='\mathsf{\it 123}'>
+            <XMTok font='italic' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <hline/>
+      <tr>
+        <td>Boldmath</td>
+      </tr>
+      <tr>
+        <td>-     </td>
+        <td><XMath mode='inline' tex='Fff'>
+            <XMTok font='bold italic'>F</XMTok>
+            <XMTok font='bold italic'>f</XMTok>
+            <XMTok font='bold italic'>f</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\alpha \Gamma '>
+            <XMTok font='bold italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='bold' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='[+\cup ]'>
+            <XMTok font='bold'>[</XMTok>
+            <XMTok font='bold'>+</XMTok>
+            <XMTok font='bold' name='Union' tex='\cup '>∪</XMTok>
+            <XMTok font='bold'>]</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='123'>
+            <XMTok font='bold' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <tr>
+        <td>mathrm  </td>
+        <td><XMath mode='inline' tex='\mathrm{Fff}'>
+            <XMTok font='bold'>Fff</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathrm{\alpha \Gamma }'>
+            <XMTok font='bold italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='bold' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathrm{[+\cup ]}'>
+            <XMTok font='bold'>[</XMTok>
+            <XMTok font='bold'>+</XMTok>
+            <XMTok font='bold' name='Union' tex='\cup '>∪</XMTok>
+            <XMTok font='bold'>]</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathrm{123}'>
+            <XMTok font='bold' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <tr>
+        <td>mathsf  </td>
+        <td><XMath mode='inline' tex='\mathsf{Fff}'>
+            <XMTok font='sansserif bold'>Fff</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathsf{\alpha \Gamma }'>
+            <XMTok font='bold italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='sansserif bold' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathsf{[+\cup ]}'>
+            <XMTok font='bold'>[</XMTok>
+            <XMTok font='bold'>+</XMTok>
+            <XMTok font='bold' name='Union' tex='\cup '>∪</XMTok>
+            <XMTok font='bold'>]</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathsf{123}'>
+            <XMTok font='sansserif bold' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <tr>
+        <td>mathtt  </td>
+        <td><XMath mode='inline' tex='\mathtt{Fff}'>
+            <XMTok font='typewriter bold'>Fff</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathtt{\alpha \Gamma }'>
+            <XMTok font='bold italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='typewriter bold' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathtt{[+\cup ]}'>
+            <XMTok font='bold'>[</XMTok>
+            <XMTok font='bold'>+</XMTok>
+            <XMTok font='bold' name='Union' tex='\cup '>∪</XMTok>
+            <XMTok font='bold'>]</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathtt{123}'>
+            <XMTok font='typewriter bold' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <tr>
+        <td>matcal  </td>
+        <td><XMath mode='inline' tex='\mathcal{Fff}'>
+            <XMTok font='caligraphic bold'>F</XMTok>
+            <XMTok font='caligraphic bold'>f</XMTok>
+            <XMTok font='caligraphic bold'>f</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathcal{\alpha \Gamma }'>
+            <XMTok font='bold italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='caligraphic bold' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathcal{[+\cup ]}'>
+            <XMTok font='bold'>[</XMTok>
+            <XMTok font='bold'>+</XMTok>
+            <XMTok font='bold' name='Union' tex='\cup '>∪</XMTok>
+            <XMTok font='bold'>]</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathcal{123}'>
+            <XMTok font='caligraphic bold' name='123'>123</XMTok>
+          </XMath> </td>
+      </tr>
+      <tr>
+        <td>mathit  </td>
+        <td><XMath mode='inline' tex='\mathit{Fff}'>
+            <XMTok font='bold italic'>Fff</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathit{\alpha \Gamma }'>
+            <XMTok font='bold italic' name='alpha' tex='\alpha '>α</XMTok>
+            <XMTok font='bold italic' name='Gamma' tex='\Gamma '>Γ</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathit{[+\cup ]}'>
+            <XMTok font='bold'>[</XMTok>
+            <XMTok font='bold'>+</XMTok>
+            <XMTok font='bold' name='Union' tex='\cup '>∪</XMTok>
+            <XMTok font='bold'>]</XMTok>
+          </XMath>  </td>
+        <td><XMath mode='inline' tex='\mathit{123}'>
+            <XMTok font='bold italic' name='123'>123</XMTok>
+          </XMath>  </td>
+      </tr>
+    </tabular>
+    <p>roman <textstyle font='italic'>roman-italic</textstyle>  <textstyle font='sansserif'>sans <textstyle font='slanted'>sans-slant</textstyle></textstyle> </p>
+  </section>
+</document>

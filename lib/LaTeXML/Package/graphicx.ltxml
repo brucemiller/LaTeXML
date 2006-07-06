@@ -1,0 +1,50 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  graphicx                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+# (See  LaTeXML::Post::Graphics for suggested postprocessing)
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+#**********************************************************************
+# Package options: draft, final, hiderotate, hidescale, hiresbb.
+# NOTE: More things to implement (?)
+#  \rotatebox[options]{angle}{text}
+#  \scalebox{hscale}[vscale]{text}
+#  \reflectbox{text}
+#  \resizebox{hlength}{vlength}{text}
+
+# Unimplemented, for now: What should be the result?
+# Would seem to require different treatment if the content was ONLY \includegraphic,
+# or more general text.
+DefConstructor('\rotatebox[]{}{}','#3');
+DefConstructor('\scalebox{}[]{}','#3');
+DefConstructor('\reflectbox{}','#1');
+DefConstructor('\resizebox{}{}{}','#3');
+
+
+DefConstructor('\graphicspath{semiverb}',"<?latexml graphicspath='#1'?>");
+
+DefKeyVal('Gin','width','Dimension');
+DefKeyVal('Gin','height','Dimension');
+DefKeyVal('Gin','vrml','semiverb');
+DefKeyVal('Gin','magnifiable','','true');
+
+DefConstructor('\includegraphics Flag:* [KeyVal:Gin]{semiverb}',
+	       "<graphics graphic='#3' options='#2?#1(,clip=true)'/>");
+
+# Also unimplemented... probably nothing useful to pass thru anyway?
+DefConstructor('\DeclareGraphicsExtensions{}','');
+DefConstructor('\DeclareGraphicsRule{}{}{}{}','');
+# Nothing done about the keyval package...
+#**********************************************************************
+1;
+

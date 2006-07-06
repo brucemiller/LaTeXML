@@ -1,0 +1,29 @@
+\documentclass{article}
+\begin{document}
+\def\testA{foo}
+\def\testB{foo}
+\def\testC{bar}
+
+Test Letters A and A (True) : \ifx AA True \else False\fi.
+
+Test Letters A and B (False) : \ifx AB True \else False\fi.
+
+TestA and B (True) : \ifx\testA\testB True \else False\fi.
+
+TestA and C (False) : \ifx\testA\testC True \else False\fi.
+
+Nested (True False)
+\ifx\testA\testB True \ifx\testA\testC True \else False\fi \else False \ifx\testA\testC True \else False\fi\fi.
+
+\let\endif\fi
+Test let fi (True False); 
+\ifx\testA\testB True \ifx\testA\testC True \else False\endif \else False\ifx\testA\testC True \else False\endif\endif.
+
+\let\otherwise\else
+Test let else (True False); 
+\ifx\testA\testB True \ifx\testA\testC True \otherwise False\endif \otherwise False\ifx\testA\testC True \otherwise False\endif\endif.
+
+
+ifx does NOT expand conditional tokens (fooFalse): \ifx\iftrue\testA True\else\testB False\fi.
+
+\end{document}

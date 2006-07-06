@@ -1,0 +1,129 @@
+#!/usr/bin/perl -w
+use strict;
+use Getopt::Long;
+use Pod::Usage;
+use LaTeXML;
+use LaTeXML::Util::Pathname;
+BEGIN { $SIG{__DIE__} = \&LaTeXML::Error::Error; }
+
+#**********************************************************************
+# Parse command line
+
+my ($format,$output,$help)=('xml','');
+my (@paths,@preload);
+GetOptions("output=s"  => \$output,
+	   "preload=s" => \@preload,
+	   "path=s"    => \@paths,
+	   "quiet"     => sub { LaTeXML::Error::SetDebugging('quiet'); },
+	   "debug:s"   => sub { LaTeXML::Error::SetDebugging($_[1] || 'min'); },
+	   "xml"       => sub { $format = 'xml'; },
+	   "tex"       => sub { $format = 'tex'; },
+	   "box"       => sub { $format = 'box'; },
+	   "help"      => \$help,
+	  ) or pod2usage(2);
+pod2usage(1) if $help;
+pod2usage("Missing input TeX file") unless @ARGV;
+my $source = $ARGV[0];
+
+#**********************************************************************
+# Do the processing.
+
+my $latexml= LaTeXML->new(preload=>[@preload], searchpath=>[@paths]);
+
+if($output){
+  my($dir,$name,$type)=pathname_split($output);
+  if($dir){
+    pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }
+  open(OUT,">:utf8",$output) or die "Couldn't open output file $output: $!"; }
+else {
+  binmode(STDOUT,":utf8");
+  *OUT = *STDOUT; }
+
+if($format eq 'tex'){
+  my $digested = $latexml->digestFile($source);
+  print OUT $digested->untex; }
+elsif($format eq 'box'){
+  my $digested = $latexml->digestFile($source);
+  print OUT $digested; }
+else {
+  my $dom = $latexml->convertFile($source); 
+  $dom->serialize(\*OUT); }
+
+if($output){ close(OUT); }
+
+#**********************************************************************
+__END__
+
+=head1 NAME
+
+C<latexml> transforms a TeX/LaTeX file into XML
+
+=head1 SYNOPSIS
+
+latexml [options] texfile
+
+  Options:
+   --output=outputfile        specifies output file; default prints to stdout.
+   --preload=module           requests loading of an optional module; can be repeated
+   --path=dir                 adds dir to the paths searched for files, modules, etc; can be repeated.
+   --quiet                    suppress all messages except error messages.
+   --debug=feature            requests debugging output relevant to feature; can be repeated
+   --xml                      requests xml output (default).
+   --tex                      requests TeX output after expansion.
+   --box                      requests box output after expansion and digestion.
+   --help                     shows help message.
+
+=head1 OPTIONS AND ARGUMENTS
+
+latexml transforms a TeX/LaTeX file into XML.
+
+=over 4
+
+=item B<--output=>I<outputfile>
+
+Specifies the output file; by default the XML is written to stdout.
+
+=item B<--preload=module>
+
+Requests the loading of an optional module or package.  This may if the TeX code
+doesn't itself require the loading of the module.
+
+=item B<-path>=I<dir>
+
+Add I<dir> to the search paths used when searching for files, modules, style files, etc;
+somewhat like TEXINPUTS.
+
+=item B<--quiet>
+
+Suppresses all messages except fatal error messages.
+
+=item B<--debug>=I<feature>
+
+Requests debugging messages relevant to I<feature>.
+Currently known I<feature>s are macros, DOM, DOCTYPE, mode, catcodes.
+This option can be repeated to add more features.
+
+=item B<--xml>
+
+Requests XML output; this is the default.
+
+=item B<--tex>
+
+Requests TeX output;  processing is only carried out through expansion and digestion.
+This may not be quite valid TeX, since Unicode may be introduced; it is more for
+debugging purposes.
+
+=item B<--box>
+
+Requests Box output;  processing is carried out through expansion and digestions,
+and the result is printed; this is primarily for debugging purposes.
+
+=item B<--help>
+
+Shows this help message.
+
+=back
+
+=cut
+#**********************************************************************
+

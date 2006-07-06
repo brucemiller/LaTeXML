@@ -1,0 +1,37 @@
+# -*- CPERL -*-
+#======================================================================
+# Collected separately so I can override for LaTeXML
+#======================================================================
+use LaTeXML::Package;
+use LaTeXML::Token;
+# From latexml.sty
+DefConstructor('\XML',     "<a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a>");
+DefConstructor('\HTML',    "<a href='http://www.w3c.org/HTML/'><texttt>HTML</texttt></a>");
+DefConstructor('\XHTML',   "<a href='http://www.w3c.org/XHTML/'><texttt>XHTML</texttt></a>");
+DefConstructor('\MathML',  "<a href='http://www.w3c.org/Math/'><texttt>MathML</texttt></a>");
+DefConstructor('\OpenMath',"<a href='http://www.openmath.org/'>OpenMath</a>");
+DefConstructor('\LaTeXML', "<a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a>");
+
+DefConstructor('\URL[]{}',"<a href='#2'>?#1(#1)!#1(#2)</a>");
+
+RequirePackage('graphicx');
+
+# Various other typographic bits
+DefMacro('\pkg {}','\texttt{#1}');
+DefMacro('\lpkg {}','\texttt{LaTeXML::#1}');
+DefMacro('\cmd {}','\texttt{#1}');
+DefMacro('\code {}','\texttt{#1}');
+DefMacro('\method {}','\texttt{->#1}');
+DefMacro('\tag {}','\texttt{#1}');
+DefMacro('\perldoc {}','\texttt{perldoc #1}');
+
+# Perverse!
+DefMacro('\perldoc{}', '\@perldoc{#1}{\@perldochtml{#1}}');
+DefMacro('\@perldochtml{}', sub { 
+ my $pkg = $_[1]->toString;
+ $pkg =~ s|::|/|;
+ T_OTHER("perldoc/$pkg.html"); });
+DefConstructor('\@perldoc {}{}', "<a href='#2'><texttt>#1</texttt></a>");
+
+#======================================================================
+1;

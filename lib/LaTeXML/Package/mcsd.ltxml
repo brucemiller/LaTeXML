@@ -1,0 +1,24 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  mcsd                                                               | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#**********************************************************************
+# \mcsdpage{nistir}{title}{author}{date}
+# Creates a title page for an MCSD NISTIR
+DefConstructor('\mcsdpage{}{}{}{}',
+	       "<title>#2</title><author>#3</author><creationdate>#4</creationdate>");
+# and what to do with the NISTIR # ? Add it to the document?
+#**********************************************************************
+1;

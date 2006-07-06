@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /=====================================================================\ 
+ |  DLMF.dtd                                                           |
+ | Extension of LaTeXML.dtd for DLMF documents                         |
+ |=====================================================================|
+ | Part of LaTeXML:                                                    |
+ |  Public domain software, produced as part of work done by the       |
+ |  United States Government & not subject to copyright in the US.     |
+ |=====================================================================|
+ | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+ | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+ \=========================================================ooo==U==ooo=/
+-->
+
+<!ENTITY % Inline.extra "| email | VRML | GAMS">
+<!ENTITY % Block.extra  "| figuregroup | equationgroup | equationmix | begin_onecolumn | end_onecolumn">
+<!ENTITY % Misc.extra   "| electroniconly | printonly | note">
+<!ENTITY % Frontmatter.extra "| affiliation | acknowledgements | sidebar | gallery | copyright
+                              | origref">
+<!ENTITY % Sectitle.extra "">
+
+<!ENTITY % define.structure  "IGNORE" >
+<!ENTITY % Equation.extra "| note | origref | constraint">
+
+<!ENTITY % LaTeXML.dtd SYSTEM "LaTeXML.dtd" >
+%LaTeXML.dtd; 
+
+<!-- Redefined document structure -->
+<!ELEMENT chapter       ((%Frontmatter.mix;)*, (part | note)*, bibliography?)>
+<!ELEMENT part          ((%Sectitle.mix;)*, (%Block.mix; | section | paragraph)*)>
+<!ELEMENT section       ((%Sectitle.mix;)*, (%Block.mix; | subsection | paragraph)*)>
+<!ELEMENT subsection    ((%Sectitle.mix;)*, (%Block.mix; | subsubsection | paragraph)*)>
+<!ELEMENT subsubsection ((%Sectitle.mix;)*, (%Block.mix; | paragraph)*)>
+<!ELEMENT paragraph     ((%Sectitle.mix;)*, (%Block.mix;)*)>
+<!-- Redefined document structure -->
+
+<!ELEMENT affiliation (#PCDATA | %Inline.mix;)*>
+<!ELEMENT acknowledgements (#PCDATA | %Inline.mix;)*>
+
+<!ELEMENT copyright (#PCDATA | %Inline.mix;)*>
+<!ATTLIST copyright
+          year CDATA #IMPLIED>
+
+<!ELEMENT begin_onecolumn      ANY>
+<!ELEMENT end_onecolumn      ANY>
+<!ELEMENT printonly      ANY>
+<!ELEMENT electroniconly ANY>
+
+<!ELEMENT gallery (galleryitem)*>
+<!ELEMENT galleryitem (graphics)*>
+<!ATTLIST galleryitem
+          graphic   CDATA #REQUIRED
+          name      CDATA #IMPLIED>
+<!ELEMENT figuregroup (figure)*>
+<!ELEMENT sidebar (title?, toctitle?, author?, (%Block.mix;)*)>
+<!ATTLIST sidebar
+          name CDATA #REQUIRED>
+<!ELEMENT equationmix (#PCDATA | %Inline.mix; | punct | origref | constraint)*>
+<!ATTLIST equationmix
+          label ID #IMPLIED
+          refnum CDATA #IMPLIED>
+<!--<!ELEMENT equationgroup (equation | equationmix | origref | constraint | %Flow.mix;)*>-->
+<!ELEMENT equationgroup (equation | equationmix | origref | constraint | text)*>
+<!ATTLIST equationgroup
+          label ID #IMPLIED>
+<!ELEMENT constraint (#PCDATA | XMath)*>
+<!ATTLIST constraint 
+          hidden (yes|no) #IMPLIED>
+<!ELEMENT email (#PCDATA | %Inline.mix;)*>
+<!ELEMENT origref (#PCDATA | %Inline.mix;)*>
+<!ATTLIST origref
+          ref CDATA #IMPLIED>
+<!ELEMENT note (#PCDATA | %Flow.mix;)*>
+
+<!ELEMENT VRML EMPTY>
+<!ATTLIST VRML
+         href CDATA #REQUIRED>
+
+<!ELEMENT GAMS EMPTY>
+<!ATTLIST GAMS
+          class CDATA #IMPLIED
+          package CDATA #IMPLIED>
+
+<!-- Character entities -->
+<!ENTITY ldots "">

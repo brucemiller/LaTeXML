@@ -1,0 +1,1642 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  TeX                                                                | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Token;
+use LaTeXML::Box;
+use LaTeXML::Package;
+use charnames ":full";
+use Unicode::Normalize;
+no warnings 'redefine';
+
+#**********************************************************************
+# Expandable Primitives
+# See The TeXBook, Ch. 20, Definitions (also called Macros) pp. 212--215
+#**********************************************************************
+
+#======================================================================
+# Conditionals
+#   Expand enough to determine true/false, then maybe skip
+#   record a flag somewhere so that \else or \fi is recognized
+#   (otherwise, they should signal an error)
+
+sub skipConditionalBody {
+  my($gullet,$toelse)=@_;
+  my $stomach = $gullet->getStomach;
+  my $fi   = $stomach->getMeaning(T_CS('\fi'));
+  my $else = $stomach->getMeaning(T_CS('\else'));
+  my $level=1;
+  while(defined(my $t=$gullet->readToken)){
+    if(defined(my $defn = $stomach->getMeaning($t))){
+      if($defn->isExecutable && $defn->isExpandable && $defn->isConditional){
+	$level++; }
+      elsif($defn eq $else){
+	return if $toelse && $level == 1; }
+      elsif($defn eq $fi){ 
+	return unless --$level; }}}
+  Error("Conditional fell off end"); }
+
+sub ifHandler   { skipConditionalBody($_[0],1) unless $_[1]; return; }
+sub elseHandler { skipConditionalBody($_[0],0); return; };
+#======================================================================
+# Should complain if we aren't actually evaluating an \if
+DefExpandable('\else', \&elseHandler);
+DefExpandable('\fi',  undef);
+
+sub compare {
+  my($a,$rel,$b)=@_;
+  if   ($rel eq T_OTHER('<')){ $a < $b; }
+  elsif($rel eq T_OTHER('=')){ $a = $b; }
+  elsif($rel eq T_OTHER('>')){ $a > $b; }
+  else { Error("Non-relation token: $rel in comparison conditional"); }}
+DefExpandable('\ifnum Number Token Number', 
+	      sub { ifHandler($_[0],compare($_[1]->getValue,$_[2],$_[3]->getValue)); },
+	     isConditional=>1);
+DefExpandable('\ifdim Dimension Token Dimension',
+	      sub { ifHandler($_[0],compare($_[1]->getValue,$_[2],$_[3]->getValue)); },
+	      isConditional=>1);
+DefExpandable('\ifodd Number',
+	      sub { ifHandler($_[0],$_[1]->getValue % 2); },
+	     isConditional=>1);
+
+# \ifvmode
+# \ifhmode
+DefExpandable('\ifmmode',sub { ifHandler($_[0],$_[0]->inMath); }, isConditional=>1);
+
+# \ifinner
+DefExpandable('\if XToken XToken',    
+	      sub { ifHandler($_[0],$_[1]->getCharcode == $_[2]->getCharcode); },
+	      isConditional=>1);
+DefExpandable('\ifcat XToken XToken', 
+	      sub { ifHandler($_[0],$_[1]->getCatcode  == $_[2]->getCatcode); },
+	      isConditional=>1);
+
+# !! ????
+DefExpandable('\ifx Token Token', sub {
+  my($gullet,$token1,$token2)=@_;
+  my $stomach = $gullet->getStomach;
+  my $def1=$stomach->getMeaning($token1);
+  my $def2=$stomach->getMeaning($token2);
+  my $bool=0;
+  if(defined $def1 != defined $def2){	       # Don't both have defs or not have defs
+    $bool=0; }
+  elsif(!defined $def1 && !defined $def2){	# Neither have defs
+    $bool = $_[1] eq $_[2]; }
+  elsif($def1 eq $def2){	# Same defn (hopefully covers same primitives ???)
+    $bool = 1; }		# But what about same \chardefs, etc....
+  elsif($def1->isExecutable &&  $def2->isExecutable 
+	&& $def1->isExpandable && $def2->isExpandable # Macros w/ same top level expansion
+	&& ($def1->showParameters eq $def2->showParameters)
+	&& ($def1->getExpansion eq $def2->getExpansion)){
+    $bool = 1; }
+  ifHandler($gullet,$bool); },
+	      isConditional=>1);
+
+# Testing boxes ???
+# \ifvoid
+# \ifhbox
+# \ifvbox
+
+# \ifeof
+
+DefExpandable('\iftrue', sub { ifHandler($_[0],1); }, isConditional=>1);
+DefExpandable('\iffalse',sub { ifHandler($_[0],0); }, isConditional=>1);
+
+# \ifcase !!!!!
+
+#======================================================================
+
+DefPrimitive('\relax',undef);
+DefExpandable('\number Number',       sub { Explode($_[1]->getValue); });
+
+#======================================================================
+
+DefExpandable('\romannumeral Number', sub { roman($_[1]->getValue); });
+DefExpandable('\string Token ',        sub { Explode($_[1]->getString); });
+DefExpandable('\jobname',Tokens()); # Set to the filename by initialization
+
+DefExpandable('\fontname', sub { Explode("fontname not implemented"); });
+
+DefExpandable('\meaning Token',sub {
+  my($gullet,$tok)=@_;
+  my $meaning = $gullet->getStomach->getMeaning($tok);
+  Explode(defined $meaning ? $meaning : 'undefined'); });
+
+DefExpandable('\csname',sub {
+  my($gullet)=@_;
+  my $stomach = $gullet->getStomach;
+  my ($token,@toks)=();
+  while(($token = $gullet->readXToken()) && ($token->getString ne '\endcsname')){
+    push(@toks,$token); }
+  $token = T_CS("\\".Tokens(@toks)->untex);
+  $stomach->setMeaning($token, $stomach->getMeaning(T_CS('\relax'))) 
+    unless defined $stomach->getMeaning($token);
+  $token;  });
+DefPrimitive('\endcsname', sub { Error("Extra \csname"); });
+
+DefExpandable('\expandafter Token Token',sub {
+  my($gullet,$tok,$xtok)=@_;
+  my $stomach = $gullet->getStomach;
+  my $defn;
+  if(defined($defn=$stomach->getMeaning($xtok)) && $defn->isExecutable && $defn->isExpandable){
+    ($tok,$defn->expand($gullet)); } # Expand $xtok ONCE ONLY!
+  else {
+    ($tok,$xtok); }});
+
+# Insert magic token that Gullet knows not to expand the next one.
+DefExpandable('\noexpand',sub { Token('',CC_NOTEXPANDED); });
+
+DefExpandable('\topmark',        sub { $_[0]->getStomach->mark_register('topmark'); return; });
+DefExpandable('\firstmark',      sub { $_[0]->getStomach->mark_register('firstmark'); return;});
+DefExpandable('\botmark',        sub { $_[0]->getStomach->mark_register('botmark'); return;});
+DefExpandable('\splitfirstmark', sub { $_[0]->getStomach->mark_register('splitfirstmark'); return;});
+DefExpandable('\splitbotmark',   sub { $_[0]->getStomach->mark_register('splitbotmark'); return;});
+
+DefExpandable('\input',sub {
+  my($gullet)=@_;
+  my $stomach = $gullet->getStomach;
+  my ($token,@tokens)=();
+  while(($token=$gullet->readXToken()) && ($token->getCatcode != CC_SPACE)){
+    push(@tokens,$token); }
+  $gullet->unread($token);
+  $stomach->input(Tokens(@tokens));
+  return; });
+
+DefExpandable('\endinput',sub { $_[0]->closeMouth; return; });
+
+# \the<internal quantity>
+DefExpandable('\the',sub {
+  my($gullet)=@_;
+  my $stomach = $gullet->getStomach;
+  my $defn = readVar($stomach);
+  my $type = $defn->isParameter;
+  if(!$type){ Error("You can't use ".$defn->getCS." after \\the"); }
+  my $value = $defn->getValue($stomach,$defn->readArguments($gullet));
+  my @tokens = ($type eq 'any' ? $value->unlist : Explode($value->toString));
+  if($LaTeXML::NOEXPAND_THE){
+    $gullet->neutralizeTokens(@tokens); }
+  else {
+    @tokens; }});
+
+#**********************************************************************
+# Primitives
+# See The TeXBook, Chapter 24, Summary of Vertical Mode
+#  and Chapter 25, Summary of Horizontal Mode.
+# Parsing of basic types (pp.268--271) is (mostly) handled in Gullet.pm
+#**********************************************************************
+
+DefPrimitive('\bye',sub {
+  $_[0]->getGullet->flush;
+  Message("Bye!") if Debugging(); 		# Should end the job!!
+  return; });
+#======================================================================
+# Registers & Parameters
+# See Chapter 24, Summary of Vertical Mode
+# Define a whole mess of useless parameters here ...
+#======================================================================
+
+#======================================================================
+# Integer parameters; TeXBook p. 272-273
+our %iparms= (pretolerance=>0, tolerance=>0, hbadness=>0, vbadness=>0, linepenalty=>0,
+	      hypenpenalty=>0, exhyphenpenalty=>0, binoppenalty=>0, relpenalty=>0, 
+	      clubpenalty=>0, widowpenalty=>0, displaywidowpenalty=>0, brokenpenalty=>0, 
+	      predisplaypenalty=>0, postdisplaypenalty=>0, interlinepenalty=>0, 
+	      floatingpenalty=>0, outputpenalty=>0, doublehyphendemerits=>0,
+	      finalhyphendemerits=>0, adjdemerits=>0, looseness=>0, pausing=>0, 
+	      holdinginserts=>0, tracingonline=>0, tracingmacros=>0, tracingstats=>0, 
+	      tracingparagraphs=>0, tracingpages=>0, tracingoutput=>0, tracinglostchars=>0, 
+	      tracingcommands=>0, tracingrestores=>0, language=>0, uchyph=>0, lefthyphenmin=>0, 
+	      righthyphenmin=>0, globaldefs=>0, defaulthyphenchar=>0, defaultskewchar=>0, 
+	      escapechar=>0, endlinechar=>0, newlinechar=>0, maxdeadcycles=>0, hangafter=>0, 
+	      fam=>0, mag=>1000, delimiterfactor=>0, time=>0, day=>0, month=>0, year=>0,
+	      showboxbreadth=>0, showboxdepth=>0, errorcontextlines=>0);
+foreach my $p (keys %iparms){
+  DefParameter("\\$p",Number($iparms{$p})); }
+
+# Read-only Integer parameters
+our %ro_iparms=(lastpenalty=>0, inputlineno=>0, badness=>0);
+foreach my $p (keys %ro_iparms){
+  DefParameter("\\$p",Number($ro_iparms{$p}),readonly=>1); }
+
+# Special integer parameters (?)
+# <special integer> = \spacefactor | \prevgraf | \deadcycles | \insertpenalties
+our %sp_iparms=(spacefactor=>0, prevgraf=>0, deadcycles=>0, insertpenalties=>0);
+foreach my $p (keys %sp_iparms){
+  DefParameter("\\$p",Number($sp_iparms{$p})); }
+
+#======================================================================
+# Dimen parameters; TeXBook p. 274
+our %dparms=(hfuzz=>'1pt', vfuzz=>'1pt', overfullrule=>0, emergencystretch=>0, 
+	     hsize=>'6in', vsize=>'9in',
+	     maxdepth=>0, splitmaxdepth=>0, boxmaxdepth=>0, lineskiplimit=>0, 
+	     delimitershortfall=>0, nulldelimiterspace=>0, scriptspace=>0, mathsurround=>0, 
+	     predisplaysize=>0, displaywidth=>0, displayindent=>0, parindent=>0, 
+	     hangindent=>0, hoffset=>0, voffset=>0,);
+foreach my $p (keys %dparms){
+  DefParameter("\\$p",Dimension($dparms{$p})); }
+
+# Read-only dimension parameters.
+our %ro_dparms=(lastkern=>0);
+foreach my $p (keys %ro_dparms){
+  DefParameter("\\$p",Dimension($ro_dparms{$p}), readonly=>1); }
+
+
+# Special dimension parameters (?)
+# <special dimen> = \prevdepth | \pagegoal | \pagetotal | \pagestretch | \pagefilstretch
+#    | \pagefillstretch | \pagefilllstretch | pageshrink | \pagedepth
+our %sp_dparms=(prevdepth=>0, pagegoal=>0, pagetotal=>0, pagestretch=>0, pagefilstretch=>0,
+		pagefillstretch=>0, pagefilllstretch=>0, pageshrink=>0, pagedepth=>0);
+foreach my $p (keys %sp_dparms){
+  DefParameter("\\$p",Dimension($sp_dparms{$p})); }
+
+#======================================================================
+# Glue parameters; TeXBook p.274
+our %gparms=(baselineskip=>0, lineskip=>0, parskip=>0, abovedisplayskip=>0, 
+	     abovedisplayshortskip=>0, leftskip=>0, rightskip=>0, topskip=>0, splittopskip=>0,
+	     tabskip=>0, spaceskip=>0, xspaceskip=>0, parfillskip=>0);
+foreach my $p (keys %gparms){
+  DefParameter("\\$p",Glue($gparms{$p})); }
+
+#======================================================================
+# MuGlue parameters; TeXBook p.274
+our %mparms=(thinmuskip=>0, medmuskip=>0, thickmuskip=>0);
+foreach my $p (keys %mparms){
+  DefParameter("\\$p",Glue($mparms{$p})); }
+
+#======================================================================
+# Token parameters; TeXBook p.275
+our @tparms= qw(output everypar everymath everydisplay everyhbox everyvbox
+		everyjob everycr everyhelp);
+#======================================================================
+
+# Are these from plain ?
+DefConstructor('\smallskip',"");
+DefConstructor('\medskip',"");
+DefConstructor('\bigskip',"");
+
+DefConstructor('\thinspace'," ");
+DefConstructor('\thickspace'," ");
+#======================================================================
+# Assignment, TeXBook Ch.24, p.275
+#======================================================================
+# <assignment> = <non-macro assignment> | <macro assignment>
+
+#======================================================================
+# Macros
+# See Chapter 24, p.275-276
+# <macro assignment> = <definition> | <prefix><macro assignment>
+# <definition> = <def><control sequence><definition text>
+# <def> = \def | \gdef | \edef | \xdef
+# <definition text> = <parameter text><left brace><balanced text><right brace>
+
+# Convert the parameter list to the internal form.
+sub readDefParameterList {
+  my($cs, $gullet)=@_;
+
+  # Read tokens until a '{'
+  my ($token,@tokens)=();
+  while(defined ($token=$gullet->readToken()) && ($token->getCatcode != CC_BEGIN)){
+    push(@tokens,$token); }
+  $gullet->unread($token);
+
+  # Now, recognize parameters and delimiters.
+  my @copy = @tokens;
+  my @params=();
+  my $n=0;
+  while(@tokens){
+    my $t=shift(@tokens);
+    if($t->getCatcode == CC_PARAM){
+      $n++; $t=shift(@tokens); 
+      Error("Parameters for \"$cs\" not in order in ".join('',@copy))
+	unless $n == (ord($t->getString)-ord('0'));
+      my @delim=();
+      while(@tokens && ($tokens[0]->getCatcode != CC_PARAM)){
+	push(@delim,shift(@tokens)); }
+      if(@delim){ 
+	my $expected=Tokens(@delim);
+	push(@params,{ spec=>'Until:'.$expected->toString, after=>$expected}); }
+      else {
+	push(@params,{ spec=>'{}', before=>'{', after=>'}'}); }}
+    else {
+      my @lit=($t);
+      while(@tokens && ($tokens[0]->getCatcode != CC_PARAM)){
+	push(@lit,shift(@tokens)); }
+      my $expected = Tokens(@lit);
+      push(@params,{ spec=>'Literal:'.$expected->toString, 
+		     type=>'Match', matches=>[$expected], novalue=>1}); }
+  }
+  [@params]; }
+
+# On these, we'll parse the arguments ourselves!!
+sub do_def {
+  my($stomach, $globally, $expanded)=@_;
+  my $gullet = $stomach->getGullet;
+  my $cs     = $gullet->readNonSpace;
+  my $params = readDefParameterList($cs,$gullet);
+  my $body   = $gullet->readArg();
+  if($expanded){
+    local $LaTeXML::NOEXPAND_THE = 1;
+    $body = $gullet->expandTokens($body); }
+  my $new    =  LaTeXML::Expandable->new($cs,$params,$body);
+  Message("Defining $cs".$new->showParameters." => ".$body->untex)
+    if Debugging('macros');
+  $stomach->setMeaning($cs,$new,$globally);
+  return; }
+
+DefPrimitive('\def',  sub { do_def($_[0],0,0); });
+DefPrimitive('\gdef', sub { do_def($_[0],1,0); });
+DefPrimitive('\edef', sub { do_def($_[0],0,1); });
+DefPrimitive('\xdef', sub { do_def($_[0],1,1); });
+
+# <prefix> = \global | \long | \outer
+# See Stomach.pm & Stomach.pm
+DefPrimitive('\global',sub { $_[0]->setPrefix('global');},isPrefix=>1);
+DefPrimitive('\long',  sub { $_[0]->setPrefix('long');},  isPrefix=>1);
+DefPrimitive('\outer', sub { $_[0]->setPrefix('outer');}, isPrefix=>1);
+
+#======================================================================
+# Non-Macro assignments; TeXBook Ch.24, pp 276--277
+# <non-macro assignment> = <simple assignment> | \global <non-macro assignment>
+
+# <filler> = <optional spaces> | <filler>\relax<optional spaces>
+# <general text> = <filler>{<balanced text><right brace>
+
+# <simple assignment> = <variable assignment> | <arithmetic>
+#    | <code assignment> | <let assignment> | <shorthand definition>
+#    | <fontdef token> | <family assignment> | <shape assignment>
+#    | \read <number> to <optional spaces><control sequence>
+#    | \setbox<8bit><equals><filler><box>
+#    | \font <control sequence><equals><file name><at clause>
+#    | <global assignment>
+# <variable assignment> = <integer variable><equals><number>
+#    | <dimen variable><equals><dimen>
+#    | <glue variable><equals><dimen>
+#    | <muglue variable><equals><muglue>
+#    | <token variable><equals><general text>
+#    | <token variable><equals><token variable>
+# <at clause> = at <dimen> | scaled <number> | <optional spaces>
+# <code assignment> = <codename><8bit><equals><number>
+
+DefParameter('\count Number',Number(0));
+DefParameter('\dimen Number',Dimension(0));
+DefParameter('\skip Number',Glue(0));
+DefParameter('\muskip Number',MuGlue(0));
+DefParameter('\toks Number',Tokens());
+
+# <integer variable> = <integer parameter> | <countdef token> | \count<8bit>
+# <dimen var> = <dimen parameter> | <dimendef token> | \dimen<8bit>
+# <glue variable> = <glue parameter> | <skipdef token> | \skip<8bit>
+# <muglue variable> = <muglue parameter> | <muskipdef token> | \muskip<8bit>
+
+# <arithmetic> = \advance <integer variable><optional by><number>
+#    | \advance <dimen variable><optional by><dimen>
+#    | \advance <glue variable><optional by><glue>
+#    | \advance <muglue variable><optional by><muglue>
+#    | \multiply <numeric variable><optional by><number>
+#    | \divide <numeric variable><optional by><number>
+
+sub readVar {
+  my($stomach)=@_;
+  my ($var,$type);
+  my $gullet = $stomach->getGullet;
+  my $token = $gullet->readXToken;
+  Error("Missing variable") unless defined $token;
+  my $defn = $stomach->getMeaning($token);
+  if((defined $defn) && $defn->isExecutable && $defn->isParameter && !$defn->isReadonly){
+    $defn; }
+  else {
+    $gullet->unread($token); 
+    Error("Missing variable"); }}
+
+DefPrimitive('\advance',sub {
+  my($stomach)=@_;
+  my $gullet = $stomach->getGullet;
+  my $defn = readVar($stomach);
+  my @args = $defn->readArguments($gullet);
+  $gullet->readKeyword('by');
+  $defn->setValue($stomach,
+		  $defn->getValue($stomach,@args)->add($gullet->readValue($defn->isParameter)),
+		  @args); });
+
+DefPrimitive('\multiply',sub {
+  my($stomach)=@_;
+  my $gullet = $stomach->getGullet;
+  my $defn = readVar($stomach);
+  my @args = $defn->readArguments($gullet);
+  $gullet->readKeyword('by');
+  $defn->setValue($stomach,
+		  $defn->getValue($stomach,@args)->multiply($gullet->readNumber->getValue),
+		  @args); });
+
+
+DefPrimitive('\divide',sub {
+  my($stomach)=@_;
+  my $gullet = $stomach->getGullet;
+  my $defn = readVar($stomach);
+  my @args = $defn->readArguments($gullet);
+  $gullet->readKeyword('by');
+  $defn->setValue($stomach,
+		  $defn->getValue($stomach,@args)->multiply(1/$gullet->readNumber->getValue),
+		  @args); });
+
+# <let assignment> = \futurelet <control sequence><token><token> 
+#   | \let<control sequence><equals><one optional space><token>
+# DefPrimitive('\futurelet','<token><token><token>', sub { ... });
+DefPrimitive('\let Token Ignore:= Token', sub {
+  my($stomach,$token1,$token2)=@_;
+  $stomach->setMeaning($token1, $stomach->getMeaning($token2));
+  return;  });
+
+DefExpandable('\futurelet Token Token Token',sub{
+  my($gullet,$cs,$token1,$token2)=@_;
+  my $stomach = $gullet->getStomach;
+  $stomach->setMeaning($cs, $stomach->getMeaning($token2));
+  ($token1,$token2); });
+
+# <shorthand definition> = \chardef<control sequence><equals><8bit>
+#    | \mathchardef <control sequence><equals><15bit>
+#    | <registerdef><control sequence><equals><8bit>
+# <registerdef> = \countdef | \dimendef | \skipdef | \muskipdef | toksdef
+
+# As defining a parameter ??
+DefPrimitive('\chardef Token Ignore:= Number', sub {
+  my($stomach,$newcs,$code)=@_;
+  $stomach->setValue($newcs->getString,Number($code));	# For when used as an integer getValue
+  my $ch = chr($code->getValue);
+  $stomach->setMeaning($newcs,
+		       LaTeXML::Primitive->new($newcs,"",
+#					       eval("sub { \$_[0]->digestToken(T_OTHER(\"$ch\"));}"),
+					       sub { T_OTHER($ch)->digest(\$_[0]); },
+					       parameterType=>'Number', readonly=>1));
+  return; });
+# \mathchardef ?
+
+DefPrimitive('\countdef Token Ignore:= Number',sub {
+  my($stomach,$cs,$num)=@_;
+  my $count = '\count'.$num->getValue;
+  DefParameter($cs->getString, Number(0),
+	       getter=>sub { $_[0]->getValue($count); },
+	       setter=>sub { $_[0]->setValue($count,$_[1]); });
+  return; });
+
+DefPrimitive('\dimendef Token Ignore:= Number',sub {
+  my($stomach,$cs,$num)=@_;
+  my $dimen = '\dimen'.$num->getValue;
+  DefParameter($cs->getString, Dimension(0),
+	       getter=>sub { $_[0]->getValue($dimen); },
+	       setter=>sub { $_[0]->setValue($dimen,$_[1]); });
+  return; });
+
+DefPrimitive('\skipdef Token Ignore:= Number',sub {
+  my($stomach,$cs,$num)=@_;
+  my $glue = '\skip'.$num->getValue;
+  DefParameter($cs->getString, Glue(0),
+	       getter=>sub { $_[0]->getValue($glue); },
+	       setter=>sub { $_[0]->setValue($glue,$_[1]); });
+  return; });
+
+DefPrimitive('\muskipdef Token Ignore:= Number',sub {
+  my($stomach,$cs,$num)=@_;
+  my $muglue = '\muskip'.$num->getValue;
+  DefParameter($cs->getString, MuGlue(0),
+	       getter=>sub { $_[0]->getValue($muglue); },
+	       setter=>sub { $_[0]->setValue($muglue,$_[1]); });
+
+ return; });
+
+DefPrimitive('\toksdef Token Ignore:= Number',sub {
+  my($stomach,$cs,$num)=@_;
+  my $toks = '\toks'.$num->getValue;
+  DefParameter($cs->getString, Tokens(),
+	       getter=>sub { $_[0]->getValue($toks); },
+	       setter=>sub { $_[0]->setValue($toks,$_[1]); });
+  return; });
+
+
+# NOTE: Get all these handled as parameters
+# <internal integer> = <integer parameter> | <special integer> | \lastpenalty
+#   | <countdef token> | \count<8bit> | <codename><8bit>
+#   | <chardef token> | <mathchardef token> | \parshape | \inputlineno
+#   | \hyphenchar<font> | \skewchar<font> | \badness
+
+# <codename> = \catcode | \mathcode | \lccode | \uccode | \sfcode | \delcode
+
+DefParameter('\catcode Number',Number(0),
+	     getter=>sub { Number($_[0]->getCatcode(chr($_[1]->getValue))); },
+	     setter=>sub { $_[0]->setCatcode($_[1]->getValue, chr($_[2]->getValue)); });
+# \mathcode
+# \lccode
+# \uccode
+# \sfcode
+# \delcode
+DefParameter('\hyphenchar{}',Number(ord('-')));
+# \parshape !?!??
+#DefParameter('\inputlineno',Number(0),
+#            readonly=>1,
+#	     getter=>{ Number($_->[0]->getGullet->getMouth????? ->lineno); });
+# \skewchar
+
+DefMacro('\hyphenation{}',''); # Well, what ?
+
+
+# <font> = <fontdef token> | \font | <family member>
+# <family member> | <font range><4bit>
+# <font range> = \textfont | \scriptfont | \scriptscriptfont
+
+# <internal dimen> = <dimen parameter> | <special dimen> | \lastkern
+#    | <dimendef token> | \dimen<8bit> | <box dimension><8bit> | \fontdimen<number><font>
+# <box dimension> = \ht | \wd | \dp
+
+# Need some clever getter & setters!
+DefParameter('\ht Number',Dimension(0));
+DefParameter('\wd Number',Dimension(0));
+DefParameter('\dp Number',Dimension(0));
+
+#   Could be handled by setting dimensions whenever the box itself is set?
+
+# <internal glue> = <glue parameter> | \lastskip | <skipdef token> | \skip<8bit>
+
+# <internal muglue> = <muglue parameter> | \lastskip | <muskipdef token> | \muskip<8bit>
+
+# <family assignment> = <family member><equals><font>
+# <shape assignment> = \parshape<equals><number><shape dimensions>
+#  <shape dimensions> is 2n <dimen>
+
+# <global assignment> = <font assignment> | <hyphenation assignment>
+#   | <box size assignment> | <interaction mode assignment>
+#   | <intimate assignment>
+# <font assignment> = \fontdimen <number><font><equals><dimen>
+#   | \hyphenchar<font><equals><number> | \skewchar<font><equals><number>
+# <hyphenation assignment> = \hyphenation<general text>
+#   | \patterns<general text>
+# <box size assignment> = <box dimension><8bit><equals><dimen>
+# <interaction mode assignment> = \errorstopmode | \scrollmode | \nonstopmode | \batchmode
+# <intimate assignment> = <special integer><equals><number>
+#   | <special dimension><equals><dimen>
+
+#DefPrimitive('\char Number', sub { $_[0]->digestToken(T_OTHER(chr($_[1]->getValue))); });
+DefPrimitive('\char Number', sub { T_OTHER(chr($_[1]->getValue))->digest($_[0]); });
+
+# <box> = \box <8bit> | \copy <8bit> | \lastbox | \vsplit <8bit> to <dimen>
+#   | \hbox <box specification>{<horizontal mode material>}
+#   | \vbox <box specification>{<vertical mode material>}
+#   | \vtop <box specification>{<vertical mode material>}
+# <box specification> = to <dimen><filler> | spread <dimen><filler> | <filler>
+
+# \setbox<number>=\hbox to <dimen>{<horizontal mode material>}
+
+DefPrimitive('\setbox Number Ignore:= {}', sub { $_[0]->setValue('box'.$_[1]->getValue,$_[2]); });
+# Is this the same ??
+DefPrimitive('\sbox Number Ignore:= {}', sub { $_[0]->setValue('box'.$_[1]->getValue,$_[2]); });
+
+#DefPrimitive('\hbox{Keyword:to|spread} Dimension {}', sub { $_[0]->digestTokens($_[3]); });
+#DefPrimitive('\vbox{Keyword:to|spread} Dimension {}', sub { $_[0]->digestTokens($_[3]); });
+#DefPrimitive('\vtop{Keyword:to|spread} Dimension {}', sub { $_[0]->digestTokens($_[3]); });
+DefPrimitive('\hbox Keyword:to|spread Dimension {}', sub { $_[3]->digest($_[0]); });
+DefPrimitive('\vbox Keyword:to|spread Dimension {}', sub { $_[3]->digest($_[0]); });
+DefPrimitive('\vtop Keyword:to|spread Dimension {}', sub { $_[3]->digest($_[0]); });
+
+# Ignore, but leave the box!
+DefPrimitive('\lower Dimension', undef);
+DefPrimitive('\raise Dimension', undef);
+#======================================================================
+# Remaining Mode independent primitives in Ch.24, pp.279-280
+# \relax was done as expandable (isn't that right?)
+# }
+# Note, we don't bother making sure begingroup is ended by endgroup.
+
+# These define the handler for { } (or anything of catcode BEGIN, END)
+
+# These are actually TeX primitives, but we treat them as a Whatsit so they
+# remain in the constructed tree.
+DefConstructor('{','%body', #untex=>'{', 
+	       beforeDigest=> sub { $_[0]->bgroup; }, captureBody=>1);
+DefConstructor('}',  '', #untex=>'}', 
+beforeDigest => sub { $_[0]->egroup; });
+Let('\bgroup',T_BEGIN);
+Let('\egroup',T_END);
+DefPrimitive('\begingroup',sub { $_[0]->bgroup(1); });
+DefPrimitive('\endgroup',  sub { $_[0]->egroup(1); });
+
+# \show, \showbox<8bit>, \showlists, \showthe<internal quantity>
+# \shipout<box>
+# \ignorespaces
+# \afterassignment<token>
+# \aftergroup<token>
+# \uppercase<general text>, \lowercase<general text>
+# \message<general text>
+# \openin<4bit>, \closein<4bit>
+# \immediate\openout<4bit><equals><filename>
+# \immediate\closeout<4bit>
+# \immediate\write<number><general text>
+
+DefPrimitive('\aftergroup Token', sub { $_[0]->pushAfterGroup($_[1]); });
+
+#======================================================================
+# Remaining semi- Vertical Mode primitives in Ch.24, pp.280--281
+# \openout<4bit><equals><filename>
+# \special<general text>
+# \penalty<number>
+# \kern<dimen>, \mkern<mudimen>
+# \unpenalty, \unkern, \unskip
+# \mark{general text}
+# \insert<8bit><filler>{<vertical mode material>}
+# \vadjust<filler>{<vertical mode material>}
+
+DefPrimitive('\penalty Number',undef);
+DefPrimitive('\kern Dimension',undef);
+DefPrimitive('\mkern MuGlue',undef);
+DefPrimitive('\unpenalty',undef);
+
+#======================================================================
+# Remaining Vertical Mode primitives in Ch.24, pp.281--283
+# \vskip<glue>, \vfil, \vfill, \vss, \vfilneg
+# <leaders> = \leaders | \cleaders | \xleaders
+# <box or rule> = <box> | <vertical rule> | <horizontal rule>
+# <vertical rule> = \vrule<rule specification>
+# <horizontal rule> = \hrule<rule specification>
+# <rule specification> = <optional spaces> | <rule dimension><rule specification>
+# <rule dimension> = width <dimen> | height <dimen> | depth <dimen>
+
+# Stuff to ignore for now...
+foreach my $op ('\vskip Glue', '\vfil', '\vfill', '\vss', '\vfilneg',
+		'\leaders', '\cleaders', '\xleaders'){
+  DefPrimitive($op,undef); }
+
+# \moveleft<dimen><box>, \moveright<dimen><box>
+# \unvbox<8bit>, \unvcopy<8bit>
+# \halign<box specification>{<alignment material>}
+DefConstructor('\noindent', "");
+DefConstructor('\indent', "");
+
+# Remember; \par closes, not opens, paragraphs!
+DefConstructor('\par', sub { $_[0]->closeElement('p') if $_[0]->getNode->canClose('p'); },
+	       untex=>"\\par\n");
+Tag('p', autoClose=>1, autoOpen=>1);
+
+# {
+
+# The following cause tex to start a new paragraph -- they switch to horizontal mode.
+# <horizontal command> = <letter> | <other> | \char | <chardef token>
+#    | \noboundary | \unhbox | \unhcopy | \valign | \vrule 
+#    | \hskip | \hfil | \hfill | \hss | \hfilneg 
+#    | \accent | \discretionary | \- | \<space> | $
+
+DefPrimitive('\hskip Glue',undef);
+
+DefConstructor('\hfil',' ',mathConstructor=>"<XMHint name='hfil'/>");
+DefConstructor('\hfill',' ',mathConstructor=>"<XMHint name='hfill'/>");
+# \end
+# \dump
+
+#**********************************************************************
+DefConstructor("~","\N{NO-BREAK SPACE}");
+
+DefPrimitive('\nobreak',undef);
+
+#**********************************************************************
+DefConstructor('\vspace{}',"");
+DefPrimitive('\leavevmode',undef);
+DefConstructor('\centerline{}',"<centering>#1</centering>");
+
+# Well, what else?
+DefMacro('\newpage','');
+#**********************************************************************
+# Math mode stuff
+# See TeXBook Ch.26
+#**********************************************************************
+# Decide whether we're going into or out of math, inline or display.
+
+DefPrimitive('$', sub {
+  my($stomach)=@_;
+  my $gullet = $stomach->getGullet;
+  my $mode = $stomach->getMode;
+  my $op = '\@@BEGININLINEMATH';
+  if($mode eq 'display_math'){
+    Error("Missing \$") unless $gullet->ifNext(undef,CC_MATH);
+    $op = '\@@ENDDISPLAYMATH'; }
+  elsif($mode eq 'inline_math'){
+    $op = '\@@ENDINLINEMATH'; }
+  elsif($gullet->ifNext(undef,CC_MATH)){
+    $op = '\@@BEGINDISPLAYMATH'; }
+  $gullet->unread(T_CS($op));
+  return; });
+
+# Effectively these are the math hooks, redefine these to do what you want with math?
+DefConstructor('\@@BEGINDISPLAYMATH',"<equation><XMath mode='display'>\%body</XMath></equation>",
+	       untex=>'$$',
+	       beforeDigest=> sub{ $_[0]->beginMode('display_math'); },
+	       captureBody=>1);
+DefConstructor('\@@ENDDISPLAYMATH'  , "", untex=>'$$',
+	       beforeDigest=> sub{ $_[0]->endMode('display_math'); });
+
+DefConstructor('\@@BEGININLINEMATH', "<XMath mode='inline'>\%body</XMath>", untex=>'$',
+	       beforeDigest=> sub{ $_[0]->beginMode('inline_math'); },
+	      captureBody=>1);
+DefConstructor('\@@ENDINLINEMATH'   ,"", untex=>'$', 
+	       beforeDigest=> sub{ $_[0]->endMode('inline_math');});
+
+# Add the TeX code from the object that created this node,
+# unless it has already been recorded on another node.
+sub add_TeX {
+  my($node,$thing)=@_;
+  if($thing && (ref $thing eq 'LaTeXML::Whatsit') && !$thing->getProperty('_added_tex')){
+    $node->setAttribute('tex',$thing->untex('nofloats'));
+    $thing->setProperty('_added_tex',1); }}
+
+sub cleanup_TeX {
+  my($node)=@_;
+  my($x,$y);
+  if((defined ($x=$node->getAttribute('tex'))) && (defined ($y = $node->textContent)) && ($y eq $x)){
+    $node->removeAttribute('tex'); }}
+  
+# Same as add_TeX, but add the code from the body of the object.
+sub add_body_TeX {
+  my($node,$thing)=@_;
+  if($thing && !$thing->getProperty('_added_body_tex')){
+    my $body = $thing->getProperty('body');
+    $node->setAttribute('tex', $body->untex('nofloats')) if $body;
+    $thing->setProperty('_added_body_tex',1); }}
+
+Tag('XMath', afterOpen=>\&add_body_TeX, afterClose=>\&cleanup_XMath);
+Tag('XMTok', afterOpen=>\&add_TeX, afterClose=>\&cleanup_TeX);
+Tag('XMApp', afterOpen=>\&add_TeX);
+Tag('XMHint',afterOpen=>\&add_TeX);
+Tag('XMWrap',afterOpen=>\&add_TeX, afterClose=>\&collapse_XMWrap);
+Tag('XMDual',afterOpen=>\&add_TeX);
+
+sub cleanup_XMath {
+  my($xnode)=@_;
+  # If the XMath contains only non-math nodes, pull them up & toss the XMath wrapper.
+  if(!grep($_->getNodeName =~ /^XMApp|XMArg|XMTok|XMDual|XMHint|XMWrap/, $xnode->childNodes)){
+    $xnode->getParentNode->replace($xnode,$xnode->childNodes); }
+}
+
+# If an XMWrap contains only a single node, replace it by the content,
+# after copying the XMWrap's attributes
+sub collapse_XMWrap {
+  my($wrap)=@_;
+  my @nodes = $wrap->childNodes;
+  if(scalar(@nodes) == 1){
+    my %attr = %{$wrap->getAttributes};
+    map($nodes[0]->setAttribute($_,$attr{$_}), keys %attr); 
+    # and replace the XMWrap.
+    $wrap->getParentNode->replace($wrap,@nodes); }
+  return; }
+
+#======================================================================
+# Scripts need a bit of special handling.
+# Although they look like they take a normal TeX argument, they really
+# take the next BOX after expansion & digestion!  Thus,
+#   a^\frac{b}{c} and a^\mathcal{B} 
+# DO work (in TeX)!!  OTOH, things like
+#   a^\sqrt{3} or a^\acute{b}
+# DONT! (Hint: consider the expansions)
+# Note that 
+#  \def\xyz{xyz}
+#   a^\xyz   =>  a^{x}yz
+# So, we try to mimic, but note that our boxes don't correspond 100% to TeX's
+
+# Grab & store the next digested box as arg of whatsit, after digesting the ^ or _
+sub scriptArgHandler {
+  my($stomach,$whatsit)=@_;
+  my @stuff = $stomach->digestToken($stomach->getGullet->readXToken);
+  $whatsit->setArgs(shift(@stuff));
+  @stuff; }
+DefConstructor('^', "<XMApp name='PostSuperscript'><XMArg rule='Superscript'>#1</XMArg></XMApp>",
+	       afterDigest=>\&scriptArgHandler,
+	       untex=>'^{#1}');
+DefConstructor('_', "<XMApp name='PostSubscript'><XMArg rule='Subscript'>#1</XMArg></XMApp>",
+	       afterDigest=>\&scriptArgHandler,
+	       untex=>'_{#1}');
+
+# This only becomes active in math mode.
+DefMacro('\'',sub{
+  my($gullet)=@_;
+  my $n = 1;
+  while($gullet->ifNext(T_OTHER('\''))){ $n++; };
+  (T_SUPER,T_BEGIN,map(T_CS('\prime'), 1..$n),T_END); });
+
+# These are \let in plain
+Let('\sp',T_SUPER);
+Let('\sb',T_SUB);
+
+#======================================================================
+# \choose & friends, also need special argument handling
+
+# After digesting the \choose (or whatever), grab the previous and following material
+# and store as args in the whatsit.
+sub chooseArgHandler {
+  my($stomach,$whatsit)=@_;
+  my @top = $stomach->regurgitate;
+  my @bot = $stomach->readAndDigestBody;
+  my $closing = pop(@bot);	# We'll leave whatever closed the list (endmath, endgroup...)
+  $whatsit->setArgs(MathList(@top),MathList(@bot));
+  $closing; }			# leave the closing bit
+
+DefConstructor('\choose',
+	       "<XMApp><XMTok name='binomial'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>",
+	       afterDigest=>\&chooseArgHandler,
+	       untex=>'#1 \choose #2');
+DefConstructor('\over',
+	       "<XMApp><XMTok name='/' style='over'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>",
+	       afterDigest=>\&chooseArgHandler,
+	       untex=>'#1 \over #2');
+DefConstructor('\atop',
+	       "<XMApp><XMTok name='stacked'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>",
+	       afterDigest=>\&chooseArgHandler,
+	       untex=>'#1 \atop #2');
+
+#**********************************************************************
+# Old style font styles.
+# The trick is to create an empty Whatsit preserved till assimilation (for untex'ing)
+# but to change the current font used in boxes.
+Tag('textstyle',autoClose=>1);
+DefConstructor('\rm', '', beforeDigest=>sub{ $_[0]->setFont(family=>'serif'); });
+DefConstructor('\bf',  '', beforeDigest=>sub{ $_[0]->setFont(series=>'bold'); });
+DefConstructor('\it',  '', beforeDigest=>sub{ $_[0]->setFont(shape=>'italic'); });
+DefConstructor('\tt',  '', beforeDigest=>sub{ $_[0]->setFont(family=>'typewriter'); });
+DefConstructor('\sl',  '', beforeDigest=>sub{ $_[0]->setFont(shape=>'slanted'); });# No effect in math ?
+DefConstructor('\sc',  '', beforeDigest=>sub{ $_[0]->setFont(shape=>'smallcaps'); });# No effect in math ?
+DefConstructor('\tiny',          '', beforeDigest=>sub{ $_[0]->setFont(size=>'tiny'); });
+DefConstructor('\footnotesize',  '', beforeDigest=>sub{ $_[0]->setFont(size=>'footnote'); });
+DefConstructor('\small',         '', beforeDigest=>sub{ $_[0]->setFont(size=>'small'); });
+DefConstructor('\normalsize',    '', beforeDigest=>sub{ $_[0]->setFont(size=>'normal'); });
+DefConstructor('\large',         '', beforeDigest=>sub{ $_[0]->setFont(size=>'large'); });
+DefConstructor('\Large',         '', beforeDigest=>sub{ $_[0]->setFont(size=>'Large'); });
+DefConstructor('\LARGE',         '', beforeDigest=>sub{ $_[0]->setFont(size=>'LARGE'); });
+DefConstructor('\huge',          '', beforeDigest=>sub{ $_[0]->setFont(size=>'huge'); });
+DefConstructor('\Huge',          '', beforeDigest=>sub{ $_[0]->setFont(size=>'Huge'); });
+DefConstructor('\cal', '', beforeDigest=>sub{ $_[0]->requireMath; $_[0]->setFont(family=>'caligraphic'); });
+
+DefConstructor('\@end@emph','</emph>');
+DefConstructor('\em',"<emph>", afterDigest=>sub { $_[0]->pushAfterGroup(T_CS('\@end@emph')); });
+
+DefPrimitive('\boldmath',  sub { $_[0]->forbidMath; $_[0]->setMathFont(forcebold=>1); });
+DefPrimitive('\unboldmath',sub { $_[0]->forbidMath; $_[0]->setMathFont(forcebold=>0); });
+
+#**********************************************************************
+# Combining letters & numbers
+#**********************************************************************
+# Combine letters, when the fonts are right.
+sub match_math_letters {
+  my(@list)=@_;
+  my $init = shift(@list);
+  my $font = $init->getFont; 
+  if(! $font->isSticky){ 0; }
+  else {
+    my ($i,$l,$f)=(1);
+    while(($l = shift(@list))
+	  && ((ref $l eq 'LaTeXML::Comment')
+	      || (((ref $l) eq 'LaTeXML::MathBox')
+		  && ($l->getString =~ /^[a-zA-Z]$/)
+		  && ($l->getFont eq $font)))){
+      $i++; }
+    ($i > 1 ? $i : 0); }}	# Match at least 2
+
+sub replace_math_letters { MathBox(join('',map($_->getString, @_)),$_[0]->getFont); }
+
+foreach my $letter (qw(a b c d e f g h i j k l m n o p q r s t u v w x y z
+		      A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)){
+  DefMathFilter($letter, \&match_math_letters, \&replace_math_letters); }
+
+#======================================================================
+# Combine digits in math.
+
+# Accept strings of digits, possibly with a `.', 
+# possibly with \, \: \; spacing embedded,
+# and possibly with a trailing \ldots
+sub check_digit {
+  my($digit)=@_;
+  my $s;
+  my $r = ref $digit;
+  if($r eq 'LaTeXML::MathBox'){
+    my $s = $digit->getString;
+    ($s =~ /^[\d\.]$/ ? $s : undef); }
+  elsif($r eq 'LaTeXML::Whatsit'){
+    my $s = $digit->getDefinition->getCS;
+    ($s =~ /^(\\,|\\:|\\;|\.|\\ldots|\\dots)$/ ? $s : undef); }}
+
+sub match_digits {
+  my(@list)=@_;
+  my ($i,$d,$s,$string) = (0,'','','');
+  my $font = $list[0]->getFont; 
+  # Match digits and spacing, possible trailing \ldots
+  while(($d = shift(@list))
+	&& ((ref $d eq 'LaTeXML::Comment')
+	    || (defined ($s = check_digit($d)) && ($d->getFont eq $font)
+		&& (($string .=$s) =~ /^(\d|\\,|\\:|\\;)*\.?(\d|\\,|\\:|\\;)*(\\ldots|\\dots)?$/)))){
+	  $i++; }
+  # but back up over trailing spacing
+  while($string =~ s/(\\,|\\:|\\;)$//){ $i--; }
+  ($i > 1 ? $i : 0); }		# Match at least 2.
+
+# @@NUMBER{value}{unicode}{tex}
+DefConstructor('\@@NUMBER{}{}{}',"<XMTok name='#1' font='%font'>#2</XMTok>",
+	       untex=>'#3');
+
+sub replace_digits { 
+  my(@digits)=@_;
+  my $tex = join('',map($_->untex, @_));
+  my $number = $tex;
+  my $string = $tex;
+  $number =~ s/(\\,|\\:|\\;|\\ldots |\\dots )//g;
+  $string =~ s/\\,/\N{THIN SPACE}/g;
+  $string =~ s/\\:/\N{FOUR-PER-EM SPACE}/g;
+  $string =~ s/\\;/\N{THREE-PER-EM SPACE}/g;
+  $string =~ s/(\\ldots |\\dots )/\N{HORIZONTAL ELLIPSIS}/g;
+  my $font = $digits[0]->getFont;
+  Whatsit($LaTeXML::STOMACH->getMeaning(T_CS('\@@NUMBER')),$LaTeXML::STOMACH,
+	  [Box($number,$font),Box($string,$font),Box($tex,$font)],
+	  font=>$font); }
+
+foreach my $digit (qw(. 0 1 2 3 4 5 6 7 8 9)){
+  DefMathFilter($digit, \&match_digits, \&replace_digits); }
+
+#**********************************************************************
+# Stuff from Plain
+#**********************************************************************
+
+#**********************************************************************
+# Spacing stuff
+DefConstructor('\@','');
+# Math spacing.
+DefConstructor('\,',"\N{THIN SPACE}",mathConstructor=>"<XMHint name='thinspace'/>");
+DefConstructor('\:',"\N{FOUR-PER-EM SPACE}",mathConstructor=>"<XMHint name='medspace'/>");
+DefConstructor('\;',"\N{THREE-PER-EM SPACE}",mathConstructor=>"<XMHint name='thickspace'/>");
+DefConstructor('\!','',mathConstructor=>"<XMHint name='negthingspace'/>");
+DefConstructor('\ ',"\N{EN SPACE}",mathConstructor=>"<XMHint name='medspace'/>");
+DefConstructor('\/','', mathConstructor=>"<XMHint name='italiccorr'/>");
+DefConstructor('\frenchspacing', "");
+DefConstructor('\nonfrenchspacing',"");
+
+# Math style.
+DefConstructor('\displaystyle','',afterDigest=>sub { $_[0]->setMathStyle('display'); });
+DefConstructor('\textstyle',   '',afterDigest=>sub { $_[0]->setMathStyle('text'); });
+DefConstructor('\scriptstyle', '',afterDigest=>sub { $_[0]->setMathStyle('script'); });
+DefConstructor('\scriptscriptstyle','',afterDigest=>sub { $_[0]->setMathStyle('scriptscript'); });
+
+#**********************************************************************
+# MATH representation
+#**********************************************************************
+
+#**********************************************************************
+# Various Symbols;
+# Mostly from the LaTeX Manual (presumably most apply to Plain?)
+#**********************************************************************
+
+#======================================================================
+# Normal ASCII chars.
+#======================================================================
+# (Since they're not active, they're only evaluated in math mode)
+
+#======================================================================
+# Accents.  LaTeX Table 3.1, p.38
+#======================================================================
+# All of TeX's accents can (sorta) be handled by Unicode's combining accents
+# (which follow the character to be accented).
+# We'll let unicode normalization do the combination, if needed.
+# Also, note that \t is intended to combine multiple chars, but it appears to
+# work (via mozilla !?) best when the combining char is after the 1st char.
+# Further, the accents \d and \b seem to center the under dot or bar under multiple
+# chars --- how should this be handled in Unicode?
+
+our %accents = ('\`' => "\N{COMBINING GRAVE ACCENT}",
+		"\\'"=> "\N{COMBINING ACUTE ACCENT}",
+		'\^' => "\N{COMBINING CIRCUMFLEX ACCENT}",
+		'\"' => "\N{COMBINING DIAERESIS}",
+		'\~' => "\N{COMBINING TILDE}",
+		'\=' => "\N{COMBINING MACRON}",
+		'\.' => "\N{COMBINING DOT ABOVE}",
+		'\u' => "\N{COMBINING BREVE}",
+		'\v' => "\N{COMBINING CARON}",
+		'\H' => "\N{COMBINING DOUBLE ACUTE ACCENT}",
+		'\c' => "\N{COMBINING CEDILLA}",
+		'\d' => "\N{COMBINING DOT BELOW}",
+		'\b' => "\N{COMBINING MACRON BELOW}",
+		'\t' => "\N{COMBINING DOUBLE INVERTED BREVE}", # I doubt this covers multiple chars...?
+#		'\bar'=>"\N{COMBINING MACRON}", # or is this the longer overbar?
+		);
+foreach my $accent (keys %accents){
+  DefConstructor($accent."{}", sub {
+    my($intestine,$letter)=@_;
+    my @letters = map(($_ eq '\i ' ? 'i':$_),map($_->untex,$letter->unlist));
+    # Put the accent AFTER the first char(?)
+    $intestine->openText($letters[0].$accents{$accent}.join('',@letters[1..$#letters]),
+		     $letter->getFont);}); }
+
+#======================================================================
+# LaTeX; Table 3.2. Non-English Symbols, p.39
+#======================================================================
+
+DefSymbol('\oe',"\N{LATIN SMALL LIGATURE OE}");
+DefSymbol('\OE',"\N{LATIN CAPITAL LIGATURE OE}");
+DefSymbol('\ae',"\N{LATIN SMALL LETTER AE}");
+DefSymbol('\AE',"\N{LATIN CAPITAL LETTER AE}");
+DefSymbol('\aa',"\N{LATIN SMALL LETTER A WITH RING ABOVE}");
+DefSymbol('\AA',"\N{LATIN CAPITAL LETTER A WITH RING ABOVE}");
+DefSymbol('\o', "\N{LATIN SMALL LETTER O WITH STROKE}");
+DefSymbol('\O', "\N{LATIN CAPITAL LETTER O WITH STROKE}");
+DefSymbol('\l', "\N{LATIN SMALL LETTER L WITH STROKE}");
+DefSymbol('\L', "\N{LATIN CAPITAL LETTER L WITH STROKE}");
+DefSymbol('\ss',"\N{LATIN SMALL LETTER SHARP S}");
+
+DefSymbol('\dag',   "\N{DAGGER}");
+DefSymbol('\ddag',  "\N{DOUBLE DAGGER}");
+DefSymbol('\S',     "\N{SECTION SIGN}");
+DefSymbol('\P',     "\N{PILCROW SIGN}");
+DefSymbol('\copyright',"\N{COPYRIGHT SIGN}");
+DefSymbol('\pounds',"\N{POUND SIGN}");
+
+# Special Characters.
+DefSymbol('\#',   '#');
+DefSymbol('\&',   '&amp;');
+#DefSymbol('\%',   '%');
+DefMacro('\%',Tokens(T_OTHER('%')));
+DefSymbol("\\\$", '\$');
+DefSymbol('\_',   '_');
+
+#======================================================================
+# LaTeX; Table 3.3, Greek, p.41
+#======================================================================
+
+DefSymbol('\alpha',     "\N{GREEK SMALL LETTER ALPHA}",'alpha', mathclass=>'lcgreek');
+DefSymbol('\beta',      "\N{GREEK SMALL LETTER BETA}",'beta', mathclass=>'lcgreek');
+DefSymbol('\gamma',     "\N{GREEK SMALL LETTER GAMMA}",'gamma', mathclass=>'lcgreek');
+DefSymbol('\delta',     "\N{GREEK SMALL LETTER DELTA}",'delta', mathclass=>'lcgreek');
+DefSymbol('\epsilon'  , "\N{GREEK LUNATE EPSILON SYMBOL}",'epsilon', mathclass=>'lcgreek');
+DefSymbol('\varepsilon',"\N{GREEK SMALL LETTER EPSILON}",'varepsilon', mathclass=>'lcgreek');
+DefSymbol('\zeta',      "\N{GREEK SMALL LETTER ZETA}",'zeta', mathclass=>'lcgreek');
+DefSymbol('\eta',       "\N{GREEK SMALL LETTER ETA}",'eta', mathclass=>'lcgreek');
+DefSymbol('\theta',     "\N{GREEK SMALL LETTER THETA}",'theta', mathclass=>'lcgreek');
+DefSymbol('\vartheta',  "\N{GREEK THETA SYMBOL}",'vartheta', mathclass=>'lcgreek');
+DefSymbol('\iota',      "\N{GREEK SMALL LETTER IOTA}",'iota', mathclass=>'lcgreek');
+DefSymbol('\kappa',     "\N{GREEK SMALL LETTER KAPPA}",'kappa', mathclass=>'lcgreek');
+DefSymbol('\lambda',    "\N{GREEK SMALL LETTER LAMDA}",'lambda', mathclass=>'lcgreek');
+DefSymbol('\mu',        "\N{GREEK SMALL LETTER MU}",'mu', mathclass=>'lcgreek');
+DefSymbol('\nu',        "\N{GREEK SMALL LETTER NU}",'nu', mathclass=>'lcgreek');
+DefSymbol('\xi',        "\N{GREEK SMALL LETTER XI}",'xi', mathclass=>'lcgreek');
+DefSymbol('\pi',        "\N{GREEK SMALL LETTER PI}",'pi', mathclass=>'lcgreek');
+DefSymbol('\varpi',     "\N{GREEK PI SYMBOL}",'varpi', mathclass=>'lcgreek');
+DefSymbol('\rho',       "\N{GREEK SMALL LETTER RHO}",'rho', mathclass=>'lcgreek');
+DefSymbol('\varrho',    "\N{GREEK RHO SYMBOL}",'varrho', mathclass=>'lcgreek');
+DefSymbol('\sigma',     "\N{GREEK SMALL LETTER SIGMA}",'sigma', mathclass=>'lcgreek');
+DefSymbol('\varsigma',  "\N{GREEK SMALL LETTER FINAL SIGMA}",'varsigma', mathclass=>'lcgreek');
+DefSymbol('\tau',       "\N{GREEK SMALL LETTER TAU}",'tau', mathclass=>'lcgreek');
+DefSymbol('\upsilon',   "\N{GREEK SMALL LETTER UPSILON}",'upsilon', mathclass=>'lcgreek');
+DefSymbol('\phi',       "\N{GREEK PHI SYMBOL}",'phi', mathclass=>'lcgreek');
+DefSymbol('\varphi',    "\N{GREEK SMALL LETTER PHI}",'varphi', mathclass=>'lcgreek');
+DefSymbol('\chi',       "\N{GREEK SMALL LETTER CHI}",'chi', mathclass=>'lcgreek');
+DefSymbol('\psi',       "\N{GREEK SMALL LETTER PSI}",'psi', mathclass=>'lcgreek');
+DefSymbol('\omega',     "\N{GREEK SMALL LETTER OMEGA}",'omega', mathclass=>'lcgreek');
+DefSymbol('\Gamma',     "\N{GREEK CAPITAL LETTER GAMMA}",'Gamma', mathclass=>'ucgreek');
+DefSymbol('\Delta',     "\N{GREEK CAPITAL LETTER DELTA}",'Delta', mathclass=>'ucgreek');
+DefSymbol('\Theta',     "\N{GREEK CAPITAL LETTER THETA}",'Theta', mathclass=>'ucgreek');
+DefSymbol('\Lambda',    "\N{GREEK CAPITAL LETTER LAMDA}",'Lambda', mathclass=>'ucgreek');
+DefSymbol('\Xi',        "\N{GREEK CAPITAL LETTER XI}",   'Xi', mathclass=>'ucgreek');
+DefSymbol('\Pi',        "\N{GREEK CAPITAL LETTER PI}",   'Pi', mathclass=>'ucgreek');
+DefSymbol('\Sigma',     "\N{GREEK CAPITAL LETTER SIGMA}",'Sigma', mathclass=>'ucgreek');
+DefSymbol('\Upsilon',   "\N{GREEK CAPITAL LETTER UPSILON}",'Upsilon', mathclass=>'ucgreek');
+DefSymbol('\Phi',       "\N{GREEK CAPITAL LETTER PHI}",  'Phi', mathclass=>'ucgreek');
+DefSymbol('\Psi',       "\N{GREEK CAPITAL LETTER PSI}",  'Psi', mathclass=>'ucgreek');
+DefSymbol('\Omega',     "\N{GREEK CAPITAL LETTER OMEGA}",'Omega', mathclass=>'ucgreek');
+
+#======================================================================
+# LaTeX; Table 3.4. Binary Operation Symbols, p.42
+#======================================================================
+
+DefSymbol('\pm',        "\N{PLUS-MINUS SIGN}",'PlusMinus');
+DefSymbol('\mp',        "\N{MINUS-OR-PLUS SIGN}",'MinusPlus');
+DefSymbol('\times',     "\N{MULTIPLICATION SIGN}",'Times');
+DefSymbol('\div',       "\N{DIVISION SIGN}",'Divide');
+DefSymbol('\ast',       "\N{ASTERISK OPERATOR}",'Asterisk');
+DefSymbol('\star',      "\N{STAR OPERATOR}",'Star');
+DefSymbol('\circ',      "\N{RING OPERATOR}",'Circle');
+DefSymbol('\bullet',    "\N{BULLET OPERATOR}",'Bullet');
+DefSymbol('\cdot',      "\N{DOT OPERATOR}",'Dot');
+
+# Need to classify set operations more carefully....
+DefSymbol('\cap',       "\N{INTERSECTION}",'Intersection');
+DefSymbol('\cup',       "\N{UNION}",'Union');
+DefSymbol('\uplus',     "\N{MULTISET}",'Multiset');
+DefSymbol('\sqcap',     "\N{SQUARE CAP}",'SquareCap');
+DefSymbol('\sqcup',     "\N{SQUARE CUP}",'SquareCup');
+DefSymbol('\vee',       "\N{LOGICAL OR}", 'Or');
+DefSymbol('\wedge',     "\N{LOGICAL AND}",'And');
+DefSymbol('\setminus',  "\N{SET MINUS}",'SetMinus');
+DefSymbol('\wr',        "\N{WREATH PRODUCT}",'Wreath');
+
+DefSymbol('\diamond',        "\N{DIAMOND OPERATOR}",'Diamond');
+DefSymbol('\bigtriangleup',  "\N{WHITE UP-POINTING TRIANGLE}",'BigTriangleUp');
+DefSymbol('\bigtriangledown',"\N{WHITE DOWN-POINTING TRIANGLE}",'BigTriangleDown');
+DefSymbol('\triangleleft',   "\N{WHITE LEFT-POINTING SMALL TRIANGLE}",'TriangleLeft');
+DefSymbol('\triangleright',  "\N{WHITE RIGHT-POINTING SMALL TRIANGLE}",'TriangleRight');
+DefSymbol('\lhd',       "\N{NORMAL SUBGROUP OF}",'Subgroup');
+DefSymbol('\rhd',       "\N{CONTAINS AS NORMAL SUBGROUP}",'ContainsSubgroup');
+DefSymbol('\unlhd',     "\N{NORMAL SUBGROUP OF OR EQUAL TO}",'SubgroupOrEquals');
+DefSymbol('\unrhd',     "\N{CONTAINS AS NORMAL SUBGROUP OR EQUAL TO}",'ContainsSubgroupOrEquals');
+
+DefSymbol('\oplus',     "\N{CIRCLED PLUS}",'CircledPlus');
+DefSymbol('\ominus',    "\N{CIRCLED MINUS}",'CircledMinus');
+DefSymbol('\otimes',    "\N{CIRCLED TIMES}",'CircledTimes');
+DefSymbol('\oslash',    "\N{CIRCLED DIVISION SLASH}",'CircledDivision');
+DefSymbol('\odot',      "\N{CIRCLED DOT OPERATOR}",'CircledDot');
+DefSymbol('\bigcirc',   "\N{WHITE CIRCLE}",'BigCircle');
+DefSymbol('\dagger',    "\N{DAGGER}",'Dagger');
+DefSymbol('\ddagger',   "\N{DOUBLE DAGGER}",'DoubleDagger');
+DefSymbol('\amalg',     "\N{N-ARY COPRODUCT}",'Coproduct');
+
+
+DefSymbol('\dot',"\N{DOT OPERATOR}",'Dot');
+# Discretionary times; just treat as invisible ?
+DefSymbol('\*',"\N{MULTIPLICATION SIGN}",'InvisibleTimes');
+
+# And also
+
+DefSymbol('\ldots',"\N{HORIZONTAL ELLIPSIS}",'Ellipsis');
+DefSymbol('\cdots',"\N{MIDLINE HORIZONTAL ELLIPSIS}",'CenterEllipsis');
+DefSymbol('\vdots',"\N{VERTICAL ELLIPSIS}",'VerticalEllipsis');
+DefSymbol('\ddots',"\N{DOWN RIGHT DIAGONAL ELLIPSIS}",'DiagonalEllipsis');
+# Note that amsmath redefines \dots to be `smart'.
+DefSymbol('\dots',"\N{HORIZONTAL ELLIPSIS}",'Ellipsis');
+
+# And while we're at it...
+DefMathFilter('\cdot\cdot\cdot','\cdots');
+DefTextFilter('...','\ldots');
+DefMathFilter('...','\ldots');
+
+#======================================================================
+# LaTeX; Table 3.5. Relation Symbols, p.43
+#======================================================================
+DefSymbol('\le',        "\N{LESS-THAN OR EQUAL TO}",'LessEqual');
+DefSymbol('\ge',        "\N{GREATER-THAN OR EQUAL TO}",'GreaterEqual');
+DefSymbol('\ne',        "\N{NOT EQUAL TO}",'NotEqual');
+ 
+DefSymbol('\leq',       "\N{LESS-THAN OR EQUAL TO}",'LessEqual');
+DefSymbol('\prec',      "\N{PRECEDES}", 'Precedes');
+DefSymbol('\preceq',    "\N{PRECEDES ABOVE SINGLE-LINE EQUALS SIGN}",'PrecedesEqual');
+DefSymbol('\ll',        "\N{MUCH LESS-THAN}",'MuchLess');
+DefSymbol('\subset',    "\N{SUBSET OF}",'Subset');
+DefSymbol('\subseteq',  "\N{SUBSET OF OR EQUAL TO}",'SubsetEqual');
+DefSymbol('\sqsubset',  "\N{SQUARE IMAGE OF}", 'SquareImage'); # latexsym package only!!
+DefSymbol('\sqsubseteq',"\N{SQUARE IMAGE OF OR EQUAL TO}",'SquareImageEqual');
+DefSymbol('\in',        "\N{ELEMENT OF}",'In');
+DefSymbol('\vdash',     "\N{LEFT TACK}",'LeftTack');
+
+DefSymbol('\geq',       "\N{GREATER-THAN OR EQUAL TO}",'GreaterEqual');
+DefSymbol('\succ',      "\N{SUCCEEDS}",'Succeeds');
+DefSymbol('\succeq',    "\N{SUCCEEDS ABOVE SINGLE-LINE EQUALS SIGN}",'SucceedsEqual');
+DefSymbol('\gg',        "\N{MUCH GREATER-THAN}",'MuchGreater');
+DefSymbol('\supset',    "\N{SUPERSET OF}",'Superset');
+DefSymbol('\supseteq',  "\N{SUPERSET OF OR EQUAL TO}",'SupersetEqual');
+DefSymbol('\sqsupset',  "\N{SQUARE ORIGINAL OF}",'SquareOriginal'); # latexsym only!
+DefSymbol('\sqsupseteq',"\N{SQUARE ORIGINAL OF OR EQUAL TO}",'SquareOriginalEqual');
+DefSymbol('\ni',        "\N{CONTAINS AS MEMBER}",'Contains');
+DefSymbol('\dashv',     "\N{RIGHT TACK}",'RightTack');
+
+DefSymbol('\equiv',     "\N{IDENTICAL TO}",'Identical');
+DefSymbol('\sim',       "\N{TILDE OPERATOR}",'Similar');
+DefSymbol('\simeq',     "\N{ASYMPTOTICALLY EQUAL TO}",'SimilarEqual');
+DefSymbol('\asymp',     "\N{EQUIVALENT TO}",'Equivalent');
+DefSymbol('\approx',    "\N{ALMOST EQUAL TO}",'Approximately');
+DefSymbol('\cong',      "\N{APPROXIMATELY EQUAL TO}",'ApproximatelyEqual');
+DefSymbol('\neq',       "\N{NOT EQUAL TO}",'NotEqual');
+DefSymbol('\doteq',     "\N{APPROACHES THE LIMIT}",'Approaches');
+DefSymbol('\notin',     "\N{NOT AN ELEMENT OF}",'NotIn');
+
+DefSymbol('\models',    "\N{MODELS}",'Models');
+DefSymbol('\perp',      "\N{UP TACK}",'UpTack');
+DefSymbol('\mid',       "\N{DIVIDES}",'Divides');
+DefSymbol('\parallel',  "\N{PARALLEL TO}",'Parallel');
+DefSymbol('\bowtie',    "\N{BOWTIE}",'BowTie');
+DefSymbol('\Join',      "\N{JOIN}",'Join');
+DefSymbol('\smile',     "\N{SMILE}",'Smile');
+DefSymbol('\frown',     "\N{FROWN}",'Frown');
+DefSymbol('\propto',    "\N{PROPORTIONAL TO}",'Proportional');
+
+DefSymbol('\gtrless',   "\N{LESS-THAN OR GREATER-THAN}",'GreaterLess');
+
+DefConstructor('\not',"<XMTok>not</XMTok>");
+DefMathFilter('\not=','\ne');
+DefMathFilter('\not\in','\notin');
+
+# and many more!
+
+# Have to synthesize various not-operators (a nice shorthand?)
+# I've basically put in every `not' form from Unicode 2200-226C, for which there is 
+# a corresponding TeX operator.
+DefSymbol('\@not@lt', "\N{NOT LESS-THAN}", 'NotLessThan', untex=>'\not<');
+DefMathFilter('\not<','\@not@lt');
+DefSymbol('\@not@gt', "\N{NOT GREATER-THAN}", 'NotGreaterThan', untex=>'\not>');
+DefMathFilter('\not>','\@not@gt');
+DefSymbol('\@not@le', "\N{NEITHER LESS-THAN NOR EQUAL TO}", 'NotLessEqual', untex=>'\not\le');
+DefMathFilter('\not\le','\@not@le');
+DefMathFilter('\not\leq','\@not@le');
+DefSymbol('\@not@ge', "\N{NEITHER GREATER-THAN NOR EQUAL TO}", 'NotGreaterEqual', untex=>'\not\ge');
+DefMathFilter('\not\ge','\@not@ge');
+DefMathFilter('\not\geq','\@not@ge');
+
+
+DefSymbol('\@not@prec', "\N{DOES NOT PRECEDE}", 'NotPrecedes', untex=>'\not\prec');
+DefMathFilter('\not\prec','\@not@prec');
+DefSymbol('\@not@succ', "\N{DOES NOT SUCCEED}", 'NotSucceeds', untex=>'\not\succ');
+DefMathFilter('\not\succ','\@not@succ');
+DefSymbol('\@not@preceq', "\N{DOES NOT PRECEDE OR EQUAL}", 'NotPrecedesEqual', untex=>'\not\preceq');
+DefMathFilter('\not\preceq','\@not@prec');
+DefSymbol('\@not@succeq', "\N{DOES NOT SUCCEED OR EQUAL}", 'NotSucceedsEqual', untex=>'\not\succeq');
+DefMathFilter('\not\succeq','\@not@succeq');
+DefSymbol('\@not@subset', "\N{NOT A SUBSET OF}", 'NotSubset', untex=>'\not\subset');
+DefMathFilter('\not\subset','\@not@subset');
+DefSymbol('\@not@supset', "\N{NOT A SUPERSET OF}", 'NotSuperset', untex=>'\not\supset');
+DefMathFilter('\not\supset','\@not@supset');
+DefSymbol('\@not@subseteq', "\N{NEITHER A SUBSET OF NOR EQUAL TO}", 'NotSubsetEqual', untex=>'\not\subseteq');
+DefMathFilter('\not\subseteq','\@not@subseteq');
+DefSymbol('\@not@supseteq', "\N{NEITHER A SUPERSET OF NOR EQUAL TO}", 'NotSupersetEqual', untex=>'\not\supseteq');
+DefMathFilter('\not\supseteq','\@not@supseteq');
+DefSymbol('\@not@sqsubseteq', "\N{NOT SQUARE IMAGE OF OR EQUAL TO}", 'NotSquareImageEqual',
+	  untex=>'\not\sqsubseteq');
+DefMathFilter('\not\sqsubseteq','\@not@sqsubseteq');
+DefSymbol('\@not@sqsupseteq', "\N{NOT SQUARE ORIGINAL OF OR EQUAL TO}", 'NotSquareOriginalEqual',
+	  untex=>'\not\sqsupseteq');
+DefMathFilter('\not\sqsupseteq','\@not@sqsupseteq');
+
+
+DefSymbol('\@not@equiv', "\N{NOT IDENTICAL TO}", 'NotIdentical', untex=>'\not\equiv');
+DefMathFilter('\not\equiv','\@not@equiv');
+DefSymbol('\@not@asymp', "\N{NOT EQUIVALENT TO}", 'NotEquivalent', untex=>'\not\asymp');
+DefMathFilter('\not\asymp','\@not@asymp');
+DefSymbol('\@not@approx', "\N{NOT ALMOST EQUAL TO}", 'NotApproximately', untex=>'\not\approx');
+DefMathFilter('\not\approx','\@not@approx');
+
+
+DefSymbol('\@not@lhd',       "\N{NOT NORMAL SUBGROUP OF}",'NotSubgroup', untex=>'\not\lhd');
+DefMathFilter('\not\lhd','\@not@lhd');
+DefSymbol('\@not@rhd',       "\N{DOES NOT CONTAIN AS NORMAL SUBGROUP}",'NotContainsSubgroup',
+	 untex=>'\not\rhd');
+DefMathFilter('\not\rhd','\@not@rhd');
+DefSymbol('\@not@unlhd',     "\N{NOT NORMAL SUBGROUP OF OR EQUAL TO}",'NotSubgroupOrEquals',
+	 untex=>'\not\unlhd');
+DefMathFilter('\not\unlhd','\@not@unlhd');
+DefSymbol('\@not@unrhd',     "\N{DOES NOT CONTAIN AS NORMAL SUBGROUP OR EQUAL}",'NotContainsSubgroupOrEquals',
+	 untex=>'\not\unrhd');
+DefMathFilter('\not\unrhd','\@not@unrhd');
+
+
+#======================================================================
+# LaTeX; Table 3.6. Arrow Symbols, p.43
+#======================================================================
+# (treat them as RELOP for now ???)
+
+DefSymbol('\leftarrow',         "\N{LEFTWARDS ARROW}",'LeftArrow');
+DefSymbol('\Leftarrow',         "\N{LEFTWARDS DOUBLE ARROW}",'LeftDoubleArrow');
+DefSymbol('\rightarrow',        "\N{RIGHTWARDS ARROW}",'RightArrow');
+DefSymbol('\Rightarrow',        "\N{RIGHTWARDS DOUBLE ARROW}",'RightDoubleArrow');
+DefSymbol('\leftrightarrow',    "\N{LEFT RIGHT ARROW}",'LeftRightArrow');
+DefSymbol('\Leftrightarrow',    "\N{LEFT RIGHT DOUBLE ARROW}",'LeftRightDoubleArrow');
+DefSymbol('\mapsto',            "\N{RIGHTWARDS ARROW FROM BAR}",'MapsTo');
+DefSymbol('\hookleftarrow',     "\N{LEFTWARDS ARROW WITH HOOK}",'LeftArrowHook');
+DefSymbol('\leftharpoonup',     "\N{LEFTWARDS HARPOON WITH BARB UPWARDS}",'LeftHarpoonBarbUp');
+DefSymbol('\leftharpoondown',   "\N{LEFTWARDS HARPOON WITH BARB DOWNWARDS}",'LeftHarpoonBarbDown');
+DefSymbol('\rightleftharpoons', "\N{RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON}",'RightHarpoonLeftHarpoon');
+
+DefSymbol('\longleftarrow',     "\N{LONG LEFTWARDS ARROW}",'LongLeftArrow');
+DefSymbol('\Longleftarrow',     "\N{LONG LEFTWARDS DOUBLE ARROW}",'LongLeftDoubleArrow');
+DefSymbol('\longrightarrow',    "\N{LONG RIGHTWARDS ARROW}",'LongRightArrow');
+DefSymbol('\Longrightarrow',    "\N{LONG RIGHTWARDS DOUBLE ARROW}",'LongRightDoubleArrow');
+DefSymbol('\longleftrightarrow',"\N{LONG LEFT RIGHT ARROW}",'LongLeftRightArrow');
+DefSymbol('\Longleftrightarrow',"\N{LONG LEFT RIGHT DOUBLE ARROW}",'LongLeftRightDoubleArrow');
+DefSymbol('\longmapsto',        "\N{LONG RIGHTWARDS ARROW FROM BAR}",'LongRightArrowBar');
+DefSymbol('\hookrightarrow',    "\N{RIGHTWARDS ARROW WITH HOOK}",'RightArrowHook');
+DefSymbol('\rightharpoonup',    "\N{RIGHTWARDS HARPOON WITH BARB UPWARDS}",'RightHarpoonBarbUp');
+DefSymbol('\rightharpoondown',  "\N{RIGHTWARDS HARPOON WITH BARB DOWNWARDS}",'RightHarpoonBarbDown');
+DefSymbol('\leadsto',           "\N{RIGHTWARDS WAVE ARROW}",'RightWaveArrow');
+
+DefSymbol('\uparrow',           "\N{UPWARDS ARROW}",'UpArrow');
+DefSymbol('\Uparrow',           "\N{UPWARDS DOUBLE ARROW}",'UpDoubleArrow');
+DefSymbol('\downarrow',         "\N{DOWNWARDS ARROW}",'DownArrow');
+DefSymbol('\Downarrow',         "\N{DOWNWARDS DOUBLE ARROW}",'DownDoubleArrow');
+DefSymbol('\updownarrow',       "\N{UP DOWN ARROW}",'UpDownArrow');
+DefSymbol('\Updownarrow',       "\N{UP DOWN DOUBLE ARROW}",'UpDownDoubleArrow');
+DefSymbol('\nearrow',           "\N{NORTH EAST ARROW}",'NEArrow');
+DefSymbol('\searrow',           "\N{SOUTH EAST ARROW}",'SEArrow');
+DefSymbol('\swarrow',           "\N{SOUTH WEST ARROW}",'SWArrow');
+DefSymbol('\nwarrow',           "\N{NORTH WEST ARROW}",'NWArrow');
+
+#======================================================================
+# LaTeX; Table 3.7. Miscellaneous Symbols, p.43
+#======================================================================
+# Some should be differential operators, qualifiers, ...
+DefSymbol('\aleph',    "\N{ALEF SYMBOL}",'aleph');
+DefSymbol('\hbar',     "\N{PLANCK CONSTANT OVER TWO PI}",'hbar');
+DefSymbol('\imath',    "imath",'i'); # Unicode?
+DefSymbol('\jmath',    "jmath",'j'); # Unicode?
+DefSymbol('\ell',      "\N{SCRIPT SMALL L}",'ell');
+DefSymbol('\wp',       "\N{SCRIPT CAPITAL P}",'Weierstrassp');
+DefSymbol('\Re',       "Re",'RealPart'); # Unicode?
+DefSymbol('\Im',       "Im",'ImaginaryPart'); # Unicode?
+DefSymbol('\mho',      "\N{INVERTED OHM SIGN}",'InvertedOhm');
+
+DefSymbol('\prime',    "\N{PRIME}",'prime');
+DefSymbol('\emptyset', "\N{EMPTY SET}",'EmptySet');
+DefSymbol('\nabla',    "\N{NABLA}",'Nabla');
+DefSymbol('\surd',     "\N{SQUARE ROOT}",'Surd');
+DefSymbol('\top',      "\N{DOWN TACK}",'DownTack');
+DefSymbol('\bot',      "\N{UP TACK}",'UpTack');
+DefSymbol('\|',        "\N{PARALLEL TO}",'Parallel');
+DefSymbol('\angle',    "\N{ANGLE}",'Angle');
+
+DefSymbol('\forall',   "\N{FOR ALL}",'ForAll');
+DefSymbol('\exists',   "\N{THERE EXISTS}",'Exists');
+DefSymbol('\neg',      "\N{NOT SIGN}",'Not');
+DefSymbol('\flat',     "\N{MUSIC FLAT SIGN}",'Flat');
+DefSymbol('\natural',  "\N{MUSIC NATURAL SIGN}",'Natural');
+DefSymbol('\sharp',    "\N{MUSIC SHARP SIGN}",'Sharp');
+DefSymbol('\backslash',"\N{REVERSE SOLIDUS}",'Backslash');
+DefSymbol('\partial',  "\N{PARTIAL DIFFERENTIAL}",'Partial');
+
+DefSymbol('\@not@exists', "\N{THERE DOES NOT EXIST}", 'NotExists', untex=>'\not\exists');
+DefMathFilter('\not\exists','\@not@exists');
+
+DefSymbol('\infty',    "\N{INFINITY}",'Infinity');
+DefSymbol('\Box',      "\N{WHITE SQUARE}",'Box');
+DefSymbol('\Diamond',  "\N{WHITE DIAMOND}",'Diamond');
+DefSymbol('\triangle', "\N{WHITE UP-POINTING TRIANGLE}",'UpTriangle');
+DefSymbol('\clubsuit', "\N{BLACK CLUB SUIT}",'ClubSuit');
+DefSymbol('\diamondsuit',"\N{WHITE DIAMOND SUIT}",'DiamondSuit');
+DefSymbol('\heartsuit',"\N{WHITE HEART SUIT}",'HeartSuit');
+DefSymbol('\spadesuit',"\N{BLACK SPADE SUIT}",'SpadeSuit');
+
+#======================================================================
+# LaTeX; Table 3.8. Variable-sized Symbols, p.44.
+#======================================================================
+#DefSymbol('\sum',      "\N{N-ARY SUMMATION}",'Summation');
+#DefSymbol('\prod',     "\N{N-ARY PRODUCT}",'Product');
+#DefSymbol('\coprod',   "\N{N-ARY COPRODUCT}",'Coproduct');
+#DefSymbol('\int',      "\N{INTEGRAL}",'Integral');
+#DefSymbol('\oint',     "\N{CONTOUR INTEGRAL}",'ContourIntegral');
+DefSymbol('\bigcap',   "\N{N-ARY INTERSECTION}",'NAryIntersection');
+DefSymbol('\bigcup',   "\N{N-ARY UNION}",'NAryUnion');
+DefSymbol('\bigsqcup', "\N{SQUARE CUP}",'NArySquareCup'); # N-ARY ???
+DefSymbol('\bigvee',   "\N{N-ARY LOGICAL OR}",'NAryOr');
+DefSymbol('\bigwedge', "\N{N-ARY LOGICAL AND}",'NAryAnd');
+DefSymbol('\bigodot',  "\N{CIRCLED DOT OPERATOR}",'NAryCircledDot'); # N-ARY ?
+DefSymbol('\bigotimes',"\N{CIRCLED TIMES}",'NAryCircledTimes');# N-ARY ?
+DefSymbol('\bigoplus', "\N{CIRCLED PLUS}",'NAryCircledPlus');# N-ARY ?
+DefSymbol('\biguplus', "\N{CIRCLED MINUS}",'NAryCircledMinus');# N-ARY ?
+
+
+DefSymbol('\smallint',"\N{INTEGRAL}",'Integral', style=>'small');
+
+DefConstructor('\limits',  sub { $_[0]->getNode->lastChild->setAttribute(stackscripts=>'yes'); });
+DefConstructor('\nolimits',sub { $_[0]->getNode->lastChild->setAttribute(stackscripts=>'no'); });
+# Wrong timing!
+#DefConstructor('\displaylimits',sub { ...
+
+sub setDefaultLimits {
+  my($stomach,$whatsit)=@_;
+#  (stackscripts => ($stomach->getMathStyle eq 'display' ? 'yes' : 'no')); }
+  $whatsit->setProperty(stackscripts => ($stomach->getMathStyle eq 'display' ? 'yes' : 'no')); 
+  return; }
+sub setDefaultNolimits {
+  my($stomach,$whatsit)=@_;
+  $whatsit->setProperty(stackscripts => 'no');
+  return; }
+
+DefConstructor('\sum',
+	       "<XMTok name='Summation' stackscripts='%stackscripts'>\N{N-ARY SUMMATION}</XMTok>",
+	       afterDigest=>\&setDefaultLimits, mathclass=>'symbol');
+DefConstructor('\prod',
+	       "<XMTok name='Product' stackscripts='%stackscripts'>\N{N-ARY PRODUCT}</XMTok>",
+	       afterDigest=>\&setDefaultLimits, mathclass=>'symbol');
+DefConstructor('\coprod',
+	       "<XMTok name='Coproduct' stackscripts='%stackscripts'>\N{N-ARY COPRODUCT}</XMTok>",
+	       afterDigest=>\&setDefaultLimits, mathclass=>'symbol');
+DefConstructor('\int', 
+	       "<XMTok name='Integral' stackscripts='%stackscripts'>\N{INTEGRAL}</XMTok>",
+	       afterDigest=>\&setDefaultNolimits, mathclass=>'symbol');
+DefConstructor('\oint', 
+	       "<XMTok name='ContourIntegral' stackscripts='%stackscripts'>\N{CONTOUR INTEGRAL}</XMTok>",
+	       afterDigest=>\&setDefaultNolimits, mathclass=>'symbol');
+
+#======================================================================
+# LaTeX; Table 3.9. Log-like Functions, p.44.
+#======================================================================
+# NOTE: Classifying some as TRIGFUNCTION might clarify 'pi' ambiguities ?
+DefSymbol('\arccos', "arccos");
+DefSymbol('\arcsin', "arcsin");
+DefSymbol('\arctan', "arctan");
+DefSymbol('\arg',    "arg");
+
+DefSymbol('\cos',    "cos");
+DefSymbol('\cosh',   "cosh");
+DefSymbol('\cot',    "cot");
+DefSymbol('\coth',   "coth");
+
+DefSymbol('\csc',    "csc");
+DefSymbol('\deg',    "deg");
+DefSymbol('\det',    "det");
+DefSymbol('\dim',    "dim");
+
+DefSymbol('\exp',    "exp");
+DefSymbol('\gcd',    "gcd");
+DefSymbol('\hom',    "hom");
+DefSymbol('\inf',    "inf");
+
+DefSymbol('\ker',    "ker");
+DefSymbol('\lg',     "lg");
+DefSymbol('\lim',    "lim");
+DefSymbol('\liminf', "liminf");
+
+DefSymbol('\limsup', "limsup");
+DefSymbol('\ln',     "ln");
+DefSymbol('\log',    "log");
+DefSymbol('\max',    "max");
+
+DefSymbol('\min',    "min");
+DefSymbol('\Pr',     "Pr");
+DefSymbol('\sec',    "sec");
+DefSymbol('\sin',    "sin");
+
+DefSymbol('\sinh',   "sinh");
+DefSymbol('\sup',    "sup");
+DefSymbol('\tan',    "tan");
+DefSymbol('\tanh',   "tanh");
+
+#======================================================================
+# LaTeX; Table 3.10. Delimiters, p.47
+#======================================================================
+
+DefSymbol('\{',        '{');
+DefSymbol('\lbrace',   "{");
+DefSymbol('\lbrack',   "[");
+DefSymbol('\lfloor',   "\N{LEFT FLOOR}", 'LeftFloor');
+DefSymbol('\lceil',    "\N{LEFT CEILING}", 'LeftCeiling');
+DefSymbol('\langle',   "\N{LEFT-POINTING ANGLE BRACKET}", 'LeftAngle');
+DefSymbol('\}',        '}');
+DefSymbol('\rbrace',   "}");
+DefSymbol('\rbrack',   "]");
+DefSymbol('\rfloor',   "\N{RIGHT FLOOR}", 'RightFloor');
+DefSymbol('\rceil',    "\N{RIGHT CEILING}", 'RightCeiling');
+DefSymbol('\rangle',   "\N{RIGHT-POINTING ANGLE BRACKET}", 'RightAngle');
+
+DefConstructor('\left Token ',"<XMWrap POS='OPEN'>#1</XMWrap>");
+DefConstructor('\right Token ',"<XMWrap POS='CLOSE'>#1</XMWrap>");
+
+# Defined in e-Tex and other places.
+DefConstructor('\middle Token ',"<XMWrap POS='MIDDLE' style='stretchy'>#1</XMWrap>");
+
+DefConstructor('\phantom{}',"<XMHint name='phantom'/>");
+
+DefConstructor('\bigl Token',"<XMWrap POS='OPEN' style='big'>#1</XMWrap>");
+DefConstructor('\bigm Token',"<XMWrap POS='MIDDLE' style='big'>#1</XMWrap>");
+DefConstructor('\bigr Token',"<XMWrap POS='CLOSE' style='big'>#1</XMWrap>");
+DefConstructor('\Bigl Token',"<XMWrap POS='OPEN' style='Big'>#1</XMWrap>");
+DefConstructor('\Bigm Token',"<XMWrap POS='MIDDLE' style='Big'>#1</XMWrap>");
+DefConstructor('\Bigr Token',"<XMWrap POS='CLOSE' style='Big'>#1</XMWrap>");
+DefConstructor('\biggl Token',"<XMWrap POS='OPEN' style='bigg'>#1</XMWrap>");
+DefConstructor('\biggm Token',"<XMWrap POS='MIDDLE' style='bigg'>#1</XMWrap>");
+DefConstructor('\biggr Token',"<XMWrap POS='CLOSE' style='bigg'>#1</XMWrap>");
+DefConstructor('\Biggl Token',"<XMWrap POS='OPEN' style='Bigg'>#1</XMWrap>");
+DefConstructor('\Biggm Token',"<XMWrap POS='MIDDLE' style='Bigg'>#1</XMWrap>");
+DefConstructor('\Biggr Token',"<XMWrap POS='CLOSE' style='Bigg'>#1</XMWrap>");
+
+# ?
+DefConstructor('\big Token',"<XMWrap style='big'>#1</XMWrap>");
+DefConstructor('\Big Token',"<XMWrap style='Big'>#1</XMWrap>");
+DefConstructor('\bigg Token',"<XMWrap style='bigg'>#1</XMWrap>");
+DefConstructor('\Bigg Token',"<XMWrap style='Bigg'>#1</XMWrap>");
+
+#DefSymbol('\vert','|','VerticalBar');
+DefSymbol('\vert','|');
+DefSymbol('\Vert',"\N{PARALLEL TO}",'Parallel');
+
+#======================================================================
+# Math Accents.
+#======================================================================
+# LaTeX; Table 3.11. Math Mode Accents, p.50.
+# Are these all TeX (or LaTeX)?
+
+foreach my $entry (['\hat',       "\N{CIRCUMFLEX ACCENT}",'OverHat'],
+		   ['\check',     "\N{CHECK MARK}",       'OverCheck'],
+		   ['\breve',     "\N{BREVE}",            'OverBreve'],
+		   ['\acute',     "\N{ACUTE ACCENT}",     'OverAcute'],
+		   ['\grave',     "\N{GRAVE ACCENT}",     'OverGrave'],
+		   ['\tilde',     "\N{TILDE}",            'OverTilde'],
+		   ['\bar',       "\N{MINUS SIGN}",       'OverBar'],
+		   ['\vec',       "\N{RIGHTWARDS ARROW}", 'OverArrow'],
+		   ['\dot',       "\N{DOT ABOVE}",        'OverDot'],
+		   ['\ddot',      "\N{DIAERESIS}",        'OverDoubleDot'],
+		   ['\overline',  "\N{MINUS SIGN}",       'OverLine'],
+		   ['\overbrace', "\N{PRESENTATION FORM FOR VERTICAL LEFT CURLY BRACKET}", 'OverBrace'],
+		   ['\widehat',   "\N{CIRCUMFLEX ACCENT}",'OverHat'],
+		   ['\widetilde', "\N{TILDE}",            'OverTilde'],
+		   # Actually from amsmath, but...
+		   ['\dddot',      "\N{DOT ABOVE}\N{DOT ABOVE}\N{DOT ABOVE}", 'OverTripleDot'],
+		   ['\ddddot',     "\N{DOT ABOVE}\N{DOT ABOVE}\N{DOT ABOVE}\N{DOT ABOVE}", 'OverQuadrupleDot']
+){
+  my($cmd,$unicode,$name)=@$entry;
+  DefConstructor($cmd."{}",
+		 "<XMApp><XMTok name='$name' POS='OVERACCENT'>$unicode</XMTok><XMArg>#1</XMArg></XMApp>",
+		 beforeDigest=>sub { $_[0]->requireMath; }); }
+foreach my $entry (['\underline', "\N{MINUS SIGN}",       'UnderLine'],
+		   ['\underbrace',"\N{PRESENTATION FORM FOR VERTICAL RIGHT CURLY BRACKET}", 'UnderBrace']){
+  my($cmd,$unicode,$name)=@$entry;
+  DefConstructor($cmd."{}", 
+		 "<XMApp><XMTok name='$name' POS='UNDERACCENT'>$unicode</XMTok><XMArg>#1</XMArg></XMApp>",
+		 beforeDigest=>sub { $_[0]->requireMath; }); }
+
+#**********************************************************************
+# Stray stuff .... where to ?
+#**********************************************************************
+# These 3 should have some `name' assigned ... but what???
+
+DefConstructor('\mathrel{}',"<XMWrap POS='RELOP'>#1</XMWrap>");
+DefConstructor('\mathop{}', "<XMWrap POS='FUNCTION'>#1</XMWrap>");
+
+
+DefMacro('\hiderel{}', "#1"); # Just ignore, for now...
+# ???? this ain't latex...
+# See amsmath's \genfrac
+#DefConstructor('\stacked{}{}","<STACKED/>");
+
+DefConstructor('\hbox{}', "<text>#1</text>", mode=>'text');
+
+DefConstructor('\quad', "\N{EM QUAD}",
+	       mathConstructor=>"<XMHint name='quad'/>");
+DefConstructor('\qquad',"\N{EM QUAD}\N{EM QUAD}",
+	       mathConstructor=>"<XMHint name='qquad'/>");
+
+DefSymbol('\to',"\N{RIGHTWARDS ARROW}",'RightArrow');	# ??? a bit more explicitly relation-like?
+
+
+# TeX's ligatures handled by Filters.
+DefTextFilter("---","\N{EM DASH}");
+DefTextFilter("--","\N{EN DASH}"); # NOTE: With digits before & aft => \N{FIGURE DASH}
+DefTextFilter("``","\N{LEFT DOUBLE QUOTATION MARK}");
+DefTextFilter("''","\N{RIGHT DOUBLE QUOTATION MARK}");
+
+DefConstructor('\TeX', 'TeX');
+DefConstructor('\i',"\N{LATIN SMALL LETTER DOTLESS I}");
+DefConstructor('\j',"j");	# Apparently, no Unicode equivalent...
+
+
+DefConstructor('\>',"<XMHint name='\>'/>");	# ??
+
+#**********************************************************************
+# LaTeX Hook
+#**********************************************************************
+# No, \documentclass isn't really a primitive -- It's not even TeX!
+# But we define it here so it will automatically load whatever class definition,
+# and indirectly (hopefully), the LaTeX Package.
+our %ignorable_classoptions 
+  = map(($_=>1),qw(10pt 11pt 12pt 
+		   letterpaper legalpaper executivepaper a4paper a5paper b5paper
+		   landscape final draft oneside twoside
+		   openright openany onecolumn twocolumn 
+		   notitlepage titlepage openbib leqno fleqn));
+
+DefConstructor('\documentclass[]{}',"<?latexml class='#2' ?#1(options='#1')?>",
+  afterDigest=>sub {
+    my($stomach,$whatsit)=@_;
+    my($options,$class)=$whatsit->getArgs;
+    $options = $options->untex if defined $options;
+    my @options = grep( !$ignorable_classoptions{$_},  split(/,\s*/, $options||''));
+    Warn("Unrecognized options ".join(', ',@options)." ignored") if @options;
+    $stomach->input($class); 
+    return;});
+
+#**********************************************************************
+# Support for Declarations & Presentation/Semantic Duality
+#**********************************************************************
+# \DUAL{PartOfSpeech}{semantic}{presentation} 
+#  Handles untex so that $whatsit->untex('semantic') or 'presentation' can
+# select the appropriate branch.  Also needs handlers to select which branch
+# is used in math parsing, etc.
+DefConstructor('\DUAL{}{}{}',
+	       "<XMDual POS='#1'>#2<XMWrap>#3</XMWrap></XMDual>",
+	       untex=>'#3');
+
+DefConstructor('\FCN{}',       "<XMWrap POS='FUNCTION'>#1</XMWrap>", untex=>'#1');
+DefConstructor('\POS{}{}', "<XMWrap POS='#1'>#2</XMWrap>",       untex=>'#2');
+
+# NOTE: work through this systematically!
+DefConstructor('\@SYMBOL{}', "<XMWrap POS='ID'>#1</XMWrap>", untex=>'#1');
+DefConstructor('\@APPLY{}',  "<XMApp>#1</XMApp>", untex=>'#1');
+DefConstructor('\@WRAP{}',   "<XMWrap>#1</XMWrap>", untex=>'#1');
+DefConstructor('\@TOKEN{}',   "<XMTok name='#1'/>", untex=>'');
+DefConstructor('\@ARG{}{}',"<XMArg rule='#1'>#2</XMArg>", untex=>'#2');
+DefConstructor('\@APPLYFUNCTION',"<XMTok name='ApplyFunction'/>", untex=>'');
+DefConstructor('\@INVISIBLETIMES',"<XMTok name='InvisibleTimes'/>", untex=>'');
+
+#**********************************************************************
+1;

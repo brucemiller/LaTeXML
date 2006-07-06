@@ -1,0 +1,64 @@
+\documentclass{article}
+\def\eatone#1{}
+\def\eatnone#1{#1}
+\newcommand{\onearg}[1]{(onearg: #1)}
+\newcommand{\twoarg}[2]{(twoarg: #1 ; #2)}
+\newcommand{\twoargopt}[2][missing]{(twoargopt: #1 ; #2)}
+\def\textwoarg#1#2{(textwoarg: #1 ; #2)}
+\begin{document}
+\section{Testing}
+
+Testing raw tex macros:
+Expect inline math: xx\eatone$$a+b\eatone$$xx
+
+Expect display math: xx\eatnone$$a+b\eatnone$$xx
+
+Expect 2 empty maths: xx$ $a+b$ $xx
+
+Testing latex macros
+Expect (onearg: one) \onearg{one}
+Expect (twoarg: one two) \twoarg{one}{two}
+Expect (twoargopt: one ; two) \twoargopt[one]{two}
+Expect (twoargopt: missing ; two)\twoargopt{two}
+
+
+Testing whitespace:
+Expect (twoarg: a ; b) \twoarg
+    {a}   
+    {b}   
+Expect (textwoarg: a ; b) \textwoarg
+    {a}   
+    {b}   
+Expect (twoargopt: a ; b) \twoargopt
+    [a]
+    {b}
+
+\expandafter\def\expandafter\baz\eatone##1{(#1)}
+
+Expecting (beep) : \baz{beep}
+
+
+\expandafter\def\expandafter\bloop\expandafter{\baz{foo}}
+
+Expecting (foo) : \bloop
+
+
+%\expandafter\def\expandafter\blorp\expandafter{\textrm{foo}}
+%\blorp
+
+%\section{Error inside arg \stoopid undefined macro}
+\def\inside#1{[[#1]]}
+\def\outside{\inside{x}}
+\def\deftoo#1{{\def\inside##1{(#1(##1)#1)}\outside}}
+Expect [[x]] : \outside
+Expect (y(x)y) : \deftoo{y}
+Expect [[x]] : \outside
+
+
+\def\now#1{NOW #1}
+\def\later#1{LATER #1}
+\edef\expanded{\now{a} \later{b} \noexpand\later{c}}
+\def\later#1{MUCHLATER #1}
+Expect NOW a LATER b MUCHLATER c: \expanded
+
+\end{document}

@@ -1,0 +1,21 @@
+\documentclass{article}
+\def\beginfoo{\bgroup}
+\def\endfoo{\egroup}
+\begin{document}
+\section{Testing Over}
+$ a b c \over d e f $
+
+$ a {b c \over d e} f $
+
+$ a {b c \over d e\egroup f $
+
+$ a \bgroup b c \over d e\egroup f $
+
+$ a \beginfoo b c \over d e\endfoo f $
+
+$ a { b c \over d \over e} f $
+$ \{a\} $
+$ \left\{a\right\} $
+% Following isn't proper TeX
+% $ \left\\{}a\right{\}} $
+\end{document}
