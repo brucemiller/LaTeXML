@@ -14,7 +14,9 @@ package LaTeXML::Error;
 use strict;
 use Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT = ( qw( &Error &TypeError &CheckOptions &Message &Warn &Debugging &SetDebugging));
+our @EXPORT = ( qw( &Error  &Warn &SalvageError &TypeError &CheckOptions
+		    &Message &NoteProgress
+		    &Debugging &SetDebugging));
 
 #**********************************************************************
 # Error reporting
@@ -38,12 +40,22 @@ sub Error {
     chomp($msg);
     $msg = join('',"\nERROR: ", $msg, "\n", ($context ? $context."\n" : ''));
 #    $msg = Carp::longmess($msg);
-    $msg .= "Stack Trace:\n".LaTeXML::Error::stacktrace();
+    $msg .= "Stack Trace:\n".LaTeXML::Error::stacktrace()
+      if $VERBOSITY > 0;
   }
   local $LaTeXML::Error::IN_ERROR_HANDLER=1;
   die $msg; }
 
-sub Message { print STDERR @_,"\n" unless $VERBOSITY < 0; }
+our $NEED_CR=0;
+
+sub Message { 
+  return if $VERBOSITY < 0;
+  print STDERR "\n" if $NEED_CR; $NEED_CR=0;
+  print STDERR @_,"\n"; }
+
+sub NoteProgress { 
+  return if $VERBOSITY < 0;
+  print STDERR @_; }
 
 sub CheckOptions {
   my($operation,$allowed,%options)=@_;
@@ -53,16 +65,28 @@ sub CheckOptions {
 
 # Should it print context ??
 sub Warn    { 
-  return if $VERBOSITY < 0;
+  return if $VERBOSITY < -1;
   my $context = getContextMessage(1);
   print STDERR "\nWARNING: ",@_,"\n" 
     . ($context ? $context."\n" : '');
 }
 
+sub SalvageError  { 
+  return if $VERBOSITY < -1;
+  my $context = getContextMessage(1);
+  if(Debugging('nosalvage')){
+    Error(@_); }
+  else {
+    print STDERR  "\nSALVAGEABLE ERROR: ",@_,"\n" 
+      . ($context ? $context."\n" : '')
+	."Further problems likely...\n"; }
+}
+
 sub getContextMessage {
   my($short)=@_;
-  ($LaTeXML::STOMACH   ? "During digestion: ".$LaTeXML::STOMACH->getContext($short) : '')
-    .($LaTeXML::INTESTINE ? "During DOM construction: ".$LaTeXML::INTESTINE->getContext($short) : ''); }
+  if ($LaTeXML::INTESTINE){ $LaTeXML::INTESTINE->getContext($short); }
+  elsif($LaTeXML::STOMACH){ $LaTeXML::STOMACH->getContext($short); }
+  else { ''; }}
 
 # Possible debugging levels:
 #   quiet : No debugging info, nor warning messages.
@@ -73,10 +97,13 @@ sub SetDebugging {
   my($spec)=@_;
   if(!$spec){ $VERBOSITY=0; }
   elsif($spec =~ /quiet/i){ $VERBOSITY=-1; }
+  elsif($spec =~ /silent/i){ $VERBOSITY=-2; }
   else {
     $VERBOSITY=1;
     map( $DEBUGKEYS{$_}=1, split('\|',$spec));
-    $VERBOSITY=2 if $DEBUGKEYS{verbose}; }
+    $VERBOSITY=2 if $DEBUGKEYS{verbose}; 
+    # And, set fancy error handler for ANY die!
+    $SIG{__DIE__} = \&Error; }
 }
 
 # If $level is empty, then return 1 if we're debugging at all.
@@ -88,7 +115,7 @@ sub TypeError {
   my($thing,$type)=@_;
   $type = '?' unless defined $type;
   $thing = '<nothing>' unless defined $thing;
-  Error("Internal error:\nExpected \"$type\", got $thing"); }
+  Error("Expected \"$type\", got $thing"); }
 
 #======================================================================
 # This portion adapted from Carp; simplified (but hopefully still correct),

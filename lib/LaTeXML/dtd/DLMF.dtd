@@ -64,7 +64,7 @@
 <!ELEMENT equationgroup (equation | equationmix | origref | constraint | text)*>
 <!ATTLIST equationgroup
           label ID #IMPLIED>
-<!ELEMENT constraint (#PCDATA | XMath)*>
+<!ELEMENT constraint (#PCDATA | Math)*>
 <!ATTLIST constraint 
           hidden (yes|no) #IMPLIED>
 <!ELEMENT email (#PCDATA | %Inline.mix;)*>

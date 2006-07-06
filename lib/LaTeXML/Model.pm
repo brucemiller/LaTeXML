@@ -14,8 +14,7 @@ package LaTeXML::Model;
 use strict;
 use XML::LibXML;
 use XML::LibXML::Common qw(:libxml);
-use LaTeXML::Error;
-use LaTeXML::Definition;
+use LaTeXML::Global;
 use LaTeXML::Object;
 use LaTeXML::Util::Pathname;
 our @ISA = qw(LaTeXML::Object);
@@ -28,17 +27,19 @@ sub new {
 sub getRootName { $_[0]->{roottag}; }
 sub getPublicID { $_[0]->{public_id}; }
 sub getSystemID { $_[0]->{system_id}; }
+sub getDefaultNamespace { $_[0]->{defaultNamespace}; }
 
 #**********************************************************************
 # DocType
 #**********************************************************************
 
 sub setDocType {
-  my($self,$roottag,$publicid,$systemid)=@_;
+  my($self,$roottag,$publicid,$systemid,$namespace)=@_;
   $$self{roottag}=$roottag;
   $self->setTagProperty('_Document_','model',{$roottag=>1});
   $$self{public_id}   =$publicid;
   $$self{system_id}   =$systemid;
+  $$self{defaultNamespace}=$namespace;
 }
 # Hmm, rather than messing with roottag, we could extract all
 # possible root tags from the doctype, then put the tag of the
@@ -116,25 +117,32 @@ sub loadDocType {
   my($self,$searchpaths)=@_;
   $$self{doctype_loaded}=1;
   if(!$$self{system_id}){
-    Message("No DTD declared...punting!");
+    Warn("No DTD declared...punting!");
     $$self{permissive}=1;	# Actually, they could have declared all sorts of Tags....
     return; }
   # Parse the DTD
   foreach my $dir (@INC){	# Load catalog (all, 1st only ???)
     next unless -f "$dir/LaTeXML/dtd/catalog";
-    Message("Loading XML Catalog $dir/LaTeXML/dtd/catalog") if Debugging();
+    NoteProgress("\n(Loading XML Catalog $dir/LaTeXML/dtd/catalog)");
     XML::LibXML->load_catalog("$dir/LaTeXML/dtd/catalog"); 
     last; }
   my $dtd = XML::LibXML::Dtd->new($$self{public_id},$$self{system_id});
-  if(!$dtd){ # Couldn't find dtd in catalog, try finding the file. (search path?)
-    my $dtdfile = pathname_find($$self{system_id},paths=>$searchpaths);
+  if($dtd){
+    NoteProgress("\n(Loaded DTD for $$self{public_id} $$self{system_id})"); }
+  else { # Couldn't find dtd in catalog, try finding the file. (search path?)
+    my @paths = @$searchpaths;
+    @paths = (map("$_/dtd",@paths),@paths);
+    my $dtdfile = pathname_find($$self{system_id},paths=>[@paths]);
     if($dtdfile){
       { local $/=undef;
+	NoteProgress("\n(Loading DTD from $dtdfile");
 	open(DTD,$dtdfile) || Error("Couldn't read DTD from $dtdfile");
 	my $dtdtext = <DTD>;
 	close(DTD);
-	$dtd = XML::LibXML::Dtd->parse_string($dtdtext); }}}
-  Error("Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed") unless $dtd;
+	$dtd = XML::LibXML::Dtd->parse_string($dtdtext); 
+	Error("Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed") unless $dtd;
+	NoteProgress(")"); }}}
+  Error("Couldn't find DTD \"$$self{public_id}\" \"$$self{system_id}\" failed") unless $dtd;
   Message("Analyzing DTD \"$$self{public_id}\" \"$$self{system_id}\"") if Debugging();
   # Extract all possible children for each tag.
   foreach my $node ($dtd->childNodes()){
@@ -226,10 +234,10 @@ Return the public identifier for the document type.
 Return the system identifier for the document type
 (typically a filename for the DTD).
 
-=item C<< $model->setDocType($rootname,$publicid,$systemid); >>
+=item C<< $model->setDocType($rootname,$publicid,$systemid,$namespace); >>
 
 Sets the root element name and the public and system identifiers
-for the desired document type.
+for the desired document type, as well as the default namespace URI.
 
 =item C<< $value = $model->getTagProperty($tag,$property); >>
 

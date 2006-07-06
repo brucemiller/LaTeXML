@@ -36,17 +36,15 @@ package LaTeXML::Post::HTMLTable;
 use strict;
 use LaTeXML::Util::LibXML;
 use Text::Balanced;
-
-sub new {
-  my($class,%options)=@_;
-  bless {verbosity            => $options{verbosity}||0,
-	},$class; }
+use LaTeXML::Post;
+our @ISA = (qw(LaTeXML::Post::Processor));
 
 #**********************************************************************
 sub process {
-  my($self,$doc,%options)=@_;
-  $$self{verbosity} = $options{verbosity}||0;
-  foreach my $tabular ($self->find_tabular_nodes($doc)){
+  my($self,$doc)=@_;
+  my @tabs = $self->find_tabular_nodes($doc);
+  $self->Progress("Reformatting ".scalar(@tabs)." tables");
+  foreach my $tabular (@tabs){
     $self->process_tabular($tabular); }
   $doc; }
 
@@ -61,7 +59,7 @@ sub process {
 # Default is look for XMath elements with a tex attribute.
 sub find_tabular_nodes {
   my($self,$doc)=@_;
-  $doc->findnodes('.//tabular'); }
+  $doc->getElementsByTagNameNS($self->getNamespace,'tabular'); }
 
 #**********************************************************************
 # Closest HTML frame value for RLBT (in binary)
@@ -71,7 +69,7 @@ our @framespec=qw(void above below hsides
 		  vsides box box box);
 sub process_tabular {
   my($self,$tabular)=@_;
-
+  my $nsURI = $self->getNamespace;
   # --- Analyze Table ----
   # Split columns & rows into groups separated by | or hlines, resp.
   # Each is alternating list of counts (of hlines or |) and arrays of alignments or rows.
@@ -108,8 +106,10 @@ sub process_tabular {
   $tabular->setAttribute('frame',$frame);
   $tabular->setAttribute('rules',$rules);
   foreach my $row (@rows){
+    # NOTE: There's some kind of namespace screwup here.
+    $row->setNamespace($nsURI);	# !?!?!?!?
     my $j=0;
-    foreach my $cell ($row->getChildrenByTagName('td')){
+    foreach my $cell ($row->getChildrenByTagNameNS($nsURI,'td')){
       if(my $span = $cell->getAttribute('colspan')){ # From \multicolumn
 	$cell->setAttribute('align',map(@$_, grep(ref $_, group_cols($cell->getAttribute('pattern')))));
 	$cell->removeAttribute('pattern');
@@ -121,14 +121,14 @@ sub process_tabular {
   if($rules eq 'groups'){
     foreach my $cols (grep(ref $_, @colgroups)){
       if(!grep($cols->[0] ne $_, @$cols)){ # All alignments are same?
-	append_nodes($tabular,new_node('colgroup',undef,span=>scalar(@$cols),align=>$cols->[0])); }
+	append_nodes($tabular,new_node($nsURI,"colgroup",undef,span=>scalar(@$cols),align=>$cols->[0])); }
       else {
-	append_nodes($tabular,new_node('colgroup',[map(new_node('col',undef,align=>$_),@$cols)])); }}}
+	append_nodes($tabular,new_node($nsURI,"colgroup",[map(new_node($nsURI,"col",undef,align=>$_),@$cols)])); }}}
 
   # Finally, add the rows back in, possibly grouped into tbody's
   if($rules eq 'groups'){
     # Here'd be a good place to guess whether the 1st group might be a header????
-    append_nodes($tabular,map(new_node('tbody',$_), grep(ref $_, @rowgroups))); }
+    append_nodes($tabular,map(new_node($nsURI,"tbody",$_), grep(ref $_, @rowgroups))); }
   else {
     append_nodes($tabular, @rows); }
 }

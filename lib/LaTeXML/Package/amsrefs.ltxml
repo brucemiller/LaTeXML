@@ -11,11 +11,9 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool::amsrefs;
-Use;
 use charnames ":full";
-use LaTeXML::Token;
 use LaTeXML::Package;
-use LaTeXML::Box;
+
 #**********************************************************************
 # \bib{key}{type}{keyval pairs}
 
@@ -33,8 +31,8 @@ our %equivs = (place=>'address', year=>'date');
 DefPrimitive('\bib{any}{any}', sub {
   my($stomach,$key,$type)=@_;
   my $gullet = $stomach->getGullet;
-  $key = $stomach->digestTokens($key);
-  $type = $stomach->digestTokens($type);
+  $key = $stomach->digest($key);
+  $type = $stomach->digest($type);
   Error("Missing key-value pairs") unless $gullet->ifNext('{',CC_BEGIN);
   $gullet->skipSpaces;
   my $defn = $stomach->getMeaning(T_CS('\parsed@bib'));
@@ -44,9 +42,9 @@ DefPrimitive('\bib{any}{any}', sub {
     $field =~ s/\s//g; $field=lc($field);
     $field=$equivs{$field} if $equivs{$field};
     if($field =~ /url$/){
-      $value = $stomach->digestTokens($gullet->readSemiverbatim,1); }
+      $value = $stomach->digest($gullet->readSemiverbatim,1); }
     else {
-      $value = $stomach->digestTokens($gullet->readArg); }
+      $value = $stomach->digest($gullet->readArg); }
     push(@fields,[$field,$value]);
     $gullet->skipSpaces; 
     $gullet->readMatch(T_OTHER(','));

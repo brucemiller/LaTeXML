@@ -24,7 +24,6 @@
 #**********************************************************************
 package LaTeXML::Package::Pool;
 use strict;
-use LaTeXML::Token;
 use LaTeXML::Package;
 use charnames ":full";
 no warnings 'redefine';
@@ -42,36 +41,36 @@ no warnings 'redefine';
 # C.1.2 Environments
 #======================================================================
 
-# In LaTeX, \begin{env} & \end{env} open or close a group, and then invoke
-# \env or \endenv. [Note \env & \endenv CAN be invoked w/o \begin or \end!].
-# The issue here is to allow environments defined by \newenvironment, et.al,
-# to be expanded in the Gullet, but constructor environments (defined by 
-# Environment) to be processed in the Stomache.  Also, grouping should be 
-# handled correctly if \begin{env} is or is not used. Finally, untex
-# to TeX should work. Thus these 2 are defined as macros and must
-# cooperate w/ Environment in LaTeXML::Package
+# In LaTeX, \newenvironment{env} defines \env and \endenv.
+# \begin{env} & \end{env} open/close a group, and invoke these.
+# In fact, the \env & \endenv don't have to have been created by
+# \newenvironment; And in fact \endenv doesn't even have to be defined!
+# [it is created by \csname, and equiv to \relax if no previous defn]
+
+# We need to respect these usages here, but we also want to be able
+# to define environment constructors that `capture' the body so that
+# it can be processed specially, if needed.  These are the magic
+# '\begin{env}', '\end{env}' control sequences created by DefEnvironment.
 
 DefExpandable('\begin{}',sub { 
   my($gullet,$env)=@_;
   my $name = $env->untex;
-  my $defn = $gullet->getStomach->getMeaning(T_CS("\\$name"));
-  if(!$defn){
-    Error("Environment \"$name\" is not defined"); }
-  elsif($defn->isExecutable && $defn->isExpandable){
-    (T_BEGIN,T_CS("\\$name")); }
+  if($gullet->getStomach->getMeaning(T_CS("\\begin{$name}"))){
+    T_CS("\\begin{$name}"); } # Magic cs!
+  elsif($gullet->getStomach->getMeaning(T_CS("\\$name"))){
+    (T_CS('\begingroup'),T_CS("\\$name")); }
   else {
-    T_CS("\\begin{$name}"); }}); # Magic cs!
+    Error("Environment \"$name\" is not defined"); }});
 
 DefExpandable('\end{}',  sub { 
   my($gullet,$env)=@_;
   my $name = $env->untex;
-  my $defn = $gullet->getStomach->getMeaning(T_CS("\\end$name"));
-  if(!$defn){
-    Error("Environment \"$name\" is not defined"); }
-  elsif($defn->isExecutable && $defn->isExpandable){
-    (T_CS("\\end$name"),T_END); }
-  else {
-    T_CS("\\end{$name}"); }}); # Magic cs!
+  if($gullet->getStomach->getMeaning(T_CS("\\end{$name}"))){
+    T_CS("\\end{$name}"); } # Magic cs!
+  elsif($gullet->getStomach->getMeaning(T_CS("\\end$name"))){
+    (T_CS("\\end$name"),T_CS('\endgroup')); }
+  else { # Effectively, \endenv is \relax
+    (T_CS('\endgroup')); }});
 
 #======================================================================
 # C.1.3 Fragile Commands
@@ -106,6 +105,7 @@ DefConstructor("\\\\ Flag:* []", "\n", mathConstructor=>"<XMHint name='\\'/>", u
 #   \end{document}
 
 DefEnvironment('{document}','<document>%body</document>',
+	       beforeDigest=> sub { $_[0]->setInPreamble(0); },
 	       afterDigest=> sub { $_[0]->getGullet->flush; return; });
 
 #**********************************************************************
@@ -140,7 +140,6 @@ DefExpandable('\today',sub {
 	  .', '.$stomach->getValue('\year')->getValue); });
 DefConstructor('\emph{}', "<emph>#1</emph>", mode=>'text');
 Tag('text', autoClose=>1, autoOpen=>1); # ???
-DefConstructor('\mbox{}',"<text>#1</text>", mode=>'text');
 
 #======================================================================
 # C.3.2 Making Paragraphs
@@ -151,7 +150,7 @@ DefConstructor('\mbox{}',"<text>#1</text>", mode=>'text');
 # \parindent, \baselineskip, \parskip alreadin in Primitives.pm
 our %sparms=(textwidth=>'6in', columnwidth=>'6in', linewidth=>'6in', baselinestretcth=>0);
 foreach my $p (keys %sparms){
-  DefParameter("\\$p",Dimension($sparms{$p})); }
+  DefRegister("\\$p",Dimension($sparms{$p})); }
 
 #======================================================================
 # C.3.3 Footnotes
@@ -164,7 +163,7 @@ DefConstructor('\footnotemark[]',""); # ????
 DefConstructor('\footnotetext[]{}',"<footnote ?#1(footnotemark='#1')>#2</footnote>");
 
 # Style parameters
-DefParameter('\footnotesep',Dimension(0));
+DefRegister('\footnotesep',Dimension(0));
 DefPrimitive('\footnoterule',undef);
 
 #======================================================================
@@ -219,10 +218,10 @@ DefPrimitive('\numberline{}{}', undef);
 DefPrimitive('\addtocontents{}{}', undef);
 
 #======================================================================
-# C.4.4 Style parameters
+# C.4.4 Style registers
 #======================================================================
-DefParameter('\secnumdepth',Number(0));
-DefParameter('\tocdepth',Number(0));
+DefRegister('\secnumdepth',Number(0));
+DefRegister('\tocdepth',Number(0));
 
 #**********************************************************************
 # C.5 Classes, Packages and Page Styles
@@ -235,10 +234,10 @@ DefParameter('\tocdepth',Number(0));
 # to LaTeX mode when processing LaTeX files.
 
 # Style Parameters
-DefParameter('\bibindent',Dimension(0));
-DefParameter('\columnsep',Dimension(0));
-DefParameter('\columnseprule',Dimension(0));
-DefParameter('\mathindent',Dimension(0));
+DefRegister('\bibindent',Dimension(0));
+DefRegister('\columnsep',Dimension(0));
+DefRegister('\columnseprule',Dimension(0));
+DefRegister('\mathindent',Dimension(0));
 
 #======================================================================
 # C.5.2 Packages
@@ -249,8 +248,15 @@ DefParameter('\mathindent',Dimension(0));
 # Ignorable packages ??
 # pre-defined packages??
 
+#DefConstructor('\usepackage[]{}',"<?latexml package='#2' ?#1(options='#1')?>",
+#	       afterDigest=>sub {  $_[0]->input($_[1]->getArg(2)->untex); return;  });
 DefConstructor('\usepackage[]{}',"<?latexml package='#2' ?#1(options='#1')?>",
-	       afterDigest=>sub { $_[0]->input($_[1]->getArg(2)->untex); return;  });
+	       afterDigest=>sub { my($stomach,$whatsit)=@_;
+				  my @pkgs = split(',',$whatsit->getArg(2)->toString);
+				  my $opt = $whatsit->getArg(1);
+				  my $options = [($opt ? split(',',($opt->toString)) :())];
+				  map($stomach->input($_, options=>$options),@pkgs); 
+				  return; });
 
 #======================================================================
 # C.5.3 Page Styles
@@ -265,18 +271,18 @@ DefPrimitive('\twocolumn[]',       undef);
 DefPrimitive('\onecolumn',         undef);
 
 # Style parameters from Fig. C.3, p.182
-DefParameter('\paperheight',Dimension(0));
-DefParameter('\paperwidth',Dimension(0));
-DefParameter('\textheight',Dimension(0));
-DefParameter('\textwidth',Dimension(0));
-DefParameter('\topmargin',Dimension(0));
-DefParameter('\headheight',Dimension(0));
-DefParameter('\headsep',Dimension(0));
-DefParameter('\footskip',Dimension(0));
-DefParameter('\evensidemargin',Dimension(0));
-DefParameter('\oddsidemargin',Dimension(0));
-DefParameter('\marginparwidth',Dimension(0));
-DefParameter('\marginparsep',Dimension(0));
+DefRegister('\paperheight',Dimension(0));
+DefRegister('\paperwidth',Dimension(0));
+DefRegister('\textheight',Dimension(0));
+DefRegister('\textwidth',Dimension(0));
+DefRegister('\topmargin',Dimension(0));
+DefRegister('\headheight',Dimension(0));
+DefRegister('\headsep',Dimension(0));
+DefRegister('\footskip',Dimension(0));
+DefRegister('\evensidemargin',Dimension(0));
+DefRegister('\oddsidemargin',Dimension(0));
+DefRegister('\marginparwidth',Dimension(0));
+DefRegister('\marginparsep',Dimension(0));
 
 #======================================================================
 # C.5.4 The Title Page and Abstract
@@ -342,15 +348,15 @@ DefEnvironment('{description}','<description>%body</description>');
 DefEnvironment('{list}{}{}', "<list default_label='#1' declarations='#2'>%body</list>");
 DefEnvironment('{trivlist}', '<trivlist>%body</trivlist>');
 
-DefParameter('\topsep',Glue(0));
-DefParameter('\partopsep',Glue(0));
-DefParameter('\itemsep',Glue(0));
-DefParameter('\parsep',Glue(0));
-DefParameter('\leftmargin',Dimension(0));
-DefParameter('\rightmargin',Dimension(0));
-DefParameter('\listparindent',Dimension(0));
-DefParameter('\itemindent',Dimension(0));
-DefParameter('\labelsep',Dimension(0));
+DefRegister('\topsep',Glue(0));
+DefRegister('\partopsep',Glue(0));
+DefRegister('\itemsep',Glue(0));
+DefRegister('\parsep',Glue(0));
+DefRegister('\leftmargin',Dimension(0));
+DefRegister('\rightmargin',Dimension(0));
+DefRegister('\listparindent',Dimension(0));
+DefRegister('\itemindent',Dimension(0));
+DefRegister('\labelsep',Dimension(0));
 
 # NOTE: Eventually use \makelabel to construct the list ?
 #\makelabel{label}
@@ -363,6 +369,20 @@ DefParameter('\labelsep',Dimension(0));
 # NOTE: how's the best way to get verbatim material through?
 DefEnvironment('{verbatim}', '<verbatim>%body</verbatim>');
 DefEnvironment('{verbatim*}','<verbatim>%body</verbatim>');
+
+# verbatim is a bit of special case;
+# We're going to sidestep the Gullet for inputting, 
+# and also the usual environment capture.
+STOMACH->setMeaning(T_CS('\begin{verbatim}'),
+      LaTeXML::Constructor->new('\begin{verbatim}',undef,
+				"<verbatim font='%font'>%body</verbatim>",
+				beforeDigest=>[sub { $_[0]->bgroup; $_[0]->setFont(family=>'typewriter'); }],
+				afterDigest=>[sub {
+				  my($stomach,$whatsit)=@_;
+				  my $font = $whatsit->getFont;
+				  my @lines = $stomach->getGullet->readRawLines("\\end{verbatim}\n");
+				  $whatsit->setBody(map(Box($_,$font),@lines)); 
+				  $stomach->egroup; }]));
 
 DefExpandable('\verb', sub { 
   my($gullet)=@_;
@@ -386,17 +406,17 @@ DefExpandable('\verb', sub {
 # C.7.1 Math Mode Environments
 #======================================================================
 DefEnvironment('{displaymath}', 
-	       "<equation><XMath mode='display'>%body</XMath></equation>", 
+	       "<equation><Math mode='display'><XMath>%body</XMath></Math></equation>", 
 	       mode=>'display_math');
 DefEnvironment('{math}',
-	       "<XMath mode='inline'>%body</XMath>",
+	       "<Math mode='inline'><XMath>%body</XMath></Math>",
 	       mode=>'inline_math');
 DefEnvironment('{equation}',
-	       "<equation refnum='%refnum'><XMath mode='display'>%body</XMath></equation>", 
+	       "<equation refnum='%refnum'><Math mode='display'><XMath>%body</XMath></Math></equation>", 
 	       mode=>'display_math',
 	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); });
 DefEnvironment('{equation*}',
-	       "<equation><XMath mode='display'>%body<XMath></equation>",
+	       "<equation><Math mode='display'><XMath>%body<XMath></Math></equation>",
 	       mode=>'display_math');
 
 # NOTE: This has to interact with equation to CANCEL (or backtrack?) the
@@ -404,26 +424,44 @@ DefEnvironment('{equation*}',
 DefPrimitive('\nonumber',undef);
 
 # Define \( ..\) and \[ ... \] to act like environments.
-DefConstructor('\[',"<equation><XMath mode='display'>\%body</XMath></equation>",
+DefConstructor('\[',
+	       "<equation><Math mode='display'><XMath>\%body</XMath></Math></equation>",
 	       beforeDigest=> sub{ $_[0]->beginMode('display_math'); },
 	       captureBody=>1);
 DefConstructor('\]'  ,"",beforeDigest=> sub{ $_[0]->endMode('display_math'); });
-DefConstructor('\(' ,"<XMath mode='inline'>\%body</XMath>",
+DefConstructor('\(' ,
+	       "<Math mode='inline'><XMath>\%body</XMath></Math>",
 	       beforeDigest=> sub{ $_[0]->beginMode('inline_math'); },
 	       captureBody=>1);
 DefConstructor('\)'   ,"", beforeDigest=> sub{ $_[0]->endMode('inline_math'); });
 
+# Can just enter math, can't we?
+#DefConstructor('\ensuremath{}', '#1', mode=>'inline_math');
+DefExpandable('\ensuremath{}', sub {
+  my($gullet,$stuff)=@_;
+  if($gullet->getStomach->inMath){ @$stuff; }
+  else { (T_MATH,@$stuff,T_MATH); }});
+
 # NOTE: Implement these
-# DefPrimitive('\ensuremath' ...
 # Environment('eqnarray' ...
 # Environment('eqnarray*' ...
 
+# NOTE: The numbering isn't right.
+# And the parseability will have to be worked on!
+DefEnvironment('{eqnarray}',
+	       "<equation refnum='%refnum'><Math mode='display'><XMath>%body</XMath></Math></equation>", 
+	       mode=>'display_math',
+	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); });
+DefEnvironment('{eqnarray*}',
+	       "<equation><Math mode='display'><XMath>%body</XMath></Math></equation>", 
+	       mode=>'display_math');
+
 # Style Parameters
 #  \abovedisplayskip \abovedisplayshortskip are in Primitives.pm
-DefParameter('\jot',Dimension(0)); 
-DefParameter('\mathindent',Dimension(0)); 
-DefParameter('\belowdisplayskip',Glue(0)); 
-DefParameter('\belowdisplayshortskip',Glue(0));
+DefRegister('\jot',Dimension(0)); 
+DefRegister('\mathindent',Dimension(0)); 
+DefRegister('\belowdisplayskip',Glue(0)); 
+DefRegister('\belowdisplayshortskip',Glue(0));
 
 #======================================================================
 # C.7.2 Common Structures
@@ -540,6 +578,9 @@ DefPrimitive('\DeclareRobustCommand{}[][]{}',sub { do_newcommand(-1,@_); });
 #======================================================================
 # C.8.2 Defining Environments
 #======================================================================
+# Note that \env & \endenv defined by \newenvironment CAN be 
+# invoked directly.
+
 sub do_newenvironment {
   my($newonly,$stomach,$name,$nargs,$opt,$begin,$end)=@_;
   $name = $name->untex;
@@ -646,11 +687,11 @@ DefMacro('\floatpagefraction',"0.25");
 NewCounter('dbltopnumber');
 DefMacro('\dblfloatpagefraction',"0.25");
 DefMacro('\dblfloatpagefraction',"0.25");
-DefParameter('\floatsep',Glue(0));
-DefParameter('\textfloatsep',Glue(0));
-DefParameter('\intextsep',Glue(0));
-DefParameter('\dblfloatsep',Glue(0));
-DefParameter('\dbltextfloatsep',Glue(0));
+DefRegister('\floatsep',Glue(0));
+DefRegister('\textfloatsep',Glue(0));
+DefRegister('\intextsep',Glue(0));
+DefRegister('\dblfloatsep',Glue(0));
+DefRegister('\dbltextfloatsep',Glue(0));
 
 #======================================================================
 # C.9.2 Marginal Notes
@@ -659,7 +700,7 @@ DefParameter('\dbltextfloatsep',Glue(0));
 DefConstructor('\marginpar[]{}', "<marginpar>#2</marginpar>");
 DefPrimitive('\reversemarginpar',undef);
 DefPrimitive('\normalmarginpar', undef);
-DefParameter('\marginparpush',Dimension(0));
+DefRegister('\marginparpush',Dimension(0));
 
 #**********************************************************************
 # C.10 Lining It Up in Columns
@@ -720,9 +761,9 @@ DefConstructor('\multicolumn{}{}{}',"<td colspan='#1' pattern='#2'>#3");
 DefConstructor('\hline',"<hline/>");
 
 # NOTE: \vline, \cline{c1-c2}
-DefParameter('\arraycolsep',Dimension(0));
-DefParameter('\tabcolsep',Dimension(0));
-DefParameter('\arrayrulewidth',Dimension(0));
+DefRegister('\arraycolsep',Dimension(0));
+DefRegister('\tabcolsep',Dimension(0));
+DefRegister('\arrayrulewidth',Dimension(0));
 DefMacro('\arraystretch',"1");
 
 # Array and similar environments
@@ -737,7 +778,7 @@ sub matharray {
   open_matharray_level($intestine,$cellname);
   open_matharray_arg($intestine);
   # Now process the body (& and // should be bound to matharray_{align|cr} )
-  $$props{body}->absorb($intestine);
+  $intestine->absorb($$props{body});
   # Close open cell and row, pruning empty ones.
   close_matharray_arg($intestine);
   close_matharray_level($intestine,$cellname,1);
@@ -817,10 +858,13 @@ DefPrimitive('\nofiles',undef);
 # C.11.2 Cross-References
 #======================================================================
 # add a label id to nearest labelable element.
-DefConstructor('\label{semiverb}',"label='#1'", floats=>1);
+DefConstructor('\label{semiverb}',"label='#1'", floats=>1, mode=>'text',
+	      afterDigest=>sub { $_[0]->setValue('LABEL@'.$_[1]->getArg(1)->toString, 
+						 $_[0]->digest(T_CS('\@currentlabel')),1); });
 
-DefConstructor('\ref{}', "<ref labelref='#1'/>");
-DefConstructor('\pageref{}', "<ref labelref='#1'/>"); # Any sense in distinguishing?
+DefMacro('\ref{semiverb}', '\@REF{#1}{\@VALUE{LABEL@#1}}');
+DefMacro('\pageref{semiverb}', '\@REF{#1}{\@VALUE{LABEL@#1}}'); # Any sense in distinguishing?
+DefConstructor('\@REF{}{}', "<ref labelref='#1'>#2</ref>");
 
 #======================================================================
 # C.11.3 Bibliography and Citation
@@ -975,28 +1019,28 @@ DefPrimitive('\cleardoublepage',undef);
 # \newlength{cmd}
 DefPrimitive('\newlength{Token}',sub {
   my($stomach,$cmd)=@_;
-  DefParameter($cmd->untex,Dimension(0)); });
+  DefRegister($cmd->untex,Dimension(0)); });
 # \setlength{cmd}{len}
 DefPrimitive('\setlength{Token}{Dimension}',sub{
   my($stomach,$cmd,$dimen)=@_;
-  $stomach->getMeaning($cmd)->setValue($stomach,$dimen);});
+  $stomach->getDefinition($cmd)->setValue($stomach,$dimen);});
 # \addtolength{cmd}{len}
 DefPrimitive('\addtolength{Token}{Dimension}',sub{
   my($stomach,$cmd,$dimen)=@_;
-  my $defn =  $stomach->getMeaning($cmd);
+  my $defn =  $stomach->getDefinition($cmd);
   $defn->setValue($stomach,$defn->getValue($stomach)->add($dimen));});
 # \settowidth{cmd}{text}
 # \settoheight{cmd}{text}
 # \settodepth{cmd}{text}
 
 # Assuming noone tries to get clever with figuring out the allocation of 
-# numbers, these become simple DefParameter's
-DefPrimitive('\newcount{Token}', sub { DefParameter($_[1]->untex,Number(0)); });
-DefPrimitive('\newdimen{Token}', sub { DefParameter($_[1]->untex,Dimension(0)); });
-DefPrimitive('\newskip{Token}',  sub { DefParameter($_[1]->untex,Glue(0)); });
-DefPrimitive('\newmuskip{Token}',sub { DefParameter($_[1]->untex,MuGlue(0)); });
-#DefPrimitive('\newbox{Token}',  sub { DefParameter($_[1]->untex,Box()); });
-DefPrimitive('\newtoks{Token}',  sub { DefParameter($_[1]->untex,Tokens()); });
+# numbers, these become simple DefRegister's
+DefPrimitive('\newcount{Token}', sub { DefRegister($_[1]->untex,Number(0)); });
+DefPrimitive('\newdimen{Token}', sub { DefRegister($_[1]->untex,Dimension(0)); });
+DefPrimitive('\newskip{Token}',  sub { DefRegister($_[1]->untex,Glue(0)); });
+DefPrimitive('\newmuskip{Token}',sub { DefRegister($_[1]->untex,MuGlue(0)); });
+#DefPrimitive('\newbox{Token}',  sub { DefRegister($_[1]->untex,Box()); });
+DefPrimitive('\newtoks{Token}',  sub { DefRegister($_[1]->untex,Tokens()); });
 
 #======================================================================
 # C.13.2 Space
@@ -1010,13 +1054,29 @@ DefPrimitive('\vspace Flag:* {}',undef);
 #======================================================================
 # C.13.3 Boxes
 #======================================================================
-# \mbox already defined
+DefConstructor('\mbox{}',"<text>#1</text>", mode=>'text');
 DefConstructor('\makebox[][]{}',"<text ?#1(width='#1') ?#2(pos='#2')>#3</text>", 
 	       mode=>'text');
-# NOTE ??? 
-#DefConstructor('\fbox{}',"<text>#1</text>", mode=>'text');
-#DefConstructor('\framebox[][]{}',"<text ?#1(width='#1') ?#2(pos='#2')>#3</text>", 
-#	       mode=>'text');
+DefConstructor('\fbox{}',"<text framed='yes'>#1</text>", mode=>'text');
+DefConstructor('\framebox[][]{}',"<text ?#1(width='#1') ?#2(pos='#2') framed='yes'>#3</text>",
+	       mode=>'text');
+DefPrimitive('\newsavebox{Token}',sub { $_[0]->setValue('box'.$_[1]->toString, List());});
+DefPrimitive('\sbox{Token}{}',sub {
+   $_[0]->setValue('box'.$_[1]->toString, $_[0]->digest($_[2]));});
+DefPrimitive('\savebox{Token}[][]{}',sub {
+   $_[0]->setValue('box'.$_[1]->toString, $_[0]->digest($_[4]));});
+DefEnvironment('{lrbox}{Token}','',
+  afterDigest=>sub{ 
+    my($stomach,$whatsit)=@_;
+    $stomach->setValue('box'.$whatsit->getArg(1)->toString, $whatsit->getProperty('body'));
+    return; });
+DefPrimitive('\usebox{Token}', sub { $_[0]->getValue('box'.$_[1]->toString);});
+
+DefConstructor('\parbox[][]{}',"<text ?#2(width='#2') ?#1(pos='#1') justified='yes'>#3</text>",
+	       mode=>'text');
+DefEnvironment('{minipage}[]{}',"<text ?#2(width='#2') ?#1(pos='#1') justified='yes'>#3</text>",
+	       mode=>'text');
+DefConstructor('\rule[]{}{}', "<rule ?#1(raise='#1') width='#2' height='#3'/>");
 
 #**********************************************************************
 # C.15 Font Selection
@@ -1089,6 +1149,41 @@ DefConstructor('\text{}', "<text>#1</text>", mode=>'text');
 # C.15.3 Special Symbol
 #======================================================================
 # \symbol{num} ????
+
+DefSymbol('\textdollar',"\$");
+DefSymbol('\textemdash',"\N{EM DASH}");
+DefSymbol('\textendash',"\N{EN DASH}");
+#DefSymbol('\textexclamdown',"\N{}");
+#DefSymbol('\textquestiondown',"\N{}");
+DefSymbol('\textquotedblleft',"\N{LEFT DOUBLE QUOTATION MARK}");
+DefSymbol('\textquotedblright',"\N{RIGHT DOUBLE QUOTATION MARK}");
+DefSymbol('\textquoteleft',"\N{LEFT SINGLE QUOTATION MARK}");
+DefSymbol('\textquoteright',"\N{RIGHT SINGLE QUOTATION MARK}");
+#DefSymbol('\textsterling',"\N{}");
+#DefSymbol('\textasteriskcentered',"\N{}");
+#DefSymbol('\textbackslash',"\N{}");
+#DefSymbol('\textbar',"\N{}");
+DefSymbol('\textbraceleft',"{");
+DefSymbol('\textbraceright',"}");
+DefSymbol('\textbullet',"\N{BULLET}");
+DefSymbol('\textdaggerdbl',"\N{DOUBLE DAGGER}");
+DefSymbol('\textdagger',"\N{DAGGER}");
+DefSymbol('\textparagraph',"\N{PILCROW SIGN}");
+DefSymbol('\textperiodcentered',"\N{DOT OPERATOR}");
+DefSymbol('\textsection',"\N{SECTION SIGN}");
+DefSymbol('\textless',"<");
+DefSymbol('\textgreater',">");
+DefSymbol('\textcopyright',"\N{COPYRIGHT SIGN}");
+DefSymbol('\textasciicircum',"^");
+DefSymbol('\textasciitilde',"~");
+#DefSymbol('\textcompwordmark',"\leavevmode\kern\z@}
+DefSymbol('\textunderscore',"_");
+DefSymbol('\textvisiblespace'," ");
+DefSymbol('\textellipsis',"\N{HORIZONTAL ELLIPSIS}");
+#DefSymbol('\textregistered',"\textcircled{\scshape r}}
+#DefSymbol('\texttrademark',"\textsuperscript{TM}}
+DefConstructor('\textsuperscript{}',"<textsup>#1</textsup>");
+#DefConstructor('\textcircled{}',
 
 #**********************************************************************
 # Other stuff
@@ -1206,11 +1301,11 @@ DefMacro('\@latex@info@no@line{}',
 #\newbox\voidb@x % permanently void box register
 
 # First approximation.
-DefParameter('\maxdimen',Dimension(16383.99999*65536));
-DefParameter('\hideskip',Glue(-1000*65536,'1fill'));
-DefParameter('\p@',Dimension(65536));
-DefParameter('\z@',Dimension(0));
-DefParameter('\z@skip',Glue(0,0,0));
+DefRegister('\maxdimen',Dimension(16383.99999*65536));
+DefRegister('\hideskip',Glue(-1000*65536,'1fill'));
+DefRegister('\p@',Dimension(65536));
+DefRegister('\z@',Dimension(0));
+DefRegister('\z@skip',Glue(0,0,0));
 DefMacro('\voidb@x','');
 
 # \newread
@@ -1232,6 +1327,7 @@ DefMacro('\selectfont','');
 DefMacro('\@ifnextchar Token {}{}', sub {
   my($gullet,$token,$if,$else)=@_;
   my $next = $gullet->readNonSpace;
+  # NOTE: Not actually substituting, but collapsing ## pairs!!!!
   ( LaTeXML::Expandable::substituteTokens($next eq $token ? $if : $else),$next); });
 
 #======================================================================

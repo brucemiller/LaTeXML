@@ -4,7 +4,7 @@ use Getopt::Long;
 use Pod::Usage;
 use LaTeXML;
 use LaTeXML::Util::Pathname;
-BEGIN { $SIG{__DIE__} = \&LaTeXML::Error::Error; }
+#BEGIN { $SIG{__DIE__} = \&LaTeXML::Error::Error; }
 
 #**********************************************************************
 # Parse command line
@@ -39,6 +39,7 @@ else {
   binmode(STDOUT,":utf8");
   *OUT = *STDOUT; }
 
+binmode(STDERR,":utf8");
 if($format eq 'tex'){
   my $digested = $latexml->digestFile($source);
   print OUT $digested->untex; }

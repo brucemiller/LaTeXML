@@ -27,8 +27,11 @@ sub element_nodes {
   grep( $_->nodeType == XML_ELEMENT_NODE, $node->childNodes); }
 
 sub new_node {
-  my($tag,$children,%attributes)=@_;
+  my($nsURI,$tag,$children,%attributes)=@_;
   my $node=XML::LibXML::Element->new($tag);
+#  my $node=$LaTeXML::Post::DOC->createElement($tag);
+#  my $node=$LaTeXML::Post::DOC->createElementNS($nsURI,$tag);
+  $node->setNamespace($nsURI);
   append_nodes($node,$children);
   foreach my $key (sort keys %attributes){
     $node->setAttribute($key, $attributes{$key}) if defined $attributes{$key}; }
@@ -42,7 +45,11 @@ sub append_nodes {
     if(ref $child eq 'ARRAY'){ 
       append_nodes($node,@$child); }
     elsif(ref $child eq 'XML::LibXML::Element'){ 
-      $node->appendChild(maybe_clone($child)); }
+#      $node->appendChild(maybe_clone($child)); }
+      my $new = maybe_clone($child);
+      $node->appendChild($new);
+#      normalize_node($new);
+    }
     elsif(ref $child){
       die "Attept to append $child to $node\n"; }
     elsif(defined $child){ 
@@ -55,14 +62,31 @@ sub clear_node {
       grep(($_->nodeType == XML_ELEMENT_NODE) || ($_->nodeType == XML_TEXT_NODE),
 	   $node->childNodes)); }
 
-# We have to be _extremely_ careful when rearranging trees when using 
-# addXML::LibXML!!! If we add one node to another, it is _silently_ removed 
-# from any parent it may have had!
+# We have to be _extremely_ careful when rearranging trees when using XML::LibXML!!!
+# If we add one node to another, it is _silently_ removed from it's previous
+# parent, if any!
 # Hopefully, this test is sufficient?
-
 sub maybe_clone {
   my($node)=@_;
   ($node->parentNode ? $node->cloneNode(1) : $node); }
+
+
+sub normalize_node {
+  my($node)=@_;
+  return unless defined $node->namespaceURI; # ???
+  my $parent = $node->parentNode;
+  my $parentNS =  $parent->namespaceURI;
+  if($node->namespaceURI eq $parentNS){ # If they should be equal
+    print STDERR "May need normalizing of ".$node->nodeName."\n";
+#    my ($decl) = grep( ($_->nodeType == XML_NAMESPACE_DECL) && ($_->getData eq $parentNS) ,
+#		       $node->childNodes);
+    my ($decl) = grep($_->getData eq $parentNS, $node->getNamespaces);
+
+    print STDERR "Found unneeded declaration ".$decl->getData."\n" if $decl; 
+    $node->removeAttribute('xmlns');
+#    $node->setNamespace($parentNS);
+#    $node->removeChild($decl);
+  }}
 
 #**********************************************************************
 1;

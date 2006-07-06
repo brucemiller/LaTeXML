@@ -15,7 +15,7 @@ use LaTeXML::Stomach;
 use LaTeXML::Intestine;
 
 use vars qw($VERSION);
-$VERSION = "0.1.0";
+$VERSION = "0.1.1";
 
 #**********************************************************************
 sub new {

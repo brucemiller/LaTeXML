@@ -53,11 +53,11 @@ AR_STATIC_ARGS = cr
 DIRFILESEP = /
 NAME = LaTeXML
 NAME_SYM = LaTeXML
-VERSION = 0.1.0
+VERSION = 0.1.1
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_1_0
+VERSION_SYM = 0_1_1
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.1.0
+XS_VERSION = 0.1.1
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -157,6 +157,7 @@ MAN3PODS = lib/LaTeXML.pm \
 	lib/LaTeXML/Definition.pm \
 	lib/LaTeXML/Error.pm \
 	lib/LaTeXML/Font.pm \
+	lib/LaTeXML/Global.pm \
 	lib/LaTeXML/Gullet.pm \
 	lib/LaTeXML/Intestine.pm \
 	lib/LaTeXML/Model.pm \
@@ -193,6 +194,7 @@ TO_INST_PM = lib/LaTeXML.pm \
 	lib/LaTeXML/Definition.pm \
 	lib/LaTeXML/Error.pm \
 	lib/LaTeXML/Font.pm \
+	lib/LaTeXML/Global.pm \
 	lib/LaTeXML/Gullet.pm \
 	lib/LaTeXML/Intestine.pm \
 	lib/LaTeXML/Model.pm \
@@ -204,10 +206,13 @@ TO_INST_PM = lib/LaTeXML.pm \
 	lib/LaTeXML/Package/DLMFmath.ltxml \
 	lib/LaTeXML/Package/LaTeX.ltxml \
 	lib/LaTeXML/Package/TeX.ltxml \
+	lib/LaTeXML/Package/acronym.ltxml \
 	lib/LaTeXML/Package/amsmath.ltxml \
 	lib/LaTeXML/Package/amsrefs.ltxml \
+	lib/LaTeXML/Package/amssymb.ltxml \
 	lib/LaTeXML/Package/article.ltxml \
 	lib/LaTeXML/Package/color.ltxml \
+	lib/LaTeXML/Package/comment.ltxml \
 	lib/LaTeXML/Package/graphics.ltxml \
 	lib/LaTeXML/Package/graphicx.ltxml \
 	lib/LaTeXML/Package/html.ltxml \
@@ -215,6 +220,7 @@ TO_INST_PM = lib/LaTeXML.pm \
 	lib/LaTeXML/Package/makeidx.ltxml \
 	lib/LaTeXML/Package/mcsd.ltxml \
 	lib/LaTeXML/Package/url.ltxml \
+	lib/LaTeXML/Parameters.pm \
 	lib/LaTeXML/Post.pm \
 	lib/LaTeXML/Post/Graphics.pm \
 	lib/LaTeXML/Post/HTMLTable.pm \
@@ -225,15 +231,16 @@ TO_INST_PM = lib/LaTeXML.pm \
 	lib/LaTeXML/Post/MathParser.pm \
 	lib/LaTeXML/Post/MathPath.pm \
 	lib/LaTeXML/Post/PresentationMathML.pm \
-	lib/LaTeXML/Post/XRef.pm \
 	lib/LaTeXML/Post/XSLT.pm \
 	lib/LaTeXML/Stomach.pm \
 	lib/LaTeXML/Token.pm \
 	lib/LaTeXML/Util/LibXML.pm \
 	lib/LaTeXML/Util/Pathname.pm \
 	lib/LaTeXML/dtd/DLMF.dtd \
+	lib/LaTeXML/dtd/LaTeXML-base.xsl \
+	lib/LaTeXML/dtd/LaTeXML-html.xsl \
+	lib/LaTeXML/dtd/LaTeXML-xhtml.xsl \
 	lib/LaTeXML/dtd/LaTeXML.dtd \
-	lib/LaTeXML/dtd/LaTeXML.xsl \
 	lib/LaTeXML/dtd/catalog \
 	lib/LaTeXML/dtd/isoamsa.ent \
 	lib/LaTeXML/dtd/isoamsb.ent \
@@ -257,8 +264,7 @@ TO_INST_PM = lib/LaTeXML.pm \
 	lib/LaTeXML/dtd/mathml2-qname-1.mod \
 	lib/LaTeXML/dtd/mathml2.dtd \
 	lib/LaTeXML/dtd/mmlalias.ent \
-	lib/LaTeXML/dtd/mmlextra.ent \
-	lib/LaTeXML/dtd/xhtml-math11-f.dtd
+	lib/LaTeXML/dtd/mmlextra.ent
 
 PM_TO_BLIB = lib/LaTeXML/dtd/isoamsr.ent \
 	blib/lib/LaTeXML/dtd/isoamsr.ent \
@@ -292,10 +298,10 @@ PM_TO_BLIB = lib/LaTeXML/dtd/isoamsr.ent \
 	blib/lib/LaTeXML/dtd/DLMF.dtd \
 	lib/LaTeXML/Intestine.pm \
 	blib/lib/LaTeXML/Intestine.pm \
+	lib/LaTeXML/Package/amssymb.ltxml \
+	blib/lib/LaTeXML/Package/amssymb.ltxml \
 	lib/LaTeXML/dtd/catalog \
 	blib/lib/LaTeXML/dtd/catalog \
-	lib/LaTeXML/dtd/LaTeXML.xsl \
-	blib/lib/LaTeXML/dtd/LaTeXML.xsl \
 	lib/LaTeXML/dtd/isopub.ent \
 	blib/lib/LaTeXML/dtd/isopub.ent \
 	lib/LaTeXML/dtd/isolat2.ent \
@@ -314,20 +320,20 @@ PM_TO_BLIB = lib/LaTeXML/dtd/isoamsr.ent \
 	blib/lib/LaTeXML/dtd/isolat1.ent \
 	lib/LaTeXML/Post/MathDictionary.pm \
 	blib/lib/LaTeXML/Post/MathDictionary.pm \
-	lib/LaTeXML/dtd/xhtml-math11-f.dtd \
-	blib/lib/LaTeXML/dtd/xhtml-math11-f.dtd \
-	lib/LaTeXML/Post/XRef.pm \
-	blib/lib/LaTeXML/Post/XRef.pm \
 	lib/LaTeXML/Gullet.pm \
 	blib/lib/LaTeXML/Gullet.pm \
 	lib/LaTeXML/Package/hyperref.ltxml \
 	blib/lib/LaTeXML/Package/hyperref.ltxml \
+	lib/LaTeXML/dtd/LaTeXML-base.xsl \
+	blib/lib/LaTeXML/dtd/LaTeXML-base.xsl \
 	lib/LaTeXML/Error.pm \
 	blib/lib/LaTeXML/Error.pm \
 	lib/LaTeXML/Package/DLMFbib.ltxml \
 	blib/lib/LaTeXML/Package/DLMFbib.ltxml \
 	lib/LaTeXML/dtd/isonum.ent \
 	blib/lib/LaTeXML/dtd/isonum.ent \
+	lib/LaTeXML/dtd/LaTeXML-html.xsl \
+	blib/lib/LaTeXML/dtd/LaTeXML-html.xsl \
 	lib/LaTeXML/dtd/isomscr.ent \
 	blib/lib/LaTeXML/dtd/isomscr.ent \
 	lib/LaTeXML/dtd/isodia.ent \
@@ -340,10 +346,12 @@ PM_TO_BLIB = lib/LaTeXML/dtd/isoamsr.ent \
 	blib/lib/LaTeXML/Package/DLMF.ltxml \
 	lib/LaTeXML/Post/PresentationMathML.pm \
 	blib/lib/LaTeXML/Post/PresentationMathML.pm \
-	lib/LaTeXML/dtd/LaTeXML.dtd \
-	blib/lib/LaTeXML/dtd/LaTeXML.dtd \
 	lib/LaTeXML/Post/HTMLTable.pm \
 	blib/lib/LaTeXML/Post/HTMLTable.pm \
+	lib/LaTeXML/dtd/LaTeXML.dtd \
+	blib/lib/LaTeXML/dtd/LaTeXML.dtd \
+	lib/LaTeXML/Package/comment.ltxml \
+	blib/lib/LaTeXML/Package/comment.ltxml \
 	lib/LaTeXML/dtd/isotech.ent \
 	blib/lib/LaTeXML/dtd/isotech.ent \
 	lib/LaTeXML/Post/MathPath.pm \
@@ -352,6 +360,8 @@ PM_TO_BLIB = lib/LaTeXML/dtd/isoamsr.ent \
 	blib/lib/LaTeXML/Mouth.pm \
 	lib/LaTeXML/dtd/isomfrk.ent \
 	blib/lib/LaTeXML/dtd/isomfrk.ent \
+	lib/LaTeXML/Package/acronym.ltxml \
+	blib/lib/LaTeXML/Package/acronym.ltxml \
 	lib/LaTeXML/dtd/mathml2-qname-1.mod \
 	blib/lib/LaTeXML/dtd/mathml2-qname-1.mod \
 	lib/LaTeXML/dtd/isocyr1.ent \
@@ -360,6 +370,10 @@ PM_TO_BLIB = lib/LaTeXML/dtd/isoamsr.ent \
 	blib/lib/LaTeXML/Post/MathGrammar \
 	lib/LaTeXML/Package.pm \
 	blib/lib/LaTeXML/Package.pm \
+	lib/LaTeXML/dtd/LaTeXML-xhtml.xsl \
+	blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl \
+	lib/LaTeXML/Global.pm \
+	blib/lib/LaTeXML/Global.pm \
 	lib/LaTeXML/Post/MathGrammar.pm \
 	blib/lib/LaTeXML/Post/MathGrammar.pm \
 	lib/LaTeXML/dtd/isomopf.ent \
@@ -374,6 +388,8 @@ PM_TO_BLIB = lib/LaTeXML/dtd/isoamsr.ent \
 	blib/lib/LaTeXML/DOM.pm \
 	lib/LaTeXML/Package/amsrefs.ltxml \
 	blib/lib/LaTeXML/Package/amsrefs.ltxml \
+	lib/LaTeXML/Parameters.pm \
+	blib/lib/LaTeXML/Parameters.pm \
 	lib/LaTeXML/Util/LibXML.pm \
 	blib/lib/LaTeXML/Util/LibXML.pm \
 	lib/LaTeXML/Package/color.ltxml \
@@ -466,7 +482,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = LaTeXML
-DISTVNAME = LaTeXML-0.1.0
+DISTVNAME = LaTeXML-0.1.1
 
 
 # --- MakeMaker macro section:
@@ -620,54 +636,57 @@ manifypods : pure_all  \
 	bin/latexmlpost \
 	bin/latexml \
 	lib/LaTeXML/Object.pm \
-	lib/LaTeXML/Token.pm \
 	lib/LaTeXML/DOM.pm \
-	lib/LaTeXML/Error.pm \
 	lib/LaTeXML/Font.pm \
-	lib/LaTeXML/Package.pm \
 	lib/LaTeXML/Model.pm \
-	lib/LaTeXML/Intestine.pm \
 	lib/LaTeXML/Definition.pm \
-	lib/LaTeXML.pm \
-	lib/LaTeXML/Box.pm \
 	lib/LaTeXML/Mouth.pm \
-	lib/LaTeXML/Post.pm \
 	lib/LaTeXML/Gullet.pm \
 	lib/LaTeXML/Stomach.pm \
-	lib/LaTeXML/Object.pm \
 	lib/LaTeXML/Token.pm \
-	lib/LaTeXML/DOM.pm \
 	lib/LaTeXML/Error.pm \
-	lib/LaTeXML/Font.pm \
 	lib/LaTeXML/Package.pm \
-	lib/LaTeXML/Model.pm \
 	lib/LaTeXML/Intestine.pm \
-	lib/LaTeXML/Definition.pm \
+	lib/LaTeXML/Global.pm \
 	lib/LaTeXML.pm \
 	lib/LaTeXML/Box.pm \
-	lib/LaTeXML/Mouth.pm \
 	lib/LaTeXML/Post.pm \
+	lib/LaTeXML/Object.pm \
+	lib/LaTeXML/DOM.pm \
+	lib/LaTeXML/Font.pm \
+	lib/LaTeXML/Model.pm \
+	lib/LaTeXML/Definition.pm \
+	lib/LaTeXML/Mouth.pm \
 	lib/LaTeXML/Gullet.pm \
-	lib/LaTeXML/Stomach.pm
+	lib/LaTeXML/Stomach.pm \
+	lib/LaTeXML/Token.pm \
+	lib/LaTeXML/Error.pm \
+	lib/LaTeXML/Package.pm \
+	lib/LaTeXML/Intestine.pm \
+	lib/LaTeXML/Global.pm \
+	lib/LaTeXML.pm \
+	lib/LaTeXML/Box.pm \
+	lib/LaTeXML/Post.pm
 	$(NOECHO) $(POD2MAN) --section=1 --perm_rw=$(PERM_RW)\
 	  bin/latexmlpost $(INST_MAN1DIR)/latexmlpost.$(MAN1EXT) \
 	  bin/latexml $(INST_MAN1DIR)/latexml.$(MAN1EXT) 
 	$(NOECHO) $(POD2MAN) --section=3 --perm_rw=$(PERM_RW)\
 	  lib/LaTeXML/Object.pm $(INST_MAN3DIR)/LaTeXML::Object.$(MAN3EXT) \
-	  lib/LaTeXML/Token.pm $(INST_MAN3DIR)/LaTeXML::Token.$(MAN3EXT) \
 	  lib/LaTeXML/DOM.pm $(INST_MAN3DIR)/LaTeXML::DOM.$(MAN3EXT) \
-	  lib/LaTeXML/Error.pm $(INST_MAN3DIR)/LaTeXML::Error.$(MAN3EXT) \
 	  lib/LaTeXML/Font.pm $(INST_MAN3DIR)/LaTeXML::Font.$(MAN3EXT) \
-	  lib/LaTeXML/Package.pm $(INST_MAN3DIR)/LaTeXML::Package.$(MAN3EXT) \
 	  lib/LaTeXML/Model.pm $(INST_MAN3DIR)/LaTeXML::Model.$(MAN3EXT) \
-	  lib/LaTeXML/Intestine.pm $(INST_MAN3DIR)/LaTeXML::Intestine.$(MAN3EXT) \
 	  lib/LaTeXML/Definition.pm $(INST_MAN3DIR)/LaTeXML::Definition.$(MAN3EXT) \
+	  lib/LaTeXML/Mouth.pm $(INST_MAN3DIR)/LaTeXML::Mouth.$(MAN3EXT) \
+	  lib/LaTeXML/Gullet.pm $(INST_MAN3DIR)/LaTeXML::Gullet.$(MAN3EXT) \
+	  lib/LaTeXML/Stomach.pm $(INST_MAN3DIR)/LaTeXML::Stomach.$(MAN3EXT) \
+	  lib/LaTeXML/Token.pm $(INST_MAN3DIR)/LaTeXML::Token.$(MAN3EXT) \
+	  lib/LaTeXML/Error.pm $(INST_MAN3DIR)/LaTeXML::Error.$(MAN3EXT) \
+	  lib/LaTeXML/Package.pm $(INST_MAN3DIR)/LaTeXML::Package.$(MAN3EXT) \
+	  lib/LaTeXML/Intestine.pm $(INST_MAN3DIR)/LaTeXML::Intestine.$(MAN3EXT) \
+	  lib/LaTeXML/Global.pm $(INST_MAN3DIR)/LaTeXML::Global.$(MAN3EXT) \
 	  lib/LaTeXML.pm $(INST_MAN3DIR)/LaTeXML.$(MAN3EXT) \
 	  lib/LaTeXML/Box.pm $(INST_MAN3DIR)/LaTeXML::Box.$(MAN3EXT) \
-	  lib/LaTeXML/Mouth.pm $(INST_MAN3DIR)/LaTeXML::Mouth.$(MAN3EXT) \
-	  lib/LaTeXML/Post.pm $(INST_MAN3DIR)/LaTeXML::Post.$(MAN3EXT) \
-	  lib/LaTeXML/Gullet.pm $(INST_MAN3DIR)/LaTeXML::Gullet.$(MAN3EXT) \
-	  lib/LaTeXML/Stomach.pm $(INST_MAN3DIR)/LaTeXML::Stomach.$(MAN3EXT) 
+	  lib/LaTeXML/Post.pm $(INST_MAN3DIR)/LaTeXML::Post.$(MAN3EXT) 
 
 
 
@@ -736,19 +755,21 @@ realclean_subdirs :
 realclean purge ::  clean realclean_subdirs
 	$(RM_RF) $(INST_AUTODIR) $(INST_ARCHAUTODIR)
 	$(RM_RF) $(DISTVNAME)
-	$(RM_F)  blib/lib/LaTeXML/dtd/LaTeXML.dtd blib/lib/LaTeXML/Post/XRef.pm blib/lib/LaTeXML/dtd/isonum.ent blib/lib/LaTeXML/Post/MathPath.pm blib/lib/LaTeXML/dtd/isoamsb.ent blib/lib/LaTeXML/Package/amsmath.ltxml
+	$(RM_F)  blib/lib/LaTeXML/dtd/LaTeXML.dtd blib/lib/LaTeXML/dtd/isonum.ent blib/lib/LaTeXML/Post/MathPath.pm blib/lib/LaTeXML/dtd/isoamsb.ent blib/lib/LaTeXML/Package/amsmath.ltxml
 	$(RM_F) blib/lib/LaTeXML/Package/color.ltxml blib/lib/LaTeXML/dtd/isotech.ent blib/lib/LaTeXML/Package/graphics.ltxml blib/lib/LaTeXML/dtd/mmlextra.ent blib/lib/LaTeXML/Package/makeidx.ltxml
-	$(RM_F) blib/lib/LaTeXML/Post/MathParser.pm blib/lib/LaTeXML/Package/DLMFmath.ltxml blib/lib/LaTeXML/Package/graphicx.ltxml blib/lib/LaTeXML/Package/hyperref.ltxml blib/lib/LaTeXML/Post/Graphics.pm
-	$(RM_F) blib/lib/LaTeXML/Package/mcsd.ltxml blib/lib/LaTeXML/dtd/isogrk3.ent $(MAKEFILE_OLD) blib/lib/LaTeXML/dtd/mathml2.dtd blib/lib/LaTeXML/Font.pm blib/lib/LaTeXML.pm blib/lib/LaTeXML/Package/DLMF.ltxml
-	$(RM_F) blib/lib/LaTeXML/dtd/LaTeXML.xsl blib/lib/LaTeXML/DOM.pm blib/lib/LaTeXML/Post/XSLT.pm blib/lib/LaTeXML/Post/MathImages.pm blib/lib/LaTeXML/Definition.pm blib/lib/LaTeXML/Post.pm
-	$(RM_F) blib/lib/LaTeXML/Package/TeX.ltxml blib/lib/LaTeXML/Box.pm blib/lib/LaTeXML/Token.pm blib/lib/LaTeXML/Stomach.pm blib/lib/LaTeXML/dtd/isolat1.ent blib/lib/LaTeXML/Post/PresentationMathML.pm
-	$(RM_F) blib/lib/LaTeXML/Error.pm blib/lib/LaTeXML/dtd/isoamsc.ent blib/lib/LaTeXML/Util/Pathname.pm blib/lib/LaTeXML/Post/MathGrammar blib/lib/LaTeXML/Post/MathGrammar.pm blib/lib/LaTeXML/dtd/isoamsn.ent
-	$(RM_F) blib/lib/LaTeXML/Post/HTMLTable.pm blib/lib/LaTeXML/Util/LibXML.pm blib/lib/LaTeXML/dtd/isomfrk.ent $(FIRST_MAKEFILE) blib/lib/LaTeXML/Package/LaTeX.ltxml blib/lib/LaTeXML/Mouth.pm
-	$(RM_F) blib/lib/LaTeXML/Package.pm blib/lib/LaTeXML/dtd/isocyr1.ent blib/lib/LaTeXML/dtd/isolat2.ent blib/lib/LaTeXML/dtd/mathml2-qname-1.mod blib/lib/LaTeXML/Package/url.ltxml
-	$(RM_F) blib/lib/LaTeXML/dtd/isoamsr.ent blib/lib/LaTeXML/dtd/xhtml-math11-f.dtd blib/lib/LaTeXML/Package/DLMFbib.ltxml blib/lib/LaTeXML/Package/html.ltxml blib/lib/LaTeXML/dtd/isomopf.ent
+	$(RM_F) blib/lib/LaTeXML/Post/MathParser.pm blib/lib/LaTeXML/Package/DLMFmath.ltxml blib/lib/LaTeXML/Package/graphicx.ltxml blib/lib/LaTeXML/dtd/LaTeXML-base.xsl blib/lib/LaTeXML/Package/hyperref.ltxml
+	$(RM_F) blib/lib/LaTeXML/Post/Graphics.pm blib/lib/LaTeXML/Package/mcsd.ltxml blib/lib/LaTeXML/dtd/isogrk3.ent blib/lib/LaTeXML/Parameters.pm $(MAKEFILE_OLD) blib/lib/LaTeXML/dtd/mathml2.dtd
+	$(RM_F) blib/lib/LaTeXML/Font.pm blib/lib/LaTeXML.pm blib/lib/LaTeXML/Package/DLMF.ltxml blib/lib/LaTeXML/DOM.pm blib/lib/LaTeXML/Post/XSLT.pm blib/lib/LaTeXML/Post/MathImages.pm blib/lib/LaTeXML/Definition.pm
+	$(RM_F) blib/lib/LaTeXML/Package/comment.ltxml blib/lib/LaTeXML/Post.pm blib/lib/LaTeXML/Package/TeX.ltxml blib/lib/LaTeXML/Box.pm blib/lib/LaTeXML/Token.pm blib/lib/LaTeXML/Stomach.pm
+	$(RM_F) blib/lib/LaTeXML/dtd/isolat1.ent blib/lib/LaTeXML/Post/PresentationMathML.pm blib/lib/LaTeXML/Error.pm blib/lib/LaTeXML/dtd/isoamsc.ent blib/lib/LaTeXML/Util/Pathname.pm
+	$(RM_F) blib/lib/LaTeXML/Post/MathGrammar blib/lib/LaTeXML/Post/MathGrammar.pm blib/lib/LaTeXML/dtd/isoamsn.ent blib/lib/LaTeXML/Post/HTMLTable.pm blib/lib/LaTeXML/Util/LibXML.pm
+	$(RM_F) blib/lib/LaTeXML/dtd/isomfrk.ent $(FIRST_MAKEFILE) blib/lib/LaTeXML/Package/LaTeX.ltxml blib/lib/LaTeXML/Mouth.pm blib/lib/LaTeXML/Package.pm blib/lib/LaTeXML/dtd/isocyr1.ent
+	$(RM_F) blib/lib/LaTeXML/dtd/isolat2.ent blib/lib/LaTeXML/dtd/mathml2-qname-1.mod blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl blib/lib/LaTeXML/Package/url.ltxml blib/lib/LaTeXML/Global.pm
+	$(RM_F) blib/lib/LaTeXML/dtd/isoamsr.ent blib/lib/LaTeXML/Package/DLMFbib.ltxml blib/lib/LaTeXML/dtd/LaTeXML-html.xsl blib/lib/LaTeXML/Package/html.ltxml blib/lib/LaTeXML/dtd/isomopf.ent
 	$(RM_F) blib/lib/LaTeXML/dtd/isobox.ent blib/lib/LaTeXML/dtd/DLMF.dtd blib/lib/LaTeXML/Post/MathDictionary.pm blib/lib/LaTeXML/dtd/isoamso.ent blib/lib/LaTeXML/Package/article.ltxml blib/lib/LaTeXML/Gullet.pm
-	$(RM_F) blib/lib/LaTeXML/dtd/isomscr.ent blib/lib/LaTeXML/Package/amsrefs.ltxml blib/lib/LaTeXML/dtd/isodia.ent blib/lib/LaTeXML/dtd/isoamsa.ent blib/lib/LaTeXML/Intestine.pm blib/lib/LaTeXML/dtd/catalog
-	$(RM_F) blib/lib/LaTeXML/dtd/mmlalias.ent blib/lib/LaTeXML/dtd/isopub.ent blib/lib/LaTeXML/Model.pm blib/lib/LaTeXML/dtd/isocyr2.ent blib/lib/LaTeXML/Object.pm
+	$(RM_F) blib/lib/LaTeXML/Package/acronym.ltxml blib/lib/LaTeXML/dtd/isomscr.ent blib/lib/LaTeXML/Package/amsrefs.ltxml blib/lib/LaTeXML/dtd/isodia.ent blib/lib/LaTeXML/Package/amssymb.ltxml
+	$(RM_F) blib/lib/LaTeXML/dtd/isoamsa.ent blib/lib/LaTeXML/Intestine.pm blib/lib/LaTeXML/dtd/catalog blib/lib/LaTeXML/dtd/mmlalias.ent blib/lib/LaTeXML/dtd/isopub.ent blib/lib/LaTeXML/Model.pm
+	$(RM_F) blib/lib/LaTeXML/dtd/isocyr2.ent blib/lib/LaTeXML/Object.pm
 
 
 # --- MakeMaker metafile section:
@@ -756,7 +777,7 @@ metafile :
 	$(NOECHO) $(ECHO) '# http://module-build.sourceforge.net/META-spec.html' > META.yml
 	$(NOECHO) $(ECHO) '#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#' >> META.yml
 	$(NOECHO) $(ECHO) 'name:         LaTeXML' >> META.yml
-	$(NOECHO) $(ECHO) 'version:      0.1.0' >> META.yml
+	$(NOECHO) $(ECHO) 'version:      0.1.1' >> META.yml
 	$(NOECHO) $(ECHO) 'version_from: lib/LaTeXML.pm' >> META.yml
 	$(NOECHO) $(ECHO) 'installdirs:  site' >> META.yml
 	$(NOECHO) $(ECHO) 'requires:' >> META.yml
@@ -1028,7 +1049,7 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd:
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,1,0,0">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,1,1,0">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <TITLE>$(DISTNAME)</TITLE>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT></ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Bruce Miller &lt;bruce.miller@nist.gov&gt;</AUTHOR>' >> $(DISTNAME).ppd
@@ -1064,8 +1085,8 @@ pm_to_blib: $(TO_INST_PM)
 	  lib/LaTeXML/Package/makeidx.ltxml blib/lib/LaTeXML/Package/makeidx.ltxml \
 	  lib/LaTeXML/dtd/DLMF.dtd blib/lib/LaTeXML/dtd/DLMF.dtd \
 	  lib/LaTeXML/Intestine.pm blib/lib/LaTeXML/Intestine.pm \
+	  lib/LaTeXML/Package/amssymb.ltxml blib/lib/LaTeXML/Package/amssymb.ltxml \
 	  lib/LaTeXML/dtd/catalog blib/lib/LaTeXML/dtd/catalog \
-	  lib/LaTeXML/dtd/LaTeXML.xsl blib/lib/LaTeXML/dtd/LaTeXML.xsl \
 	  lib/LaTeXML/dtd/isopub.ent blib/lib/LaTeXML/dtd/isopub.ent \
 	  lib/LaTeXML/dtd/isolat2.ent blib/lib/LaTeXML/dtd/isolat2.ent \
 	  lib/LaTeXML/dtd/isoamsb.ent blib/lib/LaTeXML/dtd/isoamsb.ent \
@@ -1075,29 +1096,33 @@ pm_to_blib: $(TO_INST_PM)
 	  lib/LaTeXML/Post/XSLT.pm blib/lib/LaTeXML/Post/XSLT.pm \
 	  lib/LaTeXML/dtd/isolat1.ent blib/lib/LaTeXML/dtd/isolat1.ent \
 	  lib/LaTeXML/Post/MathDictionary.pm blib/lib/LaTeXML/Post/MathDictionary.pm \
-	  lib/LaTeXML/dtd/xhtml-math11-f.dtd blib/lib/LaTeXML/dtd/xhtml-math11-f.dtd \
-	  lib/LaTeXML/Post/XRef.pm blib/lib/LaTeXML/Post/XRef.pm \
 	  lib/LaTeXML/Gullet.pm blib/lib/LaTeXML/Gullet.pm \
 	  lib/LaTeXML/Package/hyperref.ltxml blib/lib/LaTeXML/Package/hyperref.ltxml \
+	  lib/LaTeXML/dtd/LaTeXML-base.xsl blib/lib/LaTeXML/dtd/LaTeXML-base.xsl \
 	  lib/LaTeXML/Error.pm blib/lib/LaTeXML/Error.pm \
 	  lib/LaTeXML/Package/DLMFbib.ltxml blib/lib/LaTeXML/Package/DLMFbib.ltxml \
 	  lib/LaTeXML/dtd/isonum.ent blib/lib/LaTeXML/dtd/isonum.ent \
+	  lib/LaTeXML/dtd/LaTeXML-html.xsl blib/lib/LaTeXML/dtd/LaTeXML-html.xsl \
 	  lib/LaTeXML/dtd/isomscr.ent blib/lib/LaTeXML/dtd/isomscr.ent \
 	  lib/LaTeXML/dtd/isodia.ent blib/lib/LaTeXML/dtd/isodia.ent \
 	  lib/LaTeXML/Box.pm blib/lib/LaTeXML/Box.pm \
 	  lib/LaTeXML/Post.pm blib/lib/LaTeXML/Post.pm \
 	  lib/LaTeXML/Package/DLMF.ltxml blib/lib/LaTeXML/Package/DLMF.ltxml \
 	  lib/LaTeXML/Post/PresentationMathML.pm blib/lib/LaTeXML/Post/PresentationMathML.pm \
-	  lib/LaTeXML/dtd/LaTeXML.dtd blib/lib/LaTeXML/dtd/LaTeXML.dtd \
 	  lib/LaTeXML/Post/HTMLTable.pm blib/lib/LaTeXML/Post/HTMLTable.pm \
+	  lib/LaTeXML/dtd/LaTeXML.dtd blib/lib/LaTeXML/dtd/LaTeXML.dtd \
+	  lib/LaTeXML/Package/comment.ltxml blib/lib/LaTeXML/Package/comment.ltxml \
 	  lib/LaTeXML/dtd/isotech.ent blib/lib/LaTeXML/dtd/isotech.ent \
 	  lib/LaTeXML/Post/MathPath.pm blib/lib/LaTeXML/Post/MathPath.pm \
 	  lib/LaTeXML/Mouth.pm blib/lib/LaTeXML/Mouth.pm \
 	  lib/LaTeXML/dtd/isomfrk.ent blib/lib/LaTeXML/dtd/isomfrk.ent \
+	  lib/LaTeXML/Package/acronym.ltxml blib/lib/LaTeXML/Package/acronym.ltxml \
 	  lib/LaTeXML/dtd/mathml2-qname-1.mod blib/lib/LaTeXML/dtd/mathml2-qname-1.mod \
 	  lib/LaTeXML/dtd/isocyr1.ent blib/lib/LaTeXML/dtd/isocyr1.ent \
 	  lib/LaTeXML/Post/MathGrammar blib/lib/LaTeXML/Post/MathGrammar \
 	  lib/LaTeXML/Package.pm blib/lib/LaTeXML/Package.pm \
+	  lib/LaTeXML/dtd/LaTeXML-xhtml.xsl blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl \
+	  lib/LaTeXML/Global.pm blib/lib/LaTeXML/Global.pm \
 	  lib/LaTeXML/Post/MathGrammar.pm blib/lib/LaTeXML/Post/MathGrammar.pm \
 	  lib/LaTeXML/dtd/isomopf.ent blib/lib/LaTeXML/dtd/isomopf.ent \
 	  lib/LaTeXML/Util/Pathname.pm blib/lib/LaTeXML/Util/Pathname.pm \
@@ -1105,6 +1130,7 @@ pm_to_blib: $(TO_INST_PM)
 	  lib/LaTeXML/dtd/isoamsa.ent blib/lib/LaTeXML/dtd/isoamsa.ent \
 	  lib/LaTeXML/DOM.pm blib/lib/LaTeXML/DOM.pm \
 	  lib/LaTeXML/Package/amsrefs.ltxml blib/lib/LaTeXML/Package/amsrefs.ltxml \
+	  lib/LaTeXML/Parameters.pm blib/lib/LaTeXML/Parameters.pm \
 	  lib/LaTeXML/Util/LibXML.pm blib/lib/LaTeXML/Util/LibXML.pm \
 	  lib/LaTeXML/Package/color.ltxml blib/lib/LaTeXML/Package/color.ltxml \
 	  lib/LaTeXML/dtd/mathml2.dtd blib/lib/LaTeXML/dtd/mathml2.dtd \

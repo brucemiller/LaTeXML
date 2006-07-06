@@ -25,6 +25,8 @@ our @EXPORT_OK = (qw(&constructMathPath));
 our @EXPORT = (qw(&constructMathPath));
 
 our %table;
+our $nsURI = "http://dlmf.nist.gov/LaTeXML";
+
 # Construct an XPath selector from a textual math expression.
 # Returns undef if it can't understand the expression.
 # Options are:
@@ -43,14 +45,22 @@ sub constructMathPath {
   return undef unless scalar(@xpaths)==1; # Too many parts or not enough??
   my $xpath = $xpaths[0];
   return undef unless defined $xpath;
-  # Add conditional to restrict to undeclared items.
-  $xpath .= "[not(ancestor::XMWrap)][not(\@POS)]" if $options{undeclared};
+
+  # Add outer XPath to restrict to certain kinds of expressions
+
+  # Restrict to Undeclared items. (NOT in XMWrap and NO POS attribute)
+  $xpath .= "[not(ancestor::*".isElement('XMWrap').")][not(\@POS)]" if $options{undeclared};
+  # Restrict to certain fonts
   $xpath .= "[\@font='$options{font}']" if defined $options{font};
-  # Wrap approriately to select containing XMath, or just node.
-  $xpath = ($options{container} ? "//XMath[descendant::".$xpath."]" : "//".$xpath);
+  # Wrap to select the whole containing XMath, or just the matching node.
+  $xpath = "//*". ($options{container}
+		   ? isElement('XMath')."[descendant::".$xpath."]"
+		   : $xpath);
   # Add restrictions for  label or refnum.
   $xpath .= "[ancestor-or-self::*[\@label='$options{label}']]" if defined $options{label};
   $xpath .= "[ancestor-or-self::*[\@refnum='$options{refnum}']]" if defined $options{refnum};
+
+#print STDERR "$pattern => $xpath\n";
   $xpath; }
 
 # If we can work something out for infix, maybe we can leverage the
@@ -64,45 +74,71 @@ BEGIN{
 					UnderLine UnderBrace))));
 
 }
+
+#======================================================================
+# Low-level XPath constructors.
+# These all return a Test (ie in [])
+
+# The test to check for a LaTeXML element.
+sub isElement {
+  my($tag)=@_;
+  "[local-name()='$tag' and namespace-uri()='$nsURI']"; }
+
+sub hasName {
+  my($name)=@_;
+  "[\@name='$name' or text()='$name']"; }
+
+sub atPos {
+  my($n)=@_;
+  "[position()=$n]"; }
+
+sub hasChild {
+  my($test)=@_;
+  "[child::*".$test."]"; }
+
+sub hasArg {
+  my($n,$test)=@_;
+  hasChild(atPos($n).isElement('XMArg').hasChild($test)); }
+
+#======================================================================
+
 sub constructXPath1 {
   my($expr)=@_;
   my @stuff;
   do {
+    #  word(...)  : some special construct
     if($expr =~ s/^(\w+)#O(\d+)#(.*)#C\2#//){
       my($op,$args)=($1,$3);
       my $fcn = $table{$op};
       my @args = constructXPath1($args);
       return undef if !defined $op or grep(!defined $_,@args);
       push(@stuff,&$fcn($op,@args)); }
-    elsif($expr =~ s/^(\w+)//){
-      my $name = $1;
-     push(@stuff,"XMTok[\@name='$name' or text()='$name']"); }
+    # "$"  => wildcard
     elsif($expr =~ s/^\$//){
-     push(@stuff,"*"); }
-    elsif($expr =~ s/^(.)//){
+     push(@stuff,"[true()]"); }
+    # word or single char  : a specific token with the given name
+    elsif($expr =~ s/^(\w+|.)//){
       my $name = $1;
-     push(@stuff,"XMTok[\@name='$name' or text()='$name']"); }
+     push(@stuff, isElement('XMTok').hasName($name)); }
     else { 
       return undef;	}	# Unmatched stuff? 
     } while($expr =~ s/^,//);
 
   @stuff; }
 
+# This matches $base IFF it is followed by a postfix subscript operator.
+# Further, if $script is defined, the subscript much match
 sub dosubscript {
   my($op,$base,$script)=@_;
-  if(defined $script){
-    $base
-      ."[following-sibling::*[1][self::XMApp][\@name='PostSubscript']"
-	."[child::*[1][self::XMArg/$script]]"
-	  ."]"; }
-  else {
-    $base
-      ."[following-sibling::*[1][self::XMApp][\@name='PostSubscript']]"; }
-  }
+  $base
+    ."[following-sibling::*".isElement('XMApp').hasName('PostSubscript')
+      .(defined $script ? hasArg(1,$script) : '') ."]"; }
 
 sub doaccent {
   my($op,$var)=@_;
-  "XMApp[child::*[1][self::XMTok[\@name='$op']]][child::*[2][self::XMArg[child::$var]]]"; }
+  isElement('XMApp') 
+    . hasChild(atPos(1).isElement('XMTok').hasName($op))
+      . hasArg(2,$var); }
 
 # ================================================================================
 1;

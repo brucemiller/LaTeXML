@@ -16,7 +16,6 @@
 #**********************************************************************
 package LaTeXML::Package::Pool;
 use strict;
-use LaTeXML::Token;
 use LaTeXML::Package;
 use charnames ":full";
 
@@ -24,7 +23,7 @@ use charnames ":full";
 # Load special functions & other required packages.
 RequirePackage('amsmath');
 
-$LaTeXML::STOMACH->addSearchPath("$ENV{HOME}/dlmf/styles/DLMFtex/");
+STOMACH->addSearchPath("$ENV{HOME}/dlmf/styles/DLMFtex/");
 
 RequirePackage('DLMFfcns');
 

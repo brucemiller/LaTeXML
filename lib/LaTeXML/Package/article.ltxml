@@ -17,7 +17,8 @@ RequirePackage('LaTeX');
 #**********************************************************************
 # Document structure.
 
-DocType("document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd');
+DocType("document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd', 
+	"http://dlmf.nist.gov/LaTeXML");
 
 #**********************************************************************
 # The core sectioning commands are defined in LaTeX.pm

@@ -17,24 +17,34 @@ package LaTeXML::Post::XSLT;
 use strict;
 use XML::LibXML;
 use XML::LibXSLT;
+use LaTeXML::Post;
+our @ISA = (qw(LaTeXML::Post::Processor));
 
-sub new {
-  my($class,%options)=@_;
-  bless {},$class; }
+our @SEARCH_SUBDIRS = qw(LaTeXML/dtd dtd .); 
 
 sub process {
   my($self,$doc,%options)=@_;
-  my $stylesheet = $options{stylesheet};
-  if(!$stylesheet){
-    foreach my $dir (@INC){
-      my $xsl = "$dir/LaTeXML/dtd/LaTeXML.xsl";
-      if(-f $xsl){ $stylesheet=$xsl; last; }}}
-  if($stylesheet && !(ref $stylesheet)){
+  my $stylesheet = $self->getOption('stylesheet') 
+    || "LaTeXML-".$self->getOption('format').".xsl";
+
+  # Now find the actual stylesheet file
+  if($stylesheet && !(-f $stylesheet)){
+    foreach my $dir ($self->getSourceDirectory, $self->getDestinationDirectory, @INC){
+      foreach my $sub (@SEARCH_SUBDIRS){
+	my $file = "$dir/$sub/$stylesheet";
+	if(-f $file){ $stylesheet = $file; last; }}}}
+
+  # Finally, do the transform, if we found a stylesheet
+  if(!$stylesheet || !(-f $stylesheet)){
+    $self->Warn("No stylesheet found for \"$stylesheet\"");
+    $doc; }
+  else {
     my $ssdoc = XML::LibXML->new()->parse_file($stylesheet);
-    $stylesheet = XML::LibXSLT->new()->parse_stylesheet($ssdoc); }
-  die "No Stylesheet found!" unless $stylesheet;
-  $stylesheet->transform($doc, 
-			 ($options{CSS} ? (CSS=>"'$options{CSS}'") :())); }
+    my $xsl   = XML::LibXSLT->new()->parse_stylesheet($ssdoc);
+    $self->Error("Stylesheet \"$stylesheet\" couldn't be read!") unless $xsl;
+    my $css = $self->getOption('CSS');
+    $xsl->transform($doc, ($css ? (CSS=>"'$css'") :())); }}
+
 # ================================================================================
 1;
 

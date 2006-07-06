@@ -1,6 +1,6 @@
 # -*- CPERL -*-
 # /=====================================================================\ #
-# |  DLMFbib                                                            | #
+# |  amssymb                                                            | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -10,26 +10,20 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
+
+#**********************************************************************
+# Currently only a random collection of things I need for DLMF chapters.
+# Eventually, go through the doc and implement it all.
+#**********************************************************************
 package LaTeXML::Package::Pool;
 use strict;
-use charnames ":full";
 use LaTeXML::Package;
+use charnames ":full";
 
-RequirePackage('LaTeX');
-#**********************************************************************
-# Document
-#**********************************************************************
-DocType("bibliography","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
-	"http://dlmf.nist.gov/LaTeXML");
-DefEnvironment('{document}',"<bibliography>%body</bibliography>");
+DefConstructor('\mathbb{}', '#1',
+	       beforeDigest=>sub{ $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(family=>'blackboard'); },
+	       afterDigest=>sub{$_[0]->egroup; });
 
-# Load special functions & other required packages.
-RequirePackage('DLMFmath');
-RequirePackage('amsrefs');
-
-#**********************************************************************
-# Where does this belong?
-DefConstructor('\circledR',"\N{REGISTERED SIGN}");
 
 #**********************************************************************
 1;

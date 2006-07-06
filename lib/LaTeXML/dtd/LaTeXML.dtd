@@ -14,17 +14,16 @@
 -->
 
 <!ENTITY % Simple.class
-        "textstyle | textup | textit | textsl | textsc | textmd | textbf | textrm | textsf | texttt 
-         | emph | textsize | text | cite | ref ">
+        "textstyle | emph | text | cite | ref | acronym | textsup">
 <!ENTITY % Inline.class
-         "a | XMath">
+         "a | Math">
 
 <!-- kinda concerned about equation being only block -->
 <!ENTITY % Block.class
          "p  | equation | figure | table  | tabular | centering | 
-          itemize | enumerate | description">
+          itemize | enumerate | description | verbatim | acronyms">
 <!ENTITY % Misc.class
-         " graphics | quote | footnote | index">
+         "graphics | quote | footnote | index | ERROR">
 
 <!-- These can be overridden to add more elements. -->
 <!ENTITY % Simple.extra "">
@@ -33,21 +32,30 @@
 <!ENTITY % Misc.extra   "">
 
 <!ENTITY % Simple.mix
-      "%Simple.class; %Simple.extra;">
+	 "%Simple.class; %Simple.extra;">
 <!ENTITY % Inline.mix
-      "%Simple.class; %Simple.extra; | %Inline.class; %Inline.extra; | %Misc.class; %Misc.extra;">
-<!ENTITY % Block.mix "%Block.class; %Block.extra; | %Misc.class; %Misc.extra;">
+	 "%Simple.class; %Simple.extra; 
+	  | %Inline.class; %Inline.extra;
+	  | %Misc.class; %Misc.extra;">
+<!ENTITY % Block.mix 
+	 "%Block.class; %Block.extra;
+	  | %Misc.class; %Misc.extra;">
 <!ENTITY % Flow.mix
-       "%Simple.class; %Simple.extra; | %Inline.class; %Inline.extra;
-        | %Block.class; %Block.extra; | %Misc.class; %Misc.extra;">
+	 "%Simple.class; %Simple.extra;
+	  | %Inline.class; %Inline.extra;
+          | %Block.class; %Block.extra;
+	  | %Misc.class; %Misc.extra;">
 
+<!ENTITY % Common.attr
+	 "xmlns CDATA #IMPLIED">
 <!-- ======================================================================
      Math level
-     Really MathML !!!
+     Math (potentially) contains  various alternative forms or representations of a forumula.
+     XMath  is our internal parsed (or to be parsed) form.
+     MathML is also possible; eventually OpenMath...
      ====================================================================== -->
+
 <!-- Include MathML 2 -->
-
-
 <!ENTITY % NS.prefixed "INCLUDE">
 <!ENTITY % NamespaceDecl.attrib "xmlns:m CDATA #IMPLIED"> <!-- ??? -->
 <!ENTITY % MathML.dtd PUBLIC "-//W3C//DTD MathML 2.0//EN" "mathml2.dtd">
@@ -55,40 +63,46 @@
 
 <!ENTITY % Equation.extra "">
 
-<!ELEMENT equation (XMath | tabular | punct | index %Equation.extra;)*>
+<!ELEMENT equation (Math | tabular | punct | index %Equation.extra;)*>
 <!ATTLIST equation
+	  %Common.attr;
           label ID #IMPLIED
           refnum CDATA #IMPLIED>
 
-<!-- Hmm, tabular ? -->
-<!ENTITY % XMath.model "XMApp | XMTok | XMHint | XMArg | XMWrap | XMDual | %Simple.class;">
-<!ELEMENT XMath (%XMath.model; | tabular | m:math)*>
-<!ATTLIST XMath
+<!ENTITY % Math.formats.extra "">
+<!ENTITY % Math.formats "XMath | m:math %Math.formats.extra;">
+
+<!-- tabular? ... Ugh... -->
+<!ELEMENT Math (%Math.formats; | tabular)*>
+<!ATTLIST Math
+	  %Common.attr;
           mode (display|inline) #IMPLIED
-          tex CDATA #IMPLIED
+          tex    CDATA #IMPLIED
           prefix CDATA #IMPLIED
           mathimage CDATA #IMPLIED
           width  CDATA #IMPLIED
           height CDATA #IMPLIED>
 
-<!ELEMENT PMNode (%XMath.model;)*>
-<!ATTLIST PMNode
-          class CDATA #REQUIRED
-          value CDATA #IMPLIED>
-
+<!ENTITY % XMath.model "XMApp | XMTok | XMHint | XMArg | XMWrap | XMDual | %Simple.class;">
+<!ELEMENT XMath (%XMath.model;)*>
+<!ATTLIST XMath
+	  status CDATA #IMPLIED>
 
 <!ELEMENT XMApp (%XMath.model;)*>
 <!ATTLIST XMApp
+	  %Common.attr;
           POS     CDATA #IMPLIED
           name    CDATA #IMPLIED
 	  stackscripts CDATA #IMPLIED
           tex     CDATA #IMPLIED>
 <!ELEMENT XMDual ((%XMath.model;), (%XMath.model;))>
 <!ATTLIST XMDual
+	  %Common.attr;
           POS     CDATA #IMPLIED
           tex     CDATA #IMPLIED>
 <!ELEMENT XMTok (#PCDATA)*>
 <!ATTLIST XMTok
+	  %Common.attr;
           name    CDATA #IMPLIED
           POS     CDATA #IMPLIED
           font    CDATA #IMPLIED
@@ -99,6 +113,7 @@
 
 <!ELEMENT XMHint EMPTY>
 <!ATTLIST XMHint
+	  %Common.attr;
           name    CDATA #IMPLIED
           POS     CDATA #IMPLIED
           style   CDATA #IMPLIED
@@ -106,17 +121,16 @@
 
 <!ELEMENT XMWrap (%XMath.model;)*>
 <!ATTLIST XMWrap
+	  %Common.attr;
           name    CDATA #IMPLIED
           POS     CDATA #IMPLIED
           style   CDATA #IMPLIED
           tex     CDATA #IMPLIED>
 <!ELEMENT XMArg (%XMath.model;)*>
 <!ATTLIST XMArg
+	  %Common.attr;
           rule   CDATA #IMPLIED>
 
-<!ELEMENT style (#PCDATA)*>
-<!ATTLIST style
-          style CDATA #IMPLIED>
 <!ELEMENT punct (#PCDATA)*>
 <!-- ======================================================================
      Document Structure
@@ -137,7 +151,7 @@
 <!ENTITY % define.structure  "INCLUDE" >
 <![%define.structure;[
 
-<!ELEMENT document ((%Frontmatter.mix;)*, section*, bibliography?, appendix*)>
+<!ELEMENT document      ((%Frontmatter.mix;)*, section*, bibliography?, appendix*)>
 <!ELEMENT section       ((%Sectitle.mix;)*, (%Block.mix; | subsection | paragraph)*)>
 <!ELEMENT appendix      ((%Sectitle.mix;)*, (%Block.mix; | subsection | paragraph)*)>
 <!ELEMENT subsection    ((%Sectitle.mix;)*, (%Block.mix; | subsubsection | paragraph)*)>
@@ -153,30 +167,32 @@
 
 <!ELEMENT p        (#PCDATA | %Inline.mix;)*>
 
-<!ENTITY % section-attr "
+<!ENTITY % Section.attr "
           label ID #IMPLIED
           refnum CDATA #IMPLIED">
 
-<!ATTLIST document %section-attr;>
-<!ATTLIST chapter %section-attr;>
-<!ATTLIST part %section-attr;>
-<!ATTLIST section %section-attr;>
-<!ATTLIST appendix %section-attr;>
-<!ATTLIST subsection %section-attr;>
-<!ATTLIST subsubsection %section-attr;>
-<!ATTLIST paragraph %section-attr;>
-<!-- <!ATTLIST p %section-attr;> -->
+<!ATTLIST document      %Common.attr; %Section.attr;>
+<!ATTLIST chapter       %Common.attr; %Section.attr;>
+<!ATTLIST part          %Common.attr; %Section.attr;>
+<!ATTLIST section       %Common.attr; %Section.attr;>
+<!ATTLIST appendix      %Common.attr; %Section.attr;>
+<!ATTLIST subsection    %Common.attr; %Section.attr;>
+<!ATTLIST subsubsection %Common.attr; %Section.attr;>
+<!ATTLIST paragraph     %Common.attr; %Section.attr;>
+<!-- <!ATTLIST p %Section.attr;> -->
 
 <!-- ======================================================================
      Block Elements
      ====================================================================== -->
 <!ELEMENT figure (%Block.mix; | caption | toccaption)*>
-<!ELEMENT table (%Block.mix; | caption | toccaption)*>
+<!ELEMENT table  (%Block.mix; | caption | toccaption)*>
 <!ATTLIST figure
+	  %Common.attr; 
           label  ID #IMPLIED
           placement CDATA #IMPLIED
           refnum CDATA #IMPLIED>
 <!ATTLIST table
+	  %Common.attr; 
           label  ID #IMPLIED
           placement CDATA #IMPLIED
           refnum CDATA #IMPLIED>
@@ -186,14 +202,17 @@
 <!-- tabular is basically cribbed from HTML4's table -->
 <!ELEMENT tabular ((col*|colgroup*), thead?, tfoot?, (tbody | tr | hline)*)>
 <!ATTLIST tabular
+	  %Common.attr; 
           pattern CDATA #IMPLIED
           frame   CDATA #IMPLIED
           rules   CDATA #IMPLIED>
 <!ELEMENT colgroup (col)*>
 <!ATTLIST colgroup
+	  %Common.attr; 
           span  CDATA #IMPLIED
           align CDATA #IMPLIED>
 <!ATTLIST col
+	  %Common.attr; 
           span  CDATA #IMPLIED
           align CDATA #IMPLIED>
 
@@ -204,6 +223,7 @@
 
 <!ELEMENT th (#PCDATA | %Inline.mix;)*>
 <!ATTLIST th
+	  %Common.attr; 
           rowpan CDATA #IMPLIED
           colspan CDATA #IMPLIED
           align CDATA #IMPLIED
@@ -211,6 +231,7 @@
 
 <!ELEMENT td (#PCDATA | %Inline.mix;)*>
 <!ATTLIST td
+	  %Common.attr; 
           rowspan CDATA #IMPLIED
           colspan CDATA #IMPLIED
           align CDATA #IMPLIED
@@ -218,15 +239,18 @@
 
 <!ELEMENT hline EMPTY>
 
+<!ELEMENT verbatim (#PCDATA)*>
 <!ELEMENT centering (%Flow.mix;)*>
 <!ELEMENT itemize (item)*>
 <!ELEMENT enumerate (item)*>
 <!ELEMENT description (item)*>
+<!ELEMENT acronyms (item)*>
 <!ELEMENT item (#PCDATA | tag | %Flow.mix; )*>
 <!ELEMENT tag (#PCDATA | %Inline.mix;)*>
 
 <!ELEMENT graphics EMPTY>
 <!ATTLIST graphics
+	  %Common.attr; 
           graphic CDATA #REQUIRED
           options CDATA #IMPLIED
           src     CDATA #IMPLIED
@@ -238,26 +262,16 @@
      ====================================================================== -->
 <!ELEMENT textstyle (#PCDATA | %Inline.mix;)*>
 <!ATTLIST textstyle
+	  %Common.attr; 
 	  font CDATA #IMPLIED>
 
-<!ELEMENT textup (#PCDATA | %Inline.mix;)*>
-<!ELEMENT textit (#PCDATA | %Inline.mix;)*>
-<!ELEMENT emph   (#PCDATA | %Inline.mix;)*>
-<!ELEMENT textsl (#PCDATA | %Inline.mix;)*>
-<!ELEMENT textsc (#PCDATA | %Inline.mix;)*>
-<!ELEMENT textmd (#PCDATA | %Inline.mix;)*>
-<!ELEMENT textbf (#PCDATA | %Inline.mix;)*>
-<!ELEMENT textrm (#PCDATA | %Inline.mix;)*>
-<!ELEMENT textsf (#PCDATA | %Inline.mix;)*>
-<!ELEMENT texttt (#PCDATA | %Inline.mix;)*>
+<!ELEMENT emph (#PCDATA | %Inline.mix;)*>
 <!ELEMENT text (#PCDATA | %Inline.mix;)*>
-<!ELEMENT textsize (#PCDATA | %Inline.mix;)*>
-<!ATTLIST textsize
-          size CDATA #REQUIRED>
-
+<!ELEMENT textsup (#PCDATA | %Inline.mix;)*>
 
 <!ELEMENT cite (citepre?,citepost?)>
 <!ATTLIST cite
+	  %Common.attr; 
           ref CDATA #REQUIRED
           style (intext|parenthetic) #IMPLIED
           show CDATA #IMPLIED>
@@ -266,7 +280,13 @@
 
 <!ELEMENT a  (#PCDATA | %Inline.mix;)*>
 <!ATTLIST a
+	  %Common.attr; 
           href CDATA #REQUIRED>
+
+<!ELEMENT acronym (#PCDATA | %Inline.mix;)*>
+<!ATTLIST acronym
+	  %Common.attr; 
+	  name CDATA #REQUIRED>
 <!-- ======================================================================
      Misc Elements
      can appear in block or inline contexts
@@ -275,13 +295,20 @@
 <!ELEMENT quote  (#PCDATA | %Inline.mix;)*>
 <!ELEMENT footnote  (#PCDATA | %Inline.mix;)*>
 <!ATTLIST footnote
+	  %Common.attr; 
           footnotemark CDATA #IMPLIED>
+<!-- error object for undefined control sequences, or whatever -->
+<!ELEMENT ERROR (#PCDATA)*>
+<!ATTLIST ERROR
+	  type CDATA #IMPLIED>
+
 <!-- ======================================================================
      Meta data
      ====================================================================== -->
 
-<!ELEMENT ref   EMPTY>
+<!ELEMENT ref  (#PCDATA | %Inline.mix;)*>
 <!ATTLIST ref
+	  %Common.attr; 
           labelref CDATA #REQUIRED>
 <!ELEMENT index (indexphrase*)>
 <!ELEMENT indexphrase (#PCDATA | %Inline.mix;)*>
@@ -293,6 +320,7 @@
 
 <!ELEMENT bibliography (biblist*)>
 <!ATTLIST bibliography
+	  %Common.attr; 
           files CDATA #REQUIRED>
 
 <!ELEMENT biblist (bibentry)*>
@@ -309,6 +337,7 @@
                bib-language |
                bib-url | bib-code_url | bib-eprint | bib-preprint | bib-note )*>
 <!ATTLIST bibentry
+	  %Common.attr; 
           key CDATA #REQUIRED
           type CDATA #REQUIRED>
 <!-- hyphenation |  xref | label | setup | name  -->

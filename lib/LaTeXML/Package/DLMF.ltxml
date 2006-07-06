@@ -12,14 +12,14 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
-use LaTeXML::Token;
 use LaTeXML::Package;
 RequirePackage('LaTeX');
 
 #**********************************************************************
 # Document
 #**********************************************************************
-DocType("chapter","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd');
+DocType("chapter","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
+       "http://dlmf.nist.gov/LaTeXML");
 
 RequirePackage('graphicx');
 RequirePackage('DLMFmath');
@@ -31,6 +31,7 @@ DefPrimitive('\thischapter{}', sub {
   $ch=$ch->untex;
   DefMacro('\thechapter',$ch); 
   DefEnvironment('{document}',"<chapter refnum='%refnum' label='%label'>%body</chapter>",
+		 beforeDigest=> sub { $_[0]->setInPreamble(0); },
 		 afterDigestBegin=>sub{ $_[1]->setProperty(refnum=>$ch);
 					$_[1]->setProperty(label=>"ch:$ch"); },
 		 afterDigest=>sub { $_[0]->getGullet->flush; return; }
@@ -129,11 +130,11 @@ DefConstructor('\origref[]{}', "<origref ref='#2'>#1</origref>", mode=>'text', f
 
 # Redefine to accept optional (ignored) arg.
 DefEnvironment('{equation}[]',
-	       "<equation refnum='%refnum'><XMath mode='display'>%body</XMath></equation>",
+	       "<equation refnum='%refnum'><Math mode='display'><XMath>%body</XMath></Math></equation>",
 	       mode=>'display_math',
 	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); });
 DefEnvironment('{equation*}[]',
-	       "<equation><XMath mode='display'>%body</XMath></equation>",
+	       "<equation><Math mode='display'><XMath>%body</XMath></Math></equation>",
 	       mode=>'display_math');
 
 # equationmix contains several math environments, 
@@ -142,9 +143,10 @@ DefEnvironment('{equationmix}',"<equationmix refnum='%refnum'>%body</equationmix
 	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); },
 	       # NOTE: We'd like to have displaystyle (but NOT mode=display!) for enclosed math env!
 	       # Use displaystyles for math environments within here.
-	       beforeDigest => sub { DefEnvironment('{math}',"<XMath mode='inline'>%body</XMath>",
-						    mode=>'inline_math',
-						    beforeDigest=>sub {$_[0]->setMathStyle('display');});
+	       beforeDigest => sub {
+		 DefEnvironment('{math}',"<Math mode='inline'><XMath>%body</XMath></Math>",
+				mode=>'inline_math',
+				beforeDigest=>sub {$_[0]->setMathStyle('display');});
 			       return; }
 );
 DefEnvironment('{equationmix*}',  "<equationmix>%body</equationmix>");

@@ -3,9 +3,13 @@
 <?latexml class='article'?>
 <document xmlns='http://dlmf.nist.gov/LaTeXML'>
   <section refnum='1'>
-    <title>Testing</title>
-    <p>Expecting (beep) : (beep)
+    <title>Testing Verbatim</title>
+    <p>Normal <textstyle font='bold'>Bold</textstyle> stuff.
 </p>
-    <p>Expecting (foo) : (foo)</p>
+    <verbatim font='typewriter'>
+AbNormal {\bf NonBold} stuff.
+</verbatim>
+    <p>More Normal <textstyle font='bold'>Bold</textstyle> stuff.
+</p>
   </section>
 </document>

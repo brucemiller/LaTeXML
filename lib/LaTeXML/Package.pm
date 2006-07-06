@@ -12,23 +12,21 @@
 
 package LaTeXML::Package;
 use strict;
-use LaTeXML::Token;
-use LaTeXML::Mouth;
-use LaTeXML::Error;
+use Exporter;
+use LaTeXML::Global;
 use LaTeXML::Definition;
-use Exporter();
-use LaTeXML::Object;
-our @ISA = qw(Exporter LaTeXML::Object);
+use LaTeXML::Parameters;
+our @ISA = qw(Exporter);
 our @EXPORT = (qw(&DefExpandable &DefMacro
-		  &DefPrimitive  &DefParameter &NewCounter
+		  &DefPrimitive  &DefRegister &NewCounter
 		  &DefConstructor &DefSymbol
 		  &DefEnvironment
 		  &DefTextFilter &DefMathFilter &DefKeyVal
 		  &Let
 		  &RequirePackage
-
+		  &RawTeX
 		  &Tag &DocType),
-	       @LaTeXML::Error::EXPORT); 
+	       @LaTeXML::Global::EXPORT);
 
 #**********************************************************************
 #   Initially, I thought LaTeXML Packages should try to be like perl modules:
@@ -42,6 +40,14 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 #**********************************************************************
 # Somebody must have bound $LaTeXML::STOMACH to the stomach that is
 # receiving the definitions.
+
+sub parsePrototype {
+  my($proto)=@_;
+  $proto =~ s/^(\\?[a-zA-Z@]+|\\?.)//; # Match a cs, env name,...
+  my($cs,@junk) = TokenizeInternal($1)->unlist;
+  Error("Definition prototype doesn't have proper control sequence: $proto") if @junk;
+  $proto =~ s/^\s*//;
+  ($cs, parseParameters($proto,$cs)); }
 
 #**********************************************************************
 # Definitions
@@ -61,7 +67,7 @@ sub DefExpandable {
   CheckOptions("DefExpandable ($proto)",$expandable_options,%options);
   my ($cs,$paramlist)=parsePrototype($proto);
   $expansion = Tokens() unless defined $expansion;
-  $LaTeXML::STOMACH->setMeaning($cs,LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options));
+  STOMACH->setMeaning($cs,LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options));
   return; }
 
 # Define a Macro: Essentially an alias for DefExpandable
@@ -72,7 +78,7 @@ sub DefMacro {
   my ($cs,$paramlist)=parsePrototype($proto);
   $expansion = Tokens() unless defined $expansion;
   $expansion = TokenizeInternal($expansion) unless ref $expansion;
-  $LaTeXML::STOMACH->setMeaning($cs,LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options));
+  STOMACH->setMeaning($cs,LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options));
   return; }
 
 #======================================================================
@@ -82,7 +88,7 @@ sub DefMacro {
 # The $replacement should be a sub which returns nothing, or a list of Box's or Whatsit's.
 # The options are:
 #    isPrefix  : 1 for things like \global, \long, etc.
-#    parameterType : for parameters (but needs to be worked into DefParameter, below).
+#    registerType : for parameters (but needs to be worked into DefParameter, below).
 
 our $primitive_options = {isPrefix=>1};
 sub DefPrimitive {
@@ -90,20 +96,20 @@ sub DefPrimitive {
   CheckOptions("DefPrimitive ($proto)",$primitive_options,%options);
   my ($cs,$paramlist)=parsePrototype($proto);
   $replacement = sub { (); } unless defined $replacement;
-  $LaTeXML::STOMACH->setMeaning($cs,LaTeXML::Primitive->new($cs,$paramlist,$replacement,%options));
+  STOMACH->setMeaning($cs,LaTeXML::Primitive->new($cs,$paramlist,$replacement,%options));
   return; }
 
-our $parameter_options = {readonly=>1, getter=>1, setter=>1};
-our %parameter_types = ('LaTeXML::Number'   =>'Number',
-			'LaTeXML::Dimension'=>'Dimension',
-			'LaTeXML::Glue'     =>'Glue',
-			'LaTeXML::MuGlue'   =>'MuGlue',
-			'LaTeXML::Tokens'   =>'any',
+our $register_options = {readonly=>1, getter=>1, setter=>1};
+our %register_types = ('LaTeXML::Number'   =>'Number',
+		       'LaTeXML::Dimension'=>'Dimension',
+		       'LaTeXML::Glue'     =>'Glue',
+		       'LaTeXML::MuGlue'   =>'MuGlue',
+		       'LaTeXML::Tokens'   =>'any',
 		       );
-sub DefParameter {
+sub DefRegister {
   my($proto,$value,%options)=@_;
-  CheckOptions("DefParameter ($proto)",$parameter_options,%options);
-  my $type = $parameter_types{ref $value};
+  CheckOptions("DefRegsiter ($proto)",$register_options,%options);
+  my $type = $register_types{ref $value};
   my ($cs,$paramlist)=parsePrototype($proto);
   my $name = $cs->toString;
   my $getter = $options{getter} 
@@ -113,14 +119,11 @@ sub DefParameter {
     || sub { my($stomach,$value,@args)=@_; 
 	     $stomach->setValue(join('',$name,map($_->toString,@args)),$value); };
   # Not really right to set the value!
-  $LaTeXML::STOMACH->setValue($cs->toString,$value) if defined $value;
-  $LaTeXML::STOMACH->setMeaning($cs,LaTeXML::Parameter->new($cs,$paramlist, '',
-							    getter=>$getter,
-							    setter=>$setter,
-							    parameterType=>$type,
-							    readonly=>$options{readonly}));
+  STOMACH->setValue($cs->toString,$value) if defined $value;
+  STOMACH->setMeaning($cs,LaTeXML::Register->new($cs,$paramlist, $type,$getter,$setter,
+						 readonly=>$options{readonly}));
   return; }
-  
+
 #======================================================================
 # Define a constructor control sequence. 
 #======================================================================
@@ -159,7 +162,7 @@ sub DefConstructor {
 	  floats=>$options{floats},
 	  (defined $options{mathclass} ? (mathclass=>$options{mathclass}):()),
 	  captureBody=>$options{captureBody});
-  $LaTeXML::STOMACH->setMeaning($cs,$def);
+  STOMACH->setMeaning($cs,$def);
   return; }
 
 our $symbol_options = {style=>1, name=>1, mathclass=>1,untex=>1,partOfSpeech=>1};
@@ -184,9 +187,9 @@ our $environment_options = {mode=>1, beforeDigest=>1, afterDigest=>1,
 sub DefEnvironment {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefEnvironment ($proto)",$environment_options,%options);
-  $proto =~ s/^\{([^\}]+)\}/\\foo/; # Pull off the environment name as {name}
+  $proto =~ s/^\{([^\}]+)\}//; # Pull off the environment name as {name}
   my $name = $1;
-  my ($ignore,$paramlist)=parsePrototype($proto);
+  my $paramlist=parseParameters($proto,"Environment $name");
   my $mode = $options{mode};
   # This is for the common case where the environment is opened by \begin{env}
   my $BEG=LaTeXML::Constructor->new("\\begin{$name}", $paramlist,$replacement,
@@ -207,17 +210,15 @@ sub DefEnvironment {
   my $beg=LaTeXML::Constructor->new("\\$name", $paramlist,$replacement,
 				    mathConstructor  => $options{mathConstructor},
 				    beforeDigest=>[($mode ? (sub { $_[0]->beginMode($mode);}):()),
-						   sub { $_[0]->beginEnvironment($name); },
 						   ($options{beforeDigest} ? ($options{beforeDigest}) : ())],
 				    captureBody=>1);
   my $end=LaTeXML::Constructor->new("\\end$name","","",
 				    afterDigest=>[($options{afterDigest} ? ($options{afterDigest}) : ()),
-						  sub { $_[0]->endEnvironment($name); },
 						  ($mode ? (sub { $_[0]->endMode($mode);}):())]),
-  $LaTeXML::STOMACH->setMeaning(T_CS("\\begin{$name}"),$BEG);
-  $LaTeXML::STOMACH->setMeaning(T_CS("\\end{$name}"),$END);
-  $LaTeXML::STOMACH->setMeaning(T_CS("\\$name"),$beg);
-  $LaTeXML::STOMACH->setMeaning(T_CS("\\end$name"),$end);
+  STOMACH->setMeaning(T_CS("\\begin{$name}"),$BEG);
+  STOMACH->setMeaning(T_CS("\\end{$name}"),$END);
+  STOMACH->setMeaning(T_CS("\\$name"),$beg);
+  STOMACH->setMeaning(T_CS("\\end$name"),$end);
   return; }
 
 #======================================================================
@@ -228,24 +229,29 @@ sub Tag {
   my($tag,%properties)=@_;
   CheckOptions("Tag ($tag)",$tag_options,%properties);
   foreach my $key (keys %properties){
-    $LaTeXML::STOMACH->getModel->setTagProperty($tag,$key,$properties{$key}); }
+    MODEL->setTagProperty($tag,$key,$properties{$key}); }
   return; }
 
 sub DocType {
-  my($rootelement,$pubid,$sysid)=@_;
-  $LaTeXML::STOMACH->getModel->setDocType($rootelement,$pubid,$sysid); 
+  my($rootelement,$pubid,$sysid,$namespace)=@_;
+  MODEL->setDocType($rootelement,$pubid,$sysid,$namespace); 
   return; }
 
+our $require_options = {options=>1};
 sub RequirePackage {
-  my($package)=@_;
-  $LaTeXML::STOMACH->input($package); 
+  my($package,%options)=@_;
+  CheckOptions("RequirePackage ($package)",$require_options,%options);
+  STOMACH->input($package,%options); 
   return; }
 
 sub Let {
   my($token1,$token2)=@_;
   ($token1)=Tokenize($token1)->unlist unless ref $token1;
-  $LaTeXML::STOMACH->setMeaning($token1,$LaTeXML::STOMACH->getMeaning($token2)); }
+  STOMACH->setMeaning($token1,STOMACH->getMeaning($token2)); }
 
+sub RawTeX {
+  my($text)=@_;
+  STOMACH->digest(TokenizeInternal($text)); }
 #======================================================================
 # Additional support for counters (primarily LaTeX oriented)
 
@@ -253,11 +259,11 @@ sub NewCounter {
   my($ctr,$within)=@_;
   $ctr=$ctr->untex if ref $ctr;
   $within=$within->untex if $within && ref $within;
-  DefParameter("\\c\@$ctr",Number(0));
-  $LaTeXML::STOMACH->setValue("\\c\@$ctr",Number(0),1);
-  $LaTeXML::STOMACH->setValue("\\cl\@$ctr",Tokens(),1);
-  $LaTeXML::STOMACH->setValue("\\cl\@$within",
-			      Tokens(T_CS($ctr),$LaTeXML::STOMACH->getValue("\\cl\@$within")->unlist),1) 
+  DefRegister("\\c\@$ctr",Number(0));
+  STOMACH->setValue("\\c\@$ctr",Number(0),1);
+  STOMACH->setValue("\\cl\@$ctr",Tokens(),1);
+  STOMACH->setValue("\\cl\@$within",
+			      Tokens(T_CS($ctr),STOMACH->getValue("\\cl\@$within")->unlist),1) 
     if $within;
   DefMacro("\\the$ctr","\\arabic{$ctr}");
   }
@@ -269,17 +275,17 @@ sub NewCounter {
 # Here we define perl-level declarations so that keyval args can be handled
 sub DefKeyVal {
   my($keyset,$key,$type,$default)=@_;
-  my ($ignore,$paramlist)=parsePrototype("\\foo $type");
-  $LaTeXML::STOMACH->setValue('KEYVAL@'.$keyset.'@'.$key, $paramlist->[0]); 
-  $LaTeXML::STOMACH->setValue('KEYVAL@'.$keyset.'@'.$key.'@default', Tokenize($default)) 
+  my $paramlist=parseParameters($type,"KeyVal $key in set $keyset");
+  STOMACH->setValue('KEYVAL@'.$keyset.'@'.$key, $paramlist->[0]); 
+  STOMACH->setValue('KEYVAL@'.$keyset.'@'.$key.'@default', Tokenize($default)) 
     if defined $default; }
 #======================================================================
 # Defining Filters
 sub DefTextFilter {
   my(@args)=@_;
   Error("DefTextFilter only takes either 2 or 3 arguments") unless (scalar(@args)==2)||(scalar(@args)==3);
-  my $stomach = $LaTeXML::STOMACH;
-  @args = map( (ref $_ ? $_ : $stomach->digestTokens(TokenizeInternal($_))), @args);
+  my $stomach = STOMACH;
+  @args = map( (ref $_ ? $_ : $stomach->digest(TokenizeInternal($_))), @args);
   my($init,$pattern,$replacement)=(scalar(@args)==2 ? ($args[0],@args) : @args);
   $stomach->addTextFilter($init->getInitial, 
 			  (ref $pattern eq 'CODE' ? $pattern : [$pattern->unlist]),
@@ -288,8 +294,8 @@ sub DefTextFilter {
 sub DefMathFilter {
   my(@args)=@_;
   Error("DefMathFilter only takes either 2 or 3 arguments") unless (scalar(@args)==2)||(scalar(@args)==3);
-  my $stomach = $LaTeXML::STOMACH;
-  @args = map( (ref $_ ? $_ : $stomach->digestTokens(TokenizeInternal('$'.$_.'$'))->getBody),
+  my $stomach = STOMACH;
+  @args = map( (ref $_ ? $_ : $stomach->digest(TokenizeInternal('$'.$_.'$'))->getBody),
 	       @args);
   my($init,$pattern,$replacement)=(scalar(@args)==2 ? ($args[0],@args) : @args);
   $stomach->addMathFilter($init->getInitial, 
@@ -405,7 +411,7 @@ that only matters if you define subroutines or variables that need
 =head3 Control Sequence Prototypes
 
 Many of the following defining forms define the behaviour of a control sequence (macro, 
-primitive, parameter, etc); they take a `Prototype' as the first argument indicating
+primitive, register, etc); they take a `Prototype' as the first argument indicating
 the control sequence to define and a sequence of parameter specifications.
 Each parameter specification is of the form "{type}", "[type]" or simply "type".
 For "{type}", a regular TeX argument (token or sequence of tokens with balanced braces)
@@ -471,12 +477,12 @@ but otherwise should return a list of digested items.
 
 The only option is for the special case: isPrefix=>1 is used for assignment  prefixes (like \global).
 
-=item C<< DefParameter($proto,$value,%options); >>
+=item C<< DefRegister($proto,$value,%options); >>
 
-Defines a parameter with the given initial value (a Number, Dimension, Glue, MuGlue or Tokens
+Defines a register with the given initial value (a Number, Dimension, Glue, MuGlue or Tokens
 --- I haven't handled Box's yet).  Usually, the $proto is just the control sequence, but
-registers are also handled by prototypes like "\count{Number}". DefParameter arranges
-that the parameter value can be accessed when a numeric, dimension, ... value is being read,
+registers are also handled by prototypes like "\count{Number}". DefRegister arranges
+that the register value can be accessed when a numeric, dimension, ... value is being read,
 and also defines the control sequence for assignment.
 
 By default the value is stored in the Stomach's Value table under a name concatenating the 
@@ -587,9 +593,10 @@ The recognized properties are:
 
 The autoOpen and autoClose properties help match the more  SGML-like LaTeX to XML.
 
-=item C<< DocType($rootelement,$publicid,$systemid); >>
+=item C<< DocType($rootelement,$publicid,$systemid,$namespace); >>
 
-Declares the document type to be used in the final document.
+Declares the expected rootelement, the public and system ID's of the document type
+to be used in the final document, and the default namespace URI.
 
 =item C<< RequirePackage($package); >>
 
@@ -638,6 +645,12 @@ The $patterncode is called with the current list of digested things and should
 return the number of matched items.  The $replacment gets the list of matched
 things and returns a list of things to relace it by.  For efficiency, these
 filters are only invoked when the box in $init is encountered.
+
+=item C<< RawTeX('... tex code ...'); >>
+
+RawTeX is a convenience function for including chunks of raw TeX (or LaTeX) code
+in a Package implementation.  It is useful for copying portions of the normal
+implementation that can be handled simply using macros and primitives.
 
 =back
 

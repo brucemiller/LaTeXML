@@ -73,7 +73,7 @@ sub pathname_concat {
 # pathname_is_absolute($pathname) => (0|1)
 sub pathname_is_absolute {
   my($pathname)=@_;
-  $pathname =~ m|^/|; }
+  $pathname && $pathname =~ m|^/|; }
 
 # pathname_relative($pathname,$base) => $relativepathname
 # Return $pathname as a pathname relative to $base.

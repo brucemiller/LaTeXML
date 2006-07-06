@@ -22,7 +22,7 @@ use charnames ":full";
 
 #**********************************************************************
 
-DefConstructor('\eqref{}', "(<ref labelref='#1'/>)");
+DefMacro('\eqref{semiverb}', '(\@REF{#1}{\@VALUE{LABEL@#1}})');
 
 
 # Where's this defined ? (amsmath ??)
@@ -61,7 +61,7 @@ DefConstructor('\sideset{}{}{}', sub {
   my $node=$intestine->openElement('XMApp');
   my $phase=0;
   foreach my $group ($pre,$post){
-    $group->absorb($intestine);
+    $intestine->absorb($group);
     foreach my $p ($node->childNodes){
       my $type = $p->getAttribute('name')||'';
       if   ($type eq 'PostSubscript'  ){ $scripts[$phase+0] = $p->firstChild; }

@@ -11,23 +11,13 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Box;
 use strict;
+use LaTeXML::Global;
 use LaTeXML::Object;
-use Exporter;
-our @ISA = qw(LaTeXML::Object Exporter);
-our @EXPORT = qw(Box List MathBox MathList Whatsit);
-# Profiling hack so new doesn't get seen as BEGIN!
-sub dummy {()} dummy();
-
-# Concise exported constructors for various Digested objects.
-sub Box { LaTeXML::Box->new(@_); }
-sub List { LaTeXML::List->new(@_); }
-sub MathBox { LaTeXML::MathBox->new(@_); }
-sub MathList { LaTeXML::MathList->new(@_); }
-sub Whatsit { LaTeXML::Whatsit->new(@_); }
+our @ISA = qw(LaTeXML::Object);
 
 sub new {
   my($class,$string,$font)=@_;
-  my $self=[$string,$font];
+  my $self=[$string,$font || Font()];
   bless $self,$class; }
 
 # Accessors
@@ -42,9 +32,8 @@ sub unlist  { ($_[0]); }	# Return list of the boxes
 sub untex { $_[0][0]; }
 sub toString { $_[0][0]; }
 
-sub absorb {
+sub beAbsorbed {
   my($self,$intestine)=@_;
-  local $LaTeXML::BOX = $self;
   $intestine->openText($$self[0], $$self[1]); }
 
 # Methods for overloaded operators
@@ -59,18 +48,25 @@ sub equals {
   my($a,$b)=@_;
   ((ref $a) eq (ref $b)) && ($$a[0] eq $$b[0]); }
 
+sub getSourceLocator { 'unknown'; }
+  
 #**********************************************************************
 # LaTeXML::MathBox
 #**********************************************************************
 package LaTeXML::MathBox;
 use strict;
+use LaTeXML::Global;
 our @ISA = qw(LaTeXML::Box);
+
+sub new {
+  my($class,$string,$font)=@_;
+  my $self=[$string,$font || MathFont()];
+  bless $self,$class; }
 
 sub isMath { 1; }		# MathBoxes are math mode.
 
-sub absorb {
+sub beAbsorbed {
   my($self,$intestine)=@_;
-  local $LaTeXML::BOX = $self;
   $intestine->insertMathToken($$self[0],$$self[1]); }
 
 #**********************************************************************
@@ -78,15 +74,16 @@ sub absorb {
 #**********************************************************************
 package LaTeXML::Comment;
 use strict;
+use LaTeXML::Global;
 our @ISA = qw(LaTeXML::Box);
 
 sub untex { "%".$_[0][0]."\n"; }
 sub toString { '';}
 
-sub absorb {
+sub beAbsorbed {
   my($self,$intestine)=@_;
-  local $LaTeXML::BOX = $self;
   $intestine->openComment($$self[0]); }
+
 #**********************************************************************
 # LaTeXML::List
 # A list of boxes or Whatsits
@@ -94,19 +91,13 @@ sub absorb {
 #**********************************************************************
 package LaTeXML::List;
 use strict;
-use LaTeXML::Error;
+use LaTeXML::Global;
 use LaTeXML::Object;
 our @ISA = qw(LaTeXML::Object);
 
-our %boxtypes=map(($_=>1), qw(LaTeXML::Box LaTeXML::MathBox LaTeXML::Comment LaTeXML::List 
-			      LaTeXML::MathList LaTeXML::Whatsit));
 sub new {
   my($class,@boxes)=@_;
-  map( $boxtypes{ref $_} || TypeError($_,"Box|Comment|List|MathList|Whatsit"),@boxes);
   bless [@boxes],$class; }
-
-sub typecheck {
-  map( $boxtypes{ref $_} || TypeError($_,"Box|Comment|List|MathList|Whatsit"),@_); }
 
 sub isMath     { 0; }			# List's are text mode
 sub getFont    { $_[0]->[0]->getFont; }	# Return font of 1st box (?)
@@ -122,10 +113,9 @@ sub toString {
   my($self)=@_;
   join('',map($_->toString,@$self)); }
 
-sub absorb {
+sub beAbsorbed {
   my($self,$intestine)=@_;
-  local $LaTeXML::BOX = $self;
-  map($_->absorb($intestine), @$self); }
+  map($intestine->absorb($_), @$self); }
 
 # Methods for overloaded operators
 sub stringify {
@@ -149,6 +139,7 @@ sub equals {
 # (possibly evolve into HList, VList, MList)
 #**********************************************************************
 package LaTeXML::MathList;
+use LaTeXML::Global;
 our @ISA = qw(LaTeXML::List);
 
 sub isMath { 1; }		# MathList's are math mode.
@@ -167,7 +158,7 @@ sub isMath { 1; }		# MathList's are math mode.
 #**********************************************************************
 package LaTeXML::Whatsit;
 use strict;
-use LaTeXML::Error;
+use LaTeXML::Global;
 use LaTeXML::Object;
 our @ISA = qw(LaTeXML::Object);
 
@@ -176,13 +167,16 @@ sub new {
   my $ismath = $stomach->inMath;
   my $font = $data{font}
     || ($ismath ? $stomach->getFont->specialize($defn->getMathClass) : $stomach->getFont );
+  my($file,$line)=$stomach->getSourceLocation;
   my $self={definition=>$defn, isMath=>$ismath, args=>$args||[],
-	    properties=>{font=>$font,%data}};
+	    properties=>{font=>$font,%data},
+	    filename=>$file, line=>$line};
   bless $self,$class; }
 
 sub isMath        { $_[0]{isMath}; }
 sub getDefinition { $_[0]{definition}; }
 sub getFont       { $_[0]{properties}->{font}; } # and if undef ????
+sub setFont       { $_[0]{properties}->{font} = $_[1]; }
 sub getProperty   { $_[0]{properties}{$_[1]}; }
 sub setProperty   { $_[0]{properties}{$_[1]}=$_[2]; return; }
 sub getProperties { $_[0]{properties}; }
@@ -216,6 +210,10 @@ sub untex {
 
 sub toString { $_[0]->untex;}
 
+sub getSourceLocator { 
+  my($self)=@_;
+  "file $$self{filename}, line $$self{line}"; }
+
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
@@ -236,89 +234,15 @@ sub equals {
     shift(@a); shift(@b); }
   return !(@a || @b); }
 
-#**********************************************************************
-sub absorb {
+sub beAbsorbed {
   my($self,$intestine)=@_;
-  local $LaTeXML::BOX = $self;
   my ($defn,$args,$props) = ($$self{definition},$$self{args},$$self{properties});
   my $constructor = $defn->getConstructor($$self{isMath});
   if(defined $constructor && !ref $constructor && $constructor){
-    $constructor = conditionalize_constructor($constructor,$args,$props);
-    my ($floats,$savenode) = ($defn->floats,undef);
-    while($constructor){
-      # Processing instruction pattern <?name a=v ...?>
-      if($constructor =~ s|^\s*<\?([\w\-_]+)(.*?)\s*\?>||){
-	my($target,$avpairs)=($1,$2);
-	$intestine->insertPI($target,parse_avpairs($avpairs,$args,$props)); }
-      # Open tag <name a=v ...> (possibly empty <name a=v/>)
-      elsif($constructor =~ s|^\s*<([\w\-_]+)(.*?)\s*(/?)>||){
-	my($tag,$avpairs,$empty)=($1,$2,$3);
-	if($floats && !defined $savenode){
-	  my $n = $intestine->getNode;
-	  while(defined $n && !$n->canContain($tag)){
-	    $n = $n->getParentNode; }
-	  Error("No open node can accept a \"$tag\"") unless defined $n;
-	  $savenode = $intestine->getNode;
-	  $intestine->setNode($n); }
-	$intestine->openElement($tag,parse_avpairs($avpairs,$args,$props));
-	$intestine->closeElement($tag) if $empty; }
-      # A Close tag </name>
-      elsif($constructor =~ s|^\s*</([\w\-_]+)\s*>||){
-	$intestine->closeElement($1); }
-      # A bare argument #1 or property %prop
-      elsif($constructor =~ s/^(\#(\d+)|\%([\w\-_]+))//){      # A positional argument or named property
-	my $value = (defined $2 ? $$args[$2-1] : $$props{$3});
-	$value->absorb($intestine) if defined $value; }
-      # Could recognize a=v  to assign attribute to current node? May conflict with random text!?!
-      elsif($constructor =~ s|^([\w\-_]+)=([\'\"])(.*?)\2||){
-	my $key = $1;
-	my $value = parse_attribute_value($3,$args,$props);
-	my $n = $intestine->getNode;
-	if($floats){
-	  while(defined $n && ! $n->canHaveAttribute($key)){
-	    $n = $n->getParentNode; }
-	  Error("No open node can accept attribute $key") unless defined $n; }
-	$n->setAttribute($key,$value) if defined $value; }
-      # Else random text
-      elsif($constructor =~ s/^([^\%\#<]+|.)//){	# Else, just some text.
-	$intestine->openText($1,$$props{font}); }
-    }
-    $intestine->setNode($savenode) if defined $savenode; }
+    $intestine->interpretConstructor($constructor,$args,$props,$defn->floats); }
   elsif(ref $constructor eq 'CODE'){
     &$constructor($intestine,@$args,$props); }
 }
-
-# This evaluates conditionals in a constructor pattern, removing any that fail.
-# Conditionals are of the form ?#1(...) or ?%foo(...) for Whatsit args or parameters.
-# It does NOT handled nested conditionals!!!
-sub conditionalize_constructor {
-  my($constructor,$args,$props)=@_;
-  $constructor =~ s/(\?|\!)(\#(\d+)|\%([\w\-_]+))\(((\\.|[^\)])*)\)/ {
-    my $val = ($3 ? $$args[$3-1] : $$props{$4});
-    (($1 eq '!' ? !$val : $val) ? $5 : ''); } /gex;
-  $constructor; }
-
-# Parse a set of attribute value pairs from a constructor pattern, 
-# substituting argument and property values from the whatsit.
-sub parse_avpairs {
-  my($avpairs,$args,$props)=@_;
-  my %attr=();		# Check substitutions for attributes.
-  while($avpairs =~ s|^\s*([\w\-_]+)=([\'\"])(.*?)\2||){
-    my $key = $1;
-    my $value = parse_attribute_value($3,$args,$props);
-    $attr{$key}=$value if defined $value; }
-  Error("Couldn't recognize constructor attributes for $LaTeXML::BOX at \"$avpairs\"")
-    if $avpairs;
-  %attr; }
-
-sub parse_attribute_value {
-  my($value,$args,$props)=@_;
-  if($value =~ /^\#(\d+)$/){ $value = $$args[$1-1]; }
-  elsif($value =~ /^\%([\w\-_]+)$/){ $value = $$props{$1}; }
-  else {
-    $value =~ s/\#(\d+)/ my $x=$$args[$1-1]; (ref $x ? $x->untex : $x);/eg;
-    $value =~ s/\%([\w\-_]+)/ my $x=$$props{$1}; (ref $x ? $x->untex : $x); /eg; }
-  $value; }
 
 #**********************************************************************
 1;
@@ -340,34 +264,7 @@ LaTeXML::MathList represents a sequence of digested things in math;
 LaTeXML::Whatsit represents a digested object that can generate
 arbitrary elements in the XML Document.
 
-=head2 Exports
-
-The following constructors are exported, for convenience.
-
-=over 4
-
-=item C<< $box = Box($string,$font); >>
-
-Create a L<LaTeXML::Box> for the given $string, in the given $font.
-
-=item C<< $mathbox = MathBox($string,$font); >>
-
-Create a  L<LaTeXML::MathBox> for the given $string, in the given $font.
-
-=item C<< $list = List(@boxes); >>
-
-Create a L<LaTeXML::List> containing the given @boxes.
-
-=item C<< $mathlist = MathList(@mathboxes); >>
-
-Create a L<LaTeXML::MathList> containing the given @mathboxes.
-
-=item C<< $whatsit = Whatsit($defn,$stomach,$args,%data); >>
-
-Create a L<LaTeXML::Whatsit> according to $defn, with the given $args (an 
-array reference containing the arguments) and any extra relevant %data.
-
-=back
+See L<LaTeXML::Global> for convenient constructors for these objects.
 
 =head2 Common Methods for all digested objects.
 
@@ -406,11 +303,10 @@ Returns the TeX string that corresponds to this $digested
 in a form (hopefully) suitable for processing by TeX,
 if needed.
 
-=item C<< $digested->absorb($intestine); >>
+=item C<< $digested->beAbsorbed($intestine); >>
 
-Inserts the contents of $digested into the DOM that the
-$intestine is building in a manner appropriate to the type
-of $digested.
+This method tells the $digested to insert it's content into the DOM
+that the $intestine is building in whatever manner is appropriate for its type.
 
 =back
 
@@ -476,7 +372,7 @@ under 'trailer'.
 
 Return the trailer for this $whatsit. See setBody.
 
-=item C<< $whatsit->absorb($intestine); >>
+=item C<< $whatsit->beAbsorbed($intestine); >>
 
 Inserts itself into the DOM being constructed by the $intestine.
 The definition that created this $whatsit is a LaTeXML::Constructor,

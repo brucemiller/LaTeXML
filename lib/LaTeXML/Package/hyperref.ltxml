@@ -12,11 +12,10 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
-use LaTeXML::Token;
 use LaTeXML::Package;
 
 # Need some work here!?!?
 DefMacro('\pdfcatalog{}','');
-DefParameter('\pdfcompresslevel',Number(0));
+DefRegister('\pdfcompresslevel',Number(0));
 
 1;

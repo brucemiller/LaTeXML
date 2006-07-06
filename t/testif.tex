@@ -14,6 +14,8 @@ TestA and C (False) : \ifx\testA\testC True \else False\fi.
 
 Nested (True False)
 \ifx\testA\testB True \ifx\testA\testC True \else False\fi \else False \ifx\testA\testC True \else False\fi\fi.
+Nested (False True)
+\ifx\testA\testC True \ifx\testA\testB True \else False\fi \else False \ifx\testA\testB True \else False\fi\fi.
 
 \let\endif\fi
 Test let fi (True False); 

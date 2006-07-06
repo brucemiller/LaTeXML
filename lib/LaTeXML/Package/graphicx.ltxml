@@ -35,6 +35,9 @@ DefConstructor('\graphicspath{semiverb}',"<?latexml graphicspath='#1'?>");
 
 DefKeyVal('Gin','width','Dimension');
 DefKeyVal('Gin','height','Dimension');
+DefKeyVal('Gin','keepaspectratio','','true');
+DefKeyVal('Gin','clip','','true');
+
 DefKeyVal('Gin','vrml','semiverb');
 DefKeyVal('Gin','magnifiable','','true');
 

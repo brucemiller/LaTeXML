@@ -5,14 +5,14 @@
 use LaTeXML::Package;
 use LaTeXML::Token;
 # From latexml.sty
-DefConstructor('\XML',     "<a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a>");
-DefConstructor('\HTML',    "<a href='http://www.w3c.org/HTML/'><texttt>HTML</texttt></a>");
-DefConstructor('\XHTML',   "<a href='http://www.w3c.org/XHTML/'><texttt>XHTML</texttt></a>");
-DefConstructor('\MathML',  "<a href='http://www.w3c.org/Math/'><texttt>MathML</texttt></a>");
-DefConstructor('\OpenMath',"<a href='http://www.openmath.org/'>OpenMath</a>");
-DefConstructor('\LaTeXML', "<a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a>");
-
 DefConstructor('\URL[]{}',"<a href='#2'>?#1(#1)!#1(#2)</a>");
+DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3c.org/XML/}');
+DefMacro('\HTML',    '\URL[\texttt{HTML}]{http://www.w3c.org/HTML/}');
+DefMacro('\XHTML',   '\URL[\texttt{XHTML}]{http://www.w3c.org/XHTML/}');
+DefMacro('\MathML',  '\URL[\texttt{MathML}]{http://www.w3c.org/Math/}');
+DefMacro('\OpenMath','\URL[\texttt{OpenMath}]{http://www.openmath.org/}');
+DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
+
 
 RequirePackage('graphicx');
 
@@ -26,12 +26,11 @@ DefMacro('\tag {}','\texttt{#1}');
 DefMacro('\perldoc {}','\texttt{perldoc #1}');
 
 # Perverse!
-DefMacro('\perldoc{}', '\@perldoc{#1}{\@perldochtml{#1}}');
-DefMacro('\@perldochtml{}', sub { 
+DefMacro('\perldoc{}', '\URL[\texttt{#1}]{\@perldocurl{#1}}');
+DefMacro('\@perldocurl{}', sub { 
  my $pkg = $_[1]->toString;
  $pkg =~ s|::|/|;
  T_OTHER("perldoc/$pkg.html"); });
-DefConstructor('\@perldoc {}{}', "<a href='#2'><texttt>#1</texttt></a>");
 
 #======================================================================
 1;

@@ -29,17 +29,15 @@ my $xmlfile = shift(@ARGV);
 binmode(STDERR,":utf8");
 binmode(STDOUT,":utf8");
 
-if(!$format && $destination){
-  $format = 'html' if $destination =~ /\.html$/;
-  $format = 'xhtml' if $destination =~ /\.xhtml$/; }
-my $post = LaTeXML::Post->new(format=>$format);
-my $doc = $post->process($xmlfile, sourceDirectory=>$source,
-			 destination=>$destination,
-			 stylesheet=>$stylesheet,
-			 verbosity=>$verbosity);
+my $doc = LaTeXML::Post->new()->process($xmlfile, 
+					sourceDirectory=> $source,
+					destination    => $destination,
+					format         => $format,
+					stylesheet     => $stylesheet,
+					verbosity      => $verbosity,
+					toString       => !$destination);
 
-if(!$destination){
-  print $doc->toString(1); }
+print $doc unless $destination;
 
 #**********************************************************************
 __END__
@@ -59,6 +57,7 @@ latexmlpost [options] xmlfile
    --format=html|xhtml        requests processing for html(+images), or xhtml(+MathML) respectively
    --stylesheet=xslfile       requests the XSL transform of the document using the given
                               xslfile as stylesheet.
+   --verbose                  prints progress messages during processing.
    --help                     shows help message.
 
 =head1 OPTIONS AND ARGUMENTS

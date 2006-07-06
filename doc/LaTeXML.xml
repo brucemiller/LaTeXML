@@ -2,177 +2,372 @@
 <!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class='article'?>
 <?latexml package='latexmldoc'?>
-<document>
-  <title><a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a>: a LaTeX to <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a> Converter; <emph>Preview</emph></title>
+<document xmlns='http://dlmf.nist.gov/LaTeXML'>
+  <title><a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a>: a LaTeX to <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a> Converter; <emph>Preview</emph></title>
   <author>Bruce R. Miller</author>
-  <creationdate>May 17, 2004</creationdate>
+  <creationdate>June 15, 2004</creationdate>
   <section refnum='1'>
     <title>Overview</title>
-    <p>For many, LaTeX is the prefered means for document authoring, particularly when <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 10 **** -->
-significant mathematical content is involved. On the other hand, content-oriented <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a> is an extremely useful storage format allowing documents to be used, and reused, for a variety of purposes, not least, presentation on the Web.  Given the rough mismatch between the two, particularly for mathematics, conversion  from LaTeX to <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a> is a bit tricky. Faced with this situation, and the lack of other suitable tools at that time, the <a href='http://dlmf.nist.gov'>Digital Library of Mathematical Functions</a> proceeded to develop thier own tool, <a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a>, to fill this need. This document describes a <emph>preview</emph> release of <a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a>. </p>
-    <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 20 **** -->
-
-    <p>The idealistic goals of <a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a> are: </p>
+    <p>For many, LaTeX is the prefered means for document authoring, particularly when
+significant mathematical content is involved.
+On the other hand, content-oriented <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a> is an extremely useful storage format
+allowing documents to be used, and reused, for a variety of purposes, not least,
+presentation on the Web.  Given the rough mismatch between the two,
+particularly for mathematics, conversion  from LaTeX to <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a> is a bit tricky.
+Faced with this situation, and the lack of other suitable tools at that time,
+the <a href='http://dlmf.nist.gov'>Digital Library of Mathematical Functions</a>
+proceeded to develop thier own tool, <a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a>, to fill this need.
+This document describes a <emph>preview</emph> release of <a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a>.
+</p>
+    <p>The idealistic goals of <a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a> are:
+</p>
     <itemize>
-      <item><tag/>Faithful emulation of TeX's behaviour. </item>
-      <item><tag/>Easily extensible. </item>
-      <item><tag/>Lossless; preserving both semantic and presentation cues. </item>
-      <item><tag/>Uses abstract LaTeX-like, extensible, document type. </item>
+      <item><tag/>Faithful emulation of TeX's behaviour.
+</item>
+      <item><tag/>Easily extensible.
+</item>
+      <item><tag/>Lossless; preserving both semantic and presentation cues.
+<!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 25 **** -->
+</item>
+      <item><tag/>Uses abstract LaTeX-like, extensible, document type.
+</item>
       <item><tag/>Determine the semantics of mathematical content
-(Content <a href='http://www.w3c.org/Math/'><texttt>MathML</texttt></a>, <emph>Good</emph> Presentation <a href='http://www.w3c.org/Math/'><texttt>MathML</texttt></a>, eventually <a href='http://www.openmath.org/'>OpenMath</a>). </item>
+(Content <a href='http://www.w3c.org/Math/'><textstyle font='typewriter'>MathML</textstyle></a>, <emph>Good</emph> Presentation <a href='http://www.w3c.org/Math/'><textstyle font='typewriter'>MathML</textstyle></a>, eventually <a href='http://www.openmath.org/'><textstyle font='typewriter'>OpenMath</textstyle></a>).
+</item>
     </itemize>
-    <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 30 **** -->
-
-    <p>As these goals are not entirely practical, or somewhat contradictory, they are implicitly modified by “as much as possible.” Completely mimicing TeX's behaviour would seem to require the sneakiest modifications to TeX, itself.  `Ease of use,' of course, is in the eye of the beholder. Few documents are likely to have completely unambiguous mathematics markup; human understanding of both the topic and the surrounding text is needed to properly interpret any particular mathematical fragment. Thus, we expect that document-specific declarations or tuning to be necessary to faithfully convert mathematical documents, rather than presuming to provide a `turn-key' solution. At the same time, we would encourage <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 40 **** -->
-a more content-oriented mathematical markup style, than a presentation-oriented style. </p>
-    <p>This document continues with an overview of the usage of <a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a>(§<ref labelref='sec:usage'/>) and it's architecture (§<ref labelref='sec:architecture'/>). In §<ref labelref='sec:packages'/>, an overview of customizing <a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a> is given. How mathematics is converted to content-oriented forms is discussed in §<ref labelref='sec:math'/>. Finally, Appendix <ref labelref='app:architecture'/> gives slightly more details about the architecture, and Appendix <ref labelref='app:todo'/> lists the main problem areas and unfinished features. In general, for more detail, you should see the perl documentation of various <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 50 **** -->
-<a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a> Packages, or the source code and examples, themselves. </p>
+    <p>As these goals are not entirely practical, or somewhat contradictory,
+they are implicitly modified by “as much as possible.”
+Completely mimicing TeX's behaviour would seem to require the sneakiest modifications
+to TeX, itself.  `Ease of use,' of course, is in the eye of the beholder.
+Few documents are likely to have completely unambiguous mathematics markup;
+human understanding of both the topic and the surrounding text is needed to
+properly interpret any particular mathematical fragment.
+Thus, we expect that document-specific declarations or tuning to be necessary
+to faithfully convert mathematical documents, rather than presuming to
+provide a `turn-key' solution. At the same time, we would encourage
+a more content-oriented mathematical markup style, than a presentation-oriented style.
+</p>
+    <p>This document continues with an overview of the usage of <a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a>(§<ref labelref='sec:usage'>2</ref>)
+and it's architecture (§<ref labelref='sec:architecture'>3</ref>).
+In §<ref labelref='sec:packages'>4</ref>, an overview of customizing <a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a> is given.
+How mathematics is converted to content-oriented forms is discussed in §<ref labelref='sec:math'>5</ref>.
+Finally, Appendix <ref labelref='app:architecture'>A</ref> gives slightly more details about the architecture,
+and Appendix <ref labelref='app:todo'>B</ref> lists the main problem areas and unfinished features.
+In general, for more detail, you should see the perl documentation of various
+<!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 50 **** -->
+<a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a> Packages, or the source code and examples, themselves.
+</p>
   </section>
   <section label='sec:usage' refnum='2'>
-    <title>Using <a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a></title>
-    <p>The basic conversion to <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a> (using the <a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a> DTD, by default) is carried out by the command: <quote> <textstyle font='typewriter'>latexml <textstyle font='italic'>options</textstyle> document.tex &gt; document.xml</textstyle> </quote> The more useful command options are </p>
+    <title>Using <a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a></title>
+    <p>The basic conversion to <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a> (using the <a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a> DTD, by default) is carried out
+by the command:
+<quote>
+<textstyle font='typewriter'>latexml <textstyle font='italic'>options</textstyle> document.tex &gt; document.xml</textstyle>
+</quote>
+The more useful command options are
+</p>
     <description>
-      <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 60 **** -->
+      <item><tag><textstyle font='typewriter'>–path</textstyle>=<textstyle font='italic'>dir</textstyle></tag> Adds <textstyle font='italic'>dir</textstyle> to the list of paths used to search
+for files (packages, style files, etc). Similar to <textstyle font='typewriter'>TEXINPUTS</textstyle>.
+</item>
+      <item><tag><textstyle font='typewriter'>–preload</textstyle>=<textstyle font='italic'>package</textstyle></tag> Loads a Package before processing.  This may
+be useful to load a package that would not otherwise be automatically loaded
+due to a \usepackage or similar command.  See §<ref labelref='sec:packages'>4</ref>.
+</item>
+    </description>
+    <p>See <textstyle font='typewriter'>latexml –help</textstyle> for other options that may be useful for debugging.
+</p>
+    <p>Additional transformations, particularly the parsing of mathematical content, are carried out
+by the postprocessor <textstyle font='typewriter'>latexmlpost</textstyle>:
+<quote>
+<textstyle font='typewriter'>latexmlpost <textstyle font='italic'>options</textstyle> document.xml</textstyle>
+</quote>
+where the options are:
+</p>
+    <description>
+      <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 75 **** -->
 
-      <item><tag><textstyle font='typewriter'>–path</textstyle>=<textstyle font='italic'>dir</textstyle></tag> Adds <textstyle font='italic'>dir</textstyle> to the list of paths used to search for files (packages, style files, etc). Similar to <textstyle font='typewriter'>TEXINPUTS</textstyle>. </item>
-      <item><tag><textstyle font='typewriter'>–preload</textstyle>=<textstyle font='italic'>package</textstyle></tag> Loads a Package before processing.  This may be useful to load a package that would not otherwise be automatically loaded due to a \usepackage or similar command.  See §<ref labelref='sec:packages'/>. </item>
+      <item><tag><textstyle font='typewriter'>–stylesheet=<textstyle font='italic'>stylesheet</textstyle></textstyle></tag> requests an <textstyle font='typewriter'>XSLT</textstyle> transformation of
+the <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a> using the given stylesheet.
+</item>
+      <item><tag><textstyle font='typewriter'>–format=(html|xhtml)</textstyle></tag>  Specifies the format for conversion. Default
+is to leave as <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a>.
+</item>
+      <item><tag><textstyle font='typewriter'>–destination=<textstyle font='italic'>file</textstyle></textstyle></tag>  Specifies the file to write the output.
+If the file has either an html or xhtml extension, that format is assumed.
+</item>
+      <item><tag><textstyle font='typewriter'>–source=<textstyle font='italic'>dir</textstyle></textstyle></tag> Some postprocessing (eg. transforming graphics files)
+may need access to the directory  where the original TeX file resided
+(if it isn't the current working directory).
+</item>
+      <item><tag><textstyle font='typewriter'>–verbose</textstyle></tag> Increases the amount of messages about the progress of processing.
+</item>
+      <item><tag><textstyle font='typewriter'>–help</textstyle></tag> Prints a brief description of the command and options.
+</item>
     </description>
-    <p>See <textstyle font='typewriter'>latexml –help</textstyle> for other options that may be useful for debugging. </p>
-    <p>Additional transformations, particularly the parsing of mathematical content, are carried out by the postprocessor <textstyle font='typewriter'>latexmlpost</textstyle>: <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 70 **** -->
-<quote> <textstyle font='typewriter'>latexmlpost <textstyle font='italic'>options</textstyle> document.xml</textstyle> </quote> where the options are: </p>
-    <description>
-      <item><tag><textstyle font='typewriter'>–stylesheet=<textstyle font='italic'>stylesheet</textstyle></textstyle></tag> requests an <textstyle font='typewriter'>XSLT</textstyle> transformation of the <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a> using the given stylesheet. </item>
-      <item><tag><textstyle font='typewriter'>–format=(html|xhtml)</textstyle></tag>  Specifies the format for conversion. Default is to leave as <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a>. </item>
-      <item><tag><textstyle font='typewriter'>–destination=<textstyle font='italic'>file</textstyle></textstyle></tag>  Specifies the file to write the output. <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 80 **** -->
-If the file has either an html or xhtml extension, that format is assumed. </item>
-      <item><tag><textstyle font='typewriter'>–source=<textstyle font='italic'>dir</textstyle></textstyle></tag> Some postprocessing (eg. transforming graphics files) may need access to the directory  where the original TeX file resided (if it isn't the current working directory). </item>
-      <item><tag><textstyle font='typewriter'>–verbose</textstyle></tag> Increases the amount of messages about the progress of processing. </item>
-      <item><tag><textstyle font='typewriter'>–help</textstyle></tag> Prints a brief description of the command and options. </item>
-    </description>
-    <p>Transforming to html format involves parsing math formula and converting them to Presentation MathML, transforming tables into an HTML consistent format, converting graphics files and applying an XSLT transformation. <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 90 **** -->
-Transforming to html format is similar, but math formula are converted to images. If no format is specified, only math parsing and conversion is done. </p>
+    <p>Transforming to html format involves parsing math formula and converting them to Presentation MathML,
+transforming tables into an HTML consistent format, converting graphics files and applying
+an XSLT transformation.
+Transforming to html format is similar, but math formula are converted to images.
+If no format is specified, only math parsing and conversion is done.
+</p>
   </section>
   <section label='sec:architecture' refnum='3'>
     <title>Architecture</title>
-    <p>Like TeX, <a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a> is data-driven: the text and control sequences<footnote>TeX's name for the backslashed commands; ie. macros, primitives and so forth</footnote> in the source file (and packages used, being simply collections of macros) direct the processing. You exert control over the processing, and customize it, by the <emph>implementation</emph> of the control sequences (or packages). <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 100 **** -->
-That, or by postprocessing — all the heavy-lifting that implements parsing of mathematics is carried out in postprocessing; See §<ref labelref='sec:math'/>. </p>
+    <p>Like TeX, <a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a> is data-driven: the text and control sequences<footnote>TeX's name
+for the backslashed commands; ie. macros, primitives and so forth</footnote>
+in the source file (and packages used, being simply collections of macros)
+direct the processing.
+You exert control over the processing, and customize it, by
+the <emph>implementation</emph> of the control sequences (or packages).
+<!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 100 **** -->
+That, or by postprocessing — all the heavy-lifting that implements parsing
+of mathematics is carried out in postprocessing; See §<ref labelref='sec:math'>5</ref>.
+</p>
     <figure label='fig:dataflow' placement='tb' refnum='1'>
       <graphics graphic='dataflow' options='width=433.62pt'/>
-      <caption>Flow of data through <a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a>'s digestive tract.</caption>
+      <caption>Flow of data through <a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a>'s digestive tract.</caption>
     </figure>
-    <p>Roughly, TeX's digestive tract is emulated as follows; See Figure <ref labelref='fig:dataflow'/>. The processing is broken into two phases; digestion and construction. <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 110 **** -->
-The <textstyle font='typewriter'>Stomach</textstyle>  maintains the current state of processing during digestion; it sets up a chain consisting of a <textstyle font='typewriter'>Mouth</textstyle> (to convert characters from the file into <textstyle font='typewriter'>Token</textstyle>'s) and a <textstyle font='typewriter'>Gullet</textstyle> (to read <textstyle font='typewriter'>Token</textstyle>'s from that <textstyle font='typewriter'>Mouth</textstyle>, expanding any <textstyle font='typewriter'>Macro</textstyle> or <textstyle font='typewriter'>Expandable</textstyle> tokens). It then reads <textstyle font='typewriter'>Token</textstyle>'s from the <textstyle font='typewriter'>Gullet</textstyle> and digests them (executing <textstyle font='typewriter'>Primitive</textstyle>'s and converting <textstyle font='typewriter'>Constructor</textstyle> tokens to <textstyle font='typewriter'>Whatsit</textstyle>'s). These three components operate in <emph>pull mode</emph>, each pulling data from the previous. The <textstyle font='typewriter'>Stomach</textstyle> digests all available input, converting the <textstyle font='typewriter'>Token</textstyle>'s into a recursive <textstyle font='typewriter'>List</textstyle> of <textstyle font='typewriter'>Box</textstyle>'s, <textstyle font='typewriter'>List</textstyle>'s, and <textstyle font='typewriter'>Whatsit</textstyle>'s. </p>
-    <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 120 **** -->
-
-    <p>Document construction is carried out by the <textstyle font='typewriter'>Intestine</textstyle>, which recursively traverses the <textstyle font='typewriter'>List</textstyle> constructs a <textstyle font='typewriter'>DOM</textstyle>, representing the <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a> document tree. The key features for generating <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a>, are the control sequences that we call `constructors', and our extension of the concept of a <textstyle font='typewriter'>Whatsit</textstyle> that generate arbitrary <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a> fragments. </p>
-    <p>This process is described in slightly more detail in Appendix <ref labelref='app:architecture'/>, but see the perl documentation <textstyle font='typewriter'>perldoc</textstyle> for the modules for the APIs, and, ultimately, the source for full details. </p>
-    <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 130 **** -->
-
+    <p>Roughly, TeX's digestive tract is emulated as follows; See Figure <ref labelref='fig:dataflow'>1</ref>.
+The processing is broken into two phases; digestion and construction.
+The <textstyle font='typewriter'>Stomach</textstyle>  maintains the current state of processing during digestion;
+it sets up a chain consisting of a <textstyle font='typewriter'>Mouth</textstyle> (to convert characters from the file into <textstyle font='typewriter'>Token</textstyle>'s)
+and a <textstyle font='typewriter'>Gullet</textstyle> (to read <textstyle font='typewriter'>Token</textstyle>'s from that <textstyle font='typewriter'>Mouth</textstyle>, expanding any <textstyle font='typewriter'>Macro</textstyle> or
+<textstyle font='typewriter'>Expandable</textstyle> tokens).
+It then reads <textstyle font='typewriter'>Token</textstyle>'s from the <textstyle font='typewriter'>Gullet</textstyle> and digests them
+(executing <textstyle font='typewriter'>Primitive</textstyle>'s and converting <textstyle font='typewriter'>Constructor</textstyle> tokens to <textstyle font='typewriter'>Whatsit</textstyle>'s).
+These three components operate in <emph>pull mode</emph>, each pulling data from the previous.
+The <textstyle font='typewriter'>Stomach</textstyle> digests all available input, converting the <textstyle font='typewriter'>Token</textstyle>'s into
+a recursive <textstyle font='typewriter'>List</textstyle> of <textstyle font='typewriter'>Box</textstyle>'s, <textstyle font='typewriter'>List</textstyle>'s, and <textstyle font='typewriter'>Whatsit</textstyle>'s.
+</p>
+    <p>Document construction is carried out by the <textstyle font='typewriter'>Intestine</textstyle>, which recursively traverses
+the <textstyle font='typewriter'>List</textstyle> constructs a <textstyle font='typewriter'>DOM</textstyle>, representing the <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a> document tree.
+The key features for generating <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a>, are the control sequences that we
+call `constructors', and our extension of the concept of a <textstyle font='typewriter'>Whatsit</textstyle> that generate arbitrary
+<a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a> fragments.
+<!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 125 **** -->
+</p>
+    <p>This process is described in slightly more detail in Appendix <ref labelref='app:architecture'>A</ref>, but
+see the perl documentation <textstyle font='typewriter'>perldoc</textstyle> for the modules for the APIs, and, ultimately,
+the source for full details.
+</p>
   </section>
   <section label='sec:packages' refnum='4'>
     <title>Packages: Implementing Control Sequences</title>
-    <p>The processsing of the LaTeX document and it's  conversion into <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a> is affected by the definitions of control sequences, either as macros, primitives or constructors, and other declarations specifying the document type, properties of <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a> tags, ligatures, …. These definitions and declarations are typically contained in `packages' which provide the implementation of LaTeX classes and packages.  For example, the LaTeX directive \usepackage{foo} would cause <a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a> to load the file <textstyle font='typewriter'>foo.ltxml</textstyle>. This file would be sought in any of the directories in perl's @INC list (typically including the current directory), or in a LaTeXML/Package subdirectory of any of <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 140 **** -->
-those directories. </p>
-    <p>The following packages are loaded before processing the document <textstyle font='italic'>jobname</textstyle><textstyle font='typewriter'>.tex</textstyle>: first the <textstyle font='typewriter'>TeX</textstyle> package is loaded, then any packages named in the –preload option is loaded, then a file <textstyle font='italic'>jobname</textstyle><textstyle font='typewriter'>.latexml</textstyle>, if present, is loaded, providing for document-specific declarations. Document processing then commences; by default assuming that the document is plain TeX. However, if a \documentclass directive encountered, the <textstyle font='typewriter'>LaTeX</textstyle> package, as well as a package for the named class are loaded. </p>
+    <p>The processsing of the LaTeX document and it's  conversion into <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a> is affected
+by the definitions of control sequences, either as macros, primitives or constructors,
+and other declarations specifying the document type, properties of <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a> tags, ligatures, ….
+These definitions and declarations are typically contained in `packages' which provide
+the implementation of LaTeX classes and packages.  For example, the LaTeX directive
+\usepackage{foo} would cause <a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a> to load the file <textstyle font='typewriter'>foo.ltxml</textstyle>.
+This file would be sought in any of the directories in perl's @INC list (typically
+including the current directory), or in a LaTeXML/Package subdirectory of any of
+those directories.
+</p>
+    <p>The following packages are loaded before processing the document <textstyle font='italic'>jobname</textstyle><textstyle font='typewriter'>.tex</textstyle>:
+first the <textstyle font='typewriter'>TeX</textstyle> package is loaded, then any packages named in
+the –preload option is loaded, then a file <textstyle font='italic'>jobname</textstyle><textstyle font='typewriter'>.latexml</textstyle>, if
+present, is loaded, providing for document-specific declarations.
+Document processing then commences; by default assuming that the document is plain TeX.
+However, if a \documentclass directive encountered, the <textstyle font='typewriter'>LaTeX</textstyle> package, as well
+as a package for the named class are loaded.
+</p>
     <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 150 **** -->
 
-    <p>The facilities available for implementing packages is described in <a href='perldoc/LaTeXML/Package.html'><texttt>LaTeXML::Package</texttt></a>. </p>
+    <p>The facilities available for implementing packages is described in <a href='perldoc/LaTeXML/Package.html'><textstyle font='typewriter'>LaTeXML::Package</textstyle></a>.
+</p>
   </section>
   <section label='sec:math' refnum='5'>
     <title>Mathematics</title>
-    <p>The mathematical material is parsed into a content-oriented representation following the usual steps: lexical scanning, grammar-based parsing and (eventually) type-analysis, but with a few twists. As <a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a> constructs the initial document, the mathematical material is converted mainly into a sequence of lexical tokens (<textstyle font='typewriter'>XMTok</textstyle>), possibly carrying extra information such as name, partOfSpeech, font, style, etc.  The exceptions are where the mathematical structure is clear from the markup itself, such as \frac or sub- and superscripts, where an application (<textstyle font='typewriter'>XMApp</textstyle>) is constructed.  The substructures will <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 160 **** -->
-typically be wrapped in either an <textstyle font='typewriter'>XMArg</textstyle> or <textstyle font='typewriter'>XMWrap</textstyle> element; the former for when the substructure should also be parsed as a complete subexpression, the latter when it is expected to be sloppy and may not be sensibly parsed (explain this!). Thus we speak of <a href='http://dlmf.nist.gov/LaTeXML/'>LaTeXML</a> as being a <emph>structure preserving lexer</emph>. </p>
-    <p>The parser, invoked by the postprocessor, works only with the top-level lists of lexical tokens, or with those sublists contained in an <textstyle font='typewriter'>XMArg</textstyle>.  The grammar works primarily through the name and partOfSpeech (<textstyle font='typewriter'>POS</textstyle>).  The name is given by an attribute, or the content if it is the same.  The partOfSpeech (things like ID, FUNCTION, OPERATOR, OPEN, …) is also given by an attribute, or, if not present, the name is looked up in a document-specific <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 170 **** -->
-dictionary (<textstyle font='italic'>jobname</textstyle><textstyle font='typewriter'>.dict</textstyle>), or in a default dictionary. </p>
-    <p>Additional exceptions that need fuller explanation are: (1) <textstyle font='typewriter'>Constructors</textstyle> may wish to create a dual object (<textstyle font='typewriter'>XMDual</textstyle>) whose children are the semantic and presentational forms. (2) Spacing and similar markup generates <textstyle font='typewriter'>XMHint</textstyle> elements, which are currently ignored during parsing, but probably shouldn't. </p>
+    <p>The mathematical material is parsed into a content-oriented representation following
+the usual steps: lexical scanning, grammar-based parsing and (eventually) type-analysis, but
+with a few twists. As <a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a> constructs the initial document, the mathematical material
+is converted mainly into a sequence of lexical tokens (<textstyle font='typewriter'>XMTok</textstyle>), possibly carrying extra information
+such as name, partOfSpeech, font, style, etc.  The exceptions are where
+the mathematical structure is clear from the markup itself, such as \frac or sub- and
+superscripts, where an application (<textstyle font='typewriter'>XMApp</textstyle>) is constructed.  The substructures will
+typically be wrapped in either an <textstyle font='typewriter'>XMArg</textstyle> or <textstyle font='typewriter'>XMWrap</textstyle> element; the former for when
+the substructure should also be parsed as a complete subexpression, the latter when it is
+expected to be sloppy and may not be sensibly parsed (explain this!).
+Thus we speak of <a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a> as being a <emph>structure preserving lexer</emph>.
+</p>
+    <p>The parser, invoked by the postprocessor, works only with the top-level lists of lexical tokens,
+or with those sublists contained in an <textstyle font='typewriter'>XMArg</textstyle>.  The grammar works primarily through
+the name and partOfSpeech (<textstyle font='typewriter'>POS</textstyle>).  The name is given by an attribute, or the content if it is
+the same.  The partOfSpeech (things like ID, FUNCTION, OPERATOR, OPEN, …) is also given
+by an attribute, or, if not present, the name is looked up in a document-specific
+dictionary (<textstyle font='italic'>jobname</textstyle><textstyle font='typewriter'>.dict</textstyle>), or in a default dictionary.
+</p>
+    <p>Additional exceptions that need fuller explanation are:
+(1) <textstyle font='typewriter'>Constructors</textstyle> may wish to create a dual object (<textstyle font='typewriter'>XMDual</textstyle>) whose children are
+the semantic and presentational forms.
+<!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 175 **** -->
+(2) Spacing and similar markup generates <textstyle font='typewriter'>XMHint</textstyle> elements, which are currently ignored
+during parsing, but probably shouldn't.
+</p>
   </section>
   <appendix label='app:architecture' refnum='A'>
     <title>Architectural Details</title>
-    <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 180 **** -->
-
     <subsection refnum='A.1'>
       <title>Tokenization</title>
       <paragraph>
         <title><textstyle font='typewriter'>LaTeXML::Mouth</textstyle></title>
-        <p>Given a string or file, a <textstyle font='typewriter'>Mouth</textstyle> tokenizes the input text according to the current category codes in the <textstyle font='typewriter'>Stomach</textstyle>. Category codes distinguish classes of characters such as plain characters, control sequences,  active characters and TeX's special characters for grouping,  sub- and super-script and math mode.  The main method is <textstyle font='typewriter'>-&gt;readToken</textstyle>, which returns the next <textstyle font='typewriter'>Token</textstyle> from the input. (See <a href='perldoc/LaTeXML/Mouth.html'><texttt>LaTeXML::Mouth</texttt></a>) </p>
-        <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 190 **** -->
-
+        <p>Given a string or file, a <textstyle font='typewriter'>Mouth</textstyle> tokenizes the input text according to
+the current category codes in the <textstyle font='typewriter'>Stomach</textstyle>. Category codes distinguish classes of characters
+such as plain characters, control sequences,  active characters and TeX's special characters
+for grouping,  sub- and super-script and math mode.  The main method is <textstyle font='typewriter'>-&gt;readToken</textstyle>, which
+returns the next <textstyle font='typewriter'>Token</textstyle> from the input.
+(See <a href='perldoc/LaTeXML/Mouth.html'><textstyle font='typewriter'>LaTeXML::Mouth</textstyle></a>)
+</p>
       </paragraph>
       <paragraph>
         <title><textstyle font='typewriter'>LaTeXML::Token</textstyle>, <textstyle font='typewriter'>LaTeXML::Tokens</textstyle></title>
-        <p>These packages represent a Token (a pair containing a character or string and the category code) and a list of <textstyle font='typewriter'>Token</textstyle>'s.  The latter responds to the same interface as <textstyle font='typewriter'>Mouth</textstyle>, so it can also be read from. (See <a href='perldoc/LaTeXML/Token.html'><texttt>LaTeXML::Token</texttt></a>) </p>
+        <p>These packages represent a Token (a pair containing a character
+or string and the category code) and a list of <textstyle font='typewriter'>Token</textstyle>'s.  The latter responds to the same
+interface as <textstyle font='typewriter'>Mouth</textstyle>, so it can also be read from.
+(See <a href='perldoc/LaTeXML/Token.html'><textstyle font='typewriter'>LaTeXML::Token</textstyle></a>)
+</p>
       </paragraph>
     </subsection>
     <subsection refnum='A.2'>
       <title>Expansion</title>
       <paragraph>
         <title><textstyle font='typewriter'>LaTeXML::Gullet</textstyle></title>
-        <p>The <textstyle font='typewriter'>Gullet</textstyle> reads <textstyle font='typewriter'>Token</textstyle>'s from the <textstyle font='typewriter'>Mouth</textstyle>, possibly expanding them. The main methods are <textstyle font='typewriter'>-&gt;readToken</textstyle> and  <textstyle font='typewriter'>-&gt;readXToken</textstyle>. <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 200 **** -->
-The latter returns the next unexpandable <textstyle font='typewriter'>Token</textstyle> from the input; if the token's current meaning in the <textstyle font='typewriter'>Stomach</textstyle> is a <textstyle font='typewriter'>Macro</textstyle> or <textstyle font='typewriter'>Expandable</textstyle>, it is expanded and its expansion is replaced in the input before retrying. (See <a href='perldoc/LaTeXML/Gullet.html'><texttt>LaTeXML::Gullet</texttt></a>) </p>
+        <p>The <textstyle font='typewriter'>Gullet</textstyle> reads <textstyle font='typewriter'>Token</textstyle>'s from the <textstyle font='typewriter'>Mouth</textstyle>, possibly expanding them.
+The main methods are <textstyle font='typewriter'>-&gt;readToken</textstyle> and  <textstyle font='typewriter'>-&gt;readXToken</textstyle>.
+<!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 200 **** -->
+The latter returns the next unexpandable <textstyle font='typewriter'>Token</textstyle> from the input;
+if the token's current meaning in the <textstyle font='typewriter'>Stomach</textstyle> is a <textstyle font='typewriter'>Macro</textstyle> or <textstyle font='typewriter'>Expandable</textstyle>,
+it is expanded and its expansion is replaced in the input before retrying.
+(See <a href='perldoc/LaTeXML/Gullet.html'><textstyle font='typewriter'>LaTeXML::Gullet</textstyle></a>)
+</p>
       </paragraph>
       <paragraph>
         <title><textstyle font='typewriter'>LaTeXML::Expandable</textstyle>, <textstyle font='typewriter'>LaTeXML::Macro</textstyle></title>
-        <p>Instances of these packages (subclasses of <textstyle font='typewriter'>LaTeXML::Definition</textstyle>) represent the expansions of control sequences. <textstyle font='typewriter'>Expandible</textstyle> typically are used for conditionals (like \if, \ifx, …) and built-in control sequences that expand into sequences of <textstyle font='typewriter'>Token</textstyle>'s (such as \jobname).  <textstyle font='typewriter'>Macro</textstyle> are typically used to replace the control sequence with a list of <textstyle font='typewriter'>Token</textstyle>'s. <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 210 **** -->
-(See <a href='perldoc/LaTeXML/Definition.html'><texttt>LaTeXML::Definition</texttt></a>) </p>
+        <p>Instances of these packages (subclasses of <textstyle font='typewriter'>LaTeXML::Definition</textstyle>)
+represent the expansions of control sequences. <textstyle font='typewriter'>Expandible</textstyle> typically are used for
+conditionals (like \if, \ifx, …) and built-in control sequences that expand
+into sequences of <textstyle font='typewriter'>Token</textstyle>'s (such as \jobname).  <textstyle font='typewriter'>Macro</textstyle> are typically used
+to replace the control sequence with a list of <textstyle font='typewriter'>Token</textstyle>'s.
+(See <a href='perldoc/LaTeXML/Definition.html'><textstyle font='typewriter'>LaTeXML::Definition</textstyle></a>)
+</p>
       </paragraph>
     </subsection>
     <subsection refnum='A.3'>
       <title>Digestion</title>
       <paragraph>
         <title><textstyle font='typewriter'>LaTeXML::Stomach</textstyle></title>
-        <p>The <textstyle font='typewriter'>Stomach</textstyle> maintains global state during digestion and carries out the digestion of <textstyle font='typewriter'>Token</textstyle>'s. The top-level method <textstyle font='typewriter'>-&gt;readAndDigestFile(\$file)</textstyle> sets up the initial state and stack, pre-loads packages (at least <textstyle font='typewriter'>TeX</textstyle>), and then digests all available input, returning the digested <textstyle font='typewriter'>List</textstyle>. </p>
-        <p>The <textstyle font='typewriter'>Mouth</textstyle> and <textstyle font='typewriter'>Gullet</textstyle> refer to the <textstyle font='typewriter'>Stomach</textstyle> to set or access the mode, various values and <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 220 **** -->
-definitions (The variable $LaTeXML::STOMACH is bound (<textstyle font='typewriter'>local</textstyle>) to current <textstyle font='typewriter'>Stomach</textstyle> object, so that it can be accessed from various odd places). To mimic TeX's binding of definitions and values scoped by grouping, the <textstyle font='typewriter'>Stomach</textstyle> maintains a <emph>stack</emph>, with each stack frame corresponding to a TeX group. Look-ups generally proceed by searching the stack for a frame that contains a value for the quantity in question.  (See <a href='perldoc/LaTeXML/Stomach.html'><texttt>LaTeXML::Stomach</texttt></a>) </p>
-        <p>Basically, there are four cases when digesting a <textstyle font='typewriter'>Token</textstyle>: </p>
+        <p>The <textstyle font='typewriter'>Stomach</textstyle> maintains global state during digestion and carries out the digestion of <textstyle font='typewriter'>Token</textstyle>'s.
+The top-level method <textstyle font='typewriter'>-&gt;readAndDigestFile(\$file)</textstyle> sets up the initial state and stack,
+pre-loads packages (at least <textstyle font='typewriter'>TeX</textstyle>), and then digests all available input,
+returning the digested <textstyle font='typewriter'>List</textstyle>.
+</p>
+        <p>The <textstyle font='typewriter'>Mouth</textstyle> and <textstyle font='typewriter'>Gullet</textstyle> refer to the <textstyle font='typewriter'>Stomach</textstyle> to set or access the mode, various values and
+definitions (The variable $LaTeXML::STOMACH is bound (<textstyle font='typewriter'>local</textstyle>) to current
+<textstyle font='typewriter'>Stomach</textstyle> object, so that it can be accessed from various odd places).
+To mimic TeX's binding of definitions and values scoped by grouping,
+the <textstyle font='typewriter'>Stomach</textstyle> maintains a <emph>stack</emph>, with each stack frame corresponding to a TeX group.
+Look-ups generally proceed by searching the stack for a frame that contains a value for the quantity
+<!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 225 **** -->
+in question.  (See <a href='perldoc/LaTeXML/Stomach.html'><textstyle font='typewriter'>LaTeXML::Stomach</textstyle></a>)
+</p>
+        <p>Basically, there are four cases when digesting a <textstyle font='typewriter'>Token</textstyle>:
+</p>
         <itemize>
-          <item><tag/>Plain characters are simply converted to a <textstyle font='typewriter'>Box</textstyle> (or <textstyle font='typewriter'>MathBox</textstyle> in math mode), <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 230 **** -->
-recording the current <textstyle font='typewriter'>Font</textstyle>. </item>
-          <item><tag/>Control sequences representing a <textstyle font='typewriter'>Primitive</textstyle> are executed.  This is typically done for side effect (changing the state in the <textstyle font='typewriter'>Stomach</textstyle>), although they may also contribute <textstyle font='typewriter'>List</textstyle>'s, <textstyle font='typewriter'>Box</textstyle>'s or <textstyle font='typewriter'>Whatsit</textstyle>'s. As with <textstyle font='typewriter'>Macro</textstyle>'s, any arguments to the <textstyle font='typewriter'>Primitive</textstyle> are read from the <textstyle font='typewriter'>Gullet</textstyle>. </item>
-          <item><tag/>Grouping (or environment bodies) are collected into a <textstyle font='typewriter'>List</textstyle> (or <textstyle font='typewriter'>MathList</textstyle> in math mode). </item>
-          <item><tag/>A special class of control sequence, called a <textstyle font='typewriter'>Constructor</textstyle> produces a <textstyle font='typewriter'>Whatsit</textstyle> which remembers the control sequence and arguments that created it, and defines it's own translation into <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a> elements, attributes and data. <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 240 **** -->
-Arguments to a <textstyle font='typewriter'>Constructor</textstyle> are read from the <textstyle font='typewriter'>Gullet</textstyle> and also digested. </item>
+          <item><tag/>Plain characters are simply converted to a <textstyle font='typewriter'>Box</textstyle> (or <textstyle font='typewriter'>MathBox</textstyle> in math mode),
+recording the current <textstyle font='typewriter'>Font</textstyle>.
+</item>
+          <item><tag/>Control sequences representing a <textstyle font='typewriter'>Primitive</textstyle> are executed.  This is typically
+done for side effect (changing the state in the <textstyle font='typewriter'>Stomach</textstyle>), although they may also
+contribute <textstyle font='typewriter'>List</textstyle>'s, <textstyle font='typewriter'>Box</textstyle>'s or <textstyle font='typewriter'>Whatsit</textstyle>'s.
+As with <textstyle font='typewriter'>Macro</textstyle>'s, any arguments to the <textstyle font='typewriter'>Primitive</textstyle> are read from the <textstyle font='typewriter'>Gullet</textstyle>.
+</item>
+          <item><tag/>Grouping (or environment bodies) are collected into a <textstyle font='typewriter'>List</textstyle>
+(or <textstyle font='typewriter'>MathList</textstyle> in math mode).
+</item>
+          <item><tag/>A special class of control sequence, called a <textstyle font='typewriter'>Constructor</textstyle> produces a
+<textstyle font='typewriter'>Whatsit</textstyle> which remembers the control sequence and arguments that
+created it, and defines it's own translation into <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a> elements, attributes and data.
+Arguments to a <textstyle font='typewriter'>Constructor</textstyle> are read from the <textstyle font='typewriter'>Gullet</textstyle> and also digested.
+</item>
         </itemize>
-        <p>Finally, <textstyle font='typewriter'>Filter</textstyle>'s are applied to the resulting <textstyle font='typewriter'>List</textstyle>'s (see below). </p>
+        <p>Finally, <textstyle font='typewriter'>Filter</textstyle>'s are applied to the resulting <textstyle font='typewriter'>List</textstyle>'s (see below).
+</p>
       </paragraph>
       <paragraph>
         <title><textstyle font='typewriter'>LaTeXML::Box</textstyle>, <textstyle font='typewriter'>MathBox</textstyle>, <textstyle font='typewriter'>List</textstyle>, <textstyle font='typewriter'>MathList</textstyle>, <textstyle font='typewriter'>Whatsit</textstyle></title>
-        <p>Instances of these classes represent the digested objects: boxes being characters; lists being sequences of digested objects; whatsits representing some sort of document fragment. Note that, currently, Although \par tends to do the `right thing', there is no real notion of horizontal or vertical mode. (See <a href='perldoc/LaTeXML/Box.html'><texttt>LaTeXML::Box</texttt></a>) <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 250 **** -->
+        <p>Instances of
+these classes represent the digested objects: boxes being characters; lists being sequences
+of digested objects; whatsits representing some sort of document fragment.
+Note that, currently, Although \par tends to do the `right thing', there
+is no real notion of horizontal or vertical mode.
+(See <a href='perldoc/LaTeXML/Box.html'><textstyle font='typewriter'>LaTeXML::Box</textstyle></a>)
+<!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 250 **** -->
 </p>
       </paragraph>
       <paragraph>
         <title><textstyle font='typewriter'>LaTeXML::Primitive</textstyle>,<textstyle font='typewriter'>LaTeXML::Constructor</textstyle></title>
-        <p>These classes of <textstyle font='typewriter'>Definitions</textstyle> are carried out (at least partly) in the <textstyle font='typewriter'>Stomach</textstyle>. They may have before and after daemons; little bits of code that affect the state.  A <textstyle font='typewriter'>Primitive</textstyle> is carried out for only side-effect, but a <textstyle font='typewriter'>Constructor</textstyle> generates a <textstyle font='typewriter'>Whatsit</textstyle> that survives to the <textstyle font='typewriter'>Intestine</textstyle>. (See <a href='perldoc/LaTeXML/Definition.html'><texttt>LaTeXML::Definition</texttt></a>). </p>
+        <p>These classes of <textstyle font='typewriter'>Definitions</textstyle> are carried out
+(at least partly) in the <textstyle font='typewriter'>Stomach</textstyle>. They may have before and after daemons; little bits
+of code that affect the state.  A <textstyle font='typewriter'>Primitive</textstyle> is carried out for only side-effect,
+but a <textstyle font='typewriter'>Constructor</textstyle> generates a <textstyle font='typewriter'>Whatsit</textstyle> that survives to the <textstyle font='typewriter'>Intestine</textstyle>.
+(See <a href='perldoc/LaTeXML/Definition.html'><textstyle font='typewriter'>LaTeXML::Definition</textstyle></a>).
+</p>
       </paragraph>
       <paragraph>
         <title><textstyle font='typewriter'>Filter</textstyle></title>
-        <p>Filters are roughly a generalization of ligatures. They are matched against sequences of digested items during digestion; if they pattern is matched, it is substituted <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 260 **** -->
-by the replacement.  They are currently defined for the kinds of substitutions that would make sense for <a href='http://www.w3c.org/XML/'><texttt>XML</texttt></a>; namely repeated characters like <textstyle font='typewriter'>-</textstyle> or <textstyle font='typewriter'>`</textstyle> are replaced by the appropriate unicode. Also, in math, patterns of digits or letters (in non-mathitalic fonts) are combined as one would expect.  On the other hand, ligatures like <textstyle font='typewriter'>ffi</textstyle> do not really seem appropriate here — or do they? — they would be easily implemented, but they might adversely affect search. </p>
+        <p>Filters are roughly a generalization of ligatures. They are matched
+against sequences of digested items during digestion; if they pattern is matched, it is substituted
+by the replacement.  They are currently defined for the kinds of substitutions that would
+make sense for <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a>; namely repeated characters like <textstyle font='typewriter'>-</textstyle> or <textstyle font='typewriter'>`</textstyle> are replaced by
+the appropriate unicode. Also, in math, patterns of digits or letters (in non-mathitalic fonts)
+are combined as one would expect.  On the other hand, ligatures like <textstyle font='typewriter'>ffi</textstyle> do not
+really seem appropriate here — or do they? — they would be easily implemented, but
+they might adversely affect search.
+</p>
       </paragraph>
       <paragraph>
         <title><textstyle font='typewriter'>LaTeXML::Font</textstyle></title>
-        <p>A representation of font, size and color. </p>
+        <p>A representation of font, size and color.
+</p>
       </paragraph>
     </subsection>
     <subsection refnum='A.4'>
       <title>Construction</title>
-      <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 270 **** -->
-
       <subsubsection refnum='A.4.1'>
         <title><textstyle font='typewriter'>LaTeXML::Intestine</textstyle></title>
-        <p>The <textstyle font='typewriter'>Intestine</textstyle> traverses the recursive <textstyle font='typewriter'>List</textstyle> of <textstyle font='typewriter'>List</textstyle>'s, <textstyle font='typewriter'>Box</textstyle>'s and <textstyle font='typewriter'>Whatsit</textstyle>'s, constructing a Document Object (<textstyle font='typewriter'>DOM</textstyle>), according to the current <textstyle font='typewriter'>Model</textstyle>.  Generally, a <textstyle font='typewriter'>Box</textstyle> gives rise to text data, whereas a <textstyle font='typewriter'>Whatsit</textstyle> describes a document fragment (consisting of elements, thier attributes and or content). At each insertion, the <textstyle font='typewriter'>Model</textstyle> is consulted to determine if the insertion is allowed at the current point, or if intermediate elements may need to be opened or closed. This allows the document structure of sections and paragraphs to be automatically constructed, for example, even though LaTeX doesn't explicitly close \section, nor open \par. <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 280 **** -->
-(See <a href='perldoc/LaTeXML/Intestine.html'><texttt>LaTeXML::Intestine</texttt></a>,  <a href='perldoc/LaTeXML/DOM.html'><texttt>LaTeXML::DOM</texttt></a>,  <a href='perldoc/LaTeXML/Model.html'><texttt>LaTeXML::Model</texttt></a>). </p>
+        <p>The <textstyle font='typewriter'>Intestine</textstyle> traverses the recursive <textstyle font='typewriter'>List</textstyle> of <textstyle font='typewriter'>List</textstyle>'s,
+<textstyle font='typewriter'>Box</textstyle>'s and <textstyle font='typewriter'>Whatsit</textstyle>'s, constructing a Document Object (<textstyle font='typewriter'>DOM</textstyle>),
+according to the current <textstyle font='typewriter'>Model</textstyle>.  Generally, a <textstyle font='typewriter'>Box</textstyle> gives rise to text data, whereas
+a <textstyle font='typewriter'>Whatsit</textstyle> describes a document fragment (consisting of elements, thier attributes and or content).
+<!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 275 **** -->
+At each insertion, the <textstyle font='typewriter'>Model</textstyle> is consulted to determine if the insertion is allowed at the
+current point, or if intermediate elements may need to be opened or closed.
+This allows the document structure of sections and paragraphs to be automatically
+constructed, for example, even though LaTeX doesn't explicitly close \section,
+nor open \par.
+(See <a href='perldoc/LaTeXML/Intestine.html'><textstyle font='typewriter'>LaTeXML::Intestine</textstyle></a>,  <a href='perldoc/LaTeXML/DOM.html'><textstyle font='typewriter'>LaTeXML::DOM</textstyle></a>,  <a href='perldoc/LaTeXML/Model.html'><textstyle font='typewriter'>LaTeXML::Model</textstyle></a>).
+</p>
       </subsubsection>
     </subsection>
   </appendix>
   <appendix label='app:todo' refnum='B'>
     <title>Issues and ToDo</title>
-    <p>Lots…! </p>
+    <p>Lots…!
+</p>
     <itemize>
-      <item><tag/>Lots of useful LaTeX packages have not been implemented, and those that are aren't necessarily complete. </item>
-      <item><tag/>TeX boxes aren't really complete, and in particular things like \ht0 don't work. <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 290 **** -->
+      <item><tag/>Lots of useful LaTeX packages have not been implemented, and those
+that are aren't necessarily complete.
 </item>
-      <item><tag/>Possibly useful to override (pre-override?) a macro defined in the source file; that is, define it and silently ignore the definition given in the source. </item>
-      <item><tag/>…um, …<emph>documentation</emph>! </item>
+      <item><tag/>TeX boxes aren't really complete, and in particular things like \ht0
+don't work.
+</item>
+      <item><tag/>Possibly useful to override (pre-override?) a macro defined in the source file;
+that is, define it and silently ignore the definition given in the source.
+</item>
+      <item><tag/>…um, …<emph>documentation</emph>!
+</item>
     </itemize>
   </appendix>
 </document>

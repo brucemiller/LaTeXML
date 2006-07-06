@@ -12,6 +12,7 @@
 
 package LaTeXML::Stomach;
 use strict;
+use LaTeXML::Global;
 use LaTeXML::Token;
 use LaTeXML::Box;
 use LaTeXML::Error;
@@ -29,7 +30,8 @@ our @ISA = qw(LaTeXML::Object);
 sub new {
   my($class, %options)=@_;
   my $stacktop = {mode=>'text', math_mode=>0, 
-		  bindings=>{}, values=>{},
+		  bindings=>{}, 
+		  values=>{preserveNewLines=>1},
 		  cattable=>getStandardCattable, cattable_copied=>0};
   my $self={stacktop => $stacktop, stack=>[$stacktop],
 	    boxingDepth=>0,
@@ -37,6 +39,7 @@ sub new {
 	    prefixes=>{},
 	    includeComments=>1,
 	    text_filters=>{}, math_filters=>{},
+	    packagesLoaded=>{},
 	    %options, 
 	    };
   $$self{searchpath}=[] unless $$self{searchpath};
@@ -49,9 +52,20 @@ sub getGullet  { $_[0]->{gullet}; }
 sub getModel   { $_[0]->{model}; }
 
 sub getContext { 
+  my($self,$short)=@_;
+  my $gullet = $self->getGullet;
+  if(!$gullet){ "During preloading"; }
+  else {
+    my $string = "During digestion ";
+    $string .= "of ".$LaTeXML::DEFINITION if $LaTeXML::DEFINITION;
+    $string .= "\n" unless $short;
+    $string .= $gullet->getContext($short); 
+    $string; }}
+
+sub getSourceLocation {
   my($self)=@_;
   my $gullet = $self->getGullet;
-  ($gullet ? $gullet->getContext($_[1]) : "Preloading"); }
+  ($gullet ? $gullet->getSourceLocation : ('unknown',0)); }
 
 #**********************************************************************
 # Top level operation
@@ -59,21 +73,26 @@ sub getContext {
 sub readAndDigestFile {
   my($self,$file)=@_;
   local $LaTeXML::STOMACH = $self;
+  local $LaTeXML::DEFINITION = undef;
+  local $LaTeXML::MODEL  = $$self{model} = LaTeXML::Model->new();
   $self->initialize;
   $self->initializeFile($file);
-  Message("Digesting file $file...") if Debugging();
-  List($self->readAndDigestBody); }
+  NoteProgress("\n(Digesting file $file...");
+  my $list = List($self->readAndDigestBody); 
+  NoteProgress(')');
+  $list; }
 
 sub initializeFile {
   my($self,$file)=@_;
-  $file = pathname_find($file,types=>['tex']);
-  my($dir,$name,$ext)=pathname_split($file);
+  my $pathname = pathname_find($file,types=>['tex']);
+  Error("Cannot find TeX file $file") unless $pathname;
+  my($dir,$name,$ext)=pathname_split($pathname);
   $self->addSearchPath($dir);	# Shouldn't permanently change!! ?
-  my $mouth =  LaTeXML::FileMouth->new($self,$file,includeComments=>$$self{includeComments});
+  my $mouth =  LaTeXML::FileMouth->new($self,$pathname,includeComments=>$$self{includeComments});
   $$self{gullet} = LaTeXML::Gullet->new($mouth,$self);
-  $$self{model}  = LaTeXML::Model->new();
-  $self->setMeaning(T_CS('\jobname'),LaTeXML::Expandable->new(T_CS('\jobname'),'',Tokens(Explode($name))));
+  $self->setMeaning(T_CS('\jobname'),LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode($name))));
   Message("***** Initializing *****") if Debugging();
+  # Would be nice to turn off debugging messages for this Package!
   $self->input('TeX');
   my ($sec,$min,$hour,$mday,$mon,$year)=localtime();
   $self->setValue('\day',  Number($mday));
@@ -88,8 +107,10 @@ sub initializeFile {
 sub initialize {
   my($self)=@_;
   # Setup default fonts.
-  $self->setValue('default@textfont', Font('serif','medium','upright','normal','black'));
-  $self->setValue('default@mathfont', MathFont('math','medium','italic','normal','black',0));
+  $self->setValue('default@textfont', Font(family=>'serif',series=>'medium',shape=>'upright',
+					   size=>'normal',color=>'black'));
+  $self->setValue('default@mathfont', MathFont(family=>'math',series=>'medium',shape=>'italic',
+					       size=>'normal',color=>'black',forcebold=>0));
   $self->setValue('current@font', $self->getValue('default@textfont'));
 }
 
@@ -108,10 +129,11 @@ sub readAndDigestBody {
 # If $nofilter is true, no filters will be applied to the list
 # (eg. for literal type arguments)
 # Returns a List or MathList containing the digested material.
-sub digestTokens {
+sub digest {
   my($self,$tokens,$nofilter)=@_;
-#  $self->getGullet->openMouth((ref $tokens eq 'LaTeXML::Token' ? Tokens($tokens) : $tokens->clone));
-  $self->getGullet->openMouth($tokens);
+Error("Huh?") unless defined $tokens;
+  $self->getGullet->openMouth((ref $tokens eq 'LaTeXML::Token' ? Tokens($tokens) : $tokens->clone));
+#  $self->getGullet->openMouth($tokens);
   $self->clearPrefixes; # prefixes shouldn't apply here.
   my $ismath = $self->inMath;
   my @chunk = $self->readAndDigestChunk(0);
@@ -132,31 +154,34 @@ sub readAndDigestChunk {
   my $depth  = $$self{boxingDepth};
   local @LaTeXML::LIST=();
   while(defined(my $token=$gullet->readXToken($autoflush))){ # Done if we run out of tokens
-    push(@LaTeXML::LIST,$self->digestToken($token));
+    push(@LaTeXML::LIST,$self->invokeToken($token));
     last if $depth > $$self{boxingDepth}; } # if we've closed the initial mode.
   @LaTeXML::LIST; }
 
 our @forbidden_cc = (1,0,0,0, 0,0,1,0, 0,1,0,0, 0,0,0,1, 0,1);
 
-# Digest a token; 
-# If it is a primitive or constructor, arguments will be parsed from the Gullet.
+# Invoke a token; 
+# If it is a primitive or constructor, it's definition will be invoked, 
+# possibly arguments will be parsed from the Gullet.
+# Otherwise, the token is simply digested.
 # Returns a list of boxes/whatsits.
-sub digestToken {
+sub invokeToken {
   my($self,$token)=@_;
   my $defn = $self->getMeaning($token);
-  if(! defined $defn){
-    Error("Executable token $token not defined."); }
-  elsif($defn->isExecutable){
-    my @stuff = $defn->digest($self);
+  if(! defined $defn){		# Was an executable token, but no definition!
+    SalvageError("Executable token $token not defined. Punting..."); 
+    DefConstructor($token->untex,"<ERROR type='undefined'>".$token->untex."</ERROR>");
+    $self->invokeToken($token); }
+  elsif($defn->isa('LaTeXML::Definition')){
+    my @stuff = $defn->invoke($self);
     $self->clearPrefixes() unless $defn->isPrefix; # Clear prefixes unless we just set one.
-    LaTeXML::List::typecheck(@stuff);
     @stuff; }
   else {
     $token = $defn;
     my $cc = $token->getCatcode;
     $self->clearPrefixes; # prefixes shouldn't apply here.
     if($cc == CC_SPACE){
-      ($self->inMath() ? () : Box($token->getString, $self->getFont)); }
+      ($self->inMath || $self->inPreamble ? () : Box($token->getString, $self->getFont)); }
     elsif($cc == CC_COMMENT){
       LaTeXML::Comment->new($token->getString); }
     elsif($forbidden_cc[$cc]){
@@ -213,9 +238,16 @@ sub applyFilters {
 	    # Risky: set the replacement boxes to same font. 
 	    # It's sometimes the right thing to do; make it optional somehow?
 	    @rep = map((ref $_ eq 'LaTeXML::Box' ? Box($_->getString,$font) : $_),@$replacement); }
-	  LaTeXML::List::typecheck(@rep);
-	  unshift(@list,@rep);
-	  last; }}}		# We'll try more filters at same pos.
+	  CheckBoxes(@rep);
+	  # Annoying, but we'd better check if the replacement is different
+	  my $mstring = join('',map($_->untex,@match));
+	  my $rstring = join('',map($_->untex,@rep));
+	  if(($np == scalar(@rep)) && ($mstring eq $rstring)){
+	    Warn("Filter match \"$mstring\" same as replacement \"$rstring\" !");
+	    unshift(@list,@match); $np=0; last; } # Just abort this position.
+	  else {
+	    unshift(@list,@rep);
+	    last; }}}}		# We'll try more filters at same pos.
     if(!$np){
       push(@out,shift(@list)); }} # Next starting position.
   @out; }
@@ -365,6 +397,13 @@ sub endEnvironment {
   my $env = pop(@{$$self{environments}});
   Error("Unbalanced environments: closing $environment when $env was open") unless $env eq $environment;
   return; }
+
+#======================================================================
+# Whether we're in the Preamble (for LaTeX)
+
+sub inPreamble { $_[0]->{inPreamble}; }
+sub setInPreamble { $_[0]->{inPreamble} = $_[1]; return; }
+
 #======================================================================
 # Set/Get catcodes, or the current table of catcodes.
 #======================================================================
@@ -384,7 +423,7 @@ sub getCatcode {
 
 sub setCatcode {
   my($self,$catcode,@chars)=@_;
-  Message("Catcode ".join(', ',map("\"$_\"",@chars))."=>$CC_NAME[$catcode]") if Debugging('catcodes');
+  Message("Catcode ".join(', ',map("\"$_\"",@chars))."=>$catcode") if Debugging('catcodes');
   my $frame = $$self{stacktop};
   if(!$$frame{cattable_copied}){
     $$frame{cattable_copied}=1;
@@ -393,34 +432,39 @@ sub setCatcode {
 
 #======================================================================
 # Lookup or add the `meaning' (definition) of a token or control sequence.
-our @primitive_catcodes = (0,1,1,1, 1,0,0,1, 1,0,0,0, 0,0,0,0);
+
 # GACK, this is horrid.
 # Ultimately, I suppose I have to define \mathcode ...
 our %mathcodes = ("'"=>1);
 our @executable_cc= (0,1,1,1, 1,0,0,1, 1,0,0,0, 0,1,0,0, 1,0);
 
-# Since the special executable catcodes may actually have different cs's,
-# we store the meaning under CATCODE:type instead of the cs itself.
+# Get the `Meaning' of a token.  For a control sequence or otherwise active token,
+# this may give the definition object or a regular token (if it was \let), or undef.
+# Otherwise, the token itself is returned.
 sub getMeaning {
   my($self,$token)=@_;
   # NOTE: Inlined token accessors!!!
   my $cs = $$token[0];
   my $cc = $$token[1];
-  my $name = ($primitive_catcodes[$cc] ? "CATCODE:".$CC_NAME[$cc] : $cs);
   if($executable_cc[$cc] || ($$self{stacktop}->{math_mode} && $mathcodes{$cs})){
-    lookup_internal($self,'bindings',$name); }
+    lookup_internal($self,'bindings',$token->getCSName); }
   else {
     $token; }}
 
 sub setMeaning {
   my($self,$token,$defn,$globally)=@_;
+  assign_internal($self,'bindings',$token->getCSName, $defn,$globally); }
+
+# This is similar to getMeaning, but when you are only interested in executable defns.
+sub getDefinition {
+  my($self,$token)=@_;
   my $cs = $$token[0];
   my $cc = $$token[1];
-  if((!defined $cs) || (!defined $cc)){
-    print STDERR "Something wrong here $token\n";}
-  my $name = ($primitive_catcodes[$cc] ? "CATCODE:".$CC_NAME[$cc] : $cs);
-  assign_internal($self,'bindings',$name, $defn,$globally); }
-
+  if($executable_cc[$cc] || ($$self{stacktop}->{math_mode} && $mathcodes{$cs})){
+    my $defn = lookup_internal($self,'bindings',$token->getCSName); 
+    ($defn && $defn->isa('LaTeXML::Definition') ? $defn : undef); }
+  else { undef; }}
+  
 #======================================================================
 # Lookup or set the value of a parameter/register/whatever.
 # (a register is simply named "\count1").
@@ -473,7 +517,9 @@ sub convertUnit {
   elsif($unit eq 'mu'){ 10.0 * 65536 / 18; }
   else{
     my $sp = $UNITS{$unit}; 
-    Warn("Unknown unit \"$unit\"") unless $sp;
+    if(!$sp){
+      SalvageError("Unknown unit \"$unit\"; assuming pt.");
+      $sp = $UNITS{'pt'}; }
     $sp; }}
 
 #======================================================================
@@ -504,7 +550,7 @@ sub refStepCounter {
   $ctr=$ctr->untex if ref $ctr;
   $self->stepCounter($ctr);
   my $v = $self->getGullet->expandTokens(Tokens(T_CS("\\the$ctr")));
-  $self->setMeaning(T_CS('\@currentlabel'),LaTeXML::Expandable->new(T_CS('\@currentlabel'),'',$v));
+  $self->setMeaning(T_CS('\@currentlabel'),LaTeXML::Expandable->new(T_CS('\@currentlabel'),undef,$v));
   $v; }
 
 sub resetCounter {
@@ -543,23 +589,29 @@ sub findInput {
 # However, if things are included via some other `package', presumably
 # that package will be responsible for loading those extra pacakges, so
 # they should be ignored too, right?
+# NOTE: options from usepackage, etc, get carried to here.
+# For latexml implementations, the global $LaTeXML::PACKAGE_OPTIONS gets 
+# bound to them, but NOTHING is done to pass them to TeX style files!
 sub input {
-  my($self,$name)=@_;
+  my($self,$name,%options)=@_;
+  if($$self{packagesLoaded}{$name}){
+    Warn("Package $name already loaded");
+    return; }
   # Try to find a Package implementing $name.
-
+  local @LaTeXML::PACKAGE_OPTIONS = @{$options{options}||[]};
   $name = $name->untex if ref $name;
   $name = $1 if $name =~ /^\{(.*)\}$/; # just in case
   my $file=$self->findInput($name);
   if($file =~ /\.(ltxml|latexml)$/){		# Perl module.
     my($dir,$modname)=pathname_split($file);
-    Message("Loading $name") if Debugging();
+    NoteProgress("\n(Loading $file");
     do $file;
     Error("Package $name had an error:\n  $@") if $@;
   }
   # Hmm, very slightly different treatment needed for .sty and .tex ?
   elsif($file){
     my $isstyle = ($file =~ /\.sty$/);
-    Message("Loading Style $file") if Debugging();
+    NoteProgress("\n(Loading Style $file");
     my $comments = $$self{includeComments} && !$isstyle;
     my $atcc = $self->getCatcode('@');
     $self->setCatcode(CC_LETTER,'@') if $isstyle;
@@ -568,7 +620,9 @@ sub input {
 						       ));
   }
   else {
-    Error("Cannot find LaTeXML implementation, style or tex file for $name"); }
+    SalvageError("Cannot find LaTeXML implementation, style or tex file for $name; Ignoring..."); }
+  $$self{packagesLoaded}{$name}=1;
+  NoteProgress(")");
 }
 
 #**********************************************************************
@@ -626,7 +680,7 @@ Returns the current LaTeXML::Gullet used by this $stomach
 
 Returns the current LaTeXML::Model used by this $stomach
 
-=item C<< $model = $stomach->getContext($short); >>
+=item C<< $string = $stomach->getContext($short); >>
 
 Returns a string describing the current position within the source.
 
@@ -636,19 +690,20 @@ Return the digested L<LaTeXML::List> after reading and digesting a `body'
 from the current Gullet.  The body extends until the current
 level of boxing or environment is closed.
 
-=item C<< $list = $stomach->digestTokens($tokens,$nofilter); >>
+=item C<< $list = $stomach->digest($tokens,$nofilter); >>
 
 Return the L<LaTeXML::List> resuting from digesting the given tokens.
 This is typically used to digest arguments to primitives or
 constructors.
 If $nofilter is true, filters will not be applied.
 
-=item C<< @boxes = $stomach->digestToken($token); >>
+=item C<< @boxes = $stomach->invokeToken($token); >>
 
-Digest the given $token, returning a list of boxes resulting.
-If the $token represents a control sequence whose definition
-requires arguments, those arguments will be read from the
-current input source.
+Invoke the given (expanded) token.  If it corresponds to a
+Primitive or Constructor, the definition will be invoked,
+reading any needed arguments fromt he current input source.
+Otherwise, the token will be digested.
+A List of Box's, Lists, Whatsit's is returned.
 
 =item C<< @boxes = $stomach->regurgitate; >>
 

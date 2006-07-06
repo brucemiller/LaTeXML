@@ -20,14 +20,13 @@
 
 package LaTeXML::DOM::Node;
 use strict;
-use LaTeXML::Error;
+use LaTeXML::Global;
 # Profiling hack so new doesn't get seen as BEGIN!
 sub dummy {()} dummy();
 
 sub new {
   my($class,$tag,%attributes)=@_;
-  bless {tag=>$tag, attributes=>{%attributes},  content=>[], 
-	 model=>$LaTeXML::MODEL}, $class; }
+  bless {tag=>$tag, attributes=>{%attributes},  content=>[]}, $class; }
 
 sub getNodeName   { $_[0]->{tag}; }
 sub getParentNode { $_[0]->{parent}; }
@@ -76,10 +75,10 @@ sub replace {
 #----------------------------------------------------------------------
 # Construction methods
 
-sub canContain       { $_[0]->{model}->canContain($_[0]->{tag},$_[1]); }
-sub canContainVia    { $_[0]->{model}->canContainVia($_[0]->{tag},$_[1]); }
-sub canAutoClose     { $_[0]->{model}->canAutoClose($_[0]->{tag}); }
-sub canHaveAttribute { $_[0]->{model}->canHaveAttribute($_[0]->{tag},$_[1]); }
+sub canContain       { MODEL->canContain($_[0]->{tag},$_[1]); }
+sub canContainVia    { MODEL->canContainVia($_[0]->{tag},$_[1]); }
+sub canAutoClose     { MODEL->canAutoClose($_[0]->{tag}); }
+sub canHaveAttribute { MODEL ->canHaveAttribute($_[0]->{tag},$_[1]); }
 
 # Can we close $self, and any parents, upto closing a node with tag $tag?
 sub canClose {
@@ -247,22 +246,25 @@ sub getContext {
   my($self,$short)=@_;
   my $node = $self;
   my @stack = ($node);
-  while(defined($node = $$node{parent})) { push(@stack,$node); }
+  if(!$short){
+    while(defined($node = $$node{parent})) { push(@stack,$node); }}
   my ($string,$prefix,$line) = ('','  ','');
   while(@stack){
     $node = pop(@stack);
+    $string .= "\n" if $string;
     $line = $prefix . $node->header
       .(@stack && ($stack[$#stack] ne $$node{content}->[0]) ? "..." : '');
-    $string .= $line ."\n";
+    $string .= $line;
     $prefix .= '  '; }
-  $string .= (' 'x length($line))."^ XML Insertion point";
+  if(!$short){
+    $string .= "\n".(' 'x length($line))."^ XML Insertion point"; }
   $string; }
 
 #**********************************************************************
 # LaTeXML::DOM::Text;
 #**********************************************************************
 package LaTeXML::DOM::Text;
-use LaTeXML::Error;
+use LaTeXML::Global;
 use strict;
 use Unicode::Normalize;
 our @ISA = qw(LaTeXML::DOM::Node);
@@ -270,8 +272,7 @@ our @ISA = qw(LaTeXML::DOM::Node);
 sub new {
   my($class,$text)=@_;
   $text = "&amp;" if $text eq '&';
-  bless {tag=>'#PCDATA', attributes=>{}, content=>[], text=>$text, 
-	 model=>$LaTeXML::MODEL}, $class;  }
+  bless {tag=>'#PCDATA', attributes=>{}, content=>[], text=>$text}, $class;  }
 
 sub insertText {
   my($self,$text)=@_;
@@ -307,8 +308,7 @@ our @ISA = qw(LaTeXML::DOM::Node);
 
 sub new {
   my($class,$text)=@_;
-  bless {tag=>'_Comment_', attributes=>{}, content=>[], text=>$text, 
-	 model=>$LaTeXML::MODEL}, $class; }
+  bless {tag=>'_Comment_', attributes=>{}, content=>[], text=>$text}, $class; }
 
 sub insertComment {
   my($self,$comment)=@_;
@@ -340,8 +340,8 @@ our @ISA = qw(LaTeXML::DOM::Node);
 
 sub new {
   my($class,$op,%attrib)=@_;
-  bless {tag=>'_ProcessingInstruction_', op=>$op, attributes=>{%attrib}, content=>[], 
-	 model=>$LaTeXML::MODEL}, $class; }
+  bless {tag=>'_ProcessingInstruction_', op=>$op, 
+	 attributes=>{%attrib}, content=>[]}, $class; }
 
 sub serialize {
   my($self,$out,$depth)=@_;
@@ -357,25 +357,27 @@ sub textContent { ""; }
 # LaTeXML::DOM::Document;
 #**********************************************************************
 package LaTeXML::DOM::Document;
-use LaTeXML::Error;
+use LaTeXML::Global;
 use strict;
 our @ISA = qw(LaTeXML::DOM::Node);
 
 sub new {
-  my($class,$model,%options)=@_;
-  bless {tag=>'_Document_',  attributes=>{}, content=>[], model=>$model,
-	 %options}, $class; }
+  my($class,%options)=@_;
+  bless {tag=>'_Document_',  attributes=>{}, content=>[], 
+	 model=>MODEL, %options}, $class; }
 
 sub serialize {
   my($self,$out,$depth)=@_;
-  my $model = $$self{model};
   my @content = @{$$self{content}};
   my @roots = grep(ref $_ eq 'LaTeXML::DOM::Node', @content);
+  local $LaTeXML::MODEL = $$self{model};
   Error("Document must have exactly 1 root element; it has ".scalar(@roots))  
     if (scalar(@roots) != 1);
   print $out "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-  print $out "<!DOCTYPE ".$roots[0]->getNodeName
-    ." PUBLIC \"".$model->getPublicID."\" \"".$model->getSystemID."\">\n";
+  print $out "<!DOCTYPE ".($roots[0]->getNodeName||'')
+    ." PUBLIC \"".(MODEL->getPublicID||'')."\" \"".(MODEL->getSystemID||'')."\">\n";
+  my $ns = MODEL->getDefaultNamespace;;
+  $roots[0]->setAttribute('xmlns',$ns) if $ns;
   $depth=0 unless $depth;
   foreach my $node (@{$$self{content}}){
     $node->serialize($out,$depth+1); }
@@ -383,15 +385,17 @@ sub serialize {
 
 sub toString {
   my($self,$depth)=@_;
-  my $model = $$self{model};
   my @content = @{$$self{content}};
   my @roots = grep(ref $_ eq 'LaTeXML::DOM::Node', @content);
+  local $LaTeXML::MODEL = $$self{model};
   Error("Document must have exactly 1 root element; it has ".scalar(@roots))  
     if (scalar(@roots) != 1);
   my $string = '';
   $string .= "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
   $string .= "<!DOCTYPE ".$roots[0]->getNodeName
-    ." PUBLIC \"".$model->getPublicID."\" \"".$model->getSystemID."\">\n";
+    ." PUBLIC \"".MODEL->getPublicID."\" \"".MODEL->getSystemID."\">\n";
+  my $ns = MODEL->getDefaultNamespace;;
+  $roots[0]->setAttribute('xmlns',$ns) if $ns;
   $depth=0 unless $depth;
   foreach my $node (@{$$self{content}}){
     $string .= $node->toString($depth+1); }

@@ -16,8 +16,7 @@
 #**********************************************************************
 package LaTeXML::Mouth;
 use strict;
-use LaTeXML::Token;
-use LaTeXML::Error;
+use LaTeXML::Global;
 use LaTeXML::Object;
 our @ISA = qw(LaTeXML::Object);
 
@@ -39,11 +38,15 @@ sub initialize {
   $$self{nchars}=0;
 }
 
-sub readLine {
+sub getNextLine {
   my($self)=@_;
   return undef unless scalar(@{$$self{buffer}});
   my $line = shift(@{$$self{buffer}});
   (scalar(@{$$self{buffer}}) ? $line . "\n" : $line); }	# No cr on last line!
+
+sub hasMoreInput {
+  my($self)=@_;
+  ($$self{colno} < $$self{nchars}) || scalar(@{$$self{buffer}}); }
 
 sub stringify {
   my($self)=@_;
@@ -61,6 +64,9 @@ sub getContext {
     my $p2 = join('',@$chars[$c..$n-1]);
     $msg .="\n  ".$p1."\n  ".(' ' x $c).'^'.' '.$p2; }
   $msg; }
+
+sub getPathname { $_[0]->{pathname}; }
+sub getLinenumber { $_[0]->{lineno}; }
 
 #**********************************************************************
 # See The TeXBook, Chapter 8, The Characters You Type, pp.46--47.
@@ -80,7 +86,7 @@ sub readToken {
   if ($$self{colno} >= $$self{nchars}) {
     $$self{lineno}++;
     $$self{colno}=0;
-    my $line = $self->readLine; 
+    my $line = $self->getNextLine; 
     if (!defined $line) {	# Exhausted the input.
       $$self{chars}=[];
       $$self{nchars}=0;
@@ -91,8 +97,11 @@ sub readToken {
 #    $$self{chars}=[split('',$line),chr(0),chr(0)]; # Padding, so we don't have to check nchars so much.
     $$self{nchars} = scalar(@{$$self{chars}});
     # Sneak a comment out, every so often.
-    return T_COMMENT("**** $$self{source} Line $$self{lineno} ****")
-      unless !$$self{includeComments} ||  ($$self{lineno} % 10);
+    if(!($$self{lineno} % 25)){
+      NoteProgress("[#$$self{lineno}]");
+      return T_COMMENT("**** $$self{source} Line $$self{lineno} ****")
+	if $$self{includeComments};
+    }
   }
   # ==== Extract next token from line.
   my $ch = $$self{chars}->[$$self{colno}++];
@@ -136,9 +145,11 @@ sub readToken {
   elsif ($cc == CC_IGNORE) {	# Ignore this char, get next token.
     $self->readToken; } 
   elsif ($cc == CC_EOL) {	# End of Line
-    ($$self{colno}==1 ? T_CS('\par') : T_SPACE()); }
-# It would be nice to preserve \n, to pretty print output, but need to be careful with token->eq !!?!?!
-#    ($$self{colno}==1 ? T_CS('\par') : Token("\n",CC_SPACE)); }
+    ($$self{colno}==1
+     ? T_CS('\par') 
+     : ($$self{stomach} && $$self{stomach}->getValue('preserveNewLines') 
+	? Token("\n",CC_SPACE)
+	: T_SPACE)); }
   elsif ($cc == CC_COMMENT) { 
     my $n = $$self{colno};
     $$self{colno} = $$self{nchars};
@@ -146,7 +157,8 @@ sub readToken {
     $comment =~ s/^\s+//; $comment =~ s/\s+$//;
     ($$self{includeComments} && $comment ? T_COMMENT($comment) : $self->readToken); }
   else {
-    Error("Invalid character $ch"); }
+#    Error("Invalid character $ch"); }
+    T_OTHER($ch); }		# Should this warn? (we're could be getting unicode!)
 }
 
 # If $ch is a superscript, peek at next chars; if another superscript, convert the
@@ -163,6 +175,16 @@ sub super_kludge {
     ($ch, (defined $cc ? $cc : CC_OTHER)); }
   else {
     ($ch, CC_SUPER); }}
+
+#**********************************************************************
+sub readLine {
+  my($self)=@_;
+  if($$self{colno} < $$self{nchars}){
+    my $line = join('',@{$$self{chars}}[$$self{colno}..$$self{nchars}-1]);
+    $$self{colno}=$$self{nchars}; 
+    $line; }
+  else {
+    $self->getNextLine; }}
 
 #**********************************************************************
 # Read all tokens, until exhausted.
@@ -183,7 +205,7 @@ sub readTokens {
 #**********************************************************************
 package LaTeXML::FileMouth;
 use strict;
-use LaTeXML::Error;
+use LaTeXML::Global;
 our @ISA = qw(LaTeXML::Mouth);
 
 sub new {
@@ -196,7 +218,11 @@ sub new {
   $self->initialize;
   $self;  }
 
-sub readLine {
+sub hasMoreInput {
+  my($self)=@_;
+  ($$self{colno} < $$self{nchars}) || $$self{IN}; }
+
+sub getNextLine {
   my($self)=@_;
   return undef unless $$self{IN};
   my $fh = \*{$$self{IN}};

@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                version="1.0">
 <!--
  /=====================================================================\ 
- |  LaTeXML.xsl                                                        |
- | Stylesheet for converting LaTeXML generated documents to HTML       |
+ |  LaTeXML-base.xsl                                                   |
+ | Base Stylesheet for converting LaTeXML documents to html or xhtml   |
+ | included by LaTeXML-html.xsl and LaTeXML-xhtml.xsl                  |
  |=====================================================================|
  | Part of LaTeXML:                                                    |
  |  Public domain software, produced as part of work done by the       |
@@ -14,33 +13,13 @@
  | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
  \=========================================================ooo==U==ooo=/
 -->
-
-<xsl:output method="html"
-	    omit-xml-declaration='yes'
-	    doctype-public = "-//W3C//DTD HTML 4.01 Transitional//EN"
-            doctype-system = "http://www.w3c.org/TR/html4/loose.dtd"
-	    media-type='text/html'/>
-
+<xsl:stylesheet 
+   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   version="1.0"
+   xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+   exclude-result-prefixes='ltx'
+   >
 <xsl:param name="CSS"></xsl:param>
-
-<!--  ======================================================================
-      Copy Template; things that should just get copied straight through
-      ====================================================================== -->
-
-<xsl:template match="p | a | span | div | font | br
-                     | colgroup | col | tr | td | th | thead | tbody | tfoot | hr">
-    <xsl:element name="{name()}">
-      <xsl:for-each select="@*">
-        <xsl:attribute name="{name()}">
-          <xsl:value-of select="."/>
-        </xsl:attribute>
-      </xsl:for-each>
-      <xsl:apply-templates/>
-    </xsl:element>
-</xsl:template>
-
-<xsl:template match="printonly"/>
-
 
 <!--  ======================================================================
       The Page
@@ -49,18 +28,18 @@
 <xsl:template match="/">
   <html>
     <head>
-      <!--      <title>DLMF: <xsl:value-of select="*/title/descendent::text()"/></title>-->
-      <title><xsl:value-of select="*/title"/></title>
+      <title><xsl:value-of select="*/ltx:title"/></title>
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+      <style type="text/css">
+	img.math { vertical-align:middle }
+      </style>
       <xsl:if test='$CSS'>
 	<link rel='stylesheet' type="text/css" href="{$CSS}"/> 
      </xsl:if>
     </head>
     <body>
       <xsl:call-template name="header"/>
-      <div class="content">
-        <xsl:apply-templates/>
-      </div>
+      <xsl:apply-templates/>
       <xsl:call-template name="footer"/> 
     </body>
   </html>
@@ -73,11 +52,6 @@
 <!--  ======================================================================
       Header & Footer
       ====================================================================== -->
-
-<xsl:template name="sep">
-  <xsl:text> &#x2666; </xsl:text>
-</xsl:template>
-
 <xsl:template name="header">
   <div class='header'>
   </div>
@@ -85,7 +59,7 @@
 
 <xsl:template name="footer">
   <div class='footer'>
-    <xsl:value-of select='//creationdate/node()'/>
+    <xsl:value-of select='//ltx:creationdate/node()'/>
   </div>
 </xsl:template>
 
@@ -93,78 +67,65 @@
      Document Structure
      ====================================================================== -->
 
-<xsl:template match="document | chapter | part | section 
-              | subsection | subsubsection | paragraph | sidebar | bibliography | appendix">
-  <div class="{name()}" id="{@label}">
+<xsl:template match="ltx:document | ltx:chapter | ltx:part 
+		     | ltx:section | ltx:subsection | ltx:subsubsection
+		     | ltx:paragraph | ltx:sidebar | ltx:bibliography | ltx:appendix">
+  <div class="{local-name()}">
+    <xsl:call-template name="add_id"/>
     <xsl:apply-templates/>
   </div>
 </xsl:template>
 
-<xsl:template match="author">
+<xsl:template match="ltx:author">
   <div class='author'>
     <xsl:apply-templates/>
   </div>
 </xsl:template>
 
-<xsl:template match="affiliation">
+<xsl:template match="ltx:affiliation">
   <div class='affiliation'><xsl:apply-templates/></div>
 </xsl:template>
 
-<!-- for now, just ignore ... -->
-<xsl:template match="creationdate"/>
-
-<xsl:template match="gallery">
-  <div class='gallery'>
-    <xsl:apply-templates/>
-  </div>
-</xsl:template>
-<xsl:template match="galleryitem">
-  <a href="{@href}" class="galleryitem"><img src="{@src}" width='100' height='100' border='0'/></a>
-</xsl:template>
-
-<xsl:template name="add_id">
-  <xsl:if test="@label">
-    <xsl:attribute name="id"><xsl:value-of select="@label"/></xsl:attribute>
-  </xsl:if>
-</xsl:template>
+<!-- put in footer -->
+<xsl:template match="ltx:creationdate"/>
 
 <!--  ======================================================================
       Titles, Refnums and such
       ====================================================================== -->
 
-<xsl:template match="document/title">
+<xsl:template match="ltx:document/ltx:title">
   <h1><xsl:call-template name="title-refnum"/><xsl:apply-templates /></h1>
 </xsl:template>
 
-<xsl:template match="part/title">
+<xsl:template match="ltx:part/ltx:title">
   <h2><xsl:call-template name="title-refnum"/><xsl:apply-templates/></h2>
 </xsl:template>
 
-<xsl:template match="chapter/title | bibliography/title">
+<xsl:template match="ltx:chapter/ltx:title | ltx:bibliography/ltx:title">
   <h2><xsl:call-template name="title-refnum"/><xsl:apply-templates/></h2>
 </xsl:template>
 
-<xsl:template match="section/title">
+<xsl:template match="ltx:section/ltx:title">
   <h3><xsl:call-template name="title-refnum"/><xsl:apply-templates/></h3>
 </xsl:template>
 
-<xsl:template match="appendix/title">
+<xsl:template match="ltx:appendix/ltx:title">
   <h3>Appendix <xsl:call-template name="title-refnum"/><xsl:apply-templates/></h3>
 </xsl:template>
 
-<xsl:template match="subsection/title">
+<xsl:template match="ltx:subsection/ltx:title">
   <h4><xsl:call-template name="title-refnum"/><xsl:apply-templates/></h4>
 </xsl:template>
 
-<xsl:template match="subsubsection/title | paragraph/title">
+<xsl:template match="ltx:subsubsection/ltx:title | ltx:paragraph/ltx:title">
   <h5><xsl:call-template name="title-refnum"/><xsl:apply-templates/></h5>
 </xsl:template>
 
-<xsl:template match="title">
+<xsl:template match="ltx:title">
   <h6><xsl:call-template name="title-refnum"/><xsl:apply-templates/></h6>
 </xsl:template>
 
-<xsl:template match="toctitle"/>
+<xsl:template match="ltx:toctitle"/>
 
 <!-- Refnums -->
 <xsl:template match="@refnum[../@label]">
@@ -180,96 +141,128 @@
   </xsl:if>
 </xsl:template>
 
-<xsl:template match="ref[text()] | qref[text()]">
+<xsl:template match="ltx:ref[text()] | ltx:qref[text()]">
   <a href="{concat('#',@labelref)}" class="refnum"><xsl:apply-templates/></a>
 </xsl:template>
 
-<xsl:template match="ref | qref">
+<xsl:template match="ltx:ref | ltx:qref">
   <a href="{concat('#',@labelref)}" class="refnum"><xsl:value-of select="@labelref"/></a>
 </xsl:template>
 
-<xsl:template match="eqref">(<a href="{concat('#',@labelref)}" class="refnum"><xsl:value-of select="@labelref"/></a>)</xsl:template>
+<xsl:template match="ltx:eqref">(<a href="{concat('#',@labelref)}" class="refnum"><xsl:value-of select="@labelref"/></a>)</xsl:template>
 
 <!-- ======================================================================
      Math level
      Really MathML !!!
      ====================================================================== -->
-<xsl:template match="equation">
+<xsl:template match="ltx:equation">
   <div class='equation'> 
-  <xsl:call-template name="add_id"/>
+    <xsl:call-template name="add_id"/>
     <xsl:apply-templates select="@refnum"/>
     <span class='equationcontent'>
-      <xsl:apply-templates select="XMath"/>
+      <xsl:apply-templates select="ltx:Math"/>
     </span>
-    <xsl:apply-templates select="constraint"/>
-    <xsl:apply-templates select="@metalabel"/>
   </div>
 </xsl:template>
 
-<xsl:template match="XMath[@imagesrc]">
-  <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}" alt="{@tex}" class='math'/>
-</xsl:template>
 
 <!-- ignore (if preceded by an XMath?) -->
-<xsl:template match="punct"/>
-
-<xsl:template match="equationmix">
-  <div class='equation'> 
-  <xsl:call-template name="add_id"/>
-    <xsl:apply-templates select="@refnum"/>
-    <span class='equationcontent'>
-      <xsl:apply-templates/>
-    </span>
-    <xsl:apply-templates select="@metalabel"/>
-  </div>
-</xsl:template>
-
-<xsl:template match="constraint[@hidden='yes']"/>
-<xsl:template match="constraint">
-  <span class='constraint'><xsl:apply-templates/></span>
-</xsl:template>
+<xsl:template match="ltx:punct"/>
 
 <!-- ======================================================================
      Block Elements
      ====================================================================== -->
 
-<xsl:template match="toccaption"/>
-<xsl:template match="caption">
+<xsl:template match="ltx:p">
+  <p><xsl:apply-templates/></p>
+</xsl:template>
+
+<xsl:template match="ltx:toccaption"/>
+<xsl:template match="ltx:caption">
   <div class='caption'>  
     <xsl:apply-templates select="../@refnum"/>
     <xsl:apply-templates/>
   </div>
 </xsl:template>
 
-<xsl:template match="figure | table">
-  <div class='{name()}'>
+<xsl:template match="ltx:figure | ltx:table">
+  <div class='{local-name()}'>
   <xsl:call-template name="add_id"/>
     <xsl:apply-templates/>
   </div>
 </xsl:template>
 
-<xsl:template match="figuregroup">
-  <div class="figuregroup">
-    <xsl:apply-templates/>
-  </div>
-</xsl:template>
-
-<xsl:template match="tabular">
-  <table align='center'>
-    <xsl:attribute name="frame"><xsl:value-of select="@frame"/></xsl:attribute>
-    <xsl:attribute name="rules"><xsl:value-of select="@rules"/></xsl:attribute>
+<xsl:template match="ltx:tabular">
+  <table align='center' frame='{@frame}' rules='{@rules}'>
     <xsl:apply-templates/>
   </table>
 </xsl:template>
 
-<xsl:template match="graphics">
+<xsl:template match="ltx:colgroup">
+  <colgroup><xsl:call-template name="col-attributes"/><xsl:apply-templates/></colgroup>
+</xsl:template>
+
+<xsl:template match="ltx:col">
+  <col><xsl:call-template name="col-attributes"/><xsl:apply-templates/></col>
+</xsl:template>
+
+<xsl:template name="col-attributes">
+  <xsl:if test="@span">
+    <xsl:attribute name='span'><xsl:value-of select='@span'/></xsl:attribute>
+  </xsl:if>
+  <xsl:if test="@align">
+    <xsl:attribute name='align'><xsl:value-of select='@align'/></xsl:attribute>
+  </xsl:if>
+</xsl:template>
+
+<xsl:template match="ltx:thead">
+  <thead><xsl:apply-templates/></thead>
+</xsl:template>
+
+<xsl:template match="ltx:tbody">
+  <tbody><xsl:apply-templates/></tbody>
+</xsl:template>
+
+<xsl:template match="ltx:tfoot">
+  <tfoot><xsl:apply-templates/></tfoot>
+</xsl:template>
+
+<xsl:template match="ltx:tr">
+  <tr><xsl:apply-templates/></tr>
+</xsl:template>
+
+<xsl:template match="ltx:td">
+  <td><xsl:call-template name="cell-attributes"/><xsl:apply-templates/></td>
+</xsl:template>
+
+<xsl:template match="ltx:th">
+  <th><xsl:call-template name="cell-attributes"/><xsl:apply-templates/></th>
+</xsl:template>
+
+<xsl:template name="cell-attributes">
+  <xsl:if test="@rowspan">
+    <xsl:attribute name='rowspan'><xsl:value-of select='@rowspan'/></xsl:attribute>
+  </xsl:if>
+  <xsl:if test="@colspan">
+    <xsl:attribute name='colspan'><xsl:value-of select='@colspan'/></xsl:attribute>
+  </xsl:if>
+  <xsl:if test="@align">
+    <xsl:attribute name='align'><xsl:value-of select='@align'/></xsl:attribute>
+  </xsl:if>
+</xsl:template>
+
+<xsl:template match="ltx:graphics">
   <img src="{@src}" width="{@width}" height="{@height}"/>
 </xsl:template>
 
-<xsl:template match="quote">
+<xsl:template match="ltx:quote">
   <blockquote>
     <xsl:apply-templates/>
   </blockquote>
+</xsl:template>
+
+<xsl:template match="ltx:ERROR">
+  <span class="ERROR" style="color:red"><xsl:apply-templates/></span>
 </xsl:template>
 <!-- ======================================================================
      Lists
@@ -283,99 +276,99 @@
   </xsl:if>
 </xsl:template>
 
-<xsl:template match="itemize">
+<xsl:template match="ltx:itemize">
   <ul>
     <xsl:call-template name="copy-class"/>
-    <xsl:apply-templates/></ul>
+    <xsl:apply-templates/>
+  </ul>
 </xsl:template>
-<xsl:template match="enumerate">
+
+<xsl:template match="ltx:enumerate">
   <ol>
     <xsl:call-template name="copy-class"/>
-    <xsl:apply-templates/></ol>
+    <xsl:apply-templates/>
+  </ol>
 </xsl:template>
-<xsl:template match="item">
+
+<xsl:template match="ltx:item">
   <li><xsl:apply-templates/></li>
 </xsl:template>
 
-<xsl:template match="description">
+<xsl:template match="ltx:description">
   <dl class="description">
     <xsl:call-template name="copy-class"/>
-    <xsl:apply-templates mode='description'/></dl>
-</xsl:template>
-<xsl:template match="item" mode="description">
-  <dt><xsl:value-of select="@tag"/><xsl:apply-templates select="tag/node()"/></dt><dd><xsl:apply-templates/></dd>
+    <xsl:apply-templates mode='description'/>
+  </dl>
 </xsl:template>
 
-<xsl:template match="tag"/>
+<xsl:template match="ltx:item" mode="description">
+  <dt><xsl:value-of select="@tag"/><xsl:apply-templates select="tag/node()"/></dt>
+  <dd><xsl:apply-templates/></dd>
+</xsl:template>
+
+<xsl:template match="ltx:tag"/>
 <!-- ======================================================================
      Inline Elements
      ====================================================================== -->
 
-<xsl:template match="textup | textsl | textsc | textmd | textrm | textsf">
-  <span class="{name()}"><xsl:apply-templates/></span>
+<xsl:template match="ltx:a">
+  <a href="{@href}"><xsl:apply-templates/></a>
 </xsl:template>
 
-<xsl:template match="textstyle[@font='typewriter']">
+<xsl:template match="ltx:textstyle[@font='typewriter']">
   <tt><xsl:apply-templates/></tt>
 </xsl:template>
-<xsl:template match="textstyle[@font='bold']">
+
+<xsl:template match="ltx:textstyle[@font='bold']">
   <b><xsl:apply-templates/></b>
 </xsl:template>
-<xsl:template match="textstyle[@font='italic']">
+
+<xsl:template match="ltx:textstyle[@font='italic']">
   <i><xsl:apply-templates/></i>
 </xsl:template>
 
-<xsl:template match="textstyle">
+<xsl:template match="ltx:textstyle">
   <span class="{@font}"><xsl:apply-templates/></span>
 </xsl:template>
 
-<xsl:template match="textit">
-  <i><xsl:apply-templates/></i>
-</xsl:template>
-
-<xsl:template match="emph">
+<xsl:template match="ltx:emph">
   <em><xsl:apply-templates/></em>
 </xsl:template>
-<xsl:template match="textbf">
-  <b><xsl:apply-templates/></b>
-</xsl:template>
-<xsl:template match="texttt">
-  <tt><xsl:apply-templates/></tt>
-</xsl:template>
-<xsl:template match="text">
+
+<xsl:template match="ltx:text">
   <xsl:apply-templates/>
 </xsl:template>
 
-<xsl:template match="cite[@style='intext']">
+<xsl:template match="ltx:cite[@style='intext']">
   <xsl:apply-templates select="citepre"/>
   <!--  <xsl:apply-templates select="bibref"/>-->
   <xsl:value-of select="@ref"/>
   <xsl:apply-templates select="citepost"/>
 </xsl:template>
 
-<xsl:template match="cite">
+<xsl:template match="ltx:cite">
   (<xsl:apply-templates select="citepre"/>
 <!-- <xsl:apply-templates select="bibref"/>-->
    <xsl:value-of select="@ref"/>
    <xsl:apply-templates select="citepost"/>)</xsl:template>
 
-<xsl:template match="bibref">
+<xsl:template match="ltx:bibref">
   <a href="{@href}"><xsl:apply-templates/></a>
 </xsl:template>
 
-<xsl:template match="citepre[../@style='intext'] | citepost[../@style='intext']"
+<xsl:template match="ltx:citepre[../@style='intext'] | citepost[../@style='intext']"
   >(<xsl:apply-templates/>)</xsl:template>
-<xsl:template match="citepre"><xsl:apply-templates/><xsl:text> </xsl:text></xsl:template>
-<xsl:template match="citepost">; <xsl:apply-templates/></xsl:template>
 
-<xsl:template match="VRML">
-  <a href="{@href}">VRML</a>
-</xsl:template>
+<xsl:template match="ltx:citepre"><xsl:apply-templates/><xsl:text> </xsl:text></xsl:template>
+
+<xsl:template match="ltx:citepost">; <xsl:apply-templates/></xsl:template>
 
 <!-- ======================================================================
      The Index
      ====================================================================== -->
-<xsl:template match="indexentry">
+<xsl:template match="ltx:index"/>
+
+<xsl:template match="ltx:indexentry">
   <li id="{@label}">
    <span class='indexline'>
     <xsl:apply-templates select="indexlevel"/>
@@ -384,53 +377,59 @@
   <xsl:apply-templates select="indexlist"/>
   </li>
 </xsl:template>
-<xsl:template match="indexlevel[../@label]">
+
+<xsl:template match="ltx:indexlevel[../@label]">
   <a name="{../@label}" class="indexlevel">
     <xsl:apply-templates/>
   </a>
 </xsl:template>
-<xsl:template match="indexlevel">
+
+<xsl:template match="ltx:indexlevel">
   <span class="indexlevel">
     <xsl:apply-templates/>
   </span>
 </xsl:template>
-<xsl:template match="indexrefs">
+
+<xsl:template match="ltx:indexrefs">
   <xsl:text> </xsl:text>
   <xsl:apply-templates/>
 </xsl:template>
-<xsl:template match="indexlist">
+
+<xsl:template match="ltx:indexlist">
   <ul class="indexlist">
     <xsl:apply-templates/>
   </ul>
 </xsl:template>
 
-
 <!-- ======================================================================
      Bibliography
      ====================================================================== -->
-<xsl:template match="biblist">
+<xsl:template match="ltx:biblist">
   <ul class="biblist">
     <xsl:apply-templates/>
   </ul>
 </xsl:template>
 
-<xsl:template match="bibitem">
+<xsl:template match="ltx:bibitem">
   <li id="{@label}" class="bibitem">
     <a name="{@label}" class="bib-ay"><xsl:apply-templates select="fbib-author-year"/></a>
     <xsl:apply-templates select="fbib-title | fbib-data | fbib-extra"/>
-</li>
+  </li>
 </xsl:template>
-<xsl:template match="fbib-title | fbib-data | fbib-extra">
+
+<xsl:template match="ltx:fbib-title | ltx:fbib-data | ltx:fbib-extra">
   <br/><xsl:apply-templates/>
 </xsl:template>
 
-<xsl:template match="bib-mr">
+<xsl:template match="ltx:bib-mr">
   <a href="{concat('http://www.ams.org/mathscinet-getitem?mr=',text())}"><xsl:apply-templates/>(MathRev)</a>
 </xsl:template>
-<xsl:template match="bib-doi">
+
+<xsl:template match="ltx:bib-doi">
   <a href="{concat('http://dx.doi.org/',text())}"><xsl:apply-templates/></a>
 </xsl:template>
-<xsl:template match="bib-url">
+
+<xsl:template match="ltx:bib-url">
   <a href="{concat('http://dx.doi.org/',text())}"><xsl:apply-templates/></a>
 </xsl:template>
 
@@ -438,107 +437,57 @@
      Meta data
      ====================================================================== -->
 
-<xsl:template match="email">
+<xsl:template match="ltx:email">
   <a href="{concat('mailto:',text())}"><xsl:value-of select="text()"/></a>
 </xsl:template>
 
-<xsl:template match="metadata">
+<xsl:template match="ltx:metadata">
   <dl class="metadata">
     <xsl:apply-templates/>
   </dl>
 </xsl:template>
 
-<xsl:template match="sources">
+<xsl:template match="ltx:sources">
   <dt>Sources</dt>
   <dd><ul><xsl:apply-templates/></ul></dd>
 </xsl:template>
-<xsl:template match="source">
+
+<xsl:template match="ltx:source">
   <li class="source"><xsl:apply-templates select="node()"/></li>
 </xsl:template>
 
-<xsl:template match="notes">
+<xsl:template match="ltx:notes">
   <dt>Notes</dt>
   <dd><ul><xsl:apply-templates/></ul></dd>
 </xsl:template>
-<xsl:template match="note">
+
+<xsl:template match="ltx:note">
   <li class="note"><xsl:apply-templates select="node()"/></li>
 </xsl:template>
 
-<xsl:template match="keywords">
+<xsl:template match="ltx:keywords">
   <dt>Keywords</dt>
   <dd class="keywords"><ul><li><xsl:apply-templates/></li></ul></dd>
 </xsl:template>
-<xsl:template match="keyword">
+
+<xsl:template match="ltx:keyword">
   <a href="{@href}" class="keyword"><xsl:apply-templates/></a>
 </xsl:template>
 
-<xsl:template match="index"/>
-
-<xsl:template match="origrefs">
-  <dt>A&amp;S Ref.</dt>
-  <dd><ul><li><xsl:apply-templates/></li></ul></dd>
-</xsl:template>
-<xsl:template match="origref">
-  <xsl:text> </xsl:text>
-  <span class="origref"><span class="refnum"><xsl:value-of select="@ref"/></span>
-    <xsl:if test="node()"> (<xsl:apply-templates select="node()"/>)</xsl:if>
-  </span>
-</xsl:template>
-
-<xsl:template match="latex-encodings">
-  <dt>LaTeX</dt>
-  <dd class="encoding"><ul><li><xsl:apply-templates/></li></ul></dd>
-</xsl:template>
-<xsl:template match="encoding">
-  <xsl:text> </xsl:text>
-  <a href="{concat('data:text/plain;base64,',text())}"><xsl:value-of select="@aboutrefnum"/></a>
-</xsl:template>
+<xsl:template match="ltx:index"/>
 
 <xsl:template match="referrers">
   <dt>Ref'd&#160;by</dt>
   <dd class="referrers"><ul><li><xsl:apply-templates/></li></ul></dd>
 </xsl:template>
+
 <xsl:template match="referrer">
   <a href="{@href}" class='referrer'><xsl:apply-templates/></a>
 </xsl:template>
 
-<xsl:template match="acknowledgements">
+<xsl:template match="ltx:acknowledgements">
   <dt>Acknowledgments</dt>
   <dd class='acknowledgements'><xsl:apply-templates select="node()"/></dd>
 </xsl:template>
-
-<!-- ======================================================================
-     Search Hit List
-     ====================================================================== -->
-
-<xsl:template match="hitlist">
-  <div class="hitlist"><xsl:apply-templates/></div>
-</xsl:template>
-
-<xsl:template match="hit">
-  <h4><em>In </em><xsl:apply-templates select="ancestry" mode="hitancestry"/></h4>
-  <h5><xsl:apply-templates select="hittag"/></h5>
-  <xsl:apply-templates select="hitcontent"/>
-</xsl:template>
-
-<xsl:template match="hittag">
-  <xsl:apply-templates/>
-</xsl:template>
-
-<xsl:template match="ancestry" mode="hitancestry">
-  <xsl:apply-templates select="ancestry" mode="hitancestry"/>
-  <xsl:if test="ancestry">
-    <xsl:text>; </xsl:text>
-  </xsl:if>
-  <xsl:apply-templates select="reftitle"/>
-</xsl:template>
-
-<xsl:template match="hitcontent">
-  <div class="hitcontent"><xsl:apply-templates/></div>
-</xsl:template>
-
-<!-- HACK !!! -->
-<xsl:template match="hit//meta-equation | hit//meta-equationmix | hit//meta-figure | hit//meta-table"/>
-
 
 </xsl:stylesheet>

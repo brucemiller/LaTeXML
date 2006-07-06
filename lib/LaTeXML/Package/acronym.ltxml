@@ -1,0 +1,58 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  acronym                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#**********************************************************************
+DefMacro('\acsfont{}','#1');
+DefMacro('\acffont{}','#1');
+DefMacro('\acfsfont{}','#1');
+
+DefMacro('\ac{}',
+	 '\@ACRO@{#1}{\@AC@if{#1}{\acsfont{\@VALUE{ACRONYM@short@#1}}}'
+	 .'{\acffont{\@VALUE{ACRONYM@long@#1}}\acfsfont{(\acsfont{\@VALUE{ACRONYM@short@#1}})}}}');
+DefMacro('\acs{}','\@ACRO@{#1}{\acsfont{\@VALUE{ACRONYM@short@#1}}}');
+DefMacro('\acl{}','\@ACRO@{#1}{\acffont{\@VALUE{ACRONYM@long@#1}}}');
+DefMacro('\acf{}',
+	 '\@ACRO@{#1}{\acffont{\@VALUE{ACRONYM@long@#1}}\acfsfont{(\acsfont{\@VALUE{ACRONYM@short@#1}})}}');
+
+
+DefEnvironment('{acronym}','<acronyms>%body</acronyms>',
+	      beforeDigest=>sub { DefMacro('\acro{}[]{}', 
+					   '\acrodef{#1}[#2]{#3}\item[\acs{#1}]\acl{#1} '); });
+
+DefPrimitive('\acrodef{}[]{}', sub {
+  my($stomach,$id,$short,$long)=@_;
+  $short = $id unless $short && $short->toString;
+  $id = $id->toString;
+  $stomach->setValue('ACRONYM@short@'.$id, $stomach->digest($short),1);
+  $stomach->setValue('ACRONYM@long@'.$id, $stomach->digest($long),1); });
+
+
+# \@ACR@{id}{text}
+DefConstructor('\@ACRO@{}{}',"<acronym name='#1'>#2</acronym>");
+
+DefExpandable('\@AC@if{}{}{}', sub { 
+  my($gullet,$id,$short,$long)=@_;
+  my $stomach = $gullet->getStomach;
+  my $key = 'ACROUSED@'.$_[1]->toString;
+  if($stomach->getValue($key)){
+    $short->unlist; }
+  else {
+    $stomach->setValue($key, 1,1);
+    $long->unlist; }});
+
+
+#**********************************************************************
+1;

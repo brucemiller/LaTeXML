@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage{comment}
+\includecomment{Included}
+\excludecomment{Excluded}
+\specialcomment{BoldSpecial}{[\begingroup\bf}{\endgroup]}
+\begin{document}
+Before Comment.
+\begin{comment}
+Inside Comment.
+\end{comment}
+After Comment.
+
+Before Included.
+\begin{Included}
+Inside Included.
+\end{Included}
+After Included.
+
+Before Excluded.
+\begin{Excluded}
+Inside Excluded.
+\end{Excluded}
+After Excluded.
+
+Before BoldSpecial.
+\begin{BoldSpecial}
+Inside BoldSpecial.
+\end{BoldSpecial}
+After BoldSpecial.
+
+Before Included.
+\begin{Included}
+\bf Bold Inside Included.
+\end{Included}
+After Included, but still Bold.
+
+\end{document}
+
+% Following doesn't even work in LaTeX ??
+Before Comment
+\comment
+Inside Comment
+\endcomment
+After Comment
+
+Before Included
+\Included
+Inside Included
+\endIncluded
+After Included
+
+Before Excluded
+\Excluded
+Inside Excluded
+\endExcluded
+After Excluded

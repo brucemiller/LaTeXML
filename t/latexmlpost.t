@@ -1,25 +1,16 @@
 # -*- CPERL -*-
 #**********************************************************************
-# Test cases for LaTeXML
+# Test cases for LaTeXML Postprocessing
 #**********************************************************************
 use Test;
-BEGIN { plan tests => 10; }
+BEGIN { plan tests => 1; }
 
-use LaTeXML;
+use LaTeXML::Post;
 
 # For each test $name there should be $name.tex and $name.xml
 # (the latter from a previous `good' run of latexml $name).
 # We transform $name.tex and compare the result to $name.xml
 
-dotest('testchar');
-dotest('testctr');
-dotest('testexpand');
-dotest('testif');
-dotest('testover');
-dotest('fonts');
-dotest('xii');
-dotest('verb');
-dotest('comment');
 dotest('simplemath');
 
 #**********************************************************************
@@ -32,17 +23,19 @@ dotest('simplemath');
 sub dotest{
   my($name)=@_;
 
-  $SIG{__DIE__} = \&LaTeXML::Error::Error;
-  LaTeXML::Error::SetDebugging('quiet');
-  my $latexml= LaTeXML->new(preload=>[], searchpath=>[], includeComments=>0);
-  return ok(0,1,"Couldn't instanciate LaTeXML") unless $latexml;
+  my $processor = LaTeXML::Post->new();
+  return ok(0,1,"Couldn't instanciate LaTeXML::Post") unless $processor;
 
-  my $dom = $latexml->convertFile("t/$name.tex");
-  return ok(0,1,"Couldn't convert $name.tex") unless $dom;
+  my $doc = $processor->process("t/$name.xml",
+				format    => 'xml',
+				verbosity => -1,
+				toString  => 1);
 
-  my @lines = split('\n',$dom->toString);
+  return ok(0,1,"Couldn't process $name.xml") unless $doc;
 
-  open(IN,"<:utf8","t/$name.xml") || return ok(0,1,"Couldn't read $name.xml");
+  my @lines = split('\n',$doc);
+
+  open(IN,"<:utf8","t/$name-post.xml") || return ok(0,1,"Couldn't read $name-post.xml");
   my($n,$new,$old)=(0,undef,undef);
   do {
     $old=<IN>; chomp($old) if $old;

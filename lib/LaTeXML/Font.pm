@@ -12,17 +12,30 @@
 
 package LaTeXML::Font;
 use strict;
+use LaTeXML::Global;
 use LaTeXML::Object;
-use Exporter;
-our @ISA = qw(LaTeXML::Object Exporter);
-our @EXPORT = qw(Font MathFont);
+our @ISA = qw(LaTeXML::Object);
+
+our $DEFFAMILY = 'serif';
+our $DEFSERIES = 'medium';
+our $DEFSHAPE  = 'upright';
+our $DEFSIZE   = 'normal';
+our $DEFCOLOR  = 'black';
+
+# NOTE:  Would it make sense to allow compnents to be `inherit' ??
 
 sub new {
-  my($class,$family,$series,$shape,$size,$color)=@_;
-  bless [$family,$series,$shape,$size,$color],$class; }
+  my($class,%options)=@_;
+  my $family = $options{family} || $DEFFAMILY;
+  my $series = $options{series} || $DEFSERIES;
+  my $shape  = $options{shape}  || $DEFSHAPE;
+  my $size   = $options{size}   || $DEFSIZE;
+  my $color  = $options{color}  || $DEFCOLOR;
+  $class->new_internal($family,$series,$shape,$size,$color); }
 
-sub Font     { LaTeXML::Font->new(@_); }
-sub MathFont { LaTeXML::MathFont->new(@_); }
+sub new_internal {
+  my($class,@components)=@_;
+  bless [@components],$class; }
 
 # Accessors
 sub getFamily { $_[0]->[0]; }
@@ -45,7 +58,7 @@ sub merge {
   my $shape  = $options{shape}  || $$self[2];
   my $size   = $options{size}   || $$self[3];
   my $color  = $options{color}  || $$self[4];
-  (ref $self)->new($family,$series,$shape,$size,$color); }
+  (ref $self)->new_internal($family,$series,$shape,$size,$color); }
 
 # Return a string representing the font relative to other.
 sub relativeTo {
@@ -77,17 +90,24 @@ sub distance {
 #**********************************************************************
 package LaTeXML::MathFont;
 use strict;
+use LaTeXML::Global;
 our @ISA = qw(LaTeXML::Font);
-
-sub new {
-  my($class,$family,$series,$shape,$size,$color,$forcebold)=@_;
-  bless [$family,$series,$shape,$size,$color,$forcebold],$class; }
 
 our $DEFFAMILY = 'serif';
 our $DEFSERIES = 'medium';
 our $DEFSHAPE  = 'upright';
 our $DEFSIZE   = 'normal';
 our $DEFCOLOR  = 'black';
+
+sub new { 
+  my($class,%options)=@_;
+  my $family = $options{family} || 'math';
+  my $series = $options{series} || $DEFSERIES;
+  my $shape  = $options{shape}  || $DEFSHAPE;
+  my $size   = $options{size}   || $DEFSIZE;
+  my $color  = $options{color}  || $DEFCOLOR;
+  my $force  = $options{forcebold} || 0;
+  $class->new_internal($family,$series,$shape,$size,$color,$force); }
 
 sub isSticky {
   $_[0]->[0] =~ /^(serif|sansserif|typewriter)$/; }
@@ -104,7 +124,7 @@ sub merge {
   $family = $DEFFAMILY if !$options{family} && ($options{series} || $options{shape});
   $series = $DEFSERIES if !$options{series} && ($options{family} || $options{shape});
   $shape  = $DEFSHAPE  if !$options{shape}  && ($options{family} || $options{series});
-  (ref $self)->new($family,$series,$shape,$size,$color,$force); }
+  (ref $self)->new_internal($family,$series,$shape,$size,$color,$force); }
 
 # Instanciate the font for a particular class of symbols.
 # NOTE: This works in `normal' latex, but probably needs some tunability.
@@ -127,7 +147,7 @@ sub specialize {
   elsif($mathclass eq 'symbol'){
     $family=$DEFFAMILY; $shape=$DEFSHAPE; # defaults, always.
     $series=($forcebold ? 'bold' : $DEFSERIES); }
-  (ref $self)->new($family,$series,$shape,$size,$color,$forcebold); }
+  (ref $self)->new_internal($family,$series,$shape,$size,$color,$forcebold); }
 
 
 #**********************************************************************
@@ -141,7 +161,7 @@ __END__
 
 =head2 SYNOPSIS
 
-use LaTeXML::Error;
+use LaTeXML::Font;
 
 =head2 DESCRIPTION
 

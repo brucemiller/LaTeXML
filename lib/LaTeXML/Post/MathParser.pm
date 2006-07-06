@@ -20,7 +20,9 @@ use LaTeXML::Util::LibXML;
 use LaTeXML::Post::MathDictionary;
 use Exporter;
 use charnames ":full";
-our @ISA = qw(Exporter);
+use LaTeXML::Post;
+our @ISA = (qw(Exporter LaTeXML::Post::Processor));
+
 our @EXPORT_OK = (qw(&Lookup &New &Apply &recApply &Annotate &InvisibleTimes
 		     &NewFormulae &NewFormula &NewCollection  &ApplyFunction
 		     &LeftRec
@@ -31,6 +33,7 @@ our %EXPORT_TAGS = (constructors => [qw(&Lookup &New &Apply &recApply &Annotate 
 					&LeftRec
 					&Arg &Content &Problem &MaybeFunction 
 					&isMatchingClose &NewFenced)]);
+our $nsURI = "http://dlmf.nist.gov/LaTeXML";
 
 # ================================================================================
 sub new {
@@ -46,27 +49,20 @@ sub new {
   my $internalparser = LaTeXML::Post::MathGrammar->new();
   die("Math Parser grammar failed") unless $internalparser;
 
-  bless {internalparser => $internalparser,
-	verbosity => $options{verbosity} || 0},$class;
-  }
+  my $self = bless {internalparser => $internalparser},$class;
+  $self->init(%options);
+  $self; }
 
 sub process {
   my($self,$doc,%options)=@_;
-  my $pathname = $options{source};
-  $$self{verbosity} = $options{verbosity}||0;
-
   $self->clear;			# Not reentrant!
-  my $dict = LaTeXML::Post::MathDictionary::getDocumentDictionary($doc,$pathname);
-  my @math =  $self->find_math_nodes($doc);
-  $self->Msg(1,"Parsing ".scalar(@math)." formulae");
+  my $dict = LaTeXML::Post::MathDictionary::getDocumentDictionary($doc,$self->getSource);
+  my @math =  $self->findMathNodes($doc);
+  $self->Progress("Parsing ".scalar(@math)." formulae");
   foreach my $math (@math){
     $self->parse($math,$dict); }
-  $self->summary;
+  $self->showSummary;
   $doc; }
-
-sub Msg {
-  my($self,$level,$msg)=@_;
-  print STDERR "".(ref $self).": $msg\n" if $$self{verbosity}>=$level; }
 
 # ================================================================================
 sub clear {
@@ -80,25 +76,25 @@ sub clear {
   $$self{unknowns}={};
   $$self{maybe_functions}={};
 }
-sub summary {
+sub showSummary {
   my($self)=@_;
-  return unless $$self{verbosity} >= 1;
   my $ntot = $$self{math_passed}+$$self{math_failed};
   my $ntotargs = $$self{arg_passed}+$$self{arg_failed};
   my $ntotwrap = $$self{wrap_passed}+$$self{wrap_failed};
-  $self->Msg(1,"Math parsing succeeded\n"
-  	     ."  $$self{math_passed}/$ntot top-level expressions\n"
-	     ."  $$self{arg_passed}/$ntotargs subexpressions\n"
-	     ."  $$self{wrap_passed}/$ntotwrap sloppy subexpressions."
-	    ) if $ntot; 
+  $self->Progress("Math parsing succeeded\n"
+		  ."  $$self{math_passed}/$ntot top-level expressions\n"
+		  ."  $$self{arg_passed}/$ntotargs subexpressions\n"
+		  ."  $$self{wrap_passed}/$ntotwrap sloppy subexpressions."
+		 ) if $ntot; 
   my @unk = keys %{$$self{unknowns}};
   if(@unk){
-    print STDERR "Symbols assumed as simple identifiers (with # of occurences):\n   "
-      .join(', ',map("'$_' ($$self{unknowns}{$_})",sort @unk))."\n"; 
+    $self->Warn("Symbols assumed as simple identifiers (with # of occurences):\n   "
+		    .join(', ',map("'$_' ($$self{unknowns}{$_})",sort @unk)));
     my @funcs = keys %{$$self{maybe_functions}};
     if(@funcs){
-      print STDERR "Possibly used as functions? (with # suspicious usages/# of occurrences):\n  "
-	.join(', ',map("'$_' ($$self{maybe_functions}{$_}/$$self{unknowns}{$_} times)",sort @funcs))."\n"; }}
+      $self->Warn("Possibly used as functions? (with # suspicious usages/# of occurrences):\n  "
+		      .join(', ',map("'$_' ($$self{maybe_functions}{$_}/$$self{unknowns}{$_} times)",
+				     sort @funcs))); }}
 }
 
 sub note_unknown {
@@ -138,9 +134,9 @@ sub node_location {
 # ================================================================================
 # Customizable?
 
-sub find_math_nodes {
+sub findMathNodes {
   my($self,$doc)=@_;
-  $doc->findnodes('.//XMath'); }
+  $doc->getElementsByTagNameNS($self->getNamespace,'XMath'); }
 
 # ================================================================================
 sub parse {
@@ -160,7 +156,8 @@ sub parse {
     map($xnode->removeChild($_),element_nodes($xnode));
     append_nodes($xnode,$result);
 
-    $xnode->setAttribute('text',$self->text_form($result));
+    # Add text representation to the containing Math element.
+    $xnode->parentNode->setAttribute('text',$self->text_form($result));
 #print STDERR "Math : \"".$xnode->getAttribute('tex')."\"\n=>\"".$xnode->getAttribute('text')."\"\n";
   }}
 
@@ -240,7 +237,7 @@ sub parse_internal {
       if($POS eq 'UNKNOWN'){
 	$self->note_unknown($name);
 	if($name eq 'Unknown'){
-	  print STDERR "MathParser: What is this: \"".$node->toString."\"?\n"; }}
+	  $self->Warn("MathParser: What is this: \"".$node->toString."\"?"); }}
       $$LaTeXML::Post::MathParser::LEXEMES{$id} = $node;
       $textified .= ' '.$id; }
     #print STDERR "MathParse Node:\"".node_string(@nodes)."\"\n => \"$textified\"\n";
@@ -258,8 +255,8 @@ sub parse_internal {
     my $parsed  = node_string(@nodes[0..$pos-1]);
     my $toparse = node_string(@nodes[$pos..$#nodes]);
     my $id = node_location($nodes[$pos] || $nodes[$pos-1] || $mathnode);
-    print STDERR "MathParser failed to match rule $rule for ".$mathnode->nodeName." at pos. $pos in $id at\n"
-       . ($parsed ? $parsed."\n".(' ' x (length($parsed)-2)) : '')."> ".$toparse."\n";
+    $self->Warn("MathParser failed to match rule $rule for ".$mathnode->nodeName." at pos. $pos in $id at\n"
+		. ($parsed ? $parsed."\n".(' ' x (length($parsed)-2)) : '')."> ".$toparse);
     undef; }
   # Success!
   else {
@@ -340,7 +337,7 @@ sub Lookup {
 # Make a new Token node with given name, content, and attributes.
 sub New {
   my($name,$content,%attribs)=@_;
-  Annotate(new_node('XMTok',$content),name=>$name,%attribs); }
+  Annotate(new_node($nsURI,'XMTok',$content),name=>$name,%attribs); }
 
 # Get n-th arg of an XMApp.
 sub Arg {
@@ -364,7 +361,7 @@ sub Annotate {
 # Mid-level constructors
 sub Apply {
   my($op,@args)=@_;
-  new_node('XMApp', [$op,@args]); }
+  new_node($nsURI,'XMApp', [$op,@args]); }
 
 sub recApply {
   my(@ops)=@_;

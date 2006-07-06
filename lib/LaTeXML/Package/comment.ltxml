@@ -1,0 +1,56 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  comment                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#**********************************************************************
+# Define \name and \begin{name} to start an ignored section
+# until \endname or \end{name}, respectively
+sub defineExcluded {
+  my($stomach,$name)=@_;
+  $name = $name->toString if ref $name;
+  my $defn = LaTeXML::Constructor->new("\\begin{$name}",undef,'', untex=>'',
+                   afterDigest=>[sub {
+				   my($stomach,$whatsit)=@_;
+				   my @lines = $stomach->getGullet->readRawLines("\\end{$name}\n");
+				   return; }]);
+
+  $stomach->setMeaning(T_CS("\\begin{$name}"),$defn);
+  $stomach->setMeaning(T_CS("\\$name"),$defn);
+  return; }
+
+sub defineIncluded {
+  my($stomach,$name,$before,$after)=@_;
+  $name = $name->toString if ref $name;
+  # Note that we define the `magic' environment control sequences,
+  # but DO NOT do any of the normal environ things, like \begingroup \endgroup!
+  my $bdefn = LaTeXML::Expandable->new("\\begin{$name}",undef,
+				       Tokens(($before ? $before->unlist:()),T_CS('\ignorespaces')));
+  $stomach->setMeaning(T_CS("\\$name"),$bdefn);
+  $stomach->setMeaning(T_CS("\\begin{$name}"),$bdefn);
+  my $edefn = LaTeXML::Expandable->new("\\end{$name}",undef,
+				       Tokens(($after ? $after->unlist:()),T_CS('\ignorespaces')));
+  $stomach->setMeaning(T_CS("\\end{$name}"),$edefn);
+  $stomach->setMeaning(T_CS("\\end$name"),$edefn);
+  return; }
+
+defineExcluded(STOMACH,'comment');
+
+DefPrimitive('\includecomment{}',\&defineIncluded);
+DefPrimitive('\excludecomment{}',\&defineExcluded);
+DefPrimitive('\specialcomment{}{}{}',\&defineIncluded);
+#DefPrimitive('\processcomment{}{}{}{}',);
+
+#**********************************************************************
+1;

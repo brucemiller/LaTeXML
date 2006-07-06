@@ -79,7 +79,7 @@ sub loadDocumentDictionary {
   my($dict,$doc,$pathname)=@_;
   my($dir,$name,$ext)=pathname_split($pathname);
   if(my $docdictpath = pathname_find($name,paths=>[$dir], types=>['dict'])){
-    print STDERR "loading dictionary: $docdictpath\n";
+#    print STDERR "loading dictionary: $docdictpath\n";
     local $LaTeXML::DOCUMENT = $doc;
     if(!defined(do $docdictpath)){
       warn "Failed to process dictionary $docdictpath: $!$@"; }}

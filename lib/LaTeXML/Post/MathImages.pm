@@ -11,10 +11,12 @@
 # \=========================================================ooo==U==ooo=/ #
 
 package LaTeXML::Post::MathImages;
+use strict;
 use DB_File;
 use Image::Magick;
 use LaTeXML::Util::Pathname;
-use strict;
+use LaTeXML::Post;
+our @ISA = (qw(LaTeXML::Post::Processor));
 
 #======================================================================
 
@@ -40,16 +42,16 @@ our $DVIPSCMD='dvips -q -S1 -i -E -j0';
 #   dpi            : assumed DPI for the target medium (default 100)
 #   background     : color of background (for anti-aliasing, since it is made transparent)
 #   imagetype      : typically 'png' or 'gif'.
-#   verbosity
 #  Make the math subdirectory an option!
 sub new {
   my($class,%options)=@_;
-  bless {magnification => $options{magnification} || 1.75,
-	 maxwidth      => $options{maxwidth} || 800,
-	 dpi           => $options{dpi} || 100, 
-	 background    => $options{background} || "#FFFFFF",
-	 imagetype     => $options{imagetype} || 'png',
-	 verbosity     => $options{verbosity} || 0 }, $class; }
+  my $self= bless {magnification => $options{magnification} || 1.75,
+		   maxwidth      => $options{maxwidth} || 800,
+		   dpi           => $options{dpi} || 100, 
+		   background    => $options{background} || "#FFFFFF",
+		   imagetype     => $options{imagetype} || 'png'}, $class; 
+  $self->init(%options);
+  $self; }
 
 #**********************************************************************
 # Generating & Processing the LaTeX source.
@@ -62,12 +64,11 @@ sub new {
 #   (2) relative path from doc to images.
 sub process {
   my($self,$doc,%options)=@_;
-  $self = $self->new() unless ref $self; # Allow non-OO call, we'll create our own $self!
-  my $name = 'mathimages';
-  my $destdir = $options{destinationDirectory} || '.';
+
+  my $jobname = 'mathimages';
+  my $destdir = $self->getDestinationDirectory;
   my $relpath = $options{mathImagesRelative} || 'math';
-  $destdir .= '/'.$relpath;
-  $$self{verbosity} = $options{verbosity}||0;
+
   my %table=();
 
   # === Get the desired math nodes, extract the set of unique tex strings, noting which need processing.
@@ -81,31 +82,24 @@ sub process {
     if(!$entry){
       $nuniq++; $entry = $table{$key} = {key=>$key, tex=>$tex, mode=>$mode, nodes=>[]}; }
     push(@{$$entry{nodes}},$node); }
-  $self->Msg(1,"Found $nuniq unique formula (of $ntotal)");
-  return $doc unless $nuniq;	# No formula!
+  $self->Progress("Found $nuniq unique formula (of $ntotal)");
+  return $doc unless $nuniq;	# No formula to process!
 
-  pathname_mkdir($destdir) or return $self->Error("Couldn't create destination dir $destdir: $!");
-
-  # === Open a DB file remembering processed math formula & thier images.
-  my %DB=();
-  my $dbfile = pathname_make(dir=>$destdir,name=>$name,type=>'db');
-#  tie %DB, 'DB_File', [$dbfile,  O_RDWR|O_CREAT, 0666, $DB_HASH]
-  tie %DB, 'DB_File', $dbfile, O_RDWR|O_CREAT
-    or return $self->Error("Couldn't attach DB $dbfile for $name: $!");
-  $DB{_max_image_} or ($DB{_max_image_}=0);
+  pathname_mkdir(pathname_concat($destdir,$relpath)) 
+    or return $self->Error("Couldn't create destination dir $destdir/$relpath: $!");
 
   # === Check which formula still need processing.
   my @pending=();
   foreach my $entry (values %table){
-    push(@pending,$entry) unless $DB{$$entry{key}}; }
+    push(@pending,$entry) unless $self->cacheLookup($$entry{key}); }
 
-  $self->Msg(1,scalar(@pending)." images to generate");
+  $self->Progress(scalar(@pending)." images to generate");
   if(@pending){			# if any images need processing
     my $workdir=pathname_concat($TMP,"LaTeXML$$");
     pathname_mkdir($workdir) or return $self->Error("Couldn't create MathImage working dir $workdir: $!");
 
     # === Generate the LaTeX file.
-    my $texfile = pathname_make(dir=>$workdir,name=>$name,type=>'tex');
+    my $texfile = pathname_make(dir=>$workdir,name=>$jobname,type=>'tex');
     open(TEX,">$texfile") or return $self->Error("Cant write to $texfile: $!");
     print TEX $self->preamble($doc);
     print TEX "\\begin{document}\n";
@@ -116,32 +110,34 @@ sub process {
     close(TEX);
 
     # === Run LaTeX on the file.
-    system("cd $workdir ; $LATEXCMD $name > $name.output") == 0
-      or return $self->Error("Couldn't execute latex for math images: See $workdir/$name.log");
-    if(! -f "$workdir/$name.dvi"){
-      return $self->Error("LaTeX somehow failed: See $workdir/$name.log"); }
+    system("cd $workdir ; $LATEXCMD $jobname > $jobname.output") == 0
+      or return $self->Error("Couldn't execute latex for math images: See $workdir/$jobname.log");
+    if(! -f "$workdir/$jobname.dvi"){
+      return $self->Error("LaTeX somehow failed: See $workdir/$jobname.log"); }
     # === Run dvips to extract individual postscript files.
     my $mag = int($$self{magnification}*1000);
-    system("cd $workdir ; $DVIPSCMD -x$mag -o mix $name.dvi") == 0 
+    system("cd $workdir ; $DVIPSCMD -x$mag -o mix $jobname.dvi") == 0 
       or return $self->Error("Couldn't execute dvips: $!");
 
-    # === Convert each to .gif.
-    my ($index,$ndigits)= (0,1+int(log(scalar(keys %DB))/log(10)));
+    # === Convert each image to appropriate type and put in place.
+    my ($index,$ndigits)= (0,1+int(log( $self->cacheLookup('_max_image_')||1)/log(10)));
     foreach my $entry (@pending){
       my $src   = sprintf("mix%03d",++$index);
-      my $dest  = sprintf("mi%0*d",$ndigits,++$DB{_max_image_}).'.'.$$self{imagetype};
-      my($width,$height) = $self->convert_mathimage("$workdir/$src","$destdir/$dest");
-      $DB{$$entry{key}} = "$dest;$width;$height"; }
+      my $N = $self->cacheLookup('_max_image_')||0;
+      my $dest  = pathname_make(dir=>$relpath,name=>sprintf("mi%0*d",$ndigits,++$N),type=>$$self{imagetype});
+      $self->cacheStore('_max_image_',$N);
+      my($w,$h) = $self->convert_mathimage("$workdir/$src",pathname_concat($destdir,$dest));
+      $self->cacheStore($$entry{key},"$dest;$w;$h"); }
     # Cleanup
     (system("rm -rf $workdir")==0) or warn "Couldn't cleanup MathImages workingdirectory $workdir: $!";
   }
 
   # Finally, modify the original document to record the associated images.
   foreach my $entry (values %table){
-    next unless $DB{$$entry{key}} =~ /^(.*);(\d+);(\d+)$/;
-    my($file,$width,$height)=($1,$2,$3);
+    next unless $self->cacheLookup($$entry{key}) =~ /^(.*);(\d+);(\d+)$/;
+    my($image,$width,$height)=($1,$2,$3);
     foreach my $node (@{$$entry{nodes}}){
-      $self->set_math_image($node,"$relpath/$file",$width,$height); }}
+      $self->set_math_image($node,$image,$width,$height); }}
   $doc;}
 
 #**********************************************************************
@@ -155,7 +151,7 @@ sub process {
 # Default is look for XMath elements with a tex attribute.
 sub find_math_nodes {
   my($self,$doc)=@_;
-  $doc->findnodes('.//XMath[@tex]'); }
+  $doc->getElementsByTagNameNS($self->getNamespace,'Math'); }
 
 # Given a node such as selected by select_math_nodes,
 # return a list of mode (inline|display) and the TeX string.
@@ -193,14 +189,6 @@ sub find_documentclass_and_packages {
       push(@packages,[$$entry{package},$$entry{options}||'']); }
   }
   ([$class,$classoptions],@packages); }
-
-sub Error {
-  my($self,$msg)=@_;
-  die "".(ref $self)." Error: $msg"; }
-
-sub Msg {
-  my($self,$level,$msg)=@_;
-  print STDERR "".(ref $self).": $msg\n" if $$self{verbosity}>=$level; }
 
 #======================================================================
 # Generating & Processing the LaTeX source.
@@ -279,7 +267,7 @@ sub convert_mathimage {
   my ($w,$h) = $image->Get('width','height');
   $image->Transparent(color=>$$self{background});
 
-  $self->Msg(2,"Converting $src => $dest ($w x $h)");
+  $self->ProgressDetailed("Converting $src => $dest ($w x $h)");
 
   $image->Write(filename=>$dest);
   ($w,$h); }

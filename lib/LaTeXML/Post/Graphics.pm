@@ -14,11 +14,12 @@
 #======================================================================
 package LaTeXML::Post::Graphics;
 use strict;
-use DB_File;
 use XML::LibXML;
 use LaTeXML::Util::Pathname;
-use Image::Magick;
 use POSIX;
+use Image::Magick;
+use LaTeXML::Post;
+our @ISA = (qw(LaTeXML::Post::Processor));
 
 #======================================================================
 # Options:
@@ -36,41 +37,31 @@ use POSIX;
 #           ncolors     : the image will be quantized to ncolors.
 sub new {
   my($class,%options)=@_;
-  bless {dppt               => (($options{dpi}||100)/72.0), # Dots per point.
-	 ignore_options     => $options{ignore_options}   || [],
-	 trivial_scaling    => $options{trivial_scaling}  || 1,
-	 source_types       => $options{source_types}     || [qw(png gif jpg jpeg eps ps)],
-	 type_map           => $options{type_map} || { ps  =>{type=>'png', transparent=>1},
-						       eps =>{type=>'png', transparent=>1},
-						       jpg =>{type=>'jpg'},
-						       jpeg=>{type=>'jpeg'},
-						       gif =>{type=>'gif', transparent=>1},
-						       png =>{type=>'png', transparent=>1}},
-	 background         => $options{background}       || "#FFFFFF",
-	 verbosity            => $options{verbosity}||0,
-	},$class; }
+  my $self = bless {dppt              => (($options{dpi}||100)/72.0), # Dots per point.
+		    ignoreOptions     => $options{ignoreOptions}   || [],
+		    trivial_scaling   => $options{trivial_scaling}  || 1,
+		    graphicsSourceTypes => $options{graphicsSourceTypes} || [qw(png gif jpg jpeg eps ps)],
+		    type_map          => $options{type_map} || { ps  =>{type=>'png', transparent=>1},
+								 eps =>{type=>'png', transparent=>1},
+								 jpg =>{type=>'jpg'},
+								 jpeg=>{type=>'jpeg'},
+								 gif =>{type=>'gif', transparent=>1},
+								 png =>{type=>'png', transparent=>1}},
+		    background        => $options{background}       || "#FFFFFF",
+		   },$class; 
+  $self->init(%options); 
+  $self; }
 
 sub process {
-  my($self,$doc,%options)=@_;
-  $self=$self->new() unless ref $self; # Allow non-OO call; we'll create our own $self!!
-  $$self{sourceDirectory} = $options{sourceDirectory} || '.';
-  $$self{destinationDirectory} = $options{destinationDirectory} || '.';
-  $$self{search_paths} = [$$self{sourceDirectory}];
-  $$self{verbosity} = $options{verbosity}||0;
+  my($self,$doc)=@_;
+  $self->findGraphicsPaths($doc);
+  $self->ProgressDetailed("Using graphicspaths: ".join(', ',@{$self->getSearchPaths}));
 
-  $self->find_graphicspaths($doc);
-  $self->Msg(2,"Using graphicspaths: ".join(', ',@{$$self{search_paths}}));
-
-  my @nodes = $self->select_graphics_nodes($doc);
-  $self->Msg(1,scalar(@nodes)." graphics nodes to process");
+  my @nodes = $self->selectGraphicsNodes($doc);
+  $self->Progress(scalar(@nodes)." graphics nodes to process");
   foreach my $node (@nodes){
-    $self->process_graphic($node); }
+    $self->processGraphic($node);  }
   $doc; }
-
-#======================================================================
-sub ignore_scaling  { push(@{$_[0]->{ignore_options}}, qw(width height totalheight scale)); }
-sub ignore_rotation { push(@{$_[0]->{ignore_options}}, qw(angle)); }
-sub ignore_clipping { push(@{$_[0]->{ignore_options}}, qw(trim clip)); }
 
 #======================================================================
 # Potentially customizable operations.
@@ -79,39 +70,31 @@ sub ignore_clipping { push(@{$_[0]->{ignore_options}}, qw(trim clip)); }
 
 # Extract any graphicspath PI's from the document and return a reference 
 # to a list of search paths.
-sub find_graphicspaths {
+sub findGraphicsPaths {
   my($self,$doc)=@_;
   foreach my $pi ($doc->findnodes('.//processing-instruction("latexml")')){
     if($pi->textContent =~ /^\s*graphicspath\s*=\s*([\"\'])(.*?)\1\s*$/){
       my $value=$2;
       while($value=~ s/^\s*\{(.*?)\}//){
-	$self->add_searchpath($1); }}}}
+	$self->addSearchPath($1); }}}}
 
 # Return a list of ZML nodes which have graphics that need processing.
-sub select_graphics_nodes {
+sub selectGraphicsNodes {
   my($self,$doc)=@_;
-  $doc->findnodes('.//graphics'); }
+  $doc->getElementsByTagNameNS($self->getNamespace,'graphics'); }
 
-# Return the `name' of the graphics file for this node.
-# (not necessarily a complete pathname)
-sub get_name {
+# Return the pathname to an appropriate image.
+sub findGraphicsFile {
   my($self,$node)=@_;
-   $node->getAttribute('graphic'); }
+  my $name = $node->getAttribute('graphic');
+  ($name ? $self->findFile($name,$$self{graphicsSourceTypes}) : undef); }
 
-# Return a list of file types that would be acceptable for this node.
-sub get_types {
+# Return the Transform to be used for this node
+# Default is based on parsing the graphicx options
+sub getTransform {
   my($self,$node)=@_;
-  $$self{source_types}; }
-
-# Return the options for this node.
-sub get_options {
-  my($self,$node)=@_;
-  $node->getAttribute('options'); }
-
-# Return the parsed options (a transform) for this node.
-sub get_transform {
-  my($self,$node,$options)=@_;
-  ($options ? $self->parse_options($options) : []); }
+  my $options = $node->getAttribute('options');
+  ($options ? $self->parseOptions($options) : []); }
 
 # Get a hash of the image processing properties to be applied to this image.
 sub get_type_map {
@@ -121,7 +104,7 @@ sub get_type_map {
 
 # Set the attributes of the graphics node to record the image file name,
 # width and height.
-sub set_graphics_src {
+sub setGraphicsSrc {
   my($self,$node,$src,$width,$height)=@_;
   $node->setAttribute('src',$src);
   $node->setAttribute('width',$width);
@@ -135,86 +118,59 @@ sub postprocess_image {
   $image->Set('quality',$$map{quality}) if $$map{quality};
   $image; }
 
-sub Error {
-  my($self,$msg)=@_;
-  die "".(ref $self)." Error: $msg"; }
-
-sub Msg {
-  my($self,$level,$msg)=@_;
-  print STDERR "".(ref $self).": $msg\n" if $$self{verbosity}>$level; }
-
-#======================================================================
-sub to_absolute {
-  my($self,$path)=@_;
-  (pathname_is_absolute($path) ? $path : pathname_absolute($path,$$self{sourceDirectory})); }
-
-sub add_searchpath {
-  my($self,$path)=@_;
-  push(@{$$self{search_paths}},$self->to_absolute($path)); }
-
-sub find_file {
-  my($self,$name,$types)=@_;
-  pathname_find($name,paths=>$$self{search_paths},types=>$types); }
-
-# Given a source pathname, presumably relative to the source document's directory,
-# create a corresponding sub-directory in the destination directory.
-# Return a pair: (absolute dest dir,  relative dest dir)
-sub make_relative_subdirectory {
-  my($self,$source)=@_;
-  my ($reldir,$name,$type) = pathname_split(pathname_relative($source,$$self{sourceDirectory}));
-  my $destdirrel = pathname_concat($$self{destinationDirectory},$reldir);
-  pathname_mkdir($destdirrel) 
-    or return $self->Error("Could not create relative directory $destdirrel: $!");
-  ($destdirrel,$reldir); }
-
-#======================================================================
-
-sub process_graphic {
+sub processGraphic {
   my($self,$node)=@_;
-  # Collect all required information.
-  my $gname      = $self->get_name($node);
-  return warn "No graphic name for ".$node->toString unless $gname;
-  my $source    = $self->find_file($gname,$self->get_types($node));
-  return warn "Couldn't find graphic source for $gname " unless $source;
-  my $transform = $self->get_transform($node,$self->get_options($node));
+  my $source = $self->findGraphicsFile($node);
+  if(!$source){
+    $self->Warn("Missing graphic for $node; skipping"); return; }
+  my $transform = $self->getTransform($node);
+  my($image,$width,$height)=$self->transformGraphic($node,$source,$transform); 
+  $self->setGraphicsSrc($node,$image,$width,$height) if $image;
+}
+
+#======================================================================
+
+sub transformGraphic {
+  my($self,$node,$source,$transform)=@_;
+  my ($reldir,$name,$type) = pathname_split(pathname_relative($source,$self->getSourceDirectory));
+
+  my $key = join('|',"$reldir$name.$type", map(join(' ',@$_),@$transform));
+  $self->ProgressDetailed("Processing $key");
+
   my $map       = $self->get_type_map($source,$transform);
   return warn "Don't know what to do with graphics file format $source" unless $map;
+  my $newtype = $$map{type} || $type;
 
-  my($ignore,$name,$type) = pathname_split($source);
-  my($destdir,$reldir) = $self->make_relative_subdirectory($source);
-
-  my %DB=();
-  my $dbfile = pathname_make(dir=>$destdir, name=>'LTXGraphics', type=>'db');
-#  tie %DB, 'DB_File', [$dbfile,  O_RDWR|O_CREAT, 0666, $DB_HASH]
-  tie %DB, 'DB_File', $dbfile,  O_RDWR|O_CREAT
-    or return $self->Error("Couldn't attach DB $dbfile for $name: $!");
-  $DB{_max_image_}=0 unless $DB{_max_image_};
-
-  my $key = join('|',"$name.$type",map(join(',',grep($_,@$_)),@$transform));
-  $self->Msg(2,"Processing $key");
-  my($newname,$newtype,$width,$height) = ($name,$$map{type} || $type, 0,0);
-  if(my $prev = $DB{$key}){	# Image was processed on previous run?
-    $prev =~ /^(.*?)\.(\w+)\|(\d+)\|(\d+)$/;
-    ($newname,$newtype,$width,$height)=($1,$2,$3,$4); 
-    $self->Msg(2,">> Reuse $newname.$newtype $width x $height"); }
+  if(my $prev = $self->cacheLookup($key)){	# Image was processed on previous run?
+    $prev =~ /^(.*?)\|(\d+)\|(\d+)$/;
+    my ($cached,$width,$height)=($1,$2,$3);
+    $self->ProgressDetailed(">> Reuse $cached $width x $height"); 
+    ($cached,$width,$height); }
   # Trivial scaling case: Use original image with different width & height.
   elsif($$self{trivial_scaling} && ($newtype eq $type) && !grep(!($_->[0]=~/^scale/),@$transform)){
-    ($width,$height)=$self->trivial_scaling($source,$transform);
-    $self->Msg(2,">> Trivial scaling: Copy $source to $destdir");
-    pathname_copy($source, pathname_make(dir=>$destdir,name=>$name,type=>$type))
-      or warn("Couldn't copy image $source to $destdir: $!");
-    $DB{$key}="$newname.$newtype|$width|$height"; }
+    my ($width,$height)=$self->trivial_scaling($source,$transform);
+    my $copy = $self->copyFile($source);
+    $self->ProgressDetailed(">> Trivial scaling: Copy to $copy @ $width x $height");
+    $self->cacheStore($key,"$copy|$width|$height");
+    ($copy,$width,$height); }
   else {
-    my $image;
-    ($image,$width,$height) =$self->complex_transform($source,$transform);
+    my ($image,$width,$height) =$self->complex_transform($source,$transform);
     $image = $self->postprocess_image($image,$map);
-    $newname = "$name-GEN". ++$DB{_max_image_};
-    my $dest = pathname_make(dir=>$destdir,name=>$newname,type=>$newtype);
-    $self->Msg(2,">> Transform to $dest $width x $height");
-    $image->Write(filename=>$dest) and warn "Couldn't write image $dest: $!";
-    $DB{$key}="$newname.$newtype|$width|$height"; }
 
-  $self->set_graphics_src($node,pathname_make(dir=>$reldir,name=>$newname,type=>$newtype),$width,$height);
+    my $N = $self->cacheLookup('_max_image_') || 0;
+    my $newname = "$name-GEN". ++$N;
+    $self->cacheStore('_max_image_',$N);
+
+    my $destdir = pathname_concat($$self{destinationDirectory},$reldir);
+    pathname_mkdir($destdir) 
+      or return $self->Error("Could not create relative directory $destdir: $!");
+    my $dest = pathname_make(dir=>$destdir,name=>$newname,type=>$newtype);
+    my $reldest = pathname_make(dir=>$reldir,name=>$newname,type=>$newtype);
+    $image->Write(filename=>$dest) and warn "Couldn't write image $dest: $!";
+
+    $self->ProgressDetailed(">> Transform to $dest $width x $height ");
+    $self->cacheStore($key,"$reldest|$width|$height");
+    ($reldest,$width,$height); }
 }
 
 #======================================================================
@@ -270,10 +226,12 @@ sub complex_transform {
       $image->Set(density=>int($w*$xr/$w0).'x'.int($h*$yr/$h0)); 
       $image->Read($source); }}	# RELOAD!!!
 
+#  print STDERR "Image is $w x $h\n";
   foreach my $trans (@transform){
     my($op,$a1,$a2,$a3,$a4)=@$trans;
     if($op eq 'scale'){		# $a1 => scale
       ($w,$h)=(ceil($w*$a1),ceil($h*$a1));
+#      print STDERR "Scale $a1 x $a2 => $w x $h\n";
       $image->Scale(width=>$w,height=>$h); }
     elsif($op eq 'scale-to'){ 
       # $a1 => width, $a2 => height, $a3 => preserve aspect ratio.
@@ -281,28 +239,48 @@ sub complex_transform {
 	if($a1/$w < $a2/$h) { $a2 = $h*$a1/$w; }
 	else                { $a1 = $w*$a2/$h; }}
       ($w,$h)=(ceil($a1*$$self{dppt}),ceil($a2*$$self{dppt}));
+#      print STDERR "Scale-to $a1 x $a2 => $w x $h\n";
       $image->Scale(width=>$w,height=>$h); }
     elsif($op eq 'rotate'){
       $image->Rotate(degrees=>-$a1,color=>$$self{background});
-      ($w,$h) = $image->Get('width','height'); }
+      ($w,$h) = $image->Get('width','height'); 
+#      print STDERR "Rotate by $a1 => $w x $h\n";
+      # Note: This re-composing didn't used to be necessary!
+      my $nimage = Image::Magick->new();
+      $nimage->Set('size',"$w x $h");
+      $nimage->Read("xc:$$self{background}");
+      $nimage->Composite(image=>$image, compose=>'over', x=>0, y=>0);
+      $image=$nimage; 
+    }
     # In the following two, note that TeX's coordinates are relative to lower left corner,
     # but ImageMagick's coordinates are relative to upper left.
     elsif(($op eq 'trim') || ($op eq 'clip')){
       my($x0,$y0,$ww,$hh);
       if($op eq 'trim'){ # Amount to trim: a1=left, a2=bottom, a3=right, a4=top
 	($x0,$y0,$ww,$hh)=( floor($a1*$$self{dppt}),             floor($a4*$$self{dppt}),
-			    ceil($w - ($a1 + $a3)*$$self{dppt}), ceil($h - ($a4 + $a2)*$$self{dppt})); }
+			    ceil($w - ($a1 + $a3)*$$self{dppt}), ceil($h - ($a4 + $a2)*$$self{dppt})); 
+#      print STDERR "Trim $a1 $a2 $a3 $a4 => $x0,$y0 $ww x $hh\n";
+      }
       else {			# BBox: a1=left, a2=bottom, a3=right, a4=top
 	($x0,$y0,$ww,$hh)=( floor($a1*$$self{dppt}),        floor($h - $a4*$$self{dppt}),
-			    ceil(($a3 - $a1)*$$self{dppt}), ceil(($a4 - $a2)*$$self{dppt})); }
+			    ceil(($a3 - $a1)*$$self{dppt}), ceil(($a4 - $a2)*$$self{dppt})); 
+#      print STDERR "Clip $a1 $a2 $a3 $a4 => $x0,$y0 $ww x $hh\n";
+      }
+
       if(($x0 > 0) || ($y0 > 0) || ($x0+$ww < $w) || ($y0+$hh < $h)){
 	my $x0p=max($x0,0); $x0 = min($x0,0);
 	my $y0p=max($y0,0); $y0 = min($y0,0);
 	$image->Crop(x=>$x0p, width =>min($ww,$w-$x0p),
 		     y=>$y0p, height=>min($hh,$h-$y0p));
+#      print STDERR "Crop x=>".$x0p." width =>".min($ww,$w-$x0p).
+#	           " y=>".$y0p." height=>".min($hh,$h-$y0p)."\n";
+
 	$w = min($ww+$x0, $w-$x0p);
 	$h = min($hh+$y0, $h-$y0p); }
-      if(($x0 < 0) || ($y0 < 0) || ($ww > $w) || ($hh > $h)){
+# Hmm, this set seems necessary even when no padding required? 
+# (were there changes in ImageMagick?)
+#      if(($x0 < 0) || ($y0 < 0) || ($ww > $w) || ($hh > $h)){
+      {
 	# No direct `padding' operation in ImageMagick
 	my $nimage = Image::Magick->new();
 	$nimage->Set('size',"$ww x $hh");
@@ -311,6 +289,7 @@ sub complex_transform {
 	$image=$nimage; 
 	($w,$h)=($ww,$hh);
       }
+#      print STDERR "Trim/Clip => $w x $h\n";
   }}
   ($image,$w,$h); }
 
@@ -330,7 +309,7 @@ sub max { ($_[0] > $_[1] ? $_[0] : $_[1]); }
 # Besides, I'd like to avoid reading the bb file, if I can.
 # --- So, for all these reasons, we simply ignore bounding box here.
 
-sub parse_options {
+sub parseOptions {
   my($self,$options)=@_;
   local $_;
   # --------------------------------------------------
@@ -341,7 +320,7 @@ sub parse_options {
   foreach (split(',',$options||'')){
     /^\s*(\w+)(=\s*(.*))?\s*$/;  $_=$1; $v=$3||'';
     my $op = $_;
-    if(grep($op eq $_, @{$$self{ignore_options}})){  } # Ignore this option
+    if(grep($op eq $_, @{$$self{ignoreOptions}})){  } # Ignore this option
     elsif(/^bb$/)               { @bb = map(to_bp($_),split(' ',$v)); }
     elsif(/^bb(ll|ur)(x|y)$/)   { $bb[2*/ur/ + /y/] = to_bp($v); }
     elsif(/^nat(width|height)$/){ $bb[2 + /width/] = to_bp($v); }

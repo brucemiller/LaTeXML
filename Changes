@@ -1,2 +1,63 @@
-0.1.0 Mon May 10 2004
+0.1.1 2004-06-15
+      - Packages:
+        * Made package loading more robust; doesn't re-load;
+	* Crude access to options
+	* Added several missing definitions to TeX & LaTeX
+	* Implemented comment, acronym packages;
+	  initial (mostly empty) amssymb
+
+      - General:
+        * Catch filters that don't actually change the input.
+	* Refactoring: New module Global.pm carries all exported
+	  constants and constructors to simplify coding.
+	* Refactoring: name changes & code movement of methods
+	  confusingly called `digestFoo' and similar.
+	* Refactoring: Moved macro parameter handling to new
+	  module Parameters.pm (and as side-effect had to
+	  rename parameters to Register (DefRegister, etc))
+	* More careful Token equals method, so newline can convert to
+	  a T_SPACE w/ newline inside; this means the output nominally
+	  preserves lines! (but STOMACH->setValue('preserveNewLines',0);
+	  disables it).
+	* New constructor \@VALUE fetches values from stomach during
+	  absorbtion in intestines. This (or similar) used to put
+	  reference numbers in \ref, like 2nd LaTeX pass.
+
+      - Math:
+        * Introduced new element <Math> which can contain the various
+	  alternative representations of math, such as XMath, m:math, ...
+	  Moved most of XMath's attributes to Math.
+
+      - Error/Warning Messages
+        * Added messages to show progress during processing (unless -quiet)
+	* New SalvageError message for things that in principle are errors,
+	  but we're going to try to proceed; added some things to this category,
+	  like unknown macros, and such.
+	* Added source locator to Whatsit to improve error messages.
+
+      - PostProcessing:
+        * Fixed xml catalog so it finds mathml dtd and entity files
+	* Fixed latexmlpost and LaTeXML::Post to recognize html and xhtml
+	  output formats; refined the stylesheets (LaTeXML-html.xsl and
+	  LaTeXML-xhtml.xsl (both of which include LaTeXML-base.xsl))
+
+      - Put LaTeXML tags in thier own namespace:
+            http://dlmf.nist.gov/LaTeXML
+	And first pass at fixing postprocessors to recognize this
+	[probably introduced bugs, and in any case, namespace normalization
+	 is pretty crummy]
+
+      - NEED TO DO:
+      	* Implement alltt package
+	* Question: Should XMath be duplicated before parsing?
+	  (ie w/different status=tokenized|parsed|partially-parsed|....)
+	  This would allow more inference and then re-run the parser.
+	* Extend constructor syntax to work with KeyVals, apply random functions?
+	* Refactor DOM? eg. use XML::LibXML, move more analysis to Intestine
+	  this needs (at least) resorting Font reduction.
+
+      Thanks to Michael Kohlhase <m.kohlhase@iu-bremen.de> for comments & examples
+      leading to many of these patches.
+
+0.1.0 2004-05-10
       Initial (pre)release
