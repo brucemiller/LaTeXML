@@ -20,11 +20,9 @@ use LaTeXML::Global;
 use LaTeXML::Object;
 our @ISA = qw(LaTeXML::Object);
 
-# If options include cattable=>$cattable, that table will be used
-# instead of one from $STOMACH.
 sub new {
-  my($class,$string,%options)=@_;
-  my $self = {string=>$string, source=>"Anonmymous String", includeComments=>0, %options};
+  my($class,$string, %options)=@_;
+  my $self = {string=>$string,source=>"Anonmymous String", includeComments=>0, %options};
   $$self{buffer}=[split("\n",$string)];
   bless $self,$class;
   $self->initialize;
@@ -34,6 +32,7 @@ sub initialize {
   my($self)=@_;
   $$self{lineno}=0;
   $$self{colno}=0;
+  $$self{coloffset}=0;
   $$self{chars}=[];
   $$self{nchars}=0;
 }
@@ -48,6 +47,27 @@ sub hasMoreInput {
   my($self)=@_;
   ($$self{colno} < $$self{nchars}) || scalar(@{$$self{buffer}}); }
 
+# Get the next character & it's catcode from the input,
+# handling TeX's "^^" encoding.
+# Note that this is the only place where catcode lookup is done,
+# and that it is somewhat `inlined'.
+sub getNextChar {
+  my($self)=@_;
+  if($$self{colno} < $$self{nchars}){
+    my $ch = $$self{chars}->[$$self{colno}++];
+    my $cc = $STATE->lookup('catcode',$ch);
+    if((defined $cc) && ($cc == CC_SUPER)	# Possible convert ^^x
+       && ($$self{colno}+1 < $$self{nchars}) && ($ch eq $$self{chars}->[$$self{colno}])){
+      my $c=ord($$self{chars}->[$$self{colno}+1]);
+      $ch = chr($c + ($c > 64 ? -64 : 64));
+      splice(@{$$self{chars}},$$self{colno}-1,3,$ch);
+      $$self{nchars} -= 2;
+       $cc = $STATE->lookup('catcode',$ch); }
+    $cc=CC_OTHER unless defined $cc;
+    ($ch,$cc); }
+  else {
+    (undef,undef); }}
+
 sub stringify {
   my($self)=@_;
   "Mouth[<string>\@$$self{lineno}x$$self{colno}]"; }
@@ -55,7 +75,7 @@ sub stringify {
 #**********************************************************************
 sub getLocator {
   my($self,$long)=@_;
-  my($l,$c)=($$self{lineno},$$self{colno});
+  my($l,$c)=($$self{lineno},($$self{colno}+$$self{coloffset}));
   my $msg =  "at $$self{source}; line $l col $c";
   if($long && (defined $l || defined $c)){
     my $chars=$$self{chars};
@@ -69,49 +89,28 @@ sub getLocator {
 # See The TeXBook, Chapter 8, The Characters You Type, pp.46--47.
 #**********************************************************************
 
-# Some caches
-my %LETTER =();
-my %OTHER =();
-my %ACTIVE =();
-
 sub handle_escape {		# Read control sequence
   my($self)=@_;
-  my $cattable = $LaTeXML::Mouth::CATTABLE;
   # NOTE: We're using control sequences WITH the \ prepended!!!
   my $cs = "\\";		# I need this standardized to be able to lookup tokens (A better way???)
-  my $ch = $$self{chars}->[$$self{colno}++];
-  my $cc = $$cattable{$ch};  $cc=CC_OTHER unless defined $cc;
-  if ($cc == CC_SUPER) {
-    ($ch,$cc)=super_kludge($self,$ch); }
-  elsif($cc == CC_EOL){	# I _think_ this is what Knuth is sayin' !?!?
+  my($ch,$cc)=$self->getNextChar;
+  if($cc == CC_EOL){	# I _think_ this is what Knuth is sayin' !?!?
     ($ch,$cc)=(' ',CC_SPACE); }
   $cs .= $ch;
-  if(($cc == CC_LETTER) || ($cc == CC_SPACE)){ # We'll skip whitespace here.
-    if ($cc == CC_LETTER) {	# For letter, read more letters for csname.
-      while (($$self{colno} < $$self{nchars}) 
-	     && defined($cc=$$cattable{$ch=$$self{chars}->[$$self{colno}++]})
-	     && (($cc == CC_LETTER) || ($cc==CC_SUPER))){
-	if($cc == CC_SUPER){ 
-	  ($ch,$cc)=super_kludge($self,$ch);
-	  last if ($cc != CC_LETTER); }
-	$cs .= $ch; }
-      $$self{colno}--; }
+  if ($cc == CC_LETTER) {	# For letter, read more letters for csname.
+    while ((($ch,$cc)=$self->getNextChar) && $ch && ($cc == CC_LETTER)){
+      $cs .= $ch; }
+    $$self{colno}--; }
+  if(($cc == CC_SPACE) || ($cc == CC_EOL)){ # We'll skip whitespace here.
     # Now, skip spaces
-    while ( ($$self{colno} < $$self{nchars})
-	    && defined($cc=$$cattable{$$self{chars}->[$$self{colno}++]})
-	    && (($cc == CC_SPACE) || ($cc == CC_EOL) || ($cc == CC_SUPER))) {
-      if ($cc == CC_SUPER) {
-	($ch,$cc)=super_kludge($self,$ch); 
-	last if ($cc != CC_SPACE) && ($cc != CC_EOL); }
-    }
-    $$self{colno}-- if ($$self{colno} < $$self{nchars});
-  }
+    while ((($ch,$cc)=$self->getNextChar) && $ch && (($cc == CC_SPACE) || ($cc == CC_EOL))) {}
+    $$self{colno}-- if ($$self{colno} < $$self{nchars}); }
   T_CS($cs); }
 
 sub handle_EOL {
   my($self)=@_;
   ($$self{colno}==1 ? T_CS('\par') 
-   : ($STOMACH->lookupValue('preserveNewLines') ? Token("\n",CC_SPACE) : T_SPACE)); 
+   : ($STATE->lookup('value','preserveNewLines') ? Token("\n",CC_SPACE) : T_SPACE)); 
 }
 
 sub handle_comment {
@@ -121,6 +120,11 @@ sub handle_comment {
   my $comment = join('',@{$$self{chars}}[$n..$$self{nchars}-1]);
   $comment =~ s/^\s+//; $comment =~ s/\s+$//;
   ($$self{includeComments} && $comment ? T_COMMENT($comment) : $self->readToken); }
+
+# Some caches
+my %LETTER =();
+my %OTHER =();
+my %ACTIVE =();
 
 my @DISPATCH
   = ( \&handle_escape,		# T_ESCAPE
@@ -135,22 +139,18 @@ my @DISPATCH
       sub { $_[0]->readToken; }, # T_IGNORE
       T_SPACE,			 # T_SPACE
       sub { $LETTER{$_[1]} || ($LETTER{$_[1]}=Token($_[1],$_[2])); }, # T_LETTER
-      sub { $OTHER{$_[1]} || ($OTHER{$_[1]}=Token($_[1],$_[2])); }, # T_OTHER
+      sub { $OTHER{$_[1]}  || ($OTHER{$_[1]} =Token($_[1],$_[2])); }, # T_OTHER
       sub { $ACTIVE{$_[1]} || ($ACTIVE{$_[1]}=Token($_[1],$_[2])); }, # T_ACTIVE
       \&handle_comment,		# T_COMMENT
       sub { Token($_[1],CC_OTHER); } # T_INVALID (we could get unicode!)
 );
 
 # Read the next token, or undef if exhausted.
-# Yes, this is _really_ ugly. I'm trying to emulate TeX's mouth; 
-# this has been slightly optimized, so it's even worse.
 # Note that this also returns COMMENT tokens containing source comments,
 # and also locator comments (file, line# info).
 # LaTeXML::Gullet intercepts them and passes them on at appropriate times.
 sub readToken {
   my($self)=@_;
-  my $cattable = $$self{cattable} || $STOMACH->getCattable;
-  local $LaTeXML::Mouth::CATTABLE = $cattable;
   # ===== Get next line, if we need to.
   if ($$self{colno} >= $$self{nchars}) {
     $$self{lineno}++;
@@ -159,11 +159,10 @@ sub readToken {
     if (!defined $line) {	# Exhausted the input.
       $$self{chars}=[];
       $$self{nchars}=0;
-      return undef;
-    }
-    $line =~ s/^\s+//; $line =~ s/\s*$/\n/s;
+      return undef;  }
+    $line =~ s/^(\s+)//; $$self{coloffset}=($1 ? length($1) :0);
+    $line =~ s/\s*$/\n/s;
     $$self{chars}=[split('',$line)];
-#    $$self{chars}=[split('',$line),chr(0),chr(0)]; # Padding, so we don't have to check nchars so much.
     $$self{nchars} = scalar(@{$$self{chars}});
     # Sneak a comment out, every so often.
     if(!($$self{lineno} % 25)){
@@ -173,28 +172,10 @@ sub readToken {
     }
   }
   # ==== Extract next token from line.
-  my $ch = $$self{chars}->[$$self{colno}++];
-  my $cc = $$cattable{$ch}; $cc=CC_OTHER unless defined $cc;
-  if ($cc == CC_SUPER) {	# Possible convert ^^x
-    ($ch,$cc)=super_kludge($self,$ch); }
+  my($ch,$cc)=$self->getNextChar;
   my $dispatch = $DISPATCH[$cc];
   (ref $dispatch eq 'CODE' ? &$dispatch($self,$ch,$cc) : $dispatch);
 }
-
-# If $ch is a superscript, peek at next chars; if another superscript, convert the
-# char. In either case, return a $ch & catcode
-sub super_kludge {
-  my($self,$ch)=@_;
-  if(($$self{colno}+1 < $$self{nchars})
-     && ($ch eq $$self{chars}->[$$self{colno}])){
-    my $c=ord($$self{chars}->[$$self{colno}+1]);
-    my $ch = chr($c + ($c > 64 ? -64 : 64));
-    splice(@{$$self{chars}},$$self{colno}-1,3,$ch);
-    $$self{nchars} -= 2;
-    my $cc =  $$LaTeXML::Mouth::CATTABLE{$ch};
-    ($ch, (defined $cc ? $cc : CC_OTHER)); }
-  else {
-    ($ch, CC_SUPER); }}
 
 #**********************************************************************
 sub readLine {
@@ -204,16 +185,21 @@ sub readLine {
     $$self{colno}=$$self{nchars}; 
     $line; }
   else {
-    $self->getNextLine; }}
+    my $line = $self->getNextLine; 
+    $line =~ s/\s*$/\n/s;	# Is this right? 
+    $$self{lineno}++; #$$self{colno}=length($line)+1;
+    $$self{chars}=[]; $$self{nchars}=0; $$self{colno}=0;
+    $line; }}
 
 #**********************************************************************
-# Read all tokens, until exhausted.
+# Read all tokens until a token equal to $until (if given), or until exhausted.
 # Returns an empty Tokens list, if there is no input
-# [But shouldn't it return undef?]
+
 sub readTokens {
-  my($self)=@_;
+  my($self,$until)=@_;
   my @tokens=();
   while(defined(my $token = $self->readToken())){
+    last if $until and $token->getString eq $until->getString;
     push(@tokens,$token); }
   while(@tokens && $tokens[$#tokens]->getCatcode == CC_SPACE){ # Remove trailing space
     pop(@tokens); }
@@ -270,7 +256,7 @@ __END__
 
 =head2 DESCRIPTION
 
-C<LaTeXML::Mouth> tokenizes a string according to the current cattable in the L<LaTeXML::Stomach>.
+C<LaTeXML::Mouth> tokenizes a string according to the catcodes in the C<LaTeXML::State>.
 C<LaTeXML::FileMouth> specializes C<LaTeXML::Mouth> to tokenize from a file.
 
 =head2 Methods of LaTeXML::Mouth
@@ -280,9 +266,8 @@ C<LaTeXML::FileMouth> specializes C<LaTeXML::Mouth> to tokenize from a file.
 =item C<< $mouth = LaTeXML::Mouth->new($string,%options); >>
 
 Creates a new Mouth reading from C<$string>.
-An option is cattable to override the one from the current C<$STOMACH>.
 
-=item C<< $mouth = LaTeXML::FileMouth->new($pathname,%options); >>
+=item C<< $mouth = LaTeXML::FileMouth->new($pathname,$state,%options); >>
 
 Creates a new FileMouth to read from the given file.
 

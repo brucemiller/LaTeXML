@@ -11,27 +11,58 @@
 # \=========================================================ooo==U==ooo=/ #
 
 package LaTeXML;
+use strict;
 use LaTeXML::Global;
 use LaTeXML::Error;
 use LaTeXML::Gullet;
 use LaTeXML::Stomach;
+use LaTeXML::Document;
 use LaTeXML::Model;
 use LaTeXML::Object;
+use LaTeXML::MathParser;
 our @ISA = (qw(LaTeXML::Object));
 
-#use LaTeXML::Intestine;
+#use LaTeXML::Document;
 
 use vars qw($VERSION);
-$VERSION = "0.2.2";
+$VERSION = "0.2.99";
 
 #**********************************************************************
+# What a Mess of Globals!
+#**********************************************************************
+
 sub new {
   my($class,%options)=@_;
-  bless {stomach => LaTeXML::Stomach->new(%options),
+  my $state     = LaTeXML::State->new(catcodes=>'standard'),
+  my $stomach   = LaTeXML::Stomach->new(%options);
+  bless {state   => $state, stomach => $stomach, 
 	 model   => $options{model} || LaTeXML::Model->new(),
 	 verbosity => $options{verbosity} || 0,
 	 strict    => $options{strict} || 0,
+	 nomathparse=>$options{nomathparse}||0,
 	}, $class; }
+
+
+sub convertAndWriteFile {
+  my($self,$name)=@_;
+  $name =~ s/\.tex$//;
+  my $dom = $self->convertFile($name);
+  $self->writeDOM($dom,$name) if $dom; }
+
+sub convertFile {
+  my($self,$name)=@_;
+  my $digested = $self->digestFile($name);
+  return unless $digested;
+  my $doc = $self->convertDocument($digested);
+  $doc; }
+
+sub convertString {
+  my($self,$string)=@_;
+  my $digested = $self->digestString($string);
+  return unless $digested;
+  my $doc = $self->convertDocument($digested);
+  $doc; }
+
 
 sub digestFile {
   my($self,$name)=@_;
@@ -39,6 +70,7 @@ sub digestFile {
 
   local $LaTeXML::Global::VERBOSITY  = $$self{verbosity};
   local $LaTeXML::Global::STRICT     = $$self{strict};
+  local $STATE      = $$self{state};
   local $GULLET     = LaTeXML::Gullet->new();
   local $STOMACH    = $$self{stomach}; # The current Stomach; all state is stored here.
   local $MODEL      = $$self{model};   # The document model.
@@ -47,56 +79,47 @@ sub digestFile {
 
   $$self{stomach}->readAndDigestFile($name); }
 
-sub convertFile {
-  my($self,$name)=@_;
-
-  $name =~ s/\.tex$//;
-
-  local $LaTeXML::Global::VERBOSITY  = $$self{verbosity};
-  local $LaTeXML::Global::STRICT     = $$self{strict};
-  local $GULLET     = LaTeXML::Gullet->new();
-  local $STOMACH    = $$self{stomach}; # The current Stomach; all state is stored here.
-  local $MODEL      = $$self{model};   # The document model.
-  # And, set fancy error handler for ANY die!
-  local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
-
-  my $digested = $$self{stomach}->readAndDigestFile($name);
-  return unless $digested;
-
-  require LaTeXML::Intestine;
-  local $INTESTINE  = LaTeXML::Intestine->new($$self{stomach});
-  local $LaTeXML::DUAL_BRANCH= '';
-
-  $LaTeXML::MODEL->loadDocType([$LaTeXML::STOMACH->getSearchPaths]); # If needed?
-  $LaTeXML::INTESTINE->buildDOM($digested); }
-
-sub convertString {
+sub digestString {
   my($self,$string)=@_;
 
   local $LaTeXML::Global::VERBOSITY  = $$self{verbosity};
   local $LaTeXML::Global::STRICT     = $$self{strict};
+  local $STATE      = $$self{state};
   local $GULLET     = LaTeXML::Gullet->new();
   local $STOMACH    = $$self{stomach}; # The current Stomach; all state is stored here.
   local $MODEL      = $$self{model};   # The document model.
   # And, set fancy error handler for ANY die!
   local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
 
-  my $digested = $$self{stomach}->readAndDigestString($string);
-  return unless $digested;
+  $$self{stomach}->readAndDigestString($string); }
 
-  require LaTeXML::Intestine;
-  local $INTESTINE  = LaTeXML::Intestine->new($$self{stomach});
-  local $LaTeXML::DUAL_BRANCH= '';
+sub convertDocument {
+  my($self,$digested)=@_;
+  local $LaTeXML::Global::VERBOSITY  = $$self{verbosity};
+  local $LaTeXML::Global::STRICT     = $$self{strict};
+  local $STATE      = $$self{state};
+  local $GULLET     = LaTeXML::Gullet->new();
+  local $STOMACH    = $$self{stomach}; # The current Stomach; all state is stored here.
+  local $MODEL      = $$self{model};   # The document model.
 
+  # And, set fancy error handler for ANY die!
+  local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
   $LaTeXML::MODEL->loadDocType([$LaTeXML::STOMACH->getSearchPaths]); # If needed?
-  $LaTeXML::INTESTINE->buildDOM($digested); }
 
+  local $LaTeXML::DUAL_BRANCH= '';
+  my $document  = LaTeXML::Document->new();
 
-sub convertAndWriteFile {
-  my($self,$name)=@_;
-  $name =~ s/\.tex$//;
-  my $dom = $self->convertFile($name);
-  $self->writeDOM($dom,$name) if $dom; }
+  NoteProgress("\n(Building");
+  $document->absorb($digested);
+  NoteProgress(")");
+
+  NoteProgress("\n(Rewriting");
+  $MODEL->applyRewrites($document,$document->getDocument->documentElement);
+  NoteProgress(")");
+
+  LaTeXML::MathParser->new()->parseMath($document) unless $$self{nomathparse};
+  my $xml = $document->finalize();
+  $xml; }
 
 sub writeDOM {
   my($self,$dom,$name)=@_;
@@ -167,9 +190,9 @@ this saves it in $name.xml.
 
 =head2 SEE ALSO
 
-See L<LaTeXML::Mouth>, L<LaTeXML::Gullet>,  L<LaTeXML::Stomach>
-and L<LaTeXML::Intestine> for documentation on the digestive tract.
-See L<LaTeXML::Token>, L<LaTeXML::Box>, and L<LaTeXML::Node>
+See L<LaTeXML::Mouth>, L<LaTeXML::Gullet> and  L<LaTeXML::Stomach>
+for documentation on the digestive tract.
+See L<LaTeXML::Token>, L<LaTeXML::Box>, and L<LaTeXML::Document>
 for documentation of the data objects representing the document.
 See L<LaTeXML::Package> and L<LaTeXML::Definition> for documentation
 for implementing LaTeX macros and packages.

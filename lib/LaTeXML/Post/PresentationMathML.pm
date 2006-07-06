@@ -440,7 +440,7 @@ sub do_cfrac {
   my($numer,$denom)=@_;
   if($denom->nodeName eq 'XMApp'){ # Denominator is some kind of application
     my ($denomop,@denomargs)=element_nodes($denom);
-    if($denomop->getAttribute('role') eq 'ADDOP'){ # Is it a sum or difference?
+    if(($denomop->getAttribute('role')||'') eq 'ADDOP'){ # Is it a sum or difference?
       my $last = pop(@denomargs);			# Check last operand in denominator.
       # this is the current contribution to the cfrac (if we match the last term)
 #      my $curr = Node('mfrac',[Expr($numer),Row(Infix(map(Expr($_),$denomop,@denomargs)),Expr($denomop))]);

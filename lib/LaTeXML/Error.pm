@@ -26,11 +26,14 @@ sub generateMessage {
   $long = 1 if $LaTeXML::Global::VERBOSITY > +1;
   if(my @objects = objectStack( ($long ? undef : 1))){
     my $top = shift(@objects);
-    push(@lines,"In ".trim(Stringify($top)).' '.Stringify($top->getLocator));
+    push(@lines,"In ".trim(Stringify($top)).' '.Stringify(Locator($top)));
     push(@lines,join('',map(' <= '.trim(Stringify($_)),@objects))) if @objects; }
   push(@lines,$GULLET->getLocator($long)) if $GULLET;
   join("\n",grep($_,@lines, @extra)); }
 
+sub Locator {
+  my($object)=@_;
+  ($object->can('getLocator') ? $object->getLocator :  "???"); }
 #======================================================================
 # This portion adapted from Carp; simplified (but hopefully still correct),
 # allow stringify overload, handle methods, make more concise!
@@ -121,7 +124,8 @@ sub objectStack {
     if((ref $self) && ((ref $self) !~ /^(SCALAR|ARRAY|HASH|CODE|REF|GLOB|LVALUE)$/)){
       my $method = $info{sub};
       $method =~ s/^.*:://;
-      if($self->can($method) && ($self->isaBox || $self->isaNode || $self->isaDefinition)){
+#      if($self->can($method) && ($self->isa('XML::LibXML::Node')||$self->isaBox || $self->isaNode || $self->isaDefinition)){
+      if($self->can($method)){
 	next if @objects && ($self eq $objects[$#objects]);
 	push(@objects,$self);
 	last if $maxdepth && (scalar(@objects) >= $maxdepth); }}}

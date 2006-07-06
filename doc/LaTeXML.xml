@@ -6,7 +6,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <title><a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a>: a LaTeX to <a href="http://www.w3c.org/XML/"><textstyle font="typewriter">XML</textstyle></a> Converter; <emph>Preview</emph></title>
   <author>Bruce R. Miller</author>
-  <creationdate>December 20, 2004</creationdate>
+  <creationdate>April 7, 2005</creationdate>
   <section refnum="1">
     <title>Overview</title>
     <p>For many, LaTeX is the prefered means for document authoring, particularly when
@@ -14,8 +14,7 @@ significant mathematical content is involved.
 On the other hand, content-oriented <a href="http://www.w3c.org/XML/"><textstyle font="typewriter">XML</textstyle></a> is an extremely useful storage format
 allowing documents to be used, and reused, for a variety of purposes, not least,
 presentation on the Web.  Given the rough mismatch between the two,
-<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 50 **** -->
-particularly for mathematics, conversion  from LaTeX to <a href="http://www.w3c.org/XML/"><textstyle font="typewriter">XML</textstyle></a> is a bit tricky.
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 50 **** -->particularly for mathematics, conversion  from LaTeX to <a href="http://www.w3c.org/XML/"><textstyle font="typewriter">XML</textstyle></a> is a bit tricky.
 Faced with this situation, and the lack of other suitable tools at that time,
 the <a href="http://dlmf.nist.gov">Digital Library of Mathematical Functions</a>
 proceeded to develop thier own tool, <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a>, to fill this need.
@@ -45,8 +44,7 @@ human understanding of both the topic and the surrounding text is needed to
 properly interpret any particular mathematical fragment.
 Thus, we expect that document-specific declarations or tuning to be necessary
 to faithfully convert mathematical documents, rather than presuming to
-<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 75 **** -->
-provide a `turn-key' solution. At the same time, we would encourage
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 75 **** -->provide a `turn-key' solution. At the same time, we would encourage
 a more content-oriented mathematical markup style, than a presentation-oriented style.
 </p>
     <p>This document continues with an overview of the usage of <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a>(§<ref labelref="sec:usage">2</ref>)
@@ -60,59 +58,81 @@ In general, for more detail, you should see the perl documentation of various
 <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a> Packages, or the source code and examples, themselves.
 </p>
   </section>
-  <section label="sec:usage" refnum="2"><title>Using <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a></title><p>The basic conversion to <a href="http://www.w3c.org/XML/"><textstyle font="typewriter">XML</textstyle></a> (using the <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a> DTD, by default) is carried out
+  <section refnum="2" label="sec:usage">
+    <title>Using <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a></title>
+    <p>The basic conversion to <a href="http://www.w3c.org/XML/"><textstyle font="typewriter">XML</textstyle></a> (using the <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a> DTD, by default) is carried out
 by the command:
 <quote>
 <textstyle font="typewriter">latexml <textstyle font="italic">options</textstyle> document.tex &gt; document.xml</textstyle>
 </quote>
 The more useful command options are
-</p><description><item><tag><textstyle font="typewriter">–output</textstyle>=<textstyle font="italic">outputfile</textstyle></tag>
+</p>
+    <description>
+      <item><tag><textstyle font="typewriter">–output</textstyle>=<textstyle font="italic">outputfile</textstyle></tag>
 Specifies the output file; by default the XML is written to stdout.
-<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 100 **** -->
-</item><item><tag><textstyle font="typewriter">–preload</textstyle>=<textstyle font="italic">module</textstyle></tag>
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 100 **** --></item>
+      <item><tag><textstyle font="typewriter">–preload</textstyle>=<textstyle font="italic">module</textstyle></tag>
 Requests the loading of an optional module or package.  This may be useful if the TeX code
 does not specificly require the module (eg. through input or usepackage).
-</item><item><tag><textstyle font="typewriter">–path</textstyle>=<textstyle font="italic">dir</textstyle></tag>
+</item>
+      <item><tag><textstyle font="typewriter">–path</textstyle>=<textstyle font="italic">dir</textstyle></tag>
 Add <textstyle font="italic">dir</textstyle> to the search paths used when searching for files, modules, style files, etc;
 somewhat like TEXINPUTS.  This option can be repeated.
-</item><item><tag><textstyle font="typewriter">–quiet</textstyle></tag>
+</item>
+      <item><tag><textstyle font="typewriter">–quiet</textstyle></tag>
 Reduces the verbosity of output during processing, used twice is pretty silent.
-</item><item><tag><textstyle font="typewriter">–verbose</textstyle></tag>
+</item>
+      <item><tag><textstyle font="typewriter">–verbose</textstyle></tag>
 Increases the verbosity of output during processing, used twice is pretty chatty.
 Can be useful for getting more details when errors occur.
-</item><item><tag><textstyle font="typewriter">–strict</textstyle></tag>
+</item>
+      <item><tag><textstyle font="typewriter">–strict</textstyle></tag>
 Specifies a strict processing mode. By default, undefined control sequences and
 invalid document constructs (that violate the DTD) give warning messages, but attempt
 to continue processing.  Using <textstyle font="typewriter">–strict</textstyle> makes them generate fatal errors.
-</item><item><tag><textstyle font="typewriter">–VERSION</textstyle></tag>
+</item>
+      <item><tag><textstyle font="typewriter">–VERSION</textstyle></tag>
 Shows the version number of the LaTeXML package..
-</item></description><p>See <textstyle font="typewriter">latexml –help</textstyle> for other options that may be useful for debugging.
-</p><!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 125 **** -->
-<p>Additional transformations, particularly the parsing of mathematical content, are carried out
+</item>
+    </description>
+    <p>See <textstyle font="typewriter">latexml –help</textstyle> for other options that may be useful for debugging.
+</p>
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 125 **** -->
+    <p>Additional transformations, particularly the parsing of mathematical content, are carried out
 by the postprocessor <textstyle font="typewriter">latexmlpost</textstyle>:
 <quote>
 <textstyle font="typewriter">latexmlpost <textstyle font="italic">options</textstyle> document.xml</textstyle>
 </quote>
 where the options are:
-</p><description><item><tag><textstyle font="typewriter">–stylesheet=<textstyle font="italic">stylesheet</textstyle></textstyle></tag> requests an <textstyle font="typewriter">XSLT</textstyle> transformation of
+</p>
+    <description>
+      <item><tag><textstyle font="typewriter">–stylesheet=<textstyle font="italic">stylesheet</textstyle></textstyle></tag> requests an <textstyle font="typewriter">XSLT</textstyle> transformation of
 the <a href="http://www.w3c.org/XML/"><textstyle font="typewriter">XML</textstyle></a> using the given stylesheet.
-</item><item><tag><textstyle font="typewriter">–format=(html|xhtml)</textstyle></tag>  Specifies the format for conversion. Default
+</item>
+      <item><tag><textstyle font="typewriter">–format=(html|xhtml)</textstyle></tag>  Specifies the format for conversion. Default
 is to leave as <a href="http://www.w3c.org/XML/"><textstyle font="typewriter">XML</textstyle></a>.
-</item><item><tag><textstyle font="typewriter">–destination=<textstyle font="italic">file</textstyle></textstyle></tag>  Specifies the file to write the output.
+</item>
+      <item><tag><textstyle font="typewriter">–destination=<textstyle font="italic">file</textstyle></textstyle></tag>  Specifies the file to write the output.
 If the file has either an html or xhtml extension, that format is assumed.
-</item><item><tag><textstyle font="typewriter">–source=<textstyle font="italic">dir</textstyle></textstyle></tag> Some postprocessing (eg. transforming graphics files)
+</item>
+      <item><tag><textstyle font="typewriter">–source=<textstyle font="italic">dir</textstyle></textstyle></tag> Some postprocessing (eg. transforming graphics files)
 may need access to the directory  where the original TeX file resided
 (if it isn't the current working directory).
-</item><item><tag><textstyle font="typewriter">–verbose</textstyle></tag> Increases the amount of messages about the progress of processing.
-</item><item><tag><textstyle font="typewriter">–help</textstyle></tag> Prints a brief description of the command and options.
-</item></description><p>Transforming to html format involves parsing math formula and converting them to Presentation MathML,
+</item>
+      <item><tag><textstyle font="typewriter">–verbose</textstyle></tag> Increases the amount of messages about the progress of processing.
+</item>
+      <item><tag><textstyle font="typewriter">–help</textstyle></tag> Prints a brief description of the command and options.
+</item>
+    </description>
+    <p>Transforming to html format involves parsing math formula and converting them to Presentation MathML,
 transforming tables into an HTML consistent format, converting graphics files and applying
 an XSLT transformation.
 Transforming to html format is similar, but math formula are converted to images.
 If no format is specified, only math parsing and conversion is done.
-</p><!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 150 **** -->
-</section>
-  <section label="sec:architecture" refnum="3">
+</p>
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 150 **** -->
+  </section>
+  <section refnum="3" label="sec:architecture">
     <title>Architecture</title>
     <p>Like TeX, <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a> is data-driven: the text and control sequences<footnote>TeX's name
 for the backslashed commands; ie. macros, primitives and so forth</footnote>
@@ -126,7 +146,7 @@ in the next version, to move the parsing, along with dealing with math declarati
 back into <textstyle font="typewriter">latexml</textstyle>; Then <textstyle font="typewriter">latexmlpost</textstyle> will only deal with XSLT and transformations
 of the format of math (eg. MathML)</footnote>; See §<ref labelref="sec:math">5</ref>.
 </p>
-    <figure label="fig:dataflow" placement="tb" refnum="1">
+    <figure placement="tb" refnum="1" label="fig:dataflow">
       <graphics graphic="dataflow" options="width=433.62pt"/>
       <caption>Flow of data through <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a>'s digestive tract.</caption>
     </figure>
@@ -137,8 +157,7 @@ The <emph>Stomach</emph>  maintains the current state of processing during diges
 The <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a> object sets up a chain consisting of a stomach, a
 <emph>Mouth</emph> (to convert characters from the file into <emph>Tokens</emph>; see <ref labelref="sec:tokenization">A.1</ref>)
 and a <emph>Gullet</emph> (to read tokens from that Mouth, expanding any macro or expandible
-<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 175 **** -->
-tokens in the process; see <ref labelref="sec:expansion">A.2</ref>).
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 175 **** -->tokens in the process; see <ref labelref="sec:expansion">A.2</ref>).
 The stomach then reads tokens from the gullet and digests them
 (executing <emph>Primitives</emph> and  converting the remaining tokens into <emph>Boxes</emph>,
 <emph>Lists</emph> and <emph>Whatsits</emph>; see <ref labelref="sec:digestion">A.3</ref>).
@@ -158,14 +177,13 @@ see the perl documentation <textstyle font="typewriter">perldoc</textstyle> for 
 the source for full details.
 </p>
   </section>
-  <section label="sec:packages" refnum="4">
+  <section refnum="4" label="sec:packages">
     <title>Packages: Implementing Control Sequences</title>
     <p>The processsing of the LaTeX document and its  conversion into <a href="http://www.w3c.org/XML/"><textstyle font="typewriter">XML</textstyle></a> is affected
 by the definitions of control sequences, either as macros, primitives or constructors,
 and other declarations specifying the document type, properties of <a href="http://www.w3c.org/XML/"><textstyle font="typewriter">XML</textstyle></a> tags, ligatures, ….
 These definitions and declarations are typically contained in `packages' which provide
-<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 200 **** -->
-the implementation of LaTeX classes and packages.  For example, the LaTeX directive
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 200 **** -->the implementation of LaTeX classes and packages.  For example, the LaTeX directive
 \usepackage{foo} would cause <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a> to load the file <textstyle font="typewriter">foo.ltxml</textstyle>.
 This file would be sought in any of the directories in perl's @INC list (typically
 including the current directory), or in a LaTeXML/Package subdirectory of any of
@@ -194,8 +212,10 @@ of course, welcome.  These files, as well as the document specific <textstyle fo
 are essentially Perl modules, but use the facilities described in <a href="perldoc/LaTeXML/Package.html"><textstyle font="typewriter">LaTeXML::Package</textstyle></a>.
 </p>
   </section>
-  <section label="sec:math" refnum="5"><title>Mathematics</title><!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 225 **** -->
-<p>The mathematical material is parsed into a content-oriented representation following
+  <section refnum="5" label="sec:math">
+    <title>Mathematics</title>
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 225 **** -->
+    <p>The mathematical material is parsed into a content-oriented representation following
 the usual steps: lexical scanning, grammar-based parsing and (eventually) type-analysis, but
 with a few twists. As <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a> constructs the initial document, the mathematical material
 is converted mainly into a sequence of lexical (mathmematical) tokens (<textstyle font="typewriter">XMTok</textstyle>),
@@ -205,24 +225,27 @@ such as \frac or sub- and superscripts, where a generalized <emph>application</e
 is constructed.  The substructures will typically play no role in the parsing of the upper
 layer of tokens; they are wrapped (in an <textstyle font="typewriter">XMArg</textstyle> or <textstyle font="typewriter">XMWrap</textstyle> element) and parsed
 as separate subexpressions.  Thus we speak of <a href="http://dlmf.nist.gov/LaTeXML/"><textstyle font="typewriter">LaTeXML</textstyle></a> as being a <emph>structure preserving lexer</emph>.
-</p><p>The parser, invoked by the postprocessor, works only with the top-level lists of lexical tokens,
+</p>
+    <p>The parser, invoked by the postprocessor, works only with the top-level lists of lexical tokens,
 or with those sublists contained in an <textstyle font="typewriter">XMArg</textstyle>.  The grammar works primarily through
 the name and grammatical role.  The name is given by an attribute, or the content if it is
 the same.  The role (things like ID, FUNCTION, OPERATOR, OPEN, …) is also given
 by an attribute, or, if not present, the name is looked up in a document-specific
 dictionary (<textstyle font="italic">jobname</textstyle><textstyle font="typewriter">.dict</textstyle>), or in a default dictionary.
-</p><p>Additional exceptions that need fuller explanation are:
+</p>
+    <p>Additional exceptions that need fuller explanation are:
 (1) <a href="perldoc/LaTeXML/Definition.html#LaTeXML/Constructor"><textstyle font="typewriter">LaTeXML::Constructor</textstyle></a>s may wish to create a dual object (<textstyle font="typewriter">XMDual</textstyle>) whose children are
 the semantic and presentational forms.
 (2) Spacing and similar markup generates <textstyle font="typewriter">XMHint</textstyle> elements, which are currently ignored
 during parsing, but probably shouldn't.
-</p><!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 250 **** -->
-</section>
-  <appendix label="app:architecture" refnum="A">
+</p>
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 250 **** -->
+  </section>
+  <appendix refnum="A" label="app:architecture">
     <title>Architectural Details</title>
-    <subsection label="sec:tokenization" refnum="A.1">
+    <subsection refnum="A.1" label="sec:tokenization">
       <title>Tokenization</title>
-      <paragraph refnum="">
+      <paragraph>
         <title>
           <a href="perldoc/LaTeXML/Mouth.html">
             <textstyle font="typewriter">LaTeXML::Mouth</textstyle>
@@ -235,7 +258,7 @@ for grouping,  sub- and super-script and math mode.  The main method is <textsty
 returns the next <a href="perldoc/LaTeXML/Token.html"><textstyle font="typewriter">LaTeXML::Token</textstyle></a> from the input.  A <a href="perldoc/LaTeXML/Mouth.html#LaTeXML/FileMouth"><textstyle font="typewriter">LaTeXML::FileMouth</textstyle></a> is a mouth for reading from a file.
 </p>
       </paragraph>
-      <paragraph refnum="">
+      <paragraph>
         <title><a href="perldoc/LaTeXML/Token.html"><textstyle font="typewriter">LaTeXML::Token</textstyle></a>, <a href="perldoc/LaTeXML/Token.html#LaTeXML/Tokens"><textstyle font="typewriter">LaTeXML::Tokens</textstyle></a></title>
         <p>These packages represent a Token (a pair containing a character
 or string and the category code), and a list of tokens, respectively.  The latter responds to the same
@@ -243,9 +266,9 @@ interface as <a href="perldoc/LaTeXML/Mouth.html"><textstyle font="typewriter">L
 </p>
       </paragraph>
     </subsection>
-    <subsection label="sec:expansion" refnum="A.2">
+    <subsection refnum="A.2" label="sec:expansion">
       <title>Expansion</title>
-      <paragraph refnum="">
+      <paragraph>
         <title>
           <a href="perldoc/LaTeXML/Gullet.html">
             <textstyle font="typewriter">LaTeXML::Gullet</textstyle>
@@ -258,10 +281,9 @@ if the token's current meaning in the <a href="perldoc/LaTeXML/Stomach.html"><te
 or other expandable control sequences),
 it is expanded and its expansion is replaced in the input before retrying.
 The driving <a href="perldoc/LaTeXML.html"><textstyle font="typewriter">LaTeXML</textstyle></a> instance binds the exported variable $<textstyle font="typewriter">GULLET</textstyle> to the current gullet.
-<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 275 **** -->
-</p>
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 275 **** --></p>
       </paragraph>
-      <paragraph refnum="">
+      <paragraph>
         <title>
           <a href="perldoc/LaTeXML/Definition.html#LaTeXML/Expandable">
             <textstyle font="typewriter">LaTeXML::Expandable</textstyle>
@@ -275,9 +297,9 @@ and used in generating the replacement tokens.
 </p>
       </paragraph>
     </subsection>
-    <subsection label="sec:digestion" refnum="A.3">
+    <subsection refnum="A.3" label="sec:digestion">
       <title>Digestion</title>
-      <paragraph refnum="">
+      <paragraph>
         <title>
           <a href="perldoc/LaTeXML/Stomach.html">
             <textstyle font="typewriter">LaTeXML::Stomach</textstyle>
@@ -302,8 +324,7 @@ out in linear time.
 recording the current <a href="perldoc/LaTeXML/Font.html"><textstyle font="typewriter">LaTeXML::Font</textstyle></a>.
 </item>
           <item>If a control sequence represents <a href="perldoc/LaTeXML/Definition.html#LaTeXML/Primitive"><textstyle font="typewriter">LaTeXML::Primitive</textstyle></a>, the primitive is invoked, executing its
-<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 300 **** -->
-stored subroutine.  This is typically done for side effect (changing the state in the stomach),
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 300 **** -->stored subroutine.  This is typically done for side effect (changing the state in the stomach),
 although they may also contribute digested material.
 As with macros, any arguments to the primitive are read from the gullet.
 </item>
@@ -318,7 +339,7 @@ Arguments to a constructor are read from the gullet and also digested.
         <p>Finally, <textstyle font="typewriter">Filter</textstyle>s are applied to the resulting lists (see below).
 </p>
       </paragraph>
-      <paragraph refnum="">
+      <paragraph>
         <title><a href="perldoc/LaTeXML/Box.html"><textstyle font="typewriter">LaTeXML::Box</textstyle></a>, <a href="perldoc/LaTeXML/Box.html#LaTeXML/MathBox"><textstyle font="typewriter">LaTeXML::MathBox</textstyle></a>, <a href="perldoc/LaTeXML/Box.html#LaTeXML/List"><textstyle font="typewriter">LaTeXML::List</textstyle></a>, <a href="perldoc/LaTeXML/Box.html#LaTeXML/MathList"><textstyle font="typewriter">LaTeXML::MathList</textstyle></a>, <a href="perldoc/LaTeXML/Box.html#LaTeXML/Whatsit"><textstyle font="typewriter">LaTeXML::Whatsit</textstyle></a></title>
         <p>Instances of
 these classes represent the digested objects: boxes being characters; lists being sequences
@@ -327,7 +348,7 @@ Note that, currently, Although \par tends to do the `right thing', there
 is no real notion of horizontal or vertical mode.
 </p>
       </paragraph>
-      <paragraph refnum="">
+      <paragraph>
         <title><a href="perldoc/LaTeXML/Definition.html#LaTeXML/Primitive"><textstyle font="typewriter">LaTeXML::Primitive</textstyle></a>, <a href="perldoc/LaTeXML/Definition.html#LaTeXML/Constructor"><textstyle font="typewriter">LaTeXML::Constructor</textstyle></a></title>
         <p>These subclasses of <a href="perldoc/LaTeXML/Definition.html"><textstyle font="typewriter">LaTeXML::Definition</textstyle></a>are carried out
 (at least partly) in the stomach. They may have before and after daemons; little bits
@@ -335,15 +356,14 @@ of code that affect the state.  A primitive is carried out for only side-effect,
 but a constructor generates a whatsit that survives to the <a href="perldoc/LaTeXML/Intestine.html"><textstyle font="typewriter">LaTeXML::Intestine</textstyle></a>.
 </p>
       </paragraph>
-      <paragraph refnum="">
+      <paragraph>
         <title>
           <textstyle font="typewriter">Filter</textstyle>
         </title>
         <p>Filters are roughly a generalization of ligatures. They are matched
 against sequences of digested items during digestion; if they pattern is matched, it is substituted
 by the replacement.  They are currently defined for the kinds of substitutions that would
-<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 325 **** -->
-make sense for <a href="http://www.w3c.org/XML/"><textstyle font="typewriter">XML</textstyle></a>; namely repeated characters like <textstyle font="typewriter">-</textstyle> or <textstyle font="typewriter">`</textstyle> are replaced by
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 325 **** -->make sense for <a href="http://www.w3c.org/XML/"><textstyle font="typewriter">XML</textstyle></a>; namely repeated characters like <textstyle font="typewriter">-</textstyle> or <textstyle font="typewriter">`</textstyle> are replaced by
 the appropriate unicode. Also, in math, patterns of digits or letters (in non-mathitalic fonts)
 are combined as one would expect.  On the other hand, ligatures like <textstyle font="typewriter">ffi</textstyle> do not
 really seem appropriate here — or do they? — they would be easily implemented, but
@@ -351,9 +371,9 @@ they might adversely affect search.
 </p>
       </paragraph>
     </subsection>
-    <subsection label="sec:construction" refnum="A.4">
+    <subsection refnum="A.4" label="sec:construction">
       <title>Construction</title>
-      <paragraph refnum="">
+      <paragraph>
         <title>
           <a href="perldoc/LaTeXML/Intestine.html">
             <textstyle font="typewriter">LaTeXML::Intestine</textstyle>
@@ -373,14 +393,12 @@ nor open \par.
       </paragraph>
     </subsection>
   </appendix>
-  <appendix label="app:hierarchy" refnum="B">
+  <appendix refnum="B" label="app:hierarchy">
     <title>Object Hierarchy</title>
     <description>
       <item><tag><a href="perldoc/LaTeXML/Object.html"><textstyle font="typewriter">LaTeXML::Object</textstyle></a></tag>: Abstract base class.
-<description><!-- %In Token.pm -->
-<item><tag><a href="perldoc/LaTeXML/Token.html"><textstyle font="typewriter">LaTeXML::Token</textstyle></a></tag>: A TeX token: character/string with category code.
-<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 350 **** -->
-</item><item><tag><a href="perldoc/LaTeXML/Token.html#LaTeXML/Tokens"><textstyle font="typewriter">LaTeXML::Tokens</textstyle></a></tag>: A list of <a href="perldoc/LaTeXML/Token.html"><textstyle font="typewriter">LaTeXML::Token</textstyle></a>s.
+<description><!-- %In Token.pm --><item><tag><a href="perldoc/LaTeXML/Token.html"><textstyle font="typewriter">LaTeXML::Token</textstyle></a></tag>: A TeX token: character/string with category code.
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 350 **** --></item><item><tag><a href="perldoc/LaTeXML/Token.html#LaTeXML/Tokens"><textstyle font="typewriter">LaTeXML::Tokens</textstyle></a></tag>: A list of <a href="perldoc/LaTeXML/Token.html"><textstyle font="typewriter">LaTeXML::Token</textstyle></a>s.
 </item><item><tag><a href="perldoc/LaTeXML/Token.html#LaTeXML/Number"><textstyle font="typewriter">LaTeXML::Number</textstyle></a></tag>: A TeX number.
 <description><item><tag><a href="perldoc/LaTeXML/Token.html#LaTeXML/Dimension"><textstyle font="typewriter">LaTeXML::Dimension</textstyle></a></tag>: A TeX dimension; number with unit.
 <description><item><tag><a href="perldoc/LaTeXML/Token.html#LaTeXML/MuDimension"><textstyle font="typewriter">LaTeXML::MuDimension</textstyle></a></tag>: A TeX math-mode dimension.
@@ -389,8 +407,7 @@ nor open \par.
 </item></description>
 </item></description>
 </item></description>
-<!-- %In Box.pm -->
-</item><item><tag><a href="perldoc/LaTeXML/Box.html"><textstyle font="typewriter">LaTeXML::Box</textstyle></a></tag>: A digested character/string; base class for digested objects.
+<!-- %In Box.pm --></item><item><tag><a href="perldoc/LaTeXML/Box.html"><textstyle font="typewriter">LaTeXML::Box</textstyle></a></tag>: A digested character/string; base class for digested objects.
 <description><item><tag><a href="perldoc/LaTeXML/Box.html#LaTeXML/MathBox"><textstyle font="typewriter">LaTeXML::MathBox</textstyle></a></tag>: A digested character token in math.
 </item><item><tag><a href="perldoc/LaTeXML/Box.html#LaTeXML/Comment"><textstyle font="typewriter">LaTeXML::Comment</textstyle></a></tag>: A digested comment.
 </item><item><tag><a href="perldoc/LaTeXML/Box.html#LaTeXML/List"><textstyle font="typewriter">LaTeXML::List</textstyle></a></tag>: A list of text-mode boxes.
@@ -399,19 +416,17 @@ nor open \par.
 </item><item><tag><a href="perldoc/LaTeXML/Box.html#LaTeXML/Whatsit"><textstyle font="typewriter">LaTeXML::Whatsit</textstyle></a></tag>: A special digested object with arguments and properties; has its own
 rules for conversion into an document fragment.
 </item></description>
-<!-- %In Font.pm%**** /home/bruce/latexml/doc/LaTeXML.tex Line 375 **** -->
-</item><item><tag><a href="perldoc/LaTeXML/Font.html"><textstyle font="typewriter">LaTeXML::Font</textstyle></a></tag>: A representation of a font, attached to digested objects.
+<!-- %In Font.pm 
+     %**** /home/bruce/latexml/doc/LaTeXML.tex Line 375 ****--></item><item><tag><a href="perldoc/LaTeXML/Font.html"><textstyle font="typewriter">LaTeXML::Font</textstyle></a></tag>: A representation of a font, attached to digested objects.
 <description><item><tag><a href="perldoc/LaTeXML/Font.html#LaTeXML/MathFont"><textstyle font="typewriter">LaTeXML::MathFont</textstyle></a></tag>: A font in math; special rules for merging.
 </item></description>
-<!-- %In Node.pm -->
-</item><item><tag><a href="perldoc/LaTeXML/Node.html"><textstyle font="typewriter">LaTeXML::Node</textstyle></a></tag>:  Intermediate representation of an XML element (also base class).
+<!-- %In Node.pm --></item><item><tag><a href="perldoc/LaTeXML/Node.html"><textstyle font="typewriter">LaTeXML::Node</textstyle></a></tag>:  Intermediate representation of an XML element (also base class).
 <description><item><tag><a href="perldoc/LaTeXML/Node.html#LaTeXML/TextNode"><textstyle font="typewriter">LaTeXML::TextNode</textstyle></a></tag>: a text node.
 </item><item><tag><a href="perldoc/LaTeXML/Node.html#LaTeXML/CommentNode"><textstyle font="typewriter">LaTeXML::CommentNode</textstyle></a></tag>: a comment node.
 </item><item><tag><a href="perldoc/Node.html#LaTeXML/ProcessingInstruction"><textstyle font="typewriter">LaTeXML::ProcessingInstruction</textstyle></a></tag>: a processing instruction
 </item><item><tag><a href="perldoc/LaTeXML/Node.html#LaTeXML/Document"><textstyle font="typewriter">LaTeXML::Document</textstyle></a></tag>: the root document object.
 </item></description>
-<!-- %In Definition.pm -->
-</item><item><tag><a href="perldoc/LaTeXML/Definition.html"><textstyle font="typewriter">LaTeXML::Definition</textstyle></a></tag>: Represents the action of executable control sequences
+<!-- %In Definition.pm --></item><item><tag><a href="perldoc/LaTeXML/Definition.html"><textstyle font="typewriter">LaTeXML::Definition</textstyle></a></tag>: Represents the action of executable control sequences
 <description><item><tag><a href="perldoc/LaTeXML/Definition.html#LaTeXML/Expandable"><textstyle font="typewriter">LaTeXML::Expandable</textstyle></a></tag>: A definition expandable in the Gullet, (eg. a macro).
 </item><item><tag><a href="perldoc/LaTeXML/Definition.html#LaTeXML/Primitive"><textstyle font="typewriter">LaTeXML::Primitive</textstyle></a></tag>: Definition for primitives, carried out in Stomach.
 <description><item><tag><a href="perldoc/LaTeXML/Definition.html#LaTeXML/Register"><textstyle font="typewriter">LaTeXML::Register</textstyle></a></tag>: A definition for TeX registers.
@@ -419,38 +434,30 @@ rules for conversion into an document fragment.
 generates a Whatsit during digestion.
 </item></description>
 </item></description>
-<!-- %In Parameters.pm -->
-</item><item><tag><a href="perldoc/LaTeXML/Parameters.html"><textstyle font="typewriter">LaTeXML::Parameters</textstyle></a></tag>: A definition's parameter list; a collection of <a href="perldoc/LaTeXML/Parameter.html#LaTeXML/Parameter"><textstyle font="typewriter">LaTeXML::Parameter</textstyle></a>s.
-<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 400 **** -->
-</item><item><tag><a href="perldoc/LaTeXML/Parameter.html#LaTeXML/Parameter"><textstyle font="typewriter">LaTeXML::Parameter</textstyle></a></tag>: A definition's parameter, including type, optional, etc.
+<!-- %In Parameters.pm --></item><item><tag><a href="perldoc/LaTeXML/Parameters.html"><textstyle font="typewriter">LaTeXML::Parameters</textstyle></a></tag>: A definition's parameter list; a collection of <a href="perldoc/LaTeXML/Parameter.html#LaTeXML/Parameter"><textstyle font="typewriter">LaTeXML::Parameter</textstyle></a>s.
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 400 **** --></item><item><tag><a href="perldoc/LaTeXML/Parameter.html#LaTeXML/Parameter"><textstyle font="typewriter">LaTeXML::Parameter</textstyle></a></tag>: A definition's parameter, including type, optional, etc.
 </item><item><tag><a href="perldoc/LaTeXML/Parameter.html#LaTeXML/KeyVals"><textstyle font="typewriter">LaTeXML::KeyVals</textstyle></a></tag>: Representation of LaTeX-style Key-Value lists.
-<!-- %In Mouth.pm -->
-</item><item><tag><a href="perldoc/LaTeXML/Mouth.html"><textstyle font="typewriter">LaTeXML::Mouth</textstyle></a></tag>: The organ that converts characters (eg. from files) into <a href="perldoc/LaTeXML/Token.html"><textstyle font="typewriter">LaTeXML::Token</textstyle></a>s.
+<!-- %In Mouth.pm --></item><item><tag><a href="perldoc/LaTeXML/Mouth.html"><textstyle font="typewriter">LaTeXML::Mouth</textstyle></a></tag>: The organ that converts characters (eg. from files) into <a href="perldoc/LaTeXML/Token.html"><textstyle font="typewriter">LaTeXML::Token</textstyle></a>s.
 <description><item><tag><a href="perldoc/LaTeXML/Mouth.html#LaTeXML/FileMouth"><textstyle font="typewriter">LaTeXML::FileMouth</textstyle></a></tag>: A mouth that tokenizes input from a file.
 </item></description>
-<!-- %In Gullet.pm -->
-</item><item><tag><a href="perldoc/LaTeXML/Gullet.html"><textstyle font="typewriter">LaTeXML::Gullet</textstyle></a></tag>: The organ that expands <a href="perldoc/LaTeXML/Token.html"><textstyle font="typewriter">LaTeXML::Token</textstyle></a>s into other sequences of tokens;
+<!-- %In Gullet.pm --></item><item><tag><a href="perldoc/LaTeXML/Gullet.html"><textstyle font="typewriter">LaTeXML::Gullet</textstyle></a></tag>: The organ that expands <a href="perldoc/LaTeXML/Token.html"><textstyle font="typewriter">LaTeXML::Token</textstyle></a>s into other sequences of tokens;
 also provides common `parsing' operations such as reading numbers, delimited lists of tokens, etc.
-<!-- %In Stomach.pm -->
-</item><item><tag><a href="perldoc/LaTeXML/Stomach.html"><textstyle font="typewriter">LaTeXML::Stomach</textstyle></a></tag>: The organ that digests <a href="perldoc/LaTeXML/Token.html"><textstyle font="typewriter">LaTeXML::Token</textstyle></a>s, converting them to a tree of
+<!-- %In Stomach.pm --></item><item><tag><a href="perldoc/LaTeXML/Stomach.html"><textstyle font="typewriter">LaTeXML::Stomach</textstyle></a></tag>: The organ that digests <a href="perldoc/LaTeXML/Token.html"><textstyle font="typewriter">LaTeXML::Token</textstyle></a>s, converting them to a tree of
 digested boxes; also contains the current state of grouping, bindings of definitions, etc.
-<!-- %In Intestine.pm -->
-</item><item><tag><a href="perldoc/LaTeXML/Intestine.html"><textstyle font="typewriter">LaTeXML::Intestine</textstyle></a></tag>: The organ that constructs the document tree from digested boxes.
+<!-- %In Intestine.pm --></item><item><tag><a href="perldoc/LaTeXML/Intestine.html"><textstyle font="typewriter">LaTeXML::Intestine</textstyle></a></tag>: The organ that constructs the document tree from digested boxes.
 Vaguely analogous to TeX's output routine, but runs at end of document, rather than per-page.
-<!-- %In Model.pm -->
-</item><item><tag><a href="perldoc/LaTeXML/Model.html"><textstyle font="typewriter">LaTeXML::Model</textstyle></a></tag>: Represents the model of the document, extracted from the DTD.
+<!-- %In Model.pm --></item><item><tag><a href="perldoc/LaTeXML/Model.html"><textstyle font="typewriter">LaTeXML::Model</textstyle></a></tag>: Represents the model of the document, extracted from the DTD.
 </item></description>
 </item>
     </description>
   </appendix>
-  <appendix label="app:todo" refnum="C">
+  <appendix refnum="C" label="app:todo">
     <title>Issues and ToDo</title>
     <p>Lots…!
 </p>
     <itemize>
       <item>Lots of useful LaTeX packages have not been implemented, and those
-<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 425 **** -->
-that are aren't necessarily complete.
+<!-- %**** /home/bruce/latexml/doc/LaTeXML.tex Line 425 **** -->that are aren't necessarily complete.
 </item>
       <item>TeX boxes aren't really complete, and in particular things like \ht0
 don't work.

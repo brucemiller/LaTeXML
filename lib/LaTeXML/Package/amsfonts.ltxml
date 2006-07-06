@@ -14,14 +14,14 @@
 # See amsfndoc
 #
 DefConstructor('\mathbb{}', '#1',
-	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'blackboard'); },
-	       afterDigest=>sub{$STOMACH->egroup; });
+	       beforeDigest=>sub{ RequireMath; BGroup; MergeFont(family=>'blackboard'); },
+	       afterDigest=>\&EGroup);
 DefMacro('\Bbb{}','\mathbb{#1}');
 DefMacro('\bold{}','\mathbb{#1}');
 # Also defined in eufrak
 DefConstructor('\mathfrak{}','#1',
-	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'fraktur'); },
-	       afterDigest=>sub{$STOMACH->egroup; });
+	       beforeDigest=>sub{ RequireMath; BGroup; MergeFont(family=>'fraktur'); },
+	       afterDigest=>\&EGroup);
 DefMacro('\frak{}','\mathfrak{#1}');
 
 # Not necessarily math

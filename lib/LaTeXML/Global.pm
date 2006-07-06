@@ -22,47 +22,29 @@
 package LaTeXML::Global;
 use strict;
 use Exporter;
-
+use XML::LibXML;
 our @ISA = qw(Exporter);
 our @EXPORT = ( 
-	       # Global State accessors
-	       qw( *GULLET *STOMACH *INTESTINE *MODEL),
+	       # Global State accessors; These variables get bound by LaTeXML.pm
+	       qw( *STATE *GULLET *STOMACH *MODEL),
 	       # Catcode constants
 	       qw( CC_ESCAPE  CC_BEGIN  CC_END     CC_MATH
 		   CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
 		   CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
 		   CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
 		   CC_CS      CC_NOTEXPANDED ),
-	       qw( &getStandardCattable &getInternalCattable ),
 	       # Token constructors
 	       qw( &T_BEGIN &T_END &T_MATH &T_ALIGN &T_PARAM &T_SUB &T_SUPER &T_SPACE 
 		   &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
-		   &CheckTokens
 		   &Token &Tokens
 		   &Tokenize &TokenizeInternal &Explode ),
-	       qw( &roman &Roman ),
 	       # Number & Dimension constructors
 	       qw( &Number &Dimension &MuDimension &Glue &MuGlue),
-	       # Font constructors
-	       qw( &Font &MathFont ),
-	       # Digested thing constructors
-	       qw( &Box &List &MathBox &MathList &Whatsit &CheckBoxes ),
-	       # Other generally useful operations
-	       qw( &requireMath &forbidMath ),
 	       # Error & Progress reporting
 	       qw( &NoteProgress &Fatal &Error &Warn ),
 	       # And some generics
 	       qw(&Stringify &ToString  &Equals)
 );
-
-#======================================================================
-# NOTE: These globals must be bound (local) by LaTeXML
-
-# These should just be deprecated, since I'm exporting the symbols now.
-sub GULLET()    { $LaTeXML::Global::GULLET; }
-sub STOMACH()   { $LaTeXML::Global::STOMACH; }
-sub INTESTINE() { $LaTeXML::Global::INTESTINE; }
-sub MODEL()     { $LaTeXML::Global::MODEL; }
 
 #======================================================================
 # Catcodes & Standard Token constructors.
@@ -94,87 +76,37 @@ sub Token {
   bless [$string,(defined $cc ? $cc : CC_OTHER)], 'LaTeXML::Token'; }
 
 #======================================================================
-our $STD_CATTABLE;		# Standard Catcodes
-our $STY_CATTABLE;		# Catcodes for `style files'
-
-BEGIN {
-  # Setup default catcodes.
-  $$STD_CATTABLE{"\\"} = CC_ESCAPE;
-  $$STD_CATTABLE{"{"}  = CC_BEGIN;
-  $$STD_CATTABLE{"}"}  = CC_END;
-  $$STD_CATTABLE{"\$"} = CC_MATH;
-  $$STD_CATTABLE{"\&"} = CC_ALIGN;
-  $$STD_CATTABLE{"\n"} = CC_EOL;
-  $$STD_CATTABLE{"#"}  = CC_PARAM;
-  $$STD_CATTABLE{"^"}  = CC_SUPER;
-  $$STD_CATTABLE{"_"}  = CC_SUB;
-  $$STD_CATTABLE{" "}  = CC_SPACE;
-  $$STD_CATTABLE{"\t"} = CC_SPACE;
-  $$STD_CATTABLE{"%"}  = CC_COMMENT;
-  $$STD_CATTABLE{"~"}  = CC_ACTIVE;
-  $$STD_CATTABLE{chr(0)}= CC_IGNORE;
-  for(my $c=ord('A'); $c <= ord('Z'); $c++){
-    $$STD_CATTABLE{chr($c)}   = CC_LETTER;
-    $$STD_CATTABLE{chr($c+ord('a')-ord('A'))}= CC_LETTER;
-  }
-  $STY_CATTABLE = {%$STD_CATTABLE};
-  $$STY_CATTABLE{"@"}  = CC_LETTER;
-}
-
-# Return the Standard Cattable (a hash: char=>catcode).
-sub getStandardCattable { $STD_CATTABLE; }
-# Return the Internal Cattable; @ is treated as a letter.
-sub getInternalCattable    { $STY_CATTABLE; }
-
-#======================================================================
 # These belong to Mouth, but make more sense here.
 
-# tokenize($string); Tokenizes the string using the standard cattable, returning a LaTeXML::Tokens
-sub Tokenize {
-  my($string)=@_;
-  LaTeXML::Mouth->new($string,cattable=>getStandardCattable)->readTokens; }
+our $STD_CATTABLE;
+our $STY_CATTABLE;
 
-# tokenize($string); Tokenizes the string using the internal cattable, returning a LaTeXML::Tokens
-sub TokenizeInternal {
+# Tokenize($string); Tokenizes the string using the standard cattable, returning a LaTeXML::Tokens
+sub Tokenize         {
   my($string)=@_;
-  LaTeXML::Mouth->new($string,cattable=>getInternalCattable)->readTokens; }
+  $STD_CATTABLE = LaTeXML::State->new(catcodes=>'standard') unless $STD_CATTABLE;
+  local $LaTeXML::STATE = $STD_CATTABLE;
+  LaTeXML::Mouth->new($string)->readTokens; }
+
+# TokenizeInternal($string); Tokenizes the string using the internal cattable, returning a LaTeXML::Tokens
+sub TokenizeInternal { 
+  my($string)=@_;
+  $STY_CATTABLE = LaTeXML::State->new(catcodes=>'style') unless  $STY_CATTABLE;
+  local $LaTeXML::STATE = $STY_CATTABLE;
+  LaTeXML::Mouth->new($string)->readTokens; }
 
 #======================================================================
 # Token List constructors.
 
-sub CheckTokens {
-  map( ((ref $_) && $_->isaToken)|| Fatal("Expected Token, got ".Stringify($_)), @_);
-  @_; }
-
 # Return a LaTeXML::Tokens made from the arguments (tokens)
-sub Tokens { LaTeXML::Tokens->new(CheckTokens(@_)); }
+sub Tokens {
+  map( ((ref $_) && $_->isaToken)|| Fatal("Expected Token, got ".Stringify($_)), @_);
+  LaTeXML::Tokens->new(@_); }
 
 # Explode a string into a list of tokens w/catcode OTHER (except space).
 sub Explode {
   my($string)=@_;
   map(($_ eq ' ' ? T_SPACE() : T_OTHER($_)),split('',$string)); }
-
-# Dumb place for this, but where else...
-# The TeX way! (bah!! hint: try a large number)
-my @rmletters=('i','v',  'x','l', 'c','d', 'm');
-sub roman_aux {
-  my($n)=@_;
-  my $div= 1000;
-  my $s=($n>$div ? ('m' x int($n/$div)) : '');
-  my $p=4;
-  while($n %= $div){
-    $div /= 10;
-    my $d = int($n/$div);
-    if($d%5==4){ $s.= $rmletters[$p]; $d++;}
-    if($d > 4 ){ $s.= $rmletters[$p+int($d/5)]; $d %=5; }
-    if($d) {     $s.= $rmletters[$p] x $d; }
-    $p -= 2;}
-  $s; }
-
-# Convert the number to lower case roman numerals, returning a list of LaTeXML::Token
-sub roman { Explode(roman_aux(@_)); }
-# Convert the number to upper case roman numerals, returning a list of LaTeXML::Token
-sub Roman { Explode(uc(roman_aux(@_))); }
 
 #======================================================================
 # Constructors for number and dimension types.
@@ -184,35 +116,6 @@ sub Dimension   { LaTeXML::Dimension->new(@_); }
 sub MuDimension { LaTeXML::MuDimension->new(@_); }
 sub Glue        { LaTeXML::Glue->new(@_); }
 sub MuGlue      { LaTeXML::MuGlue->new(@_); }
-
-#======================================================================
-# Constructors for fonts.
-
-sub Font     { 'LaTeXML::Font'->new(@_); }
-sub MathFont { 'LaTeXML::MathFont'->new(@_); }
-
-#======================================================================
-# Constructors for Digested objects: Box, List, Whatsit.
-
-sub CheckBoxes {
-  map( ((ref $_) && $_->isaBox)|| Fatal("Expected Box, got ".Stringify($_)), @_);
-  @_; }
-
-# Concise exported constructors for various Digested objects.
-sub Box     { 'LaTeXML::Box'->new(@_); }
-sub List    { 'LaTeXML::List'->new(CheckBoxes(@_)); }
-sub MathBox { 'LaTeXML::MathBox'->new(@_); }
-sub MathList{ 'LaTeXML::MathList'->new(CheckBoxes(@_)); }
-sub Whatsit { 'LaTeXML::Whatsit'->new(@_); }
-
-#**********************************************************************
-sub requireMath() {
-  Fatal("Current operation can only appear in math mode") unless $LaTeXML::Global::STOMACH->inMath;
-  return; }
-
-sub forbidMath() {
-  Fatal("Current operation can not appear in math mode") if $LaTeXML::Global::STOMACH->inMath;
-  return; }
 
 #**********************************************************************
 # Error & Progress reporting.
@@ -252,8 +155,16 @@ our %NOBLESS= map(($_=>1), qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE));
 
 sub Stringify {
   my($object)=@_;
-  (defined $object ? (((ref $object) && !$NOBLESS{ref $object}) ? $object->stringify : "$object")
-   : 'undef'); }
+  if(!defined $object){ 'undef'; }
+  elsif(!ref $object){ $object; }
+  elsif($NOBLESS{ref $object}){ "$object"; }
+  elsif($object->can('stringify')){ $object->stringify; }
+  elsif($object->isa('XML::LibXML::Node')){
+    if($object->nodeType == XML_ELEMENT_NODE){ "$object"."[".$object->nodeName."]"; }
+    else { "$object"; }}
+  else { "$object"; }}
+#  (defined $object ? (((ref $object) && !$NOBLESS{ref $object}) && $object->can('stringify') ? $object->stringify : "$object")
+#   : 'undef'); }
 
 sub ToString {
   my($object)=@_;
@@ -287,11 +198,10 @@ throughout LaTeXML, and in Package implementations.
 
 =over 4
 
-=item C<< $GULLET, $STOMACH, $INTESTINE, $MODEL; >>
+=item C<< $STATE,$GULLET, $STOMACH, $MODEL; >>
 
-These are bound to the currently active L<LaTeXML::Gullet>, L<LaTeXML::Stomach>,
-L<LaTeXML::Intestine> and L<LaTeXML::Model> by an instance of L<LaTeXML> during
-processing.
+These are bound to the currently active L<LaTeXML::State>, L<LaTeXML::Gullet>, L<LaTeXML::Stomach>
+and L<LaTeXML::Model> by an instance of L<LaTeXML> during processing.
 
 =back 
 
@@ -330,14 +240,6 @@ returning a L<LaTeXML::Tokens>.
 =item C<< @tokens = Explode($string); >>
 
 Returns a list of the tokens corresponding to the characters in C<$string>.
-
-=item C<< @tokens = roman($number); >>
-
-Formats the C<$number> in (lowercase) roman numerals, returning a list of the tokens.
-
-=item C<< @tokens = Roman($number); >>
-
-Formats the C<$number> in (uppercase) roman numerals, returning a list of the tokens.
 
 =item C<< $number = Number($num); >>
 
@@ -380,21 +282,6 @@ This is the same as the standard cattable, but treats @ as a letter.
 
 =back
 
-=head2 Font related exports
-
-=over 4
-
-=item C<< $font = Font(%components); >>
-
-Creates a Font object, components are C<family>, C<series>, C<shape>, C<size> and C<color>.
-
-=item C<< $font = MathFont(%components); >>
-
-Creates a MathFont object, components are the same as Font, with the addition of
-C<forcebold> for use when all symbols should be bold (such as with amsmath's \boldsymbol).
-
-=back
-
 =head2 Box related exports
 
 =over 4
@@ -402,14 +289,14 @@ C<forcebold> for use when all symbols should be bold (such as with amsmath's \bo
 =item C<< $box = Box($string,$font,$locator); >>
 
 Create a L<LaTeXML::Box> for the given C<$string>, in the given C<$font>.
-C<$locator> is a string indicating where the C<$string> came from; if not supplied,
-the location will be determined from the C<$GULLET>.
+C<$locator> is a string indicating where the C<$string> came from
+(eg C<$GULLET->getLocator>).
 
 =item C<< $mathbox = MathBox($string,$font,$locator); >>
 
 Create a  L<LaTeXML::MathBox> for the given $string, in the given $font.
-C<$locator> is a string indicating where the C<$string> came from; if not supplied,
-the location will be determined from the C<$GULLET>.
+C<$locator> is a string indicating where the C<$string> came from
+(eg C<$GULLET->getLocator>).
 
 =item C<< $list = List(@boxes); >>
 
@@ -432,20 +319,6 @@ Specially recognized properties are:
 
 If the properties are not supplied, then the data is obtained from 
 the current execution environment.
-
-=back
-
-=head2 Generally useful procedures
-
-=over 4
-
-=item C<< requireMath; >>
-
-Signals an error unless we are currently in math mode.
-
-=item C<< forbidMath; >>
-
-Signals an error if we are currently in math mode.
 
 =back
 

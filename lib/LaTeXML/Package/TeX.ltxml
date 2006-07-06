@@ -14,7 +14,10 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 use Unicode::Normalize;
+use XML::LibXML;
 no warnings 'redefine';
+
+RegisterNamespace(ltxml=>"http://dlmf.nist.gov/LaTeXML",1);
 
 #**********************************************************************
 # Expandable Primitives
@@ -60,13 +63,13 @@ sub compare {
   else { Fatal("Non-relation token: ".Stringify($rel)." in comparison conditional"); }}
 
 DefExpandable('\ifnum Number Token Number', 
-	      sub { ifHandler(compare($_[1]->getValue,$_[2],$_[3]->getValue)); },
+	      sub { ifHandler(compare($_[1]->valueOf,$_[2],$_[3]->valueOf)); },
 	     isConditional=>1);
 DefExpandable('\ifdim Dimension Token Dimension',
-	      sub { ifHandler(compare($_[1]->getValue,$_[2],$_[3]->getValue)); },
+	      sub { ifHandler(compare($_[1]->valueOf,$_[2],$_[3]->valueOf)); },
 	      isConditional=>1);
 DefExpandable('\ifodd Number',
-	      sub { ifHandler($_[1]->getValue % 2); },
+	      sub { ifHandler($_[1]->valueOf % 2); },
 	     isConditional=>1);
 
 # \ifvmode
@@ -84,8 +87,8 @@ DefExpandable('\ifcat XToken XToken',
 # !! ????
 DefExpandable('\ifx Token Token', sub {
   my($self,$token1,$token2)=@_;
-  my $def1=$STOMACH->lookupMeaning($token1);
-  my $def2=$STOMACH->lookupMeaning($token2);
+  my $def1=$STATE->lookupMeaning($token1);
+  my $def2=$STATE->lookupMeaning($token2);
   my $bool=0;
   if(defined $def1 != defined $def2){	       # Don't both have defs or not have defs
     $bool=0; }
@@ -111,11 +114,11 @@ DefExpandable('\iffalse',sub { ifHandler(0); }, isConditional=>1);
 #======================================================================
 
 DefPrimitive('\relax',undef);
-DefExpandable('\number Number',       sub { Explode($_[1]->getValue); });
+DefExpandable('\number Number',       sub { Explode($_[1]->valueOf); });
 
 #======================================================================
 
-DefExpandable('\romannumeral Number', sub { roman($_[1]->getValue); });
+DefExpandable('\romannumeral Number', sub { roman($_[1]->valueOf); });
 DefExpandable('\string Token ',        sub { Explode($_[1]->getString); });
 DefExpandable('\jobname',Tokens()); # Set to the filename by initialization
 
@@ -123,7 +126,7 @@ DefExpandable('\fontname', sub { Explode("fontname not implemented"); });
 
 DefExpandable('\meaning Token',sub {
   my($self,$tok)=@_;
-  my $meaning = $STOMACH->lookupMeaning($tok);
+  my $meaning = $STATE->lookupMeaning($tok);
   Explode(defined $meaning ? $meaning : 'undefined'); });
 
 DefExpandable('\csname',sub {
@@ -131,8 +134,8 @@ DefExpandable('\csname',sub {
   while(($token = $GULLET->readXToken()) && ($token->getString ne '\endcsname')){
     push(@toks,$token); }
   $token = T_CS("\\".Tokens(@toks)->toString);
-  $STOMACH->assignMeaning($token, T_CS('\relax')->getDefinition)
-    unless defined $STOMACH->lookupMeaning($token);
+  $STATE->assignMeaning($token, T_CS('\relax')->getDefinition)
+    unless defined $STATE->lookupMeaning($token);
   $token;  });
 
 DefPrimitive('\endcsname', sub { Fatal("Extra \csname"); });
@@ -169,7 +172,7 @@ DefExpandable('\the',sub {
   my $defn = readVariable();
   my $type = $defn->isRegister;
   if(!$type){ Fatal("You can't use ".$defn->getCS->untex." after \\the"); }
-  my $value = $defn->getValue($defn->readArguments);
+  my $value = $defn->valueOf($defn->readArguments);
   my @tokens = ($type eq 'any' ? $value->unlist : Explode($value->toString));
   if($LaTeXML::NOEXPAND_THE){
     $GULLET->neutralizeTokens(@tokens); }
@@ -211,9 +214,9 @@ foreach my $p (keys %iparms){
   DefRegister("\\$p",Number($iparms{$p})); }
 
 {  my ($sec,$min,$hour,$mday,$mon,$year)=localtime();
-   $STOMACH->assignValue('\day'  =>Number($mday));
-   $STOMACH->assignValue('\month'=>Number($mon+1));
-   $STOMACH->assignValue('\year' =>Number(1900+$year)); }
+   Assign('value','\day'  =>Number($mday), 'global');
+   Assign('value','\month'=>Number($mon+1), 'global');
+   Assign('value','\year' =>Number(1900+$year), 'global'); }
 
 # Read-only Integer registers
 our %ro_iparms=(lastpenalty=>0, inputlineno=>0, badness=>0);
@@ -309,7 +312,7 @@ sub readDefParameterList {
     my $t=shift(@tokens);
     if($t->getCatcode == CC_PARAM){
       $n++; $t=shift(@tokens); 
-      Fatal("Parameters for \"$cs\" not in order in ".join('',@copy))
+      Fatal("Parameters for \"".ToString($cs)."\" not in order in ".join('',map(ToString($_),@copy)))
 	unless $n == (ord($t->getString)-ord('0'));
       my @delim=();
       while(@tokens && ($tokens[0]->getCatcode != CC_PARAM)){
@@ -338,7 +341,7 @@ sub do_def {
   if($expanded){
     local $LaTeXML::NOEXPAND_THE = 1;
     $body = $GULLET->expandTokens($body); }
-  $STOMACH->installDefinition(LaTeXML::Expandable->new($cs,$params,$body),globally=>$globally);
+  $STATE->installDefinition(LaTeXML::Expandable->new($cs,$params,$body),($globally ? 'global':undef));
   return; }
 
 DefPrimitive('\def',  sub { do_def(0,0); });
@@ -348,9 +351,9 @@ DefPrimitive('\xdef', sub { do_def(1,1); });
 
 # <prefix> = \global | \long | \outer
 # See Stomach.pm & Stomach.pm
-DefPrimitive('\global',sub { $STOMACH->setPrefix('global');},isPrefix=>1);
-DefPrimitive('\long',  sub { $STOMACH->setPrefix('long');},  isPrefix=>1);
-DefPrimitive('\outer', sub { $STOMACH->setPrefix('outer');}, isPrefix=>1);
+DefPrimitive('\global',sub { $STATE->setPrefix('global'); return; },isPrefix=>1);
+DefPrimitive('\long',  sub { $STATE->setPrefix('long');   return; },  isPrefix=>1);
+DefPrimitive('\outer', sub { $STATE->setPrefix('outer');  return; }, isPrefix=>1);
 
 #======================================================================
 # Non-Macro assignments; TeXBook Ch.24, pp 276--277
@@ -408,32 +411,32 @@ DefPrimitive('\advance',sub {
   my $defn = readVariable();
   my @args = $defn->readArguments;
   $GULLET->readKeyword('by');
-  $defn->setValue($defn->getValue(@args)->add($GULLET->readValue($defn->isRegister)),@args); });
+  $defn->setValue($defn->valueOf(@args)->add($GULLET->readValue($defn->isRegister)),@args); });
 
 DefPrimitive('\multiply',sub {
   my $defn = readVariable();
   my @args = $defn->readArguments;
   $GULLET->readKeyword('by');
-  $defn->setValue($defn->getValue(@args)->multiply($GULLET->readNumber->getValue),@args); });
+  $defn->setValue($defn->valueOf(@args)->multiply($GULLET->readNumber->valueOf),@args); });
 
 
 DefPrimitive('\divide',sub {
   my $defn = readVariable();
   my @args = $defn->readArguments;
   $GULLET->readKeyword('by');
-  $defn->setValue($defn->getValue(@args)->multiply(1/$GULLET->readNumber->getValue),@args); });
+  $defn->setValue($defn->valueOf(@args)->multiply(1/$GULLET->readNumber->valueOf),@args); });
 
 # <let assignment> = \futurelet <control sequence><token><token> 
 #   | \let<control sequence><equals><one optional space><token>
 # DefPrimitive('\futurelet','<token><token><token>', sub { ... });
 DefPrimitive('\let Token Ignore:= Token', sub {
   my($self,$token1,$token2)=@_;
-  $STOMACH->assignMeaning($token1, $STOMACH->lookupMeaning($token2));
+  $STATE->assignMeaning($token1, $STATE->lookupMeaning($token2));
   return;  });
 
 DefExpandable('\futurelet Token Token Token',sub{
   my($self,$cs,$token1,$token2)=@_;
-  $STOMACH->assignMeaning($cs, $STOMACH->lookupMeaning($token2));
+  $STATE->assignMeaning($cs, $STATE->lookupMeaning($token2));
   ($token1,$token2); });
 
 # <shorthand definition> = \chardef<control sequence><equals><8bit>
@@ -444,8 +447,8 @@ DefExpandable('\futurelet Token Token Token',sub{
 # As defining a register ??
 DefPrimitive('\chardef Token Ignore:= Number', sub {
   my($self,$newcs,$code)=@_;
-  $STOMACH->assignValue($newcs->getString,Number($code));	# For when used as an integer getValue
-  my $ch = chr($code->getValue);
+  Assign('value',$newcs->getString=>Number($code));	# For when used as an integer valueOf
+  my $ch = chr($code->valueOf);
   $STOMACH->instalDefinition(LaTeXML::Primitive->new($newcs,"",
 						    sub { $STOMACH->digest(T_OTHER($ch)); },
 						    registerType=>'Number', readonly=>1));
@@ -454,43 +457,43 @@ DefPrimitive('\chardef Token Ignore:= Number', sub {
 
 DefPrimitive('\countdef Token Ignore:= Number',sub {
   my($self,$cs,$num)=@_;
-  my $count = '\count'.$num->getValue;
+  my $count = '\count'.$num->valueOf;
   DefRegister($cs->getString, Number(0),
-	       getter=>sub { $STOMACH->lookupValue($count); },
-	       setter=>sub { $STOMACH->assignValue($count,$_[0]); });
+	       getter=>sub { Lookup('value',$count); },
+	       setter=>sub { Assign('value',$count=>$_[0]); });
   return; });
 
 DefPrimitive('\dimendef Token Ignore:= Number',sub {
   my($self,$cs,$num)=@_;
-  my $dimen = '\dimen'.$num->getValue;
+  my $dimen = '\dimen'.$num->valueOf;
   DefRegister($cs->getString, Dimension(0),
-	       getter=>sub { $STOMACH->lookupValue($dimen); },
-	       setter=>sub { $STOMACH->assignValue($dimen,$_[0]); });
+	       getter=>sub { Lookup('value',$dimen); },
+	       setter=>sub { Assign('value',$dimen=>$_[0]); });
   return; });
 
 DefPrimitive('\skipdef Token Ignore:= Number',sub {
   my($self,$cs,$num)=@_;
-  my $glue = '\skip'.$num->getValue;
+  my $glue = '\skip'.$num->valueOf;
   DefRegister($cs->getString, Glue(0),
-	       getter=>sub { $STOMACH->lookupValue($glue); },
-	       setter=>sub { $STOMACH->assignValue($glue,$_[0]); });
+	       getter=>sub { Lookup('value',$glue); },
+	       setter=>sub { Assign('value',$glue=>$_[0]); });
   return; });
 
 DefPrimitive('\muskipdef Token Ignore:= Number',sub {
   my($self,$cs,$num)=@_;
-  my $muglue = '\muskip'.$num->getValue;
+  my $muglue = '\muskip'.$num->valueOf;
   DefRegister($cs->getString, MuGlue(0),
-	       getter=>sub { $STOMACH->lookupValue($muglue); },
-	       setter=>sub { $STOMACH->assignValue($muglue,$_[0]); });
+	       getter=>sub { Lookup('value',$muglue); },
+	       setter=>sub { Assign('value',$muglue=>$_[0]); });
 
  return; });
 
 DefPrimitive('\toksdef Token Ignore:= Number',sub {
   my($self,$cs,$num)=@_;
-  my $toks = '\toks'.$num->getValue;
+  my $toks = '\toks'.$num->valueOf;
   DefRegister($cs->getString, Tokens(),
-	       getter=>sub { $STOMACH->lookupValue($toks); },
-	       setter=>sub { $STOMACH->assignValue($toks,$_[0]); });
+	       getter=>sub { Lookup('value',$toks); },
+	       setter=>sub { Assign('value',$toks=>$_[0]); });
   return; });
 
 
@@ -503,8 +506,10 @@ DefPrimitive('\toksdef Token Ignore:= Number',sub {
 # <codename> = \catcode | \mathcode | \lccode | \uccode | \sfcode | \delcode
 
 DefRegister('\catcode Number',Number(0),
-	     getter=>sub { Number($STOMACH->lookupCatcode(chr($_[0]->getValue))); },
-	     setter=>sub { $STOMACH->assignCatcode($_[0]->getValue, chr($_[1]->getValue)); });
+	     getter=>sub { my $cc = Lookup('catcode',chr($_[0]->valueOf));
+			   $cc = CC_OTHER unless defined $cc;
+			   Number($cc); },
+	     setter=>sub { Assign('catcode',chr($_[1]->valueOf) => $_[0]->valueOf); });
 # \mathcode
 # \lccode
 # \uccode
@@ -555,7 +560,7 @@ DefRegister('\dp Number',Dimension(0));
 # <intimate assignment> = <special integer><equals><number>
 #   | <special dimension><equals><dimen>
 
-DefPrimitive('\char Number', sub { $STOMACH->digest(T_OTHER(chr($_[1]->getValue))); });
+DefPrimitive('\char Number', sub { $STOMACH->digest(T_OTHER(chr($_[1]->valueOf))); });
 # <box> = \box <8bit> | \copy <8bit> | \lastbox | \vsplit <8bit> to <dimen>
 #   | \hbox <box specification>{<horizontal mode material>}
 #   | \vbox <box specification>{<vertical mode material>}
@@ -564,9 +569,9 @@ DefPrimitive('\char Number', sub { $STOMACH->digest(T_OTHER(chr($_[1]->getValue)
 
 # \setbox<number>=\hbox to <dimen>{<horizontal mode material>}
 
-DefPrimitive('\setbox Number Ignore:= {}', sub { $STOMACH->assignValue('box'.$_[1]->getValue,$_[2]); });
+DefPrimitive('\setbox Number Ignore:= {}', sub { Assign('value','box'.$_[1]->valueOf =>$_[2]); return;});
 # Is this the same ??
-DefPrimitive('\sbox Number Ignore:= {}', sub { $STOMACH->assignValue('box'.$_[1]->getValue,$_[2]); });
+DefPrimitive('\sbox Number Ignore:= {}', sub { Assign('value','box'.$_[1]->valueOf =>$_[2]);return; });
 
 DefPrimitive('\hbox{Keyword:to|spread} Dimension {}', sub { $STOMACH->digest($_[3]); });
 DefPrimitive('\vbox{Keyword:to|spread} Dimension {}', sub { $STOMACH->digest($_[3]); });
@@ -585,14 +590,13 @@ DefPrimitive('\raise Dimension', undef);
 
 # These are actually TeX primitives, but we treat them as a Whatsit so they
 # remain in the constructed tree.
-DefConstructor('{','#body', 
-	       beforeDigest=> sub { $STOMACH->bgroup; }, captureBody=>1);
-DefConstructor('}',  '',
-	       beforeDigest => sub { $STOMACH->egroup; });
+DefConstructor('{','#body', beforeDigest=>\&BGroup, captureBody=>1);
+DefConstructor('}',  '',    beforeDigest=>\&EGroup);
+
 Let('\bgroup',T_BEGIN);
 Let('\egroup',T_END);
-DefPrimitive('\begingroup',sub { $STOMACH->bgroup(1); });
-DefPrimitive('\endgroup',  sub { $STOMACH->egroup(1); });
+DefPrimitive('\begingroup',\&BeginGroup);
+DefPrimitive('\endgroup',  \&EndGroup);
 
 # \show, \showbox<8bit>, \showlists, \showthe<internal quantity>
 # \shipout<box>
@@ -646,7 +650,7 @@ DefConstructor('\noindent', "");
 DefConstructor('\indent', "");
 
 # Remember; \par closes, not opens, paragraphs!
-DefConstructor('\par', sub { $INTESTINE->maybeCloseElement('p'); }, untex=>"\\par\n");
+DefConstructor('\par', sub { $_[0]->maybeCloseElement('p'); }, untex=>"\\par\n");
 Tag('p', autoClose=>1, autoOpen=>1);
 
 # {
@@ -699,17 +703,17 @@ DefPrimitive('$', sub {
 DefConstructor('\@@BEGINDISPLAYMATH',
 	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>",
 	       untex=>'$$', alias=>'$$',
-	       beforeDigest=> sub{ $STOMACH->beginMode('display_math'); },
+	       beforeDigest=> sub{ BeginMode('display_math'); },
 	       captureBody=>1);
 DefConstructor('\@@ENDDISPLAYMATH'  , "", untex=>'$$', alias=>'$$',
-	       beforeDigest=> sub{ $STOMACH->endMode('display_math'); });
+	       beforeDigest=> sub{ EndMode('display_math'); });
 
 DefConstructor('\@@BEGININLINEMATH', 
 	       "<Math mode='inline'><XMath>#body</XMath></Math>", untex=>'$', alias=>'$',
-	       beforeDigest=> sub{ $STOMACH->beginMode('inline_math'); },
+	       beforeDigest=> sub{ BeginMode('inline_math'); },
 	      captureBody=>1);
 DefConstructor('\@@ENDINLINEMATH'   ,"", untex=>'$', alias=>'$',
-	       beforeDigest=> sub{ $STOMACH->endMode('inline_math');});
+	       beforeDigest=> sub{ EndMode('inline_math');});
 
 # Add the TeX code from the object that created this node,
 # unless it has already been recorded on another node.
@@ -746,31 +750,57 @@ sub add_body_TeX {
     $thing->setProperty('_added_body_tex',1); }}
 
 Tag('Math',   afterOpen=>\&add_body_TeX);
-Tag('XMath',  afterClose=>\&cleanup_XMath);
+Tag('Math',  afterClose=>\&cleanup_Math);
 #Tag('XMTok',  afterClose=>\&cleanup_TeX);
-Tag('XMWrap', afterClose=>\&collapse_XMWrap);
+###Tag('XMWrap', afterClose=>\&collapse_XMWrap);
 
 sub cleanup_XMath {
   my($xnode)=@_;
   # If the XMath contains only non-math nodes, it apparently isn't math at all (?)
   # pull them up & toss the XMath and Math wrapper.
-  if(!grep($_->getNodeName =~ /^XMApp|XMArg|XMTok|XMDual|XMHint|XMWrap/, $xnode->childNodes)){
-    my $mnode = $xnode->getParentNode;
-    $mnode->getParentNode->replace($mnode,$xnode->childNodes); }
-}
+  if(!grep($_->nodeName =~ /^XMApp|XMArg|XMTok|XMDual|XMHint|XMWrap/, $xnode->childNodes)){
+    replace_node($xnode->getParentNode, $xnode->childNodes); }}
+
+sub cleanup_Math {
+  my($mathnode)=@_;
+  # If the Math contains only XMath that only contain non-math, it apparently isn't math at all!?!
+  # pull them up & toss the XMath and Math wrapper.
+  my $hasmath=0;
+  foreach my $xnode ($mathnode->childNodes){
+    if($xnode->nodeName eq 'XMath'){
+      if(!grep($_->nodeName =~ /^XMApp|XMArg|XMTok|XMDual|XMHint|XMWrap/, $xnode->childNodes)){
+	replace_node($xnode, $xnode->childNodes); } # Pull these out.
+      else {
+	$hasmath=1; }}}
+  if(!$hasmath){		# If all XMath's were pulled up, pull out the Math too.
+    replace_node($mathnode, $mathnode->childNodes); }}
+
+sub replace_node {
+  my($oldnode,@newnodes)=@_;
+  my $parent = $oldnode->parentNode;
+  if(!@newnodes){
+    $parent->removeChild($oldnode); }
+  else {
+    my $new = shift(@newnodes);
+    $parent->replaceChild($new,$oldnode);
+    foreach my $n (@newnodes){
+      $parent->insertAfter($n,$new);
+      $new = $n; }}}
 
 # NOTE: possibly rewrite to only collapse nested XMWraps?
 # If an XMWrap contains only a single node, replace it by the content,
 # after copying the XMWrap's attributes
 sub collapse_XMWrap {
   my($wrap)=@_;
-  my @nodes = $wrap->childNodes;
-  if(scalar(@nodes) == 1){
-    my %attr = %{$wrap->getAttributes};
-    map($nodes[0]->setAttribute($_,$attr{$_}), keys %attr); 
-    # and replace the XMWrap.
-    $wrap->getParentNode->replace($wrap,@nodes); }
+  my($node,@rest) = $wrap->childNodes;
+  if(!@rest){
+    foreach my $attribute ($wrap->attributes){
+      if($attribute->nodeType == XML_ATTRIBUTE_NODE){
+	my $attr = $attribute->nodeName;
+	$node->setAttribute($attr,$attribute->getValue) unless $attr =~ /^_/; }}
+    $wrap->parentNode->replaceChild($node,$wrap); }
   return; }
+
 
 #======================================================================
 # Scripts are a bit of a strange beast, with respect to when the arguments
@@ -803,18 +833,19 @@ sub scriptHandler {
   $GULLET->skipSpaces;
   my $cs = '\@@POST'.$op;
   # Check if preceding box is empty {}
-  if(defined(my $prev = $LaTeXML::LIST[$#LaTeXml::LIST])){
+  if(defined(my $prev = $LaTeXML::LIST[$#LaTeXML::LIST])){
     if($prev->toString eq '{}'){
+      pop(@LaTeXML::LIST);
       $cs = '\@@FLOATING'.$op; }}
-  my $style = $STOMACH->getMathStyle; # Bump the math style smaller.
-  $STOMACH->setMathStyle($scriptstylemap{$style});
+  my $style = Lookup('value','mathstyle'); # Bump the math style smaller.
+  Assign('value',mathstyle=>$scriptstylemap{$style});
   # Now, get following boxes
   my @stuff = $STOMACH->invokeToken($GULLET->readXToken);
   Fatal("Missing { in sub/super-script argument") unless @stuff;
   my $script = shift(@stuff);	# ONLY this box is the script!
-  push(@stuff, Whatsit(T_CS($cs)->getDefinition,[$script]))
-    if $script->toString ne '{}';  # ONLY If Script is not empty!!!
-  $STOMACH->setMathStyle($style); # revert
+  push(@stuff, LaTeXML::Whatsit->new(T_CS($cs)->getDefinition,[$script]))
+    if $script->toString ne '{}';    # ONLY If Script is not empty!!!
+  Assign('value',mathstyle=>$style); # revert
   @stuff; }
 
 DefPrimitive('^', sub{ scriptHandler('SUPERSCRIPT'); });
@@ -841,7 +872,7 @@ DefConstructor('\@SUBSCRIPT{}{}',
 	       untex=>'{#1}_{#2}');
 
 # This only becomes active in math mode.
-$STOMACH->setMathActive('\'');
+Assign('mathactive', "'"=>1, 'global');
 DefMacro('\'',sub{
   my $n = 1;
   while($GULLET->ifNext(T_OTHER('\''))){ $n++; };
@@ -854,9 +885,6 @@ Let('\sb',T_SUB);
 #======================================================================
 # Additional properties for plain characters.
 # These are allowed in plain text, but need to act a bit special in math.
-$STOMACH->setMathActive('=', '>', '<', '+', '-', '*', '/', '!',
-		       ',', '.', ';',
-		       '(', '[',  ']', ')', '|');
 DefMath('=','=', role=>'RELOP');
 DefMath('>','>', role=>'RELOP');
 DefMath('<','<', role=>'RELOP');
@@ -881,24 +909,28 @@ our %fracstylemap=(display=>'text', text=>'script',
 		   script=>'scriptscript', scriptscript=>'scriptscript');
 sub chooseArgHandler {
   my($whatsit)=@_;
-  my $style = $STOMACH->getMathStyle;
-  $STOMACH->setMathStyle($fracstylemap{$style}); # Bump the style smaller.
+  my $style = Lookup('value','mathstyle');
+  Assign('value',mathstyle=>$fracstylemap{$style}); # Bump the style smaller.
   # Unfortunately, the way we've done it, it's too late for the numerator!!!
   my @top = $STOMACH->regurgitate;
   my @bot = $STOMACH->digestNextBody;
   my $closing = pop(@bot);	# We'll leave whatever closed the list (endmath, endgroup...)
-#  $whatsit->setArgs(MathList(@top),MathList(@bot));
-  $whatsit->setProperty(top=>MathList(@top));
-  $whatsit->setProperty(bottom=>MathList(@bot));
-  $STOMACH->setMathStyle($style);
+#  $whatsit->setArgs(LaTeXML::MathList->new(@top),LaTeXML::MathList->new(@bot));
+  $whatsit->setProperty(top=>LaTeXML::MathList->new(@top));
+  $whatsit->setProperty(bottom=>LaTeXML::MathList->new(@bot));
+  Assign('value',mathstyle=>$style);
   $closing; }			# leave the closing bit
 
+# WHY did I change to top/bottom instead of #1,#2 ????
+# This will inhibit comparisons!!!!
+# Is it because of the delims forms already having args???
+# No, because constructor doesn't know there are 2 extra args!!
 DefConstructor('\choose',
 	       "<XMApp><XMTok name='binomial'/><XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
 	       afterDigest=>\&chooseArgHandler,
 	       untex=>'#top \choose #bottom');
 DefConstructor('\over',
-	       "<XMApp><XMTok name='/' style='over'/><XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
+	       "<XMApp><XMTok name='/' style='over' role='MULOP'/><XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
 	       afterDigest=>\&chooseArgHandler,
 	       untex=>'#top \over #bottom');
 DefConstructor('\atop',
@@ -906,7 +938,7 @@ DefConstructor('\atop',
 	       afterDigest=>\&chooseArgHandler,
 	       untex=>'#top \atop #bottom');
 DefConstructor('\overwithdelims{}{}',
-	       "<XMApp open='#1' close='#2'><XMTok name='/' style='over'/>"
+	       "<XMApp open='#1' close='#2'><XMTok name='/' style='over' role='MULOP'/>"
 	       .  "<XMArg>#top</XMArg><XMArg>#bottom</XMArg></XMApp>",
 	       afterDigest=>\&chooseArgHandler,
 	       untex=>'#top \overwithdelims{#1}{#2} #bottom');
@@ -927,112 +959,106 @@ DefConstructor('\abovewithdelims{}{}{}',
 # The trick is to create an empty Whatsit preserved till assimilation (for untex'ing)
 # but to change the current font used in boxes.
 Tag('textstyle',autoClose=>1);
-DefConstructor('\rm', '', beforeDigest=>sub{ $STOMACH->setFont(family=>'serif'); });
-DefConstructor('\sf', '', beforeDigest=>sub{ $STOMACH->setFont(family=>'sansserif'); });
-DefConstructor('\bf',  '', beforeDigest=>sub{ $STOMACH->setFont(series=>'bold'); });
-DefConstructor('\it',  '', beforeDigest=>sub{ $STOMACH->setFont(shape=>'italic'); });
-DefConstructor('\tt',  '', beforeDigest=>sub{ $STOMACH->setFont(family=>'typewriter'); });
-DefConstructor('\sl',  '', beforeDigest=>sub{ $STOMACH->setFont(shape=>'slanted'); });# No effect in math ?
-DefConstructor('\sc',  '', beforeDigest=>sub{ $STOMACH->setFont(shape=>'smallcaps'); });# No effect in math ?
-DefConstructor('\tiny',          '', beforeDigest=>sub{ $STOMACH->setFont(size=>'tiny'); });
-DefConstructor('\scriptsize',    '', beforeDigest=>sub{ $STOMACH->setFont(size=>'script'); });
-DefConstructor('\footnotesize',  '', beforeDigest=>sub{ $STOMACH->setFont(size=>'footnote'); });
-DefConstructor('\small',         '', beforeDigest=>sub{ $STOMACH->setFont(size=>'small'); });
-DefConstructor('\normalsize',    '', beforeDigest=>sub{ $STOMACH->setFont(size=>'normal'); });
-DefConstructor('\large',         '', beforeDigest=>sub{ $STOMACH->setFont(size=>'large'); });
-DefConstructor('\Large',         '', beforeDigest=>sub{ $STOMACH->setFont(size=>'Large'); });
-DefConstructor('\LARGE',         '', beforeDigest=>sub{ $STOMACH->setFont(size=>'LARGE'); });
-DefConstructor('\huge',          '', beforeDigest=>sub{ $STOMACH->setFont(size=>'huge'); });
-DefConstructor('\Huge',          '', beforeDigest=>sub{ $STOMACH->setFont(size=>'Huge'); });
-DefConstructor('\cal', '', beforeDigest=>sub{ requireMath; $STOMACH->setFont(family=>'caligraphic'); });
+
+DefConstructor('\rm', '',  beforeDigest=>sub{ MergeFont(family=>'serif'); });
+DefConstructor('\sf', '',  beforeDigest=>sub{ MergeFont(family=>'sansserif'); });
+DefConstructor('\bf',  '', beforeDigest=>sub{ MergeFont(series=>'bold'); });
+DefConstructor('\it',  '', beforeDigest=>sub{ MergeFont(shape=>'italic'); });
+DefConstructor('\tt',  '', beforeDigest=>sub{ MergeFont(family=>'typewriter'); });
+DefConstructor('\sl',  '', beforeDigest=>sub{ MergeFont(shape=>'slanted'); });# No effect in math ?
+DefConstructor('\sc',  '', beforeDigest=>sub{ MergeFont(shape=>'smallcaps'); });# No effect in math ?
+DefConstructor('\tiny',          '', beforeDigest=>sub{ MergeFont(size=>'tiny'); });
+DefConstructor('\scriptsize',    '', beforeDigest=>sub{ MergeFont(size=>'script'); });
+DefConstructor('\footnotesize',  '', beforeDigest=>sub{ MergeFont(size=>'footnote'); });
+DefConstructor('\small',         '', beforeDigest=>sub{ MergeFont(size=>'small'); });
+DefConstructor('\normalsize',    '', beforeDigest=>sub{ MergeFont(size=>'normal'); });
+DefConstructor('\large',         '', beforeDigest=>sub{ MergeFont(size=>'large'); });
+DefConstructor('\Large',         '', beforeDigest=>sub{ MergeFont(size=>'Large'); });
+DefConstructor('\LARGE',         '', beforeDigest=>sub{ MergeFont(size=>'LARGE'); });
+DefConstructor('\huge',          '', beforeDigest=>sub{ MergeFont(size=>'huge'); });
+DefConstructor('\Huge',          '', beforeDigest=>sub{ MergeFont(size=>'Huge'); });
+DefConstructor('\cal', '', beforeDigest=>sub{ RequireMath; MergeFont(family=>'caligraphic'); });
 
 DefConstructor('\@end@emph','</emph>');
 DefConstructor('\em',"<emph>", afterDigest=>sub { $STOMACH->pushAfterGroup(T_CS('\@end@emph')); });
 
-DefPrimitive('\boldmath',  sub { forbidMath; $STOMACH->setMathFont(forcebold=>1); });
-DefPrimitive('\unboldmath',sub { forbidMath; $STOMACH->setMathFont(forcebold=>0); });
+sub setMathBoldness {
+  my($bold)=@_;
+  ForbidMath;
+  Assign('value', mathfont=>Lookup('value','mathfont')->merge(forcebold=>$bold),
+		 'local');
+  return; }
+
+DefPrimitive('\boldmath',  sub { setMathBoldness(1); });
+DefPrimitive('\unboldmath',sub { setMathBoldness(0); });
 
 #**********************************************************************
 # Combining letters & numbers
 #**********************************************************************
 # Combine letters, when the fonts are right.
-sub match_math_letters {
-  my(@list)=@_;
-  my $init = shift(@list);
-  my $font = $init->getFont; 
-  if(! $font->isSticky){ 0; }
-  else {
-    my ($i,$l,$f)=(1);
-    while(($l = shift(@list))
-	  && ((ref $l eq 'LaTeXML::Comment')
-	      || (((ref $l) eq 'LaTeXML::MathBox')
-		  && ($l->getString =~ /^[a-zA-Z]$/)
-		  && ($l->getFont->equals($font))))){
-      $i++; }
-    ($i > 1 ? $i : 0); }}	# Match at least 2
 
-sub replace_math_letters { MathBox(join('',map($_->getString, @_)),$_[0]->getFont, $_[0]->getLocator); }
+sub match_letter_tokens {
+  my($document,$node)=@_;
+  my $font = $document->getNodeFont($node);
+  return 0 unless $font->isSticky;
+  my $i=0;
+  while($node	# (comment nodes??)
+	&& ($node->nodeType == XML_ELEMENT_NODE) && ($node->localname eq 'XMTok')
+	&& ($node->textContent =~ /^[a-zA-Z]$/)
+	&& ($document->getNodeFont($node)->equals($font))){
+    $i++; $node = $node->nextSibling; }
+  (($i > 1) ? $i : 0); }
 
-foreach my $letter (qw(a b c d e f g h i j k l m n o p q r s t u v w x y z
-		       A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)){
-  DefMathFilter($letter, \&match_math_letters, \&replace_math_letters); }
+sub construct_multiletter_token {
+  my($document,@nodes)=@_;
+  $document->insertMathToken(join('',map($_->textContent,@nodes)), font=>$document->getNodeFont($nodes[0])); }
 
+DefRewrite(xpath=>"descendant-or-self::ltxml:XMTok[contains('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',text())]",
+	   match=>\&match_letter_tokens, replace=>\&construct_multiletter_token);
 #======================================================================
 # Combine digits in math.
 
-# Accept strings of digits, possibly with a `.', 
-# possibly with \, \: \; spacing embedded,
-# and possibly with a trailing \ldots
-sub check_digit {
-  my($digit,$font)=@_;
-  if(ref $digit eq 'LaTeXML::Whatsit'){
-    my $s = $digit->getDefinition->getCS->untex;
-    if( ( ($s =~ /^[\d\.]$/) && ($digit->getFont->equals($font)) )
-	|| ($s =~ /^(\\,|\\:|\\;|\\ldots|\\dots)$/) ){
-      return $s; }}
-  undef;}
-
-sub match_digits {
-  my(@list)=@_;
-  my ($i,$d,$s,$string) = (0,'','','');
-  my $font = $list[0]->getFont; 
-  # Match digits and spacing, possible trailing \ldots
-  while(($d = shift(@list))
-	&& ((ref $d eq 'LaTeXML::Comment')
-	    || (defined ($s = check_digit($d,$font))
-		&& (($string .=$s) =~ /^(\d|\\,|\\:|\\;)*\.?(\d|\\,|\\:|\\;)*(\\ldots|\\dots)?$/)))){
-	  $i++; }
-  # but back up over trailing spacing
-  while($string =~ s/(\\,|\\:|\\;)$//){ $i--; }
-  # To be worth matching must have at least 2 chars. AND must have a digit
-  (($i > 1) && ($string=~/\d/) ? $i : 0); }
-
-# @@NUMBER
-DefConstructor('\@@NUMBER', sub {
-  my($whatsit,$props)=@_;
-  $INTESTINE->insertMathToken($$props{string},font=>$$props{font},role=>'NUMBER', name=>$$props{value});},
-	       untex=>'#tex');
-
-sub replace_digits { 
-  my(@digits)=@_;
-  my $tex = join('',map($_->untex, @_));
-  my $value = $tex;
-  my $string = $tex;
-  $value =~ s/(\\,|\\:|\\;|\\ldots |\\dots )//g;
-  $string =~ s/\\,/\x{2009}/g;	# THIN SPACE
-  $string =~ s/\\:/\x{2005}/g;	# FOUR-PER-EM SPACE
-  $string =~ s/\\;/\x{2004}/g;	# THREE-PER-EM SPACE
-  $string =~ s/(\\ldots |\\dots )/\x{2026}/g; # HORIZONTAL ELLIPSIS
-  Whatsit(T_CS('\@@NUMBER')->getDefinition,[],
-	  tex=>$tex,value=>$value,string=>$string,
-	  font=>$digits[0]->getFont->specialize('1'), isMath=>1,locator=>$digits[0]->getLocator); }
-
 foreach my $digit (qw(0 1 2 3 4 5 6 7 8 9)){
-  $STOMACH->setMathActive($digit);
-  DefMath($digit,$digit, role=>'NUMBER');
-  DefMathFilter($digit, \&match_digits, \&replace_digits); }
-# "." already defined as punctuation, but make it work with these filters.
-DefMathFilter('.', \&match_digits, \&replace_digits);
+  DefMath($digit,$digit, role=>'NUMBER'); }
+
+sub match_digit_tokens {
+  my($document,$node)=@_;
+  my $font = $node->getAttribute('_font');
+  my $string = $node->textContent;
+  my $prev = $node;
+  my $i=1;
+  while(my $n = $prev->nextSibling){
+    $prev = $n;
+    next if $n->nodeType == XML_COMMENT_NODE;
+    my $tag = $n->localname;
+    if($tag eq 'XMHint'){
+      last unless ($n->getAttribute('name')||'') =~/^(negthinspace|thinspace|medspace|thickspace)$/; }
+    elsif(($tag eq 'XMTok') && ($n->getAttribute('_font') eq $font)){
+      my $s = $n->textContent;
+      last unless $s =~ /^(\.|\d)$/;
+      last unless ($string .= $s) =~ /^\d*\.?\d*$/; }
+    else { last; }
+    $i++;  }
+  (($i > 1) && ($string =~ /\d/) ? $i : 0); }
+
+our %space_chars = (negthinspace=>'', thinspace=>"\x{2009}", medspace=>"\x{2005}", thickspace=>"\x{2004}");
+sub construct_number {
+  my($document,@nodes)=@_;
+  my $string = '';
+  my $value = '';
+  foreach my $node (@nodes){
+    next if $node->nodeType == XML_COMMENT_NODE;
+    if($node->localname eq 'XMTok'){
+      my $s = $node->textContent;
+      $string .= $s; $value .= $s; }
+    else {
+      $string .= $space_chars{$node->getAttribute('name')}; }}
+  $document->insertMathToken($string, name=>$value, role=>'NUMBER', font=>$document->getNodeFont($nodes[0])); }
+
+# Match initial digit or .
+DefRewrite(xpath=>"descendant-or-self::ltxml:XMTok[(\@role='NUMBER' or \@role='PUNCT') and contains('.0123456789',text())]",
+	  match=>\&match_digit_tokens, replace=>\&construct_number);
+
 #**********************************************************************
 # Alignments
 
@@ -1058,10 +1084,10 @@ DefConstructor('\frenchspacing', "");
 DefConstructor('\nonfrenchspacing',"");
 
 # Math style.
-DefConstructor('\displaystyle','',afterDigest=>sub { $STOMACH->setMathStyle('display'); });
-DefConstructor('\textstyle',   '',afterDigest=>sub { $STOMACH->setMathStyle('text'); });
-DefConstructor('\scriptstyle', '',afterDigest=>sub { $STOMACH->setMathStyle('script'); });
-DefConstructor('\scriptscriptstyle','',afterDigest=>sub { $STOMACH->setMathStyle('scriptscript'); });
+DefConstructor('\displaystyle','',afterDigest=>sub { Assign('value',mathstyle=>'display'); return; });
+DefConstructor('\textstyle',   '',afterDigest=>sub { Assign('value',mathstyle=>'text'); return;});
+DefConstructor('\scriptstyle', '',afterDigest=>sub { Assign('value',mathstyle=>'script'); return;});
+DefConstructor('\scriptscriptstyle','',afterDigest=>sub { Assign('value',mathstyle=>'scriptscript'); return;});
 
 #**********************************************************************
 # MATH representation
@@ -1110,13 +1136,13 @@ our %accents
 		);
 foreach my $accent (keys %accents){
   DefConstructor($accent."{}", sub {
-    my($whatsit,$letter)=@_;
+    my($document,$letter,$props)=@_;
     if(my @letters = map(($_ eq '\i ' ? 'i':$_),map($_->untex,$letter->unlist))){
       # Put the accent AFTER the first char(?)
-      $INTESTINE->openText($letters[0].$accents{$accent}->[0].join('',@letters[1..$#letters]),
+      $document->openText($letters[0].$accents{$accent}->[0].join('',@letters[1..$#letters]),
 			   $letter->getFont);}
     else {			# Empty argument???
-      $INTESTINE->openText($accents{$accent}->[1],$whatsit->getFont); }} ); }
+      $document->openText($accents{$accent}->[1],$$props{font}); }} ); }
 
 #======================================================================
 # LaTeX; Table 3.2. Non-English Symbols, p.39
@@ -1253,7 +1279,7 @@ DefMath('\*',"\x{2062}", role=>'MULOP'); # INVISIBLE TIMES (or MULTIPLICATION SI
 #DefMath('\ldots',"\x{2026}", role=>'ID'); # HORIZONTAL ELLIPSIS
 # Ah, since \ldots can appear in text....
 DefConstructor('\ldots',"?IfMath(<XMTok name='ldots' font='#font' role='ID'>\x{2026}</XMTok>)(\x{2026})",
-	      properties=>{font=>sub{ $STOMACH->getFont->merge(family=>'serif');}} ); # Since not DefMath!
+	      properties=>{font=>sub{ Lookup('value','font')->merge(family=>'serif');}} ); # Since not DefMath!
 DefMath('\cdots',"\x{22EF}", role=>'ID'); # MIDLINE HORIZONTAL ELLIPSIS
 DefMath('\vdots',"\x{22EE}", role=>'ID'); # VERTICAL ELLIPSIS
 DefMath('\ddots',"\x{22F1}", role=>'ID'); # DOWN RIGHT DIAGONAL ELLIPSIS
@@ -1261,12 +1287,13 @@ DefMath('\colon',':');
 # Note that amsmath redefines \dots to be `smart'.
 # Aha, also can be in text...
 DefConstructor('\dots',"?IfMath(<XMTok name='dots' font='#font' role='ID'>\x{2026}</XMTok>)(\x{2026})",
-	      properties=>{font=>sub{ $STOMACH->getFont->merge(family=>'serif');}} ); # Since not DefMath!
+	      properties=>{font=>sub{ Lookup('value','font')->merge(family=>'serif');}} ); # Since not DefMath!
 # And while we're at it...
-DefMathFilter('\cdot\cdot\cdot','\cdots');
-DefTextFilter('...','\ldots');
-DefMathFilter('...','\ldots');
 
+# Pretest for XMath to keep from interpreting math that the DOM may not allow!!
+DefMathRewrite(xpath=>'descendant-or-self::ltxml:XMath',match=>'\cdot\cdot\cdot',replace=>'\cdots');
+DefRewrite(match=>'...',replace=>'\ldots');
+DefMathRewrite(xpath=>'descendant-or-self::ltxml:XMath',match=>'...',replace=>'\ldots');
 #======================================================================
 # LaTeX; Table 3.5. Relation Symbols, p.43
 #======================================================================
@@ -1316,75 +1343,38 @@ DefMath('\smile',     "\x{2323}", role=>'RELOP');   # SMILE
 DefMath('\frown',     "\x{2322}", role=>'RELOP');   # FROWN
 DefMath('\propto',    "\x{221D}", role=>'RELOP'); # PROPORTIONAL TO
 
-DefMath('\gtrless',   "\x{2276}", role=>'RELOP'); # LESS-THAN OR GREATER-THAN
-
 DefMath('\not',"not", role=>'PREFIX');
-DefMathFilter('\not=','\ne');
-DefMathFilter('\not\in','\notin');
 
-# and many more!
+#======================================================================
+# Match negations of many operators
 
-# Have to synthesize various not-operators (a nice shorthand?)
-# I've basically put in every `not' form from Unicode 2200-226C, for which there is 
-# a corresponding TeX operator.
-# BUT note that most of these are also defined in amssymb!
-# .. I'd just as soon define them here, but shouldn't steal the symbols!
-DefMath('\@not@lt', "\x{226E}", role=>'RELOP', untex=>'\not<'); # NOT LESS-THAN
-DefMathFilter('\not<','\@not@lt');
-DefMath('\@not@gt', "\x{226F}", role=>'RELOP', untex=>'\not>'); # NOT GREATER-THAN
-DefMathFilter('\not>','\@not@gt');
-DefMath('\@not@le', "\x{2270}", role=>'RELOP', untex=>'\not\le'); # NEITHER LESS-THAN NOR EQUAL TO
-DefMathFilter('\not\le','\@not@le');
-DefMathFilter('\not\leq','\@not@le');
-DefMath('\@not@ge', "\x{2271}", role=>'RELOP', untex=>'\not\ge'); # NEITHER GREATER-THAN NOR EQUAL TO
-DefMathFilter('\not\ge','\@not@ge');
-DefMathFilter('\not\geq','\@not@ge');
-
-
-DefMath('\@not@prec', "\x{2280}", role=>'RELOP', untex=>'\not\prec'); # DOES NOT PRECEDE
-DefMathFilter('\not\prec','\@not@prec');
-DefMath('\@not@succ', "\x{2281}", role=>'RELOP', untex=>'\not\succ'); # DOES NOT SUCCEED
-DefMathFilter('\not\succ','\@not@succ');
-DefMath('\@not@preceq', "\x{22E0}", role=>'RELOP', untex=>'\not\preceq'); # DOES NOT PRECEDE OR EQUAL
-DefMathFilter('\not\preceq','\@not@prec');
-DefMath('\@not@succeq', "\x{22E1}", role=>'RELOP', untex=>'\not\succeq'); # DOES NOT SUCCEED OR EQUAL
-DefMathFilter('\not\succeq','\@not@succeq');
-DefMath('\@not@subset', "\x{2284}", role=>'RELOP', untex=>'\not\subset'); # NOT A SUBSET OF
-DefMathFilter('\not\subset','\@not@subset');
-DefMath('\@not@supset', "\x{2285}", role=>'RELOP', untex=>'\not\supset');	# NOT A SUPERSET OF
-DefMathFilter('\not\supset','\@not@supset');
-DefMath('\@not@subseteq', "\x{2288}", role=>'RELOP', untex=>'\not\subseteq'); # NEITHER A SUBSET OF NOR EQUAL TO
-DefMathFilter('\not\subseteq','\@not@subseteq');
-DefMath('\@not@supseteq', "\x{2289}", role=>'RELOP', untex=>'\not\supseteq'); # NEITHER A SUPERSET OF NOR EQUAL TO
-DefMathFilter('\not\supseteq','\@not@supseteq');
-DefMath('\@not@sqsubseteq', "\x{22E2}", role=>'RELOP', # NOT SQUARE IMAGE OF OR EQUAL TO
-	  untex=>'\not\sqsubseteq');
-DefMathFilter('\not\sqsubseteq','\@not@sqsubseteq');
-DefMath('\@not@sqsupseteq', "\x{22E3}", role=>'RELOP', # NOT SQUARE ORIGINAL OF OR EQUAL TO
-	  untex=>'\not\sqsupseteq');
-DefMathFilter('\not\sqsupseteq','\@not@sqsupseteq');
-
-
-DefMath('\@not@equiv', "\x{2262}", role=>'RELOP', untex=>'\not\equiv'); # NOT IDENTICAL TO
-DefMathFilter('\not\equiv','\@not@equiv');
-DefMath('\@not@asymp', "\x{226D}", role=>'RELOP', untex=>'\not\asymp');	# NOT EQUIVALENT TO
-DefMathFilter('\not\asymp','\@not@asymp');
-DefMath('\@not@approx', "\x{2249}", role=>'RELOP', untex=>'\not\approx'); # NOT ALMOST EQUAL TO
-DefMathFilter('\not\approx','\@not@approx');
-
-
-DefMath('\@not@lhd',       "\x{22EA}", role=>'RELOP', untex=>'\not\lhd'); # NOT NORMAL SUBGROUP OF
-DefMathFilter('\not\lhd','\@not@lhd');
-DefMath('\@not@rhd',       "\x{22EB}", role=>'RELOP', # DOES NOT CONTAIN AS NORMAL SUBGROUP
-	 untex=>'\not\rhd');
-DefMathFilter('\not\rhd','\@not@rhd');
-DefMath('\@not@unlhd',     "\x{22EC}", role=>'RELOP', # NOT NORMAL SUBGROUP OF OR EQUAL TO
-	 untex=>'\not\unlhd');
-DefMathFilter('\not\unlhd','\@not@unlhd');
-DefMath('\@not@unrhd',     "\x{22ED}", role=>'RELOP', # DOES NOT CONTAIN AS NORMAL SUBGROUP OR EQUAL
-	 untex=>'\not\unrhd');
-DefMathFilter('\not\unrhd','\@not@unrhd');
-
+our %NOTS = ('='=>"\x{2260}", '<'=> "\x{226E}", '>'=>"\x{226F}",
+	     "\x{2208}"=>"\x{2209}", #\in=>\notin
+	     "\x{2264}"=>"\x{2270}", "\x{2265}"=>"\x{2271}", # Less eq, greater eq.
+	     "\x{227A}"=>"\x{2280}", "\x{227B}"=>"\x{2281}", # prec, succ
+	     "\x{2AAF}"=>"\x{22E0}", "\x{2AB0}"=>"\x{22E1}", # preceq, succeq
+	     "\x{2282}"=>"\x{2284}", "\x{2283}"=>"\x{2285}", # subset, supset
+	     "\x{2286}"=>"\x{2288}", "\x{2287}"=>"\x{2289}", # subseteq, supseteq
+	     "\x{2291}"=>"\x{22E2}", "\x{2290}"=>"\x{22E3}", # sqsubseteq, sqsupseteq
+	     "\x{2261}"=>"\x{2262}",			     # equiv
+	     "\x{224D}"=>"\x{226D}", "\x{2248}"=>"\x{2249}", # asymp, approx
+	     "\x{22B2}"=>"\x{22EA}", "\x{22B3}"=>"\x{22EB}", # lhd, rhd
+	     "\x{22B4}"=>"\x{22EC}", "\x{22B5}"=>"\x{22ED}", # unlhd, unrhd
+	     "\x{2203}"=>"\x{2204}",			     # Exists
+	     );
+DefMathRewrite(xpath=>'descendant-or-self::ltxml:XMath',match=>'\not',
+	       match=>sub { my($document,$not)=@_;
+			    if(my $op = $not->nextSibling){
+			      (($op->nodeType == XML_ELEMENT_NODE)
+			       && ($op->localname eq 'XMTok')
+			       && ($NOTS{$op->textContent})
+			       ? 2 : 0); }},
+	       replace=>sub { my($document,$not,$op)=@_;
+			      my $name = $op->getAttribute('name')||$op->textContent;
+			      $document->insertMathToken($NOTS{$op->textContent},
+							  role=>$op->getAttribute('role'),
+							  ($name ? (name=>'not-'.$name):()),
+							  font=>$document->getNodeFont($op)); });
 
 #======================================================================
 # LaTeX; Table 3.6. Arrow Symbols, p.43
@@ -1461,9 +1451,6 @@ DefMath('\sharp',    "\x{266F}"); # MUSIC SHARP SIGN
 DefMath('\backslash',"\x{005C}", role=>'MULOP');    # REVERSE SOLIDUS
 DefMath('\partial',  "\x{2202}", role=>'FUNCTION'); # PARTIAL DIFFERENTIAL
 
-DefMath('\@not@exists', "\x{2204}", role=>'FUNCTION', untex=>'\not\exists');	# THERE DOES NOT EXIST
-DefMathFilter('\not\exists','\@not@exists');
-
 DefMath('\infty',    "\x{221E}", role=>'ID', name=>'Infinity'); # INFINITY
 DefMath('\Box',      "\x{25A1}");  # WHITE SQUARE
 DefMath('\Diamond',  "\x{25C6}");  # WHITE DIAMOND
@@ -1481,7 +1468,7 @@ DefMath('\spadesuit',"\x{2660}");	# BLACK SPADE SUIT
 # are currently in displaystyle!
 # IE. we need to evaluate the properties in the digestion context!!!!
 
-sub doStackscripts { ($STOMACH->getMathStyle eq 'display' ? 'yes' : undef); }
+sub doStackscripts { (Lookup('value','mathstyle') eq 'display' ? 'yes' : undef); }
 
 DefMath('\sum',      "\x{2211}", role=>'SUMOP', stackscripts=>\&doStackscripts); # N-ARY SUMMATION
 DefMath('\prod',     "\x{220F}", role=>'SUMOP', stackscripts=>\&doStackscripts); # N-ARY PRODUCT
@@ -1501,8 +1488,8 @@ DefMath('\biguplus', "\x{2296}", role=>'SUMOP', stackscripts=>\&doStackscripts);
 
 DefMath('\smallint',"\x{222B}", name=>'Integral', role=>'INTOP', size=>'small', stackscripts=>\&doStackscripts); # INTEGRAL
 
-DefConstructor('\limits',  sub { $INTESTINE->getNode->lastChild->setAttribute(stackscripts=>'yes'); });
-DefConstructor('\nolimits',sub { $INTESTINE->getNode->lastChild->setAttribute(stackscripts=>'no'); });
+DefConstructor('\limits',  sub { $_[0]->getNode->lastChild->setAttribute(stackscripts=>'yes'); });
+DefConstructor('\nolimits',sub { $_[0]->getNode->lastChild->setAttribute(stackscripts=>'no'); });
 
 #======================================================================
 # LaTeX; Table 3.9. Log-like Functions, p.44.
@@ -1651,12 +1638,11 @@ DefConstructor('\qquad',"?IfMath(<XMHint name='qquad'/>)(\x{2001}\x{2001})"); # 
 DefMath('\to',"\x{2192}", role=>'ARROW'); # RIGHTWARDS ARROW??? a bit more explicitly relation-like?
 
 
-# TeX's ligatures handled by Filters.
-DefTextFilter("---","\x{2014}");	   # EM DASH
-DefTextFilter("--","\x{2013}"); # EN DASH (NOTE: With digits before & aft => \N{FIGURE DASH})
-DefTextFilter("``","\x{201C}");	# LEFT DOUBLE QUOTATION MARK
-DefTextFilter("''","\x{201D}");	# RIGHT DOUBLE QUOTATION MARK
-
+# TeX's ligatures handled by rewrite regexps.
+DefRewrite(regexp=>"/---/\x{2014}/"); # EM DASH
+DefRewrite(regexp=>"/--/\x{2013}/"); # EN DASH (NOTE: With digits before & aft => \N{FIGURE DASH})
+DefRewrite(regexp=>"/\`\`/\x{201C}/");
+DefRewrite(regexp=>"/\'\'/\x{201D}/");
 DefConstructor('\TeX', 'TeX');
 DefConstructor('\i',"\x{0131}");	# LATIN SMALL LETTER DOTLESS I
 DefConstructor('\j',"j");	# Apparently, no Unicode equivalent...
@@ -1684,6 +1670,7 @@ DefConstructor('\documentclass[]{}',"<?latexml class='#2' ?#1(options='#1')?>",
     my @options = grep( !$ignorable_classoptions{$_},  split(/,\s*/, $options||''));
     Warn("Unrecognized options ".join(', ',map(Stringify($_),@options))." ignored") if @options;
     $STOMACH->setInPreamble(1);	# \begin{document} will clear this.
+    $STOMACH->input('LaTeX');
     $STOMACH->input($class); 
     return;});
 
@@ -1707,8 +1694,8 @@ DefConstructor('\DUAL[]{}{}',
 		     $untex .= $presentation->untex .'}'; }
 		   $untex; }});
 
-DefConstructor('\FCN{}',    "<XMWrap role='FUNCTION'>#1</XMWrap>", untex=>'#1');
-DefConstructor('\ROLE{}{}', "<XMWrap role='#1'>#2</XMWrap>",       untex=>'#2');
+DefConstructor('\FCN{}',    "<XMWrap role='FUNCTION'>#1</XMWrap>", untex=>'#1', alias=>'');
+DefConstructor('\ROLE{}{}', "<XMWrap role='#1'>#2</XMWrap>",       untex=>'#2', alias=>'');
 
 # NOTE: work through this systematically!
 DefConstructor('\@SYMBOL{}', "<XMWrap role='ID'>#1</XMWrap>", untex=>'#1');
@@ -1723,21 +1710,39 @@ DefMath('\@INVISIBLETIMES',"\x{2062}", untex=>'', name=>'', role=>'MULOP'); # IN
 DefConstructor('\@XMArg{}{}',"<XMArg ?#1(xml:id='#1')>#2</XMArg>", untex=>'#2',
 	       properties=>{id=>'#1'});
 DefConstructor('\@XMRef{}',"<XMRef idref='#1'/>",
-	       untex=>sub{ $STOMACH->lookupID($_[0]->getArg(1)->toString)->untex; });
+	       untex=>sub{ ($STOMACH ? $STOMACH->lookupID($_[0]->getArg(1)->toString)->untex
+			    : '\@XMRef{#1}'); });
 
 DefConstructor('\@ERROR{}{}', "<ERROR type='#1'>#2</ERROR>");
 
 #**********************************************************************
 # Support for defered values (not known till after digestion.
 DefConstructor('\@VALUE{}', sub {
-  my($whatsit,$key)=@_;
+  my($document,$key,$props)=@_;
   $key = $key->toString;
-  my $value = $STOMACH->lookupValue($key);
+  my $value = Lookup('value',$key);
   if(!$value){
     Warn("Missing value for \"$key\"");
-    $value = Box("??",$whatsit->getFont,$whatsit->getLocator); 
-    $STOMACH->assignValue($key,$value); } # Go ahead and set it to inhibit more messages.
-  $INTESTINE->absorb($value); });
+    $value = LaTeXML::Box->new("??",$$props{font},$$props{locator}); 
+    Assign('value',$key=>$value); } # Go ahead and set it to inhibit more messages.
+  $document->absorb($value); });
 
 #**********************************************************************
+DefConstructor('\WildCardA',"<_WildCard_/>");
+DefConstructor('\WildCardB',"<_WildCard_/>");
+DefConstructor('\WildCardC',"<_WildCard_/>");
+#**********************************************************************
+# After all other rewrites have acted, a little cleanup 
+
+DefRewrite(xpath=>'descendant-or-self::ltxml:XMWrap[count(child::*)=1]',
+	  replace=>sub { my($document,$wrap)=@_;
+			 my $node = $wrap->firstChild;
+			 foreach my $attribute ($wrap->attributes){
+			   if($attribute->nodeType == XML_ATTRIBUTE_NODE){
+			     my $attr = $attribute->nodeName;
+			     $node->setAttribute($attr,$attribute->getValue) unless $attr =~ /^_/; }}
+#			 $wrap->parentNode->replaceChild($node,$wrap); });
+			 $document->getNode->appendChild($node); });
+#**********************************************************************
+
 1;

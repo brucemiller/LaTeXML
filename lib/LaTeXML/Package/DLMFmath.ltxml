@@ -20,7 +20,7 @@ use LaTeXML::Package;
 
 #**********************************************************************
 # Load special functions & other required packages.
-RequirePackage('amsmath');
+RequirePackage('amssymb');
 
 $STOMACH->addSearchPath("$ENV{HOME}/dlmf/styles/DLMFtex/");
 
@@ -44,6 +44,8 @@ DefMath('\realpart{}', "\x{211C}");	# BLACK-LETTER CAPITAL R
 DefMath('\imagpart{}', "\x{2111}");	# BLACK-LETTER CAPITAL I
 
 DefMath('\iunit',"\x{2148}", role=>'ID', name=>'iunit'); # DOUBLE-STRUCK ITALIC SMALL I
+DefMath('\expe', "\x{2147}", role=>'ID', name=>'exponentiale'); # DOUBLE-STRUCK ITALIC SMALL E
+DefMath('\cpi',  "\x{03C0}", role=>'ID', name=>'circularpi'); # pi (is there a special one?)
 DefMacro('\opminus',   "(-1)");
 
 # \cfrac covered in amsmath.
@@ -51,6 +53,10 @@ DefMacro('\opminus',   "(-1)");
 
 DefMath('\floor{}','\left\lfloor#1\right\rfloor');
 DefMath('\ceiling{}','\left\lceil#1\right\rceil');
+
+DefMath('\divides','|', role=>'MULOP');
+DefMath('\abs{}', '\left|#1\right|');
+DefMath('\pgcd{}', '\left(#1\right)');
 
 #**********************************************************************
 # Numbers
@@ -65,22 +71,11 @@ sub convert_sci {
   ($exponent ? join('',$mantissa,"\x{00D7}10",map($SUPDIGITS{$_}||'?',split('',$exponent))) : $mantissa); }
 
 DefConstructor('\Sci{}{}',sub {
-  my($whatsit,$mantissa,$exponent)=@_;
+  my($document,$mantissa,$exponent,$props)=@_;
   my $string = convert_sci($mantissa,$exponent);
-  ($whatsit->isMath 
-   ? $INTESTINE->insertMathToken($string,font=>$whatsit->getFont)
-   : $INTESTINE->openText($string,$whatsit->getFont)); });
-
-# In table variant: uses r@{}l for column spec.
-#   \TSci{mantisa}{exponent}
-#DefConstructor('\TSci{}{}',sub {
-#  my($whatsit,$mantissa,$exponent)=@_;
-#  my $savenode = $INTESTINE->floatToAttribute('colspan');
-#  $INTESTINE->getNode->setAttribute(colspan=>2);
-#  $INTESTINE->setNode($savenode);
-#  my $string = convert_sci($mantissa,$exponent);
-#  ($whatsit->isMath ? $INTESTINE->openText($string,$whatsit->getFont)
-#   : $INTESTINE->insertMathToken($string,font=>$whatsit->getFont)); });
+  ($$props{isMath} 
+   ? $document->insertMathToken($string,font=>$$props{font})
+   : $document->openText($string,$$props{font})); });
 
 # Worry about alignment later...
 DefMacro('\TSci{}{}','\multicolumn{2}{c}{\Sci{#1}{#2}}');
@@ -139,7 +134,7 @@ DefMath('\binomial{}{}',    '', name=>'binomial');
 #**********************************************************************
 # Constants
 DefMath('\EulerConstant',"\x{03B3}", role=>'ID'); # GREEK SMALL LETTER GAMMA
-
+DefMath('\BoltzmannConstant',"k", role=>'ID');
 #**********************************************************************
 # Special Functions
 DefPrimitive('\specFunObsolete{}{}',sub {
@@ -163,7 +158,7 @@ DefPrimitive('\defSpecFun{}[][]{}{}', sub {
   # Define with DefMath to create presentation & content cs's
   DefMath($cs . convertLaTeXArgs($nparam,$optparam), $formatter, role=>'FUNCTION', omcd=>'dlmf');
   # Then, redefine top-level macro to check for powers, args, etc.
-  DefExpandable($cs.convertLaTeXArgs($nparam,$optparam),  sub { expand_specfun($cs,@_); });
+  DefExpandable($cs.convertLaTeXArgs($nparam,$optparam),  sub { expand_specfun($cs,$nargs,@_); });
 
   # Read any argument formats & generate args macros
   my @argfmts=();
@@ -187,7 +182,7 @@ DefMath('\diffop{}{}','{{#1}^{\@PRIMES{#2}}}');
 DefMath('\power{}{}',"{#1^{#2}}");
 
 sub expand_specfun {
-  my($cs,$self,@params)=@_;
+  my($cs,$nargs,$self,@params)=@_;
   my($cparams,$pparams)=dualize_arglist(@params);
   my $ccall = T_CS($cs.'@content')->invocation(@$cparams);
   my $pcall = T_CS($cs.'@presentation')->invocation(@$pparams);
@@ -214,7 +209,7 @@ sub expand_specfun {
 				     $argsmacro->invocation(@$pargs)->unlist)
 			     )->unlist; }
   else {
-    T_CS('\DUAL')->invocation(T_OTHER('FUNCTION'), $ccall, $pcall)->unlist}; }
+    T_CS('\DUAL')->invocation(T_OTHER(($nargs ? 'FUNCTION' : 'ATOM')), $ccall, $pcall)->unlist}; }
 
 #**********************************************************************
 1;

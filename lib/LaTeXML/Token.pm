@@ -68,7 +68,9 @@ sub getCharcode{ ($_[0]->[1] == CC_CS ? 256 : ord($_[0]->[0])); }
 # Return the catcode of the token.
 sub getCatcode { $_[0]->[1]; }
 
-sub getDefinition { $STOMACH->lookupDefinition($_[0]); }
+sub getDefinition {
+  my $defn = $STATE->lookupMeaning($_[0]); 
+  (defined $defn && $defn->isaDefinition ? $defn : undef); }
 
 # Defined so a Token or Tokens can be used interchangeably.
 sub unlist { ($_[0]); }
@@ -186,15 +188,15 @@ sub new {
   my($class,$number)=@_;
   bless [$number||"0"],$class; }
 
-sub getValue { $_[0]->[0]; }
+sub valueOf { $_[0]->[0]; }
 sub toString { $_[0]->[0]; }
 sub untex    { $_[0]->toString.'\relax'; }
 sub unlist   { $_[0]; }
 
-sub negate   { (ref $_[0])->new(- $_[0]->getValue); }
-sub add      { (ref $_[0])->new($_[0]->getValue + $_[1]->getValue); }
+sub negate   { (ref $_[0])->new(- $_[0]->valueOf); }
+sub add      { (ref $_[0])->new($_[0]->valueOf + $_[1]->valueOf); }
 # arg 2 is a number
-sub multiply { (ref $_[0])->new($_[0]->getValue * $_[1]); }
+sub multiply { (ref $_[0])->new($_[0]->valueOf * $_[1]); }
 
 sub stringify { "Number[".$_[0]->[0]."]"; }
 
@@ -208,7 +210,7 @@ sub new {
   my($class,$sp)=@_;
   $sp = "0" unless $sp;
   if($sp =~ /^(\d*\.?\d*)([a-zA-Z][a-zA-Z])$/){ # Dimensions given.
-    $sp = $1 * $STOMACH->convertUnit($2); }
+    $sp = $1 * $STATE->convertUnit($2); }
   bless [$sp||"0"],$class; }
 
 sub toString    { ($_[0]->[0]/65536).'pt'; }
@@ -234,13 +236,13 @@ sub new {
     if($sp =~ /^(\d*\.?\d*)$/){}
     elsif($sp =~ /^(\d*\.?\d*)(\w\w)(\s+plus(\d*\.?\d*)(fil|fill|filll|[a-zA-Z][a-zA-Z))(\s+minus(\d*\.?\d*)(fil|fill|filll|[a-zA-Z][a-zA-Z]))?$/){
       my($f,$u,$p,$pu,$m,$mu)=($1,$2,$4,$5,$7,$8);
-      $sp = $f * $STOMACH->convertUnit($u);
+      $sp = $f * $STATE->convertUnit($u);
       if(!$pu){}
       elsif($fillcode{$pu}){ $plus=$p; $pfill=$pu; }
-      else { $plus = $p * $STOMACH->convertUnit($pu); $pfill=0; }
+      else { $plus = $p * $STATE->convertUnit($pu); $pfill=0; }
       if(!$mu){}
       elsif($fillcode{$mu}){ $minus=$m; $mfill=$mu; }
-      else { $minus = $m * $STOMACH->convertUnit($mu); $mfill=0; }
+      else { $minus = $m * $STATE->convertUnit($mu); $mfill=0; }
     }}
   bless [$sp||"0",$plus||"0",$pfill||0,$minus||"0",$mfill||0],$class; }
 
@@ -270,7 +272,7 @@ sub add         {
     elsif($mf < $mf2){ $m=$m2; $mf=$mf2; }
     (ref $_[0])->new($pts,$p,$pf,$m,$mf); }
   else {
-    (ref $_[0])->new($pts+$other->getValue,$p,$pf,$m,$mf); }}
+    (ref $_[0])->new($pts+$other->valueOf,$p,$pf,$m,$mf); }}
 
 sub multiply    { 
   my($self,$other)=@_;
@@ -344,7 +346,7 @@ Return the catcode of the C<$token>.
 
 =item C<< $defn = $token->getDefinition; >>
 
-Return the current definition associated with C<$token> in C<$STOMACH>, or
+Return the current definition associated with C<$token> in C<$STATE>, or
 undef if none.
 
 =item C<< $tokens = $token->invocation(@args); >>
@@ -373,7 +375,7 @@ so that a C<LaTeXML::Tokens> can serve as a L<LaTeXML::Mouth>.
 
 =over 4
 
-=item C<< $n = $object->getValue; >>
+=item C<< $n = $object->valueOf; >>
 
 Return the value in scaled points (ignoring shrink and stretch, if any).
 

@@ -18,8 +18,8 @@ use strict;
 use LaTeXML::Package;
 
 DefConstructor('\boldsymbol{}', '#1',
-	       beforeDigest=>sub { requireMath; $STOMACH->bgroup; $STOMACH->setFont(forcebold=>1); },
-	       afterDigest =>sub { $STOMACH->egroup; });
+	       beforeDigest=>sub { RequireMath; BGroup; MergeFont(forcebold=>1); },
+	       afterDigest =>\&EGroup);
 
 # I think the intent is that you use \pmb to get bold, but your current font doesn't supply
 # a bold for those glyphs.  Since we're just forcing the glyph to be bold, 

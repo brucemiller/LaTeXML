@@ -17,20 +17,17 @@ our @ISA = qw(LaTeXML::Object);
 
 sub new {
   my($class,$string,$font,$locator)=@_;
-  my $self=[$string,$font || Font(),$locator || $GULLET->getLocator];
-  bless $self,$class; }
+  bless [$string,$font,$locator],$class; }
 
 # Accessors
 sub isaBox     { 1; }
 sub getString  { $_[0][0]; }	# Return the string contents of the box
 sub getFont    { $_[0][1]; }	# Return the font this box uses.
 sub isMath     { 0; }		# Box is text mode.
-sub getInitial { $_[0][0]; }	# Return the `initial', for indexing ops.
 sub getLocator { $_[0][2]; }
 
 # So a Box can stand in for a List
 sub unlist     { ($_[0]); }	# Return list of the boxes
-
 sub untex      { $_[0][0]; }
 sub toString   { $_[0][0]; }
 
@@ -44,9 +41,9 @@ sub stringify {
 # Should this compare fonts too?
 sub equals {
   my($a,$b)=@_;
-  (defined $b) && ((ref $a) eq (ref $b)) && ($$a[0] eq $$b[0]); }
+  (defined $b) && ((ref $a) eq (ref $b)) && ($$a[0] eq $$b[0]) && ($$a[1]->equals($$b[1])); }
 
-sub beAbsorbed { $INTESTINE->openText($_[0][0],$_[0][1]); }
+sub beAbsorbed { $_[1]->openText($_[0][0],$_[0][1]); }
 
 #**********************************************************************
 # LaTeXML::MathBox
@@ -56,14 +53,9 @@ use strict;
 use LaTeXML::Global;
 our @ISA = qw(LaTeXML::Box);
 
-sub new {
-  my($class,$string,$font,$locator)=@_;
-  my $self=[$string,$font || MathFont(),$locator || $GULLET->getLocator];
-  bless $self,$class; }
-
 sub isMath { 1; }		# MathBoxes are math mode.
 
-sub beAbsorbed { $INTESTINE->insertMathToken($_[0][0],font=>$_[0][1]); }
+sub beAbsorbed { $_[1]->insertMathToken($_[0][0],font=>$_[0][1]); }
 
 #**********************************************************************
 # LaTeXML::Comment
@@ -76,7 +68,7 @@ our @ISA = qw(LaTeXML::Box);
 sub untex    { ''; }
 sub toString { ''; }
 
-sub beAbsorbed { $INTESTINE->insertComment($_[0][0]); }
+sub beAbsorbed { $_[1]->insertComment($_[0][0]); }
 
 #**********************************************************************
 # LaTeXML::List
@@ -91,40 +83,38 @@ our @ISA = qw(LaTeXML::Box);
 
 sub new {
   my($class,@boxes)=@_;
-  bless [@boxes],$class; }
+  my $box0 = $boxes[0];
+  bless [[@boxes], ($box0 ? $box0->getFont : undef), ($box0 ? $box0->getLocator : '')],$class; }
 
 sub isMath     { 0; }			# List's are text mode
-sub getFont    { (defined $_[0][0] ? $_[0][0]->getFont    : undef); }	# Return font of 1st box (?)
-sub getInitial { (defined $_[0][0] ? $_[0][0]->getInitial : undef); }
-sub getLocator { (defined $_[0][0] ? $_[0][0]->getLocator : ''); }
 
-sub unlist { @{$_[0]}; }
+sub unlist { @{$_[0][0]}; }
 
 sub untex {
   my($self)=@_;
-  join('',map($_->untex,@$self)); }
+  join('', map($_->untex,$self->unlist)); }
 
 sub toString {
   my($self)=@_;
-  join('',map($_->toString,@$self)); }
+  join('',map($_->toString,$self->unlist)); }
 
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
-  $type.'['.join(',',map($_->toString,@$self)).']'; } # Not ideal, but....
+  $type.'['.join(',',map($_->toString,$self->unlist)).']'; } # Not ideal, but....
 
 sub equals {
   my($a,$b)=@_;
   return 0 unless (defined $b) && ((ref $a) eq (ref $b));
-  my @a = @$a;
-  my @b = @$b;
+  my @a = $a->unlist;
+  my @b = $b->unlist;
   while(@a && @b && ($a[0]->equals($b[0]))){
     shift(@a); shift(@b); }
   return !(@a || @b); }
 
-sub beAbsorbed { map($INTESTINE->absorb($_), @{$_[0]}); }
+sub beAbsorbed { map($_[1]->absorb($_), $_[0]->unlist); }
 
 #**********************************************************************
 # LaTeXML::MathList
@@ -147,7 +137,7 @@ sub isMath { 1; }		# MathList's are math mode.
 # sequences that do NOT get expanded or processed, but are taken to represent 
 # some semantic something or other.
 # These get preserved in the expanded/processed token stream to be
-# converted into XML objects in the Intestines.
+# converted into XML objects in the document.
 #**********************************************************************
 package LaTeXML::Whatsit;
 use strict;
@@ -164,7 +154,7 @@ our @ISA = qw(LaTeXML::Box);
 #  trailer
 sub new {
   my($class,$defn,$args,%properties)=@_;
-  $properties{font}    = $STOMACH->getFont   unless defined $properties{font};
+  $properties{font}    = $STATE->lookup('value','font')   unless defined $properties{font};
   $properties{locator} = $GULLET->getLocator unless defined $properties{locator};
   $properties{isMath}  = $STOMACH->inMath    unless defined $properties{isMath};
   bless {definition=>$defn, args=>$args||[], properties=>{%properties}},$class; }
@@ -188,21 +178,39 @@ sub getBody     { $_[0]{properties}{body}; }
 sub setBody {
   my($self,@body)=@_;
   my $trailer = pop(@body);
-  $$self{properties}{body} = ($self->isMath ? MathList(@body) : List(@body));
+  $$self{properties}{body} = ($self->isMath ? LaTeXML::MathList->new(@body) : LaTeXML::List->new(@body));
   $$self{properties}{trailer} = $trailer;
   return; }
 
 sub getTrailer  { $_[0]{properties}{trailer}; }
-
-# Return the `initial' of this object, for indexing.
-sub getInitial { $_[0]->getDefinition->getCS->untex; }
 
 # So a Whatsit can stand in for a List
 sub unlist  { ($_[0]); }
 
 sub untex {
   my($self)=@_;
-  $$self{definition}->untex($self); }
+  my $defn = $self->getDefinition;
+  my $untex = $defn->getUntexSpec;
+  if((defined $untex) && (ref $untex eq 'CODE')){
+    return &$untex($self); }
+  else {
+    my $string = '';
+    if(defined $untex){
+      my $p;
+      $string = $untex;
+      $string =~ s/\#(\d)/ $self->getArg($1)->untex; /eg; 
+      $string =~ s/\#(\w+)/ (defined($p=$self->getProperty($1)) ? (ref $p ? $p->untex:$p):''); /eg; }
+    else {
+      $string = $defn->getAlias || $defn->getCS->untex;
+      my @args = $self->getArgs;
+      $string .= ' ' unless scalar(@args) || ($string=~/\W$/) || !($string =~ /^\\/);
+      my $params = $defn->getParameters;
+      $string .= $params->untexArguments(@args) if $params;
+    }
+    if(defined (my $body = $self->getBody)){
+      $string .= $body->untex;
+      $string .= $self->getTrailer->untex; }
+    $string; }}
 
 sub toString { $_[0]->untex;}
 
@@ -220,15 +228,15 @@ sub equals {
   my($a,$b)=@_;
   return 0 unless (defined $b) && ((ref $a) eq (ref $b));
   return 0 unless $$a{definition} eq $$b{definition}; # I think we want IDENTITY here, not ->equals
-  my @a = @{$$a{args}};
-  my @b = @{$$b{args}};
+  my @a = @{$$a{args}}; push(@a, $$a{properties}{body}) if  $$a{properties}{body};
+  my @b = @{$$b{args}}; push(@b, $$b{properties}{body}) if  $$b{properties}{body};
   while(@a && @b && ($a[0]->equals($b[0]))){
     shift(@a); shift(@b); }
   return !(@a || @b); }
 
 sub beAbsorbed {
-  my($self)=@_;
-  &{$self->getDefinition->getConstructor}($self,$self->getArgs,$self->getProperties);}
+  my($self,$document)=@_;
+  &{$self->getDefinition->getConstructor}($document,$self->getArgs,$self->getProperties);}
 
 #**********************************************************************
 1;
@@ -267,12 +275,6 @@ Returns the font used by C<$digested>.
 
 Returns whether C<$digested> was created in math mode.
 
-=item C<< $string = $digested->getInitial; >>
-
-Returns the `initial' of C<$digested>; the initial letter
-or control sequence. This is used to improve certain table lookups, 
-such as finding relevant Filters.
-
 =item C<< @boxes = $digested->unlist; >>
 
 Returns a list of the boxes contained in C<$digested>.
@@ -294,9 +296,9 @@ if needed.
 Get a string describing the location in the original source that gave rise
 to C<$digested>.
 
-=item C<< $digested->beAbsorbed; >>
+=item C<< $digested->beAbsorbed($document); >>
 
-C<$digested> should get itself absorbed into the C<INTESTINE> in whatever way
+C<$digested> should get itself absorbed into the C<$document> in whatever way
 is apppropriate.
 
 =back

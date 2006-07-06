@@ -1,3 +1,41 @@
+0.2.99 2005-04-07
+       - Released as 0.2.99 so the Bremen folks can get
+       	 some work done.  Documentation update is needed
+	 for 0.3.0 release.
+
+0.2.xx 2005-03-17
+      - Bigger changes, increment version.
+      - Modified DocType; don't add namespace, use RegisterNamespace
+      	instead.
+      - Intestine now creates XML::LibXML structures directly.
+        Module LaTeXML::Node is removed.
+	In fact, Intestine essentially represents the Document itself
+	and thus is now renamed LaTeXML::Document.
+      - Removed global exported Font() and MathFont()
+      - Made more definitions scopable, cleaned up stash & scope
+        implementation.  Renamed: methods {de}activateStash
+      - Implemented Rewrite rules that act on the constructed document.
+        They also allow rules defined in terms of TeX strings
+	(tokenized, digested, converted	to document fragments
+	and then XPath statements, as needed).
+	These rules can be used to effectively declare variable
+	or symbol's Grammatical roles.
+	Math Parsing is now part of the latexml script
+	and removed from latexmlpost.
+
+0.2.3 2005-01-xx
+      - Fixed a problem where misplaced egroups could
+        inadvertently change the mode. Mode is no longer
+	affected by the TeX stack; they must be explicitly
+	start/finished (even though they also introduce grouping).
+
+      - Fixed counting of `raw' lines read for
+      	"comment"ed environments.  Line numbers for
+	errors were getting skewed.
+
+      - Moved sectional attribute declarations inside the
+      	%define.structure; block to ease defining extension DTD's
+
 0.2.2 2005-01-11
       - Random minor bug fixes and improvements to error
         reporting.

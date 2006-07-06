@@ -1,6 +1,6 @@
 # /=====================================================================\ #
 # |  LaTeXML::Model                                                     | #
-# | Stores representation of Document Type for use by Intestine         | #
+# | Stores representation of Document Type for use by Document          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
@@ -14,15 +14,22 @@ package LaTeXML::Model;
 use strict;
 use XML::LibXML;
 use XML::LibXML::Common qw(:libxml);
+use XML::LibXML::XPathContext;
 use LaTeXML::Global;
+use LaTeXML::Font;
 use LaTeXML::Object;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Rewrite;
 our @ISA = qw(LaTeXML::Object);
 
 #**********************************************************************
 sub new {
   my($class,%options)=@_;
-  bless {%options},$class; }
+  my $self = bless {xpath=> XML::LibXML::XPathContext->new(),
+		    namespace_prefixes=>{}, namespaces=>{}, rewrites=>[], %options},$class;
+  $$self{xpath}->registerFunction('match-font',\&LaTeXML::Font::match_font);
+  $self->registerNamespace('xml',"http://www.w3.org/XML/1998/namespace");
+  $self; }
 
 sub getRootName { $_[0]->{roottag}; }
 sub getPublicID { $_[0]->{public_id}; }
@@ -34,17 +41,18 @@ sub getDTD {
   $self->loadDocType unless $$self{doctype_loaded};
   $$self{dtd}; }
 
+sub getXPath { $_[0]->{xpath}; }
+
 #**********************************************************************
 # DocType
 #**********************************************************************
 
 sub setDocType {
-  my($self,$roottag,$publicid,$systemid,$namespace)=@_;
+  my($self,$roottag,$publicid,$systemid)=@_;
   $$self{roottag}=$roottag;
   $self->setTagProperty('_Document_','model',{$roottag=>1}) if $roottag;
   $$self{public_id}   =$publicid;
   $$self{system_id}   =$systemid;
-  $$self{defaultNamespace}=$namespace;
 }
 # Hmm, rather than messing with roottag, we could extract all
 # possible root tags from the doctype, then put the tag of the
@@ -54,6 +62,26 @@ sub setDocType {
 
 # Question: if we don't have a doctype, can we rig the queries to
 # let it build a `reasonable' document?
+
+#**********************************************************************
+# Namespaces
+#**********************************************************************
+
+sub registerNamespace {
+  my($self,$prefix,$namespace,$default)=@_;
+  if($prefix && $namespace){
+    $$self{namespace_prefixes}{$namespace}=$prefix;
+    $$self{namespaces}{$prefix}=$namespace;
+    $$self{xpath}->registerNs($prefix,$namespace);  }
+  $$self{defaultNamespace}=$namespace if $default; }
+
+sub getNamespacePrefix {
+  my($self,$namespace)=@_;
+  $$self{namespace_prefixes}{$namespace}; }
+
+sub getNamespace {
+  my($self,$prefix)=@_;
+  $$self{namespaces}{$prefix}; }
 
 #**********************************************************************
 # Accessors
@@ -78,6 +106,10 @@ sub canContain {
   # Handle obvious cases explicitly.
   return 0 if $tag eq '#PCDATA';
   return 0 if $tag eq '_Comment_';
+  return 1 if $tag eq '_Capture_';
+  return 1 if $tag eq '_WildCard_';
+  return 1 if $childtag eq '_Capture_';
+  return 1 if $childtag eq '_WildCard_';
   return 1 if $childtag eq '_Comment_';
   return 1 if $childtag eq '_ProcessingInstruction_';
 #  return 1 if $$self{permissive}; # No DTD? Punt!
@@ -94,6 +126,10 @@ sub canContainIndirect {
   $self->loadDocType unless $$self{doctype_loaded};
   $$self{tagprop}{$tag}{indirect_model}{$childtag}; }
 
+sub canContainSomehow {
+  my($self,$tag,$childtag)=@_;
+  $self->canContain($tag,$childtag) ||  $self->canContainIndirect($tag,$childtag); }
+
 # Can this node be automatically closed, if needed?
 sub canAutoClose {
   my($self,$tag)=@_;
@@ -105,6 +141,7 @@ sub canAutoClose {
 sub canHaveAttribute {
   my($self,$tag,$attrib)=@_;
   $self->loadDocType unless $$self{doctype_loaded};
+  return 1 if $attrib eq 'xml:id';
   return 1 if $$self{permissive};
   $$self{tagprop}{$tag}{attributes}{$attrib}; }
 
@@ -204,6 +241,20 @@ sub computeDescendents {
   }
 }
 
+
+#**********************************************************************
+# Rewrite Rules
+
+sub addRewriteRule {
+  my($self,$mode,@specs)=@_;
+  push(@{$$self{rewrites}},LaTeXML::Rewrite->new($mode,@specs)); }
+
+sub applyRewrites {
+  my($self,$document,$node, $until_rule)=@_;
+  foreach my $rule (@{$$self{rewrites}}){
+    last if $until_rule && ($rule eq $until_rule);
+    $rule->rewrite($document,$node); }}
+
 #**********************************************************************
 1;
 
@@ -216,7 +267,7 @@ __END__
 =head2 DESCRIPTION
 
 C<LaTeXML::Model> encapsulates information about the document model to be used
-in converting a digested document into XML by the L<LaTeXML::Intestine>.
+in converting a digested document into XML by the L<LaTeXML::Document>.
 This information is based on the DTD, but may also be modified by
 modules implementing various macro packages; thus the model may not be
 complete until digestion is completed.

@@ -1,0 +1,37 @@
+\documentclass{article}
+\def\where{Unknown}
+
+\begin{document}
+
+\section{One}
+Expect Section 1:\where.
+
+\section{Two}
+Expect Unknown: \where.
+\begin{equation}
+  \mbox{Equation 1} = \mbox{\where}
+\end{equation}
+Expect Unknown: \where.
+
+\subsection{Two pt one}
+Expect Subsection 2.1: \where
+
+\subsection{Two point two}
+Expect Unknown: \where.
+
+\subsection{Two point three}\label{labelled}
+Expect Labelled subsection: \where
+
+\subsection{Two point four}
+Expect Unknown: \where.
+
+\section{Three}
+Expect Section 3:\where.
+
+\subsection{Three point one}
+Expect Section 3: \where.
+
+\section{Four}
+Expect Unknown: \where.
+
+\end{document}

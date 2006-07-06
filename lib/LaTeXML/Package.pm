@@ -18,15 +18,21 @@ use LaTeXML::Definition;
 use LaTeXML::Parameters;
 our @ISA = qw(Exporter);
 our @EXPORT = (qw(&DefExpandable &DefMacro
-		  &DefPrimitive  &DefRegister &NewCounter
+		  &DefPrimitive  &DefRegister
 		  &DefConstructor &DefMath &dualize_arglist
 		  &DefEnvironment
-		  &DefTextFilter &DefMathFilter &DefKeyVal
+		  &DefKeyVal
+		  &DefRewrite &DefMathRewrite
 		  &Let
 		  &RequirePackage
 		  &RawTeX
-		  &Tag &DocType
-		  &convertLaTeXArgs),
+		  &Tag &DocType &RegisterNamespace
+		  &convertLaTeXArgs
+
+		  &BGroup &EGroup &BeginGroup &EndGroup &BeginMode &EndMode
+		  &Lookup &Assign
+		  &MergeFont &RequireMath &ForbidMath
+		  &roman &Roman),
 	       @LaTeXML::Global::EXPORT);
 
 #**********************************************************************
@@ -66,6 +72,56 @@ sub CheckOptions {
   Error($operation." does not accept options:".join(', ',@badops)) if @badops;
 }
 
+#======================================================================
+# Convenience functions for writing definitions.
+#======================================================================
+
+sub BGroup()     { $STOMACH->bgroup; }
+sub EGroup()     { $STOMACH->egroup; }
+sub BeginGroup() { $STOMACH->bgroup(1); }
+sub EndGroup()   { $STOMACH->egroup(1); }
+sub BeginMode    { $STOMACH->beginMode(@_); }
+sub EndMode      { $STOMACH->endMode(@_); }
+
+sub Lookup       { $STATE->lookup(@_); }
+sub Assign       { $STATE->assign(@_); }
+
+sub RequireMath() {
+  Fatal("Current operation can only appear in math mode") unless $STATE->lookup('internal','math_mode');
+  return; }
+
+sub ForbidMath() {
+  Fatal("Current operation can not appear in math mode") if $STATE->lookup('internal','math_mode');
+  return; }
+
+# Merge the current font with the style specifications
+sub MergeFont {
+  my(%style)=@_;
+  $STATE->assign('value', font=>$STATE->lookup('value','font')->merge(%style), 'local');
+  return; }
+
+# Dumb place for this, but where else...
+# The TeX way! (bah!! hint: try a large number)
+my @rmletters=('i','v',  'x','l', 'c','d', 'm');
+sub roman_aux {
+  my($n)=@_;
+  my $div= 1000;
+  my $s=($n>$div ? ('m' x int($n/$div)) : '');
+  my $p=4;
+  while($n %= $div){
+    $div /= 10;
+    my $d = int($n/$div);
+    if($d%5==4){ $s.= $rmletters[$p]; $d++;}
+    if($d > 4 ){ $s.= $rmletters[$p+int($d/5)]; $d %=5; }
+    if($d) {     $s.= $rmletters[$p] x $d; }
+    $p -= 2;}
+  $s; }
+
+# Convert the number to lower case roman numerals, returning a list of LaTeXML::Token
+sub roman { Explode(roman_aux(@_)); }
+# Convert the number to upper case roman numerals, returning a list of LaTeXML::Token
+sub Roman { Explode(uc(roman_aux(@_))); }
+
 #**********************************************************************
 # Definitions
 #**********************************************************************
@@ -78,27 +134,27 @@ sub CheckOptions {
 # substituted for any #1,...), or a sub which returns a list of tokens (or just return;).
 # Those tokens, if any, will be reinserted into the input.
 # There are no options to these definitions.
-our $expandable_options = {isConditional=>1,stash=>1};
+our $expandable_options = {isConditional=>1, scope=>1};
 sub DefExpandable {
   my($proto,$expansion,%options)=@_;
   CheckOptions("DefExpandable ($proto)",$expandable_options,%options);
   my ($cs,$paramlist)=parsePrototype($proto);
   $expansion = Tokens() unless defined $expansion;
-  $STOMACH->installDefinition(LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options),
-			     stash=>$options{stash});
+  $STATE->installDefinition(LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options),
+			    $options{scope});
   return; }
 
 # Define a Macro: Essentially an alias for DefExpandable
 # For convenience, the $expansion can be a string which will be tokenized.
-our $macro_options = {stash=>1};
+our $macro_options = {scope=>1};
 sub DefMacro {
   my($proto,$expansion,%options)=@_;
   CheckOptions("DefMacro ($proto)",$macro_options,%options);
   my ($cs,$paramlist)=parsePrototype($proto);
   $expansion = Tokens() unless defined $expansion;
   $expansion = TokenizeInternal($expansion) unless ref $expansion;
-  $STOMACH->installDefinition(LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options),
-			     stash=>$options{stash});
+  $STATE->installDefinition(LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options),
+			    $options{scope});
   return; }
 
 #======================================================================
@@ -110,14 +166,14 @@ sub DefMacro {
 #    isPrefix  : 1 for things like \global, \long, etc.
 #    registerType : for parameters (but needs to be worked into DefParameter, below).
 
-our $primitive_options = {isPrefix=>1,stash=>1};
+our $primitive_options = {isPrefix=>1,scope=>1};
 sub DefPrimitive {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefPrimitive ($proto)",$primitive_options,%options);
   my ($cs,$paramlist)=parsePrototype($proto);
   $replacement = sub { (); } unless defined $replacement;
-  $STOMACH->installDefinition(LaTeXML::Primitive->new($cs,$paramlist,$replacement,%options),
-			     stash=>$options{stash});
+  $STATE->installDefinition(LaTeXML::Primitive->new($cs,$paramlist,$replacement,%options),
+			    $options{scope});
   return; }
 
 our $register_options = {readonly=>1, getter=>1, setter=>1};
@@ -135,14 +191,14 @@ sub DefRegister {
   my $name = $cs->toString;
   my $getter = $options{getter} 
     || sub { my(@args)=@_;  
-	     $STOMACH->lookupValue(join('',$name,map($_->toString,@args))) || $value; };
+	     $STATE->lookup('value',join('',$name,map($_->toString,@args))) || $value; };
   my $setter = $options{setter} 
     || sub { my($value,@args)=@_; 
-	     $STOMACH->assignValue(join('',$name,map($_->toString,@args)),$value); };
+	     $STATE->assign('value',join('',$name,map($_->toString,@args)) => $value); };
   # Not really right to set the value!
-  $STOMACH->assignValue($cs->toString,$value) if defined $value;
-  $STOMACH->assignMeaning($cs,LaTeXML::Register->new($cs,$paramlist, $type,$getter,$setter,
-						 readonly=>$options{readonly}));
+  $STATE->assign('value',$cs->toString =>$value) if defined $value;
+  $STATE->assignMeaning($cs,LaTeXML::Register->new($cs,$paramlist, $type,$getter,$setter,
+						   readonly=>$options{readonly}));
   return; }
 
 sub flatten {
@@ -157,7 +213,7 @@ sub flatten {
 #======================================================================
 # The arguments, if any, will be collected and processed in the Stomach, and
 # a Whatsit will be constructed.
-# It is the Whatsit that will be processed in the Intestine: It is responsible
+# It is the Whatsit that will be processed in the Document: It is responsible
 # for constructing XML Nodes.  The $replacement should be a sub which inserts nodes, 
 # or a string specifying a constructor pattern (See somewhere).
 #
@@ -172,23 +228,23 @@ sub flatten {
 #                     These properties can be used in the constructor.
 our $constructor_options = {mode=>1, untex=>1, properties=>1, alias=>1,
 			    beforeDigest=>1, afterDigest=>1,
-			    captureBody=>1,stash=>1};
+			    captureBody=>1, scope=>1};
 sub DefConstructor {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefConstructor ($proto)",$constructor_options,%options);
   my ($cs,$paramlist)=parsePrototype($proto);
   my $mode = $options{mode};
-  $STOMACH->installDefinition(LaTeXML::Constructor
-			     ->new($cs,$paramlist,$replacement,
-				   beforeDigest=> flatten(($mode ? (sub { $STOMACH->beginMode($mode); }):()),
-							  $options{beforeDigest}),
-				   afterDigest => flatten($options{afterDigest},
-							  ($mode ? (sub { $STOMACH->endMode($mode) }):())),
-				   alias       => $options{alias},
-				   untex       => $options{untex},
-				   captureBody => $options{captureBody},
-				   properties  => $options{properties}||{}),
-			     stash=>$options{stash});
+  $STATE->installDefinition(LaTeXML::Constructor
+			    ->new($cs,$paramlist,$replacement,
+				  beforeDigest=> flatten(($mode ? (sub { $STOMACH->beginMode($mode); }):()),
+							 $options{beforeDigest}),
+				  afterDigest => flatten($options{afterDigest},
+							 ($mode ? (sub { $STOMACH->endMode($mode) }):())),
+				  alias       => $options{alias},
+				  untex       => $options{untex},
+				  captureBody => $options{captureBody},
+				  properties  => $options{properties}||{}),
+			    $options{scope});
 
   return; }
 
@@ -210,7 +266,7 @@ our $math_options = {name=>1, omcd=>1, untex=>1, alias=>1,
 		     role=>1, operator_role=>1,
 		     style=>1, size=>1, 
 		     stackscripts=>1,operator_stackscripts=>1,
-		     beforeDigest=>1, afterDigest=>1, stash=>1};
+		     beforeDigest=>1, afterDigest=>1, scope=>1};
 our $XMID=0;
 sub next_id {
   "LXID".$XMID++; }
@@ -227,20 +283,25 @@ sub dualize_arglist {
       push(@cargs,undef);
       push(@pargs,undef); }}
   ( [@cargs],[@pargs] ); }
+# Quick reversal!
+#  ( [@pargs],[@cargs] ); }
 
 sub DefMath {
   my($proto,$presentation,%options)=@_;
   CheckOptions("DefMath ($proto)",$math_options,%options);
   my ($cs,$paramlist)=parsePrototype($proto);  
   my $nargs = scalar($paramlist->getParameters);
-  my $name = $cs->getString;
+  my $csname = $cs->getString;
+  my $name = $csname;
   $name =~ s/^\\//;
   $name = $options{name} if defined $options{name};
   $name = undef if (defined $name) && (($name eq $presentation) || ($name eq ''));
   my $attr="name='#name' omcd='#omcd' style='#style' size='#size'";
+  $options{role} = 'UNKNOWN' if ($nargs == 0) && !defined $options{role};
+  $options{operator_role} = 'UNKNOWN' if ($nargs > 0) && !defined $options{operator_role};
   my %common =(alias=>$options{alias}||$cs->getString,
 	       (defined $options{untex} ? (untex=>$options{untex}) : ()),
-	       beforeDigest=> flatten(sub{ requireMath;},
+	       beforeDigest=> flatten(sub{ RequireMath;},
 				      $options{beforeDigest}),
 	       afterDigest => flatten($options{afterDigest}),
 	       properties => {name=>$name, omcd=>$options{omcd},
@@ -248,40 +309,47 @@ sub DefMath {
 			      style=>$options{style}, size=>$options{size},
 			      stackscripts=>$options{stackscripts},
 			      operator_stackscripts=>$options{operator_stackscripts}},
-	       stash=>$options{stash});
+	       scope=>$options{scope});
+  # If single character, Make the character active in math.
+  if(length($csname) == 1){
+    $STATE->assign('mathactive', $csname=>1, $options{scope}); }
 
   if((ref $presentation) || ($presentation =~ /\#\d|\\./)){	      # Seems to have TeX! => XMDual
-    my $cont_cs = $cs->getString."\@content";
-    my $pres_cs = $cs->getString."\@presentation";
-    DefExpandable($proto, sub {
-      my($self,@args)=@_;
-      my($cargs,$pargs)=dualize_arglist(@args);
-      T_CS('\DUAL')->invocation(($options{role} ? T_OTHER($options{role}):undef),
-				T_CS($cont_cs)->invocation(@$cargs),
-				T_CS($pres_cs)->invocation(@$pargs) )->unlist;},
-		 stash=>$options{stash});
-    DefMacro($pres_cs . $paramlist->stringify, $presentation,
-	     stash=>$options{stash});
-    DefConstructor($cont_cs . $paramlist->stringify,
-		   ($nargs == 0 
-		    ? "<XMTok $attr role='#role' stackscripts='#stackscripts'/>"
-		    : "<XMApp role='#role' stackscripts='#stackscripts'>"
-		    .  "<XMTok $attr role='#operator_role' stackscripts='#operator_stackscripts'/>"
-		    .   join('',map("#$_", 1..$nargs))
-		    ."</XMApp>"),
-		   %common); }
+    my $cont_cs = T_CS($csname."\@content");
+    my $pres_cs = T_CS($csname."\@presentation");
+    # Make the original CS expand into a DUAL invoking a presentation macro and content constructor
+    $STATE->installDefinition(LaTeXML::Expandable->new($cs,$paramlist, sub {
+         my($self,@args)=@_;
+	 my($cargs,$pargs)=dualize_arglist(@args);
+	 T_CS('\DUAL')->invocation(($options{role} ? T_OTHER($options{role}):undef),
+				   $cont_cs->invocation(@$cargs),
+				   $pres_cs->invocation(@$pargs) )->unlist;}),
+      $options{scope});
+    # Make the presentation macro.
+    $STATE->installDefinition(LaTeXML::Expandable->new($pres_cs, $paramlist,
+							 (ref $presentation ? $presentation
+							  : TokenizeInternal($presentation))),
+				$options{scope});
+    $STATE->installDefinition(LaTeXML::Constructor->new($cont_cs,$paramlist,
+         ($nargs == 0 
+	  ? "<XMTok $attr role='#role' stackscripts='#stackscripts'/>"
+	  : "<XMApp role='#role' stackscripts='#stackscripts'>"
+	  .  "<XMTok $attr role='#operator_role' stackscripts='#operator_stackscripts'/>"
+	  .   join('',map("#$_", 1..$nargs))
+	  ."</XMApp>"),
+         %common), $options{scope}); }
   else {
     my $end_tok = (defined $presentation ? ">$presentation</XMTok>" : "/>");
-    $common{properties}{font} = sub { $STOMACH->getFont->specialize($presentation); };
-    DefConstructor($proto,
-		   ($nargs == 0 
-		    ? "<XMTok role='#role' stackscripts='#stackscripts' font='#font' $attr$end_tok"
-		    : "<XMApp role='#role' stackscripts='#stackscripts'>"
-		    .  "<XMTok $attr font='#font' role='#operator_role' stackscripts='#operator_stackscripts'"
-		    .  " $end_tok"
-		    .   join('',map("<XMArg>#$_</XMArg>", 1..$nargs))
-		    ."</XMApp>"),
-		   %common); }
+    $common{properties}{font} = sub { $STATE->lookup('value','font')->specialize($presentation); };
+    $STATE->installDefinition(LaTeXML::Constructor->new($cs,$paramlist,
+         ($nargs == 0 
+	  ? "<XMTok role='#role' stackscripts='#stackscripts' font='#font' $attr$end_tok"
+	  : "<XMApp role='#role' stackscripts='#stackscripts'>"
+	  .  "<XMTok $attr font='#font' role='#operator_role' stackscripts='#operator_stackscripts'"
+	  .  " $end_tok"
+	  .   join('',map("<XMArg>#$_</XMArg>", 1..$nargs))
+	  ."</XMApp>"),
+         %common), $options{scope}); }
 }
 
 #======================================================================
@@ -290,7 +358,7 @@ sub DefMath {
 our $environment_options = {mode=>1, properties=>1,
 			    beforeDigest=>1, afterDigest=>1,
 			    afterDigestBegin=>1, #beforeDigestEnd=>1
-			    stash=>1};
+			    scope=>1};
 sub DefEnvironment {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefEnvironment ($proto)",$environment_options,%options);
@@ -299,36 +367,40 @@ sub DefEnvironment {
   my $paramlist=parseParameters($proto,"Environment $name");
   my $mode = $options{mode};
   # This is for the common case where the environment is opened by \begin{env}
-  $STOMACH->installDefinition(LaTeXML::Constructor
+  $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\begin{$name}"), $paramlist,$replacement,
 				   beforeDigest=>flatten(($mode ? (sub { $STOMACH->beginMode($mode);})
-							  : (sub { $STOMACH->bgroup; })),
-							 sub { $STOMACH->beginEnvironment($name); },
+							  : (\&BGroup)),
+							 sub { $STATE->assign('value',current_environment=>$name);
+							       return; },
 							 $options{beforeDigest}),
 				   afterDigest =>flatten($options{afterDigestBegin}),
 				   captureBody=>1, 
 				   properties=>$options{properties}||{}),
-			     stash=>$options{stash});
-  $STOMACH->installDefinition(LaTeXML::Constructor
+			     $options{scope});
+  $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\end{$name}"),"","",
 				   afterDigest=>flatten($options{afterDigest},
-							sub { $STOMACH->endEnvironment($name); },
+							sub { my $env = $STATE->lookup('value','current_environment');
+							      Error("Cannot close environment $name; current is $env")
+								unless $name eq $env; 
+							    return; },
 							($mode ? (sub { $STOMACH->endMode($mode);})
-							 :(sub { $STOMACH->egroup; })))),
-			     stash=>$options{stash});
+							 :(\&EGroup)))),
+			     $options{scope});
   # For the uncommon case opened by \csname env\endcsname
-  $STOMACH->installDefinition(LaTeXML::Constructor
+  $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\$name"), $paramlist,$replacement,
 				   beforeDigest=>flatten(($mode ? (sub { $STOMACH->beginMode($mode);}):()),
 							 $options{beforeDigest}),
 				   captureBody=>1,
 				   properties=>$options{properties}||{}),
-			     stash=>$options{stash});
-  $STOMACH->installDefinition(LaTeXML::Constructor
+			     $options{scope});
+  $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\end$name"),"","",
 				   afterDigest=>flatten($options{afterDigest},
 							($mode ? (sub { $STOMACH->endMode($mode);}):()))),
-			     stash=>$options{stash});
+			     $options{scope});
   return; }
 
 #======================================================================
@@ -343,9 +415,13 @@ sub Tag {
   return; }
 
 sub DocType {
-  my($rootelement,$pubid,$sysid,$namespace)=@_;
-  $MODEL->setDocType($rootelement,$pubid,$sysid,$namespace); 
+  my($rootelement,$pubid,$sysid)=@_;
+  $MODEL->setDocType($rootelement,$pubid,$sysid);
   return; }
+
+sub RegisterNamespace {
+  my($prefix,$namespace,$default)=@_;
+  $MODEL->registerNamespace($prefix,$namespace,$default); }
 
 our $require_options = {options=>1};
 sub RequirePackage {
@@ -356,28 +432,14 @@ sub RequirePackage {
 
 sub Let {
   my($token1,$token2)=@_;
-  ($token1)=Tokenize($token1)->unlist unless ref $token1;
-  ($token2)=Tokenize($token2)->unlist unless ref $token2;
-  $STOMACH->assignMeaning($token1,$STOMACH->lookupMeaning($token2)); }
+  ($token1)=TokenizeInternal($token1)->unlist unless ref $token1;
+  ($token2)=TokenizeInternal($token2)->unlist unless ref $token2;
+  $STATE->assignMeaning($token1,$STATE->lookupMeaning($token2)); 
+  return; }
 
 sub RawTeX {
   my($text)=@_;
   $STOMACH->digest(TokenizeInternal($text)); }
-#======================================================================
-# Additional support for counters (primarily LaTeX oriented)
-
-sub NewCounter { 
-  my($ctr,$within)=@_;
-  $ctr=$ctr->toString if ref $ctr;
-  $within=$within->toString if $within && ref $within;
-  DefRegister("\\c\@$ctr",Number(0));
-  $STOMACH->assignValue("\\c\@$ctr",Number(0),1);
-  $STOMACH->assignValue("\\cl\@$ctr",Tokens(),1);
-  $STOMACH->assignValue("\\cl\@$within",
-			      Tokens(T_CS($ctr),$STOMACH->lookupValue("\\cl\@$within")->unlist),1) 
-    if $within;
-  DefMacro("\\the$ctr","\\arabic{$ctr}");
-  }
 
 #======================================================================
 # Support for KeyVal type constructs.
@@ -387,33 +449,25 @@ sub NewCounter {
 sub DefKeyVal {
   my($keyset,$key,$type,$default)=@_;
   my $paramlist=parseParameters($type,"KeyVal $key in set $keyset");
-  $STOMACH->assignValue('KEYVAL@'.$keyset.'@'.$key, $paramlist->[0]); 
-  $STOMACH->assignValue('KEYVAL@'.$keyset.'@'.$key.'@default', Tokenize($default)) 
+  $STATE->assign('value','KEYVAL@'.$keyset.'@'.$key => $paramlist->[0]); 
+  $STATE->assign('value','KEYVAL@'.$keyset.'@'.$key.'@default' => Tokenize($default)) 
     if defined $default; }
-#======================================================================
-# Defining Filters
-sub DefTextFilter {
-  my(@args)=@_;
-  Fatal("DefTextFilter only takes either 2 or 3 arguments") unless (scalar(@args)==2)||(scalar(@args)==3);
-  @args = map( (ref $_ ? $_ : $STOMACH->digest(TokenizeInternal($_))), @args);
-  my($init,$pattern,$replacement)=(scalar(@args)==2 ? ($args[0],@args) : @args);
-  $STOMACH->addTextFilter($init->getInitial, 
-			  $pattern,$replacement
-#			 (ref $pattern eq 'CODE' ? $pattern : [$pattern->unlist]),
-#			 (ref $replacement eq 'CODE' ? $replacement : [$replacement->unlist])
-); }
 
-sub DefMathFilter {
-  my(@args)=@_;
-  Fatal("DefMathFilter only takes either 2 or 3 arguments") unless (scalar(@args)==2)||(scalar(@args)==3);
-  @args = map( (ref $_ ? $_ : $STOMACH->digest(TokenizeInternal('$'.$_.'$'))->getBody),
-	       @args);
-  my($init,$pattern,$replacement)=(scalar(@args)==2 ? ($args[0],@args) : @args);
-  $STOMACH->addMathFilter($init->getInitial, 
-			  $pattern,$replacement
-#			 (ref $pattern eq 'CODE' ? $pattern : [$pattern->unlist]),
-#			 (ref $replacement eq 'CODE' ? $replacement : [$replacement->unlist])
-); }
+
+#======================================================================
+# Defining Rewrite rules that act on the DOM
+
+our $rewrite_options = {scope=>1, xpath=>1, match=>1,
+			 attributes=>1, replace=>1, regexp=>1};
+sub DefRewrite {
+  my(@specs)=@_;
+  CheckOptions("DefRewrite",$rewrite_options,@specs);
+  $MODEL->addRewriteRule('text',@specs); }
+
+sub DefMathRewrite {
+  my(@specs)=@_;
+  CheckOptions("DefRewrite",$rewrite_options,@specs);
+  $MODEL->addRewriteRule('math',@specs); }
 
 #**********************************************************************
 1;
@@ -426,7 +480,7 @@ __END__
 
 =head2 Description
 
-You import (use) C<LaTeXML::Package> when implementing a `Package'; 
+You import (use) C<LaTeXML::Package> when implementing a C<Package>; 
 the LaTeXML implementation of a LaTeX package.
 It exports various declarations and defining forms that allow you to specify what should 
 be done with various control sequences, whether there is special treatment of document elements,
@@ -469,7 +523,7 @@ A relatively simple package might look something like this:
   # Define the negation of myrel.
   DefMath('\notmyrel',  "\mathbf{not x}", role=>'RELOP');
   # and define a Filter that combines \not and \in.
-  DefMathFilter('\not\myrel','\notmyrel');
+  DefMathRewrite(match=>'\not\myrel',replace=>'\notmyrel');
 
   # To define a symbol \Real to stand for the Reals, 
   # using double struck capital R for presentation
@@ -507,10 +561,10 @@ various packages in LaTeXML.
 
   # These primitives implement LaTeX's \makeatletter and \makeatother.
   # They change the catcode but return nothing to the digested list.
-  DefPrimitive('\makeatletter',sub {
-     $STOMACH->assignCatcode(CC_LETTER,'@'); return; });
-  DefPrimitive('\makeatother', sub {
-      $STOMACH->assignCatcode(CC_OTHER,'@'); return; });
+  DefPrimitive('\makeatletter',sub { 
+    $STATE->assign('catcode','@'=>CC_LETTER,'local'); return; });
+  DefPrimitive('\makeatother', sub { 
+    $STATE->assign('catcode','@'=>CC_OTHER, 'local'); return; });
 
   # Some frontmatter examples.
 
@@ -553,12 +607,17 @@ next section), and the second argument describes the replacement as a string, to
 The remaining arguments are generally optional keyword arguments providing further
 control.
 
-A common, but rarely used option is C<stash=>$stash> which causes the
-definition to be stored in a global list named C<$stash>;  After the definitions
-have gone out of scope, they can be reactivated by C<< $STOMACH->useStash($stash); >>.
-This is an experimental feature to allow explicit control of the scope of a definition,
-particularly useful for declarative information, when the scoping rules are different
-from TeX's usual grouping.
+=head3 Control of Scoping
+
+Most defining commands accept an option  C<<scope=>$scope>> which affects how the
+definition is stored: C<$scope> can be 'global' for global definitions,
+'local', to be stored in the current stack frame, or a string naming a I<scope>.
+A scope saves a set of definitions and values that can be activated at a later time.
+
+Particularly interesting forms of scope are those that get automatically activated
+upon changes of counter and label.  For example, definitions that have
+C<<scope=>'section:1.1'>>  will be activated when the section number is "1.1",
+and will be deactivated when the section ends.
 
 =head3 Control Sequence Prototypes
 
@@ -575,7 +634,7 @@ If type is empty in the above (ie. "{}" or "[]"), no parsing of the argument is 
 and the argument value is simply the Tokens (or undef for [] when no option was provided).
 The remaining recognized types are
 
-  semiverb      : Like {} but with many catcodes and filtering disabled.
+  semiverb      : Like {} but with many catcodes disabled.
   Token         : Read a single Token.
   XToken        : Read the next unexpandable Token after expandable 
                   ones have been expanded.
@@ -653,11 +712,11 @@ The option readonly specifies if it is not allowed to change this value.
 Defines a Constructor; invoking the control sequence will generate an arbitrary XML
 fragment in the document tree.  More specifically: during digestion, the arguments
 will be read and digested, creating a Whatsit to represent the object. During
-absorbtion by the Intestine, the Whatsit will generate the XML fragment according
+absorbtion by the Document, the Whatsit will generate the XML fragment according
 to the replacement pattern, or code based on the stored data.
 
 The replacement is a pattern representing the XML fragment to be inserted,
-or code called with the Intestine, arguments and properties.
+or code called with the Document, arguments and properties.
 The pattern is simply a bit of XML as a string with certain substitutions made.
 Generally, #1, #2 ... is replaced by the corresponding argument (turned into
 a string when it appears as an attribute, or recursively processed when it appears as
@@ -782,20 +841,17 @@ as appropriate.
 
 Gives C<$token1> the same `meaning' (definition) as C<$token2>; like TeX's \let.
 
-=item C<< NewCounter($counter,$within); >>
-
-Sets up a counter named $counter, and arranges for it to be reset whenever
-the counter C<$within> is incremented. (like \newcounter).
-
 =item C<< DefKeyVal($keyset,$key,$type); >>
 
 Defines the type of value expected for the key $key when parsed in part
 of a KeyVal using C<$keyset>.  C<$type> would be something like 'any' or 'Number', but
 I'm still working on this.
 
-=item C<< DefTextFilter($pattern,$replacement); >>
+=item C<< DefTextFilter($pattern,$replacement, %options); >>
 
-=item C<< DefMathFilter($pattern,$replacement); >>
+=item C<< DefMathFilter($pattern,$replacement, %options); >>
+
+REWRITE THIS FOR DOM REWRITE RULES!!!
 
 These define filters to apply in text and math.  The C<$pattern> and C<$replacement>
 are strings which will be digested to obtain the sequence of boxes.  
@@ -806,21 +862,70 @@ two examples replace doubled quotes by the appropriate quotation marks:
   DefTextFilter("``","\N{LEFT DOUBLE QUOTATION MARK}");
   DefTextFilter("''","\N{RIGHT DOUBLE QUOTATION MARK}");
 
-=item C<< DefTextFilter($init,$patterncode,$replacement); >>
+The options are 
 
-=item C<< DefMathFilter($init,$patterncode,$replacement); >>
-
-These forms define filters that use code to determine how many characters match.
-The C<$patterncode> is called with the current list of digested things and should
-return the number of matched items.  The C<$replacment> gets the list of matched
-things and returns a list of things to relace it by.  For efficiency, these
-filters are only invoked when the box in C<$init> is encountered.
+    initial the initial character that triggers matching this filter.
+            This is required if the pattern is a CODE, rather than tokens.
+    scope   The scope in which this pattern is applied (default is global).
 
 =item C<< RawTeX('... tex code ...'); >>
 
 RawTeX is a convenience function for including chunks of raw TeX (or LaTeX) code
 in a Package implementation.  It is useful for copying portions of the normal
 implementation that can be handled simply using macros and primitives.
+
+=back
+
+=head2 Convenience Functions
+
+The following are exported as a convenience when writing definitions.
+
+=over 4
+
+=over 4
+
+=item C<< BGroup($nobox); >>
+
+Begin a new level of binding by pushing a new stack frame.
+If C<$nobox> is true, no new level of boxing will be created
+(such as for \begingroup).
+
+=item C<< EGroup($nobox); >>
+
+End a level of binding by popping the last stack frame,
+undoing whatever bindings appeared there.
+If C<$nobox> is true, the level of boxing will not be decremented
+(such as for \endgroup).
+
+=item C<< RequireMath; >>
+
+Signals an error unless we are currently in math mode.
+
+=item C<< ForbidMath; >>
+
+Signals an error if we are currently in math mode.
+
+=item C<< MergeFont(%style); >>
+
+Set the current font by merging the font style attributes with the current font.
+The attributes and likely values (the values aren't required to be in this set):
+
+   family : serif, sansserif, typewriter, caligraphic, fraktur, script
+   series : medium, bold
+   shape  : upright, italic, slanted, smallcaps
+   size   : tiny, footnote, small, normal, large, Large, LARGE, huge, Huge
+   color  : any named color, default is black
+
+Some families will only be used in math.
+This function returns nothing so it can be easily used in beforeDigest, afterDigest.
+
+=item C<< @tokens = roman($number); >>
+
+Formats the C<$number> in (lowercase) roman numerals, returning a list of the tokens.
+
+=item C<< @tokens = Roman($number); >>
+
+Formats the C<$number> in (uppercase) roman numerals, returning a list of the tokens.
 
 =back
 

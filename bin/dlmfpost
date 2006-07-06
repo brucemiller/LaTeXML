@@ -4,7 +4,6 @@ use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use LaTeXML::Post;
 use LaTeXML::Post::HTMLTable;
-use LaTeXML::Post::MathParser;
 use LaTeXML::Post::PresentationMathML;
 use Carp;
 use Getopt::Long;
@@ -34,7 +33,6 @@ my $processors=[DLMFMath->new(),
 		DLMFGraphics->new(),
 		DLMFGallery->new(),
 		LaTeXML::Post::HTMLTable->new(),
-		LaTeXML::Post::MathParser->new(),
 		LaTeXML::Post::PresentationMathML->new()];
 
 my $post = LaTeXML::Post->new();
@@ -74,13 +72,17 @@ BEGIN{ our @ISA = qw(LaTeXML::Post::Graphics);}
 sub findGraphicsFile {
   my($self,$node)=@_;
   my $name = $node->getAttribute('graphic');
-  if($name =~ m|^2D/|){
+# Let's try _always_ using the postscript
+# They've been touched up by graphics arts...
+#  if($name =~ m|^2D/|){
     my $file = $self->findFile($name,['eps','ps']); 
-    return $file if $file; }
+    return $file if $file; 
+#}
   $self->SUPER::findGraphicsFile($node); }
 
 our @VRML_EXTRA;
-BEGIN { @VRML_EXTRA = qw(dlmf_proto.wrl sml_rec_proto.wrl); }
+BEGIN { @VRML_EXTRA = qw(dlmf_proto.wrl sml_rec_proto.wrl
+			four.gif legendXYZ.gif smap.gif); }
 
 sub processGraphic {
   my($self,$node)=@_;

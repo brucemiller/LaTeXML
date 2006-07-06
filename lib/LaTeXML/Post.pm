@@ -117,21 +117,17 @@ sub completeOptions {
 			       LaTeXML::Post::HTMLTable)];
     $options{stylesheet} = "LaTeXML-html.xsl" unless $options{stylesheet}; }
   elsif($options{format} eq 'xhtml'){
-    $options{processors} = [qw(LaTeXML::Post::MathParser
-			       LaTeXML::Post::PresentationMathML
+    $options{processors} = [qw(LaTeXML::Post::PresentationMathML
 			       LaTeXML::Post::Graphics
 			       LaTeXML::Post::HTMLTable)];
     $options{stylesheet} = "LaTeXML-xhtml.xsl" unless $options{stylesheet}; }
   elsif($options{mathml}) {
-    $options{processors} = [qw(LaTeXML::Post::MathParser
-			       LaTeXML::Post::PresentationMathML)]; }
+    $options{processors} = [qw(LaTeXML::Post::PresentationMathML)]; }
   elsif($options{openmath}) {
-    $options{processors} = [qw(LaTeXML::Post::MathParser
-			       LaTeXML::Post::OpenMath)]; }
+    $options{processors} = [qw(LaTeXML::Post::OpenMath)]; }
   else {			# Else do sensible minimal XML stuff?
     $keepXMath=1;
-    $options{processors} = [qw(LaTeXML::Post::MathParser
-			       LaTeXML::Post::PresentationMathML)]; }
+    $options{processors} = [qw(LaTeXML::Post::PresentationMathML)]; }
   push(@{$options{processors}},'LaTeXML::Post::PurgeXMath') unless $keepXMath;
   push(@{$options{processors}},'LaTeXML::Post::XSLT') if $options{stylesheet};
 

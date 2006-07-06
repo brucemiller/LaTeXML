@@ -31,11 +31,11 @@ DefConstructor('\graphicspath{semiverb}',"<?latexml graphicspath='#1'?>");
 # Basically, we're transforming the graphics options into graphicx format.
 DefConstructor('\includegraphics Flag:* [][]{semiverb}', 
 	       sub {
-		 my($whatsit,$starred,$op1,$op2,$graphic)=@_;
+		 my($document,$starred,$op1,$op2,$graphic)=@_;
 		 my $bb = ($op2 ? $op1->toString." ".$op2->toString : ($op1 ? "0 0 ".$op1->toString : ''));
 		 $bb=~ s/,/ /g;
 		 my $options=($starred ? ($bb ? "viewport=$bb, clip" : "clip") : '');
-		 $INTESTINE->insertElement('graphics',undef,graphic=>$graphic,options=>$options); });
+		 $document->insertElement('graphics',undef,graphic=>$graphic,options=>$options); });
 
 # Also unimplemented... probably nothing useful to pass thru anyway?
 DefConstructor('\DeclareGraphicsExtensions{}','');

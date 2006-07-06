@@ -207,6 +207,7 @@ sub complex_transform {
   my @transform = @$transform;
   # But for postscript, we want to do as much scaling as possible BEFORE loading.
   if($source =~ /\.e?ps$/){
+#    print STDERR "Prescaling postscript image from $w x $h\n";
     my($w0,$h0)=($w,$h);
     $w *=$$self{dppt}; $h *=$$self{dppt};		# Force to desired dpi ??
     while(@transform && ($transform[0]->[0] =~ /^scale/)){
@@ -220,11 +221,16 @@ sub complex_transform {
 	  else                { $a1 = $w*$a2/$h; }}
 	($w,$h)=(ceil($a1*$$self{dppt}),ceil($a2*$$self{dppt})); }}
     if(($w != $w0) || ($h != $h0)){
-      my($xr,$yr)=($image->Get('x-resolution')||72,$image->Get('y-resolution')||72);
+#      print STDERR "postscript target size $w x $h\n";
+#      my($xr,$yr)=($image->Get('x-resolution')||72,$image->Get('y-resolution')||72);
+      my($xr,$yr)=(72,72);
+#      print STDERR "postscript resolution $xr x $yr\n";
       $image = Image::Magick->new(); 
       $image->Set(antialias=>1);
       $image->Set(density=>int($w*$xr/$w0).'x'.int($h*$yr/$h0)); 
-      $image->Read($source); }}	# RELOAD!!!
+      $image->Read($source);
+      ($w,$h) = $image->Get('width','height');
+ }}	# RELOAD!!!
 
 #  print STDERR "Image is $w x $h\n";
   foreach my $trans (@transform){

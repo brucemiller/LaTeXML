@@ -11,7 +11,7 @@ use LaTeXML::Util::Pathname;
 # Parse command line
 
 my $identity = "latexml (LaTeXML version $LaTeXML::VERSION)";
-my($verbosity,$strict,$comments)=(0,0,1);
+my($verbosity,$strict,$comments,$noparse)=(0,0,1,0);
 my ($format,$output,$help,$showversion)=('xml','');
 my (@paths,@preload,@debugs);
 GetOptions("output=s"  => \$output,
@@ -23,8 +23,10 @@ GetOptions("output=s"  => \$output,
 	   "xml"       => sub { $format = 'xml'; },
 	   "tex"       => sub { $format = 'tex'; },
 	   "box"       => sub { $format = 'box'; },
+	   "noparse"   => \$noparse,
 	   "comments!" => \$comments,
 	   "VERSION"   => \$showversion,
+	   "debug=s"   => sub { eval "\$LaTeXML::$_[1]::DEBUG=1; "; },
 	   "help"      => \$help,
 	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
@@ -38,7 +40,8 @@ my $source = $ARGV[0];
 print STDERR "$identity\n" unless $verbosity < 0;
 
 my $latexml= LaTeXML->new(preload=>[@preload], searchpath=>[@paths],
-			 verbosity=>$verbosity, strict=>$strict,includeComments=>$comments);
+			 verbosity=>$verbosity, strict=>$strict,includeComments=>$comments,
+			 nomathparse=>$noparse);
 
 if($output){
   my($dir,$name,$type)=pathname_split($output);
@@ -86,6 +89,7 @@ latexml [options] texfile
    --box                      requests box output after expansion and digestion.
    --nocomments               omit comments from the output
    --VERSION                  show version number.
+   --debug=package            enables debugging output for the named package
    --help                     shows help message.
 
 =head1 OPTIONS AND ARGUMENTS
@@ -145,6 +149,10 @@ an aid in tracking the source.  The option --nocomments discards such comments.
 =item B<--VERSION>
 
 Shows the version number of the LaTeXML package..
+
+=item B<--debug>=I<package>
+
+Enables debugging output for the named package. The package is given without the leading LaTeXML::.
 
 =item B<--help>
 

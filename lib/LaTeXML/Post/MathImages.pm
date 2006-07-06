@@ -24,7 +24,7 @@ our @ISA = (qw(LaTeXML::Post::Processor));
 our $MATHIMAGE_SUBDIR = 'math';
 # Other silly constants that might want changing?
 our $TMP = '/tmp';
-our $LATEXCMD='latex';
+our $LATEXCMD='elatex';
 
 # Usefull DVIPS options:
 #  -q  : run quietly

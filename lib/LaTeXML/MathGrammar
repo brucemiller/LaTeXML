@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Post::MathGrammar                                         | #
+# |  LaTeXML::MathGrammar                                         | #
 # | LaTeXML's Math Grammar for postprocessing                           | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -12,10 +12,10 @@
 # ================================================================================
 # LaTeXML's MathGrammar.
 # To compile :
-#      perl -MParse::RecDescent - MathGrammar LaTeXML::Post::MathGrammar
+#      perl -MParse::RecDescent - MathGrammar LaTeXML::MathGrammar
 # ================================================================================
 # Startup actions: import the constructors
-{ BEGIN{ use LaTeXML::Post::MathParser qw(:constructors); 
+{ BEGIN{ use LaTeXML::MathParser qw(:constructors); 
 #$::RD_TRACE=1;
 }}
   
@@ -110,7 +110,7 @@ relopExpr : relop Expression			{ [$item[1],$item[2]]; }
 # `Modifier' formula, things like $<0$, that might follow another formula or text.
 # Empty is a placeholder for the missing thing... (?)
 
-modifierFormula : relopExpr(s) { NewFormula(New('Empty'),map(@{$_},$item[1])); }
+modifierFormula : relopExpr(s) { NewFormula(New('Empty'),map(@{$_},@{$item[1]})); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Expressions; sums of terms
@@ -150,7 +150,7 @@ Factor	:
 	| preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
 	| preScripted['UNKNOWN'] doubtArgs[$item[1]]
 	| NUMBER   addScripts[$item[1]]
-	| OPEN afterOpen[$item[1]]
+	| OPEN factorOpen[$item[1]]
 #	| bigop addScripts[$item[1]] Term   { Apply($item[2],$item[3]); }
 	| bigop addScripts[$item[1]] addTerm[$item[2]]
 	| VERTBAR Expression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
@@ -215,10 +215,13 @@ moreScriptsB : POSTSUBSCRIPT   addScripts[NewScripts($arg[0],$item[1],$arg[3],$a
 	|                      addScripts[NewScripts($arg[0],'',      $arg[3],$arg[1],$arg[2])]
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Adding Arguments and other parenthetical bits to things
+# Parenthetical: Things wrapped in OPEN .. CLOSE
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# afterOpen[$open] : Dealing with various things that start with an open.
-afterOpen : ADDOP balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1],$item[2])] # For (-) !?!?
+
+# ================================================================================
+# Factors that begin with OPEN; grouped expressions and objects like sets, intervals, etc.
+# factorOpen[$open] : Dealing with various things that start with an open.
+factorOpen : ADDOP balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1],$item[2])] # For (-) !?!?
         # Parenthesized differential op possibly w/scripts
         | bigop addScripts[$item[1]] balancedClose[$arg[0]] 
 	  	 addScripts[Fence($arg[0],$item[2],$item[3])] Factor
@@ -228,11 +231,11 @@ afterOpen : ADDOP balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1],$item
 	     addScripts[Fence($arg[0],Apply(InvisibleTimes(),$item[1],$item[3]),$item[4])] Factor
           { Apply($item[5],$item[6]); }
 	# read expression too? match subcases.
-        | Expression afterOpenExpr[$arg[0],$item[1]]
+        | Expression factorOpenExpr[$arg[0],$item[1]]
 
-# afterOpenExpr[$open,$expr];  Try to recognize various things that start this way.
+# factorOpenExpr[$open,$expr];  Try to recognize various things that start this way.
 #     Need some extra productions for sets (w/possible middle '|' )and vectors; all n-ary.
-afterOpenExpr :
+factorOpenExpr :
 	# 2nd expression; some kind of pair, interval, set, whatever
          (PUNCT Expression { [$item[1],$item[2]]; })(s)  CLOSE
 		  addScripts[Fence($arg[0],$arg[1],map(@$_,@{$item[1]}),$item[2])]
@@ -264,12 +267,12 @@ forbidArgs : Expression (PUNCT Expression)(s) balancedClose[$arg[1]] { MaybeFunc
 	| addConstraint[$arg[0],$arg[1]]
 
 # requireArgs[$function]; Add arguments following a function, failing if it isn't there!
-requireArgs : OPEN Expression (PUNCT Expression {[$item[1],$item[2]];})(s?) balancedClose[$item[1]]
+requireArgs : OPEN Expression (argPunct Expression {[$item[1],$item[2]];})(s?) balancedClose[$item[1]]
  	  	  { ApplyDelimited($arg[0],$item[1],$item[2],map(@$_,@{$item[3]}),$item[4]); }
 	| barearg				{ Apply($arg[0],$item[1]); }
 
 # addArgs[$function]; Add following arguments to a function, if present.
-addArgs : APPLYOP(?) OPEN Expression (PUNCT Expression {[$item[1],$item[2]];})(s?) balancedClose[$item[2]]
+addArgs : APPLYOP(?) OPEN Expression (argPunct Expression {[$item[1],$item[2]];})(s?) balancedClose[$item[2]]
  	  	  { ApplyDelimited($arg[0],$item[2],$item[3],map(@$_,@{$item[4]}),$item[5]); }
 	| APPLYOP(?) barearg				{ Apply($arg[0],$item[2]); }
 	| { $arg[0]; }
@@ -277,6 +280,9 @@ addArgs : APPLYOP(?) OPEN Expression (PUNCT Expression {[$item[1],$item[2]];})(s
 # addTerm[$bigop]; Add following Term to a bigop, if present.
 addTerm : APPLYOP(?) Term				{ Apply($arg[0],$item[2]); }
 	| { $arg[0]; }
+
+# Punctuation separating function arguments; things marked MIDDLE could also separate arguments
+argPunct : PUNCT | MIDDLE
 
 # ================================================================================
 # Function args, etc.

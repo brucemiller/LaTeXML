@@ -20,7 +20,7 @@
 
 <!-- kinda concerned about equation being only block -->
 <!ENTITY % Block.class
-         "p  | equation | figure | table  | tabular | centering |
+         "p  | equation | equationgroup | figure | table  | tabular | centering |
           itemize | enumerate | description | verbatim | acronyms">
 <!ENTITY % Misc.class
          "graphics | minipage | quote | footnote | index | ERROR">
@@ -58,8 +58,16 @@
 <!-- Include MathML 2 -->
 
 <!ENTITY % Equation.extra "">
-<!ENTITY % XM.attr "xml:id ID #IMPLIED">
 <!ELEMENT equation (Math | tabular | punct | index %Equation.extra;)*>
+<!--<!ELEMENT equationgroup (equation | equationmix | origref | constraint | %Flow.mix;)*>-->
+<!-- <!ELEMENT equationgroup (equation | equationmix | origref | constraint | text)*>-->
+<!ELEMENT equationgroup (%Block.mix;)*>
+<!ATTLIST equationgroup
+          label ID #IMPLIED>
+
+<!ENTITY % XMath.attr
+	  "%Common.attr;
+           xml:id ID #IMPLIED">
 <!ATTLIST equation
 	  %Common.attr;
           label ID #IMPLIED
@@ -87,20 +95,17 @@
 
 <!ELEMENT XMApp (%XMath.model;)*>
 <!ATTLIST XMApp
-	  %Common.attr;
-	  %XM.attr;
+	  %XMath.attr;
           role    CDATA #IMPLIED
           name    CDATA #IMPLIED
 	  stackscripts CDATA #IMPLIED>
 <!ELEMENT XMDual ((%XMath.model;), (%XMath.model;))>
 <!ATTLIST XMDual
-	  %Common.attr;
-	  %XM.attr;
+	  %XMath.attr;
           role    CDATA #IMPLIED>
 <!ELEMENT XMTok (#PCDATA)*>
 <!ATTLIST XMTok
-	  %Common.attr;
-	  %XM.attr;
+	  %XMath.attr;
           name    CDATA #IMPLIED
 	  omcd    CDATA #IMPLIED
           role    CDATA #IMPLIED
@@ -111,23 +116,20 @@
 
 <!ELEMENT XMHint EMPTY>
 <!ATTLIST XMHint
-	  %Common.attr;
-	  %XM.attr;
+	  %XMath.attr;
           name    CDATA #IMPLIED
           role    CDATA #IMPLIED
           style   CDATA #IMPLIED>
 
 <!ELEMENT XMWrap (%XMath.model;)*>
 <!ATTLIST XMWrap
-	  %Common.attr;
-	  %XM.attr;
+	  %XMath.attr;
           name    CDATA #IMPLIED
           role    CDATA #IMPLIED
           style   CDATA #IMPLIED>
 <!ELEMENT XMArg (%XMath.model;)*>
 <!ATTLIST XMArg
-	  %Common.attr;
-	  %XM.attr;
+	  %XMath.attr;
           rule   CDATA #IMPLIED>
 <!ELEMENT XMRef EMPTY>
 <!ATTLIST XMRef
@@ -147,6 +149,10 @@
 <!ENTITY % Sectitle.mix "%Sectitle.class; %Sectitle.extra;">
 
 
+<!ENTITY % Section.attr "
+          label ID #IMPLIED
+          refnum CDATA #IMPLIED">
+
 <!-- If you want to rearrange the overall document structure define
      define.structure to be IGNORE, then include a modified version of
      the following. -->
@@ -160,6 +166,13 @@
 <!ELEMENT subsubsection ((%Sectitle.mix;)*, (%Block.mix; | paragraph)*)>
 <!ELEMENT paragraph     ((%Sectitle.mix;)*, (%Block.mix;)*)>
 
+<!ATTLIST document      %Common.attr; %Section.attr;>
+<!ATTLIST section       %Common.attr; %Section.attr;>
+<!ATTLIST appendix      %Common.attr; %Section.attr;>
+<!ATTLIST subsection    %Common.attr; %Section.attr;>
+<!ATTLIST subsubsection %Common.attr; %Section.attr;>
+<!ATTLIST paragraph     %Common.attr; %Section.attr;>
+
 ]]>
 
 <!ELEMENT title    (#PCDATA | %Inline.mix;)* >
@@ -169,18 +182,7 @@
 
 <!ELEMENT p        (#PCDATA | %Inline.mix;)*>
 
-<!ENTITY % Section.attr "
-          label ID #IMPLIED
-          refnum CDATA #IMPLIED">
 
-<!ATTLIST document      %Common.attr; %Section.attr;>
-<!ATTLIST chapter       %Common.attr; %Section.attr;>
-<!ATTLIST part          %Common.attr; %Section.attr;>
-<!ATTLIST section       %Common.attr; %Section.attr;>
-<!ATTLIST appendix      %Common.attr; %Section.attr;>
-<!ATTLIST subsection    %Common.attr; %Section.attr;>
-<!ATTLIST subsubsection %Common.attr; %Section.attr;>
-<!ATTLIST paragraph     %Common.attr; %Section.attr;>
 <!-- <!ATTLIST p %Section.attr;> -->
 
 <!-- ======================================================================
@@ -246,6 +248,9 @@
 <!ELEMENT hline EMPTY>
 
 <!ELEMENT verbatim (#PCDATA)*>
+<!ATTLIST verbatim
+	  %Common.attr; 
+	  font CDATA #IMPLIED>
 <!-- with some trepidation, allow captions here too -->
 <!ELEMENT centering (caption | toccaption | %Flow.mix;)*>
 <!ELEMENT itemize (item)*>

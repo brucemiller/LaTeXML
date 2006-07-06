@@ -20,7 +20,6 @@ LaTeXML::Post->new()->process('LaTeXML',destination=>"$DEST/LaTeXML.html",
 # This indicates which packages are actually contained in modules (in addition to the expected one).
 our %GLOMPED = (Box       =>[qw(MathBox Comment List MathList Whatsit)],
 		Definition=>[qw(Expandable Primitive Parameter Constructor)],
-		DOM       =>[qw(DOM/Node DOM/Text DOM/Comment DOM/ProcessingInstruction DOM/Document)],
 		Font      =>[qw(MathFont)],
 		Token     =>[qw(Tokens Number Dimension MuDimension Glue MuGlue KeyVals)]
 	       );

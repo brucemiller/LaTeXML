@@ -15,7 +15,7 @@
 #
 # Only defines \mathfrak to use the Euler Fraktur font
 DefConstructor('\mathfrak{}','#1',
-	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'fraktur'); },
-	       afterDigest=>sub{$STOMACH->egroup; });
+	       beforeDigest=>sub{ RequireMath; BGroup; MergeFont(family=>'fraktur'); },
+	       afterDigest=>\&EGroup);
 
 1;

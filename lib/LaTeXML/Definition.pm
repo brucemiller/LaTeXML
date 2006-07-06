@@ -22,6 +22,7 @@ our @ISA = qw(LaTeXML::Object);
 
 sub isaDefinition { 1; }
 sub getCS        { $_[0]->{cs}; }
+sub getCSName    { (defined $_[0]->{alias} ? $_[0]->{alias} : $_[0]->{cs}->getCSName); }
 sub isExpandable { 0; }
 sub isRegister   { ''; }
 sub isPrefix     { 0; }
@@ -37,6 +38,7 @@ sub showInvocation {
   my $params = $$self{parameters};
   ($params ? $$self{cs}->untex.$params->untexArguments(@args) : $$self{cs}->untex); }
 
+sub getParameters { $_[0]->{parameters}; }
 #======================================================================
 # Overriding methods
 sub stringify {
@@ -177,7 +179,7 @@ sub isPrefix    { 0; }
 sub isRegister { $_[0]->{registerType}; }
 sub isReadonly  { $_[0]->{readonly}; }
 
-sub getValue {
+sub valueOf {
   my($self,@args)=@_;
   &{$$self{getter}}(@args); }
 
@@ -196,8 +198,9 @@ sub invoke {
   return; }
 
 #**********************************************************************
-# Constructor control sequences.  These are executed in the Intestine,
-# BUT, they are converted to a Whatsit in the Stomach!
+# Constructor control sequences.  
+# They are first converted to a Whatsit in the Stomach, and that Whatsit's
+# contruction is carried out to form parts of the document.
 # In particular, beforeDigest, reading args and afterDigest are executed
 # in the Stomach.
 #**********************************************************************
@@ -232,32 +235,11 @@ sub getConstructor {
 							 ($$self{parameters} ? $$self{parameters}->getNArgs:0));}
   $replacement; }
 
-sub untex {
-  my($self,$whatsit)=@_;
-  my $untex = $$self{untex};
-  if((defined $untex) && (ref $untex eq 'CODE')){
-    return &$untex($whatsit); }
-  else {
-    my $string = '';
-    if(defined $untex){
-      my $p;
-      $string = $untex;
-      $string =~ s/#(\d)/ $whatsit->getArg($1)->untex; /eg; 
-      $string =~ s/#(\w+)/ (defined($p=$whatsit->getProperty($1)) ? (ref $p ? $p->untex:$p):''); /eg; }
-    else {
-      $string= $$self{alias}||$$self{cs}->untex;
-      my @args = $whatsit->getArgs;
-      $string .= ' ' unless scalar(@args) || ($string=~/\W$/) || !($string =~ /^\\/);
-      my $params = $$self{parameters};
-      $string .= $params->untexArguments(@args) if $params;
-    }
-    if(defined (my $body = $whatsit->getBody)){
-      $string .= $body->untex;
-      $string .= $whatsit->getTrailer->untex; }
-    $string; }}
+sub getUntexSpec { $_[0]->{untex}; }
+sub getAlias     { $_[0]->{alias}; }
 
-# Digest the constructor; This should occur in the Stomach (NOT the Intestine)
-# to create a Whatsit, which will be further processed in the Intestine
+# Digest the constructor; This should occur in the Stomach to create a Whatsit.
+# The whatsit which will be further processed to create the document.
 sub invoke {
   my($self)=@_;
   # Call any `Before' code.
@@ -273,7 +255,7 @@ sub invoke {
       $props{$key} = &$value($self); }
     elsif($value && ($value =~/^\#(\d)$/)){
       $props{$key} = $args[$1-1]->toString; }}
-  my $whatsit = Whatsit($self,[@args],%props);
+  my $whatsit = LaTeXML::Whatsit->new($self,[@args],%props);
   my @post = $self->executeAfterDigest($whatsit,@args);
   if(my $id = $props{id}){
     $STOMACH->recordID($id,$whatsit); }
@@ -303,11 +285,10 @@ sub compileConstructor {
   my $body = translate_constructor($constructor,$floats);
   my $code =
     " sub $name {\n"
-    ."my(".join(', ','$whatsit', map("\$arg$_",1..$nargs),'$prop').")=\@_;\n"
-      ."my \$intestine = \$INTESTINE;\n"
+    ."my(".join(', ','$document', map("\$arg$_",1..$nargs),'$prop').")=\@_;\n"
       .($floats ? "my \$savenode;\n" :'')
 	. $body
-	  . ($floats ? "\$intestine->setNode(\$savenode) if defined \$savenode;\n" : '')
+	  . ($floats ? "\$document->setNode(\$savenode) if defined \$savenode;\n" : '')
 	    . "}\n" ;
   eval $code;
   Fatal("Compilation of \"$constructor\" => \n$code\nFailed; $@") if $@; 
@@ -325,33 +306,33 @@ sub translate_constructor {
     # Processing instruction: <?name a=v ...?>
     elsif(s|^\s*<\?$QNAME_RE||so){
       my($pi,$av) = ($1, translate_avpairs());
-      $code .= "\$intestine->insertPI('$pi'".($av? ", $av" : '').");\n";
+      $code .= "\$document->insertPI('$pi'".($av? ", $av" : '').");\n";
       Fatal("Missing \"?>\" in constructor template at \"$_\"") unless s|^\s*\?>||; }
     # Open tag: <name a=v ...> or .../> (for empty element)
     elsif(s|^\s*<$QNAME_RE||so){
       my($tag,$av) = ($1,translate_avpairs());
       if($float){
-	$code .= "\$savenode=\$intestine->floatToElement('$tag');\n";
+	$code .= "\$savenode=\$document->floatToElement('$tag');\n";
 	$float = undef; }
-      $code .= "\$intestine->openElement('$tag'".($av? ", $av" : '').");\n";
-      $code .= "\$intestine->closeElement('$tag');\n" if s|^/||; # Empty element.
+      $code .= "\$document->openElement('$tag'".($av? ", $av" : '').");\n";
+      $code .= "\$document->closeElement('$tag');\n" if s|^/||; # Empty element.
       Fatal("Missing \">\" in constructor template at \"$_\"") unless s|^>||; }
     # Close tag: </name>
     elsif(s|^\s*</$QNAME_RE\s*>||so){
-      $code .= "\$intestine->closeElement('$1');\n"; }
+      $code .= "\$document->closeElement('$1');\n"; }
     # Substitutable value: argument, property...
     elsif(/^$VALUE_RE/o){ 
-      $code .= "\$intestine->absorb(".translate_value().");\n"; }
+      $code .= "\$document->absorb(".translate_value().");\n"; }
     # Attribute: a=v; assigns in current node? [May conflict with random text!?!]
     elsif(s|^$QNAME_RE\s*=\s*||so){
       my $key = $1;
       if($float){
-	$code .= "\$savenode=\$intestine->floatToAttribute('$key');\n";
+	$code .= "\$savenode=\$document->floatToAttribute('$key');\n";
 	$float = undef; }
-      $code .= "\$intestine->getNode->setAttribute('$key',".translate_string().");\n"; }
+      $code .= "\$document->getNode->setAttribute('$key',ToString(".translate_string()."));\n"; }
     # Else random text
     elsif(s/^$TEXT_RE//so){	# Else, just some text.
-      $code .= "\$intestine->absorb('".slashify($1)."');\n"; }
+      $code .= "\$document->absorb('".slashify($1)."');\n"; }
   }
   $code; }
 
@@ -366,8 +347,8 @@ sub slashify {
 # It does NOT handled nested conditionals!!! (yet...)
 sub parse_conditional {
   s/^\?//;			# Remove leading "?"
-  my $bool = (s/^IfMath// ? '$whatsit->isMath'
-	      : 'defined('.translate_value().')');
+  my $bool = (s/^IfMath// ? '$$prop{isMath}'
+	      : 'ToString('.translate_value().')' );
   if(s/^\((.*?)\)(\((.*?)\))?//s){
     ($bool,$1,$3); }
   else {
@@ -480,7 +461,7 @@ the Gullet, and returns a list of L<LaTeXML::Token>s.  For primitives, it
 is carried out in the Stomach, and returns a list of L<LaTeXML::Box>es.
 For a constructor, it is also carried out by the Stomach, and returns a L<LaTeXML::Whatsit>.
 That whatsit will be responsible for constructing the XML document fragment, when the
-L<LaTeXML::Intestine> invokes C<$whatsit->beAbsorbed;>.
+L<LaTeXML::Document> invokes C<$whatsit->beAbsorbed($document);>.
 
 Primitives and Constructors also support before and after daemons, lists of subroutines
 that are executed before and after digestion.  These can be useful for changing modes, etc.

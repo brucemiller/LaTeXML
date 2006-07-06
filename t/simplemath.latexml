@@ -1,0 +1,16 @@
+use LaTeXML::Package;
+
+DefMathRewrite(scope=>'label:sec:restricted', match=>'a',attributes=>{role=>'FUNCTION'});
+DefMathRewrite(scope=>'label:sec:restricted', match=>'b',attributes=>{role=>'FUNCTION'});
+
+DefMathRewrite(match=>'a', attributes=>{role=>'ID'});
+DefMathRewrite(match=>'b', attributes=>{role=>'ID'});
+
+DefMathRewrite(match=>'\hat{f}',       attributes=>{role=>'ID'});
+DefMathRewrite(match=>'f_D)',          attributes=>{role=>'DIFFOP'});
+DefMathRewrite(match=>'f_\WildCardA', attributes=>{role=>'ID'});
+
+DefMathRewrite(match=>'f', attributes=>{role=>'FUNCTION'});
+
+DefMathRewrite(match=>'D', attributes=>{role=>'ID'});
+DefMathRewrite(match=>'x', attributes=>{role=>'ID'});

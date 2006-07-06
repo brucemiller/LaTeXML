@@ -24,10 +24,11 @@ sub defineExcluded {
                    afterDigest=>[sub {
 				   my($whatsit)=@_;
 				   my @lines = $GULLET->readRawLines("\\end{$name}\n");
+				   NoteProgress("Skipped ".scalar(@lines)." for environment $name");
 				   return; }]);
 
-  $STOMACH->assignMeaning(T_CS("\\begin{$name}"),$defn);
-  $STOMACH->assignMeaning(T_CS("\\$name"),$defn);
+  $STATE->assignMeaning(T_CS("\\begin{$name}"),$defn);
+  $STATE->assignMeaning(T_CS("\\$name"),$defn);
   return; }
 
 sub defineIncluded {
@@ -37,12 +38,12 @@ sub defineIncluded {
   # but DO NOT do any of the normal environ things, like \begingroup \endgroup!
   my $bdefn = LaTeXML::Expandable->new("\\begin{$name}",undef,
 				       Tokens(($before ? $before->unlist:()),T_CS('\ignorespaces')));
-  $STOMACH->assignMeaning(T_CS("\\$name"),$bdefn);
-  $STOMACH->assignMeaning(T_CS("\\begin{$name}"),$bdefn);
+  $STATE->assignMeaning(T_CS("\\$name"),$bdefn);
+  $STATE->assignMeaning(T_CS("\\begin{$name}"),$bdefn);
   my $edefn = LaTeXML::Expandable->new("\\end{$name}",undef,
 				       Tokens(($after ? $after->unlist:()),T_CS('\ignorespaces')));
-  $STOMACH->assignMeaning(T_CS("\\end{$name}"),$edefn);
-  $STOMACH->assignMeaning(T_CS("\\end$name"),$edefn);
+  $STATE->assignMeaning(T_CS("\\end{$name}"),$edefn);
+  $STATE->assignMeaning(T_CS("\\end$name"),$edefn);
   return; }
 
 defineExcluded($STOMACH,'comment');

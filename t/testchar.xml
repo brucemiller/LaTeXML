@@ -5,15 +5,17 @@
   <section refnum="1">
     <title>Testing</title>
     <p>Testing raw tex macros:
-Expect inline math: xx<Math mode="inline" tex="a+b"><XMath><XMTok font="italic">a</XMTok><XMTok role="ADDOP">+</XMTok><XMTok font="italic">b</XMTok></XMath></Math>xx
+Expect inline math: xx<Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math>xx
 </p>
     <p>Expect display math: xx</p>
     <equation>
-      <Math mode="display" tex="a+b">
+      <Math mode="display" tex="a+b" text="a + b">
         <XMath>
-          <XMTok font="italic">a</XMTok>
-          <XMTok role="ADDOP">+</XMTok>
-          <XMTok font="italic">b</XMTok>
+          <XMApp>
+            <XMTok role="ADDOP">+</XMTok>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMTok role="UNKNOWN" font="italic">b</XMTok>
+          </XMApp>
         </XMath>
       </Math>
     </equation>

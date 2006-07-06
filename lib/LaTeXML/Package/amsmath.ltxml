@@ -37,53 +37,193 @@ RequirePackage('amsopn');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 3:  Displayed equations
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# General implementation comments:
+#   Some of these environments are intended for breaking up single equations
+# into multiple lines, while others are for presenting several equations in a group.
+# [some environments may be more ambiguous]
+# In any case, there may be specific relative alignment expected between the lines.
+#
+# Our primary objective, in LaTeXML, is to get at the semantics of the document,
+# and secondarily, to preserve enough of the author's intent to generate
+# presentation MathML that has the originally desired appearance.
+
+# Thus, our first concern is to recognize the portions of the input which represent
+# individual equations.  These sequences can then be passed to the math parser
+# and hopefully recognized.
+#
+# The secondary objective is not yet fully carried out.
+# The idea is to insert additional hint or punctuation tokens that indicate the
+# requested alignment points or linebreaks.  Currently hints are discarded
+# before parsing.  Presumably, they need to be attached to neighboring tokens,
+# and preserved through the parsing process?
+# Hopefully, there would be enough attributes remaining for the presentation
+# mathml generator to reconstruct an appropriate alignment afterwards.
+
+# Note that the default implementation of \\ (in LaTeX) is to generate an XMHint.
 
 #======================================================================
 # Section 3.1 introduction
-# TODO
-#   equation equation*
-#   gather   gather*
-#   align    align*
-#   flalign  flalign*
-#   alignat  alignat*
-#   split
-
-# ?? Of course, I have to figure out how to represent them....
-#DefConstructor('\gather',   "<XMTok name='gather'>", environment=>'gather');
-#DefConstructor('\endgather',"<XMTok ?? />", end_environment=>'gather');
-DefEnvironment('{gather}',
-	       "<XMApp><XMTok name='gather'/>#body</XMApp>");
-
-# Same as equation; \\ gives an XMHint. 
-# Probably need to carry some styling info so mathml can align?
-DefEnvironment('{multiline}',
-	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>", 
-	       mode=>'display_math',
-	       properties=> {refnum=>sub { $STOMACH->refStepCounter('equation'); }});
-DefEnvironment('{multiline*}',
-	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>", 
-	       mode=>'display_math');
 
 #======================================================================
 # Section 3.2 Single equations
 
-# Used for single equations:
-#  equation, equation*, split, multiline
+#  equation, equation*
+
 #======================================================================
 # Section 3.3 Split equations without alignment
+
+# Multiline is for single equations, but split on multiple lines, using \\ to separate lines.
+DefEnvironment('{multline}',
+	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>", 
+	       mode=>'display_math',
+	       properties=> {refnum=>sub { refStepCounter('equation'); }});
+DefEnvironment('{multline*}',
+	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>", 
+	       mode=>'display_math');
 
 #======================================================================
 # Section 3.4 Split equations with alignment
 
+# split is used within other math environments to provide line breaks and alignment.
+# It is not entirely clear the contents necessarily represent any complete mathematical entity,
+# so the begin and end also yield XMHint's!
+DefEnvironment('{split}',
+	       "<XMHint name='split-begin'/>#body<XMHint name='split-end'/>",
+	       beforeDigest=>sub{ DefConstructor("&","<XMHint name='align'/>"); });
+
 #======================================================================
 # Section 3.5 Equation groups without alignment
+
+DefConstructor('\@@gather@newline',
+	       "</XMath></Math></equation>"
+	       ."<equation refnum='#refnum'><Math mode='display'><XMath>",
+	       properties=> {refnum=>sub { refStepCounter('equation'); }},
+	       untex=>'\\');
+DefConstructor('\@@gather@newline@nonum',
+	       "</XMath></Math></equation>"
+	       ."<equation><Math mode='display'><XMath>",
+	       untex=>'\\');
+
+# gather collects several equations, separated by \\
+# NOTE: This gets the structure right, but the addition of tex property isn't cooperating.
+DefEnvironment('{gather}',
+	       "<equationgroup><equation refnum='#refnum'><Math mode='display'><XMath>"
+	       ."#body"
+	       ."</XMath></Math></equation></equationgroup>",
+	       mode=>'display_math',
+	       beforeDigest=>sub{  Let("\\\\",'\@@gather@newline'); },
+	       properties=> {refnum=>sub { refStepCounter('equation'); }});
+DefEnvironment('{gather*}',
+	       "<equationgroup><equation><Math mode='display'><XMath>"
+	       ."#body"
+	       ."</XMath></Math></equation></equationgroup>",
+	       mode=>'display_math',
+	       beforeDigest=>sub{ Let("\\\\",'\@@gather@newline@nonum'); });
 
 #======================================================================
 # Section 3.6 Equation groups with mutual alignment
 
+# This environment can contain multiple columns, but apparently the intension is 
+# that each pair should constitute an equation:
+#    lhs & = rhs & lhs & = rhs ...
+# where each lhs is right aligned, and rhs is left aligned.
+
+DefConstructor('\@@align@newline',
+	       "</XMath></Math></equation>"
+	       ."<equation refnum='#refnum'><Math mode='display'><XMath>",
+	       properties=> {refnum=>sub { refStepCounter('equation'); }},
+	       beforeDigest=>sub{ Let('&','\@@align@odd'); },
+	       untex=>'\\');
+DefConstructor('\@@align@newline@nonum',
+	       "</XMath></Math></equation>"
+	       ."<equation><Math mode='display'><XMath>",
+	       beforeDigest=>sub{ Let('&','\@@align@odd'); },
+	       untex=>'\\');
+DefConstructor('\@@align@odd',"<XMHint name='align'/>",
+	       afterDigest=>sub{ Let('&','\@@align@even'); },
+	       untex=>'&');
+DefConstructor('\@@align@even',
+	       "</XMath></Math></equation>"
+	       ."<equation><Math mode='display'><XMath>",
+	       afterDigest=>sub{ Let('&','\@@align@odd'); },
+	       untex=>'&');
+
+# Question: Should the extra "equations" in each row be <equation> or just <Math> ????
+DefEnvironment('{align}',
+	       "<equationgroup><equation refnum='#refnum'><Math mode='display'><XMath>"
+	       ."#body"
+	       ."</XMath></Math></equation></equationgroup>",
+	       mode=>'display_math',
+	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline'); },
+	       properties=> {refnum=>sub { refStepCounter('equation'); }});
+
+DefEnvironment('{align*}',
+	       "<equationgroup><equation><Math mode='display'><XMath>"
+	       ."#body"
+	       ."</XMath></Math></equation></equationgroup>",
+	       mode=>'display_math',
+	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline@nonum'); });
+
+# flalign typesets in the full column width.
+# We'll ignore that distinction for now. 
+DefEnvironment('{flalign}',
+	       "<equationgroup><equation refnum='#refnum'><Math mode='display'><XMath>"
+	       ."#body"
+	       ."</XMath></Math></equation></equationgroup>",
+	       mode=>'display_math',
+	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline'); },
+	       properties=> {refnum=>sub { refStepCounter('equation'); }});
+
+DefEnvironment('{flalign*}',
+	       "<equationgroup><equation><Math mode='display'><XMath>"
+	       ."#body"
+	       ."</XMath></Math></equation></equationgroup>",
+	       mode=>'display_math',
+	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline@nonum'); });
+
+# alignat doesn't stretch the columns out as much (?)
+# We'll ignore that distinction for now. 
+DefEnvironment('{alignat}{}',
+	       "<equationgroup><equation refnum='#refnum'><Math mode='display'><XMath>"
+	       ."#body"
+	       ."</XMath></Math></equation></equationgroup>",
+	       mode=>'display_math',
+	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline'); },
+	       properties=> {refnum=>sub { refStepCounter('equation'); }});
+
+DefEnvironment('{alignat*}{}',
+	       "<equationgroup><equation><Math mode='display'><XMath>"
+	       ."#body"
+	       ."</XMath></Math></equation></equationgroup>",
+	       mode=>'display_math',
+	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline@nonum'); });
+
+
 #======================================================================
 # Section 3.7. Alignmnet building blocks
 #    gathered, aligned alignedat
+# These are intended to be used within math environments, but do they have the same
+# `semanitic' intent as far as separating equations?
+# aligned/alignedat perhaps do, since the alignment doesn't make much sense otherwise
+# [except for a single column, but then split should be used]
+# gathered could make sense as arranging a single subexpression into multiple lines within
+# a larger expression.
+#   On the other hand, we'll already be inside of a math environment, so delineating
+# these potentially separate equations will be awkward anyway!
+
+# So, we just leave Hint markers for & and \\
+DefEnvironment('{gathered}[]',
+	       "<XMHint name='gathered-begin'/>#body<XMHint name='gathered-end'/>");
+DefEnvironment('{aligned}[]',
+	       "<XMHint name='aligned-begin'/>#body<XMHint name='aligned-end'/>",
+	       beforeDigest=>sub{ DefConstructor("&","<XMHint name='align'/>"); });
+DefEnvironment('{alignedat}{}[]',
+	       "<XMHint name='aligned-begin'/>#body<XMHint name='aligned-end'/>",
+	       beforeDigest=>sub{ DefConstructor("&","<XMHint name='align'/>"); });
+
+DefEnvironment('{cases}',
+	       sub { matharray($_[0],'',$_[1], 'Cases','Case','Cell');},
+	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 
 #======================================================================
 # Section 3.8 Adjusting tag placement
@@ -105,7 +245,7 @@ DefMacro('\displaybreak[]','');	# Ignorable
 # Section 3.11.1 Numbering hierarchy
 DefPrimitive('\numberwithin{}{}',sub {
   my($ignore,$counter,$within)=@_;
-  NewCounter($counter,$within); });
+  NewCounter($counter->toString,$within->toString); });
 
 # Section 3.11.2 Cross references to equation numbers
 DefMacro('\eqref{semiverb}', '(\@REF{#1}{\@VALUE{LABEL@#1}})');
@@ -113,14 +253,14 @@ DefMacro('\eqref{semiverb}', '(\@REF{#1}{\@VALUE{LABEL@#1}})');
 # Section 3.11.3 Subordinate numbering sequences.
 DefEnvironment('{subequations}',"<subequations refnum='#refnum'>#body</subequations>",
 	       beforeDigest=>sub { NewCounter('parentequation');
-				   $STOMACH->refStepCounter('equation');
-				   $STOMACH->assignValue("\\c\@parentequation",
-							 $STOMACH->lookupValue("\\c\@equation"));
-				   $STOMACH->assignValue("\\c\@equation",Number(0));
+				   refStepCounter('equation');
+				   Assign('value',"\\c\@parentequation"=>Lookup('value',"\\c\@equation"));
+				   Assign('value',"\\c\@equation",Number(0));
 				   Let('\theparentequation','\theequation');
-				   DefMacro('\theequation','\theparentequation\alph{equation}'); },
-	       afterDigest =>sub{ $STOMACH->assignValue("\\c\@equation",
-						     $STOMACH->lookupValue("\\c\@parentequation")); },
+				   DefMacro('\theequation','\theparentequation\alph{equation}'); 
+				   return; },
+	       afterDigest =>sub{ Assign('value',"\\c\@equation"=>Lookup('value',"\\c\@parentequation"));
+				  return; },
 	       properties=> {refnum=>sub {  $GULLET->expandTokens(Tokens(T_CS("\\theparentequation"))); }});
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -129,28 +269,25 @@ DefEnvironment('{subequations}',"<subequations refnum='#refnum'>#body</subequati
 
 #======================================================================
 # Section 4.1 Matrices
-DefEnvironment('{cases}',
-	       sub { matharray('',$_[1], 'Cases','Case','Cell');},
-	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 
 DefEnvironment('{matrix}',
-	       sub { matharray('',$_[1], 'Matrix','Row','Cell');},
+	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 
 DefEnvironment('{pmatrix}',
-	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'(',close=>')');},
+	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>'(',close=>')');},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 DefEnvironment('{bmatrix}',
-	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'[',close=>']');},
+	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>'[',close=>']');},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 DefEnvironment('{Bmatrix}',
-	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'{',close=>'}');},
+	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>'{',close=>'}');},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 DefEnvironment('{vmatrix}',
-	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'|',close=>'|');},
+	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>'|',close=>'|');},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 DefEnvironment('{Vmatrix}',
-	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>"\x{2225}",close=>"\x{2225}");},
+	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>"\x{2225}",close=>"\x{2225}");},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 
 #======================================================================
@@ -233,11 +370,11 @@ DefConstructor('\underset{}{}',"<XMApp><XMWrap role='UNDERACCENT>#1</XMWrap><XMA
 
 # Section 4.11.1 The \frac, \dfrac, and \tfrac commands
 DefMath('\dfrac{}{}','/', style=>'display', name=>"/", operator_role=>'MULOP',
-	beforeDigest=>sub { $STOMACH->bgroup; $STOMACH->setMathStyle('text'); },
-	afterDigest =>sub { $STOMACH->egroup; });
+	beforeDigest=>sub { BGroup; Assign('value',mathstyle=>'text'); return; },
+	afterDigest =>\&EGroup);
 DefMath('\tfrac{}{}','/', style=>'text',    name=>"/", operator_role=>'MULOP',
-	beforeDigest=>sub { $STOMACH->bgroup; $STOMACH->setMathStyle('script'); },
-	afterDigest =>sub { $STOMACH->egroup; });
+	beforeDigest=>sub { BGroup; Assign('value',mathstyle=>'script'); return; },
+	afterDigest =>\&EGroup);
 DefMath('\ifrac{}{}','/', style=>'inline',  name=>"/", operator_role=>'MULOP');
 
 # Section 4.11.2 The \binom, \dbinom, and \tbinom commands
@@ -302,8 +439,8 @@ DefMath('\pod{}', '(#1)', role=>'POSTFIX'); # Well, sorta postfix..
 #  \substack, \begin{subarray}
 
 DefConstructor('\substack{}',"<XMApp><XMTok name='Collection'/><XMArg>#1</XMArg></XMApp>",
-	       beforeDigest=>sub{ $STOMACH->bgroup; DefConstructor("\\\\","</XMArg><XMArg>"); },
-	       afterDigest =>sub{ $STOMACH->egroup; });
+	       beforeDigest=>sub{ BGroup; DefConstructor("\\\\","</XMArg><XMArg>"); },
+	       afterDigest =>\&EGroup);
 DefEnvironment('{subarray}[]',"<XMApp><XMTok name='Collection' alignment='#1'/><XMArg>#body</XMArg></XMApp>",
 	       beforeDigest=>sub{ DefConstructor("\\\\","</XMArg><XMArg>"); });
 
@@ -315,13 +452,13 @@ DefEnvironment('{subarray}[]',"<XMApp><XMTok name='Collection' alignment='#1'/><
 # Thus, our representation is: sideset(presub,presup,postsub,postsup,object)
 # Note, also, that this is quite ugly, but since it is a rather peculiar special case.... ?
 DefConstructor('\sideset{}{}{}', sub {
-  my($whatsit,$pre,$post,$ob)=@_;
+  my($document,$pre,$post,$ob)=@_;
   my @scripts = (undef,undef,undef,undef);
 
-  my $node=$INTESTINE->openElement('XMApp');
+  my $node=$document->openElement('XMApp');
   my $phase=0;
   foreach my $group ($pre,$post){
-    $INTESTINE->absorb($group);
+    $document->absorb($group);
     foreach my $p ($node->childNodes){
       my $role = $p->getAttribute('role')||'';
       if   ($role eq 'POSTSUBSCRIPT'  ){ $scripts[$phase+0] = $p->firstChild; }
@@ -331,14 +468,14 @@ DefConstructor('\sideset{}{}{}', sub {
     $phase +=2;  }
 
   # And finally build it.
-  $INTESTINE->insertElement('XMTok',undef,name=>'sideset');
+  $document->insertElement('XMTok',undef,name=>'sideset');
   foreach my $script (@scripts){
     if($script){
-      $node->insert($script); }
+      $node->appendChild($script); }
     else {
-      $INTESTINE->insertElement('XMTok',undef,name=>'Empty'); }}
-  $INTESTINE->insertElement('XMArg',$ob);
-  $INTESTINE->closeElement('XMApp');
+      $document->insertElement('XMTok',undef,name=>'Empty'); }}
+  $document->insertElement('XMArg',$ob);
+  $document->closeElement('XMApp');
 });
 
 #======================================================================

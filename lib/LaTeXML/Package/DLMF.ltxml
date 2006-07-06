@@ -13,7 +13,6 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
-RequirePackage('LaTeX');
 
 #**********************************************************************
 # Document
@@ -22,6 +21,8 @@ DocType("chapter","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
        "http://dlmf.nist.gov/LaTeXML");
 
 RequirePackage('graphicx');
+RequirePackage('amsmath');
+RequirePackage('amssymb');
 RequirePackage('DLMFmath');
 RequirePackage('url');
 RequirePackage('comment');
@@ -138,7 +139,7 @@ DefConstructor('\origref[]{}', "^<origref ref='#2'>#1</origref>", mode=>'text', 
 DefEnvironment('{equation}[]',
 	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>",
 	       mode=>'display_math',
-	       properties=> { refnum=> sub { $STOMACH->refStepCounter('equation'); }});
+	       properties=> { refnum=> sub { refStepCounter('equation'); }});
 DefEnvironment('{equation*}[]',
 	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>",
 	       mode=>'display_math');
@@ -146,13 +147,13 @@ DefEnvironment('{equation*}[]',
 # equationmix contains several math environments, 
 # Each math produces inline math, BUT we've set displaystyle in them!
 DefEnvironment('{equationmix}[]',"<equationmix refnum='#refnum'>#body</equationmix>",
-	       properties=> { refnum=> sub { $STOMACH->refStepCounter('equation'); }},
+	       properties=> { refnum=> sub { refStepCounter('equation'); }},
 	       # NOTE: We'd like to have displaystyle (but NOT mode=display!) for enclosed math env!
 	       # Use displaystyles for math environments within here.
 	       beforeDigest => sub {
 		 DefEnvironment('{math}',"<Math mode='inline'><XMath>#body</XMath></Math>",
 				mode=>'inline_math',
-				beforeDigest=>sub {$STOMACH->setMathStyle('display');});
+				beforeDigest=>sub { Assign('value',mathstyle=>'display'); return;});
 			       return; }
 );
 DefEnvironment('{equationmix*}[]',  "<equationmix>#body</equationmix>");

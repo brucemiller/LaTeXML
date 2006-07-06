@@ -15,9 +15,10 @@ WriteMakefile(
 	      AUTHOR => 'Bruce Miller <bruce.miller@nist.gov>',
 	      PREREQ_PM => { 'XML::LibXML'  => 1.57,
 			     'XML::LibXSLT' => 1.57,
+			     'XML::LibXML::XPathContext' => 0,
 			     'Parse::RecDescent' => 0,
 			     'Image::Magick'=> 0},
-	      EXE_FILES => [ 'bin/latexml', 'bin/latexmlpost',
+	      EXE_FILES => [ 'bin/latexml', 'bin/latexmlpost', 'bin/latexmlfind',
 			     ($DLMF ? ('bin/dlmfpost') : ())],
 	      );
 
@@ -62,12 +63,12 @@ sub postamble {
 
   # Generate a makefile block to compile the grammer
   my $makeGrammar = <<'MakeGrammar';
-all :: blib/lib/LaTeXML/Post/MathGrammar.pm
+all :: blib/lib/LaTeXML/MathGrammar.pm
 
-blib/lib/LaTeXML/Post/MathGrammar.pm: lib/LaTeXML/Post/MathGrammar
-	$(PERLRUN) -MParse::RecDescent - lib/LaTeXML/Post/MathGrammar LaTeXML::Post::MathGrammar
-	$(NOECHO) $(MKPATH) $(INST_LIBDIR)/LaTeXML/Post
-	$(MV) MathGrammar.pm blib/lib/LaTeXML/Post/MathGrammar.pm
+blib/lib/LaTeXML/MathGrammar.pm: lib/LaTeXML/MathGrammar
+	$(PERLRUN) -MParse::RecDescent - lib/LaTeXML/MathGrammar LaTeXML::MathGrammar
+	$(NOECHO) $(MKPATH) $(INST_LIBDIR)/LaTeXML
+	$(MV) MathGrammar.pm blib/lib/LaTeXML/MathGrammar.pm
 
 MakeGrammar
 

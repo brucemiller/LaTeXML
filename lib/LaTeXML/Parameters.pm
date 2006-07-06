@@ -121,9 +121,11 @@ sub untexArguments {
   foreach my $spec (@$self){
     if($$spec{noValue}){ $string .= $$spec{matches}->[0]->untex; }
     elsif(defined(my $arg = shift(@args))){
-      $string .= $$spec{before} if $$spec{before};
+      if(my $before = $$spec{before}){
+	$string .= (ref $before ? $before->untex : $before); }
       $string .= $arg->untex;
-      $string .= $$spec{after} if $$spec{after};
+      if(my $after = $$spec{after}){
+	$string .= (ref $after ? $after->untex : $after); }
     }}
   $string; }
 
@@ -241,7 +243,7 @@ sub readKeyVal {
 Fatal("What's up?") unless $ktoks;
     my $key= $ktoks->toString; $key=~s/\s//g;
     if($key){
-      my $keydef=$STOMACH->lookupValue('KEYVAL@'.$keyset.'@'.$key) || {};
+      my $keydef=$STATE->lookup('value','KEYVAL@'.$keyset.'@'.$key) || {};
       my $value;
       if($delim->equals($T_EQ)){	# Got =, so read the value
 	$GULLET->startSemiverbatim if $$keydef{verbatim};
@@ -250,7 +252,7 @@ Fatal("What's up?") unless $ktoks;
 	$value = $keydef->reparseArgument($value) if $$keydef{type};
       }
       else {			# Else, get default value.
-	$value = $STOMACH->lookupValue('KEYVAL@'.$keyset.'@'.$key.'@default'); }
+	$value = $STATE->lookup('value','KEYVAL@'.$keyset.'@'.$key.'@default'); }
       push(@kv,$key);
       push(@kv,$value); }
     last if $delim->equals($close); }
@@ -322,7 +324,7 @@ sub digestValues {
   while(@kv){
     my($key,$value)=(shift(@kv),shift(@kv));
     push(@dkv,$key); 
-    my $keydef=$STOMACH->lookupValue('KEYVAL@'.$keyset.'@'.$key);
+    my $keydef=$STATE->lookup('value','KEYVAL@'.$keyset.'@'.$key);
     if($keydef){
       push(@dkv,$keydef->digestArgument($value)); }
     else {

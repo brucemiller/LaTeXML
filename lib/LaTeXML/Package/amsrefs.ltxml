@@ -24,15 +24,15 @@ DefKeyVal('amsrefs','code_url','semiverb');
 
 # \bib{key}{type}{keyval-pairs}
 DefConstructor('\bib{any}{any}{KeyVal:amsrefs}', sub {
-  my($whatsit,$key,$type,$fields)=@_;
-  $INTESTINE->openElement('bibentry',key=>$key, type=>$type);
+  my($document,$key,$type,$fields)=@_;
+  $document->openElement('bibentry',key=>$key, type=>$type);
   my @pairs = $fields->getKeyVals;
   while(@pairs){
     my($field,$value)=(shift(@pairs),shift(@pairs));
     $field=lc($field);
     $field=$equivs{$field} if $equivs{$field};
-    $INTESTINE->insertElement("bib-$field",$value); }
-  $INTESTINE->closeElement('bibentry'); });
+    $document->insertElement("bib-$field",$value); }
+  $document->closeElement('bibentry'); });
 
 DefEnvironment('{bibdiv}','#body');
 DefEnvironment('{biblist}',"<biblist>#body</biblist>");
@@ -42,11 +42,11 @@ DefEnvironment('{biblist}',"<biblist>#body</biblist>");
 # Other Defns (presumably from textcmds?)
 
 DefConstructor('\MR{any}',sub {
-  my($whatsit,$mrnumber)=@_;
+  my($document,$mrnumber)=@_;
   # Patch up old-style MathReviews numbers
   my $id = $mrnumber->toString;
   $id =~ s/\s+\\\#\s*/:/;
-  $INTESTINE->insertElement('bib-mr',Box($id,$mrnumber->getFont,$mrnumber->getLocator)); });
+  $document->insertElement('bib-mr',LaTeXML::Box->new($id,$mrnumber->getFont,$mrnumber->getLocator)); });
 
 DefConstructor('\ndash',"\x{2013}"); # EN DASH
 DefConstructor('\mdash',"\x{2014}"); # EM DASH

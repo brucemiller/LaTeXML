@@ -53,6 +53,7 @@ sub closeMouth {
     $$self{pushback}=[];
     $$self{mouth}=Tokens(); }}
 
+sub getMouth { $_[0]->{mouth}; }
 # Obscure, but the only way I can think of to End!! (see \bye or \end{document})
 # Flush all sources (close all pending mouth's)
 sub flush {
@@ -298,7 +299,7 @@ sub readSemiverbatim {
 sub startSemiverbatim {
   my($self)=@_;
   $STOMACH->bgroup(1);
-  $STOMACH->assignCatcode(CC_OTHER,'^','_','@','~','&','$','#','%');  # should '%' too ?
+  map($STATE->assign('catcode',$_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%');  # should '%' too ?
 }
 sub endSemiverbatim {
   my($self)=@_;
@@ -323,7 +324,7 @@ sub readRegisterValue {
   return unless defined $token;
   my $defn = $token->getDefinition;
   if((defined $defn) && ($defn->isRegister eq $type)){
-    $defn->getValue($defn->readArguments($self)); }
+    $defn->valueOf($defn->readArguments($self)); }
   else {
     $self->unread($token); return; }}
 
@@ -357,7 +358,7 @@ sub readFactor {
   my($self)=@_;
   my $string = $self->readDigits('0-9');
   my $token = $self->readXToken;
-  if($token->getString =~ /^[\.\,]$/){
+  if($token && $token->getString =~ /^[\.\,]$/){
     $string .= '.'.$self->readDigits('0-9'); 
     $token = $self->readXToken; }
   if(length($string)>0){
@@ -366,7 +367,7 @@ sub readFactor {
   else {
     $self->unread($token);
     my $n = $self->readNormalInteger;
-    (defined $n ? $n->getValue : undef); }}
+    (defined $n ? $n->valueOf : undef); }}
 
 #======================================================================
 # Integer, Number
@@ -379,8 +380,8 @@ sub readNumber {
   my($self)=@_;
   my $s = $self->readOptionalSigns;
   if   (defined (my $n = $self->readNormalInteger    )){ ($s < 0 ? $n->negate : $n); }
-  elsif(defined (   $n = $self->readInternalDimension)){ Number($s * $n->getValue); }
-  elsif(defined (   $n = $self->readInternalGlue     )){ Number($s * $n->getValue); }
+  elsif(defined (   $n = $self->readInternalDimension)){ Number($s * $n->valueOf); }
+  elsif(defined (   $n = $self->readInternalGlue     )){ Number($s * $n->valueOf); }
   else{ Warn("Missing number, treated as zero.");        Number(0); }}
 
 # <normal integer> = <internal integer> | <integer constant>
@@ -416,7 +417,7 @@ sub readDimension {
   my($self)=@_;
   my $s = $self->readOptionalSigns;
   if   (defined (my $d = $self->readInternalDimension)){ ($s < 0 ? $d->negate : $d); }
-  elsif(defined (   $d = $self->readInternalGlue)     ){ Dimension($s * $d->getValue); }
+  elsif(defined (   $d = $self->readInternalGlue)     ){ Dimension($s * $d->valueOf); }
   elsif(defined (   $d = $self->readFactor)           ){ Dimension($s * $d * $self->readUnit); }
   else{ Warn("Missing number, treated as zero.");        Dimension(0); }}
 
@@ -429,14 +430,14 @@ sub readDimension {
 # Read a unit, returning the equivalent number of scaled points, 
 sub readUnit {
   my($self)=@_;
-  if(defined(my $u=$self->readKeyword('ex','em'))){ $self->skip1Space; $STOMACH->convertUnit($u);  }
-  elsif(defined($u=$self->readInternalInteger  )){ $u->getValue; } # These are coerced to number=>sp
-  elsif(defined($u=$self->readInternalDimension)){ $u->getValue; }
-  elsif(defined($u=$self->readInternalGlue     )){ $u->getValue; }
+  if(defined(my $u=$self->readKeyword('ex','em'))){ $self->skip1Space; $STATE->convertUnit($u);  }
+  elsif(defined($u=$self->readInternalInteger  )){ $u->valueOf; } # These are coerced to number=>sp
+  elsif(defined($u=$self->readInternalDimension)){ $u->valueOf; }
+  elsif(defined($u=$self->readInternalGlue     )){ $u->valueOf; }
   else {
     $self->readKeyword('true');	# But ignore, we're not bothering with mag...
     $u = $self->readKeyword('pt','pc','in','bp','cm','mm','dd','cc','sp');
-    if($u){ $self->skip1Space; $STOMACH->convertUnit($u); }
+    if($u){ $self->skip1Space; $STATE->convertUnit($u); }
     else  { Warn("Illegal unit of measure (pt inserted)."); 65536; }}}
 
 # Return a dimension value or undef
@@ -454,14 +455,14 @@ sub readMuDimension {
   my($self)=@_;
   my $s = $self->readOptionalSigns;
   if   (defined (my $m = $self->readFactor        )){ MuDimension($s * $m * $self->readMuUnit); }
-  elsif(defined (   $m = $self->readInternalMuGlue)){ MuDimension($s * $m->getValue); }
+  elsif(defined (   $m = $self->readInternalMuGlue)){ MuDimension($s * $m->valueOf); }
   else{ Warn("Expecting mudimen; assuming 0 ");       MuDimension(0); }}
 
 sub readMuUnit {
   my($self)=@_;
-  if   (my $m=$self->readKeyword('mu')){ $self->skip1Space; $STOMACH->convertUnit($m); }
-  elsif($m=$self->readInternalMuGlue  ){ $m->getValue; }
-  else { Warn("Illegal unit of measure (mu inserted)."); $STOMACH->convertUnit('mu'); }}
+  if   (my $m=$self->readKeyword('mu')){ $self->skip1Space; $STATE->convertUnit($m); }
+  elsif($m=$self->readInternalMuGlue  ){ $m->valueOf; }
+  else { Warn("Illegal unit of measure (mu inserted)."); $STATE->convertUnit('mu'); }}
 
 #======================================================================
 # Glue
@@ -483,7 +484,7 @@ sub readGlue {
     my($r1,$f1,$r2,$f2);
     ($r1,$f1) = $self->readRubber if $self->readKeyword('plus');
     ($r2,$f2)  = $self->readRubber if $self->readKeyword('minus');
-    Glue($d->getValue*$s,$r1,$f1,$r2,$f2); }}
+    Glue($d->valueOf*$s,$r1,$f1,$r2,$f2); }}
 
 our %FILLS = (fil=>1,fill=>2,filll=>3);
 sub readRubber {
@@ -492,7 +493,7 @@ sub readRubber {
   my $f = $self->readFactor;
   if(!defined $f){
     $f = ($mu ? $self->readMuDimension : $self->readDimension);
-    ($f->getValue * $s, 0); }
+    ($f->valueOf * $s, 0); }
   elsif(defined(my $fil = $self->readKeyword('filll','fill','fil'))){
     ($s*$f,$FILLS{$fil}); }
   elsif(defined(my $u = ($mu ? $self->readMuUnit : $self->readUnit))){
@@ -524,7 +525,7 @@ sub readMuGlue {
     my($r1,$f1,$r2,$f2);
     ($r1,$f1) = $self->readRubber(1) if $self->readKeyword('plus');
     ($r2,$f2)  = $self->readRubber(1) if $self->readKeyword('minus');
-    MuGlue($d->getValue*$s,$r1,$f1,$r2,$f2); }}
+    MuGlue($d->valueOf*$s,$r1,$f1,$r2,$f2); }}
 
 # Return a muglue value or undef.
 sub readInternalMuGlue { $_[0]->readRegisterValue('MuGlue'); }

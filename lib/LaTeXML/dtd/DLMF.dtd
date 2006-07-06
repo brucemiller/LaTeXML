@@ -14,7 +14,7 @@
 -->
 
 <!ENTITY % Inline.extra "| email | VRML | GAMS">
-<!ENTITY % Block.extra  "| figuregroup | equationgroup | equationmix | begin_onecolumn | end_onecolumn">
+<!ENTITY % Block.extra  "| figuregroup | equationmix | begin_onecolumn | end_onecolumn">
 <!ENTITY % Misc.extra   "| electroniconly | printonly | note">
 <!ENTITY % Frontmatter.extra "| affiliation | acknowledgements | sidebar | gallery | copyright
                               | origref">
@@ -36,6 +36,13 @@
 <!ELEMENT subsection    ((%Sectitle.mix;)*, (%Block.mix; | subsubsection | paragraph)*)>
 <!ELEMENT subsubsection ((%Sectitle.mix;)*, (%Block.mix; | paragraph)*)>
 <!ELEMENT paragraph     ((%Sectitle.mix;)*, (%Block.mix;)*)>
+<!ATTLIST chapter       %Common.attr; %Section.attr;>
+<!ATTLIST part          %Common.attr; %Section.attr;>
+<!ATTLIST section       %Common.attr; %Section.attr;>
+<!ATTLIST subsection    %Common.attr; %Section.attr;>
+<!ATTLIST subsubsection %Common.attr; %Section.attr;>
+<!ATTLIST paragraph     %Common.attr; %Section.attr;>
+
 <!-- Redefined document structure -->
 
 <!ELEMENT affiliation (#PCDATA | %Inline.mix;)*>
@@ -65,11 +72,6 @@
 <!ATTLIST equationmix
           label ID #IMPLIED
           refnum CDATA #IMPLIED>
-<!--<!ELEMENT equationgroup (equation | equationmix | origref | constraint | %Flow.mix;)*>-->
-<!-- <!ELEMENT equationgroup (equation | equationmix | origref | constraint | text)*>-->
-<!ELEMENT equationgroup (%Block.mix;)*>
-<!ATTLIST equationgroup
-          label ID #IMPLIED>
 <!ELEMENT constraint (#PCDATA | Math)*>
 <!ATTLIST constraint 
           hidden (yes|no) #IMPLIED>

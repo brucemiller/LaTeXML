@@ -3,7 +3,13 @@
 # Test cases for LaTeXML
 #**********************************************************************
 use Test;
-BEGIN { plan tests => 10; }
+our @tests;
+BEGIN { 
+  @tests = ( qw( testchar testctr testexpand testif testover
+		  fonts xii verb comment simplemath scopemacro
+		 ));
+
+plan tests => 11; }
 
 use LaTeXML;
 
@@ -11,16 +17,8 @@ use LaTeXML;
 # (the latter from a previous `good' run of latexml $name).
 # We transform $name.tex and compare the result to $name.xml
 
-dotest('testchar');
-dotest('testctr');
-dotest('testexpand');
-dotest('testif');
-dotest('testover');
-dotest('fonts');
-dotest('xii');
-dotest('verb');
-dotest('comment');
-dotest('simplemath');
+foreach my $test (@tests){
+  dotest($test); }
 
 #**********************************************************************
 # Do the test

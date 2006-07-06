@@ -12,8 +12,8 @@
 # \=========================================================ooo==U==ooo=/ #
 use strict;
 use LaTeXML::Package;
+package LaTeXML::Package::Pool;
 
-RequirePackage('LaTeX');
 #**********************************************************************
 # Document structure.
 
@@ -23,12 +23,12 @@ DocType("document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd',
 #**********************************************************************
 # The core sectioning commands are defined in LaTeX.pm
 # but the counter setup, etc, depends on article
-NewCounter('part');
-NewCounter('section');
-NewCounter('subsection','section');
-NewCounter('subsubsection','subsection');
-NewCounter('paragraph','subsubsection');
-NewCounter('subparagraph','paragraph');
+NewCounter('part', undef, 'section');
+NewCounter('section', undef, 'subsection');
+NewCounter('subsection','section', 'subsubsection');
+NewCounter('subsubsection','subsection', 'paragraph');
+NewCounter('paragraph','subsubsection', 'subparagraph');
+NewCounter('subparagraph','paragraph', 'equation','figure','table');
 
 NewCounter('equation');
 NewCounter('figure');
@@ -50,15 +50,14 @@ DefMacro('\thetable',   '\arabic{table}');
 
 Tag('appendix',autoClose=>1);
 DefPrimitive('\appendix',sub{
-  $STOMACH->resetCounter('section');
+  resetCounter('section');
   DefMacro('\thesection',      '\Alph{section}');
   DefConstructor('\section Flag:* []{}',
       "<appendix ?#refnum(refnum='#refnum')>"
 		 ."<title>#3</title>?#2(<toctitle>#2</toctitle>)",
 		 afterDigest=> sub { my($whatsit,$star,$toctitle,$title)=@_;
 				     if(!$star){ # if not starred
-				       $whatsit->setProperty('refnum',
-							     $STOMACH->refStepCounter('section')); }
+				       $whatsit->setProperty('refnum',refStepCounter('section')); }
 				     return; }); });
 
 #**********************************************************************
