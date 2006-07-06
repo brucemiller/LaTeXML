@@ -1,49 +1,31 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
- /=====================================================================\ 
- |  LaTeXML-base.xsl                                                   |
- | Base Stylesheet for converting LaTeXML documents to html or xhtml   |
- | included by LaTeXML-html.xsl and LaTeXML-xhtml.xsl                  |
- |=====================================================================|
- | Part of LaTeXML:                                                    |
- |  Public domain software, produced as part of work done by the       |
- |  United States Government & not subject to copyright in the US.     |
- |=====================================================================|
- | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
- | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
- \=========================================================ooo==U==ooo=/
--->
-<xsl:stylesheet 
-   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   version="1.0"
-   xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
-   exclude-result-prefixes='ltx'
-   >
+<!-- INCOMPLETE: Must prepend html.xsl.head or xhtml.xsl.head -->
+
 <xsl:param name="CSS"></xsl:param>
 
 <!--  ======================================================================
       The Page
       ====================================================================== -->
 
-<xsl:template match="/">
-  <html>
-    <head>
-      <title><xsl:value-of select="normalize-space(*/ltx:title)"/></title>
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-      <style type="text/css">
-	img.math { vertical-align:middle }
-	.framed  { border:1px solid black;}
-      </style>
-      <xsl:if test='$CSS'>
-	<link rel='stylesheet' type="text/css" href="{$CSS}"/> 
-     </xsl:if>
-    </head>
-    <body>
-      <xsl:call-template name="header"/>
-      <xsl:apply-templates/>
-      <xsl:call-template name="footer"/> 
-    </body>
-  </html>
+<xsl:template name="head">
+  <head>
+    <title><xsl:value-of select="normalize-space(*/ltx:title)"/></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <style type="text/css">
+      img.math { vertical-align:middle }
+      .framed  { border:1px solid black;}
+    </style>
+    <xsl:if test='$CSS'>
+      <link rel='stylesheet' type="text/css" href="{$CSS}"/> 
+    </xsl:if>
+  </head>
+</xsl:template>
+
+<xsl:template name="body">
+  <body>
+    <xsl:call-template name="header"/>
+    <xsl:apply-templates/>
+    <xsl:call-template name="footer"/> 
+  </body>
 </xsl:template>
 
 <xsl:template match="metakeywords">
@@ -54,17 +36,19 @@
       Header & Footer
       ====================================================================== -->
 <xsl:template name="header">
-  <div class='header'>
-    <xsl:if test="//ltx:title">
+  <xsl:if test="//ltx:title">
+    <div class='header'>
       <xsl:apply-templates mode="TOC"/>
-    </xsl:if>
-  </div>
+    </div>
+  </xsl:if>
 </xsl:template>
 
 <xsl:template name="footer">
-  <div class='footer'>
-    <xsl:value-of select='//ltx:creationdate/node()'/>
-  </div>
+  <xsl:if test="//ltx:creationdate">
+    <div class='footer'>
+      <xsl:value-of select='//ltx:creationdate/node()'/>
+    </div>
+  </xsl:if>
 </xsl:template>
 
 <!-- ======================================================================
@@ -93,6 +77,10 @@
 <!-- put in footer -->
 <xsl:template match="ltx:creationdate"/>
 
+<xsl:template match="ltx:abstract">
+  <div class='abstract'><h6>Abstract</h6><xsl:apply-templates/></div>
+</xsl:template>
+
 <!--  ======================================================================
       Titles.
       ====================================================================== -->
@@ -120,6 +108,10 @@
 
 <xsl:param name="appendix_level">
   <xsl:value-of select="$chapter_level+number(boolean(//ltx:appendix))"/>
+</xsl:param>
+
+<xsl:param name="bibliography_level">
+  <xsl:value-of select="$chapter_level+number(boolean(//ltx:bibliography))"/>
 </xsl:param>
 
 <xsl:param name="subsection_level">
@@ -166,6 +158,11 @@
   <xsl:element name="{concat('h',$appendix_level)}">
     Appendix <xsl:call-template name="maketitle"/></xsl:element>
 </xsl:template>
+<xsl:template match="ltx:bibliography/ltx:title">
+  <xsl:element name="{concat('h',$bibliography_level)}">
+    <xsl:call-template name="maketitle"/></xsl:element>
+</xsl:template>
+
 <xsl:template match="ltx:subsection/ltx:title">
   <xsl:element name="{concat('h',$subsection_level)}">
     <xsl:call-template name="maketitle"/>
@@ -207,7 +204,7 @@
 <xsl:template match="*" mode="TOC"/>
 
 <xsl:template match="ltx:document|ltx:part|ltx:chapter
-		     |ltx:section|ltx:appendix|ltx:subsection|ltx:subsubsection
+		     |ltx:section|ltx:appendix|ltx:bibliography|ltx:subsection|ltx:subsubsection
                      |ltx:paragraph|ltx:subparagraph" mode="TOC">
   <xsl:param name="TOC_DEPTH">0</xsl:param>
   <xsl:choose>
@@ -229,7 +226,7 @@
 <xsl:template name="inTOC">
   <xsl:param name="TOC_DEPTH">0</xsl:param>
   <xsl:apply-templates select="ltx:title" mode="toctitle"/>
-  <xsl:if test="ltx:part|ltx:chapter|ltx:section|ltx:appendix|ltx:subsection
+  <xsl:if test="ltx:part|ltx:chapter|ltx:section|ltx:appendix|ltx:bibliography|ltx:subsection
                 |ltx:subsubsection|ltx:paragraph|ltx:subparagraph">
     <ul><xsl:apply-templates mode="TOC">
 	<xsl:with-param name="TOC_DEPTH" select="1+$TOC_DEPTH"/>
@@ -309,7 +306,7 @@
 </xsl:template>
 
 <xsl:template match="ltx:tabular">
-  <table align='center' frame='{@frame}' rules='{@rules}'>
+  <table align='center'>
     <xsl:apply-templates/>
   </table>
 </xsl:template>
@@ -356,14 +353,14 @@
 </xsl:template>
 
 <xsl:template name="cell-attributes">
-  <xsl:if test="@rowspan">
-    <xsl:attribute name='rowspan'><xsl:value-of select='@rowspan'/></xsl:attribute>
-  </xsl:if>
   <xsl:if test="@colspan">
     <xsl:attribute name='colspan'><xsl:value-of select='@colspan'/></xsl:attribute>
   </xsl:if>
   <xsl:if test="@align">
     <xsl:attribute name='align'><xsl:value-of select='@align'/></xsl:attribute>
+  </xsl:if>
+  <xsl:if test="@border">
+    <xsl:attribute name='class'><xsl:value-of select='@border'/></xsl:attribute>
   </xsl:if>
 </xsl:template>
 
@@ -380,6 +377,10 @@
 <xsl:template match="ltx:ERROR">
   <span class="ERROR" style="color:red"><xsl:apply-templates/></span>
 </xsl:template>
+<xsl:template match="ltx:verbatim">
+  <tt><xsl:apply-templates/></tt>
+</xsl:template>
+
 <!-- ======================================================================
      Lists
      ====================================================================== -->
@@ -457,16 +458,26 @@
 
 <xsl:template match="ltx:cite[@style='intext']">
   <xsl:apply-templates select="citepre"/>
-  <!--  <xsl:apply-templates select="bibref"/>-->
-  <xsl:value-of select="@ref"/>
+  <xsl:call-template name="cite-label">
+    <xsl:with-param name="bibkey" select="@ref"/>
+  </xsl:call-template>
   <xsl:apply-templates select="citepost"/>
 </xsl:template>
 
+
 <xsl:template match="ltx:cite">
   (<xsl:apply-templates select="citepre"/>
-<!-- <xsl:apply-templates select="bibref"/>-->
-   <xsl:value-of select="@ref"/>
+  <xsl:call-template name="cite-label">
+    <xsl:with-param name="bibkey" select="@ref"/>
+  </xsl:call-template>
    <xsl:apply-templates select="citepost"/>)</xsl:template>
+
+<xsl:template name="cite-label">
+  <xsl:param name="bibkey"/>
+  <a href="{concat('#',$bibkey)}" class="citation">
+    <xsl:value-of select="//ltx:bibitem[@key=$bibkey]/ltx:biblabel"/> 
+  </a>
+</xsl:template>
 
 <xsl:template match="ltx:bibref">
   <a href="{@href}"><xsl:apply-templates/></a>
@@ -521,16 +532,14 @@
      Bibliography
      ====================================================================== -->
 <xsl:template match="ltx:biblist">
-  <ul class="biblist">
+  <dl class="biblist">
     <xsl:apply-templates/>
-  </ul>
+  </dl>
 </xsl:template>
 
 <xsl:template match="ltx:bibitem">
-  <li id="{@label}" class="bibitem">
-    <a name="{@label}" class="bib-ay"><xsl:apply-templates select="fbib-author-year"/></a>
-    <xsl:apply-templates select="fbib-title | fbib-data | fbib-extra"/>
-  </li>
+  <dt id="{@key}" class="bibitem"><xsl:apply-templates select="ltx:fbib-author-year | ltx:biblabel"/></dt>
+  <dd><xsl:apply-templates select="ltx:fbib-title | ltx:fbib-data | ltx:fbib-extra | ltx:bibblock"/></dd>
 </xsl:template>
 
 <xsl:template match="ltx:fbib-title | ltx:fbib-data | ltx:fbib-extra">

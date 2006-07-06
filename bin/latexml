@@ -53,18 +53,28 @@ else {
   *OUT = *STDOUT; }
 
 binmode(STDERR,":utf8");
-if($format eq 'tex'){
-  my $digested = $latexml->digestFile($source);
-  local $LaTeXML::Global::STATE = $$latexml{state};
-  print OUT LaTeXML::Global::UnTeX($digested); }
-elsif($format eq 'box'){
-  my $digested = $latexml->digestFile($source);
-  local $LaTeXML::Global::STATE = $$latexml{state};
-  print OUT $digested->toString; }
+# ========================================
+# First read and digest whatever we're given.
+my $digested;
+if($source eq '-'){
+    my $content;
+    { local $/ = undef; $content = <>; }
+    $digested = $latexml->digestString($content); }
 else {
-  my $dom = $latexml->convertFile($source); 
-  print OUT $dom->toString(1);
-}
+    $digested = $latexml->digestFile($source); }
+
+# ========================================
+# Now, convert to DOM and output, if desired.
+if($digested){
+    local $LaTeXML::Global::STATE = $$latexml{state};
+    if($format eq 'tex'){
+	print OUT LaTeXML::Global::UnTeX($digested); }
+    elsif($format eq 'box'){
+	print OUT $digested->toString; }
+    else {
+	my $dom = $latexml->convertDocument($digested); 
+	print OUT $dom->toString(1);
+    }}
 
 if($output){ close(OUT); }
 
@@ -93,6 +103,8 @@ latexml [options] texfile
    --VERSION                  show version number.
    --debug=package            enables debugging output for the named package
    --help                     shows help message.
+
+If texfile is '-', latexml reads the TeX source from standard input.
 
 =head1 OPTIONS AND ARGUMENTS
 

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section>
+    <para>
+      <p>Simple KV no options: <graphics/></p>
+    </para>
+    <para>
+      <p>Simple KV with options: <graphics options="width=100, height=200"/>
+</p>
+    </para>
+    <para>
+      <p>Complex KV no options: <graphics/></p>
+    </para>
+    <para>
+      <p>Complex KV with options: <graphics height="200" width="100"/>
+</p>
+    </para>
+    <para>
+      <p>KV Environment no options:
+<text>
+Inside the environment.
+</text>
+After the environment.
+</p>
+    </para>
+    <para>
+      <p>KV Environment with options:
+<text height="200" width="100">
+Inside the environment.
+</text>
+After the environment.
+</p>
+    </para>
+    <para>
+      <p>KV Environment with structure no options:
+<text><text>&amp;amp;</text>
+Inside the environment.
+</text>
+After the environment.
+</p>
+    </para>
+    <para>
+      <p>KV Environment with structure with options:
+<text><text>Width: 100</text><text>&amp;amp;</text><text>Height: 200</text>
+Inside the environment.
+</text>
+After the environment.
+</p>
+    </para>
+    <para>
+      <p>KV automatic conversion to structure
+<text>width=100, height=200</text>
+</p>
+    </para>
+  </section>
+</document>

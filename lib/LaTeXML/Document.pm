@@ -233,12 +233,16 @@ sub floatToElement {
   my $node = $$self{node};
   $node = $node->parentNode if $node->nodeType == XML_TEXT_NODE;
   my $n = $node;
+  # What _exactly_ do we want here? canContain vs canContainSomehow
   while(($n->nodeType != XML_DOCUMENT_NODE) && ! $MODEL->canContain($n->nodeName,$tag)){
+#  while(($n->nodeType != XML_DOCUMENT_NODE) && ! $MODEL->canContainSomehow($n->nodeName,$tag)){
     $n = $n->parentNode; }
   if($n->nodeType != XML_DOCUMENT_NODE){
     my $savenode = $$self{node};
     $$self{node}=$n;
-    $savenode; }
+    print STDERR "Floating from ".Stringify($savenode)." to ".Stringify($n)." for $tag\n" 
+	if ($$savenode ne $$n) && $LaTeXML::Document::DEBUG;
+   $savenode; }
   else { 
     Warn("No open node \"$tag\"") unless $MODEL->canContainSomehow($node->nodeName,$tag);
     undef; }}
@@ -328,17 +332,27 @@ sub openElement {
   NoteProgress('.') if ($$self{progress}++ % 25)==0;
   print STDERR "Open element $tag at ".Stringify($$self{node})."\n" if $LaTeXML::Document::DEBUG;
   my $point = $self->find_insertion_point($tag);
-  my $ns = $attributes{_namespace} || $MODEL->getDefaultNamespace;
+  my $localtag = $tag;
+  my $ns = $attributes{_namespace};
+  if($ns){}
+  elsif($localtag =~ s/^([^:]+)://){
+      $ns = $MODEL->getNamespace($1); }
+  else {
+      $ns = $MODEL->getDefaultNamespace; }
   my $node;
   if($point->nodeType == XML_DOCUMENT_NODE){ # First node! (?)
     $$self{document}->createInternalSubset($tag,$MODEL->getPublicID,$MODEL->getSystemID);
     map( $$self{node}->appendChild($_), @{$$self{pending}});
-    $node = ($ns ? $$self{document}->createElementNS($ns,$tag) : $$self{document}->createElement($tag));
+    $node = ($ns ? $$self{document}->createElementNS($ns,$localtag) : $$self{document}->createElement($tag));
     $$self{document}->setDocumentElement($node); 
     $node->setNamespace("http://www.w3.org/XML/1998/namespace",'xml',0);
-}
+    my $def_ns =  $MODEL->getDefaultNamespace;
+    foreach my $reg_ns ($MODEL->getRegisteredNamespaces){
+	$node->setNamespace($reg_ns, $MODEL->getNamespacePrefix($reg_ns),0) 
+	    unless !$def_ns || ($reg_ns eq $def_ns); }
+  }
   else {
-    $node = ($ns ? $point->addNewChild($ns,$tag): $point->appendChild($$self{document}->createElement($tag))); }
+    $node = ($ns ? $point->addNewChild($ns,$localtag): $point->appendChild($$self{document}->createElement($tag))); }
 #    $node = ($ns ? $$self{document}->createElementNS($ns,$tag) : $$self{document}->createElement($tag));
 #    $point->appendChild($node); }
 
@@ -388,6 +402,12 @@ sub closeElement {
       if @cant_close;
     # So, now close up to the desired node.
     $self->closeNode_internal($node); }}
+
+# Check whether it is possible to open $tag at this point,
+# possibly by autoOpen'ing other tags.
+sub isOpenable {
+  my($self,$tag)=@_;
+  $MODEL->canContainSomehow($$self{node}->nodeName,$tag); }
 
 # Check whether it is possible to close each element in @tags,
 # any intervening nodes must be autocloseable.
@@ -555,6 +575,11 @@ to insert such an element into the current node.
 Close the closest open element named C<$tag> including any intermedate nodes that
 may be automatically closed.  If that is not possible, signal an error.
 The closed node's parent becomes the current node.
+
+=item C<< $node = $document->isOpenable($tag); >>
+
+Check whether it is possible to open a C<$tag> element
+at the current insertion point.
 
 =item C<< $node = $document->isCloseable($tag); >>
 

@@ -82,6 +82,10 @@ sub getNamespace {
   my($self,$prefix)=@_;
   $$self{namespaces}{$prefix}; }
 
+sub getRegisteredNamespaces {
+    my($self)=@_;
+    keys %{$$self{namespace_prefixes}}; }
+
 #**********************************************************************
 # Accessors
 #**********************************************************************

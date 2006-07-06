@@ -22,6 +22,9 @@ our %equivs = (place=>'address', year=>'date');
 
 DefKeyVal('amsrefs','url','Semiverbatim');
 DefKeyVal('amsrefs','code_url','Semiverbatim');
+DefKeyVal('amsrefs','author','BibName');
+DefKeyVal('amsrefs','editor','BibName');
+DefKeyVal('amsrefs','translator','BibName');
 
 # \bib{key}{type}{keyval-pairs}
 DefConstructor('\bib{}{} RequiredKeyVals:amsrefs', sub {
@@ -34,6 +37,76 @@ DefConstructor('\bib{}{} RequiredKeyVals:amsrefs', sub {
     $field=$equivs{$field} if $equivs{$field};
     $document->insertElement("bib-$field",$value); }
   $document->closeElement('bibentry'); });
+
+# Recognize names in BibTeX formats:
+#   First von Last
+#   von Last, First
+#   von Last, Jr, First
+
+sub ReadBibName {
+  my $entry = ReadArg();
+  my @tokens = $entry->unlist;
+  # First phase of analysis: Break the entry into words, phrases,
+  # while respecting the `protection' of braces and noticing
+  # commas, von prefixes.
+  my @groups=();
+  my @phrase=();
+  my @word=();
+  my ($vonsplit)=(0);
+  while(my $tok = shift(@tokens)){
+    if($tok->equals(T_BEGIN)){	# Collect up balanced brace, temporarily treat group as letter.
+      my $level=1;
+      my @x=($tok);
+      while($level && ($tok = shift(@tokens))){
+	if($tok->equals(T_BEGIN)){ $level++; }
+	elsif($tok->equals(T_END)){ $level--; }
+	push(@x,$tok); }
+      push(@word,Tokens(@x)); }
+    elsif($tok->equals(T_OTHER(','))){
+      push(@phrase,[@word]); @word=();
+      push(@groups,[@phrase]); @phrase=(); }
+    elsif(($tok->equals(T_SPACE)) || ($tok->equals(T_ACTIVE('~')))){
+      if(@word){
+	push(@phrase,[@word]); @word=(); }}
+    elsif(!scalar(@word) && !$vonsplit
+	  && ($tok->getCatcode == CC_LETTER) && ($tok->getString =~ /[a-z]/)){
+      push(@word,$tok);
+      push(@groups,[@phrase]); @phrase=(); $vonsplit=1; }
+    else {
+      push(@word,$tok); }}
+  push(@phrase,[@word]) if @word;
+  push(@groups,[@phrase]) if @phrase;
+
+  # Having split the entry into phrases, recognize the pattern of name components
+  my($sur,$given,$jr);
+  if($vonsplit){
+    ($given,$surname,$jr)= @groups; }
+  elsif(scalar(@groups)>2) {
+    ($surname,$jr,$given)=@groups; }
+  elsif((scalar(@groups)==1) && (scalar(@{$groups[0]})>1)){
+    ($surname,$given)= ([pop(@{$groups[0]})],$groups[0]); }
+  else {
+    ($surname,$given)=@groups; }
+  my $initials= ($given? [map([$_->[0],T_OTHER('.')], @$given)] : undef);
+
+  Tokens( ($surname  ? flatten_name_component('\bib@surname',$surname) :()),
+	  ($given    ? flatten_name_component('\bib@given',$given) :()),
+	  ($initials ? flatten_name_component('\bib@initials',$initials) :()),
+	  ($jr       ? flatten_name_component('\bib@lineage',$jr) :())); }
+
+sub flatten_name_component {
+  my($cs,$component)=@_;
+  my @tokens = ();
+  foreach my $word (@$component){
+    push(@tokens,T_SPACE) if @tokens;
+    push(@tokens,map($_->unlist,@$word)); }
+  LookupDefinition(T_CS($cs))->invocation(Tokens(@tokens)); }
+
+
+DefConstructor('\bib@surname{}',  "<surname>#1</surname>");
+DefConstructor('\bib@given{}',   "<givenname>#1</givenname>");
+DefConstructor('\bib@initials{}', "<initials>#1</initials>");
+DefConstructor('\bib@lineage{}', "<lineage>#1</lineage>");
 
 DefEnvironment('{bibdiv}','#body');
 DefEnvironment('{biblist}',"<biblist>#body</biblist>");

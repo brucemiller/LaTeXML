@@ -1,3 +1,25 @@
+0.4.1  2006-01-09
+     - Relase 0.4.1
+
+0.4.x  2006-01-09
+     - Experimental tabular transformation.
+       More faithful reproduction of latex tabular in html,
+       via CSS.  Heuristics for table headers.
+
+0.4.x  2005-12-15
+     - Fixed some namespace usages, so that
+       constructors containing "<foo:bar>..." will
+       work, provided foo was registered (RegisterNamespace)
+       Added a too-simple testcase.
+
+     - If "-" is used on latexml|latexmlpost command line,
+       they reads the TeX|XML, respectively, from STDIN.
+
+  
+0.4.x  2005-09-27
+      - Added missing test result file keyval.xml
+      - Patch to postprocessor: only mung LaTeXML's DTDs.
+
 0.4.0  2005-09-26
       - Release 0.4.0
 
@@ -55,7 +77,7 @@
        - The above also allows KeyVals to be better encapsulated
          and pulled out from the core of LaTeXML.
 	 The functionality of keyvals will now only be available if
-	 you \usepackage{keyvals} or RequirePackage('keyvals')
+	 you \usepackage{keyvals} or RequirePackage('keyval')
 	
 	 The Parameter specification for KeyVals is now of the form;
 	    RequiredKeyVals:name
@@ -75,7 +97,7 @@
       -  Similar change to argument type semiverb.  Instead of 
           {semiverb}
          you should now write
-	   Verbatim
+	   Semiverbatim
          this reads an {} delimited argument, but with most catcodes turned off.
 
       - Conditional patterns in constructors now properly balance the delimiting
@@ -83,8 +105,8 @@
 	used within the patterns should work.
 
       - Revamped and regularized Parameter specs, making them more extensible.
-        {KeyVal:foo} => RequiredKeyVal:foo
-        [KeyVal:foo] => OptionalKeyVal:foo
+        {KeyVals:foo} => RequiredKeyVals:foo
+        [KeyVals:foo] => OptionalKeyVals:foo
         Flag:*       => OptionalKeyword:*
 
 0.3.x  2005-06-xx

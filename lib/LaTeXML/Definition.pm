@@ -39,7 +39,7 @@ sub stringify {
   my($self)=@_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
-  $type.'['.($$self{alias}||$$self{cs}->getCSName).Stringify($$self{parameters}).']'; }
+  $type.'['.($$self{alias}||$$self{cs}->getCSName).' '.Stringify($$self{parameters}).']'; }
 
 sub toString {
   my($self)=@_;
@@ -154,8 +154,9 @@ sub equals {
 
 #**********************************************************************
 # A `Generalized' register;
-# includes the normal ones, as well as registers and 
-# eventually things like catcode, 
+# includes the normal ones, as well as paramters,
+# along with tables like catcode.
+
 package LaTeXML::Register;
 use LaTeXML::Global;
 use base qw(LaTeXML::Primitive);
@@ -190,6 +191,27 @@ sub invoke {
   my $value = $GULLET->readValue($self->isRegister);
   $self->setValue($value,@args);
   return; }
+
+#**********************************************************************
+# A CharDef is a specialized register;
+# You can't assign it; when you invoke the control sequence, it returns
+# the result of evaluating the character (more like a regular primitive).
+
+package LaTeXML::CharDef;
+use LaTeXML::Global;
+use base qw(LaTeXML::Register);
+
+sub new {
+  my($class,$cs,$value,%traits)=@_;
+  bless {cs=>$cs, parameters=>undef,
+	 value=>$value, char=>T_OTHER(chr($value->valueOf)),
+	 registerType=>'Number', readonly=>1,
+	 locator=>"defined ".$GULLET->getLocator, %traits}, $class; }
+
+sub valueOf  { $_[0]->{value}; }
+sub setValue { Error("Cannot assign to chardef ".$_[0]->getCSName); return; }
+sub invoke   { $STOMACH->invokeToken($_[0]->{char}); }
+
 
 #**********************************************************************
 # Constructor control sequences.  
@@ -315,6 +337,7 @@ sub translate_constructor {
     elsif(s|^\s*<$QNAME_RE||so){
       my($tag,$av) = ($1,translate_avpairs());
       if($float){
+#	$code .= "\$savenode=\$document->floatToElement('$tag') unless \$document->isOpenable('$tag');\n";
 	$code .= "\$savenode=\$document->floatToElement('$tag');\n";
 	$float = undef; }
       $code .= "\$document->openElement('$tag'".($av? ", $av" : '').");\n";
@@ -559,6 +582,8 @@ to index into a set, such as the index to C<\count>.
 =item C<< $register->setValue($value,@args); >>
 
 Assign a value to the register, by invoking it's C<setter> function.
+
+=back
 
 =head2 More about Constructors
 

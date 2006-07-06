@@ -4,7 +4,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:m="http://www.w3.org/1998/Math/MathML">
   <section>
     <para>
-      <p>Inline math <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="ID" font="italic">a</XMTok><XMTok role="ID" font="italic">b</XMTok></XMApp></XMath><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></math></Math>.
+      <p>Inline math <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="ID" font="italic">a</XMTok><XMTok role="ID" font="italic">b</XMTok></XMApp></XMath><m:math display="inline"><m:mrow><m:mi>a</m:mi><m:mo>+</m:mo><m:mi>b</m:mi></m:mrow></m:math></Math>.
 </p>
     </para>
     <para>
@@ -18,15 +18,15 @@
               <XMTok name="123" role="NUMBER">123</XMTok>
             </XMApp>
           </XMath>
-          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            <mrow>
-              <mi>a</mi>
-              <mo>+</mo>
-              <mi>b</mi>
-              <mo>+</mo>
-              <mn>123</mn>
-            </mrow>
-          </math>
+          <m:math display="block">
+            <m:mrow>
+              <m:mi>a</m:mi>
+              <m:mo>+</m:mo>
+              <m:mi>b</m:mi>
+              <m:mo>+</m:mo>
+              <m:mn>123</m:mn>
+            </m:mrow>
+          </m:math>
         </Math>
       </equation>
       <equation>
@@ -42,23 +42,23 @@
               </XMApp>
             </XMApp>
           </XMath>
-          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            <mrow>
-              <mi>a</mi>
-              <mo>+</mo>
-              <mi>b</mi>
-              <mo>+</mo>
-              <mrow>
-                <mi>f</mi>
-                <mo>⁡</mo>
-                <mrow>
-                  <mo>(</mo>
-                  <mn>123</mn>
-                  <mo>)</mo>
-                </mrow>
-              </mrow>
-            </mrow>
-          </math>
+          <m:math display="block">
+            <m:mrow>
+              <m:mi>a</m:mi>
+              <m:mo>+</m:mo>
+              <m:mi>b</m:mi>
+              <m:mo>+</m:mo>
+              <m:mrow>
+                <m:mi>f</m:mi>
+                <m:mo>⁡</m:mo>
+                <m:mrow>
+                  <m:mo>(</m:mo>
+                  <m:mn>123</m:mn>
+                  <m:mo>)</m:mo>
+                </m:mrow>
+              </m:mrow>
+            </m:mrow>
+          </m:math>
         </Math>
       </equation>
       <equation>
@@ -81,26 +81,26 @@
               </XMApp>
             </XMApp>
           </XMath>
-          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            <mrow>
-              <msub>
-                <mi>f</mi>
-                <mi>D</mi>
-              </msub>
-              <mo>⁢</mo>
-              <mrow>
-                <mi>f</mi>
-                <mo>⁡</mo>
-                <mrow>
-                  <mo>(</mo>
-                  <mi>a</mi>
-                  <mo>+</mo>
-                  <mi>b</mi>
-                  <mo>)</mo>
-                </mrow>
-              </mrow>
-            </mrow>
-          </math>
+          <m:math display="block">
+            <m:mrow>
+              <m:msub>
+                <m:mi>f</m:mi>
+                <m:mi>D</m:mi>
+              </m:msub>
+              <m:mo>⁢</m:mo>
+              <m:mrow>
+                <m:mi>f</m:mi>
+                <m:mo>⁡</m:mo>
+                <m:mrow>
+                  <m:mo>(</m:mo>
+                  <m:mi>a</m:mi>
+                  <m:mo>+</m:mo>
+                  <m:mi>b</m:mi>
+                  <m:mo>)</m:mo>
+                </m:mrow>
+              </m:mrow>
+            </m:mrow>
+          </m:math>
         </Math>
       </equation>
       <equation>
@@ -120,22 +120,22 @@
               </XMApp>
             </XMApp>
           </XMath>
-          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            <mrow>
-              <msub>
-                <mi>f</mi>
-                <mn>1</mn>
-              </msub>
-              <mo>⁢</mo>
-              <mrow>
-                <mo>(</mo>
-                <mi>a</mi>
-                <mo>+</mo>
-                <mi>b</mi>
-                <mo>)</mo>
-              </mrow>
-            </mrow>
-          </math>
+          <m:math display="block">
+            <m:mrow>
+              <m:msub>
+                <m:mi>f</m:mi>
+                <m:mn>1</m:mn>
+              </m:msub>
+              <m:mo>⁢</m:mo>
+              <m:mrow>
+                <m:mo>(</m:mo>
+                <m:mi>a</m:mi>
+                <m:mo>+</m:mo>
+                <m:mi>b</m:mi>
+                <m:mo>)</m:mo>
+              </m:mrow>
+            </m:mrow>
+          </m:math>
         </Math>
       </equation>
       <equation>
@@ -150,16 +150,16 @@
               <XMTok role="ID" font="italic">a</XMTok>
             </XMApp>
           </XMath>
-          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            <mrow>
-              <mover accent="true">
-                <mi>f</mi>
-                <mo>^</mo>
-              </mover>
-              <mo>⁢</mo>
-              <mi>a</mi>
-            </mrow>
-          </math>
+          <m:math display="block">
+            <m:mrow>
+              <m:mover accent="true">
+                <m:mi>f</m:mi>
+                <m:mo>^</m:mo>
+              </m:mover>
+              <m:mo>⁢</m:mo>
+              <m:mi>a</m:mi>
+            </m:mrow>
+          </m:math>
         </Math>
       </equation>
     </para>
@@ -183,31 +183,31 @@
               <XMTok name="123" role="NUMBER">123</XMTok>
             </XMApp>
           </XMath>
-          <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-            <mrow>
-              <mrow>
-                <mi>a</mi>
-                <mo>⁡</mo>
-                <mrow>
-                  <mo>(</mo>
-                  <mi>x</mi>
-                  <mo>)</mo>
-                </mrow>
-              </mrow>
-              <mo>+</mo>
-              <mrow>
-                <mi>b</mi>
-                <mo>⁡</mo>
-                <mrow>
-                  <mo>(</mo>
-                  <mi>x</mi>
-                  <mo>)</mo>
-                </mrow>
-              </mrow>
-              <mo>+</mo>
-              <mn>123</mn>
-            </mrow>
-          </math>
+          <m:math display="block">
+            <m:mrow>
+              <m:mrow>
+                <m:mi>a</m:mi>
+                <m:mo>⁡</m:mo>
+                <m:mrow>
+                  <m:mo>(</m:mo>
+                  <m:mi>x</m:mi>
+                  <m:mo>)</m:mo>
+                </m:mrow>
+              </m:mrow>
+              <m:mo>+</m:mo>
+              <m:mrow>
+                <m:mi>b</m:mi>
+                <m:mo>⁡</m:mo>
+                <m:mrow>
+                  <m:mo>(</m:mo>
+                  <m:mi>x</m:mi>
+                  <m:mo>)</m:mo>
+                </m:mrow>
+              </m:mrow>
+              <m:mo>+</m:mo>
+              <m:mn>123</m:mn>
+            </m:mrow>
+          </m:math>
         </Math>
       </equation>
     </para>

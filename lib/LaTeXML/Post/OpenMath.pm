@@ -136,6 +136,9 @@ DefOpenMath('Token:NUMBER:?',sub {
   else {
     Node('OMI',$value); }});
 
+DefOpenMath("Token:?:\x{2062}", sub {
+    Node('OMS',[], name=>'times', cd=>'arith1'); });
+
 # ================================================================================
 # Applications.
 

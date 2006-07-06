@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
  /=====================================================================\ 
- |  LaTeXML-xhtml.xsl                                                  |
+ |  Head of xhtml.xsl                                                  |
  |  Stylesheet for converting LaTeXML documents to xhtml               |
  |=====================================================================|
  | Part of LaTeXML:                                                    |
@@ -13,24 +13,21 @@
  \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-  xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
   version     = "1.0"
-  xmlns:xhtml = "http://www.w3.org/1999/xhtml"
+  xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
+  xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
+  xmlns       = "http://www.w3.org/1999/xhtml"
   xmlns:m     = "http://www.w3.org/1998/Math/MathML"
   xmlns:svg   = "http://www.w3.org/2000/svg"
-  xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-  exclude-result-prefixes = "xhtml m ltx"
+  exclude-result-prefixes = "ltx"
 >
 
 <xsl:output method="xml"
 	    doctype-public = "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN"
             doctype-system = "http://www.w3c.org/TR/MathML2/dtd/xhtml-math11-f.dtd"
-	    media-type='application/xhtml+xml'/>
+	    media-type     = 'application/xhtml+xml'
+	    encoding       = 'UTF-8'/>
     
-  <xsl:param name="NSDECL">http://www.w3.org/1999/xhtml</xsl:param>
-  <xsl:param name="EXT">.xhtml</xsl:param>
-  <xsl:param name="MATHML">true</xsl:param>
-
   <xsl:template match="ltx:Math">
     <xsl:apply-templates select="m:math"/>
   </xsl:template>
@@ -91,6 +88,12 @@
     </xsl:choose>
   </xsl:template>
 
-  <xsl:include href="LaTeXML-base.xsl"/>
+  <xsl:template match="/">
+    <html xmlns:m     = "http://www.w3.org/1998/Math/MathML"
+	  xmlns:svg   = "http://www.w3.org/2000/svg">
+      <xsl:call-template name="head"/>
+      <xsl:call-template name="body"/>
+    </html>
+  </xsl:template>
 
-</xsl:stylesheet>
+<!-- INCOMPLETE;  Must have core.xsl.tail appended!!!! -->

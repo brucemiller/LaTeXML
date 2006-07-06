@@ -220,8 +220,6 @@ If no scoping is specified, then the assignment will be global
 if a preceding C<\global> has set the global flag, otherwise
 the value will be assigned within the current grouping.
 
-=item Low Level
-
 =over 4
 
 =item C<< $STATE->pushFrame; >>

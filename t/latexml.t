@@ -7,7 +7,7 @@ our @tests;
 BEGIN { 
   @tests = ( qw( testchar testctr testexpand testif testover
 		 fonts xii verb comment simplemath
-		 scopemacro keyval));
+		 scopemacro keyval ns));
 plan tests => scalar(@tests); }
 
 use LaTeXML;

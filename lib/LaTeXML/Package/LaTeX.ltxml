@@ -503,11 +503,8 @@ DefEnvironment('{eqnarray*}',
 	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 
 # Style Parameters
-#  \abovedisplayskip \abovedisplayshortskip are in Primitives.pm
-DefRegister('\jot'  => Dimension(0)); 
+#  \abovedisplayskip \abovedisplayshortskip, \jot are in Primitives.pm
 DefRegister('\mathindent' =>Dimension(0)); 
-DefRegister('\belowdisplayskip' => Glue(0)); 
-DefRegister('\belowdisplayshortskip' => Glue(0));
 
 #======================================================================
 # C.7.2 Common Structures
@@ -668,8 +665,9 @@ sub NewCounter {
   AssignValue("\\c\@$ctr"=>Number(0),'global');
   AssignValue("\\cl\@$ctr"=>Tokens(),'global');
   AssignValue("\\cl\@$within" =>
-	      Tokens(T_CS($ctr),LookupValue("\\cl\@$within")->unlist),'global')
-    if $within;
+	      Tokens(T_CS($ctr),
+		     (LookupValue("\\cl\@$within") ? LookupValue("\\cl\@$within")->unlist :())),
+	      'global') if $within;
   AssignValue('nested_counters_'.$ctr =>[@inner]) if @inner;
   DefMacro("\\the$ctr","\\arabic{$ctr}");
   }
@@ -680,12 +678,11 @@ sub stepCounter {
   # and reset any within counters!
   foreach my $c (LookupValue("\\cl\@$ctr")->unlist){
     resetCounter($c->toString); }
-  return; }
+  Expand(T_CS("\\the$ctr")); }
 
 sub refStepCounter {
   my($ctr)=@_;
-  stepCounter($ctr);
-  my $v = Expand(T_CS("\\the$ctr"));
+  my $v = stepCounter($ctr);
   InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentlabel'),undef,$v));
   # Any scopes activated for previous value of this counter (& any nested counters) must be removed.
   # This may also include scopes activated for \label
@@ -706,8 +703,11 @@ sub deactivateCounterScope {
 
 sub resetCounter {
   my($ctr)=@_;
-  AssignValue('\c@'.$ctr => Number(0),'global'); }
-
+  AssignValue('\c@'.$ctr => Number(0),'global'); 
+  # and reset any within counters!
+  foreach my $c (LookupValue("\\cl\@$ctr")->unlist){
+    resetCounter($c->toString); }
+  return;}
 
 DefPrimitive('\newcounter{}[]',sub { shift; NewCounter(map($_ && $_->toString,@_)); });
 
@@ -722,7 +722,7 @@ DefPrimitive('\addtocounter{}{Number}',sub {
   $ctr="\\c\@".$ctr->toString;
   AssignValue($ctr=>LookupValue($ctr)->add($value),'global'); });
 
-DefPrimitive('\stepcounter{}',   sub { stepCounter($_[1]->toString); });
+DefPrimitive('\stepcounter{}',   sub { stepCounter($_[1]->toString); return; });
 DefPrimitive('\refstepcounter{}',sub { refStepCounter($_[1]->toString); return; });
 
 DefExpandable('\value{}', sub {
@@ -837,20 +837,19 @@ sub before_tabular {
 sub after_tabular {
   EGroup; }
 
-# Note: we allow a tabular to float up to where it is allowed (it's sometimes inside equation)
-DefEnvironment('{tabular}[]{}', "^<tabular pattern='#2'>#body</tabular>",
+DefEnvironment('{tabular}[]{}', "<tabular pattern='#2'>#body</tabular>",
   beforeDigest=> \&before_tabular, afterDigest=> \&after_tabular,
   mode=>'text');
 
 # ignore width(#1), and pos(#2)
-DefEnvironment('{tabular*}{}[]{}', "^<tabular pattern='#2'>#body</tabular>",
+DefEnvironment('{tabular*}{}[]{}', "<tabular pattern='#2'>#body</tabular>",
   beforeDigest=> \&before_tabular, afterDigest=> \&after_tabular,
   mode=>'text');
 
 # Open, but don't close, so "&" can operate correctly.
 DefConstructor('\multicolumn{}{}{}',"<td colspan='#1' pattern='#2'>#3");
 DefConstructor('\hline',"<hline/>");
-DefConstructor('\cline{}',"<hline cols='#1'/>");
+DefConstructor('\cline{}',"<hline colspan='#1'/>");
 DefConstructor('\vline',"");	# ???
 DefRegister('\arraycolsep',Dimension(0));
 DefRegister('\tabcolsep',Dimension(0));
@@ -859,175 +858,406 @@ DefMacro('\extracolsep{}','');
 DefMacro('\arraystretch',"1");
 
 #======================================================================
-# 
-Tag('tabular', afterClose=>\&process_tabular);
+# Experimental tabular heuristications.
+#======================================================================
+# There are two main tasks to accomplish here.
+#  (1) To translate the column patterns (including in multicolumns),
+#    and hline sequences into a more usable form.
+#    In particular, since HTML's table model is simplistic compared to LaTeX's,
+#    we'll put attributes on td's that can be leverated by CSS to create complicated
+#    border schemes; we'll ignore HTML's frame, rules and colgroup mechanisms.
+#  (2) Attempt to recognize patterns of rows/columns that indicate which might be headers.
+#    We'll characterize the cells by alignment, content and borders.
+#    Then, assuming that headers will be first and be noticably `different' from data lines,
+#    and also that the data lines will have similar structure,  we'll attempt to
+#    recognize groups of header lines and groups data lines, possibly alternating.
 
-our @framespec=qw(void above below hsides
-		  lhs above below box
-		  rhs above below box
-		  vsides box box box);
+Tag('tabular', afterClose=>\&study_tabular);
 
-sub process_tabular {
+sub study_tabular {
   my($tabular)=@_;
-  my $nsURI = $MODEL->getNamespace('ltxml');
-  # --- Analyze Table ----
-  # Split columns & rows into groups separated by | or hlines, resp.
-  # Each is alternating list of counts (of hlines or |) and arrays of alignments or rows.
-  my @colgroups = group_tabular_cols($tabular->getAttribute('pattern'));
-  my @rowgroups = group_tabular_rows(element_nodes($tabular));
-  my @cols = map(@$_, grep(ref $_, @colgroups));
-  my @rows = map(@$_, grep(ref $_, @rowgroups));
+  my $toplevel = 1;
+  # We won't guess headers for nested tables, but still need to translate the borders.
+  for(my $n = $tabular->parentNode; $n->nodeType == XML_ELEMENT_NODE; $n=$n->parentNode){
+    if($n->nodeName eq 'tabular'){
+      $toplevel=0; last; }}
 
-  # Determine the outer frame, based on leading/trailing vbars/hlines (numbers)
-  # remove the item, while we're at it.
-  my $frame = $framespec[(!ref $rowgroups[0]           ? (shift(@rowgroups),1) : 0)+
-			 (!ref $rowgroups[$#rowgroups] ? (pop(@rowgroups),  2) : 0)+
-			 (!ref $colgroups[0]           ? (shift(@colgroups),4) : 0)+
-			 (!ref $colgroups[$#colgroups] ? (pop(@colgroups),  8) : 0)];
-
-  # Count rows|columns and groups of them.
-  my $ncols      = scalar(@cols);
-  my $ncolgroups = scalar(grep(ref $_, @colgroups));
-  my $nrows      = scalar(@rows);
-  my $nrowgroups = scalar(grep(ref $_, @rowgroups));
-
-  # Determine inner rules based on grouping.
-  # Particularly, whether each col|row is a group to itself, or all are in a single group.
-  my $rules = 'groups';
-  if   (($ncolgroups == $ncols) && ($nrowgroups == $nrows)){ $rules='all'; }
-  elsif(($ncolgroups == $ncols) && ($nrowgroups == 1)     ){ $rules='cols'; }
-  elsif(($ncolgroups == 1)      && ($nrowgroups == $nrows)){ $rules='rows'; }
-  elsif(($ncolgroups == 1)      && ($nrowgroups == 1)     ){ $rules='none'; }
-
-  my $row_headers = guess_tabular_header(@rowgroups) || 0;
-  my $col_headers = guess_tabular_header(@colgroups) || 0;
-#  print STDERR "Table:\n"
-#    ." cols: ".join(', ',map(ref $_ ? join(', ',@$_) : "$_ lines", @colgroups))."\n"
-#    ." rows: ".join(', ',map(ref $_ ? scalar(@$_)." rows" : "$_ lines",@rowgroups))."\n"
-#    ." => frame=$frame, rules=>$rules\n"
-#    ." row headers: $row_headers\n"
-#    ." col headers: $col_headers\n";
-
-  # --- Clear and Rebuild the Table ----
-  # So far, there should be ONLY tr and hline elements. Remove hlines!
-  map($tabular->removeChild($_), 
-      $tabular->getChildrenByTagNameNS($nsURI,'hline'));
-  # Add computed frame & rule to the tabular, and alignment attr. to the cells
-  $tabular->setAttribute(frame=>$frame);
-  $tabular->setAttribute(rules=>$rules);
-
-  my $i=0;
-  foreach my $row (@rows){
-    my $j=0;
-    foreach my $cell ($row->getChildrenByTagNameNS($nsURI,'td')){
-      $cell = rename_node($cell,'th',$nsURI) if ($i < $row_headers) || ($j < $col_headers);
-      if(my $span = $cell->getAttribute('colspan')){ # From \multicolumn
-	$cell->setAttribute(align=>map(@$_, grep(ref $_,
-						 group_tabular_cols($cell->getAttribute('pattern')))));
-	$cell->removeAttribute('pattern');
-	$j += $span; }
-      else {
-	$cell->setAttribute(align=>$cols[$j++]); }}
-    $i++; }
-
-  # Add column groups, if there is non-trivial grouping
-  if($rules eq 'groups'){
-    foreach my $cols (grep(ref $_, @colgroups)){
-      my $cg = $tabular->addNewChild($nsURI,'colgroup');
-      $tabular->insertBefore($cg,$rows[0]);
-      if(!grep($cols->[0] ne $_, @$cols)){ # All alignments are same?
-	$cg->setAttribute(span=>scalar(@$cols));
-	$cg->setAttribute(align=>$cols->[0]); }
-      else {			# Else, add individual cols
-	foreach my $c (@$cols){
-#	  $cg->appendChild(new_node($nsURI,'col',undef,align=>$c)); }
-	  $cg->addNewChild($nsURI,'col')->setAttribute(align=>$c); }
-      }}}
-
-  # Finally (possibly) group the rows into tbody's
-  if($rules eq 'groups'){
-    foreach my $rg (@rowgroups){
-      if(ref $rg){
-	my $g = $tabular->addNewChild($nsURI,'tbody');
-	$tabular->insertBefore($g,$rg->[0]); 
-	map($g->appendChild($_),@$rg); }}
-  }
+  # Build a view of the table by extracting the rows, collecting & characterizing each cell.
+  my @rows = collect_tabular_rows($tabular);
+  # Flip the rows around to produce a column view.
+  my @cols = ();
+  for(my $c = 0; $c < scalar(@{$rows[0]}); $c++){
+    push(@cols, [map($$_[$c], @rows)]); }
+  # Attempt to recognize header lines.
+  if($toplevel){
+    tabular_characterize_lines(0,@rows);
+    tabular_characterize_lines(1,@cols); }
+  # Convert the table alignment,border,etc info into attributes on the td's
+  tabular_finish($tabular,$toplevel,@rows);
+  # Debugging report!
+#  summarize_tabular([@rows],[@cols]) if $toplevel;
 }
 
 #======================================================================
-# Parse a tabular column specification, returning an alternating list of:
-#   number: representing the repeat count of '|'
-#   ARRAY : representing the sequence of column alignments: (right|left|center|justify)
-sub group_tabular_cols {
+# Build a View of the tabular, with characterized cells, for analysis.
+sub collect_tabular_rows {
+  my($tabular)=@_;
+  # Initialize the column view by building outer column 0 from the column alignments pattern.
+  my @rows = ( [ decode_column_pattern($tabular->getAttribute('pattern')) ] );
+  my $ncols = scalar(@{$rows[0]}); # Nominal number of columns, but _may_ be too many!
+  my $maxc=0;
+  foreach my $xrow (element_nodes($tabular)){
+    my $rtype = $xrow->nodeName;
+    # For <hline> add bottom edges to affected cells
+    if($rtype eq 'hline'){
+      if(my $lcols=$xrow->getAttribute('colspan')){ # from \cline{}
+	while($lcols=~ s/^,?(\d+)//){
+	  my $n = $1;
+	  map( $rows[$#rows][$_-1]{border}[2] ++, ($lcols =~ s/^-(\d+)// ? ($n..$1) : ($n))); }}
+      else {
+	map( $$_{border}[2] ++,  @{$rows[$#rows]});}}
+    # For <tr>, build a new row.
+    elsif($rtype eq 'tr'){
+      push(@rows, [ ] );
+      my $c=0;
+      foreach my $xcell (element_nodes($xrow)){
+	my $class = classify_tabular_cell($xcell);
+	if(my $colspan = $xcell->getAttribute('colspan')){ # From a multicolumn
+	  my @mcols = decode_column_pattern($xcell->getAttribute('pattern'));
+	  # Add a cell that refers to the actual <td>
+	  push(@{$rows[$#rows]},{cell=>$xcell, role=>'d', class=>$class,
+				 align=>$mcols[0]{align},
+				 border=>[$rows[$#rows-1][$c]{border}[2],
+					  0,
+					  0,
+					  $rows[0][$c]{border}[3]]});
+	    $c++;
+	  # Add extra dummy cells to represent the spanned columns.
+	  for(my $i=1; $i<$colspan; $i++){
+	    push(@{$rows[$#rows]},{role=>'d', class=>$class,
+				   align=>$mcols[0]{align}, 
+				   border=>[$rows[$#rows-1][$c]{border}[2],
+					    0,0,0]});
+	    $c++; }
+	  $rows[$#rows][$c-1]{border}[1] =  $mcols[0]{border}[1]; }
+	else {
+	  # Add a regular cell.
+	  push(@{$rows[$#rows]},{cell=>$xcell, role=>'d', class=>$class,
+				 align=>$rows[0][$c]{align},
+				 border=>[$rows[$#rows-1][$c]{border}[2],
+					  $rows[0][$c]{border}[1],
+					  0,
+					  $rows[0][$c]{border}[3]]});
+	  $c++; }}
+      # Remove the entire row, if all cells empty; Presumably it was used for vertical spacing?
+      if(!grep( $$_{cell} && $$_{cell}->hasChildNodes, @{$rows[$#rows]})){
+	pop(@rows); 
+	$xrow->parentNode->removeChild($xrow); }
+      else {
+	$maxc = $c if $c > $maxc; 
+	# Pad with extra columns, if needed; LaTeX lets you use short rows.
+	for( ; $c < $ncols; $c++){
+	  push(@{$rows[$#rows]},{role=>'d', class=>'_',
+				 align=>$rows[0][$c]{align},
+				 border=>[$rows[$#rows-1][$c]{border}[2],
+					  $rows[0][$c]{border}[1],
+					  0,
+					  $rows[0][$c]{border}[3]]}); }
+      }}}
+  # Possibly truncate the rows; LaTeX lets you declare more columns than you use.
+  if($maxc < $ncols){
+    for(my $r = 1; $r < scalar(@rows); $r++){
+      $rows[$r] = [ @{$rows[$r]}[0..$maxc-1] ]; }}
+  @rows[1..$#rows]; }
+
+# Return one of: i(nteger), t(ext), m(ath), ? (unknown) or '_' (empty) (or some combination)
+#  or 'mx' for alternating text & math.
+sub classify_tabular_cell {
+  my($xcell)=@_;
+  my $content = $xcell->textContent;
+  my $class;
+  if($content =~ /^\s*\d+\s*$/){
+    $class = 'i'; }
+  else {
+    foreach my $ch ($xcell->childNodes){
+      my $chtype = $ch->nodeType;
+      if($chtype == XML_TEXT_NODE){
+	my $text = $ch->textContent;
+	$class .= 't' 
+	  unless $text=~/^\s*$/ || (($class eq 'm') && ($text=~/^\s*[\.,;]\s*$/)); }
+      elsif($chtype == XML_ELEMENT_NODE){
+	my $chtag = $ch->nodeName;
+	if($chtag eq 'text'){ # Font would be useful, but haven't "resolved" it, yet!
+	  $class .= 't' unless $class eq 't'; }
+	elsif($chtag eq 'Math'){
+	  $class .= 'm' unless $class eq 'm'; }
+	else {
+	  $class .= '?' unless $class; }}}}
+  $class = 'mx' if $class && (($class =~ /^((m|i)t)+(m|i)?$/)||($class =~ /^(t(m|i))+t?$/));
+  $class || '_'; }
+
+# Construct an "row" of empty cells, representing the bars, alignments, etc 
+# by decoding the column pattern.
+#    border=>[t,r,b,l] each being the number of bars
+sub decode_column_pattern {
   my($pattern)=@_;
-  my (@groups,@group);
+  my @row= ({role=>'', class=>'', align=>'', border=>[0,0,0,0]}); # Start w/ `outer' cell.
+  my $ignore;
   while($pattern){
     if   ($pattern =~ s/^(\|+)//){ 
-      push(@groups,[@group]) if @group; @group=();
-      push(@groups,length($1));  }
-    elsif($pattern =~ s/^r// ){ push(@group,'right'); }
-    elsif($pattern =~ s/^l// ){ push(@group,'left'); }
-    elsif($pattern =~ s/^c// ){ push(@group,'center'); }
-    elsif($pattern =~ s/^p//){ 	# Paragraph: p{width}
-      my $ignore;
-      ($ignore,$pattern)=Text::Balanced::extract_bracketed($pattern,"{}");
-      push(@group,'justify'); }
+      $row[$#row]{border}[1] += length($1); }
+    elsif($pattern =~ s/^(r|l|c|p)// ){
+      my $align = $1;
+      ($ignore,$pattern)=Text::Balanced::extract_bracketed($pattern,"{}") if $align eq 'p';
+      push(@row, {role=>'',class=>'', align=>$1, border=>[0,0,0,$row[$#row]{border}[1]]} ); }
     elsif($pattern =~ s/^\*\{(\d+)\}//){ # Repeated pattern: *{n}{subpattern}; expand & put back
       my $n=$1;
       my ($sub,$rest)=Text::Balanced::extract_bracketed($pattern,"{}");
+      $sub =~ s/^\{//; $sub =~ s/\}$//;
       $pattern=join('',map($sub,1..$n),$rest); }
     elsif($pattern =~ s/^\@//){	# Insertion between columns: Ignore it!!!
-      my $ignore;
-      ($ignore,$pattern)=Text::Balanced::extract_bracketed($pattern,"{}"); }
-  }
-  push(@groups,[@group]) if @group;
-  @groups; }
-
-# Group the tabular rows, returning an alternating list of:
-#   number : representing the repeat count of <hline/>'s
-#   ARRAY  : being the sequence of <tr>..</tr> between sets of <hlines/>
-sub group_tabular_rows {
-  my(@rows)=@_;
-  my (@groups,@group);
-  my $prevhline;
-  foreach my $row (@rows){
-    my $type = $row->nodeName;
-    if($type eq 'hline'){ 
-      if($prevhline){ $groups[$#groups]++; }
-      else {
-	push(@groups,[@group]) if @group; @group=();
-	push(@groups,1); 
-	$prevhline=1;}}
-    elsif($type eq 'tr'){
-      $prevhline=undef;
-      push(@group,$row); }
+      my $insertion;
+      ($insertion,$pattern)=Text::Balanced::extract_bracketed($pattern,"{}"); 
+      $insertion =~ s/\\(,;:!)//g;
+      my $n = $insertion =~ s/\\vline//g;
+      if($n){
+	$row[$#row]{border}[1] += $n; }
+    }
+    # Hmm, some patterns of insertion might be handled?
     else {
-      warn("What's a <$type> doing in a tabular?"); }
-  }
-  push(@groups,[@group]) if @group;
-  @groups; }
+      Warn("Unrecognized tabular pattern \"$pattern\""); last; }}
+  @row[1..$#row]; }
 
 #======================================================================
-# Given an alternating set of rows/cols and # of hlines or |'s, 
-# (leading & trailing lines removed)
-# GUESS whether the 1st might be a header.
-sub guess_tabular_header {
-  my(@groups)=@_;
-  my $n = scalar(@groups);
-  if($n < 3){ 0; }		# only one group? Who Knows??
-  elsif(scalar(@{$groups[0]})>2){ 0;} # More than 3 rows in 1st group? Dubious...
-  elsif($n == 3){		# 2 groups, 2nd group is bigger, maybe 1st is header?
-    (scalar(@{$groups[0]}) < scalar(@{$groups[2]})) && scalar(@{$groups[0]}); }
-  else {			# Multiple groups, doubled lines only after 1st?
-    my $row1   = scalar(@{shift(@groups)});
-    my $lines1 = shift(@groups);
-    my($rows_check,$lines_check)=(1,1);
-    while(@groups){
-      my $rown   = scalar(@{shift(@groups)});
-      my $linesn = shift(@groups)||0;
-      $rows_check  &&= $row1 < $rown;
-      $lines_check &&= $lines1 > $linesn; }
-    ($rows_check || $lines_check) && $row1; }}
+# Scan pairs of rows/columns attempting to recognize differences that
+# might indicate which are headers and which are data.
+# Warning: This section is full of "magic numbers"
+# guessed by sampling various test cases.
+our %cell_class_diff =
+  ('_'=>{'_'=>0.0, m=>0.1, i=>0.1, t=>0.1, '?'=>0.1, mx=>0.1},
+   m  =>{'_'=>0.1, m=>0.0, i=>0.1, mx=>0.2},
+   i  =>{'_'=>0.1, m=>0.1, i=>0.0, mx=>0.2},
+   t  =>{'_'=>0.1, t=>0.0, mx=>0.2},
+   '?'=>{'_'=>0.1, '?'=>0.0, mx=>0.2},
+   mx=>{'_'=>0.1, m=>0.2, i=>0.2, t=>0.2, '?'=>0.2, mx=>0.0});
+our $MIN_TABULAR_DATA_LINES=1;	#  (or 2?)
+our $MAX_TABULAR_HEADER_LINES=4;
+
+# Compare two lines along $axis (0=row,1=column), returning a measure of the difference.
+# The borders are compared differently if
+#  $foradjacency: we adjacent lines that might belong to the same block,
+#  otherwise    : comparing two lines that ought to have identical patterns (eg. in a repeated block)
+sub tabular_compare {
+  my($axis, $foradjacency, $line1,$line2)=@_;
+  return 0 if !($line1 && $line2);
+  return 999999 if $line1 xor $line2;
+  my @cells1 = @$line1;
+  my @cells2 = @$line2;
+  my $diff=0.0;
+  while(@cells1 && @cells2){
+    my $cell1 = shift(@cells1);
+    my $cell2 = shift(@cells2);
+    $diff += 0.5 if ($$cell1{align} ne $$cell2{align});
+    if(my $d = $cell_class_diff{$$cell1{class}}{$$cell2{class}}){
+      $diff += $d; }
+    elsif($$cell1{class} ne $$cell2{class}){
+      $diff += 0.75; }
+    # compare certain edges
+    if($foradjacency){		# Compare edges for adjacent rows of potentially different purpose
+      $diff += 0.3*scalar(grep($$cell1{border}[$_] != $$cell2{border}[$_], $axis+1, ($axis+3)%4));
+      my $pedge = ($axis == 0 ? 2 : 1);
+      # Penalty for apparent divider between.
+      $diff += 2.0*$$cell1{border}[$pedge]
+	unless ($$cell1{border}[$pedge] == $$cell1{border}[($pedge+2)%4])
+	  && ($$cell1{border}[$pedge] == $$cell2{border}[$pedge]);
+    }
+    else {			# Compare edges for rows from diff places for potential similarity
+      $diff += 0.3*scalar(grep($$cell1{border}[$_] != $$cell2{border}[$_], 0..3)); }
+  }
+  return $diff/scalar(@$line1); }
+
+# We expect to find header lines at the beginning, noticably different from the eventual data lines.
+# But the header lines might be quite similar to each other.  So, the strategy is to look
+# for a `hump' in the line differences and consider blocks containing these lines to be potential headers.
+sub tabular_characterize_lines {
+  my($axis,@lines)=@_;
+  my $n = scalar(@lines);
+  return unless $n > 1;
+
+  # Establish a scale of differences for the table.
+  my($diffhi,$difflo)=(0,99999999);
+  for(my $l = 0; $l < $n-1; $l++){
+    my $d = tabular_compare($axis,1,$lines[$l],$lines[$l+1]);
+    $diffhi = $d if $d > $diffhi;
+    $difflo = $d if $d < $difflo; }
+  return if $diffhi < 0.05;	# virtually no differences.
+  local @::TABLINES = @lines;
+  local $::TAB_THRESHOLD = $difflo + 0.4*($diffhi-$difflo);
+  local $::TAB_AXIS = $axis;
+  # print STDERR "\nCharacterizing $n ".($axis ? "columns" : "rows")."\n";
+  # Find the first hump in differences. These are candidates for header lines.
+  my $diff;
+  my ($minh,$maxh) = (1,1);
+  while( ($diff=tabular_compare($axis,1,$lines[$maxh-1],$lines[$maxh])) < $::TAB_THRESHOLD){
+    $maxh++; }
+  while( tabular_compare($axis,1,$lines[$maxh],$lines[$maxh+1]) > $difflo + ($diff-$difflo)/6){
+    $maxh++; }
+  $maxh = $MAX_TABULAR_HEADER_LINES if $maxh > $MAX_TABULAR_HEADER_LINES;
+  # print STDERR "Found from $minh--$maxh potential headers\n";
+
+  for(my $nh = $maxh; $nh >= $minh; $nh--){
+#  for(my $nh = $minh; $nh <= $maxh; $nh++){
+    if(my @heads = tabular_test_headers($nh)){
+      my $nsURI = $MODEL->getNamespace('ltxml');
+      foreach my $h (@heads){
+	foreach my $cell (@{$lines[$h]}){
+	  $$cell{role} = 'h';
+	  if(my $xcell = $$cell{cell}){
+	    $$cell{cell} = rename_node($xcell,'th',$nsURI); }}}
+      last; }}
+  1; }
+
+# Test whether $nhead lines makes a good fit for the headers
+sub tabular_test_headers {
+  my($nhead)=@_;
+  # print STDERR "Testing $nhead headers\n";
+  my @heads =(0..$nhead-1);		# The indices of heading lines.
+  my $i = $nhead;		# Start from the end of the proposed headings.
+  # Watch out for the assumed header being really data that is a repeated pattern.
+#  my $nrep = scalar(@::TABLINES)/$nhead;
+#  if(($nhead > 1) && ($nrep == int($nrep))){
+#    my $matched = 1;
+#    for(my $r = 1; $r < $nrep; $r++){
+#      $matched &&= tabular_match_lines(0,$r*$nhead,$nhead); }
+#    return if $matched; }
+  # And find a following grouping of data lines.
+  my $ndata = tabular_skip_data($i);
+  return unless $ndata >= $nhead; # ???? Well, maybe if _really_ convincing???
+  return unless ($ndata >= $nhead) || ($ndata >= 2);
+  $i += $ndata;
+  my $nd;
+  # If there are more lines, they should match either the previous data block, or the head/data pattern.
+  while($i < scalar(@::TABLINES)){
+    # First try to match a repeat of the 1st data block; 
+    # This would be the case when groups of data have borders around them.
+    # Could conceivably wnat to match a variable number of datalines, but they should be similar!!!??!?!?
+    if(($ndata > 1) && (($nd = tabular_match_lines($nhead,$i,$ndata))*1.0/$ndata > 0.66)){
+      # print STDERR "Matched $nd data lines at $i\n";
+      $i += $nd; }
+      # Else, try to match the first header block; less common.
+    elsif(tabular_match_lines(0,$i,$nhead) == $nhead){
+      # print STDERR "Matched $nhead header lines at $i\n";
+      push(@heads,$i..$i+$nhead-1);
+      $i += $nhead;
+      # Then attempt to match a new data block.
+#      my $d = tabular_skip_data($i);
+#      return unless ($d >= $nhead) || ($d >= 2);
+#      $i += $d; }
+      # No, better be the same data block?
+      return unless ($nd = tabular_match_lines($nhead,$i,$ndata))*1.0/$ndata > 0.66;
+      # print STDERR "Matched $nd data lines at $i\n";
+      $i += $nd; }
+    else { return; }}
+  # print STDERR "Succeeded with $nhead headers\n";
+  @heads; }
+
+# Match the $n lines starting at $i2 to those starting at $i1.
+sub tabular_match_lines {
+  my($i1,$i2,$n)=@_;
+  for(my $i = 0; $i < $n; $i++){
+    return $i if ($i1+$i >= scalar(@::TABLINES)) || ($i2+$i >= scalar(@::TABLINES))
+      || tabular_compare($::TAB_AXIS,0,$::TABLINES[$i1+$i],$::TABLINES[$i2+$i]) >= $::TAB_THRESHOLD; }
+  #  print STDERR "Matched $n lines at $i2\n";
+  return $n; }
+
+# Skip through a block of lines starting at $i that appear to be data, returning the number of lines.
+# We'll assume the 1st line is data, compare it to following lines,
+# but also accept `continuation' data lines.
+sub tabular_skip_data {
+  my($i)=@_;
+  return 0 if $i >= scalar(@::TABLINES);
+  my $n = 1;
+  while($i+$n < scalar(@::TABLINES)){
+    last unless (tabular_compare($::TAB_AXIS,1,$::TABLINES[$i+$n-1],$::TABLINES[$i+$n]) < $::TAB_THRESHOLD)
+      # Accept an outlying `continuation line' as data, if mostly empty
+      || (($n > 1) && (scalar(grep($$_{class} eq '_', @{$::TABLINES[$i+$n]})) > 0.4*scalar($::TABLINES[0])));
+    $n++; }
+  # print STDERR "Skipped $n data lines at $i\n";
+  ($n >= $MIN_TABULAR_DATA_LINES ? $n : 0); }
+
+
+#======================================================================
+# Apply the various recognized features to the tabular,
+# group headers and data, set borders, etc.
+our %alignment_map = (r=>'right', c=>'center', l=>'left', p=>'justify');
+sub tabular_finish {
+  my($tabular,$toplevel,@rows)=@_;
+  my $nsURI = $MODEL->getNamespace('ltxml');
+  $tabular->removeAttribute('pattern');
+  map($tabular->removeChild($_), 
+      $tabular->getChildrenByTagNameNS($nsURI,'hline'));
+  my $nrows = scalar(@rows);
+  my $ncols = scalar(@{$rows[0]});
+  my @xrows = element_nodes($tabular);
+  my ($group,$grouptype)=(undef,0);
+  for(my $i=0; $i<$nrows; $i++){
+    my $xrow = $xrows[$i];
+    if($toplevel){
+      my $rowtype = (grep($$_{role} ne 'h', @{$rows[$i]}) ? 'd' : 'h');
+      if($grouptype ne $rowtype){
+	$group = $tabular->addNewChild($nsURI,($rowtype eq 'h' ? 'thead' : 'tbody'));
+	$tabular->insertBefore($group,$xrow);
+	$grouptype = $rowtype; }
+      $group->appendChild($xrow); }
+    for(my $j=0; $j<$ncols; ){
+      my $cell  = $rows[$i][$j];
+      my $xcell = $$cell{cell};
+      if(!$xcell){
+	$xcell = $xrow->addNewChild($nsURI, ($$cell{role} eq 'h' ? 'th' : 'td')); }
+      my $cs = $xcell->getAttribute('colspan');
+      if(!$cs){ 
+	$cs=1; }
+      elsif($cs == 1){
+	$xcell->removeAttribute('colspan'); }
+      $xcell->removeAttribute('pattern');
+      if(my $align = $alignment_map{$$cell{align}}){
+	$xcell->setAttribute(align=>$align); }
+      my ($t,$r,$b,$l)=@{$$cell{border}};
+      $r = $rows[$i][$j+$cs-1]{border}[1] if $cs > 1;
+      $xcell->setAttribute(border=>join(' ',grep($_, ('t' x $t),('r' x $r),('b' x $b),('l' x $l)))); 
+      $j += $cs; }
+  }}
+
+#======================================================================
+sub summarize_tabular {
+  my($rows,$cols)=@_;
+  my $r=0;
+  my ($nrows,$ncols) = (scalar(@$rows),scalar(@{$$rows[0]}));
+  print STDERR "\n";
+  foreach my $cell (@{$$rows[0]}){
+    print STDERR ' '.($$cell{border}[0] ? ('-' x 6) : (' ' x 6)); }
+  print STDERR "\n";
+  foreach my $row (@$rows){
+    my $maxb = 0;
+    print STDERR ($$row[0]{border}[3] ? ('|' x $$row[0]{border}[3]) : ' ');
+    foreach my $cell (@$row){
+      print STDERR sprintf(" %4s ",$$cell{role}.$$cell{align}.$$cell{class}).
+	($$cell{border}[1] ? ('|' x $$cell{border}[1]) : ' ');
+      $maxb = $$cell{border}[2] if $$cell{border}[2] > $maxb; }
+    print STDERR sprintf("%.3f",tabular_compare(0,1,$$rows[$r],$$rows[$r+1])) if ($r < $nrows-1);
+    print STDERR "\n";
+    for(my $b = 0; $b < $maxb; $b++){
+      foreach my $cell (@$row){
+	print STDERR ' '.($b < $$cell{border}[2] ? ('-' x 6) : (' ' x 6)); }
+      print STDERR "\n"; }
+    $r++; }
+  print STDERR "   ";
+  for(my $c = 0; $c < $ncols-1; $c++){
+    print STDERR sprintf(" %.3f ",tabular_compare(1,1,$$cols[$c],$$cols[$c+1])); }
+  print STDERR "\n";
+}
+
+#======================================================================
 
 #======================================================================
 # Array and similar environments
@@ -1174,12 +1404,13 @@ DefConstructor('\label Semiverbatim',
 	       afterDigest=>sub {
 		 my $label = $_[1]->toString;
 		 my $scope = 'label:'.$label;
-		 unshift(@{LookupValue('scopes_for_counter:'.LookupValue('current_counter'))},
-		      $scope);
-		 $STATE->activateScope($scope);
-		 BeginMode('text');
-		 AssignValue('LABEL@'.$_[1]->toString, Digest(T_CS('\@currentlabel')),'global');
-		 EndMode('text'); });
+		 if(my $ctr = LookupValue('current_counter')){
+		   unshift(@{LookupValue('scopes_for_counter:'.$ctr)},$scope);
+		   $STATE->activateScope($scope);
+		   BeginMode('text');
+		   AssignValue('LABEL@'.$_[1]->toString, Digest(T_CS('\@currentlabel')),'global');
+		   EndMode('text'); }
+		 return; });
 
 DefConstructor('\ref Semiverbatim', "<ref labelref='#1'>&LookupValue('LABEL@#1')</ref>");
 DefConstructor('\pageref Semiverbatim', "<ref labelref='#1'>&LookupValue('LABEL@#1')</ref>"); # Same??
@@ -1190,10 +1421,13 @@ DefConstructor('\pageref Semiverbatim', "<ref labelref='#1'>&LookupValue('LABEL@
 # NOTE: Not really complete, since I haven't dealt with bibliographies!
 DefConstructor('\bibliography{}', "<bibliography files='#1'/>");
 
-DefEnvironment('{thebibliography}{}',"<bibliography>#body</bibliography>");
+DefEnvironment('{thebibliography}{}',"<bibliography><title>References</title><biblist>#body</biblist></bibliography>");
 
 # NOTE: 
-DefConstructor('\bibitem[]{}',"<bibitem ref='#1'>#1</bibitem>");
+DefConstructor('\bibitem[]{}',"<bibitem key='#2'>?#1(<biblabel>#1</biblabel>)<bibblock>");
+DefConstructor('\newblock',"<bibblock>");
+Tag('bibitem', autoClose=>1);
+Tag('bibblock', autoClose=>1);
 
 sub makecite {
   my($style,$show, $document,$phrase1,$phrase2,$ref)=@_;
@@ -1206,7 +1440,7 @@ sub makecite {
   $document->closeElement('cite'); }
 
 # Most of this is really natbib style.
-DefConstructor('\cite[][] Semiverbatim',       sub { makecite('intext','all',@_); });
+DefConstructor('\cite[][] Semiverbatim',       sub { makecite('parenthetic','all',@_); });
 DefConstructor('\citet[][] Semiverbatim',      sub { makecite('intext','all',@_); });
 DefConstructor('\citep[][] Semiverbatim',      sub { makecite('parenthetic','all',@_); });
 DefConstructor('\citeauthor[][] Semiverbatim', sub { makecite('intext','author',@_); });
@@ -1390,7 +1624,6 @@ DefPrimitive('\newtoks{Token}',  sub { DefRegister($_[1]->toString,Tokens()); })
 #======================================================================
 DefPrimitive('\hspace OptionalMatch:* {}',undef);
 DefPrimitive('\vspace OptionalMatch:* {}',undef);
-# \bigskip, \medskip, \smallskip
 # \addvspace{len}
 # \hfill, \vfill
 
@@ -1751,11 +1984,7 @@ DefConstructor('\textordmasculine',"\x{00BA}"); # MASCULINE ORDINAL INDICATOR
 DefMacro('\@namedef{}','\expandafter\def\csname #1\endcsname');
 DefMacro('\@nameuse{}','\csname #1\endcsname');
 
-#DefMacro('\space',' ');
-DefMacro('\space',Tokens(T_SPACE));
 DefMacro('\@spaces','\space\space\space\space');
-DefMacro('\@empty',Tokens());
-Let('\empty',T_CS('\@empty'));
 Let('\@sptoken',T_SPACE);
 #======================================================================
 # Internals used in Packages
@@ -1855,25 +2084,6 @@ DefMacro('\@latex@info@no@line{}',
   '\@latex@info{#1\@gobble}');
 
 #======================================================================
-
-# From latex.ltx
-#\newdimen\maxdimen \maxdimen=16383.99999pt % the largest legal <dimen>
-#\newskip\hideskip \hideskip=-1000pt plus 1fill % negative but can grow
-#\newdimen\p@ \p@=1pt % this saves macro space and time
-#\newdimen\z@ \z@=0pt % can be used both for 0pt and 0
-#\newskip\z@skip \z@skip=0pt plus0pt minus0pt
-#\newbox\voidb@x % permanently void box register
-
-# First approximation.
-DefRegister('\maxdimen',Dimension(16383.99999*65536));
-DefRegister('\hideskip',Glue(-1000*65536,'1fill'));
-DefRegister('\p@',Dimension(65536));
-DefRegister('\z@',Dimension(0));
-DefRegister('\z@skip',Glue(0,0,0));
-DefMacro('\voidb@x','');
-
-# \newread
-# \newwrite
 
 #======================================================================
 # Some control structure from latex.ltx

@@ -61,7 +61,7 @@ sub pasthru {
 sub postamble {
   my $inst = shift->SUPER::postamble(@_);
 
-  # Generate a makefile block to compile the grammer
+  # Generate a makefile block to compile the grammar
   my $makeGrammar = <<'MakeGrammar';
 all :: blib/lib/LaTeXML/MathGrammar.pm
 
@@ -72,16 +72,32 @@ blib/lib/LaTeXML/MathGrammar.pm: lib/LaTeXML/MathGrammar
 
 MakeGrammar
 
+  # Generate a makefile block to concatenate the style files.
+  my $makeXSLTs = << 'MakeXSLT';
+all :: blib/lib/LaTeXML/dtd/LaTeXML-html.xsl
+
+all :: blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl
+
+blib/lib/LaTeXML/dtd/LaTeXML-html.xsl: lib/LaTeXML/dtd/html.xsl.head lib/LaTeXML/dtd/core.xsl.tail
+	$(PERLRUN) -e 'while(<>){print;}' lib/LaTeXML/dtd/html.xsl.head lib/LaTeXML/dtd/core.xsl.tail \
+	> blib/lib/LaTeXML/dtd/LaTeXML-html.xsl
+
+blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl: lib/LaTeXML/dtd/xhtml.xsl.head lib/LaTeXML/dtd/core.xsl.tail
+	$(PERLRUN) -e 'while(<>){print;}' lib/LaTeXML/dtd/xhtml.xsl.head lib/LaTeXML/dtd/core.xsl.tail \
+	> blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl
+
+MakeXSLT
+
   # Generate a makefile block to install the TeX sytle files
-  my $installStyles = <<'InstallStyles';
+  my $installTeXStyles = <<'InstallTeXStyles';
 install::
 	$(MKPATH) $(TEXMF)/tex/latex/latexml/
 	$(CP) $(STYLE_FILES) $(TEXMF)/tex/latex/latexml/
 	$(TEXHASH)
 
-InstallStyles
+InstallTeXStyles
 
-$inst . $makeGrammar . $installStyles; }
+$inst . $makeGrammar . $makeXSLTs . $installTeXStyles; }
 
 # To strip FindBin stuff from scripts.
 # BUT, I want to do it when installing to final dest, NOT when copying to blib/bin !!!!!

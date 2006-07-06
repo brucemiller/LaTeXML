@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
  /=====================================================================\ 
- |  LaTeXML-html.xsl                                                   |
+ |  Head of html.xsl                                                   |
  |  Stylesheet for converting LaTeXML documents to html                |
  |=====================================================================|
  | Part of LaTeXML:                                                    |
@@ -13,8 +13,8 @@
  \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-   xmlns:xsl = "http://www.w3.org/1999/XSL/Transform"
    version   = "1.0"
+   xmlns:xsl = "http://www.w3.org/1999/XSL/Transform"
    xmlns:ltx = "http://dlmf.nist.gov/LaTeXML"
    exclude-result-prefixes='ltx'
    >
@@ -24,11 +24,8 @@
    omit-xml-declaration = 'yes'
    doctype-public = "-//W3C//DTD HTML 4.01//EN"
    doctype-system = "http://www.w3c.org/TR/html4/strict.dtd"
-   media-type     = 'text/html'/>
-
-  <xsl:param name="NSDECL"/>
-  <xsl:param name="EXT">.html</xsl:param>
-  <xsl:param name="MATHML">false</xsl:param>
+   media-type     = 'text/html'
+   encoding       = 'UTF=8'/>
 
   <!-- could dump a tex form or something? -->
   <xsl:template match="ltx:Math"/>
@@ -47,6 +44,12 @@
     </xsl:choose>
   </xsl:template>
 
-  <xsl:include href="LaTeXML-base.xsl"/>
+  <xsl:template match="/">
+    <html>
+      <xsl:call-template name="head"/>
+      <xsl:call-template name="body"/>
+    </html>
+  </xsl:template>
 
-</xsl:stylesheet>
+<!-- INCOMPLETE;  Must have core.xsl.tail appended!!!! -->
+

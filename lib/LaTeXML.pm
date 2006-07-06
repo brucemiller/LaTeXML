@@ -26,7 +26,7 @@ our @ISA = (qw(LaTeXML::Object));
 #use LaTeXML::Document;
 
 use vars qw($VERSION);
-$VERSION = "0.4.0";
+$VERSION = "0.4.1";
 
 #**********************************************************************
 # What a Mess of Globals!
@@ -109,7 +109,7 @@ sub digestString {
 
   NoteProgress("\n(Digesting string...");
   $STOMACH->initialize;
-  map($GULLET->input($_), 'TeX', @{$$self{preload} || []} );
+  map($GULLET->input($_,['ltxml','latexml']), 'TeX', @{$$self{preload} || []} );
   $GULLET->openMouth(LaTeXML::Mouth->new($string),0);
   $STATE->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode("Unknown"))));
   my $list = LaTeXML::List->new($STOMACH->digestNextBody); 

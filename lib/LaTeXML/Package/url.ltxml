@@ -14,5 +14,5 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-DefConstructor('\url{}',"<a href='#1'>#1</a>");
+DefConstructor('\url Semiverbatim',"<a href='#1'>#1</a>");
 1;

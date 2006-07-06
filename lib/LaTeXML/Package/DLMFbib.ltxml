@@ -25,8 +25,19 @@ DefEnvironment('{document}',"<bibliography>#body</bibliography>",
 
 # Load special functions & other required packages.
 RequirePackage('DLMFmath');
+RequirePackage('amsmath');
 RequirePackage('amsrefs');
 RequirePackage('url');
+
+DefKeyVal('amsrefs','text_url','Semiverbatim');
+DefKeyVal('amsrefs','abstract_url','Semiverbatim');
+
+# Oh, and these too...
+DefConstructor('\URL[]{}',"<a href='#2'>?#1(#1)(#2)</a>");
+DefConstructor('\GAMSclass{}',"<GAMS class='#1'/>");
+DefConstructor('\GAMSpackage{}',"<GAMS package='#1'/>");
+DefConstructor('\GAMSclasspackage{}{}',"<GAMS class='#1' package='#2'/>");
+DefConstructor('\GAMSmodule{}{}{}',"<GAMS package='#1' module='#2' module_id='#3'/>");
 
 #**********************************************************************
 1;

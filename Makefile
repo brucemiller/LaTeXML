@@ -6,12 +6,12 @@
 #
 #       ANY CHANGES MADE HERE WILL BE LOST!
 #
-#   MakeMaker ARGV: ()
+#   MakeMaker ARGV: (q[DLMF])
 #
 #   MakeMaker Parameters:
 
 #     AUTHOR => q[Bruce Miller <bruce.miller@nist.gov>]
-#     EXE_FILES => [q[bin/latexml], q[bin/latexmlpost], q[bin/latexmlfind]]
+#     EXE_FILES => [q[bin/latexml], q[bin/latexmlpost], q[bin/latexmlfind], q[bin/dlmfpost]]
 #     NAME => q[LaTeXML]
 #     PREREQ_PM => { XML::LibXML::XPathContext=>q[0], XML::LibXSLT=>q[1.57], XML::LibXML=>q[1.57], Image::Magick=>q[0], Parse::RecDescent=>q[0] }
 #     VERSION_FROM => q[lib/LaTeXML.pm]
@@ -21,13 +21,13 @@
 
 # --- MakeMaker const_config section:
 
-# These definitions are from config.sh (via /usr/lib/perl5/5.8.5/i386-linux-thread-multi/Config.pm)
+# These definitions are from config.sh (via /usr/lib/perl5/5.8.6/i386-linux-thread-multi/Config.pm)
 
 # They may have been overridden via Makefile.PL or on the command line
 AR = ar
 CC = gcc
 CCCDLFLAGS = -fPIC
-CCDLFLAGS = -Wl,-E -Wl,-rpath,/usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE
+CCDLFLAGS = -Wl,-E -Wl,-rpath,/usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE
 DLEXT = so
 DLSRC = dl_dlopen.xs
 LD = gcc
@@ -37,15 +37,15 @@ LIBC = /lib/libc-2.3.5.so
 LIB_EXT = .a
 OBJ_EXT = .o
 OSNAME = linux
-OSVERS = 2.6.9-1.906_elsmp
+OSVERS = 2.6.9-22.18.bz155725.elsmp
 RANLIB = :
-SITELIBEXP = /usr/lib/perl5/site_perl/5.8.5
-SITEARCHEXP = /usr/lib/perl5/site_perl/5.8.5/i386-linux-thread-multi
+SITELIBEXP = /usr/lib/perl5/site_perl/5.8.6
+SITEARCHEXP = /usr/lib/perl5/site_perl/5.8.6/i386-linux-thread-multi
 SO = so
 EXE_EXT = 
 FULL_AR = /usr/bin/ar
-VENDORARCHEXP = /usr/lib/perl5/vendor_perl/5.8.5/i386-linux-thread-multi
-VENDORLIBEXP = /usr/lib/perl5/vendor_perl/5.8.5
+VENDORARCHEXP = /usr/lib/perl5/vendor_perl/5.8.6/i386-linux-thread-multi
+VENDORLIBEXP = /usr/lib/perl5/vendor_perl/5.8.6
 
 
 # --- MakeMaker constants section:
@@ -53,11 +53,11 @@ AR_STATIC_ARGS = cr
 DIRFILESEP = /
 NAME = LaTeXML
 NAME_SYM = LaTeXML
-VERSION = 0.4.0
+VERSION = 0.4.1
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_4_0
+VERSION_SYM = 0_4_1
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.4.0
+XS_VERSION = 0.4.1
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -74,17 +74,17 @@ PREFIX =
 PERLPREFIX = /usr
 SITEPREFIX = /usr
 VENDORPREFIX = /usr
-INSTALLPRIVLIB = $(PERLPREFIX)/lib/perl5/5.8.5
+INSTALLPRIVLIB = $(PERLPREFIX)/lib/perl5/5.8.6
 DESTINSTALLPRIVLIB = $(DESTDIR)$(INSTALLPRIVLIB)
-INSTALLSITELIB = $(SITEPREFIX)/lib/perl5/site_perl/5.8.5
+INSTALLSITELIB = $(SITEPREFIX)/lib/perl5/site_perl/5.8.6
 DESTINSTALLSITELIB = $(DESTDIR)$(INSTALLSITELIB)
-INSTALLVENDORLIB = $(VENDORPREFIX)/lib/perl5/vendor_perl/5.8.5
+INSTALLVENDORLIB = $(VENDORPREFIX)/lib/perl5/vendor_perl/5.8.6
 DESTINSTALLVENDORLIB = $(DESTDIR)$(INSTALLVENDORLIB)
-INSTALLARCHLIB = $(PERLPREFIX)/lib/perl5/5.8.5/i386-linux-thread-multi
+INSTALLARCHLIB = $(PERLPREFIX)/lib/perl5/5.8.6/i386-linux-thread-multi
 DESTINSTALLARCHLIB = $(DESTDIR)$(INSTALLARCHLIB)
-INSTALLSITEARCH = $(SITEPREFIX)/lib/perl5/site_perl/5.8.5/i386-linux-thread-multi
+INSTALLSITEARCH = $(SITEPREFIX)/lib/perl5/site_perl/5.8.6/i386-linux-thread-multi
 DESTINSTALLSITEARCH = $(DESTDIR)$(INSTALLSITEARCH)
-INSTALLVENDORARCH = $(VENDORPREFIX)/lib/perl5/vendor_perl/5.8.5/i386-linux-thread-multi
+INSTALLVENDORARCH = $(VENDORPREFIX)/lib/perl5/vendor_perl/5.8.6/i386-linux-thread-multi
 DESTINSTALLVENDORARCH = $(DESTDIR)$(INSTALLVENDORARCH)
 INSTALLBIN = $(PERLPREFIX)/bin
 DESTINSTALLBIN = $(DESTDIR)$(INSTALLBIN)
@@ -106,14 +106,14 @@ INSTALLSITEMAN3DIR = $(SITEPREFIX)/share/man/man3
 DESTINSTALLSITEMAN3DIR = $(DESTDIR)$(INSTALLSITEMAN3DIR)
 INSTALLVENDORMAN3DIR = $(VENDORPREFIX)/share/man/man3
 DESTINSTALLVENDORMAN3DIR = $(DESTDIR)$(INSTALLVENDORMAN3DIR)
-PERL_LIB = /usr/lib/perl5/5.8.5
-PERL_ARCHLIB = /usr/lib/perl5/5.8.5/i386-linux-thread-multi
+PERL_LIB = /usr/lib/perl5/5.8.6
+PERL_ARCHLIB = /usr/lib/perl5/5.8.6/i386-linux-thread-multi
 LIBPERL_A = libperl.a
 FIRST_MAKEFILE = Makefile
 MAKEFILE_OLD = $(FIRST_MAKEFILE).old
 MAKE_APERL_FILE = $(FIRST_MAKEFILE).aperl
 PERLMAINCC = $(CC)
-PERL_INC = /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE
+PERL_INC = /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE
 PERL = /usr/bin/perl
 FULLPERL = /usr/bin/perl
 ABSPERL = $(PERL)
@@ -127,7 +127,7 @@ PERL_CORE = 0
 PERM_RW = 644
 PERM_RWX = 755
 
-MAKEMAKER   = /usr/lib/perl5/5.8.5/ExtUtils/MakeMaker.pm
+MAKEMAKER   = /usr/lib/perl5/5.8.6/ExtUtils/MakeMaker.pm
 MM_VERSION  = 6.17
 MM_REVISION = 1.133
 
@@ -247,6 +247,7 @@ TO_INST_PM = lib/LaTeXML.pm \
 	lib/LaTeXML/Post/Graphics.pm \
 	lib/LaTeXML/Post/MathImages.pm \
 	lib/LaTeXML/Post/MathML.pm \
+	lib/LaTeXML/Post/MathML.pm.save \
 	lib/LaTeXML/Post/OpenMath.pm \
 	lib/LaTeXML/Post/PurgeXMath.pm \
 	lib/LaTeXML/Post/SVG.pm \
@@ -263,11 +264,12 @@ TO_INST_PM = lib/LaTeXML.pm \
 	lib/LaTeXML/dtd/DLMF.dtd \
 	lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd \
 	lib/LaTeXML/dtd/LaTeXML-MathML.dtd \
-	lib/LaTeXML/dtd/LaTeXML-base.xsl \
-	lib/LaTeXML/dtd/LaTeXML-html.xsl \
-	lib/LaTeXML/dtd/LaTeXML-xhtml.xsl \
+	lib/LaTeXML/dtd/LaTeXML.css \
 	lib/LaTeXML/dtd/LaTeXML.dtd \
-	lib/LaTeXML/dtd/catalog
+	lib/LaTeXML/dtd/catalog \
+	lib/LaTeXML/dtd/core.xsl.tail \
+	lib/LaTeXML/dtd/html.xsl.head \
+	lib/LaTeXML/dtd/xhtml.xsl.head
 
 PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/Package/amsmath.ltxml \
@@ -283,24 +285,26 @@ PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/Definition.pm \
 	lib/LaTeXML/Post/MathImages.pm \
 	blib/lib/LaTeXML/Post/MathImages.pm \
-	lib/LaTeXML/Package/LaTeX.ltxml \
-	blib/lib/LaTeXML/Package/LaTeX.ltxml \
 	lib/LaTeXML/Package/graphicx.ltxml \
 	blib/lib/LaTeXML/Package/graphicx.ltxml \
+	lib/LaTeXML/Package/LaTeX.ltxml \
+	blib/lib/LaTeXML/Package/LaTeX.ltxml \
 	lib/LaTeXML/State.pm \
 	blib/lib/LaTeXML/State.pm \
 	lib/LaTeXML/Token.pm \
 	blib/lib/LaTeXML/Token.pm \
+	lib/LaTeXML/dtd/core.xsl.tail \
+	blib/lib/LaTeXML/dtd/core.xsl.tail \
 	lib/LaTeXML/Package/amstext.ltxml \
 	blib/lib/LaTeXML/Package/amstext.ltxml \
 	lib/LaTeXML/Package/amsbsy.ltxml \
 	blib/lib/LaTeXML/Package/amsbsy.ltxml \
 	lib/LaTeXML/Package/makeidx.ltxml \
 	blib/lib/LaTeXML/Package/makeidx.ltxml \
-	lib/LaTeXML/Post/OpenMath.pm \
-	blib/lib/LaTeXML/Post/OpenMath.pm \
 	lib/LaTeXML/dtd/DLMF.dtd \
 	blib/lib/LaTeXML/dtd/DLMF.dtd \
+	lib/LaTeXML/Post/OpenMath.pm \
+	blib/lib/LaTeXML/Post/OpenMath.pm \
 	lib/LaTeXML/Package/amssymb.ltxml \
 	blib/lib/LaTeXML/Package/amssymb.ltxml \
 	lib/LaTeXML/dtd/catalog \
@@ -325,38 +329,38 @@ PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/Post/XSLT.pm \
 	lib/LaTeXML/Rewrite.pm \
 	blib/lib/LaTeXML/Rewrite.pm \
+	lib/LaTeXML/dtd/xhtml.xsl.head \
+	blib/lib/LaTeXML/dtd/xhtml.xsl.head \
 	lib/LaTeXML/Gullet.pm \
 	blib/lib/LaTeXML/Gullet.pm \
 	lib/LaTeXML/Package/hyperref.ltxml \
 	blib/lib/LaTeXML/Package/hyperref.ltxml \
-	lib/LaTeXML/dtd/LaTeXML-base.xsl \
-	blib/lib/LaTeXML/dtd/LaTeXML-base.xsl \
-	lib/LaTeXML/Package/DLMFbib.ltxml \
-	blib/lib/LaTeXML/Package/DLMFbib.ltxml \
 	lib/LaTeXML/Error.pm \
 	blib/lib/LaTeXML/Error.pm \
-	lib/LaTeXML/dtd/LaTeXML-html.xsl \
-	blib/lib/LaTeXML/dtd/LaTeXML-html.xsl \
+	lib/LaTeXML/Package/DLMFbib.ltxml \
+	blib/lib/LaTeXML/Package/DLMFbib.ltxml \
 	lib/LaTeXML/Util/Transform.pm \
 	blib/lib/LaTeXML/Util/Transform.pm \
+	lib/LaTeXML/Post/MathML.pm.save \
+	blib/lib/LaTeXML/Post/MathML.pm.save \
 	lib/LaTeXML/Package/pst-node.ltxml \
 	blib/lib/LaTeXML/Package/pst-node.ltxml \
 	lib/LaTeXML/Box.pm \
 	blib/lib/LaTeXML/Box.pm \
-	lib/LaTeXML/Package/DLMF.ltxml \
-	blib/lib/LaTeXML/Package/DLMF.ltxml \
 	lib/LaTeXML/Post.pm \
 	blib/lib/LaTeXML/Post.pm \
+	lib/LaTeXML/Package/DLMF.ltxml \
+	blib/lib/LaTeXML/Package/DLMF.ltxml \
 	lib/LaTeXML/Post/SVG.pm \
 	blib/lib/LaTeXML/Post/SVG.pm \
 	lib/LaTeXML/Document.pm \
 	blib/lib/LaTeXML/Document.pm \
 	lib/LaTeXML/dtd/LaTeXML.dtd \
 	blib/lib/LaTeXML/dtd/LaTeXML.dtd \
-	lib/LaTeXML/Util/Geometry.pm \
-	blib/lib/LaTeXML/Util/Geometry.pm \
 	lib/LaTeXML/Package/keyval.ltxml \
 	blib/lib/LaTeXML/Package/keyval.ltxml \
+	lib/LaTeXML/Util/Geometry.pm \
+	blib/lib/LaTeXML/Util/Geometry.pm \
 	lib/LaTeXML/Package/comment.ltxml \
 	blib/lib/LaTeXML/Package/comment.ltxml \
 	lib/LaTeXML/Package/latexml.ltxml \
@@ -373,8 +377,6 @@ PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/Package.pm \
 	lib/LaTeXML/Package/alltt.ltxml \
 	blib/lib/LaTeXML/Package/alltt.ltxml \
-	lib/LaTeXML/dtd/LaTeXML-xhtml.xsl \
-	blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl \
 	lib/LaTeXML/Global.pm \
 	blib/lib/LaTeXML/Global.pm \
 	lib/LaTeXML/Util/Pathname.pm \
@@ -385,6 +387,10 @@ PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/Package/pstricks.ltxml \
 	lib/LaTeXML/Package/amsrefs.ltxml \
 	blib/lib/LaTeXML/Package/amsrefs.ltxml \
+	lib/LaTeXML/dtd/LaTeXML.css \
+	blib/lib/LaTeXML/dtd/LaTeXML.css \
+	lib/LaTeXML/dtd/html.xsl.head \
+	blib/lib/LaTeXML/dtd/html.xsl.head \
 	lib/LaTeXML/dtd/LaTeXML-MathML.dtd \
 	blib/lib/LaTeXML/dtd/LaTeXML-MathML.dtd \
 	lib/LaTeXML/Parameters.pm \
@@ -403,12 +409,12 @@ PM_TO_BLIB = lib/LaTeXML/Package/amsmath.ltxml \
 	blib/lib/LaTeXML/Package/TeX.ltxml \
 	lib/LaTeXML/Package/DLMFmath.ltxml \
 	blib/lib/LaTeXML/Package/DLMFmath.ltxml \
+	lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd \
+	blib/lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd \
 	lib/LaTeXML/Number.pm \
 	blib/lib/LaTeXML/Number.pm \
 	lib/LaTeXML/Package/graphics.ltxml \
 	blib/lib/LaTeXML/Package/graphics.ltxml \
-	lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd \
-	blib/lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd \
 	lib/LaTeXML/Package/html.ltxml \
 	blib/lib/LaTeXML/Package/html.ltxml \
 	lib/LaTeXML/Post/Graphics.pm \
@@ -481,7 +487,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = LaTeXML
-DISTVNAME = LaTeXML-0.4.0
+DISTVNAME = LaTeXML-0.4.1
 
 
 # --- MakeMaker macro section:
@@ -552,21 +558,21 @@ config :: $(INST_ARCHAUTODIR)$(DIRFILESEP).exists
 config :: $(INST_AUTODIR)$(DIRFILESEP).exists
 	$(NOECHO) $(NOOP)
 
-$(INST_AUTODIR)/.exists :: /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE/perl.h
+$(INST_AUTODIR)/.exists :: /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE/perl.h
 	$(NOECHO) $(MKPATH) $(INST_AUTODIR)
-	$(NOECHO) $(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE/perl.h $(INST_AUTODIR)/.exists
+	$(NOECHO) $(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE/perl.h $(INST_AUTODIR)/.exists
 
 	-$(NOECHO) $(CHMOD) $(PERM_RWX) $(INST_AUTODIR)
 
-$(INST_LIBDIR)/.exists :: /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE/perl.h
+$(INST_LIBDIR)/.exists :: /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE/perl.h
 	$(NOECHO) $(MKPATH) $(INST_LIBDIR)
-	$(NOECHO) $(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE/perl.h $(INST_LIBDIR)/.exists
+	$(NOECHO) $(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE/perl.h $(INST_LIBDIR)/.exists
 
 	-$(NOECHO) $(CHMOD) $(PERM_RWX) $(INST_LIBDIR)
 
-$(INST_ARCHAUTODIR)/.exists :: /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE/perl.h
+$(INST_ARCHAUTODIR)/.exists :: /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE/perl.h
 	$(NOECHO) $(MKPATH) $(INST_ARCHAUTODIR)
-	$(NOECHO) $(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE/perl.h $(INST_ARCHAUTODIR)/.exists
+	$(NOECHO) $(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE/perl.h $(INST_ARCHAUTODIR)/.exists
 
 	-$(NOECHO) $(CHMOD) $(PERM_RWX) $(INST_ARCHAUTODIR)
 
@@ -574,9 +580,9 @@ config :: $(INST_MAN1DIR)$(DIRFILESEP).exists
 	$(NOECHO) $(NOOP)
 
 
-$(INST_MAN1DIR)/.exists :: /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE/perl.h
+$(INST_MAN1DIR)/.exists :: /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE/perl.h
 	$(NOECHO) $(MKPATH) $(INST_MAN1DIR)
-	$(NOECHO) $(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE/perl.h $(INST_MAN1DIR)/.exists
+	$(NOECHO) $(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE/perl.h $(INST_MAN1DIR)/.exists
 
 	-$(NOECHO) $(CHMOD) $(PERM_RWX) $(INST_MAN1DIR)
 
@@ -584,9 +590,9 @@ config :: $(INST_MAN3DIR)$(DIRFILESEP).exists
 	$(NOECHO) $(NOOP)
 
 
-$(INST_MAN3DIR)/.exists :: /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE/perl.h
+$(INST_MAN3DIR)/.exists :: /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE/perl.h
 	$(NOECHO) $(MKPATH) $(INST_MAN3DIR)
-	$(NOECHO) $(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE/perl.h $(INST_MAN3DIR)/.exists
+	$(NOECHO) $(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE/perl.h $(INST_MAN3DIR)/.exists
 
 	-$(NOECHO) $(CHMOD) $(PERM_RWX) $(INST_MAN3DIR)
 
@@ -712,21 +718,21 @@ manifypods : pure_all  \
 
 # --- MakeMaker installbin section:
 
-$(INST_SCRIPT)/.exists :: /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE/perl.h
+$(INST_SCRIPT)/.exists :: /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE/perl.h
 	$(NOECHO) $(MKPATH) $(INST_SCRIPT)
-	$(NOECHO) $(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.8.5/i386-linux-thread-multi/CORE/perl.h $(INST_SCRIPT)/.exists
+	$(NOECHO) $(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.8.6/i386-linux-thread-multi/CORE/perl.h $(INST_SCRIPT)/.exists
 
 	-$(NOECHO) $(CHMOD) $(PERM_RWX) $(INST_SCRIPT)
 
-EXE_FILES = bin/latexml bin/latexmlpost bin/latexmlfind
+EXE_FILES = bin/latexml bin/latexmlpost bin/latexmlfind bin/dlmfpost
 
 FIXIN = $(PERLRUN) "-MExtUtils::MY" -e "MY->fixin(shift)"
 
-pure_all :: $(INST_SCRIPT)/latexmlpost $(INST_SCRIPT)/latexmlfind $(INST_SCRIPT)/latexml
+pure_all :: $(INST_SCRIPT)/latexmlpost $(INST_SCRIPT)/latexmlfind $(INST_SCRIPT)/dlmfpost $(INST_SCRIPT)/latexml
 	$(NOECHO) $(NOOP)
 
 realclean ::
-	$(RM_F) $(INST_SCRIPT)/latexmlpost $(INST_SCRIPT)/latexmlfind $(INST_SCRIPT)/latexml
+	$(RM_F) $(INST_SCRIPT)/latexmlpost $(INST_SCRIPT)/latexmlfind $(INST_SCRIPT)/dlmfpost $(INST_SCRIPT)/latexml
 
 $(INST_SCRIPT)/latexmlpost: bin/latexmlpost $(FIRST_MAKEFILE) $(INST_SCRIPT)/.exists
 	$(NOECHO) $(RM_F) $(INST_SCRIPT)/latexmlpost
@@ -739,6 +745,12 @@ $(INST_SCRIPT)/latexmlfind: bin/latexmlfind $(FIRST_MAKEFILE) $(INST_SCRIPT)/.ex
 	$(CP) bin/latexmlfind $(INST_SCRIPT)/latexmlfind
 	$(FIXIN) $(INST_SCRIPT)/latexmlfind
 	-$(NOECHO) $(CHMOD) $(PERM_RWX) $(INST_SCRIPT)/latexmlfind
+
+$(INST_SCRIPT)/dlmfpost: bin/dlmfpost $(FIRST_MAKEFILE) $(INST_SCRIPT)/.exists
+	$(NOECHO) $(RM_F) $(INST_SCRIPT)/dlmfpost
+	$(CP) bin/dlmfpost $(INST_SCRIPT)/dlmfpost
+	$(FIXIN) $(INST_SCRIPT)/dlmfpost
+	-$(NOECHO) $(CHMOD) $(PERM_RWX) $(INST_SCRIPT)/dlmfpost
 
 $(INST_SCRIPT)/latexml: bin/latexml $(FIRST_MAKEFILE) $(INST_SCRIPT)/.exists
 	$(NOECHO) $(RM_F) $(INST_SCRIPT)/latexml
@@ -779,18 +791,19 @@ realclean purge ::  clean realclean_subdirs
 	$(RM_RF) $(DISTVNAME)
 	$(RM_F)  blib/lib/LaTeXML/dtd/LaTeXML.dtd blib/lib/LaTeXML/Package/pspicture.ltxml blib/lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd blib/lib/LaTeXML/State.pm blib/lib/LaTeXML/Package/amsbsy.ltxml
 	$(RM_F) blib/lib/LaTeXML/Util/Transform.pm blib/lib/LaTeXML/Post/PurgeXMath.pm blib/lib/LaTeXML/Package/euscript.ltxml blib/lib/LaTeXML/Package/amsmath.ltxml blib/lib/LaTeXML/Package/color.ltxml
-	$(RM_F) blib/lib/LaTeXML/Util/Color.pm blib/lib/LaTeXML/Package/graphics.ltxml blib/lib/LaTeXML/Package/alltt.ltxml blib/lib/LaTeXML/Package/amsfonts.ltxml blib/lib/LaTeXML/Package/makeidx.ltxml
-	$(RM_F) blib/lib/LaTeXML/Package/amsopn.ltxml blib/lib/LaTeXML/Package/DLMFmath.ltxml blib/lib/LaTeXML/Package/eufrak.ltxml blib/lib/LaTeXML/Package/graphicx.ltxml blib/lib/LaTeXML/dtd/LaTeXML-base.xsl
-	$(RM_F) blib/lib/LaTeXML/Package/hyperref.ltxml blib/lib/LaTeXML/Post/Graphics.pm blib/lib/LaTeXML/Package/mcsd.ltxml blib/lib/LaTeXML/Parameters.pm $(MAKEFILE_OLD) blib/lib/LaTeXML/Font.pm blib/lib/LaTeXML.pm
-	$(RM_F) blib/lib/LaTeXML/Package/DLMF.ltxml blib/lib/LaTeXML/Package/ae.ltxml blib/lib/LaTeXML/Post/SVG.pm blib/lib/LaTeXML/Post/XSLT.pm blib/lib/LaTeXML/Post/MathImages.pm blib/lib/LaTeXML/Definition.pm
-	$(RM_F) blib/lib/LaTeXML/Package/latexml.ltxml blib/lib/LaTeXML/Package/comment.ltxml blib/lib/LaTeXML/Package/keyval.ltxml blib/lib/LaTeXML/Post.pm blib/lib/LaTeXML/Package/TeX.ltxml blib/lib/LaTeXML/Box.pm
-	$(RM_F) blib/lib/LaTeXML/Number.pm blib/lib/LaTeXML/Token.pm blib/lib/LaTeXML/Stomach.pm blib/lib/LaTeXML/dtd/LaTeXML-MathML.dtd blib/lib/LaTeXML/Error.pm blib/lib/LaTeXML/Util/Pathname.pm
-	$(RM_F) blib/lib/LaTeXML/Package/amstext.ltxml blib/lib/LaTeXML/Util/LibXML.pm $(FIRST_MAKEFILE) blib/lib/LaTeXML/MathGrammar blib/lib/LaTeXML/Package/LaTeX.ltxml blib/lib/LaTeXML/Post/MathML.pm
-	$(RM_F) blib/lib/LaTeXML/Mouth.pm blib/lib/LaTeXML/Package.pm blib/lib/LaTeXML/Package/pst-node.ltxml blib/lib/LaTeXML/Package/eucal.ltxml blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl
-	$(RM_F) blib/lib/LaTeXML/Package/url.ltxml blib/lib/LaTeXML/Global.pm blib/lib/LaTeXML/Package/pstricks.ltxml blib/lib/LaTeXML/Package/DLMFbib.ltxml blib/lib/LaTeXML/dtd/LaTeXML-html.xsl
-	$(RM_F) blib/lib/LaTeXML/Package/html.ltxml blib/lib/LaTeXML/dtd/DLMF.dtd blib/lib/LaTeXML/Package/article.ltxml blib/lib/LaTeXML/Gullet.pm blib/lib/LaTeXML/Package/acronym.ltxml blib/lib/LaTeXML/Rewrite.pm
-	$(RM_F) blib/lib/LaTeXML/Package/amsxtra.ltxml blib/lib/LaTeXML/MathParser.pm blib/lib/LaTeXML/Package/amsrefs.ltxml blib/lib/LaTeXML/Package/amssymb.ltxml blib/lib/LaTeXML/dtd/catalog
-	$(RM_F) blib/lib/LaTeXML/Document.pm blib/lib/LaTeXML/Util/Geometry.pm blib/lib/LaTeXML/Model.pm blib/lib/LaTeXML/Object.pm blib/lib/LaTeXML/Post/OpenMath.pm
+	$(RM_F) blib/lib/LaTeXML/Util/Color.pm blib/lib/LaTeXML/Package/graphics.ltxml blib/lib/LaTeXML/Package/alltt.ltxml blib/lib/LaTeXML/Package/amsfonts.ltxml blib/lib/LaTeXML/dtd/core.xsl.tail
+	$(RM_F) blib/lib/LaTeXML/Package/makeidx.ltxml blib/lib/LaTeXML/Package/amsopn.ltxml blib/lib/LaTeXML/Package/DLMFmath.ltxml blib/lib/LaTeXML/Package/eufrak.ltxml blib/lib/LaTeXML/Package/graphicx.ltxml
+	$(RM_F) blib/lib/LaTeXML/Package/hyperref.ltxml blib/lib/LaTeXML/Post/Graphics.pm blib/lib/LaTeXML/Package/mcsd.ltxml blib/lib/LaTeXML/dtd/xhtml.xsl.head blib/lib/LaTeXML/Parameters.pm $(MAKEFILE_OLD)
+	$(RM_F) blib/lib/LaTeXML/Font.pm blib/lib/LaTeXML.pm blib/lib/LaTeXML/dtd/LaTeXML.css blib/lib/LaTeXML/Package/DLMF.ltxml blib/lib/LaTeXML/Package/ae.ltxml blib/lib/LaTeXML/Post/SVG.pm
+	$(RM_F) blib/lib/LaTeXML/Post/XSLT.pm blib/lib/LaTeXML/Post/MathImages.pm blib/lib/LaTeXML/Definition.pm blib/lib/LaTeXML/Package/latexml.ltxml blib/lib/LaTeXML/Package/comment.ltxml
+	$(RM_F) blib/lib/LaTeXML/Package/keyval.ltxml blib/lib/LaTeXML/Post.pm blib/lib/LaTeXML/Package/TeX.ltxml blib/lib/LaTeXML/Box.pm blib/lib/LaTeXML/Number.pm blib/lib/LaTeXML/Token.pm
+	$(RM_F) blib/lib/LaTeXML/Stomach.pm blib/lib/LaTeXML/dtd/LaTeXML-MathML.dtd blib/lib/LaTeXML/Error.pm blib/lib/LaTeXML/Util/Pathname.pm blib/lib/LaTeXML/Package/amstext.ltxml blib/lib/LaTeXML/Util/LibXML.pm
+	$(RM_F) $(FIRST_MAKEFILE) blib/lib/LaTeXML/MathGrammar blib/lib/LaTeXML/Package/LaTeX.ltxml blib/lib/LaTeXML/Post/MathML.pm blib/lib/LaTeXML/Mouth.pm blib/lib/LaTeXML/Package.pm
+	$(RM_F) blib/lib/LaTeXML/Package/pst-node.ltxml blib/lib/LaTeXML/Package/eucal.ltxml blib/lib/LaTeXML/Package/url.ltxml blib/lib/LaTeXML/Global.pm blib/lib/LaTeXML/Package/pstricks.ltxml
+	$(RM_F) blib/lib/LaTeXML/Package/DLMFbib.ltxml blib/lib/LaTeXML/Package/html.ltxml blib/lib/LaTeXML/dtd/DLMF.dtd blib/lib/LaTeXML/Package/article.ltxml blib/lib/LaTeXML/dtd/html.xsl.head
+	$(RM_F) blib/lib/LaTeXML/Gullet.pm blib/lib/LaTeXML/Package/acronym.ltxml blib/lib/LaTeXML/Rewrite.pm blib/lib/LaTeXML/Package/amsxtra.ltxml blib/lib/LaTeXML/MathParser.pm
+	$(RM_F) blib/lib/LaTeXML/Package/amsrefs.ltxml blib/lib/LaTeXML/Package/amssymb.ltxml blib/lib/LaTeXML/dtd/catalog blib/lib/LaTeXML/Document.pm blib/lib/LaTeXML/Util/Geometry.pm blib/lib/LaTeXML/Model.pm
+	$(RM_F) blib/lib/LaTeXML/Post/MathML.pm.save blib/lib/LaTeXML/Object.pm blib/lib/LaTeXML/Post/OpenMath.pm
 
 
 # --- MakeMaker metafile section:
@@ -798,7 +811,7 @@ metafile :
 	$(NOECHO) $(ECHO) '# http://module-build.sourceforge.net/META-spec.html' > META.yml
 	$(NOECHO) $(ECHO) '#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#' >> META.yml
 	$(NOECHO) $(ECHO) 'name:         LaTeXML' >> META.yml
-	$(NOECHO) $(ECHO) 'version:      0.4.0' >> META.yml
+	$(NOECHO) $(ECHO) 'version:      0.4.1' >> META.yml
 	$(NOECHO) $(ECHO) 'version_from: lib/LaTeXML.pm' >> META.yml
 	$(NOECHO) $(ECHO) 'installdirs:  site' >> META.yml
 	$(NOECHO) $(ECHO) 'requires:' >> META.yml
@@ -1020,7 +1033,7 @@ $(FIRST_MAKEFILE) : Makefile.PL $(CONFIGDEP)
 	$(NOECHO) $(RM_F) $(MAKEFILE_OLD)
 	$(NOECHO) $(MV)   $(FIRST_MAKEFILE) $(MAKEFILE_OLD)
 	-$(MAKE) -f $(MAKEFILE_OLD) clean $(DEV_NULL) || $(NOOP)
-	$(PERLRUN) Makefile.PL 
+	$(PERLRUN) Makefile.PL "DLMF"
 	$(NOECHO) $(ECHO) "==> Your Makefile has been rebuilt. <=="
 	$(NOECHO) $(ECHO) "==> Please rerun the make command.  <=="
 	false
@@ -1041,7 +1054,8 @@ $(MAKE_APERL_FILE) : $(FIRST_MAKEFILE)
 	$(NOECHO) $(PERLRUNINST) \
 		Makefile.PL DIR= \
 		MAKEFILE=$(MAKE_APERL_FILE) LINKTYPE=static \
-		MAKEAPERL=1 NORECURS=1 CCCDLFLAGS=
+		MAKEAPERL=1 NORECURS=1 CCCDLFLAGS= \
+		DLMF
 
 
 # --- MakeMaker test section:
@@ -1071,7 +1085,7 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd:
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,4,0,0">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,4,1,0">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <TITLE>$(DISTNAME)</TITLE>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT></ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Bruce Miller &lt;bruce.miller@nist.gov&gt;</AUTHOR>' >> $(DISTNAME).ppd
@@ -1099,15 +1113,16 @@ pm_to_blib: $(TO_INST_PM)
 	  lib/LaTeXML/MathGrammar blib/lib/LaTeXML/MathGrammar \
 	  lib/LaTeXML/Definition.pm blib/lib/LaTeXML/Definition.pm \
 	  lib/LaTeXML/Post/MathImages.pm blib/lib/LaTeXML/Post/MathImages.pm \
-	  lib/LaTeXML/Package/LaTeX.ltxml blib/lib/LaTeXML/Package/LaTeX.ltxml \
 	  lib/LaTeXML/Package/graphicx.ltxml blib/lib/LaTeXML/Package/graphicx.ltxml \
+	  lib/LaTeXML/Package/LaTeX.ltxml blib/lib/LaTeXML/Package/LaTeX.ltxml \
 	  lib/LaTeXML/State.pm blib/lib/LaTeXML/State.pm \
 	  lib/LaTeXML/Token.pm blib/lib/LaTeXML/Token.pm \
+	  lib/LaTeXML/dtd/core.xsl.tail blib/lib/LaTeXML/dtd/core.xsl.tail \
 	  lib/LaTeXML/Package/amstext.ltxml blib/lib/LaTeXML/Package/amstext.ltxml \
 	  lib/LaTeXML/Package/amsbsy.ltxml blib/lib/LaTeXML/Package/amsbsy.ltxml \
 	  lib/LaTeXML/Package/makeidx.ltxml blib/lib/LaTeXML/Package/makeidx.ltxml \
-	  lib/LaTeXML/Post/OpenMath.pm blib/lib/LaTeXML/Post/OpenMath.pm \
 	  lib/LaTeXML/dtd/DLMF.dtd blib/lib/LaTeXML/dtd/DLMF.dtd \
+	  lib/LaTeXML/Post/OpenMath.pm blib/lib/LaTeXML/Post/OpenMath.pm \
 	  lib/LaTeXML/Package/amssymb.ltxml blib/lib/LaTeXML/Package/amssymb.ltxml \
 	  lib/LaTeXML/dtd/catalog blib/lib/LaTeXML/dtd/catalog \
 	  lib/LaTeXML/Package/amsxtra.ltxml blib/lib/LaTeXML/Package/amsxtra.ltxml \
@@ -1120,22 +1135,22 @@ pm_to_blib: $(TO_INST_PM)
 	  lib/LaTeXML/Font.pm blib/lib/LaTeXML/Font.pm \
 	  lib/LaTeXML/Post/XSLT.pm blib/lib/LaTeXML/Post/XSLT.pm \
 	  lib/LaTeXML/Rewrite.pm blib/lib/LaTeXML/Rewrite.pm \
+	  lib/LaTeXML/dtd/xhtml.xsl.head blib/lib/LaTeXML/dtd/xhtml.xsl.head \
 	  lib/LaTeXML/Gullet.pm blib/lib/LaTeXML/Gullet.pm \
 	  lib/LaTeXML/Package/hyperref.ltxml blib/lib/LaTeXML/Package/hyperref.ltxml \
-	  lib/LaTeXML/dtd/LaTeXML-base.xsl blib/lib/LaTeXML/dtd/LaTeXML-base.xsl \
-	  lib/LaTeXML/Package/DLMFbib.ltxml blib/lib/LaTeXML/Package/DLMFbib.ltxml \
 	  lib/LaTeXML/Error.pm blib/lib/LaTeXML/Error.pm \
-	  lib/LaTeXML/dtd/LaTeXML-html.xsl blib/lib/LaTeXML/dtd/LaTeXML-html.xsl \
+	  lib/LaTeXML/Package/DLMFbib.ltxml blib/lib/LaTeXML/Package/DLMFbib.ltxml \
 	  lib/LaTeXML/Util/Transform.pm blib/lib/LaTeXML/Util/Transform.pm \
+	  lib/LaTeXML/Post/MathML.pm.save blib/lib/LaTeXML/Post/MathML.pm.save \
 	  lib/LaTeXML/Package/pst-node.ltxml blib/lib/LaTeXML/Package/pst-node.ltxml \
 	  lib/LaTeXML/Box.pm blib/lib/LaTeXML/Box.pm \
-	  lib/LaTeXML/Package/DLMF.ltxml blib/lib/LaTeXML/Package/DLMF.ltxml \
 	  lib/LaTeXML/Post.pm blib/lib/LaTeXML/Post.pm \
+	  lib/LaTeXML/Package/DLMF.ltxml blib/lib/LaTeXML/Package/DLMF.ltxml \
 	  lib/LaTeXML/Post/SVG.pm blib/lib/LaTeXML/Post/SVG.pm \
 	  lib/LaTeXML/Document.pm blib/lib/LaTeXML/Document.pm \
 	  lib/LaTeXML/dtd/LaTeXML.dtd blib/lib/LaTeXML/dtd/LaTeXML.dtd \
-	  lib/LaTeXML/Util/Geometry.pm blib/lib/LaTeXML/Util/Geometry.pm \
 	  lib/LaTeXML/Package/keyval.ltxml blib/lib/LaTeXML/Package/keyval.ltxml \
+	  lib/LaTeXML/Util/Geometry.pm blib/lib/LaTeXML/Util/Geometry.pm \
 	  lib/LaTeXML/Package/comment.ltxml blib/lib/LaTeXML/Package/comment.ltxml \
 	  lib/LaTeXML/Package/latexml.ltxml blib/lib/LaTeXML/Package/latexml.ltxml \
 	  lib/LaTeXML/MathParser.pm blib/lib/LaTeXML/MathParser.pm \
@@ -1144,12 +1159,13 @@ pm_to_blib: $(TO_INST_PM)
 	  lib/LaTeXML/Post/PurgeXMath.pm blib/lib/LaTeXML/Post/PurgeXMath.pm \
 	  lib/LaTeXML/Package.pm blib/lib/LaTeXML/Package.pm \
 	  lib/LaTeXML/Package/alltt.ltxml blib/lib/LaTeXML/Package/alltt.ltxml \
-	  lib/LaTeXML/dtd/LaTeXML-xhtml.xsl blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl \
 	  lib/LaTeXML/Global.pm blib/lib/LaTeXML/Global.pm \
 	  lib/LaTeXML/Util/Pathname.pm blib/lib/LaTeXML/Util/Pathname.pm \
 	  lib/LaTeXML/Object.pm blib/lib/LaTeXML/Object.pm \
 	  lib/LaTeXML/Package/pstricks.ltxml blib/lib/LaTeXML/Package/pstricks.ltxml \
 	  lib/LaTeXML/Package/amsrefs.ltxml blib/lib/LaTeXML/Package/amsrefs.ltxml \
+	  lib/LaTeXML/dtd/LaTeXML.css blib/lib/LaTeXML/dtd/LaTeXML.css \
+	  lib/LaTeXML/dtd/html.xsl.head blib/lib/LaTeXML/dtd/html.xsl.head \
 	  lib/LaTeXML/dtd/LaTeXML-MathML.dtd blib/lib/LaTeXML/dtd/LaTeXML-MathML.dtd \
 	  lib/LaTeXML/Parameters.pm blib/lib/LaTeXML/Parameters.pm \
 	  lib/LaTeXML/Util/LibXML.pm blib/lib/LaTeXML/Util/LibXML.pm \
@@ -1159,9 +1175,9 @@ pm_to_blib: $(TO_INST_PM)
 	  lib/LaTeXML/Package/eucal.ltxml blib/lib/LaTeXML/Package/eucal.ltxml \
 	  lib/LaTeXML/Package/TeX.ltxml blib/lib/LaTeXML/Package/TeX.ltxml \
 	  lib/LaTeXML/Package/DLMFmath.ltxml blib/lib/LaTeXML/Package/DLMFmath.ltxml \
+	  lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd blib/lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd \
 	  lib/LaTeXML/Number.pm blib/lib/LaTeXML/Number.pm \
 	  lib/LaTeXML/Package/graphics.ltxml blib/lib/LaTeXML/Package/graphics.ltxml \
-	  lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd blib/lib/LaTeXML/dtd/LaTeXML-MathML-OpenMath.dtd \
 	  lib/LaTeXML/Package/html.ltxml blib/lib/LaTeXML/Package/html.ltxml \
 	  lib/LaTeXML/Post/Graphics.pm blib/lib/LaTeXML/Post/Graphics.pm \
 	  lib/LaTeXML.pm blib/lib/LaTeXML.pm \
@@ -1179,6 +1195,18 @@ blib/lib/LaTeXML/MathGrammar.pm: lib/LaTeXML/MathGrammar
 	$(PERLRUN) -MParse::RecDescent - lib/LaTeXML/MathGrammar LaTeXML::MathGrammar
 	$(NOECHO) $(MKPATH) $(INST_LIBDIR)/LaTeXML
 	$(MV) MathGrammar.pm blib/lib/LaTeXML/MathGrammar.pm
+
+all :: blib/lib/LaTeXML/dtd/LaTeXML-html.xsl
+
+all :: blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl
+
+blib/lib/LaTeXML/dtd/LaTeXML-html.xsl: lib/LaTeXML/dtd/html.xsl.head lib/LaTeXML/dtd/core.xsl.tail
+	$(PERLRUN) -e 'while(<>){print;}' lib/LaTeXML/dtd/html.xsl.head lib/LaTeXML/dtd/core.xsl.tail \
+	> blib/lib/LaTeXML/dtd/LaTeXML-html.xsl
+
+blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl: lib/LaTeXML/dtd/xhtml.xsl.head lib/LaTeXML/dtd/core.xsl.tail
+	$(PERLRUN) -e 'while(<>){print;}' lib/LaTeXML/dtd/xhtml.xsl.head lib/LaTeXML/dtd/core.xsl.tail \
+	> blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl
 
 install::
 	$(MKPATH) $(TEXMF)/tex/latex/latexml/

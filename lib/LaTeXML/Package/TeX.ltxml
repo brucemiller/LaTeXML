@@ -20,6 +20,10 @@ no warnings 'redefine';
 RegisterNamespace(ltxml=>"http://dlmf.nist.gov/LaTeXML",1);
 
 #**********************************************************************
+# CORE TeX; Built-in commands.
+#**********************************************************************
+
+#**********************************************************************
 # Expandable Primitives
 # See The TeXBook, Ch. 20, Definitions (also called Macros) pp. 212--215
 #**********************************************************************
@@ -163,15 +167,6 @@ DefExpandable('\ifcase Number', sub {
   isConditional=>1);
 
 #======================================================================
-# \newif (from plain).
-DefExpandable('\newif Token',sub {
-  my($ignore,$cs)=@_;
-  my $name = $cs->toString; $name =~ s/^\\if//;
-  DefExpandable($cs->toString, sub { ifHandler(LookupValue('Boolean:'.$name)); }, isConditional=>1);
-  DefPrimitive('\\'.$name.'true', sub { AssignValue('Boolean:'.$name => 1); });
-  DefPrimitive('\\'.$name.'false', sub { AssignValue('Boolean:'.$name => 0); });  });
-
-#======================================================================
 
 DefPrimitive('\relax',undef);
 DefExpandable('\number Number',       sub { Explode($_[1]->valueOf); });
@@ -253,23 +248,27 @@ DefPrimitive('\bye',sub {
 # Registers & Parameters
 # See Chapter 24, Summary of Vertical Mode
 # Define a whole mess of useless registers here ...
+# Values are from Appendix B, pp. 348-349 (for whatever its worth)
 #======================================================================
 
 #======================================================================
 # Integer registers; TeXBook p. 272-273
-our %iparms= (pretolerance=>0, tolerance=>0, hbadness=>0, vbadness=>0, linepenalty=>0,
-	      hypenpenalty=>0, exhyphenpenalty=>0, binoppenalty=>0, relpenalty=>0, 
-	      clubpenalty=>0, widowpenalty=>0, displaywidowpenalty=>0, brokenpenalty=>0, 
-	      predisplaypenalty=>0, postdisplaypenalty=>0, interlinepenalty=>0, 
-	      floatingpenalty=>0, outputpenalty=>0, doublehyphendemerits=>0,
-	      finalhyphendemerits=>0, adjdemerits=>0, looseness=>0, pausing=>0, 
+our %iparms= (pretolerance=>100, tolerance=>200, hbadness=>1000, vbadness=>1000,
+	      linepenalty=>10, hypenpenalty=>50, exhyphenpenalty=>50,
+	      binoppenalty=>700, relpenalty=>500,
+	      clubpenalty=>150, widowpenalty=>150, displaywidowpenalty=>50,
+	      brokenpenalty=>100, predisplaypenalty=>10000,
+	      postdisplaypenalty=>0, interlinepenalty=>0, 
+	      floatingpenalty=>0, outputpenalty=>0, 
+	      doublehyphendemerits=>10000, finalhyphendemerits=>5000, adjdemerits=>10000,
+	      looseness=>0, pausing=>0, 
 	      holdinginserts=>0, tracingonline=>0, tracingmacros=>0, tracingstats=>0, 
-	      tracingparagraphs=>0, tracingpages=>0, tracingoutput=>0, tracinglostchars=>0, 
-	      tracingcommands=>0, tracingrestores=>0, language=>0, uchyph=>0, lefthyphenmin=>0, 
-	      righthyphenmin=>0, globaldefs=>0, defaulthyphenchar=>0, defaultskewchar=>0, 
-	      escapechar=>0, endlinechar=>0, newlinechar=>0, maxdeadcycles=>0, hangafter=>0, 
+	      tracingparagraphs=>0, tracingpages=>0, tracingoutput=>0, tracinglostchars=>1,
+	      tracingcommands=>0, tracingrestores=>0, language=>0, uchyph=>1, lefthyphenmin=>0,
+	      righthyphenmin=>0, globaldefs=>0, defaulthyphenchar=>ord('-'), defaultskewchar=>-1,
+	      escapechar=>0, endlinechar=>0, newlinechar=>-1, maxdeadcycles=>0, hangafter=>0, 
 	      fam=>0, mag=>1000, delimiterfactor=>0, time=>0, day=>0, month=>0, year=>0,
-	      showboxbreadth=>0, showboxdepth=>0, errorcontextlines=>0);
+	      showboxbreadth=>5, showboxdepth=>3, errorcontextlines=>5);
 foreach my $p (keys %iparms){
   DefRegister("\\$p",Number($iparms{$p})); }
 
@@ -292,11 +291,14 @@ foreach my $p (keys %sp_iparms){
 
 #======================================================================
 # Dimen registers; TeXBook p. 274
-our %dparms=(hfuzz=>'1pt', vfuzz=>'1pt', overfullrule=>0, emergencystretch=>0, 
-	     hsize=>'6in', vsize=>'9in',
-	     maxdepth=>0, splitmaxdepth=>0, boxmaxdepth=>0, lineskiplimit=>0, 
-	     delimitershortfall=>0, nulldelimiterspace=>0, scriptspace=>0, mathsurround=>0, 
-	     predisplaysize=>0, displaywidth=>0, displayindent=>0, parindent=>0, 
+our %dparms=(hfuzz=>'0.1pt', vfuzz=>'0.1pt', overfullrule=>'5pt',
+	     emergencystretch=>0,
+	     hsize=>'6.5in', vsize=>'8.9in',
+	     maxdepth=>'4pt', splitmaxdepth=>'16383.99999pt', boxmaxdepth=>'16383.99999pt',
+	     lineskiplimit=>0, 
+	     delimitershortfall=>'5pt', nulldelimiterspace=>'1.2pt', scriptspace=>'0.5pt',
+	     mathsurround=>0, 
+	     predisplaysize=>0, displaywidth=>0, displayindent=>0, parindent=>'20pt',
 	     hangindent=>0, hoffset=>0, voffset=>0,);
 foreach my $p (keys %dparms){
   DefRegister("\\$p",Dimension($dparms{$p})); }
@@ -317,15 +319,20 @@ foreach my $p (keys %sp_dparms){
 
 #======================================================================
 # Glue registers; TeXBook p.274
-our %gparms=(baselineskip=>0, lineskip=>0, parskip=>0, abovedisplayskip=>0, 
-	     abovedisplayshortskip=>0, leftskip=>0, rightskip=>0, topskip=>0, splittopskip=>0,
-	     tabskip=>0, spaceskip=>0, xspaceskip=>0, parfillskip=>0);
+our %gparms=(baselineskip=>0, lineskip=>0, 
+	     parskip=>'0pt plus 1pt', 
+	     abovedisplayskip=>'12pt plus 3pt minus 9pt',
+	     abovedisplayshortskip=>'0pt plus 3pt',
+	     belowdisplayskip=>'12pt plus 3pt minus 9pt',
+	     belowdisplayshortskip=>'0pt plus 3pt',
+	     leftskip=>0, rightskip=>0, topskip=>'10pt', splittopskip=>'10pt',
+	     tabskip=>0, spaceskip=>0, xspaceskip=>0, parfillskip=>'0pt plus 1fil');
 foreach my $p (keys %gparms){
   DefRegister("\\$p",Glue($gparms{$p})); }
 
 #======================================================================
 # MuGlue registers; TeXBook p.274
-our %mparms=(thinmuskip=>'3mu', medmuskip=>'4mu', thickmuskip=>'5mu');
+our %mparms=(thinmuskip=>'3mu', medmuskip=>'4mu plus 2mu minus 4mu', thickmuskip=>'5mu plus 5mu');
 foreach my $p (keys %mparms){
   DefRegister("\\$p",Glue($mparms{$p})); }
 
@@ -333,19 +340,7 @@ foreach my $p (keys %mparms){
 # Token registers; TeXBook p.275
 our @tparms= qw(output everypar everymath everydisplay everyhbox everyvbox
 		everyjob everycr everyhelp);
-#======================================================================
 
-# Are these from plain ?
-DefConstructor('\smallskip',"");
-DefConstructor('\medskip',"");
-DefConstructor('\bigskip',"");
-
-DefConstructor('\thinspace',"?#isMath(<XMHint name='thinspace'/>)( )");
-DefConstructor('\thickspace',"?#isMath(<XMHint name='thickspace'/>)( )");
-
-# Mostly ignorable, although it could add an attribute to an ancestor
-# to record the desired justification.
-DefPrimitive('\raggedright',undef);
 #======================================================================
 # Assignment, TeXBook Ch.24, p.275
 #======================================================================
@@ -441,14 +436,6 @@ DefRegister('\skip Number'  => Glue(0));
 DefRegister('\muskip Number'=> MuGlue(0));
 DefRegister('\toks Number'  => Tokens());
 
-# From plain.tex
-DefPrimitive('\newcount  Token',sub { DefRegister($_[1]->toString=>Number(0));   return; });
-DefPrimitive('\newdimen  Token',sub { DefRegister($_[1]->toString=>Dimension(0));return; });
-DefPrimitive('\newskip   Token',sub { DefRegister($_[1]->toString=>Glue(0));     return; });
-DefPrimitive('\newmuskip Token',sub { DefRegister($_[1]->toString=>MuGlue(0));   return; });
-DefPrimitive('\newtoks   Token',sub { DefRegister($_[1]->toString=>Tokens(0));   return; });
-# also \newbox, \newhelp, \newread, \newwrite, \newfam, \newlanguage
-
 # <integer variable> = <integer parameter> | <countdef token> | \count<8bit>
 # <dimen var> = <dimen parameter> | <dimendef token> | \dimen<8bit>
 # <glue variable> = <glue parameter> | <skipdef token> | \skip<8bit>
@@ -499,15 +486,12 @@ DefExpandable('\futurelet Token Token Token',sub{
 #    | <registerdef><control sequence><equals><8bit>
 # <registerdef> = \countdef | \dimendef | \skipdef | \muskipdef | toksdef
 
-# As defining a register ??
+# Almost like a register, but different...
 DefPrimitive('\chardef Token SkipMatch:= Number', sub {
-  my($self,$newcs,$code)=@_;
-  AssignValue($newcs->getString=>Number($code));	# For when used as an integer valueOf
-  my $ch = chr($code->valueOf);
-  InstallDefinition(LaTeXML::Primitive->new($newcs,"",
-					    sub { InvokeToken(T_OTHER($ch)); },
-					    registerType=>'Number', readonly=>1));
+  my($self,$newcs,$value)=@_;
+  InstallDefinition(LaTeXML::CharDef->new($newcs,$value));
   return; });
+
 # \mathchardef ?
 
 DefPrimitive('\countdef Token SkipMatch:= Number',sub {
@@ -701,8 +685,6 @@ DefConstructor('\@raise Dimension Token', "<text raise='#1'>#2</text>", alias=>'
 DefConstructor('{','#body', beforeDigest=>\&BGroup, captureBody=>1);
 DefConstructor('}',  '',    beforeDigest=>\&EGroup);
 
-Let('\bgroup',T_BEGIN);
-Let('\egroup',T_END);
 DefPrimitive('\begingroup',\&BeginGroup);
 DefPrimitive('\endgroup',  \&EndGroup);
 
@@ -783,22 +765,16 @@ DefConstructor('\hfill',"?#isMath(<XMHint name='hfill'/>)( )");
 # \end
 # \dump
 
-#**********************************************************************
-DefConstructor("~","?#isMath(<XMHint name='nobreakspace'/>)(\x{00A0})"); # NO-BREAK SPACE
-
-DefPrimitive('\nobreak',undef);
-
-#**********************************************************************
 DefConstructor('\vspace{}',"");
 DefPrimitive('\leavevmode',undef);
-DefConstructor('\centerline{}',"<centering>#1</centering>");
 
 # Well, what else?
 DefMacro('\newpage','');
-#**********************************************************************
+
+#======================================================================
 # Math mode stuff
 # See TeXBook Ch.26
-#**********************************************************************
+#======================================================================
 # Decide whether we're going into or out of math, inline or display.
 
 DefPrimitive('$', sub {
@@ -1003,24 +979,6 @@ Let('\sp',T_SUPER);
 Let('\sb',T_SUB);
 
 #======================================================================
-# Additional properties for plain characters.
-# These are allowed in plain text, but need to act a bit special in math.
-DefMath('=','=', role=>'RELOP');
-DefMath('>','>', role=>'RELOP');
-DefMath('<','<', role=>'RELOP');
-DefMath('+','+', role=>'ADDOP');
-DefMath('-','-', role=>'ADDOP');
-DefMath('*','*', role=>'MULOP');
-DefMath('/','/', role=>'MULOP', style=>'inline');
-DefMath('!','!', role=>'POSTFIX');
-DefMath(',',',', role=>'PUNCT');
-DefMath('.','.', role=>'PUNCT');
-DefMath(';',';', role=>'PUNCT');
-DefMath('(','(', role=>'OPEN'); DefMath(')',')', role=>'CLOSE');
-DefMath('[','[', role=>'OPEN'); DefMath(']',']', role=>'CLOSE');
-DefMath('|','|', role=>'VERTBAR');
-
-#======================================================================
 # \choose & friends, also need special argument handling
 
 # After digesting the \choose (or whatever), grab the previous and following material
@@ -1097,7 +1055,8 @@ DefConstructor('\abovewithdelims{}{}{}',
 		 ($whatsit->getProperty('top')->revert,
 		  $whatsit->getDefinition->invocation(@args),
 		  $whatsit->getProperty('bottom')->revert); });
-#**********************************************************************
+
+#======================================================================
 # Old style font styles.
 # The trick is to create an empty Whatsit preserved till assimilation (for reversion'ing)
 # but to change the current font used in boxes.
@@ -1135,10 +1094,45 @@ sub setMathBoldness {
 DefPrimitive('\boldmath',  sub { setMathBoldness(1); });
 DefPrimitive('\unboldmath',sub { setMathBoldness(0); });
 
+
+#======================================================================
+# Alignments
+
+# & gives an error except within the right context 
+# (which should redefine it!)
+DefConstructor('&',sub { Fatal("Stray \"&\""); });
+
 #**********************************************************************
-# Combining letters & numbers
+# Plain;  Extracted from Appendix B.
 #**********************************************************************
-# Combine letters, when the fonts are right.
+
+#======================================================================
+# TeX Book, Appendix B, p. 344
+#======================================================================
+# \dospecials ??
+
+# Set up the mathcode table
+
+#======================================================================
+# Properties for plain characters.
+# These are allowed in plain text, but need to act a bit special in math.
+DefMath('=','=', role=>'RELOP');
+DefMath('>','>', role=>'RELOP');
+DefMath('<','<', role=>'RELOP');
+DefMath('+','+', role=>'ADDOP');
+DefMath('-','-', role=>'ADDOP');
+DefMath('*','*', role=>'MULOP');
+DefMath('/','/', role=>'MULOP', style=>'inline');
+DefMath('!','!', role=>'POSTFIX');
+DefMath(',',',', role=>'PUNCT');
+DefMath('.','.', role=>'PUNCT');
+DefMath(';',';', role=>'PUNCT');
+DefMath('(','(', role=>'OPEN'); DefMath(')',')', role=>'CLOSE');
+DefMath('[','[', role=>'OPEN'); DefMath(']',']', role=>'CLOSE');
+DefMath('|','|', role=>'VERTBAR');
+
+#======================================================================
+# Combine letters, when the fonts are right. (sorta related to mathcode)
 
 sub match_letter_tokens {
   my($document,$node)=@_;
@@ -1202,18 +1196,171 @@ sub construct_number {
 DefRewrite(xpath=>"descendant-or-self::ltxml:XMTok[(\@role='NUMBER' or \@role='PUNCT') and contains('.0123456789',text())]",
 	  match=>\&match_digit_tokens, replace=>\&construct_number);
 
-#**********************************************************************
-# Alignments
+#======================================================================
+# TeX Book, Appendix B, p. 345
 
-# & gives an error except within the right context 
-# (which should redefine it!)
-DefConstructor('&',sub { Fatal("Stray \"&\""); });
+RawTeX('
+  \chardef\@one=1
+  \chardef\tw@=2
+  \chardef\thr@@=3
+  \chardef\sixt@@n=16
+  \chardef\@cclv=255
+  \chardef\@cclvi=256
+  \chardef\@m=1000
+  \chardef\@M=10000
+  \chardef\@MM=20000');
 
-#**********************************************************************
-# Stuff from Plain
-#**********************************************************************
+#======================================================================
+# TeX Book, Appendix B, p. 346
 
-#**********************************************************************
+RawTeX('
+  \countdef\count@=255
+  \toksdef\toks@=0
+  \skipdef\skip@=0
+  \dimendef\dimen@i=1
+  \dimendef\dimen@ii=2');
+# Various \count's are set; should we?
+
+#======================================================================
+# TeX Book, Appendix B, p. 347
+# \wlog ??
+# From plain.tex
+DefPrimitive('\newcount  Token',sub { DefRegister($_[1]->toString=>Number(0));   return; });
+DefPrimitive('\newdimen  Token',sub { DefRegister($_[1]->toString=>Dimension(0));return; });
+DefPrimitive('\newskip   Token',sub { DefRegister($_[1]->toString=>Glue(0));     return; });
+DefPrimitive('\newmuskip Token',sub { DefRegister($_[1]->toString=>MuGlue(0));   return; });
+DefPrimitive('\newtoks   Token',sub { DefRegister($_[1]->toString=>Tokens(0));   return; });
+
+# also \newbox, \newhelp, \newread, \newwrite, \newfam, \newlanguage
+# \alloc@, \newinsert, \ch@ck
+
+# TeX plain uses \newdimen, etc. for these.
+# Is there any advantage to that?
+DefRegister('\maxdimen',Dimension(16383.99999*65536));
+DefRegister('\hideskip',Glue(-1000*65536,'1fill'));
+DefRegister('\centering',Glue('0pt plus 1000pt minus 1000pt'));
+DefRegister('\p@',Dimension(65536));
+DefRegister('\z@',Dimension(0));
+DefRegister('\z@skip',Glue(0,0,0));
+
+# First approximation. till I figure out \newbox
+#  \newbox\voidb@x
+DefMacro('\voidb@x','');
+
+#======================================================================
+# TeX Book, Appendix B, p. 348
+
+DefExpandable('\newif Token',sub {
+  my($ignore,$cs)=@_;
+  my $name = $cs->toString; $name =~ s/^\\if//;
+  DefExpandable($cs->toString, sub { ifHandler(LookupValue('Boolean:'.$name)); }, isConditional=>1);
+  DefPrimitive('\\'.$name.'true', sub { AssignValue('Boolean:'.$name => 1); });
+  DefPrimitive('\\'.$name.'false', sub { AssignValue('Boolean:'.$name => 0); });  });
+
+# See the section Registers & Parameters, above for setting default values.
+#======================================================================
+# TeX Book, Appendix B, p. 349
+# See the section Registers & Parameters, above for setting default values.
+
+# These are originally defined with \newskip, etc
+DefRegister('\smallskipamount' => Glue('3pt plus1pt minus1pt'));
+DefRegister('\medskipamount'   => Glue('6pt plus2pt minus2pt'));
+DefRegister('\bigskipamount'   => Glue('12pt plus4pt minus4pt'));
+DefRegister('\normalbaselineskip' => Glue('12pt'));
+DefRegister('\normallineskip'  => Glue('1pt'));
+DefRegister('\normallineskiplimit'=> Dimension('0pt'));
+DefRegister('\jot'  => Dimension('3pt'));
+DefRegister('\interdisplaylinepenalty' => Number(100));
+DefRegister('\interfootnotelinepenalty' => Number(100));
+
+DefMacro('\magstephalf','1095');
+# \magstep ??
+
+#======================================================================
+# TeX Book, Appendix B, p. 350
+
+# Font stuff ??????
+
+#======================================================================
+# TeX Book, Appendix B, p. 351
+
+# More Font stuff ??????
+
+DefPrimitive('\frenchspacing', undef);
+DefPrimitive('\nonfrenchspacing',undef);
+DefMacro('\normalbaselines',
+	 '\lineskip=\normallineskip\baselineskip=\normalbaselineskip\lineskiplimit=\normallineskiplimit');
+DefMacro('\space',Tokens(T_SPACE));
+DefMacro("\\\@empty",Tokens());
+DefMacro('\lq',"`");
+DefMacro('\rq',"'");
+Let('\empty',T_CS('\@empty'));
+##DefMacro{'\null','\hbox{}');
+Let('\bgroup',T_BEGIN);
+Let('\egroup',T_END);
+
+#======================================================================
+# TeX Book, Appendix B, p. 352
+
+DefPrimitive('\obeyspaces',undef);
+DefPrimitive('\obeylines',undef);
+
+RawTeX(' \def\loop#1\repeat{\def\body{#1}\iterate}
+         \def\iterate{\body \let\next=\iterate \else\let\next=\relax\fi \next}
+         \let\repeat=\fi ');
+
+DefConstructor('\enskip',  "?#isMath(<XMHint name='enskip'/>)(\x{2000})"); # EN QUAD
+DefConstructor('\enspace', "?#isMath(<XMHint name='enskip'/>)(\x{2000})"); # EN QUAD
+DefConstructor('\quad', "?#isMath(<XMHint name='quad'/>)(\x{2001})"); # EM QUAD
+DefConstructor('\qquad',"?#isMath(<XMHint name='qquad'/>)(\x{2001}\x{2001})"); # EM QUAD
+
+DefConstructor('\thinspace',   "?#isMath(<XMHint name='thinspace'/>)( )");
+DefConstructor('\negthinspace',"?#isMath(<XMHint name='negthinspace'/>)()");
+DefConstructor('\thickspace',  "?#isMath(<XMHint name='thickspace'/>)( )");
+
+DefConstructor('\hglue Glue', "?#isMath(<XMHint name='#1'/>)(\x{2001})"); # EM QUAD
+DefPrimitive('\vglue Glue', undef);
+DefPrimitive('\topglue', undef);
+DefPrimitive('\nointerlineskip',undef);
+DefPrimitive('\offinterlineskip',undef);
+
+DefConstructor('\smallskip',"");
+DefConstructor('\medskip',"");
+DefConstructor('\bigskip',"");
+
+#======================================================================
+# TeX Book, Appendix B, p. 353
+
+DefPrimitive('\break',undef);
+DefPrimitive('\allowbreak',undef);
+DefConstructor("~","?#isMath(<XMHint name='nobreakspace'/>)(\x{00A0})"); # NO-BREAK SPACE
+DefMacro('\slash','/');
+
+# \filbreak
+# \goodbreak
+DefPrimitive('\eject',undef);
+DefPrimitive('\supereject',undef);
+# \removelastskip
+# \smallbreak
+# \medbreak
+# \bigbreak
+
+# \line
+# \leftline
+DefConstructor('\centerline{}',"<centering>#1</centering>");
+# \llap
+# \underbar
+
+# \strutbox
+DefMacro('\strut','');
+
+#======================================================================
+
+
+# Mostly ignorable, although it could add an attribute to an ancestor
+# to record the desired justification.
+DefPrimitive('\raggedright',undef);
+
 # Spacing stuff
 DefConstructor('\@','');
 # Math spacing.
@@ -1223,8 +1370,7 @@ DefConstructor('\;',"?#isMath(<XMHint name='thickspace'/>)(\x{2004})"); # THREE-
 DefConstructor('\!',"?#isMath(<XMHint name='negthinspace'/>)()");
 DefConstructor('\ ',"?#isMath(<XMHint name='medspace'/>)(\x{2002})"); # EN SPACE
 DefConstructor('\/',"?#isMath(<XMHint name='italiccorr'/>)()");
-DefConstructor('\frenchspacing', "");
-DefConstructor('\nonfrenchspacing',"");
+
 
 # Math style.
 DefConstructor('\displaystyle','',afterDigest=>sub { AssignValue(mathstyle=>'display'); });
@@ -1314,7 +1460,7 @@ DefConstructor('\pounds',"\x{00A3}");	# POUND SIGN
 
 # Special Characters.
 DefConstructor('\#',   '#');
-DefConstructor('\&',   '&amp;');
+DefConstructor('\&',   '&');
 #DefConstructor('\%',   '%');
 DefMacro('\%',Tokens(T_OTHER('%')));
 DefConstructor("\\\$", "\$");
@@ -1773,11 +1919,6 @@ DefMacro('\overleftarrow{}',  '\ifmmode\math@overleftarrow{#1}\else$\math@overle
 # Stray stuff .... where to ?
 #**********************************************************************
 
-# Define plain TeX's \loop macro (p.352)
-RawTeX(' \def\loop#1\repeat{\def\body{#1}\iterate}
-         \def\iterate{\body \let\next=\iterate \else\let\next=\relax\fi \next}
-         \let\repeat=\fi ');
-
 # These 3 should have some `name' assigned ... but what???
 
 # NOTE that \mathord and \mathbin aren't really right here.
@@ -1796,11 +1937,6 @@ DefMacro('\hiderel{}', "#1"); # Just ignore, for now...
 # ???? this ain't latex...
 # See amsmath's \genfrac
 #DefConstructor('\stacked{}{}","<STACKED/>");
-
-DefMacro('\strut','');
-DefConstructor('\enskip', "?#isMath(<XMHint name='enskip'/>)(\x{2000})"); # EN QUAD
-DefConstructor('\quad', "?#isMath(<XMHint name='quad'/>)(\x{2001})"); # EM QUAD
-DefConstructor('\qquad',"?#isMath(<XMHint name='qquad'/>)(\x{2001}\x{2001})"); # EM QUAD
 
 DefMath('\to',"\x{2192}", role=>'ARROW'); # RIGHTWARDS ARROW??? a bit more explicitly relation-like?
 

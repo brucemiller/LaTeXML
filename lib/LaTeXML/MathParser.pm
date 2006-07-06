@@ -224,7 +224,7 @@ sub parse_rec {
      map($node->removeChild($_),element_nodes($node));
      append_nodes($node,$result); }
     else {			# Replace node for XMArg, XMWrap; preserve some attributes
-      NoteProgress($TAG_FEEDBACK{$tag}||'.');
+      NoteProgress($TAG_FEEDBACK{$tag}||'.') if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1;
       if(my $role = $node->getAttribute('role')){
 	$result->setAttribute('role',$role); }
       if(my $id = $node->getAttribute('id')){ # Update the node associated w/ id
@@ -234,9 +234,9 @@ sub parse_rec {
     $result; }
   else {
     if($tag eq 'XMath'){
-     NoteProgress('[F'.++$$self{n_parsed}.']'); }
+      NoteProgress('[F'.++$$self{n_parsed}.']'); }
     elsif($tag eq 'XMArg'){
-      NoteProgress('-a'); }
+      NoteProgress('-a') if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1; }
     $$self{failed}{$tag}++;
     undef; }}
 

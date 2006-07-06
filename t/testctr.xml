@@ -5,31 +5,23 @@
   <section refnum="1">
     <title>Testing Counters</title>
     <para>
-      <p>Foo is 0.
+      <p>Counter Foo [0] = 0.
 </p>
     </para>
     <para>
-      <p>Increment foo.
-
-Now Foo is  1.
+      <p>Increment Foo[1] =  1.
 </p>
     </para>
     <para>
-      <p>Set Foo to 2.
-
-Now Foo is  2.
+      <p>Set Foo to 2 = 2.
 </p>
     </para>
     <para>
-      <p>Add ten to Foo.
-
-Now Foo is  12.
+      <p>Add 10 to Foo [12] = 12.
 </p>
     </para>
     <para>
-      <p>Double Foo
-
-Now Foo is  24.
+      <p>Double Foo [24] = 24.
 </p>
     </para>
   </section>
@@ -38,49 +30,39 @@ Now Foo is  24.
     <para>
       <p>Define bar to be reset within foo.
 
-Now (Foo,Bar) is (24,0)
+Now (Foo,Bar)[24,0] is (24,0)
 </p>
     </para>
     <para>
       <p>Refstep bar: 
-Now (Foo,Bar) is (24,1)
+Now (Foo,Bar)[24,1] is (24,1)
 </p>
     </para>
     <para>
       <p>Refstep foo: 
-Now (Foo,Bar) is (25,0)
+Now (Foo,Bar)[25,0] is (25,0)
 </p>
     </para>
   </section>
   <section refnum="3">
     <title>Number formatting</title>
     <para>
-      <p>Fubar is 6</p>
+      <p>arabic[6] = 6</p>
     </para>
     <para>
-      <p>roman:
-
-Fubar is vi</p>
+      <p>roman [vi] = vi</p>
     </para>
     <para>
-      <p>Roman:
-
-Fubar is VI</p>
+      <p>Roman [VI] = VI</p>
     </para>
     <para>
-      <p>alph:
-
-Fubar is f</p>
+      <p>alph [f] = f</p>
     </para>
     <para>
-      <p>Alph:
-
-Fubar is F</p>
+      <p>Alph [F] = F</p>
     </para>
     <para>
-      <p>fnsymbol:
-
-Fubar is ∥</p>
+      <p>fnsymbol [<Math mode="inline" tex="\Vert" text="Vert"><XMath><XMTok name="Vert" role="VERTBAR">∥</XMTok></XMath></Math>] = ∥</p>
     </para>
     <para>
       <p>How far will TeX go?
@@ -104,6 +86,16 @@ Fubar is mmmmmmmmmcmxcix</p>
     </subsection>
     <subsection refnum="4.2">
       <title>Dimensions</title>
+      <para>
+        <p>HFuzz is 1pt.
+Now HFuzz is 2pt.
+</p>
+      </para>
+      <para>
+        <p>HFuzz is 2pt.
+Now HFuzz is 2pt.
+</p>
+      </para>
       <para>
         <p>Dimen 1.23pt = 1.23pt.
 </p>
@@ -205,6 +197,29 @@ Fubar is mmmmmmmmmcmxcix</p>
       <para>
         <p>1em = 10pt
 3em = 30pt</p>
+      </para>
+    </subsection>
+    <subsection refnum="4.8">
+      <title>Macrology</title>
+      <para>
+        <p>1=1</p>
+      </para>
+      <para>
+        <p>[23=23]
+</p>
+      </para>
+      <para>
+        <p>[29=29]
+</p>
+      </para>
+      <para>
+        <p>[29=29]
+</p>
+      </para>
+      <para>
+        <p>[10000=10000]
+[$a$ = $a$]
+</p>
       </para>
     </subsection>
   </section>

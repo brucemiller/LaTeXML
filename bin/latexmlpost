@@ -7,6 +7,7 @@ use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use LaTeXML;
 use LaTeXML::Post;
+use LaTeXML::Util::Pathname;
 
 #======================================================================
 # Parse command line.
@@ -69,20 +70,24 @@ if($showversion){ print STDERR "$identity\n"; exit(1); }
 # Get the requested XML file
 Error("Missing input xmlfile") unless @ARGV;
 my $xmlfile = shift(@ARGV);
-$xmlfile .= '.xml' unless -f $xmlfile;
-Error("No input file \"$xmlfile\" found") unless -f $xmlfile;
+if($xmlfile ne '-'){
+    $xmlfile .= '.xml' unless -f $xmlfile;
+    Error("No input file \"$xmlfile\" found") unless -f $xmlfile; }
 
 #======================================================================
 # Sanity check and Completion of options.
 #======================================================================
 if(!defined $sourcedir){
-  my($vol,$dir,$name) = File::Spec->splitpath($xmlfile);
-  $sourcedir = $dir || '.'; }
+    if($xmlfile eq '-'){
+	$sourcedir = '.'; }
+    else {
+	my($vol,$dir,$name) = File::Spec->splitpath($xmlfile);
+	$sourcedir = $dir || '.'; }}
 if((defined $destination) && (!defined $destdir)){
   my($vol,$dir,$name)=File::Spec->splitpath($destination);
   $destdir = $dir; }
-$sourcedir = '.' unless defined $sourcedir;
-$destdir   = '.' unless defined $destdir;
+$sourcedir = '.' unless $sourcedir;
+$destdir   = '.' unless $destdir;
 
 # Sanity check & option completion for known output formats.
 if(!defined $format){}
@@ -94,7 +99,9 @@ elsif($format eq 'html'){
   $mathimages = 1 unless defined $mathimages;
   $keepXMath  = 0;
   $dographics = 1 unless defined $dographics;
-  $stylesheet = "LaTeXML-html.xsl" unless defined $stylesheet; }
+  if(!defined $stylesheet){
+    $stylesheet = "LaTeXML-html.xsl";
+    $css = "LaTeXML.css" unless defined $css; }}
 elsif($format eq 'xhtml'){
   Error("Default xhtml stylesheet does not support math images")
     if (!defined $stylesheet) && $mathimages;
@@ -107,7 +114,9 @@ elsif($format eq 'xhtml'){
   $keepXMath  = 0;
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
-  $stylesheet = "LaTeXML-xhtml.xsl" unless defined $stylesheet; }
+  if(!defined $stylesheet){
+    $stylesheet = "LaTeXML-xhtml.xsl";
+    $css = "LaTeXML.css" unless defined $css; }}
 
 Error("Parallel math markup needs at least two formats")
   if $parallelmath && (scalar(@math_formats) < 2);
@@ -163,7 +172,14 @@ if($stylesheet){
   push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet)); }
 
 my $POST = LaTeXML::Post->new();
-my $indoc = $POST->readDocument($xmlfile,validate=>$validate);
+my $indoc;
+if($xmlfile eq '-'){
+    my $content;
+    { local $/ = undef; $content = <>; }
+    $indoc = $POST->readDocumentFromString($content,validate=>$validate); }
+else {
+    $indoc = $POST->readDocument($xmlfile,validate=>$validate); }
+
 my $doc = $POST->process($indoc, 
 			 processors     => [@procs],
 			 sourceDirectory=> $sourcedir,
@@ -179,7 +195,13 @@ if(!$stylesheet){      # If no XSL, we'll munge our own DTD for now...
   $POST->adjust_latexml_doctype($doc,@addns) if @addns; }
 
 if($destination){ 
-  $POST->writeDocument($doc,$destination,$format); }
+  $POST->writeDocument($doc,$destination,$format); 
+  if(($css eq 'LaTeXML.css') && !-f "$destdir/LaTeXML.css"){
+    foreach my $dir (@INC){	# Find installed stylesheet.
+      next unless -f "$dir/LaTeXML/dtd/LaTeXML.css";
+      pathname_copy("$dir/LaTeXML/dtd/LaTeXML.css", "$destdir/LaTeXML.css"); 
+      last; }}
+}
 else {
   print $POST->toString($doc,$format); }
 
@@ -215,12 +237,15 @@ latexmlpost [options] xmlfile
    --format=html|xhtml|xml    requests the output format.
    --stylesheet=xslfile       requests the XSL transform of the document using the given
                               xslfile as stylesheet.
+   --css=cssfile              use the cssfile in html/xhtml (when using default stylesheet)
    --mathml                   requests conversion of the math to Presentation MathML
    --presentationmathml       requests conversion of the math to Presentation MathML
    --nopresentationmathml     requests no conversion of the math to Presentation MathML
    --contentmathml            requests conversion of the math to Content MathML
    --nocontentmathml          requests no conversion of the math to Content MathML
    --openmath                 requests conversion of the math to OpenMath
+   --parallelmath             requests parallel math markup for MathML
+   --noparallelmath           requests no parallel math markup for MathML
    --svg                      requests conversion of the pictures to SVG
    --keepXMath                preserves the intermediate XMath representation
    --verbose                  prints progress messages during processing.
@@ -228,6 +253,8 @@ latexmlpost [options] xmlfile
    --source=sourcedir         specifies directory of source TeX file.
    --destination=outputfile   specifies output file (and directory).
    --help                     shows help message.
+
+If texfile is '-', latexmlpost reads the XML from standard input.
 
 =head1 OPTIONS AND ARGUMENTS
 
@@ -273,6 +300,13 @@ or content+presentation (content annotated with presentation).
 Requests that the mathematical material be parsed, and converted to
 OpenMath.  This is currently a very naive conversion.
 
+=item B<--parallelmath>
+=item B<--noparallelmath>
+
+Requests (or diables) parallel math markup using the MathML semantics element.
+The first math markup shouldbe either Presentation or Content MathML markup;
+additional markup models will be added as annotations to the semantics element.
+
 =item B<--svg>
 
 Requests that the picture and pstricks material be parsed and converted to SVG.
@@ -299,6 +333,12 @@ mathimages and graphics processing.
 
 Requests the XSL transformation of the document using the given xslfile as stylesheet.
 If the stylesheet is omitted, a `standard' one will be used (C<dtd/LaTeXML.xsl>).
+
+=item B<--css>=I<cssfile>
+
+Requests that the css file will be used in the transformed html/xhtml.
+It is passed as a parameter to the stylesheet.
+By default, the default stylesheets will use the included LaTeXML.css.
 
 =item B<--VERSION>
 

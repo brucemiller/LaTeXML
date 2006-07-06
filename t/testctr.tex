@@ -2,60 +2,53 @@
 \begin{document}
 \section{Testing Counters}
 \newcounter{foo}
-Foo is \thefoo.
+Counter Foo [0] = \thefoo.
 
-Increment foo.
+
 \stepcounter{foo}
-Now Foo is  \thefoo.
+Increment Foo[1] =  \thefoo.
 
-
-Set Foo to 2.
 \setcounter{foo}{2}
-Now Foo is  \thefoo.
+Set Foo to 2 = \thefoo.
 
-Add ten to Foo.
 \addtocounter{foo}{10}
-Now Foo is  \thefoo.
+Add 10 to Foo [12] = \thefoo.
 
-Double Foo
+
 \addtocounter{foo}{\value{foo}}
-Now Foo is  \thefoo.
+Double Foo [24] = \thefoo.
 
 \section{Testing RefStep}
 Define bar to be reset within foo.
 \newcounter{bar}[foo]
-Now (Foo,Bar) is (\thefoo,\thebar)
+Now (Foo,Bar)[24,0] is (\thefoo,\thebar)
 
 Refstep bar: \refstepcounter{bar}
-Now (Foo,Bar) is (\thefoo,\thebar)
+Now (Foo,Bar)[24,1] is (\thefoo,\thebar)
 
 Refstep foo: \refstepcounter{foo}
-Now (Foo,Bar) is (\thefoo,\thebar)
+Now (Foo,Bar)[25,0] is (\thefoo,\thebar)
 
 \section{Number formatting}
 \newcounter{fubar}
 \setcounter{fubar}{6}
-Fubar is \thefubar
+arabic[6] = \thefubar
 
-roman:
 \renewcommand{\thefubar}{\roman{fubar}}
-Fubar is \thefubar
+roman [vi] = \thefubar
 
-Roman:
+
 \renewcommand{\thefubar}{\Roman{fubar}}
-Fubar is \thefubar
+Roman [VI] = \thefubar
 
-alph:
 \renewcommand{\thefubar}{\alph{fubar}}
-Fubar is \thefubar
+alph [f] = \thefubar
 
-Alph:
 \renewcommand{\thefubar}{\Alph{fubar}}
-Fubar is \thefubar
+Alph [F] = \thefubar
 
-fnsymbol:
 \renewcommand{\thefubar}{\fnsymbol{fubar}}
-Fubar is \thefubar
+fnsymbol [$\Vert$] = \thefubar
 
 How far will \TeX\ go?
 \renewcommand{\thefubar}{\roman{fubar}}
@@ -71,6 +64,20 @@ Fubar is \thefubar
 7 = \the\count2.
 
 \subsection{Dimensions}
+HFuzz is \the\hfuzz.
+\hfuzz=2pt
+Now HFuzz is \the\hfuzz.
+
+HFuzz is \the\hfuzz.
+\hfuzz=2ptNow HFuzz is \the\hfuzz.
+
+%HFuzz is \the\hfuzz.
+%\hfuzz=2Now HFuzz is \the\hfuzz.
+
+%Linethickness: \the\linethickness
+%\linethickness=2pt
+%Now Linethickness: \the\linethickness
+
 \dimen7= 1.23 pt\relax
 Dimen 1.23pt = \the\dimen7.
 
@@ -158,4 +165,26 @@ Catcode: 12 = \the\catcode`\@
 1em = \the\foolen
 \addtolength{\foolen}{2em}
 3em = \the\foolen
+
+\subsection{Macrology}
+\def\numthree{3}
+\count2=1\relax 1=\the\count2
+
+\count2=2\numthree\relax
+[23=\the\count2]
+
+\count2=2\ifnum20<\count2 9\else 8\fi
+[29=\the\count2]
+
+\count2=2\ifnum\count2<20 8\else 9\fi
+[29=\the\count2]
+
+\makeatletter
+\count\tw@=\@M\relax
+[10000=\the\count\tw@]
+[\chardef\mydollar=36\relax
+\$a\$ = \mydollar a\mydollar]
+
+\makeatother
+
 \end{document}

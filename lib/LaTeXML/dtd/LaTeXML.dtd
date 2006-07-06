@@ -71,6 +71,13 @@
           |  %Block.class; %Block.extra;
 	  | %Misc.class; %Misc.extra;">
 
+<!-- Contents of table cells -->
+<!ENTITY % Cell.mix
+	 "%Simple.class; %Simple.extra;
+	  | %Inline.class; %Inline.extra;
+          | %Para.class; %Para.extra;
+	  | %Misc.class; %Misc.extra;">
+
 <!-- Parameterized attributes -->
 <!ENTITY % Common.attr.base
 	 "xmlns CDATA #IMPLIED">
@@ -91,11 +98,24 @@
 <!ENTITY % Section.attr "
          %Section.attr.base; %Section.attr.extra;">
 
+<!ENTITY % Bibentry.class
+	 "bib-author | bib-editor | bib-translator 
+	  | bib-title | bib-subtitle | bib-booktitle | bib-key
+	  | bib-journal | bib-series | bib-conference | bib-publisher
+	  | bib-organization | bib-institution | bib-address
+	  | bib-volume | bib-number | bib-pages | bib-part | bib-date | bib-edition 
+	  | bib-status | bib-type 
+	  | bib-issn | bib-doi | bib-isbn | bib-review | bib-mrnumber 
+	  | bib-language | bib-url | bib-eprint | bib-preprint | bib-note">
+
+<!ENTITY % Bibentry.extra "">
+<!ENTITY % Bibentry.mix
+	 "%Bibentry.class; %Bibentry.extra;">
 <!-- ======================================================================
      Document Structure
      ====================================================================== -->
 
-<!ENTITY % Frontmatter.class "title | toctitle | author | creationdate | thanks">
+<!ENTITY % Frontmatter.class "title | toctitle | author | creationdate | thanks | abstract">
 <!ENTITY % Frontmatter.extra "">
 <!ENTITY % Frontmatter.mix "%Frontmatter.class; %Frontmatter.extra;">
 
@@ -122,7 +142,6 @@
 <!ATTLIST subsection    %Common.attr; %Labelled.attr; %Section.attr;>
 <!ATTLIST subsubsection %Common.attr; %Labelled.attr; %Section.attr;>
 <!ATTLIST paragraph     %Common.attr; %Labelled.attr; %Section.attr;>
-
 ]]>
 
 <!ELEMENT title  (#PCDATA | %Inline.mix;)* >
@@ -139,6 +158,9 @@
 
 <!ELEMENT thanks (#PCDATA | %Inline.mix;)* >
 <!ATTLIST thanks %Common.attr;>
+
+<!ELEMENT abstract      (%Block.mix;)*>
+<!ATTLIST abstract      %Common.attr;>
 
 <!-- ======================================================================
      Block Elements
@@ -212,24 +234,29 @@
 	  %Common.attr;
 	  >
 
-<!ELEMENT th (#PCDATA | %Inline.mix;)*>
+<!-- A little concerned about broadening the content model here... -->
+<!-- <!ELEMENT th (#PCDATA | %Inline.mix;)*>-->
+<!ELEMENT th (#PCDATA | %Cell.mix;)*>
 <!ATTLIST th
 	  %Common.attr; 
           rowpan CDATA #IMPLIED
           colspan CDATA #IMPLIED
           align CDATA #IMPLIED
-          pattern CDATA #IMPLIED>
+          pattern CDATA #IMPLIED
+	  border CDATA #IMPLIED>
 
-<!ELEMENT td (#PCDATA | %Inline.mix;)*>
+<!-- A little concerned about broadening the content model here... -->
+<!-- <!ELEMENT td (#PCDATA | %Inline.mix;)*>-->
+<!ELEMENT td (#PCDATA | %Cell.mix;)*>
 <!ATTLIST td
 	  %Common.attr; 
-          rowspan CDATA #IMPLIED
           colspan CDATA #IMPLIED
           align CDATA #IMPLIED
-          pattern CDATA #IMPLIED>
-
+          pattern CDATA #IMPLIED
+	  border CDATA #IMPLIED>
 <!ELEMENT hline EMPTY>
-<!ATTLIST hline %Common.attr;>
+<!ATTLIST hline %Common.attr;
+          colspan CDATA #IMPLIED>
 
 <!ELEMENT verbatim (#PCDATA | %Flow.mix;)*>
 <!ATTLIST verbatim
@@ -237,7 +264,9 @@
 	  font CDATA #IMPLIED>
 
 <!-- with some trepidation, allow captions here too -->
-<!ELEMENT centering (caption | toccaption | %Flow.mix;)*>
+<!-- Hmm, probably should be Para.mix for centering..
+    <!ELEMENT centering (caption | toccaption | %Flow.mix;)*> -->
+<!ELEMENT centering (caption | toccaption | %Para.mix;)*>
 <!ATTLIST centering %Common.attr;>
 
 <!ELEMENT itemize (item)*>
@@ -252,7 +281,6 @@
 <!ELEMENT acronyms (item)*>
 <!ATTLIST acronyms %Common.attr;>
 
-<!-- <!ELEMENT item (#PCDATA | tag | %Flow.mix; )*>-->
 <!ELEMENT item (%Para.mix; | tag)*>
 <!ATTLIST item %Common.attr;>
 
@@ -318,7 +346,8 @@
 <!ATTLIST XMApp
 	  %Common.attr;
 	  %XMath.attr;
-          name    CDATA #IMPLIED
+          name         CDATA #IMPLIED
+	  punctuation  CDATA #IMPLIED
 	  stackscripts CDATA #IMPLIED>
 
 <!ELEMENT XMDual ((%XMath.model;), (%XMath.model;))>
@@ -335,8 +364,9 @@
           font    CDATA #IMPLIED
           style   CDATA #IMPLIED
           size    CDATA #IMPLIED
-	  stackscripts CDATA #IMPLIED>
-<!-- and  possibleFunction, alignment  ?? -->
+	  stackscripts CDATA #IMPLIED
+	  possibleFunction CDATA #IMPLIED>
+<!-- and alignment  ?? -->
 
 <!ELEMENT XMHint EMPTY>
 <!ATTLIST XMHint
@@ -535,25 +565,19 @@
      ====================================================================== -->
 <!-- Would be nice to use somebody elses already-developed DTD... -->
 
-<!ELEMENT bibliography (biblist*)>
+<!ELEMENT bibliography (title?,biblist*)>
 <!ATTLIST bibliography
 	  %Common.attr; 
-          files CDATA #REQUIRED>
+	  %Labelled.attr; 
+          files CDATA #IMPLIED>
 
-<!ELEMENT biblist (bibentry)*>
+<!ELEMENT biblist (bibentry | bibitem)*>
 <!ATTLIST biblist %Common.attr;>
 <!-- prefix all elements with bib- to avoid conflicts
      Alternatively, separate DTD/namespace ? -->
    
-<!ELEMENT bibentry (bib-author | bib-editor | bib-translator |
-               bib-title | bib-subtitle | bib-booktitle | bib-key |
-               bib-journal | bib-series | bib-conference | bib-publisher |
-               bib-organization | bib-institution | bib-address |
-               bib-volume | bib-number | bib-pages | bib-part | bib-date | bib-edition |
-               bib-status | bib-type |
-               bib-issn | bib-doi | bib-isbn | bib-review | bib-mrnumber |
-               bib-language |
-               bib-url | bib-code_url | bib-eprint | bib-preprint | bib-note )*>
+<!-- Semantic bibliography model; would result from parsing BibTeX -->
+<!ELEMENT bibentry (%Bibentry.mix;)*>
 <!ATTLIST bibentry
 	  %Common.attr; 
           key CDATA #REQUIRED
@@ -568,14 +592,19 @@
 <!ELEMENT giveninitials (#PCDATA | %Inline.mix;)*>
 <!ELEMENT jrname (#PCDATA | %Inline.mix;)*>
 -->
-<!ELEMENT bib-author (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-author (surname, givenname?, initials?, lineage?)>
 <!ATTLIST bib-author %Common.attr;>
 
-<!ELEMENT bib-editor (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-editor (surname, givenname?, initials?, lineage?)>
 <!ATTLIST bib-editor %Common.attr;>
 
-<!ELEMENT bib-translator (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-translator (surname, givenname?, initials?, lineage?)>
 <!ATTLIST bib-translator %Common.attr;>
+
+<!ELEMENT surname   (#PCDATA | %Inline.mix;)*>
+<!ELEMENT givenname (#PCDATA | %Inline.mix;)*>
+<!ELEMENT initials  (#PCDATA | %Inline.mix;)*>
+<!ELEMENT lineage   (#PCDATA | %Inline.mix;)*>
 
 <!ELEMENT bib-title (#PCDATA | %Inline.mix;)*>
 <!ATTLIST bib-title %Common.attr;>
@@ -658,9 +687,6 @@
 <!ELEMENT bib-url (#PCDATA | %Inline.mix;)*>
 <!ATTLIST bib-url %Common.attr;>
 
-<!ELEMENT bib-code_url (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-code-url %Common.attr;>
-
 <!ELEMENT bib-eprint (#PCDATA | %Inline.mix;)*>
 <!ATTLIST bib-eprint %Common.attr;>
 
@@ -669,3 +695,11 @@
 
 <!ELEMENT bib-note (#PCDATA | %Inline.mix;)*>
 <!ATTLIST bib-note %Common.attr;>
+
+<!-- Presentational bibliographic model; would result from \bibitem's -->
+<!ELEMENT bibitem (biblabel?, bibblock*)>
+<!ATTLIST bibitem %Common.attr;
+		   key ID #REQUIRED>
+<!ELEMENT biblabel (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bibblock (#PCDATA | %Inline.mix;)*>
+ 

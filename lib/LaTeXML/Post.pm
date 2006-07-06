@@ -37,23 +37,33 @@ sub process {
   $doc = normalizeNS($doc) unless ($options{format}||'') eq 'html';
   $doc; }
 
+sub createParser {
+    my($self,%options)=@_;
+    # Read in the XML, unless it already is a Doc.
+    my $XMLParser = XML::LibXML->new();
+    if($options{validate}){ # First, load the LaTeXML catalog in case it's needed...
+	foreach my $dir (@INC){	# Load catalog (all, 1st only ???)
+	    next unless -f "$dir/LaTeXML/dtd/catalog";
+	    XML::LibXML->load_catalog("$dir/LaTeXML/dtd/catalog");
+	    last; }
+	$XMLParser->load_ext_dtd(1);  # DO load dtd.
+	$XMLParser->validation(1); }
+    else {
+	$XMLParser->load_ext_dtd(0);
+	$XMLParser->validation(0); }
+    $XMLParser->keep_blanks(0);	# This allows formatting the output.
+    $XMLParser; }
+
+
 sub readDocument {
   my($self,$source,%options)=@_;
-  # Read in the XML, unless it already is a Doc.
-  my $XMLParser = XML::LibXML->new();
-  if($options{validate}){ # First, load the LaTeXML catalog in case it's needed...
-    foreach my $dir (@INC){	# Load catalog (all, 1st only ???)
-      next unless -f "$dir/LaTeXML/dtd/catalog";
-        XML::LibXML->load_catalog("$dir/LaTeXML/dtd/catalog");
-      last; }
-    $XMLParser->load_ext_dtd(1);  # DO load dtd.
-    $XMLParser->validation(1); }
-  else {
-    $XMLParser->load_ext_dtd(0);
-    $XMLParser->validation(0); }
-  $XMLParser->keep_blanks(0);	# This allows formatting the output.
-  $XMLParser->parse_file($source); }
+  my $parser = $self->createParser(%options);
+  $parser->parse_file($source); }
 
+sub readDocumentFromString {
+  my($self,$string,%options)=@_;
+  my $parser = $self->createParser(%options);
+  $parser->parse_string($string); }
 
 # Should these also be "postprocessors" ?
 sub toString {
@@ -72,6 +82,7 @@ sub writeDocument {
 # (and of course, done correctly), and bound in XML::LibXML
 sub normalizeNS {
   my($doc)=@_;
+return $doc;
   my $XMLParser = XML::LibXML->new();
   # KLUDGE: The only namespace cleanup available right now
   # in libxml2 is during parsing!! So, we write to string & reparse!
@@ -88,11 +99,12 @@ sub adjust_latexml_doctype {
   my($self,$doc,@additions)=@_;
   if(my $dtd = $doc->internalSubset){
     if($dtd->toString =~/^<!DOCTYPE\s+(\w+)\s+PUBLIC\s+(\"|\')([^\"]*)\2\s+(\"|\')([^\"]*)\4>$/){
-      my $publicid = join(' + ',"-//NIST LaTeXML//LaTeXML article",@additions);
-      my $systemid = join('-',"http://dlmf.nist.gov/LaTeXML/LaTeXML",@additions).".dtd";
-      my ($root,$pubid) = ($1,$3);
-      $doc->removeInternalSubset;	# Apparently we've got to remove it first.
-      $doc->createInternalSubset($root,$publicid,$systemid); }}}
+      my($root,$public,$system)=($1,$3,$5);
+      if($public =~ m|^-//NIST LaTeXML|){
+	my $publicid = join(' + ',"-//NIST LaTeXML//LaTeXML article",@additions);
+	my $systemid = join('-',"http://dlmf.nist.gov/LaTeXML/LaTeXML",@additions).".dtd";
+	$doc->removeInternalSubset;	# Apparently we've got to remove it first.
+	$doc->createInternalSubset($root,$publicid,$systemid); }}}}
 
 #**********************************************************************
 package LaTeXML::Post::Processor;

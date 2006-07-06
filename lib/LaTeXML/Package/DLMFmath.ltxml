@@ -66,8 +66,31 @@ my %SUPDIGITS = (0=>"\x{2070}",1=>"\x{00b9}",2=>"\x{00b2}",3=>"\x{00b3}",4=>"\x{
 sub convert_sci {
   my($mantissa,$exponent)=@_;
   $mantissa = $mantissa->toString;
+  $mantissa =~ s/\\,/\x{2009}/g;
+  $mantissa =~ s/\\:/\x{2005}/g;
+  $mantissa =~ s/\\;/\x{2004}/g;
+  $mantissa =~ s/\\ /\x{2002}/g;
+  $mantissa =~ s/\\!//g;
   $exponent = $exponent->toString;
-  ($exponent ? join('',$mantissa,"\x{00D7}10",map($SUPDIGITS{$_}||'?',split('',$exponent))) : $mantissa); }
+  ($exponent
+   ? join('',$mantissa,"\x{00D7}10",map($SUPDIGITS{$_}||'?',split('',$exponent))) 
+   : $mantissa . "\x{00A0}\x{00A0}\x{00A0}"); } # for alignment spacing???
+
+sub convert_sci_mantissa {
+  my($mantissa)=@_;
+  $mantissa = $mantissa->toString;
+  $mantissa =~ s/\\,/\x{2009}/g;
+  $mantissa =~ s/\\:/\x{2005}/g;
+  $mantissa =~ s/\\;/\x{2004}/g;
+  $mantissa =~ s/\\ /\x{2002}/g;
+  $mantissa =~ s/\\!//g;
+  $mantissa; }
+sub convert_sci_exponent {
+  my($exponent)=@_;
+  $exponent = $exponent->toString;
+  ($exponent
+   ? join('',"\x{00D7}10",map($SUPDIGITS{$_}||'?',split('',$exponent))) 
+   : ""); }
 
 DefConstructor('\Sci{}{}',sub {
   my($document,$mantissa,$exponent,$props)=@_;
@@ -77,7 +100,18 @@ DefConstructor('\Sci{}{}',sub {
    : $document->openText($string,$$props{font})); });
 
 # Worry about alignment later...
-DefMacro('\TSci{}{}','\multicolumn{2}{c}{\Sci{#1}{#2}}');
+#DefMacro('\TSci{}{}','\multicolumn{2}{r}{\Sci{#1}{#2}}');
+
+DefConstructor('\Sci@Exp{}',
+	       sub { my($document,$exp,$props)=@_;
+		     $document->insertMathToken(convert_sci_exponent($exp),
+						font=>$$props{font}, role=>'NUMBER'); },
+	      reversion=>sub { my $exp = $_[0]->getArg(1);
+			      ($exp->unlist ? (T_CS('\times'),T_OTHER('1'),T_OTHER('0'),
+					       T_SUPER,T_BEGIN,$exp->revert,T_END)
+			       :()); });
+DefMacro('\TSci{}{}','\ensuremath{#1} & \ensuremath{\Sci@Exp{#2}}');
+
 
 DefConstructor('\thinhline',"<hline size='thin'/>"); # ?
 

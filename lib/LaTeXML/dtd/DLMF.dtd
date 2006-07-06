@@ -26,6 +26,7 @@
 <!-- figure & table already contain Misc.extra -->
 <!ENTITY % Figure.extra "| origref">
 <!ENTITY % Table.extra "| origref">
+<!ENTITY % Bibentry.extra "| bib-text_url | bib-code_url | bib-gams_package | bib-gams_module">
 
 <!ENTITY % LaTeXML.dtd SYSTEM "LaTeXML.dtd" >
 %LaTeXML.dtd; 
@@ -90,3 +91,15 @@
 
 <!-- Character entities -->
 <!ENTITY ldots "">
+
+<!-- Bibliography extensions -->
+<!ELEMENT bib-text_url (#PCDATA | %Inline.mix;)*>
+<!ATTLIST bib-text-url %Common.attr;>
+
+<!ELEMENT bib-code_url (#PCDATA | %Inline.mix;)*>
+<!ATTLIST bib-code-url %Common.attr;>
+
+<!ELEMENT bib-gams_package (#PCDATA | %Inline.mix;)*>
+<!ATTLIST bib-gams_package %Common.attr;>
+<!ELEMENT bib-gams_module (#PCDATA | %Inline.mix;)*>
+<!ATTLIST bib-gams_module %Common.attr;>

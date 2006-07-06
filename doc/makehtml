@@ -5,6 +5,7 @@ use lib "$FindBin::RealBin/../lib";
 use Pod::Html;
 use Pod::Find;
 use LaTeXML;
+use LaTeXML::Util::Pathname;
 use LaTeXML::Post;
 use LaTeXML::Post::Graphics;
 use LaTeXML::Post::MathML;
@@ -12,7 +13,8 @@ use LaTeXML::Post::PurgeXMath;
 use LaTeXML::Post::XSLT;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-my $LOC = $FindBin::RealBin."..";
+my $SRCDIR = $FindBin::RealBin;
+my $LOC = $SRCDIR."/..";
 my $DEST= "/local/www/site/htdocs/DigitalMathLib/LaTeXML";
 my $PDDEST = "$DEST/perldoc";
 
@@ -22,6 +24,7 @@ print "Generating LaTeXML documentation in $DEST\n";
 LaTeXML->new()->convertAndWriteFile('LaTeXML');
 my $POST = LaTeXML::Post->new();
 my $doc = $POST->process($POST->readDocument('LaTeXML.xml'),
+			 sourceDirectory=>$SRCDIR,
 			 destinationDirectory=>$DEST,
 			 format     => 'xhtml',
 			 processors=>[LaTeXML::Post::Graphics->new(),
@@ -53,6 +56,7 @@ process_dir("$LOC/bin");
 unlink('pod2htmd.tmp');
 unlink('pod2htmi.tmp');
 
+pathname_copy("$LOC/Changes","$DEST/Changes");
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub process_dir {
   my($dir)=@_;
