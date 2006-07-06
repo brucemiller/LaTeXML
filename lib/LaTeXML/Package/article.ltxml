@@ -17,48 +17,57 @@ package LaTeXML::Package::Pool;
 #**********************************************************************
 # Document structure.
 
-DocType("document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd', 
-	"http://dlmf.nist.gov/LaTeXML");
+DocType("ltx:document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd', 
+	'#default'=>"http://dlmf.nist.gov/LaTeXML");
 
 #**********************************************************************
 # The core sectioning commands are defined in LaTeX.pm
 # but the counter setup, etc, depends on article
-NewCounter('part', undef, 'section');
-NewCounter('section', undef, 'subsection');
-NewCounter('subsection','section', 'subsubsection');
-NewCounter('subsubsection','subsection', 'paragraph');
-NewCounter('paragraph','subsubsection', 'subparagraph');
-NewCounter('subparagraph','paragraph', 'equation','figure','table');
+NewCounter('section',       undef,         idprefix=>'S',  nested=>['subsection']);
+NewCounter('subsection',   'section',      idprefix=>'SS', nested=>['subsubsection']);
+NewCounter('subsubsection','subsection',   idprefix=>'SSS',nested=>['paragraph']);
+NewCounter('paragraph',    'subsubsection',idprefix=>'P',  nested=>['subparagraph']);
+NewCounter('subparagraph', 'paragraph',    idprefix=>'SP', nested=>['equation','figure','table']);
 
-NewCounter('equation');
-NewCounter('figure');
-NewCounter('table');
-
-DefMacro('\thepart',         '\Roman{part}');
 DefMacro('\thesection',      '\arabic{section}');
 DefMacro('\thesubsection',   '\thesection.\arabic{subsection}');
 DefMacro('\thesubsubsection','\thesubsection.\arabic{subsubsection}');
-#DefMacro('\theparagraph',    '\thesubsubsection.\arabic{paragraph}');
-#DefMacro('\thesubparagraph', '\theparagraph.\arabic{subparagraph}');
 DefMacro('\theparagraph',    '');
 DefMacro('\thesubparagraph', '');
 
+NewCounter('equation', undef, idprefix=>'E');
+NewCounter('figure',   undef, idprefix=>'F');
+NewCounter('table',    undef, idprefix=>'T');
+DefMacro('\theequation', '\arabic{equation}');
+DefMacro('\thefigure',   '\arabic{figure}');
+DefMacro('\thetable',    '\arabic{table}');
 
-DefMacro('\theequation','\arabic{equation}');
-DefMacro('\thefigure',  '\arabic{figure}');
-DefMacro('\thetable',   '\arabic{table}');
+NewCounter('@itemize', undef, idprefix=>'I');
+NewCounter('enumi');
+NewCounter('enumii');
+NewCounter('enumiii');
+NewCounter('enumiv');
+# Since we don't want enumi (necessarily) to be reset when @itemize is incremented,
+# we've got to manually define the ID macros:
+DefMacro('\theenumi@ID',   '\the@itemize@ID.\@enumi@ID');
+DefMacro('\theenumii@ID',  '\the@itemize@ID.\@enumii@ID');
+DefMacro('\theenumiii@ID', '\the@itemize@ID.\@enumiii@ID');
+DefMacro('\theenumiv@ID',  '\the@itemize@ID.\@enumiv@ID');
 
-Tag('appendix',autoClose=>1);
+DefMacro('\theenumi',           '\arabic{enumi}');
+DefMacro('\theenumii',          '\alph{enumii}');
+DefMacro('\theenumiii',         '\roman{enumiii}');
+DefMacro('\theenumiv',          '\Alph{enumiv}');
+
+Tag('ltx:appendix',autoClose=>1);
 DefPrimitive('\appendix',sub{
   resetCounter('section');
   DefMacro('\thesection',      '\Alph{section}');
   DefConstructor('\section OptionalMatch:* []{}',
-      "<appendix ?#refnum(refnum='#refnum')>"
-		 ."<title>#3</title>?#2(<toctitle>#2</toctitle>)",
-		 afterDigest=> sub { my($whatsit,$star,$toctitle,$title)=@_;
-				     if(!$star){ # if not starred
-				       $whatsit->setProperty('refnum',refStepCounter('section')); }
-				     return; }); });
+		 "<ltx:appendix ?#refnum(refnum='#refnum')>"
+		 .  "<ltx:title>#3</ltx:title>"
+		 .  "?#2(<ltx:toctitle>#2</ltx:toctitle>)",
+		 properties => { refnum => sub{ $_[1] && refStepCounter('section'); }}); });
 
 #**********************************************************************
 1;

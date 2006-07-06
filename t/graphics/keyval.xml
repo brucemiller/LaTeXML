@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<?latexml package="mykeyval"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section>
+    <para id="p1">
+      <p>Simple KV no options: <graphics graphic="none"/></p>
+    </para>
+    <para id="p2">
+      <p>Simple KV with options: <graphics graphic="none" options="width=100, height=200"/></p>
+    </para>
+    <para id="p3">
+      <p>Complex KV no options: <graphics graphic="none"/></p>
+    </para>
+    <para id="p4">
+      <p>Complex KV with options: <graphics graphic="none" height="200" width="100"/></p>
+    </para>
+    <para id="p5">
+      <p>KV Environment no options:
+<text>
+Inside the environment.
+</text>
+After the environment.</p>
+    </para>
+    <para id="p6">
+      <p>KV Environment with options:
+<text height="200" width="100">
+Inside the environment.
+</text>
+After the environment.</p>
+    </para>
+    <para id="p7">
+      <p>KV Environment with structure no options:
+<text><text>&amp;amp;</text>
+Inside the environment.
+</text>
+After the environment.</p>
+    </para>
+    <para id="p8">
+      <p>KV Environment with structure with options:
+<text><text>Width: 100</text><text>&amp;amp;</text><text>Height: 200</text>
+Inside the environment.
+</text>
+After the environment.</p>
+    </para>
+    <para id="p9">
+      <p>KV automatic conversion to structure
+<text>width=100, height=200</text></p>
+    </para>
+  </section>
+</document>

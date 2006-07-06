@@ -1,0 +1,38 @@
+\documentclass{article}
+\begin{document}
+\let\foo={
+\let\bar=}
+\section{Testing Choose}
+\def\beep{beep}
+\beep\foo\def\beep{BEEP} hello, \beep. \bar\beep.
+
+1. $  a +  b $
+
+2. $  a \choose b $
+
+3. $ a + {b \choose c} + d$
+
+% Should also work with these
+4. $ a + \bgroup b \choose c \egroup + d$
+
+% And even our own tokens \let to {}
+5. $ a + \foo b \choose c \bar + d$
+
+%% Interesting behaviour! \begingroup ..\endgroup do NOT create boxes!
+6. $ a + \begingroup b \choose c \endgroup + d$
+
+%$ a + { b \choose c \egroup + d$
+
+%$ a + \bgroup b \choose c } + d$
+
+% Aha, TeX doesn't like this (says Ambiguous)
+%$ a + \frac{b \choose c}{d \choose e} + f$
+
+
+
+
+%\def\open{\bgroup}\def\close{\bgroup}
+% It doesn't like this either; it want's a real }
+%$ a + \open b \choose c \close + d$
+
+\end{document}

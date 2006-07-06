@@ -18,7 +18,7 @@ use strict;
 use LaTeXML::Package;
 
 DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}',sub{
-  my($ignore,$star,$cs,$text)=@_;
+  my($stomach,$star,$cs,$text)=@_;
   DefMath($cs->toString,$text,stackscripts=>$star); }); # Hmm, is this right?
 
 # See p.18
@@ -37,10 +37,9 @@ DefMath('\varprojlim','\underleftarrow{\lim}', role=>'LIMITOP');
 #  DefMath(T_CS("\\".$name->toString),$name,stackscripts=>$star); }); # Hmm, is this right?
 
 # Hmm... OPERATOR or LIMITOP ??
-DefConstructor('\operatorname OptionalMatch:* {}',"<XMWrap role='OPERATOR' stackscripts='#1'>#2</XMWrap>",
-	       beforeDigest=>sub{ RequireMath; BGroup; MergeFont(family=>'serif'); },
-	       afterDigest=>\&EGroup);
-
+DefConstructor('\operatorname OptionalMatch:* {}',
+	       "<ltx:XMWrap role='OPERATOR' stackscripts='#1'>#2</ltx:XMWrap>",
+	       bounded=>1, requireMath=>1, font=>{family=>'serif'});
 
 #**********************************************************************
 1;

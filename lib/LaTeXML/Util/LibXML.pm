@@ -19,7 +19,7 @@ use XML::LibXML;
 use Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT= (qw(&element_nodes &text_in_node &new_node &append_nodes &clear_node &maybe_clone 
-		 &valid_attributes &copy_attributes &rename_attribute &rename_node &remove_attr
+		 &valid_attributes &copy_attributes &rename_attribute &remove_attr
 		 &get_attr &isTextNode &isElementNode
 		 &CA_KEEP &CA_OVERWRITE &CA_MERGE &CA_EXCEPT));
 
@@ -67,13 +67,7 @@ sub append_nodes {
     if(ref $child eq 'ARRAY'){ 
       append_nodes($node,@$child); }
     elsif(ref $child ){#eq 'XML::LibXML::Element'){ 
-#      $node->appendChild(maybe_clone($child)); }
-      my $new = maybe_clone($child);
-      $node->appendChild($new);
-#      normalize_node($new);
-    }
-#    elsif(ref $child){
-#      die "Attempt to append $child to $node\n"; }
+      $node->appendChild(maybe_clone($child));   }
     elsif(defined $child){ 
       $node->appendText($child); }}
   $node; }
@@ -91,16 +85,6 @@ sub clear_node {
 sub maybe_clone {
   my($node)=@_;
   ($node->parentNode ? $node->cloneNode(1) : $node); }
-
-sub rename_node {
-    my ($node, $newName,$newNSURI) = @_;
-    my @children = $node->childNodes;
-#    my $newNode = new_node($newNSURI, $newName, \@children);
-    my $newNode = $node->parentNode->addNewChild($newNSURI,$newName);
-    map($newNode->appendChild($_), @children);
-    copy_attributes($newNode, $node);
-    $node->replaceNode($newNode);
-    $newNode; }
 
 # the attributes list may contain undefined values
 # and attributes with no name (?)
@@ -137,23 +121,6 @@ sub remove_attr {
 sub get_attr {
     my ($node, @attr) = @_;
     map($node->getAttribute($_), @attr); }
-
-sub normalize_node {
-  my($node)=@_;
-  return unless defined $node->namespaceURI; # ???
-  my $parent = $node->parentNode;
-  my $parentNS =  $parent->namespaceURI;
-  if($node->namespaceURI eq $parentNS){ # If they should be equal
-    print STDERR "May need normalizing of ".$node->nodeName."\n";
-#    my ($decl) = grep( ($_->nodeType == XML_NAMESPACE_DECL) && ($_->getData eq $parentNS) ,
-#		       $node->childNodes);
-    my ($decl) = grep($_->getData eq $parentNS, $node->getNamespaces);
-
-    print STDERR "Found unneeded declaration ".$decl->getData."\n" if $decl; 
-    $node->removeAttribute('xmlns');
-#    $node->setNamespace($parentNS);
-#    $node->removeChild($decl);
-  }}
 
 #**********************************************************************
 1;

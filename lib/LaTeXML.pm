@@ -14,7 +14,6 @@ package LaTeXML;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::Error;
-use LaTeXML::Gullet;
 use LaTeXML::Stomach;
 use LaTeXML::Document;
 use LaTeXML::Model;
@@ -26,22 +25,21 @@ our @ISA = (qw(LaTeXML::Object));
 #use LaTeXML::Document;
 
 use vars qw($VERSION);
-$VERSION = "0.4.1";
+$VERSION = "0.5.0";
 
-#**********************************************************************
-# What a Mess of Globals!
 #**********************************************************************
 
 sub new {
   my($class,%options)=@_;
-  my $state     = LaTeXML::State->new(catcodes=>'standard');
+  my $state     = LaTeXML::State->new(catcodes=>'standard',
+				      stomach=>LaTeXML::Stomach->new(),
+				      model  => $options{model} || LaTeXML::Model->new());
   $state->assignValue(VERBOSITY => (defined $options{verbosity} ? $options{verbosity} : 0), 'global');
   $state->assignValue(STRICT    => (defined $options{strict}   ? $options{strict}     : 0), 'global');
   $state->assignValue(INCLUDE_COMMENTS=>(defined $options{includeComments} ? $options{includeComments} : 1),
 		     'global');
   $state->assignValue(SEARCHPATHS=> [ @{$options{searchpaths} || []} ],'global');
   bless {state   => $state, 
-	 model   => $options{model} || LaTeXML::Model->new(),
 	 nomathparse=>$options{nomathparse}||0,
 	}, $class; }
 
@@ -73,74 +71,70 @@ sub digestFile {
   my($self,$file)=@_;
   $file =~ s/\.tex$//;
   local $STATE    = $$self{state};
-  local $GULLET   = LaTeXML::Gullet->new();
-  local $STOMACH  = LaTeXML::Stomach->new(); # The current Stomach;
-  local $MODEL    = $$self{model};   # The document model.
+  my $stomach  = $STATE->getStomach; # The current Stomach;
+  my $gullet   = $stomach->getGullet;
   # And, set fancy error handler for ANY die!
   local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
   local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',@_)); }; # ??
 
-  NoteProgress("\n(Digesting $file...");
-  $STOMACH->initialize;
-  map($GULLET->input($_,['ltxml','latexml']), 'TeX', @{$$self{preload} || []} );
+  NoteBegin("Digesting $file");
+  $stomach->initialize;
+  map($gullet->input($_,['ltxml','latexml']), 'TeX', @{$$self{preload} || []} );
 
   my $pathname = pathname_find($file,types=>['tex','']);
   Fatal("Cannot find TeX file $file") unless $pathname;
   my($dir,$name,$ext)=pathname_split($pathname);
   $STATE->pushValue(SEARCHPATHS=>$dir);
   $STATE->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode($name))));
-  $GULLET->input($pathname);
-  my $list = LaTeXML::List->new($STOMACH->digestNextBody);
+  $gullet->input($pathname);
+  my $list = LaTeXML::List->new($stomach->digestNextBody);
   if(my $env = $STATE->lookupValue('current_environment')){
     Error("Input ended while environment $env was open"); } 
-  $GULLET->flush;
-  NoteProgress(")");
+  $gullet->flush;
+  NoteEnd("Digesting $file");
   $list; }
 
 sub digestString {
   my($self,$string)=@_;
   local $STATE    = $$self{state};
-  local $GULLET   = LaTeXML::Gullet->new();
-  local $STOMACH  = LaTeXML::Stomach->new(); # The current Stomach;
-  local $MODEL    = $$self{model};   # The document model.
+  my $stomach  = $STATE->getStomach; # The current Stomach;
+  my $gullet   = $stomach->getGullet;
   # And, set fancy error handler for ANY die!
   local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
   local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',@_)); }; # ??
 
-  NoteProgress("\n(Digesting string...");
-  $STOMACH->initialize;
-  map($GULLET->input($_,['ltxml','latexml']), 'TeX', @{$$self{preload} || []} );
-  $GULLET->openMouth(LaTeXML::Mouth->new($string),0);
+  NoteBegin("Digesting string");
+  $stomach->initialize;
+  map($gullet->input($_,['ltxml','latexml']), 'TeX', @{$$self{preload} || []} );
+  $gullet->openMouth(LaTeXML::Mouth->new($string),0);
   $STATE->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode("Unknown"))));
-  my $list = LaTeXML::List->new($STOMACH->digestNextBody); 
+  my $list = LaTeXML::List->new($stomach->digestNextBody); 
   if(my $env = $STATE->lookupValue('current_environment')){
     Error("Input ended while environment $env was open"); } 
-  $GULLET->flush;
-  NoteProgress(")");
+  $gullet->flush;
+  NoteEnd("Digesting string");
   $list; }
 
 sub convertDocument {
   my($self,$digested)=@_;
   local $STATE    = $$self{state};
-  local $GULLET   = LaTeXML::Gullet->new();
-  local $STOMACH  = LaTeXML::Stomach->new(); # The current Stomach;
-  local $MODEL    = $$self{model};   # The document model.
+  my $model    = $STATE->getModel;   # The document model.
 
   # And, set fancy error handler for ANY die!
   local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
   local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',@_)); }; # ??
 
   local $LaTeXML::DUAL_BRANCH= '';
-  my $document  = LaTeXML::Document->new();
+  my $document  = LaTeXML::Document->new($model);
 
-  NoteProgress("\n(Building");
-  $LaTeXML::MODEL->loadDocType(); # If needed?
+  NoteBegin("Building");
+  $model->loadDocType(); # If needed?
   $document->absorb($digested);
-  NoteProgress(")");
+  NoteEnd("Building");
 
-  NoteProgress("\n(Rewriting");
-  $MODEL->applyRewrites($document,$document->getDocument->documentElement);
-  NoteProgress(")");
+  NoteBegin("Rewriting");
+  $model->applyRewrites($document,$document->getDocument->documentElement);
+  NoteEnd("Rewriting");
 
   LaTeXML::MathParser->new()->parseMath($document) unless $$self{nomathparse};
   my $xml = $document->finalize();

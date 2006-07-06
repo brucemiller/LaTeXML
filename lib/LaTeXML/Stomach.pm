@@ -14,6 +14,7 @@ package LaTeXML::Stomach;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::State;
+use LaTeXML::Gullet;
 use LaTeXML::Token;
 use LaTeXML::Number;
 use LaTeXML::Box;
@@ -25,7 +26,8 @@ use base qw(LaTeXML::Object);
 #**********************************************************************
 sub new {
   my($class, %options)=@_;
-  bless {boxing=>[]}, $class; }
+  bless { gullet=> LaTeXML::Gullet->new(),
+	  boxing=>[]}, $class; }
 
 #**********************************************************************
 # Initialize various parameters, preload, etc.
@@ -42,6 +44,9 @@ sub initialize {
 }
 
 #**********************************************************************
+sub getGullet { $_[0]->{gullet}; }
+
+#**********************************************************************
 # Digestion
 #**********************************************************************
 # NOTE: Worry about whether the $autoflush thing is right?
@@ -52,7 +57,7 @@ sub digestNextBody {
   my $initdepth  = scalar(@{$$self{boxing}});
   my $token;
   local @LaTeXML::LIST=();
-  while(defined($token=$GULLET->readXToken(1))){ # Done if we run out of tokens
+  while(defined($token=$$self{gullet}->readXToken(1))){ # Done if we run out of tokens
     push(@LaTeXML::LIST, $self->invokeToken($token));
     last if $initdepth > scalar(@{$$self{boxing}}); } # if we've closed the initial mode.
   push(@LaTeXML::LIST,LaTeXML::List->new()) unless $token; # Dummy `trailer' if none explicit.
@@ -64,13 +69,13 @@ sub digestNextBody {
 sub digest {
   my($self,$tokens)=@_;
   return undef unless defined $tokens;
-  $GULLET->openMouth((ref $tokens eq 'LaTeXML::Token' ? Tokens($tokens) : $tokens->clone),1);
+  $$self{gullet}->openMouth((ref $tokens eq 'LaTeXML::Token' ? Tokens($tokens) : $tokens->clone),1);
   $STATE->clearPrefixes; # prefixes shouldn't apply here.
   my $ismath     = $STATE->lookupValue('IN_MATH');
   my $initdepth  = scalar(@{$$self{boxing}});
   my $depth=$initdepth;
   local @LaTeXML::LIST=();
-  while(defined(my $token=$GULLET->readXToken())){ # Done if we run out of tokens
+  while(defined(my $token=$$self{gullet}->readXToken())){ # Done if we run out of tokens
     push(@LaTeXML::LIST, $self->invokeToken($token));
     my $depth  = scalar(@{$$self{boxing}});
     last if $initdepth > $depth; } # if we've closed the initial mode.
@@ -81,7 +86,7 @@ sub digest {
 
   my $list = (scalar(@LaTeXML::LIST) == 1 ? $LaTeXML::LIST[0] 
 	      : ($ismath ? LaTeXML::MathList->new(@LaTeXML::LIST) : LaTeXML::List->new(@LaTeXML::LIST)));
-  $GULLET->closeMouth;
+  $$self{gullet}->closeMouth;
   $list; }
 
 our @forbidden_cc = (1,0,0,0, 0,0,1,0, 0,1,0,0, 0,0,0,1, 0,1);
@@ -99,10 +104,10 @@ sub invokeToken {
     my $cs = $token->getCSName;
     Error("$cs is not defined.");
     $STATE->installDefinition(LaTeXML::Constructor->new($token,undef,
-			  "<ERROR type='undefined'>".$cs."</ERROR>")); #,mode=>'text');
+			  "<ltx:ERROR type='undefined'>".$cs."</ltx:ERROR>")); #,mode=>'text');
     $self->invokeToken($token); }
   elsif($meaning->isaDefinition){
-    my @boxes = $meaning->invoke;
+    my @boxes = $meaning->invoke($self);
     my @err = grep( (! ref $_) || (! $_->isaBox), @boxes);
     Fatal("Execution of ".ToString($token)." yielded non boxes: ".join(',',map(Stringify($_),@err))) if @err;
     $STATE->clearPrefixes unless $meaning->isPrefix; # Clear prefixes unless we just set one.
@@ -119,10 +124,10 @@ sub invokeToken {
     elsif($STATE->lookupValue('IN_MATH')){
       my $string = $meaning->getString;
       LaTeXML::MathBox->new($string,$STATE->lookupValue('font')->specialize($string),
-			    $GULLET->getLocator,$meaning); }
+			    $$self{gullet}->getLocator,$meaning); }
     else {
       LaTeXML::Box->new($meaning->getString, $STATE->lookupValue('font'),
-			$GULLET->getLocator,$meaning); }}
+			$$self{gullet}->getLocator,$meaning); }}
   else {
     Fatal("[Internal] ".Stringify($meaning)." should never reach Stomach!"); }}
 
@@ -153,11 +158,11 @@ sub pushStackFrame {
 sub popStackFrame {
   my($self,$nobox)=@_;
   if(my $beforeafter=$STATE->lookupValue('beforeAfterGroup')){
-    push(@LaTeXML::LIST,map($_->beDigested, @$beforeafter)); }
+    push(@LaTeXML::LIST,map($_->beDigested($self), @$beforeafter)); }
   my $after = $STATE->lookupValue('afterGroup');
   $STATE->popFrame;
   pop(@{$$self{boxing}}) unless $nobox; # For begingroup/endgroup
-  $GULLET->unread(@$after) if $after;
+  $$self{gullet}->unread(@$after) if $after;
 }
 
 #======================================================================
@@ -166,15 +171,27 @@ sub popStackFrame {
 
 # if $nobox is true, inhibit incrementing the boxingLevel
 sub bgroup {
-  my($self,$nobox)=@_;
-  pushStackFrame($self,$nobox);
+  my($self)=@_;
+  pushStackFrame($self,0);
   return; }
 
 sub egroup {
-  my($self,$nobox)=@_;
+  my($self)=@_;
   if($STATE->isValueBound('MODE',0)){ # Last stack frame was a mode switch!?!?!
     Fatal("Unbalanced \$ or \} while ending group for ".$LaTeXML::CURRENT_TOKEN->getCSName); }
-  popStackFrame($self,$nobox);
+  popStackFrame($self,0);
+  return; }
+
+sub begingroup {
+  my($self)=@_;
+  pushStackFrame($self,1);
+  return; }
+
+sub endgroup {
+  my($self)=@_;
+  if($STATE->isValueBound('MODE',0)){ # Last stack frame was a mode switch!?!?!
+    Fatal("Unbalanced \$ or \} while ending group for ".$LaTeXML::CURRENT_TOKEN->getCSName); }
+  popStackFrame($self,1);
   return; }
 
 #======================================================================
@@ -258,19 +275,19 @@ Arguments to a constructor are read from the gullet and also digested.
 
 =over 4
 
-=item C<< $list = $STOMACH->digestNextBody; >>
+=item C<< $list = $stomach->digestNextBody; >>
 
 Return the digested L<LaTeXML::List> after reading and digesting a `body'
-from the current Gullet.  The body extends until the current
+from the its Gullet.  The body extends until the current
 level of boxing or environment is closed.  
 
-=item C<< $list = $STOMACH->digest($tokens); >>
+=item C<< $list = $stomach->digest($tokens); >>
 
 Return the L<LaTeXML::List> resuting from digesting the given tokens.
 This is typically used to digest arguments to primitives or
 constructors.
 
-=item C<< @boxes = $STOMACH->invokeToken($token); >>
+=item C<< @boxes = $stomach->invokeToken($token); >>
 
 Invoke the given (expanded) token.  If it corresponds to a
 Primitive or Constructor, the definition will be invoked,
@@ -278,7 +295,7 @@ reading any needed arguments fromt he current input source.
 Otherwise, the token will be digested.
 A List of Box's, Lists, Whatsit's is returned.
 
-=item C<< @boxes = $STOMACH->regurgitate; >>
+=item C<< @boxes = $stomach->regurgitate; >>
 
 Removes and returns a list of the boxes already digested 
 at the current level.  This peculiar beast is used
@@ -291,18 +308,25 @@ a Constructor in LaTeXML).
 
 =over 4
 
-=item C<< $STOMACH->bgroup($nobox); >>
+=item C<< $stomach->bgroup; >>
+
+Begin a new level of binding by pushing a new stack frame,
+and a new level of boxing the digested output.
+
+=item C<< $stomach->egroup; >>
+
+End a level of binding by popping the last stack frame,
+undoing whatever bindings appeared there, and also
+decrementing the level of boxing.
+
+=item C<< $stomach->begingroup; >>
 
 Begin a new level of binding by pushing a new stack frame.
-If C<$nobox> is true, no new level of boxing will be created
-(such as for \begingroup).
 
-=item C<< $STOMACH->egroup($nobox); >>
+=item C<< $stomach->endgroup; >>
 
 End a level of binding by popping the last stack frame,
 undoing whatever bindings appeared there.
-If C<$nobox> is true, the level of boxing will not be decremented
-(such as for \endgroup).
 
 =back
 
@@ -310,15 +334,15 @@ If C<$nobox> is true, the level of boxing will not be decremented
 
 =over 4
 
-=item C<< $STOMACH->beginMode($mode); >>
+=item C<< $stomach->beginMode($mode); >>
 
 Begin processing in C<$mode>; one of 'text', 'display-math' or 'inline-math'.
 This also begins a new level of grouping and switches to a font
 appropriate for the mode.
 
-=item C<< $STOMACH->endMode($mode); >>
+=item C<< $stomach->endMode($mode); >>
 
-End processing in C<$mode>; an error is signalled if C<$STOMACH> is not
+End processing in C<$mode>; an error is signalled if C<$stomach> is not
 currently in C<$mode>.  This also ends a level of grouping.
 
 =back

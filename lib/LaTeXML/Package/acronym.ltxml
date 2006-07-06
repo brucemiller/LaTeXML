@@ -25,12 +25,12 @@ DefMacro('\acl{}','\@ACRO@{#1}{\acffont{\@AC@long{#1}}}');
 DefMacro('\acf{}','\@ACRO@{#1}{\acffont{\@AC@long{#1}}\acfsfont{(\@AC@short{#1})}}');
 
 
-DefEnvironment('{acronym}','<acronyms>#body</acronyms>',
+DefEnvironment('{acronym}','<ltx:acronyms>#body</ltx:acronyms>',
 	      beforeDigest=>sub { DefMacro('\acro{}[]{}', 
 					   '\acrodef{#1}[#2]{#3}\item[\acs{#1}]\acl{#1} '); });
 
 DefPrimitive('\acrodef{}[]{}', sub {
-  my($self,$id,$short,$long)=@_;
+  my($stomach,$id,$short,$long)=@_;
   $short = $id unless $short && $short->toString;
   $id = $id->toString;
   AssignValue('ACRONYM@short@'.$id => Digest($short),'global');
@@ -39,10 +39,10 @@ DefPrimitive('\acrodef{}[]{}', sub {
 DefConstructor('\@AC@short{}',"&LooukpValue('ACRONYM\@short\@#1')");
 DefConstructor('\@AC@long{}',"&LookupValue('ACRONYM\@long\@#1')");
 # \@ACR@{id}{text}
-DefConstructor('\@ACRO@{}{}',"<acronym name='#1'>#2</acronym>");
+DefConstructor('\@ACRO@{}{}',"<ltx:acronym name='#1'>#2</ltx:acronym>");
 
 DefExpandable('\@AC@if{}{}{}', sub { 
-  my($self,$id,$short,$long)=@_;
+  my($gullet,$id,$short,$long)=@_;
   my $key = 'ACROUSED@'.$_[1]->toString;
   if(LookupValue($key)){
     $short->unlist; }

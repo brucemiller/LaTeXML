@@ -16,20 +16,14 @@ use LaTeXML::Package;
 
 #**********************************************************************
 
-DefEnvironment('{alltt}',"<verbatim font='#font'>#body</verbatim>",
-	      beforeDigest=>\&before_alltt, afterDigest=>\&after_alltt);
-
-sub before_alltt {
-  my($defn)=@_;
-  MergeFont(family=>'typewriter', series=>'medium', shape=>'upright');
-  foreach my $ch (' ', '$', '&', '#', '^', '_', '%', '~'){
-    AssignCatcode($ch=>CC_OTHER); }
-  AssignValue(PRESERVE_NEWLINES=>1);
-  # \@noligs: This SHOULD inhibit ligature substitution! (eg quotes, dots, etc!!!)
-  # \frenchspacing\@vobeyspaces
-}
-
-sub after_alltt {}
+DefEnvironment('{alltt}',"<ltx:verbatim font='#font'>#body</ltx:verbatim>",
+	      font=>{family=>'typewriter', series=>'medium', shape=>'upright'},
+	      beforeDigest=>sub{
+		map(AssignCatcode($_=>CC_OTHER), ' ', '$', '&', '#', '^', '_', '%', '~');
+		AssignValue(PRESERVE_NEWLINES=>1);
+		# \@noligs: This SHOULD inhibit ligature substitution! (eg quotes, dots, etc!!!)
+		# \frenchspacing\@vobeyspaces
+	      });
 
 #**********************************************************************
 1;

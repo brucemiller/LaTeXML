@@ -254,7 +254,7 @@ sub new {
   my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN};
   bless $self,$class;
   $self->initialize;
-  NoteProgress("\n(Processing $shortpath");
+  NoteBegin("Processing $$self{source}");
   $self;  }
 
 sub finish {
@@ -262,7 +262,7 @@ sub finish {
   $self->SUPER::finish;
   if($$self{IN}){
     close( \*{$$self{IN}}); $$self{IN}=undef; }
-  NoteProgress(")");}
+  NoteEnd("Processing $$self{source}");}
 
 sub hasMoreInput {
   my($self)=@_;
@@ -300,7 +300,7 @@ sub new {
   my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN};
   bless $self,$class;
   $self->initialize;
-  NoteProgress("\n(Style $shortpath");
+  NoteBegin("Style $$self{source}");
   $$self{saved_at_cc} = $STATE->lookupCatcode('@');
   $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
   $STATE->assignCatcode('@'=>CC_LETTER);
@@ -311,6 +311,7 @@ sub finish {
   my($self)=@_;
   $STATE->assignCatcode('@'=> $$self{saved_at_cc});
   $STATE->assignValue(INCLUDE_COMMENTS=>$$self{SAVED_INCLUDE_COMMENTS});
+  NoteEnd("Style $$self{source}");
   $self->SUPER::finish; }
 
 #**********************************************************************
@@ -325,11 +326,12 @@ sub new {
   my($class,$pathname)=@_;
   my $shortpath=pathname_relative($pathname,pathname_cwd);
   my $self = bless {pathname=>$pathname, source=>$shortpath},$class;
-  NoteProgress("\n(Loading $shortpath");
+  NoteBegin("Loading $$self{source}");
   $self; }
 
 sub finish {
-  NoteProgress(")"); }
+  my($self)=@_;
+  NoteEnd("Loading $$self{source}"); }
 
 # Evolve to figure out if this gets dynamic location!
 sub getLocator {

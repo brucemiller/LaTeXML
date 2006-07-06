@@ -18,7 +18,9 @@ use LaTeXML::Package;
 # \mcsdpage{nistir}{title}{author}{date}
 # Creates a title page for an MCSD NISTIR
 DefConstructor('\mcsdpage{}{}{}{}',
-	       "<title>#2</title><author>#3</author><creationdate>#4</creationdate>");
+	       "<ltx:title>#2</ltx:title>"
+	       ."<ltx:author>#3</ltx:author>"
+	       ."<ltx:creationdate>#4</ltx:creationdate>");
 # and what to do with the NISTIR # ? Add it to the document?
 #**********************************************************************
 1;

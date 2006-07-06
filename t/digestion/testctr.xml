@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section id="S1" refnum="1">
+    <title>Testing Counters</title>
+    <para id="S1.p1">
+      <p>Counter Foo [0] = 0.</p>
+    </para>
+    <para id="S1.p2">
+      <p>Increment Foo[1] =  1.</p>
+    </para>
+    <para id="S1.p3">
+      <p>Set Foo to 2 = 2.</p>
+    </para>
+    <para id="S1.p4">
+      <p>Add 10 to Foo [12] = 12.</p>
+    </para>
+    <para id="S1.p5">
+      <p>Double Foo [24] = 24.</p>
+    </para>
+  </section>
+  <section id="S2" refnum="2">
+    <title>Testing RefStep</title>
+    <para id="S2.p1">
+      <p>Define bar to be reset within foo.
+
+Now (Foo,Bar)[24,0] is (24,0)</p>
+    </para>
+    <para id="S2.p2">
+      <p>Refstep bar: 
+Now (Foo,Bar)[24,1] is (24,1)</p>
+    </para>
+    <para id="S2.p3">
+      <p>Refstep foo: 
+Now (Foo,Bar)[25,0] is (25,0)</p>
+    </para>
+  </section>
+  <section id="S3" refnum="3">
+    <title>Number formatting</title>
+    <para id="S3.p1">
+      <p>arabic[6] = 6</p>
+    </para>
+    <para id="S3.p2">
+      <p>roman [vi] = vi</p>
+    </para>
+    <para id="S3.p3">
+      <p>Roman [VI] = VI</p>
+    </para>
+    <para id="S3.p4">
+      <p>alph [f] = f</p>
+    </para>
+    <para id="S3.p5">
+      <p>Alph [F] = F</p>
+    </para>
+    <para id="S3.p6">
+      <p>fnsymbol [<Math mode="inline" tex="\Vert" text="Vert"><XMath><XMTok name="Vert" role="VERTBAR">∥</XMTok></XMath></Math>] = ∥</p>
+    </para>
+    <para id="S3.p7">
+      <p>How far will TeX go?
+
+
+Fubar is mmmmmmmmmcmxcix</p>
+    </para>
+  </section>
+  <section id="S4" refnum="4">
+    <title>TeX Counters</title>
+    <subsection id="S4.SS1" refnum="4.1">
+      <title>Integers</title>
+      <para id="S4.SS1.p1">
+        <p>7 = 7.</p>
+      </para>
+      <para id="S4.SS1.p2">
+        <p>7 = 7.</p>
+      </para>
+    </subsection>
+    <subsection id="S4.SS2" refnum="4.2">
+      <title>Dimensions</title>
+      <para id="S4.SS2.p1">
+        <p>HFuzz is 0.1pt.
+Now HFuzz is 2pt.</p>
+      </para>
+      <para id="S4.SS2.p2">
+        <p>HFuzz is 2pt.
+Now HFuzz is 2pt.</p>
+      </para>
+      <para id="S4.SS2.p3">
+        <p>Dimen 1.23pt = 1.23pt.</p>
+      </para>
+      <para id="S4.SS2.p4">
+        <p>Dimen 1.23pt = 1.23pt.</p>
+      </para>
+      <para id="S4.SS2.p5">
+        <p>Dimen 1.23pt = 1.23pt.</p>
+      </para>
+      <para id="S4.SS2.p6">
+        <p>count 2: 3*65536 = 196608.</p>
+      </para>
+      <para id="S4.SS2.p7">
+        <p>Now dimen: 3pt = 3pt</p>
+      </para>
+      <para id="S4.SS2.p8">
+        <p>One em = 10pt</p>
+      </para>
+      <para id="S4.SS2.p9">
+        <p>One ex = 4.3pt</p>
+      </para>
+      <para id="S4.SS2.p10">
+        <p>Dimen: one ex = 4.3pt</p>
+      </para>
+      <para id="S4.SS2.p11">
+        <p>Dimen: 1pt = 1pt</p>
+      </para>
+      <para id="S4.SS2.p12">
+        <p>Dimen: 1pt = 1pt</p>
+      </para>
+      <para id="S4.SS2.p13">
+        <p>8 points = 8pt</p>
+      </para>
+      <para id="S4.SS2.p14">
+        <p>15 points = 15pt</p>
+      </para>
+    </subsection>
+    <subsection id="S4.SS3" refnum="4.3">
+      <title>Glue</title>
+      <para id="S4.SS3.p1">
+        <p>1pt plus 3pt = 1pt plus 3pt</p>
+      </para>
+      <para id="S4.SS3.p2">
+        <p>1pt plus 3fil = 1pt plus 3fil</p>
+      </para>
+      <para id="S4.SS3.p3">
+        <p>1pt plus 3fill = 1pt plus 3fill</p>
+      </para>
+      <para id="S4.SS3.p4">
+        <p>Skip: 2pt plus 3fill = 2pt plus 3fill</p>
+      </para>
+      <para id="S4.SS3.p5">
+        <p>0.1 plus 3fill = 0.1pt plus 3fill</p>
+      </para>
+    </subsection>
+    <subsection id="S4.SS4" refnum="4.4">
+      <title>Undefined?</title>
+      <para id="S4.SS4.p1">
+        <p>Unknown count: 0 = 0</p>
+      </para>
+      <para id="S4.SS4.p2">
+        <p>Unknown dimen: 0pt = 0pt</p>
+      </para>
+      <para id="S4.SS4.p3">
+        <p>Unknown skip: 0pt = 0pt</p>
+      </para>
+    </subsection>
+    <subsection id="S4.SS5" refnum="4.5">
+      <title>The</title>
+      <para id="S4.SS5.p1">
+        <p>the count 0 : 0</p>
+      </para>
+      <para id="S4.SS5.p2">
+        <p>the two (countdef 2) : 196608</p>
+      </para>
+      <para id="S4.SS5.p3">
+        <p>Tokens: abFOOcd = abFOOcd</p>
+      </para>
+      <para id="S4.SS5.p4">
+        <p>Catcode: 11 = 11</p>
+      </para>
+      <para id="S4.SS5.p5">
+        <p>Catcode: 12 = 12</p>
+      </para>
+    </subsection>
+    <subsection id="S4.SS6" refnum="4.6">
+      <title>New Count, etc</title>
+      <para id="S4.SS6.p1">
+        <p>3 = 3</p>
+      </para>
+    </subsection>
+    <subsection id="S4.SS7" refnum="4.7">
+      <title>LaTeX style</title>
+      <para id="S4.SS7.p1">
+        <p>1em = 10pt
+3em = 30pt</p>
+      </para>
+    </subsection>
+    <subsection id="S4.SS8" refnum="4.8">
+      <title>Macrology</title>
+      <para id="S4.SS8.p1">
+        <p>1=1</p>
+      </para>
+      <para id="S4.SS8.p2">
+        <p>[23=23]</p>
+      </para>
+      <para id="S4.SS8.p3">
+        <p>[29=29]</p>
+      </para>
+      <para id="S4.SS8.p4">
+        <p>[29=29]</p>
+      </para>
+      <para id="S4.SS8.p5">
+        <p>[10000=10000]
+[$a$ = $a$]</p>
+      </para>
+    </subsection>
+  </section>
+</document>

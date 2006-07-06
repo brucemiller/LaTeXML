@@ -1,0 +1,12 @@
+\documentclass{article}
+
+\makeatletter
+% building associative functions. Using \def\disj{\assoc\vee},
+% $\disj{a,b,c}$ evaluates to (a\vee b\vee c)
+% \bassoc, is a variant of assoc with brackets around
+\def\assoc#1#2{\let\@tmpop\relax\@for\@I:=#2\do{\@tmpop\@I\let\@tmpop#1}}
+\def\disj{\assoc\times}
+\makeatother
+\begin{document}
+$\disj{a,b,c}$
+\end{document}

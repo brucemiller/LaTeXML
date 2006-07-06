@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section>
+    <para id="p1">
+      <p>Inline math <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="ID" font="italic">a</XMTok><XMTok role="ID" font="italic">b</XMTok></XMApp></XMath></Math>.</p>
+    </para>
+    <para id="p2">
+      <equation>
+        <Math mode="display" tex="a+b+123" text="a + b + 123">
+          <XMath>
+            <XMApp>
+              <XMTok role="ADDOP">+</XMTok>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMTok role="ID" font="italic">b</XMTok>
+              <XMTok role="NUMBER" name="123">123</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation>
+        <Math mode="display" tex="a+b+f(123)" text="a + b + f@(123)">
+          <XMath>
+            <XMApp>
+              <XMTok role="ADDOP">+</XMTok>
+              <XMTok role="ID" font="italic">a</XMTok>
+              <XMTok role="ID" font="italic">b</XMTok>
+              <XMApp>
+                <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">f</XMTok>
+                <XMTok role="NUMBER" name="123">123</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <para id="p3">
+      <equation>
+        <Math mode="display" tex="f_{D}f(a+b)" text="f _ D * f@(a + b)">
+          <XMath>
+            <XMApp>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMApp>
+                <XMTok name="Subscript" role="SUBSCRIPT"/>
+                <XMTok role="ID" font="italic">f</XMTok>
+                <XMTok role="ID" font="italic">D</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">f</XMTok>
+                <XMApp>
+                  <XMTok role="ADDOP">+</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation>
+        <Math mode="display" tex="f_{1}(a+b)" text="f _ 1 * (a + b)">
+          <XMath>
+            <XMApp>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMApp>
+                <XMTok name="Subscript" role="SUBSCRIPT"/>
+                <XMTok role="ID" font="italic">f</XMTok>
+                <XMTok role="NUMBER">1</XMTok>
+              </XMApp>
+              <XMApp open="(" close=")">
+                <XMTok role="ADDOP">+</XMTok>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation>
+        <Math mode="display" tex="\hat{f}a" text="hat@(f) * a">
+          <XMath>
+            <XMApp>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMApp role="ID">
+                <XMTok name="hat" role="OVERACCENT">^</XMTok>
+                <XMTok role="FUNCTION" font="italic">f</XMTok>
+              </XMApp>
+              <XMTok role="ID" font="italic">a</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section id="S1" refnum="1" label="sec:restricted">
+    <title>Restricted</title>
+    <para id="S1.p1">
+      <equation>
+        <Math mode="display" tex="a(x)+b(x)+123" text="a@(x) + b@(x) + 123">
+          <XMath>
+            <XMApp>
+              <XMTok role="ADDOP">+</XMTok>
+              <XMApp>
+                <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">a</XMTok>
+                <XMTok role="ID" font="italic">x</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">b</XMTok>
+                <XMTok role="ID" font="italic">x</XMTok>
+              </XMApp>
+              <XMTok role="NUMBER" name="123">123</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+</document>

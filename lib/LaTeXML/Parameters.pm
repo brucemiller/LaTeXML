@@ -39,22 +39,22 @@ sub new {
 
 %LaTeXML::Parameters::PARAMETER_TABLE
   = ( Plain=>{reader=>sub {
-		my($inner)=@_;
-		my $value = $GULLET->readArg; 
+		my($gullet,$inner)=@_;
+		my $value = $gullet->readArg; 
 		if($inner){
-		  ($value) = $inner->reparseArgument($value); }
+		  ($value) = $inner->reparseArgument($gullet,$value); }
 		$value; },
 	      reversion=>sub{ my($arg,$inner)=@_;
 			      (T_BEGIN, ($inner
 					 ? $inner->revertArguments($arg)
 					 : $arg->revert), T_END); }},
       Optional=>{reader=>sub {
-		   my($default,$inner)=@_;
-		   my $value = $GULLET->readOptional;
+		   my($gullet,$default,$inner)=@_;
+		   my $value = $gullet->readOptional;
 		   if (!$value && $default) {
 		     $value = $default; }
 		   elsif($inner) {
-		     ($value) = $inner->reparseArgument($value); }
+		     ($value) = $inner->reparseArgument($gullet,$value); }
 		   $value; },
 		 optional=>1,
 		 reversion=>sub{ my($arg,$default,$inner)=@_;
@@ -63,8 +63,8 @@ sub new {
 						   ? $inner->revertArguments($arg)
 						   : $arg->revert), T_OTHER(']')); }
 			    else { (); }}},
-      Until     => { reader => sub { my($until)=@_;
-				     $GULLET->readUntil($until); },
+      Until     => { reader => sub { my($gullet,$until)=@_;
+				     $gullet->readUntil($until); },
 		     reversion=>sub{ my($arg,$until)=@_;
 				     ($arg->unlist, $until->unlist); }},
     );
@@ -166,40 +166,39 @@ sub revertArguments {
   @tokens; }
 
 sub readArguments {
-  my($self,$fordefn)=@_;
+  my($self,$gullet,$fordefn)=@_;
   my @args = ();
   foreach my $parameter (@$self){
-    my $value = &{$$parameter{reader}}(@{$$parameter{extra}||[]});
+#    my $value = &{$$parameter{reader}}($gullet,@{$$parameter{extra}||[]});
+    my $value = $parameter->read($gullet);
     Error("Missing argument ".ToString($parameter)." for ".ToString($fordefn))
       unless defined $value || $$parameter{optional};
     push(@args,$value) unless $$parameter{novalue}; }
   @args; }
 
-sub digestArguments {
-  my($self,@args)=@_;
-  map( (ref $_ ? $_->beDigested : $_), @args); }
-
 sub readArgumentsAndDigest {
-  my($self,$fordefn)=@_;
+  my($self,$stomach,$fordefn)=@_;
   my @args = ();
+  my $gullet = $stomach->getGullet;
   foreach my $parameter (@$self){
-    my $value = &{$$parameter{reader}}(@{$$parameter{extra}||[]});
+#    my $value = &{$$parameter{reader}}($gullet,@{$$parameter{extra}||[]});
+    my $value = $parameter->read($gullet);
     Error("Missing argument ".ToString($parameter)." for ".ToString($fordefn))
       unless defined $value || $$parameter{optional};
     if(!$$parameter{novalue}){
-      $value = $value->beDigested if ref $value;
+      $value = $value->beDigested($stomach) if ref $value;
       push(@args,$value); }}
   @args; }
 
 sub reparseArgument {
-  my($self,$tokens)=@_;
+  my($self,$gullet,$tokens)=@_;
   if(defined $tokens){
-    $GULLET->openMouth($tokens,1);
-    my @values = $self->readArguments;
-    $GULLET->skipSpaces;
-    if(my $junk =$GULLET->readToken){
+    $gullet->openMouth($tokens,1);
+    my @values = $self->readArguments($gullet);
+    $gullet->skipSpaces;
+    if(my $junk =$gullet->readToken){
       Fatal("Left over stuff in argument:".Stringify($junk)); }
-    $GULLET->closeMouth;
+    $gullet->closeMouth;
     @values; }
   else {
     (); }}
@@ -216,6 +215,15 @@ sub new {
 
 sub stringify { $_[0]->{spec}; }
 
+sub read {
+  my($self,$gullet)=@_;
+  if($$self{semiverbatim}){
+    $STATE->pushFrame;
+    map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%');}  # should '%' too ?
+  my $value = &{$$self{reader}}($gullet,@{$$self{extra}||[]});
+  if($$self{semiverbatim}){
+    $STATE->popFrame; }
+  $value; }
 
 #======================================================================
 1;
@@ -268,17 +276,13 @@ Return the list of C<LaTeXML::Parameter> contained in C<$parameters>.
 Return a list of L<LaTeXML::Token> that would represent the arguments
 such that they can be parsed by the Gullet.
 
-=item C<< @args = $parameters->readArguments; >>
+=item C<< @args = $parameters->readArguments($gullet,$fordefn); >>
 
-Read the arguments according to this C<$parameters> from the current C<$GULLET>.
+Read the arguments according to this C<$parameters> from the C<$gullet>.
 This takes into account any special forms of arguments, such as optional,
 delimited, etc.
 
-=item C<< @args = $parameters->digestArguments(@args); >>
-
-Digests the arguments according to C<$parameters> using the current C<$STOMACH>.
-
-=item C<< @args = $parameters->readArgumentsAndDigest($fordefn); >>
+=item C<< @args = $parameters->readArgumentsAndDigest($stomach,$fordefn); >>
 
 Reads and digests the arguments according to this C<$parameters>, in sequence.
 this method is used by Constructors.

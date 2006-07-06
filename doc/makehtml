@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 use FindBin;
-use lib "$FindBin::RealBin/../lib";
+use lib "$FindBin::RealBin/../blib/lib";
 use Pod::Html;
 use Pod::Find;
 use LaTeXML;

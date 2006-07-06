@@ -1,0 +1,20 @@
+use strict;
+use LaTeXML::Package;
+
+#======================================================================
+# Namespace tests ns1.tex, ns2.tex, ns3.tex...
+# The TeX sources are identical
+#======================================================================
+# Case 1: The DTD and code use no Namespaces.
+# The XML output should also have no namespaces.
+#======================================================================
+DocType("song","-//NIST LaTeXML//LaTeXML Poem",'song.dtd');
+
+Tag('song',  autoOpen=>1, autoClose=>1);
+Tag('verse', autoOpen=>1, autoClose=>1);
+Tag('line',  autoOpen=>1, autoClose=>1);
+DefConstructor('\bigskip',"<verse>");
+DefConstructor('\par',sub{ $_[0]->maybeCloseElement('line'); });
+
+#**********************************************************************
+1;

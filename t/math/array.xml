@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section>
+    <para id="p1">
+      <p>An Array</p>
+      <equation id="Ex1">
+        <Math mode="display" tex="\begin{array}{ccc}a&amp;b&amp;c\\ c&amp;&amp;d\\\\ e&amp;f\\\end{array}" text="Array@(Row@(Cell@(a), Cell@(b), Cell@(c)), Row@(Cell@(c), Cell@(d)), Row@(Cell@(e), Cell@(f)))">
+          <XMath>
+            <XMApp>
+              <XMTok name="Array"/>
+              <XMApp>
+                <XMTok name="Row"/>
+                <XMApp>
+                  <XMTok name="Cell"/>
+                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok name="Cell"/>
+                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok name="Cell"/>
+                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok name="Row"/>
+                <XMApp>
+                  <XMTok name="Cell"/>
+                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok name="Cell"/>
+                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok name="Row"/>
+                <XMApp>
+                  <XMTok name="Cell"/>
+                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok name="Cell"/>
+                  <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <p>Done.</p>
+    </para>
+  </section>
+</document>

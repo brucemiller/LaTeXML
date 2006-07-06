@@ -25,7 +25,10 @@ use base qw(LaTeXML::Object);
 sub new {
   my($class,%options)=@_;
   my $self = bless {xpath=> XML::LibXML::XPathContext->new(),
-		    namespace_prefixes=>{}, namespaces=>{}, rewrites=>[], %options},$class;
+		    namespace_prefixes=>{}, namespaces=>{}, 
+		    doctype_namespaces=>{},
+		    rewrites=>[], ligatures=>[], mathligatures=>[],
+		    %options},$class;
   $$self{xpath}->registerFunction('match-font',\&LaTeXML::Font::match_font);
   $self->registerNamespace('xml',"http://www.w3.org/XML/1998/namespace");
   $self; }
@@ -33,7 +36,6 @@ sub new {
 sub getRootName { $_[0]->{roottag}; }
 sub getPublicID { $_[0]->{public_id}; }
 sub getSystemID { $_[0]->{system_id}; }
-sub getDefaultNamespace { $_[0]->{defaultNamespace}; }
 
 sub getDTD {
   my($self)=@_;
@@ -47,11 +49,13 @@ sub getXPath { $_[0]->{xpath}; }
 #**********************************************************************
 
 sub setDocType {
-  my($self,$roottag,$publicid,$systemid)=@_;
+  my($self,$roottag,$publicid,$systemid,%namespaces)=@_;
   $$self{roottag}=$roottag;
-  $self->setTagProperty('_Document_','model',{$roottag=>1}) if $roottag;
+  $self->setTagProperty('#Document','model',{$roottag=>1}) if $roottag;
   $$self{public_id}   =$publicid;
   $$self{system_id}   =$systemid;
+  foreach my $prefix (keys %namespaces){
+    $self->registerDocTypeNamespace($prefix=>$namespaces{$prefix}); }
 }
 # Hmm, rather than messing with roottag, we could extract all
 # possible root tags from the doctype, then put the tag of the
@@ -65,14 +69,22 @@ sub setDocType {
 #**********************************************************************
 # Namespaces
 #**********************************************************************
-
+# There are TWO namespace mappings!!!
+# One for coding, one for the DocType.
+#
+# Coding: this namespace mapping associates prefixes to namespace URIs for
+#   use in the latexml code, constructors and such.
+#   This must be a one to one mapping
+# DocType: this namespace mapping associates prefixes to namespace URIs
+#   as used in the Document Type description (DTD), and will be the
+#   set of prefixes used in the generated output.
 sub registerNamespace {
-  my($self,$prefix,$namespace,$default)=@_;
+  my($self,$prefix,$namespace)=@_;
   if($prefix && $namespace){
     $$self{namespace_prefixes}{$namespace}=$prefix;
     $$self{namespaces}{$prefix}=$namespace;
-    $$self{xpath}->registerNs($prefix,$namespace);  }
-  $$self{defaultNamespace}=$namespace if $default; }
+    $$self{xpath}->registerNs($prefix,$namespace);  
+  }}
 
 sub getNamespacePrefix {
   my($self,$namespace)=@_;
@@ -82,46 +94,87 @@ sub getNamespace {
   my($self,$prefix)=@_;
   $$self{namespaces}{$prefix}; }
 
-sub getRegisteredNamespaces {
+#sub getRegisteredNamespaces {
+#    my($self)=@_;
+#    keys %{$$self{namespace_prefixes}}; }
+
+# This registers a prefix & namespace as used in the DTD.
+# The prefix may be different from the one used in latexml code,
+# HOWEVER, the namespace must have a corresponding prefix.
+# use "#default" for non-prefixed namespaces.
+sub registerDocTypeNamespace {
+  my($self,$prefix,$namespace)=@_;
+  if($prefix && $namespace){
+    $$self{doctype_namespaces}{$prefix}=$namespace; }}
+
+sub getDocTypeNamespace {
+  my($self,$prefix)=@_;
+  $$self{doctype_namespaces}{$prefix}; }
+
+sub getDocTypeNamespaces {
     my($self)=@_;
-    keys %{$$self{namespace_prefixes}}; }
+    %{$$self{doctype_namespaces}}; }
+
+sub normalizeDocTypeName {
+  my($self,$dtdname)=@_;
+  if($dtdname =~ /^#PCDATA|ANY$/){
+    $dtdname; }
+  elsif($dtdname =~ /^([^:]+):(.+)/){
+    my($dtd_prefix,$name) = ($1,$2);
+    if(my $ns = $$self{doctype_namespaces}{$dtd_prefix}){
+      if(my $code_prefix = $$self{namespace_prefixes}{$ns}){
+	$code_prefix.":".$name; }
+      else {
+	Error("No prefix has been registered for the DTD namespace \"$ns\"");
+	$name; }}
+    else {
+      Error("No namespace has been registered for the DTD prefix \"$dtd_prefix\"");
+      $name; }}
+  elsif(my $ns = $$self{doctype_namespaces}{'#default'}){
+    if(my $code_prefix = $$self{namespace_prefixes}{$ns}){
+      $code_prefix.":".$dtdname; }
+    else {
+      Error("No prefix has been registered for the DTD namespace \"$ns\"");
+      $dtdname; }}
+  else {
+    $dtdname; }}
 
 #**********************************************************************
 # Accessors
 #**********************************************************************
 
-sub getTagProperty {
-  my($self,$tag,$prop)=@_;
-  $$self{tagprop}{$tag}{$prop}; }
-
 sub setTagProperty {
   my($self,$tag,$property,$value)=@_;
   $$self{tagprop}{$tag}{$property}=$value; }
+
+sub getTagProperty {
+  my($self,$tag,$prop)=@_;
+  $$self{tagprop}{$tag}{$prop}; }
 
 #**********************************************************************
 # Document Structure Queries
 #**********************************************************************
 
-# Can the element $node contain a $childtag element?
+# Can an element with (qualified name) $tag contain a $childtag element?
 sub canContain {
   my($self,$tag,$childtag)=@_;
   $self->loadDocType unless $$self{doctype_loaded};
   # Handle obvious cases explicitly.
   return 0 if $tag eq '#PCDATA';
-  return 0 if $tag eq '_Comment_';
+  return 0 if $tag eq '#Comment';
   return 1 if $tag eq '_Capture_';
   return 1 if $tag eq '_WildCard_';
   return 1 if $childtag eq '_Capture_';
   return 1 if $childtag eq '_WildCard_';
-  return 1 if $childtag eq '_Comment_';
-  return 1 if $childtag eq '_ProcessingInstruction_';
+  return 1 if $childtag eq '#Comment';
+  return 1 if $childtag eq '#ProcessingInstruction';
 #  return 1 if $$self{permissive}; # No DTD? Punt!
-  return 1 if $$self{permissive} && ($tag eq '_Document_') && ($childtag ne '#PCDATA'); # No DTD? Punt!
+  return 1 if $$self{permissive} && ($tag eq '#Document') && ($childtag ne '#PCDATA'); # No DTD? Punt!
   # Else query tag properties.
   my $model = $$self{tagprop}{$tag}{model};
   $$model{ANY} || $$model{$childtag}; }
 
-# Can the element $node contain a $childtag element indirectly?
+# Can an element with (qualified name) $tag contain a $childtag element indirectly?
 # That is, by openning some number of autoOpen'able tags?
 # And if so, return the tag to open.
 sub canContainIndirect {
@@ -138,7 +191,7 @@ sub canAutoClose {
   my($self,$tag)=@_;
   $self->loadDocType unless $$self{doctype_loaded};
   return 1 if $tag eq '#PCDATA';
-  return 1 if $tag eq '_Comment_';
+  return 1 if $tag eq '#Comment';
   $$self{tagprop}{$tag}{autoClose}; }
 
 sub canHaveAttribute {
@@ -163,33 +216,33 @@ sub canHaveAttribute {
 sub loadDocType {
   my($self)=@_;
   $$self{doctype_loaded}=1;
-  NoteProgress("\n(Loading DocType ");
+  NoteBegin("Loading DocType");
   if(!$$self{system_id}){
     Warn("No DTD declared...assuming LaTeXML!");
     # article ??? or what ? undef gives problems!
     $self->setDocType(undef,"-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd',
-		      "http://dlmf.nist.gov/LaTeXML");
+		      '#default'=>"http://dlmf.nist.gov/LaTeXML");
     $$self{permissive}=1;	# Actually, they could have declared all sorts of Tags....
 #    return; 
   }
   # Parse the DTD
   foreach my $dir (@INC){	# Load catalog (all, 1st only ???)
     next unless -f "$dir/LaTeXML/dtd/catalog";
-    NoteProgress("\n(Loading XML Catalog $dir/LaTeXML/dtd/catalog");
+    NoteBegin("Loading XML Catalog $dir/LaTeXML/dtd/catalog");
     XML::LibXML->load_catalog("$dir/LaTeXML/dtd/catalog"); 
-    NoteProgress(")");
+    NoteEnd("Loading XML Catalog $dir/LaTeXML/dtd/catalog");
     last; }
-  NoteProgress("\n(Loading DTD for $$self{public_id} $$self{system_id}");
+  NoteBegin("Loading DTD for $$self{public_id} $$self{system_id}");
   my $dtd = XML::LibXML::Dtd->new($$self{public_id},$$self{system_id});
   if($dtd){
-    NoteProgress("via catalog "); }
+    NoteProgress(" via catalog "); }
   else { # Couldn't find dtd in catalog, try finding the file. (search path?)
     my @paths = (@{ $STATE->lookupValue('SEARCHPATHS') },
 		 map("$_/dtd", @INC));
     my $dtdfile = pathname_find($$self{system_id},paths=>[@paths]);
     if($dtdfile){
       { local $/=undef;
-	NoteProgress("from $dtdfile ");
+	NoteProgress(" from $dtdfile ");
 	if(open(DTD,$dtdfile)){
 	  my $dtdtext = <DTD>;
 	  close(DTD);
@@ -199,11 +252,11 @@ sub loadDocType {
 	  Error("Couldn't read DTD from $dtdfile"); }}}
     else {
       Error("Couldn't find DTD \"$$self{public_id}\" \"$$self{system_id}\" failed"); }}
-  NoteProgress(")");		# Done reading DTD
+  NoteEnd("Loading DTD for $$self{public_id} $$self{system_id}");		# Done reading DTD
   return unless $dtd;
 
   $$self{dtd}=$dtd;
-  NoteProgress("(Analyzing DTD");
+  NoteBegin("Analyzing DTD");
   # Extract all possible children for each tag.
   foreach my $node ($dtd->childNodes()){
     if($node->nodeType() == XML_ELEMENT_DECL()){
@@ -211,15 +264,20 @@ sub loadDocType {
       chomp($decl);
       if($decl =~ /^<!ELEMENT\s+([a-zA-Z0-9\-\_\:]+)\s+(.*)>$/){
 	my($tag,$model)=($1,$2);
+	$$self{tagprop}{$tag}{preferred_prefix} = $1 	if $tag =~ /^([^:]+):(.+)/;
+	$tag = $self->normalizeDocTypeName($tag);
 	$model=~ s/[\*\?\,\(\)\|]/ /g;
 	$model=~ s/\s+/ /g; $model=~ s/^\s+//; $model=~ s/\s+$//;
-	$$self{tagprop}{$tag}{model}={ map(($_ => 1), split(/ /,$model))};
+	my @model = map($self->normalizeDocTypeName($_),split(/ /,$model));
+	$$self{tagprop}{$tag}{model}={ map(($_ => 1), @model)};
       }
       else { warn("Warning: got \"$decl\" from DTD");}
     }
     elsif($node->nodeType() == XML_ATTRIBUTE_DECL()){
-      $$self{tagprop}{$1}{attributes}{$2}=1
-	if($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-0-+]+)\s+([a-zA-Z0-0-+]+)\s+(.*)>$/) }
+      if($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-0-+]+)\s+([a-zA-Z0-0-+]+)\s+(.*)>$/){
+	my($tag,$attr)=($1,$2);
+	$tag = $self->normalizeDocTypeName($tag);
+	$$self{tagprop}{$tag}{attributes}{$attr}=1; }}
     }
   # Determine any indirect paths to each descendent via an `autoOpen-able' tag.
   foreach my $tag (keys %{$$self{tagprop}}){
@@ -228,16 +286,19 @@ sub loadDocType {
     $$self{tagprop}{$tag}{indirect_model}={%::DESC}; }
   # PATCHUP
   if($$self{permissive}){
-    $$self{tagprop}{_Document_}{indirect_model}{'#PCDATA'}='p'; }
-  NoteProgress(")");		# Done analyzing
+    $$self{tagprop}{'#Document'}{indirect_model}{'#PCDATA'}='ltx:p'; }
+  NoteEnd("Analyzing DTD");		# Done analyzing
 
-  if(0){
+  if($LaTeXML::Model::DEBUG){
     print STDERR "Doctype\n";
     foreach my $tag (sort keys %{$$self{tagprop}}){
-      print STDERR "$tag can contain ".join(', ',sort keys %{$$self{tagprop}{$tag}{model}})."\n"; 
+      print STDERR "$tag can contain ".join(', ',sort keys %{$$self{tagprop}{$tag}{model}})."\n"
+	if keys %{$$self{tagprop}{$tag}{model}};
       print STDERR "$tag can indirectly contain ".
-	join(', ',sort keys %{$$self{tagprop}{$tag}{indirect_model}})."\n";  }}
-  NoteProgress(")");		# done Loading
+	join(', ',sort keys %{$$self{tagprop}{$tag}{indirect_model}})."\n"
+	  if keys %{$$self{tagprop}{$tag}{indirect_model}};
+    }}
+  NoteEnd("Loading DocType");		# done Loading
 }
 
 sub computeDescendents {
@@ -252,12 +313,39 @@ sub computeDescendents {
 
 
 #**********************************************************************
+sub addLigature {
+  my($self,$regexp,%options)=@_;
+  my $code =  "sub { \$_[0] =~ s${regexp}g; }";
+  my $fcn = eval $code;
+  Error("Failed to compile regexp pattern \"$regexp\" into \"$code\": $!") if $@;
+  unshift(@{$$self{ligatures}}, { regexp=>$regexp, code=>$fcn, %options}); }
+
+sub getLigatures {
+  my($self)=@_;
+  @{$$self{ligatures}}; }
+
+sub addMathLigature {
+  my($self,$matcher)=@_;
+  unshift(@{$$self{mathligatures}}, { matcher=>$matcher}); }
+
+sub getMathLigatures {
+  my($self)=@_;
+  @{$$self{mathligatures}}; }
+
+#**********************************************************************
 # Rewrite Rules
 
 sub addRewriteRule {
   my($self,$mode,@specs)=@_;
   push(@{$$self{rewrites}},LaTeXML::Rewrite->new($mode,@specs)); }
 
+# This adds the rule to the front.
+# We probably need a more powerful ordering scheme?
+sub prependRewriteRule {
+  my($self,$mode,@specs)=@_;
+  unshift(@{$$self{rewrites}},LaTeXML::Rewrite->new($mode,@specs)); }
+
+# Why is this in this class?
 sub applyRewrites {
   my($self,$document,$node, $until_rule)=@_;
   foreach my $rule (@{$$self{rewrites}}){
@@ -297,7 +385,7 @@ information about required order or number of instances.
 
 =over 4
 
-=item C<< $MODEL = LaTeXML::Model->new(%options); >>
+=item C<< $model = LaTeXML::Model->new(%options); >>
 
 Creates a new model.  The only useful option is
 C<< permissive=>1 >> which ignores any DTD and allows the
@@ -309,23 +397,27 @@ document to be built without following any particular content model.
 
 =over 4
 
-=item C<< $name = $MODEL->getRootName; >>
+=item C<< $name = $model->getRootName; >>
 
 Return the name of the expected root element.
 
-=item C<< $publicid = $MODEL->getPublicID; >>
+=item C<< $publicid = $model->getPublicID; >>
 
 Return the public identifier for the document type.
 
-=item C<< $systemid = $MODEL->getSystemID; >>
+=item C<< $systemid = $model->getSystemID; >>
 
 Return the system identifier for the document type
 (typically a filename for the DTD).
 
-=item C<< $MODEL->setDocType($rootname,$publicid,$systemid,$namespace); >>
+=item C<< $model->setDocType($rootname,$publicid,$systemid,%namespaces); >>
 
-Sets the root element name and the public and system identifiers
-for the desired document type, as well as the default namespace URI.
+Declares the expected rootelement, the public and system ID's of the document type
+to be used in the final document.  The hash C<%namespaces> specifies
+the namespace prefixes that are expected to be found in the DTD, along with
+the associated namespace URI.  These prefixes may be different from
+the prefixes used in implementation code (eg. in ltxml files; see RegisterNamespace).
+The generated document will use the namespaces and prefixes defined here.
 
 =back
 
@@ -333,21 +425,17 @@ for the desired document type, as well as the default namespace URI.
 
 =over 4
 
-=item C<< $namespace = $MODEL->getDefaultNamespace; >>
-
-Return the default namespace url.
-
-=item C<< $MODEL->registerNamespace($prefix,$namespace_url,$default); >>
+=item C<< $model->registerNamespace($prefix,$namespace_url); >>
 
 Register C<$prefix> to stand for the namespace C<$namespace_url>.
-If C<$default> is true, make this namespace the default one.
-This will be used as the namespace for any unprefixed tags.
+This prefix can then be used to create nodes in constructors and Document methods.
+It will also be recognized in XPath expressions.
 
-=item C<< $MODEL->getNamespacePrefix($namespace); >>
+=item C<< $model->getNamespacePrefix($namespace); >>
 
 Return the prefix to use for the given C<$namespace>.
 
-=item C<< $MODEL->getNamespace($prefix); >>
+=item C<< $model->getNamespace($prefix); >>
 
 Return the namespace url for the given C<$prefix>.
 
@@ -357,30 +445,32 @@ Return the namespace url for the given C<$prefix>.
 
 =over 2
 
-=item C<< $boole = $MODEL->canContain($tag,$childtag); >>
+=item C<< $boole = $model->canContain($tag,$childtag); >>
 
-Returns whether an element C<$tag> can contain an element C<$childtag>.
-The element names #PCDATA, _Comment_ and _ProcessingInstruction_
+Returns whether an element with qualified name C<$tag> can contain an element 
+with qualified name C<$childtag>.
+The tag names #PCDATA, #Document, #Comment and #ProcessingInstruction
 are specially recognized.
 
-=item C<< $auto = $MODEL->canContainIndirect($tag,$childtag); >>
+=item C<< $auto = $model->canContainIndirect($tag,$childtag); >>
 
-Checks whether an element C<$tag> could contain an element C<$childtag>,
-provided an `autoOpen'able element C<$auto> were inserted in C<$tag>.
+Checks whether an element with qualified name C<$tag> could contain an element
+with qualified name C<$childtag>, provided an `autoOpen'able element C<$auto> 
+were inserted in C<$tag>.
 
-=item C<< $boole = $MODEL->canContainSomehow($tag,$childtag); >>
+=item C<< $boole = $model->canContainSomehow($tag,$childtag); >>
 
-Returns whether an element C<$tag> could contain an element C<$childtag>,
-either directly or indirectly.
+Returns whether an element with qualified name C<$tag> could contain an element
+with qualified name C<$childtag>, either directly or indirectly.
 
-=item C<< $boole = $MODEL->canAutoClose($tag); >>
+=item C<< $boole = $model->canAutoClose($tag); >>
 
-Returns whether an element C<$tag> is allowed to be closed automatically,
+Returns whether an element with qualified name C<$tag> is allowed to be closed automatically,
 if needed.
 
-=item C<< $boole = $MODEL->canHaveAttribute($tag,$attribute); >>
+=item C<< $boole = $model->canHaveAttribute($tag,$attribute); >>
 
-Returns whether an element C<$tag> is allowed to have an attribute
+Returns whether an element with qualified name C<$tag> is allowed to have an attribute
 with the given name.
 
 =back
@@ -389,9 +479,9 @@ with the given name.
 
 =over 2
 
-=item C<< $value = $MODEL->getTagProperty($tag,$property); >>
+=item C<< $value = $model->getTagProperty($tag,$property); >>
 
-Gets the value of the $property associated with the element name C<$tag>.
+Gets the value of the $property associated with the qualified name C<$tag>
 Known properties are:
 
    autoOpen   : This asserts that the tag is allowed to be
@@ -411,9 +501,9 @@ Known properties are:
                 created node and the responsible digested object
                 as arguments.
 
-=item C<< $MODEL->setTagProperty($tag,$property,$value); >>
+=item C<< $model->setTagProperty($tag,$property,$value); >>
 
-sets the value of the C<$property> associated with the element name C<$tag> to C<$value>.
+sets the value of the C<$property> associated with the qualified name C<$tag> to C<$value>.
 
 =back
 
@@ -421,13 +511,13 @@ sets the value of the C<$property> associated with the element name C<$tag> to C
 
 =over 2
 
-=item C<< $MODEL->addRewriteRule($mode,@specs); >>
+=item C<< $model->addRewriteRule($mode,@specs); >>
 
 Install a new rewrite rule with the given C<@specs> to be used 
 in C<$mode> (being either C<math> or C<text>).
 See L<LaTeXML::Rewrite> for a description of the specifications.
 
-=item C<< $MODEL->applyRewrites($document,$node,$until_rule); >>
+=item C<< $model->applyRewrites($document,$node,$until_rule); >>
 
 Apply all matching rewrite rules to C<$node> in the given document.
 If C<$until_rule> is define, apply all those rules that were defined

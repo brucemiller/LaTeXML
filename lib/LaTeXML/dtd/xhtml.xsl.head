@@ -73,10 +73,6 @@
     </div>
   </xsl:template>
 
-  <xsl:template match="ltx:punct">
-    <xsl:apply-templates/><xsl:text> </xsl:text>
-  </xsl:template>
-
   <xsl:template name="add_id">
     <xsl:choose>
       <xsl:when test="@label">

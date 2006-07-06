@@ -20,13 +20,13 @@ use LaTeXML::Package;
 # They create a new data KeyVals object
 
 sub ReadRequiredKeyVals {
-  my($keyset)=@_;
-  Fatal("Missing argument") unless IfNext(T_BEGIN);
-  (readKeyVals($keyset,T_END)); }
+  my($gullet,$keyset)=@_;
+  Fatal("Missing argument") unless $gullet->ifNext(T_BEGIN);
+  (readKeyVals($gullet,$keyset,T_END)); }
 
 sub ReadOptionalKeyVals {
-  my($keyset)=@_;
-  (IfNext(T_OTHER('[')) ? (readKeyVals($keyset,T_OTHER(']'))) : undef); }
+  my($gullet,$keyset)=@_;
+  ($gullet->ifNext(T_OTHER('[')) ? (readKeyVals($gullet,$keyset,T_OTHER(']'))) : undef); }
 
 #======================================================================
 # This new declaration allows you to define the type associated with
@@ -62,15 +62,15 @@ our $T_EQ = T_OTHER('=');
 our $T_COMMA = T_OTHER(',');
 
 sub readKeyVals {
-  my($keyset,$close)=@_;
-  my $startloc = $GULLET->getLocator();
-  my $open = ReadToken;
+  my($gullet,$keyset,$close)=@_;
+  my $startloc = $gullet->getLocator();
+  my $open = $gullet->readToken;
   $keyset = ($keyset ? $keyset->toString : '_anonymous_');
   my @kv=();
   while(1) {
-    SkipSpaces; 
+    $gullet->skipSpaces; 
     # Read the keyword.
-    my($ktoks,$delim)=ReadUntil($T_EQ,$T_COMMA,$close);
+    my($ktoks,$delim)=$gullet->readUntil($T_EQ,$T_COMMA,$close);
     Error("Fell off end expecting ".Stringify($close)." while reading KeyVals starting at $startloc")
       unless $delim;
     my $key= $ktoks->toString; $key=~s/\s//g;
@@ -79,11 +79,13 @@ sub readKeyVals {
       my $value;
       if($delim->equals($T_EQ)){	# Got =, so read the value
 	my $type = ($keydef && (scalar(@$keydef)==1) && $keydef->[0]->{type}) || 'Plain';
-	my $verb = $type eq 'Semiverbatim';
+#	my $verb = $type eq 'Semiverbatim';
+	# WHOA!!! Secret knowledge!!!
+	my $verb = $LaTeXML::Parameters::PARAMETER_TABLE{$type}{semiverbatim};
 	StartSemiverbatim if $verb;
-	($value,$delim)=ReadUntil($T_COMMA,$close);
+	($value,$delim)=$gullet->readUntil($T_COMMA,$close);
 	EndSemiverbatim if $verb;
-	($value) = $keydef->reparseArgument($value) 
+	($value) = $keydef->reparseArgument($gullet,$value) 
 	  if $type !~ /^(Plain|Semiverbatim)$/;
       }
       else {			# Else, get default value.
@@ -144,13 +146,13 @@ sub getKeyVals {
   $$self{hash}; }
 
 sub beDigested { 
-  my($self)=@_;
+  my($self,$stomach)=@_;
   my $keyset = $$self{keyset};
   my @kv=@{$$self{keyvals}};
   my @dkv=();
   while(@kv){
     my($key,$value)=(shift(@kv),shift(@kv));
-    push(@dkv,$key, (ref $value ? $value->beDigested : $value)); }
+    push(@dkv,$key, (ref $value ? $value->beDigested($stomach) : $value)); }
   (ref $self)->new($$self{keyset},$$self{open},$$self{close},@dkv); }
 
 sub revert {

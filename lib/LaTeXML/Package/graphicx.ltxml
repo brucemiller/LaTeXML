@@ -44,7 +44,7 @@ DefKeyVal('Gin','vrml','Semiverbatim');
 DefKeyVal('Gin','magnifiable','','true');
 
 DefConstructor('\includegraphics OptionalMatch:* OptionalKeyVals:Gin Semiverbatim',
-	       "<graphics graphic='#3' options='#2?#1(,clip=true)'/>");
+	       "<ltx:graphics graphic='#3' options='#2?#1(,clip=true)'/>");
 
 # Also unimplemented... probably nothing useful to pass thru anyway?
 DefConstructor('\DeclareGraphicsExtensions{}','');

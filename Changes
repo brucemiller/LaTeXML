@@ -1,3 +1,65 @@
+0.5.0  2006-04-22
+     - Release 0.4.0
+
+0.4.x  2006-04-18
+     - Defined \LXDeclMath for "Math Declarations" in latexml package.
+       These declarations can be embedded in the TeX Source.
+       Basically these define patterns to match to scoped portions
+       of the generated document tree (using Rewrite rules),
+       and add declarative attributes to support the math parsing.
+
+0.4.x  2006-03-01
+     - Modularized the DTD, along with lots of cleanup.
+
+0.4.x  2006-02-09
+     - Cleaned up Makefile.pm: made ImageMagick optional
+       (tho' without any clear failure mode when used, yet);
+       Safer XSL style file generation.
+       Should be close to able to install on windows.
+     - Wrote some Test::Builder support code, reorganized
+       the test suite, and started adding new tests.
+
+0.4.x  2006-01-27
+     - Essentially backtracking on changes for 0.2.0,
+       I'm concerned about the number of globals and exports,
+       and formalizing extensible readers for control sequences.
+       Thus, yet another incompatible change in the parameters
+       to code blocks defining macros, primitives and constructors.
+       
+       macro($gullet,@args)
+       primitive($stomach,@args)
+         beforeDigest($stomach)
+         afterDigest($stomach)
+       constructor($document,@args, %properties)
+         beforeDigest($stomach)
+	 properties($stomach,@args)
+         afterDigest($stomach,$whatsit)
+	 beforeConstruct($document,$whatsit)
+	 afterConstruct($document,$whatsit,$node)
+       For Tag code blocks:
+         afterOpen($document,$node,$box);
+         afterClose($document,$node,$box);
+         
+0.4.x  2006-01-22
+     - Yet another rewrite of tabular processing.
+       Now allows @-expressions.
+
+     - New Tag option: whitspaceTrim; this trims
+       leading & trailing whitespace from the direct
+       text content of these tags.
+
+     - Significant namespace cleanup. 
+       There are 2 prefix/namespace mappings.
+       (1) the one used in code (eg.ltxml) for constructors,etc.
+       (2) the one used to interpret the DocType (dtd).
+       Constructors should always specify a namespace prefix for names,
+       unless they are in the null namespace (NOT default namespace).
+       In fact, there is no longer a notion of default namespace, as such,
+       and RegisterNamespace no longer takes that 3rd argument.
+       DocType takes as extra args prefix=>namespaceURI mappings
+       to be used in interpretting the DTD, and the resulting document
+       will be constructed using those same prefixes.
+
 0.4.1  2006-01-09
      - Relase 0.4.1
 

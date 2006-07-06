@@ -59,6 +59,16 @@
   \@ifnextchar[{\lx@@skipopt}{}}
 \def\lx@@skipopt[#1]{}
 
+% \LXDeclMath[declarations]{match}
+\newcommand{\LXDeclMath}[2][]{}%
+% \LXDeclRef{label}
+\newcommand{\LXDeclRef}[1]{}%
+% \LXMathDef{\cs}[nargs][optargs]{presentation}[declarations]
+\def\LXDefMath#1{\@ifnextchar[{\LXDefMath@}{\LXDefMath@[]}}%
+\def\LXDefMath@[#1]{\@ifnextchar[{\LXDefMath@@}{\LXDefMath@@[]}}%
+\def\LXDefMath@@[#1]#2{\@ifnextchar[{\LXDefMath@@@}{}}%
+\def\LXDefMath@@@[#1]{}%
+
 % NOTE: It would be good to incorporate Scoping into this macro.
 % As defined, it obeys TeX's usual grouping scope.
 % However, scoping by `module' (M.Kohlhase's approach) and/or

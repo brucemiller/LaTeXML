@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
  /=====================================================================\ 
  |  LaTeXML.dtd                                                        |
@@ -13,693 +12,312 @@
  \=========================================================ooo==U==ooo=/
 -->
 
+<!-- Modular DTD for LaTeXML.
+     General strategy for use and customization:
+     For Simpler extensions:
+     (1) predefine any parameter entities you want to modify,
+         particularly the LaTeXML-XXX.module and LaTeXML-extra.XXX.
+     (2) include this dtd (via file entity)
+     (3) define any additional elements
+
+     For more complicated, hybrid extensions:
+     (1) Import the qname submodules for the modules you want.
+         Predefine any namespace prefixes for each beforehand.
+     (2) Compose the model entities for Inline, Block.and Para.
+         Inline represents elements that can appear in inline text mode,
+	   typically used with mixed content along with plain text.
+	 InnerPara.are block elements that appear as direct children
+	   of logical paragraphs (para)
+	 OuterPara.are major block elements that appear as the content
+	   of sectional units, typically para, and floating elements like
+	   table and figure.
+     (3) Import the model submodules for the modules you want.
+         Each submodule may also have its own specific entities that may
+	 be customized by defining before loading the submodule.
+-->
+
 <!-- ======================================================================
-     Parameterized Model
-     Defining Simple, Inline, Block and Flow (combined Inline & Block)
-     The "extra" entities allow extension by DTD's that include this one.
+     Load QName Declarations and parts of various classes
      ====================================================================== -->
 
-<!-- Simple elements: roughly equivalent to stylized text,
-     in particular, omitting math -->
-<!ENTITY % Simple.class
-         "text | emph | underline | cite | ref | acronym | vbox | rule">
-
-<!ENTITY % Simple.extra ""><!--  For extension DTD's  -->
-<!ENTITY % Simple.mix
-	 "%Simple.class; %Simple.extra;">
-
-<!-- Misc elements: acceptible in both Inline and Block contexts. -->
-<!ENTITY % Misc.class
-         "graphics | minipage | note | index | picture | verbatim | ERROR">
-<!ENTITY % Misc.extra   "">
-
-<!-- Inline level elements. -->
-<!ENTITY % Inline.class
-         "a | Math">
-<!ENTITY % Inline.extra "">
-<!ENTITY % Inline.mix
-	 "%Simple.class; %Simple.extra; 
-	  | %Inline.class; %Inline.extra;
-	  | %Misc.class; %Misc.extra;">
-
-<!-- Para content; block items that appear within logical paragraphs -->
-<!ENTITY % Para.class
-	 "p | equation | equationgroup 
-	  | tabular | centering
-	  | itemize | enumerate | description | acronyms
-	  | quote">
-<!ENTITY % Para.extra "">
-<!ENTITY % Para.mix
-	 "%Para.class; %Para.extra;
-	  | %Misc.class; %Misc.extra;">
-
-<!-- Block level elements --> 
-<!ENTITY % Block.class
-         "para | figure | table">
-<!ENTITY % Block.extra  "">
-
-<!ENTITY % Block.mix 
-	 "%Block.class; %Block.extra;
-	  | %Misc.class; %Misc.extra;">
-
-
-<!-- Flow elements include all Inline and Block --> 
-<!-- I'm inclined to think that we shouldn't be using this at all.... -->
-<!ENTITY % Flow.mix
-	 "%Simple.class; %Simple.extra;
-	  | %Inline.class; %Inline.extra;
-          |  %Block.class; %Block.extra;
-	  | %Misc.class; %Misc.extra;">
-
-<!-- Contents of table cells -->
-<!ENTITY % Cell.mix
-	 "%Simple.class; %Simple.extra;
-	  | %Inline.class; %Inline.extra;
-          | %Para.class; %Para.extra;
-	  | %Misc.class; %Misc.extra;">
-
-<!-- Parameterized attributes -->
-<!ENTITY % Common.attr.base
-	 "xmlns CDATA #IMPLIED">
-<!ENTITY % Common.attr.extra "">
-<!ENTITY % Common.attr
-	 "%Common.attr.base; %Common.attr.extra;">
-
-<!ENTITY % Labelled.attr.base "
-         label ID #IMPLIED
-         refnum CDATA #IMPLIED">
-<!ENTITY % Labelled.attr.extra "">
-<!ENTITY % Labelled.attr "
-         %Labelled.attr.base; %Labelled.attr.extra;">
-
-<!ENTITY % Section.attr.base "">
-<!ENTITY % Section.attr.extra "">
-
-<!ENTITY % Section.attr "
-         %Section.attr.base; %Section.attr.extra;">
-
-<!ENTITY % Bibentry.class
-	 "bib-author | bib-editor | bib-translator 
-	  | bib-title | bib-subtitle | bib-booktitle | bib-key
-	  | bib-journal | bib-series | bib-conference | bib-publisher
-	  | bib-organization | bib-institution | bib-address
-	  | bib-volume | bib-number | bib-pages | bib-part | bib-date | bib-edition 
-	  | bib-status | bib-type 
-	  | bib-issn | bib-doi | bib-isbn | bib-review | bib-mrnumber 
-	  | bib-language | bib-url | bib-eprint | bib-preprint | bib-note">
-
-<!ENTITY % Bibentry.extra "">
-<!ENTITY % Bibentry.mix
-	 "%Bibentry.class; %Bibentry.extra;">
 <!-- ======================================================================
-     Document Structure
+     These core declarations, along with the text & block modules are essentially
+     the `core' for any normal  use of LaTeXML, or with simple extensions. -->
+
+<!ENTITY % LaTeXML-core.mod   SYSTEM "LaTeXML-core-1.mod">
+%LaTeXML-core.mod;
+
+<!ENTITY % LaTeXML-text-qname.mod   SYSTEM "LaTeXML-text-qname-1.mod">
+%LaTeXML-text-qname.mod;
+
+<!ENTITY % LaTeXML-block-qname.mod   SYSTEM "LaTeXML-block-qname-1.mod">
+%LaTeXML-block-qname.mod;
+
+<!-- ==================== Math module ====================-->
+<!ENTITY % LaTeXML-math.module  "INCLUDE" >
+<![%LaTeXML-math.module;[
+  <!ENTITY % LaTeXML-math-qname.mod   SYSTEM "LaTeXML-math-qname-1.mod">
+  %LaTeXML-math-qname.mod;
+]]>
+<!ENTITY % LaTeXML-math.Inline.class "">
+<!ENTITY % LaTeXML-math.XMath.attrib "">
+<!ENTITY % LaTeXML-math.Math.class   "">
+<!ENTITY % LaTeXML-math.XMath.class  "">
+
+<!-- ==================== Xref module ====================-->
+<!ENTITY % LaTeXML-xref.module  "INCLUDE" >
+<![%LaTeXML-xref.module;[
+  <!ENTITY % LaTeXML-xref-qname.mod   SYSTEM "LaTeXML-xref-qname-1.mod">
+  %LaTeXML-xref-qname.mod;
+]]>
+<!ENTITY % LaTeXML-xref.Inline.class "">
+
+<!-- ==================== Index module ====================-->
+<!ENTITY % LaTeXML-index.module  "INCLUDE" >
+<![%LaTeXML-index.module;[
+  <!ENTITY % LaTeXML-index-qname.mod   SYSTEM "LaTeXML-index-qname-1.mod">
+  %LaTeXML-index-qname.mod;
+]]>
+<!ENTITY % LaTeXML-index.Meta.class "">
+
+<!-- ==================== Tabular module ====================-->
+<!ENTITY % LaTeXML-tabular.module  "INCLUDE" >
+<![%LaTeXML-tabular.module;[
+  <!ENTITY % LaTeXML-tabular-qname.mod   SYSTEM "LaTeXML-tabular-qname-1.mod">
+  %LaTeXML-tabular-qname.mod;
+]]>
+<!ENTITY % LaTeXML-tabular.Misc.class "">
+
+<!-- ==================== Graphics module ====================-->
+<!ENTITY % LaTeXML-graphics.module  "INCLUDE" >
+<![%LaTeXML-graphics.module;[
+  <!ENTITY % LaTeXML-graphics-qname.mod   SYSTEM "LaTeXML-graphics-qname-1.mod">
+  %LaTeXML-graphics-qname.mod;
+]]>
+<!ENTITY % LaTeXML-graphics.Misc.class "">
+
+<!-- ==================== Picture module ====================-->
+<!ENTITY % LaTeXML-picture.module  "INCLUDE" >
+<![%LaTeXML-picture.module;[
+  <!ENTITY % LaTeXML-picture-qname.mod   SYSTEM "LaTeXML-picture-qname-1.mod">
+  %LaTeXML-picture-qname.mod;
+]]>
+<!ENTITY % LaTeXML-picture.Misc.class          "">
+<!ENTITY % LaTeXML-picture.Picture.class       "">
+<!ENTITY % LaTeXML-picture.Picture.attrib      "">
+<!ENTITY % LaTeXML-picture.PictureGroup.attrib "">
+
+<!-- ==================== Float module ====================-->
+<!ENTITY % LaTeXML-float.module  "INCLUDE" >
+<![%LaTeXML-float.module;[
+  <!ENTITY % LaTeXML-float-qname.mod   SYSTEM "LaTeXML-float-qname-1.mod">
+  %LaTeXML-float-qname.mod;
+]]>
+<!ENTITY % LaTeXML-float.Para.class "">
+<!ENTITY % LaTeXML-float.Caption.class "">
+
+<!-- ==================== Acro module ====================-->
+<!ENTITY % LaTeXML-acro.module  "INCLUDE" >
+<![%LaTeXML-acro.module;[
+  <!ENTITY % LaTeXML-acro-qname.mod   SYSTEM "LaTeXML-acro-qname-1.mod">
+  %LaTeXML-acro-qname.mod;
+]]>
+<!ENTITY % LaTeXML-acro.Inline.class "">
+<!ENTITY % LaTeXML-acro.Block.class "">
+
+<!-- ==================== List module ====================-->
+<!ENTITY % LaTeXML-list.module  "INCLUDE" >
+<![%LaTeXML-list.module;[
+  <!ENTITY % LaTeXML-list-qname.mod   SYSTEM "LaTeXML-list-qname-1.mod">
+  %LaTeXML-list-qname.mod;
+]]>
+<!ENTITY % LaTeXML-list.Block.class "">
+
+<!-- ==================== Bib module ====================-->
+<!ENTITY % LaTeXML-bib.module  "INCLUDE" >
+<![%LaTeXML-bib.module;[
+  <!ENTITY % LaTeXML-bib-qname.mod   SYSTEM "LaTeXML-bib-qname-1.mod">
+  %LaTeXML-bib-qname.mod;
+]]>
+<!ENTITY % LaTeXML-bib.Bibentry.class "">
+<!ENTITY % LaTeXML-bib.Bibname.model  "">
+
+<!-- ==================== Structure module ====================-->
+<!ENTITY % LaTeXML-structure.module  "INCLUDE" >
+<![%LaTeXML-structure.module;[
+  <!ENTITY % LaTeXML-structure-qname.mod   SYSTEM "LaTeXML-structure-qname-1.mod">
+  %LaTeXML-structure-qname.mod;
+]]>
+<!ENTITY % LaTeXML-structure.SectionalFrontMatter.class "">
+<!ENTITY % LaTeXML-structure.FrontMatter.class    "">
+<!ENTITY % LaTeXML-structure.BackMatter.class     "">
+
+<!-- ======================================================================
+     Assemble the classes
      ====================================================================== -->
+<!-- Defaults for simple extensions to classes -->
+<!ENTITY % LaTeXML-extra.Inline.class "">
+<!ENTITY % LaTeXML-extra.Block.class "">
+<!ENTITY % LaTeXML-extra.Misc.class "">
+<!ENTITY % LaTeXML-extra.Para.class "">
+<!ENTITY % LaTeXML-extra.Meta.class "">
+<!ENTITY % LaTeXML-extra.Math.class "">
+<!ENTITY % LaTeXML-extra.XMath.class "">
+<!ENTITY % LaTeXML-extra.XMath.attrib "">
+<!ENTITY % LaTeXML-extra.Bibentry.class "">
+<!ENTITY % LaTeXML-extra.Caption.class "">
+<!ENTITY % LaTeXML-extra.Picture.class "">
+<!ENTITY % LaTeXML-extra.Picture.attrib "">
+<!ENTITY % LaTeXML-extra.PictureGroup.attrib "">
+<!ENTITY % LaTeXML-extra.SectionalFrontMatter.class "">
+<!ENTITY % LaTeXML-extra.FrontMatter.class    "">
+<!ENTITY % LaTeXML-extra.BackMatter.class     "">
 
-<!ENTITY % Frontmatter.class "title | toctitle | author | creationdate | thanks | abstract">
-<!ENTITY % Frontmatter.extra "">
-<!ENTITY % Frontmatter.mix "%Frontmatter.class; %Frontmatter.extra;">
+<!-- Combine classes from all modules -->
+<!ENTITY % LaTeXML.Inline.class
+	 "%LaTeXML-text.Inline.class;
+	  %LaTeXML-math.Inline.class;
+	  %LaTeXML-xref.Inline.class;
+	  %LaTeXML-acro.Inline.class;
+	  %LaTeXML-extra.Inline.class;
+	  ">
+<!ENTITY % LaTeXML.Block.class
+	 "%LaTeXML-block.Block.class;
+	  %LaTeXML-acro.Block.class;
+	  %LaTeXML-list.Block.class;
+	  %LaTeXML-extra.Block.class;
+	  ">
+<!ENTITY % LaTeXML.Misc.class
+	 "%LaTeXML-block.Misc.class;
+	  %LaTeXML-tabular.Misc.class;
+	  %LaTeXML-graphics.Misc.class;
+	  %LaTeXML-picture.Misc.class;
+	  %LaTeXML-extra.Misc.class;
+	  ">
+<!ENTITY % LaTeXML.Para.class
+	 "%LaTeXML-block.Para.class;
+	  %LaTeXML-float.Para.class;
+	  %LaTeXML-extra.Para.class;
+	  ">
+<!ENTITY % LaTeXML.Meta.class
+	 "%LaTeXML-text.Meta.class;
+	  %LaTeXML-index.Meta.class;
+	  %LaTeXML-extra.Meta.class;
+	  ">
 
-<!ENTITY % Sectitle.class "title | toctitle | author">
-<!ENTITY % Sectitle.extra "">
-<!ENTITY % Sectitle.mix "%Sectitle.class; %Sectitle.extra;">
+<!-- Form core mixed models -->
+<!ENTITY % LaTeXML.Inline.mix
+	 "%LaTeXML.Inline.class; %LaTeXML.Misc.class; %LaTeXML.Meta.class;">
+<!ENTITY % LaTeXML.Block.mix
+	 "%LaTeXML.Block.class; %LaTeXML.Misc.class; %LaTeXML.Meta.class;">
+<!ENTITY % LaTeXML.Flow.mix
+	 "%LaTeXML.Inline.class; | %LaTeXML.Block.class; %LaTeXML.Misc.class; %LaTeXML.Meta.class;">
+<!ENTITY % LaTeXML.Para.mix 
+	 "%LaTeXML.Para.class; %LaTeXML.Meta.class;">
 
-<!-- If you want to rearrange the overall document structure define
-     define.structure to be IGNORE, then include a modified version of
-     the following. -->
-<!ENTITY % define.structure  "INCLUDE" >
-<![%define.structure;[
+<!ENTITY % LaTeXML.Inline.model "(#PCDATA | %LaTeXML.Inline.mix;)*">
+<!ENTITY % LaTeXML.Flow.model   "(#PCDATA | %LaTeXML.Flow.mix;)*">
 
-<!ELEMENT document      ((%Frontmatter.mix;)*, section*, bibliography?, appendix*)>
-<!ELEMENT section       ((%Sectitle.mix;)*, (%Block.mix; | subsection | paragraph)*)>
-<!ELEMENT appendix      ((%Sectitle.mix;)*, (%Block.mix; | subsection | paragraph)*)>
-<!ELEMENT subsection    ((%Sectitle.mix;)*, (%Block.mix; | subsubsection | paragraph)*)>
-<!ELEMENT subsubsection ((%Sectitle.mix;)*, (%Block.mix; | paragraph)*)>
-<!ELEMENT paragraph     ((%Sectitle.mix;)*, (%Block.mix;)*)>
+<!ENTITY % LaTeXML.Math.class
+	 "%LaTeXML-math.Math.class;
+	  %LaTeXML-extra.Math.class;">
+<!ENTITY % LaTeXML.XMath.class
+	 "%LaTeXML-math.XMath.class;
+	  %LaTeXML-extra.XMath.class;">
+<!ENTITY % LaTeXML.XMath.attrib
+	 "%LaTeXML-math.XMath.attrib;
+	  %LaTeXML-extra.XMath.attrib;">
 
-<!ATTLIST document      %Common.attr; %Labelled.attr; %Section.attr;>
-<!ATTLIST section       %Common.attr; %Labelled.attr; %Section.attr;>
-<!ATTLIST appendix      %Common.attr; %Labelled.attr; %Section.attr;>
-<!ATTLIST subsection    %Common.attr; %Labelled.attr; %Section.attr;>
-<!ATTLIST subsubsection %Common.attr; %Labelled.attr; %Section.attr;>
-<!ATTLIST paragraph     %Common.attr; %Labelled.attr; %Section.attr;>
+<!ENTITY % LaTeXML.Caption.class
+	 "%LaTeXML-float.Caption.class;
+	  %LaTeXML-extra.Caption.class;">
+<!ENTITY % LaTeXML.Bibentry.class
+	 "%LaTeXML-bib.Bibentry.class;
+	  %LaTeXML-extra.Bibentry.class;">
+<!ENTITY % LaTeXML.Bibname.model 
+	 "%LaTeXML-bib.Bibname.model;">
+
+<!ENTITY % LaTeXML.Picture.class
+	 "%LaTeXML-picture.Picture.class;
+	  %LaTeXML-extra.Picture.class;
+	  | %LaTeXML.Inline.mix;">
+<!ENTITY % LaTeXML.Picture.attrib
+	 "%LaTeXML-picture.Picture.attrib;
+	  %LaTeXML-extra.Picture.attrib;">
+<!ENTITY % LaTeXML.PictureGroup.attrib
+	 "%LaTeXML-picture.PictureGroup.attrib;
+	  %LaTeXML-extra.PictureGroup.attrib;">
+
+<!ENTITY % LaTeXML.SectionalFrontMatter.class
+	 "%LaTeXML-structure.SectionalFrontMatter.class;
+	  %LaTeXML-extra.SectionalFrontMatter.class;">
+<!ENTITY % LaTeXML.FrontMatter.class
+	 "%LaTeXML-structure.SectionalFrontMatter.class;
+	  %LaTeXML-extra.SectionalFrontMatter.class;
+	  %LaTeXML-structure.FrontMatter.class;
+	  %LaTeXML-extra.FrontMatter.class;">
+<!ENTITY % LaTeXML.BackMatter.class
+	 "%LaTeXML-structure.BackMatter.class;
+	  %LaTeXML-extra.BackMatter.class;">
+
+<!-- Include all included modules' models -->
+<!ENTITY % LaTeXML-text-model.mod   SYSTEM "LaTeXML-text-model-1.mod">
+%LaTeXML-text-model.mod;
+<!ENTITY % LaTeXML-block-model.mod   SYSTEM "LaTeXML-block-model-1.mod">
+%LaTeXML-block-model.mod;
+
+<![%LaTeXML-math.module;[
+  <!ENTITY % LaTeXML-math-model.mod   SYSTEM "LaTeXML-math-model-1.mod">
+  %LaTeXML-math-model.mod;
 ]]>
 
-<!ELEMENT title  (#PCDATA | %Inline.mix;)* >
-<!ATTLIST title  %Common.attr;>
-
-<!ELEMENT toctitle (#PCDATA | %Inline.mix;)* >
-<!ATTLIST toctitle  %Common.attr;>
-
-<!ELEMENT author (#PCDATA | %Inline.mix;)* >
-<!ATTLIST author %Common.attr;>
-
-<!ELEMENT creationdate (#PCDATA | %Inline.mix;)* >
-<!ATTLIST creationdate %Common.attr;>
-
-<!ELEMENT thanks (#PCDATA | %Inline.mix;)* >
-<!ATTLIST thanks %Common.attr;>
-
-<!ELEMENT abstract      (%Block.mix;)*>
-<!ATTLIST abstract      %Common.attr;>
-
-<!-- ======================================================================
-     Block Elements
-     ====================================================================== -->
-
-<!ELEMENT p (#PCDATA | %Inline.mix;)*>
-<!ATTLIST p %Common.attr;>
-
-<!ELEMENT para (%Para.mix;)*>
-<!ATTLIST para %Common.attr; %Labelled.attr;>
-
-<!-- Equations & related; the Math element contains the math itself. -->
-<!ENTITY % Equation.extra "">
-<!ELEMENT equation (Math | tabular | punct | index | note %Equation.extra;)*>
-<!ATTLIST equation  %Common.attr; %Labelled.attr;>
-
-<!ELEMENT equationgroup (%Para.mix;)*>
-<!ATTLIST equationgroup %Common.attr; %Labelled.attr;>
-
-<!ENTITY % Figure.extra "">
-<!ENTITY % Table.extra "">
-
-<!ELEMENT figure (%Para.mix; | caption | toccaption %Figure.extra;)*>
-<!ATTLIST figure
-	  %Common.attr; 
-          %Labelled.attr;
-          placement CDATA #IMPLIED>
-
-<!ELEMENT table  (%Para.mix; | caption | toccaption %Table.extra;)*>
-<!ATTLIST table
-	  %Common.attr; 
-	  %Labelled.attr;
-          placement CDATA #IMPLIED>
-
-<!ELEMENT caption (#PCDATA | %Inline.mix;)*>
-<!ATTLIST caption %Common.attr;>
-
-<!ELEMENT toccaption (#PCDATA | %Inline.mix;)*>
-<!ATTLIST toccaption %Common.attr;>
-
-<!-- tabular is basically cribbed from HTML4's table -->
-<!ELEMENT tabular ((col*|colgroup*), thead?, tfoot?, (tbody | tr | hline)*)>
-<!ATTLIST tabular
-	  %Common.attr; 
-          pattern CDATA #IMPLIED
-          frame   CDATA #IMPLIED
-          rules   CDATA #IMPLIED>
-
-<!ELEMENT colgroup (col)*>
-<!ATTLIST colgroup
-	  %Common.attr; 
-          span  CDATA #IMPLIED
-          align CDATA #IMPLIED>
-
-<!ATTLIST col
-	  %Common.attr; 
-          span  CDATA #IMPLIED
-          align CDATA #IMPLIED>
-
-<!ELEMENT thead (tr)*>
-<!ATTLIST thead %Common.attr;>
-
-<!ELEMENT tfoot (tr)*>
-<!ATTLIST tfoot %Common.attr;>
-
-<!ELEMENT tbody (tr)*>
-<!ATTLIST tbody %Common.attr;>
-
-<!ELEMENT tr (td | th)*>
-<!ATTLIST tr
-	  %Common.attr;
-	  >
-
-<!-- A little concerned about broadening the content model here... -->
-<!-- <!ELEMENT th (#PCDATA | %Inline.mix;)*>-->
-<!ELEMENT th (#PCDATA | %Cell.mix;)*>
-<!ATTLIST th
-	  %Common.attr; 
-          rowpan CDATA #IMPLIED
-          colspan CDATA #IMPLIED
-          align CDATA #IMPLIED
-          pattern CDATA #IMPLIED
-	  border CDATA #IMPLIED>
-
-<!-- A little concerned about broadening the content model here... -->
-<!-- <!ELEMENT td (#PCDATA | %Inline.mix;)*>-->
-<!ELEMENT td (#PCDATA | %Cell.mix;)*>
-<!ATTLIST td
-	  %Common.attr; 
-          colspan CDATA #IMPLIED
-          align CDATA #IMPLIED
-          pattern CDATA #IMPLIED
-	  border CDATA #IMPLIED>
-<!ELEMENT hline EMPTY>
-<!ATTLIST hline %Common.attr;
-          colspan CDATA #IMPLIED>
-
-<!ELEMENT verbatim (#PCDATA | %Flow.mix;)*>
-<!ATTLIST verbatim
-	  %Common.attr; 
-	  font CDATA #IMPLIED>
-
-<!-- with some trepidation, allow captions here too -->
-<!-- Hmm, probably should be Para.mix for centering..
-    <!ELEMENT centering (caption | toccaption | %Flow.mix;)*> -->
-<!ELEMENT centering (caption | toccaption | %Para.mix;)*>
-<!ATTLIST centering %Common.attr;>
-
-<!ELEMENT itemize (item)*>
-<!ATTLIST itemize %Common.attr;>
-
-<!ELEMENT enumerate (item)*>
-<!ATTLIST enumerate %Common.attr;>
-
-<!ELEMENT description (item)*>
-<!ATTLIST description %Common.attr;>
-
-<!ELEMENT acronyms (item)*>
-<!ATTLIST acronyms %Common.attr;>
-
-<!ELEMENT item (%Para.mix; | tag)*>
-<!ATTLIST item %Common.attr;>
-
-<!ELEMENT tag (#PCDATA | %Inline.mix;)*>
-<!ATTLIST tag %Common.attr;>
-
-<!ELEMENT graphics EMPTY>
-<!ATTLIST graphics
-	  %Common.attr; 
-          graphic CDATA #REQUIRED
-          options CDATA #IMPLIED
-          src     CDATA #IMPLIED
-          width   CDATA #IMPLIED
-          height  CDATA #IMPLIED>
-<!-- last 3 not used directly in latexml -->
-
-<!-- ======================================================================
-     Inline Elements
-     ====================================================================== -->
-
-<!ELEMENT a  (#PCDATA | %Inline.mix;)*>
-<!ATTLIST a
-	  %Common.attr; 
-          href CDATA #REQUIRED>
-
-<!-- ======================================================================
-     Math
-     ====================================================================== -->
-
-<!ENTITY % Math.formats.extra "">
-<!ENTITY % Math.formats "XMath %Math.formats.extra;">
-
-<!-- tabular? ... Ugh... -->
-<!ELEMENT Math (%Math.formats; | tabular)*>
-<!ATTLIST Math
-	  %Common.attr;
-          mode (display|inline) #IMPLIED
-          tex    CDATA #IMPLIED
-          content-tex    CDATA #IMPLIED
-          text   CDATA #IMPLIED
-          mathimage CDATA #IMPLIED
-          width  CDATA #IMPLIED
-          height CDATA #IMPLIED>
-
-<!--<!ENTITY % XMath.model "XMApp | XMTok | XMRef | XMHint | XMArg | XMWrap | XMDual | %Simple.class;">-->
-<!ENTITY % XMath.model "XMApp | XMTok | XMRef | XMHint | XMArg | XMWrap | XMDual | text">
-<!ENTITY % XMath.attr "
-         role    CDATA #IMPLIED
-	 open    CDATA #IMPLIED
-	 close   CDATA #IMPLIED
-	 argopen CDATA #IMPLIED
-	 argclose CDATA #IMPLIED
-	 separators CDATA #IMPLIED
-         id      ID    #IMPLIED">
-<!-- open, close can end up on most/all elements ? -->
-
-<!ELEMENT XMath (%XMath.model;)*>
-<!ATTLIST XMath
-	  %Common.attr;
-	  status CDATA #IMPLIED>
-
-<!ELEMENT XMApp (%XMath.model;)*>
-<!ATTLIST XMApp
-	  %Common.attr;
-	  %XMath.attr;
-          name         CDATA #IMPLIED
-	  punctuation  CDATA #IMPLIED
-	  stackscripts CDATA #IMPLIED>
-
-<!ELEMENT XMDual ((%XMath.model;), (%XMath.model;))>
-<!ATTLIST XMDual
-	  %Common.attr;
-	  %XMath.attr;>
-
-<!ELEMENT XMTok (#PCDATA)*>
-<!ATTLIST XMTok
-	  %Common.attr;
-	  %XMath.attr;
-          name    CDATA #IMPLIED
-	  omcd    CDATA #IMPLIED
-          font    CDATA #IMPLIED
-          style   CDATA #IMPLIED
-          size    CDATA #IMPLIED
-	  stackscripts CDATA #IMPLIED
-	  possibleFunction CDATA #IMPLIED>
-<!-- and alignment  ?? -->
-
-<!ELEMENT XMHint EMPTY>
-<!ATTLIST XMHint
-	  %Common.attr;
-	  %XMath.attr;
-          name    CDATA #IMPLIED
-          style   CDATA #IMPLIED>
-
-<!ELEMENT XMWrap (%XMath.model;)*>
-<!ATTLIST XMWrap
-	  %Common.attr;
-	  %XMath.attr;
-          name    CDATA #IMPLIED
-          style   CDATA #IMPLIED>
-
-<!ELEMENT XMArg (%XMath.model;)*>
-<!ATTLIST XMArg
-	  %Common.attr;
-	  %XMath.attr;
-          rule   CDATA #IMPLIED>
-
-<!ELEMENT XMRef EMPTY>
-<!ATTLIST XMRef
-	  %Common.attr;
-	  idref    IDREF #REQUIRED>
-
-<!ELEMENT punct (#PCDATA)*>
-<!ATTLIST punct
-	  %Common.attr;>
-
-<!-- ======================================================================
-     Simple Elements
-     These are the lowest level inline things that are somehow reducable to plain text
-     and don't include math.
-     ====================================================================== -->
-<!ELEMENT emph (#PCDATA | %Inline.mix;)*>
-<!ATTLIST emph %Common.attr;>
-
-<!ELEMENT underline (#PCDATA | %Inline.mix;)*>
-<!ATTLIST underline %Common.attr;>
-
-<!ELEMENT text (#PCDATA | %Inline.mix;)*>
-<!ATTLIST text
-	  %Common.attr;
-	  font CDATA #IMPLIED
-	  framed CDATA #IMPLIED
-	  width CDATA #IMPLIED
-	  pad-width CDATA #IMPLIED
-	  raise CDATA #IMPLIED>
-
-<!ELEMENT cite (citepre?,citepost?)>
-<!ATTLIST cite
-	  %Common.attr; 
-          ref CDATA #REQUIRED
-          style (intext|parenthetic) #IMPLIED
-          show CDATA #IMPLIED>
-
-<!ELEMENT citepre (#PCDATA | %Inline.mix;)*>
-<!ATTLIST citepre %Common.attr;>
-
-<!ELEMENT citepost (#PCDATA | %Inline.mix;)*>
-<!ATTLIST citepost %Common.attr;>
-
-<!ELEMENT acronym (#PCDATA | %Inline.mix;)*>
-<!ATTLIST acronym
-	  %Common.attr; 
-	  name CDATA #REQUIRED>
-
-<!ELEMENT vbox (#PCDATA | %Inline.mix;)*>
-<!ATTLIST vbox
-	  %Common.attr; 
-	  height CDATA #IMPLIED
-	  pad-height CDATA #IMPLIED
-	  align  (left|center|right) #IMPLIED
-	  valign (top|middle|bottom) #IMPLIED>
-
-<!-- How should rule fit here? (better name, at least) -->
-<!ELEMENT rule EMPTY>
-<!ATTLIST rule
-	  %Common.attr;
-	  width CDATA #IMPLIED
-	  height CDATA #IMPLIED
-	  raise CDATA #IMPLIED>
-
-<!-- ======================================================================
-     Misc Elements
-     can appear in block or inline contexts
-     ====================================================================== -->
-
-<!ELEMENT quote  (#PCDATA | %Inline.mix;)*>
-<!ATTLIST quote %Common.attr;>
-
-<!ELEMENT minipage (%Block.mix;)*>
-<!ATTLIST minipage
-	  %Common.attr;
-	  pos CDATA #IMPLIED
-	  width CDATA #IMPLIED
-	  justified CDATA #IMPLIED>
-
-<!-- note covers several `out of band' annotations.
-     class could be foot, end, margin or other extensions. -->
-<!ELEMENT note  (#PCDATA | %Inline.mix;)*>
-<!ATTLIST note
-	  %Common.attr; 
-	  class CDATA #IMPLIED
-          mark CDATA #IMPLIED>
-<!-- should mark be more like label/refnum ? -->
-
-<!-- error object for undefined control sequences, or whatever -->
-<!ELEMENT ERROR (#PCDATA)*>
-<!ATTLIST ERROR
-	  type CDATA #IMPLIED>
-
-<!-- ======================================================================
-     Picture; Experimental, possibly should evolve to SVG?
-     ====================================================================== -->
-
-<!ENTITY % Picture.class "g | rect | line | circle | path | arc | wedge | ellipse | polygon | bezier">
-
-<!ENTITY % Picture.attr.base
-	 "x CDATA #IMPLIED y CDATA #IMPLIED r CDATA #IMPLIED
-          rx CDATA #IMPLIED ry CDATA #IMPLIED 
-          width CDATA #IMPLIED height CDATA #IMPLIED
-          fill CDATA #IMPLIED stroke CDATA #IMPLIED 
-          stroke-width CDATA #IMPLIED stroke-dasharray CDATA #IMPLIED
-          transform CDATA #IMPLIED terminators CDATA #IMPLIED arrowlength CDATA #IMPLIED
-          points CDATA #IMPLIED showpoints CDATA #IMPLIED arc CDATA #IMPLIED 
-          angle1 CDATA #IMPLIED angle2 CDATA #IMPLIED 
-          arcsepA CDATA #IMPLIED arcsepB CDATA #IMPLIED
-          curvature CDATA #IMPLIED">
-<!ENTITY % Picture.attr.extra "">
-<!ENTITY % Picture.attr
-	 "%Picture.attr.base; %Picture.attr.extra;">
-
-<!ENTITY % PictureGroup.attr "pos CDATA #IMPLIED
-                              framed (yes|no) 'no'
-                              frametype (rect|circle|oval) 'rect'
-                              fillframe (yes|no) 'no'
-                              boxsep CDATA #IMPLIED
-                              shadowbox (yes|no) 'no'
-                              doubleline (yes|no) 'no'">
-
-<!ELEMENT picture  (%Picture.class; | %Flow.mix;)*>
-<!ATTLIST picture %Common.attr; %Picture.attr; 
-                   clip (yes|no) 'no'
-                   baseline CDATA #IMPLIED 
-                   tex CDATA #IMPLIED>
-
-<!ELEMENT g  (%Picture.class; | %Flow.mix;)*>
-<!ATTLIST g %Common.attr; %Picture.attr; %PictureGroup.attr; >
-
-<!ELEMENT rect    EMPTY>
-<!ATTLIST rect    %Common.attr; %Picture.attr;>
-
-<!ELEMENT line    EMPTY>
-<!ATTLIST line %Common.attr; %Picture.attr;>
-
-<!ELEMENT polygon EMPTY>
-<!ATTLIST polygon %Common.attr; %Picture.attr;>
-
-<!ELEMENT wedge EMPTY>
-<!ATTLIST wedge %Common.attr; %Picture.attr;>
-
-<!ELEMENT arc EMPTY>
-<!ATTLIST arc %Common.attr; %Picture.attr;>
-
-<!ELEMENT circle  EMPTY>
-<!ATTLIST circle %Common.attr; %Picture.attr;>
-
-<!ELEMENT ellipse  EMPTY>
-<!ATTLIST ellipse %Common.attr; %Picture.attr;>
-
-<!ELEMENT path    EMPTY>
-<!ATTLIST path %Common.attr; %Picture.attr;>
-
-<!ELEMENT bezier    EMPTY>
-<!ATTLIST bezier %Common.attr; %Picture.attr;>
-
-<!-- ======================================================================
-     Meta data
-     ====================================================================== -->
-
-<!ELEMENT ref  (#PCDATA | %Inline.mix;)*>
-<!ATTLIST ref
-	  %Common.attr; 
-          labelref CDATA #REQUIRED>
-
-<!ELEMENT index (indexphrase*)>
-<!ATTLIST index %Common.attr;>
-
-<!ELEMENT indexphrase (#PCDATA | %Inline.mix;)*>
-<!ATTLIST indexphrase %Common.attr;>
-
-<!-- ======================================================================
-     Bibliography
-     ====================================================================== -->
-<!-- Would be nice to use somebody elses already-developed DTD... -->
-
-<!ELEMENT bibliography (title?,biblist*)>
-<!ATTLIST bibliography
-	  %Common.attr; 
-	  %Labelled.attr; 
-          files CDATA #IMPLIED>
-
-<!ELEMENT biblist (bibentry | bibitem)*>
-<!ATTLIST biblist %Common.attr;>
-<!-- prefix all elements with bib- to avoid conflicts
-     Alternatively, separate DTD/namespace ? -->
-   
-<!-- Semantic bibliography model; would result from parsing BibTeX -->
-<!ELEMENT bibentry (%Bibentry.mix;)*>
-<!ATTLIST bibentry
-	  %Common.attr; 
-          key CDATA #REQUIRED
-          type CDATA #REQUIRED>
-<!-- hyphenation |  xref | label | setup | name  -->
-
-<!--
-<!ELEMENT bib-author (surname, givenname?, giveninitials?, jrname?)>
-<!ELEMENT bib-editor (surname, givenname?, giveninitials?, jrname?)>
-<!ELEMENT surname (#PCDATA | %Inline.mix;)*>
-<!ELEMENT givenname (#PCDATA | %Inline.mix;)*>
-<!ELEMENT giveninitials (#PCDATA | %Inline.mix;)*>
-<!ELEMENT jrname (#PCDATA | %Inline.mix;)*>
--->
-<!ELEMENT bib-author (surname, givenname?, initials?, lineage?)>
-<!ATTLIST bib-author %Common.attr;>
-
-<!ELEMENT bib-editor (surname, givenname?, initials?, lineage?)>
-<!ATTLIST bib-editor %Common.attr;>
-
-<!ELEMENT bib-translator (surname, givenname?, initials?, lineage?)>
-<!ATTLIST bib-translator %Common.attr;>
-
-<!ELEMENT surname   (#PCDATA | %Inline.mix;)*>
-<!ELEMENT givenname (#PCDATA | %Inline.mix;)*>
-<!ELEMENT initials  (#PCDATA | %Inline.mix;)*>
-<!ELEMENT lineage   (#PCDATA | %Inline.mix;)*>
-
-<!ELEMENT bib-title (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-title %Common.attr;>
-
-<!ELEMENT bib-subtitle (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-subtitle %Common.attr;>
-
-<!ELEMENT bib-booktitle (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-booktitle %Common.attr;>
-
-<!ELEMENT bib-key (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-key %Common.attr;>
-
-<!ELEMENT bib-journal (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-journal %Common.attr;>
-
-<!ELEMENT bib-series (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-series %Common.attr;>
-
-<!ELEMENT bib-conference (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-conference %Common.attr;>
-
-<!ELEMENT bib-publisher (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-publisher %Common.attr;>
-
-<!ELEMENT bib-organization (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-organization %Common.attr;>
-
-<!ELEMENT bib-institution (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-institution %Common.attr;>
-
-<!ELEMENT bib-address (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-address %Common.attr;>
-
-<!ELEMENT bib-volume (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-volume %Common.attr;>
-
-<!ELEMENT bib-number (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-number %Common.attr;>
-
-<!ELEMENT bib-pages (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-pages %Common.attr;>
-
-<!ELEMENT bib-part (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-part %Common.attr;>
-
-<!ELEMENT bib-date (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-date %Common.attr;>
-
-<!ELEMENT bib-edition (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-edition %Common.attr;>
-
-<!ELEMENT bib-status (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-status %Common.attr;>
-
-<!ELEMENT bib-type (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-type %Common.attr;>
-
-<!ELEMENT bib-issn (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-issn %Common.attr;>
-
-<!ELEMENT bib-isbn (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-isbn %Common.attr;>
-
-<!ELEMENT bib-doi (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-doi %Common.attr;>
-
-<!ELEMENT bib-review (#PCDATA | %Inline.mix; | bib-mr)*>
-<!ATTLIST bib-review %Common.attr;>
-
-<!ELEMENT bib-mr (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-mr %Common.attr;>
-
-<!ELEMENT bib-mrnumber (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-mrnumber %Common.attr;>
-
-<!ELEMENT bib-language (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-language %Common.attr;>
-
-<!ELEMENT bib-url (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-url %Common.attr;>
-
-<!ELEMENT bib-eprint (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-eprint %Common.attr;>
-
-<!ELEMENT bib-preprint (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-preprint %Common.attr;>
-
-<!ELEMENT bib-note (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-note %Common.attr;>
-
-<!-- Presentational bibliographic model; would result from \bibitem's -->
-<!ELEMENT bibitem (biblabel?, bibblock*)>
-<!ATTLIST bibitem %Common.attr;
-		   key ID #REQUIRED>
-<!ELEMENT biblabel (#PCDATA | %Inline.mix;)*>
-<!ELEMENT bibblock (#PCDATA | %Inline.mix;)*>
- 
+<![%LaTeXML-xref.module;[
+  <!ENTITY % LaTeXML-xref-model.mod   SYSTEM "LaTeXML-xref-model-1.mod">
+  %LaTeXML-xref-model.mod;
+]]>
+
+<![%LaTeXML-index.module;[
+  <!ENTITY % LaTeXML-index-model.mod   SYSTEM "LaTeXML-index-model-1.mod">
+  %LaTeXML-index-model.mod;
+]]>
+
+<![%LaTeXML-tabular.module;[
+  <!ENTITY % LaTeXML-tabular-model.mod   SYSTEM "LaTeXML-tabular-model-1.mod">
+  %LaTeXML-tabular-model.mod;
+]]>
+
+<![%LaTeXML-graphics.module;[
+  <!ENTITY % LaTeXML-graphics-model.mod   SYSTEM "LaTeXML-graphics-model-1.mod">
+  %LaTeXML-graphics-model.mod;
+]]>
+
+<![%LaTeXML-picture.module;[
+  <!ENTITY % LaTeXML-picture-model.mod   SYSTEM "LaTeXML-picture-model-1.mod">
+  %LaTeXML-picture-model.mod;
+]]>
+
+
+<![%LaTeXML-float.module;[
+  <!ENTITY % LaTeXML-float-model.mod   SYSTEM "LaTeXML-float-model-1.mod">
+  %LaTeXML-float-model.mod;
+]]>
+
+<![%LaTeXML-acro.module;[
+  <!ENTITY % LaTeXML-acro-model.mod   SYSTEM "LaTeXML-acro-model-1.mod">
+  %LaTeXML-acro-model.mod;
+]]>
+
+<![%LaTeXML-list.module;[
+  <!ENTITY % LaTeXML-list-model.mod   SYSTEM "LaTeXML-list-model-1.mod">
+  %LaTeXML-list-model.mod;
+]]>
+
+<![%LaTeXML-bib.module;[
+  <!ENTITY % LaTeXML-bib-model.mod   SYSTEM "LaTeXML-bib-model-1.mod">
+  %LaTeXML-bib-model.mod;
+]]>
+
+<![%LaTeXML-structure.module;[
+  <!ENTITY % LaTeXML-structure-model.mod   SYSTEM "LaTeXML-structure-model-1.mod">
+  %LaTeXML-structure-model.mod;
+]]>

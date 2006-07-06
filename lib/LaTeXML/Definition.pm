@@ -28,9 +28,9 @@ sub isPrefix     { 0; }
 sub getLocator   { $_[0]->{locator}; }
 
 sub readArguments {
-  my($self)=@_;
+  my($self,$gullet)=@_;
   my $params = $$self{parameters};
-  ($params ? $params->readArguments($self) : ()); }
+  ($params ? $params->readArguments($gullet,$self) : ()); }
 
 sub getParameters { $_[0]->{parameters}; }
 #======================================================================
@@ -70,7 +70,7 @@ sub new {
       $level-- if $t->equals(T_END); }
     Fatal("Defining Macro ".Stringify($cs).": replacement has unbalanced {}: ".ToString($expansion)) if $level;  }
   bless {cs=>$cs, parameters=>$parameters, expansion=>$expansion,
-	 locator=>"defined ".$GULLET->getLocator,
+	 locator=>"defined ".$STATE->getStomach->getGullet->getLocator,
 	 %traits}, $class; }
 
 sub isExpandable  { 1; }
@@ -78,13 +78,13 @@ sub isConditional { $_[0]->{isConditional}; }
 
 # Expand the expandable control sequence. This should be carried out by the Gullet.
 sub invoke {
-  my($self)=@_;
+  my($self,$gullet)=@_;
   if($self->isConditional){
     $STATE->assignValue(current_if_level=>($STATE->lookupValue('current_if_level')||0)+1, 'global'); }
-  my @args = $self->readArguments;
+  my @args = $self->readArguments($gullet);
   my $expansion = $$self{expansion};
   (ref $expansion eq 'CODE' 
-   ? &$expansion($self,@args)
+   ? &$expansion($gullet,@args)
    : substituteTokens($expansion,@args)); }
 
 sub substituteTokens {
@@ -123,28 +123,26 @@ sub new {
   Fatal("Defining Primitive ".Stringify($cs)." but replacement is not CODE: $replacement.")
     unless ref $replacement eq 'CODE';
   bless {cs=>$cs, parameters=>$parameters, replacement=>$replacement,
-	 locator=>"defined ".$GULLET->getLocator, %traits}, $class; }
+	 locator=>"defined ".$STATE->getStomach->getGullet->getLocator, %traits}, $class; }
 
 sub isPrefix      { $_[0]->{isPrefix}; }
 
 sub executeBeforeDigest {
-  my($self)=@_;
+  my($self,$stomach)=@_;
   my $pre = $$self{beforeDigest};
-  ($pre ? map(&$_($self), @$pre) : ()); }
+  ($pre ? map(&$_($stomach), @$pre) : ()); }
 
 sub executeAfterDigest {
-  my($self,@whatever)=@_;
+  my($self,$stomach,@whatever)=@_;
   my $post = $$self{afterDigest};
-  ($post ? map(&$_(@whatever), @$post) : ()); }
+  ($post ? map(&$_($stomach,@whatever), @$post) : ()); }
 
 # Digest the primitive; this should occur in the stomach.
 sub invoke {
-  my($self)=@_;
-  my @pre = $self->executeBeforeDigest;
-  my @args = $self->readArguments;
-  (@pre,
-   &{$$self{replacement}}($self, @args),
-   $self->executeAfterDigest($self,@args)); }
+  my($self,$stomach)=@_;
+  ($self->executeBeforeDigest($stomach),
+   &{$$self{replacement}}($stomach,$self->readArguments($stomach->getGullet)),
+   $self->executeAfterDigest($stomach)); }
 
 sub equals {
   my($self,$other)=@_;
@@ -168,7 +166,7 @@ sub new {
   my($class,$cs,$parameters,$type,$getter,$setter ,%traits)=@_;
   bless {cs=>$cs, parameters=>$parameters,
 	 registerType=>$type, getter => $getter, setter => $setter,
-	 locator=>"defined ".$GULLET->getLocator, %traits}, $class; }
+	 locator=>"defined ".$STATE->getStomach->getGullet->getLocator, %traits}, $class; }
 
 sub isPrefix    { 0; }
 sub isRegister { $_[0]->{registerType}; }
@@ -185,10 +183,11 @@ sub setValue {
 
 # No before/after daemons ???
 sub invoke {
-  my($self)=@_;
-  my @args = $self->readArguments;
-  $GULLET->readKeyword('=');	# Ignore 
-  my $value = $GULLET->readValue($self->isRegister);
+  my($self,$stomach)=@_;
+  my $gullet=$stomach->getGullet;
+  my @args = $self->readArguments($gullet);
+  $gullet->readKeyword('=');	# Ignore 
+  my $value = $gullet->readValue($self->isRegister);
   $self->setValue($value,@args);
   return; }
 
@@ -206,12 +205,13 @@ sub new {
   bless {cs=>$cs, parameters=>undef,
 	 value=>$value, char=>T_OTHER(chr($value->valueOf)),
 	 registerType=>'Number', readonly=>1,
-	 locator=>"defined ".$GULLET->getLocator, %traits}, $class; }
+	 locator=>"defined ".$STATE->getStomach->getGullet->getLocator, %traits}, $class; }
 
 sub valueOf  { $_[0]->{value}; }
 sub setValue { Error("Cannot assign to chardef ".$_[0]->getCSName); return; }
-sub invoke   { $STOMACH->invokeToken($_[0]->{char}); }
-
+sub invoke   { 
+  my($self,$stomach)=@_;
+  $stomach->invokeToken($$self{char}); }
 
 #**********************************************************************
 # Constructor control sequences.  
@@ -236,22 +236,12 @@ sub new {
   Fatal("Defining Constructor ".Stringify($cs)." but replacement is not a string or CODE: $replacement")
     unless (defined $replacement) && (!(ref $replacement) || (ref $replacement eq 'CODE'));
   bless {cs=>$cs, parameters=>$parameters, replacement=>$replacement,
-	 locator=>"defined ".$GULLET->getLocator, %traits,
+	 locator=>"defined ".$STATE->getStomach->getGullet->getLocator, %traits,
 #	 nargs =>(defined $traits{nargs} ? $traits{nargs}
 #		  : ($parameters ? scalar(grep(! $_->getNoValue, $parameters->getParameters))
 #		     : 0))}, $class; }
 	 nargs =>(defined $traits{nargs} ? $traits{nargs}
 		  : ($parameters ? $parameters->getNumArgs : 0))}, $class; }
-
-sub getConstructor {
-  my($self)=@_;
-  my $replacement = $$self{replacement};
-  if(!ref $replacement){
-    $$self{replacement} = $replacement 
-      = LaTeXML::ConstructorCompiler::compileConstructor($replacement,$self->getCS,
-#							 ($$self{parameters} ? $$self{parameters}->getNArgs:0));}
-							 $$self{nargs});}
-  $replacement; }
 
 sub getReversionSpec { $_[0]->{reversion}; }
 sub getAlias     { $_[0]->{alias}; }
@@ -259,31 +249,49 @@ sub getAlias     { $_[0]->{alias}; }
 # Digest the constructor; This should occur in the Stomach to create a Whatsit.
 # The whatsit which will be further processed to create the document.
 sub invoke {
-  my($self)=@_;
+  my($self,$stomach)=@_;
   # Call any `Before' code.
-  my @pre = $self->executeBeforeDigest;
+  my @pre = $self->executeBeforeDigest($stomach);
   # Parse AND digest the arguments to the Constructor
-#  my @args = $self->readArguments;
-#  if(my $params = $$self{parameters}){
-#    @args = $params->digestArguments(@args); }
   my $params = $$self{parameters};
-  my @args = ($params ? $params->readArgumentsAndDigest($self) : ());
+  my @args = ($params ? $params->readArgumentsAndDigest($stomach,$self) : ());
 
   @args = @args[0..$$self{nargs}-1];
-  my %props = %{$$self{properties} || {} };
+  my $properties = $$self{properties};
+  my %props = (!defined $properties ? ()
+	       : (ref $properties eq 'CODE' ? &$properties($stomach,@args)
+		  : %$properties));
   foreach my $key (keys %props){
     my $value = $props{$key};
     if(ref $value eq 'CODE'){
-      $props{$key} = &$value($self); }
+      $props{$key} = &$value($stomach,@args); }
     elsif($value && ($value =~/^\#(\d)$/)){
       $props{$key} = $args[$1-1]->toString; }}
+  $props{font}    = $STATE->lookupValue('font')   unless defined $props{font};
+  $props{locator} = $stomach->getGullet->getLocator unless defined $props{locator};
+  $props{isMath}  = $STATE->lookupValue('IN_MATH') unless defined $props{isMath};
   my $whatsit = LaTeXML::Whatsit->new($self,[@args],%props);
-  my @post = $self->executeAfterDigest($whatsit,@args);
+  my @post = $self->executeAfterDigest($stomach,$whatsit);
   if(my $id = $props{id}){
     $STATE->assignValue('xref:'.$id=>$whatsit,'global'); }
   if($$self{captureBody}){
-    $whatsit->setBody(@post,$STOMACH->digestNextBody); @post=(); }
+    $whatsit->setBody(@post,$stomach->digestNextBody); @post=(); }
   (@pre,$whatsit,@post); }
+
+sub doAbsorbtion {
+  my($self,$document,$whatsit)=@_;
+  # First, compile the constructor pattern, if needed.
+  my $replacement = $$self{replacement};
+  if(!ref $replacement){
+    $$self{replacement} = $replacement
+      = LaTeXML::ConstructorCompiler::compileConstructor($replacement,$self->getCS,$$self{nargs}); }
+  # Now do the absorbtion.
+  if(my $pre = $$self{beforeConstruct}){
+    map(&$_($document,$whatsit), @$pre); }
+  &{$replacement}($document,$whatsit->getArgs, $whatsit->getProperties); 
+  if(my $post = $$self{afterConstruct}){
+    map(&$_($document,$whatsit), @$post); }
+}
 
 #**********************************************************************
 package LaTeXML::ConstructorCompiler;
@@ -308,7 +316,7 @@ sub compileConstructor {
   my $body = translate_constructor($constructor,$floats);
   my $code =
     " sub $name {\n"
-    ."my(".join(', ','$document', map("\$arg$_",1..$nargs),'$prop').")=\@_;\n"
+    ."my(".join(', ','$document', map("\$arg$_",1..$nargs),'%prop').")=\@_;\n"
       .($floats ? "my \$savenode;\n" :'')
 	. $body
 	  . ($floats ? "\$document->setNode(\$savenode) if defined \$savenode;\n" : '')
@@ -408,7 +416,7 @@ sub translate_value {
       $value = "\"Missing\""; }
     else {
       $value = "\$arg$n" }}
-  elsif(s/^\#([\w\-_]+)//){ $value = "\$\$prop{'$1'}"; } # Recognize #prop for whatsit properties
+  elsif(s/^\#([\w\-_]+)//){ $value = "\$prop{'$1'}"; } # Recognize #prop for whatsit properties
   elsif(s/$TEXT_RE//so    ){ $value = "'".slashify($1)."'"; }
   $value; }
 
@@ -527,9 +535,9 @@ Returns the (main) token that is bound to this definition.
 Returns the string form of the token bound to this definition,
 taking into account any alias for this definition.
 
-=item C<< $defn->readArguments; >>
+=item C<< $defn->readArguments($gullet); >>
 
-Reads the arguments for this C<$defn> from the current C<$GULLET>,
+Reads the arguments for this C<$defn> from the C<$gullet>,
 returning a list of L<LaTeXML::Tokens>.
 
 =item C<< $parameters = $defn->getParameters; >>

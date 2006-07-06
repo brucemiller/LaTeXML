@@ -53,7 +53,7 @@ GetOptions("destination=s"=>sub { $destination = $_[1];
 	   "nopresentationmathml|nopmml" => sub { removeMathFormat('pmml'); },
 	   "nocontentmathml|nocmml"      => sub { removeMathFormat('cmml'); },
 	   "noopenmath|noom"             => sub { removeMathFormat('om'); },
-	   "keepXMath"                   =>\$keepXMath,
+	   "keepXMath!"                  =>\$keepXMath,
 
 	   # For graphics: vaguely similar issues, but more limited.
 	   # includegraphics images (eg. ps) can be converted to webimages (eg.png)
@@ -97,7 +97,6 @@ elsif($format eq 'html'){
   Error("Default html stylesheet does not support SVG") if $svg;
 
   $mathimages = 1 unless defined $mathimages;
-  $keepXMath  = 0;
   $dographics = 1 unless defined $dographics;
   if(!defined $stylesheet){
     $stylesheet = "LaTeXML-html.xsl";
@@ -111,7 +110,6 @@ elsif($format eq 'xhtml'){
   if(!@math_formats){		# No math format specified?
     addMathFormat('pmml');
     addMathFormat('cmml') if $parallelmath || !@math_formats; }
-  $keepXMath  = 0;
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
   if(!defined $stylesheet){
@@ -148,6 +146,7 @@ if($svg){
   require 'LaTeXML/Post/SVG.pm';
   push(@procs,LaTeXML::Post::SVG->new()); }
 if(@math_formats){
+  $keepXMath  = 0 unless defined $keepXMath;
   my @mprocs=();
   foreach my $fmt (@math_formats){
     if($fmt eq 'pmml'){
@@ -164,7 +163,10 @@ if(@math_formats){
     push(@procs,LaTeXML::Post::MathML::Parallel->new(math_processors=>[@mprocs])); }
   else {
     push(@procs,@mprocs); }}
-if($keepXMath){
+else {
+    $keepXMath  = 1 unless defined $keepXMath;
+  }
+if(!$keepXMath){
   require 'LaTeXML/Post/PurgeXMath.pm';
   push(@procs,LaTeXML::Post::PurgeXMath->new()); }
 if($stylesheet){

@@ -30,7 +30,8 @@ sub generateMessage {
     push(@lines,"In ".trim(Stringify($top)).' '.Stringify(Locator($top)));
     push(@objects,'...') if @objects && defined $nstack;
     push(@lines,join('',map(' <= '.trim(Stringify($_)),@objects))) if @objects; }
-  push(@lines,$GULLET->getLocator($long)) if $GULLET;
+  if(my $stomach = $STATE->getStomach){
+    push(@lines,$stomach->getGullet->getLocator($long)); }
   join("\n",grep($_,@lines, @extra)); }
 
 sub Locator {

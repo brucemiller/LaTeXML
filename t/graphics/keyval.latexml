@@ -1,0 +1,44 @@
+use LaTeXML::Package;
+
+RequirePackage('keyval');
+
+# Note that this gets loaded before anything else.
+# But of course, it may define things that a style file will be defining.
+# We need a mechanism to keep those things from getting overridden by
+# the style file.
+# Here's a (insufficient) first attempt:
+
+my $path = pathname_find("mykeyval",paths=>LookupValue('SEARCHPATHS'),types=>['sty']);
+AssignValue($path."_loaded"=>1,'global');
+
+#======================================================================
+# Tests of various constructors using KeyVals.
+#======================================================================
+# Testing simple use of keys; 
+#   attribute is just list of key-value pairs.
+DefConstructor('\KVsimple OptionalKeyVals:foo',
+	       "<ltx:graphics graphic='none' options='#1'/>");
+
+# Testing more complex use of keys;
+#   individual attributes are obtained from specific keys.
+DefConstructor('\KVcomplex OptionalKeyVals:foo', 
+	       "<ltx:graphics graphic='none' width='&KeyVal(#1,width)' height='&KeyVal(#1,height)'/>");
+
+
+# Testing use in an environment.
+DefEnvironment('{KVenv} OptionalKeyVals:foo',
+	       "<ltx:text width='&KeyVal(#1,width)' height='&KeyVal(#1,height)'>#body</ltx:text>");
+
+# Testing structured use of keys; map an XML structure to the keys (eg. for amsrefs)
+DefEnvironment('{KVstruct} OptionalKeyVals:foo',
+	"<ltx:text>"
+	."?&KeyVal(#1,width)(<ltx:text>Width: &KeyVal(#1,width)</ltx:text>)"
+	."<ltx:text>&amp;</ltx:text>"
+	."?&KeyVal(#1,height)(<ltx:text>Height: &KeyVal(#1,height)</ltx:text>)"
+	."#body</ltx:text>");
+
+# Testing automatic conversion of keys to text
+DefConstructor('\KVauto RequiredKeyVals:foo',"<ltx:text>#1</ltx:text>");
+
+#======================================================================
+1;

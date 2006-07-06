@@ -14,13 +14,14 @@ my $VERSION = '0.0.1';
 #my $identity = "latexmlfind (LaTeXML version $LaTeXML::VERSION)";
 my $identity = "latexmlfind ($VERSION)";
 my($verbosity)=(0);
-my ($help,$showversion)=(0,0);
+my ($help,$showversion,$SKELETON)=(0,0,0);
 my (@symbols,@unknowns,@posfuncs,@labels,@refnums);
 GetOptions("symbol=s"           => \@symbols,,
 	   "unknown=s"          => \@unknowns,
 	   "possiblefunction=s" => \@posfuncs,
 	   "label=s"            => \@labels,
 	   "refnum=s"           => \@refnums,
+	   "skeleton"  => \$SKELETON,
 	   "quiet"     => sub { $verbosity--; },
 	   "verbose"   => sub { $verbosity++; },
 	   "VERSION"   => \$showversion,
@@ -44,12 +45,17 @@ $XPATH->registerFunction('match-font',\&LaTeXML::Font::match_font);
 
 # Objects being labelled sections, equations, etc.
 our %OBJECTS=();
-our $ROOT_OBJECT = {label=>'Document',
+our $ROOT_OBJECT = {type=>'Document',
 		    subobjects=>[], items=>[]};
 
 foreach my $symbol (@symbols){
   collect_matches("Symbols \"$symbol\"",
-	       "//ltxml:Math[descendant::ltxml:XMTok[\@name='$symbol' or text()='$symbol']]"); }
+	       "//ltxml:Math[descendant::ltxml:XMTok[\@name='$symbol' or text()='$symbol']"
+	       #                                   BUT which isn't in presentation branch of an XMDual!!
+	       #                                   ie. no ancestor w/preceding sibling has parent = XMDual
+	       .                                   "[not(ancestor-or-self::*[preceding-sibling::*][parent::ltxml:XMDual])]"
+
+		 ."]"); }
 foreach my $spec (@unknowns){
   my $symbol = $spec;
   my $font;
@@ -111,20 +117,27 @@ sub labelled_object {
     return $object; }
   else {
     my $parent_object = labelled_object($node);
+    my $type = $node->localname;
+    my $refnum = $node->getAttribute('refnum');
+    my($title) = $XPATH->findnodes("child::ltxml:toctitle | child::ltxml:title",$node);
+    my $desc = ($refnum ? ($title ? "$refnum. ".$title->textContent : $refnum)
+		: ($title ? $title->textContent : ''));
     $OBJECTS{$label}=$object
-      = {label=>$label, refnum=>$node->getAttribute('refnum'),
-	 children=>[], items=>[]};
+      = {label=>$label, type=>$type, description=>$desc, children=>[], items=>[]};
     push(@{$$parent_object{children}}, $object);
     $object; }}
 
 sub show_matches {
   my($object,$indent)=@_;
   $indent = '' unless defined $indent;
-  print $indent."Label=$$object{label}".($$object{refnum} ? " ($$object{refnum})":'')."\n";
-  foreach my $item (@{ $$object{items} }){
-    show_node($item,$indent.'  '); }
+  print $indent."$$object{type}:"
+    .($$object{label} ? " Label=$$object{label}":'')
+      .($$object{description}? " \"$$object{description}\"":"")."\n";
+  if(!$SKELETON){
+    foreach my $item (@{ $$object{items} }){
+      show_node($item,$indent.' | '); }}
   foreach my $child (@{ $$object{children}}){
-    show_matches($child, $indent.'  '); }
+    show_matches($child, $indent.' | '); }
 }
 
 sub show_node {
@@ -152,7 +165,8 @@ C<latexmlfind> finds interesting things in LaTeXML generated XML.
 latexmlfind [options] xmlfile
 
   Options:
-   --unknown=symbol           finds equations where the unknown symbol appears.
+   --symbol=symbol            finds equations where the symbol appears.
+   --unknown=symbol           finds equations where the unknown symbol appears (ie role=UNKNOWN).
    --possiblefunction=symbol  finds equations where symbol is possibly used as a function.
    --label=symbol             finds objects with the given label.
    --refnum=symbol            finds objects with the given refnum (reference number).

@@ -7,12 +7,51 @@
 use FindBin;
 use lib "$FindBin::RealBin/../blib/lib";
 use LaTeXML;
+use LaTeXML::Util::Pathname;
 
-foreach my $name (@ARGV){
-  $name =~ s/\.tex$//;
+# hmm... could be even more helpful
+#  copy xml to a backup and compare ?
+foreach my $file (@ARGV){
+  my($dir,$name,$ext)=pathname_split($file);
+  gen_xml($dir,$name);
+  gen_dvi($dir,$name);
+}
+#**********************************************************************
+sub gen_xml {
+  my($dir,$name)=@_;
   my $latexml= LaTeXML->new(preload=>[], searchpath=>[], includeComments=>0);
-  $latexml->convertAndWriteFile("$name")
-    or die "Failed to create $name.xml: $!"
+  my $file = pathname_concat($dir,$name);
+  if(-f "$file.xml"){
+    rename("$file.xml", "$file.xml.bak"); }
+  $latexml->convertAndWriteFile(pathname_concat($dir,$name))
+    or die "Failed to create $dir/$name.xml: $!"
+  }
+
+sub gen_dvi {
+  my($dir,$name)=@_;
+  my $cwd = pathname_cwd();
+  chdir($dir) if $dir;
+  # Get list of files currently in directory.
+  opendir(DIR,".") or die "Cannot read directory $dir: $!";
+  my @files_before = readdir(DIR);
+  closedir(DIR);
+  my $program = 'tex';
+  open(IN,"$name.tex") or die "Cannot scanTeX file $name.tex: $!";
+  while(<IN>){ 
+    $program = 'latex' if /documentclass/; }
+  close(IN);
+
+  system($program,$name) == 0 or die "Couldn't run $program $name: $!";
+  system($program,$name) == 0 or die "Couldn't run $program $name: $!";
+
+  # Now delete an new files except $name.dvi
+  opendir(DIR,".") or die "Cannot read directory $dir: $!";
+  my @files_now = readdir(DIR);
+  closedir(DIR);
+  foreach my $f (@files_now){
+    if(($f ne "$name.dvi") && !grep($f eq $_, @files_before)){
+      unlink($f); }}
+  chdir($cwd) if $dir;
 }
 #**********************************************************************
 

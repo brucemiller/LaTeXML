@@ -22,30 +22,28 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 		  &DefConstructor &DefMath &dualize_arglist
 		  &DefEnvironment
 		  &DefRewrite &DefMathRewrite
+		  &DefLigature &DefMathLigature
 		  &RequirePackage
 		  &RawTeX
 		  &Tag &DocType &RegisterNamespace
 		  &convertLaTeXArgs),
 
 	       # Lower-level support for writing definitions.
-	       # Grouping support
-	       qw(&BGroup &EGroup &BeginGroup &EndGroup &BeginMode &EndMode),
 	       # Access to State
 	       qw(&LookupValue &AssignValue &PushValue
 		  &LookupCatcode &AssignCatcode
 		 &LookupMeaning &LookupDefinition &InstallDefinition &Let),
 	       # Math & font state.
-	       qw(&MergeFont &RequireMath &ForbidMath),
+	       qw(&MergeFont),
 	       # Explicit digestion
-	       qw(&InvokeToken &Digest),
-	       # Random low-level token operations.
-	       qw(&roman &Roman),
+	       qw(&Digest),
 	       # Support for structured/argument readers
 	       qw(&DefParameterType
-		 &ReadToken &ReadXToken &ReadNumber &ReadDimension &ReadGlue &ReadMuDimension &ReadMuGlue
-		 &ReadArg &ReadOptional &SkipSpaces &ReadMatch &ReadUntil &ReadKeyword &ReadUntilBrace
-		  &ReadBalanced &StartSemiverbatim &EndSemiverbatim &ReadSemiverbatim
-		 &IfNext &Input &Expand &Invocation),
+		  &StartSemiverbatim &EndSemiverbatim
+		  &Expand &Invocation),
+	       # Random low-level token operations.
+	       qw(&roman &Roman),
+
 	       @LaTeXML::Global::EXPORT);
 
 #**********************************************************************
@@ -57,6 +55,7 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 # and it's probably better to allow a more TeX-like evaluation of definitions
 # in order, so \let and such work as expected.
 #    So, it got simpler!
+# Still, it would be nice if there were `compiled' forms of .ltxml files!
 #**********************************************************************
 
 sub parsePrototype {
@@ -79,32 +78,9 @@ sub convertLaTeXArgs {
   join('', ($optional ? ($default ? "[Default:$default]" : "[]") : ''),
        map('{}',1..($optional ? $nargs-1 : $nargs))); }
 
-sub CheckOptions {
-  my($operation,$allowed,%options)=@_;
-  my @badops = grep(!$$allowed{$_}, keys %options);
-  Error($operation." does not accept options:".join(', ',@badops)) if @badops;
-}
-
-
-  my($name,%options)=@_;
-
-our $parameter_options = {nargs=>1,reversion=>1,optional=>1,novalue=>1};
-sub DefParameterType {
-  my($type,$reader,%options)=@_;
-  CheckOptions("DefParameterType $type",$parameter_options,%options);
-  $LaTeXML::Parameters::PARAMETER_TABLE{$type}={reader=>$reader,%options};
-  return; }
-
 #======================================================================
 # Convenience functions for writing definitions.
 #======================================================================
-
-sub BGroup()     { $STOMACH->bgroup; }
-sub EGroup()     { $STOMACH->egroup; }
-sub BeginGroup() { $STOMACH->bgroup(1); }
-sub EndGroup()   { $STOMACH->egroup(1); }
-sub BeginMode    { $STOMACH->beginMode(@_); }
-sub EndMode      { $STOMACH->endMode(@_); }
 
 sub LookupValue  { $STATE->lookupValue(@_); }
 sub AssignValue  { $STATE->assignValue(@_); return; }
@@ -122,16 +98,7 @@ sub Let {
   $STATE->assignMeaning($token1,$STATE->lookupMeaning($token2)); 
   return; }
 
-sub InvokeToken  { $STOMACH->invokeToken(@_); }
-sub Digest       { $STOMACH->digest(@_); }
-
-sub RequireMath() {
-  Fatal("Current operation can only appear in math mode") unless LookupValue('IN_MATH');
-  return; }
-
-sub ForbidMath() {
-  Fatal("Current operation can not appear in math mode") if LookupValue('IN_MATH');
-  return; }
+sub Digest       { $STATE->getStomach->digest(@_); }
 
 # Merge the current font with the style specifications
 sub MergeFont { AssignValue(font=>LookupValue('font')->merge(@_), 'local'); }
@@ -159,51 +126,48 @@ sub roman { Explode(roman_aux(@_)); }
 sub Roman { Explode(uc(roman_aux(@_))); }
 
 #======================================================================
-# Readers for reading various data types
+# Defining new Control-sequence Parameter types.
 #======================================================================
 
-sub ReadToken()       { $GULLET->readToken; }
-sub ReadXToken()      { $GULLET->readXToken; }
-sub ReadNumber()      { $GULLET->readNumber; }
-sub ReadDimension()   { $GULLET->readDimension; }
-sub ReadGlue()        { $GULLET->readGlue; }
-sub ReadMuDimension() { $GULLET->readMuDimension; }
-sub ReadMuGlue()      { $GULLET->readMuGlue; }
-sub ReadUntilBrace()  {
-  my $value=ReadUntil(T_BEGIN);
-  $GULLET->unread(T_BEGIN);
-  $value; }
-
-sub ReadArg()         { $GULLET->readArg;}
-sub ReadOptional()    { $GULLET->readOptional; }
+our $parameter_options = {nargs=>1,reversion=>1,optional=>1,novalue=>1,semiverbatim=>1};
+sub DefParameterType {
+  my($type,$reader,%options)=@_;
+  CheckOptions("DefParameterType $type",$parameter_options,%options);
+  $LaTeXML::Parameters::PARAMETER_TABLE{$type}={reader=>$reader,%options};
+  return; 
+}
+#======================================================================
+# Readers for reading various data types
+#======================================================================
 
 sub StartSemiverbatim() {
   $STATE->pushFrame;
   map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%');}  # should '%' too ?
 sub EndSemiverbatim() {  $STATE->popFrame; }
 
-sub ReadSemiverbatim {
-  StartSemiverbatim; 
-  my $arg = ReadArg;
-  EndSemiverbatim;
-  $arg; }
-
-
-# Other reader support
-sub SkipSpaces()      { $GULLET->skipSpaces; }
-sub ReadKeyword       { $GULLET->readKeyword(@_); }
-sub ReadMatch         { $GULLET->readMatch(@_); }
-sub ReadUntil         { $GULLET->readUntil(@_); }
-sub ReadBalanced()    { $GULLET->readBalanced; }
-
-sub Input             { $GULLET->input(@_); }
-sub IfNext            { $GULLET->ifNext(@_); }
-
-sub Expand            { $GULLET->expandTokens(@_); }
+sub Expand            { $STATE->getStomach->getGullet->expandTokens(@_); }
 
 sub Invocation        {
   my($token,@args)=@_;
   Tokens(LookupDefinition($token)->invocation(@args)); }
+
+#======================================================================
+# Non-exported support for defining forms.
+#======================================================================
+sub CheckOptions {
+  my($operation,$allowed,%options)=@_;
+  my @badops = grep(!$$allowed{$_}, keys %options);
+  Error($operation." does not accept options:".join(', ',@badops)) if @badops;
+}
+
+sub requireMath() {
+  Fatal("Current operation can only appear in math mode") unless LookupValue('IN_MATH');
+  return; }
+
+sub forbidMath() {
+  Fatal("Current operation can not appear in math mode") if LookupValue('IN_MATH');
+  return; }
+
 
 #**********************************************************************
 # Definitions
@@ -249,13 +213,17 @@ sub DefMacro {
 #    isPrefix  : 1 for things like \global, \long, etc.
 #    registerType : for parameters (but needs to be worked into DefParameter, below).
 
-our $primitive_options = {isPrefix=>1,scope=>1};
+our $primitive_options = {isPrefix=>1,scope=>1, requireMath=>1, forbidMath=>1};
 sub DefPrimitive {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefPrimitive ($proto)",$primitive_options,%options);
   my ($cs,$paramlist)=parsePrototype($proto);
   $replacement = sub { (); } unless defined $replacement;
-  $STATE->installDefinition(LaTeXML::Primitive->new($cs,$paramlist,$replacement,%options),
+  $STATE->installDefinition(LaTeXML::Primitive->new($cs,$paramlist,$replacement,
+						    beforeDigest=> flatten(($options{requireMath} ? (\&requireMath):()),
+									   ($options{forbidMath}  ? (\&forbidMath):()),
+									   $options{beforeDigest}),
+						    isPrefix=>$options{isPrefix}),
 			    $options{scope});
   return; }
 
@@ -301,6 +269,8 @@ sub flatten {
 # or a string specifying a constructor pattern (See somewhere).
 #
 # Options are:
+#   bounded         : any side effects of before/after daemans are bounded; they are
+#                     automatically enclosed by bgroup/egroup pair.
 #   mode            : causes a switch into the given mode during the Whatsit building in the stomach.
 #   reversion       : a string representing the preferred TeX form of the invocation.
 #   beforeDigest    : code to be executed (in the stomach) before parsing & constructing the Whatsit.
@@ -309,20 +279,29 @@ sub flatten {
 #                     useful for setting Whatsit properties,
 #   properties      : a hashref listing default values of properties to assign to the Whatsit.
 #                     These properties can be used in the constructor.
-our $constructor_options = {mode=>1, reversion=>1, properties=>1, alias=>1, nargs=>1,
-			    beforeDigest=>1, afterDigest=>1,
-			    captureBody=>1, scope=>1};
+our $constructor_options = {mode=>1, requireMath=>1, forbidMath=>1, font=>1,
+			    reversion=>1, properties=>1, alias=>1, nargs=>1,
+			    beforeDigest=>1, afterDigest=>1, beforeConstruct=>1, afterConstruct=>1,
+			    captureBody=>1, scope=>1, bounded=>1};
 sub DefConstructor {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefConstructor ($proto)",$constructor_options,%options);
   my ($cs,$paramlist)=parsePrototype($proto);
   my $mode = $options{mode};
+  my $bounded = $options{bounded};
   $STATE->installDefinition(LaTeXML::Constructor
 			    ->new($cs,$paramlist,$replacement,
-				  beforeDigest=> flatten(($mode ? (sub { BeginMode($mode); }):()),
+				  beforeDigest=> flatten(($options{requireMath} ? (\&requireMath):()),
+							 ($options{forbidMath}  ? (\&forbidMath):()),
+							 ($mode ? (sub { $_[0]->beginMode($mode); })
+							  :($bounded ? (sub {$_[0]->bgroup;}) :()) ),
+							 ($options{font}? (sub { MergeFont(%{$options{font}});}):()),
 							 $options{beforeDigest}),
 				  afterDigest => flatten($options{afterDigest},
-							 ($mode ? (sub { EndMode($mode) }):())),
+							 ($mode ? (sub { $_[0]->endMode($mode) })
+							  : ($bounded ? (sub{$_[0]->egroup;}):()) )),
+				  beforeConstruct=> flatten($options{beforeConstruct}),
+				  afterConstruct => flatten($options{afterConstruct}),
 				  nargs       => $options{nargs},
 				  alias       => $options{alias},
 				  reversion   => ($options{reversion} && !ref $options{reversion} 
@@ -349,7 +328,7 @@ sub DefConstructor {
 # If the $presentation seems to be TeX (ie. it involves #1... but not ONLY!)
 our $math_options = {name=>1, omcd=>1, reversion=>1, alias=>1,
 		     role=>1, operator_role=>1,
-		     style=>1, size=>1, 
+		     style=>1, size=>1, font=>1,
 		     stackscripts=>1,operator_stackscripts=>1,
 		     beforeDigest=>1, afterDigest=>1, scope=>1, nogroup=>1};
 our $XMID=0;
@@ -388,11 +367,14 @@ sub DefMath {
     if $options{reversion} && !ref $options{reversion};
   my %common =(alias=>$options{alias}||$cs->getString,
 	       (defined $options{reversion} ? (reversion=>$options{reversion}) : ()),
-	       beforeDigest=> flatten(sub{ RequireMath;},
-				      ($options{nogroup} ? ():(\&BGroup)),
+	       beforeDigest=> flatten(\&requireMath,
+				      ($options{nogroup} ? ():(sub{$_[0]->bgroup;})),
+				      ($options{font}? (sub { MergeFont(%{$options{font}});}):()),
 				      $options{beforeDigest}),
 	       afterDigest => flatten($options{afterDigest},
-				      ($options{nogroup} ? ():(\&EGroup))),
+				      ($options{nogroup} ? ():(sub{$_[0]->egroup;}))),
+	       beforeConstruct=> flatten($options{beforeConstruct}),
+	       afterConstruct => flatten($options{afterConstruct}),
 	       properties => {name=>$name, omcd=>$options{omcd},
 			      role => $options{role}, operator_role=>$options{operator_role},
 			      style=>$options{style}, size=>$options{size},
@@ -422,31 +404,32 @@ sub DefMath {
 				$options{scope});
     $STATE->installDefinition(LaTeXML::Constructor->new($cont_cs,$paramlist,
          ($nargs == 0 
-	  ? "<XMTok $attr role='#role' stackscripts='#stackscripts'/>"
-	  : "<XMApp role='#role' stackscripts='#stackscripts'>"
-	  .  "<XMTok $attr role='#operator_role' stackscripts='#operator_stackscripts'/>"
+	  ? "<ltx:XMTok $attr role='#role' stackscripts='#stackscripts'/>"
+	  : "<ltx:XMApp role='#role' stackscripts='#stackscripts'>"
+	  .  "<ltx:XMTok $attr role='#operator_role' stackscripts='#operator_stackscripts'/>"
 	  .   join('',map("#$_", 1..$nargs))
-	  ."</XMApp>"),
+	  ."</ltx:XMApp>"),
          %common), $options{scope}); }
   else {
-    my $end_tok = (defined $presentation ? ">$presentation</XMTok>" : "/>");
+    my $end_tok = (defined $presentation ? ">$presentation</ltx:XMTok>" : "/>");
     $common{properties}{font} = sub { LookupValue('font')->specialize($presentation); };
     $STATE->installDefinition(LaTeXML::Constructor->new($cs,$paramlist,
          ($nargs == 0 
-	  ? "<XMTok role='#role' stackscripts='#stackscripts' font='#font' $attr$end_tok"
-	  : "<XMApp role='#role' stackscripts='#stackscripts'>"
-	  .  "<XMTok $attr font='#font' role='#operator_role' stackscripts='#operator_stackscripts'"
+	  ? "<ltx:XMTok role='#role' stackscripts='#stackscripts' font='#font' $attr$end_tok"
+	  : "<ltx:XMApp role='#role' stackscripts='#stackscripts'>"
+	  .  "<ltx:XMTok $attr font='#font' role='#operator_role' stackscripts='#operator_stackscripts'"
 	  .  " $end_tok"
-	  .   join('',map("<XMArg>#$_</XMArg>", 1..$nargs))
-	  ."</XMApp>"),
+	  .   join('',map("<ltx:XMArg>#$_</ltx:XMArg>", 1..$nargs))
+	  ."</ltx:XMApp>"),
          %common), $options{scope}); }
 }
 
 #======================================================================
 # Define a LaTeX environment
 # Note that the body of the environment is treated is the 'body' parameter in the constructor.
-our $environment_options = {mode=>1, properties=>1, nargs=>1,
-			    beforeDigest=>1, afterDigest=>1,
+our $environment_options = {mode=>1, requireMath=>1, forbidMath=>1,
+			    properties=>1, nargs=>1, font=>1,
+			    beforeDigest=>1, afterDigest=>1, beforeConstruct=>1, afterConstruct=>1,
 			    afterDigestBegin=>1, #beforeDigestEnd=>1
 			    scope=>1};
 sub DefEnvironment {
@@ -459,11 +442,15 @@ sub DefEnvironment {
   # This is for the common case where the environment is opened by \begin{env}
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\begin{$name}"), $paramlist,$replacement,
-				   beforeDigest=>flatten(($mode ? (sub { BeginMode($mode);})
-							  : (\&BGroup)),
+				   beforeDigest=>flatten(($options{requireMath} ? (\&requireMath):()),
+							 ($options{forbidMath}  ? (\&forbidMath):()),
+							 ($mode ? (sub { $_[0]->beginMode($mode);})
+							  : (sub {$_[0]->bgroup;})),
 							 sub { AssignValue(current_environment=>$name); },
+							 ($options{font}? (sub { MergeFont(%{$options{font}});}):()),
 							 $options{beforeDigest}),
 				   afterDigest =>flatten($options{afterDigestBegin}),
+				   beforeConstruct=> flatten(sub{$STATE->pushFrame;},$options{beforeConstruct}),
 				   nargs=>$options{nargs},
 				   captureBody=>1, 
 				   properties=>$options{properties}||{}),
@@ -475,14 +462,19 @@ sub DefEnvironment {
 							      Error("Cannot close environment $name; current is $env")
 								unless $name eq $env; 
 							    return; },
-							($mode ? (sub { EndMode($mode);})
-							 :(\&EGroup)))),
+							($mode ? (sub { $_[0]->endMode($mode);})
+							 :(sub{$_[0]->egroup;}))),
+				   afterConstruct => flatten($options{afterConstruct},sub{$STATE->popFrame;})),
 			     $options{scope});
   # For the uncommon case opened by \csname env\endcsname
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\$name"), $paramlist,$replacement,
-				   beforeDigest=>flatten(($mode ? (sub { BeginMode($mode);}):()),
+				   beforeDigest=>flatten(($options{requireMath} ? (\&requireMath):()),
+							 ($options{forbidMath}  ? (\&forbidMath):()),
+							 ($mode ? (sub { $_[0]->beginMode($mode);}):()),
+							 ($options{font}? (sub { MergeFont(%{$options{font}});}):()),
 							 $options{beforeDigest}),
+				   beforeConstruct=> flatten(sub{$STATE->pushFrame;},$options{beforeConstruct}),
 				   nargs=>$options{nargs},
 				   captureBody=>1,
 				   properties=>$options{properties}||{}),
@@ -490,7 +482,8 @@ sub DefEnvironment {
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\end$name"),"","",
 				   afterDigest=>flatten($options{afterDigest},
-							($mode ? (sub { EndMode($mode);}):()))),
+							($mode ? (sub { $_[0]->endMode($mode);}):())),
+				   afterConstruct => flatten($options{afterConstruct},sub{$STATE->popFrame;})),
 			     $options{scope});
   return; }
 
@@ -501,25 +494,30 @@ our $tag_options = {autoOpen=>1, autoClose=>1, afterOpen=>1, afterClose=>1};
 sub Tag {
   my($tag,%properties)=@_;
   CheckOptions("Tag ($tag)",$tag_options,%properties);
-  foreach my $key (keys %properties){
-    $MODEL->setTagProperty($tag,$key,$properties{$key}); }
+  my $model = $STATE->getModel;
+  $model->setTagProperty($tag,autoOpen=>$properties{autoOpen}) if $properties{autoOpen};
+  $model->setTagProperty($tag,autoClose=>$properties{autoClose}) if $properties{autoClose};
+  $model->setTagProperty($tag,afterOpen=>flatten($model->getTagProperty($tag,'afterOpen'),$properties{afterOpen}))
+    if $properties{afterOpen};
+  $model->setTagProperty($tag,afterClose=>flatten($model->getTagProperty($tag,'afterClose'),$properties{afterClose}))
+    if $properties{afterClose};
   return; }
 
 sub DocType {
-  my($rootelement,$pubid,$sysid)=@_;
-  $MODEL->setDocType($rootelement,$pubid,$sysid);
+  my($rootelement,$pubid,$sysid,%namespaces)=@_;
+  $STATE->getModel->setDocType($rootelement,$pubid,$sysid,%namespaces);
   return; }
 
 sub RegisterNamespace {
-  my($prefix,$namespace,$default)=@_;
-  $MODEL->registerNamespace($prefix,$namespace,$default);
+  my($prefix,$namespace)=@_;
+  $STATE->getModel->registerNamespace($prefix,$namespace);
   return; }
 
 our $require_options = {options=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
-  Input($package,['ltxml','sty'],%options); 
+  $STATE->getStomach->getGullet->input($package,['ltxml','sty'],%options); 
   return; }
 
 sub RawTeX {
@@ -535,15 +533,28 @@ our $rewrite_options = {label=>1,scope=>1, xpath=>1, match=>1,
 sub DefRewrite {
   my(@specs)=@_;
   CheckOptions("DefRewrite",$rewrite_options,@specs);
-  $MODEL->addRewriteRule('text',@specs); 
+  $STATE->getModel->addRewriteRule('text',@specs); 
   return; }
 
 sub DefMathRewrite {
   my(@specs)=@_;
   CheckOptions("DefRewrite",$rewrite_options,@specs);
-  $MODEL->addRewriteRule('math',@specs); 
+  $STATE->getModel->addRewriteRule('math',@specs); 
   return; }
 
+our $ligature_options = {fontTest=>1};
+sub DefLigature {
+  my($regexp,%options)=@_;
+  CheckOptions("DefLigature",$ligature_options,%options);
+  $STATE->getModel->addLigature($regexp,%options);
+  return; }
+
+#our $math_ligature_options = {fontTest=>1, nodeText=>1, attributes=>1};
+sub DefMathLigature {
+  my($matcher)=@_;
+#  CheckOptions("DefMathLigature",$math_ligature_options,%options);
+  $STATE->getModel->addMathLigature($matcher);
+  return; }
 #**********************************************************************
 1;
 
@@ -629,10 +640,11 @@ various packages in LaTeXML.
   use strict;
 
   # Use a special DocType, if not LaTeXML.dtd
-  DocType("rootelement","-//Your Site//Your Document Type",'your.dtd');
+  DocType("rootelement","-//Your Site//Your Document Type",'your.dtd',
+          prefix=>"http://whatever/");
 
   # Allow sometag elements to be automatically closed if needed
-  Tag('sometag', autoClose=>1);
+  Tag('pre:sometag', autoClose=>1);
 
   # define a roman numeral conversion.
   DefExpandable('\romannumeral Number', sub { roman($_[1]); });
@@ -906,7 +918,6 @@ Gives C<$token1> the same `meaning' (definition) as C<$token2>; like TeX's \let.
 
 =back
 
-
 =head2 Document Declarations
 
 =over 4
@@ -931,19 +942,24 @@ The recognized properties are:
 
 The autoOpen and autoClose properties help match the more  SGML-like LaTeX to XML.
 
-=item C<< DocType($rootelement,$publicid,$systemid,$namespace); >>
+=item C<< DocType($rootelement,$publicid,$systemid,%namespaces); >>
 
 Declares the expected rootelement, the public and system ID's of the document type
-to be used in the final document, and the default namespace URI.
+to be used in the final document.  The hash C<%namespaces> specifies
+the namespace prefixes that are expected to be found in the DTD, along with
+the associated namespace URI.  These prefixes may be different from
+the prefixes used in implementation code (eg. in ltxml files; see RegisterNamespace).
+The generated document will use the namespaces and prefixes defined here.
 
-=item C<< RegisterNamespace($prefix,$URL,$default); >>
+=item C<< RegisterNamespace($prefix,$URL); >>
 
 Declares the C<$prefix> to be associated with the given C<$URL>.
-If C<$default> is true, then all created xml elements (eg. within constructors)
-without a specific namespace prefix will be assumed to use this prefix.
+These prefixes may be used in code in ltxml files, particularly for
+constructors, xpath expressions, etc.  They are not necessarily
+the same as the prefixes that will be used in the generated document
+(See DocType).
 
 =back
-
 
 =head2 Document Rewriting
 
@@ -1005,33 +1021,6 @@ The following are exported as a convenience when writing definitions.
 
 =over 4
 
-=item C<< BGroup; >>
-
-Begin a new level of binding and boxing by pushing a new stack frame, like C<\bgroup>.
-
-=item C<< EGroup; >>
-
-End a level of binding and boxing by popping the last stack frame,
-undoing whatever bindings appeared there, like C<\egroup>.
-
-=item C<< BeginGroup; >>
-
-Begin a new level of binding by pushing a new stack frame, like C<\begingroup>.
-
-=item C<< EndGroup; >>
-
-End a level of binding by popping the last stack frame,
-undoing whatever bindings appeared there, like C<\endgroup>.
-
-=item C<< BeginMode($mode); >>
-
-Begin with C<$mode>, begining a new level of grouping, switching fonts as needed.
-C<$mode> should be one of C<display_math>, C<inline_math> or C<text>.
-
-=item C<< EndMode($mode); >>
-
-End C<$mode> which should be the current mode.
-
 =item C<< $value = LookupValue($name); >>
 
 Lookup the current value associated with the the string C<$name>.
@@ -1088,23 +1077,10 @@ Looks up the current definition, if any, of the C<$token>.
 Install the Definition C<$defn> into C<$STATE> under its
 control sequence.
 
-=item C<< $boxes = InvokeToken($token); >>
-
-Invoke the definition of the given C<$token>, possibly reading
-arguments from the current C<$GULLET>.
-
 =item C<< $boxes = Digest($tokens); >>
 
 Processes and digestes the C<$tokens>.  Any arguments needed by
 control sequences in C<$tokens> must be contained within the C<$tokens> itself.
-
-=item C<< RequireMath; >>
-
-Signals an error unless we are currently in math mode.
-
-=item C<< ForbidMath; >>
-
-Signals an error if we are currently in math mode.
 
 =item C<< MergeFont(%style); >>
 
@@ -1128,62 +1104,15 @@ Formats the C<$number> in (lowercase) roman numerals, returning a list of the to
 
 Formats the C<$number> in (uppercase) roman numerals, returning a list of the tokens.
 
-=item C<< $token = ReadToken; >>
-
-Reads a Token from the Gullet.  This allows 'Token' to be used as a parameter spec.
-
-=item C<< $token = ReadXToken; >>
-
-Reads a Tokens from the Gullet and expands them until an unexpandable token is found.
-This allows 'XToken' to be used as a parameter spec.
-
-=item C<< $number = ReadNumber; >>
-=item C<< $dimen = ReadDimension; >>
-=item C<< $skip  = ReadGlue; >>
-=item C<< $mudimen = ReadMuDimension; >>
-=item C<< $muskip = ReadMuGlue; >>
-
-Reads a Number, Dimension, Glue, MuDimension, MuGlue from the Gullet, following
-TeX's rules.
-This allows these types to be used as parameter specs.
-
-=item C<< $tokens = ReadUntilBrace; >>
-
-Reads tokens until a open brace C<{> is found; this is used for some
-TeX definitions like C<\hbox>.  
-This allows 'UntilBrace' to be used as a parameter spec.
-
 =item C<< SkipSpaces(); >>
 
 Skips any spaces in the input.
 This allows 'SkipSpaces' to be used in a parameter spec, without
 contributing an argument.
 
-=item C<< $tokens = ReadMatch($keyword,...); >>
-
-Matches the input against any of the given C<$keywords> (each is a Tokens),
-returning the matching one, if any.
-This allows something like 'Keyword:foo:bar' to be used as a parameter spec.
-
-=item C<< $tokens = ReadKeyword($keyword,...); >>
-
-Similar to ReadMatch, but the keywords are strings and the matching
-ignores category codes.
-
 =item C<< $tokens = ReadUntil($keyword,...); >>
 
 Reads input until matching one of the C<$keyword>s.
-
-=item C<< Input($path,$types); >>
-
-Reads and processes an input file at C<$path>. Unless C<$path> is found
-under that name, C<$types> is an array of allowed extensions.
-Reasonable choices are C<tex>, C<sty>, C<ltxml>, C<latexml>.
-
-=item C<< $boolean = IfNext($token); >>
-
-Returns true if the next token on input is equal to $token;
-it does I<not> remove the token.
 
 =item C<< $tokens = Expand($tokens); >>
 
@@ -1194,23 +1123,9 @@ Expands the given C<$tokens> according to current definitions.
 Constructs a sequence of tokens that would invoke the token C<$cs>
 on the arguments.
 
-=item C<< $tokens = ReadArg(); >>
-
-Reads a regular TeX argument; tokens delimted by braces or a single token.
-
-=item C<< $tokens = ReadOptional(); >>
-
-Reads a LaTeX-style optional argument, delimited by square brackets, if any.
-
 =item C<< StartSemiVerbatim(); ... ; EndSemiVerbatim(); >>
 
 Reads an argument delimted by braces, while disabling most TeX catcodes.
-
-=item C<< $tokens = ReadBalanced(); >>
-
-Reads a a sequence of tokens balanced in C<{}>; assumes the initial
-C<{> has already been read.
-
 
 =back
 

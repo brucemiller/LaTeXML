@@ -30,13 +30,16 @@ use LaTeXML::Util::Color;
 # http://tex.loria.fr/graph-pack/grf/grf.pdf
 # http://www.december.com/html/spec/colorsvg.html
 
-DefMacro('\definecolor{}{}{}', sub {
-	   AssignValue('color_'.$_[1]->toString, ConvertColor($_[2]->toString, $_[3]->toString));
-	   return; });
+DefPrimitive('\definecolor{}{}{}', sub {
+	       AssignValue('color_'.$_[1]->toString, ConvertColor($_[2]->toString, $_[3]->toString));
+	       return; });
 
 sub getColor {
-  my ($model, $spec) = @_; $spec = $spec->toString;
-  $model?ConvertColor($model->toString, $spec):(LookupValue('color_'.$spec) || $spec); }
+  my($model,$spec) = @_;
+  $spec = $spec->toString;
+  $model ? ConvertColor($model->toString, $spec) : (LookupValue('color_'.$spec) || $spec); }
+
+# NOTE: Why are these defined as macros, rather than primitives?
 
 # \color{name}
 DefMacro('\color[]{}', sub {
@@ -71,22 +74,17 @@ DefMacro('\pagecolor[]{}', sub {
 
 #\colorbox{name}{text}
 #\colorbox[model]{spec}{text}
-DefConstructor('\colorbox[]{}{}',"<text backgroundcolor='#bcolor'>#3</text>",
-	       afterDigest=> sub {
-		 $_[0]->setProperty('bcolor', getColor($_[0]->getArg(1),$_[0]->getArg(2)));
-		 return; },
+DefConstructor('\colorbox[]{}{}',"<ltx:text backgroundcolor='#bcolor'>#3</ltx:text>",
+	       properties=>{ bcolor=>sub { getColor($_[1],$_[2]); }},
 	       mode=>'text');
 
 #\fcolorbox{name}{text}
 #\fcolorbox[model]{spec}{text}
-DefConstructor('\fcolorbox[]{}{}{}',"<text framed='yes' framecolor='#fcolor' ".
-	       "backgroundcolor='#bcolor'>#4</text>",
-	       afterDigest=> sub {
-		 $_[0]->setProperties(bcolor=>getColor($_[0]->getArg(1),$_[0]->getArg(2)),
-				      fcolor=>getColor($_[0]->getArg(1),$_[0]->getArg(3)));
-		 return; },
+DefConstructor('\fcolorbox[]{}{}{}',
+	       "<ltx:text framed='yes' framecolor='#fcolor' backgroundcolor='#bcolor'>#4</ltx:text>",
+	       properties=>{ bcolor=>sub { getColor($_[1],$_[2]); },
+			     fcolor=>sub { getColor($_[1],$_[3]); }},
 	       mode=>'text');
-
 
 #********************************************************************************
 1;

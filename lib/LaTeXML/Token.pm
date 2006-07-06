@@ -82,7 +82,9 @@ sub getLocator { ''; }
 sub revert { $_[0]; }
 sub toString { $_[0]->[0]; }
 
-sub beDigested { $STOMACH->digest($_[0]); }
+sub beDigested { 
+  my($self,$stomach)=@_;
+  $stomach->digest($self); }
 
 #======================================================================
 # Methods for overloaded ops.
@@ -156,7 +158,9 @@ sub stringify {
   my($self)=@_;
   "Tokens[".join(',',map($_->toString,@$self))."]"; }
 
-sub beDigested { $STOMACH->digest($_[0]); }
+sub beDigested { 
+  my($self,$stomach)=@_;
+  $stomach->digest($self); }
 
 #======================================================================
 # The following implements the Mouth API, so that a Token list can

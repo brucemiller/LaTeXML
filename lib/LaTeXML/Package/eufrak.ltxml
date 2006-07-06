@@ -14,8 +14,6 @@
 # See amsfndoc
 #
 # Only defines \mathfrak to use the Euler Fraktur font
-DefConstructor('\mathfrak{}','#1',
-	       beforeDigest=>sub{ RequireMath; BGroup; MergeFont(family=>'fraktur'); },
-	       afterDigest=>\&EGroup);
+DefConstructor('\mathfrak{}','#1', bounded=>1, requireMath=>1, font=>{family=>'fraktur'});
 
 1;

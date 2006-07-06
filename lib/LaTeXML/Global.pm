@@ -22,10 +22,12 @@
 package LaTeXML::Global;
 use strict;
 use XML::LibXML;
+use Time::HiRes;
+
 use base qw(Exporter);
 our @EXPORT = ( 
-	       # Global State accessors; These variables get bound by LaTeXML.pm
-	       qw( *STATE *GULLET *STOMACH *MODEL),
+	       # Global STATE; This gets bound by LaTeXML.pm
+	       qw( *STATE),
 	       # Catcode constants
 	       qw( CC_ESCAPE  CC_BEGIN  CC_END     CC_MATH
 		   CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
@@ -40,7 +42,7 @@ our @EXPORT = (
 	       # Number & Dimension constructors
 	       qw( &Number &Float &Dimension &MuDimension &Glue &MuGlue &Pair &PairList),
 	       # Error & Progress reporting
-	       qw( &NoteProgress &Fatal &Error &Warn ),
+	       qw( &NoteProgress &NoteBegin &NoteEnd &Fatal &Error &Warn ),
 	       # And some generics
 	       qw(&Stringify &ToString  &Equals)
 );
@@ -77,10 +79,13 @@ sub Token {
 #======================================================================
 # These belong to Mouth, but make more sense here.
 
+# WARNING: These two utilities bind $STATE to simple State objects with known fixed catcodes.
+# The State normally contains ALL the bindings, etc and links to other important objects.
+# We CAN do that here, since we are ONLY tokenizing from a new Mouth, bypassing stomach & gullet.
+# However, be careful with any changes.
+
 our $STD_CATTABLE;
 our $STY_CATTABLE;
-# Note that we are overriding $STATE, which normally contains ALL the bindings, etc.
-# But, since we are just tokenizing, only the catcode bindings matter.
 
 # Tokenize($string); Tokenizes the string using the standard cattable, returning a LaTeXML::Tokens
 sub Tokenize         {
@@ -132,6 +137,19 @@ sub NoteProgress {
   print STDERR @_ if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0;
   return; }
 
+our %note_timers=();
+sub NoteBegin {
+  my($state)=@_;
+  $note_timers{$state}=[Time::HiRes::gettimeofday];
+  print STDERR "\n($state..." if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0; }
+
+sub NoteEnd {
+  my($state)=@_;
+  if(my $start = $note_timers{$state}){
+    my $elapsed = Time::HiRes::tv_interval($start,[Time::HiRes::gettimeofday]);
+    undef $note_timers{$state};
+    print STDERR sprintf(" %.2f sec)",$elapsed) if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0; }}
+
 sub Fatal { 
   my($message)=@_;
   if(!$LaTeXML::Error::InHandler && defined($^S)){
@@ -173,18 +191,19 @@ sub Stringify {
   # Have to handle LibXML stuff explicitly (unless we want to add methods...?)
   elsif($object->isa('XML::LibXML::Node')){
     if($object->nodeType == XML_ELEMENT_NODE){ 
-#      "$object"."[".$object->nodeName."]";
       my $attributes ='';
       foreach my $attr ($object->attributes){
 	my $name = $attr->nodeName;
 	next if $name =~ /^_/;
 	$attributes .= ' '. $name. "=\"".$attr->getData."\""; }
-      "<".$object->nodeName.$attributes.">";
+      "<".$object->nodeName.$attributes. ($object->hasChildNodes ? ">..." : "/>");
     }
+    elsif($object->nodeType == XML_TEXT_NODE){
+      "XMLText[".$object->data."]"; }
+    elsif($object->nodeType == XML_DOCUMENT_NODE){
+      "XMLDocument[".$$object."]"; }
     else { "$object"; }}
   else { "$object"; }}
-#  (defined $object ? (((ref $object) && !$NOBLESS{ref $object}) && $object->can('stringify') ? $object->stringify : "$object")
-#   : 'undef'); }
 
 sub ToString {
   my($object)=@_;
@@ -220,10 +239,10 @@ throughout LaTeXML, and in Package implementations.
 
 =over 4
 
-=item C<< $STATE, $GULLET, $STOMACH, $MODEL; >>
+=item C<< $STATE; >>
 
-These are bound to the currently active L<LaTeXML::State>, L<LaTeXML::Gullet>, L<LaTeXML::Stomach>
-and L<LaTeXML::Model> by an instance of L<LaTeXML> during processing.
+This is bound to the currently active L<LaTeXML::State> by an instance
+of L<LaTeXML> during processing.
 
 =back 
 

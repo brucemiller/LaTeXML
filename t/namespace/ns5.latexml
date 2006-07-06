@@ -1,0 +1,28 @@
+use strict;
+use LaTeXML::Package;
+
+#======================================================================
+# Namespace tests ns1.tex, ns2.tex, ns3.tex...
+# The TeX sources are identical
+#======================================================================
+# Case 5: The DTD uses the two namespaces, but only one prefix "inner"
+# The XML output should use the same prefixes.
+# The code will use the prefix similar but different namespace prefixes
+#======================================================================
+
+RegisterNamespace(incode=>"http://inner.com/");
+RegisterNamespace(outcode=>"http://outer.com/");
+
+DocType("outcode:song","-//NIST LaTeXML//LaTeXML Poem",'song-nsm.dtd',
+        'inner'=>"http://inner.com/",
+        '#default'=>"http://outer.com/");
+
+Tag('outcode:song',  autoOpen=>1, autoClose=>1);
+Tag('outcode:verse', autoOpen=>1, autoClose=>1);
+Tag('incode:line',  autoOpen=>1, autoClose=>1);
+DefConstructor('\bigskip',"<outcode:verse>");
+DefConstructor('\par',sub{ $_[0]->maybeCloseElement('incode:line'); });
+
+
+#**********************************************************************
+1;

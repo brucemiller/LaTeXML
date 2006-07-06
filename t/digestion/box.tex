@@ -1,0 +1,38 @@
+\documentclass{article}
+\def\testbox#1{%
+ \ifvoid#1 Box #1 is empty
+ \else\ifhbox#1 Box #1 is horizontal
+ \else\ifvbox#1 Box #1 is vertical
+ \fi\fi\fi
+ \par}
+\begin{document}
+\setbox0=\hbox{Goodbye}
+\testbox{0}
+\setbox1=\hbox{Hello}
+\testbox{1}
+\setbox2=\vbox{\box1,\box0}
+\testbox{2}
+
+Using...
+\box2
+
+\setbox3=\hbox{}
+\testbox{3}
+
+\testbox{4}
+
+\[ a + \hbox{a}\]
+\[ a + \vbox{a}\]
+
+\[ a + \vbox{\hbox{a}\hbox{a}} \]
+\[ a + \vtop{\hbox{a}\hbox{a}} \]
+
+\[ a - \lower1ex\vtop{\hbox{a}} \]
+\[ a - \lower1ex\vbox{\hbox{a}} \]
+
+\[ a - \lower1ex\hbox{a} \]
+
+\def\mybox#1{\hbox{#1}}
+\[ a - \lower1ex\mybox{a} \]
+
+\end{document}

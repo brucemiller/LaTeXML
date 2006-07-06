@@ -15,6 +15,7 @@ use strict;
 use XML::LibXML;
 use File::Spec;
 
+our $NSURI = "http://dlmf.nist.gov/LaTeXML";
 #**********************************************************************
 sub new {
   my($class)=@_;
@@ -23,7 +24,7 @@ sub new {
 sub process {
   my($self,$doc,%options)=@_;
 
-  $options{namespaceURI} = "http://dlmf.nist.gov/LaTeXML";
+  $options{namespace} = $NSURI;
 
   foreach my $processor (@{$options{processors}}){
     $processor->init(%options); 
@@ -218,7 +219,7 @@ sub findNodeByID {
 
 sub realizeXMNode {
   my($self,$doc,$node)=@_;
-  ($node->nodeName eq 'XMRef' 
+  (($node->localname eq 'XMRef') && ($node->getNamespaceURI eq $NSURI)
    ? $node=$self->findNodeByID($doc,$node->getAttribute('idref'))
    : $node); }
 

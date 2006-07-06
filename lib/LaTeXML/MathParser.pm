@@ -48,21 +48,18 @@ sub new {
   $self; }
 
 sub parseMath {
-  my($self,$doc,%options)=@_;
-  local $LaTeXML::MathParser::DOCUMENT = $doc;
+  my($self,$document,%options)=@_;
+  local $LaTeXML::MathParser::DOCUMENT = $document;
   $self->clear;			# Not reentrant!
-  my $xmldoc = $doc->getDocument;
   $$self{idcache}={};
-  foreach my $node ($xmldoc->findnodes("//*[\@id]")){
+  foreach my $node ($document->findnodes("//*[\@id]")){
     $$self{idcache}{$node->getAttribute('id')} = $node; }
 
-  my @math =  $MODEL->getXPath->findnodes('descendant-or-self::ltxml:XMath',$xmldoc);
-  NoteProgress("\n(Math Parsing: ".scalar(@math)." formulae ");
-
-  if(@math){
-    local $LaTeXML::MathParser::CAPTURE = $xmldoc->documentElement->addNewChild($nsURI,'XMath');
+  if(my @math =  $document->findnodes('descendant-or-self::ltx:XMath')){
+    NoteBegin("Math Parsing"); NoteProgress(scalar(@math)." formulae ...");
+    local $LaTeXML::MathParser::CAPTURE = $document->getDocument->documentElement->addNewChild($nsURI,'XMath');
     foreach my $math (@math){
-      $self->parse($math,$doc); }
+      $self->parse($math,$document); }
 
     $LaTeXML::MathParser::CAPTURE->parentNode->removeChild($LaTeXML::MathParser::CAPTURE);
 
@@ -77,9 +74,8 @@ sub parseMath {
       NoteProgress("Possibly used as functions?\n  "
 		   .join(', ',map("'$_' ($$self{maybe_functions}{$_}/$$self{unknowns}{$_} usages)",
 				  sort @funcs))."\n"); }
-  }
-  NoteProgress(")");
-  $doc; }
+    NoteEnd("Math Parsing");  }
+  $document; }
 
 # ================================================================================
 sub clear {
@@ -198,12 +194,12 @@ sub node_location {
 # subexpressions.
 # XMArg and XMWrap
 sub parse {
-  my($self,$xnode,$doc)=@_;
+  my($self,$xnode,$document)=@_;
   local $LaTeXML::MathParser::STRICT = 1;
   local $LaTeXML::MathParser::WARNED = 0;
   local $LaTeXML::MathParser::XNODE  = $xnode;
 
-  if(my $result = $self->parse_rec($xnode,'Anything,',$doc)){
+  if(my $result = $self->parse_rec($xnode,'Anything,',$document)){
     # Add text representation to the containing Math element.
     $xnode->parentNode->setAttribute('text',text_form($result)); }
 }
@@ -212,12 +208,12 @@ our %TAG_FEEDBACK=(XMArg=>'a',XMWrap=>'w');
 # Recursively parse a node with some internal structure
 # by first parsing any structured children, then it's content.
 sub parse_rec {
-  my($self,$node,$rule,$doc)=@_;
-  $self->parse_children($node,$doc);
+  my($self,$node,$rule,$document)=@_;
+  $self->parse_children($node,$document);
   my $tag  = $node->localname;
   if(my $requested_rule = $node->getAttribute('rule')){
     $rule = $requested_rule; }
-  if(my $result= $self->parse_internal($node,$doc,$rule)){
+  if(my $result= $self->parse_internal($node,$document,$rule)){
     $$self{passed}{$tag}++;
    if($tag eq 'XMath'){	# Replace content of XMath
      NoteProgress('['.++$$self{n_parsed}.']');
@@ -242,23 +238,23 @@ sub parse_rec {
 
 # Depth first parsing of XMArg nodes.
 sub parse_children {
-  my($self,$node,$doc)=@_;
+  my($self,$node,$document)=@_;
   foreach my $child (element_nodes($node)){
     my $tag = $child->localname;
     if($tag eq 'XMArg'){
-      $self->parse_rec($child,'Anything',$doc); }
+      $self->parse_rec($child,'Anything',$document); }
     elsif($tag eq 'XMWrap'){
       local $LaTeXML::MathParser::STRICT=0;
-      $self->parse_rec($child,'Anything',$doc); }
+      $self->parse_rec($child,'Anything',$document); }
     elsif(($tag eq 'XMApp')||($tag eq 'XMDual')){
-      $self->parse_children($child,$doc); }
+      $self->parse_children($child,$document); }
 }}
 
 
 # ================================================================================
 
 sub parse_internal {
-  my($self,$mathnode,$doc,$rule)=@_;
+  my($self,$mathnode,$document,$rule)=@_;
   #  Remove Hints!
   my @nodes = element_nodes($mathnode);
   @nodes = grep( $_->localname ne 'XMHint', @nodes);
@@ -279,7 +275,7 @@ sub parse_internal {
     $result = $nodes[0]; }
   else {
     if($LaTeXML::MathParser::DEBUG){
-      if(my $string = join(' ',map(node_string($_,$doc),@nodes))){
+      if(my $string = join(' ',map(node_string($_,$document),@nodes))){
 	print STDERR "Parsing \"$string\"\n"; }}
 
     # Generate a textual token for each node; The parser operates on this encoded string.
@@ -304,7 +300,7 @@ sub parse_internal {
       $$LaTeXML::MathParser::LEXEMES{$lexeme} = $node;
       $textified .= ' '.$lexeme; }
 
-    #print STDERR "MathParse Node:\"".join(' ',map(node_string($_,$doc),@nodes))."\"\n => \"$textified\"\n";
+    #print STDERR "MathParse Node:\"".join(' ',map(node_string($_,$document),@nodes))."\"\n => \"$textified\"\n";
 
     # Finally, apply the parser to the textified sequence.
     local $LaTeXML::MathParser::PARSER = $self;
@@ -316,13 +312,13 @@ sub parse_internal {
     if($LaTeXML::MathParser::STRICT || (($STATE->lookupValue('VERBOSITY')||0)>1)){
       if(! $LaTeXML::MathParser::WARNED){
 	$LaTeXML::MathParser::WARNED=1;
-	my $box = $doc->getNodeBox($LaTeXML::MathParser::XNODE);
+	my $box = $document->getNodeBox($LaTeXML::MathParser::XNODE);
 	Warn("In formula \"".ToString($box)." from ".$box->getLocator); }
       $textified =~ s/^\s*//;
       my @rest=split(/ /,$textified);
       my $pos = scalar(@nodes) - scalar(@rest);
-      my $parsed  = join(' ',map(node_string($_,$doc),@nodes[0..$pos-1]));
-      my $toparse = join(' ',map(node_string($_,$doc),@nodes[$pos..$#nodes]));
+      my $parsed  = join(' ',map(node_string($_,$document),@nodes[0..$pos-1]));
+      my $toparse = join(' ',map(node_string($_,$document),@nodes[$pos..$#nodes]));
       my $lexeme = node_location($nodes[$pos] || $nodes[$pos-1] || $mathnode);
       Warn("  MathParser failed to match rule $rule for ".$mathnode->localname." at pos. $pos in $lexeme at\n   "
 	   . ($parsed ? $parsed."   \n".(' ' x (length($parsed)-2)) : '')."> ".$toparse);
@@ -393,7 +389,7 @@ sub textrec {
     # ??
     join('@',map(textrec($_), element_nodes($node))); }
   else {
-    my $string = ($tag eq 'text' ? $node->textContent :     $node->getAttribute('tex') || '?');
+    my $string = ($tag eq 'XMText' ? $node->textContent :     $node->getAttribute('tex') || '?');
       "[$string]"; }}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -425,7 +421,7 @@ sub Lookup {
 sub New {
   my($name,$content,%attributes)=@_;
 #  my $node=XML::LibXML::Element->new('XMTok');
-#  $node->setNamespace($nsURI,'ltxml',1);
+#  $node->setNamespace($nsURI,'ltx',1);
   my $node=new_node('XMTok');
 
   $node->appendText($content) if $content;
@@ -457,7 +453,7 @@ sub Annotate {
 sub Apply {
   my($op,@args)=@_;
 #  my $node=XML::LibXML::Element->new('XMApp');
-#  $node->setNamespace($nsURI,'ltxml',1);
+#  $node->setNamespace($nsURI,'ltx',1);
   my $node=new_node('XMApp');
   append_nodes($node,$op,@args);
   $node; }

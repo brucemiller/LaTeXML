@@ -17,9 +17,7 @@
 use strict;
 use LaTeXML::Package;
 
-DefConstructor('\boldsymbol{}', '#1',
-	       beforeDigest=>sub { RequireMath; BGroup; MergeFont(forcebold=>1); },
-	       afterDigest =>\&EGroup);
+DefConstructor('\boldsymbol{}', '#1', bounded=>1, requireMath=>1, font=>{forcebold=>1});
 
 # I think the intent is that you use \pmb to get bold, but your current font doesn't supply
 # a bold for those glyphs.  Since we're just forcing the glyph to be bold, 

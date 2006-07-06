@@ -74,11 +74,19 @@ RequirePackage('amsopn');
 
 # Multiline is for single equations, but split on multiple lines, using \\ to separate lines.
 DefEnvironment('{multline}',
-	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>", 
+	       "<ltx:equation refnum='#refnum' id='#id'>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>#body</ltx:XMath>"
+	       . "</ltx:Math>"
+	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       properties=> {refnum=>sub { refStepCounter('equation'); }});
+	       properties=> sub { refStepCounter('equation') });
 DefEnvironment('{multline*}',
-	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>", 
+	       "<ltx:equation>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>#body</ltx:XMath>"
+	       . "</ltx:Math>"
+	       ."</ltx:equation>",
 	       mode=>'display_math');
 
 #======================================================================
@@ -88,35 +96,55 @@ DefEnvironment('{multline*}',
 # It is not entirely clear the contents necessarily represent any complete mathematical entity,
 # so the begin and end also yield XMHint's!
 DefEnvironment('{split}',
-	       "<XMHint name='split-begin'/>#body<XMHint name='split-end'/>",
-	       beforeDigest=>sub{ DefConstructor("&","<XMHint name='align'/>"); });
+	       "<ltx:XMHint name='split-begin'/>#body<ltx:XMHint name='split-end'/>",
+	       beforeDigest=>sub{ DefConstructor("&","<ltx:XMHint name='align'/>"); });
 
 #======================================================================
 # Section 3.5 Equation groups without alignment
 
 DefConstructor('\@@gather@newline',
-	       "</XMath></Math></equation>"
-	       ."<equation refnum='#refnum'><Math mode='display'><XMath>",
-	       properties=> {refnum=>sub { refStepCounter('equation'); }},
+	       "   </ltx:XMath>"
+	       . "</ltx:Math>"
+	       ."</ltx:equation>"
+	       ."<ltx:equation refnum='#refnum'> id='#id'"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>",
+	       properties=> sub { refStepCounter('equation') },
 	       alias=>'\\');
 DefConstructor('\@@gather@newline@nonum',
-	       "</XMath></Math></equation>"
-	       ."<equation><Math mode='display'><XMath>",
+	       "   </ltx:XMath>"
+	       ." </ltx:Math>"
+	       ."</ltx:equation>"
+	       ."<ltx:equation>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>",
 	       alias=>'\\');
 
 # gather collects several equations, separated by \\
 # NOTE: This gets the structure right, but the addition of tex property isn't cooperating.
 DefEnvironment('{gather}',
-	       "<equationgroup><equation refnum='#refnum'><Math mode='display'><XMath>"
-	       ."#body"
-	       ."</XMath></Math></equation></equationgroup>",
+	       "<ltx:equationgroup>"
+	       . "<ltx:equation refnum='#refnum' id='#id'>"
+	       .  "<ltx:Math mode='display'>"
+	       .   "<ltx:XMath>"
+	       .    "#body"
+	       .   "</ltx:XMath>"
+	       .  "</ltx:Math>"
+	       . "</ltx:equation>"
+	       ."</ltx:equationgroup>",
 	       mode=>'display_math',
 	       beforeDigest=>sub{  Let("\\\\",'\@@gather@newline'); },
-	       properties=> {refnum=>sub { refStepCounter('equation'); }});
+	       properties=> sub { refStepCounter('equation') });
 DefEnvironment('{gather*}',
-	       "<equationgroup><equation><Math mode='display'><XMath>"
-	       ."#body"
-	       ."</XMath></Math></equation></equationgroup>",
+	       "<ltx:equationgroup>"
+	       . "<ltx:equation>"
+	       .  "<ltx:Math mode='display'>"
+	       .   "<ltx:XMath>"
+	       .    "#body"
+	       .   "</ltx:XMath>"
+	       .  "</ltx:Math>"
+	       . "</ltx:equation>"
+	       ."</ltx:equationgroup>",
 	       mode=>'display_math',
 	       beforeDigest=>sub{ Let("\\\\",'\@@gather@newline@nonum'); });
 
@@ -129,75 +157,116 @@ DefEnvironment('{gather*}',
 # where each lhs is right aligned, and rhs is left aligned.
 
 DefConstructor('\@@align@newline',
-	       "</XMath></Math></equation>"
-	       ."<equation refnum='#refnum'><Math mode='display'><XMath>",
-	       properties=> {refnum=>sub { refStepCounter('equation'); }},
+	       "</ltx:XMath></ltx:Math></ltx:equation>"
+	       ."<ltx:equation refnum='#refnum' id='#id'>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>",
+	       properties=> sub { refStepCounter('equation') },
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); },
 	       alias=>'\\');
 DefConstructor('\@@align@newline@nonum',
-	       "</XMath></Math></equation>"
-	       ."<equation><Math mode='display'><XMath>",
+	       "</ltx:XMath></ltx:Math></ltx:equation>"
+	       ."<ltx:equation>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>",
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); },
 	       alias=>'\\');
-DefConstructor('\@@align@odd',"<XMHint name='align'/>",
+DefConstructor('\@@align@odd',"<ltx:XMHint name='align'/>",
 	       afterDigest=>sub{ Let('&','\@@align@even'); },
 	       alias=>'&');
 DefConstructor('\@@align@even',
-	       "</XMath></Math></equation>"
-	       ."<equation><Math mode='display'><XMath>",
+	       "</ltx:XMath></ltx:Math></ltx:equation>"
+	       ."<ltx:equation>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>",
 	       afterDigest=>sub{ Let('&','\@@align@odd'); },
 	       alias=>'&');
 
 # Question: Should the extra "equations" in each row be <equation> or just <Math> ????
 DefEnvironment('{align}',
-	       "<equationgroup><equation refnum='#refnum'><Math mode='display'><XMath>"
-	       ."#body"
-	       ."</XMath></Math></equation></equationgroup>",
+	       "<ltx:equationgroup>"
+	       . "<ltx:equation refnum='#refnum' id='#id'>"
+	       .  "<ltx:Math mode='display'>"
+	       .   "<ltx:XMath>"
+	       .     "#body"
+	       .   "</ltx:XMath>"
+	       .  "</ltx:Math>"
+	       . "</ltx:equation>"
+	       ."</ltx:equationgroup>",
 	       mode=>'display_math',
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline'); },
-	       properties=> {refnum=>sub { refStepCounter('equation'); }});
+	       properties=> sub { refStepCounter('equation') });
 
 DefEnvironment('{align*}',
-	       "<equationgroup><equation><Math mode='display'><XMath>"
-	       ."#body"
-	       ."</XMath></Math></equation></equationgroup>",
+	       "<ltx:equationgroup>"
+	       . "<ltx:equation>"
+	       .  "<ltx:Math mode='display'>"
+	       .   "<ltx:XMath>"
+	       .    "#body"
+	       .   "</ltx:XMath>"
+	       .  "</ltx:Math>"
+	       . "</ltx:equation>"
+	       ."</ltx:equationgroup>",
 	       mode=>'display_math',
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline@nonum'); });
 
 # flalign typesets in the full column width.
 # We'll ignore that distinction for now. 
 DefEnvironment('{flalign}',
-	       "<equationgroup><equation refnum='#refnum'><Math mode='display'><XMath>"
-	       ."#body"
-	       ."</XMath></Math></equation></equationgroup>",
+	       "<ltx:equationgroup>"
+	       . "<ltx:equation refnum='#refnum' id='#id'>"
+	       .  "<ltx:Math mode='display'>"
+	       .   "<ltx:XMath>"
+	       .    "#body"
+	       .   "</ltx:XMath>"
+	       .  "</ltx:Math>"
+	       . "</ltx:equation>"
+	       ."</ltx:equationgroup>",
 	       mode=>'display_math',
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline'); },
-	       properties=> {refnum=>sub { refStepCounter('equation'); }});
+	       properties=> sub { refStepCounter('equation') });
 
 DefEnvironment('{flalign*}',
-	       "<equationgroup><equation><Math mode='display'><XMath>"
-	       ."#body"
-	       ."</XMath></Math></equation></equationgroup>",
+	       "<ltx:equationgroup>"
+	       . "<ltx:equation>"
+	       .  "<ltx:Math mode='display'>"
+	       .   "<ltx:XMath>"
+	       .    "#body"
+	       .   "</ltx:XMath>"
+	       .  "</ltx:Math>"
+	       . "</ltx:equation>"
+	       ."</ltx:equationgroup>",
 	       mode=>'display_math',
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline@nonum'); });
 
 # alignat doesn't stretch the columns out as much (?)
 # We'll ignore that distinction for now. 
 DefEnvironment('{alignat}{}',
-	       "<equationgroup><equation refnum='#refnum'><Math mode='display'><XMath>"
-	       ."#body"
-	       ."</XMath></Math></equation></equationgroup>",
+	       "<ltx:equationgroup>"
+	       . "<ltx:equation refnum='#refnum' id='#id'>"
+	       .  "<ltx:Math mode='display'>"
+	       .   "<ltx:XMath>"
+	       .    "#body"
+	       .   "</ltx:XMath>"
+	       .  "</ltx:Math>"
+	       . "</ltx:equation>"
+	       ."</ltx:equationgroup>",
 	       mode=>'display_math',
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline'); },
-	       properties=> {refnum=>sub { refStepCounter('equation'); }});
+	       properties=> sub { refStepCounter('equation') });
 
 DefEnvironment('{alignat*}{}',
-	       "<equationgroup><equation><Math mode='display'><XMath>"
-	       ."#body"
-	       ."</XMath></Math></equation></equationgroup>",
+	       "<ltx:equationgroup>"
+	       . "<ltx:equation>"
+	       .  "<ltx:Math mode='display'>"
+	       .   "<ltx:XMath>"
+	       .    "#body"
+	       .   "</ltx:XMath>"
+	       .  "</ltx:Math>"
+	       . "</ltx:equation>"
+	       ."</ltx:equationgroup>",
 	       mode=>'display_math',
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline@nonum'); });
-
 
 #======================================================================
 # Section 3.7. Alignmnet building blocks
@@ -213,16 +282,23 @@ DefEnvironment('{alignat*}{}',
 
 # So, we just leave Hint markers for & and \\
 DefEnvironment('{gathered}[]',
-	       "<XMHint name='gathered-begin'/>#body<XMHint name='gathered-end'/>");
+	       "<ltx:XMHint name='gathered-begin'/>"
+	       . "#body"
+	       ."<ltx:XMHint name='gathered-end'/>");
 DefEnvironment('{aligned}[]',
-	       "<XMHint name='aligned-begin'/>#body<XMHint name='aligned-end'/>",
-	       beforeDigest=>sub{ DefConstructor("&","<XMHint name='align'/>"); });
+	       "<ltx:XMHint name='aligned-begin'/>"
+	       . "#body"
+	       ."<ltx:XMHint name='aligned-end'/>",
+	       beforeDigest=>sub{ DefConstructor("&","<ltx:XMHint name='align'/>"); });
 DefEnvironment('{alignedat}{}[]',
-	       "<XMHint name='aligned-begin'/>#body<XMHint name='aligned-end'/>",
-	       beforeDigest=>sub{ DefConstructor("&","<XMHint name='align'/>"); });
+	       "<ltx:XMHint name='aligned-begin'/>"
+	       . "#body"
+	       ."<ltx:XMHint name='aligned-end'/>",
+	       beforeDigest=>sub{ DefConstructor("&","<ltx:XMHint name='align'/>"); });
 
 DefEnvironment('{cases}',
-	       sub { matharray($_[0],'',$_[1], 'Cases','Case','Cell');},
+	       sub { my($document,%props)=@_;
+		     matharray($document,$props{body},'', 'Cases','Case','Cell'); },
 	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 
 #======================================================================
@@ -248,10 +324,10 @@ DefPrimitive('\numberwithin{}{}',sub {
   NewCounter($counter->toString,$within->toString); });
 
 # Section 3.11.2 Cross references to equation numbers
-DefConstructor('\eqref Semiverbatim', "(<ref labelref='#1'>&LookupValue('LABEL@#1')</ref>)");
+DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#1'>&LookupValue('LABEL@#1')</ltx:ref>)");
 
 # Section 3.11.3 Subordinate numbering sequences.
-DefEnvironment('{subequations}',"<equationgroup refnum='#refnum'>#body</equationgroup>",
+DefEnvironment('{subequations}',"<ltx:equationgroup refnum='#refnum'>#body</ltx:equationgroup>",
 	       beforeDigest=>sub { NewCounter('parentequation');
 				   refStepCounter('equation');
 				   AssignValue("\\c\@parentequation"=>LookupValue("\\c\@equation"));
@@ -269,23 +345,28 @@ DefEnvironment('{subequations}',"<equationgroup refnum='#refnum'>#body</equation
 # Section 4.1 Matrices
 
 DefEnvironment('{matrix}',
-	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       sub { my($document,%props)=@_;
+		     matharray($document,$props{body},'', 'Matrix','Row','Cell');},
 	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
-
 DefEnvironment('{pmatrix}',
-	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>'(',close=>')');},
+	       sub { my($document,%props)=@_;
+		     matharray($document,$props{body},'', 'Matrix','Row','Cell',open=>'(',close=>')');},
 	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 DefEnvironment('{bmatrix}',
-	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>'[',close=>']');},
+	       sub { my($document,%props)=@_;
+		     matharray($document,$props{body},'', 'Matrix','Row','Cell',open=>'[',close=>']');},
 	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 DefEnvironment('{Bmatrix}',
-	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>'{',close=>'}');},
+	       sub { my($document,%props)=@_;
+		     matharray($document,$props{body},'', 'Matrix','Row','Cell',open=>'{',close=>'}');},
 	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 DefEnvironment('{vmatrix}',
-	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>'|',close=>'|');},
+	       sub { my($document,%props)=@_;
+		     matharray($document,$props{body},'', 'Matrix','Row','Cell',open=>'|',close=>'|');},
 	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 DefEnvironment('{Vmatrix}',
-	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell',open=>"\x{2225}",close=>"\x{2225}");},
+	       sub { my($document,%props)=@_;
+		     matharray($document,$props{body},'', 'Matrix','Row','Cell',open=>"\x{2225}",close=>"\x{2225}");},
 	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
 
 #======================================================================
@@ -299,12 +380,12 @@ DefEnvironment('{Vmatrix}',
 # \negmedspace
 # \negthickspace
 # I think only these are new
-DefConstructor('\medspace',"?#isMath(<XMHint name='medspace'/>)(\x{2005})");  # FOUR-PER-EM SPACE
-DefConstructor('\negthinspace',"?#isMath(<XMHint name='negthinspace'/>)()");
-DefConstructor('\negmedspace',"?#isMath(<XMHint name='negmedspace'/>)()");
-DefConstructor('\negthickspace',"?#isMath(<XMHint name='negthickspace'/>)()");
+DefConstructor('\medspace',"?#isMath(<ltx:XMHint name='medspace'/>)(\x{2005})");  # FOUR-PER-EM SPACE
+DefConstructor('\negthinspace',"?#isMath(<ltx:XMHint name='negthinspace'/>)()");
+DefConstructor('\negmedspace',"?#isMath(<ltx:XMHint name='negmedspace'/>)()");
+DefConstructor('\negthickspace',"?#isMath(<ltx:XMHint name='negthickspace'/>)()");
 
-DefConstructor('\mspace{MuDimension}',"<XMHint name='#1'/>");
+DefConstructor('\mspace{MuDimension}',"<ltx:XMHint name='#1'/>");
 #======================================================================
 # Section 4.3 Dots
 # Nice idea, but not sure what I really should do about it.
@@ -336,7 +417,8 @@ DefMacro('\uproot{}','');
 #======================================================================
 # Section 4.7 Boxed formulas
 
-DefConstructor('\boxed{}',"<XMWrap style='boxed'><XMArg>#1</XMArg></XMWrap>");
+DefConstructor('\boxed{}',
+	       "<ltx:XMWrap style='boxed'><ltx:XMArg>#1</ltx:XMArg></ltx:XMWrap>");
 
 #======================================================================
 # Section 4.8 Over and under arrows
@@ -352,28 +434,42 @@ DefMath('\underlefrighttarrow{}',"\x{2194}", operator_role=>'UNDERACCENT');
 #  \xleftarrow, \xrightarrow
 
 DefConstructor('\xleftarrow[]{}',
-	       "<XMApp role='ARROW'><XMTok name='stacked'/><XMArg>#2</XMArg><XMTok>\x{2190}</XMTok>"
-	       . "?#1(<XMArg>#1</XMArg>)</XMApp>");
+	       "<ltx:XMApp role='ARROW'>"
+	       . "<ltx:XMTok name='stacked'/>"
+	       . "<ltx:XMArg>#2</ltx:XMArg>"
+	       . "<ltx:XMTok>\x{2190}</ltx:XMTok>"
+	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
+	       ."</ltx:XMApp>");
 DefConstructor('\xrightarrow[]{}',
-	       "<XMApp role='ARROW'><XMTok name='stacked'/><XMArg>#2</XMArg><XMTok>\x{2192}</XMTok>"
-	       . "?#1(<XMArg>#1</XMArg>)</XMApp>");
+	       "<ltx:XMApp role='ARROW'>"
+	       . "<ltx:XMTok name='stacked'/>"
+	       . "<ltx:XMArg>#2</ltx:XMArg>"
+	       . "<ltx:XMTok>\x{2192}</ltx:XMTok>"
+	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
+	       ."</ltx:XMApp>");
 
 #======================================================================
 # Section 4.10 Affixing symbols to other symbols
 
-DefConstructor('\overset{}{}',"<XMApp><XMWrap role='OVERACCENT>#1</XMWrap><XMArg>#2</XMArg></XMApp>");
-DefConstructor('\underset{}{}',"<XMApp><XMWrap role='UNDERACCENT>#1</XMWrap><XMArg>#2</XMArg></XMApp>");
+DefConstructor('\overset{}{}',
+	       "<ltx:XMApp>"
+	       . "<ltx:XMWrap role='OVERACCENT>#1</ltx:XMWrap>"
+	       . "<ltx:XMArg>#2</ltx:XMArg>"
+	       ."</ltx:XMApp>");
+DefConstructor('\underset{}{}',
+	       "<ltx:XMApp>"
+	       . "<ltx:XMWrap role='UNDERACCENT>#1</ltx:XMWrap>"
+	       . "<ltx:XMArg>#2</ltx:XMArg>"
+	       ."</ltx:XMApp>");
 
 #======================================================================
 # Section 4.11 Fractions and related commands
 
 # Section 4.11.1 The \frac, \dfrac, and \tfrac commands
 DefMath('\dfrac{}{}','/', style=>'display', name=>"/", operator_role=>'MULOP',
-	beforeDigest=>sub { BGroup; AssignValue(mathstyle=>'text'); },
-	afterDigest =>\&EGroup);
+	beforeDigest=>sub { AssignValue(mathstyle=>'text'); });
 DefMath('\tfrac{}{}','/', style=>'text',    name=>"/", operator_role=>'MULOP',
-	beforeDigest=>sub { BGroup; AssignValue(mathstyle=>'script'); },
-	afterDigest =>\&EGroup);
+	beforeDigest=>sub { AssignValue(mathstyle=>'script'); });
 DefMath('\ifrac{}{}','/', style=>'inline',  name=>"/", operator_role=>'MULOP');
 
 # Section 4.11.2 The \binom, \dbinom, and \tbinom commands
@@ -383,16 +479,23 @@ DefMath('\dbinom{}{}','', name=>'binomial', style=>'display');
 
 # Section 4.11.3 The \genfrac command
 DefConstructor('\genfrac{}{}{Dimension}{}{}{}',
-	       "<XMApp open='#1' close='#2'><XMTok name='stacked' thickness='#3' style='?#4(#4)(normal)'/>"
-	       .  "<XMArg>#5</XMArg><XMArg>#6</XMArg></XMApp>");
+	       "<ltx:XMApp open='#1' close='#2'>"
+	       . "<ltx:XMTok name='stacked' thickness='#3' style='?#4(#4)(normal)'/>"
+	       . "<ltx:XMArg>#5</ltx:XMArg>"
+	       . "<ltx:XMArg>#6</ltx:XMArg>"
+	       ."</ltx:XMApp>");
 
 #======================================================================
 # Section 4.12 Continued fractions
 # Is \cfracstyle my own invention? (I know I've redefined \cfrac in DLMFmath)
 DefConstructor('\cfrac{}{}',
-	       "<XMApp><XMTok>cfrac</XMTok><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+	       "<ltx:XMApp>"
+	       . "<ltx:XMTok>cfrac</ltx:XMTok>"
+	       . "<ltx:XMArg>#1</ltx:XMArg>"
+	       . "<ltx:XMArg>#2</ltx:XMArg>"
+	       ."</ltx:XMApp>");
 # This should get incorporated into any \cfrac's that are constructed in scope.
-DefConstructor('\cfracstyle{}',''); # "<XMHint name='cfracstyle'/>");
+DefConstructor('\cfracstyle{}',''); # "<ltx:XMHint name='cfracstyle'/>");
 
 #======================================================================
 # Section 4.13 Smash options
@@ -437,11 +540,18 @@ DefMath('\pod{}', '(#1)', role=>'POSTFIX'); # Well, sorta postfix..
 # Section 7.1 Multiline subscripts and superscripts
 #  \substack, \begin{subarray}
 
-DefConstructor('\substack{}',"<XMApp><XMTok name='Collection'/><XMArg>#1</XMArg></XMApp>",
-	       beforeDigest=>sub{ BGroup; DefConstructor("\\\\","</XMArg><XMArg>"); },
-	       afterDigest =>\&EGroup);
-DefEnvironment('{subarray}[]',"<XMApp><XMTok name='Collection' alignment='#1'/><XMArg>#body</XMArg></XMApp>",
-	       beforeDigest=>sub{ DefConstructor("\\\\","</XMArg><XMArg>"); });
+DefConstructor('\substack{}',
+	       "<ltx:XMApp>"
+	       . "<ltx:XMTok name='Collection'/>"
+	       . "<ltx:XMArg>#1</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\","</ltx:XMArg><ltx:XMArg>"); });
+DefEnvironment('{subarray}[]',
+	       "<ltx:XMApp>"
+	       . "<ltx:XMTok name='Collection' alignment='#1'/>"
+	       . "<ltx:XMArg>#body</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       beforeDigest=>sub{ DefConstructor("\\\\","</ltx:XMArg><ltx:XMArg>"); });
 
 #======================================================================
 # Section 7.2 the \sideset command
@@ -454,7 +564,7 @@ DefConstructor('\sideset{}{}{}', sub {
   my($document,$pre,$post,$ob)=@_;
   my @scripts = (undef,undef,undef,undef);
 
-  my $node=$document->openElement('XMApp');
+  my $node=$document->openElement('ltx:XMApp');
   my $phase=0;
   foreach my $group ($pre,$post){
     $document->absorb($group);
@@ -467,14 +577,14 @@ DefConstructor('\sideset{}{}{}', sub {
     $phase +=2;  }
 
   # And finally build it.
-  $document->insertElement('XMTok',undef,name=>'sideset');
+  $document->insertElement('ltx:XMTok',undef,name=>'sideset');
   foreach my $script (@scripts){
     if($script){
       $node->appendChild($script); }
     else {
-      $document->insertElement('XMTok',undef,name=>'Empty'); }}
-  $document->insertElement('XMArg',$ob);
-  $document->closeElement('XMApp');
+      $document->insertElement('ltx:XMTok',undef,name=>'Empty'); }}
+  $document->insertElement('ltx:XMArg',$ob);
+  $document->closeElement('ltx:XMApp');
 });
 
 #======================================================================

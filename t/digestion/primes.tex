@@ -1,0 +1,22 @@
+
+% From the TeX Book, p. 218
+\newif\ifprime \newif\ifunknown % boolean variables
+\newcount\n \newcount\p \newcount\d \newcount\a % integer variables
+\def\primes#1{2,~3% assume that #1 is at least 3
+  \n=#1 \advance\n by-2 % n more to go
+  \p=5 % odd primes starting with p
+  \loop\ifnum\n>0 \printifprime\advance\p by2 \repeat}
+\def\printp{, % we will invoke \printp if p is prime
+  \ifnum\n=1 and~\fi % `and' precedes the last value
+  \number\p \advance\n by -1 }
+\def\printifprime{\testprimality \ifprime\printp\fi}
+\def\testprimality{{\d=3 \global\primetrue
+  \loop\trialdivision \ifunknown\advance\d by2 \repeat}}
+\def\trialdivision{\a=\p \divide\a by\d
+  \ifnum\a>\d \unknowntrue\else\unknownfalse\fi
+  \multiply\a by\d
+  \ifnum\a=\p \global\primefalse\unknownfalse\fi
+}
+
+The first thirty prime numbers are \primes{30}.
+\bye

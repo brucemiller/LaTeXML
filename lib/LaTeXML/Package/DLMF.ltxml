@@ -17,8 +17,9 @@ use LaTeXML::Package;
 #**********************************************************************
 # Document
 #**********************************************************************
-DocType("chapter","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
-       "http://dlmf.nist.gov/LaTeXML");
+DocType("ltx:document","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
+	'#default'=>"http://dlmf.nist.gov/LaTeXML");
+
 
 RequirePackage('graphicx');
 RequirePackage('amsmath');
@@ -26,68 +27,46 @@ RequirePackage('amssymb');
 RequirePackage('DLMFmath');
 RequirePackage('url');
 RequirePackage('comment');
+RequirePackage('latexml');
 
 
 # If we get this, we're doing a "chapter"
 DefPrimitive('\thischapter{}', sub {
-  my($self,$ch)=@_;
+  my($stomach,$ch)=@_;
   $ch=$ch->toString;
   DefMacro('\thechapter',$ch); 
+  DefMacro('\thechapter@ID',$ch); 
+  DefMacro('\@currentlabel',$ch);
+  AssignValue("\\c\@chapter"=>$ch,'global');
+  AssignValue(current_counter=>'chapter','local');
   AssignValue(Chapter=>$ch,'global');
-  AssignValue(ChapterLabel=>"ch:$ch",'global');  });
+  AssignValue(ChapterLabel=>"ch:$ch",'global');  
+  DocType("ltx:chapter","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
+	  '#default'=>"http://dlmf.nist.gov/LaTeXML");
+});
 
 DefEnvironment('{document}',
 	       "?&LookupValue(Chapter)"
-	       ."(<chapter id='&LookupValue(Chapter)' refnum='&LookupValue(Chapter)' label='&LookupValue(ChapterLabel)'>#body</chapter>)"
-	       ."(<document>#body</document>)",
+	       .  "(<ltx:chapter id='&LookupValue(Chapter)' refnum='&LookupValue(Chapter)'"
+	       .         " label='&LookupValue(ChapterLabel)'>#body</ltx:chapter>)"
+	       .  "(<ltx:document>#body</ltx:document>)",
 	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
-	       afterDigest=> sub { $GULLET->flush; return; });
+	       afterDigest=> sub { $_[0]->getGullet->flush; return; });
 
 #======================================================================
 # DLMF's Numbering scheme.
+DefPrimitive('\subparagraph',sub { Error("Don't use \\subparagraph!!!"); });
 
-# First, we redefine sectioning commands to support recording an id parallel to refnum.
-# But only for numbered sectionals.
-foreach my $sec (qw(chapter section subsection subsubsection)){
-  Tag($sec, autoClose=>1);
-  DefExpandable('\\'.$sec.' OptionalMatch:*',
-		sub { 
-		  my($self,$flag)=@_;
-		  my $idctr = T_CS("\\the$sec\@ID");
-		  if($flag){
-		    (T_CS('\\@@'.$sec),T_OTHER('['),T_OTHER(']'),T_OTHER('['),T_OTHER(']')); }
-		  else {
-		    refStepCounter($sec);
-		    (T_CS('\\@@'.$sec),T_OTHER('['),T_CS('\@currentlabel'),T_OTHER(']'),
-		     T_OTHER('['),$idctr,T_OTHER(']')); }});
-  DefConstructor('\\@@'.$sec.'[][][]{}',
-		 "<$sec ?#1(refnum='#1') id='#2'><title>#4</title>?#3(<toctitle>#3</toctitle>)",
-		 beforeDigest=>\&BGroup, afterDigest=>\&EGroup); }
-
-# These don't get numbered in the first place, but the WILL get an ID.
-foreach my $sec (qw(part paragraph)){
-  Tag($sec, autoClose=>1);
-  DefExpandable('\\'.$sec.' OptionalMatch:*',
-		sub { 
-		  my($self,$flag)=@_;
-		  my $idctr = T_CS("\\the$sec\@ID");
-		  refStepCounter($sec);
-		  (T_CS('\\@@'.$sec),T_OTHER('['),T_OTHER(']'),T_OTHER('['),$idctr,T_OTHER(']')); });
-  DefConstructor('\\@@'.$sec.'[][][]{}',
-		 "<$sec ?#1(refnum='#1') id='#2'><title>#4</title>?#3(<toctitle>#3</toctitle>)",
-		 beforeDigest=>\&BGroup, afterDigest=>\&EGroup); }
-
-DefPrimitive('\subparagraph',sub {
-	       Error("Don't use \\subparagraph!!!"); });
-
-NewCounter('part');
-NewCounter('section');
-NewCounter('subsection','section');
-NewCounter('subsubsection','subsection');
-NewCounter('paragraph','section');
-NewCounter('sidebar');
+NewCounter('chapter',      undef,       idprefix=>'');
+NewCounter('part',         'chapter',   idprefix=>'PT');
+NewCounter('section',      'chapter',   idprefix=>'');
+NewCounter('subsection',   'section',   idprefix=>'SS');
+NewCounter('subsubsection','subsection',idprefix=>'SSS');
+NewCounter('paragraph',    'section',   idprefix=>'P');
+NewCounter('sidebar',      'chapter',   idprefix=>'SB');
 
 DefMacro('\thechapter',      'XX');
+DefMacro('\thechapter@ID',   'XX');
 DefMacro('\thepart',         '');
 DefMacro('\thesection',      '\thechapter.\arabic{section}');
 DefMacro('\thesubsection',   '\thesection(\roman{subsection})');
@@ -96,47 +75,32 @@ DefMacro('\theparagraph',    '');
 DefMacro('\thesubparagraph', '');
 DefMacro('\thesidebar',      '\thechapter.SB\arabic{sidebar}');
 
-NewCounter('equation', 'section');
-NewCounter('figure',   'section');
-NewCounter('table',    'section');
+NewCounter('equation', 'section', idprefix=>'E');
+NewCounter('equationgroup', 'section', idprefix=>'EG');
+NewCounter('figure',   'section', idprefix=>'F');
+NewCounter('table',    'section', idprefix=>'T');
 # Note that these are ambiguous
 DefMacro('\theequation','\thesection.\arabic{equation}');
+DefMacro('\theequationgroup','');
 DefMacro('\thefigure',  '\thesection.\arabic{figure}');
 DefMacro('\thetable',   '\thesection.\arabic{table}');
 
-DefMacro('\thechapter@ID',   '\thechapter');
-DefMacro('\thepart@ID',      '\thechapter@ID.PT\arabic{part}');
-DefMacro('\thesection@ID',   '\thechapter@ID.\arabic{section}');
-DefMacro('\thesubsection@ID','\thesection@ID.SS\arabic{subsection}');
-DefMacro('\thesubsubsection@ID','\thesubsection@ID.\arabic{subsubsection}');
-DefMacro('\theparagraph@ID',  '\thesection@ID.P\arabic{paragraph}');
-DefMacro('\thesidebar@ID',   '\thechapter@ID.SB\arabic{sidebar}');
-# Note that these are NOT ambiguous!
-DefMacro('\theequation@ID','\thesection@ID.E\arabic{equation}');
-DefMacro('\thefigure@ID',  '\thesection@ID.F\arabic{figure}');
-DefMacro('\thetable@ID',   '\thesection@ID.T\arabic{table}');
+NewCounter('@itemize', 'section', idprefix=>'I');
+NewCounter('enumi');
+NewCounter('enumii');
+NewCounter('enumiii');
+NewCounter('enumiv');
+# Since we don't want enumi (necessarily) to be reset when @itemize is incremented,
+# we've got to manually define the ID macros:
+DefMacro('\theenumi@ID',   '\the@itemize@ID.\@enumi@ID');
+DefMacro('\theenumii@ID',  '\the@itemize@ID.\@enumii@ID');
+DefMacro('\theenumiii@ID', '\the@itemize@ID.\@enumiii@ID');
+DefMacro('\theenumiv@ID',  '\the@itemize@ID.\@enumiv@ID');
 
-# We want id's on para, too.
-# However, para get created implicitly on Document construction,
-# so we can't use the usual LaTeX counter mechanism.
-our $PARA_COUNTER=0;
-our $ALT_SECTION_NUMBER = "0";	# For use in unnumbered sections (UGH!)
-Tag('section',afterClose=>\&reset_para_counter);
-Tag('sidebar',afterClose=>\&reset_para_counter);
-Tag('para',afterOpen=>\&number_para);
-
-sub reset_para_counter { $PARA_COUNTER=0; }
-sub number_para {
-  my($node,$whatsit)=@_;
-  my $parent = $node->parentNode;
-  while($parent){
-    last if $parent->localname =~ /^(section|sidebar)$/;
-    $parent = $parent->parentNode; }
-  my $id = $parent->getAttribute('id');
-  if(!$id){
-    $id = Expand(T_CS('\thechapter@ID'))->toString . ".".$ALT_SECTION_NUMBER;
-    $ALT_SECTION_NUMBER .= "0"; }
-  $node->setAttribute(id => $id . ".p".(++$PARA_COUNTER)); }
+DefMacro('\theenumi',           '\arabic{enumi}');
+DefMacro('\theenumii',          '\alph{enumii}');
+DefMacro('\theenumiii',         '\roman{enumiii}');
+DefMacro('\theenumiv',          '\Alph{enumiv}');
 
 #**********************************************************************
 # Frontmatter
@@ -150,22 +114,22 @@ DefMacro('\@authorinfo','');
 DefMacro('\author{}', '\xdef\@authorinfo{\@authorinfo\fmt@author{#1}}');
 DefMacro('\affiliation{}', '\xdef\@authorinfo{\@authorinfo\fmt@affiliation{#1}}');
 
-DefConstructor('\fmt@affiliation{}',"<affiliation>#1</affiliation>");
+DefConstructor('\fmt@affiliation{}',"<ltx:affiliation>#1</ltx:affiliation>");
 
-DefConstructor('\email{}', "<email>#1</email>");
-DefConstructor('\addCopyright{}{}','');#"<copyright year='#1'>#2</copyright>");
+DefConstructor('\email{}', "<ltx:email>#1</ltx:email>");
+DefConstructor('\addCopyright{}{}','');#"<ltx:copyright year='#1'>#2</ltx:copyright>");
 
 DefMacro('\@acknowledgements','');
 DefPrimitive('\acknowledgements{}', sub { DefMacro('\@acknowledgements',$_[1])});
-DefConstructor('\fmt@acknowledgements{}', "<acknowledgements>#1</acknowledgements>");
+DefConstructor('\fmt@acknowledgements{}', "<ltx:acknowledgements>#1</ltx:acknowledgements>");
 
-Tag('gallery', autoClose=>1, autoOpen=>1);
+Tag('ltx:gallery', autoClose=>1, autoOpen=>1);
 DefMacro('\@galleryitems','');
 DefMacro('\galleryitem Semiverbatim Semiverbatim',
 	 '\xdef\@galleryitems{\@galleryitems\fmt@galleryitem{sb:\thechapter.#1}{#2}}');
 
 DefConstructor('\fmt@galleryitem Semiverbatim Semiverbatim',
-	       "<galleryitem labelref='#1' graphic='#2'/>");
+	       "<ltx:galleryitem labelref='#1' graphic='#2'/>");
 
 DefMacro('\maketitle', 
 	 '\fmt@title{\@title}\@authorinfo'
@@ -175,113 +139,125 @@ DefMacro('\maketitle',
 
 #**********************************************************************
 # More environments.
-DefEnvironment('{figuregroup}', "<figuregroup>#body</figuregroup>");
-DefEnvironment('{figuregroup*}',"<figuregroup>#body</figuregroup>");
+DefEnvironment('{figuregroup}', "<ltx:figuregroup>#body</ltx:figuregroup>");
+DefEnvironment('{figuregroup*}',"<ltx:figuregroup>#body</ltx:figuregroup>");
 
 #**********************************************************************
 # Pseudo environments.
 # Not really environments that transform to elements, since they
 # don't necessarily nest properly with the more important document structure.
-DefEnvironment('{onecolumn}', "<begin_onecolumn/>#body<end_onecolumn/>");
+DefEnvironment('{onecolumn}', "<ltx:begin_onecolumn/>#body<ltx:end_onecolumn/>");
 # Oh, what the heck, strip out printonly, and make electroniconly disappear!
-DefEnvironment('{printonly}', "<printonly>#body</printonly>");
-Tag('printonly', afterClose=>sub { $_[0]->getParentNode->removeChild($_[0]); });
+DefEnvironment('{printonly}', "<ltx:printonly>#body</ltx:printonly>");
+Tag('ltx:printonly', afterClose=>sub { $_[1]->getParentNode->removeChild($_[1]); });
 DefConstructor('\onlyprint{}', "");
 
 DefEnvironment('{electroniconly}','#body');
 DefConstructor('\onlyelectronic{}',"#1");
 
-#DefEnvironment('{sidebar}{}{}{}',
-#	       "<sidebar name='#1'><title>#2</title><author>#3</author>#body</sidebar>",
-
 DefEnvironment('{sidebar}{}{}{}',
-	       "<sidebar name='#1' label='#label' id='#id'><title>#2</title><author>#3</author>#body</sidebar>",
-	       afterDigestBegin=> sub { 
-		 my($whatsit,$name,$title,$author)=@_;
-		 # Redefine to make Sidebar act like a Section.
+	       "<ltx:sidebar name='#1' label='#label' id='#id'>"
+	       . "<ltx:title>#2</ltx:title>"
+	       . "<ltx:author>#3</ltx:author>"
+	       . "#body"
+	       ."</ltx:sidebar>",
+	       beforeDigest=> sub { 
 		 Let('\thesection','\thesidebar');
-		 Let('\thesection@ID','\thesidebar@ID');
-		 my $refnum = refStepCounter('sidebar');
-		 my $id = Expand(T_CS('\thesidebar@ID'));
-		 my $label = "sb:".Digest(T_CS('\thechapter'))->toString
-		   .".".$name->toString;
-		 $whatsit->setProperties(refnum=>$refnum, id=>$id, label=>$label); });
-
+		 Let('\thesection@ID','\thesidebar@ID'); },
+	       properties=> sub { (refStepCounter('sidebar'),
+				   label => sub { "sb:".ToString(Digest(T_CS('\thechapter'))).".".ToString($_[1]); }); });
 
 #**********************************************************************
 # Metadata
-DefConstructor('\note{}', "^<note>#1</note>", mode=>'text', reversion=>'');
-DefConstructor('\origref[]{}', "^<origref ref='#2'>#1</origref>", mode=>'text', reversion=>'');
+DefConstructor('\note{}', "^<ltx:note>#1</ltx:note>", mode=>'text', reversion=>'');
+DefConstructor('\origref[]{}', "^<ltx:origref ref='#2'>#1</ltx:origref>", mode=>'text', reversion=>'');
 
+# New form of \index allows * (to hide from printed index)
+DefExpandable('\index OptionalMatch:*{}', sub { my($gullet,$star,$phrases)=@_;
+						process_index_phrases($gullet,$phrases); });
 #**********************************************************************
 # More Math environments.
 
 # Redefine to accept optional (ignored) arg.
 DefEnvironment('{equation}[]',
-	       "<equation id='#id' refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>",
+	       "<ltx:equation id='#id' refnum='#refnum'>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>"
+	       .   "#body"
+	       .  "</ltx:XMath>"
+	       . "</ltx:Math>"
+	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       properties=> { refnum=> sub { refStepCounter('equation'); },
-			      id=> sub { Expand(T_CS('\theequation@ID')); } });
+	       properties=> sub { refStepCounter('equation') });
 DefEnvironment('{equation*}[]',
-	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>",
-	       mode=>'display_math');
+	       "<ltx:equation id='#id'>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>"
+	       .   "#body"
+	       .  "</ltx:XMath>"
+	       . "</ltx:Math>"
+	       ."</ltx:equation>",
+	       mode=>'display_math',
+	       properties=> sub { refStepID('equation') });
 
 # equationmix contains several math environments, 
 # Each math produces inline math, BUT we've set displaystyle in them!
-DefEnvironment('{equationmix}[]',"<equationmix id='#id' refnum='#refnum'>#body</equationmix>",
-	       properties=> { refnum=> sub { refStepCounter('equation'); },
-			      id=> sub { Expand(T_CS('\theequation@ID')); }},
+# Although equationmix is handled differently in LaTeX, <equation>'s model is adequate.
+DefEnvironment('{equationmix}[]',
+	       "<ltx:equation id='#id' refnum='#refnum'>#body</ltx:equation>",
+	       properties=> sub { refStepCounter('equation') },
 	       # NOTE: We'd like to have displaystyle (but NOT mode=display!) for enclosed math env!
 	       # Use displaystyles for math environments within here.
 	       beforeDigest => sub {
-		 DefEnvironment('{math}',"<Math mode='inline'><XMath>#body</XMath></Math>",
+		 DefEnvironment('{math}',
+				"<ltx:Math mode='inline'><ltx:XMath>#body</ltx:XMath></ltx:Math>",
 				mode=>'inline_math',
 				beforeDigest=>sub { AssignValue(mathstyle=>'display'); });
 	       }
 );
-DefEnvironment('{equationmix*}[]',  "<equationmix>#body</equationmix>");
+DefEnvironment('{equationmix*}[]',
+	       "<ltx:equation id='#id'>#body</ltx:equation>",
+	       properties=> sub { refStepID('equation') });
 # NOTE: I haven't handled the subequation case!!! (where equations themselves get numbered!)
-DefEnvironment('{equationgroup}[]', "<equationgroup id='#id' refnum='#refnum'>#body</equationgroup>",
-	       properties=> { refnum=> sub { refStepCounter('equation'); },
-			      id=> sub { Expand(T_CS('\theequation@ID')); }});
-DefEnvironment('{equationgroup*}[]',"<equationgroup>#body</equationgroup>");
+DefEnvironment('{equationgroup}[]', 
+	       "<ltx:equationgroup id='#id' refnum='#refnum'>#body</ltx:equationgroup>",
+	       properties=> sub { refStepCounter('equation') });
+DefEnvironment('{equationgroup*}[]',
+	       "<ltx:equationgroup id='#id'>#body</ltx:equationgroup>",
+	       properties=> sub { refStepID('equationgroup') });
 DefConstructor('\intertext{}',"#1");
 
-DefConstructor('\@constraint OptionalMatch:* {}',"^<constraint hidden='?#1(yes)(no)'>#2</constraint>",
+DefConstructor('\@constraint OptionalMatch:* {}',
+	       "^<ltx:constraint hidden='?#1(yes)(no)'>#2</ltx:constraint>",
 	       mode=>'text', reversion=>'');
 
 DefExpandable('\constraint OptionalMatch:* [Default:,]{}',sub { 
-  my($self,$starred,$punct,$constraint)=@_;
+  my($gullet,$starred,$punct,$constraint)=@_;
   if($starred){			# hidden.
     (T_CS('\@constraint'),T_OTHER('*'),T_BEGIN,$constraint->unlist,T_END); }
   else {
-    SkipSpaces();
-    my $ppunct = ReadMatch(T_OTHER('.'),T_OTHER(','),T_OTHER(';')) || Tokens();
+    $gullet->skipSpaces();
+    my $ppunct = $gullet->readMatch(T_OTHER('.'),T_OTHER(','),T_OTHER(';')) || Tokens();
     ($punct->unlist, T_CS('\@constraint'), T_BEGIN,$constraint->unlist,$ppunct->unlist,T_END); }});
 
 #**********************************************************************
-# Redefine to put an id.
-DefEnvironment('{figure}[]', "<figure id='#id' refnum='#refnum' ?#1(placement='#1')>#body</figure>",
-	       properties=> { refnum=> sub { refStepCounter('figure'); },
-			      id=> sub { Expand(T_CS('\thefigure@ID')); }});
-DefEnvironment('{figure*}[]',"<figure id='#id' refnum='#refnum' ?#1(placement='#1')>#body</figure>",
-	       properties=> { refnum=> sub { refStepCounter('figure'); },
-			      id=> sub { Expand(T_CS('\thefigure@ID')); }});
-DefEnvironment('{table}[]',   "<table id='#id' refnum='#refnum' ?#1(placement='#1')>#body</table>",
-	       properties=> { refnum=> sub { refStepCounter('table'); },
-			      id=> sub { Expand(T_CS('\thetable@ID')); }});
-DefEnvironment('{table*}[]',  "<table id='#id' refnum='#refnum' ?#1(placement='#1')>#body</table>",
-	       properties=> { refnum=> sub { refStepCounter('table'); },
-			      id=> sub { Expand(T_CS('\thetable@ID')); }});
+# Table enhancement
+sub tabular_thinhline {
+  my($document)=@_;
+  # We'll already have started the next row (tr+td) when we see this.
+  if(my @td = $document->findnodes("parent::ltx:tr/preceding-sibling::*[1][local-name()='tr']/ltx:td",
+				   $document->getElement)){
+    foreach my $td (@td){
+      add_tabular_border($td,'B'); }}} # Sneak in an additional type!!!! Add to CSS!!!
+
+DefConstructor('\thinhline',\&tabular_thinhline);
 
 #**********************************************************************
-DefConstructor('\URL[] Semiverbatim',"<a href='#2'>?#1(#1)(#2)</a>");
-DefConstructor('\VRML Semiverbatim', "<VRML href='#1'/>");
-
-DefConstructor('\GAMSclass{}',"<GAMS class='#1'/>");
-DefConstructor('\GAMSpackage{}',"<GAMS package='#1'/>");
-DefConstructor('\GAMSclasspackage{}{}',"<GAMS class='#1' package='#2'/>");
-DefConstructor('\GAMSmodule{}{}{}',"<GAMS package='#1' module='#2' module_id='#3'/>");
+DefConstructor('\VRML Semiverbatim', "<ltx:VRML href='#1'/>");
+DefConstructor('\GAMSclass{}',         "<ltx:GAMS class='#1'/>");
+DefConstructor('\GAMSpackage{}',       "<ltx:GAMS package='#1'/>");
+DefConstructor('\GAMSclasspackage{}{}',"<ltx:GAMS class='#1' package='#2'/>");
+DefConstructor('\GAMSmodule{}{}{}',    "<ltx:GAMS package='#1' module='#2' module_id='#3'/>");
 
 #**********************************************************************
 1;

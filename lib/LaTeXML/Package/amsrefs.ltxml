@@ -11,6 +11,7 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
+use strict;
 use LaTeXML::Package;
 
 RequirePackage('keyval');
@@ -20,8 +21,37 @@ RequirePackage('keyval');
 #our %equivs = (booktitle=>'title', place=>'address', year=>'date');
 our %equivs = (place=>'address', year=>'date');
 
-DefKeyVal('amsrefs','url','Semiverbatim');
-DefKeyVal('amsrefs','code_url','Semiverbatim');
+# Like Semiverbatim, but strips trailing %\n
+# since BibTeX _INSISTS_ on doing that with long lines!!! .
+sub XXXReadBibURL {
+  my($gullet)=@_;
+  StartSemiverbatim; 
+  my $url = $gullet->readArg;
+  EndSemiverbatim;
+  my @tokens = $url->unlist;
+  my @cleaned = ();
+  while(my $t = shift(@tokens)){
+    if($t->equals(T_OTHER('%')) && @tokens && $tokens[0]->equals(Token("\n",CC_SPACE))){
+      shift(@tokens); }
+    else {
+      push(@cleaned,$t); }}
+  Tokens(@cleaned); }
+
+DefParameterType('BibURL',sub {
+  my($gullet)=@_;
+  my @tokens = $gullet->readArg->unlist;
+  my @cleaned = ();
+  while(my $t = shift(@tokens)){
+    if($t->equals(T_OTHER('%')) && @tokens && $tokens[0]->equals(Token("\n",CC_SPACE))){
+      shift(@tokens); }
+    else {
+      push(@cleaned,$t); }}
+  Tokens(@cleaned); },
+  semiverbatim=>1);
+
+DefKeyVal('amsrefs','url','BibURL');
+#DefKeyVal('amsrefs','code_url','BibURL');
+DefKeyVal('amsrefs','links','BibURL');
 DefKeyVal('amsrefs','author','BibName');
 DefKeyVal('amsrefs','editor','BibName');
 DefKeyVal('amsrefs','translator','BibName');
@@ -29,14 +59,14 @@ DefKeyVal('amsrefs','translator','BibName');
 # \bib{key}{type}{keyval-pairs}
 DefConstructor('\bib{}{} RequiredKeyVals:amsrefs', sub {
   my($document,$key,$type,$fields)=@_;
-  $document->openElement('bibentry',key=>$key, type=>$type);
+  $document->openElement('ltx:bibentry',key=>$key, type=>$type);
   my @pairs = $fields->getPairs;
   while(@pairs){
     my($field,$value)=(shift(@pairs),shift(@pairs));
     $field=lc($field);
     $field=$equivs{$field} if $equivs{$field};
-    $document->insertElement("bib-$field",$value); }
-  $document->closeElement('bibentry'); });
+    $document->insertElement("ltx:bib-$field",$value); }
+  $document->closeElement('ltx:bibentry'); });
 
 # Recognize names in BibTeX formats:
 #   First von Last
@@ -44,7 +74,8 @@ DefConstructor('\bib{}{} RequiredKeyVals:amsrefs', sub {
 #   von Last, Jr, First
 
 sub ReadBibName {
-  my $entry = ReadArg();
+  my($gullet)=@_;
+  my $entry = $gullet->readArg();
   my @tokens = $entry->unlist;
   # First phase of analysis: Break the entry into words, phrases,
   # while respecting the `protection' of braces and noticing
@@ -78,7 +109,7 @@ sub ReadBibName {
   push(@groups,[@phrase]) if @phrase;
 
   # Having split the entry into phrases, recognize the pattern of name components
-  my($sur,$given,$jr);
+  my($surname,$given,$jr);
   if($vonsplit){
     ($given,$surname,$jr)= @groups; }
   elsif(scalar(@groups)>2) {
@@ -103,13 +134,13 @@ sub flatten_name_component {
   LookupDefinition(T_CS($cs))->invocation(Tokens(@tokens)); }
 
 
-DefConstructor('\bib@surname{}',  "<surname>#1</surname>");
-DefConstructor('\bib@given{}',   "<givenname>#1</givenname>");
-DefConstructor('\bib@initials{}', "<initials>#1</initials>");
-DefConstructor('\bib@lineage{}', "<lineage>#1</lineage>");
+DefConstructor('\bib@surname{}',  "<ltx:surname>#1</ltx:surname>");
+DefConstructor('\bib@given{}',    "<ltx:givenname>#1</ltx:givenname>");
+DefConstructor('\bib@initials{}', "<ltx:initials>#1</ltx:initials>");
+DefConstructor('\bib@lineage{}',  "<ltx:lineage>#1</ltx:lineage>");
 
 DefEnvironment('{bibdiv}','#body');
-DefEnvironment('{biblist}',"<biblist>#body</biblist>");
+DefEnvironment('{biblist}',"<ltx:biblist>#body</ltx:biblist>");
 
 
 #**********************************************************************
@@ -120,7 +151,8 @@ DefConstructor('\MR{}',sub {
   # Patch up old-style MathReviews numbers
   my $id = $mrnumber->toString;
   $id =~ s/\s+\\\#\s*/:/;
-  $document->insertElement('bib-mr',LaTeXML::Box->new($id,$mrnumber->getFont,$mrnumber->getLocator,T_OTHER($id))); });
+  $document->insertElement('ltx:bib-mr',
+			   LaTeXML::Box->new($id,$mrnumber->getFont,$mrnumber->getLocator,T_OTHER($id))); });
 
 DefConstructor('\ndash',"\x{2013}"); # EN DASH
 DefConstructor('\mdash',"\x{2014}"); # EM DASH

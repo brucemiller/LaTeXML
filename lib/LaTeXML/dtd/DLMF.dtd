@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
  /=====================================================================\ 
  |  DLMF.dtd                                                           |
@@ -12,94 +11,182 @@
  | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
  \=========================================================ooo==U==ooo=/
 -->
+<!ENTITY % NS.prefixed "IGNORE">
+<!ENTITY % LaTeXML.prefixed "%NS.prefixed;">
+<!ENTITY % LaTeXML.xmlns "http://dlmf.nist.gov/LaTeXML/">
+<!ENTITY % LaTeXML.prefix "ltxml">
 
-<!ENTITY % Inline.extra "| email | VRML | GAMS">
-<!ENTITY % Para.extra "| equationmix">
-<!ENTITY % Block.extra  "| figuregroup | begin_onecolumn | end_onecolumn">
-<!ENTITY % Misc.extra   "| electroniconly | printonly">
-<!ENTITY % Frontmatter.extra "| affiliation | acknowledgements | sidebar | gallery | copyright
-                              | origref">
-<!ENTITY % Sectitle.extra "">
+<![%LaTeXML.prefixed;[
+<!ENTITY % LaTeXML.pfx "%LaTeXML.prefix;"">
+<!ENTITY % LaTeXML.xmlns.extra.attrib
+  	 "xmlns:%LaTeXML.prefix; CDATA #FIXED '%LaTeXML.xmlns;'">
+]]>
+<!ENTITY % LaTeXML.pfx "">
+<!ENTITY % LaTeXML.xmlns.extra.attrib "">
 
-<!ENTITY % define.structure  "IGNORE" >
-<!ENTITY % Equation.extra "| origref | constraint">
-<!-- figure & table already contain Misc.extra -->
-<!ENTITY % Figure.extra "| origref">
-<!ENTITY % Table.extra "| origref">
-<!ENTITY % Bibentry.extra "| bib-text_url | bib-code_url | bib-gams_package | bib-gams_module">
 
+<!ENTITY % LaTeXML.email.qname            "%LaTeXML.pfx;email">
+<!ENTITY % LaTeXML.VRML.qname             "%LaTeXML.pfx;VRML">
+<!ENTITY % LaTeXML.GAMS.qname             "%LaTeXML.pfx;GAMS">
+<!ENTITY % LaTeXML.figuregroup.qname      "%LaTeXML.pfx;figuregroup">
+<!ENTITY % LaTeXML.begin_onecolumn.qname  "%LaTeXML.pfx;begin_onecolumn">
+<!ENTITY % LaTeXML.end_onecolumn.qname    "%LaTeXML.pfx;end_onecolumn">
+
+<!ENTITY % LaTeXML.electroniconly.qname   "%LaTeXML.pfx;electroniconly">
+<!ENTITY % LaTeXML.printonly.qname        "%LaTeXML.pfx;printonly">
+<!ENTITY % LaTeXML.affiliation.qname      "%LaTeXML.pfx;affiliation">
+<!ENTITY % LaTeXML.acknowledgements.qname "%LaTeXML.pfx;acknowledgements">
+<!ENTITY % LaTeXML.sidebar.qname          "%LaTeXML.pfx;sidebar">
+<!ENTITY % LaTeXML.gallery.qname          "%LaTeXML.pfx;gallery">
+<!ENTITY % LaTeXML.galleryitem.qname      "%LaTeXML.pfx;galleryitem">
+<!ENTITY % LaTeXML.copyright.qname        "%LaTeXML.pfx;copyright">
+<!ENTITY % LaTeXML.origref.qname          "%LaTeXML.pfx;origref">
+<!ENTITY % LaTeXML.constraint.qname       "%LaTeXML.pfx;constraint">
+<!ENTITY % LaTeXML.declare.qname          "%LaTeXML.pfx;declare">
+<!ENTITY % LaTeXML.bib-links.qname        "%LaTeXML.pfx;bib-links">
+
+<!ENTITY % LaTeXML-extra.Inline.class
+	 "| %LaTeXML.email.qname; | %LaTeXML.VRML.qname;| %LaTeXML.GAMS.qname;">
+<!ENTITY % LaTeXML-extra.Para.class
+	 "| %LaTeXML.figuregroup.qname; | %LaTeXML.begin_onecolumn.qname; | %LaTeXML.end_onecolumn.qname;">
+<!ENTITY % LaTeXML-extra.Misc.class
+	 "| %LaTeXML.electroniconly.qname; | %LaTeXML.printonly.qname;">
+<!ENTITY % LaTeXML-extra.Meta.class
+	 "| %LaTeXML.origref.qname; | %LaTeXML.constraint.qname; | %LaTeXML.declare.qname;">
+<!ENTITY % LaTeXML-extra.Bibentry.class
+	 "| %LaTeXML.bib-links.qname;">
+
+<!ENTITY % LaTeXML-extra.FrontMatter.class
+	 "| %LaTeXML.affiliation.qname; | %LaTeXML.acknowledgements.qname;
+	  | %LaTeXML.sidebar.qname; | %LaTeXML.gallery.qname; | %LaTeXML.copyright.qname;">
+
+<!-- We're going to redefine the document structure, but we'll need the qnames.-->
+<!ENTITY % LaTeXML-structure.module  "IGNORE" >
+<!ENTITY % LaTeXML-structure-qname.mod   SYSTEM "LaTeXML-structure-qname-1.mod">
+%LaTeXML-structure-qname.mod;
+
+<!-- Now load the rest of LaTeXML -->
 <!ENTITY % LaTeXML.dtd SYSTEM "LaTeXML.dtd" >
 %LaTeXML.dtd; 
 
 <!-- Redefined document structure -->
-<!ELEMENT chapter       ((%Frontmatter.mix;)*, (part | note)*, bibliography?)>
-<!ELEMENT part          ((%Sectitle.mix;)*, (%Block.mix; | section | paragraph)*)>
-<!ELEMENT section       ((%Sectitle.mix;)*, (%Block.mix; | subsection | paragraph)*)>
-<!ELEMENT subsection    ((%Sectitle.mix;)*, (%Block.mix; | subsubsection | paragraph)*)>
-<!ELEMENT subsubsection ((%Sectitle.mix;)*, (%Block.mix; | paragraph)*)>
-<!ELEMENT paragraph     ((%Sectitle.mix;)*, (%Block.mix;)*)>
-<!ATTLIST chapter       %Common.attr; %Labelled.attr; %Section.attr;>
-<!ATTLIST part          %Common.attr; %Labelled.attr; %Section.attr;>
-<!ATTLIST section       %Common.attr; %Labelled.attr; %Section.attr;>
-<!ATTLIST subsection    %Common.attr; %Labelled.attr; %Section.attr;>
-<!ATTLIST subsubsection %Common.attr; %Labelled.attr; %Section.attr;>
-<!ATTLIST paragraph     %Common.attr; %Labelled.attr; %Section.attr;>
+<!ELEMENT %LaTeXML.chapter.qname;
+          ((%LaTeXML.FrontMatter.class; %LaTeXML.Meta.class;)*, 
+	  (%LaTeXML.part.qname; | %LaTeXML.note.qname;)*,
+	  (%LaTeXML.BackMatter.class;)*)>
+<!ELEMENT %LaTeXML.part.qname;
+          ((%LaTeXML.SectionalFrontMatter.class;)*,
+	  (%LaTeXML.Para.mix;)*,
+	  (%LaTeXML.paragraph.qname;)*, (%LaTeXML.section.qname;)*)>
+<!ELEMENT %LaTeXML.section.qname;
+          ((%LaTeXML.SectionalFrontMatter.class;)*,
+	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*, (%LaTeXML.subsection.qname;)*)>
+<!ELEMENT %LaTeXML.appendix.qname;
+          ((%LaTeXML.SectionalFrontMatter.class;)*,
+	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*, (%LaTeXML.subsection.qname;)*)>
+<!ELEMENT %LaTeXML.subsection.qname;
+          ((%LaTeXML.SectionalFrontMatter.class;)*,
+	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*, (%LaTeXML.subsubsection.qname;)*)>
+<!ELEMENT %LaTeXML.subsubsection.qname;
+          ((%LaTeXML.SectionalFrontMatter.class;)*,
+	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*)>
+<!ELEMENT %LaTeXML.paragraph.qname;
+          ((%LaTeXML.SectionalFrontMatter.class;)*,
+	  (%LaTeXML.Para.mix;)*)>
+<!ELEMENT %LaTeXML.bibliography.qname; 
+	  ((%LaTeXML.SectionalFrontMatter.class;)?,
+	  (%LaTeXML-bib.biblist.qname;)*)>
 
-<!-- Redefined document structure -->
 
-<!ELEMENT affiliation (#PCDATA | %Inline.mix;)*>
-<!ELEMENT acknowledgements (#PCDATA | %Inline.mix;)*>
+<!ATTLIST %LaTeXML.chapter.qname;       %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
+<!ATTLIST %LaTeXML.part.qname;          %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
+<!ATTLIST %LaTeXML.section.qname;       %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
+<!ATTLIST %LaTeXML.subsection.qname;    %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
+<!ATTLIST %LaTeXML.subsubsection.qname; %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
+<!ATTLIST %LaTeXML.paragraph.qname;     %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
+<!ATTLIST %LaTeXML.bibliography.qname;  
+	  %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib; 
+          files CDATA #IMPLIED>
 
-<!ELEMENT copyright (#PCDATA | %Inline.mix;)*>
-<!ATTLIST copyright
+<!-- but still define a default document -->
+<!ELEMENT %LaTeXML.document.qname;
+	  ((%LaTeXML.FrontMatter.class;)*,
+	  (%LaTeXML.section.qname;)*,
+	  (%LaTeXML.BackMatter.class;)*)>
+<!ATTLIST %LaTeXML.document.qname;
+	  %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
+
+<!-- Define structure of other omitted elements -->
+
+<!ELEMENT %LaTeXML.title.qname;        %LaTeXML.Inline.model; >
+<!ATTLIST %LaTeXML.title.qname;        %LaTeXML.Common.attrib;>
+
+<!ELEMENT %LaTeXML.toctitle.qname;     %LaTeXML.Inline.model; >
+<!ATTLIST %LaTeXML.toctitle.qname;     %LaTeXML.Common.attrib;>
+
+<!ELEMENT %LaTeXML.author.qname;       %LaTeXML.Inline.model; >
+<!ATTLIST %LaTeXML.author.qname;       %LaTeXML.Common.attrib;>
+
+<!ELEMENT %LaTeXML.creationdate.qname; %LaTeXML.Inline.model;>
+<!ATTLIST %LaTeXML.creationdate.qname; %LaTeXML.Common.attrib;>
+
+<!ELEMENT %LaTeXML.thanks.qname;       %LaTeXML.Inline.model; >
+<!ATTLIST %LaTeXML.thanks.qname;       %LaTeXML.Common.attrib;>
+<!ELEMENT %LaTeXML.abstract.qname;    (%LaTeXML.Para.mix;)*>
+<!ATTLIST %LaTeXML.abstract.qname;     %LaTeXML.Common.attrib;>
+
+<!-- Define structure of new stuff -->
+
+
+<!ELEMENT %LaTeXML.affiliation.qname;      %LaTeXML.Inline.model;>
+<!ELEMENT %LaTeXML.acknowledgements.qname; %LaTeXML.Inline.model;>
+
+<!ELEMENT %LaTeXML.copyright.qname;        %LaTeXML.Inline.model;>
+<!ATTLIST %LaTeXML.copyright.qname;
           year CDATA #IMPLIED>
 
-<!ELEMENT begin_onecolumn      ANY>
-<!ELEMENT end_onecolumn      ANY>
-<!ELEMENT printonly      ANY>
-<!ELEMENT electroniconly ANY>
+<!ELEMENT %LaTeXML.begin_onecolumn.qname; ANY>
+<!ELEMENT %LaTeXML.end_onecolumn.qname;   ANY>
+<!ELEMENT %LaTeXML.printonly.qname;       ANY>
+<!ELEMENT %LaTeXML.electroniconly.qname;  ANY>
 
-<!ELEMENT gallery (galleryitem)*>
-<!ELEMENT galleryitem (graphics)*>
-<!ATTLIST galleryitem
+<!ELEMENT %LaTeXML.gallery.qname; (%LaTeXML.galleryitem.qname;)*>
+<!ELEMENT %LaTeXML.galleryitem.qname; (%LaTeXML.graphics.qname;)*>
+<!ATTLIST %LaTeXML.galleryitem.qname;
           graphic   CDATA #REQUIRED
           name      CDATA #IMPLIED
 	  labelref  CDATA #IMPLIED>
-<!ELEMENT figuregroup (figure)*>
-<!ELEMENT sidebar (title?, toctitle?, author?, (%Block.mix;)*)>
-<!ATTLIST sidebar
+<!ELEMENT %LaTeXML.figuregroup.qname; (%LaTeXML.figure.qname;)*>
+<!ELEMENT %LaTeXML.sidebar.qname;
+	  ((%LaTeXML.FrontMatter.class;)*, (%LaTeXML.Para.mix;)*)>
+<!ATTLIST %LaTeXML.sidebar.qname;
           name  CDATA #REQUIRED
-	  label CDATA #IMPLIED>
-<!ELEMENT equationmix (#PCDATA | %Inline.mix; | punct | origref | constraint)*>
-<!ATTLIST equationmix  %Labelled.attr;>
-<!ELEMENT constraint (#PCDATA | Math)*>
-<!ATTLIST constraint 
+          %LaTeXML.Labelled.attrib;>
+
+<!ELEMENT %LaTeXML.constraint.qname; (#PCDATA | Math)*>
+<!ATTLIST %LaTeXML.constraint.qname;
           hidden (yes|no) #IMPLIED>
-<!ELEMENT email (#PCDATA | %Inline.mix;)*>
-<!ELEMENT origref (#PCDATA | %Inline.mix;)*>
-<!ATTLIST origref
+<!ELEMENT %LaTeXML.email.qname;   %LaTeXML.Inline.model;>
+<!ELEMENT %LaTeXML.origref.qname; %LaTeXML.Inline.model;>
+<!ATTLIST %LaTeXML.origref.qname;
           ref CDATA #IMPLIED>
 
-<!ELEMENT VRML EMPTY>
-<!ATTLIST VRML
+<!ELEMENT %LaTeXML.declare.qname; (%LaTeXML.tag.qname;)?>
+<!ATTLIST %LaTeXML.declare.qname;
+          id CDATA #IMPLIED>
+
+<!ELEMENT %LaTeXML.VRML.qname; EMPTY>
+<!ATTLIST %LaTeXML.VRML.qname;
          href CDATA #REQUIRED>
 
-<!ELEMENT GAMS EMPTY>
-<!ATTLIST GAMS
-          class CDATA #IMPLIED
-          package CDATA #IMPLIED>
-
-<!-- Character entities -->
-<!ENTITY ldots "">
+<!ELEMENT %LaTeXML.GAMS.qname; EMPTY>
+<!ATTLIST %LaTeXML.GAMS.qname;
+          class     CDATA #IMPLIED
+          package   CDATA #IMPLIED
+          module    CDATA #IMPLIED
+          module_id CDATA #IMPLIED>
 
 <!-- Bibliography extensions -->
-<!ELEMENT bib-text_url (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-text-url %Common.attr;>
+<!ELEMENT %LaTeXML.bib-links.qname;        %LaTeXML.Inline.model;>
+<!ATTLIST %LaTeXML.bib-links.qname;        %LaTeXML.Common.attrib;>
 
-<!ELEMENT bib-code_url (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-code-url %Common.attr;>
-
-<!ELEMENT bib-gams_package (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-gams_package %Common.attr;>
-<!ELEMENT bib-gams_module (#PCDATA | %Inline.mix;)*>
-<!ATTLIST bib-gams_module %Common.attr;>

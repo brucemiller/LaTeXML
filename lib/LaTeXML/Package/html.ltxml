@@ -24,9 +24,9 @@ DefMacro('\externallabels Semiverbatim Semiverbatim','');
 DefMacro('\externalref{}',''); # ???
 DefMacro('\externalcite','\nocite');
 DefMacro('\htmladdTOClink[]{}{}{}', '');
-DefConstructor('\htmlrule OptionalMatch:*','<rule/>');
-DefConstructor('\HTMLrule OptionalMatch:*','<rule/>');
-DefConstructor('\htmlclear','<br/>');
+DefConstructor('\htmlrule OptionalMatch:*','<ltx:rule/>');
+DefConstructor('\HTMLrule OptionalMatch:*','<ltx:rule/>');
+DefConstructor('\htmlclear','<ltx:br/>');
 DefMacro('\bodytext{}','');
 DefMacro('\htmlbody','');
 DefMacro('\hyperrefhyper{}{}{}{}','');

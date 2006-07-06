@@ -13,15 +13,11 @@
 #
 # See amsfndoc
 #
-DefConstructor('\mathbb{}', '#1',
-	       beforeDigest=>sub{ RequireMath; BGroup; MergeFont(family=>'blackboard'); },
-	       afterDigest=>\&EGroup);
+DefConstructor('\mathbb{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'blackboard'});
 DefMacro('\Bbb{}','\mathbb{#1}');
 DefMacro('\bold{}','\mathbb{#1}');
 # Also defined in eufrak
-DefConstructor('\mathfrak{}','#1',
-	       beforeDigest=>sub{ RequireMath; BGroup; MergeFont(family=>'fraktur'); },
-	       afterDigest=>\&EGroup);
+DefConstructor('\mathfrak{}','#1', bounded=>1, requireMath=>1, font=>{family=>'fraktur'});
 DefMacro('\frak{}','\mathfrak{#1}');
 
 # Not necessarily math

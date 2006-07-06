@@ -142,7 +142,7 @@ use strict;
 use LaTeXML::Global;
 use base qw(LaTeXML::Box);
 
-# Specially recognized properties:
+# Specially recognized (some required?) properties:
 #  font    : The font object
 #  locator : a locator string, where in the source this whatsit was created
 #  isMath  : whether this is a math object
@@ -151,9 +151,6 @@ use base qw(LaTeXML::Box);
 #  trailer
 sub new {
   my($class,$defn,$args,%properties)=@_;
-  $properties{font}    = $STATE->lookupValue('font')   unless defined $properties{font};
-  $properties{locator} = $GULLET->getLocator unless defined $properties{locator};
-  $properties{isMath}  = $STATE->lookupValue('IN_MATH') unless defined $properties{isMath};
   bless {definition=>$defn, args=>$args||[], properties=>{%properties}},$class; }
 
 sub getDefinition { $_[0]{definition}; }
@@ -162,6 +159,7 @@ sub getFont       { $_[0]{properties}{font}; } # and if undef ????
 sub setFont       { $_[0]{properties}{font} = $_[1]; }
 sub getLocator    { $_[0]{properties}{locator}; }
 sub getProperty   { $_[0]{properties}{$_[1]}; }
+sub getProperties { %{$_[0]{properties}}; }
 sub setProperty   { $_[0]{properties}{$_[1]}=$_[2]; return; }
 sub setProperties {
     my ($self, %props) = @_;
@@ -169,9 +167,6 @@ sub setProperties {
 	$$self{properties}{$key} = $value if defined $value; }
     return; }
 
-sub getProperties {
-  my($self,@keys)=@_;
-  map( $$self{properties}{$_}, @keys); }
 sub getArg        { $_[0]{args}->[$_[1]-1]; }
 sub getArgs       { @{$_[0]{args}}; }
 sub setArgs       { 
@@ -243,7 +238,8 @@ sub equals {
 
 sub beAbsorbed {
   my($self,$document)=@_;
-  &{$self->getDefinition->getConstructor}($document,@{$$self{args}},$$self{properties});}
+  $self->getDefinition->doAbsorbtion($document,$self); }
+####  &{$self->getDefinition->getConstructor}($document,@{$$self{args}},$$self{properties});}
 
 #**********************************************************************
 1;
@@ -340,11 +336,12 @@ Returns the value associated with C<$key> in the C<$whatsit>'s property list.
 
 Sets the C<$value> associated with the C<$key> in the C<$whatsit>'s property list.
 
-=item C<< $props = $whatsit->getProperties(@keys); >>
+=item C<< $props = $whatsit->getProperties(); >>
 
-Returns a list of the named properties.
+Returns the hash of properties stored on this Whatsit.
+(Note that this hash is modifiable).
 
-=item C<< $props = $whatsit->getProperties(%keysvalues); >>
+=item C<< $props = $whatsit->setProperties(%keysvalues); >>
 
 Sets several properties, like setProperty.
 

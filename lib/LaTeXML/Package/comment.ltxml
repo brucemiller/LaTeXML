@@ -18,17 +18,17 @@ use LaTeXML::Package;
 # Define \name and \begin{name} to start an ignored section
 # until \endname or \end{name}, respectively
 sub defineExcluded {
-  my($ignore,$name)=@_;
+  my($stomach,$name)=@_;
   $name = $name->toString if ref $name;
   InstallDefinition(LaTeXML::Constructor->new(T_CS("\\begin{$name}"),undef,'', reversion=>'',
             afterDigest=>[sub {
-			    my($whatsit)=@_;
-			    my @lines = $GULLET->getMouth->readRawLines("\\end{$name}\n",1);
+			    my($stomach,$whatsit)=@_;
+			    my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{$name}\n",1);
 			    NoteProgress("Skipped ".scalar(@lines)." for environment $name"); }]));
   return; }
 
 sub defineIncluded {
-  my($ignore,$name,$before,$after)=@_;
+  my($stomach,$name,$before,$after)=@_;
   $name = $name->toString if ref $name;
   # Note that we define the `magic' environment control sequences,
   # but DO NOT do any of the normal environ things, like \begingroup \endgroup!

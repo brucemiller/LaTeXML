@@ -278,10 +278,6 @@
   </div>
 </xsl:template>
 
-
-<!-- ignore (if preceded by an XMath?) -->
-<xsl:template match="ltx:punct"/>
-
 <!-- ======================================================================
      Block Elements
      ====================================================================== -->
@@ -345,11 +341,16 @@
 </xsl:template>
 
 <xsl:template match="ltx:td">
-  <td><xsl:call-template name="cell-attributes"/><xsl:apply-templates/></td>
+  <td><xsl:call-template name="cell-attributes"/><xsl:apply-templates/>
+      <xsl:apply-templates select="following-sibling::*[position()=1][self::ltx:td-between]/node()"/></td>
 </xsl:template>
 
 <xsl:template match="ltx:th">
-  <th><xsl:call-template name="cell-attributes"/><xsl:apply-templates/></th>
+  <th><xsl:call-template name="cell-attributes"/><xsl:apply-templates/>
+      <xsl:apply-templates select="following-sibling::*[position()=1][self::ltx:td-between]/node()"/></th>
+</xsl:template>
+
+<xsl:template match="ltx:td-between">
 </xsl:template>
 
 <xsl:template name="cell-attributes">

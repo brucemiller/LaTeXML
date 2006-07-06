@@ -27,10 +27,14 @@ use LaTeXML::Global;
 #    <other>: For any other named `stash', it will be stored in the stash list.
 #             If that stash is currently active, the value will also be stored in current frame.
 
-# options: catcodes => (standard|style|none)
+# options: 
+#     catcodes => (standard|style|none)
+#     stomach  => a Stomach object.
+#     model    => a Model object.
 sub new {
   my($class, %options)=@_;
-  my $self = bless {table=>{}, undo=>[{}], prefixes=>{} }, $class; 
+  my $self = bless {table=>{}, undo=>[{}], prefixes=>{},
+		    stomach=>$options{stomach}, model=>$options{model}}, $class; 
   $$self{table}{'value:VERBOSITY'}=[0];
   if($options{catcodes} =~ /^(standard|style)/){
     # Setup default catcodes.
@@ -65,6 +69,10 @@ sub assign_internal {
     assign_internal($self,$key,$value,'local') 
       if $$self{table}{'stash_active_'.$scope}[0];
   }}
+
+#======================================================================
+sub getStomach { $_[0]->{stomach}; }
+sub getModel   { $_[0]->{model}; }
 
 #======================================================================
 
@@ -204,6 +212,18 @@ C<LaTeXML::State> - stores the current state of processing.
 A C<LaTeXML::State> object stores the current state of processing.
 It recording catcodes, variables values, definitions and so forth,
 as well as mimicing TeX's scoping rules.
+
+=head2 Access to State and Processing
+
+=over 4
+
+=item C<< $STATE->getStomach; >>
+
+Returns the current Stomach used for digestion.
+
+=item C<< $STATE->getModel; >>
+
+Returns the current Model representing the document model.
 
 =head2 Scoping
 

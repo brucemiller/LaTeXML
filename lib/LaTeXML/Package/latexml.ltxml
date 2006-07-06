@@ -14,11 +14,13 @@
 #======================================================================
 # LaTeXML Implementation of latexml semantic enhancement macros
 #======================================================================
+package LaTeXML::Package::Pool;
 use LaTeXML::Package;
 
 RequirePackage('keyval');
+
 # From latexml.sty
-DefConstructor('\URL[]{}',"<a href='#2'>?#1(#1)(#2)</a>");
+DefConstructor('\URL[] Semiverbatim',"<ltx:a href='#2'>?#1(#1)(#2)</ltx:a>");
 DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
 DefMacro('\SGML',    '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
 DefMacro('\HTML',    '\URL[\texttt{HTML}]{http://www.w3.org/HTML/}');
@@ -29,21 +31,9 @@ DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 
 #======================================================================
 # Exposing internal functionality of LaTeXML to the LaTeX document.
+#======================================================================
 
-# Define a mathematical object with both presentation & content information
-#   \LXMathDef{\name}[nargs][optional]{presentation body}[content keywords]
-#  The first part is essentially equivalent to \newcommand, it defines
-# an expansion for \name used for the presentation.
-# The content keywords are used to define the semantics of the object.
-# See DefMath in LaTeXML::Package for more information.
-DefPrimitive('\LXMathDef{}[][]{} OptionalKeyVals:XMath', sub {
-  my($self,$cs,$nargs,$opt,$presentation,$params)=@_;
-  my($name,$cd,$role)=$params && map($_ && $_->toString,map($params->getValue($_), qw(name cd role)));
-  DefMath($cs->toString.convertLaTeXArgs($nargs,$opt),$presentation,
-	  name=>$name, omcd=>$cd, role=>$role);
-});
-#DefKeyVal('XMath',name,string);
-
+#======================================================================
 # \LXMID{id}{math}  Associate the identifier id with the given math expression.
 DefMacro('\LXMID{}{}','\@XMArg{#1}{#2}');
 
@@ -51,6 +41,121 @@ DefMacro('\LXMID{}{}','\@XMArg{#1}{#2}');
 # In presentation, this is similar to using a shorthand macro.
 # In content situations, an XMRef is generated.
 DefMacro('\LXMRef{}','\@XMRef{#1}');
+
+#======================================================================
+# Define a mathematical object with both presentation & content information
+#   \LXDefMath{\name}[nargs][optional]{presentation body}[content keywords]
+#  The first part is essentially equivalent to \newcommand, it defines
+# an expansion for \name used for the presentation.
+# The content keywords are used to define the semantics of the object.
+# See DefMath in LaTeXML::Package for more information.
+DefPrimitive('\LXDefMath{}[][]{} OptionalKeyVals:XMath', sub {
+  my($stomach,$cs,$nargs,$opt,$presentation,$params)=@_;
+  my($name,$cd,$role)=$params && map($_ && $_->toString,map($params->getValue($_), qw(name cd role)));
+  DefMath($cs->toString.convertLaTeXArgs($nargs,$opt),$presentation,
+	  name=>$name, omcd=>$cd, role=>$role);
+});
+#DefKeyVal('XMath',name,string);
+
+#======================================================================
+# NOTE: I'm concerned about the order of applying these filters.
+# even though it seems right so far.
+
+# Keyword options:
+#    scope=<scope> : Specifies the scope of the declaration, ie. to what portion of
+#            the document the declarations apply
+#            You can specify one of the counters associated with sections, 
+#            equations, etc.  
+#            If unspecified, the declaration is scoped to the current unit.
+#            Note that this applies to equations, as well.
+#    label=<label> : assigns a label to the declaration so that it can be reused
+#            at another point in the document (with \LXDeclRef), particularly when
+#            that point is not otherwise within the scope of the original declaration.
+# To effect the declaration:
+#    role=<role>  : Assigns a grammatical role to the matched item for parsing.
+#    name=<name>  : Assigns a semantic name to the matched item.
+#  Alternatively, use
+#     replace : provides a replacement for the matched expression, rather than adding attributes.
+
+# Potential keywords/operations needed(?)
+#   nodef : inhibits the marking of the current point as the `definition' of the expression.
+#          (a ref declaration would normally not be a def anyway)
+
+DefKeyVal('Declare','wrap','{}',1);
+DefKeyVal('Declare','trace','{}',1);
+DefConstructor('\LXDeclMath OptionalMatch:* OptionalKeyVals:Declare {}',
+	       "^<ltx:declare id='#id'>?&KeyVal(#2,tag)(<ltx:tag>&KeyVal(#2,tag)</ltx:tag>)</ltx:declare>",
+	       mode=>'text',
+	       # Screwy bit to `neutralize' the font in the matches.
+	       beforeDigest=>sub { AssignValue(font=>LaTeXML::Font->new(),'local');
+				   AssignValue(mathfont=>LaTeXML::MathFont->new(), 'local');
+				   return; },
+	       afterDigest=>sub { my($stomach,$whatsit)=@_;
+				  my($star,$keys,$pattern)=$whatsit->getArgs;
+				  return unless $keys;
+				  $whatsit->setProperties(scope   => getDeclarationScope($keys),
+							  role    => ToString($keys->getValue('role')),
+							  name    => ToString($keys->getValue('name')),
+							  trace   => defined $keys->getValue('trace'),
+							  wrap    => defined $keys->getValue('wrap'),
+							  id      => next_declaration_id(),
+							  match   => $pattern,
+							  replace => $keys->getValue('replace'));
+				  if(my $label = ToString($keys->getValue('label'))){
+				    AssignValue("Declaration_$label"=>$whatsit,'global'); }
+				  return; },
+	       afterConstruct=>sub { my($document,$whatsit)=@_;
+				     my $scope = $whatsit->getProperty('scope');
+				     createDeclarationRewrite($document,$scope,$whatsit); },
+	       reversion=>'');
+
+DefConstructor('\LXDeclRef OptionalKeyVals:Declare {}','',
+	       afterDigest=>sub { my($stomach,$whatsit)=@_;
+				  my($keys,$labels)=$whatsit->getArgs;
+				  $whatsit->setProperties(scope=>getDeclarationScope($keys),
+							  labels=>[split(',',ToString($labels))]); },
+	       afterConstruct=>sub { my($document,$whatsit)=@_;
+				     my $scope  = $whatsit->getProperty('scope');
+				     foreach my $label (@{$whatsit->getProperty('labels')}){
+				       if(my $declaration = LookupValue("Declaration_$label")){
+					 createDeclarationRewrite($document,$scope,$declaration); }
+				       else {
+					 Warn("No Declaration with label=$label was found"); }}}
+	     );
+
+our $XMDeclID=0;
+sub next_declaration_id {
+  ToString(LookupValue('Chapter')).":LXDeclID".$XMDeclID++; }
+
+sub getDeclarationScope {
+  my($keys)=@_;
+  # Sort out the scope.
+  my $scope = $keys && $keys->getValue('scope');
+  $scope = ($scope ? ToString($scope) : LookupValue('current_counter'));
+  if($scope && LookupValue("\\c\@$scope")){ # Scope is some counter.
+    $scope =  "id:".ToString(Digest(Expand(T_CS("\\the$scope\@ID")))); }
+  $scope; }
+
+
+sub createDeclarationRewrite {
+  my($document,$scope,$whatsit)=@_;
+  my %props = $whatsit->getProperties;
+  my($id,$match,$wrap,$role,$name,$ref,$trace,$replace)
+    =map($props{$_}, qw(id match wrap role name ref trace replace));
+###  print STDERR "REWRITER: scope=>$scope, match=>$match, role=>$role, dec_id=>$id\n";
+  $STATE->getModel->prependRewriteRule('math',
+				       ($trace ? (trace=>$trace):()),
+				       ($scope ? (scope=>$scope):()),
+				       ($match ? (match=>$match):()),
+				       ($wrap  ? (wrap =>$wrap) :()),
+				       ($replace
+					? (replace=>$replace)
+					: attributes=>{ ($role  ? (role=>$role) :()),
+							($name  ? (name=>$name) :()),
+							($id    ? (dec_id=>$id) :()),
+						     }),
+				       );
+  return; }
 
 #======================================================================
 1;

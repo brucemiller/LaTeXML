@@ -54,19 +54,24 @@ sub rewrite {
 sub applyClause {
   my($self,$document,$tree,$n_to_replace,$clause,@more_clauses)=@_;
   if($$clause[0] eq 'uncompiled'){
-    $self->compileClause($clause); }
+    $self->compileClause($document,$clause); }
   my($ignore,$op,$pattern)=@$clause;
-  if($op eq 'select'){
+  if($op eq 'trace'){
+    local $LaTeXML::Rewrite::DEBUG = 1;
+    $self->applyClause($document,$tree,$n_to_replace,@more_clauses); }
+  elsif($op eq 'select'){
     my($xpath,$nnodes)=@$pattern;
-    print STDERR "Rewrite selecting \"$xpath\"\n" if $LaTeXML::Rewrite::DEBUG;
-    foreach my $node ($MODEL->getXPath->findnodes($xpath,$tree)){
+    my @matches = $document->findnodes($xpath,$tree);
+    print STDERR "Rewrite selecting \"$xpath\" => ".scalar(@matches)." matches\n" if $LaTeXML::Rewrite::DEBUG;
+    foreach my $node (@matches){
       next unless $node->ownerDocument->isSameNode($tree->ownerDocument); # If still attached to original document!
       $self->applyClause($document,$node,$nnodes,@more_clauses); }}
   elsif($op eq 'multi_select'){
     foreach my $subpattern (@$pattern){
       my($xpath,$nnodes)=@$subpattern;
-      print STDERR "Rewrite selecting \"$xpath\"\n" if $LaTeXML::Rewrite::DEBUG;
-      foreach my $node ($MODEL->getXPath->findnodes($xpath,$tree)){
+      my @matches = $document->findnodes($xpath,$tree);
+      print STDERR "Rewrite selecting \"$xpath\" => ".scalar(@matches)." matches\n" if $LaTeXML::Rewrite::DEBUG;
+      foreach my $node (@matches){
 	next unless $node->ownerDocument->isSameNode($tree->ownerDocument); # If still attached to original document!
 	$self->applyClause($document,$node,$nnodes,@more_clauses); }}}
   elsif($op eq 'test'){
@@ -74,6 +79,23 @@ sub applyClause {
     print STDERR "Rewrite test at ".$tree->toString.": ".($nnodes ? $nnodes." to replace" : "failed")."\n" 
       if $LaTeXML::Rewrite::DEBUG;
     $self->applyClause($document,$tree,$nnodes,@more_clauses) if $nnodes; }
+  elsif($op eq 'wrap'){
+    if($n_to_replace > 1){
+      my $parent = $tree->parentNode;
+      # Remove & separate nodes to be replaced, and sibling nodes following them.
+      my @following = ();		# Collect the matching and following nodes
+      while(my $sib = $parent->lastChild){
+	$parent->removeChild($sib);
+	unshift(@following,$sib);
+	last if $$sib == $$tree; }
+      my @replaced = map(shift(@following), 1..$n_to_replace); # Remove the nodes to be replaced
+      $document->setNode($parent);
+      $tree = $document->openElement('ltx:XMWrap', font=>$document->getNodeFont($parent));
+      print STDERR "Wrapping ".join(' ',map(Stringify($_),@replaced))."\n" if $LaTeXML::Rewrite::DEBUG;
+      map($tree->appendChild($_), @replaced); # Add matched nodes to XMWrap
+      map( $parent->appendChild($_), @following); # Add back the following nodes.
+    }
+    $self->applyClause($document,$tree,1,@more_clauses); }
   elsif($op eq 'replace'){
     print STDERR "Rewrite replace at ".$tree->toString." using $pattern\n" if $LaTeXML::Rewrite::DEBUG;
     my $parent = $tree->parentNode;
@@ -104,7 +126,7 @@ sub applyClause {
     map($insertion->appendChild($_), @inserted);
 
     # Apply PRECEDING rules to the insertion.
-    $MODEL->applyRewrites($document,$insertion,$self);
+#####    $document->getModel->applyRewrites($document,$insertion,$self);
     # Now remove the insertion and replace with rewritten nodes and replace the following siblings.
     @inserted = $insertion->childNodes;
     $parent->removeChild($insertion);
@@ -114,9 +136,13 @@ sub applyClause {
     print STDERR "Rewrite action at ".$tree->toString." using $pattern\n" if $LaTeXML::Rewrite::DEBUG;
     &$pattern($tree); }
   elsif($op eq 'attributes'){
-    map( $tree->setAttribute($_,$$pattern{$_}), keys %$pattern); }
+    map( $tree->setAttribute($_,$$pattern{$_}), keys %$pattern); 
+    print STDERR "Rewrite attributes for ".Stringify($tree)."\n" if $LaTeXML::Rewrite::DEBUG;
+  }
   elsif($op eq 'regexp'){
-    foreach my $text ($MODEL->getXPath->findnodes('descendant-or-self::text()',$tree)){
+    my @matches = $document->findnodes('descendant-or-self::text()',$tree);
+    print STDERR "Rewrite regexp => ".scalar(@matches)." matches\n" if $LaTeXML::Rewrite::DEBUG;
+    foreach my $text (@matches){
       my $string = $text->textContent;
       if(&$pattern($string)){
 	$text->setData($string); }}}
@@ -126,8 +152,9 @@ sub applyClause {
 
 #**********************************************************************
 sub compileClause {
-  my($self,$clause)=@_;
+  my($self,$document,$clause)=@_;
   my($ignore,$op,$pattern)= @$clause;
+  my($oop,$opattern)=($op,$pattern);
   if   ($op eq 'label'){
     if(ref $pattern eq 'ARRAY'){
       $op='multi_select'; $pattern = [map(["descendant-or-self::*[\@label='$_']",1], @$pattern)]; }
@@ -137,6 +164,8 @@ sub compileClause {
     $op='select';
     if($pattern =~ /^label:(.*)$/){
       $pattern=["descendant-or-self::*[\@label='$1']",1]; }
+    elsif($pattern =~ /^id:(.*)$/){
+      $pattern=["descendant-or-self::*[\@id='$1']",1]; }
     elsif($pattern =~ /^(.*):(.*)$/){
       $pattern=["descendant-or-self::*[local-name()='$1' and \@refnum='$2']",1]; }
     else {
@@ -148,44 +177,66 @@ sub compileClause {
       $op='test'; }
     elsif(ref $pattern eq 'ARRAY'){ # Multiple patterns!
       $op = 'multi_select'; 
-      $pattern = [map( (ref $_ ? $_ : $self->compile_match($_)), @$pattern)]; }
-    elsif(!ref $pattern){	# Assume is TeX
-      $op = 'select'; $pattern= $self->compile_match($pattern); }}
+      $pattern = [map(  $self->compile_match($document,$_), @$pattern)]; }
+    else {
+      $op = 'select'; $pattern= $self->compile_match($document,$pattern); }}
   elsif($op eq 'replace'){
     if(ref $pattern eq 'CODE'){}
-    elsif(!ref $pattern){
-      $pattern = $self->compile_replacement($pattern); }}
+    else {
+      $pattern = $self->compile_replacement($document,$pattern); }}
   elsif($op eq 'regexp'){
     $pattern = $self->compile_regexp($pattern); }
+  print STDERR "Compiled clause $oop=>".ToString($opattern)."  ==> $op=>".ToString($pattern)."\n"
+    if $LaTeXML::Rewrite::DEBUG;
   $$clause[0]='compiled'; $$clause[1]=$op; $$clause[2]=$pattern; }
 
 #**********************************************************************
 sub compile_match {
-  my($self,$pattern)=@_;
-  # Digest the TeX
-  $pattern = '$'.$pattern.'$' if $$self{math};
-  my $box = digest_rewrite($pattern);
+  my($self,$document,$pattern)=@_;
+  if(!ref $pattern){
+    $self->compile_match1($document,digest_rewrite(($$self{math} ? '$'.$pattern.'$' : $pattern))); }
+  elsif($pattern->isaBox){
+    $self->compile_match1($document,$pattern); }
+  else {
+    Error("Don't know what to do with match=>\"".Stringify($pattern)."\""); }}
+
+sub compile_match1 {
+  my($self,$document,$patternbox)=@_;
   # Create a temporary document
-  my $document = LaTeXML::Document->new();
-  my $capture = $document->openElement('_Capture_', font=>LaTeXML::Font->new());
-  $document->absorb($box);
-  $MODEL->applyRewrites($document,$document->getDocument->documentElement,$self);
+  my $capdocument = LaTeXML::Document->new($document->getModel);
+  my $capture = $capdocument->openElement('_Capture_', font=>LaTeXML::Font->new());
+  $capdocument->absorb($patternbox);
+#####  $capdocument->getModel->applyRewrites($capdocument,$capdocument->getDocument->documentElement,$self);
   my @nodes= ($$self{mode} eq 'math'
-	      ? $MODEL->getXPath->findnodes("//ltxml:XMath/*",$capture)
+	      ? $capdocument->findnodes("//ltx:XMath/*",$capture)
 	      : $capture->childNodes);
-  my $frag = $document->getDocument->createDocumentFragment;
+  my $frag = $capdocument->getDocument->createDocumentFragment;
   map($frag->appendChild($_), @nodes);
   # Convert the captured nodes to an XPath that would match them.
-  my $xpath = domToXPath($frag);
-  print STDERR "Converting \"$pattern\"\n  => xpath= \"$xpath\"\n" if $LaTeXML::Rewrite::DEBUG;
+  my $xpath = domToXPath($capdocument,$frag);
+  # For math, restrict to NOT operate on presentation branch of XMDual.
+  # The semantics should already be associated with it, through the XMDual itself.
+  # This assumes that any arguments in the presentation branch are by reference (XMRef)
+  # to the same args in the content branch --- thus the args will still be matched.
+  $xpath .= "[not(ancestor-or-self::*[parent::ltx:XMDual and not(following-sibling::*)])]"
+    if $$self{math};
+
+  print STDERR "Converting \"".ToString($patternbox)."\"\n  => xpath= \"$xpath\"\n" if $LaTeXML::Rewrite::DEBUG;
   [$xpath,scalar(@nodes)]; }
 
 sub compile_replacement {
-  my($self,$pattern)=@_;
-  $pattern = '$'.$pattern.'$' if $$self{math};
-  my $box = digest_rewrite($pattern);
-  $box = $box->getBody if $$self{math};
-  sub { $_[0]->absorb($box); }}
+  my($self,$document,$pattern)=@_;
+  if(!ref $pattern){
+    $self->compile_replacement1(digest_rewrite(($$self{math} ? '$'.$pattern.'$' : $pattern))); }
+  elsif($pattern->isaBox){
+    $self->compile_replacement1($pattern); }
+  else {
+    Error("Don't know what to do with replacement=>\"".Stringify($pattern)."\""); }}
+
+sub compile_replacement1 {
+  my($self,$patternbox)=@_;
+  $patternbox = $patternbox->getBody if $$self{math};
+  sub { $_[0]->absorb($patternbox); }}
 
 sub compile_regexp {
   my($self,$pattern)=@_;
@@ -198,29 +249,28 @@ sub compile_regexp {
 
 sub digest_rewrite {
   my($string)=@_;
-  $STOMACH->bgroup;
+  my $stomach = $STATE->getStomach;
+  $stomach->bgroup;
   $STATE->assignValue(font=>LaTeXML::Font->new(), 'local');  # Use empty font, so eventual insertion merges.
   $STATE->assignValue(mathfont=>LaTeXML::MathFont->new(), 'local');
-  my $box = $STOMACH->digest(TokenizeInternal($string),0);
-  $STOMACH->egroup;
+  my $box = $stomach->digest(TokenizeInternal($string),0);
+  $stomach->egroup;
   $box; }
 
 #**********************************************************************
 sub domToXPath {
-  my($node)=@_;
-  "descendant-or-self::". domToXPath_rec($node); }
+  my($document,$node)=@_;
+  "descendant-or-self::". domToXPath_rec($document,$node); }
 
 sub domToXPath_rec {
-  my($node,@extra_predicates)=@_;
+  my($document,$node,@extra_predicates)=@_;
   my $type = $node->nodeType;
   if($type == XML_DOCUMENT_FRAG_NODE){
     my @nodes = $node->childNodes;
-    domToXPath_rec(shift(@nodes) , domToXPath_seq('following-sibling',@nodes), @extra_predicates); }
+    domToXPath_rec($document,shift(@nodes) , domToXPath_seq($document,'following-sibling',@nodes), @extra_predicates); }
   elsif($type == XML_ELEMENT_NODE){
-    my $ns = $node->namespaceURI;
-    my $tag = $node->localname;
-    return '*[true()]' if $tag eq '_WildCard_';
-    my $name = ($ns ? $MODEL->getNamespacePrefix($ns).':'.$tag : $tag);
+    my $qname = $document->getNodeQName($node);
+    return '*[true()]' if $qname eq '_WildCard_';
     my @predicates =();
     # Order the predicates so as to put most quickly restrictive first.
     if($node->hasAttributes){
@@ -233,22 +283,23 @@ sub domToXPath_rec {
       if(! grep($_->nodeType != XML_TEXT_NODE,@children)){ # All are text nodes:
 	push(@predicates, "text()='".$node->textContent."'"); }
       elsif(! grep($_->nodeType != XML_ELEMENT_NODE,@children)){
-	push(@predicates,domToXPath_seq('child',@children)); }
+	push(@predicates,domToXPath_seq($document,'child',@children)); }
       else {
 	Fatal("Cannot generate XPath for mixed content on ".$node->toString); }}
-    if($MODEL->canHaveAttribute($tag,'font')){
+    if($document->getModel->canHaveAttribute($qname,'font')){
       push(@predicates,"match-font('".$node->getAttribute('_font')."',\@_font)"); }
 
-    $name."[".join(' and ',grep($_,@predicates,@extra_predicates))."]"; }
+    $qname."[".join(' and ',grep($_,@predicates,@extra_predicates))."]"; }
   elsif($type == XML_TEXT_NODE){
-    "text()='".$node->textContent."'"; }}
+###    "text()='".$node->textContent."'"; }}
+    "*[text()='".$node->textContent."']"; }}
 
 # $axis would be child or following-sibling
 sub domToXPath_seq {
-  my($axis,@nodes)=@_;
+  my($document,$axis,@nodes)=@_;
   if(@nodes){
     $axis."::*[position()=1 and self::"
-      .   domToXPath_rec(shift(@nodes),domToXPath_seq('following-sibling',@nodes)).']'; }
+      .   domToXPath_rec($document,shift(@nodes),domToXPath_seq($document,'following-sibling',@nodes)).']'; }
   else { (); }}
 
 #**********************************************************************

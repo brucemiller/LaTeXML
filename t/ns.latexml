@@ -1,7 +1,0 @@
-use LaTeXML::Package;
-RegisterNamespace(foo=>"urn:ns:foo");
-DefConstructor('\foo',"<foo:fooempty/>");
-DefConstructor('\bar{}',"<foo:bar>#1</foo:bar>");
-DefConstructor('\baz',"<baz/>");
-
-1;

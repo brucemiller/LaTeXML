@@ -52,8 +52,11 @@ sub input {
     $STATE->assignValue($file.'_loaded'=>1,'global');
     my($dir,$modname)=pathname_split($file);
     $self->openMouth(LaTeXML::PerlMouth->new($file),0);
+    my $pmouth = $$self{mouth};
     do $file; 
-    Fatal("Package $name had an error:\n  $@") if $@; }
+    Fatal("Package $name had an error:\n  $@") if $@; 
+    $self->closeMouth if $pmouth eq $$self{mouth}; # Close immediately, unless recursive input
+  }
   elsif($file =~ /\.sty$/){	# (attempt to) interpret a style file.
     return if $STATE->lookupValue($file.'_loaded');
     $STATE->assignValue($file.'_loaded'=>1,'global');
@@ -191,7 +194,7 @@ sub readXToken {
       return $token if $toplevel;
       push(@{$$self{pending_comments}},$token); } # What to do with comments???
     elsif(defined($defn=$STATE->lookupDefinition($token)) && $defn->isExpandable){
-      $self->unread($defn->invoke); } # Expand and push back the result (if any) and continue
+      $self->unread($defn->invoke($self)); } # Expand and push back the result (if any) and continue
     else {
       return $token; }		# just return it
   }}
@@ -614,7 +617,7 @@ to TeX's rules.
 
 =over 4
 
-=item C<< $GULLET->input($name,$types,%options); >>
+=item C<< $gullet->input($name,$types,%options); >>
 
 Input the file named C<$name>; Searches for matching files in the
 current C<searchpath> with an extension being one of  C<$types> (an array
@@ -623,22 +626,22 @@ it will be executed (loaded).  If the found file has a TeX extension
 (tex, sty, cls) it will be opened and latexml will prepare to read
 from it.
 
-=item C<< $GULLET->openMouth($mouth, $noautoclose); >>
+=item C<< $gullet->openMouth($mouth, $noautoclose); >>
 
 Is this public? Prepares to read tokens from C<$mouth>.
 If $noautoclose is true, the Mouth will not be automatically closed
 when it is exhausted.
 
-=item C<< $GULLET->closeMouth; >>
+=item C<< $gullet->closeMouth; >>
 
 Is this public? Finishes reading from the current mouth, and
 reverts to the one in effect before the last openMouth.
 
-=item C<< $GULLET->flush; >>
+=item C<< $gullet->flush; >>
 
 Is this public? Clears all inputs.
 
-=item C<< $GULLET->getLocator; >>
+=item C<< $gullet->getLocator; >>
 
 Returns a string describing the current location in the input stream.
 
@@ -648,27 +651,27 @@ Returns a string describing the current location in the input stream.
 
 =over 4
 
-=item C<< $tokens = $GULLET->expandTokens($tokens); >>
+=item C<< $tokens = $gullet->expandTokens($tokens); >>
 
 Return a L<LaTeXML::Tokens> being the expansion of all the tokens in C<$tokens>.
 This is actually only used in a few circumstances where the arguments to
 an expandable need explicit expansion; usually expansion happens at the right time.
 
-=item C<< @tokens = $GULLET->neutralizeTokens(@tokens); >>
+=item C<< @tokens = $gullet->neutralizeTokens(@tokens); >>
 
 Another unusual method: Used for things like \edef and token registers, to
 inhibit further expansion of control sequences and proper spawning of register tokens.
 
-=item C<< $token = $GULLET->readToken; >>
+=item C<< $token = $gullet->readToken; >>
 
 Return the next token from the input source, or undef if there is no more input.
 
-=item C<< $token = $GULLET->readXToken($toplevel); >>
+=item C<< $token = $gullet->readXToken($toplevel); >>
 
 Return the next unexpandable token from the input source, or undef if there is no more input.
 If the next token is expandable, it is expanded, and its expansion is reinserted into the input.
 
-=item C<< $GULLET->unread(@tokens); >>
+=item C<< $gullet->unread(@tokens); >>
 
 Push the C<@tokens> back into the input stream to be re-read.
 
@@ -678,40 +681,40 @@ Push the C<@tokens> back into the input stream to be re-read.
 
 =over 4
 
-=item C<< $token = $GULLET->readNonSpace; >>
+=item C<< $token = $gullet->readNonSpace; >>
 
 Read and return the next non-space token from the input, discarding any spaces.
 
-=item C<< $GULLET->skipSpaces; >>
+=item C<< $gullet->skipSpaces; >>
 
 Skip the next spaces from the input.
 
-=item C<< $GULLET->skip1Space; >>
+=item C<< $gullet->skip1Space; >>
 
 Skip the next token from the input if it is a space.
 
-=item C<< $tokens = $GULLET->readBalanced; >>
+=item C<< $tokens = $gullet->readBalanced; >>
 
 Read a sequence of tokens from the input until the balancing '}' (assuming the '{' has
 already been read). Returns a L<LaTeXML::Tokens>.
 
-=item C<< $boole = $GULLET->ifNext($token); >>
+=item C<< $boole = $gullet->ifNext($token); >>
 
 Returns true if the next token in the input matches C<$token>;
 the possibly matching token remains in the input.
 
-=item C<< $tokens = $GULLET->readMatch(@choices); >>
+=item C<< $tokens = $gullet->readMatch(@choices); >>
 
 Read and return whichever of C<@choices> (each should be a L<LaTeXML::Tokens>)
 matches the input, or undef if none do.
 
-=item C<< $keyword = $GULLET->readKeyword(@keywords); >>
+=item C<< $keyword = $gullet->readKeyword(@keywords); >>
 
 Read and return whichever of C<@keywords> (each should be a string) matches the input, or undef
 if none do.  This is similar to readMatch, but case and catcodes are ignored.
 Also, leading spaces are skipped.
 
-=item C<< $tokens = $GULLET->readUntil(@delims); >>
+=item C<< $tokens = $gullet->readUntil(@delims); >>
 
 Read and return a (balanced) sequence of L<LaTeXML::Tokens> until  matching one of the tokens
 in C<@delims>.  In a list context, it also returns which of the delimiters ended the sequence.
@@ -722,45 +725,45 @@ in C<@delims>.  In a list context, it also returns which of the delimiters ended
 
 =over 4
 
-=item C<< $tokens = $GULLET->readArg; >>
+=item C<< $tokens = $gullet->readArg; >>
 
 Read and return a TeX argument; the next Token or Tokens (if surrounded by braces).
 
-=item C<< $tokens = $GULLET->readOptional($default); >>
+=item C<< $tokens = $gullet->readOptional($default); >>
 
 Read and return a LaTeX optional argument; returns C<$default> if there is no '[',
 otherwise the contents of the [].
 
-=item C<< $thing = $GULLET->readValue($type); >>
+=item C<< $thing = $gullet->readValue($type); >>
 
 Reads an argument of a given type: one of 'Number', 'Dimension', 'Glue', 'MuGlue' or 'any'.
 
-=item C<< $value = $GULLET->readRegisterValue($type); >>
+=item C<< $value = $gullet->readRegisterValue($type); >>
 
 Read a control sequence token (and possibly it's arguments) that names a register,
 and return the value.  Returns undef if the next token isn't such a register.
 
-=item C<< $number = $GULLET->readNumber; >>
+=item C<< $number = $gullet->readNumber; >>
 
 Read a L<LaTeXML::Number> according to TeX's rules of the various things that
 can be used as a numerical value. 
 
-=item C<< $dimension = $GULLET->readDimension; >>
+=item C<< $dimension = $gullet->readDimension; >>
 
 Read a L<LaTeXML::Dimension> according to TeX's rules of the various things that
 can be used as a dimension value.
 
-=item C<< $mudimension = $GULLET->readMuDimension; >>
+=item C<< $mudimension = $gullet->readMuDimension; >>
 
 Read a L<LaTeXML::MuDimension> according to TeX's rules of the various things that
 can be used as a mudimension value.
 
-=item C<< $glue = $GULLET->readGlue; >>
+=item C<< $glue = $gullet->readGlue; >>
 
 Read a  L<LaTeXML::Glue> according to TeX's rules of the various things that
 can be used as a glue value.
 
-=item C<< $muglue = $GULLET->readMuGlue; >>
+=item C<< $muglue = $gullet->readMuGlue; >>
 
 Read a L<LaTeXML::MuGlue> according to TeX's rules of the various things that
 can be used as a muglue value.

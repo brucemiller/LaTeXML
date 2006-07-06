@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <title>Testing Sections</title>
+  <author/>
+  <creationdate>Today!</creationdate>
+  <section id="S1" refnum="1" label="sec:one">
+    <title>One</title>
+    <para id="S1.p1">
+      <p>Section One. As we will see in §<ref labelref="sec:three">3</ref>.</p>
+    </para>
+  </section>
+  <section id="S2" refnum="2" label="sec:two">
+    <title>Two</title>
+    <para id="S2.p1">
+      <p>As seen in §<ref labelref="sec:one">1</ref>; Section Two.</p>
+    </para>
+  </section>
+  <section id="S3" refnum="3" label="sec:three">
+    <title>Three</title>
+    <para id="S3.p1">
+      <p>Previously, in §<ref labelref="sec:two">2</ref>.</p>
+    </para>
+  </section>
+</document>

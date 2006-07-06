@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section>
+    <para id="p1">
+      <equation>
+        <Math mode="display" tex="f_{a},f^{a},f_{a}^{a},f^{a}_{a}" text="Collection@(f _ a, f ^ a, SubSuperscript@(f, a, a), SubSuperscript@(f, a, a))">
+          <XMath>
+            <XMApp>
+              <XMTok name="Collection" role="FENCED" separators=",,,"/>
+              <XMApp>
+                <XMTok name="Subscript" role="SUBSCRIPT"/>
+                <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok name="SubSuperscript"/>
+                <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok name="SubSuperscript"/>
+                <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <para id="p2">
+      <equation>
+        <Math mode="display" tex="{}_{a},{}^{a}">
+          <XMath>
+            <XMApp role="FLOATINGSUBSCRIPT">
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            </XMApp>
+            <XMTok role="PUNCT">,</XMTok>
+            <XMApp role="FLOATINGSUPERSCRIPT">
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+</document>

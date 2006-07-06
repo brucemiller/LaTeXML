@@ -93,56 +93,77 @@ sub convert_sci_exponent {
    : ""); }
 
 DefConstructor('\Sci{}{}',sub {
-  my($document,$mantissa,$exponent,$props)=@_;
+  my($document,$mantissa,$exponent,%props)=@_;
   my $string = convert_sci($mantissa,$exponent);
-  ($$props{isMath} 
-   ? $document->insertMathToken($string,font=>$$props{font},role=>'NUMBER')
-   : $document->openText($string,$$props{font})); });
+  ($props{isMath} 
+   ? $document->insertMathToken($string,font=>$props{font},role=>'NUMBER')
+   : $document->openText($string,$props{font})); });
 
 # Worry about alignment later...
 #DefMacro('\TSci{}{}','\multicolumn{2}{r}{\Sci{#1}{#2}}');
 
 DefConstructor('\Sci@Exp{}',
-	       sub { my($document,$exp,$props)=@_;
+	       sub { my($document,$exp,%props)=@_;
 		     $document->insertMathToken(convert_sci_exponent($exp),
-						font=>$$props{font}, role=>'NUMBER'); },
+						font=>$props{font}, role=>'NUMBER'); },
 	      reversion=>sub { my $exp = $_[0]->getArg(1);
 			      ($exp->unlist ? (T_CS('\times'),T_OTHER('1'),T_OTHER('0'),
 					       T_SUPER,T_BEGIN,$exp->revert,T_END)
 			       :()); });
 DefMacro('\TSci{}{}','\ensuremath{#1} & \ensuremath{\Sci@Exp{#2}}');
 
-
-DefConstructor('\thinhline',"<hline size='thin'/>"); # ?
-
 #**********************************************************************
 # Calculus
 # Handled as general constructors since empty numerator is effectively a differential
 # operator, instead of a derivative.
 DefConstructor('\deriv[]{}{}',  
-	       "<XMApp ?#2()(role='DIFFOP')>"
-	       . "<XMTok name='deriv' style='#style'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
-	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>",
-	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
+	       "<ltx:XMApp ?#2()(role='DIFFOP')>"
+	       . "<ltx:XMTok name='deriv' style='#style'/>"
+	       . "?#2(<ltx:XMArg>#2</ltx:XMArg>)(<ltx:XMTok name='Empty'/>)"
+	       . "<ltx:XMArg>#3</ltx:XMArg>"
+	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
+	       ."</ltx:XMApp>",
+	       bounded=>1,beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
 DefConstructor('\pderiv[]{}{}',
-	       "<XMApp ?#2()(role='DIFFOP')>"
-	       . "<XMTok name='pderiv' style='#style'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
-	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>",
-	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
+	       "<ltx:XMApp ?#2()(role='DIFFOP')>"
+	       . "<ltx:XMTok name='pderiv' style='#style'/>"
+	       . "?#2(<ltx:XMArg>#2</ltx:XMArg>)(<ltx:XMTok name='Empty'/>)"
+	       . "<ltx:XMArg>#3</ltx:XMArg>"
+	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
+	       ."</ltx:XMApp>",
+	       bounded=>1,beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
 DefConstructor('\ideriv[]{}{}',
-	       "<XMApp ?#2()(role='DIFFOP')>"
-	       . "<XMTok name='deriv' style='inline'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
-	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
+	       "<ltx:XMApp ?#2()(role='DIFFOP')>"
+	       . "<ltx:XMTok name='deriv' style='inline'/>"
+	       . "?#2(<ltx:XMArg>#2</ltx:XMArg>)(<ltx:XMTok name='Empty'/>)"
+	       . "<ltx:XMArg>#3</ltx:XMArg>"
+	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
+	       ."</ltx:XMApp>");
 DefConstructor('\ipderiv[]{}{}',
-	       "<XMApp ?#2()(role='DIFFOP')>"
-	       . "<XMTok name='pderiv' style='inline'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
-	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
+	       "<ltx:XMApp ?#2()(role='DIFFOP')>"
+	       . "<ltx:XMTok name='pderiv' style='inline'/>"
+	       . "?#2(<ltx:XMArg>#2</ltx:XMArg>)(<ltx:XMTok name='Empty'/>)"
+	       . "<ltx:XMArg>#3</ltx:XMArg>"
+	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
+	       ."</ltx:XMApp>");
 DefConstructor('\diff[]{}',
-	       "<XMApp><XMTok name='diff'/><XMArg>#2</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
+	       "<ltx:XMApp>"
+	       . "<ltx:XMTok name='diff'/>"
+	       . "<ltx:XMArg>#2</ltx:XMArg>"
+	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
+	       ."</ltx:XMApp>");
 DefConstructor('\pdiff[]{}',
-	       "<XMApp><XMTok name='pdiff'/><XMArg>#2</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
+	       "<ltx:XMApp>"
+	       . "<ltx:XMTok name='pdiff'/>"
+	       . "<ltx:XMArg>#2</ltx:XMArg>"
+	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
+	       ."</ltx:XMApp>");
 DefConstructor('\qdiff{}{}',
-	       "<XMApp><XMTok name='qdiff'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+	       "<ltx:XMApp>"
+	       . "<ltx:XMTok name='qdiff'/>"
+	       . "<ltx:XMArg>#1</ltx:XMArg>"
+	       . "<ltx:XMArg>#2</ltx:XMArg>"
+	       ."</ltx:XMApp>");
 
 
 #**********************************************************************
@@ -184,37 +205,39 @@ DefPrimitive('\specFunObsolete{}{}',sub {
   DefMacro("\\".$old->toString,"\\".$new->toString); });
 
 sub count_tokens {
-  my($token)=@_;
+  my($gullet,$token)=@_;
   my $n=0;
-  while(ReadMatch($token)){ $n++; }
+  while($gullet->readMatch($token)){ $n++; }
   $n; }
 
 #**********************************************************************
 
 DefPrimitive('\defSpecFun{}[][]{}{}', sub {
-  my($self,$name,$nparam,$optparam,$formatter,$nargs)=@_;
+  my($stomach,$name,$nparam,$optparam,$formatter,$nargs)=@_;
+  my $gullet = $stomach->getGullet;
   $name=$name->toString;
   my $cs = '\\'.$name;
   $nargs  = $nargs->toString;
 
   # Define with DefMath to create presentation & content cs's
-  DefMath($cs . convertLaTeXArgs($nparam,$optparam), $formatter, role=>'FUNCTION', omcd=>'dlmf');
+  DefMath($cs . convertLaTeXArgs($nparam,$optparam), $formatter, 
+	  role=>'FUNCTION',operator_role=>'FUNCTION', omcd=>'dlmf');
   # Then, redefine top-level macro to check for powers, args, etc.
   DefExpandable($cs.convertLaTeXArgs($nparam,$optparam),  sub { expand_specfun($cs,$nargs,@_); });
 
   # Read any argument formats & generate args macros
   my @argfmts=();
-  while(my $af = ReadOptional){
+  while(my $af = $gullet->readOptional){
     push(@argfmts,$af); }
   push(@argfmts, Tokenize("\\!\\left(".join(',',map("#$_",1..$nargs))."\\right)"))
     unless @argfmts;
   for(my $i=0; $i <= $#argfmts; $i++){
     DefMacro(join('',$cs,'@args',('@' x ($i+1)),('{}' x $nargs)),$argfmts[$i]->toString); }
 
-  SkipSpaces();
+  $gullet->skipSpaces;
   return; });
 
-DefConstructor('\sf@apply{}{}', "<XMApp>#1#2</XMApp>",
+DefConstructor('\sf@apply{}{}', "<ltx:XMApp>#1#2</ltx:XMApp>",
   reversion => sub {
     my($fcn,$args) = $_[0]->getArgs;
     ($fcn->revert,T_OTHER("@"),map( (T_BEGIN,$_->revert,T_END), $args->unlist)); });
@@ -224,27 +247,27 @@ DefMath('\diffop{}{}','{{#1}^{\@PRIMES{#2}}}');
 DefMath('\power{}{}',"{#1^{#2}}");
 
 sub expand_specfun {
-  my($cs,$nargs,$self,@params)=@_;
+  my($cs,$nargs,$gullet,@params)=@_;
   my($cparams,$pparams)=dualize_arglist(@params);
   my $ccall = Invocation(T_CS($cs.'@content'),@$cparams);
   my $pcall = Invocation(T_CS($cs.'@presentation'),@$pparams);
-  SkipSpaces;
+  $gullet->skipSpaces;
   # Check for following primes and superscripts, and wrap the function appropriately.
-  while(my $op = ReadMatch(T_OTHER("'"),T_SUPER)){ # Hmm, ' is active only in math?
+  while(my $op = $gullet->readMatch(T_OTHER("'"),T_SUPER)){ # Hmm, ' is active only in math?
     if($op->equals(T_SUPER)){
       # NOTE: Before I go assuming that ^{x} is a power, consider analyzing for things like ^{(n)} !!!
-      my($cpower,$ppower) = dualize_arglist(ReadArg); # Should do xmref here too!!!
+      my($cpower,$ppower) = dualize_arglist($gullet->readArg); # Should do xmref here too!!!
       $ccall = Invocation(T_CS('\power@content'),$ccall,@$cpower);
       $pcall = Invocation(T_CS('\power@presentation'),$pcall,@$ppower); }
     else{
-      my $n = 1+count_tokens($op);
+      my $n = 1+count_tokens($gullet,$op);
       $ccall = Invocation(T_CS('\diffop@content'),$ccall,T_OTHER($n));
       $pcall = Invocation(T_CS('\diffop@presentation'),$pcall,T_OTHER($n));}}
-  SkipSpaces;
+  $gullet->skipSpaces;
   # Check for function arguments
-  if(my $variant = count_tokens(T_OTHER('@'))){
+  if(my $variant = count_tokens($gullet,T_OTHER('@'))){
     my $argsmacro = LookupDefinition(T_CS($cs.'@args'.('@' x $variant)));
-    my($cargs,$pargs)=dualize_arglist($argsmacro->readArguments);
+    my($cargs,$pargs)=dualize_arglist($argsmacro->readArguments($gullet));
     Invocation(T_CS('\DUAL'),
 	       T_OTHER('ATOM'),
 	       Invocation(T_CS('\sf@apply'),$ccall,Tokens(map((@$_),@$cargs))),

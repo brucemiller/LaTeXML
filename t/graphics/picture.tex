@@ -1,0 +1,91 @@
+\documentclass{article}
+%\usepackage{graphpap}
+\begin{document}
+
+\section{Basic}
+Math: $a=b$
+\begin{picture}(100,100)
+\put(0,0){\line(1,0){100}}
+\end{picture}
+%\end{document}
+
+\section{Pictures}
+\paragraph{Lines:} using integers, scaling with floats, \LaTeX counters, TeX counters.
+All should be the same.
+\par
+\begin{picture}(100,100)
+\put(0,0){\line(1,0){100}}
+\put(0,0){\line(1,1){50}}
+\put(0,0){\line(0,1){100}}
+\end{picture}
+{\unitlength=100pt\relax
+\begin{picture}(1.0,1.0)
+\put(0,0){\line(1,0){1.0}}
+\put(0,0){\line(1,1){0.5}}
+\put(0,0){\line(0,1){1.0}}
+\end{picture}
+}
+
+\newcounter{foo}
+\setcounter{foo}{50}
+\begin{picture}(100,100)
+\put(0,0){\line(1,0){100}}
+%\put(0,0){\line(1,1){100}}
+\put(0,0){\line(1,1){\value{foo}}}
+\put(0,0){\line(0,1){100}}
+\end{picture}
+\newcount\ffoo\ffoo=50\relax
+\begin{picture}(100,100)
+\put(0,0){\line(1,0){100}}
+%\put(0,0){\line(1,1){100}}
+\put(0,0){\line(1,1){\ffoo}}
+\put(0,0){\line(0,1){100}}
+\end{picture}
+%\end{document}
+
+\paragraph{Vectors:}
+\begin{picture}(100,100)(-100,-100)
+\put(0,0){\vector(-1, 0){100}}
+\put(0,0){\vector(-1,-1){100}}
+\put(0,0){\vector( 0,-1){100}}
+\end{picture}
+
+\paragraph{Boxes;}
+\begin{picture}(100,100)
+\put(0,0){\bf A}
+\put(15,15){\framebox(15,15){A}}
+\put(30,30){\framebox(15,15){\bf A}}
+\put(45,45){\framebox(15,15){A}}
+\put(60,20){\frame{\shortstack{A\\B\\\bf C\\D}}}
+\put(75,20){\framebox(15,80){\shortstack{A\\\bf B\\C\\D}}}
+\end{picture}
+
+\paragraph{Circles:}
+\begin{picture}(100,100)
+\put(30,30){\circle{30}\vector(0,1){15}\circle*{5}}
+\put(70,70){\oval(60,30)}
+\end{picture}
+
+\vskip 1em
+
+\paragraph{Curves:}
+\begin{picture}(100,100)
+\qbezier(40,80)(80,120)(100,80)
+\qbezier[50](40,89)(80,129)(100,89)
+\end{picture}
+
+\paragraph{Repeats:}
+\begin{picture}(100,100)
+\multiput(0,0)(10,10){11}{a}
+\end{picture}
+
+\begin{picture}(100,100)
+\put(10,10){\circle{5}}
+\put(20,20){\framebox(10,10){\circle{5}}}
+\put(30,30){\framebox(10,10)[l]{\circle{5}}}
+\put(40,40){\framebox(10,10)[r]{\circle{5}}}
+\put(50,50){\framebox(10,10)[t]{\circle{5}}}
+\put(60,60){\framebox(10,10)[b]{\circle{5}}}
+\end{picture}
+
+\end{document}
