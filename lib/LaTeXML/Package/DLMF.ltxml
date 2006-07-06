@@ -28,9 +28,9 @@ RequirePackage('DLMFmath');
 # If we get this, we're doing a "chapter"
 DefPrimitive('\thischapter{}', sub {
   my($stomach,$ch)=@_;
-  $ch=$ch->untex;
+  $ch=$ch->toString;
   DefMacro('\thechapter',$ch); 
-  DefEnvironment('{document}',"<chapter refnum='%refnum' label='%label'>%body</chapter>",
+  DefEnvironment('{document}',"<chapter refnum='#refnum' label='#label'>#body</chapter>",
 		 beforeDigest=> sub { $_[0]->setInPreamble(0); },
 		 afterDigestBegin=>sub{ $_[1]->setProperty(refnum=>$ch);
 					$_[1]->setProperty(label=>"ch:$ch"); },
@@ -79,16 +79,17 @@ DefConstructor('\fmt@affiliation{}',"<affiliation>#1</affiliation>");
 DefConstructor('\email{}', "<email>#1</email>");
 DefConstructor('\addCopyright{}{}','');#"<copyright year='#1'>#2</copyright>");
 
+DefMacro('\@acknowledgements','');
 DefPrimitive('\acknowledgements{}', sub { DefMacro('\@acknowledgements',$_[1])});
 DefConstructor('\fmt@acknowledgements{}', "<acknowledgements>#1</acknowledgements>");
 
 Tag('gallery', autoClose=>1, autoOpen=>1);
 DefMacro('\@galleryitems','');
 DefMacro('\galleryitem{semiverb}{semiverb}',
-	 '\xdef\@galleryitems{\@galleryitems\fmt@galleryitem{#1}{#2}}');
+	 '\xdef\@galleryitems{\@galleryitems\fmt@galleryitem{sb:\thechapter.#1}{#2}}');
 
 DefConstructor('\fmt@galleryitem{semiverb}{semiverb}',
-	       "<galleryitem name='#1' graphic='#2'/>");
+	       "<galleryitem labelref='#1' graphic='#2'/>");
 
 DefMacro('\maketitle', 
 	 '\fmt@title{\@title}\@authorinfo'
@@ -98,64 +99,74 @@ DefMacro('\maketitle',
 
 #**********************************************************************
 # More environments.
-DefEnvironment('{figuregroup}', "<figuregroup>%body</figuregroup>");
-DefEnvironment('{figuregroup*}',"<figuregroup>%body</figuregroup>");
+DefEnvironment('{figuregroup}', "<figuregroup>#body</figuregroup>");
+DefEnvironment('{figuregroup*}',"<figuregroup>#body</figuregroup>");
 
 #**********************************************************************
 # Pseudo environments.
 # Not really environments that transform to elements, since they
 # don't necessarily nest properly with the more important document structure.
-DefEnvironment('{onecolumn}', "<begin_onecolumn/>%body<end_onecolumn/>");
+DefEnvironment('{onecolumn}', "<begin_onecolumn/>#body<end_onecolumn/>");
 # Oh, what the heck, strip out printonly, and make electroniconly disappear!
-DefEnvironment('{printonly}', "<printonly>%body</printonly>");
+DefEnvironment('{printonly}', "<printonly>#body</printonly>");
 Tag('printonly', afterClose=>sub { $_[0]->getParentNode->removeChild($_[0]); });
 DefConstructor('\onlyprint{}', "");
 
-DefEnvironment('{electroniconly}','%body');
+DefEnvironment('{electroniconly}','#body');
 DefConstructor('\onlyelectronic{}',"#1");
 
+#DefEnvironment('{sidebar}{}{}{}',
+#	       "<sidebar name='#1'><title>#2</title><author>#3</author>#body</sidebar>",
+
 DefEnvironment('{sidebar}{}{}{}',
-	       "<sidebar name='#1'><title>#2</title><author>#3</author>%body</sidebar>");
+	       "<sidebar name='#1' label='#label'><title>#2</title><author>#3</author>#body</sidebar>",
+	       afterDigestBegin=> sub { 
+		 my($stomach,$whatsit)=@_;
+		 my $label = "sb:".$stomach->digest(T_CS('\thechapter'))->toString
+		   .".".$whatsit->getArg(1)->toString;
+		 $whatsit->setProperty(label=>$label); });
+
+
 
 # Use same trick.
-DefEnvironment('{comment}', "<printonly>%body</printonly>");
+DefEnvironment('{comment}', "<printonly>#body</printonly>");
 
 #**********************************************************************
 # Metadata
-DefConstructor('\note{}', "<note>#1</note>", mode=>'text', floats=>1);
-DefConstructor('\origref[]{}', "<origref ref='#2'>#1</origref>", mode=>'text', floats=>1);
+DefConstructor('\note{}', "^<note>#1</note>", mode=>'text', untex=>'');
+DefConstructor('\origref[]{}', "^<origref ref='#2'>#1</origref>", mode=>'text', untex=>'');
 
 #**********************************************************************
 # More Math environments.
 
 # Redefine to accept optional (ignored) arg.
 DefEnvironment('{equation}[]',
-	       "<equation refnum='%refnum'><Math mode='display'><XMath>%body</XMath></Math></equation>",
+	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>",
 	       mode=>'display_math',
 	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); });
 DefEnvironment('{equation*}[]',
-	       "<equation><Math mode='display'><XMath>%body</XMath></Math></equation>",
+	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>",
 	       mode=>'display_math');
 
 # equationmix contains several math environments, 
 # Each math produces inline math, BUT we've set displaystyle in them!
-DefEnvironment('{equationmix}',"<equationmix refnum='%refnum'>%body</equationmix>",
+DefEnvironment('{equationmix}[]',"<equationmix refnum='#refnum'>#body</equationmix>",
 	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); },
 	       # NOTE: We'd like to have displaystyle (but NOT mode=display!) for enclosed math env!
 	       # Use displaystyles for math environments within here.
 	       beforeDigest => sub {
-		 DefEnvironment('{math}',"<Math mode='inline'><XMath>%body</XMath></Math>",
+		 DefEnvironment('{math}',"<Math mode='inline'><XMath>#body</XMath></Math>",
 				mode=>'inline_math',
 				beforeDigest=>sub {$_[0]->setMathStyle('display');});
 			       return; }
 );
-DefEnvironment('{equationmix*}',  "<equationmix>%body</equationmix>");
-DefEnvironment('{equationgroup}', "<equationgroup>%body</equationgroup>");
-DefEnvironment('{equationgroup*}',"<equationgroup>%body</equationgroup>");
+DefEnvironment('{equationmix*}[]',  "<equationmix>#body</equationmix>");
+DefEnvironment('{equationgroup}[]', "<equationgroup>#body</equationgroup>");
+DefEnvironment('{equationgroup*}[]',"<equationgroup>#body</equationgroup>");
 DefConstructor('\intertext{}',"#1");
 
-DefConstructor('\@constraint Flag:* {}',"<constraint ?#1(hidden='yes')!#1(hidden='no')>#2</constraint>",
-	       mode=>'text', floats=>1);
+DefConstructor('\@constraint Flag:* {}',"^<constraint hidden='?#1(yes)(no)'>#2</constraint>",
+	       mode=>'text', untex=>'');
 
 DefExpandable('\constraint Flag:* [Default:,]{}',sub { 
   my($gullet,$starred,$punct,$constraint)=@_;
@@ -166,7 +177,7 @@ DefExpandable('\constraint Flag:* [Default:,]{}',sub {
     ($punct->unlist, T_CS('\@constraint'), T_BEGIN,$constraint->unlist,$ppunct->unlist,T_END); }});
 
 #**********************************************************************
-DefConstructor('\URL[]{}',"<a href='#2'>?#1(#1)!#1(#2)</a>");
+DefConstructor('\URL[]{}',"<a href='#2'>?#1(#1)(#2)</a>");
 DefConstructor('\VRML{}', "<VRML href='#1'/>");
 DefConstructor('\GAMSclasspackage{}{}',"<GAMS class='#1' package='#2'/>");
 

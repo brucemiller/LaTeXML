@@ -141,13 +141,17 @@ sub findMathNodes {
 # ================================================================================
 sub parse {
   my($self,$xnode,$dict)=@_;
+#print STDERR "Parse math: ".$xnode->toString."\n";
   my $nodedict = $dict->getNodeDictionary($xnode);
   # Preset part of speech on all tokens w/o one.
-  foreach my $token ($xnode->findnodes('.//XMTok[not(@POS)]')){
+#  foreach my $token ($xnode->findnodes('.//XMTok[not(@POS)]')){
+  my $NS = $self->getNamespace;
+  foreach my $token ($xnode->findnodes(".//*[local-name()='XMTok' and namespace-uri()='$NS' and not(\@POS)]")){
     my $name = getTokenName($token);
     my $POS = defined $name && $dict->getPartOfSpeech($name);
     $token->setAttribute('POS',$POS) if defined $POS; }
 
+#print STDERR "Resolved math: ".$xnode->toString."\n";
   $self->parse_args($xnode,$nodedict);
   my $result = $self->parse_internal($xnode,$nodedict,'Anything,');
   $$self{ ($result ? 'math_passed' : 'math_failed') }++;
@@ -157,10 +161,14 @@ sub parse {
     append_nodes($xnode,$result);
 
     # Add text representation to the containing Math element.
-    $xnode->parentNode->setAttribute('text',$self->text_form($result));
-#print STDERR "Math : \"".$xnode->getAttribute('tex')."\"\n=>\"".$xnode->getAttribute('text')."\"\n";
-  }}
+   $xnode->parentNode->setAttribute('text',$self->text_form($result));
 
+#print STDERR "Math : \"".$xnode->parentNode->getAttribute('tex')."\"\n=>\"".$xnode->parentNode->getAttribute('text')."\"\n";
+  }
+  else {
+    print STDERR "Failed\n"; 
+  }
+}
 # Depth first parsing of XMArg nodes.
 sub parse_args {
   my($self,$node,$dict)=@_;
@@ -268,7 +276,12 @@ sub parse_internal {
 
 sub text_form {
   my($self,$node)=@_;
-  $self->textrec($node,0); }
+#  $self->textrec($node,0); }
+# Hmm, Something Weird is broken!!!!
+# With <, I get "unterminated entity reference" !?!?!?
+  my $text= $self->textrec($node,0); 
+  $text =~ s/</LessThan/g;
+  $text; }
 
 
 our %PREFIX_ALIAS=(Superscript=>'^',Subscript=>'_',InvisibleTimes=>'*');

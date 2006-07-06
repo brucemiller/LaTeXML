@@ -16,12 +16,19 @@
 # sometimes File::Spec seems to do too many filesystem checks (gets slow!)
 # File::Spec->splitpath "may or may not ... trailing '/'" ... Huh?
 #======================================================================
+# My first instinct is that this should bless the pathnames,
+# but strings as pathnames come so naturally in perl;
+# But I may still do it...
+#======================================================================
+# Some portability changes for Windows, thanks to Ioan Sucan.
+#======================================================================
 # Packages in the LaTeXML::Util package set have no dependence on LaTeXML
 # objects or context.
 #======================================================================
 package LaTeXML::Util::Pathname;
 use strict;
 use File::Spec;
+use Cwd;
 use Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( &pathname_find
@@ -33,8 +40,9 @@ our @EXPORT = qw( &pathname_find
 # NOTE: For absolute pathnames, the directory component starts with
 # whatever File::Spec considers to be the volume, or "/".
 #======================================================================
+# Ioan Sucan suggests switching this to '\\' for windows, but notes
+# that it works as it is, so we'll leave it (for now).
 our $SEP = '/';
-our $DOT = '.';
 
 #======================================================================
 # pathname_make(dir=>dir, name=>name, type=>type);
@@ -73,7 +81,7 @@ sub pathname_concat {
 # pathname_is_absolute($pathname) => (0|1)
 sub pathname_is_absolute {
   my($pathname)=@_;
-  $pathname && $pathname =~ m|^/|; }
+  File::Spec->file_name_is_absolute($pathname); }
 
 # pathname_relative($pathname,$base) => $relativepathname
 # Return $pathname as a pathname relative to $base.
@@ -87,10 +95,7 @@ sub pathname_absolute {
 
 #======================================================================
 # Actual file system operations.
-sub pathname_cwd {
-  my $cwd = `pwd`;
-  chomp($cwd);
-  $cwd; }
+sub pathname_cwd { cwd(); }
 
 sub pathname_mkdir {
   my($directory)=@_;
@@ -102,10 +107,21 @@ sub pathname_mkdir {
       mkdir($dir) or return undef; }}
   return $directory; }
 
+# copy a file, preserving attributes, if possible.
+# Why doesn't File::Copy preserve attributes on Unix !?!?!?
 sub pathname_copy {
   my($source,$destination)=@_;
+  # If it _needs_ to be copied:
   if(!(-f $destination) || (-M $source < -M $destination)){
-    system("cp -p $source $destination")==0 or return undef; }
+    if($^O =~ /^(MSWin32|NetWare)$/){ # Windows
+      # According to Ioan, this should work:
+      system("xcopy /P $source $destination")==0 or return undef; }
+    else {			# Unix
+      system("cp -p $source $destination")==0 or return undef; }
+    # It would make sense to punt to File::Copy in the
+    # case where we are NOT unix or windows...
+    # But no clear set of $^O characterizes Unix!
+  }
   return $destination; }
 
 #======================================================================

@@ -10,4 +10,17 @@ Expecting (beep) : \baz{beep}
 
 Expecting (foo) : \bloop
 
+\def\bar{(Bar)}
+Expecting (Bar): \bar
+
+{ \def\bar{BAR}
+Expecting (BAR): \bar }
+
+Expecting (Bar): \bar
+
+{ \global\def\bar{BAR}
+Expecting (BAR): \bar }
+
+Expecting (BAR): \bar
+
 \end{document}

@@ -139,7 +139,7 @@ DefExpandable('\csname',sub {
   my ($token,@toks)=();
   while(($token = $gullet->readXToken()) && ($token->getString ne '\endcsname')){
     push(@toks,$token); }
-  $token = T_CS("\\".Tokens(@toks)->untex);
+  $token = T_CS("\\".Tokens(@toks)->toString);
   $stomach->setMeaning($token, $stomach->getDefinition(T_CS('\relax'))) 
     unless defined $stomach->getMeaning($token);
   $token;  });
@@ -613,10 +613,10 @@ DefPrimitive('\raise Dimension', undef);
 
 # These are actually TeX primitives, but we treat them as a Whatsit so they
 # remain in the constructed tree.
-DefConstructor('{','%body', #untex=>'{', 
+DefConstructor('{','#body', 
 	       beforeDigest=> sub { $_[0]->bgroup; }, captureBody=>1);
-DefConstructor('}',  '', #untex=>'}', 
-beforeDigest => sub { $_[0]->egroup; });
+DefConstructor('}',  '',
+	       beforeDigest => sub { $_[0]->egroup; });
 Let('\bgroup',T_BEGIN);
 Let('\egroup',T_END);
 DefPrimitive('\begingroup',sub { $_[0]->bgroup(1); });
@@ -728,7 +728,7 @@ DefPrimitive('$', sub {
 
 # Effectively these are the math hooks, redefine these to do what you want with math?
 DefConstructor('\@@BEGINDISPLAYMATH',
-	       "<equation><Math mode='display'><XMath>\%body</XMath></Math></equation>",
+	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>",
 	       untex=>'$$',
 	       beforeDigest=> sub{ $_[0]->beginMode('display_math'); },
 	       captureBody=>1);
@@ -736,7 +736,7 @@ DefConstructor('\@@ENDDISPLAYMATH'  , "", untex=>'$$',
 	       beforeDigest=> sub{ $_[0]->endMode('display_math'); });
 
 DefConstructor('\@@BEGININLINEMATH', 
-	       "<Math mode='inline'><XMath>\%body</XMath></Math>", untex=>'$',
+	       "<Math mode='inline'><XMath>#body</XMath></Math>", untex=>'$',
 	       beforeDigest=> sub{ $_[0]->beginMode('inline_math'); },
 	      captureBody=>1);
 DefConstructor('\@@ENDINLINEMATH'   ,"", untex=>'$', 
@@ -747,7 +747,7 @@ DefConstructor('\@@ENDINLINEMATH'   ,"", untex=>'$',
 sub add_TeX {
   my($node,$thing)=@_;
   if($thing && (ref $thing eq 'LaTeXML::Whatsit') && !$thing->getProperty('_added_tex')){
-    $node->setAttribute('tex',$thing->untex('nofloats'));
+    $node->setAttribute('tex',$thing->untex);
     $thing->setProperty('_added_tex',1); }}
 
 sub cleanup_TeX {
@@ -761,7 +761,7 @@ sub add_body_TeX {
   my($node,$thing)=@_;
   if($thing && !$thing->getProperty('_added_body_tex')){
     my $body = $thing->getProperty('body');
-    $node->setAttribute('tex', $body->untex('nofloats')) if $body;
+    $node->setAttribute('tex', $body->untex) if $body;
     $thing->setProperty('_added_body_tex',1); }}
 
 #Tag('XMath', afterOpen=>\&add_body_TeX, afterClose=>\&cleanup_XMath);
@@ -812,6 +812,7 @@ sub collapse_XMWrap {
 # Grab & store the next digested box as arg of whatsit, after digesting the ^ or _
 sub scriptArgHandler {
   my($stomach,$whatsit)=@_;
+  $stomach->getGullet->skipSpaces;
   my @stuff = $stomach->invokeToken($stomach->getGullet->readXToken);
   Error("Missing { in sub/super-script argument") unless @stuff;
   $whatsit->setArgs(shift(@stuff));
@@ -948,7 +949,7 @@ sub match_digits {
   ($i > 1 ? $i : 0); }		# Match at least 2.
 
 # @@NUMBER{value}{unicode}{tex}
-DefConstructor('\@@NUMBER{}{}{}',"<XMTok name='#1' font='%font'>#2</XMTok>",
+DefConstructor('\@@NUMBER{}{}{}',"<XMTok name='#1' font='#font'>#2</XMTok>",
 	       untex=>'#3');
 
 sub replace_digits { 
@@ -1423,19 +1424,19 @@ sub setDefaultNolimits {
   return; }
 
 DefConstructor('\sum',
-	       "<XMTok name='Summation' stackscripts='%stackscripts'>\N{N-ARY SUMMATION}</XMTok>",
+	       "<XMTok name='Summation' stackscripts='#stackscripts'>\N{N-ARY SUMMATION}</XMTok>",
 	       afterDigest=>\&setDefaultLimits, mathclass=>'symbol');
 DefConstructor('\prod',
-	       "<XMTok name='Product' stackscripts='%stackscripts'>\N{N-ARY PRODUCT}</XMTok>",
+	       "<XMTok name='Product' stackscripts='#stackscripts'>\N{N-ARY PRODUCT}</XMTok>",
 	       afterDigest=>\&setDefaultLimits, mathclass=>'symbol');
 DefConstructor('\coprod',
-	       "<XMTok name='Coproduct' stackscripts='%stackscripts'>\N{N-ARY COPRODUCT}</XMTok>",
+	       "<XMTok name='Coproduct' stackscripts='#stackscripts'>\N{N-ARY COPRODUCT}</XMTok>",
 	       afterDigest=>\&setDefaultLimits, mathclass=>'symbol');
 DefConstructor('\int', 
-	       "<XMTok name='Integral' stackscripts='%stackscripts'>\N{INTEGRAL}</XMTok>",
+	       "<XMTok name='Integral' stackscripts='#stackscripts'>\N{INTEGRAL}</XMTok>",
 	       afterDigest=>\&setDefaultNolimits, mathclass=>'symbol');
 DefConstructor('\oint', 
-	       "<XMTok name='ContourIntegral' stackscripts='%stackscripts'>\N{CONTOUR INTEGRAL}</XMTok>",
+	       "<XMTok name='ContourIntegral' stackscripts='#stackscripts'>\N{CONTOUR INTEGRAL}</XMTok>",
 	       afterDigest=>\&setDefaultNolimits, mathclass=>'symbol');
 
 #======================================================================
@@ -1619,7 +1620,7 @@ DefConstructor('\documentclass[]{}',"<?latexml class='#2' ?#1(options='#1')?>",
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
     my($options,$class)=$whatsit->getArgs;
-    $options = $options->untex if defined $options;
+    $options = $options->toString if defined $options;
     my @options = grep( !$ignorable_classoptions{$_},  split(/,\s*/, $options||''));
     Warn("Unrecognized options ".join(', ',@options)." ignored") if @options;
     $stomach->setInPreamble(1);	# \begin{document} will clear this.
@@ -1630,9 +1631,6 @@ DefConstructor('\documentclass[]{}',"<?latexml class='#2' ?#1(options='#1')?>",
 # Support for Declarations & Presentation/Semantic Duality
 #**********************************************************************
 # \DUAL{PartOfSpeech}{semantic}{presentation} 
-#  Handles untex so that $whatsit->untex('semantic') or 'presentation' can
-# select the appropriate branch.  Also needs handlers to select which branch
-# is used in math parsing, etc.
 DefConstructor('\DUAL{}{}{}',
 	       "<XMDual POS='#1'>#2<XMWrap>#3</XMWrap></XMDual>",
 	       untex=>'#3');

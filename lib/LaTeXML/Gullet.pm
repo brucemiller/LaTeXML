@@ -246,17 +246,18 @@ sub readKeyword {
   }
   return undef; }
 
-# Return a (balanced) sequence tokens until the Tokens $delim.
+# Return a (balanced) sequence tokens until a match against one of the Tokens in @delims.
+# In list context, also returns the found delimiter.
 sub readUntil {
-  my($self,$delim)=@_;
-  my @toks=();
-  while(!defined $self->readMatch($delim)){
+  my($self,@delims)=@_;
+  my ($found,@toks)=();
+  while(!defined ($found=$self->readMatch(@delims))){
     my $tok=$self->readToken(); # Copy next token to args
     return undef unless defined $tok;
     push(@toks,$tok);
     if($tok->getCatcode == CC_BEGIN){ # And if it's a BEGIN, copy till balanced END
       push(@toks,$self->readBalanced->unlist,T_END); }}
-  Tokens(@toks); }
+  (wantarray ? (Tokens(@toks),$found) : Tokens(@toks)); }
 
 #**********************************************************************
 # Special case
@@ -302,11 +303,19 @@ sub readOptional {
 # such as for url's and such.
 sub readSemiverbatim {
   my($self)=@_;
+  $self->startSemiverbatim;
+  my $arg = $self->readArg;
+  $self->endSemiverbatim;
+  $arg; }
+
+sub startSemiverbatim {
+  my($self)=@_;
   $$self{stomach}->bgroup(1);
   $$self{stomach}->setCatcode(CC_OTHER,'^','_','@','~','&','$','#','%');  # should '%' too ?
-  my $arg = $self->readArg;
-  $$self{stomach}->egroup(1);
-  $arg; }
+}
+sub endSemiverbatim {
+  my($self)=@_;
+  $$self{stomach}->egroup(1); }
 
 #**********************************************************************
 #  Numbers, Dimensions, Glue
@@ -647,9 +656,10 @@ Read and return whichever of @keywords (each should be a string) matches the inp
 if none do.  This is similar to readMatch, but case and catcodes are ignored.
 Also, leading spaces are skipped.
 
-=item C<< $tokens = $gullet->readUntil($delim); >>
+=item C<< $tokens = $gullet->readUntil(@delims); >>
 
-Read and return a (balanced) sequence of Tokens until  matching the Tokens $delim.
+Read and return a (balanced) sequence of Tokens until  matching one of the Tokens
+in t @delims.  In a list context, it also returns which of the delimiters ended the sequence.
 
 =back
 

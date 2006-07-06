@@ -80,9 +80,10 @@ sub canContain {
   my $model = $$self{tagprop}{$tag}{model};
   $$model{ANY} || $$model{$childtag}; }
 
-# Can the element $node contain a $childtag element indirectly,
-# via openning some number of autoOpen'able tags?
-sub canContainVia {
+# Can the element $node contain a $childtag element indirectly?
+# That is, by openning some number of autoOpen'able tags?
+# And if so, return the tag to open.
+sub canContainIndirect {
   my($self,$tag,$childtag)=@_;
   $self->loadDocType unless $$self{doctype_loaded};
   $$self{tagprop}{$tag}{indirect_model}{$childtag}; }
@@ -161,7 +162,7 @@ sub loadDocType {
       $$self{tagprop}{$1}{attributes}{$2}=1
 	if($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-0-+]+)\s+([a-zA-Z0-0-+]+)\s+(.*)>$/) }
     }
-  # Determine a path to each descendent via an `autoOpen-able' tag.
+  # Determine any indirect paths to each descendent via an `autoOpen-able' tag.
   foreach my $tag (keys %{$$self{tagprop}}){
     local %::DESC=();
     computeDescendents($self,$tag,''); 
@@ -170,7 +171,7 @@ sub loadDocType {
     Message("Doctype");
     foreach my $tag (sort keys %{$$self{tagprop}}){
       Message("$tag can contain ".join(', ',sort keys %{$$self{tagprop}{$tag}{model}})); 
-      Message("$tag can be inserted via ".
+      Message("$tag can indirectly contain ".
 	      join(', ',sort keys %{$$self{tagprop}{$tag}{indirect_model}}));  }}
 }
 
@@ -266,7 +267,7 @@ Returns whether an element $tag can contain an element $childtag.
 The element names #PCDATA, _Comment_ and _ProcessingInstruction_
 are specially recognized.
 
-=item C<< $auto = $model->canContainVia($tag,$childtag); >>
+=item C<< $auto = $model->canContainIndirect($tag,$childtag); >>
 
 Checks whether an element $tag could contain an element $childtag,
 provided an `autoOpen'able element $auto were inserted in $tag.

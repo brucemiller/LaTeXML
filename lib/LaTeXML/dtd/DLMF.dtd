@@ -22,6 +22,8 @@
 
 <!ENTITY % define.structure  "IGNORE" >
 <!ENTITY % Equation.extra "| note | origref | constraint">
+<!ENTITY % Figure.extra "| note | origref">
+<!ENTITY % Table.extra "| note | origref">
 
 <!ENTITY % LaTeXML.dtd SYSTEM "LaTeXML.dtd" >
 %LaTeXML.dtd; 
@@ -61,7 +63,8 @@
           label ID #IMPLIED
           refnum CDATA #IMPLIED>
 <!--<!ELEMENT equationgroup (equation | equationmix | origref | constraint | %Flow.mix;)*>-->
-<!ELEMENT equationgroup (equation | equationmix | origref | constraint | text)*>
+<!-- <!ELEMENT equationgroup (equation | equationmix | origref | constraint | text)*>-->
+<!ELEMENT equationgroup (%Block.mix;)*>
 <!ATTLIST equationgroup
           label ID #IMPLIED>
 <!ELEMENT constraint (#PCDATA | Math)*>

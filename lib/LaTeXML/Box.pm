@@ -77,8 +77,8 @@ use strict;
 use LaTeXML::Global;
 our @ISA = qw(LaTeXML::Box);
 
-sub untex { "%".$_[0][0]."\n"; }
-sub toString { '';}
+sub untex    { ''; }
+sub toString { ''; }
 
 sub beAbsorbed {
   my($self,$intestine)=@_;
@@ -106,8 +106,8 @@ sub getInitial { ($_[0][0] ? $_[0][0]->getInitial : undef); }
 sub unlist { @{$_[0]}; }
 
 sub untex {
-  my($self,@params)=@_;
-  join('',map($_->untex(@params),@$self)); }
+  my($self)=@_;
+  join('',map($_->untex,@$self)); }
 
 sub toString {
   my($self)=@_;
@@ -205,8 +205,8 @@ sub getInitial { $_[0]->getDefinition->getCS; }
 sub unlist  { ($_[0]); }
 
 sub untex {
-  my($self,@params)=@_;
-  $$self{definition}->untex($self,@params); }
+  my($self)=@_;
+  $$self{definition}->untex($self); }
 
 sub toString { $_[0]->untex;}
 
@@ -236,12 +236,12 @@ sub equals {
 
 sub beAbsorbed {
   my($self,$intestine)=@_;
-  my ($defn,$args,$props) = ($$self{definition},$$self{args},$$self{properties});
+  my $defn = $$self{definition};
   my $constructor = $defn->getConstructor($$self{isMath});
   if(defined $constructor && !ref $constructor && $constructor){
-    $intestine->interpretConstructor($constructor,$args,$props,$defn->floats); }
+    $intestine->interpretConstructor($constructor); }
   elsif(ref $constructor eq 'CODE'){
-    &$constructor($intestine,@$args,$props); }
+    &$constructor($intestine,@{$$self{args}},$$self{properties}); }
 }
 
 #**********************************************************************

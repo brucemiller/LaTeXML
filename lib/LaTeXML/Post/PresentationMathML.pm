@@ -54,11 +54,11 @@ sub find_math_nodes {
 sub toMathML {
   my($self,$math,$mode)=@_;
   my $mmath=new_node($mmlURI,'math',[], 
-#		   'xmlns:m'=>$mmlURI,
 		   display=>($mode eq 'display' ? 'block' : 'inline'));
-#  $mmath->setNamespace($mmlURI);
+
   my @nodes= element_nodes($math);
   append_nodes($mmath, map(Expr($_), @nodes));
+
   # Since Mozilla only breaks at top-level (not in mrows), possibly pull children up.
   # Could also want a sweeping mrow cleanup: mrow w/1 child -> child.
   my @n;
@@ -72,7 +72,6 @@ sub getTokenName {
   my($node)=@_;
   my $m = $node->getAttribute('name') || $node->textContent;
   (defined $m ? $m : '?'); }
-
 
 # ================================================================================
 our $MMLTable={};
@@ -162,7 +161,7 @@ our %mathvariants = ('bold'             =>'bold',
 # Helpers
 sub Node {
   my($tag,$content,%attr)=@_;
-  new_node($mmlURI,$tag,$content,%attr); }
+  new_node($mmlURI,"m:$tag",$content,%attr); }
 
 sub Op { Node('mo',[@_]); }
 sub Row { Node('mrow',[@_]); }
@@ -188,7 +187,7 @@ sub to_mo {
        # If an operator has specifically located it's scripts, don't let mathml move them.
        (($node->getAttribute('stackscripts')||'no') eq 'yes' ? (movablelimits=>'false'):()) ); }
 
-sub InfixOrPrefix {
+sub XXInfixOrPrefix {
   my($op,@list)=@_;
   return @list unless $op && @list;
   $op = Node('mo',$op) unless ref $op;
@@ -201,7 +200,7 @@ sub InfixOrPrefix {
       push(@margs,shift(@list)); }
     @margs; }}
 
-sub Infix {
+sub XXInfix {
   my($op,@list)=@_;
   return @list unless $op && @list;
   $op = Node('mo',$op) unless ref $op;
@@ -210,6 +209,18 @@ sub Infix {
     push(@margs,$op->cloneNode(1));
     push(@margs,shift(@list)); }
   @margs; }
+
+sub Infix {
+  my($op,@list)=@_;
+  return Row() unless $op && @list;
+  if(scalar(@list) == 1){	# Infix with 1 arg is presumably Prefix!
+    Row((ref $op ? Expr($op) : Node('mo',$op)),Expr($list[0])); }
+  else {
+    my @margs = (Expr(shift(@list)));
+    while(@list){
+      push(@margs,(ref $op ? Expr($op) : Node('mo',$op)));
+      push(@margs,Expr(shift(@list))); }
+    Row(@margs); }}
 
 sub separated_list {
   my($separators,@args)=@_;
@@ -318,12 +329,19 @@ DefMathML('Apply:?:sideset', sub {
   Node('mmultiscripts',[Expr($base),Expr($postsub),Expr($postsup), 
 			  Node('mprescripts'),Expr($presub),Expr($presup)]); });
 
-DefMathML('Apply:ADDOP:?', sub { Row(InfixOrPrefix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
-DefMathML('Apply:SUBOP:?', sub { Row(InfixOrPrefix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
-DefMathML('Apply:MULOP:?', sub { Row(Infix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
-DefMathML('Apply:DIVOP:?', sub { Row(Infix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
-DefMathML('Apply:RELOP:?', sub { Row(Infix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
-DefMathML('Apply:METARELOP:?', sub { Row(Infix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
+#DefMathML('Apply:ADDOP:?', sub { Row(InfixOrPrefix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
+#DefMathML('Apply:SUBOP:?', sub { Row(InfixOrPrefix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
+#DefMathML('Apply:MULOP:?', sub { Row(Infix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
+#DefMathML('Apply:DIVOP:?', sub { Row(Infix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
+#DefMathML('Apply:RELOP:?', sub { Row(Infix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
+#DefMathML('Apply:METARELOP:?', sub { Row(Infix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
+
+DefMathML('Apply:ADDOP:?', \&Infix);
+DefMathML('Apply:SUBOP:?', \&Infix);
+DefMathML('Apply:MULOP:?', \&Infix);
+DefMathML('Apply:DIVOP:?', \&Infix);
+DefMathML('Apply:RELOP:?', \&Infix);
+DefMathML('Apply:METARELOP:?',\&Infix);
 
 sub isEmpty { ($_[0]->nodeName eq 'XMTok') && (($_[0]->getAttribute('name')||'') eq 'Empty'); }
 
@@ -365,7 +383,8 @@ DefMathML('Apply:FENCED:?',sub {
 
 # Various specific formatters.
 DefMathML('Apply:MULOP:InvisibleTimes', sub { 
-  Row(Infix(Op("\N{INVISIBLE TIMES}"),map(Expr($_),@_[1..$#_]))); });
+#  Row(Infix(Op("\N{INVISIBLE TIMES}"),map(Expr($_),@_[1..$#_]))); });
+  Infix("\N{INVISIBLE TIMES}",@_[1..$#_]); });
 DefMathML('Apply:?:sqrt', sub { Node('msqrt',[Expr($_[1])]); });
 DefMathML('Apply:?:root', sub { Node('mroot',[Expr($_[2]),Expr($_[1])]); });
 
@@ -456,7 +475,8 @@ sub do_cfrac {
     if($denomop->getAttribute('POS') =~ /ADDOP|SUBOP/){ # Is it a sum or difference?
       my $last = pop(@denomargs);			# Check last operand in denominator.
       # this is the current contribution to the cfrac (if we match the last term)
-      my $curr = Node('mfrac',[Expr($numer),Row(Infix(map(Expr($_),$denomop,@denomargs)),Expr($denomop))]);
+#      my $curr = Node('mfrac',[Expr($numer),Row(Infix(map(Expr($_),$denomop,@denomargs)),Expr($denomop))]);
+      my $curr = Node('mfrac',[Expr($numer),Row(Infix($denomop,@denomargs),Expr($denomop))]);
       if(getTokenName($last) eq 'CenterEllipsis'){ # Denom ends w/ \cdots
 	return ($curr,Expr($last));}		   # bring dots up to toplevel
       elsif($last->nodeName eq 'XMApp'){	   # Denom ends w/ application --- what kind?

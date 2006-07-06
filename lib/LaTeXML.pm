@@ -15,7 +15,7 @@ use LaTeXML::Stomach;
 use LaTeXML::Intestine;
 
 use vars qw($VERSION);
-$VERSION = "0.1.1";
+$VERSION = "0.1.2";
 
 #**********************************************************************
 sub new {
@@ -26,7 +26,7 @@ sub new {
 sub digestFile {
   my($self,$name)=@_;
   $name =~ s/\.tex$//;
-  $$self{stomach}->readAndDigestFile("$name.tex"); }
+  $$self{stomach}->readAndDigestFile($name); }
 
 sub convertFile {
   my($self,$name)=@_;

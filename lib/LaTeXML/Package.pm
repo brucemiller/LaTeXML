@@ -143,7 +143,7 @@ sub DefRegister {
 #                     useful for setting Whatsit properties,
 
 our $constructor_options = {mode=>1, 
-			    untex=>1, mathConstructor=>1, floats=>1, mathclass=>1, 
+			    untex=>1, mathConstructor=>1, mathclass=>1, 
 			    beforeDigest=>1, afterDigest=>1,
 			    captureBody=>1};
 sub DefConstructor {
@@ -159,7 +159,6 @@ sub DefConstructor {
 			($mode ? (sub { $_[0]->endMode($mode) }):())],
 	  (defined $options{untex} ? (untex => $options{untex}):()),
 	  mathConstructor=> $options{mathConstructor},
-	  floats=>$options{floats},
 	  (defined $options{mathclass} ? (mathclass=>$options{mathclass}):()),
 	  captureBody=>$options{captureBody});
   STOMACH->setMeaning($cs,$def);
@@ -172,7 +171,7 @@ sub DefSymbol {
   my $mathattr = join('',($name ? " name='$name'" : ''),
 		      ($options{partOfSpeech} ? " POS='$options{partOfSpeech}'" : ''),
 		      ($options{style} ? " style='$options{style}'" : ''),
-		      ' ?%font(font=\'%font\')');
+		      ' ?#font(font=\'#font\')');
   DefConstructor($cs,$text, mathConstructor=>"<XMTok$mathattr>$text</XMTok>", 
 		 mathclass=>$options{mathclass}||'symbol',
 		 ($options{untex} ? (untex=>$options{untex}) : ()));
@@ -257,8 +256,8 @@ sub RawTeX {
 
 sub NewCounter { 
   my($ctr,$within)=@_;
-  $ctr=$ctr->untex if ref $ctr;
-  $within=$within->untex if $within && ref $within;
+  $ctr=$ctr->toString if ref $ctr;
+  $within=$within->toString if $within && ref $within;
   DefRegister("\\c\@$ctr",Number(0));
   STOMACH->setValue("\\c\@$ctr",Number(0),1);
   STOMACH->setValue("\\cl\@$ctr",Tokens(),1);
@@ -375,18 +374,18 @@ that only matters if you define subroutines or variables that need
   # It is used when the \maketitle is encountered.
   DefMacro('\maketitle', '\fmt@title{\@title}\fmt@author{\@author}\fmt@date{\@date}');
   # And a simple environment ...
-  DefEnvironment('{abstract}','<abstract>%body</abstract>');
+  DefEnvironment('{abstract}','<abstract>#body</abstract>');
 
   # a different complication:  Have \usepackage generate a processing instruction,
   # but have it's after daemon do the actual input.
   # The constructor pattern uses a conditional clause ?#1(...) that includes the
   # attribute options only if the first (optional) argument is non-empty.
   DefConstructor('\usepackage[]{}',"<?latexml package='#2' ?#1(options='#1')?>",
-  	         afterDigest=>sub { $_[0]->input($_[1]->getArg(2)->untex); return;  });
+  	         afterDigest=>sub { $_[0]->input($_[1]->getArg(2)->toString); return;  });
   # If you prefer to be a little less perl-cryptic, you could write
   DefConstructor('\usepackage[]{}',"<?latexml package='#2' ?#1(options='#1')?>",
   	         afterDigest=>sub { my($stomach,$whatsit)=@_;
-                                    $stomach->input($whatsit->getArg(2)->untex); return;  });
+                                    $stomach->input($whatsit->getArg(2)->toString); return;  });
 
   # And finally some basic symbols.
   # a text only ligature
@@ -504,14 +503,14 @@ or code called with the Intestine, arguments and properties.
 The pattern is simply a bit of XML as a string with certain substitutions made.
 Generally, #1, #2 ... is replaced by the corresponding argument (turned into
 a string when it appears as an attribute, or recursively processed when it appears as
-content). %name stands for named properties stored in the Whatsit. 
+content). #name stands for named properties stored in the Whatsit. 
 The properties font, body and trailer are defined by default (the latter two
 only when captureBody is true).  Other properties can be added to Whatsits (how?).
 Additionally, the pattern can be conditionallized by surrounding portions of
-the pattern by ?#1(...), !#1(...) for inclusion only when the
-argument is defined or not defined.  Similarly  ?%prop(...), !%prop(...) apply when
-a given property is defined or not defined.  Currently, conditionals can NOT be nested.
-
+the pattern by the IF construct ?#1(...) or IF-ELSE ?#1(...)(...) for inclusion 
+only when the argument is defined.   Currently, conditionals can NOT be nested.
+If the constuctor begins with '^', the XML fragment is allowed to `float up' to
+a parent node that is allowed to contain it, according to the Document Type.
 
 DefConstructor options are
   mode           : Changes to this mode (text, display_math or inline_math)
@@ -520,9 +519,6 @@ DefConstructor options are
                    default is not appropriate. A string (that can include #1,#2...) 
                    or code called with the $whatsit as argument.
   mathConstructor: A replacement to be used in math mode instead of $replacement.
-  floats         : The fragment will be inserted at the closest ancestor of the 
-                   current point that it is allowed, and the current insertion 
-                   point will not be moved.
   mathclass      : The mathclass used to determine how the current font should be
                    applied to characters in this object.
   beforeDigest   : supplies a Daemon to be executed during digestion just before the
@@ -554,7 +550,7 @@ The name and POS attributes contribute to the eventual parsing of mathematical c
 
 Defines an Environment that generates a specific XML fragment.  The $replacement is
 of the same form as that for DefConstructor, but will generally include reference to
-the %body property. Upon encountering a \begin{env}:  the mode is switched, if needed,
+the #body property. Upon encountering a \begin{env}:  the mode is switched, if needed,
 else a new group is opened; then the environment name is noted; the beforeDigest daemon is run.
 Then the Whatsit representing the begin command (but ultimately the whole environment) is created
 and the afterDigestBegin daemon is run.

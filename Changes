@@ -1,3 +1,35 @@
+0.1.2 2004-09-02
+      - Some experiments to reduce namespace redundancy.
+      	C14N is too severe, use of $node->addNewChild
+  	is non-portable and awkward.
+	Kludge: leverage the namespace cleanup on _parsing_ !!
+	(which means, write to string & reparse!!!)
+	(acknowledged need on libxml2 end, but not done)
+
+      - Portability fixes to LaTeXML::Util::Pathname
+        Should work in Windows, thanks Ioan Sucan.
+
+      - Modifications to Constructor patterns
+	* Changed the `property' value pattern to '#name'
+	  (eg. #body instead of %body).        
+	  (Gratuitous, but simplifies the grammar)
+        * Values in patterns, #1 and #name can now
+	  be followed by {key}, for KeyVal arguments,
+	  to access the value associated with a given key.
+	* Conditional expressions now recognize general values:
+	  ?<value>(...) and also accept an else clause
+ 	  ?<value>(...)(...).  
+	* The NOT conditional, !<value>(...), is removed;
+	  Use ?<value>()(...) instead.
+	* Prefixing the constructor pattern with '^'
+	  allows the generated XML to `float up' to a parent
+	  node that is allowed to contain it, according to
+	  the document type.  The floats keyword for definitions
+	  is also removed.
+	* The untex strings for constructors that shouldn't appear
+	  in the math TeX string (used for image generation)
+	  should now be empty, '', instead of using the floats keyword.
+
 0.1.1 2004-06-15
       - Packages:
         * Made package loading more robust; doesn't re-load;

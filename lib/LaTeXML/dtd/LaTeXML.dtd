@@ -184,8 +184,12 @@
 <!-- ======================================================================
      Block Elements
      ====================================================================== -->
-<!ELEMENT figure (%Block.mix; | caption | toccaption)*>
-<!ELEMENT table  (%Block.mix; | caption | toccaption)*>
+
+<!ENTITY % Figure.extra "">
+<!ENTITY % Table.extra "">
+
+<!ELEMENT figure (%Block.mix; | caption | toccaption %Figure.extra;)*>
+<!ELEMENT table  (%Block.mix; | caption | toccaption %Table.extra;)*>
 <!ATTLIST figure
 	  %Common.attr; 
           label  ID #IMPLIED

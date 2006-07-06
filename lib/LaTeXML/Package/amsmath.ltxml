@@ -110,7 +110,7 @@ DefEnvironment('{Vmatrix}',
 #DefConstructor('\gather',   "<XMTok name='gather'>", environment=>'gather');
 #DefConstructor('\endgather',"<XMTok ?? />", end_environment=>'gather');
 DefEnvironment('{gather}',
-	       "<XMApp><XMTok name='gather'/>%body</XMApp>");
+	       "<XMApp><XMTok name='gather'/>#body</XMApp>");
 
 DefConstructor('\boldsymbol{}', '#1',
 	       beforeDigest=>sub { $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(forcebold=>1); },

@@ -71,8 +71,9 @@ sub buildDOM {
 
 sub absorb {
   my($self,$box)=@_;
-  local $LaTeXML::BOX = $box;
-  $box->beAbsorbed($self); }
+  if(defined $box){
+    local $LaTeXML::BOX = $box;
+    $box->beAbsorbed($self); }}
 
 #**********************************************************************
 # Handlers for various construction operations.
@@ -146,89 +147,122 @@ sub insertPI      {
 sub insertElement {
   my($self,$tag,$content,%attrib)=@_;
   $self->openElement($tag,%attrib);
-  $self->absorb($content) if defined $content;
+  $self->absorb($content);
   $self->closeElement($tag); }
 
 #**********************************************************************
 # Higher level: Interpret a Constructor pattern.
 # It looks like XML!
+# Must be called from within ->absorb, so that $BOX is bound to Whatsit.
+# Binds $_ to the constructor being parsed.
+#our $VALUE_RE = "(\\#|\\%)";
+our $VALUE_RE = "(\\#)";
+our $COND_RE  = "\\?$VALUE_RE";
+our $QNAME_RE = "([\\w\\-_]+)";	# Eventually allow prefixes?
+our $TEXT_RE  = "([^\\#<\\?]+|.)";
+
 sub interpretConstructor {
-  my($self,$constructor,$args,$props,$floats)=@_;
-  $constructor = conditionalize_constructor($constructor,$args,$props);
+  my($self,$constructor)=@_;
+  local $_ = $constructor;
+  my $floats = s/^\^\s*//;	# Grab float marker.
   my $savenode = undef;
-  while($constructor){
-    # Processing instruction pattern <?name a=v ...?>
-    if($constructor =~ s|^\s*<\?([\w\-_]+)(.*?)\s*\?>||){
-      my($target,$avpairs)=($1,$2);
-      $self->insertPI($target,parse_avpairs($avpairs,$args,$props)); }
-    # Open tag <name a=v ...> (possibly empty <name a=v/>)
-    elsif($constructor =~ s|^\s*<([\w\-_]+)(.*?)\s*(/?)>||){
-      my($tag,$avpairs,$empty)=($1,$2,$3);
+  while($_){
+    if(/^$COND_RE/o){
+      apply_conditional(); }
+    # Processing instruction: <?name a=v ...?>
+    elsif(s|^\s*<\?$QNAME_RE||o){
+      $self->insertPI($1,parse_avpairs());
+      Error("Missing \"?>\" in constructor at \"$_\"") unless s|^\s*\?>||; }
+    # Open tag: <name a=v ...> or .../> (for empty element)
+    elsif(s|^\s*<$QNAME_RE||o){
+      my $tag = $1;
+      # Floating elements: temporarily move to a parent that accepts this element.
       if($floats && !defined $savenode){
-	my $n = $self->getNode;
-	while(defined $n && !$n->canContain($tag)){
-	  $n = $n->getParentNode; }
-	Error("No open node can accept a \"$tag\"") unless defined $n;
-	$savenode = $self->getNode;
-	$self->setNode($n); }
-      $self->openElement($tag,parse_avpairs($avpairs,$args,$props));
-      $self->closeElement($tag) if $empty; }
-    # A Close tag </name>
-    elsif($constructor =~ s|^\s*</([\w\-_]+)\s*>||){
+	for(my $n=$self->getNode; defined $n; $n = $n->getParentNode){
+	  if($n->canContain($tag)){
+	    $savenode = $self->getNode; $self->setNode($n); last; }}}
+      $self->openElement($tag,parse_avpairs());
+      $self->closeElement($tag) if s|^/||; # Empty element.
+      Error("Missing \">\" in constructor at \"$_\"") unless s|^>||; }
+    # Close tag: </name>
+    elsif(s|^\s*</$QNAME_RE\s*>||o){
       $self->closeElement($1); }
-    # A bare argument #1 or property %prop
-    elsif($constructor =~ s/^(\#(\d+)|\%([\w\-_]+))//){      # A positional argument or named property
-      my $value = (defined $2 ? $$args[$2-1] : $$props{$3});
-      $self->absorb($value) if defined $value; }
-    # Attribute: a=v; assigns attribute in current node? May conflict with random text!?!
-    elsif($constructor =~ s|^([\w\-_]+)=([\'\"])(.*?)\2||){
-      my $key = $1;
-      my $value = parse_attribute_value($3,$args,$props);
-      my $n = $self->getNode;
-      if($floats){
-	while(defined $n && ! $n->canHaveAttribute($key)){
-	  $n = $n->getParentNode; }
-	Error("No open node can accept attribute $key") unless defined $n; }
-      $n->setAttribute($key,$value) if defined $value; }
+    # Substitutable value: argument, property...
+    elsif(/^$VALUE_RE/o){ 
+      $self->absorb(parse_value()); }
+    # Attribute: a=v; assigns in current node? [May conflict with random text!?!]
+    elsif(s|^$QNAME_RE\s*=\s*||o){
+      my ($n,$key) = ($self->getNode,$1);
+      while($floats && defined $n && ! $n->canHaveAttribute($key)){
+	$n = $n->getParentNode; }
+      Error("No open node can accept attribute $key") unless defined $n; 
+      $n->setAttribute($key,parse_string()); }
     # Else random text
-    elsif($constructor =~ s/^([^\%\#<]+|.)//){	# Else, just some text.
-      $self->openText($1,$$props{font}); }
+    elsif(s/^$TEXT_RE//o){	# Else, just some text.
+      $self->openText($1,$LaTeXML::BOX->getFont); }
   }
-  $self->setNode($savenode) if defined $savenode; 
+  $self->setNode($savenode) if defined $savenode; # Restore original node, if we floated
 }
 
-
-# This evaluates conditionals in a constructor pattern, removing any that fail.
-# Conditionals are of the form ?#1(...) or ?%foo(...) for Whatsit args or parameters.
+# process a conditional in a constructor
+# Conditionals are of the form ?value(...)(...),
+# standing for IF-ELSE; the ELSE clause is optional.
 # It does NOT handled nested conditionals!!!
-sub conditionalize_constructor {
-  my($constructor,$args,$props)=@_;
-  $constructor =~ s/(\?|\!)(\#(\d+)|\%([\w\-_]+))\(((\\.|[^\)])*)\)/ {
-    my $val = ($3 ? $$args[$3-1] : $$props{$4});
-    (($1 eq '!' ? !$val : $val) ? $5 : ''); } /gex;
-  $constructor; }
+sub apply_conditional {
+  if(s/^\?//){
+    my $bool = parse_value();
+    s/^\((.*?)\)(\((.*?)\))?/ ($bool ? $1 : $3)||''; /e
+      or Error("Unbalanced conditional in \"$_\"");
+  }}
+
+# Parse a substitutable value from the constructor (in $_)
+# Recognizes the #1, %prop, possibly followed by {foo}, for KeyVals,
+# Future enhancements? array ref, &foo(xxx) for function calls, ...
+sub parse_value {
+  my $value;
+  if   (s/^\#(\d+)//     ){ $value = $LaTeXML::BOX->getArg($1); }
+  elsif(s/^\#([\w\-_]+)//){ $value = $LaTeXML::BOX->getProperty($1); }
+  # &foo(...) ? Function (but not &foo; !!!)
+  if(s/^\{$QNAME_RE\}//o && defined $value){
+    Error("{} accessor applied to non-KeyVals arg in constructor")
+      unless (ref $value eq 'LaTeXML::KeyVals');
+    $value = $value->getValue($1); }
+  # Array??? 
+  $value; }
+
+# Parse a delimited string from the constructor (in $_), 
+# for example, an attribute value.  Can contain substitutions (above),
+# the result is a string.
+# NOTE: UNLESS there is ONLY one substituted value, then return the value object.
+# This is (hopefully) temporary to handle font objects as attributes.
+# The DOM holds the font objects, rather than strings,
+# to resolve relative fonts on output.
+sub parse_string {
+  my @values=();
+  if(s/^\s*([\'\"])//){
+    my $quote = $1;
+    while($_ && !s/^$quote//){
+      if   ( /^$COND_RE/o              ){ apply_conditional(); }
+      elsif( /^$VALUE_RE/o             ){ push(@values,parse_value()); }
+      elsif(s/^(.[^\#<\?\!$quote]*)//){ push(@values,$1); }}}
+  if(!@values){ undef; }
+  elsif(@values==1){ $values[0]; }
+  else { join('',map( (ref $_ ? $_->toString : $_), @values)); }}
 
 # Parse a set of attribute value pairs from a constructor pattern, 
 # substituting argument and property values from the whatsit.
 sub parse_avpairs {
-  my($avpairs,$args,$props)=@_;
   my %attr=();		# Check substitutions for attributes.
-  while($avpairs =~ s|^\s*([\w\-_]+)=([\'\"])(.*?)\2||){
-    my $key = $1;
-    my $value = parse_attribute_value($3,$args,$props);
-    $attr{$key}=$value if defined $value; }
-  Error("Couldn't recognize constructor attributes at \"$avpairs\"")
-    if $avpairs;
+  s|^\s*||;
+  while($_){
+    if(/^$COND_RE/o){
+      apply_conditional(); }
+    elsif(s|^$QNAME_RE\s*=\s*||o){
+      my ($key,$value) = ($1,parse_string());
+      $attr{$key}=$value if defined $value; }
+    else { last; }
+    s|^\s*||; }
   %attr; }
-
-sub parse_attribute_value {
-  my($value,$args,$props)=@_;
-  if($value =~ /^\#(\d+)$/){ $value = $$args[$1-1]; }
-  elsif($value =~ /^\%([\w\-_]+)$/){ $value = $$props{$1}; }
-  else {
-    $value =~ s/\#(\d+)/ my $x=$$args[$1-1]; (ref $x ? $x->untex : $x);/eg;
-    $value =~ s/\%([\w\-_]+)/ my $x=$$props{$1}; (ref $x ? $x->untex : $x); /eg; }
-  $value; }
 
 #**********************************************************************
 1;

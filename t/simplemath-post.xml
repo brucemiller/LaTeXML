@@ -3,52 +3,56 @@
 <?latexml class='article'?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:m="http://www.w3.org/1998/Math/MathML">
   <section>
-    <p>Inline math <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp xmlns="http://dlmf.nist.gov/LaTeXML"><XMTok xmlns="http://dlmf.nist.gov/LaTeXML" POS="ADDOP">+</XMTok><XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">a</XMTok><XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">b</XMTok></XMApp></XMath><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mi xmlns="http://www.w3.org/1998/Math/MathML">a</mi><mo xmlns="http://www.w3.org/1998/Math/MathML">+</mo><mi xmlns="http://www.w3.org/1998/Math/MathML">b</mi></math></Math>.
+    <p>Inline math <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok POS="ADDOP">+</XMTok><XMTok font="italic" POS="ID">a</XMTok><XMTok font="italic" POS="ID">b</XMTok></XMApp></XMath><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></math></Math>.
 </p>
     <equation>
       <Math mode="display" tex="a+b+123" text="a + b + 123">
         <XMath>
-          <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-            <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" POS="ADDOP">+</XMTok>
-            <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">a</XMTok>
-            <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">b</XMTok>
-            <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" name="123" POS="NUMBER">123</XMTok>
+          <XMApp>
+            <XMTok POS="ADDOP">+</XMTok>
+            <XMTok font="italic" POS="ID">a</XMTok>
+            <XMTok font="italic" POS="ID">b</XMTok>
+            <XMTok name="123" POS="NUMBER">123</XMTok>
           </XMApp>
         </XMath>
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          <mi xmlns="http://www.w3.org/1998/Math/MathML">a</mi>
-          <mo xmlns="http://www.w3.org/1998/Math/MathML">+</mo>
-          <mi xmlns="http://www.w3.org/1998/Math/MathML">b</mi>
-          <mo xmlns="http://www.w3.org/1998/Math/MathML">+</mo>
-          <mn xmlns="http://www.w3.org/1998/Math/MathML">123</mn>
+          <mrow>
+            <mi>a</mi>
+            <mo>+</mo>
+            <mi>b</mi>
+            <mo>+</mo>
+            <mn>123</mn>
+          </mrow>
         </math>
       </Math>
     </equation>
     <equation>
       <Math mode="display" tex="a+b+f(123)" text="a + b + f@(123)">
         <XMath>
-          <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-            <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" POS="ADDOP">+</XMTok>
-            <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">a</XMTok>
-            <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">b</XMTok>
-            <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="FUNCTION" close=")" open="(">f</XMTok>
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" name="123" POS="NUMBER">123</XMTok>
+          <XMApp>
+            <XMTok POS="ADDOP">+</XMTok>
+            <XMTok font="italic" POS="ID">a</XMTok>
+            <XMTok font="italic" POS="ID">b</XMTok>
+            <XMApp>
+              <XMTok font="italic" POS="FUNCTION" close=")" open="(">f</XMTok>
+              <XMTok name="123" POS="NUMBER">123</XMTok>
             </XMApp>
           </XMApp>
         </XMath>
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          <mi xmlns="http://www.w3.org/1998/Math/MathML">a</mi>
-          <mo xmlns="http://www.w3.org/1998/Math/MathML">+</mo>
-          <mi xmlns="http://www.w3.org/1998/Math/MathML">b</mi>
-          <mo xmlns="http://www.w3.org/1998/Math/MathML">+</mo>
-          <mrow xmlns="http://www.w3.org/1998/Math/MathML">
-            <mi xmlns="http://www.w3.org/1998/Math/MathML">f</mi>
-            <mo xmlns="http://www.w3.org/1998/Math/MathML">⁡</mo>
-            <mrow xmlns="http://www.w3.org/1998/Math/MathML">
-              <mo xmlns="http://www.w3.org/1998/Math/MathML">(</mo>
-              <mn xmlns="http://www.w3.org/1998/Math/MathML">123</mn>
-              <mo xmlns="http://www.w3.org/1998/Math/MathML">)</mo>
+          <mrow>
+            <mi>a</mi>
+            <mo>+</mo>
+            <mi>b</mi>
+            <mo>+</mo>
+            <mrow>
+              <mi>f</mi>
+              <mo>⁡</mo>
+              <mrow>
+                <mo>(</mo>
+                <mn>123</mn>
+                <mo>)</mo>
+              </mrow>
             </mrow>
           </mrow>
         </math>
@@ -57,40 +61,42 @@
     <equation>
       <Math mode="display" tex="f_{D}f(a+b)" text=" (f _ D) @(f@(a + b))">
         <XMath>
-          <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-            <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" POS="SUBSCRIPT" name="Subscript"/>
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="BIGOP">f</XMTok>
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">D</XMTok>
+          <XMApp>
+            <XMApp>
+              <XMTok POS="SUBSCRIPT" name="Subscript"/>
+              <XMTok font="italic" POS="BIGOP">f</XMTok>
+              <XMTok font="italic" POS="ID">D</XMTok>
             </XMApp>
-            <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="FUNCTION" close=")" open="(">f</XMTok>
-              <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-                <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" POS="ADDOP">+</XMTok>
-                <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">a</XMTok>
-                <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">b</XMTok>
+            <XMApp>
+              <XMTok font="italic" POS="FUNCTION" close=")" open="(">f</XMTok>
+              <XMApp>
+                <XMTok POS="ADDOP">+</XMTok>
+                <XMTok font="italic" POS="ID">a</XMTok>
+                <XMTok font="italic" POS="ID">b</XMTok>
               </XMApp>
             </XMApp>
           </XMApp>
         </XMath>
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          <msub xmlns="http://www.w3.org/1998/Math/MathML">
-            <mo xmlns="http://www.w3.org/1998/Math/MathML" mathvariant="italic">f</mo>
-            <mi xmlns="http://www.w3.org/1998/Math/MathML">D</mi>
-          </msub>
-          <mo xmlns="http://www.w3.org/1998/Math/MathML">⁡</mo>
-          <mrow xmlns="http://www.w3.org/1998/Math/MathML">
-            <mrow xmlns="http://www.w3.org/1998/Math/MathML">
-              <mi xmlns="http://www.w3.org/1998/Math/MathML">f</mi>
-              <mo xmlns="http://www.w3.org/1998/Math/MathML">⁡</mo>
-              <mrow xmlns="http://www.w3.org/1998/Math/MathML">
-                <mo xmlns="http://www.w3.org/1998/Math/MathML">(</mo>
-                <mrow xmlns="http://www.w3.org/1998/Math/MathML">
-                  <mi xmlns="http://www.w3.org/1998/Math/MathML">a</mi>
-                  <mo xmlns="http://www.w3.org/1998/Math/MathML">+</mo>
-                  <mi xmlns="http://www.w3.org/1998/Math/MathML">b</mi>
+          <mrow>
+            <msub>
+              <mo mathvariant="italic">f</mo>
+              <mi>D</mi>
+            </msub>
+            <mo>⁡</mo>
+            <mrow>
+              <mrow>
+                <mi>f</mi>
+                <mo>⁡</mo>
+                <mrow>
+                  <mo>(</mo>
+                  <mrow>
+                    <mi>a</mi>
+                    <mo>+</mo>
+                    <mi>b</mi>
+                  </mrow>
+                  <mo>)</mo>
                 </mrow>
-                <mo xmlns="http://www.w3.org/1998/Math/MathML">)</mo>
               </mrow>
             </mrow>
           </mrow>
@@ -100,37 +106,39 @@
     <equation>
       <Math mode="display" tex="f_{1}(a+b)" text="f _ 1 *  (a + b) ">
         <XMath>
-          <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-            <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" POS="MULOP" name="InvisibleTimes"/>
-            <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" POS="SUBSCRIPT" name="Subscript"/>
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">f</XMTok>
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" POS="NUMBER">1</XMTok>
+          <XMApp>
+            <XMTok POS="MULOP" name="InvisibleTimes"/>
+            <XMApp>
+              <XMTok POS="SUBSCRIPT" name="Subscript"/>
+              <XMTok font="italic" POS="ID">f</XMTok>
+              <XMTok POS="NUMBER">1</XMTok>
             </XMApp>
-            <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" POS="FENCED" close=")" name="Fenced" open="("/>
-              <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-                <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" POS="ADDOP">+</XMTok>
-                <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">a</XMTok>
-                <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">b</XMTok>
+            <XMApp>
+              <XMTok POS="FENCED" close=")" name="Fenced" open="("/>
+              <XMApp>
+                <XMTok POS="ADDOP">+</XMTok>
+                <XMTok font="italic" POS="ID">a</XMTok>
+                <XMTok font="italic" POS="ID">b</XMTok>
               </XMApp>
             </XMApp>
           </XMApp>
         </XMath>
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          <msub xmlns="http://www.w3.org/1998/Math/MathML">
-            <mi xmlns="http://www.w3.org/1998/Math/MathML">f</mi>
-            <mn xmlns="http://www.w3.org/1998/Math/MathML">1</mn>
-          </msub>
-          <mo xmlns="http://www.w3.org/1998/Math/MathML">⁢</mo>
-          <mrow xmlns="http://www.w3.org/1998/Math/MathML">
-            <mo xmlns="http://www.w3.org/1998/Math/MathML">(</mo>
-            <mrow xmlns="http://www.w3.org/1998/Math/MathML">
-              <mi xmlns="http://www.w3.org/1998/Math/MathML">a</mi>
-              <mo xmlns="http://www.w3.org/1998/Math/MathML">+</mo>
-              <mi xmlns="http://www.w3.org/1998/Math/MathML">b</mi>
+          <mrow>
+            <msub>
+              <mi>f</mi>
+              <mn>1</mn>
+            </msub>
+            <mo>⁢</mo>
+            <mrow>
+              <mo>(</mo>
+              <mrow>
+                <mi>a</mi>
+                <mo>+</mo>
+                <mi>b</mi>
+              </mrow>
+              <mo>)</mo>
             </mrow>
-            <mo xmlns="http://www.w3.org/1998/Math/MathML">)</mo>
           </mrow>
         </math>
       </Math>
@@ -138,22 +146,24 @@
     <equation>
       <Math mode="display" tex="\hat{f}a" text="OverHat@(f) * a">
         <XMath>
-          <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-            <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" POS="MULOP" name="InvisibleTimes"/>
-            <XMApp xmlns="http://dlmf.nist.gov/LaTeXML" POS="ID">
+          <XMApp>
+            <XMTok POS="MULOP" name="InvisibleTimes"/>
+            <XMApp POS="ID">
               <XMTok POS="OVERACCENT" name="OverHat">^</XMTok>
               <XMTok font="italic" POS="FUNCTION">f</XMTok>
             </XMApp>
-            <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">a</XMTok>
+            <XMTok font="italic" POS="ID">a</XMTok>
           </XMApp>
         </XMath>
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          <mover xmlns="http://www.w3.org/1998/Math/MathML" accent="true">
-            <mi xmlns="http://www.w3.org/1998/Math/MathML">f</mi>
-            <mi xmlns="http://www.w3.org/1998/Math/MathML" mathvariant="normal">^</mi>
-          </mover>
-          <mo xmlns="http://www.w3.org/1998/Math/MathML">⁢</mo>
-          <mi xmlns="http://www.w3.org/1998/Math/MathML">a</mi>
+          <mrow>
+            <mover accent="true">
+              <mi>f</mi>
+              <mi mathvariant="normal">^</mi>
+            </mover>
+            <mo>⁢</mo>
+            <mi>a</mi>
+          </mrow>
         </math>
       </Math>
     </equation>
@@ -163,41 +173,43 @@
     <equation>
       <Math mode="display" tex="a(x)+b(x)+123" text="a@(x) + b@(x) + 123">
         <XMath>
-          <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-            <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" POS="ADDOP">+</XMTok>
-            <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="FUNCTION" close=")" open="(">a</XMTok>
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">x</XMTok>
+          <XMApp>
+            <XMTok POS="ADDOP">+</XMTok>
+            <XMApp>
+              <XMTok font="italic" POS="FUNCTION" close=")" open="(">a</XMTok>
+              <XMTok font="italic" POS="ID">x</XMTok>
             </XMApp>
-            <XMApp xmlns="http://dlmf.nist.gov/LaTeXML">
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="FUNCTION" close=")" open="(">b</XMTok>
-              <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" font="italic" POS="ID">x</XMTok>
+            <XMApp>
+              <XMTok font="italic" POS="FUNCTION" close=")" open="(">b</XMTok>
+              <XMTok font="italic" POS="ID">x</XMTok>
             </XMApp>
-            <XMTok xmlns="http://dlmf.nist.gov/LaTeXML" name="123" POS="NUMBER">123</XMTok>
+            <XMTok name="123" POS="NUMBER">123</XMTok>
           </XMApp>
         </XMath>
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-          <mrow xmlns="http://www.w3.org/1998/Math/MathML">
-            <mi xmlns="http://www.w3.org/1998/Math/MathML">a</mi>
-            <mo xmlns="http://www.w3.org/1998/Math/MathML">⁡</mo>
-            <mrow xmlns="http://www.w3.org/1998/Math/MathML">
-              <mo xmlns="http://www.w3.org/1998/Math/MathML">(</mo>
-              <mi xmlns="http://www.w3.org/1998/Math/MathML">x</mi>
-              <mo xmlns="http://www.w3.org/1998/Math/MathML">)</mo>
+          <mrow>
+            <mrow>
+              <mi>a</mi>
+              <mo>⁡</mo>
+              <mrow>
+                <mo>(</mo>
+                <mi>x</mi>
+                <mo>)</mo>
+              </mrow>
             </mrow>
-          </mrow>
-          <mo xmlns="http://www.w3.org/1998/Math/MathML">+</mo>
-          <mrow xmlns="http://www.w3.org/1998/Math/MathML">
-            <mi xmlns="http://www.w3.org/1998/Math/MathML">b</mi>
-            <mo xmlns="http://www.w3.org/1998/Math/MathML">⁡</mo>
-            <mrow xmlns="http://www.w3.org/1998/Math/MathML">
-              <mo xmlns="http://www.w3.org/1998/Math/MathML">(</mo>
-              <mi xmlns="http://www.w3.org/1998/Math/MathML">x</mi>
-              <mo xmlns="http://www.w3.org/1998/Math/MathML">)</mo>
+            <mo>+</mo>
+            <mrow>
+              <mi>b</mi>
+              <mo>⁡</mo>
+              <mrow>
+                <mo>(</mo>
+                <mi>x</mi>
+                <mo>)</mo>
+              </mrow>
             </mrow>
+            <mo>+</mo>
+            <mn>123</mn>
           </mrow>
-          <mo xmlns="http://www.w3.org/1998/Math/MathML">+</mo>
-          <mn xmlns="http://www.w3.org/1998/Math/MathML">123</mn>
         </math>
       </Math>
     </equation>

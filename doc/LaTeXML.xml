@@ -5,7 +5,7 @@
 <document xmlns='http://dlmf.nist.gov/LaTeXML'>
   <title><a href='http://dlmf.nist.gov/LaTeXML/'><textstyle font='typewriter'>LaTeXML</textstyle></a>: a LaTeX to <a href='http://www.w3c.org/XML/'><textstyle font='typewriter'>XML</textstyle></a> Converter; <emph>Preview</emph></title>
   <author>Bruce R. Miller</author>
-  <creationdate>June 15, 2004</creationdate>
+  <creationdate>September 2, 2004</creationdate>
   <section refnum='1'>
     <title>Overview</title>
     <p>For many, LaTeX is the prefered means for document authoring, particularly when
@@ -211,7 +211,7 @@ during parsing, but probably shouldn't.
     <title>Architectural Details</title>
     <subsection refnum='A.1'>
       <title>Tokenization</title>
-      <paragraph>
+      <paragraph refnum=''>
         <title><textstyle font='typewriter'>LaTeXML::Mouth</textstyle></title>
         <p>Given a string or file, a <textstyle font='typewriter'>Mouth</textstyle> tokenizes the input text according to
 the current category codes in the <textstyle font='typewriter'>Stomach</textstyle>. Category codes distinguish classes of characters
@@ -221,7 +221,7 @@ returns the next <textstyle font='typewriter'>Token</textstyle> from the input.
 (See <a href='perldoc/LaTeXML/Mouth.html'><textstyle font='typewriter'>LaTeXML::Mouth</textstyle></a>)
 </p>
       </paragraph>
-      <paragraph>
+      <paragraph refnum=''>
         <title><textstyle font='typewriter'>LaTeXML::Token</textstyle>, <textstyle font='typewriter'>LaTeXML::Tokens</textstyle></title>
         <p>These packages represent a Token (a pair containing a character
 or string and the category code) and a list of <textstyle font='typewriter'>Token</textstyle>'s.  The latter responds to the same
@@ -232,7 +232,7 @@ interface as <textstyle font='typewriter'>Mouth</textstyle>, so it can also be r
     </subsection>
     <subsection refnum='A.2'>
       <title>Expansion</title>
-      <paragraph>
+      <paragraph refnum=''>
         <title><textstyle font='typewriter'>LaTeXML::Gullet</textstyle></title>
         <p>The <textstyle font='typewriter'>Gullet</textstyle> reads <textstyle font='typewriter'>Token</textstyle>'s from the <textstyle font='typewriter'>Mouth</textstyle>, possibly expanding them.
 The main methods are <textstyle font='typewriter'>-&gt;readToken</textstyle> and  <textstyle font='typewriter'>-&gt;readXToken</textstyle>.
@@ -243,7 +243,7 @@ it is expanded and its expansion is replaced in the input before retrying.
 (See <a href='perldoc/LaTeXML/Gullet.html'><textstyle font='typewriter'>LaTeXML::Gullet</textstyle></a>)
 </p>
       </paragraph>
-      <paragraph>
+      <paragraph refnum=''>
         <title><textstyle font='typewriter'>LaTeXML::Expandable</textstyle>, <textstyle font='typewriter'>LaTeXML::Macro</textstyle></title>
         <p>Instances of these packages (subclasses of <textstyle font='typewriter'>LaTeXML::Definition</textstyle>)
 represent the expansions of control sequences. <textstyle font='typewriter'>Expandible</textstyle> typically are used for
@@ -256,7 +256,7 @@ to replace the control sequence with a list of <textstyle font='typewriter'>Toke
     </subsection>
     <subsection refnum='A.3'>
       <title>Digestion</title>
-      <paragraph>
+      <paragraph refnum=''>
         <title><textstyle font='typewriter'>LaTeXML::Stomach</textstyle></title>
         <p>The <textstyle font='typewriter'>Stomach</textstyle> maintains global state during digestion and carries out the digestion of <textstyle font='typewriter'>Token</textstyle>'s.
 The top-level method <textstyle font='typewriter'>-&gt;readAndDigestFile(\$file)</textstyle> sets up the initial state and stack,
@@ -295,7 +295,7 @@ Arguments to a <textstyle font='typewriter'>Constructor</textstyle> are read fro
         <p>Finally, <textstyle font='typewriter'>Filter</textstyle>'s are applied to the resulting <textstyle font='typewriter'>List</textstyle>'s (see below).
 </p>
       </paragraph>
-      <paragraph>
+      <paragraph refnum=''>
         <title><textstyle font='typewriter'>LaTeXML::Box</textstyle>, <textstyle font='typewriter'>MathBox</textstyle>, <textstyle font='typewriter'>List</textstyle>, <textstyle font='typewriter'>MathList</textstyle>, <textstyle font='typewriter'>Whatsit</textstyle></title>
         <p>Instances of
 these classes represent the digested objects: boxes being characters; lists being sequences
@@ -306,7 +306,7 @@ is no real notion of horizontal or vertical mode.
 <!-- %**** File /home/bruce/parser/distribution/doc/LaTeXML.tex Line 250 **** -->
 </p>
       </paragraph>
-      <paragraph>
+      <paragraph refnum=''>
         <title><textstyle font='typewriter'>LaTeXML::Primitive</textstyle>,<textstyle font='typewriter'>LaTeXML::Constructor</textstyle></title>
         <p>These classes of <textstyle font='typewriter'>Definitions</textstyle> are carried out
 (at least partly) in the <textstyle font='typewriter'>Stomach</textstyle>. They may have before and after daemons; little bits
@@ -315,7 +315,7 @@ but a <textstyle font='typewriter'>Constructor</textstyle> generates a <textstyl
 (See <a href='perldoc/LaTeXML/Definition.html'><textstyle font='typewriter'>LaTeXML::Definition</textstyle></a>).
 </p>
       </paragraph>
-      <paragraph>
+      <paragraph refnum=''>
         <title><textstyle font='typewriter'>Filter</textstyle></title>
         <p>Filters are roughly a generalization of ligatures. They are matched
 against sequences of digested items during digestion; if they pattern is matched, it is substituted
@@ -327,7 +327,7 @@ really seem appropriate here — or do they? — they would be easily implemente
 they might adversely affect search.
 </p>
       </paragraph>
-      <paragraph>
+      <paragraph refnum=''>
         <title><textstyle font='typewriter'>LaTeXML::Font</textstyle></title>
         <p>A representation of font, size and color.
 </p>

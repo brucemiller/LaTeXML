@@ -20,50 +20,27 @@ use LaTeXML::Package;
 #our %equivs = (booktitle=>'title', place=>'address', year=>'date');
 our %equivs = (place=>'address', year=>'date');
 
-# \bib{key}{type}{keyval-pairs}
-# We'll parse keyval pairs by hand; some need special treatment (eg URL types).
-# We construct a Whatsit to store the data.
-# NOTE: As it stands, this Whatsit isn't really revertable.
-# We could construct a dummy 3rd arg, as we parse the fields, for that purpose, though.
-# NOTE: Could this be handled more cleanly with a keyval argtype ?
-# [We'd need to specify what value type is associated with each key].
-# ... and we'll need to anyway, eventually...
-DefPrimitive('\bib{any}{any}', sub {
-  my($stomach,$key,$type)=@_;
-  my $gullet = $stomach->getGullet;
-  $key = $stomach->digest($key);
-  $type = $stomach->digest($type);
-  Error("Missing key-value pairs") unless $gullet->ifNext('{',CC_BEGIN);
-  $gullet->skipSpaces;
-  my $defn = $stomach->getMeaning(T_CS('\parsed@bib'));
-  my($field,$value,@fields)=('','');
-  while(!$gullet->ifNext('}',CC_END)){
-    $field = $gullet->readUntil(T_OTHER('='))->untex;
-    $field =~ s/\s//g; $field=lc($field);
-    $field=$equivs{$field} if $equivs{$field};
-    if($field =~ /url$/){
-      $value = $stomach->digest($gullet->readSemiverbatim,1); }
-    else {
-      $value = $stomach->digest($gullet->readArg); }
-    push(@fields,[$field,$value]);
-    $gullet->skipSpaces; 
-    $gullet->readMatch(T_OTHER(','));
-    $gullet->skipSpaces; }
-  Whatsit($defn,$stomach,[$key,$type], fields=>[@fields]); });
+DefKeyVal('amsrefs','url','semiverb');
+DefKeyVal('amsrefs','code_url','semiverb');
 
-DefConstructor('\parsed@bib{any}{any}',sub {
-  my($intestine,$key,$type,$properties)=@_;
+# \bib{key}{type}{keyval-pairs}
+DefConstructor('\bib{any}{any}{KeyVal:amsrefs}', sub {
+  my($intestine,$key,$type,$fields)=@_;
   $intestine->openElement('bibentry',key=>$key, type=>$type);
-  foreach my $pair (@{$$properties{fields}}){
-    my($field,$value)=@$pair;
+  my @pairs = $fields->getKeyVals;
+  while(@pairs){
+    my($field,$value)=(shift(@pairs),shift(@pairs));
+    $field=lc($field);
+    $field=$equivs{$field} if $equivs{$field};
     if($intestine->getNode->canContain("bib-$field")){
-      $intestine->insertElement("bib-$field",$value);  }
+      $intestine->insertElement("bib-$field",$value); }
     else {
       Warn("Ignoring unknown bib field $field"); }}
   $intestine->closeElement('bibentry'); });
 
-DefEnvironment('{bibdiv}','%body');
-DefEnvironment('{biblist}',"<biblist>%body</biblist>");
+DefEnvironment('{bibdiv}','#body');
+DefEnvironment('{biblist}',"<biblist>#body</biblist>");
+
 
 #**********************************************************************
 # Other Defns (presumably from textcmds?)
@@ -71,7 +48,7 @@ DefEnvironment('{biblist}',"<biblist>%body</biblist>");
 DefConstructor('\MR{any}',sub {
   my($intestine,$mrnumber)=@_;
   # Patch up old-style MathReviews numbers
-  my $id = $mrnumber->untex;
+  my $id = $mrnumber->toString;
   $id =~ s/\s+\\\#\s*/:/;
   $intestine->insertElement('bib-mr',Box($id,$mrnumber->getFont)); });
 

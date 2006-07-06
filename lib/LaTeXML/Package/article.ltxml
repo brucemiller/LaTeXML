@@ -53,12 +53,12 @@ DefPrimitive('\appendix',sub{
   $_[0]->resetCounter('section');
   DefMacro('\thesection',      '\Alph{section}');
   DefConstructor('\section Flag:* []{}',
-      "<appendix ?%refnum(refnum='%refnum')>"
+      "<appendix ?#refnum(refnum='#refnum')>"
 		 ."<title>#3</title>?#2(<toctitle>#2</toctitle>)",
 		 afterDigest=> sub { my($stomach,$whatsit)=@_;
 				     if(!$whatsit->getArg(1)){ # if not starred
 				       $whatsit->setProperty('refnum',
-							     $stomach->refStepCounter('section')->untex); }
+							     $stomach->refStepCounter('section')); }
 				     return; }); });
 
 #**********************************************************************

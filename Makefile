@@ -53,11 +53,11 @@ AR_STATIC_ARGS = cr
 DIRFILESEP = /
 NAME = LaTeXML
 NAME_SYM = LaTeXML
-VERSION = 0.1.1
+VERSION = 0.1.2
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_1_1
+VERSION_SYM = 0_1_2
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.1.1
+XS_VERSION = 0.1.2
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -209,6 +209,7 @@ TO_INST_PM = lib/LaTeXML.pm \
 	lib/LaTeXML/Package/acronym.ltxml \
 	lib/LaTeXML/Package/amsmath.ltxml \
 	lib/LaTeXML/Package/amsrefs.ltxml \
+	lib/LaTeXML/Package/amsrefs.ltxml.save \
 	lib/LaTeXML/Package/amssymb.ltxml \
 	lib/LaTeXML/Package/article.ltxml \
 	lib/LaTeXML/Package/color.ltxml \
@@ -292,6 +293,8 @@ PM_TO_BLIB = lib/LaTeXML/dtd/isoamsr.ent \
 	blib/lib/LaTeXML/dtd/isocyr2.ent \
 	lib/LaTeXML/dtd/isoamsc.ent \
 	blib/lib/LaTeXML/dtd/isoamsc.ent \
+	lib/LaTeXML/Package/amsrefs.ltxml.save \
+	blib/lib/LaTeXML/Package/amsrefs.ltxml.save \
 	lib/LaTeXML/Package/makeidx.ltxml \
 	blib/lib/LaTeXML/Package/makeidx.ltxml \
 	lib/LaTeXML/dtd/DLMF.dtd \
@@ -482,7 +485,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = LaTeXML
-DISTVNAME = LaTeXML-0.1.1
+DISTVNAME = LaTeXML-0.1.2
 
 
 # --- MakeMaker macro section:
@@ -763,13 +766,13 @@ realclean purge ::  clean realclean_subdirs
 	$(RM_F) blib/lib/LaTeXML/Package/comment.ltxml blib/lib/LaTeXML/Post.pm blib/lib/LaTeXML/Package/TeX.ltxml blib/lib/LaTeXML/Box.pm blib/lib/LaTeXML/Token.pm blib/lib/LaTeXML/Stomach.pm
 	$(RM_F) blib/lib/LaTeXML/dtd/isolat1.ent blib/lib/LaTeXML/Post/PresentationMathML.pm blib/lib/LaTeXML/Error.pm blib/lib/LaTeXML/dtd/isoamsc.ent blib/lib/LaTeXML/Util/Pathname.pm
 	$(RM_F) blib/lib/LaTeXML/Post/MathGrammar blib/lib/LaTeXML/Post/MathGrammar.pm blib/lib/LaTeXML/dtd/isoamsn.ent blib/lib/LaTeXML/Post/HTMLTable.pm blib/lib/LaTeXML/Util/LibXML.pm
-	$(RM_F) blib/lib/LaTeXML/dtd/isomfrk.ent $(FIRST_MAKEFILE) blib/lib/LaTeXML/Package/LaTeX.ltxml blib/lib/LaTeXML/Mouth.pm blib/lib/LaTeXML/Package.pm blib/lib/LaTeXML/dtd/isocyr1.ent
-	$(RM_F) blib/lib/LaTeXML/dtd/isolat2.ent blib/lib/LaTeXML/dtd/mathml2-qname-1.mod blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl blib/lib/LaTeXML/Package/url.ltxml blib/lib/LaTeXML/Global.pm
-	$(RM_F) blib/lib/LaTeXML/dtd/isoamsr.ent blib/lib/LaTeXML/Package/DLMFbib.ltxml blib/lib/LaTeXML/dtd/LaTeXML-html.xsl blib/lib/LaTeXML/Package/html.ltxml blib/lib/LaTeXML/dtd/isomopf.ent
-	$(RM_F) blib/lib/LaTeXML/dtd/isobox.ent blib/lib/LaTeXML/dtd/DLMF.dtd blib/lib/LaTeXML/Post/MathDictionary.pm blib/lib/LaTeXML/dtd/isoamso.ent blib/lib/LaTeXML/Package/article.ltxml blib/lib/LaTeXML/Gullet.pm
-	$(RM_F) blib/lib/LaTeXML/Package/acronym.ltxml blib/lib/LaTeXML/dtd/isomscr.ent blib/lib/LaTeXML/Package/amsrefs.ltxml blib/lib/LaTeXML/dtd/isodia.ent blib/lib/LaTeXML/Package/amssymb.ltxml
-	$(RM_F) blib/lib/LaTeXML/dtd/isoamsa.ent blib/lib/LaTeXML/Intestine.pm blib/lib/LaTeXML/dtd/catalog blib/lib/LaTeXML/dtd/mmlalias.ent blib/lib/LaTeXML/dtd/isopub.ent blib/lib/LaTeXML/Model.pm
-	$(RM_F) blib/lib/LaTeXML/dtd/isocyr2.ent blib/lib/LaTeXML/Object.pm
+	$(RM_F) blib/lib/LaTeXML/Package/amsrefs.ltxml.save blib/lib/LaTeXML/dtd/isomfrk.ent $(FIRST_MAKEFILE) blib/lib/LaTeXML/Package/LaTeX.ltxml blib/lib/LaTeXML/Mouth.pm blib/lib/LaTeXML/Package.pm
+	$(RM_F) blib/lib/LaTeXML/dtd/isocyr1.ent blib/lib/LaTeXML/dtd/isolat2.ent blib/lib/LaTeXML/dtd/mathml2-qname-1.mod blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl blib/lib/LaTeXML/Package/url.ltxml
+	$(RM_F) blib/lib/LaTeXML/Global.pm blib/lib/LaTeXML/dtd/isoamsr.ent blib/lib/LaTeXML/Package/DLMFbib.ltxml blib/lib/LaTeXML/dtd/LaTeXML-html.xsl blib/lib/LaTeXML/Package/html.ltxml
+	$(RM_F) blib/lib/LaTeXML/dtd/isomopf.ent blib/lib/LaTeXML/dtd/isobox.ent blib/lib/LaTeXML/dtd/DLMF.dtd blib/lib/LaTeXML/Post/MathDictionary.pm blib/lib/LaTeXML/dtd/isoamso.ent
+	$(RM_F) blib/lib/LaTeXML/Package/article.ltxml blib/lib/LaTeXML/Gullet.pm blib/lib/LaTeXML/Package/acronym.ltxml blib/lib/LaTeXML/dtd/isomscr.ent blib/lib/LaTeXML/Package/amsrefs.ltxml
+	$(RM_F) blib/lib/LaTeXML/dtd/isodia.ent blib/lib/LaTeXML/Package/amssymb.ltxml blib/lib/LaTeXML/dtd/isoamsa.ent blib/lib/LaTeXML/Intestine.pm blib/lib/LaTeXML/dtd/catalog blib/lib/LaTeXML/dtd/mmlalias.ent
+	$(RM_F) blib/lib/LaTeXML/dtd/isopub.ent blib/lib/LaTeXML/Model.pm blib/lib/LaTeXML/dtd/isocyr2.ent blib/lib/LaTeXML/Object.pm
 
 
 # --- MakeMaker metafile section:
@@ -777,7 +780,7 @@ metafile :
 	$(NOECHO) $(ECHO) '# http://module-build.sourceforge.net/META-spec.html' > META.yml
 	$(NOECHO) $(ECHO) '#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#' >> META.yml
 	$(NOECHO) $(ECHO) 'name:         LaTeXML' >> META.yml
-	$(NOECHO) $(ECHO) 'version:      0.1.1' >> META.yml
+	$(NOECHO) $(ECHO) 'version:      0.1.2' >> META.yml
 	$(NOECHO) $(ECHO) 'version_from: lib/LaTeXML.pm' >> META.yml
 	$(NOECHO) $(ECHO) 'installdirs:  site' >> META.yml
 	$(NOECHO) $(ECHO) 'requires:' >> META.yml
@@ -1049,7 +1052,7 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd:
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,1,1,0">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,1,2,0">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <TITLE>$(DISTNAME)</TITLE>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <ABSTRACT></ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Bruce Miller &lt;bruce.miller@nist.gov&gt;</AUTHOR>' >> $(DISTNAME).ppd
@@ -1082,6 +1085,7 @@ pm_to_blib: $(TO_INST_PM)
 	  lib/LaTeXML/Token.pm blib/lib/LaTeXML/Token.pm \
 	  lib/LaTeXML/dtd/isocyr2.ent blib/lib/LaTeXML/dtd/isocyr2.ent \
 	  lib/LaTeXML/dtd/isoamsc.ent blib/lib/LaTeXML/dtd/isoamsc.ent \
+	  lib/LaTeXML/Package/amsrefs.ltxml.save blib/lib/LaTeXML/Package/amsrefs.ltxml.save \
 	  lib/LaTeXML/Package/makeidx.ltxml blib/lib/LaTeXML/Package/makeidx.ltxml \
 	  lib/LaTeXML/dtd/DLMF.dtd blib/lib/LaTeXML/dtd/DLMF.dtd \
 	  lib/LaTeXML/Intestine.pm blib/lib/LaTeXML/Intestine.pm \

@@ -34,6 +34,7 @@
 #======================================================================
 package LaTeXML::Post::HTMLTable;
 use strict;
+use XML::LibXML;
 use LaTeXML::Util::LibXML;
 use Text::Balanced;
 use LaTeXML::Post;
@@ -99,15 +100,13 @@ sub process_tabular {
   elsif(($ncolgroups == 1)      && ($nrowgroups == 1)     ){ $rules='none'; }
 
   # --- Clear and Rebuild the Table ----
-  # Remove all elements & text nodes from table.
-  clear_node($tabular);
-
-  # Add the computed frame & rule to the tabular, and alignment attributes to the cells
+  # So far, there should be ONLY tr and hline elements. Remove hlines!
+  map($tabular->removeChild($_), 
+      $tabular->getChildrenByTagNameNS($nsURI,'hline'));
+  # Add computed frame & rule to the tabular, and alignment attr. to the cells
   $tabular->setAttribute('frame',$frame);
   $tabular->setAttribute('rules',$rules);
   foreach my $row (@rows){
-    # NOTE: There's some kind of namespace screwup here.
-    $row->setNamespace($nsURI);	# !?!?!?!?
     my $j=0;
     foreach my $cell ($row->getChildrenByTagNameNS($nsURI,'td')){
       if(my $span = $cell->getAttribute('colspan')){ # From \multicolumn
@@ -120,17 +119,27 @@ sub process_tabular {
   # Add column groups, if there is non-trivial grouping
   if($rules eq 'groups'){
     foreach my $cols (grep(ref $_, @colgroups)){
+      my $cg = new_node($nsURI,'colgroup');
+      $tabular->insertBefore($cg,$rows[0]);
       if(!grep($cols->[0] ne $_, @$cols)){ # All alignments are same?
-	append_nodes($tabular,new_node($nsURI,"colgroup",undef,span=>scalar(@$cols),align=>$cols->[0])); }
-      else {
-	append_nodes($tabular,new_node($nsURI,"colgroup",[map(new_node($nsURI,"col",undef,align=>$_),@$cols)])); }}}
+	$cg->setAttribute('span',scalar(@$cols));
+	$cg->setAttribute('align',$cols->[0]); }
+      else {			# Else, add individual cols
+	foreach my $c (@$cols){
+	  $cg->appendChild(new_node($nsURI,'col',undef,align=>$c)); }
+      }}}
 
-  # Finally, add the rows back in, possibly grouped into tbody's
+  # Finally (possibly) group the rows into tbody's
   if($rules eq 'groups'){
     # Here'd be a good place to guess whether the 1st group might be a header????
-    append_nodes($tabular,map(new_node($nsURI,"tbody",$_), grep(ref $_, @rowgroups))); }
-  else {
-    append_nodes($tabular, @rows); }
+#    append_nodes($tabular,map(new_node($nsURI,"tbody",$_),
+#			      grep(ref $_, @rowgroups)));
+    foreach my $rg (@rowgroups){
+      if(ref $rg){
+	my $g = new_node($nsURI,'tbody');
+	$tabular->insertBefore($g,$rg->[0]); 
+	map($g->appendChild($_),@$rg); }}
+  }
 }
 
 #======================================================================

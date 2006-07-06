@@ -44,8 +44,9 @@ sub getShape  { $_[0]->[2]; }
 sub getSize   { $_[0]->[3]; }
 sub getColor  { $_[0]->[4]; }
 
-sub untex { "Font[".join(',',@{$_[0]})."]"; }
-sub stringify { "Font[".join(',',@{$_[0]})."]"; }
+sub toString { "Font[".join(',',@{$_[0]})."]"; }
+sub untex    { $_[0]->toString; }
+sub stringify{ $_[0]->toString; }
 
 sub equals {
   my($self,$other)=@_;

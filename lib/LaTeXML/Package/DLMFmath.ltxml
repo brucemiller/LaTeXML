@@ -61,20 +61,20 @@ DefMacro('\ceiling{}',
 #**********************************************************************
 # Calculus
 DefConstructor('\deriv[]{}{}',  
-	       "<XMApp !#2(POS='BIGOP')>"
-	       . "<XMTok name='deriv'/>?#2(<XMArg>#2</XMArg>)!#2(<XMTok name='Empty'/>)"
+	       "<XMApp ?#2()(POS='BIGOP')>"
+	       . "<XMTok name='deriv'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
 	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
 DefConstructor('\pderiv[]{}{}',
-	       "<XMApp !#2(POS='BIGOP')>"
-	       . "<XMTok name='pderiv'/>?#2(<XMArg>#2</XMArg>)!#2(<XMTok name='Empty'/>)"
+	       "<XMApp ?#2()(POS='BIGOP')>"
+	       . "<XMTok name='pderiv'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
 	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
 DefConstructor('\ideriv[]{}{}',
-	       "<XMApp !#2(POS='BIGOP')>"
-	       . "<XMTok name='deriv' style='inline'/>?#2(<XMArg>#2</XMArg>)!#2(<XMTok name='Empty'/>)"
+	       "<XMApp ?#2()(POS='BIGOP')>"
+	       . "<XMTok name='deriv' style='inline'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
 	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
 DefConstructor('\ipderiv[]{}{}',
-	       "<XMApp !#2(POS='BIGOP')>"
-	       . "<XMTok name='pderiv' style='inline'/>?#2(<XMArg>#2</XMArg>)!#2(<XMTok name='Empty'/>)"
+	       "<XMApp ?#2()(POS='BIGOP')>"
+	       . "<XMTok name='pderiv' style='inline'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
 	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
 DefConstructor('\diff[]{}',
 	       "<XMApp><XMTok name='diff'/><XMArg>#2</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
@@ -120,9 +120,9 @@ DefSymbol('\EulerConstant',"\N{GREEK SMALL LETTER GAMMA}",'EulerConstant',partOf
 DefPrimitive('\defSpecFun{}[][]{}{}', sub {
   my($stomach,$cs,$nparam,$optparam,$formatter,$nargs)=@_;
   my $gullet = $stomach->getGullet;
-  $cs=$cs->untex;
-  $nparam = (defined $nparam ? $nparam->untex : 0);
-  $nargs  = $nargs->untex;
+  $cs=$cs->toString;
+  $nparam = (defined $nparam ? $nparam->toString : 0);
+  $nargs  = $nargs->toString;
   # Read any argument formats
   my @argfmts=();
   while(my $af = $gullet->readOptional){
@@ -135,7 +135,7 @@ DefPrimitive('\defSpecFun{}[][]{}{}', sub {
   for(my $i=0; $i <= $#argfmts; $i++){
     DefMacro(join('','\\presentation@',$cs,'@args',map('@',1..$i+1),map('{}',1..$nargs)),
 	     Tokens($argfmts[$i]->unlist,T_CS('\egroup'))); }
-  my $lparmspec = (defined $optparam ? "[".$optparam->untex."]" : '').
+  my $lparmspec = (defined $optparam ? "[".$optparam->toString."]" : '').
     join('',map('{}', (defined $optparam ? 2 : 1)..$nparam));
   DefMacro("\\$cs$lparmspec", sub { 
     my($gullet,@params)=@_; 
@@ -216,7 +216,6 @@ sub expand_specfun {
   elsif(@params){
     @semantic = T_Apply(T_CS('\@APPLY'),[@semantic, map((T_BEGIN,T_Apply(T_CS('\@ARG'),'Expressions',$_),T_END),@params)]); }
 my @toks=  T_Apply(T_CS('\DUAL'),[T_OTHER($POS)],[@semantic],[@presentation]);
-#print STDERR "Specfun: \"".join(' ',map($_->untex,@toks))."\"\n";
 @toks;
 }
 

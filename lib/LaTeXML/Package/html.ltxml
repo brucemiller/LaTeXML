@@ -37,15 +37,15 @@ DefMacro('\hypercite{}','');
 DefMacro('\htmlcite{}{}','');
 DefMacro('\htmlimage{}','');
 DefMacro('\htmlborder{}','');
-DefEnvironment('{makeimage}','%body');
-DefEnvironment('{tex2html_deferred}','%body');
+DefEnvironment('{makeimage}','#body');
+DefEnvironment('{tex2html_deferred}','#body');
 DefMacro('\htmladdtonavigation{}','');
 
 # These get excluded, since we probably don't even want to try to include html?
 DefEnvironment('{rawhtml}','');
 DefEnvironment('{htmlonly}','');
 DefMacro('\html{}','');
-DefEnvironment('{latexonly}','%body'); # Include this (?)
+DefEnvironment('{latexonly}','#body'); # Include this (?)
 DefMacro('\latexhtml{}{}','#1');
 
 DefMacro('\strikeout{}','');

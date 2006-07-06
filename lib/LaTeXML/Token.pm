@@ -52,8 +52,8 @@ our @CC_SHORT_NAME=qw(Esc Beg End Math Align EOL Param Sup Sub
 # stored under; It's the same for various `different' BEGIN tokens, eg.
 sub getCSName {
   my($token)=@_;
-  my $cs = $$token[1];
-  ($primitive_catcode[$cs] ? $CC_NAME[$cs] : $$token[0]); }
+  my $cc = $$token[1];
+  ($primitive_catcode[$cc] ? $CC_NAME[$cc] : $$token[0]); }
 
 # Return the string or character part of the token
 sub getString  { $_[0]->[0]; }

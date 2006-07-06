@@ -24,6 +24,13 @@ sub process {
   my($self,$doc,%options)=@_;
   # Read in the XML, unless it already is a Doc.
   if(! ref $doc){
+    # First, load the LaTeXML catalog in case it's needed...
+    foreach my $dir (@INC){	# Load catalog (all, 1st only ???)
+      next unless -f "$dir/LaTeXML/dtd/catalog";
+#      NoteProgress("\n(Loading XML Catalog $dir/LaTeXML/dtd/catalog)");
+      XML::LibXML->load_catalog("$dir/LaTeXML/dtd/catalog"); 
+      last; }
+    # Now, read the file.
     $doc .= ".xml" unless $doc=~/\.xml$/;
     $options{source} = $doc unless $options{source};
     my $XMLParser = XML::LibXML->new();
@@ -50,16 +57,34 @@ sub process {
     $processor->closeCache;		# If opened.
   }
 
+  # Normalize namespaces.
+  $doc = normalizeNS($doc) unless ($options{format}||'') eq 'html';
 
   # Should this be a `writer' filter?
   if($options{destination} || $options{toString}){
-    $doc = (($options{format} || '') eq 'html' ? $doc->toStringHTML : $doc->toString(1)); }
+    $doc = (($options{format} || '') eq 'html' 
+	    ? $doc->toStringHTML
+	    : $doc->toString(1)); }
 
   if($options{destination}){
     open(OUT,">:utf8",$options{destination}) || return die("Couldn't write $options{destination}: $!");
     print OUT $doc;
     close(OUT); }
   $doc; }
+
+# Returns a new document with namespaces normalized.
+# Should ultimately be incorporated in libxml2
+# (and of course, done correctly), and bound in XML::LibXML
+sub normalizeNS {
+  my($doc)=@_;
+  my $XMLParser = XML::LibXML->new();
+  # KLUDGE: The only namespace cleanup available right now
+  # in libxml2 is during parsing!! So, we write to string & reparse!
+  # (C14N is a bit too extreme for our purposes)
+  # Obviously inefficent (but amazingly fast!)
+  $XMLParser->clean_namespaces(1);
+  $XMLParser->parse_string($doc->toString);
+}
 
 sub completeOptions {
   my($self,%options)=@_;

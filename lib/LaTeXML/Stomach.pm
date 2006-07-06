@@ -22,6 +22,7 @@ use LaTeXML::Gullet;
 use LaTeXML::Font;
 use LaTeXML::Definition;
 use LaTeXML::Model;
+use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
 
 our @ISA = qw(LaTeXML::Object);
@@ -170,7 +171,7 @@ sub invokeToken {
   my $defn = $self->getMeaning($token);
   if(! defined $defn){		# Was an executable token, but no definition!
     SalvageError("Executable token $token not defined. Punting..."); 
-    DefConstructor($token->untex,"<ERROR type='undefined'>".$token->untex."</ERROR>");
+    DefConstructor($token->getCSName,"<ERROR type='undefined'>".$token->getCSName."</ERROR>");
     $self->invokeToken($token); }
   elsif($defn->isa('LaTeXML::Definition')){
     my @stuff = $defn->invoke($self);
@@ -538,7 +539,7 @@ sub getMathStyle {
 # See LaTeXML::Package for definition of the variables used in a counter.
 sub stepCounter {
   my($self,$ctr)=@_;
-  $ctr=$ctr->untex if ref $ctr;
+  $ctr=$ctr->toString if ref $ctr;
   $self->setValue("\\c\@$ctr",$self->getValue("\\c\@$ctr")->add(Number(1)),1);
   # and reset any within counters!
   foreach my $c ($self->getValue("\\cl\@$ctr")->unlist){
@@ -547,7 +548,7 @@ sub stepCounter {
 
 sub refStepCounter {
   my($self,$ctr)=@_;
-  $ctr=$ctr->untex if ref $ctr;
+  $ctr=$ctr->toString if ref $ctr;
   $self->stepCounter($ctr);
   my $v = $self->getGullet->expandTokens(Tokens(T_CS("\\the$ctr")));
   $self->setMeaning(T_CS('\@currentlabel'),LaTeXML::Expandable->new(T_CS('\@currentlabel'),undef,$v));
@@ -555,7 +556,7 @@ sub refStepCounter {
 
 sub resetCounter {
   my($self,$ctr)=@_;
-  $ctr=$ctr->untex if ref $ctr;
+  $ctr=$ctr->toString if ref $ctr;
   $self->setValue('\c@'.$ctr,Number(0),1); }
 #**********************************************************************
 # File I/O
@@ -592,6 +593,9 @@ sub findInput {
 # NOTE: options from usepackage, etc, get carried to here.
 # For latexml implementations, the global $LaTeXML::PACKAGE_OPTIONS gets 
 # bound to them, but NOTHING is done to pass them to TeX style files!
+
+# HMM: the packageLoaded check only makes sense for style files, and
+# is probably only important for latexml implementations?
 sub input {
   my($self,$name,%options)=@_;
   if($$self{packagesLoaded}{$name}){
@@ -599,7 +603,7 @@ sub input {
     return; }
   # Try to find a Package implementing $name.
   local @LaTeXML::PACKAGE_OPTIONS = @{$options{options}||[]};
-  $name = $name->untex if ref $name;
+  $name = $name->toString if ref $name;
   $name = $1 if $name =~ /^\{(.*)\}$/; # just in case
   my $file=$self->findInput($name);
   if($file =~ /\.(ltxml|latexml)$/){		# Perl module.

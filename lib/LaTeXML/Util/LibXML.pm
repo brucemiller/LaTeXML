@@ -28,10 +28,15 @@ sub element_nodes {
 
 sub new_node {
   my($nsURI,$tag,$children,%attributes)=@_;
-  my $node=XML::LibXML::Element->new($tag);
+  $tag =~ /^(\w+):(.*)$/;
+  my($nspre,$rawtag)=($1,$2 || $tag);
+  my $node=XML::LibXML::Element->new($rawtag);
 #  my $node=$LaTeXML::Post::DOC->createElement($tag);
 #  my $node=$LaTeXML::Post::DOC->createElementNS($nsURI,$tag);
-  $node->setNamespace($nsURI);
+  if($nspre){
+    $node->setNamespace($nsURI,$nspre,1); }
+  else {
+    $node->setNamespace($nsURI); }
   append_nodes($node,$children);
   foreach my $key (sort keys %attributes){
     $node->setAttribute($key, $attributes{$key}) if defined $attributes{$key}; }

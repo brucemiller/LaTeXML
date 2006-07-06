@@ -57,10 +57,10 @@ sub parseParameters {
   my $p = $proto;
   my @params=();
   while($p){
-    my ($spec,$ispec,$open,$close);
-    if   ($p =~ s/^((\{)([^\}]*)(\}))\s*//){ ($spec,$ispec,$open,$close)=($1,$3,$2,$4); }
-    elsif($p =~ s/^((\[)([^\]]*)(\]))\s*//){ ($spec,$ispec,$open,$close)=($1,$3,$2,$4); }
-    elsif($p =~ s/^([^\s]*)\s*//          ){ ($spec,$ispec,$open,$close)=($1,$1,'',''); }
+    my ($spec,$ispec,$open,$close,$opt);
+    if   ($p =~ s/^((\{)([^\}]*)(\}))\s*//){ ($spec,$ispec,$open,$close,$opt)=($1,$3,$2,$4,0); }
+    elsif($p =~ s/^((\[)([^\]]*)(\]))\s*//){ ($spec,$ispec,$open,$close,$opt)=($1,$3,$2,$4,1); }
+    elsif($p =~ s/^([^\s]*)\s*//          ){ ($spec,$ispec,$open,$close,$opt)=($1,$1,'','',0); }
     else { Error("Unrecognized parameter specification at \"$proto\" for $for"); }
     $ispec =~ /^(\w*)(:([^\Q$close\E\s\{\[]*))?$/;
     my($type,$extra)=($1,$3);
@@ -69,25 +69,27 @@ sub parseParameters {
     elsif($type =~ /^(Ignore|Flag|Literal|Keyword)$/){
       push(@params,LaTeXML::Parameter->new(spec=>$spec, type=>'Match', before=>$open, after=>$close,
 					   matches=>[map(Tokenize($_),split('\|',$extra))],
-					   allowmissing=>($type=~/^(Ignore|Flag)$/ ? 1:0),
-					   novalue=>($type=~/^(Ignore|Literal)$/ ? 1:0))); }
+					   optional=>($type=~/^(Ignore|Flag)$/ ? 1:0),
+					   noValue=>($type=~/^(Ignore|Literal)$/ ? 1:0))); }
     elsif($type eq 'KeyVal'){
       push(@params,LaTeXML::Parameter->new(spec=>$spec, type=>'KeyVal', keyset=>$extra, 
-					   before=>$open, after=>$close)); }
+					   before=>$open, after=>$close, optional=>$opt)); }
     elsif($type eq 'Default'){
       push(@params,LaTeXML::Parameter->new(spec=>$spec, default=>Tokenize($extra), 
-					   before=>$open, after=>$close)); }
+					   before=>$open, after=>$close, optional=>$opt)); }
     elsif($type eq 'any'){
-      push(@params,LaTeXML::Parameter->new(spec=>$spec, before=>$open, after=>$close)); }
+      push(@params,LaTeXML::Parameter->new(spec=>$spec, before=>$open, after=>$close, optional=>$opt)); }
     elsif($type eq ''){
-      push(@params,LaTeXML::Parameter->new(spec=>$spec, before=>$open, after=>$close)); }
+      push(@params,LaTeXML::Parameter->new(spec=>$spec, before=>$open, after=>$close, optional=>$opt)); }
     elsif($type eq 'semiverb'){
-      push(@params,LaTeXML::Parameter->new(spec=>$spec, verbatim=>1, before=>$open, after=>$close)); }
+      push(@params,LaTeXML::Parameter->new(spec=>$spec, verbatim=>1,
+					   before=>$open, after=>$close, optional=>$opt)); }
     elsif($type =~ /^(Token|XToken)$/){
-      push(@params,LaTeXML::Parameter->new(spec=>$spec, type=>$type, before=>$open, after=>$close)); }
+      push(@params,LaTeXML::Parameter->new(spec=>$spec, type=>$type,
+					   before=>$open, after=>$close, optional=>$opt)); }
     elsif($type =~ /^(Number|Dimension|Glue|MuGlue)$/){
-      push(@params,LaTeXML::Parameter->new(spec=>$spec, type=>$type, before=>$open, after=>$close,
-					   noDigest=>1)); }
+      push(@params,LaTeXML::Parameter->new(spec=>$spec, type=>$type,
+					   before=>$open, after=>$close, optional=>$opt, noDigest=>1)); }
     else {
       Error("Unknown parameter type \"$spec\" in \"$proto\" for $for"); }}
   LaTeXML::Parameters->new(@params); }
@@ -106,7 +108,7 @@ sub untexArguments {
   my($self,@args)=@_;
   my $string = '';
   foreach my $spec (@$self){
-    if($$spec{novalue}){ $string .= $$spec{matches}->[0]->untex; }
+    if($$spec{noValue}){ $string .= $$spec{matches}->[0]->untex; }
     elsif(defined(my $arg = shift(@args))){
       $string .= $$spec{before} if $$spec{before};
       $string .= $arg->untex;
@@ -119,7 +121,7 @@ sub readArguments {
   my @args=();
   foreach my $spec (@$self){
     my $value = $spec->readArgument($gullet);
-    push(@args,$value) unless $$spec{novalue}; }
+    push(@args,$value) unless $$spec{noValue}; }
   @args; }
 
 
@@ -127,7 +129,7 @@ sub digestArguments {
   my($self,$stomach,@args)=@_;
   my @dargs=();
   foreach my $spec (@$self){
-    if(!$$spec{novalue}){
+    if(!$$spec{noValue}){
       push(@dargs,$spec->digestArgument($stomach,shift(@args))); }}
   @dargs; }
 
@@ -144,38 +146,40 @@ sub new {
 sub stringify {
   my($self)=@_;
   ($$self{open}||' ').$$self{spec}.($$self{close}||''); }
+#  ($$self{open}||' ')
+#    .$$self{spec}
+#      .join(' ',map("$_=>$$self{$_}", grep($$self{$_}, keys %$self)))
+#      .($$self{close}||''); }
 
-# verbatim ?
-# Ignore|Flag|Literal|Keyword => readMatch??
 sub readArgument {
   my($self,$gullet)=@_;
   my($before,$after)=($$self{before}||'',$$self{after}||'');
-  my $verb = $$self{verbatim};
-  my $allowmissing = $$self{allowmissing};
-  if($verb){
-    $$gullet{stomach}->bgroup(1);
-    $$gullet{stomach}->setCatcode(CC_OTHER,'^','_','@','~','&','$','#','%'); } # should '%' too ?
+  $gullet->startSemiverbatim if $$self{verbatim};
   my $value;
-  if($before || $after){
-    my $tokens;
-    if   ($before eq '{' ){ $tokens = $gullet->readArg; }
-    elsif($before eq '[' ){ $tokens = $gullet->readOptional; $allowmissing=1;}
-    else                  { $tokens = $gullet->readUntil($after); }
-    if(!$$self{type}){ 
-      $value = $tokens; }
-    elsif($tokens){
-      $gullet->openMouth($tokens);
-      $value = $self->readArgumentAux($gullet);
-      $gullet->skipSpaces;
-      Error("Left over stuff in argument") if $gullet->readToken;
-      $gullet->closeMouth; }}
-  else {
+  if(($$self{type}||'') eq 'KeyVal'){ # KeyVal get's special treatment.
+    $value = $self->readKeyVal($gullet); }
+  elsif($before || $after){	# If in braces, optional, or delimited, read tokens first
+    if   ($before eq '{' ){ $value = $gullet->readArg; }
+    elsif($before eq '[' ){ $value = $gullet->readOptional; }
+    else                  { $value = $gullet->readUntil($after); }
+    $value = $self->reparseArgument($gullet,$value) if $$self{type};
+  }
+  else {			# Else, just read primitive argument type.
     $value = $self->readArgumentAux($gullet); }
-  if($verb){$$gullet{stomach}->egroup(1);}
-  if($value){ $value; }
+  $gullet->endSemiverbatim if $$self{verbatim};
+  if($value)             { $value; }
   elsif($$self{default}) { $$self{default}; }
-  elsif($allowmissing){ undef; }
+  elsif($$self{optional}){ undef; }
   else { Error("Missing argument $$self{spec}"); }}
+
+sub reparseArgument {
+  my($self,$gullet,$value)=@_;
+  $gullet->openMouth($value);
+  $value = $self->readArgumentAux($gullet);
+  $gullet->skipSpaces;
+  Error("Left over stuff in argument") if $gullet->readToken;
+  $gullet->closeMouth; 
+  $value; }
 
 sub readArgumentAux {
   my($self,$gullet)=@_;
@@ -187,50 +191,50 @@ sub readArgumentAux {
   elsif($type eq 'Glue'     ){ $gullet->readGlue; }
   elsif($type eq 'MuGlue'   ){ $gullet->readMuGlue; }
   elsif($type eq 'Match'    ){ $gullet->readMatch(@{$$self{matches}}); }
-  elsif($type eq 'KeyVal'   ){ $self->readKeyVal($gullet);}
   else { Error("Unknown argument type $$self{spec}"); }}
 
-# Work in how default gets applied?
+# A KeyVal argument MUST be delimited by either braces or brackets (if optional)
+# This method reads the keyval pairs INCLUDING the delimiters, (rather than parsing
+# after the fact), since some values may have special catcode needs.
+our $T_EQ = T_OTHER('=');
+our $T_COMMA = T_OTHER(',');
 sub readKeyVal {
   my($self,$gullet)=@_;
   my $keyset = $$self{keyset};
   my $stomach = $$gullet{stomach};
-#print STDERR "Reading keyvals for $keyset\n";
   my @kv=();
-  $gullet->skipSpaces; 
-  while(1){
-    # Read balanced till comma or end of input.
-    my @toks=();
-    my ($key,$value);
-    while(my $tok = $gullet->readToken){
-      if($tok eq T_OTHER('=')){	# If got an =, the preceding is the key
-	$key=Tokens(@toks)->toString; $key=~s/\s//g; @toks=(); }
-      elsif($tok eq T_OTHER(',')){
-	last; }
-      else {
-	push(@toks,$tok);
-	if($tok->getCatcode == CC_BEGIN){ # And if it's a BEGIN, copy till balanced END
-	  push(@toks,$gullet->readBalanced->unlist,T_END); }}}
-    if($key){			# Got key, rest is value.
-      $value = Tokens(@toks); 
-      my $keydef=$stomach->getValue('KEYVAL@'.$keyset.'@'.$key);
-      if($keydef && $$keydef{type}){
-	$gullet->openMouth($value);
-#	$value = $keydef->readArgumentAux($gullet);
-	$value = $keydef->readArgument($gullet);
-	$gullet->closeMouth; }}
-    elsif(@toks){		# No =, so @toks is key, and use default.
-      $key=Tokens(@toks)->toString; $key=~s/\s//g; 
-      if(my $keydef=$stomach->getValue('KEYVAL@'.$keyset.'@'.$key.'@default')){
-	$value=$keydef; }}
-    else {			# Nothing found.
-      last; }
-#print STDERR "Read Keyval $keyset : $key->$value\n";
-    push(@kv,$key);
-    push(@kv,$value); 
-    $gullet->skipSpaces; }
-  LaTeXML::KeyVals->new($keyset,@kv); }
+  # Read the opening delimiter.
+  my $close;
+  my $t=$gullet->readToken;
+  if($$self{before} eq '{'){
+    Error("Missing argument") unless $t->getCatcode == CC_BEGIN; 
+    $close = T_END;}
+  elsif($$self{before} eq '['){
+    if(!($t eq T_OTHER('['))){ 
+      $gullet->unread($t); return undef; }
+    $close = T_OTHER(']'); }
+  # Now start reading keyval pairs.
+  while(1) {
+    $gullet->skipSpaces; 
+    # Read the keyword.
+    my($ktoks,$delim)=$gullet->readUntil($T_EQ,$T_COMMA,$close);
+    my $key=$ktoks->toString; $key=~s/\s//g;
+    if($key){
+      my $keydef=$stomach->getValue('KEYVAL@'.$keyset.'@'.$key) || {};
+      my $value;
+      if($delim eq $T_EQ){	# Got =, so read the value
+	$gullet->startSemiverbatim if $$keydef{verbatim};
+	($value,$delim)=$gullet->readUntil($T_COMMA,$close);
+	$gullet->endSemiverbatim if $$keydef{verbatim};
+	$value = $keydef->reparseArgument($gullet,$value) if $$keydef{type};
+      }
+      else {			# Else, get default value.
+	$value = $stomach->getValue('KEYVAL@'.$keyset.'@'.$key.'@default'); }
+      push(@kv,$key);
+      push(@kv,$value); }
+    last if $delim eq $close; }
 
+  LaTeXML::KeyVals->new($keyset,@kv); }
 
 sub digestArgument {
   my($self,$stomach,$arg)=@_;
@@ -242,9 +246,17 @@ sub digestArgument {
     $stomach->digest($arg,$$self{nofilter}); }}
 
 #**********************************************************************
+# KeyVals: representation of keyval arguments,
+# Not necessarily a hash, since keys could be repeated and order may
+# be significant.
+#**********************************************************************
 # Where does this really belong?
-# It's only a special representation of something that can only appear
-# as a control sequence argument.
+# The values can be Tokens, after parsing, or Boxes, after digestion.
+# (or Numbers, etc. in either case)
+# But also, it has a non-generic API used above...
+# If Box-like, it could have a beAbsorbed method; which would do what?
+# Should it convert to simple text? Or structure?
+# If latter, there needs to be a key => tag mapping.
 
 package LaTeXML::KeyVals;
 use LaTeXML::Global;
@@ -253,7 +265,28 @@ our @ISA=qw(LaTeXML::Object);
 # Spec??
 sub new {
   my($class,$keyset,@pairs)=@_;
-  bless {keyset=>$keyset, keyvals=>[@pairs]},$class; }
+  my %hash = ();
+  my @pp=@pairs;
+  while(@pp){
+    my($k,$v) = (shift(@pp),shift(@pp));
+    if(!defined $hash{$k}){ $hash{$k}=$v; }
+    # Hmm, accumulate an ARRAY if multiple values for given key.
+    # This is unlikely to be what the caller expects!! But what?
+    elsif(ref $hash{$k} eq 'ARRAY'){ push(@{$hash{$k}},$v); }
+    else { $hash{$k}=[$hash{$k},$v]; }}
+  bless {keyset=>$keyset, keyvals=>[@pairs], hash=>{%hash}},$class; }
+
+sub getValue {
+  my($self,$key)=@_;
+  $$self{hash}{$key}; }
+
+sub getKeys {
+  my($self)=@_;
+  keys %{$$self{hash}}; }
+
+sub getKeyVals {
+  my($self)=@_;
+  @{$$self{keyvals}}; }
 
 sub digestValues {
   my($self,$stomach)=@_;

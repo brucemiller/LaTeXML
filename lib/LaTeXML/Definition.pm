@@ -214,7 +214,7 @@ use LaTeXML::Global;
 our @ISA = qw(LaTeXML::Primitive);
 
 # Known properties: beforeDigest, afterDigest, 
-#    mathConstructor, mathclass, floats, untex, captureBody
+#    mathConstructor, mathclass, untex, captureBody
 sub new {
   my($class,$cs,$parameters,$replacement,%properties)=@_;
   $cs = $cs->untex if ref $cs;
@@ -228,7 +228,6 @@ sub new {
   Message("Defining $self") if Debugging('macros');
   $self; }
 
-sub floats { $_[0]->{floats}; }
 sub getMathClass { $_[0]->{mathclass} || 'symbol'; }
 
 sub getConstructor {
@@ -236,16 +235,15 @@ sub getConstructor {
   (($ismath && defined $$self{mathConstructor}) ? $$self{mathConstructor} : $$self{replacement}); }
 
 sub untex {
-  my($self,$whatsit,@params)=@_;
+  my($self,$whatsit)=@_;
   my $untex = $$self{untex};
   if((defined $untex) && (ref $untex eq 'CODE')){
-    return &$untex($whatsit,@params); }
+    return &$untex($whatsit); }
   else {
-    return "" if grep(/nofloats/,@params) && $self->floats;
     my $string = '';
     if(defined $untex){
       $string = $untex;
-      $string =~ s/#(\d)/ $whatsit->getArg($1)->untex(@params); /eg; }
+      $string =~ s/#(\d)/ $whatsit->getArg($1)->untex; /eg; }
     else {
       $string= $$self{cs};
       my @args = $whatsit->getArgs;
@@ -254,8 +252,8 @@ sub untex {
       $string .= $params->untexArguments(@args) if $params;
     }
     if(defined (my $body = $whatsit->getBody)){
-      $string .= $body->untex(@params);
-      $string .= $whatsit->getTrailer->untex(@params); }
+      $string .= $body->untex;
+      $string .= $whatsit->getTrailer->untex; }
     $string; }}
 
 # Digest the constructor; This should occur in the Stomach (NOT the Intestine)

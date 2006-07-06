@@ -54,7 +54,7 @@ no warnings 'redefine';
 
 DefExpandable('\begin{}',sub { 
   my($gullet,$env)=@_;
-  my $name = $env->untex;
+  my $name = $env->toString;
   if($gullet->getStomach->getMeaning(T_CS("\\begin{$name}"))){
     T_CS("\\begin{$name}"); } # Magic cs!
   elsif($gullet->getStomach->getMeaning(T_CS("\\$name"))){
@@ -64,7 +64,7 @@ DefExpandable('\begin{}',sub {
 
 DefExpandable('\end{}',  sub { 
   my($gullet,$env)=@_;
-  my $name = $env->untex;
+  my $name = $env->toString;
   if($gullet->getStomach->getMeaning(T_CS("\\end{$name}"))){
     T_CS("\\end{$name}"); } # Magic cs!
   elsif($gullet->getStomach->getMeaning(T_CS("\\end$name"))){
@@ -104,7 +104,7 @@ DefConstructor("\\\\ Flag:* []", "\n", mathConstructor=>"<XMHint name='\\'/>", u
 #    text
 #   \end{document}
 
-DefEnvironment('{document}','<document>%body</document>',
+DefEnvironment('{document}','<document>#body</document>',
 	       beforeDigest=> sub { $_[0]->setInPreamble(0); },
 	       afterDigest=> sub { $_[0]->getGullet->flush; return; });
 
@@ -184,16 +184,22 @@ DefPrimitive('\footnoterule',undef);
 # it can get you in trouble.  However, in almost all cases, the result
 # is plain text.  So, I'm putting refnum as an attribute, where I like it!
 # You want something else? Redefine!
+
+# A little more messy than seems necessary:
+#  We don't know whether to step the counter and update \@currentlabel until we see the '*',
+# but we have to know it before we digest the title, since \label can be there!
 foreach my $sec (qw(part chapter section subsection subsubsection paragraph subparagraph)){
   Tag($sec, autoClose=>1);
-  DefConstructor('\\'.$sec.' Flag:* []{}',
-      "<$sec ?%refnum(refnum='%refnum')>"
-		 ."<title>#3</title>?#2(<toctitle>#2</toctitle>)",
-		 afterDigest=> sub { my($stomach,$whatsit)=@_;
-				     if(!$whatsit->getArg(1)){ # if not starred
-				       $whatsit->setProperty('refnum',
-							     $stomach->refStepCounter($sec)->untex); }
-				     return; }); }
+  DefExpandable('\\'.$sec.' Flag:*',
+		sub { 
+		  my($gullet,$flag)=@_;
+		  if($flag){
+		    (T_CS('\\@@'.$sec)); }
+		  else {
+		    $gullet->getStomach->refStepCounter($sec);
+		    (T_CS('\\@@'.$sec),T_OTHER('['),T_CS('\@currentlabel'),T_OTHER(']')); }});
+  DefConstructor('\\@@'.$sec.'[][]{}',
+		 "<$sec ?#1(refnum='#1')><title>#3</title>?#2(<toctitle>#2</toctitle>)"); }
 
 # Not sure if this is best, but if no explicit \section'ing...
 Tag('section',autoOpen=>1);
@@ -248,8 +254,6 @@ DefRegister('\mathindent',Dimension(0));
 # Ignorable packages ??
 # pre-defined packages??
 
-#DefConstructor('\usepackage[]{}',"<?latexml package='#2' ?#1(options='#1')?>",
-#	       afterDigest=>sub {  $_[0]->input($_[1]->getArg(2)->untex); return;  });
 DefConstructor('\usepackage[]{}',"<?latexml package='#2' ?#1(options='#1')?>",
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my @pkgs = split(',',$whatsit->getArg(2)->toString);
@@ -305,25 +309,25 @@ DefConstructor('\fmt@date{}', "<creationdate>#1</creationdate>");
 # This needs to be a macro so that \@author, etal, get expanded.
 DefMacro('\maketitle', '\fmt@title{\@title}\fmt@author{\@author}\fmt@date{\@date}');
 
-DefEnvironment('{abstract}','<abstract>%body</abstract>');
+DefEnvironment('{abstract}','<abstract>#body</abstract>');
 # Presumably you'll do whatever you need to specify author, etc ???
-DefEnvironment('{titlepage}','%body');
+DefEnvironment('{titlepage}','#body');
 
 #**********************************************************************
 # C.6 Displayed Paragraphs
 #**********************************************************************
-DefEnvironment('{center}','<centering>%body</centering>');
-DefEnvironment('{centering}','<centering>%body</centering>');
+DefEnvironment('{center}','<centering>#body</centering>');
+DefEnvironment('{centering}','<centering>#body</centering>');
 # NOTE: center the _line_ (till \\ or \par or ?) ! How to get it?
 DefPrimitive('\centering',undef);
 
 #======================================================================-
 # C.6.1 Quotations and Verse
 #======================================================================-
-DefEnvironment('{quote}',    '<quote>%body</quote>');
-DefEnvironment('{quotation}','<quotation>%body</quotation>');
+DefEnvironment('{quote}',    '<quote>#body</quote>');
+DefEnvironment('{quotation}','<quotation>#body</quotation>');
 # NOTE: Handling of \\ within these environments?
-DefEnvironment('{verse}',    '<verse>%body</verse>');
+DefEnvironment('{verse}',    '<verse>#body</verse>');
 
 #======================================================================
 # C.6.2 List-Making environments
@@ -331,9 +335,9 @@ DefEnvironment('{verse}',    '<verse>%body</verse>');
 Tag('item', autoClose=>1);
 DefConstructor('\item[]', "<item><tag>#1</tag>");
 
-DefEnvironment('{itemize}',    '<itemize>%body</itemize>');
-DefEnvironment('{enumerate}',  '<enumerate>%body</enumerate>');
-DefEnvironment('{description}','<description>%body</description>');
+DefEnvironment('{itemize}',    '<itemize>#body</itemize>');
+DefEnvironment('{enumerate}',  '<enumerate>#body</enumerate>');
+DefEnvironment('{description}','<description>#body</description>');
 
 # NOTE: Do I need to do anything with
 # \labelitemi, labelitemii, labelitemiii or labelitemiv ?
@@ -345,8 +349,8 @@ DefEnvironment('{description}','<description>%body</description>');
 #======================================================================
 # Mostly just punting, here; you probably want a more meaningful name
 # for your list if you want better XML.
-DefEnvironment('{list}{}{}', "<list default_label='#1' declarations='#2'>%body</list>");
-DefEnvironment('{trivlist}', '<trivlist>%body</trivlist>');
+DefEnvironment('{list}{}{}', "<list default_label='#1' declarations='#2'>#body</list>");
+DefEnvironment('{trivlist}', '<trivlist>#body</trivlist>');
 
 DefRegister('\topsep',Glue(0));
 DefRegister('\partopsep',Glue(0));
@@ -367,15 +371,15 @@ DefRegister('\labelsep',Dimension(0));
 #======================================================================
 
 # NOTE: how's the best way to get verbatim material through?
-DefEnvironment('{verbatim}', '<verbatim>%body</verbatim>');
-DefEnvironment('{verbatim*}','<verbatim>%body</verbatim>');
+DefEnvironment('{verbatim}', '<verbatim>#body</verbatim>');
+DefEnvironment('{verbatim*}','<verbatim>#body</verbatim>');
 
 # verbatim is a bit of special case;
 # We're going to sidestep the Gullet for inputting, 
 # and also the usual environment capture.
 STOMACH->setMeaning(T_CS('\begin{verbatim}'),
       LaTeXML::Constructor->new('\begin{verbatim}',undef,
-				"<verbatim font='%font'>%body</verbatim>",
+				"<verbatim font='#font'>#body</verbatim>",
 				beforeDigest=>[sub { $_[0]->bgroup; $_[0]->setFont(family=>'typewriter'); }],
 				afterDigest=>[sub {
 				  my($stomach,$whatsit)=@_;
@@ -390,7 +394,7 @@ DefExpandable('\verb', sub {
   $stomach->bgroup(1);
   $stomach->setCattable({});	# ALL chars will give CC_OTHER!
   my $init = $gullet->readToken;
-  $init = $gullet->readToken if $init->untex eq '*'; # Should I bother handling \verb* ?
+  $init = $gullet->readToken if $init->toString eq '*'; # Should I bother handling \verb* ?
   my $verb = $gullet->readUntil($init);
   $stomach->egroup(1);
   $verb->unlist; });
@@ -406,17 +410,17 @@ DefExpandable('\verb', sub {
 # C.7.1 Math Mode Environments
 #======================================================================
 DefEnvironment('{displaymath}', 
-	       "<equation><Math mode='display'><XMath>%body</XMath></Math></equation>", 
+	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>", 
 	       mode=>'display_math');
 DefEnvironment('{math}',
-	       "<Math mode='inline'><XMath>%body</XMath></Math>",
+	       "<Math mode='inline'><XMath>#body</XMath></Math>",
 	       mode=>'inline_math');
 DefEnvironment('{equation}',
-	       "<equation refnum='%refnum'><Math mode='display'><XMath>%body</XMath></Math></equation>", 
+	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>", 
 	       mode=>'display_math',
 	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); });
 DefEnvironment('{equation*}',
-	       "<equation><Math mode='display'><XMath>%body<XMath></Math></equation>",
+	       "<equation><Math mode='display'><XMath>#body<XMath></Math></equation>",
 	       mode=>'display_math');
 
 # NOTE: This has to interact with equation to CANCEL (or backtrack?) the
@@ -425,12 +429,12 @@ DefPrimitive('\nonumber',undef);
 
 # Define \( ..\) and \[ ... \] to act like environments.
 DefConstructor('\[',
-	       "<equation><Math mode='display'><XMath>\%body</XMath></Math></equation>",
+	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>",
 	       beforeDigest=> sub{ $_[0]->beginMode('display_math'); },
 	       captureBody=>1);
 DefConstructor('\]'  ,"",beforeDigest=> sub{ $_[0]->endMode('display_math'); });
 DefConstructor('\(' ,
-	       "<Math mode='inline'><XMath>\%body</XMath></Math>",
+	       "<Math mode='inline'><XMath>#body</XMath></Math>",
 	       beforeDigest=> sub{ $_[0]->beginMode('inline_math'); },
 	       captureBody=>1);
 DefConstructor('\)'   ,"", beforeDigest=> sub{ $_[0]->endMode('inline_math'); });
@@ -449,11 +453,11 @@ DefExpandable('\ensuremath{}', sub {
 # NOTE: The numbering isn't right.
 # And the parseability will have to be worked on!
 DefEnvironment('{eqnarray}',
-	       "<equation refnum='%refnum'><Math mode='display'><XMath>%body</XMath></Math></equation>", 
+	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>", 
 	       mode=>'display_math',
 	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); });
 DefEnvironment('{eqnarray*}',
-	       "<equation><Math mode='display'><XMath>%body</XMath></Math></equation>", 
+	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>", 
 	       mode=>'display_math');
 
 # Style Parameters
@@ -472,7 +476,7 @@ DefConstructor('\frac{}{}',
 	       "<XMApp><XMTok style='over'>/</XMTok><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
 DefConstructor('\sqrt[]{}',
 	       "?#1(<XMApp><XMTok name='root'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>)"
-	       ."!#1(<XMApp><XMTok name='sqrt'/><XMArg>#2</XMArg></XMApp>)");
+	         ."(<XMApp><XMTok name='sqrt'/><XMArg>#2</XMArg></XMApp>)");
 
 # Ellipsis: See Primitives
 
@@ -556,24 +560,21 @@ DefConstructor('\mathscr{}', '#1',
 # C.8.1 Defining Commands
 #======================================================================
 sub do_newcommand {
-  my($newonly,$stomach,$tokens,$nargs,$opt,$body)=@_;
-  # $tokens should be a Tokens containing a single token!
-  my($token,@rest)=$tokens->unlist;
-  Error("Bad \newcommand cs : ".$tokens->untex) if @rest;
-  my $name = $token->untex;
-  if($stomach->getMeaning($token)){
+  my($newonly,$stomach,$cs,$nargs,$opt,$body)=@_;
+  my $name = $cs->toString;
+  if($stomach->getMeaning($cs)){
     if($newonly == 1)  { Error("$name is already defined"); }
     elsif($newonly==-1){ return; }}
-  $nargs = (defined $nargs ? $nargs->untex : 0);
+  $nargs = (defined $nargs ? $nargs->toString : 0);
   $nargs-- if $opt;
-  DefMacro(join('',$name,($opt ? '[Default:'.$opt->untex.']' :''),map('{}',1..$nargs)),$body);
+  DefMacro(join('',$name,($opt ? '[Default:'.$opt->toString.']' :''),map('{}',1..$nargs)),$body);
   return; }
 
-DefPrimitive('\newcommand{}[][]{}',    sub { do_newcommand(+1,@_); });
-DefPrimitive('\renewcommand{}[][]{}',  sub { do_newcommand( 0,@_); });
-DefPrimitive('\providecommand{}[][]{}',sub { do_newcommand(-1,@_); });
+DefPrimitive('\newcommand{Token}[][]{}',    sub { do_newcommand(+1,@_); });
+DefPrimitive('\renewcommand{Token}[][]{}',  sub { do_newcommand( 0,@_); });
+DefPrimitive('\providecommand{Token}[][]{}',sub { do_newcommand(-1,@_); });
 # Need to figure out exactly what `robust' means to LaTeXML...
-DefPrimitive('\DeclareRobustCommand{}[][]{}',sub { do_newcommand(-1,@_); });
+DefPrimitive('\DeclareRobustCommand{Token}[][]{}',sub { do_newcommand(-1,@_); });
 
 #======================================================================
 # C.8.2 Defining Environments
@@ -583,12 +584,12 @@ DefPrimitive('\DeclareRobustCommand{}[][]{}',sub { do_newcommand(-1,@_); });
 
 sub do_newenvironment {
   my($newonly,$stomach,$name,$nargs,$opt,$begin,$end)=@_;
-  $name = $name->untex;
+  $name = $name->toString;
   if($stomach->getMeaning(T_CS("\\$name"))){
     if($newonly){ Error("Environment $name is already defined"); }}
-  $nargs = (defined $nargs ? $nargs->untex : 0);
+  $nargs = (defined $nargs ? $nargs->toString : 0);
   $nargs-- if $opt;
-  DefMacro(join('','\\',$name,($opt ? '[Default:'.$opt->untex.']' :''),map('{}',1..$nargs)),$begin);
+  DefMacro(join('','\\',$name,($opt ? '[Default:'.$opt->toString.']' :''),map('{}',1..$nargs)),$begin);
   DefMacro(join('','\\end',$name),$end);
   return; }
 
@@ -611,7 +612,7 @@ DefPrimitive('\newcounter{}[]',sub { shift; NewCounter(@_); return; });
 DefPrimitive('\setcounter{}{}',sub {
   my($stomach,$ctr,$value)=@_;
   my $gullet = $stomach->getGullet;
-  $ctr=$ctr->untex;
+  $ctr=$ctr->toString;
   $gullet->unread(@$value,T_CS('\relax')); # Put back, so we can read as <number>
   $stomach->setValue("c\@$ctr",$gullet->readNumber(),1); 
   return});
@@ -619,7 +620,7 @@ DefPrimitive('\setcounter{}{}',sub {
 DefPrimitive('\addtocounter{}{}',sub {
   my($stomach,$ctr,$value)=@_;
   my $gullet = $stomach->getGullet;
-  $ctr=$ctr->untex;
+  $ctr=$ctr->toString;
   $gullet->unread(@$value,T_CS('\relax')); # Put back, so we can read as <number>
   $stomach->setValue("c\@$ctr",$stomach->getValue("c\@$ctr")->add($gullet->readNumber),1);
   return; });
@@ -628,22 +629,22 @@ DefPrimitive('\stepcounter{}',   sub { $_[0]->stepCounter($_[1]); return; });
 DefPrimitive('\refstepcounter{}',sub { $_[0]->refStepCounter($_[1]); return; });
 
 DefExpandable('\value{}', sub {
-  Explode($_[0]->getStomach->getValue('\c@'.$_[1]->untex)->getValue);});
+  Explode($_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue);});
 DefExpandable('\arabic{}',sub {
-  Explode($_[0]->getStomach->getValue('\c@'.$_[1]->untex)->getValue); });
+  Explode($_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue); });
 DefExpandable('\roman{}', sub {
-  roman($_[0]->getStomach->getValue('\c@'.$_[1]->untex)->getValue); });
+  roman($_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue); });
 DefExpandable('\Roman{}', sub {
-  Roman($_[0]->getStomach->getValue('\c@'.$_[1]->untex)->getValue); });
+  Roman($_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue); });
 DefExpandable('\alph{}',  sub {
-  T_OTHER(chr($_[0]->getStomach->getValue('\c@'.$_[1]->untex)->getValue+ord('a')-1));});
+  T_OTHER(chr($_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue+ord('a')-1));});
 DefExpandable('\Alph{}',  sub {
-  T_OTHER(chr($_[0]->getStomach->getValue('\c@'.$_[1]->untex)->getValue+ord('A')-1));});
+  T_OTHER(chr($_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue+ord('A')-1));});
 our @fnsymbols=(T_OTHER('*'), T_CS('\dag'), T_CS('\ddag'), T_CS('\S'), T_CS('\P'),
 		T_CS('\Vert'), T_OTHER('**'), Tokens(T_CS('\dag'),T_CS('\dag')),
 		Tokens(T_CS('\ddag'),T_CS('\ddag')));
 DefExpandable('\fnsymbol{}',sub { 
-  $fnsymbols[$_[0]->getStomach->getValue('\c@'.$_[1]->untex)->getValue-1]->unlist;});
+  $fnsymbols[$_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue-1]->unlist;});
 
 #======================================================================
 # C.8.5 The ifthen Package.
@@ -664,13 +665,13 @@ DefExpandable('\fnsymbol{}',sub {
 # Note that, technically, the number is associated with the caption.
 # (to allow multiple figures per figure environment?).
 # We'll have to sort that out later....
-DefEnvironment('{figure}[]', "<figure refnum='%refnum' ?#1(placement='#1')>%body</figure>",
+DefEnvironment('{figure}[]', "<figure refnum='#refnum' ?#1(placement='#1')>#body</figure>",
 	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('figure')); });
-DefEnvironment('{figure*}[]', "<figure refnum='%refnum' ?#1(placement='#1')>%body</figure>",
+DefEnvironment('{figure*}[]', "<figure refnum='#refnum' ?#1(placement='#1')>#body</figure>",
 	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('figure')); });
-DefEnvironment('{table}[]',   "<table refnum='%refnum' ?#1(placement='#1')>%body</table>",
+DefEnvironment('{table}[]',   "<table refnum='#refnum' ?#1(placement='#1')>#body</table>",
 	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('table')); });
-DefEnvironment('{table*}[]',  "<table refnum='%refnum' ?#1(placement='#1')>%body</table>",
+DefEnvironment('{table*}[]',  "<table refnum='#refnum' ?#1(placement='#1')>#body</table>",
 	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('table')); });
 
 DefConstructor('\caption[]{}',"<caption>#2</caption>\n?#1(<toccaption>#1</toccaption>)");
@@ -717,12 +718,15 @@ DefRegister('\marginparpush',Dimension(0));
 #======================================================================
 # See the postprocessing class LaTeXML::Post::HTMLTable
 # for how to make a more HTML-like table from this.
+# NOTE: May need to come back & fill in some things like \tabularcr
+# \@arraycr, etc..
 
 Tag('tr', autoOpen=>1, autoClose=>1);
 Tag('td', autoOpen=>1, autoClose=>1);
 
 # Note grouping nastiness!
-DefEnvironment('{tabular}[]{}', "<tabular pattern='#2'>%body</tabular>",
+# Note: we allow a tabular to float up to where it is allowed!
+DefEnvironment('{tabular}[]{}', "^<tabular pattern='#2'>#body</tabular>",
   beforeDigest=> sub {
       DefConstructor('&',sub { close_table_cell($_[0]); },
 		    beforeDigest=>sub { $_[0]->egroup; },
@@ -858,7 +862,7 @@ DefPrimitive('\nofiles',undef);
 # C.11.2 Cross-References
 #======================================================================
 # add a label id to nearest labelable element.
-DefConstructor('\label{semiverb}',"label='#1'", floats=>1, mode=>'text',
+DefConstructor('\label{semiverb}',"^ label='#1'",  mode=>'text', untex=>'',
 	      afterDigest=>sub { $_[0]->setValue('LABEL@'.$_[1]->getArg(1)->toString, 
 						 $_[0]->digest(T_CS('\@currentlabel')),1); });
 
@@ -873,7 +877,7 @@ DefConstructor('\@REF{}{}', "<ref labelref='#1'>#2</ref>");
 # NOTE: Not really complete, since I haven't dealt with bibliographies!
 DefConstructor('\bibliography{}', "<bibliography files='#1'/>");
 
-DefEnvironment('{thebibliography}{}',"<bibliography>%body</bibliography>");
+DefEnvironment('{thebibliography}{}',"<bibliography>#body</bibliography>");
 
 # NOTE: 
 DefConstructor('\bibitem[]{}',"<bibitem ref='#1'>#1</bibitem>");
@@ -916,10 +920,24 @@ DefPrimitive('\input', sub {
   $stomach->input($file);
   return; });
 
-#DefPrimitive('\include','{}',sub {
-#	       $stomach->input($_[1]) unless ?;});
-#DefPrimitive('\includeonly','{}',sub {
-#  storesomewhere(split(',',$_[1]->untex)); });
+# Note that even excluded files SHOULD have the effects of their inclusion
+# simulated by having read the corresponding aux file;
+# But we're not bothering with that.
+DefPrimitive('\include{}',sub { 
+  my($stomach,$file)=@_;
+  $file = $file->toString;
+  my $table = $stomach->getValue('including@only');
+  $stomach->input($file) if !$table || $$table{$file};
+  return;});
+
+DefPrimitive('\includeonly{}',sub {
+  my($stomach,$files)=@_;
+  $files = $files->toString;
+  my $table = $stomach->getValue('including@only');
+  $stomach->setValue('including@only', $table = {}, 1) unless $table;
+  map( $$table{$_}=1, split(',',$files));
+  return; });
+
 #Environment('filecontents','{}',?
 #Environment('filecontents*','{}',?
 
@@ -928,7 +946,7 @@ DefPrimitive('\listfiles',undef);
 #======================================================================
 # C.11.5 Index and Glossary
 #======================================================================
-DefEnvironment('{theindex}', "<theindex>%body</theindex>");
+DefEnvironment('{theindex}', "<theindex>#body</theindex>");
 DefPrimitive('\printindex',  undef);
 DefPrimitive('\makeindex',   undef);
 DefPrimitive('\makeglossary',undef);
@@ -954,7 +972,7 @@ DefExpandable('\index{}',sub {
   push(@expansion,T_END);
   @expansion; });
 
-DefConstructor('\@index{}',"<index>#1</index>", mode=>'text', floats=>1);
+DefConstructor('\@index{}',"^<index>#1</index>", mode=>'text', untex=>'');
 DefConstructor('\@indexphrase{}',"<indexphrase>#1</indexphrase>");
 
 # NOTE:
@@ -1019,7 +1037,7 @@ DefPrimitive('\cleardoublepage',undef);
 # \newlength{cmd}
 DefPrimitive('\newlength{Token}',sub {
   my($stomach,$cmd)=@_;
-  DefRegister($cmd->untex,Dimension(0)); });
+  DefRegister($cmd->toString,Dimension(0)); });
 # \setlength{cmd}{len}
 DefPrimitive('\setlength{Token}{Dimension}',sub{
   my($stomach,$cmd,$dimen)=@_;
@@ -1035,12 +1053,12 @@ DefPrimitive('\addtolength{Token}{Dimension}',sub{
 
 # Assuming noone tries to get clever with figuring out the allocation of 
 # numbers, these become simple DefRegister's
-DefPrimitive('\newcount{Token}', sub { DefRegister($_[1]->untex,Number(0)); });
-DefPrimitive('\newdimen{Token}', sub { DefRegister($_[1]->untex,Dimension(0)); });
-DefPrimitive('\newskip{Token}',  sub { DefRegister($_[1]->untex,Glue(0)); });
-DefPrimitive('\newmuskip{Token}',sub { DefRegister($_[1]->untex,MuGlue(0)); });
-#DefPrimitive('\newbox{Token}',  sub { DefRegister($_[1]->untex,Box()); });
-DefPrimitive('\newtoks{Token}',  sub { DefRegister($_[1]->untex,Tokens()); });
+DefPrimitive('\newcount{Token}', sub { DefRegister($_[1]->toString,Number(0)); });
+DefPrimitive('\newdimen{Token}', sub { DefRegister($_[1]->toString,Dimension(0)); });
+DefPrimitive('\newskip{Token}',  sub { DefRegister($_[1]->toString,Glue(0)); });
+DefPrimitive('\newmuskip{Token}',sub { DefRegister($_[1]->toString,MuGlue(0)); });
+#DefPrimitive('\newbox{Token}',  sub { DefRegister($_[1]->toString,Box()); });
+DefPrimitive('\newtoks{Token}',  sub { DefRegister($_[1]->toString,Tokens()); });
 
 #======================================================================
 # C.13.2 Space

@@ -75,10 +75,10 @@ sub replace {
 #----------------------------------------------------------------------
 # Construction methods
 
-sub canContain       { MODEL->canContain($_[0]->{tag},$_[1]); }
-sub canContainVia    { MODEL->canContainVia($_[0]->{tag},$_[1]); }
-sub canAutoClose     { MODEL->canAutoClose($_[0]->{tag}); }
-sub canHaveAttribute { MODEL ->canHaveAttribute($_[0]->{tag},$_[1]); }
+sub canContain        { MODEL->canContain($_[0]->{tag},$_[1]); }
+sub canContainIndirect{ MODEL->canContainIndirect($_[0]->{tag},$_[1]); }
+sub canAutoClose      { MODEL->canAutoClose($_[0]->{tag}); }
+sub canHaveAttribute  { MODEL ->canHaveAttribute($_[0]->{tag},$_[1]); }
 
 # Can we close $self, and any parents, upto closing a node with tag $tag?
 sub canClose {
@@ -117,7 +117,7 @@ sub insert {
       my @k=@{$$self{content}};
       $$self{content}=[@k[0..$pos-1],$child,@k[$pos..$#k]]; }
     $child; }
-  elsif(defined($via=$self->canContainVia($ctag))){ # Can be subchild if $via is between
+  elsif(defined($via=$self->canContainIndirect($ctag))){ # Can be subchild if $via is between
     Message("Creating intermediate <$via> to insert ".$child->header." in ".$self->header)
       if Debugging('DOM');
     $self->open($via)->insert($child); } # So, create $via & insert child there.
@@ -125,7 +125,7 @@ sub insert {
     # Check if we can auto close some nodes, and _then_ insert the child.
     my ($n,$ok) = ($self,0);
     while($n->canAutoClose && defined ($n=$$n{parent}) &&
-	  ! ($ok = ($n->canContain($ctag) || $n->canContainVia($ctag)))){}
+	  ! ($ok = ($n->canContain($ctag) || $n->canContainIndirect($ctag)))){}
     if(defined $n && $ok){		# It will work.
       Message("Closing ".$self->header." to insert ".$child->header) if Debugging('DOM');
       $self->close($$self{tag})->insert($child); } # So, close self, insert child in result.
@@ -160,7 +160,6 @@ sub insertComment {
 # Various forms of output
 sub sanitize {
   my($string)=@_;
-#  $string = $string->untex if ref $string;
   $string =~ s/&/&amp;/g;
   $string =~ s/\'/&apos;/g;
   $string =~ s/</&lt;/g;
@@ -184,7 +183,6 @@ sub getAttribute_string {
       $value = $value->stringify; }
     ($value ? $value :undef); }
   else {
-#    $value = $value->untex if ref $value;
     $value = $value->toString if ref $value;
     # Damn, comments are a pain ....
     $value =~ s/%.*?\n//gs;
