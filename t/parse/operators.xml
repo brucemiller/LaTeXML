@@ -7,27 +7,27 @@
     <title>Integration and Summation</title>
     <para id="S1.p1">
       <equation id="Ex1">
-        <Math mode="display" tex="\sum _{{a=0}}^{\infty}f_{a}(c^{a})" text="(SubSuperscript@(sum, a = 0, Infinity))@((f _ a)@(c ^ a))">
+        <Math mode="display" tex="\sum _{{a=0}}^{\infty}f_{a}(c^{a})" text="(SUBSUPERSCRIPTOP@(sum, a = 0, infinity))@((f _ a)@(c ^ a))">
           <XMath>
             <XMApp>
               <XMApp>
-                <XMTok name="SubSuperscript"/>
-                <XMTok name="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
+                <XMTok role="SUBSUPERSCRIPTOP"/>
+                <XMTok meaning="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
                 <XMApp>
-                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok meaning="eq" role="RELOP">=</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
-                  <XMTok role="NUMBER">0</XMTok>
+                  <XMTok meaning="0" role="NUMBER">0</XMTok>
                 </XMApp>
-                <XMTok name="Infinity" role="ID">∞</XMTok>
+                <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
               </XMApp>
               <XMApp>
                 <XMApp argclose=")" argopen="(">
-                  <XMTok name="Subscript" role="SUBSCRIPT"/>
+                  <XMTok role="SUBSCRIPTOP"/>
                   <XMTok role="FUNCTION" font="italic">f</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                 </XMApp>
                 <XMApp>
-                  <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                  <XMTok role="SUPERSCRIPTOP"/>
                   <XMTok role="ID" font="italic">c</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                 </XMApp>
@@ -37,28 +37,28 @@
         </Math>
       </equation>
       <equation id="Ex2">
-        <Math mode="display" tex="\sum _{{a=0}}^{\infty}\sum _{{b=-a}}^{a}f_{a}(c^{a})g_{b}(c^{b})" text="(SubSuperscript@(sum, a = 0, Infinity))@((SubSuperscript@(sum, b = - a, a))@((f _ a)@(c ^ a) * (g _ b)@(c ^ b)))">
+        <Math mode="display" tex="\sum _{{a=0}}^{\infty}\sum _{{b=-a}}^{a}f_{a}(c^{a})g_{b}(c^{b})" text="(SUBSUPERSCRIPTOP@(sum, a = 0, infinity))@((SUBSUPERSCRIPTOP@(sum, b = - a, a))@((f _ a)@(c ^ a) * (g _ b)@(c ^ b)))">
           <XMath>
             <XMApp>
               <XMApp>
-                <XMTok name="SubSuperscript"/>
-                <XMTok name="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
+                <XMTok role="SUBSUPERSCRIPTOP"/>
+                <XMTok meaning="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
                 <XMApp>
-                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok meaning="eq" role="RELOP">=</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
-                  <XMTok role="NUMBER">0</XMTok>
+                  <XMTok meaning="0" role="NUMBER">0</XMTok>
                 </XMApp>
-                <XMTok name="Infinity" role="ID">∞</XMTok>
+                <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
               </XMApp>
               <XMApp>
                 <XMApp>
-                  <XMTok name="SubSuperscript"/>
-                  <XMTok name="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
+                  <XMTok role="SUBSUPERSCRIPTOP"/>
+                  <XMTok meaning="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
                   <XMApp>
-                    <XMTok role="RELOP">=</XMTok>
+                    <XMTok meaning="eq" role="RELOP">=</XMTok>
                     <XMTok role="ID" font="italic">b</XMTok>
                     <XMApp>
-                      <XMTok role="ADDOP">-</XMTok>
+                      <XMTok meaning="minus" role="ADDOP">-</XMTok>
                       <XMTok role="ID" font="italic">a</XMTok>
                     </XMApp>
                   </XMApp>
@@ -68,24 +68,24 @@
                   <XMTok role="MULOP">⁢</XMTok>
                   <XMApp>
                     <XMApp argclose=")" argopen="(">
-                      <XMTok name="Subscript" role="SUBSCRIPT"/>
+                      <XMTok role="SUBSCRIPTOP"/>
                       <XMTok role="FUNCTION" font="italic">f</XMTok>
                       <XMTok role="ID" font="italic">a</XMTok>
                     </XMApp>
                     <XMApp>
-                      <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                      <XMTok role="SUPERSCRIPTOP"/>
                       <XMTok role="ID" font="italic">c</XMTok>
                       <XMTok role="ID" font="italic">a</XMTok>
                     </XMApp>
                   </XMApp>
                   <XMApp>
                     <XMApp argclose=")" argopen="(">
-                      <XMTok name="Subscript" role="SUBSCRIPT"/>
+                      <XMTok role="SUBSCRIPTOP"/>
                       <XMTok role="FUNCTION" font="italic">g</XMTok>
                       <XMTok role="ID" font="italic">b</XMTok>
                     </XMApp>
                     <XMApp>
-                      <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                      <XMTok role="SUPERSCRIPTOP"/>
                       <XMTok role="ID" font="italic">c</XMTok>
                       <XMTok role="ID" font="italic">b</XMTok>
                     </XMApp>
@@ -97,28 +97,28 @@
         </Math>
       </equation>
       <equation id="Ex3">
-        <Math mode="display" tex="\sum _{{a=0}}^{\infty}\sum _{{b=-a}}^{a}\lim _{{c\rightarrow 0}}f_{a}(c^{a})g_{b}(c^{b})" text="(SubSuperscript@(sum, a = 0, Infinity))@((SubSuperscript@(sum, b = - a, a))@((lim _ (c rightarrow 0))@((f _ a)@(c ^ a) * (g _ b)@(c ^ b))))">
+        <Math mode="display" tex="\sum _{{a=0}}^{\infty}\sum _{{b=-a}}^{a}\lim _{{c\rightarrow 0}}f_{a}(c^{a})g_{b}(c^{b})" text="(SUBSUPERSCRIPTOP@(sum, a = 0, infinity))@((SUBSUPERSCRIPTOP@(sum, b = - a, a))@((limit _ (c rightarrow 0))@((f _ a)@(c ^ a) * (g _ b)@(c ^ b))))">
           <XMath>
             <XMApp>
               <XMApp>
-                <XMTok name="SubSuperscript"/>
-                <XMTok name="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
+                <XMTok role="SUBSUPERSCRIPTOP"/>
+                <XMTok meaning="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
                 <XMApp>
-                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok meaning="eq" role="RELOP">=</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
-                  <XMTok role="NUMBER">0</XMTok>
+                  <XMTok meaning="0" role="NUMBER">0</XMTok>
                 </XMApp>
-                <XMTok name="Infinity" role="ID">∞</XMTok>
+                <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
               </XMApp>
               <XMApp>
                 <XMApp>
-                  <XMTok name="SubSuperscript"/>
-                  <XMTok name="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
+                  <XMTok role="SUBSUPERSCRIPTOP"/>
+                  <XMTok meaning="sum" role="SUMOP" stackscripts="yes">∑</XMTok>
                   <XMApp>
-                    <XMTok role="RELOP">=</XMTok>
+                    <XMTok meaning="eq" role="RELOP">=</XMTok>
                     <XMTok role="ID" font="italic">b</XMTok>
                     <XMApp>
-                      <XMTok role="ADDOP">-</XMTok>
+                      <XMTok meaning="minus" role="ADDOP">-</XMTok>
                       <XMTok role="ID" font="italic">a</XMTok>
                     </XMApp>
                   </XMApp>
@@ -126,36 +126,36 @@
                 </XMApp>
                 <XMApp>
                   <XMApp>
-                    <XMTok name="Subscript" role="SUBSCRIPT"/>
-                    <XMTok role="LIMITOP" stackscripts="yes">lim</XMTok>
+                    <XMTok role="SUBSCRIPTOP"/>
+                    <XMTok meaning="limit" role="LIMITOP" stackscripts="yes">lim</XMTok>
                     <XMApp>
                       <XMTok name="rightarrow" role="ARROW">→</XMTok>
                       <XMTok role="ID" font="italic">c</XMTok>
-                      <XMTok role="NUMBER">0</XMTok>
+                      <XMTok meaning="0" role="NUMBER">0</XMTok>
                     </XMApp>
                   </XMApp>
                   <XMApp>
                     <XMTok role="MULOP">⁢</XMTok>
                     <XMApp>
                       <XMApp argclose=")" argopen="(">
-                        <XMTok name="Subscript" role="SUBSCRIPT"/>
+                        <XMTok role="SUBSCRIPTOP"/>
                         <XMTok role="FUNCTION" font="italic">f</XMTok>
                         <XMTok role="ID" font="italic">a</XMTok>
                       </XMApp>
                       <XMApp>
-                        <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                        <XMTok role="SUPERSCRIPTOP"/>
                         <XMTok role="ID" font="italic">c</XMTok>
                         <XMTok role="ID" font="italic">a</XMTok>
                       </XMApp>
                     </XMApp>
                     <XMApp>
                       <XMApp argclose=")" argopen="(">
-                        <XMTok name="Subscript" role="SUBSCRIPT"/>
+                        <XMTok role="SUBSCRIPTOP"/>
                         <XMTok role="FUNCTION" font="italic">g</XMTok>
                         <XMTok role="ID" font="italic">b</XMTok>
                       </XMApp>
                       <XMApp>
-                        <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                        <XMTok role="SUPERSCRIPTOP"/>
                         <XMTok role="ID" font="italic">c</XMTok>
                         <XMTok role="ID" font="italic">b</XMTok>
                       </XMApp>

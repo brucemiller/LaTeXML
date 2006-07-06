@@ -47,7 +47,8 @@ sub new {
 	      reversion=>sub{ my($arg,$inner)=@_;
 			      (T_BEGIN, ($inner
 					 ? $inner->revertArguments($arg)
-					 : $arg->revert), T_END); }},
+					 : (defined $arg ? $arg->revert :())),
+			       T_END); }},
       Optional=>{reader=>sub {
 		   my($gullet,$default,$inner)=@_;
 		   my $value = $gullet->readOptional;
@@ -217,12 +218,12 @@ sub stringify { $_[0]->{spec}; }
 
 sub read {
   my($self,$gullet)=@_;
-  if($$self{semiverbatim}){
-    $STATE->pushFrame;
-    map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%');}  # should '%' too ?
+  # For semiverbatim, I had messed with catcodes, but there are cases
+  # (eg. \caption(...\label{badchars}}) where you really need to 
+  # cleanup after the fact!
   my $value = &{$$self{reader}}($gullet,@{$$self{extra}||[]});
-  if($$self{semiverbatim}){
-    $STATE->popFrame; }
+  $value = $value->neutralize if $$self{semiverbatim} && (ref $value)
+    && $value->can('neutralize'); 
   $value; }
 
 #======================================================================

@@ -22,9 +22,9 @@ DefMacro('\frak{}','\mathfrak{#1}');
 
 # Not necessarily math
 DefConstructor('\checkmark',"\x{2713}"); # CHECK MARK
-DefConstructor('\circledR',"\x{00AE}"); # REGISTERED SIGN
+DefConstructor('\circledR',UTF(0xAE)); # REGISTERED SIGN
 DefConstructor('\maltese',"\x{2720}"); # MALTESE CROSs
-DefConstructor('\yen',"\x{00A5}"); # YEN SIGN
+DefConstructor('\yen',UTF(0xA5)); # YEN SIGN
 
 # Math
 

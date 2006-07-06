@@ -5,7 +5,7 @@
   <section>
     <para id="p1">
       <equation id="Ex1">
-        <Math mode="display" tex="abc\not=\mathrm{abc}\not=\mathit{abc}\ldots" text="a * b * c not-= abc not-= abc * ldots">
+        <Math mode="display" tex="abc\not=\mathrm{abc}\not=\mathit{abc}\ldots" text="a * b * c not-eq abc not-eq abc * ldots">
           <XMath>
             <XMApp>
               <XMTok name="MultiRelation"/>
@@ -15,9 +15,9 @@
                 <XMTok role="UNKNOWN" font="italic">b</XMTok>
                 <XMTok role="UNKNOWN" font="italic">c</XMTok>
               </XMApp>
-              <XMTok role="RELOP" name="not-=">≠</XMTok>
+              <XMTok meaning="not-eq" role="RELOP">≠</XMTok>
               <XMTok role="UNKNOWN">abc</XMTok>
-              <XMTok role="RELOP" name="not-=">≠</XMTok>
+              <XMTok meaning="not-eq" role="RELOP">≠</XMTok>
               <XMApp>
                 <XMTok role="MULOP">⁢</XMTok>
                 <XMTok role="UNKNOWN" font="italic">abc</XMTok>
@@ -31,9 +31,9 @@
         <Math mode="display" tex="\pi\approx 3.1415\; 926" text="pi approx 3.1415926">
           <XMath>
             <XMApp>
-              <XMTok name="approx" role="RELOP">≈</XMTok>
+              <XMTok meaning="approx" role="RELOP">≈</XMTok>
               <XMTok name="pi" role="UNKNOWN" font="italic">π</XMTok>
-              <XMTok role="NUMBER" name="3.1415926">3.1415 926</XMTok>
+              <XMTok meaning="3.1415926" role="NUMBER">3.1415 926</XMTok>
             </XMApp>
           </XMath>
         </Math>

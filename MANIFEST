@@ -65,6 +65,7 @@ lib/LaTeXML/Mouth.pm
 lib/LaTeXML/Number.pm
 lib/LaTeXML/Object.pm
 lib/LaTeXML/Package.pm
+lib/LaTeXML/Package/a4.ltxml
 lib/LaTeXML/Package/acronym.ltxml
 lib/LaTeXML/Package/ae.ltxml
 lib/LaTeXML/Package/alltt.ltxml
@@ -82,6 +83,7 @@ lib/LaTeXML/Package/comment.ltxml
 lib/LaTeXML/Package/DLMF.ltxml
 lib/LaTeXML/Package/DLMFbib.ltxml
 lib/LaTeXML/Package/DLMFmath.ltxml
+lib/LaTeXML/Package/epsfig.ltxml
 lib/LaTeXML/Package/eucal.ltxml
 lib/LaTeXML/Package/eufrak.ltxml
 lib/LaTeXML/Package/euscript.ltxml
@@ -94,6 +96,7 @@ lib/LaTeXML/Package/LaTeX.ltxml
 lib/LaTeXML/Package/latexml.ltxml
 lib/LaTeXML/Package/makeidx.ltxml
 lib/LaTeXML/Package/mcsd.ltxml
+lib/LaTeXML/Package/psfig.ltxml
 lib/LaTeXML/Package/pspicture.ltxml
 lib/LaTeXML/Package/pst-node.ltxml
 lib/LaTeXML/Package/pstricks.ltxml
@@ -112,6 +115,7 @@ lib/LaTeXML/Rewrite.pm
 lib/LaTeXML/State.pm
 lib/LaTeXML/Stomach.pm
 lib/LaTeXML/Token.pm
+lib/LaTeXML/Util/Alignment.pm
 lib/LaTeXML/Util/Color.pm
 lib/LaTeXML/Util/Geometry.pm
 lib/LaTeXML/Util/LibXML.pm
@@ -173,9 +177,9 @@ t/fonts/textsymbols.dvi
 t/fonts/textsymbols.tex
 t/fonts/textsymbols.xml
 t/graphics/keyval.dvi
-t/graphics/keyval.latexml
 t/graphics/keyval.tex
 t/graphics/keyval.xml
+t/graphics/mykeyval.ltxml
 t/graphics/mykeyval.sty
 t/graphics/picture.dvi
 t/graphics/picture.tex

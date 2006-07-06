@@ -286,10 +286,17 @@ sub domToXPath_rec {
 	push(@predicates,domToXPath_seq($document,'child',@children)); }
       else {
 	Fatal("Cannot generate XPath for mixed content on ".$node->toString); }}
+###    if($document->getModel->canHaveAttribute($qname,'font')){
+###      if(my $font = $node->getAttribute('_font')){
+###	push(@predicates,"\@_font and match-font('".$font."',\@_font)"); }}
     if($document->getModel->canHaveAttribute($qname,'font')){
-      push(@predicates,"match-font('".$node->getAttribute('_font')."',\@_font)"); }
+      if(my $font = $node->getAttribute('_font')){
+	my $pred = LaTeXML::Font::font_match_xpaths($font);
+##	print STDERR "Font $font => $pred\n";
+	push(@predicates,$pred); }}
 
     $qname."[".join(' and ',grep($_,@predicates,@extra_predicates))."]"; }
+
   elsif($type == XML_TEXT_NODE){
 ###    "text()='".$node->textContent."'"; }}
     "*[text()='".$node->textContent."']"; }}

@@ -6,48 +6,54 @@
     <para id="p1">
       <p>An Array</p>
       <equation id="Ex1">
-        <Math mode="display" tex="\begin{array}{ccc}a&amp;b&amp;c\\ c&amp;&amp;d\\\\ e&amp;f\\\end{array}" text="Array@(Row@(Cell@(a), Cell@(b), Cell@(c)), Row@(Cell@(c), Cell@(d)), Row@(Cell@(e), Cell@(f)))">
+        <Math mode="display" tex="\begin{array}{ccc}a&amp;b&amp;c\\ c&amp;&amp;d\\\\ e&amp;f\\\end{array}" text="Array[[a, b, c], [c, Empty, d], [Empty, Empty, Empty], [e, f, Empty]]">
           <XMath>
-            <XMApp role="ARRAY">
-              <XMTok name="Array"/>
-              <XMApp role="ARRAY">
-                <XMTok name="Row"/>
-                <XMApp role="ARRAY">
-                  <XMTok name="Cell"/>
+            <XMArray role="ARRAY">
+              <XMRow>
+                <XMCell align="center">
                   <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                </XMApp>
-                <XMApp role="ARRAY">
-                  <XMTok name="Cell"/>
+                </XMCell>
+                <XMCell align="center">
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                </XMApp>
-                <XMApp role="ARRAY">
-                  <XMTok name="Cell"/>
+                </XMCell>
+                <XMCell align="center">
                   <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                </XMApp>
-              </XMApp>
-              <XMApp role="ARRAY">
-                <XMTok name="Row"/>
-                <XMApp role="ARRAY">
-                  <XMTok name="Cell"/>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell align="center">
                   <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                </XMApp>
-                <XMApp role="ARRAY">
-                  <XMTok name="Cell"/>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok name="Empty"/>
+                </XMCell>
+                <XMCell align="center">
                   <XMTok role="UNKNOWN" font="italic">d</XMTok>
-                </XMApp>
-              </XMApp>
-              <XMApp role="ARRAY">
-                <XMTok name="Row"/>
-                <XMApp role="ARRAY">
-                  <XMTok name="Cell"/>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell align="center">
+                  <XMTok name="Empty"/>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok name="Empty"/>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok name="Empty"/>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell align="center">
                   <XMTok role="UNKNOWN" font="italic">e</XMTok>
-                </XMApp>
-                <XMApp role="ARRAY">
-                  <XMTok name="Cell"/>
+                </XMCell>
+                <XMCell align="center">
                   <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                </XMApp>
-              </XMApp>
-            </XMApp>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok name="Empty"/>
+                </XMCell>
+              </XMRow>
+            </XMArray>
           </XMath>
         </Math>
       </equation>

@@ -42,11 +42,11 @@ sub input {
   # Try to find a Package implementing $name.
   local @LaTeXML::PACKAGE_OPTIONS = @{$options{options}||[]};
   $name = $1 if $name =~ /^\{(.*)\}$/; # just in case
-  my @paths = (@{ $STATE->lookupValue('SEARCHPATHS') },
-	       map("$_/LaTeXML/Package", @INC));
-  my $file = pathname_find($name,paths=>[@paths], types=>$types);
+  my $file = pathname_find($name,paths=>$STATE->lookupValue('SEARCHPATHS'),
+			   types=>$types, installation_subdir=>'Package');
   if(! $file) {
-    Error("Cannot find file $name of type ".join(', ',@{$types||[]})." in paths ".join(', ',@paths)); }
+    Error("Cannot find file $name of type ".join(', ',@{$types||[]})
+	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   elsif($file =~ /\.(ltxml|latexml)$/){		# Perl module.
     return if $STATE->lookupValue($file.'_loaded');
     $STATE->assignValue($file.'_loaded'=>1,'global');
@@ -57,7 +57,7 @@ sub input {
     Fatal("Package $name had an error:\n  $@") if $@; 
     $self->closeMouth if $pmouth eq $$self{mouth}; # Close immediately, unless recursive input
   }
-  elsif($file =~ /\.sty$/){	# (attempt to) interpret a style file.
+  elsif($file =~ /\.(sty|cls)$/){	# (attempt to) interpret a style file.
     return if $STATE->lookupValue($file.'_loaded');
     $STATE->assignValue($file.'_loaded'=>1,'global');
     $self->openMouth(LaTeXML::StyleMouth->new($file), 0);  }

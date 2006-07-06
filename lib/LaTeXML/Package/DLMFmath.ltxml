@@ -29,39 +29,47 @@ RequirePackage('DLMFfcns');
 #**********************************************************************
 # General Math Constructs
 
-DefMath('\Real',      "\x{211D}", role=>'ID'); # DOUBLE-STRUCK CAPITAL R
-DefMath('\Complex',   "\x{2102}", role=>'ID'); # DOUBLE-STRUCK CAPITAL C
-DefMath('\NatNumber', "\x{2115}", role=>'ID'); # DOUBLE-STRUCK CAPITAL N
-DefMath('\Integer',   "\x{2124}", role=>'ID'); # DOUBLE-STRUCK CAPITAL Z
-DefMath('\Rational',  "\x{211A}", role=>'ID'); # DOUBLE-STRUCK CAPITAL Q
-DefMath('\Polynomial',"\x{2119}", role=>'ID'); # DOUBLE-STRUCK CAPITAL P
+DefMath('\Real',      "\x{211D}", role=>'ID', meaning=>'reals'); # DOUBLE-STRUCK CAPITAL R
+DefMath('\Complex',   "\x{2102}", role=>'ID', meaning=>'complexes'); # DOUBLE-STRUCK CAPITAL C
+DefMath('\NatNumber', "\x{2115}", role=>'ID', meaning=>'numbers'); # DOUBLE-STRUCK CAPITAL N
+DefMath('\Integer',   "\x{2124}", role=>'ID', meaning=>'integers'); # DOUBLE-STRUCK CAPITAL Z
+DefMath('\Rational',  "\x{211A}", role=>'ID', meaning=>'rationals'); # DOUBLE-STRUCK CAPITAL Q
+DefMath('\Polynomial',"\x{2119}", role=>'ID', meaning=>'polynomials'); # DOUBLE-STRUCK CAPITAL P
 
 # Redefined here, since Frank doesn't like the Fraktur.
-DefMath('\Re',       "Re", role=>'OPFUNCTION');
-DefMath('\Im',       "Im", role=>'OPFUNCTION');
+DefMath('\Re',       "Re", role=>'OPFUNCTION', meaning=>'realpart');
+DefMath('\Im',       "Im", role=>'OPFUNCTION', meaning=>'imagpart');
 
-DefMath('\realpart{}', "\x{211C}");	# BLACK-LETTER CAPITAL R
-DefMath('\imagpart{}', "\x{2111}");	# BLACK-LETTER CAPITAL I
+DefMath('\realpart{}', "\x{211C}", meaning=>'realpart'); # BLACK-LETTER CAPITAL R
+DefMath('\imagpart{}', "\x{2111}", meaning=>'imagpart'); # BLACK-LETTER CAPITAL I
 
-DefMath('\iunit',"\x{2148}", role=>'ID', name=>'iunit'); # DOUBLE-STRUCK ITALIC SMALL I
-DefMath('\expe', "\x{2147}", role=>'ID', name=>'exponentiale'); # DOUBLE-STRUCK ITALIC SMALL E
-DefMath('\cpi',  "\x{03C0}", role=>'ID', name=>'circularpi'); # pi (is there a special one?)
+# Hmm, reversions should just be plain i,e,pi,d ??
+DefMath('\iunit',"\x{2148}",	# DOUBLE-STRUCK ITALIC SMALL I
+	role=>'ID', meaning=>'iunit', reversion=>'i');
+DefMath('\expe', "\x{2147}",	# DOUBLE-STRUCK ITALIC SMALL E
+	role=>'ID', meaning=>'exponentiale', reversion=>'e');
+DefMath('\cpi',	 "\x{03C0}",	# pi (is there a special one?)
+	role=>'ID', meaning=>'circularpi', reversion=>'\pi');
+DefMath('\diffd',"\x{2146}", 
+	role=>'DIFFOP', meaning=>'differentiald', reversion=>'d');
+
 DefMacro('\opminus',   "(-1)");
 
 # \cfrac covered in amsmath.
 # \midvert, \midVert ??
 
-DefMath('\floor{}','\left\lfloor#1\right\rfloor');
-DefMath('\ceiling{}','\left\lceil#1\right\rceil');
+DefMath('\floor{}','\left\lfloor#1\right\rfloor', meaning=>'floor');
+DefMath('\ceiling{}','\left\lceil#1\right\rceil', meaning=>'ceiling');
 
-DefMath('\divides','|', role=>'MULOP');
-DefMath('\abs{}', '\left|#1\right|');
-DefMath('\pgcd{}', '\left(#1\right)');
+DefMath('\divides','|', role=>'MULOP', meaning=>'divides');
+DefMath('\abs{}', '\left|#1\right|', meaning=>'abs');
+DefMath('\card{}', '\left|#1\right|', meaning=>'cardinality'); # cardinality of a set.
+DefMath('\pgcd{}', '\left(#1\right)', meaning=>'gcd');
 
 #**********************************************************************
 # Numbers
 #   \Sci{mantisa}{exponent}
-my %SUPDIGITS = (0=>"\x{2070}",1=>"\x{00b9}",2=>"\x{00b2}",3=>"\x{00b3}",4=>"\x{2074}",
+my %SUPDIGITS = (0=>"\x{2070}",1=>UTF(0xb9),2=>UTF(0xb2),3=>UTF(0xb3),4=>"\x{2074}",
 		 5=>"\x{2075}",6=>"\x{2076}",7=>"\x{2077}",8=>"\x{2078}",9=>"\x{2079}",
 		'+'=>"\x{207a}", '-'=>"\x{207b}");
 sub convert_sci {
@@ -74,8 +82,8 @@ sub convert_sci {
   $mantissa =~ s/\\!//g;
   $exponent = $exponent->toString;
   ($exponent
-   ? join('',$mantissa,"\x{00D7}10",map($SUPDIGITS{$_}||'?',split('',$exponent))) 
-   : $mantissa . "\x{00A0}\x{00A0}\x{00A0}"); } # for alignment spacing???
+   ? join('',$mantissa,UTF(0xD7)."10",map($SUPDIGITS{$_}||'?',split('',$exponent))) 
+   : $mantissa . UTF(0xA0).UTF(0xA0).UTF(0xA0)); } # for alignment spacing???
 
 sub convert_sci_mantissa {
   my($mantissa)=@_;
@@ -90,7 +98,7 @@ sub convert_sci_exponent {
   my($exponent)=@_;
   $exponent = $exponent->toString;
   ($exponent
-   ? join('',"\x{00D7}10",map($SUPDIGITS{$_}||'?',split('',$exponent))) 
+   ? join('',UTF(0xD7)."10",map($SUPDIGITS{$_}||'?',split('',$exponent))) 
    : ""); }
 
 DefConstructor('\Sci{}{}',sub {
@@ -115,65 +123,67 @@ DefMacro('\TSci{}{}','\ensuremath{#1} & \ensuremath{\Sci@Exp{#2}}');
 
 #**********************************************************************
 # Calculus
-# Handled as general constructors since empty numerator is effectively a differential
+# Derivatives are handled slightly tricky, since we have an optional power,
+# and want to treat them as a differential operator if the numerator is empty.
 # operator, instead of a derivative.
-DefConstructor('\deriv[]{}{}',  
-	       "<ltx:XMApp ?#2()(role='DIFFOP')>"
-	       . "<ltx:XMTok name='deriv' style='#style'/>"
-	       . "?#2(<ltx:XMArg>#2</ltx:XMArg>)(<ltx:XMTok name='Empty'/>)"
-	       . "<ltx:XMArg>#3</ltx:XMArg>"
-	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
-	       ."</ltx:XMApp>",
-	       bounded=>1,beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
-DefConstructor('\pderiv[]{}{}',
-	       "<ltx:XMApp ?#2()(role='DIFFOP')>"
-	       . "<ltx:XMTok name='pderiv' style='#style'/>"
-	       . "?#2(<ltx:XMArg>#2</ltx:XMArg>)(<ltx:XMTok name='Empty'/>)"
-	       . "<ltx:XMArg>#3</ltx:XMArg>"
-	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
-	       ."</ltx:XMApp>",
-	       bounded=>1,beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
-DefConstructor('\ideriv[]{}{}',
-	       "<ltx:XMApp ?#2()(role='DIFFOP')>"
-	       . "<ltx:XMTok name='deriv' style='inline'/>"
-	       . "?#2(<ltx:XMArg>#2</ltx:XMArg>)(<ltx:XMTok name='Empty'/>)"
-	       . "<ltx:XMArg>#3</ltx:XMArg>"
-	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
-	       ."</ltx:XMApp>");
-DefConstructor('\ipderiv[]{}{}',
-	       "<ltx:XMApp ?#2()(role='DIFFOP')>"
-	       . "<ltx:XMTok name='pderiv' style='inline'/>"
-	       . "?#2(<ltx:XMArg>#2</ltx:XMArg>)(<ltx:XMTok name='Empty'/>)"
-	       . "<ltx:XMArg>#3</ltx:XMArg>"
-	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
-	       ."</ltx:XMApp>");
-DefConstructor('\diff[]{}',
-	       "<ltx:XMApp>"
-	       . "<ltx:XMTok name='diff'/>"
-	       . "<ltx:XMArg>#2</ltx:XMArg>"
-	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
-	       ."</ltx:XMApp>");
-DefConstructor('\pdiff[]{}',
-	       "<ltx:XMApp>"
-	       . "<ltx:XMTok name='pdiff'/>"
-	       . "<ltx:XMArg>#2</ltx:XMArg>"
-	       . "?#1(<ltx:XMArg>#1</ltx:XMArg>)"
-	       ."</ltx:XMApp>");
-DefConstructor('\qdiff{}{}',
-	       "<ltx:XMApp>"
-	       . "<ltx:XMTok name='qdiff'/>"
-	       . "<ltx:XMArg>#1</ltx:XMArg>"
-	       . "<ltx:XMArg>#2</ltx:XMArg>"
-	       ."</ltx:XMApp>");
+
+DefMath('\deriv[]{}{}',
+	'\frac{\@MAYBEAPPLY{\@SUPERSCRIPT{\diffd}{#1}}{#2}}'
+	.    '{\@SUPERSCRIPT{\@APPLY{\diffd #3}}{#1}}',
+	meaning=>'deriv', reorder=>[2,3,1],
+	afterDigest=>sub{
+	  # NOTE: arg 2 will be wrapped in XMRef!
+	  $_[1]->setProperty(role=>'DIFFOP')
+	    unless $_[1]->getArg(2)->getArg(2)->unlist;
+	  return;});
+DefMath('\pderiv[]{}{}',
+	'\frac{\@MAYBEAPPLY{\@SUPERSCRIPT{\partial}{#1}}{#2}}'
+	.    '{\@SUPERSCRIPT{\@APPLY{\partial #3}}{#1}}',
+	meaning=>'pderiv', reorder=>[2,3,1],
+	afterDigest=>sub{
+	  # NOTE: arg 2 will be wrapped in XMRef!
+	  $_[1]->setProperty(role=>'DIFFOP')
+	    unless $_[1]->getArg(2)->getArg(2)->unlist;
+	  return;});
+DefMath('\ideriv[]{}{}',
+	'\ifrac{\@MAYBEAPPLY{\@SUPERSCRIPT{\diffd}{#1}}{#2}}'
+	.     '{\@SUPERSCRIPT{\@APPLY{\diffd #3}}{#1}}',
+	meaning=>'deriv', reorder=>[2,3,1],
+	afterDigest=>sub{
+	  # NOTE: arg 2 will be wrapped in XMRef!
+	  $_[1]->setProperty(role=>'DIFFOP')
+	    unless $_[1]->getArg(2)->getArg(2)->unlist;
+	  return;});
+DefMath('\ipderiv[]{}{}',
+	'\ifrac{\@MAYBEAPPLY{\@SUPERSCRIPT{\partial}{#1}}{#2}}'
+	.     '{\@SUPERSCRIPT{\@APPLY{\partial #3}}{#1}}',
+	meaning=>'pderiv', reorder=>[2,3,1],
+	afterDigest=>sub{
+	  # NOTE: arg 2 will be wrapped in XMRef!
+	  $_[1]->setProperty(role=>'DIFFOP')
+	    unless $_[1]->getArg(2)->getArg(2)->unlist;
+	  return;});
+
+# Games to reorder the args.
+DefMath('\diff[]{}','\@APPLY{\@SUPERSCRIPT{\diffd}{#1}#2}',
+	reorder=>[2,1], meaning=>'diff');
+DefMath('\pdiff[]{}','\@APPLY{\@SUPERSCRIPT{\partial}{#1}#2}',
+	reorder=>[2,1], meaning=>'pdiff');
+DefMath('\qdiff[]{}{}',
+	'\@APPLY{\@SUPERSCRIPT{\@SUBSCRIPT{\diffd}{#2}}{#1} #3}',
+	reorder=>[2,3,1], meaning=>'qdiff');
 
 
 # Forward, Backward and Central differences operator
-DefMath('\fDiff []','\Delta_{#1}',role=>'DIFFOP');
-DefMath('\bDiff []','\nabla_{#1}',role=>'DIFFOP');
-DefMath('\cDiff []','\delta_{#1}',role=>'DIFFOP');
+DefMath('\fDiff []','\Delta_{#1}',role=>'DIFFOP',
+       meaning=>'forward-diff');
+DefMath('\bDiff []','\nabla_{#1}',role=>'DIFFOP',
+       meaning=>'backward-diff');
+DefMath('\cDiff []','\delta_{#1}',role=>'DIFFOP',
+       meaning=>'central-diff');
 #**********************************************************************
-DefMath('\pvint',  "\x{2A0D}", name=>'PrincipalValueIntegral', role=>'INTOP'); # FINITE PART INTEGRAL
-DefMath('\Residue', "res",     name=>"Residue", role=>'LIMITOP');
+DefMath('\pvint',  "\x{2A0D}", meaning=>'PrincipalValueIntegral', role=>'INTOP'); # FINITE PART INTEGRAL
+DefMath('\Residue', "res",    meaning=>"Residue", role=>'LIMITOP');
 
 #**********************************************************************
 # Types
@@ -183,23 +193,40 @@ DefMath('\Matrix{}','\boldsymbol{#1}', role=>'ID');
 DefMacro('\Vector{}','\ROLE{ID}{\boldsymbol{#1}}');
 DefMacro('\Matrix{}','\ROLE{ID}{\boldsymbol{#1}}');
 
-DefMath('\divergence', "div",  role=>'DIFFOP');
-DefMath('\curl',       "curl", role=>'DIFFOP');
-DefMath('\gradient',   "grad", role=>'DIFFOP');
-DefMath('\transpose{}','#1^{\mathrm{T}}');
-DefMath('\trace',      "tr",   role=>'LIMITOP');
-DefMath('\diag',       "diag", role=>'LIMITOP');
+DefMath('\divergence', "div",  role=>'DIFFOP', meaning=>'divergence');
+DefMath('\curl',       "curl", role=>'DIFFOP', meaning=>'curl');
+DefMath('\gradient',   "grad", role=>'DIFFOP', meaning=>'gradient');
+DefMath('\transpose{}','#1^{\mathrm{T}}', meaning=>'transpose');
+DefMath('\trace',      "tr",   role=>'LIMITOP', meaning=>'trace');
+DefMath('\diag',       "diag", role=>'LIMITOP', meaning=>'diagonal');
 
 #**********************************************************************
 # Combinatorics
-DefMath('\binomial{}{}',    '', name=>'binomial');
-DefMath('\multinomial{}{}', '\left(#1;#2\right)');
-DefMath('\pochhammer{}{}',  '\left(#1\right)_{#2}');
-DefMath('\psfactorial{}{}',  '\left[#1\right]_{#2}');
-DefMath('\wigner{}{}{}{}{}{}', '\left(#1 #2 #3 #4 | #1 #2 #5 #6\right)');
+DefConstructor('\binomial{}{}',
+	       "<ltx:XMApp open='(' close=')'>"
+	       . "<ltx:XMTok meaning='binomial' role='STACKED' style='#style'/>"
+	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
+DefConstructor('\multinomial{}{}',
+	       "<ltx:XMApp open='(' close=')'>"
+	       . "<ltx:XMTok meaning='multinomial' role='STACKED' style='#style'/>"
+	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
 
-DefMath('\qFactorial{}{}{}','\left(#1;#2\right)_{#3}');
-DefMath('\qBinomial{}{}{}', '\genfrac[]\z@{}{#1}{#2}_{#3}');
+DefMath('\pochhammer{}{}',  '\left(#1\right)_{#2}', meaning=>'pochhammer');
+DefMath('\psfactorial{}{}',  '\left[#1\right]_{#2}',
+	meaning=>'shifted-factorial');
+DefMath('\wigner{}{}{}{}{}{}',
+	'\left(#1 \@INVISIBLECOMMA #2 \@INVISIBLECOMMA #3 \@INVISIBLECOMMA #4'
+	.'| #1 \@INVISIBLECOMMA #2 \@INVISIBLECOMMA #5 \@INVISIBLECOMMA #6\right)',
+	meaning=>'vigner');
+
+DefMath('\qFactorial{}{}{}','\left(#1;#2\right)_{#3}',
+	meaning=>'qfactorial');
+DefMath('\qBinomial{}{}{}', '\genfrac[]\z@{}{#1}{#2}_{#3}',
+	meaning=>'qbinomial');
 
 DefExpandable('\threej OptionalKeyword:@',
 	      sub { my($gullet,$at)=@_;
@@ -210,23 +237,25 @@ DefExpandable('\sixj OptionalKeyword:@',
 DefExpandable('\ninej OptionalKeyword:@',
 	      sub { my($gullet,$at)=@_;
 		    ($at ? (T_CS('\ninej@args')):(T_CS('\ninej@text'))); });
-DefMath('\threej@text','3j', role=>'ID', reversion=>'3j',name=>'threej');
-DefMath('\sixj@text',  '6j', role=>'ID', reversion=>'6j',name=>'sixj');
-DefMath('\ninej@text', '9j', role=>'ID', reversion=>'9j',name=>'ninej');
+DefMath('\threej@text','3j', role=>'ID', reversion=>'3j',meaning=>'threej');
+DefMath('\sixj@text',  '6j', role=>'ID', reversion=>'6j',meaning=>'sixj');
+DefMath('\ninej@text', '9j', role=>'ID', reversion=>'9j',meaning=>'ninej');
 DefMath('\threej@args {}{}{}{}{}{}',
 	'\begin{pmatrix}#1&#2&#3\\\\#4&#5&#6\end{pmatrix}',
-	name=>'threej');
+	meaning=>'threej');
 DefMath('\sixj@args {}{}{}{}{}{}',
 	'\begin{Bmatrix}#1&#2&#3\\\\#4&#5&#6\end{Bmatrix}',
-	name=>'sixj');
+	meaning=>'sixj');
 DefMath('\ninej@args {}{}{}{}{}{}{}{}{}',
 	'\begin{Bmatrix}#1&#2&#3\\\\#4&#5&#6\\\\#7&#8&#9\end{Bmatrix}',
-	name=>'ninej');
+	meaning=>'ninej');
 
 #**********************************************************************
 # Constants
-DefMath('\EulerConstant',"\x{03B3}", role=>'ID'); # GREEK SMALL LETTER GAMMA
-DefMath('\BoltzmannConstant',"k", role=>'ID');
+DefMath('\EulerConstant',"\x{03B3}", role=>'ID',
+	meaning=>'euler-constant'); # GREEK SMALL LETTER GAMMA
+DefMath('\BoltzmannConstant',"k", role=>'ID',
+	meaning=>'boltzmann-constant');
 #**********************************************************************
 # Special Functions
 DefPrimitive('\specFunObsolete{}{}',sub {
@@ -251,7 +280,7 @@ DefPrimitive('\defSpecFun{}[][]{} OptionalKeyVals:DefSpecFun {}', sub {
   DefExpandable($cs.'@role',Tokens(T_OTHER($role)));
   # Define with DefMath to create presentation & content cs's
   DefMath($cs . convertLaTeXArgs($nparam,$optparam), $formatter, 
-	  role=>$role, operator_role=>$role, omcd=>'dlmf');
+	  role=>$role, operator_role=>$role, meaning=>$name, omcd=>'dlmf');
   # Then, redefine top-level macro to check for powers, args, etc.
   DefExpandable($cs.convertLaTeXArgs($nparam,$optparam),
 		sub { expand_specfun($cs,$nargs,@_); });

@@ -1,19 +1,12 @@
 use LaTeXML::Package;
-
+package LaTeXML::Package::Pool;
 RequirePackage('keyval');
-
-# Note that this gets loaded before anything else.
-# But of course, it may define things that a style file will be defining.
-# We need a mechanism to keep those things from getting overridden by
-# the style file.
-# Here's a (insufficient) first attempt:
-
-my $path = pathname_find("mykeyval",paths=>LookupValue('SEARCHPATHS'),types=>['sty']);
-AssignValue($path."_loaded"=>1,'global');
 
 #======================================================================
 # Tests of various constructors using KeyVals.
 #======================================================================
+DefKeyVal('foo','path','Semiverbatim');
+
 # Testing simple use of keys; 
 #   attribute is just list of key-value pairs.
 DefConstructor('\KVsimple OptionalKeyVals:foo',

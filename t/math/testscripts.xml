@@ -5,28 +5,28 @@
   <section>
     <para id="p1">
       <equation>
-        <Math mode="display" tex="f_{a},f^{a},f_{a}^{a},f^{a}_{a}" text="Collection@(f _ a, f ^ a, SubSuperscript@(f, a, a), SubSuperscript@(f, a, a))">
+        <Math mode="display" tex="f_{a},f^{a},f_{a}^{a},f^{a}_{a}" text="Collection@(f _ a, f ^ a, SUBSUPERSCRIPTOP@(f, a, a), SUBSUPERSCRIPTOP@(f, a, a))">
           <XMath>
             <XMApp>
               <XMTok name="Collection" role="FENCED" separators=",,,"/>
               <XMApp>
-                <XMTok name="Subscript" role="SUBSCRIPT"/>
+                <XMTok role="SUBSCRIPTOP"/>
                 <XMTok role="UNKNOWN" font="italic">f</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok name="Superscript" role="SUPERSCRIPT"/>
+                <XMTok role="SUPERSCRIPTOP"/>
                 <XMTok role="UNKNOWN" font="italic">f</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok name="SubSuperscript"/>
+                <XMTok role="SUBSUPERSCRIPTOP"/>
                 <XMTok role="UNKNOWN" font="italic">f</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok name="SubSuperscript"/>
+                <XMTok role="SUBSUPERSCRIPTOP"/>
                 <XMTok role="UNKNOWN" font="italic">f</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>

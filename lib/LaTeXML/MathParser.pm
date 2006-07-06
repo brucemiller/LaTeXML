@@ -20,21 +20,27 @@ use LaTeXML::Global;
 use XML::LibXML;
 use base (qw(Exporter));
 
-our @EXPORT_OK = (qw(&Lookup &New &Apply &ApplyNary &recApply &Annotate &InvisibleTimes
-		     &NewFormulae &NewFormula &NewCollection  &ApplyDelimited &NewScripts
+our @EXPORT_OK = (qw(&Lookup &New &Apply &ApplyNary &recApply
+		     &Annotate &InvisibleTimes
+		     &NewFormulae &NewFormula &NewCollection
+		     &ApplyDelimited &NewScripts
 		     &LeftRec
 		     &Arg &Problem &MaybeFunction
 		     &isMatchingClose &Fence));
-our %EXPORT_TAGS = (constructors => [qw(&Lookup &New &Apply &ApplyNary &recApply &Annotate &InvisibleTimes
-					&NewFormulae &NewFormula &NewCollection  &ApplyDelimited &NewScripts
-					&LeftRec
-					&Arg &Problem &MaybeFunction 
-					&isMatchingClose &Fence)]);
+our %EXPORT_TAGS = (constructors
+		    => [qw(&Lookup &New &Apply &ApplyNary &recApply
+			   &Annotate &InvisibleTimes
+			   &NewFormulae &NewFormula &NewCollection
+			   &ApplyDelimited &NewScripts
+			   &LeftRec
+			   &Arg &Problem &MaybeFunction
+			   &isMatchingClose &Fence)]);
 our $nsURI = "http://dlmf.nist.gov/LaTeXML";
 our $nsXML = "http://www.w3.org/XML/1998/namespace";
 #our $DEFAULT_FONT = LaTeXML::MathFont->default();
-our $DEFAULT_FONT = LaTeXML::MathFont->new(family=>'serif', series=>'medium', shape=>'upright',
-					   size=>'normal', color=>'black');
+our $DEFAULT_FONT = LaTeXML::MathFont->new(family=>'serif', series=>'medium',
+					   shape=>'upright', size=>'normal',
+					   color=>'black');
 
 # ================================================================================
 sub new {
@@ -93,7 +99,8 @@ sub token_prettyname {
   if(defined $name){}
   elsif($name = $node->textContent){
     my $font = $LaTeXML::MathParser::DOCUMENT->getNodeFont($node);
-    my $desc = $font->relativeTo($DEFAULT_FONT);
+    my %attr = $font->relativeTo($DEFAULT_FONT);
+    my $desc = join(' ',values %attr);
     $name .= "{$desc}" if $desc; }
   else {
     $name = 'Unknown';
@@ -128,9 +135,6 @@ sub append_nodes {
   foreach my $child (@children){
 
     my $parent = $child->parentNode;
-#    if($parent && ! $parent->isSameNode($LaTeXML::MathParser::CAPTURE)){
-#      $child = $child->cloneNode(1);}
-#    $node->appendChild($child); }}
     if($parent && ! $parent->isSameNode($LaTeXML::MathParser::CAPTURE)){
       insert_clone($node,$child); }
     else {
@@ -156,13 +160,22 @@ sub insert_clone {
   }
   $new; }
 
-sub getTokenName {		# Get the Token's name, or fall back to content
+# Get the Token's  meaning, else name, else content, else role
+sub getTokenMeaning {
   my($node)=@_;
-  $node->getAttribute('name') || $node->textContent;}
+  my $x;
+  (defined ($x=$node->getAttribute('meaning')) ? $x
+   : (defined ($x=$node->getAttribute('name')) ? $x
+      : (($x= $node->textContent) ne '' ? $x
+	 : (defined ($x=$node->getAttribute('role')) ? $x
+	    : undef)))); }
 
-sub getTokenContent {		# Get the Token's content, or fall back to name.
+sub getTokenContent { # Get the Token's content, or fall back to name.
   my($node)=@_;
-  $node->textContent || $node->getAttribute('name'); }
+  my $x;
+  (($x=$node->textContent) ne '' ? $x
+   : (defined ($x=$node->getAttribute('name')) ? $x
+      : undef)); }
 
 sub node_string {
   my($node,$document)=@_;
@@ -250,7 +263,8 @@ sub parse_children {
     elsif($tag eq 'XMWrap'){
       local $LaTeXML::MathParser::STRICT=0;
       $self->parse_rec($child,'Anything',$document); }
-    elsif(($tag eq 'XMApp')||($tag eq 'XMDual')){
+#    elsif(($tag eq 'XMApp')||($tag eq 'XMDual')){
+    elsif($tag =~ /^(XMApp|XMDual|XMArray|XMRow|XMCell)$/){
       $self->parse_children($child,$document); }
 }}
 
@@ -293,11 +307,17 @@ sub parse_internal {
 	if(my $id = $node->getAttribute('id')){
 	  $rnode = $$self{idcache}{$id};
 	  $tag = $rnode->localname; }}
-      my $name = getTokenName($rnode);
-      $name = 'Unknown' unless defined $name;
+      my $text = getTokenMeaning($node);
+      $text = 'Unknown' unless defined $text;
       my $role = $rnode->getAttribute('role');
-      $role = ($tag eq 'XMTok' ? 'UNKNOWN' : 'ATOM') unless defined $role;
-      my $lexeme      = $role.":".$name.":".++$i;
+#      $role = ($tag eq 'XMTok' ? 'UNKNOWN' : 'ATOM') unless defined $role;
+      if(!defined $role){
+	if($tag eq 'XMTok'){
+	  $role = 'UNKNOWN'; }
+	elsif($tag eq 'XMDual'){
+	  $role = $node->firstChild->getAttribute('role'); }
+	$role = 'ATOM' unless defined $role; }
+      my $lexeme      = $role.":".$text.":".++$i;
       $lexeme =~ s/\s//g;
       $self->note_unknown($rnode)
 	if ($role eq 'UNKNOWN') && $LaTeXML::MathParser::STRICT;
@@ -343,16 +363,18 @@ sub text_form {
 # With <, I get "unterminated entity reference" !?!?!?
 #  my $text= $self->textrec($node,0); 
   my $text= textrec($node,undef); 
-  $text =~ s/</LessThan/g;
+  $text =~ s/</less/g;
   $text; }
 
 
-our %PREFIX_ALIAS=(Superscript=>'^',Subscript=>'_', "\x{2062}"=>'*');
+our %PREFIX_ALIAS=(SUPERSCRIPTOP=>'^',SUBSCRIPTOP=>'_', "\x{2062}"=>'*',
+		   eq=>'=',less=>'<',greater=>'<',
+		   plus=>'+',minus=>'-',div=>'/');
 # Put infix, along with `binding power'
 our %IS_INFIX = (METARELOP=>1, 
 		 RELOP=>2, ARROW=>2,
 		 ADDOP=>10, MULOP=>100, 
-		 SUPERSCRIPT=>1000, SUBSCRIPT=>1000);
+		 SUPERSCRIPTOP=>1000, SUBSCRIPTOP=>1000);
 
 sub textrec {
   my($node, $outer_bp,$outer_name)=@_;
@@ -361,7 +383,7 @@ sub textrec {
   $outer_name = '' unless defined $outer_name;
   if($tag eq 'XMApp') {
     my($op,@args) = element_nodes($node);
-    my $name = (($op->localname eq 'XMTok') && getTokenName($op)) || 'unknown';
+    my $name = (($op->localname eq 'XMTok') && getTokenMeaning($op)) || 'unknown';
     my $role  =  $op->getAttribute('role') || 'Unknown';
     my ($bp,$string);
     if($bp = $IS_INFIX{$role}){
@@ -386,14 +408,22 @@ sub textrec {
     my($content,$presentation)=element_nodes($node);
     textrec($content,$outer_bp,$outer_name); } # Just send out the semantic form.
   elsif($tag eq 'XMTok'){
-    my $name = getTokenName($node);
-    return 'Unknown' unless defined $name;
+    my $name = getTokenMeaning($node);
+    $name = 'Unknown' unless defined $name;
     $PREFIX_ALIAS{$name} || $name; }
   elsif($tag eq 'XMWrap'){
     # ??
     join('@',map(textrec($_), element_nodes($node))); }
+  elsif($tag eq 'XMArray'){
+    my $name = $node->getAttribute('meaning') || $node->getAttribute('name')
+      || 'Array';
+    my @rows = ();
+    foreach my $row (element_nodes($node)){
+      push(@rows,
+       '['.join(', ',map(textrec($_->firstChild),element_nodes($row))).']');}
+    $name.'['.join(', ',@rows).']';  }
   else {
-    my $string = ($tag eq 'XMText' ? $node->textContent :     $node->getAttribute('tex') || '?');
+    my $string = ($tag eq 'XMText' ? $node->textContent : $node->getAttribute('tex') || '?');
       "[$string]"; }}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -433,7 +463,7 @@ sub New {
   foreach my $key (sort keys %attributes){
     my $value = $attributes{$key};
     if(defined $value){
-      $value = getTokenName($value) if ref $value;
+      $value = getTokenContent($value) if ref $value;
       $node->setAttribute($key, $value); }}
   $node; }
 
@@ -449,7 +479,7 @@ sub Annotate {
   my($node,%attribs)=@_;
   foreach my $attr (sort keys %attribs){
     my $value = $attribs{$attr};
-    $value = getTokenName($value) if ref $value;
+    $value = getTokenContent($value) if ref $value;
     $node->setAttribute($attr,$value) if defined $value; }
   $node; }
 
@@ -506,28 +536,29 @@ sub InvisibleTimes {
 # Make customizable?
 # Should I just check left@right against enclose1 ?
 our %balanced = ( '(' => ')', '['=>']', '{'=>'}', 
-		  '|'=>'|', 'Parallel'=>'Parallel',
-		  'lfloor'=>'rfloor','lceil'=>'rceil','langle'=>'rangle');
+		  '|'=>'|', '||'=>'||',
+		  "\x{230A}"=>"\x{230B}", # lfloor, rfloor
+		  "\x{2308}"=>"\x{2309}", # lceil, rceil
+		  "\x{2329}"=>"\x{232A}");
 our %enclose1 = ( '(@)'=>'Fenced', '[@]'=>'Fenced', '{@}'=>'Set',
-		  '|@|'=>'Abs', '||@||'=>'Abs', 'Parallel@Parallel'=>'Abs',
-		  'LeftFloor@RightFloor'=>'Floor', 'LeftCeiling@RightCeiling'=>'Ceiling' );
+		  '|@|'=>'Abs', '||@||'=>'norm',
+		  "\x{230A}@\x{230B}"=>'Floor',
+		  "\x{2308}@\x{2309}"=>'Ceiling' );
 our %enclose2 = ( '(@)'=>'OpenInterval', '[@]'=>'ClosedInterval',
 		  '(@]'=>'OpenLeftInterval', '[@)'=>'OpenRightInterval',
 		  '{@}'=>'Set',
 		  # Nah, too weird.
 		  #'{@}'=>'SchwarzianDerivative',
-		  #'LeftAngle@RightAngle'=>'Distribution' 
+		  # "\x{2329}@\x{232A}"=>'Distribution'
 		);
 our %encloseN = ( '(@)'=>'Vector','{@}'=>'Set',);
 
 sub isMatchingClose {
   my($open,$close)=@_;
-  my $oname = getTokenName($open);
-  my $cname = getTokenName($close);
-  return 1 if $oname eq '.';
+  my $oname = getTokenContent($open);
+  my $cname = getTokenContent($close);
   my $expect = $balanced{$oname};
-  Warn("Unknown OPEN delimiter \"$oname\"") unless defined $expect;
-  ($expect eq $cname) || ($cname eq '.'); }
+  (defined $expect) && ($expect eq $cname); }
 
 # Given a delimited sequence: open expr (punct expr)* close
 # Convert it into the appropriate thing, depending on the specific open & close used.
@@ -537,16 +568,19 @@ sub Fence {
   my(@stuff)=@_;
   # Peak at delimiters to guess what kind of construct this is.
   my ($open,$close) = ($stuff[0],$stuff[$#stuff]);
-  my $openname  = (ref $open  ? getTokenName($open) : $open);
-  my $closename = (ref $close ? getTokenName($close): $close);
-  my $key = $openname.'@'.$closename;
+  $open  = getTokenContent($open)  if ref $open;
+  $close = getTokenContent($close) if ref $close;
+  my $key = $open.'@'.$close;
   my $n = int(scalar(@stuff)-2+1)/2;
-  my $op = (($n==1) && $enclose1{$key}) || (($n==2) && $enclose2{$key}) || (($n > 2) && $encloseN{$key})
-    || 'Collection';
+  my $op = ($n==1
+	    ?  ($enclose1{$key} || 'Fenced')
+	    : ($n==2 
+	      ? ($enclose2{$key} || 'Collection')
+	       : ($encloseN{$key} || 'Collection')));
   if(($n==1) && ($op eq 'Fenced')){ # Simple case.
     my $node = $stuff[1];
-    $node->setAttribute(open=>getTokenContent($open)) if $open && ($openname ne '.');
-    $node->setAttribute(close=>getTokenContent($close)) if $close && ($closename ne '.');
+    $node->setAttribute(open=>$open) if $open;
+    $node->setAttribute(close=>$close) if $close;
     $node; }
   else {
     ApplyDelimited(New($op,undef,role=>'FENCED'),@stuff); }}
@@ -584,36 +618,31 @@ sub LeftRec {
   my($arg1,@more)=@_;
   if(@more){
     my $op = shift(@more);
-    my $opname = getTokenName($op);
+    my $opname = getTokenMeaning($op);
     my @args = ($arg1,shift(@more));
-    while(@more && ($opname eq getTokenName($more[0]))){
+    while(@more && ($opname eq getTokenMeaning($more[0]))){
       shift(@more);
       push(@args,shift(@more)); }
     LeftRec(Apply($op,@args),@more); }
   else {
     $arg1; }}
 
-# Like apply, but if ops in $arg1 or $arg2 are the same, then combine as nary.
+# Like apply, but if ops in $arg1 (but NOT $arg2) are the same, then combine as nary.
 sub ApplyNary {
   my($op,$arg1,$arg2)=@_;
-  my $opname = getTokenName($op);  
+  my $opname = getTokenMeaning($op);  
   my @args = ();
   if($arg1->localname eq 'XMApp'){
     my($op1,@args1)=element_nodes($arg1);
-    if(getTokenName($op1) eq $opname){
+    if((getTokenMeaning($op1) eq $opname)
+       && !grep($_ ,map(($op->getAttribute($_)||'<none>') ne ($op1->getAttribute($_)||'<none>'),
+			qw(style)))) { # Check ops are used in similar way
       push(@args,@args1); }
     else {
       push(@args,$arg1); }}
   else {
     push(@args,$arg1); }
-  if($arg2->localname eq 'XMApp'){
-    my($op2,@args2)=element_nodes($arg2);
-    if(getTokenName($op2) eq $opname){
-      push(@args,@args2); }
-    else {
-      push(@args,$arg2); }}
-  else {
-    push(@args,$arg2); }
+  push(@args,$arg2); 
   Apply($op,@args); }
 
 # ================================================================================
@@ -631,11 +660,11 @@ sub NewScripts {
 	  ($postsup ? Arg($postsup,0) : New('Empty')),
 	  $base); }
   elsif($postsub && $postsup){
-    Apply(New('SubSuperscript'),$base,Arg($postsub,0),Arg($postsup,0)); }
+    Apply(New(undef,undef,role=>'SUBSUPERSCRIPTOP'),$base,Arg($postsub,0),Arg($postsup,0)); }
   elsif($postsub){
-    Apply(New('Subscript',undef, role=>'SUBSCRIPT'),$base,Arg($postsub,0)); }
+    Apply(New(undef,undef, role=>'SUBSCRIPTOP'),$base,Arg($postsub,0)); }
   elsif($postsup){
-    Apply(New('Superscript',undef, role=>'SUPERSCRIPT'),$base,Arg($postsup,0)); }}
+    Apply(New(undef,undef, role=>'SUPERSCRIPTOP'),$base,Arg($postsup,0)); }}
 
 # ================================================================================
 sub Problem { Warn("MATH Problem? ",@_); }

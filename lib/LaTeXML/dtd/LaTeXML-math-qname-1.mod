@@ -23,7 +23,10 @@
 <!ENTITY % LaTeXML.XMWrap.qname "%LaTeXML.pfx;XMWrap">
 <!ENTITY % LaTeXML.XMArg.qname  "%LaTeXML.pfx;XMArg">
 <!ENTITY % LaTeXML.XMRef.qname  "%LaTeXML.pfx;XMRef">
-<!ENTITY % LaTeXML.XMText.qname  "%LaTeXML.pfx;XMText">
+<!ENTITY % LaTeXML.XMText.qname "%LaTeXML.pfx;XMText">
+<!ENTITY % LaTeXML.XMArray.qname "%LaTeXML.pfx;XMArray">
+<!ENTITY % LaTeXML.XMRow.qname   "%LaTeXML.pfx;XMRow">
+<!ENTITY % LaTeXML.XMCell.qname  "%LaTeXML.pfx;XMCell">
 
 <!ENTITY % LaTeXML-math.Inline.class "| %LaTeXML.Math.qname;">
 
@@ -42,7 +45,8 @@
 <!ENTITY % LaTeXML-math.XMath.class
         "%LaTeXML.XMApp.qname; | %LaTeXML.XMTok.qname; | %LaTeXML.XMRef.qname;
        | %LaTeXML.XMHint.qname; | %LaTeXML.XMArg.qname; | %LaTeXML.XMWrap.qname;
-       | %LaTeXML.XMDual.qname; | %LaTeXML.XMText.qname;">
+       | %LaTeXML.XMDual.qname; | %LaTeXML.XMText.qname;
+       | %LaTeXML.XMArray.qname;">
 
 <!ENTITY % LaTeXML-math.XMath.attrib "
          role    CDATA #IMPLIED

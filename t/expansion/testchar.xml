@@ -6,7 +6,7 @@
     <title>Testing</title>
     <para id="S1.p1">
       <p>Testing raw tex macros:
-Expect inline math: xx<Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math>xx</p>
+Expect inline math: xx<Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math>xx</p>
     </para>
     <para id="S1.p2">
       <p>Expect display math: xx</p>
@@ -14,7 +14,7 @@ Expect inline math: xx<Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><
         <Math mode="display" tex="a+b" text="a + b">
           <XMath>
             <XMApp>
-              <XMTok role="ADDOP">+</XMTok>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMTok role="UNKNOWN" font="italic">b</XMTok>
             </XMApp>

@@ -79,7 +79,7 @@ sub digestFile {
 
   NoteBegin("Digesting $file");
   $stomach->initialize;
-  map($gullet->input($_,['ltxml','latexml']), 'TeX', @{$$self{preload} || []} );
+  map($gullet->input($_,['ltxml']), 'TeX', @{$$self{preload} || []} );
 
   my $pathname = pathname_find($file,types=>['tex','']);
   Fatal("Cannot find TeX file $file") unless $pathname;
@@ -105,7 +105,7 @@ sub digestString {
 
   NoteBegin("Digesting string");
   $stomach->initialize;
-  map($gullet->input($_,['ltxml','latexml']), 'TeX', @{$$self{preload} || []} );
+  map($gullet->input($_,['ltxml']), 'TeX', @{$$self{preload} || []} );
   $gullet->openMouth(LaTeXML::Mouth->new($string),0);
   $STATE->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode("Unknown"))));
   my $list = LaTeXML::List->new($stomach->digestNextBody); 

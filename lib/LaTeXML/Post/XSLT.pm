@@ -12,6 +12,7 @@
 
 package LaTeXML::Post::XSLT;
 use strict;
+use LaTeXML::Util::Pathname;
 use XML::LibXML;
 use XML::LibXSLT;
 use base qw(LaTeXML::Post::Processor);
@@ -24,13 +25,11 @@ sub new {
   my $self = bless {%options},$class;
   $self->Error("No stylesheet specified!") unless $stylesheet;
   if(!ref $stylesheet){
-    if(!(-f $stylesheet)){	# Maybe search for it.
-      foreach my $dir (@INC){
-	foreach my $sub (@SEARCH_SUBDIRS){
-	  my $file = "$dir/$sub/$stylesheet";
-	  if(-f $file){ $stylesheet = $file; last; }}}}
-    $self->Error("No stylesheet \"$stylesheet\" found!") unless -f $stylesheet;
-    $stylesheet = XML::LibXML->new()->parse_file($stylesheet); }
+    my $pathname = pathname_find($stylesheet,
+				 types=>['xsl'],installation_subdir=>'dtd');
+    $self->Error("No stylesheet \"$stylesheet\" found!")
+      unless $pathname && -f $pathname;
+    $stylesheet = XML::LibXML->new()->parse_file($pathname); }
   if(ref $stylesheet eq 'XML::LibXML::Document'){
     $stylesheet = XML::LibXSLT->new()->parse_stylesheet($stylesheet); }
   if(ref $stylesheet ne 'XML::LibXSLT::Stylesheet'){

@@ -19,7 +19,6 @@
 <!ENTITY % LaTeXML.tfoot.qname      "%LaTeXML.pfx;tfoot">
 <!ENTITY % LaTeXML.tbody.qname      "%LaTeXML.pfx;tbody">
 <!ENTITY % LaTeXML.tr.qname         "%LaTeXML.pfx;tr">
-<!ENTITY % LaTeXML.th.qname         "%LaTeXML.pfx;th">
 <!ENTITY % LaTeXML.td.qname         "%LaTeXML.pfx;td">
 <!ENTITY % LaTeXML.td-between.qname "%LaTeXML.pfx;td-between">
 

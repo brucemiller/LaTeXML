@@ -71,6 +71,14 @@ sub getCatcode { $_[0]->[1]; }
 sub unlist { ($_[0]); }
 sub getLocator { ''; }
 
+our @NEUTRALIZABLE=(0,0,0,1,
+		    1,0,1,1,
+		    1,0,0,0,
+		    0,1,1,0,
+		    0,0);
+sub neutralize {
+  ($NEUTRALIZABLE[$_[0]->[1]] ? T_OTHER($_[0]->[0]) : $_[0]); }
+
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.
 # We'll need to be careful about using string instead of reverting for internal purposes where the
@@ -161,6 +169,9 @@ sub stringify {
 sub beDigested { 
   my($self,$stomach)=@_;
   $stomach->digest($self); }
+
+sub neutralize {
+  Tokens(map($_->neutralize,$_[0]->unlist)); }
 
 #======================================================================
 # The following implements the Mouth API, so that a Token list can

@@ -22,7 +22,7 @@
               <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators=";"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMApp>
-                <XMTok name="in" role="RELOP">∈</XMTok>
+                <XMTok meaning="in" role="RELOP">∈</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
@@ -37,7 +37,7 @@
               <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators="|"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMApp>
-                <XMTok name="in" role="RELOP">∈</XMTok>
+                <XMTok meaning="in" role="RELOP">∈</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
@@ -51,20 +51,20 @@
         <Math mode="display" tex="\{ a|a\in b\} _{{c=0}}" text="(ConditionalSet@(a, a in b)) _ (c = 0)">
           <XMath>
             <XMApp>
-              <XMTok name="Subscript" role="SUBSCRIPT"/>
+              <XMTok role="SUBSCRIPTOP"/>
               <XMApp>
                 <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators="|"/>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMApp>
-                  <XMTok name="in" role="RELOP">∈</XMTok>
+                  <XMTok meaning="in" role="RELOP">∈</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
                 </XMApp>
               </XMApp>
               <XMApp>
-                <XMTok role="RELOP">=</XMTok>
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
                 <XMTok role="ID" font="italic">c</XMTok>
-                <XMTok role="NUMBER">0</XMTok>
+                <XMTok meaning="0" role="NUMBER">0</XMTok>
               </XMApp>
             </XMApp>
           </XMath>

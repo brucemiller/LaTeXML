@@ -1,0 +1,64 @@
+======================================================================
+The following roles are used in the Grammar
+ATOM
+UNKNOWN
+ID
+ARRAY
+NUMBER
+PUNCT
+PERIOD
+RELOP
+METARELOP
+MODIFIEROP
+MODIFIER
+ARROW
+ADDOP
+MULOP
+POSTFIX
+FUNCTION
+OPFUNCTION
+TRIGFUNCTION
+APPLYOP
+COMPOSEOP
+SUPOP
+OPEN
+SCRIPTOPEN
+CLOSE
+MIDDLE
+VERTBAR
+BIGOP
+SUMOP
+INTOP
+LIMITOP
+DIFFOP
+OPERATOR
+##DIFF
+POSTSUPERSCRIPT
+POSTSUBSCRIPT
+FLOATINGSUPERSCRIPT
+FLOATINGSUBSCRIPT
+
+# The following roles are used in atomic objects
+# and only affect the presentation
+STACKED
+OVERACCENT
+UNDERACCENT
+FENCED
+
+# Used by \not, but not in grammar
+# (disappears if negated op is recognized!)
+PREFIX
+
+
+======================================================================
+Names that are conceivably "semantic" enough.
+
+eq, greater, less
+plus, minus,
+times, div
+
+======================================================================
+Names that aren't really very semantic
+many derived from the CS
+
+colon

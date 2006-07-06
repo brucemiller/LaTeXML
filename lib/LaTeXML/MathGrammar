@@ -183,8 +183,8 @@ moreFactors : MULOP Factor moreFactors[ApplyNary($item[1],$arg[0],$item[2])]
 Factor	: 
 	# These 2nd two are Iffy; hopefully the 1st rule will protect from backtrack?
 	  OPEN ARRAY CLOSE  { Fence($item[1],$item[2],$item[3]); }
-	| OPEN ARRAY  { Apply(New('LCases',undef,open=>$item[1]),$item[2]); }
-	| ARRAY CLOSE { Apply(New('RCases',undef,close=>$item[2]),$item[1]); }
+	| OPEN ARRAY  { Annotate(Apply(New('LCases'),$item[2]),open=>$item[1]); }
+	| ARRAY CLOSE { Annotate(Apply(New('RCases'),$item[1]),close=>$item[2]); }
 	| preScripted['FUNCTION'] addArgs[$item[1]]
 	| preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
 	| preScripted['TRIGFUNCTION'] addTrigFunArgs[$item[1]]

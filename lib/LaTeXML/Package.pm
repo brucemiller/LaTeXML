@@ -26,7 +26,8 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 		  &RequirePackage
 		  &RawTeX
 		  &Tag &DocType &RegisterNamespace
-		  &convertLaTeXArgs),
+		  &convertLaTeXArgs
+		  &UTF),
 
 	       # Lower-level support for writing definitions.
 	       # Access to State
@@ -40,7 +41,7 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 	       # Support for structured/argument readers
 	       qw(&DefParameterType
 		  &StartSemiverbatim &EndSemiverbatim
-		  &Expand &Invocation),
+		  &Expand &Invocation &ReadParameters),
 	       # Random low-level token operations.
 	       qw(&roman &Roman),
 
@@ -59,6 +60,10 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 #    So, it got simpler!
 # Still, it would be nice if there were `compiled' forms of .ltxml files!
 #**********************************************************************
+
+sub UTF {
+  my($code)=@_;
+  pack('U',$code); }
 
 sub parsePrototype {
   my($proto)=@_;
@@ -102,6 +107,12 @@ sub Let {
   return; }
 
 sub Digest       { $STATE->getStomach->digest(@_); }
+
+sub ReadParameters {
+  my($gullet,$spec)=@_;
+  my $for = T_OTHER("Anonymous");
+  my $parm = LaTeXML::Parameters::parseParameters($spec,$for);
+  $parm->readArguments($gullet,$for); }
 
 # Merge the current font with the style specifications
 sub MergeFont { AssignValue(font=>LookupValue('font')->merge(@_), 'local'); }
@@ -152,7 +163,8 @@ sub Expand            { $STATE->getStomach->getGullet->expandTokens(@_); }
 
 sub Invocation        {
   my($token,@args)=@_;
-  Tokens(LookupDefinition($token)->invocation(@args)); }
+  Tokens(LookupDefinition((ref $token ? $token : T_CS($token)))
+	 ->invocation(@args)); }
 
 #======================================================================
 # Non-exported support for defining forms.
@@ -329,9 +341,9 @@ sub DefConstructor {
 # HMM.... Still fishy.
 # When to make a dual ?
 # If the $presentation seems to be TeX (ie. it involves #1... but not ONLY!)
-our $math_options = {name=>1, omcd=>1, reversion=>1, alias=>1,
-		     role=>1, operator_role=>1,
-		     style=>1, size=>1, font=>1,
+our $math_options = {name=>1, meaning=>1, omcd=>1, reversion=>1, alias=>1,
+		     role=>1, operator_role=>1, reorder=>1,
+		     style=>1, font=>1,
 		     stackscripts=>1,operator_stackscripts=>1,
 		     beforeDigest=>1, afterDigest=>1, scope=>1, nogroup=>1};
 our $XMID=0;
@@ -359,28 +371,42 @@ sub DefMath {
   my ($cs,$paramlist)=parsePrototype($proto);  
   my $nargs = scalar($paramlist->getParameters);
   my $csname = $cs->getString;
+  my $meaning = $options{meaning};
   my $name = $csname;
   $name =~ s/^\\//;
   $name = $options{name} if defined $options{name};
-  $name = undef if (defined $name) && (($name eq $presentation) || ($name eq ''));
-  my $attr="name='#name' omcd='#omcd' style='#style' size='#size'";
-  $options{role} = 'UNKNOWN' if ($nargs == 0) && !defined $options{role};
-  $options{operator_role} = 'UNKNOWN' if ($nargs > 0) && !defined $options{operator_role};
+  $name = undef if (defined $name)
+    && (($name eq $presentation) || ($name eq '')
+	|| ((defined $meaning) && ($meaning eq $name)));
+  my $attr="name='#name' meaning='#meaning' omcd='#omcd' style='#style'";
+  $options{role} = 'UNKNOWN'
+    if ($nargs == 0) && !defined $options{role};
+  $options{operator_role} = 'UNKNOWN'
+    if ($nargs > 0) && !defined $options{operator_role};
   $options{reversion} = Tokenize($options{reversion})
     if $options{reversion} && !ref $options{reversion};
   my %common =(alias=>$options{alias}||$cs->getString,
-	       (defined $options{reversion} ? (reversion=>$options{reversion}) : ()),
+	       (defined $options{reversion}
+		? (reversion=>$options{reversion}) : ()),
 	       beforeDigest=> flatten(\&requireMath,
-				      ($options{nogroup} ? ():(sub{$_[0]->bgroup;})),
-				      ($options{font}? (sub { MergeFont(%{$options{font}});}):()),
+				      ($options{nogroup}
+				       ? ()
+				       :(sub{$_[0]->bgroup;})),
+				      ($options{font}
+				       ? (sub { MergeFont(%{$options{font}});})
+				       :()),
 				      $options{beforeDigest}),
 	       afterDigest => flatten($options{afterDigest},
-				      ($options{nogroup} ? ():(sub{$_[0]->egroup;}))),
+				      ($options{nogroup} 
+				       ? ()
+				       :(sub{$_[0]->egroup;}))),
 	       beforeConstruct=> flatten($options{beforeConstruct}),
 	       afterConstruct => flatten($options{afterConstruct}),
-	       properties => {name=>$name, omcd=>$options{omcd},
-			      role => $options{role}, operator_role=>$options{operator_role},
-			      style=>$options{style}, size=>$options{size},
+	       properties => {name=>$name, meaning=>$meaning,
+			      omcd=>$options{omcd},
+			      role => $options{role},
+			      operator_role=>$options{operator_role},
+			      style=>$options{style}, 
 			      stackscripts=>$options{stackscripts},
 			      operator_stackscripts=>$options{operator_stackscripts}},
 	       scope=>$options{scope});
@@ -388,7 +414,13 @@ sub DefMath {
   if(length($csname) == 1){
     AssignCatcode('math:'.$csname=>1, $options{scope}); }
 
-  if((ref $presentation) || ($presentation =~ /\#\d|\\./)){	      # Seems to have TeX! => XMDual
+  # If the presentation is complex, and involves arguments,
+  # we will create an XMDual to separate content & presentation.
+  # This involves creating 3 control sequences:
+  #   \cs              macro that expands into \DUAL{pres}{content}
+  #   \cs@content      constructor creates the content branch
+  #   \cs@presentation macro that expands into code in the presentation branch.
+  if((ref $presentation) || ($presentation =~ /\#\d|\\./)){
     my $cont_cs = T_CS($csname."\@content");
     my $pres_cs = T_CS($csname."\@presentation");
     # Make the original CS expand into a DUAL invoking a presentation macro and content constructor
@@ -401,27 +433,30 @@ sub DefMath {
 		    Invocation($pres_cs,@$pargs) )->unlist; }),
       $options{scope});
     # Make the presentation macro.
+    $presentation = TokenizeInternal($presentation) unless ref $presentation;
     $STATE->installDefinition(LaTeXML::Expandable->new($pres_cs, $paramlist,
-							 (ref $presentation ? $presentation
-							  : TokenizeInternal($presentation))),
-				$options{scope});
+						       $presentation),
+			      $options{scope});
     $STATE->installDefinition(LaTeXML::Constructor->new($cont_cs,$paramlist,
          ($nargs == 0 
 	  ? "<ltx:XMTok $attr role='#role' stackscripts='#stackscripts'/>"
 	  : "<ltx:XMApp role='#role' stackscripts='#stackscripts'>"
-	  .  "<ltx:XMTok $attr role='#operator_role' stackscripts='#operator_stackscripts'/>"
-	  .   join('',map("#$_", 1..$nargs))
+	  .   "<ltx:XMTok $attr role='#operator_role'"
+	  .             " stackscripts='#operator_stackscripts'/>"
+	  .   join('',map("#$_", 
+		  ($options{reorder}? @{$options{reorder}} : (1..$nargs))))
 	  ."</ltx:XMApp>"),
-         %common), $options{scope}); }
+      %common), $options{scope}); }
   else {
     my $end_tok = (defined $presentation ? ">$presentation</ltx:XMTok>" : "/>");
     $common{properties}{font} = sub { LookupValue('font')->specialize($presentation); };
     $STATE->installDefinition(LaTeXML::Constructor->new($cs,$paramlist,
          ($nargs == 0 
-	  ? "<ltx:XMTok role='#role' stackscripts='#stackscripts' font='#font' $attr$end_tok"
+	  ? "<ltx:XMTok role='#role' stackscripts='#stackscripts'"
+	  .           " font='#font' $attr$end_tok"
 	  : "<ltx:XMApp role='#role' stackscripts='#stackscripts'>"
-	  .  "<ltx:XMTok $attr font='#font' role='#operator_role' stackscripts='#operator_stackscripts'"
-	  .  " $end_tok"
+	  .   "<ltx:XMTok $attr font='#font' role='#operator_role'"
+	  .             " stackscripts='#operator_stackscripts' $end_tok"
 	  .   join('',map("<ltx:XMArg>#$_</ltx:XMArg>", 1..$nargs))
 	  ."</ltx:XMApp>"),
          %common), $options{scope}); }
@@ -501,11 +536,18 @@ sub Tag {
   my($tag,%properties)=@_;
   CheckOptions("Tag ($tag)",$tag_options,%properties);
   my $model = $STATE->getModel;
-  $model->setTagProperty($tag,autoOpen=>$properties{autoOpen}) if $properties{autoOpen};
-  $model->setTagProperty($tag,autoClose=>$properties{autoClose}) if $properties{autoClose};
-  $model->setTagProperty($tag,afterOpen=>flatten($model->getTagProperty($tag,'afterOpen'),$properties{afterOpen}))
+  $model->setTagProperty($tag,autoOpen=>$properties{autoOpen})
+    if $properties{autoOpen};
+  $model->setTagProperty($tag,autoClose=>$properties{autoClose})
+    if $properties{autoClose};
+  # ADD after daemons to any already present.
+  $model->setTagProperty($tag,
+	 afterOpen=>flatten($model->getTagProperty($tag,'afterOpen'),
+			    $properties{afterOpen}))
     if $properties{afterOpen};
-  $model->setTagProperty($tag,afterClose=>flatten($model->getTagProperty($tag,'afterClose'),$properties{afterClose}))
+  $model->setTagProperty($tag,
+         afterClose=>flatten($model->getTagProperty($tag,'afterClose'),
+			     $properties{afterClose}))
     if $properties{afterClose};
   return; }
 
@@ -617,7 +659,8 @@ installed C<LaTeXML/Package> directory for realistic examples.
 
 To provide a LaTeXML=specific version of a LaTeX package C<somepackage.sty>, 
 (so that C<\usepackage{somepackage}> works), you create the file C<somepackage.ltxml>
-and save it where perl can find it (eg. your working directory or any directory in C<@INC>).
+and save it in the searchpath (current directory, or one of the directories
+given to the --path option, or possibly added to the variable SEARCHPATHS).
 Likewise, to provide document-specific customization for, say, C<mydoc.tex>, 
 you would create the file C<mydoc.latexml> (typically in the same directory).
 In either case, you'll C<use LaTeXML::Package;> to import the various declarations

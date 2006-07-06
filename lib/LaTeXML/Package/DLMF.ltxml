@@ -253,11 +253,8 @@ DefExpandable('\constraint OptionalMatch:* [Default:,]{}',sub {
 # Table enhancement
 sub tabular_thinhline {
   my($document)=@_;
-  # We'll already have started the next row (tr+td) when we see this.
-  if(my @td = $document->findnodes("parent::ltx:tr/preceding-sibling::*[1][local-name()='tr']/ltx:td",
-				   $document->getElement)){
-    foreach my $td (@td){
-      add_tabular_border($td,'B'); }}} # Sneak in an additional type!!!! Add to CSS!!!
+  # Sneak in an additional type!!!! Add to CSS!!!
+  LaTeXML::Util::Alignment::add_border_to_previous($document,'B','t'); }
 
 DefConstructor('\thinhline',\&tabular_thinhline);
 

@@ -34,6 +34,11 @@
     <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}" alt="{@tex}" class='math'/>
   </xsl:template>
 
+  <xsl:template match="ltx:picture"/>
+  <xsl:template match="ltx:picture[@imagesrc]">
+    <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}" alt="{@tex}" class='math'/>
+  </xsl:template>
+
   <xsl:template name="add_id">
     <xsl:choose>
       <xsl:when test="@label"><a name="{@label}"></a></xsl:when>

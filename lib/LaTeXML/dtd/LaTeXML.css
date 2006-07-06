@@ -1,5 +1,17 @@
 .red { color:red; }
 .center { text-align:center; }
+
+.tiny     {  font-size:70%; }
+.script   {  font-size:70%; }
+.footnote {  font-size:80%; }
+.small    {  font-size:90%; }
+.normal   {  font-size:100%; }
+.large    {  font-size:110%; }
+.Large    {  font-size:120%; }
+.LARGE    {  font-size:140%; }
+.huge     {  font-size:150%; }
+.Huge     {  font-size:200%; }
+
 body { background:#FFFFFF; color:#000000; }
 h1 { text-align:center; font-family:sans-serif;}
 .author { text-align:center; font-size: 150%; font-family:sans-serif; }
@@ -28,12 +40,13 @@ dl.description dl.description dd { margin-left:3em; }
 #.header:before { content:url(latexml.png); }
 
 table { border-collapse:collapse; }
-th { background-color:#e5f7fb; }
-td.t, th.t { border-top:1px solid black; }
-td.r, th.r { border-right:1px solid black; }
-td.b, th.b { border-bottom:1px solid black; }
-td.l, th.l { border-left:1px solid black; }
-td.th, th.tt { border-top:3px double black; }
-td.rr, th.rr { border-right:3px double black; }
-td.bb, th.bb { border-bottom:3px double black; }
-td.ll, th.ll { border-left:3px double black; }
+th, *[class~="thead"] { background-color:#e5f7fb; }
+/* Hmm... the star should be m:mtd */
+td.t, th.t, *[class~="t"] { border-top:1px solid black; }
+td.r, th.r, *[class~="r"] { border-right:1px solid black; }
+td.b, th.b, *[class~="b"] { border-bottom:1px solid black; }
+td.l, th.l, *[class~="l"] { border-left:1px solid black; }
+td.th, th.tt, *[class~="tt"] { border-top:3px double black; }
+td.rr, th.rr, *[class~="rr"] { border-right:3px double black; }
+td.bb, th.bb, *[class~="bb"] { border-bottom:3px double black; }
+td.ll, th.ll, *[class~="ll"] { border-left:3px double black; }

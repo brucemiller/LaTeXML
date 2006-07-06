@@ -45,6 +45,7 @@
 	  %LaTeXML.XMath.attrib;
 	  %LaTeXML.ID.attrib;
           name         CDATA #IMPLIED
+          meaning CDATA #IMPLIED
 	  stackscripts CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.XMDual.qname; ((%LaTeXML.XMath.class;), (%LaTeXML.XMath.class;))>
@@ -59,10 +60,12 @@
 	  %LaTeXML.XMath.attrib;
 	  %LaTeXML.ID.attrib;
           name    CDATA #IMPLIED
+          meaning CDATA #IMPLIED
 	  omcd    CDATA #IMPLIED
-          font    CDATA #IMPLIED
           style   CDATA #IMPLIED
+          font    CDATA #IMPLIED
           size    CDATA #IMPLIED
+          color   CDATA #IMPLIED
 	  stackscripts CDATA #IMPLIED
 	  thickness  CDATA #IMPLIED
 	  possibleFunction CDATA #IMPLIED>
@@ -74,6 +77,7 @@
 	  %LaTeXML.XMath.attrib;
 	  %LaTeXML.ID.attrib;
           name    CDATA #IMPLIED
+          meaning CDATA #IMPLIED
           style   CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.XMText.qname; %LaTeXML.Inline.model;>
@@ -88,6 +92,7 @@
 	  %LaTeXML.XMath.attrib;
 	  %LaTeXML.ID.attrib;
           name    CDATA #IMPLIED
+          meaning CDATA #IMPLIED
           style   CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.XMArg.qname; (%LaTeXML.XMath.class;)*>
@@ -103,3 +108,25 @@
 	  %LaTeXML.XMath.attrib;
 	  %LaTeXML.ID.attrib;
 	  %LaTeXML.IDREF.attrib;>
+
+<!ELEMENT %LaTeXML.XMArray.qname; (%LaTeXML.XMRow.qname;)*>
+<!ATTLIST %LaTeXML.XMArray.qname;
+	  %LaTeXML.Common.attrib;
+	  %LaTeXML.XMath.attrib;
+	  %LaTeXML.ID.attrib;
+          name    CDATA #IMPLIED
+          meaning CDATA #IMPLIED>
+
+<!ELEMENT %LaTeXML.XMRow.qname; (%LaTeXML.XMCell.qname;)*>
+<!ATTLIST %LaTeXML.XMRow.qname;
+	  %LaTeXML.Common.attrib;>
+
+<!ELEMENT %LaTeXML.XMCell.qname; (%LaTeXML.XMath.class;)*>
+<!ATTLIST %LaTeXML.XMCell.qname;
+	  %LaTeXML.Common.attrib;
+          rowpan  CDATA #IMPLIED
+          colspan CDATA #IMPLIED
+          align   CDATA #IMPLIED
+          width   CDATA #IMPLIED
+	  border  CDATA #IMPLIED
+	  thead   (yes|no) #IMPLIED>

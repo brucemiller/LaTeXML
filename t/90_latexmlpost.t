@@ -29,7 +29,7 @@ sub dotest{
 
   return ok(0,1,"Couldn't instanciate LaTeXML::Post") unless $POST;
 
-  my $source = $POST->readDocument("$name.xml");
+  my $source = $POST->readDocument("$name.xml",validate=>1);
   my $doc = $POST->process($source,
 			   format    => 'xml',
 			   verbosity => -1,

@@ -9,7 +9,7 @@
         <Math mode="display" tex="abc\over def" text="(a * b * c) / (d * e * f)">
           <XMath>
             <XMApp>
-              <XMTok name="/" role="MULOP" style="over"/>
+              <XMTok meaning="div" role="MULOP"/>
               <XMApp>
                 <XMTok role="MULOP">⁢</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -35,7 +35,7 @@
               <XMTok role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok name="/" role="MULOP" style="over"/>
+                <XMTok meaning="div" role="MULOP" style="display"/>
                 <XMApp>
                   <XMTok role="MULOP">⁢</XMTok>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -61,7 +61,7 @@
               <XMTok role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok name="/" role="MULOP" style="over"/>
+                <XMTok meaning="div" role="MULOP" style="display"/>
                 <XMApp>
                   <XMTok role="MULOP">⁢</XMTok>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -87,7 +87,7 @@
               <XMTok role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok name="/" role="MULOP" style="over"/>
+                <XMTok meaning="div" role="MULOP" style="display"/>
                 <XMApp>
                   <XMTok role="MULOP">⁢</XMTok>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -113,7 +113,7 @@
               <XMTok role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok name="/" role="MULOP" style="over"/>
+                <XMTok meaning="div" role="MULOP" style="display"/>
                 <XMApp>
                   <XMTok role="MULOP">⁢</XMTok>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>

@@ -330,6 +330,8 @@ during parsing, but probably shouldn't.
    an \tag{XMArg} or \tag{XMWrap} element).  This results in an expression tree
    that will hopefully be an accurate representation of the expression's structure,
    but may be ambigous in specifics (eg.`what the meaning of a superscript is).
+   The parsing is driven almost entirely by the grammatical \attr{role} assigned
+   to each item.
 \item \emph{Not yet implemented} a following stage must be developed to resolve
    the semantic ambiguities by analyzing and augmenting the expression tree.
 \item Target conversion: from the internal \tag{XM} representation to
@@ -406,6 +408,13 @@ The following attributes can appear on all \tag{XM} elements:
 \end{description}
 
 \subsection{Grammatical Roles}\label{app:mathroles}
+The \attr{role} attempts to capture the syntactic nature of each item.
+This is used primarily to drive the parsing; the grammar rules are keyed
+on the \attr{role}, rather than content, of the nodes.  The \attr{role}
+is also used to drive the conversion to presentation markup, especially
+Presentation \MathML, and in fact some values of \attr{role} are only used
+that way, never appearing explicitly in the grammar.
+
 The following grammatical roles are recognized by the math parser.
 These values can be specified in the \attr{role} attribute during the initial 
 document construction or by rewrite rules.  Although the precedence of operators
@@ -453,6 +462,13 @@ case productions, no rigidly ordered precedence is given.
 \item[\code{POSTFIX}] for a postfix operator
 \item[\code{UNKNOWN}] an unknown expression. This is the default for token elements,
   and generates a warning if the unknown seems to be used as a function.
+\end{description}
+
+The following roles are not used in the grammar, but are used to capture
+the presentation style:
+\begin{description}
+\item[\code{STACKED}] corresponds to stacked structures, such as
+  \verb|\atop|, and the presentation of binomial coefficients.
 \end{description}
 
 % Some 

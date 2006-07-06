@@ -23,14 +23,22 @@ DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}',sub{
 
 # See p.18
 # New functions (most are already in TeX)
-DefMath('\injlim', "inj lim",   role=>'LIMITOP', stackscripts=>\&doStackscripts);
-DefMath('\projlim', "proj lim", role=>'LIMITOP', stackscripts=>\&doStackscripts);
+DefMath('\injlim', "inj lim", 
+	role=>'LIMITOP', meaning=>'injective-limit',
+	stackscripts=>\&doStackscripts);
+DefMath('\projlim', "proj lim",
+	role=>'LIMITOP', meaning=>'projective-limit',
+	stackscripts=>\&doStackscripts);
 
 
-DefMath('\varlimsup', '\overline{\lim}',       role=>'LIMITOP');
-DefMath('\varliminf', '\underline{\lim}',      role=>'LIMITOP');
-DefMath('\varinjlim', '\uderrightarrow{\lim}', role=>'LIMITOP');
-DefMath('\varprojlim','\underleftarrow{\lim}', role=>'LIMITOP');
+DefMath('\varlimsup', '\overline{\lim}',
+	role=>'LIMITOP', meaning=>'limit-supremum');
+DefMath('\varliminf', '\underline{\lim}',
+	role=>'LIMITOP', meaning=>'limit-infimum');
+DefMath('\varinjlim', '\underrightarrow{\lim}',
+	role=>'LIMITOP', meaning=>'injective-limit');
+DefMath('\varprojlim','\underleftarrow{\lim}',
+	role=>'LIMITOP', meaning=>'projective-limit');
 
 #DefPrimitive('\operatorname OptionalMatch:* {}',sub{
 #  my($ignore,$star,$name)=@_;

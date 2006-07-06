@@ -31,7 +31,7 @@ use File::Spec;
 use Cwd;
 use Exporter;
 our @ISA = qw(Exporter);
-our @EXPORT = qw( &pathname_find
+our @EXPORT = qw( &pathname_find &pathname_findall
 		  &pathname_make &pathname_canonical
 		  &pathname_split &pathname_concat
 		  &pathname_relative &pathname_absolute
@@ -77,7 +77,7 @@ sub pathname_canonical {
 #  File::Spec->canonpath($pathname); }
   $pathname =~ s|//+|/|g;
   $pathname =~ s|/\./|/|g;
-  $pathname =~ s|/[^/]+/\.\./|/|g;
+  while($pathname =~ s|/[^/]+/\.\./|/|){}
   $pathname =~ s|^\./||;
   $pathname; }
 
@@ -127,7 +127,7 @@ sub pathname_copy {
       # According to Ioan, this should work:
       system("xcopy /P $source $destination")==0 or return undef; }
     else {			# Unix
-      system("cp -p $source $destination")==0 or return undef; }
+      system("cp $source $destination")==0 or return undef; }
     # It would make sense to punt to File::Copy in the
     # case where we are NOT unix or windows...
     # But no clear set of $^O characterizes Unix!
@@ -136,35 +136,69 @@ sub pathname_copy {
 
 #======================================================================
 # pathname_find($pathname, paths=>[...], types=>[...])  => $absolute_pathname;
-# Find a file corresponding to $pathname returning the absolute, completed pathname if found, else undef
-#  * If $pathname is a not an absolute pathname (it may still have directory components)
-#    then if search $paths are given, search for it relative to each of the directories in $paths,
+# Find a file corresponding to $pathname returning the absolute,
+# completed pathname if found, else undef
+#  * If $pathname is a not an absolute pathname 
+#    (although it may still have directory components)
+#    then if search $paths are given, search for it relative to
+#    each of the directories in $paths,
 #    else search for it relative to the current working directory.
-#  * If types is given, then search (in each searched directory) for the first
-#    file with the given extension.  The extension "" (empty string0 is treated specially,
-#    it searches for the exact name.
-#   If types is not given, search for the exact named file without additional extension.
-#    each type (extension) added.
-#    Note that if 'types' is given, it may find the file name w/o any extension.
-#    If a specific extension is required, use pathname_find(name="foo.type")
+#  * If types is given, then search (in each searched directory)
+#    for the first file with the given extension. 
+#    The extension "" (empty string) means to search for the exact name.
+#  * If types is not given, search for the exact named file
+#    without additional extension.
+#  * If installation_subdir is given, look in that subdirectory of where LaTeXML
+#    was installed, by appending it to the paths.
+
+our @INSTALLDIRS = grep(-d $_, map("$_/LaTeXML", @INC));
+
 sub pathname_find {
   my($pathname,%options)=@_;
-  my $paths = $options{paths};
-  my $types = $options{types};
-  if(pathname_is_absolute($pathname)){
-    if($types){
-      foreach my $type (@$types){
-	my $fullpath = $pathname;
-	$fullpath .= '.'.$type unless ($type eq '') || ($pathname=~/\.\Q$type\E$/);
-	return pathname_canonical($fullpath) if -f $fullpath; }}
-    elsif(-f $pathname){ return $pathname; }
-    return undef; }
-  elsif($paths){
-    foreach my $path (@$paths){
-      if(my $found = pathname_find(pathname_concat($path,$pathname),types=>$types)){
-	return $found; }}}
-  else {
-    pathname_find(pathname_concat(pathname_cwd(),$pathname),types=>$types); }}
+  my @paths = candidate_pathnames($pathname,%options);
+  foreach my $path (@paths){
+    return $path if -f $path; }}
+
+sub pathname_findall {
+  my($pathname,%options)=@_;
+  my @paths = candidate_pathnames($pathname,%options);
+  grep(-f $_, @paths); }
+
+# It's presumably cheep to concatinate all the pathnames,
+# relative to the cost of testing for files,
+# and this simplifies overall.
+sub candidate_pathnames {
+  my($pathname,%options)=@_;
+  my @dirs=('');
+  if(!pathname_is_absolute($pathname)){
+    my $cwd = pathname_cwd();
+    # Complete the search paths by prepending current dir to relative paths,
+    # but have at least the current dir.
+    @dirs = ($options{paths}
+	     ? map( (pathname_is_absolute($_) ? $_ : pathname_concat($cwd,$_)),
+		    @{$options{paths}})
+	     : ($cwd));
+    # And, if installation dir specified, append it.
+    if(my $subdir = $options{installation_subdir}){
+      push(@dirs,map(pathname_concat($_,$subdir),@INSTALLDIRS)); }}
+
+  # extract the desired extensions.
+  my @exts = ();
+  if($options{types}){
+    foreach my $ext (@{$options{types}}){
+      if($ext eq ''){ push(@exts,''); }
+      elsif($pathname =~ /\.\Q$ext\E$/){
+	push(@exts,''); }
+      else {
+	push(@exts, '.'.$ext); }}}
+    push(@exts,'') unless @exts;
+
+  my @paths = ();
+  # Now, combine; precedence to leading directories.
+  foreach my $dir (@dirs){
+    foreach my $ext (@exts){
+      push(@paths,pathname_concat($dir,$pathname.$ext)); }}
+  @paths; }
 
 #======================================================================
 1;

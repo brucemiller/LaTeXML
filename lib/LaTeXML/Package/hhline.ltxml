@@ -1,0 +1,22 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  hhline                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+#
+# hhline defines some rather interesting, but complicated table rules
+# with options for joining corders in various ways.
+# Some of this could possibly be integrated with the model for table rules,
+# and some not.  Less of it would actually succeed when XSLT'd to HTML,
+# though, so I'm basically providing a stub implementation for now.
+
+DefMacro('\hhline Semiverbatim', '\hline');
+
+1;

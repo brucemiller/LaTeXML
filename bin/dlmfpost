@@ -4,6 +4,7 @@ use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use LaTeXML::Post;
 use LaTeXML::Post::MathML;
+use LaTeXML::Post::PictureImages;
 use Carp;
 use Getopt::Long;
 
@@ -35,17 +36,27 @@ my $processors=[DLMFMath->new(),
 		DLMFGraphics->new(),
 		DLMFGallery->new(),
 		LaTeXML::Post::MathML::Presentation->new(),
+		LaTeXML::Post::PictureImages->new(),
+		DLMFMagPictures->new(),
 #		DLMFAugment->new()
 ];
 
 my $post = LaTeXML::Post->new();
 
-foreach my $CH (@ARGV){
-  print STDERR "Processing Chapter $CH\n" if $verbosity;
-  my $srcdir  = "$DLMFBASE/$CH";
-  my $destdir = "$SITEBASE/$CH";
-  my $dest    = "$destdir/$CH.xml";
-  my $inchap = $post->readDocument("$srcdir/$CH.xml");
+foreach my $doc (@ARGV){
+  $doc =~ s/\.xml$//;
+  my($subdir,$name);
+  if(-d "$DLMFBASE/$doc" && -f "$DLMFBASE/$doc/$doc.xml"){
+    $subdir = $doc; $name = $doc; }
+  elsif($doc =~ m|^(.*)/([^/]*)$|){
+    $subdir = $1; $name = $2; }
+  else {
+    $subdir = ''; $name = $doc; }
+  print STDERR "Processing Document $name ($subdir)\n" if $verbosity;
+  my $srcdir  = "$DLMFBASE/$subdir";
+  my $destdir = "$SITEBASE/$subdir";
+  my $dest    = "$destdir/$name.xml";
+  my $inchap = $post->readDocument("$srcdir/$name.xml");
   my $outchap = $post->process($inchap,
 			       sourceDirectory=>$srcdir,
 			       destinationDirectory=>$destdir,
@@ -67,8 +78,8 @@ BEGIN{ our @ISA = qw(LaTeXML::Post::MathImages); }
 sub preamble {
   my($self,$doc)=@_;
   $self->SUPER::preamble($doc) 
-      ."\\def\\beginDISPLAY{\\begingroup\\[[fullframe]}\n"
-      ."\\def\\endDISPLAY{\\]\\endgroup\\clearpage}\n";  }
+      ."\\def\\beginDISPLAY{\\[[fullframe]}\n"
+      ."\\def\\endDISPLAY{\\]}";  }
 
 #**********************************************************************
 package DLMFGraphics;
@@ -99,7 +110,7 @@ BEGIN { @VRML_EXTRA = qw(dlmf_proto.wrl sml_rec_proto.wrl
 sub processGraphic {
   my($self,$node)=@_;
   my $source = $self->findGraphicsFile($node);
-  return $self->Warn("Missing graphic for $node; skipping") unless $source;
+  return $self->Warn("Missing graphic for ".$node->toString."; skipping") unless $source;
   my $transform = $self->getTransform($node);
 
   # Check for magnifiable and/or vrml options; then remove them.
@@ -146,6 +157,25 @@ sub XXget_type_map {
 ##    {type=>'jpeg'}; }
   else {
     $self->SUPER::get_type_map($src,$options); }}
+
+#**********************************************************************
+package DLMFMagPictures;
+use strict;
+use LaTeXML::Post::PictureImages;
+BEGIN{ our @ISA = qw(LaTeXML::Post::PictureImages);}
+
+sub init {
+  my($self,%options)=@_;
+  $self->SUPER::init(%options); 
+  $$self{magnification} *= 1.5; }
+
+sub image_prefix { 'mpic'; }
+
+sub set_image {
+  my($self,$node,$path,$width,$height)=@_;
+  $node->setAttribute('magsrc',$path);
+  $node->setAttribute('magwidth',$width);
+  $node->setAttribute('magheight',$height); }
 
 #**********************************************************************
 # Custom form for Gallery images.

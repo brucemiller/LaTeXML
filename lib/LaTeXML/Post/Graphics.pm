@@ -124,7 +124,7 @@ sub processGraphic {
   my($self,$node)=@_;
   my $source = $self->findGraphicsFile($node);
   if(!$source){
-    $self->Warn("Missing graphic for $node; skipping"); return; }
+    $self->Warn("Missing graphic for ".$node->toString."; skipping"); return; }
   my $transform = $self->getTransform($node);
   my($image,$width,$height)=$self->transformGraphic($node,$source,$transform); 
   $self->setGraphicsSrc($node,$image,$width,$height) if $image;
@@ -135,6 +135,7 @@ sub processGraphic {
 sub transformGraphic {
   my($self,$node,$source,$transform)=@_;
   my ($reldir,$name,$type) = pathname_split(pathname_relative($source,$self->getSourceDirectory));
+  my $destdir = pathname_concat($$self{destinationDirectory},$reldir);
 
   my $key = join('|',"$reldir$name.$type", map(join(' ',@$_),@$transform));
   $self->ProgressDetailed("Processing $key");
@@ -146,10 +147,12 @@ sub transformGraphic {
   if(my $prev = $self->cacheLookup($key)){	# Image was processed on previous run?
     $prev =~ /^(.*?)\|(\d+)\|(\d+)$/;
     my ($cached,$width,$height)=($1,$2,$3);
-    $self->ProgressDetailed(">> Reuse $cached @ $width x $height"); 
-    ($cached,$width,$height); }
+    my $dest =  pathname_make(dir=>$$self{destinationDirectory},name=>$cached);
+    if(-f $dest && (-M $source >= -M $dest)){
+      $self->ProgressDetailed(">> Reuse $cached @ $width x $height");
+      return ($cached,$width,$height); }}
   # Trivial scaling case: Use original image with different width & height.
-  elsif($$self{trivial_scaling} && ($newtype eq $type) && !grep(!($_->[0]=~/^scale/),@$transform)){
+  if($$self{trivial_scaling} && ($newtype eq $type) && !grep(!($_->[0]=~/^scale/),@$transform)){
     my ($width,$height)=$self->trivial_scaling($source,$transform);
     my $copy = $self->copyFile($source);
     $self->ProgressDetailed(">> Copied to $copy for $width x $height");
@@ -162,7 +165,6 @@ sub transformGraphic {
     my $newname = "$name-GEN". ++$N;
     $self->cacheStore('_max_image_',$N);
 
-    my $destdir = pathname_concat($$self{destinationDirectory},$reldir);
     pathname_mkdir($destdir) 
       or return $self->Error("Could not create relative directory $destdir: $!");
     my $dest = pathname_make(dir=>$destdir,name=>$newname,type=>$newtype);

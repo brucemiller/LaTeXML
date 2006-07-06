@@ -125,14 +125,35 @@ sub finalize {
   $self->finalize_rec($root);
   $$self{document}; }
 
+sub XXfinalize_rec {
+  my($self,$node)=@_;
+  my $declared_font = $LaTeXML::FONT;
+  if(my $font_attr = $node->getAttribute('_font')){
+    if($$self{model}->canHaveAttribute($self->getNodeQName($node),'font')
+       && $node->hasChildNodes){
+      my $font = $$self{node_fonts}{$font_attr};
+      if(my $fontdecl = $font->relativeTo($LaTeXML::FONT)){
+	$node->setAttribute(font=>$fontdecl);
+	$declared_font = $font; }}}
+
+  $node->removeAttribute('_font');
+  $node->removeAttribute('_fontswitch');
+  $node->removeAttribute('_box');
+
+  local $LaTeXML::FONT = $declared_font;
+  foreach my $child ($node->childNodes){
+    $self->finalize_rec($child)
+      if $child->nodeType == XML_ELEMENT_NODE; }}
+
 sub finalize_rec {
   my($self,$node)=@_;
   my $declared_font = $LaTeXML::FONT;
   if(my $font_attr = $node->getAttribute('_font')){
-    if($$self{model}->canHaveAttribute($self->getNodeQName($node),'font') && $node->hasChildNodes){
+    if($$self{model}->canHaveAttribute($self->getNodeQName($node),'font')
+       && $node->hasChildNodes){
       my $font = $$self{node_fonts}{$font_attr};
-      if(my $fontdecl = $font->relativeTo($LaTeXML::FONT)){
-	$node->setAttribute(font=>$fontdecl);
+      if(my %fontdecl = $font->relativeTo($LaTeXML::FONT)){
+	map($node->setAttribute($_=>$fontdecl{$_}), keys %fontdecl);
 	$declared_font = $font; }}}
 
   $node->removeAttribute('_font');
@@ -198,7 +219,7 @@ sub absorb {
   elsif($self->getNodeQName($$self{node}) eq $MATH_TOKEN_NAME){ # Already in a XMTok, just insert the text
     print STDERR "Appending text \"$box\" to $MATH_TOKEN_NAME ".Stringify($$self{node})."\n"
       if $LaTeXML::Document::DEBUG;
-#    $$self{node}->appendText(NFC($box)); 
+#    $$self{node}->appendText($box); 
     $self->openMathText_internal($box); }
   else {			# Shouldn't happen?  Should I distinguish space from `real' stuff?
     # Odd case: constructors that work in math & text can insert raw strings in Math mode.
@@ -211,14 +232,14 @@ sub XXXopenText_internal {
   my $qname;
   if($$self{node}->nodeType == XML_TEXT_NODE){ # current node already is a text node.
     print STDERR "Appending text \"$text\" to ".Stringify($$self{node})."\n"  if $LaTeXML::Document::DEBUG;
-    $$self{node}->appendData(NFC($text)); }
+    $$self{node}->appendData($text); }
   else{
     if(!($qname = $self->getNodeQName($$self{node})) # No text allowed here!
        || !$$self{model}->canContain($qname,'#PCDATA')){
       return $$self{node} unless $text =~/\S/; # But ignore whitespace
       Error("Text \"$text\" is not allowed in ".Stringify($$self{node})); }
     my $point = $self->find_insertion_point('#PCDATA');
-    my $node = $$self{document}->createTextNode(NFC($text));
+    my $node = $$self{document}->createTextNode($text);
     print STDERR "Inserting text node for \"$text\" into ".Stringify($point)."\n"
        if $LaTeXML::Document::DEBUG;
     $point->appendChild($node);
@@ -229,12 +250,12 @@ sub openText_internal {
   my $qname;
   if($$self{node}->nodeType == XML_TEXT_NODE){ # current node already is a text node.
     print STDERR "Appending text \"$text\" to ".Stringify($$self{node})."\n"  if $LaTeXML::Document::DEBUG;
-    $$self{node}->appendData(NFC($text)); }
+    $$self{node}->appendData($text); }
   elsif(($text =~/\S/)					# If non space
 	|| (($qname = $self->getNodeQName($$self{node})) # or text allowed here
 	    && $$self{model}->canContain($qname,'#PCDATA'))){
     my $point = $self->find_insertion_point('#PCDATA');
-    my $node = $$self{document}->createTextNode(NFC($text));
+    my $node = $$self{document}->createTextNode($text);
     print STDERR "Inserting text node for \"$text\" into ".Stringify($point)."\n"
        if $LaTeXML::Document::DEBUG;
     $point->appendChild($node);
@@ -412,7 +433,7 @@ sub openMathText_internal {
   # And if there's already text???
   my $node = $$self{node};
   my $font = $self->getNodeFont($node);
-  $node->appendText(NFC($string));
+  $node->appendText($string);
 ##print STDERR "Trying Math Ligatures at \"$string\"\n";
   my @sibs = $node->parentNode->childNodes;
   foreach my $ligature ($STATE->getModel->getMathLigatures){
@@ -542,7 +563,6 @@ sub insertComment {
   my($self,$text)=@_;
   chomp($text);
   $text =~ s/\-\-+/__/g;
-  $text = NFC($text);
   if($$self{node}->nodeType == XML_TEXT_NODE){  # Get above plain text node!
     $$self{node} = $$self{node}->parentNode; }
   my $comment;

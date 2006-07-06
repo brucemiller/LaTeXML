@@ -72,28 +72,31 @@ sub readKeyVals {
     $gullet->skipSpaces; 
     # Read the keyword.
     my($ktoks,$delim)=$gullet->readUntil($T_EQ,$T_COMMA,$close);
-    Error("Fell off end expecting ".Stringify($close)." while reading KeyVals starting at $startloc")
+    Error("Fell off end expecting ".Stringify($close)." while reading KeyVal key starting at $startloc")
       unless $delim;
     my $key= $ktoks->toString; $key=~s/\s//g;
     if($key){
       my $keydef=LookupValue('KEYVAL@'.$keyset.'@'.$key);
       my $value;
       if($delim->equals($T_EQ)){	# Got =, so read the value
-	my $type = ($keydef && (scalar(@$keydef)==1) && $keydef->[0]->{type}) || 'Plain';
-#	my $verb = $type eq 'Semiverbatim';
 	# WHOA!!! Secret knowledge!!!
-	my $verb = $LaTeXML::Parameters::PARAMETER_TABLE{$type}{semiverbatim};
-	StartSemiverbatim if $verb;
+	my $type = ($keydef && (scalar(@$keydef)==1) && $keydef->[0]->{type}) || 'Plain';
+	my $typedef = $LaTeXML::Parameters::PARAMETER_TABLE{$type};
+	StartSemiverbatim if $typedef && $$typedef{semiverbatim};
+
 	($value,$delim)=$gullet->readUntil($T_COMMA,$close);
-	EndSemiverbatim if $verb;
-	($value) = $keydef->reparseArgument($gullet,$value) 
-	  if $type !~ /^(Plain|Semiverbatim)$/;
+	if($type eq 'Plain'){}	# Fine as is.
+	elsif($type eq 'Semiverbatim'){ # Needs neutralization
+	  $value = $value->neutralize; }
+	else {
+	  ($value) = $keydef->reparseArgument($gullet,$value) }
+	EndSemiverbatim if $typedef && $$typedef{semiverbatim};
       }
       else {			# Else, get default value.
 	$value = LookupValue('KEYVAL@'.$keyset.'@'.$key.'@default'); }
       push(@kv,$key);
       push(@kv,$value); }
-    Error("Fell off end expecting ".Stringify($close)." while reading KeyVals starting at $startloc")
+    Error("Fell off end expecting ".Stringify($close)." while reading KeyVal value starting at $startloc")
       unless $delim;
     last if $delim->equals($close); }
   LaTeXML::KeyVals->new($keyset,$open,$close,@kv); }
@@ -137,6 +140,13 @@ sub new {
 sub getValue {
   my($self,$key)=@_;
   $$self{hash}{$key}; }
+
+sub setValue {
+  my($self,$key,$value)=@_;
+  if(defined $value){
+    $$self{hash}{$key}=$value; }
+  else {
+    delete $$self{hash}{$key}; }}
 
 sub getPairs {
   my($self)=@_;

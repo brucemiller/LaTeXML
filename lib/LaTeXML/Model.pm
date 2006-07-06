@@ -226,33 +226,33 @@ sub loadDocType {
 #    return; 
   }
   # Parse the DTD
-  foreach my $dir (@INC){	# Load catalog (all, 1st only ???)
-    next unless -f "$dir/LaTeXML/dtd/catalog";
-    NoteBegin("Loading XML Catalog $dir/LaTeXML/dtd/catalog");
-    XML::LibXML->load_catalog("$dir/LaTeXML/dtd/catalog"); 
-    NoteEnd("Loading XML Catalog $dir/LaTeXML/dtd/catalog");
-    last; }
+  NoteBegin("Loading XML catalogs");
+  foreach my $catalog (	pathname_findall('catalog',
+					 paths=>$STATE->lookupValue('SEARCHPATHS'),
+					 installation_subdir=>'dtd')){
+    NoteProgress("Loading catalog $catalog. ");
+    XML::LibXML->load_catalog($catalog); }
+  NoteEnd("Loading XML catalogs");
+
   NoteBegin("Loading DTD for $$self{public_id} $$self{system_id}");
+  # NOTE: setting XML_DEBUG_CATALOG makes this Fail!!!
   my $dtd = XML::LibXML::Dtd->new($$self{public_id},$$self{system_id});
   if($dtd){
     NoteProgress(" via catalog "); }
   else { # Couldn't find dtd in catalog, try finding the file. (search path?)
-    my @paths = (@{ $STATE->lookupValue('SEARCHPATHS') },
-		 map("$_/dtd", @INC));
-    my $dtdfile = pathname_find($$self{system_id},paths=>[@paths]);
+    my $dtdfile = pathname_find($$self{system_id},
+				paths=>$STATE->lookupValue('SEARCHPATHS'),
+				installation_subdir=>'dtd');
     if($dtdfile){
-      { local $/=undef;
-	NoteProgress(" from $dtdfile ");
-	if(open(DTD,$dtdfile)){
-	  my $dtdtext = <DTD>;
-	  close(DTD);
-	  $dtd = XML::LibXML::Dtd->parse_string($dtdtext); 
-	  Error("Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed") unless $dtd; }
-	else {
-	  Error("Couldn't read DTD from $dtdfile"); }}}
+      NoteProgress(" from $dtdfile ");
+      $dtd = XML::LibXML::Dtd->new($$self{public_id},$dtdfile);
+      NoteProgress(" from $dtdfile ") if $dtd;
+      Error("Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed")
+	unless $dtd;
+      }
     else {
       Error("Couldn't find DTD \"$$self{public_id}\" \"$$self{system_id}\" failed"); }}
-  NoteEnd("Loading DTD for $$self{public_id} $$self{system_id}");		# Done reading DTD
+#  NoteEnd("Loading DTD for $$self{public_id} $$self{system_id}");		# Done reading DTD
   return unless $dtd;
 
   $$self{dtd}=$dtd;
@@ -266,7 +266,7 @@ sub loadDocType {
 	my($tag,$model)=($1,$2);
 	$$self{tagprop}{$tag}{preferred_prefix} = $1 	if $tag =~ /^([^:]+):(.+)/;
 	$tag = $self->normalizeDocTypeName($tag);
-	$model=~ s/[\*\?\,\(\)\|]/ /g;
+	$model=~ s/[\+\*\?\,\(\)\|]/ /g;
 	$model=~ s/\s+/ /g; $model=~ s/^\s+//; $model=~ s/\s+$//;
 	my @model = map($self->normalizeDocTypeName($_),split(/ /,$model));
 	$$self{tagprop}{$tag}{model}={ map(($_ => 1), @model)};
@@ -274,7 +274,7 @@ sub loadDocType {
       else { warn("Warning: got \"$decl\" from DTD");}
     }
     elsif($node->nodeType() == XML_ATTRIBUTE_DECL()){
-      if($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-0-+]+)\s+([a-zA-Z0-0-+]+)\s+(.*)>$/){
+      if($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-9-]+)\s+([a-zA-Z0-9-]+)\s+(.*)>$/){
 	my($tag,$attr)=($1,$2);
 	$tag = $self->normalizeDocTypeName($tag);
 	$$self{tagprop}{$tag}{attributes}{$attr}=1; }}

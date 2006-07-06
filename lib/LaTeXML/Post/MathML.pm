@@ -51,7 +51,8 @@ sub process {
     my ($xmath) = $ltx_math->getChildrenByTagNameNS($self->getNamespace,'XMath');
     my $mml_math= $ltx_math->addNewChild($mmlURI,'math');
     $mml_math->setAttribute(display=>($mode eq 'display' ? 'block' : 'inline'));
-    incorporate($mml_math,$mmlURI,$self->processNode($xmath)); }
+    my $style = ($mode eq 'display' ? 'display' : 'text');
+    incorporate($mml_math,$mmlURI,$self->processNode($xmath,$style)); }
   $doc; }
 
 # ================================================================================
@@ -87,9 +88,10 @@ sub incorporate {
 # General translation utilities.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-sub getTokenName {
+sub getTokenMeaning {
   my($node)=@_;
-  my $m = $node->getAttribute('name') || $node->textContent;
+  my $m = $node->getAttribute('meaning') || $node->getAttribute('name')
+    || $node->textContent;
   (defined $m ? $m : '?'); }
 
 sub realize {
@@ -129,14 +131,45 @@ sub lookupContent {
 # Support functions for Presentation MathML
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+sub pmml_top {
+  my($node,$style)=@_;
+  local $LaTeXML::MathML::STYLE = $style;
+  pmml($node); }
+
+our %stylestep=(display=>'text', text=>'script',
+	       script=>'scriptscript', scriptscript=>'scriptscript');
+our %stylemap
+  = (display     =>{text        =>[displaystyle=>'false'],
+		    script      =>[displaystyle=>'false',scriptlevel=>'+1'],
+		    scriptscript=>[displaystyle=>'false',scriptlevel=>'+2']},
+     text        =>{display     =>[displaystyle=>'true'],
+		    script      =>[scriptlevel=>'+1'],
+		    scriptscript=>[scriptlevel=>'+2']},
+     script      =>{display     =>[displaystyle=>'true',scriptlevel=>'-1'],
+		    text        =>[scriptlevel=>'-1'],
+		    scriptscript=>[scriptlevel=>'+1']},
+     scriptscript=>{display     =>[displaystyle=>'true',scriptlevel=>'-2'],
+		    text        =>[scriptlevel=>'-2'],
+		    script      =>[scriptlevel=>'-1']});
+
+sub pmml_smaller {
+  my($node)=@_;
+  local $LaTeXML::MathML::STYLE = $stylestep{$LaTeXML::MathML::STYLE};
+  pmml($node); }
+
 sub pmml {
   my($node)=@_;
   my $o = $node->getAttribute('open');
   my $c = $node->getAttribute('close');
   my $p = $node->getAttribute('punctuation');
-  my $result = ($node->nodeName eq 'XMRef' ? pmml(realize($node)) : pmml_internal($node));
-  $result = ( $o || $c ? pmml_parenthesize($result,$o,$c) : $result); 
-  ($p ? ['mrow',{},$result,pmml_mo($p)] : $result); }
+  # Do the core conversion.
+  my $result = ($node->nodeName eq 'XMRef'
+		? pmml(realize($node))
+		: pmml_internal($node));
+  # Handle generic things: open/close delimiters, punctuation
+  $result = pmml_parenthesize($result,$o,$c) if $o || $c;
+  $result = ['mrow',{},$result,pmml_mo($p)] if $p;
+  $result; }
 
 sub pmml_internal {
   my($node)=@_;
@@ -157,12 +190,35 @@ sub pmml_internal {
     elsif($role && ($role =~ /^POST(SUB|SUPER)SCRIPT$/)){
       pmml_unparsed_script($role,$op); }
     else {
-      $op = realize($op);		# NOTE: Could loose open/close on XMRef ???
-      &{ lookupPresenter('Apply',$op->getAttribute('role'),getTokenName($op)) }($op,@args); }}
+      $op = realize($op);  # NOTE: Could loose open/close on XMRef ???
+      my $style = $op->getAttribute('style');
+      my $styleattr = $style && $stylemap{$LaTeXML::MathML::STYLE}{$style};
+      local $LaTeXML::MathML::STYLE 
+	= ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
+      my $result = &{ lookupPresenter('Apply',$op->getAttribute('role'),
+				      getTokenMeaning($op)) }($op,@args);
+      $result = ['mstyle',{@$styleattr},$result] if $styleattr;
+      $result; }}
   elsif($tag eq 'XMTok'){
-    &{ lookupPresenter('Token',$role,getTokenName($node)) }($node); }
+    &{ lookupPresenter('Token',$role,getTokenMeaning($node)) }($node); }
   elsif($tag eq 'XMHint'){
-    &{ lookupPresenter('Hint',$role,getTokenName($node)) }($node); }
+    &{ lookupPresenter('Hint',$role,getTokenMeaning($node)) }($node); }
+  elsif($tag eq 'XMArray'){
+    my @rows = ();
+    foreach my $row (element_nodes($node)){
+      my @cols = ();
+      foreach my $col (element_nodes($row)){
+	my $a = $col->getAttribute('align');
+	my $b = $col->getAttribute('border');
+	my $h = (($col->getAttribute('thead')||'') eq 'yes') && 'thead';
+	my $c = ($b ? ($h ? "$b $h" : $b) : $h);
+	my $cs = $col->getAttribute('colspan');
+	push(@cols,['mtd',{($a ? (columnalign=>$a):()),
+			   ($c ? (class=>$c):()),
+			   ($cs ? (columnspan=>$cs):())},
+		    map(pmml($_),element_nodes($col))]); }
+      push(@rows,['mtr',{},@cols]); }
+    ['mtable',{rowspacing=>"0.2ex", columnspacing=>"0.4em"},@rows]; }
   else {
     ['mtext',{},$node->textContent]; }}
 
@@ -228,25 +284,43 @@ our %mathvariants = ('bold'             =>'bold',
 		     'sansserif bold italic'   => 'sans-serif-bold-italic',
 		     'typewriter'       => 'monospace');
 
+# The font differences (from the containing context) have been deciphered
+# into font, size and color attributes.  The font should match
+# one of the above... (?)
+
+our %sizes=(tiny=>'small',script=>'small',footnote=>'small',small=>'small',
+	    normal=>'normal',
+	    large=>'big',Large=>'big',LARGE=>'big',huge=>'big',Huge=>'big');
+
 sub pmml_mi {
   my($item)=@_;
-  my $font    = (ref $item ? $item->getAttribute('font') : undef);
-  my $variant = ($font && $mathvariants{$font})||'';
-  my $content = (ref $item ?  $item->textContent : $item);
-  if($content =~ /^.$/){	# Single char?
+  my $font  = (ref $item ? $item->getAttribute('font') : undef);
+  my $size  = (ref $item ? $item->getAttribute('size') : undef);
+  my $color = (ref $item ? $item->getAttribute('color') : undef);
+  my $text  = (ref $item ?  $item->textContent : $item);
+  my $variant = ($font ? $mathvariants{$font} : '');
+  if($text =~ /^.$/){	# Single char in mi?
     if($variant eq 'italic'){ $variant = ''; } # Defaults to italic
     elsif(!$variant){ $variant = 'normal'; }}  # must say so explicitly.
-  ['mi',{($variant ? (mathvariant=>$variant) : ())},$content]; }
+  ['mi',{($variant ? (mathvariant=>$variant):()),
+	 ($size    ? (mathsize=>$sizes{$size}):()),
+	 ($color   ? (mathcolor=>$color):())},$text]; }
 
 sub pmml_mo {
-  my($op)=@_;
-  my $font    = (ref $op ? $op->getAttribute('font') : undef);
-  my $variant = $font && $mathvariants{$font};
-  my $content = (ref $op ? $op->textContent : $op);
-  ['mo',{($variant ? (mathvariant=>$variant) : ()),
-	 # If an operator has specifically located it's scripts, don't let mathml move them.
-	 (((ref $op && $op->getAttribute('stackscripts'))||'no') eq 'yes' ? (movablelimits=>'false'):())},
-   $content]; }
+  my($item)=@_;
+  my $font  = (ref $item ? $item->getAttribute('font') : undef);
+  my $size  = (ref $item ? $item->getAttribute('size') : undef);
+  my $color = (ref $item ? $item->getAttribute('color') : undef);
+  my $text  = (ref $item ?  $item->textContent : $item);
+  my $variant = ($font ? $mathvariants{$font} : '');
+  ['mo',{($variant ? (mathvariant=>$variant):()),
+	 ($size    ? (mathsize=>$sizes{$size}):()),
+	 ($color   ? (mathcolor=>$color):()),
+	 # If an operator has specifically located it's scripts,
+	 # don't let mathml move them.
+	 (((ref $item && $item->getAttribute('stackscripts'))||'no') eq 'yes'
+	  ? (movablelimits=>'false'):())},
+   $text]; }
 
 ## POSTSUBSCRIPT | POSTSUPERSCRIPT should not remain in successfully parsed math.
 # This gives something `presentable', though not correct.
@@ -254,11 +328,16 @@ sub pmml_mo {
 # I doubt an empty <mi/> is valid, but what is?
 sub pmml_unparsed_script {
   my($type,$script)=@_;
-  [ ($type eq 'POSTSUBSCRIPT' ? 'msub' : 'msup' ), {}, ['mi'],pmml($script)]; }
+  [ ($type eq 'POSTSUBSCRIPT' ? 'msub' : 'msup' ), {}, ['mi'],
+    pmml_smaller($script)]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Support functions for Content MathML
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+sub cmml_top {
+  my($node,$style)=@_;
+  cmml($node); }
 
 sub cmml {
   my($node)=@_;
@@ -280,11 +359,11 @@ sub cmml {
       ['merror',{},['mtext',{},"Missing Operator"]]; }
     else {
       $op = realize($op);		# NOTE: Could loose open/close on XMRef ???
-      &{ lookupContent('Apply',$op->getAttribute('role'),getTokenName($op)) }($op,@args); }}
+      &{ lookupContent('Apply',$op->getAttribute('role'),getTokenMeaning($op)) }($op,@args); }}
   elsif($tag eq 'XMTok'){
-    &{ lookupContent('Token',$node->getAttribute('role'),getTokenName($node)) }($node); }
+    &{ lookupContent('Token',$node->getAttribute('role'),getTokenMeaning($node)) }($node); }
   elsif($tag eq 'XMHint'){	# ????
-    &{ lookupContent('Hint',$node->getAttribute('role'),getTokenName($node)) }($node); }
+    &{ lookupContent('Hint',$node->getAttribute('role'),getTokenMeaning($node)) }($node); }
   else {
     ['mtext',{},$node->textContent]; }}
 
@@ -424,24 +503,23 @@ DefMathML('Hint:?:?', sub { undef; });
 # NOTE: A lot of these special cases could be eliminated by
 # consistent creation of XMDual's (using DefMath and similar)
 
-DefMathML('Apply:?:?', 
-	  sub {
-	    my($op,@args)=@_;
-	    ['mrow',{},
-	     pmml($op),pmml_mo("\x{2061}"),	# FUNCTION APPLICATION
-	     pmml_parenthesize(pmml_punctuate($op->getAttribute('separators'),@args),
-			       $op->getAttribute('argopen'),$op->getAttribute('argclose'))]; },
-	  sub {
-	    my($op,@args)=@_;
-	    ['apply',{},cmml($op), map(cmml($_),@args)]; });
+DefMathML('Apply:?:?', sub {
+  my($op,@args)=@_;
+  ['mrow',{},
+   pmml($op),pmml_mo("\x{2061}"),	# FUNCTION APPLICATION
+   pmml_parenthesize(pmml_punctuate($op->getAttribute('separators'),@args),
+		     $op->getAttribute('argopen'),$op->getAttribute('argclose'))]; },
+  sub {
+    my($op,@args)=@_;
+    ['apply',{},cmml($op), map(cmml($_),@args)]; });
 
 DefMathML('Apply:OVERACCENT:?', sub {
   my($accent,$base)=@_;
-  ['mover',{accent=>'true'}, pmml($base),pmml($accent)]; });
+  ['mover',{accent=>'true'}, pmml($base),pmml_smaller($accent)]; });
 
 DefMathML('Apply:UNDERACCENT:?', sub {
   my($accent,$base)=@_;
-  ['munder',{accent=>'true'}, pmml($base),pmml($accent)]; });
+  ['munder',{accent=>'true'}, pmml($base),pmml_smaller($accent)]; });
 
 # Top level relations
 DefMathML('Apply:?:Formulae',sub { 
@@ -454,36 +532,40 @@ DefMathML('Apply:?:MultiRelation',sub {
 
 # Defaults for various parts-of-speech
 
-# For DUAL, just translate the presentation form.
-DefMathML('Apply:?:DUAL', sub { pmml($_[2]); });
-
-DefMathML('Apply:?:Superscript', sub {
+DefMathML('Apply:SUPERSCRIPTOP:?', sub {
   my($op,$base,$sup)=@_;
-  [((($base->getAttribute('stackscripts')||'no') eq 'yes') ? 'mover' : 'msup'),{},
-   pmml($base),pmml($sup)]; });
+  [((($base->getAttribute('stackscripts')||'no') eq 'yes') ? 'mover' : 'msup'),
+   {},
+   pmml($base),pmml_smaller($sup)]; });
 
-DefMathML('Apply:?:Subscript',   sub {
+DefMathML('Apply:SUBSCRIPTOP:?',   sub {
   my($op,$base,$sub)=@_;
-  [((($base->getAttribute('stackscripts')||'no') eq 'yes') ? 'munder' : 'msub'),{},
-   pmml($base),pmml($sub)]; });
+  [((($base->getAttribute('stackscripts')||'no') eq 'yes') ? 'munder' : 'msub'),
+   {},
+   pmml($base),pmml_smaller($sub)]; });
 
-DefMathML('Apply:?:SubSuperscript',   sub { 
+# Should we have such a thing, or should the combining
+# be done by the sub/sup handlers?
+DefMathML('Apply:SUBSUPERSCRIPTOP:?',   sub { 
   my($op,$base,$sub,$sup)=@_;
-  [((($base->getAttribute('stackscripts')||'no') eq 'yes') ? 'munderover' : 'msubsup'),{},
-   pmml($base),pmml($sub),pmml($sup)]; });
+  [((($base->getAttribute('stackscripts')||'no') eq 'yes')
+    ? 'munderover' : 'msubsup'),{},
+   pmml($base),pmml_smaller($sub),pmml_smaller($sup)]; });
 
-DefMathML('Apply:POSTFIX:?',     sub { ['mrow',{},pmml($_[1]),pmml($_[0])]; });
+DefMathML('Apply:POSTFIX:?', sub {
+  ['mrow',{},pmml($_[1]),pmml($_[0])]; });
 
 DefMathML('Apply:?:sideset', sub {
   my($op,$presub,$presup,$postsub,$postsup,$base)=@_;
   ['mmultiscripts',{},
-   pmml($base),pmml($postsub),pmml($postsup), 
-   ['mprescripts'],pmml($presub),pmml($presup)]; });
+   pmml($base),pmml_smaller($postsub),pmml_smaller($postsup), 
+   ['mprescripts'],pmml_smaller($presub),pmml_smaller($presup)]; });
 
 DefMathML('Apply:ADDOP:?', \&pmml_infix);
 DefMathML('Apply:MULOP:?', \&pmml_infix);
 DefMathML('Apply:RELOP:?', \&pmml_infix);
 DefMathML('Apply:ARROW:?', \&pmml_infix);
+DefMathML('Apply:COMPOSEOP:?', \&pmml_infix);
 DefMathML('Apply:METARELOP:?',\&pmml_infix);
 
 DefMathML('Apply:FENCED:?',sub {
@@ -491,108 +573,51 @@ DefMathML('Apply:FENCED:?',sub {
   pmml_parenthesize(pmml_punctuate($op->getAttribute('separators'),@elements),
 		    $op->getAttribute('argopen'), $op->getAttribute('argclose')); });
 
+# Note how annoyingly MML's arrays don't change the style the same
+# way TeX does!
+DefMathML('Apply:STACKED:?', sub {
+  my($op,$over,$under)=@_;
+  my $stack = ['mtable',{rowspacing=>"0.2ex", columnspacing=>"0.4em"},
+	       ['mtr',{},['mtd',{},pmml($over)]],
+	       ['mtr',{},['mtd',{},pmml($under)]]];
+  if($LaTeXML::MathML::STYLE =~/^(text|script)$/){
+    ['mstyle',{scriptlevel=>'+1'},$stack]; }
+  else {
+    $stack; }});
+
 # Various specific formatters.
 DefMathML('Apply:?:sqrt', sub { ['msqrt',{},pmml($_[1])]; });
-DefMathML('Apply:?:root', sub { ['mroot',{},pmml($_[2]),pmml($_[1])]; });
+DefMathML('Apply:?:root', sub { ['mroot',{},pmml($_[2]),
+				 pmml_smaller($_[1])]; });
 
-# NOTE: Need to handle displaystyle
-# It is only handled here by assuming that it is already true!!!
-# Need to bind and control it!!!!!
-DefMathML('Apply:?:/', sub {
+DefMathML('Apply:?:div', sub {
   my($op,$num,$den)=@_;
-  my $style = $op->getAttribute('style') || '';
-  if($style eq 'inline'){
-    ['mfrac',{bevelled=>'true'}, pmml($num),pmml($den)]; }
-  elsif($style eq 'display') {
-    ['mfrac',{},pmml($num),pmml($den)]; }
-  else {
-    ['mstyle',{displaystyle=>'false'},['mfrac',{},pmml($num),pmml($den)]]; }
-});
-
-# NOTE: the $pow is either undef or an XMath node!!
-sub pmml_pow {
-  my($base,$pow)=@_;
-  (defined $pow ? ['msup',{},$base,pmml($pow)] : $base); }
-
-# NOTE: Need to handle displaystyle
-sub pmml_deriv {
-  my($diffop,$op,$expr,$var,$n)=@_;
-  ['mfrac',{(($op->getAttribute('style')||'') eq 'inline' ? (bevelled=>'true') : ())},
-   ['mrow',{},pmml_pow(pmml_mo($diffop),$n),pmml($expr)],
-   pmml_pow(['mrow',{},pmml_mo($diffop),pmml($var)],$n)]; }
-
-DefMathML('Apply:?:deriv',  sub { pmml_deriv("\x{2146}",@_); }); # DOUBLE-STRUCK ITALIC SMALL D
-DefMathML('Apply:?:pderiv', sub { pmml_deriv("\x{2202}",@_); }); # PARTIAL DIFFERENTIAL
+  my $style = $op->getAttribute('style');
+  my $thickness = $op->getAttribute('thickness');
+  ['mfrac',{($thickness ? (linethickness=>$thickness):()),
+	    ($style && ($style eq 'inline') ? (bevelled=>'true'):())},
+   pmml_smaller($num),pmml_smaller($den)]; });
 
 DefMathML('Apply:?:LimitFrom', sub {
   my($op,$arg,$dir)=@_;
   ['mrow',{},pmml($arg),pmml($dir)]; });
 
-DefMathML('Apply:?:diff', sub {  
-  my($op,$x,$n)=@_;
-  ['mrow',{},pmml_pow(pmml_mo("\x{2146}"),$n),pmml($x)]; }); # DOUBLE-STRUCK ITALIC SMALL D
-
-DefMathML('Apply:?:pdiff', sub {  
-  my($op,$x,$n)=@_;
-  ['mrow',{},pmml_pow(pmml_mo("\x{2202}"),$n),pmml($x)]; }); # PARTIAL DIFFERENTIAL
-
-DefMathML('Apply:?:Cases', sub {
-  my($op,@cases)=@_;
-  ['mrow',{},pmml_mo('{'), ['mtable',{},map(pmml($_),@cases)]]; });
-
-DefMathML('Apply:?:RCases', sub {
-  my($op,$array)=@_;
-  pmml_parenthesize(pmml($array),undef,$op->getAttribute('close')); });
-
-DefMathML('Apply:?:LCases', sub {
-  my($op,$array)=@_;
-  pmml_parenthesize(pmml($array),$op->getAttribute('open'),undef); });
-
-DefMathML('Apply:?:Case',sub {
-  my($op,@cells)=@_;
-  ['mtr',{},map(pmml($_),@cells)]; });
-
-DefMathML('Apply:?:Array', sub {
-  my($op,@rows)=@_;
-  ['mtable',{},map(pmml($_),@rows)]; });
-
-DefMathML('Apply:?:Matrix', sub {
-  my($op,@rows)=@_;
-  pmml_parenthesize(['mtable',{},map(pmml($_),@rows)],
-		    $op->getAttribute('open'),$op->getAttribute('close')); });
-
-DefMathML('Apply:?:Row',sub {
-  my($op,@cells)=@_;
-  ['mtr',{},map(pmml($_),@cells)]; });
-
-DefMathML('Apply:?:Cell',sub {
-  my($op,@content)=@_;
-  ['mtd',{},map(pmml($_),@content)]; });
-
-DefMathML('Apply:?:binomial', sub {
-  my($op,$over,$under)=@_;
-  pmml_parenthesize(['mtable',{}, 
-		     ['mtr',{},['mtd',{},pmml($over)]],
-		     ['mtr',{},['mtd',{},pmml($under)]]], '(',')'); });
-
-DefMathML('Apply:?:pochhammer',sub {
-  my($op,$a,$b)=@_;
-  ['msub',{}, pmml_parenthesize(pmml($a),'(',')'),pmml($b)]; });
-
-DefMathML('Apply:?:stacked', sub {
-  my($op,$over,$under)=@_;
-  ['mtable',{},
-   ['mtr',{},['mtd',{},pmml($over)]],
-   ['mtr',{},['mtd',{},pmml($under)]]]; });
-
 DefMathML('Apply:?:Annotated', sub {
   my($op,$var,$annotation)=@_;
   ['mrow',{},pmml($var),pmml($annotation)];});
+
+# NOTE: Markup probably isn't right here....
+DefMathML('Apply:?:AT', sub {
+  my($op,$expr,$value)=@_;
+  pmml_row(pmml($expr),['msub',{},pmml_mo('|'),pmml_smaller($value)]); });
+
 
 # Have to deal w/ screwy structure:
 # If denom is a sum/diff then last summand can be: cdots, cfrac 
 #  or invisibleTimes of cdots and something which could also be a cfrac!
 # NOTE: Deal with cfracstyle!!
+# OR: Can XMDual build the right stuff?
+# AND, the propogation of style is likely wrong...
 sub do_cfrac {
   my($numer,$denom)=@_;
   if($denom->nodeName eq 'XMApp'){ # Denominator is some kind of application
@@ -600,27 +625,24 @@ sub do_cfrac {
     if(($denomop->getAttribute('role')||'') eq 'ADDOP'){ # Is it a sum or difference?
       my $last = pop(@denomargs);			# Check last operand in denominator.
       # this is the current contribution to the cfrac (if we match the last term)
-      my $curr = ['mfrac',{},pmml($numer),['mrow',{},pmml_infix($denomop,@denomargs),pmml($denomop)]];
-      if(getTokenName($last) eq 'cdots'){ # Denom ends w/ \cdots
+      my $curr = ['mfrac',{},pmml_smaller($numer),
+		  ['mrow',{},pmml_infix($denomop,@denomargs),
+		   pmml_smaller($denomop)]];
+      if(getTokenMeaning($last) eq 'cdots'){ # Denom ends w/ \cdots
 	return ($curr,pmml($last));}		   # bring dots up to toplevel
       elsif($last->nodeName eq 'XMApp'){	   # Denom ends w/ application --- what kind?
 	my($lastop,@lastargs)=element_nodes($last);
-	if(getTokenName($lastop) eq 'cfrac'){ # Denom ends w/ cfrac, pull it to toplevel
+	if(getTokenMeaning($lastop) eq 'cfrac'){ # Denom ends w/ cfrac, pull it to toplevel
 #	  return ($curr,do_cfrac(@lastargs)); }
 	  return ($curr,pmml($last)); }
-	elsif((getTokenName($lastop) eq "\x{2062}")  # Denom ends w/ * (invisible)
-	      && (scalar(@lastargs)==2) && (getTokenName($lastargs[0]) eq 'cdots')){
+	elsif((getTokenMeaning($lastop) eq "\x{2062}")  # Denom ends w/ * (invisible)
+	      && (scalar(@lastargs)==2) && (getTokenMeaning($lastargs[0]) eq 'cdots')){
 	  return ($curr,pmml($lastargs[0]),pmml($lastargs[1])); }}}}
-  (['mfrac',{},pmml($numer),pmml($denom)]); }
+  (['mfrac',{},pmml_smaller($numer),pmml_smaller($denom)]); }
 
 DefMathML('Apply:?:cfrac', sub {
   my($op,$numer,$denom)=@_;
   pmml_row(do_cfrac($numer,$denom)); });
-
-# NOTE: Markup probably isn't right here....
-DefMathML('Apply:?:AT', sub {
-  my($op,$expr,$value)=@_;
-  pmml_row(pmml($expr),['msub',{},pmml_mo('|'),pmml($value)]); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Specific converters for Presentation, Content, or Parallel.
@@ -632,7 +654,7 @@ package LaTeXML::Post::MathML::Presentation;
 use strict;
 use base qw(LaTeXML::Post::MathML);
 
-sub processNode { LaTeXML::Post::MathML::pmml($_[1]); }
+sub processNode { LaTeXML::Post::MathML::pmml_top($_[1],$_[2]); }
 sub getEncodingName { 'MathML-Presentation'; }
 
 #================================================================================
@@ -641,7 +663,7 @@ package LaTeXML::Post::MathML::Content;
 use strict;
 use base qw(LaTeXML::Post::MathML);
 
-sub processNode { LaTeXML::Post::MathML::cmml($_[1]); }
+sub processNode { LaTeXML::Post::MathML::cmml_top($_[1],$_[2]); }
 sub getEncodingName { 'MathML-Content'; }
 
 #================================================================================
@@ -651,11 +673,12 @@ use strict;
 use base qw(LaTeXML::Post::MathML);
 
 sub processNode {
-  my($self,$node)=@_;
+  my($self,$node,$style)=@_;
   my($main_proc,@annotation_procs)=@{$$self{math_processors}};
   ['semantics',{},
-   $main_proc->processNode($node),
-   map( ['annotation-xml',{encoding=>$_->getEncodingName},$_->processNode($node)],
+   $main_proc->processNode($node,$style),
+   map( ['annotation-xml',{encoding=>$_->getEncodingName},
+	 $_->processNode($node,$style)],
 	@annotation_procs) ]; }
 sub getEncodingName { 'MathML-Parallel'; }
 

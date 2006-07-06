@@ -41,19 +41,10 @@
 <!ELEMENT %LaTeXML.tbody.qname; (%LaTeXML.tr.qname;)*>
 <!ATTLIST tbody %LaTeXML.Common.attrib;>
 
-<!ELEMENT %LaTeXML.tr.qname; (%LaTeXML.td.qname; | %LaTeXML.th.qname; | %LaTeXML.td-between.qname;)*>
+<!ELEMENT %LaTeXML.tr.qname; (%LaTeXML.td.qname; | %LaTeXML.td-between.qname;)*>
 <!ATTLIST %LaTeXML.tr.qname;
 	  %LaTeXML.Common.attrib;
 	  >
-
-<!ELEMENT %LaTeXML.th.qname; %LaTeXML.Flow.model;>
-<!ATTLIST %LaTeXML.th.qname;
-	  %LaTeXML.Common.attrib; 
-          rowpan  CDATA #IMPLIED
-          colspan CDATA #IMPLIED
-          align   CDATA #IMPLIED
-          width   CDATA #IMPLIED
-	  border  CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.td.qname; %LaTeXML.Flow.model;>
 <!ATTLIST %LaTeXML.td.qname;
@@ -61,6 +52,7 @@
           colspan CDATA #IMPLIED
           align   CDATA #IMPLIED
           width   CDATA #IMPLIED
-	  border  CDATA #IMPLIED>
-
+	  border  CDATA #IMPLIED
+	  thead   (yes|no) #IMPLIED
+>
 <!ELEMENT %LaTeXML.td-between.qname; %LaTeXML.Flow.model;>

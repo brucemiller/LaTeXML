@@ -1,0 +1,70 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  epsfig                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+# (See  LaTeXML::Post::Graphics for suggested postprocessing)
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+#**********************************************************************
+
+RequirePackage('graphicx');
+AssignValue(epsfclip=>0);
+DefKeyVal('epsGin','width','Dimension');
+DefKeyVal('epsGin','height','Dimension');
+DefKeyVal('epsGin','keepaspectratio','','true');
+DefKeyVal('epsGin','clip','','true');
+
+DefKeyVal('epsGin','figure','Semiverbatim');
+DefKeyVal('epsGin','file','Semiverbatim');
+
+DefKeyVal('epsGin','prolog','Semiverbatim');
+DefKeyVal('epsGin','silent','');
+
+DefConstructor('\psfig RequiredKeyVals:epsGin',
+	       "<ltx:graphics graphic='#file' options='#1'/>",
+	      afterDigest=>sub {
+		my $kv = $_[1]->getArg(1);
+		my $file = $kv->getValue('file')|| $kv->getValue('figure');
+		$kv->setValue(file=>undef);
+		$kv->setValue(figure=>undef);
+		$kv->setValue(clip=>'true') if LookupValue('epsfclip');
+		$_[1]->setProperty(file=>$file); });
+
+Let('\epsfig','\psfig');
+
+# Also unimplemented... probably nothing useful to pass thru anyway?
+DefConstructor('\DeclareGraphicsExtensions{}','');
+DefConstructor('\DeclareGraphicsRule{}{}{}{}','');
+# Nothing done about the keyval package...
+
+# Ignorable
+DefPrimitive('\psdraft',undef);
+DefPrimitive('\psfull',undef);
+DefPrimitive('\pssilent',undef);
+DefPrimitive('\psnoisy',undef);
+DefPrimitive('\psfigdriver{}',undef);
+# \epsfsize ?
+# Probably not ignorable, but don't have time to figure out just now...
+DefPrimitive('\epsfbox[]{}',undef);
+Let('\epsffile','\epsfbox');
+DefPrimitive('\epsfclipon',sub {AssignValue(epsfclip=>1); });
+DefPrimitive('\epsfclipoff',sub {AssignValue(epsfclip=>0); });
+
+DefPrimitive('\epsfverbosetrue',undef);
+DefPrimitive('\epsfverbosefalse',undef);
+
+# Ignored!
+DefRegister('\epsfxsize'=>Dimension(0));
+DefRegister('\epsfysize'=>Dimension(0));
+#**********************************************************************
+1;
+

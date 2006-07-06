@@ -1,3 +1,57 @@
+0.5.x  2006-06-24
+     - With some trepidations...
+       Converted math arrays to use XMArray/XMRow/XMCell
+       so there's more sharing with tabular, and it can
+       handle the lines, headings, etc.
+       Instead of the more abstract XMApp/[role=ARRAY], etc.
+
+     - Added a meaning attribute to math.
+       The idea is:
+         role : grammar or presentation info.
+	 name : a name for the token, probably from the cs,
+	        but not necessarily completely semantic.
+	 meaning: a hopefully semantic enough name for the token.	
+	 	This would be used for content conversions.
+
+     - Recent runs show the Perl function bound as an XPath
+       extension are very costly.  Recoded the font match
+       handling to avoid the perl function, using a set of
+       contains calls.  Vastly faster!
+
+0.5.x  2006-06-16
+     - Fixed typos in DTD parsing
+       Thanks Ioan Sucan <i.sucan@iu-bremen.de>
+     - Reworked pathname_find to be a little clearer about
+       seaching for files that come with the installation
+       (but can be overridden by SEARCHPATHS).
+       Added pathname_findall which finds all matching files,
+       and used it so that all available catalogs are loaded,
+       in particular any in the SEARCHPATHS.
+
+       In the process noted a bug that if the environment variable
+       XML_DEBUG_CATALOG is set, XML::LibXML bombs
+       (seeking advice from mailing list).
+     - Fix to \varintjlim (Ioan Sucan)_
+
+0.5.x  2006-06-01
+     - Simplifications to PMML; use roles more consistently
+       (which means there are some roles that never appear in Grammar,
+       but which represent presentational structure).
+
+0.5.x  2006-05-20
+     - Sorted out (hopefully finally) the Unicode nonsense
+       w/chars in 80--FF; Perl is dumm; you really need to use pack;
+       exported handy UTF(hex) from LaTeXML::Package to help.
+       I had been (over)using Unicode::Normalize::NFC to patchup
+       after the fact, but this has screwy effects
+       (translates \langle to something in chinese block !?!)
+
+0.5.x  2006-04-28
+     - A number of initializations, typos, missing \and fixed.
+       Thanks Christopher B. Hamlin <chamlin@aip.org>
+     - Fix to eqnarray numbering bug.
+       Thanks Eduardo Tabacman <eduardot@dessci.com>
+
 0.5.1  2006-04-27
      - Release 0.5.1
 

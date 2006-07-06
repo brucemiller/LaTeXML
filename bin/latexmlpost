@@ -19,7 +19,10 @@ my($help,$showversion,$verbosity,$validate)=(0,0,0,1);
 # initialize these undefined!!!
 # undef => unspecified; 0 = NO, 1 = YES
 my($sourcedir,$destination);
-my($format,$parallelmath,$mathimages,$svg,$keepXMath,$stylesheet,$css);
+my($format);
+my($parallelmath,$mathimages,$keepXMath);
+my($stylesheet,$css);
+my($svg,$picimages);
 my($dographics,$destdir);
 
 my @math_formats =();
@@ -54,12 +57,12 @@ GetOptions("destination=s"=>sub { $destination = $_[1];
 	   "nocontentmathml|nocmml"      => sub { removeMathFormat('cmml'); },
 	   "noopenmath|noom"             => sub { removeMathFormat('om'); },
 	   "keepXMath!"                  =>\$keepXMath,
-
 	   # For graphics: vaguely similar issues, but more limited.
 	   # includegraphics images (eg. ps) can be converted to webimages (eg.png)
 	   # picture/pstricks images can be converted to png or possibly svg.
 	   "graphicimages!"=>\$dographics,
 	   "svg!"          =>\$svg,
+	   "pictureimages!"=>\$picimages,
 
 	   "VERSION"      =>\$showversion,
 	   "help|?"       =>\$help,
@@ -98,6 +101,7 @@ elsif($format eq 'html'){
 
   $mathimages = 1 unless defined $mathimages;
   $dographics = 1 unless defined $dographics;
+  $picimages  = 1 unless defined $picimages;
   if(!defined $stylesheet){
     $stylesheet = "LaTeXML-html.xsl";
     $css = "LaTeXML.css" unless defined $css; }}
@@ -139,6 +143,9 @@ my @procs = ();
 if($mathimages){
   require 'LaTeXML/Post/MathImages.pm';
   push(@procs,LaTeXML::Post::MathImages->new()); }
+if($picimages){
+  require 'LaTeXML/Post/PictureImages.pm';
+  push(@procs,LaTeXML::Post::PictureImages->new()); }
 if($dographics){
   require 'LaTeXML/Post/Graphics.pm';
   push(@procs,LaTeXML::Post::Graphics->new()); }
@@ -198,7 +205,7 @@ if(!$stylesheet){      # If no XSL, we'll munge our own DTD for now...
 
 if($destination){ 
   $POST->writeDocument($doc,$destination,$format); 
-  if(($css eq 'LaTeXML.css') && !-f "$destdir/LaTeXML.css"){
+  if((defined $css) && ($css eq 'LaTeXML.css') && !-f "$destdir/LaTeXML.css"){
     foreach my $dir (@INC){	# Find installed stylesheet.
       next unless -f "$dir/LaTeXML/dtd/LaTeXML.css";
       pathname_copy("$dir/LaTeXML/dtd/LaTeXML.css", "$destdir/LaTeXML.css"); 

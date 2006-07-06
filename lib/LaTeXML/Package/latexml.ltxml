@@ -18,6 +18,8 @@ package LaTeXML::Package::Pool;
 use LaTeXML::Package;
 no warnings 'redefine';
 
+DefMacro('\lxDocumentID{}','\def\thedocument@ID{#1}');
+
 RequirePackage('keyval');
 
 # From latexml.sty
@@ -60,9 +62,11 @@ DefConstructor('\lxPunct{}',"<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>",
 # See DefMath in LaTeXML::Package for more information.
 DefPrimitive('\lxDefMath{}[][]{} OptionalKeyVals:XMath', sub {
   my($stomach,$cs,$nargs,$opt,$presentation,$params)=@_;
-  my($name,$cd,$role)=$params && map($_ && $_->toString,map($params->getValue($_), qw(name cd role)));
+  my($name,$meaning,$cd,$role)= 
+    $params && map($_ && $_->toString,map($params->getValue($_),
+             qw(name meaning cd role)));
   DefMath($cs->toString.convertLaTeXArgs($nargs,$opt),$presentation,
-	  name=>$name, omcd=>$cd, role=>$role);
+	  name=>$name, meaning=>$meaning, omcd=>$cd, role=>$role);
 });
 #DefKeyVal('XMath',name,string);
 
@@ -82,7 +86,8 @@ DefPrimitive('\lxDefMath{}[][]{} OptionalKeyVals:XMath', sub {
 #            that point is not otherwise within the scope of the original declaration.
 # To effect the declaration:
 #    role=<role>  : Assigns a grammatical role to the matched item for parsing.
-#    name=<name>  : Assigns a semantic name to the matched item.
+#    name=<name>  : Assigns a name to the matched item.
+#    meaning=<meaning>  : Assigns a semantic name to the matched item.
 #  Alternatively, use
 #     replace : provides a replacement for the matched expression, rather than adding attributes.
 
@@ -92,7 +97,8 @@ DefPrimitive('\lxDefMath{}[][]{} OptionalKeyVals:XMath', sub {
 
 DefKeyVal('Declare','wrap','{}',1);
 DefKeyVal('Declare','trace','{}',1);
-our $declare_keys = {scope=>1,role=>1,tag=>1,name=>1,trace=>1,wrap=>1,replace=>1,label=>1};
+our $declare_keys = {scope=>1,role=>1,tag=>1,name=>1,meaning=>1,
+		     trace=>1,wrap=>1,replace=>1,label=>1};
 DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
 ##	       "^<ltx:declare id='#id'>?&KeyVal(#2,tag)(<ltx:tag>&KeyVal(#2,tag)</ltx:tag>)</ltx:declare>",
 	       sub { my($document,$flag,$kv,$pattern,%props)=@_;
@@ -105,14 +111,14 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
 		       $document->setNode($save); }},
 	       mode=>'text',
 	       # Screwy bit to `neutralize' the font in the matches.
-	       beforeDigest=>sub { AssignValue(font=>LaTeXML::Font->new(),'local');
-				   AssignValue(mathfont=>LaTeXML::MathFont->new(), 'local');
+	       beforeDigest=>sub { AssignValue(font=>LaTeXML::Font->default(),'local');
+				   AssignValue(mathfont=>LaTeXML::MathFont->default(), 'local');
 				   return; },
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my($star,$keys,$pattern)=$whatsit->getArgs;
 				  return unless $keys;
 				  CheckOptions("\\lxDeclare keys",$declare_keys,%{$keys->getKeyVals});
-				  foreach my $key (qw(role tag name replace)){
+				  foreach my $key (qw(role tag name meaning replace)){
 				    if(my $value = $keys->getValue($key)){
 				      Warn("Repeated $key: ".join('; ',map(Stringify($_),@$value)))
 					if ref $value eq 'ARRAY'; }}
@@ -123,6 +129,7 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
 				  $whatsit->setProperties(scope   => getDeclarationScope($keys),
 							  role    => ToString($keys->getValue('role')),
 							  name    => ToString($keys->getValue('name')),
+							  meaning => ToString($keys->getValue('meaning')),
 							  trace   => defined $keys->getValue('trace'),
 							  wrap    => defined $keys->getValue('wrap'),
 							  id      => $id,
@@ -168,8 +175,8 @@ sub getDeclarationScope {
 sub createDeclarationRewrite {
   my($document,$scope,$whatsit)=@_;
   my %props = $whatsit->getProperties;
-  my($id,$match,$wrap,$role,$name,$ref,$trace,$replace)
-    =map($props{$_}, qw(id match wrap role name ref trace replace));
+  my($id,$match,$wrap,$role,$name,$meaning,$ref,$trace,$replace)
+    =map($props{$_}, qw(id match wrap role name meaning ref trace replace));
 ###  print STDERR "REWRITER: scope=>$scope, match=>$match, role=>$role, dec_id=>$id\n";
   $STATE->getModel->prependRewriteRule('math',
 				       ($trace ? (trace=>$trace):()),
@@ -180,6 +187,7 @@ sub createDeclarationRewrite {
 					? (replace=>$replace)
 					: attributes=>{ ($role  ? (role=>$role) :()),
 							($name  ? (name=>$name) :()),
+							($meaning ? (meaning=>$meaning) :()),
 							($id    ? (dec_id=>$id) :()),
 						     }),
 				       );

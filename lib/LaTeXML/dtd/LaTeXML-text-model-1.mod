@@ -18,12 +18,14 @@
 <!ELEMENT %LaTeXML.text.qname; %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.text.qname;
 	  %LaTeXML.Common.attrib;
-	  font CDATA #IMPLIED
+          font    CDATA #IMPLIED
+          size    CDATA #IMPLIED
+          color   CDATA #IMPLIED
 	  framed (square|rectangle|circle|underline) #IMPLIED
-	  width CDATA #IMPLIED
-	  height CDATA #IMPLIED
+	  width   CDATA #IMPLIED
+	  height  CDATA #IMPLIED
 	  pad-width CDATA #IMPLIED
-	  raise CDATA #IMPLIED>
+	  raise   CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.emph.qname; %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.emph.qname; %LaTeXML.Common.attrib;>
@@ -41,7 +43,8 @@
 	  %LaTeXML.Common.attrib;
 	  width CDATA #IMPLIED
 	  height CDATA #IMPLIED
-	  raise CDATA #IMPLIED>
+	  raise CDATA #IMPLIED
+	  depth CDATA #IMPLIED>
 
 <!-- ======================================================================
      Meta data -->

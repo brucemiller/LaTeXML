@@ -23,7 +23,8 @@ DocType("ltx:document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd',
 #**********************************************************************
 # The core sectioning commands are defined in LaTeX.pm
 # but the counter setup, etc, depends on article
-NewCounter('section',       undef,         idprefix=>'S',  nested=>['subsection']);
+Let('\thedocument@ID','\@empty');
+NewCounter('section',      'document',     idprefix=>'S',  nested=>['subsection']);
 NewCounter('subsection',   'section',      idprefix=>'SS', nested=>['subsubsection']);
 NewCounter('subsubsection','subsection',   idprefix=>'SSS',nested=>['paragraph']);
 NewCounter('paragraph',    'subsubsection',idprefix=>'P',  nested=>['subparagraph']);
@@ -35,14 +36,14 @@ DefMacro('\thesubsubsection','\thesubsection.\arabic{subsubsection}');
 DefMacro('\theparagraph',    '');
 DefMacro('\thesubparagraph', '');
 
-NewCounter('equation', undef, idprefix=>'E');
-NewCounter('figure',   undef, idprefix=>'F');
-NewCounter('table',    undef, idprefix=>'T');
+NewCounter('equation', 'document', idprefix=>'E');
+NewCounter('figure',   'document', idprefix=>'F');
+NewCounter('table',    'document', idprefix=>'T');
 DefMacro('\theequation', '\arabic{equation}');
 DefMacro('\thefigure',   '\arabic{figure}');
 DefMacro('\thetable',    '\arabic{table}');
 
-NewCounter('@itemize', undef, idprefix=>'I');
+NewCounter('@itemize', 'document', idprefix=>'I');
 NewCounter('enumi');
 NewCounter('enumii');
 NewCounter('enumiii');
@@ -61,7 +62,7 @@ DefMacro('\theenumiv',          '\Alph{enumiv}');
 
 Tag('ltx:appendix',autoClose=>1);
 DefPrimitive('\appendix',sub{
-  NewCounter('section', undef, idprefix=>'A',nested=>['subsection']);
+  NewCounter('section', 'document', idprefix=>'A',nested=>['subsection']);
   Let('\\@@section'=>'\\@@appendix');
  });
 DefConstructor('\\@@appendix[][][]{}',

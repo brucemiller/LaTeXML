@@ -10,11 +10,11 @@
         <Math mode="display" tex="a+b+c-d+e" text="((a + b + c) - d) + e">
           <XMath>
             <XMApp>
-              <XMTok role="ADDOP">+</XMTok>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMApp>
-                <XMTok role="ADDOP">-</XMTok>
+                <XMTok meaning="minus" role="ADDOP">-</XMTok>
                 <XMApp>
-                  <XMTok role="ADDOP">+</XMTok>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
                   <XMTok role="ID" font="italic">c</XMTok>
@@ -30,9 +30,9 @@
         <Math mode="display" tex="a+bc-de" text="(a + b * c) - d * e">
           <XMath>
             <XMApp>
-              <XMTok role="ADDOP">-</XMTok>
+              <XMTok meaning="minus" role="ADDOP">-</XMTok>
               <XMApp>
-                <XMTok role="ADDOP">+</XMTok>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMApp>
                   <XMTok role="MULOP">⁢</XMTok>
@@ -55,7 +55,7 @@
             <XMApp>
               <XMTok role="MULOP">⁢</XMTok>
               <XMApp>
-                <XMTok role="MULOP" style="inline">/</XMTok>
+                <XMTok meaning="div" role="MULOP" style="inline">/</XMTok>
                 <XMApp>
                   <XMTok role="MULOP">⁢</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
@@ -73,11 +73,11 @@
         <Math mode="display" tex="a\times b\times c/d\times e" text="((a times b times c) / d) times e">
           <XMath>
             <XMApp>
-              <XMTok name="times" role="MULOP">×</XMTok>
+              <XMTok meaning="times" role="MULOP">×</XMTok>
               <XMApp>
-                <XMTok role="MULOP" style="inline">/</XMTok>
+                <XMTok meaning="div" role="MULOP" style="inline">/</XMTok>
                 <XMApp>
-                  <XMTok name="times" role="MULOP">×</XMTok>
+                  <XMTok meaning="times" role="MULOP">×</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
                   <XMTok role="ID" font="italic">c</XMTok>
@@ -95,12 +95,12 @@
     <title>Evaluate At</title>
     <para id="S2.p1">
       <equation id="Ex5">
-        <Math mode="display" tex="a|_{\infty}" text="AT@(a, Infinity)">
+        <Math mode="display" tex="a|_{\infty}" text="AT@(a, infinity)">
           <XMath>
             <XMApp>
               <XMTok name="AT"/>
               <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok name="Infinity" role="ID">∞</XMTok>
+              <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -122,18 +122,18 @@
                       <XMTok role="ID" font="italic">b</XMTok>
                     </XMApp>
                     <XMApp>
-                      <XMTok role="RELOP">=</XMTok>
+                      <XMTok meaning="eq" role="RELOP">=</XMTok>
                       <XMTok role="ID" font="italic">a</XMTok>
-                      <XMTok role="NUMBER">0</XMTok>
+                      <XMTok meaning="0" role="NUMBER">0</XMTok>
                     </XMApp>
                   </XMApp>
                   <XMTok role="ID" font="italic">c</XMTok>
                   <XMTok role="ID" font="italic">d</XMTok>
                 </XMApp>
                 <XMApp>
-                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok meaning="eq" role="RELOP">=</XMTok>
                   <XMTok role="ID" font="italic">c</XMTok>
-                  <XMTok role="NUMBER">0</XMTok>
+                  <XMTok meaning="0" role="NUMBER">0</XMTok>
                 </XMApp>
               </XMApp>
               <XMTok role="ID" font="italic">e</XMTok>
@@ -170,15 +170,15 @@
         </Math>
       </equation>
       <equation id="Ex9">
-        <Math mode="display" tex="|a|_{\infty}" text="(Abs@(a)) _ Infinity">
+        <Math mode="display" tex="|a|_{\infty}" text="(Abs@(a)) _ infinity">
           <XMath>
             <XMApp>
-              <XMTok name="Subscript" role="SUBSCRIPT"/>
+              <XMTok role="SUBSCRIPTOP"/>
               <XMApp>
                 <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
                 <XMTok role="ID" font="italic">a</XMTok>
               </XMApp>
-              <XMTok name="Infinity" role="ID">∞</XMTok>
+              <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -189,7 +189,7 @@
             <XMApp>
               <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
               <XMApp>
-                <XMTok role="ADDOP">+</XMTok>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
@@ -203,7 +203,7 @@
             <XMApp>
               <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
               <XMApp>
-                <XMTok role="ADDOP">-</XMTok>
+                <XMTok meaning="minus" role="ADDOP">-</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMApp>
                   <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
@@ -226,7 +226,7 @@
             <XMTok role="VERTBAR">|</XMTok>
             <XMTok role="ID" font="italic">a</XMTok>
             <XMTok role="VERTBAR">|</XMTok>
-            <XMTok role="ADDOP">-</XMTok>
+            <XMTok meaning="minus" role="ADDOP">-</XMTok>
             <XMTok role="VERTBAR">|</XMTok>
             <XMTok role="ID" font="italic">b</XMTok>
             <XMTok role="VERTBAR">|</XMTok>
@@ -241,7 +241,7 @@
             <XMTok role="VERTBAR">|</XMTok>
             <XMTok role="ID" font="italic">a</XMTok>
             <XMTok role="VERTBAR">|</XMTok>
-            <XMTok role="ADDOP">-</XMTok>
+            <XMTok meaning="minus" role="ADDOP">-</XMTok>
             <XMTok role="ID" font="italic">b</XMTok>
             <XMTok role="VERTBAR">|</XMTok>
           </XMath>
@@ -256,7 +256,7 @@
             <XMTok role="ID" font="italic">b</XMTok>
             <XMTok role="VERTBAR">|</XMTok>
             <XMApp role="POSTSUBSCRIPT">
-              <XMTok name="Infinity" role="ID">∞</XMTok>
+              <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -269,7 +269,7 @@
             <XMTok role="ID" font="italic">b</XMTok>
             <XMTok role="VERTBAR">|</XMTok>
             <XMApp role="POSTSUBSCRIPT">
-              <XMTok name="Infinity" role="ID">∞</XMTok>
+              <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
             </XMApp>
             <XMTok role="ID" font="italic">c</XMTok>
             <XMTok role="VERTBAR">|</XMTok>

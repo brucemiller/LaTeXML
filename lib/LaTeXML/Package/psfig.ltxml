@@ -1,0 +1,23 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  psfig                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+# (See  LaTeXML::Post::Graphics for suggested postprocessing)
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+#**********************************************************************
+
+# Is this close enough?
+RequirePackage('epsfig');
+#**********************************************************************
+1;
+

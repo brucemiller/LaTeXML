@@ -345,7 +345,7 @@
       <xsl:apply-templates select="following-sibling::*[position()=1][self::ltx:td-between]/node()"/></td>
 </xsl:template>
 
-<xsl:template match="ltx:th">
+<xsl:template match="ltx:td[@thead='yes']">
   <th><xsl:call-template name="cell-attributes"/><xsl:apply-templates/>
       <xsl:apply-templates select="following-sibling::*[position()=1][self::ltx:td-between]/node()"/></th>
 </xsl:template>
@@ -444,12 +444,41 @@
 </xsl:template>
 
 <xsl:template match="ltx:text" mode='faced'>
-  <xsl:if test="@framed">
-    <xsl:attribute name='class'>framed</xsl:attribute>
-  </xsl:if>
-  <xsl:if test="@raise">
-    <xsl:attribute name='style'>position:relative; bottom:<xsl:value-of select="@raise"/></xsl:attribute>
-  </xsl:if>
+  <!-- raise and color handled by style attribute -->
+  <xsl:choose>
+    <xsl:when test="@raise and @color">
+      <xsl:attribute name='style'
+        >position:relative; bottom:<xsl:value-of select="@raise"
+	/>; color:<xsl:value-of select="@color"
+	/></xsl:attribute>
+    </xsl:when>
+    <xsl:when test="@raise">
+      <xsl:attribute name='style'
+        >position:relative; bottom:<xsl:value-of select="@raise"
+	/>;</xsl:attribute>
+    </xsl:when>
+    <xsl:when test="@color">
+      <xsl:attribute name='style'
+        >color:<xsl:value-of select="@color"
+	/>;</xsl:attribute>
+    </xsl:when>
+  </xsl:choose>
+  <!-- size and framed handled by class attribute -->
+  <xsl:choose>
+    <xsl:when test="@framed and @size">
+      <xsl:attribute name='class'
+        >framed <xsl:value-of select="@size"
+	/></xsl:attribute>
+    </xsl:when>
+    <xsl:when test="@framed">
+      <xsl:attribute name='class'>framed</xsl:attribute>
+    </xsl:when>
+    <xsl:when test="@size">
+      <xsl:attribute name='class'
+        ><xsl:value-of select="@size"
+	/></xsl:attribute>
+    </xsl:when>
+  </xsl:choose>
   <xsl:apply-templates/>
 </xsl:template>
 

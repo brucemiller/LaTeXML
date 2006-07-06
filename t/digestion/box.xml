@@ -27,7 +27,7 @@
         <Math mode="display" tex="a+\hbox{a}" text="a + [a]">
           <XMath>
             <XMApp>
-              <XMTok role="ADDOP">+</XMTok>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMText>
                 <text>a</text>
@@ -40,7 +40,7 @@
         <Math mode="display" tex="a+\vbox{a}" text="a + [a]">
           <XMath>
             <XMApp>
-              <XMTok role="ADDOP">+</XMTok>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMText>
                 <vbox valign="bottom">a</vbox>
@@ -55,7 +55,7 @@
         <Math mode="display" tex="a+\vbox{\hbox{a}\hbox{a}}" text="a + [aa]">
           <XMath>
             <XMApp>
-              <XMTok role="ADDOP">+</XMTok>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMText>
                 <vbox valign="bottom">
@@ -71,7 +71,7 @@
         <Math mode="display" tex="a+\vtop{\hbox{a}\hbox{a}}" text="a + [aa]">
           <XMath>
             <XMApp>
-              <XMTok role="ADDOP">+</XMTok>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMText>
                 <vbox valign="top">
@@ -89,7 +89,7 @@
         <Math mode="display" tex="a-\raise-4.29998779296875pt\vtop{\hbox{a}}" text="a - [a]">
           <XMath>
             <XMApp>
-              <XMTok role="ADDOP">-</XMTok>
+              <XMTok meaning="minus" role="ADDOP">-</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMText>
                 <text raise="-4.29998779296875pt">
@@ -106,7 +106,7 @@
         <Math mode="display" tex="a-\raise-4.29998779296875pt\vbox{\hbox{a}}" text="a - [a]">
           <XMath>
             <XMApp>
-              <XMTok role="ADDOP">-</XMTok>
+              <XMTok meaning="minus" role="ADDOP">-</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMText>
                 <text raise="-4.29998779296875pt">
@@ -125,7 +125,7 @@
         <Math mode="display" tex="a-\raise-4.29998779296875pt\hbox{a}" text="a - [a]">
           <XMath>
             <XMApp>
-              <XMTok role="ADDOP">-</XMTok>
+              <XMTok meaning="minus" role="ADDOP">-</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMText>
                 <text raise="-4.29998779296875pt">
@@ -142,7 +142,7 @@
         <Math mode="display" tex="a-\raise-4.29998779296875pt\hbox{a}" text="a - [a]">
           <XMath>
             <XMApp>
-              <XMTok role="ADDOP">-</XMTok>
+              <XMTok meaning="minus" role="ADDOP">-</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMText>
                 <text raise="-4.29998779296875pt">

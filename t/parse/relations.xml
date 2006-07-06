@@ -13,13 +13,13 @@
             <XMApp>
               <XMTok name="MultiRelation"/>
               <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="RELOP">=</XMTok>
+              <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
-              <XMTok role="RELOP">=</XMTok>
+              <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">c</XMTok>
-              <XMTok role="RELOP">=</XMTok>
+              <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">d</XMTok>
-              <XMTok role="RELOP">=</XMTok>
+              <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">e</XMTok>
             </XMApp>
           </XMath>
@@ -31,12 +31,12 @@
             <XMApp>
               <XMTok name="Formulae" separators=","/>
               <XMApp>
-                <XMTok role="RELOP">=</XMTok>
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok role="RELOP">=</XMTok>
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
                 <XMTok role="ID" font="italic">c</XMTok>
                 <XMTok role="ID" font="italic">d</XMTok>
               </XMApp>
@@ -48,7 +48,7 @@
         <Math mode="display" tex="a=b,c,d,e" text="a = Collection@(b, c, d, e)">
           <XMath>
             <XMApp>
-              <XMTok role="RELOP">=</XMTok>
+              <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMApp>
                 <XMTok name="Collection" role="FENCED" separators=",,,"/>
@@ -67,7 +67,7 @@
             <XMApp>
               <XMTok name="Formulae" separators=","/>
               <XMApp>
-                <XMTok role="RELOP">=</XMTok>
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMApp>
                   <XMTok name="Collection" role="FENCED" separators=","/>
@@ -76,7 +76,7 @@
                 </XMApp>
               </XMApp>
               <XMApp>
-                <XMTok role="RELOP">=</XMTok>
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
                 <XMTok role="ID" font="italic">d</XMTok>
                 <XMTok role="ID" font="italic">e</XMTok>
               </XMApp>
@@ -85,18 +85,18 @@
         </Math>
       </equation>
       <equation id="Ex5">
-        <Math mode="display" tex="a=b&gt;c\le d=e" text="a = b &gt; c le d = e">
+        <Math mode="display" tex="a=b&gt;c\le d=e" text="a = b less c less-eq d = e">
           <XMath>
             <XMApp>
               <XMTok name="MultiRelation"/>
               <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="RELOP">=</XMTok>
+              <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
-              <XMTok role="RELOP">&gt;</XMTok>
+              <XMTok meaning="greater" role="RELOP">&gt;</XMTok>
               <XMTok role="ID" font="italic">c</XMTok>
-              <XMTok name="le" role="RELOP">≤</XMTok>
+              <XMTok meaning="less-eq" name="le" role="RELOP">≤</XMTok>
               <XMTok role="ID" font="italic">d</XMTok>
-              <XMTok role="RELOP">=</XMTok>
+              <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">e</XMTok>
             </XMApp>
           </XMath>
@@ -112,7 +112,7 @@
               <XMApp>
                 <XMTok name="Formulae" separators="."/>
                 <XMApp>
-                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok meaning="eq" role="RELOP">=</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMApp>
                     <XMTok name="Collection" role="FENCED" separators=","/>
@@ -121,7 +121,7 @@
                   </XMApp>
                 </XMApp>
                 <XMApp>
-                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok meaning="eq" role="RELOP">=</XMTok>
                   <XMTok role="ID" font="italic">d</XMTok>
                   <XMTok role="ID" font="italic">e</XMTok>
                 </XMApp>
@@ -135,12 +135,12 @@
               <XMApp>
                 <XMTok name="Formulae" separators="."/>
                 <XMApp>
-                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok meaning="eq" role="RELOP">=</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
                 </XMApp>
                 <XMApp>
-                  <XMTok role="RELOP">=</XMTok>
+                  <XMTok meaning="eq" role="RELOP">=</XMTok>
                   <XMApp>
                     <XMTok name="Collection" role="FENCED" separators=","/>
                     <XMTok role="ID" font="italic">c</XMTok>
@@ -159,18 +159,18 @@
     <title>Arrows as meta-relation</title>
     <para id="S2.p1">
       <equation id="Ex8">
-        <Math mode="display" tex="a=b\rightarrow c\le d=e" text="a = b rightarrow c le d = e">
+        <Math mode="display" tex="a=b\rightarrow c\le d=e" text="a = b rightarrow c less-eq d = e">
           <XMath>
             <XMApp>
               <XMTok name="MultiRelation"/>
               <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="RELOP">=</XMTok>
+              <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
               <XMTok name="rightarrow" role="ARROW">→</XMTok>
               <XMTok role="ID" font="italic">c</XMTok>
-              <XMTok name="le" role="RELOP">≤</XMTok>
+              <XMTok meaning="less-eq" name="le" role="RELOP">≤</XMTok>
               <XMTok role="ID" font="italic">d</XMTok>
-              <XMTok role="RELOP">=</XMTok>
+              <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">e</XMTok>
             </XMApp>
           </XMath>
@@ -182,7 +182,7 @@
             <XMApp>
               <XMTok name="Formulae" separators=","/>
               <XMApp>
-                <XMTok role="RELOP">=</XMTok>
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
@@ -191,7 +191,7 @@
                 <XMTok role="ID" font="italic">c</XMTok>
                 <XMTok name="rightarrow" role="ARROW">→</XMTok>
                 <XMTok role="ID" font="italic">d</XMTok>
-                <XMTok role="RELOP">=</XMTok>
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
                 <XMTok role="ID" font="italic">e</XMTok>
               </XMApp>
             </XMApp>
@@ -199,21 +199,21 @@
         </Math>
       </equation>
       <equation id="Ex10">
-        <Math mode="display" tex="a=b\leftrightarrow c\le d=e" text="a = b leftrightarrow c le d = e">
+        <Math mode="display" tex="a=b\leftrightarrow c\le d=e" text="a = b leftrightarrow c less-eq d = e">
           <XMath>
             <XMApp>
               <XMTok name="leftrightarrow" role="METARELOP">↔</XMTok>
               <XMApp>
-                <XMTok role="RELOP">=</XMTok>
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
               <XMApp>
                 <XMTok name="MultiRelation"/>
                 <XMTok role="ID" font="italic">c</XMTok>
-                <XMTok name="le" role="RELOP">≤</XMTok>
+                <XMTok meaning="less-eq" name="le" role="RELOP">≤</XMTok>
                 <XMTok role="ID" font="italic">d</XMTok>
-                <XMTok role="RELOP">=</XMTok>
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
                 <XMTok role="ID" font="italic">e</XMTok>
               </XMApp>
             </XMApp>
@@ -226,7 +226,7 @@
             <XMApp>
               <XMTok name="leftrightarrow" role="METARELOP">↔</XMTok>
               <XMApp>
-                <XMTok role="RELOP">=</XMTok>
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMApp>
                   <XMTok name="Collection" role="FENCED" separators=","/>
@@ -235,7 +235,7 @@
                 </XMApp>
               </XMApp>
               <XMApp>
-                <XMTok role="RELOP">=</XMTok>
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
                 <XMTok role="ID" font="italic">d</XMTok>
                 <XMTok role="ID" font="italic">e</XMTok>
               </XMApp>
@@ -249,13 +249,13 @@
     <title>Other Meta relations</title>
     <para id="S3.p1">
       <equation id="Ex12">
-        <Math mode="display" tex="a(&lt;e)" text="Annotated@(a, Empty LessThan e)">
+        <Math mode="display" tex="a(&lt;e)" text="Annotated@(a, Empty less e)">
           <XMath>
             <XMApp>
               <XMTok name="Annotated"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMApp open="(" close=")">
-                <XMTok role="RELOP">&lt;</XMTok>
+                <XMTok meaning="less" role="RELOP">&lt;</XMTok>
                 <XMTok name="Empty"/>
                 <XMTok role="ID" font="italic">e</XMTok>
               </XMApp>
@@ -264,13 +264,13 @@
         </Math>
       </equation>
       <equation id="Ex13">
-        <Math mode="display" tex="a;(&lt;e)" text="Annotated@(a, Empty LessThan e)">
+        <Math mode="display" tex="a;(&lt;e)" text="Annotated@(a, Empty less e)">
           <XMath>
             <XMApp>
               <XMTok name="Annotated"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMApp open="(" close=")">
-                <XMTok role="RELOP">&lt;</XMTok>
+                <XMTok meaning="less" role="RELOP">&lt;</XMTok>
                 <XMTok name="Empty"/>
                 <XMTok role="ID" font="italic">e</XMTok>
               </XMApp>
@@ -279,21 +279,21 @@
         </Math>
       </equation>
       <equation id="Ex14">
-        <Math mode="display" tex="a=b+c+d(&lt;e)" text="a = Annotated@(b + c + d, Empty LessThan e)">
+        <Math mode="display" tex="a=b+c+d(&lt;e)" text="a = Annotated@(b + c + d, Empty less e)">
           <XMath>
             <XMApp>
-              <XMTok role="RELOP">=</XMTok>
+              <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMApp>
                 <XMTok name="Annotated"/>
                 <XMApp>
-                  <XMTok role="ADDOP">+</XMTok>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
                   <XMTok role="ID" font="italic">c</XMTok>
                   <XMTok role="ID" font="italic">d</XMTok>
                 </XMApp>
                 <XMApp open="(" close=")">
-                  <XMTok role="RELOP">&lt;</XMTok>
+                  <XMTok meaning="less" role="RELOP">&lt;</XMTok>
                   <XMTok name="Empty"/>
                   <XMTok role="ID" font="italic">e</XMTok>
                 </XMApp>
@@ -306,12 +306,12 @@
         <Math mode="display" tex="a=b+c+d\mod e" text="a = mod@(b + c + d, e)">
           <XMath>
             <XMApp>
-              <XMTok role="RELOP">=</XMTok>
+              <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMApp>
                 <XMTok role="MODIFIEROP">mod</XMTok>
                 <XMApp>
-                  <XMTok role="ADDOP">+</XMTok>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
                   <XMTok role="ID" font="italic">c</XMTok>
                   <XMTok role="ID" font="italic">d</XMTok>

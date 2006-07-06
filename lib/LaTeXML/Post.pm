@@ -13,7 +13,8 @@
 package LaTeXML::Post;
 use strict;
 use XML::LibXML;
-use File::Spec;
+##use File::Spec;
+use LaTeXML::Util::Pathname;
 
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
 #**********************************************************************
@@ -39,21 +40,19 @@ sub process {
   $doc; }
 
 sub createParser {
-    my($self,%options)=@_;
-    # Read in the XML, unless it already is a Doc.
-    my $XMLParser = XML::LibXML->new();
-    if($options{validate}){ # First, load the LaTeXML catalog in case it's needed...
-	foreach my $dir (@INC){	# Load catalog (all, 1st only ???)
-	    next unless -f "$dir/LaTeXML/dtd/catalog";
-	    XML::LibXML->load_catalog("$dir/LaTeXML/dtd/catalog");
-	    last; }
-	$XMLParser->load_ext_dtd(1);  # DO load dtd.
-	$XMLParser->validation(1); }
-    else {
-	$XMLParser->load_ext_dtd(0);
-	$XMLParser->validation(0); }
-    $XMLParser->keep_blanks(0);	# This allows formatting the output.
-    $XMLParser; }
+  my($self,%options)=@_;
+  # Read in the XML, unless it already is a Doc.
+  my $XMLParser = XML::LibXML->new();
+  if($options{validate}){ # First, load the LaTeXML catalog in case it's needed...
+    map(XML::LibXML->load_catalog($_),
+	pathname_find('catalog',installation_subdir=>'dtd'));
+    $XMLParser->load_ext_dtd(1);  # DO load dtd.
+    $XMLParser->validation(1); }
+  else {
+    $XMLParser->load_ext_dtd(0);
+    $XMLParser->validation(0); }
+  $XMLParser->keep_blanks(0);	# This allows formatting the output.
+  $XMLParser; }
 
 
 sub readDocument {

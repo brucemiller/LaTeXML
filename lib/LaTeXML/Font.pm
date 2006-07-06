@@ -81,7 +81,7 @@ sub merge {
   (ref $self)->new_internal($family,$series,$shape,$size,$color); }
 
 # Return a string representing the font relative to other.
-sub relativeTo {
+sub XXrelativeTo {
   my($self,$other)=@_;
   my($family,$series,$shape,$size,$color)=@$self;  
   my($ofamily,$oseries,$oshape,$osize,$ocolor)=@$other;
@@ -94,6 +94,23 @@ sub relativeTo {
 		   ($size   && (!$osize   || ($size   ne $osize))   ? $size : ''),
 		   ($color  && (!$ocolor  || ($color  ne $ocolor))  ? $color : ''));
   join(' ',@diffs); }
+
+# Return a hash of the differences in font, size and color
+sub relativeTo {
+  my($self,$other)=@_;
+  my($family,$series,$shape,$size,$color)=@$self;  
+  my($ofamily,$oseries,$oshape,$osize,$ocolor)=@$other;
+  $family  = 'serif' if $family  && ($family eq 'math');
+  $ofamily = 'serif' if $ofamily && ($ofamily eq 'math');
+  my @diffs=(($family && (!$ofamily || ($family ne $ofamily)) ? $family : ''),
+	     ($series && (!$oseries || ($series ne $oseries)) ? $series : ''),
+	     ($shape  && (!$oshape  || ($shape  ne $oshape))  ? $shape : ''));
+  my $fdiff=join(' ',grep($_, @diffs)); 
+  my $sdiff=($size   && (!$osize   || ($size   ne $osize))   ? $size : '');
+  my $cdiff=($color  && (!$ocolor  || ($color  ne $ocolor))  ? $color : '');
+  ( ($fdiff ? (font=>$fdiff):()),
+    ($sdiff ? (size=>$sdiff):()),
+    ($cdiff ? (color=>$cdiff):()) ); }
 
 sub distance {
   my($self,$other)=@_;
@@ -109,9 +126,11 @@ sub distance {
 
 # This matches fonts when both are converted to strings (toString),
 # such as when they are set as attributes.
-sub match_font {
+sub XXmatch_font {
   my($font1,$font2)=@_;
 #print STDERR "Match font \"".($font1 || 'none')."\" to \"".($font2||'none')."\"\n";
+return 1;
+
   return 0 unless $font1 && $font2;
   $font1 =~ /^Font\[(.*)\]$/;
   my @comp1  = split(',',$1);
@@ -122,6 +141,43 @@ sub match_font {
     my $c2 = shift @comp2;
     return 0 if ($c1 ne '*') && ($c2 ne '*') && ($c1 ne $c2); }
   return 1; }
+
+
+our %FONT_REGEXP_CACHE=();
+
+sub match_font {
+  my($font1,$font2)=@_;
+  my $regexp = $FONT_REGEXP_CACHE{$font1};
+  if(!$regexp){
+    $font1 =~ /^Font\[(.*)\]$/;
+    my @comp  = split(',',$1);
+    my $re= '^Font\['
+      . join(',', map( ($_ eq '*' ? "[^,]+" : "\Q$_\E"), @comp))
+	.'\]$';
+    print STDERR "\nCreating re for \"$font1\" => $re\n";
+    $regexp = $FONT_REGEXP_CACHE{$font1} = qr/$re/; }
+  $font2 =~ /$regexp/; }
+
+
+sub font_match_xpaths {
+  my($font)=@_;
+  $font =~ /^Font\[(.*)\]$/;
+  my @comps  = split(',',$1);
+  my($frag,@frags) = ();
+  for(my $i=0; $i<=$#comps; $i++){
+    my $comp = $comps[$i];
+    if($comp eq '*'){
+      push(@frags,$frag) if $frag;
+      $frag = undef; }
+    else {
+      my $post = ($i == $#comps ? ']' : ',');
+      if($frag){
+	$frag .= $comp . $post; }
+      else {
+	$frag = ($i==0 ? 'Font[' : ',') . $comp . $post; }}}
+  push(@frags,$frag) if $frag;
+  join(' and ','@_font',
+       map("contains(\@_font,'$_')",@frags)); }
 
 #**********************************************************************
 package LaTeXML::MathFont;

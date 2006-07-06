@@ -39,7 +39,9 @@ sub XXXReadBibURL {
 
 DefParameterType('BibURL',sub {
   my($gullet)=@_;
+  StartSemiverbatim();
   my @tokens = $gullet->readArg->unlist;
+  EndSemiverbatim();
   my @cleaned = ();
   while(my $t = shift(@tokens)){
     if($t->equals(T_OTHER('%')) && @tokens && $tokens[0]->equals(Token("\n",CC_SPACE))){
