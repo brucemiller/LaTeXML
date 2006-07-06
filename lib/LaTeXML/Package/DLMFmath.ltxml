@@ -17,63 +17,61 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
-use charnames ":full";
 
 #**********************************************************************
 # Load special functions & other required packages.
 RequirePackage('amsmath');
 
-STOMACH->addSearchPath("$ENV{HOME}/dlmf/styles/DLMFtex/");
+$STOMACH->addSearchPath("$ENV{HOME}/dlmf/styles/DLMFtex/");
 
 RequirePackage('DLMFfcns');
 
 #**********************************************************************
 # General Math Constructs
 
-DefSymbol('\Real',      "\N{DOUBLE-STRUCK CAPITAL R}",'Reals');
-DefSymbol('\Complex',   "\N{DOUBLE-STRUCK CAPITAL C}",'Complex');
-DefSymbol('\NatNumber', "\N{DOUBLE-STRUCK CAPITAL N}",'NaturalNumbers');
-DefSymbol('\Integer',   "\N{DOUBLE-STRUCK CAPITAL Z}",'Integers');
-DefSymbol('\Rational',  "\N{DOUBLE-STRUCK CAPITAL Q}",'Rational');
-DefSymbol('\Polynomial',"\N{DOUBLE-STRUCK CAPITAL P}",'Polynomial');
+DefMath('\Real',      "\x{211D}", role=>'ID'); # DOUBLE-STRUCK CAPITAL R
+DefMath('\Complex',   "\x{2102}", role=>'ID'); # DOUBLE-STRUCK CAPITAL C
+DefMath('\NatNumber', "\x{2115}", role=>'ID'); # DOUBLE-STRUCK CAPITAL N
+DefMath('\Integer',   "\x{2124}", role=>'ID'); # DOUBLE-STRUCK CAPITAL Z
+DefMath('\Rational',  "\x{211A}", role=>'ID'); # DOUBLE-STRUCK CAPITAL Q
+DefMath('\Polynomial',"\x{2119}", role=>'ID'); # DOUBLE-STRUCK CAPITAL P
 
-DefConstructor('\realpart{}',
-	       "<XMApp><XMTok name='realpart'>\N{BLACK-LETTER CAPITAL R}</XMTok><XMArg>#1</XMArg></XMApp>");
-DefConstructor('\imagpart{}',
-	       "<XMApp><XMTok name='imagpart'>\N{BLACK-LETTER CAPITAL I}</XMTok><XMArg>#1</XMArg></XMApp>");
-DefSymbol('\iunit',"\N{DOUBLE-STRUCK ITALIC SMALL I}",'iunit');
+# Redefined here, since Frank doesn't like the Fraktur.
+DefMath('\Re',       "Re", role=>'FUNCTION');
+DefMath('\Im',       "Im", role=>'FUNCTION');
+
+DefMath('\realpart{}', "\x{211C}");	# BLACK-LETTER CAPITAL R
+DefMath('\imagpart{}', "\x{2111}");	# BLACK-LETTER CAPITAL I
+
+DefMath('\iunit',"\x{2148}", role=>'ID', name=>'iunit'); # DOUBLE-STRUCK ITALIC SMALL I
 DefMacro('\opminus',   "(-1)");
 
 # \cfrac covered in amsmath.
 # \midvert, \midVert ??
 
-#DefConstructor('\floor{}',
-#	       "<XMApp><XMTok name='floor'/><XMArg>#1</XMArg></XMApp>");
-#DefConstructor('\ceiling{}',
-#	       "<XMApp><XMTok name='ceiling'/><XMArg>#1</XMArg></XMApp>");
-# NOTE: This is a nice way to capture the meaning, and still preserve the presentation.
-# That is, they need no special treatment for presentation MathML.
-# Find a way to make it easier and use it!
-DefMacro('\floor{}',
-	 '\DUAL{ATOM}{\@APPLY{\@TOKEN{floor}\@ARG{Expression}{#1}}}{\@WRAP{\left\lfloor#1\right\rfloor}}');
-DefMacro('\ceiling{}',
-	 '\DUAL{ATOM}{\@APPLY{\@TOKEN{ceiling}\@ARG{Expression}{#1}}}{\@WRAP{\left\lceil#1\right\rceil}}');
+DefMath('\floor{}','\left\lfloor#1\right\rfloor');
+DefMath('\ceiling{}','\left\lceil#1\right\rceil');
+
 #**********************************************************************
 # Calculus
+# Handled as general constructors since empty numerator is effectively a differential
+# operator, instead of a derivative.
 DefConstructor('\deriv[]{}{}',  
-	       "<XMApp ?#2()(POS='BIGOP')>"
-	       . "<XMTok name='deriv'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
-	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
+	       "<XMApp ?#2()(role='DIFFOP')>"
+	       . "<XMTok name='deriv' style='#style'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
+	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>",
+	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
 DefConstructor('\pderiv[]{}{}',
-	       "<XMApp ?#2()(POS='BIGOP')>"
-	       . "<XMTok name='pderiv'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
-	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
+	       "<XMApp ?#2()(role='DIFFOP')>"
+	       . "<XMTok name='pderiv' style='#style'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
+	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>",
+	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
 DefConstructor('\ideriv[]{}{}',
-	       "<XMApp ?#2()(POS='BIGOP')>"
+	       "<XMApp ?#2()(role='DIFFOP')>"
 	       . "<XMTok name='deriv' style='inline'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
 	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
 DefConstructor('\ipderiv[]{}{}',
-	       "<XMApp ?#2()(POS='BIGOP')>"
+	       "<XMApp ?#2()(role='DIFFOP')>"
 	       . "<XMTok name='pderiv' style='inline'/>?#2(<XMArg>#2</XMArg>)(<XMTok name='Empty'/>)"
 	       . "<XMArg>#3</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
 DefConstructor('\diff[]{}',
@@ -82,8 +80,8 @@ DefConstructor('\pdiff[]{}',
 	       "<XMApp><XMTok name='pdiff'/><XMArg>#2</XMArg>?#1(<XMArg>#1</XMArg>)</XMApp>");
 
 #**********************************************************************
-DefSymbol('\pvint',"\N{FINITE PART INTEGRAL}",'PrincipalValueIntegral');
-DefSymbol('\Residue',    "res","Residue",partOfSpeech=>'BIGOP');
+DefMath('\pvint',  "\x{2A0D}", name=>'PrincipalValueIntegral', role=>'INTOP'); # FINITE PART INTEGRAL
+DefMath('\Residue', "res",     name=>"Residue", role=>'LIMITOP');
 
 #**********************************************************************
 # Types
@@ -92,132 +90,98 @@ DefSymbol('\Residue',    "res","Residue",partOfSpeech=>'BIGOP');
 DefMacro('\Vector{}','\boldsymbol{#1}');
 DefMacro('\Matrix{}','\boldsymbol{#1}');
 
-DefSymbol('\divergence',    "div","divergence",partOfSpeech=>'BIGOP');
-DefSymbol('\curl',    "curl","curl",partOfSpeech=>'BIGOP');
-DefSymbol('\gradient',    "grad","gradient",partOfSpeech=>'BIGOP');
-DefMacro('\transpose{}',
-	 '\DUAL{ATOM}{\\@APPLY{\\@TOKEN{transpose}\\@ARG{Expression}{#1}}}{\@WRAP{#1^{\mathrm{T}}}}');
+DefMath('\divergence', "div",  role=>'DIFFOP');
+DefMath('\curl',       "curl", role=>'DIFFOP');
+DefMath('\gradient',   "grad", role=>'DIFFOP');
+DefMath('\transpose{}','#1^{\mathrm{T}}');
 
 #**********************************************************************
 # Combinatorics
-DefConstructor('\tbinom{}{}',     
-	       "<XMApp><XMTok name='binomial' style='text'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
-DefConstructor('\dbinom{}{}',
-	       "<XMApp><XMTok name='binomial' style='display'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
-DefConstructor('\multinomial{}{}',
-	       "<XMApp><XMTok name='multinomial'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
-DefConstructor('\pochhammer{}{}',
-	       "<XMApp><XMTok name='pochhammer'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
-DefConstructor('\binomial{}{}',
-	       "<XMApp><XMTok name='binomial'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+DefMath('\tbinom{}{}',      '', name=>'binomial', style=>'text');
+DefMath('\dbinom{}{}',      '', name=>'binomial', style=>'display');
+DefMath('\multinomial{}{}', '', name=>'multinomial');
+DefMath('\pochhammer{}{}',  '', name=>'pochhammer');
+DefMath('\binomial{}{}',    '', name=>'binomial');
 
 #**********************************************************************
 # Constants
-DefSymbol('\EulerConstant',"\N{GREEK SMALL LETTER GAMMA}",'EulerConstant',partOfSpeech=>'ID');
+DefMath('\EulerConstant',"\x{03B3}", role=>'ID'); # GREEK SMALL LETTER GAMMA
 
 #**********************************************************************
 # Special Functions
+DefPrimitive('\specFunObsolete{}{}',sub {
+  my($defn,$old,$new)=@_;
+  DefMacro("\\".$old->toString,"\\".$new->toString); });
+
+sub count_tokens {
+  my($token)=@_;
+  my $n=0;
+  while($GULLET->readMatch($token)){ $n++; }
+  $n; }
+
+#**********************************************************************
+
 DefPrimitive('\defSpecFun{}[][]{}{}', sub {
-  my($stomach,$cs,$nparam,$optparam,$formatter,$nargs)=@_;
-  my $gullet = $stomach->getGullet;
-  $cs=$cs->toString;
-  $nparam = (defined $nparam ? $nparam->toString : 0);
+  my($self,$name,$nparam,$optparam,$formatter,$nargs)=@_;
+  $name=$name->toString;
+  my $cs = '\\'.$name;
   $nargs  = $nargs->toString;
-  # Read any argument formats
+
+  # Define with DefMath to create presentation & content cs's
+  DefMath($cs . convertLaTeXArgs($nparam,$optparam), $formatter, role=>'FUNCTION', omcd=>'dlmf');
+  # Then, redefine top-level macro to check for powers, args, etc.
+  DefExpandable($cs.convertLaTeXArgs($nparam,$optparam),  sub { expand_specfun($cs,@_); });
+
+  # Read any argument formats & generate args macros
   my @argfmts=();
-  while(my $af = $gullet->readOptional){
+  while(my $af = $GULLET->readOptional){
     push(@argfmts,$af); }
   push(@argfmts, Tokenize("\\!\\left(".join(',',map("#$_",1..$nargs))."\\right)"))
     unless @argfmts;
-
-  # Define macros for presentation, argument presentation and the main macro.
-  DefMacro(join('','\\presentation@',$cs,map('{}',1..$nparam)), $formatter);
   for(my $i=0; $i <= $#argfmts; $i++){
-    DefMacro(join('','\\presentation@',$cs,'@args',map('@',1..$i+1),map('{}',1..$nargs)),
-	     Tokens($argfmts[$i]->unlist,T_CS('\egroup'))); }
-  my $lparmspec = (defined $optparam ? "[".$optparam->toString."]" : '').
-    join('',map('{}', (defined $optparam ? 2 : 1)..$nparam));
-  DefMacro("\\$cs$lparmspec", sub { 
-    my($gullet,@params)=@_; 
-    expand_specfun($gullet,$cs,$nargs,@params); });
-  $gullet->skipSpaces();
+    DefMacro(join('',$cs,'@args',('@' x ($i+1)),('{}' x $nargs)),$argfmts[$i]->toString); }
+
+  $GULLET->skipSpaces();
   return; });
 
-sub count_tokens {
-  my($gullet,$token)=@_;
-  my $n=0;
-  while($gullet->readMatch($token)){ $n++; }
-  $n; }
+DefConstructor('\sf@apply{}{}', "<XMApp>#1#2</XMApp>",
+  untex => sub {
+    my($fcn,$args) = $_[0]->getArgs;
+    $fcn->untex . "@" . join('',map("{".$_->untex."}", $args->unlist)); });
 
-DefConstructor('\diffop{}{}',
-	       "<XMApp><XMTok name='diffop'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
-DefConstructor('\power{}{}',
-	       "<XMApp><XMTok name='power'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+DefExpandable('\@PRIMES{}',sub { ((T_CS('\prime')) x $_[1]->toString); });
+DefMath('\diffop{}{}','{{#1}^{\@PRIMES{#2}}}');
+DefMath('\power{}{}',"{#1^{#2}}");
 
-sub T_Apply {
-  my($cs,@args)=@_;
-#  (T_CS($cs),map( (T_BEGIN, ($_ ? @$_ : ()), T_END), @args)); }
-  my @wargs = ();
-  foreach my $arg (@args){
-    if   (!defined $arg                ){}
-    elsif(ref $arg eq 'ARRAY'          ){ push(@wargs, (T_BEGIN, @$arg, T_END)); }
-    elsif(ref $arg eq 'LaTeXML::Tokens'){ push(@wargs, (T_BEGIN, $arg->unlist, T_END)); }
-    elsif(ref $arg                     ){ push(@wargs, (T_BEGIN, $arg, T_END)); }
-    else                                { push(@wargs, (T_BEGIN, T_OTHER($arg), T_END)); }
-  }
-#  (T_CS($cs),@wargs); }
-  ($cs,@wargs); }
-
-# NOTE: The following is messy & convoluted.
-# We constuct a \DUAL to contain the content form and presentation form.
-# The content form should be pre-structured, as if parsed
-# The presentation form is wrapped in XMWrap, so it isn't parsed as strictly.
-# In both cases, any parameters & arguments (and powers) are wrapped in XMArg,
-# so they _will_ be parsed.
-# The parsing occurs in post-processing.
 sub expand_specfun {
-  my($gullet,$cs,$nargs,@params)=@_;
-  my @presentation =T_Apply(T_CS('\\presentation@'.$cs), @params);
-  my @semantic= T_Apply(T_CS('\@SYMBOL'),$cs);
+  my($cs,$self,@params)=@_;
+  my($cparams,$pparams)=dualize_arglist(@params);
+  my $ccall = T_CS($cs.'@content')->invocation(@$cparams);
+  my $pcall = T_CS($cs.'@presentation')->invocation(@$pparams);
 
-  # Check for following primes and superscripts.
-  my $prevop='';
-  while(my $op = $gullet->readMatch(T_OTHER("'"),T_SUPER())){ # Hmm, ' is active only in math?
-    if($op eq T_SUPER){
-      my $power = $gullet->readArg;
-      @semantic = T_Apply(T_CS('\power'),[@semantic],$power);
-      # Don't double superscripts!  Add grouping here.
-      @presentation = (T_BEGIN,@presentation,T_END) if $prevop;
-      push(@presentation,T_Apply(T_SUPER,$power));
-      $prevop = 'power'; }
+  # Check for following primes and superscripts, and wrap the function appropriately.
+  while(my $op = $GULLET->readMatch(T_OTHER("'"),T_SUPER)){ # Hmm, ' is active only in math?
+    if($op->equals(T_SUPER)){
+      # NOTE: Before I go assuming that ^{x} is a power, consider analyzing for things like ^{(n)} !!!
+      my($cpower,$ppower) = dualize_arglist($GULLET->readArg); # Should do xmref here too!!!
+      $ccall = T_CS('\power@content')->invocation($ccall,@$cpower);
+      $pcall = T_CS('\power@presentation')->invocation($pcall,@$ppower); }
     else{
-      my $n = 1+count_tokens($gullet,$op);
-      @semantic = T_Apply(T_CS('\diffop'),[@semantic],$n);
-      # Don't double superscripts!  Add parentheses here..
-      @presentation = (T_CS('\left'),T_OTHER('('),@presentation,T_CS('\right'),T_OTHER(')')) 
-	if $prevop eq 'power';
-      push(@presentation,
-	   T_Apply(T_SUPER,Tokens(map(T_CS('\prime'),1..$n))));
-      $prevop = 'prime'; }}
-  @presentation = T_Apply(T_CS('\mathop'),[@presentation,T_CS('\/')]); # Wrap in \mathop
+      my $n = 1+count_tokens($op);
+      $ccall = T_CS('\diffop@content')->invocation($ccall,T_OTHER($n));
+      $pcall = T_CS('\diffop@presentation')->invocation($pcall,T_OTHER($n));}}
 
-  # Check for following @ implying that argument list follows.
-  my $variant = '';
-  while($gullet->readMatch(T_OTHER('@'))){ $variant .='@'; }
-
-  my $POS = ($nargs > 0 ? 'FUNCTION' : 'ATOM');
-  if($variant) {		# Arguments, and (possibly) parameters.
-    $POS = 'ATOM';
-    my @args = map(Tokens(T_Apply(T_CS('\@ARG'),'Expressions',$_)),map( $gullet->readArg, 1..$nargs));
-    @semantic = T_Apply(T_CS('\@APPLY'),[@semantic, map((T_BEGIN,T_Apply(T_CS('\@ARG'),'Expressions',$_),T_END),@params), 
-				   map((T_BEGIN,$_->unlist,T_END),@args)]);
-   push(@presentation, T_CS('\@APPLYFUNCTION'), 
-	T_CS('\bgroup'),T_Apply(T_CS('\\presentation@'.$cs.'@args'.$variant) , @args)); }
-  elsif(@params){
-    @semantic = T_Apply(T_CS('\@APPLY'),[@semantic, map((T_BEGIN,T_Apply(T_CS('\@ARG'),'Expressions',$_),T_END),@params)]); }
-my @toks=  T_Apply(T_CS('\DUAL'),[T_OTHER($POS)],[@semantic],[@presentation]);
-@toks;
-}
+  # Check for function arguments
+  if(my $variant = count_tokens(T_OTHER('@'))){
+    my $argsmacro = T_CS($cs.'@args'.('@' x $variant))->getDefinition;
+    my($cargs,$pargs)=dualize_arglist($argsmacro->readArguments);
+    T_CS('\DUAL')->invocation(T_OTHER('ATOM'),
+			      T_CS('\sf@apply')->invocation($ccall,Tokens(map((@$_),@$cargs))),
+			      Tokens(@$pcall,T_CS('\@APPLYFUNCTION'),
+				     $argsmacro->invocation(@$pargs)->unlist)
+			     )->unlist; }
+  else {
+    T_CS('\DUAL')->invocation(T_OTHER('FUNCTION'), $ccall, $pcall)->unlist}; }
 
 #**********************************************************************
 1;

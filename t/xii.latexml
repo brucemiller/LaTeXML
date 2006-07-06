@@ -5,7 +5,7 @@ use strict;
 use LaTeXML::Package;
 
 # Don't need to respect source newlines
-STOMACH->setValue('preserveNewLines',0);
+STOMACH->assignValue('preserveNewLines',0);
 
 # We'll use a DTD for a (trivial) Song, containing verses with lines.
 DocType("song","-//NIST LaTeXML//LaTeXML Poem",'xii.dtd');
@@ -18,9 +18,7 @@ Tag('verse', autoClose=>1);
 DefConstructor('\bigskip',"<verse>");
 
 # David ends each line with \par; redefine \par to close an auto-opened <line>
-DefConstructor('\par',sub{ 
-  my($intestine)=@_;
-  $intestine->closeElement('line') if $intestine->getNode->canAutoClose('line'); });
+DefConstructor('\par',sub{ INTESTINE->maybeCloseElement('line'); });
 
 Tag('line', autoClose=>1, autoOpen=>1);
 #**********************************************************************

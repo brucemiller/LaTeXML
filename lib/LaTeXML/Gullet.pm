@@ -24,13 +24,9 @@ our @ISA = qw(LaTeXML::Object);
 
 #**********************************************************************
 sub new {
-  my($class,$source,$stomach,%options)=@_;
-  bless {stomach=>$stomach, mouth=>$source, mouthstack=>[], pushback=>[],
-	 pending_comments=>[], %options}, $class; }
-
-#**********************************************************************
-# Accessors
-sub getStomach { $_[0]->{stomach}; }
+  my($class)=@_;
+  bless {mouth=>undef, mouthstack=>[], pushback=>[], pending_comments=>[]
+	}, $class; }
 
 #**********************************************************************
 # Start reading tokens from a new Mouth.
@@ -42,14 +38,14 @@ sub getStomach { $_[0]->{stomach}; }
 sub openMouth {
   my($self,$mouth)=@_;
   return unless $mouth;
-  unshift(@{$$self{mouthstack}},$$self{pushback},$$self{mouth}); 
+  unshift(@{$$self{mouthstack}},$$self{pushback},$$self{mouth}) if $$self{mouth};
   $$self{pushback}=[];
   $$self{mouth}=$mouth; }
 
 sub closeMouth {
   my($self,$forced)=@_;
   if(!$forced && (@{$$self{pushback}} || $$self{mouth}->hasMoreInput)){
-    Error("Closing mouth with input remaining: ".$self->getContext); } # Or Warn???
+    Warn("Closing mouth with input remaining: ".Stringify($self->readToken)); }
   if(@{$$self{mouthstack}}){
     $$self{pushback}= shift(@{$$self{mouthstack}}); 
     $$self{mouth}   = shift(@{$$self{mouthstack}}); }
@@ -66,27 +62,21 @@ sub flush {
   $$self{mouthstack}=[]; }
 
 # User feedback for where something (error?) occurred.
-sub getContext {
-  my($self,$short)=@_;
-  my $msg ='';
-  my @mouths = ($$self{pushback}, $$self{mouth}, @{$$self{mouthstack}});
-  while(@mouths){
-    my $pb = shift(@mouths);
-    my $m = shift(@mouths);
-    $msg .= $m->getContext($short);
-    $msg .= "\n  To be read again ".Tokens(@$pb)->untex if !$short && @$pb;
-  }
-  $msg; }
-
-sub getSourceLocation {
-  my($self)=@_;
-  my @mouths = ($$self{pushback}, $$self{mouth}, @{$$self{mouthstack}});
-  while(@mouths){
-    my $pb = shift(@mouths);
-    my $m = shift(@mouths);
-    my $f = $m->getPathname;
-    return ($f, $m->getLinenumber) if $f; }
-  ("Unknown",0); }
+sub getLocator {
+  my($self,$long)=@_;
+  my $loc = (defined $$self{mouth} ? $$self{mouth}->getLocator($long) : '');
+  if(!$loc || $long){
+    my($mouth,$pb)=($$self{mouth},$$self{pushback});
+    $loc .= "\n  To be read again ".Tokens(@$pb)->untex if $long && @$pb;
+    my @mouths = @{$$self{mouthstack}};
+    while(@mouths){
+      $pb = shift(@mouths);
+      $mouth = shift(@mouths);
+      $loc .= $mouth->getLocator($long);
+      last if $loc && !$long;
+      $loc .= "\n  To be read again ".Tokens(@$pb)->untex if $long && @$pb;
+    }}
+  $loc; }
 
 #**********************************************************************
 # Return $tokens with all tokens expanded
@@ -104,12 +94,11 @@ sub expandTokens {
 # Solution: Duplicate param tokens, stick NOTEXPANDED infront of expandable tokens.
 sub neutralizeTokens {
   my($self,@tokens)=@_;
-  my $stomach = $$self{stomach};
   my @result=();
   foreach my $t (@tokens){
     if($t->getCatcode == CC_PARAM){    
       push(@result,$t); }
-    elsif(defined(my $defn=$stomach->getDefinition($t))){
+    elsif(defined(my $defn=$t->getDefinition)){
       push(@result,Token('\noexpand',CC_NOTEXPANDED)); }
     push(@result,$t); }
   @result; }
@@ -121,10 +110,9 @@ sub neutralizeTokens {
 # So, be Fast & Clean!  This method only reads from the current input stream (Mouth).
 sub readToken {
   my($self)=@_;
-  return shift(@{$$self{pushback}}) if @{$$self{pushback}};
-  my $mouth = $$self{mouth};
-  my $token;
-  while(defined($token = $mouth->readToken()) && ($$token[1] == CC_COMMENT)){ # NOTE: Inlined ->getCatcode
+  my $token = shift(@{$$self{pushback}});
+  return $token if defined $token;
+  while(defined($token = $$self{mouth}->readToken()) && ($$token[1] == CC_COMMENT)){ # NOTE: Inlined ->getCatcode
     push(@{$$self{pending_comments}},$token); } # What to do with comments???
   return $token; }
 
@@ -142,7 +130,6 @@ sub readXToken {
   my($self,$toplevel)=@_;
   return shift(@{$$self{pending_comments}}) if $toplevel && @{$$self{pending_comments}};
   my($token,$cc,$defn);
-  my $stomach = $$self{stomach};
   while(1){
     if(!defined($token = (@{$$self{pushback}} ? shift(@{$$self{pushback}}) : $$self{mouth}->readToken() ))){
       return undef unless $toplevel && @{$$self{mouthstack}};
@@ -154,8 +141,8 @@ sub readXToken {
     elsif($cc == CC_COMMENT){
       return $token if $toplevel;
       push(@{$$self{pending_comments}},$token); } # What to do with comments???
-    elsif(defined($defn=$stomach->getDefinition($token)) && $defn->isExpandable){
-      $self->unread($defn->invoke($self)); } # Expand and push back the result (if any) and continue
+    elsif(defined($defn=$token->getDefinition) && $defn->isExpandable){
+      $self->unread($defn->invoke); } # Expand and push back the result (if any) and continue
     else {
       return $token; }		# just return it
   }}
@@ -222,7 +209,7 @@ sub readMatch {
     my @tomatch=$choice->unlist;
     my @matched=();
     my $tok;
-    while(@tomatch && defined($tok=$self->readToken) && push(@matched,$tok) && ($tok eq $tomatch[0])){ 
+    while(@tomatch && defined($tok=$self->readToken) && push(@matched,$tok) && ($tok->equals($tomatch[0]))){
       shift(@tomatch); }
     return $choice unless @tomatch;	# All matched!!!
     $self->unread(@matched);	# Put 'em back and try next!
@@ -265,7 +252,7 @@ sub readUntil {
 sub readRawLines {
   my($self,$endline)=@_;
   # Should check that there's no pushback !?!?
-  Error("Extra junk!?") if @{$$self{pushback}};
+  Fatal("Extra junk!?") if @{$$self{pushback}};
   my $mouth = $$self{mouth};
   my @lines = ();
   while(my $line = $mouth->readLine){
@@ -293,7 +280,7 @@ sub readOptional {
   my($self,$default)=@_;
   my $tok = $self->readNonSpace;
   if(!defined $tok){ undef; }
-  elsif(($tok eq T_OTHER('['))){
+  elsif(($tok->equals(T_OTHER('[')))){
     $self->readUntil(T_OTHER(']')); }
   else {
     $self->unread($tok);
@@ -310,12 +297,12 @@ sub readSemiverbatim {
 
 sub startSemiverbatim {
   my($self)=@_;
-  $$self{stomach}->bgroup(1);
-  $$self{stomach}->setCatcode(CC_OTHER,'^','_','@','~','&','$','#','%');  # should '%' too ?
+  $STOMACH->bgroup(1);
+  $STOMACH->assignCatcode(CC_OTHER,'^','_','@','~','&','$','#','%');  # should '%' too ?
 }
 sub endSemiverbatim {
   my($self)=@_;
-  $$self{stomach}->egroup(1); }
+  $STOMACH->egroup(1); }
 
 #**********************************************************************
 #  Numbers, Dimensions, Glue
@@ -334,9 +321,9 @@ sub readRegisterValue {
   my($self,$type)=@_;
   my $token = $self->readXToken;
   return unless defined $token;
-  my $defn = $$self{stomach}->getDefinition($token);
+  my $defn = $token->getDefinition;
   if((defined $defn) && ($defn->isRegister eq $type)){
-    $defn->getValue($$self{stomach},$defn->readArguments($self)); }
+    $defn->getValue($defn->readArguments($self)); }
   else {
     $self->unread($token); return; }}
 
@@ -349,7 +336,7 @@ sub readOptionalSigns {
   my($self)=@_;
   my ($sign,$t)=("+1",'');
   while(defined($t=$self->readXToken)
-	&& (($t->getString eq '+') || ($t->getString eq '-') || ($t eq T_SPACE))){
+	&& (($t->getString eq '+') || ($t->getString eq '-') || ($t->equals(T_SPACE)))){
     $sign = -$sign if ($t->getString eq '-'); }
   $self->unread($t) if $t;
   $sign; }
@@ -394,7 +381,7 @@ sub readNumber {
   if   (defined (my $n = $self->readNormalInteger    )){ ($s < 0 ? $n->negate : $n); }
   elsif(defined (   $n = $self->readInternalDimension)){ Number($s * $n->getValue); }
   elsif(defined (   $n = $self->readInternalGlue     )){ Number($s * $n->getValue); }
-  else{ SalvageError("Missing number, treated as zero.");        Number(0); }}
+  else{ Warn("Missing number, treated as zero.");        Number(0); }}
 
 # <normal integer> = <internal integer> | <integer constant>
 #   | '<octal constant><one optional space> | "<hexadecimal constant><one optional space>
@@ -406,11 +393,11 @@ sub readNormalInteger {
   if(!defined $t){}
   elsif(($t->getCatcode == CC_OTHER) && ($t->getString =~ /^[0-9]$/)){ # Read decimal literal
     Number(int($t->getString . $self->readDigits('0-9',1))); }
-  elsif( $t eq T_OTHER("\'")){		# Read Octal literal
+  elsif( $t->equals(T_OTHER("\'"))){		# Read Octal literal
     Number(oct($self->readDigits('0-7',1))); }
-  elsif( $t eq T_OTHER("\"")){		# Read Hex literal
+  elsif( $t->equals(T_OTHER("\""))){		# Read Hex literal
     Number(hex($self->readDigits('0-9A-F',1))); }
-  elsif( $t eq T_OTHER("\`")){		# Read Charcode
+  elsif( $t->equals(T_OTHER("\`"))){		# Read Charcode
     my $s = $self->readToken->getString;
     $s =~ s/^\\//;
     Number(ord($s)); } # Only a character token!!! NOT expanded!!!!
@@ -431,7 +418,7 @@ sub readDimension {
   if   (defined (my $d = $self->readInternalDimension)){ ($s < 0 ? $d->negate : $d); }
   elsif(defined (   $d = $self->readInternalGlue)     ){ Dimension($s * $d->getValue); }
   elsif(defined (   $d = $self->readFactor)           ){ Dimension($s * $d * $self->readUnit); }
-  else{ SalvageError("Missing number, treated as zero.");        Dimension(0); }}
+  else{ Warn("Missing number, treated as zero.");        Dimension(0); }}
 
 # <unit of measure> = <optional spaces><internal unit>
 #     | <optional true><physical unit><one optional space>
@@ -442,15 +429,15 @@ sub readDimension {
 # Read a unit, returning the equivalent number of scaled points, 
 sub readUnit {
   my($self)=@_;
-  if(my $u=$self->readKeyword('ex','em')){ $self->skip1Space; $$self{stomach}->convertUnit($u);  }
-  elsif($u=$self->readInternalInteger  ){ $u->getValue; } # These are coerced to number=>sp
-  elsif($u=$self->readInternalDimension){ $u->getValue; }
-  elsif($u=$self->readInternalGlue     ){ $u->getValue; }
+  if(defined(my $u=$self->readKeyword('ex','em'))){ $self->skip1Space; $STOMACH->convertUnit($u);  }
+  elsif(defined($u=$self->readInternalInteger  )){ $u->getValue; } # These are coerced to number=>sp
+  elsif(defined($u=$self->readInternalDimension)){ $u->getValue; }
+  elsif(defined($u=$self->readInternalGlue     )){ $u->getValue; }
   else {
     $self->readKeyword('true');	# But ignore, we're not bothering with mag...
     $u = $self->readKeyword('pt','pc','in','bp','cm','mm','dd','cc','sp');
-    if($u){ $self->skip1Space; $$self{stomach}->convertUnit($u); }
-    else  { SalvageError("Illegal unit of measure (pt inserted)."); 65536; }}}
+    if($u){ $self->skip1Space; $STOMACH->convertUnit($u); }
+    else  { Warn("Illegal unit of measure (pt inserted)."); 65536; }}}
 
 # Return a dimension value or undef
 sub readInternalDimension { $_[0]->readRegisterValue('Dimension'); }
@@ -468,13 +455,13 @@ sub readMuDimension {
   my $s = $self->readOptionalSigns;
   if   (defined (my $m = $self->readFactor        )){ MuDimension($s * $m * $self->readMuUnit); }
   elsif(defined (   $m = $self->readInternalMuGlue)){ MuDimension($s * $m->getValue); }
-  else{ SalvageError("Expecting mudimen; assuming 0 ");       MuDimension(0); }}
+  else{ Warn("Expecting mudimen; assuming 0 ");       MuDimension(0); }}
 
 sub readMuUnit {
   my($self)=@_;
-  if   (my $m=$self->readKeyword('mu')){ $self->skip1Space; $$self{stomach}->convertUnit($m); }
+  if   (my $m=$self->readKeyword('mu')){ $self->skip1Space; $STOMACH->convertUnit($m); }
   elsif($m=$self->readInternalMuGlue  ){ $m->getValue; }
-  else { SalvageError("Illegal unit of measure (mu inserted)."); $$self{stomach}->convertUnit('mu'); }}
+  else { Warn("Illegal unit of measure (mu inserted)."); $STOMACH->convertUnit('mu'); }}
 
 #======================================================================
 # Glue
@@ -491,7 +478,7 @@ sub readGlue {
   else{
     my $d = $self->readDimension;
     if(!$d){
-      SalvageError("Missing number, treated as zero."); return Glue(0); }
+      Warn("Missing number, treated as zero."); return Glue(0); }
     $d = $d->negate if $s < 0;
     my($r1,$f1,$r2,$f2);
     ($r1,$f1) = $self->readRubber if $self->readKeyword('plus');
@@ -506,12 +493,12 @@ sub readRubber {
   if(!defined $f){
     $f = ($mu ? $self->readMuDimension : $self->readDimension);
     ($f->getValue * $s, 0); }
-  elsif(my $fil = $self->readKeyword('filll','fill','fil')){
+  elsif(defined(my $fil = $self->readKeyword('filll','fill','fil'))){
     ($s*$f,$FILLS{$fil}); }
   elsif(defined(my $u = ($mu ? $self->readMuUnit : $self->readUnit))){
     ($s*$f*$u,0); }
   else {
-    SalvageError("Illegal unit of measure (pt inserted).");
+    Warn("Illegal unit of measure (pt inserted).");
     ($s*$f*65536,0); }}
 
 # Return a glue value or undef.
@@ -532,7 +519,7 @@ sub readMuGlue {
   else{
     my $d = $self->readMuDimension;
     if(!$d){
-      SalvageError("Missing number, treated as zero."); return MuGlue(0); }
+      Warn("Missing number, treated as zero."); return MuGlue(0); }
     $d = $d->negate if $s < 0;
     my($r1,$f1,$r2,$f2);
     ($r1,$f1) = $self->readRubber(1) if $self->readKeyword('plus');
@@ -558,7 +545,7 @@ __END__
 
 =head2 DESCRIPTION
 
-LaTeXML::Gullet reads tokens (L<LaTeXML::Token>) from a L<LaTeXML::Mouth> 
+C<LaTeXML::Gullet> reads tokens (L<LaTeXML::Token>) from a L<LaTeXML::Mouth> 
 and (possibly) expands them.  It also provides a variety of methods for reading 
 various types of input such as arguments, optional arguments, Numbers, etc.
 
@@ -566,24 +553,20 @@ various types of input such as arguments, optional arguments, Numbers, etc.
 
 =over 4
 
-=item C<< $stomach = $gullet->getStomach; >>
+=item C<< $GULLET->openMouth($mouth); >>
 
-Return the Stomach that uses this $gullet.
+Is this public? Prepares to read tokens from C<$mouth>.
 
-=item C<< $gullet->openMouth($mouth); >>
-
-Is this public? Prepares to read tokens from $mouth.
-
-=item C<< $gullet->closeMouth; >>
+=item C<< $GULLET->closeMouth; >>
 
 Is this public? Finishes reading from the current mouth, and
 reverts to the one in effect before the last openMouth.
 
-=item C<< $gullet->flush; >>
+=item C<< $GULLET->flush; >>
 
 Is this public? Clears all inputs.
 
-=item C<< $gullet->getContext; >>
+=item C<< $GULLET->getLocator; >>
 
 Returns a string describing the current location in the input stream.
 
@@ -593,29 +576,29 @@ Returns a string describing the current location in the input stream.
 
 =over 4
 
-=item C<< $tokens = $gullet->expandTokens($tokens); >>
+=item C<< $tokens = $GULLET->expandTokens($tokens); >>
 
-Return a L<LaTeXML::Tokens> being the expansion of all the tokens in $tokens.
+Return a L<LaTeXML::Tokens> being the expansion of all the tokens in C<$tokens>.
 This is actually only used in a few circumstances where the arguments to
 an expandable need explicit expansion; usually expansion happens at the right time.
 
-=item C<< @tokens = $gullet->neutralizeTokens(@tokens); >>
+=item C<< @tokens = $GULLET->neutralizeTokens(@tokens); >>
 
 Another unusual method: Used for things like \edef and token registers, to
 inhibit further expansion of control sequences and proper spawning of register tokens.
 
-=item C<< $token = $gullet->readToken; >>
+=item C<< $token = $GULLET->readToken; >>
 
 Return the next token from the input source, or undef if there is no more input.
 
-=item C<< $token = $gullet->readXToken($toplevel); >>
+=item C<< $token = $GULLET->readXToken($toplevel); >>
 
 Return the next unexpandable token from the input source, or undef if there is no more input.
 If the next token is expandable, it is expanded, and its expansion is reinserted into the input.
 
-=item C<< $gullet->unread(@tokens); >>
+=item C<< $GULLET->unread(@tokens); >>
 
-Push the @tokens back into the input stream to be re-read.
+Push the C<@tokens> back into the input stream to be re-read.
 
 =back
 
@@ -623,43 +606,43 @@ Push the @tokens back into the input stream to be re-read.
 
 =over 4
 
-=item C<< $token = $gullet->readNonSpace; >>
+=item C<< $token = $GULLET->readNonSpace; >>
 
 Read and return the next non-space token from the input, discarding any spaces.
 
-=item C<< $gullet->skipSpaces; >>
+=item C<< $GULLET->skipSpaces; >>
 
 Skip the next spaces from the input.
 
-=item C<< $gullet->skip1Space; >>
+=item C<< $GULLET->skip1Space; >>
 
 Skip the next token from the input if it is a space.
 
-=item C<< $tokens = $gullet->readBalanced; >>
+=item C<< $tokens = $GULLET->readBalanced; >>
 
 Read a sequence of tokens from the input until the balancing '}' (assuming the '{' has
-already been read). Returns a LaTeXML::Tokens.
+already been read). Returns a L<LaTeXML::Tokens>.
 
-=item C<< $boole = $gullet->ifNext($string,$catcode); >>
+=item C<< $boole = $GULLET->ifNext($string,$catcode); >>
 
-Returns true if the next token in the input matches the $string and/or $catcode.
-(either can be undef, or $string can be a token).
+Returns true if the next token in the input matches the C<$string> and/or C<$catcode>.
+(either can be undef, or C<$string> can be a token).
 
-=item C<< $tokens = $gullet->readMatch(@choices); >>
+=item C<< $tokens = $GULLET->readMatch(@choices); >>
 
-Read and return whichever of @choices (each should be a Tokens) matches the input, or undef
-if none do.
+Read and return whichever of C<@choices> (each should be a L<LaTeXML::Tokens>)
+matches the input, or undef if none do.
 
-=item C<< $keyword = $gullet->readKeyword(@keywords); >>
+=item C<< $keyword = $GULLET->readKeyword(@keywords); >>
 
-Read and return whichever of @keywords (each should be a string) matches the input, or undef
+Read and return whichever of C<@keywords> (each should be a string) matches the input, or undef
 if none do.  This is similar to readMatch, but case and catcodes are ignored.
 Also, leading spaces are skipped.
 
-=item C<< $tokens = $gullet->readUntil(@delims); >>
+=item C<< $tokens = $GULLET->readUntil(@delims); >>
 
-Read and return a (balanced) sequence of Tokens until  matching one of the Tokens
-in t @delims.  In a list context, it also returns which of the delimiters ended the sequence.
+Read and return a (balanced) sequence of L<LaTeXML::Tokens> until  matching one of the tokens
+in C<@delims>.  In a list context, it also returns which of the delimiters ended the sequence.
 
 =back
 
@@ -667,52 +650,52 @@ in t @delims.  In a list context, it also returns which of the delimiters ended 
 
 =over 4
 
-=item C<< $tokens = $gullet->readArg; >>
+=item C<< $tokens = $GULLET->readArg; >>
 
 Read and return a TeX argument; the next Token or Tokens (if surrounded by braces).
 
-=item C<< $tokens = $gullet->readOptional($default); >>
+=item C<< $tokens = $GULLET->readOptional($default); >>
 
-Read and return a LaTeX optional argument; returns $default if there is no '[',
+Read and return a LaTeX optional argument; returns C<$default> if there is no '[',
 otherwise the contents of the [].
 
-=item C<< $tokens = $gullet->readSemiverbatim; >>
+=item C<< $tokens = $GULLET->readSemiverbatim; >>
 
 Read and return a TeX argument, but with catcodes reset so that most annoying
 characters are treated as OTHER; useful for reading pathnames, URL's, etc.
 
-=item C<< $thing = $gullet->readValue($type); >>
+=item C<< $thing = $GULLET->readValue($type); >>
 
 Reads an argument of a given type: one of 'Number', 'Dimension', 'Glue', 'MuGlue' or 'any'.
 
-=item C<< $value = $gullet->readRegisterValue($type); >>
+=item C<< $value = $GULLET->readRegisterValue($type); >>
 
 Read a control sequence token (and possibly it's arguments) that names a register,
 and return the value.  Returns undef if the next token isn't such a register.
 
-=item C<< $number = $gullet->readNumber; >>
+=item C<< $number = $GULLET->readNumber; >>
 
-Read a Number (LaTeXML::Number) according to TeX's rules of the various things that
+Read a L<LaTeXML::Number> according to TeX's rules of the various things that
 can be used as a numerical value. 
 
-=item C<< $dimension = $gullet->readDimension; >>
+=item C<< $dimension = $GULLET->readDimension; >>
 
-Read a Dimension (LaTeXML::Dimension) according to TeX's rules of the various things that
+Read a L<LaTeXML::Dimension> according to TeX's rules of the various things that
 can be used as a dimension value.
 
-=item C<< $mudimension = $gullet->readMuDimension; >>
+=item C<< $mudimension = $GULLET->readMuDimension; >>
 
-Read a MuDimension (LaTeXML::MuDimension) according to TeX's rules of the various things that
+Read a L<LaTeXML::MuDimension> according to TeX's rules of the various things that
 can be used as a mudimension value.
 
-=item C<< $glue = $gullet->readGlue; >>
+=item C<< $glue = $GULLET->readGlue; >>
 
-Read a Glue (LaTeXML::Glue) according to TeX's rules of the various things that
+Read a  L<LaTeXML::Glue> according to TeX's rules of the various things that
 can be used as a glue value.
 
-=item C<< $muglue = $gullet->readMuGlue; >>
+=item C<< $muglue = $GULLET->readMuGlue; >>
 
-Read a MuGlue (LaTeXML::MuGlue) according to TeX's rules of the various things that
+Read a L<LaTeXML::MuGlue> according to TeX's rules of the various things that
 can be used as a muglue value.
 
 =back

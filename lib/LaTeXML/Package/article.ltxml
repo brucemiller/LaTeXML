@@ -50,15 +50,15 @@ DefMacro('\thetable',   '\arabic{table}');
 
 Tag('appendix',autoClose=>1);
 DefPrimitive('\appendix',sub{
-  $_[0]->resetCounter('section');
+  $STOMACH->resetCounter('section');
   DefMacro('\thesection',      '\Alph{section}');
   DefConstructor('\section Flag:* []{}',
       "<appendix ?#refnum(refnum='#refnum')>"
 		 ."<title>#3</title>?#2(<toctitle>#2</toctitle>)",
-		 afterDigest=> sub { my($stomach,$whatsit)=@_;
-				     if(!$whatsit->getArg(1)){ # if not starred
+		 afterDigest=> sub { my($whatsit,$star,$toctitle,$title)=@_;
+				     if(!$star){ # if not starred
 				       $whatsit->setProperty('refnum',
-							     $stomach->refStepCounter('section')); }
+							     $STOMACH->refStepCounter('section')); }
 				     return; }); });
 
 #**********************************************************************

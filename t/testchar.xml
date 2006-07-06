@@ -1,25 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
-<?latexml class='article'?>
-<document xmlns='http://dlmf.nist.gov/LaTeXML'>
-  <section refnum='1'>
+<?latexml class="article"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section refnum="1">
     <title>Testing</title>
     <p>Testing raw tex macros:
-Expect inline math: xx<Math mode='inline' tex='a+b'>
-        <XMath>
-          <XMTok font='italic'>a</XMTok>
-          <XMTok>+</XMTok>
-          <XMTok font='italic'>b</XMTok>
-        </XMath>
-      </Math>xx
+Expect inline math: xx<Math mode="inline" tex="a+b"><XMath><XMTok font="italic">a</XMTok><XMTok role="ADDOP">+</XMTok><XMTok font="italic">b</XMTok></XMath></Math>xx
 </p>
     <p>Expect display math: xx</p>
     <equation>
-      <Math mode='display' tex='a+b'>
+      <Math mode="display" tex="a+b">
         <XMath>
-          <XMTok font='italic'>a</XMTok>
-          <XMTok>+</XMTok>
-          <XMTok font='italic'>b</XMTok>
+          <XMTok font="italic">a</XMTok>
+          <XMTok role="ADDOP">+</XMTok>
+          <XMTok font="italic">b</XMTok>
         </XMath>
       </Math>
     </equation>

@@ -18,11 +18,10 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
-use charnames ":full";
 
 DefConstructor('\mathbb{}', '#1',
-	       beforeDigest=>sub{ $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(family=>'blackboard'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'blackboard'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 
 
 #**********************************************************************

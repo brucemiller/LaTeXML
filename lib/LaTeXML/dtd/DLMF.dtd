@@ -22,8 +22,9 @@
 
 <!ENTITY % define.structure  "IGNORE" >
 <!ENTITY % Equation.extra "| note | origref | constraint">
-<!ENTITY % Figure.extra "| note | origref">
-<!ENTITY % Table.extra "| note | origref">
+<!-- figure & table already contain Misc.extra -->
+<!ENTITY % Figure.extra "| origref">
+<!ENTITY % Table.extra "| origref">
 
 <!ENTITY % LaTeXML.dtd SYSTEM "LaTeXML.dtd" >
 %LaTeXML.dtd; 
@@ -53,11 +54,13 @@
 <!ELEMENT galleryitem (graphics)*>
 <!ATTLIST galleryitem
           graphic   CDATA #REQUIRED
-          name      CDATA #IMPLIED>
+          name      CDATA #IMPLIED
+	  labelref  CDATA #IMPLIED>
 <!ELEMENT figuregroup (figure)*>
 <!ELEMENT sidebar (title?, toctitle?, author?, (%Block.mix;)*)>
 <!ATTLIST sidebar
-          name CDATA #REQUIRED>
+          name  CDATA #REQUIRED
+	  label CDATA #IMPLIED>
 <!ELEMENT equationmix (#PCDATA | %Inline.mix; | punct | origref | constraint)*>
 <!ATTLIST equationmix
           label ID #IMPLIED

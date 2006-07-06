@@ -32,7 +32,8 @@ use Cwd;
 use Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( &pathname_find
-		  &pathname_make &pathname_split &pathname_concat
+		  &pathname_make &pathname_canonical
+		  &pathname_split &pathname_concat
 		  &pathname_relative &pathname_absolute
 		  &pathname_is_absolute 
 		  &pathname_cwd &pathname_mkdir &pathname_copy);
@@ -57,7 +58,7 @@ sub pathname_make {
   $pathname .= $SEP if $pathname && $pieces{name};
   $pathname .= $pieces{name} if $pieces{name};
   $pathname .= '.'.$pieces{type} if $pieces{type};
-  $pathname; }
+  pathname_canonical($pathname); }
 
 # Split the pathname into components (dir,name,type).
 # If pathname is absolute, dir starts with volume or '/'
@@ -70,6 +71,15 @@ sub pathname_split {
   my $type = '';
   $type = $1 if $name =~ s/\.([^\.]+)$//;
   ($dir,$name,$type); }
+
+sub pathname_canonical {
+  my($pathname)=@_;
+#  File::Spec->canonpath($pathname); }
+  $pathname =~ s|//+|/|g;
+  $pathname =~ s|/\./|/|g;
+  $pathname =~ s|/[^/]+/\.\./|/|g;
+  $pathname =~ s|^\./||;
+  $pathname; }
 
 #======================================================================
 sub pathname_concat {
@@ -141,7 +151,7 @@ sub pathname_find {
     elsif($types){
       foreach my $type (@$types){
 	my $fullpath = $pathname . "." . $type;
-	return $fullpath if -f $fullpath; }}
+	return pathname_canonical($fullpath) if -f $fullpath; }}
     return undef; }
   elsif($paths){
     foreach my $path (@$paths){

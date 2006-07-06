@@ -41,9 +41,10 @@
   <xsl:template match="ltx:punct"/>
 
   <xsl:template name="add_id">
-    <xsl:if test="@label">
-      <a name='{@label}'></a>
-    </xsl:if>
+    <xsl:choose>
+      <xsl:when test="@label"><a name="{@label}"></a></xsl:when>
+      <xsl:otherwise><a name="{generate-id()}"></a></xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:include href="LaTeXML-base.xsl"/>

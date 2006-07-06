@@ -177,7 +177,7 @@ sub set_math_image {
 # Get a list blah, blah...
 sub find_documentclass_and_packages {
   my($self,$doc)=@_;
-  my ($class,$classoptions,@packages)=@_;
+  my ($class,$classoptions,@packages);
   foreach my $pi ($doc->findnodes(".//processing-instruction('latexml')")){
     my $data = $pi->textContent;
     my $entry={};
@@ -188,6 +188,7 @@ sub find_documentclass_and_packages {
     elsif($$entry{package}){
       push(@packages,[$$entry{package},$$entry{options}||'']); }
   }
+  $self->Error("No document class found") unless $class;
   ([$class,$classoptions],@packages); }
 
 #======================================================================
@@ -241,7 +242,7 @@ $packages
 \\def\\endDISPLAY{\\)\\egroup\\AdjustInline\\fbox{\\copy\\sizebox}\\clearpage}
 % Extra definitions for LaTeXML generated TeX
 \\def\\FCN#1{#1}
-\\def\\DUAL#1#2#3{#3}% Use presentation form!!!
+\\newcommand{\\DUAL}[3][]{#3}% Use presentation form!!!
 \\makeatother
 EOPreamble
 }

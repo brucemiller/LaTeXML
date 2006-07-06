@@ -12,7 +12,6 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
-use charnames ":full";
 use LaTeXML::Package;
 
 RequirePackage('LaTeX');
@@ -22,15 +21,16 @@ RequirePackage('LaTeX');
 DocType("bibliography","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
 	"http://dlmf.nist.gov/LaTeXML");
 DefEnvironment('{document}',"<bibliography>#body</bibliography>",
-		 beforeDigest=> sub { $_[0]->setInPreamble(0); });
+		 beforeDigest=> sub { $STOMACH->setInPreamble(0); });
 
 # Load special functions & other required packages.
 RequirePackage('DLMFmath');
 RequirePackage('amsrefs');
+RequirePackage('url');
 
 #**********************************************************************
 # Where does this belong?
-DefConstructor('\circledR',"\N{REGISTERED SIGN}");
+DefConstructor('\circledR',"\x{00AE}"); # REGISTERED SIGN
 
 #**********************************************************************
 1;

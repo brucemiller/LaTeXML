@@ -50,7 +50,7 @@ sub stringify{ $_[0]->toString; }
 
 sub equals {
   my($self,$other)=@_;
-  join('|',@$self) eq   join('|',@$other); }
+  (defined $other) && ((ref $self) eq (ref $other)) && (join('|',@$self) eq   join('|',@$other)); }
 
 sub merge {
   my($self,%options)=@_;
@@ -133,22 +133,37 @@ sub merge {
 # Getting the font right is important, since the author probably
 # thinks of the identity of the symbols according to what they SEE in the printed
 # document.  Even though the markup might seem to indicate something else...
+
+# Use Unicode properties to determine font merging.
 sub specialize {
-  my($self,$mathclass)=@_;
+  my($self,$string)=@_;
   my($family,$series,$shape,$size,$color,$forcebold)=@$self;
+#print STDERR "Specialized font $self for $string ";
+
   $series = 'bold' if $forcebold;
-  if($mathclass eq 'letter'){}
-  elsif($mathclass eq 'number'){
+  if(($string =~ /^\p{Latin}$/) && ($string =~ /^\p{L}$/)){	# Latin Letter
+  }
+  elsif($string =~ /^\p{Greek}$/){	# Single Greek character?
+    if($string =~ /^\p{Lu}$/){	# Uppercase
+#print STDERR "Greek Upper";
+      if($family eq 'math'){ $family=$DEFFAMILY; $shape=$DEFSHAPE; }}
+    else {			# Lowercase
+#print STDERR "Greek Lower";
+      $family=$DEFFAMILY; $shape='italic';  # always ?
+      $series=($forcebold ? 'bold' : $DEFSERIES); }}
+  elsif($string =~ /^\p{N}$/){	# Digit
+#  elsif($string =~ /^[\d\.\s]+$/){ # Number
+#print STDERR "Digit";
     if($family eq 'math'){ $family=$DEFFAMILY; $shape=$DEFSHAPE; }}
-  elsif($mathclass eq 'ucgreek'){
-    if($family eq 'math'){ $family=$DEFFAMILY; $shape=$DEFSHAPE; }}
-  elsif($mathclass eq 'lcgreek'){
-    $family=$DEFFAMILY; $shape='italic';  # always ?
-    $series=($forcebold ? 'bold' : $DEFSERIES); }
-  elsif($mathclass eq 'symbol'){
+  else {			# Other Symbol
+#print STDERR "Symbol";
     $family=$DEFFAMILY; $shape=$DEFSHAPE; # defaults, always.
     $series=($forcebold ? 'bold' : $DEFSERIES); }
-  (ref $self)->new_internal($family,$series,$shape,$size,$color,$forcebold); }
+
+my $f=  (ref $self)->new_internal($family,$series,$shape,$size,$color,$forcebold); 
+#print STDERR " => $f\n";
+$f;
+}
 
 
 #**********************************************************************
@@ -160,14 +175,32 @@ __END__
 
 =head1 LaTeXML::Font and LaTeXML::MathFont
 
-=head2 SYNOPSIS
-
-use LaTeXML::Font;
-
 =head2 DESCRIPTION
 
 This module defines Font objects.
 I'm not completely happy with the arrangement, or
-maybe just the use of it.
+maybe just the use of it, so I'm not going to document extensively at this point.
+
+C<LaTeXML::Font> and C<LaTeXML::MathFont> represent fonts 
+(the latter, fonts in math-mode, obviously) in LaTeXML. 
+Generally, they are created by the C<LaTeXML::Stomach> in response 
+to C<$STOMACH->setFont(%attr);> or C<$STOMACH->setMathFont(%attr);>.
+The attributes are
+
+   family : serif, sansserif, typewriter, caligraphic, fraktur, script
+   series : medium, bold
+   shape  : upright, italic, slanted, smallcaps
+   size   : tiny, footnote, small, normal, large, Large, LARGE, huge, Huge
+   color  : any named color, default is black
+
+They are usually merged against the current font, attempting to mimic the,
+sometimes counter-intuitive, way that TeX does it,  particularly for math
+
+Additionally, C<LaTeXML::MathFont> supports C<$font->specialize($string);>, which
+computes a font reflecting how the specific C<$string> would be printed when
+C<$font> is active; This (attempts to) handle the curious ways that lower case
+greek often doesn't get a different font.  In particular, it recognizes the
+following classes of strings: single latin letter, single uppercase greek character,
+single lowercase greek character, digits, and others.
 
 =cut

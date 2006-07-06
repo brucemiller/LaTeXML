@@ -1,0 +1,136 @@
+#!/usr/bin/perl -w
+use strict;
+use FindBin;
+use lib "$FindBin::RealBin/../lib";
+use LaTeXML::Post;
+use LaTeXML::Post::HTMLTable;
+use LaTeXML::Post::MathParser;
+use LaTeXML::Post::PresentationMathML;
+use Carp;
+use Getopt::Long;
+
+my $verbosity=1;
+my $help=0;
+my $demo=0;
+GetOptions("verbose+"     =>\$verbosity,
+	   "demo+"        =>\$demo,
+	   "help|?"       =>\$help,
+	  ) or warn("Wah!");
+
+BEGIN { $SIG{__DIE__} = \&confess; }
+
+#**********************************************************************
+my $DLMFBASE = "$ENV{HOME}/dlmf";
+my $SITEBASE = ($demo
+		? "/local/www/site/htdocs/DigitalMathLib/LaTeXML/dlmf"
+		: "/local/www/site/htdocs/DigitalMathLib/xdlmf");
+
+
+$ENV{TEXINPUTS}="$DLMFBASE/styles/DLMFtex::";
+#**********************************************************************
+binmode(STDERR,":utf8");
+
+my $processors=[DLMFMath->new(),
+		DLMFGraphics->new(),
+		DLMFGallery->new(),
+		LaTeXML::Post::HTMLTable->new(),
+		LaTeXML::Post::MathParser->new(),
+		LaTeXML::Post::PresentationMathML->new()];
+
+my $post = LaTeXML::Post->new();
+
+foreach my $CH (@ARGV){
+  print STDERR "Processing Chapter $CH\n" if $verbosity;
+  $post->process("$DLMFBASE/$CH/$CH.xml",
+		 destination=>"$SITEBASE/$CH/$CH.xml",
+		 verbosity=>$verbosity,
+		 processors=>$processors); }
+
+#**********************************************************************
+package DLMFMath;
+use LaTeXML::Post::MathImages;
+BEGIN{ our @ISA = qw(LaTeXML::Post::MathImages); }
+
+# Override the default TeX code for capturing display equations.
+# We'll use breqn's framing for display math.
+# Alas, it's a bit broken right now, so add some padding between formula and frame.
+sub preamble {
+  my($self,$doc)=@_;
+  $self->SUPER::preamble($doc) 
+      ."\\def\\beginDISPLAY{\\begingroup\\[[fullframe]}\n"
+      ."\\def\\endDISPLAY{\\]\\endgroup\\clearpage}\n";  }
+
+#**********************************************************************
+package DLMFGraphics;
+use LaTeXML::Post::Graphics;
+use LaTeXML::Util::Pathname;
+BEGIN{ our @ISA = qw(LaTeXML::Post::Graphics);}
+
+# Need to handle specially:
+# TODO:
+#   vrml : copy vrml & proto files.
+
+# Graphics in 2D subdirs tend to be line drawings: Prefer the postscript source.
+sub findGraphicsFile {
+  my($self,$node)=@_;
+  my $name = $node->getAttribute('graphic');
+  if($name =~ m|^2D/|){
+    my $file = $self->findFile($name,['eps','ps']); 
+    return $file if $file; }
+  $self->SUPER::findGraphicsFile($node); }
+
+our @VRML_EXTRA;
+BEGIN { @VRML_EXTRA = qw(dlmf_proto.wrl sml_rec_proto.wrl); }
+
+sub processGraphic {
+  my($self,$node)=@_;
+  my $source = $self->findGraphicsFile($node);
+  return $self->Warn("Missing graphic for $node; skipping") unless $source;
+  my $transform = $self->getTransform($node);
+
+  # Check for magnifiable and/or vrml options; then remove them.
+  my $mag    = grep($_->[0] eq 'magnifiable',@$transform);
+  my ($vrml) = grep(($_->[0] eq 'vrml' ? $_->[1] : ''),@$transform);
+  $vrml = $vrml->[1] if $vrml;
+  $transform = [grep( $_->[0] !~/^(magnifiable|vrml)$/, @$transform)];
+
+  # Process the main image
+  my($image,$width,$height)=$self->transformGraphic($node,$source,$transform); 
+  $self->setGraphicsSrc($node,$image,$width,$height) if $image;
+
+  if($mag){			# Generate Magnified image, if requested
+    my($mimage,$mwidth,$mheight)=$self->transformGraphic($node,$source,[@$transform,['scale',2.5]]);
+    $node->setAttribute('magsrc',$mimage);
+    $node->setAttribute('magwidth',$mwidth);
+    $node->setAttribute('magheight',$mheight); }
+
+  if($vrml){			# Copy vrml & related files, if requested
+    my $source = $self->findFile($vrml,['wrl']);
+    $node->setAttribute('vrml',$self->copyFile($source));
+    my($srcdir,$name,$type)=pathname_split($source);
+    foreach my $extra (@VRML_EXTRA){
+      my $x = pathname_make(dir=>$srcdir,name=>$extra);
+      $self->copyFile($x) if -f $x; }}
+}
+
+sub get_type_map {
+  my($self,$src,$options)=@_;
+  if($src =~ m|/2D/|){		# 2D: line graphics: use png with transparency.
+    {type=>'png', transparent=>1}; }
+  elsif($src =~ m|/3D/|){	# 3D: surfaces best using jpeg.
+    {type=>'jpeg'}; }
+  else {
+    $self->SUPER::get_type_map($src,$options); }}
+
+#**********************************************************************
+# Custom form for Gallery images.
+package DLMFGallery;
+use LaTeXML::Post::Graphics;
+BEGIN{ our @ISA = qw(LaTeXML::Post::Graphics);}
+
+sub selectGraphicsNodes { 
+  $_[1]->getElementsByTagNameNS($_[0]->getNamespace,'galleryitem'); }
+sub getTransform {
+  [['scale-to',72,72]]; }
+
+#**********************************************************************

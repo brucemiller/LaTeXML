@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class='article'?>
+<document xmlns='http://dlmf.nist.gov/LaTeXML'>
+  <section>
+    <p>Inline math <Math mode='inline' tex='a+b'>
+        <XMath>
+          <XMTok font='italic'>a</XMTok>
+          <XMTok>+</XMTok>
+          <XMTok font='italic'>b</XMTok>
+        </XMath>
+      </Math>.
+</p>
+    <equation>
+      <Math mode='display' tex='a+b+123'>
+        <XMath>
+          <XMTok font='italic'>a</XMTok>
+          <XMTok>+</XMTok>
+          <XMTok font='italic'>b</XMTok>
+          <XMTok>+</XMTok>
+          <XMTok name='123'>123</XMTok>
+        </XMath>
+      </Math>
+    </equation>
+    <equation>
+      <Math mode='display' tex='a+b+f(123)'>
+        <XMath>
+          <XMTok font='italic'>a</XMTok>
+          <XMTok>+</XMTok>
+          <XMTok font='italic'>b</XMTok>
+          <XMTok>+</XMTok>
+          <XMTok font='italic'>f</XMTok>
+          <XMTok>(</XMTok>
+          <XMTok name='123'>123</XMTok>
+          <XMTok>)</XMTok>
+        </XMath>
+      </Math>
+    </equation>
+    <equation>
+      <Math mode='display' tex='f_{D}f(a+b)'>
+        <XMath>
+          <XMTok font='italic'>f</XMTok>
+          <XMApp name='PostSubscript'>
+            <XMArg rule='Subscript'>
+              <XMTok font='italic'>D</XMTok>
+            </XMArg>
+          </XMApp>
+          <XMTok font='italic'>f</XMTok>
+          <XMTok>(</XMTok>
+          <XMTok font='italic'>a</XMTok>
+          <XMTok>+</XMTok>
+          <XMTok font='italic'>b</XMTok>
+          <XMTok>)</XMTok>
+        </XMath>
+      </Math>
+    </equation>
+    <equation>
+      <Math mode='display' tex='f_{1}(a+b)'>
+        <XMath>
+          <XMTok font='italic'>f</XMTok>
+          <XMApp name='PostSubscript'>
+            <XMArg rule='Subscript'>
+              <XMTok>1</XMTok>
+            </XMArg>
+          </XMApp>
+          <XMTok>(</XMTok>
+          <XMTok font='italic'>a</XMTok>
+          <XMTok>+</XMTok>
+          <XMTok font='italic'>b</XMTok>
+          <XMTok>)</XMTok>
+        </XMath>
+      </Math>
+    </equation>
+    <equation>
+      <Math mode='display' tex='\hat{f}a'>
+        <XMath>
+          <XMApp>
+            <XMTok POS='OVERACCENT' name='OverHat'>^</XMTok>
+            <XMArg>
+              <XMTok font='italic'>f</XMTok>
+            </XMArg>
+          </XMApp>
+          <XMTok font='italic'>a</XMTok>
+        </XMath>
+      </Math>
+    </equation>
+  </section>
+  <section label='sec:restricted' refnum='1'>
+    <title>Restricted</title>
+    <equation>
+      <Math mode='display' tex='a(x)+b(x)+123'>
+        <XMath>
+          <XMTok font='italic'>a</XMTok>
+          <XMTok>(</XMTok>
+          <XMTok font='italic'>x</XMTok>
+          <XMTok>)</XMTok>
+          <XMTok>+</XMTok>
+          <XMTok font='italic'>b</XMTok>
+          <XMTok>(</XMTok>
+          <XMTok font='italic'>x</XMTok>
+          <XMTok>)</XMTok>
+          <XMTok>+</XMTok>
+          <XMTok name='123'>123</XMTok>
+        </XMath>
+      </Math>
+    </equation>
+  </section>
+</document>

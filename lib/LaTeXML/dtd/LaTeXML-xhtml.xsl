@@ -70,9 +70,13 @@
   </xsl:template>
 
   <xsl:template name="add_id">
-    <xsl:if test="@label">
-      <xsl:attribute name="id"><xsl:value-of select="@label"/></xsl:attribute>
-    </xsl:if>
+    <xsl:choose>
+      <xsl:when test="@label">
+	<xsl:attribute name="id"><xsl:value-of select="@label"/></xsl:attribute>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:attribute name="id"><xsl:value-of select="generate_id()"/></xsl:attribute>
+      </xsl:otherwise>
   </xsl:template>
 
   <xsl:include href="LaTeXML-base.xsl"/>

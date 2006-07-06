@@ -30,7 +30,7 @@ our $nsURI = "http://dlmf.nist.gov/LaTeXML";
 # Construct an XPath selector from a textual math expression.
 # Returns undef if it can't understand the expression.
 # Options are:
-#   undeclared=>1 only selects nodes that don't have POS (part of speech) attribute.
+#   undeclared=>1 only selects nodes that don't have role attribute.
 #   container=>1 selects XMath nodes that have matching nodes, 
 #     rather than the nodes themselves.
 #   label=>$label only selects nodes within some element labeled by $label
@@ -48,8 +48,8 @@ sub constructMathPath {
 
   # Add outer XPath to restrict to certain kinds of expressions
 
-  # Restrict to Undeclared items. (NOT in XMWrap and NO POS attribute)
-  $xpath .= "[not(ancestor::*".isElement('XMWrap').")][not(\@POS)]" if $options{undeclared};
+  # Restrict to Undeclared items. (NOT in XMWrap and NO role attribute)
+  $xpath .= "[not(ancestor::*".isElement('XMWrap').")][not(\@role)]" if $options{undeclared};
   # Restrict to certain fonts
   $xpath .= "[\@font='$options{font}']" if defined $options{font};
   # Wrap to select the whole containing XMath, or just the matching node.
@@ -87,6 +87,10 @@ sub isElement {
 sub hasName {
   my($name)=@_;
   "[\@name='$name' or text()='$name']"; }
+
+sub hasRole {
+  my($role)=@_;
+  "[\@role='$role']"; }
 
 sub atPos {
   my($n)=@_;
@@ -131,7 +135,7 @@ sub constructXPath1 {
 sub dosubscript {
   my($op,$base,$script)=@_;
   $base
-    ."[following-sibling::*".isElement('XMApp').hasName('PostSubscript')
+    ."[following-sibling::*".isElement('XMApp').hasRole('POSTSUBSCRIPT')
       .(defined $script ? hasArg(1,$script) : '') ."]"; }
 
 sub doaccent {

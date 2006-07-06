@@ -1,6 +1,6 @@
 # /=====================================================================\ #
 # |  LaTeXML::Intestine                                                 | #
-# | Constructs the DOM from digested material                           | #
+# | Constructs the Document from digested material                      | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
@@ -14,255 +14,247 @@ package LaTeXML::Intestine;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::Object;
-use LaTeXML::DOM;
+use LaTeXML::Node;
 our @ISA = qw(LaTeXML::Object);
 #**********************************************************************
 
 # [could conceivable make more sense to let the Stomach create the Intestine?]
 
 sub new {
-  my($class, $stomach)=@_;
-  bless {model=>$stomach->getModel, 
-#	 initialFont=>$stomach->getFont, 
-	 initialFont=>$stomach->getValue('default@textfont'),
-	 stomach=>$stomach,
-	 progress=>0},$class; }
+  my($class)=@_;
+  bless {idstore=>{}, progress=>0},$class; }
 
 #**********************************************************************
 # Accessors
-sub getModel { $_[0]->{model}; }
 
 sub getRootNode { $_[0]->{root}; }
 sub getNode     { $_[0]->{node}; }
 sub setNode     { $_[0]->{node} = $_[1]; }
 
-sub getContext {
-  my($self,$short)=@_;
-  my $node = $$self{node};
-  my $box = $LaTeXML::BOX;
-  my $msg = "During DOM construction ";
-  $msg .= "for ".$box->toString." from ".$box->getSourceLocator if $box;
-  $msg .= "\n" unless $short;
-  $node = undef if $short && $box; # ignore node if want short & have box
-  $msg .= $node->getContext($short) if $node;
-  $msg; }
-
+# Note: $node->getNodeNmme gets invoked so often, we're inlining => $$node{tag};
 #**********************************************************************
-# Allow lookup of values from Stomach.
-# Only will work for values globally set during digestion.
+# Record nodes by id
+sub recordID {
+  my($self,$id,$object)=@_;
+  $$self{idstore}{$id}=$object; }
 
-sub getValue { $_[0]->{stomach}->getValue($_[1]); }
-sub setValue { $_[0]->{stomach}->setValue($_[1],$_[2],1); }
+sub lookupID {
+  my($self,$id)=@_;
+  $$self{idstore}{$id}; }
 
 #**********************************************************************
 # Given a digested document, process it, constructing a DOM tree.
+# Top-level API.
 sub buildDOM {
   my($self,$doc)=@_;
   NoteProgress("\n(Building");
-  local $LaTeXML::INTESTINE = $self;
-  local $LaTeXML::STOMACH   = $$self{stomach}; # Can still access FINAL state
-  local $LaTeXML::MODEL     = $$self{model};
-  $$self{model}->loadDocType([$$self{stomach}->getSearchPaths]);
-  $$self{node} = $$self{root} = LaTeXML::DOM::Document->new();
-  $$self{node}->setAttribute('font',$$self{initialFont});
+  my $font = $STOMACH->lookupValue('default@textfont');
+  $$self{node} = $$self{root} = LaTeXML::Document->new(publicID=>$MODEL->getPublicID, 
+						       systemID=>$MODEL->getSystemID,_font=>$font);
   $self->absorb($doc);
   NoteProgress(")");
-  $$self{root}; }
+  $$self{root}->toXML; }
 
+# absorb a given object into the DOM.
 sub absorb {
   my($self,$box)=@_;
-  if(defined $box){
+  if(!defined $box){}
+  elsif(ref $box){
     local $LaTeXML::BOX = $box;
-    $box->beAbsorbed($self); }}
+    $box->beAbsorbed; }
+  # The following handle inserting raw strings, presumably within the context of some constructor?
+  elsif(!$LaTeXML::BOX->isMath){
+    $self->openText_internal($box); }
+  elsif($$self{node}{tag} eq 'XMTok'){ # Already in a XMTok, just insert the text
+    $$self{node}->insert(LaTeXML::TextNode->new($box,_locator=>$box)); } # Should be safe...
+  else {			# Shouldn't happen?  Should I distinguish space from `real' stuff?
+    Warn("Inserting raw text \"$box\" within math ".Stringify($$self{node})."; Converting to XMTok");
+    $self->insertMathToken($box,font=>$LaTeXML::BOX->getFont); }}
 
 #**********************************************************************
+# Low level internal interface
+sub openText_internal {
+  my($self,$text)=@_;
+  my $tag = $$self{node}{tag};
+  if($tag eq '#PCDATA'){ # current node is a text node.
+    $$self{node}->appendText($text); }
+  elsif(($text =~/\S/) || $MODEL->canContain($tag,'#PCDATA')){  # Ignore stray whitespace
+    my $node = LaTeXML::TextNode->new($text,_locator=>$LaTeXML::BOX);
+    $self->openNode_internal($node); }}
+
+# Insert a child node, return the child as the current node, assuming this one were.
+sub openNode_internal {
+  my($self,$child)=@_;
+  Fatal("Expected Node; got ".Stringify($child)) unless defined $child && $child->isaNode;
+  my $tag = $$self{node}{tag};
+  my $ctag = $$child{tag};
+  if($MODEL->canContain($tag,$ctag)){ # $child is allowed here, insert it!
+    $$self{node} = $$self{node}->insert($child); }
+  elsif(my $via=$MODEL->canContainIndirect($tag,$ctag)){ # Can be subchild if $via is between
+    $self->openElement($via);				      # Open intermediary node.
+    $self->openNode_internal($child); } # And retry insertion (should work now).
+  else {			# Now we're getting more desparate...
+    # Check if we can auto close some nodes, and _then_ insert the child.
+    my($n,$t) = ($$self{node}, $$self{node}{tag});
+    while(defined $n && $MODEL->canAutoClose($t)){
+      if(defined(my $p = $n->getParentNode)){
+	my $pt = $$p{tag};
+	last if $MODEL->canContain($pt,$ctag) || $MODEL->canContainIndirect($pt,$ctag);
+	$n = $p; $t = $pt; }
+      else {
+	$n = undef; }}
+
+    if(defined $n && $MODEL->canAutoClose($t)){
+      $self->closeNode_internal($n); # Close the auto closeable nodes.
+      $self->openNode_internal($child); }	    # Then retry, possibly w/auto open's
+    else {					    # Didn't find a legit place.
+      $n = $$self{node};
+      while(defined $n && ($$n{tag} eq '#PCDATA')){ # Get an element node!
+	$n = $n->getParentNode; }
+      Error(Stringify($child)." isn't allowed in ".Stringify($n));
+      $n->insert($child);	# But we'll do it anyway, unless Error => Fatal.
+      $$self{node} = $child; }}}
+
+# No checking! Use this when you've already verified that the $tag can be closed.
+sub closeNode_internal {
+  my($self,$node)=@_;
+  my $n = $$self{node};
+  while(1){
+    if(defined(my $post= $MODEL->getTagProperty($$n{tag},'afterClose'))){
+      &$post($n,$LaTeXML::BOX); }
+    last if $node eq $n;
+    $n = $n->getParentNode; }
+  $$self{node} = $node->getParentNode; }
+
+sub floatToElement {
+  my($self,$tag)=@_;
+  my $savenode;
+  for(my $n=$self->getNode; defined $n; $n = $n->getParentNode){
+    if($MODEL->canContain($$n{tag},$tag)){
+      $savenode = $self->getNode; $self->setNode($n); last; }}
+  $savenode; }
+
+sub floatToAttribute {
+  my($self,$key)=@_;
+  my $savenode;
+  my $n = $$self{node};
+  while(defined $n && ! $MODEL->canHaveAttribute($$n{tag},$key)){
+    $n = $n->getParentNode; }
+  if(defined $n){
+    $savenode = $$self{node};
+    $$self{node}=$n; }
+  else {
+    Error("No open node can accept attribute $key"); }
+  $savenode; }
+
+#**********************************************************************
+# Middle level, mostly public, API.
 # Handlers for various construction operations.
 # General naming: 'open' opens a node at current pos and sets it to current,
 # 'close' closes current node(s), inserts opens & closes, ie. w/o moving current
 
-# Tricky: if there's a font switch, we may want to open or close nodes.
-# We'll want to close nodes if we can minimize the number of font switches.
+
+# Tricky: Insert some text in a particular font.
+# We need to find the current effective -- being the closest  _declared_ font,
+# (ie. it will appear in the elements attributes).  We may also want
+# to open/close some elements in such a way as to minimize the font switchiness.
+# I guess we should only open/close "textstyle" elements, though.
+# [Actually, we'd like the user to _declare_ what element to use....
+#  I don't like having "textstyle" built in here!
+#  AND, we've assumed that "font" names the relevant attribute!!!]
+
+our $FONTTAG = "textstyle";	# Eventually declared somewhere???
 sub openText {
   my($self,$text,$font)=@_;
   my $n = $$self{node};
-  my ($closeable,$bestdiff,$closeto,$lastcloseto,$f)=(1,99999,$n,$n);
+  my ($bestdiff,$closeto)=(99999,$n);
   while(defined $n){
-    $closeable &&= $n->canAutoClose;
-    if(defined (my $f = $n->getAttribute('font'))){
-      my $d = $font->distance($f);
-      if($d < $bestdiff){
-	$bestdiff = $d;
-	$closeto = $lastcloseto; 
-	last if ($d == 0); }
-      last unless $closeable;
-      $lastcloseto = $n->getParentNode; }
+    my $d = $font->distance($n->getAttribute('_font'));
+    if($d < $bestdiff){
+      $bestdiff = $d;
+      $closeto = $n;
+      last if ($d == 0); }
+    my $t=$$n{tag};
+    last unless ($t eq $FONTTAG) || ($t eq '#PCDATA');
     $n = $n->getParentNode; }
-
-  # Maybe close some nodes.
-  while($$self{node} != $closeto){
-    $$self{node} = $$self{node}->getParentNode; } # Hmm... this avoids the daemons!
-  # Maybe open a new node.
-  if($bestdiff > 0){
-    # NOTE: We've embedded the element name here!!! Arghh!!!
-    $self->openElement('textstyle',font=>$font); }
+  $$self{node} = $closeto;	# Move to best starting point for this text.
+  $self->openElement($FONTTAG,font=>$font) if $bestdiff > 0; # Open if needed.
   # Finally, insert the darned text.
-  $$self{node} = $$self{node}->insertText($text); }
+  $self->openText_internal($text); }
 
 sub insertMathToken {
-  my($self,$string,$font)=@_;
-  $self->openElement('XMTok', font=>$font);
-  $self->getNode->insertText($string);
-  $self->closeElement('XMTok'); }
+  my($self,$string,%attributes)=@_;
+  my $node = $self->openElement('XMTok', %attributes);
+  $node->insert(LaTeXML::TextNode->new($string,_locator=>$LaTeXML::BOX));
+  $self->closeNode_internal($node); } # Should be safe.
 
 sub openElement {
   my($self,$tag,%attributes)=@_;
   NoteProgress('.') if ($$self{progress}++ % 25)==0;
-  $$self{node} = $$self{node}->open($tag,%attributes); 
-  # Probably here is the place we can set the `origin' of the node, 
-  # or whatever that evolves into....
-  if(defined(my $post=$$self{model}->getTagProperty($tag,'afterOpen'))){
+  $attributes{_namespace} = $MODEL->getDefaultNamespace unless $attributes{_namespace};
+  $attributes{_locator}   = $LaTeXML::BOX unless $attributes{_locator};
+  my $node = LaTeXML::Node->new($tag,%attributes);
+  $self->openNode_internal($node);
+  if(defined(my $post=$MODEL->getTagProperty($tag,'afterOpen'))){
     &$post($$self{node},$LaTeXML::BOX); }
   $$self{node}; }
 
 sub closeElement {
   my($self,$tag)=@_;
-  $$self{node} = $$self{node}->close($tag); 
-  if(defined(my $post=$$self{model}->getTagProperty($tag,'afterClose'))){
-    # Hopefully, the node we want to process is now the last child of the
-    # current node that has the correct type?
-    my @nodes = grep($_->getNodeName eq $tag, $$self{node}->childNodes);
-    my $node = $nodes[$#nodes];
-    &$post($node,$LaTeXML::BOX); }
-  $$self{node}; }
+  my $node = $$self{node};
+  # First, check whether $tag is closeable.
+  my ($t, @cant_close) = ();
+  while(defined $node && (($t=$$node{tag}) ne $tag)){
+    push(@cant_close,$node) unless $MODEL->canAutoClose($t);
+    $node = $node->getParentNode; }
+  if(!defined $node){		# Didn't find an open $tag at all!
+    Error("Attempt to close $tag, which isn't open"); }
+  else {
+    # Found node, but has intervening non-auto-closeable parents
+    # Will go ahead and close them anyway, unless Error ends up a Fatal error.
+    Error("Closing $tag whose open descendents (".
+	  join(', ',map(Stringify($_),@cant_close)).") dont auto-close")
+      if @cant_close;
+    # So, now close up to the desired node.
+    $self->closeNode_internal($node); }}
 
-sub openComment {
+# Close $tag, if it is closeable.
+sub maybeCloseElement {
+  my($self,$tag)=@_;
+  my($node,$t) = ($$self{node},undef);
+  while(defined $node && (($t=$$node{tag}) ne $tag)){
+    return unless $MODEL->canAutoClose($t);
+    $node = $node->getParentNode; }
+  $self->closeNode_internal($node) if $node; }
+
+# Insert a new comment, or append to previous comment.
+# Note: shouldn't this just move back to parent??
+sub insertComment {
   my($self,$text)=@_;
-  $$self{node} = $$self{node}->insertComment($text); }
+  my $node = $$self{node};
+  if($$node{tag} eq '_Comment_'){
+    $node->appendComment($text); }
+  else {
+    while(defined $node && ($$node{tag} eq '#PCDATA')){ # Get an element node!
+      $node = $node->getParentNode; }
+    $$self{node} = $node->insert(LaTeXML::CommentNode->new($text,_locator=>$LaTeXML::BOX)); }}
 
-sub insertPI      { 
+sub insertPI {
   my($self,$op,%attrib)=@_;
-  $$self{node}->insert(LaTeXML::DOM::ProcessingInstruction->new($op,%attrib));}
+  my $node = $$self{node};
+  while(defined $node && ((ref $node) !~ /^(LaTeXML::Node|LaTeXML::Document)$/)){ # Get an element node!
+    $node = $node->getParentNode; }
+  $node->insert(LaTeXML::ProcessingInstruction->new($op,_locator=>$LaTeXML::BOX,%attrib));}
 
 # Shorthand
 sub insertElement {
   my($self,$tag,$content,%attrib)=@_;
   $self->openElement($tag,%attrib);
-  $self->absorb($content);
+  if(ref $content eq 'ARRAY'){
+    map($self->absorb($_), @$content); }
+  elsif(defined $content){
+    $self->absorb($content); }
   $self->closeElement($tag); }
-
-#**********************************************************************
-# Higher level: Interpret a Constructor pattern.
-# It looks like XML!
-# Must be called from within ->absorb, so that $BOX is bound to Whatsit.
-# Binds $_ to the constructor being parsed.
-#our $VALUE_RE = "(\\#|\\%)";
-our $VALUE_RE = "(\\#)";
-our $COND_RE  = "\\?$VALUE_RE";
-our $QNAME_RE = "([\\w\\-_]+)";	# Eventually allow prefixes?
-our $TEXT_RE  = "([^\\#<\\?]+|.)";
-
-sub interpretConstructor {
-  my($self,$constructor)=@_;
-  local $_ = $constructor;
-  my $floats = s/^\^\s*//;	# Grab float marker.
-  my $savenode = undef;
-  while($_){
-    if(/^$COND_RE/o){
-      apply_conditional(); }
-    # Processing instruction: <?name a=v ...?>
-    elsif(s|^\s*<\?$QNAME_RE||o){
-      $self->insertPI($1,parse_avpairs());
-      Error("Missing \"?>\" in constructor at \"$_\"") unless s|^\s*\?>||; }
-    # Open tag: <name a=v ...> or .../> (for empty element)
-    elsif(s|^\s*<$QNAME_RE||o){
-      my $tag = $1;
-      # Floating elements: temporarily move to a parent that accepts this element.
-      if($floats && !defined $savenode){
-	for(my $n=$self->getNode; defined $n; $n = $n->getParentNode){
-	  if($n->canContain($tag)){
-	    $savenode = $self->getNode; $self->setNode($n); last; }}}
-      $self->openElement($tag,parse_avpairs());
-      $self->closeElement($tag) if s|^/||; # Empty element.
-      Error("Missing \">\" in constructor at \"$_\"") unless s|^>||; }
-    # Close tag: </name>
-    elsif(s|^\s*</$QNAME_RE\s*>||o){
-      $self->closeElement($1); }
-    # Substitutable value: argument, property...
-    elsif(/^$VALUE_RE/o){ 
-      $self->absorb(parse_value()); }
-    # Attribute: a=v; assigns in current node? [May conflict with random text!?!]
-    elsif(s|^$QNAME_RE\s*=\s*||o){
-      my ($n,$key) = ($self->getNode,$1);
-      while($floats && defined $n && ! $n->canHaveAttribute($key)){
-	$n = $n->getParentNode; }
-      Error("No open node can accept attribute $key") unless defined $n; 
-      $n->setAttribute($key,parse_string()); }
-    # Else random text
-    elsif(s/^$TEXT_RE//o){	# Else, just some text.
-      $self->openText($1,$LaTeXML::BOX->getFont); }
-  }
-  $self->setNode($savenode) if defined $savenode; # Restore original node, if we floated
-}
-
-# process a conditional in a constructor
-# Conditionals are of the form ?value(...)(...),
-# standing for IF-ELSE; the ELSE clause is optional.
-# It does NOT handled nested conditionals!!!
-sub apply_conditional {
-  if(s/^\?//){
-    my $bool = parse_value();
-    s/^\((.*?)\)(\((.*?)\))?/ ($bool ? $1 : $3)||''; /e
-      or Error("Unbalanced conditional in \"$_\"");
-  }}
-
-# Parse a substitutable value from the constructor (in $_)
-# Recognizes the #1, %prop, possibly followed by {foo}, for KeyVals,
-# Future enhancements? array ref, &foo(xxx) for function calls, ...
-sub parse_value {
-  my $value;
-  if   (s/^\#(\d+)//     ){ $value = $LaTeXML::BOX->getArg($1); }
-  elsif(s/^\#([\w\-_]+)//){ $value = $LaTeXML::BOX->getProperty($1); }
-  # &foo(...) ? Function (but not &foo; !!!)
-  if(s/^\{$QNAME_RE\}//o && defined $value){
-    Error("{} accessor applied to non-KeyVals arg in constructor")
-      unless (ref $value eq 'LaTeXML::KeyVals');
-    $value = $value->getValue($1); }
-  # Array??? 
-  $value; }
-
-# Parse a delimited string from the constructor (in $_), 
-# for example, an attribute value.  Can contain substitutions (above),
-# the result is a string.
-# NOTE: UNLESS there is ONLY one substituted value, then return the value object.
-# This is (hopefully) temporary to handle font objects as attributes.
-# The DOM holds the font objects, rather than strings,
-# to resolve relative fonts on output.
-sub parse_string {
-  my @values=();
-  if(s/^\s*([\'\"])//){
-    my $quote = $1;
-    while($_ && !s/^$quote//){
-      if   ( /^$COND_RE/o              ){ apply_conditional(); }
-      elsif( /^$VALUE_RE/o             ){ push(@values,parse_value()); }
-      elsif(s/^(.[^\#<\?\!$quote]*)//){ push(@values,$1); }}}
-  if(!@values){ undef; }
-  elsif(@values==1){ $values[0]; }
-  else { join('',map( (ref $_ ? $_->toString : $_), @values)); }}
-
-# Parse a set of attribute value pairs from a constructor pattern, 
-# substituting argument and property values from the whatsit.
-sub parse_avpairs {
-  my %attr=();		# Check substitutions for attributes.
-  s|^\s*||;
-  while($_){
-    if(/^$COND_RE/o){
-      apply_conditional(); }
-    elsif(s|^$QNAME_RE\s*=\s*||o){
-      my ($key,$value) = ($1,parse_string());
-      $attr{$key}=$value if defined $value; }
-    else { last; }
-    s|^\s*||; }
-  %attr; }
 
 #**********************************************************************
 1;
@@ -276,9 +268,12 @@ __END__
 
 =head2 DESCRIPTION
 
-LaTeXML::Intestine carries out the construction of the document tree (represented by
-a LaTeXML::DOM::Document) by traversing the digested LaTeXML::List coming from the
-LaTeXML::Stomach.  
+C<LaTeXML::Intestine> carries out the construction of the document tree by traversing 
+the digested L<LaTeXML::List> coming from the L<LaTeXML::Stomach>.  It is primarily
+the L<LaTeXML::Constructor> patterns encoded in L<LaTeXML::Whatsit>s that generate the
+interesting structure.  An intermediate representation of the document tree
+using L<LaTeXML::Node> is first built, which is then converted
+to an L<XML::LibXML::Document>.
 
 =head2 Top-Level Method
 
@@ -286,9 +281,8 @@ LaTeXML::Stomach.
 
 =item C<< $doc = $intestine->buildDOM($list); >>
 
-Build and return a DOM from the digested $list.
-This is done by invoking the absorb method of the digested objects, passing
-the intestine as argument.
+Build and return an L<XML::LibXML::Document> from the digested C<$list>.
+This is done by recursively "absorb"ing the digested objects.
 
 =back
 
@@ -296,23 +290,20 @@ the intestine as argument.
 
 =over 4
 
-=item C<< $model = $intestine->getModel; >>
-
-Returns the current LaTeXML::Model being used.
-
 =item C<< $doc = $intestine->getRootNode; >>
 
-Returns the root node (LaTeXML::DOM::Document) of the document being constructed.
+Returns the root node (L<LaTeXML::Document>) of the document being constructed.
 
 =item C<< $node = $intestine->getNode; >>
 
 Returns the node at the current insertion point during construction.  This node
 is considered still to be `open'; any insertions will go into it (if possible).
 
-=item C<< $string = $intestine->getContext; >>
+=item C<< $intestine->setNode($node); >>
 
-Returns a string describing the current position in the constructed tree, for
-error messages.
+Sets C<$node> to be the current insertion point during construction.
+This should be rarely used, if at all; The construction methods of intestine
+generally maintain the notion of insertion point automatically.
 
 =back
 
@@ -320,34 +311,42 @@ error messages.
 
 =over 4
 
+=item C<< $intestine->absorb($digested); >>
+
+Absorb the C<$digested> object into the document at the current insertion point
+according to its type.  Various of the the other methods are invoked as needed,
+and document nodes may be automatically opened or closed according to the document
+model.
+
 =item C<< $intestine->openText($text,$font); >>
 
-Open a node for text in font $font, performing any required automatic opening
-and closing of intermedate nodes (including those needed for font changes) 
-and inserting the string $text into it.
+Open a text node in font C<$font>, performing any required automatic opening
+and closing of intermedate nodes (including those needed for font changes)
+and inserting the string C<$text> into it.
 
-=item C<< $intestine->insertMathToken($string,$font); >>
+=item C<< $intestine->insertMathToken($string,%attributes); >>
 
-Insert a math token (XMTok) containing the string $string in the given font.
+Insert a math token (XMTok) containing the string C<$string> with the given attributes.
+Useful attributes would be name, role, font.
 
 =item C<< $intestine->openElement($tag,%attributes); >>
 
-Open an element, named $tag and with the given attributes.
+Open an element, named C<$tag> and with the given attributes.
 This will be inserted into the current node while  performing 
 any required automatic opening and closing of intermedate nodes.
 The new element becomes the current node.
-An error is signalled if there is no allowed way to insert such an element into
-the current node.
+An error (fatal if in C<Strict> mode) is signalled if there is no allowed way
+to insert such an element into the current node.
 
 =item C<< $intestine->closeElement($tag); >>
 
-Close the closest open element named $tag including any intermedate nodes that
+Close the closest open element named C<$tag> including any intermedate nodes that
 may be automatically closed.  If that is not possible, signal an error.
 The closed node's parent becomes the current node.
 
-=item C<< $intestine->openComment($text); >>
+=item C<< $intestine->insertComment($text); >>
 
-Insert a comment with the given $text into the current node.
+Insert a comment with the given C<$text> into the current node.
 
 =item C<< $intestine->insertPI($op,%attributes); >>
 
@@ -355,8 +354,10 @@ Insert a ProcessingInstruction into the current node.
 
 =item C<< $intestine->insertElement($tag,$content,%attributes); >>
 
-This is a shorthand for creating an element $tag (with given attributes),
-absorbing $content from within that new node, and then closing it.
+This is a shorthand for creating an element C<$tag> (with given attributes),
+absorbing C<$content> from within that new node, and then closing it.
+The C<$content> must be digested material, either a single box, or
+an array of boxes.
 
 =cut
 

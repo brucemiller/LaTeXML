@@ -2,6 +2,8 @@
 
 # RUN THIS IN THE distribution/docs directory!!
 use strict;
+use FindBin;
+use lib "$FindBin::RealBin/../lib";
 use Pod::Html;
 use LaTeXML;
 use LaTeXML::Post;
@@ -22,7 +24,8 @@ our %GLOMPED = (Box       =>[qw(MathBox Comment List MathList Whatsit)],
 		Font      =>[qw(MathFont)],
 		Token     =>[qw(Tokens Number Dimension MuDimension Glue MuGlue KeyVals)]
 	       );
-our %REDIRECT =();
+our %REDIRECT =(
+	       "XML/LibXML/Document.html"=>"http://search.cpan.org/search?query=XML%3A%3ALibXML&mode=module");
 foreach my $homepkg (keys %GLOMPED){
   foreach my $subpkg (@{$GLOMPED{$homepkg}}){
     $REDIRECT{"LaTeXML/$subpkg.html"} = "LaTeXML/$homepkg.html"; }}
@@ -34,6 +37,7 @@ unlink('pod2htmi.tmp');
 
 #======================================================================
 # Generate HTML from POD's
+
 sub process_pkgs {
   my(@components)=@_;
   my $name = join('/',$LIB,@components);
@@ -60,7 +64,7 @@ sub process_pkg {
   my $pkg = join('::',@components,$name);
   my $stuff = `perldoc $pkg`;	# Any easier way to check if there is POD?
   return unless $stuff;
-  print "Generating $htmlfile for $pkg\n";
+  print "$pkg => $htmlfile\n";
   my $dir = join('/',$DEST,@components);
   my $dd=$PDDEST;
   mkdir($dd) unless -d $dd;
@@ -68,19 +72,28 @@ sub process_pkg {
     $dd .= '/'.$sub;
     mkdir($dd) unless -d $dd; }
   pod2html(
-	   # "--css=stylesheet",
+	    "--css=".join('/',map("..",@components,$name))."/latexml.css",
+#	   "--noindex",
 	   # "--header",
+	   "--podroot=$LIB",
 	   "--title=$pkg",
 	   "--infile=$podfile",
 	   "--outfile=$htmlfile",
-	   (@components ? "--htmlroot=".join('/',map("..",@components)) : ''),
+	   "--htmldir=$DEST/perldoc",
+#	   (@components ? "--htmlroot=".join('/',map("..",@components)) : '.'),
 	   ); 
   # Hmm, annoying pattern (or my usage thereof).
   open(HTML,$htmlfile);
   local $/=undef;
   my $doc = <HTML>;
   close(HTML);
+  # MUNGY Rewriting!!!
   $doc =~ s/\>the\s+([\w\:]*)\s+manpage\</\>$1\</g;
+  $doc =~ s|<!-- INDEX BEGIN -->|<div class="nav">|;
+  $doc =~ s|<!-- INDEX END -->|</div><div class="main">|;
+  $doc =~ s|</body>|</div></body>|;
+  $doc =~ s|<hr\s*/>||g;
+  $doc =~ s|<p>\s*</p>||g;
   foreach my $child (keys %REDIRECT){
     $doc =~ s/$child/$REDIRECT{$child}/g; }
   open(HTML,">$htmlfile");
@@ -88,3 +101,4 @@ sub process_pkg {
   close(HTML);
 }
 #======================================================================
+

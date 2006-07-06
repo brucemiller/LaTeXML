@@ -32,15 +32,14 @@ dotest('simplemath');
 sub dotest{
   my($name)=@_;
 
-  $SIG{__DIE__} = \&LaTeXML::Error::Error;
-  LaTeXML::Error::SetDebugging('quiet');
-  my $latexml= LaTeXML->new(preload=>[], searchpath=>[], includeComments=>0);
+  my $latexml= LaTeXML->new(preload=>[], searchpath=>[], includeComments=>0,
+			   verbosity=>-2);
   return ok(0,1,"Couldn't instanciate LaTeXML") unless $latexml;
 
   my $dom = $latexml->convertFile("t/$name.tex");
   return ok(0,1,"Couldn't convert $name.tex") unless $dom;
 
-  my @lines = split('\n',$dom->toString);
+  my @lines = split('\n',$dom->toString(1));
 
   open(IN,"<:utf8","t/$name.xml") || return ok(0,1,"Couldn't read $name.xml");
   my($n,$new,$old)=(0,undef,undef);

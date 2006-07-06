@@ -15,13 +15,10 @@ use strict;
 use LaTeXML::Global;
 use LaTeXML::Token;
 use LaTeXML::Box;
-use LaTeXML::Error;
 use LaTeXML::Object;
 use LaTeXML::Mouth;
-use LaTeXML::Gullet;
 use LaTeXML::Font;
 use LaTeXML::Definition;
-use LaTeXML::Model;
 use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
 
@@ -30,52 +27,26 @@ our @ISA = qw(LaTeXML::Object);
 #**********************************************************************
 sub new {
   my($class, %options)=@_;
-  my $stacktop = {mode=>'text', math_mode=>0, 
-		  bindings=>{}, 
-		  values=>{preserveNewLines=>1},
-		  cattable=>getStandardCattable, cattable_copied=>0};
-  my $self={stacktop => $stacktop, stack=>[$stacktop],
-	    boxingDepth=>0,
-	    environments => [],
-	    prefixes=>{},
-	    includeComments=>1,
-	    text_filters=>{}, math_filters=>{},
-	    packagesLoaded=>{},
-	    %options, 
-	    };
+  my $self= bless {symboltable=>{}, stackundo=>[{}],
+		   boxingDepth=>0,
+		   environments => [],
+		   prefixes=>{},
+		   idstore=>{},
+		   includeComments=>1,
+		   text_filters=>{}, math_filters=>{},
+		   packagesLoaded=>{},
+		   %options, 
+		  }, $class;
   $$self{searchpath}=[] unless $$self{searchpath};
   push(@{$$self{searchpath}},'.', @INC);
-  bless $self,$class; }
-
-#**********************************************************************
-# Accessors
-sub getGullet  { $_[0]->{gullet}; }
-sub getModel   { $_[0]->{model}; }
-
-sub getContext { 
-  my($self,$short)=@_;
-  my $gullet = $self->getGullet;
-  if(!$gullet){ "During preloading"; }
-  else {
-    my $string = "During digestion ";
-    $string .= "of ".$LaTeXML::DEFINITION if $LaTeXML::DEFINITION;
-    $string .= "\n" unless $short;
-    $string .= $gullet->getContext($short); 
-    $string; }}
-
-sub getSourceLocation {
-  my($self)=@_;
-  my $gullet = $self->getGullet;
-  ($gullet ? $gullet->getSourceLocation : ('unknown',0)); }
+  $self; }
 
 #**********************************************************************
 # Top level operation
+#  to be invoked from LaTeXML
 #**********************************************************************
 sub readAndDigestFile {
   my($self,$file)=@_;
-  local $LaTeXML::STOMACH = $self;
-  local $LaTeXML::DEFINITION = undef;
-  local $LaTeXML::MODEL  = $$self{model} = LaTeXML::Model->new();
   $self->initialize;
   $self->initializeFile($file);
   NoteProgress("\n(Digesting file $file...");
@@ -83,22 +54,21 @@ sub readAndDigestFile {
   NoteProgress(')');
   $list; }
 
+#**********************************************************************
 sub initializeFile {
   my($self,$file)=@_;
   my $pathname = pathname_find($file,types=>['tex']);
-  Error("Cannot find TeX file $file") unless $pathname;
+  Fatal("Cannot find TeX file $file") unless $pathname;
   my($dir,$name,$ext)=pathname_split($pathname);
   $self->addSearchPath($dir);	# Shouldn't permanently change!! ?
-  my $mouth =  LaTeXML::FileMouth->new($self,$pathname,includeComments=>$$self{includeComments});
-  $$self{gullet} = LaTeXML::Gullet->new($mouth,$self);
-  $self->setMeaning(T_CS('\jobname'),LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode($name))));
-  Message("***** Initializing *****") if Debugging();
-  # Would be nice to turn off debugging messages for this Package!
+  $GULLET->openMouth(LaTeXML::FileMouth->new($pathname,includeComments=>$$self{includeComments}));
+  $self->assignMeaning(T_CS('\jobname'),
+		       LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode($name))));
   $self->input('TeX');
   my ($sec,$min,$hour,$mday,$mon,$year)=localtime();
-  $self->setValue('\day',  Number($mday));
-  $self->setValue('\month',Number($mon));
-  $self->setValue('\year', Number(1900+$year));
+  assign_internal($self,'value_theday',  Number($mday));
+  assign_internal($self,'value_themonth',Number($mon));
+  assign_internal($self,'value_theyear', Number(1900+$year));
   map($self->input($_), @{$$self{preload}}) if $$self{preload};
   # Is this the best time for this? [Or do I need an AtDocumentBegin?]
   $self->input("$name.latexml") if $self->findInput("$name.latexml");
@@ -107,12 +77,20 @@ sub initializeFile {
 # Initialize various parameters, etc.
 sub initialize {
   my($self)=@_;
+  $$self{symboltable}={};
+  $$self{stackundo}=[{}];
+  assign_internal($self,'internal_mode','text');
+  assign_internal($self,'internal_math_mode',0);
+  assign_internal($self,'value_preserveNewLines',1);
+  assign_internal($self,'internal_cattable',{%{getStandardCattable()}});
+  assign_internal($self,'internal_aftergroup',[]);
   # Setup default fonts.
-  $self->setValue('default@textfont', Font(family=>'serif',series=>'medium',shape=>'upright',
-					   size=>'normal',color=>'black'));
-  $self->setValue('default@mathfont', MathFont(family=>'math',series=>'medium',shape=>'italic',
-					       size=>'normal',color=>'black',forcebold=>0));
-  $self->setValue('current@font', $self->getValue('default@textfont'));
+  my $font = Font(family=>'serif',series=>'medium',shape=>'upright', size=>'normal',color=>'black');
+  assign_internal($self,'value_default@textfont', $font);
+  assign_internal($self,'value_current@font', $font);
+  assign_internal($self,'value_default@mathfont', 
+		  MathFont(family=>'math',series=>'medium',shape=>'italic',
+			   size=>'normal',color=>'black',forcebold=>0));
 }
 
 #**********************************************************************
@@ -132,16 +110,14 @@ sub readAndDigestBody {
 # Returns a List or MathList containing the digested material.
 sub digest {
   my($self,$tokens,$nofilter)=@_;
-Error("Huh?") unless defined $tokens;
-  $self->getGullet->openMouth((ref $tokens eq 'LaTeXML::Token' ? Tokens($tokens) : $tokens->clone));
-#  $self->getGullet->openMouth($tokens);
+  $GULLET->openMouth((ref $tokens eq 'LaTeXML::Token' ? Tokens($tokens) : $tokens->clone));
   $self->clearPrefixes; # prefixes shouldn't apply here.
   my $ismath = $self->inMath;
   my @chunk = $self->readAndDigestChunk(0);
   @chunk = $self->applyFilters(@chunk) unless $nofilter;
   my $list = (scalar(@chunk) == 1 ? $chunk[0] 
 	      : ($ismath ? MathList(@chunk) : List(@chunk)));
-  $self->getGullet->closeMouth;
+  $GULLET->closeMouth;
   $list; }
 
 # Digest the next `chunk' of input, returning a list of digested
@@ -151,10 +127,9 @@ Error("Huh?") unless defined $tokens;
 # and we continue to read from the containing source.
 sub readAndDigestChunk {
   my($self,$autoflush)=@_;
-  my $gullet = $self->getGullet;
   my $depth  = $$self{boxingDepth};
   local @LaTeXML::LIST=();
-  while(defined(my $token=$gullet->readXToken($autoflush))){ # Done if we run out of tokens
+  while(defined(my $token=$GULLET->readXToken($autoflush))){ # Done if we run out of tokens
     push(@LaTeXML::LIST,$self->invokeToken($token));
     last if $depth > $$self{boxingDepth}; } # if we've closed the initial mode.
   @LaTeXML::LIST; }
@@ -164,37 +139,36 @@ our @forbidden_cc = (1,0,0,0, 0,0,1,0, 0,1,0,0, 0,0,0,1, 0,1);
 # Invoke a token; 
 # If it is a primitive or constructor, it's definition will be invoked, 
 # possibly arguments will be parsed from the Gullet.
-# Otherwise, the token is simply digested.
+# Otherwise, the token is simply digested: turned into an appropriate box.
 # Returns a list of boxes/whatsits.
 sub invokeToken {
   my($self,$token)=@_;
-  my $defn = $self->getMeaning($token);
-  if(! defined $defn){		# Was an executable token, but no definition!
-    SalvageError("Executable token $token not defined. Punting..."); 
-    DefConstructor($token->getCSName,"<ERROR type='undefined'>".$token->getCSName."</ERROR>");
+  my $meaning = $self->lookupMeaning($token);
+  if(! defined $meaning){		# Supposedly executable token, but no definition!
+    my $cs = $token->getCSName;
+    Error("$cs is not defined.");
+    DefConstructor($cs,"<ERROR type='undefined'>".$cs."</ERROR>",mode=>'text');
     $self->invokeToken($token); }
-  elsif($defn->isa('LaTeXML::Definition')){
-    my @stuff = $defn->invoke($self);
-    $self->clearPrefixes() unless $defn->isPrefix; # Clear prefixes unless we just set one.
+  elsif($meaning->isaDefinition){
+    my @stuff = CheckBoxes($meaning->invoke);
+    $self->clearPrefixes() unless $meaning->isPrefix; # Clear prefixes unless we just set one.
     @stuff; }
-  else {
-    $token = $defn;
-    my $cc = $token->getCatcode;
+  elsif($meaning->isaToken) {
+    my $cc = $meaning->getCatcode;
     $self->clearPrefixes; # prefixes shouldn't apply here.
-    if($cc == CC_SPACE){
-      ($self->inMath || $self->inPreamble ? () : Box($token->getString, $self->getFont)); }
+    if(($cc == CC_SPACE) && ( ($self->inMath || $self->inPreamble) )){ 
+      (); }
     elsif($cc == CC_COMMENT){
-      LaTeXML::Comment->new($token->getString); }
+      LaTeXML::Comment->new($meaning->getString); }
     elsif($forbidden_cc[$cc]){
-      Error("Internal error: Token $token should never reach Stomach!"); }
+      Fatal("[Internal] ".Stringify($token)." should never reach Stomach!"); }
     elsif($self->inMath){
-      my $string = $token->getString;
-      my $class = 'symbol';
-      $class = 'letter' if $string =~ /^\w$/;
-      $class = 'number' if $string =~ /^\d$/;
-      MathBox($string,$self->getFont->specialize($class)); }
+      my $string = $meaning->getString;
+      MathBox($string,$self->getFont->specialize($string),$GULLET->getLocator); }
     else {
-      Box($token->getString, $self->getFont); }}}
+      Box($meaning->getString, $self->getFont,$GULLET->getLocator); }}
+  else {
+    Fatal("[Internal] ".Stringify($meaning)." should never reach Stomach!"); }}
 
 # Regurgitate: steal the previously digested boxes from the current level.
 sub regurgitate {
@@ -210,6 +184,7 @@ sub regurgitate {
 # item of the pattern (as a untex'd string).  Each entry is a list of pairs.
 # Each pair is a list of pattern & replacement, each of which can be CODE or 
 # an ARRAY of items to match.
+# Note that filters act on Boxes, not Tokens!
 
 sub addMathFilter {
   my($self,$init,$pattern,$replacement)=@_;
@@ -226,9 +201,11 @@ sub applyFilters {
     my $item = $list[0];
     my $np = 0;
     if(defined(my $init = $item->getInitial)){
+#print STDERR "Apply filter to ".ToString($init)."\n";
       my $table = ($item->isMath ? $$self{math_filters} : $$self{text_filters});
       foreach my $pair (@{$$table{$init}||[]}){
 	my($pattern,$replacement)=@$pair;
+#print STDERR "Try ".ToString($pattern)." => ".ToString($replacement)."\n";
 	if($np =(ref $pattern eq 'CODE' ? &$pattern(@list) : match($pattern,@list))){
 	  my @match = map(shift(@list), 0..$np-1);
 	  my @rep = ();
@@ -238,15 +215,26 @@ sub applyFilters {
 	    my $font = $item->getFont;
 	    # Risky: set the replacement boxes to same font. 
 	    # It's sometimes the right thing to do; make it optional somehow?
-	    @rep = map((ref $_ eq 'LaTeXML::Box' ? Box($_->getString,$font) : $_),@$replacement); }
+#	    @rep = map((ref $_ eq 'LaTeXML::Box' ? Box($_->getString,$font,$item->getLocator) : $_),@$replacement); }
+	    @rep = map((ref $_ eq 'LaTeXML::Box' ? Box($_->getString,$font,$item->getLocator) : $_),
+		       $replacement->unlist); }
 	  CheckBoxes(@rep);
 	  # Annoying, but we'd better check if the replacement is different
-	  my $mstring = join('',map($_->untex,@match));
-	  my $rstring = join('',map($_->untex,@rep));
-	  if(($np == scalar(@rep)) && ($mstring eq $rstring)){
-	    Warn("Filter match \"$mstring\" same as replacement \"$rstring\" !");
+	  my @matchcopy=@match;
+	  my @repcopy = @rep;
+	  while(@matchcopy && @repcopy && ($matchcopy[0]->equals($repcopy[0]))){
+	    shift(@matchcopy); shift(@repcopy); }
+	  if(!(@matchcopy) && !(@repcopy)){ # Whoops, they're the same!
+#	  my($mstring,$rstring);
+#	  if(0 && ($np == scalar(@rep))
+#	     && (    ($mstring = join('',map($_->untex,@match)))
+#		  eq ($rstring = join('',map($_->untex,@rep)))   )){
+#	    Warn("Filter match \"$mstring\" same as replacement \"$rstring\" !");
+	    Warn("Filter match \"".ToString(List(@match))
+		 ."\" same as replacement \"".ToString(List(@rep))."\" !");
 	    unshift(@list,@match); $np=0; last; } # Just abort this position.
 	  else {
+#print STDERR "Replaced ".ToString(List(@list))." => ".ToString(List(@rep))."\n";
 	    unshift(@list,@rep);
 	    last; }}}}		# We'll try more filters at same pos.
     if(!$np){
@@ -256,9 +244,10 @@ sub applyFilters {
 # Return number of boxes matched or 0 if failed.
 sub match {
   my($pattern,@list)=@_;
-  my @pattern = @$pattern;
+#  my @pattern = @$pattern;
+  my @pattern = $pattern->unlist;
   my $n=0;
-  while(@list && @pattern && ($list[0] eq  $pattern[0])){
+  while(@list && @pattern && ($list[0]->equals($pattern[0]))){
     shift(@list); shift(@pattern);  $n++; }
   (@pattern ? 0 : $n); }
 
@@ -269,41 +258,42 @@ sub match {
 #======================================================================
 # Stack Frames: Internal support for context, lookup & assignment.  Non-methods.
 
-sub pushStackFrame {
-  my($self)=@_;
-  my $frame = {mode=>$$self{stacktop}->{mode},
-	       math_mode=>$$self{stacktop}->{math_mode},
-	       aftergroup=>[],
-	       # Defer copying cattable till it's modified.
-	       cattable=>$$self{stacktop}->{cattable}, cattable_copied=>0};
-  $$self{stacktop} = $frame;
-  unshift(@{$$self{stack}},$frame); }
-
-sub popStackFrame {
-  my($self,$token)=@_;
-  shift(@{$$self{stack}});
-  $$self{stacktop} = $$self{stack}->[0]; }
-
-sub lookup_internal {
-  my($self,$tablename,$key)=@_;
-  my $value;
-  foreach my $frame (@{$$self{stack}}){
-    return $value if defined ($value=$$frame{$tablename}{$key}); }
-  undef;}
-
 # Assign a definition or variable (depending on table being bindings, values, resp).
 # If $globally is non-0 or if $$self{globally} has been (temporarily) set by Stomach,
 # remove all bound values and assign in lowest frame.  Otherwise assign in current frame.
+
+# Dealing with TeX's bindings & grouping.
+# Note that lookups happen more often than bgroup/egroup (which open/close frames).
+
+sub pushStackFrame {
+  my($self)=@_;
+  # Easy: just push a new undo hash.
+  unshift(@{$$self{stackundo}},{}); 
+  assign_internal($self,'internal_aftergroup',[]); # ALWAYS bind this!
+}
+
+sub popStackFrame {
+  my($self)=@_;
+  my $undo = shift(@{$$self{stackundo}});
+  foreach my $key (keys %$undo){
+    shift(@{$$self{symboltable}{$key}}); }
+}
+
+# To Lookup a value, use
+#   $$self{symboltable}{$prefixed_name}[0];
+
 sub assign_internal {
-  my($self,$tablename,$key,$value,$globally)=@_;
+  my($self,$key,$value,$globally)=@_;
   $globally ||= $$self{prefixes}{global};
-  if(!$globally){
-    $$self{stacktop}{$tablename}{$key}=$value; }
+  if($globally){
+    foreach my $undo (@{$$self{stackundo}}){ # These no longer should get undone.
+      delete $$undo{$key};}
+    $$self{symboltable}{$key} = [$value]; } # And place single value in table.
+  elsif($$self{stackundo}[0]{$key}){ # Already set for undo.
+    $$self{symboltable}{$key}[0] = $value; } # so just change binding.
   else {
-    foreach my $frame (@{$$self{stack}}){
-      delete $$frame{$tablename}{$key}; }	# Remove all previous bindings
-    $$self{stack}->[$#{$$self{stack}}]->{$tablename}{$key}=$value; # and put in first frame
-  }}
+    $$self{stackundo}[0]{$key}=1; # Note that this value must be undone
+    unshift(@{$$self{symboltable}{$key}},$value); }} # And push new binding.
 
 #======================================================================
 # Set the prefix (global, long, outer) for the NEXT assignment.
@@ -330,16 +320,16 @@ sub bgroup {
 
 sub egroup {
   my($self,$nobox)=@_;
-  my $after = $$self{stacktop}->{aftergroup};
+  my $after = $$self{symboltable}{internal_aftergroup}[0];
   popStackFrame($self);
   $$self{boxingDepth}-- unless $nobox; # For begingroup/endgroup
-  $self->getGullet->unread(@$after);
+  $GULLET->unread(@$after) if $after;
   return; }
 
 # A list of boxes/whatsits output after the current group closes.
 sub pushAfterGroup {
   my($self,@tokens)=@_;
-  unshift(@{$$self{stacktop}->{aftergroup}},@tokens); 
+  unshift(@{$$self{symboltable}{internal_aftergroup}[0]},@tokens);
   return; }
 
 #======================================================================
@@ -347,46 +337,37 @@ sub pushAfterGroup {
 # Could (should?) be taken up by Stomach by building horizontal, vertical or math lists ?
 sub inMath {
   my($self)=@_;
-  $$self{stacktop}->{math_mode}; }
+  $$self{symboltable}{internal_math_mode}[0]; }
 
 sub getMode {
   my($self)=@_;
-  $$self{stacktop}->{mode}; }
+  $$self{symboltable}{internal_mode}[0]; }
 
 sub beginMode {
   my($self,$mode)=@_;
-  Message("Enter mode $mode") if Debugging('mode');
   $self->bgroup;
-  my $prevmode = $$self{stacktop}->{mode};
-  $$self{stacktop}->{mode} = $mode;
+  my $prevmode =  $$self{symboltable}{internal_mode}[0]; 
+  my $ismath = $mode=~/math$/;
+  assign_internal($self,'internal_mode',$mode);
+  assign_internal($self,'internal_math_mode',$ismath);
   if($mode eq $prevmode){}
   elsif($mode =~ /math$/){
-    $$self{stacktop}->{math_mode} = 1;
     # When entering math mode, we set the font to the default math font,
     # and save the text font for any embedded text.
-    $self->setValue('saved@textfont',$self->getValue('current@font'));
-    $self->setValue('current@font',$self->getValue('default@mathfont')); 
-    $self->setValue('@mathstyle', ($mode =~ /^display/ ? 'display' : 'text')); }
+    assign_internal($self,'value_saved@textfont',$$self{symboltable}{'value_current@font'}[0]);
+    assign_internal($self,'value_current@font',  $$self{symboltable}{'value_default@mathfont'}[0]);
+    assign_internal($self,'value_mathstyle', ($mode =~ /^display/ ? 'display' : 'text')); }
   else {
-    $$self{stacktop}->{math_mode} = 0;
     # When entering text mode, we should set the font to the text font in use before the math.
-    $self->setValue('current@font',$self->getValue('saved@textfont')); }
+    assign_internal($self,'value_current@font',$$self{symboltable}{'value_saved@textfont'}[0]); }
   return; }
 
 sub endMode {
   my($self,$mode)=@_;
-  my $m =   $$self{stacktop}->{mode};
-  Message("Leave mode $mode") if Debugging('mode');
-  Error("Was in mode $m, not mode $mode!!") if $mode && !($mode eq $m); 
+  my $prevmode =  $$self{symboltable}{internal_mode}[0];
+  Fatal("Can't end mode $mode: Was in mode $prevmode!!") if $mode && !($mode eq $prevmode);
   $self->egroup; }		# Return whatever egroup returns.
 
-sub requireMath {
-  Error("Current operation can only appear in math mode") unless $_[0]->{stacktop}->{math_mode}; 
-  return; }
-
-sub forbidMath {
-  Error("Current operation can not appear in math mode") if $_[0]->{stacktop}->{math_mode};
-  return; }
 #======================================================================
 sub beginEnvironment {
   my($self,$environment)=@_;
@@ -396,7 +377,7 @@ sub beginEnvironment {
 sub endEnvironment {
   my($self,$environment)=@_;
   my $env = pop(@{$$self{environments}});
-  Error("Unbalanced environments: closing $environment when $env was open") unless $env eq $environment;
+  Fatal("Can't close environment $environment: current is $env!") unless $env eq $environment;
   return; }
 
 #======================================================================
@@ -411,78 +392,107 @@ sub setInPreamble { $_[0]->{inPreamble} = $_[1]; return; }
 
 sub getCattable {
   my($self)=@_;
-  $$self{stacktop}->{cattable}; }
+  $$self{symboltable}{internal_cattable}[0]; }
 
 sub setCattable {
   my($self,$cattable)=@_;
-  $$self{stacktop}->{cattable} = $cattable; }
+  assign_internal($self,'internal_cattable',$cattable); }
 
-sub getCatcode {
+sub lookupCatcode {
   my($self,$char)=@_;
-  my $cc = $$self{stacktop}->{cattable}{$char}; 
+  my $cc =  $$self{symboltable}{internal_cattable}[0]{$char};
   (defined $cc ? $cc : CC_OTHER); }
 
-sub setCatcode {
+sub assignCatcode {
   my($self,$catcode,@chars)=@_;
-  Message("Catcode ".join(', ',map("\"$_\"",@chars))."=>$catcode") if Debugging('catcodes');
-  my $frame = $$self{stacktop};
-  if(!$$frame{cattable_copied}){
-    $$frame{cattable_copied}=1;
-    $$frame{cattable}={%{$$frame{cattable}}}; }
-  map($$frame{cattable}{$_}=$catcode,@chars); }
+  if(! $$self{stackundo}[0]{'internal_cattable'}){ # Cattable has NOT been copied in this frame!
+    my $old = $$self{symboltable}{internal_cattable}[0];
+    assign_internal($self,'internal_cattable',{%{$old}}); }
+  my $cattable = $$self{symboltable}{internal_cattable}[0];
+  map($$cattable{$_}=$catcode, @chars); }
+
+# Perverse means to handle \mathcode = "8000
+# Ie. a char acts as if active in math mode.
+sub setMathActive {
+  my($self,@chars)=@_;
+  map( assign_internal($self,'mathactive_'.$_,1), @chars); }
+
+sub getMathActive {
+  my($self,$char)=@_;
+  $$self{symboltable}{internal_math_mode}[0]
+    &&  $$self{symboltable}{'mathactive_'.$char}[0] }
 
 #======================================================================
 # Lookup or add the `meaning' (definition) of a token or control sequence.
 
-# GACK, this is horrid.
-# Ultimately, I suppose I have to define \mathcode ...
-our %mathcodes = ("'"=>1);
 our @executable_cc= (0,1,1,1, 1,0,0,1, 1,0,0,0, 0,1,0,0, 1,0);
 
 # Get the `Meaning' of a token.  For a control sequence or otherwise active token,
 # this may give the definition object or a regular token (if it was \let), or undef.
 # Otherwise, the token itself is returned.
-sub getMeaning {
+sub lookupMeaning {
   my($self,$token)=@_;
   # NOTE: Inlined token accessors!!!
   my $cs = $$token[0];
   my $cc = $$token[1];
-  if($executable_cc[$cc] || ($$self{stacktop}->{math_mode} && $mathcodes{$cs})){
-    lookup_internal($self,'bindings',$token->getCSName); }
+  if($executable_cc[$cc]
+     || ($$self{symboltable}{internal_math_mode}[0] &&  $$self{symboltable}{'mathactive_'.$cs}[0])){
+    $$self{symboltable}{'binding_'.$token->getCSName}[0] }
   else {
     $token; }}
 
-sub setMeaning {
+sub assignMeaning {
   my($self,$token,$defn,$globally)=@_;
-  assign_internal($self,'bindings',$token->getCSName, $defn,$globally); }
+  assign_internal($self,'binding_'.$token->getCSName, $defn,$globally); }
 
-# This is similar to getMeaning, but when you are only interested in executable defns.
-sub getDefinition {
+# This is similar to lookupMeaning, but when you are only interested in executable defns.
+sub lookupDefinition {
   my($self,$token)=@_;
   my $cs = $$token[0];
   my $cc = $$token[1];
-  if($executable_cc[$cc] || ($$self{stacktop}->{math_mode} && $mathcodes{$cs})){
-    my $defn = lookup_internal($self,'bindings',$token->getCSName); 
-    ($defn && $defn->isa('LaTeXML::Definition') ? $defn : undef); }
+  if($executable_cc[$cc]
+     || ($$self{symboltable}{internal_math_mode}[0] &&  $$self{symboltable}{'mathactive_'.$cs}[0])){
+    my $defn = $$self{symboltable}{'binding_'.$token->getCSName}[0];
+    (defined $defn && $defn->isaDefinition ? $defn : undef); }
   else { undef; }}
-  
+
+# And a shorthand for installing definitions
+# It also supports `stashing' the definitions into lists (eg modules)
+# that can be reinstalled later by invoking $self->useStash($stash);
+sub installDefinition {
+  my($self,$definition,%options)=@_;
+  $self->assignMeaning($definition->getCS,$definition,($options{globally} ? 1 : 0));
+  if(defined(my $stash = $options{stash})){
+    my $stashname = 'value_'.ToString($stash);
+    assign_internal($self,$stashname,[],1) unless $$self{symboltable}{$stashname}[0];
+    push(@{ $$self{symboltable}{$stashname} }, $definition); }}
+
+sub useStash {
+  my($self,$stash)=@_;
+  if(defined (my $defns = $$self{symboltable}{'value_'.ToString($stash)}[0])){
+    map( $self->assignMeaning($_->getCS,$_,0), @$defns); }}
+
 #======================================================================
 # Lookup or set the value of a parameter/register/whatever.
 # (a register is simply named "\count1").
 
-sub setValue {
+sub assignValue {
   my($self,$name,$value,$globally)=@_;
-  # allow passing a $defn for the $name
-  # NOTE: Or should this work for tokens, defns, ... (eg. use untex ?)
-  Message("Setting value \"$name\" to \"$value\"") if Debugging('values');
-  assign_internal($self,'values',(ref $name ? $name->getCS : $name),$value,$globally); 
+  assign_internal($self,'value_'.$name,$value,$globally);
   return; }
 
-sub getValue {
+sub lookupValue {
   my($self,$name)=@_;
-  my $value = lookup_internal($self,'values',$name); 
-#  Message("Getting value \"$name\" => \"$value\"") if Debugging('values');
-  $value; }
+  $$self{symboltable}{'value_'.$name}[0] }
+
+#======================================================================
+sub recordID {
+  my($self,$id,$object)=@_;
+  $$self{idstore}{$id}=$object; }
+
+sub lookupID {
+  my($self,$id)=@_;
+  $$self{idstore}{$id}; }
 
 #======================================================================
 # Fonts
@@ -491,18 +501,19 @@ sub getValue {
 
 sub setFont {
   my($self,%style)=@_;
-  $self->setValue('current@font',$self->getValue('current@font')->merge(%style));
+  assign_internal($self,'value_current@font',$$self{symboltable}{'value_current@font'}[0]->merge(%style));
   return; }
 
 # This modifies the default math font
 sub setMathFont {
   my($self,%style)=@_;
-  $self->setValue('default@mathfont',$self->getValue('default@mathfont')->merge(%style));
+  assign_internal($self,'value_default@mathfont',
+		  $$self{symboltable}{'value_default@mathfont'}[0]->merge(%style));
   return; }
 
 sub getFont {
   my($self)=@_;
-  $self->getValue('current@font'); }
+  $$self{symboltable}{'value_current@font'}[0]; }
 
 # Conversion to scaled points
 our %UNITS= (pt=>65536, pc=>12*65536, in=>72.27*65536, bp=>72.27*65536/72, 
@@ -519,7 +530,7 @@ sub convertUnit {
   else{
     my $sp = $UNITS{$unit}; 
     if(!$sp){
-      SalvageError("Unknown unit \"$unit\"; assuming pt.");
+      Warn("Unknown unit \"$unit\"; assuming pt.");
       $sp = $UNITS{'pt'}; }
     $sp; }}
 
@@ -530,9 +541,12 @@ sub convertUnit {
 sub setMathStyle { 
   my($self,$style)=@_;
   Warn("Unknown math style: \"$style\"") unless $style=~/^display|text|script|scriptscript$/;
-  $_[0]->setValue('@mathstyle',$_[1]); }
+  assign_internal($self,'value_mathstyle',$_[1]); 
+  return; }
+
 sub getMathStyle {
-  $_[0]->getValue('@mathstyle'); }
+  my($self)=@_;
+  $$self{symboltable}{value_mathstyle}[0]; }
 
 #======================================================================
 # Additional support for Counters (primarily LaTeX).
@@ -540,9 +554,9 @@ sub getMathStyle {
 sub stepCounter {
   my($self,$ctr)=@_;
   $ctr=$ctr->toString if ref $ctr;
-  $self->setValue("\\c\@$ctr",$self->getValue("\\c\@$ctr")->add(Number(1)),1);
+  $self->assignValue("\\c\@$ctr",$self->lookupValue("\\c\@$ctr")->add(Number(1)),1);
   # and reset any within counters!
-  foreach my $c ($self->getValue("\\cl\@$ctr")->unlist){
+  foreach my $c ($self->lookupValue("\\cl\@$ctr")->unlist){
     $self->resetCounter($c); }
 }
 
@@ -550,14 +564,14 @@ sub refStepCounter {
   my($self,$ctr)=@_;
   $ctr=$ctr->toString if ref $ctr;
   $self->stepCounter($ctr);
-  my $v = $self->getGullet->expandTokens(Tokens(T_CS("\\the$ctr")));
-  $self->setMeaning(T_CS('\@currentlabel'),LaTeXML::Expandable->new(T_CS('\@currentlabel'),undef,$v));
+  my $v = $GULLET->expandTokens(Tokens(T_CS("\\the$ctr")));
+  $self->assignMeaning(T_CS('\@currentlabel'),LaTeXML::Expandable->new(T_CS('\@currentlabel'),undef,$v));
   $v; }
 
 sub resetCounter {
   my($self,$ctr)=@_;
   $ctr=$ctr->toString if ref $ctr;
-  $self->setValue('\c@'.$ctr,Number(0),1); }
+  $self->assignValue('\c@'.$ctr,Number(0),1); }
 #**********************************************************************
 # File I/O
 #**********************************************************************
@@ -598,37 +612,58 @@ sub findInput {
 # is probably only important for latexml implementations?
 sub input {
   my($self,$name,%options)=@_;
+  $name = $name->toString if ref $name;
   if($$self{packagesLoaded}{$name}){
     Warn("Package $name already loaded");
     return; }
   # Try to find a Package implementing $name.
   local @LaTeXML::PACKAGE_OPTIONS = @{$options{options}||[]};
-  $name = $name->toString if ref $name;
   $name = $1 if $name =~ /^\{(.*)\}$/; # just in case
   my $file=$self->findInput($name);
   if($file =~ /\.(ltxml|latexml)$/){		# Perl module.
     my($dir,$modname)=pathname_split($file);
     NoteProgress("\n(Loading $file");
-    do $file;
-    Error("Package $name had an error:\n  $@") if $@;
+    $GULLET->openMouth(LaTeXML::PerlMouth->new($file));
+    do $file; 
+#    $GULLET->closeMouth;
+    Fatal("Package $name had an error:\n  $@") if $@;
   }
   # Hmm, very slightly different treatment needed for .sty and .tex ?
   elsif($file){
     my $isstyle = ($file =~ /\.sty$/);
     NoteProgress("\n(Loading Style $file");
     my $comments = $$self{includeComments} && !$isstyle;
-    my $atcc = $self->getCatcode('@');
-    $self->setCatcode(CC_LETTER,'@') if $isstyle;
-    $self->getGullet->openMouth(LaTeXML::FileMouth->new($self,$file,includeComments=>$comments,
-							($isstyle ? (after=>"\\catcode`\\\@=$atcc\\relax") :())
-						       ));
+    my $atcc = $self->lookupCatcode('@');
+    $self->assignCatcode(CC_LETTER,'@') if $isstyle;
+    $GULLET->openMouth(LaTeXML::FileMouth->new($file,includeComments=>$comments,
+					      ($isstyle ? (after=>"\\catcode`\\\@=$atcc\\relax") :())
+					     ));
   }
   else {
-    SalvageError("Cannot find LaTeXML implementation, style or tex file for $name; Ignoring..."); }
+    Error("Cannot find LaTeXML implementation, style or tex file for $name."); }
   $$self{packagesLoaded}{$name}=1;
   NoteProgress(")");
 }
 
+#**********************************************************************
+# A fake mouth provides a hook for getting the Locator of anything
+# defined in a perl module (*.pm, *.ltxml, *.latexml...)
+package LaTeXML::PerlMouth;
+
+sub new {
+  my($class,$file)=@_;
+  bless {file=>$file},$class; }
+
+# Evolve to figure out if this gets dynamic location!
+sub getLocator {
+  my($self)=@_;
+  my $file = $$self{file};
+  my $line = LaTeXML::Error::line_in_file($file);
+#my $line = "Lost";
+  $file.($line ? " line $line":''); }
+
+sub hasMoreInput { 0; }
+sub readToken { undef; }
 #**********************************************************************
 1;
 
@@ -640,68 +675,29 @@ __END__
 
 =head2 DESCRIPTION
 
-LaTeXML::Stomach digests tokens read from a L<LaTeXML::Gullet>
+C<LaTeXML::Stomach> digests tokens read from a L<LaTeXML::Gullet>
 (they will have already been expanded).  The Stomach also 
 maintains all of the state relevant during the overall process
 of digestion (including tokenization and expansion;
 see L<LaTeXML::Mouth> and L<LaTeXML::Gullet>)
 
-=head2 Top-level Methods
-
-=over 4
-
-=item C<< $list = $stomach->readAndDigestFile($file); >>
-
-Return the digested L<LaTeXML::List> after reading and digesting the
-contents of the $file.  This is the most useful top-level method,
-and pretty much all you need to I<use> LaTeXML.  
-
-A typical program for converting a TeX file would look like:
-   use LaTeXML::Stomach;
-   use LaTeXML::Intestine;
-   my $stomach = LaTeXML::Stomach->new();
-   my $digested = $stomach->readAndDigestFile($source);
-   my $document = LaTeXML::Intestine->new($stomach)->buildDOM($digested);
-   binmode(STDOUT,":utf8");
-   $document->serialize(*STDOUT);
-
-In fact, this is the essence of the script C<latexml>.
-All the hard stuff is in the Packages implementing LaTeX packages
-for LaTeXML; the remaining methods documented here are useful for
-those purposes.
-
-=back
-
 =head2 Methods dealing with digestion
 
 =over 4
 
-=item C<< $gullet = $stomach->getGullet; >>
-
-Returns the current LaTeXML::Gullet used by this $stomach
-
-=item C<< $model = $stomach->getModel; >>
-
-Returns the current LaTeXML::Model used by this $stomach
-
-=item C<< $string = $stomach->getContext($short); >>
-
-Returns a string describing the current position within the source.
-
-=item C<< $list = $stomach->readAndDigestBody; >>
+=item C<< $list = $STOMACH->readAndDigestBody; >>
 
 Return the digested L<LaTeXML::List> after reading and digesting a `body'
 from the current Gullet.  The body extends until the current
 level of boxing or environment is closed.
 
-=item C<< $list = $stomach->digest($tokens,$nofilter); >>
+=item C<< $list = $STOMACH->digest($tokens,$nofilter); >>
 
 Return the L<LaTeXML::List> resuting from digesting the given tokens.
 This is typically used to digest arguments to primitives or
-constructors.
-If $nofilter is true, filters will not be applied.
+constructors. If C<$nofilter> is true, filters will not be applied.
 
-=item C<< @boxes = $stomach->invokeToken($token); >>
+=item C<< @boxes = $STOMACH->invokeToken($token); >>
 
 Invoke the given (expanded) token.  If it corresponds to a
 Primitive or Constructor, the definition will be invoked,
@@ -709,7 +705,7 @@ reading any needed arguments fromt he current input source.
 Otherwise, the token will be digested.
 A List of Box's, Lists, Whatsit's is returned.
 
-=item C<< @boxes = $stomach->regurgitate; >>
+=item C<< @boxes = $STOMACH->regurgitate; >>
 
 Removes and returns a list of the boxes already digested 
 at the current level.  This peculiar beast is used
@@ -722,22 +718,22 @@ a Constructor in LaTeXML).
 
 =over 4
 
-=item C<< $stomach->bgroup($nobox); >>
+=item C<< $STOMACH->bgroup($nobox); >>
 
 Begin a new level of binding by pushing a new stack frame.
-If $nobox is true, no new level of boxing will be created
+If C<$nobox> is true, no new level of boxing will be created
 (such as for \begingroup).
 
-=item C<< $stomach->egroup($nobox); >>
+=item C<< $STOMACH->egroup($nobox); >>
 
 End a level of binding by popping the last stack frame,
 undoing whatever bindings appeared there.
-If $nobox is true, the level of boxing will not be decremented
+If C<$nobox> is true, the level of boxing will not be decremented
 (such as for \endgroup).
 
-=item C<< $stomach->pushAfterGroup(@tokens); >>
+=item C<< $STOMACH->pushAfterGroup(@tokens); >>
 
-Push the @tokens onto a list to be inserted into the input stream
+Push the C<@tokens> onto a list to be inserted into the input stream
 after the next level of grouping ends.  The tokens will
 be used only once.
 
@@ -747,44 +743,44 @@ be used only once.
 
 =over 4
 
-=item C<< $stomach->beginMode($mode); >>
+=item C<< $STOMACH->beginMode($mode); >>
 
-Begin processing in $mode; one of 'text', 'display-math' or 'inline-math'.
+Begin processing in C<$mode>; one of 'text', 'display-math' or 'inline-math'.
 This also begins a new level of grouping and switches to a font
 appropriate for the mode.
 
-=item C<< $stomach->endMode($mode); >>
+=item C<< $STOMACH->endMode($mode); >>
 
-End processing in $mode; an error is signalled if $stomach is not
-currently in $mode.  This also ends a level of grouping.
+End processing in C<$mode>; an error is signalled if C<$STOMACH> is not
+currently in C<$mode>.  This also ends a level of grouping.
 
-=item C<< $mode = $stomach->getMode; >>
+=item C<< $mode = $STOMACH->getMode; >>
 
 Returns the current mode.
 
-=item C<< $boole = $stomach->inMath; >>
+=item C<< $boole = $STOMACH->inMath; >>
 
-Returns true if the $stomach is currently in a math mode.
+Returns true if the C<$STOMACH> is currently in a math mode.
 
-=item C<< $stomach->requireMath; >>
-
-Signal an error unless $stomach is in math mode.
-(See L<LaTeXML::Error>)
-
-=item C<< $stomach->forbidMath; >>
-
-Signal an error if $stomach is in math mode.
-(See L<LaTeXML::Error>)
-
-=item C<< $stomach->beginEnvironment($environment); >>
+=item C<< $STOMACH->beginEnvironment($environment); >>
 
 Begin an environment. This does I<not> start a level of
 grouping, but is only for error checking.
 
-=item C<< $stomach->endEnvironment($environment); >>
+=item C<< $STOMACH->endEnvironment($environment); >>
 
-End an environment; an error is signalled if $stomach isn't currently
+End an environment; an error is signalled if C<$STOMACH> isn't currently
 processessing $environment.
+
+=item C<< $boole = $STOMACH->inPreamble; >>
+
+Returns whether or not we are in the preamble of the document, in 
+the LaTeX sense; spaces and such are ignored in the preamble.
+
+=item C<< $STOMACH->setInPreamble($value); >>
+
+Specifies whether or not we are in the preamble of the document, in 
+the LaTeX sense.
 
 =back
 
@@ -792,56 +788,86 @@ processessing $environment.
 
 =over 4
 
-=item C<< $stomach->setPrefix($prefix); >>
+=item C<< $STOMACH->setPrefix($prefix); >>
 
 Set the prefix (one of 'global', 'long' or 'outer') for the next
 assignment operation. (only 'global' is used in LaTeXML).
 
-=item C<< $cattable = $stomach->getCattable; >>
+=item C<< $cattable = $STOMACH->getCattable; >>
 
 Return the current cattable (a reference to a hash).
 
-=item C<< $stomach->setCattable($cattable); >>
+=item C<< $STOMACH->setCattable($cattable); >>
 
 Set the current cattable (a reference to a hash).
 
-=item C<< $cc = $stomach->getCatcode($char); >>
+=item C<< $cc = $STOMACH->lookupCatcode($char); >>
 
-Get the catcode currently associated with $char.
+Get the catcode currently associated with C<$char>.
 (See L<LaTeXML::Token>)
 
-=item C<< $stomach->setCatcode($cc,@chars); >>
+=item C<< $STOMACH->assignCatcode($cc,@chars); >>
 
-Set the catcode associated with the characters @chars to $cc.
+Set the catcode associated with the characters C<@chars> to C<$cc>.
 (See L<LaTeXML::Token>)
 
-=item C<< $defn = $stomach->getMeaning($token); >>
+=item C<< $boole = $STOMACH->getMathActive($char); >>
 
-Get the definition currently associated with $token, or the token
-itself if it shouldn't be executable.
+Returns whether this C<$char> would be considered active
+in math mode, such as the prime character.
+
+=item C<< $STOMACH->setMathActive(@chars); >>
+
+Makes each of the C<@chars> active in math mode, such as the prime character.
+
+=item C<< $defn = $STOMACH->lookupMeaning($token); >>
+
+Get the "meaning" currently associated with C<$token>,
+either the definition (if it is a control sequence or active character)
+ or the token itself if it shouldn't be executable.
 (See L<LaTeXML::Definition>)
 
-=item C<< $stomach->setMeaning($token,$defn,$globally); >>
+=item C<< $STOMACH->assignMeaning($token,$defn,$globally); >>
 
-Set the definition associated with $token to $defn.
-If $globally is true, clears $token from all stack frames and
-set the definition in the base frame.
+Set the definition associated with C<$token> to C<$defn>.
+If C<$globally> is true, it makes this the global definition
+rather than bound within the current group.
 (See L<LaTeXML::Definition>, and L<LaTeXML::Package>)
 
-=item C<< $stomach->setValue($name,$value,$globally); >>
+=item C<< $defn = $STOMACH->lookupDefinition($token); >>
 
-Set a value to be associated with the string $name,
+Lookup the definition assocated with C<$token>, taking into account
+characters that are only active in math mode.
+
+=item C<< $STOMACH->installDefinition($definition, globally=>1, stash=>$stashname); >>
+
+Install the definition into the current stack frame under its normal control sequence.
+
+The stash option also stores the definition in a list named by C<$stashname>,
+for later reuse by C<< $STOMACH->useStash($stashname); >>  This may be used
+for supporting `modules' and other scoping mechanisms.
+
+=item C<< $STOMACH->useStash($stashname); >>
+
+Installs (reinstalls) the definitions that were previously stored in
+the list named by C<$stashname>, but which may have gone out of scope
+in the meantime.
+
+=item C<< $STOMACH->assignValue($name,$value,$globally); >>
+
+Set a value to be associated with the string C<$name>,
 possibly globally. This value is stored in a table separate
 from Meanings.
 
-=item C<< $value = $stomach->getValue($name); >>
+=item C<< $value = $STOMACH->lookupValue($name); >>
 
-Return the value associated with $name.
+Return the value associated with C<$name>.
 
-=item C<< $stomach->setFont(%style); >>
+=item C<< $STOMACH->setFont(%style); >>
 
 Set the current font by merging the font style attributes with the current font.
 The attributes and likely values (the values aren't required to be in this set):
+
    family : serif, sansserif, typewriter, caligraphic, fraktur, script
    series : medium, bold
    shape  : upright, italic, slanted, smallcaps
@@ -850,33 +876,33 @@ The attributes and likely values (the values aren't required to be in this set):
 
 Some families will only be used in math.
 
-=item C<< $stomach->setMathFont(%style); >>
+=item C<< $STOMACH->setMathFont(%style); >>
 
 Set the font that will be used for the I<next> math.
 It accepts the same style data as setFont and also C<forcebold> being 0 or 1
 to force all symbols to get bold (like \boldmath).
 
-=item C<< $font = $stomach->getFont; >>
+=item C<< $font = $STOMACH->getFont; >>
 
-Return the current $font.
+Return the current C<$font>.
 (See L<LaTeXML::Font>)
 
-=item C<< $stomach->setMathStyle($style); >>
+=item C<< $STOMACH->setMathStyle($style); >>
 
-Sets the current math style to one of displa, text, script or scriptscript.
+Sets the current math style to one of display, text, script or scriptscript.
 
-=item C<< $style = $stomach->getMathStyle; >>
+=item C<< $style = $STOMACH->getMathStyle; >>
 
 Return the current math style.
 
-=item C<< $stomach->stepCounter($counter); >>
+=item C<< $STOMACH->stepCounter($counter); >>
 
-Increment the LaTeX-style counter associated with $counter, resetting
+Increment the LaTeX-style counter associated with C<$counter>, resetting
 any `within' counters.
 
-=item C<< $value = $stomach->refStepCounter($counter); >>
+=item C<< $value = $STOMACH->refStepCounter($counter); >>
 
-Increment the LaTeX-style counter associated with $counter, resetting any
+Increment the LaTeX-style counter associated with C<$counter>, resetting any
 `within' counters, set \@currentlabel to \the$counter, and
 return that Tokens.
 
@@ -886,27 +912,27 @@ return that Tokens.
 
 =over 4
 
-=item C<< @paths = $stomach->getSearchPaths; >>
+=item C<< @paths = $STOMACH->getSearchPaths; >>
 
 Return the list of paths that is currently used to search for files.
 
-=item C<< $stomach->addSearchPath(@paths); >>
+=item C<< $STOMACH->addSearchPath(@paths); >>
 
-Add @paths to the list of search paths.
+Add C<@paths> to the list of search paths.
 
-=item C<< $filename = $stomach->findFile($name,$types); >>
+=item C<< $filename = $STOMACH->findFile($name,$types); >>
 
-Find a file with $name and one of the types in $types (an array ref)
+Find a file with C<$name> and one of the types in C<$types> (an array ref)
 somewhere in the list of search paths,
 and return the filename if found or else undef.
 
-=item C<< $filename = $stomach->findInput($name); >>
+=item C<< $filename = $STOMACH->findInput($name); >>
 
 Find an input file of type [pm sty tex]
 
-=item C<< $stomach->input($name); >>
+=item C<< $STOMACH->input($name); >>
 
-Input the file with $name, using findInput.  If the file found
+Input the file with C<$name>, using findInput.  If the file found
 with extension .ltxml, it should be an implementation Package,
 otherwise it should be a style or TeX file and it's contents
 will be interpreted (hopefully).

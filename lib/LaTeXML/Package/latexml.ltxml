@@ -1,0 +1,54 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  latexml.ltxml                                                      | #
+# | Style file for latexml documents                                    | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+#======================================================================
+# LaTeXML Implementation of latexml semantic enhancement macros
+#======================================================================
+use LaTeXML::Package;
+
+# From latexml.sty
+DefConstructor('\URL[]{}',"<a href='#2'>?#1(#1)(#2)</a>");
+DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3c.org/XML/}');
+DefMacro('\HTML',    '\URL[\texttt{HTML}]{http://www.w3c.org/HTML/}');
+DefMacro('\XHTML',   '\URL[\texttt{XHTML}]{http://www.w3c.org/XHTML/}');
+DefMacro('\MathML',  '\URL[\texttt{MathML}]{http://www.w3c.org/Math/}');
+DefMacro('\OpenMath','\URL[\texttt{OpenMath}]{http://www.openmath.org/}');
+DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
+
+#======================================================================
+# Exposing internal functionality of LaTeXML to the LaTeX document.
+
+# Define a mathematical object with both presentation & content information
+#   \LXMathDef{\name}[nargs][optional]{presentation body}[content keywords]
+#  The first part is essentially equivalent to \newcommand, it defines
+# an expansion for \name used for the presentation.
+# The content keywords are used to define the semantics of the object.
+# See DefMath in LaTeXML::Package for more information.
+DefPrimitive('\LXMathDef{}[][]{}[KeyVal:XMath]', sub {
+  my(self,$cs,$nargs,$opt,$presentation,$params)=@_;
+  my($name,$cd,$role)=$params && map($_ && $_->toString,map($params->getValue($_), qw(name cd role)));
+  DefMath($cs->toString.convertLaTeXArgs($nargs,$opt),$presentation,
+	  name=>$name, omcd=>$cd, role=>$role);
+});
+#DefKeyVal('XMath',name,string);
+
+# \LXMID{id}{math}  Associate the identifier id with the given math expression.
+DefMacro('\LXMID{}{}','\@XMArg{#1}{#2}');
+
+# \LXRef{id} Refer to the math expression associated with id.
+# In presentation, this is similar to using a shorthand macro.
+# In content situations, an XMRef is generated.
+DefMacro('\LXMRef{}','\@XMRef{#1}');
+
+#======================================================================
+1;

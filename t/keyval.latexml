@@ -1,0 +1,29 @@
+use LaTeXML::Package;
+
+#======================================================================
+# Tests of various constructors using KeyVals.
+#======================================================================
+# Testing simple use of keys; 
+#   attribute is just list of key-value pairs.
+DefConstructor('\KVsimple[KeyVal:foo]', "<graphics options='#1'/>");
+
+# Testing more complex use of keys;
+#   individual attributes are obtained from specific keys.
+DefConstructor('\KVcomplex[KeyVal:foo]', "<graphics width='#1{width}' height='#1{height}'/>");
+
+
+# Testing use in an environment.
+DefEnvironment('{KVenv}[KeyVal:foo]',"<text width='#1{width}' height='#1{height}'>%body</text>");
+
+# Testing structured use of keys; map an XML structure to the keys (eg. for amsrefs)
+DefEnvironment('{KVstruct}[KeyVal:foo]',
+	"<text>"
+	."?#1{width}(<text>Width: #1{width}</text>)"
+	."?#1{height}(<text>Height: #1{height}</text>)"
+	."%body</text>");
+
+# Testing automatic conversion of keys to structure (?)
+DefConstructor('\KVauto{KeyVal:foo}',"<text>#1</text>");
+
+#======================================================================
+1;

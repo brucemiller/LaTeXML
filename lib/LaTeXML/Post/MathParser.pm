@@ -19,22 +19,21 @@ use Parse::RecDescent;
 use LaTeXML::Util::LibXML;
 use LaTeXML::Post::MathDictionary;
 use Exporter;
-use charnames ":full";
 use LaTeXML::Post;
 our @ISA = (qw(Exporter LaTeXML::Post::Processor));
 
 our @EXPORT_OK = (qw(&Lookup &New &Apply &recApply &Annotate &InvisibleTimes
-		     &NewFormulae &NewFormula &NewCollection  &ApplyFunction
+		     &NewFormulae &NewFormula &NewCollection  &ApplyDelimited &NewScripts
 		     &LeftRec
-		     &Arg &Name &Content &Problem &MaybeFunction
-		     &isMatchingClose &NewFenced));
+		     &Arg &Problem &MaybeFunction
+		     &isMatchingClose &Fence));
 our %EXPORT_TAGS = (constructors => [qw(&Lookup &New &Apply &recApply &Annotate &InvisibleTimes
-					&NewFormulae &NewFormula &NewCollection  &ApplyFunction
+					&NewFormulae &NewFormula &NewCollection  &ApplyDelimited &NewScripts
 					&LeftRec
-					&Arg &Content &Problem &MaybeFunction 
-					&isMatchingClose &NewFenced)]);
+					&Arg &Problem &MaybeFunction 
+					&isMatchingClose &Fence)]);
 our $nsURI = "http://dlmf.nist.gov/LaTeXML";
-
+our $nsXML = "http://www.w3.org/XML/1998/namespace";
 # ================================================================================
 sub new {
   my($class,%options)=@_;
@@ -56,68 +55,66 @@ sub new {
 sub process {
   my($self,$doc,%options)=@_;
   $self->clear;			# Not reentrant!
+  $self->cacheIDs($doc);
+
   my $dict = LaTeXML::Post::MathDictionary::getDocumentDictionary($doc,$self->getSource);
   my @math =  $self->findMathNodes($doc);
   $self->Progress("Parsing ".scalar(@math)." formulae");
   foreach my $math (@math){
-    $self->parse($math,$dict); }
+    $self->parse($math,$doc,$dict); }
   $self->showSummary;
   $doc; }
 
 # ================================================================================
 sub clear {
   my($self)=@_;
-  $$self{math_passed}=0;
-  $$self{math_failed}=0;
-  $$self{arg_passed}=0;
-  $$self{arg_failed}=0;
-  $$self{wrap_passed}=0;
-  $$self{wrap_failed}=0;
+  $$self{passed}={XMath=>0,XMArg=>0,XMWrap=>0};
+  $$self{failed}={XMath=>0,XMArg=>0,XMWrap=>0};
   $$self{unknowns}={};
   $$self{maybe_functions}={};
 }
 sub showSummary {
   my($self)=@_;
-  my $ntot = $$self{math_passed}+$$self{math_failed};
-  my $ntotargs = $$self{arg_passed}+$$self{arg_failed};
-  my $ntotwrap = $$self{wrap_passed}+$$self{wrap_failed};
-  $self->Progress("Math parsing succeeded\n"
-		  ."  $$self{math_passed}/$ntot top-level expressions\n"
-		  ."  $$self{arg_passed}/$ntotargs subexpressions\n"
-		  ."  $$self{wrap_passed}/$ntotwrap sloppy subexpressions."
-		 ) if $ntot; 
-  my @unk = keys %{$$self{unknowns}};
-  if(@unk){
+  $self->Progress("Math parsing succeeded:"
+		  .join('',map( "\n   $_: ".$$self{passed}{$_}."/".($$self{passed}{$_}+$$self{failed}{$_}),
+				keys %{$$self{passed}})));
+  if(my @unk = keys %{$$self{unknowns}}){
     $self->Warn("Symbols assumed as simple identifiers (with # of occurences):\n   "
-		    .join(', ',map("'$_' ($$self{unknowns}{$_})",sort @unk)));
-    my @funcs = keys %{$$self{maybe_functions}};
-    if(@funcs){
-      $self->Warn("Possibly used as functions? (with # suspicious usages/# of occurrences):\n  "
-		      .join(', ',map("'$_' ($$self{maybe_functions}{$_}/$$self{unknowns}{$_} times)",
-				     sort @funcs))); }}
+		.join(', ',map("'$_' ($$self{unknowns}{$_})",sort @unk))); }
+  if(my @funcs = keys %{$$self{maybe_functions}}){
+    $self->Warn("Possibly used as functions? (with # suspicious usages/# of occurrences):\n  "
+		.join(', ',map("'$_' ($$self{maybe_functions}{$_}/$$self{unknowns}{$_} times)",
+			       sort @funcs))); }
 }
 
 sub note_unknown {
   my($self,$name)=@_;
-  $$self{unknowns}{$name}++ unless $LaTeXML::Post::MathParser::NO_NOTES; }
+  $$self{unknowns}{$name}++ if $LaTeXML::Post::MathParser::STRICT; }
 
 # ================================================================================
 # Some more XML utilities, but math specific (?)
-sub getTokenName {
+
+sub getTokenName {		# Get the Token's name, or fall back to content
   my($node)=@_;
   $node->getAttribute('name') || $node->textContent;}
+
+sub getTokenContent {		# Get the Token's content, or fall back to name.
+  my($node)=@_;
+  $node->textContent || $node->getAttribute('name'); }
 
 sub node_TeX {
   my($node)=@_;
   $node->getAttribute('tex') || $node->textContent;}
 
 sub node_string {
-  my(@nodes)=@_;
-  my $x;
-  join(' ',map( (defined ($x=$_->getAttribute('tex')) ? $x
-		: (defined ($x=$_->getAttribute('name')) ? $x
-		   : ( (($_->nodeName eq 'XMTok')&& (defined ($x=$_->textContent))) ? $x
-		       : $_->nodeName))), @nodes)); }
+  my($node)=@_;
+  my($string,$x);
+#  if(defined ($x=$node->getAttribute('tex'))){ $string=$x; }
+#  elsif(defined ($x=$node->getAttribute('name'))) { $string=$x; }
+#  elsif(($node->nodeName eq 'XMTok')&& (defined ($x=$node->textContent))){ $string=$x; }
+#  else{ $string=$node->nodeName; }
+  $string = text_form($node);
+  ($node->getAttribute('role')||'Unknown').'['.$string.']'; }
 
 sub node_location {
   my($node)=@_;
@@ -138,82 +135,64 @@ sub findMathNodes {
   my($self,$doc)=@_;
   $doc->getElementsByTagNameNS($self->getNamespace,'XMath'); }
 
-# ================================================================================
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Parser
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 sub parse {
-  my($self,$xnode,$dict)=@_;
-#print STDERR "Parse math: ".$xnode->toString."\n";
+  my($self,$xnode,$doc,$dict)=@_;
+  local $LaTeXML::Post::MathParser::STRICT=1;
+
   my $nodedict = $dict->getNodeDictionary($xnode);
-  # Preset part of speech on all tokens w/o one.
-#  foreach my $token ($xnode->findnodes('.//XMTok[not(@POS)]')){
-  my $NS = $self->getNamespace;
-  foreach my $token ($xnode->findnodes(".//*[local-name()='XMTok' and namespace-uri()='$NS' and not(\@POS)]")){
-    my $name = getTokenName($token);
-    my $POS = defined $name && $dict->getPartOfSpeech($name);
-    $token->setAttribute('POS',$POS) if defined $POS; }
-
-#print STDERR "Resolved math: ".$xnode->toString."\n";
-  $self->parse_args($xnode,$nodedict);
-  my $result = $self->parse_internal($xnode,$nodedict,'Anything,');
-  $$self{ ($result ? 'math_passed' : 'math_failed') }++;
-  if($result){
-    clear_node($xnode);
-    map($xnode->removeChild($_),element_nodes($xnode));
-    append_nodes($xnode,$result);
-
+  if(my $result = $self->parse_rec($xnode,'Anything,',$doc,$nodedict)){
     # Add text representation to the containing Math element.
-   $xnode->parentNode->setAttribute('text',$self->text_form($result));
-
-#print STDERR "Math : \"".$xnode->parentNode->getAttribute('tex')."\"\n=>\"".$xnode->parentNode->getAttribute('text')."\"\n";
-  }
-  else {
-    print STDERR "Failed\n"; 
-  }
+    $xnode->parentNode->setAttribute('text',text_form($result)); }
 }
+
+# Recursively parse a node with some internal structure
+# by first parsing any structured children, then it's content.
+sub parse_rec {
+  my($self,$node,$rule,$doc,$dict)=@_;
+  $self->parse_children($node,$doc,$dict);
+  my $tag  = $node->nodeName;
+  if(my $requested_rule = $node->getAttribute('rule')){
+    $rule = $requested_rule; }
+  if(my $result= $self->parse_internal($node,$doc,$dict,$rule)){
+    $$self{passed}{$tag}++;
+   if($tag eq 'XMath'){	# Replace content of XMath
+      clear_node($node);
+      map($node->removeChild($_),element_nodes($node));
+      append_nodes($node,$result); }
+    else {			# Replace node for XMArg, XMWrap; preserve some attributes
+      if(my $role = $node->getAttribute('role')){
+	$result->setAttribute('role',$role); }
+      if(my $id = $node->getAttributeNS($nsXML,'id')){
+	$result->setAttributeNS($nsXML,id=>$id);
+	$self->updateID($result,$id); }
+      $node->parentNode->replaceChild($result,$node); }
+    $result; }
+  else {
+    $$self{failed}{$tag}++;
+    undef; }}
+
 # Depth first parsing of XMArg nodes.
-sub parse_args {
-  my($self,$node,$dict)=@_;
+sub parse_children {
+  my($self,$node,$doc,$dict)=@_;
   foreach my $child (element_nodes($node)){
-    $self->parse_args($child,$dict);
-    if($child->nodeName eq 'XMArg'){
-      $self->parse_arg($child,$dict); }
-    elsif($child->nodeName eq 'XMWrap'){
-      $self->parse_wrap($child,$dict); }
+    my $tag = $child->nodeName;
+    if($tag eq 'XMArg'){
+      $self->parse_rec($child,'Anything',$doc,$dict); }
+    elsif($tag eq 'XMWrap'){
+      local $LaTeXML::Post::MathParser::STRICT=0;
+      $self->parse_rec($child,'Anything',$doc,$dict); }
+    elsif(($tag eq 'XMApp')||($tag eq 'XMDual')){
+      $self->parse_children($child,$doc,$dict); }
 }}
-
-our %pos_rule = (FUNCTION=>'QFunction', RELOP=>'QOp');
-sub parse_arg {
-  my($self,$arg,$dict)=@_;
-  my $rule = $arg->getAttribute('rule') || 'Anything';
-  my $result= $self->parse_internal($arg,$dict,$rule);
-  $$self{ ($result ? 'arg_passed' : 'arg_failed') }++;
-  $arg->parentNode->replaceChild($result,$arg) if $result; 
- }
-
-# Parse `wrapped' sequences: things the author has asserted mave a 
-# particular part-of-speech.
-# We really don't expect to get good sense here, but they typically
-# need _some_ sort of parsing to rewrite with sub/superscripts, at least.
-# We probably need to associate a default rule (to parse the insides)
-# that depends on the part of speech that the object plays on the outside.
-sub parse_wrap {
-  my($self,$arg,$dict)=@_;
-  my $POS  = $arg->getAttribute('POS');
-  my $rule = $arg->getAttribute('rule') || 'Anything';
-  local $LaTeXML::Post::MathParser::NO_NOTES=1;
-  my @nodes = element_nodes($arg);
-  @nodes = grep( $_->nodeName ne 'XMHint', @nodes);
-  # Don't even bother if a single item.
-  my $result= (scalar(@nodes)==1 ? $nodes[0] : $self->parse_internal($arg,$dict,$rule));
-  $$self{ ($result ? 'wrap_passed' : 'wrap_failed') }++;
-  if($result){
-    $result->setAttribute('POS',$POS) if defined $POS;
-    $arg->parentNode->replaceChild($result,$arg); }
- }
 
 # ================================================================================
 
 sub parse_internal {
-  my($self,$mathnode,$dict,$rule)=@_;
+  my($self,$mathnode,$doc,$dict,$rule)=@_;
   #  Remove Hints!
   my @nodes = element_nodes($mathnode);
   @nodes = grep( $_->nodeName ne 'XMHint', @nodes);
@@ -221,145 +200,156 @@ sub parse_internal {
   # Extract trailing punctuation, if rule allows it.
   my ($punct, $result,$textified);
   if($rule =~ s/,$//){
-    my $x = $nodes[$#nodes];
-    $punct =($x && ($x->nodeName eq 'XMTok') && defined($x = getTokenName($x))
-	     && ($x = $dict->getPartOfSpeech($x)) && ($x eq 'PUNCT') ? pop(@nodes) : ''); }
-  if(@nodes){
+    my ($x,$r) = ($nodes[$#nodes]);
+    $punct =($x && ($x->nodeName eq 'XMTok') 
+	     && (  $r = $x->getAttribute('role')
+		   || (defined($x = getTokenName($x)) && ($r = $dict->getRole($x))))
+	     && ($r eq 'PUNCT')
+	     ? pop(@nodes) : ''); }
+  my $nnodes = scalar(@nodes);
+  
+  if($nnodes == 0){	     # Probably the wrong thing to do, but ...
+    $result = New('Empty'); }
+  elsif($nnodes == 1){		# One node? What's to parse?
+    $result = $nodes[0]; }
+  else {
     # Generate a textual token for each node; The parser operates on this encoded string.
     local $LaTeXML::Post::MathParser::LEXEMES = {};
     my $i = 0;
     $textified='';
     foreach my $node (@nodes){
       my $tag = $node->nodeName;
-      my $name = getTokenName($node);
+      my $rnode = $node;
+      if($tag eq 'XMRef'){
+	$rnode = $self->realizeXMNode($doc,$node);
+	$tag = $rnode->nodeName; }
+      my $name = getTokenName($rnode);
       $name = 'Unknown' unless defined $name;
-      my $POS = $node->getAttribute('POS');
-      if(!defined $POS){
-	$POS = $dict->getPartOfSpeech($name);
-	# Hack: record UNKNOWN on Wrapped tokens, so we know they're not known!
-	$POS = 'UNKNOWN' if (!defined $POS) &&($tag eq 'XMTok') && $LaTeXML::Post::MathParser::NO_NOTES;
-	$node->setAttribute('POS',$POS) if defined $POS; }
-      $POS = ($tag eq 'XMTok' ? 'UNKNOWN' : 'ATOM') unless defined $POS;
-      my $id      = $POS.":".$name.":".++$i;
-      $id =~ s/\s//g;
-      if($POS eq 'UNKNOWN'){
+      my $role = $rnode->getAttribute('role');
+#      if(!defined $role){
+#	$role = $dict->getRole($name);
+#	# Hack: record UNKNOWN on Wrapped tokens, so we know they're not known!
+#	$role = 'UNKNOWN' if (!defined $role) &&($tag eq 'XMTok') && !$LaTeXML::Post::MathParser::STRICT;
+#	$node->setAttribute('role',$role) if defined $role; }
+      $role = ($tag eq 'XMTok' ? 'UNKNOWN' : 'ATOM') unless defined $role;
+      my $lexeme      = $role.":".$name.":".++$i;
+      $lexeme =~ s/\s//g;
+      if(($role eq 'UNKNOWN') && $LaTeXML::Post::MathParser::STRICT){
 	$self->note_unknown($name);
 	if($name eq 'Unknown'){
 	  $self->Warn("MathParser: What is this: \"".$node->toString."\"?"); }}
-      $$LaTeXML::Post::MathParser::LEXEMES{$id} = $node;
-      $textified .= ' '.$id; }
-    #print STDERR "MathParse Node:\"".node_string(@nodes)."\"\n => \"$textified\"\n";
+      $$LaTeXML::Post::MathParser::LEXEMES{$lexeme} = $node;
+      $textified .= ' '.$lexeme; }
+    #print STDERR "MathParse Node:\"".join(' ',map(node_string($_),@nodes))."\"\n => \"$textified\"\n";
     # Finally, apply the parser to the textified sequence.
     local $LaTeXML::Post::MathParser::PARSER = $self;
     $result = $$self{internalparser}->$rule(\$textified); }
-  else {
-    # Probably the wrong thing to do, but ...
-    $result = New('Empty'); }
+
   # Failure: report on what/where
+  # NOTE: Should do script hack??
   if((! defined $result) || $textified){
-    $textified =~ s/^\s*//;
-    my @rest=split(/ /,$textified);
-    my $pos = scalar(@nodes) - scalar(@rest);
-    my $parsed  = node_string(@nodes[0..$pos-1]);
-    my $toparse = node_string(@nodes[$pos..$#nodes]);
-    my $id = node_location($nodes[$pos] || $nodes[$pos-1] || $mathnode);
-    $self->Warn("MathParser failed to match rule $rule for ".$mathnode->nodeName." at pos. $pos in $id at\n"
-		. ($parsed ? $parsed."\n".(' ' x (length($parsed)-2)) : '')."> ".$toparse);
+    if($LaTeXML::Post::MathParser::STRICT){
+      $textified =~ s/^\s*//;
+      my @rest=split(/ /,$textified);
+      my $pos = scalar(@nodes) - scalar(@rest);
+      my $parsed  = join(' ',map(node_string($_),@nodes[0..$pos-1]));
+      my $toparse = join(' ',map(node_string($_),@nodes[$pos..$#nodes]));
+      my $lexeme = node_location($nodes[$pos] || $nodes[$pos-1] || $mathnode);
+      $self->Warn("MathParser failed to match rule $rule for ".$mathnode->nodeName." at pos. $pos in $lexeme at\n"
+		  . ($parsed ? $parsed."\n".(' ' x (length($parsed)-2)) : '')."> ".$toparse);
+    }
     undef; }
   # Success!
   else {
-    $result->setAttribute('punctuation',getTokenName($punct)) if $punct;
+    $result->setAttribute('punctuation',getTokenContent($punct)) if $punct;
     $result; }}
 
 # ================================================================================
 # Conversion to a less ambiguous, mostly-prefix form.
 
 sub text_form {
-  my($self,$node)=@_;
+  my($node)=@_;
 #  $self->textrec($node,0); }
 # Hmm, Something Weird is broken!!!!
 # With <, I get "unterminated entity reference" !?!?!?
-  my $text= $self->textrec($node,0); 
+#  my $text= $self->textrec($node,0); 
+  my $text= textrec($node,undef); 
   $text =~ s/</LessThan/g;
   $text; }
 
 
-our %PREFIX_ALIAS=(Superscript=>'^',Subscript=>'_',InvisibleTimes=>'*');
+our %PREFIX_ALIAS=(Superscript=>'^',Subscript=>'_', "\x{2062}"=>'*');
 # Put infix, along with `binding power'
 our %IS_INFIX = (METARELOP=>1, 
-		 RELOP=>2, ARROW=>2,LARROW=>2,RARROW=>2,
-		 ADDOP=>10,  SUBOP=>11,
-		 MULOP=>100, DIVOP=>101,
-		 POWEROP=>1000,
+		 RELOP=>2, ARROW=>2,
+		 ADDOP=>10, MULOP=>100, 
 		 SUPERSCRIPT=>1000, SUBSCRIPT=>1000);
+
 sub textrec {
-  my($self,$node, $outer_bp)=@_;
+  my($node, $outer_bp,$outer_name)=@_;
   my $tag = $node->nodeName;
+  $outer_bp = 0 unless defined $outer_bp;
+  $outer_name = '' unless defined $outer_name;
   if($tag eq 'XMApp') {
     my($op,@args) = element_nodes($node);
     my $name = (($op->nodeName eq 'XMTok') && getTokenName($op)) || 'unknown';
-    my $POS  =  $op->getAttribute('POS') || 'Unknown';
+    my $role  =  $op->getAttribute('role') || 'Unknown';
     my ($bp,$string);
-    if($bp = $IS_INFIX{$POS}){
+    if($bp = $IS_INFIX{$role}){
       # Format as infix.
       $string = (scalar(@args) == 1 # unless a single arg; then prefix.
-		  ? $self->textrec($op) .' '.$self->textrec($args[0],$bp)
-		  : join(' '. $self->textrec($op) .' ',map($self->textrec($_,$bp), @args))); }
-    elsif($POS eq 'POSTFIX'){
+		  ? textrec($op) .' '.textrec($args[0],$bp,$name)
+		  : join(' '. textrec($op) .' ',map(textrec($_,$bp,$name), @args))); }
+    elsif($role eq 'POSTFIX'){
       $bp = 10000;
-      $string = $self->textrec($args[0],$bp).$self->textrec($op); }
+      $string = textrec($args[0],$bp,$name).textrec($op); }
     elsif($name eq 'MultiRelation'){
       $bp = 2;
-      $string = join(' ',map($self->textrec($_,$bp),@args)); }
+      $string = join(' ',map(textrec($_,$bp,$name),@args)); }
     elsif($name eq 'Fenced'){
-#      $bp = 0;
-#      $string = " (" . join(', ',map($self->textrec($_),@args)) .") "; }
       $bp = -1;			# to force parentheses
-      $string = join(', ',map($self->textrec($_),@args)); }
+      $string = join(', ',map(textrec($_),@args)); }
     else {
       $bp = 500;
-      $string = $self->textrec($op,10000) .'@(' . join(', ',map($self->textrec($_),@args)). ')'; }
-    ($bp < ($outer_bp||0) ? ' ('.$string.') ' : $string); }
+      $string = textrec($op,10000,$name) .'@(' . join(', ',map(textrec($_),@args)). ')'; }
+    (($bp < $outer_bp)||(($bp==$outer_bp)&&($name ne $outer_name)) ? '('.$string.')' : $string); }
   elsif($tag eq 'XMDual'){
     my($content,$presentation)=element_nodes($node);
-    $self->textrec($content,$outer_bp); } # Just send out the semantic form.
+    textrec($content,$outer_bp,$outer_name); } # Just send out the semantic form.
   elsif($tag eq 'XMTok'){
     my $name = getTokenName($node);
     return 'Unknown' unless defined $name;
     $PREFIX_ALIAS{$name} || $name; }
   elsif($tag eq 'XMWrap'){
     # ??
-    join('@',map($self->textrec($_), element_nodes($node))); }
+    join('@',map(textrec($_), element_nodes($node))); }
   else {
     my $string = ($tag eq 'text' ? $node->textContent :     $node->getAttribute('tex') || '?');
       "[$string]"; }}
 
-# ================================================================================
-# Constructors for grammar
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Constructors used in grammar
 # All the tree construction in the grammar should come through these operations.
 # We have to be _extremely_ careful about cloning nodes when using addXML::LibXML!!!
 # If we add one node to another, it is _silently_ removed from any parent it may have had!
-# ================================================================================
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # ================================================================================
 # Low-level accessors
 sub Lookup {
-  my($id)=@_;
-  $$LaTeXML::Post::MathParser::LEXEMES{$id}; }
+  my($lexeme)=@_;
+  $$LaTeXML::Post::MathParser::LEXEMES{$lexeme}; }
 
 # Make a new Token node with given name, content, and attributes.
 sub New {
   my($name,$content,%attribs)=@_;
-  Annotate(new_node($nsURI,'XMTok',$content),name=>$name,%attribs); }
+  Annotate(new_node($nsURI,'XMTok',$content),($name? (name=>$name):()),%attribs); }
 
 # Get n-th arg of an XMApp.
 sub Arg {
   my($node,$n)=@_;
   my @args = element_nodes($node);
   $args[$n]; }			# will get cloned if/when needed.
-
-sub Name { getTokenName($_[0]); }
-sub Content { $_[0]->textContent; }
 
 # Add more attributes to a node.
 sub Annotate {
@@ -372,10 +362,25 @@ sub Annotate {
 
 # ================================================================================
 # Mid-level constructors
+
+# Apply $op to the list of arguments
 sub Apply {
   my($op,@args)=@_;
   new_node($nsURI,'XMApp', [$op,@args]); }
 
+# Apply $op to a `delimited' list of arguments of the form
+#     open, expr (punct expr)* close
+# after extracting the opening and closing delimiters, and the separating punctuation
+sub ApplyDelimited {
+  my($op,@stuff)=@_;
+  my $open =shift(@stuff);
+  my $close=pop(@stuff);
+  $open  = getTokenContent($open)  if ref $open;
+  $close = getTokenContent($close) if ref $close;
+  my ($seps,@args)=extract_separators(@stuff);
+  Apply(Annotate($op, argopen=>$open, argclose=>$close, separators=>$seps),@args); }
+
+# Given a sequence of operators, form the nested application op(op(...(arg)))
 sub recApply {
   my(@ops)=@_;
   (scalar(@ops)>1 ? Apply(shift(@ops),recApply(@ops)) : $ops[0]); }
@@ -389,7 +394,7 @@ sub extract_separators {
   if(@stuff){
     push(@args,shift(@stuff));
     while(@stuff){
-      $punct .= Content(shift(@stuff));
+      $punct .= shift(@stuff)->textContent;
       push(@args,shift(@stuff)); }}
   ($punct,@args); }
 
@@ -397,21 +402,15 @@ sub extract_separators {
 # Some special cases 
 
 sub InvisibleTimes {
-  New('InvisibleTimes',undef,POS=>'MULOP'); }
+  New('',"\x{2062}", role=>'MULOP'); }
 
-sub ApplyFunction {
-  my($op,@stuff)=@_;
-  my $left=Content(shift(@stuff));
-  my $right=Content(pop(@stuff));
-  my ($seps,@args)=extract_separators(@stuff);
-  Apply(Annotate($op,open=>$left, close=>$right, separators=>$seps),@args);}
 
 # OK, what about \left. or \right. !!?!?!!?!?!?
 # Make customizable?
 # Should I just check left@right against enclose1 ?
 our %balanced = ( '(' => ')', '['=>']', '{'=>'}', 
 		  '|'=>'|', 'Parallel'=>'Parallel',
-		  'LeftFloor'=>'RightFloor','LeftCeiling'=>'RightCeiling','LeftAngle'=>'RightAngle');
+		  'lfloor'=>'rfloor','lceil'=>'rceil','langle'=>'rangle');
 our %enclose1 = ( '(@)'=>'Fenced', '[@]'=>'Fenced', '{@}'=>'Set',
 		  '|@|'=>'Abs', '||@||'=>'Abs', 'Parallel@Parallel'=>'Abs',
 		  'LeftFloor@RightFloor'=>'Floor', 'LeftCeiling@RightCeiling'=>'Ceiling' );
@@ -426,25 +425,34 @@ our %encloseN = ( '(@)'=>'Vector','{@}'=>'Set',);
 
 sub isMatchingClose {
   my($open,$close)=@_;
-  my $oname = Name($open);
-  my $cname = Name($close);
+  my $oname = getTokenName($open);
+  my $cname = getTokenName($close);
   return 1 if $oname eq '.';
   my $expect = $balanced{$oname};
-  warn "Unknown OPEN delimiter \"".Name($open)."\"" unless defined $expect;
+  warn "Unknown OPEN delimiter \"$oname\"" unless defined $expect;
   ($expect eq $cname) || ($cname eq '.'); }
 
-# Convert Fenced things like open expr (punct expr)* close
-# into the appropriate thing, depending on the specific open & close used.
-sub NewFenced {
-  my($open,@stuff)=@_;
-  my $close= pop(@stuff);
-  my $key = Name($open).'@'.Name($close);
-  my $n = int(scalar(@stuff)+1)/2;
+# Given a delimited sequence: open expr (punct expr)* close
+# Convert it into the appropriate thing, depending on the specific open & close used.
+# If the open/close are `simple' delimiters and there is only one expr,
+# simply add open/close attributes.
+sub Fence {
+  my(@stuff)=@_;
+  # Peak at delimiters to guess what kind of construct this is.
+  my ($open,$close) = ($stuff[0],$stuff[$#stuff]);
+  my $openname  = (ref $open  ? getTokenName($open) : $open);
+  my $closename = (ref $close ? getTokenName($close): $close);
+  my $key = $openname.'@'.$closename;
+  my $n = int(scalar(@stuff)-2+1)/2;
   my $op = (($n==1) && $enclose1{$key}) || (($n==2) && $enclose2{$key}) || (($n > 2) && $encloseN{$key})
     || 'Collection';
-  my ($seps,@elements)=extract_separators(@stuff);
-  Apply(New($op,undef,open=>$open->textContent, close=>$close->textContent,separators=>$seps,POS=>'FENCED'),
-	@elements); }
+  if(($n==1) && ($op eq 'Fenced')){ # Simple case.
+    my $node = $stuff[1];
+    $node->setAttribute(open=>getTokenContent($open)) if $open && ($openname ne '.');
+    $node->setAttribute(close=>getTokenContent($close)) if $close && ($closename ne '.');
+    $node; }
+  else {
+    ApplyDelimited(New($op,undef,role=>'FENCED'),@stuff); }}
 
 # NOTE: It might be best to separate the multiple Formulae into separate XMath's???
 # but only at the top level!
@@ -470,7 +478,7 @@ sub NewCollection {
   if(@stuff == 1){ $stuff[0]; }
   else {
     my ($seps,@items)=extract_separators(@stuff);
-    Apply(New('Collection',undef, separators=>$seps, POS=>'FENCED'),@items);}}
+    Apply(New('Collection',undef, separators=>$seps, role=>'FENCED'),@items);}}
 
 # Given alternation of expr (addop expr)*, compose the tree (left recursive),
 # flattenning portions that have the same operator
@@ -479,14 +487,35 @@ sub LeftRec {
   my($arg1,@more)=@_;
   if(@more){
     my $op = shift(@more);
-    my $opname = Name($op);
+    my $opname = getTokenName($op);
     my @args = ($arg1,shift(@more));
-    while(@more && ($opname eq Name($more[0]))){
+    while(@more && ($opname eq getTokenName($more[0]))){
       shift(@more);
       push(@args,shift(@more)); }
     LeftRec(Apply($op,@args),@more); }
   else {
     $arg1; }}
+
+# ================================================================================
+# Construct an appropriate application of sub/superscripts
+# $postsub & $postsuper are POSTSUBSCRIPT and POSTSUPERSCRIPT objects
+# (ie. an XMApp with the script as 1st arg).
+sub NewScripts {
+  my($base,$postsub,$postsup,$presub,$presup)=@_;
+  if($presub||$presup){
+    # NOTE: Stupid arrangement for sideset!!! Fix this!!
+    Apply(New('sideset'),
+	  ($presub  ? Arg($presub,0)  : New('Empty')),
+	  ($presup  ? Arg($presup,0)  : New('Empty')),
+	  ($postsub ? Arg($postsub,0) : New('Empty')),
+	  ($postsup ? Arg($postsup,0) : New('Empty')),
+	  $base); }
+  elsif($postsub && $postsup){
+    Apply(New('SubSuperscript'),$base,Arg($postsub,0),Arg($postsup,0)); }
+  elsif($postsub){
+    Apply(New('Subscript',undef, role=>'SUBSCRIPT'),$base,Arg($postsub,0)); }
+  elsif($postsup){
+    Apply(New('Superscript',undef, role=>'SUPERSCRIPT'),$base,Arg($postsup,0)); }}
 
 # ================================================================================
 sub Problem { warn("MATH Problem? ",@_); }
@@ -498,10 +527,10 @@ sub MaybeFunction {
   my $self = $LaTeXML::Post::MathParser::PARSER;
   while($token->nodeName eq 'XMApp'){
     $token = Arg($token,1); }
-  my $name = Name($token);
+  my $name = getTokenName($token);
   $token->setAttribute('possibleFunction','yes');
   $$self{maybe_functions}{$name}++ 
-    unless $LaTeXML::Post::MathParser::NO_NOTES or   $$self{suspicious_tokens}{$token};
+    unless !$LaTeXML::Post::MathParser::STRICT or   $$self{suspicious_tokens}{$token};
   $$self{suspicious_tokens}{$token}=1; }
 
 # ================================================================================

@@ -3,7 +3,6 @@
 # Collected separately so I can override for LaTeXML
 #======================================================================
 use LaTeXML::Package;
-use LaTeXML::Token;
 # From latexml.sty
 DefConstructor('\URL[]{}',"<a href='#2'>?#1(#1)(#2)</a>");
 DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3c.org/XML/}');
@@ -17,8 +16,6 @@ DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 RequirePackage('graphicx');
 
 # Various other typographic bits
-DefMacro('\pkg {}','\texttt{#1}');
-DefMacro('\lpkg {}','\texttt{LaTeXML::#1}');
 DefMacro('\cmd {}','\texttt{#1}');
 DefMacro('\code {}','\texttt{#1}');
 DefMacro('\method {}','\texttt{->#1}');
@@ -27,10 +24,19 @@ DefMacro('\perldoc {}','\texttt{perldoc #1}');
 
 # Perverse!
 DefMacro('\perldoc{}', '\URL[\texttt{#1}]{\@perldocurl{#1}}');
-DefMacro('\@perldocurl{}', sub { 
- my $pkg = $_[1]->toString;
+DefMacro('\@perldocurl[]{}', sub { 
+ my($defn,$file,$pkg)=@_;
+ $pkg = $pkg->toString;
  $pkg =~ s|::|/|;
- T_OTHER("perldoc/$pkg.html"); });
+ $file = $file->toString if $file; 
+ if($file){
+   $file =~ s|::|/|;
+   T_OTHER("perldoc/$file.html#$pkg"); }
+ else {
+   T_OTHER("perldoc/$pkg.html"); }});
+
+DefMacro('\pkg[]{}', '\URL[\texttt{#2}]{\@perldocurl[#1]{#2}}');
+
 
 #======================================================================
 1;

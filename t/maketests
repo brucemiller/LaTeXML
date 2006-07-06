@@ -4,6 +4,8 @@
 # Generate XML files for each TeX file on the command line.
 # test.t compares these to the xml generated on a test system.
 #**********************************************************************
+use FindBin;
+use lib "$FindBin::RealBin/../lib";
 use LaTeXML;
 
 foreach my $name (@ARGV){

@@ -16,25 +16,23 @@ use LaTeXML::Object;
 our @ISA = qw(LaTeXML::Object);
 
 sub new {
-  my($class,$string,$font)=@_;
-  my $self=[$string,$font || Font()];
+  my($class,$string,$font,$locator)=@_;
+  my $self=[$string,$font || Font(),$locator || $GULLET->getLocator];
   bless $self,$class; }
 
 # Accessors
-sub getString { $_[0][0]; }	# Return the string contents of the box
-sub getFont   { $_[0][1]; }	# Return the font this box uses.
-sub isMath    { 0; }		# Box is text mode.
+sub isaBox     { 1; }
+sub getString  { $_[0][0]; }	# Return the string contents of the box
+sub getFont    { $_[0][1]; }	# Return the font this box uses.
+sub isMath     { 0; }		# Box is text mode.
 sub getInitial { $_[0][0]; }	# Return the `initial', for indexing ops.
+sub getLocator { $_[0][2]; }
 
 # So a Box can stand in for a List
-sub unlist  { ($_[0]); }	# Return list of the boxes
+sub unlist     { ($_[0]); }	# Return list of the boxes
 
-sub untex { $_[0][0]; }
-sub toString { $_[0][0]; }
-
-sub beAbsorbed {
-  my($self,$intestine)=@_;
-  $intestine->openText($$self[0], $$self[1]); }
+sub untex      { $_[0][0]; }
+sub toString   { $_[0][0]; }
 
 # Methods for overloaded operators
 sub stringify {
@@ -46,10 +44,10 @@ sub stringify {
 # Should this compare fonts too?
 sub equals {
   my($a,$b)=@_;
-  ((ref $a) eq (ref $b)) && ($$a[0] eq $$b[0]); }
+  (defined $b) && ((ref $a) eq (ref $b)) && ($$a[0] eq $$b[0]); }
 
-sub getSourceLocator { 'unknown'; }
-  
+sub beAbsorbed { $INTESTINE->openText($_[0][0],$_[0][1]); }
+
 #**********************************************************************
 # LaTeXML::MathBox
 #**********************************************************************
@@ -59,15 +57,13 @@ use LaTeXML::Global;
 our @ISA = qw(LaTeXML::Box);
 
 sub new {
-  my($class,$string,$font)=@_;
-  my $self=[$string,$font || MathFont()];
+  my($class,$string,$font,$locator)=@_;
+  my $self=[$string,$font || MathFont(),$locator || $GULLET->getLocator];
   bless $self,$class; }
 
 sub isMath { 1; }		# MathBoxes are math mode.
 
-sub beAbsorbed {
-  my($self,$intestine)=@_;
-  $intestine->insertMathToken($$self[0],$$self[1]); }
+sub beAbsorbed { $INTESTINE->insertMathToken($_[0][0],font=>$_[0][1]); }
 
 #**********************************************************************
 # LaTeXML::Comment
@@ -80,9 +76,7 @@ our @ISA = qw(LaTeXML::Box);
 sub untex    { ''; }
 sub toString { ''; }
 
-sub beAbsorbed {
-  my($self,$intestine)=@_;
-  $intestine->openComment($$self[0]); }
+sub beAbsorbed { $INTESTINE->insertComment($_[0][0]); }
 
 #**********************************************************************
 # LaTeXML::List
@@ -93,15 +87,16 @@ package LaTeXML::List;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::Object;
-our @ISA = qw(LaTeXML::Object);
+our @ISA = qw(LaTeXML::Box);
 
 sub new {
   my($class,@boxes)=@_;
   bless [@boxes],$class; }
 
 sub isMath     { 0; }			# List's are text mode
-sub getFont    { $_[0]->[0]->getFont; }	# Return font of 1st box (?)
-sub getInitial { ($_[0][0] ? $_[0][0]->getInitial : undef); }
+sub getFont    { (defined $_[0][0] ? $_[0][0]->getFont    : undef); }	# Return font of 1st box (?)
+sub getInitial { (defined $_[0][0] ? $_[0][0]->getInitial : undef); }
+sub getLocator { (defined $_[0][0] ? $_[0][0]->getLocator : ''); }
 
 sub unlist { @{$_[0]}; }
 
@@ -113,25 +108,23 @@ sub toString {
   my($self)=@_;
   join('',map($_->toString,@$self)); }
 
-sub beAbsorbed {
-  my($self,$intestine)=@_;
-  map($intestine->absorb($_), @$self); }
-
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
-  $type.'['.join('',map("$_",@$self)).']'; } # Not ideal, but....
+  $type.'['.join(',',map($_->toString,@$self)).']'; } # Not ideal, but....
 
 sub equals {
   my($a,$b)=@_;
-  return 0 unless (ref $a) eq (ref $b);
+  return 0 unless (defined $b) && ((ref $a) eq (ref $b));
   my @a = @$a;
   my @b = @$b;
-  while(@a && @b && ($a[0] eq $b[0])){
+  while(@a && @b && ($a[0]->equals($b[0]))){
     shift(@a); shift(@b); }
   return !(@a || @b); }
+
+sub beAbsorbed { map($INTESTINE->absorb($_), @{$_[0]}); }
 
 #**********************************************************************
 # LaTeXML::MathList
@@ -160,23 +153,27 @@ package LaTeXML::Whatsit;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::Object;
-our @ISA = qw(LaTeXML::Object);
+our @ISA = qw(LaTeXML::Box);
 
+# Specially recognized properties:
+#  font    : The font object
+#  locator : a locator string, where in the source this whatsit was created
+#  isMath  : whether this is a math object
+#  id
+#  body
+#  trailer
 sub new {
-  my($class,$defn,$stomach,$args,%data)=@_;
-  my $ismath = $stomach->inMath;
-  my $font = $data{font}
-    || ($ismath ? $stomach->getFont->specialize($defn->getMathClass) : $stomach->getFont );
-  my($file,$line)=$stomach->getSourceLocation;
-  my $self={definition=>$defn, isMath=>$ismath, args=>$args||[],
-	    properties=>{font=>$font,%data},
-	    filename=>$file, line=>$line};
-  bless $self,$class; }
+  my($class,$defn,$args,%properties)=@_;
+  $properties{font}    = $STOMACH->getFont   unless defined $properties{font};
+  $properties{locator} = $GULLET->getLocator unless defined $properties{locator};
+  $properties{isMath}  = $STOMACH->inMath    unless defined $properties{isMath};
+  bless {definition=>$defn, args=>$args||[], properties=>{%properties}},$class; }
 
-sub isMath        { $_[0]{isMath}; }
 sub getDefinition { $_[0]{definition}; }
-sub getFont       { $_[0]{properties}->{font}; } # and if undef ????
-sub setFont       { $_[0]{properties}->{font} = $_[1]; }
+sub isMath        { $_[0]{properties}{isMath}; }
+sub getFont       { $_[0]{properties}{font}; } # and if undef ????
+sub setFont       { $_[0]{properties}{font} = $_[1]; }
+sub getLocator    { $_[0]{properties}{locator}; }
 sub getProperty   { $_[0]{properties}{$_[1]}; }
 sub setProperty   { $_[0]{properties}{$_[1]}=$_[2]; return; }
 sub getProperties { $_[0]{properties}; }
@@ -187,19 +184,18 @@ sub setArgs       {
   $$self{args} = [@args]; 
   return; }
 
-sub getBody     { $_[0]{properties}->{body}; }
+sub getBody     { $_[0]{properties}{body}; }
 sub setBody {
   my($self,@body)=@_;
   my $trailer = pop(@body);
-  $$self{properties}{body} = ($$self{isMath} ? LaTeXML::MathList->new(@body)
-			      : LaTeXML::List->new(@body)); 
-  $$self{properties}{trailer} = $trailer; 
+  $$self{properties}{body} = ($self->isMath ? MathList(@body) : List(@body));
+  $$self{properties}{trailer} = $trailer;
   return; }
 
-sub getTrailer  { $_[0]{properties}->{trailer}; }
+sub getTrailer  { $_[0]{properties}{trailer}; }
 
 # Return the `initial' of this object, for indexing.
-sub getInitial { $_[0]->getDefinition->getCS; }
+sub getInitial { $_[0]->getDefinition->getCS->untex; }
 
 # So a Whatsit can stand in for a List
 sub unlist  { ($_[0]); }
@@ -210,39 +206,29 @@ sub untex {
 
 sub toString { $_[0]->untex;}
 
-sub getSourceLocator { 
-  my($self)=@_;
-  "file $$self{filename}, line $$self{line}"; }
-
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
-  my $string = "Whatsit[".join(', ',$self->getDefinition->getCS,
-			       map((defined $_ ? "$_" : 'undef'),$self->getArgs));
+  my $string = "Whatsit[".join(',',$self->getDefinition->getCS->getCSName,
+			       map(ToString($_),$self->getArgs));
   if(defined $$self{properties}{body}){
-    $string .= $$self{properties}{body}->stringify;
-    $string .= $$self{properties}{trailer}->stringify; }
+    $string .= $$self{properties}{body}->toString;
+    $string .= $$self{properties}{trailer}->toString; }
   $string."]"; }
 
 sub equals {
   my($a,$b)=@_;
-  return 0 unless (ref $a) eq (ref $b);
-  return 0 unless $$a{definition} eq $$b{definition};
+  return 0 unless (defined $b) && ((ref $a) eq (ref $b));
+  return 0 unless $$a{definition} eq $$b{definition}; # I think we want IDENTITY here, not ->equals
   my @a = @{$$a{args}};
   my @b = @{$$b{args}};
-  while(@a && @b && ($a[0] eq $b[0])){
+  while(@a && @b && ($a[0]->equals($b[0]))){
     shift(@a); shift(@b); }
   return !(@a || @b); }
 
 sub beAbsorbed {
-  my($self,$intestine)=@_;
-  my $defn = $$self{definition};
-  my $constructor = $defn->getConstructor($$self{isMath});
-  if(defined $constructor && !ref $constructor && $constructor){
-    $intestine->interpretConstructor($constructor); }
-  elsif(ref $constructor eq 'CODE'){
-    &$constructor($intestine,@{$$self{args}},$$self{properties}); }
-}
+  my($self)=@_;
+  &{$self->getDefinition->getConstructor}($self,$self->getArgs,$self->getProperties);}
 
 #**********************************************************************
 1;
@@ -257,11 +243,11 @@ __END__
 =head2 DESCRIPTION
 
 These represent various kinds of digested objects:
-LaTeXML::Box represents a text character in a particular font;
-LaTeXML::MathBox represents a math character in a particular font;
-LaTeXML::List represents a sequence of digested things in text;
-LaTeXML::MathList represents a sequence of digested things in math;
-LaTeXML::Whatsit represents a digested object that can generate
+C<LaTeXML::Box> represents a text character in a particular font;
+C<LaTeXML::MathBox> represents a math character in a particular font;
+C<LaTeXML::List> represents a sequence of digested things in text;
+C<LaTeXML::MathList> represents a sequence of digested things in math;
+C<LaTeXML::Whatsit> represents a digested object that can generate
 arbitrary elements in the XML Document.
 
 See L<LaTeXML::Global> for convenient constructors for these objects.
@@ -275,112 +261,106 @@ the C<stringify> and C<equals> operations.
 
 =item C<< $font = $digested->getFont; >>
 
-Returns the font used by $digested.
+Returns the font used by C<$digested>.
 
 =item C<< $boole = $digested->isMath; >>
 
-Returns whether the $digested object was created in math mode.
+Returns whether C<$digested> was created in math mode.
 
 =item C<< $string = $digested->getInitial; >>
 
-Returns the `initial' of $digested;  This is used
-to improve certain table lookups, such as finding
-relevant Filters.
+Returns the `initial' of C<$digested>; the initial letter
+or control sequence. This is used to improve certain table lookups, 
+such as finding relevant Filters.
 
 =item C<< @boxes = $digested->unlist; >>
 
-Returns a list of the boxes contained in $digested.
+Returns a list of the boxes contained in C<$digested>.
 It is also defined for the Boxes and Whatsit (which just
 return themselves) so they can stand-in for a List.
 
 =item C<< $string = $digested->toString; >>
 
-Returns a string representing this $digested.
+Returns a string representing this C<$digested>.
 
 =item C<< $string = $digested->untex; >>
 
-Returns the TeX string that corresponds to this $digested
+Returns the TeX string that corresponds to this C<$digested>
 in a form (hopefully) suitable for processing by TeX,
 if needed.
 
-=item C<< $digested->beAbsorbed($intestine); >>
+=item C<< $string = $digested->getLocator; >>
 
-This method tells the $digested to insert it's content into the DOM
-that the $intestine is building in whatever manner is appropriate for its type.
+Get a string describing the location in the original source that gave rise
+to C<$digested>.
+
+=item C<< $digested->beAbsorbed; >>
+
+C<$digested> should get itself absorbed into the C<INTESTINE> in whatever way
+is apppropriate.
 
 =back
 
-=head2 Methods specific of LaTeXML::Box and LaTeXML::MathBox
+=head2 Methods specific of C<LaTeXML::Box> and C<LaTeXML::MathBox>
 
 =over 4
 
 =item C<< $string = $box->getString; >>
 
-Returns the string part of the $box.
+Returns the string part of the C<$box>.
 
 =back
 
-=head2 Methods specific to LaTeXML::Whatsit
+=head2 Methods specific to C<LaTeXML::Whatsit>
 
-LaTeXML::Whatsit extends LaTeXML::Object.
 Note that the font is stored in the data properties under 'font'.
 
 =over 4
 
 =item C<< $defn = $whatsit->getDefinition; >>
 
-Returns the LaTeXML::Definition responsible for creating this $whatsit.
+Returns the L<LaTeXML::Definition> responsible for creating this C<$whatsit>.
 
 =item C<< $value = $whatsit->getProperty($key); >>
 
-Returns the value associated with the $key in the $whatsits property list.
+Returns the value associated with C<$key> in the C<$whatsit>'s property list.
 
 =item C<< $whatsit->setProperty($key,$value); >>
 
-Sets the $value associated with the $key in the $whatsits property list.
+Sets the C<$value> associated with the C<$key> in the C<$whatsit>'s property list.
 
 =item C<< $props = $whatsit->getProperties; >>
 
-Returns the hash reference representing the property list of $whatsit.
+Returns the hash reference representing the property list of C<$whatsit>.
 
 =item C<< $list = $whatsit->getArg($n); >>
 
-Returns the $n-th argument (starting from 1) for this $whatsit.
+Returns the C<$n>-th argument (starting from 1) for this C<$whatsit>.
 
 =item C<< @args = $whatsit->getArgs; >>
 
-Returns the list of arguments for this $whatsit.
+Returns the list of arguments for this C<$whatsit>.
 
 =item C<< $whatsit->setArgs(@args); >>
 
-Sets the list of arguments for this $whatsit to @args (each arg should be a LaTeXML::List
-or LaTeXML::MathList).
+Sets the list of arguments for this C<$whatsit> to C<@args> (each arg should be
+a C<LaTeXML::List> or C<LaTeXML::MathList>).
 
 =item C<< $list = $whatsit->getBody; >>
 
-Return the body for this $whatsit. This is only defined for environments or
+Return the body for this C<$whatsit>. This is only defined for environments or
 top-level math formula.  The body is stored in the properties under 'body'.
 
 =item C<< $whatsit->setBody(@body); >>
 
-Sets the body of the $whatsit to the boxes in @body.  The last $box in @body
-is assumed to represent the `trailer', that is the result of the invokation
+Sets the body of the C<$whatsit> to the boxes in C<@body>.  The last C<$box> in C<@body>
+is assumed to represent the `trailer', that is the result of the invocation
 that closed the environment or math.  It is stored separately in the properties
 under 'trailer'.
 
 =item C<< $list = $whatsit->getTrailer; >>
 
-Return the trailer for this $whatsit. See setBody.
-
-=item C<< $whatsit->beAbsorbed($intestine); >>
-
-Inserts itself into the DOM being constructed by the $intestine.
-The definition that created this $whatsit is a LaTeXML::Constructor,
-it has a constructor which is either a procedure (CODE ref) or a string.
-If a procedure, that procedure is called as
-   &$constructor($intestine,@$args,$props)
-Otherwise, the string is interpreted as a template representing the XML
-fragment to be created.  See L<LaTeXML::Definition>
+Return the trailer for this C<$whatsit>. See C<setBody>.
 
 =back
 

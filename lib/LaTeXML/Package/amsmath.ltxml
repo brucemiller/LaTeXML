@@ -18,24 +18,20 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
-use charnames ":full";
 
 #**********************************************************************
 
 DefMacro('\eqref{semiverb}', '(\@REF{#1}{\@VALUE{LABEL@#1}})');
 
-
-# Where's this defined ? (amsmath ??)
-DefConstructor('\iff',"<XMTok>iff</XMTok>");
-
 #**********************************************************************
 # Fractions
-DefConstructor('\dfrac{}{}',
-  "<XMApp><XMTok style='over' size='display'>/</XMTok><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
-DefConstructor('\tfrac{}{}',
-  "<XMApp><XMTok style='over' size='text'>/</XMTok><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
-DefConstructor('\ifrac{}{}',
-  "<XMApp><XMTok>/</XMTok><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+DefMath('\dfrac{}{}','/', style=>'display', name=>"/", operator_role=>'MULOP',
+	beforeDigest=>sub { $STOMACH->bgroup; $STOMACH->setMathStyle('text'); },
+	afterDigest =>sub { $STOMACH->egroup; });
+DefMath('\tfrac{}{}','/', style=>'text',    name=>"/", operator_role=>'MULOP',
+	beforeDigest=>sub { $STOMACH->bgroup; $STOMACH->setMathStyle('script'); },
+	afterDigest =>sub { $STOMACH->egroup; });
+DefMath('\ifrac{}{}','/', style=>'inline',  name=>"/", operator_role=>'MULOP');
 
 #**********************************************************************
 # Is \cfracstyle my own invention? (I know I've redefined \cfrac in DLMFmath)
@@ -46,8 +42,13 @@ DefConstructor('\cfracstyle{}',''); # "<XMHint name='cfracstyle'/>");
 
 #**********************************************************************
 # Integrals
-DefSymbol('\iint',"\N{DOUBLE INTEGRAL}",'DoubleIntegral');
-DefSymbol('\iiint',"\N{TRIPLE INTEGRAL}",'TripleIntegral');
+DefMath('\iint', "\x{222C}", name=>'DoubleIntegral', role=>'INTOP'); # DOUBLE INTEGRAL
+DefMath('\iiint',"\x{222D}", name=>'TripleIntegral', role=>'INTOP'); # TRIPLE INTEGRAL
+
+#**********************************************************************
+# Accents
+DefMath('\dddot{}', "\x{02D9}\x{02D9}\x{02D9}",         operator_role=>'OVERACCENT'); # DOT ABOVE
+DefMath('\ddddot{}',"\x{02D9}\x{02D9}\x{02D9}\x{02d9}", operator_role=>'OVERACCENT'); # DOT ABOVE
 
 #**********************************************************************
 # This is intended to be a modifier for \sum or \prod
@@ -55,54 +56,55 @@ DefSymbol('\iiint',"\N{TRIPLE INTEGRAL}",'TripleIntegral');
 # Thus, our representation is: sideset(presub,presup,postsub,postsup,object)
 # Note, also, that this is quite ugly, but since it is a rather peculiar special case.... ?
 DefConstructor('\sideset{}{}{}', sub {
-  my($intestine,$pre,$post,$ob)=@_;
+  my($whatsit,$pre,$post,$ob)=@_;
   my @scripts = (undef,undef,undef,undef);
 
-  my $node=$intestine->openElement('XMApp');
+  my $node=$INTESTINE->openElement('XMApp');
   my $phase=0;
   foreach my $group ($pre,$post){
-    $intestine->absorb($group);
+    $INTESTINE->absorb($group);
     foreach my $p ($node->childNodes){
-      my $type = $p->getAttribute('name')||'';
-      if   ($type eq 'PostSubscript'  ){ $scripts[$phase+0] = $p->firstChild; }
-      elsif($type eq 'PostSuperscript'){ $scripts[$phase+1] = $p->firstChild; }
+      my $role = $p->getAttribute('role')||'';
+      if   ($role eq 'POSTSUBSCRIPT'  ){ $scripts[$phase+0] = $p->firstChild; }
+      elsif($role eq 'POSTSUPERSCRIPT'){ $scripts[$phase+1] = $p->firstChild; }
       else { warn("Non sub/superscript in \\sideset: $p"); }
       $node->removeChild($p); }
     $phase +=2;  }
 
   # And finally build it.
-  $intestine->insertElement('XMTok',undef,name=>'sideset');
+  $INTESTINE->insertElement('XMTok',undef,name=>'sideset');
   foreach my $script (@scripts){
     if($script){
-      $intestine->getNode->insert($script); }
+      $node->insert($script); }
     else {
-      $intestine->insertElement('XMTok',undef,name=>'Empty'); }}
-  $intestine->insertElement('XMArg',$ob);
-  $intestine->closeElement('XMApp');
+      $INTESTINE->insertElement('XMTok',undef,name=>'Empty'); }}
+  $INTESTINE->insertElement('XMArg',$ob);
+  $INTESTINE->closeElement('XMApp');
 });
 
 #**********************************************************************
 DefEnvironment('{cases}',
-	       sub { matharray($_[0],'',$_[1], 'Cases','Case','Cell');},
+	       sub { matharray('',$_[1], 'Cases','Case','Cell');},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 
 DefEnvironment('{matrix}',
-	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       sub { matharray('',$_[1], 'Matrix','Row','Cell');},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
+
 DefEnvironment('{pmatrix}',
-	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'(',close=>')');},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 DefEnvironment('{bmatrix}',
-	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'[',close=>']');},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 DefEnvironment('{Bmatrix}',
-	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'{',close=>'}');},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 DefEnvironment('{vmatrix}',
-	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>'|',close=>'|');},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 DefEnvironment('{Vmatrix}',
-	       sub { matharray($_[0],'',$_[1], 'Matrix','Row','Cell');},
+	       sub { matharray('',$_[1], 'Matrix','Row','Cell',open=>"\x{2225}",close=>"\x{2225}");},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 
 
@@ -113,9 +115,11 @@ DefEnvironment('{gather}',
 	       "<XMApp><XMTok name='gather'/>#body</XMApp>");
 
 DefConstructor('\boldsymbol{}', '#1',
-	       beforeDigest=>sub { $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(forcebold=>1); },
-	       afterDigest =>sub { $_[0]->egroup; });
+	       beforeDigest=>sub { requireMath; $STOMACH->bgroup; $STOMACH->setFont(forcebold=>1); },
+	       afterDigest =>sub { $STOMACH->egroup; });
 
+# Actually in amsfonts (but obsolete??)
+DefMacro('\bold{}','\mathbf{#1}');
 #**********************************************************************
 1;
 

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
-<?latexml class='article'?>
+<?latexml class="article"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article + MathML" "http://dlmf.nist.gov/LaTeXML/LaTeXML-MathML.dtd">
 <document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:m="http://www.w3.org/1998/Math/MathML">
   <section>
-    <p>Inline math <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok POS="ADDOP">+</XMTok><XMTok font="italic" POS="ID">a</XMTok><XMTok font="italic" POS="ID">b</XMTok></XMApp></XMath><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></math></Math>.
+    <p>Inline math <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok role="ADDOP">+</XMTok><XMTok font="italic" role="ID">a</XMTok><XMTok font="italic" role="ID">b</XMTok></XMApp></XMath><math xmlns="http://www.w3.org/1998/Math/MathML" display="inline"><mrow><mi>a</mi><mo>+</mo><mi>b</mi></mrow></math></Math>.
 </p>
     <equation>
       <Math mode="display" tex="a+b+123" text="a + b + 123">
         <XMath>
           <XMApp>
-            <XMTok POS="ADDOP">+</XMTok>
-            <XMTok font="italic" POS="ID">a</XMTok>
-            <XMTok font="italic" POS="ID">b</XMTok>
-            <XMTok name="123" POS="NUMBER">123</XMTok>
+            <XMTok role="ADDOP">+</XMTok>
+            <XMTok font="italic" role="ID">a</XMTok>
+            <XMTok font="italic" role="ID">b</XMTok>
+            <XMTok name="123" role="NUMBER">123</XMTok>
           </XMApp>
         </XMath>
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -30,12 +30,12 @@
       <Math mode="display" tex="a+b+f(123)" text="a + b + f@(123)">
         <XMath>
           <XMApp>
-            <XMTok POS="ADDOP">+</XMTok>
-            <XMTok font="italic" POS="ID">a</XMTok>
-            <XMTok font="italic" POS="ID">b</XMTok>
+            <XMTok role="ADDOP">+</XMTok>
+            <XMTok font="italic" role="ID">a</XMTok>
+            <XMTok font="italic" role="ID">b</XMTok>
             <XMApp>
-              <XMTok font="italic" POS="FUNCTION" close=")" open="(">f</XMTok>
-              <XMTok name="123" POS="NUMBER">123</XMTok>
+              <XMTok font="italic" role="FUNCTION" argclose=")" argopen="(">f</XMTok>
+              <XMTok name="123" role="NUMBER">123</XMTok>
             </XMApp>
           </XMApp>
         </XMath>
@@ -59,20 +59,20 @@
       </Math>
     </equation>
     <equation>
-      <Math mode="display" tex="f_{D}f(a+b)" text=" (f _ D) @(f@(a + b))">
+      <Math mode="display" tex="f_{D}f(a+b)" text="(f _ D)@(f@(a + b))">
         <XMath>
           <XMApp>
             <XMApp>
-              <XMTok POS="SUBSCRIPT" name="Subscript"/>
-              <XMTok font="italic" POS="BIGOP">f</XMTok>
-              <XMTok font="italic" POS="ID">D</XMTok>
+              <XMTok name="Subscript" role="SUBSCRIPT"/>
+              <XMTok font="italic" role="DIFFOP">f</XMTok>
+              <XMTok font="italic" role="ID">D</XMTok>
             </XMApp>
             <XMApp>
-              <XMTok font="italic" POS="FUNCTION" close=")" open="(">f</XMTok>
+              <XMTok font="italic" role="FUNCTION" argclose=")" argopen="(">f</XMTok>
               <XMApp>
-                <XMTok POS="ADDOP">+</XMTok>
-                <XMTok font="italic" POS="ID">a</XMTok>
-                <XMTok font="italic" POS="ID">b</XMTok>
+                <XMTok role="ADDOP">+</XMTok>
+                <XMTok font="italic" role="ID">a</XMTok>
+                <XMTok font="italic" role="ID">b</XMTok>
               </XMApp>
             </XMApp>
           </XMApp>
@@ -80,23 +80,19 @@
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
           <mrow>
             <msub>
-              <mo mathvariant="italic">f</mo>
+              <mi>f</mi>
               <mi>D</mi>
             </msub>
             <mo>⁡</mo>
             <mrow>
+              <mi>f</mi>
+              <mo>⁡</mo>
               <mrow>
-                <mi>f</mi>
-                <mo>⁡</mo>
-                <mrow>
-                  <mo>(</mo>
-                  <mrow>
-                    <mi>a</mi>
-                    <mo>+</mo>
-                    <mi>b</mi>
-                  </mrow>
-                  <mo>)</mo>
-                </mrow>
+                <mo>(</mo>
+                <mi>a</mi>
+                <mo>+</mo>
+                <mi>b</mi>
+                <mo>)</mo>
               </mrow>
             </mrow>
           </mrow>
@@ -104,22 +100,19 @@
       </Math>
     </equation>
     <equation>
-      <Math mode="display" tex="f_{1}(a+b)" text="f _ 1 *  (a + b) ">
+      <Math mode="display" tex="f_{1}(a+b)" text="f _ 1 * (a + b)">
         <XMath>
           <XMApp>
-            <XMTok POS="MULOP" name="InvisibleTimes"/>
+            <XMTok role="MULOP">⁢</XMTok>
             <XMApp>
-              <XMTok POS="SUBSCRIPT" name="Subscript"/>
-              <XMTok font="italic" POS="ID">f</XMTok>
-              <XMTok POS="NUMBER">1</XMTok>
+              <XMTok name="Subscript" role="SUBSCRIPT"/>
+              <XMTok font="italic" role="ID">f</XMTok>
+              <XMTok role="NUMBER">1</XMTok>
             </XMApp>
-            <XMApp>
-              <XMTok POS="FENCED" close=")" name="Fenced" open="("/>
-              <XMApp>
-                <XMTok POS="ADDOP">+</XMTok>
-                <XMTok font="italic" POS="ID">a</XMTok>
-                <XMTok font="italic" POS="ID">b</XMTok>
-              </XMApp>
+            <XMApp open="(" close=")">
+              <XMTok role="ADDOP">+</XMTok>
+              <XMTok font="italic" role="ID">a</XMTok>
+              <XMTok font="italic" role="ID">b</XMTok>
             </XMApp>
           </XMApp>
         </XMath>
@@ -132,11 +125,9 @@
             <mo>⁢</mo>
             <mrow>
               <mo>(</mo>
-              <mrow>
-                <mi>a</mi>
-                <mo>+</mo>
-                <mi>b</mi>
-              </mrow>
+              <mi>a</mi>
+              <mo>+</mo>
+              <mi>b</mi>
               <mo>)</mo>
             </mrow>
           </mrow>
@@ -144,15 +135,15 @@
       </Math>
     </equation>
     <equation>
-      <Math mode="display" tex="\hat{f}a" text="OverHat@(f) * a">
+      <Math mode="display" tex="\hat{f}a" text="hat@(f) * a">
         <XMath>
           <XMApp>
-            <XMTok POS="MULOP" name="InvisibleTimes"/>
-            <XMApp POS="ID">
-              <XMTok POS="OVERACCENT" name="OverHat">^</XMTok>
-              <XMTok font="italic" POS="FUNCTION">f</XMTok>
+            <XMTok role="MULOP">⁢</XMTok>
+            <XMApp>
+              <XMTok name="hat" role="OVERACCENT">^</XMTok>
+              <XMTok font="italic" role="FUNCTION">f</XMTok>
             </XMApp>
-            <XMTok font="italic" POS="ID">a</XMTok>
+            <XMTok font="italic" role="ID">a</XMTok>
           </XMApp>
         </XMath>
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
@@ -174,16 +165,16 @@
       <Math mode="display" tex="a(x)+b(x)+123" text="a@(x) + b@(x) + 123">
         <XMath>
           <XMApp>
-            <XMTok POS="ADDOP">+</XMTok>
+            <XMTok role="ADDOP">+</XMTok>
             <XMApp>
-              <XMTok font="italic" POS="FUNCTION" close=")" open="(">a</XMTok>
-              <XMTok font="italic" POS="ID">x</XMTok>
+              <XMTok font="italic" role="FUNCTION" argclose=")" argopen="(">a</XMTok>
+              <XMTok font="italic" role="ID">x</XMTok>
             </XMApp>
             <XMApp>
-              <XMTok font="italic" POS="FUNCTION" close=")" open="(">b</XMTok>
-              <XMTok font="italic" POS="ID">x</XMTok>
+              <XMTok font="italic" role="FUNCTION" argclose=")" argopen="(">b</XMTok>
+              <XMTok font="italic" role="ID">x</XMTok>
             </XMApp>
-            <XMTok name="123" POS="NUMBER">123</XMTok>
+            <XMTok name="123" role="NUMBER">123</XMTok>
           </XMApp>
         </XMath>
         <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">

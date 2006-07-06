@@ -15,47 +15,54 @@
 # that other modules and package implementations are likely to need.
 # This should be used in a context where presumably all the required
 # LaTeXML modules that implement the various classes have already been loaded.
+#
+# Yes, a lot of stuff is exported, polluting your namespace.
+# Thus, you use this module only if you _need_ the functionality!
 #======================================================================
 package LaTeXML::Global;
 use strict;
 use Exporter;
-use LaTeXML::Error;
 
 our @ISA = qw(Exporter);
 our @EXPORT = ( 
 	       # Global State accessors
-	       qw(&STOMACH &INTESTINE &DEFINITION &MODEL),
-
+	       qw( *GULLET *STOMACH *INTESTINE *MODEL),
 	       # Catcode constants
-	       qw(CC_ESCAPE  CC_BEGIN  CC_END     CC_MATH
-		  CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
-		  CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
-		  CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
-		  CC_CS      CC_NOTEXPANDED),
-	       qw(&getStandardCattable &getInternalCattable),
+	       qw( CC_ESCAPE  CC_BEGIN  CC_END     CC_MATH
+		   CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
+		   CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
+		   CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
+		   CC_CS      CC_NOTEXPANDED ),
+	       qw( &getStandardCattable &getInternalCattable ),
 	       # Token constructors
-	       qw(&T_BEGIN &T_END &T_MATH &T_ALIGN &T_PARAM &T_SUB &T_SUPER &T_SPACE 
-		  &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
-		  &CheckTokens
-		  &Token &Tokens
-		  &Tokenize &TokenizeInternal &Explode),
-	       qw(&roman &Roman),
+	       qw( &T_BEGIN &T_END &T_MATH &T_ALIGN &T_PARAM &T_SUB &T_SUPER &T_SPACE 
+		   &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
+		   &CheckTokens
+		   &Token &Tokens
+		   &Tokenize &TokenizeInternal &Explode ),
+	       qw( &roman &Roman ),
 	       # Number & Dimension constructors
-	       qw(&Number &Dimension &MuDimension &Glue &MuGlue),
+	       qw( &Number &Dimension &MuDimension &Glue &MuGlue),
 	       # Font constructors
-	       qw(&Font &MathFont),
+	       qw( &Font &MathFont ),
 	       # Digested thing constructors
-	       qw(&Box &List &MathBox &MathList &Whatsit
-		  &CheckBoxes),
-	       # And export whatever LaTeXML::Error exports
-	       @LaTeXML::Error::EXPORT);
+	       qw( &Box &List &MathBox &MathList &Whatsit &CheckBoxes ),
+	       # Other generally useful operations
+	       qw( &requireMath &forbidMath ),
+	       # Error & Progress reporting
+	       qw( &NoteProgress &Fatal &Error &Warn ),
+	       # And some generics
+	       qw(&Stringify &ToString  &Equals)
+);
 
 #======================================================================
-# NOTE: These globals must be bound (local) in Stomach, or wherever...
-sub STOMACH()   { $LaTeXML::STOMACH; }
-sub INTESTINE() { $LaTeXML::INTESTINE; }
-sub MODEL()     { $LaTeXML::MODEL; }
-sub DEFINITION(){ $LaTeXML::DEFINITION; }
+# NOTE: These globals must be bound (local) by LaTeXML
+
+# These should just be deprecated, since I'm exporting the symbols now.
+sub GULLET()    { $LaTeXML::Global::GULLET; }
+sub STOMACH()   { $LaTeXML::Global::STOMACH; }
+sub INTESTINE() { $LaTeXML::Global::INTESTINE; }
+sub MODEL()     { $LaTeXML::Global::MODEL; }
 
 #======================================================================
 # Catcodes & Standard Token constructors.
@@ -125,23 +132,22 @@ sub getInternalCattable    { $STY_CATTABLE; }
 # tokenize($string); Tokenizes the string using the standard cattable, returning a LaTeXML::Tokens
 sub Tokenize {
   my($string)=@_;
-  LaTeXML::Mouth->new('',$string,cattable=>getStandardCattable)->readTokens; }
+  LaTeXML::Mouth->new($string,cattable=>getStandardCattable)->readTokens; }
 
 # tokenize($string); Tokenizes the string using the internal cattable, returning a LaTeXML::Tokens
 sub TokenizeInternal {
   my($string)=@_;
-  LaTeXML::Mouth->new('',$string,cattable=>getInternalCattable)->readTokens; }
+  LaTeXML::Mouth->new($string,cattable=>getInternalCattable)->readTokens; }
 
 #======================================================================
 # Token List constructors.
 
 sub CheckTokens {
-  map((ref $_ eq 'LaTeXML::Token')||TypeError($_,'Token'),@_); }
+  map( ((ref $_) && $_->isaToken)|| Fatal("Expected Token, got ".Stringify($_)), @_);
+  @_; }
 
 # Return a LaTeXML::Tokens made from the arguments (tokens)
-sub Tokens {
-  CheckTokens(@_);
-  LaTeXML::Tokens->new(@_); }
+sub Tokens { LaTeXML::Tokens->new(CheckTokens(@_)); }
 
 # Explode a string into a list of tokens w/catcode OTHER (except space).
 sub Explode {
@@ -188,17 +194,76 @@ sub MathFont { 'LaTeXML::MathFont'->new(@_); }
 #======================================================================
 # Constructors for Digested objects: Box, List, Whatsit.
 
-our %boxtypes=map(($_=>1), qw(LaTeXML::Box LaTeXML::MathBox LaTeXML::Comment LaTeXML::List 
-			      LaTeXML::MathList LaTeXML::Whatsit));
 sub CheckBoxes {
-  map( $boxtypes{ref $_} || TypeError($_,"Box|Comment|List|MathList|Whatsit"),@_); }
+  map( ((ref $_) && $_->isaBox)|| Fatal("Expected Box, got ".Stringify($_)), @_);
+  @_; }
 
 # Concise exported constructors for various Digested objects.
-sub Box     { LaTeXML::Box->new(@_); }
-sub List    { CheckBoxes(@_); LaTeXML::List->new(@_); }
-sub MathBox { LaTeXML::MathBox->new(@_); }
-sub MathList{ CheckBoxes(@_); LaTeXML::MathList->new(@_); }
-sub Whatsit { LaTeXML::Whatsit->new(@_); }
+sub Box     { 'LaTeXML::Box'->new(@_); }
+sub List    { 'LaTeXML::List'->new(CheckBoxes(@_)); }
+sub MathBox { 'LaTeXML::MathBox'->new(@_); }
+sub MathList{ 'LaTeXML::MathList'->new(CheckBoxes(@_)); }
+sub Whatsit { 'LaTeXML::Whatsit'->new(@_); }
+
+#**********************************************************************
+sub requireMath() {
+  Fatal("Current operation can only appear in math mode") unless $LaTeXML::Global::STOMACH->inMath;
+  return; }
+
+sub forbidMath() {
+  Fatal("Current operation can not appear in math mode") if $LaTeXML::Global::STOMACH->inMath;
+  return; }
+
+#**********************************************************************
+# Error & Progress reporting.
+
+$LaTeXML::Global::VERBOSITY = 0;
+
+sub NoteProgress { 
+  print STDERR @_ unless $LaTeXML::Global::VERBOSITY < 0; }
+
+sub Fatal { 
+  my($message)=@_;
+  if(!$LaTeXML::Error::InHandler && defined($^S)){
+    $message
+      = LaTeXML::Error::generateMessage("Fatal",$message,1,
+		       ($LaTeXML::Global::VERBOSITY > 0 ? ("Stack Trace:",LaTeXML::Error::stacktrace()):()));
+  }
+  local $LaTeXML::Error::InHandler=1;
+  die $message; }
+
+# Should be fatal if strict is set, else warn.
+sub Error {
+  my($msg)=@_;
+  if($LaTeXML::Global::STRICT){
+    Fatal($msg); }
+  else {
+    print STDERR LaTeXML::Error::generateMessage("Error",$msg,0,"Continuing... Expect trouble.\n")
+      unless $LaTeXML::Global::VERBOSITY < -1; }}
+
+sub Warn {
+  my($msg)=@_;
+  print STDERR LaTeXML::Error::generateMessage("Warning",$msg,0)
+    unless $LaTeXML::Global::VERBOSITY < 0; }
+
+#**********************************************************************
+# Generic functions
+our %NOBLESS= map(($_=>1), qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE));
+
+sub Stringify {
+  my($object)=@_;
+  (defined $object ? (((ref $object) && !$NOBLESS{ref $object}) ? $object->stringify : "$object")
+   : 'undef'); }
+
+sub ToString {
+  my($object)=@_;
+  ( (defined $object && (ref $object) && !$NOBLESS{ref $object}) ? $object->toString : "$object"); }
+
+sub Equals {
+  my($a,$b)=@_;
+  (defined $a) && (defined $b)
+    && ( ((ref $a) && (ref $b) && ((ref $a) eq (ref $b)) && !$NOBLESS{ref $a})
+	 ? $a->equals($b) : ($a eq $b)); }
 
 #**********************************************************************
 1;
@@ -218,7 +283,19 @@ use LaTeXML::Global;
 This module exports the various constants and constructors that are useful
 throughout LaTeXML, and in Package implementations.
 
-=head2 EXPORTS
+=head2 Global state
+
+=over 4
+
+=item C<< $GULLET, $STOMACH, $INTESTINE, $MODEL; >>
+
+These are bound to the currently active L<LaTeXML::Gullet>, L<LaTeXML::Stomach>,
+L<LaTeXML::Intestine> and L<LaTeXML::Model> by an instance of L<LaTeXML> during
+processing.
+
+=back 
+
+=head2 Token related exports
 
 =over 4
 
@@ -232,7 +309,7 @@ with catcodes 16 and 17, respectively].
 
 =item C<< $token = Token($string,$cc); >>
 
-Creates a LaTeXML::Token with the given content and catcode.  The following shorthand versions
+Creates a L<LaTeXML::Token> with the given content and catcode.  The following shorthand versions
 are also exported for convenience:
 C<T_BEGIN>, C<T_END>, C<T_MATH>, C<T_ALIGN>, C<T_PARAM>, C<T_SUB>, C<T_SUPER>, C<T_SPACE>, 
 C<T_LETTER($letter)>, C<T_OTHER($char)>, C<T_ACTIVE($char)>, C<T_COMMENT($comment)>, C<T_CS($cs)>
@@ -243,32 +320,32 @@ Creates a L<LaTeXML::Tokens> from a list of L<LaTeXML::Token>'s
 
 =item C<< $tokens = Tokenize($string); >>
 
-Tokenizes the $string according to the standard cattable, returning a L<LaTeXML::Tokens>.
+Tokenizes the C<$string> according to the standard cattable, returning a L<LaTeXML::Tokens>.
 
 =item C<< $tokens = TokenizeInternal($string); >>
 
-Tokenizes the $string according to the internal cattable (where @ is a letter), 
+Tokenizes the C<$string> according to the internal cattable (where @ is a letter),
 returning a L<LaTeXML::Tokens>.
 
 =item C<< @tokens = Explode($string); >>
 
-Returns a list of the tokens corresponding to the characters in $string.
+Returns a list of the tokens corresponding to the characters in C<$string>.
 
 =item C<< @tokens = roman($number); >>
 
-Formats the $number in (lowercase) roman numerals, returning a list of the tokens.
+Formats the C<$number> in (lowercase) roman numerals, returning a list of the tokens.
 
 =item C<< @tokens = Roman($number); >>
 
-Formats the $number in (uppercase) roman numerals, returning a list of the tokens.
+Formats the C<$number> in (uppercase) roman numerals, returning a list of the tokens.
 
 =item C<< $number = Number($num); >>
 
-Creates a Number object representing $num.
+Creates a Number object representing C<$num>.
 
 =item C<< $dimension = Dimension($dim); >>
 
-Creates a Dimension object.  $num can be a string with the number and units
+Creates a Dimension object.  C<$num> can be a string with the number and units
 (with any of the usual TeX recognized units), or just a number standing for
 scaled points (sp).
 
@@ -277,15 +354,17 @@ scaled points (sp).
 Creates a MuDimension object; similar to Dimension.
 
 =item C<< $glue = Glue($gluespec); >>
+
 =item C<< $glue = Glue($sp,$plus,$pfill,$minus,$mfill); >>
 
-Creates a Glue object.  $gluespec can be a string in the
+Creates a Glue object.  C<$gluespec> can be a string in the
 form that TeX recognizes (number units optional plus and minus parts).
 Alternatively, the dimension, plus and minus parts can be given separately:
-$pfill and $mfill are 0 (when the $plus or $minus part is in sp)
+C<$pfill> and C<$mfill> are 0 (when the C<$plus> or C<$minus> part is in sp)
 or 1,2,3 for fil, fill or filll.
 
 =item C<< $glue = MuGlue($gluespec); >>
+
 =item C<< $glue = MuGlue($sp,$plus,$pfill,$minus,$mfill); >>
 
 Creates a MuGlue object, similar to Glue.
@@ -301,7 +380,7 @@ This is the same as the standard cattable, but treats @ as a letter.
 
 =back
 
-=head2 Font related
+=head2 Font related exports
 
 =over 4
 
@@ -316,32 +395,109 @@ C<forcebold> for use when all symbols should be bold (such as with amsmath's \bo
 
 =back
 
-=head2 Constructors for Digested objects
+=head2 Box related exports
 
 =over 4
 
-=item C<< $box = Box($string,$font); >>
+=item C<< $box = Box($string,$font,$locator); >>
 
-Create a L<LaTeXML::Box> for the given $string, in the given $font.
+Create a L<LaTeXML::Box> for the given C<$string>, in the given C<$font>.
+C<$locator> is a string indicating where the C<$string> came from; if not supplied,
+the location will be determined from the C<$GULLET>.
 
-=item C<< $mathbox = MathBox($string,$font); >>
+=item C<< $mathbox = MathBox($string,$font,$locator); >>
 
 Create a  L<LaTeXML::MathBox> for the given $string, in the given $font.
+C<$locator> is a string indicating where the C<$string> came from; if not supplied,
+the location will be determined from the C<$GULLET>.
 
 =item C<< $list = List(@boxes); >>
 
-Create a L<LaTeXML::List> containing the given @boxes.
+Create a L<LaTeXML::List> containing the given C<@boxes>.
 
 =item C<< $mathlist = MathList(@mathboxes); >>
 
-Create a L<LaTeXML::MathList> containing the given @mathboxes.
+Create a L<LaTeXML::MathList> containing the given C<@mathboxes>.
 
-=item C<< $whatsit = Whatsit($defn,$stomach,$args,%data); >>
+=item C<< $whatsit = Whatsit($defn,$args,%properties); >>
 
-Create a L<LaTeXML::Whatsit> according to $defn, with the given $args (an 
-array reference containing the arguments) and any extra relevant %data.
+Create a L<LaTeXML::Whatsit> according to C<$defn> (a L<LaTeXML::Constructor>),
+with the given C<$args> (an array reference containing the arguments) 
+and any extra C<%properties>.
+Specially recognized properties are:
+
+   font   : the font object for any contained text.
+   isMath : whether it represents a math object.
+   locator: string indicating where in the source this was created
+
+If the properties are not supplied, then the data is obtained from 
+the current execution environment.
 
 =back
 
+=head2 Generally useful procedures
+
+=over 4
+
+=item C<< requireMath; >>
+
+Signals an error unless we are currently in math mode.
+
+=item C<< forbidMath; >>
+
+Signals an error if we are currently in math mode.
+
+=back
+
+=head2 Error and Progress reporting procedures
+
+=over 4
+
+=item C<< Fatal($message); >>
+
+Signals an fatal error, printing C<$message> along with some context.
+In verbose mode a stack trace is printed.
+
+=item C<< Error($message); >>
+
+Signals an error, printing C<$message> along with some context.
+If in strict mode, this is the same as Fatal().
+Otherwise, it attempts to continue processing..
+
+=item C<< Warn($message); >>
+
+Prints a warning message along with a short indicator of
+the input context, unless verbosity is quiet.
+
+=item C<< NoteProgress($message); >>
+
+Prints C<$message> unless the verbosity level below 0.
+
+=back
+
+=head2 Generic functions
+
+=over 4
+
+=item C<< Stringify($object); >>
+
+Returns a short string identifying C<$object>, for debugging purposes.
+Works on any values and objects, but invokes the stringify method on 
+blessed objects.
+More informative than the default perl conversion to a string.
+
+=item C<< ToString($object); >>
+
+Converts C<$object> to string; most useful for Tokens or Boxes where the
+string content is desired.  Works on any values and objects, but invokes 
+the toString method on blessed objects.
+
+=item C<< Equals($a,$b); >>
+
+Compares the two objects for equality.  Works on any values and objects, 
+but invokes the equals method on blessed objects, which does a
+deep comparison of the two objects.
+
+=back
 =cut
 

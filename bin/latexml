@@ -1,34 +1,44 @@
 #!/usr/bin/perl -w
 use strict;
-use Getopt::Long;
+use FindBin;
+use lib "$FindBin::RealBin/../lib";
+use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use LaTeXML;
 use LaTeXML::Util::Pathname;
-#BEGIN { $SIG{__DIE__} = \&LaTeXML::Error::Error; }
 
 #**********************************************************************
 # Parse command line
 
-my ($format,$output,$help)=('xml','');
-my (@paths,@preload);
+my $identity = "latexml (LaTeXML version $LaTeXML::VERSION)";
+my($verbosity,$strict,$comments)=(0,0,1);
+my ($format,$output,$help,$showversion)=('xml','');
+my (@paths,@preload,@debugs);
 GetOptions("output=s"  => \$output,
 	   "preload=s" => \@preload,
 	   "path=s"    => \@paths,
-	   "quiet"     => sub { LaTeXML::Error::SetDebugging('quiet'); },
-	   "debug:s"   => sub { LaTeXML::Error::SetDebugging($_[1] || 'min'); },
+	   "quiet"     => sub { $verbosity--; },
+	   "verbose"   => sub { $verbosity++; },
+	   "strict"    => \$strict,
 	   "xml"       => sub { $format = 'xml'; },
 	   "tex"       => sub { $format = 'tex'; },
 	   "box"       => sub { $format = 'box'; },
+	   "comments!" => \$comments,
+	   "VERSION"   => \$showversion,
 	   "help"      => \$help,
-	  ) or pod2usage(2);
-pod2usage(1) if $help;
-pod2usage("Missing input TeX file") unless @ARGV;
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+if($showversion){ print STDERR "$identity\n"; exit(1); }
+pod2usage(-message=>"$identity\nMissing input TeX file", 
+	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
 my $source = $ARGV[0];
 
 #**********************************************************************
 # Do the processing.
+print STDERR "$identity\n" unless $verbosity < 0;
 
-my $latexml= LaTeXML->new(preload=>[@preload], searchpath=>[@paths]);
+my $latexml= LaTeXML->new(preload=>[@preload], searchpath=>[@paths],
+			 verbosity=>$verbosity, strict=>$strict,includeComments=>$comments);
 
 if($output){
   my($dir,$name,$type)=pathname_split($output);
@@ -48,7 +58,8 @@ elsif($format eq 'box'){
   print OUT $digested; }
 else {
   my $dom = $latexml->convertFile($source); 
-  $dom->serialize(\*OUT); }
+  print OUT $dom->toString(1);
+}
 
 if($output){ close(OUT); }
 
@@ -66,12 +77,15 @@ latexml [options] texfile
   Options:
    --output=outputfile        specifies output file; default prints to stdout.
    --preload=module           requests loading of an optional module; can be repeated
-   --path=dir                 adds dir to the paths searched for files, modules, etc; can be repeated.
-   --quiet                    suppress all messages except error messages.
-   --debug=feature            requests debugging output relevant to feature; can be repeated
+   --path=dir                 adds dir to the paths searched for files, modules, etc; 
+   --quiet                    suppress messages (can repeat)
+   --verbose                  more informative output (can repeat)
+   --strict                   makes latexml less forgiving of errors
    --xml                      requests xml output (default).
    --tex                      requests TeX output after expansion.
    --box                      requests box output after expansion and digestion.
+   --nocomments               omit comments from the output
+   --VERSION                  show version number.
    --help                     shows help message.
 
 =head1 OPTIONS AND ARGUMENTS
@@ -86,23 +100,28 @@ Specifies the output file; by default the XML is written to stdout.
 
 =item B<--preload=module>
 
-Requests the loading of an optional module or package.  This may if the TeX code
-doesn't itself require the loading of the module.
+Requests the loading of an optional module or package.  This may be useful if the TeX code
+does not specificly require the module (eg. through input or usepackage).
 
-=item B<-path>=I<dir>
+=item B<--path>=I<dir>
 
 Add I<dir> to the search paths used when searching for files, modules, style files, etc;
-somewhat like TEXINPUTS.
+somewhat like TEXINPUTS.  This option can be repeated.
 
 =item B<--quiet>
 
-Suppresses all messages except fatal error messages.
+Reduces the verbosity of output during processing, used twice is pretty silent.
 
-=item B<--debug>=I<feature>
+=item B<--verbose>
 
-Requests debugging messages relevant to I<feature>.
-Currently known I<feature>s are macros, DOM, DOCTYPE, mode, catcodes.
-This option can be repeated to add more features.
+Increases the verbosity of output during processing, used twice is pretty chatty.
+Can be useful for getting more details when errors occur.
+
+=item B<--strict>
+
+Specifies a strict processing mode. By default, undefined control sequences and
+invalid document constructs (that violate the DTD) give warning messages, but attempt
+to continue processing.  Using --strict makes them generate fatal errors.
 
 =item B<--xml>
 
@@ -110,20 +129,32 @@ Requests XML output; this is the default.
 
 =item B<--tex>
 
-Requests TeX output;  processing is only carried out through expansion and digestion.
-This may not be quite valid TeX, since Unicode may be introduced; it is more for
-debugging purposes.
+Requests TeX output for debugging purposes;  processing is only carried out through expansion and digestion.
+This may not be quite valid TeX, since Unicode may be introduced.
 
 =item B<--box>
 
-Requests Box output;  processing is carried out through expansion and digestions,
-and the result is printed; this is primarily for debugging purposes.
+Requests Box output for debugging purposes;  processing is carried out through expansion and digestions,
+and the result is printed.
+
+=item B<--nocomments>
+
+Normally latexml preserves comments from the source file, and adds a comment every 25 lines as
+an aid in tracking the source.  The option --nocomments discards such comments.
+
+=item B<--VERSION>
+
+Shows the version number of the LaTeXML package..
 
 =item B<--help>
 
 Shows this help message.
 
 =back
+
+=head1 SEE ALSO
+
+L<latexmlpost>, L<LaTeXML>
 
 =cut
 #**********************************************************************

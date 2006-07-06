@@ -42,11 +42,17 @@ my @standardchar=("\\",'{','}','$',
 our @CC_NAME=qw(Escape Begin End Math Align EOL Parameter Superscript Subscript
 		Ignore Space Letter Other Active Comment Invalid
 		ControlSequence NotExpanded);
-our @CC_SHORT_NAME=qw(Esc Beg End Math Align EOL Param Sup Sub
-		      Ignore Space Letter Other Active Comment Invalid
-		      CS NotExp);
+our @CC_SHORT_NAME = qw(T_ESCAPE T_BEGIN T_END T_MATH
+			T_ALIGN T_EOL T_PARAM T_SUPER
+			T_SUB T_IGNORE T_SPACE T_LETTER
+			T_OTHER T_ACTIVE T_COMMENT T_INVALID
+			T_CS T_NOTEXPANDED
+		       );
+
 #======================================================================
 # Accessors.
+
+sub isaToken { 1; }
 
 # Get the CS Name of the token. This is the name that definitions will be
 # stored under; It's the same for various `different' BEGIN tokens, eg.
@@ -62,8 +68,11 @@ sub getCharcode{ ($_[0]->[1] == CC_CS ? 256 : ord($_[0]->[0])); }
 # Return the catcode of the token.
 sub getCatcode { $_[0]->[1]; }
 
+sub getDefinition { $STOMACH->lookupDefinition($_[0]); }
+
 # Defined so a Token or Tokens can be used interchangeably.
 sub unlist { ($_[0]); }
+sub getLocator { ''; }
 
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.
@@ -74,6 +83,13 @@ sub untex {
   ($standardchar[$$self[1]] || $$self[0]); }
 
 sub toString { $_[0]->[0]; }
+
+# Convenience, for a CS token.
+# Return the expansion (Tokens) that would invoke it with the given args.
+sub invocation {
+  my($self,@args)=@_;
+  $self->getDefinition->invocation(@args); }
+
 #======================================================================
 # Methods for overloaded ops.
 
@@ -82,14 +98,15 @@ sub toString { $_[0]->[0]; }
 # are equal.
 sub equals {
   my($a,$b)=@_;
-  ((ref $a) eq (ref $b)) 
+  (defined $b
+   && (ref $a) eq (ref $b)) 
     && ($$a[1] eq $$b[1])
       && ($primitive_catcode[$$a[1]] || ($$a[0] eq $$b[0])); }
 
 # Primarily for error reporting.
 sub stringify {
   my($self)=@_;
-  "Token[".$$self[0].','.$CC_SHORT_NAME[$$self[1]]."]"; }
+  $CC_SHORT_NAME[$$self[1]].'['.$$self[0].']'; }
 
 #**********************************************************************
 # LaTeXML::Tokens
@@ -132,16 +149,16 @@ sub untex {
 # Methods for overloaded ops.
 sub equals {
   my($a,$b)=@_;
-  return 0 unless (ref $a) eq (ref $b);
+  return 0 unless defined $b && (ref $a) eq (ref $b);
   my @a = @$a;
   my @b = @$b;
-  while(@a && @b && ($a[0] eq $b[0])){
+  while(@a && @b && ($a[0]->equals($b[0]))){
     shift(@a); shift(@b); }
   return !(@a || @b); }
 
 sub stringify {
   my($self)=@_;
-  "Tokens[".join('',map($_->getString,@$self))."]"; }
+  "Tokens[".join(',',map($_->toString,@$self))."]"; }
 
 #======================================================================
 # The following implements the Mouth API, so that a Token list can
@@ -156,15 +173,8 @@ sub readToken {
   return unless @$self;
   shift(@$self); }
 
-sub getContext { 
-  my($self)=@_;
-  my $msg=$self;
-  if(@$msg > 100){
-    $msg = bless [@$self[0..100]], ref $self; }
-  "  pending tokens: ". $msg->untex."\n"; }
+sub getLocator { ''; }
 
-sub getPathname { undef; }
-sub getLinenumber { 0; }
 #**********************************************************************
 package LaTeXML::Number;
 use LaTeXML::Global;
@@ -198,7 +208,7 @@ sub new {
   my($class,$sp)=@_;
   $sp = "0" unless $sp;
   if($sp =~ /^(\d*\.?\d*)([a-zA-Z][a-zA-Z])$/){ # Dimensions given.
-    $sp = $1 * STOMACH->convertUnit($2); }
+    $sp = $1 * $STOMACH->convertUnit($2); }
   bless [$sp||"0"],$class; }
 
 sub toString    { ($_[0]->[0]/65536).'pt'; }
@@ -224,13 +234,13 @@ sub new {
     if($sp =~ /^(\d*\.?\d*)$/){}
     elsif($sp =~ /^(\d*\.?\d*)(\w\w)(\s+plus(\d*\.?\d*)(fil|fill|filll|[a-zA-Z][a-zA-Z))(\s+minus(\d*\.?\d*)(fil|fill|filll|[a-zA-Z][a-zA-Z]))?$/){
       my($f,$u,$p,$pu,$m,$mu)=($1,$2,$4,$5,$7,$8);
-      $sp = $f * STOMACH->convertUnit($u);
+      $sp = $f * $STOMACH->convertUnit($u);
       if(!$pu){}
       elsif($fillcode{$pu}){ $plus=$p; $pfill=$pu; }
-      else { $plus = $p * STOMACH->convertUnit($pu); $pfill=0; }
+      else { $plus = $p * $STOMACH->convertUnit($pu); $pfill=0; }
       if(!$mu){}
       elsif($fillcode{$mu}){ $minus=$m; $mfill=$mu; }
-      else { $minus = $m * STOMACH->convertUnit($mu); $mfill=0; }
+      else { $minus = $m * $STOMACH->convertUnit($mu); $mfill=0; }
     }}
   bless [$sp||"0",$plus||"0",$pfill||0,$minus||"0",$mfill||0],$class; }
 
@@ -282,20 +292,16 @@ __END__
 
 =pod 
 
-=head1 LaTeXML::Token and LaTeXML::Tokens
-
-=head2 SYNOPSIS
-
-use LaTeXML::Token;
+=head1 LaTeXML::Token, LaTeXML::Tokens, LaTeXML::Number, LaTeXML::Dimension, etc.
 
 =head2 DESCRIPTION
 
- This module defines Tokens (LaTeXML::Token, LaTeXML::Tokens)
-  and other things (LaTeXML::Number, LaTeXML::Dimension, LaTeXML::MuDimension, 
-LaTeXML::Glue and  LaTeXML::MuGlue)  that get created during tokenization and
- expansion. 
- LaTeXML::Token represents a TeX token. LaTeXML::Tokens represents a sequence of tokens.
- Both packages extend LaTeXML::Object and implement the methods for the overloaded operators.
+This module defines Tokens (C<LaTeXML::Token>, C<LaTeXML::Tokens>)
+and other things (C<LaTeXML::Number>, C<LaTeXML::Dimension>, C<LaTeXML::MuDimension>,
+C<LaTeXML::Glue> and  C<LaTeXML::MuGlue>)  that get created during tokenization 
+and  expansion.
+C<LaTeXML::Token> represents a TeX token. C<LaTeXML::Tokens> represents a sequence of tokens.
+Both packages extend L<LaTeXML::Object> and implement the methods for the overloaded operators.
 
 =head2 Methods common to all Token level objects.
 
@@ -303,15 +309,15 @@ LaTeXML::Glue and  LaTeXML::MuGlue)  that get created during tokenization and
 
 =item C<< @tokens = $object->unlist; >>
 
-Return a list of the tokens making up this $object.
+Return a list of the tokens making up this C<$object>.
 
 =item C<< $string = $object->toString; >>
 
-Return a string representing $object.
+Return a string representing C<$object>.
 
 =item C<< $string = $object->untex; >>
 
-Return the TeX form of $object, suitable (hopefully) for processing by TeX.
+Return the TeX form of C<$object>, suitable (hopefully) for processing by TeX.
 
 =back
 
@@ -319,17 +325,32 @@ Return the TeX form of $object, suitable (hopefully) for processing by TeX.
 
 =over 4
 
+=item C<< $string = $token->getCSName; >>
+
+Return the string or character part of the C<$token>; for the special category
+codes, returns the standard string (eg. C<T_BEGIN->getCSName> returns "{").
+
 =item C<< $string = $token->getString; >>
 
-Return the string or character part of the $token.
+Return the string or character part of the C<$token>.
 
 =item C<< $code = $token->getCharcode; >>
 
-Return the character code of the character part of the $token, or 256 if it is a control sequence.
+Return the character code of the character part of the C<$token>, or 256 if it is a control sequence.
 
 =item C<< $code = $token->getCatcode; >>
 
-Return the catcode of the $token.
+Return the catcode of the C<$token>.
+
+=item C<< $defn = $token->getDefinition; >>
+
+Return the current definition associated with C<$token> in C<$STOMACH>, or
+undef if none.
+
+=item C<< $tokens = $token->invocation(@args); >>
+
+Return the L<LaTeXML::Tokens> representing the invocation of C<$token> acting
+on the arguments in C<@args>.  C<$token> must have a associated definition.
 
 =back
 
@@ -339,17 +360,12 @@ Return the catcode of the $token.
 
 =item C<< $tokenscopy = $tokens->clone; >>
 
-Return a shallow copy of the $tokens.  This is useful before reading from a LaTeXML::Tokens.
+Return a shallow copy of the $tokens.  This is useful before reading from a C<LaTeXML::Tokens>.
 
 =item C<< $token = $tokens->readToken; >>
 
 Returns (and remove) the next token from $tokens.  This is part of the public API of L<LaTeXML::Mouth>
-so that a $tokens can serve as a Mouth.
-
-=item C<< $string = $tokens->getContext; >>
-
-Return a description of $tokens.   This is part of the public API of L<LaTeXML::Mouth>
-so that a $tokens can serve as a Mouth.
+so that a C<LaTeXML::Tokens> can serve as a L<LaTeXML::Mouth>.
 
 =back
 
@@ -361,18 +377,17 @@ so that a $tokens can serve as a Mouth.
 
 Return the value in scaled points (ignoring shrink and stretch, if any).
 
-
 =item C<< $n = $object->negate; >>
 
-Return an object representing the negative of the object.
+Return an object representing the negative of the C<$object>.
 
-=item C<< $n = $object->negate($other); >>
+=item C<< $n = $object->add($other); >>
 
-Return an object representing the sum of this object and $other
+Return an object representing the sum of C<$object> and C<$other>
 
 =item C<< $n = $object->multiply($n); >>
 
-Return an object representing the product of this object and $n (a regular number).
+Return an object representing the product of C<$object> and C<$n> (a regular number).
 
 =cut
 

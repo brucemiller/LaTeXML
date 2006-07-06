@@ -24,16 +24,21 @@ sub process {
   my($self,$doc,%options)=@_;
   # Read in the XML, unless it already is a Doc.
   if(! ref $doc){
-    # First, load the LaTeXML catalog in case it's needed...
-    foreach my $dir (@INC){	# Load catalog (all, 1st only ???)
-      next unless -f "$dir/LaTeXML/dtd/catalog";
-#      NoteProgress("\n(Loading XML Catalog $dir/LaTeXML/dtd/catalog)");
-      XML::LibXML->load_catalog("$dir/LaTeXML/dtd/catalog"); 
-      last; }
+    my $XMLParser = XML::LibXML->new();
+    if($options{validate}){ # First, load the LaTeXML catalog in case it's needed...
+      foreach my $dir (@INC){	# Load catalog (all, 1st only ???)
+	next unless -f "$dir/LaTeXML/dtd/catalog";
+	#      NoteProgress("\n(Loading XML Catalog $dir/LaTeXML/dtd/catalog)");
+	XML::LibXML->load_catalog("$dir/LaTeXML/dtd/catalog"); 
+	last; }
+      $XMLParser->load_ext_dtd(1);  # DO load dtd.
+      $XMLParser->validation(1); }
+    else {
+      $XMLParser->load_ext_dtd(0); 
+      $XMLParser->validation(0); }
     # Now, read the file.
     $doc .= ".xml" unless $doc=~/\.xml$/;
     $options{source} = $doc unless $options{source};
-    my $XMLParser = XML::LibXML->new();
     $XMLParser->keep_blanks(0);	# This allows formatting the output.
     $doc = $XMLParser->parse_file($doc); }
   %options = $self->completeOptions(%options);
@@ -52,10 +57,14 @@ sub process {
       $processor = $processor->new(%options); }
     else {
       $processor->init(%options); }
-
+    local $LaTeXML::Post::PROCESSOR = $processor;
+    local $LaTeXML::Post::DOCUMENT = $doc;
     $doc = $processor->process($doc); 
     $processor->closeCache;		# If opened.
   }
+
+  # Experimental: Add an internal subset for additional math representations
+  $self->adjust_doctype($doc,%options);
 
   # Normalize namespaces.
   $doc = normalizeNS($doc) unless ($options{format}||'') eq 'html';
@@ -86,6 +95,8 @@ sub normalizeNS {
   $XMLParser->parse_string($doc->toString);
 }
 
+# NOTE: Most of this logic should probably be in latexmlpost!!!
+# NOTE: Implement keepxmath option! (by allowing stripping of XMath subtrees)
 sub completeOptions {
   my($self,%options)=@_;
   # Guess the output format (html|xhtml|xml), if not given
@@ -110,6 +121,14 @@ sub completeOptions {
 			       LaTeXML::Post::Graphics
 			       LaTeXML::Post::HTMLTable
 			       LaTeXML::Post::XSLT)];  }
+  elsif($options{mathml}) {
+    $options{processors} = [qw(LaTeXML::Post::MathParser
+			       LaTeXML::Post::PresentationMathML)];
+    push(@{$options{processors}},'LaTeXML::Post::XSLT') if $options{stylesheet}; }
+  elsif($options{openmath}) {
+    $options{processors} = [qw(LaTeXML::Post::MathParser
+			       LaTeXML::Post::OpenMath)];
+    push(@{$options{processors}},'LaTeXML::Post::XSLT') if $options{stylesheet}; }
   else {			# Else do sensible minimal XML stuff?
     $options{processors} = [qw(LaTeXML::Post::MathParser
 			       LaTeXML::Post::PresentationMathML)];
@@ -129,6 +148,46 @@ sub completeOptions {
   $options{sourceDirectory} = '.' unless $options{sourceDirectory};
   $options{destinationDirectory} = '.' unless $options{destinationDirectory};
   %options; }
+
+# EXPERIMENTAL:
+#   Would like to get away from including MathML.dtd in LaTeXML.dtd.
+#   It might not be needed.  And what about including OpenMath? SVG? Etc!!!
+#   Alternatively, create a set of known composite DTD's
+#    latexml, latexml-mathml, latexml-openmath, latexml-mathml-openmath.
+#   From known base doctypes and known postprocessors, synthesize
+#   the new doctype.
+#   AND, need a way of extending this to new types, etc.
+#   (ie. let the user configure it).
+our %ID_MAP =("-//NIST LaTeXML//LaTeXML article"=>
+	      [["-//NIST LaTeXML//LaTeXML article",
+		"http://dlmf.nist.gov/LaTeXML/LaTeXML.dtd"],
+	       ["-//NIST LaTeXML//LaTeXML article + MathML",
+		"http://dlmf.nist.gov/LaTeXML/LaTeXML-MathML.dtd"],
+	       ["-//NIST LaTeXML//LaTeXML article + OpenMath",
+		"http://dlmf.nist.gov/LaTeXML/LaTeXML-OpenMath.dtd"],
+	       ["-//NIST LaTeXML//LaTeXML article + MathML + OpenMath",
+		"http://dlmf.nist.gov/LaTeXML/LaTeXML+MathML+OpenMath.dtd"]],
+	     );
+sub adjust_doctype {
+  my($self,$doc,%options)=@_;
+  my $processors = $options{processors};
+  print STDERR "Processors: ".join(', ',@$processors)."\n";
+  
+  my $mathml   = (grep($_->isa('LaTeXML::Post::PresentationMathML'),@$processors) ? 1 : 0);
+  my $openmath = (grep($_->isa('LaTeXML::Post::OpenMath'),@$processors) ? 1 : 0);
+  my $idx = $mathml + 2*$openmath;
+
+  if(my $dtd = $doc->internalSubset){
+    if($dtd->toString =~/^<!DOCTYPE\s+(\w+)\s+PUBLIC\s+(\"|\')([^\"]*)\2\s+(\"|\')([^\"]*)\4>$/){
+      my ($root,$pubid) = ($1,$3);
+      print STDERR "Got Doctype root=$root, id=\"$pubid\" mathml=$mathml, openmath=$openmath\n";
+      
+      my $entry = $ID_MAP{$pubid};
+      if($entry && $idx){
+	$doc->removeInternalSubset;	# Apparently we've got to remove it first.
+	$doc->createInternalSubset($root,$$entry[$idx][0],$$entry[$idx][1]); }}}
+}
+
 
 #**********************************************************************
 package LaTeXML::Post::Processor;
@@ -207,6 +266,43 @@ sub copyFile {
   my $dest = pathname_make(dir=>$destdir,name=>$name,type=>$type);
   pathname_copy($source, $dest) or warn("Couldn't copy $source to $dest: $!");
   pathname_make(dir=>$reldir,name=>$name,type=>$type); }
+
+#======================================================================
+# Support for ID's
+
+# NOTE: This needs to be worked on.
+#  If you use xml:id, the ID spec (supported by libxml2, at least partly)
+# will allow xpath id('$id') to quickly look it up, even w/o loading the DTD.
+# HOWEVER, if you change the node the id is on, it isn't recognized by libxml!!!
+# Currently (probably) the only place we'd need that is in MathParse, which
+# soon will be moved to latexml, proper, so afterwards, probably xpath's id() 
+# will be sufficient.
+
+our $nsXML = "http://www.w3.org/XML/1998/namespace";
+
+sub cacheIDs {
+  my($self,$doc)=@_;
+  $$self{idcache}={};
+  foreach my $node ($doc->findnodes("//*[\@xml:id]")){
+    $$self{idcache}{$node->getAttributeNS($nsXML,'id')} = $node; }}
+
+sub updateID {
+  my($self,$node)=@_;
+  $$self{idcache}{$node->getAttributeNS($nsXML,'id')} = $node; }
+
+sub findNodeByID {
+  my($self,$doc,$id)=@_;
+#  [$doc->findnodes("//*[\@id='$id']")]->[0]; }
+  $$self{idcache}{$id}; 
+#  my($node)=$doc->findnodes("id('$id')");
+#  $node; }
+}
+
+sub realizeXMNode {
+  my($self,$doc,$node)=@_;
+  ($node->nodeName eq 'XMRef' 
+   ? $node=$self->findNodeByID($doc,$node->getAttribute('idref'))
+   : $node); }
 
 #======================================================================
 # Cache support: storage of data from previous run.

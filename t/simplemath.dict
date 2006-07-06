@@ -1,16 +1,16 @@
 use LaTeXML::Post::MathDictionary;
 
-Declare('a',partOfSpeech=>'FUNCTION', label=>'sec:restricted');
-Declare('b',partOfSpeech=>'FUNCTION', label=>'sec:restricted');
+Declare('a',role=>'FUNCTION', label=>'sec:restricted');
+Declare('b',role=>'FUNCTION', label=>'sec:restricted');
 
-Declare('a',partOfSpeech=>'ID');
-Declare('b',partOfSpeech=>'ID');
+Declare('a', role=>'ID');
+Declare('b', role=>'ID');
 
-Declare('OverHat(f)', partOfSpeech=>'ID');
-Declare('subscript(f,D)',partOfSpeech=>'BIGOP');
-Declare('subscript(f)',partOfSpeech=>'ID');
+Declare('OverHat(f)', role=>'ID');
+Declare('subscript(f,D)', role=>'DIFFOP');
+Declare('subscript(f)', role=>'ID');
 
-Declare('f',partOfSpeech=>'FUNCTION');
+Declare('f', role=>'FUNCTION');
 
-Declare('D',partOfSpeech=>'ID');
-Declare('x',partOfSpeech=>'ID');
+Declare('D', role=>'ID');
+Declare('x', role=>'ID');

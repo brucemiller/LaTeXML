@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ /=====================================================================\ 
+ |  LaTeXML+MathML.dtd                                                 |
+ | Document Type for LaTeXML generated documents + MathML              |
+ |=====================================================================|
+ | Part of LaTeXML:                                                    |
+ |  Public domain software, produced as part of work done by the       |
+ |  United States Government & not subject to copyright in the US.     |
+ |=====================================================================|
+ | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+ | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+ \=========================================================ooo==U==ooo=/
+-->
+<!-- Grab MathML dtd, prefixed by 'm' -->
+<!ENTITY % NS.prefixed "INCLUDE">
+<!ENTITY % NamespaceDecl.attrib "xmlns:m CDATA #IMPLIED">
+<!-- Where's the publicly accessible dtd? -->
+<!ENTITY % MathML.dtd PUBLIC "-//W3C//DTD MathML 2.0//EN"
+	 "mathml2.dtd">
+%MathML.dtd;
+
+<!-- Grab OpenMath.dtd -->
+<!-- Namespace is "http://www.openmath.org/OpenMath" -->
+<!-- What's the public identifier? -->
+<!ENTITY % OpenMath.dtd PUBLIC "OpenMath"
+	 "http://www.openmath.org/cocoon/openmath//standard/om20/openmath2.dtd">
+
+<!-- Specify m:math as additional math format -->
+<!ENTITY % Math.formats.extra "| m:math | om:what?">
+
+<!-- Now, load the LaTeXML.dtd -->
+<!ENTITY % LaTeXML.dtd PUBLIC "-//NIST LaTeXML//LaTeXML article"
+	 "http://dlmf.nist.gov/LaTeXML/LaTeXML.dtd">
+%LaTeXML.dtd; 

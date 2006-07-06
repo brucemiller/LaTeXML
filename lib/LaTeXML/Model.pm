@@ -29,6 +29,11 @@ sub getPublicID { $_[0]->{public_id}; }
 sub getSystemID { $_[0]->{system_id}; }
 sub getDefaultNamespace { $_[0]->{defaultNamespace}; }
 
+sub getDTD {
+  my($self)=@_;
+  $self->loadDocType unless $$self{doctype_loaded};
+  $$self{dtd}; }
+
 #**********************************************************************
 # DocType
 #**********************************************************************
@@ -36,7 +41,7 @@ sub getDefaultNamespace { $_[0]->{defaultNamespace}; }
 sub setDocType {
   my($self,$roottag,$publicid,$systemid,$namespace)=@_;
   $$self{roottag}=$roottag;
-  $self->setTagProperty('_Document_','model',{$roottag=>1});
+  $self->setTagProperty('_Document_','model',{$roottag=>1}) if $roottag;
   $$self{public_id}   =$publicid;
   $$self{system_id}   =$systemid;
   $$self{defaultNamespace}=$namespace;
@@ -118,7 +123,9 @@ sub loadDocType {
   my($self,$searchpaths)=@_;
   $$self{doctype_loaded}=1;
   if(!$$self{system_id}){
-    Warn("No DTD declared...punting!");
+    Warn("No DTD declared...assuming LaTeXML!");
+    $self->setDocType(undef,"-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd',
+		      "http://dlmf.nist.gov/LaTeXML");
     $$self{permissive}=1;	# Actually, they could have declared all sorts of Tags....
     return; }
   # Parse the DTD
@@ -137,14 +144,19 @@ sub loadDocType {
     if($dtdfile){
       { local $/=undef;
 	NoteProgress("\n(Loading DTD from $dtdfile");
-	open(DTD,$dtdfile) || Error("Couldn't read DTD from $dtdfile");
-	my $dtdtext = <DTD>;
-	close(DTD);
-	$dtd = XML::LibXML::Dtd->parse_string($dtdtext); 
-	Error("Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed") unless $dtd;
-	NoteProgress(")"); }}}
-  Error("Couldn't find DTD \"$$self{public_id}\" \"$$self{system_id}\" failed") unless $dtd;
-  Message("Analyzing DTD \"$$self{public_id}\" \"$$self{system_id}\"") if Debugging();
+	if(open(DTD,$dtdfile)){
+	  my $dtdtext = <DTD>;
+	  close(DTD);
+	  $dtd = XML::LibXML::Dtd->parse_string($dtdtext); 
+	  Error("Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed") unless $dtd;
+	  NoteProgress(")"); }
+	else {
+	  Error("Couldn't read DTD from $dtdfile"); }}}
+    else {
+      Error("Couldn't find DTD \"$$self{public_id}\" \"$$self{system_id}\" failed"); }};
+  return unless $dtd;
+  $$self{dtd}=$dtd;
+  NoteProgress("\nAnalyzing DTD \"$$self{public_id}\" \"$$self{system_id}\"");
   # Extract all possible children for each tag.
   foreach my $node ($dtd->childNodes()){
     if($node->nodeType() == XML_ELEMENT_DECL()){
@@ -167,12 +179,12 @@ sub loadDocType {
     local %::DESC=();
     computeDescendents($self,$tag,''); 
     $$self{tagprop}{$tag}{indirect_model}={%::DESC}; }
-  if(Debugging('DOCTYPE')){
-    Message("Doctype");
+  if(0){
+    print STDERR "Doctype\n";
     foreach my $tag (sort keys %{$$self{tagprop}}){
-      Message("$tag can contain ".join(', ',sort keys %{$$self{tagprop}{$tag}{model}})); 
-      Message("$tag can indirectly contain ".
-	      join(', ',sort keys %{$$self{tagprop}{$tag}{indirect_model}}));  }}
+      print STDERR "$tag can contain ".join(', ',sort keys %{$$self{tagprop}{$tag}{model}})."\n"; 
+      print STDERR "$tag can indirectly contain ".
+	join(', ',sort keys %{$$self{tagprop}{$tag}{indirect_model}})."\n";  }}
 }
 
 sub computeDescendents {
@@ -196,7 +208,7 @@ __END__
 
 =head2 DESCRIPTION
 
-LaTeXML::Model encapsulates information about the document model to be used
+C<LaTeXML::Model> encapsulates information about the document model to be used
 in converting a digested document into XML by the L<LaTeXML::Intestine>.
 This information is based on the DTD, but may also be modified by
 modules implementing various macro packages; thus the model may not be
@@ -224,7 +236,7 @@ document to be built without following any particular content model.
 
 =item C<< $name = $model->getRootName; >>
 
-Return the name of the root element.
+Return the name of the expected root element.
 
 =item C<< $publicid = $model->getPublicID; >>
 
@@ -242,44 +254,49 @@ for the desired document type, as well as the default namespace URI.
 
 =item C<< $value = $model->getTagProperty($tag,$property); >>
 
-Gets the value of the $property associated with the element name $tag.
+Gets the value of the $property associated with the element name C<$tag>.
 Known properties are:
-   autoOpen   : This asserts that the $tag is allowed to be opened automatically
-                if needed to insert some other element.  If not set
-                this tag will need to be explicitly opened.
-   autoClose  : This asserts that the $tag is allowed to be closed automatically
-                if needed to insert some other element.  If not set
-                this tag will need to be explicitly closed.
-   afterOpen  : supplies code to be executed whenever an element of this type is
-                opened.  It is called with the created node and the responsible
-                digested object as arguments.
-   afterClose : supplies code to be executed whenever an element of this type is
-                closed.  It is called with the created node and the responsible
-                digested object as arguments.
+
+   autoOpen   : This asserts that the tag is allowed to be
+                opened automatically if needed to insert some 
+                other element.  If not set this tag will need to
+                be explicitly opened.
+   autoClose  : This asserts that the $tag is allowed to be 
+                closed automatically if needed to insert some
+                other element.  If not set this tag will need 
+                to be explicitly closed.
+   afterOpen  : supplies code to be executed whenever an element
+                of this type is opened.  It is called with the
+                created node and the responsible digested object
+                as arguments.
+   afterClose : supplies code to be executed whenever an element
+                of this type is closed.  It is called with the
+                created node and the responsible digested object
+                as arguments.
 
 =item C<< $model->setTagProperty($tag,$property,$value); >>
 
-sets the value of the $property associated with the element name $tag to $value.
+sets the value of the C<$property> associated with the element name C<$tag> to C<$value>.
 
 =item C<< $boole = $model->canContain($tag,$childtag); >>
 
-Returns whether an element $tag can contain an element $childtag.
+Returns whether an element C<$tag> can contain an element C<$childtag>.
 The element names #PCDATA, _Comment_ and _ProcessingInstruction_
 are specially recognized.
 
 =item C<< $auto = $model->canContainIndirect($tag,$childtag); >>
 
-Checks whether an element $tag could contain an element $childtag,
-provided an `autoOpen'able element $auto were inserted in $tag.
+Checks whether an element C<$tag> could contain an element C<$childtag>,
+provided an `autoOpen'able element C<$auto> were inserted in C<$tag>.
 
 =item C<< $boole = $model->canAutoClose($tag); >>
 
-Returns whether an element $tag is allowed to be closed automatically,
+Returns whether an element C<$tag> is allowed to be closed automatically,
 if needed.
 
 =item C<< $boole = $model->canHaveAttribute($tag,$attribute); >>
 
-Returns whether an element $tag is allowed to have an attribute
+Returns whether an element C<$tag> is allowed to have an attribute
 with the given name.
 
 =back

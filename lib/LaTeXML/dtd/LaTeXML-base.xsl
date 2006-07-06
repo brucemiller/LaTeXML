@@ -28,7 +28,7 @@
 <xsl:template match="/">
   <html>
     <head>
-      <title><xsl:value-of select="*/ltx:title"/></title>
+      <title><xsl:value-of select="normalize-space(*/ltx:title)"/></title>
       <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
       <style type="text/css">
 	img.math { vertical-align:middle }
@@ -54,6 +54,9 @@
       ====================================================================== -->
 <xsl:template name="header">
   <div class='header'>
+    <xsl:if test="//ltx:title">
+      <xsl:apply-templates mode="TOC"/>
+    </xsl:if>
   </div>
 </xsl:template>
 
@@ -90,56 +93,168 @@
 <xsl:template match="ltx:creationdate"/>
 
 <!--  ======================================================================
-      Titles, Refnums and such
+      Titles.
       ====================================================================== -->
+<!-- Hack to determine the `levels' of various sectioning.
+     Given that the nesting could consist of any of
+     document/part/chapter/section or appendix/subsection/subsubsection
+       /paragraph/subparagraph
+     We'd like to assign h1,h2,... sensibly.
+     Or should the DTD be more specific? -->
+<xsl:param name="document_level">
+  <xsl:value-of select="number(boolean(ltx:document))"/>
+</xsl:param>
+
+<xsl:param name="part_level">
+  <xsl:value-of select="$document_level+number(boolean(//ltx:part))"/>
+</xsl:param>
+
+<xsl:param name="chapter_level">
+  <xsl:value-of select="$part_level+number(boolean(//ltx:chapter))"/>
+</xsl:param>
+
+<xsl:param name="section_level">
+  <xsl:value-of select="$chapter_level+number(boolean(//ltx:section))"/>
+</xsl:param>
+
+<xsl:param name="appendix_level">
+  <xsl:value-of select="$chapter_level+number(boolean(//ltx:appendix))"/>
+</xsl:param>
+
+<xsl:param name="subsection_level">
+  <xsl:value-of select="$section_level+number(boolean(//ltx:subsection))"/>
+</xsl:param>
+
+<xsl:param name="subsubsection_level">
+  <xsl:value-of select="$subsection_level+number(boolean(//ltx:subsubsection))"/>
+</xsl:param>
+
+<xsl:param name="paragraph_level">
+  <xsl:value-of select="$subsubsection_level+number(boolean(//ltx:paragraph))"/>
+</xsl:param>
+
+<xsl:param name="subparagraph_level">
+  <xsl:value-of select="$paragraph_level+number(boolean(//ltx:subparagraph))"/>
+</xsl:param>
+
+<!-- and hope we haven't past 6!!! -->
 
 <xsl:template match="ltx:document/ltx:title">
-  <h1><xsl:call-template name="title-refnum"/><xsl:apply-templates /></h1>
+  <xsl:element name="{concat('h',$document_level)}">
+    <xsl:call-template name="maketitle"/>
+  </xsl:element>
 </xsl:template>
 
 <xsl:template match="ltx:part/ltx:title">
-  <h2><xsl:call-template name="title-refnum"/><xsl:apply-templates/></h2>
+  <xsl:element name="{concat('h',$part_level)}">
+    <xsl:call-template name="maketitle"/>
+  </xsl:element>
 </xsl:template>
 
-<xsl:template match="ltx:chapter/ltx:title | ltx:bibliography/ltx:title">
-  <h2><xsl:call-template name="title-refnum"/><xsl:apply-templates/></h2>
+<xsl:template match="ltx:chapter/ltx:title">
+  <xsl:element name="{concat('h',$chapter_level)}">
+    <xsl:call-template name="maketitle"/>
+  </xsl:element>
 </xsl:template>
-
 <xsl:template match="ltx:section/ltx:title">
-  <h3><xsl:call-template name="title-refnum"/><xsl:apply-templates/></h3>
+  <xsl:element name="{concat('h',$section_level)}">
+    <xsl:call-template name="maketitle"/>
+  </xsl:element>
 </xsl:template>
-
 <xsl:template match="ltx:appendix/ltx:title">
-  <h3>Appendix <xsl:call-template name="title-refnum"/><xsl:apply-templates/></h3>
+  <xsl:element name="{concat('h',$appendix_level)}">
+    Appendix <xsl:call-template name="maketitle"/></xsl:element>
 </xsl:template>
-
 <xsl:template match="ltx:subsection/ltx:title">
-  <h4><xsl:call-template name="title-refnum"/><xsl:apply-templates/></h4>
+  <xsl:element name="{concat('h',$subsection_level)}">
+    <xsl:call-template name="maketitle"/>
+  </xsl:element>
 </xsl:template>
-
-<xsl:template match="ltx:subsubsection/ltx:title | ltx:paragraph/ltx:title">
-  <h5><xsl:call-template name="title-refnum"/><xsl:apply-templates/></h5>
+<xsl:template match="ltx:subsubsection/ltx:title">
+  <xsl:element name="{concat('h',$subsubsection_level)}">
+    <xsl:call-template name="maketitle"/>
+  </xsl:element>
+</xsl:template>
+<xsl:template match="ltx:paragraph/ltx:title">
+  <xsl:element name="{concat('h',$paragraph_level)}">
+    <xsl:call-template name="maketitle"/>
+  </xsl:element>
+</xsl:template>
+<xsl:template match="ltx:subparagraph/ltx:title">
+  <xsl:element name="{concat('h',$subparagraph_level)}">
+    <xsl:call-template name="maketitle"/>
+  </xsl:element>
 </xsl:template>
 
 <xsl:template match="ltx:title">
-  <h6><xsl:call-template name="title-refnum"/><xsl:apply-templates/></h6>
+  <h6><xsl:call-template name="maketitle"/></h6>
+</xsl:template>
+
+<xsl:template name="maketitle">
+  <xsl:if test="../@refnum and not(../@refnum = '')">
+    <xsl:value-of select="../@refnum"/>.<xsl:text> </xsl:text>
+  </xsl:if>
+  <xsl:apply-templates mode="intitle"/>
 </xsl:template>
 
 <xsl:template match="ltx:toctitle"/>
 
-<!-- Refnums -->
-<xsl:template match="@refnum[../@label]">
-  <a name="{../@label}" class='refnum'><xsl:value-of select="."/></a><xsl:text> </xsl:text>
+<!--  ======================================================================
+      Tables of Contents.
+      ====================================================================== -->
+<xsl:param name="TOC_MAX_DEPTH">2</xsl:param>
+<xsl:template match="*" mode="TOC"/>
+
+<xsl:template match="ltx:document|ltx:part|ltx:chapter
+		     |ltx:section|ltx:appendix|ltx:subsection|ltx:subsubsection
+                     |ltx:paragraph|ltx:subparagraph" mode="TOC">
+  <xsl:param name="TOC_DEPTH">0</xsl:param>
+  <xsl:choose>
+    <xsl:when test="$TOC_DEPTH &gt; $TOC_MAX_DEPTH"/>
+    <xsl:when test="$TOC_DEPTH &gt; 0">
+      <li><xsl:call-template name="inTOC">
+	  <xsl:with-param name="TOC_DEPTH" select="$TOC_DEPTH"/>
+	  </xsl:call-template>
+      </li>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:call-template name="inTOC">
+	<xsl:with-param name="TOC_DEPTH" select="$TOC_DEPTH"/>
+      </xsl:call-template>
+    </xsl:otherwise>
+  </xsl:choose>
 </xsl:template>
 
-<xsl:template name="title-refnum">
-  <xsl:if test="../@refnum">
-    <span class="refnum">
-      <xsl:value-of select="../@refnum"/>
-    </span>
-    <xsl:text> </xsl:text>
+<xsl:template name="inTOC">
+  <xsl:param name="TOC_DEPTH">0</xsl:param>
+  <xsl:apply-templates select="ltx:title" mode="toctitle"/>
+  <xsl:if test="ltx:part|ltx:chapter|ltx:section|ltx:appendix|ltx:subsection
+                |ltx:subsubsection|ltx:paragraph|ltx:subparagraph">
+    <ul><xsl:apply-templates mode="TOC">
+	<xsl:with-param name="TOC_DEPTH" select="1+$TOC_DEPTH"/>
+      </xsl:apply-templates>
+    </ul>
   </xsl:if>
 </xsl:template>
+
+<xsl:template match="ltx:title" mode="toctitle">
+  <xsl:element name="a">
+    <xsl:attribute name="href">
+      <xsl:choose>
+	<xsl:when test="../@label"><xsl:value-of select="concat('#',../@label)"/></xsl:when>
+	<xsl:otherwise><xsl:value-of select="concat('#',generate-id(..))"/></xsl:otherwise>
+      </xsl:choose>
+    </xsl:attribute>
+    <xsl:if test="../@refnum">
+      <xsl:value-of select="../@refnum"/>.<xsl:text> </xsl:text>
+    </xsl:if>
+    <xsl:apply-templates mode="toctitle"/>
+  </xsl:element>
+</xsl:template>
+
+<!--  ======================================================================
+      Refnums and such
+      ====================================================================== -->
 
 <xsl:template match="ltx:ref[text()] | ltx:qref[text()]">
   <a href="{concat('#',@labelref)}" class="refnum"><xsl:apply-templates/></a>
@@ -302,7 +417,7 @@
 </xsl:template>
 
 <xsl:template match="ltx:item" mode="description">
-  <dt><xsl:value-of select="@tag"/><xsl:apply-templates select="tag/node()"/></dt>
+  <dt><xsl:value-of select="@tag"/><xsl:apply-templates select="ltx:tag/node()"/></dt>
   <dd><xsl:apply-templates/></dd>
 </xsl:template>
 

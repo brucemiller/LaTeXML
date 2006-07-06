@@ -1,15 +1,20 @@
 #!/usr/bin/perl -w
 use strict;
-use Getopt::Long;
+use FindBin;
+use lib "$FindBin::RealBin/../lib";
+use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
+use LaTeXML;
 use LaTeXML::Post;
 
 #**********************************************************************
 # Parse command line.
 
+my $identity = "latexmlpost (LaTeXML version $LaTeXML::VERSION)";
 my($source,$destination)=(".","");
-my($help)=(0);
+my($help,$showversion)=(0,0);
 my $format=undef;
+my($mathml,$openmath);
 my $verbosity=0;
 my $stylesheet;
 GetOptions("destination=s"=>\$destination,
@@ -17,22 +22,29 @@ GetOptions("destination=s"=>\$destination,
 	   "verbose+"     =>\$verbosity,
 	   "stylesheet:s" =>\$stylesheet,
 	   "format=s"     =>\$format,
+	   "VERSION"      =>\$showversion,
+	   "mathml"       =>\$mathml,
+	   "openmath"     =>\$openmath,
 	   "help|?"       =>\$help,
-	  ) or pod2usage(2);
-pod2usage(1) if $help;
-pod2usage("Missing input xmlfile") unless @ARGV;
-
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+if($showversion){ print STDERR "$identity\n"; exit(1); }
+pod2usage(-message=>"$identity\nMissing input xmlfile", 
+	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
 my $xmlfile = shift(@ARGV);
 
 #**********************************************************************
 # Do the processing.
 binmode(STDERR,":utf8");
 binmode(STDOUT,":utf8");
+print STDERR "$identity\n" if $verbosity > 0;
 
 my $doc = LaTeXML::Post->new()->process($xmlfile, 
 					sourceDirectory=> $source,
 					destination    => $destination,
 					format         => $format,
+					mathml         => $mathml,
+					openmath       => $openmath,
 					stylesheet     => $stylesheet,
 					verbosity      => $verbosity,
 					toString       => !$destination);
@@ -58,6 +70,7 @@ latexmlpost [options] xmlfile
    --stylesheet=xslfile       requests the XSL transform of the document using the given
                               xslfile as stylesheet.
    --verbose                  prints progress messages during processing.
+   --VERSION                  show version number.
    --help                     shows help message.
 
 =head1 OPTIONS AND ARGUMENTS
@@ -85,14 +98,19 @@ to specify this option in order to find graphics and style files.
 Requests the XSL transformation of the document using the given xslfile as stylesheet.
 If the stylesheet is omitted, a `standard' one will be used (C<dtd/LaTeXML.xsl>).
 
+=item B<--version>
+
+Shows the version number of the LaTeXML package..
+
 =item B<--help>
 
 Shows this help message.
 
 =back
 
-=head1 DESCRIPTION
+=head1 SEE ALSO
 
+L<latexml>, L<LaTeXML>
 
 =cut
 #**********************************************************************

@@ -23,19 +23,19 @@ DocType("chapter","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
 
 RequirePackage('graphicx');
 RequirePackage('DLMFmath');
+RequirePackage('url');
+RequirePackage('comment');
 
 
 # If we get this, we're doing a "chapter"
 DefPrimitive('\thischapter{}', sub {
-  my($stomach,$ch)=@_;
+  my($self,$ch)=@_;
   $ch=$ch->toString;
   DefMacro('\thechapter',$ch); 
   DefEnvironment('{document}',"<chapter refnum='#refnum' label='#label'>#body</chapter>",
-		 beforeDigest=> sub { $_[0]->setInPreamble(0); },
-		 afterDigestBegin=>sub{ $_[1]->setProperty(refnum=>$ch);
-					$_[1]->setProperty(label=>"ch:$ch"); },
-		 afterDigest=>sub { $_[0]->getGullet->flush; return; }
-);
+		 beforeDigest=> sub { $STOMACH->setInPreamble(0); },
+		 afterDigest=>sub { $GULLET->flush; return; },
+		 properties=>{refnum=>$ch, label=>"ch:$ch"});
   return; });
 
 #======================================================================
@@ -121,15 +121,10 @@ DefConstructor('\onlyelectronic{}',"#1");
 DefEnvironment('{sidebar}{}{}{}',
 	       "<sidebar name='#1' label='#label'><title>#2</title><author>#3</author>#body</sidebar>",
 	       afterDigestBegin=> sub { 
-		 my($stomach,$whatsit)=@_;
-		 my $label = "sb:".$stomach->digest(T_CS('\thechapter'))->toString
-		   .".".$whatsit->getArg(1)->toString;
+		 my($whatsit,$name,$title,$author)=@_;
+		 my $label = "sb:".$STOMACH->digest(T_CS('\thechapter'))->toString
+		   .".".$name->toString;
 		 $whatsit->setProperty(label=>$label); });
-
-
-
-# Use same trick.
-DefEnvironment('{comment}', "<printonly>#body</printonly>");
 
 #**********************************************************************
 # Metadata
@@ -143,7 +138,7 @@ DefConstructor('\origref[]{}', "^<origref ref='#2'>#1</origref>", mode=>'text', 
 DefEnvironment('{equation}[]',
 	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>",
 	       mode=>'display_math',
-	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); });
+	       properties=> { refnum=> sub { $STOMACH->refStepCounter('equation'); }});
 DefEnvironment('{equation*}[]',
 	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>",
 	       mode=>'display_math');
@@ -151,13 +146,13 @@ DefEnvironment('{equation*}[]',
 # equationmix contains several math environments, 
 # Each math produces inline math, BUT we've set displaystyle in them!
 DefEnvironment('{equationmix}[]',"<equationmix refnum='#refnum'>#body</equationmix>",
-	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); },
+	       properties=> { refnum=> sub { $STOMACH->refStepCounter('equation'); }},
 	       # NOTE: We'd like to have displaystyle (but NOT mode=display!) for enclosed math env!
 	       # Use displaystyles for math environments within here.
 	       beforeDigest => sub {
 		 DefEnvironment('{math}',"<Math mode='inline'><XMath>#body</XMath></Math>",
 				mode=>'inline_math',
-				beforeDigest=>sub {$_[0]->setMathStyle('display');});
+				beforeDigest=>sub {$STOMACH->setMathStyle('display');});
 			       return; }
 );
 DefEnvironment('{equationmix*}[]',  "<equationmix>#body</equationmix>");
@@ -169,11 +164,11 @@ DefConstructor('\@constraint Flag:* {}',"^<constraint hidden='?#1(yes)(no)'>#2</
 	       mode=>'text', untex=>'');
 
 DefExpandable('\constraint Flag:* [Default:,]{}',sub { 
-  my($gullet,$starred,$punct,$constraint)=@_;
+  my($self,$starred,$punct,$constraint)=@_;
   if($starred){			# hidden.
     (T_CS('\@constraint'),T_OTHER('*'),T_BEGIN,$constraint->unlist,T_END); }
   else {
-    my $ppunct = $gullet->readMatch(T_OTHER('.'),T_OTHER(','),T_OTHER(';')) || Tokens();
+    my $ppunct = $GULLET->readMatch(T_OTHER('.'),T_OTHER(','),T_OTHER(';')) || Tokens();
     ($punct->unlist, T_CS('\@constraint'), T_BEGIN,$constraint->unlist,$ppunct->unlist,T_END); }});
 
 #**********************************************************************

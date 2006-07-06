@@ -33,24 +33,23 @@ DefEnvironment('{acronym}','<acronyms>#body</acronyms>',
 					   '\acrodef{#1}[#2]{#3}\item[\acs{#1}]\acl{#1} '); });
 
 DefPrimitive('\acrodef{}[]{}', sub {
-  my($stomach,$id,$short,$long)=@_;
+  my($self,$id,$short,$long)=@_;
   $short = $id unless $short && $short->toString;
   $id = $id->toString;
-  $stomach->setValue('ACRONYM@short@'.$id, $stomach->digest($short),1);
-  $stomach->setValue('ACRONYM@long@'.$id, $stomach->digest($long),1); });
+  $STOMACH->assignValue('ACRONYM@short@'.$id, $STOMACH->digest($short),1);
+  $STOMACH->assignValue('ACRONYM@long@'.$id,  $STOMACH->digest($long),1); });
 
 
 # \@ACR@{id}{text}
 DefConstructor('\@ACRO@{}{}',"<acronym name='#1'>#2</acronym>");
 
 DefExpandable('\@AC@if{}{}{}', sub { 
-  my($gullet,$id,$short,$long)=@_;
-  my $stomach = $gullet->getStomach;
+  my($self,$id,$short,$long)=@_;
   my $key = 'ACROUSED@'.$_[1]->toString;
-  if($stomach->getValue($key)){
+  if($STOMACH->lookupValue($key)){
     $short->unlist; }
   else {
-    $stomach->setValue($key, 1,1);
+    $STOMACH->assignValue($key, 1,1);
     $long->unlist; }});
 
 

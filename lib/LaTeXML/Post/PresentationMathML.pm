@@ -26,7 +26,6 @@
 package LaTeXML::Post::PresentationMathML;
 use strict;
 use LaTeXML::Util::LibXML;
-use charnames ":full";
 use LaTeXML::Post;
 our @ISA = (qw(LaTeXML::Post::Processor));
 
@@ -34,6 +33,9 @@ our $mmlURI = "http://www.w3.org/1998/Math/MathML";
 
 sub process {
   my($self,$doc)=@_;
+
+  $self->cacheIDs($doc);
+
   $doc->documentElement->setNamespace($mmlURI,'m',0);
   my @math = $self->find_math_nodes($doc);
   $self->Progress("Converting ".scalar(@math)." formulae");
@@ -73,6 +75,10 @@ sub getTokenName {
   my $m = $node->getAttribute('name') || $node->textContent;
   (defined $m ? $m : '?'); }
 
+sub realize {
+  my($node)=@_;
+  $LaTeXML::Post::PROCESSOR->realizeXMNode($LaTeXML::Post::DOCUMENT,$node); }
+
 # ================================================================================
 our $MMLTable={};
 
@@ -81,28 +87,18 @@ sub DefMathML {
   $$MMLTable{$key} = $sub; }
 
 # Evolve to be more data-driven, and customizable.
+# NOTE: There's an almost-inconsistent usage of open/close attributes.
+#  If they are on an XMApp, then they are considered `decoration',
+#  If they are on the operator XMTok in an XMApp, they are part of that op's 
+#  concept of how it wraps its arguments.... Or something like that.
 sub Expr {
   my($node)=@_;
+  my $o = $node->getAttribute('open');
+  my $c = $node->getAttribute('close');
   my $p = $node->getAttribute('punctuation');
-#  my $o = $node->getAttribute('open');
-#  my $c = $node->getAttribute('close');
-  my @result = Expr_internal($node);
-#  if($o){
-#    if($result[0]->nodeName eq 'mrow'){
-#      $result[0]->prependChild(Op($o)); }
-#    else {
-#      unshift(@result,Op($o)); }}
-#  if($c){
-#    if($result[$#result]->nodeName eq 'mrow'){
-#      $result[$#result]->appendChild(Op($c)); }
-#    else {
-#      push(@result,Op($c)); }}
-  if($p){
-    if($result[$#result]->nodeName eq 'mrow'){
-      $result[$#result]->appendChild(Op($p)); }
-    else {
-      push(@result,Op($p)); }}
-  @result; }
+  my $result = ($node->nodeName eq 'XMRef' ? Expr(realize($node)) : Expr_internal($node));
+  $result = ( $o || $c ? parenthesize($result,$o,$c) : $result); 
+  ($p ? Row($result,Op($p)) : $result); }
 
 sub Expr_internal {
   my($node)=@_;
@@ -111,31 +107,57 @@ sub Expr_internal {
   if($tag eq 'XMDual'){
     my($content,$presentation) = element_nodes($node);
     Expr($presentation); }
-  elsif($tag eq 'XMWrap'){
+  elsif($tag eq 'XMWrap'){	# Only present if parsing failed!
     Row(grep($_,map(Expr($_),element_nodes($node)))); }
   elsif($tag eq 'XMApp'){
     my($op,@args) = element_nodes($node);
     return Node('merror',Node('mtext',"Missing Operator")) unless $op;
+    $op = realize($op);		# NOTE: Could loose open/close on XMRef ???
     my $name =  getTokenName($op);
-    my $pos  =  $op->getAttribute('POS') || '?';
-
-    my $sub = $$MMLTable{"Apply:$pos:$name"} || $$MMLTable{"Apply:?:$name"} 
-      || $$MMLTable{"Apply:$pos:?"} || $$MMLTable{"Apply:?:?"};
-    &$sub($op,@args); }
+    my $role =  $op->getAttribute('role') || '?';
+    my $handler = $$MMLTable{"Apply:$role:$name"} || $$MMLTable{"Apply:?:$name"} 
+      || $$MMLTable{"Apply:$role:?"} || $$MMLTable{"Apply:?:?"};
+    &$handler($op,@args); }
   elsif($tag eq 'XMTok'){
     my $name =  getTokenName($node);
-    my $pos  =  $node->getAttribute('POS') || '?';
-    my $sub = $$MMLTable{"Token:$pos:$name"} || $$MMLTable{"Token:?:$name"} 
-      || $$MMLTable{"Token:$pos:?"} || $$MMLTable{"Token:?:?"};
-    &$sub($node); }
+    my $role  =  $node->getAttribute('role') || '?';
+    my $handler = $$MMLTable{"Token:$role:$name"} || $$MMLTable{"Token:?:$name"} 
+      || $$MMLTable{"Token:$role:?"} || $$MMLTable{"Token:?:?"};
+    &$handler($node); }
   elsif($tag eq 'XMHint'){
     my $name =  getTokenName($node);
-    my $sub = $$MMLTable{"Hint:$name"} || $$MMLTable{"Hint:?"};
-    &$sub($node); }
+    my $handler = $$MMLTable{"Hint:$name"} || $$MMLTable{"Hint:?"};
+    &$handler($node); }
   else {
-#    Node('mtext',$node->untex); }}
-#    Node('mtext',[$node->content]); }}
     Node('mtext',[$node->textContent]); }}
+
+sub XXXExprPunct {
+  my($node)=@_;
+  my $p = $node->getAttribute('punctuation');
+  my $result = Expr($node);
+  if(!$p){ 
+    $result; }
+  elsif($result->nodeName eq 'mrow'){
+    $result->appendChild(Op($p)); 
+    $result; }
+  else {
+    ($result,Op($p)); }}
+
+sub ExprPunct { Expr(@_);}
+
+sub parenthesize {
+  my($node,$open,$close)=@_;
+  if(!$open && !$close){
+    $node; }
+  elsif($node->localName eq 'mrow'){
+    $node->insertBefore(Op($open),$node->firstChild) if $open;
+    $node->appendChild(Op($close)) if $close; 
+    $node; }
+  else {
+    my @nodes = ($node);
+    unshift(@nodes,Op($open)) if $open;
+    push(@nodes,Op($close)) if $close;
+    Row(@nodes); }}
 
 # ================================================================================
 # Mappings between internal fonts & sizes.
@@ -187,40 +209,18 @@ sub to_mo {
        # If an operator has specifically located it's scripts, don't let mathml move them.
        (($node->getAttribute('stackscripts')||'no') eq 'yes' ? (movablelimits=>'false'):()) ); }
 
-sub XXInfixOrPrefix {
-  my($op,@list)=@_;
-  return @list unless $op && @list;
-  $op = Node('mo',$op) unless ref $op;
-  if(scalar(@list) == 1){	# Infix with 1 arg is presumably Prefix!
-    ($op,@list); }
-  else {
-    my @margs = (shift(@list));
-    while(@list){
-      push(@margs,$op->cloneNode(1));
-      push(@margs,shift(@list)); }
-    @margs; }}
-
-sub XXInfix {
-  my($op,@list)=@_;
-  return @list unless $op && @list;
-  $op = Node('mo',$op) unless ref $op;
-  my @margs = (shift(@list));
-  while(@list){
-    push(@margs,$op->cloneNode(1));
-    push(@margs,shift(@list)); }
-  @margs; }
-
 sub Infix {
   my($op,@list)=@_;
   return Row() unless $op && @list;
+  my @mlist=();
   if(scalar(@list) == 1){	# Infix with 1 arg is presumably Prefix!
-    Row((ref $op ? Expr($op) : Node('mo',$op)),Expr($list[0])); }
+    push(@mlist,(ref $op ? Expr($op) : Node('mo',$op)),Expr($list[0])); }
   else {
-    my @margs = (Expr(shift(@list)));
+    push(@mlist, Expr(shift(@list)));
     while(@list){
-      push(@margs,(ref $op ? Expr($op) : Node('mo',$op)));
-      push(@margs,Expr(shift(@list))); }
-    Row(@margs); }}
+      push(@mlist,(ref $op ? Expr($op) : Node('mo',$op)));
+      push(@mlist,Expr(shift(@list))); }}
+  Row(@mlist); }
 
 sub separated_list {
   my($separators,@args)=@_;
@@ -240,62 +240,58 @@ sub separated_list {
 DefMathML('Token:?:?',    \&to_mi);
 
 DefMathML('Token:ADDOP:?', \&to_mo);
-DefMathML('Token:SUBOP:?', \&to_mo);
 DefMathML('Token:MULOP:?', \&to_mo);
-DefMathML('Token:DIVOP:?', \&to_mo);
 DefMathML('Token:RELOP:?', \&to_mo);
 DefMathML('Token:PUNCT:?', \&to_mo);
-DefMathML('Token:BIGOP:?', \&to_mo);
+DefMathML('Token:SUMOP:?', \&to_mo);
+DefMathML('Token:INTOP:?', \&to_mo);
+DefMathML('Token:LIMITOP:?', \&to_mo);
 DefMathML('Token:OPERATOR:?', \&to_mo);
 DefMathML('Token:OPEN:?', \&to_mo);
 DefMathML('Token:CLOSE:?', \&to_mo);
 DefMathML('Token:MIDDLE:?', \&to_mo);
 DefMathML('Token:VERTBAR:?', \&to_mo);
-DefMathML('Token:LARROW:?', \&to_mo);
-DefMathML('Token:RARROW:?', \&to_mo);
 DefMathML('Token:ARROW:?', \&to_mo);
 DefMathML('Token:METARELOP:?', \&to_mo);
 
 DefMathML('Token:NUMBER:?',sub { Node('mn',$_[0]->textContent); });
 DefMathML('Token:?:Empty', sub { Node('none')} );
+
+DefMathML("Token:?:\x{2061}", \&to_mo); # FUNCTION APPLICATION
+DefMathML("Token:?:\x{2062}", \&to_mo); # INVISIBLE TIMES
+
 # ================================================================================
 # Hints
 DefMathML('Hint:?', sub { undef; });
-DefMathML('Hint:ApplyFunction', sub { Op("\N{FUNCTION APPLICATION}"); });
-DefMathML('Hint:InvisibleTimes', sub { Op("\N{INVISIBLE TIMES}"); });
 # ================================================================================
 # Applications.
 
-# Generic
-#DefMathML('Apply:?:?', sub {
-#  my($op,@args)=@_;
-#  Row(Expr($op),Op("\N{FUNCTION APPLICATION}"),
-#      Row(Op($op->getAttribute('open')|| '('),
-#	  separated_list($op->getAttribute('separators'),@args),
-#	  Op($op->getAttribute('close') || ')'))); });
+# NOTE: A lot of these special cases could be eliminated by
+# consistent creation of XMDual's (using DefMath and similar)
+
 DefMathML('Apply:?:?', sub {
   my($op,@args)=@_;
   my @arglist  = separated_list($op->getAttribute('separators'),@args);
-  unshift(@arglist,Op($op->getAttribute('open'))) if $op->getAttribute('open');
-  push(@arglist,Op($op->getAttribute('close'))) if $op->getAttribute('close');
-  Row(Expr($op),Op("\N{FUNCTION APPLICATION}"), Row(@arglist)); });
+  my $args = (scalar(@arglist)==1 ? $arglist[0] : Row(@arglist));
+  Row(Expr($op),Op("\x{2061}"),	# FUNCTION APPLICATION
+      parenthesize($args,$op->getAttribute('argopen'),$op->getAttribute('argclose'))); });
+
+DefMathML('Apply:OVERACCENT:?', sub {
+  my($accent,$base)=@_;
+  Node('mover', [Expr($base),Expr($accent)],accent=>'true'); });
+
+DefMathML('Apply:UNDERACCENT:?', sub {
+  my($accent,$base)=@_;
+  Node('munder', [Expr($base),Expr($accent)],accent=>'true'); });
 
 # Top level relations
 DefMathML('Apply:?:Formulae',sub { 
   my($op,@elements)=@_;
   Row(separated_list($op->getAttribute('separators'),@elements)); });
+
 DefMathML('Apply:?:MultiRelation',sub { 
   my($op,@elements)=@_;
   Row(map(Expr($_),@elements)); });
-
-# Covered by POS=FENCED ??
-#DefMathML('Apply:?:Collection',sub { 
-#  my($op,@elements)=@_;
-#  Row(separated_list($op->getAttribute('separators'),@elements)); });
-
-DefMathML('Apply:RARROW:?',sub { 
-  my($op,$var,$limit,$from)=@_;
-  Row(Expr($var),Expr($op),Expr($limit),($from ? (Expr($from)) :())); });
 
 # Defaults for various parts-of-speech
 
@@ -306,10 +302,12 @@ DefMathML('Apply:?:Superscript', sub {
   my($op,$base,$sup)=@_;
   Node(((($base->getAttribute('stackscripts')||'no') eq 'yes') ? 'mover' : 'msup'),
        [Expr($base),Expr($sup)]); });
+
 DefMathML('Apply:?:Subscript',   sub {
   my($op,$base,$sub)=@_;
   Node(((($base->getAttribute('stackscripts')||'no') eq 'yes') ? 'munder' : 'msub'),
        [Expr($base),Expr($sub)]); });
+
 DefMathML('Apply:?:SubSuperscript',   sub { 
   my($op,$base,$sub,$sup)=@_;
   Node(((($base->getAttribute('stackscripts')||'no') eq 'yes') ? 'munderover' : 'msubsup'),
@@ -317,85 +315,43 @@ DefMathML('Apply:?:SubSuperscript',   sub {
 
 DefMathML('Apply:POSTFIX:?',     sub { Node('mrow',[Expr($_[1]),Expr($_[0])]); });
 
-DefMathML('Apply:OVERACCENT:?', sub {
-  my($accent,$base)=@_;
-  Node('mover', [Expr($base),Expr($accent)],accent=>'true'); });
-DefMathML('Apply:UNDERACCENT:?', sub {
-  my($accent,$base)=@_;
-  Node('munder', [Expr($base),Expr($accent)],accent=>'true'); });
-
 DefMathML('Apply:?:sideset', sub {
   my($op,$presub,$presup,$postsub,$postsup,$base)=@_;
   Node('mmultiscripts',[Expr($base),Expr($postsub),Expr($postsup), 
 			  Node('mprescripts'),Expr($presub),Expr($presup)]); });
 
-#DefMathML('Apply:ADDOP:?', sub { Row(InfixOrPrefix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
-#DefMathML('Apply:SUBOP:?', sub { Row(InfixOrPrefix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
-#DefMathML('Apply:MULOP:?', sub { Row(Infix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
-#DefMathML('Apply:DIVOP:?', sub { Row(Infix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
-#DefMathML('Apply:RELOP:?', sub { Row(Infix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
-#DefMathML('Apply:METARELOP:?', sub { Row(Infix(Expr($_[0]),map(Expr($_),@_[1..$#_]))); });
-
 DefMathML('Apply:ADDOP:?', \&Infix);
-DefMathML('Apply:SUBOP:?', \&Infix);
 DefMathML('Apply:MULOP:?', \&Infix);
-DefMathML('Apply:DIVOP:?', \&Infix);
 DefMathML('Apply:RELOP:?', \&Infix);
+DefMathML('Apply:ARROW:?', \&Infix);
 DefMathML('Apply:METARELOP:?',\&Infix);
-
-sub isEmpty { ($_[0]->nodeName eq 'XMTok') && (($_[0]->getAttribute('name')||'') eq 'Empty'); }
-
-#DefMathML('Apply:INTOP:?', sub {
-#  my($op,$low,$high,$integrand)=@_;
-#  my $content = $op->textContent;
-#  if(isEmpty($low)){
-#    if(isEmpty($high)){
-#      Row(Op($content),Expr($integrand)); }
-#    else {
-#      Row(Node('msup',[Op($content),Expr($high)]),Expr($integrand)); }}
-#  elsif(isEmpty($high)){
-#      Row(Node('msub',[Op($content),Expr($low)]),Expr($integrand)); }
-#  else {
-#    Row(Node('msubsup',[Op($content),Expr($low),Expr($high)]),Expr($integrand)); }});
-
-#DefMathML('Apply:BIGOP:?', sub {
-#  my($op,$low,$high,$summand)=@_;
-#  my $content = $op->textContent;
-#  if(isEmpty($low)){
-#    if(isEmpty($high)){
-#      Row(Op($content),Expr($summand)); }
-#    else {
-#      Row(Node('mover',[Op($content),Expr($high)]),Expr($summand)); }}
-#  elsif(isEmpty($high)){
-#      Row(Node('munder',[Op($content),Expr($low)]),Expr($summand)); }
-#  else {
-#    Row(Node('munderover',[Op($content),Expr($low),Expr($high)]),Expr($summand)); }});
-
-#DefMathML('Apply:LIMITOP:?', sub {
-#  my($op,$limit,$arg)=@_;
-#  Row(Node('munder',[Expr($op),Expr($limit)]),Expr($arg)); });
 
 DefMathML('Apply:FENCED:?',sub {
   my($op,@elements)=@_;
-  Row(Op($op->getAttribute('open')),
+  Row(Op($op->getAttribute('argopen')),
       separated_list($op->getAttribute('separators'),@elements),
-      Op($op->getAttribute('close'))); });
+      Op($op->getAttribute('argclose'))); });
 
 # Various specific formatters.
-DefMathML('Apply:MULOP:InvisibleTimes', sub { 
-#  Row(Infix(Op("\N{INVISIBLE TIMES}"),map(Expr($_),@_[1..$#_]))); });
-  Infix("\N{INVISIBLE TIMES}",@_[1..$#_]); });
 DefMathML('Apply:?:sqrt', sub { Node('msqrt',[Expr($_[1])]); });
 DefMathML('Apply:?:root', sub { Node('mroot',[Expr($_[2]),Expr($_[1])]); });
 
 # NOTE: Need to handle displaystyle
+# It is only handled here by assuming that it is already true!!!
+# Need to bind and control it!!!!!
 DefMathML('Apply:?:/', sub {
   my($op,$num,$den)=@_;
   my $style = $op->getAttribute('style') || '';
-  Node('mfrac',[Expr($num),Expr($den)],($style eq 'over' ? () : (bevelled=>'true'))); });
+  if($style eq 'inline'){
+    Node('mfrac',[Expr($num),Expr($den)], bevelled=>'true'); }
+  elsif($style eq 'display') {
+    Node('mfrac',[Expr($num),Expr($den)]); }
+  else {
+    Node('mstyle',[Node('mfrac',[Expr($num),Expr($den)])], displaystyle=>'false'); }
+});
 
-DefMathML('Apply:?:deriv',  sub { mml_deriv("\N{DOUBLE-STRUCK ITALIC SMALL D}",@_); });
-DefMathML('Apply:?:pderiv', sub { mml_deriv("\N{PARTIAL DIFFERENTIAL}",@_); });
+DefMathML('Apply:?:deriv',  sub { mml_deriv("\x{2146}",@_); }); # DOUBLE-STRUCK ITALIC SMALL D
+DefMathML('Apply:?:pderiv', sub { mml_deriv("\x{2202}",@_); }); # PARTIAL DIFFERENTIAL
 
 DefMathML('Apply:?:LimitFrom', sub {
   my($op,$arg,$dir)=@_;
@@ -416,15 +372,16 @@ sub mml_deriv {
 DefMathML('Apply:?:diff', sub {  
   my($op,$x,$n)=@_;
   if($n){
-    Row(Node('msup',[Op("\N{DOUBLE-STRUCK ITALIC SMALL D}"),Expr($n)]),Expr($x)); }
+    Row(Node('msup',[Op("\x{2146}"),Expr($n)]),Expr($x)); } # DOUBLE-STRUCK ITALIC SMALL D
   else {
-    Row(Op("\N{DOUBLE-STRUCK ITALIC SMALL D}"),Expr($x)); }});
+    Row(Op("\x{2146}"),Expr($x)); }}); # DOUBLE-STRUCK ITALIC SMALL D
+
 DefMathML('Apply:?:pdiff', sub {  
   my($op,$x,$n)=@_;
   if($n){
-    Row(Node('msup',[Op("\N{PARTIAL DIFFERENTIAL}"),Expr($n)]),Expr($x)); }
+    Row(Node('msup',[Op("\x{2202}"),Expr($n)]),Expr($x)); } # PARTIAL DIFFERENTIAL
   else {
-    Row(Op("\N{PARTIAL DIFFERENTIAL}"),Expr($x)); }});
+    Row(Op("\x{2202}"),Expr($x)); }}); # PARTIAL DIFFERENTIAL
 
 DefMathML('Apply:?:Cases', sub {
   my($op,@cases)=@_;
@@ -432,25 +389,34 @@ DefMathML('Apply:?:Cases', sub {
 
 DefMathML('Apply:?:Case',sub {
   my($op,@cells)=@_;
-  Node('mtr',[map(Node('mtd',[Expr($_)]),@cells)]); });
+  Node('mtr',[map(Node('mtd',[ExprPunct($_)]),@cells)]); });
 
 DefMathML('Apply:?:Array', sub {
   my($op,@rows)=@_;
   Node('mtable',[map(Expr($_),@rows)]); });
+
 DefMathML('Apply:?:Matrix', sub {
   my($op,@rows)=@_;
-  Row(Op('('), Node('mtable',[map(Expr($_),@rows)]),Op(')')); });
+  my($open,$close)=($op->getAttribute('open'),$op->getAttribute('close'));
+  my $table = Node('mtable',[map(Expr($_),@rows)]);
+  if($open||$close){
+    Row(($open ? Op($open) : ()),$table,($close ? Op($close) : ())); }
+  else {
+    $table; }});
+
 DefMathML('Apply:?:Row',sub {
   my($op,@cells)=@_;
   Node('mtr',[map(Expr($_),@cells)]); });
+
 DefMathML('Apply:?:Cell',sub {
   my($op,@content)=@_;
-  Node('mtd',[map(Expr($_),@content)]); });
+  Node('mtd',[map(ExprPunct($_),@content)]); });
 
 DefMathML('Apply:?:binomial', sub {
   my($op,$over,$under)=@_;
   Row(Op('('),Node('mtable',[Node('mtr',[Node('mtd',[Expr($over)])]),
 			       Node('mtr',[Node('mtd',[Expr($under)])])]), Op(')')); });
+
 DefMathML('Apply:?:pochhammer',sub {
   my($op,$a,$b)=@_;
   Node('msub',[Row(Op('('),Expr($a),Op(')')),Expr($b)]); });
@@ -472,20 +438,20 @@ sub do_cfrac {
   my($numer,$denom)=@_;
   if($denom->nodeName eq 'XMApp'){ # Denominator is some kind of application
     my ($denomop,@denomargs)=element_nodes($denom);
-    if($denomop->getAttribute('POS') =~ /ADDOP|SUBOP/){ # Is it a sum or difference?
+    if($denomop->getAttribute('role') eq 'ADDOP'){ # Is it a sum or difference?
       my $last = pop(@denomargs);			# Check last operand in denominator.
       # this is the current contribution to the cfrac (if we match the last term)
 #      my $curr = Node('mfrac',[Expr($numer),Row(Infix(map(Expr($_),$denomop,@denomargs)),Expr($denomop))]);
       my $curr = Node('mfrac',[Expr($numer),Row(Infix($denomop,@denomargs),Expr($denomop))]);
-      if(getTokenName($last) eq 'CenterEllipsis'){ # Denom ends w/ \cdots
+      if(getTokenName($last) eq 'cdots'){ # Denom ends w/ \cdots
 	return ($curr,Expr($last));}		   # bring dots up to toplevel
       elsif($last->nodeName eq 'XMApp'){	   # Denom ends w/ application --- what kind?
 	my($lastop,@lastargs)=element_nodes($last);
 	if(getTokenName($lastop) eq 'cfrac'){ # Denom ends w/ cfrac, pull it to toplevel
 #	  return ($curr,do_cfrac(@lastargs)); }
 	  return ($curr,Expr($last)); }
-	elsif((getTokenName($lastop) eq 'InvisibleTimes')  # Denom ends w/ *
-	      && (scalar(@lastargs)==2) && (getTokenName($lastargs[0]) eq 'CenterEllipsis')){
+	elsif((getTokenName($lastop) eq "\x{2062}")  # Denom ends w/ * (invisible)
+	      && (scalar(@lastargs)==2) && (getTokenName($lastargs[0]) eq 'cdots')){
 	  return ($curr,Expr($lastargs[0]),Expr($lastargs[1])); }}}}
   (Node('mfrac',[Expr($numer),Expr($denom)])); }
 

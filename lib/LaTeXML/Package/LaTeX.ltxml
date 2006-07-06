@@ -25,7 +25,6 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
-use charnames ":full";
 no warnings 'redefine';
 
 #**********************************************************************
@@ -53,25 +52,20 @@ no warnings 'redefine';
 # '\begin{env}', '\end{env}' control sequences created by DefEnvironment.
 
 DefExpandable('\begin{}',sub { 
-  my($gullet,$env)=@_;
+  my($self,$env)=@_;
   my $name = $env->toString;
-  if($gullet->getStomach->getMeaning(T_CS("\\begin{$name}"))){
+  if(T_CS("\\begin{$name}")->getDefinition){
     T_CS("\\begin{$name}"); } # Magic cs!
-  elsif($gullet->getStomach->getMeaning(T_CS("\\$name"))){
-    (T_CS('\begingroup'),T_CS("\\$name")); }
-  else {
-    Error("Environment \"$name\" is not defined"); }});
+  else {			# If not defined, let stomach handle it.
+    (T_CS('\begingroup'),T_CS("\\$name")); }});
 
 DefExpandable('\end{}',  sub { 
-  my($gullet,$env)=@_;
+  my($self,$env)=@_;
   my $name = $env->toString;
-  if($gullet->getStomach->getMeaning(T_CS("\\end{$name}"))){
+  if(T_CS("\\end{$name}")->getDefinition){
     T_CS("\\end{$name}"); } # Magic cs!
-  elsif($gullet->getStomach->getMeaning(T_CS("\\end$name"))){
-    (T_CS("\\end$name"),T_CS('\endgroup')); }
-  else { # Effectively, \endenv is \relax
-    (T_CS('\endgroup')); }});
-
+  else {
+    (T_CS("\\end$name"),T_CS('\endgroup')); }});
 #======================================================================
 # C.1.3 Fragile Commands
 #======================================================================
@@ -93,7 +87,7 @@ DefExpandable('\protect',undef);
 # C.1.6 The \\ Command
 #======================================================================
 # In math, \\ is just a formatting hint, unless within an array, cases, .. environment.
-DefConstructor("\\\\ Flag:* []", "\n", mathConstructor=>"<XMHint name='\\'/>", untex=>"\\\\\n");
+DefConstructor("\\\\ Flag:* []", "?IfMath(<XMHint name='\\'/>)(\n)", untex=>"\\\\\n");
 
 #**********************************************************************
 # C.2. The Structure of the Document
@@ -105,8 +99,8 @@ DefConstructor("\\\\ Flag:* []", "\n", mathConstructor=>"<XMHint name='\\'/>", u
 #   \end{document}
 
 DefEnvironment('{document}','<document>#body</document>',
-	       beforeDigest=> sub { $_[0]->setInPreamble(0); },
-	       afterDigest=> sub { $_[0]->getGullet->flush; return; });
+	       beforeDigest=> sub { $STOMACH->setInPreamble(0); },
+	       afterDigest=> sub { $GULLET->flush; return; });
 
 #**********************************************************************
 # C.3. Sentences and Paragraphs
@@ -133,11 +127,10 @@ DefConstructor('\LaTeX', 'LaTeX');
 our @MonthNames=(qw( January February March April May June
 		     July August September October November December));
 DefExpandable('\today',sub { 
-  my($gullet)=@_;
-  my $stomach = $gullet->getStomach;
-  Explode($MonthNames[$stomach->getValue('\month')->getValue]
-	  ." ".$stomach->getValue('\day')->getValue
-	  .', '.$stomach->getValue('\year')->getValue); });
+   Explode($MonthNames[$STOMACH->lookupValue('themonth')->getValue]
+	   ." ".$STOMACH->lookupValue('theday')->getValue
+	   .', '.$STOMACH->lookupValue('theyear')->getValue); });
+
 DefConstructor('\emph{}', "<emph>#1</emph>", mode=>'text');
 Tag('text', autoClose=>1, autoOpen=>1); # ???
 
@@ -192,14 +185,16 @@ foreach my $sec (qw(part chapter section subsection subsubsection paragraph subp
   Tag($sec, autoClose=>1);
   DefExpandable('\\'.$sec.' Flag:*',
 		sub { 
-		  my($gullet,$flag)=@_;
+		  my($self,$flag)=@_;
 		  if($flag){
 		    (T_CS('\\@@'.$sec)); }
 		  else {
-		    $gullet->getStomach->refStepCounter($sec);
+		    $STOMACH->refStepCounter($sec);
 		    (T_CS('\\@@'.$sec),T_OTHER('['),T_CS('\@currentlabel'),T_OTHER(']')); }});
   DefConstructor('\\@@'.$sec.'[][]{}',
-		 "<$sec ?#1(refnum='#1')><title>#3</title>?#2(<toctitle>#2</toctitle>)"); }
+		 "<$sec ?#1(refnum='#1')><title>#3</title>?#2(<toctitle>#2</toctitle>)",
+		 beforeDigest=>sub{ $STOMACH->bgroup; },
+		 afterDigest=>sub{ $STOMACH->egroup; }); }
 
 # Not sure if this is best, but if no explicit \section'ing...
 Tag('section',autoOpen=>1);
@@ -255,11 +250,10 @@ DefRegister('\mathindent',Dimension(0));
 # pre-defined packages??
 
 DefConstructor('\usepackage[]{}',"<?latexml package='#2' ?#1(options='#1')?>",
-	       afterDigest=>sub { my($stomach,$whatsit)=@_;
-				  my @pkgs = split(',',$whatsit->getArg(2)->toString);
-				  my $opt = $whatsit->getArg(1);
-				  my $options = [($opt ? split(',',($opt->toString)) :())];
-				  map($stomach->input($_, options=>$options),@pkgs); 
+	       afterDigest=>sub { my($whatsit,$options,$packages)=@_;
+				  my @pkgs = split(',',$packages->toString);
+				  $options = [($options ? split(',',($options->toString)) :())];
+				  map($STOMACH->input($_, options=>$options),@pkgs);
 				  return; });
 
 #======================================================================
@@ -269,10 +263,10 @@ DefConstructor('\usepackage[]{}',"<?latexml package='#2' ?#1(options='#1')?>",
 DefPrimitive('\pagestyle{}',    undef);
 DefPrimitive('\thispagestyle{}',undef);
 DefPrimitive('\markright{}',    undef);
-DefPrimitive('\markboth{}{}',undef);
+DefPrimitive('\markboth{}{}',   undef);
 DefPrimitive('\pagenumbering{}',undef);
-DefPrimitive('\twocolumn[]',       undef);
-DefPrimitive('\onecolumn',         undef);
+DefPrimitive('\twocolumn[]',    undef);
+DefPrimitive('\onecolumn',      undef);
 
 # Style parameters from Fig. C.3, p.182
 DefRegister('\paperheight',Dimension(0));
@@ -295,9 +289,9 @@ DefRegister('\marginparsep',Dimension(0));
 DefMacro('\@title','');
 DefMacro('\@author','');
 DefMacro('\@date','\today');
-DefPrimitive('\title{}', sub { DefMacro('\@title',$_[1])});
-DefPrimitive('\author{}', sub { DefMacro('\@author',$_[1])});
-DefPrimitive('\date{}', sub { DefMacro('\@date',$_[1])});
+DefPrimitive('\title{}',    sub { DefMacro('\@title',$_[1])});
+DefPrimitive('\author{}',   sub { DefMacro('\@author',$_[1])});
+DefPrimitive('\date{}',     sub { DefMacro('\@date',$_[1])});
 DefConstructor('\thanks{}', "<thanks>#1</thanks>");
 
 # Introduce secret control sequences to format the title, date, etc.
@@ -333,7 +327,7 @@ DefEnvironment('{verse}',    '<verse>#body</verse>');
 # C.6.2 List-Making environments
 #======================================================================
 Tag('item', autoClose=>1);
-DefConstructor('\item[]', "<item><tag>#1</tag>");
+DefConstructor('\item[]', "<item>?#1(<tag>#1</tag>)");
 
 DefEnvironment('{itemize}',    '<itemize>#body</itemize>');
 DefEnvironment('{enumerate}',  '<enumerate>#body</enumerate>');
@@ -377,26 +371,26 @@ DefEnvironment('{verbatim*}','<verbatim>#body</verbatim>');
 # verbatim is a bit of special case;
 # We're going to sidestep the Gullet for inputting, 
 # and also the usual environment capture.
-STOMACH->setMeaning(T_CS('\begin{verbatim}'),
-      LaTeXML::Constructor->new('\begin{verbatim}',undef,
-				"<verbatim font='#font'>#body</verbatim>",
-				beforeDigest=>[sub { $_[0]->bgroup; $_[0]->setFont(family=>'typewriter'); }],
-				afterDigest=>[sub {
-				  my($stomach,$whatsit)=@_;
-				  my $font = $whatsit->getFont;
-				  my @lines = $stomach->getGullet->readRawLines("\\end{verbatim}\n");
-				  $whatsit->setBody(map(Box($_,$font),@lines)); 
-				  $stomach->egroup; }]));
+$STOMACH->installDefinition(LaTeXML::Constructor
+			   ->new(T_CS('\begin{verbatim}'),undef,
+				 "<verbatim font='#font'>#body</verbatim>",
+				 beforeDigest=>[sub { $STOMACH->bgroup; 
+						      $STOMACH->setFont(family=>'typewriter');}],
+				 afterDigest=>[sub {
+						 my($whatsit)=@_;
+						 my $font = $whatsit->getFont;
+						 my $loc  = $whatsit->getLocator;
+						 my @lines = $GULLET->readRawLines("\\end{verbatim}\n");
+						 $whatsit->setBody(map(Box($_,$font,$loc),@lines));
+						 $STOMACH->egroup; }]));
 
 DefExpandable('\verb', sub { 
-  my($gullet)=@_;
-  my $stomach = $gullet->getStomach;
-  $stomach->bgroup(1);
-  $stomach->setCattable({});	# ALL chars will give CC_OTHER!
-  my $init = $gullet->readToken;
-  $init = $gullet->readToken if $init->toString eq '*'; # Should I bother handling \verb* ?
-  my $verb = $gullet->readUntil($init);
-  $stomach->egroup(1);
+  $STOMACH->bgroup(1);
+  $STOMACH->setCattable({});	# ALL chars will give CC_OTHER!
+  my $init = $GULLET->readToken;
+  $init = $GULLET->readToken if $init->toString eq '*'; # Should I bother handling \verb* ?
+  my $verb = $GULLET->readUntil($init);
+  $STOMACH->egroup(1);
   $verb->unlist; });
 
 # This is defined by the alltt package.
@@ -418,7 +412,7 @@ DefEnvironment('{math}',
 DefEnvironment('{equation}',
 	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>", 
 	       mode=>'display_math',
-	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); });
+	       properties=> {refnum=>sub { $STOMACH->refStepCounter('equation'); }});
 DefEnvironment('{equation*}',
 	       "<equation><Math mode='display'><XMath>#body<XMath></Math></equation>",
 	       mode=>'display_math');
@@ -430,20 +424,20 @@ DefPrimitive('\nonumber',undef);
 # Define \( ..\) and \[ ... \] to act like environments.
 DefConstructor('\[',
 	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>",
-	       beforeDigest=> sub{ $_[0]->beginMode('display_math'); },
+	       beforeDigest=> sub{ $STOMACH->beginMode('display_math'); },
 	       captureBody=>1);
-DefConstructor('\]'  ,"",beforeDigest=> sub{ $_[0]->endMode('display_math'); });
+DefConstructor('\]'  ,"",beforeDigest=> sub{ $STOMACH->endMode('display_math'); });
 DefConstructor('\(' ,
 	       "<Math mode='inline'><XMath>#body</XMath></Math>",
-	       beforeDigest=> sub{ $_[0]->beginMode('inline_math'); },
+	       beforeDigest=> sub{ $STOMACH->beginMode('inline_math'); },
 	       captureBody=>1);
-DefConstructor('\)'   ,"", beforeDigest=> sub{ $_[0]->endMode('inline_math'); });
+DefConstructor('\)'   ,"", beforeDigest=> sub{ $STOMACH->endMode('inline_math'); });
 
 # Can just enter math, can't we?
 #DefConstructor('\ensuremath{}', '#1', mode=>'inline_math');
 DefExpandable('\ensuremath{}', sub {
-  my($gullet,$stuff)=@_;
-  if($gullet->getStomach->inMath){ @$stuff; }
+  my($self,$stuff)=@_;
+  if($STOMACH->inMath){ @$stuff; }
   else { (T_MATH,@$stuff,T_MATH); }});
 
 # NOTE: Implement these
@@ -455,7 +449,7 @@ DefExpandable('\ensuremath{}', sub {
 DefEnvironment('{eqnarray}',
 	       "<equation refnum='#refnum'><Math mode='display'><XMath>#body</XMath></Math></equation>", 
 	       mode=>'display_math',
-	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('equation')); });
+	       properties=> {refnum=>sub { $STOMACH->refStepCounter('equation'); }});
 DefEnvironment('{eqnarray*}',
 	       "<equation><Math mode='display'><XMath>#body</XMath></Math></equation>", 
 	       mode=>'display_math');
@@ -472,8 +466,17 @@ DefRegister('\belowdisplayshortskip',Glue(0));
 #======================================================================
 # sub, superscript and prime are in Primitives.pm
 
-DefConstructor('\frac{}{}',
-	       "<XMApp><XMTok style='over'>/</XMTok><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+sub getMathStyle { $STOMACH->getMathStyle; }
+# Ugh; my state keeping is kinda messed up.
+# I want to set the style according to current math style
+# AND set the math style smaller for the args!
+our %fracstylemap=(display=>'text', text=>'script',
+		   script=>'scriptscript', scriptscript=>'scriptscript');
+sub beforeFrac { $STOMACH->bgroup; $STOMACH->setMathStyle($fracstylemap{$STOMACH->getMathStyle}); }
+sub afterFrac  { $STOMACH->egroup; $_[0]->setProperty('style',$STOMACH->getMathStyle); }
+DefMath('\frac{}{}','/', name=>"/", operator_role=>'MULOP',
+	beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
+
 DefConstructor('\sqrt[]{}',
 	       "?#1(<XMApp><XMTok name='root'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>)"
 	         ."(<XMApp><XMTok name='sqrt'/><XMArg>#2</XMArg></XMApp>)");
@@ -491,10 +494,9 @@ DefConstructor('\sqrt[]{}',
 #======================================================================
 # Modulo
 
-DefConstructor('\mod',"<XMTok>mod</XMTok>");
-DefConstructor('\pmod{}',
-	       "<XMApp name='pmod'><XMTok>pmod</XMTok><XMArg>#1</XMArg></XMApp>");
-DefConstructor('\bmod',"<XMTok>bmod</XMTok>");
+DefMath('\mod',    'mod');
+DefMath('\pmod{}', 'pmod');	# Role ???
+DefMath('\bmod',   'bnod', role=>'ADDOP');
 
 #======================================================================
 # C.7.4 Arrays
@@ -506,8 +508,7 @@ DefConstructor('\bmod',"<XMTok>bmod</XMTok>");
 #======================================================================-
 # All this is already in Primitives.pm
 
-DefConstructor('\stackrel{}{}',
-	       "<XMApp><XMTok name='stacked'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+DefMath('\stackrel{}{}','');
 #======================================================================-
 # C.7.6 Putting One Thing Above Another
 #======================================================================-
@@ -528,29 +529,29 @@ DefConstructor('\stackrel{}{}',
 # rather they override all of family, series and shape.
 
 DefConstructor('\mathrm{}', '#1',
-	       beforeDigest=>sub{ $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(family=>'serif'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'serif'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 DefConstructor('\mathit{}',  '#1',
-	       beforeDigest=>sub{ $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(shape=>'italic'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(shape=>'italic'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 DefConstructor('\mathbf{}',  '#1',
-	       beforeDigest=>sub{ $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(series=>'bold'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(series=>'bold'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 DefConstructor('\mathsf{}',  '#1',
-	       beforeDigest=>sub{ $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(family=>'sansserif'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'sansserif'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 DefConstructor('\mathtt{}',  '#1',
-	       beforeDigest=>sub{ $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(family=>'typewriter'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'typewriter'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 DefConstructor('\mathcal{}', '#1',
-	       beforeDigest=>sub{ $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(family=>'caligraphic'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'caligraphic'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 DefConstructor('\mathfrak{}','#1',
-	       beforeDigest=>sub{ $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(family=>'fraktur'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'fraktur'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 DefConstructor('\mathscr{}', '#1',
-	       beforeDigest=>sub{ $_[0]->requireMath; $_[0]->bgroup; $_[0]->setFont(family=>'script'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+	       beforeDigest=>sub{ requireMath; $STOMACH->bgroup; $STOMACH->setFont(family=>'script'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 
 #**********************************************************************
 # C.8 Definitions, Numbering and Programming
@@ -559,22 +560,30 @@ DefConstructor('\mathscr{}', '#1',
 #======================================================================
 # C.8.1 Defining Commands
 #======================================================================
-sub do_newcommand {
-  my($newonly,$stomach,$cs,$nargs,$opt,$body)=@_;
-  my $name = $cs->toString;
-  if($stomach->getMeaning($cs)){
-    if($newonly == 1)  { Error("$name is already defined"); }
-    elsif($newonly==-1){ return; }}
-  $nargs = (defined $nargs ? $nargs->toString : 0);
-  $nargs-- if $opt;
-  DefMacro(join('',$name,($opt ? '[Default:'.$opt->toString.']' :''),map('{}',1..$nargs)),$body);
-  return; }
 
-DefPrimitive('\newcommand{Token}[][]{}',    sub { do_newcommand(+1,@_); });
-DefPrimitive('\renewcommand{Token}[][]{}',  sub { do_newcommand( 0,@_); });
-DefPrimitive('\providecommand{Token}[][]{}',sub { do_newcommand(-1,@_); });
+DefPrimitive('\newcommand{Token}[][]{}', sub {
+  my($self,$cs,$nargs,$opt,$body)=@_;
+  Fatal(Stringify($cs)." is already defined") if $cs->getDefinition;
+  DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body);
+  return; });
+
+DefPrimitive('\renewcommand{Token}[][]{}', sub {
+  my($self,$cs,$nargs,$opt,$body)=@_;
+  DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body);
+  return; });
+
+DefPrimitive('\providecommand{Token}[][]{}', sub {
+  my($self,$cs,$nargs,$opt,$body)=@_;
+  return if $cs->getDefinition;
+  DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body);
+  return; });
+
 # Need to figure out exactly what `robust' means to LaTeXML...
-DefPrimitive('\DeclareRobustCommand{Token}[][]{}',sub { do_newcommand(-1,@_); });
+DefPrimitive('\DeclareRobustCommand{Token}[][]{}', sub {
+  my($self,$cs,$nargs,$opt,$body)=@_;
+  return if $cs->getDefinition;
+  DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body);
+  return; });
 
 #======================================================================
 # C.8.2 Defining Environments
@@ -582,19 +591,20 @@ DefPrimitive('\DeclareRobustCommand{Token}[][]{}',sub { do_newcommand(-1,@_); })
 # Note that \env & \endenv defined by \newenvironment CAN be 
 # invoked directly.
 
-sub do_newenvironment {
-  my($newonly,$stomach,$name,$nargs,$opt,$begin,$end)=@_;
+DefPrimitive('\newenvironment{}[][]{}{}', sub {
+  my($self,$name,$nargs,$opt,$begin,$end)=@_;
   $name = $name->toString;
-  if($stomach->getMeaning(T_CS("\\$name"))){
-    if($newonly){ Error("Environment $name is already defined"); }}
-  $nargs = (defined $nargs ? $nargs->toString : 0);
-  $nargs-- if $opt;
-  DefMacro(join('','\\',$name,($opt ? '[Default:'.$opt->toString.']' :''),map('{}',1..$nargs)),$begin);
+  Fatal("Environment $name is already defined") if T_CS("\\$name")->getDefinition;
+  DefMacro(join('','\\',$name, convertLaTeXArgs($nargs,$opt)),$begin);
   DefMacro(join('','\\end',$name),$end);
-  return; }
+  return; });
 
-DefPrimitive('\newenvironment{}[][]{}{}',  sub { do_newenvironment(1,@_); });
-DefPrimitive('\renewenvironment{}[][]{}{}',sub { do_newenvironment(0,@_); });
+DefPrimitive('\renewenvironment{}[][]{}{}', sub {
+  my($self,$name,$nargs,$opt,$begin,$end)=@_;
+  $name = $name->toString;
+  DefMacro(join('','\\',$name, convertLaTeXArgs($nargs,$opt)),$begin);
+  DefMacro(join('','\\end',$name),$end);
+  return; });
 
 #======================================================================
 # C.8.3 Theorem-like Environments
@@ -610,41 +620,39 @@ DefPrimitive('\renewenvironment{}[][]{}{}',sub { do_newenvironment(0,@_); });
 DefPrimitive('\newcounter{}[]',sub { shift; NewCounter(@_); return; });
 
 DefPrimitive('\setcounter{}{}',sub {
-  my($stomach,$ctr,$value)=@_;
-  my $gullet = $stomach->getGullet;
+  my($self,$ctr,$value)=@_;
   $ctr=$ctr->toString;
-  $gullet->unread(@$value,T_CS('\relax')); # Put back, so we can read as <number>
-  $stomach->setValue("c\@$ctr",$gullet->readNumber(),1); 
+  $GULLET->unread(@$value,T_CS('\relax')); # Put back, so we can read as <number>
+  $STOMACH->assignValue("c\@$ctr",$GULLET->readNumber(),1); 
   return});
 
 DefPrimitive('\addtocounter{}{}',sub {
-  my($stomach,$ctr,$value)=@_;
-  my $gullet = $stomach->getGullet;
+  my($self,$ctr,$value)=@_;
   $ctr=$ctr->toString;
-  $gullet->unread(@$value,T_CS('\relax')); # Put back, so we can read as <number>
-  $stomach->setValue("c\@$ctr",$stomach->getValue("c\@$ctr")->add($gullet->readNumber),1);
+  $GULLET->unread(@$value,T_CS('\relax')); # Put back, so we can read as <number>
+  $STOMACH->assignValue("c\@$ctr",$STOMACH->lookupValue("c\@$ctr")->add($GULLET->readNumber),1);
   return; });
 
-DefPrimitive('\stepcounter{}',   sub { $_[0]->stepCounter($_[1]); return; });
-DefPrimitive('\refstepcounter{}',sub { $_[0]->refStepCounter($_[1]); return; });
+DefPrimitive('\stepcounter{}',   sub { $STOMACH->stepCounter($_[1]); return; });
+DefPrimitive('\refstepcounter{}',sub { $STOMACH->refStepCounter($_[1]); return; });
 
 DefExpandable('\value{}', sub {
-  Explode($_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue);});
+  Explode($STOMACH->lookupValue('\c@'.$_[1]->toString)->getValue);});
 DefExpandable('\arabic{}',sub {
-  Explode($_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue); });
+  Explode($STOMACH->lookupValue('\c@'.$_[1]->toString)->getValue); });
 DefExpandable('\roman{}', sub {
-  roman($_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue); });
+  roman($STOMACH->lookupValue('\c@'.$_[1]->toString)->getValue); });
 DefExpandable('\Roman{}', sub {
-  Roman($_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue); });
+  Roman($STOMACH->lookupValue('\c@'.$_[1]->toString)->getValue); });
 DefExpandable('\alph{}',  sub {
-  T_OTHER(chr($_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue+ord('a')-1));});
+  T_OTHER(chr($STOMACH->lookupValue('\c@'.$_[1]->toString)->getValue+ord('a')-1));});
 DefExpandable('\Alph{}',  sub {
-  T_OTHER(chr($_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue+ord('A')-1));});
+  T_OTHER(chr($STOMACH->lookupValue('\c@'.$_[1]->toString)->getValue+ord('A')-1));});
 our @fnsymbols=(T_OTHER('*'), T_CS('\dag'), T_CS('\ddag'), T_CS('\S'), T_CS('\P'),
 		T_CS('\Vert'), T_OTHER('**'), Tokens(T_CS('\dag'),T_CS('\dag')),
 		Tokens(T_CS('\ddag'),T_CS('\ddag')));
 DefExpandable('\fnsymbol{}',sub { 
-  $fnsymbols[$_[0]->getStomach->getValue('\c@'.$_[1]->toString)->getValue-1]->unlist;});
+  $fnsymbols[$STOMACH->lookupValue('\c@'.$_[1]->toString)->getValue-1]->unlist;});
 
 #======================================================================
 # C.8.5 The ifthen Package.
@@ -666,14 +674,13 @@ DefExpandable('\fnsymbol{}',sub {
 # (to allow multiple figures per figure environment?).
 # We'll have to sort that out later....
 DefEnvironment('{figure}[]', "<figure refnum='#refnum' ?#1(placement='#1')>#body</figure>",
-	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('figure')); });
+	       properties=> { refnum=> sub { $STOMACH->refStepCounter('figure'); }});
 DefEnvironment('{figure*}[]', "<figure refnum='#refnum' ?#1(placement='#1')>#body</figure>",
-	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('figure')); });
+	       properties=> { refnum=> sub { $STOMACH->refStepCounter('figure'); }});
 DefEnvironment('{table}[]',   "<table refnum='#refnum' ?#1(placement='#1')>#body</table>",
-	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('table')); });
+	       properties=> { refnum=> sub { $STOMACH->refStepCounter('table'); }});
 DefEnvironment('{table*}[]',  "<table refnum='#refnum' ?#1(placement='#1')>#body</table>",
-	       afterDigestBegin=> sub { $_[1]->setProperty(refnum=>$_[0]->refStepCounter('table')); });
-
+	       properties=> { refnum=> sub { $STOMACH->refStepCounter('table'); }});
 DefConstructor('\caption[]{}',"<caption>#2</caption>\n?#1(<toccaption>#1</toccaption>)");
 
 DefPrimitive('\suppressfloats[]', undef);
@@ -728,37 +735,46 @@ Tag('td', autoOpen=>1, autoClose=>1);
 # Note: we allow a tabular to float up to where it is allowed!
 DefEnvironment('{tabular}[]{}', "^<tabular pattern='#2'>#body</tabular>",
   beforeDigest=> sub {
-      DefConstructor('&',sub { close_table_cell($_[0]); },
-		    beforeDigest=>sub { $_[0]->egroup; },
-		    afterDigest=>sub { $_[0]->bgroup; } );
-      DefConstructor("\\\\ Flag:* []", sub { $_[0]->closeElement('tr') if $_[0]->getNode->canClose('tr'); },
+      DefConstructor('&',sub { close_table_cell(); },
+		    beforeDigest=>sub { $STOMACH->egroup; },
+		    afterDigest=>sub { $STOMACH->bgroup; } );
+      DefConstructor("\\\\ Flag:* []", sub { $INTESTINE->maybeCloseElement('tr'); },
 		     untex=>"\\\\\n",
-		     beforeDigest=>sub { $_[0]->egroup; },
-		     afterDigest=>sub { $_[0]->bgroup; } );
-      $_[0]->bgroup;
+		     beforeDigest=>sub { $STOMACH->egroup; },
+		     afterDigest=>sub { $STOMACH->bgroup; } );
+      $STOMACH->bgroup;
       return; },
-  afterDigest=> sub { $_[0]->egroup; },
+  afterDigest=> sub { $STOMACH->egroup; },
   mode=>'text');
 
-# This should be in Primitives, but I don't have any alignment code there yet...
-DefConstructor('&',sub { close_table_cell($_[0]); },
-	       mathConstructor=>"<XMTok name='ALIGN'/>");
+# ignore width(#1), and pos(#2)
+DefEnvironment('{tabular*}{}[]{}', "^<tabular pattern='#2'>#body</tabular>",
+  beforeDigest=> sub {
+      DefConstructor('&',sub { close_table_cell(); },
+		    beforeDigest=>sub { $STOMACH->egroup; },
+		    afterDigest=>sub { $STOMACH->bgroup; } );
+      DefConstructor("\\\\ Flag:* []", sub { $INTESTINE->maybeCloseElement('tr'); },
+		     untex=>"\\\\\n",
+		     beforeDigest=>sub { $STOMACH->egroup; },
+		     afterDigest=>sub { $STOMACH->bgroup; } );
+      $STOMACH->bgroup;
+      return; },
+  afterDigest=> sub { $STOMACH->egroup; },
+  mode=>'text');
+
 # This handles & in tables.
 # If there is an open td or multicolumn, close it,
 # Otherwise, we need to open a td first, then close it!
 # NOTE: It needs to be generalized for different sorts of arrays, etc.
 sub close_table_cell {
-  my($intestine)=@_;
-  my $n = $intestine->getNode;
-  while($n && $n->canAutoClose){
-#    if ($$n{tag} =~ /(td|multicolumn)/){
+  my $n = $INTESTINE->getNode;
+  while($n && $MODEL->canAutoClose($n->getNodeName)){
     if ($$n{tag} eq 'td'){
-      $intestine->closeElement($$n{tag});
+      $INTESTINE->closeElement($$n{tag});
       return; }
     $n=$$n{parent}; }
   # Didn't find anything...
-  $intestine->insertElement('td');
-}
+  $INTESTINE->insertElement('td'); }
 
 # Open, but don't close, so "&" can operate correctly.
 DefConstructor('\multicolumn{}{}{}',"<td colspan='#1' pattern='#2'>#3");
@@ -768,85 +784,85 @@ DefConstructor('\hline',"<hline/>");
 DefRegister('\arraycolsep',Dimension(0));
 DefRegister('\tabcolsep',Dimension(0));
 DefRegister('\arrayrulewidth',Dimension(0));
+DefMacro('\extracolsep{}','');
 DefMacro('\arraystretch',"1");
 
 # Array and similar environments
 # Since in Math, we're using XMTok and XMApp generically, rather than specific <tr>,<td> etc.
 # we have to do all the `automatic' open/close manually.
 sub matharray {
-  my($intestine,$alignment,$props, $arrayname,$rowname,$cellname)=@_;
+  my($alignment,$props, $arrayname,$rowname,$cellname,%attributes)=@_;
   local($LaTeXML::arrayname,$LaTeXML::rowname,$LaTeXML::cellname)=($arrayname,$rowname,$cellname);
   # Open the Array, and an initial row and cell.
-  open_matharray_level($intestine,$arrayname);
-  open_matharray_level($intestine,$rowname);
-  open_matharray_level($intestine,$cellname);
-  open_matharray_arg($intestine);
+  open_matharray_level($arrayname,%attributes);
+  open_matharray_level($rowname);
+  open_matharray_level($cellname);
+  open_matharray_arg();
   # Now process the body (& and // should be bound to matharray_{align|cr} )
-  $intestine->absorb($$props{body});
+  $INTESTINE->absorb($$props{body});
   # Close open cell and row, pruning empty ones.
-  close_matharray_arg($intestine);
-  close_matharray_level($intestine,$cellname,1);
-  close_matharray_level($intestine,$rowname,1);
-  close_matharray_level($intestine,$arrayname,0);
+  close_matharray_arg();
+  close_matharray_level($cellname,1);
+  close_matharray_level($rowname,1);
+  close_matharray_level($arrayname,0);
 }
 
 # Close XMArg, and if empty, remove it.
 sub open_matharray_arg {
-  my($intestine)=@_;
   # NOTE: Until this gets better sorted out, allow punctuation!
-  $intestine->openElement('XMArg',rule=>'Anything,'); }
+  $INTESTINE->openElement('XMArg',rule=>'Anything,'); }
 
 sub close_matharray_arg {
-  my($intestine)=@_;
-  my $node = $intestine->closeElement('XMArg')->lastChild;
-  if(grep(ref $_ ne 'LaTeXML::DOM::Comment', $node->childNodes) == 0){ # No non-comment => `empty'
+  my $node = $INTESTINE->closeElement('XMArg')->lastChild;
+  # If XMArg is (except for comments) empty, remove it, but move it's comments up.
+  if(grep(ref $_ ne 'LaTeXML::CommentNode', $node->childNodes) == 0){ # No non-comment => `empty'
     $node->getParentNode->removeChild($node);
-    map($node->getParentNode->insert($_),grep(ref $_ eq 'LaTeXML::DOM::Comment', $node->childNodes)); }
+    map($node->getParentNode->insert($_),grep(ref $_ eq 'LaTeXML::CommentNode', $node->childNodes)); }
 }
 
 sub open_matharray_level {
-  my($intestine,$levelname)=@_;
-  $intestine->openElement('XMApp'); 
-  $intestine->insertElement('XMTok',undef,name=>$levelname); }
+  my($levelname,%attributes)=@_;
+  $INTESTINE->openElement('XMApp'); 
+  $INTESTINE->insertElement('XMTok',undef,name=>$levelname,%attributes); }
 
 sub close_matharray_level {
-  my($intestine,$levelname,$prune)=@_;
-  my $node = $intestine->closeElement('XMApp')->lastChild;
-  if(grep(ref $_ ne 'LaTeXML::DOM::Comment', $node->childNodes) == 1){ # Only 1 non-comment => `empty'
+  my($levelname,$prune)=@_;
+  # If XMApp is empty (except for the Array/Row/Cell operator and comments), remove it,
+  # but preserve the commetns.
+  my $node = $INTESTINE->closeElement('XMApp')->lastChild;
+  if(grep(ref $_ ne 'LaTeXML::CommentNode', $node->childNodes) == 1){ # Only 1 non-comment => `empty'
     $node->getParentNode->removeChild($node);
-    map($node->getParentNode->insert($_),grep(ref $_ eq 'LaTeXML::DOM::Comment', $node->childNodes)); }
+    map($node->getParentNode->insert($_),grep(ref $_ eq 'LaTeXML::CommentNode', $node->childNodes)); }
 }
 
 sub matharray_align {
-  my($intestine)=@_;
-  close_matharray_arg($intestine);
-  close_matharray_level($intestine,$LaTeXML::cellname);
-  open_matharray_level($intestine,$LaTeXML::cellname);
-  open_matharray_arg($intestine);
+  close_matharray_arg();
+  close_matharray_level($LaTeXML::cellname);
+  open_matharray_level($LaTeXML::cellname);
+  open_matharray_arg();
 }
 sub matharray_cr {
-  my($intestine)=@_;
-  close_matharray_arg($intestine);
-  close_matharray_level($intestine,$LaTeXML::cellname,1);
-  close_matharray_level($intestine,$LaTeXML::rowname);
-  open_matharray_level($intestine,$LaTeXML::rowname);
-  open_matharray_level($intestine,$LaTeXML::cellname);
-  open_matharray_arg($intestine);
+  close_matharray_arg();
+  close_matharray_level($LaTeXML::cellname,1);
+  close_matharray_level($LaTeXML::rowname);
+  open_matharray_level($LaTeXML::rowname);
+  open_matharray_level($LaTeXML::cellname);
+  open_matharray_arg();
 }
 
 
 sub matharray_defs {
   DefConstructor('&', \&matharray_align,
-		 beforeDigest=>sub { $_[0]->egroup; },
-		 afterDigest=>sub { $_[0]->bgroup; } );
+		 beforeDigest=>sub { $STOMACH->egroup; },
+		 afterDigest=>sub { $STOMACH->bgroup; } );
   DefConstructor("\\\\ Flag:* []", \&matharray_cr,
-		 beforeDigest=>sub { $_[0]->egroup; },
-		 afterDigest=>sub { $_[0]->bgroup; } );
-  $_[0]->bgroup;
+		 beforeDigest=>sub { $STOMACH->egroup; },
+		 afterDigest=>sub { $STOMACH->bgroup; } );
+  $STOMACH->bgroup;
   return; }
 sub matharray_end {
-  $_[0]->egroup; }
-DefEnvironment('{array}[]{}',sub { matharray($_[0],$_[2],$_[3], 'Array','Row','Cell');},
+  $STOMACH->egroup; }
+DefEnvironment('{array}[]{}',sub { matharray($_[2],$_[3], 'Array','Row','Cell');},
 	       beforeDigest=>\&matharray_defs, afterDigest=>\&matharray_end);
 
 #**********************************************************************
@@ -863,8 +879,8 @@ DefPrimitive('\nofiles',undef);
 #======================================================================
 # add a label id to nearest labelable element.
 DefConstructor('\label{semiverb}',"^ label='#1'",  mode=>'text', untex=>'',
-	      afterDigest=>sub { $_[0]->setValue('LABEL@'.$_[1]->getArg(1)->toString, 
-						 $_[0]->digest(T_CS('\@currentlabel')),1); });
+	       afterDigest=>sub {$STOMACH->assignValue('LABEL@'.$_[1]->toString, 
+						      $STOMACH->digest(T_CS('\@currentlabel')),1); });
 
 DefMacro('\ref{semiverb}', '\@REF{#1}{\@VALUE{LABEL@#1}}');
 DefMacro('\pageref{semiverb}', '\@REF{#1}{\@VALUE{LABEL@#1}}'); # Any sense in distinguishing?
@@ -883,14 +899,14 @@ DefEnvironment('{thebibliography}{}',"<bibliography>#body</bibliography>");
 DefConstructor('\bibitem[]{}',"<bibitem ref='#1'>#1</bibitem>");
 
 sub makecite {
-  my($style,$show, $intestine,$phrase1,$phrase2,$ref)=@_;
-  $intestine->openElement('cite', ref=>$ref,style=>$style, show=>$show);
+  my($style,$show, $self,$phrase1,$phrase2,$ref)=@_;
+  $INTESTINE->openElement('cite', ref=>$ref,style=>$style, show=>$show);
   if(defined $phrase1 && defined $phrase2){
-    $intestine->insertElement('citepre',$phrase1);
-    $intestine->insertElement('citepost',$phrase2); }
+    $INTESTINE->insertElement('citepre',$phrase1);
+    $INTESTINE->insertElement('citepost',$phrase2); }
   elsif(defined $phrase1){
-    $intestine->insertElement('citepost',$phrase1); }
-  $intestine->closeElement('cite'); }
+    $INTESTINE->insertElement('citepost',$phrase1); }
+  $INTESTINE->closeElement('cite'); }
 
 # Most of this is really natbib style.
 DefConstructor('\cite[][]{semiverb}',       sub { makecite('intext','all',@_); });
@@ -906,35 +922,33 @@ DefConstructor('\citeyearpar[][]{semiverb}',sub { makecite('parenthetic','year',
 #======================================================================
 # LaTeX's \input is a bit different...
 DefPrimitive('\input', sub {
-  my($stomach)=@_;
   my ($tok,$file);
-  my $gullet=$stomach->getGullet;
-  if($tok=$gullet->ifNext('{',CC_BEGIN)){ # Read LaTeX style
-    $gullet->unread($tok);
-    $file=$gullet->expandTokens($gullet->readArg()); }
+  if($tok=$GULLET->ifNext('{',CC_BEGIN)){ # Read LaTeX style
+    $GULLET->unread($tok);
+    $file=$GULLET->expandTokens($GULLET->readArg()); }
   else {			# Read TeX style.
     my ($token,@tokens)=();
-    while(($token=$gullet->readXToken()) && ($token->getCatcode != CC_SPACE)){
+    while(($token=$GULLET->readXToken()) && ($token->getCatcode != CC_SPACE)){
       push(@tokens,$token); }
     $file = Tokens(@tokens); }
-  $stomach->input($file);
+  $STOMACH->input($file);
   return; });
 
 # Note that even excluded files SHOULD have the effects of their inclusion
 # simulated by having read the corresponding aux file;
 # But we're not bothering with that.
 DefPrimitive('\include{}',sub { 
-  my($stomach,$file)=@_;
+  my($self,$file)=@_;
   $file = $file->toString;
-  my $table = $stomach->getValue('including@only');
-  $stomach->input($file) if !$table || $$table{$file};
+  my $table = $STOMACH->lookupValue('including@only');
+  $STOMACH->input($file) if !$table || $$table{$file};
   return;});
 
 DefPrimitive('\includeonly{}',sub {
-  my($stomach,$files)=@_;
+  my($self,$files)=@_;
   $files = $files->toString;
-  my $table = $stomach->getValue('including@only');
-  $stomach->setValue('including@only', $table = {}, 1) unless $table;
+  my $table = $STOMACH->lookupValue('including@only');
+  $STOMACH->assignValue('including@only', $table = {}, 1) unless $table;
   map( $$table{$_}=1, split(',',$files));
   return; });
 
@@ -954,7 +968,7 @@ DefPrimitive('\makeglossary',undef);
 # A bit screwy, but....
 # Expand \index{a!b!...} into \@index{\@indexphrase{a}\@indexphrase{b}...}
 DefExpandable('\index{}',sub { 
-  my($gullet,$phrases)=@_;
+  my($self,$phrases)=@_;
   my @expansion = (T_CS('\@index'),T_BEGIN);
   # Split the text into phrases, separated by "!"
   my @tokens = $phrases->unlist;
@@ -982,8 +996,8 @@ DefConstructor('\@indexphrase{}',"<indexphrase>#1</indexphrase>");
 #======================================================================
 
 DefPrimitive('\typeout{}',sub {
-  my($stomach,$stuff)=@_;
-  print STDERR $stomach->getGullet->expandTokens($stuff)->untex; 
+  my($self,$stuff)=@_;
+  print STDERR $GULLET->expandTokens($stuff)->untex;
   return; });
 
 #DefPrimitive('\typein[]{}',sub {
@@ -1036,17 +1050,17 @@ DefPrimitive('\cleardoublepage',undef);
 # \stretch
 # \newlength{cmd}
 DefPrimitive('\newlength{Token}',sub {
-  my($stomach,$cmd)=@_;
+  my($self,$cmd)=@_;
   DefRegister($cmd->toString,Dimension(0)); });
 # \setlength{cmd}{len}
 DefPrimitive('\setlength{Token}{Dimension}',sub{
-  my($stomach,$cmd,$dimen)=@_;
-  $stomach->getDefinition($cmd)->setValue($stomach,$dimen);});
+  my($self,$cmd,$dimen)=@_;
+  $cmd->getDefinition->setValue($dimen);});
 # \addtolength{cmd}{len}
 DefPrimitive('\addtolength{Token}{Dimension}',sub{
-  my($stomach,$cmd,$dimen)=@_;
-  my $defn =  $stomach->getDefinition($cmd);
-  $defn->setValue($stomach,$defn->getValue($stomach)->add($dimen));});
+  my($self,$cmd,$dimen)=@_;
+  my $register =  $cmd->getDefinition;
+  $register->setValue($register->getValue->add($dimen));});
 # \settowidth{cmd}{text}
 # \settoheight{cmd}{text}
 # \settodepth{cmd}{text}
@@ -1078,21 +1092,21 @@ DefConstructor('\makebox[][]{}',"<text ?#1(width='#1') ?#2(pos='#2')>#3</text>",
 DefConstructor('\fbox{}',"<text framed='yes'>#1</text>", mode=>'text');
 DefConstructor('\framebox[][]{}',"<text ?#1(width='#1') ?#2(pos='#2') framed='yes'>#3</text>",
 	       mode=>'text');
-DefPrimitive('\newsavebox{Token}',sub { $_[0]->setValue('box'.$_[1]->toString, List());});
+DefPrimitive('\newsavebox{Token}',sub { $STOMACH->assignValue('box'.$_[1]->toString, List());});
 DefPrimitive('\sbox{Token}{}',sub {
-   $_[0]->setValue('box'.$_[1]->toString, $_[0]->digest($_[2]));});
+   $STOMACH->assignValue('box'.$_[1]->toString, $STOMACH->digest($_[2]));});
 DefPrimitive('\savebox{Token}[][]{}',sub {
-   $_[0]->setValue('box'.$_[1]->toString, $_[0]->digest($_[4]));});
+   $STOMACH->assignValue('box'.$_[1]->toString, $STOMACH->digest($_[4]));});
 DefEnvironment('{lrbox}{Token}','',
   afterDigest=>sub{ 
-    my($stomach,$whatsit)=@_;
-    $stomach->setValue('box'.$whatsit->getArg(1)->toString, $whatsit->getProperty('body'));
+    my($whatsit,$name)=@_;
+    $STOMACH->assignValue('box'.$name->toString, $whatsit->getProperty('body'));
     return; });
-DefPrimitive('\usebox{Token}', sub { $_[0]->getValue('box'.$_[1]->toString);});
+DefPrimitive('\usebox{Token}', sub { $STOMACH->lookupValue('box'.$_[1]->toString);});
 
 DefConstructor('\parbox[][]{}',"<text ?#2(width='#2') ?#1(pos='#1') justified='yes'>#3</text>",
 	       mode=>'text');
-DefEnvironment('{minipage}[]{}',"<text ?#2(width='#2') ?#1(pos='#1') justified='yes'>#3</text>",
+DefEnvironment('{minipage}[]{}',"<text ?#2(width='#1') justified='yes'>#2</text>",
 	       mode=>'text');
 DefConstructor('\rule[]{}{}', "<rule ?#1(raise='#1') width='#2' height='#3'/>");
 
@@ -1106,57 +1120,74 @@ DefConstructor('\rule[]{}{}', "<rule ?#1(raise='#1') width='#2' height='#3'/>");
 
 # What about \f@family, etc....?
 # These are not allowed in math.
-DefConstructor('\mdseries', '', beforeDigest=>sub{ $_[0]->forbidMath; $_[0]->setFont(series=>'medium')});
-DefConstructor('\bfseries', '', beforeDigest=>sub{ $_[0]->forbidMath; $_[0]->setFont(series=>'bold')});
+DefConstructor('\mdseries', '', 
+	       beforeDigest=>sub{ forbidMath; $STOMACH->setFont(series=>'medium')});
+DefConstructor('\bfseries', '', 
+	       beforeDigest=>sub{ forbidMath; $STOMACH->setFont(series=>'bold')});
 
-DefConstructor('\rmfamily', '', beforeDigest=>sub{ $_[0]->forbidMath; $_[0]->setFont(family=>'serif')});
-DefConstructor('\sffamily', '', beforeDigest=>sub{ $_[0]->forbidMath; $_[0]->setFont(family=>'sansserif')});
-DefConstructor('\ttfamily', '', beforeDigest=>sub{ $_[0]->forbidMath; $_[0]->setFont(family=>'typewriter')});
+DefConstructor('\rmfamily', '', 
+	       beforeDigest=>sub{ forbidMath; $STOMACH->setFont(family=>'serif')});
+DefConstructor('\sffamily', '', 
+	       beforeDigest=>sub{ forbidMath; $STOMACH->setFont(family=>'sansserif')});
+DefConstructor('\ttfamily', '', 
+	       beforeDigest=>sub{ forbidMath; $STOMACH->setFont(family=>'typewriter')});
 
-DefConstructor('\upshape',  '', beforeDigest=>sub{ $_[0]->forbidMath; $_[0]->setFont(shape=>'upright')});
-DefConstructor('\itshape',  '', beforeDigest=>sub{ $_[0]->forbidMath; $_[0]->setFont(shape=>'italic')});
-DefConstructor('\slshape',  '', beforeDigest=>sub{ $_[0]->forbidMath; $_[0]->setFont(shape=>'slanted')});
-DefConstructor('\scshape',  '', beforeDigest=>sub{ $_[0]->forbidMath; $_[0]->setFont(shape=>'smallcaps')});
+DefConstructor('\upshape',  '', 
+	       beforeDigest=>sub{ forbidMath; $STOMACH->setFont(shape=>'upright')});
+DefConstructor('\itshape',  '', 
+	       beforeDigest=>sub{ forbidMath; $STOMACH->setFont(shape=>'italic')});
+DefConstructor('\slshape',  '', 
+	       beforeDigest=>sub{ forbidMath; $STOMACH->setFont(shape=>'slanted')});
+DefConstructor('\scshape',  '', 
+	       beforeDigest=>sub{ forbidMath; $STOMACH->setFont(shape=>'smallcaps')});
 
 DefConstructor('\normalfont', '', 
-	       beforeDigest=>sub{ $_[0]->setFont(family=>'serif', series=>'medium', shape=>'upright')});
+	       beforeDigest=>sub{ $STOMACH->setFont(family=>'serif', series=>'medium', shape=>'upright')});
 
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
-DefConstructor('\textmd{}','#1', mode=>'text', mathConstructor=>"<text>#1</text>",
-	       beforeDigest=>sub{ $_[0]->bgroup; $_[0]->setFont(series=>'medium'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+DefConstructor('\textmd{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+	       beforeDigest=>sub{ $STOMACH->bgroup; $STOMACH->setFont(series=>'medium'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 
-DefConstructor('\textbf{}','#1', mode=>'text', mathConstructor=>"<text>#1</text>",
-	       beforeDigest=>sub{ $_[0]->bgroup; $_[0]->setFont(series=>'bold'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+DefConstructor('\textbf{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+	       beforeDigest=>sub{ $STOMACH->bgroup; $STOMACH->setFont(series=>'bold'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 
-DefConstructor('\textrm{}','#1', mode=>'text', mathConstructor=>"<text>#1</text>",
-	       beforeDigest=>sub{ $_[0]->bgroup; $_[0]->setFont(family=>'serif'); },
-	       afterDigest=>sub{$_[0]->egroup; });
-DefConstructor('\textsf{}','#1', mode=>'text', mathConstructor=>"<text>#1</text>",
-	       beforeDigest=>sub{ $_[0]->bgroup; $_[0]->setFont(family=>'sansserif'); },
-	       afterDigest=>sub{$_[0]->egroup; });
-DefConstructor('\texttt{}','#1', mode=>'text', mathConstructor=>"<text>#1</text>",
-	       beforeDigest=>sub{ $_[0]->bgroup; $_[0]->setFont(family=>'typewriter'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+DefConstructor('\textrm{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+	       beforeDigest=>sub{ $STOMACH->bgroup; $STOMACH->setFont(family=>'serif'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
+DefConstructor('\textsf{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+	       beforeDigest=>sub{ $STOMACH->bgroup; $STOMACH->setFont(family=>'sansserif'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
+DefConstructor('\texttt{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+	       beforeDigest=>sub{ $STOMACH->bgroup; $STOMACH->setFont(family=>'typewriter'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 
-DefConstructor('\textup{}','#1', mode=>'text', mathConstructor=>"<text>#1</text>",
-	       beforeDigest=>sub{ $_[0]->bgroup; $_[0]->setFont(shape=>'upright'); },
-	       afterDigest=>sub{$_[0]->egroup; });
-DefConstructor('\textit{}','#1', mode=>'text', mathConstructor=>"<text>#1</text>",
-	       beforeDigest=>sub{ $_[0]->bgroup; $_[0]->setFont(shape=>'italic'); },
-	       afterDigest=>sub{$_[0]->egroup; });
-DefConstructor('\textsl{}','#1', mode=>'text', mathConstructor=>"<text>#1</text>",
-	       beforeDigest=>sub{ $_[0]->bgroup; $_[0]->setFont(shape=>'slanted'); },
-	       afterDigest=>sub{$_[0]->egroup; });
-DefConstructor('\textsc{}','#1', mode=>'text', mathConstructor=>"<text>#1</text>",
-	       beforeDigest=>sub{ $_[0]->bgroup; $_[0]->setFont(shape=>'smallcaps'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+DefConstructor('\textup{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+	       beforeDigest=>sub{ $STOMACH->bgroup; $STOMACH->setFont(shape=>'upright'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
+DefConstructor('\textit{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+	       beforeDigest=>sub{ $STOMACH->bgroup; $STOMACH->setFont(shape=>'italic'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
+DefConstructor('\textsl{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+	       beforeDigest=>sub{ $STOMACH->bgroup; $STOMACH->setFont(shape=>'slanted'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
+DefConstructor('\textsc{}', "?IfMath(<text>#1</text>)(#1)", mode=>'text',
+	       beforeDigest=>sub{ $STOMACH->bgroup; $STOMACH->setFont(shape=>'smallcaps'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 
 DefConstructor('\textnormal{}','#1',
-	       beforeDigest=>sub{ $_[0]->bgroup; $_[0]->setFont(family=>'serif',series=>'medium',shape=>'upright'); },
-	       afterDigest=>sub{$_[0]->egroup; });
+	       beforeDigest=>sub{ $STOMACH->bgroup; $STOMACH->setFont(family=>'serif',series=>'medium',shape=>'upright'); },
+	       afterDigest=>sub{$STOMACH->egroup; });
 DefConstructor('\text{}', "<text>#1</text>", mode=>'text');
+
+DefPrimitive('\mathversion{}',sub {
+  my($self,$version)=@_;
+  forbidMath;
+  $version = $version->toString;
+  if($version eq 'bold'     ){ $STOMACH->setMathFont(forcebold=>1); }
+  elsif($version eq 'normal'){ $STOMACH->setMathFont(forcebold=>0); }
+  else { Fatal("Unknown math verison \"$version\""); }});
 
 #======================================================================
 # C.15.2 Changing the Type Size
@@ -1168,38 +1199,38 @@ DefConstructor('\text{}', "<text>#1</text>", mode=>'text');
 #======================================================================
 # \symbol{num} ????
 
-DefSymbol('\textdollar',"\$");
-DefSymbol('\textemdash',"\N{EM DASH}");
-DefSymbol('\textendash',"\N{EN DASH}");
-#DefSymbol('\textexclamdown',"\N{}");
-#DefSymbol('\textquestiondown',"\N{}");
-DefSymbol('\textquotedblleft',"\N{LEFT DOUBLE QUOTATION MARK}");
-DefSymbol('\textquotedblright',"\N{RIGHT DOUBLE QUOTATION MARK}");
-DefSymbol('\textquoteleft',"\N{LEFT SINGLE QUOTATION MARK}");
-DefSymbol('\textquoteright',"\N{RIGHT SINGLE QUOTATION MARK}");
-#DefSymbol('\textsterling',"\N{}");
-#DefSymbol('\textasteriskcentered',"\N{}");
-#DefSymbol('\textbackslash',"\N{}");
-#DefSymbol('\textbar',"\N{}");
-DefSymbol('\textbraceleft',"{");
-DefSymbol('\textbraceright',"}");
-DefSymbol('\textbullet',"\N{BULLET}");
-DefSymbol('\textdaggerdbl',"\N{DOUBLE DAGGER}");
-DefSymbol('\textdagger',"\N{DAGGER}");
-DefSymbol('\textparagraph',"\N{PILCROW SIGN}");
-DefSymbol('\textperiodcentered',"\N{DOT OPERATOR}");
-DefSymbol('\textsection',"\N{SECTION SIGN}");
-DefSymbol('\textless',"<");
-DefSymbol('\textgreater',">");
-DefSymbol('\textcopyright',"\N{COPYRIGHT SIGN}");
-DefSymbol('\textasciicircum',"^");
-DefSymbol('\textasciitilde',"~");
-#DefSymbol('\textcompwordmark',"\leavevmode\kern\z@}
-DefSymbol('\textunderscore',"_");
-DefSymbol('\textvisiblespace'," ");
-DefSymbol('\textellipsis',"\N{HORIZONTAL ELLIPSIS}");
-#DefSymbol('\textregistered',"\textcircled{\scshape r}}
-#DefSymbol('\texttrademark',"\textsuperscript{TM}}
+DefConstructor('\textdollar',"\$");
+DefConstructor('\textemdash',"\x{2014}"); # EM DASH
+DefConstructor('\textendash',"\x{2013}"); # EN DASH
+DefConstructor('\textexclamdown',"\x{00A1}"); # INVERTED EXCLAMATION MARK
+DefConstructor('\textquestiondown',"\x{00BF}");	# INVERTED QUESTION MARK
+DefConstructor('\textquotedblleft',"\x{201C}"); # LEFT DOUBLE QUOTATION MARK
+DefConstructor('\textquotedblright',"\x{201D}"); # RIGHT DOUBLE QUOTATION MARK
+DefConstructor('\textquoteleft',"\x{2018}");     # LEFT SINGLE QUOTATION MARK
+DefConstructor('\textquoteright',"\x{2019}");    # RIGHT SINGLE QUOTATION MARK
+#DefConstructor('\textsterling',"\x{}");
+#DefConstructor('\textasteriskcentered',"\x{}");
+DefConstructor('\textbackslash',"\x{005C}"); # REVERSE SOLIDUS
+#DefConstructor('\textbar',"\x{}");
+DefConstructor('\textbraceleft',"{");
+DefConstructor('\textbraceright',"}");
+DefConstructor('\textbullet',"\x{2022}");    # BULLET
+DefConstructor('\textdaggerdbl',"\x{2020}"); # DOUBLE DAGGER
+DefConstructor('\textdagger',"\x{2021}");    # DAGGER
+DefConstructor('\textparagraph',"\x{00B6}"); # PILCROW SIGN
+DefConstructor('\textperiodcentered',"\x{22C5}"); # DOT OPERATOR
+DefConstructor('\textsection',"\x{00A7}");	      # SECTION SIGN
+DefConstructor('\textless',"<");
+DefConstructor('\textgreater',">");
+DefConstructor('\textcopyright',"\x{00A9}"); # COPYRIGHT SIGN
+DefConstructor('\textasciicircum',"^");
+DefConstructor('\textasciitilde',"~");
+#DefConstructor('\textcompwordmark',"\leavevmode\kern\z@}
+DefConstructor('\textunderscore',"_");
+DefConstructor('\textvisiblespace'," ");
+DefConstructor('\textellipsis',"\x{2026}"); # HORIZONTAL ELLIPSIS
+#defconstructor('\textregistered',"\textcircled{\scshape r}}
+#DefConstructor('\texttrademark',"\textsuperscript{TM}}
 DefConstructor('\textsuperscript{}',"<textsup>#1</textsup>");
 #DefConstructor('\textcircled{}',
 
@@ -1222,22 +1253,22 @@ Let('\@sptoken',T_SPACE);
 DefMacro('\NeedsTeXFormat{}','');
 DefMacro('\ProvidesPackage{}[]','');
 DefMacro('\DeclareOption{}{}', sub {
-  my($gullet,$option,$code)=@_;
+  my($self,$option,$code)=@_;
   DefMacro('\ds@'.$option->toString,
-	   $gullet->expandTokens(Tokens($gullet->neutralizeTokens($code->unlist)))); });
+	   $GULLET->expandTokens(Tokens($GULLET->neutralizeTokens($code->unlist)))); });
 DefMacro('\ExecuteOptions{}', sub{
-  my($gullet,$options)=@_;
+  my($self,$options)=@_;
   map(T_CS('\ds@'.$_),split(',',$options->toString)); });
 DefMacro('\ProcessOptions','');
 DefMacro('\@ehc',"I can't help");
 
 sub make_message {
-  my($gullet,@args)=@_;
-  join("\n",map($gullet->expandTokens($_)->toString,@args)); }
+  my($cs,@args)=@_;
+  join("\n",map($GULLET->expandTokens($_)->toString,@args)); }
 
-DefMacro('\GenericError{}{}{}{}', sub{ Error(make_message(@_)); });
+DefMacro('\GenericError{}{}{}{}', sub{ Fatal(make_message(@_)); });
 DefMacro('\GenericWarning{}{}',         sub{ Warn(make_message(@_)); });
-DefMacro('\GenericInfo{}{}{}{}',  sub{ Message("Info: ".make_message(@_)); });
+DefMacro('\GenericInfo{}{}{}{}',  sub{ print STDERR "Info: ".make_message(@_)."\n"; });
 
 DefMacro('\PackageError{}{}{}',
   ' \GenericError{%
@@ -1343,23 +1374,22 @@ DefMacro('\selectfont','');
 # Semi-Undocumented stuff
 #**********************************************************************
 DefMacro('\@ifnextchar Token {}{}', sub {
-  my($gullet,$token,$if,$else)=@_;
-  my $next = $gullet->readNonSpace;
+  my($self,$token,$if,$else)=@_;
+  my $next = $GULLET->readNonSpace;
   # NOTE: Not actually substituting, but collapsing ## pairs!!!!
-  ( LaTeXML::Expandable::substituteTokens($next eq $token ? $if : $else),$next); });
+  ( LaTeXML::Expandable::substituteTokens($token->equals($next) ? $if : $else),$next); });
 
 #======================================================================
 # Hair
-DefPrimitive('\makeatletter',sub { $_[0]->setCatcode(CC_LETTER,'@'); return; });
-DefPrimitive('\makeatother', sub { $_[0]->setCatcode(CC_OTHER,'@'); return; });
+DefPrimitive('\makeatletter',sub { $STOMACH->assignCatcode(CC_LETTER,'@'); return; });
+DefPrimitive('\makeatother', sub { $STOMACH->assignCatcode(CC_OTHER,'@'); return; });
 
 #**********************************************************************
-DefConstructor('\binom{}{}',
-	       "<XMApp><XMTok name='binomial'/><XMArg>#1</XMArg><XMArg>#2</XMArg></XMApp>");
+DefMath('\binom{}{}', '', name=>'binomial');
 
 #**********************************************************************
 # Sundry (is this ams ?)
-DefConstructor('\textprime',"\N{ACUTE ACCENT}");
+DefConstructor('\textprime',"\x{00B4}"); # ACUTE ACCENT
 
 #**********************************************************************
 1;

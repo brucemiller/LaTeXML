@@ -56,13 +56,9 @@
      ====================================================================== -->
 
 <!-- Include MathML 2 -->
-<!ENTITY % NS.prefixed "INCLUDE">
-<!ENTITY % NamespaceDecl.attrib "xmlns:m CDATA #IMPLIED"> <!-- ??? -->
-<!ENTITY % MathML.dtd PUBLIC "-//W3C//DTD MathML 2.0//EN" "mathml2.dtd">
-%MathML.dtd;
 
 <!ENTITY % Equation.extra "">
-
+<!ENTITY % XM.attr "xml:id ID #IMPLIED">
 <!ELEMENT equation (Math | tabular | punct | index %Equation.extra;)*>
 <!ATTLIST equation
 	  %Common.attr;
@@ -70,7 +66,7 @@
           refnum CDATA #IMPLIED>
 
 <!ENTITY % Math.formats.extra "">
-<!ENTITY % Math.formats "XMath | m:math %Math.formats.extra;">
+<!ENTITY % Math.formats "XMath %Math.formats.extra;">
 
 <!-- tabular? ... Ugh... -->
 <!ELEMENT Math (%Math.formats; | tabular)*>
@@ -78,12 +74,13 @@
 	  %Common.attr;
           mode (display|inline) #IMPLIED
           tex    CDATA #IMPLIED
+          content-tex    CDATA #IMPLIED
           prefix CDATA #IMPLIED
           mathimage CDATA #IMPLIED
           width  CDATA #IMPLIED
           height CDATA #IMPLIED>
 
-<!ENTITY % XMath.model "XMApp | XMTok | XMHint | XMArg | XMWrap | XMDual | %Simple.class;">
+<!ENTITY % XMath.model "XMApp | XMTok | XMRef | XMHint | XMArg | XMWrap | XMDual | %Simple.class;">
 <!ELEMENT XMath (%XMath.model;)*>
 <!ATTLIST XMath
 	  status CDATA #IMPLIED>
@@ -91,45 +88,50 @@
 <!ELEMENT XMApp (%XMath.model;)*>
 <!ATTLIST XMApp
 	  %Common.attr;
-          POS     CDATA #IMPLIED
+	  %XM.attr;
+          role    CDATA #IMPLIED
           name    CDATA #IMPLIED
-	  stackscripts CDATA #IMPLIED
-          tex     CDATA #IMPLIED>
+	  stackscripts CDATA #IMPLIED>
 <!ELEMENT XMDual ((%XMath.model;), (%XMath.model;))>
 <!ATTLIST XMDual
 	  %Common.attr;
-          POS     CDATA #IMPLIED
-          tex     CDATA #IMPLIED>
+	  %XM.attr;
+          role    CDATA #IMPLIED>
 <!ELEMENT XMTok (#PCDATA)*>
 <!ATTLIST XMTok
 	  %Common.attr;
+	  %XM.attr;
           name    CDATA #IMPLIED
-          POS     CDATA #IMPLIED
+	  omcd    CDATA #IMPLIED
+          role    CDATA #IMPLIED
           font    CDATA #IMPLIED
           style   CDATA #IMPLIED
           size    CDATA #IMPLIED
-          tex     CDATA #IMPLIED
 	  stackscripts CDATA #IMPLIED>
 
 <!ELEMENT XMHint EMPTY>
 <!ATTLIST XMHint
 	  %Common.attr;
+	  %XM.attr;
           name    CDATA #IMPLIED
-          POS     CDATA #IMPLIED
-          style   CDATA #IMPLIED
-          tex     CDATA #IMPLIED>
+          role    CDATA #IMPLIED
+          style   CDATA #IMPLIED>
 
 <!ELEMENT XMWrap (%XMath.model;)*>
 <!ATTLIST XMWrap
 	  %Common.attr;
+	  %XM.attr;
           name    CDATA #IMPLIED
-          POS     CDATA #IMPLIED
-          style   CDATA #IMPLIED
-          tex     CDATA #IMPLIED>
+          role    CDATA #IMPLIED
+          style   CDATA #IMPLIED>
 <!ELEMENT XMArg (%XMath.model;)*>
 <!ATTLIST XMArg
 	  %Common.attr;
+	  %XM.attr;
           rule   CDATA #IMPLIED>
+<!ELEMENT XMRef EMPTY>
+<!ATTLIST XMRef
+	  idref    IDREF #REQUIRED>
 
 <!ELEMENT punct (#PCDATA)*>
 <!-- ======================================================================
@@ -244,7 +246,8 @@
 <!ELEMENT hline EMPTY>
 
 <!ELEMENT verbatim (#PCDATA)*>
-<!ELEMENT centering (%Flow.mix;)*>
+<!-- with some trepidation, allow captions here too -->
+<!ELEMENT centering (caption | toccaption | %Flow.mix;)*>
 <!ELEMENT itemize (item)*>
 <!ELEMENT enumerate (item)*>
 <!ELEMENT description (item)*>
@@ -332,7 +335,7 @@
      Alternatively, separate DTD/namespace ? -->
    
 <!ELEMENT bibentry (bib-author | bib-editor | bib-translator |
-               bib-title | bib-subtitle | bib-booktitle |
+               bib-title | bib-subtitle | bib-booktitle | bib-key |
                bib-journal | bib-series | bib-conference | bib-publisher |
                bib-organization | bib-institution | bib-address |
                bib-volume | bib-number | bib-pages | bib-part | bib-date | bib-edition |
@@ -361,6 +364,7 @@
 <!ELEMENT bib-title (#PCDATA | %Inline.mix;)*>
 <!ELEMENT bib-subtitle (#PCDATA | %Inline.mix;)*>
 <!ELEMENT bib-booktitle (#PCDATA | %Inline.mix;)*>
+<!ELEMENT bib-key (#PCDATA | %Inline.mix;)*>
 <!ELEMENT bib-journal (#PCDATA | %Inline.mix;)*>
 <!ELEMENT bib-series (#PCDATA | %Inline.mix;)*>
 <!ELEMENT bib-conference (#PCDATA | %Inline.mix;)*>

@@ -1,3 +1,93 @@
+0.2.0 2004-12-25
+      Extensive changes, so incrementing minor version, but
+      not robust enough for major version!
+
+      - Added version info to latexml, latexmlpost help output.
+        separated --debug and --trace options.
+      - Removed mathConstructor option to various DefXXs
+      	Use new constructor conditional "?IfMath(..)(...)"
+
+      - POS is an annoying acronym. Role is better and
+        upon reflection, doesn't conflict with OpenMath's ussge.
+	Hence, partOfSpeech and POS have been replaced by role
+	to describe the grammatical role (or `part of speech')
+	of tokens to be interpreted during a math parse.
+
+      - Reduced introduction of new `name' attributes for
+      	math tokens, especially when they add little value.
+	Most greek & math characters are just replaced
+	by thier unicode equivalent; In most cases, a name
+        is synthesized from the control sequence when needed.
+        The intestines will now create an XMTok, if required.
+	Also, it will automatically manage the font
+	and assign a `cs' attribute to record the macro
+	used to create the token.
+
+      - DefSymbol is deprecated (removed in fact)
+      - DefMath (new) covers what DefSymbol did,
+      	and more: handles the common form for functions
+	taking arguments. When the macro takes args and
+	the replacement presentation text involves #1,
+	it generates an XMDual using the replacement as
+	an expansion, but also creates the content form.
+        To avoid duplicating the arguments, the XMArg's
+        containing the arguments in the content branch
+        are marked with an id; in the presentation branch
+	<XMRef idref='id..'/> is used.  Corresponding
+	code in postprocessor looks up the referred node
+	when needed.  XMRef can also be used on it's own:
+	see the macros \@XMArg and \@XMRef in TeX.ltxml.
+
+      - Constructors take property arguments which supply
+      	properties to the whatsit (which can be CODE evaluated
+	at digestion time).  These properties can be used
+	in the constructor pattern.
+
+      - Refactoring of Intestine & DOM; most interaction
+        with Model is done in Intestine.  Renamed
+        DOM to Node and renamed it's subclasses.
+
+      - "In for a dime, in for a dollar":
+        Since I'd found it necessary to use global variables
+	to access the stomach and intestine from strange places, 
+	then I might just USE the darn'ed things!
+	Consequently, most places were a $stomach, $intestine
+	(or $gullet and $model) were passed around as arguments, 
+        no longer do. Now, just use the globals, which the inlines
+	STOMACH, INTESTINE and GULLET and MODEL return.
+	As a side effect, the `0-th' argument to CODE implementing
+	control sequences is generally the definition (for whatever
+	use that might be), or the Whatsit for constructors.
+
+      - Made DOM construction more forgiving by using SalvageError
+        when constructing a tree that doesn't conform to DTD.
+	The result may not be valid, but continues processing.
+	This led to major rewriting & cleanup of error reporting,
+	and storing a `locator' on all data objects that record
+	where in the source file they were created.
+	[Thanks to suggestions from Kevin Smith]
+      - Cleanup of math parsing, presentation mathml generation.
+      - Added postprocessing module for generating OpenMath.
+        It is insufficient, but a starting point.
+      - latexml.sty & latexml.ltxml
+        A start at providing special purpose macros that make sense
+	in LaTeX, and do even more interesting things in LaTeXML.
+	Currently, define some silly macros like \XML, \LaTeXML, etc,
+	and provide LaTeX bindings for things like DefMath!
+
+      - Sadly, I gave up on "overload".  Nice idea, but 
+        for a big package, it's tricky to get right.
+	The magic creation of methods can lead to hard-to-find
+	performance issues, if you try to do to much with Stringify.
+	So, Object doesn't use overload.  To stringify or compare,
+	consider the (newly exported functions in Global):
+	Stringify($ob), ToString($ob) and Equals($a,$b).
+
+      - added latexml.sty which should get installed in the local branch
+        of the standard texmf directories.  Not yet documented, but
+	it provides (or will) LaTeX bindings to interesting LaTeXML
+	declarations, eg. defining math commands.
+
 0.1.2 2004-09-02
       - Some experiments to reduce namespace redundancy.
       	C14N is too severe, use of $node->addNewChild

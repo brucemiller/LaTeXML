@@ -11,7 +11,6 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool::amsrefs;
-use charnames ":full";
 use LaTeXML::Package;
 
 #**********************************************************************
@@ -25,18 +24,15 @@ DefKeyVal('amsrefs','code_url','semiverb');
 
 # \bib{key}{type}{keyval-pairs}
 DefConstructor('\bib{any}{any}{KeyVal:amsrefs}', sub {
-  my($intestine,$key,$type,$fields)=@_;
-  $intestine->openElement('bibentry',key=>$key, type=>$type);
+  my($whatsit,$key,$type,$fields)=@_;
+  $INTESTINE->openElement('bibentry',key=>$key, type=>$type);
   my @pairs = $fields->getKeyVals;
   while(@pairs){
     my($field,$value)=(shift(@pairs),shift(@pairs));
     $field=lc($field);
     $field=$equivs{$field} if $equivs{$field};
-    if($intestine->getNode->canContain("bib-$field")){
-      $intestine->insertElement("bib-$field",$value); }
-    else {
-      Warn("Ignoring unknown bib field $field"); }}
-  $intestine->closeElement('bibentry'); });
+    $INTESTINE->insertElement("bib-$field",$value); }
+  $INTESTINE->closeElement('bibentry'); });
 
 DefEnvironment('{bibdiv}','#body');
 DefEnvironment('{biblist}',"<biblist>#body</biblist>");
@@ -46,13 +42,13 @@ DefEnvironment('{biblist}',"<biblist>#body</biblist>");
 # Other Defns (presumably from textcmds?)
 
 DefConstructor('\MR{any}',sub {
-  my($intestine,$mrnumber)=@_;
+  my($whatsit,$mrnumber)=@_;
   # Patch up old-style MathReviews numbers
   my $id = $mrnumber->toString;
   $id =~ s/\s+\\\#\s*/:/;
-  $intestine->insertElement('bib-mr',Box($id,$mrnumber->getFont)); });
+  $INTESTINE->insertElement('bib-mr',Box($id,$mrnumber->getFont,$mrnumber->getLocator)); });
 
-DefConstructor('\ndash',"\N{EN DASH}");
-DefConstructor('\mdash',"\N{EM DASH}");
+DefConstructor('\ndash',"\x{2013}"); # EN DASH
+DefConstructor('\mdash',"\x{2014}"); # EM DASH
 #**********************************************************************
 1;
