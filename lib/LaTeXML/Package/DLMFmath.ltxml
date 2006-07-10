@@ -221,7 +221,7 @@ DefMath('\psfactorial{}{}',  '\left[#1\right]_{#2}',
 DefMath('\wigner{}{}{}{}{}{}',
 	'\left(#1 \@INVISIBLECOMMA #2 \@INVISIBLECOMMA #3 \@INVISIBLECOMMA #4'
 	.'| #1 \@INVISIBLECOMMA #2 \@INVISIBLECOMMA #5 \@INVISIBLECOMMA #6\right)',
-	meaning=>'vigner');
+	meaning=>'wigner');
 
 DefMath('\qFactorial{}{}{}','\left(#1;#2\right)_{#3}',
 	meaning=>'qfactorial');
