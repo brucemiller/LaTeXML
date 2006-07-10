@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section id="S1" refnum="1">
+    <title>Compositions</title>
+    <para id="S1.p1">
+      <equation id="Ex1">
+        <Math mode="display" tex="(f*g)(x)" text="composition@(f, g) * x">
+          <XMath>
+            <XMApp>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMApp open="(" close=")">
+                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMTok role="FUNCTION" font="italic">f</XMTok>
+                <XMTok role="FUNCTION" font="italic">g</XMTok>
+              </XMApp>
+              <XMTok role="ID" open="(" close=")" font="italic">x</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex2">
+        <Math mode="display" tex="(f*g*h)(x)" text="composition@(composition@(f, g), h) * x">
+          <XMath>
+            <XMApp>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMApp open="(" close=")">
+                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMApp>
+                  <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                  <XMTok role="FUNCTION" font="italic">f</XMTok>
+                  <XMTok role="FUNCTION" font="italic">g</XMTok>
+                </XMApp>
+                <XMTok role="FUNCTION" font="italic">h</XMTok>
+              </XMApp>
+              <XMTok role="ID" open="(" close=")" font="italic">x</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section id="S2" refnum="2">
+    <title>Implicit lambdas?</title>
+    <para id="S2.p1">
+      <equation id="Ex3">
+        <Math mode="display" tex="(y^{2}*f)(x)" text="composition@(y ^ 2, f) * x">
+          <XMath>
+            <XMApp>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMApp open="(" close=")">
+                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP"/>
+                  <XMTok role="ID" font="italic">y</XMTok>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+                <XMTok role="FUNCTION" font="italic">f</XMTok>
+              </XMApp>
+              <XMTok role="ID" open="(" close=")" font="italic">x</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex4">
+        <Math mode="display" tex="(yy^{2}*f)(x)" text="composition@(y * y ^ 2, f) * x">
+          <XMath>
+            <XMApp>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMApp open="(" close=")">
+                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok role="ID" font="italic">y</XMTok>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP"/>
+                    <XMTok role="ID" font="italic">y</XMTok>
+                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                  </XMApp>
+                </XMApp>
+                <XMTok role="FUNCTION" font="italic">f</XMTok>
+              </XMApp>
+              <XMTok role="ID" open="(" close=")" font="italic">x</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex5">
+        <Math mode="display" tex="(y^{2}*f)(x)" text="composition@(y ^ 2, f) * x">
+          <XMath>
+            <XMApp>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMApp open="(" close=")">
+                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP"/>
+                  <XMTok role="ID" font="italic">y</XMTok>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+                <XMTok role="FUNCTION" font="italic">f</XMTok>
+              </XMApp>
+              <XMTok role="ID" open="(" close=")" font="italic">x</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex6">
+        <Math mode="display" tex="(f*y^{2})(x)" text="composition@(f, y ^ 2) * x">
+          <XMath>
+            <XMApp>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMApp open="(" close=")">
+                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMTok role="FUNCTION" font="italic">f</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP"/>
+                  <XMTok role="ID" font="italic">y</XMTok>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMTok role="ID" open="(" close=")" font="italic">x</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section id="S3" refnum="3">
+    <title>Dubious forms, probably should fail parsing</title>
+    <para id="S3.p1">
+      <equation id="Ex7">
+        <Math mode="display" tex="yy^{2}*fx">
+          <XMath>
+            <XMTok role="ID" font="italic">y</XMTok>
+            <XMTok role="ID" font="italic">y</XMTok>
+            <XMApp role="POSTSUPERSCRIPT">
+              <XMTok meaning="2" role="NUMBER">2</XMTok>
+            </XMApp>
+            <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+            <XMTok role="FUNCTION" font="italic">f</XMTok>
+            <XMTok role="ID" font="italic">x</XMTok>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex8">
+        <Math mode="display" tex="f*y^{2}x" text="composition@(f, y ^ 2) * x">
+          <XMath>
+            <XMApp>
+              <XMTok role="MULOP">⁢</XMTok>
+              <XMApp>
+                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMTok role="FUNCTION" font="italic">f</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP"/>
+                  <XMTok role="ID" font="italic">y</XMTok>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMTok role="ID" font="italic">x</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation id="Ex9">
+        <Math mode="display" tex="f*y^{2}(x)" text="(composition@(f, y ^ 2))@(x)">
+          <XMath>
+            <XMApp>
+              <XMApp argclose=")" argopen="(">
+                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMTok role="FUNCTION" font="italic">f</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP"/>
+                  <XMTok role="ID" font="italic">y</XMTok>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMTok role="ID" font="italic">x</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+</document>

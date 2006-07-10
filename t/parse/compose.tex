@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage{latexml}
+\lxDeclare[role=COMPOSEOP,meaning=composition]{$*$}
+\lxDeclare[role=FUNCTION]{$f$}
+\lxDeclare[role=FUNCTION]{$g$}
+\lxDeclare[role=FUNCTION]{$h$}
+\lxDeclare[role=ID]{$x$}
+\lxDeclare[role=ID]{$y$}
+\begin{document}
+\section{Compositions}
+% Straightforward
+\[ (f*g)(x) \]
+% Is nesting right?
+\[ (f*g*h)(x) \]
+\section{Implicit lambdas?}
+\[ (y^2 * f)(x) \]
+\[ (y y^2 * f)(x) \]
+\[ (y^2 * f)(x) \]
+\[ (f * y^2)(x) \]
+\section{Dubious forms, probably should fail parsing}
+\[ y y^2 * f x \]
+\[ f * y^2 x \]
+\[ f * y^2 (x) \]
+\end{document}
