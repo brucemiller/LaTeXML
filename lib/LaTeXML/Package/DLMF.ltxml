@@ -126,10 +126,12 @@ DefConstructor('\fmt@acknowledgements{}', "<ltx:acknowledgements>#1</ltx:acknowl
 Tag('ltx:gallery', autoClose=>1, autoOpen=>1);
 DefMacro('\@galleryitems','');
 DefMacro('\galleryitem Semiverbatim Semiverbatim',
-	 '\xdef\@galleryitems{\@galleryitems\fmt@galleryitem{sb:\thechapter.#1}{#2}}');
+	 '\xdef\@galleryitems{\@galleryitems'
+	 .'\fmt@galleryitem{\ifx.#1.\else sb:\thechapter.#1\fi}{#2}}');
 
 DefConstructor('\fmt@galleryitem Semiverbatim Semiverbatim',
 	       "<ltx:galleryitem labelref='#1' graphic='#2'/>");
+
 
 DefMacro('\maketitle', 
 	 '\fmt@title{\@title}\@authorinfo'
