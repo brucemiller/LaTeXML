@@ -1148,8 +1148,13 @@ DefConstructor('\newblock',"<ltx:bibblock>");
 Tag('ltx:bibitem', autoClose=>1);
 Tag('ltx:bibblock', autoClose=>1);
 
+# Here's an annoyance: The case of the keys have to agree in LaTeX,
+# but can be different from the BibTeX!!!
+# (bibtex matches case insensitively)
+# Only sane solution is to downcase the keys in both places.
 sub makecite {
   my($style,$show, $document,$phrase1,$phrase2,$ref)=@_;
+  $ref = lc(ToString($ref)); $ref =~ s/\s//g;
   $document->openElement('ltx:cite', ref=>$ref,style=>$style, show=>$show);
   if(defined $phrase1 && defined $phrase2){
     $document->insertElement('ltx:citepre',$phrase1);
