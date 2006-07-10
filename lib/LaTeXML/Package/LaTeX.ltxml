@@ -813,7 +813,7 @@ sub NewCounter {
     else {
       DefMacro("\\the$ctr\@ID","$prefix\\\@$ctr\@ID"); }
     DefMacro("\\\@$ctr\@ID","0"); }
-  }
+  return; }
 
 sub stepCounter {
   my($ctr)=@_;
