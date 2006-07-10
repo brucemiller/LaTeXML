@@ -269,8 +269,10 @@ sub pmml_infix {
 # Default math font is roman|medium|upright.
 our %mathvariants = ('bold'             =>'bold',
 		     'italic'           =>'italic',
+		     'medium italic'    =>'italic',
 		     'bold italic'      =>'bold-italic',
 		     'doublestruck'     =>'double-struck',
+		     'blackboard'       =>'double-struck',
 		     'fraktur bold'     => 'bold-fraktur',
 		     'script'           => 'script',
 		     'script italic'    => 'script',
@@ -299,6 +301,8 @@ sub pmml_mi {
   my $color = (ref $item ? $item->getAttribute('color') : undef);
   my $text  = (ref $item ?  $item->textContent : $item);
   my $variant = ($font ? $mathvariants{$font} : '');
+  if($font && !$variant){
+    warn "Unrecognized font variant \"$font\""; $variant=''; }
   if($text =~ /^.$/){	# Single char in mi?
     if($variant eq 'italic'){ $variant = ''; } # Defaults to italic
     elsif(!$variant){ $variant = 'normal'; }}  # must say so explicitly.
