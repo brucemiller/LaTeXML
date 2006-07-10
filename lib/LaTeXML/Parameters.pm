@@ -221,9 +221,16 @@ sub read {
   # For semiverbatim, I had messed with catcodes, but there are cases
   # (eg. \caption(...\label{badchars}}) where you really need to 
   # cleanup after the fact!
+  # Hmmm, seem to still need it...
+  if($$self{semiverbatim}){
+      $STATE->pushFrame;
+      map($STATE->assignCatcode($_=>CC_OTHER,'local'),
+	  '^','_','@','~','&','$','#','%'); }
   my $value = &{$$self{reader}}($gullet,@{$$self{extra}||[]});
   $value = $value->neutralize if $$self{semiverbatim} && (ref $value)
     && $value->can('neutralize'); 
+  if($$self{semiverbatim}){
+    $STATE->popFrame; }
   $value; }
 
 #======================================================================

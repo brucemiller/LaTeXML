@@ -61,6 +61,7 @@ DefKeyVal('amsrefs','translator','BibName');
 # \bib{key}{type}{keyval-pairs}
 DefConstructor('\bib{}{} RequiredKeyVals:amsrefs', sub {
   my($document,$key,$type,$fields)=@_;
+  $key = lc(ToString($key)); $key =~ s/^\s+//;   $key =~ s/\s+$//;
   $document->openElement('ltx:bibentry',key=>$key, type=>$type);
   my @pairs = $fields->getPairs;
   while(@pairs){
