@@ -23,7 +23,7 @@ use base (qw(Exporter));
 our @EXPORT_OK = (qw(&Lookup &New &Apply &ApplyNary &recApply
 		     &Annotate &InvisibleTimes
 		     &NewFormulae &NewFormula &NewCollection
-		     &ApplyDelimited &NewScripts
+		     &ApplyDelimited &NewScript
 		     &LeftRec
 		     &Arg &Problem &MaybeFunction
 		     &isMatchingClose &Fence));
@@ -31,7 +31,7 @@ our %EXPORT_TAGS = (constructors
 		    => [qw(&Lookup &New &Apply &ApplyNary &recApply
 			   &Annotate &InvisibleTimes
 			   &NewFormulae &NewFormula &NewCollection
-			   &ApplyDelimited &NewScripts
+			   &ApplyDelimited &NewScript
 			   &LeftRec
 			   &Arg &Problem &MaybeFunction
 			   &isMatchingClose &Fence)]);
@@ -373,7 +373,7 @@ our %PREFIX_ALIAS=(SUPERSCRIPTOP=>'^',SUBSCRIPTOP=>'_', "\x{2062}"=>'*',
 # Put infix, along with `binding power'
 our %IS_INFIX = (METARELOP=>1, 
 		 RELOP=>2, ARROW=>2,
-		 ADDOP=>10, MULOP=>100, 
+		 ADDOP=>10, MULOP=>100,
 		 SUPERSCRIPTOP=>1000, SUBSCRIPTOP=>1000);
 
 sub textrec {
@@ -647,24 +647,26 @@ sub ApplyNary {
 
 # ================================================================================
 # Construct an appropriate application of sub/superscripts
-# $postsub & $postsuper are POSTSUBSCRIPT and POSTSUPERSCRIPT objects
-# (ie. an XMApp with the script as 1st arg).
-sub NewScripts {
-  my($base,$postsub,$postsup,$presub,$presup)=@_;
-  if($presub||$presup){
-    # NOTE: Stupid arrangement for sideset!!! Fix this!!
-    Apply(New('sideset'),
-	  ($presub  ? Arg($presub,0)  : New('Empty')),
-	  ($presup  ? Arg($presup,0)  : New('Empty')),
-	  ($postsub ? Arg($postsub,0) : New('Empty')),
-	  ($postsup ? Arg($postsup,0) : New('Empty')),
-	  $base); }
-  elsif($postsub && $postsup){
-    Apply(New(undef,undef,role=>'SUBSUPERSCRIPTOP'),$base,Arg($postsub,0),Arg($postsup,0)); }
-  elsif($postsub){
-    Apply(New(undef,undef, role=>'SUBSCRIPTOP'),$base,Arg($postsub,0)); }
-  elsif($postsup){
-    Apply(New(undef,undef, role=>'SUPERSCRIPTOP'),$base,Arg($postsup,0)); }}
+# Accounting for whether it precedes (float), is over/under (if base requests),
+# or follows (normal case), along with whether sub/super.
+sub NewScript {
+  my($base,$script)=@_;
+  my $role;
+  my ($bx,$bl) = ($base->getAttribute('scriptpos')||'post')
+    =~ /^(pre|mid|post)?(\d+)?$/;
+  my ($sx,$sl) = ($script->getAttribute('scriptpos')||'post')
+    =~ /^(pre|mid|post)?(\d+)?$/;
+  my ($x,$y) = $script->getAttribute('role')
+    =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT$/;
+  $x = ($x eq 'FLOAT' ? 'pre' : $bx || 'post');
+  my $t;
+  my $l = $sl || $bl ||
+    (($t=$LaTeXML::MathParser::DOCUMENT->getNodeBox($script))
+     && ($t->getProperty('level'))) || 0;
+  my $app = Apply(New(undef,undef, role=>$y.'SCRIPTOP',scriptpos=>"$x$l"),
+		  $base,Arg($script,0));
+  $app->setAttribute(scriptpos=>"$bx") if $bx ne 'post';
+  $app; }
 
 # ================================================================================
 sub Problem { Warn("MATH Problem? ",@_); }
@@ -781,10 +783,6 @@ else just return the first.
 Given an expr followed by repeated (op expr), compose the left recursive tree.
 For example C<a + b + c - d> would give C<(- (+ a b c) d)>>
 
-=item C<< $node = NewScripts($base, $postsub, $postsup, $presub, $presup); >>
-
-Given a base and collection of following and/or preceding sub and/or superscripts
-(any of which may be undef), construct an appropriate sub or superscript application.
 
 =item C<< Problem($text); >>
 

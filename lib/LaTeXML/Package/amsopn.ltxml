@@ -19,16 +19,16 @@ use LaTeXML::Package;
 
 DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}',sub{
   my($stomach,$star,$cs,$text)=@_;
-  DefMath($cs->toString,$text,stackscripts=>$star); }); # Hmm, is this right?
+  DefMath($cs->toString,$text,scriptpos=>($star ? 'mid':'post')); });
 
 # See p.18
 # New functions (most are already in TeX)
 DefMath('\injlim', "inj lim", 
 	role=>'LIMITOP', meaning=>'injective-limit',
-	stackscripts=>\&doStackscripts);
+	scriptpos=>\&doScriptpos);
 DefMath('\projlim', "proj lim",
 	role=>'LIMITOP', meaning=>'projective-limit',
-	stackscripts=>\&doStackscripts);
+	scriptpos=>\&doScriptpos);
 
 
 DefMath('\varlimsup', '\overline{\lim}',
@@ -42,11 +42,11 @@ DefMath('\varprojlim','\underleftarrow{\lim}',
 
 #DefPrimitive('\operatorname OptionalMatch:* {}',sub{
 #  my($ignore,$star,$name)=@_;
-#  DefMath(T_CS("\\".$name->toString),$name,stackscripts=>$star); }); # Hmm, is this right?
+#  DefMath(T_CS("\\".$name->toString),$name,scriptpos=>$star); }); # Hmm, is this right?
 
 # Hmm... OPERATOR or LIMITOP ??
 DefConstructor('\operatorname OptionalMatch:* {}',
-	       "<ltx:XMWrap role='OPERATOR' stackscripts='#1'>#2</ltx:XMWrap>",
+	       "<ltx:XMWrap role='OPERATOR' scriptpos='?#1(mid)(post)'>#2</ltx:XMWrap>",
 	       bounded=>1, requireMath=>1, font=>{family=>'serif'});
 
 #**********************************************************************

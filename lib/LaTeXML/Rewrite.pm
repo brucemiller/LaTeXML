@@ -262,6 +262,9 @@ sub domToXPath {
   my($document,$node)=@_;
   "descendant-or-self::". domToXPath_rec($document,$node); }
 
+# May need some work here;
+our %EXCLUDED_MATCH_ATTRIBUTES=(scriptpos=>1);
+
 sub domToXPath_rec {
   my($document,$node,@extra_predicates)=@_;
   my $type = $node->nodeType;
@@ -276,7 +279,7 @@ sub domToXPath_rec {
     if($node->hasAttributes){
       foreach my $attribute (grep($_->nodeType == XML_ATTRIBUTE_NODE, $node->attributes)){
 	my $key = $attribute->nodeName;
-	next if $key =~ /^_/;
+	next if ($key =~ /^_/) || $EXCLUDED_MATCH_ATTRIBUTES{$key};
 	push(@predicates, "\@".$key."='".$attribute->getValue."'"); }}
     if($node->hasChildNodes){
       my @children = $node->childNodes;

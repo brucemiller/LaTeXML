@@ -98,6 +98,22 @@ sub realize {
   my($node)=@_;
   $LaTeXML::Post::PROCESSOR->realizeXMNode($LaTeXML::Post::DOCUMENT,$node); }
 
+# For a node that is a (possibly embellished) operator,
+# find the underlying role.
+our %EMBELLISHING_ROLE=(SUPERSCRIPTOP=>1,SUBSCRIPTOP=>1,STACKED=>1,
+			OVERACCENT=>1,UNDERACCENT=>1,MODIFIER=>1,MODIFIEROP=>1);
+sub getOperatorRole {
+  my($node)=@_;
+  if(!$node){
+    undef; }
+  elsif(my $role = $node->getAttribute('role')){
+    $role; }
+  elsif($node->localname eq 'XMApp'){
+    my($op,$base)= element_nodes($node);
+    ($EMBELLISHING_ROLE{$op->getAttribute('role')||''}
+     ? getOperatorRole($base)
+     : undef); }}
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Table of Translators for presentation|content
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -187,15 +203,16 @@ sub pmml_internal {
     my($op,@args) = element_nodes($node);
     if(!$op){
       ['merror',{},['mtext',{},"Missing Operator"]]; }
-    elsif($role && ($role =~ /^POST(SUB|SUPER)SCRIPT$/)){
-      pmml_unparsed_script($role,$op); }
+    elsif($role && ($role =~ /^(FLOAT|POST)(SUB|SUPER)SCRIPT$/)){
+      pmml_unparsed_script($1,$2,$op); }
     else {
       $op = realize($op);  # NOTE: Could loose open/close on XMRef ???
       my $style = $op->getAttribute('style');
       my $styleattr = $style && $stylemap{$LaTeXML::MathML::STYLE}{$style};
       local $LaTeXML::MathML::STYLE 
 	= ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
-      my $result = &{ lookupPresenter('Apply',$op->getAttribute('role'),
+###      my $result = &{ lookupPresenter('Apply',$op->getAttribute('role'),
+      my $result = &{ lookupPresenter('Apply',getOperatorRole($op),
 				      getTokenMeaning($op)) }($op,@args);
       $result = ['mstyle',{@$styleattr},$result] if $styleattr;
       $result; }}
@@ -227,13 +244,22 @@ sub pmml_row {
   @items = grep($_,@items);
   (scalar(@items) == 1 ? $items[0] : ['mrow',{},@items]); }
 
+sub pmml_unrow {
+  my($mml)=@_;
+  if($mml && (ref $mml)  && ($mml->[0] eq 'mrow') && !scalar(keys %{$mml->[1]})){
+    my($tag,$attr,@children)=@$mml;
+    @children; }
+  else {
+    ($mml); }}
+
 sub pmml_parenthesize {
   my($item,$open,$close)=@_;
   if(!$open && !$close){
     $item; }
-  elsif($item && (ref $item)  && ($item->[0] eq 'mrow')){
-    my($tag,$attr,@children)=@$item;
-    ['mrow',$attr,($open ? (pmml_mo($open)):()),@children,($close ? (pmml_mo($close)):())]; }
+## Maybe better not open the contained mrow; seems to affect bracket size in Moz.
+##  elsif($item && (ref $item)  && ($item->[0] eq 'mrow')){
+##    my($tag,$attr,@children)=@$item;
+##    ['mrow',$attr,($open ? (pmml_mo($open)):()),@children,($close ? (pmml_mo($close)):())]; }
   else {
     ['mrow',{},($open ? (pmml_mo($open)):()),$item,($close ? (pmml_mo($close)):())]; }}
 
@@ -317,22 +343,23 @@ sub pmml_mo {
   my $color = (ref $item ? $item->getAttribute('color') : undef);
   my $text  = (ref $item ?  $item->textContent : $item);
   my $variant = ($font ? $mathvariants{$font} : '');
+  my $pos   = (ref $item && $item->getAttribute('scriptpos')) || 'post';
   ['mo',{($variant ? (mathvariant=>$variant):()),
 	 ($size    ? (mathsize=>$sizes{$size}):()),
 	 ($color   ? (mathcolor=>$color):()),
 	 # If an operator has specifically located it's scripts,
 	 # don't let mathml move them.
-	 (((ref $item && $item->getAttribute('stackscripts'))||'no') eq 'yes'
+	 (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
 	  ? (movablelimits=>'false'):())},
    $text]; }
 
-## POSTSUBSCRIPT | POSTSUPERSCRIPT should not remain in successfully parsed math.
+## (FLOAT|POST)(SUB|SUPER)SCRIPT's should NOT remain in successfully parsed math.
 # This gives something `presentable', though not correct.
 # What to use for base? I can't reasonably go up & grap the preceding token...
 # I doubt an empty <mi/> is valid, but what is?
 sub pmml_unparsed_script {
-  my($type,$script)=@_;
-  [ ($type eq 'POSTSUBSCRIPT' ? 'msub' : 'msup' ), {}, ['mi'],
+  my($x,$y,$script)=@_;
+  [ ($y eq 'SUB' ? 'msub' : 'msup' ), {}, ['mi'],
     pmml_smaller($script)]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -403,6 +430,7 @@ DefMathML("Token:MULOP:?",       \&pmml_mo);
 DefMathML("Token:MULOP:*",       undef,     sub { ['times'];});
 DefMathML("Token:MULOP:\x{2062}",undef,     sub { ['times'];});
 DefMathML("Token:MULOP:/",       undef,     sub { ['divide'];});
+DefMathML("Token:SUPOP:?",       \&pmml_mo);
 
 DefMathML("Token:RELOP:?",      \&pmml_mo);
 DefMathML("Token:RELOP:=",       undef,     sub { ['eq'];});
@@ -504,9 +532,6 @@ DefMathML('Hint:?:?', sub { undef; });
 # ================================================================================
 # Applications.
 
-# NOTE: A lot of these special cases could be eliminated by
-# consistent creation of XMDual's (using DefMath and similar)
-
 DefMathML('Apply:?:?', sub {
   my($op,@args)=@_;
   ['mrow',{},
@@ -516,6 +541,16 @@ DefMathML('Apply:?:?', sub {
   sub {
     my($op,@args)=@_;
     ['apply',{},cmml($op), map(cmml($_),@args)]; });
+
+sub pmml_bigop {
+  my($op,$body)=@_;
+  ['mrow',{}, pmml($op), pmml_unrow(pmml($body))]; }
+
+  
+DefMathML('Apply:BIGOP:?',\&pmml_bigop);
+DefMathML('Apply:INTOP:?',\&pmml_bigop);
+DefMathML('Apply:SUMOP:?',\&pmml_bigop);
+
 
 DefMathML('Apply:OVERACCENT:?', sub {
   my($accent,$base)=@_;
@@ -536,34 +571,111 @@ DefMathML('Apply:?:MultiRelation',sub {
 
 # Defaults for various parts-of-speech
 
-DefMathML('Apply:SUPERSCRIPTOP:?', sub {
-  my($op,$base,$sup)=@_;
-  [((($base->getAttribute('stackscripts')||'no') eq 'yes') ? 'mover' : 'msup'),
-   {},
-   pmml($base),pmml_smaller($sup)]; });
+sub pmml_script {
+  my($script)=@_;
+  ($script ? pmml_smaller($script) : ['empty']); }
 
-DefMathML('Apply:SUBSCRIPTOP:?',   sub {
-  my($op,$base,$sub)=@_;
-  [((($base->getAttribute('stackscripts')||'no') eq 'yes') ? 'munder' : 'msub'),
-   {},
-   pmml($base),pmml_smaller($sub)]; });
+# Since we're keeping track of display style, under/over vs. sub/super
+# We've got to override MathML's desire to do it for us.
+# Here, we make sure the eventual inner operator (if any) has
+# movablelimits disabled.
+# NOTE: Another issue is when the base is "embellished", in particular
+# has sub/superscripts of it's own.
+# Mozilla (at least?) centers the over/under wrong in that case.
+# The OVERUNDERHACK makes the sub & superscripts have 0 width 
+# in this situation.
+# Worried that this will end up biting me, though...
+sub do_overunder {
+  my($tag,$base,@scripts)=@_;
+  { local $LaTeXML::MathML::NOMOVABLELIMITS=1;
+    local $LaTeXML::MathML::OVERUNDERHACKS=1;
+    $base = pmml($base); }
+  my $form = [$tag,{},$base,map(pmml_smaller($_),@scripts)];
+  if($LaTeXML::MathML::STYLE ne 'display'){ # Workaround Mozilla bug (?)
+    ['mstyle',{displaystyle=>'false'},$form]; }
+  else {
+    $form; }}
 
-# Should we have such a thing, or should the combining
-# be done by the sub/sup handlers?
-DefMathML('Apply:SUBSUPERSCRIPTOP:?',   sub { 
-  my($op,$base,$sub,$sup)=@_;
-  [((($base->getAttribute('stackscripts')||'no') eq 'yes')
-    ? 'munderover' : 'msubsup'),{},
-   pmml($base),pmml_smaller($sub),pmml_smaller($sup)]; });
+sub do_subsup {
+  my($tag,$base,@scripts)=@_;
+  $base = pmml($base);
+  @scripts = map(pmml_smaller($_),@scripts);
+  if($LaTeXML::MathML::OVERUNDERHACKS){
+    @scripts = map(['mpadded',{width=>'0'},$_],@scripts); }
+  [$tag,{},$base,@scripts]; }
+
+sub pmml_script_handler {
+  my($op,$base,$script)=@_;
+  my(@pres,@posts);
+  my($prelevel,$postlevel)=(0,0);
+  my ($y) = ($op->getAttribute('role')||'') =~ /^(SUPER|SUB)SCRIPTOP$/;
+  my ($x,$l)= ($op->getAttribute('scriptpos')||'post0')
+    =~ /^(pre|mid|post)?(\d+)?$/;
+  if($x eq 'pre'){
+    if($y eq 'SUB'){
+      push(@pres,[$script,undef]); $prelevel=$l; }
+    elsif($y eq 'SUPER'){
+      push(@pres,[undef,$script]); $prelevel=$l; }}
+  else {
+    if($y eq 'SUB'){
+      push(@posts,[$script,undef]); $postlevel=$l; }
+    elsif($y eq 'SUPER'){
+      push(@posts,[undef,$script]); $postlevel=$l; }}
+
+  # Keep from having multiple scripts when $loc is stack!!!
+  while(1){
+    last unless $base->localname eq 'XMApp';
+    my($xop,$xbase,$xscript) = element_nodes($base);
+    last unless ($xop->localname eq 'XMTok');
+    my ($ny) = ($xop->getAttribute('role')||'') =~ /^(SUPER|SUB)SCRIPTOP$/;
+    last unless $ny;
+    my ($nx,$nl)= ($xop->getAttribute('scriptpos')||'postsup0')
+      =~ /^(pre|mid|post)?(\d+)?$/;
+    last unless ($x ne 'mid') || ($nx eq 'mid');
+
+    my $spos = ($ny eq 'SUB' ? 0 : 1);
+    if($nx eq 'pre'){
+      push(@pres,[undef,undef]) # New empty pair (?)
+	if($prelevel ne $nl) || $pres[-1][$spos];
+      $pres[-1][$spos] = $xscript; $prelevel = $nl; }
+    else {
+      unshift(@posts,[undef,undef]) # New empty pair (?)
+	if($postlevel ne $nl) || $posts[0][$spos];
+      $posts[0][$spos] = $xscript; $postlevel = $nl; }
+    $base = $xbase;
+  }
+  if(scalar(@pres) > 0){
+    ['mmultiscripts',{},
+     pmml($base),
+     map( (pmml_script($_->[0]),pmml_script($_->[1])), @posts),
+     ['mprescripts'],
+     map( (pmml_script($_->[0]),pmml_script($_->[1])), @pres)]; }
+  elsif(scalar(@posts) > 1){
+    ['mmultiscripts',{},
+     pmml($base),
+     map( (pmml_script($_->[0]),pmml_script($_->[1])), @posts)]; }
+  elsif(!defined $posts[0][1]){
+    if($x eq 'mid'){ do_overunder('munder',$base,$posts[0][0]); }
+    else           { do_subsup('msub',$base,$posts[0][0]); }}
+  elsif(!defined $posts[0][0]){
+    if($x eq 'mid'){ do_overunder('mover',$base,$posts[0][1]); }
+    else           { do_subsup('msup',$base,$posts[0][1]); }}
+  else {
+    if($x eq 'mid'){ do_overunder('munderover',$base,$posts[0][0],$posts[0][1]); }
+    else           { do_subsup('msubsup',$base,$posts[0][0],$posts[0][1]); }}}
+
+
+DefMathML('Apply:SUPERSCRIPTOP:?', \&pmml_script_handler);
+DefMathML('Apply:SUBSCRIPTOP:?',   \&pmml_script_handler);
 
 DefMathML('Apply:POSTFIX:?', sub {
   ['mrow',{},pmml($_[1]),pmml($_[0])]; });
 
-DefMathML('Apply:?:sideset', sub {
-  my($op,$presub,$presup,$postsub,$postsup,$base)=@_;
-  ['mmultiscripts',{},
-   pmml($base),pmml_smaller($postsub),pmml_smaller($postsup), 
-   ['mprescripts'],pmml_smaller($presub),pmml_smaller($presup)]; });
+## DefMathML('Apply:?:sideset', sub {
+##  my($op,$presub,$presup,$postsub,$postsup,$base)=@_;
+##  ['mmultiscripts',{},
+##   pmml($base),pmml_smaller($postsub),pmml_smaller($postsup), 
+##   ['mprescripts'],pmml_smaller($presub),pmml_smaller($presup)]; });
 
 DefMathML('Apply:ADDOP:?', \&pmml_infix);
 DefMathML('Apply:MULOP:?', \&pmml_infix);

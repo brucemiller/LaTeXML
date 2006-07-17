@@ -5,30 +5,36 @@
   <section>
     <para id="p1">
       <equation>
-        <Math mode="display" tex="f_{a},f^{a},f_{a}^{a},f^{a}_{a}" text="Collection@(f _ a, f ^ a, SUBSUPERSCRIPTOP@(f, a, a), SUBSUPERSCRIPTOP@(f, a, a))">
+        <Math mode="display" tex="f_{a},f^{a},f_{a}^{a},f^{a}_{a}" text="Collection@(f _ a, f ^ a, (f _ a) ^ a, (f ^ a) _ a)">
           <XMath>
             <XMApp>
               <XMTok name="Collection" role="FENCED" separators=",,,"/>
               <XMApp>
-                <XMTok role="SUBSCRIPTOP"/>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
                 <XMTok role="UNKNOWN" font="italic">f</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok role="SUPERSCRIPTOP"/>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                 <XMTok role="UNKNOWN" font="italic">f</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok role="SUBSUPERSCRIPTOP"/>
-                <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                </XMApp>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok role="SUBSUPERSCRIPTOP"/>
-                <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                </XMApp>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
               </XMApp>
             </XMApp>
@@ -40,11 +46,11 @@
       <equation>
         <Math mode="display" tex="{}_{a},{}^{a}">
           <XMath>
-            <XMApp role="FLOATINGSUBSCRIPT">
+            <XMApp role="FLOATSUBSCRIPT" scriptpos="2">
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
             </XMApp>
             <XMTok role="PUNCT">,</XMTok>
-            <XMApp role="FLOATINGSUPERSCRIPT">
+            <XMApp role="FLOATSUPERSCRIPT" scriptpos="2">
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
             </XMApp>
           </XMath>

@@ -44,9 +44,9 @@
 	  %LaTeXML.Common.attrib;
 	  %LaTeXML.XMath.attrib;
 	  %LaTeXML.ID.attrib;
-          name         CDATA #IMPLIED
-          meaning CDATA #IMPLIED
-	  stackscripts CDATA #IMPLIED>
+          name      CDATA #IMPLIED
+          meaning   CDATA #IMPLIED
+	  scriptpos CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.XMDual.qname; ((%LaTeXML.XMath.class;), (%LaTeXML.XMath.class;))>
 <!ATTLIST %LaTeXML.XMDual.qname;
@@ -66,8 +66,8 @@
           font    CDATA #IMPLIED
           size    CDATA #IMPLIED
           color   CDATA #IMPLIED
-	  stackscripts CDATA #IMPLIED
-	  thickness  CDATA #IMPLIED
+	  scriptpos CDATA #IMPLIED
+	  thickness CDATA #IMPLIED
 	  possibleFunction CDATA #IMPLIED>
 <!-- and alignment  ?? -->
 

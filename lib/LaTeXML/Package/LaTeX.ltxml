@@ -680,10 +680,12 @@ DefMath('\bmod',   'mod', role=>'MODIFIEROP');
 
 DefConstructor('\stackrel{}{}',
 	       "<ltx:XMApp role='RELOP'>"
-	       .  "<ltx:XMTok role='SUPERSCRIPTOP'/>"
-	       .  "<ltx:XMWrap stackscripts='yes'>#2</ltx:XMWrap>"
+	       .  "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
+	       .  "<ltx:XMWrap>#2</ltx:XMWrap>"
 	       .  "<ltx:XMWrap>#1</ltx:XMWrap>"
-	       ."</ltx:XMApp>");
+	       ."</ltx:XMApp>",
+	       properties=>{scriptpos=>sub{ "mid".$_[1]->getProperty('level'); }}
+);
 #======================================================================-
 # C.7.6 Putting One Thing Above Another
 #======================================================================-

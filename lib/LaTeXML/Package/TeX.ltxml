@@ -869,8 +869,10 @@ Tag('ltx:p', autoClose=>1, autoOpen=>1, afterClose=>\&trimNodeWhitespace);
 
 DefPrimitive('\hskip Glue',undef);
 DefPrimitive('\hss',undef);
-DefConstructor('\hfil',"?#isMath(<ltx:XMHint name='hfil'/>)( )");
-DefConstructor('\hfill',"?#isMath(<ltx:XMHint name='hfill'/>)( )");
+DefConstructor('\hfil',"?#isMath(<ltx:XMHint name='hfil'/>)( )",
+	      properties=>{isSpace=>1});
+DefConstructor('\hfill',"?#isMath(<ltx:XMHint name='hfill'/>)( )",
+	      properties=>{isSpace=>1});
 DefPrimitive('\hfilneg',undef);
 # \end
 # \dump
@@ -1015,6 +1017,18 @@ sub replace_node {
 our %scriptstylemap=(display=>'script', text=>'script', 
 		     script=>'scriptscript', scriptscript=>'scriptscript');
 
+sub isEmpty {
+  my($box)=@_;
+my $is=
+  (!$box || $box->getProperty('isSpace')
+   || ((ref $box eq 'LaTeXML::Whatsit')
+       && ($box->getDefinition eq $STATE->lookupMeaning(T_BEGIN))
+       && !grep(!isEmpty($_), $box->getBody->unlist))); 
+
+##print STDERR "Box ".Stringify($box)." is empty: ".($is ? "yes":"no")."\n";
+  $is;
+}
+  
 sub scriptHandler {
   my($stomach,$op)=@_;
   my $gullet = $stomach->getGullet;
@@ -1022,19 +1036,30 @@ sub scriptHandler {
   my $style = LookupValue('mathstyle'); # Bump the math style smaller.
   if(defined $style){
     my $cs = '\@@POST'.$op;
-    # Check if preceding box is empty {}
-    if(defined(my $prev = $LaTeXML::LIST[$#LaTeXML::LIST])){
-      if($prev->toString eq '{}'){
-	pop(@LaTeXML::LIST);
-	$cs = '\@@FLOATING'.$op; }}
+    # Check if preceding box, if any, is empty {}
+    my $prev = $LaTeXML::LIST[$#LaTeXML::LIST];
+    if(! $prev){		# No box at all?
+      $cs = '\@@FLOATING'.$op; }
+    elsif(isEmpty($prev)){	# Or empty (remove it)
+      pop(@LaTeXML::LIST);
+      $cs = '\@@FLOATING'.$op; }
+    elsif((ref $prev eq 'LaTeXML::Whatsit') # Or previous sub/supscript.
+	  && (($prev->getDefinition eq $STATE->lookupMeaning(T_CS('\@@FLOATINGSUPERSCRIPT')))
+	      || ($prev->getDefinition eq $STATE->lookupMeaning(T_CS('\@@FLOATINGSUBSCRIPT'))))){
+      $cs = '\@@FLOATING'.$op; }
+
+
     AssignValue(mathstyle=>$scriptstylemap{$style});
     # Now, get following boxes
     my @stuff = $stomach->invokeToken($gullet->readXToken);
     Fatal("Missing { in sub/super-script argument") unless @stuff;
     my $script = shift(@stuff);	# ONLY this box is the script!
-    unshift(@stuff, LaTeXML::Whatsit->new(LookupDefinition(T_CS($cs)),[$script],
-					  locator=>$gullet->getLocator,
-					  font=>$script->getFont,isMath=>1))
+    my $level = $stomach->getBoxingLevel;
+    unshift(@stuff,
+	    LaTeXML::Whatsit->new(LookupDefinition(T_CS($cs)),[$script],
+				  locator=>$gullet->getLocator,
+				  font=>$script->getFont,isMath=>1,
+				  level=>$level))
       if $script->toString ne '{}';    # ONLY If Script is not empty!!!
     AssignValue(mathstyle=>$style); # revert
     @stuff; }
@@ -1047,29 +1072,32 @@ DefPrimitive('^', sub{ scriptHandler($_[0],'SUPERSCRIPT'); });
 DefPrimitive('_', sub{ scriptHandler($_[0],'SUBSCRIPT'); });
 
 DefConstructor('\@@POSTSUPERSCRIPT{}',
-	       "<ltx:XMApp role='POSTSUPERSCRIPT'>"
+	       "<ltx:XMApp role='POSTSUPERSCRIPT' scriptpos='#level'>"
 	       . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       alias=>'^');
 DefConstructor('\@@POSTSUBSCRIPT{}',
-	       "<ltx:XMApp role='POSTSUBSCRIPT'>"
+	       "<ltx:XMApp role='POSTSUBSCRIPT' scriptpos='#level'>"
 	       . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       alias=>'_');
 DefConstructor('\@@FLOATINGSUPERSCRIPT{}',
-	       "<ltx:XMApp role='FLOATINGSUPERSCRIPT'>"
+	       "<ltx:XMApp role='FLOATSUPERSCRIPT' scriptpos='#level'>"
 	       . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       alias=>'{}^');
 DefConstructor('\@@FLOATINGSUBSCRIPT{}',
-	       "<ltx:XMApp role='FLOATINGSUBSCRIPT'>"
+	       "<ltx:XMApp role='FLOATSUBSCRIPT' scriptpos='#level'>"
 	       . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       alias=>'{}_');
 
+## NOTE: Strictly speaking, these two should examine the scriptpos
+# attribute of the base (it may have \limits,\nolimits)
+## OR, alternatively, there could be separate \@OVERSCRIPT/\@UNDERSCRIPT macros ?
 DefConstructor('\@SUPERSCRIPT{}{}', 
 	       "?#2(<ltx:XMApp>"
-	       .     "<ltx:XMTok role='SUPERSCRIPTOP'/>"
+	       .     "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
 	       .     "<ltx:XMArg>#1</ltx:XMArg>"
 	       .     "<ltx:XMArg rule='Superscript'>#2</ltx:XMArg>"
 	       .   "</ltx:XMApp>)"
@@ -1079,10 +1107,11 @@ DefConstructor('\@SUPERSCRIPT{}{}',
 		 ($sup && $sup->unlist 
 		  ? (T_BEGIN,$base->revert,T_END,
 		     T_SUPER,T_BEGIN,$sup->revert,T_END)
-		  : $base->revert); });
+		  : $base->revert); },
+	       properties=>{scriptpos=>sub{ "post".$_[0]->getBoxingLevel; }});
 DefConstructor('\@SUBSCRIPT{}{}', 
 	       "?#2(<ltx:XMApp>"
-	       .     "<ltx:XMTok role='SUBSCRIPTOP'/>"
+	       .     "<ltx:XMTok role='SUBSCRIPTOP' scriptpos='#scriptpos'/>"
 	       .     "<ltx:XMArg>#1</ltx:XMArg>"
 	       .     "<ltx:XMArg rule='Subscript'>#2</ltx:XMArg>"
 	       .   "</ltx:XMApp>)"
@@ -1092,7 +1121,8 @@ DefConstructor('\@SUBSCRIPT{}{}',
 		 ($sub && $sub->unlist 
 		  ? (T_BEGIN,$base->revert,T_END,
 		     T_SUB,T_BEGIN,$sub->revert,T_END)
-		  : $base->revert); });
+		  : $base->revert); },
+	       properties=>{scriptpos=>sub{ "post".$_[0]->getBoxingLevel; }});
 
 # This only becomes active in math mode.
 AssignCatcode('math:\''=>1, 'global');
@@ -1450,16 +1480,24 @@ RawTeX(' \def\loop#1\repeat{\def\body{#1}\iterate}
          \def\iterate{\body \let\next=\iterate \else\let\next=\relax\fi \next}
          \let\repeat=\fi ');
 
-DefConstructor('\enskip',  "?#isMath(<ltx:XMHint name='enskip'/>)(\x{2000})"); # EN QUAD
-DefConstructor('\enspace', "?#isMath(<ltx:XMHint name='enskip'/>)(\x{2000})"); # EN QUAD
-DefConstructor('\quad', "?#isMath(<ltx:XMHint name='quad'/>)(\x{2001})"); # EM QUAD
-DefConstructor('\qquad',"?#isMath(<ltx:XMHint name='qquad'/>)(\x{2001}\x{2001})"); # EM QUAD
+DefConstructor('\enskip',  "?#isMath(<ltx:XMHint name='enskip'/>)(\x{2000})",
+	       properties=>{isSpace=>1}); # EN QUAD
+DefConstructor('\enspace', "?#isMath(<ltx:XMHint name='enskip'/>)(\x{2000})",
+	      properties=>{isSpace=>1}); # EN QUAD
+DefConstructor('\quad', "?#isMath(<ltx:XMHint name='quad'/>)(\x{2001})",
+	      properties=>{isSpace=>1}); # EM QUAD
+DefConstructor('\qquad',"?#isMath(<ltx:XMHint name='qquad'/>)(\x{2001}\x{2001})",
+	      properties=>{isSpace=>1}); # EM QUAD
 
-DefConstructor('\thinspace',   "?#isMath(<ltx:XMHint name='thinspace'/>)( )");
-DefConstructor('\negthinspace',"?#isMath(<ltx:XMHint name='negthinspace'/>)()");
-DefConstructor('\thickspace',  "?#isMath(<ltx:XMHint name='thickspace'/>)( )");
+DefConstructor('\thinspace',   "?#isMath(<ltx:XMHint name='thinspace'/>)( )",
+	      properties=>{isSpace=>1});
+DefConstructor('\negthinspace',"?#isMath(<ltx:XMHint name='negthinspace'/>)()",
+	      properties=>{isSpace=>1});
+DefConstructor('\thickspace',  "?#isMath(<ltx:XMHint name='thickspace'/>)( )",
+	      properties=>{isSpace=>1});
 
-DefConstructor('\hglue Glue', "?#isMath(<ltx:XMHint name='#1'/>)(\x{2001})"); # EM QUAD
+DefConstructor('\hglue Glue', "?#isMath(<ltx:XMHint name='#1'/>)(\x{2001})",
+	      properties=>{isSpace=>1}); # EM QUAD
 DefPrimitive('\vglue Glue', undef);
 DefPrimitive('\topglue', undef);
 DefPrimitive('\nointerlineskip',undef);
@@ -1474,7 +1512,8 @@ DefConstructor('\bigskip',"");
 
 DefPrimitive('\break',undef);
 DefPrimitive('\allowbreak',undef);
-DefConstructor("~","?#isMath(<ltx:XMHint name='nobreakspace'/>)(".UTF(0xA0).")"); # NO-BREAK SPACE
+DefConstructor("~","?#isMath(<ltx:XMHint name='nobreakspace'/>)(".UTF(0xA0).")",
+	      properties=>{isSpace=>1}); # NO-BREAK SPACE
 
 DefMacro('\slash','/');
 DefPrimitive('\filbreak',undef);
@@ -1517,12 +1556,18 @@ DefPrimitive('\normalbottom',undef);
 # Spacing stuff
 DefConstructor('\@','');
 # Math spacing.
-DefConstructor('\,',"?#isMath(<ltx:XMHint name='thinspace'/>)(\x{2009})"); # THIN SPACE
-DefConstructor('\:',"?#isMath(<ltx:XMHint name='medspace'/>)(\x{2005})");  # FOUR-PER-EM SPACE
-DefConstructor('\;',"?#isMath(<ltx:XMHint name='thickspace'/>)(\x{2004})"); # THREE-PER-EM SPACE
-DefConstructor('\!',"?#isMath(<ltx:XMHint name='negthinspace'/>)()");
-DefConstructor('\ ',"?#isMath(<ltx:XMHint name='medspace'/>)(\x{2002})"); # EN SPACE
-DefConstructor('\/',"?#isMath(<ltx:XMHint name='italiccorr'/>)()");
+DefConstructor('\,',"?#isMath(<ltx:XMHint name='thinspace'/>)(\x{2009})",
+	      properties=>{isSpace=>1}); # THIN SPACE
+DefConstructor('\:',"?#isMath(<ltx:XMHint name='medspace'/>)(\x{2005})",
+	      properties=>{isSpace=>1});  # FOUR-PER-EM SPACE
+DefConstructor('\;',"?#isMath(<ltx:XMHint name='thickspace'/>)(\x{2004})",
+	      properties=>{isSpace=>1}); # THREE-PER-EM SPACE
+DefConstructor('\!',"?#isMath(<ltx:XMHint name='negthinspace'/>)()",
+	       properties=>{isSpace=>1});
+DefConstructor('\ ',"?#isMath(<ltx:XMHint name='medspace'/>)(\x{2002})",
+	      properties=>{isSpace=>1}); # EN SPACE
+DefConstructor('\/',"?#isMath(<ltx:XMHint name='italiccorr'/>)()",
+	      properties=>{isSpace=>1});
 
 
 # Math style.
@@ -1923,47 +1968,43 @@ DefMath('\spadesuit',"\x{2660}");	# BLACK SPADE SUIT
 #======================================================================
 # LaTeX; Table 3.8. Variable-sized Symbols, p.44.
 #======================================================================
-# NOTE: Almost got this right!
-#  These stackscripts=>'yes' should really set it to 'yes' IFF we
-# are currently in displaystyle!
-# IE. we need to evaluate the properties in the digestion context!!!!
 
-sub doStackscripts { (LookupValue('mathstyle') eq 'display' ? 'yes' : undef); }
+sub doScriptpos { (LookupValue('mathstyle') eq 'display' ? 'mid' : 'post'); }
 
 DefMath('\sum',      "\x{2211}", role=>'SUMOP', meaning=>'sum',
-	stackscripts=>\&doStackscripts); # N-ARY SUMMATION
+	scriptpos=>\&doScriptpos); # N-ARY SUMMATION
 DefMath('\prod',     "\x{220F}", role=>'SUMOP', meaning=>'product',
-	stackscripts=>\&doStackscripts); # N-ARY PRODUCT
+	scriptpos=>\&doScriptpos); # N-ARY PRODUCT
 DefMath('\coprod',   "\x{2210}", role=>'SUMOP', meaning=>'coproduct',
-	stackscripts=>\&doStackscripts); # N-ARY COPRODUCT
+	scriptpos=>\&doScriptpos); # N-ARY COPRODUCT
 DefMath('\int',      "\x{222B}", role=>'INTOP', meaning=>'integral'); # INTEGRAL
 DefMath('\oint',     "\x{222E}", role=>'INTOP', meaning=>'contour-integral'); # CONTOUR INTEGRAL
 DefMath('\bigcap',   "\x{22C2}", role=>'SUMOP', meaning=>'intersection',
-	stackscripts=>\&doStackscripts); # N-ARY INTERSECTION
+	scriptpos=>\&doScriptpos); # N-ARY INTERSECTION
 DefMath('\bigcup',   "\x{22C3}", role=>'SUMOP', meaning=>'union',
-	stackscripts=>\&doStackscripts); # N-ARY UNION
-DefMath('\bigsqcup', "\x{2294}", role=>'SUMOP', stackscripts=>\&doStackscripts); # SQUARE CUP (N-ARY ???)
+	scriptpos=>\&doScriptpos); # N-ARY UNION
+DefMath('\bigsqcup', "\x{2294}", role=>'SUMOP', scriptpos=>\&doScriptpos); # SQUARE CUP (N-ARY ???)
 DefMath('\bigvee',   "\x{22C1}", role=>'SUMOP', meaning=>'or',
-	stackscripts=>\&doStackscripts); # N-ARY LOGICAL OR
+	scriptpos=>\&doScriptpos); # N-ARY LOGICAL OR
 DefMath('\bigwedge', "\x{22C0}", role=>'SUMOP', meaning=>'and',
-	stackscripts=>\&doStackscripts); # N-ARY LOGICAL AND
+	scriptpos=>\&doScriptpos); # N-ARY LOGICAL AND
 DefMath('\bigodot',  "\x{22A1}", role=>'SUMOP',
-	stackscripts=>\&doStackscripts); # CIRCLED DOT OPERATOR (N-ARY ???)
+	scriptpos=>\&doScriptpos); # CIRCLED DOT OPERATOR (N-ARY ???)
 DefMath('\bigotimes',"\x{2297}", role=>'SUMOP',
-	stackscripts=>\&doStackscripts); # CIRCLED TIMES (N-ARY ?)
+	scriptpos=>\&doScriptpos); # CIRCLED TIMES (N-ARY ?)
 DefMath('\bigoplus', "\x{2295}", role=>'SUMOP',
-	stackscripts=>\&doStackscripts); # CIRCLED PLUS (N-ARY ?)
+	scriptpos=>\&doScriptpos); # CIRCLED PLUS (N-ARY ?)
 DefMath('\biguplus', "\x{2296}", role=>'SUMOP',
-	stackscripts=>\&doStackscripts); # CIRCLED MINUS (N-ARY ?)
+	scriptpos=>\&doScriptpos); # CIRCLED MINUS (N-ARY ?)
 
 
 DefMath('\smallint',"\x{222B}", meaning=>'integral', role=>'INTOP', 
-	font=>{size=>'small'}, stackscripts=>\&doStackscripts); # INTEGRAL
+	font=>{size=>'small'}, scriptpos=>\&doScriptpos); # INTEGRAL
 
 DefConstructor('\limits', sub {
-   $_[0]->getNode->lastChild->setAttribute(stackscripts=>'yes'); });
+   $_[0]->getNode->lastChild->setAttribute(scriptpos=>'mid'); });
 DefConstructor('\nolimits',sub {
-   $_[0]->getNode->lastChild->setAttribute(stackscripts=>'no'); });
+   $_[0]->getNode->lastChild->setAttribute(scriptpos=>'post'); });
 
 #======================================================================
 # LaTeX; Table 3.9. Log-like Functions, p.44.
@@ -1982,39 +2023,39 @@ DefMath('\coth',   "coth", role=>'TRIGFUNCTION', meaning=>'coth');
 DefMath('\csc',    "csc", role=>'TRIGFUNCTION',  meaning=>'cosec');
 DefMath('\deg',    "deg", role=>'OPFUNCTION',    meaning=>'degree');
 DefMath('\det',    "det", role=>'LIMITOP',       meaning=>'det',
-	stackscripts=>\&doStackscripts);
+	scriptpos=>\&doScriptpos);
 DefMath('\dim',    "dim", role=>'LIMITOP',       meaning=>'dim');
 
 DefMath('\exp',    "exp", role=>'OPFUNCTION',    meaning=>'exp');
 DefMath('\gcd',    "gcd", role=>'OPFUNCTION',    meaning=>'gcd',
-	stackscripts=>\&doStackscripts);
+	scriptpos=>\&doScriptpos);
 DefMath('\hom',    "hom", role=>'OPFUNCTION');
 DefMath('\inf',    "inf", role=>'LIMITOP',       meaning=>'infimum',
-	stackscripts=>\&doStackscripts);
+	scriptpos=>\&doScriptpos);
 
 DefMath('\ker',    "ker", role=>'OPFUNCTION',    meaning=>'kernel');
 DefMath('\lg',     "lg",  role=>'OPFUNCTION');
 DefMath('\lim',    "lim", role=>'LIMITOP',       meaning=>'limit',
-	stackscripts=>\&doStackscripts);
+	scriptpos=>\&doScriptpos);
 DefMath('\liminf', "lim inf", role=>'LIMITOP',   meaning=>'limit-infimum',
-	stackscripts=>\&doStackscripts);
+	scriptpos=>\&doScriptpos);
 
 DefMath('\limsup', "lim sup", role=>'LIMITOP',   meaning=>'limit-supremum',
-	stackscripts=>\&doStackscripts);
+	scriptpos=>\&doScriptpos);
 DefMath('\ln',     "ln",  role=>'OPFUNCTION',    meaning=>'ln');
 DefMath('\log',    "log", role=>'OPFUNCTION',    meaning=>'log');
 DefMath('\max',    "max", role=>'LIMITOP',       meaning=>'max',
-	stackscripts=>\&doStackscripts);
+	scriptpos=>\&doScriptpos);
 
 DefMath('\min',    "min", role=>'LIMITOP',       meaning=>'min',
-	stackscripts=>\&doStackscripts);
-DefMath('\Pr',     "Pr",  role=>'OPFUNCTION', stackscripts=>\&doStackscripts);
+	scriptpos=>\&doScriptpos);
+DefMath('\Pr',     "Pr",  role=>'OPFUNCTION', scriptpos=>\&doScriptpos);
 DefMath('\sec',    "sec", role=>'TRIGFUNCTION',  meaning=>'sec');
 DefMath('\sin',    "sin", role=>'TRIGFUNCTION',  meaning=>'sin');
 
 DefMath('\sinh',   "sinh", role=>'TRIGFUNCTION', meaning=>'sinh');
 DefMath('\sup',    "sup",  role=>'LIMITOP',      meaning=>'supremum',
-	stackscripts=>\&doStackscripts);
+	scriptpos=>\&doScriptpos);
 DefMath('\tan',    "tan",  role=>'TRIGFUNCTION', meaning=>'tan');
 DefMath('\tanh',   "tanh", role=>'TRIGFUNCTION', meaning=>'tanh');
 
@@ -2184,10 +2225,14 @@ DefMacro('\mathpalette{}{}',
 	 '\mathchoice{#1\displaystyle{#2}}{#1\textstyle{#2}}'
 	 .'{#1\scriptstyle{#2}}{#1\scriptscriptstyle{#2}}');
   
-DefConstructor('\phantom{}',"?#isMath(<ltx:XMHint name='phantom'/>)()");
-DefConstructor('\hphantom{}',"?#isMath(<ltx:XMHint name='hphantom'/>)()");
-DefConstructor('\vphantom{}',"?#isMath(<ltx:XMHint name='vphantom'/>)()");
-DefConstructor('\mathstrut{}',"?#isMath(<ltx:XMHint name='mathstrut'/>)()");
+DefConstructor('\phantom{}',"?#isMath(<ltx:XMHint name='phantom'/>)()",
+	      properties=>{isSpace=>1});
+DefConstructor('\hphantom{}',"?#isMath(<ltx:XMHint name='hphantom'/>)()",
+	      properties=>{isSpace=>1});
+DefConstructor('\vphantom{}',"?#isMath(<ltx:XMHint name='vphantom'/>)()",
+	      properties=>{isSpace=>1});
+DefConstructor('\mathstrut{}',"?#isMath(<ltx:XMHint name='mathstrut'/>)()",
+	      properties=>{isSpace=>1});
 DefConstructor('\smash{}',"#1"); # well, what?
 
 #======================================================================
@@ -2208,11 +2253,11 @@ DefMath('\dot{}',       "\x{02D9}", operator_role=>'OVERACCENT'); # DOT ABOVE
 DefMath('\ddot{}',      UTF(0xA8), operator_role=>'OVERACCENT'); # DIAERESIS
 DefMath('\overline{}',  UTF(0xAF), operator_role=>'OVERACCENT'); # MACRON
 DefMath('\overbrace{}', "\x{FE37}", operator_role=>'OVERACCENT',  # PRESENTATION FORM FOR VERTICAL LEFT CURLY BRACKET
-	stackscripts=>'yes');
+	scriptpos=>'mid');
 DefMath('\widehat{}',   UTF(0x5E), operator_role=>'OVERACCENT'); # CIRCUMFLEX ACCENT [plain? also amsfonts]
 DefMath('\widetilde{}', UTF(0x7E), operator_role=>'OVERACCENT');  # TILDE [plain? also amsfonts]
 DefMath('\underbrace{}',"\x{FE38}", operator_role=>'UNDERACCENT', # PRESENTATION FORM FOR VERTICAL RIGHT CURLY BRACKET
-	stackscripts=>'yes');
+	scriptpos=>'mid');
 
 # NOTE that all the above accents REQUIRE math mode
 # EXCEPT underline, overrightarrow and overleftarrow!
@@ -2266,14 +2311,16 @@ DefConstructor('\i',"\x{0131}");	# LATIN SMALL LETTER DOTLESS I
 DefConstructor('\j',"j");	# Apparently, no Unicode equivalent...
 
 
-DefConstructor('\>',"<ltx:XMHint name='\>'/>");	# ??
+DefConstructor('\>',"<ltx:XMHint name='\>'/>",
+	      properties=>{isSpace=>1});	# ??
 
 DefConstructor('\buildrel Until:\over {}',
 	       "<ltx:XMApp role='RELOP'>"
 	       .  "<ltx:XMTok role='SUPERSCRIPTOP'/>"
-	       .  "<ltx:XMWrap stackscripts='yes'>#2</ltx:XMWrap>"
+	       .  "<ltx:XMWrap scriptpos='#scriptpos'>#2</ltx:XMWrap>"
 	       .  "<ltx:XMWrap>#1</ltx:XMWrap>"
-	       ."</ltx:XMApp>");
+	       ."</ltx:XMApp>",
+	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }});
 
 #**********************************************************************
 # LaTeX Hook

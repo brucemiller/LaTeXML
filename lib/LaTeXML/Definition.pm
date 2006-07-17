@@ -270,6 +270,7 @@ sub invoke {
   $props{font}    = $STATE->lookupValue('font')   unless defined $props{font};
   $props{locator} = $stomach->getGullet->getLocator unless defined $props{locator};
   $props{isMath}  = $STATE->lookupValue('IN_MATH') unless defined $props{isMath};
+  $props{level}   = $stomach->getBoxingLevel;
   my $whatsit = LaTeXML::Whatsit->new($self,[@args],%props);
   my @post = $self->executeAfterDigest($stomach,$whatsit);
   if(my $id = $props{id}){

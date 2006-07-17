@@ -344,7 +344,7 @@ sub DefConstructor {
 our $math_options = {name=>1, meaning=>1, omcd=>1, reversion=>1, alias=>1,
 		     role=>1, operator_role=>1, reorder=>1,
 		     style=>1, font=>1,
-		     stackscripts=>1,operator_stackscripts=>1,
+		     scriptpos=>1,operator_scriptpos=>1,
 		     beforeDigest=>1, afterDigest=>1, scope=>1, nogroup=>1};
 our $XMID=0;
 sub next_id {
@@ -407,8 +407,8 @@ sub DefMath {
 			      role => $options{role},
 			      operator_role=>$options{operator_role},
 			      style=>$options{style}, 
-			      stackscripts=>$options{stackscripts},
-			      operator_stackscripts=>$options{operator_stackscripts}},
+			      scriptpos=>$options{scriptpos},
+			      operator_scriptpos=>$options{operator_scriptpos}},
 	       scope=>$options{scope});
   # If single character, Make the character active in math.
   if(length($csname) == 1){
@@ -439,10 +439,10 @@ sub DefMath {
 			      $options{scope});
     $STATE->installDefinition(LaTeXML::Constructor->new($cont_cs,$paramlist,
          ($nargs == 0 
-	  ? "<ltx:XMTok $attr role='#role' stackscripts='#stackscripts'/>"
-	  : "<ltx:XMApp role='#role' stackscripts='#stackscripts'>"
+	  ? "<ltx:XMTok $attr role='#role' scriptpos='#scriptpos'/>"
+	  : "<ltx:XMApp role='#role' scriptpos='#scriptpos'>"
 	  .   "<ltx:XMTok $attr role='#operator_role'"
-	  .             " stackscripts='#operator_stackscripts'/>"
+	  .             " scriptpos='#operator_scriptpos'/>"
 	  .   join('',map("#$_", 
 		  ($options{reorder}? @{$options{reorder}} : (1..$nargs))))
 	  ."</ltx:XMApp>"),
@@ -452,11 +452,11 @@ sub DefMath {
     $common{properties}{font} = sub { LookupValue('font')->specialize($presentation); };
     $STATE->installDefinition(LaTeXML::Constructor->new($cs,$paramlist,
          ($nargs == 0 
-	  ? "<ltx:XMTok role='#role' stackscripts='#stackscripts'"
+	  ? "<ltx:XMTok role='#role' scriptpos='#scriptpos'"
 	  .           " font='#font' $attr$end_tok"
-	  : "<ltx:XMApp role='#role' stackscripts='#stackscripts'>"
+	  : "<ltx:XMApp role='#role' scriptpos='#scriptpos'>"
 	  .   "<ltx:XMTok $attr font='#font' role='#operator_role'"
-	  .             " stackscripts='#operator_stackscripts' $end_tok"
+	  .             " scriptpos='#operator_scriptpos' $end_tok"
 	  .   join('',map("<ltx:XMArg>#$_</ltx:XMArg>", 1..$nargs))
 	  ."</ltx:XMApp>"),
          %common), $options{scope}); }
@@ -1009,15 +1009,17 @@ Specifies the font to be used for when creating this object.
 See L<MergeFont>.
 
 
-=item stackscripts=>boolean
+=item scriptpos=>boolean
 
 Controls whether any sub and super-scripts will be stacked over/under this
 object, or whether they will appear in the usual position.
 
-=item operator_role=>grammatical_role
-=item operator_stackscripts=>boolean
+WRONG: Redocument this!
 
-These two are similar to C<role> and C<stackscripts>, but are used in
+=item operator_role=>grammatical_role
+=item operator_scriptpos=>boolean
+
+These two are similar to C<role> and C<scriptpos>, but are used in
 unusual cases.  These apply to the given attributes to the operator token
 in the content branch.
 

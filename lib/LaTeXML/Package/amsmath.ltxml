@@ -629,31 +629,38 @@ DefEnvironment('{subarray}[]',
 # NOTE that there can be at most one subscript in each of the pre & post, ditto for superscript.
 # Thus, our representation is: sideset(presub,presup,postsub,postsup,object)
 # Note, also, that this is quite ugly, but since it is a rather peculiar special case.... ?
+
+# try by nesting...
 DefConstructor('\sideset{}{}{}', sub {
-  my($document,$pre,$post,$ob)=@_;
+  my($document,$pre,$post,$base,%props)=@_;
   my @scripts = (undef,undef,undef,undef);
 
-  my $node=$document->openElement('ltx:XMApp');
-  my $phase=0;
-  foreach my $group ($pre,$post){
-    $document->absorb($group);
-    foreach my $p ($node->childNodes){
-      my $role = $p->getAttribute('role')||'';
-      if   ($role eq 'POSTSUBSCRIPT'  ){ $scripts[$phase+0] = $p->firstChild; }
-      elsif($role eq 'POSTSUPERSCRIPT'){ $scripts[$phase+1] = $p->firstChild; }
-      else { warn("Non sub/superscript in \\sideset: $p"); }
-      $node->removeChild($p); }
-    $phase +=2;  }
-
-  # And finally build it.
-  $document->insertElement('ltx:XMTok',undef,name=>'sideset');
-  foreach my $script (@scripts){
-    if($script){
-      $node->appendChild($script); }
-    else {
-      $document->insertElement('ltx:XMTok',undef,name=>'Empty'); }}
-  $document->insertElement('ltx:XMArg',$ob);
-  $document->closeElement('ltx:XMApp');
+  my $node = $document->insertElement('ltx:XMArg',$base);
+  my ($opx,$ignore)
+    = ($node->firstChild->getAttribute('scriptpos')||'post')
+      =~ /^(pre|mid|post)?(\d+)?$/;
+  my $level = $props{level}||0;
+  my $x  = 'pre';
+  foreach my $group ($pre,$post){ # Best order?
+    foreach my $script ($group->unlist){
+      my $y;
+      if((ref $script eq 'LaTeXML::Whatsit')
+	 && (( ($script->getDefinition eq
+		$STATE->lookupMeaning(T_CS('\@@FLOATINGSUPERSCRIPT')))
+	       && ($y='SUPER'))
+	     || (($script->getDefinition eq
+		  $STATE->lookupMeaning(T_CS('\@@FLOATINGSUBSCRIPT')))
+		&& ($y='SUB')))){
+	my $new = $document->openElement('ltx:XMApp');
+	$document->insertElement('ltx:XMTok',undef,
+				 role=>$y.'SCRIPTOP',scriptpos=>"$x$level");
+	$new->appendChild($node);
+	$document->insertElement('ltx:XMWrap',$script->getArg(1));
+	$document->closeElement('ltx:XMApp');
+	$node = $new; }
+      else { warn("Non sub/superscript in \\sideset: ".Stringify($script)); }}
+    $x = 'post'; }
+  $node->setAttribute(scriptpos=>$opx) if $opx;
 });
 
 #======================================================================

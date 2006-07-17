@@ -51,7 +51,7 @@
         <Math mode="display" tex="\{ a|a\in b\} _{{c=0}}" text="(ConditionalSet@(a, a in b)) _ (c = 0)">
           <XMath>
             <XMApp>
-              <XMTok role="SUBSCRIPTOP"/>
+              <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
               <XMApp>
                 <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators="|"/>
                 <XMTok role="ID" font="italic">a</XMTok>

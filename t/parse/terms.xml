@@ -173,7 +173,7 @@
         <Math mode="display" tex="|a|_{\infty}" text="(Abs@(a)) _ infinity">
           <XMath>
             <XMApp>
-              <XMTok role="SUBSCRIPTOP"/>
+              <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
               <XMApp>
                 <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -255,7 +255,7 @@
             <XMTok role="VERTBAR">|</XMTok>
             <XMTok role="ID" font="italic">b</XMTok>
             <XMTok role="VERTBAR">|</XMTok>
-            <XMApp role="POSTSUBSCRIPT">
+            <XMApp role="POSTSUBSCRIPT" scriptpos="2">
               <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
             </XMApp>
           </XMath>
@@ -268,7 +268,7 @@
             <XMTok role="ID" font="italic">a</XMTok>
             <XMTok role="ID" font="italic">b</XMTok>
             <XMTok role="VERTBAR">|</XMTok>
-            <XMApp role="POSTSUBSCRIPT">
+            <XMApp role="POSTSUBSCRIPT" scriptpos="2">
               <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
             </XMApp>
             <XMTok role="ID" font="italic">c</XMTok>

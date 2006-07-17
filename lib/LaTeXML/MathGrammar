@@ -181,8 +181,6 @@ SignedTerm : ADDOP Term				{ Apply($item[1],$item[2]); }
 Term    : Factor moreFactors[$item[1]]
 moreFactors :
 	  MULOP Factor moreFactors[ApplyNary($item[1],$arg[0],$item[2])]
-###     | evalAtOp POSTSUBSCRIPT
-###	        moreFactors[Apply(New('AT'),$arg[0],Arg($item[2],0))]
 	# Given an explicit COMPOSEOP, we'll assume the preceding is
 	# an implicit lambda of some sort(?)
 	| COMPOSEOP makeComposition[$arg[0],$item[1]]
@@ -211,8 +209,7 @@ Factor	:
 	| NUMBER   addScripts[$item[1]]
 	| SCRIPTOPEN scriptFactorOpen[$item[1]]
 	| OPEN factorOpen[$item[1]]
-#	| bigop addScripts[$item[1]] Term   { Apply($item[2],$item[3]); }
-	| bigop addScripts[$item[1]] addOpArgs[$item[2]]
+	| preScripted['bigop'] addOpArgs[$item[1]]
 	| VERTBAR absExpression VERTBAR
 	  	  addScripts[Fence($item[1],$item[2],$item[3])]
 	| VERTBAR VERTBAR absExpression VERTBAR VERTBAR 
@@ -267,53 +264,20 @@ moreTrigBareargs :
 
 # addScripts[$base] ; adds any following sub/super scripts to $base.
 addScripts :
-          POSTSUBSCRIPT   addScriptsA[$arg[0],$item[1]]
-	| POSTSUPERSCRIPT addScriptsB[$arg[0],$item[1]]
-	| POSTFIX addScripts[Apply($item[1],$arg[0])]
-####	| evalAtOp POSTSUBSCRIPT { Apply(New('AT'),$arg[0],Arg($item[2],0)); }
+          POSTSUPERSCRIPT  addScripts[NewScript($arg[0],$item[1])]
+        | POSTSUBSCRIPT    addScripts[NewScript($arg[0],$item[1])]
+	| POSTFIX          addScripts[Apply($item[1],$arg[0])]
 	| { $arg[0]; }
-
-# addScriptsA[$base,$sub]
-addScriptsA : POSTSUPERSCRIPT addScripts[NewScripts($arg[0],$arg[1],$item[1])]
-	|                     addScripts[NewScripts($arg[0],$arg[1],undef)]
-# addScriptsB[$base,$sup]
-addScriptsB : POSTSUBSCRIPT   addScripts[NewScripts($arg[0],$item[1],$arg[1])]
-	|                     addScripts[NewScripts($arg[0],'',      $arg[1])]
 
 # ================================================================================
 # preScripted['RULE']; match a RULE possibly preceded by sub/super prescripts,
 #  possibly followed by sub/superscripts
 
-preScripted :
-	  FLOATINGSUBSCRIPT   preScriptedA[$arg[0],$item[1]]
-        | FLOATINGSUPERSCRIPT preScriptedB[$arg[0],$item[1]]
-        | <matchrule:$arg[0]> addScripts[$item[1]]
-# preScriptedA[rule,$presub]
-preScriptedA :
-	  FLOATINGSUPERSCRIPT <matchrule:$arg[0]>
-	       moreScripts[$item[2],$arg[1],$item[1]]
-        | <matchrule:$arg[0]> moreScripts[$item[1],$arg[1],''      ]
-# preScriptedB[rule,$presup]
-preScriptedB :
-	  FLOATINGSUBSCRIPT
-	  <matchrule:$arg[0]> moreScripts[$item[2],$item[1],$arg[1]]
-        | <matchrule:$arg[0]> moreScripts[$item[1],'',      $arg[1]]
 
-# moreScripts[base,presub,presup];
-moreScripts :
-	  POSTSUBSCRIPT   moreScriptsA[$arg[0],$arg[1],$arg[2],$item[1]]
-	| POSTSUPERSCRIPT moreScriptsB[$arg[0],$arg[1],$arg[2],$item[1]]
-        |               { NewScripts($arg[0],'',      '',      $arg[1],$arg[2]); }
-# moreScriptsA[base,presub,presup,sub]
-moreScriptsA :
-	  POSTSUPERSCRIPT
-	  addScripts[NewScripts($arg[0],$arg[3],$item[1],$arg[1],$arg[2])]
-	| addScripts[NewScripts($arg[0],$arg[3],'',      $arg[1],$arg[2])]
-# moreScriptsB[base,presub,presup,sup]
-moreScriptsB :
-	  POSTSUBSCRIPT
-	  addScripts[NewScripts($arg[0],$item[1],$arg[3],$arg[1],$arg[2])]
-	| addScripts[NewScripts($arg[0],'',      $arg[3],$arg[1],$arg[2])]
+preScripted :
+	  FLOATSUPERSCRIPT preScripted[$arg[0]] { NewScript($item[2],$item[1]);}
+	| FLOATSUBSCRIPT   preScripted[$arg[0]] { NewScript($item[2],$item[1]);}
+        | <matchrule:$arg[0]> addScripts[$item[1]]
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Parenthetical: Things wrapped in OPEN .. CLOSE
@@ -326,14 +290,14 @@ moreScriptsB :
 factorOpen :
 	  ADDOP balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1],$item[2])] # For (-)
         # Parenthesized Operator possibly w/scripts
-        | bigop addScripts[$item[1]] balancedClose[$arg[0]] 
-	  	 addScripts[Fence($arg[0],$item[2],$item[3])] Factor
-            { Apply($item[4],$item[5]); }
+        | preScripted['bigop'] balancedClose[$arg[0]] 
+	  	 addScripts[Fence($arg[0],$item[1],$item[2])] Factor
+            { Apply($item[3],$item[4]); }
 	# Parenthesized Operator including a pre-factor
-	| Factor bigop addScripts[$item[2]] balancedClose[$arg[0]] 
+	| Factor preScripted['bigop'] balancedClose[$arg[0]] 
 	     addScripts[Fence($arg[0],
-                        Apply(InvisibleTimes(),$item[1],$item[3]),$item[4])] Factor
-          { Apply($item[5],$item[6]); }
+                        Apply(InvisibleTimes(),$item[1],$item[2]),$item[3])] Factor
+          { Apply($item[4],$item[5]); }
 	# read expression too? match subcases.
         | Expression factorOpenExpr[$arg[0],$item[1]]
 
@@ -489,7 +453,7 @@ nestOperators :
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 anyop   : relop | METARELOP | ARROW | ADDOP | MULOP 
-	| bigop addScripts[$item[1]] 
+	| preScripted['bigop']
 	| OPERATOR addScripts[$item[1]]
 
 relop	: RELOP | ARROW
@@ -557,9 +521,9 @@ LIMITOP		: /LIMITOP:\S*:\d+/ 	    { Lookup($item[1]); }
 DIFFOP		: /DIFFOP:\S*:\d+/ 	    { Lookup($item[1]); }
 OPERATOR	: /OPERATOR:\S*:\d+/ 	    { Lookup($item[1]); }
 ##DIFF		: /DIFF:\S*:\d+/ 	    { Lookup($item[1]); }
-POSTSUPERSCRIPT : /POSTSUPERSCRIPT:\S*:\d+/ { Lookup($item[1]); }
 POSTSUBSCRIPT   : /POSTSUBSCRIPT:\S*:\d+/   { Lookup($item[1]); }
-FLOATINGSUPERSCRIPT  : /FLOATINGSUPERSCRIPT:\S*:\d+/  { Lookup($item[1]); }
-FLOATINGSUBSCRIPT    : /FLOATINGSUBSCRIPT:\S*:\d+/    { Lookup($item[1]); }
+POSTSUPERSCRIPT : /POSTSUPERSCRIPT:\S*:\d+/ { Lookup($item[1]); }
+FLOATSUPERSCRIPT : /FLOATSUPERSCRIPT:\S*:\d+/ { Lookup($item[1]); }
+FLOATSUBSCRIPT	: /FLOATSUBSCRIPT:\S*:\d+/  { Lookup($item[1]); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

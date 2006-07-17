@@ -55,7 +55,7 @@
               <XMApp>
                 <XMTok meaning="sin" role="TRIGFUNCTION">sin</XMTok>
                 <XMApp>
-                  <XMTok role="SUPERSCRIPTOP"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMTok meaning="2" role="NUMBER">2</XMTok>
                 </XMApp>
@@ -149,7 +149,7 @@
                   <XMTok role="MULOP">⁢</XMTok>
                   <XMTok meaning="2" role="NUMBER">2</XMTok>
                   <XMApp>
-                    <XMTok role="SUPERSCRIPTOP"/>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                     <XMTok role="UNKNOWN" font="italic">x</XMTok>
                     <XMTok meaning="2" role="NUMBER">2</XMTok>
                   </XMApp>
@@ -232,14 +232,14 @@
               <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMApp>
                 <XMApp argclose=")" argopen="(">
-                  <XMTok role="SUPERSCRIPTOP"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                   <XMTok role="FUNCTION" font="italic">f</XMTok>
                   <XMTok name="prime" role="SUPOP">′</XMTok>
                 </XMApp>
                 <XMTok role="ID" font="italic">a</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok role="SUPERSCRIPTOP"/>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok meaning="2" role="NUMBER">2</XMTok>
               </XMApp>
@@ -254,7 +254,7 @@
               <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMApp>
                 <XMApp argclose=")" argopen="(">
-                  <XMTok role="SUPERSCRIPTOP"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                   <XMTok role="FUNCTION" font="italic">f</XMTok>
                   <XMTok meaning="2" role="NUMBER">2</XMTok>
                 </XMApp>
@@ -262,7 +262,7 @@
               </XMApp>
               <XMApp>
                 <XMApp argclose=")" argopen="(">
-                  <XMTok role="SUPERSCRIPTOP"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                   <XMTok role="FUNCTION" font="italic">g</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
                 </XMApp>
@@ -289,7 +289,7 @@
               <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMApp>
                 <XMApp>
-                  <XMTok role="SUBSCRIPTOP"/>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
                   <XMTok meaning="log" role="OPFUNCTION">log</XMTok>
                   <XMTok role="ID" font="italic">e</XMTok>
                 </XMApp>
@@ -298,7 +298,7 @@
               <XMTok meaning="eq" role="RELOP">=</XMTok>
               <XMApp>
                 <XMApp>
-                  <XMTok role="SUBSCRIPTOP"/>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
                   <XMTok meaning="ln" role="OPFUNCTION">ln</XMTok>
                   <XMTok meaning="plus" role="ADDOP">+</XMTok>
                 </XMApp>
