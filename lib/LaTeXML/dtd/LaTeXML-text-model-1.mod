@@ -25,7 +25,8 @@
 	  width   CDATA #IMPLIED
 	  height  CDATA #IMPLIED
 	  pad-width CDATA #IMPLIED
-	  raise   CDATA #IMPLIED>
+	  raise   CDATA #IMPLIED
+	  class   CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.emph.qname; %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.emph.qname; %LaTeXML.Common.attrib;>

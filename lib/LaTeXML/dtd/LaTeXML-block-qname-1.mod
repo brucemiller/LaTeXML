@@ -21,6 +21,7 @@
 <!ENTITY % LaTeXML.equationgroup.qname "%LaTeXML.pfx;equationgroup">
 <!ENTITY % LaTeXML.verbatim.qname      "%LaTeXML.pfx;verbatim">
 <!ENTITY % LaTeXML.centering.qname     "%LaTeXML.pfx;centering">
+<!ENTITY % LaTeXML.block.qname         "%LaTeXML.pfx;block">
 
 <!-- ======================================================================
      Para Elements: Logical Paragraphs -->
@@ -37,8 +38,10 @@
 <!-- ======================================================================
      Declare contributions to various classes. -->
 <!ENTITY % LaTeXML-block.Block.class
-	 "%LaTeXML.p.qname; | %LaTeXML.equation.qname;  | %LaTeXML.equationgroup.qname;
-	| %LaTeXML.quote.qname; | %LaTeXML.centering.qname;" >
+	 "%LaTeXML.p.qname;
+	| %LaTeXML.equation.qname;  | %LaTeXML.equationgroup.qname;
+	| %LaTeXML.quote.qname; | %LaTeXML.centering.qname;
+	| %LaTeXML.block.qname;" >
 <!ENTITY % LaTeXML-block.Misc.class
 	 "| %LaTeXML.minipage.qname; | %LaTeXML.verbatim.qname;">
 <!ENTITY % LaTeXML-block.Para.class

@@ -286,6 +286,10 @@
   <p><xsl:apply-templates/></p>
 </xsl:template>
 
+<xsl:template match="ltx:block">
+  <div class="{@class}"><xsl:apply-templates/></div>
+</xsl:template>
+
 <xsl:template match="ltx:toccaption"/>
 <xsl:template match="ltx:caption">
   <div class='caption'>  
@@ -463,20 +467,26 @@
 	/>;</xsl:attribute>
     </xsl:when>
   </xsl:choose>
-  <!-- size and framed handled by class attribute -->
+  <!-- size and framed handled by class attribute; but copy @class too!!! -->
   <xsl:choose>
     <xsl:when test="@framed and @size">
       <xsl:attribute name='class'
         >framed <xsl:value-of select="@size"
-	/></xsl:attribute>
+	/><xsl:if test="@class"
+         ><xsl:text> </xsl:text><xsl:value-of select="@class"/></xsl:if
+	 ></xsl:attribute>
     </xsl:when>
     <xsl:when test="@framed">
-      <xsl:attribute name='class'>framed</xsl:attribute>
+      <xsl:attribute name='class'>framed<xsl:if test="@class"
+         ><xsl:text> </xsl:text><xsl:value-of select="@class"/></xsl:if
+	 ></xsl:attribute>
     </xsl:when>
     <xsl:when test="@size">
       <xsl:attribute name='class'
         ><xsl:value-of select="@size"
-	/></xsl:attribute>
+	/><xsl:if test="@class"
+         ><xsl:text> </xsl:text><xsl:value-of select="@class"/></xsl:if
+	 ></xsl:attribute>
     </xsl:when>
   </xsl:choose>
   <xsl:apply-templates/>

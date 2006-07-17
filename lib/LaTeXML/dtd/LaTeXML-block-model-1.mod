@@ -34,6 +34,12 @@
 <!ELEMENT %LaTeXML.quote.qname;  %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.quote.qname; %LaTeXML.Common.attrib;>
 
+<!-- generic block (fallback) -->
+<!ELEMENT %LaTeXML.block.qname;  %LaTeXML.Inline.model;>
+<!ATTLIST %LaTeXML.block.qname;
+	  %LaTeXML.Common.attrib;
+	  class CDATA #IMPLIED>
+
 
 <!-- ======================================================================
      Misc Elements
