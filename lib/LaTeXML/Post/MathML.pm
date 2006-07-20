@@ -221,6 +221,10 @@ sub pmml_internal {
   elsif($tag eq 'XMHint'){
     &{ lookupPresenter('Hint',$role,getTokenMeaning($node)) }($node); }
   elsif($tag eq 'XMArray'){
+    my $style = $node->getAttribute('style');
+    my $styleattr = $style && $stylemap{$LaTeXML::MathML::STYLE}{$style};
+    local $LaTeXML::MathML::STYLE 
+      = ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
     my @rows = ();
     foreach my $row (element_nodes($node)){
       my @cols = ();
@@ -235,7 +239,9 @@ sub pmml_internal {
 			   ($cs ? (columnspan=>$cs):())},
 		    map(pmml($_),element_nodes($col))]); }
       push(@rows,['mtr',{},@cols]); }
-    ['mtable',{rowspacing=>"0.2ex", columnspacing=>"0.4em"},@rows]; }
+    my $result = ['mtable',{rowspacing=>"0.2ex", columnspacing=>"0.4em"},@rows];
+    $result = ['mstyle',{@$styleattr},$result] if $styleattr;
+    $result; }
   else {
     ['mtext',{},$node->textContent]; }}
 

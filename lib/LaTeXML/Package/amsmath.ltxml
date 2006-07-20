@@ -396,6 +396,21 @@ DefEnvironment('{Vmatrix}',
 	       beforeDigest=>\&before_alignment,
 	       afterDigest=>\&after_alignment);
 
+DefEnvironment('{smallmatrix}',
+	       sub { my($document,%props)=@_;
+		     my $n=$props{trailer}->getProperty('n_columns');
+		     alignment($document,$props{body},
+			       parseTabularPattern('c' x $n),0,
+			       name=>'Matrix', style=>'script');},
+#	       beforeDigest=>\&before_alignment,
+#	       afterDigestBegin=>sub { MergeFont(size=>'script'); return; },
+	       beforeDigest=>[
+			      sub { MergeFont(size=>'script'); return; },
+			      sub { AssignValue(mathstyle=>'script'); },
+			      \&before_alignment
+],
+	       afterDigest=>\&after_alignment);
+
 #======================================================================
 # Section 4.2 Math spacing commands
 # \, == \thinspace
@@ -480,12 +495,12 @@ DefConstructor('\xrightarrow[]{}',
 
 DefConstructor('\overset{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMWrap role='OVERACCENT>#1</ltx:XMWrap>"
+	       . "<ltx:XMWrap role='OVERACCENT'>#1</ltx:XMWrap>"
 	       . "<ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>");
 DefConstructor('\underset{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMWrap role='UNDERACCENT>#1</ltx:XMWrap>"
+	       . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
 	       . "<ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>");
 
@@ -710,6 +725,23 @@ DefMacro('\varPsi',     '\mathit{\Psi}');
 DefMacro('\varXi',      '\mathit{\Xi}');
 DefMacro('\varOmega',   '\mathit{\Omega}');
 DefMacro('\varPi',      '\mathit{\Pi}');
+
+#======================================================================
+# And some random other weird naming
+Let('\Hat', '\hat');
+Let('\Check', '\check');
+Let('\Tilde', '\tilde');
+Let('\Acute', '\acute');
+Let('\Grave', '\grave');
+Let('\Dot', '\dot');
+Let('\Ddot', '\ddot');
+Let('\Breve', '\breve');
+Let('\Bar', '\bar');
+Let('\Vec', '\vec');
+
+# And where does this go?
+DefPrimitive('\notag', undef);
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
 

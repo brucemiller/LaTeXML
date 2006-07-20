@@ -115,7 +115,8 @@
 	  %LaTeXML.XMath.attrib;
 	  %LaTeXML.ID.attrib;
           name    CDATA #IMPLIED
-          meaning CDATA #IMPLIED>
+          meaning CDATA #IMPLIED
+          style   CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.XMRow.qname; (%LaTeXML.XMCell.qname;)*>
 <!ATTLIST %LaTeXML.XMRow.qname;
