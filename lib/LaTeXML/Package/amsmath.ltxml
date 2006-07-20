@@ -351,7 +351,7 @@ DefEnvironment('{matrix}',
 	       sub { my($document,%props)=@_;
 		     my $n=$props{trailer}->getProperty('n_columns');
 		     alignment($document,$props{body},
-			       makeTabularPattern($n,'center'),0,
+			       parseTabularPattern('c' x $n),0,
 			       name=>'Matrix');},
 	       beforeDigest=>\&before_alignment,
 	       afterDigest=>\&after_alignment);
@@ -359,7 +359,7 @@ DefEnvironment('{pmatrix}',
 	       sub { my($document,%props)=@_;
 		     my $n=$props{trailer}->getProperty('n_columns');
 		     alignment($document,$props{body},
-			       makeTabularPattern($n,'center'),0,
+			       parseTabularPattern('c' x $n),0,
 			       name=>'Matrix',open=>'(',close=>')');},
 	       beforeDigest=>\&before_alignment,
 	       afterDigest=>\&after_alignment);
@@ -367,7 +367,7 @@ DefEnvironment('{bmatrix}',
 	       sub { my($document,%props)=@_;
 		     my $n=$props{trailer}->getProperty('n_columns');
 		     alignment($document,$props{body},
-			       makeTabularPattern($n,'center'),0,
+			       parseTabularPattern('c' x $n),0,
 			       name=>'Matrix',open=>'[',close=>']');},
 	       beforeDigest=>\&before_alignment,
 	       afterDigest=>\&after_alignment);
@@ -375,7 +375,7 @@ DefEnvironment('{Bmatrix}',
 	       sub { my($document,%props)=@_;
 		     my $n=$props{trailer}->getProperty('n_columns');
 		     alignment($document,$props{body},
-			       makeTabularPattern($n,'center'),0,
+			       parseTabularPattern('c' x $n),0,
 			       name=>'Matrix',open=>'{',close=>'}');},
 	       beforeDigest=>\&before_alignment,
 	       afterDigest=>\&after_alignment);
@@ -383,7 +383,7 @@ DefEnvironment('{vmatrix}',
 	       sub { my($document,%props)=@_;
 		     my $n=$props{trailer}->getProperty('n_columns');
 		     alignment($document,$props{body},
-			       makeTabularPattern($n,'center'),0,
+			       parseTabularPattern('c' x $n),0,
 			       name=>'Matrix',open=>'|',close=>'|');},
 	       beforeDigest=>\&before_alignment,
 	       afterDigest=>\&after_alignment);
@@ -391,7 +391,7 @@ DefEnvironment('{Vmatrix}',
 	       sub { my($document,%props)=@_;
 		     my $n=$props{trailer}->getProperty('n_columns');
 		     alignment($document,$props{body},
-			       makeTabularPattern($n,'center'),0,
+			       parseTabularPattern('c' x $n),0,
 			       name=>'Matrix',open=>"\x{2225}",close=>"\x{2225}");},
 	       beforeDigest=>\&before_alignment,
 	       afterDigest=>\&after_alignment);
@@ -537,7 +537,7 @@ DefConstructor('\dbinom{}{}',
 # Section 4.11.3 The \genfrac command
 DefConstructor('\genfrac{}{}{Dimension}{}{}{}',
 	       "<ltx:XMApp open='#open' close='#close'>"
-	       . "<ltx:XMTok ?&IsZero(#3)(role='STACKED')(role='MULOP' name='/')"
+	       . "<ltx:XMTok ?&IsZero(#3)(role='STACKED')(role='MULOP' meaning='div')"
 	       .           " thickness='#3' style='?#4(#4)(#style)'/>"
 	       . "<ltx:XMArg>#5</ltx:XMArg>"
 	       . "<ltx:XMArg>#6</ltx:XMArg>"

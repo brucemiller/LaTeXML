@@ -578,38 +578,43 @@ DefExpandable('\ensuremath{}', sub {
   if(LookupValue('IN_MATH')){ @$stuff; }
   else { (T_MATH,@$stuff,T_MATH); }});
 
-# NOTE: Implement these
-# Environment('eqnarray' ...
-# Environment('eqnarray*' ...
-
 # NOTE: The numbering isn't right.
 # And the parseability will have to be worked on!
 DefEnvironment('{eqnarray}',
-	       sub { 
-		 my($document,%props)=@_;
-		 $document->openElement('ltx:equation',refnum=>$props{refnum}, id=>$props{id});
-		 $document->openElement('ltx:Math',mode=>'display');
-		 $document->openElement('ltx:XMath');
-		 matharray($document,$props{body},'', 'Matrix','Row','Cell');
+	       sub { my($document,%props)=@_;
+		     $document->openElement('ltx:equation',
+					    refnum=>$props{refnum}, id=>$props{id});
+		     $document->openElement('ltx:Math',mode=>'display');
+		     $document->openElement('ltx:XMath');
+		     my $n=$props{trailer}->getProperty('n_columns');
+		     alignment($document,$props{body},
+			       parseTabularPattern('rcl'),0,
+			       name=>'eqnarray');
 		 $document->closeElement('ltx:XMath');
 		 $document->closeElement('ltx:Math');
 		 $document->closeElement('ltx:equation'); },
 	       mode=>'display_math',
 	       properties=> sub { refStepCounter('equation') },
-	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
+	       beforeDigest=>\&before_alignment,
+	       afterDigest=>\&after_alignment);
 DefEnvironment('{eqnarray*}',
-	       sub { 
-		 my($document,%props)=@_;
-		 $document->openElement('ltx:equation', id=>$props{id});
-		 $document->openElement('ltx:Math',mode=>'display');
-		 $document->openElement('ltx:XMath');
-		 matharray($document,$props{body},'', 'Matrix','Row','Cell');
+	       sub { my($document,%props)=@_;
+		     $document->openElement('ltx:equation', id=>$props{id});
+		     $document->openElement('ltx:Math',mode=>'display');
+		     $document->openElement('ltx:XMath');
+		     my $n=$props{trailer}->getProperty('n_columns');
+		     alignment($document,$props{body},
+			       parseTabularPattern('rcl'),0,
+			       name=>'eqnarray');
 		 $document->closeElement('ltx:XMath');
 		 $document->closeElement('ltx:Math');
 		 $document->closeElement('ltx:equation'); },
 	       mode=>'display_math',
 	       properties=> sub { refStepID('equation') },
-	       beforeDigest=>\&before_matharray, afterDigest=>\&after_matharray);
+	       beforeDigest=>\&before_alignment,
+	       afterDigest=>\&after_alignment);
+
+DefMacro('\lefteqn{}','\multicolumn{3}{l}{#1\mbox{}}');
 
 # Style Parameters
 #  \abovedisplayskip \abovedisplayshortskip, \jot are in Primitives.pm

@@ -22,7 +22,7 @@ our @EXPORT= (qw(&alignment
 		 &alignment_align &alignment_cr &alignment_hline
 		 &alignment_multicol
 		 &guess_alignment_headers
-		 &ReadTabularPattern &makeTabularPattern));
+		 &ReadTabularPattern &parseTabularPattern));
 
 # If in math => XMArray > XMRow > XMCell,
 #  else      => tabular > tr    > td
@@ -201,11 +201,14 @@ sub ReadTabularPattern {
       Warn("Unrecognized tabular pattern \"".Stringify($op)."\""); last; }}
   return LaTeXML::TabularPattern->new(row=>[@row], tokens=>[@tokens]); }
 
-sub makeTabularPattern {
-  my($ncols,$alignment)=@_;
-  my @row = map( {align=>$alignment, border=>''}, 0..$ncols-1);
-  LaTeXML::TabularPattern->new(row=>[@row]); }
-  
+sub parseTabularPattern {
+  my($spec)=@_;
+  my $gullet = $STATE->getStomach->getGullet;
+  $gullet->openMouth(LaTeXML::Mouth->new("{".$spec."}"),1);
+  my $pattern = ReadTabularPattern($gullet);
+  $gullet->closeMouth(1);
+  $pattern; }
+
 {
 package LaTeXML::TabularPattern;
 use base qw(LaTeXML::Object);
