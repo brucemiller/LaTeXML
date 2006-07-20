@@ -803,6 +803,7 @@ DefPrimitive('\aftergroup Token', sub { UnshiftValue(afterGroup=>$_[1]); });
 # \mark{general text}
 # \insert<8bit><filler>{<vertical mode material>}
 # \vadjust<filler>{<vertical mode material>}
+DefPrimitive('\unskip',undef);
 DefPrimitive('\mark{}',undef);
 DefPrimitive('\penalty Number',undef);
 DefPrimitive('\kern Dimension',undef);
@@ -1511,6 +1512,7 @@ DefConstructor('\bigskip',"");
 # TeX Book, Appendix B, p. 353
 
 DefPrimitive('\break',undef);
+DefPrimitive('\nobreak',undef);
 DefPrimitive('\allowbreak',undef);
 DefConstructor("~","?#isMath(<ltx:XMHint name='nobreakspace'/>)(".UTF(0xA0).")",
 	      properties=>{isSpace=>1}); # NO-BREAK SPACE
@@ -2335,28 +2337,46 @@ our %ignorable_classoptions
 		   openright openany onecolumn twocolumn 
 		   notitlepage titlepage openbib leqno fleqn));
 
-DefConstructor('\documentclass[]{}[]',"<?latexml class='#2' ?#1(options='#1')?>",
+sub loadLaTeXClass {
+  my($stomach,$class,@options)=@_;
+  AssignValue(inPreamble=>1);	# \begin{document} will clear this.
+  $stomach->getGullet->input('LaTeX',['ltxml'],options=>[@options]);
+  if(my $file = pathname_find($class,paths=>LookupValue('SEARCHPATHS'),
+			      types=>['ltxml'], installation_subdir=>'Package')){
+    $stomach->getGullet->input($class,['ltxml']); }
+  elsif($file = pathname_find($class,paths=>LookupValue('SEARCHPATHS'),
+			      types=>['cls'])){
+    my $msg = "IGNORING class file $file: using article instead";
+    NoteBegin($msg); 
+    $stomach->getGullet->input('article',['ltxml']);
+    NoteEnd($msg); }
+  return; }
+
+DefConstructor('\documentclass[]{}[]',
+	       "<?latexml class='#2' ?#1(options='#1')?>",
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
     my $options = $whatsit->getArg(1);
-    my $class   = $whatsit->getArg(2)->toString;
     $options = $options->toString if defined $options;
-    my @options = grep( !$ignorable_classoptions{$_},  split(/,\s*/, $options||''));
-    AssignValue(inPreamble=>1);	# \begin{document} will clear this.
-    $stomach->getGullet->input('LaTeX',['ltxml'],options=>[@options]);
-    if(my $file = pathname_find($class,paths=>LookupValue('SEARCHPATHS'),
-				types=>['ltxml'], installation_subdir=>'Package')){
-      $stomach->getGullet->input($class,['ltxml']); }
-    elsif($file = pathname_find($class,paths=>LookupValue('SEARCHPATHS'),
-				types=>['cls'])){
-      my $msg = "IGNORING class file $file: using article instead";
-      NoteBegin($msg); 
-      $stomach->getGullet->input('article',['ltxml']);
-      NoteEnd($msg); }
+    my @options = grep( !$ignorable_classoptions{$_}, split(/,\s*/, $options||''));
+    loadLaTeXClass($stomach,$whatsit->getArg(2)->toString,@options);
     return;});
 
-
-Let('\documentstyle','\documentclass');
+DefConstructor('\documentstyle[]{}[]',
+	       "<?latexml class='#2' ?#1(options='#1')?>",
+  afterDigest=>sub {
+    my($stomach,$whatsit)=@_;
+    my $options = $whatsit->getArg(1);
+    $options = $options->toString if defined $options;
+    my @options = grep( !$ignorable_classoptions{$_}, split(/,\s*/, $options||''));
+    loadLaTeXClass($stomach,$whatsit->getArg(2)->toString,@options);
+    # For documentstyle, some options mean to load styles!
+    foreach my $option(@options) {
+      if(my $file = pathname_find($option,paths=>LookupValue('SEARCHPATHS'),
+				  types=>['ltxml','sty'],
+				  installation_subdir=>'Package')){
+	$stomach->getGullet->input($file); }}
+    return;});
 
 #**********************************************************************
 # Support for Declarations & Presentation/Semantic Duality

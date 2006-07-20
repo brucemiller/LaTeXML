@@ -149,6 +149,8 @@ DefConstructor('\emph{}', "<ltx:emph>#1</ltx:emph>", mode=>'text');
 # Style parameters
 # \parindent, \baselineskip, \parskip alreadin in Primitives.pm
 
+DefPrimitive('\linespread{}', undef);
+
 #======================================================================
 # C.3.3 Footnotes
 #======================================================================
