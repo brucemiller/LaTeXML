@@ -156,6 +156,7 @@ sub alignment_multicol {
 
 sub ReadTabularPattern {
   my($gullet)=@_;
+  $gullet->skipSpaces;
   my $open = $gullet->readToken;		# Better be {
   my @tokens=($open);
   my @row=();

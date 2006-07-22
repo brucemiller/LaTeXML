@@ -28,7 +28,6 @@ use LaTeXML::Package;
 use XML::LibXML;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::LibXML;
-use LaTeXML::Util::Alignment;
 no warnings 'redefine';
 
 #**********************************************************************
@@ -652,13 +651,6 @@ DefConstructor('\frac{}{}',
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
 
-DefConstructor('\sqrt[]{}',
-	       "?#1(<ltx:XMApp><ltx:XMTok meaning='root'/>"
-	       .     "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
-	       .   "</ltx:XMApp>)"
-	       .  "(<ltx:XMApp><ltx:XMTok meaning='sqrt'/>"
-	       .    "<ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>)");
-
 # Ellipsis: See Primitives
 
 #======================================================================
@@ -667,13 +659,6 @@ DefConstructor('\sqrt[]{}',
 # See Tables 3.3 through 3.8 (pp 41--44)
 # Defined in Primitives.pm
 # [Possibly some are strictly LaTeX and should be moved here?]
-
-
-#======================================================================
-# Modulo
-
-DefMath('\pmod{}', '(\textrm{mod} #1)', role=>'MODIFIER');
-DefMath('\bmod',   'mod', role=>'MODIFIEROP');
 
 #======================================================================
 # C.7.4 Arrays
@@ -1081,49 +1066,8 @@ DefRegister('\marginparpush',Dimension(0));
 # attributes to all cells.  For HTML, CSS will be necessary to display them.
 # [We'll ignore HTML's frame, rules and colgroup mechanisms.]
 
-# See LaTeXML::Util::Alignment
+# The Core alignment support is in LaTeXML::Util::Alignment and in TeX.ltxml
 
-Tag('ltx:td',        afterClose=>\&trimNodeWhitespace);
-Tag('ltx:td-between',afterClose=>\&trimNodeWhitespace);
-
-DefConstructor('\@alignment@align', \&alignment_align,
-	       beforeDigest=>sub {$_[0]->egroup; # YES, backwards!
-				  AssignValue(alignment_n_cols=>
- 				   LookupValue('alignment_n_cols')+1);
-				  return; },
-	       afterDigest=>sub{$_[0]->bgroup;},
-	       alias=>'&');
-
-DefConstructor('\@alignment@cr OptionalMatch:* [Dimension]', \&alignment_cr,
-	       beforeDigest=>sub {$_[0]->egroup;
-				  my $n = LookupValue('alignment_n_cols');
-				  my $m = LookupValue('alignment_max_cols');
-				  AssignValue(alignment_n_cols=>1);
-				  AssignValue(alignment_max_cols=>$n)
-				    if $n > $m; 
-				  return; },
-	       afterDigest=>sub{$_[0]->bgroup; },
-	       alias=>"\\\\" );
-DefConstructor('\@alignment@hline', sub { alignment_hline($_[0]); },
-	       alias=>'\hline');
-
-sub before_alignment {
-  Let(T_ALIGN,        T_CS('\@alignment@align'));
-  Let(T_CS("\\\\"),   T_CS('\@alignment@cr'));
-  Let(T_CS('\hline'), T_CS('\@alignment@hline'));
-  AssignValue(alignment_max_cols=>0);
-  AssignValue(alignment_n_cols=>1);
-  $_[0]->bgroup; }	    # Extra bgroup to prepare for rows & cells
-
-sub after_alignment {
-  $_[0]->egroup; 
-  my $n = LookupValue('alignment_n_cols');
-  my $m = LookupValue('alignment_max_cols');
-  $m = $n if $n > $m;
-  $_[1]->setProperty(n_columns=>$m); # NOTE: This is the Trailer's Whatsit!
-  return; }
-
-#======================================================================
 
 DefEnvironment('{tabular}[] TabularPattern',
 	       sub { my($document,$pos,$pattern,%props)=@_;
@@ -1207,7 +1151,7 @@ DefConstructor('\pageref Semiverbatim', "<ltx:ref labelref='#1'>&LookupValue('LA
 #======================================================================
 
 # NOTE: Not really complete, since I haven't dealt with bibliographies!
-DefConstructor('\bibliography{}',
+DefConstructor('\bibliography Semiverbatim',
 	       "<ltx:bibliography files='#1'/>");
 DefPrimitive('\bibliographystyle{}', undef);
 DefEnvironment('{thebibliography}{}',
@@ -1254,33 +1198,38 @@ DefConstructor('\citeyearpar[][] Semiverbatim',sub { makecite('parenthetic','yea
 DefPrimitive('\input', sub {
   my($stomach)=@_;
   my $gullet=$stomach->getGullet;
-  my $file;
+  my $path;
   if($gullet->ifNext(T_BEGIN)){ # Read LaTeX style
-    $file=Expand($gullet->readArg); }
+    $path=Expand($gullet->readArg); }
   else {			# Read TeX style.
     my ($token,@tokens)=();
     while(($token = $gullet->readXToken) && ($token->getCatcode != CC_SPACE)){
       push(@tokens,$token); }
-    $file = Tokens(@tokens); }
-  $gullet->input($file,['tex','']);
+    $path = Tokens(@tokens); }
+  # Special case HACK.  If filename ends .sty, we're probably really
+  # trying to load a style file!  Look for .ltxml!
+  if($path =~ s/\.sty$//){
+    $gullet->input($path,['ltxml','sty']); }
+  else {
+    $gullet->input($path,['tex','']); }
   return; });
 
 # Note that even excluded files SHOULD have the effects of their inclusion
 # simulated by having read the corresponding aux file;
 # But we're not bothering with that.
 DefPrimitive('\include{}',sub { 
-  my($stomach,$file)=@_;
-  $file = $file->toString;
+  my($stomach,$path)=@_;
+  $path = $path->toString;
   my $table = LookupValue('including@only');
-  $stomach->getGullet->input($file,['tex','']) if !$table || $$table{$file};
+  $stomach->getGullet->input($path,['tex','']) if !$table || $$table{$path};
   return;});
 
 DefPrimitive('\includeonly{}',sub {
-  my($stomach,$files)=@_;
-  $files = $files->toString;
+  my($stomach,$paths)=@_;
+  $paths = $paths->toString;
   my $table = LookupValue('including@only');
   AssignValue('including@only', $table = {}, 'global') unless $table;
-  map( $$table{$_}=1, split(',',$files));
+  map( $$table{$_}=1, split(',',$paths));
   return; });
 
 #Environment('filecontents','{}',?

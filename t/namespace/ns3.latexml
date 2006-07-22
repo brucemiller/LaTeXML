@@ -13,7 +13,8 @@ use LaTeXML::Package;
 RegisterNamespace(incode=>"http://example.com/");
 
 DocType("incode:song","-//NIST LaTeXML//LaTeXML Poem",'song-ns.dtd',
-        'example'=>"http://example.com/");
+        'example'=>"http://example.com/",
+        '#default'=>undef); # Disable default
 
 Tag('incode:song',  autoOpen=>1, autoClose=>1);
 Tag('incode:verse', autoOpen=>1, autoClose=>1);

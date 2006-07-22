@@ -80,10 +80,17 @@ sub setDocType {
 #   set of prefixes used in the generated output.
 sub registerNamespace {
   my($self,$prefix,$namespace)=@_;
-  if($prefix && $namespace){
-    $$self{namespace_prefixes}{$namespace}=$prefix;
-    $$self{namespaces}{$prefix}=$namespace;
-    $$self{xpath}->registerNs($prefix,$namespace);  
+#  if($prefix && $namespace){
+  if($prefix){
+    if($namespace){
+      $$self{namespace_prefixes}{$namespace}=$prefix;
+      $$self{namespaces}{$prefix}=$namespace;
+      $$self{xpath}->registerNs($prefix,$namespace); }
+    else {
+print STDERR "Removing namespace for $prefix\n";
+      my $prev = $$self{namespaces}{$prefix};
+      delete $$self{namespace_prefixes}{$prev} if $prev;
+      delete $$self{namespaces}{$prefix}; }
   }}
 
 sub getNamespacePrefix {
@@ -104,8 +111,15 @@ sub getNamespace {
 # use "#default" for non-prefixed namespaces.
 sub registerDocTypeNamespace {
   my($self,$prefix,$namespace)=@_;
-  if($prefix && $namespace){
-    $$self{doctype_namespaces}{$prefix}=$namespace; }}
+##  if($prefix && $namespace){
+##    $$self{doctype_namespaces}{$prefix}=$namespace; }}
+  if($prefix){
+    if($namespace){
+      $$self{doctype_namespaces}{$prefix}=$namespace; }
+    else {
+      delete $$self{doctype_namespaces}{$prefix}; }
+  }}
+
 
 sub getDocTypeNamespace {
   my($self,$prefix)=@_;

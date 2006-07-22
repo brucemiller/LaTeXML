@@ -15,7 +15,8 @@ RegisterNamespace(outcode=>"http://outer.com/");
 
 DocType("outcode:song","-//NIST LaTeXML//LaTeXML Poem",'song-nss.dtd',
         'inner'=>"http://inner.com/",
-        'outer'=>"http://outer.com/");
+        'outer'=>"http://outer.com/",
+	'#default'=>undef); # Disable default.
 
 Tag('outcode:song',  autoOpen=>1, autoClose=>1);
 Tag('outcode:verse', autoOpen=>1, autoClose=>1);

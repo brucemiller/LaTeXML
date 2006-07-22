@@ -86,15 +86,15 @@
     </para>
     <para id="p9">
       <equation id="Ex5">
-        <Math mode="display" tex="a-\raise-4.29998779296875pt\vtop{\hbox{a}}" text="a - [a]">
+        <Math mode="display" tex="a-\lower 4.3pt\vtop{\hbox{a}}" text="a - [a]">
           <XMath>
             <XMApp>
               <XMTok meaning="minus" role="ADDOP">-</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMText>
-                <text raise="-4.29998779296875pt">
+                <text raise="-4.29998779296875pt" font="italic">
                   <vbox valign="top">
-                    <text>a</text>
+                    <text font="upright">a</text>
                   </vbox>
                 </text>
               </XMText>
@@ -103,15 +103,15 @@
         </Math>
       </equation>
       <equation id="Ex6">
-        <Math mode="display" tex="a-\raise-4.29998779296875pt\vbox{\hbox{a}}" text="a - [a]">
+        <Math mode="display" tex="a-\lower 4.3pt\vbox{\hbox{a}}" text="a - [a]">
           <XMath>
             <XMApp>
               <XMTok meaning="minus" role="ADDOP">-</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMText>
-                <text raise="-4.29998779296875pt">
+                <text raise="-4.29998779296875pt" font="italic">
                   <vbox valign="bottom">
-                    <text>a</text>
+                    <text font="upright">a</text>
                   </vbox>
                 </text>
               </XMText>
@@ -122,14 +122,14 @@
     </para>
     <para id="p10">
       <equation id="Ex7">
-        <Math mode="display" tex="a-\raise-4.29998779296875pt\hbox{a}" text="a - [a]">
+        <Math mode="display" tex="a-\lower 4.3pt\hbox{a}" text="a - [a]">
           <XMath>
             <XMApp>
               <XMTok meaning="minus" role="ADDOP">-</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMText>
-                <text raise="-4.29998779296875pt">
-                  <text>a</text>
+                <text raise="-4.29998779296875pt" font="italic">
+                  <text font="upright">a</text>
                 </text>
               </XMText>
             </XMApp>
@@ -139,14 +139,14 @@
     </para>
     <para id="p11">
       <equation id="Ex8">
-        <Math mode="display" tex="a-\raise-4.29998779296875pt\hbox{a}" text="a - [a]">
+        <Math mode="display" tex="a-\lower 4.3pt\hbox{a}" text="a - [a]">
           <XMath>
             <XMApp>
               <XMTok meaning="minus" role="ADDOP">-</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMText>
-                <text raise="-4.29998779296875pt">
-                  <text>a</text>
+                <text raise="-4.29998779296875pt" font="italic">
+                  <text font="upright">a</text>
                 </text>
               </XMText>
             </XMApp>
