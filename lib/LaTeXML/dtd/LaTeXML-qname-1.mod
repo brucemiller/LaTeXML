@@ -69,6 +69,13 @@
   %LaTeXML-float-qname.mod;
 ]]>
 
+<!-- ==================== Theorem module ====================-->
+<!ENTITY % LaTeXML-theorem.module  "INCLUDE" >
+<![%LaTeXML-theorem.module;[
+  <!ENTITY % LaTeXML-theorem-qname.mod   SYSTEM "LaTeXML-theorem-qname-1.mod">
+  %LaTeXML-theorem-qname.mod;
+]]>
+
 <!-- ==================== Acro module ====================-->
 <!ENTITY % LaTeXML-acro.module  "INCLUDE" >
 <![%LaTeXML-acro.module;[

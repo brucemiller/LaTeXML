@@ -150,7 +150,18 @@ sub lookupContent {
 sub pmml_top {
   my($node,$style)=@_;
   local $LaTeXML::MathML::STYLE = $style;
+  local $LaTeXML::MathML::FONT  = find_inherited_attribute($node,'font');
+  local $LaTeXML::MathML::SIZE  = find_inherited_attribute($node,'size');
+  local $LaTeXML::MathML::COLOR = find_inherited_attribute($node,'color');
   pmml($node); }
+
+sub find_inherited_attribute {
+  my($node,$attribute)=@_;
+  while($node && isElementNode($node)){
+    if(my $value = $node->getAttribute($attribute)){
+      return $value; }
+    $node = $node->parentNode; }
+  return undef; }
 
 our %stylestep=(display=>'text', text=>'script',
 	       script=>'scriptscript', scriptscript=>'scriptscript');
@@ -299,7 +310,9 @@ sub pmml_infix {
 
 # Mappings between internal fonts & sizes.
 # Default math font is roman|medium|upright.
-our %mathvariants = ('bold'             =>'bold',
+our %mathvariants = ('upright'          =>'normal',
+		     'bold'             =>'bold',
+		     'bold upright'     =>'bold',
 		     'italic'           =>'italic',
 		     'medium italic'    =>'italic',
 		     'bold italic'      =>'bold-italic',
@@ -328,9 +341,9 @@ our %sizes=(tiny=>'small',script=>'small',footnote=>'small',small=>'small',
 
 sub pmml_mi {
   my($item)=@_;
-  my $font  = (ref $item ? $item->getAttribute('font') : undef);
-  my $size  = (ref $item ? $item->getAttribute('size') : undef);
-  my $color = (ref $item ? $item->getAttribute('color') : undef);
+  my $font  = (ref $item ? $item->getAttribute('font') : undef) ||  $LaTeXML::MathML::FONT;
+  my $size  = (ref $item ? $item->getAttribute('size') : undef) || $LaTeXML::MathML::SIZE;
+  my $color = (ref $item ? $item->getAttribute('color') : undef) || $LaTeXML::MathML::COLOR;
   my $text  = (ref $item ?  $item->textContent : $item);
   my $variant = ($font ? $mathvariants{$font} : '');
   if($font && !$variant){

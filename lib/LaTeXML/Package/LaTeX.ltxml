@@ -775,6 +775,72 @@ DefPrimitive('\renewenvironment OptionalMatch:* {}[][]{}{}', sub {
 # Def('\newtheorem','{}[]{}[]", ....);
 # => something like <theorem type="foo"> .. </theorem>
 
+# The core non-customizable part is defined here.
+# For customizable theorems, see amsthm.
+AssignValue('thm@swap' => 'N');
+AssignValue('thm@style'=>'plain');
+DefRegister('\thm@headfont'=>Tokens());
+DefRegister('\thm@bodyfont'=>Tokens());
+DefRegister('\thm@headpunct'=>Tokens());
+
+DefPrimitive('\th@plain', sub {
+  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
+  AssignValue('\thm@headpunct'=> T_OTHER('.'));
+  return; });
+
+DefMacro('\@thmcountersep','.');
+
+DefExpandable('\newtheorem OptionalMatch:* {}[]{}[]', sub {
+  my ($stomach, $flag, $thmset, $otherthmset, $text, $reset) = @_;
+  $thmset = $thmset->toString;
+  $otherthmset = $otherthmset && $otherthmset->toString;
+  $text   = undef unless $text->unlist;
+  $reset  = $reset ? $reset->toString : undef;
+
+  my $counter = $otherthmset || $thmset;
+  my $swap    = LookupValue('thm@swap') eq 'S';
+  my $style   = LookupValue('thm@style');
+
+  if(!$otherthmset){
+    NewCounter($counter, $reset,
+	       idprefix => "Thm$counter");
+    DefMacro("\\the$counter","\\the$reset\\\@thmcountersep\\arabic{$counter}")
+      if $reset; }
+
+  DefEnvironment("{$thmset}[]",
+		 "<ltx:theorem id='#id' refnum='#refnum'>"
+		 . "<ltx:title>#title</ltx:title>"
+		 .  "#body"
+		 ."</ltx:theorem>",
+
+		 beforeDigest=>sub { Digest(Tokens(T_CS('\th@'.$style))); },
+		 afterDigestBegin=> sub {
+		   my($stomach,$whatsit)=@_;
+		   my $note = $whatsit->getArg(1);
+		   my $refnum = $whatsit->getProperty('refnum');
+		   my($a,$b) = ($swap ? ($refnum,$text) : ($text,$refnum));
+		   my @toks=(T_BEGIN,T_CS('\the'),T_CS('\thm@headfont'));
+		   push(@toks,
+			($a ? $a->unlist :()),
+			($a && $b ? (T_SPACE):()),
+			($b ? $b->unlist : ()));
+		   if($note){
+		     push(@toks,T_SPACE,T_OTHER('(')) if $text;
+		     push(@toks,$note->revert);
+		     push(@toks,T_OTHER(')')) if $text; }
+		   push(@toks,T_CS('\the'),T_CS('\thm@headpunct'),T_END);
+		   $whatsit->setProperties(title=>Digest(Tokens(@toks)));
+
+		   Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
+		 ($counter 
+		  ? (properties => sub {
+		       ($flag ? refStepID($counter) : refStepCounter($counter));})
+		  :()),
+		 scope => 'global');
+});
+
+
 #======================================================================
 # C.8.4 Numbering
 #======================================================================

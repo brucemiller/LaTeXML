@@ -305,6 +305,24 @@
   </div>
 </xsl:template>
 
+<xsl:template match="ltx:theorem | ltx:proof">
+  <div class='{local-name()}'>
+  <xsl:call-template name="add_id"/>
+    <xsl:apply-templates/>
+  </div>
+</xsl:template>
+
+<xsl:template match="ltx:theorem/ltx:title | ltx:proof/ltx:title">
+  <span class="title">
+  <xsl:apply-templates/>
+<!--
+  <xsl:if test="../@refnum">
+    <xsl:text> </xsl:text><xsl:value-of select="../@refnum"/>
+  </xsl:if>
+-->
+  </span>
+</xsl:template>
+
 <xsl:template match="ltx:tabular">
   <table align='center'>
     <xsl:apply-templates/>
@@ -439,12 +457,20 @@
 
 
 <xsl:template match="ltx:text">
+<!--
   <xsl:choose>
     <xsl:when test="@font='typewriter'"><tt  ><xsl:apply-templates select='.' mode='faced'/></tt  ></xsl:when>
     <xsl:when test="@font='bold'"      ><b   ><xsl:apply-templates select='.' mode='faced'/></b   ></xsl:when>
     <xsl:when test="@font='italic'"    ><i   ><xsl:apply-templates select='.' mode='faced'/></i   ></xsl:when>
     <xsl:otherwise                     ><span><xsl:apply-templates select='.' mode='faced'/></span></xsl:otherwise>
   </xsl:choose>
+-->
+ <span>
+   <xsl:if test="@font">
+     <xsl:attribute name='class'><xsl:value-of select="@font"/></xsl:attribute>
+   </xsl:if>
+   <xsl:apply-templates select='.' mode='faced'/>
+  </span>
 </xsl:template>
 
 <xsl:template match="ltx:text" mode='faced'>

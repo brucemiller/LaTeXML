@@ -86,11 +86,23 @@ sub pushValue {
   assign_internal($self,$key,[],'global') unless $$self{table}{$key}[0];
   push(@{$$self{table}{$key}[0]},@values); }
 
+sub popValue {
+  my($self,$name)=@_;
+  my $key = 'value:'.$name;
+  assign_internal($self,$key,[],'global') unless $$self{table}{$key}[0];
+  pop(@{$$self{table}{$key}[0]}); }
+
 sub unshiftValue {
   my($self,$name,@values)=@_;
   my $key = 'value:'.$name;
   assign_internal($self,$key,[],'global') unless $$self{table}{$key}[0];
   unshift(@{$$self{table}{$key}[0]},@values); }
+
+sub shiftValue {
+  my($self,$name)=@_;
+  my $key = 'value:'.$name;
+  assign_internal($self,$key,[],'global') unless $$self{table}{$key}[0];
+  shift(@{$$self{table}{$key}[0]}); }
 
 #======================================================================
 # Was $name bound?  If  $frame is given, check only whether it is bound in 

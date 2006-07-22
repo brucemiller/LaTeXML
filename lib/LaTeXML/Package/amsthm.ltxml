@@ -1,0 +1,110 @@
+# -*- CPERL -*-
+# /=======================================================\ #
+# |  amsthm - Implementation for LaTeXML                  | #
+# |                                                       | #
+# |=======================================================| #
+# |  Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/      | #
+# | Copyright (c) 2006 arXMLiv group                      | #
+# | Released under the GNU Public License                 | #
+# \=======================================================/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Core is defined in LaTeX.ltxml
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Theorem Styles.
+
+DefMacro('\swapnumbers', sub {
+  AssignValue('thm@swap' =>(LookupValue('thm@swap') eq 'N' ? 'S' : 'N')); });
+
+
+# activate a certain theorem style
+DefPrimitive('\theoremstyle{}', sub { 
+  AssignValue('thm@style'=>ToString($_[1]));});
+
+# the default theorem styles
+# plain is defined in LaTeX.
+
+DefPrimitive('\th@definition', sub {
+  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+  AssignValue('\thm@bodyfont' => T_CS('\normalfont'));
+  AssignValue('\thm@headpunct'=> T_OTHER('.'));
+  return; });
+
+DefPrimitive('\th@remark', sub {
+  AssignValue('\thm@headfont' => T_CS('\itshape'));
+  AssignValue('\thm@bodyfont' => T_CS('\normalfont'));
+  AssignValue('\thm@headpunct'=> T_OTHER('.'));
+  return; });
+
+#\newtheoremstyle{note}% name
+#  {3pt}%      Space above
+#  {3pt}%      Space below
+#  {}%         Body font
+#  {}%         Indent amount (empty = no indent, \parindent = para indent)
+#  {\itshape}% Thm head font
+#  {:}%        Punctuation after thm head
+#  {.5em}%     Space after thm head: " " = normal interword space;
+#        %       \newline = linebreak
+#  {}%         Thm head spec (can be left empty, meaning `normal')
+
+DefPrimitive('\newtheoremstyle{}{}{}{}{}{}{}{}{}', sub {
+  my($stomach,$name,$spaceabove,$spacebelow,$bodyfont,
+     $indent,$headfont,$headpunct,$spaceafter,$headspec)=@_;
+  DefMacro('\th@'.ToString($name), sub {
+	     AssignValue('\thm@bodyfont' => $bodyfont);
+	     AssignValue('\thm@headfont' => $headfont);
+	     AssignValue('\thm@headpunct'=> $headpunct);
+	     return; });
+});
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Proofs
+
+AssignValue('QED@stack',[]);
+# Should mark this as somehow ignorable for math,
+# but we DO want to keep it in the formula...
+DefConstructor('\qed',
+	       "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+DefExpandable('\qedhere', sub {
+  my $t = PopValue('QED@stack');
+  PushValue('QED@stack',Tokens());
+  $t; });
+
+DefMacro('\proofname','Proof');
+DefEnvironment("{proof} []",
+	       "<ltx:proof>"
+	       ."<ltx:title>#title</ltx:title>"
+	       ."#body"
+	       ."</ltx:proof>",
+
+		 afterDigestBegin=> sub {
+		   my($stomach,$whatsit)=@_;
+		   my $name = $whatsit->getArg(1);
+		   my @toks=(T_BEGIN,T_CS('\itshape'),
+			    ($name ? $name->revert : (T_CS('\proofname'))),
+			     T_OTHER('.'),
+			     T_END);
+		   $whatsit->setProperties(title=>Digest(Tokens(@toks)));
+
+		   PushValue('QED@stack',T_CS('\qed'));
+		   Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
+	       beforeDigestEnd=>sub {
+		 Digest(PopValue('QED@stack')); }
+	      );
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# from older versions of amsthm.sty
+DefPrimitive('\theorembodyfont{}', sub { AssignValue('\thm@bodyfont' => $_[1]); });
+DefPrimitive('\theoremheaderfont{}', sub { AssignValue('\thm@headfont' => $_[1]); });
+DefMacro('\theorempreskipamount', '');
+DefMacro('\theorempostskipamount', '');
+
+
+1;

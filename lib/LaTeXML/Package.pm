@@ -31,7 +31,8 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 
 	       # Lower-level support for writing definitions.
 	       # Access to State
-	       qw(&LookupValue &AssignValue &PushValue &UnshiftValue
+	       qw(&LookupValue &AssignValue
+		  &PushValue &PopValue &UnshiftValue &ShiftValue
 		  &LookupCatcode &AssignCatcode
 		 &LookupMeaning &LookupDefinition &InstallDefinition &Let),
 	       # Math & font state.
@@ -92,7 +93,9 @@ sub convertLaTeXArgs {
 sub LookupValue  { $STATE->lookupValue(@_); }
 sub AssignValue  { $STATE->assignValue(@_); return; }
 sub PushValue    { $STATE->pushValue(@_);  return; }
+sub PopValue     { $STATE->popValue(@_); }
 sub UnshiftValue { $STATE->unshiftValue(@_);  return; }
+sub ShiftValue { $STATE->shiftValue(@_); }
 sub LookupCatcode{ $STATE->lookupCatcode(@_); }
 sub AssignCatcode{ $STATE->assignCatcode(@_); return; }
 

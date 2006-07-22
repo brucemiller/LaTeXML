@@ -41,7 +41,8 @@ DefParameterType('UntilBrace', sub{
 DefParameterType('Match',      sub{shift->readMatch(@_); });
 DefParameterType('Keyword',    sub{shift->readKeyword(@_); });
 DefParameterType('Balanced',   sub{$_[0]->readBalanced; });
-DefParameterType('Semiverbatim',sub{ $_[0]->readArg; }, semiverbatim=>1);
+DefParameterType('Semiverbatim',sub{ $_[0]->readArg; }, semiverbatim=>1,
+		 reversion=>sub { (T_BEGIN,$_[0]->revert,T_END); });
 
 DefParameterType('Variable', sub {
   my($gullet)=@_;

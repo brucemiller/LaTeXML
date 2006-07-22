@@ -49,10 +49,12 @@
 	  ">
 
 <!ENTITY % LaTeXML-float.Para.class "">
+<!ENTITY % LaTeXML-theorem.Para.class "">
 <!ENTITY % LaTeXML-extra.Para.class "">
 <!ENTITY % LaTeXML.Para.class
 	 "%LaTeXML-block.Para.class;
 	  %LaTeXML-float.Para.class;
+	  %LaTeXML-theorem.Para.class;
 	  %LaTeXML-extra.Para.class;
 	  ">
 

@@ -57,6 +57,11 @@
   %LaTeXML-float-model.mod;
 ]]>
 
+<![%LaTeXML-theorem.module;[
+  <!ENTITY % LaTeXML-theorem-model.mod   SYSTEM "LaTeXML-theorem-model-1.mod">
+  %LaTeXML-theorem-model.mod;
+]]>
+
 <![%LaTeXML-acro.module;[
   <!ENTITY % LaTeXML-acro-model.mod   SYSTEM "LaTeXML-acro-model-1.mod">
   %LaTeXML-acro-model.mod;

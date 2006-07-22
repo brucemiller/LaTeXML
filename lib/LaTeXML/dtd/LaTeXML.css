@@ -21,6 +21,14 @@ h2 { border-top: 5px double #087d9d; border-left: 3px double #087d9d; background
 h3 { border-top: 1px solid #087d9d; border-left: 1px solid #087d9d;  background:#e7faff;
      padding-left:0.2em; margin-left:-0.3em;
      font-family:sans-serif; }
+
+span.sansserif  { font-family: sans-serif; }
+span.typewriter { font-family: monospace; }
+span.bold       { font-weight: bold; }
+span.italic     { font-style: italic; }
+span.upright    { font-style: normal; }
+span.slanted    { font-style: oblique; }
+/* span.title { font-weight:bold; display:run-in; }*/
 .header,
 .nav { position:fixed; left:0px; top:0px; width:170px;
        border-right: 3px double #087d9d; border-bottom: 5px double #087d9d; background:#e5f7fb;

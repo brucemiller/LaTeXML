@@ -50,6 +50,8 @@ lib/LaTeXML/dtd/LaTeXML-structure-model-1.mod
 lib/LaTeXML/dtd/LaTeXML-structure-qname-1.mod
 lib/LaTeXML/dtd/LaTeXML-tabular-model-1.mod
 lib/LaTeXML/dtd/LaTeXML-tabular-qname-1.mod
+lib/LaTeXML/dtd/LaTeXML-theorem-model-1.mod
+lib/LaTeXML/dtd/LaTeXML-theorem-qname-1.mod
 lib/LaTeXML/dtd/LaTeXML-text-model-1.mod
 lib/LaTeXML/dtd/LaTeXML-text-qname-1.mod
 lib/LaTeXML/dtd/LaTeXML-xref-model-1.mod
@@ -79,6 +81,7 @@ lib/LaTeXML/Package/amsopn.ltxml
 lib/LaTeXML/Package/amsrefs.ltxml
 lib/LaTeXML/Package/amssymb.ltxml
 lib/LaTeXML/Package/amstext.ltxml
+lib/LaTeXML/Package/amsthm.ltxml
 lib/LaTeXML/Package/amsxtra.ltxml
 lib/LaTeXML/Package/article.ltxml
 lib/LaTeXML/Package/color.ltxml
@@ -137,6 +140,7 @@ t/22_fonts.t
 t/40_math.t
 t/50_structure.t
 t/52_namespace.t
+t/55_theorem.t
 t/65_graphics.t
 t/70_parse.t
 t/80_complex.t
@@ -265,6 +269,12 @@ t/structure/para.xml
 t/structure/sec.dvi
 t/structure/sec.tex
 t/structure/sec.xml
+t/theorem/amstheorem.dvi
+t/theorem/amstheorem.tex
+t/theorem/amstheorem.xml
+t/theorem/latextheorem.dvi
+t/theorem/latextheorem.tex
+t/theorem/latextheorem.xml
 t/tokenize/alltt.dvi
 t/tokenize/alltt.tex
 t/tokenize/alltt.xml
