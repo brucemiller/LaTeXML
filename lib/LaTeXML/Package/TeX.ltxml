@@ -1741,6 +1741,7 @@ our %accents
      '\.' => ["\x{0307}",UTF(0xB7)], # COMBINING DOT ABOVE & MIDDLE DOT (?)
      '\u' => ["\x{0306}","\x{02D8}"], # COMBINING BREVE & BREVE
      '\v' => ["\x{030C}","\x{02C7}"], # COMBINING CARON & CARON
+     '\@ringaccent' => ["\x{030A}","o"], # COMBINING RING ABOVE & non-combining
      '\H' => ["\x{030B}","\x{02DD}"], # COMBINING DOUBLE ACUTE ACCENT & non-combining
      '\c' => ["\x{0327}",UTF(0xB8)], # COMBINING CEDILLA & CEDILLA
      '\d' => ["\x{0323}",UTF(0xB7)], # COMBINING DOT BELOW & MIDDLE DOT (?)

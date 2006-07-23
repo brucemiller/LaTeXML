@@ -1,0 +1,96 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  pifont                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use strict;
+use LaTeXML::Package;
+package LaTeXML::Package::Pool;
+
+sub dingbat_map {
+  my($code)=@_;
+  pack('U',$code+0x2700); }
+
+our %PIFONT_MAP = (pzd=>\&dingbat_map);
+
+sub pichar {
+  my($pifont,$number)=@_;
+  $pifont = $pifont->toString if ref $pifont;
+  $number = $number->valueOf if ref $number;
+  if(my $mapper = $PIFONT_MAP{$pifont}){
+    &$mapper($number); }
+  else {
+    Error("Unknown pi font $pifont");
+    "?"; }}
+
+DefConstructor('\Pisymbol{}{Number}', sub {
+  my($document,$pifont,$code,%props)=@_;
+  $document->openText(pichar($pifont,$code),$props{font}); });
+
+DefConstructor('\pilist@item[]',
+	       "<ltx:item id='#id'><ltx:tag>#refnum</ltx:tag>",
+	       properties=>sub{
+		 (refStepItemCounter(),
+		  refnum=>pichar(LookupValue('pilist_pifont'),
+			      LookupValue('pilist_base'))); });
+DefConstructor('\piautolist@item[]',
+	       "<ltx:item id='#id' refnum='#refnum'><ltx:tag>#refnum</ltx:tag>",
+	       properties=>sub{
+		 my $lvl = ToString(Tokens(roman(LookupValue('itemlevel'))));
+		 (refStepItemCounter(),
+		  refnum=>pichar(LookupValue('pilist_pifont'),
+			      LookupValue('pilist_base')
+			      +LookupValue('\c@enum'.$lvl)->valueOf)); });
+  
+DefEnvironment('{Pilist}{}{Number}',
+	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
+	       beforeDigest=>sub { beforeItemize('pilist'); },
+	       afterDigestBegin=>sub {
+		 AssignValue(pilist_pifont=>$_[1]->getArg(1)->toString); 
+		 AssignValue(pilist_base  =>$_[1]->getArg(2)->valueOf); },
+	       properties=>sub { refStepCounter('@itemize'); });
+
+DefEnvironment('{Piautolist}{}{Number}',
+	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
+	       beforeDigest=>sub { beforeItemize('piautolist'); },
+	       afterDigestBegin=>sub {
+		 AssignValue(pilist_pifont=>$_[1]->getArg(1)->toString);
+		 AssignValue(pilist_base  =>$_[1]->getArg(2)->valueOf); },
+	       properties=>sub { refStepCounter('@itemize'); });
+
+# Don't know what to do with these.
+DefPrimitive('\Piline{}{Number}',undef);
+DefPrimitive('\Pifill{}{Number}',undef);
+
+DefMacro('\ding{}','\Pisymbol{pzd}{#1}');
+
+DefEnvironment('{dinglist}{Number}',
+	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
+	       beforeDigest=>sub { beforeItemize('pilist'); },
+	       afterDigestBegin=>sub {
+		 AssignValue(pilist_pifont=>'pzd'); 
+		 AssignValue(pilist_base  =>$_[1]->getArg(1)->valueOf); },
+	       properties=>sub { refStepCounter('@itemize'); });
+
+DefEnvironment('{dingautolist}{Number}',
+	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
+	       beforeDigest=>sub { beforeItemize('piautolist'); },
+	       afterDigestBegin=>sub {
+		 AssignValue(pilist_pifont=>'pzd'); 
+		 AssignValue(pilist_base  =>$_[1]->getArg(1)->valueOf); },
+	       properties=>sub { refStepCounter('@itemize'); });
+
+# Don't know what to do with these.
+DefPrimitive('\dingline{Number}',undef);
+DefPrimitive('\dingfill{Number}',undef);
+
+
+
+1;

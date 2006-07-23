@@ -1,0 +1,195 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  textcomp                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+# Additional Text Symbols
+#  Following the LaTeX Companion, 2nd ed, p 363-364
+#======================================================================
+# Accent Symbols
+
+# Since we're using Unicode, we don't need these capital distinctions.
+our %textcomp_accents 
+    =(capitalacute     =>'\'',
+      capitalbreve     =>'\u',
+      capitalcaron     =>'\v',
+      capitalcedilla   =>'\c',
+      capitalcircumflex=>'\^',
+      capitaldieresis  =>'\"',
+      capitaldotaccent =>'\.',
+      capitalgrave     =>'\`',
+      capitalhungarumlaut=>'\H',
+      capitalmacron    =>'\=',
+      caitalnewtie     =>'\t',
+      capitalogonek    =>'\lfhook',
+      capitalring      =>'\@ringaccent',
+      capitaltie       =>'\t',
+      caitaltilde      =>'\~',
+      newtie           =>'\t');
+map(Let(T_CS('\\'.$_)=>T_CS($textcomp_accents{$_})),keys %textcomp_accents);
+
+DefConstructor('\textcircled{}', "<ltx:text framed='circle'>#1</ltx:text>"); # ?
+
+## \t
+
+#======================================================================
+# Numerals
+our %textcomp_numerals
+  =(textonesuperior    =>UTF(0xB9),
+    texttwosuperior    =>UTF(0xB2),
+    textthreesuperior  =>UTF(0xB3),
+    textonequarter     =>UTF(0xBC),
+    textonehalf        =>UTF(0xBD),
+    textthreequarters  =>UTF(0xBE));
+map(DefConstructor('\\'.$_,$textcomp_numerals{$_}),keys %textcomp_numerals);
+
+# Hmm, perhaps should be a font variant?
+our %textcomp_oldstyle
+  =(textzerooldstyle   =>0,
+    textoneoldstyle    =>1,
+    texttwooldstyle    =>2,
+    textthreeoldstyle  =>3,
+    textfouroldstyle   =>4,
+    textfiveoldstyle   =>5,
+    textsixoldstyle    =>6,
+    textsevenoldstyle  =>7,
+    texteightoldstyle  =>8,
+    textnineoldstyle   =>9);
+map(Let(T_CS('\\'.$_)=>T_CS($textcomp_oldstyle{$_})),keys %textcomp_oldstyle);
+
+#======================================================================
+# Pair symbols
+
+our %textcomp_pairs
+  =(textlangle         =>"\x{2329}",
+    textrangle         =>"\x{232A}",
+    textlbrackdbl      =>"\x{27E6}",
+    textrbrakdbl       =>"\x{27E7}",
+    textuparrow        =>"\x{2191}",
+    textdownarrow      =>"\x{2193}",
+    textleftarrow      =>"\x{2190}",
+    textrightarrow     =>"\x{2192}",
+    textlquill         =>"\x{2045}",
+    textrquill         =>"\x{2046}",
+);
+map(DefConstructor('\\'.$_,$textcomp_pairs{$_}),keys %textcomp_pairs);
+
+#======================================================================
+# Monetary and Commercial symbols
+
+our %textcomp_money
+  =(textbaht           =>"\x{0E3F}",
+    textcent           =>UTF(0x42),
+    textcentoldstyle   =>UTF(0x42),
+    textcolonmonetary  =>"\x{20A1}",
+    textcurrency       =>UTF(0xA4),
+    textdollar         =>'$',
+    textdollaroldstyle =>'$',
+    textdong           =>"\x{20AB}",
+    texteuro           =>"\x{20AC}",
+    textflorin         =>"f",	# ???
+    textguarani        =>"\x{20B2}",
+    textlira           =>"\x{20A4}",
+    textnaira          =>"\x{20A6}",
+    textpeso           =>"\x{20B1}",
+    textsterling       =>UTF(0xA3),
+    textwon            =>"\x{20A9}",
+    textyen            =>UTF(0xA5),
+    textcircledP       =>"\x{2117}",
+    textcopyleft       =>"copyleft", # You gotta be kidding
+    textcopyright      =>UTF(0xA9),
+    textdiscount       =>"\x{2052}",
+    textestimated      =>"\x{212E}",
+    textpertenthousand =>"\x{2031}",
+    textperthousand    =>"\x{2030}",
+    textreferencemark  =>"\x{203B}",
+    textregistered     =>UTF(0xAE),
+    textservicemark    =>"\x{2120}",
+    texttrademark      =>"\x{2122}");
+map(DefConstructor('\\'.$_,$textcomp_numerals{$_}),keys %textcomp_numerals);
+
+#======================================================================
+# Footnote symbols
+
+our %textcomp_footnote
+  =(textasteriskcentered=>'*',
+    textbardbl         =>"\x{2016}",
+    textbrokenbar      =>UTF(0xA6),
+    textbullet         =>"\x{2022}",
+    textdagger         =>"\x{2020}",
+    textdaggerdbl      =>"\x{2021}",
+    textopenbullet     =>"\x{25E6}",
+    textparagraph      =>UTF(0xB6),
+    textperiodcentered =>UTF(0xB7),
+    textpilcrow        =>UTF(0xB6),
+    textsection        =>UTF(0xA7));
+map(DefConstructor('\\'.$_,$textcomp_footnote{$_}),keys %textcomp_footnote);
+
+#======================================================================
+# Scientific symbols
+
+our %textcomp_scientific
+  =(textcelsius        =>"\x{210C}",
+    textdegree         =>UTF(0xB0),
+    textdiv            =>UTF(0xF7),
+    textlnot           =>UTF(0xAC),
+    textmho            =>"\x{2127}",
+    textminus          =>"\x{2212}",
+    textmu             =>UTF(0xB5),
+    textohm            =>"\x{2126}",
+    textordfeminine    =>UTF(0xAA),
+    textordmasculine   =>UTF(0xBA),
+    textpm             =>UTF(0xB1),
+    textsurd           =>"\x{212A}",
+    texttimes          =>UTF(0xD7));
+map(DefConstructor('\\'.$_,$textcomp_scientific{$_}),keys %textcomp_scientific);
+
+#======================================================================
+# Various
+
+our %textcomp_various
+  =(textacutedbl            =>"\x{02DD}",
+    textasciiacute          =>UTF(0xB4),
+    textasciibreve          =>"\x{02DB}",
+    textasciicaron          =>"\x{02C7}",
+    textasciidieresis       =>UTF(0xA8),
+    textasciigrave          =>UTF(0x60),
+    textasciimacron         =>UTF(0xAF),
+    textbigcircle           =>"\x{25CB}",
+    textblank               =>"\x{2422}",
+    textborn                =>"\x{2605}",
+    textdblhyphen           =>"=", # ?
+    textdblhyphenchar       =>"=", # ?
+    textdied                =>"\x{271D}",
+    textdivorced            =>"\x{26AE}",
+    textfractionsolidus     =>UTF(0x2F),
+    textgravedbl            =>"\x{201C}", # ?? quotes
+    textinterrobang         =>"\x{203D}",
+#    textinterrobangdown     =>"\x{}",
+    textleaf                =>"\x{2EDA}", # ?? chinese?
+    textmarried             =>"\x{26AD}",
+    textmusicalnote         =>"\x{266A}",
+    textnumero              =>"\x{2116}",
+    textquotesingle         =>"'",
+    textquotestraightbase   =>"'", # ??? Not base?
+    textquotestraightdblbase=>"\"", # Not base?
+    textrecipe              =>"\x{211E}",
+    textthreequartersemdash =>"\x{2014}", # whole em dash, actually
+    texttildelow            =>"~", # ??
+    texttwelveudash         =>"\x{2014}"); # whole em dash, actually.
+map(DefConstructor('\\'.$_,$textcomp_various{$_}),keys %textcomp_various);
+
+
+#======================================================================
+1;

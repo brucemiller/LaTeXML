@@ -1,0 +1,22 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  fixltx2e                                                           | #
+# | Core TeX Implementation for LaTeXML                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+# This package allows you to define the font used for
+# emphasis (\emph) within emphasis.
+# For latexml, that styling should be left to the ultimate output,
+# so we just define the command as a dummy.
+DefMacro('\eminnershape',"");
+1;
