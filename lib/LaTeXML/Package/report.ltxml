@@ -1,0 +1,80 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  report                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use strict;
+use LaTeXML::Package;
+package LaTeXML::Package::Pool;
+
+#**********************************************************************
+# Document structure.
+
+DocType("ltx:document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd', 
+	'#default'=>"http://dlmf.nist.gov/LaTeXML");
+
+#**********************************************************************
+# The core sectioning commands are defined in LaTeX.pm
+# but the counter setup, etc, depends on article
+Let('\thedocument@ID','\@empty');
+NewCounter('part',         'document',     idprefix=>'Pt', nested=>['chapter']);
+NewCounter('chapter',      'document',     idprefix=>'Ch', nested=>['bsection']);
+NewCounter('section',      'document',     idprefix=>'S',  nested=>['subsection']);
+NewCounter('subsection',   'section',      idprefix=>'SS', nested=>['subsubsection']);
+NewCounter('subsubsection','subsection',   idprefix=>'SSS',nested=>['paragraph']);
+NewCounter('paragraph',    'subsubsection',idprefix=>'P',  nested=>['subparagraph']);
+NewCounter('subparagraph', 'paragraph',    idprefix=>'SP', nested=>['equation','figure','table']);
+
+DefMacro('\thepart',         '\Roman{part}');
+DefMacro('\thechapter',      '\arabic{chapter}');
+DefMacro('\thesection',      '\thechapter.\arabic{section}');
+DefMacro('\thesubsection',   '\thesection.\arabic{subsection}');
+DefMacro('\thesubsubsection','\thesubsection.\arabic{subsubsection}');
+DefMacro('\theparagraph',    '');
+DefMacro('\thesubparagraph', '');
+
+NewCounter('equation', 'document', idprefix=>'E');
+NewCounter('figure',   'document', idprefix=>'F');
+NewCounter('table',    'document', idprefix=>'T');
+DefMacro('\theequation', '\arabic{equation}');
+DefMacro('\thefigure',   '\arabic{figure}');
+DefMacro('\thetable',    '\arabic{table}');
+
+NewCounter('@itemize', 'document', idprefix=>'I');
+NewCounter('enumi');
+NewCounter('enumii');
+NewCounter('enumiii');
+NewCounter('enumiv');
+# Since we don't want enumi (necessarily) to be reset when @itemize is incremented,
+# we've got to manually define the ID macros:
+DefMacro('\theenumi@ID',   '\the@itemize@ID.\@enumi@ID');
+DefMacro('\theenumii@ID',  '\the@itemize@ID.\@enumii@ID');
+DefMacro('\theenumiii@ID', '\the@itemize@ID.\@enumiii@ID');
+DefMacro('\theenumiv@ID',  '\the@itemize@ID.\@enumiv@ID');
+
+DefMacro('\theenumi',           '\arabic{enumi}');
+DefMacro('\theenumii',          '\alph{enumii}');
+DefMacro('\theenumiii',         '\roman{enumiii}');
+DefMacro('\theenumiv',          '\Alph{enumiv}');
+
+Tag('ltx:appendix',autoClose=>1);
+DefPrimitive('\appendix',sub{
+  NewCounter('section', 'document', idprefix=>'A',nested=>['subsection']);
+  Let('\\@@section'=>'\\@@appendix');
+ });
+DefConstructor('\\@@appendix[][][]{}',
+	       "<ltx:appendix ?#1(refnum='#1') id='#2'>"
+	       . "<ltx:title>#4</ltx:title>"
+	       . "?#3(<ltx:toctitle>#3</ltx:toctitle>)",
+	       bounded=>1);
+
+
+#**********************************************************************
+1;

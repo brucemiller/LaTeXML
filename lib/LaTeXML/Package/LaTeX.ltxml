@@ -191,23 +191,40 @@ DefPrimitive('\footnoterule',undef);
 # A little more messy than seems necessary:
 #  We don't know whether to step the counter and update \@currentlabel until we see the '*',
 # but we have to know it before we digest the title, since \label can be there!
-foreach my $sec (qw(part chapter section subsection subsubsection paragraph subparagraph)){
-  Tag("ltx:$sec", autoClose=>1);
-  DefExpandable('\\'.$sec.' OptionalMatch:*',
-		sub { 
-		  my($gullet,$flag)=@_;
-		  if($flag){
-		    refStepID($sec);
-		    (T_CS('\\@@'.$sec),T_OTHER('['),T_OTHER(']'),T_OTHER('['),T_CS('\@currentID'),T_OTHER(']')); }
-		  else {
-		    refStepCounter($sec);
-		    (T_CS('\\@@'.$sec),T_OTHER('['),T_CS('\@currentlabel'),T_OTHER(']'),
-		     T_OTHER('['),T_CS('\@currentID'),T_OTHER(']')); }});
-  DefConstructor('\\@@'.$sec.'[][][]{}',
-		 "<ltx:$sec ?#1(refnum='#1') id='#2'>"
-		 . "<ltx:title>#4</ltx:title>"
-		 . "?#3(<ltx:toctitle>#3</ltx:toctitle>)",
-		 bounded=>1); }
+
+# These are defined in terms of \@startsection so that
+# casual user redefinitions work, too.
+DefMacro('\chapter',       '\@startsection{chapter}{}{}{}{}{}');
+DefMacro('\part',          '\@startsection{part}{}{}{}{}{}');
+DefMacro('\section',       '\@startsection{section}{}{}{}{}{}');
+DefMacro('\subsection',    '\@startsection{subsection}{}{}{}{}{}');
+DefMacro('\subsubsection', '\@startsection{subsubsection}{}{}{}{}{}');
+DefMacro('\paragraph',     '\@startsection{paragraph}{}{}{}{}{}');
+DefMacro('\subparagraph',  '\@startsection{subparagraph}{}{}{}{}{}');
+map(Tag("ltx:$_", autoClose=>1),
+    qw(part chapter section subsection subsubsection paragraph subparagraph));
+
+DefExpandable('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
+  my($gullet,$type,$level,$ignore3,$ignore4,$ignore5,$ignore6,$flag)=@_;
+  if($flag){
+    refStepID(ToString($type));
+    (T_CS('\\@@section'),
+     T_BEGIN,$type->unlist,T_END,
+     T_OTHER('['),T_OTHER(']'),
+     T_OTHER('['),T_CS('\@currentID'),T_OTHER(']')); }
+  else {
+    refStepCounter(ToString($type));
+    (T_CS('\\@@section'),
+     T_BEGIN,$type->unlist,T_END,
+     T_OTHER('['),T_CS('\@currentlabel'),T_OTHER(']'),
+     T_OTHER('['),T_CS('\@currentID'),T_OTHER(']')); }});
+
+DefConstructor('\\@@section{}[][][]{}',sub {
+  my($document,$type,$refnum,$id,$toctitle,$title)=@_;
+  $document->openElement("ltx:".$type->toString,refnum=>$refnum,id=>$id);
+  $document->insertElement('ltx:title',$title);
+  $document->insertElement('ltx:toctitle',$toctitle) if $toctitle; },
+  properties=>{refnum=>'#2',id=>'#3'});
 
 # Not sure if this is best, but if no explicit \section'ing...
 Tag('ltx:section',autoOpen=>1);
@@ -327,6 +344,9 @@ DefPrimitive('\title{}',    sub { DefMacro('\@title',$_[1])});
 DefPrimitive('\author{}',   sub { DefMacro('\@author',$_[1])});
 DefPrimitive('\date{}',     sub { DefMacro('\@date',$_[1])});
 DefConstructor('\thanks{}', "<ltx:thanks>#1</ltx:thanks>");
+
+# Hmm, this should ideally split authors into multiple author lists?
+DefConstructor('\and', " and ");
 
 # Introduce secret control sequences to format the title, date, etc.
 # These will be used by \maketitle when the time comes.
@@ -704,6 +724,7 @@ DefConstructor('\mathsf{}',  '#1', bounded=>1, requireMath=>1, font=>{family=>'s
 DefConstructor('\mathtt{}',  '#1', bounded=>1, requireMath=>1, font=>{family=>'typewriter'});
 DefConstructor('\mathcal{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'caligraphic'});
 DefConstructor('\mathscr{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'script'});
+DefConstructor('\mit',       '',   requireMath=>1, font=>{family=>'italic'});
 
 #**********************************************************************
 # C.8 Definitions, Numbering and Programming
@@ -1318,6 +1339,7 @@ DefPrimitive('\-',undef);	# We don't do hyphenation.
 
 DefPrimitive('\sloppy',undef);
 DefPrimitive('\fussy',undef);
+DefEnvironment('{sloppypar}','#body');
 
 #======================================================================
 # C.12.2 Page Breaking
@@ -1328,6 +1350,8 @@ DefPrimitive('\enlargethispage OptionalMatch:* {}',undef);
 
 DefPrimitive('\clearpage',undef); # Could possibly mean something?
 DefPrimitive('\cleardoublepage',undef);
+
+DefPrimitive('\samepage',undef);
 
 #**********************************************************************
 # C.13 Lengths, Spaces and Boxes

@@ -1,0 +1,24 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  yfonts                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+#
+# Not much to do for LaTeXML.
+
+
+DefConstructor('\frakfamily', '', font=>{family=>'fraktur'});
+# These font families are otherwise unrecognized...
+DefConstructor('\swabfamily', '', font=>{family=>'schwabacher'});
+DefConstructor('\gothfamily', '', font=>{family=>'gothic'});
+
+DefPrimitive('\fraklines',undef);
+
+1;

@@ -502,13 +502,75 @@ DefExpandable('\read Number SkipKeyword:to Token',sub {
   DefMacro(ToString($token),Tokens()); });
 
 
-our %font_family=(r=>'serif',''=>'serif',ss=>'sansserif',tt=>'typewriter',
-		  vtt=>'typewriter',fib=>'fibonacci',fr=>'funnyroman',
-		  dh=>'dunhill',m=>'math',sy=>'symbol');
-our %font_series=(''=>'medium',b=>'bold',bx=>'boldextended',
-		  sbc=>'semiboldcondensed');
-our %font_shape =(''=>'upright',i=>'italic',sl=>'slanted',sc=>'smallcaps');
+##our %font_family=(r=>'serif',''=>'serif',ss=>'sansserif',tt=>'typewriter',
+##		  vtt=>'typewriter',fib=>'fibonacci',fr=>'funnyroman',
+##		  dh=>'dunhill',m=>'math',sy=>'symbol');
 
+# Given a font, we'd like to map it to the "logical" names derived from LaTeX,
+# (w/ loss of fine grained control).
+# I'd like to use Karl Berry's font naming scheme
+# (See http://www.tug.org/fontname/html/)
+# but it seems to be a one-way mapping, and moreover, doesn't even fit CM fonts!
+# We'll assume a sloppier version:
+#   family + series + variant + size
+
+our %font_family=(cmr=>{family=>'serif'},      cmss=>{family=>'sansserif'},
+		  cmtt=>{family=>'typewriter'},cmvtt=>{family=>'typewriter'},
+		  cmfib=>{family=>'serif'},    cmfr=>{family=>'serif'},
+		  cmdh=>{family=>'serif'},     cm=>{family=>'serif'},
+		  ptm=>{family=>'serif'},      ppl=>{family=>'serif'},
+		  pnc=>{family=>'serif'},      pbk=>{family=>'serif'},
+		  phv=>{family=>'sansserif'},  pag=>{family=>'serif'},
+		  pcr=>{family=>'typewriter'}, pzc=>{family=>'script'},
+		  put=>{family=>'serif'},      bch=>{family=>'serif'},
+		  psy=>{family=>'symbol'},     pzd=>{family=>'dingbats'},
+		  ccr=>{family=>'serif'},      ccy=>{family=>'symbol'},
+		  cmbr=>{family=>'sansserif'}, cmtl=>{family=>'typewriter'},
+		  cmbrs=>{family=>'symbol'},   ul9=>{family=>'typewriter'},
+		  txr=>{family=>'serif'},      txss=>{family=>'sansserif'},
+		  txtt=>{family=>'typewriter'},txms=>{family=>'symbol'},
+		  txsya=>{family=>'symbol'},   txsyb=>{family=>'symbol'},
+		  pxr=>{family=>'serif'},      pxms=>{family=>'symbol'},
+		  pxsya=>{family=>'symbol'},   pxsyb=>{family=>'symbol'},
+		  futs=>{family=>'serif'},
+		  uaq=>{family=>'serif'},      ugq=>{family=>'sansserif'},
+		  eur=>{family=>'serif'},      eus=>{family=>'script'},
+		  euf=>{family=>'fraktur'},    euex=>{family=>'symbol'},
+		  # The following are actually math fonts.
+		  ccm=>{family=>'serif', shape=>'italic'},
+		  ccitt=>{family=>'typewriter', shape=>'italic'},
+		  cmbrm=>{family=>'sansserif', shape=>'italic'},
+		  futm=>{family=>'serif', shape=>'italic'},
+		  futmi=>{family=>'serif', shape=>'italic'},
+		  txmi=>{family=>'serif', shape=>'italic'},
+		  pxmi=>{family=>'serif', shape=>'italic'},
+		  );
+
+our %font_series=(''=>'medium',m=>'medium', mc=>'medium', 
+		  b=>'bold',bc=>'bold', bx=>'bold', sb=>'bold', sbc=>'bold');
+our %font_shape =(''=>'upright',n=>'upright', i=>'italic',it=>'italic',
+		  sl=>'slanted', sc=>'smallcaps', csc=>'smallcaps');
+
+our $FONTREGEXP
+  = '('.join('|',sort { -($a cmp $b) } keys %font_family).')'
+  . '('.join('|',sort { -($a cmp $b) } keys %font_series).')'
+  . '('.join('|',sort { -($a cmp $b) } keys %font_shape).')'
+  . '(\d+)';
+  
+# Decode a font size in points into a "logical" size.
+our @font_size_map=(0.60=>'tiny',   0.75=>'script', 0.85=>'footnote',0.95=>'small',
+		    1.10=>'normal', 1.30=>'large',  1.55=>'Large',   1.85=>'LARGE',
+		    2.25=>'huge',   1000.0=>'Huge');
+sub abstract_font_size {
+  my($size)=@_;
+  my $scaled = $size/10.0;	# ASSUMED nominal font 10pt!!! Set from doc!!!
+  my @map = @font_size_map;
+  while(@map){
+    return shift(@map) if($scaled <= shift(@map));
+    shift(@map); }
+  'Huge'; }
+
+# Need to handle "at" too!!!
 DefPrimitive('\font Token SkipMatch:=', sub {
   my($stomach,$cs)=@_;
   $cs = $cs->toString;
@@ -522,11 +584,14 @@ DefPrimitive('\font Token SkipMatch:=', sub {
   if($gullet->readKeyword('scaled')){
     $gullet->readNumber; }
   $gullet->skipSpaces;
-  if($name =~ /^cm(r|ss|tt|vtt|fib|fr|dh|m|sy|)(bx|b|sbc|)(i|sl|sc|)(\d+)$/){
-    DefConstructor($cs,'',font=>{family=>$font_family{$1},
-				 series=>$font_series{$2},
-				 shape =>$font_shape{$3},
-				 size  =>$4}); }
+  if($name =~ /^$FONTREGEXP$/o){
+    my($fm,$sr,$sh,$sz)=($1,$2,$3,$4);
+    my %props = %{$font_family{$fm}||{}};
+    $props{series}= $font_series{$sr} unless $props{series};
+    $props{shape} = $font_shape{$sh}  unless $props{shape};
+    $props{size}  = abstract_font_size($sz);
+    print STDERR "Font $name == ".join(', ',map("$_=>$props{$_}",sort keys %props))."\n";
+    DefConstructor($cs,'',font=>{%props}); }
   else {
     Warn("Unrecognized font \"$name\"; $cs will be ignored");
     DefPrimitive($cs,undef); }});

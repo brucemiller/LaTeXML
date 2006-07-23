@@ -1,3 +1,10 @@
+0.5.x  2006-07-23
+     - Fixed the TeX font command to recognize more fonts.
+     - Redefined sectioning commands to go via \@startsection,
+       so more author customizations will still work.
+     - added report & book classes. 
+     - Other random (minimal) packages: eulervm, yfonts, a4wide
+
 0.5.x  2006-07-22
      - Dealing with some font issues, and adding minimal
        implementations: fixltx2e, textcomp, exscale
