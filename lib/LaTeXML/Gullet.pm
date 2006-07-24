@@ -62,11 +62,18 @@ sub input {
     $STATE->assignValue($file.'_loaded'=>1,'global');
     $self->openMouth(LaTeXML::StyleMouth->new($file), 0);  }
   else {			# Else read as an included file.
-    $self->openMouth(LaTeXML::FileMouth->new($file) ,0);  
-    # AND if there are file-specific declarations, deal with those first!
-    $file =~ s/\.tex//;
-    if(my $conf = pathname_find("$file.latexml",paths=>$STATE->lookupValue('SEARCHPATHS'))){
-      $self->input($conf); }
+    # If there is a file-specific declaration file (name.latexml), load it first!
+    my $name = $file;
+    $name =~ s/\.tex//;
+    if(my $conf = pathname_find("$name.latexml",
+				paths=>$STATE->lookupValue('SEARCHPATHS'))){
+      local $LaTeXML::INHIBIT_LOAD=0;
+      $self->input($conf); 
+      # and THEN load the input --- UNLESS INHIBITTED!!!
+      $self->openMouth(LaTeXML::FileMouth->new($file) ,0) unless $LaTeXML::INHIBIT_LOAD;
+    }
+    else {
+      $self->openMouth(LaTeXML::FileMouth->new($file) ,0); }
   }}
 
 #**********************************************************************
