@@ -1229,6 +1229,7 @@ DefPrimitive('\input', sub {
     $path = Tokens(@tokens); }
   # Special case HACK.  If filename ends .sty, we're probably really
   # trying to load a style file!  Look for .ltxml!
+  $path = $path->toString if ref $path;
   if($path =~ s/\.sty$//){
     $gullet->input($path,['ltxml','sty']); }
   else {
