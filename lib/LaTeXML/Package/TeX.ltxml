@@ -71,6 +71,15 @@ DefParameterType('MoveableBox', sub{
       && ($box->getDefinition->getCSName =~ /^(\\hbox|\\vbox||\\vtop)$/);
   $box; });
 
+DefParameterType('BalancedParen', sub {
+  my ($gullet) = @_;
+  my $tok = $gullet->readToken;
+  if (ref $tok && $tok->toString eq '(') {
+    $gullet->readUntil(T_OTHER(')'));
+  } else {
+    $gullet->unread($tok) if ref $tok;
+    undef; }});
+
 # In addition to the standard TeX Dimension, there are various LaTeX constructs
 # (particularly, the LaTeX picture environment, and the various pstricks packages)
 # that take a different sort of length.  They differ in two ways.
@@ -334,7 +343,8 @@ our %iparms= (pretolerance=>100, tolerance=>200, hbadness=>1000, vbadness=>1000,
 	      tracingcommands=>0, tracingrestores=>0, language=>0, uchyph=>1, lefthyphenmin=>0,
 	      righthyphenmin=>0, globaldefs=>0, defaulthyphenchar=>ord('-'), defaultskewchar=>-1,
 	      escapechar=>0, endlinechar=>0, newlinechar=>-1, maxdeadcycles=>0, hangafter=>0, 
-	      fam=>-1, mag=>1000, delimiterfactor=>0, time=>0, day=>0, month=>0, year=>0,
+	      fam=>-1, mag=>1000, magnification=>1000, delimiterfactor=>0,
+	      time=>0, day=>0, month=>0, year=>0,
 	      showboxbreadth=>5, showboxdepth=>3, errorcontextlines=>5);
 foreach my $p (keys %iparms){
   DefRegister("\\$p",Number($iparms{$p})); }
@@ -741,6 +751,11 @@ DefMacro('\hyphenation{}',''); # Well, what ?
 # <family member> | <font range><4bit>
 # <font range> = \textfont | \scriptfont | \scriptscriptfont
 
+# Doubtful that we can do anything useful with these.
+DefMacro('\textfont Number SkipMatch:= Token', sub { return; });
+DefMacro('\scriptfont Number SkipMatch:= Token', sub { return; });
+DefMacro('\scriptscriptfont Number SkipMatch:= Token', sub { return; });
+
 # <internal dimen> = <dimen parameter> | <special dimen> | \lastkern
 #    | <dimendef token> | \dimen<8bit> | <box dimension><8bit> | \fontdimen<number><font>
 # <box dimension> = \ht | \wd | \dp
@@ -843,7 +858,12 @@ sub read_rule_spec {
 DefConstructor('\vrule', "<ltx:text height='#height' depth='#depth' width='#width'/>",
 	       afterDigest=>sub { read_rule_spec(@_); },
 	       reversion=>sub { (T_CS('\vbox'),revert_spec($_[0],'height'),
-				 revert_spec($_[0],'depth'),revert_spec($_[0],'width')); });
+				 revert_spec($_[0],'depth'),revert_spec($_[0],'width'));});
+
+DefConstructor('\hrule', "<ltx:text height='#height' depth='#depth' width='#width'/>",
+	       afterDigest=>sub { read_rule_spec(@_); },
+	       reversion=>sub { (T_CS('\hbox'),revert_spec($_[0],'height'),
+                                revert_spec($_[0],'depth'),revert_spec($_[0],'width'));});
 
 #======================================================================
 # Remaining Mode independent primitives in Ch.24, pp.279-280
@@ -1194,6 +1214,11 @@ sub replace_node {
     foreach my $n (@newnodes){
       $parent->insertAfter($n,$new);
       $new = $n; }}}
+
+# May need further work to integrate; probably needs to be displayed,
+# and should be added as refnum attribute to some container.
+DefPrimitive('\eqno BalancedParen', undef);
+DefPrimitive('\leqno BalancedParen', undef);
 
 #======================================================================
 # Scripts are a bit of a strange beast, with respect to when the arguments

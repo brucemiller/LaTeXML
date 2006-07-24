@@ -64,6 +64,11 @@ sub convertString {
   return unless $digested;
   $self->convertDocument($digested); }
 
+
+sub getStatus {
+  my($self)=@_;
+  $$self{state}->getStatus; }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Mid-level API.
 

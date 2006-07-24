@@ -65,17 +65,19 @@ else {
 
 # ========================================
 # Now, convert to DOM and output, if desired.
+my $serialized;
 if($digested){
     local $LaTeXML::Global::STATE = $$latexml{state};
     if($format eq 'tex'){
-	print OUT LaTeXML::Global::UnTeX($digested); }
+	$serialized = LaTeXML::Global::UnTeX($digested); }
     elsif($format eq 'box'){
-	print OUT $digested->toString; }
+	$serialized = $digested->toString; }
     else {
 	my $dom = $latexml->convertDocument($digested); 
-	print OUT $dom->toString(1);
+	$serialized = $dom->toString(1);
     }}
-
+print STDERR "\nConversion complete: ".$latexml->getStatus.".\n";
+print OUT $serialized if $serialized;
 if($output){ close(OUT); }
 
 #**********************************************************************

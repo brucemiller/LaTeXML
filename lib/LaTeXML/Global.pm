@@ -153,6 +153,7 @@ sub NoteEnd {
 sub Fatal { 
   my($message)=@_;
   if(!$LaTeXML::Error::InHandler && defined($^S)){
+    $LaTeXML::Global::STATE->noteStatus('fatal');
     $message
       = LaTeXML::Error::generateMessage("Fatal",$message,1,
 		       ($LaTeXML::Global::STATE->lookupValue('VERBOSITY') > 0
@@ -168,12 +169,14 @@ sub Error {
   if($LaTeXML::Global::STATE->lookupValue('STRICT')){
     Fatal($msg); }
   else {
+    $LaTeXML::Global::STATE->noteStatus('error');
     print STDERR LaTeXML::Error::generateMessage("Error",$msg,1,"Continuing... Expect trouble.\n")
       unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -1; }
   return; }
 
 sub Warn {
   my($msg)=@_;
+  $LaTeXML::Global::STATE->noteStatus('warning');
   print STDERR LaTeXML::Error::generateMessage("Warning",$msg,0)
     unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < 0; 
   return; }

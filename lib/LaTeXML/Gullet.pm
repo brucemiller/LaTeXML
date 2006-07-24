@@ -45,6 +45,7 @@ sub input {
   my $file = pathname_find($name,paths=>$STATE->lookupValue('SEARCHPATHS'),
 			   types=>$types, installation_subdir=>'Package');
   if(! $file) {
+    $STATE->noteStatus(missing=>$name);
     Error("Cannot find file $name of type ".join(', ',@{$types||[]})
 	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   elsif($file =~ /\.(ltxml|latexml)$/){		# Perl module.

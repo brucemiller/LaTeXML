@@ -104,6 +104,7 @@ sub invokeToken {
   my $meaning = $STATE->lookupMeaning($token);
   if(! defined $meaning){		# Supposedly executable token, but no definition!
     my $cs = $token->getCSName;
+    $STATE->noteStatus(undefined=>$cs);
     Error("$cs is not defined.");
     $STATE->installDefinition(LaTeXML::Constructor->new($token,undef,
 			  "<ltx:ERROR type='undefined'>".$cs."</ltx:ERROR>")); #,mode=>'text');

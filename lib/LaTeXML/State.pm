@@ -33,7 +33,7 @@ use LaTeXML::Global;
 #     model    => a Model object.
 sub new {
   my($class, %options)=@_;
-  my $self = bless {table=>{}, undo=>[{}], prefixes=>{},
+  my $self = bless {table=>{}, undo=>[{}], prefixes=>{}, status=>{},
 		    stomach=>$options{stomach}, model=>$options{model}}, $class; 
   $$self{table}{'value:VERBOSITY'}=[0];
   if($options{catcodes} =~ /^(standard|style)/){
@@ -214,6 +214,37 @@ sub convertUnit {
       Warn("Unknown unit \"$unit\"; assuming pt.");
       $sp = $UNITS{'pt'}; }
     $sp; }}
+
+#======================================================================
+
+sub noteStatus {
+  my($self,$type,@data)=@_;
+  if($type eq 'undefined'){
+    map($$self{status}{undefined}{$_}++, @data); }
+  elsif($type eq 'missing'){
+    map($$self{status}{missing}{$_}++, @data); }
+  else {
+    $$self{status}{$type}++; }}
+
+sub getStatus {
+  my($self)=@_;
+  my $status= $$self{status};
+  my @report=();
+  push(@report, "$$status{warning} warning".($$status{warning}>1?'s':''))
+    if $$status{warning};
+  push(@report, "$$status{error} error".($$status{error}>1?'s':''))
+    if $$status{error};
+  push(@report, "$$status{fatal} fatal error".($$status{fatal}>1?'s':''))
+    if $$status{fatal};
+  my @undef = ($$status{undefined} ? keys %{$$status{undefined}} :());
+  push(@report, scalar(@undef)." undefined macro".(@undef > 1 ? 's':'')
+       ."[".join(', ',@undef)."]")
+    if @undef;
+  my @miss = ($$status{missing} ? keys %{$$status{missing}} :());
+  push(@report, scalar(@miss)." missing file".(@miss > 1 ? 's':'')
+       ."[".join(', ',@miss)."]")
+    if @miss;
+  join('; ', @report) || 'No obvious problems'; }
 
 #======================================================================
 1;

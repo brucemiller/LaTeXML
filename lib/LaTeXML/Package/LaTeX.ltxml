@@ -325,6 +325,7 @@ DefRegister('\topmargin'     => Dimension(0));
 DefRegister('\headheight'    => Dimension(0));
 DefRegister('\headsep'       => Dimension(0));
 DefRegister('\footskip'      => Dimension(0));
+DefRegister('\footheight'    => Dimension(0));
 DefRegister('\evensidemargin'=> Dimension(0));
 DefRegister('\oddsidemargin' => Dimension(0));
 DefRegister('\marginparwidth'=> Dimension(0));
@@ -460,7 +461,8 @@ DefRegister('\labelsep'      => Dimension(0));
 
 # NOTE: Eventually use \makelabel to construct the list ?
 #\makelabel{label}
-# \usecounter{ctr}
+# Could do something with this, but it's a headache.
+DefPrimitive('\usecounter{}', undef);
 
 #======================================================================
 # C.6.4 Verbatim
@@ -753,6 +755,30 @@ DefPrimitive('\DeclareRobustCommand OptionalMatch:* {Token}[][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
   return if LookupDefinition($cs);
   DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body); });
+
+# The next font declaration commands are based on
+# http://tex.loria.fr/general/new/fntguide.html
+# we ignore font encoding
+DefPrimitive('\DeclareSymbolFont{}{}{}{}{}', sub {
+  my ($stomach, $name, $enc, $family, $series, $shape) = @_;
+  AssignValue('fontdeclaration@'.$name->toString,
+	      {family=>$family->toString,
+	       series=>$series->toString,
+	       shape =>$shape->toString}); });
+DefPrimitive('\DeclareSymbolFontAlphabet{}{}', sub {
+  my ($stomach, $cs, $name) = @_;
+  my $font = LookupValue('fontdeclarations@'.$name->toString) || {};
+  DefConstructor($cs->toString, '', font=>$font); });
+
+DefPrimitive('\DeclareMathAlphabet{}{}{}{}{}', sub {
+  my ($stomach, $cs, $enc, $family, $series, $shape) = @_;
+  DefConstructor($cs, '', font=>{family=>$family,
+				 series=>$series,
+				 shape =>$shape}); });
+
+DefPrimitive('\DeclareFontShape{}{}{}{}{}{}', undef);
+DefPrimitive('\DeclareFontFamily{}{}{}', undef);
+DefPrimitive('\DeclareSizeFunction{}{}', undef);
 
 #======================================================================
 # C.8.2 Defining Environments
@@ -1707,6 +1733,8 @@ DefPrimitive('\mathversion{}',sub {
   elsif($version eq 'normal'){ 
     AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>0), 'local'); }
   else { Fatal("Unknown math verison \"$version\""); }});
+
+DefMacro('\newfont{}{}', '\font#1=#2\relax');
 
 #======================================================================
 # C.15.2 Changing the Type Size
