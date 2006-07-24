@@ -258,8 +258,14 @@ sub readMatch {
     my @tomatch=$choice->unlist;
     my @matched=();
     my $tok;
-    while(@tomatch && defined($tok=$self->readToken) && push(@matched,$tok) && ($tok->equals($tomatch[0]))){
-      shift(@tomatch); }
+    while(@tomatch && defined($tok=$self->readToken)
+	  && push(@matched,$tok) && ($tok->equals($tomatch[0]))){
+      shift(@tomatch);
+      if($tok->getCatcode == CC_SPACE){ # If this was space, SKIP any following!!!
+	while(defined($tok=$self->readToken) && ($tok->getCatcode == CC_SPACE)){
+	  push(@matched,$tok); }
+	$self->unread($tok) if $tok; }
+    }
     return $choice unless @tomatch;	# All matched!!!
     $self->unread(@matched);	# Put 'em back and try next!
   }

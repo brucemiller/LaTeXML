@@ -1,3 +1,7 @@
+0.5.x  2006-07-24
+     - Fixed a sneaky bug in \def parameters, and gullet->readMatch
+       where TeX collapses multiple spaces! Thanks Ioan!
+
 0.5.x  2006-07-23
      - Fixed the TeX font command to recognize more fonts.
      - Redefined sectioning commands to go via \@startsection,

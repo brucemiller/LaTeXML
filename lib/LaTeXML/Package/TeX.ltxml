@@ -433,23 +433,36 @@ sub parseDefParameters {
       $n++; $t=shift(@tokens); 
 	Fatal("Parameters for \"".ToString($cs)."\" not in order in ".ToSting($params))
 	  unless $n == (ord($t->getString)-ord('0'));
+      # Check for delimiting text following the parameter #n
       my @delim=();
-      while(@tokens && ($tokens[0]->getCatcode != CC_PARAM)){
-	push(@delim,shift(@tokens)); }
+      my($pc,$cc)=(-1,0);
+      while(@tokens && (($cc=$tokens[0]->getCatcode) != CC_PARAM)){
+	my $d = shift(@tokens);
+	push(@delim,$d) unless $cc == $pc && $cc==CC_SPACE; # BUT collapse whitespace!
+	$pc = $cc;}
+      # Found text that marks the end of the parameter
       if(@delim){ 
 	my $expected=Tokens(@delim);
-	push(@params, LaTeXML::Parameters::newParameter('Until','Until:'.$expected->toString, extra=>[$expected])); }
-      elsif((scalar(@tokens)==1) && ($tokens[0]->getCatcode == CC_PARAM)){ # Special case: trailing #
+	push(@params, LaTeXML::Parameters::newParameter('Until',
+							'Until:'.$expected->toString,
+							extra=>[$expected])); }
+      
+      # Special case: trailing sole # => delimited by next opening brace.
+      elsif((scalar(@tokens)==1) && ($tokens[0]->getCatcode == CC_PARAM)){
 	shift(@tokens);
 	push(@params, LaTeXML::Parameters::newParameter('UntilBrace','UntilBrace')); }
+      # Nothing? Just a plain parameter.
       else {
 	push(@params, LaTeXML::Parameters::newParameter('Plain','{}')); }}
     else {
+      # Initial delimiting text is required.
       my @lit=($t);
       while(@tokens && ($tokens[0]->getCatcode != CC_PARAM)){
 	push(@lit,shift(@tokens)); }
       my $expected = Tokens(@lit);
-      push(@params,LaTeXML::Parameters::newParameter('Match','Match:'.$expected->toString, extra=>[$expected],
+      push(@params,LaTeXML::Parameters::newParameter('Match',
+						     'Match:'.$expected->toString,
+						     extra=>[$expected],
 						     novalue=>1)); }
   }
   LaTeXML::Parameters->new(@params); }
