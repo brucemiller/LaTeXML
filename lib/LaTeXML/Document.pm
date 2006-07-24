@@ -187,7 +187,8 @@ sub setNodeBox {
 
 sub getNodeBox {
   my($self,$node)=@_;
-  return undef if $node->nodeType == XML_DOCUMENT_NODE;
+  my $t =  $node->nodeType;
+  return undef if $t == XML_DOCUMENT_NODE || $t == XML_DOCUMENT_FRAG_NODE;
   if(my $boxid = $node->getAttribute('_box')){
     $$self{node_boxes}{$boxid}; }}
 
@@ -196,11 +197,15 @@ sub setNodeFont {
 #  my $fontid = "$font";
   my $fontid = $font->toString;
   $$self{node_fonts}{$fontid} = $font;
-  $node->setAttribute(_font=>$fontid); }
+  if($node->nodeType == XML_ELEMENT_NODE){
+    $node->setAttribute(_font=>$fontid); }
+  else {
+    Warn("Can't set font on node ".Stringify($node)); }}
 
 sub getNodeFont {
   my($self,$node)=@_;
-  ($node->nodeType == XML_DOCUMENT_NODE ? LaTeXML::Font->default()
+  my $t =  $node->nodeType;
+  ($t == XML_DOCUMENT_NODE || $t == XML_DOCUMENT_FRAG_NODE ? LaTeXML::Font->default()
    : $$self{node_fonts}{$node->getAttribute('_font')}); }
 
 #**********************************************************************
@@ -214,7 +219,6 @@ sub absorb {
   # The following handle inserting raw strings, presumably within the context of some constructor?
   elsif(!$LaTeXML::BOX->isMath){
     $self->openText_internal($box); }
-###    $self->openText($box,$LaTeXML::BOX->getFont); }
   # Note that in math mode text nodes appear ONLY in <XMTok> or <text>!!!
   elsif($self->getNodeQName($$self{node}) eq $MATH_TOKEN_NAME){ # Already in a XMTok, just insert the text
     print STDERR "Appending text \"$box\" to $MATH_TOKEN_NAME ".Stringify($$self{node})."\n"
