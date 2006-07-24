@@ -1,0 +1,36 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  cite                                                               | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+# Ignore the resorting of citations
+# "Compression" of citation lists doesn't make much sense in XML.
+# Likewise, the options aren't much help.
+
+
+# These macros _could_ be used in formatting the citations,
+# but that seems something better left to whoever is formatting
+# the XML at the end.
+# An alternative would be to store various styling info,
+# but I'll leave that off, for now.
+DefMacro('\citeleft','[');
+DefMacro('\citeright',']');
+DefMacro('\citedash','--');
+DefMacro('\citemid', ', ');
+DefMacro('\citepunct',', ');
+DefMacro('\citeform{}','#1');
+
+DefMacro('\citen','\citet');
+
+1;
