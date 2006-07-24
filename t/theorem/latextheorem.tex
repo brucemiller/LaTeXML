@@ -1,0 +1,45 @@
+\documentclass{article}
+% Simplified extract of the tests of ams theorem.
+\title{\LaTeX's Newtheorem}
+\date{none}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{prop}{Proposition}
+\newtheorem{lem}[thm]{Lemma}
+
+%    Because the amsmath pkg is not used, we need to define a couple of
+%    commands in more primitive terms.
+\let\lvert=|\let\rvert=|
+\newcommand{\Ric}{\mathop{\mathrm{Ric}}\nolimits}
+
+%    Dispel annoying problem of slightly overlong lines:
+\addtolength{\textwidth}{8pt}
+
+\begin{document}
+\maketitle
+
+\section{Test of standard theorem styles}
+
+\begin{lem}[negatively curved families]
+Let $\{ds_1^2,\dots,ds_k^2\}$ be a negatively curved family of metrics
+on $\mathbf{D}_r$, with associated forms $\omega^1$, \dots, $\omega^k$.
+Then $\omega^i \leq\omega_r$ for all $i$.
+\end{lem}
+
+Then our main theorem:
+\begin{thm}\label{pigspan}
+Let $d_{\max}$ and $d_{\min}$ be the maximum, resp.\ minimum distance
+between any two adjacent vertices of a quadrilateral $Q$. Let $\sigma$
+be the diagonal pigspan of a pig $P$ with four legs.
+Then $P$ is capable of standing on the corners of $Q$ iff
+\begin{equation}\label{sdq}
+\sigma\geq \sqrt{d_{\max}^2+d_{\min}^2}.
+\end{equation}
+\end{thm}
+
+\begin{cor}
+Admitting reflection and rotation, a three-legged pig $P$ is capable of
+standing on the corners of a triangle $T$ iff (\ref{sdq}) holds.
+\end{cor}
+
+\end{document}
