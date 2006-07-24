@@ -591,23 +591,29 @@ DefPrimitive('\font Token SkipMatch:=', sub {
   my($token,@tokens)=();
   while(($token = $gullet->readXToken()) && ($token->getCatcode != CC_SPACE)){
     push(@tokens,$token); }
+
   my $name = Tokens(@tokens)->toString;
-  if($gullet->readKeyword('at')){
-    $gullet->readDimension; }
-  if($gullet->readKeyword('scaled')){
-    $gullet->readNumber; }
-  $gullet->skipSpaces;
+  my %props=();
+  my $size;
   if($name =~ /^$FONTREGEXP$/o){
-    my($fm,$sr,$sh,$sz)=($1,$2,$3,$4);
-    my %props = %{$font_family{$fm}||{}};
+    my($fm,$sr,$sh)=($1,$2,$3);
+    $size = $4;
+    %props = %{$font_family{$fm}||{}};
     $props{series}= $font_series{$sr} unless $props{series};
-    $props{shape} = $font_shape{$sh}  unless $props{shape};
-    $props{size}  = abstract_font_size($sz);
-    print STDERR "Font $name == ".join(', ',map("$_=>$props{$_}",sort keys %props))."\n";
-    DefConstructor($cs,'',font=>{%props}); }
+    $props{shape} = $font_shape{$sh}  unless $props{shape}; }
   else {
-    Warn("Unrecognized font \"$name\"; $cs will be ignored");
-    DefPrimitive($cs,undef); }});
+    Warn("Unrecognized font \"$name\"; $cs will have no effect"); }
+
+  if($gullet->readKeyword('at')){
+    $size = $gullet->readDimension->ptValue; }
+  if($gullet->readKeyword('scaled')){
+    $size *= ($gullet->readNumber->valueOf/1000); }
+  $props{size}  = abstract_font_size($size);
+  $gullet->skipSpaces;
+  print STDERR "Font $name == ".join(', ',map("$_=>$props{$_}",sort keys %props))."\n";
+  DefConstructor($cs,'',font=>{%props});
+
+});
 
 DefRegister('\count Number' => Number(0));
 DefRegister('\dimen Number' => Dimension(0));
@@ -1643,7 +1649,8 @@ DefRegister('\interdisplaylinepenalty' => Number(100));
 DefRegister('\interfootnotelinepenalty' => Number(100));
 
 DefMacro('\magstephalf','1095');
-# \magstep ??
+our @mags=(1000,1200,1440,1728,2074,2488);
+DefExpandable('\magstep{}', sub { Explode($mags[$_[1]->toString]);});
 
 #======================================================================
 # TeX Book, Appendix B, p. 350
