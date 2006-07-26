@@ -194,12 +194,16 @@ sub Stringify {
   # Have to handle LibXML stuff explicitly (unless we want to add methods...?)
   elsif($object->isa('XML::LibXML::Node')){
     if($object->nodeType == XML_ELEMENT_NODE){ 
+      my $nodename = $object->localname;
+      my $ns    = $object->namespaceURI;
+      if($ns && ($ns=$LaTeXML::Global::STATE->getModel->getNamespacePrefix($ns))){
+	$nodename = "$ns:$nodename"; }
       my $attributes ='';
       foreach my $attr ($object->attributes){
 	my $name = $attr->nodeName;
 	next if $name =~ /^_/;
 	$attributes .= ' '. $name. "=\"".$attr->getData."\""; }
-      "<".$object->nodeName.$attributes. ($object->hasChildNodes ? ">..." : "/>");
+      "<".$nodename.$attributes. ($object->hasChildNodes ? ">..." : "/>");
     }
     elsif($object->nodeType == XML_TEXT_NODE){
       "XMLText[".$object->data."]"; }

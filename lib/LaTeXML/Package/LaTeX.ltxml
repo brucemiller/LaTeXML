@@ -442,12 +442,13 @@ DefEnvironment('{description}',
 #======================================================================
 # C.6.3 The list and trivlist environments.
 #======================================================================
-# Mostly just punting, here; you probably want a more meaningful name
-# for your list if you want better XML.
+# These are unlikely to generate what is wanted, but list, trivlist
+# don't give enough idea of the logical structure.
+# And, they can contain \item, so we need some list-like structure.
 DefEnvironment('{list}{}{}',
-	       "<ltx:list default_label='#1' declarations='#2'>#body</ltx:list>");
+	       "<ltx:itemize default_label='#1' declarations='#2'>#body</ltx:itemize>");
 DefEnvironment('{trivlist}',
-	       '<ltx:trivlist>#body</ltx:trivlist>');
+	       '<ltx:itemize><ltx:item>#body</ltx:itemize>');
 
 DefRegister('\topsep'        => Glue(0));
 DefRegister('\partopsep'     => Glue(0));

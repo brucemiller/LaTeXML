@@ -66,5 +66,8 @@
 <!-- Also allow id on para -->
 <!ATTLIST %LaTeXML.para.qname; %LaTeXML.Common.attrib; %LaTeXML.ID.attrib;>
 
+<!ELEMENT %LaTeXML.quotation.qname; (%LaTeXML.Block.mix;)*>
+<!ATTLIST %LaTeXML.quotation.qname; %LaTeXML.Common.attrib;>
+
 
 
