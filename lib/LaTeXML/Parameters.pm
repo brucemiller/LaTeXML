@@ -67,7 +67,7 @@ sub new {
       Until     => { reader => sub { my($gullet,$until)=@_;
 				     $gullet->readUntil($until); },
 		     reversion=>sub{ my($arg,$until)=@_;
-				     ($arg->unlist, $until->unlist); }},
+				     ($arg->revert, $until->revert); }},
     );
 
 # Parsing a parameter list spec.
