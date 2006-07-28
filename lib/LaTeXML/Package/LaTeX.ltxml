@@ -224,7 +224,8 @@ DefConstructor('\\@@section{}[][][]{}',sub {
   $document->openElement("ltx:".$type->toString,refnum=>$refnum,id=>$id);
   $document->insertElement('ltx:title',$title);
   $document->insertElement('ltx:toctitle',$toctitle) if $toctitle; },
-  properties=>{refnum=>'#2',id=>'#3'});
+  properties=>{refnum=>'#2',id=>'#3'},
+  bounded=>1);
 
 # Not sure if this is best, but if no explicit \section'ing...
 Tag('ltx:section',autoOpen=>1);

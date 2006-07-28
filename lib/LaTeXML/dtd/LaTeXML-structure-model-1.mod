@@ -28,8 +28,17 @@
 
 <!ELEMENT %LaTeXML.document.qname;
           ((%LaTeXML.FrontMatter.class;)*,
-	  (%LaTeXML.section.qname;)*,
+	  (%LaTeXML.part.qname;)*,(%LaTeXML.chapter.qname;)*,(%LaTeXML.section.qname;)*,
 	  (%LaTeXML.BackMatter.class;)*)>
+
+<!ELEMENT %LaTeXML.part.qname;
+          ((%LaTeXML.SectionalFrontMatter.class;)*,
+	  (%LaTeXML.chapter.qname;)*)>
+
+<!ELEMENT %LaTeXML.chapter.qname;
+          ((%LaTeXML.SectionalFrontMatter.class;)*, 
+	  (%LaTeXML.section.qname;)*)>
+
 <!ELEMENT %LaTeXML.section.qname;
           ((%LaTeXML.SectionalFrontMatter.class;)*,
 	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*, (%LaTeXML.subsection.qname;)*)>
@@ -50,6 +59,8 @@
 	  (%LaTeXML-bib.biblist.qname;)*)>
 
 <!ATTLIST %LaTeXML.document.qname;      %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
+<!ATTLIST %LaTeXML.part.qname;          %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
+<!ATTLIST %LaTeXML.chapter.qname;       %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 <!ATTLIST %LaTeXML.section.qname;       %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 <!ATTLIST %LaTeXML.appendix.qname;      %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 <!ATTLIST %LaTeXML.subsection.qname;    %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
