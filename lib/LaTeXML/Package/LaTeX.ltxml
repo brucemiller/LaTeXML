@@ -26,7 +26,6 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 use XML::LibXML;
-use LaTeXML::Util::Pathname;
 use LaTeXML::Util::LibXML;
 no warnings 'redefine';
 
@@ -728,7 +727,6 @@ DefConstructor('\mathsf{}',  '#1', bounded=>1, requireMath=>1, font=>{family=>'s
 DefConstructor('\mathtt{}',  '#1', bounded=>1, requireMath=>1, font=>{family=>'typewriter'});
 DefConstructor('\mathcal{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'caligraphic'});
 DefConstructor('\mathscr{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'script'});
-DefConstructor('\mit',       '',   requireMath=>1, font=>{family=>'italic'});
 
 #**********************************************************************
 # C.8 Definitions, Numbering and Programming
@@ -1953,11 +1951,11 @@ DefMacro('\@ifundefined{}{}{}',sub {
 
 DefMacro('\IfFileExists{}{}{}', sub{
   my($gullet,$file,$if,$else)=@_;
-  (pathname_find($file->toString,paths=>LookupValue('SEARCHPATHS')) ? $if->unlist : $else->unlist); });
+  (FindFile($file) ? $if->unlist : $else->unlist); });
 
 DefMacro('\InputIfFileExists{}{}{}', sub{
   my($gullet,$file,$if,$else)=@_;
-  if(pathname_find($file->toString,paths=>LookupValue('SEARCHPATHS'))){
+  if(FindFile($file)){
     $gullet->input($file);
     $if->unlist; }
   else { $else->unlist; }});

@@ -16,6 +16,7 @@ use Exporter;
 use LaTeXML::Global;
 use LaTeXML::Definition;
 use LaTeXML::Parameters;
+use LaTeXML::Util::Pathname;
 use base qw(Exporter);
 our @EXPORT = (qw(&DefExpandable &DefMacro
 		  &DefPrimitive  &DefRegister
@@ -23,7 +24,7 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 		  &DefEnvironment
 		  &DefRewrite &DefMathRewrite
 		  &DefLigature &DefMathLigature
-		  &RequirePackage
+		  &RequirePackage &FindFile
 		  &RawTeX
 		  &Tag &DocType &RegisterNamespace
 		  &convertLaTeXArgs
@@ -570,6 +571,15 @@ sub RequirePackage {
   CheckOptions("RequirePackage ($package)",$require_options,%options);
   $STATE->getStomach->getGullet->input($package,['ltxml','sty'],%options); 
   return; }
+
+sub FindFile {
+  my ($file,$ext)=@_;
+  $file = ToString($file);
+  $ext = [$ext] unless ref $ext;
+  my $pkg = ($file =~ /\.ltxml$/) || ($ext && grep('ltxml',@$ext));
+  pathname_find($file,paths=>LookupValue('SEARCHPATHS'),
+		types=>$ext,
+		($pkg ? (installation_subdir=>'Package'):())); }
 
 sub RawTeX {
   my($text)=@_;

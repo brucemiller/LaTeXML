@@ -194,10 +194,10 @@ sub node_string {
 sub node_location {
   my($node)=@_;
   my $n = $node;
-  while($n && (ref $n ne 'XML::LibXML::Document')
+  while($n && (ref $n !~ /^XML::LibXML::Document/) # Sometimes DocuementFragment ???
 	&& !$n->getAttribute('refnum') && !$n->getAttribute('label')){
     $n = $n->parentNode; }
-  if($n && (ref $n ne 'XML::LibXML::Document')){
+  if($n && (ref $n !~ /^XML::LibXML::Document/)){
     my($r,$l)=($n->getAttribute('refnum'),$n->getAttribute('label'));
     ($r && $l ? "$r ($l)" : $r || $l); }
   else {

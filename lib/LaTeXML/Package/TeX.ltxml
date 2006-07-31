@@ -73,12 +73,14 @@ DefParameterType('MoveableBox', sub{
 
 DefParameterType('BalancedParen', sub {
   my ($gullet) = @_;
-  my $tok = $gullet->readToken;
+  my $tok = $gullet->readXToken;
   if (ref $tok && $tok->toString eq '(') {
     $gullet->readUntil(T_OTHER(')'));
   } else {
     $gullet->unread($tok) if ref $tok;
-    undef; }});
+    undef; }},
+   reversion=> sub {
+     (T_OTHER('('), $_[0]->revert, T_OTHER(')')); });
 
 # In addition to the standard TeX Dimension, there are various LaTeX constructs
 # (particularly, the LaTeX picture environment, and the various pstricks packages)
@@ -539,6 +541,7 @@ DefExpandable('\read Number SkipKeyword:to Token',sub {
 
 our %font_family=(cmr=>{family=>'serif'},      cmss=>{family=>'sansserif'},
 		  cmtt=>{family=>'typewriter'},cmvtt=>{family=>'typewriter'},
+		  cmti=>{family=>'typewriter', shape=>'italic'},
 		  cmfib=>{family=>'serif'},    cmfr=>{family=>'serif'},
 		  cmdh=>{family=>'serif'},     cm=>{family=>'serif'},
 		  ptm=>{family=>'serif'},      ppl=>{family=>'serif'},
@@ -561,6 +564,8 @@ our %font_family=(cmr=>{family=>'serif'},      cmss=>{family=>'sansserif'},
 		  euf=>{family=>'fraktur'},    euex=>{family=>'symbol'},
 		  # The following are actually math fonts.
 		  ccm=>{family=>'serif', shape=>'italic'},
+		  cmex=>{family=>'symbol'}, # Not really symbol, but...
+		  cmsy=>{family=>'symbol'},
 		  ccitt=>{family=>'typewriter', shape=>'italic'},
 		  cmbrm=>{family=>'sansserif', shape=>'italic'},
 		  futm=>{family=>'serif', shape=>'italic'},
@@ -586,12 +591,15 @@ our @font_size_map=(0.60=>'tiny',   0.75=>'script', 0.85=>'footnote',0.95=>'smal
 		    2.25=>'huge',   1000.0=>'Huge');
 sub abstract_font_size {
   my($size)=@_;
-  my $scaled = $size/10.0;	# ASSUMED nominal font 10pt!!! Set from doc!!!
-  my @map = @font_size_map;
-  while(@map){
-    return shift(@map) if($scaled <= shift(@map));
-    shift(@map); }
-  'Huge'; }
+  if(defined $size){
+    my $scaled = $size/10.0;	# ASSUMED nominal font 10pt!!! Set from doc!!!
+    my @map = @font_size_map;
+    while(@map){
+      return shift(@map) if($scaled <= shift(@map));
+      shift(@map); }
+    'Huge'; }
+  else {
+    'normal'; }}
 
 # Need to handle "at" too!!!
 DefPrimitive('\font Token SkipMatch:=', sub {
@@ -620,7 +628,7 @@ DefPrimitive('\font Token SkipMatch:=', sub {
     $size *= ($gullet->readNumber->valueOf/1000); }
   $props{size}  = abstract_font_size($size);
   $gullet->skipSpaces;
-  print STDERR "Font $name == ".join(', ',map("$_=>$props{$_}",sort keys %props))."\n";
+##  print STDERR "Font $name == ".join(', ',map("$_=>$props{$_}",sort keys %props))."\n";
   DefConstructor($cs,'',font=>{%props});
 
 });
@@ -1018,6 +1026,10 @@ sub after_alignment {
 
 # TODO: This needs implementation!!! See Chap 22.
 # \halign<box specification>{<alignment material>}
+DefConstructor('\cr', "\n"); # default value, that should be redefined
+
+DefMacro('\crcr', '\cr');
+DefPrimitive('\noalign', undef);
 
 #----------------------------------------------------------------------
 DefConstructor('\indent', "");
@@ -1215,10 +1227,12 @@ sub replace_node {
       $parent->insertAfter($n,$new);
       $new = $n; }}}
 
+Let('\vcenter', '\vbox');
+
 # May need further work to integrate; probably needs to be displayed,
 # and should be added as refnum attribute to some container.
-DefPrimitive('\eqno BalancedParen', undef);
-DefPrimitive('\leqno BalancedParen', undef);
+DefConstructor('\eqno BalancedParen',  "^ refnum='#1'");
+DefConstructor('\leqno BalancedParen', "^ refnum='#1'");
 
 #======================================================================
 # Scripts are a bit of a strange beast, with respect to when the arguments
@@ -1469,28 +1483,6 @@ DefConstructor('\abovewithdelims Token Token Dimension',
 		  $whatsit->getProperty('bottom')->revert); });
 
 #======================================================================
-# Old style font styles.
-# The trick is to create an empty Whatsit preserved till assimilation (for reversion'ing)
-# but to change the current font used in boxes.
-Tag('ltx:text',autoOpen=>1,autoClose=>1);
-
-DefConstructor('\rm', '',  font=>{family=>'serif'});
-DefConstructor('\sf', '',  font=>{family=>'sansserif'});
-DefConstructor('\bf',  '', font=>{series=>'bold'});
-DefConstructor('\it',  '', font=>{shape=>'italic'});
-DefConstructor('\tt',  '', font=>{family=>'typewriter'});
-DefConstructor('\sl',  '', font=>{shape=>'slanted'});# No effect in math ?
-DefConstructor('\sc',  '', font=>{shape=>'smallcaps'});# No effect in math ?
-DefConstructor('\tiny',          '', font=>{size=>'tiny'});
-DefConstructor('\scriptsize',    '', font=>{size=>'script'});
-DefConstructor('\footnotesize',  '', font=>{size=>'footnote'});
-DefConstructor('\small',         '', font=>{size=>'small'});
-DefConstructor('\normalsize',    '', font=>{size=>'normal'});
-DefConstructor('\large',         '', font=>{size=>'large'});
-DefConstructor('\Large',         '', font=>{size=>'Large'});
-DefConstructor('\LARGE',         '', font=>{size=>'LARGE'});
-DefConstructor('\huge',          '', font=>{size=>'huge'});
-DefConstructor('\Huge',          '', font=>{size=>'Huge'});
 DefConstructor('\cal', '', requireMath=>1, font=>{family=>'caligraphic'});
 
 DefConstructor('\@end@emph','</ltx:emph>');
@@ -1680,12 +1672,55 @@ DefExpandable('\magstep{}', sub { Explode($mags[$_[1]->toString]);});
 #======================================================================
 # TeX Book, Appendix B, p. 350
 
-# Font stuff ??????
+# Font stuff ...
+RawTeX('
+ \font\tenrm=cmr10
+ \font\sevenrm=cmr7
+ \font\fiverm=cmr5
+ \font\teni=cmmi10
+ \font\seveni=cmmi7
+ \font\fivei=cmmi7
+ \font\tensy=cmsy10
+ \font\sevensy=cmsy7
+ \font\fivesy=cmsy5
+ \font\tenex=cmex10
+ \font\tenbf=cmbx10
+ \font\sevenbf=cmbx7
+ \font\fivebf=cmbx5
+ \font\tensl=cmsl10
+ \font\tentt=cmtt10
+ \font\tenit=cmti10
+ ');
+
 
 #======================================================================
 # TeX Book, Appendix B, p. 351
 
-# More Font stuff ??????
+# Old style font styles.
+# The trick is to create an empty Whatsit preserved till assimilation (for reversion'ing)
+# but to change the current font used in boxes.
+# (some of these were defined on different pages? or even latex...)
+Tag('ltx:text',autoOpen=>1,autoClose=>1);
+
+DefConstructor('\rm', '',  font=>{family=>'serif'});
+DefConstructor('\sf', '',  font=>{family=>'sansserif'});
+DefConstructor('\bf',  '', font=>{series=>'bold'});
+DefConstructor('\it',  '', font=>{shape=>'italic'});
+DefConstructor('\tt',  '', font=>{family=>'typewriter'});
+DefConstructor('\sl',  '', font=>{shape=>'slanted'});# No effect in math ?
+DefConstructor('\sc',  '', font=>{shape=>'smallcaps'});# No effect in math ?
+DefConstructor('\tiny',          '', font=>{size=>'tiny'});
+DefConstructor('\scriptsize',    '', font=>{size=>'script'});
+DefConstructor('\footnotesize',  '', font=>{size=>'footnote'});
+DefConstructor('\small',         '', font=>{size=>'small'});
+DefConstructor('\normalsize',    '', font=>{size=>'normal'});
+DefConstructor('\large',         '', font=>{size=>'large'});
+DefConstructor('\Large',         '', font=>{size=>'Large'});
+DefConstructor('\LARGE',         '', font=>{size=>'LARGE'});
+DefConstructor('\huge',          '', font=>{size=>'huge'});
+DefConstructor('\Huge',          '', font=>{size=>'Huge'});
+
+DefConstructor('\mit',       '',   requireMath=>1, font=>{family=>'italic'});
 
 DefPrimitive('\frenchspacing', undef);
 DefPrimitive('\nonfrenchspacing',undef);
@@ -1763,7 +1798,6 @@ DefConstructor('\centerline{}',"<ltx:centering>#1</ltx:centering>");
 DefMacro('\llap{}','\hbox{#1}');
 DefMacro('\rlap{}','\hbox{#1}');
 DefMacro('\m@th','\mathsurround=0pt ');
-Let('\underbar','\underline');	# Will anyone notice?
 
 # \strutbox
 DefMacro('\strut','');
@@ -1774,6 +1808,9 @@ DefMacro('\strut','');
 # TODO: Not yet done!!
 # \ialign, and tabbing stuff!!!
 
+DefMacro('\settabs', undef);
+DefPrimitive('\ialign', undef);
+
 #======================================================================
 # TeX Book, Appendix B. p. 355
 
@@ -1782,7 +1819,8 @@ DefPrimitive('\hang',undef);
 # TODO: \item, \itemitem not done!
 # This could probably be adopted from LaTeX, if the <itemize> could auto-open
 # and close!
-# DefPrimitive('\item',undef);
+DefConstructor('\item{}','#1');
+DefConstructor('\itemitem{}','#1');
 
 DefMacro('\textindent{}','#1');
 
@@ -1800,8 +1838,6 @@ DefConstructor('\beginsection{}',
 
 DefPrimitive('\raggedright',undef);
 DefPrimitive('\ttraggedright',undef);
-DefPrimitive('\raggedbottom',undef);
-DefPrimitive('\normalbottom',undef);
 DefPrimitive('\leavevmode',undef);
 
 #----------------------------------------------------------------------
@@ -1862,15 +1898,22 @@ our %accents
      # I doubt that latter covers multiple chars...?
      #		'\bar'=>"\x{0304}", # COMBINING MACRON or is this the longer overbar?
 		);
-foreach my $accent (keys %accents){
+
+# Defines an accent command using a combining char that follows the
+# 1st char of the argument.  In cases where there is no argument, $standalonechar is used.
+sub DefAccent {
+  my ($accent, $combiningchar, $standalonechar) = @_;
   DefConstructor($accent."{}", sub {
     my($document,$letter,%props)=@_;
     if(my @letters = map(($_ eq '\i' ? 'i':$_),map(ToString($_),$letter->unlist))){
       # Put the accent AFTER the first char(?)
-      $document->openText(NFC($letters[0].$accents{$accent}->[0].join('',@letters[1..$#letters])),
-			   $letter->getFont);}
+      $document->openText(NFC($letters[0].$combiningchar.join('',@letters[1..$#letters])),
+			  $letter->getFont);}
     else {			# Empty argument???
-      $document->openText($accents{$accent}->[1],$props{font}); }} ); }
+       $document->openText($standalonechar,$props{font}); }} ); }
+
+foreach my $accent (keys %accents) {
+  DefAccent($accent, @{$accents{$accent}}); }
 
 #======================================================================
 # TeX Book, Appendix B. p. 357
@@ -2278,6 +2321,8 @@ DefMath('\math@overleftarrow{}', "\x{2190}", operator_role=>'OVERACCENT',
 	name=>'overleftarrow', alias=>'\overleftarrow');
 
 DefMacro('\underline{}',      '\ifmmode\math@underline{#1}\else\text@underline{#1}\fi');
+Let('\underbar','\underline');	# Will anyone notice?
+
 DefMacro('\overrightarrow{}', '\ifmmode\math@overrightarrow{#1}\else$\math@overrightarrow{#1}$\fi');
 DefMacro('\overleftarrow{}',  '\ifmmode\math@overleftarrow{#1}\else$\math@overleftarrow{#1}$\fi');
 
@@ -2532,6 +2577,9 @@ DefMath('\tanh',   "tanh", role=>'TRIGFUNCTION', meaning=>'tanh');
 DefMath('\pmod{}', '(\textrm{mod} #1)', role=>'MODIFIER');
 DefMath('\bmod',   'mod', role=>'MODIFIEROP');
 
+#======================================================================
+# TeX Book, Appendix B. p. 362
+
 DefConstructor('\matrix{}',
 	       sub { my($document,$body,%props)=@_;
 		     my $n=$props{n_columns};
@@ -2586,6 +2634,11 @@ DefConstructor('\cases{}',
 	       beforeDigest=>\&before_cases,
 	       afterDigest=>\&after_cases);
 
+DefPrimitive('\openup Dimension',undef);
+
+# What should this do? (needs to work with alignments..)
+DefMacro('\displaylines{}','#1');
+
 DefConstructor('\eqalign{}',
 	       sub { my($document,$body,%props)=@_;
 		     alignment($document,$body,parseTabularPattern('rl'),0,
@@ -2605,6 +2658,51 @@ DefConstructor('\leqalignno{}',
 			       name=>'eqalign'); },
 	       beforeDigest=>\&before_alignment,
 	       afterDigest=>\&after_alignment);
+
+DefRegister('\pageno'=>Number(0));
+DefRegister('\headline'=>Tokens());
+DefRegister('\footline'=>Tokens());
+DefExpandable('\folio', sub {
+  Explode(LookupValue($_[1]->toString)->valueOf); });
+
+DefPrimitive('\nopagenumber',undef);
+DefMacro('\advancepageno','\advance\pageno1\relax');
+
+#======================================================================
+# TeX Book, Appendix B. p. 363
+
+DefPrimitive('\raggedbottom',undef);
+DefPrimitive('\normalbottom',undef);
+
+# if the mark is not simple, we add it to the content of the note
+# otherwise, to the attribute.
+DefConstructor('\footnote{}{}',
+             "<ltx:note class='foot' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
+             afterDigest=>sub {
+               my ($stomach, $whatsit) = @_;
+               my $mark = $whatsit->getArg(1);
+               my $change = 0;
+               foreach my $token($mark->revert) {
+                 unless ($token->getCatcode == CC_LETTER || $token->getCatcode == CC_SPACE ||
+                         $token->getCatcode == CC_OTHER) {
+                   $change = 1; last; }}
+               $whatsit->setProperty(($change ? 'prenote' : 'mark')=>$mark);
+               return; });
+DefPrimitive('\footstrut', undef);
+DefRegister('\footins'=>Dimension(0));
+
+DefPrimitive('\topinsert',undef);
+DefPrimitive('\midinsert',undef);
+DefPrimitive('\pageinsert',undef);
+# \topins ?
+
+#======================================================================
+# TeX Book, Appendix B. p. 364
+
+# Let's hope nobody is messing with the output routine...
+
+DefPrimitive('\footnoterule',undef);
+DefPrimitive('\tracingall',undef);
 
 #======================================================================
 # End of TeX Book definitions.
@@ -2708,11 +2806,9 @@ sub loadLaTeXClass {
   my($stomach,$class,@options)=@_;
   AssignValue(inPreamble=>1);	# \begin{document} will clear this.
   $stomach->getGullet->input('LaTeX',['ltxml'],options=>[@options]);
-  if(my $file = pathname_find($class,paths=>LookupValue('SEARCHPATHS'),
-			      types=>['ltxml'], installation_subdir=>'Package')){
+  if(my $file = FindFile($class,'ltxml')){
     $stomach->getGullet->input($class,['ltxml']); }
-  elsif($file = pathname_find($class,paths=>LookupValue('SEARCHPATHS'),
-			      types=>['cls'])){
+  elsif($file = FindFile($class,'cls')){
     my $msg = "IGNORING class file $file: using article instead";
     NoteBegin($msg); 
     $stomach->getGullet->input('article',['ltxml']);
@@ -2739,9 +2835,7 @@ DefConstructor('\documentstyle[]{}[]',
     loadLaTeXClass($stomach,$whatsit->getArg(2)->toString,@options);
     # For documentstyle, some options mean to load styles!
     foreach my $option(@options) {
-      if(my $file = pathname_find($option,paths=>LookupValue('SEARCHPATHS'),
-				  types=>['ltxml','sty'],
-				  installation_subdir=>'Package')){
+      if(my $file = FindFile($option,['ltxml','sty'])){
 	$stomach->getGullet->input($file); }}
     return;});
 
