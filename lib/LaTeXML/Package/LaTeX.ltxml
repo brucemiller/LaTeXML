@@ -1063,7 +1063,7 @@ DefEnvironment('{table*}[]',
 	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>#body</ltx:table>",
 	       properties=> sub { refStepCounter('table')} );
 
-
+DefPrimitive('\flushbottom',undef);
 DefPrimitive('\suppressfloats[]', undef);
 
 NewCounter('topnumber');
