@@ -32,6 +32,8 @@ use LaTeXML::Util::KeyVal;
 ##  Parameter type definitions
 ##############################################################
 
+DefParameterType('Float',     sub{$_[0]->readFloat; });
+
 sub ReadPSDimension {
   my($gullet)=@_;
   my $scale = $_[0] || LookupValue('\psunit');
@@ -70,7 +72,7 @@ sub ReadOptionalBracketed {
     if(!$itemreader){ Error("Cannot find reader for optional curly-bracketed argument from $itemtype"); }
     $gullet->readToken; $gullet->skipSpaces;
     my $item = &$itemreader($gullet);
-    $gulet->skipSpaces;
+    $gullet->skipSpaces;
     $gullet->readToken if $gullet->ifNext(T_END);
     $item; }
   else { return; }}

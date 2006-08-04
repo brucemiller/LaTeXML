@@ -210,7 +210,7 @@ DefPSConstructor('\pcline', 'PSCoord PSCoord',
 DefPSConstructor('\ncLine', '{} {}',
 		 "<ltx:line $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
 		 attributes=>[qw(fill linecolor linewidth dash showpoints)],
-		 proeperties=>{ points=>sub { nodeConnection(getANode($_[3]), getBNode($_[4])); }});
+		 properties=>{ points=>sub { nodeConnection(getANode($_[3]), getBNode($_[4])); }});
 
 sub curvePoints {
   my ($A, $B) = @_;

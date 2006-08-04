@@ -343,7 +343,8 @@ DefRegister('\baselinestretch'   => Dimension(0));
 DefMacro('\title{}', '\@add@frontmatter{ltx:title}{#1}');
 DefMacro('\date{}', '\@add@frontmatter{ltx:date}[role=creation]{#1}');
 
-DefConstructor('\person@thanks{}', "^ <ltx:contact role='thanks'>#1</ltx:contact>");
+DefConstructor('\person@thanks{}', "^ <ltx:contact role='thanks'>#1</ltx:contact>",
+	       alias=>'\thanks');
 DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
 	      beforeDigest=>sub { Let('\thanks','\person@thanks'); },
 	      bounded=>1);

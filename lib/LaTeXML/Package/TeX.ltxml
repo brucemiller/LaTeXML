@@ -333,7 +333,7 @@ DefExpandable('\the Variable',sub {
 #======================================================================
 # Integer registers; TeXBook p. 272-273
 our %iparms= (pretolerance=>100, tolerance=>200, hbadness=>1000, vbadness=>1000,
-	      linepenalty=>10, hypenpenalty=>50, exhyphenpenalty=>50,
+	      linepenalty=>10, hyphenpenalty=>50, exhyphenpenalty=>50,
 	      binoppenalty=>700, relpenalty=>500,
 	      clubpenalty=>150, widowpenalty=>150, displaywidowpenalty=>50,
 	      brokenpenalty=>100, predisplaypenalty=>10000,
@@ -747,6 +747,8 @@ DefRegister('\catcode Number',Number(0),
 # \sfcode
 # \delcode
 DefRegister('\hyphenchar{}',Number(ord('-')));
+DefRegister('\skewchar{}',Number(0)); # no idea what the default is here
+
 # \parshape !?!??
 #DefRegister('\inputlineno',Number(0),
 #            readonly=>1,
@@ -1075,6 +1077,7 @@ DefPrimitive('\end',sub { $_[0]->getGullet->flush; return; });
 #    | \accent | \discretionary | \- | \<space> | $
 
 DefPrimitive('\hskip Glue',undef);
+DefPrimitive('\mskip MuGlue', undef);
 DefPrimitive('\hss',undef);
 DefConstructor('\hfil',"?#isMath(<ltx:XMHint name='hfil'/>)( )",
 	      properties=>{isSpace=>1});
@@ -1618,6 +1621,7 @@ DefPrimitive('\newcount  Token',sub { DefRegister($_[1]->toString=>Number(0)); }
 DefPrimitive('\newdimen  Token',sub { DefRegister($_[1]->toString=>Dimension(0)); });
 DefPrimitive('\newskip   Token',sub { DefRegister($_[1]->toString=>Glue(0)); });
 DefPrimitive('\newmuskip Token',sub { DefRegister($_[1]->toString=>MuGlue(0)); });
+DefPrimitive('\newbox    Token',sub { DefRegister($_[1]->toString=>Tokens()); });
 DefPrimitive('\newhelp Token {}',sub { AssignValue($_[1]->toString=>$_[2]); });
 DefPrimitive('\newtoks   Token',sub { DefRegister($_[1]->toString=>Tokens(0)); });
 DefPrimitive('\newread Token',  sub { DefRegister($_[1]->toString=>Number(0)); });
@@ -1736,6 +1740,8 @@ DefMacro('\null','\hbox{}');
 Let('\bgroup',T_BEGIN);
 Let('\egroup',T_END);
 
+DefPrimitive('\endline', undef);
+
 #======================================================================
 # TeX Book, Appendix B, p. 352
 
@@ -1790,7 +1796,7 @@ DefMacro('\supereject','\par');
 DefPrimitive('\removelastskip',undef);
 DefMacro('\smallbreak','\par');
 DefMacro('\medbreak','\par');
-DefMacro('\bibbreak','\par');
+DefMacro('\bigbreak','\par');
 
 DefMacro('\line','\hbox to \hsize');
 DefMacro('\leftline{}','\line{#1\hss}');
@@ -1802,6 +1808,7 @@ DefMacro('\m@th','\mathsurround=0pt ');
 
 # \strutbox
 DefMacro('\strut','');
+DefRegister('\strutbox'=>Tokens());
 
 #======================================================================
 # TeX Book, Appendix B. p. 354
@@ -1915,6 +1922,7 @@ DefConstructor('\beginsection{}',
 # TeX Book, Appendix B. p. 356
 
 DefPrimitive('\raggedright',undef);
+DefPrimitive('\raggedleft',undef);  # this is actually LaTeX
 DefPrimitive('\ttraggedright',undef);
 DefPrimitive('\leavevmode',undef);
 
@@ -2743,7 +2751,7 @@ DefRegister('\footline'=>Tokens());
 DefExpandable('\folio', sub {
   Explode(LookupValue($_[1]->toString)->valueOf); });
 
-DefPrimitive('\nopagenumber',undef);
+DefPrimitive('\nopagenumbers',undef);
 DefMacro('\advancepageno','\advance\pageno1\relax');
 
 #======================================================================
@@ -2772,6 +2780,7 @@ DefRegister('\footins'=>Dimension(0));
 DefPrimitive('\topinsert',undef);
 DefPrimitive('\midinsert',undef);
 DefPrimitive('\pageinsert',undef);
+DefPrimitive('\endinsert',undef);
 # \topins ?
 
 #======================================================================
