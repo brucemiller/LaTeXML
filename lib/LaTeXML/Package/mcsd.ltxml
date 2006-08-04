@@ -20,7 +20,7 @@ use LaTeXML::Package;
 DefConstructor('\mcsdpage{}{}{}{}',
 	       "<ltx:title>#2</ltx:title>"
 	       ."<ltx:author>#3</ltx:author>"
-	       ."<ltx:creationdate>#4</ltx:creationdate>");
+	       ."<ltx:date role='creation'>#4</ltx:date>");
 # and what to do with the NISTIR # ? Add it to the document?
 #**********************************************************************
 1;

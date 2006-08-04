@@ -43,6 +43,7 @@ DefPrimitive('\thischapter{}', sub {
   AssignValue(ChapterLabel=>"ch:$ch",'global');  
   DocType("ltx:chapter","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
 	  '#default'=>"http://dlmf.nist.gov/LaTeXML");
+  Tag('ltx:chapter', afterOpen=>\&insertFrontMatter);
 });
 
 DefEnvironment('{document}',
@@ -107,38 +108,54 @@ DefMacro('\theenumiv',          '\Alph{enumiv}');
 
 # NOTE: Need to redo author & affiliation to handle multiple authors.
 # Need to handle token lists ??
+## DefPrimitive('\status{}', sub{ AssignValue(chapter_status=>$_[1]); });
+## 
+## DefMacro('\@authorinfo','');
+## # Let \author & \affiliation simply collect the constructors, in order.
+## DefMacro('\author{}', '\xdef\@authorinfo{\@authorinfo\fmt@author{#1}}');
+## DefMacro('\affiliation{}', '\xdef\@authorinfo{\@authorinfo\fmt@affiliation{#1}}');
+## 
+## DefConstructor('\fmt@affiliation{}',"<ltx:affiliation>#1</ltx:affiliation>");
+## 
+## DefConstructor('\email{}', "<ltx:email>#1</ltx:email>");
+## DefConstructor('\addCopyright{}{}','');#"<ltx:copyright year='#1'>#2</ltx:copyright>");
+## 
+## DefMacro('\@acknowledgements','');
+## DefPrimitive('\acknowledgements{}', sub { DefMacro('\@acknowledgements',$_[1])});
+## DefConstructor('\fmt@acknowledgements{}', "<ltx:acknowledgements>#1</ltx:acknowledgements>");
+
+## Tag('ltx:gallery', autoClose=>1, autoOpen=>1);
+## DefMacro('\@galleryitems','');
+## DefMacro('\galleryitem Semiverbatim Semiverbatim',
+## 	 '\xdef\@galleryitems{\@galleryitems'
+## 	 .'\fmt@galleryitem{\ifx.#1.\else sb:\thechapter.#1\fi}{#2}}');
+
+## DefConstructor('\fmt@galleryitem Semiverbatim Semiverbatim',
+## 	       "<ltx:galleryitem labelref='#1' graphic='#2'/>");
+## 
+## DefMacro('\maketitle', 
+## 	 '\fmt@title{\@title}\@authorinfo'
+##	 .'\fmt@date{\@date}'
+##         .'\fmt@acknowledgements{\@acknowledgements}'
+##	 .'\@galleryitems');
+
+
 DefPrimitive('\status{}', sub{ AssignValue(chapter_status=>$_[1]); });
 
-DefMacro('\@authorinfo','');
-# Let \author & \affiliation simply collect the constructors, in order.
-DefMacro('\author{}', '\xdef\@authorinfo{\@authorinfo\fmt@author{#1}}');
-DefMacro('\affiliation{}', '\xdef\@authorinfo{\@authorinfo\fmt@affiliation{#1}}');
+DefConstructor('\@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\affiliation{}','\@add@to@frontmatter{ltx:creator}{\@affiliation{#1}}');
 
-DefConstructor('\fmt@affiliation{}',"<ltx:affiliation>#1</ltx:affiliation>");
+DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
 
-DefConstructor('\email{}', "<ltx:email>#1</ltx:email>");
 DefConstructor('\addCopyright{}{}','');#"<ltx:copyright year='#1'>#2</ltx:copyright>");
 
-DefMacro('\@acknowledgements','');
-DefPrimitive('\acknowledgements{}', sub { DefMacro('\@acknowledgements',$_[1])});
-DefConstructor('\fmt@acknowledgements{}', "<ltx:acknowledgements>#1</ltx:acknowledgements>");
+DefMacro('\acknowledgements{}', '\@add@frontmatter{ltx:acknowledgements}{#1}');
 
-Tag('ltx:gallery', autoClose=>1, autoOpen=>1);
-DefMacro('\@galleryitems','');
-DefMacro('\galleryitem Semiverbatim Semiverbatim',
-	 '\xdef\@galleryitems{\@galleryitems'
-	 .'\fmt@galleryitem{\ifx.#1.\else sb:\thechapter.#1\fi}{#2}}');
-
-DefConstructor('\fmt@galleryitem Semiverbatim Semiverbatim',
+DefConstructor('\@galleryitem Semiverbatim Semiverbatim',
 	       "<ltx:galleryitem labelref='#1' graphic='#2'/>");
-
-
-DefMacro('\maketitle', 
-	 '\fmt@title{\@title}\@authorinfo'
-	 .'\fmt@date{\@date}'
-         .'\fmt@acknowledgements{\@acknowledgements}'
-	 .'\@galleryitems');
-
+DefMacro('\galleryitem Semiverbatim Semiverbatim',
+	 '\@add@to@frontmatter{ltx:gallery}{\@galleryitem{\ifx.#1.\else sb:\thechapter.#1\fi}{#2}}');
 #**********************************************************************
 # More environments.
 DefEnvironment('{figuregroup}', "<ltx:figuregroup>#body</ltx:figuregroup>");
@@ -160,7 +177,7 @@ DefConstructor('\onlyelectronic{}',"#1");
 DefEnvironment('{sidebar}{}{}{}',
 	       "<ltx:sidebar name='#1' label='#label' id='#id'>"
 	       . "<ltx:title>#2</ltx:title>"
-	       . "<ltx:author>#3</ltx:author>"
+	       . "<ltx:creator role='author'><ltx:personname>#3</ltx:personname></ltx:creator>"
 	       . "#body"
 	       ."</ltx:sidebar>",
 	       beforeDigest=> sub { 

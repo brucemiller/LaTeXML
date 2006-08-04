@@ -205,14 +205,15 @@ map(Tag("ltx:$_", autoClose=>1),
 
 DefExpandable('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
   my($gullet,$type,$level,$ignore3,$ignore4,$ignore5,$ignore6,$flag)=@_;
+  my $ctr = LookupValue('counter_for_'.ToString($type)) || ToString($type);
   if($flag){
-    refStepID(ToString($type));
+    refStepID($ctr);
     (T_CS('\\@@section'),
      T_BEGIN,$type->unlist,T_END,
      T_OTHER('['),T_OTHER(']'),
      T_OTHER('['),T_CS('\@currentID'),T_OTHER(']')); }
   else {
-    refStepCounter(ToString($type));
+    refStepCounter($ctr);
     (T_CS('\\@@section'),
      T_BEGIN,$type->unlist,T_END,
      T_OTHER('['),T_CS('\@currentlabel'),T_OTHER(']'),
@@ -338,28 +339,38 @@ DefRegister('\baselinestretch'   => Dimension(0));
 # C.5.4 The Title Page and Abstract
 #======================================================================
 
-DefMacro('\@title','');
-DefMacro('\@author','');
-DefMacro('\@date','\today');
-DefPrimitive('\title{}',    sub { DefMacro('\@title',$_[1])});
-DefPrimitive('\author{}',   sub { DefMacro('\@author',$_[1])});
-DefPrimitive('\date{}',     sub { DefMacro('\@date',$_[1])});
-DefConstructor('\thanks{}', "<ltx:thanks>#1</ltx:thanks>");
+# See frontmatter support in TeX.ltxml
+DefMacro('\title{}', '\@add@frontmatter{ltx:title}{#1}');
+DefMacro('\date{}', '\@add@frontmatter{ltx:date}[role=creation]{#1}');
 
-# Hmm, this should ideally split authors into multiple author lists?
+DefConstructor('\person@thanks{}', "^ <ltx:contact role='thanks'>#1</ltx:contact>");
+DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
+	      beforeDigest=>sub { Let('\thanks','\person@thanks'); },
+	      bounded=>1);
+
 DefConstructor('\and', " and ");
+sub andSplit {
+  my($cs,$tokens)=@_;
+  my @items = ();
+  my @toks=();
+  foreach my $t ($tokens->unlist){
+    if($t->equals(T_CS('\and'))){
+      push(@items,[@toks]); @toks=();}
+    else {
+      push(@toks,$t); }}
+  map( ($cs,T_BEGIN,@$_,T_END), @items,[@toks]); }
 
-# Introduce secret control sequences to format the title, date, etc.
-# These will be used by \maketitle when the time comes.
-DefConstructor('\fmt@title{}', "<ltx:title>#1</ltx:title>");
-DefConstructor('\fmt@author{}', "<ltx:author>#1</ltx:author>");
-# Would be nice to put the ISO date as an attribute!
-DefConstructor('\fmt@date{}', "<ltx:creationdate>#1</ltx:creationdate>");
-# This needs to be a macro so that \@author, etal, get expanded.
-DefMacro('\maketitle', '\fmt@title{\@title}\fmt@author{\@author}\fmt@date{\@date}');
+DefMacro('\@author{}', '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
+DefExpandable('\author{}', sub { andSplit(T_CS('\@author'),$_[1]); });
+
+DefPrimitive('\maketitle', undef); # Doesn't matter.
+
+DefConstructor('\thanks{}', "<ltx:note class='thanks'>#1</ltx:note>");
 
 DefEnvironment('{abstract}','<ltx:abstract>#body</ltx:abstract>');
 # Presumably you'll do whatever you need to specify author, etc ???
+# Hmm, should this even redefine author, title, etc so that they
+# are simply output?
 DefEnvironment('{titlepage}','#body');
 
 #**********************************************************************
@@ -1947,7 +1958,8 @@ DefMacro('\@ifnextchar Token {}{}', sub {
 DefMacro('\@ifundefined{}{}{}',sub {
   my($gullet,$name,$if,$else)=@_;
   my $cs = T_CS('\\'.ToString($name));
-  (LookupMeaning($cs) ne $cs ? $if->unlist : $else->unlist); });
+  my $meaning = LookupMeaning($cs);
+  (!(defined $meaning) || ($meaning ne $cs) ? $if->unlist : $else->unlist); });
 
 DefMacro('\IfFileExists{}{}{}', sub{
   my($gullet,$file,$if,$else)=@_;

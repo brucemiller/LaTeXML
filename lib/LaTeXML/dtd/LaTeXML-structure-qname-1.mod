@@ -29,15 +29,18 @@
 
 <!ENTITY % LaTeXML.title.qname          "%LaTeXML.pfx;title">
 <!ENTITY % LaTeXML.toctitle.qname       "%LaTeXML.pfx;toctitle">
-<!ENTITY % LaTeXML.author.qname         "%LaTeXML.pfx;author">
-<!ENTITY % LaTeXML.creationdate.qname   "%LaTeXML.pfx;creationdate">
-<!ENTITY % LaTeXML.thanks.qname         "%LaTeXML.pfx;thanks">
+<!ENTITY % LaTeXML.creator.qname        "%LaTeXML.pfx;creator">
+<!ENTITY % LaTeXML.personname.qname     "%LaTeXML.pfx;personname">
+<!ENTITY % LaTeXML.contact.qname        "%LaTeXML.pfx;contact">
+<!ENTITY % LaTeXML.date.qname           "%LaTeXML.pfx;date">
 <!ENTITY % LaTeXML.abstract.qname       "%LaTeXML.pfx;abstract">
 
 
+<!ENTITY % LaTeXML-structure.Person.class
+	 "%LaTeXML.personname.qname; | %LaTeXML.contact.qname;">
 <!ENTITY % LaTeXML-structure.SectionalFrontMatter.class
-	 "%LaTeXML.title.qname; | %LaTeXML.toctitle.qname; | %LaTeXML.author.qname;">
+	 "%LaTeXML.title.qname; | %LaTeXML.toctitle.qname; | %LaTeXML.creator.qname;">
 <!ENTITY % LaTeXML-structure.FrontMatter.class
-         "| %LaTeXML.creationdate.qname; | %LaTeXML.thanks.qname; | %LaTeXML.abstract.qname;">
+         "| %LaTeXML.date.qname; | %LaTeXML.abstract.qname;">
 <!ENTITY % LaTeXML-structure.BackMatter.class
 	 "%LaTeXML.bibliography.qname; | %LaTeXML.appendix.qname;">

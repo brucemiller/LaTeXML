@@ -17,11 +17,11 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
+use LaTeXML::Util::KeyVal;
 
 #**********************************************************************
 # Load special functions & other required packages.
 RequirePackage('amssymb');
-RequirePackage('keyval');
 
 UnshiftValue(SEARCHPATHS=>"$ENV{HOME}/dlmf/styles/DLMFtex/");
 RequirePackage('DLMFfcns');

@@ -48,12 +48,16 @@ NewCounter('enumi');
 NewCounter('enumii');
 NewCounter('enumiii');
 NewCounter('enumiv');
+NewCounter('enumv');		# A couple of more levels, since we use these for ID's!
+NewCounter('enumvi');
 # Since we don't want enumi (necessarily) to be reset when @itemize is incremented,
 # we've got to manually define the ID macros:
 DefMacro('\theenumi@ID',   '\the@itemize@ID.\@enumi@ID');
 DefMacro('\theenumii@ID',  '\the@itemize@ID.\@enumii@ID');
 DefMacro('\theenumiii@ID', '\the@itemize@ID.\@enumiii@ID');
 DefMacro('\theenumiv@ID',  '\the@itemize@ID.\@enumiv@ID');
+DefMacro('\theenumv@ID',   '\the@itemize@ID.\@enumv@ID');
+DefMacro('\theenumvi@ID',  '\the@itemize@ID.\@enumvi@ID');
 
 DefMacro('\theenumi',           '\arabic{enumi}');
 DefMacro('\theenumii',          '\alph{enumii}');
@@ -61,16 +65,12 @@ DefMacro('\theenumiii',         '\roman{enumiii}');
 DefMacro('\theenumiv',          '\Alph{enumiv}');
 
 Tag('ltx:appendix',autoClose=>1);
+# Actually we should be using section counter
+AssignValue(counter_for_appendix=>'section');
 DefPrimitive('\appendix',sub{
   NewCounter('section', 'document', idprefix=>'A',nested=>['subsection']);
-  Let('\\@@section'=>'\\@@appendix');
+  DefMacro('\section', '\@startsection{appendix}{}{}{}{}{}');
  });
-DefConstructor('\\@@appendix[][][]{}',
-	       "<ltx:appendix ?#1(refnum='#1') id='#2'>"
-	       . "<ltx:title>#4</ltx:title>"
-	       . "?#3(<ltx:toctitle>#3</ltx:toctitle>)",
-	       bounded=>1);
-
 
 #**********************************************************************
 1;

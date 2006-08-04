@@ -16,11 +16,10 @@
 #======================================================================
 package LaTeXML::Package::Pool;
 use LaTeXML::Package;
+use LaTeXML::Util::KeyVal;
 no warnings 'redefine';
 
 DefMacro('\lxDocumentID{}','\def\thedocument@ID{#1}');
-
-RequirePackage('keyval');
 
 # From latexml.sty
 DefConstructor('\URL[] Semiverbatim',"<ltx:a href='#2'>?#1(#1)(#2)</ltx:a>");

@@ -129,14 +129,23 @@
 <!ELEMENT %LaTeXML.toctitle.qname;     %LaTeXML.Inline.model; >
 <!ATTLIST %LaTeXML.toctitle.qname;     %LaTeXML.Common.attrib;>
 
-<!ELEMENT %LaTeXML.author.qname;       %LaTeXML.Inline.model; >
-<!ATTLIST %LaTeXML.author.qname;       %LaTeXML.Common.attrib;>
+<!ELEMENT %LaTeXML.personname.qname;   %LaTeXML.Inline.model; >
+<!ATTLIST %LaTeXML.personname.qname;   %LaTeXML.Common.attrib;>
+<!ELEMENT %LaTeXML.contact.qname;      %LaTeXML.Inline.model; >
+<!ATTLIST %LaTeXML.contact.qname;
+	  %LaTeXML.Common.attrib;
+	  role CDATA #IMPLIED>
 
-<!ELEMENT %LaTeXML.creationdate.qname; %LaTeXML.Inline.model;>
-<!ATTLIST %LaTeXML.creationdate.qname; %LaTeXML.Common.attrib;>
+<!ELEMENT %LaTeXML.creator.qname;       (%LaTeXML.Person.class;)* >
+<!ATTLIST %LaTeXML.creator.qname;
+	  %LaTeXML.Common.attrib;
+	  role CDATA #IMPLIED>
 
-<!ELEMENT %LaTeXML.thanks.qname;       %LaTeXML.Inline.model; >
-<!ATTLIST %LaTeXML.thanks.qname;       %LaTeXML.Common.attrib;>
+<!ELEMENT %LaTeXML.date.qname;         %LaTeXML.Inline.model;>
+<!ATTLIST %LaTeXML.date.qname;
+          %LaTeXML.Common.attrib;
+	  role CDATA #IMPLIED>
+
 <!ELEMENT %LaTeXML.abstract.qname;    (%LaTeXML.Para.mix;)*>
 <!ATTLIST %LaTeXML.abstract.qname;     %LaTeXML.Common.attrib;>
 

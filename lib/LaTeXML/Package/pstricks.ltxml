@@ -26,7 +26,7 @@ use LaTeXML::Package;
 use LaTeXML::Util::Color;
 use LaTeXML::Util::Transform;
 use LaTeXML::Util::Geometry;
-RequirePackage('keyval');
+use LaTeXML::Util::KeyVal;
 
 ##############################################################
 ##  Parameter type definitions

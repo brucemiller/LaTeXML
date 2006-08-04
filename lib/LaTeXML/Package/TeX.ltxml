@@ -16,6 +16,7 @@ use LaTeXML::Package;
 use Unicode::Normalize;
 use XML::LibXML;
 use LaTeXML::Util::Alignment;
+use LaTeXML::Util::KeyVal;
 no warnings 'redefine';
 
 RegisterNamespace(ltx=>"http://dlmf.nist.gov/LaTeXML");
@@ -1827,6 +1828,83 @@ DefMacro('\textindent{}','#1');
 # Conceivably this should enclose the next para in a block?
 # Or add attribute to it? Or...
 DefPrimitive('\narrower',undef);
+
+#----------------------------------------------------------------------
+# General support for Front Matter.
+# Not (yet) used by TeX (finish plain?)
+# But provides support for LaTeX (and other formats?) for handling frontmatter.
+#
+# The idea is to accumulate any frontmatter material (title, author,...)
+# rather than directly drop it into the digested stream.
+# When we begin constructing the document, all accumulated material is output.
+# See LaTeX.ltxml for usage.
+
+# Note: could be circumstances where you'd want modular frontmatter?
+# (ie. frontmatter for each sectional unit)
+AssignValue(frontmatter=>{},'global');
+
+# Add a new frontmatter item that will be enclosed in <$tag %attr>...</$tag>
+# The content is the result of digesting $tokens.
+# \@add@frontmatter{tag}[attributes]{content}
+DefPrimitive('\@add@frontmatter {} OptionalKeyVals {}', sub {
+  my($stomach,$tag,$keys,$tokens)=@_;
+  $tag = ToString($tag);
+  my $attr = ($keys ? {$keys->beDigested($stomach)->getHash} : undef);
+
+  my $frontmatter = LookupValue('frontmatter');
+  my $inpreamble = LookupValue('inPreamble');
+  AssignValue(inPreamble=>0);
+  my $datum = Digest($tokens);
+  AssignValue(inPreamble=>$inpreamble);
+  push(@{$$frontmatter{$tag}},[$tag,$attr,$datum]);
+  return; });
+
+# Append a piece of data to an existing frontmatter item that is contained in <$tag>
+# If $label is given, look for an item which has label=>$label,
+# otherwise, just append to the last item in $tag.
+
+# \@add@to@frontmatter{tag}[label]{content}
+DefPrimitive('\@add@to@frontmatter {} [] {}', sub {
+  my($stomach,$tag,$label,$tokens)=@_;
+  $tag   = ToString($tag);
+  $label = ToString($label) if $label;
+  my $frontmatter = LookupValue('frontmatter');
+
+  my $inpreamble = LookupValue('inPreamble');
+  AssignValue(inPreamble=>0);
+  my $datum = Digest($tokens);
+  AssignValue(inPreamble=>$inpreamble);
+
+  if($label){
+    my $entry;
+    foreach my $item (@{$$frontmatter{$tag} || []}){
+      my($itag,$iattr,@stuff)=@$item;
+      if($label eq ($$iattr{label}||'')){
+	push(@$item,$datum); 
+	return; }}}
+  elsif(my $list = $$frontmatter{$tag}){
+    push(@{$$list[-1]},$datum); 
+    return;}
+  push(@{$$frontmatter{$tag}},[$tag,($label ? {label=>$label} : undef),$datum]);
+  return; });
+
+# This is called by afterOpen (by default on <ltx:document>) to
+# output any frontmatter that was accumulated.
+sub insertFrontMatter {
+  my($document)=@_;
+  my $frontmatter = LookupValue('frontmatter');
+  foreach my $key ('ltx:title','ltx:toctitle','ltx:creator','ltx:date',
+		   grep($_ !~/^(ltx:title|ltx:toctitle|ltx:creator|ltx:date)$/, 
+			keys %$frontmatter)){
+    if(my $list = $$frontmatter{$key}){
+      foreach my $item (@$list){
+	my($tag,$attr,@stuff)=@$item;
+	$document->openElement($tag,($attr ? %$attr : ()));
+	map($document->absorb($_), @stuff);
+	$document->closeElement($tag); }}}
+  return; }
+
+Tag('ltx:document', afterOpen=>\&insertFrontMatter);
 
 DefConstructor('\beginsection{}',
 	       "<ltx:section><ltx:title>#1</ltx:title>");

@@ -44,9 +44,9 @@
 </xsl:template>
 
 <xsl:template name="footer">
-  <xsl:if test="//ltx:creationdate">
+  <xsl:if test="//ltx:date[@role='creation']">
     <div class='footer'>
-      <xsl:value-of select='//ltx:creationdate/node()'/>
+      <xsl:value-of select='//ltx:date/node()'/>
     </div>
   </xsl:if>
 </xsl:template>
@@ -64,7 +64,7 @@
   </div>
 </xsl:template>
 
-<xsl:template match="ltx:author">
+<xsl:template match="ltx:creator[@role='author']">
   <div class='author'>
     <xsl:apply-templates/>
   </div>
@@ -75,7 +75,7 @@
 </xsl:template>
 
 <!-- put in footer -->
-<xsl:template match="ltx:creationdate"/>
+<xsl:template match="ltx:date"/>
 
 <xsl:template match="ltx:abstract">
   <div class='abstract'><h6>Abstract</h6><xsl:apply-templates/></div>

@@ -133,6 +133,12 @@
 	 "%LaTeXML-picture.PictureGroup.attrib;
 	  %LaTeXML-extra.PictureGroup.attrib;">
 
+<!ENTITY % LaTeXML-structure.Person.class "">
+<!ENTITY % LaTeXML-extra.Person.class     "">
+<!ENTITY % LaTeXML.Person.class
+	 "%LaTeXML-structure.Person.class;
+	  %LaTeXML-extra.Person.class;">
+
 <!ENTITY % LaTeXML-structure.SectionalFrontMatter.class "">
 <!ENTITY % LaTeXML-extra.SectionalFrontMatter.class     "">
 <!ENTITY % LaTeXML.SectionalFrontMatter.class

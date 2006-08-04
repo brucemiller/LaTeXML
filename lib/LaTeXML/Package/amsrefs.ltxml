@@ -13,8 +13,8 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
+use LaTeXML::Util::KeyVal;
 
-RequirePackage('keyval');
 #**********************************************************************
 # \bib{key}{type}{keyval pairs}
 

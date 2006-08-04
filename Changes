@@ -1,3 +1,14 @@
+0.5.x  2006-08-03
+     - Changes to how frontmatter is handled, and represented.
+       Frontmatter gets accumulated and added to <document>
+       when it is absorbed, whether or not there's a \maketitle.
+       <author> => <creator role='author'><personname>...
+       <affliation> => <contact role='affiliation'>... inside of <creator>
+       Similarly for <email>
+       This construct gives more flexibility for representing
+       editors, translators, reviewers, etc,
+       And also for various kinds of info about them (address, etc).
+
 0.5.x  2006-07-24
      - Fixed a sneaky bug in \def parameters, and gullet->readMatch
        where TeX collapses multiple spaces! Thanks Ioan!
