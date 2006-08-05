@@ -34,6 +34,8 @@
 <!ENTITY % LaTeXML.contact.qname        "%LaTeXML.pfx;contact">
 <!ENTITY % LaTeXML.date.qname           "%LaTeXML.pfx;date">
 <!ENTITY % LaTeXML.abstract.qname       "%LaTeXML.pfx;abstract">
+<!ENTITY % LaTeXML.acknowledgements.qname "%LaTeXML.pfx;acknowledgements">
+<!ENTITY % LaTeXML.keywords.qname       "%LaTeXML.pfx;keywords">
 
 
 <!ENTITY % LaTeXML-structure.Person.class
@@ -41,6 +43,7 @@
 <!ENTITY % LaTeXML-structure.SectionalFrontMatter.class
 	 "%LaTeXML.title.qname; | %LaTeXML.toctitle.qname; | %LaTeXML.creator.qname;">
 <!ENTITY % LaTeXML-structure.FrontMatter.class
-         "| %LaTeXML.date.qname; | %LaTeXML.abstract.qname;">
+         "| %LaTeXML.date.qname; | %LaTeXML.abstract.qname;
+	  | %LaTeXML.acknowledgements.qname; | %LaTeXML.keywords.qname;">
 <!ENTITY % LaTeXML-structure.BackMatter.class
 	 "%LaTeXML.bibliography.qname; | %LaTeXML.appendix.qname;">

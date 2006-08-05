@@ -137,7 +137,8 @@
 <!ENTITY % LaTeXML-extra.Person.class     "">
 <!ENTITY % LaTeXML.Person.class
 	 "%LaTeXML-structure.Person.class;
-	  %LaTeXML-extra.Person.class;">
+	  %LaTeXML-extra.Person.class;
+	  %LaTeXML.Misc.class;">
 
 <!ENTITY % LaTeXML-structure.SectionalFrontMatter.class "">
 <!ENTITY % LaTeXML-extra.SectionalFrontMatter.class     "">

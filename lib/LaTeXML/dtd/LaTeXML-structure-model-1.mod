@@ -95,3 +95,9 @@
 
 <!ELEMENT %LaTeXML.abstract.qname;    (%LaTeXML.Para.mix;)*>
 <!ATTLIST %LaTeXML.abstract.qname;     %LaTeXML.Common.attrib;>
+
+<!ELEMENT %LaTeXML.acknowledgements.qname; %LaTeXML.Inline.model;>
+<!ATTLIST %LaTeXML.acknowledgements.qname; %LaTeXML.Common.attrib;>
+
+<!ELEMENT %LaTeXML.keywords.qname; %LaTeXML.Inline.model;>
+<!ATTLIST %LaTeXML.keywords.qname; %LaTeXML.Common.attrib;>
