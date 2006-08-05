@@ -120,9 +120,9 @@ sub getNodeQName {
 # It removes the `helper' attributes that store fonts, source box, etc.
 sub finalize {
   my($self)=@_;
-  my $root = $self->getDocument->documentElement;
-  local $LaTeXML::FONT = $self->getNodeFont($root);
-  $self->finalize_rec($root);
+  if(my $root = $self->getDocument->documentElement){
+    local $LaTeXML::FONT = $self->getNodeFont($root);
+    $self->finalize_rec($root); }
   $$self{document}; }
 
 sub XXfinalize_rec {
