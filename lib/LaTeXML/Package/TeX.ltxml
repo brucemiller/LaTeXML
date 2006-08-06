@@ -53,7 +53,7 @@ DefParameterType('Variable', sub {
   ((defined $defn) && $defn->isRegister && !$defn->isReadonly
    ? [$defn,$defn->readArguments($gullet)] : undef); });
 
-DefParameterType('Filename', sub {
+DefParameterType('XUntilSpace', sub {
   my($gullet)=@_;
   my($token,@tokens)=();
   while(($token = $gullet->readXToken()) && ($token->getCatcode != CC_SPACE)){
@@ -289,7 +289,7 @@ DefExpandable('\botmark',        sub { return; });
 DefExpandable('\splitfirstmark', sub { return; });
 DefExpandable('\splitbotmark',   sub { return; });
 
-DefExpandable('\input Filename',sub {
+DefExpandable('\input XUntilSpace',sub {
   my($gullet,$path)=@_;
   $path = $path->toString;
   $path = $1 if $path =~ /^\{(.*)\}$/; # just in case
@@ -357,6 +357,15 @@ foreach my $p (keys %iparms){
    AssignValue('\month'=>Number($mon+1), 'global');
    AssignValue('\year' =>Number(1900+$year), 'global'); 
    AssignValue('\time' =>Number(60*$hour+$min),'global'); }
+
+our @MonthNames=(qw( January February March April May June
+		     July August September October November December));
+
+# Return a string for today's date.
+sub today {
+  $MonthNames[LookupValue('\month')->valueOf-1]
+    ." ".LookupValue('\day')->valueOf
+      .', '.LookupValue('\year')->valueOf; }
 
 # Read-only Integer registers
 our %ro_iparms=(lastpenalty=>0, inputlineno=>0, badness=>0);
@@ -922,8 +931,8 @@ DefPrimitive('\message{}',sub {
 ## I'm thinking we want to mostly ignore the I/O stuff.
 ## Generally, it's used to move info around for multiple passes
 ## of aux, index, etc.
-DefPrimitive('\openin Number SkipMatch:= Filename', undef);
-DefPrimitive('\openout Number SkipMatch:= Filename', undef);
+DefPrimitive('\openin Number SkipMatch:= XUntilSpace', undef);
+DefPrimitive('\openout Number SkipMatch:= XUntilSpace', undef);
 DefPrimitive('\closein Number',undef);
 DefPrimitive('\closeout Number',undef);
 DefPrimitive('\immediate',undef);
@@ -1695,8 +1704,12 @@ RawTeX('
  \font\tensl=cmsl10
  \font\tentt=cmtt10
  \font\tenit=cmti10
+ \newfam\itfam
+ \newfam\slfam
+ \newfam\bffam
+ \newfam\ttfam
  ');
-
+# Note: \newfam in math should be font switching(?)
 
 #======================================================================
 # TeX Book, Appendix B, p. 351
@@ -1849,6 +1862,10 @@ DefPrimitive('\narrower',undef);
 # Note: could be circumstances where you'd want modular frontmatter?
 # (ie. frontmatter for each sectional unit)
 AssignValue(frontmatter=>{},'global');
+
+push(@{ LookupValue('frontmatter')->{date}},
+     ['ltx:date',{role=>'conversion'}, today()])
+  if LookupValue('INCLUDE_COMMENTS');
 
 # Add a new frontmatter item that will be enclosed in <$tag %attr>...</$tag>
 # The content is the result of digesting $tokens.
