@@ -48,10 +48,10 @@ sub input {
     $STATE->noteStatus(missing=>$name);
     Error("Cannot find file $name of type ".join(', ',@{$types||[]})
 	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
-  elsif($file =~ /\.(ltxml|latexml)$/){		# Perl module.
+#  elsif($file =~ /\.(ltxml|latexml)$/){		# Perl module.
+  elsif($file =~ /\.ltxml$/){		# Perl module.
     return if $STATE->lookupValue($file.'_loaded');
     $STATE->assignValue($file.'_loaded'=>1,'global');
-    my($dir,$modname)=pathname_split($file);
     $self->openMouth(LaTeXML::PerlMouth->new($file),0);
     my $pmouth = $$self{mouth};
     do $file; 
@@ -66,15 +66,17 @@ sub input {
     # If there is a file-specific declaration file (name.latexml), load it first!
     my $name = $file;
     $name =~ s/\.tex//;
+    local $LaTeXML::INHIBIT_LOAD=0;
     if(my $conf = pathname_find("$name.latexml",
 				paths=>$STATE->lookupValue('SEARCHPATHS'))){
-      local $LaTeXML::INHIBIT_LOAD=0;
-      $self->input($conf); 
-      # and THEN load the input --- UNLESS INHIBITTED!!!
-      $self->openMouth(LaTeXML::FileMouth->new($file) ,0) unless $LaTeXML::INHIBIT_LOAD;
+      $self->openMouth(LaTeXML::PerlMouth->new($conf),0);
+      my $pmouth = $$self{mouth};
+      do $conf; 
+      Fatal("Configuration file $conf had an error:\n  $@") if $@; 
+      $self->closeMouth if $pmouth eq $$self{mouth}; # Close immediately, unless rec. input
     }
-    else {
-      $self->openMouth(LaTeXML::FileMouth->new($file) ,0); }
+    # NOW load the input --- UNLESS INHIBITTED!!!
+    $self->openMouth(LaTeXML::FileMouth->new($file) ,0) unless $LaTeXML::INHIBIT_LOAD;
   }}
 
 #**********************************************************************
