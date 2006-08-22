@@ -15,13 +15,15 @@
 <!-- If no driver has assembled these so far: -->
 <!ENTITY % LaTeXML.Caption.class "%LaTeXML-float.Caption.class;">
 
-<!ELEMENT %LaTeXML.figure.qname; (%LaTeXML.Block.mix; | %LaTeXML.Caption.class;)*>
+<!ELEMENT %LaTeXML.figure.qname;
+	  (%LaTeXML.Block.mix; | %LaTeXML.Caption.class; %LaTeXML-extra.Figure.class;)*>
 <!ATTLIST %LaTeXML.figure.qname;
 	  %LaTeXML.Common.attrib; 
           %LaTeXML.Labelled.attrib;
           placement CDATA #IMPLIED>
 
-<!ELEMENT %LaTeXML.table.qname; (%LaTeXML.Block.mix; | %LaTeXML.Caption.class;)*>
+<!ELEMENT %LaTeXML.table.qname;
+	  (%LaTeXML.Block.mix; | %LaTeXML.Caption.class; %LaTeXML-extra.Table.class;)*>
 <!ATTLIST %LaTeXML.table.qname;
 	  %LaTeXML.Common.attrib; 
 	  %LaTeXML.Labelled.attrib;

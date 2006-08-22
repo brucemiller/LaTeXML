@@ -65,6 +65,7 @@ DefPrimitive('\epsfverbosefalse',undef);
 # Ignored!
 DefRegister('\epsfxsize'=>Dimension(0));
 DefRegister('\epsfysize'=>Dimension(0));
+DefPrimitive('\epsfsize{}{}',undef);
 #**********************************************************************
 1;
 

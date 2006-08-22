@@ -80,6 +80,10 @@
 <!ENTITY % LaTeXML.Inline.model "(#PCDATA | %LaTeXML.Inline.mix;)*">
 <!ENTITY % LaTeXML.Flow.model   "(#PCDATA | %LaTeXML.Flow.mix;)*">
 
+<!ENTITY % LaTeXML-extra.Equation.class  "">
+<!ENTITY % LaTeXML-extra.Figure.class  "">
+<!ENTITY % LaTeXML-extra.Table.class  "">
+
 <!ENTITY % LaTeXML-math.Math.class  "">
 <!ENTITY % LaTeXML-extra.Math.class "">
 <!ENTITY % LaTeXML.Math.class
@@ -151,7 +155,7 @@
 <!ENTITY % LaTeXML.FrontMatter.class
 	 "%LaTeXML-structure.SectionalFrontMatter.class;
 	  %LaTeXML-extra.SectionalFrontMatter.class;
-	  %LaTeXML-structure.FrontMatter.class;
+	| %LaTeXML-structure.FrontMatter.class;
 	  %LaTeXML-extra.FrontMatter.class;">
 
 <!ENTITY % LaTeXML-structure.BackMatter.class "">

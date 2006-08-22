@@ -25,11 +25,15 @@
 
 <!-- Equation's model is just Inline which includes Math, the main expected ingredient.
      But, other things can end up in display math, too, so we use Inline. -->
-<!ELEMENT %LaTeXML.equation.qname; %LaTeXML.Inline.model;>
-<!ATTLIST %LaTeXML.equation.qname;  %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
+<!ELEMENT %LaTeXML.equation.qname; 
+	  (#PCDATA | %LaTeXML.Inline.mix; %LaTeXML-extra.Equation.class;)*>
+<!ATTLIST %LaTeXML.equation.qname;
+	  %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 
-<!ELEMENT %LaTeXML.equationgroup.qname; (%LaTeXML.Block.mix;)*>
-<!ATTLIST %LaTeXML.equationgroup.qname; %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
+<!ELEMENT %LaTeXML.equationgroup.qname;
+	  (%LaTeXML.Block.mix;  %LaTeXML-extra.Equation.class;)*>
+<!ATTLIST %LaTeXML.equationgroup.qname;
+	  %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 
 <!ELEMENT %LaTeXML.quote.qname;  %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.quote.qname; %LaTeXML.Common.attrib;>

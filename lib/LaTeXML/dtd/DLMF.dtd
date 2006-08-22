@@ -34,7 +34,6 @@
 
 <!ENTITY % LaTeXML.electroniconly.qname   "%LaTeXML.pfx;electroniconly">
 <!ENTITY % LaTeXML.printonly.qname        "%LaTeXML.pfx;printonly">
-<!ENTITY % LaTeXML.affiliation.qname      "%LaTeXML.pfx;affiliation">
 <!ENTITY % LaTeXML.sidebar.qname          "%LaTeXML.pfx;sidebar">
 <!ENTITY % LaTeXML.gallery.qname          "%LaTeXML.pfx;gallery">
 <!ENTITY % LaTeXML.galleryitem.qname      "%LaTeXML.pfx;galleryitem">
@@ -44,22 +43,44 @@
 <!ENTITY % LaTeXML.declare.qname          "%LaTeXML.pfx;declare">
 <!ENTITY % LaTeXML.mark.qname             "%LaTeXML.pfx;mark">
 <!ENTITY % LaTeXML.bib-links.qname        "%LaTeXML.pfx;bib-links">
+<!ENTITY % LaTeXML.ERROR.qname            "%LaTeXML.pfx;ERROR">
+<!ENTITY % LaTeXML.date.qname             "%LaTeXML.pfx;date">
+
+<!ENTITY % LaTeXML.metadata.qname         "%LaTeXML.pfx;metadata">
 
 <!ENTITY % LaTeXML-extra.Inline.class
 	 "| %LaTeXML.email.qname; | %LaTeXML.VRML.qname;| %LaTeXML.GAMS.qname;">
 <!ENTITY % LaTeXML-extra.Para.class
-	 "| %LaTeXML.figuregroup.qname; | %LaTeXML.begin_onecolumn.qname; | %LaTeXML.end_onecolumn.qname;">
+	 "| %LaTeXML.figuregroup.qname;
+	  | %LaTeXML.begin_onecolumn.qname; | %LaTeXML.end_onecolumn.qname;">
+
 <!ENTITY % LaTeXML-extra.Misc.class
 	 "| %LaTeXML.electroniconly.qname; | %LaTeXML.printonly.qname;">
+
+<!-- (pre)define w/o note since those should move into metadata -->
+<!ENTITY % LaTeXML-text.Meta.class
+	 "| %LaTeXML.ERROR.qname;" >
 <!ENTITY % LaTeXML-extra.Meta.class
-	 "| %LaTeXML.origref.qname; | %LaTeXML.constraint.qname;
+	 "| %LaTeXML.constraint.qname;
 	  | %LaTeXML.declare.qname;  | %LaTeXML.mark.qname; ">
 <!ENTITY % LaTeXML-extra.Bibentry.class
 	 "| %LaTeXML.bib-links.qname;">
 
+<!ENTITY % LaTeXML-extra.SectionalFrontMatter.class
+	 "| %LaTeXML.metadata.qname;">
+<!ENTITY % LaTeXML-extra.Equation.class
+	 "| %LaTeXML.metadata.qname;">
+<!ENTITY % LaTeXML-extra.Figure.class
+	 "| %LaTeXML.metadata.qname;">
+<!ENTITY % LaTeXML-extra.Table.class
+	 "| %LaTeXML.metadata.qname;">
+
+<!-- predefine as empty; to keep acknowledgements OUT -->
+<!ENTITY % LaTeXML-structure.FrontMatter.class 
+	 "%LaTeXML.date.qname;">
+
 <!ENTITY % LaTeXML-extra.FrontMatter.class
-	 "| %LaTeXML.affiliation.qname; | %LaTeXML.acknowledgements.qname;
-	  | %LaTeXML.sidebar.qname; | %LaTeXML.gallery.qname; | %LaTeXML.copyright.qname;">
+         "| %LaTeXML.sidebar.qname; | %LaTeXML.gallery.qname; | %LaTeXML.copyright.qname;">
 
 <!ENTITY % LaTeXML-extra.XMath.attrib
 	 " dec_id CDATA #IMPLIED">
@@ -68,12 +89,26 @@
 <!ENTITY % LaTeXML-structure-qname.mod   SYSTEM "LaTeXML-structure-qname-1.mod">
 %LaTeXML-structure-qname.mod;
 
-<!-- Now load the rest of LaTeXML -->
-<!ENTITY % LaTeXML.dtd SYSTEM "LaTeXML.dtd" >
-%LaTeXML.dtd; 
+<!-- ======================================================================
+     Now load the rest of LaTeXML -->
 
-<!-- Redefined document structure -->
-<!-- ??	  (%LaTeXML.part.qname; | %LaTeXML.note.qname;)*, -->
+<!ENTITY % LaTeXML-core.mod   SYSTEM "LaTeXML-core-1.mod">
+%LaTeXML-core.mod;
+
+<!-- Define qualified names for all elements -->
+<!ENTITY % LaTeXML-qname.mod   SYSTEM "LaTeXML-qname-1.mod">
+%LaTeXML-qname.mod;
+
+<!-- Assemble the classes for various models -->
+<!ENTITY % LaTeXML-classes.mod   SYSTEM "LaTeXML-classes-1.mod">
+%LaTeXML-classes.mod;
+
+<!-- Include all included modules' models -->
+<!ENTITY % LaTeXML-model.mod   SYSTEM "LaTeXML-model-1.mod">
+%LaTeXML-model.mod;
+
+<!-- ======================================================================
+      Redefined document structure -->
 <!ELEMENT %LaTeXML.chapter.qname;
           ((%LaTeXML.FrontMatter.class; %LaTeXML.Meta.class;)*, 
 	  (%LaTeXML.part.qname;)*,
@@ -148,11 +183,15 @@
 <!ELEMENT %LaTeXML.abstract.qname;    (%LaTeXML.Para.mix;)*>
 <!ATTLIST %LaTeXML.abstract.qname;     %LaTeXML.Common.attrib;>
 
+<!ELEMENT %LaTeXML.acknowledgements.qname; %LaTeXML.Inline.model;>
+<!ATTLIST %LaTeXML.acknowledgements.qname; %LaTeXML.Common.attrib;>
+
 <!-- Define structure of new stuff -->
 
-
-<!ELEMENT %LaTeXML.affiliation.qname;      %LaTeXML.Inline.model;>
-<!ELEMENT %LaTeXML.acknowledgements.qname; %LaTeXML.Inline.model;>
+<!-- metadata collects various kinds of info about its container -->
+<!ELEMENT %LaTeXML.metadata.qname;
+	  ( %LaTeXML.note.qname; | %LaTeXML.origref.qname;
+	  | %LaTeXML.acknowledgements.qname;)*>
 
 <!ELEMENT %LaTeXML.copyright.qname;        %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.copyright.qname;

@@ -27,6 +27,15 @@
 \providecommand{\MathML}{MathML}%
 \providecommand{\OpenMath}{OpenMath}%
 
+\RequirePackage{url}
+% Shorthand to present a URL the actual text (also linked in HTML)
+% \URL[alternative text]{url}
+\def\URL{\@ifnextchar[{\@URL}{\@@URL}}%]
+%\def\@@URL{\begingroup\def\UrlLeft##1\UrlRight{\stepcounter{footnote}%
+%[Footnote~\thefootnote\footnotetext{##1}]}\Url}
+\def\@@URL{\begingroup\Url}
+\def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\texttt{##1}}}\Url}
+
 % The LaTeXML Logo.
 \DeclareRobustCommand{\LaTeXML}{L\kern-.36em%
         {\sbox\z@ T%

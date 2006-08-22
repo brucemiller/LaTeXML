@@ -214,6 +214,7 @@ DefExpandable('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
      T_OTHER('['),T_CS('\@currentlabel'),T_OTHER(']'),
      T_OTHER('['),T_CS('\@currentID'),T_OTHER(']')); }});
 
+# \@@section{type}[refnum][id][toctitle]{title}
 DefConstructor('\\@@section{}[][][]{}',sub {
   my($document,$type,$refnum,$id,$toctitle,$title)=@_;
   $document->openElement("ltx:".$type->toString,refnum=>$refnum,id=>$id);
@@ -735,7 +736,8 @@ DefConstructor('\mathsf{}',  '#1', bounded=>1, requireMath=>1, font=>{family=>'s
 DefConstructor('\mathtt{}',  '#1', bounded=>1, requireMath=>1, font=>{family=>'typewriter'});
 DefConstructor('\mathcal{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'caligraphic'});
 DefConstructor('\mathscr{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'script'});
-
+DefConstructor('\mathnormal{}', '#1', bounded=>1, requireMath=>1,
+	       font=>{family=>'math',shape=>'italic'});
 #**********************************************************************
 # C.8 Definitions, Numbering and Programming
 #**********************************************************************
@@ -944,7 +946,8 @@ sub refStepCounter {
   my($ctr)=@_;
   my $v = stepCounter($ctr);
   InstallDefinition(LaTeXML::Expandable->new(T_CS("\\\@$ctr\@ID"),undef,
-					     Tokens(Explode(LookupValue('\c@'.$ctr)->valueOf))));
+			       Tokens(Explode(LookupValue('\c@'.$ctr)->valueOf))),
+		   'global');
   my $id = Expand(T_CS("\\the$ctr\@ID"));
   InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentlabel'),undef,$v));
   InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentID'),undef,$id));
@@ -964,7 +967,8 @@ sub refStepID {
   my $unctr = "UN$ctr";
   my $v = stepCounter($unctr);
   InstallDefinition(LaTeXML::Expandable->new(T_CS("\\\@$ctr\@ID"),undef,
-					     Tokens(T_OTHER('x'),Explode(LookupValue('\c@'.$unctr)->valueOf))));
+			Tokens(T_OTHER('x'),Explode(LookupValue('\c@'.$unctr)->valueOf))),
+		   'global');
   my $id = Expand(T_CS("\\the$ctr\@ID"));
   InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentID'),undef,$id));
   (id=>$id); }
@@ -1059,16 +1063,24 @@ DefExpandable('\fnsymbol{}',sub {
 DefConstructor('\caption[]{}',
 	       "<ltx:caption>#2</ltx:caption>\n?#1(<ltx:toccaption>#1</ltx:toccaption>)");
 DefEnvironment('{figure}[]',
-	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>#body</ltx:figure>",
+	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       . "#body"
+	       ."</ltx:figure>",
 	       properties=> sub { refStepCounter('figure') });
 DefEnvironment('{figure*}[]',
-	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>#body</ltx:figure>",
+	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       . "#body"
+	       ."</ltx:figure>",
 	       properties=> sub { refStepCounter('figure') });
 DefEnvironment('{table}[]',
-	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>#body</ltx:table>",
+	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       . "#body"
+	       ."</ltx:table>",
 	       properties=> sub { refStepCounter('table')} );
 DefEnvironment('{table*}[]',
-	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>#body</ltx:table>",
+	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       . "#body"
+	       ."</ltx:table>",
 	       properties=> sub { refStepCounter('table')} );
 
 DefPrimitive('\flushbottom',undef);
@@ -1144,6 +1156,7 @@ DefEnvironment('{tabular*}{}[] TabularPattern',
 DefConstructor('\multicolumn{Number} TabularPattern {}', \&alignment_multicol);
 
 ##DefConstructor('\hline',sub { alignment_hline($_[0],0); });
+DefPrimitive('\hline',undef);
 
 DefConstructor('\cline{}', sub {
   my($document,$cols)=@_;
@@ -1215,9 +1228,15 @@ DefEnvironment('{thebibliography}{}',
 	       . "<ltx:biblist>#body</ltx:biblist>"
 	       ."</ltx:bibliography>");
 
+sub cleanBibKey {
+  my($key)=@_;
+  $key = lc(ToString($key));
+  $key =~ s/\s//g;
+  $key; }
 # NOTE: 
 DefConstructor('\bibitem[] Semiverbatim',
-	       "<ltx:bibitem key='#2'>?#1(<ltx:biblabel>#1</ltx:biblabel>)<ltx:bibblock>");
+	       "<ltx:bibitem key='#2'>?#1(<ltx:biblabel>#1</ltx:biblabel>)<ltx:bibblock>",
+	       properties=>{key=>sub { cleanBibKey($_[1]); }});
 DefConstructor('\newblock',"<ltx:bibblock>");
 Tag('ltx:bibitem', autoClose=>1);
 Tag('ltx:bibblock', autoClose=>1);
@@ -1228,7 +1247,7 @@ Tag('ltx:bibblock', autoClose=>1);
 # Only sane solution is to downcase the keys in both places.
 sub makecite {
   my($style,$show, $document,$phrase1,$phrase2,$ref)=@_;
-  $ref = lc(ToString($ref)); $ref =~ s/\s//g;
+  $ref = cleanBibKey($ref);
   $document->openElement('ltx:cite', ref=>$ref,style=>$style, show=>$show);
   if(defined $phrase1 && defined $phrase2){
     $document->insertElement('ltx:citepre',$phrase1);
@@ -1244,7 +1263,6 @@ DefConstructor('\citep[][] Semiverbatim',      sub { makecite('parenthetic','all
 DefConstructor('\citeauthor[][] Semiverbatim', sub { makecite('intext','author',@_); });
 DefConstructor('\citeyear[][] Semiverbatim',   sub { makecite('intext','year',@_); });
 DefConstructor('\citeyearpar[][] Semiverbatim',sub { makecite('parenthetic','year',@_); });
-
 
 #======================================================================
 # C.11.4 Splitting the input

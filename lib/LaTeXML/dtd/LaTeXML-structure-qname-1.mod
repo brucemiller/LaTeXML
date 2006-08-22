@@ -43,7 +43,7 @@
 <!ENTITY % LaTeXML-structure.SectionalFrontMatter.class
 	 "%LaTeXML.title.qname; | %LaTeXML.toctitle.qname; | %LaTeXML.creator.qname;">
 <!ENTITY % LaTeXML-structure.FrontMatter.class
-         "| %LaTeXML.date.qname; | %LaTeXML.abstract.qname;
-	  | %LaTeXML.acknowledgements.qname; | %LaTeXML.keywords.qname;">
+         "%LaTeXML.date.qname; | %LaTeXML.abstract.qname;
+        | %LaTeXML.acknowledgements.qname; | %LaTeXML.keywords.qname;">
 <!ENTITY % LaTeXML-structure.BackMatter.class
 	 "%LaTeXML.bibliography.qname; | %LaTeXML.appendix.qname;">

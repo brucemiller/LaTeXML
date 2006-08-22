@@ -32,11 +32,12 @@ $ENV{TEXINPUTS}="$DLMFBASE/styles/DLMFtex::";
 #**********************************************************************
 binmode(STDERR,":utf8");
 
-my $processors=[DLMFMath->new(),
+my $processors=[DLMFMathImages->new(),
 		DLMFGraphics->new(),
 		DLMFGallery->new(),
 		LaTeXML::Post::MathML::Presentation->new(),
 		LaTeXML::Post::PictureImages->new(),
+		DLMFMath->new(),
 		DLMFMagPictures->new(),
 #		DLMFAugment->new()
 ];
@@ -67,7 +68,7 @@ foreach my $doc (@ARGV){
 }
 
 #**********************************************************************
-package DLMFMath;
+package DLMFMathImages;
 use strict;
 use LaTeXML::Post::MathImages;
 BEGIN{ our @ISA = qw(LaTeXML::Post::MathImages); }
@@ -80,6 +81,66 @@ sub preamble {
   $self->SUPER::preamble($doc) 
       ."\\def\\beginDISPLAY{\\[[fullframe]}\n"
       ."\\def\\endDISPLAY{\\]}";  }
+
+#**********************************************************************
+# Deal with extra type & meta info for math.
+package DLMFMath;
+use strict;
+use LaTeXML::Post;
+use XML::LibXML;
+use MIME::Base64;
+
+BEGIN{ our @ISA = (qw(LaTeXML::Post::Processor)); }
+
+
+sub new {
+  my($class,%options)=@_;
+  my $self = bless {%options},$class; 
+  $self->init(%options); 
+  $self; }
+
+sub process {
+  my($self,$doc)=@_;
+  my $NSURI = $self->getNamespace;
+  my @meta = $self->findnodes("//ltx:equation/ltx:metadata"
+			      ." | //ltx:equationmix/ltx:metadata"
+			      ." | //ltx:equationgroup/ltx:metadata",$doc);
+  $self->Progress(scalar(@meta)." equations to process");
+  foreach my $meta (@meta){
+    my $eqn = $meta->parentNode;
+    my @maths = $self->findnodes("ltx:Math",$eqn);
+
+    # Add latex representation of formulas
+    if(my $tex = join("\n",map("\$$_\$",grep($_,map($_->getAttribute('tex'),@maths))))){
+      my $node = $meta->addNewChild($NSURI,'encoding');
+      $node->setAttribute(type=>'LaTeX');
+      $node->setAttribute(data=>encode_base64($tex,'')); }
+
+    # Add list of symbols used.
+    local %XDLMF::SYMBOLS = ();
+    foreach my $math (@maths){
+      foreach my $xmath ($math->getChildrenByTagNameNS($NSURI,'XMath')){
+	extractMathSymbols_rec($xmath); }}
+    if(my $symbols = join('###', keys %XDLMF::SYMBOLS)){
+      my $node = $meta->addNewChild($NSURI,'symbols-used');
+      $node->setAttribute(symbols_used=>$symbols); }
+  }
+  $doc; }
+
+sub extractMathSymbols_rec {
+  my($node)=@_;
+  if($node->nodeType == XML_ELEMENT_NODE){
+    my $tag = $node->localname;
+    if($tag eq 'XMTok'){
+      if(($node->getAttribute('role')||'') eq 'NUMBER'){}
+      elsif(my $id = $node->getAttribute('dec_id')){
+	$XDLMF::SYMBOLS{"local:$id"}=1; }
+      elsif(my $name = $node->getAttribute('meaning')){
+	$XDLMF::SYMBOLS{"global:$name"}=1; }}
+    elsif($tag eq 'XMDual'){		# Just follow content branch
+      extractMathSymbols_rec([$node->childNodes]->[0]); }
+    else {
+      map(extractMathSymbols_rec($_), $node->childNodes); }}}
 
 #**********************************************************************
 package DLMFGraphics;
@@ -186,8 +247,19 @@ BEGIN{ our @ISA = qw(LaTeXML::Post::Graphics);}
 
 sub selectGraphicsNodes { 
   $_[1]->getElementsByTagNameNS($_[0]->getNamespace,'galleryitem'); }
+
 sub getTransform {
   [['scale-to',72,72]]; }
+
+sub processGraphic {
+  my($self,$node)=@_;
+  my $name = $node->getAttribute('graphic');
+  if($name =~ /^DLMF:/){
+    $node->setAttribute('src',$name);
+    $node->setAttribute('width',100);
+    $node->setAttribute('height',100); }
+  else {
+    $self->SUPER::processGraphic($node); }}
 
 #**********************************************************************
 package DLMFAugment;

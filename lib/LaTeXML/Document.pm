@@ -78,6 +78,12 @@ sub findnodes {
   my($self,$xpath,$node)=@_;
   $$self{model}->getXPath->findnodes($xpath,($node || $$self{document})); }
 
+# Handy when you expect only one, or want only first.
+sub findnode {
+  my($self,$xpath,$node)=@_;
+  my @nodes = $$self{model}->getXPath->findnodes($xpath,($node || $$self{document})); 
+  (@nodes ? $nodes[0] : undef); }
+
 # Given a Qualified name, possibly prefixed with a (incode) namespace prefix,
 # return the NamespaceURI and localname.
 sub decodeQName {
@@ -328,7 +334,7 @@ sub closeNode_internal {
 
 # find an ancestor node that can contain an element $qname
 # returns undef if no such place
-sub floatToElement {
+sub XXfloatToElement {
   my($self,$qname)=@_;
   my $node = $$self{node};
   $node = $node->parentNode if $node->nodeType == XML_TEXT_NODE;
@@ -348,13 +354,61 @@ sub floatToElement {
       unless $$self{model}->canContainSomehow($self->getNodeQName($node),$qname);
     undef; }}
 
-sub floatToAttribute {
+sub XXfloatToAttribute {
   my($self,$key)=@_;
   my $n = $$self{node};
   $n = $n->parentNode if $n->nodeType == XML_TEXT_NODE;
   while(($n->nodeType != XML_DOCUMENT_NODE) && ! $$self{model}->canHaveAttribute($self->getNodeQName($n),$key)){
     $n = $n->parentNode; }
   if($n->nodeType != XML_DOCUMENT_NODE){
+    my $savenode = $$self{node};
+    $$self{node}=$n;
+    $savenode; }
+  else {
+    Warn("No open node can get attribute \"$key\"");
+    undef; }}
+
+sub precedingNodes {
+  my($node)=@_;
+  $node = $node->lastChild if $node->hasChildNodes;
+  my $n;
+  my @nodes = ();
+  while($node && ($node->nodeType != XML_DOCUMENT_NODE)){
+    push(@nodes,$node);
+    while($n = $node->previousSibling){
+      push(@nodes,$n);
+      $node = $n; }
+    $node = $node->parentNode; }
+  @nodes; }
+
+# find an preceding sibling or ancestor node that can contain an element $qname
+# returns undef if no such place
+sub floatToElement {
+  my($self,$qname)=@_;
+  my @prev = precedingNodes($$self{node});
+  while(@prev
+	&& (($prev[0]->nodeType != XML_ELEMENT_NODE) 
+	    || ! $$self{model}->canContain($self->getNodeQName($prev[0]),$qname))){
+    shift(@prev); }
+  if(my $n = shift(@prev)){
+    my $savenode = $$self{node};
+    $$self{node}=$n;
+    print STDERR "Floating from ".Stringify($savenode)." to ".Stringify($n)." for $qname\n" 
+	if ($$savenode ne $$n) && $LaTeXML::Document::DEBUG;
+   $savenode; }
+  else { 
+    Warn("No open node can accept <$qname> at ".Stringify($$self{node}))
+      unless $$self{model}->canContainSomehow($self->getNodeQName($$self{node}),$qname);
+    undef; }}
+
+sub floatToAttribute {
+  my($self,$key)=@_;
+  my @prev = precedingNodes($$self{node});
+  while(@prev 
+	&& (($prev[0]->nodeType != XML_ELEMENT_NODE) 
+	    || ! $$self{model}->canHaveAttribute($self->getNodeQName($prev[0]),$key))){
+    shift(@prev); }
+  if(my $n = shift(@prev)){
     my $savenode = $$self{node};
     $$self{node}=$n;
     $savenode; }

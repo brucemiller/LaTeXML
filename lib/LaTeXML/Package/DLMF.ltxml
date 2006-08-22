@@ -43,16 +43,82 @@ DefPrimitive('\thischapter{}', sub {
   AssignValue(ChapterLabel=>"ch:$ch",'global');  
   DocType("ltx:chapter","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
 	  '#default'=>"http://dlmf.nist.gov/LaTeXML");
-  Tag('ltx:chapter', afterOpen=>\&insertFrontMatter);
+  Tag('ltx:chapter', afterOpen=>\&insertDLMFFrontMatter);
+  Tag('ltx:chapter', afterClose=>\&extractSourceNotes);
 });
 
 DefEnvironment('{document}',
 	       "?&LookupValue(Chapter)"
 	       .  "(<ltx:chapter id='&LookupValue(Chapter)' refnum='&LookupValue(Chapter)'"
-	       .         " label='&LookupValue(ChapterLabel)'>#body</ltx:chapter>)"
+	       .         " label='&LookupValue(ChapterLabel)'>"
+	       .      "<ltx:metadata about_id='&LookupValue(Chapter)' id='&LookupValue(Chapter).info'/>"
+	       .      "#body"
+	       .    "</ltx:chapter>)"
 	       .  "(<ltx:document>#body</ltx:document>)",
 	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
 	       afterDigest=> sub { $_[0]->getGullet->flush; return; });
+
+sub insertDLMFFrontMatter {
+  my($document)=@_;
+  Digest(T_CS('\default@gallery'));
+  insertFrontMatter($document); }
+
+sub extractSourceNotes {
+  my($doc)=@_;
+  my $savenode = $doc->getNode;
+  # Extract "source" notes from References \part (if any), and remove the part.
+  my $ch = ToString(LookupValue('Chapter'));
+  if(my $pt = $doc->findnode("//ltx:part[child::ltx:title[text() = 'References']]")){
+    $pt->parentNode->removeChild($pt);
+    if(my $gen= $doc->findnode("ltx:section[child::ltx:title"
+			       ."[text()='General References']]",$pt)){
+      if(my $meta = $doc->findnode("ltx:metadata[\@about_id='$ch']",
+				   $doc->getDocument->documentElement)){
+	$doc->setNode($meta);
+	my $note = $doc->openElement('ltx:note',class=>'source');
+	map($note->appendChild($_),$doc->findnodes("descendant::ltx:p/node()",$gen));
+	$doc->closeElement('ltx:note'); }
+      else {
+	Warn("No metadata node found for $ch"); }}
+    else {
+      Warn("No 'General References' section found"); }
+    if(my $oth = $doc->findnode("ltx:section[child::ltx:title"
+				     ."[text()='Original Sources']]",$pt)){
+      foreach my $item ($doc->findnodes("descendant::ltx:description/ltx:item",$oth)){
+	my $tag= $doc->findnode('ltx:tag',$item);
+	$tag->parentNode->removeChild($tag);
+	foreach my $label (map($_->getAttribute('labelref'),
+			       $doc->findnodes("ltx:ref",$tag))){
+	  if(my $sec = $doc->findnode("//ltx:section[\@label = '$label']")){
+	    my $id = $sec->getAttribute('id');
+	    if(my $meta = $doc->findnode("ltx:metadata[\@about_id='$id']",$sec)){
+	      $doc->setNode($meta);
+	      my $note = $doc->openElement('ltx:note',class=>'source');
+	      map($note->appendChild($_->cloneNode(1)), $item->childNodes());
+	      $doc->closeElement('ltx:note'); }
+	    else {
+	      Warn("No metadata node found for $id"); }}
+	  else {
+	    Warn("No matching section for 'Original Source' entry $label"); }}
+      }}
+    else {
+      Warn("No 'Original Sources' section found"); }}
+  else {
+    Warn("No 'References' part found"); }
+  $doc->setNode($savenode); }
+#======================================================================
+# Redefine to add a <metadata> block
+# \@@section{type}[refnum][id][toctitle]{title}
+DefConstructor('\\@@section{}[][][]{}',sub {
+  my($document,$type,$refnum,$id,$toctitle,$title)=@_;
+  $id = ToString($id);
+  $document->openElement("ltx:".$type->toString,refnum=>$refnum,id=>$id);
+  $document->insertElement('ltx:title',$title);
+  $document->insertElement('ltx:toctitle',$toctitle) if $toctitle;
+  $document->insertElement('ltx:metadata',undef, about_id=>$id, id=>$id.".info");
+},
+  properties=>{refnum=>'#2',id=>'#3'},
+  bounded=>1);
 
 #======================================================================
 # DLMF's Numbering scheme.
@@ -106,41 +172,10 @@ DefMacro('\theenumiv',          '\Alph{enumiv}');
 #**********************************************************************
 # Frontmatter
 
-# NOTE: Need to redo author & affiliation to handle multiple authors.
-# Need to handle token lists ??
-## DefPrimitive('\status{}', sub{ AssignValue(chapter_status=>$_[1]); });
-## 
-## DefMacro('\@authorinfo','');
-## # Let \author & \affiliation simply collect the constructors, in order.
-## DefMacro('\author{}', '\xdef\@authorinfo{\@authorinfo\fmt@author{#1}}');
-## DefMacro('\affiliation{}', '\xdef\@authorinfo{\@authorinfo\fmt@affiliation{#1}}');
-## 
-## DefConstructor('\fmt@affiliation{}',"<ltx:affiliation>#1</ltx:affiliation>");
-## 
-## DefConstructor('\email{}', "<ltx:email>#1</ltx:email>");
-## DefConstructor('\addCopyright{}{}','');#"<ltx:copyright year='#1'>#2</ltx:copyright>");
-## 
-## DefMacro('\@acknowledgements','');
-## DefPrimitive('\acknowledgements{}', sub { DefMacro('\@acknowledgements',$_[1])});
-## DefConstructor('\fmt@acknowledgements{}', "<ltx:acknowledgements>#1</ltx:acknowledgements>");
-
-## Tag('ltx:gallery', autoClose=>1, autoOpen=>1);
-## DefMacro('\@galleryitems','');
-## DefMacro('\galleryitem Semiverbatim Semiverbatim',
-## 	 '\xdef\@galleryitems{\@galleryitems'
-## 	 .'\fmt@galleryitem{\ifx.#1.\else sb:\thechapter.#1\fi}{#2}}');
-
-## DefConstructor('\fmt@galleryitem Semiverbatim Semiverbatim',
-## 	       "<ltx:galleryitem labelref='#1' graphic='#2'/>");
-## 
-## DefMacro('\maketitle', 
-## 	 '\fmt@title{\@title}\@authorinfo'
-##	 .'\fmt@date{\@date}'
-##         .'\fmt@acknowledgements{\@acknowledgements}'
-##	 .'\@galleryitems');
-
-
 DefPrimitive('\status{}', sub{ AssignValue(chapter_status=>$_[1]); });
+
+DefMacro('\author[]{}',
+ '\@add@frontmatter{ltx:creator}[role=author,soft_idref=\ifx.#1.\else bio:#1\fi]{\@personname{#2}}');
 
 DefConstructor('\@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
 DefMacro('\affiliation{}','\@add@to@frontmatter{ltx:creator}{\@affiliation{#1}}');
@@ -150,16 +185,30 @@ DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
 
 DefConstructor('\addCopyright{}{}','');#"<ltx:copyright year='#1'>#2</ltx:copyright>");
 
-DefMacro('\acknowledgements{}', '\@add@frontmatter{ltx:acknowledgements}{#1}');
+## DefMacro('\acknowledgements{}', '\@add@frontmatter{ltx:acknowledgements}{#1}');
+# No, float it to the metadata.
+DefConstructor('\acknowledgements{}', '^<ltx:acknowledgements>#1</ltx:acknowledgements>');
 
 DefConstructor('\@galleryitem Semiverbatim Semiverbatim',
 	       "<ltx:galleryitem labelref='#1' graphic='#2'/>");
 DefMacro('\galleryitem Semiverbatim Semiverbatim',
-	 '\@add@to@frontmatter{ltx:gallery}{\@galleryitem{\ifx.#1.\else sb:\thechapter.#1\fi}{#2}}');
+	 '\@add@to@frontmatter{ltx:gallery}{\@galleryitem{\ifx.#1.\else sb:\thechapter.#1\fi}{#2}}'
+	.'\gdef\default@gallery{}');
+
+DefMacro('\default@gallery',
+	 '\galleryitem{}{DLMF:/images/noimage.png}'
+	 .'\galleryitem{}{DLMF:/images/noimage.png}');
+
+#**********************************************************************
+# Backmatter.
+# Ignore bibliography.
+DefConstructor('\bibliography Semiverbatim','');
+
 #**********************************************************************
 # More environments.
 DefEnvironment('{figuregroup}', "<ltx:figuregroup>#body</ltx:figuregroup>");
 DefEnvironment('{figuregroup*}',"<ltx:figuregroup>#body</ltx:figuregroup>");
+
 
 #**********************************************************************
 # Pseudo environments.
@@ -209,6 +258,7 @@ DefConstructor('\MarkNotation {}{}',
 # Redefine to accept optional (ignored) arg.
 DefEnvironment('{equation}[]',
 	       "<ltx:equation id='#id' refnum='#refnum'>"
+	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>"
 	       .   "#body"
@@ -232,7 +282,10 @@ DefEnvironment('{equation*}[]',
 # Each math produces inline math, BUT we've set displaystyle in them!
 # Although equationmix is handled differently in LaTeX, <equation>'s model is adequate.
 DefEnvironment('{equationmix}[]',
-	       "<ltx:equation id='#id' refnum='#refnum'>#body</ltx:equation>",
+	       "<ltx:equation id='#id' refnum='#refnum'>"
+	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "#body"
+	       ."</ltx:equation>",
 	       properties=> sub { refStepCounter('equation') },
 	       # NOTE: We'd like to have displaystyle (but NOT mode=display!) for enclosed math env!
 	       # Use displaystyles for math environments within here.
@@ -248,7 +301,10 @@ DefEnvironment('{equationmix*}[]',
 	       properties=> sub { refStepID('equation') });
 # NOTE: I haven't handled the subequation case!!! (where equations themselves get numbered!)
 DefEnvironment('{equationgroup}[]', 
-	       "<ltx:equationgroup id='#id' refnum='#refnum'>#body</ltx:equationgroup>",
+	       "<ltx:equationgroup id='#id' refnum='#refnum'>"
+	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "#body"
+	       ."</ltx:equationgroup>",
 	       properties=> sub { refStepCounter('equation') });
 DefEnvironment('{equationgroup*}[]',
 	       "<ltx:equationgroup id='#id'>#body</ltx:equationgroup>",
@@ -269,7 +325,36 @@ DefExpandable('\constraint OptionalMatch:* [Default:,]{}',sub {
     ($punct->unlist, T_CS('\@constraint'), T_BEGIN,$constraint->unlist,$ppunct->unlist,T_END); }});
 
 #**********************************************************************
+# Redefine to include metadata block.
+
+DefEnvironment('{figure}[]',
+	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "#body"
+	       ."</ltx:figure>",
+	       properties=> sub { refStepCounter('figure') });
+DefEnvironment('{figure*}[]',
+	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "#body"
+	       ."</ltx:figure>",
+	       properties=> sub { refStepCounter('figure') });
+DefEnvironment('{table}[]',
+	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "#body"
+	       ."</ltx:table>",
+	       properties=> sub { refStepCounter('table')} );
+DefEnvironment('{table*}[]',
+	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "#body"
+	       ."</ltx:table>",
+	       properties=> sub { refStepCounter('table')} );
+
+#**********************************************************************
 # Table enhancement
+
 sub tabular_thinhline {
   my($document)=@_;
   # Sneak in an additional type!!!! Add to CSS!!!

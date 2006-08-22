@@ -13,8 +13,10 @@
 package LaTeXML::Post;
 use strict;
 use XML::LibXML;
+use XML::LibXML::XPathContext;
 ##use File::Spec;
 use LaTeXML::Util::Pathname;
+
 
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
 #**********************************************************************
@@ -26,6 +28,9 @@ sub process {
   my($self,$doc,%options)=@_;
 
   $options{namespace} = $NSURI;
+  if(!$options{xpath}){
+    $options{xpath} = XML::LibXML::XPathContext->new();
+    $options{xpath}->registerNs(ltx=>$NSURI); }
 
   foreach my $processor (@{$options{processors}}){
     $processor->init(%options); 
@@ -125,6 +130,7 @@ sub init {
   $$self{sourceDirectory}      = $options{sourceDirectory};
   $$self{destinationDirectory} = $options{destinationDirectory};
   $$self{searchPaths}          = $options{searchPaths} || [$$self{sourceDirectory}];
+  $$self{xpath}                = $options{xpath};
 }
 
 sub getSourceDirectory      { $_[0]->{sourceDirectory}; }
@@ -133,6 +139,12 @@ sub getSearchPaths          { $_[0]->{searchPaths}; }
 sub getNamespace            { $_[0]->{namespace} || "http://dlmf.nist.gov/LaTeXML"; }
 
 sub getOption { $_[0]->{options}->{$_[1]}; }
+
+#======================================================================
+
+sub findnodes {
+  my($self,$path,$node)=@_;
+  $$self{xpath}->findnodes($path,$node); }
 
 #======================================================================
 sub Error {

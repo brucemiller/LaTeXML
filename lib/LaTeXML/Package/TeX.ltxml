@@ -2841,7 +2841,8 @@ DefConstructor("\\\$", "\$");
 DefConstructor('\_',   '_');
 
 
-DefMath('\dot',"\x{22C5}", role=>'MULOP');	# DOT OPERATOR
+### How did this get added ?
+#### DefMath('\dot',"\x{22C5}", role=>'MULOP');	# DOT OPERATOR
 # Discretionary times; just treat as invisible ?
 DefMath('\*',"\x{2062}", role=>'MULOP'); # INVISIBLE TIMES (or MULTIPLICATION SIGN = 00D7)
 
@@ -2919,7 +2920,7 @@ sub loadLaTeXClass {
     NoteEnd($msg); }
   return; }
 
-DefConstructor('\documentclass[]{}[]',
+DefConstructor('\documentclass[] Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
@@ -2929,7 +2930,7 @@ DefConstructor('\documentclass[]{}[]',
     loadLaTeXClass($stomach,$whatsit->getArg(2)->toString,@options);
     return;});
 
-DefConstructor('\documentstyle[]{}[]',
+DefConstructor('\documentstyle[] Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
