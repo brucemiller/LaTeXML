@@ -1,0 +1,46 @@
+\documentclass{article}
+\begin{document}
+\section{Itemize}
+\begin{itemize}
+  \item One\label{it:one}, but not \ref{en:one}
+  \item Two\label{it:two}, but not \ref{en:two}
+  \item Three\label{it:three}, but not \ref{en:three}
+\end{itemize}
+
+\section{Enumerate}
+\begin{enumerate}
+  \item One \label{en:one}, but not \ref{de:one}
+  \item Two \label{en:two}, but not \ref{de:two}
+  \item Three \label{en:three}, but not \ref{de:three}
+\end{enumerate}
+
+\section{Description}
+\begin{description}
+  \item[One] \label{de:one}, but not \ref{it:one}
+  \item[Two] \label{de:two}, but not \ref{it:two}
+  \item[Three] \label{de:three}, but not \ref{it:three}
+\end{description}
+
+\section{Nested Enumerate}
+\begin{enumerate}
+  \item One
+\begin{enumerate}
+  \item One
+  \item Two
+  \item Three
+\end{enumerate}
+  \item Two
+\begin{enumerate}
+  \item One
+  \item Two
+  \item Three
+\end{enumerate}
+  \item Three
+\begin{enumerate}
+  \item One
+  \item Two
+  \item Three
+\end{enumerate}
+\end{enumerate}
+
+\end{document}

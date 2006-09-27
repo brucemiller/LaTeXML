@@ -24,6 +24,7 @@
 <!ENTITY % LaTeXML.subsubsection.qname  "%LaTeXML.pfx;subsubsection">
 <!ENTITY % LaTeXML.paragraph.qname      "%LaTeXML.pfx;paragraph">
 <!ENTITY % LaTeXML.bibliography.qname   "%LaTeXML.pfx;bibliography">
+<!ENTITY % LaTeXML.index.qname          "%LaTeXML.pfx;index">
 
 <!ENTITY % LaTeXML.appendix.qname       "%LaTeXML.pfx;appendix">
 
@@ -46,4 +47,4 @@
          "%LaTeXML.date.qname; | %LaTeXML.abstract.qname;
         | %LaTeXML.acknowledgements.qname; | %LaTeXML.keywords.qname;">
 <!ENTITY % LaTeXML-structure.BackMatter.class
-	 "%LaTeXML.bibliography.qname; | %LaTeXML.appendix.qname;">
+	 "%LaTeXML.bibliography.qname; | %LaTeXML.appendix.qname; | %LaTeXML.index.qname;">

@@ -155,9 +155,9 @@
      it basically contains a biblabel and several bibblock's
      ====================================================================== -->
 
-<!ELEMENT %LaTeXML-bib.bibitem.qname; ((%LaTeXML-bib.biblabel.qname;)?, (%LaTeXML-bib.bibblock.qname;)*)>
+<!ELEMENT %LaTeXML-bib.bibitem.qname; ((%LaTeXML.tag.qname;)?, (%LaTeXML-bib.bibblock.qname;)*)>
 <!ATTLIST %LaTeXML-bib.bibitem.qname; %LaTeXML.Common.attrib;
-		   key ID #REQUIRED>
-<!ELEMENT %LaTeXML-bib.biblabel.qname; %LaTeXML.Inline.model;>
+	  id ID #REQUIRED
+	  key CDATA #REQUIRED>
 <!ELEMENT %LaTeXML-bib.bibblock.qname; %LaTeXML.Inline.model;>
  

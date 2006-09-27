@@ -57,6 +57,9 @@
 <!ELEMENT %LaTeXML.bibliography.qname; 
 	  ((%LaTeXML.SectionalFrontMatter.class;)?,
 	  (%LaTeXML-bib.biblist.qname;)*)>
+<!ELEMENT %LaTeXML.index.qname; 
+	  ((%LaTeXML.SectionalFrontMatter.class;)?,
+           (%LaTeXML.indexlist.qname;)*)>
 
 <!ATTLIST %LaTeXML.document.qname;      %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 <!ATTLIST %LaTeXML.part.qname;          %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
@@ -69,6 +72,8 @@
 <!ATTLIST %LaTeXML.bibliography.qname;  
 	  %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib; 
           files CDATA #IMPLIED>
+<!ATTLIST %LaTeXML.index.qname;
+	  %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 
 <!ELEMENT %LaTeXML.title.qname;        %LaTeXML.Inline.model; >
 <!ATTLIST %LaTeXML.title.qname;        %LaTeXML.Common.attrib;>

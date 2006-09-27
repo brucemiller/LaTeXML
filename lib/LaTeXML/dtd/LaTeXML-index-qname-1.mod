@@ -12,8 +12,14 @@
  \=========================================================ooo==U==ooo=/
 -->
 
-<!ENTITY % LaTeXML.index.qname          "%LaTeXML.pfx;index">
+<!-- Elements for marking keywords in the document -->
+<!ENTITY % LaTeXML.indexmark.qname      "%LaTeXML.pfx;indexmark">
 <!ENTITY % LaTeXML.indexphrase.qname    "%LaTeXML.pfx;indexphrase">
 
+<!-- Elements for marking up the index itself -->
+<!ENTITY % LaTeXML.indexlist.qname       "%LaTeXML.pfx;indexlist">
+<!ENTITY % LaTeXML.indexentry.qname      "%LaTeXML.pfx;indexentry">
+<!ENTITY % LaTeXML.indexrefs.qname       "%LaTeXML.pfx;indexrefs">
+
 <!ENTITY % LaTeXML-index.Meta.class
-	 "| %LaTeXML.index.qname;">
+	 "| %LaTeXML.indexmark.qname;">

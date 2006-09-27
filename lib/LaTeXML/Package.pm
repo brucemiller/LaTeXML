@@ -36,6 +36,8 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 		  &PushValue &PopValue &UnshiftValue &ShiftValue
 		  &LookupCatcode &AssignCatcode
 		 &LookupMeaning &LookupDefinition &InstallDefinition &Let),
+	       # Counter support
+	       qw(&NewCounter &StepCounter &RefStepCounter &RefStepID &ResetCounter),
 	       # Math & font state.
 	       qw(&MergeFont),
 	       # Explicit digestion
@@ -147,13 +149,124 @@ sub Roman { Explode(uc(roman_aux(@_))); }
 # Defining new Control-sequence Parameter types.
 #======================================================================
 
-our $parameter_options = {nargs=>1,reversion=>1,optional=>1,novalue=>1,semiverbatim=>1};
+our $parameter_options = {nargs=>1,reversion=>1,optional=>1,novalue=>1,
+			  semiverbatim=>1,undigested=>1};
 sub DefParameterType {
   my($type,$reader,%options)=@_;
   CheckOptions("DefParameterType $type",$parameter_options,%options);
   $LaTeXML::Parameters::PARAMETER_TABLE{$type}={reader=>$reader,%options};
   return; 
 }
+
+#======================================================================
+# Counters
+#======================================================================
+# This is modelled on LaTeX's counter mechanisms, but since it also
+# provides support for ID's, even where there is no visible reference number,
+# it is defined in genera.
+# These id's should be both unique, and parallel the visible reference numbers
+# (as much as possible).  Also, for consistency, we add id's to unnumbered
+# document elements (eg from \section*); this requires an additional counter
+# (eg. UNsection) and  mechanisms to track it.
+
+# Defines a new counter named $ctr.
+# If $within is defined, $ctr will be reset whenever $within is incremented.
+# Keywords:
+#  idprefix : specifies a prefix to be used in formatting ID's for document structure elements
+#           counted by this counter.  Ie. subsection 3 in section 2 might get: id="S2.SS3"
+#   nested : a list of counters that correspond to scopes which are "inside" this one.
+#           Whenever any definitions scoped to this counter are deactivated,
+#           the inner counter's scopes are also deactivated.
+#           NOTE: I'm not sure this is even a sensible implementation,
+#           or why inner should be different than the counters reset by incrementing this counter.
+
+sub NewCounter { 
+  my($ctr,$within,%options)=@_;
+  my $unctr = "UN$ctr";		# UNctr is counter for generating ID's for UN-numbered items.
+  DefRegister("\\c\@$ctr",Number(0));
+  AssignValue("\\c\@$ctr"=>Number(0),'global');
+  AssignValue("\\cl\@$ctr"=>Tokens(),'global');
+  DefRegister("\\c\@$unctr",Number(0));
+  AssignValue("\\c\@$unctr"=>Number(0),'global');
+  AssignValue("\\cl\@$unctr"=>Tokens(),'global');
+  AssignValue("\\cl\@$within" =>
+	      Tokens(T_CS($ctr),T_CS($unctr),
+		     (LookupValue("\\cl\@$within") ? LookupValue("\\cl\@$within")->unlist :())),
+	      'global') if $within;
+  AssignValue("\\cl\@UN$within" =>
+	      Tokens(T_CS($unctr),
+		     (LookupValue("\\cl\@UN$within") ? LookupValue("\\cl\@UN$within")->unlist :())),
+	      'global') if $within;
+  AssignValue('nested_counters_'.$ctr =>$options{nested}) if $options{nested};
+  DefMacro("\\the$ctr","\\arabic{$ctr}");
+  my $prefix = $options{idprefix};
+  if(defined $prefix){
+    if($within){
+      DefMacro("\\the$ctr\@ID",
+	       "\\ifx\\\@empty\\the$within\@ID\\else\\the$within\@ID.\\fi $prefix\\\@$ctr\@ID"); }
+    else {
+      DefMacro("\\the$ctr\@ID","$prefix\\\@$ctr\@ID"); }
+    DefMacro("\\\@$ctr\@ID","0"); }
+  return; }
+
+sub StepCounter {
+  my($ctr)=@_;
+  AssignValue("\\c\@$ctr"=>LookupValue("\\c\@$ctr")->add(Number(1)),'global');
+  # and reset any within counters!
+  if(my $nested = LookupValue("\\cl\@$ctr")){
+    foreach my $c ($nested->unlist){
+      ResetCounter($c->toString); }}
+  Expand(T_CS("\\the$ctr")); }
+
+# HOW can we retract this?
+sub RefStepCounter {
+  my($ctr)=@_;
+  my $v = StepCounter($ctr);
+  InstallDefinition(LaTeXML::Expandable->new(T_CS("\\\@$ctr\@ID"),undef,
+			       Tokens(Explode(LookupValue('\c@'.$ctr)->valueOf))),
+		   'global');
+  my $id = Expand(T_CS("\\the$ctr\@ID"));
+  InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentlabel'),undef,$v));
+  InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentID'),undef,$id));
+
+  # Any scopes activated for previous value of this counter (& any nested counters) must be removed.
+  # This may also include scopes activated for \label
+  deactivateCounterScope($ctr);
+  # And install the scope (if any) for this reference number.
+  AssignValue(current_counter=>$ctr,'local');
+  AssignValue('scopes_for_counter:'.$ctr => [$ctr.':'.ToString($v)],'local');
+  $STATE->activateScope($ctr.':'.ToString($v));
+  (refnum=>$v, id=>$id); }
+
+sub deactivateCounterScope {
+  my($ctr)=@_;
+#  print STDERR "Unusing scopes for $ctr\n";
+ if(my $scopes = LookupValue('scopes_for_counter:'.$ctr)){
+    map($STATE->deactivateScope($_), @$scopes); }
+  foreach my $inner_ctr (@{LookupValue('nested_counters_'.$ctr) || []}){
+    deactivateCounterScope($inner_ctr); }}
+
+# For UN-numbered units
+sub RefStepID {
+  my($ctr)=@_;
+  my $unctr = "UN$ctr";
+  my $v = StepCounter($unctr);
+  InstallDefinition(LaTeXML::Expandable->new(T_CS("\\\@$ctr\@ID"),undef,
+			Tokens(T_OTHER('x'),Explode(LookupValue('\c@'.$unctr)->valueOf))),
+		   'global');
+  my $id = Expand(T_CS("\\the$ctr\@ID"));
+  InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentID'),undef,$id));
+  (id=>$id); }
+
+sub ResetCounter {
+  my($ctr)=@_;
+  AssignValue('\c@'.$ctr => Number(0),'global'); 
+  # and reset any within counters!
+  if(my $nested = LookupValue("\\cl\@$ctr")){
+    foreach my $c ($nested->unlist){
+      ResetCounter($c->toString); }}
+  return;}
+
 #======================================================================
 # Readers for reading various data types
 #======================================================================
@@ -352,16 +465,26 @@ our $math_options = {name=>1, meaning=>1, omcd=>1, reversion=>1, alias=>1,
 		     beforeDigest=>1, afterDigest=>1, scope=>1, nogroup=>1};
 our $XMID=0;
 sub next_id {
-  "LXID".$XMID++; }
+##  "LXID".$XMID++; }
+  my $docid = LookupValue('DOCUMENTID');
+  ($docid ? "$docid.XM" : 'XM').++$XMID; }
 
 sub dualize_arglist {
   my(@args)=@_;
   my(@cargs,@pargs);
   foreach my $arg (@args){
     if(defined $arg){
-      my $id = next_id();
-      push(@cargs, Invocation(T_CS('\@XMArg'),T_OTHER($id),$arg));
-      push(@pargs, Invocation(T_CS('\@XMRef'),T_OTHER($id))); }
+#      my $id = next_id();
+#      push(@cargs, Invocation(T_CS('\@XMArg'),T_OTHER($id),$arg));
+#      push(@pargs, Invocation(T_CS('\@XMRef'),T_OTHER($id))); }
+
+      StepCounter('@XMARG');
+      InstallDefinition(LaTeXML::Expandable->new(T_CS('\@@XMARG@ID'),undef,
+			 Tokens(Explode(LookupValue('\c@@XMARG')->valueOf))),
+		   'global');
+      my $id = Expand(T_CS('\the@XMARG@ID'));
+      push(@cargs, Invocation(T_CS('\@XMArg'),$id,$arg));
+      push(@pargs, Invocation(T_CS('\@XMRef'),$id)); }
     else {
       push(@cargs,undef);
       push(@pargs,undef); }}

@@ -12,8 +12,23 @@
  \=========================================================ooo==U==ooo=/
 -->
 
-<!ELEMENT %LaTeXML.index.qname; (%LaTeXML.indexphrase.qname;)*>
-<!ATTLIST %LaTeXML.index.qname; %LaTeXML.Common.attrib;>
+<!ELEMENT %LaTeXML.indexmark.qname; (%LaTeXML.indexphrase.qname;)*>
+<!ATTLIST %LaTeXML.indexmark.qname; %LaTeXML.Common.attrib;>
 
 <!ELEMENT %LaTeXML.indexphrase.qname; %LaTeXML.Inline.model;>
-<!ATTLIST %LaTeXML.indexphrase.qname; %LaTeXML.Common.attrib;>
+<!ATTLIST %LaTeXML.indexphrase.qname;
+	  %LaTeXML.Common.attrib;
+          key CDATA #IMPLIED>
+
+<!ELEMENT %LaTeXML.indexlist.qname; (%LaTeXML.indexentry.qname;)*>
+<!ATTLIST %LaTeXML.indexlist.qname;
+	  %LaTeXML.Common.attrib;
+	  id       ID #IMPLIED>
+
+<!ELEMENT %LaTeXML.indexentry.qname; 
+	  ((%LaTeXML.indexphrase.qname;), (%LaTeXML.indexrefs.qname;)?,
+	   (%LaTeXML.indexlist.qname;)?)>
+<!ATTLIST %LaTeXML.indexentry.qname;
+	  %LaTeXML.Common.attrib;
+	  id       ID #IMPLIED>
+<!ELEMENT %LaTeXML.indexrefs.qname; %LaTeXML.Inline.model;>

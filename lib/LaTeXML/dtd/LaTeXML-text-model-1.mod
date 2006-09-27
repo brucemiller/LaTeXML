@@ -53,7 +53,8 @@
 
 <!-- note covers several `out of band' annotations.
      class could be foot, end, margin or other extensions. -->
-<!ELEMENT %LaTeXML.note.qname;  %LaTeXML.Inline.model;>
+<!--<!ELEMENT %LaTeXML.note.qname;  %LaTeXML.Inline.model;>-->
+<!ELEMENT %LaTeXML.note.qname;  %LaTeXML.Flow.model;>
 <!ATTLIST %LaTeXML.note.qname;
 	  %LaTeXML.Common.attrib; 
 	  class CDATA #IMPLIED

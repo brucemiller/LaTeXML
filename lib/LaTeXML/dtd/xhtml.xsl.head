@@ -63,13 +63,16 @@
   <xsl:template match="ltx:equation[@refnum]">
     <div class='equation'> 
       <xsl:call-template name="add_id"/>
-      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
-	<mtable>
-	  <mlabeledtr><mtd><mtext>(<xsl:value-of select="@refnum"/>)</mtext></mtd>
-	    <mtd><xsl:apply-templates select="ltx:Math/m:math/node()"/></mtd>
-	  </mlabeledtr>
-	</mtable>
-      </math>
+      <m:math display="block">
+	<m:mtable>
+<!--	  <m:mlabeledtr>-->
+<m:mtr>
+	    <m:mtd><m:mtext>(<xsl:value-of select="@refnum"/>)</m:mtext></m:mtd>
+	    <m:mtd><xsl:apply-templates select="ltx:Math/m:math/node()"/></m:mtd>
+<!--	  </m:mlabeledtr>-->
+	</m:mtr>
+	</m:mtable>
+      </m:math>
     </div>
   </xsl:template>
 

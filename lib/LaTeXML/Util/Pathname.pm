@@ -28,12 +28,14 @@
 package LaTeXML::Util::Pathname;
 use strict;
 use File::Spec;
+use File::Copy;
 use Cwd;
 use Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT = qw( &pathname_find &pathname_findall
 		  &pathname_make &pathname_canonical
-		  &pathname_split &pathname_concat
+		  &pathname_split &pathname_directory &pathname_name &pathname_type
+		  &pathname_concat
 		  &pathname_relative &pathname_absolute
 		  &pathname_is_absolute 
 		  &pathname_cwd &pathname_mkdir &pathname_copy);
@@ -81,6 +83,19 @@ sub pathname_canonical {
   $pathname =~ s|^\./||;
   $pathname; }
 
+# Convenient extractors;
+sub pathname_directory { 
+  my($dir,$name,$type)=pathname_split(@_);
+  $dir; }
+
+sub pathname_name { 
+  my($dir,$name,$type)=pathname_split(@_);
+  $name; }
+
+sub pathname_type { 
+  my($dir,$name,$type)=pathname_split(@_);
+  $type; }
+
 #======================================================================
 sub pathname_concat {
   my($dir,$file)=@_;
@@ -122,15 +137,17 @@ sub pathname_mkdir {
 sub pathname_copy {
   my($source,$destination)=@_;
   # If it _needs_ to be copied:
-  if(!(-f $destination) || (-M $source < -M $destination)){
-    if($^O =~ /^(MSWin32|NetWare)$/){ # Windows
-      # According to Ioan, this should work:
-      system("xcopy /P $source $destination")==0 or return undef; }
-    else {			# Unix
-      system("cp $source $destination")==0 or return undef; }
-    # It would make sense to punt to File::Copy in the
-    # case where we are NOT unix or windows...
-    # But no clear set of $^O characterizes Unix!
+  if((!-f $destination) || (-M $source < -M $destination)){
+    pathname_mkdir(pathname_directory($destination)) or return undef;
+###    if($^O =~ /^(MSWin32|NetWare)$/){ # Windows
+###      # According to Ioan, this should work:
+###      system("xcopy /P $source $destination")==0 or return undef; }
+###    else {			# Unix
+###      system("cp --preserve=timestamps $source $destination")==0 or return undef; }
+    # Hopefully this portably copies, preserving timestamp.
+    copy($source,$destination) or return undef; 
+    my($atime,$mtime)= (stat($source))[8,9];
+    utime $atime,$mtime,$destination; # And set the modification time
   }
   return $destination; }
 

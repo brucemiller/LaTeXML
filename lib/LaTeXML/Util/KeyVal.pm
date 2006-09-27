@@ -89,7 +89,7 @@ sub readKeyVals {
 	StartSemiverbatim if $typedef && $$typedef{semiverbatim};
 
 	($value,$delim)=$gullet->readUntil($T_COMMA,$close);
-	if($type eq 'Plain'){}	# Fine as is.
+	if(($type eq 'Plain') || ($typedef && $$typedef{undigested})){}	# Fine as is.
 	elsif($type eq 'Semiverbatim'){ # Needs neutralization
 	  $value = $value->neutralize; }
 	else {
@@ -171,7 +171,9 @@ sub beDigested {
   my @dkv=();
   while(@kv){
     my($key,$value)=(shift(@kv),shift(@kv));
-    push(@dkv,$key, (ref $value ? $value->beDigested($stomach) : $value)); }
+    my $keydef=LookupValue('KEYVAL@'.$keyset.'@'.$key);
+    my $dodigest = (ref $value) && (!$keydef || !$$keydef[0]{undigested});
+    push(@dkv,$key, ($dodigest ? $value->beDigested($stomach) : $value)); }
   (ref $self)->new($$self{keyset},$$self{open},$$self{close},@dkv); }
 
 sub revert {

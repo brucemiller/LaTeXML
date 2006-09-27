@@ -24,18 +24,14 @@ dotest('t/post/simplemath');
 sub dotest{
   my($name)=@_;
 
-  my $POST = LaTeXML::Post->new();
-  my $procs = [LaTeXML::Post::MathML::Presentation->new()];
+  my @procs = (LaTeXML::Post::MathML::Presentation->new(verbosity=>-1));
 
-  return ok(0,1,"Couldn't instanciate LaTeXML::Post") unless $POST;
+  return ok(0,1,"Couldn't instanciate LaTeXML::Post") unless @procs;
 
-  my $source = $POST->readDocument("$name.xml",validate=>1);
-  my $doc = $POST->process($source,
-			   format    => 'xml',
-			   verbosity => -1,
-			   processors=>$procs);
-  $POST->adjust_latexml_doctype($doc,'MathML');
-  my $output = $POST->toString($doc);
+  my($doc) = LaTeXML::Post::ProcessChain(
+               LaTeXML::Post::Document->newFromFile("$name.xml",validate=>1),
+	       @procs);
+  my $output = $doc->toString(1);
 
   return ok(0,1,"Couldn't process $name.xml") unless $doc;
 

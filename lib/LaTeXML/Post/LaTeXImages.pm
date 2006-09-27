@@ -15,8 +15,7 @@ use strict;
 use DB_File;
 use Image::Magick;
 use LaTeXML::Util::Pathname;
-use LaTeXML::Post;
-our @ISA = (qw(LaTeXML::Post::Processor));
+use base qw(LaTeXML::Post);
 
 #======================================================================
 
@@ -42,12 +41,12 @@ our $DVIPSCMD='dvips -q -S1 -i -E -j0';
 #   imagetype      : typically 'png' or 'gif'.
 sub new {
   my($class,%options)=@_;
-  my $self= bless {magnification => $options{magnification} || 1.75,
-		   maxwidth      => $options{maxwidth} || 800,
-		   dpi           => $options{dpi} || 100, 
-		   background    => $options{background} || "#FFFFFF",
-		   imagetype     => $options{imagetype} || 'png'}, $class; 
-  $self->init(%options);
+  my $self = $class->SUPER::new(%options);
+  $$self{magnification} = $options{magnification} || 1.75;
+  $$self{maxwidth}      = $options{maxwidth} || 800;
+  $$self{dpi}           = $options{dpi} || 100;
+  $$self{background}    = $options{background} || "#FFFFFF";
+  $$self{imagetype}     = $options{imagetype} || 'png';
   $self; }
 
 #**********************************************************************
@@ -77,9 +76,9 @@ sub format_tex { ""; }
 #   (1) where to write the images.
 #   (2) relative path from doc to images.
 sub process {
-  my($self,$doc,%options)=@_;
+  my($self,$doc)=@_;
 
-  my $destdir = $self->getDestinationDirectory;
+  my $destdir = $doc->getDestinationDirectory;
   my $relpath = $self->image_prefix;
   my $jobname = $self->image_prefix . '_job';
 
@@ -94,7 +93,8 @@ sub process {
     $ntotal++;
     my $entry = $table{$tex};
     if(!$entry){
-      $nuniq++; $entry = $table{$tex} = {tex=>$tex, nodes=>[]}; }
+      $nuniq++;
+      $entry = $table{$tex} = {tex=>$tex, nodes=>[], key=>(ref $self).':'.$tex}; }
     push(@{$$entry{nodes}},$node); }
   $self->Progress("Found $nuniq unique tex strings (of $ntotal)");
   return $doc unless $nuniq;	# No strings to process!
@@ -105,7 +105,7 @@ sub process {
   # === Check which objects still need processing.
   my @pending=();
   foreach my $entry (values %table){
-    my $store = $self->cacheLookup($$entry{tex});
+    my $store = $doc->cacheLookup($$entry{key});
     if($store && ($store =~ /^(.*);(\d+);(\d+)$/)){
       my $dest = pathname_concat($destdir,$1);
       next if -f $dest; }
@@ -146,16 +146,16 @@ sub process {
       or return $self->Error("Couldn't execute dvips: $!");
 
     # === Convert each image to appropriate type and put in place.
-    my ($index,$ndigits)= (0,1+int(log( $self->cacheLookup('_max_image_')||1)/log(10)));
+    my ($index,$ndigits)= (0,1+int(log( $doc->cacheLookup((ref $self).':_max_image_')||1)/log(10)));
     foreach my $entry (@pending){
       my $src   = "$workdir/$xprefix".sprintf("%03d",++$index);
-      my $N = $self->cacheLookup('_max_image_')||0;
+      my $N = $doc->cacheLookup((ref $self).':_max_image_')||0;
       if(-f $src){
 	my $dest  = pathname_make(dir=>$relpath,name=>sprintf("$prefix%0*d",$ndigits,++$N),
 				  type=>$$self{imagetype});
-	$self->cacheStore('_max_image_',$N);
+	$doc->cacheStore((ref $self).':_max_image_',$N);
 	my($w,$h) = $self->convert_image($src,pathname_concat($destdir,$dest));
-	$self->cacheStore($$entry{tex},"$dest;$w;$h"); }
+	$doc->cacheStore($$entry{key},"$dest;$w;$h"); }
       else {
 	$self->Warn("Missing image $src; See $workdir/$jobname.log"); }}
     # Cleanup
@@ -165,10 +165,11 @@ sub process {
 
   # Finally, modify the original document to record the associated images.
   foreach my $entry (values %table){
-    next unless $self->cacheLookup($$entry{tex}) =~ /^(.*);(\d+);(\d+)$/;
+    next unless $doc->cacheLookup($$entry{key}) =~ /^(.*);(\d+);(\d+)$/;
     my($image,$width,$height)=($1,$2,$3);
     foreach my $node (@{$$entry{nodes}}){
       $self->set_image($node,$image,$width,$height); }}
+  $doc->closeCache;		# If opened.
   $doc;}
 
 

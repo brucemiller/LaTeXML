@@ -15,14 +15,16 @@ use strict;
 use LaTeXML::Util::Pathname;
 use XML::LibXML;
 use XML::LibXSLT;
-use base qw(LaTeXML::Post::Processor);
+use base qw(LaTeXML::Post);
 
-our @SEARCH_SUBDIRS = qw(LaTeXML/dtd dtd .);
-
+# Useful Options:
+#    stylesheet : path to XSLT stylesheet.
+#    css        : path to CSS stylesheet.
 sub new {
   my($class,%options)=@_;
+  my $self = $class->SUPER::new(%options);
+  $$self{css} = $options{css};
   my $stylesheet = $options{stylesheet};
-  my $self = bless {%options},$class;
   $self->Error("No stylesheet specified!") unless $stylesheet;
   if(!ref $stylesheet){
     my $pathname = pathname_find($stylesheet,
@@ -32,15 +34,25 @@ sub new {
     $stylesheet = XML::LibXML->new()->parse_file($pathname); }
   if(ref $stylesheet eq 'XML::LibXML::Document'){
     $stylesheet = XML::LibXSLT->new()->parse_stylesheet($stylesheet); }
-  if(ref $stylesheet ne 'XML::LibXSLT::Stylesheet'){
+  if((!ref $stylesheet) || !($stylesheet->can('transform'))){
     $self->Error("Stylesheet \"$stylesheet\" is not a usable stylesheet!"); }
-  $$self{stylesheet} = $stylesheet;
+  $$self{stylesheet}=$stylesheet;
   $self; }
 
 sub process {
-  my($self,$doc,%options)=@_;
-  my $css = $self->getOption('CSS');
-  $$self{stylesheet}->transform($doc, ($css ? (CSS=>"'$css'") :())); }
+  my($self,$doc)=@_;
+  my $css = $$self{css};
+
+  # Copy the CSS file to the destination. if found & needed.
+  if($css){
+    if(my $destdir = $doc->getDestinationDirectory){
+      my $csssource = pathname_find($css,paths=>[$doc->getSourceDirectory],
+				    installation_subdir=>'dtd');
+      my $cssdest = pathname_concat($destdir,$css);
+      pathname_copy($csssource,$cssdest)  if -f $csssource;  }}
+
+  $doc->new($$self{stylesheet}->transform($doc->getDocument,
+					  ($css ? (CSS=>"'$css'") :()))); }
 
 # ================================================================================
 1;

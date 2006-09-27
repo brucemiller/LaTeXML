@@ -6,6 +6,7 @@
       The Page
       ====================================================================== -->
 
+<xsl:param name="n">0</xsl:param>
 <xsl:template name="head">
   <head>
     <title><xsl:value-of select="normalize-space(*/ltx:title)"/></title>
@@ -17,14 +18,31 @@
     <xsl:if test='$CSS'>
       <link rel='stylesheet' type="text/css" href="{$CSS}"/> 
     </xsl:if>
+
+     <xsl:if test="//ltx:indexphrase">
+       <meta name="keywords" xml:lang="en-us">
+         <xsl:attribute name="content">
+	    <xsl:for-each select="//ltx:indexphrase[not(.=preceding::ltx:indexphrase)]">
+ 	       <xsl:sort select="text()"/>
+	       <xsl:if test="position() &gt; 1">, </xsl:if> 
+	       <xsl:value-of select="text()"/>
+	     </xsl:for-each>
+          </xsl:attribute>
+        </meta>
+      </xsl:if>
   </head>
 </xsl:template>
 
 <xsl:template name="body">
   <body>
-    <xsl:call-template name="header"/>
-    <xsl:apply-templates/>
-    <xsl:call-template name="footer"/> 
+    <xsl:call-template name="navbar"/>
+    <div class='main'>
+      <xsl:call-template name="header"/>
+      <div class='content'>
+        <xsl:apply-templates/>
+      </div>
+      <xsl:call-template name="footer"/> 
+    </div>
   </body>
 </xsl:template>
 
@@ -35,29 +53,43 @@
 <!--  ======================================================================
       Header & Footer
       ====================================================================== -->
-<xsl:template name="header">
+<xsl:template name="navbar">
   <xsl:if test="//ltx:title">
-    <div class='header'>
+    <div class='navbar'>
       <xsl:apply-templates mode="TOC"/>
     </div>
   </xsl:if>
 </xsl:template>
 
+<xsl:template name="header">
+  <xsl:if test="//ltx:navigation/ltx:ref">
+    <div class='header'>
+      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='up']"/>
+      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='previous']"/>
+      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='next']"/>
+    </div>
+  </xsl:if>
+</xsl:template>
+
 <xsl:template name="footer">
-  <xsl:if test="//ltx:date[@role='creation']">
+  <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1]">
     <div class='footer'>
       <xsl:value-of select='//ltx:date/node()'/>
     </div>
   </xsl:if>
 </xsl:template>
 
+<xsl:template match="ltx:navigation"/>
+<xsl:template match="ltx:navigation/ltx:ref">
+  <a href="{@href}" class="{@class}" title="{@title}"><xsl:value-of select="@class"/>: <xsl:apply-templates/></a>
+</xsl:template>
 <!-- ======================================================================
      Document Structure
      ====================================================================== -->
 
 <xsl:template match="ltx:document | ltx:chapter | ltx:part 
 		     | ltx:section | ltx:subsection | ltx:subsubsection
-		     | ltx:paragraph | ltx:sidebar | ltx:bibliography | ltx:appendix">
+		     | ltx:paragraph | ltx:sidebar | ltx:bibliography | ltx:appendix | ltx:index">
   <div class="{local-name()}">
     <xsl:call-template name="add_id"/>
     <xsl:apply-templates/>
@@ -113,6 +145,9 @@
 <xsl:param name="bibliography_level">
   <xsl:value-of select="$chapter_level+number(boolean(//ltx:bibliography))"/>
 </xsl:param>
+<xsl:param name="index_level">
+  <xsl:value-of select="$chapter_level+number(boolean(//ltx:index))"/>
+</xsl:param>
 
 <xsl:param name="subsection_level">
   <xsl:value-of select="$section_level+number(boolean(//ltx:subsection))"/>
@@ -162,6 +197,10 @@
   <xsl:element name="{concat('h',$bibliography_level)}">
     <xsl:call-template name="maketitle"/></xsl:element>
 </xsl:template>
+<xsl:template match="ltx:index/ltx:title">
+  <xsl:element name="{concat('h',$index_level)}">
+    <xsl:call-template name="maketitle"/></xsl:element>
+</xsl:template>
 
 <xsl:template match="ltx:subsection/ltx:title">
   <xsl:element name="{concat('h',$subsection_level)}">
@@ -204,7 +243,8 @@
 <xsl:template match="*" mode="TOC"/>
 
 <xsl:template match="ltx:document|ltx:part|ltx:chapter
-		     |ltx:section|ltx:appendix|ltx:bibliography|ltx:subsection|ltx:subsubsection
+		     |ltx:section|ltx:appendix|ltx:bibliography|ltx:index
+		     |ltx:subsection|ltx:subsubsection
                      |ltx:paragraph|ltx:subparagraph" mode="TOC">
   <xsl:param name="TOC_DEPTH">0</xsl:param>
   <xsl:choose>
@@ -226,8 +266,8 @@
 <xsl:template name="inTOC">
   <xsl:param name="TOC_DEPTH">0</xsl:param>
   <xsl:apply-templates select="ltx:title" mode="toctitle"/>
-  <xsl:if test="ltx:part|ltx:chapter|ltx:section|ltx:appendix|ltx:bibliography|ltx:subsection
-                |ltx:subsubsection|ltx:paragraph|ltx:subparagraph">
+  <xsl:if test="ltx:part|ltx:chapter|ltx:section|ltx:appendix|ltx:bibliography|ltx:index
+                |ltx:subsection|ltx:subsubsection|ltx:paragraph|ltx:subparagraph">
     <ul><xsl:apply-templates mode="TOC">
 	<xsl:with-param name="TOC_DEPTH" select="1+$TOC_DEPTH"/>
       </xsl:apply-templates>
@@ -250,19 +290,75 @@
   </xsl:element>
 </xsl:template>
 
+<!-- explictly requested TOC -->
+<xsl:template match="ltx:TOC[@format='short']">
+  <xsl:apply-templates mode="short"/>
+</xsl:template>
+
+<xsl:template match="ltx:TOC[@format='veryshort']">
+  <xsl:apply-templates mode="veryshort"/>
+</xsl:template>
+
+<xsl:template match="ltx:TOC">
+  <h6>Contents</h6>
+  <xsl:apply-templates/>
+</xsl:template>
+
+<xsl:template match="ltx:toclist" mode="short">
+ <div class="shorttoc"><xsl:text>
+ &#x2666; </xsl:text><xsl:apply-templates mode="short"/>
+  </div>
+</xsl:template>
+
+<xsl:template match="ltx:toclist" mode="veryshort">
+  <div class="veryshorttoc">&#x2666;<xsl:apply-templates mode="veryshort"/></div>
+</xsl:template>
+
+<xsl:template match="ltx:toclist[@tocindent]">
+  <xsl:text>
+  </xsl:text><ul class="{concat('toc toclevel',floor((@tocindent+3) div 4))}"><xsl:apply-templates/></ul>
+</xsl:template>
+<xsl:template match="ltx:toclist">
+  <xsl:text>
+  </xsl:text><ul class="toc"><xsl:apply-templates/></ul>
+</xsl:template>
+
+<!-- Need to set up an id so link's to Part do the `right thing' -->
+<xsl:template match="ltx:tocentry">
+  <xsl:text>
+  </xsl:text>
+  <li>
+    <xsl:call-template name='add_id'/>
+    <xsl:apply-templates/>
+  </li>
+</xsl:template>
+
+<xsl:template match="ltx:tocentry" mode="short">
+  <xsl:text>
+  </xsl:text><xsl:apply-templates/><xsl:text> &#x2666; </xsl:text>
+</xsl:template>
+
+<xsl:template match="ltx:tocentry" mode="veryshort">
+  <xsl:apply-templates/>&#x2666;</xsl:template>
+
+
 <!--  ======================================================================
       Refnums and such
       ====================================================================== -->
 
+<!--
 <xsl:template match="ltx:ref[text()] | ltx:qref[text()]">
-  <a href="{concat('#',@labelref)}" class="refnum"><xsl:apply-templates/></a>
+  <a href="{@href}" class="refnum" title="{@title}"><xsl:apply-templates/></a>
 </xsl:template>
 
 <xsl:template match="ltx:ref | ltx:qref">
-  <a href="{concat('#',@labelref)}" class="refnum"><xsl:value-of select="@labelref"/></a>
+  <a href="{@href}" class="refnum" title="{@title}"><xsl:value-of select="@labelref"/></a>
 </xsl:template>
+-->
 
-<xsl:template match="ltx:eqref">(<a href="{concat('#',@labelref)}" class="refnum"><xsl:value-of select="@labelref"/></a>)</xsl:template>
+<xsl:template match="ltx:ref | ltx:qref">
+  <a href="{@href}" class="refnum" title="{@title}"><xsl:apply-templates/></a>
+</xsl:template>
 
 <!-- ======================================================================
      Math level
@@ -522,6 +618,11 @@
   <em><xsl:apply-templates/></em>
 </xsl:template>
 
+<xsl:template match="ltx:cite">
+  <span class="citation"><xsl:apply-templates/></span>
+</xsl:template>
+
+<!--
 <xsl:template match="ltx:cite[@style='intext']">
   <xsl:apply-templates select="citepre"/>
   <xsl:call-template name="cite-label">
@@ -529,7 +630,6 @@
   </xsl:call-template>
   <xsl:apply-templates select="citepost"/>
 </xsl:template>
-
 
 <xsl:template match="ltx:cite">
   (<xsl:apply-templates select="citepre"/>
@@ -555,40 +655,33 @@
 <xsl:template match="ltx:citepre"><xsl:apply-templates/><xsl:text> </xsl:text></xsl:template>
 
 <xsl:template match="ltx:citepost">; <xsl:apply-templates/></xsl:template>
-
+-->
 <!-- ======================================================================
      The Index
      ====================================================================== -->
-<xsl:template match="ltx:index"/>
+<!-- invisible -->
+<xsl:template match="ltx:indexmark"/>
 
 <xsl:template match="ltx:indexentry">
-  <li id="{@label}">
-   <span class='indexline'>
-    <xsl:apply-templates select="indexlevel"/>
-    <xsl:apply-templates select="indexrefs"/>
-  </span>
-  <xsl:apply-templates select="indexlist"/>
+  <li>
+    <xsl:call-template name="add_id"/>
+    <xsl:apply-templates select="ltx:indexphrase"/>
+    <xsl:apply-templates select="ltx:indexrefs"/>
+    <xsl:apply-templates select="ltx:indexlist"/>
   </li>
 </xsl:template>
 
-<xsl:template match="ltx:indexlevel[../@label]">
-  <a name="{../@label}" class="indexlevel">
-    <xsl:apply-templates/>
-  </a>
-</xsl:template>
-
-<xsl:template match="ltx:indexlevel">
-  <span class="indexlevel">
-    <xsl:apply-templates/>
-  </span>
-</xsl:template>
-
-<xsl:template match="ltx:indexrefs">
-  <xsl:text> </xsl:text>
+<xsl:template match="ltx:indexphrase">
   <xsl:apply-templates/>
 </xsl:template>
 
+<xsl:template match="ltx:indexrefs">
+  <xsl:text> </xsl:text><xsl:apply-templates/>
+</xsl:template>
+
 <xsl:template match="ltx:indexlist">
+  <xsl:text>
+</xsl:text>
   <ul class="indexlist">
     <xsl:apply-templates/>
   </ul>
@@ -604,9 +697,16 @@
 </xsl:template>
 
 <xsl:template match="ltx:bibitem">
+  <dt id="{@key}" class="bibitem"><xsl:apply-templates select="ltx:tag"/></dt>
+  <dd><xsl:apply-templates select="ltx:fbib-title | ltx:fbib-data | ltx:fbib-extra | ltx:bibblock"/></dd>
+</xsl:template>
+
+<!--
+<xsl:template match="ltx:bibitem">
   <dt id="{@key}" class="bibitem"><xsl:apply-templates select="ltx:fbib-author-year | ltx:biblabel"/></dt>
   <dd><xsl:apply-templates select="ltx:fbib-title | ltx:fbib-data | ltx:fbib-extra | ltx:bibblock"/></dd>
 </xsl:template>
+-->
 
 <xsl:template match="ltx:fbib-title | ltx:fbib-data | ltx:fbib-extra">
   <br/><xsl:apply-templates/>
@@ -664,8 +764,6 @@
 <xsl:template match="ltx:keyword">
   <a href="{@href}" class="keyword"><xsl:apply-templates/></a>
 </xsl:template>
-
-<xsl:template match="ltx:index"/>
 
 <xsl:template match="referrers">
   <dt>Ref'd&#160;by</dt>

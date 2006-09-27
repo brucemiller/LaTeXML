@@ -11,6 +11,7 @@ use LaTeXML::Post::Graphics;
 use LaTeXML::Post::MathML;
 use LaTeXML::Post::PurgeXMath;
 use LaTeXML::Post::XSLT;
+use LaTeXML::Post::Writer;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 my $SRCDIR = $FindBin::RealBin;
@@ -22,17 +23,16 @@ my $PDDEST = "$DEST/perldoc";
 # Process the LaTeX documentation
 print "Generating LaTeXML documentation in $DEST\n";
 LaTeXML->new()->convertAndWriteFile('LaTeXML');
-my $POST = LaTeXML::Post->new();
-my $doc = $POST->process($POST->readDocument('LaTeXML.xml'),
-			 sourceDirectory=>$SRCDIR,
-			 destinationDirectory=>$DEST,
-			 format     => 'xhtml',
-			 processors=>[LaTeXML::Post::Graphics->new(),
-				      LaTeXML::Post::MathML::Presentation->new(),
-				      LaTeXML::Post::PurgeXMath->new(),
-				      LaTeXML::Post::XSLT->new(stylesheet=>"LaTeXML-xhtml.xsl")],
-			 CSS=>'latexml.css');
-$POST->writeDocument($doc,"$DEST/LaTeXML.xhtml",'xhtml');
+LaTeXML::Post::ProcessChain(
+   LaTeXML::Post::Document
+     ->newFromFile('LaTeXML.xml',
+		   destination=>"$DEST/LaTeXML.xhtml"),
+   LaTeXML::Post::Graphics->new(),
+   LaTeXML::Post::MathML::Presentation->new(),
+   LaTeXML::Post::PurgeXMath->new(),
+   LaTeXML::Post::XSLT->new(stylesheet=>"LaTeXML-xhtml.xsl",
+			    css=>'latexml.css'),
+   LaTeXML::Post::Writer->new(format=>'xhtml'));
 
 #======================================================================
 # Process the perldocs
@@ -75,8 +75,8 @@ sub process_dir {
     print "$object => $htmlfile\n";
 
     foreach my $i (-1..$#subdir){
-      my $dir = join('/',$PDDEST,@subdir[0..$i]);
-      mkdir($dir) unless -d $dir; }
+      my $sdir = join('/',$PDDEST,@subdir[0..$i]);
+      mkdir($sdir) unless -d $sdir; }
 
     pod2html(
 	     "--css=../$toroot/latexml.css",

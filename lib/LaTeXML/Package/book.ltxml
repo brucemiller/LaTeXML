@@ -40,24 +40,27 @@ DefMacro('\thesubsubsection','\thesubsection.\arabic{subsubsection}');
 DefMacro('\theparagraph',    '');
 DefMacro('\thesubparagraph', '');
 
-NewCounter('equation', 'document', idprefix=>'E');
-NewCounter('figure',   'document', idprefix=>'F');
-NewCounter('table',    'document', idprefix=>'T');
-DefMacro('\theequation', '\arabic{equation}');
-DefMacro('\thefigure',   '\arabic{figure}');
-DefMacro('\thetable',    '\arabic{table}');
+NewCounter('equation', 'chapter', idprefix=>'E');
+NewCounter('figure',   'chapter', idprefix=>'F');
+NewCounter('table',    'chapter', idprefix=>'T');
+DefMacro('\theequation', '\thechapter.\arabic{equation}');
+DefMacro('\thefigure',   '\thechapter.\arabic{figure}');
+DefMacro('\thetable',    '\thechapter.\arabic{table}');
 
-NewCounter('@itemize', 'document', idprefix=>'I');
-NewCounter('enumi');
-NewCounter('enumii');
-NewCounter('enumiii');
-NewCounter('enumiv');
-# Since we don't want enumi (necessarily) to be reset when @itemize is incremented,
-# we've got to manually define the ID macros:
-DefMacro('\theenumi@ID',   '\the@itemize@ID.\@enumi@ID');
-DefMacro('\theenumii@ID',  '\the@itemize@ID.\@enumii@ID');
-DefMacro('\theenumiii@ID', '\the@itemize@ID.\@enumiii@ID');
-DefMacro('\theenumiv@ID',  '\the@itemize@ID.\@enumiv@ID');
+NewCounter('@itemizei',   'chapter',    idprefix=>'I');
+NewCounter('@itemizeii',  '@itemizei',  idprefix=>'I');
+NewCounter('@itemizeiii', '@itemizeii', idprefix=>'I');
+NewCounter('@itemizeiv',  '@itemizeiii',idprefix=>'I');
+NewCounter('@itemizev',   '@itemizeiv', idprefix=>'I');
+NewCounter('@itemizevi',  '@itemizev',  idprefix=>'I');
+
+NewCounter('enumi',  '@itemizei',   idprefix=>'i');
+NewCounter('enumii', '@itemizeii',  idprefix=>'i');
+NewCounter('enumiii','@itemizeiii', idprefix=>'i');
+NewCounter('enumiv', '@itemizeiv',  idprefix=>'i');
+# A couple of more levels, since we use these for ID's!
+NewCounter('enumv',  '@itemizev',   idprefix=>'i');
+NewCounter('enumvi', '@itemizevi',  idprefix=>'i');
 
 DefMacro('\theenumi',           '\arabic{enumi}');
 DefMacro('\theenumii',          '\alph{enumii}');

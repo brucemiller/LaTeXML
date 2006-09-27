@@ -23,7 +23,7 @@ DocType("ltx:document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd',
 #**********************************************************************
 # The core sectioning commands are defined in LaTeX.pm
 # but the counter setup, etc, depends on article
-Let('\thedocument@ID','\@empty');
+#Let('\thedocument@ID','\@empty');
 NewCounter('section',      'document',     idprefix=>'S',  nested=>['subsection']);
 NewCounter('subsection',   'section',      idprefix=>'SS', nested=>['subsubsection']);
 NewCounter('subsubsection','subsection',   idprefix=>'SSS',nested=>['paragraph']);
@@ -43,21 +43,20 @@ DefMacro('\theequation', '\arabic{equation}');
 DefMacro('\thefigure',   '\arabic{figure}');
 DefMacro('\thetable',    '\arabic{table}');
 
-NewCounter('@itemize', 'document', idprefix=>'I');
-NewCounter('enumi');
-NewCounter('enumii');
-NewCounter('enumiii');
-NewCounter('enumiv');
-NewCounter('enumv');		# A couple of more levels, since we use these for ID's!
-NewCounter('enumvi');
-# Since we don't want enumi (necessarily) to be reset when @itemize is incremented,
-# we've got to manually define the ID macros:
-DefMacro('\theenumi@ID',   '\the@itemize@ID.\@enumi@ID');
-DefMacro('\theenumii@ID',  '\the@itemize@ID.\@enumii@ID');
-DefMacro('\theenumiii@ID', '\the@itemize@ID.\@enumiii@ID');
-DefMacro('\theenumiv@ID',  '\the@itemize@ID.\@enumiv@ID');
-DefMacro('\theenumv@ID',   '\the@itemize@ID.\@enumv@ID');
-DefMacro('\theenumvi@ID',  '\the@itemize@ID.\@enumvi@ID');
+NewCounter('@itemizei',   'document',   idprefix=>'I');
+NewCounter('@itemizeii',  '@itemizei',  idprefix=>'I');
+NewCounter('@itemizeiii', '@itemizeii', idprefix=>'I');
+NewCounter('@itemizeiv',  '@itemizeiii',idprefix=>'I');
+NewCounter('@itemizev',   '@itemizeiv', idprefix=>'I');
+NewCounter('@itemizevi',  '@itemizev',  idprefix=>'I');
+
+NewCounter('enumi',  '@itemizei',   idprefix=>'i');
+NewCounter('enumii', '@itemizeii',  idprefix=>'i');
+NewCounter('enumiii','@itemizeiii', idprefix=>'i');
+NewCounter('enumiv', '@itemizeiv',  idprefix=>'i');
+# A couple of more levels, since we use these for ID's!
+NewCounter('enumv',  '@itemizev',   idprefix=>'i');
+NewCounter('enumvi', '@itemizevi',  idprefix=>'i');
 
 DefMacro('\theenumi',           '\arabic{enumi}');
 DefMacro('\theenumii',          '\alph{enumii}');

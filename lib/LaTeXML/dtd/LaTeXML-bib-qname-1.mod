@@ -74,7 +74,6 @@
 <!ENTITY % LaTeXML-bib.bib-preprint.qname   "%LaTeXML-bib.pfx;bib-preprint">
 <!ENTITY % LaTeXML-bib.bib-note.qname       "%LaTeXML-bib.pfx;bib-note">
 <!ENTITY % LaTeXML-bib.bibitem.qname        "%LaTeXML-bib.pfx;bibitem">
-<!ENTITY % LaTeXML-bib.biblabel.qname       "%LaTeXML-bib.pfx;biblabel">
 <!ENTITY % LaTeXML-bib.bibblock.qname       "%LaTeXML-bib.pfx;bibblock">
 
 

@@ -96,6 +96,8 @@ DefPrimitive('\lxDefMath{}[][]{} OptionalKeyVals:XMath', sub {
 
 DefKeyVal('Declare','wrap','{}',1);
 DefKeyVal('Declare','trace','{}',1);
+DefKeyVal('Declare','replace','Undigested');
+
 our $declare_keys = {scope=>1,role=>1,tag=>1,name=>1,meaning=>1,
 		     trace=>1,wrap=>1,replace=>1,label=>1};
 DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
@@ -159,7 +161,16 @@ DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}','',
 
 our $XMDeclID=0;
 sub next_declaration_id {
-  ToString(LookupValue('Chapter')).":LXDeclID".$XMDeclID++; }
+##  ToString(LookupValue('Chapter')).":LXDeclID".$XMDeclID++; }
+
+##  my $docid = LookupValue('DOCUMENTID');
+##  ($docid ? "$docid.XMD" : 'XMD').++$XMDeclID; }
+
+  StepCounter('@XMDECL');
+  InstallDefinition(LaTeXML::Expandable->new(T_CS('\@@XMDECL@ID'),undef,
+                    Tokens(Explode(LookupValue('\c@@XMDECL')->valueOf))),
+		    'global');
+  ToString(Expand(T_CS('\the@XMDECL@ID'))); }
 
 sub getDeclarationScope {
   my($keys)=@_;

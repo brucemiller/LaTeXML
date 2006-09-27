@@ -18,9 +18,7 @@ use base qw(LaTeXML::Post::LaTeXImages);
 sub image_prefix { 'mi'; }
 
 # Return the list of Math nodes.
-sub find_nodes {
-  my($self,$doc)=@_;
-  $doc->getElementsByTagNameNS($self->getNamespace,'Math'); }
+sub find_nodes { $_[1]->findnodes('//ltx:Math'); }
 
 # Return the TeX string to format the image for this node.
 sub extract_tex {

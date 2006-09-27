@@ -21,6 +21,15 @@ no warnings 'redefine';
 
 RegisterNamespace(ltx=>"http://dlmf.nist.gov/LaTeXML");
 
+# Base ID prefixes everything.
+DefMacro("\\\@empty",Tokens());
+
+if(my $docid = LookupValue('DOCUMENTID')){
+  DefMacro('\thedocument@ID',$docid); }
+else {
+  Let('\thedocument@ID','\@empty'); }
+NewCounter('@XMARG','document',idprefix=>'XM');
+
 #**********************************************************************
 # CORE TeX; Built-in commands.
 #**********************************************************************
@@ -45,6 +54,8 @@ DefParameterType('Keyword',    sub{shift->readKeyword(@_); });
 DefParameterType('Balanced',   sub{$_[0]->readBalanced; });
 DefParameterType('Semiverbatim',sub{ $_[0]->readArg; }, semiverbatim=>1,
 		 reversion=>sub { (T_BEGIN,$_[0]->revert,T_END); });
+
+DefParameterType('Undigested',  sub { $_[0]->readArg; }, undigested=>1);
 
 DefParameterType('Variable', sub {
   my($gullet)=@_;
@@ -875,12 +886,12 @@ sub read_rule_spec {
     $whatsit->setProperty($key=>$gullet->readDimension); }
   return; }
 
-DefConstructor('\vrule', "<ltx:text height='#height' depth='#depth' width='#width'/>",
+DefConstructor('\vrule', "<ltx:rule height='#height' depth='#depth' width='#width'/>",
 	       afterDigest=>sub { read_rule_spec(@_); },
 	       reversion=>sub { (T_CS('\vbox'),revert_spec($_[0],'height'),
 				 revert_spec($_[0],'depth'),revert_spec($_[0],'width'));});
 
-DefConstructor('\hrule', "<ltx:text height='#height' depth='#depth' width='#width'/>",
+DefConstructor('\hrule', "<ltx:rule height='#height' depth='#depth' width='#width'/>",
 	       afterDigest=>sub { read_rule_spec(@_); },
 	       reversion=>sub { (T_CS('\hbox'),revert_spec($_[0],'height'),
                                 revert_spec($_[0],'depth'),revert_spec($_[0],'width'));});
@@ -1211,22 +1222,33 @@ sub add_body_TeX {
 Tag('ltx:Math',   afterOpen=>\&add_body_TeX);
 Tag('ltx:Math',  afterClose=>\&cleanup_Math);
 
-sub cleanup_Math {
+sub XXXcleanup_Math {
   my($document,$mathnode)=@_;
   # If the Math contains only XMath that only contain non-math, it apparently isn't math at all!?!
   # pull them up & toss the XMath and Math wrapper.
   my $hasmath=0;
   foreach my $xnode ($mathnode->childNodes){
     if($document->getNodeQName($xnode) eq 'ltx:XMath'){
-#      if(!grep($document->getNodeQName($_) =~ /^ltx:XMApp|ltx:XMArg|ltx:XMTok|ltx:XMDual|ltx:XMHint|ltx:XMWrap/,
       # If all nodes are wrapped in XMText (?)
-      if(! grep($document->getNodeQName($_) ne 'ltx:XMText',
-	       $xnode->childNodes)){
+      if(! grep($document->getNodeQName($_) ne 'ltx:XMText',$xnode->childNodes)){
 	replace_node($xnode, $xnode->childNodes); } # Pull these out.
       else {
 	$hasmath=1; }}}
   if(!$hasmath){		# If all XMath's were pulled up, pull out the Math too.
     replace_node($mathnode, $mathnode->childNodes); }}
+
+sub cleanup_Math {
+  my($document,$mathnode)=@_;
+  # If the Math contains ONLY XMath that ONLY contain XMText,
+  # it apparently isn't math at all!?!  So pull up the contents of the XMText's.
+  foreach my $xnode ($mathnode->childNodes){
+    return unless $document->getNodeQName($xnode) eq 'ltx:XMath';
+    foreach my $mnode ($xnode->childNodes){
+      return unless $document->getNodeQName($mnode) eq 'ltx:XMText';
+    }}
+  # Replace Math/XMath/XMText/* by *
+  replace_node($mathnode,
+	       map($_->childNodes,map($_->childNodes,$mathnode->childNodes))); }
 
 sub replace_node {
   my($oldnode,@newnodes)=@_;
@@ -1745,7 +1767,6 @@ DefPrimitive('\nonfrenchspacing',undef);
 DefMacro('\normalbaselines',
 	 '\lineskip=\normallineskip\baselineskip=\normalbaselineskip\lineskiplimit=\normallineskiplimit');
 DefMacro('\space',Tokens(T_SPACE));
-DefMacro("\\\@empty",Tokens());
 DefMacro('\lq',"`");
 DefMacro('\rq',"'");
 Let('\empty',T_CS('\@empty'));

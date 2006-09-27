@@ -224,19 +224,42 @@ sub compile_match1 {
   print STDERR "Converting \"".ToString($patternbox)."\"\n  => xpath= \"$xpath\"\n" if $LaTeXML::Rewrite::DEBUG;
   [$xpath,scalar(@nodes)]; }
 
-sub compile_replacement {
+sub XXXcompile_replacement {
   my($self,$document,$pattern)=@_;
   if(!ref $pattern){
     $self->compile_replacement1(digest_rewrite(($$self{math} ? '$'.$pattern.'$' : $pattern))); }
   elsif($pattern->isaBox){
     $self->compile_replacement1($pattern); }
   else {
-    Error("Don't know what to do with replacement=>\"".Stringify($pattern)."\""); }}
+#    Error("Don't know what to do with replacement=>\"".Stringify($pattern)."\""); 
+    $self->compile_replacement1(digest_rewrite($pattern)); 
+}}
 
-sub compile_replacement1 {
+sub XXXcompile_replacement1 {
   my($self,$patternbox)=@_;
   $patternbox = $patternbox->getBody if $$self{math};
   sub { $_[0]->absorb($patternbox); }}
+
+
+# Reworked to do digestion at replacement time.
+sub compile_replacement {
+  my($self,$document,$pattern)=@_;
+
+  if((ref $pattern) && $pattern->isaBox){
+    $pattern = $pattern->getBody if $$self{math};
+    sub { $_[0]->absorb($pattern); }}
+  else {
+    $pattern = Tokenize($$self{math} ? '$'.$pattern.'$' : $pattern) unless ref $pattern;
+    sub {
+      my $stomach = $STATE->getStomach;
+      $stomach->bgroup;
+      $STATE->assignValue(font=>LaTeXML::Font->new(), 'local');
+      $STATE->assignValue(mathfont=>LaTeXML::MathFont->new(), 'local');
+      my $box = $stomach->digest($pattern,0);
+      $stomach->egroup;
+      $box = $box->getBody if $$self{math};
+      $_[0]->absorb($box); }
+}}
 
 sub compile_regexp {
   my($self,$pattern)=@_;
@@ -253,7 +276,7 @@ sub digest_rewrite {
   $stomach->bgroup;
   $STATE->assignValue(font=>LaTeXML::Font->new(), 'local');  # Use empty font, so eventual insertion merges.
   $STATE->assignValue(mathfont=>LaTeXML::MathFont->new(), 'local');
-  my $box = $stomach->digest(TokenizeInternal($string),0);
+  my $box = $stomach->digest((ref $string ? $string : Tokenize($string)),0);
   $stomach->egroup;
   $box; }
 

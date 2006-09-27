@@ -13,6 +13,7 @@ use LaTeXML::Util::Pathname;
 my $identity = "latexml (LaTeXML version $LaTeXML::VERSION)";
 my($verbosity,$strict,$comments,$noparse)=(0,0,1,0);
 my ($format,$output,$help,$showversion)=('xml','');
+my ($documentid);
 my (@paths,@preload,@debugs);
 GetOptions("output=s"  => \$output,
 	   "preload=s" => \@preload,
@@ -27,6 +28,7 @@ GetOptions("output=s"  => \$output,
 	   "comments!" => \$comments,
 	   "VERSION"   => \$showversion,
 	   "debug=s"   => sub { eval "\$LaTeXML::$_[1]::DEBUG=1; "; },
+	   "documentid=s" => \$documentid,
 	   "help"      => \$help,
 	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
@@ -40,8 +42,10 @@ my $source = $ARGV[0];
 print STDERR "$identity\n" unless $verbosity < 0;
 
 my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[@paths],
-			 verbosity=>$verbosity, strict=>$strict,includeComments=>$comments,
-			 nomathparse=>$noparse);
+			  verbosity=>$verbosity, strict=>$strict,
+			  includeComments=>$comments,
+			  documentid=>$documentid,
+			  nomathparse=>$noparse);
 
 if($output){
   my($dir,$name,$type)=pathname_split($output);

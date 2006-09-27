@@ -7,7 +7,9 @@ use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use LaTeXML;
 use LaTeXML::Post;
+use LaTeXML::Post::Writer;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Util::ObjectDB;
 
 #======================================================================
 # Parse command line.
@@ -18,12 +20,12 @@ my($help,$showversion,$verbosity,$validate)=(0,0,0,1);
 
 # initialize these undefined!!!
 # undef => unspecified; 0 = NO, 1 = YES
-my($sourcedir,$destination);
+my($sourcedir,$destination,$url);
 my($format);
 my($parallelmath,$mathimages,$keepXMath);
-my($stylesheet,$css);
+my($split,$stylesheet,$css);
 my($svg,$picimages);
-my($dographics,$destdir);
+my($dographics);
 
 my @math_formats =();
 my %removed_math_formats=();
@@ -33,13 +35,14 @@ GetOptions("destination=s"=>sub { $destination = $_[1];
 				  if(!defined $format){
 				    $format='xhtml' if $destination=~/\.xhtml$/;
 				    $format='html'  if $destination=~/\.html$/; }},
+	   "url=s"                 =>\$url,
 	   "sourcedirectory=s"     =>\$sourcedir,
 	   "verbose+"              =>\$verbosity,
 	   "stylesheet=s"          =>\$stylesheet,
 	   "css=s"                 =>\$css,
 	   "format=s"              =>\$format,
 	   "validate!"             =>\$validate,
-
+	   "split=s"               =>\$split,
 	   # Various choices for math processing.
 	   # Note: Could want OM embedded in mml annotation, too.
 	   # In general, could(?) want multiple math reps within <Math>
@@ -80,19 +83,10 @@ if($xmlfile ne '-'){
 #======================================================================
 # Sanity check and Completion of options.
 #======================================================================
-if(!defined $sourcedir){
-    if($xmlfile eq '-'){
-	$sourcedir = '.'; }
-    else {
-	my($vol,$dir,$name) = File::Spec->splitpath($xmlfile);
-	$sourcedir = $dir || '.'; }}
-if((defined $destination) && (!defined $destdir)){
-  my($vol,$dir,$name)=File::Spec->splitpath($destination);
-  $destdir = $dir; }
-$sourcedir = '.' unless $sourcedir;
-$destdir   = '.' unless $destdir;
 
 # Sanity check & option completion for known output formats.
+if((defined $split) && !defined $destination){
+  Error("Must supply destination when using split"); }
 if(!defined $format){}
 elsif($format eq 'html'){
   Error("Default html stylesheet only supports math images")
@@ -132,42 +126,47 @@ Error("Parallel math markup can only be based on MathML")
 binmode(STDERR,":utf8");
 binmode(STDOUT,":utf8");
 print STDERR "$identity\n" if $verbosity > 0;
+our %OPTIONS = (verbosity=>$verbosity||0);
 
-# Create destination directory if needed,
-if($destdir && !-d $destdir){
-    (mkdir $destdir
-     or die "Couldn't create destination dir \"$destdir\": $!"); }
+my $DB = LaTeXML::Util::ObjectDB->new();
 
 # Create the processors:
 my @procs = ();
+if($split){
+  require 'LaTeXML/Post/Split.pm';
+  push(@procs,LaTeXML::Post::Split->new(split_xpath=>$split,%OPTIONS)); }
+
+require 'LaTeXML/Post/Scan.pm';
+push(@procs,LaTeXML::Post::Scan->new(db=>$DB,%OPTIONS));
+
 if($mathimages){
   require 'LaTeXML/Post/MathImages.pm';
-  push(@procs,LaTeXML::Post::MathImages->new()); }
+  push(@procs,LaTeXML::Post::MathImages->new(%OPTIONS)); }
 if($picimages){
   require 'LaTeXML/Post/PictureImages.pm';
-  push(@procs,LaTeXML::Post::PictureImages->new()); }
+  push(@procs,LaTeXML::Post::PictureImages->new(%OPTIONS)); }
 if($dographics){
   require 'LaTeXML/Post/Graphics.pm';
-  push(@procs,LaTeXML::Post::Graphics->new()); }
+  push(@procs,LaTeXML::Post::Graphics->new(%OPTIONS)); }
 if($svg){
   require 'LaTeXML/Post/SVG.pm';
-  push(@procs,LaTeXML::Post::SVG->new()); }
+  push(@procs,LaTeXML::Post::SVG->new(%OPTIONS)); }
 if(@math_formats){
   $keepXMath  = 0 unless defined $keepXMath;
   my @mprocs=();
   foreach my $fmt (@math_formats){
     if($fmt eq 'pmml'){
       require 'LaTeXML/Post/MathML.pm';
-      push(@mprocs,LaTeXML::Post::MathML::Presentation->new()); }
+      push(@mprocs,LaTeXML::Post::MathML::Presentation->new(%OPTIONS)); }
     elsif($fmt eq 'cmml'){
       require 'LaTeXML/Post/MathML.pm';
-      push(@mprocs,LaTeXML::Post::MathML::Content->new()); }
+      push(@mprocs,LaTeXML::Post::MathML::Content->new(%OPTIONS)); }
     elsif($fmt eq 'om'){
       require 'LaTeXML/Post/OpenMath.pm';
-      push(@mprocs,LaTeXML::Post::OpenMath->new()); }}
+      push(@mprocs,LaTeXML::Post::OpenMath->new(%OPTIONS)); }}
   if($parallelmath){
     require 'LaTeXML/Post/MathML.pm';
-    push(@procs,LaTeXML::Post::MathML::Parallel->new(math_processors=>[@mprocs])); }
+    push(@procs,LaTeXML::Post::MathML::Parallel->new(math_processors=>[@mprocs],%OPTIONS)); }
   else {
     push(@procs,@mprocs); }}
 else {
@@ -175,44 +174,31 @@ else {
   }
 if(!$keepXMath){
   require 'LaTeXML/Post/PurgeXMath.pm';
-  push(@procs,LaTeXML::Post::PurgeXMath->new()); }
+  push(@procs,LaTeXML::Post::PurgeXMath->new(%OPTIONS)); }
+
+# Cut somewhere like here for 2 stage processing
+require 'LaTeXML/Post/CrossRef.pm';
+push(@procs,LaTeXML::Post::CrossRef->new(db=>$DB,%OPTIONS));
+
 if($stylesheet){
   require 'LaTeXML/Post/XSLT.pm'; 
-  push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet)); }
+  push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet, css=>$css,%OPTIONS)); }
+
+push(@procs,LaTeXML::Post::Writer->new(format=>$format,%OPTIONS));
 
 my $POST = LaTeXML::Post->new();
-my $indoc;
-if($xmlfile eq '-'){
-    my $content;
-    { local $/ = undef; $content = <>; }
-    $indoc = $POST->readDocumentFromString($content,validate=>$validate); }
-else {
-    $indoc = $POST->readDocument($xmlfile,validate=>$validate); }
-
-my $doc = $POST->process($indoc, 
-			 processors     => [@procs],
-			 sourceDirectory=> $sourcedir,
-			 destinationDirectory=>$destdir,
-			 format         => $format,
-			 stylesheet     => $stylesheet,
-			 CSS            => $css,
-			 verbosity      => $verbosity);
-if(!$stylesheet){      # If no XSL, we'll munge our own DTD for now...
-  my @addns=( (grep(/^(pmml|cmml)$/,@math_formats) ? ('MathML'):()),
-	      (grep(/^(om)$/,       @math_formats) ? ('OpenMath'):()),
-	      ($svg ? ('SVG'):()) );
-  $POST->adjust_latexml_doctype($doc,@addns) if @addns; }
-
-if($destination){ 
-  $POST->writeDocument($doc,$destination,$format); 
-  if((defined $css) && ($css eq 'LaTeXML.css') && !-f "$destdir/LaTeXML.css"){
-    foreach my $dir (@INC){	# Find installed stylesheet.
-      next unless -f "$dir/LaTeXML/dtd/LaTeXML.css";
-      pathname_copy("$dir/LaTeXML/dtd/LaTeXML.css", "$destdir/LaTeXML.css"); 
-      last; }}
-}
-else {
-  print $POST->toString($doc,$format); }
+LaTeXML::Post::ProcessChain(
+	  ($xmlfile eq '-'
+	   ? LaTeXML::Post::Document->newFromSTDIN(validate=>$validate,
+						   sourceDirectory=>$sourcedir,
+						   destination=>$destination,
+						   url=>$url || $destination)
+	   : LaTeXML::Post::Document->newFromFile($xmlfile,
+						  validate=>$validate,
+						  sourceDirectory=>$sourcedir,
+						  destination=>$destination,
+						  url=>$url || $destination)),
+			    @procs);
 
 #======================================================================
 # helpers

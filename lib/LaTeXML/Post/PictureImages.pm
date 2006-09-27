@@ -18,9 +18,7 @@ use base qw(LaTeXML::Post::LaTeXImages);
 sub image_prefix { 'pic'; }
 
 # Return the list of Picture nodes.
-sub find_nodes {
-  my($self,$doc)=@_;
-  $doc->getElementsByTagNameNS($self->getNamespace,'picture'); }
+sub find_nodes { $_[1]->findnodes('//ltx:picture'); }
 
 # Return the TeX string to format the image for this node.
 sub extract_tex {

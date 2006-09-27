@@ -202,13 +202,13 @@ DefExpandable('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
   my($gullet,$type,$level,$ignore3,$ignore4,$ignore5,$ignore6,$flag)=@_;
   my $ctr = LookupValue('counter_for_'.ToString($type)) || ToString($type);
   if($flag){
-    refStepID($ctr);
+    RefStepID($ctr);
     (T_CS('\\@@section'),
      T_BEGIN,$type->unlist,T_END,
      T_OTHER('['),T_OTHER(']'),
      T_OTHER('['),T_CS('\@currentID'),T_OTHER(']')); }
   else {
-    refStepCounter($ctr);
+    RefStepCounter($ctr);
     (T_CS('\\@@section'),
      T_BEGIN,$type->unlist,T_END,
      T_OTHER('['),T_CS('\@currentlabel'),T_OTHER(']'),
@@ -407,41 +407,39 @@ Tag('ltx:item', autoClose=>1);
 DefConstructor('\item[]',
 	       "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
 
-sub refStepItemCounter {
-  refStepCounter('enum'.ToString(Tokens(roman(LookupValue('itemlevel'))))); }
+AssignValue(itemlevel=>0,'global');
 
-sub beforeItemize {
+sub beginItemize {
   my($type)=@_;
-  my $level = AssignValue(itemlevel=>LookupValue('itemlevel')+1);
+  my $level = LookupValue('itemlevel')+1;
+  AssignValue(itemlevel=>$level);
+  my $postfix = ToString(Tokens(roman($level)));
   Let('\item'=>"\\".$type.'@item');
-  resetCounter('enum'.ToString(Tokens(roman(LookupValue('itemlevel')))));
-}
+  ResetCounter('enum'.$postfix);
+  RefStepCounter('@itemize'.$postfix); }
+
+sub RefStepItemCounter {
+  RefStepCounter('enum'.ToString(Tokens(roman(LookupValue('itemlevel'))))); }
 
 DefConstructor('\itemize@item[]',
 	       "<ltx:item id='#id'>?#1(<ltx:tag>#1</ltx:tag>)",
-	       properties=>sub{ refStepItemCounter(); });
+	       properties=>sub{ RefStepItemCounter(); });
 DefConstructor('\enumerate@item[]',
 	       "<ltx:item id='#id' refnum='#refnum'>?#1(<ltx:tag>#1</ltx:tag>)",
-	       properties=>sub{ refStepItemCounter(); });
+	       properties=>sub{ RefStepItemCounter(); });
 DefConstructor('\description@item[]',
 	       "<ltx:item id='#id'>?#1(<ltx:tag>#1</ltx:tag>)",
-	       properties=>sub{ refStepItemCounter(); });
-
-AssignValue(itemlevel=>0);
-
+	       properties=>sub{ RefStepItemCounter(); });
   
 DefEnvironment('{itemize}',
 	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
-	       beforeDigest=>sub { beforeItemize('itemize'); },
-	       properties=>sub { refStepCounter('@itemize'); });
+	       properties=>sub { beginItemize('itemize'); });
 DefEnvironment('{enumerate}',
 	       "<ltx:enumerate  id='#id'>#body</ltx:enumerate>",
-	      beforeDigest=>sub { beforeItemize('enumerate'); },
-	       properties=>sub { refStepCounter('@itemize'); });
+	       properties=>sub { beginItemize('enumerate'); });
 DefEnvironment('{description}',
 	       "<ltx:description  id='#id'>#body</ltx:description>",
-	       beforeDigest=>sub { beforeItemize('description'); },
-	       properties=>sub { refStepCounter('@itemize'); });
+	       properties=>sub { beginItemize('description'); });
 
 # NOTE: Do I need to do anything with
 # \labelitemi, labelitemii, labelitemiii or labelitemiv ?
@@ -567,7 +565,7 @@ DefEnvironment('{equation}',
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       properties=> sub { refStepCounter('equation') });
+	       properties=> sub { RefStepCounter('equation') });
 DefEnvironment('{equation*}',
 	       "<ltx:equation id='#id'>"
 	       . "<ltx:Math mode='display'>"
@@ -577,7 +575,7 @@ DefEnvironment('{equation*}',
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       properties=> sub { refStepID('equation') });
+	       properties=> sub { RefStepID('equation') });
 
 # NOTE: This has to interact with equation to CANCEL (or backtrack?) the
 # numbering?
@@ -594,7 +592,7 @@ DefConstructor('\[',
 	       ."</ltx:equation>",
 	       beforeDigest=> sub{ $_[0]->beginMode('display_math'); },
 	       captureBody=>1,
-	       properties=> sub { refStepID('equation') });
+	       properties=> sub { RefStepID('equation') });
 DefConstructor('\]'  ,"",beforeDigest=> sub{ $_[0]->endMode('display_math'); });
 DefConstructor('\(' ,
 	       "<ltx:Math mode='inline'>"
@@ -627,7 +625,7 @@ DefEnvironment('{eqnarray}',
 		 $document->closeElement('ltx:Math');
 		 $document->closeElement('ltx:equation'); },
 	       mode=>'display_math',
-	       properties=> sub { refStepCounter('equation') },
+	       properties=> sub { RefStepCounter('equation') },
 	       beforeDigest=>\&before_alignment,
 	       afterDigest=>\&after_alignment);
 DefEnvironment('{eqnarray*}',
@@ -643,7 +641,7 @@ DefEnvironment('{eqnarray*}',
 		 $document->closeElement('ltx:Math');
 		 $document->closeElement('ltx:equation'); },
 	       mode=>'display_math',
-	       properties=> sub { refStepID('equation') },
+	       properties=> sub { RefStepID('equation') },
 	       beforeDigest=>\&before_alignment,
 	       afterDigest=>\&after_alignment);
 
@@ -877,7 +875,7 @@ DefExpandable('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 		   Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
 		 ($counter 
 		  ? (properties => sub {
-		       ($flag ? refStepID($counter) : refStepCounter($counter));})
+		       ($flag ? RefStepID($counter) : RefStepCounter($counter));})
 		  :()),
 		 scope => 'global');
 });
@@ -886,110 +884,6 @@ DefExpandable('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 #======================================================================
 # C.8.4 Numbering
 #======================================================================
-# We're attempting to mimic LaTeX's counter mechanisms, while leveraging
-# it to add id attributes to the main document structural elements.
-# These id's should be both unique, and parallel the visible reference numbers
-# (as much as possible).  Also, for consistency, we add id's to unnumbered
-# document elements (eg from \section*); this requires an additional counter
-# (eg. UNsection) and  mechanisms to track it.
-
-# Defines a new counter named $ctr.
-# If $within is defined, $ctr will be reset whenever $within is incremented.
-# Keywords:
-#  idprefix : specifies a prefix to be used in formatting ID's for document structure elements
-#           counted by this counter.  Ie. subsection 3 in section 2 might get: id="S2.SS3"
-#   nested : a list of counters that correspond to scopes which are "inside" this one.
-#           Whenever any definitions scoped to this counter are deactivated,
-#           the inner counter's scopes are also deactivated.
-#           NOTE: I'm not sure this is even a sensible implementation,
-#           or why inner should be different than the counters reset by incrementing this counter.
-
-sub NewCounter { 
-  my($ctr,$within,%options)=@_;
-  my $unctr = "UN$ctr";		# UNctr is counter for generating ID's for UN-numbered items.
-  DefRegister("\\c\@$ctr",Number(0));
-  AssignValue("\\c\@$ctr"=>Number(0),'global');
-  AssignValue("\\cl\@$ctr"=>Tokens(),'global');
-  DefRegister("\\c\@$unctr",Number(0));
-  AssignValue("\\c\@$unctr"=>Number(0),'global');
-  AssignValue("\\cl\@$unctr"=>Tokens(),'global');
-  AssignValue("\\cl\@$within" =>
-	      Tokens(T_CS($ctr),T_CS($unctr),
-		     (LookupValue("\\cl\@$within") ? LookupValue("\\cl\@$within")->unlist :())),
-	      'global') if $within;
-  AssignValue("\\cl\@UN$within" =>
-	      Tokens(T_CS($unctr),
-		     (LookupValue("\\cl\@UN$within") ? LookupValue("\\cl\@UN$within")->unlist :())),
-	      'global') if $within;
-  AssignValue('nested_counters_'.$ctr =>$options{nested}) if $options{nested};
-  DefMacro("\\the$ctr","\\arabic{$ctr}");
-  my $prefix = $options{idprefix};
-  if(defined $prefix){
-    if($within){
-      DefMacro("\\the$ctr\@ID","\\ifx\\\@empty\\the$within\@ID\\else\\the$within\@ID.\\fi $prefix\\\@$ctr\@ID"); }
-    else {
-      DefMacro("\\the$ctr\@ID","$prefix\\\@$ctr\@ID"); }
-    DefMacro("\\\@$ctr\@ID","0"); }
-  return; }
-
-sub stepCounter {
-  my($ctr)=@_;
-  AssignValue("\\c\@$ctr"=>LookupValue("\\c\@$ctr")->add(Number(1)),'global');
-  # and reset any within counters!
-  if(my $nested = LookupValue("\\cl\@$ctr")){
-    foreach my $c ($nested->unlist){
-      resetCounter($c->toString); }}
-  Expand(T_CS("\\the$ctr")); }
-
-# HOW can we retract this?
-sub refStepCounter {
-  my($ctr)=@_;
-  my $v = stepCounter($ctr);
-  InstallDefinition(LaTeXML::Expandable->new(T_CS("\\\@$ctr\@ID"),undef,
-			       Tokens(Explode(LookupValue('\c@'.$ctr)->valueOf))),
-		   'global');
-  my $id = Expand(T_CS("\\the$ctr\@ID"));
-  InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentlabel'),undef,$v));
-  InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentID'),undef,$id));
-
-  # Any scopes activated for previous value of this counter (& any nested counters) must be removed.
-  # This may also include scopes activated for \label
-  deactivateCounterScope($ctr);
-  # And install the scope (if any) for this reference number.
-  AssignValue(current_counter=>$ctr,'local');
-  AssignValue('scopes_for_counter:'.$ctr => [$ctr.':'.ToString($v)],'local');
-  $STATE->activateScope($ctr.':'.ToString($v));
-  (refnum=>$v, id=>$id); }
-
-# For UN-numbered units
-sub refStepID {
-  my($ctr)=@_;
-  my $unctr = "UN$ctr";
-  my $v = stepCounter($unctr);
-  InstallDefinition(LaTeXML::Expandable->new(T_CS("\\\@$ctr\@ID"),undef,
-			Tokens(T_OTHER('x'),Explode(LookupValue('\c@'.$unctr)->valueOf))),
-		   'global');
-  my $id = Expand(T_CS("\\the$ctr\@ID"));
-  InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentID'),undef,$id));
-  (id=>$id); }
-
-sub deactivateCounterScope {
-  my($ctr)=@_;
-#  print STDERR "Unusing scopes for $ctr\n";
- if(my $scopes = LookupValue('scopes_for_counter:'.$ctr)){
-    map($STATE->deactivateScope($_), @$scopes); }
-  foreach my $inner_ctr (@{LookupValue('nested_counters_'.$ctr) || []}){
-    deactivateCounterScope($inner_ctr); }}
-
-sub resetCounter {
-  my($ctr)=@_;
-  AssignValue('\c@'.$ctr => Number(0),'global'); 
-  # and reset any within counters!
-  if(my $nested = LookupValue("\\cl\@$ctr")){
-    foreach my $c ($nested->unlist){
-      resetCounter($c->toString); }}
-  return;}
-
 # For LaTeX documents, We want id's on para, as well as sectional units.
 # However, para get created implicitly on Document construction, rather than
 # explicitly during digestion (via a whatsit), we can't use the usual LaTeX counter mechanism.
@@ -1021,8 +915,8 @@ DefPrimitive('\addtocounter{}{Number}',sub {
   $ctr="\\c\@".$ctr->toString;
   AssignValue($ctr=>LookupValue($ctr)->add($value),'global'); });
 
-DefPrimitive('\stepcounter{}',   sub { stepCounter($_[1]->toString); return; });
-DefPrimitive('\refstepcounter{}',sub { refStepCounter($_[1]->toString); return; });
+DefPrimitive('\stepcounter{}',   sub { StepCounter($_[1]->toString); return; });
+DefPrimitive('\refstepcounter{}',sub { RefStepCounter($_[1]->toString); return; });
 
 DefExpandable('\value{}', sub {
   Explode(LookupValue('\c@'.$_[1]->toString)->valueOf);});
@@ -1066,22 +960,22 @@ DefEnvironment('{figure}[]',
 	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:figure>",
-	       properties=> sub { refStepCounter('figure') });
+	       properties=> sub { RefStepCounter('figure') });
 DefEnvironment('{figure*}[]',
 	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:figure>",
-	       properties=> sub { refStepCounter('figure') });
+	       properties=> sub { RefStepCounter('figure') });
 DefEnvironment('{table}[]',
 	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:table>",
-	       properties=> sub { refStepCounter('table')} );
+	       properties=> sub { RefStepCounter('table')} );
 DefEnvironment('{table*}[]',
 	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:table>",
-	       properties=> sub { refStepCounter('table')} );
+	       properties=> sub { RefStepCounter('table')} );
 
 DefPrimitive('\flushbottom',undef);
 DefPrimitive('\suppressfloats[]', undef);
@@ -1220,13 +1114,19 @@ DefConstructor('\pageref Semiverbatim', "<ltx:ref labelref='#1'>&LookupValue('LA
 
 # NOTE: Not really complete, since I haven't dealt with bibliographies!
 DefConstructor('\bibliography Semiverbatim',
-	       "<ltx:bibliography files='#1'/>");
+	       "<ltx:bibliography files='#1' id='#id'/>",
+	       afterDigest=>sub { 
+		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
+		 $_[1]->setProperty(id=>($docid ? "$docid.bib" : 'bib')); });
 DefPrimitive('\bibliographystyle{}', undef);
 DefEnvironment('{thebibliography}{}',
-	       "<ltx:bibliography>"
+	       "<ltx:bibliography id='#id'>"
 	       . "<ltx:title>References</ltx:title>"
 	       . "<ltx:biblist>#body</ltx:biblist>"
-	       ."</ltx:bibliography>");
+	       ."</ltx:bibliography>",
+	       afterDigestBegin=>sub { 
+		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
+		 $_[1]->setProperty(id=>($docid ? "$docid.bib" : 'bib')); });
 
 sub cleanBibKey {
   my($key)=@_;
@@ -1235,8 +1135,12 @@ sub cleanBibKey {
   $key; }
 # NOTE: 
 DefConstructor('\bibitem[] Semiverbatim',
-	       "<ltx:bibitem key='#2'>?#1(<ltx:biblabel>#1</ltx:biblabel>)<ltx:bibblock>",
-	       properties=>{key=>sub { cleanBibKey($_[1]); }});
+	       "<ltx:bibitem key='#key' id='#id'>?#1(<ltx:tag>#1</ltx:tag>)<ltx:bibblock>",
+	       afterDigest=>sub {
+		 my $key = cleanBibKey($_[1]->getArg(2));
+		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
+		 my $id  = ($docid ? "$docid.bib" : 'bib').".".$key;
+		 $_[1]->setProperties(key=>$key, id=>$id); });
 DefConstructor('\newblock',"<ltx:bibblock>");
 Tag('ltx:bibitem', autoClose=>1);
 Tag('ltx:bibblock', autoClose=>1);
@@ -1314,11 +1218,8 @@ DefPrimitive('\listfiles',undef);
 #======================================================================
 # C.11.5 Index and Glossary
 #======================================================================
-DefEnvironment('{theindex}', "<ltx:theindex>#body</ltx:theindex>");
-DefPrimitive('\printindex',  undef);
-DefPrimitive('\makeindex',   undef);
-DefPrimitive('\makeglossary',undef);
 
+# ---- The index commands
 # Format of Index entries:
 #   \index{entry!entry}  gives multilevel index (handled)
 # Each entry:
@@ -1357,11 +1258,68 @@ sub process_index_phrases {
 
 DefExpandable('\index{}', \&process_index_phrases);
 
-DefConstructor('\@index{}',"^<ltx:index>#1</ltx:index>", mode=>'text', reversion=>'');
-DefConstructor('\@indexphrase{}',"<ltx:indexphrase>#1</ltx:indexphrase>");
+sub cleanIndexKey {
+  my($key)=@_;
+  $key = ToString($key);
+  $key =~ s/[^a-zA-Z0-9]//g;
+  $key =~ tr|A-Z|a-z|;
+  $key; }
 
+DefConstructor('\@index{}',"^<ltx:indexmark>#1</ltx:indexmark>",
+	       mode=>'text', reversion=>'');
+DefConstructor('\@indexphrase{}',
+	       "<ltx:indexphrase key='#key'>#1</ltx:indexphrase>",
+	       properties=>{key=>sub { cleanIndexKey($_[1]); }} );
+
+# ---- Creating the index itself
+
+AssignValue(INDEXLEVEL=>0);
+
+Tag('ltx:indexentry', autoClose=>1);
+sub doIndexItem {
+  my($document,$level)=@_;
+  $document->closeElement('ltx:indexrefs') if $document->isCloseable('ltx:indexrefs');
+  $document->closeElement('ltx:indexphrase') if $document->isCloseable('ltx:indexphrase');
+  my $l = LookupValue('INDEXLEVEL');
+  while($l < $level){
+    $document->openElement('ltx:indexlist'); $l++; }
+  while($l > $level){
+    $document->closeElement('ltx:indexlist'); $l--;}
+  AssignValue(INDEXLEVEL=>$l);
+  if($level){
+    $document->openElement('ltx:indexentry');
+    $document->openElement('ltx:indexphrase'); }}
+
+DefConstructor('\index@dotfill',   sub {
+  my($document)=@_;
+  $document->closeElement('ltx:indexphrase') if $document->isCloseable('ltx:indexphrase');
+  $document->openElement('ltx:indexrefs'); });
+DefConstructor('\index@item',      sub { doIndexItem($_[0],1); });
+DefConstructor('\index@subitem',   sub { doIndexItem($_[0],2); });
+DefConstructor('\index@subsubitem',sub { doIndexItem($_[0],3); });
+DefConstructor('\index@done',      sub { doIndexItem($_[0],0); });
+
+DefEnvironment('{theindex}', 
+	       "<ltx:index id='#id'>"
+	       .  "<ltx:title>Index</ltx:title>"
+	       .  "#body"
+	       ."</ltx:index>",
+	       beforeDigest=>sub { Let('\item',      '\index@item');
+				   Let('\subitem',   '\index@subitem');
+				   Let('\subsubitem','\index@subsubitem');
+				   Let('\dotfill',   '\index@dotfill'); },
+	       beforeDigestEnd=>sub { Digest(T_CS('\index@done'));},
+	       afterDigestBegin=>sub { 
+		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
+		 $_[1]->setProperty(id=>($docid ? "$docid.idx" : 'idx')); });
+
+DefPrimitive('\indexspace',  undef);
+
+# ---- Glossary (TBD)
 # NOTE:
 # DefConstructor('\glossary','{}',sub { ...
+DefPrimitive('\makeglossary',undef);
+
 #======================================================================
 # C.11.6 Terminal Input and Output
 #======================================================================

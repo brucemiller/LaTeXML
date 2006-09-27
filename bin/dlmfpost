@@ -3,12 +3,15 @@ use strict;
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use LaTeXML::Post;
+use LaTeXML::Post::Scan;
 use LaTeXML::Post::MathML;
 use LaTeXML::Post::PictureImages;
+use LaTeXML::Post::Writer;
 use Carp;
 use Getopt::Long;
 
 my $verbosity=1;
+my $validate=1;
 my $help=0;
 my ($demo,$master)=(0,0);
 GetOptions("verbose+"     =>\$verbosity,
@@ -31,16 +34,19 @@ my $SITEBASE = ($demo
 $ENV{TEXINPUTS}="$DLMFBASE/styles/DLMFtex::";
 #**********************************************************************
 binmode(STDERR,":utf8");
+our %OPTIONS = (verbosity=>$verbosity||0);
 
-my $processors=[DLMFMathImages->new(),
-		DLMFGraphics->new(),
-		DLMFGallery->new(),
-		LaTeXML::Post::MathML::Presentation->new(),
-		LaTeXML::Post::PictureImages->new(),
-		DLMFMath->new(),
-		DLMFMagPictures->new(),
+my @processors=(LaTeXML::Post::Scan->new(%OPTIONS),
+		DLMFMathImages->new(%OPTIONS),
+		DLMFGraphics->new(%OPTIONS),
+		DLMFGallery->new(%OPTIONS),
+		LaTeXML::Post::MathML::Presentation->new(%OPTIONS),
+		LaTeXML::Post::PictureImages->new(%OPTIONS),
+		DLMFMath->new(%OPTIONS),
+		DLMFMagPictures->new(magnification => 1.5 * 1.75,%OPTIONS),
 #		DLMFAugment->new()
-];
+		LaTeXML::Post::Writer->new(%OPTIONS),
+);
 
 my $post = LaTeXML::Post->new();
 
@@ -54,24 +60,16 @@ foreach my $doc (@ARGV){
   else {
     $subdir = ''; $name = $doc; }
   print STDERR "Processing Document $name ($subdir)\n" if $verbosity;
-  my $srcdir  = "$DLMFBASE/$subdir";
-  my $destdir = "$SITEBASE/$subdir";
-  my $dest    = "$destdir/$name.xml";
-  my $inchap = $post->readDocument("$srcdir/$name.xml");
-  my $outchap = $post->process($inchap,
-			       sourceDirectory=>$srcdir,
-			       destinationDirectory=>$destdir,
-			       destination=>$dest,
-			       verbosity=>$verbosity,
-			       processors=>$processors);
-  $post->writeDocument($outchap,$dest);
-}
+  LaTeXML::Post::ProcessChain(LaTeXML::Post::Document
+			      ->newFromFile("$DLMFBASE/$subdir/$name.xml",
+					    validate=>$validate,
+					    destination=>"$SITEBASE/$subdir/$name.xml"),
+			      @processors); }
 
 #**********************************************************************
 package DLMFMathImages;
 use strict;
-use LaTeXML::Post::MathImages;
-BEGIN{ our @ISA = qw(LaTeXML::Post::MathImages); }
+use base qw(LaTeXML::Post::MathImages);
 
 # Override the default TeX code for capturing display equations.
 # We'll use breqn's framing for display math.
@@ -86,29 +84,21 @@ sub preamble {
 # Deal with extra type & meta info for math.
 package DLMFMath;
 use strict;
-use LaTeXML::Post;
 use XML::LibXML;
 use MIME::Base64;
-
-BEGIN{ our @ISA = (qw(LaTeXML::Post::Processor)); }
-
-
-sub new {
-  my($class,%options)=@_;
-  my $self = bless {%options},$class; 
-  $self->init(%options); 
-  $self; }
+use base qw(LaTeXML::Post);
 
 sub process {
   my($self,$doc)=@_;
   my $NSURI = $self->getNamespace;
-  my @meta = $self->findnodes("//ltx:equation/ltx:metadata"
-			      ." | //ltx:equationmix/ltx:metadata"
-			      ." | //ltx:equationgroup/ltx:metadata",$doc);
+  my @meta = $doc->findnodes("//ltx:equation/ltx:metadata"
+			     ." | //ltx:equationmix/ltx:metadata"
+			     ." | //ltx:equationgroup/ltx:metadata",
+			     $doc->getDocumentElement);
   $self->Progress(scalar(@meta)." equations to process");
   foreach my $meta (@meta){
     my $eqn = $meta->parentNode;
-    my @maths = $self->findnodes("ltx:Math",$eqn);
+    my @maths = $doc->findnodes("ltx:Math",$eqn);
 
     # Add latex representation of formulas
     if(my $tex = join("\n",map("\$$_\$",grep($_,map($_->getAttribute('tex'),@maths))))){
@@ -145,9 +135,8 @@ sub extractMathSymbols_rec {
 #**********************************************************************
 package DLMFGraphics;
 use strict;
-use LaTeXML::Post::Graphics;
 use LaTeXML::Util::Pathname;
-BEGIN{ our @ISA = qw(LaTeXML::Post::Graphics);}
+use base qw(LaTeXML::Post::Graphics);
 
 # Need to handle specially:
 # TODO:
@@ -155,22 +144,23 @@ BEGIN{ our @ISA = qw(LaTeXML::Post::Graphics);}
 
 # Graphics in 2D subdirs tend to be line drawings: Prefer the postscript source.
 sub findGraphicsFile {
-  my($self,$node)=@_;
-  my $name = $node->getAttribute('graphic');
-# Let's try _always_ using the postscript
-# They've been touched up by graphics arts...
-  if($name =~ m|^\dD/|){
-    my $file = $self->findFile($name,['eps','ps']); 
-    return $file if $file; }
-  $self->SUPER::findGraphicsFile($node); }
+  my($self,$doc,$node)=@_;
+  if(my $name = $node->getAttribute('graphic')){
+    # Let's try _always_ using the postscript
+    # They've been touched up by graphics arts...
+    pathname_find($name,paths=>$LaTeXML::Post::Graphics::SEARCHPATHS,
+		  types=>($name =~ m|^\dD/|
+			  ? ['eps','ps','png']
+			  : $$self{graphicsSourceTypes})); }
+  else { undef; }}
 
 our @VRML_EXTRA;
 BEGIN { @VRML_EXTRA = qw(dlmf_proto.wrl sml_rec_proto.wrl
 			four.gif legendXYZ.gif smap.gif); }
 
 sub processGraphic {
-  my($self,$node)=@_;
-  my $source = $self->findGraphicsFile($node);
+  my($self,$doc,$node)=@_;
+  my $source = $self->findGraphicsFile($doc,$node);
   return $self->Warn("Missing graphic for ".$node->toString."; skipping") unless $source;
   my $transform = $self->getTransform($node);
 
@@ -180,18 +170,20 @@ sub processGraphic {
   $vrml = $vrml->[1] if $vrml;
   $transform = [grep( $_->[0] !~/^(magnifiable|vrml)$/, @$transform)];
   # Process the main image
-  my($image,$width,$height)=$self->transformGraphic($node,$source,$transform); 
+  my($image,$width,$height)=$self->transformGraphic($doc,$node,$source,$transform);
   $self->setGraphicsSrc($node,$image,$width,$height) if $image;
 
   if($mag){			# Generate Magnified image, if requested
-    my($mimage,$mwidth,$mheight)=$self->transformGraphic($node,$source,[@$transform,['scale',2.5]]);
+    my($mimage,$mwidth,$mheight)=$self->transformGraphic($doc,$node,$source,
+							 [@$transform,['scale',2.5]]);
     $node->setAttribute('magsrc',$mimage);
     $node->setAttribute('magwidth',$mwidth);
     $node->setAttribute('magheight',$mheight); }
 
   if($vrml){			# Copy vrml & related files, if requested
-    if(my $vrmlsource = $self->findFile($vrml,['wrl'])){
-      $node->setAttribute('vrml',$self->copyFile($vrmlsource));
+    if(my $vrmlsource = pathname_find($vrml,paths=>$LaTeXML::Post::Graphics::SEARCHPATHS,
+				      types=>['wrl'])){
+      $node->setAttribute('vrml',$self->copyFile($doc,$vrmlsource));
       my($srcdir,$name,$type)=pathname_split($vrmlsource);
 #      foreach my $extra (@VRML_EXTRA){
 #	my $x = pathname_make(dir=>$srcdir,name=>$extra);
@@ -203,7 +195,7 @@ sub processGraphic {
       foreach my $extra (@allvrml){
 	next if $extra =~ /^\./;
 	my $x = pathname_make(dir=>$srcdir,name=>$extra);
-	$self->copyFile($x) if -f $x; }
+	$self->copyFile($doc,$x) if -f $x; }
 
     }
     else {
@@ -225,11 +217,6 @@ use strict;
 use LaTeXML::Post::PictureImages;
 BEGIN{ our @ISA = qw(LaTeXML::Post::PictureImages);}
 
-sub init {
-  my($self,%options)=@_;
-  $self->SUPER::init(%options); 
-  $$self{magnification} *= 1.5; }
-
 sub image_prefix { 'mpic'; }
 
 sub set_image {
@@ -242,30 +229,29 @@ sub set_image {
 # Custom form for Gallery images.
 package DLMFGallery;
 use strict;
-use LaTeXML::Post::Graphics;
-BEGIN{ our @ISA = qw(LaTeXML::Post::Graphics);}
+use base qw(LaTeXML::Post::Graphics);
 
 sub selectGraphicsNodes { 
-  $_[1]->getElementsByTagNameNS($_[0]->getNamespace,'galleryitem'); }
+  $_[1]->findnodes('//ltx:galleryitem'); }
 
 sub getTransform {
   [['scale-to',72,72]]; }
 
 sub processGraphic {
-  my($self,$node)=@_;
+  my($self,$doc,$node)=@_;
   my $name = $node->getAttribute('graphic');
   if($name =~ /^DLMF:/){
     $node->setAttribute('src',$name);
     $node->setAttribute('width',100);
     $node->setAttribute('height',100); }
   else {
-    $self->SUPER::processGraphic($node); }}
+    $self->SUPER::processGraphic($doc,$node); }}
 
 #**********************************************************************
 package DLMFAugment;
 use strict;
-BEGIN{ our @ISA = qw(LaTeXML::Post::Processor); }
 use LaTeXML::Util::LibXML;
+use base qw(LaTeXML::Post);
 
 sub process {
   my($self,$doc)=@_;

@@ -29,16 +29,23 @@ span.italic     { font-style: italic; }
 span.upright    { font-style: normal; }
 span.slanted    { font-style: oblique; }
 /* span.title { font-weight:bold; display:run-in; }*/
-.header,
-.nav { position:fixed; left:0px; top:0px; width:170px;
+.navbar { position:fixed; left:0px; top:0px; width:170px;
        border-right: 3px double #087d9d; border-bottom: 5px double #087d9d; background:#e5f7fb;
        margin:0em; padding:1em; font: bold 85% sans-serif; }
-.header ul,
-.nav ul { margin-left:-2em; }
-.document,
+.navbar ul { margin-left:-2em; }
 .main { position:absolute; left:190px; top:0px; right:2px; 
         margin:0px; padding:1em 3em 1em 2em;
         width:70%; }
+
+.header .previous { float:left; }
+.header .up { display:block; text-align:center; }
+.header .next { float:right; }
+.header  { font-size:80%; }
+.content { clear:both;
+ border-top:1px solid #087d9d;}
+.footer  { text-align:center;
+	   font-size:80%;
+	   border-top:1px solid #087d9d;}
 
 dl.description dt { margin-right:0.5em; float:left; }
 dl.description dd { margin-left:5em; }

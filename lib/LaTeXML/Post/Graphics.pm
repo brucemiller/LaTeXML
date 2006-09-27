@@ -14,12 +14,10 @@
 #======================================================================
 package LaTeXML::Post::Graphics;
 use strict;
-use XML::LibXML;
 use LaTeXML::Util::Pathname;
 use POSIX;
 use Image::Magick;
-use LaTeXML::Post;
-our @ISA = (qw(LaTeXML::Post::Processor));
+use base qw(LaTeXML::Post);
 
 #======================================================================
 # Options:
@@ -40,36 +38,40 @@ our @ISA = (qw(LaTeXML::Post::Processor));
 #                         This is useful for getting the best antialiasing for postscript, eg.
 sub new {
   my($class,%options)=@_;
-  my $self = bless {dppt              => (($options{dpi}||100)/72.0), # Dots per point.
-		    ignoreOptions     => $options{ignoreOptions}   || [],
-		    trivial_scaling   => $options{trivial_scaling}  || 1,
-		    graphicsSourceTypes => $options{graphicsSourceTypes} || [qw(png gif jpg jpeg eps ps)],
-		    type_map          => $options{type_map} || { ps  =>{type=>'png', prescale=>1,
-									transparent=>1, ncolors=>'400%',
-									quality=>90},
-								 eps =>{type=>'png', prescale=>1,
-									transparent=>1, ncolors=>'400%',
-									quality=>90},
-								 jpg =>{type=>'jpg',ncolors=>'400%'},
-								 jpeg=>{type=>'jpeg', ncolors=>'400%'},
-								 gif =>{type=>'gif', 
-									transparent=>1, ncolors=>'400%'},
-								 png =>{type=>'png', transparent=>1,
-									ncolors=>'400%'}},
-		    background        => $options{background}       || "#FFFFFF",
-		   },$class; 
-  $self->init(%options); 
+  my $self = $class->SUPER::new(%options);
+  $$self{dppt}               = (($options{dpi}||100)/72.0); # Dots per point.
+  $$self{ignoreOptions}      = $options{ignoreOptions}   || [];
+  $$self{trivial_scaling}    = $options{trivial_scaling}  || 1;
+  $$self{graphicsSourceTypes}= $options{graphicsSourceTypes}
+    || [qw(png gif jpg jpeg eps ps)];
+  $$self{type_map}           = $options{type_map}
+    || { ps  =>{type=>'png', prescale=>1,
+		transparent=>1, ncolors=>'400%',
+		quality=>90},
+	 eps =>{type=>'png', prescale=>1,
+		transparent=>1, ncolors=>'400%',
+		quality=>90},
+	 jpg =>{type=>'jpg',ncolors=>'400%'},
+	 jpeg=>{type=>'jpeg', ncolors=>'400%'},
+	 gif =>{type=>'gif', 
+		transparent=>1, ncolors=>'400%'},
+	 png =>{type=>'png', transparent=>1,
+		ncolors=>'400%'}};
+  $$self{background}        = $options{background}       || "#FFFFFF";
   $self; }
 
 sub process {
   my($self,$doc)=@_;
-  $self->findGraphicsPaths($doc);
-  $self->ProgressDetailed("Using graphicspaths: ".join(', ',@{$self->getSearchPaths}));
+  local $LaTeXML::Post::Graphics::SEARCHPATHS
+    = [$doc->getSourceDirectory, $self->findGraphicsPaths($doc)];
+  $self->ProgressDetailed("Using graphicspaths: "
+			  .join(', ',@$LaTeXML::Post::Graphics::SEARCHPATHS));
 
   my @nodes = $self->selectGraphicsNodes($doc);
   $self->Progress(scalar(@nodes)." graphics nodes to process");
   foreach my $node (@nodes){
-    $self->processGraphic($node);  }
+    $self->processGraphic($doc,$node);  }
+  $doc->closeCache;		# If opened.
   $doc; }
 
 #======================================================================
@@ -81,22 +83,27 @@ sub process {
 # to a list of search paths.
 sub findGraphicsPaths {
   my($self,$doc)=@_;
+  my @paths = ();
   foreach my $pi ($doc->findnodes('.//processing-instruction("latexml")')){
     if($pi->textContent =~ /^\s*graphicspath\s*=\s*([\"\'])(.*?)\1\s*$/){
       my $value=$2;
       while($value=~ s/^\s*\{(.*?)\}//){
-	$self->addSearchPath($1); }}}}
+	push(@paths,$1); }}}
+  @paths; }
 
 # Return a list of ZML nodes which have graphics that need processing.
 sub selectGraphicsNodes {
   my($self,$doc)=@_;
-  $doc->getElementsByTagNameNS($self->getNamespace,'graphics'); }
+  $doc->findnodes('//ltx:graphics'); }
 
 # Return the pathname to an appropriate image.
 sub findGraphicsFile {
-  my($self,$node)=@_;
-  my $name = $node->getAttribute('graphic');
-  ($name ? $self->findFile($name,$$self{graphicsSourceTypes}) : undef); }
+  my($self,$doc,$node)=@_;
+  if(my $name = $node->getAttribute('graphic')){
+    pathname_find($name,paths=>$LaTeXML::Post::Graphics::SEARCHPATHS,
+		  types=>$$self{graphicsSourceTypes}); }
+  else {
+    undef; }}
 
 # Return the Transform to be used for this node
 # Default is based on parsing the graphicx options
@@ -121,49 +128,65 @@ sub setGraphicsSrc {
 }
 
 sub processGraphic {
-  my($self,$node)=@_;
-  my $source = $self->findGraphicsFile($node);
+  my($self,$doc,$node)=@_;
+  my $source = $self->findGraphicsFile($doc,$node);
   if(!$source){
     $self->Warn("Missing graphic for ".$node->toString."; skipping"); return; }
   my $transform = $self->getTransform($node);
-  my($image,$width,$height)=$self->transformGraphic($node,$source,$transform); 
+  my($image,$width,$height)=$self->transformGraphic($doc,$node,$source,$transform); 
   $self->setGraphicsSrc($node,$image,$width,$height) if $image;
 }
 
 #======================================================================
+# Copy a source file, presumably relative to the source document's directory,
+# to a corresponding sub-directory in the destination directory.
+# Return the path to the copy, relative to the destination.
+sub copyFile {
+  my($self,$doc,$source)=@_;
+  my ($reldir,$name,$type) = pathname_split(pathname_relative($source,
+							      $doc->getSourceDirectory));
+  my $destdir = pathname_concat($doc->getDestinationDirectory,$reldir);
+  pathname_mkdir($destdir) 
+    or return $self->Error("Could not create relative directory $destdir: $!");
+  my $dest = pathname_make(dir=>$destdir,name=>$name,type=>$type);
+  pathname_copy($source, $dest) or warn("Couldn't copy $source to $dest: $!");
+  pathname_make(dir=>$reldir,name=>$name,type=>$type); }
+
+#======================================================================
 
 sub transformGraphic {
-  my($self,$node,$source,$transform)=@_;
-  my ($reldir,$name,$type) = pathname_split(pathname_relative($source,$self->getSourceDirectory));
-  my $destdir = pathname_concat($$self{destinationDirectory},$reldir);
+  my($self,$doc,$node,$source,$transform)=@_;
+  my ($reldir,$name,$type)
+    = pathname_split(pathname_relative($source,$doc->getSourceDirectory));
+  my $destdir = pathname_concat($doc->getDestinationDirectory,$reldir);
 
-  my $key = join('|',"$reldir$name.$type", map(join(' ',@$_),@$transform));
+  my $key = (ref $self).':'.join('|',"$reldir$name.$type", map(join(' ',@$_),@$transform));
   $self->ProgressDetailed("Processing $key");
 
   my $map       = $self->get_type_map($source,$transform);
   return warn "Don't know what to do with graphics file format $source" unless $map;
   my $newtype = $$map{type} || $type;
 
-  if(my $prev = $self->cacheLookup($key)){	# Image was processed on previous run?
+  if(my $prev = $doc->cacheLookup($key)){	# Image was processed on previous run?
     $prev =~ /^(.*?)\|(\d+)\|(\d+)$/;
     my ($cached,$width,$height)=($1,$2,$3);
-    my $dest =  pathname_make(dir=>$$self{destinationDirectory},name=>$cached);
+    my $dest =  pathname_make(dir=>$doc->getDestinationDirectory,name=>$cached);
     if(-f $dest && (-M $source >= -M $dest)){
       $self->ProgressDetailed(">> Reuse $cached @ $width x $height");
       return ($cached,$width,$height); }}
   # Trivial scaling case: Use original image with different width & height.
   if($$self{trivial_scaling} && ($newtype eq $type) && !grep(!($_->[0]=~/^scale/),@$transform)){
     my ($width,$height)=$self->trivial_scaling($source,$transform);
-    my $copy = $self->copyFile($source);
+    my $copy = $self->copyFile($doc,$source);
     $self->ProgressDetailed(">> Copied to $copy for $width x $height");
-    $self->cacheStore($key,"$copy|$width|$height");
+    $doc->cacheStore($key,"$copy|$width|$height");
     $self->ProgressDetailed(">> done with $key");
     ($copy,$width,$height); }
   else {
     my ($image,$width,$height) =$self->complex_transform($source,$transform, $map);
-    my $N = $self->cacheLookup('_max_image_') || 0;
+    my $N = $doc->cacheLookup((ref $self).':_max_image_') || 0;
     my $newname = "$name-GEN". ++$N;
-    $self->cacheStore('_max_image_',$N);
+    $doc->cacheStore((ref $self).':_max_image_',$N);
 
     pathname_mkdir($destdir) 
       or return $self->Error("Could not create relative directory $destdir: $!");
@@ -172,7 +195,7 @@ sub transformGraphic {
     my $reldest = pathname_make(dir=>$reldir,name=>$newname,type=>$newtype);
     $image->Write(filename=>$dest) and warn "Couldn't write image $dest: $!";
 
-    $self->cacheStore($key,"$reldest|$width|$height");
+    $doc->cacheStore($key,"$reldest|$width|$height");
     $self->ProgressDetailed(">> done with $key");
     ($reldest,$width,$height); }
 }

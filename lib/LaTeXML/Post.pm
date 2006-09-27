@@ -12,139 +12,31 @@
 
 package LaTeXML::Post;
 use strict;
-use XML::LibXML;
-use XML::LibXML::XPathContext;
-##use File::Spec;
-use LaTeXML::Util::Pathname;
-
-
-our $NSURI = "http://dlmf.nist.gov/LaTeXML";
-#**********************************************************************
-sub new {
-  my($class)=@_;
-  bless { },$class; }
-
-sub process {
-  my($self,$doc,%options)=@_;
-
-  $options{namespace} = $NSURI;
-  if(!$options{xpath}){
-    $options{xpath} = XML::LibXML::XPathContext->new();
-    $options{xpath}->registerNs(ltx=>$NSURI); }
-
-  foreach my $processor (@{$options{processors}}){
-    $processor->init(%options); 
-    local $LaTeXML::Post::PROCESSOR = $processor;
-    local $LaTeXML::Post::DOCUMENT = $doc;
-    $doc = $processor->process($doc); 
-    $processor->closeCache;		# If opened.
-  }
-
-  # Normalize namespaces.
-  $doc = normalizeNS($doc) unless ($options{format}||'') eq 'html';
-  $doc; }
-
-sub createParser {
-  my($self,%options)=@_;
-  # Read in the XML, unless it already is a Doc.
-  my $XMLParser = XML::LibXML->new();
-  if($options{validate}){ # First, load the LaTeXML catalog in case it's needed...
-    map(XML::LibXML->load_catalog($_),
-	pathname_find('catalog',installation_subdir=>'dtd'));
-    $XMLParser->load_ext_dtd(1);  # DO load dtd.
-    $XMLParser->validation(1); }
-  else {
-    $XMLParser->load_ext_dtd(0);
-    $XMLParser->validation(0); }
-  $XMLParser->keep_blanks(0);	# This allows formatting the output.
-  $XMLParser; }
-
-
-sub readDocument {
-  my($self,$source,%options)=@_;
-  my $parser = $self->createParser(%options);
-  $parser->parse_file($source); }
-
-sub readDocumentFromString {
-  my($self,$string,%options)=@_;
-  my $parser = $self->createParser(%options);
-  $parser->parse_string($string); }
-
-# Should these also be "postprocessors" ?
-sub toString {
-  my($self,$doc,$format)=@_;
-  (($format||'xml') eq 'html' ? $doc->toStringHTML : $doc->toString(1)); }
-
-sub writeDocument {
-  my($self,$doc,$destination,$format)=@_;
-  my $string = $self->toString($doc,$format);
-  open(OUT,">:utf8",$destination) or return die("Couldn't write $destination: $!");
-  print OUT $string;
-  close(OUT); }
-
-# Returns a new document with namespaces normalized.
-# Should ultimately be incorporated in libxml2
-# (and of course, done correctly), and bound in XML::LibXML
-sub normalizeNS {
-  my($doc)=@_;
-return $doc;
-  my $XMLParser = XML::LibXML->new();
-  # KLUDGE: The only namespace cleanup available right now
-  # in libxml2 is during parsing!! So, we write to string & reparse!
-  # (C14N is a bit too extreme for our purposes)
-  # Obviously inefficent (but amazingly fast!)
-  $XMLParser->clean_namespaces(1);
-  $XMLParser->parse_string($doc->toString);
-}
-
-# adjust_latexml_doctype($doc,"Foo","Bar") =>
-# <!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article + Foo + Bar"
-#                 "http://dlmf.nist.gov/LaTeXML/LaTeXML-Foo-Bar.dtd">
-sub adjust_latexml_doctype {
-  my($self,$doc,@additions)=@_;
-  if(my $dtd = $doc->internalSubset){
-    if($dtd->toString =~/^<!DOCTYPE\s+(\w+)\s+PUBLIC\s+(\"|\')([^\"]*)\2\s+(\"|\')([^\"]*)\4>$/){
-      my($root,$public,$system)=($1,$3,$5);
-      if($public =~ m|^-//NIST LaTeXML|){
-	my $publicid = join(' + ',"-//NIST LaTeXML//LaTeXML article",@additions);
-	my $systemid = join('-',"http://dlmf.nist.gov/LaTeXML/LaTeXML",@additions).".dtd";
-	$doc->removeInternalSubset;	# Apparently we've got to remove it first.
-	$doc->createInternalSubset($root,$publicid,$systemid); }}}}
-
-#**********************************************************************
-package LaTeXML::Post::Processor;
-use strict;
-use LaTeXML::Util::Pathname;
-use DB_File;
+use Time::HiRes;
 
 sub new {
   my($class,%options)=@_;
-  bless {%options}, $class; }
+  my $self = bless {%options}, $class; 
+  $$self{verbosity} = 0 unless defined $$self{verbosity};
+  $self; }
 
-sub init {
-  my($self,%options)=@_;
-  $self->closeCache;
-  $$self{options}              = {%options};
-  $$self{verbosity}            = $options{verbosity} || 0;
-  $$self{format}               = $options{format} || 'xml';
-  $$self{sourceDirectory}      = $options{sourceDirectory};
-  $$self{destinationDirectory} = $options{destinationDirectory};
-  $$self{searchPaths}          = $options{searchPaths} || [$$self{sourceDirectory}];
-  $$self{xpath}                = $options{xpath};
-}
-
-sub getSourceDirectory      { $_[0]->{sourceDirectory}; }
-sub getDestinationDirectory { $_[0]->{destinationDirectory}; }
-sub getSearchPaths          { $_[0]->{searchPaths}; }
 sub getNamespace            { $_[0]->{namespace} || "http://dlmf.nist.gov/LaTeXML"; }
 
-sub getOption { $_[0]->{options}->{$_[1]}; }
-
 #======================================================================
+# abstract:
+# sub process($doc) => $doc,...
 
-sub findnodes {
-  my($self,$path,$node)=@_;
-  $$self{xpath}->findnodes($path,$node); }
+
+sub ProcessChain {
+  my($doc,@postprocessors)=@_;
+  my @docs = ($doc);
+  foreach my $processor (@postprocessors){
+    my $t0 = [Time::HiRes::gettimeofday];
+    @docs = map($processor->process($_),@docs);
+    my $elapsed = Time::HiRes::tv_interval($t0,[Time::HiRes::gettimeofday]);
+    $processor->Progress(sprintf(" %.2f sec",$elapsed));
+  }
+  @docs; }
 
 #======================================================================
 sub Error {
@@ -163,98 +55,247 @@ sub ProgressDetailed {
   my($self,$msg)=@_;
   print STDERR "".(ref $self).": $msg\n" if $$self{verbosity}>1; }
 
+#**********************************************************************
+
+
+#**********************************************************************
+package LaTeXML::Post::Document;
+use strict;
+use XML::LibXML;
+use XML::LibXML::XPathContext;
+use LaTeXML::Util::Pathname;
+use DB_File;
+
+our $NSURI = "http://dlmf.nist.gov/LaTeXML";
+our $XPATH = XML::LibXML::XPathContext->new();
+$XPATH->registerNs(ltx=>$NSURI);
+
+sub new {
+  my($class,$xmldoc,%options)=@_;
+  my %data = ();
+  if(ref $class){		# Cloning!
+    map($data{$_}=$$class{$_}, keys %$class);
+    $class = ref $class; }
+  map($data{$_}=$options{$_}, keys %options);
+  if((defined $data{destination}) && (!defined $data{destinationDirectory})){
+    my($vol,$dir,$name)=File::Spec->splitpath($data{destination});
+    $data{destinationDirectory} = $dir || '.'; }
+  $data{document}=$xmldoc;
+  $data{idcache} = undef;
+  $data{namespaces}={ltx=>$NSURI} unless $data{namespaces};
+  bless {%data}, $class; }
+
+sub newFromFile {
+  my($class,$source,%options)=@_;
+  if(!$options{sourceDirectory}){
+    my($vol,$dir,$name) = File::Spec->splitpath($source);
+    $options{sourceDirectory} = $dir || '.'; }
+  $class->new(createParser(%options)->parse_file($source),
+	      %options); }
+
+sub newFromString {
+  my($class,$string,%options)=@_;
+  $options{sourceDirectory} = '.' unless $options{sourceDirectory};
+  $class->new(createParser(%options)->parse_string($string),
+	      %options); }
+
+sub newFromSTDIN {
+  my($class,%options)=@_;
+  my $string;
+  { local $/ = undef; $string = <>; }
+  $options{sourceDirectory} = '.' unless $options{sourceDirectory};
+  $class->new(createParser(%options)->parse_string($string),
+	      %options); }
+
+sub newFromNode {
+  my($class,$node,%options)=@_;
+  my $doc = $class->new_document($node);
+  $class->new($doc,%options); }
+
+sub createParser {
+  my(%options)=@_;
+  # Read in the XML, unless it already is a Doc.
+  my $XMLParser = XML::LibXML->new();
+  if($options{validate}){ # First, load the LaTeXML catalog in case it's needed...
+    map(XML::LibXML->load_catalog($_),
+	pathname_find('catalog',installation_subdir=>'dtd'));
+    $XMLParser->load_ext_dtd(1);  # DO load dtd.
+    $XMLParser->validation(1); }
+  else {
+    $XMLParser->load_ext_dtd(0);
+    $XMLParser->validation(0); }
+  $XMLParser->keep_blanks(0);	# This allows formatting the output.
+  $XMLParser; }
+
+
+sub getDocument             { $_[0]->{document}; }
+sub getDocumentElement      { $_[0]->{document}->documentElement; }
+sub getSourceDirectory      { $_[0]->{sourceDirectory} || '.'; }
+sub getDestination          { $_[0]->{destination}; }
+sub getURL                  { $_[0]->{url}; }
+sub getDestinationDirectory { $_[0]->{destinationDirectory}; }
+sub toString                { $_[0]->{document}->toString(1); }
+
+sub getDestinationExtension {
+  my($self)=@_;
+  ($$self{destination} =~ /\.([^\.\/]*)$/ ? $1 : undef); }
+
+sub findnodes {
+  my($self,$path,$node)=@_;
+  $XPATH->findnodes($path,$node || $$self{document}); }
+
+# Similar but returns only 1st node
+sub findnode {
+  my($self,$path,$node)=@_;
+  my($first)=$XPATH->findnodes($path,$node || $$self{document});
+  $first; }
+
+sub addNamespace{
+  my($self,$nsuri,$prefix)=@_;
+  $$self{namespaces}{$prefix}=$nsuri;
+  $self->getDocumentElement->setNamespace($nsuri,$prefix,0); }
+
 #======================================================================
-# I/O support
-sub addSearchPath {
-  my($self,$path)=@_;
-  $path = pathname_absolute($path,$$self{sourceDirectory})
-    unless pathname_is_absolute($path);
-  push(@{$$self{searchPaths}}, $path); }
+# Add nodes to $node in the document $self.
+# This takes a convenient recursive reprsentation for xml:
+# data = string |  [$tagname, {attr=>value,..}, @children...]
+# The $tagname should have a namespace prefix whose URI has been
+# registered with addNamespace.
 
-# Find a file in, or relative to, the source directory or any additional search paths.
-sub findFile {
-  my($self,$name,$types)=@_;
-  pathname_find($name,paths=>$$self{searchPaths},types=>$types); }
+sub addNodes {
+  my($self,$node,@data)=@_;
+  foreach my $child (@data){
+    if(ref $child eq 'ARRAY'){
+      my($tag,$attributes,@children)=@$child;
+      my($prefix,$localname)= $tag =~ /^(.*):(.*)$/;
+      my $nsuri = $$self{namespaces}{$prefix};
+      warn "No namespace on $tag" unless $nsuri;
+      my $new = $node->addNewChild($nsuri,$localname);
+      $node->appendChild($new);
+      if($attributes){
+	foreach my $key (keys %$attributes){
+	  $new->setAttribute($key, $$attributes{$key}) if defined $$attributes{$key}; }}
+      $self->addNodes($new,@children); }
+    elsif((ref $child) =~ /^XML::LibXML::/){
+      my $type = $child->nodeType;
+      if($type == XML_ELEMENT_NODE){
+	my $newnode = $node->addNewChild($child->namespaceURI,$child->localname);
+	copy_attributes($newnode,$child);
+	$self->addNodes($newnode,$child->childNodes); }
+      elsif($type == XML_DOCUMENT_FRAG_NODE){
+	$self->addNodes($node,$child->childNodes); }
+      elsif($type == XML_TEXT_NODE){
+	$node->appendTextNode($child->textContent); }
+    }
+    elsif(ref $child){
+      warn "Dont know how to add $child to $node; ignoring"; }
+    elsif(defined $child){
+      $node->appendTextNode($child); }}}
 
-# Copy a source file, presumably relative to the source document's directory,
-# to a corresponding sub-directory in the destination directory.
-# Return the path to the copy, relative to the destination.
-sub copyFile {
-  my($self,$source)=@_;
-  my ($reldir,$name,$type) = pathname_split(pathname_relative($source,$$self{sourceDirectory}));
-  my $destdir = pathname_concat($$self{destinationDirectory},$reldir);
-  pathname_mkdir($destdir) 
-    or return $self->Error("Could not create relative directory $destdir: $!");
-  my $dest = pathname_make(dir=>$destdir,name=>$name,type=>$type);
-  pathname_copy($source, $dest) or warn("Couldn't copy $source to $dest: $!");
-  pathname_make(dir=>$reldir,name=>$name,type=>$type); }
+sub new_document {
+  my($self,$root)=@_;
+  my $doc = XML::LibXML::Document->new("1.0","UTF-8");
+  my($public_id,$system_id);
+  if(my $dtd = $$self{document}->internalSubset){
+    if($dtd->toString
+       =~ /^<!DOCTYPE\s+(\w+)\s+PUBLIC\s+(\"|\')([^\2]*)\2\s+(\"|\')([^\4]*)\4>$/){
+      ($public_id,$system_id)=($3,$5); }}
+  if(ref $root eq 'ARRAY'){
+    my($tag,$attributes,@children)=@$root;
+    my($prefix,$localname)= $tag =~ /^(.*):(.*)$/;
+    $doc->createInternalSubset($localname,$public_id,$system_id) if $public_id;
+    my $nsuri = $$self{namespaces}{$prefix};
+    my $node = $doc->createElementNS($nsuri,$localname);
+    $doc->setDocumentElement($node);
+    map( $node->setAttribute($_=>$$attributes{$_}),keys %$attributes) if $attributes;
+    $self->addNodes($node,@children); }
+  elsif(ref $root eq 'XML::LibXML::Element'){
+    my $localname = $root->localname;
+    $doc->createInternalSubset($localname,$public_id,$system_id) if $public_id;
+    my $node = $doc->createElementNS($root->namespaceURI,$localname);
+    $doc->setDocumentElement($node);
+    copy_attributes($node,$root);
+    $self->addNodes($node,$root->childNodes); }
+  else {
+    die "Dont know how to use $root as document element"; }
+# With some trepidation, I'm leaving this off.
+# All the xml utilities on the web end give problems finding a way to install
+# a catalog for the DTD's!!!
+#  $doc->createInternalSubset($doc->documentElement->nodeName,$PUBLICID,$SYSTEMID);
+  $doc; }
+
+sub copy_attributes {
+  my($newnode,$oldnode)=@_;
+  foreach my $child ($oldnode->attributes){
+    my $type = $child->nodeType;
+    if($type == XML_ATTRIBUTE_NODE){
+      if(my $ns = $child->namespaceURI){
+	$newnode->setAttributeNS($ns,$child->localname,$child->getValue); }
+      else {
+	$newnode->setAttribute($child->localname,$child->getValue); }}
+    elsif($type == XML_NAMESPACE_DECL){}
+    else {
+      warn "Dont know how to add $child to $newnode; ignoring"; }}}
 
 #======================================================================
 # Support for ID's
 
-# NOTE: This needs to be worked on.
-#  If you use xml:id, the ID spec (supported by libxml2, at least partly)
-# will allow xpath id('$id') to quickly look it up, even w/o loading the DTD.
-# HOWEVER, if you change the node the id is on, it isn't recognized by libxml!!!
-# Currently (probably) the only place we'd need that is in MathParse, which
-# soon will be moved to latexml, proper, so afterwards, probably xpath's id() 
-# will be sufficient.
-
-our $nsXML = "http://www.w3.org/XML/1998/namespace";
-
-sub cacheIDs {
-  my($self,$doc)=@_;
-  $$self{idcache}={};
-  foreach my $node ($doc->findnodes("//*[\@id]")){
-#    $$self{idcache}{$node->getAttributeNS($nsXML,'id')} = $node; }}
-    $$self{idcache}{$node->getAttribute('id')} = $node; }}
-
-sub updateID {
-  my($self,$node)=@_;
-#  $$self{idcache}{$node->getAttributeNS($nsXML,'id')} = $node; }
-  $$self{idcache}{$node->getAttribute('id')} = $node; }
-
 sub findNodeByID {
-  my($self,$doc,$id)=@_;
-
-##  my $cnode =   $$self{idcache}{$id};
-##  my ($idnode) = $doc->findnodes("id('$id')");
-##print STDERR "ID=$id cached => ".($cnode ? $cnode->toString : "not found")."\n id() =>".($idnode ? $idnode->toString : "not found")."\n";
-
-
-#  [$doc->findnodes("//*[\@id='$id']")]->[0]; }
-  $$self{idcache}{$id}; 
-#  my($node)=$doc->findnodes("id('$id')");
-#  $node; }
-}
+  my($self,$id)=@_;
+  if(!$$self{idcache}){
+    $$self{idcache}={};
+    foreach my $node ($self->findnodes("//*[\@id]")){
+      $$self{idcache}{$node->getAttribute('id')} = $node; }}
+  $$self{idcache}{$id}; }
 
 sub realizeXMNode {
-  my($self,$doc,$node)=@_;
+  my($self,$node)=@_;
   (($node->localname eq 'XMRef') && ($node->getNamespaceURI eq $NSURI)
-   ? $node=$self->findNodeByID($doc,$node->getAttribute('idref'))
+   ? $node=$self->findNodeByID($node->getAttribute('idref'))
    : $node); }
+
+#======================================================================
+# adjust_latexml_doctype($doc,"Foo","Bar") =>
+# <!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article + Foo + Bar"
+#                 "http://dlmf.nist.gov/LaTeXML/LaTeXML-Foo-Bar.dtd">
+sub adjust_latexml_doctype {
+  my($self,@additions)=@_;
+  my $doc = $$self{document};
+  if(my $dtd = $doc->internalSubset){
+    if($dtd->toString
+       =~ /^<!DOCTYPE\s+(\w+)\s+PUBLIC\s+(\"|\')-\/\/NIST LaTeXML\/\/LaTeXML\s+([^\"]*)\2\s+(\"|\')([^\"]*)\4>$/){
+      my($root,$parts,$system)=($1,$3,$5);
+      my($type,@addns)=split(/ \+ /,$parts);
+      my %addns = ();
+      map($addns{$_}=1,@addns,@additions);
+      @addns = sort keys %addns;
+      my $publicid = join(' + ',"-//NIST LaTeXML//LaTeXML $type",@addns);
+      my $systemid = join('-',"http://dlmf.nist.gov/LaTeXML/LaTeXML",@addns).".dtd";
+      $doc->removeInternalSubset;	# Apparently we've got to remove it first.
+      $doc->createInternalSubset($root,$publicid,$systemid); }}}
 
 #======================================================================
 # Cache support: storage of data from previous run.
 # ?
 
+# cacheFile as parameter ????
+
 sub cacheLookup {
   my($self,$key)=@_;
   $self->openCache;
-  my $skey = (ref $self).":".$key;
-  $$self{cache}{$skey}; }
+  $$self{cache}{$key}; }
 
 sub cacheStore {
   my($self,$key,$value)=@_;
   $self->openCache;
-  my $skey = (ref $self).":".$key;
-  $$self{cache}{$skey} = $value; }
+  $$self{cache}{$key} = $value; }
 
 sub openCache {
   my($self)=@_;
   if(!$$self{cache}){
     $$self{cache}={};
-    my $dbfile = pathname_make(dir=>$self->getDestinationDirectory, name=>'LaTeXML', type=>'cache');
+    my $dbfile = pathname_make(dir=>$self->getDestinationDirectory,
+			       name=>'LaTeXML', type=>'cache');
     tie %{$$self{cache}}, 'DB_File', $dbfile,  O_RDWR|O_CREAT
       or return $self->Error("Couldn't create DB cache for ".$self->getSource.": $!");
   }}
@@ -265,7 +306,6 @@ sub closeCache {
       untie %{$$self{cache}};
       $$self{cache}=undef; }}
 
-#**********************************************************************
 1;
 
 __END__

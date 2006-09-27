@@ -34,10 +34,14 @@ sub new {
   my $state     = LaTeXML::State->new(catcodes=>'standard',
 				      stomach=>LaTeXML::Stomach->new(),
 				      model  => $options{model} || LaTeXML::Model->new());
-  $state->assignValue(VERBOSITY => (defined $options{verbosity} ? $options{verbosity} : 0), 'global');
-  $state->assignValue(STRICT    => (defined $options{strict}   ? $options{strict}     : 0), 'global');
+  $state->assignValue(VERBOSITY=>(defined $options{verbosity} ? $options{verbosity} : 0),
+		      'global');
+  $state->assignValue(STRICT   =>(defined $options{strict}   ? $options{strict}     : 0),
+		      'global');
   $state->assignValue(INCLUDE_COMMENTS=>(defined $options{includeComments} ? $options{includeComments} : 1),
-		     'global');
+		      'global');
+  $state->assignValue(DOCUMENTID=>(defined $options{documentid} ? $options{documentid} : ''),
+		      'global');
   $state->assignValue(SEARCHPATHS=> [ @{$options{searchpaths} || []} ],'global');
   bless {state   => $state, 
 	 nomathparse=>$options{nomathparse}||0,

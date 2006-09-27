@@ -47,6 +47,7 @@
 <!ENTITY % LaTeXML.date.qname             "%LaTeXML.pfx;date">
 
 <!ENTITY % LaTeXML.metadata.qname         "%LaTeXML.pfx;metadata">
+<!ENTITY % LaTeXML.indexkeyword.qname     "%LaTeXML.pfx;indexkeyword">
 
 <!ENTITY % LaTeXML-extra.Inline.class
 	 "| %LaTeXML.email.qname; | %LaTeXML.VRML.qname;| %LaTeXML.GAMS.qname;">
@@ -135,7 +136,9 @@
 <!ELEMENT %LaTeXML.bibliography.qname; 
 	  ((%LaTeXML.SectionalFrontMatter.class;)?,
 	  (%LaTeXML-bib.biblist.qname;)*)>
-
+<!ELEMENT %LaTeXML.index.qname; 
+	  ((%LaTeXML.SectionalFrontMatter.class;)?,
+           (%LaTeXML.indexlist.qname;)*)>
 
 <!ATTLIST %LaTeXML.chapter.qname;       %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 <!ATTLIST %LaTeXML.part.qname;          %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
@@ -146,6 +149,8 @@
 <!ATTLIST %LaTeXML.bibliography.qname;  
 	  %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib; 
           files CDATA #IMPLIED>
+<!ATTLIST %LaTeXML.index.qname;
+	  %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 
 <!-- but still define a default document -->
 <!ELEMENT %LaTeXML.document.qname;
@@ -173,7 +178,8 @@
 <!ELEMENT %LaTeXML.creator.qname;       (%LaTeXML.Person.class;)* >
 <!ATTLIST %LaTeXML.creator.qname;
 	  %LaTeXML.Common.attrib;
-	  role CDATA #IMPLIED>
+	  role CDATA #IMPLIED
+	  soft_idref CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.date.qname;         %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.date.qname;
@@ -191,7 +197,11 @@
 <!-- metadata collects various kinds of info about its container -->
 <!ELEMENT %LaTeXML.metadata.qname;
 	  ( %LaTeXML.note.qname; | %LaTeXML.origref.qname;
+	  | %LaTeXML.indexkeyword.qname;
 	  | %LaTeXML.acknowledgements.qname;)*>
+<!ATTLIST %LaTeXML.metadata.qname;
+	  about_id CDATA #IMPLIED
+	  id CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.copyright.qname;        %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.copyright.qname;
@@ -222,6 +232,9 @@
 <!ELEMENT %LaTeXML.origref.qname; %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.origref.qname;
           ref CDATA #IMPLIED>
+<!ELEMENT %LaTeXML.indexkeyword.qname; %LaTeXML.Inline.model;>
+<!ATTLIST %LaTeXML.indexkeyword.qname;
+          key CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.mark.qname;   ((%LaTeXML.tag.qname;)?, %LaTeXML.text.qname;)>
 <!ATTLIST %LaTeXML.mark.qname;

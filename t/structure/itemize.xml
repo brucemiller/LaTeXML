@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section id="S1" refnum="1">
+    <title>Itemize</title>
+    <para id="S1.p1">
+      <itemize id="I1">
+        <item id="I1.i1" label="it:one">
+          <p>One, but not <ref labelref="en:one">1</ref></p>
+        </item>
+        <item id="I1.i2" label="it:two">
+          <p>Two, but not <ref labelref="en:two">2</ref></p>
+        </item>
+        <item id="I1.i3" label="it:three">
+          <p>Three, but not <ref labelref="en:three">3</ref></p>
+        </item>
+      </itemize>
+    </para>
+  </section>
+  <section id="S2" refnum="2">
+    <title>Enumerate</title>
+    <para id="S2.p1">
+      <enumerate id="I2">
+        <item id="I2.i1" refnum="1" label="en:one">
+          <p>One , but not <ref labelref="de:one">1</ref></p>
+        </item>
+        <item id="I2.i2" refnum="2" label="en:two">
+          <p>Two , but not <ref labelref="de:two">2</ref></p>
+        </item>
+        <item id="I2.i3" refnum="3" label="en:three">
+          <p>Three , but not <ref labelref="de:three">3</ref></p>
+        </item>
+      </enumerate>
+    </para>
+  </section>
+  <section id="S3" refnum="3">
+    <title>Description</title>
+    <para id="S3.p1">
+      <description id="I3">
+        <item id="I3.i1" label="de:one">
+          <tag>One</tag>
+          <p>, but not <ref labelref="it:one">1</ref></p>
+        </item>
+        <item id="I3.i2" label="de:two">
+          <tag>Two</tag>
+          <p>, but not <ref labelref="it:two">2</ref></p>
+        </item>
+        <item id="I3.i3" label="de:three">
+          <tag>Three</tag>
+          <p>, but not <ref labelref="it:three">3</ref></p>
+        </item>
+      </description>
+    </para>
+  </section>
+  <section id="S4" refnum="4">
+    <title>Nested Enumerate</title>
+    <para id="S4.p1">
+      <enumerate id="I4">
+        <item id="I4.i1" refnum="1">
+          <p>One</p>
+          <enumerate id="I4.I1">
+            <item id="I4.I1.i1" refnum="a">
+              <p>One</p>
+            </item>
+            <item id="I4.I1.i2" refnum="b">
+              <p>Two</p>
+            </item>
+            <item id="I4.I1.i3" refnum="c">
+              <p>Three</p>
+            </item>
+          </enumerate>
+        </item>
+        <item id="I4.i2" refnum="2">
+          <p>Two</p>
+          <enumerate id="I4.I2">
+            <item id="I4.I2.i1" refnum="a">
+              <p>One</p>
+            </item>
+            <item id="I4.I2.i2" refnum="b">
+              <p>Two</p>
+            </item>
+            <item id="I4.I2.i3" refnum="c">
+              <p>Three</p>
+            </item>
+          </enumerate>
+        </item>
+        <item id="I4.i3" refnum="3">
+          <p>Three</p>
+          <enumerate id="I4.I3">
+            <item id="I4.I3.i1" refnum="a">
+              <p>One</p>
+            </item>
+            <item id="I4.I3.i2" refnum="b">
+              <p>Two</p>
+            </item>
+            <item id="I4.I3.i3" refnum="c">
+              <p>Three</p>
+            </item>
+          </enumerate>
+        </item>
+      </enumerate>
+    </para>
+  </section>
+</document>

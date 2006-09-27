@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
+<?latexml class="article"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section id="S1" refnum="1">
+    <title>First Section</title>
+    <para id="S1.p1">
+      <p>Begin first paragraph,</p>
+      <equation id="E1" refnum="1">
+        <Math mode="display" tex="a+b," text="a + b">
+          <XMath>
+            <XMApp punctuation=",">
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" font="italic">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <para id="S1.p2">
+      <equation id="E2" refnum="2">
+        <Math mode="display" tex="c+d," text="c + d">
+          <XMath>
+            <XMApp punctuation=",">
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              <XMTok role="UNKNOWN" font="italic">d</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <figure id="F1" refnum="1">
+      <p>A Figure</p>
+      <caption>A Figure</caption>
+    </figure>
+    <table id="T1" refnum="1">
+      <p>A Figure</p>
+      <caption>A Figure</caption>
+    </table>
+    <para id="S1.p3">
+      <enumerate id="I1">
+        <item id="I1.i1" refnum="1">
+          <p>one</p>
+        </item>
+        <item id="I1.i2" refnum="2">
+          <p>two</p>
+          <enumerate id="I1.I1">
+            <item id="I1.I1.i1" refnum="a">
+              <p>one</p>
+            </item>
+            <item id="I1.I1.i2" refnum="b">
+              <p>two</p>
+            </item>
+          </enumerate>
+        </item>
+      </enumerate>
+    </para>
+  </section>
+  <section id="S2" refnum="2">
+    <title>Second Section</title>
+    <para id="S2.p1">
+      <p>Begin first paragraph,</p>
+      <equation id="E3" refnum="3">
+        <Math mode="display" tex="a+b," text="a + b">
+          <XMath>
+            <XMApp punctuation=",">
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" font="italic">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <para id="S2.p2">
+      <equation id="E4" refnum="4">
+        <Math mode="display" tex="c+d," text="c + d">
+          <XMath>
+            <XMApp punctuation=",">
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              <XMTok role="UNKNOWN" font="italic">d</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <figure id="F2" refnum="2">
+      <p>A Figure</p>
+      <caption>A Figure</caption>
+    </figure>
+    <table id="T2" refnum="2">
+      <p>A Figure</p>
+      <caption>A Figure</caption>
+    </table>
+    <para id="S2.p3">
+      <enumerate id="I2">
+        <item id="I2.i1" refnum="1">
+          <p>one</p>
+        </item>
+        <item id="I2.i2" refnum="2">
+          <p>two</p>
+          <enumerate id="I2.I1">
+            <item id="I2.I1.i1" refnum="a">
+              <p>one</p>
+            </item>
+            <item id="I2.I1.i2" refnum="b">
+              <p>two</p>
+            </item>
+          </enumerate>
+        </item>
+      </enumerate>
+    </para>
+  </section>
+</document>

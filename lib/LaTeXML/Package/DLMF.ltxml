@@ -34,8 +34,9 @@ RequirePackage('latexml');
 DefPrimitive('\thischapter{}', sub {
   my($stomach,$ch)=@_;
   $ch=$ch->toString;
+  AssignValue(DOCUMENTID=>$ch,'global');
   DefMacro('\thechapter',$ch); 
-  DefMacro('\thechapter@ID',$ch); 
+  DefMacro('\thechapter@ID',$ch);
   DefMacro('\@currentlabel',$ch);
   AssignValue("\\c\@chapter"=>$ch,'global');
   AssignValue(current_counter=>'chapter','local');
@@ -47,11 +48,13 @@ DefPrimitive('\thischapter{}', sub {
   Tag('ltx:chapter', afterClose=>\&extractSourceNotes);
 });
 
+sub LookupChapterMetaID { ToString(LookupValue('Chapter')).".info"; }
+  
 DefEnvironment('{document}',
 	       "?&LookupValue(Chapter)"
 	       .  "(<ltx:chapter id='&LookupValue(Chapter)' refnum='&LookupValue(Chapter)'"
 	       .         " label='&LookupValue(ChapterLabel)'>"
-	       .      "<ltx:metadata about_id='&LookupValue(Chapter)' id='&LookupValue(Chapter).info'/>"
+	       .      "<ltx:metadata about_id='&LookupValue(Chapter)' id='&LookupChapterMetaID()'/>"
 	       .      "#body"
 	       .    "</ltx:chapter>)"
 	       .  "(<ltx:document>#body</ltx:document>)",
@@ -152,22 +155,29 @@ DefMacro('\theequationgroup','');
 DefMacro('\thefigure',  '\thesection.\arabic{figure}');
 DefMacro('\thetable',   '\thesection.\arabic{table}');
 
-NewCounter('@itemize', 'section', idprefix=>'I');
-NewCounter('enumi');
-NewCounter('enumii');
-NewCounter('enumiii');
-NewCounter('enumiv');
-# Since we don't want enumi (necessarily) to be reset when @itemize is incremented,
-# we've got to manually define the ID macros:
-DefMacro('\theenumi@ID',   '\the@itemize@ID.\@enumi@ID');
-DefMacro('\theenumii@ID',  '\the@itemize@ID.\@enumii@ID');
-DefMacro('\theenumiii@ID', '\the@itemize@ID.\@enumiii@ID');
-DefMacro('\theenumiv@ID',  '\the@itemize@ID.\@enumiv@ID');
+NewCounter('@itemizei',   'section',    idprefix=>'I');
+NewCounter('@itemizeii',  '@itemizei',  idprefix=>'I');
+NewCounter('@itemizeiii', '@itemizeii', idprefix=>'I');
+NewCounter('@itemizeiv',  '@itemizeiii',idprefix=>'I');
+NewCounter('@itemizev',   '@itemizeiv', idprefix=>'I');
+NewCounter('@itemizevi',  '@itemizev',  idprefix=>'I');
+
+NewCounter('enumi',  '@itemizei',   idprefix=>'i');
+NewCounter('enumii', '@itemizeii',  idprefix=>'i');
+NewCounter('enumiii','@itemizeiii', idprefix=>'i');
+NewCounter('enumiv', '@itemizeiv',  idprefix=>'i');
+# A couple of more levels, since we use these for ID's!
+NewCounter('enumv',  '@itemizev',   idprefix=>'i');
+NewCounter('enumvi', '@itemizevi',  idprefix=>'i');
 
 DefMacro('\theenumi',           '\arabic{enumi}');
 DefMacro('\theenumii',          '\alph{enumii}');
 DefMacro('\theenumiii',         '\roman{enumiii}');
 DefMacro('\theenumiv',          '\Alph{enumiv}');
+
+# Number these per section.
+NewCounter('@XMARG', 'section',idprefix=>'XM');
+NewCounter('@XMDECL','section',idprefix=>'XMD');
 
 #**********************************************************************
 # Frontmatter
@@ -198,7 +208,7 @@ DefMacro('\galleryitem Semiverbatim Semiverbatim',
 DefMacro('\default@gallery',
 	 '\galleryitem{}{DLMF:/images/noimage.png}'
 	 .'\galleryitem{}{DLMF:/images/noimage.png}');
-
+DefPrimitive('\gallerynote{}',undef); # Ignore
 #**********************************************************************
 # Backmatter.
 # Ignore bibliography.
@@ -232,7 +242,7 @@ DefEnvironment('{sidebar}{}{}{}',
 	       beforeDigest=> sub { 
 		 Let('\thesection','\thesidebar');
 		 Let('\thesection@ID','\thesidebar@ID'); },
-	       properties=> sub { (refStepCounter('sidebar'),
+	       properties=> sub { (RefStepCounter('sidebar'),
 				   label => sub { "sb:".ToString(Digest(T_CS('\thechapter'))).".".ToString($_[1]); }); });
 
 #**********************************************************************
@@ -243,6 +253,14 @@ DefConstructor('\origref[]{}', "^<ltx:origref ref='#2'>#1</ltx:origref>", mode=>
 # New form of \index allows * (to hide from printed index)
 DefExpandable('\index OptionalMatch:*{}', sub { my($gullet,$star,$phrases)=@_;
 						process_index_phrases($gullet,$phrases); });
+# Also, redefine phrase to add a keyword to the metadata.
+DefMacro('\@indexphrase{}','\@@indexphrase{#1}\@@indexkeyword{#1}');
+DefConstructor('\@@indexphrase{}',
+	       "<ltx:indexphrase key='#key'>#1</ltx:indexphrase>",
+	       properties=>{key=>sub { cleanIndexKey($_[1]); }} );
+DefConstructor('\@@indexkeyword{}',
+	       "^<ltx:indexkeyword key='#key'>#1</ltx:indexkeyword>",
+	       properties=>{key=>sub { cleanIndexKey($_[1]); }} );
 
 # NOTE: the "^" prefix allows these to float up out of math mode.
 DefConstructor('\MarkDefn []{}',
@@ -266,7 +284,7 @@ DefEnvironment('{equation}[]',
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       properties=> sub { refStepCounter('equation') });
+	       properties=> sub { RefStepCounter('equation') });
 DefEnvironment('{equation*}[]',
 	       "<ltx:equation id='#id'>"
 	       . "<ltx:Math mode='display'>"
@@ -276,7 +294,7 @@ DefEnvironment('{equation*}[]',
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       properties=> sub { refStepID('equation') });
+	       properties=> sub { RefStepID('equation') });
 
 # equationmix contains several math environments, 
 # Each math produces inline math, BUT we've set displaystyle in them!
@@ -286,7 +304,7 @@ DefEnvironment('{equationmix}[]',
 	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:equation>",
-	       properties=> sub { refStepCounter('equation') },
+	       properties=> sub { RefStepCounter('equation') },
 	       # NOTE: We'd like to have displaystyle (but NOT mode=display!) for enclosed math env!
 	       # Use displaystyles for math environments within here.
 	       beforeDigest => sub {
@@ -298,17 +316,17 @@ DefEnvironment('{equationmix}[]',
 );
 DefEnvironment('{equationmix*}[]',
 	       "<ltx:equation id='#id'>#body</ltx:equation>",
-	       properties=> sub { refStepID('equation') });
+	       properties=> sub { RefStepID('equation') });
 # NOTE: I haven't handled the subequation case!!! (where equations themselves get numbered!)
 DefEnvironment('{equationgroup}[]', 
 	       "<ltx:equationgroup id='#id' refnum='#refnum'>"
 	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:equationgroup>",
-	       properties=> sub { refStepCounter('equation') });
+	       properties=> sub { RefStepCounter('equation') });
 DefEnvironment('{equationgroup*}[]',
 	       "<ltx:equationgroup id='#id'>#body</ltx:equationgroup>",
-	       properties=> sub { refStepID('equationgroup') });
+	       properties=> sub { RefStepID('equationgroup') });
 DefConstructor('\intertext{}',"#1");
 
 DefConstructor('\@constraint OptionalMatch:* {}',
@@ -332,25 +350,25 @@ DefEnvironment('{figure}[]',
 	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:figure>",
-	       properties=> sub { refStepCounter('figure') });
+	       properties=> sub { RefStepCounter('figure') });
 DefEnvironment('{figure*}[]',
 	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
 	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:figure>",
-	       properties=> sub { refStepCounter('figure') });
+	       properties=> sub { RefStepCounter('figure') });
 DefEnvironment('{table}[]',
 	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
 	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:table>",
-	       properties=> sub { refStepCounter('table')} );
+	       properties=> sub { RefStepCounter('table')} );
 DefEnvironment('{table*}[]',
 	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
 	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:table>",
-	       properties=> sub { refStepCounter('table')} );
+	       properties=> sub { RefStepCounter('table')} );
 
 #**********************************************************************
 # Table enhancement

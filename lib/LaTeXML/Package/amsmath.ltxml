@@ -80,7 +80,7 @@ DefEnvironment('{multline}',
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       properties=> sub { refStepCounter('equation') });
+	       properties=> sub { RefStepCounter('equation') });
 DefEnvironment('{multline*}',
 	       "<ltx:equation>"
 	       . "<ltx:Math mode='display'>"
@@ -109,7 +109,7 @@ DefConstructor('\@@gather@newline OptionalMatch:* [Dimension]',
 	       ."<ltx:equation refnum='#refnum'> id='#id'"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>",
-	       properties=> sub { refStepCounter('equation') },
+	       properties=> sub { RefStepCounter('equation') },
 	       alias=>'\\');
 DefConstructor('\@@gather@newline@nonum OptionalMatch:* [Dimension]',
 	       "   </ltx:XMath>"
@@ -134,7 +134,7 @@ DefEnvironment('{gather}',
 	       ."</ltx:equationgroup>",
 	       mode=>'display_math',
 	       beforeDigest=>sub{  Let("\\\\",'\@@gather@newline'); },
-	       properties=> sub { refStepCounter('equation') });
+	       properties=> sub { RefStepCounter('equation') });
 DefEnvironment('{gather*}',
 	       "<ltx:equationgroup>"
 	       . "<ltx:equation>"
@@ -161,7 +161,7 @@ DefConstructor('\@@align@newline OptionalMatch:* [Dimension]',
 	       ."<ltx:equation refnum='#refnum' id='#id'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>",
-	       properties=> sub { refStepCounter('equation') },
+	       properties=> sub { RefStepCounter('equation') },
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); },
 	       alias=>'\\');
 DefConstructor('\@@align@newline@nonum OptionalMatch:* [Dimension]',
@@ -195,7 +195,7 @@ DefEnvironment('{align}',
 	       ."</ltx:equationgroup>",
 	       mode=>'display_math',
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline'); },
-	       properties=> sub { refStepCounter('equation') });
+	       properties=> sub { RefStepCounter('equation') });
 
 DefEnvironment('{align*}',
 	       "<ltx:equationgroup>"
@@ -224,7 +224,7 @@ DefEnvironment('{flalign}',
 	       ."</ltx:equationgroup>",
 	       mode=>'display_math',
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline'); },
-	       properties=> sub { refStepCounter('equation') });
+	       properties=> sub { RefStepCounter('equation') });
 
 DefEnvironment('{flalign*}',
 	       "<ltx:equationgroup>"
@@ -253,7 +253,7 @@ DefEnvironment('{alignat}{}',
 	       ."</ltx:equationgroup>",
 	       mode=>'display_math',
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline'); },
-	       properties=> sub { refStepCounter('equation') });
+	       properties=> sub { RefStepCounter('equation') });
 
 DefEnvironment('{alignat*}{}',
 	       "<ltx:equationgroup>"
@@ -331,7 +331,7 @@ DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#1'>&LookupValue('LAB
 # Section 3.11.3 Subordinate numbering sequences.
 DefEnvironment('{subequations}',"<ltx:equationgroup refnum='#refnum'>#body</ltx:equationgroup>",
 	       beforeDigest=>sub { NewCounter('parentequation');
-				   refStepCounter('equation');
+				   RefStepCounter('equation');
 				   AssignValue("\\c\@parentequation"=>LookupValue("\\c\@equation"));
 				   AssignValue("\\c\@equation",Number(0));
 				   Let('\theparentequation','\theequation');

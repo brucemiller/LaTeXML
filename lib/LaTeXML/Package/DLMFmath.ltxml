@@ -45,13 +45,13 @@ DefMath('\imagpart{}', "\x{2111}", meaning=>'imagpart'); # BLACK-LETTER CAPITAL 
 
 # Hmm, reversions should just be plain i,e,pi,d ??
 DefMath('\iunit',"\x{2148}",	# DOUBLE-STRUCK ITALIC SMALL I
-	role=>'ID', meaning=>'iunit', reversion=>'i');
+	role=>'ID', meaning=>'iunit');# , reversion=>'i');
 DefMath('\expe', "\x{2147}",	# DOUBLE-STRUCK ITALIC SMALL E
-	role=>'ID', meaning=>'exponentiale', reversion=>'e');
+	role=>'ID', meaning=>'exponentiale');# , reversion=>'e');
 DefMath('\cpi',	 "\x{03C0}",	# pi (is there a special one?)
-	role=>'ID', meaning=>'circularpi', reversion=>'\pi');
+	role=>'ID', meaning=>'circularpi');#, reversion=>'\pi');
 DefMath('\diffd',"\x{2146}", 
-	role=>'DIFFOP', meaning=>'differentiald', reversion=>'d');
+	role=>'DIFFOP', meaning=>'differentiald' );# , reversion=>'d');
 
 DefMacro('\opminus',   "(-1)");
 

@@ -187,7 +187,7 @@ sub readArgumentsAndDigest {
     Error("Missing argument ".ToString($parameter)." for ".ToString($fordefn))
       unless defined $value || $$parameter{optional};
     if(!$$parameter{novalue}){
-      $value = $value->beDigested($stomach) if ref $value;
+      $value = $value->beDigested($stomach) if (ref $value) && !$$parameter{undigested};
       push(@args,$value); }}
   @args; }
 

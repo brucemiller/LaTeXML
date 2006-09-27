@@ -9,6 +9,7 @@
   <creator role="author">
     <personname>Bruce R. Miller</personname>
   </creator>
+  <date role="conversion">September 12, 2006</date>
   <section id="S1" refnum="1">
     <title>Introduction</title>
     <para id="S1.p1">
@@ -264,9 +265,9 @@ during parsing, but probably shouldn't.</p>
             </a>
           </tag>
           <p>: Abstract base class.</p>
-          <description id="I4">
+          <description id="I3.I1">
 <!-- %In Token.pm -->
-            <item id="I4.1">
+            <item id="I3.I1.1">
               <tag>
                 <a href="perldoc/LaTeXML/Token.html">
                   <text font="typewriter" size="small">LaTeXML::Token</text>
@@ -274,7 +275,7 @@ during parsing, but probably shouldn't.</p>
               </tag>
               <p>: A TeX token: character/string with category code.</p>
             </item>
-            <item id="I4.2">
+            <item id="I3.I1.2">
               <tag>
                 <a href="perldoc/LaTeXML/Token.html#LaTeXML/Tokens">
                   <text font="typewriter" size="small">LaTeXML::Tokens</text>
@@ -283,23 +284,23 @@ during parsing, but probably shouldn't.</p>
               <p>: A list of <a href="perldoc/LaTeXML/Token.html"><text font="typewriter" size="small">LaTeXML::Token</text></a>s.
 <!-- %**** LaTeXML.tex Line 250 **** --></p>
             </item>
-            <item id="I4.3">
+            <item id="I3.I1.3">
               <tag>
                 <a href="perldoc/LaTeXML/Token.html#LaTeXML/Number">
                   <text font="typewriter" size="small">LaTeXML::Number</text>
                 </a>
               </tag>
               <p>: A TeX number.</p>
-              <description id="I5">
-                <item id="I5.1">
+              <description id="I3.I1.I1">
+                <item id="I3.I1.I1.1">
                   <tag>
                     <a href="perldoc/LaTeXML/Token.html#LaTeXML/Dimension">
                       <text font="typewriter" size="small">LaTeXML::Dimension</text>
                     </a>
                   </tag>
                   <p>: A TeX dimension; number with unit.</p>
-                  <description id="I6">
-                    <item id="I6.1">
+                  <description id="I3.I1.I1.I1">
+                    <item id="I3.I1.I1.I1.1">
                       <tag>
                         <a href="perldoc/LaTeXML/Token.html#LaTeXML/MuDimension">
                           <text font="typewriter" size="small">LaTeXML::MuDimension</text>
@@ -307,15 +308,15 @@ during parsing, but probably shouldn't.</p>
                       </tag>
                       <p>: A TeX math-mode dimension.</p>
                     </item>
-                    <item id="I6.2">
+                    <item id="I3.I1.I1.I1.2">
                       <tag>
                         <a href="perldoc/LaTeXML/Token.html#LaTeXML/Glue">
                           <text font="typewriter" size="small">LaTeXML::Glue</text>
                         </a>
                       </tag>
                       <p>:  A TeX dimension with shrink and stretch.</p>
-                      <description id="I7">
-                        <item id="I7.1">
+                      <description id="I3.I1.I1.I1.I1">
+                        <item id="I3.I1.I1.I1.I1.1">
                           <tag>
                             <a href="perldoc/LaTeXML/Token.html#LaTeXML/MuGlue">
                               <text font="typewriter" size="small">LaTeXML::MuGlue</text>
@@ -330,15 +331,15 @@ during parsing, but probably shouldn't.</p>
               </description>
 <!-- %In Box.pm -->
             </item>
-            <item id="I4.4">
+            <item id="I3.I1.4">
               <tag>
                 <a href="perldoc/LaTeXML/Box.html">
                   <text font="typewriter" size="small">LaTeXML::Box</text>
                 </a>
               </tag>
               <p>: A digested character/string; base class for digested objects.</p>
-              <description id="I8">
-                <item id="I8.1">
+              <description id="I3.I1.I2">
+                <item id="I3.I1.I2.1">
                   <tag>
                     <a href="perldoc/LaTeXML/Box.html#LaTeXML/MathBox">
                       <text font="typewriter" size="small">LaTeXML::MathBox</text>
@@ -346,7 +347,7 @@ during parsing, but probably shouldn't.</p>
                   </tag>
                   <p>: A digested character token in math.</p>
                 </item>
-                <item id="I8.2">
+                <item id="I3.I1.I2.2">
                   <tag>
                     <a href="perldoc/LaTeXML/Box.html#LaTeXML/Comment">
                       <text font="typewriter" size="small">LaTeXML::Comment</text>
@@ -354,15 +355,15 @@ during parsing, but probably shouldn't.</p>
                   </tag>
                   <p>: A digested comment.</p>
                 </item>
-                <item id="I8.3">
+                <item id="I3.I1.I2.3">
                   <tag>
                     <a href="perldoc/LaTeXML/Box.html#LaTeXML/List">
                       <text font="typewriter" size="small">LaTeXML::List</text>
                     </a>
                   </tag>
                   <p>: A list of text-mode boxes.</p>
-                  <description id="I9">
-                    <item id="I9.1">
+                  <description id="I3.I1.I2.I1">
+                    <item id="I3.I1.I2.I1.1">
                       <tag>
                         <a href="perldoc/LaTeXML/Box.html#LaTeXML/MathList">
                           <text font="typewriter" size="small">LaTeXML::MathList</text>
@@ -372,7 +373,7 @@ during parsing, but probably shouldn't.</p>
                     </item>
                   </description>
                 </item>
-                <item id="I8.4">
+                <item id="I3.I1.I2.4">
                   <tag>
                     <a href="perldoc/LaTeXML/Box.html#LaTeXML/Whatsit">
                       <text font="typewriter" size="small">LaTeXML::Whatsit</text>
@@ -384,7 +385,7 @@ rules for conversion into an document fragment.</p>
               </description>
 <!-- %In Font.pm -->
             </item>
-            <item id="I4.5">
+            <item id="I3.I1.5">
               <tag>
                 <a href="perldoc/LaTeXML/Font.html">
                   <text font="typewriter" size="small">LaTeXML::Font</text>
@@ -392,8 +393,8 @@ rules for conversion into an document fragment.</p>
               </tag>
               <p>: A representation of a font, attached to digested objects.
 <!-- %**** LaTeXML.tex Line 275 **** --></p>
-              <description id="I10">
-                <item id="I10.1">
+              <description id="I3.I1.I3">
+                <item id="I3.I1.I3.1">
                   <tag>
                     <a href="perldoc/LaTeXML/Font.html#LaTeXML/MathFont">
                       <text font="typewriter" size="small">LaTeXML::MathFont</text>
@@ -404,7 +405,7 @@ rules for conversion into an document fragment.</p>
               </description>
 <!-- %In Node.pm -->
             </item>
-            <item id="I4.6">
+            <item id="I3.I1.6">
               <tag>
                 <a href="perldoc/LaTeXML/Document.html">
                   <text font="typewriter" size="small">LaTeXML::Document</text>
@@ -413,15 +414,15 @@ rules for conversion into an document fragment.</p>
               <p>: A representation of the document under construction.
 <!-- %In Definition.pm --></p>
             </item>
-            <item id="I4.7">
+            <item id="I3.I1.7">
               <tag>
                 <a href="perldoc/LaTeXML/Definition.html">
                   <text font="typewriter" size="small">LaTeXML::Definition</text>
                 </a>
               </tag>
               <p>: Represents the action of executable control sequences</p>
-              <description id="I11">
-                <item id="I11.1">
+              <description id="I3.I1.I4">
+                <item id="I3.I1.I4.1">
                   <tag>
                     <a href="perldoc/LaTeXML/Definition.html#LaTeXML/Expandable">
                       <text font="typewriter" size="small">LaTeXML::Expandable</text>
@@ -429,15 +430,15 @@ rules for conversion into an document fragment.</p>
                   </tag>
                   <p>: A definition expandable in the Gullet, (eg. a macro).</p>
                 </item>
-                <item id="I11.2">
+                <item id="I3.I1.I4.2">
                   <tag>
                     <a href="perldoc/LaTeXML/Definition.html#LaTeXML/Primitive">
                       <text font="typewriter" size="small">LaTeXML::Primitive</text>
                     </a>
                   </tag>
                   <p>: Definition for primitives, carried out in Stomach.</p>
-                  <description id="I12">
-                    <item id="I12.1">
+                  <description id="I3.I1.I4.I1">
+                    <item id="I3.I1.I4.I1.1">
                       <tag>
                         <a href="perldoc/LaTeXML/Definition.html#LaTeXML/Register">
                           <text font="typewriter" size="small">LaTeXML::Register</text>
@@ -445,7 +446,7 @@ rules for conversion into an document fragment.</p>
                       </tag>
                       <p>: A definition for TeX registers.</p>
                     </item>
-                    <item id="I12.2">
+                    <item id="I3.I1.I4.I1.2">
                       <tag>
                         <a href="perldoc/LaTeXML/Definition.html#LaTeXML/Constructor">
                           <text font="typewriter" size="small">LaTeXML::Constructor</text>
@@ -459,7 +460,7 @@ generates a Whatsit during digestion.</p>
               </description>
 <!-- %In Parameters.pm -->
             </item>
-            <item id="I4.8">
+            <item id="I3.I1.8">
               <tag>
                 <a href="perldoc/LaTeXML/Parameters.html">
                   <text font="typewriter" size="small">LaTeXML::Parameters</text>
@@ -467,7 +468,7 @@ generates a Whatsit during digestion.</p>
               </tag>
               <p>: A definition's parameter list; a collection of <a href="perldoc/LaTeXML/Parameter.html#LaTeXML/Parameter"><text font="typewriter" size="small">LaTeXML::Parameter</text></a>s.</p>
             </item>
-            <item id="I4.9">
+            <item id="I3.I1.9">
               <tag>
                 <a href="perldoc/LaTeXML/Parameter.html#LaTeXML/Parameter">
                   <text font="typewriter" size="small">LaTeXML::Parameter</text>
@@ -475,7 +476,7 @@ generates a Whatsit during digestion.</p>
               </tag>
               <p>: A definition's parameter, including type, optional, etc.</p>
             </item>
-            <item id="I4.10">
+            <item id="I3.I1.10">
               <tag>
                 <a href="perldoc/LaTeXML/Parameter.html#LaTeXML/KeyVals">
                   <text font="typewriter" size="small">LaTeXML::KeyVals</text>
@@ -484,24 +485,24 @@ generates a Whatsit during digestion.</p>
               <p>: Representation of LaTeX-style Key-Value lists.
 <!-- %In Mouth.pm --></p>
             </item>
-            <item id="I4.11">
+            <item id="I3.I1.11">
               <tag>
                 <a href="perldoc/LaTeXML/Mouth.html">
                   <text font="typewriter" size="small">LaTeXML::Mouth</text>
                 </a>
               </tag>
               <p>: The organ that converts characters (eg. from files) into <a href="perldoc/LaTeXML/Token.html"><text font="typewriter" size="small">LaTeXML::Token</text></a>s.</p>
-              <description id="I13">
-                <item id="I13.1">
+              <description id="I3.I1.I5">
+                <item id="I3.I1.I5.1">
                   <tag>
                     <a href="perldoc/LaTeXML/Mouth.html#LaTeXML/FileMouth">
                       <text font="typewriter" size="small">LaTeXML::FileMouth</text>
                     </a>
                   </tag>
                   <p>: A mouth that tokenizes input from a file.</p>
-                  <description id="I14">
+                  <description id="I3.I1.I5.I1">
 <!-- %**** LaTeXML.tex Line 300 **** -->
-                    <item id="I14.1">
+                    <item id="I3.I1.I5.I1.1">
                       <tag>
                         <a href="perldoc/LaTeXML/Mouth.html#LaTeXML/StyleMouth">
                           <text font="typewriter" size="small">LaTeXML::StyleMouth</text>
@@ -511,7 +512,7 @@ generates a Whatsit during digestion.</p>
                     </item>
                   </description>
                 </item>
-                <item id="I13.2">
+                <item id="I3.I1.I5.2">
                   <tag>
                     <a href="perldoc/LaTeXML/Mouth.html#LaTeXML/PerlMouth">
                       <text font="typewriter" size="small">LaTeXML::PerlMouth</text>
@@ -522,7 +523,7 @@ generates a Whatsit during digestion.</p>
               </description>
 <!-- %In Gullet.pm -->
             </item>
-            <item id="I4.12">
+            <item id="I3.I1.12">
               <tag>
                 <a href="perldoc/LaTeXML/Gullet.html">
                   <text font="typewriter" size="small">LaTeXML::Gullet</text>
@@ -532,7 +533,7 @@ generates a Whatsit during digestion.</p>
 also provides common `parsing' operations such as reading numbers, delimited lists of tokens, etc.
 <!-- %In Stomach.pm --></p>
             </item>
-            <item id="I4.13">
+            <item id="I3.I1.13">
               <tag>
                 <a href="perldoc/LaTeXML/Stomach.html">
                   <text font="typewriter" size="small">LaTeXML::Stomach</text>
@@ -542,7 +543,7 @@ also provides common `parsing' operations such as reading numbers, delimited lis
 digested boxes; also contains the current state of grouping, bindings of definitions, etc.
 <!-- %In Intestine.pm --></p>
             </item>
-            <item id="I4.14">
+            <item id="I3.I1.14">
               <tag>
                 <a href="perldoc/LaTeXML/Intestine.html">
                   <text font="typewriter" size="small">LaTeXML::Intestine</text>
@@ -552,7 +553,7 @@ digested boxes; also contains the current state of grouping, bindings of definit
 Vaguely analogous to TeX's output routine, but runs at end of document, rather than per-page.
 <!-- %In Model.pm --></p>
             </item>
-            <item id="I4.15">
+            <item id="I3.I1.15">
               <tag>
                 <a href="perldoc/LaTeXML/Model.html">
                   <text font="typewriter" size="small">LaTeXML::Model</text>
@@ -569,19 +570,19 @@ Vaguely analogous to TeX's output routine, but runs at end of document, rather t
     <title>Math Details</title>
     <para id="A2.p1">
       <p><a href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></a> processes mathematical material by proceeding through several stages:</p>
-      <itemize id="I15">
-        <item id="I15.1">
+      <itemize id="I4">
+        <item id="I4.1">
           <p>Basic processing of macros, primitives and constructors resulting in
 an XML document; the math is primarily represented by a sequence of
 tokens (<text font="typewriter">XMTok</text>) or structured items (<text font="typewriter">XMApp</text>, <text font="typewriter">XMDual</text>) and
 hints (<text font="typewriter">XMHint</text>, which are ignored).
 <!-- %**** LaTeXML.tex Line 325 **** --></p>
         </item>
-        <item id="I15.2">
+        <item id="I4.2">
           <p>Document tree rewriting, where rules are applied to modify the document tree.
 User supplied rules can be used here to clarify the intent of markup used in the document.</p>
         </item>
-        <item id="I15.3">
+        <item id="I4.3">
           <p>Math Parsing; a grammar based parser is applied, depth first, to each level of the math.
 In particular, at the top level of each math expression, as well as each
 subexpression within structured items (these will have been contained in
@@ -591,11 +592,11 @@ but may be ambigous in specifics (eg.`what the meaning of a superscript is).
 The parsing is driven almost entirely by the grammatical <text font="typewriter">role</text> assigned
 to each item.</p>
         </item>
-        <item id="I15.4">
+        <item id="I4.4">
           <p><emph>Not yet implemented</emph> a following stage must be developed to resolve
 the semantic ambiguities by analyzing and augmenting the expression tree.</p>
         </item>
-        <item id="I15.5">
+        <item id="I4.5">
           <p>Target conversion: from the internal <text font="typewriter">XM</text> representation to
 <a href="http://www.w3.org/Math/"><text font="typewriter">MathML</text></a> or <a href="http://www.openmath.org/"><text font="typewriter">OpenMath</text></a>.</p>
         </item>
@@ -617,25 +618,25 @@ The <text font="typewriter">mode</text> attribute specifies whether the math sho
       </para>
       <para id="A2.SS1.p2">
         <p>The following attributes can appear on all <text font="typewriter">XM</text> elements:</p>
-        <description id="I16">
-          <item id="I16.1">
+        <description id="I5">
+          <item id="I5.1">
             <tag>
               <text font="typewriter">role</text>
             </tag>
             <p>the grammatical role that this element plays</p>
           </item>
-          <item id="I16.2">
+          <item id="I5.2">
             <tag><text font="typewriter">open</text>, <text font="typewriter">close</text></tag>
             <p>parenthese or delimiters that were used to wrap the
 expression represented by this element.</p>
           </item>
-          <item id="I16.3">
+          <item id="I5.3">
             <tag><text font="typewriter">argopen</text>, <text font="typewriter">argclose</text>, <text font="typewriter">separators</text></tag>
             <p>delimiters on an function or operator
 (the first element of an <text font="typewriter">XMApp</text>)  that were used to delimit the arguments of the function.
 The separators is a string of the punctuation characters used to separate arguments.</p>
           </item>
-          <item id="I16.4">
+          <item id="I5.4">
             <tag>
               <text font="typewriter">xml:id</text>
             </tag>
@@ -647,46 +648,46 @@ The separators is a string of the punctuation characters used to separate argume
         <title>Math Tags</title>
         <para id="A2.SS1.SSS0.P1.p1">
           <p>The following tags are used for the intermediate math representation:</p>
-          <description id="I17">
-            <item id="I17.1">
+          <description id="I6">
+            <item id="I6.1">
               <tag>
                 <text font="typewriter">XMTok</text>
               </tag>
               <p>represents a math token. It may contain text for presentation.
 Additional attributes are:</p>
-              <description id="I18">
-                <item id="I18.1">
+              <description id="I6.I1">
+                <item id="I6.I1.1">
                   <tag>
                     <text font="typewriter">name</text>
                   </tag>
                   <p>the name that represents the `meaning' of the token; this overrides
 the content for identifying the token.</p>
                 </item>
-                <item id="I18.2">
+                <item id="I6.I1.2">
                   <tag>
                     <text font="typewriter">omcd</text>
                   </tag>
                   <p>the <a href="http://www.openmath.org/"><text font="typewriter">OpenMath</text></a> content dictionary that the name belongs to.</p>
                 </item>
-                <item id="I18.3">
+                <item id="I6.I1.3">
                   <tag>
                     <text font="typewriter">font</text>
                   </tag>
                   <p>the font to be used for presenting the content.</p>
                 </item>
-                <item id="I18.4">
+                <item id="I6.I1.4">
                   <tag>
                     <text font="typewriter">style</text>
                   </tag>
                   <p>?</p>
                 </item>
-                <item id="I18.5">
+                <item id="I6.I1.5">
                   <tag>
                     <text font="typewriter">size</text>
                   </tag>
                   <p>?</p>
                 </item>
-                <item id="I18.6">
+                <item id="I6.I1.6">
                   <tag>
                     <text font="typewriter">stackscripts</text>
                   </tag>
@@ -696,21 +697,21 @@ of the usual script position.
                 </item>
               </description>
             </item>
-            <item id="I17.2">
+            <item id="I6.2">
               <tag>
                 <text font="typewriter">XMApp</text>
               </tag>
               <p>represents the generalized application of some function or operator to arguments.
 The first child element is the operator, the remainig elements are the arguments.
 Additional attributes:</p>
-              <description id="I19">
-                <item id="I19.1">
+              <description id="I6.I2">
+                <item id="I6.I2.1">
                   <tag>
                     <text font="typewriter">name</text>
                   </tag>
                   <p>the name that represents the meaning of the construct as a whole.</p>
                 </item>
-                <item id="I19.2">
+                <item id="I6.I2.2">
                   <tag>
                     <text font="typewriter">stackscripts</text>
                   </tag>
@@ -718,26 +719,26 @@ Additional attributes:</p>
                 </item>
               </description>
             </item>
-            <item id="I17.3">
+            <item id="I6.3">
               <tag>
                 <text font="typewriter">XMDual</text>
               </tag>
               <p>combines representations of the content (the first child) and presentation
 (the second child), useful when the two structures are not easily related.</p>
             </item>
-            <item id="I17.4">
+            <item id="I6.4">
               <tag>
                 <text font="typewriter">XMHint</text>
               </tag>
               <p>represents spacing or other apparent purely presentation material.</p>
-              <description id="I20">
-                <item id="I20.1">
+              <description id="I6.I3">
+                <item id="I6.I3.1">
                   <tag>
                     <text font="typewriter">name</text>
                   </tag>
                   <p>names the effect that the hint was intended to achieve.</p>
                 </item>
-                <item id="I20.2">
+                <item id="I6.I3.2">
                   <tag>
                     <text font="typewriter">style</text>
                   </tag>
@@ -745,20 +746,20 @@ Additional attributes:</p>
                 </item>
               </description>
             </item>
-            <item id="I17.5">
+            <item id="I6.5">
               <tag>
                 <text font="typewriter">XMWrap</text>
               </tag>
               <p>serves to assert the expected type or role of a subexpression that
 may otherwise be difficult to interpret — the parser is more forgiving about these.</p>
-              <description id="I21">
-                <item id="I21.1">
+              <description id="I6.I4">
+                <item id="I6.I4.1">
                   <tag>
                     <text font="typewriter">name</text>
                   </tag>
                   <p>?</p>
                 </item>
-                <item id="I21.2">
+                <item id="I6.I4.2">
                   <tag>
                     <text font="typewriter">style</text>
                   </tag>
@@ -766,14 +767,14 @@ may otherwise be difficult to interpret — the parser is more forgiving about t
                 </item>
               </description>
             </item>
-            <item id="I17.6">
+            <item id="I6.6">
               <tag>
                 <text font="typewriter">XMArg</text>
               </tag>
               <p>serves to wrap individual arguments or subexpressions, created by
 structured markup, such as <verbatim font="typewriter">\frac</verbatim>.  These subexpressions can be parsed individually.</p>
-              <description id="I22">
-                <item id="I22.1">
+              <description id="I6.I5">
+                <item id="I6.I5.1">
                   <tag>
                     <text font="typewriter">rule</text>
                   </tag>
@@ -782,7 +783,7 @@ structured markup, such as <verbatim font="typewriter">\frac</verbatim>.  These 
                 </item>
               </description>
             </item>
-            <item id="I17.7">
+            <item id="I6.7">
               <tag>
                 <text font="typewriter">XMRef</text>
               </tag>
@@ -790,8 +791,8 @@ structured markup, such as <verbatim font="typewriter">\frac</verbatim>.  These 
 arguments when constructing an <text font="typewriter">XMDual</text> to represent a function application, for example.
 The arguments will be placed in the content branch (wrapped in an <text font="typewriter">XMArg</text>) while
 <text font="typewriter">XMRef</text>'s will be placed in the presentation branch.</p>
-              <description id="I23">
-                <item id="I23.1">
+              <description id="I6.I6">
+                <item id="I6.I6.1">
                   <tag>
                     <text font="typewriter">idref</text>
                   </tag>
@@ -819,119 +820,119 @@ These values can be specified in the <text font="typewriter">role</text> attribu
 document construction or by rewrite rules.  Although the precedence of operators
 is loosely described in the following, since the grammar contains various special
 case productions, no rigidly ordered precedence is given.</p>
-        <description id="I24">
-          <item id="I24.1">
+        <description id="I7">
+          <item id="I7.1">
             <tag>
               <text font="typewriter">ATOM</text>
             </tag>
             <p>a general atomic subexpression.
 <!-- %**** LaTeXML.tex Line 425 **** --></p>
           </item>
-          <item id="I24.2">
+          <item id="I7.2">
             <tag>
               <text font="typewriter">ID</text>
             </tag>
             <p>a variable-like token, whether scalar or otherwise.</p>
           </item>
-          <item id="I24.3">
+          <item id="I7.3">
             <tag>
               <text font="typewriter">PUNCT</text>
             </tag>
             <p>punctuation.</p>
           </item>
-          <item id="I24.4">
+          <item id="I7.4">
             <tag>
               <text font="typewriter">APPLYOP</text>
             </tag>
             <p>an explicit infix application operator (high precedence).</p>
           </item>
-          <item id="I24.5">
+          <item id="I7.5">
             <tag>
               <text font="typewriter">RELOP</text>
             </tag>
             <p>a relational operator, loosely binding.</p>
           </item>
-          <item id="I24.6">
+          <item id="I7.6">
             <tag>
               <text font="typewriter">ARROW</text>
             </tag>
             <p>an arrow operator (with little semantic significance).
 treated equivalently to <text font="typewriter">RELOP</text>.</p>
           </item>
-          <item id="I24.7">
+          <item id="I7.7">
             <tag>
               <text font="typewriter">METARELOP</text>
             </tag>
             <p>an operator used for relations between relations, with lower precedence.</p>
           </item>
-          <item id="I24.8">
+          <item id="I7.8">
             <tag>
               <text font="typewriter">ADDOP</text>
             </tag>
             <p>an addition operator, precedence between relational and multiplicative operators.</p>
           </item>
-          <item id="I24.9">
+          <item id="I7.9">
             <tag>
               <text font="typewriter">MULOP</text>
             </tag>
             <p>a multiplicative operator, high precedence.</p>
           </item>
-          <item id="I24.10">
+          <item id="I7.10">
             <tag>
               <text font="typewriter">SUPOP</text>
             </tag>
             <p>An operator appearing in a superscript, such as a collection of primes.</p>
           </item>
-          <item id="I24.11">
+          <item id="I7.11">
             <tag>
               <text font="typewriter">OPEN</text>
             </tag>
             <p>an open delimiter.</p>
           </item>
-          <item id="I24.12">
+          <item id="I7.12">
             <tag>
               <text font="typewriter">CLOSE</text>
             </tag>
             <p>a close delimiter.</p>
           </item>
-          <item id="I24.13">
+          <item id="I7.13">
             <tag>
               <text font="typewriter">MIDDLE</text>
             </tag>
             <p>a middle operator used to group items between an <text font="typewriter">OPEN</text>, <text font="typewriter">CLOSE</text> pair.</p>
           </item>
-          <item id="I24.14">
+          <item id="I7.14">
             <tag>
               <text font="typewriter">OPERATOR</text>
             </tag>
             <p>a general operator; higher precedence than function application.
 For example, for an operator <Math mode="inline" tex="A" text="A"><XMath><XMTok role="UNKNOWN" font="italic">A</XMTok></XMath></Math>, and function <Math mode="inline" tex="F" text="F"><XMath><XMTok role="UNKNOWN" font="italic">F</XMTok></XMath></Math>, <Math mode="inline" tex="AFx" text="A * F * x"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">A</XMTok><XMTok role="UNKNOWN" font="italic">F</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok></XMApp></XMath></Math> would be interpretted as <Math mode="inline" tex="(A(F))(x)" text="A * F * x"><XMath><XMApp><XMTok role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" possibleFunction="yes" font="italic">A</XMTok><XMTok role="UNKNOWN" open="(" close=")" font="italic">F</XMTok><XMTok role="UNKNOWN" open="(" close=")" font="italic">x</XMTok></XMApp></XMath></Math>.</p>
           </item>
-          <item id="I24.15">
+          <item id="I7.15">
             <tag>
               <text font="typewriter">SUMOP</text>
             </tag>
             <p>a summation/union operator.</p>
           </item>
-          <item id="I24.16">
+          <item id="I7.16">
             <tag>
               <text font="typewriter">INTOP</text>
             </tag>
             <p>an integral operator.</p>
           </item>
-          <item id="I24.17">
+          <item id="I7.17">
             <tag>
               <text font="typewriter">LIMITOP</text>
             </tag>
             <p>a limiting operator.</p>
           </item>
-          <item id="I24.18">
+          <item id="I7.18">
             <tag>
               <text font="typewriter">DIFFOP</text>
             </tag>
             <p>a differential operator.</p>
           </item>
-          <item id="I24.19">
+          <item id="I7.19">
             <tag>
               <text font="typewriter">BIGOP</text>
             </tag>
@@ -943,25 +944,25 @@ analyzing the argument structure (eg bound variables and differentials within an
 <text font="bold">Note</text> are <text font="typewriter">SUMOP</text> and <text font="typewriter">LIMITOP</text> significantly different in this sense?
 <!-- %**** LaTeXML.tex Line 450 **** --></p>
           </item>
-          <item id="I24.20">
+          <item id="I7.20">
             <tag>
               <text font="typewriter">VERTBAR</text>
             </tag>
           </item>
-          <item id="I24.21">
+          <item id="I7.21">
             <tag>
               <text font="typewriter">FUNCTION</text>
             </tag>
             <p>a function which (may) apply to following arguments with higher
 precedence than addition and multiplication, or parenthesized arguments.</p>
           </item>
-          <item id="I24.22">
+          <item id="I7.22">
             <tag>
               <text font="typewriter">NUMBER</text>
             </tag>
             <p>a number.</p>
           </item>
-          <item id="I24.23">
+          <item id="I7.23">
             <tag>
               <text font="typewriter">POSTSUPERSCRIPT</text>
             </tag>
@@ -969,13 +970,13 @@ precedence than addition and multiplication, or parenthesized arguments.</p>
 an argument, but the base will be determined by parsing. Note that this is not
 necessarily assumed to be a power. Very high precedence.</p>
           </item>
-          <item id="I24.24">
+          <item id="I7.24">
             <tag>
               <text font="typewriter">POSTSUBSCRIPT</text>
             </tag>
             <p>Similar to <text font="typewriter">POSTSUPERSCRIPT</text> for subscripts.</p>
           </item>
-          <item id="I24.25">
+          <item id="I7.25">
             <tag>
               <text font="typewriter">FLOATINGSUPERSCRIPT</text>
             </tag>
@@ -983,19 +984,19 @@ necessarily assumed to be a power. Very high precedence.</p>
 ie. <verbatim font="typewriter">{}^{x}</verbatim>.  This is often used to place a pre-superscript or for
 non-math uses (eg. <verbatim font="typewriter">10${}^{th}</verbatim>).</p>
           </item>
-          <item id="I24.26">
+          <item id="I7.26">
             <tag>
               <text font="typewriter">FLOATINGSUBSCRIPT</text>
             </tag>
             <p>Similar to <text font="typewriter">POSTSUPERSCRIPT</text> for subscripts.</p>
           </item>
-          <item id="I24.27">
+          <item id="I7.27">
             <tag>
               <text font="typewriter">POSTFIX</text>
             </tag>
             <p>for a postfix operator</p>
           </item>
-          <item id="I24.28">
+          <item id="I7.28">
             <tag>
               <text font="typewriter">UNKNOWN</text>
             </tag>
@@ -1007,8 +1008,8 @@ and generates a warning if the unknown seems to be used as a function.</p>
       <para id="A2.SS2.p3">
         <p>The following roles are not used in the grammar, but are used to capture
 the presentation style:</p>
-        <description id="I25">
-          <item id="I25.1">
+        <description id="I8">
+          <item id="I8.1">
             <tag>
               <text font="typewriter">STACKED</text>
             </tag>
@@ -1025,20 +1026,20 @@ the presentation style:</p>
     <title>Issues and ToDo</title>
     <para id="A3.p1">
       <p>Lots…!</p>
-      <itemize id="I26">
-        <item id="I26.1">
+      <itemize id="I9">
+        <item id="I9.1">
           <p>Lots of useful LaTeX packages have not been implemented, and those
 that are aren't necessarily complete.</p>
         </item>
-        <item id="I26.2">
+        <item id="I9.2">
           <p>TeX boxes aren't really complete, and in particular things like <verbatim font="typewriter">\ht0</verbatim>
 don't work.</p>
         </item>
-        <item id="I26.3">
+        <item id="I9.3">
           <p>Possibly useful to override (pre-override?) a macro defined in the source file;
 that is, define it and silently ignore the definition given in the source.</p>
         </item>
-        <item id="I26.4">
+        <item id="I9.4">
           <p>…um, …<emph>documentation</emph>!</p>
         </item>
       </itemize>
