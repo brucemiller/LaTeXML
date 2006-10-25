@@ -13,7 +13,10 @@
 -->
 
 <!ELEMENT %LaTeXML.indexmark.qname; (%LaTeXML.indexphrase.qname;)*>
-<!ATTLIST %LaTeXML.indexmark.qname; %LaTeXML.Common.attrib;>
+<!ATTLIST %LaTeXML.indexmark.qname; 
+	  %LaTeXML.Common.attrib;
+	  see_also CDATA #IMPLIED
+	  style    CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.indexphrase.qname; %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.indexphrase.qname;

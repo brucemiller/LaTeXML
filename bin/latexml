@@ -47,15 +47,10 @@ my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[@paths],
 			  documentid=>$documentid,
 			  nomathparse=>$noparse);
 
+# Check that destination is valid before wasting any time...
 if($output){
-  my($dir,$name,$type)=pathname_split($output);
-  if($dir){
-    pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }
-  open(OUT,">:utf8",$output) or die "Couldn't open output file $output: $!"; }
-else {
-  binmode(STDOUT,":utf8");
-  *OUT = *STDOUT; }
-
+  if(my $dir =pathname_directory($output)){
+    pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }}
 binmode(STDERR,":utf8");
 # ========================================
 # First read and digest whatever we're given.
@@ -81,8 +76,15 @@ if($digested){
 	$serialized = $dom->toString(1);
     }}
 print STDERR "\nConversion complete: ".$latexml->getStatus.".\n";
+
+if($output){
+  open(OUT,">:utf8",$output) or die "Couldn't open output file $output: $!"; }
+else {
+  binmode(STDOUT,":utf8");
+  *OUT = *STDOUT; }
 print OUT $serialized if $serialized;
-if($output){ close(OUT); }
+if($output){ 
+  close(OUT); }
 
 #**********************************************************************
 __END__

@@ -36,22 +36,26 @@ sub process {
     $self->Progress("Converting ".scalar(@maths)." formulae");
     $doc->addNamespace($omURI,'om');
     foreach my $math (@maths){
-      my $xmath = $doc->findnode('ltx:XMath',$math);
-      $doc->addNodes($math,$self->processNode($xmath)); }
-##      my $ommath = $self->processNode($xmath);
-##      $math->appendChild($ommath); }
+      $self->processNode($doc,$math); }
     $doc->adjust_latexml_doctype('OpenMath'); } # Add OpenMath if LaTeXML dtd.
   $doc; }
 
-# ================================================================================
 sub find_math_nodes { $_[1]->findnodes('//ltx:Math'); }
 
-# ================================================================================
-
+# $self->processNode($doc,$mathnode) is the top-level conversion
+# It converts the XMath within $mathnode, and adds it to the $mathnode,
 sub processNode {
-  my($self,$math)=@_;
-  # NOTE: Should be only 1 child node by now?
-  ['om:OMOBJ',{},map(Expr($_), element_nodes($math))]; }
+  my($self,$doc,$math)=@_;
+  my $mode = $math->getAttribute('mode')||'inline';
+  my $xmath = $doc->findnode('ltx:XMath',$math);
+  my $style = ($mode eq 'display' ? 'display' : 'text');
+  $doc->addNodes($math,$self->translateNode($doc,$xmath,$style,'ltx:Math')); }
+
+sub translateNode {
+  my($self,$doc,$xmath,$style,$embedding)=@_;
+  my @trans = Expr($xmath);
+  # Wrap unless already embedding within MathML.
+  ($embedding =~ /^om:/ ? @trans : ['om:OMOBJ',{},@trans]); }
 
 sub getEncodingName { 'OpenMath'; }
 # ================================================================================
@@ -78,7 +82,11 @@ sub Expr {
   my($node)=@_;
   return OMError("Missing Subexpression") unless $node;
   my $tag = $node->nodeName;
-  if($tag eq 'XMDual'){
+  if($tag eq 'XMath'){
+    my($item,@rest)=  element_nodes($node);
+    print STDERR "Warning! got extra nodes for content!\n" if @rest;
+    Expr($item); }
+  elsif($tag eq 'XMDual'){
     my($content,$presentation) = element_nodes($node);
     Expr($content); }
   elsif($tag eq 'XMWrap'){

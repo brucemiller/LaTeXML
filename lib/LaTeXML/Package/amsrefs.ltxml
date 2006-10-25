@@ -60,16 +60,19 @@ DefKeyVal('amsrefs','translator','BibName');
 
 # \bib{key}{type}{keyval-pairs}
 DefConstructor('\bib{}{} RequiredKeyVals:amsrefs', sub {
-  my($document,$key,$type,$fields)=@_;
-  $key = lc(ToString($key)); $key =~ s/^\s+//;   $key =~ s/\s+$//;
-  $document->openElement('ltx:bibentry',key=>$key, type=>$type);
+  my($document,$ignorekey,$type,$fields,%props)=@_;
+  $document->openElement('ltx:bibentry',key=>$props{key}, id=>$props{id}, type=>$type);
   my @pairs = $fields->getPairs;
   while(@pairs){
     my($field,$value)=(shift(@pairs),shift(@pairs));
     $field=lc($field);
     $field=$equivs{$field} if $equivs{$field};
     $document->insertElement("ltx:bib-$field",$value); }
-  $document->closeElement('ltx:bibentry'); });
+  $document->closeElement('ltx:bibentry'); },
+	       afterDigest=>sub {
+		 my $key = cleanBibKey($_[1]->getArg(1));
+		 my $id  = ToString(Expand(T_CS('\thebibliography@ID'))).".".$key;
+		 $_[1]->setProperties(key=>$key, id=>$id); });
 
 # Recognize names in BibTeX formats:
 #   First von Last

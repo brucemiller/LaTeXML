@@ -76,6 +76,7 @@
     </div>
   </xsl:template>
 
+<!--
   <xsl:template name="add_id">
     <xsl:choose>
       <xsl:when test="@label">
@@ -85,6 +86,12 @@
 	<xsl:attribute name="id"><xsl:value-of select="generate-id()"/></xsl:attribute>
       </xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+-->
+  <xsl:template name="add_id">
+    <xsl:if test="@fragid">
+      <xsl:attribute name="id"><xsl:value-of select="@fragid"/></xsl:attribute>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="/">

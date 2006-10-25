@@ -326,7 +326,7 @@ DefPrimitive('\numberwithin{}{}',sub {
   NewCounter($counter->toString,$within->toString); });
 
 # Section 3.11.2 Cross references to equation numbers
-DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#1'>&LookupValue('LABEL@#1')</ltx:ref>)");
+DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#1'/>)");
 
 # Section 3.11.3 Subordinate numbering sequences.
 DefEnvironment('{subequations}',"<ltx:equationgroup refnum='#refnum'>#body</ltx:equationgroup>",
@@ -625,7 +625,7 @@ DefMath('\pod{}', '(#1)', role=>'MODIFIER'); # Well, sorta postfix..
 
 DefConstructor('\substack{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok name='Collection'/>"
+	       . "<ltx:XMTok name='Collection' role='STACKED'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]","</ltx:XMArg><ltx:XMArg>"); });

@@ -37,6 +37,11 @@ our @ISA=qw(Storable);
 #
 #======================================================================
 
+our @DBS=();
+END {
+  map($_->finish, @DBS);
+}
+
 #======================================================================
 # Creating an ObjectDB object, hooking up initial database.
 sub new {
@@ -47,14 +52,17 @@ sub new {
     unlink($dbfile); }
 
   my $self = bless {dbfile=>$dbfile,
-		    objects=>{},
+		    objects=>{}, externaldb=>{},
 		    verbosity => $options{verbosity}||0,
 		    read_write => $options{read_write},
 		   }, $class;
   if($dbfile){
-    my $flags = ($options{read_write} ? O_RDWR|O_CREAT : O_RDONLY);
+##    my $flags = ($options{read_write} ? O_RDWR|O_CREAT : O_RDONLY);
+    my $flags = O_RDWR|O_CREAT;
     tie %{$$self{externaldb}}, 'DB_File', $dbfile,$flags
-      or die "Couldn't attach DB $dbfile for object table"; }
+      or die "Couldn't attach DB $dbfile for object table"; 
+    $$self{opened_timestamp}=time(); }
+  push(@DBS,$self);
   $self; }
 
 sub status {
@@ -68,12 +76,12 @@ sub status {
 
 sub finish {
   my($self)=@_;
-  if(my $dbfile = $$self{dbfile}){
+  if($$self{externaldb} && $$self{dbfile}){
     my $n=0;
     my %types=();
     my $opened = $$self{opened_timestamp};
-    foreach my $key (keys %{$$self{cache}}){
-      my $row = $$self{cache}{$key};
+    foreach my $key (keys %{$$self{objects}}){
+      my $row = $$self{objects}{$key};
       next if $$row{timestamp} < $opened;
       $n++;
       my %item = %$row;
@@ -83,17 +91,22 @@ sub finish {
       #    $$row{timestamp}=$opened;
       $$self{externaldb}{Encode::encode('utf8',$key)} = nfreeze({%item}); }
 
-    untie %{$$self{externaldb}};
-    print STDERR "ObjectDB Stored $n objects\n" if $$self{verbosity} > 0; }
+    print STDERR "ObjectDB Stored $n objects (".scalar(keys %{$$self{externaldb}})." total)\n"
+      if $$self{verbosity} > 0; 
+    untie %{$$self{externaldb}};  }
 
  $$self{externaldb}=undef;
  $$self{objects}=undef;
 }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-sub all_keys {
+sub getKeys {
   my($self)=@_;
-  map(Encode::decode('utf8',$_), keys %{$$self{externaldb}}); }
+  # Get union of all keys in externaldb & local objects.
+  my %keys = ();
+  map($keys{$_}=1, keys %{$$self{objects}});
+  map($keys{Encode::decode('utf8',$_)}=1, keys %{$$self{externaldb}}); 
+  keys %keys; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Lookup of various kinds of things in the DB.
@@ -112,7 +125,7 @@ sub lookup {
     $entry = thaw($entry);
     $$entry{key} = $key;
     bless $entry, 'LaTeXML::Util::ObjectDB::Entry';
-    $$self{cache}{$entry} = $entry; }
+    $$self{objects}{$key} = $entry; }
   $entry; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -129,15 +142,6 @@ sub register {
     bless $entry, 'LaTeXML::Util::ObjectDB::Entry';
     $$self{objects}{$key}=$entry;
     $$entry{timestamp}=time(); }
-
-  my $parent = $props{parent};
-###  if($parent){
-###    $props{parent} = $parent->key if ref $parent;
-###    $parent = $self->register_chunk($parent) unless ref $parent;
-###    $parent->add_child($id); }
-###  else {
-###    delete $props{parent}; }
-
   $entry->setValues(%props);
 
   $entry; }
@@ -191,8 +195,8 @@ sub key { $_[0]->{key}; }
 sub getValue {
   my($self,$attr)=@_;
   my $value = $$self{$attr}; 
-  if($value && $value =~ /^XML::(.*)$/){
-    $value = $XMLParser->parse_xml_chunk($1);
+  if($value && $value =~ /^XML::/){
+    $value = $XMLParser->parse_xml_chunk(substr($value,5));
     # Simplify, if we get a single node Document Fragment.
     if($value && (ref $value eq 'XML::LibXML::DocumentFragment')) {
       my @k = $value->childNodes;
@@ -203,7 +207,8 @@ sub setValues {
   my($self,%avpairs)=@_;
   foreach my $attr (keys %avpairs){
     my $value = $avpairs{$attr};
-    if(ref $value){
+    if(((ref $value) || '') =~ /^XML::/){
+      # The node is cloned so as to copy any inherited namespace nodes.
       $value = "XML::".$value->cloneNode(1)->toString; }
     if(! defined $value){
       if(defined $$self{$attr}){
@@ -213,17 +218,19 @@ sub setValues {
       $$self{$attr}=$value;
       $$self{timestamp} = time(); }}}
 
-# Set an element in a hash-valued DBRow's column.
-# Note a named relation of this entry to another
-sub note_relation {
-  my($self,$relation,$key)=@_;
-  if(!$$self{$relation}{$key}){
-    $$self{$relation}{$key} = 1;
-    $$self{timestamp} = time(); }}
-
-sub getRelations {
-  my($self,$relation)=@_;
-  sort keys %{$$self{$relation}}; }
+# Note an association with this entry
+# Roughly equivalent to $$entry{key1}{key2}{...}=1,
+# but keeps track of modification timestamps.
+sub noteAssociation {
+  my($self,@keys)=@_;
+  my $hash = $self;
+  while(@keys){
+    my $key = shift(@keys);
+    if(defined $$hash{$key}){
+      $hash = $$hash{$key}; }
+    else {
+      $$self{timestamp} = time();
+      $hash = $$hash{$key} = (@keys ? {} : 1); }}}
 
 #======================================================================
 1;

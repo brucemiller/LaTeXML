@@ -459,7 +459,7 @@ sub DefConstructor {
 # When to make a dual ?
 # If the $presentation seems to be TeX (ie. it involves #1... but not ONLY!)
 our $math_options = {name=>1, meaning=>1, omcd=>1, reversion=>1, alias=>1,
-		     role=>1, operator_role=>1, reorder=>1,
+		     role=>1, operator_role=>1, reorder=>1, dual=>1,
 		     style=>1, font=>1,
 		     scriptpos=>1,operator_scriptpos=>1,
 		     beforeDigest=>1, afterDigest=>1, scope=>1, nogroup=>1};

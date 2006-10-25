@@ -54,7 +54,7 @@ DefEnvironment('{document}',
 	       "?&LookupValue(Chapter)"
 	       .  "(<ltx:chapter id='&LookupValue(Chapter)' refnum='&LookupValue(Chapter)'"
 	       .         " label='&LookupValue(ChapterLabel)'>"
-	       .      "<ltx:metadata about_id='&LookupValue(Chapter)' id='&LookupChapterMetaID()'/>"
+	       .      "<ltx:metadata id='&LookupChapterMetaID()'/>"
 	       .      "#body"
 	       .    "</ltx:chapter>)"
 	       .  "(<ltx:document>#body</ltx:document>)",
@@ -75,7 +75,7 @@ sub extractSourceNotes {
     $pt->parentNode->removeChild($pt);
     if(my $gen= $doc->findnode("ltx:section[child::ltx:title"
 			       ."[text()='General References']]",$pt)){
-      if(my $meta = $doc->findnode("ltx:metadata[\@about_id='$ch']",
+      if(my $meta = $doc->findnode("ltx:metadata[\@id='$ch.info']",
 				   $doc->getDocument->documentElement)){
 	$doc->setNode($meta);
 	my $note = $doc->openElement('ltx:note',class=>'source');
@@ -94,10 +94,10 @@ sub extractSourceNotes {
 			       $doc->findnodes("ltx:ref",$tag))){
 	  if(my $sec = $doc->findnode("//ltx:section[\@label = '$label']")){
 	    my $id = $sec->getAttribute('id');
-	    if(my $meta = $doc->findnode("ltx:metadata[\@about_id='$id']",$sec)){
+	    if(my $meta = $doc->findnode("ltx:metadata[\@id='$id.info']",$sec)){
 	      $doc->setNode($meta);
 	      my $note = $doc->openElement('ltx:note',class=>'source');
-	      map($note->appendChild($_->cloneNode(1)), $item->childNodes());
+	      map($note->appendChild($_), $item->childNodes());
 	      $doc->closeElement('ltx:note'); }
 	    else {
 	      Warn("No metadata node found for $id"); }}
@@ -118,7 +118,7 @@ DefConstructor('\\@@section{}[][][]{}',sub {
   $document->openElement("ltx:".$type->toString,refnum=>$refnum,id=>$id);
   $document->insertElement('ltx:title',$title);
   $document->insertElement('ltx:toctitle',$toctitle) if $toctitle;
-  $document->insertElement('ltx:metadata',undef, about_id=>$id, id=>$id.".info");
+  $document->insertElement('ltx:metadata',undef, id=>$id.".info");
 },
   properties=>{refnum=>'#2',id=>'#3'},
   bounded=>1);
@@ -185,7 +185,7 @@ NewCounter('@XMDECL','section',idprefix=>'XMD');
 DefPrimitive('\status{}', sub{ AssignValue(chapter_status=>$_[1]); });
 
 DefMacro('\author[]{}',
- '\@add@frontmatter{ltx:creator}[role=author,soft_idref=\ifx.#1.\else bio:#1\fi]{\@personname{#2}}');
+ '\@add@frontmatter{ltx:creator}[role=author,idref=\ifx.#1.\else bio:#1\fi]{\@personname{#2}}');
 
 DefConstructor('\@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
 DefMacro('\affiliation{}','\@add@to@frontmatter{ltx:creator}{\@affiliation{#1}}');
@@ -206,8 +206,8 @@ DefMacro('\galleryitem Semiverbatim Semiverbatim',
 	.'\gdef\default@gallery{}');
 
 DefMacro('\default@gallery',
-	 '\galleryitem{}{DLMF:/images/noimage.png}'
-	 .'\galleryitem{}{DLMF:/images/noimage.png}');
+	 '\galleryitem{}{}'
+	 .'\galleryitem{}{}');
 DefPrimitive('\gallerynote{}',undef); # Ignore
 #**********************************************************************
 # Backmatter.
@@ -254,29 +254,37 @@ DefConstructor('\origref[]{}', "^<ltx:origref ref='#2'>#1</ltx:origref>", mode=>
 DefExpandable('\index OptionalMatch:*{}', sub { my($gullet,$star,$phrases)=@_;
 						process_index_phrases($gullet,$phrases); });
 # Also, redefine phrase to add a keyword to the metadata.
-DefMacro('\@indexphrase{}','\@@indexphrase{#1}\@@indexkeyword{#1}');
-DefConstructor('\@@indexphrase{}',
-	       "<ltx:indexphrase key='#key'>#1</ltx:indexphrase>",
-	       properties=>{key=>sub { cleanIndexKey($_[1]); }} );
-DefConstructor('\@@indexkeyword{}',
-	       "^<ltx:indexkeyword key='#key'>#1</ltx:indexkeyword>",
-	       properties=>{key=>sub { cleanIndexKey($_[1]); }} );
+DefMacro('\@indexphrase[]{}','\@@indexphrase[#1]{#2}\@@indexkeyword[#1]{#2}');
+DefConstructor('\@@indexphrase[]{}',
+	       "<ltx:indexphrase key='#key'>#2</ltx:indexphrase>",
+	       properties=>{key=>sub { cleanIndexKey($_[1]); }});
+DefConstructor('\@@indexkeyword[]{}',
+	       "^<ltx:indexkeyword key='#key'>#2</ltx:indexkeyword>",
+	       properties=>{key=>sub { cleanIndexKey($_[1]); }});
+Tag('ltx:indexkeyword',afterClose=>\&addIndexKey);
 
 # NOTE: the "^" prefix allows these to float up out of math mode.
-DefConstructor('\MarkDefn []{}',
-	       "^<ltx:mark type='definition'>?#1(<ltx:tag>#1</ltx:tag>)#2</ltx:mark>",
+DefConstructor('\MarkDefn {}{}',
+	       "^<ltx:mark type='definition'>"
+	       .  "<ltx:tag>#1</ltx:tag>"
+	       .  "<ltx:text>#2</ltx:text>"
+	       ."</ltx:mark>",
 	       mode=>'text', reversion=>'');
 DefConstructor('\MarkNotation {}{}',
-	       "^<ltx:mark type='notation'><ltx:tag>#1</ltx:tag>#2</ltx:mark>",
+	       "^<ltx:mark type='notation'>"
+	       .  "<ltx:tag>#1</ltx:tag>"
+	       .  "<ltx:text>#2</ltx:text>"
+	       ."</ltx:mark>",
 	       mode=>'text', reversion=>'');
 
+DefMacro('\indexdefn{}','\index{#1|textbf}'); # This'll work.
 #**********************************************************************
 # More Math environments.
 
 # Redefine to accept optional (ignored) arg.
 DefEnvironment('{equation}[]',
 	       "<ltx:equation id='#id' refnum='#refnum'>"
-	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "<ltx:metadata id='#id.info'/>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>"
 	       .   "#body"
@@ -301,7 +309,7 @@ DefEnvironment('{equation*}[]',
 # Although equationmix is handled differently in LaTeX, <equation>'s model is adequate.
 DefEnvironment('{equationmix}[]',
 	       "<ltx:equation id='#id' refnum='#refnum'>"
-	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "<ltx:metadata id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:equation>",
 	       properties=> sub { RefStepCounter('equation') },
@@ -320,7 +328,7 @@ DefEnvironment('{equationmix*}[]',
 # NOTE: I haven't handled the subequation case!!! (where equations themselves get numbered!)
 DefEnvironment('{equationgroup}[]', 
 	       "<ltx:equationgroup id='#id' refnum='#refnum'>"
-	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "<ltx:metadata id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:equationgroup>",
 	       properties=> sub { RefStepCounter('equation') });
@@ -347,25 +355,25 @@ DefExpandable('\constraint OptionalMatch:* [Default:,]{}',sub {
 
 DefEnvironment('{figure}[]',
 	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
-	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "<ltx:metadata id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:figure>",
 	       properties=> sub { RefStepCounter('figure') });
 DefEnvironment('{figure*}[]',
 	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
-	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "<ltx:metadata id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:figure>",
 	       properties=> sub { RefStepCounter('figure') });
 DefEnvironment('{table}[]',
 	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
-	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "<ltx:metadata id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:table>",
 	       properties=> sub { RefStepCounter('table')} );
 DefEnvironment('{table*}[]',
 	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
-	       . "<ltx:metadata about_id='#id' id='#id.info'/>"
+	       . "<ltx:metadata id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:table>",
 	       properties=> sub { RefStepCounter('table')} );

@@ -43,23 +43,33 @@ our $mmlURI = "http://www.w3.org/1998/Math/MathML";
 sub process {
   my($self,$doc)=@_;
   local $LaTeXML::Post::MathML::DOCUMENT = $doc;
-
   if(my @maths = $self->find_math_nodes($doc)){
     $self->Progress("Converting ".scalar(@maths)." formulae");
     $doc->addNamespace($mmlURI,'m');
     foreach my $math (@maths){
-      my $mode = $math->getAttribute('mode')||'inline';
-      my $xmath = $doc->findnode('ltx:XMath',$math);
-      my $style = ($mode eq 'display' ? 'display' : 'text');
-      $doc->addNodes($math,['m:math',
-			    {display=>($mode eq 'display' ? 'block' : 'inline')},
-			    $self->processNode($xmath,$style)]); }
-
+      $self->processNode($doc,$math); }
     $doc->adjust_latexml_doctype('MathML'); } # Add MathML if LaTeXML dtd.
   $doc; }
 
-# ================================================================================
 sub find_math_nodes {  $_[1]->findnodes('//ltx:Math'); }
+
+# $self->processNode($doc,$mathnode) is the top-level conversion
+# It converts the XMath within $mathnode, and adds it to the $mathnode,
+sub processNode {
+  my($self,$doc,$math)=@_;
+  my $mode = $math->getAttribute('mode')||'inline';
+  my $xmath = $doc->findnode('ltx:XMath',$math);
+  my $style = ($mode eq 'display' ? 'display' : 'text');
+  $doc->addNodes($math,$self->translateNode($doc,$xmath,$style,'ltx:Math')); }
+
+# $self->translateNode($doc,$XMath,$style,$embedding)
+# returns the translation of the XMath node (but doesn't insert it)
+# $style will be either 'display' or 'text' (if relevant),
+# The result should be wrapped as necessary for the result to
+# be embedded within the tag $embedding.
+# Eg. for parallel markup.
+
+# See END for presentation, content and parallel versions.
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # General translation utilities.
@@ -358,217 +368,6 @@ sub pmml_unparsed_script {
   [ ($y eq 'SUB' ? 'm:msub' : 'm:msup' ), {}, ['m:mi'],
     pmml_smaller($script)]; }
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Support functions for Content MathML
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-sub cmml_top {
-  my($node,$style)=@_;
-  cmml($node); }
-
-sub cmml {
-  my($node)=@_;
-  return ['m:merror',{},['m:mtext',{},"Missing Subexpression"]] unless $node;
-  $node = realize($node) if $node->localname eq 'XMRef';
-  my $tag = $node->localname;
-  if($tag eq 'XMath'){
-    my($item,@rest)=  element_nodes($node);
-    print STDERR "Warning! got extra nodes for content!\n" if @rest;
-    cmml($item); }
-  elsif($tag eq 'XMDual'){
-    my($content,$presentation) = element_nodes($node);
-    cmml($content); }
-  elsif($tag eq 'XMWrap'){	# Only present if parsing failed!
-    pmml_row(map(pmml($_),element_nodes($node))); } # ????
-  elsif($tag eq 'XMApp'){
-    my($op,@args) = element_nodes($node);
-    if(!$op){
-      ['m:merror',{},['m:mtext',{},"Missing Operator"]]; }
-    else {
-      $op = realize($op);		# NOTE: Could loose open/close on XMRef ???
-      &{ lookupContent('Apply',$op->getAttribute('role'),getTokenMeaning($op)) }($op,@args); }}
-  elsif($tag eq 'XMTok'){
-    &{ lookupContent('Token',$node->getAttribute('role'),getTokenMeaning($node)) }($node); }
-  elsif($tag eq 'XMHint'){	# ????
-    &{ lookupContent('Hint',$node->getAttribute('role'),getTokenMeaning($node)) }($node); }
-  else {
-    ['m:mtext',{},$node->textContent]; }}
-
-# Or csymbol if there's some kind of "defining" attribute?
-sub cmml_ci {
-  my($item)=@_;
-  my $font    = (ref $item ? $item->getAttribute('font') : undef);
-  my $variant = ($font && $mathvariants{$font})||'';
-  my $content = (ref $item ?  $item->textContent : $item);
-  if($content =~ /^.$/){	# Single char?
-    if($variant eq 'italic'){ $variant = ''; } # Defaults to italic
-    elsif(!$variant){ $variant = 'normal'; }}  # must say so explicitly.
-#  ['m:csymbol',{($variant ? (mathvariant=>$variant) : ())},$content]; }
-  ['m:ci',{},$content]; }
-
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Tranlators
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# An issue here:
-#  Some constructs are pretty purely presentational.  Hopefully, these would
-# only appear in XWrap's or in the presentation branch of an XMDual, so we won't
-# attempt to convert them to content.  But if we do, should we warn?
-# ================================================================================
-# Tokens
-
-DefMathML("Token:?:?",           \&pmml_mi, \&cmml_ci);
-
-DefMathML("Token:ADDOP:?",       \&pmml_mo);
-DefMathML("Token:ADDOP:plus",    undef,     sub { ['m:plus'];});
-DefMathML("Token:ADDOP:minus",   undef,     sub { ['m:minus'];});
-
-DefMathML("Token:MULOP:?",       \&pmml_mo);
-DefMathML("Token:MULOP:times",   undef,     sub { ['m:times'];});
-DefMathML("Token:MULOP:\x{2062}",undef,     sub { ['m:times'];});
-DefMathML("Token:MULOP:div",     undef,     sub { ['m:divide'];});
-DefMathML("Token:SUPOP:?",       \&pmml_mo);
-
-DefMathML("Token:RELOP:?",      \&pmml_mo);
-DefMathML("Token:RELOP:eq",      undef,     sub { ['m:eq'];});
-DefMathML("Token:RELOP:\x{2260}",undef,     sub { ['m:neq'];}); # \ne, not-eq .. ???
-DefMathML("Token:RELOP:greater", undef,     sub { ['m:gt'];});
-DefMathML("Token:RELOP:less",    undef,     sub { ['m:lt'];});
-DefMathML("Token:RELOP:less-eq", undef,     sub { ['m:leq'];});
-DefMathML("Token:RELOP:greater-eq",undef,   sub { ['m:geq'];});
-
-DefMathML("Token:PUNCT:?",       \&pmml_mo);
-DefMathML("Token:PERIOD:?",      \&pmml_mo);
-DefMathML("Token:SUMOP:?",       \&pmml_mo);
-DefMathML("Token:INTOP:?",       \&pmml_mo);
-DefMathML("Token:LIMITOP:?",     \&pmml_mo);
-DefMathML("Token:OPERATOR:?",    \&pmml_mo);
-DefMathML("Token:OPEN:?",        \&pmml_mo);
-DefMathML("Token:CLOSE:?",       \&pmml_mo);
-DefMathML("Token:MIDDLE:?",      \&pmml_mo);
-DefMathML("Token:VERTBAR:?",     \&pmml_mo);
-DefMathML("Token:ARROW:?",       \&pmml_mo);
-DefMathML("Token:METARELOP:?",   \&pmml_mo);
-DefMathML("Token:OVERACCENT:?",  \&pmml_mo);
-DefMathML("Token:UNDERACCENT:?", \&pmml_mo);
-
-DefMathML("Token:NUMBER:?",
-	  sub { ['m:mn',{},$_[0]->textContent]; },
-	  sub { ['m:cn',{},$_[0]->textContent]; });
-DefMathML("Token:?:Empty", sub { ['m:none']} );
-
-DefMathML("Token:?:\x{2061}", \&pmml_mo); # FUNCTION APPLICATION
-DefMathML("Token:?:\x{2062}", \&pmml_mo); # INVISIBLE TIMES
-
-
-DefMathML("Token:OPFUNCTION:exp",      undef, sub { ['m:exp']; });
-DefMathML("Token:OPFUNCTION:ln",       undef, sub { ['m:ln']; });
-DefMathML("Token:OPFUNCTION:log",      undef, sub { ['m:log']; });
-DefMathML("Token:TRIGFUNCTION:sin",    undef, sub { ['m:sin']; });
-DefMathML("Token:TRIGFUNCTION:cos",    undef, sub { ['m:cos']; });
-DefMathML("Token:TRIGFUNCTION:tan",    undef, sub { ['m:tan']; });
-DefMathML("Token:TRIGFUNCTION:sec",    undef, sub { ['m:sec']; });
-DefMathML("Token:TRIGFUNCTION:csc",    undef, sub { ['m:csc']; });
-DefMathML("Token:TRIGFUNCTION:cot",    undef, sub { ['m:cot']; });
-DefMathML("Token:TRIGFUNCTION:sinh",   undef, sub { ['m:sinh']; });
-DefMathML("Token:TRIGFUNCTION:cosh",   undef, sub { ['m:cosh']; });
-DefMathML("Token:TRIGFUNCTION:tanh",   undef, sub { ['m:tanh']; });
-DefMathML("Token:TRIGFUNCTION:sech",   undef, sub { ['m:sech']; });
-DefMathML("Token:TRIGFUNCTION:csch",   undef, sub { ['m:csch']; });
-DefMathML("Token:TRIGFUNCTION:coth",   undef, sub { ['m:coth']; });
-DefMathML("Token:OPFUNCTION:arcsin",   undef, sub { ['m:arcsin']; });
-DefMathML("Token:OPFUNCTION:arccos",   undef, sub { ['m:arccos']; });
-DefMathML("Token:OPFUNCTION:arctan",   undef, sub { ['m:arctan']; });
-DefMathML("Token:OPFUNCTION:arccosh",  undef, sub { ['m:arccosh']; });
-DefMathML("Token:OPFUNCTION:arccot",   undef, sub { ['m:arccot']; });
-DefMathML("Token:OPFUNCTION:arccoth",  undef, sub { ['m:arccoth']; });
-DefMathML("Token:OPFUNCTION:arccsc",   undef, sub { ['m:arcscsc']; });
-DefMathML("Token:OPFUNCTION:arccsch",  undef, sub { ['m:arccsch']; });
-DefMathML("Token:OPFUNCTION:arcsec",   undef, sub { ['m:arcsec']; });
-DefMathML("Token:OPFUNCTION:arcsech",  undef, sub { ['m:arcsech']; });
-DefMathML("Token:OPFUNCTION:arcsinh",  undef, sub { ['m:arcsinh']; });
-DefMathML("Token:OPFUNCTION:arctanh",  undef, sub { ['m:arctanh']; });
-
-
-# Token elements:
-#   cn, ci, csymbol
-# Basic Content elements:
-#   apply, interval, inverse, sep, condition, declare, lambda, compose, ident,
-#   domain, codomain, image, domainofapplication, piecewise, piece, otherwise
-# Arithmetic, Algebra and Logic:
-#   quotient, factorial, divide, max, min, minus, plus, power, rem, times, root
-#   gcd, and, or, xor, not, implies, forall, exists, abs, conjugate, arg, real,
-#   imaginary, lcm, floor, ceiling.
-# Relations:
-#   eq, neq, gt, lt, geq, leq, equivalent, approx, factorof
-# Calculus and Vector Calculus:
-#   int, diff, partialdiff, lowlimit, uplimit, bvar, degree, 
-#   divergence, grad, curl, laplacian.
-# Theory of Sets,
-#   set, list, union, intersect, in, notin, subset, prsubset, notsubset, notprsubset,
-#   setdiff, card, cartesianproduct.
-# Sequences and Series:
-#   sum, product, limit, tendsto
-# Elementary Classical Functions,
-#   exp, ln, log, sin, cos tan, sec, csc, cot, sinh, cosh, tanh, sech, csch, coth,
-#   arcsin, arccos, arctan, arccosh, arccot, arccoth, arccsc, arccsch, arcsec, arcsech,
-#   arcsinh, arctanh
-# Statistics:
-#   mean, sdev, variance, median, mode, moment, momentabout
-# Linear Algebra:
-#   vector, matrix, matrixrow, determinant, transpose, selector, 
-#   vectorproduct, scalarproduct, outerproduct.
-# Semantic Mapping Elements
-#   annotation, semantics, annotation-xml
-# Constant and Symbol Elements
-#   integers, reals, rationals, naturalnumbers, complexes, primes,
-#   exponentiale, imaginaryi, notanumber, true, false, emptyset, pi,
-#   eulergamma, infinity
-
-# ================================================================================
-# Hints
-DefMathML('Hint:?:?', sub { undef; });
-# ================================================================================
-# Applications.
-
-DefMathML('Apply:?:?', sub {
-  my($op,@args)=@_;
-  ['m:mrow',{},
-   pmml($op),pmml_mo("\x{2061}"),	# FUNCTION APPLICATION
-   pmml_parenthesize(pmml_punctuate($op->getAttribute('separators'),@args),
-		     $op->getAttribute('argopen'),$op->getAttribute('argclose'))]; },
-  sub {
-    my($op,@args)=@_;
-    ['m:apply',{},cmml($op), map(cmml($_),@args)]; });
-
-sub pmml_bigop {
-  my($op,$body)=@_;
-  ['m:mrow',{}, pmml($op), pmml_unrow(pmml($body))]; }
-
-  
-DefMathML('Apply:BIGOP:?',\&pmml_bigop);
-DefMathML('Apply:INTOP:?',\&pmml_bigop);
-DefMathML('Apply:SUMOP:?',\&pmml_bigop);
-
-
-DefMathML('Apply:OVERACCENT:?', sub {
-  my($accent,$base)=@_;
-  ['m:mover',{accent=>'true'}, pmml($base),pmml_smaller($accent)]; });
-
-DefMathML('Apply:UNDERACCENT:?', sub {
-  my($accent,$base)=@_;
-  ['m:munder',{accent=>'true'}, pmml($base),pmml_smaller($accent)]; });
-
-# Top level relations
-DefMathML('Apply:?:Formulae',sub { 
-  my($op,@elements)=@_;
-  pmml_punctuate($op->getAttribute('separators'),@elements); });
-
-DefMathML('Apply:?:MultiRelation',sub { 
-  my($op,@elements)=@_;
-  pmml_row(map(pmml($_),@elements)); });
-
-# Defaults for various parts-of-speech
-
 sub pmml_script {
   my($script)=@_;
   ($script ? pmml_smaller($script) : ['m:empty']); }
@@ -662,25 +461,420 @@ sub pmml_script_handler {
     if($x eq 'mid'){ do_overunder('m:munderover',$base,$posts[0][0],$posts[0][1]); }
     else           { do_subsup('m:msubsup',$base,$posts[0][0],$posts[0][1]); }}}
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Support functions for Content MathML
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DefMathML('Apply:SUPERSCRIPTOP:?', \&pmml_script_handler);
-DefMathML('Apply:SUBSCRIPTOP:?',   \&pmml_script_handler);
+sub cmml_top {
+  my($node)=@_;
+  cmml($node); }
+
+sub cmml {
+  my($node)=@_;
+  return ['m:merror',{},['m:mtext',{},"Missing Subexpression"]] unless $node;
+  $node = realize($node) if $node->localname eq 'XMRef';
+  my $tag = $node->localname;
+  if($tag eq 'XMath'){
+    my($item,@rest)=  element_nodes($node);
+    print STDERR "Warning! got extra nodes for content!\n" if @rest;
+    cmml($item); }
+  elsif($tag eq 'XMDual'){
+    my($content,$presentation) = element_nodes($node);
+    cmml($content); }
+  elsif($tag eq 'XMWrap'){	# Only present if parsing failed!
+    pmml_row(map(pmml($_),element_nodes($node))); } # ????
+  elsif($tag eq 'XMApp'){
+    my($op,@args) = element_nodes($node);
+    if(!$op){
+      ['m:merror',{},['m:mtext',{},"Missing Operator"]]; }
+    else {
+      $op = realize($op);		# NOTE: Could loose open/close on XMRef ???
+      &{ lookupContent('Apply',$op->getAttribute('role'),getTokenMeaning($op)) }($op,@args); }}
+  elsif($tag eq 'XMTok'){
+    &{ lookupContent('Token',$node->getAttribute('role'),getTokenMeaning($node)) }($node); }
+  elsif($tag eq 'XMHint'){	# ????
+    &{ lookupContent('Hint',$node->getAttribute('role'),getTokenMeaning($node)) }($node); }
+  else {
+    ['m:mtext',{},$node->textContent]; }}
+
+# Or csymbol if there's some kind of "defining" attribute?
+sub cmml_ci {
+  my($item)=@_;
+  my $font    = (ref $item ? $item->getAttribute('font') : undef);
+  my $variant = ($font && $mathvariants{$font})||'';
+  my $content = (ref $item ?  $item->textContent : $item);
+  if($content =~ /^.$/){	# Single char?
+    if($variant eq 'italic'){ $variant = ''; } # Defaults to italic
+    elsif(!$variant){ $variant = 'normal'; }}  # must say so explicitly.
+#  ['m:csymbol',{($variant ? (mathvariant=>$variant) : ())},$content]; }
+  ['m:ci',{},$content]; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Tranlators
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Organized according to the MathML Content element lists.
+
+#======================================================================
+# Token elements:
+#   cn, ci, csymbol
+
+DefMathML("Token:?:?",           \&pmml_mi, \&cmml_ci);
+DefMathML("Token:PUNCT:?",       \&pmml_mo, undef);
+DefMathML("Token:PERIOD:?",      \&pmml_mo, undef);
+DefMathML("Token:OPEN:?",        \&pmml_mo, undef);
+DefMathML("Token:CLOSE:?",       \&pmml_mo, undef);
+DefMathML("Token:MIDDLE:?",      \&pmml_mo, undef);
+DefMathML("Token:VERTBAR:?",     \&pmml_mo, undef);
+DefMathML("Token:ARROW:?",       \&pmml_mo, undef);
+DefMathML("Token:OVERACCENT:?",  \&pmml_mo, undef);
+DefMathML("Token:UNDERACCENT:?", \&pmml_mo, undef);
+
+DefMathML("Token:NUMBER:?",
+	  sub { ['m:mn',{},$_[0]->textContent]; },
+	  sub { ['m:cn',{},$_[0]->textContent]; });
+DefMathML("Token:?:Empty", sub { ['m:none']} );
+DefMathML('Hint:?:?', sub { undef; }, sub { undef; }); # Should Disappear!
+
+# At presentation level, these are essentially adorned tokens.
+# args are (accent,base)
+DefMathML('Apply:OVERACCENT:?', sub {
+  my($accent,$base)=@_;
+  ['m:mover',{accent=>'true'}, pmml($base),pmml_smaller($accent)]; });
+
+DefMathML('Apply:UNDERACCENT:?', sub {
+  my($accent,$base)=@_;
+  ['m:munder',{accent=>'true'}, pmml($base),pmml_smaller($accent)]; });
+
+#======================================================================
+# Basic Content elements:
+#   apply, interval, inverse, sep, condition, declare, lambda, compose, ident,
+#   domain, codomain, image, domainofapplication, piecewise, piece, otherwise
+
+# BRM
+DefMathML("Token:?:\x{2061}", \&pmml_mo, undef); # FUNCTION APPLICATION
+DefMathML("Token:OPERATOR:?", \&pmml_mo, undef);
+
+DefMathML('Apply:?:?', sub {
+  my($op,@args)=@_;
+  ['m:mrow',{},
+   pmml($op),pmml_mo("\x{2061}"),	# FUNCTION APPLICATION
+   pmml_parenthesize(pmml_punctuate($op->getAttribute('separators'),@args),
+		     $op->getAttribute('argopen'),$op->getAttribute('argclose'))]; },
+  sub {
+    my($op,@args)=@_;
+    ['m:apply',{},cmml($op), map(cmml($_),@args)]; });
+DefMathML('Apply:COMPOSEOP:?', \&pmml_infix, undef);
+
+
+# MK
+# Are these valid elements??
+# Wouldn't it be better to use Apply ?
+# Also coordinate with my interval symbols.
+DefMathML("Token:CONSTRUCTOR:ccinterval",undef,sub{['m:ccinterval'];});
+DefMathML("Token:CONSTRUCTOR:cointerval",undef,sub{['m:cointerval'];});
+DefMathML("Token:CONSTRUCTOR:ocinterval",undef,sub{['m:ocinterval'];});
+DefMathML("Token:CONSTRUCTOR:oointerval",undef,sub{['m:oointerval'];});
+
+DefMathML("Token:OPFUNCTION:inverse",    undef, sub{['m:inverse'];});
+DefMathML("Token:BINDER:lambda",         undef, sub{['m:lambda'];});
+DefMathML("Token:MULOP:compose",         undef, sub{['m:compose'];});
+DefMathML("Token:ID:ident",              undef, sub{['m:ident'];});
+DefMathML("Token:OPFUNCTION:domain",     undef, sub{['m:domain'];});
+DefMathML("Token:OPFUNCTION:codomain",   undef, sub{['m:codomain'];});
+DefMathML("Token:OPFUNCTION:image",      undef, sub{['m:image'];});
+DefMathML("Token:OPFUNCTION:piecewise",  undef, sub{['m:piecewise'];});
+DefMathML("Token:OPFUNCTION:piece",      undef, sub{['m:piece'];});
+DefMathML("Token:OPFUNCTION:otherwise",  undef, sub{['m:otherwise'];});
+
+#======================================================================
+# Arithmetic, Algebra and Logic:
+#   quotient, factorial, divide, max, min, minus, plus, power, rem, times, root
+#   gcd, and, or, xor, not, implies, forall, exists, abs, conjugate, arg, real,
+#   imaginary, lcm, floor, ceiling.
+
+# BRM:
+
+DefMathML("Token:ADDOP:?",       \&pmml_mo,    undef);
+DefMathML("Token:ADDOP:plus",     undef,       sub { ['m:plus'];});
+DefMathML("Token:ADDOP:minus",    undef,       sub { ['m:minus'];});
+DefMathML('Apply:ADDOP:?',       \&pmml_infix, undef);
+
+DefMathML("Token:MULOP:?",       \&pmml_mo,    undef);
+DefMathML("Token:MULOP:times",    undef,       sub { ['m:times'];});
+DefMathML("Token:MULOP:\x{2062}", undef,       sub { ['m:times'];});
+DefMathML("Token:MULOP:div",      undef,       sub { ['m:divide'];});
+DefMathML("Token:?:\x{2062}",    \&pmml_mo,    undef); # INVISIBLE TIMES
+DefMathML('Apply:MULOP:?',       \&pmml_infix, undef);
+DefMathML('Apply:?:div', sub {
+  my($op,$num,$den)=@_;
+  my $style = $op->getAttribute('style');
+  my $thickness = $op->getAttribute('thickness');
+  ['m:mfrac',{($thickness ? (linethickness=>$thickness):()),
+	    ($style && ($style eq 'inline') ? (bevelled=>'true'):())},
+   pmml_smaller($num),pmml_smaller($den)]; });
+
+DefMathML("Token:SUPOP:?",        \&pmml_mo,   undef);
+DefMathML('Apply:SUPERSCRIPTOP:?',\&pmml_script_handler, undef);
+DefMathML('Apply:SUBSCRIPTOP:?',  \&pmml_script_handler, undef);
 
 DefMathML('Apply:POSTFIX:?', sub {
   ['m:mrow',{},pmml($_[1]),pmml($_[0])]; });
 
-## DefMathML('Apply:?:sideset', sub {
-##  my($op,$presub,$presup,$postsub,$postsup,$base)=@_;
-##  ['m:mmultiscripts',{},
-##   pmml($base),pmml_smaller($postsub),pmml_smaller($postsup), 
-##   ['m:mprescripts'],pmml_smaller($presub),pmml_smaller($presup)]; });
+DefMathML('Apply:?:sqrt', sub { ['m:msqrt',{},pmml($_[1])]; });
+DefMathML('Apply:?:root', sub { ['m:mroot',{},pmml($_[2]),pmml_smaller($_[1])]; });
 
-DefMathML('Apply:ADDOP:?', \&pmml_infix);
-DefMathML('Apply:MULOP:?', \&pmml_infix);
-DefMathML('Apply:RELOP:?', \&pmml_infix);
+# MK:
+DefMathML("Token:OPFUNCTION:quotient",  undef, sub{['m:quotient'];});
+DefMathML("Token:OPFUNCTION:factorial", undef, sub{['m:factorial'];});
+DefMathML("Token:OPFUNCTION:divide",    undef, sub{['m:divide'];});
+DefMathML("Token:OPFUNCTION:max",       undef, sub{['m:max'];});
+DefMathML("Token:OPFUNCTION:min",       undef, sub{['m:min'];});
+DefMathML("Token:ADDOP:minus",          undef, sub{['m:minus'];});
+DefMathML("Token:OPFUNCTION:uminus",    undef, sub{['m:uminus'];});
+DefMathML("Token:ADDOP:plus",           undef, sub{['m:plus'];});
+DefMathML("Token:OPFUNCTION:power",     undef, sub{['m:power'];});
+DefMathML("Token:OPFUNCTION:rem",       undef, sub{['m:rem'];});
+DefMathML("Token:MULOP:times",          undef, sub{['m:times'];});
+DefMathML("Token:OPFUNCTION:root",      undef, sub{['m:root'];});
+DefMathML("Token:OPFUNCTION:gcd",       undef, sub{['m:gcd'];});
+DefMathML("Token:CONNECTIVE:and",       undef, sub{['m:and'];});
+DefMathML("Token:CONNECTIVE:or",        undef, sub{['m:or'];});
+DefMathML("Token:CONNECTIVE:xor",       undef, sub{['m:xor'];});
+DefMathML("Token:CONNECTIVE:not",       undef, sub{['m:not'];});
+DefMathML("Token:CONNECTIVE:implies",   undef, sub{['m:implies'];});
+DefMathML("Token:BINDER:And",           undef, sub{['m:And'];});
+DefMathML("Token:BINDER:Or",            undef, sub{['m:Or'];});
+DefMathML("Token:BINDER:Xor",           undef, sub{['m:Xor'];});
+DefMathML("Token:BINDER:forall",        undef, sub{['m:forall'];});
+DefMathML("Token:BINDER:exists",        undef, sub{['m:exists'];});
+DefMathML("Token:OPFUNCTION:abs",       undef, sub{['m:abs'];});
+DefMathML("Token:OPFUNCTION:conjugate", undef, sub{['m:conjugate'];});
+DefMathML("Token:OPFUNCTION:arg",       undef, sub{['m:arg'];});
+DefMathML("Token:OPFUNCTION:real",      undef, sub{['m:real'];});
+DefMathML("Token:OPFUNCTION:imaginary", undef, sub{['m:imaginary'];});
+DefMathML("Token:OPFUNCTION:lcm",       undef, sub{['m:lcm'];});
+
+# Interesting question:
+#  Are these "overspecified" ?
+#  Maybe MK wants to write floor(x), whereas I want to write \lfloor x \rfloor
+# The role should probably be ? here, so that _both_ cases translate to m:floor ???
+DefMathML("Token:OPFUNCTION:floor",     undef, sub{['m:floor'];});
+DefMathML("Token:OPFUNCTION:ceiling",   undef, sub{['m:ceiling'];});
+
+#======================================================================
+# Relations:
+#   eq, neq, gt, lt, geq, leq, equivalent, approx, factorof
+
+#BRM
+DefMathML("Token:RELOP:?",         \&pmml_mo);
+DefMathML("Token:RELOP:eq",         undef,     sub { ['m:eq'];});
+DefMathML("Token:RELOP:\x{2260}",   undef,     sub { ['m:neq'];}); # \ne, not-eq .. ???
+DefMathML("Token:RELOP:greater",    undef,     sub { ['m:gt'];});
+DefMathML("Token:RELOP:less",       undef,     sub { ['m:lt'];});
+DefMathML("Token:RELOP:less-eq",    undef,     sub { ['m:leq'];});
+DefMathML("Token:RELOP:greater-eq", undef,   sub { ['m:geq'];});
+DefMathML("Token:METARELOP:?",     \&pmml_mo);
+DefMathML('Apply:RELOP:?',         \&pmml_infix);
+DefMathML('Apply:METARELOP:?',     \&pmml_infix);
+
+# Top level relations
+DefMathML('Apply:?:Formulae',sub { 
+  my($op,@elements)=@_;
+  pmml_punctuate($op->getAttribute('separators'),@elements); });
+DefMathML('Apply:?:MultiRelation',sub { 
+  my($op,@elements)=@_;
+  pmml_row(map(pmml($_),@elements)); });
+
+#MK
+DefMathML("Token:RELOP:eq",        undef, sub{['m:eq'];});
+# Hmm, neq, gt, lt ?? ???
+DefMathML("Token:RELOP:neq",       undef, sub{['m:neq'];});
+DefMathML("Token:RELOP:gt",        undef, sub{['m:gt'];});
+DefMathML("Token:RELOP:lt",        undef, sub{['m:lt'];});
+DefMathML("Token:RELOP:geq",       undef, sub{['m:geq'];});
+DefMathML("Token:RELOP:leq",       undef, sub{['m:leq'];});
+DefMathML("Token:RELOP:equivalent",undef, sub{['m:equivalent'];});
+DefMathML("Token:RELOP:approx",    undef, sub{['m:approx'];});
+DefMathML("Token:RELOP:factorof",  undef, sub{['m:factorof'];});
+
+#======================================================================
+# Calculus and Vector Calculus:
+#   int, diff, partialdiff, lowlimit, uplimit, bvar, degree, 
+#   divergence, grad, curl, laplacian.
+
+# BRM
+DefMathML("Token:INTOP:?",       \&pmml_mo);
+DefMathML("Token:LIMITOP:?",     \&pmml_mo);
 DefMathML('Apply:ARROW:?', \&pmml_infix);
-DefMathML('Apply:COMPOSEOP:?', \&pmml_infix);
-DefMathML('Apply:METARELOP:?',\&pmml_infix);
+
+# MK
+DefMathML("Token:BINDER:int",           undef, sub{['m:int'];});
+DefMathML("Token:OPFUNCTION:diff",      undef, sub{['m:diff'];});
+DefMathML("Token:OPFUNCTION:degree",    undef, sub{['m:degree'];});
+DefMathML("Token:OPFUNCTION:limit",     undef, sub{['m:limit'];});
+DefMathML("Token:RELOP:tendsto",        undef, sub{['m:tendsto'];});
+DefMathML("Token:OPFUNCTION:divergence",undef, sub{['m:divergence'];});
+DefMathML("Token:OPFUNCTION:grad",      undef, sub{['m:grad'];});
+DefMathML("Token:OPFUNCTION:url",       undef, sub{['m:url'];});
+DefMathML("Token:OPFUNCTION:laplacian", undef, sub{['m:laplacian'];});
+
+#======================================================================
+# Theory of Sets,
+#   set, list, union, intersect, in, notin, subset, prsubset, notsubset, notprsubset,
+#   setdiff, card, cartesianproduct.
+
+# MK
+DefMathML("Token:CONSTRUCTOR:set",      undef, sub{['m:set'];});
+DefMathML("Token:CONSTRUCTOR:list",     undef, sub{['m:list'];});
+DefMathML("Token:OPFUNCTION:union",     undef, sub{['m:union'];});
+DefMathML("Token:OPFUNCTION:intersect", undef, sub{['m:intersect'];});
+DefMathML("Token:RELOP:in",             undef, sub{['m:in'];});
+DefMathML("Token:RELOP:notin",          undef, sub{['m:notin'];});
+DefMathML("Token:RELOP:subset",         undef, sub{['m:subset'];});
+DefMathML("Token:RELOP:prsubset",       undef, sub{['m:prsubset'];});
+DefMathML("Token:RELOP:notsubset",      undef, sub{['m:notsubset'];});
+DefMathML("Token:RELOP:notprsubset",    undef, sub{['m:notprsubset'];});
+DefMathML("Token:OPFUNCTION:setdiff",   undef, sub{['m:setdiff'];});
+DefMathML("Token:OPFUNCTION:card",      undef, sub{['m:card'];});
+DefMathML("Token:OPFUNCTION:cartesianproduct",undef, sub{['m:cartesianproduct'];});
+DefMathML("Token:BINDER:Union",         undef, sub{['m:Union'];});
+DefMathML("Token:BINDER:Union",         undef, sub{['m:Union'];});
+DefMathML("Token:BINDER:Intersect",     undef, sub{['m:Intersect'];});
+DefMathML("Token:BINDER:Cartesianproduct",undef, sub{['m:Cartesianproduct'];});
+
+#======================================================================
+# Sequences and Series:
+#   sum, product, limit, tendsto
+
+# (but see calculus for limit too!!)
+
+# BRM
+DefMathML("Token:SUMOP:?",       \&pmml_mo);
+sub pmml_bigop {
+  my($op,$body)=@_;
+  ['m:mrow',{}, pmml($op), pmml_unrow(pmml($body))]; }
+DefMathML('Apply:BIGOP:?',\&pmml_bigop);
+DefMathML('Apply:INTOP:?',\&pmml_bigop);
+DefMathML('Apply:SUMOP:?',\&pmml_bigop);
+
+DefMathML('Apply:?:LimitFrom', sub {
+  my($op,$arg,$dir)=@_;
+  ['m:mrow',{},pmml($arg),pmml($dir)]; });
+
+DefMathML('Apply:?:Annotated', sub {
+  my($op,$var,$annotation)=@_;
+  ['m:mrow',{},pmml($var),pmml($annotation)];});
+
+# NOTE: Markup probably isn't right here....
+DefMathML('Apply:?:AT', sub {
+  my($op,$expr,$value)=@_;
+  pmml_row(pmml($expr),['m:msub',{},pmml_mo('|'),pmml_smaller($value)]); });
+
+# MK
+DefMathML("Token:BINDER:sum",          undef, sub{['m:sum'];});
+DefMathML("Token:BINDER:prod",         undef, sub{['m:prod'];});
+
+#======================================================================
+# Elementary Classical Functions,
+#   exp, ln, log, sin, cos tan, sec, csc, cot, sinh, cosh, tanh, sech, csch, coth,
+#   arcsin, arccos, arctan, arccosh, arccot, arccoth, arccsc, arccsch, arcsec, arcsech,
+#   arcsinh, arctanh
+
+# Hmm, for content, we probably should leave off the Role;
+# This would allow them to be generated with different
+# presentation styles, w/o affecting the content conversion.
+# Providing, of course, that the meaning is consistently used!
+
+DefMathML("Token:OPFUNCTION:exp",      undef, sub { ['m:exp']; });
+DefMathML("Token:OPFUNCTION:ln",       undef, sub { ['m:ln']; });
+DefMathML("Token:OPFUNCTION:log",      undef, sub { ['m:log']; });
+DefMathML("Token:TRIGFUNCTION:sin",    undef, sub { ['m:sin']; });
+DefMathML("Token:TRIGFUNCTION:cos",    undef, sub { ['m:cos']; });
+DefMathML("Token:TRIGFUNCTION:tan",    undef, sub { ['m:tan']; });
+DefMathML("Token:TRIGFUNCTION:sec",    undef, sub { ['m:sec']; });
+DefMathML("Token:TRIGFUNCTION:csc",    undef, sub { ['m:csc']; });
+DefMathML("Token:TRIGFUNCTION:cot",    undef, sub { ['m:cot']; });
+DefMathML("Token:TRIGFUNCTION:sinh",   undef, sub { ['m:sinh']; });
+DefMathML("Token:TRIGFUNCTION:cosh",   undef, sub { ['m:cosh']; });
+DefMathML("Token:TRIGFUNCTION:tanh",   undef, sub { ['m:tanh']; });
+DefMathML("Token:TRIGFUNCTION:sech",   undef, sub { ['m:sech']; });
+DefMathML("Token:TRIGFUNCTION:csch",   undef, sub { ['m:csch']; });
+DefMathML("Token:TRIGFUNCTION:coth",   undef, sub { ['m:coth']; });
+DefMathML("Token:OPFUNCTION:arcsin",   undef, sub { ['m:arcsin']; });
+DefMathML("Token:OPFUNCTION:arccos",   undef, sub { ['m:arccos']; });
+DefMathML("Token:OPFUNCTION:arctan",   undef, sub { ['m:arctan']; });
+DefMathML("Token:OPFUNCTION:arcsec",   undef, sub { ['m:arcsec']; });
+DefMathML("Token:OPFUNCTION:arccsc",   undef, sub { ['m:arccsc']; });
+DefMathML("Token:OPFUNCTION:arccot",   undef, sub { ['m:arccot']; });
+DefMathML("Token:OPFUNCTION:arcsinh",  undef, sub { ['m:arcsinh']; });
+DefMathML("Token:OPFUNCTION:arccosh",  undef, sub { ['m:arccosh']; });
+DefMathML("Token:OPFUNCTION:arctanh",  undef, sub { ['m:arctanh']; });
+DefMathML("Token:OPFUNCTION:arcsech",  undef, sub { ['m:arcsech']; });
+DefMathML("Token:OPFUNCTION:arccsch",  undef, sub { ['m:arccsch']; });
+DefMathML("Token:OPFUNCTION:arccoth",  undef, sub { ['m:arccoth']; });
+
+
+# MK (were identical, except for my own typo)
+
+#======================================================================
+# Statistics:
+#   mean, sdev, variance, median, mode, moment, momentabout
+
+# MK
+DefMathML("Token:OPFUNCTION:mean",     undef, sub{['m:mean'];});
+DefMathML("Token:OPFUNCTION:sdev",     undef, sub{['m:sdev'];});
+DefMathML("Token:OPFUNCTION:var",      undef, sub{['m:var'];});
+DefMathML("Token:OPFUNCTION:median",   undef, sub{['m:median'];});
+DefMathML("Token:OPFUNCTION:mode",     undef, sub{['m:mode'];});
+DefMathML("Token:OPFUNCTION:moment",   undef, sub{['m:moment'];});
+
+#======================================================================
+# Linear Algebra:
+#   vector, matrix, matrixrow, determinant, transpose, selector, 
+#   vectorproduct, scalarproduct, outerproduct.
+
+# MK
+DefMathML("Token:CONSTRUCTOR:vector",       undef, sub{['m:vector'];});
+DefMathML("Token:CONSTRUCTOR:matrix",       undef, sub{['m:matrix'];});
+DefMathML("Token:OPFUNCTION:determinant",   undef, sub{['m:determinant'];});
+DefMathML("Token:OPFUNCTION:transpose",     undef, sub{['m:transpose'];});
+DefMathML("Token:OPFUNCTION:selector",      undef, sub{['m:selector'];});
+DefMathML("Token:OPFUNCTION:vectorproduct", undef, sub{['m:vectorproduct'];});
+DefMathML("Token:OPFUNCTION:scalarproduct", undef, sub{['m:scalarproduct'];});
+DefMathML("Token:OPFUNCTION:outerproduct",  undef, sub{['m:outerproduct'];});
+
+#======================================================================
+# Semantic Mapping Elements
+#   annotation, semantics, annotation-xml
+#======================================================================
+# Constant and Symbol Elements
+#   integers, reals, rationals, naturalnumbers, complexes, primes,
+#   exponentiale, imaginaryi, notanumber, true, false, emptyset, pi,
+#   eulergamma, infinity
+
+# MK
+DefMathML("Token:ID:integers",      undef, sub{['m:integers'];});
+DefMathML("Token:ID:reals",         undef, sub{['m:reals'];});
+DefMathML("Token:ID:rationals",     undef, sub{['m:rationals'];});
+DefMathML("Token:ID:naturalnumbers",undef, sub{['m:naturalnumbers'];});
+DefMathML("Token:ID:complexes",     undef, sub{['m:complexes'];});
+DefMathML("Token:ID:primes",        undef, sub{['m:primes'];});
+DefMathML("Token:ID:exponentiale",  undef, sub{['m:exponentiale'];});
+DefMathML("Token:ID:imaginaryi",    undef, sub{['m:imaginaryi'];});
+DefMathML("Token:ID:notanumber",    undef, sub{['m:notanumber'];});
+DefMathML("Token:ID:true",          undef, sub{['m:true'];});
+DefMathML("Token:ID:false",         undef, sub{['m:false'];});
+DefMathML("Token:ID:emptyset",      undef, sub{['m:emptyset'];});
+DefMathML("Token:ID:pi",            undef, sub{['m:pi'];});
+DefMathML("Token:ID:eulergamma",    undef, sub{['m:eulergamma'];});
+DefMathML("Token:ID:infinit",       undef, sub{['m:infinit'];});
+
+#======================================================================
+# Purely presentational constructs.
+# An issue here:
+#  Some constructs are pretty purely presentational.  Hopefully, these would
+# only appear in XWrap's or in the presentation branch of an XMDual, so we won't
+# attempt to convert them to content.  But if we do, should we warn?
 
 DefMathML('Apply:FENCED:?',sub {
   my($op,@elements)=@_;
@@ -699,32 +893,8 @@ DefMathML('Apply:STACKED:?', sub {
   else {
     $stack; }});
 
-# Various specific formatters.
-DefMathML('Apply:?:sqrt', sub { ['m:msqrt',{},pmml($_[1])]; });
-DefMathML('Apply:?:root', sub { ['m:mroot',{},pmml($_[2]),
-				 pmml_smaller($_[1])]; });
-
-DefMathML('Apply:?:div', sub {
-  my($op,$num,$den)=@_;
-  my $style = $op->getAttribute('style');
-  my $thickness = $op->getAttribute('thickness');
-  ['m:mfrac',{($thickness ? (linethickness=>$thickness):()),
-	    ($style && ($style eq 'inline') ? (bevelled=>'true'):())},
-   pmml_smaller($num),pmml_smaller($den)]; });
-
-DefMathML('Apply:?:LimitFrom', sub {
-  my($op,$arg,$dir)=@_;
-  ['m:mrow',{},pmml($arg),pmml($dir)]; });
-
-DefMathML('Apply:?:Annotated', sub {
-  my($op,$var,$annotation)=@_;
-  ['m:mrow',{},pmml($var),pmml($annotation)];});
-
-# NOTE: Markup probably isn't right here....
-DefMathML('Apply:?:AT', sub {
-  my($op,$expr,$value)=@_;
-  pmml_row(pmml($expr),['m:msub',{},pmml_mo('|'),pmml_smaller($value)]); });
-
+# ================================================================================
+# cfrac! Ugh!
 
 # Have to deal w/ screwy structure:
 # If denom is a sum/diff then last summand can be: cdots, cfrac 
@@ -768,7 +938,13 @@ package LaTeXML::Post::MathML::Presentation;
 use strict;
 use base qw(LaTeXML::Post::MathML);
 
-sub processNode { LaTeXML::Post::MathML::pmml_top($_[1],$_[2]); }
+sub translateNode {
+  my($self,$doc,$xmath,$style,$embedding)=@_;
+  my @trans = LaTeXML::Post::MathML::pmml_top($xmath,$style);
+  # Wrap unless already embedding within MathML.
+  ($embedding =~ /^m:/ ? @trans 
+   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},@trans]); }
+
 sub getEncodingName { 'MathML-Presentation'; }
 
 #================================================================================
@@ -777,7 +953,13 @@ package LaTeXML::Post::MathML::Content;
 use strict;
 use base qw(LaTeXML::Post::MathML);
 
-sub processNode { LaTeXML::Post::MathML::cmml_top($_[1],$_[2]); }
+sub translateNode {
+  my($self,$doc,$xmath,$style,$embedding)=@_;
+  my @trans = LaTeXML::Post::MathML::cmml_top($xmath);
+  # Wrap unless already embedding within MathML.
+  ($embedding =~ /^m:/ ? @trans 
+   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},@trans]); }
+
 sub getEncodingName { 'MathML-Content'; }
 
 #================================================================================
@@ -786,14 +968,18 @@ package LaTeXML::Post::MathML::Parallel;
 use strict;
 use base qw(LaTeXML::Post::MathML);
 
-sub processNode {
-  my($self,$node,$style)=@_;
+sub translateNode {
+  my($self,$doc,$xmath,$style,$embedding)=@_;
   my($main_proc,@annotation_procs)=@{$$self{math_processors}};
-  ['m:semantics',{},
-   $main_proc->processNode($node,$style),
-   map( ['m:annotation-xml',{encoding=>$_->getEncodingName},
-	 $_->processNode($node,$style)],
-	@annotation_procs) ]; }
+  my @trans = ['m:semantics',{},
+	       $main_proc->translateNode($doc,$xmath,$style,'m:semantics'),
+	       map( ['m:annotation-xml',{encoding=>$_->getEncodingName},
+		     $_->translateNode($doc,$xmath,$style,'m:annotation-xml')],
+		    @annotation_procs) ];
+  # Wrap unless already embedding within MathML.
+  ($embedding =~ /^m:/ ? @trans 
+   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},@trans]); }
+
 sub getEncodingName { 'MathML-Parallel'; }
 
 #================================================================================

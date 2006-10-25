@@ -25,5 +25,8 @@
 <!ATTLIST %LaTeXML.item.qname; %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 
 <!ELEMENT %LaTeXML.tag.qname; %LaTeXML.Inline.model;>
-<!ATTLIST %LaTeXML.tag.qname; %LaTeXML.Common.attrib;>
+<!ATTLIST %LaTeXML.tag.qname;
+	  %LaTeXML.Common.attrib;
+	  open  CDATA #IMPLIED
+	  close CDATA #IMPLIED>
 

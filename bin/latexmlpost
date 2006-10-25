@@ -16,19 +16,20 @@ use LaTeXML::Util::ObjectDB;
 #======================================================================
 my $identity = "latexmlpost (LaTeXML version $LaTeXML::VERSION)";
 
-my($help,$showversion,$verbosity,$validate)=(0,0,0,1);
-
-# initialize these undefined!!!
 # undef => unspecified; 0 = NO, 1 = YES
-my($sourcedir,$destination,$url);
-my($format);
-my($parallelmath,$mathimages,$keepXMath);
-my($split,$stylesheet,$css);
-my($svg,$picimages);
-my($dographics);
-
+my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
+my($sourcedir,$destination,$url)=(undef,undef,undef);
+my($format) = (undef);
+my($stylesheet,$css)=(undef,undef);
+my($parallelmath,$mathimages,$keepXMath)=(undef,undef,undef);
+my($dographics,$svg,$picimages)=(undef,undef,undef);
+my($split,$splitpath)=(undef,"//ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index");
+my($prescan,$dbfile,$scan,$crossref)=(undef,undef,1,1);
+my($index,$permutedindex,$splitindex)=(1,undef,undef);
+my($splitbibliography,@bibliographies)=(undef);
 my @math_formats =();
 my %removed_math_formats=();
+
 
 # Get the command line arguments.
 GetOptions("destination=s"=>sub { $destination = $_[1];
@@ -38,11 +39,25 @@ GetOptions("destination=s"=>sub { $destination = $_[1];
 	   "url=s"                 =>\$url,
 	   "sourcedirectory=s"     =>\$sourcedir,
 	   "verbose+"              =>\$verbosity,
+	   # Some general XSLT/CSS options.
 	   "stylesheet=s"          =>\$stylesheet,
 	   "css=s"                 =>\$css,
 	   "format=s"              =>\$format,
 	   "validate!"             =>\$validate,
-	   "split=s"               =>\$split,
+	   "omitdoctype!"          =>\$omit_doctype,
+	   # Options for broader document set processing
+	   "split!"                =>\$split,
+	   "splitpath=s"           =>sub { $splitpath=$_[1]; $split=1 unless defined $split;},
+	   "index!"                =>\$index,
+	   "permutedindex!"        =>\$permutedindex,
+	   "splitindex!"           =>\$splitindex,
+	   "bibliography=s"        =>\@bibliographies,
+	   "splitbibliography!"    =>\$splitbibliography,
+	   "scan!"                 =>\$scan,
+	   "crossref!"             =>\$crossref,
+	   # Options for two phase processing
+	   "prescan"               =>\$prescan,
+	   "dbfile=s"              =>\$dbfile,
 	   # Various choices for math processing.
 	   # Note: Could want OM embedded in mml annotation, too.
 	   # In general, could(?) want multiple math reps within <Math>
@@ -87,6 +102,19 @@ if($xmlfile ne '-'){
 # Sanity check & option completion for known output formats.
 if((defined $split) && !defined $destination){
   Error("Must supply destination when using split"); }
+if($prescan && !$scan){
+  Error("Makes no sense to prescan with scanning disabled"); }
+if($prescan && (!defined $dbfile)){
+  Error("Cannot prescan documents without a dbfile"); }
+if(!$prescan && $crossref && ! ($scan || (defined $dbfile))){
+  Error("Cannot cross-reference without scan or dbfile"); }
+if(($permutedindex || $splitindex) && (! defined $index)){
+  $index=1; }
+if(!$prescan && $index && ! ($scan || defined $crossref)){
+  Error("Cannot generate index without scan or dbfile"); }
+if(!$prescan && @bibliographies && ! ($scan || defined $crossref)){
+  Error("Cannot generate bibliography without scan or dbfile"); }
+
 if(!defined $format){}
 elsif($format eq 'html'){
   Error("Default html stylesheet only supports math images")
@@ -128,65 +156,82 @@ binmode(STDOUT,":utf8");
 print STDERR "$identity\n" if $verbosity > 0;
 our %OPTIONS = (verbosity=>$verbosity||0);
 
-my $DB = LaTeXML::Util::ObjectDB->new();
+if(defined $dbfile && !-f $dbfile){
+  pathname_mkdir(pathname_directory($dbfile)); }
+my $DB = LaTeXML::Util::ObjectDB->new(dbfile=>$dbfile,%OPTIONS);
 
 # Create the processors:
 my @procs = ();
 if($split){
   require 'LaTeXML/Post/Split.pm';
-  push(@procs,LaTeXML::Post::Split->new(split_xpath=>$split,%OPTIONS)); }
+  push(@procs,LaTeXML::Post::Split->new(split_xpath=>$splitpath,%OPTIONS)); }
 
 require 'LaTeXML/Post/Scan.pm';
-push(@procs,LaTeXML::Post::Scan->new(db=>$DB,%OPTIONS));
+our $scanner = ($scan || $DB) && LaTeXML::Post::Scan->new(db=>$DB,%OPTIONS);
+if($scan){
+  push(@procs,$scanner); }
 
-if($mathimages){
-  require 'LaTeXML/Post/MathImages.pm';
-  push(@procs,LaTeXML::Post::MathImages->new(%OPTIONS)); }
-if($picimages){
-  require 'LaTeXML/Post/PictureImages.pm';
-  push(@procs,LaTeXML::Post::PictureImages->new(%OPTIONS)); }
-if($dographics){
-  require 'LaTeXML/Post/Graphics.pm';
-  push(@procs,LaTeXML::Post::Graphics->new(%OPTIONS)); }
-if($svg){
-  require 'LaTeXML/Post/SVG.pm';
-  push(@procs,LaTeXML::Post::SVG->new(%OPTIONS)); }
-if(@math_formats){
-  $keepXMath  = 0 unless defined $keepXMath;
-  my @mprocs=();
-  foreach my $fmt (@math_formats){
-    if($fmt eq 'pmml'){
+if(!$prescan){
+  if($index){
+    require 'LaTeXML/Post/MakeIndex.pm';
+    push(@procs,LaTeXML::Post::MakeIndex->new(db=>$DB, permuted=>$permutedindex,
+					      split=>$splitindex, scanner=>$scanner,
+					      %OPTIONS)); }
+  if(@bibliographies){
+    require 'LaTeXML/Post/MakeBibliography.pm';
+    push(@procs,LaTeXML::Post::MakeBibliography->new(db=>$DB, bibliographies=>[@bibliographies],
+						     split=>$splitbibliography, scanner=>$scanner,
+						     %OPTIONS)); }
+  if($crossref){
+    require 'LaTeXML/Post/CrossRef.pm';
+    push(@procs,LaTeXML::Post::CrossRef->new(db=>$DB,%OPTIONS)); }
+
+  if($mathimages){
+    require 'LaTeXML/Post/MathImages.pm';
+    push(@procs,LaTeXML::Post::MathImages->new(%OPTIONS)); }
+  if($picimages){
+    require 'LaTeXML/Post/PictureImages.pm';
+    push(@procs,LaTeXML::Post::PictureImages->new(%OPTIONS)); }
+  if($dographics){
+    require 'LaTeXML/Post/Graphics.pm';
+    push(@procs,LaTeXML::Post::Graphics->new(%OPTIONS)); }
+  if($svg){
+    require 'LaTeXML/Post/SVG.pm';
+    push(@procs,LaTeXML::Post::SVG->new(%OPTIONS)); }
+  if(@math_formats){
+    $keepXMath  = 0 unless defined $keepXMath;
+    my @mprocs=();
+    foreach my $fmt (@math_formats){
+      if($fmt eq 'pmml'){
+	require 'LaTeXML/Post/MathML.pm';
+	push(@mprocs,LaTeXML::Post::MathML::Presentation->new(%OPTIONS)); }
+      elsif($fmt eq 'cmml'){
+	require 'LaTeXML/Post/MathML.pm';
+	push(@mprocs,LaTeXML::Post::MathML::Content->new(%OPTIONS)); }
+      elsif($fmt eq 'om'){
+	require 'LaTeXML/Post/OpenMath.pm';
+	push(@mprocs,LaTeXML::Post::OpenMath->new(%OPTIONS)); }}
+    if($parallelmath){
       require 'LaTeXML/Post/MathML.pm';
-      push(@mprocs,LaTeXML::Post::MathML::Presentation->new(%OPTIONS)); }
-    elsif($fmt eq 'cmml'){
-      require 'LaTeXML/Post/MathML.pm';
-      push(@mprocs,LaTeXML::Post::MathML::Content->new(%OPTIONS)); }
-    elsif($fmt eq 'om'){
-      require 'LaTeXML/Post/OpenMath.pm';
-      push(@mprocs,LaTeXML::Post::OpenMath->new(%OPTIONS)); }}
-  if($parallelmath){
-    require 'LaTeXML/Post/MathML.pm';
-    push(@procs,LaTeXML::Post::MathML::Parallel->new(math_processors=>[@mprocs],%OPTIONS)); }
+      push(@procs,LaTeXML::Post::MathML::Parallel->new(math_processors=>[@mprocs],%OPTIONS)); }
+    else {
+      push(@procs,@mprocs); }}
   else {
-    push(@procs,@mprocs); }}
-else {
     $keepXMath  = 1 unless defined $keepXMath;
   }
-if(!$keepXMath){
-  require 'LaTeXML/Post/PurgeXMath.pm';
-  push(@procs,LaTeXML::Post::PurgeXMath->new(%OPTIONS)); }
+  if(!$keepXMath){
+    require 'LaTeXML/Post/PurgeXMath.pm';
+    push(@procs,LaTeXML::Post::PurgeXMath->new(%OPTIONS)); }
 
-# Cut somewhere like here for 2 stage processing
-require 'LaTeXML/Post/CrossRef.pm';
-push(@procs,LaTeXML::Post::CrossRef->new(db=>$DB,%OPTIONS));
+  if($stylesheet){
+    require 'LaTeXML/Post/XSLT.pm'; 
+    push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet, css=>$css,%OPTIONS)); }
 
-if($stylesheet){
-  require 'LaTeXML/Post/XSLT.pm'; 
-  push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet, css=>$css,%OPTIONS)); }
+  push(@procs,LaTeXML::Post::Writer->new(format=>$format,omit_doctype=>$omit_doctype,%OPTIONS));
+}
 
-push(@procs,LaTeXML::Post::Writer->new(format=>$format,%OPTIONS));
-
-my $POST = LaTeXML::Post->new();
+# Figure how to define a Reader processor (?)
+# that initialize the thing by reading several files (the rest of the command line).
 LaTeXML::Post::ProcessChain(
 	  ($xmlfile eq '-'
 	   ? LaTeXML::Post::Document->newFromSTDIN(validate=>$validate,
@@ -199,7 +244,7 @@ LaTeXML::Post::ProcessChain(
 						  destination=>$destination,
 						  url=>$url || $destination)),
 			    @procs);
-
+$DB->finish;
 #======================================================================
 # helpers
 #======================================================================
@@ -228,35 +273,94 @@ such ad convert math to images and processing graphics inclusions for the web.
 
 latexmlpost [options] xmlfile
 
-  Options:
-   --format=html|xhtml|xml    requests the output format.
-   --stylesheet=xslfile       requests the XSL transform of the document using the given
-                              xslfile as stylesheet.
-   --css=cssfile              use the cssfile in html/xhtml (when using default stylesheet)
-   --mathml                   requests conversion of the math to Presentation MathML
-   --presentationmathml       requests conversion of the math to Presentation MathML
-   --nopresentationmathml     requests no conversion of the math to Presentation MathML
-   --contentmathml            requests conversion of the math to Content MathML
-   --nocontentmathml          requests no conversion of the math to Content MathML
-   --openmath                 requests conversion of the math to OpenMath
-   --parallelmath             requests parallel math markup for MathML
-   --noparallelmath           requests no parallel math markup for MathML
-   --svg                      requests conversion of the pictures to SVG
-   --keepXMath                preserves the intermediate XMath representation
-   --verbose                  prints progress messages during processing.
-   --VERSION                  show version number.
-   --source=sourcedir         specifies directory of source TeX file.
-   --destination=outputfile   specifies output file (and directory).
-   --help                     shows help message.
+Options:
+ --destination=outputfile   specifies output file (and directory).
+ --source=sourcedir         specifies directory of source TeX file.
+ --format=html|xhtml|xml    requests the output format.
+ --url=url                  specifies the destination url (if needed)
+ --stylesheet=xslfile       requests the XSL transform of the document
+                            using the given xslfile as stylesheet.
+ --css=cssfile              use the cssfile in html/xhtml 
+                            (for default XSL stylesheets)
+ --split                    requests splitting each document
+ --nosplit                  disables the above (default)
+ --splitpath=xpath          specifies xpath expression for splitting
+                            (default is section-like, if splitting)
+ --index                    requests filling in the index (default)
+ --noindex                  disables the above
+ --permutedindex            permutes index phrases in generated index
+ --nopermutedindex          disables the above (default)
+ --splitindex               enables spliting the index into pages per initial.
+ --nosplitindex             disables the above (default)
+ --bibliography=file        specifies a bibliography file
+ --splitbibliography        splits the bibliography into pages per initial
+ --nosplitbibliography      disables the above (default)
+ --scan                     scans documents to extract ids, labels, 
+                            section titles, etc. (default)
+ --noscan                   disables the above
+ --crossref                 fills in crossreferences (default)
+ --nocrossref               disables the above
+ --prescan                  carries out only the split (if enabled) and scan
+                            storing cross-referencing data in dbfile
+                            (default is complete processing)
+ --dbfile=dbfile            specifies a file to store crossreferences
+ --mathimages               converts math to images (default for html)
+ --nomathimages             disables the above
+ --presentationmathml       converts math to Presentation MathML
+                            (default for xhtml format)
+ --pmml                     alias for --presentationmathml
+ --nopresentationmathml     disables the above
+ --contentmathml            converts math to Content MathML
+ --nocontentmathml          disables the above (default)
+ --cmml                     alias for --contentmathml
+ --openmath                 converts math to OpenMath
+ --noopenmath               disables the above (default)
+ --om                       alias for --openmath
+ --parallelmath             requests parallel math markup for MathML
+                            (default when multiple math formats)
+ --noparallelmath           disables the above
+ --graphicsimages           converts graphics to images (default)
+ --nographicsimages         disables the above
+ --pictureimages            converts picture environments to
+                            images (default)
+ --nopictureimages          disables the above
+ --svg                      converts picture environments to SVG
+ --nosvg                    disables the above (default)
+ --keepXMath                preserves the intermediate XMath
+                            representation (default is to remove)
+ --verbose                  prints progress messages during processing.
+ --VERSION                  show version number.
+ --help                     shows help message.
 
-If texfile is '-', latexmlpost reads the XML from standard input.
+If xmlfile is '-', latexmlpost reads the XML from standard input.
 
 =head1 OPTIONS AND ARGUMENTS
 
-latexmlpost postprocesses an xml file, C<xmlfile>, generated by latexml 
+C<latexmlpost> postprocesses an xml file, I<xmlfile>, generated by C<latexml>
 to perform common tasks, such as convert math to images and processing
 graphics inclusions for the web.  If C<-> is given for C<xmlfile>, the
 xml data is read from standard input.
+
+=head2 General Options
+
+=over 4
+
+=item B<--verbose>
+
+Requests informative output as processing proceeds. Can be repeated
+to increase the amount of information.
+
+=item B<--VERSION>
+
+Shows the version number of the LaTeXML package..
+
+=item B<--help>
+
+Shows this help message.
+
+=back
+
+=head2 Format Options
 
 =over 4
 
@@ -272,62 +376,29 @@ but the math is parsed and converted to presentation MathML.
 For html and xhtml, a default stylesheet is provided, but see
 the B<--stylesheet> option.
 
-=item B<--stylesheet>=I<stylesheet>
-
-Specifies an XSLT stylesheet for transforming the xml.
-
-=item B<--mathml>
-=item B<--presentationmathml>
-=item B<--contentmathml>
-=item B<--nopresentationmathml>
-=item B<--nocontentmathml>
-
-Requests that the mathematical material be converted to MathML, either
-Presentation MathML, Content MathML or both.  If both presentation and
-content are requested, the first request will be the primary one,
-with the second being an C<annotation>.
-Presentation MathML.  If a value is given to the option it must be one
-of: presentation, content, presentation+content (presentation annotated with content)
-or content+presentation (content annotated with presentation).
-
-=item B<--openmath>
-
-Requests that the mathematical material be parsed, and converted to
-OpenMath.  This is currently a very naive conversion.
-
-=item B<--parallelmath>
-=item B<--noparallelmath>
-
-Requests (or diables) parallel math markup using the MathML semantics element.
-The first math markup shouldbe either Presentation or Content MathML markup;
-additional markup models will be added as annotations to the semantics element.
-
-=item B<--svg>
-
-Requests that the picture and pstricks material be parsed and converted to SVG.
-
-=item B<--keepXMath>
-
-By default, when either of the C<--mathml> or C<--openmath> conversions
-is used, the intermediate math representation will be removed;  
-this option preserves it.
-
 =item B<--source>=I<source>
 
 Specifies the directory where the original latex source is located.
-Unless latexmlpost is run from that directory, it may be necessary
-to specify this option in order to find graphics and style files.
+Unless latexmlpost is run from that directory, or it can be determined
+from the xml filename, it may be necessary to specify this option in
+order to find graphics and style files.
 
 =item B<--destination=>I<destination>
 
 Specifies the destination file and directory.  The directory is needed for
 mathimages and graphics processing.
 
+=item B<--url=>I<url>
+
+Specifies the url where the destination file will be seen.  This is only
+needed when relative urls cannot be derived from the destination path,
+such as when processing a larger site, whose root is at a higher level.
 
 =item B<--stylesheet>=I<xslfile>
 
 Requests the XSL transformation of the document using the given xslfile as stylesheet.
-If the stylesheet is omitted, a `standard' one will be used (C<dtd/LaTeXML.xsl>).
+If the stylesheet is omitted, a `standard' one appropriate for the
+format (html or xhtml) will be used.
 
 =item B<--css>=I<cssfile>
 
@@ -335,13 +406,153 @@ Requests that the css file will be used in the transformed html/xhtml.
 It is passed as a parameter to the stylesheet.
 By default, the default stylesheets will use the included LaTeXML.css.
 
-=item B<--VERSION>
+=back
 
-Shows the version number of the LaTeXML package..
+=head2 Site and Crossreferencing Options
 
-=item B<--help>
+=over 4
 
-Shows this help message.
+=item B<--split>, B<--nosplit>
+
+Enables or disables (default) the splitting of documents into multiple `pages'.
+If enabled, the the document will be split into sections, bibliography,
+index and appendices (if any) by default, unless B<--splitpath> is specified.
+
+=item B<--splitpath=>I<xpath>
+
+Specifies an XPath expression to select nodes that will generate separate
+pages.
+
+=item B<--scan>, B<--noscan>
+
+Enables (default) or disables the scanning of documents for ids, labels,
+references, indexmarks, etc, for use in filling in refs, cites, index and
+so on.  It may be useful to disable when generating documents not based
+on the LaTeXML doctype.
+
+=item B<--crossref>, B<--nocrossref>
+
+Enables (default) or disables the filling in of references, hrefs, etc
+based on a previous scan (either from C<--scan>, or C<--dbfile>)
+It may be useful to disable when generating documents not based
+on the LaTeXML doctype.
+
+=item B<--index>, B<--noindex>
+
+Enables (default) or disables the generation of an index from indexmarks
+embedded within the document.  Enabling this has no effect unless
+there is an index element in the document (generated by \printindex).
+
+=item B<--splitindex>, B<--nosplitindex>
+
+Enables or disables (default) the splitting of generated indexes
+into separate pages per initial letter.
+
+=item B<--bibliography=>I<pathname>
+
+Specifies a bibliography file generated from a BibTeX file.
+This is used to fill in a bibliography element.
+Explicit bibliographies generated by a C<thebibliography> environment
+do not need this processing.  Enabling this has no effect unless
+there is an bibliography element in the document (generated by \bibliography).
+
+=item B<--splitbibliography>, B<--nosplitbibliography>
+
+Enables or disables (default) the splitting of generated bibliographies
+into separate pages per initial letter.
+
+=item B<--prescan>
+
+By default C<latexmlpost> processes a single document into one
+(or more; see C<--split>) destination files in a single pass.
+When generating a complicated site consisting of several documents
+it may be advantageous to first scan through the documents
+to extract and store (in C<dbfile>) cross-referencing data
+(such as ids, titles, urls, and so on).
+A later pass then has complete information allowing all documents
+to reference each other, and also constructs an index and bibliography
+that reflects the entire document set.  The same effect (though less efficient)
+can be achieved by running C<latexmlpost> twice, provided a C<dbfile>
+is specified.
+
+=item B<--dbfile>I<=file>
+
+Specifies a filename to use for the crossreferencing data when
+using two-pass processing.  This file may reside in the intermediate
+destination directory.
+
+=back
+
+=head2 Math Options
+
+These options specify how math should be converted into other formats.
+Multiple formats can be requested; how they will be combined
+depends on the format and other options.
+
+=over 4
+
+=item B<--mathimages>, B<--nomathimages>
+
+Requests or disables the conversion of math to images.
+Conversion is the default for html format.
+
+=item B<--presentationmathml>, B<--nopresentationmathml>
+
+Requests or disables conversion of math to Presentation MathML.
+Conversion is the default for xhtml format.
+
+=item B<--contentmathml>, B<--nocontentmathml>
+
+Requests or disables conversion of math to Content MathML.
+Conversion is disabled by default.
+B<Note> that this conversion is only partially implemented.
+
+=item B<--openmath>
+
+Requests or disables conversion of math to OpenMath.
+Conversion is disabled by default.
+B<Note> that this conversion is only partially implemented.
+
+=item B<--parallelmath>, B<--noparallelmath>
+
+Requests or disables parallel math markup.
+Parallel markup is the default for xhtml formats when multiple math
+formats are requested.
+
+This method uses the MathML C<semantics> element with additional formats
+appearing as C<annotation>'s.
+The first math format requested must be either Presentation or Content MathML;
+additional formats may be MathML or OpenMath.
+
+If this option is disabled and multiple formats are requested, the
+representations are simply stored as separate children of the C<Math> element.
+
+=item B<--keepXMath>
+
+By default, when any of the MathML or OpenMath conversions
+are used, the intermediate math representation will be removed;
+this option preserves it.
+
+=back
+
+=head2 Graphics Options
+
+=over 4
+
+=item B<--graphicsimages>, B<--nographicsimages>
+
+Enables (default) or disables the conversion of graphics inclusion
+to web-appropriate format (png).
+
+=item B<--pictureimages>, B<--nopictureimages>
+
+Enables (default) or disables the conversion of picture environments
+and pstricks material into images.
+
+=item B<--svg>, B<--nosvg>
+
+Enables or disables (default) the conversion of picture environments
+and pstricks material to SVG.
 
 =back
 

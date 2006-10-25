@@ -1106,18 +1106,21 @@ DefConstructor('\label Semiverbatim',
 		   $_[0]->endMode('text'); }
 		 return; });
 
-DefConstructor('\ref Semiverbatim', "<ltx:ref labelref='#1'>&LookupValue('LABEL@#1')</ltx:ref>");
-DefConstructor('\pageref Semiverbatim', "<ltx:ref labelref='#1'>&LookupValue('LABEL@#1')</ltx:ref>"); # Same??
+# These will get filled in during postprocessing.
+DefConstructor('\ref Semiverbatim', "<ltx:ref labelref='#1'/>");
+DefConstructor('\pageref Semiverbatim', "<ltx:ref labelref='#1'/>"); # Same??
 #======================================================================
 # C.11.3 Bibliography and Citation
 #======================================================================
 
+DefMacro('\thebibliography@id','');
 # NOTE: Not really complete, since I haven't dealt with bibliographies!
 DefConstructor('\bibliography Semiverbatim',
 	       "<ltx:bibliography files='#1' id='#id'/>",
 	       afterDigest=>sub { 
 		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
-		 $_[1]->setProperty(id=>($docid ? "$docid.bib" : 'bib')); });
+		 DefMacro('\thebibliography@ID',($docid ? "$docid.bib" : 'bib'));
+		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID')))); });
 DefPrimitive('\bibliographystyle{}', undef);
 DefEnvironment('{thebibliography}{}',
 	       "<ltx:bibliography id='#id'>"
@@ -1126,7 +1129,10 @@ DefEnvironment('{thebibliography}{}',
 	       ."</ltx:bibliography>",
 	       afterDigestBegin=>sub { 
 		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
-		 $_[1]->setProperty(id=>($docid ? "$docid.bib" : 'bib')); });
+		 ResetCounter('enumiv');
+		 DefMacro('\thebibliography@ID',($docid ? "$docid.bib" : 'bib'));
+		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID')))); });
+
 
 sub cleanBibKey {
   my($key)=@_;
@@ -1134,13 +1140,17 @@ sub cleanBibKey {
   $key =~ s/\s//g;
   $key; }
 # NOTE: 
+DefMacro('\the@bibitem','\arabic{enumiv}');
 DefConstructor('\bibitem[] Semiverbatim',
-	       "<ltx:bibitem key='#key' id='#id'>?#1(<ltx:tag>#1</ltx:tag>)<ltx:bibblock>",
+	       "<ltx:bibitem key='#key' id='#id'><ltx:tag open='[' close=']'>#tag</ltx:tag><ltx:bibblock>",
 	       afterDigest=>sub {
+		 my $tag = $_[1]->getArg(1);
 		 my $key = cleanBibKey($_[1]->getArg(2));
-		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
-		 my $id  = ($docid ? "$docid.bib" : 'bib').".".$key;
-		 $_[1]->setProperties(key=>$key, id=>$id); });
+		 if(!$tag){
+		   RefStepCounter('enumiv');
+		   $tag = Digest(Expand(T_CS('\the@bibitem'))); }
+		 my $id  = ToString(Expand(T_CS('\thebibliography@ID'))).".".$key;
+		 $_[1]->setProperties(tag=>$tag, key=>$key, id=>$id); });
 DefConstructor('\newblock',"<ltx:bibblock>");
 Tag('ltx:bibitem', autoClose=>1);
 Tag('ltx:bibblock', autoClose=>1);
@@ -1150,23 +1160,32 @@ Tag('ltx:bibblock', autoClose=>1);
 # (bibtex matches case insensitively)
 # Only sane solution is to downcase the keys in both places.
 sub makecite {
-  my($style,$show, $document,$phrase1,$phrase2,$ref)=@_;
-  $ref = cleanBibKey($ref);
-  $document->openElement('ltx:cite', ref=>$ref,style=>$style, show=>$show);
-  if(defined $phrase1 && defined $phrase2){
-    $document->insertElement('ltx:citepre',$phrase1);
-    $document->insertElement('ltx:citepost',$phrase2); }
-  elsif(defined $phrase1){
-    $document->insertElement('ltx:citepost',$phrase1); }
+  my($parenthesized,$show, $document,$phrase1,$phrase2,$refs,%props)=@_;
+  $refs = cleanBibKey($refs);
+  my($pre,$post)=(defined $phrase1 && defined $phrase2
+		  ? ($phrase1,$phrase2)
+		  : (undef,   $phrase1));
+  $document->openElement('ltx:cite');
+  $document->openText('[',$props{font}) if $parenthesized;
+  if($pre){
+    $document->openText('(',$props{font}) unless $parenthesized;
+    $document->absorb($pre);
+    $document->openText(($parenthesized ? ', ' : ')'),$props{font}); }
+  $document->insertElement('ltx:bibref',undef,bibrefs=>$refs, show=>$show);
+  if($post){
+    $document->openText(($parenthesized ? ', ' : '('),$props{font});
+    $document->absorb($post);
+    $document->openText(')',$props{font}) unless $parenthesized; }
+  $document->openText(']',$props{font}) if $parenthesized;
   $document->closeElement('ltx:cite'); }
 
 # Most of this is really natbib style.
-DefConstructor('\cite[][] Semiverbatim',       sub { makecite('parenthetic','all',@_); });
-DefConstructor('\citet[][] Semiverbatim',      sub { makecite('intext','all',@_); });
-DefConstructor('\citep[][] Semiverbatim',      sub { makecite('parenthetic','all',@_); });
-DefConstructor('\citeauthor[][] Semiverbatim', sub { makecite('intext','author',@_); });
-DefConstructor('\citeyear[][] Semiverbatim',   sub { makecite('intext','year',@_); });
-DefConstructor('\citeyearpar[][] Semiverbatim',sub { makecite('parenthetic','year',@_); });
+DefConstructor('\cite[][] Semiverbatim',       sub { makecite(1,undef,@_); });
+DefConstructor('\citet[][] Semiverbatim',      sub { makecite(0,undef,@_); });
+DefConstructor('\citep[][] Semiverbatim',      sub { makecite(1,undef,@_); });
+DefConstructor('\citeauthor[][] Semiverbatim', sub { makecite(0,'author',@_); });
+DefConstructor('\citeyear[][] Semiverbatim',   sub { makecite(0,'year',@_); });
+DefConstructor('\citeyearpar[][] Semiverbatim',sub { makecite(1,'year',@_); });
 
 #======================================================================
 # C.11.4 Splitting the input
@@ -1221,39 +1240,64 @@ DefPrimitive('\listfiles',undef);
 
 # ---- The index commands
 # Format of Index entries:
-#   \index{entry!entry}  gives multilevel index (handled)
+#   \index{entry!entry}  gives multilevel index
 # Each entry:
-#   foo@bar  sorts on "foo" but prints "bar" (not handled yet)
+#   foo@bar  sorts on "foo" but prints "bar"
 # The entries can end with a |expression:
-#   \index{...|(}    this page starts a range for foo (not handled)
-#   \index{...|)}    this page ends a range (not handled)
-#   \index{...|see{key}}  cross reference (not handled yet)
-#      [I think makeindex just prints key, but we'll have to create an actual cross link!!!]
+#   \index{...|(}    this page starts a range for foo
+#   \index{...|)}    this page ends a range
+#           The last two aren't handled in any particular way.
+#           We _could_ mark start & end, and then the postprocessor would
+#           need to fill in all likely links... ???
+#   \index{...|see{key}}  cross reference.
 #   \index{...|textbf}  (etc) causes the number to be printed in bold!
 #
 # I guess the formula is that
-#    \index{foo!whatever{pi}{pa}{po}}  => \whatever{pi}{pa}{po}{page}
+#    \index{foo|whatever{pi}{pa}{po}}  => \whatever{pi}{pa}{po}{page}
 # How should this get interpreted??
-
+our %index_style = (textbf=>'bold', bf=>'bold', textrm=>'', rm=>'',
+		    textit=>'italic', it=>'italic', emph=>'italic'); # What else?
 # A bit screwy, but....
 # Expand \index{a!b!...} into \@index{\@indexphrase{a}\@indexphrase{b}...}
 sub process_index_phrases {
   my($gullet,$phrases)=@_;
-  my @expansion = (T_CS('\@index'),T_BEGIN);
+  my @expansion = ();
   # Split the text into phrases, separated by "!"
   my @tokens = $phrases->unlist;
   push(@tokens,T_OTHER('!')) unless $tokens[$#tokens]->getString eq '!'; # Add terminal !
   my @phrase=();
-  foreach my $tok (@tokens){
-    if($tok->getString eq '!'){
-      while(@phrase && ($phrase[$#phrase]->getString =~ /\s/)){ pop(@phrase); }
-      push(@expansion,T_CS('\@indexphrase'),T_BEGIN,@phrase,T_END)
+  my @sortas=();
+  my $style;
+  while(@tokens){
+    my $tok = shift(@tokens);
+    my $string = $tok->getString;
+    if($string eq '"'){
+      push(@phrase,shift(@tokens)); }
+    elsif($string eq '@'){
+      while(@phrase && ($phrase[$#phrase]->getString =~ /\s/)){ pop(@phrase); }	# Trim
+      @sortas=@phrase; @phrase=(); }
+    elsif(($string eq '!') || ($string eq '|')){
+      while(@phrase && ($phrase[$#phrase]->getString =~ /\s/)){ pop(@phrase); }	# Trim
+      push(@expansion,T_CS('\@indexphrase'),
+	   (@sortas ? (T_OTHER('['),@sortas,T_OTHER(']')) :()),
+	   T_BEGIN,@phrase,T_END)
 	if @phrase;
-      @phrase=(); }
-    elsif(!@phrase && ($tok->getString =~ /\s/)){}	# Skip leading whitespace
+      @phrase=(); @sortas=();
+      if($string eq '|'){
+	pop(@tokens);		# Remove the extra "!" stopbit.
+	my $extra = Tokens(@tokens)->toString;
+	if($extra =~ /^see/){
+	  push(@expansion,T_CS('\@indexsee'),@tokens[3..$#tokens]); }
+	elsif($extra eq '('){}	# ?
+	elsif($extra eq ')'){}	# ?
+	else { $style = $index_style{$extra} || $extra; }
+	@tokens=(); }}
+    elsif(!@phrase && ($string =~ /\s/)){}	# Skip leading whitespace
     else { 
       push(@phrase,$tok); }}
-  push(@expansion,T_END);
+  @expansion = (T_CS('\@index'),
+		($style ? (T_OTHER('['),T_OTHER($style),T_OTHER(']')):()),
+		T_BEGIN,@expansion,T_END);
   @expansion; }
 
 DefExpandable('\index{}', \&process_index_phrases);
@@ -1265,21 +1309,78 @@ sub cleanIndexKey {
   $key =~ tr|A-Z|a-z|;
   $key; }
 
-DefConstructor('\@index{}',"^<ltx:indexmark>#1</ltx:indexmark>",
+DefConstructor('\@index[]{}',"^<ltx:indexmark style='#1'>#2</ltx:indexmark>",
 	       mode=>'text', reversion=>'');
-DefConstructor('\@indexphrase{}',
-	       "<ltx:indexphrase key='#key'>#1</ltx:indexphrase>",
-	       properties=>{key=>sub { cleanIndexKey($_[1]); }} );
+DefConstructor('\@indexphrase[]{}',
+	       "<ltx:indexphrase key='#key'>#2</ltx:indexphrase>",
+	       properties=>{key=>sub { cleanIndexKey($_[1]); }});
+DefConstructor('\@indexsee{}',
+	       "<ltx:indexphrase see_also_marker='1'>#1</ltx:indexphrase>");
+
+Tag('ltx:indexphrase', afterClose=>\&addIndexKey);
+sub addIndexKey {
+  my($document,$node)=@_;
+  # Do something about See ????
+  # [Presumably compute key and add it to the index element and delete]
+  # Or introduce a special element?
+  if($node->getAttribute('see_also_marker')){
+    my $key = $node->getAttribute('key') || indexify($node);
+    my $indexmark = $node->parentNode;
+    $indexmark->setAttribute(see_also=>$key);
+    $indexmark->removeChild($node); }
+  elsif(!$node->getAttribute('key')) {
+    $node->setAttribute(key=>indexify($node)); }}
+
+#======================================================================
+# This converts an indexphrase node into a sortable string.
+# Seems the XML nodes are the best place to handle it (rather than Boxes),
+# although some of the special cases (see, @, may end up tricky)
+sub indexify {
+  my($node)=@_;
+  my $type = $node->nodeType;
+  if($type == XML_TEXT_NODE){
+    my $string = $node->textContent; 
+    $string =~ s/\W//g;		# to be safe (if perhaps non-unique?)
+    $string =~ s/\s//g;		# Or remove entirely? Eventually worry about many=>1 mapping???
+    lc($string); }		# Worry..
+  elsif($type == XML_ELEMENT_NODE){
+    if($node->localname eq 'Math'){
+      indexify_tex($node->getAttribute('tex'));}
+    else {
+      join('',map(indexify($_),$node->childNodes)); }}
+  elsif($type == XML_DOCUMENT_FRAG_NODE){
+    join('',map(indexify($_),content_nodes($node))); }
+  else { ""; }}
+
+# Try to clean up a TeX string into something
+# Could walk the math tree and handle XMDual specially, but need to xref args.
+# But also we'd have unicode showing up, which we'd like to latinize...
+sub indexify_tex {
+  my($string)=@_;
+  $string =~ s/(\\\@|\\,|\\:|\\;|\\!|\\ |\\\/|)//g;
+  $string =~ s/(\\mathrm|\\mathit|\\mathbf|\\mathsf|\\mathtt|\\mathcal|\\mathscr|\\mbox|\\rm|\\it|\\bf|\\tt|\\small|\\tiny)//g;
+  $string =~ s/\\left\b//g;  $string =~ s/\\right\b//g;
+  $string =~ s/(\\|\{|\})//g;
+  $string =~ s/\W//g;		# to be safe (if perhaps non-unique?)
+  $string =~ s/\s//g;		# Or remove entirely? Eventually worry about many=>1 mapping???
+  lc($string); }		# Worry..
 
 # ---- Creating the index itself
 
 AssignValue(INDEXLEVEL=>0);
 
 Tag('ltx:indexentry', autoClose=>1);
+sub closeIndexPhrase {
+  my($document)=@_;
+  if($document->isCloseable('ltx:indexphrase')){
+#    my $inode = $document->getElement;
+#    $inode->setAttribute(key=>cleanIndexKey($inode->textContent));
+    $document->closeElement('ltx:indexphrase'); }}
+
 sub doIndexItem {
   my($document,$level)=@_;
   $document->closeElement('ltx:indexrefs') if $document->isCloseable('ltx:indexrefs');
-  $document->closeElement('ltx:indexphrase') if $document->isCloseable('ltx:indexphrase');
+  closeIndexPhrase($document);
   my $l = LookupValue('INDEXLEVEL');
   while($l < $level){
     $document->openElement('ltx:indexlist'); $l++; }
@@ -1292,7 +1393,7 @@ sub doIndexItem {
 
 DefConstructor('\index@dotfill',   sub {
   my($document)=@_;
-  $document->closeElement('ltx:indexphrase') if $document->isCloseable('ltx:indexphrase');
+  closeIndexPhrase($document);
   $document->openElement('ltx:indexrefs'); });
 DefConstructor('\index@item',      sub { doIndexItem($_[0],1); });
 DefConstructor('\index@subitem',   sub { doIndexItem($_[0],2); });
@@ -1546,7 +1647,8 @@ sub after_picture {}
 
 # NOTE: Untex should prefix a setting of unitlength!!!
 DefEnvironment('{picture} Pair OptionalPair',
-	       "<ltx:picture %&SimplePairAttr(#size,width,height) fill='black' stroke='black'>"
+	       "<ltx:picture %&SimplePairAttr(#size,width,height)"
+	       ." fill='black' stroke='black' unitlength='#unitlength'>"
 	       . "#body"
 	       ."</ltx:picture>",
 	       beforeDigest=>\&before_picture,
@@ -1651,7 +1753,8 @@ sub add_picture_TeX {
     $node->setAttribute(tex=>$tex); }
   $thing->setProperty('_added_tex',1); }
 
-Tag('ltx:picture',   afterOpen=>\&add_picture_TeX);
+#Tag('ltx:picture',   afterOpen=>\&add_picture_TeX);
+Tag('ltx:picture',   afterOpen=>\&add_TeX);
 
 Tag('ltx:g', afterClose=> sub {
       my ($document,$node) = @_;

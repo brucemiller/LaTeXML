@@ -67,11 +67,11 @@ sub process {
   $self->ProgressDetailed("Using graphicspaths: "
 			  .join(', ',@$LaTeXML::Post::Graphics::SEARCHPATHS));
 
-  my @nodes = $self->selectGraphicsNodes($doc);
-  $self->Progress(scalar(@nodes)." graphics nodes to process");
-  foreach my $node (@nodes){
-    $self->processGraphic($doc,$node);  }
-  $doc->closeCache;		# If opened.
+  if(my @nodes = $self->selectGraphicsNodes($doc)){
+    $self->Progress(scalar(@nodes)." graphics nodes to process");
+    foreach my $node (@nodes){
+      $self->processGraphic($doc,$node);  }
+    $doc->closeCache; }		# If opened.
   $doc; }
 
 #======================================================================
@@ -138,67 +138,42 @@ sub processGraphic {
 }
 
 #======================================================================
-# Copy a source file, presumably relative to the source document's directory,
-# to a corresponding sub-directory in the destination directory.
-# Return the path to the copy, relative to the destination.
-sub copyFile {
-  my($self,$doc,$source)=@_;
-  my ($reldir,$name,$type) = pathname_split(pathname_relative($source,
-							      $doc->getSourceDirectory));
-  my $destdir = pathname_concat($doc->getDestinationDirectory,$reldir);
-  pathname_mkdir($destdir) 
-    or return $self->Error("Could not create relative directory $destdir: $!");
-  my $dest = pathname_make(dir=>$destdir,name=>$name,type=>$type);
-  pathname_copy($source, $dest) or warn("Couldn't copy $source to $dest: $!");
-  pathname_make(dir=>$reldir,name=>$name,type=>$type); }
-
-#======================================================================
 
 sub transformGraphic {
   my($self,$doc,$node,$source,$transform)=@_;
-  my ($reldir,$name,$type)
+  my ($reldir,$name,$srctype)
     = pathname_split(pathname_relative($source,$doc->getSourceDirectory));
-  my $destdir = pathname_concat($doc->getDestinationDirectory,$reldir);
-
-  my $key = (ref $self).':'.join('|',"$reldir$name.$type", map(join(' ',@$_),@$transform));
+  my $key = (ref $self).':'.join('|',"$reldir$name.$srctype", map(join(' ',@$_),@$transform));
   $self->ProgressDetailed("Processing $key");
 
   my $map       = $self->get_type_map($source,$transform);
   return warn "Don't know what to do with graphics file format $source" unless $map;
-  my $newtype = $$map{type} || $type;
-
+  my $type = $$map{type} || $srctype;
+  my $reldest = $self->desiredResourcePathname($doc,$node,$source,$type);
   if(my $prev = $doc->cacheLookup($key)){	# Image was processed on previous run?
     $prev =~ /^(.*?)\|(\d+)\|(\d+)$/;
     my ($cached,$width,$height)=($1,$2,$3);
-    my $dest =  pathname_make(dir=>$doc->getDestinationDirectory,name=>$cached);
-    if(-f $dest && (-M $source >= -M $dest)){
-      $self->ProgressDetailed(">> Reuse $cached @ $width x $height");
-      return ($cached,$width,$height); }}
+    if((!defined $reldest) || ($cached eq $reldest)){
+      my $dest =  pathname_make(dir=>$doc->getDestinationDirectory,name=>$cached);
+      if(-f $dest && (-M $source >= -M $dest)){
+	$self->ProgressDetailed(">> Reuse $cached @ $width x $height");
+	return ($cached,$width,$height); }}}
+  $reldest = $self->generateResourcePathname($doc,$node,$source,$type) unless $reldest;
+  my $dest = $doc->checkDestination($reldest);
   # Trivial scaling case: Use original image with different width & height.
-  if($$self{trivial_scaling} && ($newtype eq $type) && !grep(!($_->[0]=~/^scale/),@$transform)){
-    my ($width,$height)=$self->trivial_scaling($source,$transform);
-    my $copy = $self->copyFile($doc,$source);
-    $self->ProgressDetailed(">> Copied to $copy for $width x $height");
-    $doc->cacheStore($key,"$copy|$width|$height");
-    $self->ProgressDetailed(">> done with $key");
-    ($copy,$width,$height); }
+  my ($image,$width,$height);
+  if($$self{trivial_scaling} && ($type eq $srctype) && !grep(!($_->[0]=~/^scale/),@$transform)){
+    ($width,$height)=$self->trivial_scaling($source,$transform);
+    pathname_copy($source, $dest) or warn("Couldn't copy $source to $dest: $!");
+    $self->ProgressDetailed(">> Copied to $reldest for $width x $height"); }
   else {
-    my ($image,$width,$height) =$self->complex_transform($source,$transform, $map);
-    my $N = $doc->cacheLookup((ref $self).':_max_image_') || 0;
-    my $newname = "$name-GEN". ++$N;
-    $doc->cacheStore((ref $self).':_max_image_',$N);
-
-    pathname_mkdir($destdir) 
-      or return $self->Error("Could not create relative directory $destdir: $!");
-    my $dest = pathname_make(dir=>$destdir,name=>$newname,type=>$newtype);
+    ($image,$width,$height) =$self->complex_transform($source,$transform, $map);
     $self->ProgressDetailed(">> Writing to $dest ");
-    my $reldest = pathname_make(dir=>$reldir,name=>$newname,type=>$newtype);
-    $image->Write(filename=>$dest) and warn "Couldn't write image $dest: $!";
+    $image->Write(filename=>$dest) and warn "Couldn't write image $dest: $!"; }
 
-    $doc->cacheStore($key,"$reldest|$width|$height");
-    $self->ProgressDetailed(">> done with $key");
-    ($reldest,$width,$height); }
-}
+  $doc->cacheStore($key,"$reldest|$width|$height");
+  $self->ProgressDetailed(">> done with $key");
+  ($reldest,$width,$height); }
 
 #======================================================================
 # Compute the desired image size (width,height)
@@ -348,8 +323,8 @@ sub parseOptions {
   local $_;
   # --------------------------------------------------
   # Parse options
-  my ($v,$clip,$trim,$width,$height,$scale,$aspect,$a,$rotfirst,@bb,@vp,)
-    =('', '',   '',   0,    0,   0,    '',      0, '',        0);
+  my ($v,$clip,$trim,$width,$height,$scale,$aspect,$a,$rotfirst,$mag,@bb,@vp,)
+    =('',  '',   '',    0,     0,      0,     '',   0,   '',     1,  0);
   my @unknown=();
   foreach (split(',',$options||'')){
     /^\s*(\w+)(=\s*(.*))?\s*$/;  $_=$1; $v=$3||'';
@@ -367,6 +342,8 @@ sub parseOptions {
     elsif(/^scale$/)            { $scale = $v; }
     elsif(/^angle$/)            { $a = $v; $rotfirst = !($width||$height||$scale); }
     elsif(/^origin$/)           { } # ??
+    # Non-standard option
+    elsif(/^magnification$/)    { $mag = $v; }
     else { push(@unknown,[$op,$v]); }}
   # --------------------------------------------------
   # Now, compile the options into a sequence of `transformations'.
@@ -378,10 +355,11 @@ sub parseOptions {
   # overlap neighboring text, etc, in current HTML).
   push(@transform, [($trim ? 'trim' : 'clip'), @vp]) if(@vp && $clip);
   push(@transform,['rotate',$a]) if($rotfirst && $a); # Rotate before scaling?
-  if($width && $height){ push(@transform,['scale-to',$width,$height,$aspect]); }
-  elsif($width)        { push(@transform,['scale-to',$width,999999,1]); }
-  elsif($height)       { push(@transform,['scale-to',999999,$height,1]); }
-  elsif($scale)        { push(@transform,['scale',$scale]); }
+  if($width && $height){ push(@transform,['scale-to',$mag*$width,$mag*$height,$aspect]); }
+  elsif($width)        { push(@transform,['scale-to',$mag*$width,999999,1]); }
+  elsif($height)       { push(@transform,['scale-to',999999,$mag*$height,1]); }
+  elsif($scale)        { push(@transform,['scale',$mag*$scale]); }
+  elsif($mag!=1)       { push(@transform,['scale',$mag]); }
   push(@transform,['rotate',$a]) if(!$rotfirst && $a);  # Rotate after scaling?
   #  ----------------------
   [@transform,@unknown]; }

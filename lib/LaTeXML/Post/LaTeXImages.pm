@@ -52,16 +52,14 @@ sub new {
 #**********************************************************************
 # Methods that must be defined;
 
-sub image_prefix { 'img'; }
+# $self->findTeXNodes($doc) => @nodes;
+sub findTeXNodes { (); }
 
-# $self->find_nodes($doc) => @nodes;
-sub find_nodes { (); }
+# $self->setTeXImage($doc,$node,$imagepath,$width,$height);
+sub setTeXImage {}
 
-# $self->set_image($node,$imagepath,$width,$height);
-sub set_image {}
-
-# $self->extract_tex($node)=>$texstring;
-sub extract_tex { ""; }
+# $self->extractTeX($doc,$node)=>$texstring;
+sub extractTeX { ""; }
 
 # $self->format_tex($texstring)
 sub format_tex { ""; }
@@ -78,40 +76,41 @@ sub format_tex { ""; }
 sub process {
   my($self,$doc)=@_;
 
-  my $destdir = $doc->getDestinationDirectory;
-  my $relpath = $self->image_prefix;
-  my $jobname = $self->image_prefix . '_job';
+  my $jobname = "ltxmlimg";
 
   my %table=();
 
   # === Get the desired nodes, extract the set of unique tex strings,
   #     noting which need processing.
+  # Note that if desiredResourcePathname is implemented, we might get
+  # several desired names for the same chunk of tex!!!
   my($ntotal,$nuniq)=(0,0);
-  foreach my $node ($self->find_nodes($doc)){
-    my $tex = $self->extract_tex($node);
+  foreach my $node ($self->findTeXNodes($doc)){
+    my $tex = $self->extractTeX($doc,$node);
     next if !(defined $tex) or ($tex eq '');
     $ntotal++;
-    my $entry = $table{$tex};
+
+    my $reldest = $self->desiredResourcePathname($doc,$node,undef,$$self{imagetype});
+    my $key = (ref $self).":".$tex . ($reldest ? ":$reldest" : '');
+    my $entry = $table{$key};
     if(!$entry){
       $nuniq++;
-      $entry = $table{$tex} = {tex=>$tex, nodes=>[], key=>(ref $self).':'.$tex}; }
+      $entry = $table{$key} = {tex=>$tex, key=>$key, nodes=>[], reldest=>$reldest}; }
     push(@{$$entry{nodes}},$node); }
-  $self->Progress("Found $nuniq unique tex strings (of $ntotal)");
+
   return $doc unless $nuniq;	# No strings to process!
 
-  pathname_mkdir(pathname_concat($destdir,$relpath)) 
-    or return $self->Error("Couldn't create destination dir $destdir/$relpath: $!");
-
   # === Check which objects still need processing.
+  my $destdir = $doc->getDestinationDirectory;
   my @pending=();
   foreach my $entry (values %table){
     my $store = $doc->cacheLookup($$entry{key});
     if($store && ($store =~ /^(.*);(\d+);(\d+)$/)){
-      my $dest = pathname_concat($destdir,$1);
-      next if -f $dest; }
+      next if -f pathname_concat($destdir,$1); }
     push(@pending,$entry); }
 
-  $self->Progress(scalar(@pending)." images to generate");
+  $self->Progress("Found $nuniq unique tex strings (of $ntotal); "
+		  .scalar(@pending)." to generate");
   if(@pending){			# if any images need processing
     my $workdir=pathname_concat($TMP,"LaTeXML$$");
     pathname_mkdir($workdir) or 
@@ -132,30 +131,30 @@ sub process {
     close(TEX);
 
     # === Run LaTeX on the file.
-    my $err = system("cd $workdir ; $LATEXCMD $jobname > $jobname.output");
+    my $texinputs = ".:".pathname_absolute($doc->getSourceDirectory) .":".($ENV{TEXINPUTS} ||'');
+    my $command = "cd $workdir ; TEXINPUTS=$texinputs $LATEXCMD $jobname > $jobname.output";
+    my $err = system($command);
+
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
     if($err != 0){
-      $self->Warn("latex returned code $err (!= 0) for image generation: $@\n See $workdir/$jobname.log"); }
+      $self->Warn("latex ($command) returned code $err (!= 0) for image generation: $@\n See $workdir/$jobname.log"); }
     if(! -f "$workdir/$jobname.dvi"){
-      return $self->Error("LaTeX somehow failed: See $workdir/$jobname.log"); }
+      return $self->Error("LaTeX ($command) somehow failed: See $workdir/$jobname.log"); }
     # === Run dvips to extract individual postscript files.
     my $mag = int($$self{magnification}*1000);
-    my $prefix = $self->image_prefix;
-    my $xprefix = $prefix."x";
-    system("cd $workdir ; $DVIPSCMD -x$mag -o $xprefix $jobname.dvi") == 0 
+    system("cd $workdir ; $DVIPSCMD -x$mag -o imgx $jobname.dvi") == 0 
       or return $self->Error("Couldn't execute dvips: $!");
 
     # === Convert each image to appropriate type and put in place.
     my ($index,$ndigits)= (0,1+int(log( $doc->cacheLookup((ref $self).':_max_image_')||1)/log(10)));
     foreach my $entry (@pending){
-      my $src   = "$workdir/$xprefix".sprintf("%03d",++$index);
-      my $N = $doc->cacheLookup((ref $self).':_max_image_')||0;
+      my $src   = "$workdir/imgx".sprintf("%03d",++$index);
       if(-f $src){
-	my $dest  = pathname_make(dir=>$relpath,name=>sprintf("$prefix%0*d",$ndigits,++$N),
-				  type=>$$self{imagetype});
-	$doc->cacheStore((ref $self).':_max_image_',$N);
-	my($w,$h) = $self->convert_image($src,pathname_concat($destdir,$dest));
-	$doc->cacheStore($$entry{key},"$dest;$w;$h"); }
+	my $reldest = $$entry{reldest} 
+	  ||  $self->generateResourcePathname($doc,$$entry{nodes}[0],undef,$$self{imagetype});
+	my $dest = $doc->checkDestination($reldest);
+	my($w,$h) = $self->convert_image($src,$dest);
+	$doc->cacheStore($$entry{key},"$reldest;$w;$h"); }
       else {
 	$self->Warn("Missing image $src; See $workdir/$jobname.log"); }}
     # Cleanup
@@ -168,7 +167,7 @@ sub process {
     next unless $doc->cacheLookup($$entry{key}) =~ /^(.*);(\d+);(\d+)$/;
     my($image,$width,$height)=($1,$2,$3);
     foreach my $node (@{$$entry{nodes}}){
-      $self->set_image($node,$image,$width,$height); }}
+      $self->setTeXImage($doc,$node,$image,$width,$height); }}
   $doc->closeCache;		# If opened.
   $doc;}
 
@@ -242,7 +241,7 @@ sub convert_image {
   $image->Transparent(color=>$$self{background});
 
   $self->ProgressDetailed("Converting $src => $dest ($w x $h)");
-
+  
   $image->Write(filename=>$dest);
   ($w,$h); }
 

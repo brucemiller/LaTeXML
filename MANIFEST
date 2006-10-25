@@ -100,6 +100,7 @@ lib/LaTeXML/Package/concmath.ltxml
 lib/LaTeXML/Package/courier.ltxml
 lib/LaTeXML/Package/comment.ltxml
 lib/LaTeXML/Package/DLMF.ltxml
+lib/LaTeXML/Package/DLMFpage.ltxml
 lib/LaTeXML/Package/DLMFbib.ltxml
 lib/LaTeXML/Package/DLMFmath.ltxml
 lib/LaTeXML/Package/epsfig.ltxml
@@ -144,8 +145,11 @@ lib/LaTeXML/Package/utopia.ltxml
 lib/LaTeXML/Package/yfonts.ltxml
 lib/LaTeXML/Parameters.pm
 lib/LaTeXML/Post.pm
+lib/LaTeXML/Post/Collector.pm
 lib/LaTeXML/Post/CrossRef.pm
 lib/LaTeXML/Post/Graphics.pm
+lib/LaTeXML/Post/MakeBibliography.pm
+lib/LaTeXML/Post/MakeIndex.pm
 lib/LaTeXML/Post/MathImages.pm
 lib/LaTeXML/Post/MathML.pm
 lib/LaTeXML/Post/OpenMath.pm

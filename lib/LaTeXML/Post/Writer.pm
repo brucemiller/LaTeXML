@@ -20,14 +20,19 @@ sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
   $$self{format} = ($options{format}||'xml');
+  $$self{omit_doctype}=1 if $options{omit_doctype};
   $self; }
 
 sub process {
   my($self,$doc)=@_;
+
   my $xmldoc = $doc->getDocument;
-  my $string = ($$self{format} eq 'html' ? $xmldoc->toStringHTML : $xmldoc->toString(1));
+  $doc->getDocument->removeInternalSubset if $$self{omit_doctype};
+#  my $string = ($$self{format} eq 'html' ? $xmldoc->toStringHTML : $xmldoc->toString(1));
+  my $string = ($$self{format} eq 'html' ? $xmldoc->toStringHTML : $xmldoc->toString);
 
   if(my $destination = $doc->getDestination){
+    $self->Progress("Writing $destination");
     pathname_mkdir($doc->getDestinationDirectory)
       or return die("Couldn't create directory ".$doc->getDestinationDirectory.": $!");
     open(OUT,">:utf8",$destination)

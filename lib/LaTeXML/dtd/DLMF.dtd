@@ -179,7 +179,7 @@
 <!ATTLIST %LaTeXML.creator.qname;
 	  %LaTeXML.Common.attrib;
 	  role CDATA #IMPLIED
-	  soft_idref CDATA #IMPLIED>
+	  idref CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.date.qname;         %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.date.qname;
@@ -200,7 +200,6 @@
 	  | %LaTeXML.indexkeyword.qname;
 	  | %LaTeXML.acknowledgements.qname;)*>
 <!ATTLIST %LaTeXML.metadata.qname;
-	  about_id CDATA #IMPLIED
 	  id CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.copyright.qname;        %LaTeXML.Inline.model;>
@@ -215,7 +214,7 @@
 <!ELEMENT %LaTeXML.gallery.qname; (%LaTeXML.galleryitem.qname;)*>
 <!ELEMENT %LaTeXML.galleryitem.qname; (%LaTeXML.graphics.qname;)*>
 <!ATTLIST %LaTeXML.galleryitem.qname;
-          graphic   CDATA #REQUIRED
+          graphic   CDATA #IMPLIED
           name      CDATA #IMPLIED
 	  labelref  CDATA #IMPLIED>
 <!ELEMENT %LaTeXML.figuregroup.qname; (%LaTeXML.figure.qname;)*>

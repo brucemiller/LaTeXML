@@ -35,7 +35,8 @@
 <!ELEMENT %LaTeXML-bib.bibentry.qname; (%LaTeXML.Bibentry.class;)*>
 <!ATTLIST %LaTeXML-bib.bibentry.qname;
 	  %LaTeXML.Common.attrib; 
-          key CDATA #REQUIRED
+	  id   ID    #REQUIRED
+          key  CDATA #REQUIRED
           type CDATA #REQUIRED>
 
 <!-- ======================================================================

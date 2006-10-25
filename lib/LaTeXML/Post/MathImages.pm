@@ -14,15 +14,20 @@ package LaTeXML::Post::MathImages;
 use strict;
 use base qw(LaTeXML::Post::LaTeXImages);
 
+sub new {
+  my($class,%options)=@_;
+  $options{resourceDirectory}='mi' unless defined $options{resourceDirectory};
+  $options{resourcePrefix}='mi'    unless defined $options{resourcePrefix};
+  $class->SUPER::new(%options); }
+
 #======================================================================
-sub image_prefix { 'mi'; }
 
 # Return the list of Math nodes.
-sub find_nodes { $_[1]->findnodes('//ltx:Math'); }
+sub findTeXNodes { $_[1]->findnodes('//ltx:Math'); }
 
 # Return the TeX string to format the image for this node.
-sub extract_tex {
-  my($self,$node)=@_;
+sub extractTeX {
+  my($self,$doc,$node)=@_;
   my $mode = uc($node->getAttribute('mode')||'INLINE');
   my $tex = $node->getAttribute('tex') || '';
   $tex =~ s/\%[^\n]*\n//gs;	# Strip comments
@@ -30,8 +35,8 @@ sub extract_tex {
   "\\begin$mode $tex\\end$mode"; }
 
 # Record the math image's (relative) filename, width & height for this node.
-sub set_image {
-  my($self,$node,$path,$width,$height)=@_;
+sub setTeXImage {
+  my($self,$doc,$node,$path,$width,$height)=@_;
   $node->setAttribute('imagesrc',$path);
   $node->setAttribute('imagewidth',$width);
   $node->setAttribute('imageheight',$height); }

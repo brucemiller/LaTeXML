@@ -16,13 +16,6 @@ use LaTeXML::Util::Pathname;
 use XML::LibXML;
 use base qw(LaTeXML::Post);
 
-# NOTE:
-#   * how to specify the split? Providing an xpath expression?
-#   * How to generate names for the parts?
-#   * We need to leave something where we've removed the part?
-#     (that can be turned into a TOC?)
-#     In particular, any sequence of adjacent nodes.
-#   * Need to record up,prev,next!
 sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
@@ -33,8 +26,9 @@ sub process {
   my($self,$doc)=@_;
   my $root = $doc->getDocumentElement;
   my @docs = ($doc);
-  my @dates = $doc->findnodes('ltx:date',$root);
-  if(my @parts = $self->getSubdocuments($doc)){
+  my @parts = $self->getSubdocuments($doc);
+  @parts = grep($_->parentNode->parentNode,@parts); # Strip out the root node.
+  if(@parts){
     $self->Progress("Splitting into ".scalar(@parts)." parts");
     while(@parts){
       my $parent = $parts[0]->parentNode;
@@ -50,25 +44,16 @@ sub process {
       while(@parts && @removed && ${$parts[0]} == ${$removed[0]}){
 	my $part = shift(@parts);
 	shift(@removed);
-	push(@toc,['ltx:tocentry',{},['ltx:ref',{class=>'toc',idref=>$part->getAttribute('id')}]]);
-	my $idparent = $doc->findnode('ancestor::*[@id]',$part);
-	my $dest = $self->getSubdocumentName($doc,$part);
-	my $url  = $self->getSubdocumentURL($doc,$part);
-	my $next = ( (@parts && @removed && ${$parts[0]} == ${$removed[0]})  ? $parts[0] : undef);
-	$doc->addNodes($part,
-		       ['ltx:navigation',{},
-			['ltx:ref',{class=>'up',idref=>$root->getAttribute('id')}],
-			($prev
-			 ? (['ltx:ref',{class=>'previous',idref=>$prev->getAttribute('id')}])
-			 : ()),
-			($next
-			 ? (['ltx:ref',{class=>'next',idref=>$next->getAttribute('id')}])
-			 : ())],
-		       @dates);
-	push(@docs,$doc->newFromNode($part, destination=>$dest, url=>$url,
-				     parent_id=>($idparent ? $idparent->getAttribute('id'):undef)
-				    ));
-	$prev = $part; }
+	my $id = $part->getAttribute('id');
+	push(@toc,['ltx:tocentry',{},['ltx:ref',{class=>'toc',show=>'typerefnum title', idref=>$id}]]);
+	my $subdoc = $doc->newDocument($part,
+				       destination=>$self->getSubdocumentName($doc,$part),
+				       url=>$self->getSubdocumentURL($doc,$part));
+	push(@docs,$subdoc);
+	$subdoc->addNavigation(up      =>$root->getAttribute('id'));
+	$subdoc->addNavigation(previous=>$prev->getDocumentElement->getAttribute('id')) if $prev;
+	$prev->addNavigation(next=>$id) if $prev;
+	$prev = $subdoc; }
       # Finally, add the toc to reflect the consecutive, removed nodes, and add back the remainder
       $doc->addNodes($parent,['ltx:TOC',{},['ltx:toclist',{},@toc]]);
       map($parent->addChild($_),@removed); }}

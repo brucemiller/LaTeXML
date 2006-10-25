@@ -13,68 +13,43 @@ package LaTeXML::Post::Scan;
 use strict;
 use LaTeXML::Util::Pathname;
 use XML::LibXML;
-use charnames qw(:full);
 use base qw(LaTeXML::Post);
 
 # NOTE: This module is one that probably needs a lot of customizability.
-
-our $PILCROW = "\N{PILCROW SIGN}";
-our $SECTION = "\N{SECTION SIGN}";
-our %TYPEPREFIX = 
-  (equation     =>'Eq.',
-   equationmix  =>'Eq.',
-   equationgroup=>'Eq.',
-   figure       =>'Fig.',
-   table        =>'Tab.',
-   chapter      =>'Ch.',
-   part         =>'Pt.',
-   section      =>$SECTION,
-   subsection   =>$SECTION,
-   subsubsection=>$SECTION,
-   paragraph    =>$PILCROW,
-   subparagraph =>$PILCROW,
-   para         =>'p'
- );
-
 sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
   $$self{db}=$options{db};
+  $$self{handlers}={};
+  $self->registerHandler(mainpage      => \&section_handler);
+  $self->registerHandler(document      => \&section_handler);
+  $self->registerHandler(bibliography  => \&section_handler);
+  $self->registerHandler(index         => \&section_handler);
+  $self->registerHandler(chapter       => \&section_handler);
+  $self->registerHandler(section       => \&section_handler);
+  $self->registerHandler(subsection    => \&section_handler);
+  $self->registerHandler(subsubsection => \&section_handler);
+  $self->registerHandler(paragraph     => \&section_handler);
+  $self->registerHandler(sidebar       => \&section_handler);
 
-  $$self{handlers}{mainpage}      = \&section_handler;
-  $$self{handlers}{document}      = \&section_handler;
-  $$self{handlers}{authorbio}     = \&section_handler;
-  $$self{handlers}{bibliography}  = \&section_handler;
-  $$self{handlers}{index}         = \&section_handler;
-  $$self{handlers}{chapter}       = \&section_handler;
-  $$self{handlers}{section}       = \&section_handler;
-  $$self{handlers}{subsection}    = \&section_handler;
-  $$self{handlers}{subsubsection} = \&section_handler;
-  $$self{handlers}{paragraph}     = \&section_handler;
-  $$self{handlers}{sidebar}       = \&section_handler;
+  $self->registerHandler(table         => \&labelled_handler);
+  $self->registerHandler(figure        => \&labelled_handler);
+  $self->registerHandler(equation      => \&labelled_handler);
+  $self->registerHandler(equationmix   => \&labelled_handler);
+  $self->registerHandler(equationgroup => \&labelled_handler);
 
+  $self->registerHandler(bibitem       => \&bibitem_handler);
+  $self->registerHandler(bibentry      => \&bibentry_handler);
+  $self->registerHandler(indexmark     => \&indexmark_handler);
+  $self->registerHandler(ref           => \&ref_handler);
+  $self->registerHandler(bibref        => \&bibref_handler);
 
-#  elsif($tag =~ /^(para|itemize|enumerate|description|item)$/){ # Unnumbered, but ID'd nodes.
-  $$self{handlers}{table}         = \&labelled_handler;
-  $$self{handlers}{figure}        = \&labelled_handler;
-  $$self{handlers}{equation}      = \&labelled_handler;
-  $$self{handlers}{equationmix}   = \&labelled_handler;
-  $$self{handlers}{equationgroup} = \&labelled_handler;
-  $$self{handlers}{bibitem}       = \&bibitem_handler;
-#  elsif($tag eq 'metadata'){
-  $$self{handlers}{indexmark}     = \&index_handler;
-  $$self{handlers}{ref}           = \&ref_handler;
-  $$self{handlers}{cite}          = \&ref_handler;
-
-#  elsif($tag eq 'declare'){
-#  elsif($tag eq 'mark'){
-#  elsif($tag eq 'origref'){ 
-#  elsif($tag eq 'XMath'){
-#  elsif($tag eq 'graphics'){	# Check if we need a Magnified figure page.
-#  elsif($tag eq 'picture'){	# Check if we need a Magnified figure page.
-
-
+  $self->registerHandler(XMath         => \&XMath_handler);
   $self; }
+
+sub registerHandler {
+  my($self,$tag,$handler)=@_;
+  $$self{handlers}{$tag} = $handler; }
 
 sub process {
   my($self,$doc)=@_;
@@ -83,158 +58,129 @@ sub process {
   $self->Progress("Scanned; DBStatus: ".$$self{db}->status);
   $doc; }
 
-
 sub scan {
   my($self,$doc,$node,$parent_id)=@_;
   my $tag = $node->localname;
   my $handler = $$self{handlers}{$tag} || \&default_handler;
-  my $id = &$handler($self,$doc,$node,$tag,$parent_id);
-  local $::FOO = ($tag eq 'section' ? $id : $::FOO);
+  &$handler($self,$doc,$node,$tag,$parent_id); }
+
+sub scanChildren {
+  my($self,$doc,$node,$parent_id)=@_;
   foreach my $child ($node->childNodes){
     if($child->nodeType == XML_ELEMENT_NODE){
-      $self->scan($doc,$child,$id || $parent_id); }}
-}
+      $self->scan($doc,$child,$parent_id); }}}
 
-
+# Compute a "Fragment ID", ie. an ID based on the given ID,
+# but which is potentially shortened so that it need only be
+# unique within the given page.
 sub inPageID {
   my($self,$doc,$id)=@_;
-  my $baseid = $doc->getDocumentElement->getAttribute('id');
-  my ($relid) = $id =~ /^\Q$baseid\E\.(.*)$/;
-  ($relid || $id); }
+  my $baseid = $doc->getDocumentElement->getAttribute('id') || '';
+  if($baseid eq $id){
+    undef; }
+  elsif($baseid && ($id =~ /^\Q$baseid\E\.(.*)$/)){
+    $1; }
+  elsif($$doc{split_from_id} && ($id =~ /^\Q$$doc{split_from_id}\E\.(.*)$/)){
+    $1; }
+  else {
+    $id; }}
 
 sub default_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  if(my $id = $node->getAttribute('id')){
-    if(my $label = $node->getAttribute('label')){
-      $$self{db}->register("LABEL:$label",id=>$id); }
-    # ($url,$store_page,$add_links) = $self->compute_location($node,$id,$parent);
-    $$self{db}->register("ID:$id",
-			 type=>$tag,
-			 parent=>$parent_id,
-			 url=>$doc->getURL, fragid=>$self->inPageID($doc,$id));
-    $id; }
-}
+  my $id = $node->getAttribute('id');
+  if($id){
+    my $label = $node->getAttribute('label');
+    $$self{db}->register("LABEL:$label",id=>$id) if $label;
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, label=>$label,
+			 url=>$doc->getURL, fragid=>$self->inPageID($doc,$id)); }
+  $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub section_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  if(my $id = $node->getAttribute('id')){
-    if(my $label = $node->getAttribute('label')){
-      $$self{db}->register("LABEL:$label",id=>$id); }
-    # ($url,$store_page,$add_links) = $self->compute_location($node,$id,$parent);
-    my ($title)=$doc->findnodes('ltx:toctitle | ltx:title',$node);
-    my $refnum = $node->getAttribute('refnum');
-    my $titlestring;
-    if($title){
-      $titlestring = (ref $title ? $title->textContent : $title);
-      $titlestring = $refnum.'. '.$titlestring if $refnum;
-      $titlestring = $TYPEPREFIX{$tag}.$titlestring if $TYPEPREFIX{$tag};
-      my ($p,$ps) = ($parent_id);
-      while($p && ($p=$$self{db}->lookup("ID:$p")) && !($ps=$p->getValue('titlestring'))){
-	$p = $p->getValue('parent'); }
-      $titlestring .= ' in '.$ps if $ps; }
-
-    $$self{db}->register("ID:$id",
-			 type=>$tag,
-			 parent=>$parent_id,
+  my $id = $node->getAttribute('id');
+  if($id){
+    my $label = $node->getAttribute('label');
+    $$self{db}->register("LABEL:$label",id=>$id) if $label;
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, label=>$label,
 			 url=>$doc->getURL, fragid=>$self->inPageID($doc,$id),
-			 refnum=>$refnum,
-#		      in_toc=>1, toc_embedded=>($tag eq 'part'),
-#		      stub=>($node->getAttribute('stub')? 1: undef),
-			 title=>$title,
-			 titlestring=>$titlestring);
-    $id; }
-}
+			 refnum=>$node->getAttribute('refnum'),
+			 title=>$doc->findnode('ltx:toctitle | ltx:title',$node),
+			 stub=>$node->getAttribute('stub')); }
+  $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub labelled_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  if(my $id = $node->getAttribute('id')){
-    if(my $label = $node->getAttribute('label')){
-      $$self{db}->register("LABEL:$label",id=>$id); }
-    # ($url,$store_page,$add_links) = $self->compute_location($node,$id,$parent);
-    my $refnum = $node->getAttribute('refnum');
-    my $titlestring;
-    if($refnum){
-      $titlestring = $refnum;
-      $titlestring = $TYPEPREFIX{$tag}.$titlestring if $TYPEPREFIX{$tag};
-      my ($p,$ps) = ($parent_id);
-      while($p && ($p=$$self{db}->lookup("ID:$p")) && !($ps=$p->getValue('titlestring'))){
-	$p = $p->getValue('parent'); }
-      $titlestring .= ' in '.$ps if $ps; }
-
-    $$self{db}->register("ID:$id",
-			 type=>$tag,
-			 parent=>$parent_id,
+  my $id = $node->getAttribute('id');
+  if($id){
+    my $label = $node->getAttribute('label');
+    $$self{db}->register("LABEL:$label",id=>$id) if $label;
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, label=>$label,
 			 url=>$doc->getURL, fragid=>$self->inPageID($doc,$id),
-			 refnum=>$refnum,
-			 titlestring=>$titlestring);
-    $id; }
-}
+			 refnum=>$node->getAttribute('refnum')); }
+  $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub ref_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-#  $$self{db}->register("LABEL:$label",?
-  undef; }
+  if(my $label = $node->getAttribute('labelref')){ # Only record refs of labels
+    my $entry = $$self{db}->register("LABEL:$label");
+    $entry->noteAssociation(referrers=>$parent_id); }}
 
-sub index_handler {}
+sub bibref_handler {
+  my($self,$doc,$node,$tag,$parent_id)=@_;
+  my $keys = $node->getAttribute('bibrefs');
+  foreach my $bibkey (split(',',$keys)){
+    my $entry = $$self{db}->register("BIBLABEL:$bibkey");
+    $entry->noteAssociation(referrers=>$parent_id); }}
 
+# Note that index entries get stored in simple form; just the terms & location.
+# They will be turned into a tree, sorted, possibly permuted, get URL's, whatever,
+# by MakeIndex.
+sub indexmark_handler {
+  my($self,$doc,$node,$tag,$parent_id)=@_;
+  my $key = join(':','INDEX',map($_->getAttribute('key'),$doc->findnodes('ltx:indexphrase',$node)));
+  my $entry = $$self{db}->register($key);
+  $entry->setValues(phrases=>$node) unless $entry->getValue('phrases'); # No dueling
+  if(my $seealso = $node->getAttribute('see_also')){
+print STDERR "Index Seealso: $key => $seealso\n";
+    $entry->noteAssociation(see_also=>$seealso); }
+  else {
+    $entry->noteAssociation(referrers=>$parent_id=>($node->getAttribute('style') || 'normal')); }}
+
+# Note this bit of perversity:
+#  <ltx:bibentry> is a semantic bibliographic entry,
+#     as generated from a BibTeX file.
+#  <ltx:bibitem> is a formatted bibliographic entry,
+#     as generated from an explicit thebibliography environment,
+#     or as formatted from a <ltx:bibentry> by MakeBibliography.
+# For a bibitem, we'll store the usual info in the DB.
 sub bibitem_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  if(my $id = $node->getAttribute('id')){
+  my $id = $node->getAttribute('id');
+  if($id){
     if(my $key = $node->getAttribute('key')){
       $$self{db}->register("BIBLABEL:$key",id=>$id); }
-    # ($url,$store_page,$add_links) = $self->compute_location($node,$id,$parent);
-    my ($title)=$doc->findnodes('ltx:tag',$node);
-    my $titlestring;
-    if($title){
-      $titlestring = (ref $title ? $title->textContent : $title);
-      my ($p,$ps) = ($parent_id);
-      while($p && ($p=$$self{db}->lookup("ID:$p")) && !($ps=$p->getValue('titlestring'))){
-	$p = $p->getValue('parent'); }
-      $titlestring .= ' in '.$ps if $ps; }
-
-    $$self{db}->register("ID:$id",
-			 type=>$tag,
-			 parent=>$parent_id,
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,
 			 url=>$doc->getURL, fragid=>$self->inPageID($doc,$id),
-			 title=>$title,
-			 titlestring=>$titlestring);
-    $id; }
+			 names =>$doc->findnode('ltx:bib-citekeys/ltx:cite-names',$node),
+			 year  =>$doc->findnode('ltx:bib-citekeys/ltx:cite-year',$node),
+			 refnum=>$doc->findnode('ltx:tag',$node),
+			 title=>$doc->findnode('ltx:bib-citekeys/ltx:cite-title',$node)); }
+  $self->scanChildren($doc,$node,$id || $parent_id); }
+
+# For a bibentry, we'll only store the citation key, so we know it's there.
+sub bibentry_handler {
+  my($self,$doc,$node,$tag,$parent_id)=@_;
+  my $id = $node->getAttribute('id');
+  if($id){
+    if(my $key = $node->getAttribute('key')){
+      $$self{db}->register("BIBLABEL:$key",id=>$id); }}
+  $self->scanChildren($doc,$node,$id || $parent_id); }
+
+# Do nothing (particularly, DO NOT note ids/idrefs!)
+# Actually, what I want to do is avoid recursion!!!
+sub XMath_handler {
 }
 
-# ================================================================================
-
-## sub abbreviate {
-##  my($string)=@_;
-##  $string = $string->cloneNode(1)->toString if $string && ref $string;
-##  $string =~ s/ and / &amp; /g if $string;
-##  $XMLParser->parse_xml_chunk($string); }
-
-sub cleanIndexKey {
-  my($key)=@_;
-  $key = $key->toString;
-  $key =~ s/[^a-zA-Z0-9]//g;
-  $key =~ tr|A-Z|a-z|;
-  $key; }
-
-# ================================================================================
-#  if($tag =~ /^(mainpage|document|authorbio)$/){ # Arbitrary top-level documents
-#  elsif($tag =~ /^(bibliography)$/){
-#  elsif($tag =~ /^(chapter|part|section|subsection|subsubsection|paragraph)$/){
-#  elsif($tag eq 'sidebar'){
-#  elsif($tag =~ /^(para|itemize|enumerate|description|item)$/){ # Unnumbered, but ID'd nodes.
-#  elsif($tag =~ /^(table|figure)$/){
-#  elsif($tag =~ /^(equation|equationmix|equationgroup)$/){
-#  elsif($tag eq 'metadata'){
-#  elsif($tag eq 'bibitem'){
-#  elsif($tag eq 'index'           ){
-#  elsif($tag eq 'ref'){
-#  elsif($tag eq 'cite'){
-#  elsif($tag eq 'declare'){
-#  elsif($tag eq 'mark'){
-#  elsif($tag eq 'origref'){ 
-#  elsif($tag eq 'XMath'){
-#  elsif($tag eq 'graphics'){	# Check if we need a Magnified figure page.
-#  elsif($tag eq 'picture'){	# Check if we need a Magnified figure page.
 # ================================================================================
 1;
 

@@ -20,8 +20,13 @@ RequirePackage('LaTeX');
 #**********************************************************************
 DocType("ltx:bibliography","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
 	'#default'=>"http://dlmf.nist.gov/LaTeXML");
-DefEnvironment('{document}',"<ltx:bibliography>#body</ltx:bibliography>",
-		 beforeDigest=> sub { AssignValue(inPreamble=>0); });
+DefMacro('\thedocument@ID','bib');
+DefEnvironment('{document}',
+	       "<ltx:bibliography id='#id'>#body</ltx:bibliography>",
+	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
+	       afterDigestBegin=>sub { 
+		 Let('\thebibliography@ID','\thedocument@ID');
+		 $_[1]->setProperty(id=>Expand(T_CS('\thebibliography@ID'))); });
 
 # Load special functions & other required packages.
 RequirePackage('latexml');

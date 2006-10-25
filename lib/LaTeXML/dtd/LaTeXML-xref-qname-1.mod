@@ -14,9 +14,7 @@
 
 <!ENTITY % LaTeXML.ref.qname       "%LaTeXML.pfx;ref">
 <!ENTITY % LaTeXML.cite.qname      "%LaTeXML.pfx;cite">
-<!ENTITY % LaTeXML.citepre.qname   "%LaTeXML.pfx;citepre">
-<!ENTITY % LaTeXML.citepost.qname  "%LaTeXML.pfx;citepost">
-<!ENTITY % LaTeXML.a.qname         "%LaTeXML.pfx;a">
+<!ENTITY % LaTeXML.bibref.qname    "%LaTeXML.pfx;bibref">
 
 <!ENTITY % LaTeXML-xref.Inline.class 
-	 "| %LaTeXML.ref.qname; | %LaTeXML.cite.qname; | %LaTeXML.a.qname;">
+	 "| %LaTeXML.ref.qname; | %LaTeXML.cite.qname; | %LaTeXML.bibref.qname;">

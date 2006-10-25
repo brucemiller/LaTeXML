@@ -13,11 +13,14 @@
 package LaTeXML::Post;
 use strict;
 use Time::HiRes;
+use LaTeXML::Util::Pathname;
 
 sub new {
   my($class,%options)=@_;
   my $self = bless {%options}, $class; 
   $$self{verbosity} = 0 unless defined $$self{verbosity};
+  $$self{resourceDirectory} = $options{resourceDirectory};
+  $$self{resourcePrefix} = $options{resourcePrefix};
   $self; }
 
 sub getNamespace            { $_[0]->{namespace} || "http://dlmf.nist.gov/LaTeXML"; }
@@ -34,7 +37,8 @@ sub ProcessChain {
     my $t0 = [Time::HiRes::gettimeofday];
     @docs = map($processor->process($_),@docs);
     my $elapsed = Time::HiRes::tv_interval($t0,[Time::HiRes::gettimeofday]);
-    $processor->Progress(sprintf(" %.2f sec",$elapsed));
+    my $mem =  `ps -p $$ -o size=`; chomp($mem);
+    $processor->Progress(sprintf(" %.2f sec; $mem KB",$elapsed));
   }
   @docs; }
 
@@ -55,7 +59,26 @@ sub ProgressDetailed {
   my($self,$msg)=@_;
   print STDERR "".(ref $self).": $msg\n" if $$self{verbosity}>1; }
 
-#**********************************************************************
+#======================================================================
+# Some postprocessors will want to create a bunch of "resource"s,
+# such as generated or transformed image files, or other data files.
+# These should return a pathname, relative to the document's destination,
+# for storing a resource associated with $node.
+# Will use the Post option resourceDirectory
+sub desiredResourcePathname {
+  my($self,$doc,$node,$source,$type)=@_;
+  undef; }
+
+sub generateResourcePathname {
+  my($self,$doc,$node,$source,$type)=@_;
+  my $subdir = $$self{resourceDirectory} || '';
+  my $prefix = $$self{resourcePrefix} || "x";
+  my $counter = join('_', "_max",$subdir,$prefix,"counter_");
+  my $n = $doc->cacheLookup($counter) || 0;
+  my $name = $prefix . ++$n;
+  $doc->cacheStore($counter,$n); 
+  pathname_make(dir=>$subdir, name=>$name, type=>$type); }
+#======================================================================
 
 
 #**********************************************************************
@@ -65,6 +88,7 @@ use XML::LibXML;
 use XML::LibXML::XPathContext;
 use LaTeXML::Util::Pathname;
 use DB_File;
+use Unicode::Normalize;
 
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
 our $XPATH = XML::LibXML::XPathContext->new();
@@ -77,12 +101,13 @@ sub new {
     map($data{$_}=$$class{$_}, keys %$class);
     $class = ref $class; }
   map($data{$_}=$options{$_}, keys %options);
-  if((defined $data{destination}) && (!defined $data{destinationDirectory})){
+  if((defined $options{destination}) && (!defined $options{destinationDirectory})){
     my($vol,$dir,$name)=File::Spec->splitpath($data{destination});
     $data{destinationDirectory} = $dir || '.'; }
   $data{document}=$xmldoc;
   $data{idcache} = undef;
   $data{namespaces}={ltx=>$NSURI} unless $data{namespaces};
+  $data{namespaceURIs}={$NSURI=>'ltx'} unless $data{namespaceURIs};
   bless {%data}, $class; }
 
 sub newFromFile {
@@ -106,11 +131,6 @@ sub newFromSTDIN {
   $options{sourceDirectory} = '.' unless $options{sourceDirectory};
   $class->new(createParser(%options)->parse_string($string),
 	      %options); }
-
-sub newFromNode {
-  my($class,$node,%options)=@_;
-  my $doc = $class->new_document($node);
-  $class->new($doc,%options); }
 
 sub createParser {
   my(%options)=@_;
@@ -140,6 +160,15 @@ sub getDestinationExtension {
   my($self)=@_;
   ($$self{destination} =~ /\.([^\.\/]*)$/ ? $1 : undef); }
 
+sub checkDestination {
+  my($self,$reldest)=@_;
+  my $dest = pathname_concat($self->getDestinationDirectory,$reldest);
+  my $destdir = pathname_directory($dest);
+  pathname_mkdir($destdir)
+      or return $self->Error("Could not create directory $destdir for $reldest: $!"); 
+  $dest; }
+
+#======================================================================
 sub findnodes {
   my($self,$path,$node)=@_;
   $XPATH->findnodes($path,$node || $$self{document}); }
@@ -153,10 +182,14 @@ sub findnode {
 sub addNamespace{
   my($self,$nsuri,$prefix)=@_;
   $$self{namespaces}{$prefix}=$nsuri;
+  $$self{namespaceURIs}{$nsuri}=$prefix;
   $self->getDocumentElement->setNamespace($nsuri,$prefix,0); }
 
+sub getQName {
+  my($self,$node)=@_;
+  $$self{namespaceURIs}{$node->namespaceURI}.":".$node->localname; }
 #======================================================================
-# Add nodes to $node in the document $self.
+# ADD nodes to $node in the document $self.
 # This takes a convenient recursive reprsentation for xml:
 # data = string |  [$tagname, {attr=>value,..}, @children...]
 # The $tagname should have a namespace prefix whose URI has been
@@ -168,15 +201,28 @@ sub addNodes {
     if(ref $child eq 'ARRAY'){
       my($tag,$attributes,@children)=@$child;
       my($prefix,$localname)= $tag =~ /^(.*):(.*)$/;
-      my $nsuri = $$self{namespaces}{$prefix};
+      my $nsuri = $prefix && $$self{namespaces}{$prefix};
       warn "No namespace on $tag" unless $nsuri;
       my $new = $node->addNewChild($nsuri,$localname);
-      $node->appendChild($new);
       if($attributes){
 	foreach my $key (keys %$attributes){
 	  $new->setAttribute($key, $$attributes{$key}) if defined $$attributes{$key}; }}
       $self->addNodes($new,@children); }
     elsif((ref $child) =~ /^XML::LibXML::/){
+      # NOTE: Watch this space for possible namespace mangling.
+#      $node->appendChild($$self{document}->importNode($child));
+#      $node->addChild($$self{document}->importNode($child));
+#      $node->appendChild($$self{document}->adoptNode($child));
+      # This version seems to work, but assumes the $child isn't 
+      # still part of some other document.   BUT that's risky
+#      $node->addChild($child);
+##      my $newchild = $$self{document}->importNode($child);
+##      $node->appendChild($newchild);
+##      $newchild->setNamespace($child->namespaceURI,$child->prefix,1)
+##	if $child->nodeType == XML_ELEMENT_NODE;
+
+##      if(0){
+      # So, we walk through the to-be-added node, copying it's data & children.
       my $type = $child->nodeType;
       if($type == XML_ELEMENT_NODE){
 	my $newnode = $node->addNewChild($child->namespaceURI,$child->localname);
@@ -186,42 +232,59 @@ sub addNodes {
 	$self->addNodes($node,$child->childNodes); }
       elsif($type == XML_TEXT_NODE){
 	$node->appendTextNode($child->textContent); }
+##    }
     }
     elsif(ref $child){
       warn "Dont know how to add $child to $node; ignoring"; }
     elsif(defined $child){
       $node->appendTextNode($child); }}}
 
-sub new_document {
-  my($self,$root)=@_;
-  my $doc = XML::LibXML::Document->new("1.0","UTF-8");
+sub newDocument {
+  my($self,$root,%options)=@_;
+  my $xmldoc = XML::LibXML::Document->new("1.0","UTF-8");
   my($public_id,$system_id);
   if(my $dtd = $$self{document}->internalSubset){
     if($dtd->toString
        =~ /^<!DOCTYPE\s+(\w+)\s+PUBLIC\s+(\"|\')([^\2]*)\2\s+(\"|\')([^\4]*)\4>$/){
       ($public_id,$system_id)=($3,$5); }}
+  my $parent_id;
   if(ref $root eq 'ARRAY'){
     my($tag,$attributes,@children)=@$root;
     my($prefix,$localname)= $tag =~ /^(.*):(.*)$/;
-    $doc->createInternalSubset($localname,$public_id,$system_id) if $public_id;
+    $xmldoc->createInternalSubset($localname,$public_id,$system_id) if $public_id;
     my $nsuri = $$self{namespaces}{$prefix};
-    my $node = $doc->createElementNS($nsuri,$localname);
-    $doc->setDocumentElement($node);
+    my $node = $xmldoc->createElementNS($nsuri,$localname);
+    $xmldoc->setDocumentElement($node);
     map( $node->setAttribute($_=>$$attributes{$_}),keys %$attributes) if $attributes;
     $self->addNodes($node,@children); }
   elsif(ref $root eq 'XML::LibXML::Element'){
+    $parent_id = $self->findnode('ancestor::*[@id]',$root);
+    $parent_id = $parent_id->getAttribute('id') if $parent_id;
     my $localname = $root->localname;
-    $doc->createInternalSubset($localname,$public_id,$system_id) if $public_id;
-    my $node = $doc->createElementNS($root->namespaceURI,$localname);
-    $doc->setDocumentElement($node);
-    copy_attributes($node,$root);
-    $self->addNodes($node,$root->childNodes); }
+    $xmldoc->createInternalSubset($localname,$public_id,$system_id) if $public_id;
+    # Make a copy of $root be the new element node, carefully w.r.t. namespaces.
+    # Seems that only importNode (not adopt) works correctly,
+    # PROVIDED we also set the namespace.
+    my $node = $xmldoc->importNode($root);
+    $xmldoc->setDocumentElement($node); 
+    $xmldoc->documentElement->setNamespace($root->namespaceURI,$root->prefix,1); }
   else {
     die "Dont know how to use $root as document element"; }
-# With some trepidation, I'm leaving this off.
-# All the xml utilities on the web end give problems finding a way to install
-# a catalog for the DTD's!!!
-#  $doc->createInternalSubset($doc->documentElement->nodeName,$PUBLICID,$SYSTEMID);
+
+  my $root_id = $self->getDocumentElement->getAttribute('id');
+  my $doc = $self->new($xmldoc,
+		       ($parent_id ? (parent_id=>$parent_id) : ()),
+		       ($root_id   ? (split_from_id=>$root_id) : ()),
+		       %options); 
+
+  # Copy any processing instructions.
+  foreach my $pi ($self->findnodes(".//processing-instruction('latexml')")){
+    $doc->getDocument->appendChild($pi->cloneNode); }
+  # If new document has no date, but $self's document has some, copy them.
+  if(!$doc->findnodes('ltx:date',$doc->getDocumentElement)){
+    if(my @dates = $self->findnodes('ltx:date',$self->getDocumentElement)){
+      $doc->addNodes($doc->getDocumentElement,@dates); }}
+  # Finally, return the new document.
   $doc; }
 
 sub copy_attributes {
@@ -236,6 +299,58 @@ sub copy_attributes {
     elsif($type == XML_NAMESPACE_DECL){}
     else {
       warn "Dont know how to add $child to $newnode; ignoring"; }}}
+
+#======================================================================
+# Given a list of nodes (or node constructors [tag,attr,content...])
+# conjoin given a conjunction like ',' or a pair like [',', ' and ']
+sub conjoin {
+  my($self,$conjunction,@nodes)=@_;
+  my ($comma,$and) = ($conjunction,$conjunction);
+  ($comma,$and)=@$conjunction if ref $conjunction;
+  my $n = scalar(@nodes);
+  if($n < 2){ return @nodes; }
+  else {
+    my @foo=();
+    push(@foo,shift(@nodes));
+    while($nodes[1]){
+      push(@foo, $comma,shift(@nodes)); }
+    push(@foo,$and,shift(@nodes)); 
+    @foo; }}
+
+# Find the initial letter in a string, or *.
+# Uses unicode decomposition to reduce accented characters to A-Z
+# If $force is true, skips any non-letter initials
+sub initial {
+  my($self,$string,$force)=@_;
+  $string = NFD($string);	# Decompose accents, etc.
+  $string =~ s/^[^a-zA-Z]*// if $force;
+  ($string =~/^([a-zA-Z])/ ? uc($1) : '*'); }
+
+sub trimChildNodes {
+  my($self,$node)=@_;
+  if(!$node){ (); }
+  elsif(!ref $node){ ($node); }
+  elsif(my @children = $node->childNodes){
+    if($children[0]->nodeType == XML_TEXT_NODE){
+      my $s = $children[0]->data;
+      $s =~ s/^\s+//;
+      $children[0]->setData($s); }
+    if($children[-1]->nodeType == XML_TEXT_NODE){
+      my $s = $children[-1]->data;
+      $s =~ s/\s+$//;
+      $children[-1]->setData($s); }
+    @children; }
+  else { (); }}
+    
+#======================================================================
+
+sub addNavigation {
+  my($self,$direction,$id)=@_;
+  my $ref = ['ltx:ref',{class=>$direction,show=>'typerefnum. title',idref=>$id}];
+  if(my $nav = $self->findnode('//ltx:navigation')){
+    $self->addNodes($nav,$ref); }
+  else {
+    $self->addNodes($self->getDocumentElement, ['ltx:navigation',{},$ref]);}}
 
 #======================================================================
 # Support for ID's
@@ -288,16 +403,18 @@ sub cacheLookup {
 sub cacheStore {
   my($self,$key,$value)=@_;
   $self->openCache;
-  $$self{cache}{$key} = $value; }
+  if(defined $value){
+    $$self{cache}{$key} = $value; }
+  else {
+    delete $$self{cache}{$key}; }}
 
 sub openCache {
   my($self)=@_;
   if(!$$self{cache}){
     $$self{cache}={};
-    my $dbfile = pathname_make(dir=>$self->getDestinationDirectory,
-			       name=>'LaTeXML', type=>'cache');
+    my $dbfile = $self->checkDestination("LaTeXML.cache");
     tie %{$$self{cache}}, 'DB_File', $dbfile,  O_RDWR|O_CREAT
-      or return $self->Error("Couldn't create DB cache for ".$self->getSource.": $!");
+      or return $self->Error("Couldn't create DB cache for ".$self->getDestination.": $!");
   }}
 
 sub closeCache {

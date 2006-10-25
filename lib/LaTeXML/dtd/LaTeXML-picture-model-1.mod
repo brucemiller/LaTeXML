@@ -27,7 +27,11 @@
 	  %LaTeXML.Picture.attrib; 
           clip (yes|no) 'no'
           baseline CDATA #IMPLIED 
-          tex CDATA #IMPLIED>
+	  unitlength CDATA #IMPLIED
+	  xunitlength CDATA #IMPLIED
+	  yunitlength CDATA #IMPLIED
+          tex CDATA #IMPLIED
+	  content-tex CDATA #IMPLIED>
 
 <!ELEMENT %LaTeXML.g.qname;       (%LaTeXML.Picture.class;)*>
 <!ATTLIST %LaTeXML.g.qname;       %LaTeXML.Common.attrib; %LaTeXML.Picture.attrib; %LaTeXML.PictureGroup.attrib; >

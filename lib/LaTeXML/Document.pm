@@ -370,9 +370,13 @@ sub XXfloatToAttribute {
 
 sub precedingNodes {
   my($node)=@_;
+  my @nodes = ();
+  # Check the current element FIRST, then build list of candidates.
+  my $first = $node;
+  $first = $first->parentNode if $first->getType == XML_TEXT_NODE;
+  push(@nodes,$first) unless $first->getType == XML_DOCUMENT_NODE;
   $node = $node->lastChild if $node->hasChildNodes;
   my $n;
-  my @nodes = ();
   while($node && ($node->nodeType != XML_DOCUMENT_NODE)){
     push(@nodes,$node);
     while($n = $node->previousSibling){

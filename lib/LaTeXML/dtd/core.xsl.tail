@@ -279,8 +279,11 @@
   <xsl:element name="a">
     <xsl:attribute name="href">
       <xsl:choose>
+	<xsl:when test="../@fragid"><xsl:value-of select="concat('#',../@fragid)"/></xsl:when>
+<!--
 	<xsl:when test="../@label"><xsl:value-of select="concat('#',../@label)"/></xsl:when>
 	<xsl:otherwise><xsl:value-of select="concat('#',generate-id(..))"/></xsl:otherwise>
+-->
       </xsl:choose>
     </xsl:attribute>
     <xsl:if test="../@refnum">
@@ -346,18 +349,8 @@
       Refnums and such
       ====================================================================== -->
 
-<!--
-<xsl:template match="ltx:ref[text()] | ltx:qref[text()]">
-  <a href="{@href}" class="refnum" title="{@title}"><xsl:apply-templates/></a>
-</xsl:template>
-
-<xsl:template match="ltx:ref | ltx:qref">
-  <a href="{@href}" class="refnum" title="{@title}"><xsl:value-of select="@labelref"/></a>
-</xsl:template>
--->
-
-<xsl:template match="ltx:ref | ltx:qref">
-  <a href="{@href}" class="refnum" title="{@title}"><xsl:apply-templates/></a>
+<xsl:template match="ltx:ref">
+  <a href="{@href}" title="{@title}"><xsl:apply-templates/></a>
 </xsl:template>
 
 <!-- ======================================================================
@@ -377,6 +370,14 @@
 <!-- ======================================================================
      Block Elements
      ====================================================================== -->
+
+<xsl:template match="ltx:para">
+  <div class="para">
+    <xsl:call-template name="add_id"/>
+    <xsl:apply-templates/>
+  </div>
+</xsl:template>
+
 
 <xsl:template match="ltx:p">
   <p><xsl:apply-templates/></p>
@@ -538,11 +539,13 @@
 </xsl:template>
 
 <xsl:template match="ltx:item" mode="description">
-  <dt><xsl:value-of select="@tag"/><xsl:apply-templates select="ltx:tag/node()"/></dt>
-  <dd><xsl:apply-templates/></dd>
+  <dt><xsl:apply-templates select="ltx:tag"/></dt>
+  <dd><xsl:apply-templates select="not(ltx:tag)"/></dd>
 </xsl:template>
 
-<!-- <xsl:template match="ltx:tag"/>-->
+<xsl:template match="ltx:tag">
+  <xsl:value-of select="@open"/><xsl:apply-templates/><xsl:value-of select="@close"/>	      
+</xsl:template>
 <!-- ======================================================================
      Inline Elements
      ====================================================================== -->
@@ -622,40 +625,6 @@
   <span class="citation"><xsl:apply-templates/></span>
 </xsl:template>
 
-<!--
-<xsl:template match="ltx:cite[@style='intext']">
-  <xsl:apply-templates select="citepre"/>
-  <xsl:call-template name="cite-label">
-    <xsl:with-param name="bibkey" select="@ref"/>
-  </xsl:call-template>
-  <xsl:apply-templates select="citepost"/>
-</xsl:template>
-
-<xsl:template match="ltx:cite">
-  (<xsl:apply-templates select="citepre"/>
-  <xsl:call-template name="cite-label">
-    <xsl:with-param name="bibkey" select="@ref"/>
-  </xsl:call-template>
-   <xsl:apply-templates select="citepost"/>)</xsl:template>
-
-<xsl:template name="cite-label">
-  <xsl:param name="bibkey"/>
-  <a href="{concat('#',$bibkey)}" class="citation">
-    <xsl:value-of select="//ltx:bibitem[@key=$bibkey]/ltx:biblabel"/> 
-  </a>
-</xsl:template>
-
-<xsl:template match="ltx:bibref">
-  <a href="{@href}"><xsl:apply-templates/></a>
-</xsl:template>
-
-<xsl:template match="ltx:citepre[../@style='intext'] | citepost[../@style='intext']"
-  >(<xsl:apply-templates/>)</xsl:template>
-
-<xsl:template match="ltx:citepre"><xsl:apply-templates/><xsl:text> </xsl:text></xsl:template>
-
-<xsl:template match="ltx:citepost">; <xsl:apply-templates/></xsl:template>
--->
 <!-- ======================================================================
      The Index
      ====================================================================== -->
@@ -676,7 +645,7 @@
 </xsl:template>
 
 <xsl:template match="ltx:indexrefs">
-  <xsl:text> </xsl:text><xsl:apply-templates/>
+  <xsl:apply-templates/>
 </xsl:template>
 
 <xsl:template match="ltx:indexlist">

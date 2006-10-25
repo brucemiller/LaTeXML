@@ -14,7 +14,26 @@ package LaTeXML::Post::CrossRef;
 use strict;
 use LaTeXML::Util::Pathname;
 use XML::LibXML;
+use charnames qw(:full);
 use base qw(LaTeXML::Post);
+
+our $PILCROW = "\N{PILCROW SIGN}";
+our $SECTION = "\N{SECTION SIGN}";
+our %TYPEPREFIX = 
+  (equation     =>'Eq.',
+   equationmix  =>'Eq.',
+   equationgroup=>'Eq.',
+   figure       =>'Fig.',
+   table        =>'Tab.',
+   chapter      =>'Ch.',
+   part         =>'Pt.',
+   section      =>$SECTION,
+   subsection   =>$SECTION,
+   subsubsection=>$SECTION,
+   paragraph    =>$PILCROW,
+   subparagraph =>$PILCROW,
+   para         =>'p'
+ );
 
 sub new {
   my($class,%options)=@_;
@@ -25,120 +44,220 @@ sub new {
 sub process {
   my($self,$doc)=@_;
   my $root = $doc->getDocumentElement;
-  $self->fill_in_cites($doc);
+  local %LaTeXML::Post::CrossRef::MISSING=();
+  $self->fill_in_frags($doc);
   $self->fill_in_refs($doc);
+  $self->fill_in_bibrefs($doc);
+  if(($$self{verbosity} > 0) && (keys %LaTeXML::Post::CrossRef::MISSING)){
+    my @msgs=();
+    foreach my $type (sort keys %LaTeXML::Post::CrossRef::MISSING){
+      push(@msgs,$type.": ".join(', ',sort keys %{$LaTeXML::Post::CrossRef::MISSING{$type}}));}
+    $self->Progress("Missing keys\n".join(";\n",@msgs)); }
   $doc; }
 
-# Fill in content text for any <ref..>'s; Section name
-# Mostly should apply to cite, as well?
-# In fact, probably should apply to all @idref's
-# EXCEPT XMRef!!!!
+sub note_missing {
+  my($self,$type,$key)=@_;
+  $LaTeXML::Post::CrossRef::MISSING{$type}{$key}++; }
+
+sub fill_in_frags {
+  my($self,$doc)=@_;
+  my $db = $$self{db};
+  # Any nodes with an ID will get a fragid;
+  # This is the id/name that will be used within xhtml/html.
+  foreach my $node ($doc->findnodes('//@id')){
+    if(my $entry = $db->lookup("ID:".$node->value)){
+      if(my $fragid = $entry->getValue('fragid')){
+	$node->parentNode->setAttribute(fragid=>$fragid); }}}}
+
+# Fill in content text for any <... @idref..>'s or @labelref
 sub fill_in_refs {
   my($self,$doc)=@_;
   my $db = $$self{db};
-  my $baseurl = pathname_directory($doc->getURL);
   print STDERR "Filling in refs\n" if $$self{verbosity}>1;
-  foreach my $ref ($doc->findnodes('descendant::ltx:ref')){
+  foreach my $ref ($doc->findnodes('descendant::*[@idref or @labelref]')){
+    next if $ref->localname eq 'XMRef';
     my $id = $ref->getAttribute('idref');
+    my $show = $ref->getAttribute('show');
     if(!$id){
       if(my $label = $ref->getAttribute('labelref')){
 	if(my $entry = $db->lookup("LABEL:$label")){
-	  $id = $entry->getValue('id'); }}}
+	  $show = 'refnum' unless $show;
+	  $id = $entry->getValue('id'); }
+	else {
+	  $self->note_missing('Label',$label); }}}
     if($id){
-      if(my $object = $db->lookup("ID:".$id)){
-	my $url    = $object->getValue('url');
-	my $fragid = $object->getValue('fragid');
-	$url = pathname_relative('/'.$url,'/'.$baseurl) if $url && $baseurl;
-	$url .= '#'.$fragid if $url && $fragid;
-	$ref->setAttribute(href=>$url) if $url;
-	if(my $titlestring = $object->getValue('titlestring')){
-	  $ref->setAttribute(title=>$titlestring); }
-	if(!$ref->textContent){
-	  my $title = $object->getValue('title');
-	  $doc->addNodes($ref,(ref $title ? $title->childNodes : $title)); }
-      }}}}
+      if(!$ref->getAttribute('href')){
+	if(my $url = $self->generateURL($doc,$id)){
+	  $ref->setAttribute(href=>$url); }}
+      if(!$ref->getAttribute('title')){
+	if(my $titlestring = $self->generateTitle($id)){
+	  $ref->setAttribute(title=>$titlestring); }}
+      if(!$ref->textContent){
+	$doc->addNodes($ref,$self->generateRef($doc,$id,$show || 'typerefnum')); }
+      if(my $entry = $$self{db}->lookup("ID:$id")){
+	$ref->setAttribute(stub=>1) if $entry->getValue('stub'); }
+    }}}
+
 
 # Needs to evolve into the combined stuff that we had in DLMF.
-# (eg. concise author/year combinations for multiple cites)
-sub fill_in_cites {
+# (eg. concise author/year combinations for multiple bibrefs)
+sub fill_in_bibrefs {
   my($self,$doc)=@_;
+  print STDERR "Filling in bibrefs\n" if $$self{verbosity}>1;
   my $db = $$self{db};
-  my $baseurl = pathname_directory($doc->getURL);
-  print STDERR "Filling in cites\n" if $$self{verbosity}>1;
-  foreach my $cite ($doc->findnodes('descendant::ltx:cite')){
-    my $style  = $cite->getAttribute('style') || '';
-    my $show   = $cite->getAttribute('show');
-    my $pre    = $doc->findnode('ltx:citepre',$cite);
-    my $post   = $doc->findnode('ltx:citepost',$cite);
-    my @cites  = ();
-    foreach my $key (split(/,/,$cite->getAttribute('ref'))){
-      my $entry = $db->lookup("BIBLABEL:$key");
-      if(my $id = $entry->getValue('id')){
-	my $object = $db->lookup("ID:$id");
-	my $url    = $object->getValue('url');
-	my $fragid = $object->getValue('fragid');
-	my $titlestring = $object->getValue('titlestring');
-	$url = pathname_relative('/'.$url,'/'.$baseurl) if $url && $baseurl;
-	$url .= '#'.$fragid if $url && $fragid;
-	my $title = $object->getValue('title');
-	push(@cites,
-	     ['ltx:ref',{ idref=>$id,
-			  ($url         ? (href=>$url):()),
-			  ($titlestring ? (title=>$titlestring):()) },
-	      (ref $title ? $title->childNodes : $title)]); }
-      map($cite->removeChild($_),$cite->childNodes);
-      $doc->addNodes($cite,
-		     ($style ne 'intext' ? ('('):()),
-		     ($pre  && $style eq 'intext' ? ('(',$pre, ')') : ($pre)),
-		     @cites,
-		     ($post && $style eq 'intext' ? ('(',$post,')') : ($post)),
-		     ($style ne 'intext' ? (')'):())); }}}
+  foreach my $bibref ($doc->findnodes('descendant::ltx:bibref')){
+    my $show   = $bibref->getAttribute('show');
+    # Messy, since we're REPLACING the bibref with it's expansion.
+    my @save = ();
+    my ($p,$s) = ($bibref->parentNode, undef);
+    while(($s = $p->lastChild) && ($$s != $$bibref)){ # Remove & Save following siblings.
+      unshift(@save,$p->removeChild($s)); }
+    $p->removeChild($bibref);
+    $doc->addNodes($p,$self->make_bibcite($doc,$show,split(/,/,$bibref->getAttribute('bibrefs'))));
+    map($p->appendChild($_),@save); # Put these back.
+ }}
 
-# NOTE: THis needs to be adapted from XDLMF,
-# but the functionality is desirable.
-# Given a list of bibitem targets, construct links to them.
+# Given a list of bibkeys, construct links to them.
+# Mostly tuned to author-year style.
 # Combines when multiple bibitems share the same authors.
+
+# WORK OUT the fallback when BibTeX wasn't used...
+# IE. explicit thebibliography
 sub make_bibcite {
-  my($show,$format,@bibtargets)=@_;
-  if(($show||'all') eq 'all'){ # Combine same authors
-##    if(@bibtargets > 1){
-##      print STDERR "Joining ".join(', ',map($_->key,@bibtargets))."\n"; }
+  my($self,$doc, $show,@keys)=@_;
+    my @data = ();
+    foreach my $key (@keys){
+      if(my $bentry = $$self{db}->lookup("BIBLABEL:$key")){
+	if(my $id = $bentry->getValue('id')){
+	  if(my $entry = $$self{db}->lookup("ID:$id")){
+	    my $names = $entry->getValue('names');
+	    my $year  = $entry->getValue('year');
+	    my $title = $entry->getValue('title');
+	    my $refnum= $entry->getValue('refnum'); # This come's from the \bibitem, w/o BibTeX
+	    $show = 'refnum' unless $names;	    # Disable author-year format!
+	    push(@data,{names    =>[$doc->trimChildNodes($names)],
+			namestext=>($names ? $names->textContent :''),
+			year     =>[$doc->trimChildNodes($year)],
+			refnum   =>[$doc->trimChildNodes($refnum)],
+			title    =>[$doc->trimChildNodes($title)],
+			attr=>{idref=>$id,
+			       href=>$self->generateURL($doc,$id),
+			       ($title ? (title=>$title->textContent):())}}); }}}
+      else {
+	$self->note_missing('Citation',$key); }}
+  if(!$show){			# Default is like author(year), but combine same authors
     my @stuff=();
-    while(@bibtargets){
+    while(@data){
       push(@stuff,', ') if @stuff;
-      my $target = shift(@bibtargets);
-      my $authors = $target->get_xml_value('names');
-      my $authtxt = $authors && $authors->textContent;
+      my $datum = shift(@data);
       my @group = ();
-      my $a;
-      while($authtxt && @bibtargets
-	    && ($a = $bibtargets[0]->get_xml_value('names'))
-	    && ($authtxt eq $a->textContent)){
-	push(@group,shift(@bibtargets)); }
+      while($$datum{namestext} && @data
+	    && ($$datum{namestext} eq $data[0]->{namestext})){
+	push(@group,shift(@data)); }
       if(@group){
-	push(@stuff,content_nodes($authors),'(',
-	    ['bibref',{bibref=>$target->key,
-		       title=>stringify($target->make_ref(format=>'long'))},
-	     content_nodes($target->get_xml_value('year'))]);
+	push(@stuff,@{$$datum{names}},
+	     '(',['ltx:ref',$$datum{attr}, @{$$datum{year}}]);
 	foreach my $next (@group){
-	  push(@stuff,', ',
-	       ['bibref',{bibref=>$next->key,
-			  title=>stringify($next->make_ref(format=>'long'))},
-		content_nodes($next->get_xml_value('year'))]); }
+	  push(@stuff,', ', ['ltx:ref',$$next{attr}, @{$$next{year}}]); }
 	push(@stuff,')'); }
       else {
-	push(@stuff,['bibref',{bibref=>$target->key,
-			       title=>stringify($target->make_ref(format=>'long'))},
-		     content_nodes($authors),'(',
-		     content_nodes($target->get_xml_value('year')),')']); }}
+	push(@stuff,
+	     ['ltx:ref',$$datum{attr}, @{$$datum{names}},'(', @{$$datum{year}},')']); }}
     @stuff; }
   else {
-    conjoin(', ',
-	    map(['bibref',{bibref=>$_->key,
-			   title=>stringify($_->make_ref(format=>'long'))},
-		 $_->make_ref(show=>$show,format=>$format)],
-		@bibtargets)); }}
+    my @refs=();
+    my $saveshow = $show;
+    foreach my $datum (@data){
+      my @stuff=();
+      while($show){
+	if(($show =~ s/^author//) || ($show =~ s/^names//)){
+	  push(@stuff,@{$$datum{names}}); }
+	elsif(($show =~ s/^year//) || ($show =~ s/^date//)){
+	  push(@stuff,@{$$datum{year}}); }
+	elsif($show =~ s/^title//){
+	  push(@stuff,@{$$datum{title}}); }
+	elsif($show =~ s/^refnum//){
+	  push(@stuff,@{$$datum{refnum}}); }
+	elsif($show =~ s/^(.)//){
+	  push(@stuff, $1); }}
+      push(@refs,['ltx:ref',$$datum{attr},@stuff]); 
+      $show=$saveshow; }
+    $doc->conjoin(', ',@refs); }}
 
+sub generateURL {
+  my($self,$doc,$id)=@_;
+  if(my $object = $$self{db}->lookup("ID:".$id)){
+    my $url    = $object->getValue('url');
+    my $docurl = $doc->getURL;
+    my $relurl = pathname_relative('/'.$url,  '/'.pathname_directory($docurl)) if $url;
+    $relurl .= '/' if ($url ne '.') && ($url =~ /\/$/);
+    if(my $fragid = $object->getValue('fragid')){
+      $relurl = '' if ($relurl eq '.') or ($url eq $docurl);
+      $relurl .= '#'.$fragid; }
+    $relurl; }
+  else {
+    $self->note_missing('ID',$id); }}
+
+# Generate the contents of a <ltx:ref> of the given id.
+# show is a string containing substrings 'type', 'refnum' and 'title'
+# (standing for the type prefix, refnum and title of the id'd object)
+# and any other random characters; the
+# Temporarily, normal and all are also accepted as formats.
+sub generateRef {
+  my($self,$doc,$id,$show)=@_;
+  my $saveshow = $show;
+  while(my $entry = $id && $$self{db}->lookup("ID:$id")){
+    my $OK=0;
+    my @stuff=();
+    while($show){
+      if($show =~ s/^typerefnum(\.?\s*)//){
+	my @rest = ($1 ? ($1):());
+	if(my $refnum = $entry->getValue('refnum')){
+	  my $type   = $entry->getValue('type');
+	  $OK = 1;
+	  push(@stuff, ['ltx:span',{class=>'refnum'},
+			($type && $TYPEPREFIX{$type} ? ($TYPEPREFIX{$type}) :()),
+			$doc->trimChildNodes($refnum)],
+	       @rest); }}
+      elsif($show =~ s/^type(\.?\s*)//){
+	my @rest = ($1 ? ($1):());
+	my $type   = $entry->getValue('type');
+	if($type && $TYPEPREFIX{$type}){
+	  $OK = 1;
+	  push(@stuff, $TYPEPREFIX{$type},@rest); }}
+      elsif($show =~ s/^refnum(\.?\s*)//){
+	my @rest = ($1 ? ($1):());
+	if(my $refnum = $entry->getValue('refnum')){
+	  $OK = 1;
+	  push(@stuff, ['ltx:span',{class=>'refnum'},$doc->trimChildNodes($refnum)],
+	       @rest); }}
+      elsif($show =~ s/^title//){
+	if(my $title = $entry->getValue('title')){
+	  $OK = 1;
+	  push(@stuff, ['ltx:span',{class=>'title'},$doc->trimChildNodes($title)]); }}
+      elsif($show =~ s/^(.)//){
+	push(@stuff, $1); }}
+    return @stuff if $OK;
+    $show = $saveshow; 
+    $id = $entry->getValue('parent'); }
+  (); }
+
+
+sub generateTitle {
+  my($self,$id)=@_;
+  # Add author, if any ???
+  my $string = "";
+  while(my $entry = $id && $$self{db}->lookup("ID:$id")){
+    my $title  = $entry->getValue('title');
+    my $refnum = $entry->getValue('refnum');
+    if($title || $refnum){
+      $string .= ' in ' if $string;
+      my $type   = $entry->getValue('type');
+      $string .= $TYPEPREFIX{$type} if $TYPEPREFIX{$type};
+      $string .= (ref $refnum ? $refnum->textContent : $refnum) if $refnum;
+      $string .= ($refnum ? '. ':'').(ref $title ? $title->textContent : $title) if $title; }
+    $id = $entry->getValue('parent'); }
+  $string; }
 
 # ================================================================================
 1;

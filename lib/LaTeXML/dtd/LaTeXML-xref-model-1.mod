@@ -17,25 +17,17 @@
 	  %LaTeXML.Common.attrib; 
 	  %LaTeXML.IDREF.attrib; 
           labelref CDATA #IMPLIED
+          show     CDATA #IMPLIED
 	  href     CDATA #IMPLIED
 	  title    CDATA #IMPLIED>
 
-<!ELEMENT %LaTeXML.cite.qname; ((%LaTeXML.citepre.qname;)?, (%LaTeXML.citepost.qname;)?)>
+<!ELEMENT %LaTeXML.cite.qname; %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.cite.qname;
-	  %LaTeXML.Common.attrib; 
-          ref CDATA #IMPLIED
-          style (intext|parenthetic) #IMPLIED
-          show CDATA #IMPLIED
-	  href     CDATA #IMPLIED
-	  title    CDATA #IMPLIED>
+	  %LaTeXML.Common.attrib;>
 
-<!ELEMENT %LaTeXML.citepre.qname; %LaTeXML.Inline.model;>
-<!ATTLIST %LaTeXML.citepre.qname; %LaTeXML.Common.attrib;>
-
-<!ELEMENT %LaTeXML.citepost.qname; %LaTeXML.Inline.model;>
-<!ATTLIST %LaTeXML.citepost.qname; %LaTeXML.Common.attrib;>
-     
-<!ELEMENT %LaTeXML.a.qname;  %LaTeXML.Inline.model;>
-<!ATTLIST %LaTeXML.a.qname;
+<!ELEMENT %LaTeXML.bibref.qname;  %LaTeXML.Inline.model;>
+<!ATTLIST %LaTeXML.bibref.qname;
 	  %LaTeXML.Common.attrib; 
-          href CDATA #REQUIRED>
+	  %LaTeXML.IDREF.attrib; 
+          bibrefs  CDATA #IMPLIED
+          show     CDATA #IMPLIED>

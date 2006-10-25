@@ -39,7 +39,7 @@
 <!ATTLIST %LaTeXML.tfoot.qname; %LaTeXML.Common.attrib;>
 
 <!ELEMENT %LaTeXML.tbody.qname; (%LaTeXML.tr.qname;)*>
-<!ATTLIST tbody %LaTeXML.Common.attrib;>
+<!ATTLIST %LaTeXML.tbody.qname; %LaTeXML.Common.attrib;>
 
 <!ELEMENT %LaTeXML.tr.qname; (%LaTeXML.td.qname; | %LaTeXML.td-between.qname;)*>
 <!ATTLIST %LaTeXML.tr.qname;

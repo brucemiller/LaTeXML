@@ -22,7 +22,7 @@ no warnings 'redefine';
 DefMacro('\lxDocumentID{}','\def\thedocument@ID{#1}');
 
 # From latexml.sty
-DefConstructor('\URL[] Semiverbatim',"<ltx:a href='#2'>?#1(#1)(#2)</ltx:a>");
+DefConstructor('\URL[] Semiverbatim',"<ltx:ref href='#2'>?#1(#1)(#2)</ltx:ref>");
 DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
 DefMacro('\SGML',    '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
 DefMacro('\HTML',    '\URL[\texttt{HTML}]{http://www.w3.org/HTML/}');

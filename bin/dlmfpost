@@ -2,74 +2,510 @@
 use strict;
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
-use LaTeXML::Post;
-use LaTeXML::Post::Scan;
-use LaTeXML::Post::MathML;
-use LaTeXML::Post::PictureImages;
-use LaTeXML::Post::Writer;
 use Carp;
 use Getopt::Long;
+use Pod::Usage;
 
-my $verbosity=1;
+use LaTeXML::Post;
+use LaTeXML::Util::Pathname;
+use LaTeXML::Util::ObjectDB;
+use LaTeXML::Post::MakeIndex;
+use LaTeXML::Post::MakeBibliography;
+use LaTeXML::Post::PictureImages;
+# use LaTeXML::Post::SVG;
+#use LaTeXML::Post::PurgeXMath;;
+use LaTeXML::Post::MathML;
+my($scan,$prescan,$dbfile)=(1,undef,undef);
+my @bibliographies=();
+my($sourcedir,$destination,$basedir)=(undef,undef,undef);
+my $verbosity=0;
 my $validate=1;
 my $help=0;
-my ($demo,$master)=(0,0);
-GetOptions("verbose+"     =>\$verbosity,
-	   "demo+"        =>\$demo,
-	   "master",       =>\$master,
-	   "help|?"       =>\$help,
-	  ) or warn("Wah!");
+
+GetOptions("verbose+"          =>\$verbosity,
+	   "prescan!"          =>\$prescan,
+	   "scan!"             =>\$scan,
+	   "dbfile=s"          =>\$dbfile,
+	   "sourcedirectory=s" =>\$sourcedir,
+	   "destination=s"     =>\$destination,
+	   "basedir=s"         =>\$basedir,
+	   "bibliography=s"    =>\@bibliographies,
+	   "validate!"         =>\$validate,
+	   "help|?"            =>\$help,
+	  ) or pod2usage(-message =>"dlmfpost", -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>"dlmfpost", -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+
+# Get the requested XML file
+Error("Missing input xmlfile") unless @ARGV;
+my $xmlfile = shift(@ARGV);
+if($xmlfile ne '-'){
+    $xmlfile .= '.xml' unless -f $xmlfile;
+    Error("No input file \"$xmlfile\" found") unless -f $xmlfile; }
 
 BEGIN { $SIG{__DIE__} = \&confess; }
 
 #**********************************************************************
 my $DLMFBASE = "$ENV{HOME}/dlmf";
-my $SITEBASE = ($demo
-		? "/local/www/site/htdocs/DigitalMathLib/LaTeXML/dlmf"
-		: ($master
-		   ? "/local/dlmf/web"
-		   : "/local/www/site/htdocs/DigitalMathLib/xdlmf"));
-
 
 $ENV{TEXINPUTS}="$DLMFBASE/styles/DLMFtex::";
 #**********************************************************************
 binmode(STDERR,":utf8");
 our %OPTIONS = (verbosity=>$verbosity||0);
 
-my @processors=(LaTeXML::Post::Scan->new(%OPTIONS),
-		DLMFMathImages->new(%OPTIONS),
-		DLMFGraphics->new(%OPTIONS),
-		DLMFGallery->new(%OPTIONS),
-		LaTeXML::Post::MathML::Presentation->new(%OPTIONS),
-		LaTeXML::Post::PictureImages->new(%OPTIONS),
-		DLMFMath->new(%OPTIONS),
-		DLMFMagPictures->new(magnification => 1.5 * 1.75,%OPTIONS),
-#		DLMFAugment->new()
-		LaTeXML::Post::Writer->new(%OPTIONS),
-);
+if(defined $dbfile && !-f $dbfile){
+  pathname_mkdir(pathname_directory($dbfile)); }
+my $DB = LaTeXML::Util::ObjectDB->new(dbfile=>$dbfile,%OPTIONS);
 
-my $post = LaTeXML::Post->new();
+my $scanner = DLMFScan->new(db=>$DB,%OPTIONS);
 
-foreach my $doc (@ARGV){
-  $doc =~ s/\.xml$//;
-  my($subdir,$name);
-  if(-d "$DLMFBASE/$doc" && -f "$DLMFBASE/$doc/$doc.xml"){
-    $subdir = $doc; $name = $doc; }
-  elsif($doc =~ m|^(.*)/([^/]*)$|){
-    $subdir = $1; $name = $2; }
-  else {
-    $subdir = ''; $name = $doc; }
-  print STDERR "Processing Document $name ($subdir)\n" if $verbosity;
-  LaTeXML::Post::ProcessChain(LaTeXML::Post::Document
-			      ->newFromFile("$DLMFBASE/$subdir/$name.xml",
-					    validate=>$validate,
-					    destination=>"$SITEBASE/$subdir/$name.xml"),
-			      @processors); }
+my @procs=(DLMFSplit->new(%OPTIONS));
+push(@procs,$scanner) if $scan;
 
-#**********************************************************************
+if(!$prescan){
+  push(@procs,
+       LaTeXML::Post::MakeIndex->new(db=>$DB,permuted=>1,split=>1,scanner=>$scanner,%OPTIONS),
+       LaTeXML::Post::MakeBibliography->new(db=>$DB, bibliographies=>[@bibliographies],
+					    split=>1, scanner=>$scanner,%OPTIONS),
+       DLMFMakeNotations->new(db=>$DB,split=>1,scanner=>$scanner,%OPTIONS),
+
+       DLMFCrossRef->new(db=>$DB,%OPTIONS),
+       DLMFGallery->new(resourceDirectory=>'',resourcePrefix=>'g',%OPTIONS),
+       DLMFGraphics->new(resourceDirectory=>'',resourcePrefix=>'g',%OPTIONS),
+       DLMFPictureImages->new(resourceDirectory=>'',resourcePrefix=>'g',%OPTIONS),
+       # LaTeXML::Post::SVG->new(%OPTIONS),
+
+       DLMFMathImages->new(resourceDirectory=>'', resourcePrefix=>'m',%OPTIONS),
+       DLMFpMML->new(resourceDirectory=>'', resourcePrefix=>'m',%OPTIONS),
+       # cmml options ?
+       # LaTeXML::Post::PurgeXMath->new(%OPTIONS),
+       DLMFWriter->new(format=>'xml',omit_doctype=>1,%OPTIONS),
+       ); }
+my $target = "$basedir/$destination";
+my $url = $destination;
+$url =~ s/\.xml$//;
+$url =~ s/(^|\/)index$/$1/;
+
+LaTeXML::Post::ProcessChain(LaTeXML::Post::Document->newFromFile($xmlfile,
+								 validate=>$validate,
+								 sourceDirectory=>$sourcedir,
+								 destination=>$target,
+								 url=>$url),
+			    @procs);
+$DB->finish;
+
+#======================================================================
+# Customized Split;
+# splits (only) chapters into sections,
+# while absorbing the parts into the chapter toc.
+#======================================================================
+package DLMFSplit;
+use LaTeXML::Util::Pathname;
+use base qw(LaTeXML::Post::Split);
+
+sub process {
+  my($self,$doc)=@_;
+  my $root = $doc->getDocumentElement;
+  if($root->localname eq 'chapter'){
+    my @docs = ($doc);
+    my @toc = ();
+    my $chapid = $root->getAttribute('id');
+    my $prev = undef;
+    # Remove parts and sections, making sections into sequence of subpages;
+    # parts only appear in chapter's TOC.
+    foreach my $part ($doc->findnodes('//ltx:part')){
+      my $partid = $part->getAttribute('id');
+      my @parttoc = ();
+      foreach my $section ($doc->findnodes('ltx:section',$part)){
+	my $secid = $section->getAttribute('id');
+	my $secdoc = $doc->newDocument($section,
+				       destination=>$self->getSubdocumentName($doc,$section),
+				       url=>$self->getSubdocumentURL($doc,$section));
+	push(@docs,$secdoc);
+	push(@parttoc,['ltx:tocentry',{},['ltx:ref',{class=>'toc',show=>'typerefnum title',
+						     idref=>$secid}]]);
+	$secdoc->addNavigation(up      =>$chapid);
+	$secdoc->addNavigation(up      =>$partid);
+	$secdoc->addNavigation(previous=>$prev->getDocumentElement->getAttribute('id')) if $prev;
+	$prev->addNavigation(  next    =>$secid) if $prev;
+	$prev = $secdoc; 
+	# Magnify any figures in the sections.
+	foreach my $figure ($secdoc->findnodes('//ltx:figure[@refnum]')){
+	  if(my $magfigure = $self->magnifyFigure($secdoc,$figure)){
+	    $magfigure->addNavigation(up      =>$chapid);
+	    $magfigure->addNavigation(up      =>$partid);
+	    $magfigure->addNavigation(up      =>$secid);
+	    push(@docs,$magfigure); }}
+      }
+      push(@toc,['ltx:tocentry',{id=>$partid, label=>$part->getAttribute('label')},
+		 ['ltx:span',{},
+		  $doc->findnode('ltx:toctitle | ltx:title',$part)->childNodes,
+		  $doc->findnodes('ltx:indexmark',$part)], # Need to copy these _somewhere_!!
+		 ['ltx:toclist',{tocindent=>5},@parttoc]]);
+      $part->parentNode->removeChild($part); }
+    $doc->addNodes($root,['ltx:toclist',{tocindent=>0},@toc]); 
+    # Now, handle any sidebars...
+    foreach my $sidebar ($doc->findnodes('//ltx:sidebar')){
+      my $sbdoc = $doc->newDocument($sidebar,
+				     destination=>$self->getSubdocumentName($doc,$sidebar),
+				     url=>$self->getSubdocumentURL($doc,$sidebar));
+      $sbdoc->addNavigation(up      =>$chapid);
+      push(@docs,$sbdoc); 
+      $sidebar->parentNode->removeChild($sidebar); }
+
+    @docs; }
+  else { $doc; }}
+
+# Used ONLY within chapters for sections & sidebars.
+sub getSubdocumentName {
+  my($self,$doc,$sec)=@_;
+  my $id = $sec->getAttribute('id');
+  $id =~ /\.([^\.]+)$/;
+  pathname_make(dir=>$doc->getDestinationDirectory. '/'.$1, name=>'index', type=>'xml'); }
+
+sub getSubdocumentURL {
+  my($self,$doc,$sec)=@_;
+  my $id = $sec->getAttribute('id');
+  $id =~ /\.([^\.]+)$/;
+  $doc->getURL.$1.'/'; }
+
+sub magnifyFigure {
+  my($self,$doc,$figure)=@_;
+  my @magnifiable = $doc->findnodes('.//ltx:graphics[contains(@options,"magnifiable=true")]'
+				    .' | .//ltx:picture',$figure);
+  if(@magnifiable){
+    my $figid = $figure->getAttribute('id');
+    $figid =~ /\.([^\.]+)$/;
+    my $name = "$1.mag";
+    my $magfigid = $figid.".mag";
+    my $magdoc = $doc->newDocument($figure->cloneNode(1),
+				   destination=>pathname_make(dir=>$doc->getDestinationDirectory,
+							      name=>$name,type=>'xml'),
+				   url=>$doc->getURL.$name);
+    my $root = $magdoc->getDocumentElement;
+    # replace all ID's and related IDREF's, remove label's
+    my %ids=();
+    foreach my $n ($magdoc->findnodes('.//*[@id]')){
+      my $id = $n->getAttribute('id');
+      my $newid = ($id =~ /^(.*)\.info$/ ? "$1.mag.info" : $id.".mag");
+      $n->setAttribute(id=>$newid);
+      $ids{$id}=$newid; }
+    foreach my $n ($magdoc->findnodes('.//*[@idref]')){
+      my $id = $n->getAttribute('idref');
+      $n->setAttribute(idref=>$ids{$id}) if $ids{$id}; }
+    foreach my $n ($magdoc->findnodes('.//*[@label]')){
+      $n->removeAttribute('label'); }
+
+    # Arrange for the figures to be scaled.
+    foreach my $gr ($magdoc->findnodes('.//ltx:graphics[contains(@options,"magnifiable=true")]')){
+      my $options=$gr->getAttribute('options');
+      $gr->setAttribute(options=>($options && $options.",")."magnification=2.5"); }
+    foreach my $pic ($magdoc->findnodes('.//ltx:picture')){
+      my ($len,$unit) = $pic->getAttribute('unitlength') =~ /^([\d\.]+)([a-zA-Z]*)$/;
+      $pic->setAttribute(unitlength=>($len*2.5).$unit); }
+    map($_->setAttribute(idref=>$magfigid), @magnifiable);
+    $magdoc; }}
+
+#======================================================================
+# Customized Writer.
+# Converts all url-like attributes to absolute form for the
+# pseudo-protocal DLMF, eg DLMF:/AI/1
+# This allows the pages to be indexed and chanks can be used from different
+# relative locations.  The XSLT is responsible for turning these urls relative.
+#======================================================================
+package DLMFWriter;
+use LaTeXML::Post::Writer;
+use LaTeXML::Util::Pathname;
+use base qw(LaTeXML::Post::Writer);
+
+sub process {
+  my($self,$doc)=@_;
+  my $base = $doc->getURL;
+  $base =~ s/[^\/]*$//;		# trim back to directory.
+  foreach my $n ($doc->findnodes('//@src|//@magsrc|//@vrml|//@image|//@imagesrc|//@href')){
+    my $path = $n->value;
+    next if (! defined $path) || $path =~ /^(\w+:|\/)/;
+    $n->setValue("DLMF:/". pathname_make(dir=>$base, name=>$path)); }
+  # And remove any metadata containers if empty 
+  foreach my $meta ($doc->findnodes('descendant::ltx:metadata')){
+    if(! $meta->hasChildNodes){
+      $meta->parentNode->removeChild($meta); }}
+
+  $self->SUPER::process($doc); }
+
+#======================================================================
+# Customized Scan.
+#======================================================================
+package DLMFScan;
+use XML::LibXML;
+use base qw(LaTeXML::Post::Scan);
+
+sub new {
+  my($class,%options)=@_;
+  my $self = $class->SUPER::new(%options);
+  $self->registerHandler(tocentry =>\&tocentry_handler);
+  $self->registerHandler(declare  =>\&declare_handler);
+  $self->registerHandler(mark     =>\&mark_handler);
+  $self->registerHandler(notations=>\&LaTeXML::Post::Scan::section_handler);
+
+  $self; }
+
+# If a tocentry has an ID, it's because it's stubbing for a <part>!!! (see above).
+# So, we want to make an ID entry for it, like for sectional units.
+sub tocentry_handler {
+  my($self,$doc,$node,$tag,$parent_id)=@_;
+  my $id = $node->getAttribute('id');
+  if($id){
+    if(my $label = $node->getAttribute('label')){
+      $$self{db}->register("LABEL:$label",id=>$id); }
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,
+			 url=>$doc->getURL, fragid=>$self->inPageID($doc,$id),
+			 title=>$doc->findnode('ltx:span',$node)); }
+  $self->scanChildren($doc,$node,$id || $parent_id); }
+
+# A declare represents a local declaration for a symbol.
+# See DLMFCrossRef for how these are looked up.
+sub declare_handler {
+  my($self,$doc,$node,$tag,$parent_id)=@_;
+  if($parent_id){
+    if(my $tag = $doc->findnode('ltx:tag',$node)){
+      if(my $decl_id = $node->getAttribute('id')){
+	$$self{db}->register("DECLARATION:local:$decl_id",
+			     parent=>$parent_id, tag=>$tag);
+      }}}}
+
+sub mark_handler {
+  my($self,$doc,$node,$tag,$parent_id)=@_;
+  # See preprocess_symbols for the extraction of the "defined" symbol (if any)
+  # Also recognize marks for definition, notation...
+  my $type =  $node->getAttribute('type');
+  my $tagnode = $doc->findnode('child::ltx:tag',$node);
+  my $textnode= $doc->findnode('child::ltx:text',$node);
+  if($type eq 'definition'){
+    my (@syms) = $doc->findnodes('descendant-or-self::ltx:XMTok[@meaning]',$tagnode);
+    # We're probably not defining a relation, so put those first.
+    @syms = (grep(($_->getAttribute('role')||'') ne 'RELOP', @syms), @syms);
+    my $name = $syms[0] && $syms[0]->getAttribute('meaning');
+    $$self{db}->register("DECLARATION:global:$name",
+			 parent=>$parent_id, tag=>$tagnode, text=>$textnode); }
+  $$self{db}->register("NOTATION:".$tagnode->cloneNode(1),
+		       parent=>$parent_id, tag=>$tagnode, text=>$textnode); }
+
+#======================================================================
+# Abstract Mixin class for looking up symbol definitions.
+#======================================================================
+package DLMFSymbols;
+use strict;
+use XML::LibXML;
+
+sub extractMathSymbols {
+  my($self,$doc,@nodes)=@_;
+  my @links = ();
+  local %DLMFSymbols::SYMBOLS = ();
+  foreach my $node (@nodes){
+    extractMathSymbols_rec($node); }
+  sort keys %DLMFSymbols::SYMBOLS; }
+
+sub makeSymbolDefinitionLinks {
+  my($self,$doc,$inside_id,@symbols)=@_;
+  my @links = ();
+  foreach my $symbol (@symbols){
+    if(my $entry = $$self{db}->lookup("DECLARATION:$symbol")){
+      if(my $tag = $entry->getValue('tag')){
+	my $dec_id = $entry->getValue('parent'); # Where defined
+	my $text   = $entry->getValue('text'); 
+	my @stuff = ($tag->childNodes, ($text ? (': ',$text->childNodes):()));
+	push(@links,
+	     ($inside_id && is_ancestor($$self{db},$dec_id,$inside_id)
+	      ? ['ltx:span',{class=>'bold'},@stuff]
+	      : ['ltx:ref',{idref=>$dec_id},@stuff])); }}}
+  $doc->conjoin([', ',' and '],@links); }
+
+sub extractMathSymbols_rec {
+  my($node)=@_;
+  if($node->nodeType == XML_ELEMENT_NODE){
+    my $tag = $node->localname;
+    if($tag eq 'XMTok'){
+      if(($node->getAttribute('role')||'') eq 'NUMBER'){}
+      elsif(my $id = $node->getAttribute('dec_id')){
+	$DLMFSymbols::SYMBOLS{"local:$id"}=1; }
+      elsif(my $name = $node->getAttribute('meaning')){
+	$DLMFSymbols::SYMBOLS{"global:$name"}=1; }}
+    elsif($tag eq 'XMDual'){		# Just follow content branch
+      extractMathSymbols_rec([$node->childNodes]->[0]); }
+    else {
+      map(extractMathSymbols_rec($_), $node->childNodes); }}}
+
+# Find out if $dec_id is an ancestor of $id
+sub is_ancestor {
+  my($db, $possible_ancestor,$id)=@_;
+  my $entry;
+  while($id){
+    return 1 if $id eq $possible_ancestor;
+    $id = ($entry = $db->lookup("ID:$id")) && $entry->getValue('parent'); }
+  0; }
+
+#======================================================================
+# Customized CrossRef
+#======================================================================
+package DLMFCrossRef;
+use base qw(LaTeXML::Post::CrossRef DLMFSymbols);
+
+# Adapt augment_meta from PageBuilder
+sub process {
+  my($self,$doc)=@_;
+  # Fill in metadata
+  foreach my $meta ($doc->findnodes('descendant::ltx:metadata')){
+    my($id)= $meta->getAttribute('id') =~ /^(.*)\.info$/;
+    # Connect links to index
+    foreach my $ikey ($doc->findnodes('descendant::ltx:indexkeyword',$meta)){
+      $ikey->setAttribute(idref=>'idx.'.$ikey->getAttribute('key')); }
+    # Add Referrers
+    if(my $identry = $$self{db}->lookup("ID:$id")){
+      if(my $label = $identry->getValue('label')){
+	if(my $entry = $$self{db}->lookup("LABEL:$label")){
+	  if(my $referrers = $entry->getValue('referrers')){
+	    # NOTE: Possibly reimplement the compressed ref list ?
+	    $doc->addNodes($meta,['ltx:referrers',{},
+				  $doc->conjoin(', ',
+						map(['ltx:ref',{idref=>$_,show=>'typerefnum'}],
+						    sort keys %$referrers))]); }}}}
+    # Compile list of Symbols Used w/links to "definitions"
+    if($meta->parentNode->localname =~ /^equation/){ # Only for equations?
+      # Better would be "all Math not contained by another element with metadata" (Ha)
+      my @symbols = $self->extractMathSymbols($doc,
+           $doc->findnodes(".//ltx:Math/ltx:XMath",$meta->parentNode));
+      my @links = $self->makeSymbolDefinitionLinks($doc,$id,@symbols);
+      $doc->addNodes($meta,['ltx:symbols-used',{},@links]) if @links; }
+  }
+  $self->SUPER::process($doc); }
+
+#======================================================================
+# Abstract Mixin class for coordinating resource names with reference numbers.
+# Thus image, mathml, tex, etc, files have the "same" name as the
+# containing equation, figure, etc.
+#======================================================================
+package DLMFResourceMap;
+use LaTeXML::Util::Pathname;
+use strict;
+
+# This class provides a couple of methods for managing the (re)mapping
+# of copied or generated files to be associated with the reference
+# number of it's container.
+
+# Find the desired filename for a file associated with $node.
+# The node might represent a graphics or math node, or ...
+# If it is contained in a container matching $containerpath,
+# is should have a name that reflects that container's refnum.
+# For example, a graphic inside figure X.Y.Z would end up in X/fig/Y.Z.png.
+# If there are other siblings (matching $siblingpath),
+# the name will get a suffix a,b,c...
+# The file might be generated or copied from somewhere else,
+# but should end up unique.
+
+# Define method
+# $self->getResourceContainer($doc,$node);
+sub containedResourcePathname {
+  my($self,$doc,$node, $siblingpath,$type)=@_;
+  my($container,$refnum);
+  if($container = $self->getResourceContainer($doc,$node)){
+    my @sibs = $doc->findnodes($siblingpath,$container);
+    my $suffix='';
+    if(scalar(@sibs) > 1){
+      $suffix = 'a';
+      while(@sibs && (${$sibs[0]} != $$node)){
+	shift(@sibs); $suffix = chr(ord($suffix)+1); }}
+    my $name = ($doc->getDestination =~ /index.xml$/ 
+		? $container->getAttribute('fragid')
+		: $container->getAttribute('id'));
+    pathname_make(dir=>$$self{resourceDirectory}, name=>$name.$suffix, type=>$type); }}
+
+our %typename;
+BEGIN{ 
+  %typename = (png=>'png', eps=>'eps',tex=>'TeX', wrl=>'vrml',
+	       pmml=>'pMathML', cmml=>'cMathML', om=>'OpenMath'); }
+
+# NOTE: Should I do something about copying the suffix to the typename ?
+sub noteEncodedResource {
+  my($self,$doc,$node,$resourcename,$type)=@_;
+  if(my $container = $self->getResourceContainer($doc,$node)){
+    if(my $meta = $doc->findnode('ltx:metadata',$container)){
+      $type = pathname_type($resourcename) unless $type;
+      $resourcename =~ s/\.\w+$/.$type/; # change the dest pathname to the requested type.
+      $doc->addNodes($meta,['ltx:encoding',{href=>$resourcename,type=>$typename{$type}||$type}]);
+      $resourcename; }}}
+
+sub copyEncodedResource {
+  my($self,$doc,$node,$resourcename,$source,$type)=@_;
+  $type = pathname_type($resourcename) unless $type;
+  $source =~ s/\.\w+$/.$type/;	# change the source pathname to the requested type.
+  if(-f $source){
+    if(my $container = $self->getResourceContainer($doc,$node)){
+      if(my $meta = $doc->findnode('ltx:metadata',$container)){
+	$resourcename =~ s/\.\w+$/.$type/; # change the dest to the requested type.
+	pathname_copy($source,$doc->checkDestination($resourcename));
+	$doc->addNodes($meta,['ltx:encoding',{href=>$resourcename,type=>$typename{$type}||$type}]);
+	$resourcename; }}}}
+
+# NOTE: It would be really helpful to AVOID writing the file
+# if the content is unchanged (Ugh).
+sub writeEncodedResource {
+  my($self,$doc,$node,$resourcename,$contents,$type)=@_;
+  if($contents){
+    if(my $container = $self->getResourceContainer($doc,$node)){
+      if(my $meta = $doc->findnode('ltx:metadata',$container)){
+	$type = pathname_type($resourcename) unless $type;
+	$resourcename =~ s/\.\w+$/.$type/; # change the dest to the requested type.
+	my $absdest = $doc->checkDestination($resourcename);
+	open(RESOURCE,">:utf8",$absdest) or die "Cannot write resource $absdest: $!";
+	print RESOURCE $contents;
+	close(RESOURCE);
+	$doc->addNodes($meta,['ltx:encoding',{href=>$resourcename,type=>$typename{$type}||$type}]);
+	$resourcename; }}}}
+
+#======================================================================
+# Mixin class for managing resources associated with math in numbered equations
+#======================================================================
+package DLMFEquationResourceMap;
+use base qw(DLMFResourceMap);
+our $exclusion;
+BEGIN{ $exclusion = 'ancestor::ltx:metadata | ancestor::ltx:mark'
+	 .' | ancestor::ltx:indexphrase  | ancestor::ltx:constraint'; }
+sub getResourceContainer {
+  my($self,$doc,$node) = @_;
+  # Exclude math that's contained within things like notations, metadata, etc.
+  if(!$doc->findnode($exclusion, $node)){
+    $doc->findnode('ancestor::ltx:equation[@refnum]'
+		   .' | ancestor::ltx:equationmix[@refnum]'
+		   .' | ancestor::ltx:equationgroup[@refnum]',
+		   $node); }}
+
+sub desiredResourcePathname {
+  my($self,$doc,$node,$source,$type)=@_;
+  $self->containedResourcePathname($doc,$node,"descendant::ltx:Math[not($exclusion)]",$type); }
+
+#======================================================================
+# Mixin class for managing resources associated with graphical things in numbered figures
+#======================================================================
+package DLMFFigureResourceMap;
+use base qw(DLMFResourceMap);
+
+sub getResourceContainer {
+  my($self,$doc,$node) = @_;
+  $doc->findnode('ancestor::ltx:figure[@refnum]',$node); }
+
+sub desiredResourcePathname {
+  my($self,$doc,$node,$source,$type)=@_;
+  $self->containedResourcePathname($doc,$node,
+				   'descendant::ltx:graphics | descendant::ltx:picture',
+				   $type); }
+
+#======================================================================
+# Conversion of Math to Images, 
+# with special naming for those in equations, and encodings.
+#======================================================================
 package DLMFMathImages;
 use strict;
-use base qw(LaTeXML::Post::MathImages);
+use base qw(DLMFEquationResourceMap LaTeXML::Post::MathImages);
 
 # Override the default TeX code for capturing display equations.
 # We'll use breqn's framing for display math.
@@ -80,69 +516,47 @@ sub preamble {
       ."\\def\\beginDISPLAY{\\[[fullframe]}\n"
       ."\\def\\endDISPLAY{\\]}";  }
 
-#**********************************************************************
-# Deal with extra type & meta info for math.
-package DLMFMath;
-use strict;
-use XML::LibXML;
-use MIME::Base64;
-use base qw(LaTeXML::Post);
 
-sub process {
-  my($self,$doc)=@_;
-  my $NSURI = $self->getNamespace;
-  my @meta = $doc->findnodes("//ltx:equation/ltx:metadata"
-			     ." | //ltx:equationmix/ltx:metadata"
-			     ." | //ltx:equationgroup/ltx:metadata",
-			     $doc->getDocumentElement);
-  $self->Progress(scalar(@meta)." equations to process");
-  foreach my $meta (@meta){
-    my $eqn = $meta->parentNode;
-    my @maths = $doc->findnodes("ltx:Math",$eqn);
-
-    # Add latex representation of formulas
-    if(my $tex = join("\n",map("\$$_\$",grep($_,map($_->getAttribute('tex'),@maths))))){
-      my $node = $meta->addNewChild($NSURI,'encoding');
-      $node->setAttribute(type=>'LaTeX');
-      $node->setAttribute(data=>encode_base64($tex,'')); }
-
-    # Add list of symbols used.
-    local %XDLMF::SYMBOLS = ();
-    foreach my $math (@maths){
-      foreach my $xmath ($math->getChildrenByTagNameNS($NSURI,'XMath')){
-	extractMathSymbols_rec($xmath); }}
-    if(my $symbols = join('###', keys %XDLMF::SYMBOLS)){
-      my $node = $meta->addNewChild($NSURI,'symbols-used');
-      $node->setAttribute(symbols_used=>$symbols); }
-  }
-  $doc; }
-
-sub extractMathSymbols_rec {
-  my($node)=@_;
-  if($node->nodeType == XML_ELEMENT_NODE){
-    my $tag = $node->localname;
-    if($tag eq 'XMTok'){
-      if(($node->getAttribute('role')||'') eq 'NUMBER'){}
-      elsif(my $id = $node->getAttribute('dec_id')){
-	$XDLMF::SYMBOLS{"local:$id"}=1; }
-      elsif(my $name = $node->getAttribute('meaning')){
-	$XDLMF::SYMBOLS{"global:$name"}=1; }}
-    elsif($tag eq 'XMDual'){		# Just follow content branch
-      extractMathSymbols_rec([$node->childNodes]->[0]); }
+sub setTeXImage {
+  my($self,$doc,$node,$image,$width,$height)=@_;
+  $self->SUPER::setTeXImage($doc,$node,$image,$width,$height);
+  $self->noteEncodedResource($doc,$node,$image);
+  if(my $tex = $node->getAttribute('tex')){
+    if(($node->getAttribute('mode')||'inline') eq 'inline'){
+      $tex = '$'.$tex.'$'; }
     else {
-      map(extractMathSymbols_rec($_), $node->childNodes); }}}
+      $tex = '\['.$tex.'\]'; }
+    $self->writeEncodedResource($doc,$node,$image,$tex,'tex'); }
+}
+#======================================================================
+# Conversion of Math to Presentation MathML
+# with recording of pmml encoding.
+#======================================================================
+package DLMFpMML;
+use strict;
+use base qw(DLMFEquationResourceMap LaTeXML::Post::MathML::Presentation);
 
-#**********************************************************************
+sub processNode {
+  my($self,$doc,$math)=@_;
+  $self->SUPER::processNode($doc,$math);
+  if(my $resource = $self->desiredResourcePathname($doc,$math,undef,'pmml')){
+    if(my $pmml = $doc->findnode('m:math',$math)){
+      $self->writeEncodedResource($doc,$math,$resource,
+				  $pmml->cloneNode(1)->toString,'pmml'); }}}
+
+#======================================================================
+# Customized conversion of images.
+# Special naming of images within numbered figures,
+# copying of vrml (& it's auxilliary files),
+# and noting encodings.
+#======================================================================
 package DLMFGraphics;
 use strict;
 use LaTeXML::Util::Pathname;
-use base qw(LaTeXML::Post::Graphics);
+use base qw(DLMFFigureResourceMap LaTeXML::Post::Graphics);
 
-# Need to handle specially:
-# TODO:
-#   vrml : copy vrml & proto files.
-
-# Graphics in 2D subdirs tend to be line drawings: Prefer the postscript source.
+# Graphics in "2D" subdirs tend to be line drawings: 
+# To get smoother scaling, prefer the postscript source to an already rasterized.
 sub findGraphicsFile {
   my($self,$doc,$node)=@_;
   if(my $name = $node->getAttribute('graphic')){
@@ -165,68 +579,58 @@ sub processGraphic {
   my $transform = $self->getTransform($node);
 
   # Check for magnifiable and/or vrml options; then remove them.
-  my $mag    = grep($_->[0] eq 'magnifiable',@$transform);
   my ($vrml) = grep(($_->[0] eq 'vrml' ? $_->[1] : ''),@$transform);
   $vrml = $vrml->[1] if $vrml;
   $transform = [grep( $_->[0] !~/^(magnifiable|vrml)$/, @$transform)];
+
   # Process the main image
   my($image,$width,$height)=$self->transformGraphic($doc,$node,$source,$transform);
-  $self->setGraphicsSrc($node,$image,$width,$height) if $image;
+  return unless $image;
 
-  if($mag){			# Generate Magnified image, if requested
-    my($mimage,$mwidth,$mheight)=$self->transformGraphic($doc,$node,$source,
-							 [@$transform,['scale',2.5]]);
-    $node->setAttribute('magsrc',$mimage);
-    $node->setAttribute('magwidth',$mwidth);
-    $node->setAttribute('magheight',$mheight); }
+  $self->setGraphicsSrc($node,$image,$width,$height);
+  $self->noteEncodedResource($doc,$node,$image);
+  $self->copyEncodedResource($doc,$node,$image,$source,'eps');
 
   if($vrml){			# Copy vrml & related files, if requested
-    if(my $vrmlsource = pathname_find($vrml,paths=>$LaTeXML::Post::Graphics::SEARCHPATHS,
+    if(my $vrmlsrc = pathname_find($vrml,paths=>$LaTeXML::Post::Graphics::SEARCHPATHS,
 				      types=>['wrl'])){
-      $node->setAttribute('vrml',$self->copyFile($doc,$vrmlsource));
-      my($srcdir,$name,$type)=pathname_split($vrmlsource);
-#      foreach my $extra (@VRML_EXTRA){
-#	my $x = pathname_make(dir=>$srcdir,name=>$extra);
-#	$self->copyFile($x) if -f $x; }
-      # Too much variability in aux files; copy 'em all!!!
-      opendir(DIR, $srcdir) or $self->Warn("Couldn't read files from VRML directory $srcdir: $!");
-      my @allvrml = readdir(DIR);
-      closedir(DIR);
-      foreach my $extra (@allvrml){
-	next if $extra =~ /^\./;
-	my $x = pathname_make(dir=>$srcdir,name=>$extra);
-	$self->copyFile($doc,$x) if -f $x; }
+      my $vrmldst = $self->copyEncodedResource($doc,$node,$image,$vrmlsrc,'wrl');
+      $node->setAttribute('vrml',$vrmldst);
 
+      # Too much variability in auxilliary vrml files; copy 'em all *proto* & *.gif ???
+      my $srcdir = pathname_directory($vrmlsrc);
+      opendir(DIR, $srcdir) or $self->Warn("Couldn't read files from VRML directory $srcdir: $!");
+      my @vrmlaux = readdir(DIR);
+      closedir(DIR);
+      my $dstdir = pathname_directory($doc->checkDestination($image));
+      foreach my $extra (@vrmlaux){
+	next if $extra =~ /^\./;
+	next unless ($extra =~ /proto/) || ($extra =~ /\.gif$/);
+	pathname_copy(pathname_concat($srcdir,$extra),
+		      pathname_concat($dstdir,$extra)); }
     }
     else {
       $self->Warn("Couldn't find VRML file for $vrml at graphic $source"); }}
 }
 
-sub XXget_type_map {
-  my($self,$src,$options)=@_;
-  if($src =~ m|/2D/|){		# 2D: line graphics: use png with transparency.
-    {type=>'png', transparent=>1}; }
-##  elsif($src =~ m|/3D/|){	# 3D: surfaces best using jpeg.
-##    {type=>'jpeg'}; }
-  else {
-    $self->SUPER::get_type_map($src,$options); }}
-
-#**********************************************************************
-package DLMFMagPictures;
+#======================================================================
+# Customized conversion of picture environments to images,
+# special naming for images within numbered figures,
+# noting encodings.
+#======================================================================
+package DLMFPictureImages;
 use strict;
-use LaTeXML::Post::PictureImages;
-BEGIN{ our @ISA = qw(LaTeXML::Post::PictureImages);}
+use base qw(DLMFFigureResourceMap LaTeXML::Post::PictureImages);
 
-sub image_prefix { 'mpic'; }
+sub setTeXImage {
+  my($self,$doc,$node,$image,$width,$height)=@_;
+  $self->SUPER::setTeXImage($doc,$node,$image,$width,$height);
+  $self->noteEncodedResource($doc,$node,$image);
+  $self->writeEncodedResource($doc,$node,$image,$node->getAttribute('tex'),'tex'); }
 
-sub set_image {
-  my($self,$node,$path,$width,$height)=@_;
-  $node->setAttribute('magsrc',$path);
-  $node->setAttribute('magwidth',$width);
-  $node->setAttribute('magheight',$height); }
-
-#**********************************************************************
-# Custom form for Gallery images.
+#======================================================================
+# Customized for Gallery images.
+#======================================================================
 package DLMFGallery;
 use strict;
 use base qw(LaTeXML::Post::Graphics);
@@ -237,203 +641,387 @@ sub selectGraphicsNodes {
 sub getTransform {
   [['scale-to',72,72]]; }
 
+# This is so that a stock default image (noimage.png) can be used.
 sub processGraphic {
   my($self,$doc,$node)=@_;
-  my $name = $node->getAttribute('graphic');
-  if($name =~ /^DLMF:/){
-    $node->setAttribute('src',$name);
+  my $source = $node->getAttribute('graphic');
+  if(!$source || ($source eq 'DLMF:/images/noimage.png')){
+    $node->setAttribute('src','DLMF:/style/noimage.png');
     $node->setAttribute('width',100);
     $node->setAttribute('height',100); }
   else {
     $self->SUPER::processGraphic($doc,$node); }}
 
-#**********************************************************************
-package DLMFAugment;
+#======================================================================
+# MakeNotation
+#======================================================================
+package DLMFMakeNotations;
 use strict;
-use LaTeXML::Util::LibXML;
-use base qw(LaTeXML::Post);
+use base qw(LaTeXML::Post::Collector DLMFSymbols);
+use XML::LibXML;
 
+# Need a dummy stub document containing <notations>
 sub process {
   my($self,$doc)=@_;
-  local %::LABELS = map( ($_->getValue()=>1), $doc->findnodes('//@label'));
-  local %::LASTOFTYPE = ();
-  $self->Progress("Augmenting labels, refnums");
-  $self->process_node($doc->documentElement,'','');
-  $doc; }
+  if(my $notations = $doc->findnode('//ltx:notations')){
+    my $entries = $self->getNotationEntries($doc);
+    if($$self{split}){
+      # Separate by initial.
+      my $split = {};
+      foreach my $key (keys %$entries){
+	my $entry = $$entries{$key};
+	$$split{$$entry{initial}}{$key} = $entry; }
+      map($self->rescan($_),
+	  $self->makeSubCollectionDocuments($doc,$notations,
+					    map( ($_=>$self->makeNotationsList($doc,$$split{$_})),
+						 keys %$split))); }
+    else {
+      $doc->addNodes($notations,$self->makeNotationsList($doc,$entries));
+      $self->rescan($doc); }}
+  else {
+    $doc; }}
 
-# Worthwhile attributes on all `important' (ie. labelable, referable), nodes
-#    label  : hopefully given by author, else generated.
-#    refnum : the full reference number, as generated by latex
-#    altrefnum : for those nodes not labeled by latex.
-#    relrefum  : the reference number relative to the (important) parent.
-sub process_node {
-  my($self,$node,$dest,$parent)=@_;
-  my $tag       = $node->localname;
-  my $label     = $node->getAttribute('label');
-  my $refnum    = $node->getAttribute('refnum');
-  my $altrefnum = $node->getAttribute('altrefnum');
-  my $whole=0;
+our %NOTATION_ALIA;		# At end
 
-  if(my $d = $node->getAttribute('destination')){ # File marked with destination.
-    $dest = $d;  $whole=1; }
+sub getNotationEntries {
+  my($self,$doc)=@_;
+  my $entries = {};
+  my @keys = grep(/^NOTATION:/,$$self{db}->getKeys);
+  $self->Progress(scalar(@keys)." notation entries to process");
+  foreach my $key (@keys){
+    my $notation = $$self{db}->lookup($key);
+    my $tagnode  =  $doc->getDocument->adoptNode($notation->getValue('tag'));
+    my $textnode =  $doc->getDocument->adoptNode($notation->getValue('text'));
 
-  if($tag =~ /^(mainpage|document|authorbio|sidebar)$/){ # !?!?!?!?!
-    $node->setAttribute(label=>($label = synthesize_label($node,$parent))) unless $label;
-    $parent = $node;
-    }
-  elsif($tag =~ /^(chapter|part|section|subsection|subsubsection|paragraph|para)$/){
-    $node->setAttribute(label=>($label = synthesize_label($node,$parent))) unless $label;
-    my $ispart = $tag eq 'part';
-    if(!($refnum||$altrefnum)){
-      $altrefnum = $self->synthesize_refnum($node,$parent, $tag=~/^(sub|part)/, $ispart);
-      $node->setAttribute(altrefnum=>$altrefnum) if $altrefnum; }
+    # Get the sortform list from the Math representation.
+    my @sortform = makeNotationSortform($doc->findnode('.//ltx:XMath',$tagnode));
 
-    my ($r);
-    my $n = $refnum || $altrefnum;
-    # In the following refnum formats, XX is chapter code, II is uppercase roman, ii lowercase roman,
-    # ## is digits.
-    if(!$n){}
-    # Chapter refnum:  XX
-    elsif($tag eq 'chapter'){
-      $dest=$refnum."/"; }
-    # Part refnum:  XX.Pt.II
-    elsif(($tag eq 'part')         &&($n =~ /^(\w\w)\.Pt\.(\w+)$/)){
-      $r=$2; }
-    # Section refnum: XX.##
-    elsif(($tag eq 'section')      &&($n =~ /^(\w\w)\.(\d+)$/)){
-      $r=$2; $dest=$dest.$2; 
-      $::LASTOFTYPE{subsection}=$::LASTOFTYPE{subsubsection}
-	=$::LASTOFTYPE{paragraph}=$::LASTOFTYPE{subparagraph}
-	  =$::LASTOFTYPE{equation}=$::LASTOFTYPE{equationmix}=$::LASTOFTYPE{equationgroup}
-	    =$::LASTOFTYPE{figure}=$::LASTOFTYPE{table}
-	      =$::LASTOFTYPE{para} = 0; }
-    # Subsection refnum: XX.##(ii)
-    elsif(($tag eq 'subsection')   &&($n =~ /^(\w\w)\.(\d+)\((\w+)\)$/)){
-      $r="($3)"; 
-      $::LASTOFTYPE{para} = 0; }
-    # Subsubsection refnum: XX.##(ii)(ii)
-    elsif(($tag eq 'subsubsection')&&($n =~ /^(\w\w)\.(\d+)\((\w+)\)\((\w+)\)$/)){
-      $r="($4)";
-      $::LASTOFTYPE{para} = 0; }
-    # Paragraph refnum: XX.##(ii)*P##
-    # where (ii)* are optional sub/section numbers, assuming paragraph appears within section, at least.
-    elsif(($tag eq 'paragraph')    &&($n =~ /^(\w\w)\.(\d)+(.*).\x{00B6}(\d+)$/)){ # Pilcrow
-      my($ch,$s,$unit,$n)=($1,$2,$3,$4);
-      $unit =~ s/\(//g; $unit=~s/\)/./g;
-      $r = $n;
-      $::LASTOFTYPE{para} = 0; }
-    $node->setAttribute(relrefnum=>$r) if $r;
-    $parent = $node unless $tag eq 'para';
-    }
-  elsif($tag =~ /^(table|figure)$/){
-    $node->setAttribute(label=>($label = synthesize_label($node,$parent))) unless $label;
-    if(!($refnum||$altrefnum)){
-      $altrefnum = $self->synthesize_refnum($node,$parent);
-      $node->setAttribute(altrefnum=>$altrefnum); }
-    my $n = ((($refnum||$altrefnum) =~ /^(\w\w)\.(\d+)\.(\d+)$/) ? $3 : '');
-    $node->setAttribute(relrefnum=>$n) if $n;
-    $parent = $node; }
-  # No, I think we shouldn't add labels to equationgroup;
-  # If they weren't numbered, they apparently are only for visual alignment,
-  # rather than implying any logical structure
-#  elsif($tag =~ /^(equation|equationmix|equationgroup)$/){
-  elsif($tag =~ /^(equation|equationmix)$/){
-    $node->setAttribute(label=>($label = synthesize_label($node,$parent))) unless $label;
-    if(!($refnum||$altrefnum)){
-      $altrefnum = $self->synthesize_refnum($node,$parent);
-      $node->setAttribute(altrefnum=>$altrefnum); }
-    my $n =((($refnum||$altrefnum||'') =~ /^(\w\w)\.(\d+)\.(\d+)$/) ? $3 : '');
-    $node->setAttribute(relrefnum=>$n) if $n;
-    $parent = $node; }
-  elsif($tag eq 'equationgroup'){
-    $parent = $node if $node->getAttribute('label'); }
-  elsif($tag =~ /^(bibentry)$/){
-    # needs label?
-  }
-  # Recurse on content.
-  map($self->process_node($_,$dest,$parent), element_nodes($node));
-}
+    # Study the first token to establish which notation page,
+    # and other interesting info
+    my ($first) = grep(/^[^!~]/,@sortform); # Find first "meaningful" token.
+    $self->Warn("Malformatted notation ".join(' ',@sortform)) unless $first;
+    my $alias =  $NOTATION_ALIA{$first} || {};
+    my $initial = $$alias{initial} || $$alias{equivalent} || $first;
+    $initial = ($initial =~ /^([a-zA-Z])/ ? uc($1) : '*');
+
+    # Now, translate the sortform tokens into the truly sortable form.
+    @sortform = map($NOTATION_ALIA{$_}{sort_as}||$NOTATION_ALIA{$_}{equivalent}||$_, @sortform);
+
+    # Check if text starts with "= fcn" or "propto fcn"
+    my @intermsof = ();
+    if(my $definer = $doc->findnode('.//ltx:Math/ltx:XMath/ltx:XMApp['
+				    .' child::*[position()=1][@role="RELOP"]'
+				    .']/child::*[position()=3]', $tagnode)){
+      my @symbols = $self->extractMathSymbols($doc,$definer);
+      @intermsof = $self->makeSymbolDefinitionLinks($doc,undef,grep(/^global/,@symbols)); }
+
+    $$entries{$key}
+      ={initial=>$initial, sortform=>[@sortform],
+	formatted=>['ltx:notationitem',{},
+		    $tagnode, 
+		    ['ltx:text',{},$doc->trimChildNodes($textnode),'; ',
+		     ['ltx:ref',{idref=>$notation->getValue('parent'),show=>'typerefnum'}],
+		     (@intermsof ? (['ltx:br'],
+				    ['ltx:text',{font=>'small'},'(with ',@intermsof,')']):())]]};
+
+    # If an unusual first char is likely to be sought under other initials,
+    # Add "see also" entries under those initials.
+    if($$alias{from}){
+      foreach my $from (@{$$alias{from}}){
+	my $seekey = "$from.seealso.$first";
+	$$entries{$seekey}
+	  = {initial=>$from, sortform=>[$$alias{sort_as}],
+	     formatted=>['ltx:notationitem',{},
+			 ['ltx:tag',{},$first],
+			 ['ltx:text',{font=>'italic'},"see ",
+			  ['ltx:ref',{idref=>"notations.$initial"},"Notations $initial"]]]}
+	    unless $$entries{$seekey}; }}}
+  $entries; }
+
+sub makeNotationsList {
+  my($self,$doc,$entries)=@_;
+  my @entries = 
+  ['ltx:notationlist',{},
+   map($$_{formatted}, sort cmpNotation (values %$entries))]; }
 
 #======================================================================
-# NOTE: Where does this belong???
-# Here??? Or in Target???
-# Create a unique label for $node if none was given.
-# Assume labels of the form "type:ch.pt.sec" or similar.
-# Type is an abbreviation drawn from the following:
-our %LABELPREFIX;
-our %PREFIXES;
-BEGIN{
-%LABELPREFIX=(chapter=>'ch', part=>'pt', section=>'sec',
-		  subsection=>'sec',subsubsection=>'sec',
-		  paragraph=>'par', subparagraph=>'par', para=>'p',
-		  table=>'tab', figure=>'fig',
-		  equation=>'eq', equationmix=>'eq',equationgroup=>'eq',
-		  sidebar=>'sb');
-%PREFIXES = 
-  (equation     =>'Eq.', equationmix  =>'Eq.', equationgroup=>'Eq.',
-   figure       =>'Fig.', table        =>'Tab.',
-   chapter      =>'Ch.', part         =>'Pt.',
-   section      =>"\x{00A7}", subsection   =>"\x{00A7}", subsubsection=>"\x{00A7}",
-   paragraph    =>"\x{00B6}", subparagraph =>"\x{00B6}");
-}
-sub synthesize_label {
-  my($node,$parent)=@_;
-  return unless $parent;
-  my $label = $parent->getAttribute('label');
+# Sort Comparison function for sorting a list of entries(hashes)
+# which have a $$entry{sortform} being the Sortform, as computed below.
+
+sub cmpNotation {
+  my @atokens = @{$$DLMFMakeNotations::a{sortform}};
+  my @btokens = @{$$DLMFMakeNotations::b{sortform}};
+  my @a = @atokens;
+  my @b = @btokens;
+  while(@a && @b){
+    my $atoken = shift(@a);
+    my $btoken = shift(@b);
+    my $c = lc($atoken) cmp lc($btoken);
+    return $c if $c; }
+  return (@a ? +1 : -1) unless !@a && !@b;
+  @a = @atokens;
+  @b = @btokens;
+  while(@a && @b){
+    my $atoken = shift(@a);
+    my $btoken = shift(@b);
+    my $c = $atoken cmp $btoken;
+    return $c if $c; }
+  (!@a && !@b ? 0 : (@a ? +1 : -1)); }
+
+#======================================================================
+# Compute the Sortform for a piece of math.
+# The sortform is a list of cleverly translated tokens(strings) that
+# represent the structure in an order that corresponds to the visual layout.
+sub makeNotationSortform {
+  my($node)=@_;
+  # WHOA!!!!
+  # There were some "corrupt doubly linked list" problems when using xpath here????
+  local @DLMFMakeNotations::TRAILINGTOKENS=();
+  my @sortform = sortform_rec($node);
+  (@sortform,@DLMFMakeNotations::TRAILINGTOKENS); }
+
+sub elements {
+  my($node)=@_;
+  grep( $_->nodeType == XML_ELEMENT_NODE, $node->childNodes); }
+
+# Somewhat repeats what LaTeXML::Post::MathML does,
+# but we want control over variables, etc.
+sub sortform_rec {
+  my($node)=@_;
+  return () unless $node;
   my $tag = $node->localname;
-  $label =~ s/^(\w+):/ {$LABELPREFIX{$tag}.":";} /e; # Substitute our prefix
-  my ($title) =$node->findnodes("*[local-name()='toctitle' or local-name()='title'"
-				."   or local-name()='toccaption' or local-name()='caption']"
-#				."[namespace-uri()='".NSURI."']"
-			       );
-  $title = stringify($title) if $title;
-  my($newlabel,$suf)=('','');
-  # Try different ways of creating a label from the title/caption.
-  if($title && ($suf = join('',map( s/^(\w).*/$1/ && $_, split(/ /,$title))))
-     && length($suf)>1 && !$::LABELS{"$label.$suf"}){
-    $newlabel = "$label.$suf"; }
-  elsif($title && ($title =~ /^(\w\w?\w?)/) && ($suf=$1)
-	&& length($suf)>1 && !$::LABELS{"$label.$suf"}){
-    $newlabel = "$label.$suf"; }
+  my $role = $node->getAttribute('role')||'';
+  my @items = ();
+  if($tag eq 'XMath'){
+    push(@items,map(sortform_rec($_), elements($node))); }
+  elsif($tag eq 'XMDual'){
+    my($content,$presentation) = elements($node);
+    push(@items,sortform_rec($presentation)); }
+  elsif($tag eq 'XMWrap'){	# Only present if parsing failed!
+    push(@items,map(sortform_rec($_),elements($node))); }
+  elsif($tag eq 'XMRef'){
+    push(@items,'!Z'); }
+  elsif($tag eq 'XMApp'){
+    my($op,@args) = elements($node);
+    my $oprole = $op->getAttribute('role')||'';
+    my $opname = $op->getAttribute('name')||'';
+    if($oprole eq 'POSTSUBSCRIPT'){
+      push(@items, '~!0', sortform_rec($args[0])); }
+    elsif($oprole eq 'POSTSUPERSCRIPT'){
+      push(@items, '~!1', sortform_rec($args[0])); }
+    elsif($oprole eq 'SUBSCRIPTOP'){
+      push(@items,sortform_rec($args[0]),addscript('~!0',$args[1]));}
+    elsif($oprole eq 'SUPERSCRIPTOP'){
+      push(@items,sortform_rec($args[0]),addscript('~!1',$args[1])); }
+    elsif($oprole eq 'SUBSUPERSCRIPTOP'){
+      push(@items,sortform_rec($args[0]),
+	   addscript('~!1', $args[2]),
+	   addscript('~!0', $args[1])); }
+    elsif($opname eq 'sideset'){
+      push(@items,sortform_rec($args[4]),
+	   addscript('~!3', $args[1]),
+	   addscript('~!2', $args[0]),
+	   addscript('~!1', $args[3]),
+	   addscript('~!0', $args[2])); }
+    elsif($oprole eq 'STACKED'){
+      push(@items,'~,',sortform_rec($args[0]),'~,',sortform_rec($args[1]));}
+##    elsif($oprole eq 'ARRAYOP'){
+##      push(@items,'~,',map((sortform_rec($_),'~,'),@args)); }
+##    elsif($opname eq 'Row'){
+##      push(@items,map((sortform_rec($_),'~,'),@args)); }
+    elsif($oprole eq 'UNDERACCENT'){
+      push(@items,sortform_rec($args[0]),sortform_rec($op)); }
+    elsif($oprole eq 'OVERACCENT'){
+      push(@items,sortform_rec($args[0]),sortform_rec($op)); }
+    elsif($oprole eq 'POSTFIX'){
+      push(@items,sortform_rec($args[1]),
+	   sortform_rec($args[0])); }
+    elsif($oprole eq 'RELOP'){
+      # Just sort on LHS alone!
+      push(@items,sortform_rec($args[0])); }
+    elsif($oprole =~ /^ADDOP|MULOP|ARROW|METARELOP$/){
+      my @top = sortform_rec($op);
+      push(@items,sortform_rec(shift(@args)));
+      while(@args){
+	push(@items,@top,sortform_rec(shift(@args)));}}
+    else {
+      push(@items,sortform_rec($op));
+      if(my $p = $op->getAttribute('argopen')){
+       push(@items,$p); }
+      push(@items,sortform_rec(shift(@args)));
+      while(@args){
+	push(@items,"~,",sortform_rec(shift(@args))); }
+#	push(@items,sortform_rec(shift(@args))); }
+      if(my $p = $op->getAttribute('argclose')){
+       push(@items,$p); }}
+# name sqrt, root
+# name deriv, pderiv, diff, pdiff, qdiff!!
+  }
+  elsif($tag eq 'XMArray'){
+    foreach my $row (elements($node)){
+      foreach my $col (elements($row)){
+	push(@items,'~,',map(sortform_rec($_),elements($col))); }}}
+  elsif($tag eq 'XMTok'){
+    if($role eq 'PUNCT'){
+      push(@items,'~,');
+    }
+    elsif(($role eq 'ID') && !($node->getAttribute('name'))	# ??
+      && (($node->getAttribute('font')||'italic')=~ /italic/)){
+      push(@items,'!Z'); }
+    elsif(my $s = $node->textContent){
+      push(@items,$s); }}
+  elsif($tag eq 'XMHint'){
+    }
   else {
-    my $i=1;
-    while($::LABELS{"$label.$suf$i"}){ $i++; }
-    $newlabel = "$label.$suf$i"; }
-  $::LABELS{$newlabel}=1;
-  $node->setAttribute('label', $newlabel);
-  $newlabel; }
+    push(@items,$node->textContent); }
 
+  if(@items){
+    if(my $p = $node->getAttribute('open')){
+      unshift(@items,$p); }
+    if(my $p = $node->getAttribute('close')){
+      push(@items,$p); }}
+  @items; }
 
-sub synthesize_refnum {
-  my($self,$node,$parent,$roman,$uppercase)=@_;
-  if(my $prefnum =  $parent && ($parent->getAttribute('refnum')||$parent->getAttribute('altrefnum'))){
-    my $n = ++$::LASTOFTYPE{$node->nodeName};
-    $n = roman($n) if $roman;
-    $n = uc($n) if $uppercase;
-    $prefnum . '.'. ($PREFIXES{$node->nodeName}||'') . $n; }}
+sub addscript {
+  my($token,$node)=@_;
+  if(!$node
+     || (($node->localname eq 'XMTok')
+	 && (($node->getAttribute('name')||'') eq 'Empty'))){
+    (); }
+  elsif(($node->localname eq 'XMTok')
+	&& (($node->getAttribute('name')||'') eq 'prime')){
+    push(@DLMFMakeNotations::TRAILINGTOKENS,"~'"); # Put prime at end.
+    (); }
+  else {
+    ($token,sortform_rec($node)); }}
 
-# Cribbed from LaTeXML [The TeX way! (bah!! hint: try a large number)]
-my @rmletters;
-BEGIN { @rmletters=('i','v',  'x','l', 'c','d', 'm'); }
-sub roman {
-  my($n)=@_;
-  my $div= 1000;
-  my $s=($n>$div ? ('m' x int($n/$div)) : '');
-  my $p=4;
-  while($n %= $div){
-    $div /= 10;
-    my $d = int($n/$div);
-    if($d%5==4){ $s.= $rmletters[$p]; $d++;}
-    if($d > 4 ){ $s.= $rmletters[$p+int($d/5)]; $d %=5; }
-    if($d) {     $s.= $rmletters[$p] x $d; }
-    $p -= 2;}
-  $s; }
+#======================================================================
+# Some Unicode characters, especially Greek, "look like","sound like",
+# "are related to", ... latin letters.
+# For each, give [$isequiv,$alias,...]
+# where $isequiv means it essentially equivalent to the 1st alias; doesn't go to * page at all.
+#       $alias is a latinization, also used to index, and used for sorting.
+#       ...    are more alia that will cause it to be indexed under those latinizations
+# The latter bits are in case someone looks for "phi" under p or f.
+# For each funny character, we supply:
+#   sort_as    : a replacement to be used in sorting
+#   initial    : the effective Initial (*,A-Z) that this should appear under.
+#   equivalent : an equivalent character; treat the character as equivalent to this
+#                for sorting, and ... (?)
+#   from   : a list of Initials (ie. notation pages) where one might look for this character
 
-sub stringify {
-  my(@stuff)=@_;
-  my $string = join('', map((ref $_ ? $_->textContent : $_),@stuff)); 
-  $string =~ s/^\s+//;
-  $string =~ s/\s+$//;
-  $string; }
+BEGIN {
+%NOTATION_ALIA
+  = ("\x{03B1}"=>{sort_as=>'~gr01', initial=>'A',from=>['*']}, # alpha
+     "\x{03B2}"=>{sort_as=>'~gr02', initial=>'B',from=>['*']}, # beta
+     "\x{03B3}"=>{sort_as=>'~gr03', initial=>'G',from=>['*']}, # gamma
+     "\x{03B4}"=>{sort_as=>'~gr04', initial=>'D',from=>['*']}, # delta
+     "\x{03F5}"=>{sort_as=>'~gr05', initial=>'E',from=>['*']}, # epsilon
+     "\x{03B5}"=>{sort_as=>'~gr05', initial=>'E',from=>['*']}, # varepsilon
+     "\x{03B6}"=>{sort_as=>'~gr06', initial=>'Z',from=>['*']}, # zeta
+     "\x{03B7}"=>{sort_as=>'~gr07', initial=>'H',from=>['*','E','N']}, # eta
+     "\x{03B8}"=>{sort_as=>'~gr08', initial=>'T',from=>['*']}, # theta
+     "\x{03D1}"=>{sort_as=>'~gr08', initial=>'T',from=>['*']}, # vartheta
+     "\x{03B9}"=>{sort_as=>'~gr09', initial=>'I',from=>['*']}, # iota
+     "\x{03BA}"=>{sort_as=>'~gr10', initial=>'K',from=>['*']}, # kappa
+     "\x{03BB}"=>{sort_as=>'~gr11', initial=>'L',from=>['*']}, # lambda
+     "\x{03BC}"=>{sort_as=>'~gr12', initial=>'M',from=>['*','U']},	# mu
+     "\x{03BD}"=>{sort_as=>'~gr13', initial=>'N',from=>['*','V']}, # nu
+     "\x{03BE}"=>{sort_as=>'~gr14', initial=>'X',from=>['*']}, # xi
+     # omicron ?
+     "\x{03C0}"=>{sort_as=>'~gr16', initial=>'P',from=>['*']}, # pi
+     "\x{03D6}"=>{sort_as=>'~gr16', initial=>'P',from=>['*']}, # varpi
+     "\x{03C1}"=>{sort_as=>'~gr17', initial=>'R',from=>['*','P']},	# rho
+     "\x{03F1}"=>{sort_as=>'~gr17', initial=>'R',from=>['*','P']},	# varrho
+     "\x{03C3}"=>{sort_as=>'~gr18', initial=>'S',from=>['*']}, # sigma
+     "\x{03C2}"=>{sort_as=>'~gr18', initial=>'S',from=>['*']}, # varsigma
+     "\x{03C4}"=>{sort_as=>'~gr19', initial=>'T',from=>['*']}, # tau
+     "\x{03C5}"=>{sort_as=>'~gr20', initial=>'U',from=>['*']}, # upsilon
+     "\x{03D5}"=>{sort_as=>'~gr21', initial=>'F',from=>['*','P']}, # phi
+     "\x{03C6}"=>{sort_as=>'~gr22', initial=>'F',from=>['*','P']}, # varphi
+     "\x{03C7}"=>{sort_as=>'~gr23', initial=>'C',from=>['*','X']}, # chi
+     "\x{03C8}"=>{sort_as=>'~gr24', initial=>'P',from=>['*']}, # psi
+     "\x{03C9}"=>{sort_as=>'~gr25', initial=>'O',from=>['*','W']}, # omega
+     "\x{0393}"=>{sort_as=>'~GR03', initial=>'G',from=>['*']}, # Gamma
+     "\x{0394}"=>{sort_as=>'~GR04', initial=>'D',from=>['*']}, # Delta
+     "\x{0398}"=>{sort_as=>'~GR08', initial=>'T',from=>['*']}, # Theta
+     "\x{039B}"=>{sort_as=>'~GR11', initial=>'L',from=>['*']}, # Lambda
+     "\x{039E}"=>{sort_as=>'~GR14', initial=>'X',from=>['*']}, # Xi
+     "\x{03A0}"=>{sort_as=>'~GR16', initial=>'P',from=>['*']}, # Pi
+     "\x{03A3}"=>{sort_as=>'~GR18', initial=>'S',from=>['*']}, # Sigma
+     "\x{03A5}"=>{sort_as=>'~GR20', initial=>'U',from=>['*','Y']},	# Upsilon
+     "\x{03A6}"=>{sort_as=>'~GR21', initial=>'F',from=>['*','P']}, # Phi
+     "\x{03A8}"=>{sort_as=>'~GR24', initial=>'P',from=>['*']}, # Psi
+     "\x{03A9}"=>{sort_as=>'~GR25', initial=>'O',from=>['*']}, # Omega
+     "\x{211D}"=>{equivalent=>'R'},# sort_as=>'~R'},	# Real
+     "\x{2102}"=>{equivalent=>'C'},# sort_as=>'~C'},	# Complex
+     "\x{2115}"=>{equivalent=>'N'},# sort_as=>'~N'},	# NatNumber
+     "\x{2124}"=>{equivalent=>'Z'},# sort_as=>'~Z'},	# Integer
+     "\x{211A}"=>{equivalent=>'Q'},# sort_as=>'~Q'},	# Rational
+     "\x{2119}"=>{equivalent=>'P'},# sort_as=>'~P'},	# Polynomial
+     "\x{211C}"=>{equivalent=>'R', sort_as=>'~R'},	# realpart
+     "\x{2111}"=>{equivalent=>'I', sort_as=>'~I'},	# imagpart
+     "\x{2148}"=>{equivalent=>'i'},# sort_as=>'~i'},	# iunit
+     "\x{2147}"=>{equivalent=>'e'},# sort_as=>'~e'},	# expe
+     "\x{2135}"=>{sort_as=>'~HE0',   initial=>'A',from=>['*']}, # aleph
+     "\x{210F}"=>{equivalent=>'h', sort_as=>'~h'},	# hbar
+     "\x{0131}"=>{equivalent=>'i', sort_as=>'~i'},	# imath
+     "\x{2113}"=>{equivalent=>'l', sort_as=>'~l'},	# ell
+     "\x{2118}"=>{sort_as=>'~p',      initial=>'P',from=>['*']}, # wp
+     "\x{2127}"=>{sort_as=>'~GR25',  initial=>'O',from=>['*','M']}, # mho
+     "\x{2207}"=>{sort_as=>'~nabla', initial=>'N',from=>['*','D']}, # nabla
+     "\x{2200}"=>{equivalent=>'A', sort_as=>'~A'},	# forall
+     "\x{2203}"=>{equivalent=>'E', sort_as=>'~E'},	# exists
+     "\x{2146}"=>{equivalent=>'d', sort_as=>'~d'},	# deriv
+     "\x{2202}"=>{sort_as=>'~d',     initial=>'D',from=>['*']}, # partial
+     "\x{03DD}"=>{sort_as=>'~gr21',  initial=>'F',from=>['*','P']}, # digamma
+     "\x{2132}"=>{equivalent=>'F', sort_as=>'~F'},	# Finv
+     "\x{2141}"=>{equivalent=>'G', sort_as=>'~G'},	# Game
+     "\x{1D55C}"=>{equivalent=>'k', sort_as=>'~k'},	# Bbbk
+     # Sorting tricks: "!" pushes to front, "~" pushes to end.
+     "("       =>{sort_as=>'!!('},
+     ")"       =>{sort_as=>'!!)'},
+     "["       =>{sort_as=>'!!['},
+     "]"       =>{sort_as=>'!!]'},
+     "{"       =>{sort_as=>'!!{'},
+     "}"       =>{sort_as=>'!!}'},
+     "<"       =>{sort_as=>'!!<'},
+     ">"       =>{sort_as=>'!!>'},
+     ","       =>{sort_as=>'~,'},
+     "\x{2063}"=>{sort_as=>'~,'}, # Invisible comma
+     ";"       =>{sort_as=>'~;'},
+     "~"       =>{sort_as=>'~~;'},
+     "\x{2329}"=>{equivalent=>'!!<'},	# langle
+     "\x{232A}"=>{equivalent=>'!!>'},	# rangle
+     "\x{230A}"=>{sort_as=>'!![~'}, # lfloor
+     "\x{2308}"=>{sort_as=>'!![~'}, # lceil
+     "\x{230B}"=>{sort_as=>'!!]~'}, # rfloor
+     "\x{2309}"=>{sort_as=>'!!]~'}, # rceil
+    );
+}
 
 #**********************************************************************
+__END__
+
+=head1 NAME
+
+C<dlmfpost> Customized postprocessor for DLMF
+
+
+=head1 SYNOPSIS
+
+latexmlpost [options] xmlfile
+
+ --verbose              Increases the verbosity
+ --scan                 Enables scanning of documents (default)
+ --noscan               Disables the above.
+ --prescan              Use to prescan documents into the object database
+ --dbfile=file          Specifies the file for the object database
+ --sourcedirectory=dir  Specifies the source TeX directory
+                        to find styles, graphics, etc.
+ --destination=dest     Specifies where the file should go
+ --url=url              Specifies the effective url for this document
+ --bibliography=bib.xml Specifies the bibliography to use.
+ --help                 This message.
+
+=cut
