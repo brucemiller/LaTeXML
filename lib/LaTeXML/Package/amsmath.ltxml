@@ -106,7 +106,7 @@ DefConstructor('\@@gather@newline OptionalMatch:* [Dimension]',
 	       "   </ltx:XMath>"
 	       . "</ltx:Math>"
 	       ."</ltx:equation>"
-	       ."<ltx:equation refnum='#refnum'> id='#id'"
+	       ."<ltx:equation refnum='#refnum' id='#id'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>",
 	       properties=> sub { RefStepCounter('equation') },
