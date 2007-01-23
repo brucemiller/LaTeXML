@@ -513,6 +513,9 @@ sub cmml_ci {
 # Tranlators
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Organized according to the MathML Content element lists.
+# As a general rule, presentation conversions are based on role
+# (eg "Token:role:?"), whereas content conversions are based
+# on meaning or name (eg. "Token:?:meaning").
 
 #======================================================================
 # Token elements:
@@ -570,21 +573,24 @@ DefMathML('Apply:COMPOSEOP:?', \&pmml_infix, undef);
 # Are these valid elements??
 # Wouldn't it be better to use Apply ?
 # Also coordinate with my interval symbols.
-DefMathML("Token:CONSTRUCTOR:ccinterval",undef,sub{['m:ccinterval'];});
-DefMathML("Token:CONSTRUCTOR:cointerval",undef,sub{['m:cointerval'];});
-DefMathML("Token:CONSTRUCTOR:ocinterval",undef,sub{['m:ocinterval'];});
-DefMathML("Token:CONSTRUCTOR:oointerval",undef,sub{['m:oointerval'];});
+# TO MK: How about interval-cc, etc; No need for CONSTRUCTOR role (?)
 
-DefMathML("Token:OPFUNCTION:inverse",    undef, sub{['m:inverse'];});
-DefMathML("Token:BINDER:lambda",         undef, sub{['m:lambda'];});
-DefMathML("Token:MULOP:compose",         undef, sub{['m:compose'];});
-DefMathML("Token:ID:ident",              undef, sub{['m:ident'];});
-DefMathML("Token:OPFUNCTION:domain",     undef, sub{['m:domain'];});
-DefMathML("Token:OPFUNCTION:codomain",   undef, sub{['m:codomain'];});
-DefMathML("Token:OPFUNCTION:image",      undef, sub{['m:image'];});
-DefMathML("Token:OPFUNCTION:piecewise",  undef, sub{['m:piecewise'];});
-DefMathML("Token:OPFUNCTION:piece",      undef, sub{['m:piece'];});
-DefMathML("Token:OPFUNCTION:otherwise",  undef, sub{['m:otherwise'];});
+DefMathML("Token:?:open_interval",       undef,sub{['m:interval',{closure=>"open"}];});
+DefMathML("Token:?:closed_interval",     undef,sub{['m:interval',{closure=>"closed"}];});
+DefMathML("Token:?:closed_open_interval",undef,sub{['m:interval',{closure=>"closed-open"}];});
+DefMathML("Token:?:open_closed_interval",undef,sub{['m:interval',{closure=>"open-closed"}];});
+
+
+DefMathML("Token:?:inverse",    undef, sub{['m:inverse'];}); # OPFUNCTION
+DefMathML("Token:?:lambda",     undef, sub{['m:lambda'];}); # BINDER
+DefMathML("Token:?:compose",    undef, sub{['m:compose'];}); # MULOP
+DefMathML("Token:ID:ident",     undef, sub{['m:ident'];});
+DefMathML("Token:?:domain",     undef, sub{['m:domain'];});	   # OPFUNCTION
+DefMathML("Token:?:codomain",   undef, sub{['m:codomain'];});	   # OPFUNCTION
+DefMathML("Token:?:image",      undef, sub{['m:image'];});	   # OPFUNCTION
+DefMathML("Token:?:piecewise",  undef, sub{['m:piecewise'];});	   # OPFUNCTION
+DefMathML("Token:?:piece",      undef, sub{['m:piece'];});	   # OPFUNCTION
+DefMathML("Token:?:otherwise",  undef, sub{['m:otherwise'];});	   # OPFUNCTION
 
 #======================================================================
 # Arithmetic, Algebra and Logic:
@@ -624,42 +630,42 @@ DefMathML('Apply:?:sqrt', sub { ['m:msqrt',{},pmml($_[1])]; });
 DefMathML('Apply:?:root', sub { ['m:mroot',{},pmml($_[2]),pmml_smaller($_[1])]; });
 
 # MK:
-DefMathML("Token:OPFUNCTION:quotient",  undef, sub{['m:quotient'];});
-DefMathML("Token:OPFUNCTION:factorial", undef, sub{['m:factorial'];});
-DefMathML("Token:OPFUNCTION:divide",    undef, sub{['m:divide'];});
-DefMathML("Token:OPFUNCTION:max",       undef, sub{['m:max'];});
-DefMathML("Token:OPFUNCTION:min",       undef, sub{['m:min'];});
-DefMathML("Token:ADDOP:minus",          undef, sub{['m:minus'];});
-DefMathML("Token:OPFUNCTION:uminus",    undef, sub{['m:uminus'];});
-DefMathML("Token:ADDOP:plus",           undef, sub{['m:plus'];});
-DefMathML("Token:OPFUNCTION:power",     undef, sub{['m:power'];});
-DefMathML("Token:OPFUNCTION:rem",       undef, sub{['m:rem'];});
-DefMathML("Token:MULOP:times",          undef, sub{['m:times'];});
-DefMathML("Token:OPFUNCTION:root",      undef, sub{['m:root'];});
-DefMathML("Token:OPFUNCTION:gcd",       undef, sub{['m:gcd'];});
-DefMathML("Token:CONNECTIVE:and",       undef, sub{['m:and'];});
-DefMathML("Token:CONNECTIVE:or",        undef, sub{['m:or'];});
-DefMathML("Token:CONNECTIVE:xor",       undef, sub{['m:xor'];});
-DefMathML("Token:CONNECTIVE:not",       undef, sub{['m:not'];});
-DefMathML("Token:CONNECTIVE:implies",   undef, sub{['m:implies'];});
-DefMathML("Token:BINDER:And",           undef, sub{['m:And'];});
-DefMathML("Token:BINDER:Or",            undef, sub{['m:Or'];});
-DefMathML("Token:BINDER:Xor",           undef, sub{['m:Xor'];});
-DefMathML("Token:BINDER:forall",        undef, sub{['m:forall'];});
-DefMathML("Token:BINDER:exists",        undef, sub{['m:exists'];});
-DefMathML("Token:OPFUNCTION:abs",       undef, sub{['m:abs'];});
-DefMathML("Token:OPFUNCTION:conjugate", undef, sub{['m:conjugate'];});
-DefMathML("Token:OPFUNCTION:arg",       undef, sub{['m:arg'];});
-DefMathML("Token:OPFUNCTION:real",      undef, sub{['m:real'];});
-DefMathML("Token:OPFUNCTION:imaginary", undef, sub{['m:imaginary'];});
-DefMathML("Token:OPFUNCTION:lcm",       undef, sub{['m:lcm'];});
+DefMathML("Token:?:quotient",  undef, sub{['m:quotient'];}); # OPFUNCTION
+DefMathML("Token:?:factorial", undef, sub{['m:factorial'];}); # OPFUNCTION
+DefMathML("Token:?:divide",    undef, sub{['m:divide'];});    # OPFUNCTION
+DefMathML("Token:?:max",       undef, sub{['m:max'];});	      # OPFUNCTION
+DefMathML("Token:?:min",       undef, sub{['m:min'];});	      # OPFUNCTION
+DefMathML("Token:?:minus",     undef, sub{['m:minus'];});     # ADDOP
+DefMathML("Token:?:uminus",    undef, sub{['m:uminus'];}); # OPFUNCTION
+DefMathML("Token:?:plus",      undef, sub{['m:plus'];});       # ADDOP
+DefMathML("Token:?:power",     undef, sub{['m:power'];});      # OPFUNCTION
+DefMathML("Token:?:rem",       undef, sub{['m:rem'];});	       # OPFUNCTION
+DefMathML("Token:?:times",     undef, sub{['m:times'];});      # MULOP
+DefMathML("Token:?:root",      undef, sub{['m:root'];});       # OPFUNCTION
+DefMathML("Token:?:gcd",       undef, sub{['m:gcd'];});	       # OPFUNCTION
+DefMathML("Token:?:and",       undef, sub{['m:and'];});	       # CONNECTIVE
+DefMathML("Token:?:or",        undef, sub{['m:or'];});	       # CONNECTIVE
+DefMathML("Token:?:xor",       undef, sub{['m:xor'];});	       # CONNECTIVE
+DefMathML("Token:?:not",       undef, sub{['m:not'];});	       # CONNECTIVE
+DefMathML("Token:?:implies",   undef, sub{['m:implies'];});    # CONNECTIVE
+DefMathML("Token:?:And",       undef, sub{['m:And'];});    # BINDER
+DefMathML("Token:?:Or",        undef, sub{['m:Or'];});     # BINDER
+DefMathML("Token:?:Xor",       undef, sub{['m:Xor'];});    # BINDER
+DefMathML("Token:?:forall",    undef, sub{['m:forall'];}); # BINDER
+DefMathML("Token:?:exists",    undef, sub{['m:exists'];}); # BINDER
+DefMathML("Token:?:abs",       undef, sub{['m:abs'];});	       # OPFUNCTION
+DefMathML("Token:?:conjugate", undef, sub{['m:conjugate'];});  # OPFUNCTION
+DefMathML("Token:?:arg",       undef, sub{['m:arg'];});	       # OPFUNCTION
+DefMathML("Token:?:real",      undef, sub{['m:real'];});       # OPFUNCTION
+DefMathML("Token:?:imaginary", undef, sub{['m:imaginary'];});  # OPFUNCTION
+DefMathML("Token:?:lcm",       undef, sub{['m:lcm'];});	       # OPFUNCTION
 
 # Interesting question:
 #  Are these "overspecified" ?
 #  Maybe MK wants to write floor(x), whereas I want to write \lfloor x \rfloor
 # The role should probably be ? here, so that _both_ cases translate to m:floor ???
-DefMathML("Token:OPFUNCTION:floor",     undef, sub{['m:floor'];});
-DefMathML("Token:OPFUNCTION:ceiling",   undef, sub{['m:ceiling'];});
+DefMathML("Token:?:floor",     undef, sub{['m:floor'];}); # OPFUNCTION
+DefMathML("Token:?:ceiling",   undef, sub{['m:ceiling'];}); # OPFUNCTION
 
 #======================================================================
 # Relations:
@@ -686,16 +692,16 @@ DefMathML('Apply:?:MultiRelation',sub {
   pmml_row(map(pmml($_),@elements)); });
 
 #MK
-DefMathML("Token:RELOP:eq",        undef, sub{['m:eq'];});
+DefMathML("Token:?:eq",        undef, sub{['m:eq'];}); # RELOP
 # Hmm, neq, gt, lt ?? ???
-DefMathML("Token:RELOP:neq",       undef, sub{['m:neq'];});
-DefMathML("Token:RELOP:gt",        undef, sub{['m:gt'];});
-DefMathML("Token:RELOP:lt",        undef, sub{['m:lt'];});
-DefMathML("Token:RELOP:geq",       undef, sub{['m:geq'];});
-DefMathML("Token:RELOP:leq",       undef, sub{['m:leq'];});
-DefMathML("Token:RELOP:equivalent",undef, sub{['m:equivalent'];});
-DefMathML("Token:RELOP:approx",    undef, sub{['m:approx'];});
-DefMathML("Token:RELOP:factorof",  undef, sub{['m:factorof'];});
+DefMathML("Token:?:neq",       undef, sub{['m:neq'];}); # RELOP
+DefMathML("Token:?:gt",        undef, sub{['m:gt'];});	# RELOP
+DefMathML("Token:?:lt",        undef, sub{['m:lt'];});	# RELOP
+DefMathML("Token:?:geq",       undef, sub{['m:geq'];}); # RELOP
+DefMathML("Token:?:leq",       undef, sub{['m:leq'];}); # RELOP
+DefMathML("Token:?:equivalent",undef, sub{['m:equivalent'];}); # RELOP
+DefMathML("Token:?:approx",    undef, sub{['m:approx'];});     # RELOP
+DefMathML("Token:?:factorof",  undef, sub{['m:factorof'];});   # RELOP
 
 #======================================================================
 # Calculus and Vector Calculus:
@@ -708,15 +714,15 @@ DefMathML("Token:LIMITOP:?",     \&pmml_mo);
 DefMathML('Apply:ARROW:?', \&pmml_infix);
 
 # MK
-DefMathML("Token:BINDER:int",           undef, sub{['m:int'];});
-DefMathML("Token:OPFUNCTION:diff",      undef, sub{['m:diff'];});
-DefMathML("Token:OPFUNCTION:degree",    undef, sub{['m:degree'];});
-DefMathML("Token:OPFUNCTION:limit",     undef, sub{['m:limit'];});
-DefMathML("Token:RELOP:tendsto",        undef, sub{['m:tendsto'];});
-DefMathML("Token:OPFUNCTION:divergence",undef, sub{['m:divergence'];});
-DefMathML("Token:OPFUNCTION:grad",      undef, sub{['m:grad'];});
-DefMathML("Token:OPFUNCTION:url",       undef, sub{['m:url'];});
-DefMathML("Token:OPFUNCTION:laplacian", undef, sub{['m:laplacian'];});
+DefMathML("Token:?:int",       undef, sub{['m:int'];}); # BINDER
+DefMathML("Token:?:diff",      undef, sub{['m:diff'];});    # OPFUNCTION
+DefMathML("Token:?:degree",    undef, sub{['m:degree'];});  # OPFUNCTION
+DefMathML("Token:?:limit",     undef, sub{['m:limit'];});   # OPFUNCTION
+DefMathML("Token:?:tendsto",   undef, sub{['m:tendsto'];}); # RELOP
+DefMathML("Token:?:divergence",undef, sub{['m:divergence'];});	 # OPFUNCTION
+DefMathML("Token:?:grad",      undef, sub{['m:grad'];});	 # OPFUNCTION
+DefMathML("Token:?:url",       undef, sub{['m:url'];});		 # OPFUNCTION
+DefMathML("Token:?:laplacian", undef, sub{['m:laplacian'];});	 # OPFUNCTION
 
 #======================================================================
 # Theory of Sets,
@@ -724,23 +730,23 @@ DefMathML("Token:OPFUNCTION:laplacian", undef, sub{['m:laplacian'];});
 #   setdiff, card, cartesianproduct.
 
 # MK
-DefMathML("Token:CONSTRUCTOR:set",      undef, sub{['m:set'];});
-DefMathML("Token:CONSTRUCTOR:list",     undef, sub{['m:list'];});
-DefMathML("Token:OPFUNCTION:union",     undef, sub{['m:union'];});
-DefMathML("Token:OPFUNCTION:intersect", undef, sub{['m:intersect'];});
-DefMathML("Token:RELOP:in",             undef, sub{['m:in'];});
-DefMathML("Token:RELOP:notin",          undef, sub{['m:notin'];});
-DefMathML("Token:RELOP:subset",         undef, sub{['m:subset'];});
-DefMathML("Token:RELOP:prsubset",       undef, sub{['m:prsubset'];});
-DefMathML("Token:RELOP:notsubset",      undef, sub{['m:notsubset'];});
-DefMathML("Token:RELOP:notprsubset",    undef, sub{['m:notprsubset'];});
-DefMathML("Token:OPFUNCTION:setdiff",   undef, sub{['m:setdiff'];});
-DefMathML("Token:OPFUNCTION:card",      undef, sub{['m:card'];});
-DefMathML("Token:OPFUNCTION:cartesianproduct",undef, sub{['m:cartesianproduct'];});
-DefMathML("Token:BINDER:Union",         undef, sub{['m:Union'];});
-DefMathML("Token:BINDER:Union",         undef, sub{['m:Union'];});
-DefMathML("Token:BINDER:Intersect",     undef, sub{['m:Intersect'];});
-DefMathML("Token:BINDER:Cartesianproduct",undef, sub{['m:Cartesianproduct'];});
+DefMathML("Token:?:set",             undef, sub{['m:set'];}); # CONSTRUCTOR
+DefMathML("Token:?:list",            undef, sub{['m:list'];}); # CONSTRUCTOR
+DefMathML("Token:?:union",           undef, sub{['m:union'];}); # OPFUNCTION
+DefMathML("Token:?:intersect",       undef, sub{['m:intersect'];}); # OPFUNCTION
+DefMathML("Token:?:in",              undef, sub{['m:in'];});   # RELOP
+DefMathML("Token:?:notin",           undef, sub{['m:notin'];}); # RELOP
+DefMathML("Token:?:subset",          undef, sub{['m:subset'];}); # RELOP
+DefMathML("Token:?:prsubset",        undef, sub{['m:prsubset'];}); # RELOP
+DefMathML("Token:?:notsubset",       undef, sub{['m:notsubset'];}); # RELOP
+DefMathML("Token:?:notprsubset",     undef, sub{['m:notprsubset'];}); # RELOP
+DefMathML("Token:?:setdiff",         undef, sub{['m:setdiff'];}); # OPFUNCTION
+DefMathML("Token:?:card",            undef, sub{['m:card'];});    # OPFUNCTION
+DefMathML("Token:?:cartesianproduct",undef, sub{['m:cartesianproduct'];}); # OPFUNCTION
+DefMathML("Token:?:Union",           undef, sub{['m:Union'];}); # BINDER
+DefMathML("Token:?:Union",           undef, sub{['m:Union'];}); # BINDER
+DefMathML("Token:?:Intersect",       undef, sub{['m:Intersect'];}); # BINDER
+DefMathML("Token:?:Cartesianproduct",undef, sub{['m:Cartesianproduct'];}); # BINDER
 
 #======================================================================
 # Sequences and Series:
@@ -785,33 +791,33 @@ DefMathML("Token:BINDER:prod",         undef, sub{['m:prod'];});
 # presentation styles, w/o affecting the content conversion.
 # Providing, of course, that the meaning is consistently used!
 
-DefMathML("Token:OPFUNCTION:exp",      undef, sub { ['m:exp']; });
-DefMathML("Token:OPFUNCTION:ln",       undef, sub { ['m:ln']; });
-DefMathML("Token:OPFUNCTION:log",      undef, sub { ['m:log']; });
-DefMathML("Token:TRIGFUNCTION:sin",    undef, sub { ['m:sin']; });
-DefMathML("Token:TRIGFUNCTION:cos",    undef, sub { ['m:cos']; });
-DefMathML("Token:TRIGFUNCTION:tan",    undef, sub { ['m:tan']; });
-DefMathML("Token:TRIGFUNCTION:sec",    undef, sub { ['m:sec']; });
-DefMathML("Token:TRIGFUNCTION:csc",    undef, sub { ['m:csc']; });
-DefMathML("Token:TRIGFUNCTION:cot",    undef, sub { ['m:cot']; });
-DefMathML("Token:TRIGFUNCTION:sinh",   undef, sub { ['m:sinh']; });
-DefMathML("Token:TRIGFUNCTION:cosh",   undef, sub { ['m:cosh']; });
-DefMathML("Token:TRIGFUNCTION:tanh",   undef, sub { ['m:tanh']; });
-DefMathML("Token:TRIGFUNCTION:sech",   undef, sub { ['m:sech']; });
-DefMathML("Token:TRIGFUNCTION:csch",   undef, sub { ['m:csch']; });
-DefMathML("Token:TRIGFUNCTION:coth",   undef, sub { ['m:coth']; });
-DefMathML("Token:OPFUNCTION:arcsin",   undef, sub { ['m:arcsin']; });
-DefMathML("Token:OPFUNCTION:arccos",   undef, sub { ['m:arccos']; });
-DefMathML("Token:OPFUNCTION:arctan",   undef, sub { ['m:arctan']; });
-DefMathML("Token:OPFUNCTION:arcsec",   undef, sub { ['m:arcsec']; });
-DefMathML("Token:OPFUNCTION:arccsc",   undef, sub { ['m:arccsc']; });
-DefMathML("Token:OPFUNCTION:arccot",   undef, sub { ['m:arccot']; });
-DefMathML("Token:OPFUNCTION:arcsinh",  undef, sub { ['m:arcsinh']; });
-DefMathML("Token:OPFUNCTION:arccosh",  undef, sub { ['m:arccosh']; });
-DefMathML("Token:OPFUNCTION:arctanh",  undef, sub { ['m:arctanh']; });
-DefMathML("Token:OPFUNCTION:arcsech",  undef, sub { ['m:arcsech']; });
-DefMathML("Token:OPFUNCTION:arccsch",  undef, sub { ['m:arccsch']; });
-DefMathML("Token:OPFUNCTION:arccoth",  undef, sub { ['m:arccoth']; });
+DefMathML("Token:?:exp",      undef, sub { ['m:exp']; }); # OPFUNCTION
+DefMathML("Token:?:ln",       undef, sub { ['m:ln']; });  # OPFUNCTION
+DefMathML("Token:?:log",      undef, sub { ['m:log']; }); # OPFUNCTION
+DefMathML("Token:?:sin",      undef, sub { ['m:sin']; }); # TRIGFUNCTION
+DefMathML("Token:?:cos",      undef, sub { ['m:cos']; }); # TRIGFUNCTION
+DefMathML("Token:?:tan",      undef, sub { ['m:tan']; }); # TRIGFUNCTION
+DefMathML("Token:?:sec",      undef, sub { ['m:sec']; }); # TRIGFUNCTION
+DefMathML("Token:?:csc",      undef, sub { ['m:csc']; }); # TRIGFUNCTION
+DefMathML("Token:?:cot",      undef, sub { ['m:cot']; }); # TRIGFUNCTION
+DefMathML("Token:?:sinh",     undef, sub { ['m:sinh']; });  # TRIGFUNCTION
+DefMathML("Token:?:cosh",     undef, sub { ['m:cosh']; });  # TRIGFUNCTION
+DefMathML("Token:?:tanh",     undef, sub { ['m:tanh']; });  # TRIGFUNCTION
+DefMathML("Token:?:sech",     undef, sub { ['m:sech']; });  # TRIGFUNCTION
+DefMathML("Token:?:csch",     undef, sub { ['m:csch']; });  # TRIGFUNCTION
+DefMathML("Token:?:coth",     undef, sub { ['m:coth']; });  # TRIGFUNCTION
+DefMathML("Token:?:arcsin",   undef, sub { ['m:arcsin']; }); # OPFUNCTION
+DefMathML("Token:?:arccos",   undef, sub { ['m:arccos']; }); # OPFUNCTION
+DefMathML("Token:?:arctan",   undef, sub { ['m:arctan']; }); # OPFUNCTION
+DefMathML("Token:?:arcsec",   undef, sub { ['m:arcsec']; }); # OPFUNCTION
+DefMathML("Token:?:arccsc",   undef, sub { ['m:arccsc']; }); # OPFUNCTION
+DefMathML("Token:?:arccot",   undef, sub { ['m:arccot']; }); # OPFUNCTION
+DefMathML("Token:?:arcsinh",  undef, sub { ['m:arcsinh']; }); # OPFUNCTION
+DefMathML("Token:?:arccosh",  undef, sub { ['m:arccosh']; }); # OPFUNCTION
+DefMathML("Token:?:arctanh",  undef, sub { ['m:arctanh']; }); # OPFUNCTION
+DefMathML("Token:?:arcsech",  undef, sub { ['m:arcsech']; }); # OPFUNCTION
+DefMathML("Token:?:arccsch",  undef, sub { ['m:arccsch']; }); # OPFUNCTION
+DefMathML("Token:?:arccoth",  undef, sub { ['m:arccoth']; }); # OPFUNCTION
 
 
 # MK (were identical, except for my own typo)
@@ -821,12 +827,12 @@ DefMathML("Token:OPFUNCTION:arccoth",  undef, sub { ['m:arccoth']; });
 #   mean, sdev, variance, median, mode, moment, momentabout
 
 # MK
-DefMathML("Token:OPFUNCTION:mean",     undef, sub{['m:mean'];});
-DefMathML("Token:OPFUNCTION:sdev",     undef, sub{['m:sdev'];});
-DefMathML("Token:OPFUNCTION:var",      undef, sub{['m:var'];});
-DefMathML("Token:OPFUNCTION:median",   undef, sub{['m:median'];});
-DefMathML("Token:OPFUNCTION:mode",     undef, sub{['m:mode'];});
-DefMathML("Token:OPFUNCTION:moment",   undef, sub{['m:moment'];});
+DefMathML("Token:?:mean",     undef, sub{['m:mean'];}); # OPFUNCTION
+DefMathML("Token:?:sdev",     undef, sub{['m:sdev'];}); # OPFUNCTION
+DefMathML("Token:?:var",      undef, sub{['m:var'];});	# OPFUNCTION
+DefMathML("Token:?:median",   undef, sub{['m:median'];}); # OPFUNCTION
+DefMathML("Token:?:mode",     undef, sub{['m:mode'];});	  # OPFUNCTION
+DefMathML("Token:?:moment",   undef, sub{['m:moment'];}); # OPFUNCTION
 
 #======================================================================
 # Linear Algebra:
@@ -834,14 +840,14 @@ DefMathML("Token:OPFUNCTION:moment",   undef, sub{['m:moment'];});
 #   vectorproduct, scalarproduct, outerproduct.
 
 # MK
-DefMathML("Token:CONSTRUCTOR:vector",       undef, sub{['m:vector'];});
-DefMathML("Token:CONSTRUCTOR:matrix",       undef, sub{['m:matrix'];});
-DefMathML("Token:OPFUNCTION:determinant",   undef, sub{['m:determinant'];});
-DefMathML("Token:OPFUNCTION:transpose",     undef, sub{['m:transpose'];});
-DefMathML("Token:OPFUNCTION:selector",      undef, sub{['m:selector'];});
-DefMathML("Token:OPFUNCTION:vectorproduct", undef, sub{['m:vectorproduct'];});
-DefMathML("Token:OPFUNCTION:scalarproduct", undef, sub{['m:scalarproduct'];});
-DefMathML("Token:OPFUNCTION:outerproduct",  undef, sub{['m:outerproduct'];});
+DefMathML("Token:?:vector",        undef, sub{['m:vector'];}); # CONSTRUCTOR
+DefMathML("Token:?:matrix",        undef, sub{['m:matrix'];}); # CONSTRUCTOR
+DefMathML("Token:?:determinant",   undef, sub{['m:determinant'];}); # OPFUNCTION
+DefMathML("Token:?:transpose",     undef, sub{['m:transpose'];});   # OPFUNCTION
+DefMathML("Token:?:selector",      undef, sub{['m:selector'];});    # OPFUNCTION
+DefMathML("Token:?:vectorproduct", undef, sub{['m:vectorproduct'];}); # OPFUNCTION
+DefMathML("Token:?:scalarproduct", undef, sub{['m:scalarproduct'];}); # OPFUNCTION
+DefMathML("Token:?:outerproduct",  undef, sub{['m:outerproduct'];}); # OPFUNCTION
 
 #======================================================================
 # Semantic Mapping Elements
@@ -910,15 +916,16 @@ sub do_cfrac {
       my $last = pop(@denomargs);			# Check last operand in denominator.
       # this is the current contribution to the cfrac (if we match the last term)
       my $curr = ['m:mfrac',{},pmml_smaller($numer),
-		  ['m:mrow',{},pmml_infix($denomop,@denomargs),
+		  ['m:mrow',{},
+		   (@denomargs > 1 ? pmml_infix($denomop,@denomargs) : pmml($denomargs[0])),
 		   pmml_smaller($denomop)]];
       if(getTokenMeaning($last) eq 'cdots'){ # Denom ends w/ \cdots
 	return ($curr,pmml($last));}		   # bring dots up to toplevel
       elsif($last->localname eq 'XMApp'){	   # Denom ends w/ application --- what kind?
 	my($lastop,@lastargs)=element_nodes($last);
 	if(getTokenMeaning($lastop) eq 'cfrac'){ # Denom ends w/ cfrac, pull it to toplevel
-#	  return ($curr,do_cfrac(@lastargs)); }
-	  return ($curr,pmml($last)); }
+	  return ($curr,do_cfrac(@lastargs)); }
+#	  return ($curr,pmml($last)); }
 	elsif((getTokenMeaning($lastop) eq "\x{2062}")  # Denom ends w/ * (invisible)
 	      && (scalar(@lastargs)==2) && (getTokenMeaning($lastargs[0]) eq 'cdots')){
 	  return ($curr,pmml($lastargs[0]),pmml($lastargs[1])); }}}}

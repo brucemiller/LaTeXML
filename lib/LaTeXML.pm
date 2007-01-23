@@ -70,9 +70,9 @@ sub convertString {
   $self->convertDocument($digested); }
 
 
-sub getStatus {
+sub getStatusMessage {
   my($self)=@_;
-  $$self{state}->getStatus; }
+  $$self{state}->getStatusMessage; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Mid-level API.
@@ -139,6 +139,9 @@ sub convertDocument {
 
   NoteBegin("Building");
   $model->loadDocType(); # If needed?
+  if(my $paths = $STATE->lookupValue('SEARCHPATHS')){
+    if($STATE->lookupValue('INCLUDE_COMMENTS')){
+      $document->insertPI('latexml',searchpaths=>join(',',@$paths)); }}
   $document->absorb($digested);
   NoteEnd("Building");
 
@@ -189,15 +192,16 @@ But also see the convenient command line script L<latexml> which suffices for mo
 
 Creates a new LaTeXML object for transforming TeX files into XML. 
 
-   verbosity  : bigger makes it more verbose, smaller is quieter
-                0 is the default,
-   strict     : If true, undefined control sequences and 
-                invalid document constructs give fatal errors, 
-                instead of warnings.
-   includeComments : If false, comments will be excluded
-               from the result document.
-   preload    : an array of modules to preload
-   searchpath : an array of paths to be searched for Packages and style files.
+ verbosity  : Controls verbosity; higher is more verbose,
+              smaller is quieter. 0 is the default.
+ strict     : If true, undefined control sequences and 
+              invalid document constructs give fatal
+              errors, instead of warnings.
+ includeComments : If false, comments will be excluded
+              from the result document.
+ preload    : an array of modules to preload
+ searchpath : an array of paths to be searched for Packages
+              and style files.
 
 (these generally set config variables in the L<LaTeXML::State> object)
 

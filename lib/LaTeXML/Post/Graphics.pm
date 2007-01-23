@@ -63,7 +63,7 @@ sub new {
 sub process {
   my($self,$doc)=@_;
   local $LaTeXML::Post::Graphics::SEARCHPATHS
-    = [$doc->getSourceDirectory, $self->findGraphicsPaths($doc)];
+    = [$doc->getSearchPaths, $self->findGraphicsPaths($doc)];
   $self->ProgressDetailed("Using graphicspaths: "
 			  .join(', ',@$LaTeXML::Post::Graphics::SEARCHPATHS));
 
@@ -141,8 +141,10 @@ sub processGraphic {
 
 sub transformGraphic {
   my($self,$doc,$node,$source,$transform)=@_;
+  my $sourcedir=$doc->getSourceDirectory;
+  ($sourcedir) = $doc->getSearchPaths unless $sourcedir; # Fishing...
   my ($reldir,$name,$srctype)
-    = pathname_split(pathname_relative($source,$doc->getSourceDirectory));
+    = pathname_split(pathname_relative($source,$sourcedir));
   my $key = (ref $self).':'.join('|',"$reldir$name.$srctype", map(join(' ',@$_),@$transform));
   $self->ProgressDetailed("Processing $key");
 

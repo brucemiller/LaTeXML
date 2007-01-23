@@ -10,7 +10,7 @@
 <xsl:template name="head">
   <head>
     <title><xsl:value-of select="normalize-space(*/ltx:title)"/></title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <style type="text/css">
       img.math { vertical-align:middle }
       .framed  { border:1px solid black;}
@@ -135,13 +135,14 @@
 </xsl:param>
 
 <xsl:param name="section_level">
-  <xsl:value-of select="$chapter_level+number(boolean(//ltx:section))"/>
+  <xsl:value-of select="$chapter_level+number(boolean(//ltx:section | //ltx:appendix))"/>
 </xsl:param>
 
+<!--
 <xsl:param name="appendix_level">
   <xsl:value-of select="$chapter_level+number(boolean(//ltx:appendix))"/>
 </xsl:param>
-
+-->
 <xsl:param name="bibliography_level">
   <xsl:value-of select="$chapter_level+number(boolean(//ltx:bibliography))"/>
 </xsl:param>
@@ -172,6 +173,12 @@
     <xsl:call-template name="maketitle"/>
   </xsl:element>
 </xsl:template>
+<xsl:template match="ltx:document/ltx:subtitle">
+  <xsl:element name="{concat('h',$document_level+1)}">
+    <xsl:attribute name="class">subtitle</xsl:attribute>
+    <xsl:call-template name="maketitle"/>
+  </xsl:element>
+</xsl:template>
 
 <xsl:template match="ltx:part/ltx:title">
   <xsl:element name="{concat('h',$part_level)}">
@@ -190,7 +197,8 @@
   </xsl:element>
 </xsl:template>
 <xsl:template match="ltx:appendix/ltx:title">
-  <xsl:element name="{concat('h',$appendix_level)}">
+<!--  <xsl:element name="{concat('h',$appendix_level)}">-->
+  <xsl:element name="{concat('h',$section_level)}">
     Appendix <xsl:call-template name="maketitle"/></xsl:element>
 </xsl:template>
 <xsl:template match="ltx:bibliography/ltx:title">
@@ -231,7 +239,8 @@
   <xsl:if test="../@refnum and not(../@refnum = '')">
     <xsl:value-of select="../@refnum"/>.<xsl:text> </xsl:text>
   </xsl:if>
-  <xsl:apply-templates mode="intitle"/>
+<!--  <xsl:apply-templates mode="intitle"/>-->
+  <xsl:apply-templates/>
 </xsl:template>
 
 <xsl:template match="ltx:toctitle"/>
@@ -268,7 +277,7 @@
   <xsl:apply-templates select="ltx:title" mode="toctitle"/>
   <xsl:if test="ltx:part|ltx:chapter|ltx:section|ltx:appendix|ltx:bibliography|ltx:index
                 |ltx:subsection|ltx:subsubsection|ltx:paragraph|ltx:subparagraph">
-    <ul><xsl:apply-templates mode="TOC">
+    <ul class="toc"><xsl:apply-templates mode="TOC">
 	<xsl:with-param name="TOC_DEPTH" select="1+$TOC_DEPTH"/>
       </xsl:apply-templates>
     </ul>
@@ -289,7 +298,8 @@
     <xsl:if test="../@refnum">
       <xsl:value-of select="../@refnum"/>.<xsl:text> </xsl:text>
     </xsl:if>
-    <xsl:apply-templates mode="toctitle"/>
+<!--    <xsl:apply-templates mode="toctitle"/>-->
+    <xsl:apply-templates/>
   </xsl:element>
 </xsl:template>
 
@@ -303,8 +313,16 @@
 </xsl:template>
 
 <xsl:template match="ltx:TOC">
-  <h6>Contents</h6>
-  <xsl:apply-templates/>
+  <xsl:choose>
+    <xsl:when test="@class='appendixtoc'">	     
+     <h6>Appendices</h6>
+     <xsl:apply-templates/>
+    </xsl:when>
+    <xsl:otherwise>
+     <h6>Contents</h6>
+     <xsl:apply-templates/>
+    </xsl:otherwise>
+  </xsl:choose>
 </xsl:template>
 
 <xsl:template match="ltx:toclist" mode="short">
@@ -350,7 +368,24 @@
       ====================================================================== -->
 
 <xsl:template match="ltx:ref">
-  <a href="{@href}" title="{@title}"><xsl:apply-templates/></a>
+  <xsl:choose>
+    <xsl:when test="@href=''">
+      <span class="here"><xsl:apply-templates/></span>
+    </xsl:when>
+    <xsl:otherwise>
+      <a href="{@href}" title="{@title}">
+        <xsl:if test="@class">
+	  <xsl:attribute name="class"><xsl:value-of select="@class"/></xsl:attribute>
+        </xsl:if>
+        <xsl:apply-templates/>
+      </a>
+    </xsl:otherwise>
+  </xsl:choose>    
+</xsl:template>
+
+<!-- can't nest-->
+<xsl:template match="ltx:ref//ltx:ref">
+  <span><xsl:apply-templates/></span>
 </xsl:template>
 
 <!-- ======================================================================
@@ -371,6 +406,10 @@
      Block Elements
      ====================================================================== -->
 
+<xsl:template match="ltx:break">
+  <br/>
+</xsl:template>
+
 <xsl:template match="ltx:para">
   <div class="para">
     <xsl:call-template name="add_id"/>
@@ -388,9 +427,19 @@
 </xsl:template>
 
 <xsl:template match="ltx:toccaption"/>
-<xsl:template match="ltx:caption">
+<xsl:template match="ltx:table/ltx:caption">
   <div class='caption'>  
-    <xsl:apply-templates select="../@refnum"/>
+    <xsl:if test="../@refnum">
+      Table <xsl:apply-templates select="../@refnum"/><xsl:text>. </xsl:text>
+    </xsl:if>
+    <xsl:apply-templates/>
+  </div>
+</xsl:template>
+<xsl:template match="ltx:figure/ltx:caption">
+  <div class='caption'>  
+    <xsl:if test="../@refnum">
+      Figure <xsl:apply-templates select="../@refnum"/><xsl:text>. </xsl:text>
+    </xsl:if>
     <xsl:apply-templates/>
   </div>
 </xsl:template>
@@ -498,7 +547,14 @@
   <span class="ERROR" style="color:red"><xsl:apply-templates/></span>
 </xsl:template>
 <xsl:template match="ltx:verbatim">
-  <tt><xsl:apply-templates/></tt>
+    <xsl:choose>
+      <xsl:when test="contains(text(),'&#xA;')">
+	<pre><xsl:apply-templates/></pre>
+      </xsl:when>
+      <xsl:otherwise>
+	<code><xsl:apply-templates/></code>
+      </xsl:otherwise>
+    </xsl:choose>
 </xsl:template>
 
 <!-- ======================================================================
@@ -540,7 +596,7 @@
 
 <xsl:template match="ltx:item" mode="description">
   <dt><xsl:apply-templates select="ltx:tag"/></dt>
-  <dd><xsl:apply-templates select="not(ltx:tag)"/></dd>
+  <dd><xsl:apply-templates select="*[position() &gt; 1]"/></dd>
 </xsl:template>
 
 <xsl:template match="ltx:tag">

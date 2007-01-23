@@ -353,14 +353,15 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Mouth>, C<LaTeXML::FileMouth> and C<LaTeXML::StyleMouth> -- tokenize
-the input.
+C<LaTeXML::Mouth> - tokenize the input.
 
 =head1 DESCRIPTION
 
 A C<LaTeXML::Mouth> (and subclasses) is responsible for I<tokenizing>, ie.
 converting plain text and strings into L<LaTeXML::Token>s according to the
 current category codes (catcodes) stored in the C<LaTeXML::State>.
+
+
 C<LaTeXML::FileMouth> specializes C<LaTeXML::Mouth> to tokenize from a file.
 C<LaTeXML::StyleMouth> further specializes C<LaTeXML::FileMouth> for processing
 style files, setting the catcode for C<@> and ignoring comments.
@@ -409,9 +410,10 @@ This is useful for the C<\verb> command.
 
 =item C<< $lines = $mouth->readRawLines($endline,$exact); >>
 
-Reads raw lines (not tokenized) from C<$mouth> until a line matches C<$endline>.
-If C<$exact> is true, the matching is done like with the c<comment> package;
-the ending line must match exactly, with no leading or trailing data.
+Reads raw (untokenized) lines from C<$mouth> until a line matching C<$endline>
+is found.
+If C<$exact> is true, C<$endline> is matched exactly, with no leading or trailing
+data (like in the c<comment> package).
 Otherwise, the match is done like with the c<verbatim> environment;
 any text preceding C<$endline> is returned as the last line, and any characters
 after C<$endline> remains in the mouth to be tokenized.

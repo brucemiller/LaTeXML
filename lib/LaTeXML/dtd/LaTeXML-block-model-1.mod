@@ -16,7 +16,8 @@
      Block Elements
      ====================================================================== -->
 
-<!ELEMENT %LaTeXML.p.qname; %LaTeXML.Inline.model;>
+<!ELEMENT %LaTeXML.p.qname; 
+	  (#PCDATA | %LaTeXML.Inline.mix; | %LaTeXML.break.qname;)*>
 <!ATTLIST %LaTeXML.p.qname; %LaTeXML.Common.attrib;>
 
 <!-- with some trepidation, allow captions here too -->
@@ -35,15 +36,19 @@
 <!ATTLIST %LaTeXML.equationgroup.qname;
 	  %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 
-<!ELEMENT %LaTeXML.quote.qname;  %LaTeXML.Inline.model;>
+<!ELEMENT %LaTeXML.quote.qname;
+	  (#PCDATA | %LaTeXML.Inline.mix; | %LaTeXML.break.qname;)*>
+
 <!ATTLIST %LaTeXML.quote.qname; %LaTeXML.Common.attrib;>
 
 <!-- generic block (fallback) -->
-<!ELEMENT %LaTeXML.block.qname;  %LaTeXML.Inline.model;>
+<!ELEMENT %LaTeXML.block.qname; 
+	  (#PCDATA | %LaTeXML.Inline.mix; | %LaTeXML.break.qname;)*>
 <!ATTLIST %LaTeXML.block.qname;
 	  %LaTeXML.Common.attrib;
 	  class CDATA #IMPLIED>
 
+<!ELEMENT %LaTeXML.break.qname; EMPTY>
 
 <!-- ======================================================================
      Misc Elements
@@ -57,7 +62,8 @@
 	  width CDATA #IMPLIED
 	  justified CDATA #IMPLIED>
 
-<!ELEMENT %LaTeXML.verbatim.qname; %LaTeXML.Inline.model;>
+<!ELEMENT %LaTeXML.verbatim.qname;
+	  (#PCDATA | %LaTeXML.Inline.mix; | %LaTeXML.break.qname;)*>
 <!ATTLIST %LaTeXML.verbatim.qname;
 	  %LaTeXML.Common.attrib; 
 	  font CDATA #IMPLIED>

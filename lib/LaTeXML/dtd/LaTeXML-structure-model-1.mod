@@ -44,7 +44,8 @@
 	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*, (%LaTeXML.subsection.qname;)*)>
 <!ELEMENT %LaTeXML.appendix.qname;
           ((%LaTeXML.SectionalFrontMatter.class;)*,
-	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*, (%LaTeXML.subsection.qname;)*)>
+	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*,
+          (%LaTeXML.subsection.qname;)*, (%LaTeXML.section.qname;)*)>
 <!ELEMENT %LaTeXML.subsection.qname;
           ((%LaTeXML.SectionalFrontMatter.class;)*,
 	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*, (%LaTeXML.subsubsection.qname;)*)>
@@ -80,6 +81,9 @@
 
 <!ELEMENT %LaTeXML.toctitle.qname;     %LaTeXML.Inline.model; >
 <!ATTLIST %LaTeXML.toctitle.qname;     %LaTeXML.Common.attrib;>
+
+<!ELEMENT %LaTeXML.subtitle.qname;     %LaTeXML.Inline.model; >
+<!ATTLIST %LaTeXML.subtitle.qname;     %LaTeXML.Common.attrib;>
 
 <!ELEMENT %LaTeXML.personname.qname;   %LaTeXML.Inline.model; >
 <!ATTLIST %LaTeXML.personname.qname;   %LaTeXML.Common.attrib;>

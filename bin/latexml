@@ -75,7 +75,7 @@ if($digested){
 	my $dom = $latexml->convertDocument($digested); 
 	$serialized = $dom->toString(1);
     }}
-print STDERR "\nConversion complete: ".$latexml->getStatus.".\n";
+print STDERR "\nConversion complete: ".$latexml->getStatusMessage.".\n";
 
 if($output){
   open(OUT,">:utf8",$output) or die "Couldn't open output file $output: $!"; }
@@ -91,41 +91,44 @@ __END__
 
 =head1 NAME
 
-C<latexml> transforms a TeX/LaTeX file into XML
+C<latexml> - transforms a TeX/LaTeX file into XML.
 
 =head1 SYNOPSIS
 
 latexml [options] texfile
 
-  Options:
-   --output=outputfile        specifies output file; default prints to stdout.
-   --preload=module           requests loading of an optional module; can be repeated
-   --path=dir                 adds dir to the paths searched for files, modules, etc; 
-   --quiet                    suppress messages (can repeat)
-   --verbose                  more informative output (can repeat)
-   --strict                   makes latexml less forgiving of errors
-   --xml                      requests xml output (default).
-   --tex                      requests TeX output after expansion.
-   --box                      requests box output after expansion and digestion.
-   --noparse                  suppresses parsing math
-   --nocomments               omit comments from the output
-   --VERSION                  show version number.
-   --debug=package            enables debugging output for the named package
-   --help                     shows help message.
+ Options:
+ --output=file      specifies output file; default to stdout.
+ --preload=module   requests loading of an optional module;
+                    can be repeated
+ --path=dir         adds dir to the paths searched for files,
+                    modules, etc; 
+ --documentid=id    assign an id to the document root.
+ --quiet            suppress messages (can repeat)
+ --verbose          more informative output (can repeat)
+ --strict           makes latexml less forgiving of errors
+ --xml              requests xml output (default).
+ --tex              requests TeX output after expansion.
+ --box              requests box output after expansion
+                    and digestion.
+ --noparse          suppresses parsing math
+ --nocomments       omit comments from the output
+ --VERSION          show version number.
+ --debug=package    enables debugging output for the named
+                    package
+ --help             shows this help message.
 
 If texfile is '-', latexml reads the TeX source from standard input.
 
 =head1 OPTIONS AND ARGUMENTS
 
-latexml transforms a TeX/LaTeX file into XML.
-
 =over 4
 
-=item B<--output=>I<outputfile>
+=item B<--output>=I<file>
 
 Specifies the output file; by default the XML is written to stdout.
 
-=item B<--preload=module>
+=item B<--preload>=I<module>
 
 Requests the loading of an optional module or package.  This may be useful if the TeX code
 does not specificly require the module (eg. through input or usepackage).
@@ -134,6 +137,13 @@ does not specificly require the module (eg. through input or usepackage).
 
 Add I<dir> to the search paths used when searching for files, modules, style files, etc;
 somewhat like TEXINPUTS.  This option can be repeated.
+
+=item B<--documentid>=I<id>
+
+Assigns an ID to the root element of the XML document.  This ID is generally
+inherited as the prefix of ID's on all other elements within the document.
+This is useful when constructing a site of multiple documents so that
+all nodes have unique IDs.
 
 =item B<--quiet>
 

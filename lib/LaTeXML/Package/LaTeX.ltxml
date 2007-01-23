@@ -392,13 +392,17 @@ DefEnvironment('{flushright}',
 #======================================================================-
 # C.6.1 Quotations and Verse
 #======================================================================-
+DefConstructor('\@block@cr', "<ltx:break/>");
 DefEnvironment('{quote}',   
-	       '<ltx:quote>#body</ltx:quote>');
+	       '<ltx:quote>#body</ltx:quote>',
+	       beforeDigest=>sub{ Let('\\\\','\@block@cr');} );
 DefEnvironment('{quotation}',
-	       '<ltx:quotation>#body</ltx:quotation>');
+	       '<ltx:quotation>#body</ltx:quotation>',
+	       beforeDigest=>sub{ Let('\\\\','\@block@cr'); });
 # NOTE: Handling of \\ within these environments?
 DefEnvironment('{verse}',
-	       '<ltx:verse>#body</ltx:verse>');
+	       '<ltx:quotation class="verse">#body</ltx:quotation>',
+	       beforeDigest=>sub{ Let('\\\\','\@block@cr');});
 
 #======================================================================
 # C.6.2 List-Making environments
@@ -511,24 +515,37 @@ InstallDefinition(LaTeXML::Constructor
 # Hmm, this should really be constructor or something so that at least typewriter font
 # is used, if not wrapped in a <verb> something???
 our $EMPTY_CATTABLE=LaTeXML::State->new(catcodes=>'none');
-DefConstructor('\verb', "<ltx:verbatim font='#font'>#body</ltx:verbatim>",
-###	       font=>{family=>'typewriter'},
+##DefConstructor('\verb', "<ltx:verbatim font='#font'>#body</ltx:verbatim>",
+##	       beforeDigest=>[sub { $_[0]->bgroup; MergeFont(family=>'typewriter'); }],
+##	       afterDigest=>sub { 
+##		 my($stomach,$whatsit)=@_;
+##		 $stomach->egroup; 
+##		 my $font = $whatsit->getFont;
+##		 my $loc  = $whatsit->getLocator;
+##		 my $mouth = $stomach->getGullet->getMouth;
+##		 my ($init,$body);
+##		 { local $STATE = $EMPTY_CATTABLE;
+##		   $init = $mouth->readToken;
+##		   $init = $mouth->readToken if $init->toString eq '*'; # Should I bother handling \verb* ?
+##		   $body = $mouth->readTokens($init); }
+##		 $whatsit->setBody(map(LaTeXML::Box->new($_->toString,$font,$loc,$_),$body->unlist,$init)); },
+##	       reversion=>sub { (T_CS('\verb'),$_[0]->getTrailer->revert,
+##				 $_[0]->getBody->revert,$_[0]->getTrailer->revert); }
+##);
+
+DefExpandable('\verb', sub {
+  my($gullet)=@_;
+  my $mouth = $gullet->getMouth;
+  my ($init,$body);
+  { local $STATE = $EMPTY_CATTABLE;
+    $init = $mouth->readToken;
+    $init = $mouth->readToken if $init->toString eq '*'; # Should I bother handling \verb* ?
+    $body = $mouth->readTokens($init); }
+  Invocation(T_CS('\@verb'),Tokens($init),$body)->unlist; });
+DefConstructor('\@verb{}{}', "<ltx:verbatim font='#font'>#2</ltx:verbatim>",
 	       beforeDigest=>[sub { $_[0]->bgroup; MergeFont(family=>'typewriter'); }],
-	       afterDigest=>sub { 
-		 my($stomach,$whatsit)=@_;
-		 $stomach->egroup; 
-		 my $font = $whatsit->getFont;
-		 my $loc  = $whatsit->getLocator;
-		 my $mouth = $stomach->getGullet->getMouth;
-		 my ($init,$body);
-		 { local $STATE = $EMPTY_CATTABLE;
-		   $init = $mouth->readToken;
-		   $init = $mouth->readToken if $init->toString eq '*'; # Should I bother handling \verb* ?
-		   $body = $mouth->readTokens($init); }
-		 $whatsit->setBody(map(LaTeXML::Box->new($_->toString,$font,$loc,$_),$body->unlist,$init)); },
-	       reversion=>sub { (T_CS('\verb'),$_[0]->getTrailer->revert,
-				 $_[0]->getBody->revert,$_[0]->getTrailer->revert); }
-);
+	       afterDigest=>sub { $_[0]->egroup; },
+	       reversion=>'\verb#1#2#1');
 
 # This is defined by the alltt package.
 # Environment('alltt', ?);
@@ -611,39 +628,28 @@ DefExpandable('\ensuremath{}', sub {
 
 # NOTE: The numbering isn't right.
 # And the parseability will have to be worked on!
-DefEnvironment('{eqnarray}',
-	       sub { my($document,%props)=@_;
-		     $document->openElement('ltx:equation',
-					    refnum=>$props{refnum}, id=>$props{id});
-		     $document->openElement('ltx:Math',mode=>'display');
-		     $document->openElement('ltx:XMath');
-		     my $n=$props{trailer}->getProperty('n_columns');
-		     alignment($document,$props{body},
-			       parseTabularPattern('rcl'),0,
-			       name=>'eqnarray');
+# Also, the TeX gets alignments, so we'll have to be careful creating images!!
+
+DefMacro('\eqnarray',    '\@@eqnarray\@start@alignment');
+DefMacro('\endeqnarray', '\@finish@alignment\end@eqnarray');
+DefMacro('\csname eqnarray*\endcsname',    '\@@eqnarray*\@start@alignment');
+DefMacro('\csname endeqnarray*\endcsname', '\@finish@alignment\end@eqnarray');
+DefConstructor('\@@eqnarray OptionalMatch:* AlignmentBody:\end@eqnarray',
+	       sub {
+		 my($document,$star,$body,%props)=@_;
+		 $document->openElement('ltx:equation',refnum=>$props{refnum},id=>$props{id});
+		 $document->openElement('ltx:Math',mode=>'display');
+		 $document->openElement('ltx:XMath');
+		 constructAlignment($document,$body,attributes=>{name=>'eqnarray'});
 		 $document->closeElement('ltx:XMath');
 		 $document->closeElement('ltx:Math');
 		 $document->closeElement('ltx:equation'); },
 	       mode=>'display_math',
-	       properties=> sub { RefStepCounter('equation') },
-	       beforeDigest=>\&before_alignment,
-	       afterDigest=>\&after_alignment);
-DefEnvironment('{eqnarray*}',
-	       sub { my($document,%props)=@_;
-		     $document->openElement('ltx:equation', id=>$props{id});
-		     $document->openElement('ltx:Math',mode=>'display');
-		     $document->openElement('ltx:XMath');
-		     my $n=$props{trailer}->getProperty('n_columns');
-		     alignment($document,$props{body},
-			       parseTabularPattern('rcl'),0,
-			       name=>'eqnarray');
-		 $document->closeElement('ltx:XMath');
-		 $document->closeElement('ltx:Math');
-		 $document->closeElement('ltx:equation'); },
-	       mode=>'display_math',
-	       properties=> sub { RefStepID('equation') },
-	       beforeDigest=>\&before_alignment,
-	       afterDigest=>\&after_alignment);
+	       beforeDigest=>sub { alignmentBindings('rcl'); },
+	       properties=> sub { ($_[1] ? RefStepID('equation') : RefStepCounter('equation')); },
+	       afterDigest=>sub { 
+		 $_[1]->setProperty(body=>$_[1]->getArg(2));},	# So we get TeX
+	       reversion=>'\begin{eqnarray#1}#2\end{eqnarray#1}');
 
 DefMacro('\lefteqn{}','\multicolumn{3}{l}{#1\mbox{}}');
 
@@ -1028,38 +1034,38 @@ DefRegister('\marginparpush',Dimension(0));
 # [We'll ignore HTML's frame, rules and colgroup mechanisms.]
 
 # The Core alignment support is in LaTeXML::Util::Alignment and in TeX.ltxml
+DefMacro('\tabular[]{}',  '\@alignment@bindings{#2}\@@tabular[#1]{#2}\@start@alignment');
+DefMacro('\endtabular',   '\@finish@alignment\@end@tabular');
+Let('\@end@tabular','\relax');
+DefConstructor('\@@tabular[]{} AlignmentBody:\@end@tabular',
+	       sub { my($document,$pos,$pat,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{position=>$pos},
+					guess_headers=>1); },
+	       reversion=>'\begin{tabular}[#1]{#2}#3\end{tabular}');
+DefMacro('\csname tabular*\endcsname{Dimension}[]{}',
+	 '\@alignment@bindings{#3}\@@tabular@{#1}[#2]{#3}\@start@alignment');
+DefMacro('\csname endtabular*\endcsname',
+	 '\@finish@alignment\@end@tabular@');
+DefConstructor('\@@tabular@{Dimension}[]{} AlignmentBody:\@end@tabular@',
+	       sub { my($document,$width,$pos,$pat,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{position=>$pos,width=>$width},
+					guess_headers=>1); },
+	       reversion=>'\begin{tabular*}{#1}[#2]{#3}#4\end{tabular*}');
 
+Let('\multicolumn','\@multicolumn');
 
-DefEnvironment('{tabular}[] TabularPattern',
-	       sub { my($document,$pos,$pattern,%props)=@_;
-		     alignment($document,$props{body},$pattern,1); },
-	       beforeDigest=>\&before_alignment,
-	       afterDigest=>\&after_alignment,
-	       mode=>'text');
+DefPrimitive('\hline',undef);	# Redefined inside tabular
 
-DefEnvironment('{tabular*}{}[] TabularPattern', 
-	       sub { my($document,$width,$pos,$pattern,%props)=@_;
-		     alignment($document,$props{body},$pattern,1); },
-	       beforeDigest=>\&before_alignment,
-	       afterDigest=>\&after_alignment,
-	       mode=>'text');
-###Tag('ltx:tabular', afterClose=>\&guess_alignment_headers);
-
-# Open, but don't close, so "&" can operate correctly.
-# The td is already open, but we need to replace it's attributes.
-DefConstructor('\multicolumn{Number} TabularPattern {}', \&alignment_multicol);
-
-##DefConstructor('\hline',sub { alignment_hline($_[0],0); });
-DefPrimitive('\hline',undef);
-
-DefConstructor('\cline{}', sub {
-  my($document,$cols)=@_;
-  $cols = ToString($cols);
-  my @cols=();
-  while($cols=~ s/^,?(\d+)//){
-    my $n = $1;
-    push(@cols, ($cols =~ s/^-(\d+)// ? ($n-1..$1-1) : ($n-1))); }
-  alignment_hline($document,0,@cols); });
+DefConstructor('\cline{}','',
+	       afterDigest=>sub {
+		 my($stomach,$whatsit)=@_;
+		 my $cols = ToString($whatsit->getArg(1));
+		 my @cols=();
+		 while($cols=~ s/^,?(\d+)//){
+		   my $n = $1;
+		   push(@cols, ($cols =~ s/^-(\d+)// ? ($n..$1) : ($n))); }
+		 LookupValue('Alignment')->addLine('t',@cols);
+		 return; });
 
 DefConstructor('\vline',"");	# ???
 DefRegister('\arraycolsep',Dimension(0));
@@ -1071,12 +1077,16 @@ DefMacro('\arraystretch',"1");
 #======================================================================
 # Array and similar environments
 
-DefEnvironment('{array}[] TabularPattern',sub {
-   my($document,$pos,$colspec,%props)=@_;
-   alignment($document,$props{body},$colspec,1,role=>'ARRAY'); },
-	       requireMath=>1,
-	       beforeDigest=>\&before_alignment,
-	       afterDigest=>\&after_alignment);
+DefMacro('\array[]{}',
+	 '\@alignment@bindings{#2}\@@array[#1]{#2}\@start@alignment');
+DefMacro('\endarray',
+	 '\@finish@alignment\@end@array');
+Let('\@end@array','\relax');
+DefConstructor('\@@array[]{} AlignmentBody:\@end@array',
+	       sub { my($document,$pos,$pat,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{position=>$pos,
+								     role=>'ARRAY'}); },
+	       reversion=>'\begin{array}[#1]{#2}#3\end{array}');
 
 #**********************************************************************
 # C.11 Moving Information Around
@@ -1218,8 +1228,8 @@ DefPrimitive('\include{}',sub {
   my($stomach,$path)=@_;
   $path = $path->toString;
   my $table = LookupValue('including@only');
-  $stomach->getGullet->input($path,['tex','']) if !$table || $$table{$path};
-  return;});
+  $stomach->getGullet->input($path,['tex','']) if  !$table || $$table{$path};
+  return; });
 
 DefPrimitive('\includeonly{}',sub {
   my($stomach,$paths)=@_;

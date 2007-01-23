@@ -155,11 +155,11 @@ sub line_in_file {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
-C<LaTeXML::Error> -- Error reporting code.
+C<LaTeXML::Error> - Internal Error reporting code.
 
 =head1 DESCRIPTION
 
@@ -173,15 +173,15 @@ No user serviceable parts inside.  No symbols are exported.
 
 =over 4
 
-=item C<< $string = LaTeXML::Error::generateMessage($type,$message,$long,@extra); >>
+=item C<< $string = LaTeXML::Error::generateMessage($typ,$msg,$long,@more); >>
 
 Constructs an error or warning message based on the current stack and
 the current location in the document.
-C<$type> is a short string characterizing the type of message, such as "Error".  
-C<$message> is the error message itself. If C<$long> is true, will generate a
+C<$typ> is a short string characterizing the type of message, such as "Error".  
+C<$msg> is the error message itself. If C<$long> is true, will generate a
 more verbose message; this also uses the VERBOSITY set in the C<$STATE>.
 Longer messages will show a trace of the objects invoked on the stack,
-C<@extra> are additional strings to include in the message.
+C<@more> are additional strings to include in the message.
 
 =item C<< $string = LaTeXML::Error::stacktrace; >>
 

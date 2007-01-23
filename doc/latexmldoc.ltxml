@@ -6,6 +6,8 @@ use LaTeXML::Package;
 RequirePackage('latexml');
 RequirePackage('graphicx');
 
+DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
+
 # Various other typographic bits
 DefMacro('\cmd {}','\texttt{#1}');
 DefMacro('\code {}','\texttt{#1}');
@@ -27,8 +29,53 @@ DefMacro('\@perldocurl[]{}', sub {
  else {
    T_OTHER("perldoc/$pkg.html"); }});
 
-DefMacro('\pkg[]{}', '\URL[\texttt{#2}]{\@perldocurl[#1]{#2}}');
+DefConstructor('\ltxcmd{}',
+	       "<ltx:ref labelref='#1'>#1</ltx:ref>");
 
+our %lpkg_subpkg = (Tokens=>'Token',
+		    Float=>'Number', Dimension=>'Number', MuDimension=>'Number',
+		    Glue=>'Number', MuGlue=>'Number', Pair=>'Number', PairList=>'Number',
+		    MathBox=>'Box', Comment=>'Box', List=>'Box', MathList=>'Box', Whatsit=>'Box',
+		    MathFont=>'Font',
+		    FileMouth=>'Mouth', StyleMouth=>'Mouth', PerlMouth=>'Mouth',
+		    Expandable=>'Definition', Primitive=>'Definition', Register=>'Definition',
+		    CharDef=>'Definition', Constructor=>'Definition',
+		    ConstructorCompiler=>'Definition',
+		    Parameter=>'Parameters',
+		    'Post::MathML::Presentation'=>'Post::MathML',
+		    'Post::MathML::Content'=>'Post::MathML',
+		    'Post::MathML::Parallel'=>'Post::MathML',
+		    'TabularPattern'=>'Util::Alignment',
+		    'Util::ObjectDB::Entry'=>'Util::ObjectDB',
+		    'Package::Pool'=>'Package'
+		    );
+
+
+DefConstructor('\ltxpkg{}',
+	       "<ltx:ref labelref='#ref' class='package'>#pkg</ltx:ref>",
+	       afterDigest=>sub{
+		 my $name = $_[1]->getArg(1)->toString;
+		 my $pkg = ($name ? "LaTeXML::".$name : "LaTeXML");
+		 my $ref = ($lpkg_subpkg{$name} ? $lpkg_subpkg{$name} : $name);
+		 $ref = ($ref ? "LaTeXML::".$ref : "LaTeXML");
+		 $_[1]->setProperties(pkg=>$pkg, ref=>$ref); });
+
+DefConstructor('\podlink{}',
+	       "<ltx:ref href='#href' labelref='#ref' class='package'>#1</ltx:ref>",
+	       afterDigest=>sub{
+		 my $name = $_[1]->getArg(1)->toString;
+		 if($name eq 'LaTeXML'){
+		   $_[1]->setProperty(ref=>$name); }
+		 elsif($name =~ s/^LaTeXML:://){
+		   $name = $lpkg_subpkg{$name} if $lpkg_subpkg{$name};
+		   $name = "LaTeXML::".$name;
+		   $_[1]->setProperty(ref=>$name); }
+		 elsif($name =~ /^latexml/i){
+		   $_[1]->setProperty(ref=>$name); }
+		 else {
+		   $name =~ s/::/%3A%3A/g;
+		   my $url = "http://search.cpan.org/search?query=$name&mode=module";
+		   $_[1]->setProperty(href=>$url); }});
 
 #======================================================================
 1;

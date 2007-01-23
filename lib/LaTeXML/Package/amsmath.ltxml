@@ -296,12 +296,14 @@ DefEnvironment('{alignedat}{}[]',
 	       ."<ltx:XMHint name='aligned-end'/>",
 	       beforeDigest=>sub{ DefConstructor("&","<ltx:XMHint name='align'/>"); });
 
-DefEnvironment('{cases}',
-	       sub { my($document,%props)=@_;
-		     alignment($document,$props{body},undef,0,
-			       name=>'Cases',open=>'{'); },
-	       beforeDigest=>\&before_alignment,
-	       afterDigest=>\&after_alignment);
+DefMacro('\cases',   '\@@cases[#1]{#2}\@start@alignment');
+DefMacro('\endcases', '\@finish@alignment\@end@cases');
+Let('\@end@cases','\relax');
+DefConstructor('\@@cases AlignmentBody:\@end@cases',
+	       sub { my($document,$pos,$pat,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{name=>'Cases',open=>'{'}); },
+	       beforeDigest=>sub { alignmentBindings('ll'); },
+	       reversion=>'\begin{cases}#1\end{cases}');
 
 #======================================================================
 # Section 3.8 Adjusting tag placement
@@ -346,69 +348,74 @@ DefEnvironment('{subequations}',"<ltx:equationgroup refnum='#refnum'>#body</ltx:
 #======================================================================
 # Section 4.1 Matrices
 
-DefEnvironment('{matrix}',
-	       sub { my($document,%props)=@_;
-		     my $n=$props{trailer}->getProperty('n_columns');
-		     alignment($document,$props{body},
-			       parseTabularPattern('c' x $n),0,
-			       name=>'Matrix');},
-	       beforeDigest=>\&before_alignment,
-	       afterDigest=>\&after_alignment);
-DefEnvironment('{pmatrix}',
-	       sub { my($document,%props)=@_;
-		     my $n=$props{trailer}->getProperty('n_columns');
-		     alignment($document,$props{body},
-			       parseTabularPattern('c' x $n),0,
-			       name=>'Matrix',open=>'(',close=>')');},
-	       beforeDigest=>\&before_alignment,
-	       afterDigest=>\&after_alignment);
-DefEnvironment('{bmatrix}',
-	       sub { my($document,%props)=@_;
-		     my $n=$props{trailer}->getProperty('n_columns');
-		     alignment($document,$props{body},
-			       parseTabularPattern('c' x $n),0,
-			       name=>'Matrix',open=>'[',close=>']');},
-	       beforeDigest=>\&before_alignment,
-	       afterDigest=>\&after_alignment);
-DefEnvironment('{Bmatrix}',
-	       sub { my($document,%props)=@_;
-		     my $n=$props{trailer}->getProperty('n_columns');
-		     alignment($document,$props{body},
-			       parseTabularPattern('c' x $n),0,
-			       name=>'Matrix',open=>'{',close=>'}');},
-	       beforeDigest=>\&before_alignment,
-	       afterDigest=>\&after_alignment);
-DefEnvironment('{vmatrix}',
-	       sub { my($document,%props)=@_;
-		     my $n=$props{trailer}->getProperty('n_columns');
-		     alignment($document,$props{body},
-			       parseTabularPattern('c' x $n),0,
-			       name=>'Matrix',open=>'|',close=>'|');},
-	       beforeDigest=>\&before_alignment,
-	       afterDigest=>\&after_alignment);
-DefEnvironment('{Vmatrix}',
-	       sub { my($document,%props)=@_;
-		     my $n=$props{trailer}->getProperty('n_columns');
-		     alignment($document,$props{body},
-			       parseTabularPattern('c' x $n),0,
-			       name=>'Matrix',open=>"\x{2225}",close=>"\x{2225}");},
-	       beforeDigest=>\&before_alignment,
-	       afterDigest=>\&after_alignment);
+DefMacro('\matrix',    '\@@matrix\@start@alignment');
+DefMacro('\endmatrix', '\@finish@alignment\@end@matrix');
+Let('\@end@matrix','\relax');
+DefConstructor('\@@matrix AlignmentBody:\@end@matrix',
+	       sub { my($document,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{name=>'Matrix'}); },
+	       beforeDigest=>sub { alignmentBindings(MatrixTemplate()); },
+	       reversion=>'\begin{matrix}#1\end{matrix}');
 
-DefEnvironment('{smallmatrix}',
-	       sub { my($document,%props)=@_;
-		     my $n=$props{trailer}->getProperty('n_columns');
-		     alignment($document,$props{body},
-			       parseTabularPattern('c' x $n),0,
-			       name=>'Matrix', style=>'script');},
-#	       beforeDigest=>\&before_alignment,
-#	       afterDigestBegin=>sub { MergeFont(size=>'script'); return; },
-	       beforeDigest=>[
-			      sub { MergeFont(size=>'script'); return; },
-			      sub { AssignValue(mathstyle=>'script'); },
-			      \&before_alignment
-],
-	       afterDigest=>\&after_alignment);
+DefMacro('\pmatrix',    '\@@pmatrix\@start@alignment');
+DefMacro('\endpmatrix', '\@finish@alignment\@end@pmatrix');
+Let('\@end@pmatrix','\relax');
+DefConstructor('\@@pmatrix AlignmentBody:\@end@pmatrix',
+	       sub { my($document,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{name=>'Matrix',
+								     open=>'(',close=>')'}); },
+	       beforeDigest=>sub { alignmentBindings(MatrixTemplate()); },
+	       reversion=>'\begin{pmatrix}#1\end{pmatrix}');
+
+DefMacro('\bmatrix',    '\@@bmatrix\@start@alignment');
+DefMacro('\endbmatrix', '\@finish@alignment\@end@bmatrix');
+Let('\@end@bmatrix','\relax');
+DefConstructor('\@@bmatrix AlignmentBody:\@end@bmatrix',
+	       sub { my($document,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{name=>'Matrix',
+								     open=>'[',close=>']'}); },
+	       beforeDigest=>sub { alignmentBindings(MatrixTemplate()); },
+	       reversion=>'\begin{bmatrix}#1\end{bmatrix}');
+
+DefMacro('\Bmatrix',    '\@@Bmatrix\@start@alignment');
+DefMacro('\endBmatrix', '\@finish@alignment\@end@Bmatrix');
+Let('\@end@Bmatrix','\relax');
+DefConstructor('\@@Bmatrix AlignmentBody:\@end@Bmatrix',
+	       sub { my($document,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{name=>'Matrix',
+								     open=>'{',close=>'}'}); },
+	       beforeDigest=>sub { alignmentBindings(MatrixTemplate()); },
+	       reversion=>'\begin{Bmatrix}#1\end{Bmatrix}');
+
+DefMacro('\vmatrix',    '\@@vmatrix\@start@alignment');
+DefMacro('\endvmatrix', '\@finish@alignment\@end@vmatrix');
+Let('\@end@vmatrix','\relax');
+DefConstructor('\@@vmatrix AlignmentBody:\@end@vmatrix',
+	       sub { my($document,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{name=>'Matrix',
+								     open=>'|',close=>'|'}); },
+	       beforeDigest=>sub { alignmentBindings(MatrixTemplate()); },
+	       reversion=>'\begin{vmatrix}#1\end{vmatrix}');
+
+DefMacro('\Vmatrix',    '\@@Vmatrix\@start@alignment');
+DefMacro('\endVmatrix', '\@finish@alignment\@end@Vmatrix');
+Let('\@end@Vmatrix','\relax');
+DefConstructor('\@@Vmatrix AlignmentBody:\@end@Vmatrix',
+	       sub { my($document,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{name=>'Matrix',
+								     open=>"\x{2225}",
+								     close=>"\x{2225}"});},
+	       beforeDigest=>sub { alignmentBindings(MatrixTemplate()); },
+	       reversion=>'\begin{Vmatrix}#1\end{Vmatrix}');
+
+DefMacro('\smallmatrix',    '\@hidden{\scriptsize}\@@smallmatrix\@start@alignment');
+DefMacro('\endsmallmatrix', '\@finish@alignment\@end@smallmatrix');
+Let('\@end@smallmatrix','\relax');
+DefConstructor('\@@smallmatrix AlignmentBody:\@end@smallmatrix',
+	       sub { my($document,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{name=>'Matrix'}); },
+	       beforeDigest=>sub { alignmentBindings(MatrixTemplate()); },
+	       reversion=>'\begin{smallmatrix}#1\end{smallmatrix}');
 
 #======================================================================
 # Section 4.2 Math spacing commands

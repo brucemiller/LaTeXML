@@ -151,6 +151,23 @@ sub toString {
 sub stringify { "MuGlue[".join(',',@{$_[0]})."]"; }
 
 #**********************************************************************
+package LaTeXML::BoxDimensions;
+use LaTeXML::Global;
+use base qw(LaTeXML::Object);
+
+sub new {
+  my($class,%specs)=@_;
+  bless {%specs},$class; }
+
+sub toString {
+  my($self)=@_;
+  join(' ',map(ToString($_).' '.ToString($$self{$_}), keys %{$self})); }
+
+sub revert {
+  my($self)=@_;
+  map( (Explode($_),T_SPACE,$$self{$_}->revert), keys %{$self}); }
+
+#**********************************************************************
 
 package LaTeXML::Pair;
 use LaTeXML::Global;
@@ -205,12 +222,20 @@ __END__
 
 =head1 NAME
 
- C<LaTeXML::Number>, C<LaTeXML::Dimension>, etc. -- representation of numbers, dimensions, etc.
+C<LaTeXML::Number> - representation of numbers, dimensions, skips and glue.
 
 =head1 DESCRIPTION
 
-This module defines numerical data objects C<LaTeXML::Number>, C<LaTeXML::Dimension>, C<LaTeXML::MuDimension>,
-C<LaTeXML::Glue>,  C<LaTeXML::MuGlue> and C<LaTeXML::Float>
+This module defines various dimension and number-like data objects
+
+ LaTeXML::Number      represents numbers,
+ LaTeXML::Float       represents floating-point numbers,
+ LaTeXML::Dimension   represents dimensions,
+ LaTeXML::MuDimension represents math dimensions,
+ LaTeXML::Glue        represents glue (skips),
+ LaTeXML::MuGlue      represents math glue,
+ LaTeXML::Pair        represents pairs of numbers
+ LaTeXML::Pairlist    represents list of pairs.
 
 =head2 Common methods
 
@@ -236,8 +261,6 @@ with limited decimal places.
 =head2 Numerics methods
 
 These methods apply to the various numeric objects
-(C<LaTeXML::Number>, C<LaTeXML::Dimension>, C<LaTeXML::MuDimension>,
-C<LaTeXML::Glue> and  C<LaTeXML::MuGlue>)
 
 =over 4
 

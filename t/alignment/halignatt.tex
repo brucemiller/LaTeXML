@@ -1,0 +1,21 @@
+\documentclass{article}
+\begin{document}
+% From TeX Book, p247
+\vbox{\tabskip=0pt \offinterlineskip
+\def\tablerule{\noalign{\hrule}}
+%\halign to 5in{\strut#&\vrule#\tabskip=1em plus2em&
+\halign{\strut#&\vrule#\tabskip=1em plus2em&
+ \hfil#& \vrule#& \hfil#\hfil& \vrule#&
+ \hfil#& \vrule#\tabskip=0pt\cr\tablerule
+&&\multispan5\hfil AT\&T Common Stock\hfil&\cr\tablerule
+&&\omit\hidewidth Year\hidewidth&&
+ \omit\hidewidth Price\hidewidth&&
+ \omit\hidewidth Dividend\hidewidth&\cr\tablerule
+&&1971&&41--54&&\$2.60&\cr\tablerule
+&&   2&&41--54&&2.70&\cr\tablerule
+&&   3&&46--55&&2.87&\cr\tablerule
+&&   4&&40--53&&3.24&\cr\tablerule
+&&   5&&45--52&&3.40&\cr\tablerule
+&&   6&&51--59&&.95\rlap*&\cr\tablerule \noalign{\smallskip}
+&\multispan7* (first quarter only)\hfil\cr}}
+\end{document}

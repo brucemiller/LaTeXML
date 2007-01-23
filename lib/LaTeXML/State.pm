@@ -104,6 +104,9 @@ sub shiftValue {
   assign_internal($self,$key,[],'global') unless $$self{table}{$key}[0];
   shift(@{$$self{table}{$key}[0]}); }
 
+sub lookupStackedValues { 
+  my $stack = $_[0]->{table}{'value:'.$_[1]};
+  ($stack ? @$stack : ()); }
 #======================================================================
 # Was $name bound?  If  $frame is given, check only whether it is bound in 
 # that frame (0 is the topmost).
@@ -227,6 +230,10 @@ sub noteStatus {
     $$self{status}{$type}++; }}
 
 sub getStatus {
+  my($self,$type)=@_;
+  $$self{status}{$type}; }
+
+sub getStatusMessage {
   my($self)=@_;
   my $status= $$self{status};
   my @report=();
@@ -276,16 +283,18 @@ Returns the current Stomach used for digestion.
 
 Returns the current Model representing the document model.
 
+=back
+
 =head2 Scoping
 
 The assignment methods, described below, generally take a C<$scope> argument, which
 determines how the assignment is made.  The allowed values and thier implications are:
 
-   global   : global assignment.
-   local    : local assignment, within the current grouping.
-   undef    : (or if omitted) global if \global preceded, else local
-   <name>   : stores the assignment in a `scope' which
-               can be loaded later.
+ global   : global assignment.
+ local    : local assignment, within the current grouping.
+ undef    : global if \global preceded, else local (default)
+ <name>   : stores the assignment in a `scope' which
+            can be loaded later.
 
 If no scoping is specified, then the assignment will be global
 if a preceding C<\global> has set the global flag, otherwise
@@ -329,13 +338,18 @@ to the given scoping rule.
 Values are also used to specify most configuration parameters (which can
 therefor also be scoped).  The recognized configuration parameters are:
 
-  VERBOSITY         : the level of verbosity for debugging output, with 0 being default.
-  STRICT            : whether errors (such as undefined macros) are fatal.
-  INCLUDE_COMMENTS  : whether to preserve comments in the source, and to add
-                      occasional line-number comments.  Default does include them.
-  PRESERVE_NEWLINES : whether newlines in the source should be preserved (not 100% TeX-like).
-                      By default this is true.
-  SEARCHPATHS       : a list of directories to search for sources, implementations, dtds, and such.
+ VERBOSITY         : the level of verbosity for debugging
+                     output, with 0 being default.
+ STRICT            : whether errors (eg. undefined macros)
+                     are fatal.
+ INCLUDE_COMMENTS  : whether to preserve comments in the
+                     source, and to add occasional line
+                     number comments. (Default true).
+ PRESERVE_NEWLINES : whether newlines in the source should
+                     be preserved (not 100% TeX-like).
+                     By default this is true.
+ SEARCHPATHS       : a list of directories to search for
+                     sources, implementations, etc.
 
 =item C<< $STATE->pushValue($name,$value); >>
 

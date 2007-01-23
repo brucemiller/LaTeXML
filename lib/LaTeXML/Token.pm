@@ -198,7 +198,8 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Token>, C<LaTeXML::Tokens>. -- representation of tokens.
+C<LaTeXML::Token> - representation of a token,
+and C<LaTeXML::Tokens>, representing lists of tokens.
 
 =head1 DESCRIPTION
 
@@ -242,7 +243,8 @@ Return the string or character part of the C<$token>.
 
 =item C<< $code = $token->getCharcode; >>
 
-Return the character code of the character part of the C<$token>, or 256 if it is a control sequence.
+Return the character code of the character part of the C<$token>,
+or 256 if it is a control sequence.
 
 =item C<< $code = $token->getCatcode; >>
 

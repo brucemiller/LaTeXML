@@ -15,6 +15,7 @@ use strict;
 use LaTeXML::Util::Pathname;
 use XML::LibXML;
 use base qw(LaTeXML::Post);
+use Encode;
 
 sub new {
   my($class,%options)=@_;
@@ -28,8 +29,17 @@ sub process {
 
   my $xmldoc = $doc->getDocument;
   $doc->getDocument->removeInternalSubset if $$self{omit_doctype};
+
 #  my $string = ($$self{format} eq 'html' ? $xmldoc->toStringHTML : $xmldoc->toString(1));
-  my $string = ($$self{format} eq 'html' ? $xmldoc->toStringHTML : $xmldoc->toString);
+  my $string;
+  if($$self{format} eq 'html'){
+    $string = $xmldoc->toStringHTML;
+    # Bug in LibXML?  This is probably even dangerous ??
+    if($doc->getDocument->encoding =~ /utf-?8/i){
+      $string = Encode::decode_utf8($string); }
+  }
+  else {
+    $string =  $xmldoc->toString;}
 
   if(my $destination = $doc->getDestination){
     $self->Progress("Writing $destination");

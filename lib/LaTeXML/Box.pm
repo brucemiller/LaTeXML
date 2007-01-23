@@ -209,7 +209,8 @@ sub revert {
 	push(@tokens,$parameters->revertArguments($self->getArgs)); }}
     if(defined (my $body = $self->getBody)){
       push(@tokens, $body->revert);
-      push(@tokens, $self->getTrailer->revert); }
+      if(defined (my $trailer = $self->getTrailer)){
+	push(@tokens, $trailer->revert); }}
     @tokens; }}
 
 sub toString { ToString(Tokens($_[0]->revert)); }
@@ -252,8 +253,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Box>, C<LaTeXML::MathBox>, C<LaTeXML::Comment>, C<LaTeXML::List>, 
-C<LaTeXML::MathList> and C<LaTeXML::Whatsit> -- represent digested objects.
+C<LaTeXML::Box> - Representations of digested objects.
 
 =head1 DESCRIPTION
 

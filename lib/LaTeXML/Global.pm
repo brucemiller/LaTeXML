@@ -163,6 +163,9 @@ sub Fatal {
   die $message; 
   return; }
 
+# Note that "100" is hardwired into TeX, The Program!!!
+our $MAXERRORS=100;
+
 # Should be fatal if strict is set, else warn.
 sub Error {
   my($msg)=@_;
@@ -172,6 +175,8 @@ sub Error {
     $LaTeXML::Global::STATE->noteStatus('error');
     print STDERR LaTeXML::Error::generateMessage("Error",$msg,1,"Continuing... Expect trouble.\n")
       unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -1; }
+  if(($LaTeXML::Global::STATE->getStatus('error')||0) > $MAXERRORS){
+    Fatal("Too many errors!"); }
   return; }
 
 sub Warn {
@@ -231,7 +236,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Global> -- global exports used within LaTeXML, and in Packages.
+C<LaTeXML::Global> - global exports used within LaTeXML, and in Packages.
 
 =head1 SYNOPSIS
 
@@ -259,18 +264,25 @@ of L<LaTeXML> during processing.
 
 =item C<< $catcode = CC_ESCAPE; >>
 
-A constant for the escape category code; and also:
-C<CC_BEGIN>, C<CC_END>, C<CC_MATH>, C<CC_ALIGN>, C<CC_EOL>, C<CC_PARAM>, C<CC_SUPER>,
-C<CC_SUB>, C<CC_IGNORE>, C<CC_SPACE>, C<CC_LETTER>, C<CC_OTHER>, C<CC_ACTIVE>, C<CC_COMMENT>, 
-C<CC_INVALID>, C<CC_CS>, C<CC_NOTEXPANDED>.  [The last 2 are (apparent) extensions, 
+Constants for the category codes:
+
+  CC_BEGIN, CC_END, CC_MATH, CC_ALIGN, CC_EOL,
+  CC_PARAM, CC_SUPER, CC_SUB, CC_IGNORE,
+  CC_SPACE, CC_LETTER, CC_OTHER, CC_ACTIVE,
+  CC_COMMENT, CC_INVALID, CC_CS, CC_NOTEXPANDED.
+
+[The last 2 are (apparent) extensions,
 with catcodes 16 and 17, respectively].
 
 =item C<< $token = Token($string,$cc); >>
 
-Creates a L<LaTeXML::Token> with the given content and catcode.  The following shorthand versions
-are also exported for convenience:
-C<T_BEGIN>, C<T_END>, C<T_MATH>, C<T_ALIGN>, C<T_PARAM>, C<T_SUB>, C<T_SUPER>, C<T_SPACE>, 
-C<T_LETTER($letter)>, C<T_OTHER($char)>, C<T_ACTIVE($char)>, C<T_COMMENT($comment)>, C<T_CS($cs)>
+Creates a L<LaTeXML::Token> with the given content and catcode.
+The following shorthand versions are also exported for convenience:
+
+  T_BEGIN, T_END, T_MATH, T_ALIGN, T_PARAM,
+  T_SUB, T_SUPER, T_SPACE, T_LETTER($letter),
+  T_OTHER($char), T_ACTIVE($char),
+  T_COMMENT($comment), T_CS($cs)
 
 =item C<< $tokens = Tokens(@token); >>
 
@@ -376,7 +388,7 @@ Prints C<$message> unless the verbosity level below 0.
 
 =item C<< Stringify($object); >>
 
-Returns a short string identifying C<$object>, for debugging purposes.
+Returns a short string identifying C<$object>, for debugging.
 Works on any values and objects, but invokes the stringify method on 
 blessed objects.
 More informative than the default perl conversion to a string.

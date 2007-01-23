@@ -42,10 +42,10 @@
     <title>Intervals</title>
     <para id="S2.p1">
       <equation id="Ex3">
-        <Math mode="display" tex="(a,b)" text="OpenInterval@(a, b)">
+        <Math mode="display" tex="(a,b)" text="open_interval@(a, b)">
           <XMath>
             <XMApp>
-              <XMTok name="OpenInterval" role="FENCED" argclose=")" argopen="(" separators=","/>
+              <XMTok name="open_interval" role="FENCED" argclose=")" argopen="(" separators=","/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -53,10 +53,10 @@
         </Math>
       </equation>
       <equation id="Ex4">
-        <Math mode="display" tex="[a,b)" text="OpenRightInterval@(a, b)">
+        <Math mode="display" tex="[a,b)" text="closed_open_interval@(a, b)">
           <XMath>
             <XMApp>
-              <XMTok name="OpenRightInterval" role="FENCED" argclose=")" argopen="[" separators=","/>
+              <XMTok name="closed_open_interval" role="FENCED" argclose=")" argopen="[" separators=","/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -64,10 +64,10 @@
         </Math>
       </equation>
       <equation id="Ex5">
-        <Math mode="display" tex="(a,b]" text="OpenLeftInterval@(a, b)">
+        <Math mode="display" tex="(a,b]" text="open_closed_interval@(a, b)">
           <XMath>
             <XMApp>
-              <XMTok name="OpenLeftInterval" role="FENCED" argclose="]" argopen="(" separators=","/>
+              <XMTok name="open_closed_interval" role="FENCED" argclose="]" argopen="(" separators=","/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -75,10 +75,10 @@
         </Math>
       </equation>
       <equation id="Ex6">
-        <Math mode="display" tex="[a,b]" text="ClosedInterval@(a, b)">
+        <Math mode="display" tex="[a,b]" text="closed_interval@(a, b)">
           <XMath>
             <XMApp>
-              <XMTok name="ClosedInterval" role="FENCED" argclose="]" argopen="[" separators=","/>
+              <XMTok name="closed_interval" role="FENCED" argclose="]" argopen="[" separators=","/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -91,7 +91,7 @@
     <title>Cases</title>
     <para id="S3.p1">
       <equation id="Ex7">
-        <Math mode="display" tex="\left.\begin{array}{l}a\\ b\end{array}\right\}=\left\{\begin{array}{l}c\\ d\end{array}\right." text="RCases@(Array[[a], [b]]) = LCases@(Array[[c], [d]])">
+        <Math mode="display" tex="\left.\begin{array}[]{l}a\\ b\end{array}\right\}=\left\{\begin{array}[]{l}c\\ d\end{array}\right." text="RCases@(Array[[a], [b]]) = LCases@(Array[[c], [d]])">
           <XMath>
             <XMApp>
               <XMTok meaning="eq" role="RELOP">=</XMTok>
@@ -132,7 +132,7 @@
     </para>
     <para id="S3.p2">
       <equation id="Ex8">
-        <Math mode="display" tex="\left(\begin{array}{l}c\\ d\end{array}\right)" text="Array[[c], [d]]">
+        <Math mode="display" tex="\left(\begin{array}[]{l}c\\ d\end{array}\right)" text="Array[[c], [d]]">
           <XMath>
             <XMArray role="ARRAY" open="(" close=")">
               <XMRow>
@@ -150,7 +150,7 @@
         </Math>
       </equation>
       <equation id="Ex9">
-        <Math mode="display" tex="(a+\left(\begin{array}{l}c\\ d\end{array}\right)+b)" text="a + Array[[c], [d]] + b">
+        <Math mode="display" tex="(a+\left(\begin{array}[]{l}c\\ d\end{array}\right)+b)" text="a + Array[[c], [d]] + b">
           <XMath>
             <XMApp open="(" close=")">
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -248,10 +248,10 @@
         </Math>
       </equation>
       <equation id="Ex15">
-        <Math mode="display" tex="\left\{{a\over b}\right\}" text="Set@(a / b)">
+        <Math mode="display" tex="\left\{{a\over b}\right\}" text="set@(a / b)">
           <XMath>
             <XMApp>
-              <XMTok name="Set" role="FENCED" argclose="}" argopen="{"/>
+              <XMTok name="set" role="FENCED" argclose="}" argopen="{"/>
               <XMApp>
                 <XMTok meaning="div" role="MULOP" style="display"/>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -262,10 +262,10 @@
         </Math>
       </equation>
       <equation id="Ex16">
-        <Math mode="display" tex="\left\{{a\over b}\right\}" text="Set@(a / b)">
+        <Math mode="display" tex="\left\{{a\over b}\right\}" text="set@(a / b)">
           <XMath>
             <XMApp>
-              <XMTok name="Set" role="FENCED" argclose="}" argopen="{"/>
+              <XMTok name="set" role="FENCED" argclose="}" argopen="{"/>
               <XMApp>
                 <XMTok meaning="div" role="MULOP" style="display"/>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -276,10 +276,10 @@
         </Math>
       </equation>
       <equation id="Ex17">
-        <Math mode="display" tex="\left\lfloor{a\over b}\right\rfloor" text="Floor@(a / b)">
+        <Math mode="display" tex="\left\lfloor{a\over b}\right\rfloor" text="floor@(a / b)">
           <XMath>
             <XMApp>
-              <XMTok name="Floor" role="FENCED" argclose="⌋" argopen="⌊"/>
+              <XMTok name="floor" role="FENCED" argclose="⌋" argopen="⌊"/>
               <XMApp>
                 <XMTok meaning="div" role="MULOP" style="display"/>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -290,10 +290,10 @@
         </Math>
       </equation>
       <equation id="Ex18">
-        <Math mode="display" tex="\left\lceil{a\over b}\right\rceil" text="Ceiling@(a / b)">
+        <Math mode="display" tex="\left\lceil{a\over b}\right\rceil" text="ceiling@(a / b)">
           <XMath>
             <XMApp>
-              <XMTok name="Ceiling" role="FENCED" argclose="⌉" argopen="⌈"/>
+              <XMTok name="ceiling" role="FENCED" argclose="⌉" argopen="⌈"/>
               <XMApp>
                 <XMTok meaning="div" role="MULOP" style="display"/>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -326,10 +326,10 @@
         </Math>
       </equation>
       <equation id="Ex21">
-        <Math mode="display" tex="\left|{a\over b}\right|" text="Abs@(a / b)">
+        <Math mode="display" tex="\left|{a\over b}\right|" text="abs@(a / b)">
           <XMath>
             <XMApp>
-              <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
               <XMApp>
                 <XMTok meaning="div" role="MULOP" style="display"/>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -340,10 +340,10 @@
         </Math>
       </equation>
       <equation id="Ex22">
-        <Math mode="display" tex="\left|{a\over b}\right|" text="Abs@(a / b)">
+        <Math mode="display" tex="\left|{a\over b}\right|" text="abs@(a / b)">
           <XMath>
             <XMApp>
-              <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
               <XMApp>
                 <XMTok meaning="div" role="MULOP" style="display"/>
                 <XMTok role="ID" font="italic">a</XMTok>

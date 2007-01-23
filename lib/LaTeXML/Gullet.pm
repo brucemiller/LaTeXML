@@ -617,7 +617,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Gullet> -- expands expandable tokens and parses common token sequences.
+C<LaTeXML::Gullet> - expands expandable tokens and parses common token sequences.
 
 =head1 DESCRIPTION
 
@@ -669,7 +669,7 @@ Returns a string describing the current location in the input stream.
 
 =item C<< $tokens = $gullet->expandTokens($tokens); >>
 
-Return a L<LaTeXML::Tokens> being the expansion of all the tokens in C<$tokens>.
+Return the L<LaTeXML::Tokens> resulting from expanding all the tokens in C<$tokens>.
 This is actually only used in a few circumstances where the arguments to
 an expandable need explicit expansion; usually expansion happens at the right time.
 
@@ -699,7 +699,7 @@ Push the C<@tokens> back into the input stream to be re-read.
 
 =item C<< $token = $gullet->readNonSpace; >>
 
-Read and return the next non-space token from the input, discarding any spaces.
+Read and return the next non-space token from the input after discarding any spaces.
 
 =item C<< $gullet->skipSpaces; >>
 
@@ -721,12 +721,12 @@ the possibly matching token remains in the input.
 
 =item C<< $tokens = $gullet->readMatch(@choices); >>
 
-Read and return whichever of C<@choices> (each should be a L<LaTeXML::Tokens>)
+Read and return whichever of C<@choices> (each are L<LaTeXML::Tokens>)
 matches the input, or undef if none do.
 
 =item C<< $keyword = $gullet->readKeyword(@keywords); >>
 
-Read and return whichever of C<@keywords> (each should be a string) matches the input, or undef
+Read and return whichever of C<@keywords> (each a string) matches the input, or undef
 if none do.  This is similar to readMatch, but case and catcodes are ignored.
 Also, leading spaces are skipped.
 

@@ -1,0 +1,12 @@
+\documentclass{article}
+\begin{document}
+\tabskip=1em
+\halign{\hfil [u1]#[v1]\hfil&\hfil [u2]#[v2]\hfil&\hfil [u3]#[v3]\hfil\cr
+a1& a2& a3\cr
+\omit a1& a2& a3\cr
+\omit a1\span a2& a3\cr
+\omit a1\span a2\span\omit a3\cr
+\omit\span\omit a2 \span\omit a3\cr
+\omit\span\omit\span\omit a3\cr
+}
+\end{document}

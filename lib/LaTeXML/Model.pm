@@ -375,7 +375,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Model> -- represents the Document Model
+C<LaTeXML::Model> - represents the Document Model
 
 =head1 DESCRIPTION
 
@@ -498,22 +498,22 @@ with the given name.
 Gets the value of the $property associated with the qualified name C<$tag>
 Known properties are:
 
-   autoOpen   : This asserts that the tag is allowed to be
-                opened automatically if needed to insert some 
-                other element.  If not set this tag will need to
-                be explicitly opened.
-   autoClose  : This asserts that the $tag is allowed to be 
-                closed automatically if needed to insert some
-                other element.  If not set this tag will need 
-                to be explicitly closed.
-   afterOpen  : supplies code to be executed whenever an element
-                of this type is opened.  It is called with the
-                created node and the responsible digested object
-                as arguments.
-   afterClose : supplies code to be executed whenever an element
-                of this type is closed.  It is called with the
-                created node and the responsible digested object
-                as arguments.
+ autoOpen   : This asserts that the tag is allowed to
+              be opened automatically if needed to
+              insert some other element.  If not set,
+              the tag can only be opened explicitly.
+ autoClose  : This asserts that the $tag is allowed to
+              be closed automatically if needed to
+              insert some other element.  If not set,
+              the tag can only be closed explicitly.
+ afterOpen  : supplies code to be executed whenever
+              an element of this type is opened. It
+              is called with the created node and the
+              responsible digested object as arguments.
+ afterClose : supplies code to be executed whenever
+              an element of this type is closed.  It
+              is called with the created node and the
+              responsible digested object as arguments.
 
 =item C<< $model->setTagProperty($tag,$property,$value); >>
 

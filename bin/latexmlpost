@@ -18,12 +18,13 @@ my $identity = "latexmlpost (LaTeXML version $LaTeXML::VERSION)";
 
 # undef => unspecified; 0 = NO, 1 = YES
 my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
-my($sourcedir,$destination,$url)=(undef,undef,undef);
-my($format) = (undef);
+my($sourcedir,$destination)=(undef,undef);
+my($format,$urlstyle) = (undef,'server');
 my($stylesheet,$css)=(undef,undef);
 my($parallelmath,$mathimages,$keepXMath)=(undef,undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
-my($split,$splitpath)=(undef,"//ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index");
+my($split,$splitpath,$splitnaming)
+  =(undef,"//ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index",'id');
 my($prescan,$dbfile,$scan,$crossref)=(undef,undef,1,1);
 my($index,$permutedindex,$splitindex)=(1,undef,undef);
 my($splitbibliography,@bibliographies)=(undef);
@@ -36,18 +37,19 @@ GetOptions("destination=s"=>sub { $destination = $_[1];
 				  if(!defined $format){
 				    $format='xhtml' if $destination=~/\.xhtml$/;
 				    $format='html'  if $destination=~/\.html$/; }},
-	   "url=s"                 =>\$url,
 	   "sourcedirectory=s"     =>\$sourcedir,
 	   "verbose+"              =>\$verbosity,
 	   # Some general XSLT/CSS options.
 	   "stylesheet=s"          =>\$stylesheet,
 	   "css=s"                 =>\$css,
 	   "format=s"              =>\$format,
+	   "urlstyle=s"            =>$urlstyle,
 	   "validate!"             =>\$validate,
 	   "omitdoctype!"          =>\$omit_doctype,
 	   # Options for broader document set processing
 	   "split!"                =>\$split,
 	   "splitpath=s"           =>sub { $splitpath=$_[1]; $split=1 unless defined $split;},
+	   "splitnaming=s"         =>sub { $splitnaming=$_[1]; $split=1 unless defined $split;},
 	   "index!"                =>\$index,
 	   "permutedindex!"        =>\$permutedindex,
 	   "splitindex!"           =>\$splitindex,
@@ -100,21 +102,25 @@ if($xmlfile ne '-'){
 #======================================================================
 
 # Sanity check & option completion for known output formats.
-if((defined $split) && !defined $destination){
+if($split && !defined $destination){
   Error("Must supply destination when using split"); }
+if($split){
+  $splitnaming = checkOptionValue('--splitnaming',$splitnaming,
+				  qw(id idrelative label labelrelative)); }
 if($prescan && !$scan){
   Error("Makes no sense to prescan with scanning disabled"); }
 if($prescan && (!defined $dbfile)){
   Error("Cannot prescan documents without a dbfile"); }
 if(!$prescan && $crossref && ! ($scan || (defined $dbfile))){
   Error("Cannot cross-reference without scan or dbfile"); }
+if($crossref){
+  $urlstyle = checkOptionValue('--urlstyle',$urlstyle,qw(server negotiated file)); }
 if(($permutedindex || $splitindex) && (! defined $index)){
   $index=1; }
 if(!$prescan && $index && ! ($scan || defined $crossref)){
   Error("Cannot generate index without scan or dbfile"); }
 if(!$prescan && @bibliographies && ! ($scan || defined $crossref)){
   Error("Cannot generate bibliography without scan or dbfile"); }
-
 if(!defined $format){}
 elsif($format eq 'html'){
   Error("Default html stylesheet only supports math images")
@@ -164,7 +170,8 @@ my $DB = LaTeXML::Util::ObjectDB->new(dbfile=>$dbfile,%OPTIONS);
 my @procs = ();
 if($split){
   require 'LaTeXML/Post/Split.pm';
-  push(@procs,LaTeXML::Post::Split->new(split_xpath=>$splitpath,%OPTIONS)); }
+  push(@procs,LaTeXML::Post::Split->new(split_xpath=>$splitpath,splitnaming=>$splitnaming,
+					%OPTIONS)); }
 
 require 'LaTeXML/Post/Scan.pm';
 our $scanner = ($scan || $DB) && LaTeXML::Post::Scan->new(db=>$DB,%OPTIONS);
@@ -184,7 +191,8 @@ if(!$prescan){
 						     %OPTIONS)); }
   if($crossref){
     require 'LaTeXML/Post/CrossRef.pm';
-    push(@procs,LaTeXML::Post::CrossRef->new(db=>$DB,%OPTIONS)); }
+    push(@procs,LaTeXML::Post::CrossRef->new(db=>$DB,urlstyle=>$urlstyle,format=>$format,
+					     %OPTIONS)); }
 
   if($mathimages){
     require 'LaTeXML/Post/MathImages.pm';
@@ -236,13 +244,11 @@ LaTeXML::Post::ProcessChain(
 	  ($xmlfile eq '-'
 	   ? LaTeXML::Post::Document->newFromSTDIN(validate=>$validate,
 						   sourceDirectory=>$sourcedir,
-						   destination=>$destination,
-						   url=>$url || $destination)
+						   destination=>$destination)
 	   : LaTeXML::Post::Document->newFromFile($xmlfile,
 						  validate=>$validate,
 						  sourceDirectory=>$sourcedir,
-						  destination=>$destination,
-						  url=>$url || $destination)),
+						  destination=>$destination)),
 			    @procs);
 $DB->finish;
 #======================================================================
@@ -261,85 +267,94 @@ sub removeMathFormat {
   @math_formats = grep($_ ne $fmt, @math_formats);
   $removed_math_formats{$fmt}=1; }
 
+sub checkOptionValue {
+  my($option,$value,@choices)=@_;
+  if($value){
+    foreach my $choice (@choices){
+      return $choice if substr($choice,0,length($value)) eq $value; }}
+  Error("Value for $option, $value, doesn't match ".join(', ',@choices)); }
+
 #**********************************************************************
 __END__
 
 =head1 NAME
 
-C<latexmlpost> postprocesses an xml file generated by latexml for common tasks,
-such ad convert math to images and processing graphics inclusions for the web.
+C<latexmlpost> - postprocesses an xml file generated by C<latexml>
+to perform common tasks, such as convert math to images and processing
+graphics inclusions for the web.
 
 =head1 SYNOPSIS
 
 latexmlpost [options] xmlfile
 
-Options:
- --destination=outputfile   specifies output file (and directory).
- --source=sourcedir         specifies directory of source TeX file.
- --format=html|xhtml|xml    requests the output format.
- --url=url                  specifies the destination url (if needed)
- --stylesheet=xslfile       requests the XSL transform of the document
-                            using the given xslfile as stylesheet.
- --css=cssfile              use the cssfile in html/xhtml 
-                            (for default XSL stylesheets)
- --split                    requests splitting each document
- --nosplit                  disables the above (default)
- --splitpath=xpath          specifies xpath expression for splitting
-                            (default is section-like, if splitting)
- --index                    requests filling in the index (default)
- --noindex                  disables the above
- --permutedindex            permutes index phrases in generated index
- --nopermutedindex          disables the above (default)
- --splitindex               enables spliting the index into pages per initial.
- --nosplitindex             disables the above (default)
- --bibliography=file        specifies a bibliography file
- --splitbibliography        splits the bibliography into pages per initial
- --nosplitbibliography      disables the above (default)
- --scan                     scans documents to extract ids, labels, 
-                            section titles, etc. (default)
- --noscan                   disables the above
- --crossref                 fills in crossreferences (default)
- --nocrossref               disables the above
- --prescan                  carries out only the split (if enabled) and scan
-                            storing cross-referencing data in dbfile
-                            (default is complete processing)
- --dbfile=dbfile            specifies a file to store crossreferences
- --mathimages               converts math to images (default for html)
- --nomathimages             disables the above
- --presentationmathml       converts math to Presentation MathML
-                            (default for xhtml format)
- --pmml                     alias for --presentationmathml
- --nopresentationmathml     disables the above
- --contentmathml            converts math to Content MathML
- --nocontentmathml          disables the above (default)
- --cmml                     alias for --contentmathml
- --openmath                 converts math to OpenMath
- --noopenmath               disables the above (default)
- --om                       alias for --openmath
- --parallelmath             requests parallel math markup for MathML
-                            (default when multiple math formats)
- --noparallelmath           disables the above
- --graphicsimages           converts graphics to images (default)
- --nographicsimages         disables the above
- --pictureimages            converts picture environments to
-                            images (default)
- --nopictureimages          disables the above
- --svg                      converts picture environments to SVG
- --nosvg                    disables the above (default)
- --keepXMath                preserves the intermediate XMath
-                            representation (default is to remove)
- --verbose                  prints progress messages during processing.
- --VERSION                  show version number.
- --help                     shows help message.
+ Options:
+ --destination=file      specifies output file (and directory).
+ --source=sourcedir      specifies directory of source TeX file.
+ --format=html|xhtml|xml requests the output format.
+ --stylesheet=xslfile    requests the XSL transform using the
+                         given xslfile as stylesheet.
+ --css=cssfile           use the cssfile in html/xhtml 
+                         (for default XSL stylesheets)
+ --split                 requests splitting each document
+ --nosplit               disables the above (default)
+ --splitpath=xpath       specifies xpath expression for splitting
+                         (default is section-like, if splitting)
+ --splitnaming=(id|idrelative|label|labelrelative) specifies how
+                         to name split files (def. idrelative).
+ --index                 requests filling in the index (default)
+ --noindex               disables the above
+ --permutedindex         permutes index phrases in the index
+ --nopermutedindex       disables the above (default)
+ --splitindex            Splits the index into pages per initial.
+ --nosplitindex          disables the above (default)
+ --bibliography=file     specifies a bibliography file
+ --splitbibliography     splits the bibliography into pages per
+                         initial.
+ --nosplitbibliography   disables the above (default)
+ --scan                  scans documents to extract ids, labels, 
+                         section titles, etc. (default)
+ --noscan                disables the above
+ --crossref              fills in crossreferences (default)
+ --nocrossref            disables the above
+ --urlstyle=(server|negotiated|file) format to use for urls
+                         (default server).
+ --prescan               carries out only the split (if enabled)
+                         and scan, storing cross-referencing data
+                         in dbfile
+                         (default is complete processing)
+ --dbfile=dbfile         specifies file to store crossreferences
+ --mathimages            converts math to images
+                         (default for html format)
+ --nomathimages          disables the above
+ --presentationmathml    converts math to Presentation MathML
+                         (default for xhtml format)
+ --pmml                  alias for --presentationmathml
+ --nopresentationmathml  disables the above
+ --contentmathml         converts math to Content MathML
+ --nocontentmathml       disables the above (default)
+ --cmml                  alias for --contentmathml
+ --openmath              converts math to OpenMath
+ --noopenmath            disables the above (default)
+ --om                    alias for --openmath
+ --parallelmath          requests parallel math markup for MathML
+                         (default when multiple math formats)
+ --noparallelmath        disables the above
+ --graphicsimages        converts graphics to images (default)
+ --nographicsimages      disables the above
+ --pictureimages         converts picture environments to
+                         images (default)
+ --nopictureimages       disables the above
+ --svg                   converts picture environments to SVG
+ --nosvg                 disables the above (default)
+ --keepXMath             preserves the intermediate XMath
+                         representation (default is to remove)
+ --verbose               shows progress during processing.
+ --VERSION               show version number.
+ --help                  shows help message.
 
 If xmlfile is '-', latexmlpost reads the XML from standard input.
 
 =head1 OPTIONS AND ARGUMENTS
-
-C<latexmlpost> postprocesses an xml file, I<xmlfile>, generated by C<latexml>
-to perform common tasks, such as convert math to images and processing
-graphics inclusions for the web.  If C<-> is given for C<xmlfile>, the
-xml data is read from standard input.
 
 =head2 General Options
 
@@ -364,7 +379,7 @@ Shows this help message.
 
 =over 4
 
-=item B<--format>=I<html|xhtml|xml>
+=item B<--format>=C<(html|xhtml|xml)>
 
 Specifies the output format for post processing. 
 html format converts the material to html and the mathematics to png images.
@@ -388,12 +403,6 @@ order to find graphics and style files.
 Specifies the destination file and directory.  The directory is needed for
 mathimages and graphics processing.
 
-=item B<--url=>I<url>
-
-Specifies the url where the destination file will be seen.  This is only
-needed when relative urls cannot be derived from the destination path,
-such as when processing a larger site, whose root is at a higher level.
-
 =item B<--stylesheet>=I<xslfile>
 
 Requests the XSL transformation of the document using the given xslfile as stylesheet.
@@ -408,7 +417,7 @@ By default, the default stylesheets will use the included LaTeXML.css.
 
 =back
 
-=head2 Site and Crossreferencing Options
+=head2 Site & Crossreferencing Options
 
 =over 4
 
@@ -423,6 +432,17 @@ index and appendices (if any) by default, unless B<--splitpath> is specified.
 Specifies an XPath expression to select nodes that will generate separate
 pages.
 
+=item B<--splitnaming>=C<(id|idrelative|label|labelrelative)>
+
+Specifies how to name the files for subdocuments created by splitting.
+The values C<id> and C<label> simply use the id or label of the subdocument's
+root node for it's filename.  C<idrelative> and C<labelrelative> use
+the portion of the id or label that follows the parent document's
+id or label. Furthermore, to impose structure and uniqueness, 
+if a split document has children that are also split, that document
+(and it's children) will be in a separate subdirectory with the
+name index.
+
 =item B<--scan>, B<--noscan>
 
 Enables (default) or disables the scanning of documents for ids, labels,
@@ -436,6 +456,16 @@ Enables (default) or disables the filling in of references, hrefs, etc
 based on a previous scan (either from C<--scan>, or C<--dbfile>)
 It may be useful to disable when generating documents not based
 on the LaTeXML doctype.
+
+=item B<--urlstyle>=C<(server|negotiated|file)>
+
+This option determines the way that URLs within the documents
+are formatted, depending on the way they are intended to be served.
+The default, C<server>, eliminates unneccessary
+trailing C<index.html>.  With C<negotiated>, the trailing
+file extension (typically C<html> or C<xhtml>) are eliminated.
+The scheme C<file> preserves complete (but relative) urls
+so that the site can be browsed as files without any server.
 
 =item B<--index>, B<--noindex>
 

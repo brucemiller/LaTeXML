@@ -12,7 +12,7 @@
 
 package LaTeXML::Util::ObjectDB;
 use strict;
-use File::Basename;
+use LaTeXML::Util::Pathname;
 use DB_File;
 use Storable qw(nfreeze thaw);
 use strict;
@@ -138,13 +138,20 @@ sub register {
   carp("Missing key for object!") unless $key;
   my $entry = $self->lookup($key);
   if(!$entry){
-    $entry = {};
+    $entry = {key=>$key};
     bless $entry, 'LaTeXML::Util::ObjectDB::Entry';
     $$self{objects}{$key}=$entry;
     $$entry{timestamp}=time(); }
   $entry->setValues(%props);
 
   $entry; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#  Pathnames stored in the DB, will be portable if made relative to the
+# DB's location.
+sub storablePathname {
+  my($self,$path)=@_;
+  ($$self{dbfile} ? pathname_relative($path,$$self{dbfile}) : $path); }
 
 #********************************************************************************
 # Sorting Objects
@@ -231,6 +238,26 @@ sub noteAssociation {
     else {
       $$self{timestamp} = time();
       $hash = $$hash{$key} = (@keys ? {} : 1); }}}
+
+# Debugging aid
+use Text::Wrap;
+sub show {
+  my($self)=@_;
+  print "ObjectDB Entry for: $$self{key}\n";
+  foreach my $attr (qw(timestamp), grep(!/^(key|timestamp)$/, keys %{$self})){
+    my $value = $self->getValue($attr);
+    if((ref $value) =~ /^XML::/){
+      $value = $value->toString; }
+    elsif(ref $value eq 'HASH'){
+      $value = showhash($value); }
+    elsif($attr eq 'timestamp'){
+      $value = localtime($value); }
+    print wrap(sprintf(' %16s : ',$attr),(' 'x20), $value)."\n"; }
+}
+
+sub showhash {
+  my($hash)=@_;
+  "{".join(', ',map((ref $$hash{$_} ? "$_=>".showhash($$hash{$_}) : $_),sort keys %$hash))."}"; }
 
 #======================================================================
 1;

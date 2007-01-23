@@ -32,13 +32,15 @@ our %TYPEPREFIX =
    subsubsection=>$SECTION,
    paragraph    =>$PILCROW,
    subparagraph =>$PILCROW,
-   para         =>'p'
+   para         =>'p',
+#   appendix     =>'App.',
  );
 
 sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
-  $$self{db}=$options{db};
+  $$self{db}       = $options{db};
+  $$self{urlstyle} = $options{urlstyle};
   $self; }
 
 sub process {
@@ -48,11 +50,11 @@ sub process {
   $self->fill_in_frags($doc);
   $self->fill_in_refs($doc);
   $self->fill_in_bibrefs($doc);
-  if(($$self{verbosity} > 0) && (keys %LaTeXML::Post::CrossRef::MISSING)){
+  if(($$self{verbosity} >= 0) && (keys %LaTeXML::Post::CrossRef::MISSING)){
     my @msgs=();
     foreach my $type (sort keys %LaTeXML::Post::CrossRef::MISSING){
       push(@msgs,$type.": ".join(', ',sort keys %{$LaTeXML::Post::CrossRef::MISSING{$type}}));}
-    $self->Progress("Missing keys\n".join(";\n",@msgs)); }
+    $self->Warn("Missing keys in ".$doc->getDestination."\n  ".join(";\n  ",@msgs)); }
   $doc; }
 
 sub note_missing {
@@ -80,9 +82,9 @@ sub fill_in_refs {
     my $show = $ref->getAttribute('show');
     if(!$id){
       if(my $label = $ref->getAttribute('labelref')){
-	if(my $entry = $db->lookup("LABEL:$label")){
-	  $show = 'refnum' unless $show;
-	  $id = $entry->getValue('id'); }
+	my $entry;
+	if(($entry = $db->lookup("LABEL:$label")) && ($id=$entry->getValue('id'))){
+	  $show = 'refnum' unless $show; }
 	else {
 	  $self->note_missing('Label',$label); }}}
     if($id){
@@ -186,15 +188,25 @@ sub make_bibcite {
 
 sub generateURL {
   my($self,$doc,$id)=@_;
-  if(my $object = $$self{db}->lookup("ID:".$id)){
-    my $url    = $object->getValue('url');
-    my $docurl = $doc->getURL;
-    my $relurl = pathname_relative('/'.$url,  '/'.pathname_directory($docurl)) if $url;
-    $relurl .= '/' if ($url ne '.') && ($url =~ /\/$/);
+  my($object,$location);
+  if(($object = $$self{db}->lookup("ID:".$id))
+     && ($location = $object->getValue('location'))){
+    my $doclocation = $$self{db}->storablePathname($doc->getDestination);
+    my $url = pathname_relative('/'.$location,  '/'.pathname_directory($doclocation));
+    my $format = $$self{format} || 'xml';
+    my $urlstyle = $$self{urlstyle}||'file';
+    if($urlstyle eq 'server'){
+      $url =~ s/(^|\/)index.\Q$format\E$/$1/; } # Remove trailing index.$format
+    elsif($urlstyle eq 'negotiated'){
+      $url =~ s/\.\Q$format\E$//; # Remove trailing $format
+      $url =~ s/(^|\/)index$/$1/; # AND trailing index
+    }
+    $url = '.' unless $url;
+#    $url .= '/' if ($url ne '.') && ($url =~ /\/$/);
     if(my $fragid = $object->getValue('fragid')){
-      $relurl = '' if ($relurl eq '.') or ($url eq $docurl);
-      $relurl .= '#'.$fragid; }
-    $relurl; }
+      $url = '' if ($url eq '.') or ($location eq $doclocation);
+      $url .= '#'.$fragid; }
+    $url; }
   else {
     $self->note_missing('ID',$id); }}
 
@@ -240,7 +252,7 @@ sub generateRef {
     return @stuff if $OK;
     $show = $saveshow; 
     $id = $entry->getValue('parent'); }
-  (); }
+  ('?'); }
 
 
 sub generateTitle {
@@ -249,13 +261,19 @@ sub generateTitle {
   my $string = "";
   while(my $entry = $id && $$self{db}->lookup("ID:$id")){
     my $title  = $entry->getValue('title');
+    $title = $title->textContent if $title && ref $title;
+    $title =~ s/^\s+// if $title;
+    $title =~ s/\s+$// if $title;
     my $refnum = $entry->getValue('refnum');
+    $refnum = $refnum->textContent if $refnum && ref $refnum;
+    $refnum =~ s/^\s+// if $refnum;
+    $refnum =~ s/\s+$// if $refnum;
     if($title || $refnum){
       $string .= ' in ' if $string;
       my $type   = $entry->getValue('type');
       $string .= $TYPEPREFIX{$type} if $TYPEPREFIX{$type};
-      $string .= (ref $refnum ? $refnum->textContent : $refnum) if $refnum;
-      $string .= ($refnum ? '. ':'').(ref $title ? $title->textContent : $title) if $title; }
+      $string .= $refnum if $refnum;
+      $string .= ($refnum ? '. ':'').$title if $title; }
     $id = $entry->getValue('parent'); }
   $string; }
 

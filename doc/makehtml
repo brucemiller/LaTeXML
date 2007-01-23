@@ -2,11 +2,17 @@
 use strict;
 use FindBin;
 use lib "$FindBin::RealBin/../blib/lib";
+use Carp;
 use Pod::Html;
 use Pod::Find;
 use LaTeXML;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Post;
+use LaTeXML::Util::ObjectDB;
+use LaTeXML::Post::Split;
+use LaTeXML::Post::Scan;
+use LaTeXML::Post::CrossRef;
+use LaTeXML::Post::MakeIndex;
 use LaTeXML::Post::Graphics;
 use LaTeXML::Post::MathML;
 use LaTeXML::Post::PurgeXMath;
@@ -19,20 +25,30 @@ my $LOC = $SRCDIR."/..";
 my $DEST= "/local/www/site/htdocs/DigitalMathLib/LaTeXML";
 my $PDDEST = "$DEST/perldoc";
 
+BEGIN { $SIG{__DIE__} = \&confess; }
+
 #======================================================================
 # Process the LaTeX documentation
 print "Generating LaTeXML documentation in $DEST\n";
-LaTeXML->new()->convertAndWriteFile('LaTeXML');
+my %POPTIONS=(verbosity=>1);
+LaTeXML->new(documentid=>'latexml',%POPTIONS)->convertAndWriteFile('LaTeXML');
+my $DB = LaTeXML::Util::ObjectDB->new();
+my $splitpath="//ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index";
+my $scanner =LaTeXML::Post::Scan->new(db=>$DB,%POPTIONS);
+my $format='html';
 LaTeXML::Post::ProcessChain(
-   LaTeXML::Post::Document
-     ->newFromFile('LaTeXML.xml',
-		   destination=>"$DEST/LaTeXML.xhtml"),
-   LaTeXML::Post::Graphics->new(),
-   LaTeXML::Post::MathML::Presentation->new(),
-   LaTeXML::Post::PurgeXMath->new(),
-   LaTeXML::Post::XSLT->new(stylesheet=>"LaTeXML-xhtml.xsl",
-			    css=>'latexml.css'),
-   LaTeXML::Post::Writer->new(format=>'xhtml'));
+   LaTeXML::Post::Document->newFromFile('LaTeXML.xml',
+					destination=>"$DEST/LaTeXML/index.$format"),
+			    LaTeXML::Post::Split->new(db=>$DB,split_xpath=>$splitpath,%POPTIONS),
+			    $scanner,
+			    LaTeXML::Post::MakeIndex->new(db=>$DB,scanner=>$scanner,%POPTIONS),
+			    LaTeXML::Post::CrossRef->new(db=>$DB,%POPTIONS),
+			    LaTeXML::Post::Graphics->new(%POPTIONS),
+			    LaTeXML::Post::MathML::Presentation->new(%POPTIONS),
+			    LaTeXML::Post::PurgeXMath->new(%POPTIONS),
+			    LaTeXML::Post::XSLT->new(stylesheet=>"LaTeXML-$format.xsl",
+						     css=>'latexml.css',%POPTIONS),
+			    LaTeXML::Post::Writer->new(format=>$format,%POPTIONS));
 
 #======================================================================
 # Process the perldocs

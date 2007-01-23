@@ -81,11 +81,14 @@ sub invoke {
   my($self,$gullet)=@_;
   if($self->isConditional){
     $STATE->assignValue(current_if_level=>($STATE->lookupValue('current_if_level')||0)+1, 'global'); }
-  my @args = $self->readArguments($gullet);
+  $self->doInvocation($gullet,$self->readArguments($gullet)); }
+
+sub doInvocation {
+  my($self,$gullet,@args)=@_;
   my $expansion = $$self{expansion};
   (ref $expansion eq 'CODE' 
    ? &$expansion($gullet,@args)
-   : substituteTokens($expansion,@args)); }
+   : substituteTokens($expansion,map($_ && Tokens($_->revert),@args))); }
 
 sub substituteTokens {
   my($tokens,@args)=@_;
@@ -252,11 +255,16 @@ sub invoke {
   my($self,$stomach)=@_;
   # Call any `Before' code.
   my @pre = $self->executeBeforeDigest($stomach);
+
+  # Get some info before we process arguments...
+  my $font = $STATE->lookupValue('font');
+  my $ismath = $STATE->lookupValue('IN_MATH');
   # Parse AND digest the arguments to the Constructor
   my $params = $$self{parameters};
   my @args = ($params ? $params->readArgumentsAndDigest($stomach,$self) : ());
-
   @args = @args[0..$$self{nargs}-1];
+
+  # Compute any extra Whatsit properties (many end up as element attributes)
   my $properties = $$self{properties};
   my %props = (!defined $properties ? ()
 	       : (ref $properties eq 'CODE' ? &$properties($stomach,@args)
@@ -267,11 +275,15 @@ sub invoke {
       $props{$key} = &$value($stomach,@args); }
     elsif($value && ($value =~/^\#(\d)$/)){
       $props{$key} = $args[$1-1]->toString; }}
-  $props{font}    = $STATE->lookupValue('font')   unless defined $props{font};
+  $props{font}    = $font   unless defined $props{font};
   $props{locator} = $stomach->getGullet->getLocator unless defined $props{locator};
-  $props{isMath}  = $STATE->lookupValue('IN_MATH') unless defined $props{isMath};
+  $props{isMath}  = $ismath unless defined $props{isMath};
   $props{level}   = $stomach->getBoxingLevel;
+
+  # Now create the Whatsit, itself.
   my $whatsit = LaTeXML::Whatsit->new($self,[@args],%props);
+
+  # Call any 'After' code.
   my @post = $self->executeAfterDigest($stomach,$whatsit);
   if(my $id = $props{id}){
     $STATE->assignValue('xref:'.$id=>$whatsit,'global'); }
@@ -481,8 +493,9 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Definition>, C<LaTeXML::Expandable>, C<LaTeXML::Primitive>, 
-C<LaTeXML::Register>, C<LaTeXML::Constructor> -- Control sequence definitions.
+C<LaTeXML::Definition>  - Control sequence definitions,
+including specializations C<LaTeXML::Expandable>, C<LaTeXML::Primitive>, 
+C<LaTeXML::Register>, C<LaTeXML::Constructor>
 
 =head1 DESCRIPTION
 
@@ -493,7 +506,7 @@ See L<LaTeXML::Package> for the most convenient means of creating them.
 
 =item C<LaTeXML::Expandable>
 
- represents macros and other expandable control sequences like C<\if>, etc
+represents macros and other expandable control sequences like C<\if>, etc
 that are carried out in the Gullet during expansion. The results of invoking an
 C<LaTeXML::Expandable> should result in a list of C<LaTeXML::Token>s.
 
@@ -501,9 +514,9 @@ C<LaTeXML::Expandable> should result in a list of C<LaTeXML::Token>s.
 
 represents primitive control sequences that are primarily carried out
 for side effect during digestion in the L<LaTeXML::Stomach> and for changing
-the L<LaTeXML::State>.  The results of invoking a C<LaTeXML::Primitive>, if any, 
-should be a list of C<LaTeXML::Box>s, C<LaTeXML::List>'s
-or C<LaTeXML::Whatsit>s.
+the L<LaTeXML::State>.  The results of invoking a C<LaTeXML::Primitive>, if any,
+should be a list of digested items (C<LaTeXML::Box>, C<LaTeXML::List>
+or C<LaTeXML::Whatsit>).
 
 =item C<LaTeXML::Register>
 
@@ -568,7 +581,7 @@ that are executed before and after digestion.  These can be useful for changing 
 
 =head2 More about Primitives
 
-Primitive definitions may have lists of subroutines, C<beforeDigest> and C<afterDigest>,
+Primitive definitions may have lists of subroutines, called C<beforeDigest> and C<afterDigest>,
 that are executed before (and before the arguments are read) and after digestion.
 These should either end with C<return;>, C<()>, or return a list of digested 
 objects (L<LaTeXML::Box> or similar) that will be contributed to the current list.

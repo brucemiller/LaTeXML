@@ -147,22 +147,22 @@
     <title>Absolute values</title>
     <para id="S3.p1">
       <equation id="Ex7">
-        <Math mode="display" tex="|a|" text="Abs@(a)">
+        <Math mode="display" tex="|a|" text="abs@(a)">
           <XMath>
             <XMApp>
-              <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
               <XMTok role="ID" font="italic">a</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation id="Ex8">
-        <Math mode="display" tex="||a||" text="Abs@(Abs@(a))">
+        <Math mode="display" tex="||a||" text="abs@(abs@(a))">
           <XMath>
             <XMApp>
-              <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
               <XMApp>
-                <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
+                <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
                 <XMTok role="ID" font="italic">a</XMTok>
               </XMApp>
             </XMApp>
@@ -170,12 +170,12 @@
         </Math>
       </equation>
       <equation id="Ex9">
-        <Math mode="display" tex="|a|_{\infty}" text="(Abs@(a)) _ infinity">
+        <Math mode="display" tex="|a|_{\infty}" text="(abs@(a)) _ infinity">
           <XMath>
             <XMApp>
               <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
               <XMApp>
-                <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
+                <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
                 <XMTok role="ID" font="italic">a</XMTok>
               </XMApp>
               <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
@@ -184,10 +184,10 @@
         </Math>
       </equation>
       <equation id="Ex10">
-        <Math mode="display" tex="|a+b|" text="Abs@(a + b)">
+        <Math mode="display" tex="|a+b|" text="abs@(a + b)">
           <XMath>
             <XMApp>
-              <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
               <XMApp>
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -198,15 +198,15 @@
         </Math>
       </equation>
       <equation id="Ex11">
-        <Math mode="display" tex="|a-|b||" text="Abs@(a - Abs@(b))">
+        <Math mode="display" tex="|a-|b||" text="abs@(a - abs@(b))">
           <XMath>
             <XMApp>
-              <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
               <XMApp>
                 <XMTok meaning="minus" role="ADDOP">-</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMApp>
-                  <XMTok name="Abs" role="FENCED" argclose="|" argopen="|"/>
+                  <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
                   <XMTok role="ID" font="italic">b</XMTok>
                 </XMApp>
               </XMApp>

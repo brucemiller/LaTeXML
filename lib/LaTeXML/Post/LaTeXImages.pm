@@ -131,7 +131,7 @@ sub process {
     close(TEX);
 
     # === Run LaTeX on the file.
-    my $texinputs = ".:".pathname_absolute($doc->getSourceDirectory) .":".($ENV{TEXINPUTS} ||'');
+    my $texinputs = ".:".join(':',$doc->getSearchPaths) .":".($ENV{TEXINPUTS} ||'');
     my $command = "cd $workdir ; TEXINPUTS=$texinputs $LATEXCMD $jobname > $jobname.output";
     my $err = system($command);
 

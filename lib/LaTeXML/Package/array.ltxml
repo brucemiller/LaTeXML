@@ -1,0 +1,18 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  array                                                              | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use LaTeXML::Package;
+
+DefColumnType('>{}',sub { $LaTeXML::BUILD_TEMPLATE->addBefore($_[1]->unlist); return; });
+DefColumnType('<{}',sub { $LaTeXML::BUILD_TEMPLATE->addAfter($_[1]->unlist); return; });
+
+1;

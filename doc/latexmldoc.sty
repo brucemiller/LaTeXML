@@ -4,16 +4,73 @@
 \usepackage{latexml}
 \usepackage{url}
 
+%\usepackage[T1]{fontenc}
+%\usepackage{textcomp}
+
 \def\URL{\@ifnextchar[{\@URL}{\@@URL}}%]
 \def\@@URL{\begingroup\Url}
 \def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\texttt{##1}}}\Url}
 
+\let\@title\@empty
+\def\subtitle#1{\gdef\@subtitle{#1}}
+\def\@maketitle{%
+  \newpage
+  \null
+  \vskip 2em%
+  \begin{center}%
+  \let \footnote \thanks
+    {\LARGE \@title \par}%
+    \ifx\@subtitle\@empty\else
+      \vskip 1.0em%
+      {\large \@subtitle \par}%
+    \fi
+    \vskip 1.5em%
+    {\large
+      \lineskip .5em%
+      \begin{tabular}[t]{c}%
+        \@author
+      \end{tabular}\par}%
+    \vskip 1em%
+    {\large \@date}%
+  \end{center}%
+  \par
+  \vskip 1.5em}
+\renewcommand\maketitle{\begin{titlepage}%
+  \let\footnotesize\small
+  \let\footnoterule\relax
+  \let \footnote \thanks
+  \null\vfil
+  \vskip 60\p@
+  \begin{center}%
+    {\LARGE \@title \par}%
+    \ifx\@subtitle\@empty\else
+      \vskip 1.0em%
+      {\large \@subtitle \par}%
+    \fi
+    \vskip 3em%
+    {\large
+     \lineskip .75em%
+      \begin{tabular}[t]{c}%
+        \@author
+      \end{tabular}\par}%
+      \vskip 1.5em%
+    {\large \@date \par}%       % Set date in \large size.
+  \end{center}\par
+  \@thanks
+  \vfil\null
+  \end{titlepage}%
+}
 \usepackage{graphicx}
-\newcommand{\pkg}[2][]{\texttt{#2}}
+\newcommand{\ltxpkg}[1]{\if.#1.\texttt{LaTeXML}\else\texttt{LaTeXML::#1}\fi}
+\newcommand{\ltxcmd}[1]{\texttt{#1}}
+
+\newcommand{\podlink}[1]{\texttt{#1}}
+
 \newcommand{\cmd}[1]{\texttt{#1}}
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\method}[1]{\texttt{->#1}}
 \newcommand{\tag}[1]{\texttt{#1}}
 \newcommand{\attr}[1]{\texttt{#1}}
 \newcommand{\perldoc}[1]{\texttt{perldoc #1}}
+
 %======================================================================

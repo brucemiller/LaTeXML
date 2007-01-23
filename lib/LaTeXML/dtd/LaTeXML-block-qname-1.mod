@@ -23,6 +23,8 @@
 <!ENTITY % LaTeXML.centering.qname     "%LaTeXML.pfx;centering">
 <!ENTITY % LaTeXML.block.qname         "%LaTeXML.pfx;block">
 
+<!ENTITY % LaTeXML.break.qname         "%LaTeXML.pfx;break">
+
 <!-- ======================================================================
      Para Elements: Logical Paragraphs -->
 

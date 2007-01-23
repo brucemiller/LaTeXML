@@ -18,209 +18,308 @@ use LaTeXML::Package;
 use Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT= (qw(&alignment
-		 &alignment_align &alignment_cr &alignment_hline
-		 &alignment_multicol
-		 &guess_alignment_headers
-		 &ReadTabularPattern &parseTabularPattern));
-
-# If in math => XMArray > XMRow > XMCell,
-#  else      => tabular > tr    > td
-sub alignment {
-  my($document,$body,$colspec,$doheaders,%attr)=@_;
-  # Open the Array, and an initial row and cell.
-  local $LaTeXML::Alignment::ISMATH = $body->isMath;
-  local @LaTeXML::TABPATTERN = ($colspec ? @{$$colspec{row}} : ());
-  local @LaTeXML::TABSPEC = ();
-  local $LaTeXML::TR = ($LaTeXML::Alignment::ISMATH ? 'ltx:XMRow' : 'ltx:tr');
-  local $LaTeXML::TD = ($LaTeXML::Alignment::ISMATH ? 'ltx:XMCell' : 'ltx:td');
-  my $tag = ($LaTeXML::Alignment::ISMATH ? 'ltx:XMArray' : 'ltx:tabular');
-  my $alignment = $document->openElement($tag,%attr);
-  # Start with an open row & column.
-  open_alignment_row($document);
-  open_alignment_column($document);
-  # Now process the body (& and // should be bound to alignment_{align|cr} )
-  $document->absorb($body);
-  close_alignment_column($document);
-  close_alignment_row($document);
-  # Since the alignment may or may not have ended with an explicit \\,
-  # we need to check for an empty row (w/empty cells), and remove it.
-  my $lastrow = $document->getElement->lastChild;
-  my $empty = ($LaTeXML::Alignment::ISMATH
-	       ?"ltx:XMCell/ltx:XMArg[child::* or text()]"
-	       :"ltx:td[child::* or text()]");
-  if(!$document->findnodes($empty,$lastrow)){
-    $lastrow->getParentNode->removeChild($lastrow); }
-  $document->closeElement($tag); 
-  if($doheaders){
-    guess_alignment_headers($document,$alignment); }
-}
-
-sub open_alignment_row {
-  my($document)=@_;
-  # Copy pattern to new specs for this row.
-#  @LaTeXML::TABSPEC = map( { %{$_} } , @LaTeXML::TABPATTERN);
-  @LaTeXML::TABSPEC = ();
-  foreach my $cell (@LaTeXML::TABPATTERN){
-    push(@LaTeXML::TABSPEC,{%$cell}); }
-  $document->openElement($LaTeXML::TR); }
-
-sub close_alignment_row {
-  my($document)=@_;
-  while(@LaTeXML::TABSPEC){	# Pad w/empty cells if needed
-    open_alignment_column($document);
-    close_alignment_column($document); }
-  $document->closeElement($LaTeXML::TR); }
-
-sub add_alignment_border {
-  my($node,@borders)=@_;
-  my $border = join(' ',sort(map(split(/ */,$_),
-				 $node->getAttribute('border')||'',@borders)));
-  $border =~ s/(.) \1/$1$1/g;
-  $node->setAttribute(border=>$border) if $border; }
-
-sub open_alignment_column {
-  my($document)=@_;
-    $document->openElement($LaTeXML::TD);
-  if($LaTeXML::Alignment::ISMATH){
-    $document->openElement('ltx:XMArg',rule=>'Anything,'); }}
-
-sub close_alignment_column {
-  my($document)=@_;
-  if($LaTeXML::Alignment::ISMATH){
-    if($document->isCloseable('ltx:XMText')){
-      $document->closeElement('ltx:XMText'); }
-    $document->closeElement('ltx:XMArg'); }
-  my $node = $document->closeElement($LaTeXML::TD);
-  my $spec = shift(@LaTeXML::TABSPEC);
-  $node->setAttribute(align=>$$spec{align}) if $$spec{align};
-  $node->setAttribute(width=>ToString($$spec{width}))
-    if $$spec{width};
-  $node->setAttribute(colspan=>$$spec{colspan})
-    unless ($$spec{colspan}||1) == 1;
-  add_alignment_border($node,$$spec{border}) if $$spec{border};
-  if(!$LaTeXML::Alignment::ISMATH){ # ?????
-    if(my $after = $$spec{after}){
-      $document->insertElement('ltx:td-between',$after); }}}
+our @EXPORT= (qw(
+		 &constructAlignment
+		 &ReadAlignmentTemplate &parseAlignmentTemplate &MatrixTemplate));
 
 #======================================================================
-# Helpers for implementing &, \\ and \hline
+# An "Alignment" is an array/tabular construct as:
+#   <tabular><tr><td>...
+# or, for math mode
+#   <XMArray><XMRow><XMCell>...
+# (where initially, each XMCell will contain an XMArg to indicate
+# individual parsing of each cell's content is desired)
 
-sub alignment_align {
-  my($document)=@_;
-    close_alignment_column($document);
-    open_alignment_column($document); }
+sub new {
+  my($class)=@_;
+  bless { template=>LaTeXML::AlignmentTemplate->new(), rows=>[],
+	  current_column=>0, current_row=>undef}, $class; }
 
-sub alignment_cr {
-  my($document)=@_;
-    close_alignment_column($document);
-    close_alignment_row($document);
-    open_alignment_row($document);
-    open_alignment_column($document); }
+###
 
-sub add_border_to_previous {
-  my($document,$border,$border_if_first,@cols)=@_;
-  @cols = (0..$#LaTeXML::TABPATTERN) unless @cols;
-  # We'll already have started the next row (tr+td) when we see this.
-  my $xp = ($LaTeXML::Alignment::ISMATH
-	    ?"ancestor-or-self::ltx:XMCell/parent::ltx:XMRow/preceding-sibling::*[1][local-name()='XMRow']/ltx:XMCell"
-	    :"ancestor-or-self::ltx:td/parent::ltx:tr/preceding-sibling::*[1][local-name()='tr']/ltx:td");
-  if(my @td = $document->findnodes($xp,$document->getElement)){
+sub setMath {
+  my($self)=@_;
+  $$self{isMath} = 1; }
+
+###
+sub getTemplate {
+  my($self,$template)=@_;
+  $$self{template}; }
+
+sub setTemplate {
+  my($self,$template)=@_;
+  $$self{template}=$template; }
+
+###
+sub currentRow {
+  my($self)=@_;
+  $$self{current_row}; }
+
+sub newRow {
+  my($self)=@_;
+  my $row = $$self{template}->clone;
+  $$self{current_row} = $row;
+  $$self{current_column} = 0;
+  push(@{$$self{rows}}, $row);
+  $row; }
+
+###
+
+sub addLine {
+  my($self,$border,@cols)=@_;
+  my $row = $$self{current_row};
+  if(@cols){
     foreach my $c (@cols){
-      my $i=0;
-      foreach my $td (@td){
-	add_alignment_border($td,$border) if ($i == $c);
-	$i +=  $td->getAttribute('colspan')||1; }}}
-  else {			# hline before 1st row; save as top for 1st.
-    map( $$_{border} .= $border_if_first, @LaTeXML::TABSPEC[@cols]); }
+      my $colspec = $row->column($c);
+      $$colspec{border} .= $border; }}
+  else {
+    foreach my $colspec (@{$$row{row}}){
+      $$colspec{border} .= $border; }}
+  return; }
+
+###
+sub nextColumn {
+  my($self)=@_;
+  $$self{current_row}->column( ++$$self{current_column} ); }
+
+sub currentColumnNumber {
+  my($self)=@_;
+  $$self{current_column}; }
+
+sub currentColumn {
+  my($self)=@_;
+  $$self{current_row}->column($$self{current_column}); }
+
+sub getColumn {
+  my($self,$n)=@_;
+  $$self{current_row}->column($n); }
+
+# sub missingColumns {
+#   my($self)=@_;
+#   my $n = scalar(@{$$self{current_row}{row}});
+#   $n - $$self{current_column}; }
+
+#======================================================================
+# Constructing the XML for the alignment.
+#======================================================================
+# Normalize an alignment after construction
+# Tasks:
+#  (1) a trailing \\ in the alignment will generate an empty row.
+#     Note that the trailing \\ is required to get an \hline at the bottom!
+#     It is empty in the sense that no cells have "real" content
+#     but may have content generated from the template!
+#     This emptiness is sensed by inner@column.
+#     So, if we find such an empty row, we need to remove it,
+#     but copy it's top border to a bottom border of the preceding row!
+#  (2) Some table constructs, particularly Knuth's fancy ones,
+#     have empty columns for spacing purposes.
+#     These likely should be removed from the "logical" table we construct.
+#     Here, emptiness should probably be that there is no text content
+#     in the cell's at all (template data is presumably meaningful).
+#     But here, also, border data may need to be moved (but l/r borders)
+#  (3) put border attributes in a "normal" form to ease use as html's class attribute.
+#     Ie: group by l/r/t/b w/ spaces between groups.
+#
+# OR, since I'm doing so much manipulation here,
+# maybe it just makes sense to build the entire XML from the alignment construction?
+# This would avoid lots of back & forth between the alignment & xml.
+
+# NOTE: Another cleanup issue:
+# With \halign, Knuth seems to like to introduce many empty columns for spacing.
+# It may be useful to remove such columns?
+# Probably have to 
+
+sub constructAlignment {
+  my($document,$body,%props)=@_;
+  my $alignment = $body->getProperty('alignment');
+  $alignment->setMath if $body->isMath;
+
+  my %attr = ($props{attributes} ? %{$props{attributes}} : ());
+  my $node = $alignment->beAbsorbed($document,%attr);
+  if($props{guess_headers}){
+    guess_alignment_headers($document,$node); }
+  $node; }
+
+sub beAbsorbed {
+  my($self,$document,%attributes)=@_;
+  my $ismath = $$self{isMath};
+
+  my @rows = @{$$self{rows}};
+  # If last row is "empty", remove it, while copying it's top border to the bottom of prev.
+  if(!grep(! $$_{empty}, @{$rows[-1]->{row}})){
+    my $nc = scalar(@{$rows[-1]->{row}});
+    for(my $c = 0; $c < $nc; $c++){
+      my $border = $rows[$#rows]{row}[$c]{border}||'';
+      $border =~ s/[^tT]//g;
+      $border =~ s/./b/g;
+      $rows[$#rows-1]{row}[$c]{border} .= $border; }
+    pop(@rows); pop(@{$$self{rows}}); }
+
+  $document->openElement(($ismath ? 'ltx:XMArray' : 'ltx:tabular'),%attributes);
+  foreach my $row (@{$$self{rows}}){
+    $document->openElement(($ismath ? 'ltx:XMRow' : 'ltx:tr'));
+#print STDERR "Absorbing row: ".$row->show."\n";
+    foreach my $cell (@{$$row{row}}){
+      next if $$cell{skipped};
+      # Normalize the border attribute
+      my $border = join(' ',sort(map(split(/ */,$_),$$cell{border}||'')));
+      $border =~ s/(.) \1/$1$1/g;
+      my %attr = (align=>$$cell{align}, width=>$$cell{width},
+		  (($$cell{span}||1) != 1 ? (colspan=>$$cell{span}) : ()),
+		  ($border ? (border=>$border):()));
+      if($ismath){
+	$document->openElement('ltx:XMCell',%attr);
+	$document->openElement('ltx:XMArg') unless $$cell{empty}; }
+      else {
+	$document->openElement('ltx:td',%attr); }
+      $document->absorb($$cell{boxes}) unless $$cell{empty};
+      if($ismath){
+	$document->closeElement('ltx:XMArg') unless $$cell{empty};
+	$document->closeElement('ltx:XMCell'); }
+      else {
+	$document->closeElement('ltx:td'); }}
+    $document->closeElement(($ismath ? 'ltx:XMRow' : 'ltx:tr')); }
+  $document->closeElement($ismath ? 'ltx:XMArray' : 'ltx:tabular');
 }
-
-sub alignment_hline {
-  my($document,$border,@cols)=@_;
-  add_border_to_previous($document,'b','t',@cols); }
-
-sub alignment_multicol {
-  my($document,$ncol,$pattern,$body)=@_;
-  # Replace ncol table specs with the new pattern.
-  $ncol = $ncol->valueOf;
-  my $spec = $$pattern{row}[0];
-  $$spec{colspan} = $ncol;
-  my $b = $LaTeXML::TABSPEC[0]{border}; # Copy pending top border, if any.
-  $b =~ s/[^t]//g;
-  $$spec{border} = $b.$$spec{border};
-  map(shift(@LaTeXML::TABSPEC), 1..$ncol);
-  unshift(@LaTeXML::TABSPEC,$spec);
-  $document->absorb($body); }
 
 #======================================================================
 
-sub ReadTabularPattern {
+#======================================================================
+
+# newcolumntype
+#  defines \NC@rewrite@<char>
+#    As macro
+#    or "constructor" (or just sub that creates a column)
+
+sub ReadAlignmentTemplate {
   my($gullet)=@_;
   $gullet->skipSpaces;
+  local $LaTeXML::BUILD_TEMPLATE = 
+    LaTeXML::AlignmentTemplate->new(row=>[], tokens=>[]);
   my $open = $gullet->readToken;		# Better be {
   my @tokens=($open);
-  my @row=();
-  my $b='';
+  my $defn;
   while(my $op = $gullet->readToken){
     if($op->equals(T_END)){
       push(@tokens,$op);
       last; }
-    elsif($op->equals(T_OTHER('|'))){
-      push(@tokens,$op);
-      if(@row){
-	$row[$#row]{border} .= 'r'; }
+    elsif(defined($defn=$STATE->lookupDefinition(T_CS('\NC@rewrite@'.ToString($op))))
+       && $defn->isExpandable){
+#      $gullet->unread($defn->invoke($gullet)); }
+      # A variation on $defn->invoke, so we can reconstruct the reversion
+      my @args = $defn->readArguments($gullet);
+      my @exp = $defn->doInvocation($gullet,@args);
+      if(@exp){			# This just expanded into other stuff
+	$gullet->unread(@exp); }
       else {
-	$b .= 'l'; }}
-    elsif($op->equals(T_LETTER('r'))){
-      push(@tokens,$op);
-      push(@row, {align=>'right', border=>$b}); $b=''; }
-    elsif($op->equals(T_LETTER('l'))){
-      push(@tokens,$op);
-      push(@row, {align=>'left', border=>$b} ); $b=''; }
-    elsif($op->equals(T_LETTER('c'))){
-      push(@tokens,$op);
-      push(@row, {align=>'center', border=>$b} ); $b=''; }
-    elsif($op->equals(T_LETTER('p'))){
-      my($width) = ReadParameters($gullet,'{Dimension}');
-      push(@row, {align=>'justify', width=>$width, border=>$b} );  $b=''; 
-      push(@tokens,$op, T_BEGIN,$width->revert,T_END); }
-    elsif($op->equals(T_OTHER('*'))){
-      my($n,$p)= ReadParameters($gullet,'{Number}{}');
-      $n = $n->valueOf;
-      for(my $i=0; $i<$n; $i++){
-	$gullet->unread($p->unlist); }}
-    elsif($op->equals(T_OTHER('@'))){
-      # NOTE Special casing: Trim spacing, look for \vline
-      my @toks = $gullet->readArg->unlist;
-      push(@tokens,$op,@toks);
-      while(@toks && $toks[0]->toString =~ /^\\[,:;! ]$/){ shift(@toks); }
-      while(@toks && $toks[$#toks]->toString =~ /^\\[,:;! ]$/){ pop(@toks); }
-      if(scalar(@toks)==1 && $toks[0]->equals(T_CS('\vline'))){
-	shift(@toks); $gullet->unread(T_OTHER('|')); }
-      $row[$#row]{after} = Digest(Tokens(@toks)) if @toks; }
+	push(@tokens,$op,$defn->getParameters->revertArguments(@args)); }}
     else {
-      Warn("Unrecognized tabular pattern \"".Stringify($op)."\""); last; }}
-  return LaTeXML::TabularPattern->new(row=>[@row], tokens=>[@tokens]); }
+      Warn("Unrecognized tabular template \"".Stringify($op)."\""); last; }}
+  $LaTeXML::BUILD_TEMPLATE->setReversion(@tokens);
+  return $LaTeXML::BUILD_TEMPLATE; }
 
-sub parseTabularPattern {
+sub parseAlignmentTemplate {
   my($spec)=@_;
   my $gullet = $STATE->getStomach->getGullet;
   $gullet->openMouth(LaTeXML::Mouth->new("{".$spec."}"),1);
-  my $pattern = ReadTabularPattern($gullet);
+  my $template = ReadAlignmentTemplate($gullet);
   $gullet->closeMouth(1);
-  $pattern; }
+  $template; }
 
+sub MatrixTemplate {
+  LaTeXML::AlignmentTemplate->new(repeated=>[{before=>Tokens(T_CS('\hfil')),
+					      after=>Tokens(T_CS('\hfil'))}]); }
 {
-package LaTeXML::TabularPattern;
+package LaTeXML::AlignmentTemplate;
 use base qw(LaTeXML::Object);
+use LaTeXML::Global;
+
 sub new {
   my($class,%data)=@_;
-    bless {%data}, $class; }
+  $data{row}=[] unless $data{row};
+  $data{repeating} = 1 if $data{repeating} || $data{repeated};
+  $data{repeated} = [] unless $data{repeated};
+  $data{non_repeating} = scalar(@{$data{row}});
+  $data{save_before} = [] unless $data{save_before};
+
+  map( $$_{empty}=1, @{$data{row}});
+  map( $$_{empty}=1, @{$data{repeated}});
+  bless {%data}, $class; }
+
 sub revert {
   my($self)=@_;
   @{ $$self{tokens} }; }
-}
 
+# Methods for constructing a template.
+
+sub setReversion {
+  my($self,@tokens)=@_;
+  $$self{tokens} = [@tokens]; }
+
+sub setRepeating {
+  my($self)=@_; 
+  $$self{repeating}=1; }
+
+sub addBefore {
+  my($self,@tokens)=@_;
+  push(@{$$self{save_before}},@tokens); }
+
+sub addAfter {
+  my($self,@tokens)=@_;
+  $$self{current_column}{after} = Tokens(@{ $$self{current_column}{after}},@tokens); }
+
+sub addBetween {
+  my($self,@tokens)=@_;
+  my @cols = @{$$self{row}};
+  if($$self{current_column}){ $self->addAfter(@tokens); }
+  else                      { $self->addBefore(@tokens); }}
+
+sub addColumn {
+  my($self,%properties)=@_;
+  my $col = {%properties};
+  my @before=();
+  push(@before,@{$$self{save_before}});
+  push(@before,$properties{before}->unlist) if $properties{before};
+  $$col{before} = Tokens(@before);
+  $$col{after}  = Tokens() unless $properties{after};
+  $$col{empty}  = 1;
+  $$self{save_before}=[];
+  $$self{current_column} = $col;
+  if($$self{repeating}){
+    $$self{non_repeating} = scalar(@{$$self{row}});
+    push(@{$$self{repeated}},$col); }
+  else {
+    push(@{$$self{row}},$col); }}
+
+# Methods for using a template.
+sub clone {
+  my($self)=@_;
+  my @dup = ();
+  foreach my $cell (@{$$self{row}}){
+    push(@dup, { %$cell }); }
+  bless {row=>[@dup], 
+	 repeated=>$$self{repeated}, non_repeating=>$$self{non_repeating},
+	 repeating=>$$self{repeating}}, ref $self; }
+
+sub show {
+  my($self)=@_;
+  my @strings=();
+  foreach my $col(@{$$self{row}}){
+    push(@strings, "\n{".join(', ',map("$_=>".Stringify($$col{$_}),keys %$col)).'}'); }
+  join(', ',@strings); }
+
+sub column {
+  my($self,$n)=@_;
+  my $N = scalar(@{$$self{row}});
+  if(($n > $N) && $$self{repeating}){
+    my @rep = @{$$self{repeated}};
+    my $m = scalar(@rep);
+    for(my $i=$N; $i<$n; $i++){
+      my %dup = %{  $rep[($i-$$self{non_repeating}) % $m] };
+      push(@{$$self{row}},{%dup}); }}
+  $$self{row}->[$n-1]; }
+
+}
 
 #======================================================================
 # Experimental alignment heading heuristications.
@@ -236,6 +335,11 @@ sub guess_alignment_headers {
   # Assume that headers don't make sense for nested tables.
   # OR Maybe we should only do this within table environments???
   return if $document->findnodes("ancestor::ltx:tabular",$alignment);
+
+  my $tag = $document->getNodeQName($alignment);
+  my $ismath = $tag eq 'ltx:XMArray';
+  local $LaTeXML::TR = ($ismath ? 'ltx:XMRow' : 'ltx:tr');
+  local $LaTeXML::TD = ($ismath ? 'ltx:XMCell' : 'ltx:td');
 
   # Build a view of the table by extracting the rows, collecting & characterizing each cell.
   my @rows = collect_alignment_rows($document,$alignment);
@@ -258,7 +362,7 @@ sub guess_alignment_headers {
 	$$c{role}='d'; $$c{cell}->removeAttribute('thead'); }}}
   # Regroup the rows into thead & tbody elements.
   alignment_regroup($document,$alignment,@rows)
-    unless $LaTeXML::Alignment::ISMATH;
+    unless $ismath;
   # Debugging report!
   summarize_alignment([@rows],[@cols]) if $LaTeXML::Alignment::DEBUG;
 }

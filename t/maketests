@@ -40,7 +40,7 @@ sub gen_dvi {
   while(<IN>){ 
     $program = 'latex' if /documentclass/; }
   close(IN);
-
+  $ENV{TEXINPUTS} = "$FindBin::RealBin/../texmf/::".($ENV{TEXINPUTS}||'');
   system($program,$name) == 0 or die "Couldn't run $program $name: $!";
   system($program,$name) == 0 or die "Couldn't run $program $name: $!";
 

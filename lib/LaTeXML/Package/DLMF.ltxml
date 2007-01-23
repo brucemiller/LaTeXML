@@ -278,6 +278,9 @@ DefConstructor('\MarkNotation {}{}',
 	       mode=>'text', reversion=>'');
 
 DefMacro('\indexdefn{}','\index{#1|textbf}'); # This'll work.
+DefMacro('\indexodd{}',''); # Ignore
+DefMacro('\indexnew{}','\index{#1}');
+DefMacro('\indexlong{}','\index{#1}');
 #**********************************************************************
 # More Math environments.
 
@@ -381,12 +384,8 @@ DefEnvironment('{table*}[]',
 #**********************************************************************
 # Table enhancement
 
-sub tabular_thinhline {
-  my($document)=@_;
-  # Sneak in an additional type!!!! Add to CSS!!!
-  LaTeXML::Util::Alignment::add_border_to_previous($document,'B','t'); }
-
-DefConstructor('\thinhline',\&tabular_thinhline);
+DefConstructor('\thinhline','',
+	       afterDigest=>sub { LookupValue('Alignment')->addLine('T'); });
 
 #**********************************************************************
 DefConstructor('\VRML Semiverbatim', "<ltx:VRML href='#1'/>");

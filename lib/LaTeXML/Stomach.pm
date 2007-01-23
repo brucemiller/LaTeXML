@@ -238,7 +238,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Stomach> -- digests tokens into boxes, lists, etc.
+C<LaTeXML::Stomach> - digests tokens into boxes, lists, etc.
 
 =head1 DESCRIPTION
 
@@ -263,7 +263,7 @@ As with macros, any arguments to the primitive are read from the L<LaTeXML::Gull
 
 =item Grouping (or environment bodies)
 
-are collected into a L<LaTeXML::List> (or L<LaTeXML::MathList> in math mode).
+are collected into a L<LaTeXML::List>.
 
 =item Constructors
 

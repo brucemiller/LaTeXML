@@ -206,8 +206,8 @@
 <!ATTLIST %LaTeXML.copyright.qname;
           year CDATA #IMPLIED>
 
-<!ELEMENT %LaTeXML.begin_onecolumn.qname; ANY>
-<!ELEMENT %LaTeXML.end_onecolumn.qname;   ANY>
+<!ELEMENT %LaTeXML.begin_onecolumn.qname; EMPTY>
+<!ELEMENT %LaTeXML.end_onecolumn.qname;   EMPTY>
 <!ELEMENT %LaTeXML.printonly.qname;       ANY>
 <!ELEMENT %LaTeXML.electroniconly.qname;  ANY>
 

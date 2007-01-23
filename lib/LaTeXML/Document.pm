@@ -455,7 +455,7 @@ sub openText {
   return if $text=~/^\s+$/ && 
     (($$self{node}->nodeType == XML_DOCUMENT_NODE) # Ignore initial whitespace
      || (($$self{node}->nodeType == XML_ELEMENT_NODE) && !$$self{model}->canContain($self->getNodeQName($$self{node}),'#PCDATA')));
-  print STDERR "Insert text \"$text\" at ".Stringify($$self{node})."\n" if $LaTeXML::Document::DEBUG;
+  print STDERR "Insert text \"$text\" /".Stringify($font)." at ".Stringify($$self{node})."\n" if $LaTeXML::Document::DEBUG;
   my $node = $$self{node};
   if(($node->nodeType != XML_DOCUMENT_NODE) # If not at document begin
      && !(($node->nodeType == XML_TEXT_NODE) && # And not appending text in same font.
@@ -467,6 +467,8 @@ sub openText {
     my $n = $node;
     while($n->nodeType != XML_DOCUMENT_NODE){
       my $d = $font->distance($self->getNodeFont($n));
+#print STDERR "Font Compare: ".Stringify($n)." w/font=".Stringify($self->getNodeFont($n))." ==>$d\n";
+
       if($d < $bestdiff){
 	$bestdiff = $d;
 	$closeto = $n;
@@ -663,16 +665,15 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Document> -- represents an XML document under construction.
+C<LaTeXML::Document> - represents an XML document under construction.
 
 =head1 DESCRIPTION
 
-Given the L<LaTeXML::List> containing the digested  created by the L<LaTeXML::Stomach>,
-a C<LaTeXML::Document> is created absorb this digested material, and
-generate an L<XML::LibXML::Document>.  Generally, the 
-L<LaTeXML::Box>s and L<LaTeXML::List>s create text nodes, whereas
-the L<LaTeXML::Whatsit>s create C<XML> document fragments (elements, attributes and so forth)
-according to the defining L<LaTeXML::Constructor>.
+A C<LaTeXML::Document> constructs an XML document by
+absorbing the digested L<LaTeXML::List> (created by L<LaTeXML::Stomach>),
+Generally, the L<LaTeXML::Box>s and L<LaTeXML::List>s create text nodes,
+whereas the L<LaTeXML::Whatsit>s create C<XML> document fragments, elements
+and attributes according to the defining L<LaTeXML::Constructor>.
 
 The C<LaTeXML::Document> maintains a current insertion point for where material will
 be added. The L<LaTeXML::Model>, derived from various declarations and document type, 

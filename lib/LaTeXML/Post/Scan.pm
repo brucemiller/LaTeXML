@@ -27,6 +27,7 @@ sub new {
   $self->registerHandler(index         => \&section_handler);
   $self->registerHandler(chapter       => \&section_handler);
   $self->registerHandler(section       => \&section_handler);
+  $self->registerHandler(appendix      => \&section_handler);
   $self->registerHandler(subsection    => \&section_handler);
   $self->registerHandler(subsubsection => \&section_handler);
   $self->registerHandler(paragraph     => \&section_handler);
@@ -85,6 +86,10 @@ sub inPageID {
   else {
     $id; }}
 
+sub storableLocation {
+  my($self,$doc)=@_;
+  $$self{db}->storablePathname($doc->getDestination); }
+
 sub default_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('id');
@@ -92,7 +97,7 @@ sub default_handler {
     my $label = $node->getAttribute('label');
     $$self{db}->register("LABEL:$label",id=>$id) if $label;
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, label=>$label,
-			 url=>$doc->getURL, fragid=>$self->inPageID($doc,$id)); }
+			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id)); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub section_handler {
@@ -101,10 +106,14 @@ sub section_handler {
   if($id){
     my $label = $node->getAttribute('label');
     $$self{db}->register("LABEL:$label",id=>$id) if $label;
+    my $title = $doc->findnode('ltx:toctitle | ltx:title',$node);
+    if($title){
+      $title = $title->cloneNode(1);
+      map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$title)); }
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, label=>$label,
-			 url=>$doc->getURL, fragid=>$self->inPageID($doc,$id),
+			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
-			 title=>$doc->findnode('ltx:toctitle | ltx:title',$node),
+			 title=>$title,
 			 stub=>$node->getAttribute('stub')); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
@@ -115,7 +124,7 @@ sub labelled_handler {
     my $label = $node->getAttribute('label');
     $$self{db}->register("LABEL:$label",id=>$id) if $label;
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, label=>$label,
-			 url=>$doc->getURL, fragid=>$self->inPageID($doc,$id),
+			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum')); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
@@ -133,15 +142,13 @@ sub bibref_handler {
     $entry->noteAssociation(referrers=>$parent_id); }}
 
 # Note that index entries get stored in simple form; just the terms & location.
-# They will be turned into a tree, sorted, possibly permuted, get URL's, whatever,
-# by MakeIndex.
+# They will be turned into a tree, sorted, possibly permuted, whatever, by MakeIndex.
 sub indexmark_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $key = join(':','INDEX',map($_->getAttribute('key'),$doc->findnodes('ltx:indexphrase',$node)));
   my $entry = $$self{db}->register($key);
   $entry->setValues(phrases=>$node) unless $entry->getValue('phrases'); # No dueling
   if(my $seealso = $node->getAttribute('see_also')){
-print STDERR "Index Seealso: $key => $seealso\n";
     $entry->noteAssociation(see_also=>$seealso); }
   else {
     $entry->noteAssociation(referrers=>$parent_id=>($node->getAttribute('style') || 'normal')); }}
@@ -160,7 +167,7 @@ sub bibitem_handler {
     if(my $key = $node->getAttribute('key')){
       $$self{db}->register("BIBLABEL:$key",id=>$id); }
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,
-			 url=>$doc->getURL, fragid=>$self->inPageID($doc,$id),
+			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
 			 names =>$doc->findnode('ltx:bib-citekeys/ltx:cite-names',$node),
 			 year  =>$doc->findnode('ltx:bib-citekeys/ltx:cite-year',$node),
 			 refnum=>$doc->findnode('ltx:tag',$node),

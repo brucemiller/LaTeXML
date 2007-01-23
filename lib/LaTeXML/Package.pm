@@ -43,7 +43,7 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 	       # Explicit digestion
 	       qw(&Digest),
 	       # Support for structured/argument readers
-	       qw(&DefParameterType
+	       qw(&DefParameterType  &DefColumnType
 		  &StartSemiverbatim &EndSemiverbatim
 		  &Expand &Invocation &ReadParameters),
 	       # Random low-level token operations.
@@ -72,10 +72,21 @@ sub UTF {
 sub parsePrototype {
   my($proto)=@_;
   my $oproto = $proto;
-  $proto =~ s/^(\\?[a-zA-Z@]+|\\?.)//; # Match a cs, env name,...
-  my($cs,@junk) = TokenizeInternal($1)->unlist;
-  Fatal("Definition prototype doesn't have proper control sequence:"
-	.($cs?$cs->toString:'')." then ".join('',map(ToString($_),@junk))." in \"$oproto\" ") if @junk;
+  my $cs;
+  if($proto =~ s/^\\csname\s+(.*)\\endcsname//){
+    $cs = T_CS('\\'.$1); }
+  elsif($proto =~ s/^(\\[a-zA-Z@]+)//){ # Match a cs
+    $cs = T_CS($1); }
+  elsif($proto =~ s/^(\\.)//){ # Match a single char cs, env name,...
+    $cs = T_CS($1); }
+  elsif($proto =~ s/^(.)//){ # Match an active char
+    ($cs) = TokenizeInternal($1)->unlist; }
+  else {
+    Fatal("Definition prototype doesn't have proper control sequence: \"$proto\""); }
+##  $proto =~ s/^(\\?[a-zA-Z@]+|\\?.)//; # Match a cs, env name,...
+##  my($cs,@junk) = TokenizeInternal($1)->unlist;
+##  Fatal("Definition prototype doesn't have proper control sequence:"
+##	.($cs?$cs->toString:'')." then ".join('',map(ToString($_),@junk))." in \"$oproto\" ") if @junk;
   $proto =~ s/^\s*//;
   ($cs, parseParameters($proto,$cs)); }
 
@@ -158,6 +169,15 @@ sub DefParameterType {
   return; 
 }
 
+sub DefColumnType {
+  my($proto,$expansion)=@_;
+  $proto =~ s/^(.)//;
+  my $char = $1;
+  $proto =~ s/^\s*//;
+  my $params = LaTeXML::Parameters::parseParameters($proto,$char);
+  $expansion = TokenizeInternal($expansion) unless ref $expansion;
+  InstallDefinition(LaTeXML::Expandable->new(T_CS('\NC@rewrite@'.$char),$params,$expansion)); }
+
 #======================================================================
 # Counters
 #======================================================================
@@ -185,10 +205,10 @@ sub NewCounter {
   my $unctr = "UN$ctr";		# UNctr is counter for generating ID's for UN-numbered items.
   DefRegister("\\c\@$ctr",Number(0));
   AssignValue("\\c\@$ctr"=>Number(0),'global');
-  AssignValue("\\cl\@$ctr"=>Tokens(),'global');
+  AssignValue("\\cl\@$ctr"=>Tokens(),'global') unless LookupValue("\\cl\@$ctr");
   DefRegister("\\c\@$unctr",Number(0));
   AssignValue("\\c\@$unctr"=>Number(0),'global');
-  AssignValue("\\cl\@$unctr"=>Tokens(),'global');
+  AssignValue("\\cl\@$unctr"=>Tokens(),'global') unless LookupValue("\\cl\@$unctr");
   AssignValue("\\cl\@$within" =>
 	      Tokens(T_CS($ctr),T_CS($unctr),
 		     (LookupValue("\\cl\@$within") ? LookupValue("\\cl\@$within")->unlist :())),
@@ -625,8 +645,10 @@ sub DefEnvironment {
 				   beforeDigest =>flatten($options{beforeDigestEnd}),
 				   afterDigest=>flatten($options{afterDigest},
 							sub { my $env = LookupValue('current_environment');
-							      Error("Cannot close environment $name; current is $env")
-								unless $name eq $env; 
+#							      Error("Cannot close environment $name; current is $env")
+							      Error("Cannot close environment $name; current are "
+								    .join(', ',$STATE->lookupStackedValues('current_environment')))
+								unless $env && $name eq $env; 
 							    return; },
 							($mode ? (sub { $_[0]->endMode($mode);})
 							 :(sub{$_[0]->egroup;}))),
@@ -692,7 +714,11 @@ our $require_options = {options=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
-  $STATE->getStomach->getGullet->input($package,['ltxml','sty'],%options); 
+  my $file = pathname_find($package,paths=>$STATE->lookupValue('SEARCHPATHS'),
+			   types=>['ltxml'], installation_subdir=>'Package')
+    || pathname_find($package,paths=>$STATE->lookupValue('SEARCHPATHS'),
+		     types=>['sty'], installation_subdir=>'Package');
+  $STATE->getStomach->getGullet->input($file,undef,%options); 
   return; }
 
 sub FindFile {
@@ -748,7 +774,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Package> -- Support for package implementations and document customization.
+C<LaTeXML::Package> - Support for package implementations and document customization.
 
 =head1 SYNOPSIS
 
@@ -781,20 +807,20 @@ installed C<LaTeXML/Package> directory for realistic examples.
   # More esoteric ...
 
   # Use a special DocType, if not LaTeXML.dtd
-  DocType("rootelement","-//Your Site//Your Document Type",'your.dtd',
+  DocType("rootelement","-//Your Site//Your DocType",'your.dtd',
           prefix=>"http://whatever/");
 
   # Allow sometag elements to be automatically closed if needed
   Tag('pre:sometag', autoClose=>1);
 
-  # Don't forget this; it tells perl the package loaded successfully.
+  # Don't forget this, so perl knows the package loaded.
   1;
 
 
 =head1 DESCRIPTION
 
-To provide a LaTeXML=specific version of a LaTeX package C<somepackage.sty>, 
-(so that C<\usepackage{somepackage}> works), you create the file C<somepackage.ltxml>
+To provide a LaTeXML-specific version of a LaTeX package C<mypackage.sty>, 
+(so that C<\usepackage{mypackage}> works), you create the file C<mypackage.ltxml>
 and save it in the searchpath (current directory, or one of the directories
 given to the --path option, or possibly added to the variable SEARCHPATHS).
 Likewise, to provide document-specific customization for, say, C<mydoc.tex>, 
@@ -841,7 +867,7 @@ familiar TeX or LaTeX control sequences are:
 
 The general syntax for parameter for a control sequence is something like
 
-  OpenDelimiter? Modifier? Type (: value (| value)* )? CloseDelimiter?
+  OpenDelim? Modifier? Type (: value (| value)* )? CloseDelim?
 
 The enclosing delimiters, if any, are either {} or [], affect the way the
 argument is delimited.  With {}, a regular TeX argument (token or sequence
@@ -911,8 +937,8 @@ Skips any space tokens, but contributes nothing to the argument list.
 
 =head3 Control of Scoping
 
-Most defining commands accept an option  C<< scope=>$scope >> which affects how the
-definition is stored: C<$scope> can be c<'global'> for global definitions,
+Most defining commands accept an option to control how the definition is stored,
+C<< scope=>$scope >>, where C<$scope> can be c<'global'> for global definitions,
 C<'local'>, to be stored in the current stack frame, or a string naming a I<scope>.
 A scope saves a set of definitions and values that can be activated at a later time.
 
@@ -931,12 +957,14 @@ The only option, other than C<scope>, is C<isConditional> which should be true,
 for conditional control sequences (TeX uses these to keep track of conditional
 nesting when skipping to \else or \fi).
 
-=item C<< DefMacro($prototype,$string | $tokens | CODE($gullet,@args),%options); >>
+=item C<< DefMacro($prototype,$string | $tokens | $code,%options); >>
 
 Defines the macro expansion for C<$prototype>.  If a C<$string> is supplied, it will be
 tokenized at definition time, and any macro arguments will be substituted for parameter
 indicators (eg #1) at expansion time; the result is used as the expansion of
 the control sequence.  The only option is C<scope>.
+
+If defined by C<$code>, the form is C<CODE($gullet,@args)>.
 
 =item C<< DefPrimitive($prototype,CODE($stomach,@args),%options); >>
 
@@ -944,7 +972,7 @@ Define a primitive control sequence.
 The CODE should return a list of digested items,
 but usually should return nothing (eg. end with return; ).
 
-The only option is for the special case: C<isPrefix=>1> is used for assignment
+The only option is for the special case: C<< isPrefix=>1 >> is used for assignment
 prefixes (like \global).
 
 =item C<< DefRegister($prototype,$value,%options); >>
@@ -972,7 +1000,7 @@ storing the value.
 
 =back
 
-=item C<< DefConstructor($prototype,$xmlpattern | CODE($document,@args,$properties),%options); >>
+=item C<< DefConstructor($prototype,$xmlpattern | $code,%options); >>
 
 The Constructor is where LaTeXML really starts getting interesting;
 invoking the control sequence will generate an arbitrary XML
@@ -983,6 +1011,8 @@ to the replacement C<$xmlpattern>, or by executing C<CODE>.
 
 The C<$xmlpattern> is simply a bit of XML as a string with certain substitutions to be made.
 The substitutions are of the following forms:
+
+If code is supplied,  the form is C<CODE($document,@args,$properties)>
 
 =over
 
@@ -1002,7 +1032,7 @@ to the control sequence; what it returns will be inserted into the document.
 
 Patterns can be conditionallized using this form.  The C<COND> is any
 of the above expressions, considered true if the result is non-empty.
-Thus C<<?#1(<foo/>)>> would add the empty element C<foo> if the first argument
+Thus C<< ?#1(<foo/>) >> would add the empty element C<foo> if the first argument
 were given.
 
 =item C<^>
@@ -1012,10 +1042,10 @@ to a parent node that is allowed to contain it, according to the Document Type.
 
 =back
 
-The Whatsit property C<font> is defined by default.  The additional properties
+The Whatsit property C<font> is defined by default.  Additional properties
 C<body> and C<trailer> are defined when C<captureBody> is true, or for environments.
-Other properties can be added to Whatsits by using C<< $whatsit->setProperty(key=>$value); >> 
-within C<afterDigest> or using the C<properties> option.
+By using C<< $whatsit->setProperty(key=>$value); >> within C<afterDigest>,
+or by using the C<properties> option, other properties can be added.
 
 DefConstructor options are
 
@@ -1038,7 +1068,7 @@ or cannot appear, in math mode.
 
 =item  font=>{fontspec...}
 
-Specifies the font properties to be set by this invocation.
+Specifies the font to be set by this invocation.
 See L<"MergeFont">
 If the font change is to only apply to this construct,
 you would also use C<<bounded=>1>>.
@@ -1115,8 +1145,11 @@ parsing of mathematical content.
 In particular, it generates an XMDual using the replacement $tex for the presentation.
 The content information is drawn from the name and options
 
-It shares options with C<DefConstructor>: C<reversion>, C<alias>, 
-C<beforeDigest>, C<afterDigest>, C<beforeConstruct>, C<afterConstruct> and C<scope>.
+These C<DefConstructor> options also apply:
+
+  reversion, alias, beforeDigest, afterDigest,
+  beforeConstruct, afterConstruct and scope.
+
 Additionally, it accepts
 
 =over
@@ -1147,12 +1180,13 @@ See L<MergeFont>.
 
 =item scriptpos=>boolean
 
-Controls whether any sub and super-scripts will be stacked over/under this
+Controls whether any sub and super-scripts will be stacked over or under this
 object, or whether they will appear in the usual position.
 
 WRONG: Redocument this!
 
 =item operator_role=>grammatical_role
+
 =item operator_scriptpos=>boolean
 
 These two are similar to C<role> and C<scriptpos>, but are used in
@@ -1180,10 +1214,13 @@ the group is closed.  The body and C<\end{env}> whatsit are added to the C<\begi
 as body and trailer, respectively.
 
 
-It shares options with C<DefConstructor>: C<mode>, C<requireMath>, C<forbidMath>,
-C<properties>, C<nargs>, C<font>, C<beforeDigest>, C<afterDigest>, C<beforeConstruct>, 
-C<afterConstruct> and C<scope>.
-Additionally, it accepts C<afterDigestBegin> which is effectively a C<afterDigest>
+It shares options with C<DefConstructor>:
+
+ mode, requireMath, forbidMath, properties, nargs,
+ font, beforeDigest, afterDigest, beforeConstruct, 
+ afterConstruct and scope.
+
+Additionally, C<afterDigestBegin> is effectively an C<afterDigest>
 for the C<\begin{env}> control sequence.
 
 
@@ -1356,8 +1393,8 @@ replace the selected nodes.
 
 =item C<< RequirePackage($package); >>
 
-Finds an implementation (either TeX or LaTeXML) for the named C<$package>, and loads it
-as appropriate.
+Finds an implementation (C<*.sty> or C<*.ltxml>) for the required C<$package>,
+loading it as appropriate.
 
 =item C<< RawTeX('... tex code ...'); >>
 
@@ -1386,13 +1423,18 @@ to the given scoping rule.
 Values are also used to specify most configuration parameters (which can
 therefor also be scoped).  The recognized configuration parameters are:
 
-  VERBOSITY         : the level of verbosity for debugging output, with 0 being default.
-  STRICT            : whether errors (such as undefined macros) are fatal.
-  INCLUDE_COMMENTS  : whether to preserve comments in the source, and to add
-                      occasional line-number comments.  Default does include them.
-  PRESERVE_NEWLINES : whether newlines in the source should be preserved (not 100% TeX-like).
-                      By default this is true.
-  SEARCHPATHS       : a list of directories to search for sources, implementations, dtds, and such.
+ VERBOSITY         : the level of verbosity for debugging
+                     output, with 0 being default.
+ STRICT            : whether errors (eg. undefined macros)
+                     are fatal.
+ INCLUDE_COMMENTS  : whether to preserve comments in the
+                     source, and to add occasional line
+                     number comments. (Default true).
+ PRESERVE_NEWLINES : whether newlines in the source should
+                     be preserved (not 100% TeX-like).
+                     By default this is true.
+ SEARCHPATHS       : a list of directories to search for
+                     sources, implementations, etc.
 
 =item C<< PushValue($type,$name,@values); >>
 
@@ -1444,11 +1486,13 @@ control sequences in C<$tokens> must be contained within the C<$tokens> itself.
 Set the current font by merging the font style attributes with the current font.
 The attributes and likely values (the values aren't required to be in this set):
 
-   family : serif, sansserif, typewriter, caligraphic, fraktur, script
-   series : medium, bold
-   shape  : upright, italic, slanted, smallcaps
-   size   : tiny, footnote, small, normal, large, Large, LARGE, huge, Huge
-   color  : any named color, default is black
+ family : serif, sansserif, typewriter, caligraphic,
+          fraktur, script
+ series : medium, bold
+ shape  : upright, italic, slanted, smallcaps
+ size   : tiny, footnote, small, normal, large,
+          Large, LARGE, huge, Huge
+ color  : any named color, default is black
 
 Some families will only be used in math.
 This function returns nothing so it can be easily used in beforeDigest, afterDigest.

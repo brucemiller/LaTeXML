@@ -91,7 +91,7 @@ sub parseParameters {
 	push(@params,newParameter('Optional',$spec)); }}
     elsif($p =~ s/^((\w*)(:([^\s\{\[]*))?)\s*//){
       my($spec,$type,$extra)=($1,$2,$4); 
-      my @extra = map(Tokenize($_),split('\|',$extra||''));
+      my @extra = map(TokenizeInternal($_),split('\|',$extra||''));
       push(@params,newParameter($type,$spec,extra=>[@extra])); }
     else {
       Fatal("Unrecognized parameter specification at \"$proto\" for ".Stringify($for)); }}
@@ -172,8 +172,11 @@ sub readArguments {
   foreach my $parameter (@$self){
 #    my $value = &{$$parameter{reader}}($gullet,@{$$parameter{extra}||[]});
     my $value = $parameter->read($gullet);
-    Error("Missing argument ".ToString($parameter)." for ".ToString($fordefn))
-      unless defined $value || $$parameter{optional};
+    if((!defined $value) && !$$parameter{optional}){
+      my $tok = $gullet->readToken;
+      Error("Missing argument ".ToString($parameter)." for ".ToString($fordefn)
+	    .($tok ? "; next is ".Stringify($tok) : " input is empty"));
+      $gullet->unread($tok) if $tok; }
     push(@args,$value) unless $$parameter{novalue}; }
   @args; }
 
@@ -184,8 +187,11 @@ sub readArgumentsAndDigest {
   foreach my $parameter (@$self){
 #    my $value = &{$$parameter{reader}}($gullet,@{$$parameter{extra}||[]});
     my $value = $parameter->read($gullet);
-    Error("Missing argument ".ToString($parameter)." for ".ToString($fordefn))
-      unless defined $value || $$parameter{optional};
+    if((!defined $value) && !$$parameter{optional}){
+      my $tok = $gullet->readToken;
+      Error("Missing argument ".ToString($parameter)." for ".ToString($fordefn)
+	    .($tok ? "; next is ".Stringify($tok) : " input is empty"));
+      $gullet->unread($tok) if $tok; }
     if(!$$parameter{novalue}){
       $value = $value->beDigested($stomach) if (ref $value) && !$$parameter{undigested};
       push(@args,$value); }}
@@ -242,13 +248,15 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Parameters>, C<LaTeXML::Parameter> -- formal parameters
+C<LaTeXML::Parameters> - formal parameters,
+including C<LaTeXML::Parameter>.
 
 =head1 DESCRIPTION
 
-Provides a representation for the formal parameters of L<LaTeXML::Definition>s.
-C<LaTeXML::Parameters> represents the complete parameter list, 
-C<LaTeXML::Parameter> represents a single parameter.
+Provides a representation for the formal parameters of L<LaTeXML::Definition>s:
+C<LaTeXML::Parameter> for an individual parameter,
+C<LaTeXML::Parameters> for the complete parameter list.
+
 
 =head2 Parameters Methods
 
@@ -259,21 +267,25 @@ C<LaTeXML::Parameter> represents a single parameter.
 Parses a string for a sequence of parameter specifications.
 Each specification should be of the form 
 
-  {}     reads a regular TeX argument, a sequence of tokens delimited
-         by braces, or a single token.
-  {spec} reads a regular TeX argument, then reparses it to match the given spec.
-         (the spec is parsed recursively, but usually should be a single argument).
-  [spec] reads an LaTeX-style optional argument.  If the spec is of the
-         form Default:stuff, then stuff would be the default value when no
-         brackets are found.
-  Type   Reads an argument of the given type, where either Type has been declared,
-         or there exists a ReadType function accessible from LaTeXML::Package::Pool.
-  Type:value, or Type:value1:value2...
-         These forms pass additional Tokens to the reader function.
-  OptionalType  Similar to Type, but it is not considered an error if the reader
-         returns undef.
-  SkipType  Similar to OptionalType, but the value returned from the reader is
-         ignored, and does not occupy a position in the arguments list.
+ {}     reads a regular TeX argument, a sequence of
+        tokens delimited by braces, or a single token.
+ {spec} reads a regular TeX argument, then reparses it
+        to match the given spec. The spec is parsed
+        recursively, but usually should correspond to
+        a single argument.
+ [spec] reads an LaTeX-style optional argument. If the
+        spec is of the form Default:stuff, then stuff
+        would be the default value.
+ Type   Reads an argument of the given type, where either
+        Type has been declared, or there exists a ReadType
+        function accessible from LaTeXML::Package::Pool.
+ Type:value, or Type:value1:value2...    These forms
+        pass additional Tokens to the reader function.
+ OptionalType  Similar to Type, but it is not considered
+        an error if the reader returns undef.
+ SkipType  Similar to OptionalType, but the value returned
+        from the reader is ignored, and does not occupy a
+        position in the arguments list.
 
 =item C<< @parameters = $parameters->getParameters; >>
 

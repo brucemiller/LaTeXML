@@ -1,0 +1,804 @@
+\documentclass{report}
+\usepackage{latexmldoc}
+\usepackage{makeidx}
+\makeindex
+
+\title{The \LaTeXML\ Manual}
+\subtitle{A \LaTeX\ to \XML\ Converter;\\ \emph{Version~0.6.0}}
+\author{Bruce R.~Miller}
+\begin{document}
+\maketitle
+\tableofcontents
+\chapter{Introduction}\label{intro}
+For many, \LaTeX\ is the prefered format for document authoring, particularly those
+involving significant mathematical content and where quality typesetting is desired.
+On the other hand, content-oriented \XML\ is an extremely useful representation for documents,
+allowing them to be used, and reused, for a variety of purposes, not least, 
+presentation on the Web. Yet, the style and intent of \LaTeX\ markup, as compared to \XML\
+markup, not to mention its programmability, presents difficulties in converting
+documents from the former format to the latter.
+Perhaps ironically, these difficulties can be particularly large for mathematical material, 
+where there is a tendency for the markup to focus on appearance rather than meaning.
+
+The choice of \LaTeX\ for authoring, and \XML\ for delivery were natural and uncontroversial
+choices for the \URL[Digital Library of Mathematical Functions]{http://dlmf.nist.gov}.
+Faced with the need to perform this conversion and the lack of suitable tools to perform it, 
+the DLMF project proceeded to develop thier own tool, \LaTeXML, for this purpose.
+This document describes a \emph{preview} release of \LaTeXML.
+
+\paragraph{Design Goals} The idealistic goals of \LaTeXML\ are:
+\begin{itemize}
+\item Faithful emulation of \TeX's behaviour.
+\item Easily extensible.
+\item Lossless; preserving both semantic and presentation cues.
+\item Uses abstract \LaTeX-like, extensible, document type.
+\item Determine the semantics of mathematical content\\
+    (\emph{Good} Presentation \MathML, eventually Content \MathML\ and \OpenMath).
+\end{itemize}
+
+As these goals are not entirely practical, or even somewhat contradictory,
+they are implicitly modified by ``as much as possible.''
+Completely mimicing \TeX's behaviour would seem to require the sneakiest modifications
+to \TeX, itself.  `Ease of use' is, of course, in the eye of the beholder.
+More significantly, few documents are likely to have completely unambiguous
+mathematics markup; human understanding of both the topic and the surrounding 
+text is needed to properly interpret any particular fragment.
+Thus, rather than pretend to provide a `turn-key' solution,
+we expect that document-specific declarations or tuning to be necessary
+to faithfully convert documents.  Towards this end, we provide a variety
+of means to customize the processing and declare the author's intent.
+At the same time, especially for new documents, we encourage a more logical, 
+content-oriented markup style, over a purely presentation-oriented style.
+
+\paragraph[Overview]{Overview of this Manual}
+Chapter \ref{usage} describes the usage of \LaTeXML, along with
+common use cases and techniques.  Chapter \ref{architecture} describes
+the system architecture in some detail. Strategies for customization
+and implementation of new packages is described in Chapter \ref{customization}.
+The special considerations for mathematics, including details of representation
+and how to improve the conversion, are covered in Chapter \ref{math}.
+An overview of outstanding issues and planned future improvements
+are given in Chapter \ref{todo}.
+Finally, the Appendices \ref{commands}, \ref{coremodules} give detailed documentation
+on the commands and modules comprising the system.
+
+If all else fails, you can consult the source code, or the author.
+
+\chapter{Using \LaTeXML}\label{usage}
+The main commands provided by the \LaTeXML\ system are
+\begin{description}
+\item[\ltxcmd{latexml}] for converting \TeX\ sources to \XML.
+\item[\ltxcmd{latexmlpost}] for various postprocessing tasks including
+conversion to \HTML, processing images, conversion to \MathML\ and so on.
+\end{description}
+The usage of these commands can be as simple as
+\begin{quote}
+ \cmd{latexml doc.tex | latexmpost --dest=doc.xhtml}
+\end{quote}
+to convert a single document into \HTML,  or as complicated as
+\begin{quote}
+ \cmd{latexml --output=doca.xml doca}\\
+ \cmd{latexml --output=docb.xml docb}\\
+  \hbox{}\hspace{1in}\ldots\\
+ \cmd{latexmlpost --prescan --dbfile=my.db --dest=doca.xhtml doca}\\
+ \cmd{latexmlpost --prescan --dbfile=my.db --dest=docb.xhtml docb}\\
+  \hbox{}\hspace{1in}\ldots\\
+ \cmd{latexmlpost --noscan --dbfile=my.db --dest=doca.xhtml doca}\\
+ \cmd{latexmlpost --noscan --dbfile=my.db --dest=docb.xhtml docb}\\
+  \hbox{}\hspace{1in}\ldots
+\end{quote}
+to convert a whole set of documents into a complete site.
+
+How best to use the commands depends, of course, on what you
+are trying to achieve.  In the next section, we'll describe
+the use of \ltxcmd{latexml}, which will be sufficient
+if the \XML\ representation is what you want, or if you
+intend to carry out any further processing with your own
+\XML-tools.  The following sections consider a sequence of
+successively more complicated postprocessing situations,
+using \ltxcmd{latexmlpost},
+in which one or more \TeX\ sources can be converted into
+one or more web documents or a complete site.
+
+\section{Basic \XML\ Conversion}\label{usage.conversion}\index{latexml!usage}
+The command
+\begin{quote}
+ \cmd{latexml \textit{options} --output=\textit{doc}.xml \textit{doc}}
+\end{quote}
+loads any required definition modules (see below),
+reads and digests the \TeX\ document \texttt{doc.tex}
+(or from standard input, if \texttt{-} is given for the filename),
+converts it to \XML,
+performs some document rewriting, parses the mathematical content
+and writes the result in \texttt{doc.xml}.
+For details on the processing, see Chapter \ref{architecture},
+and Chapter \ref{math} for more information about math parsing.
+
+\paragraph{Modules}
+A first consideration is what definitions for control sequences and
+environments are active and used for the processing.
+Definitions and customization modules, if present, are loaded in the following
+order:
+\begin{itemize}
+  \item \texttt{TeX.ltxml} core module.
+  \item \textit{preload}; any modules specified using the
+    \begin{quote}
+     \cmd{--preload=\textit{module}}
+    \end{quote}
+    option. If the module filename is given without extension,
+    a \code{.ltxml} version will be prefered, otherwise \code{.sty} will
+    be sought and attempted.
+    This option can be repeated, and the modules will be loaded in the
+    given order.
+  \item \code{\textit{doc}.latexml} a document-specific customization module
+    is loaded if present.
+  \item \texttt{LaTeX.ltxml}, the core latex module is loaded
+    upon encountering a \verb|\documentclass| command, as in \LaTeX\ files,
+    along with the appropriate document class module (eg. \texttt{article.ltxml}).
+  \item Any modules loaded by \verb|\usepackage| or \verb|\input| are
+    also loaded during processing, with a \code{.ltxml} implementation, if found,
+    prefered over \code{.sty}.
+\end{itemize}
+Some of these modules (esp.~\code{TeX} and \code{LaTeX}), are parts of
+the \LaTeXML\ distribution; others are supplied by the user, or can be
+overridden by the user.
+See Chapter \ref{customization} for details about what can go in these modules.
+
+Directories to search (in addition to the working directory)
+for modules and other files can be specified using
+\begin{quote}
+  \cmd{--path=\textit{directory}}
+\end{quote}
+This option can be repeated.
+
+\paragraph{Other Options}
+The number and detail of progress and debugging messages printed
+during processing can be controlled using
+\begin{quote}
+  \cmd{--verbose} and \cmd{--quiet}
+\end{quote}
+They can  be repeated to get even more or fewer details.
+
+An option most useful in constructing complicated sites is
+\begin{quote}
+  \cmd{--documentid=\textit{id}}
+\end{quote}
+which provides an ID for the document root element which is inheritted
+as a prefix for id's of the child-elements in the document.
+Using this option can assure unique identifiers across a set
+of source documents.
+
+See the documentation for the command \ltxcmd{latexml} for
+less common options.
+
+\section{Basic Postprocessing}\label{usage.single}\index{latexmlpost!usage}
+In the simplest situation, you have a single \TeX\ source document
+from which you want to generate a single output document.
+The command
+\begin{quote}
+ \cmd{latexmlpost \textit{options} --dest=doc.xhtml doc}
+\end{quote}
+will carry out a set of appropriate transformations in sequence:
+\begin{itemize}
+  \item scanning of labels and ids;
+  \item filling in the index and bibliography (if needed);
+  \item cross-referencing;
+  \item conversion of math;
+  \item conversion of graphics and picture environments to web format (png);
+  \item applying an \XSLT\ stylesheet.
+\end{itemize}
+The output format affects the defaults for each step and is determined
+by the file extension of \code{--destination}, or by the option
+\begin{quote}
+ \cmd{--format=(xhtml|html|xml)}
+\end{quote}
+\begin{description}
+ \item[html] math and graphics are converted to png images;
+    the \code{LaTeXML-html.xslt} stylesheet is used.
+ \item[xhtml] math is converted to Presentation \MathML, other graphics to images;
+    the \code{LaTeXML-xhtml.xslt} stylesheet is used.
+ \item[xml] no math, graphics or \XSLT\ conversion is carried out.
+\end{description}
+Of course, all of these conversions can be controlled or overridden
+by explicit options described below.
+For more details about less common options, see the command
+documentation \ltxcmd{latexmlpost}, as well as Appendix \ref{postmodules}.
+
+\paragraph{Scanning}
+The scanning step collects information about all labels, ids,
+indexing commands, cross-references and so on, to be used
+in the following postprocessing stages.
+
+\paragraph{Index \& Bibliography}
+An index is built from \verb|\index| markup, provided 
+\code{makeidx}'s \verb|\printindex| command has been used,
+but can be disabled by
+\begin{quote}
+  \cmd{--noindex}
+\end{quote}
+The index entries can be permuted with the option
+\begin{quote}
+  \cmd{--permutedindex}
+\end{quote}
+Thus \verb|\index{term a!term b}| also shows up as \verb|\index{term b!term a}|.
+This leads to a more complete, but possibly rather silly, index,
+depending on how the terms have been written.
+
+Bibilographic data from BibTeX can be provided with the option
+\begin{quote}
+  \cmd{--bibliography=\textit{xmlbibfile}}
+\end{quote}
+However, the tools to convert a BibTeX file to \XML\ are
+not yet provided with the distribution.
+
+\paragraph{Cross-Referencing}
+In this stage, the scanned information is used to fill in the
+text and links of cross-references within the document.
+The option
+\begin{quote}
+  \cmd{--urlstyle=(server|negotiated|file)}
+\end{quote}
+can control the format of urls with the document.
+\begin{description}
+  \item[server] formats urls appropriate for use from a web server.
+    In particular, trailing \code{index.html} are omitted. (default)
+  \item[negotiated] formats urls appropriate for use by a server
+    that implements content negotiation. File extensions for \code{html}
+    and \code{xhtml} are omitted.  This enables you to set up a server
+    that serves the appropriate format depending on the browser being used.
+  \item[file] formats urls explicitly, with full filename and extension.
+    This allows the files to be browsed from the local filesystem.
+\end{description}
+
+\paragraph{Math Conversion}
+Specific conversions of the mathematics can be requested
+using the options
+\begin{quote}
+ \code{--mathimages}   converts math to png images,\\
+ \code{--presentationmathml} (or \code{--pmml}) converts to Presentation \MathML\\
+ \code{--contentmathml} (or \code{--cmml}) converts to Content \MathML\\
+ \code{--openmath} (or \code{--om}) converts to \OpenMath
+\end{quote}
+(Each of these options can also be negated if needed, eg.~\code{--nomathimages})
+It must be pointed out that the Content \MathML\ and \OpenMath\
+conversions are currently rather experimental.
+
+More than one of these conversions can be requested, and
+each will be included in the output document.
+However, the option
+\begin{quote}
+ \code{--parallelmath}
+\end{quote}
+can be used to generate parallel \MathML\ markup, provided the first
+conversion is either \code{--pmml} or \code{--cmml}.
+
+\paragraph{Graphics processing}
+Conversion of graphics (eg.~included using \verb|\includegraphics| from
+the \code{graphics} or \code{graphicx} packages) can be enabled or disabled
+using
+\begin{quote}
+ \code{--graphicsimages} or \code{--nographicsimages}
+\end{quote}
+Similarly, the conversion of \code{picture} environments can be controlled with
+\begin{quote}
+ \code{--pictureimages} or \code{--nopictureimages}
+\end{quote}
+An experimental capability for converting the latter to \textsc{SVG} can be
+controlled by
+\begin{quote}
+ \code{--svg} or \code{--nosvg}
+\end{quote}
+
+\paragraph{Stylesheet}
+If you wish to provide your own \XSLT\ stylesheet, or
+a different \CSS\ stylesheet, the options 
+\begin{quote}
+\code{--stylesheet=\textit{stylesheet.xsl}}\\
+\code{--css=\textit{stylesheet.css}}
+\end{quote}
+ can be used.  To develop such stylesheets, a knowledge
+of the \LaTeXML\ document type is necessary; See Appendix \ref{dtd}.
+
+\section{Splitting the Output}\label{usage.multiple}\index{latexmlpost!usage!split pages}
+For larger documents, it is often desirable to break the 
+result into several interlinked pages. This split,
+carried out before scanning, is requested by 
+\begin{quote}
+ \cmd{--split}
+\end{quote}
+The document is split according to
+\begin{quote}
+ \cmd{--splitpath=\textit{xpath}}
+\end{quote}
+The default xpath is
+\begin{quote}
+ \cmd{//ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index}
+\end{quote}
+which creates separate files for each section,
+bibliography, index and any appendices.
+The removed document nodes are replaced by a Table of Contents.
+
+The extra files are named using either the id or label
+of the root node of each new page document according to
+\begin{quote}
+  \cmd{--splitnaming=(id|idrelative|label|labelrelative)}
+\end{quote}
+The relative foms create shorter names in subdirectories for each
+level of splitting.
+The \code{--urlstyle} option may also be useful here,
+as well as the \ltxcmd{latexml} option \code{--documentid}.
+
+Additionally, the index and bibliography can be split
+into separate pages per initial using the options
+\begin{quote}
+  \cmd{--splitindex} and \cmd{--splitbibliography}
+\end{quote}
+
+\section{Site processing}\label{usage.site}\index{latexmlpost!usage!site}
+A more complicated situation combines several \TeX\ sources
+into a single interlinked site consisting of multiple pages
+and a composite index and bibliography.
+The games one must play with \LaTeX's aux files to satisfy cross-references
+between these documents are not covered here, but the situation is handled
+by \LaTeXML\ in the following fashion.
+
+First, all \TeX\ sources must be converted to \XML, as before;
+the option \code{--documentid} is particularly useful here.
+
+Secondly, all \XML\ files must be split and scanned using
+the command
+\begin{quote}
+ \cmd{latexmlpost --prescan --dbfile=\textit{DB} --dest=\textit{doci}.xhtml \textit{doci}}
+\end{quote}
+where \textit{DB} names a file to store the scanned data.
+Other conversions, including writing the output file, are skipped in this prescanning step.
+
+Finally, all \XML\ files are cross-referenced and converted as before
+using the command
+\begin{quote}
+ \cmd{latexmlpost --noscan --dbfile=\textit{DB} --dest=\textit{doci}.xhtml \textit{doci}}
+\end{quote}
+which skips the unnecessary scanning step.
+
+\chapter{Architecture}\label{architecture}
+Like \TeX, \LaTeXML\ is data-driven: the text and executable control
+sequences (ie.~macros and primitives)
+in the source file (and any packages loaded) direct the processing.
+The user exerts control over the conversion, and customizes it, by 
+providing alternative \LaTeXML-specific implementations of the control sequences and packages,
+by declaring properties of the desired document structure,
+and by defining rewrite rules to be applied to the constructed document tree.
+
+\begin{figure}[tb]
+\includegraphics[width=\columnwidth]{dataflow}
+\caption{Flow of data through \LaTeXML's digestive tract.\label{fig:dataflow}}
+\end{figure}
+The top-level class, \ltxpkg{}, manages the processing, providing several methods
+for converting a \TeX\ document or string into an \XML\ document, with varying degrees
+of postprocessing and optionally writing the document to file.
+A \ltxpkg{State} object maintains the current state
+of processing, current definitions for control sequences and emulates the
+\TeX's scoping rules.
+The processing is broken into the following stages
+\begin{description}
+ \item[Digestion] the \TeX-like digestion phase which converts the input into boxes.
+ \item[Construction] converts the resulting boxes into an \XML\ DOM.
+ \item[Rewriting] applies rewrite rules to modify the DOM.
+ \item[Math Parsing] parses the tokenized mathematics.
+\end{description}
+See Figure \ref{fig:dataflow} for illustration.
+The first three stages are discussed in the following sections;
+the parsing of mathematics is covered in detail in Chapter \ref{math}.
+
+The \ltxpkg{} object binds \verb|$STATE|, \verb|$GULLET|, \verb|$STOMACH|,
+and \verb|$MODEL| to corresponding active objects during processing.
+
+\section{Digestion}\label{architecture.digestion}
+Digestion is carried out primarily in a \emph{pull} mode: The \ltxpkg{Stomach}
+pulls expanded \ltxpkg{Token}s from the \ltxpkg{Gullet}, which itself pulls tokens from 
+the \ltxpkg{Mouth}.  The \ltxpkg{Mouth} converts characters from the plain text input
+into tokens according to the current category codes assigned to them (in the \ltxpkg{State}).  
+The \ltxpkg{Gullet} is responsible for expanding any macro or expandible
+tokens (when the current binding of the token in the \ltxpkg{State} is 
+an \ltxpkg{Expandable} definition), 
+and for parsing sequences of tokens into common core datatypes (numbers, dimensions, etc.).
+The \ltxpkg{Stomach} digests these tokens by executing \ltxpkg{Primitive} control 
+sequences (generally for side effect), converting control sequences bound
+to \ltxpkg{Constructor}s into \ltxpkg{Whatsit}s, and converting the remaining tokens
+into a recursive structure consisting of
+\ltxpkg{Box}es and \ltxpkg{List}s and of \ltxpkg{Box}es.
+
+\section{Construction}\label{architecture.construction}
+The main (intentional) deviation of \LaTeXML's digestion from that of \TeX\ is in the
+extension of control sequences to include \ltxpkg{Constructor}s responsible for constructing
+\XML\ document fragments, and \ltxpkg{Whatsit}s to represent thier digested form including
+whatever arguments were passed to the control sequence.
+
+\emph{Construction} thus consists of creating an \ltxpkg{Document}, containing
+an \code{XML::LibXML::Document} structure, and having it absorb the digested lists, boxes
+and whatsits.  Generally, boxes represent text which is converted to text nodes within the
+document. Whatsits generally create a document fragment involving elements, attributes
+and text.  
+
+A \ltxpkg{Model} is maintained througout the digestion phase which accumulates
+any document model declarations in particular the document type (currently only
+the DTD, but eventually may be RelaxNG based).  As \LaTeX\ markup is more
+like \SGML\ than \XML, declarations may be used to indicate which elements may
+be automatically opened or closed when needed to build a document tree that matches
+the document type.  As an example, a \verb|<subsection>| will automaticall be closed
+when a \verb|<section>| is begun.
+
+\section{Rewriting}\label{architecture.rewriting}
+Once the basic document is constructed, \ltxpkg{Rewrite} rules are applied which can
+perform various functions. Ligatures and combining mathematics digits and letters (in certain fonts)
+into composite math tokens are handled this way.  Additionally, declarations
+of the type or grammatical role of math tokens can be applied here.
+
+
+\chapter{Customization}\label{customization}
+The processsing of the \LaTeX\ document and its  conversion into \XML\ is affected
+by the definitions of control sequences, either as macros, primitives or constructors, 
+and other declarations specifying the document type, properties of \XML\ tags, ligatures, \ldots.
+These definitions and declarations are typically contained in `packages' which provide
+the implementation of \LaTeX\ classes and packages.  For example, the \LaTeX\ directive
+\verb|\usepackage{foo}| would cause \LaTeXML\ to load the file \code{foo.ltxml}.
+This file would be sought in any of the directories in perl's \verb|@INC| list (typically
+including the current directory), or in a \verb|LaTeXML/Package| subdirectory of any of 
+those directories.  If no such file is found, \LaTeXML\ would look for \code{foo.sty} and
+attempt to process it.
+
+When processing a typical file, say \textit{jobname}\texttt{.tex}, 
+the following packages are loaded:
+\begin{enumerate}
+\item the core \code{TeX} package
+\item any packages named with the \verb|--preload| option,
+\item a file \textit{jobname}\texttt{.latexml}, if present;
+      this provides for document-specific declarations.
+\end{enumerate}
+Document processing then commences; by default, \LaTeXML\ assumes that the document is plain \TeX.
+However, if a \verb|\documentclass| directive is encountered, the \code{LaTeX} package, as well
+as a package for the named document class are loaded.
+
+\LaTeXML\ implementations are provided for a number of the standard \LaTeX\ packages,
+although many implement only part of the functionality.  Contributed implementations are,
+of course, welcome.  These files, as well as the document specific \textit{jobname}\texttt{.latexml},
+are essentially Perl modules, but use the facilities described in \perldoc{LaTeXML::Package}.
+
+Much more needs to be explained here, but for the time being,
+please consult the documentation for the module \ltxpkg{Package}, and
+the various implementations of packages included with the distribution.
+
+\chapter{Mathematics}\label{math}
+There are several issues that have to be dealt with in treating the mathematics.
+On the one hand, the \TeX\ markup gives a pretty good indication of what the
+author wants the math to look like, and so we would seem to have a good handle
+on the conversion to presentation forms.  On the other hand, content formats
+are desirable as well; there are a few, but too few, clues about what the
+intent of the mathematics is.  And in fact, the generation of even Presentation
+MathML of high quality requires recognizing the mathematical structure, if not
+the actual semantics. The mathematics processing must therefore preserve the
+presentational information provided by the author, while inferring, likely
+with some help, the mathematical content.
+
+From a parsing point of view, the \TeX-like processing serves as the lexer,
+tokenizing the input which \LaTeXML\ will then parse
+[perhaps eventually a type-analysis phase will be added].
+Of course, there are a few twists.
+For one, the tokens, represented by \tag{XMTok}, can carry extra attributes
+such as font and style, but also the name, meaning and grammatical role,
+with defaults that can be overridden by the author --- more on those, in a moment.
+Another twist is that, although \LaTeX's math markup is not nearly
+as semantic as we might like, there is considerable semantics and structure in the 
+markup that we can exploit. For example, given a \verb|\frac|, we've already
+established the numerator and denominator which can be parsed individually,
+but the fraction as a whole can be directly represented as an application,
+using \tag{XMApp}, of a fraction operator; the resulting structure can be treated
+as atomic within its containing expression.This \emph{structure preserving} character
+greatly simplifies the parsing task and helps reduce misinterpretation.
+
+The parser, invoked by the postprocessor, works only with the top-level lists of lexical tokens,
+or with those sublists contained in an \tag{XMArg}.  The grammar works primarily through
+the name and grammatical role.  The name is given by an attribute, or the content if it is
+the same.  The role (things like ID, FUNCTION, OPERATOR, OPEN, \ldots) is also given
+by an attribute, or, if not present, the name is looked up in a document-specific
+dictionary (\textit{jobname}\texttt{.dict}), or in a default dictionary.
+
+Additional exceptions that need fuller explanation are: 
+\begin{itemize}
+ \item \ltxpkg{Constructor}s may wish to create a dual object (\tag{XMDual}) whose children are 
+the semantic and presentational forms.
+ \item Spacing and similar markup generates \tag{XMHint} elements, which are currently ignored
+during parsing, but probably shouldn't.
+\end{itemize}
+
+\section{Math Details}\label{math.details}
+\LaTeXML\ processes mathematical material by proceeding through several stages:
+\begin{itemize}
+\item Basic processing of macros, primitives and constructors resulting in
+   an XML document; the math is primarily represented by a sequence of
+   tokens (\tag{XMTok}) or structured items (\tag{XMApp}, \tag{XMDual}) and
+   hints (\tag{XMHint}, which are ignored).
+\item Document tree rewriting, where rules are applied to modify the document tree.
+   User supplied rules can be used here to clarify the intent of markup used in the document.
+\item Math Parsing; a grammar based parser is applied, depth first, to each level of the math.
+   In particular, at the top level of each math expression, as well as each
+   subexpression within structured items (these will have been contained in
+   an \tag{XMArg} or \tag{XMWrap} element).  This results in an expression tree
+   that will hopefully be an accurate representation of the expression's structure,
+   but may be ambigous in specifics (eg.`what the meaning of a superscript is).
+   The parsing is driven almost entirely by the grammatical \attr{role} assigned
+   to each item.
+\item \emph{Not yet implemented} a following stage must be developed to resolve
+   the semantic ambiguities by analyzing and augmenting the expression tree.
+\item Target conversion: from the internal \tag{XM} representation to
+   \MathML\ or \OpenMath.
+\end{itemize}
+
+The \tag{Math} element is a top-level container for any math mode material; it
+serves as the container for the various representations of the math, including
+images (through attributes \attr{mathimage}, \attr{width} and \attr{height}), 
+textual (through attributes \attr{tex}, \attr{content-tex} and \attr{text}),
+\MathML\ and the internal representation itself.  
+The \attr{mode} attribute specifies whether the math should be in display or inline mode.
+
+\subsection{Internal Math Resentation}\label{math.details.representation}
+The \tag{XMath} element is the container for the internal representation
+
+The following attributes can appear on all \tag{XM} elements:
+\begin{description}
+\item[\attr{role}] the grammatical role that this element plays 
+\item[\attr{open}, \attr{close}] parenthese or delimiters that were used to wrap the
+   expression represented by this element.
+\item[\attr{argopen}, \attr{argclose}, \attr{separators}] delimiters on an function or operator
+   (the first element of an \tag{XMApp})  that were used to delimit the arguments of the function.
+    The separators is a string of the punctuation characters used to separate arguments.
+\item[\attr{xml:id}] a unique identifier to allow reference (\tag{XMRef}) to this element.
+\end{description}
+
+\paragraph{Math Tags} The following tags are used for the intermediate math representation:
+\begin{description}
+\item[\tag{XMTok}] represents a math token. It may contain text for presentation.
+   Additional attributes are:
+  \begin{description}
+   \item[\attr{name}] the name that represents the `meaning' of the token; this overrides
+      the content for identifying the token.
+   \item[\attr{omcd}] the \OpenMath\ content dictionary that the name belongs to.
+   \item[\attr{font}] the font to be used for presenting the content.
+   \item[\attr{style}] ?
+   \item[\attr{size}] ?
+   \item[\attr{stackscripts}] whether scripts should be stacked above/below the item, instead
+     of the usual script position.
+  \end{description}
+\item[\tag{XMApp}] represents the generalized application of some function or operator to arguments.
+   The first child element is the operator, the remainig elements are the arguments.
+   Additional attributes:
+  \begin{description}
+    \item[\attr{name}] the name that represents the meaning of the construct as a whole.
+    \item[\attr{stackscripts}] ?
+  \end{description}
+\item[\tag{XMDual}] combines representations of the content (the first child) and presentation
+   (the second child), useful when the two structures are not easily related.
+\item[\tag{XMHint}] represents spacing or other apparent purely presentation material.
+  \begin{description}
+    \item[\attr{name}] names the effect that the hint was intended to achieve.
+    \item[\attr{style}] ?
+  \end{description}
+\item[\tag{XMWrap}] serves to assert the expected type or role of a subexpression that
+  may otherwise be difficult to interpret --- the parser is more forgiving about these.
+  \begin{description}
+    \item[\attr{name}] ?
+    \item[\attr{style}] ?
+  \end{description}
+\item[\tag{XMArg}] serves to wrap individual arguments or subexpressions, created by
+  structured markup, such as \verb|\frac|.  These subexpressions can be parsed individually.
+  \begin{description}
+    \item[\attr{rule}] the grammar rule that this subexpression should match.
+  \end{description}
+\item[\tag{XMRef}] refers to another subexpression,.  This is used to avoid duplicating
+  arguments when constructing an \tag{XMDual} to represent a function application, for example.  
+  The arguments will be placed in the content branch (wrapped in an \tag{XMArg}) while
+  \tag{XMRef}'s will be placed in the presentation branch.
+  \begin{description}
+    \item[\attr{idref}] the identifier of the referenced math subexpression.
+  \end{description}
+\end{description}
+
+\subsection{Grammatical Roles}\label{math.details.roles}
+The \attr{role} attempts to capture the syntactic nature of each item.
+This is used primarily to drive the parsing; the grammar rules are keyed
+on the \attr{role}, rather than content, of the nodes.  The \attr{role}
+is also used to drive the conversion to presentation markup, especially
+Presentation \MathML, and in fact some values of \attr{role} are only used
+that way, never appearing explicitly in the grammar.
+
+The following grammatical roles are recognized by the math parser.
+These values can be specified in the \attr{role} attribute during the initial 
+document construction or by rewrite rules.  Although the precedence of operators
+is loosely described in the following, since the grammar contains various special
+case productions, no rigidly ordered precedence is given.
+\begin{description}
+\item[\code{ATOM}] a general atomic subexpression.
+\item[\code{ID}] a variable-like token, whether scalar or otherwise.
+\item[\code{PUNCT}] punctuation.
+\item[\code{APPLYOP}] an explicit infix application operator (high precedence).
+\item[\code{RELOP}] a relational operator, loosely binding.
+\item[\code{ARROW}] an arrow operator (with little semantic significance).
+  treated equivalently to \code{RELOP}.
+\item[\code{METARELOP}] an operator used for relations between relations, with lower precedence.
+\item[\code{ADDOP}] an addition operator, precedence between relational and multiplicative operators.
+\item[\code{MULOP}] a multiplicative operator, high precedence.
+\item[\code{SUPOP}] An operator appearing in a superscript, such as a collection of primes.
+\item[\code{OPEN}] an open delimiter.
+\item[\code{CLOSE}] a close delimiter.
+\item[\code{MIDDLE}] a middle operator used to group items between an \code{OPEN}, \code{CLOSE} pair.
+\item[\code{OPERATOR}] a general operator; higher precedence than function application.
+  For example, for an operator $A$, and function $F$, $A F x$ would be interpretted as $(A(F))(x)$.
+\item[\code{SUMOP}] a summation/union operator.
+\item[\code{INTOP}] an integral operator.
+\item[\code{LIMITOP}] a limiting operator.
+\item[\code{DIFFOP}] a differential operator.
+\item[\code{BIGOP}] a general operator, but lower precedence, such as a $P$ preceding
+  an integral to denote the principal value.
+ Note that \code{SUMOP}, \code{INTOP}, \code{LIMITOP}, \code{DIFFOP} and \code{BIGOP} are treated
+ equivalently by the grammar, but are distinguished to facilitate (\emph{eventually!}) 
+ analyzing the argument structure (eg bound variables and differentials within an integral).
+ \textbf{Note} are \code{SUMOP} and \code{LIMITOP} significantly different in this sense?
+\item[\code{VERTBAR}]
+\item[\code{FUNCTION}] a function which (may) apply to following arguments with higher
+   precedence than addition and multiplication, or parenthesized arguments.
+\item[\code{NUMBER}] a number.
+\item[\code{POSTSUPERSCRIPT}] the usual superscript, where the script is treated as
+  an argument, but the base will be determined by parsing. Note that this is not
+  necessarily assumed to be a power. Very high precedence.
+\item[\code{POSTSUBSCRIPT}] Similar to \code{POSTSUPERSCRIPT} for subscripts.
+\item[\code{FLOATINGSUPERSCRIPT}] A special case for a superscript on an empty base,
+  ie. \verb|{}^{x}|.  This is often used to place a pre-superscript or for
+  non-math uses (eg. \verb|10${}^{th}|).
+\item[\code{FLOATINGSUBSCRIPT}] Similar to \code{POSTSUPERSCRIPT} for subscripts.
+\item[\code{POSTFIX}] for a postfix operator
+\item[\code{UNKNOWN}] an unknown expression. This is the default for token elements,
+  and generates a warning if the unknown seems to be used as a function.
+\end{description}
+
+The following roles are not used in the grammar, but are used to capture
+the presentation style:
+\begin{description}
+\item[\code{STACKED}] corresponds to stacked structures, such as
+  \verb|\atop|, and the presentation of binomial coefficients.
+\end{description}
+
+% Some 
+\chapter{Issues and ToDo}\label{todo}
+Lots\ldots!
+\begin{itemize}
+\item Lots of useful \LaTeX\ packages have not been implemented, and those
+  that are aren't necessarily complete.
+\item \TeX\ boxes aren't really complete, and in particular things like \verb|\ht0|
+  don't work.
+\item Possibly useful to override (pre-override?) a macro defined in the source file;
+  that is, define it and silently ignore the definition given in the source.
+\item \ldots um, \ldots \emph{documentation}!
+\end{itemize}
+
+\printindex\label{idx}
+\appendix
+\chapter{Command Documentation}\label{commands}
+\include{pods/latexml}
+\include{pods/latexmlpost}
+
+\chapter{Core Module Documentation}\label{coremodules}
+\include{pods/LaTeXML}
+\include{pods/LaTeXML_Object}
+\include{pods/LaTeXML_Definition}
+\include{pods/LaTeXML_Global}
+\include{pods/LaTeXML_Error}
+\include{pods/LaTeXML_Package}
+\include{pods/LaTeXML_Parameters}
+\include{pods/LaTeXML_State}
+
+%\section{Digestion-related Modules}
+
+\include{pods/LaTeXML_Token}
+\include{pods/LaTeXML_Box}
+\include{pods/LaTeXML_Number}
+\include{pods/LaTeXML_Font}
+\include{pods/LaTeXML_Mouth}
+\include{pods/LaTeXML_Gullet}
+\include{pods/LaTeXML_Stomach}
+
+%\section{Construction-related Modules}
+\include{pods/LaTeXML_Document}
+\include{pods/LaTeXML_Model}
+\include{pods/LaTeXML_Rewrite}
+
+%\section{Math-related Modules}
+\include{pods/LaTeXML_MathParser}
+
+\chapter{Utility Module Documentation}\label{utilitymodules}
+\include{pods/LaTeXML_Util_Pathname}
+
+\chapter{Postprocessing Module Documentation}\label{postmodules}
+\include{pods/LaTeXML_Post}
+
+\chapter{\LaTeXML\ DocType}\label{dtd}
+Not yet documented.
+
+\end{document}
+
+%======================================================================
+% OMITTED
+% and probably out-of-date
+\chapter{Object Hierarchy}\label{hierarchy}
+{\small
+\begin{description}
+  \item[\ltxpkg{Object}]: Abstract base class.
+  \begin{description}
+    % In Token.pm
+    \item[\ltxpkg{Token}]: A \TeX\ token: character/string with category code.
+    \item[\ltxpkg{Tokens}]: A list of \ltxpkg{Token}s.
+    \item[\ltxpkg{Number}]: A \TeX\ number.
+    \begin{description}
+      \item[\ltxpkg{Dimension}]: A \TeX\ dimension; number with unit.
+      \begin{description}
+        \item[\ltxpkg{MuDimension}]: A \TeX\ math-mode dimension.
+        \item[\ltxpkg{Glue}]:  A \TeX\ dimension with shrink and stretch.
+        \begin{description}
+          \item[\ltxpkg{MuGlue}]: A \TeX\ math-mode glue.
+        \end{description}
+      \end{description}
+    \end{description}
+    % In Box.pm
+    \item[\ltxpkg{Box}]: A digested character/string; base class for digested objects.
+    \begin{description}
+      \item[\ltxpkg{MathBox}]: A digested character token in math.
+      \item[\ltxpkg{Comment}]: A digested comment.
+      \item[\ltxpkg{List}]: A list of text-mode boxes.
+      \begin{description}
+        \item[\ltxpkg{MathList}]: A list of math-mode boxes.
+      \end{description}
+      \item[\ltxpkg{Whatsit}]: A special digested object with arguments and properties; has its own
+             rules for conversion into an document fragment.
+    \end{description}
+    % In Font.pm
+    \item[\ltxpkg{Font}]: A representation of a font, attached to digested objects.
+    \begin{description}
+      \item[\ltxpkg{MathFont}]: A font in math; special rules for merging.
+    \end{description}
+    % In Node.pm
+    \item[\ltxpkg{Document}]: A representation of the document under construction.
+    % In Definition.pm
+    \item[\ltxpkg{Definition}]: Represents the action of executable control sequences
+    \begin{description}
+      \item[\ltxpkg{Expandable}]: A definition expandable in the Gullet, (eg.~a macro).
+      \item[\ltxpkg{Primitive}]: Definition for primitives, carried out in Stomach.
+      \begin{description}
+        \item[\ltxpkg{Register}]: A definition for \TeX\ registers.
+        \item[\ltxpkg{Constructor}]: A definition that constructs document fragments;
+             generates a Whatsit during digestion.
+      \end{description}
+    \end{description}
+    % In Parameters.pm
+    \item[\ltxpkg{Parameters}]: A collection of \ltxpkg{Parameter} representing a definition's
+        parameter list.
+    \item[\ltxpkg{Parameter}]: A definition's parameter, including type, optional, etc.
+%    \item[\LTXKeyVals]: Representation of \LaTeX-style Key-Value lists.
+    % In Mouth.pm
+    \item[\ltxpkg{Mouth}]: The organ that converts characters (eg.~from files) into \ltxpkg{Token}s.
+    \begin{description}
+      \item[\ltxpkg{FileMouth}]: A mouth that tokenizes input from a file.
+      \begin{description}      
+        \item[\ltxpkg{StyleMouth}]: A file mouth for reading style files.
+      \end{description}
+      \item[\ltxpkg{PerlMouth}]: A fake mouth for reading perl modules.
+    \end{description}
+    % In Gullet.pm
+    \item[\ltxpkg{Gullet}]: The organ that expands \ltxpkg{Token}s into other sequences of tokens;
+      also provides common `parsing' operations such as reading numbers, delimited lists of tokens, etc.
+    % In Stomach.pm
+    \item[\ltxpkg{Stomach}]: The organ that digests \ltxpkg{Token}s, converting them to a tree of
+       digested boxes; also contains the current state of grouping, bindings of definitions, etc.
+    % In Model.pm
+    \item[\ltxpkg{Model}]: Represents the model of the document, extracted from the DTD.
+  \end{description}
+\end{description}
+}

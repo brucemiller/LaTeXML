@@ -49,7 +49,7 @@ sub Error {
 
 sub Warn {
   my($self,$msg)=@_;
-  warn "".(ref $self)." Warning: $msg" if $$self{verbosity}>-1; }
+  print STDERR "".(ref $self)." Warning: $msg\n" if $$self{verbosity}>-1; }
 
 sub Progress {
   my($self,$msg)=@_;
@@ -100,7 +100,7 @@ sub new {
   if(ref $class){		# Cloning!
     map($data{$_}=$$class{$_}, keys %$class);
     $class = ref $class; }
-  map($data{$_}=$options{$_}, keys %options);
+  map($data{$_}=$options{$_}, keys %options); # These override.
   if((defined $options{destination}) && (!defined $options{destinationDirectory})){
     my($vol,$dir,$name)=File::Spec->splitpath($data{destination});
     $data{destinationDirectory} = $dir || '.'; }
@@ -108,6 +108,15 @@ sub new {
   $data{idcache} = undef;
   $data{namespaces}={ltx=>$NSURI} unless $data{namespaces};
   $data{namespaceURIs}={$NSURI=>'ltx'} unless $data{namespaceURIs};
+
+  if(!$data{searchpaths}){
+    my @paths = ();
+    push(@paths,pathname_absolute($data{sourceDirectory})) if $data{sourceDirectory};
+    foreach my $pi ($XPATH->findnodes('.//processing-instruction("latexml")',$xmldoc)){
+      if($pi->textContent =~ /^\s*searchpaths\s*=\s*([\"\'])(.*?)\1\s*$/){
+	push(@paths,split(',',$2)); }}
+    $data{searchpaths} = [@paths]; }
+
   bless {%data}, $class; }
 
 sub newFromFile {
@@ -151,8 +160,8 @@ sub createParser {
 sub getDocument             { $_[0]->{document}; }
 sub getDocumentElement      { $_[0]->{document}->documentElement; }
 sub getSourceDirectory      { $_[0]->{sourceDirectory} || '.'; }
+sub getSearchPaths          { @{$_[0]->{searchpaths}}; }
 sub getDestination          { $_[0]->{destination}; }
-sub getURL                  { $_[0]->{url}; }
 sub getDestinationDirectory { $_[0]->{destinationDirectory}; }
 sub toString                { $_[0]->{document}->toString(1); }
 

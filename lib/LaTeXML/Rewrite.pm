@@ -345,7 +345,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Rewrite> -- rewrite rules for modifying the XML document.
+C<LaTeXML::Rewrite> - rewrite rules for modifying the XML document.
 
 =head1 DESCRIPTION
 

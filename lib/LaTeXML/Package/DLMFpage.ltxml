@@ -122,12 +122,8 @@ DefEnvironment('{wrapfigure} {} {Dimension}',
 #**********************************************************************
 # Table enhancement
 
-sub tabular_thinhline {
-  my($document)=@_;
-  # Sneak in an additional type!!!! Add to CSS!!!
-  LaTeXML::Util::Alignment::add_border_to_previous($document,'B','t'); }
-
-DefConstructor('\thinhline',\&tabular_thinhline);
+DefConstructor('\thinhline','',
+	       afterDigest=>sub { LookupValue('Alignment')->addLine('T'); });
 
 #**********************************************************************
 DefConstructor('\VRML Semiverbatim', "<ltx:VRML href='#1'/>");

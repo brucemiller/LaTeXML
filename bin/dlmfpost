@@ -63,12 +63,12 @@ push(@procs,$scanner) if $scan;
 
 if(!$prescan){
   push(@procs,
-       LaTeXML::Post::MakeIndex->new(db=>$DB,permuted=>1,split=>1,scanner=>$scanner,%OPTIONS),
+       LaTeXML::Post::MakeIndex->new(db=>$DB,split=>1,scanner=>$scanner,%OPTIONS),
        LaTeXML::Post::MakeBibliography->new(db=>$DB, bibliographies=>[@bibliographies],
 					    split=>1, scanner=>$scanner,%OPTIONS),
        DLMFMakeNotations->new(db=>$DB,split=>1,scanner=>$scanner,%OPTIONS),
 
-       DLMFCrossRef->new(db=>$DB,%OPTIONS),
+       DLMFCrossRef->new(db=>$DB,format=>'xml',urlstyle=>'negotiated',%OPTIONS),
        DLMFGallery->new(resourceDirectory=>'',resourcePrefix=>'g',%OPTIONS),
        DLMFGraphics->new(resourceDirectory=>'',resourcePrefix=>'g',%OPTIONS),
        DLMFPictureImages->new(resourceDirectory=>'',resourcePrefix=>'g',%OPTIONS),
@@ -78,18 +78,19 @@ if(!$prescan){
        DLMFpMML->new(resourceDirectory=>'', resourcePrefix=>'m',%OPTIONS),
        # cmml options ?
        # LaTeXML::Post::PurgeXMath->new(%OPTIONS),
-       DLMFWriter->new(format=>'xml',omit_doctype=>1,%OPTIONS),
+       DLMFWriter->new(basedir=>$basedir,format=>'xml',omit_doctype=>1,%OPTIONS),
        ); }
+if(pathname_absolute($destination)){
+  if(my $reldest = pathname_relative($destination,$basedir)){
+    $destination = $reldest; }}
 my $target = "$basedir/$destination";
-my $url = $destination;
-$url =~ s/\.xml$//;
-$url =~ s/(^|\/)index$/$1/;
 
+print STDERR ($prescan ? "Scanning $xmlfile\n":"Instanciating $xmlfile => $target\n")
+  if $verbosity > -1;
 LaTeXML::Post::ProcessChain(LaTeXML::Post::Document->newFromFile($xmlfile,
 								 validate=>$validate,
 								 sourceDirectory=>$sourcedir,
-								 destination=>$target,
-								 url=>$url),
+								 destination=>$target),
 			    @procs);
 $DB->finish;
 
@@ -118,8 +119,7 @@ sub process {
       foreach my $section ($doc->findnodes('ltx:section',$part)){
 	my $secid = $section->getAttribute('id');
 	my $secdoc = $doc->newDocument($section,
-				       destination=>$self->getSubdocumentName($doc,$section),
-				       url=>$self->getSubdocumentURL($doc,$section));
+				       destination=>$self->getPageName($doc,$section));
 	push(@docs,$secdoc);
 	push(@parttoc,['ltx:tocentry',{},['ltx:ref',{class=>'toc',show=>'typerefnum title',
 						     idref=>$secid}]]);
@@ -146,8 +146,7 @@ sub process {
     # Now, handle any sidebars...
     foreach my $sidebar ($doc->findnodes('//ltx:sidebar')){
       my $sbdoc = $doc->newDocument($sidebar,
-				     destination=>$self->getSubdocumentName($doc,$sidebar),
-				     url=>$self->getSubdocumentURL($doc,$sidebar));
+				     destination=>$self->getPageName($doc,$sidebar));
       $sbdoc->addNavigation(up      =>$chapid);
       push(@docs,$sbdoc); 
       $sidebar->parentNode->removeChild($sidebar); }
@@ -156,17 +155,11 @@ sub process {
   else { $doc; }}
 
 # Used ONLY within chapters for sections & sidebars.
-sub getSubdocumentName {
+sub getPageName {
   my($self,$doc,$sec)=@_;
   my $id = $sec->getAttribute('id');
   $id =~ /\.([^\.]+)$/;
   pathname_make(dir=>$doc->getDestinationDirectory. '/'.$1, name=>'index', type=>'xml'); }
-
-sub getSubdocumentURL {
-  my($self,$doc,$sec)=@_;
-  my $id = $sec->getAttribute('id');
-  $id =~ /\.([^\.]+)$/;
-  $doc->getURL.$1.'/'; }
 
 sub magnifyFigure {
   my($self,$doc,$figure)=@_;
@@ -179,8 +172,7 @@ sub magnifyFigure {
     my $magfigid = $figid.".mag";
     my $magdoc = $doc->newDocument($figure->cloneNode(1),
 				   destination=>pathname_make(dir=>$doc->getDestinationDirectory,
-							      name=>$name,type=>'xml'),
-				   url=>$doc->getURL.$name);
+							      name=>$name,type=>'xml'));
     my $root = $magdoc->getDocumentElement;
     # replace all ID's and related IDREF's, remove label's
     my %ids=();
@@ -219,7 +211,10 @@ use base qw(LaTeXML::Post::Writer);
 
 sub process {
   my($self,$doc)=@_;
-  my $base = $doc->getURL;
+  my $base = pathname_relative($doc->getDestination,$$self{basedir});
+  $base =~ s/\.xml$//;
+  $base =~ s/\bindex//;
+  $doc->getDocumentElement->setAttribute(url=>"DLMF:/$base");
   $base =~ s/[^\/]*$//;		# trim back to directory.
   foreach my $n ($doc->findnodes('//@src|//@magsrc|//@vrml|//@image|//@imagesrc|//@href')){
     my $path = $n->value;
@@ -258,7 +253,7 @@ sub tocentry_handler {
     if(my $label = $node->getAttribute('label')){
       $$self{db}->register("LABEL:$label",id=>$id); }
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,
-			 url=>$doc->getURL, fragid=>$self->inPageID($doc,$id),
+			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
 			 title=>$doc->findnode('ltx:span',$node)); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
@@ -358,7 +353,11 @@ sub process {
     my($id)= $meta->getAttribute('id') =~ /^(.*)\.info$/;
     # Connect links to index
     foreach my $ikey ($doc->findnodes('descendant::ltx:indexkeyword',$meta)){
-      $ikey->setAttribute(idref=>'idx.'.$ikey->getAttribute('key')); }
+      my $keyid = 'idx.'.$ikey->getAttribute('key');
+      if($$self{db}->lookup("ID:$keyid")){
+	$ikey->setAttribute(idref=>$keyid); }
+      else {
+	$ikey->parentNode->removeChild($ikey); }}
     # Add Referrers
     if(my $identry = $$self{db}->lookup("ID:$id")){
       if(my $label = $identry->getValue('label')){
@@ -574,6 +573,7 @@ BEGIN { @VRML_EXTRA = qw(dlmf_proto.wrl sml_rec_proto.wrl
 
 sub processGraphic {
   my($self,$doc,$node)=@_;
+  return if $node->getAttribute('src'); # Already has a src defined?
   my $source = $self->findGraphicsFile($doc,$node);
   return $self->Warn("Missing graphic for ".$node->toString."; skipping") unless $source;
   my $transform = $self->getTransform($node);
@@ -1020,7 +1020,6 @@ latexmlpost [options] xmlfile
  --sourcedirectory=dir  Specifies the source TeX directory
                         to find styles, graphics, etc.
  --destination=dest     Specifies where the file should go
- --url=url              Specifies the effective url for this document
  --bibliography=bib.xml Specifies the bibliography to use.
  --help                 This message.
 

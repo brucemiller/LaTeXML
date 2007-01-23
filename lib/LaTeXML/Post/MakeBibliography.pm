@@ -210,7 +210,7 @@ sub do_date { @_; }
 sub do_title { (['ltx:text',{font=>'italic'},@_]); }
 sub do_bold  { (['ltx:text',{font=>'bold'},@_]); }
 sub do_edition { (@_," edition"); } # If a number, should convert to cardinal!
-sub do_isbn { my @l = map( (", ",$_), @_); @l[1..-1]; }
+sub do_isbn { my @l = map( (", ",$_), @_); @l[1..$#l]; }
 sub do_thesis_type { @_; }
 sub do_eprint { @_; }
 sub do_pages { (" pp.\N{NO-BREAK SPACE}",@_); } # Non breaking space
@@ -244,7 +244,7 @@ sub do_links {
     elsif($tag eq 'bib-url'         ){
       push(@links,['ltx:ref',{href=>$href},"Other"]); }}
   @links = map((",\n",$_),@links);
-  @links[1..-1]; }
+  @links[1..$#links]; }
 
 # ================================================================================
 # Formatting specifications.

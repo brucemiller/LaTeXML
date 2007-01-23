@@ -420,7 +420,7 @@ sub textrec {
     my @rows = ();
     foreach my $row (element_nodes($node)){
       push(@rows,
-       '['.join(', ',map(textrec($_->firstChild),element_nodes($row))).']');}
+       '['.join(', ',map(($_->firstChild ? textrec($_->firstChild):''),element_nodes($row))).']');}
     $name.'['.join(', ',@rows).']';  }
   else {
     my $string = ($tag eq 'XMText' ? $node->textContent : $node->getAttribute('tex') || '?');
@@ -531,27 +531,29 @@ sub extract_separators {
 sub InvisibleTimes {
   New('',"\x{2062}", role=>'MULOP'); }
 
-
-# OK, what about \left. or \right. !!?!?!!?!?!?
-# Make customizable?
+# This specifies the "meaning" of things within a pair
+# of open/close delimiters, depending on the number of things.
+# Reall should be customizable?
+# Note that the "Fenced" case (n==1) doesn't actually give a meaning,
+# but just generates open/close attributes on the object.
 # Should I just check left@right against enclose1 ?
 our %balanced = ( '(' => ')', '['=>']', '{'=>'}', 
 		  '|'=>'|', '||'=>'||',
 		  "\x{230A}"=>"\x{230B}", # lfloor, rfloor
 		  "\x{2308}"=>"\x{2309}", # lceil, rceil
 		  "\x{2329}"=>"\x{232A}");
-our %enclose1 = ( '(@)'=>'Fenced', '[@]'=>'Fenced', '{@}'=>'Set',
-		  '|@|'=>'Abs', '||@||'=>'norm',
-		  "\x{230A}@\x{230B}"=>'Floor',
-		  "\x{2308}@\x{2309}"=>'Ceiling' );
-our %enclose2 = ( '(@)'=>'OpenInterval', '[@]'=>'ClosedInterval',
-		  '(@]'=>'OpenLeftInterval', '[@)'=>'OpenRightInterval',
-		  '{@}'=>'Set',
+our %enclose1 = ( '(@)'=>'Fenced', '[@]'=>'Fenced', '{@}'=>'set',
+		  '|@|'=>'abs', '||@||'=>'norm',
+		  "\x{230A}@\x{230B}"=>'floor',
+		  "\x{2308}@\x{2309}"=>'ceiling' );
+our %enclose2 = ( '(@)'=>'open_interval', '[@]'=>'closed_interval',
+		  '(@]'=>'open_closed_interval', '[@)'=>'closed_open_interval',
+		  '{@}'=>'set',
 		  # Nah, too weird.
 		  #'{@}'=>'SchwarzianDerivative',
 		  # "\x{2329}@\x{232A}"=>'Distribution'
 		);
-our %encloseN = ( '(@)'=>'Vector','{@}'=>'Set',);
+our %encloseN = ( '(@)'=>'vector','{@}'=>'set',);
 
 sub isMatchingClose {
   my($open,$close)=@_;

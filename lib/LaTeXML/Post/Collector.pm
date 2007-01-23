@@ -48,8 +48,7 @@ sub makeSubCollectionDocuments {
   for(my $i=0; $i<=$#ids; $i++){
     my $subdoc = ($i == 0 ? $doc
 		  : $doc->newDocument([$roottag,{id=>$ids[$i][0]}],
-				      destination=>$self->getSubDocumentName($doc,$ids[$i][1]),
-				      url=>$self->getSubDocumentURL($doc,$ids[$i][1])));
+				      destination=>$self->getPageName($doc,$ids[$i][1])));
     push(@docs,$subdoc);
     $subdoc->addNodes($subdoc->findnode('//'.$roottag),
 		      ['ltx:title',{},@titlestuff,' ',$ids[$i][1]],
@@ -72,20 +71,12 @@ sub rescan {
 # If the main document is named "index", (like index.html) presumably this collection
 # will be contained in its own directory, so the sub document names can be short.
 # Otherwise, we'll append the initial to 
-sub getSubDocumentName {
+sub getPageName {
   my($self,$doc,$initial)=@_;
   my($dir,$name,$type) = pathname_split($doc->getDestination);
   pathname_make(dir=>$dir,
 		name=>($name eq 'index' ? $initial : "$name.$initial"),
 		type=>$type); }
-
-sub getSubDocumentURL {
-  my($self,$doc,$initial)=@_;
-  my($dir,$name,$type) = pathname_split($doc->getURL);
-  pathname_make(dir=>$dir,
-		name=>(!$name || ($name eq 'index') ? $initial : "$name.$initial"),
-		type=>$type); }
-
 
 # ================================================================================
 1;

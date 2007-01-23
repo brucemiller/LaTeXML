@@ -279,7 +279,8 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Font> and C<LaTeXML::MathFont> -- representation of fonts.
+C<LaTeXML::Font> - representation of fonts,
+along with the specialization C<LaTeXML::MathFont>.
 
 =head1 DESCRIPTION
 
@@ -292,17 +293,19 @@ C<LaTeXML::Font> and C<LaTeXML::MathFont> represent fonts
 
 The attributes are
 
-   family : serif, sansserif, typewriter, caligraphic, fraktur, script
-   series : medium, bold
-   shape  : upright, italic, slanted, smallcaps
-   size   : tiny, footnote, small, normal, large, Large, LARGE, huge, Huge
-   color  : any named color, default is black
+ family : serif, sansserif, typewriter, caligraphic,
+          fraktur, script
+ series : medium, bold
+ shape  : upright, italic, slanted, smallcaps
+ size   : tiny, footnote, small, normal, large,
+          Large, LARGE, huge, Huge
+ color  : any named color, default is black
 
 They are usually merged against the current font, attempting to mimic the,
 sometimes counter-intuitive, way that TeX does it,  particularly for math
 
-Additionally, C<LaTeXML::MathFont> supports C<$font->specialize($string);>, which
-computes a font reflecting how the specific C<$string> would be printed when
+Additionally, C<LaTeXML::MathFont> supports C<$font->specialize($string);> for
+computing a font reflecting how the specific C<$string> would be printed when
 C<$font> is active; This (attempts to) handle the curious ways that lower case
 greek often doesn't get a different font.  In particular, it recognizes the
 following classes of strings: single latin letter, single uppercase greek character,

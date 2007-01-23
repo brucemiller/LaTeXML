@@ -27,6 +27,8 @@ DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
 DefMacro('\SGML',    '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
 DefMacro('\HTML',    '\URL[\texttt{HTML}]{http://www.w3.org/HTML/}');
 DefMacro('\XHTML',   '\URL[\texttt{XHTML}]{http://www.w3.org/XHTML/}');
+DefMacro('\XSLT',    '\URL[\texttt{XSLT}]{http://www.w3.org/Style/XSL/}');
+DefMacro('\CSS',     '\URL[\texttt{CSS}]{http://www.w3.org/Style/CSS/}');
 DefMacro('\MathML',  '\URL[\texttt{MathML}]{http://www.w3.org/Math/}');
 DefMacro('\OpenMath','\URL[\texttt{OpenMath}]{http://www.openmath.org/}');
 DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
@@ -96,7 +98,7 @@ DefPrimitive('\lxDefMath{}[][]{} OptionalKeyVals:XMath', sub {
 
 DefKeyVal('Declare','wrap','{}',1);
 DefKeyVal('Declare','trace','{}',1);
-DefKeyVal('Declare','replace','Undigested');
+DefKeyVal('Declare','replace','UndigestedKey');
 
 our $declare_keys = {scope=>1,role=>1,tag=>1,name=>1,meaning=>1,
 		     trace=>1,wrap=>1,replace=>1,label=>1};
