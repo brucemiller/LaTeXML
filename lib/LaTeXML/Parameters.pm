@@ -204,7 +204,7 @@ sub reparseArgument {
     my @values = $self->readArguments($gullet);
     $gullet->skipSpaces;
     if(my $junk =$gullet->readToken){
-      Fatal("Left over stuff in argument for ".Stringify($self).":".Stringify($junk)); }
+      Error("Left over stuff in argument for ".Stringify($self).":".Stringify($junk)); }
     $gullet->closeMouth;
     @values; }
   else {
