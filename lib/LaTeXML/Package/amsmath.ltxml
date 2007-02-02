@@ -296,11 +296,11 @@ DefEnvironment('{alignedat}{}[]',
 	       ."<ltx:XMHint name='aligned-end'/>",
 	       beforeDigest=>sub{ DefConstructor("&","<ltx:XMHint name='align'/>"); });
 
-DefMacro('\cases',   '\@@cases[#1]{#2}\@start@alignment');
+DefMacro('\cases',   '\@@cases\@start@alignment');
 DefMacro('\endcases', '\@finish@alignment\@end@cases');
 Let('\@end@cases','\relax');
 DefConstructor('\@@cases AlignmentBody:\@end@cases',
-	       sub { my($document,$pos,$pat,$body,%props)=@_;
+	       sub { my($document,$body,%props)=@_;
 		     constructAlignment($document,$body,attributes=>{name=>'Cases',open=>'{'}); },
 	       beforeDigest=>sub { alignmentBindings('ll'); },
 	       reversion=>'\begin{cases}#1\end{cases}');

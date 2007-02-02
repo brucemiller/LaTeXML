@@ -365,7 +365,7 @@ sub DefMacro {
 #    isPrefix  : 1 for things like \global, \long, etc.
 #    registerType : for parameters (but needs to be worked into DefParameter, below).
 
-our $primitive_options = {isPrefix=>1,scope=>1, requireMath=>1, forbidMath=>1};
+our $primitive_options = {isPrefix=>1,scope=>1, requireMath=>1, forbidMath=>1,beforeDigest=>1};
 sub DefPrimitive {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefPrimitive ($proto)",$primitive_options,%options);

@@ -55,11 +55,12 @@ sub getBoxingLevel { scalar(@{$_[0]->{boxing}}); }
 # It puts a lot of cruft in Gullet; Should we just create a new Gullet?
 
 sub digestNextBody {
-  my($self)=@_;
+  my($self,$terminal)=@_;
   my $initdepth  = scalar(@{$$self{boxing}});
   my $token;
   local @LaTeXML::LIST=();
   while(defined($token=$$self{gullet}->readXToken(1))){ # Done if we run out of tokens
+    last if $terminal and $token->equals($terminal);
     push(@LaTeXML::LIST, $self->invokeToken($token));
     last if $initdepth > scalar(@{$$self{boxing}}); } # if we've closed the initial mode.
   push(@LaTeXML::LIST,LaTeXML::List->new()) unless $token; # Dummy `trailer' if none explicit.

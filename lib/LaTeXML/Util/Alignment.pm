@@ -167,14 +167,15 @@ sub beAbsorbed {
       my %attr = (align=>$$cell{align}, width=>$$cell{width},
 		  (($$cell{span}||1) != 1 ? (colspan=>$$cell{span}) : ()),
 		  ($border ? (border=>$border):()));
+      my $empty = !$$cell{boxes} || !scalar($$cell{boxes}->unlist);
       if($ismath){
 	$document->openElement('ltx:XMCell',%attr);
-	$document->openElement('ltx:XMArg') unless $$cell{empty}; }
+	$document->openElement('ltx:XMArg', rule=>'Anything,') unless $empty; }
       else {
 	$document->openElement('ltx:td',%attr); }
-      $document->absorb($$cell{boxes}) unless $$cell{empty};
+      $document->absorb($$cell{boxes}) unless $empty;
       if($ismath){
-	$document->closeElement('ltx:XMArg') unless $$cell{empty};
+	$document->closeElement('ltx:XMArg') unless $empty;
 	$document->closeElement('ltx:XMCell'); }
       else {
 	$document->closeElement('ltx:td'); }}

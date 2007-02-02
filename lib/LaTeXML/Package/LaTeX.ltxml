@@ -1041,7 +1041,8 @@ DefConstructor('\@@tabular[]{} AlignmentBody:\@end@tabular',
 	       sub { my($document,$pos,$pat,$body,%props)=@_;
 		     constructAlignment($document,$body,attributes=>{position=>$pos},
 					guess_headers=>1); },
-	       reversion=>'\begin{tabular}[#1]{#2}#3\end{tabular}');
+	       reversion=>'\begin{tabular}[#1]{#2}#3\end{tabular}',
+	       mode=>'text');
 DefMacro('\csname tabular*\endcsname{Dimension}[]{}',
 	 '\@alignment@bindings{#3}\@@tabular@{#1}[#2]{#3}\@start@alignment');
 DefMacro('\csname endtabular*\endcsname',
@@ -1050,7 +1051,8 @@ DefConstructor('\@@tabular@{Dimension}[]{} AlignmentBody:\@end@tabular@',
 	       sub { my($document,$width,$pos,$pat,$body,%props)=@_;
 		     constructAlignment($document,$body,attributes=>{position=>$pos,width=>$width},
 					guess_headers=>1); },
-	       reversion=>'\begin{tabular*}{#1}[#2]{#3}#4\end{tabular*}');
+	       reversion=>'\begin{tabular*}{#1}[#2]{#3}#4\end{tabular*}',
+	       mode=>'text');
 
 Let('\multicolumn','\@multicolumn');
 
@@ -1065,9 +1067,11 @@ DefConstructor('\cline{}','',
 		   my $n = $1;
 		   push(@cols, ($cols =~ s/^-(\d+)// ? ($n..$1) : ($n))); }
 		 LookupValue('Alignment')->addLine('t',@cols);
-		 return; });
+		 return; },
+	       properties=>{isHorizontalRule=>1});
 
-DefConstructor('\vline',"");	# ???
+DefConstructor('\vline',"",	# ???
+	       properties=>{isVerticalRule=>1},);
 DefRegister('\arraycolsep',Dimension(0));
 DefRegister('\tabcolsep',Dimension(0));
 DefRegister('\arrayrulewidth',Dimension(0));
