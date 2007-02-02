@@ -310,6 +310,8 @@ DefPrimitive('\pagestyle{}',    undef);
 DefPrimitive('\thispagestyle{}',undef);
 DefPrimitive('\markright{}',    undef);
 DefPrimitive('\markboth{}{}',   undef);
+DefConstructor('\leftmark',     '');
+DefConstructor('\rightmark',    '');
 DefPrimitive('\pagenumbering{}',undef);
 DefPrimitive('\twocolumn[]',    undef);
 DefPrimitive('\onecolumn',      undef);
