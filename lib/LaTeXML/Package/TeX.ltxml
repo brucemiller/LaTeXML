@@ -1065,7 +1065,7 @@ DefColumnType('r',sub {
   $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\hfil'))); return; });
 
 DefColumnType('p{Dimension}',sub {
-  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_BEGIN),
+  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\hbox'),T_BEGIN),#Tokens(T_BEGIN),
 				      after=>Tokens(T_END),
 				      align=>'justify', width=>$_[1]); return; });
 DefColumnType('*{Number}{}', sub {
@@ -1132,7 +1132,7 @@ DefExpandable('\multispan{Number}', sub {
 
 DefExpandable('\@multicolumn {Number}  AlignmentTemplate {}', sub {
   my($gullet,$span,$template,$tokens)=@_;
-  my $column = $$template{row}[0];
+  my $column = $template->column(1);
   $span = $span->valueOf;
   # First part, like \multispan
   (T_CS('\omit'),map((T_CS('\span'),T_CS('\omit')), 1..$span-1),
@@ -3057,7 +3057,7 @@ DefConstructor('\@@cases{}',
  		 my $col1 = {before=>Tokens(), after=>Tokens(T_CS('\hfil'))};
  		 my $col2 = {before=>Tokens(T_CS('\hbox'),T_BEGIN),
 			     after=>Tokens(T_END,T_CS('\hfil'))};
-		 alignmentBindings(LaTeXML::AlignmentTemplate->new(row=>[$col1,$col2])); });
+		 alignmentBindings(LaTeXML::AlignmentTemplate->new(columns=>[$col1,$col2])); });
 
 DefPrimitive('\openup Dimension',undef);
 

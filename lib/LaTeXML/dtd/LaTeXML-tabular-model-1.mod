@@ -50,6 +50,7 @@
 <!ATTLIST %LaTeXML.td.qname;
 	  %LaTeXML.Common.attrib; 
           colspan CDATA #IMPLIED
+          rowspan CDATA #IMPLIED
           align   CDATA #IMPLIED
           width   CDATA #IMPLIED
 	  border  CDATA #IMPLIED

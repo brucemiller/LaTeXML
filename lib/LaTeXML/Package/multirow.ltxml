@@ -1,0 +1,22 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  multirow                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+DefPrimitive('\multirowsetup',undef);
+DefPrimitive('\multirow{Number}{}{}',sub {
+  my($stomach,$nrows,$width,$content)=@_;
+  my $colspec = LookupValue('Alignment')->currentColumn;
+  $$colspec{rowspan}=$nrows->valueOf;
+  Digest(Tokens(T_CS('\hbox'),T_BEGIN,T_CS('\multirowsetup'),$content->unlist,T_END)); });
+
+#**********************************************************************
+1;
