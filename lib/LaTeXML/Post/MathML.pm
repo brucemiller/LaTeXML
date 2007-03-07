@@ -232,9 +232,11 @@ sub pmml_internal {
 	my $h = (($col->getAttribute('thead')||'') eq 'yes') && 'thead';
 	my $c = ($b ? ($h ? "$b $h" : $b) : $h);
 	my $cs = $col->getAttribute('colspan');
+	my $rs = $col->getAttribute('rowspan');
 	push(@cols,['m:mtd',{($a ? (columnalign=>$a):()),
 			     ($c ? (class=>$c):()),
-			     ($cs ? (columnspan=>$cs):())},
+			     ($cs ? (columnspan=>$cs):()),
+			     ($rs ? (rowspan=>$rs):())},
 		    map(pmml($_),element_nodes($col))]); }
       push(@rows,['m:mtr',{},@cols]); }
     my $result = ['m:mtable',{rowspacing=>"0.2ex", columnspacing=>"0.4em"},@rows];
