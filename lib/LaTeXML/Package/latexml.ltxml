@@ -144,6 +144,7 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
 	       afterConstruct=>sub { my($document,$whatsit)=@_;
 				     my $scope = $whatsit->getProperty('scope');
 				     createDeclarationRewrite($document,$scope,$whatsit); },
+	       properties=>{alignmentIgnorable=>1},
 	       reversion=>'');
 
 DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}','',
@@ -159,6 +160,7 @@ DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}','',
 					     @$declaration); }
 				       else {
 					 Warn("No Declaration with label=$label was found"); }}},
+	       properties=>{alignmentIgnorable=>1},
 	       reversion=>'');
 
 our $XMDeclID=0;

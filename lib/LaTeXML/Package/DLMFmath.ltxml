@@ -75,6 +75,35 @@ DefMath('\card{}', '\left|#1\right|', meaning=>'cardinality'); # cardinality of 
 DefMath('\pgcd{}', '\left(#1\right)', meaning=>'gcd');
 
 #**********************************************************************
+DefConstructor('\selection{}',
+	       "<ltx:XMApp>"
+	       . "<ltx:XMTok name='selection' role='STACKED'/>"
+	       . "<ltx:XMArg>#1</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]","</ltx:XMArg><ltx:XMArg>"); });
+
+DefConstructor('\rselection{}',
+	       "<ltx:XMApp close='}'>"
+	       . "<ltx:XMTok name='selection' role='STACKED'/>"
+	       . "<ltx:XMArg>#1</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]","</ltx:XMArg><ltx:XMArg>"); });
+
+DefConstructor('\lselection{}',
+	       "<ltx:XMApp open='{'>"
+	       . "<ltx:XMTok name='selection' role='STACKED'/>"
+	       . "<ltx:XMArg>#1</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]","</ltx:XMArg><ltx:XMArg>"); });
+
+DefConstructor('\lrselection{}',
+	       "<ltx:XMApp open='{' close='}'>"
+	       . "<ltx:XMTok name='selection' role='STACKED'/>"
+	       . "<ltx:XMArg>#1</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]","</ltx:XMArg><ltx:XMArg>"); });
+
+#**********************************************************************
 # Numbers
 #   \Sci{mantisa}{exponent}
 my %SUPDIGITS = (0=>"\x{2070}",1=>UTF(0xb9),2=>UTF(0xb2),3=>UTF(0xb3),4=>"\x{2074}",
@@ -191,7 +220,7 @@ DefMath('\cDiff []','\delta_{#1}',role=>'DIFFOP',
        meaning=>'central-diff');
 #**********************************************************************
 DefMath('\pvint',  "\x{2A0D}", meaning=>'PrincipalValueIntegral', role=>'INTOP'); # FINITE PART INTEGRAL
-DefMath('\Residue', "res",    meaning=>"Residue", role=>'LIMITOP');
+DefMath('\Residue', "res",    meaning=>"residue", role=>'LIMITOP');
 
 #**********************************************************************
 # Types
@@ -223,18 +252,29 @@ DefConstructor('\multinomial{}{}',
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
 
-DefMath('\pochhammer{}{}',  '\left(#1\right)_{#2}', meaning=>'pochhammer');
+DefMath('\pochhammer{}{}',  '\left(#1\right)_{#2}', meaning=>'Pochhammer');
 DefMath('\psfactorial{}{}',  '\left[#1\right]_{#2}',
 	meaning=>'shifted-factorial');
 DefMath('\wigner{}{}{}{}{}{}',
 	'\left(#1 \@INVISIBLECOMMA #2 \@INVISIBLECOMMA #3 \@INVISIBLECOMMA #4'
 	.'| #1 \@INVISIBLECOMMA #2 \@INVISIBLECOMMA #5 \@INVISIBLECOMMA #6\right)',
-	meaning=>'wigner');
+	meaning=>'Wigner');
+
+DefMath('\Kronecker{}{}','\delta_{#1,#2}',
+	meaning=>'Kronecker');
+DefMath('\LeviCivita{}{}{}','\epsilon_{#1,#2,#3}',
+	meaning=>'Levi-Civita');
+DefMath('\deltaDistribution[]','\delta_{#1}',
+	meaning=>'deltaDistribution');
+DefMath('\Distribution{}{}','\left\langle #1,#2\right\rangle',
+	meaning=>'distribution');
+DefMath('\Schwarzian{}{}','\left\{ #1,#2\right\}',
+	meaning=>'Schwarzian');
 
 DefMath('\qFactorial{}{}{}','\left(#1;#2\right)_{#3}',
-	meaning=>'qfactorial');
+	meaning=>'q-factorial');
 DefMath('\qBinomial{}{}{}', '\genfrac[]\z@{}{#1}{#2}_{#3}',
-	meaning=>'qbinomial');
+	meaning=>'q-binomial');
 
 DefExpandable('\threej OptionalKeyword:@',
 	      sub { my($gullet,$at)=@_;
@@ -258,12 +298,16 @@ DefMath('\ninej@args {}{}{}{}{}{}{}{}{}',
 	'\begin{Bmatrix}#1&#2&#3\\\\#4&#5&#6\\\\#7&#8&#9\end{Bmatrix}',
 	meaning=>'ninej');
 
+# Paper over for AbstractJacobi
+DefMacro('\AbstractJacobi{}{}','\AbstractJacobiPQ{\mathrm{#1#2}}');
+DefMacro('\arcAbstractJacobi{}{}','\arcAbstractJacobiPQ{\mathrm{arc#1#2}}');
+
 #**********************************************************************
 # Constants
 DefMath('\EulerConstant',"\x{03B3}", role=>'ID',
-	meaning=>'euler-constant'); # GREEK SMALL LETTER GAMMA
+	meaning=>'Euler-constant'); # GREEK SMALL LETTER GAMMA
 DefMath('\BoltzmannConstant',"k", role=>'ID',
-	meaning=>'boltzmann-constant');
+	meaning=>'Boltzmann-constant');
 #**********************************************************************
 # Special Functions
 DefPrimitive('\specFunObsolete{}{}',sub {
@@ -284,7 +328,8 @@ DefPrimitive('\defSpecFun{}[][]{} OptionalKeyVals:DefSpecFun {}', sub {
   $name=$name->toString;
   my $cs = '\\'.$name;
   $nargs  = $nargs->toString;
-  my $role = ($keys && ToString($keys->getValue('role'))) || 'FUNCTION';
+  my $role = ($keys && ToString($keys->getValue('role'))) 
+    || ($nargs ?  'FUNCTION' : 'ATOM');
   DefExpandable($cs.'@role',Tokens(T_OTHER($role)));
   # Define with DefMath to create presentation & content cs's
   DefMath($cs . convertLaTeXArgs($nparam,$optparam), $formatter, 

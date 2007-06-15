@@ -29,6 +29,7 @@
 <!ENTITY % LaTeXML.VRML.qname             "%LaTeXML.pfx;VRML">
 <!ENTITY % LaTeXML.GAMS.qname             "%LaTeXML.pfx;GAMS">
 <!ENTITY % LaTeXML.figuregroup.qname      "%LaTeXML.pfx;figuregroup">
+<!ENTITY % LaTeXML.tablegroup.qname       "%LaTeXML.pfx;tablegroup">
 <!ENTITY % LaTeXML.begin_onecolumn.qname  "%LaTeXML.pfx;begin_onecolumn">
 <!ENTITY % LaTeXML.end_onecolumn.qname    "%LaTeXML.pfx;end_onecolumn">
 
@@ -52,7 +53,7 @@
 <!ENTITY % LaTeXML-extra.Inline.class
 	 "| %LaTeXML.email.qname; | %LaTeXML.VRML.qname;| %LaTeXML.GAMS.qname;">
 <!ENTITY % LaTeXML-extra.Para.class
-	 "| %LaTeXML.figuregroup.qname;
+	 "| %LaTeXML.figuregroup.qname; | %LaTeXML.tablegroup.qname;
 	  | %LaTeXML.begin_onecolumn.qname; | %LaTeXML.end_onecolumn.qname;">
 
 <!ENTITY % LaTeXML-extra.Misc.class
@@ -218,6 +219,7 @@
           name      CDATA #IMPLIED
 	  labelref  CDATA #IMPLIED>
 <!ELEMENT %LaTeXML.figuregroup.qname; (%LaTeXML.figure.qname;)*>
+<!ELEMENT %LaTeXML.tablegroup.qname;  (%LaTeXML.table.qname;)*>
 <!ELEMENT %LaTeXML.sidebar.qname;
 	  ((%LaTeXML.FrontMatter.class;)*, (%LaTeXML.Para.mix;)*)>
 <!ATTLIST %LaTeXML.sidebar.qname;

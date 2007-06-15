@@ -1039,7 +1039,9 @@ DefRegister('\marginparpush',Dimension(0));
 DefMacro('\tabular[]{}',  '\@alignment@bindings{#2}\@@tabular[#1]{#2}\@start@alignment');
 DefMacro('\endtabular',   '\@finish@alignment\@end@tabular');
 Let('\@end@tabular','\relax');
-DefConstructor('\@@tabular[]{} AlignmentBody:\@end@tabular',
+# Note that the pattern will already have been interpreted by \@alignment@bindings,
+# so make it Undigested here!
+DefConstructor('\@@tabular[] Undigested AlignmentBody:\@end@tabular',
 	       sub { my($document,$pos,$pat,$body,%props)=@_;
 		     constructAlignment($document,$body,attributes=>{position=>$pos},
 					guess_headers=>1); },
@@ -1049,7 +1051,7 @@ DefMacro('\csname tabular*\endcsname{Dimension}[]{}',
 	 '\@alignment@bindings{#3}\@@tabular@{#1}[#2]{#3}\@start@alignment');
 DefMacro('\csname endtabular*\endcsname',
 	 '\@finish@alignment\@end@tabular@');
-DefConstructor('\@@tabular@{Dimension}[]{} AlignmentBody:\@end@tabular@',
+DefConstructor('\@@tabular@{Dimension}[] Undigested AlignmentBody:\@end@tabular@',
 	       sub { my($document,$width,$pos,$pat,$body,%props)=@_;
 		     constructAlignment($document,$body,attributes=>{position=>$pos,width=>$width},
 					guess_headers=>1); },
@@ -1088,7 +1090,7 @@ DefMacro('\array[]{}',
 DefMacro('\endarray',
 	 '\@finish@alignment\@end@array');
 Let('\@end@array','\relax');
-DefConstructor('\@@array[]{} AlignmentBody:\@end@array',
+DefConstructor('\@@array[] Undigested AlignmentBody:\@end@array',
 	       sub { my($document,$pos,$pat,$body,%props)=@_;
 		     constructAlignment($document,$body,attributes=>{position=>$pos,
 								     role=>'ARRAY'}); },
@@ -1202,6 +1204,10 @@ DefConstructor('\citep[][] Semiverbatim',      sub { makecite(1,undef,@_); });
 DefConstructor('\citeauthor[][] Semiverbatim', sub { makecite(0,'author',@_); });
 DefConstructor('\citeyear[][] Semiverbatim',   sub { makecite(0,'year',@_); });
 DefConstructor('\citeyearpar[][] Semiverbatim',sub { makecite(1,'year',@_); });
+
+# Ignore for now...
+DefPrimitive('\defcitealias Semiverbatim {}',undef);
+DefMacro('\citetalias Semiverbatim','\citet{#1}');
 
 #======================================================================
 # C.11.4 Splitting the input
@@ -1558,7 +1564,7 @@ DefEnvironment('{lrbox}{Token}','',
     AssignValue('box'.$whatsit->getArg(1)->toString, $whatsit->getProperty('body')); });
 DefPrimitive('\usebox{Token}', sub { LookupValue('box'.$_[1]->toString);});
 
-DefConstructor('\parbox[][Dimension]{}',
+DefConstructor('\parbox[]{Dimension}{}',
 	       "<ltx:minipage ?#2(width='#2') ?#1(pos='#1') justified='yes'>#3</ltx:minipage>",
 	       mode=>'text');
 DefEnvironment('{minipage}[]{Dimension}',
@@ -1567,7 +1573,8 @@ DefEnvironment('{minipage}[]{Dimension}',
 DefConstructor('\rule[Dimension]{Dimension}{Dimension}', 
 	       "<ltx:rule ?#1(raise='#1') width='#2' height='#3'/>");
 DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
-	       "<ltx:text raise='#1'>#4</ltx:text>");
+	       "<ltx:text raise='#1'>#4</ltx:text>",
+	       mode=>'text');
 
 #**********************************************************************
 # C.14 Pictures and Color
@@ -2047,6 +2054,8 @@ DefMacro('\@ifnextchar Token {}{}', sub {
   # NOTE: Not actually substituting, but collapsing ## pairs!!!!
   ( LaTeXML::Expandable::substituteTokens($token->equals($next) ? $if : $else),$next); });
 
+Let('\@ifnext', '\@ifnextchar'); # ????
+
 DefMacro('\@ifundefined{}{}{}',sub {
   my($gullet,$name,$if,$else)=@_;
   my $cs = T_CS('\\'.ToString($name));
@@ -2064,6 +2073,12 @@ DefMacro('\InputIfFileExists{}{}{}', sub{
     $if->unlist; }
   else { $else->unlist; }});
 
+DefRegister('\@tempdima' => Dimension(0));
+DefRegister('\@tempdimb' => Dimension(0));
+DefRegister('\@tempdimc' => Dimension(0));
+DefRegister('\@tempskipa' => Glue(0));
+DefRegister('\@tempskipb' => Glue(0));
+DefRegister('\@tempskipc' => Glue(0));
 #======================================================================
 # Hair
 DefPrimitive('\makeatletter',sub { AssignCatcode('@'=>CC_LETTER,'local'); });

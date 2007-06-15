@@ -15,4 +15,9 @@ use LaTeXML::Package;
 DefColumnType('>{}',sub { $LaTeXML::BUILD_TEMPLATE->addBefore($_[1]->unlist); return; });
 DefColumnType('<{}',sub { $LaTeXML::BUILD_TEMPLATE->addAfter($_[1]->unlist); return; });
 
+# NOTE:  Come back & check this; is the arglist right??
+DefPrimitive('\newcolumntype{}[][]{}',sub {
+  my($stomach,$char,$nargs,$opt,$replacement)=@_;
+  DefMacro('\NC@rewrite@'.$char->toString.convertLaTeXArgs($nargs,$opt), $replacement); });
+
 1;

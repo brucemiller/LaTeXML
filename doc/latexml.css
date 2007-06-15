@@ -1,3 +1,5 @@
+.navbar:before { display:block; content:url(../latexml.png); }
+
 .red { color:red; }
 .center { text-align:center; }
 
@@ -18,9 +20,13 @@ h1 { text-align:center; font-family:sans-serif;}
 h2 { border-top: 5px double #087d9d; border-left: 3px double #087d9d; background:#e5f7fb;
      padding-left:0.2em; margin-left:-0.5em;
      font-family:sans-serif; }
+h2.subtitle { border:none; background:none;
+     padding-left:0.2em; margin-left:-0.5em;
+     font-family:sans-serif; }
 h3 { border-top: 1px solid #087d9d; border-left: 1px solid #087d9d;  background:#e7faff;
      padding-left:0.2em; margin-left:-0.3em;
      font-family:sans-serif; }
+
 
 span.sansserif  { font-family: sans-serif; }
 span.typewriter { font-family: monospace; }
@@ -28,11 +34,15 @@ span.bold       { font-weight: bold; }
 span.italic     { font-style: italic; }
 span.upright    { font-style: normal; }
 span.slanted    { font-style: oblique; }
+.package { font-family:monospace; }
+
 /* span.title { font-weight:bold; display:run-in; }*/
 .navbar { position:fixed; left:0px; top:0px; width:170px;
        border-right: 3px double #087d9d; border-bottom: 5px double #087d9d; background:#e5f7fb;
-       margin:0em; padding:1em; font: bold 75% sans-serif; }
+       margin:0em; padding:1em; font: bold 70% sans-serif; }
 .navbar ul { margin-left:-2em; }
+.navbar .here { background:#087d9d; color:#e5f7fb; }
+
 .main { position:absolute; left:190px; top:0px; right:2px; 
         margin:0px; padding:1em 3em 1em 2em;
         width:70%; }
@@ -42,10 +52,14 @@ span.slanted    { font-style: oblique; }
 .header .next { float:right; }
 .header  { font-size:80%; }
 .content { clear:both;
-	   padding-top:5px; border-top:1px solid #087d9d;}
+ border-top:1px solid #087d9d;}
 .footer  { text-align:center;
 	   font-size:80%;
-	   margin-top:5px; border-top:1px solid #087d9d;}
+	   border-top:1px solid #087d9d;}
+
+.navbar > .toc > li { margin-left:-1em; }
+.toc li { list-style-type:none;}
+
 
 dl.description dt { margin-right:0.5em; float:left; }
 dl.description dd { margin-left:5em; }
@@ -54,7 +68,6 @@ dl.description dl.description dd { margin-left:3em; }
 .indexlist { margin-left:1em; padding-left:1em;}
 .nav li,
 .header li { padding:0.2em;}
-#.header:before { content:url(latexml.png); }
 
 table { border-collapse:collapse; }
 th, *[class~="thead"] { background-color:#e5f7fb; }

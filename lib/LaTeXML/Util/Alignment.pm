@@ -215,7 +215,8 @@ sub ReadAlignmentTemplate {
   my @tokens=($open);
   my $defn;
   while(my $op = $gullet->readToken){
-    if($op->equals(T_END)){
+    if($op->equals(T_SPACE)){}
+    elsif($op->equals(T_END)){
       push(@tokens,$op);
       last; }
     elsif(defined($defn=$STATE->lookupDefinition(T_CS('\NC@rewrite@'.ToString($op))))
@@ -396,34 +397,6 @@ sub alignment_regroup {
   }
 #======================================================================
 # Build a View of the alignment, with characterized cells, for analysis.
-sub XXcollect_alignment_rows {
-  my($document,$table)=@_;
-  my @rows = ();
-  foreach my $xrow ($document->findnodes($LaTeXML::TR,$table)){
-    push(@rows, [ ] );
-    my $c=0;
-    foreach my $xcell ($document->findnodes($LaTeXML::TD,$xrow)){
-      my $class = classify_alignment_cell($document,$xcell);
-      my $align = $xcell->getAttribute('align')||'center';
-      my %border = (t=>0, r=>0, b=>0, l=>0); # Decode border
-      map($border{$_}++, split(/ */,$xcell->getAttribute('border')||''));
-      $border{t}=$rows[$#rows-1][$c]{b} if $#rows > 0;	   # Copy prev bottom border to top.
-      $border{l}=$rows[$#rows][$c-1]{r} if $c > 0;	   # Copy prev right border to left.
-      if (my $colspan = $xcell->getAttribute('colspan')) { # From a multicolumn (> 1)
-	for (my $i=0; $i<$colspan; $i++) { # Add colspan cells
-	  push(@{$rows[$#rows]},{cell_type=>'d', content_class=>$class, align=>$align,
-				 t=>$border{t}, b=>$border{b}, r=>0, l=>0}); }
-	# Add left & right borders to first & last spanned cell.
-	$rows[$#rows][$c]{cell} = $xcell;
-	$rows[$#rows][$c]{l} =  $border{l};
-	$rows[$#rows][$c+$colspan-1]{r} =  $border{r};
-	$c += $colspan; }
-      else {			# Add a regular cell.
-	push(@{$rows[$#rows]},{cell=>$xcell, cell_type=>'d', 
-			       content_class=>$class, align=>$align,%border});
-	$c++; }
-    }}
-  @rows; }
 
 sub collect_alignment_rows {
   my($document,$table,$alignment)=@_;
@@ -436,6 +409,7 @@ sub collect_alignment_rows {
       push(@{$rows[$#rows]}, $col);
       $$col{cell_type} = 'd';
       $$col{content_class} = ($$col{cell} ? classify_alignment_cell($document,$$col{cell}) : '?');
+      $$col{content_length} =($$col{cell} ? length($$col{cell}->textContent) : 0);
       my %border = (t=>0, r=>0, b=>0, l=>0); # Decode border
       map($border{$_}++, split(/ */,$$col{border}||''));
       $border{t}=$rows[$#rows-1][$c]{b} if $#rows > 0;	   # Copy prev bottom border to top.
@@ -489,7 +463,8 @@ our $MIN_ALIGNMENT_DATA_LINES=1;	#  (or 2?)
 our $MAX_ALIGNMENT_HEADER_LINES=4;
 
 # We expect to find header lines at the beginning, noticably different from the eventual data lines.
-# But the header lines might be quite similar to each other.  So, the strategy is to look
+# Both header lines and data lines can consist of several neighboring lines.
+# Check that header lines are `similar' to each other.  So, the strategy is to look
 # for a `hump' in the line differences and consider blocks containing these lines to be potential headers.
 sub alignment_characterize_lines {
   my($axis,@lines)=@_;
@@ -522,10 +497,12 @@ sub alignment_characterize_lines {
  print STDERR "\nFound from $minh--$maxh potential headers\n" if $LaTeXML::Alignment::DEBUG;
 
   my $nn = scalar(@{$lines[0]})-1;
-  # Now, change all cells marked as header from td => th.
+  # The sets of lines 1--$minh, .. 1--$maxh are potential headers.
   for(my $nh = $maxh; $nh >= $minh; $nh--){
 #  for(my $nh = $minh; $nh <= $maxh; $nh++){
+    # Check whether the set 1..$nh is plausable.
     if(my @heads = alignment_test_headers($nh)){
+      # Now, change all cells marked as header from td => th.
       foreach my $h (@heads){
 	my $i = 0;
 	foreach my $cell (@{$lines[$h]}){
@@ -544,8 +521,11 @@ sub alignment_characterize_lines {
 sub alignment_test_headers {
   my($nhead)=@_;
   print STDERR "Testing $nhead headers\n" if $LaTeXML::Alignment::DEBUG;
+  my ($headlength,$datalength)=(0,0);
   my @heads =(0..$nhead-1);		# The indices of heading lines.
-  my $i = $nhead;		# Start from the end of the proposed headings.
+  $headlength = alignment_max_content_length($headlength,0,$nhead-1);
+  my $nextline = $nhead;		# Start from the end of the proposed headings.
+
   # Watch out for the assumed header being really data that is a repeated pattern.
   my $nrep = scalar(@::TABLINES)/$nhead;
   if(($nhead > 1) && ($nrep == int($nrep))){
@@ -557,31 +537,43 @@ sub alignment_test_headers {
     return if $matched; }
 
   # And find a following grouping of data lines.
-  my $ndata = alignment_skip_data($i);
+  my $ndata = alignment_skip_data($nextline);
   return unless $ndata >= $nhead; # ???? Well, maybe if _really_ convincing???
   return unless ($ndata >= $nhead) || ($ndata >= 2);
-  $i += $ndata;
+  # Check that the content of the headers isn't dramatically larger than the content in the data
+  $datalength = alignment_max_content_length($datalength,$nextline,$nextline+$ndata-1);
+  $nextline += $ndata;
+
   my $nd;
   # If there are more lines, they should match either the previous data block, or the head/data pattern.
-  while($i < scalar(@::TABLINES)){
+  while($nextline < scalar(@::TABLINES)){
     # First try to match a repeat of the 1st data block; 
     # This would be the case when groups of data have borders around them.
-    # Could conceivably wnat to match a variable number of datalines, but they should be similar!!!??!?!?
-
-    if(($ndata > 1) && ($nd = alignment_match_data($nhead,$i,$ndata))){
-      $i += $nd; }
+    # Could want to match a variable number of datalines, but they should be similar!!!??!?!?
+    if(($ndata > 1) && ($nd = alignment_match_data($nhead,$nextline,$ndata))){
+      $datalength = alignment_max_content_length($datalength,$nextline,$nextline+$nd-1);
+      $nextline += $nd; }
       # Else, try to match the first header block; less common.
-    elsif(alignment_match_head(0,$i,$nhead)){
-      push(@heads,$i..$i+$nhead-1);
-      $i += $nhead;
+    elsif(alignment_match_head(0,$nextline,$nhead)){
+      push(@heads,$nextline..$nextline+$nhead-1);
+      $headlength = alignment_max_content_length($headlength,$nextline,$nextline+$nhead-1);
+      $nextline += $nhead;
       # Then attempt to match a new data block.
-#      my $d = alignment_skip_data($i);
+#      my $d = alignment_skip_data($nextline);
 #      return unless ($d >= $nhead) || ($d >= 2);
-#      $i += $d; }
+#      $nextline += $d; }
       # No, better be the same data block?
-      return unless ($nd = alignment_match_data($nhead,$i,$ndata));
-      $i += $nd; }
+      return unless ($nd = alignment_match_data($nhead,$nextline,$ndata));
+      $datalength = alignment_max_content_length($datalength,$nextline,$nextline+$nd-1);
+      $nextline += $nd; }
     else { return; }}
+  # Header content seems too large relative to data?
+  print STDERR "header content = $headlength; data content = $datalength\n"
+      if $LaTeXML::Alignment::DEBUG;
+  if(($headlength > 10) && ($headlength > 0.9*$datalength)){
+    print STDERR "header content longer than data content\n" if $LaTeXML::Alignment::DEBUG;
+    return; }
+
    print STDERR "Succeeded with $nhead headers\n" if $LaTeXML::Alignment::DEBUG;
   @heads; }
 
@@ -624,6 +616,14 @@ sub alignment_skip_data {
     $n++; }
   print STDERR "\nFound $n data lines at $i\n" if $LaTeXML::Alignment::DEBUG;
   ($n >= $MIN_ALIGNMENT_DATA_LINES ? $n : 0); }
+
+sub alignment_max_content_length {
+  my($length,$from,$to)=@_;
+  foreach my $j ( ($from..$to) ){
+    foreach my $cell (@{$::TABLINES[$j]}){
+      $length = $$cell{content_length}
+	if $$cell{content_length} && ($$cell{content_length} > $length); }}
+  $length; }
 
 #======================================================================
 # The comparator.
@@ -687,8 +687,11 @@ sub summarize_alignment {
     my $maxb = 0;
     print STDERR ($$row[0]{l} ? ('|' x $$row[0]{l}) : ' ');
     foreach my $cell (@$row){
-      print STDERR sprintf(" %4s ",$$cell{cell_type}.$acode{$$cell{align}}.$$cell{content_class}).
-	($$cell{r} ? ('|' x $$cell{r}) : ' ');
+      print STDERR sprintf(" %4s ",
+			   ($$cell{cell_type}||'?')
+			   .($$cell{align} ? $acode{$$cell{align}} : ' ')
+			   .($$cell{content_class}||'?')
+			   .($$cell{r} ? ('|' x $$cell{r}) : ' '));
       $maxb = $$cell{b} if $$cell{b} > $maxb; }
 #    print STDERR sprintf("%.3f",alignment_compare(0,1,$$rows[$r],$$rows[$r+1])) if ($r < $nrows-1);
     print STDERR "\n";

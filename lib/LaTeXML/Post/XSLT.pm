@@ -42,14 +42,8 @@ sub new {
 sub process {
   my($self,$doc)=@_;
   my $css = $$self{css};
-
+  $css = pathname_relative($css,$doc->getDestinationDirectory) if $css;
   # Copy the CSS file to the destination. if found & needed.
-  if($css){
-    if(my $destdir = $doc->getDestinationDirectory){
-      my $csssource = pathname_find($css,paths=>[$doc->getSearchPaths],
-				    installation_subdir=>'dtd');
-      my $cssdest = pathname_concat($destdir,$css);
-      pathname_copy($csssource,$cssdest)  if -f $csssource;  }}
   $doc->new($$self{stylesheet}->transform($doc->getDocument,
 					  ($css ? (CSS=>"'$css'") :()))); }
 

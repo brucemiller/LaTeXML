@@ -61,7 +61,7 @@ sub new {
     my $flags = O_RDWR|O_CREAT;
     tie %{$$self{externaldb}}, 'DB_File', $dbfile,$flags
       or die "Couldn't attach DB $dbfile for object table"; 
-    $$self{opened_timestamp}=time(); }
+  }
   push(@DBS,$self);
   $self; }
 
@@ -74,7 +74,7 @@ sub status {
 #======================================================================
 # This saves the db
 
-sub finish {
+sub XXXfinish {
   my($self)=@_;
   if($$self{externaldb} && $$self{dbfile}){
     my $n=0;
@@ -86,9 +86,8 @@ sub finish {
       $n++;
       my %item = %$row;
       delete $item{key}; 		# Don't store these
-      delete $item{sort_order};	# Just in case
-      delete $item{sort_delta};
       #    $$row{timestamp}=$opened;
+##print STDERR "Saving: ".$row->show."\n";
       $$self{externaldb}{Encode::encode('utf8',$key)} = nfreeze({%item}); }
 
     print STDERR "ObjectDB Stored $n objects (".scalar(keys %{$$self{externaldb}})." total)\n"
@@ -98,6 +97,57 @@ sub finish {
  $$self{externaldb}=undef;
  $$self{objects}=undef;
 }
+
+
+sub finish {
+  my($self)=@_;
+  if($$self{externaldb} && $$self{dbfile}){
+    my $n=0;
+    my %types=();
+    foreach my $key (keys %{$$self{objects}}){
+      my $row = $$self{objects}{$key};
+      # Skip saving, unless there's some difference between stored value
+      if(my $stored = $$self{externaldb}{Encode::encode('utf8',$key)}){ # Get the external object
+	next if compare_hash($row,thaw($stored)); }
+      $n++;
+      my %item = %$row;
+##print STDERR "Saving: ".$row->show."\n";
+      $$self{externaldb}{Encode::encode('utf8',$key)} = nfreeze({%item}); }
+
+    print STDERR "ObjectDB Stored $n objects (".scalar(keys %{$$self{externaldb}})." total)\n"
+      if $$self{verbosity} > 0; 
+    untie %{$$self{externaldb}};  }
+
+ $$self{externaldb}=undef;
+ $$self{objects}=undef;
+}
+
+sub compare {
+  my($a,$b)=@_;
+  my $ra = ref $a;
+  if(! $ra){
+    if(ref $b){ 0; }
+    else { $a eq $b; }}
+  elsif($ra ne ref $b){ 0; }
+  elsif($ra eq 'HASH'){ compare_hash($a,$b); }
+  elsif($ra eq 'ARRAY'){ compare_array($a,$b); }
+  else { $a eq $b;}}
+
+sub compare_hash {
+  my($a,$b)=@_;
+  my %attr = ();
+  map($attr{$_}=1, keys %$a);
+  map($attr{$_}=1, keys %$b);
+  (grep( !( (defined $$a{$_}) && (defined $$b{$_})
+	    && compare($$a{$_}, $$b{$_}) ), keys %attr) ? 0 : 1); }
+
+sub compare_array {
+  my($a,$b)=@_;
+  my @a = @$a;
+  my @b = @$b;
+  while(@a && @b){
+    return 0 unless compare(shift(@a),shift(@b)); }
+  (@a || @b ? 0 : 1); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub getKeys {
@@ -140,8 +190,7 @@ sub register {
   if(!$entry){
     $entry = {key=>$key};
     bless $entry, 'LaTeXML::Util::ObjectDB::Entry';
-    $$self{objects}{$key}=$entry;
-    $$entry{timestamp}=time(); }
+    $$self{objects}{$key}=$entry; }
   $entry->setValues(%props);
 
   $entry; }
@@ -152,35 +201,6 @@ sub register {
 sub storablePathname {
   my($self,$path)=@_;
   ($$self{dbfile} ? pathname_relative($path,$$self{dbfile}) : $path); }
-
-#********************************************************************************
-# Sorting Objects
-#********************************************************************************
-sub sort_targets {
-  my($self,@ids)=@_;
-  my @objects = map($self->lookup($_),@ids);
-  map($self->compute_sort_order($_), @objects);
-  map($_->key, sort { $$a{sort_order} <=> $$b{sort_order}} @objects); }
-
-# Scheme for deferred computation of the order of nodes.
-# based on (recursive) position within parent's children.
-sub compute_sort_order {
-  my($self,$chunk)=@_;
-  if($$chunk{sort_order}){}
-  elsif(my $parent=$chunk->parent){
-    # Compute fractional position of this child within parent's children
-    my $parent_chunk = $self->lookup($parent);
-    $self->compute_sort_order($parent_chunk);
-    my @sibs = $parent_chunk->children;
-    $$chunk{sort_delta} = $$parent_chunk{sort_delta}/(scalar(@sibs)+1);
-    my $pos = 1;
-    my $key = $chunk->key;
-    while($key ne shift(@sibs)){ $pos++; }
-    $$chunk{sort_order} = $$parent_chunk{sort_order} + $$chunk{sort_delta}*$pos; }
-  else {
-    $$chunk{sort_order}=0;
-    $$chunk{sort_delta}=1; }
-  $$chunk{sort_order}; }
 
 #********************************************************************************
 # DB Entries
@@ -219,15 +239,13 @@ sub setValues {
       $value = "XML::".$value->cloneNode(1)->toString; }
     if(! defined $value){
       if(defined $$self{$attr}){
-	delete $$self{$attr};
-	$$self{timestamp}=time(); }}
+	delete $$self{$attr}; }}
     elsif((! defined $$self{$attr}) || ($$self{$attr} ne $value)){
-      $$self{$attr}=$value;
-      $$self{timestamp} = time(); }}}
+      $$self{$attr}=$value; }}}
 
 # Note an association with this entry
 # Roughly equivalent to $$entry{key1}{key2}{...}=1,
-# but keeps track of modification timestamps.
+# but keeps track of modification timestamps. --- not any more!
 sub noteAssociation {
   my($self,@keys)=@_;
   my $hash = $self;
@@ -236,28 +254,25 @@ sub noteAssociation {
     if(defined $$hash{$key}){
       $hash = $$hash{$key}; }
     else {
-      $$self{timestamp} = time();
       $hash = $$hash{$key} = (@keys ? {} : 1); }}}
 
 # Debugging aid
 use Text::Wrap;
 sub show {
   my($self)=@_;
-  print "ObjectDB Entry for: $$self{key}\n";
-  foreach my $attr (qw(timestamp), grep(!/^(key|timestamp)$/, keys %{$self})){
-    my $value = $self->getValue($attr);
-    if((ref $value) =~ /^XML::/){
-      $value = $value->toString; }
-    elsif(ref $value eq 'HASH'){
-      $value = showhash($value); }
-    elsif($attr eq 'timestamp'){
-      $value = localtime($value); }
-    print wrap(sprintf(' %16s : ',$attr),(' 'x20), $value)."\n"; }
+  my $string = "ObjectDB Entry for: $$self{key}\n";
+  foreach my $attr (grep($_ ne 'key', keys %{$self})){
+    $string .= wrap(sprintf(' %16s : ',$attr),(' 'x20), showvalue($self->getValue($attr)))."\n"; }
 }
 
-sub showhash {
-  my($hash)=@_;
-  "{".join(', ',map((ref $$hash{$_} ? "$_=>".showhash($$hash{$_}) : $_),sort keys %$hash))."}"; }
+sub showvalue {
+  my($value)=@_;
+  if((ref $value) =~ /^XML::/){ $value->toString; }
+  elsif(ref $value eq 'HASH'){
+    "{".join(', ',map("$_=>".showvalue($$value{$_}), keys %$value))."}"; }
+  elsif(ref $value eq 'ARRAY'){
+  "[".join(', ',map(showvalue($_),@$value))."]"; }
+  else { "$value"; }}
 
 #======================================================================
 1;

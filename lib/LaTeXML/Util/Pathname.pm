@@ -99,14 +99,14 @@ sub pathname_type {
 #======================================================================
 sub pathname_concat {
   my($dir,$file)=@_;
-  File::Spec->catpath('',$dir,$file); }
+  File::Spec->catpath('',$dir || '',$file); }
 
 #======================================================================
 # Is $pathname an absolute pathname ?
 # pathname_is_absolute($pathname) => (0|1)
 sub pathname_is_absolute {
   my($pathname)=@_;
-  File::Spec->file_name_is_absolute($pathname); }
+  $pathname && File::Spec->file_name_is_absolute($pathname); }
 
 # pathname_relative($pathname,$base) => $relativepathname
 # Return $pathname as a pathname relative to $base.
@@ -124,6 +124,7 @@ sub pathname_cwd { cwd(); }
 
 sub pathname_mkdir {
   my($directory)=@_;
+  return undef unless $directory;
   my($volume,$dirs,$last)=File::Spec->splitpath($directory);
   my(@dirs)=(File::Spec->splitdir($dirs),$last);
   for(my $i=0; $i <= $#dirs; $i++){
@@ -172,12 +173,14 @@ our @INSTALLDIRS = grep(-d $_, map("$_/LaTeXML", @INC));
 
 sub pathname_find {
   my($pathname,%options)=@_;
+  return undef unless $pathname;
   my @paths = candidate_pathnames($pathname,%options);
   foreach my $path (@paths){
     return $path if -f $path; }}
 
 sub pathname_findall {
   my($pathname,%options)=@_;
+  return undef unless $pathname;
   my @paths = candidate_pathnames($pathname,%options);
   grep(-f $_, @paths); }
 

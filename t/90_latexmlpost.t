@@ -37,7 +37,8 @@ sub dotest{
 
   my @lines = split('\n',$output);
 
-  open(IN,"<:utf8","$name-post.xml") || return ok(0,1,"Couldn't read $name-post.xml");
+#  open(IN,"<:utf8","$name-post.xml") || return ok(0,1,"Couldn't read $name-post.xml");
+  open(IN,"<","$name-post.xml") || return ok(0,1,"Couldn't read $name-post.xml");
   my($n,$new,$old)=(0,undef,undef);
   do {
     $old=<IN>; chomp($old) if $old;

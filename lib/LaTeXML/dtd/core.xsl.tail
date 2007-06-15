@@ -54,11 +54,22 @@
       Header & Footer
       ====================================================================== -->
 <xsl:template name="navbar">
-  <xsl:if test="//ltx:title">
+  <xsl:if test="//ltx:title | //ltx:navigation/ltx:toclist">
     <div class='navbar'>
-      <xsl:apply-templates mode="TOC"/>
+      <xsl:choose>
+	<xsl:when test="//ltx:navigation/ltx:toclist">
+	  <xsl:apply-templates select="//ltx:navigation/ltx:toclist"/>
+	</xsl:when>
+	<xsl:when test="//ltx:title">
+	  <xsl:apply-templates mode="TOC"/>
+	</xsl:when>
+      </xsl:choose>
     </div>
   </xsl:if>
+</xsl:template>
+
+<xsl:template match="ltx:TOCHERE">
+  <xsl:apply-templates select="/" mode="TOC"/>
 </xsl:template>
 
 <xsl:template name="header">
@@ -274,7 +285,14 @@
 
 <xsl:template name="inTOC">
   <xsl:param name="TOC_DEPTH">0</xsl:param>
-  <xsl:apply-templates select="ltx:title" mode="toctitle"/>
+  <xsl:choose>
+    <xsl:when test="ltx:toctitle">
+      <xsl:apply-templates select="ltx:toctitle" mode="toctitle"/>
+    </xsl:when>
+    <xsl:otherwise>
+      <xsl:apply-templates select="ltx:title" mode="toctitle"/>
+    </xsl:otherwise>
+  </xsl:choose>
   <xsl:if test="ltx:part|ltx:chapter|ltx:section|ltx:appendix|ltx:bibliography|ltx:index
                 |ltx:subsection|ltx:subsubsection|ltx:paragraph|ltx:subparagraph">
     <ul class="toc"><xsl:apply-templates mode="TOC">
@@ -284,7 +302,7 @@
   </xsl:if>
 </xsl:template>
 
-<xsl:template match="ltx:title" mode="toctitle">
+<xsl:template match="ltx:title | ltx:toctitle" mode="toctitle">
   <xsl:element name="a">
     <xsl:attribute name="href">
       <xsl:choose>
@@ -369,7 +387,7 @@
 
 <xsl:template match="ltx:ref">
   <xsl:choose>
-    <xsl:when test="@href=''">
+    <xsl:when test="not(@href) or @href=''">
       <span class="here"><xsl:apply-templates/></span>
     </xsl:when>
     <xsl:otherwise>

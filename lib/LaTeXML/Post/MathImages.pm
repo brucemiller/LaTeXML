@@ -32,7 +32,7 @@ sub extractTeX {
   my $tex = $node->getAttribute('tex') || '';
   $tex =~ s/\%[^\n]*\n//gs;	# Strip comments
   $tex =~ s/\n//g;		# and stray CR's
-  "\\begin$mode $tex\\end$mode"; }
+  ($tex =~ /^\s*$/ ? undef : "\\begin$mode $tex\\end$mode"); }
 
 # Record the math image's (relative) filename, width & height for this node.
 sub setTeXImage {

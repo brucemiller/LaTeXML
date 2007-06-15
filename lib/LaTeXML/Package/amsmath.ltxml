@@ -110,7 +110,7 @@ DefConstructor('\@@gather@newline OptionalMatch:* [Dimension]',
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>",
 	       properties=> sub { RefStepCounter('equation') },
-	       alias=>'\\');
+	       alias=>'\\\\');
 DefConstructor('\@@gather@newline@nonum OptionalMatch:* [Dimension]',
 	       "   </ltx:XMath>"
 	       ." </ltx:Math>"
@@ -118,7 +118,7 @@ DefConstructor('\@@gather@newline@nonum OptionalMatch:* [Dimension]',
 	       ."<ltx:equation>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>",
-	       alias=>'\\');
+	       alias=>'\\\\');
 
 # gather collects several equations, separated by \\
 # NOTE: This gets the structure right, but the addition of tex property isn't cooperating.
@@ -163,14 +163,14 @@ DefConstructor('\@@align@newline OptionalMatch:* [Dimension]',
 	       .  "<ltx:XMath>",
 	       properties=> sub { RefStepCounter('equation') },
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); },
-	       alias=>'\\');
+	       alias=>'\\\\');
 DefConstructor('\@@align@newline@nonum OptionalMatch:* [Dimension]',
 	       "</ltx:XMath></ltx:Math></ltx:equation>"
 	       ."<ltx:equation>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>",
 	       beforeDigest=>sub{ Let('&','\@@align@odd'); },
-	       alias=>'\\');
+	       alias=>'\\\\');
 DefConstructor('\@@align@odd',"<ltx:XMHint name='align'/>",
 	       afterDigest=>sub{ Let('&','\@@align@even'); },
 	       alias=>'&');
@@ -285,16 +285,32 @@ DefEnvironment('{gathered}[]',
 	       "<ltx:XMHint name='gathered-begin'/>"
 	       . "#body"
 	       ."<ltx:XMHint name='gathered-end'/>");
+
+DefConstructor('\@@aligned@newline OptionalMatch:* [Dimension]',
+	       "</ltx:XMath></ltx:Math>"
+	       ."<ltx:Math mode='display'><ltx:XMath>",
+	       properties=> sub { RefStepCounter('equation') },
+	       beforeDigest=>sub{ Let('&','\@@aligned@odd'); },
+	       alias=>'\\\\');
+DefConstructor('\@@aligned@odd',"<ltx:XMHint name='align'/>",
+	       afterDigest=>sub{ Let('&','\@@aligned@even'); },
+	       alias=>'&');
+DefConstructor('\@@aligned@even',
+	       "</ltx:XMath></ltx:Math>"
+	       . "<ltx:Math mode='display'><ltx:XMath>",
+	       afterDigest=>sub{ Let('&','\@@aligned@odd'); },
+	       alias=>'&');
+
 DefEnvironment('{aligned}[]',
 	       "<ltx:XMHint name='aligned-begin'/>"
 	       . "#body"
 	       ."<ltx:XMHint name='aligned-end'/>",
-	       beforeDigest=>sub{ DefConstructor("&","<ltx:XMHint name='align'/>"); });
+	       beforeDigest=>sub{ Let('&','\@@aligned@odd'); Let("\\\\",'\@@aligned@newline'); });
 DefEnvironment('{alignedat}{}[]',
 	       "<ltx:XMHint name='aligned-begin'/>"
 	       . "#body"
 	       ."<ltx:XMHint name='aligned-end'/>",
-	       beforeDigest=>sub{ DefConstructor("&","<ltx:XMHint name='align'/>"); });
+	       beforeDigest=>sub{ Let('&','\@@aligned@odd'); Let("\\\\",'\@@aligned@newline'); });
 
 DefMacro('\cases',   '\@@cases\@start@alignment');
 DefMacro('\endcases', '\@finish@alignment\@end@cases');
@@ -315,9 +331,8 @@ DefMacro('\displaybreak[]','');	# Ignorable
 
 #======================================================================
 # Section 3.10 Interrupting a display
-#   \intertext
 
-# TODO
+DefConstructor('\intertext{}', "#1", mode=>'text');
 
 #======================================================================
 # Section 3.11 Equation numbering

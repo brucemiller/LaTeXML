@@ -80,7 +80,12 @@
           meaning CDATA #IMPLIED
           style   CDATA #IMPLIED>
 
-<!ELEMENT %LaTeXML.XMText.qname; %LaTeXML.Inline.model;>
+<!-- I think the content of XMText should be somewhat restricted.
+     In particular, most Meta class stuff should float to the Math's container.
+     I suspect most Misc might be OK.
+    <!ELEMENT %LaTeXML.XMText.qname; %LaTeXML.Inline.model;>
+-->
+<!ELEMENT %LaTeXML.XMText.qname; (#PCDATA | %LaTeXML.Inline.class; %LaTeXML.Misc.class;)*>
 <!ATTLIST %LaTeXML.XMText.qname;
 	  %LaTeXML.Common.attrib;
 	  %LaTeXML.XMath.attrib;

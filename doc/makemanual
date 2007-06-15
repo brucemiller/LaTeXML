@@ -1,0 +1,150 @@
+#!/usr/bin/perl -w
+use strict;
+use FindBin;
+use lib "$FindBin::RealBin/../blib/lib";
+use Carp;
+use Pod::LaTeX;
+use Pod::Html;
+use Pod::Find;
+use LaTeXML;
+use LaTeXML::Util::Pathname;
+use LaTeXML::Post;
+use LaTeXML::Util::ObjectDB;
+use LaTeXML::Post::Split;
+use LaTeXML::Post::Scan;
+use LaTeXML::Post::CrossRef;
+use LaTeXML::Post::MakeIndex;
+use LaTeXML::Post::Graphics;
+use LaTeXML::Post::MathML;
+use LaTeXML::Post::PurgeXMath;
+use LaTeXML::Post::XSLT;
+use LaTeXML::Post::Writer;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+my $SRCDIR = $FindBin::RealBin;
+my $LOC = $SRCDIR."/..";
+my $DEST= "/local/www/site/htdocs/DigitalMathLib/LaTeXML";
+my $PDDEST = "$DEST/perldoc";
+
+BEGIN { $SIG{__DIE__} = \&confess; }
+
+#======================================================================
+print "Converting PODs to LaTeX\n";
+# Prepare LaTeX from various POD's
+my @exes = (qw(latexml latexmlpost));
+my @modules = (qw(LaTeXML 
+		  LaTeXML::Box LaTeXML::Definition LaTeXML::Document
+		  LaTeXML::Error LaTeXML::Font LaTeXML::Global LaTeXML::Gullet
+		  LaTeXML::MathParser LaTeXML::Model LaTeXML::Mouth
+		  LaTeXML::Number LaTeXML::Object LaTeXML::Package
+		  LaTeXML::Parameters LaTeXML::Post LaTeXML::Rewrite
+		  LaTeXML::State LaTeXML::Stomach LaTeXML::Token
+		  LaTeXML::Util::Pathname));
+
+foreach my $name (@exes){
+  my $podconverter = MyPodConverter->new();
+  my $src  = "$LOC/bin/$name";
+  my $dest = "pods/$name.tex";
+  pathname_mkdir(pathname_directory($dest));
+  $podconverter->parse_from_file($src,$dest); }
+
+foreach my $name (@modules){
+  my $podconverter = MyPodConverter->new();
+  my $src = $name;
+  $src =~ s|::|/|g;
+  $src = "$LOC/lib/$src.pm";
+  my $dest = $name;
+  my @heir = split('::',$name);
+  $dest =~ s|::|_|g;
+  $dest = "pods/$dest.tex";
+#  $podconverter->Head1Level(scalar(@heir)-1);
+  pathname_mkdir(pathname_directory($dest));
+  $podconverter->parse_from_file($src,$dest); }
+
+#======================================================================
+# Process the LaTeX documentation
+print "Generating LaTeXML documentation in $DEST\n";
+my %POPTIONS=(verbosity=>0);
+LaTeXML->new(documentid=>'manual',%POPTIONS)->convertAndWriteFile('manual');
+my $DB = LaTeXML::Util::ObjectDB->new();
+my $split='//ltx:chapter[@id] | //ltx:section[@id]'
+  . '| //ltx:bibliography[@id] | //ltx:appendix[@id] | //ltx:index';
+
+my $scanner =LaTeXML::Post::Scan->new(db=>$DB,%POPTIONS);
+my $format='html';
+my $csssource = 'latexml.css';
+my $css = "$DEST/manual/latexml.css";
+pathname_copy($csssource,$css);
+
+LaTeXML::Post::ProcessChain(
+   LaTeXML::Post::Document->newFromFile('manual.xml',
+					destination=>"$DEST/manual/index.$format"),
+			    LaTeXML::Post::Split->new(db=>$DB,split_xpath=>$split,
+#						      splitnaming=>'id',
+#						      splitnaming=>'idrelative',
+#						      splitnaming=>'label',
+						      splitnaming=>'labelrelative',
+						      %POPTIONS),
+			    $scanner,
+			    LaTeXML::Post::MakeIndex->new(db=>$DB,scanner=>$scanner,%POPTIONS),
+			    LaTeXML::Post::CrossRef->new(db=>$DB,
+							 urlstyle=>'server',format=>$format,
+							 %POPTIONS),
+			    LaTeXML::Post::Graphics->new(%POPTIONS),
+			    LaTeXML::Post::MathML::Presentation->new(%POPTIONS),
+			    LaTeXML::Post::PurgeXMath->new(%POPTIONS),
+			    LaTeXML::Post::XSLT->new(stylesheet=>"LaTeXML-$format.xsl",
+						     css=>$css,%POPTIONS),
+			    LaTeXML::Post::Writer->new(format=>$format,%POPTIONS));
+
+pathname_copy("$LOC/Changes","$DEST/Changes");
+#======================================================================
+package MyPodConverter;
+use base qw(Pod::LaTeX);
+
+sub new {
+  my($class,@args)=@_;
+  my $self = $class->SUPER::new(@args);
+  $self->Head1Level(1);
+#  $self->LevelNoNum(3);
+  $self->LevelNoNum(1);
+  $self->ReplaceNAMEwithSection(1);
+  $self->AddPreamble(0);
+  $self->AddPostamble(0);
+  $self->select('!AUTHOR|COPYRIGHT');
+  $self; }
+
+our %titles;
+our %ignore;
+BEGIN{
+  %titles=("SYNOPSIS"=>"Synopsis",
+	   "OPTIONS AND ARGUMENTS"=>"Options \\& Arguments",
+	   "DESCRIPTION"=>"Description",
+	   "SEE ALSO"=>"See also",
+	   "METHODS"=>"Methods",
+	  ); 
+}
+
+# Redefined to beautify POD headings
+sub head {
+  my($self,$level,$title,$parobj)=@_;
+  my $newtitle = $titles{$title} || $title;
+  $self->SUPER::head($level,$newtitle,$parobj); }
+
+# Redefined to translate links to our PODs
+sub interior_sequence {
+  my ($self,$seq_command, $seq_argument, $pod_seq) = @_;
+  if($seq_command eq 'L'){
+    "\\podlink{$seq_argument}"; }
+  else {
+    $self->SUPER::interior_sequence($seq_command,$seq_argument,$pod_seq); }}
+
+# Redefined to avoid unnecessary math.
+sub _replace_special_chars_late {
+  my($self,$paragraph)=@_;
+  $paragraph =~ s/</\\textless /g;
+  $paragraph =~ s/>/\\textgreater /g;
+  $paragraph =~ s/\|/\\textbar /g;
+  $paragraph;}
+
+#======================================================================

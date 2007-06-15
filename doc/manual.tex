@@ -100,7 +100,7 @@ using \ltxcmd{latexmlpost},
 in which one or more \TeX\ sources can be converted into
 one or more web documents or a complete site.
 
-\section{Basic \XML\ Conversion}\label{usage.conversion}\index{latexml!usage}
+\section[Conversion]{Basic \XML\ Conversion}\label{usage.conversion}\index{latexml!usage}
 The command
 \begin{quote}
  \cmd{latexml \textit{options} --output=\textit{doc}.xml \textit{doc}}
@@ -171,7 +171,7 @@ of source documents.
 See the documentation for the command \ltxcmd{latexml} for
 less common options.
 
-\section{Basic Postprocessing}\label{usage.single}\index{latexmlpost!usage}
+\section[Postprocessing]{Basic Postprocessing}\label{usage.single}\index{latexmlpost!usage}
 In the simplest situation, you have a single \TeX\ source document
 from which you want to generate a single output document.
 The command
@@ -209,7 +209,7 @@ The scanning step collects information about all labels, ids,
 indexing commands, cross-references and so on, to be used
 in the following postprocessing stages.
 
-\paragraph{Index \& Bibliography}
+\paragraph{Indexing}
 An index is built from \verb|\index| markup, provided 
 \code{makeidx}'s \verb|\printindex| command has been used,
 but can be disabled by
@@ -224,6 +224,7 @@ Thus \verb|\index{term a!term b}| also shows up as \verb|\index{term b!term a}|.
 This leads to a more complete, but possibly rather silly, index,
 depending on how the terms have been written.
 
+\paragraph{Bibliography}
 Bibilographic data from BibTeX can be provided with the option
 \begin{quote}
   \cmd{--bibliography=\textit{xmlbibfile}}
@@ -272,7 +273,7 @@ However, the option
 can be used to generate parallel \MathML\ markup, provided the first
 conversion is either \code{--pmml} or \code{--cmml}.
 
-\paragraph{Graphics processing}
+\paragraph[Graphics]{Graphics processing}
 Conversion of graphics (eg.~included using \verb|\includegraphics| from
 the \code{graphics} or \code{graphicx} packages) can be enabled or disabled
 using
@@ -299,7 +300,7 @@ a different \CSS\ stylesheet, the options
  can be used.  To develop such stylesheets, a knowledge
 of the \LaTeXML\ document type is necessary; See Appendix \ref{dtd}.
 
-\section{Splitting the Output}\label{usage.multiple}\index{latexmlpost!usage!split pages}
+\section[Splitting]{Splitting the Output}\label{usage.multiple}\index{latexmlpost!usage!split pages}
 For larger documents, it is often desirable to break the 
 result into several interlinked pages. This split,
 carried out before scanning, is requested by 
@@ -334,7 +335,7 @@ into separate pages per initial using the options
   \cmd{--splitindex} and \cmd{--splitbibliography}
 \end{quote}
 
-\section{Site processing}\label{usage.site}\index{latexmlpost!usage!site}
+\section[Sites]{Site processing}\label{usage.site}\index{latexmlpost!usage!site}
 A more complicated situation combines several \TeX\ sources
 into a single interlinked site consisting of multiple pages
 and a composite index and bibliography.
@@ -541,7 +542,7 @@ textual (through attributes \attr{tex}, \attr{content-tex} and \attr{text}),
 \MathML\ and the internal representation itself.  
 The \attr{mode} attribute specifies whether the math should be in display or inline mode.
 
-\subsection{Internal Math Resentation}\label{math.details.representation}
+\subsection{Internal Math Representation}\label{math.details.representation}
 The \tag{XMath} element is the container for the internal representation
 
 The following attributes can appear on all \tag{XM} elements:
@@ -668,7 +669,7 @@ the presentation style:
 \end{description}
 
 % Some 
-\chapter{Issues and ToDo}\label{todo}
+\chapter{ToDo}\label{todo}
 Lots\ldots!
 \begin{itemize}
 \item Lots of useful \LaTeX\ packages have not been implemented, and those
@@ -682,11 +683,11 @@ Lots\ldots!
 
 \printindex\label{idx}
 \appendix
-\chapter{Command Documentation}\label{commands}
+\chapter[Commands]{Command Documentation}\label{commands}
 \include{pods/latexml}
 \include{pods/latexmlpost}
 
-\chapter{Core Module Documentation}\label{coremodules}
+\chapter[Modules]{Core Module Documentation}\label{coremodules}
 \include{pods/LaTeXML}
 \include{pods/LaTeXML_Object}
 \include{pods/LaTeXML_Definition}
@@ -714,13 +715,13 @@ Lots\ldots!
 %\section{Math-related Modules}
 \include{pods/LaTeXML_MathParser}
 
-\chapter{Utility Module Documentation}\label{utilitymodules}
+\chapter[Utility Modules]{Utility Module Documentation}\label{utilitymodules}
 \include{pods/LaTeXML_Util_Pathname}
 
-\chapter{Postprocessing Module Documentation}\label{postmodules}
+\chapter[Postprocessing Modules]{Postprocessing Module Documentation}\label{postmodules}
 \include{pods/LaTeXML_Post}
 
-\chapter{\LaTeXML\ DocType}\label{dtd}
+\chapter[DocType]{\LaTeXML\ DocType}\label{dtd}
 Not yet documented.
 
 \end{document}

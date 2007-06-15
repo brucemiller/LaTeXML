@@ -198,7 +198,9 @@ sub revert {
     my @tokens = ();
     if(defined $spec){
       @tokens=LaTeXML::Expandable::substituteTokens($spec,
-						    map(Tokens($_->revert),$self->getArgs)) if $spec ne '';
+						    map(($_ ? Tokens($_->revert) : $_),
+							$self->getArgs))
+	if $spec ne '';
     }
     else {
       if(my $alias = $defn->getAlias){

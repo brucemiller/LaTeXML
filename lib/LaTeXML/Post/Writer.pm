@@ -34,9 +34,9 @@ sub process {
   my $string;
   if($$self{format} eq 'html'){
     $string = $xmldoc->toStringHTML;
-    # Bug in LibXML?  This is probably even dangerous ??
-    if($doc->getDocument->encoding =~ /utf-?8/i){
-      $string = Encode::decode_utf8($string); }
+#    # Bug in LibXML?  This is probably even dangerous ??
+#    if($doc->getDocument->encoding =~ /utf-?8/i){
+#      $string = Encode::decode_utf8($string); }
   }
   else {
     $string =  $xmldoc->toString;}
@@ -45,7 +45,8 @@ sub process {
     $self->Progress("Writing $destination");
     pathname_mkdir($doc->getDestinationDirectory)
       or return die("Couldn't create directory ".$doc->getDestinationDirectory.": $!");
-    open(OUT,">:utf8",$destination)
+#    open(OUT,">:utf8",$destination)
+    open(OUT,">",$destination)
       or return die("Couldn't write $destination: $!");
     print OUT $string;
     close(OUT); }

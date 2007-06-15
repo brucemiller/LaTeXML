@@ -106,15 +106,20 @@ sub section_handler {
   if($id){
     my $label = $node->getAttribute('label');
     $$self{db}->register("LABEL:$label",id=>$id) if $label;
-    my $title = $doc->findnode('ltx:toctitle | ltx:title',$node);
+#    my $title = $doc->findnode('ltx:toctitle | ltx:title',$node);
+    my ($title) = ($doc->findnodes('ltx:toctitle',$node),$doc->findnodes('ltx:title',$node));
     if($title){
       $title = $title->cloneNode(1);
       map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$title)); }
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, label=>$label,
 			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
-			 title=>$title,
-			 stub=>$node->getAttribute('stub')); }
+			 title=>$title, children=>[],
+			 stub=>$node->getAttribute('stub'));
+    if(my $p = $parent_id && $$self{db}->lookup("ID:$parent_id")){
+      if(my $sib = $p->getValue('children')){
+	push(@$sib,$id); }}
+  }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub labelled_handler {

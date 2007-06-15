@@ -22,37 +22,44 @@ DocType("ltx:document","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
 
 
 RequirePackage('graphicx');
+RequirePackage('color');
 RequirePackage('amsmath');
 RequirePackage('amssymb');
 RequirePackage('DLMFmath');
 RequirePackage('url');
 RequirePackage('comment');
+RequirePackage('tabularx');
 RequirePackage('latexml');
 
 
 # If we get this, we're doing a "chapter"
-DefPrimitive('\thischapter{}', sub {
-  my($stomach,$ch)=@_;
-  $ch=$ch->toString;
-  AssignValue(DOCUMENTID=>$ch,'global');
-  DefMacro('\thechapter',$ch); 
-  DefMacro('\thechapter@ID',$ch);
-  DefMacro('\@currentlabel',$ch);
-  AssignValue("\\c\@chapter"=>$ch,'global');
+DefPrimitive('\thischapter[]{}', sub {
+  my($stomach,$chnum,$chcode)=@_;
+  $chcode=$chcode->toString;
+  $chnum= ($chnum ? $chnum->toString : $chcode);
+
+  AssignValue(DOCUMENTID=>$chnum,'global');
+  DefMacro('\thechapter',$chnum); 
+  DefMacro('\thechapter@ID',"C$chnum");
+  DefMacro('\@currentlabel',$chcode);
+  AssignValue("\\c\@chapter"=>$chnum,'global');
   AssignValue(current_counter=>'chapter','local');
-  AssignValue(Chapter=>$ch,'global');
-  AssignValue(ChapterLabel=>"ch:$ch",'global');  
+  AssignValue(Chapter=>$chnum,'global');
+  AssignValue(ChapterID=>"C$chnum",'global');
+  AssignValue(ChapterLabel=>"ch:$chcode",'global');  
   DocType("ltx:chapter","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
 	  '#default'=>"http://dlmf.nist.gov/LaTeXML");
   Tag('ltx:chapter', afterOpen=>\&insertDLMFFrontMatter);
   Tag('ltx:chapter', afterClose=>\&extractSourceNotes);
 });
 
-sub LookupChapterMetaID { ToString(LookupValue('Chapter')).".info"; }
+DefMacro('\toctitle{}', '\@add@frontmatter{ltx:toctitle}{#1}');
+
+sub LookupChapterMetaID { ToString(LookupValue('ChapterID')).".info"; }
   
 DefEnvironment('{document}',
 	       "?&LookupValue(Chapter)"
-	       .  "(<ltx:chapter id='&LookupValue(Chapter)' refnum='&LookupValue(Chapter)'"
+	       .  "(<ltx:chapter id='&LookupValue(ChapterID)' refnum='&LookupValue(Chapter)'"
 	       .         " label='&LookupValue(ChapterLabel)'>"
 	       .      "<ltx:metadata id='&LookupChapterMetaID()'/>"
 	       .      "#body"
@@ -70,9 +77,13 @@ sub extractSourceNotes {
   my($doc)=@_;
   my $savenode = $doc->getNode;
   # Extract "source" notes from References \part (if any), and remove the part.
-  my $ch = ToString(LookupValue('Chapter'));
+  my $ch = ToString(LookupValue('ChapterID'));
   if(my $pt = $doc->findnode("//ltx:part[child::ltx:title[text() = 'References']]")){
     $pt->parentNode->removeChild($pt);
+    ## Since the Sources section seems to have evolved into a COPY of all the
+    ## annotations throughout the chapter, there's little sense adding it back
+    ## to the sections
+    if(0){
     if(my $gen= $doc->findnode("ltx:section[child::ltx:title"
 			       ."[text()='General References']]",$pt)){
       if(my $meta = $doc->findnode("ltx:metadata[\@id='$ch.info']",
@@ -83,10 +94,10 @@ sub extractSourceNotes {
 	$doc->closeElement('ltx:note'); }
       else {
 	Warn("No metadata node found for $ch"); }}
-    else {
-      Warn("No 'General References' section found"); }
+#    else {  # This is optional...
+#      Warn("No 'General References' section found"); }
     if(my $oth = $doc->findnode("ltx:section[child::ltx:title"
-				     ."[text()='Original Sources']]",$pt)){
+				     ."[text()='Sources']]",$pt)){
       foreach my $item ($doc->findnodes("descendant::ltx:description/ltx:item",$oth)){
 	my $tag= $doc->findnode('ltx:tag',$item);
 	$tag->parentNode->removeChild($tag);
@@ -102,10 +113,11 @@ sub extractSourceNotes {
 	    else {
 	      Warn("No metadata node found for $id"); }}
 	  else {
-	    Warn("No matching section for 'Original Source' entry $label"); }}
+	    Warn("No matching section for 'Sources' entry $label"); }}
       }}
     else {
-      Warn("No 'Original Sources' section found"); }}
+      Warn("No 'Sources' section found"); }
+  }}
   else {
     Warn("No 'References' part found"); }
   $doc->setNode($savenode); }
@@ -127,9 +139,9 @@ DefConstructor('\\@@section{}[][][]{}',sub {
 # DLMF's Numbering scheme.
 DefPrimitive('\subparagraph',sub { Error("Don't use \\subparagraph!!!"); });
 
-NewCounter('chapter',      undef,       idprefix=>'');
+NewCounter('chapter',      undef,       idprefix=>'C');
 NewCounter('part',         'chapter',   idprefix=>'PT');
-NewCounter('section',      'chapter',   idprefix=>'');
+NewCounter('section',      'chapter',   idprefix=>'S');
 NewCounter('subsection',   'section',   idprefix=>'SS');
 NewCounter('subsubsection','subsection',idprefix=>'SSS');
 NewCounter('paragraph',    'section',   idprefix=>'P');
@@ -219,6 +231,9 @@ DefConstructor('\bibliography Semiverbatim','');
 DefEnvironment('{figuregroup}', "<ltx:figuregroup>#body</ltx:figuregroup>");
 DefEnvironment('{figuregroup*}',"<ltx:figuregroup>#body</ltx:figuregroup>");
 
+DefEnvironment('{tablegroup}', "<ltx:tablegroup>#body</ltx:tablegroup>");
+DefEnvironment('{tablegroup*}',"<ltx:tablegroup>#body</ltx:tablegroup>");
+
 
 #**********************************************************************
 # Pseudo environments.
@@ -228,10 +243,10 @@ DefEnvironment('{onecolumn}', "<ltx:begin_onecolumn/>#body<ltx:end_onecolumn/>")
 # Oh, what the heck, strip out printonly, and make electroniconly disappear!
 DefEnvironment('{printonly}', "<ltx:printonly>#body</ltx:printonly>");
 Tag('ltx:printonly', afterClose=>sub { $_[1]->getParentNode->removeChild($_[1]); });
-DefConstructor('\onlyprint{}', "");
+DefMacro('\onlyprint{}', "");
 
 DefEnvironment('{electroniconly}','#body');
-DefConstructor('\onlyelectronic{}',"#1");
+DefMacro('\onlyelectronic{}',"#1"); # macro? constructor?
 
 DefEnvironment('{sidebar}{}{}{}',
 	       "<ltx:sidebar name='#1' label='#label' id='#id'>"
@@ -338,7 +353,6 @@ DefEnvironment('{equationgroup}[]',
 DefEnvironment('{equationgroup*}[]',
 	       "<ltx:equationgroup id='#id'>#body</ltx:equationgroup>",
 	       properties=> sub { RefStepID('equationgroup') });
-DefConstructor('\intertext{}',"#1");
 
 DefConstructor('\@constraint OptionalMatch:* {}',
 	       "^<ltx:constraint hidden='?#1(yes)(no)'>#2</ltx:constraint>",
@@ -385,9 +399,17 @@ DefEnvironment('{table*}[]',
 # Table enhancement
 
 DefConstructor('\thinhline','',
-	       afterDigest=>sub { LookupValue('Alignment')->addLine('T'); });
+	       afterDigest=>sub { LookupValue('Alignment')->addLine('T'); },
+	       reversion=>'');
+
+# Paragraph similar to X
+DefColumnType('P',sub {
+  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\hbox'),T_BEGIN),
+				      after=>Tokens(T_END),
+				      align=>'justify'); return; });
 
 #**********************************************************************
+DefConstructor('\DLMF',                '<ltx:ref href="http://dlmf.nist.gov">DLMF</ltx:ref>');
 DefConstructor('\VRML Semiverbatim', "<ltx:VRML href='#1'/>");
 DefConstructor('\GAMSclass{}',         "<ltx:GAMS class='#1'/>");
 DefConstructor('\GAMSpackage{}',       "<ltx:GAMS package='#1'/>");

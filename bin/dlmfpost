@@ -75,7 +75,7 @@ if(!$prescan){
        # LaTeXML::Post::SVG->new(%OPTIONS),
 
        DLMFMathImages->new(resourceDirectory=>'', resourcePrefix=>'m',%OPTIONS),
-       DLMFpMML->new(resourceDirectory=>'', resourcePrefix=>'m',%OPTIONS),
+       DLMFpMML->new(linelength=>80,resourceDirectory=>'', resourcePrefix=>'m',%OPTIONS),
        # cmml options ?
        # LaTeXML::Post::PurgeXMath->new(%OPTIONS),
        DLMFWriter->new(basedir=>$basedir,format=>'xml',omit_doctype=>1,%OPTIONS),
@@ -158,8 +158,10 @@ sub process {
 sub getPageName {
   my($self,$doc,$sec)=@_;
   my $id = $sec->getAttribute('id');
-  $id =~ /\.([^\.]+)$/;
-  pathname_make(dir=>$doc->getDestinationDirectory. '/'.$1, name=>'index', type=>'xml'); }
+  my $name = $id;
+  if($id =~ /C\d+\.(SB\d+)$/){ $name = $1; }
+  elsif($id =~ /^C\d+\.S(\d+)$/){ $name = $1; } 
+  pathname_make(dir=>$doc->getDestinationDirectory. '/'.$name, name=>'index', type=>'xml'); }
 
 sub magnifyFigure {
   my($self,$doc,$figure)=@_;
@@ -240,7 +242,7 @@ sub new {
   $self->registerHandler(tocentry =>\&tocentry_handler);
   $self->registerHandler(declare  =>\&declare_handler);
   $self->registerHandler(mark     =>\&mark_handler);
-  $self->registerHandler(notations=>\&LaTeXML::Post::Scan::section_handler);
+  $self->registerHandler(notations=>\&notation_handler);
 
   $self; }
 
@@ -282,8 +284,35 @@ sub mark_handler {
     my $name = $syms[0] && $syms[0]->getAttribute('meaning');
     $$self{db}->register("DECLARATION:global:$name",
 			 parent=>$parent_id, tag=>$tagnode, text=>$textnode); }
-  $$self{db}->register("NOTATION:".$tagnode->cloneNode(1),
+#  $$self{db}->register("NOTATION:".$tagnode->cloneNode(1),
+  $$self{db}->register("NOTATION:".$tagnode->cloneNode(1)->toString,
 		       parent=>$parent_id, tag=>$tagnode, text=>$textnode); }
+
+# This is a copy of Scan's section_handler, BUT without the recursion.
+# We do this is because (most) notations are copied from notations sections
+# of chapters, and they have citations that will already be seen there,
+# but do not need to be ranked as "cited by" the notation lists.
+sub notation_handler {
+  my($self,$doc,$node,$tag,$parent_id)=@_;
+  my $id = $node->getAttribute('id');
+  if($id){
+    my $label = $node->getAttribute('label');
+    $$self{db}->register("LABEL:$label",id=>$id) if $label;
+#    my $title = $doc->findnode('ltx:toctitle | ltx:title',$node);
+    my ($title) = ($doc->findnodes('ltx:toctitle',$node),$doc->findnodes('ltx:title',$node));
+    if($title){
+      $title = $title->cloneNode(1);
+      map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$title)); }
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, label=>$label,
+			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
+			 refnum=>$node->getAttribute('refnum'),
+			 title=>$title, children=>[],
+			 stub=>$node->getAttribute('stub'));
+    if(my $p = $parent_id && $$self{db}->lookup("ID:$parent_id")){
+      if(my $sib = $p->getValue('children')){
+	push(@$sib,$id); }}
+  }
+}
 
 #======================================================================
 # Abstract Mixin class for looking up symbol definitions.
@@ -391,6 +420,10 @@ use strict;
 # of copied or generated files to be associated with the reference
 # number of it's container.
 
+# Note that these resources should only be associated with chapters
+# and that the parent file will always be index.xml, except
+# for magnified figures.
+
 # Find the desired filename for a file associated with $node.
 # The node might represent a graphics or math node, or ...
 # If it is contained in a container matching $containerpath,
@@ -403,6 +436,7 @@ use strict;
 
 # Define method
 # $self->getResourceContainer($doc,$node);
+
 sub containedResourcePathname {
   my($self,$doc,$node, $siblingpath,$type)=@_;
   my($container,$refnum);
@@ -413,9 +447,13 @@ sub containedResourcePathname {
       $suffix = 'a';
       while(@sibs && (${$sibs[0]} != $$node)){
 	shift(@sibs); $suffix = chr(ord($suffix)+1); }}
-    my $name = ($doc->getDestination =~ /index.xml$/ 
+#    my $name = ($doc->getDestination =~ /index.xml$/ 
+#		? $container->getAttribute('fragid')
+#		: $container->getAttribute('id'));
+    my($parentdir,$parentname,$parenttype)=pathname_split($doc->getDestination);
+    my $name = ($parentname eq 'index'
 		? $container->getAttribute('fragid')
-		: $container->getAttribute('id'));
+		: $parentname );
     pathname_make(dir=>$$self{resourceDirectory}, name=>$name.$suffix, type=>$type); }}
 
 our %typename;
@@ -455,7 +493,9 @@ sub writeEncodedResource {
 	$type = pathname_type($resourcename) unless $type;
 	$resourcename =~ s/\.\w+$/.$type/; # change the dest to the requested type.
 	my $absdest = $doc->checkDestination($resourcename);
+# Need for LibXML to be consistent with encoding!!!
 	open(RESOURCE,">:utf8",$absdest) or die "Cannot write resource $absdest: $!";
+#	open(RESOURCE,">",$absdest) or die "Cannot write resource $absdest: $!";
 	print RESOURCE $contents;
 	close(RESOURCE);
 	$doc->addNodes($meta,['ltx:encoding',{href=>$resourcename,type=>$typename{$type}||$type}]);
@@ -722,7 +762,7 @@ sub getNotationEntries {
 		    ['ltx:text',{},$doc->trimChildNodes($textnode),'; ',
 		     ['ltx:ref',{idref=>$notation->getValue('parent'),show=>'typerefnum'}],
 		     (@intermsof ? (['ltx:br'],
-				    ['ltx:text',{font=>'small'},'(with ',@intermsof,')']):())]]};
+				    ['ltx:text',{size=>'small'},'(with ',@intermsof,')']):())]]};
 
     # If an unusual first char is likely to be sought under other initials,
     # Add "see also" entries under those initials.

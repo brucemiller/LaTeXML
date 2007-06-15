@@ -1137,9 +1137,9 @@ DefExpandable('\@multicolumn {Number}  AlignmentTemplate {}', sub {
   # First part, like \multispan
   (T_CS('\omit'),map((T_CS('\span'),T_CS('\omit')), 1..$span-1),
    # Next part, just put the template in-line, since it's only used once.
-   ($column ? $$column{before}->unlist : ()),
+   ($column ? beforeCellUnlist($$column{before}) : ()),
    $tokens->unlist,
-   ($column ? $$column{after}->unlist : ()) ); });
+   ($column ? afterCellUnlist($$column{after}) : ()) ); });
 
 sub alignmentBindings {
   my($template)=@_;
@@ -1150,6 +1150,7 @@ sub alignmentBindings {
   $alignment->setTemplate($template) if $template;
   Let(T_ALIGN,        T_CS('\@alignment@align'));
   Let(T_CS("\\\\"),   T_CS('\@alignment@newline'));
+  Let(T_CS('\tabularnewline'),   T_CS('\@alignment@newline'));
   Let(T_CS('\cr'),    T_CS('\@alignment@cr'));
   Let(T_CS('\hline'), T_CS('\@alignment@hline'));
   Let(T_CS('\hrule'), T_CS('\@alignment@hrule'));
@@ -1209,7 +1210,7 @@ DefPrimitive('\@open@column SkipSpaces DeferredAlignmentBody:\@close@column', su
   my $align=  $$colspec{align} || 'left';
   my $border= '';
 
-##print STDERR "\nColumn $n0-$n1:\n   ".Stringify($boxes)."\n";
+## print STDERR "\nColumn $n0-$n1:\n   ".Stringify($boxes)."\n";
   # Scan boxes for borders & hfill whatsits, adjusting $align and $border
   my @boxes = $boxes->unlist;
   my @saveleft=();
@@ -1261,7 +1262,7 @@ DefPrimitive('\@open@column SkipSpaces DeferredAlignmentBody:\@close@column', su
   $$colspec{empty} = 1 if $empty;
   for(my $i = $n0+1; $i <= $n1; $i++){
     $alignment->getColumn($i)->{skipped}=1; }
-##print STDERR " => align=$align, border=$border\n  ".Stringify($boxes)."\n";
+## print STDERR " => align=$align, border=$border\n  ".Stringify($boxes)."\n";
 #
   $stomach->egroup;
   $boxes; },
@@ -1271,14 +1272,19 @@ DefPrimitive('\@open@column SkipSpaces DeferredAlignmentBody:\@close@column', su
 Let('\@@close@inner@column','\relax');
 DefPrimitive('\@@eat@space',sub {
 	       my $box;
+	       my @save=();
 	       while(($box = $LaTeXML::LIST[$#LaTeXML::LIST]) && ($box->toString=~/^\s*$/)){
-		 pop(@LaTeXML::LIST); }
+		 if($box->getProperty('alignmentIgnorable')){
+		   push(@save,pop(@LaTeXML::LIST)); }
+		 else {
+		   pop(@LaTeXML::LIST); }}
+	       push(@LaTeXML::LIST,@save);
 	       return; });
 
 DefMacro('\@close@inner@column', sub {
 	   my $col = LookupValue('Alignment')->currentColumn;
 	   (T_CS('\@@eat@space'),
-	    ($$col{after} ? $$col{after}->unlist : ()),
+	    ($$col{after} ? afterCellUnlist($$col{after}) : ()),
 	    T_CS('\@@close@inner@column')); });
   
 DefPrimitive('\@open@inner@column',sub {
@@ -1310,12 +1316,40 @@ DefPrimitive('\@open@inner@column',sub {
     else { last; }}
   $gullet->unread($tok) if $tok;
 
-  $gullet->unread($$colspec{before}->unlist) if $$colspec{before};
+  $gullet->unread(beforeCellUnlist($$colspec{before})) if $$colspec{before};
 
   my $endtoken = T_CS('\@@close@inner@column');
   my @boxes = $STATE->getStomach->digestNextBody($endtoken); 
   $stomach->egroup;
   (@save,@boxes); });
+
+# Yet more special case hacking. Sometimes the order of tokens works for
+# TeX, but confuses us... In particular the order of $ and \hfil!
+# \@open@column is too late, since the stuff is already digested.
+# Could _almost_  handle the extractions here, but there are several
+# rule operators that digest into whatsits with certain properties...
+sub beforeCellUnlist {
+  my($tokens)=@_; 
+  my @toks = $tokens->unlist;
+  my @new = ();
+  while(my $t = shift(@toks)){
+    if($t->equals(T_MATH) && @toks && $toks[0]->equals(T_CS('\hfil'))){
+      push(@new,shift(@toks)); unshift(@toks,$t); }
+    else {
+      push(@new, $t); }}
+  @new; }
+
+sub afterCellUnlist {
+  my($tokens)=@_; 
+  my @toks = $tokens->unlist;
+  my @new = ();
+  while(my $t = pop(@toks)){
+    if($t->equals(T_MATH) && @toks && $toks[$#toks]->equals(T_CS('\hfil'))){
+      unshift(@new,pop(@toks)); push(@toks,$t); }
+    else {
+      unshift(@new, $t); }}
+  @new; }
+
 
 #----------------------------------------------------------------------
 # \halign, See Chap.22
@@ -2869,7 +2903,7 @@ DefConstructor('\right Token',"?#char(<ltx:XMTok role='#role' name='#name'>#char
 sub addDelimiterRole {
   my($document,$role)=@_;
   my $node=$document->getNode->lastChild; # This should be the wrapper just added.
-  my $delim_role = ($node->firstChild->getAttribute('role') || '');
+  my $delim_role = ($node->firstChild && $node->firstChild->getAttribute('role') || '');
   my $wrapper_role = ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR)$/ ? $role : $delim_role);
   $node->setAttribute(role=>$wrapper_role) if $wrapper_role; }
 
@@ -3242,6 +3276,12 @@ sub loadLaTeXClass {
     $stomach->getGullet->input($class,['ltxml']); }
   elsif($file = FindFile($class,'cls')){
     my $msg = "IGNORING class file $file: using article instead";
+    NoteBegin($msg); 
+    $stomach->getGullet->input('article',['ltxml']);
+    NoteEnd($msg); }
+  else {
+    Error("No implementation of document class $class; using article instead");
+    my $msg = "using article instead";
     NoteBegin($msg); 
     $stomach->getGullet->input('article',['ltxml']);
     NoteEnd($msg); }

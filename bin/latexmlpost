@@ -21,7 +21,8 @@ my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
 my($sourcedir,$destination)=(undef,undef);
 my($format,$urlstyle) = (undef,'server');
 my($stylesheet,$css)=(undef,undef);
-my($parallelmath,$mathimages,$keepXMath)=(undef,undef,undef);
+my($parallelmath,$mathimages)=(undef,undef);
+my($linelength,$keepXMath)=(undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
 my($split,$splitpath,$splitnaming)
   =(undef,"//ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index",'id');
@@ -77,6 +78,7 @@ GetOptions("destination=s"=>sub { $destination = $_[1];
 	   "nocontentmathml|nocmml"      => sub { removeMathFormat('cmml'); },
 	   "noopenmath|noom"             => sub { removeMathFormat('om'); },
 	   "keepXMath!"                  =>\$keepXMath,
+	   "linelength=i"                =>\$linelength,
 	   # For graphics: vaguely similar issues, but more limited.
 	   # includegraphics images (eg. ps) can be converted to webimages (eg.png)
 	   # picture/pstricks images can be converted to png or possibly svg.
@@ -158,7 +160,7 @@ Error("Parallel math markup can only be based on MathML")
 #======================================================================
 
 binmode(STDERR,":utf8");
-binmode(STDOUT,":utf8");
+#binmode(STDOUT,":utf8");
 print STDERR "$identity\n" if $verbosity > 0;
 our %OPTIONS = (verbosity=>$verbosity||0);
 
@@ -212,7 +214,9 @@ if(!$prescan){
     foreach my $fmt (@math_formats){
       if($fmt eq 'pmml'){
 	require 'LaTeXML/Post/MathML.pm';
-	push(@mprocs,LaTeXML::Post::MathML::Presentation->new(%OPTIONS)); }
+	push(@mprocs,LaTeXML::Post::MathML::Presentation->new(
+		    (defined $linelength ? (linelength=>$linelength):()),
+                    %OPTIONS)); }
       elsif($fmt eq 'cmml'){
 	require 'LaTeXML/Post/MathML.pm';
 	push(@mprocs,LaTeXML::Post::MathML::Content->new(%OPTIONS)); }
@@ -233,6 +237,11 @@ if(!$prescan){
 
   if($stylesheet){
     require 'LaTeXML/Post/XSLT.pm'; 
+    if($css && $destination){
+      my $csssource = pathname_find($css,paths=>[$sourcedir||'.'],
+				    installation_subdir=>'dtd');
+      $css = pathname_absolute($css,pathname_directory($destination));
+      pathname_copy($csssource,$css)  if -f $csssource; }
     push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet, css=>$css,%OPTIONS)); }
 
   push(@procs,LaTeXML::Post::Writer->new(format=>$format,omit_doctype=>$omit_doctype,%OPTIONS));
@@ -330,6 +339,8 @@ latexmlpost [options] xmlfile
                          (default for xhtml format)
  --pmml                  alias for --presentationmathml
  --nopresentationmathml  disables the above
+ --linelength=n          formats presentation mathml to a
+                         linelength max of n characters
  --contentmathml         converts math to Content MathML
  --nocontentmathml       disables the above (default)
  --cmml                  alias for --contentmathml
@@ -530,6 +541,11 @@ Conversion is the default for html format.
 
 Requests or disables conversion of math to Presentation MathML.
 Conversion is the default for xhtml format.
+
+=item B<--linelength>I<=number>
+
+(Experimental) Applies line-breaking to the generated Presentation
+MathML such that it is no longer than I<number> `characters'.
 
 =item B<--contentmathml>, B<--nocontentmathml>
 

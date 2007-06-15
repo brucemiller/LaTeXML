@@ -64,6 +64,7 @@ else {
 
 # ========================================
 # Now, convert to DOM and output, if desired.
+use Encode;
 my $serialized;
 if($digested){
     local $LaTeXML::Global::STATE = $$latexml{state};
@@ -73,14 +74,20 @@ if($digested){
 	$serialized = $digested->toString; }
     else {
 	my $dom = $latexml->convertDocument($digested); 
+#	$serialized = $dom->toString(1);
+#	$serialized = Encode::decode("utf-8",$dom->toString(1));
+#	$dom->setEncoding("UTF8");
 	$serialized = $dom->toString(1);
+
+
     }}
 print STDERR "\nConversion complete: ".$latexml->getStatusMessage.".\n";
 
 if($output){
-  open(OUT,">:utf8",$output) or die "Couldn't open output file $output: $!"; }
+#  open(OUT,">:utf8",$output) or die "Couldn't open output file $output: $!"; }
+  open(OUT,">",$output) or die "Couldn't open output file $output: $!"; }
 else {
-  binmode(STDOUT,":utf8");
+#  binmode(STDOUT,":utf8");
   *OUT = *STDOUT; }
 print OUT $serialized if $serialized;
 if($output){ 

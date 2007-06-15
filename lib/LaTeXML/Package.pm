@@ -231,7 +231,11 @@ sub NewCounter {
 
 sub StepCounter {
   my($ctr)=@_;
-  AssignValue("\\c\@$ctr"=>LookupValue("\\c\@$ctr")->add(Number(1)),'global');
+  my $value = LookupValue("\\c\@$ctr");
+  if(!$value){
+    Warn("Counter $ctr was not defined; assuming 0");
+    $value = Number(0); }
+  AssignValue("\\c\@$ctr"=>$value->add(Number(1)),'global');
   # and reset any within counters!
   if(my $nested = LookupValue("\\cl\@$ctr")){
     foreach my $c ($nested->unlist){

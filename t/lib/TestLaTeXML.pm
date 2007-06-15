@@ -61,19 +61,23 @@ sub latexml_ok {
   { local $Test::Builder::Level =  $Test::Builder::Level+1;
     is_xmlcontent($dom,$xmlpath,$name); }}
 
-
+#use Encode;
 sub is_xmlcontent {
   my($xmldom,$path,$name)=@_;
   if(!defined $xmldom){
     do_fail($name,"The XML DOM was undefined for $name"); }
   else {
     { local $Test::Builder::Level =  $Test::Builder::Level+1;
+#      is_filecontent([split('\n',$xmldom->toString(1))],$path,$name); }}}
+#      is_filecontent([split('\n',Encode::decode("utf-8",$xmldom->toString(1)))],$path,$name); }}}
+#      $xmldom->setEncoding("utf-8");
       is_filecontent([split('\n',$xmldom->toString(1))],$path,$name); }}}
 
 
 sub is_filecontent {
   my($strings,$path,$name)=@_;
-  if(!open(IN,"<:utf8",$path)){
+#  if(!open(IN,"<:utf8",$path)){
+  if(!open(IN,"<",$path)){
     do_fail($name,"Could not open $path"); }
   else {
     my @lines;

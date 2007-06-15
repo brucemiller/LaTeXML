@@ -185,6 +185,8 @@ sub pmml {
   $result = ['m:mrow',{},$result,pmml_mo($p)] if $p;
   $result; }
 
+our $NBSP = pack('U',0xA0);
+
 sub pmml_internal {
   my($node)=@_;
   return ['m:merror',{},['m:mtext',{},"Missing Subexpression"]] unless $node;
@@ -204,14 +206,13 @@ sub pmml_internal {
     elsif($role && ($role =~ /^(FLOAT|POST)(SUB|SUPER)SCRIPT$/)){
       pmml_unparsed_script($1,$2,$op); }
     else {
-      $op = realize($op);  # NOTE: Could loose open/close on XMRef ???
+      my $rop = realize($op);  # NOTE: Could loose open/close on XMRef ???
       my $style = $op->getAttribute('style');
       my $styleattr = $style && $stylemap{$LaTeXML::MathML::STYLE}{$style};
       local $LaTeXML::MathML::STYLE 
 	= ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
-###      my $result = &{ lookupPresenter('Apply',$op->getAttribute('role'),
-      my $result = &{ lookupPresenter('Apply',getOperatorRole($op),
-				      getTokenMeaning($op)) }($op,@args);
+      my $result = &{ lookupPresenter('Apply',getOperatorRole($rop),getTokenMeaning($rop))
+		    }($op,@args);
       $result = ['m:mstyle',{@$styleattr},$result] if $styleattr;
       $result; }}
   elsif($tag eq 'XMTok'){
@@ -243,7 +244,10 @@ sub pmml_internal {
     $result = ['m:mstyle',{@$styleattr},$result] if $styleattr;
     $result; }
   else {
-    ['m:mtext',{},$node->textContent]; }}
+    my $text = $node->textContent; #  Spaces are significant here
+    $text =~ s/^\s+/$NBSP/;
+    $text =~ s/\s+$/$NBSP/;
+    ['m:mtext',{},$text]; }}
 
 sub pmml_row {
   my(@items)=@_;
@@ -286,6 +290,7 @@ sub pmml_punctuate {
 # args are XMath nodes
 sub pmml_infix {
   my($op,@args)=@_;
+  $op = realize($op);
   return ['m:mrow',{}] unless $op && @args; # ??
   my @items=();
   if(scalar(@args) == 1){	# Infix with 1 arg is presumably Prefix!
@@ -372,7 +377,7 @@ sub pmml_unparsed_script {
 
 sub pmml_script {
   my($script)=@_;
-  ($script ? pmml_smaller($script) : ['m:empty']); }
+  ($script ? pmml_smaller($script) : ['m:none']); }
 
 # Since we're keeping track of display style, under/over vs. sub/super
 # We've got to override MathML's desire to do it for us.
@@ -390,10 +395,11 @@ sub do_overunder {
     local $LaTeXML::MathML::OVERUNDERHACKS=1;
     $base = pmml($base); }
   my $form = [$tag,{},$base,map(pmml_smaller($_),@scripts)];
-  if($LaTeXML::MathML::STYLE ne 'display'){ # Workaround Mozilla bug (?)
-    ['m:mstyle',{displaystyle=>'false'},$form]; }
-  else {
-    $form; }}
+#  if($LaTeXML::MathML::STYLE ne 'display'){ # Workaround Mozilla bug (?)
+#    ['m:mstyle',{displaystyle=>'false'},$form]; }
+#  else {
+    $form; }
+#}
 
 sub do_subsup {
   my($tag,$base,@scripts)=@_;
@@ -490,8 +496,8 @@ sub cmml {
     if(!$op){
       ['m:merror',{},['m:mtext',{},"Missing Operator"]]; }
     else {
-      $op = realize($op);		# NOTE: Could loose open/close on XMRef ???
-      &{ lookupContent('Apply',$op->getAttribute('role'),getTokenMeaning($op)) }($op,@args); }}
+      my $rop = realize($op);		# NOTE: Could loose open/close on XMRef ???
+      &{ lookupContent('Apply',$rop->getAttribute('role'),getTokenMeaning($rop)) }($op,@args); }}
   elsif($tag eq 'XMTok'){
     &{ lookupContent('Token',$node->getAttribute('role'),getTokenMeaning($node)) }($node); }
   elsif($tag eq 'XMHint'){	# ????
@@ -617,9 +623,15 @@ DefMathML('Apply:?:div', sub {
   my($op,$num,$den)=@_;
   my $style = $op->getAttribute('style');
   my $thickness = $op->getAttribute('thickness');
-  ['m:mfrac',{($thickness ? (linethickness=>$thickness):()),
-	    ($style && ($style eq 'inline') ? (bevelled=>'true'):())},
-   pmml_smaller($num),pmml_smaller($den)]; });
+#  ['m:mfrac',{($thickness ? (linethickness=>$thickness):()),
+#	    ($style && ($style eq 'inline') ? (bevelled=>'true'):())},
+#   pmml_smaller($num),pmml_smaller($den)]; });
+  # Bevelled looks crappy (operands too small) in Mozilla, so just open-code it.
+  if($style && ($style eq 'inline')){
+    ['m:mrow',{},pmml($num),pmml_mo('/'),pmml($den)]; }
+  else {
+    ['m:mfrac',{($thickness ? (linethickness=>$thickness):())},
+     pmml_smaller($num),pmml_smaller($den)]; }});
 
 DefMathML("Token:SUPOP:?",        \&pmml_mo,   undef);
 DefMathML('Apply:SUPERSCRIPTOP:?',\&pmml_script_handler, undef);
@@ -713,7 +725,7 @@ DefMathML("Token:?:factorof",  undef, sub{['m:factorof'];});   # RELOP
 # BRM
 DefMathML("Token:INTOP:?",       \&pmml_mo);
 DefMathML("Token:LIMITOP:?",     \&pmml_mo);
-DefMathML('Apply:ARROW:?', \&pmml_infix);
+DefMathML('Apply:ARROW:?',       \&pmml_infix);
 
 # MK
 DefMathML("Token:?:int",       undef, sub{['m:int'];}); # BINDER
@@ -946,13 +958,22 @@ DefMathML('Apply:?:cfrac', sub {
 package LaTeXML::Post::MathML::Presentation;
 use strict;
 use base qw(LaTeXML::Post::MathML);
+use LaTeXML::Util::MathMLLinebreaker;
 
 sub translateNode {
   my($self,$doc,$xmath,$style,$embedding)=@_;
   my @trans = LaTeXML::Post::MathML::pmml_top($xmath,$style);
+  my $m = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
+  if($style eq 'display'){
+    if(my $linelength = $$self{linelength}){
+      my $breaker = LaTeXML::Util::MathMLLinebreaker->new();
+      if(!$breaker->fitToWidth($m,$linelength,1)){
+	my $p = $doc->findnode('ancestor::*[@id]',$xmath);
+	my $id = $p && $p->getAttribute('id');
+	warn "Couldn't fit math at $id to $linelength"; }}}
   # Wrap unless already embedding within MathML.
   ($embedding =~ /^m:/ ? @trans 
-   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},@trans]); }
+   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},$m]); }
 
 sub getEncodingName { 'MathML-Presentation'; }
 

@@ -87,7 +87,7 @@ sub process {
   my($ntotal,$nuniq)=(0,0);
   foreach my $node ($self->findTeXNodes($doc)){
     my $tex = $self->extractTeX($doc,$node);
-    next if !(defined $tex) or ($tex eq '');
+    next if !(defined $tex) or ($tex =~/^\s*$/);
     $ntotal++;
 
     my $reldest = $self->desiredResourcePathname($doc,$node,undef,$$self{imagetype});

@@ -47,6 +47,7 @@ sub process {
   my($self,$doc)=@_;
   my $root = $doc->getDocumentElement;
   local %LaTeXML::Post::CrossRef::MISSING=();
+  $self->fill_in_navigation($doc);
   $self->fill_in_frags($doc);
   $self->fill_in_refs($doc);
   $self->fill_in_bibrefs($doc);
@@ -60,6 +61,41 @@ sub process {
 sub note_missing {
   my($self,$type,$key)=@_;
   $LaTeXML::Post::CrossRef::MISSING{$type}{$key}++; }
+
+sub fill_in_navigation {
+  my($self,$doc)=@_;
+  if(my $id = $doc->getDocumentElement->getAttribute('id')){
+    if(my $entry = $$self{db}->lookup("ID:$id")){
+      if(my $nav = $doc->findnode('//ltx:navigation')){
+	my $h_id = $id;
+	# Generate Downward TOC
+	my $navtoc= $self->navtoc_aux($id, $entry->getValue('location'));
+	# And Upward Context
+	my $p_id;
+	while(($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))){
+	  $navtoc = ['ltx:toclist',{},
+		     map(['ltx:tocentry',{},
+			  ['ltx:ref',{class=>'toc',show=>'refnum title',idref=>$_}],
+			  (($_ eq $h_id) && $navtoc ? ($navtoc) : ())],
+			 @{ $entry->getValue('children')||[] })];
+	  $h_id = $p_id; }
+	$navtoc = ['ltx:toclist',{},
+		   ['ltx:tocentry',{},
+		    ['ltx:ref',{class=>'toc',show=>'refnum title',idref=>$h_id}],
+		    $navtoc]] if $h_id;
+	$doc->addNodes($nav,$navtoc); }
+    }}}
+
+sub navtoc_aux {
+  my($self,$id, $relative_to)=@_;
+  if(my $entry = $$self{db}->lookup("ID:$id")){
+    if(($entry->getValue('location')||'') eq $relative_to){
+      if(my $kids = $entry->getValue('children')){
+	return (['ltx:toclist',{},map(['ltx:tocentry',{},
+				       ['ltx:ref',{class=>'toc',show=>'refnum title',idref=>$_}],
+				       $self->navtoc_aux($_,$relative_to)],
+				      @$kids)]); }}}
+  (); }
 
 sub fill_in_frags {
   my($self,$doc)=@_;
@@ -77,7 +113,8 @@ sub fill_in_refs {
   my $db = $$self{db};
   print STDERR "Filling in refs\n" if $$self{verbosity}>1;
   foreach my $ref ($doc->findnodes('descendant::*[@idref or @labelref]')){
-    next if $ref->localname eq 'XMRef';
+    my $tag = $ref->localname;
+    next if $tag eq 'XMRef'; # Blech; list those TO fill-in, or list those to exclude?
     my $id = $ref->getAttribute('idref');
     my $show = $ref->getAttribute('show');
     if(!$id){
@@ -86,7 +123,11 @@ sub fill_in_refs {
 	if(($entry = $db->lookup("LABEL:$label")) && ($id=$entry->getValue('id'))){
 	  $show = 'refnum' unless $show; }
 	else {
-	  $self->note_missing('Label',$label); }}}
+	  $self->note_missing('Label',$label);
+	  if(!$ref->textContent){
+	    $doc->addNodes($ref,$label);  # Just to reassure (?) readers.
+	    $ref->setAttribute(broken=>1); }
+	}}}
     if($id){
       if(!$ref->getAttribute('href')){
 	if(my $url = $self->generateURL($doc,$id)){
@@ -94,7 +135,7 @@ sub fill_in_refs {
       if(!$ref->getAttribute('title')){
 	if(my $titlestring = $self->generateTitle($id)){
 	  $ref->setAttribute(title=>$titlestring); }}
-      if(!$ref->textContent){
+      if(!$ref->textContent && !(($tag eq 'graphics') || ($tag eq 'picture'))){
 	$doc->addNodes($ref,$self->generateRef($doc,$id,$show || 'typerefnum')); }
       if(my $entry = $$self{db}->lookup("ID:$id")){
 	$ref->setAttribute(stub=>1) if $entry->getValue('stub'); }
@@ -206,6 +247,8 @@ sub generateURL {
     if(my $fragid = $object->getValue('fragid')){
       $url = '' if ($url eq '.') or ($location eq $doclocation);
       $url .= '#'.$fragid; }
+    elsif($location eq $doclocation){
+      $url = ''; }
     $url; }
   else {
     $self->note_missing('ID',$id); }}
@@ -215,6 +258,7 @@ sub generateURL {
 # (standing for the type prefix, refnum and title of the id'd object)
 # and any other random characters; the
 # Temporarily, normal and all are also accepted as formats.
+our $NBSP = pack('U',0xA0);
 sub generateRef {
   my($self,$doc,$id,$show)=@_;
   my $saveshow = $show;
@@ -223,26 +267,31 @@ sub generateRef {
     my @stuff=();
     while($show){
       if($show =~ s/^typerefnum(\.?\s*)//){
+	my $r = $1;
+	$r =~ s/\s+/$NBSP/ if $r;
 	my @rest = ($1 ? ($1):());
 	if(my $refnum = $entry->getValue('refnum')){
 	  my $type   = $entry->getValue('type');
 	  $OK = 1;
 	  push(@stuff, ['ltx:span',{class=>'refnum'},
 			($type && $TYPEPREFIX{$type} ? ($TYPEPREFIX{$type}) :()),
-			$doc->trimChildNodes($refnum)],
-	       @rest); }}
+			$doc->trimChildNodes($refnum),
+			($r ? ($r):())]); }}
       elsif($show =~ s/^type(\.?\s*)//){
-	my @rest = ($1 ? ($1):());
+	my $r = $1;
+	$r =~ s/\s+/$NBSP/ if $r;
 	my $type   = $entry->getValue('type');
 	if($type && $TYPEPREFIX{$type}){
 	  $OK = 1;
-	  push(@stuff, $TYPEPREFIX{$type},@rest); }}
+	  push(@stuff, $TYPEPREFIX{$type},($r ? ($r):())); }}
       elsif($show =~ s/^refnum(\.?\s*)//){
-	my @rest = ($1 ? ($1):());
+	my $r = $1;
+	$r =~ s/\s+/$NBSP/ if $r;
 	if(my $refnum = $entry->getValue('refnum')){
 	  $OK = 1;
-	  push(@stuff, ['ltx:span',{class=>'refnum'},$doc->trimChildNodes($refnum)],
-	       @rest); }}
+	  push(@stuff, ['ltx:span',{class=>'refnum'},
+			$doc->trimChildNodes($refnum),
+			($r ? ($r):())]); }}
       elsif($show =~ s/^title//){
 	if(my $title = $entry->getValue('title')){
 	  $OK = 1;

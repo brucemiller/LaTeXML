@@ -33,7 +33,7 @@ sub process {
   @pages = grep($_->parentNode->parentNode,@pages); # Strip out the root node.
   if(@pages){
     $self->Progress("Splitting into ".scalar(@pages)." pages");
-    my $tree = {node=>$root,name=>$doc->getDestination,children=>[]};
+    my $tree = {node=>$root,id=>$root->getAttribute('id'),name=>$doc->getDestination,children=>[]};
     # Group the pages into a tree, in case they are nested.
     my $haschildren={};
     foreach my $page (@pages){
@@ -67,9 +67,10 @@ sub presortPages {
   else {
     $$haschildren{$$tree{node}->localname}=1; # Wrong key for this!?!
     push(@{$$tree{children}},
-	 {node=>$page,upid=>$$tree{node}->getAttribute('id'),children=>[]}); }}
+	 {node=>$page,upid=>$$tree{id}, id=>$page->getAttribute('id'),parent=>$tree,children=>[]}); }}
 
 # Is $node an descendant of $possibleparent?
+# Probably even belongs somewhere else??
 sub isDescendant {
   my($node,$possibleparent)=@_;
   do {
@@ -116,7 +117,7 @@ sub processPages {
       # BEFORE processing this page.
       my @childdocs = $self->processPages($doc,@{$$entry{children}});
       my $subdoc = $doc->newDocument($page,destination=>$$entry{name},parent_id=>$$entry{upid});
-      $subdoc->addNavigation(up=>$$entry{upid}); 
+      $subdoc->addNavigation(up=>$$entry{upid});
       push(@docs,$subdoc,@childdocs); }
     # Finally, add the toc to reflect the consecutive, removed nodes, and add back the remainder
     $doc->addNodes($parent,['ltx:TOC',{},['ltx:toclist',{},@toc]]) if @toc;
