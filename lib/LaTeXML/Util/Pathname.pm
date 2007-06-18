@@ -207,9 +207,12 @@ sub candidate_pathnames {
   if($options{types}){
     foreach my $ext (@{$options{types}}){
       if($ext eq ''){ push(@exts,''); }
-      elsif($pathname =~ /\.\Q$ext\E$/){
+      elsif($pathname =~ /\.\Q$ext\E$/i){
 	push(@exts,''); }
       else {
+	# Half attempt at case insensitivity; not actually correct, though.
+	push(@exts,'.'.lc($ext)) if $ext =~/[A-Z]/;
+	push(@exts,'.'.uc($ext)) if $ext =~/[a-z]/;
 	push(@exts, '.'.$ext); }}}
     push(@exts,'') unless @exts;
 
