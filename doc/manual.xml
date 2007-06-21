@@ -11,7 +11,7 @@
   <creator role="author">
     <personname>Bruce R. Miller</personname>
   </creator>
-  <date role="conversion">June 15, 2007</date>
+  <date role="conversion">June 18, 2007</date>
   <chapter id="manual.Ch1" refnum="1" label="intro">
     <title>Introduction</title>
     <section>
@@ -1228,7 +1228,8 @@ that is, define it and silently ignore the definition given in the source.</p>
         <para id="manual.A1.Sx1.SSx1.p2">
           <verbatim font="typewriter">
  Options:
- --output=file      specifies output file; default to stdout.
+ --destination=file specifies destination file; default to stdout.
+ --output=file      [obsolete synonym for --destination]
  --preload=module   requests loading of an optional module;
                     can be repeated
  --path=dir         adds dir to the paths searched for files,
@@ -1258,16 +1259,16 @@ that is, define it and silently ignore the definition given in the source.</p>
         <para id="manual.A1.Sx1.SSx2.p1">
           <description id="manual.A1.I1">
             <item id="manual.A1.I1.i1">
-              <tag><text font="bold">–output</text>=<text font="italic">file</text></tag>
+              <tag><text font="bold">–destination</text>=<text font="italic">file</text></tag>
               <p><text/></p>
-              <p>Specifies the output file; by default the XML is written to stdout.</p>
+              <p>Specifies the destination file; by default the XML is written to stdout.</p>
             </item>
             <item id="manual.A1.I1.i2">
               <tag><text font="bold">–preload</text>=<text font="italic">module</text></tag>
               <p><text/></p>
               <p>Requests the loading of an optional module or package.  This may be useful if the TeX code
-does not specificly require the module (eg. through input or usepackage).</p>
-              <!-- %**** pods/latexml.tex Line 50 **** -->
+does not specificly require the module (eg. through input or usepackage).
+<!-- %**** pods/latexml.tex Line 50 **** --></p>
             </item>
             <item id="manual.A1.I1.i3">
               <tag><text font="bold">–path</text>=<text font="italic">dir</text></tag>
@@ -1296,8 +1297,8 @@ all nodes have unique IDs.</p>
               </tag>
               <p><text/></p>
               <p>Increases the verbosity of output during processing, used twice is pretty chatty.
-Can be useful for getting more details when errors occur.</p>
-              <!-- %**** pods/latexml.tex Line 75 **** -->
+Can be useful for getting more details when errors occur.
+<!-- %**** pods/latexml.tex Line 75 **** --></p>
             </item>
             <item id="manual.A1.I1.i7">
               <tag>
@@ -1364,9 +1365,9 @@ an aid in tracking the source.  The option –nocomments discards such comments.
       </subsection>
       <subsection id="manual.A1.Sx1.SSx3" label="latexml_See_also">
         <title>See also<indexmark><indexphrase key="latexml">latexml</indexphrase><indexphrase key="seealso">See also</indexphrase></indexmark></title>
+        <!-- %**** pods/latexml.tex Line 125 **** -->
         <para id="manual.A1.Sx1.SSx3.p1">
-          <p><ref class="package" labelref="latexmlpost">latexmlpost</ref>, <ref class="package" labelref="LaTeXML">LaTeXML</ref>
-<!-- %**** pods/latexml.tex Line 125 **** --></p>
+          <p><ref class="package" labelref="latexmlpost">latexmlpost</ref>, <ref class="package" labelref="LaTeXML">LaTeXML</ref></p>
         </para>
       </subsection>
     </section>

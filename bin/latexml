@@ -12,10 +12,11 @@ use LaTeXML::Util::Pathname;
 
 my $identity = "latexml (LaTeXML version $LaTeXML::VERSION)";
 my($verbosity,$strict,$comments,$noparse)=(0,0,1,0);
-my ($format,$output,$help,$showversion)=('xml','');
+my ($format,$destination,$help,$showversion)=('xml','');
 my ($documentid);
 my (@paths,@preload,@debugs);
-GetOptions("output=s"  => \$output,
+GetOptions("destination=s" => \$destination,
+	   "output=s"  => \$destination,
 	   "preload=s" => \@preload,
 	   "path=s"    => \@paths,
 	   "quiet"     => sub { $verbosity--; },
@@ -48,8 +49,8 @@ my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[@paths],
 			  nomathparse=>$noparse);
 
 # Check that destination is valid before wasting any time...
-if($output){
-  if(my $dir =pathname_directory($output)){
+if($destination){
+  if(my $dir =pathname_directory($destination)){
     pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }}
 binmode(STDERR,":utf8");
 # ========================================
@@ -83,14 +84,14 @@ if($digested){
     }}
 print STDERR "\nConversion complete: ".$latexml->getStatusMessage.".\n";
 
-if($output){
-#  open(OUT,">:utf8",$output) or die "Couldn't open output file $output: $!"; }
-  open(OUT,">",$output) or die "Couldn't open output file $output: $!"; }
+if($destination){
+#  open(OUT,">:utf8",$destination) or die "Couldn't open output file $destination: $!"; }
+  open(OUT,">",$destination) or die "Couldn't open output file $destination: $!"; }
 else {
 #  binmode(STDOUT,":utf8");
   *OUT = *STDOUT; }
 print OUT $serialized if $serialized;
-if($output){ 
+if($destination){ 
   close(OUT); }
 
 #**********************************************************************
@@ -105,7 +106,8 @@ C<latexml> - transforms a TeX/LaTeX file into XML.
 latexml [options] texfile
 
  Options:
- --output=file      specifies output file; default to stdout.
+ --destination=file specifies destination file; default to stdout.
+ --output=file      [obsolete synonym for --destination]
  --preload=module   requests loading of an optional module;
                     can be repeated
  --path=dir         adds dir to the paths searched for files,
@@ -131,9 +133,9 @@ If texfile is '-', latexml reads the TeX source from standard input.
 
 =over 4
 
-=item B<--output>=I<file>
+=item B<--destination>=I<file>
 
-Specifies the output file; by default the XML is written to stdout.
+Specifies the destination file; by default the XML is written to stdout.
 
 =item B<--preload>=I<module>
 

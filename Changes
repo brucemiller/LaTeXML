@@ -1,3 +1,26 @@
+0.5.9  2007-06-20
+     - Hmmm, I haven't been keeping the changelog uptodate.
+       Things _have_ been happening...
+     - Lots of changes, including:
+     - Improvements to handling of various kinds of Alignments,
+       including multrow, rowspan, tabularx packages
+     - enhancements to postprocessing to support splitting single
+       documents into multiple output pages, as well as crossreferencing
+       between multiple source documents.
+     - Improvements to manual.
+     - Updated for XML::LibXML version 1.62
+       No longer explicitly requires XPathContext.
+     - Experimental math linebreaker 
+       (see --linelength option to latexmlpost)
+     - Various minor correctness & robustness patches.
+       [Thanks to the DLMF and ArXMLiv projects for testing and patches]
+
+0.5.1  2006-04-27
+       Released.
+
+0.5.0  2006-03-22
+       Released.
+
 0.5.x  2006-08-03
      - Changes to how frontmatter is handled, and represented.
        Frontmatter gets accumulated and added to <document>
