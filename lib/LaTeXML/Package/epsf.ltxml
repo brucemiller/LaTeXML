@@ -1,6 +1,6 @@
 # -*- CPERL -*-
 # /=====================================================================\ #
-# |  graphicx                                                           | #
+# |  epsf                                                               | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -14,27 +14,44 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
-use LaTeXML::Util::KeyVal;
 
 #**********************************************************************
 # Provides alternative argument syntax.
-RequirePackage('graphics');
+RawTeX(<<'EOTeX');
+\newif\ifepsfatend
+\newif\ifepsfdraft
+\newif\ifepsfframe
+\newif\ifepsfshow
+\epsfshowtrue
+\newif\ifepsfshowfilename
+\newif\ifepsfverbose
+\newdimen\epsfframemargin
+\newdimen\epsfframethickness
+\newdimen\epsfxsize
+\newdimen\epsfysize
+\newdimen\pspoints
+\pspoints = 1bp
+\epsfxsize = 0pt
+\epsfysize = 0pt
+\epsfframemargin = 0pt
+\epsfframethickness = 0.4pt
+EOTeX
 
-DefKeyVal('Gin','width','Dimension');
-DefKeyVal('Gin','height','Dimension');
-DefKeyVal('Gin','keepaspectratio','','true');
-DefKeyVal('Gin','clip','','true');
+DefPrimitive('\epsfclipon', sub { AssignValue(epsf_clip=>1); return; });
+DefPrimitive('\epsfclipoff', sub { AssignValue(epsf_clip=>0); return; });
+DefConstructor('\epsfbox[] Semiverbatim', sub {
+  my($document,$bb,$graphic)=@_;
+  my $clip = LookupValue('epsf_clip');
+  my $options=($clip ? ($bb ? "viewport=$bb, clip" : "clip") : '');
+  $document->insertElement('ltx:graphics',undef,graphic=>$graphic,options=>$options); });
 
-DefKeyVal('Gin','vrml','Semiverbatim');
-DefKeyVal('Gin','magnifiable','','true');
+Let('\epsfgetlitbb','\epsfbox');
+Let('\epsfnormal','\epsfbox');
+Let('\epsffile','\epsfbox');
 
-# Redefine
-DefMacro('\includegraphics OptionalMatch:* []',
-	 '\@ifnextchar[{\@includegraphics#1[#2]}{\@includegraphicx#1[#2]}');
+DefPrimitive('\epsfgetbb Semiverbatim',undef);
+DefPrimitive('\epsfframe', undef); # Ignore (?), and process the arg.
 
-DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbatim',
-	       "<ltx:graphics graphic='#3' options='#2?#1(,clip=true)'/>",
-	      alias=>'\@includegraphicx');
 
 
 #**********************************************************************
