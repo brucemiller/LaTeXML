@@ -54,6 +54,8 @@ DefParameterType('Keyword',    sub{shift->readKeyword(@_); });
 DefParameterType('Balanced',   sub{$_[0]->readBalanced; });
 DefParameterType('Semiverbatim',sub{ $_[0]->readArg; }, semiverbatim=>1,
 		 reversion=>sub { (T_BEGIN,$_[0]->revert,T_END); });
+DefParameterType('OptionalSemiverbatim',sub{ $_[0]->readOptional; }, semiverbatim=>1,
+		 reversion=>sub { ($_[0] ? (T_OTHER('['),$_[0]->revert,T_OTHER(']')) : ()); });
 
 DefParameterType('Undigested',  sub { $_[0]->readArg; }, undigested=>1,
 		reversion=>sub {  (T_BEGIN,$_[0]->revert,T_END); });
@@ -63,8 +65,11 @@ DefParameterType('Variable', sub {
   my($gullet)=@_;
   my $token = $gullet->readXToken;
   my $defn = $token && LookupDefinition($token);
-  ((defined $defn) && $defn->isRegister && !$defn->isReadonly
-   ? [$defn,$defn->readArguments($gullet)] : undef); });
+  if((defined $defn) && $defn->isRegister && !$defn->isReadonly){
+    [$defn,$defn->readArguments($gullet)]; }
+  else {
+    Error("Attempt to use ".($token||'')." as a variable");
+    undef; }});
 
 DefParameterType('XUntilSpace', sub {
   my($gullet)=@_;
@@ -302,6 +307,7 @@ DefExpandable('\botmark',        sub { return; });
 DefExpandable('\splitfirstmark', sub { return; });
 DefExpandable('\splitbotmark',   sub { return; });
 
+# [note, this will load name.tex, if it exists, else name]
 DefExpandable('\input XUntilSpace',sub {
   my($gullet,$path)=@_;
   $path = $path->toString;
@@ -319,9 +325,11 @@ DefExpandable('\endinput',sub { $_[0]->closeMouth(1); return; });
 # \the<internal quantity>
 DefExpandable('\the Variable',sub {
   my($gullet,$variable)=@_;
+  return () unless $variable;
   my($defn,@args) = @$variable;
   my $type = $defn->isRegister;
-  if(!$type){ Fatal("You can't use ".ToString($defn->getCS)." after \\the"); }
+  if(!$type){ 
+    Error("You can't use ".ToString($defn->getCS)." after \\the"); return (); }
   my $value = $defn->valueOf(@args);
   my @tokens = ($type eq 'any' ? $value->unlist : Explode($value->toString));
   if($LaTeXML::NOEXPAND_THE){	# See \the for the sense in this.
@@ -677,16 +685,19 @@ DefRegister('\toks Number'  => Tokens());
 
 DefPrimitive('\advance Variable SkipKeyword:by',sub {
   my($stomach,$var)=@_;
+  return () unless $var;
   my($defn,@args)=@$var;
   $defn->setValue($defn->valueOf(@args)->add($stomach->getGullet->readValue($defn->isRegister)),@args); });
 
 DefPrimitive('\multiply Variable SkipKeyword:by Number',sub {
   my($stomach,$var,$scale)=@_;
+  return () unless $var;
   my($defn,@args)=@$var;
   $defn->setValue($defn->valueOf(@args)->multiply($scale->valueOf),@args); });
 
 DefPrimitive('\divide Variable SkipKeyword:by Number',sub {
   my($stomach,$var,$scale)=@_;
+  return () unless $var;
   my($defn,@args)=@$var;
   $defn->setValue($defn->valueOf(@args)->multiply(1/$scale->valueOf),@args); });
 
@@ -1701,8 +1712,11 @@ sub scriptHandler {
     AssignValue(mathstyle=>$style); # revert
     @stuff; }
   else {			# Non math use of _ ??
-    # Warn ??
-    ( ($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB);
+    my $c = (($op eq 'SUPERSCRIPT') ? '^' : '_');
+    Error("Script $c can only appear in math mode");
+    LaTeXML::Box->new($c,
+		      $STATE->lookupValue('font'),$gullet->getLocator,
+		      (($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
   }}
 
 DefPrimitive('^', sub{ scriptHandler($_[0],'SUPERSCRIPT'); });
@@ -1894,7 +1908,7 @@ DefPrimitive('\unboldmath',sub { AssignValue(mathfont=>LookupValue('mathfont')->
 
 # & gives an error except within the right context 
 # (which should redefine it!)
-DefConstructor('&',sub { Fatal("Stray \"&\""); });
+DefConstructor('&',sub { Error("Stray \"&\""); });
 
 #**********************************************************************
 # Plain;  Extracted from Appendix B.
@@ -1982,7 +1996,7 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 # TeX Book, Appendix B, p. 345
 
 RawTeX('
-  \chardef\@one=1
+  \chardef\@ne=1
   \chardef\tw@=2
   \chardef\thr@@=3
   \chardef\sixt@@n=16
@@ -3287,7 +3301,7 @@ sub loadLaTeXClass {
     NoteEnd($msg); }
   return; }
 
-DefConstructor('\documentclass[] Semiverbatim []',
+DefConstructor('\documentclass OptionalSemiverbatim Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
@@ -3297,7 +3311,7 @@ DefConstructor('\documentclass[] Semiverbatim []',
     loadLaTeXClass($stomach,$whatsit->getArg(2)->toString,@options);
     return;});
 
-DefConstructor('\documentstyle[] Semiverbatim []',
+DefConstructor('\documentstyle OptionalSemiverbatim Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;

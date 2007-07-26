@@ -276,7 +276,7 @@ DefRegister('\mathindent'   => Dimension(0));
 # Ignorable packages ??
 # pre-defined packages??
 
-DefConstructor('\usepackage[]{}',
+DefConstructor('\usepackage[] Semiverbatim',
 	       "<?latexml package='#2' ?#1(options='#1')?>",
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
@@ -286,14 +286,14 @@ DefConstructor('\usepackage[]{}',
 				  $options = [($options ? split(',',($options->toString)) :())];
 				  map(RequirePackage($_,options=>$options),@pkgs);
 				  return});
-DefConstructor('\RequirePackage[]{}[]',
+DefConstructor('\RequirePackage[] Semiverbatim []',
 	       "<?latexml package='#2' ?#1(options='#1')?>",
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
 				  my $package=$whatsit->getArg(2);
 				  $options = [($options ? split(',',($options->toString)) :())];
 				  RequirePackage(ToString($package), options=>$options); });
-DefConstructor('\LoadClass[]{}[]',
+DefConstructor('\LoadClass[] Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
@@ -754,7 +754,7 @@ DefConstructor('\mathnormal{}', '#1', bounded=>1, requireMath=>1,
 
 DefPrimitive('\newcommand OptionalMatch:* {Token}[][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
-  Fatal(Stringify($cs)." is already defined") if LookupDefinition($cs);
+  Error(Stringify($cs)." is already defined") if LookupDefinition($cs);
   DefMacro($cs->toString . convertLaTeXArgs($nargs,$opt),$body); });
 
 DefPrimitive('\renewcommand OptionalMatch:* {Token}[][]{}', sub {
@@ -805,7 +805,7 @@ DefPrimitive('\DeclareSizeFunction{}{}', undef);
 DefPrimitive('\newenvironment OptionalMatch:* {}[][]{}{}', sub {
   my($stomach,$star,$name,$nargs,$opt,$begin,$end)=@_;
   $name = $name->toString;
-  Fatal("Environment $name is already defined") if LookupDefinition(T_CS("\\$name"));
+  Error("Environment $name is already defined") if LookupDefinition(T_CS("\\$name"));
   DefMacro(join('','\\',$name, convertLaTeXArgs($nargs,$opt)),$begin);
   DefMacro(join('','\\end',$name),$end); });
 
@@ -998,11 +998,19 @@ DefMacro('\floatpagefraction',"0.25");
 NewCounter('dbltopnumber');
 DefMacro('\dblfloatpagefraction',"0.25");
 DefMacro('\dblfloatpagefraction',"0.25");
-DefRegister('\floatsep',Glue(0));
-DefRegister('\textfloatsep',Glue(0));
-DefRegister('\intextsep',Glue(0));
-DefRegister('\dblfloatsep',Glue(0));
-DefRegister('\dbltextfloatsep',Glue(0));
+DefRegister('\floatsep'     => Glue(0));
+DefRegister('\textfloatsep' => Glue(0));
+DefRegister('\intextsep'    => Glue(0));
+DefRegister('\dblfloatsep'  => Glue(0));
+DefRegister('\dbltextfloatsep' => Glue(0));
+DefRegister('\@maxsep'      => Dimension(0));
+DefRegister('\@dblmaxsep'   => Dimension(0));
+DefRegister('\@fptop'      => Glue(0));
+DefRegister('\@fpsep'      => Glue(0));
+DefRegister('\@fpbot'      => Glue(0));
+DefRegister('\@dblfptop'   => Glue(0));
+DefRegister('\@dblfpsep'   => Glue(0));
+DefRegister('\@dblfpbot'   => Glue(0));
 
 #======================================================================
 # C.9.2 Marginal Notes
@@ -1212,7 +1220,9 @@ DefMacro('\citetalias Semiverbatim','\citet{#1}');
 #======================================================================
 # C.11.4 Splitting the input
 #======================================================================
+Let('\@@input','\input');	# Save TeX's version.
 # LaTeX's \input is a bit different...
+# [note, this will load name.tex, if it exists, else name]
 DefPrimitive('\input', sub {
   my($stomach)=@_;
   my $gullet=$stomach->getGullet;
@@ -1236,6 +1246,7 @@ DefPrimitive('\input', sub {
 # Note that even excluded files SHOULD have the effects of their inclusion
 # simulated by having read the corresponding aux file;
 # But we're not bothering with that.
+# [note, this will load name.tex, if it exists, else name]
 DefPrimitive('\include{}',sub { 
   my($stomach,$path)=@_;
   $path = $path->toString;
@@ -1243,6 +1254,7 @@ DefPrimitive('\include{}',sub {
   $stomach->getGullet->input($path,['tex','']) if  !$table || $$table{$path};
   return; });
 
+# [note, this will load name.tex, if it exists, else name]
 DefPrimitive('\includeonly{}',sub {
   my($stomach,$paths)=@_;
   $paths = $paths->toString;
@@ -1507,21 +1519,11 @@ DefPrimitive('\samepage',undef);
 DefPrimitive('\newlength{Token}',sub {
   my($stomach,$cmd)=@_;
   DefRegister($cmd->toString,Dimension(0)); });
-# \setlength{cmd}{len}
-# Damn people sure can abuse TeX!
-##DefPrimitive('\setlength{Token}{Dimension}',sub{
-##  my($stomach,$cmd,$dimen)=@_;
-##  LookupDefinition($cmd)->setValue($dimen);});
 DefMacro('\setlength{}{}','#1#2\relax');
-# \addtolength{cmd}{len}
-## DefPrimitive('\addtolength{Token}{Dimension}',sub{
-##   my($stomach,$cmd,$dimen)=@_;
-##   my $register =  LookupDefinition($cmd);
-##   $register->setValue($register->valueOf->add($dimen));});
 DefMacro('\addtolength{}{}','\advance#1 #2\relax');
-# \settowidth{cmd}{text}
-# \settoheight{cmd}{text}
-# \settodepth{cmd}{text}
+DefMacro('\settowidth{}{}','#1 0pt\relax'); # Till we have an approximation of width
+DefMacro('\settoheight{}{}','#1 0pt\relax'); # "
+DefMacro('\settodepth{}{}','#1 0pt\relax'); # "
 
 # Assuming noone tries to get clever with figuring out the allocation of 
 # numbers, these become simple DefRegister's
@@ -1607,7 +1609,7 @@ sub ReadPair {
     $gullet->skipSpaces; $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
     Pair($x,$y); }}
 
-sub ReadFloat { $_[0]->skipSpaces; $_[0]->readFloat; }
+sub ReadFloat { $_[0]->skipSpaces; ($_[0]->readFloat || Float(0)); }
 
 sub ptValue { $_[0]?$_[0]->ptValue:undef; }
 
@@ -1842,7 +1844,7 @@ DefPrimitive('\mathversion{}',sub {
     AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>1), 'local'); }
   elsif($version eq 'normal'){ 
     AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>0), 'local'); }
-  else { Fatal("Unknown math verison \"$version\""); }});
+  else { Error("Unknown math verison \"$version\""); }});
 
 DefMacro('\newfont{}{}', '\font#1=#2\relax');
 
@@ -2014,6 +2016,19 @@ DefMacro('\@latex@info@no@line{}',
   '\@latex@info{#1\@gobble}');
 
 #======================================================================
+RawTeX(<<'EOTeX');
+\newif\if@insert
+\newif\if@colmade
+\newif\if@specialpage   \@specialpagefalse
+\newif\if@firstcolumn   \@firstcolumntrue
+\newif\if@twocolumn     \@twocolumnfalse
+\newif\if@twoside       \@twosidefalse
+\newif\if@reversemargin \@reversemarginfalse
+\newif\if@mparswitch    \@mparswitchfalse
+\newcount\col@number    \@ne
+\newif\if@compatibility
+
+EOTeX
 
 #======================================================================
 # Some control structure from latex.ltx
@@ -2032,7 +2047,6 @@ RawTeX(<<'EOTeX');
 \long\def\@iforloop#1,#2\@@#3#4{\def#3{#1}\ifx #3\@nnil
        \expandafter\@fornoop \else
       #4\relax\expandafter\@iforloop\fi#2\@@#3{#4}}
-
 EOTeX
 
 #======================================================================
@@ -2062,10 +2076,12 @@ DefMacro('\@ifundefined{}{}{}',sub {
   my $meaning = LookupMeaning($cs);
   (!(defined $meaning) || ($meaning ne $cs) ? $if->unlist : $else->unlist); });
 
+# [note, this will load name.tex, if it exists, else name]
 DefMacro('\IfFileExists{}{}{}', sub{
   my($gullet,$file,$if,$else)=@_;
   (FindFile($file) ? $if->unlist : $else->unlist); });
 
+# [note, this will load name.tex, if it exists, else name]
 DefMacro('\InputIfFileExists{}{}{}', sub{
   my($gullet,$file,$if,$else)=@_;
   if(FindFile($file)){
@@ -2079,6 +2095,16 @@ DefRegister('\@tempdimc' => Dimension(0));
 DefRegister('\@tempskipa' => Glue(0));
 DefRegister('\@tempskipb' => Glue(0));
 DefRegister('\@tempskipc' => Glue(0));
+DefRegister('\@flushglue' => Glue(0));
+#DefRegister('\@tempboxa'  => Box());
+#DefRegister('\@temptokena'  => Tokens());
+RawTeX(<<'EOTeX');
+\def\@tempswafalse{\let\if@tempswa\iffalse}
+\def\@tempswatrue{\let\if@tempswa\iftrue}
+\let\if@tempswa\iffalse
+\long\def\@firstoftwo#1#2{#1}
+\long\def\@secondoftwo#1#2{#2}
+EOTeX
 #======================================================================
 # Hair
 DefPrimitive('\makeatletter',sub { AssignCatcode('@'=>CC_LETTER,'local'); });

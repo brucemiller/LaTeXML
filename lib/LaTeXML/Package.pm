@@ -317,11 +317,11 @@ sub CheckOptions {
 }
 
 sub requireMath() {
-  Fatal("Current operation can only appear in math mode") unless LookupValue('IN_MATH');
+  Error("Current operation can only appear in math mode") unless LookupValue('IN_MATH');
   return; }
 
 sub forbidMath() {
-  Fatal("Current operation can not appear in math mode") if LookupValue('IN_MATH');
+  Error("Current operation can not appear in math mode") if LookupValue('IN_MATH');
   return; }
 
 
@@ -399,8 +399,11 @@ sub DefRegister {
   my $getter = $options{getter} 
     || sub { LookupValue(join('',$name,map($_->toString,@_))) || $value; };
   my $setter = $options{setter} 
-    || sub { my($value,@args)=@_; 
-	     AssignValue(join('',$name,map($_->toString,@args)) => $value); };
+    || ($options{readonly}
+	? sub { my($value,@args)=@_; 
+		Error("Cannot assign to register $name"); return; }
+	: sub { my($value,@args)=@_; 
+		AssignValue(join('',$name,map($_->toString,@args)) => $value); });
   # Not really right to set the value!
   AssignValue($cs->toString =>$value) if defined $value;
   $STATE->installDefinition(LaTeXML::Register->new($cs,$paramlist, $type,$getter,$setter,
@@ -718,11 +721,18 @@ our $require_options = {options=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
+  # Search FIRST for .ltxml anywhere, then .sty if that fails.
+  #[ or maybe should .sty be ignored in most cases? ]
   my $file = pathname_find($package,paths=>$STATE->lookupValue('SEARCHPATHS'),
 			   types=>['ltxml'], installation_subdir=>'Package')
     || pathname_find($package,paths=>$STATE->lookupValue('SEARCHPATHS'),
 		     types=>['sty'], installation_subdir=>'Package');
-  $STATE->getStomach->getGullet->input($file,undef,%options); 
+  if($file){
+    $STATE->getStomach->getGullet->input($file,undef,%options); }
+  else {
+    $STATE->noteStatus(missing=>$package);
+    Error("Cannot find package $package"
+	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   return; }
 
 sub FindFile {
