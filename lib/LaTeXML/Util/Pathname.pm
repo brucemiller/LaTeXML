@@ -211,8 +211,9 @@ sub candidate_pathnames {
 	push(@exts,''); }
       else {
 	# Half attempt at case insensitivity; not actually correct, though.
-	push(@exts,'.'.lc($ext)) if $ext =~/[A-Z]/;
-	push(@exts,'.'.uc($ext)) if $ext =~/[a-z]/;
+## Disabled, since it screws up on the Mac's partially case-insensitive (?) filesystem.
+##	push(@exts,'.'.lc($ext)) if $ext =~/[A-Z]/;
+##	push(@exts,'.'.uc($ext)) if $ext =~/[a-z]/;
 	push(@exts, '.'.$ext); }}}
     push(@exts,'') unless @exts;
 
