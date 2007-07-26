@@ -17,8 +17,15 @@ package LaTeXML::Package::Pool;
 #**********************************************************************
 # Document structure.
 
-DocType("ltx:document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd', 
+DocType("ltx:document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd',
 	'#default'=>"http://dlmf.nist.gov/LaTeXML");
+
+DefMacro('\@ptsize','0');	# should depend on options...
+RawTeX(<<'EOTeX');
+\newif\if@restonecol
+\newif\if@titlepage
+\@titlepagefalse
+EOTeX
 
 #**********************************************************************
 # The core sectioning commands are defined in LaTeX.pm
