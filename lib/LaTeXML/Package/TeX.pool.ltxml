@@ -54,7 +54,8 @@ DefParameterType('Keyword',    sub{shift->readKeyword(@_); });
 DefParameterType('Balanced',   sub{$_[0]->readBalanced; });
 DefParameterType('Semiverbatim',sub{ $_[0]->readArg; }, semiverbatim=>1,
 		 reversion=>sub { (T_BEGIN,$_[0]->revert,T_END); });
-DefParameterType('OptionalSemiverbatim',sub{ $_[0]->readOptional; }, semiverbatim=>1,
+DefParameterType('OptionalSemiverbatim',sub{ $_[0]->readOptional; },
+		 semiverbatim=>1, optional=>1,
 		 reversion=>sub { ($_[0] ? (T_OTHER('['),$_[0]->revert,T_OTHER(']')) : ()); });
 
 DefParameterType('Undigested',  sub { $_[0]->readArg; }, undigested=>1,
@@ -307,17 +308,16 @@ DefExpandable('\botmark',        sub { return; });
 DefExpandable('\splitfirstmark', sub { return; });
 DefExpandable('\splitbotmark',   sub { return; });
 
-# [note, this will load name.tex, if it exists, else name]
 DefExpandable('\input XUntilSpace',sub {
   my($gullet,$path)=@_;
   $path = $path->toString;
   $path = $1 if $path =~ /^\{(.*)\}$/; # just in case
-  # Special case HACK.  If filename ends .sty, we're probably really
-  # trying to load a LaTeX (non-tex!) style file!  Look for .ltxml!
-  if($path =~ s/\.sty$//){
-    $gullet->input($path,['ltxml','sty']); }
+  if(my $file = FindFile($path)){
+    $gullet->input($file); }
   else {
-    $gullet->input($path,['tex','']); }
+    $STATE->noteStatus(missing=>$path);
+    Error("Cannot find file $path "
+	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   return; });
 
 DefExpandable('\endinput',sub { $_[0]->closeMouth(1); return; });
@@ -3285,20 +3285,19 @@ our %ignorable_classoptions
 sub loadLaTeXClass {
   my($stomach,$class,@options)=@_;
   AssignValue(inPreamble=>1);	# \begin{document} will clear this.
-  $stomach->getGullet->input('LaTeX',['ltxml'],options=>[@options]);
-  if(my $file = FindFile($class,'ltxml')){
-    $stomach->getGullet->input($class,['ltxml']); }
-  elsif($file = FindFile($class,'cls')){
-    my $msg = "IGNORING class file $file: using article instead";
-    NoteBegin($msg); 
-    $stomach->getGullet->input('article',['ltxml']);
-    NoteEnd($msg); }
+  if(my $poolfile = FindFile("LaTeX.pool")){
+    $stomach->getGullet->input($poolfile,undef,options=>[@options]); }
   else {
-    Error("No implementation of document class $class; using article instead");
-    my $msg = "using article instead";
-    NoteBegin($msg); 
-    $stomach->getGullet->input('article',['ltxml']);
-    NoteEnd($msg); }
+    Fatal("Installation error: Cannot find LaTeX pool module!"); }
+  my $classfile = FindFile($class,"cls");
+  if(!$classfile || ($classfile =~ /\.cls$/)){
+    Warn("No LaTeXML implementation of class $class found, using article");
+    if($classfile = FindFile("article.cls")){
+      $stomach->getGullet->input($classfile,undef,options=>[@options]); }
+    else {
+      Fatal("Installation error: Cannot find article implementation!"); }}
+  else {
+    $stomach->getGullet->input($classfile,undef,options=>[@options]); }
   return; }
 
 DefConstructor('\documentclass OptionalSemiverbatim Semiverbatim []',
@@ -3321,7 +3320,7 @@ DefConstructor('\documentstyle OptionalSemiverbatim Semiverbatim []',
     loadLaTeXClass($stomach,$whatsit->getArg(2)->toString,@options);
     # For documentstyle, some options mean to load styles!
     foreach my $option(@options) {
-      if(my $file = FindFile($option,['ltxml','sty'])){
+      if(my $file = FindFile($option,'sty')){
 	$stomach->getGullet->input($file); }}
     return;});
 

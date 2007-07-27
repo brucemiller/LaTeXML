@@ -721,28 +721,35 @@ our $require_options = {options=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
-  # Search FIRST for .ltxml anywhere, then .sty if that fails.
-  #[ or maybe should .sty be ignored in most cases? ]
-  my $file = pathname_find($package,paths=>$STATE->lookupValue('SEARCHPATHS'),
-			   types=>['ltxml'], installation_subdir=>'Package')
-    || pathname_find($package,paths=>$STATE->lookupValue('SEARCHPATHS'),
-		     types=>['sty'], installation_subdir=>'Package');
-  if($file){
+  my $extension = $options{type} || 'sty';
+  if(my $file = FindFile($package,$extension)){
     $STATE->getStomach->getGullet->input($file,undef,%options); }
   else {
     $STATE->noteStatus(missing=>$package);
     Error("Cannot find package $package"
+	  .($extension eq 'sty' ? '' : "(w/type=$extension)")
 	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   return; }
 
+# Find a file:
+# If $ext is given or $file ends with a known extension
+# (eg. .sty for packages, .cls for classes, etc):
+#    the file is sought first as $file.$ext.ltxml then as $file.$ext
+# Otherwise, the file is sought in a more TeX-like fashion:
+#    the file is sought as $file.tex.ltxml, $file.tex, $file.ltxml or $file.
 sub FindFile {
   my ($file,$ext)=@_;
+  my $paths = LookupValue('SEARCHPATHS');
   $file = ToString($file);
-  $ext = [$ext] unless ref $ext;
-  my $pkg = ($file =~ /\.ltxml$/) || ($ext && grep('ltxml',@$ext));
-  pathname_find($file,paths=>LookupValue('SEARCHPATHS'),
-		types=>$ext,
-		($pkg ? (installation_subdir=>'Package'):())); }
+  $file .= ".$ext" if $ext;
+  if($ext || ($file =~ /\.(pool|sty|cls|clo|cnf)$/)){ # explicit or known extensions
+    pathname_find("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
+      || pathname_find("$file",paths=>$paths); }
+  else {
+    pathname_find("$file.tex.ltxml",paths=>$paths,installation_subdir=>'Package')
+      || pathname_find("$file.tex",paths=>$paths)
+	|| pathname_find("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
+	  || pathname_find("$file",paths=>$paths); }}
 
 sub RawTeX {
   my($text)=@_;

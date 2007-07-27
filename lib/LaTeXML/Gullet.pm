@@ -58,8 +58,11 @@ sub input {
     Fatal("Package $name had an error:\n  $@") if $@; 
     $self->closeMouth if $pmouth eq $$self{mouth}; # Close immediately, unless recursive input
   }
-  elsif($file =~ /\.(sty|cls)$/){	# (attempt to) interpret a style file.
+  elsif($file =~ /\.(pool|sty|cls|clo|cnf)$/){	# (attempt to) interpret a style file.
     return if $STATE->lookupValue($file.'_loaded');
+    if(! $STATE->lookupValue('INCLUDE_STYLES')){
+      Warn("Ignoring style file $file");
+      return; }
     $STATE->assignValue($file.'_loaded'=>1,'global');
     $self->openMouth(LaTeXML::StyleMouth->new($file), 0);  }
   else {			# Else read as an included file.

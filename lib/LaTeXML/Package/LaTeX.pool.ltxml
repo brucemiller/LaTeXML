@@ -1222,7 +1222,6 @@ DefMacro('\citetalias Semiverbatim','\citet{#1}');
 #======================================================================
 Let('\@@input','\input');	# Save TeX's version.
 # LaTeX's \input is a bit different...
-# [note, this will load name.tex, if it exists, else name]
 DefPrimitive('\input', sub {
   my($stomach)=@_;
   my $gullet=$stomach->getGullet;
@@ -1234,24 +1233,29 @@ DefPrimitive('\input', sub {
     while(($token = $gullet->readXToken) && ($token->getCatcode != CC_SPACE)){
       push(@tokens,$token); }
     $path = Tokens(@tokens); }
-  # Special case HACK.  If filename ends .sty, we're probably really
-  # trying to load a style file!  Look for .ltxml!
   $path = $path->toString if ref $path;
-  if($path =~ s/\.sty$//){
-    $gullet->input($path,['ltxml','sty']); }
+  if(my $file = FindFile($path)){
+    $gullet->input($file); }
   else {
-    $gullet->input($path,['tex','']); }
+    $STATE->noteStatus(missing=>$path);
+    Error("Cannot find file $path "
+	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   return; });
 
 # Note that even excluded files SHOULD have the effects of their inclusion
 # simulated by having read the corresponding aux file;
 # But we're not bothering with that.
-# [note, this will load name.tex, if it exists, else name]
 DefPrimitive('\include{}',sub { 
   my($stomach,$path)=@_;
   $path = $path->toString;
   my $table = LookupValue('including@only');
-  $stomach->getGullet->input($path,['tex','']) if  !$table || $$table{$path};
+  if(!$table || $$table{$path}){
+    if(my $file = FindFile($path)){
+      $stomach->getGullet->input($file); }
+    else {
+      $STATE->noteStatus(missing=>$path);
+      Error("Cannot find file $path "
+	    ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }}
   return; });
 
 # [note, this will load name.tex, if it exists, else name]
@@ -2076,12 +2080,10 @@ DefMacro('\@ifundefined{}{}{}',sub {
   my $meaning = LookupMeaning($cs);
   (!(defined $meaning) || ($meaning ne $cs) ? $if->unlist : $else->unlist); });
 
-# [note, this will load name.tex, if it exists, else name]
 DefMacro('\IfFileExists{}{}{}', sub{
   my($gullet,$file,$if,$else)=@_;
   (FindFile($file) ? $if->unlist : $else->unlist); });
 
-# [note, this will load name.tex, if it exists, else name]
 DefMacro('\InputIfFileExists{}{}{}', sub{
   my($gullet,$file,$if,$else)=@_;
   if(FindFile($file)){

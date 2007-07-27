@@ -43,6 +43,7 @@ sub new {
   $state->assignValue(DOCUMENTID=>(defined $options{documentid} ? $options{documentid} : ''),
 		      'global');
   $state->assignValue(SEARCHPATHS=> [ @{$options{searchpaths} || []} ],'global');
+  $state->assignValue(INCLUDE_STYLES=>$options{includeStyles}|| 0,'global');
   bless {state   => $state, 
 	 nomathparse=>$options{nomathparse}||0,
 	 preload=>$options{preload},
@@ -89,7 +90,12 @@ sub digestFile {
 
   NoteBegin("Digesting $file");
   $stomach->initialize;
-  map($gullet->input($_,['ltxml']), 'TeX', @{$$self{preload} || []} );
+  my $paths = $STATE->lookupValue('SEARCHPATHS');
+  foreach my $preload ('TeX.pool', @{$$self{preload} || []}){
+    if(my $loadpath = pathname_find("$preload.ltxml",paths=>$paths,installation_subdir=>'Package')){
+      $gullet->input($loadpath); }
+    else {
+      Fatal("Couldn't find $preload to preload"); }}
 
   my $pathname = pathname_find($file,types=>['tex','']);
   Fatal("Cannot find TeX file $file") unless $pathname;
@@ -115,7 +121,13 @@ sub digestString {
 
   NoteBegin("Digesting string");
   $stomach->initialize;
-  map($gullet->input($_,['ltxml']), 'TeX', @{$$self{preload} || []} );
+  my $paths = $STATE->lookupValue('SEARCHPATHS');
+  foreach my $preload ('TeX.pool', @{$$self{preload} || []}){
+    if(my $loadpath = pathname_find("$preload.ltxml",paths=>$paths,installation_subdir=>'Package')){
+      $gullet->input($loadpath); }
+    else {
+      Fatal("Couldn't find $preload to preload"); }}
+
   $gullet->openMouth(LaTeXML::Mouth->new($string),0);
   $STATE->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode("Unknown"))));
   my $list = LaTeXML::List->new($stomach->digestNextBody); 

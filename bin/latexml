@@ -11,7 +11,7 @@ use LaTeXML::Util::Pathname;
 # Parse command line
 
 my $identity = "latexml (LaTeXML version $LaTeXML::VERSION)";
-my($verbosity,$strict,$comments,$noparse)=(0,0,1,0);
+my($verbosity,$strict,$comments,$noparse,$includestyles)=(0,0,1,0,0);
 my ($format,$destination,$help,$showversion)=('xml','');
 my ($documentid);
 my (@paths,@preload,@debugs);
@@ -26,6 +26,7 @@ GetOptions("destination=s" => \$destination,
 	   "tex"       => sub { $format = 'tex'; },
 	   "box"       => sub { $format = 'box'; },
 	   "noparse"   => \$noparse,
+	   "includestyles"=> \$includestyles,
 	   "comments!" => \$comments,
 	   "VERSION"   => \$showversion,
 	   "debug=s"   => sub { eval "\$LaTeXML::$_[1]::DEBUG=1; "; },
@@ -45,6 +46,7 @@ print STDERR "$identity\n" unless $verbosity < 0;
 my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[@paths],
 			  verbosity=>$verbosity, strict=>$strict,
 			  includeComments=>$comments,
+			  includeStyles=>$includestyles,
 			  documentid=>$documentid,
 			  nomathparse=>$noparse);
 
@@ -141,6 +143,21 @@ Specifies the destination file; by default the XML is written to stdout.
 
 Requests the loading of an optional module or package.  This may be useful if the TeX code
 does not specificly require the module (eg. through input or usepackage).
+For example, to force LaTeX mode, use C<--preload=LaTeX.pool>.
+
+=item B<--includestyles>
+
+This optional allows processing of style files (files with extensions C<sty>,
+C<cls>, C<clo>, C<cnf>).  By default, these files are ignored  unless a latexml
+implementation of them is found (with an extension of C<ltxml>).
+
+These style files generally fall into two classes:  Those
+that merely affect document style are ignorable in the XML.
+Others define new markup and document structure, often using
+deeper LaTeX macros to achieve their ends.  Although the omission
+will lead to other errors (missing macro definitions), it is
+unlikely that processing the TeX code in the style file will
+lead to a correct document.
 
 =item B<--path>=I<dir>
 
