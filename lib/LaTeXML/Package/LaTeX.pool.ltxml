@@ -299,7 +299,8 @@ DefConstructor('\LoadClass[] Semiverbatim []',
 				  my $options=$whatsit->getArg(1);
 				  my $class=$whatsit->getArg(2);
 				  $options = [($options ? split(',',($options->toString)) :())];
-				  RequirePackage(ToString($class), options=>$options); });
+				  RequirePackage(ToString($class),
+						 type=>'cls', options=>$options); });
 
 #======================================================================
 # C.5.3 Page Styles
