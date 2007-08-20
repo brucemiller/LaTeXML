@@ -89,9 +89,10 @@ sub getBibEntries {
 	$title= ($title ?$title->textContent : '');
 
 	my $sortkey = lc(join('.',$names,$date,$title,$bibkey));
+	my $referrers = $dbentry->getValue('referrers');
 	$$entries{$sortkey} = {bibentry=>$bibentry, ay=>"$names.$date",
 			       initial=>$doc->initial($names,1), 
-			       referrers=>[sort keys %{$dbentry->getValue('referrers')}]};
+			       referrers=> ($referrers ? [sort keys %$referrers]:[])};
 	delete $citations{$bibkey}; }}}
   $self->Progress("$ntotal bibentries, $ncited cited");
   # Remaining citations were never found!
