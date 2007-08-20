@@ -112,7 +112,7 @@ sub pathname_is_absolute {
 # Return $pathname as a pathname relative to $base.
 sub pathname_relative {
   my($pathname,$base)=@_;
-  File::Spec->abs2rel($pathname,$base); }
+  File::Spec->abs2rel(pathname_canonical($pathname),pathname_canonical($base)); }
 
 sub pathname_absolute {
   my($pathname,$base)=@_;
