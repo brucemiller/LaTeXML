@@ -32,8 +32,8 @@ EOTeX
 # but the counter setup, etc, depends on article
 #Let('\thedocument@ID','\@empty');
 NewCounter('part',         'document',     idprefix=>'Pt', nested=>['chapter']);
-NewCounter('chapter',      'document',     idprefix=>'Ch', nested=>['bsection']);
-NewCounter('section',      'chapter',     idprefix=>'S',  nested=>['subsection']);
+NewCounter('chapter',      'document',     idprefix=>'Ch', nested=>['section']);
+NewCounter('section',      'chapter',      idprefix=>'S',  nested=>['subsection']);
 NewCounter('subsection',   'section',      idprefix=>'SS', nested=>['subsubsection']);
 NewCounter('subsubsection','subsection',   idprefix=>'SSS',nested=>['paragraph']);
 NewCounter('paragraph',    'subsubsection',idprefix=>'P',  nested=>['subparagraph']);
