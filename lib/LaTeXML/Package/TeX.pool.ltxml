@@ -3346,6 +3346,34 @@ DefConstructor('\DUAL[]{}{}',
 						       $presentation); }
 	       });
 
+# Normally, the content branch contains the pure structure and meaning of a construct,
+# and the presentation is generated from lower level TeX macros that only concern
+# themselves with how to display the object.
+# Nevertheless, it is sometimes useful to know where the tokens in the presentation branch
+# came from;  particularly what their presumed "meaning" is.
+# For example, when search-indexing pmml, or providing links to definitions from the pmml.
+#
+# The following constructor (see how it's used in DefMath), adds meaning attributes
+# whereever it seems sensible on the presentation branch, after it has been generated.
+DefConstructor('\@ASSERT@MEANING{}{}','#2',reversion=>'#2',
+	       afterConstruct=>sub {
+		 my($document,$whatsit)=@_;
+		 my $node=$document->getNode; # This should be the wrapper just added.
+		 my $meaning = ToString($whatsit->getArg(1));
+		 addMeaningRec($node,$meaning);
+		 $node; });
+
+sub addMeaningRec {
+  my($node,$meaning)=@_;
+  if($node->nodeType == XML_ELEMENT_NODE){
+    if($node->nodeName eq 'XMTok'){
+      if((($node->getAttribute('role')||'UNKNOWN') eq 'UNKNOWN')
+	 && !$node->getAttribute('meaning')){
+	$node->setAttribute(meaning=>$meaning); }}
+    else {
+      foreach my $c ($node->childNodes){
+	addMeaningRec($c,$meaning); }}}}
+
 DefConstructor('\FCN{}',    "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", reversion=>'#1', alias=>'');
 DefConstructor('\ROLE{}{}', "<ltx:XMWrap role='#1'>#2</ltx:XMWrap>",       reversion=>'#2', alias=>'');
 
