@@ -24,7 +24,7 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 		  &DefEnvironment
 		  &DefRewrite &DefMathRewrite
 		  &DefLigature &DefMathLigature
-		  &RequirePackage &FindFile
+		  &RequirePackage &LoadClass &FindFile
 		  &RawTeX
 		  &Tag &DocType &RegisterNamespace
 		  &convertLaTeXArgs
@@ -719,32 +719,52 @@ sub RegisterNamespace {
   $STATE->getModel->registerNamespace($prefix,$namespace);
   return; }
 
-our $require_options = {options=>1, type=>1};
+our $require_options = {options=>1, type=>1, raw=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
-  my $extension = $options{type} || 'sty';
-  if(my $file = FindFile($package,$extension)){
+  $options{type} = 'sty' unless $options{type};
+  if(my $file = FindFile($package,%options)){
     $STATE->getStomach->getGullet->input($file,undef,%options); }
   else {
     $STATE->noteStatus(missing=>$package);
     Error("Cannot find package $package"
-	  .($extension eq 'sty' ? '' : "(w/type=$extension)")
+	  .($options{type} eq 'sty' ? '' : "(w/type=$options{type})")
+	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
+  return; }
+
+our $loadclass_options = {options=>1};
+sub LoadClass {
+  my($class,%options)=@_;
+  CheckOptions("LoadClass ($class)",$loadclass_options,%options);
+  $options{type} = 'cls' unless $options{type};
+  if(my $file = FindFile($class,%options)){
+    $STATE->getStomach->getGullet->input($file,undef,%options); }
+  else {
+    $STATE->noteStatus(missing=>$class);
+    Error("Cannot find class $class"
 	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   return; }
 
 # Find a file:
+# If the raw option is given, 
+#   it searches for the file.
 # If $ext is given or $file ends with a known extension
 # (eg. .sty for packages, .cls for classes, etc):
 #    the file is sought first as $file.$ext.ltxml then as $file.$ext
 # Otherwise, the file is sought in a more TeX-like fashion:
 #    the file is sought as $file.tex.ltxml, $file.tex, $file.ltxml or $file.
+# [ie. if raw=>1, we do _not_ loo for .ltxml forms]
+our $findfile_options = {raw=>1, type=>1};
 sub FindFile {
-  my ($file,$ext)=@_;
+  my ($file,%options)=@_;
+  CheckOptions("FindFile ($file)",$findfile_options,%options);
   my $paths = LookupValue('SEARCHPATHS');
   $file = ToString($file);
-  $file .= ".$ext" if $ext;
-  if($ext || ($file =~ /\.(tex|pool|sty|cls|clo|cnf)$/)){ # explicit or known extensions
+  $file .= ".$options{type}" if $options{type};
+  if($options{raw}){
+    pathname_find("$file",paths=>$paths); }
+  elsif($options{type} || ($file =~ /\.(tex|pool|sty|cls|clo|cnf)$/)){ # explicit or known extensions
     pathname_find("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
       || pathname_find("$file",paths=>$paths); }
   else {

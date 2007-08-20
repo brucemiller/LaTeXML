@@ -60,7 +60,7 @@ sub input {
   }
   elsif($file =~ /\.(pool|sty|cls|clo|cnf)$/){	# (attempt to) interpret a style file.
     return if $STATE->lookupValue($file.'_loaded');
-    if(! $STATE->lookupValue('INCLUDE_STYLES')){
+    if(! ($options{raw} || $STATE->lookupValue('INCLUDE_STYLES'))){
       Warn("Ignoring style file $file");
       return; }
     $STATE->assignValue($file.'_loaded'=>1,'global');

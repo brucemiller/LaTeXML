@@ -3289,7 +3289,7 @@ sub loadLaTeXClass {
     $stomach->getGullet->input($poolfile,undef,options=>[@options]); }
   else {
     Fatal("Installation error: Cannot find LaTeX pool module!"); }
-  my $classfile = FindFile($class,"cls");
+  my $classfile = FindFile($class,type=>"cls");
   if(!$classfile || ($classfile =~ /\.cls$/)){
     Warn("No LaTeXML implementation of class $class found, using article");
     if($classfile = FindFile("article.cls")){
@@ -3320,7 +3320,7 @@ DefConstructor('\documentstyle OptionalSemiverbatim Semiverbatim []',
     loadLaTeXClass($stomach,$whatsit->getArg(2)->toString,@options);
     # For documentstyle, some options mean to load styles!
     foreach my $option(@options) {
-      if(my $file = FindFile($option,'sty')){
+      if(my $file = FindFile($option,type=>'sty')){
 	$stomach->getGullet->input($file); }}
     return;});
 

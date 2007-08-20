@@ -24,7 +24,7 @@ use LaTeXML::Util::KeyVal;
 RequirePackage('amssymb');
 
 UnshiftValue(SEARCHPATHS=>"$ENV{HOME}/dlmf/styles/DLMFtex/");
-RequirePackage('DLMFfcns');
+RequirePackage('DLMFfcns', raw=>1);
 
 #**********************************************************************
 # General Math Constructs
