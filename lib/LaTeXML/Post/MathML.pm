@@ -71,6 +71,10 @@ sub processNode {
 
 # See END for presentation, content and parallel versions.
 
+sub augmentNode {
+  my($self,$node,$mathml)=@_;
+  $mathml; }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # General translation utilities.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -135,7 +139,8 @@ sub lookupContent {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 sub pmml_top {
-  my($node,$style)=@_;
+  my($self,$node,$style)=@_;
+  local $LaTeXML::MathML::PROCESSOR = $self;
   local $LaTeXML::MathML::STYLE = $style;
   local $LaTeXML::MathML::FONT  = find_inherited_attribute($node,'font');
   local $LaTeXML::MathML::SIZE  = find_inherited_attribute($node,'size');
@@ -179,7 +184,7 @@ sub pmml {
   # Do the core conversion.
   my $result = ($node->localname eq 'XMRef'
 		? pmml(realize($node))
-		: pmml_internal($node));
+		: $LaTeXML::MathML::PROCESSOR->augmentNode($node,pmml_internal($node)));
   # Handle generic things: open/close delimiters, punctuation
   $result = pmml_parenthesize($result,$o,$c) if $o || $c;
   $result = ['m:mrow',{},$result,pmml_mo($p)] if $p;
@@ -347,7 +352,8 @@ sub pmml_mi {
     elsif(!$variant){ $variant = 'normal'; }}  # must say so explicitly.
   ['m:mi',{($variant ? (mathvariant=>$variant):()),
 	   ($size    ? (mathsize=>$sizes{$size}):()),
-	   ($color   ? (mathcolor=>$color):())},$text]; }
+	   ($color   ? (mathcolor=>$color):())},
+   $text]; }
 
 sub pmml_mo {
   my($item)=@_;
@@ -474,7 +480,7 @@ sub pmml_script_handler {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 sub cmml_top {
-  my($node)=@_;
+  my($self,$node)=@_;
   cmml($node); }
 
 sub cmml {
@@ -962,7 +968,7 @@ use LaTeXML::Util::MathMLLinebreaker;
 
 sub translateNode {
   my($self,$doc,$xmath,$style,$embedding)=@_;
-  my @trans = LaTeXML::Post::MathML::pmml_top($xmath,$style);
+  my @trans = $self->pmml_top($xmath,$style);
   my $m = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
   if($style eq 'display'){
     if(my $linelength = $$self{linelength}){
@@ -985,7 +991,7 @@ use base qw(LaTeXML::Post::MathML);
 
 sub translateNode {
   my($self,$doc,$xmath,$style,$embedding)=@_;
-  my @trans = LaTeXML::Post::MathML::cmml_top($xmath);
+  my @trans = $self->cmml_top($xmath);
   # Wrap unless already embedding within MathML.
   ($embedding =~ /^m:/ ? @trans 
    : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},@trans]); }
