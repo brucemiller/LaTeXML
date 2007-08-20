@@ -112,6 +112,8 @@ latexml [options] texfile
  --output=file      [obsolete synonym for --destination]
  --preload=module   requests loading of an optional module;
                     can be repeated
+ --includestyles    allows latexml to load raw *.sty file;
+                    by default it avoids this.
  --path=dir         adds dir to the paths searched for files,
                     modules, etc; 
  --documentid=id    assign an id to the document root.
