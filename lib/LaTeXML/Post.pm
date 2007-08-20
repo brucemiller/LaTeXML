@@ -119,6 +119,10 @@ sub new {
 
   bless {%data}, $class; }
 
+sub Error {
+  my($self,$msg)=@_;
+  die "".(ref $self)." Error: $msg"; }
+
 sub newFromFile {
   my($class,$source,%options)=@_;
   if(!$options{sourceDirectory}){
@@ -215,7 +219,14 @@ sub addNodes {
       my $new = $node->addNewChild($nsuri,$localname);
       if($attributes){
 	foreach my $key (keys %$attributes){
-	  $new->setAttribute($key, $$attributes{$key}) if defined $$attributes{$key}; }}
+	  next unless defined $$attributes{$key};
+	  my($attrprefix,$attrname)= $key =~ /^(.*):(.*)$/;
+	  if($attrprefix){
+	    my $attrnsuri = $attrprefix && $$self{namespaces}{$attrprefix};
+	    $new->setAttributeNS($attrnsuri,$attrname, $$attributes{$key}); }
+	  else {
+	    $new->setAttribute($key, $$attributes{$key}); }
+	}}
       $self->addNodes($new,@children); }
     elsif((ref $child) =~ /^XML::LibXML::/){
       # NOTE: Watch this space for possible namespace mangling.
