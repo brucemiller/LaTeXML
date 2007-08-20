@@ -59,6 +59,8 @@ sub applyClause {
   if($op eq 'trace'){
     local $LaTeXML::Rewrite::DEBUG = 1;
     $self->applyClause($document,$tree,$n_to_replace,@more_clauses); }
+  elsif($op eq 'ignore'){
+    $self->applyClause($document,$tree,$n_to_replace,@more_clauses); }
   elsif($op eq 'select'){
     my($xpath,$nnodes)=@$pattern;
     my @matches = $document->findnodes($xpath,$tree);
@@ -169,7 +171,8 @@ sub compileClause {
     elsif($pattern =~ /^(.*):(.*)$/){
       $pattern=["descendant-or-self::*[local-name()='$1' and \@refnum='$2']",1]; }
     else {
-      Error("Unrecognized scope pattern in Rewrite clause: \"$pattern\""); }}
+      Error("Unrecognized scope pattern in Rewrite clause: \"$pattern\"; Ignoring it."); 
+      $op='ignore'; $pattern=[]; }}
   elsif($op eq 'xpath'){
     $op='select'; $pattern=[$pattern,1]; }
   elsif($op eq 'match'){
