@@ -588,6 +588,8 @@ sub DefMath {
       $options{scope});
     # Make the presentation macro.
     $presentation = TokenizeInternal($presentation) unless ref $presentation;
+    $presentation = Invocation(T_CS('\@ASSERT@MEANING'), T_OTHER($meaning), $presentation)
+      if $meaning;
     $STATE->installDefinition(LaTeXML::Expandable->new($pres_cs, $paramlist,
 						       $presentation),
 			      $options{scope});
@@ -717,7 +719,7 @@ sub RegisterNamespace {
   $STATE->getModel->registerNamespace($prefix,$namespace);
   return; }
 
-our $require_options = {options=>1};
+our $require_options = {options=>1, type=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
@@ -742,7 +744,7 @@ sub FindFile {
   my $paths = LookupValue('SEARCHPATHS');
   $file = ToString($file);
   $file .= ".$ext" if $ext;
-  if($ext || ($file =~ /\.(pool|sty|cls|clo|cnf)$/)){ # explicit or known extensions
+  if($ext || ($file =~ /\.(tex|pool|sty|cls|clo|cnf)$/)){ # explicit or known extensions
     pathname_find("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
       || pathname_find("$file",paths=>$paths); }
   else {
