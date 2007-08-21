@@ -724,7 +724,7 @@ sub RequirePackage {
   my($package,%options)=@_;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
   $options{type} = 'sty' unless $options{type};
-  if(my $file = FindFile($package,%options)){
+  if(my $file = FindFile($package, type=>$options{type}, raw=>$options{raw})){
     $STATE->getStomach->getGullet->input($file,undef,%options); }
   else {
     $STATE->noteStatus(missing=>$package);
@@ -738,7 +738,7 @@ sub LoadClass {
   my($class,%options)=@_;
   CheckOptions("LoadClass ($class)",$loadclass_options,%options);
   $options{type} = 'cls' unless $options{type};
-  if(my $file = FindFile($class,%options)){
+  if(my $file = FindFile($class, type=>$options{type}, raw=>$options{raw})){
     $STATE->getStomach->getGullet->input($file,undef,%options); }
   else {
     $STATE->noteStatus(missing=>$class);
