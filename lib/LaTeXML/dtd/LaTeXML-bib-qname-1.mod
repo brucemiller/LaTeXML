@@ -22,7 +22,7 @@
 <!ENTITY % LaTeXML-bib.prefix "ltxml">
 
 <![%LaTeXML-bib.prefixed;[
-<!ENTITY % LaTeXML-bib.pfx "%LaTeXML.prefix;"">
+<!ENTITY % LaTeXML-bib.pfx "%LaTeXML.prefix;">
 <!ENTITY % LaTeXML-bib.xmlns.extra.attrib
   	 "xmlns:%LaTeXML-bib.prefix; CDATA #FIXED '%LaTeXML-bib.xmlns;'">
 ]]>
