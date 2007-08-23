@@ -19,6 +19,8 @@ use Exporter;
 our @ISA = qw(Exporter);
 our @EXPORT= (qw(&ConvertColor &RGB &Gray2RGB &HSB2RGB &CMYK2RGB));
 
+sub round { int($_[0]+0.5*($_[0] <=> 0)); }
+
 sub ConvertColor {
     my ($model, $spec) = @_; my $color = 0;
     if    ($model =~ /gray/) { $color = '#'.Gray2RGB($spec); }
