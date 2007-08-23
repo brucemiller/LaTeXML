@@ -608,8 +608,13 @@ sub DefMath {
     $common{properties}{font} = sub { LookupValue('font')->specialize($presentation); };
     $STATE->installDefinition(LaTeXML::Constructor->new($cs,$paramlist,
          ($nargs == 0 
-	  ? "<ltx:XMTok role='#role' scriptpos='#scriptpos'"
-	  .           " font='#font' $attr$end_tok"
+	  # If trivial presentation, allow it in Text
+	  ? ($presentation !~ /(\(|\)|\\)/
+	     ? "?#isMath(<ltx:XMTok role='#role' scriptpos='#scriptpos'"
+	     .           " font='#font' $attr$end_tok)"
+	     .         "($presentation)"
+	     : "<ltx:XMTok role='#role' scriptpos='#scriptpos'"
+	     .           " font='#font' $attr$end_tok")
 	  : "<ltx:XMApp role='#role' scriptpos='#scriptpos'>"
 	  .   "<ltx:XMTok $attr font='#font' role='#operator_role'"
 	  .             " scriptpos='#operator_scriptpos' $end_tok"
