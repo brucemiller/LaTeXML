@@ -30,6 +30,53 @@ use LaTeXML::Util::LibXML;
 no warnings 'redefine';
 
 #**********************************************************************
+# Basic \documentclass & \documentstyle
+our %ignorable_classoptions 
+  = map(($_=>1),qw(10pt 11pt 12pt 
+		   letterpaper legalpaper executivepaper a4paper a5paper b5paper
+		   landscape final draft oneside twoside
+		   openright openany onecolumn twocolumn 
+		   notitlepage titlepage openbib leqno fleqn));
+
+sub loadLaTeXClass {
+  my($stomach,$class,@options)=@_;
+  AssignValue(inPreamble=>1);	# \begin{document} will clear this.
+  my $classfile = FindFile($class,type=>"cls");
+  if(!$classfile || ($classfile =~ /\.cls$/)){
+    Warn("No LaTeXML implementation of class $class found, using article");
+    if($classfile = FindFile("article.cls")){
+      $stomach->getGullet->input($classfile,undef,options=>[@options]); }
+    else {
+      Fatal("Installation error: Cannot find article implementation!"); }}
+  else {
+    $stomach->getGullet->input($classfile,undef,options=>[@options]); }
+  return; }
+
+DefConstructor('\documentclass OptionalSemiverbatim Semiverbatim []',
+	       "<?latexml class='#2' ?#1(options='#1')?>",
+  afterDigest=>sub {
+    my($stomach,$whatsit)=@_;
+    my $options = $whatsit->getArg(1);
+    $options = $options->toString if defined $options;
+    my @options = grep( !$ignorable_classoptions{$_}, split(/,\s*/, $options||''));
+    loadLaTeXClass($stomach,$whatsit->getArg(2)->toString,@options);
+    return;});
+
+DefConstructor('\documentstyle OptionalSemiverbatim Semiverbatim []',
+	       "<?latexml class='#2' ?#1(options='#1')?>",
+  afterDigest=>sub {
+    my($stomach,$whatsit)=@_;
+    my $options = $whatsit->getArg(1);
+    $options = $options->toString if defined $options;
+    my @options = grep( !$ignorable_classoptions{$_}, split(/,\s*/, $options||''));
+    loadLaTeXClass($stomach,$whatsit->getArg(2)->toString,@options);
+    # For documentstyle, some options mean to load styles!
+    foreach my $option(@options) {
+      if(my $file = FindFile($option,type=>'sty')){
+	$stomach->getGullet->input($file); }}
+    return;});
+
+#**********************************************************************
 # C.1.  Commands and Environments.
 #**********************************************************************
 
