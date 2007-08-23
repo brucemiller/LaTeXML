@@ -12,6 +12,9 @@
 # \=========================================================ooo==U==ooo=/ #
 #
 # See amsfndoc
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
 #
 DefConstructor('\mathbb{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'blackboard'});
 DefMacro('\Bbb{}','\mathbb{#1}');

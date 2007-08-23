@@ -11,6 +11,10 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
 DefPrimitive('\multirowsetup',undef);
 DefPrimitive('\multirow{Number}{}{}',sub {
   my($stomach,$nrows,$width,$content)=@_;
