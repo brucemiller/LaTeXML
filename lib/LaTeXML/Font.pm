@@ -80,6 +80,11 @@ sub merge {
   my $color  = $options{color}  || $$self[4];
   (ref $self)->new_internal($family,$series,$shape,$size,$color); }
 
+# Really only applies to Math Fonts, but that should be handled elsewhere; We punt here.
+sub specialize {
+  my($self,$string)=@_;
+  $self; }
+
 # Return a string representing the font relative to other.
 sub XXrelativeTo {
   my($self,$other)=@_;
