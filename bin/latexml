@@ -54,6 +54,8 @@ my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[@paths],
 if($destination){
   if(my $dir =pathname_directory($destination)){
     pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }}
+if(my @baddirs = grep(! -d $_, @paths)){
+  warn "$identity: path directories do not exits: ".join(', ',@baddirs)."\n"; }
 binmode(STDERR,":utf8");
 # ========================================
 # First read and digest whatever we're given.
