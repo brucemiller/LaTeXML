@@ -836,9 +836,9 @@ DefPrimitive('\DeclareSymbolFontAlphabet{}{}', sub {
 
 DefPrimitive('\DeclareMathAlphabet{}{}{}{}{}', sub {
   my ($stomach, $cs, $enc, $family, $series, $shape) = @_;
-  DefConstructor($cs, '', font=>{family=>$family,
-				 series=>$series,
-				 shape =>$shape}); });
+  DefConstructor($cs, '', font=>{family=>$family->toString,
+				 series=>$series->toString,
+				 shape =>$shape->toString}); });
 
 DefPrimitive('\DeclareFontShape{}{}{}{}{}{}', undef);
 DefPrimitive('\DeclareFontFamily{}{}{}', undef);
