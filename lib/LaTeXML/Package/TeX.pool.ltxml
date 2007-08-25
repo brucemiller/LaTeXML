@@ -3285,7 +3285,8 @@ sub LaTeXTrigger {
   $gullet->unread(T_CS("\\".$cs));
   (); }
 
-foreach my $trigger (qw(documentclass documentstyle newcommand)){
+foreach my $trigger (qw(documentclass documentstyle newcommand
+			makeatletter makeatother)){
   DefMacro("\\".$trigger, sub { LaTeXTrigger($_[0],$trigger); }); }
 
 #**********************************************************************
@@ -3324,19 +3325,19 @@ DefConstructor('\@ASSERT@MEANING{}{}','#2',reversion=>'#2',
 		 my($document,$whatsit)=@_;
 		 my $node=$document->getNode; # This should be the wrapper just added.
 		 my $meaning = ToString($whatsit->getArg(1));
-		 addMeaningRec($node,$meaning);
+		 addMeaningRec($document,$node,$meaning);
 		 $node; });
 
 sub addMeaningRec {
-  my($node,$meaning)=@_;
+  my($document,$node,$meaning)=@_;
   if($node->nodeType == XML_ELEMENT_NODE){
-    if($node->nodeName eq 'XMTok'){
+    if($document->getNodeQName($node) eq 'ltx:XMTok'){
       if((($node->getAttribute('role')||'UNKNOWN') eq 'UNKNOWN')
 	 && !$node->getAttribute('meaning')){
 	$node->setAttribute(meaning=>$meaning); }}
     else {
       foreach my $c ($node->childNodes){
-	addMeaningRec($c,$meaning); }}}}
+	addMeaningRec($document,$c,$meaning); }}}}
 
 DefConstructor('\FCN{}',    "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", reversion=>'#1', alias=>'');
 DefConstructor('\ROLE{}{}', "<ltx:XMWrap role='#1'>#2</ltx:XMWrap>",       reversion=>'#2', alias=>'');
