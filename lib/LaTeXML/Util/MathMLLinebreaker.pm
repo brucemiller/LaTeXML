@@ -121,7 +121,7 @@ sub applyLayout {
     foreach my $row (@rows[1..$#rows]){
       my $op = $$row[0];
       my $newop;
-      if((localname($op) eq 'mo') && ($newop=$CONVERTOPS{textContent($op)})){
+      if((nodeName($op) eq 'm:mo') && ($newop=$CONVERTOPS{textContent($op)})){
 	splice(@$op,2,scalar(@$op)-2, $newop); }}
     splice(@$node,2,scalar(@children),
 	   ["m:mtable",{align=>'baseline 1', columnalign=>'left'},
@@ -154,12 +154,6 @@ our $BADBREAK = 100;	  # factor to make breaks much less desirable.
 sub nodeName {
   my($node)=@_;
   my($tag,$attr,@children)=@$node;
-  $tag; }
-
-sub localname {
-  my($node)=@_;
-  my($tag,$attr,@children)=@$node;
-  $tag =~ s/\w+://;
   $tag; }
 
 sub getAttribute {
@@ -294,7 +288,7 @@ sub asRow {
   if($demerits < $NOBREAK){
     for(my $i=1; $i<$n-1; $i++){
       my $child = $children[$i];
-      my $content = (localname($child) eq 'mo') && textContent($child);
+      my $content = (nodeName($child) eq 'm:mo') && textContent($child);
       push(@breaks, [$i,$content]) if $content && ($BREAKOPS{$content} || $CONVERTOPS{$content}); }}
   my @breaksets = choices(@breaks);
 
@@ -530,7 +524,7 @@ sub layout_munderover {
 sub layout_mmultiscripts {
   my($node,$target,$level,$displaystyle,$scriptlevel,$demerits)=@_;
   my($base,@scripts)=nodeChildren($node);
-  @scripts = grep( localname($_) ne "mprescripts", @scripts); # Remove prescripts marker (if any).
+  @scripts = grep( nodeName($_) ne "m:mprescripts", @scripts); # Remove prescripts marker (if any).
   asScripts($node,$target,$level,$displaystyle,$scriptlevel,$demerits, 0,$base,@scripts); }
 
 sub layout_none {
