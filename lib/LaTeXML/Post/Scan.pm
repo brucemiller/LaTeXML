@@ -21,31 +21,31 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{db}=$options{db};
   $$self{handlers}={};
-  $self->registerHandler(mainpage      => \&section_handler);
-  $self->registerHandler(document      => \&section_handler);
-  $self->registerHandler(bibliography  => \&section_handler);
-  $self->registerHandler(index         => \&section_handler);
-  $self->registerHandler(chapter       => \&section_handler);
-  $self->registerHandler(section       => \&section_handler);
-  $self->registerHandler(appendix      => \&section_handler);
-  $self->registerHandler(subsection    => \&section_handler);
-  $self->registerHandler(subsubsection => \&section_handler);
-  $self->registerHandler(paragraph     => \&section_handler);
-  $self->registerHandler(sidebar       => \&section_handler);
+  $self->registerHandler('ltx:mainpage'      => \&section_handler);
+  $self->registerHandler('ltx:document'      => \&section_handler);
+  $self->registerHandler('ltx:bibliography'  => \&section_handler);
+  $self->registerHandler('ltx:index'         => \&section_handler);
+  $self->registerHandler('ltx:chapter'       => \&section_handler);
+  $self->registerHandler('ltx:section'       => \&section_handler);
+  $self->registerHandler('ltx:appendix'      => \&section_handler);
+  $self->registerHandler('ltx:subsection'    => \&section_handler);
+  $self->registerHandler('ltx:subsubsection' => \&section_handler);
+  $self->registerHandler('ltx:paragraph'     => \&section_handler);
+  $self->registerHandler('ltx:sidebar'       => \&section_handler);
 
-  $self->registerHandler(table         => \&labelled_handler);
-  $self->registerHandler(figure        => \&labelled_handler);
-  $self->registerHandler(equation      => \&labelled_handler);
-  $self->registerHandler(equationmix   => \&labelled_handler);
-  $self->registerHandler(equationgroup => \&labelled_handler);
+  $self->registerHandler('ltx:table'         => \&labelled_handler);
+  $self->registerHandler('ltx:figure'        => \&labelled_handler);
+  $self->registerHandler('ltx:equation'      => \&labelled_handler);
+  $self->registerHandler('ltx:equationmix'   => \&labelled_handler);
+  $self->registerHandler('ltx:equationgroup' => \&labelled_handler);
 
-  $self->registerHandler(bibitem       => \&bibitem_handler);
-  $self->registerHandler(bibentry      => \&bibentry_handler);
-  $self->registerHandler(indexmark     => \&indexmark_handler);
-  $self->registerHandler(ref           => \&ref_handler);
-  $self->registerHandler(bibref        => \&bibref_handler);
+  $self->registerHandler('ltx:bibitem'       => \&bibitem_handler);
+  $self->registerHandler('ltx:bibentry'      => \&bibentry_handler);
+  $self->registerHandler('ltx:indexmark'     => \&indexmark_handler);
+  $self->registerHandler('ltx:ref'           => \&ref_handler);
+  $self->registerHandler('ltx:bibref'        => \&bibref_handler);
 
-  $self->registerHandler(XMath         => \&XMath_handler);
+  $self->registerHandler('ltx:XMath'         => \&XMath_handler);
   $self; }
 
 sub registerHandler {
@@ -61,7 +61,7 @@ sub process {
 
 sub scan {
   my($self,$doc,$node,$parent_id)=@_;
-  my $tag = $node->localname;
+  my $tag = $doc->getQName($node);
   my $handler = $$self{handlers}{$tag} || \&default_handler;
   &$handler($self,$doc,$node,$tag,$parent_id); }
 

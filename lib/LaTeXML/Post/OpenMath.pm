@@ -32,6 +32,7 @@ our $omURI = "http://www.openmath.org/OpenMath";
 
 sub process {
   my($self,$doc)=@_;
+  local $LaTeXML::Post::OpenMath::DOCUMENT = $doc;
   if(my @maths = $self->find_math_nodes($doc)){
     $self->Progress("Converting ".scalar(@maths)." formulae");
     $doc->addNamespace($omURI,'om');
@@ -41,6 +42,9 @@ sub process {
   $doc; }
 
 sub find_math_nodes { $_[1]->findnodes('//ltx:Math'); }
+
+sub getQName {
+  $LaTeXML::Post::OpenMath::DOCUMENT->getQName(@_); }
 
 # $self->processNode($doc,$mathnode) is the top-level conversion
 # It converts the XMath within $mathnode, and adds it to the $mathnode,
@@ -81,19 +85,19 @@ sub DefOpenMath {
 sub Expr {
   my($node)=@_;
   return OMError("Missing Subexpression") unless $node;
-  my $tag = $node->nodeName;
-  if($tag eq 'XMath'){
+  my $tag = getQName($node);
+  if($tag eq 'ltx:XMath'){
     my($item,@rest)=  element_nodes($node);
     print STDERR "Warning! got extra nodes for content!\n" if @rest;
     Expr($item); }
-  elsif($tag eq 'XMDual'){
+  elsif($tag eq 'ltx:XMDual'){
     my($content,$presentation) = element_nodes($node);
     Expr($content); }
-  elsif($tag eq 'XMWrap'){
+  elsif($tag eq 'ltx:XMWrap'){
     # Note... Error?
 ##    Row(grep($_,map(Expr($_),element_nodes($node)))); 
     (); }
-  elsif($tag eq 'XMApp'){
+  elsif($tag eq 'ltx:XMApp'){
     my($op,@args) = element_nodes($node);
     return OMError("Missing Operator") unless $op;
     my $name =  getTokenMeaning($op);
@@ -102,13 +106,13 @@ sub Expr {
     my $sub = $$OMTable{"Apply:$pos:$name"} || $$OMTable{"Apply:?:$name"} 
       || $$OMTable{"Apply:$pos:?"} || $$OMTable{"Apply:?:?"};
     &$sub($op,@args); }
-  elsif($tag eq 'XMTok'){
+  elsif($tag eq 'ltx:XMTok'){
     my $name =  getTokenMeaning($node);
     my $pos  =  $node->getAttribute('role') || '?';
     my $sub = $$OMTable{"Token:$pos:$name"} || $$OMTable{"Token:?:$name"} 
       || $$OMTable{"Token:$pos:?"} || $$OMTable{"Token:?:?"};
     &$sub($node); }
-  elsif($tag eq 'XMHint'){
+  elsif($tag eq 'ltx:XMHint'){
     (); }
   else {
     ['om:OMSTR',{},$node->textContent]; }}

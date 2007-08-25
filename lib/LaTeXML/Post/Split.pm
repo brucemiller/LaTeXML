@@ -136,10 +136,10 @@ sub getPageName {
   my $name  = $page->getAttribute($attr);
   if(!$name){
     if(($attr eq 'label') && ($name=$page->getAttribute('id'))){
-      $self->Warn($page->nodeName." has no $attr attribute for pathname; using id=$name"); 
+      $self->Warn($doc->getQName($page)." has no $attr attribute for pathname; using id=$name"); 
       $attr='id'; }
     else {
-      $self->Warn($page->nodeName." has no $attr attribute for pathname");
+      $self->Warn($doc->getQName($page)." has no $attr attribute for pathname");
       $name="FOO".++$COUNTER; }}
   if($naming =~ /relative$/){
     my $pname = $parent->getAttribute($attr);

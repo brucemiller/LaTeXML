@@ -113,8 +113,8 @@ sub fill_in_refs {
   my $db = $$self{db};
   print STDERR "Filling in refs\n" if $$self{verbosity}>1;
   foreach my $ref ($doc->findnodes('descendant::*[@idref or @labelref]')){
-    my $tag = $ref->localname;
-    next if $tag eq 'XMRef'; # Blech; list those TO fill-in, or list those to exclude?
+    my $tag = $doc->getQName($ref);
+    next if $tag eq 'ltx:XMRef'; # Blech; list those TO fill-in, or list those to exclude?
     my $id = $ref->getAttribute('idref');
     my $show = $ref->getAttribute('show');
     if(!$id){
@@ -135,7 +135,7 @@ sub fill_in_refs {
       if(!$ref->getAttribute('title')){
 	if(my $titlestring = $self->generateTitle($id)){
 	  $ref->setAttribute(title=>$titlestring); }}
-      if(!$ref->textContent && !(($tag eq 'graphics') || ($tag eq 'picture'))){
+      if(!$ref->textContent && !(($tag eq 'ltx:graphics') || ($tag eq 'ltx:picture'))){
 	$doc->addNodes($ref,$self->generateRef($doc,$id,$show || 'typerefnum')); }
       if(my $entry = $$self{db}->lookup("ID:$id")){
 	$ref->setAttribute(stub=>1) if $entry->getValue('stub'); }

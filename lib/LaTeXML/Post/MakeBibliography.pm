@@ -114,8 +114,12 @@ sub getBibEntries {
 
 sub makeBibliographyList {
   my($self,$doc,$entries)=@_;
+  local $LaTeXML::Post::MakeBibliography::DOCUMENT = $doc;
   ['ltx:biblist',{},
    map($self->formatBibEntry($doc,$$entries{$_}), sort keys %$entries)]; }
+
+sub getQName {
+  $LaTeXML::Post::MakeBibliography::DOCUMENT->getQName(@_); }
 
 # ================================================================================
 sub formatBibEntry {
@@ -226,23 +230,23 @@ sub do_links {
   my(@nodes)=@_;
   my @links=();
 
-  my($mrreviewer) = grep( $_->localname eq 'bib-mrreviewer', @nodes);
+  my($mrreviewer) = grep( getQName($_) eq 'ltx:bib-mrreviewer', @nodes);
 
   foreach my $node (@nodes){
     my $href = $node->textContent;
-    my $tag = $node->localname;
-    if   ($tag eq 'bib-doi'         ){
+    my $tag = getQName($node);
+    if   ($tag eq 'ltx:bib-doi'         ){
       push(@links,['ltx:ref',{href=>"http://dx.doi.org/".$href},"FullText"]); }
-    elsif($tag eq 'bib-links'       ){
+    elsif($tag eq 'ltx:bib-links'       ){
       push(@links, map($_->cloneNode(1),
 		       $LaTeXML::Post::MakeBibliography::DOCUMENT->findnodes('ltx:ref | ltx:GAMS',$node))); }
-    elsif($tag eq 'bib-mrnumber'    ){
+    elsif($tag eq 'ltx:bib-mrnumber'    ){
       push(@links,['ltx:ref',{href=>"http://www.ams.org/mathscinet-getitem?mr=".$href},
 		   "MathReviews",
 		   ($mrreviewer ? (" (",$mrreviewer->childNodes,")"):())]); }
-    elsif($tag eq 'bib-review'      ){
+    elsif($tag eq 'ltx:bib-review'      ){
       push(@links,['ltx:ref',{href=>$href},"Review"]); }
-    elsif($tag eq 'bib-url'         ){
+    elsif($tag eq 'ltx:bib-url'         ){
       push(@links,['ltx:ref',{href=>$href},"Other"]); }}
   @links = map((",\n",$_),@links);
   @links[1..$#links]; }

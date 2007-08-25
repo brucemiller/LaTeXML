@@ -30,6 +30,7 @@ my $NR = '[\-\+\d\.e]+';
 ####################################
 sub process {
   my ($self, $doc) = @_;
+  local $LaTeXML::Post::SVG::DOCUMENT = $doc;
   if(my @svg = $self->find_svg_nodes($doc)){
     $self->Progress("Converting ".scalar(@svg)." pictures");
     $doc->getDocumentElement->setNamespace($svgURI, $svgPref, 0);
@@ -38,6 +39,9 @@ sub process {
   $doc; }
 
 sub find_svg_nodes { $_[1]->findnodes('//ltx:picture'); }
+
+sub getQName {
+  $LaTeXML::Post::MathML::DOCUMENT->getQName(@_); }
 
 ####################################
 ## fixes an svg node
@@ -80,7 +84,7 @@ sub makeViewBox {
 sub simplifyGroups {
   my ($node) = @_;
   map(simplifyGroups($_), element_nodes($node));
-  if (($node->localname || '') eq 'g') {
+  if ((getQName($node) || '') eq 'ltx:g') {
     my ($parent, @sons) = ($node->parentNode, $node->childNodes);
     if (scalar(@sons) == 0) {
       $parent->removeChild($node);
@@ -102,16 +106,16 @@ sub simplifyGroups {
 #======================================================================
 # Converting specific tags.
 #======================================================================
-our %converters = (picture=>\&convertPicture, path  =>\&convertPath,
-		   g      =>\&convertG,       text  =>\&convertText,
-		   polygon=>\&convertPolygon, line  =>\&convertLine,
-		   rect   =>\&convertRect,    bezier=>\&convertBezier,
-		   vbox   =>\&convertVbox,    circle=>\&convertCircle,
-		   ellipse=>\&convertEllipse, wedge =>\&convertWedge,
-		   arc    =>\&convertArc);
+our %converters = ('ltx:picture'=>\&convertPicture, 'ltx:path'  =>\&convertPath,
+		   'ltx:g'      =>\&convertG,       'ltx:text'  =>\&convertText,
+		   'ltx:polygon'=>\&convertPolygon, 'ltx:line'  =>\&convertLine,
+		   'ltx:rect'   =>\&convertRect,    'ltx:bezier'=>\&convertBezier,
+		   'ltx:vbox'   =>\&convertVbox,    'ltx:circle'=>\&convertCircle,
+		   'ltx:ellipse'=>\&convertEllipse, 'ltx:wedge' =>\&convertWedge,
+		   'ltx:arc'    =>\&convertArc);
 sub convertNode {
   my ($parent,$node) = @_;
-  my $tag = $node->localname;
+  my $tag = getQName($node);
   my $converter = $converters{$tag};
   if($converter){
     &$converter($parent,$node); }
@@ -151,7 +155,7 @@ sub convertG {
 sub convertText {
   my ($parent,$node) = @_;
   my $p; my $oldparent = $node->parentNode;
-  if (($oldparent->localname || '') eq 'g') {
+  if ((getQName($oldparent) || '') eq 'ltx:g') {
     $p = $oldparent->getAttribute('pos') || '';
   } else {
     $p = 'bl';
@@ -269,8 +273,8 @@ sub convertVbox {
   my($parent,$node) = @_;
   my $text = '';
   foreach my $child(element_nodes($node)) {
-    my $cn = $child->localname;
-    if ((($cn || '') =~/^(text|hbox)$/) && (my $t = text_in_node($node))) { $text.=$t."\n" ; }}
+    my $cn = getQName($child);
+    if ((($cn || '') =~/^ltx:(text|hbox)$/) && (my $t = text_in_node($node))) { $text.=$t."\n" ; }}
   my $dummynode = new_node($NSURI,'text');
   $dummynode->appendText($text);
   my $newNode = $parent->addNewChild($svgURI, 'text');
@@ -478,20 +482,20 @@ sub getSVGBounds {
 
 sub SVGObjectBoundary {
   my ($node, @boundary) = @_;
-  my $nodeName = $node->localname;
-  return undef unless $nodeName;
+  my $tag = getQName($node);
+  return undef unless $tag;
   my @xs=($boundary[0], $boundary[1]), my @ys = ($boundary[2], $boundary[3]);
 
-  if ($nodeName eq 'circle') {
+  if ($tag eq 'ltx:circle') {
     my ($cx, $cy, $r) = get_attr($node, qw (cx cy r));
     $r = $r*sqrt(2); push(@xs, $cx-$r,$cx+$r); push(@ys, $cy-$r,$cy+$r);
-  } elsif (($nodeName eq 'polygon') || ($nodeName eq 'line')) {
+  } elsif (($tag eq 'ltx:polygon') || ($tag eq 'ltx:line')) {
     my $points = $node->getAttribute('points');
     $points =~ s/,/ /g;
     while ($points =~ s/^\s*($NR)\s+($NR)//) {
       push(@xs, $1); push(@ys,$2);
     }
-  } elsif ($nodeName eq 'path') {
+  } elsif ($tag eq 'ltx:path') {
     my ($data, $mode) = ($node->getAttribute('d'), '');
     $data =~ s/,/ /g;
     while ($data) {
@@ -515,12 +519,12 @@ sub SVGObjectBoundary {
 	push(@xs,$1); push(@ys,$2);
       }
     }
-  } elsif ($nodeName eq 'rect') {
+  } elsif ($tag eq 'ltx:rect') {
     my ($x, $y, $w, $h) = get_attr($node, qw(x y width height));
     if (defined $x && defined $y && defined $w && defined $h) {
       push(@xs,$x, $x+$w); push(@ys,$y, $y+$h);
     }
-  } elsif ($nodeName eq 'ellipse') {
+  } elsif ($tag eq 'ltx:ellipse') {
     my ($ex, $ey, $rx, $ry) = get_attr($node, qw (cx cy rx ry));
     ($rx, $ry) = map($_*sqrt(2), ($rx, $ry)); 
     push(@xs,$ex-$rx,$ex+$rx); push(@ys,$ey-$ry,$ey+$ry);

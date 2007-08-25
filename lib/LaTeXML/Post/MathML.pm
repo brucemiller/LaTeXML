@@ -53,6 +53,9 @@ sub process {
 
 sub find_math_nodes {  $_[1]->findnodes('//ltx:Math'); }
 
+sub getQName {
+  $LaTeXML::Post::MathML::DOCUMENT->getQName(@_); }
+
 # $self->processNode($doc,$mathnode) is the top-level conversion
 # It converts the XMath within $mathnode, and adds it to the $mathnode,
 sub processNode {
@@ -99,7 +102,7 @@ sub getOperatorRole {
     undef; }
   elsif(my $role = $node->getAttribute('role')){
     $role; }
-  elsif($node->localname eq 'XMApp'){
+  elsif(getQName($node) eq 'ltx:XMApp'){
     my($op,$base)= element_nodes($node);
     ($EMBELLISHING_ROLE{$op->getAttribute('role')||''}
      ? getOperatorRole($base)
@@ -182,7 +185,7 @@ sub pmml {
   my $c = $node->getAttribute('close');
   my $p = $node->getAttribute('punctuation');
   # Do the core conversion.
-  my $result = ($node->localname eq 'XMRef'
+  my $result = (getQName($node) eq 'ltx:XMRef'
 		? pmml(realize($node))
 		: $LaTeXML::MathML::PROCESSOR->augmentNode($node,pmml_internal($node)));
   # Handle generic things: open/close delimiters, punctuation
@@ -195,16 +198,16 @@ our $NBSP = pack('U',0xA0);
 sub pmml_internal {
   my($node)=@_;
   return ['m:merror',{},['m:mtext',{},"Missing Subexpression"]] unless $node;
-  my $tag = $node->localname;
+  my $tag = getQName($node);
   my $role = $node->getAttribute('role');
-  if($tag eq 'XMath'){
+  if($tag eq 'ltx:XMath'){
     pmml_row(map(pmml($_), element_nodes($node))); } # Really multiple nodes???
-  elsif($tag eq 'XMDual'){
+  elsif($tag eq 'ltx:XMDual'){
     my($content,$presentation) = element_nodes($node);
     pmml($presentation); }
-  elsif($tag eq 'XMWrap'){	# Only present if parsing failed!
+  elsif($tag eq 'ltx:XMWrap'){	# Only present if parsing failed!
     pmml_row(map(pmml($_),element_nodes($node))); }
-  elsif($tag eq 'XMApp'){
+  elsif($tag eq 'ltx:XMApp'){
     my($op,@args) = element_nodes($node);
     if(!$op){
       ['m:merror',{},['m:mtext',{},"Missing Operator"]]; }
@@ -220,11 +223,11 @@ sub pmml_internal {
 		    }($op,@args);
       $result = ['m:mstyle',{@$styleattr},$result] if $styleattr;
       $result; }}
-  elsif($tag eq 'XMTok'){
+  elsif($tag eq 'ltx:XMTok'){
     &{ lookupPresenter('Token',$role,getTokenMeaning($node)) }($node); }
-  elsif($tag eq 'XMHint'){
+  elsif($tag eq 'ltx:XMHint'){
     &{ lookupPresenter('Hint',$role,getTokenMeaning($node)) }($node); }
-  elsif($tag eq 'XMArray'){
+  elsif($tag eq 'ltx:XMArray'){
     my $style = $node->getAttribute('style');
     my $styleattr = $style && $stylemap{$LaTeXML::MathML::STYLE}{$style};
     local $LaTeXML::MathML::STYLE 
@@ -435,9 +438,9 @@ sub pmml_script_handler {
 
   # Keep from having multiple scripts when $loc is stack!!!
   while(1){
-    last unless $base->localname eq 'XMApp';
+    last unless getQName($base) eq 'ltx:XMApp';
     my($xop,$xbase,$xscript) = element_nodes($base);
-    last unless ($xop->localname eq 'XMTok');
+    last unless (getQName($xop) eq 'ltx:XMTok');
     my ($ny) = ($xop->getAttribute('role')||'') =~ /^(SUPER|SUB)SCRIPTOP$/;
     last unless $ny;
     my ($nx,$nl)= ($xop->getAttribute('scriptpos')||'postsup0')
@@ -486,27 +489,27 @@ sub cmml_top {
 sub cmml {
   my($node)=@_;
   return ['m:merror',{},['m:mtext',{},"Missing Subexpression"]] unless $node;
-  $node = realize($node) if $node->localname eq 'XMRef';
-  my $tag = $node->localname;
-  if($tag eq 'XMath'){
+  $node = realize($node) if getQName($node) eq 'ltx:XMRef';
+  my $tag = getQName($node);
+  if($tag eq 'ltx:XMath'){
     my($item,@rest)=  element_nodes($node);
     print STDERR "Warning! got extra nodes for content!\n" if @rest;
     cmml($item); }
-  elsif($tag eq 'XMDual'){
+  elsif($tag eq 'ltx:XMDual'){
     my($content,$presentation) = element_nodes($node);
     cmml($content); }
-  elsif($tag eq 'XMWrap'){	# Only present if parsing failed!
+  elsif($tag eq 'ltx:XMWrap'){	# Only present if parsing failed!
     pmml_row(map(pmml($_),element_nodes($node))); } # ????
-  elsif($tag eq 'XMApp'){
+  elsif($tag eq 'ltx:XMApp'){
     my($op,@args) = element_nodes($node);
     if(!$op){
       ['m:merror',{},['m:mtext',{},"Missing Operator"]]; }
     else {
       my $rop = realize($op);		# NOTE: Could loose open/close on XMRef ???
       &{ lookupContent('Apply',$rop->getAttribute('role'),getTokenMeaning($rop)) }($op,@args); }}
-  elsif($tag eq 'XMTok'){
+  elsif($tag eq 'ltx:XMTok'){
     &{ lookupContent('Token',$node->getAttribute('role'),getTokenMeaning($node)) }($node); }
-  elsif($tag eq 'XMHint'){	# ????
+  elsif($tag eq 'ltx:XMHint'){	# ????
     &{ lookupContent('Hint',$node->getAttribute('role'),getTokenMeaning($node)) }($node); }
   else {
     ['m:mtext',{},$node->textContent]; }}
@@ -930,7 +933,7 @@ DefMathML('Apply:STACKED:?', sub {
 # AND, the propogation of style is likely wrong...
 sub do_cfrac {
   my($numer,$denom)=@_;
-  if($denom->localname eq 'XMApp'){ # Denominator is some kind of application
+  if(getQName($denom) eq 'ltx:XMApp'){ # Denominator is some kind of application
     my ($denomop,@denomargs)=element_nodes($denom);
     if(($denomop->getAttribute('role')||'') eq 'ADDOP'){ # Is it a sum or difference?
       my $last = pop(@denomargs);			# Check last operand in denominator.
@@ -941,7 +944,7 @@ sub do_cfrac {
 		   pmml_smaller($denomop)]];
       if(getTokenMeaning($last) eq 'cdots'){ # Denom ends w/ \cdots
 	return ($curr,pmml($last));}		   # bring dots up to toplevel
-      elsif($last->localname eq 'XMApp'){	   # Denom ends w/ application --- what kind?
+      elsif(getQName($last) eq 'ltx:XMApp'){	   # Denom ends w/ application --- what kind?
 	my($lastop,@lastargs)=element_nodes($last);
 	if(getTokenMeaning($lastop) eq 'cfrac'){ # Denom ends w/ cfrac, pull it to toplevel
 	  return ($curr,do_cfrac(@lastargs)); }
