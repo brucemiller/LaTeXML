@@ -83,11 +83,14 @@ sub parseMath {
     NoteEnd("Math Parsing");  }
   $document; }
 
+sub getQName {
+  $LaTeXML::MathParser::DOCUMENT->getNodeQName(@_); }
+
 # ================================================================================
 sub clear {
   my($self)=@_;
-  $$self{passed}={XMath=>0,XMArg=>0,XMWrap=>0};
-  $$self{failed}={XMath=>0,XMArg=>0,XMWrap=>0};
+  $$self{passed}={'ltx:XMath'=>0,'ltx:XMArg'=>0,'ltx:XMWrap'=>0};
+  $$self{failed}={'ltx:XMath'=>0,'ltx:XMArg'=>0,'ltx:XMWrap'=>0};
   $$self{unknowns}={};
   $$self{maybe_functions}={};
   $$self{n_parsed}=0;
@@ -179,14 +182,6 @@ sub getTokenContent { # Get the Token's content, or fall back to name.
 
 sub node_string {
   my($node,$document)=@_;
-  my($string,$x);
-#  if(defined ($x=$node->getAttribute('tex'))){ $string=$x; }
-#  elsif(defined ($x=$node->getAttribute('name'))) { $string=$x; }
-#  elsif(($node->localname eq 'XMTok')&& (defined ($x=$node->textContent))){ $string=$x; }
-#  else{ $string=$node->localname; }
-
-#  $string = text_form($node);
-#  ($node->getAttribute('role')||'Unknown').'['.$string.']'; }
   my $role = $node->getAttribute('role') || 'UNKNOWN';
   my $box = $document->getNodeBox($node);
   ($box ? ToString($box) : text_form($node)). "[[$role]]"; }
@@ -221,18 +216,18 @@ sub parse {
     $xnode->parentNode->setAttribute('text',text_form($result)); }
 }
 
-our %TAG_FEEDBACK=(XMArg=>'a',XMWrap=>'w');
+our %TAG_FEEDBACK=('ltx:XMArg'=>'a','ltx:XMWrap'=>'w');
 # Recursively parse a node with some internal structure
 # by first parsing any structured children, then it's content.
 sub parse_rec {
   my($self,$node,$rule,$document)=@_;
   $self->parse_children($node,$document);
-  my $tag  = $node->localname;
+  my $tag  = getQName($node);
   if(my $requested_rule = $node->getAttribute('rule')){
     $rule = $requested_rule; }
   if(my $result= $self->parse_internal($node,$document,$rule)){
     $$self{passed}{$tag}++;
-   if($tag eq 'XMath'){	# Replace content of XMath
+   if($tag eq 'ltx:XMath'){	# Replace content of XMath
      NoteProgress('['.++$$self{n_parsed}.']');
      map($node->removeChild($_),element_nodes($node));
      append_nodes($node,$result); }
@@ -246,9 +241,9 @@ sub parse_rec {
       $node->parentNode->replaceChild($result,$node); }
     $result; }
   else {
-    if($tag eq 'XMath'){
+    if($tag eq 'ltx:XMath'){
       NoteProgress('[F'.++$$self{n_parsed}.']'); }
-    elsif($tag eq 'XMArg'){
+    elsif($tag eq 'ltx:XMArg'){
       NoteProgress('-a') if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1; }
     $$self{failed}{$tag}++;
     undef; }}
@@ -257,14 +252,14 @@ sub parse_rec {
 sub parse_children {
   my($self,$node,$document)=@_;
   foreach my $child (element_nodes($node)){
-    my $tag = $child->localname;
-    if($tag eq 'XMArg'){
+    my $tag = getQName($child);
+    if($tag eq 'ltx:XMArg'){
       $self->parse_rec($child,'Anything',$document); }
-    elsif($tag eq 'XMWrap'){
+    elsif($tag eq 'ltx:XMWrap'){
       local $LaTeXML::MathParser::STRICT=0;
       $self->parse_rec($child,'Anything',$document); }
-#    elsif(($tag eq 'XMApp')||($tag eq 'XMDual')){
-    elsif($tag =~ /^(XMApp|XMDual|XMArray|XMRow|XMCell)$/){
+#    elsif(($tag eq 'ltx:XMApp')||($tag eq 'ltx:XMDual')){
+    elsif($tag =~ /^ltx:(XMApp|XMDual|XMArray|XMRow|XMCell)$/){
       $self->parse_children($child,$document); }
 }}
 
@@ -275,13 +270,13 @@ sub parse_internal {
   my($self,$mathnode,$document,$rule)=@_;
   #  Remove Hints!
   my @nodes = element_nodes($mathnode);
-  @nodes = grep( $_->localname ne 'XMHint', @nodes);
+  @nodes = grep( getQName($_) ne 'ltx:XMHint', @nodes);
 
   # Extract trailing punctuation, if rule allows it.
   my ($punct, $result,$textified);
   if($rule =~ s/,$//){
     my ($x,$r) = ($nodes[$#nodes]);
-    $punct = ($x && ($x->localname eq 'XMTok')
+    $punct = ($x && (getQName($x) eq 'ltx:XMTok')
 	      && ($r = $x->getAttribute('role'))
 	      && (($r eq 'PUNCT')||($r eq 'PERIOD'))
 	      ? pop(@nodes) : ''); }
@@ -301,20 +296,20 @@ sub parse_internal {
     my $i = 0;
     $textified='';
     foreach my $node (@nodes){
-      my $tag = $node->localname;
+      my $tag = getQName($node);
       my $rnode = $node;
-      if($tag eq 'XMRef'){
+      if($tag eq 'ltx:XMRef'){
 	if(my $id = $node->getAttribute('id')){
 	  $rnode = $$self{idcache}{$id};
-	  $tag = $rnode->localname; }}
+	  $tag = getQName($rnode); }}
       my $text = getTokenMeaning($node);
       $text = 'Unknown' unless defined $text;
       my $role = $rnode->getAttribute('role');
-#      $role = ($tag eq 'XMTok' ? 'UNKNOWN' : 'ATOM') unless defined $role;
+#      $role = ($tag eq 'ltx:XMTok' ? 'UNKNOWN' : 'ATOM') unless defined $role;
       if(!defined $role){
-	if($tag eq 'XMTok'){
+	if($tag eq 'ltx:XMTok'){
 	  $role = 'UNKNOWN'; }
-	elsif($tag eq 'XMDual'){
+	elsif($tag eq 'ltx:XMDual'){
 	  $role = $node->firstChild->getAttribute('role'); }
 	$role = 'ATOM' unless defined $role; }
       my $lexeme      = $role.":".$text.":".++$i;
@@ -344,7 +339,7 @@ sub parse_internal {
       my $parsed  = join(' ',map(node_string($_,$document),@nodes[0..$pos-1]));
       my $toparse = join(' ',map(node_string($_,$document),@nodes[$pos..$#nodes]));
       my $lexeme = node_location($nodes[$pos] || $nodes[$pos-1] || $mathnode);
-      Warn("  MathParser failed to match rule $rule for ".$mathnode->localname." at pos. $pos in $lexeme at\n   "
+      Warn("  MathParser failed to match rule $rule for ".getQName($mathnode)." at pos. $pos in $lexeme at\n   "
 	   . ($parsed ? $parsed."   \n".(' ' x (length($parsed)-2)) : '')."> ".$toparse);
     }
     undef; }
@@ -378,12 +373,12 @@ our %IS_INFIX = (METARELOP=>1,
 
 sub textrec {
   my($node, $outer_bp,$outer_name)=@_;
-  my $tag = $node->localname;
+  my $tag = getQName($node);
   $outer_bp = 0 unless defined $outer_bp;
   $outer_name = '' unless defined $outer_name;
-  if($tag eq 'XMApp') {
+  if($tag eq 'ltx:XMApp') {
     my($op,@args) = element_nodes($node);
-    my $name = (($op->localname eq 'XMTok') && getTokenMeaning($op)) || 'unknown';
+    my $name = ((getQName($op) eq 'ltx:XMTok') && getTokenMeaning($op)) || 'unknown';
     my $role  =  $op->getAttribute('role') || 'Unknown';
     my ($bp,$string);
     if($bp = $IS_INFIX{$role}){
@@ -404,17 +399,17 @@ sub textrec {
       $bp = 500;
       $string = textrec($op,10000,$name) .'@(' . join(', ',map(textrec($_),@args)). ')'; }
     (($bp < $outer_bp)||(($bp==$outer_bp)&&($name ne $outer_name)) ? '('.$string.')' : $string); }
-  elsif($tag eq 'XMDual'){
+  elsif($tag eq 'ltx:XMDual'){
     my($content,$presentation)=element_nodes($node);
     textrec($content,$outer_bp,$outer_name); } # Just send out the semantic form.
-  elsif($tag eq 'XMTok'){
+  elsif($tag eq 'ltx:XMTok'){
     my $name = getTokenMeaning($node);
     $name = 'Unknown' unless defined $name;
     $PREFIX_ALIAS{$name} || $name; }
-  elsif($tag eq 'XMWrap'){
+  elsif($tag eq 'ltx:XMWrap'){
     # ??
     join('@',map(textrec($_), element_nodes($node))); }
-  elsif($tag eq 'XMArray'){
+  elsif($tag eq 'ltx:XMArray'){
     my $name = $node->getAttribute('meaning') || $node->getAttribute('name')
       || 'Array';
     my @rows = ();
@@ -423,7 +418,7 @@ sub textrec {
        '['.join(', ',map(($_->firstChild ? textrec($_->firstChild):''),element_nodes($row))).']');}
     $name.'['.join(', ',@rows).']';  }
   else {
-    my $string = ($tag eq 'XMText' ? $node->textContent : $node->getAttribute('tex') || '?');
+    my $string = ($tag eq 'ltx:XMText' ? $node->textContent : $node->getAttribute('tex') || '?');
       "[$string]"; }}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -634,7 +629,7 @@ sub ApplyNary {
   my($op,$arg1,$arg2)=@_;
   my $opname = getTokenMeaning($op);  
   my @args = ();
-  if($arg1->localname eq 'XMApp'){
+  if(getQName($arg1) eq 'ltx:XMApp'){
     my($op1,@args1)=element_nodes($arg1);
     if((getTokenMeaning($op1) eq $opname)
        && !grep($_ ,map(($op->getAttribute($_)||'<none>') ne ($op1->getAttribute($_)||'<none>'),
@@ -678,7 +673,7 @@ sub Problem { Warn("MATH Problem? ",@_); }
 sub MaybeFunction {
   my($token)=@_;
   my $self = $LaTeXML::MathParser::PARSER;
-  while($token->localname eq 'XMApp'){
+  while(getQName($token) eq 'ltx:XMApp'){
     $token = Arg($token,1); }
   my $name = token_prettyname($token);
   $token->setAttribute('possibleFunction','yes');
