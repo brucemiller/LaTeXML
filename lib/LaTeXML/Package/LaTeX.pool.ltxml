@@ -565,23 +565,6 @@ InstallDefinition(LaTeXML::Constructor
 # Hmm, this should really be constructor or something so that at least typewriter font
 # is used, if not wrapped in a <verb> something???
 our $EMPTY_CATTABLE=LaTeXML::State->new(catcodes=>'none');
-##DefConstructor('\verb', "<ltx:verbatim font='#font'>#body</ltx:verbatim>",
-##	       beforeDigest=>[sub { $_[0]->bgroup; MergeFont(family=>'typewriter'); }],
-##	       afterDigest=>sub { 
-##		 my($stomach,$whatsit)=@_;
-##		 $stomach->egroup; 
-##		 my $font = $whatsit->getFont;
-##		 my $loc  = $whatsit->getLocator;
-##		 my $mouth = $stomach->getGullet->getMouth;
-##		 my ($init,$body);
-##		 { local $STATE = $EMPTY_CATTABLE;
-##		   $init = $mouth->readToken;
-##		   $init = $mouth->readToken if $init->toString eq '*'; # Should I bother handling \verb* ?
-##		   $body = $mouth->readTokens($init); }
-##		 $whatsit->setBody(map(LaTeXML::Box->new($_->toString,$font,$loc,$_),$body->unlist,$init)); },
-##	       reversion=>sub { (T_CS('\verb'),$_[0]->getTrailer->revert,
-##				 $_[0]->getBody->revert,$_[0]->getTrailer->revert); }
-##);
 
 DefExpandable('\verb', sub {
   my($gullet)=@_;
@@ -1410,19 +1393,19 @@ sub addIndexKey {
   # [Presumably compute key and add it to the index element and delete]
   # Or introduce a special element?
   if($node->getAttribute('see_also_marker')){
-    my $key = $node->getAttribute('key') || indexify($node);
+    my $key = $node->getAttribute('key') || indexify($node,$document);
     my $indexmark = $node->parentNode;
     $indexmark->setAttribute(see_also=>$key);
     $indexmark->removeChild($node); }
   elsif(!$node->getAttribute('key')) {
-    $node->setAttribute(key=>indexify($node)); }}
+    $node->setAttribute(key=>indexify($node,$document)); }}
 
 #======================================================================
 # This converts an indexphrase node into a sortable string.
 # Seems the XML nodes are the best place to handle it (rather than Boxes),
 # although some of the special cases (see, @, may end up tricky)
 sub indexify {
-  my($node)=@_;
+  my($node,$document)=@_;
   my $type = $node->nodeType;
   if($type == XML_TEXT_NODE){
     my $string = $node->textContent; 
@@ -1430,7 +1413,7 @@ sub indexify {
     $string =~ s/\s//g;		# Or remove entirely? Eventually worry about many=>1 mapping???
     lc($string); }		# Worry..
   elsif($type == XML_ELEMENT_NODE){
-    if($node->localname eq 'Math'){
+    if($document->getNodeQName($node) eq 'ltx:Math'){
       indexify_tex($node->getAttribute('tex'));}
     else {
       join('',map(indexify($_),$node->childNodes)); }}
