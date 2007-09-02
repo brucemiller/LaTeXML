@@ -515,11 +515,16 @@ DefRegister('\topsep'        => Glue(0));
 DefRegister('\partopsep'     => Glue(0));
 DefRegister('\itemsep'       => Glue(0));
 DefRegister('\parsep'        => Glue(0));
+DefRegister('\@topsep'       => Glue(0));
+DefRegister('\@topsepadd'    => Glue(0));
+DefRegister('\@outerparskip' => Glue(0));
 DefRegister('\leftmargin'    => Dimension(0));
 DefRegister('\rightmargin'   => Dimension(0));
 DefRegister('\listparindent' => Dimension(0));
 DefRegister('\itemindent'    => Dimension(0));
+DefRegister('\labelwidth'    => Dimension(0));
 DefRegister('\labelsep'      => Dimension(0));
+DefRegister('\@totalleftmargin'=> Dimension(0));
 
 # NOTE: Eventually use \makelabel to construct the list ?
 #\makelabel{label}
@@ -958,21 +963,21 @@ DefPrimitive('\stepcounter{}',   sub { StepCounter($_[1]->toString); return; });
 DefPrimitive('\refstepcounter{}',sub { RefStepCounter($_[1]->toString); return; });
 
 DefExpandable('\value{}', sub {
-  Explode(LookupValue('\c@'.$_[1]->toString)->valueOf);});
+  Explode(CounterValue($_[1])->valueOf);});
 DefExpandable('\arabic{}',sub {
-  Explode(LookupValue('\c@'.$_[1]->toString)->valueOf); });
+  Explode(CounterValue($_[1])->valueOf); });
 DefExpandable('\roman{}', sub {
-  roman(LookupValue('\c@'.$_[1]->toString)->valueOf); });
+  roman(CounterValue($_[1])->valueOf); });
 DefExpandable('\Roman{}', sub {
-  Roman(LookupValue('\c@'.$_[1]->toString)->valueOf); });
+  Roman(CounterValue($_[1])->valueOf); });
 DefExpandable('\alph{}',  sub {
-  T_OTHER(chr(LookupValue('\c@'.$_[1]->toString)->valueOf+ord('a')-1));});
+  T_OTHER(chr(CounterValue($_[1])->valueOf+ord('a')-1));});
 DefExpandable('\Alph{}',  sub {
-  T_OTHER(chr(LookupValue('\c@'.$_[1]->toString)->valueOf+ord('A')-1));});
+  T_OTHER(chr(CounterValue($_[1])->valueOf+ord('A')-1));});
 our @fnsymbols=("*", "\x{2020}", "\x{2021}", UTF(0xA7), UTF(0xB6),
 		"\x{2225}", "**", "\x{2020}\x{2020}","\x{2021}\x{2021}");
 DefExpandable('\fnsymbol{}',sub { 
-		T_OTHER($fnsymbols[LookupValue('\c@'.$_[1]->toString)->valueOf-1]);});
+		T_OTHER($fnsymbols[CounterValue($_[1])->valueOf-1]);});
 
 #======================================================================
 # C.8.5 The ifthen Package.
@@ -1244,6 +1249,7 @@ DefConstructor('\citeauthor[][] Semiverbatim', sub { makecite(0,'author',@_); })
 DefConstructor('\citeyear[][] Semiverbatim',   sub { makecite(0,'year',@_); });
 DefConstructor('\citeyearpar[][] Semiverbatim',sub { makecite(1,'year',@_); });
 
+DefConstructor('\nocite Semiverbatim', ''); # Eventually needs to be recognized by MakeBibliography
 # Ignore for now...
 DefPrimitive('\defcitealias Semiverbatim {}',undef);
 DefMacro('\citetalias Semiverbatim','\citet{#1}');
