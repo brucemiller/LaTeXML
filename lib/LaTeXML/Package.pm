@@ -37,7 +37,7 @@ our @EXPORT = (qw(&DefExpandable &DefMacro
 		  &LookupCatcode &AssignCatcode
 		 &LookupMeaning &LookupDefinition &InstallDefinition &Let),
 	       # Counter support
-	       qw(&NewCounter &StepCounter &RefStepCounter &RefStepID &ResetCounter),
+	       qw(&NewCounter &CounterValue &StepCounter &RefStepCounter &RefStepID &ResetCounter),
 	       # Math & font state.
 	       qw(&MergeFont),
 	       # Explicit digestion
@@ -95,7 +95,7 @@ sub parsePrototype {
 # something like \newcommand, convert it to the form we use
 sub convertLaTeXArgs {
   my($nargs,$optional)=@_;
-  $nargs = (defined $nargs ? $nargs->toString : 0);
+  $nargs = (ref $nargs ? $nargs->toString : $nargs || 0);
   my $default = ($optional ? $optional->toString : undef);
   join('', ($optional ? ($default ? "[Default:$default]" : "[]") : ''),
        map('{}',1..($optional ? $nargs-1 : $nargs))); }
@@ -229,12 +229,18 @@ sub NewCounter {
     DefMacro("\\\@$ctr\@ID","0"); }
   return; }
 
-sub StepCounter {
+sub CounterValue {
   my($ctr)=@_;
-  my $value = LookupValue("\\c\@$ctr");
+  $ctr = $ctr->toString if ref $ctr;
+  my $value = LookupValue('\c@'.$ctr);
   if(!$value){
     Warn("Counter $ctr was not defined; assuming 0");
     $value = Number(0); }
+  $value; }
+
+sub StepCounter {
+  my($ctr)=@_;
+  my $value = CounterValue($ctr);
   AssignValue("\\c\@$ctr"=>$value->add(Number(1)),'global');
   # and reset any within counters!
   if(my $nested = LookupValue("\\cl\@$ctr")){
@@ -304,8 +310,11 @@ sub Expand            { $STATE->getStomach->getGullet->expandTokens(@_); }
 
 sub Invocation        {
   my($token,@args)=@_;
-  Tokens(LookupDefinition((ref $token ? $token : T_CS($token)))
-	 ->invocation(@args)); }
+  if(my $defn = LookupDefinition((ref $token ? $token : T_CS($token)))){
+    Tokens($defn->invocation(@args)); }
+  else {
+    Fatal("Cannot invoke ".Stringify($token)."; it is undefined");
+    Tokens(); }}
 
 #======================================================================
 # Non-exported support for defining forms.
