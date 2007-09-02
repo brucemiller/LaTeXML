@@ -14,9 +14,9 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
+RequirePackage('hyperref');
 #**********************************************************************
 DefMacro('\latextohtml','\LaTeX2\texttt{HTML}');
-# Load hyperref ?
 DefMacro('\htmladdnormallinkfoot{}{}','\footnote{\href{#2}{#1}}');
 DefMacro('\htmladdnormallink{}{}','\href{#2}{#1}');
 DefMacro('\htmladdimg{}','\hyperimage{#1}');
@@ -29,12 +29,16 @@ DefConstructor('\HTMLrule OptionalMatch:*','<ltx:rule/>');
 DefConstructor('\htmlclear','<ltx:br/>');
 DefMacro('\bodytext{}','');
 DefMacro('\htmlbody','');
-DefMacro('\hyperrefhyper{}{}{}{}','');
-DefMacro('\hyperrefdef{}{}{}{}','');
-DefMacro('\hyperrefpagedef{}{}{}{}','');
-DefMacro('\hyperrefnodef{}{}{}{}','');
-DefMacro('\hypercite{}','');
-DefMacro('\htmlcite{}{}','');
+
+DefConstructor('\hyperrefdef {} {}{} Semiverbatim', "<ltx:ref labelref='#4'>#1</ltx:ref>");
+Let('\hyperrefhyper',  '\hyperrefdef');
+Let('\hyperrefpagedef','\hyperrefdef');
+Let('\hyperrefnoref',  '\hyperrefdef');
+Let('\hyperrefhtml',   '\hyperrefdef');
+
+DefConstructor('\hypercite [] {}{} [] Semiverbatim',
+	       "<ltx:cite>#4 <ltx:bibref bibrefs='#5'>#2</ltx:bibref> #1</ltx:cite>");
+Let('\htmlcite{}{}','\hypercite');
 DefMacro('\htmlimage{}','');
 DefMacro('\htmlborder{}','');
 DefEnvironment('{makeimage}','#body');
@@ -42,10 +46,21 @@ DefEnvironment('{tex2html_deferred}','#body');
 DefMacro('\htmladdtonavigation{}','');
 
 # These get excluded, since we probably don't even want to try to include html?
-DefEnvironment('{rawhtml}','');
-DefEnvironment('{htmlonly}','');
+#DefEnvironment('{rawhtml}','');
+#DefEnvironment('{htmlonly}','');
+InstallDefinition(LaTeXML::Constructor->new(T_CS("\\begin{rawhtml}"),undef,'', reversion=>'',
+   afterDigest=>[sub {
+		   my($stomach,$whatsit)=@_;
+		   my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{rawhtml}",0);
+		   NoteProgress("Skipped ".scalar(@lines)." for environment rawhtml"); }]));
+InstallDefinition(LaTeXML::Constructor->new(T_CS("\\begin{htmlonly}"),undef,'', reversion=>'',
+   afterDigest=>[sub {
+		   my($stomach,$whatsit)=@_;
+		   my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{htmlonly}",0);
+		   NoteProgress("Skipped ".scalar(@lines)." for environment htmlonly"); }]));
 DefMacro('\html{}','');
 DefEnvironment('{latexonly}','#body'); # Include this (?)
+DefMacro('\latex{}','#1');
 DefMacro('\latexhtml{}{}','#1');
 
 DefMacro('\strikeout{}','');

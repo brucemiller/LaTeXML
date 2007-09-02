@@ -17,5 +17,7 @@ use LaTeXML::Package;
 # Need some work here!?!?
 DefMacro('\pdfcatalog{}','');
 DefRegister('\pdfcompresslevel',Number(0));
+DefConstructor('\href Semiverbatim  Semiverbatim',"<ltx:ref href='#1'>#2</ltx:ref>");
+DefConstructor('\htmlref Semiverbatim  Semiverbatim',"<ltx:ref labelref='#2'>#1</ltx:ref>");
 
 1;
