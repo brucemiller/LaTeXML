@@ -29,7 +29,7 @@ DefParameterType('GraphixDimension',  sub{
 # Unimplemented, for now: What should be the result?
 # Would seem to require different treatment if the content was ONLY \includegraphic,
 # or more general text.
-DefConstructor('\scalebox{Number}[Number]{}','#3');
+DefConstructor('\scalebox{}[]{}','#3');
 DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension}{}','#4');
 DefConstructor('\rotatebox{Number}{}','#2');
 DefConstructor('\reflectbox{}','#1');
@@ -38,7 +38,7 @@ DefConstructor('\graphicspath Semiverbatim',"<?latexml graphicspath='#1'?>");
 
 # Basically, we're transforming the graphics options into graphicx format.
 DefMacro('\includegraphics OptionalMatch:* [][] Semiverbatim',
-	 '\@includegraphicx#1[#2][#3]{#4}');
+	 '\@includegraphics#1[#2][#3]{#4}');
 
 DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim', sub {
   my($document,$starred,$op1,$op2,$graphic)=@_;
