@@ -61,6 +61,7 @@ my $scanner = DLMFScan->new(db=>$DB,%OPTIONS);
 my @procs=(DLMFSplit->new(%OPTIONS));
 push(@procs,$scanner) if $scan;
 
+my $crossref = DLMFCrossRef->new(db=>$DB,format=>'xml',urlstyle=>'negotiated',%OPTIONS);
 if(!$prescan){
   push(@procs,
        LaTeXML::Post::MakeIndex->new(db=>$DB,split=>1,scanner=>$scanner,%OPTIONS),
@@ -68,14 +69,15 @@ if(!$prescan){
 					    split=>1, scanner=>$scanner,%OPTIONS),
        DLMFMakeNotations->new(db=>$DB,split=>1,scanner=>$scanner,%OPTIONS),
 
-       DLMFCrossRef->new(db=>$DB,format=>'xml',urlstyle=>'negotiated',%OPTIONS),
+       $crossref,
        DLMFGallery->new(resourceDirectory=>'',resourcePrefix=>'g',%OPTIONS),
        DLMFGraphics->new(resourceDirectory=>'',resourcePrefix=>'g',%OPTIONS),
        DLMFPictureImages->new(resourceDirectory=>'',resourcePrefix=>'g',%OPTIONS),
        # LaTeXML::Post::SVG->new(%OPTIONS),
 
        DLMFMathImages->new(resourceDirectory=>'', resourcePrefix=>'m',%OPTIONS),
-       DLMFpMML->new(linelength=>80,resourceDirectory=>'', resourcePrefix=>'m',%OPTIONS),
+       DLMFpMML->new(db=>$DB,linelength=>80,resourceDirectory=>'', resourcePrefix=>'m',
+		     crossref=>$crossref, %OPTIONS),
        # cmml options ?
        # LaTeXML::Post::PurgeXMath->new(%OPTIONS),
        DLMFWriter->new(basedir=>$basedir,format=>'xml',omit_doctype=>1,%OPTIONS),
@@ -85,7 +87,7 @@ if(pathname_absolute($destination)){
     $destination = $reldest; }}
 my $target = "$basedir/$destination";
 
-print STDERR ($prescan ? "Scanning $xmlfile\n":"Instanciating $xmlfile => $target\n")
+print STDERR ($prescan ? "Scanning $xmlfile\n":"Paginating $xmlfile => $target\n")
   if $verbosity > -1;
 LaTeXML::Post::ProcessChain(LaTeXML::Post::Document->newFromFile($xmlfile,
 								 validate=>$validate,
@@ -106,7 +108,7 @@ use base qw(LaTeXML::Post::Split);
 sub process {
   my($self,$doc)=@_;
   my $root = $doc->getDocumentElement;
-  if($root->localname eq 'chapter'){
+  if($doc->getQName($root) eq 'ltx:chapter'){
     my @docs = ($doc);
     my @toc = ();
     my $chapid = $root->getAttribute('id');
@@ -239,10 +241,10 @@ use base qw(LaTeXML::Post::Scan);
 sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
-  $self->registerHandler(tocentry =>\&tocentry_handler);
-  $self->registerHandler(declare  =>\&declare_handler);
-  $self->registerHandler(mark     =>\&mark_handler);
-  $self->registerHandler(notations=>\&notation_handler);
+  $self->registerHandler('ltx:tocentry' =>\&tocentry_handler);
+  $self->registerHandler('ltx:declare'  =>\&declare_handler);
+  $self->registerHandler('ltx:mark'     =>\&mark_handler);
+  $self->registerHandler('ltx:notations'=>\&notation_handler);
 
   $self; }
 
@@ -267,7 +269,8 @@ sub declare_handler {
     if(my $tag = $doc->findnode('ltx:tag',$node)){
       if(my $decl_id = $node->getAttribute('id')){
 	$$self{db}->register("DECLARATION:local:$decl_id",
-			     parent=>$parent_id, tag=>$tag);
+			     parent=>$parent_id, tag=>$tag,
+			     textform => textualize($doc,$tag));
       }}}}
 
 sub mark_handler {
@@ -283,10 +286,12 @@ sub mark_handler {
     @syms = (grep(($_->getAttribute('role')||'') ne 'RELOP', @syms), @syms);
     my $name = $syms[0] && $syms[0]->getAttribute('meaning');
     $$self{db}->register("DECLARATION:global:$name",
-			 parent=>$parent_id, tag=>$tagnode, text=>$textnode); }
+			 parent=>$parent_id, tag=>$tagnode, text=>$textnode,
+			 textform => textualize($doc,$tagnode,":",$textnode)); }
 #  $$self{db}->register("NOTATION:".$tagnode->cloneNode(1),
   $$self{db}->register("NOTATION:".$tagnode->cloneNode(1)->toString,
-		       parent=>$parent_id, tag=>$tagnode, text=>$textnode); }
+		       parent=>$parent_id, tag=>$tagnode, text=>$textnode); 
+}
 
 # This is a copy of Scan's section_handler, BUT without the recursion.
 # We do this is because (most) notations are copied from notations sections
@@ -314,6 +319,32 @@ sub notation_handler {
   }
 }
 
+sub textualize {
+  my($doc,@nodes)=@_;
+  join(' ',grep($_,map(textualize_rec($doc,$_),@nodes))); }
+
+# Alas, we don't have pmml yet, but we'd like to turn this into a readable string.
+sub textualize_rec {
+  my($doc,$node)=@_;
+  if(!ref $node){ $node; }
+  else {
+    my $type = $node->nodeType;
+    if($type == XML_TEXT_NODE){
+      $node->textContent; }
+    elsif($type == XML_ELEMENT_NODE){
+      my $tag = $doc->getQName($node);
+      if($tag eq 'ltx:XMTok'){
+	my $text = $node->textContent;
+	(defined $text ? $text : $node->getAttribute('name'));
+      }
+      elsif($tag eq 'ltx:XMDual'){
+	my($cont,$pres) = $node->childNodes;
+	textualize($doc, $pres); }
+      # Eventually, perhaps, do a more sophisticated mml to string conversion!
+      else {
+	textualize($doc, $node->childNodes); }}}
+}
+
 #======================================================================
 # Abstract Mixin class for looking up symbol definitions.
 #======================================================================
@@ -326,42 +357,44 @@ sub extractMathSymbols {
   my @links = ();
   local %DLMFSymbols::SYMBOLS = ();
   foreach my $node (@nodes){
-    extractMathSymbols_rec($node); }
+    extractMathSymbols_rec($node,$doc); }
   sort keys %DLMFSymbols::SYMBOLS; }
 
 sub makeSymbolDefinitionLinks {
   my($self,$doc,$inside_id,@symbols)=@_;
-  my @links = ();
+  my (@reflinks,@deflinks) = ();
   foreach my $symbol (@symbols){
     if(my $entry = $$self{db}->lookup("DECLARATION:$symbol")){
       if(my $tag = $entry->getValue('tag')){
 	my $dec_id = $entry->getValue('parent'); # Where defined
 	my $text   = $entry->getValue('text'); 
 	my @stuff = ($tag->childNodes, ($text ? (': ',$text->childNodes):()));
-	push(@links,
-	     ($inside_id && is_ancestor($$self{db},$dec_id,$inside_id)
-	      ? ['ltx:span',{class=>'bold'},@stuff]
-	      : ['ltx:ref',{idref=>$dec_id},@stuff])); }}}
-  $doc->conjoin([', ',' and '],@links); }
+	if($inside_id && $self->isAncestor($dec_id,$inside_id)){
+	  push(@deflinks,['ltx:span',{class=>'bold'},@stuff]); }
+	else {
+	  push(@reflinks, ['ltx:ref',{idref=>$dec_id},@stuff]); }}}}
+  ( (@reflinks ? [$doc->conjoin([', ',' and '],@reflinks)] : []),
+    (@deflinks ? [$doc->conjoin([', ',' and '],@deflinks)] : []) ); }
 
 sub extractMathSymbols_rec {
-  my($node)=@_;
+  my($node,$doc)=@_;
   if($node->nodeType == XML_ELEMENT_NODE){
-    my $tag = $node->localname;
-    if($tag eq 'XMTok'){
+    my $tag = $doc->getQName($node);
+    if($tag eq 'ltx:XMTok'){
       if(($node->getAttribute('role')||'') eq 'NUMBER'){}
       elsif(my $id = $node->getAttribute('dec_id')){
 	$DLMFSymbols::SYMBOLS{"local:$id"}=1; }
       elsif(my $name = $node->getAttribute('meaning')){
 	$DLMFSymbols::SYMBOLS{"global:$name"}=1; }}
-    elsif($tag eq 'XMDual'){		# Just follow content branch
-      extractMathSymbols_rec([$node->childNodes]->[0]); }
+    elsif($tag eq 'ltx:XMDual'){		# Just follow content branch
+      extractMathSymbols_rec([$node->childNodes]->[0],$doc); }
     else {
-      map(extractMathSymbols_rec($_), $node->childNodes); }}}
+      map(extractMathSymbols_rec($_,$doc), $node->childNodes); }}}
 
 # Find out if $dec_id is an ancestor of $id
-sub is_ancestor {
-  my($db, $possible_ancestor,$id)=@_;
+sub isAncestor {
+  my($self, $possible_ancestor,$id)=@_;
+  my $db = $$self{db};
   my $entry;
   while($id){
     return 1 if $id eq $possible_ancestor;
@@ -398,12 +431,13 @@ sub process {
 						map(['ltx:ref',{idref=>$_,show=>'typerefnum'}],
 						    sort keys %$referrers))]); }}}}
     # Compile list of Symbols Used w/links to "definitions"
-    if($meta->parentNode->localname =~ /^equation/){ # Only for equations?
+    if($doc->getQName($meta->parentNode) =~ /^ltx:equation/){ # Only for equations?
       # Better would be "all Math not contained by another element with metadata" (Ha)
       my @symbols = $self->extractMathSymbols($doc,
            $doc->findnodes(".//ltx:Math/ltx:XMath",$meta->parentNode));
-      my @links = $self->makeSymbolDefinitionLinks($doc,$id,@symbols);
-      $doc->addNodes($meta,['ltx:symbols-used',{},@links]) if @links; }
+      my ($used,$defd) = $self->makeSymbolDefinitionLinks($doc,$id,@symbols);
+      $doc->addNodes($meta,['ltx:symbols-defined',{},@$defd]) if @$defd;
+      $doc->addNodes($meta,['ltx:symbols-used',{},@$used]) if @$used; }
   }
   $self->SUPER::process($doc); }
 
@@ -573,15 +607,53 @@ sub setTeXImage {
 #======================================================================
 package DLMFpMML;
 use strict;
-use base qw(DLMFEquationResourceMap LaTeXML::Post::MathML::Presentation);
+use base qw(DLMFEquationResourceMap DLMFSymbols LaTeXML::Post::MathML::Presentation);
+
+our $XLINKURI;
+BEGIN{ $XLINKURI = "http://www.w3.org/1999/xlink"; }
+sub process {
+  my($self,$doc)=@_;
+  $doc->addNamespace($XLINKURI=>'xlink');
+  $self->SUPER::process($doc); }
 
 sub processNode {
   my($self,$doc,$math)=@_;
+  local $DLMF::CURRENT_DOC = $doc;
+# WHY is xpath failing here??
+#  my ($ancestor)=$doc->findnode('ancestor::*[@id]',$math);
+#  local $DLMF::CURRENT_ID = ($ancestor ? $ancestor->getAttribute('id') : undef);
+  local $DLMF::CURRENT_ID;
+  my $p = $math;
+  while($p){ 
+    last if $DLMF::CURRENT_ID = $p->getAttribute('id');
+    $p = $p->parentNode; }
+  if(!$DLMF::CURRENT_ID){
+    print STDERR "No parent id for ".$math->toString."\n"; }
+
   $self->SUPER::processNode($doc,$math);
   if(my $resource = $self->desiredResourcePathname($doc,$math,undef,'pmml')){
     if(my $pmml = $doc->findnode('m:math',$math)){
       $self->writeEncodedResource($doc,$math,$resource,
 				  $pmml->cloneNode(1)->toString,'pmml'); }}}
+
+sub augmentNode {
+  my($self,$node,$mathml)=@_;
+  my $db = $$self{crossref}{db};
+  my $entry;
+
+  if(my $dec_id = $node->getAttribute('dec_id')){
+    $entry = $$self{crossref}{db}->lookup("DECLARATION:local:$dec_id"); }
+  elsif(my $meaning = $node->getAttribute('meaning')){
+    $entry = $$self{crossref}{db}->lookup("DECLARATION:global:$meaning"); }
+
+  if(my $id = $entry && $entry->getValue('parent')){
+#    if(! ($DLMF::CURRENT_ID && $self->isAncestor($id,$DLMF::CURRENT_ID))){
+    if(! $self->isAncestor($id,$DLMF::CURRENT_ID)){
+      $$mathml[1]{'xlink:href'} = $$self{crossref}->generateURL($DLMF::CURRENT_DOC,$id);
+      if(my $text = $entry->getValue('textform')){
+	$$mathml[1]{'xlink:title'} = $text; }}}
+
+  $mathml; }
 
 #======================================================================
 # Customized conversion of images.
@@ -734,7 +806,7 @@ sub getNotationEntries {
     my $textnode =  $doc->getDocument->adoptNode($notation->getValue('text'));
 
     # Get the sortform list from the Math representation.
-    my @sortform = makeNotationSortform($doc->findnode('.//ltx:XMath',$tagnode));
+    my @sortform = makeNotationSortform($doc,$doc->findnode('.//ltx:XMath',$tagnode));
 
     # Study the first token to establish which notation page,
     # and other interesting info
@@ -748,12 +820,12 @@ sub getNotationEntries {
     @sortform = map($NOTATION_ALIA{$_}{sort_as}||$NOTATION_ALIA{$_}{equivalent}||$_, @sortform);
 
     # Check if text starts with "= fcn" or "propto fcn"
-    my @intermsof = ();
+    my $intermsof = [];
     if(my $definer = $doc->findnode('.//ltx:Math/ltx:XMath/ltx:XMApp['
 				    .' child::*[position()=1][@role="RELOP"]'
 				    .']/child::*[position()=3]', $tagnode)){
       my @symbols = $self->extractMathSymbols($doc,$definer);
-      @intermsof = $self->makeSymbolDefinitionLinks($doc,undef,grep(/^global/,@symbols)); }
+      ($intermsof) = $self->makeSymbolDefinitionLinks($doc,undef,grep(/^global/,@symbols)); }
 
     $$entries{$key}
       ={initial=>$initial, sortform=>[@sortform],
@@ -761,8 +833,8 @@ sub getNotationEntries {
 		    $tagnode, 
 		    ['ltx:text',{},$doc->trimChildNodes($textnode),'; ',
 		     ['ltx:ref',{idref=>$notation->getValue('parent'),show=>'typerefnum'}],
-		     (@intermsof ? (['ltx:br'],
-				    ['ltx:text',{size=>'small'},'(with ',@intermsof,')']):())]]};
+		     (@$intermsof ? (['ltx:br'],
+				     ['ltx:text',{size=>'small'},'(with ',@$intermsof,')']):())]]};
 
     # If an unusual first char is likely to be sought under other initials,
     # Add "see also" entries under those initials.
@@ -813,11 +885,11 @@ sub cmpNotation {
 # The sortform is a list of cleverly translated tokens(strings) that
 # represent the structure in an order that corresponds to the visual layout.
 sub makeNotationSortform {
-  my($node)=@_;
+  my($doc,$node)=@_;
   # WHOA!!!!
   # There were some "corrupt doubly linked list" problems when using xpath here????
   local @DLMFMakeNotations::TRAILINGTOKENS=();
-  my @sortform = sortform_rec($node);
+  my @sortform = sortform_rec($node,$doc);
   (@sortform,@DLMFMakeNotations::TRAILINGTOKENS); }
 
 sub elements {
@@ -827,81 +899,81 @@ sub elements {
 # Somewhat repeats what LaTeXML::Post::MathML does,
 # but we want control over variables, etc.
 sub sortform_rec {
-  my($node)=@_;
+  my($node,$doc)=@_;
   return () unless $node;
-  my $tag = $node->localname;
+  my $tag = $doc->getQName($node);
   my $role = $node->getAttribute('role')||'';
   my @items = ();
   if($tag eq 'XMath'){
-    push(@items,map(sortform_rec($_), elements($node))); }
-  elsif($tag eq 'XMDual'){
+    push(@items,map(sortform_rec($_,$doc), elements($node))); }
+  elsif($tag eq 'ltx:XMDual'){
     my($content,$presentation) = elements($node);
-    push(@items,sortform_rec($presentation)); }
-  elsif($tag eq 'XMWrap'){	# Only present if parsing failed!
-    push(@items,map(sortform_rec($_),elements($node))); }
-  elsif($tag eq 'XMRef'){
+    push(@items,sortform_rec($presentation,$doc)); }
+  elsif($tag eq 'ltx:XMWrap'){	# Only present if parsing failed!
+    push(@items,map(sortform_rec($_,$doc),elements($node))); }
+  elsif($tag eq 'ltx:XMRef'){
     push(@items,'!Z'); }
-  elsif($tag eq 'XMApp'){
+  elsif($tag eq 'ltx:XMApp'){
     my($op,@args) = elements($node);
     my $oprole = $op->getAttribute('role')||'';
     my $opname = $op->getAttribute('name')||'';
     if($oprole eq 'POSTSUBSCRIPT'){
-      push(@items, '~!0', sortform_rec($args[0])); }
+      push(@items, '~!0', sortform_rec($args[0],$doc)); }
     elsif($oprole eq 'POSTSUPERSCRIPT'){
-      push(@items, '~!1', sortform_rec($args[0])); }
+      push(@items, '~!1', sortform_rec($args[0],$doc)); }
     elsif($oprole eq 'SUBSCRIPTOP'){
-      push(@items,sortform_rec($args[0]),addscript('~!0',$args[1]));}
+      push(@items,sortform_rec($args[0],$doc),addscript('~!0',$args[1],$doc));}
     elsif($oprole eq 'SUPERSCRIPTOP'){
-      push(@items,sortform_rec($args[0]),addscript('~!1',$args[1])); }
+      push(@items,sortform_rec($args[0],$doc),addscript('~!1',$args[1],$doc)); }
     elsif($oprole eq 'SUBSUPERSCRIPTOP'){
-      push(@items,sortform_rec($args[0]),
-	   addscript('~!1', $args[2]),
-	   addscript('~!0', $args[1])); }
+      push(@items,sortform_rec($args[0],$doc),
+	   addscript('~!1', $args[2],$doc),
+	   addscript('~!0', $args[1],$doc)); }
     elsif($opname eq 'sideset'){
-      push(@items,sortform_rec($args[4]),
-	   addscript('~!3', $args[1]),
-	   addscript('~!2', $args[0]),
-	   addscript('~!1', $args[3]),
-	   addscript('~!0', $args[2])); }
+      push(@items,sortform_rec($args[4],$doc),
+	   addscript('~!3', $args[1],$doc),
+	   addscript('~!2', $args[0],$doc),
+	   addscript('~!1', $args[3],$doc),
+	   addscript('~!0', $args[2],$doc)); }
     elsif($oprole eq 'STACKED'){
-      push(@items,'~,',sortform_rec($args[0]),'~,',sortform_rec($args[1]));}
+      push(@items,'~,',sortform_rec($args[0],$doc),'~,',sortform_rec($args[1],$doc));}
 ##    elsif($oprole eq 'ARRAYOP'){
-##      push(@items,'~,',map((sortform_rec($_),'~,'),@args)); }
+##      push(@items,'~,',map((sortform_rec($_,$doc),'~,'),@args)); }
 ##    elsif($opname eq 'Row'){
-##      push(@items,map((sortform_rec($_),'~,'),@args)); }
+##      push(@items,map((sortform_rec($_,$doc),'~,'),@args)); }
     elsif($oprole eq 'UNDERACCENT'){
-      push(@items,sortform_rec($args[0]),sortform_rec($op)); }
+      push(@items,sortform_rec($args[0],$doc),sortform_rec($op,$doc)); }
     elsif($oprole eq 'OVERACCENT'){
-      push(@items,sortform_rec($args[0]),sortform_rec($op)); }
+      push(@items,sortform_rec($args[0],$doc),sortform_rec($op,$doc)); }
     elsif($oprole eq 'POSTFIX'){
-      push(@items,sortform_rec($args[1]),
-	   sortform_rec($args[0])); }
+      push(@items,sortform_rec($args[1],$doc),
+	   sortform_rec($args[0],$doc)); }
     elsif($oprole eq 'RELOP'){
       # Just sort on LHS alone!
-      push(@items,sortform_rec($args[0])); }
+      push(@items,sortform_rec($args[0],$doc)); }
     elsif($oprole =~ /^ADDOP|MULOP|ARROW|METARELOP$/){
-      my @top = sortform_rec($op);
-      push(@items,sortform_rec(shift(@args)));
+      my @top = sortform_rec($op,$doc);
+      push(@items,sortform_rec(shift(@args),$doc));
       while(@args){
-	push(@items,@top,sortform_rec(shift(@args)));}}
+	push(@items,@top,sortform_rec(shift(@args),$doc));}}
     else {
-      push(@items,sortform_rec($op));
+      push(@items,sortform_rec($op,$doc));
       if(my $p = $op->getAttribute('argopen')){
        push(@items,$p); }
-      push(@items,sortform_rec(shift(@args)));
+      push(@items,sortform_rec(shift(@args),$doc));
       while(@args){
-	push(@items,"~,",sortform_rec(shift(@args))); }
-#	push(@items,sortform_rec(shift(@args))); }
+	push(@items,"~,",sortform_rec(shift(@args),$doc)); }
+#	push(@items,sortform_rec(shift(@args),$doc)); }
       if(my $p = $op->getAttribute('argclose')){
        push(@items,$p); }}
 # name sqrt, root
 # name deriv, pderiv, diff, pdiff, qdiff!!
   }
-  elsif($tag eq 'XMArray'){
+  elsif($tag eq 'ltx:XMArray'){
     foreach my $row (elements($node)){
       foreach my $col (elements($row)){
-	push(@items,'~,',map(sortform_rec($_),elements($col))); }}}
-  elsif($tag eq 'XMTok'){
+	push(@items,'~,',map(sortform_rec($_,$doc),elements($col))); }}}
+  elsif($tag eq 'ltx:XMTok'){
     if($role eq 'PUNCT'){
       push(@items,'~,');
     }
@@ -910,7 +982,7 @@ sub sortform_rec {
       push(@items,'!Z'); }
     elsif(my $s = $node->textContent){
       push(@items,$s); }}
-  elsif($tag eq 'XMHint'){
+  elsif($tag eq 'ltx:XMHint'){
     }
   else {
     push(@items,$node->textContent); }
@@ -923,17 +995,17 @@ sub sortform_rec {
   @items; }
 
 sub addscript {
-  my($token,$node)=@_;
+  my($token,$node,$doc)=@_;
   if(!$node
-     || (($node->localname eq 'XMTok')
+     || (($doc->getQName($node) eq 'ltx:XMTok')
 	 && (($node->getAttribute('name')||'') eq 'Empty'))){
     (); }
-  elsif(($node->localname eq 'XMTok')
+  elsif(($doc->getQName($node) eq 'ltx:XMTok')
 	&& (($node->getAttribute('name')||'') eq 'prime')){
     push(@DLMFMakeNotations::TRAILINGTOKENS,"~'"); # Put prime at end.
     (); }
   else {
-    ($token,sortform_rec($node)); }}
+    ($token,sortform_rec($node,$doc)); }}
 
 #======================================================================
 # Some Unicode characters, especially Greek, "look like","sound like",
