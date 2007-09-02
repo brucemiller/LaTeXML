@@ -23,6 +23,7 @@
 <!ENTITY % LaTeXML.subsection.qname     "%LaTeXML.pfx;subsection">
 <!ENTITY % LaTeXML.subsubsection.qname  "%LaTeXML.pfx;subsubsection">
 <!ENTITY % LaTeXML.paragraph.qname      "%LaTeXML.pfx;paragraph">
+<!ENTITY % LaTeXML.subparagraph.qname   "%LaTeXML.pfx;subparagraph">
 <!ENTITY % LaTeXML.bibliography.qname   "%LaTeXML.pfx;bibliography">
 <!ENTITY % LaTeXML.index.qname          "%LaTeXML.pfx;index">
 

@@ -41,18 +41,23 @@
 
 <!ELEMENT %LaTeXML.section.qname;
           ((%LaTeXML.SectionalFrontMatter.class;)*,
-	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*, (%LaTeXML.subsection.qname;)*)>
+	  (%LaTeXML.Para.mix;)*, (%LaTeXML.subparagraph.qname;)*,
+	  (%LaTeXML.paragraph.qname;)*, (%LaTeXML.subsection.qname;)*)>
 <!ELEMENT %LaTeXML.appendix.qname;
           ((%LaTeXML.SectionalFrontMatter.class;)*,
-	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*,
+	  (%LaTeXML.Para.mix;)*, (%LaTeXML.subparagraph.qname;)*,(%LaTeXML.paragraph.qname;)*,
           (%LaTeXML.subsection.qname;)*, (%LaTeXML.section.qname;)*)>
 <!ELEMENT %LaTeXML.subsection.qname;
           ((%LaTeXML.SectionalFrontMatter.class;)*,
-	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*, (%LaTeXML.subsubsection.qname;)*)>
+	  (%LaTeXML.Para.mix;)*, (%LaTeXML.subparagraph.qname;)*,(%LaTeXML.paragraph.qname;)*,
+	  (%LaTeXML.subsubsection.qname;)*)>
 <!ELEMENT %LaTeXML.subsubsection.qname;
           ((%LaTeXML.SectionalFrontMatter.class;)*,
-	  (%LaTeXML.Para.mix;)*, (%LaTeXML.paragraph.qname;)*)>
+	  (%LaTeXML.Para.mix;)*, (%LaTeXML.subparagraph.qname;)*,(%LaTeXML.paragraph.qname;)*)>
 <!ELEMENT %LaTeXML.paragraph.qname;
+          ((%LaTeXML.SectionalFrontMatter.class;)*,
+	  (%LaTeXML.Para.mix;)*,(%LaTeXML.subparagraph.qname;)*)>
+<!ELEMENT %LaTeXML.subparagraph.qname;
           ((%LaTeXML.SectionalFrontMatter.class;)*,
 	  (%LaTeXML.Para.mix;)*)>
 <!ELEMENT %LaTeXML.bibliography.qname; 
@@ -70,6 +75,7 @@
 <!ATTLIST %LaTeXML.subsection.qname;    %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 <!ATTLIST %LaTeXML.subsubsection.qname; %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 <!ATTLIST %LaTeXML.paragraph.qname;     %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
+<!ATTLIST %LaTeXML.subparagraph.qname;  %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib;>
 <!ATTLIST %LaTeXML.bibliography.qname;  
 	  %LaTeXML.Common.attrib; %LaTeXML.Labelled.attrib; 
           files CDATA #IMPLIED>
