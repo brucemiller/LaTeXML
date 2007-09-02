@@ -2430,7 +2430,7 @@ DefConstructor('\,',"?#isMath(<ltx:XMHint name='thinspace'/>)(\x{2009})",
 	      properties=>{isSpace=>1}); # THIN SPACE
 DefConstructor('\!',"?#isMath(<ltx:XMHint name='negthinspace'/>)()",
 	       properties=>{isSpace=>1});
-DefConstructor('\>',"<ltx:XMHint name='\>'/>",
+DefConstructor('\>',"?#isMath(<ltx:XMHint name='\>'/>)()",
 	      properties=>{isSpace=>1});	# ??
 DefConstructor('\;',"?#isMath(<ltx:XMHint name='thickspace'/>)(\x{2004})",
 	      properties=>{isSpace=>1}); # THREE-PER-EM SPACE
