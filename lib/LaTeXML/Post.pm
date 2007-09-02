@@ -200,7 +200,12 @@ sub addNamespace{
 
 sub getQName {
   my($self,$node)=@_;
-  $$self{namespaceURIs}{$node->namespaceURI}.":".$node->localname; }
+  my $nsuri = $node->namespaceURI;
+  if(my $prefix = $$self{namespaceURIs}{$nsuri}){
+    $prefix.":".$node->localname; }
+  else {
+    warn "Missing namespace prefix for $nsuri";
+    $node->localname; }}
 #======================================================================
 # ADD nodes to $node in the document $self.
 # This takes a convenient recursive reprsentation for xml:
