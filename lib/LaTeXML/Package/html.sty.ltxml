@@ -17,7 +17,7 @@ use LaTeXML::Package;
 RequirePackage('hyperref');
 #**********************************************************************
 DefMacro('\latextohtml','\LaTeX2\texttt{HTML}');
-DefMacro('\htmladdnormallinkfoot{}{}','\footnote{\href{#2}{#1}}');
+DefMacro('\htmladdnormallinkfoot{}{}','\href{#2}{#1}');
 DefMacro('\htmladdnormallink{}{}','\href{#2}{#1}');
 DefMacro('\htmladdimg{}','\hyperimage{#1}');
 DefMacro('\externallabels Semiverbatim Semiverbatim','');

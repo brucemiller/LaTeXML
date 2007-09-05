@@ -17,7 +17,13 @@ use LaTeXML::Package;
 # Need some work here!?!?
 DefMacro('\pdfcatalog{}','');
 DefRegister('\pdfcompresslevel',Number(0));
-DefConstructor('\href Semiverbatim  Semiverbatim',"<ltx:ref href='#1'>#2</ltx:ref>");
+sub cleanURL {
+  my($url)=@_;
+  $url =~ s/\\~{}/~/g;
+  $url; }
+
+DefConstructor('\href Semiverbatim  Semiverbatim',"<ltx:ref href='#href'>#2</ltx:ref>",
+	       properties=>sub { (href=>cleanURL($_[1]->toString)); } );
 DefConstructor('\htmlref Semiverbatim  Semiverbatim',"<ltx:ref labelref='#2'>#1</ltx:ref>");
 
 1;
