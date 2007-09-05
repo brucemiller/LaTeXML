@@ -55,7 +55,7 @@ sub process {
     my @msgs=();
     foreach my $type (sort keys %LaTeXML::Post::CrossRef::MISSING){
       push(@msgs,$type.": ".join(', ',sort keys %{$LaTeXML::Post::CrossRef::MISSING{$type}}));}
-    $self->Warn("Missing keys in ".$doc->getDestination."\n  ".join(";\n  ",@msgs)); }
+    $self->Warn("Missing keys in ".$doc->getDestination.":\n  ".join(";\n  ",@msgs)); }
   $doc; }
 
 sub note_missing {
