@@ -27,6 +27,10 @@ sub new {
 sub process {
   my($self,$doc)=@_;
   my $root = $doc->getDocumentElement;
+  # RISKY and annoying; to split, we really need an id on the root.
+  # Writer will remove it.
+  $root->setAttribute(id=>'TEMPORARY_DOCUMENT_ID') unless $root->hasAttribute('id');
+
   my @docs = ($doc);
   my @pages = $self->getPages($doc);
   # Weird test: exclude the "whole document" from the list (?)
@@ -89,6 +93,7 @@ sub prenamePages {
 # Process a sequence of page entries, removing them and generating documents for each.
 sub processPages {
   my($self,$doc,@entries)=@_;
+  my $rootid = $doc->getDocumentElement->getAttribute('id');
   my @docs=();
   while(@entries){
     my $parent = $entries[0]->{node}->parentNode;
@@ -117,6 +122,7 @@ sub processPages {
       # BEFORE processing this page.
       my @childdocs = $self->processPages($doc,@{$$entry{children}});
       my $subdoc = $doc->newDocument($page,destination=>$$entry{name},parent_id=>$$entry{upid});
+      $subdoc->addNavigation(start=>$rootid) if $rootid;
       $subdoc->addNavigation(up=>$$entry{upid});
       push(@docs,$subdoc,@childdocs); }
     # Finally, add the toc to reflect the consecutive, removed nodes, and add back the remainder

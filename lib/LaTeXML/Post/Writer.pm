@@ -30,6 +30,10 @@ sub process {
   my $xmldoc = $doc->getDocument;
   $doc->getDocument->removeInternalSubset if $$self{omit_doctype};
 
+  my $root = $xmldoc->documentElement;
+  $root->removeAttribute('id')
+    if ($root->getAttribute('id')||'') eq  'TEMPORARY_DOCUMENT_ID';
+
 #  my $string = ($$self{format} eq 'html' ? $xmldoc->toStringHTML : $xmldoc->toString(1));
   my $string;
   if($$self{format} eq 'html'){
