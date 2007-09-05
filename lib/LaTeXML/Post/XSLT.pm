@@ -19,7 +19,7 @@ use base qw(LaTeXML::Post);
 
 # Useful Options:
 #    stylesheet : path to XSLT stylesheet.
-#    css        : path to CSS stylesheet.
+#    css        : array of paths to CSS stylesheets.
 sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
@@ -42,10 +42,11 @@ sub new {
 sub process {
   my($self,$doc)=@_;
   my $css = $$self{css};
-  $css = pathname_relative($css,$doc->getDestinationDirectory) if $css;
+  my $dir = $doc->getDestinationDirectory;
+  my $cssparam = ($css ? join('|',map(pathname_relative($_,$dir),@$css)) : undef);
   # Copy the CSS file to the destination. if found & needed.
   $doc->new($$self{stylesheet}->transform($doc->getDocument,
-					  ($css ? (CSS=>"'$css'") :()))); }
+					  ($cssparam ? (CSS=>"'$cssparam'") :()))); }
 
 # ================================================================================
 1;

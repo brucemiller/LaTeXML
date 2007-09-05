@@ -20,7 +20,7 @@ my $identity = "latexmlpost (LaTeXML version $LaTeXML::VERSION)";
 my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
 my($sourcedir,$destination)=(undef,undef);
 my($format,$urlstyle) = (undef,'server');
-my($stylesheet,$css)=(undef,undef);
+my($stylesheet,$defaultcss,@css)=(undef,1);
 my($parallelmath,$mathimages)=(undef,undef);
 my($linelength,$keepXMath)=(undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
@@ -42,7 +42,8 @@ GetOptions("destination=s"=>sub { $destination = $_[1];
 	   "verbose+"              =>\$verbosity,
 	   # Some general XSLT/CSS options.
 	   "stylesheet=s"          =>\$stylesheet,
-	   "css=s"                 =>\$css,
+	   "css=s"                 =>\@css,
+	   "defaultcss!"           =>\$defaultcss,
 	   "format=s"              =>\$format,
 	   "urlstyle=s"            =>$urlstyle,
 	   "validate!"             =>\$validate,
@@ -134,7 +135,7 @@ elsif($format eq 'html'){
   $picimages  = 1 unless defined $picimages;
   if(!defined $stylesheet){
     $stylesheet = "LaTeXML-html.xsl";
-    $css = "LaTeXML.css" unless defined $css; }}
+    unshift(@css,"LaTeXML.css") if $defaultcss; }}
 elsif($format eq 'xhtml'){
   Error("Default xhtml stylesheet does not support math images")
     if (!defined $stylesheet) && $mathimages;
@@ -148,7 +149,7 @@ elsif($format eq 'xhtml'){
   $dographics = 1 unless defined $dographics;
   if(!defined $stylesheet){
     $stylesheet = "LaTeXML-xhtml.xsl";
-    $css = "LaTeXML.css" unless defined $css; }}
+    unshift(@css,"LaTeXML.css") if $defaultcss; }}
 
 Error("Parallel math markup needs at least two formats")
   if $parallelmath && (scalar(@math_formats) < 2);
@@ -237,12 +238,15 @@ if(!$prescan){
 
   if($stylesheet){
     require 'LaTeXML/Post/XSLT.pm'; 
-    if($css && $destination){
-      my $csssource = pathname_find($css,paths=>[$sourcedir||'.'],
-				    installation_subdir=>'dtd');
-      $css = pathname_absolute($css,pathname_directory($destination));
-      pathname_copy($csssource,$css)  if -f $csssource; }
-    push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet, css=>$css,%OPTIONS)); }
+    my @csspaths=();
+    if(@css && $destination){
+      foreach my $css (@css){
+	my $csssource = pathname_find($css,paths=>[$sourcedir||'.'],
+				      installation_subdir=>'dtd');
+	my $csspath = pathname_absolute($css,pathname_directory($destination));
+	pathname_copy($csssource,$csspath)  if -f $csssource; 
+	push(@csspaths,$csspath); }}
+    push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet, css=>[@csspaths],%OPTIONS)); }
 
   push(@procs,LaTeXML::Post::Writer->new(format=>$format,omit_doctype=>$omit_doctype,%OPTIONS));
 }
@@ -303,7 +307,8 @@ latexmlpost [options] xmlfile
  --stylesheet=xslfile    requests the XSL transform using the
                          given xslfile as stylesheet.
  --css=cssfile           use the cssfile in html/xhtml 
-                         (for default XSL stylesheets)
+                         (can be repeated)
+ --nodefaultcss          disables use of the default css stylesheet
  --split                 requests splitting each document
  --nosplit               disables the above (default)
  --splitpath=xpath       specifies xpath expression for splitting
@@ -422,9 +427,14 @@ format (html or xhtml) will be used.
 
 =item B<--css>=I<cssfile>
 
-Requests that the css file will be used in the transformed html/xhtml.
-It is passed as a parameter to the stylesheet.
-By default, the default stylesheets will use the included LaTeXML.css.
+Adds I<cssfile> as a css stylesheet to be used in the transformed html/xhtml.
+Multiple stylesheets can be used; they are included in the html in the
+order given, following the default C<LaTeXML.css>, unless that is inhibited
+(see B<--nodefaultcss>).
+
+=item B<--nodefaultcss>
+
+Disables the inclusion of the default C<LaTeXML.css> stylesheet.
 
 =back
 
@@ -441,7 +451,13 @@ index and appendices (if any) by default, unless B<--splitpath> is specified.
 =item B<--splitpath=>I<xpath>
 
 Specifies an XPath expression to select nodes that will generate separate
-pages.
+pages. The default splitpath is
+  //ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index
+
+Specifying
+  --splitpath="//ltx:section | //ltx:subsection | //ltx:bibliography | //ltx:appendix | //ltx:index"
+
+would split the document at subsections as well as sections.
 
 =item B<--splitnaming>=C<(id|idrelative|label|labelrelative)>
 
