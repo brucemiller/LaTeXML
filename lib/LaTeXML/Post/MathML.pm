@@ -313,9 +313,11 @@ sub pmml_infix {
 # Mappings between internal fonts & sizes.
 # Default math font is roman|medium|upright.
 our %mathvariants = ('upright'          =>'normal',
+		     'serif'            =>'normal',
 		     'bold'             =>'bold',
 		     'bold upright'     =>'bold',
 		     'italic'           =>'italic',
+		     'serif italic'     =>'italic',
 		     'medium italic'    =>'italic',
 		     'bold italic'      =>'bold-italic',
 		     'doublestruck'     =>'double-struck',
