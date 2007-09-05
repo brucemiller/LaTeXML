@@ -1,0 +1,23 @@
+\documentclass{article}
+\newenvironment{myquote}{\begin{quote} MY\\}{\end{quote}}
+\newenvironment{quote1}{\begin{quote} 1\\}{\end{quote}}
+\begin{document}
+\begin{quote}
+A Quote!
+\end{quote}
+
+\begin{myquote}
+A Quote!
+\end{myquote}
+
+\begin{quote1}
+A Quote!
+\end{quote1}
+
+\renewenvironment{quote1}{\begin{quote} ONE\\}{\end{quote}}
+
+\begin{quote1}
+A Quote!
+\end{quote1}
+
+\end{document}
