@@ -491,8 +491,8 @@ sub getNecessaryTransform {
 
 DefConstructor('\psset RequiredKeyVals:pstricks', "?#need(<ltx:g transform='#transform'>)",
 	       afterDigest=> sub {
-		 my($whatsit, $kv)=@_;
-		 setGraphParams(%{KeyVals($kv)});
+		 my($stomach,$whatsit)=@_;
+		 setGraphParams(%{KeyVals($whatsit->getArg(1))});
 		 my ($need, $have) = (getNecessaryTransform(), LookupValue('_psActiveCCTransform'));
 		 if (!$need->equals($have)) {
 		   AssignValue('_psActiveCCTransform', $need);
