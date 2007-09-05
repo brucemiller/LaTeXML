@@ -13,8 +13,11 @@
 .Huge     {  font-size:200%; }
 
 body { background:#FFFFFF; color:#000000; }
-h1 { text-align:center; font-family:sans-serif;}
+h1 { text-align:center; font-size: 150%; font-family:sans-serif;}
 .author { text-align:center; font-size: 150%; font-family:sans-serif; }
+h2.subtitle
+   {  border: none; background: transparent;
+      text-align:center; font-size: 120%; font-family:sans-serif;}
 h2 { border-top: 5px double #087d9d; border-left: 3px double #087d9d; background:#e5f7fb;
      padding-left:0.2em; margin-left:-0.5em;
      font-family:sans-serif; }
@@ -29,6 +32,11 @@ span.italic     { font-style: italic; }
 span.upright    { font-style: normal; }
 span.slanted    { font-style: oblique; }
 /* span.title { font-weight:bold; display:run-in; }*/
+
+img.math { vertical-align:middle }
+
+.framed  { border:1px solid black;}
+
 .navbar { position:fixed; left:0px; top:0px; width:170px;
        border-right: 3px double #087d9d; border-bottom: 5px double #087d9d; background:#e5f7fb;
        margin:0em; padding:1em; font: bold 75% sans-serif; }
@@ -50,11 +58,13 @@ span.slanted    { font-style: oblique; }
 dl.description dt { margin-right:0.5em; float:left; }
 dl.description dd { margin-left:5em; }
 dl.description dl.description dd { margin-left:3em; }
+
+.toc li,
 .indexlist li { list-style-type:none;  }
 .indexlist { margin-left:1em; padding-left:1em;}
 .nav li,
 .header li { padding:0.2em;}
-#.header:before { content:url(latexml.png); }
+/*.header:before { content:url(latexml.png); }*/
 
 table { border-collapse:collapse; }
 th, *[class~="thead"] { background-color:#e5f7fb; }
@@ -67,3 +77,6 @@ td.th, th.tt, *[class~="tt"] { border-top:3px double black; }
 td.rr, th.rr, *[class~="rr"] { border-right:3px double black; }
 td.bb, th.bb, *[class~="bb"] { border-bottom:3px double black; }
 td.ll, th.ll, *[class~="ll"] { border-left:3px double black; }
+
+
+

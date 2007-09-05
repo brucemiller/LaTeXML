@@ -9,14 +9,38 @@
 <xsl:param name="n">0</xsl:param>
 <xsl:template name="head">
   <head>
+    <xsl:text>
+</xsl:text>
     <title><xsl:value-of select="normalize-space(*/ltx:title)"/></title>
+      <xsl:text>
+</xsl:text>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <style type="text/css">
-      img.math { vertical-align:middle }
-      .framed  { border:1px solid black;}
-    </style>
+      <xsl:text>
+</xsl:text>
+    <xsl:if test="/*/ltx:navigation/ltx:ref[@class='start']">
+      <link rel="start" href="{/*/ltx:navigation/ltx:ref[@class='start']/@href}"
+	    title="{normalize-space(.//ltx:navigation/ltx:ref[@class='start']/@title)}"/>
+      <xsl:text>
+</xsl:text>
+    </xsl:if>
+    <xsl:if test="/*/ltx:navigation/ltx:ref[@class='previous']">
+      <link rel="prev" href="{/*/ltx:navigation/ltx:ref[@class='previous']/@href}"
+	    title="{normalize-space(.//ltx:navigation/ltx:ref[@class='previous']/@title)}"/>
+      <xsl:text>
+</xsl:text>
+    </xsl:if>
+    <xsl:if test="/*/ltx:navigation/ltx:ref[@class='next']">
+      <link rel="next" href="{/*/ltx:navigation/ltx:ref[@class='next']/@href}"
+	    title="{normalize-space(.//ltx:navigation/ltx:ref[@class='next']/@title)}"/>
+      <xsl:text>
+</xsl:text>
+    </xsl:if>
     <xsl:if test='$CSS'>
-      <link rel='stylesheet' type="text/css" href="{$CSS}"/> 
+      <xsl:for-each select="string:split($CSS,'|')">
+        <link rel='stylesheet' type="text/css" href="{text()}"/> 
+        <xsl:text>
+</xsl:text>
+      </xsl:for-each>
     </xsl:if>
 
      <xsl:if test="//ltx:indexphrase">
@@ -29,6 +53,8 @@
 	     </xsl:for-each>
           </xsl:attribute>
         </meta>
+       <xsl:text>
+</xsl:text>
       </xsl:if>
   </head>
 </xsl:template>
@@ -56,6 +82,7 @@
 <xsl:template name="navbar">
   <xsl:if test="//ltx:title | //ltx:navigation/ltx:toclist">
     <div class='navbar'>
+      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='start']"/>
       <xsl:choose>
 	<xsl:when test="//ltx:navigation/ltx:toclist">
 	  <xsl:apply-templates select="//ltx:navigation/ltx:toclist"/>
@@ -93,6 +120,10 @@
 <xsl:template match="ltx:navigation"/>
 <xsl:template match="ltx:navigation/ltx:ref">
   <a href="{@href}" class="{@class}" title="{@title}"><xsl:value-of select="@class"/>: <xsl:apply-templates/></a>
+</xsl:template>
+
+<xsl:template match="ltx:navigation/ltx:ref[@class='start']">
+  <a href="{@href}" class="{@class}" title="{@title}"><xsl:apply-templates/></a>
 </xsl:template>
 <!-- ======================================================================
      Document Structure
