@@ -416,10 +416,34 @@ DefPrimitive('\maketitle', undef); # Doesn't matter.
 DefConstructor('\thanks{}', "<ltx:note class='thanks'>#1</ltx:note>");
 
 DefEnvironment('{abstract}','<ltx:abstract>#body</ltx:abstract>');
-# Presumably you'll do whatever you need to specify author, etc ???
+
+# Hmm, titlepage is likely to be hairy, low-level markup,
+# without even title, author, etc, specified as such!
 # Hmm, should this even redefine author, title, etc so that they
 # are simply output?
-DefEnvironment('{titlepage}','#body');
+# This is horrible hackery; What we really need, I think, is the
+# ability to bind some sort of "Do <this> when we create a text box"...
+DefEnvironment('{titlepage}','<ltx:title>#body',
+	      beforeDigest=>sub { Let("\\\\",'\title@cr');
+				  Let('\par','\relax');
+				  Let('\centering','\relax');
+				  DefEnvironment('{center}','#body');
+				  DefEnvironment('{abstract}',
+						 '<ltx:abstract>#body</ltx:abstract>',
+						 beforeDigest=>sub { 
+						   Digest(T_CS('\maybe@end@title')); });
+				return; },
+	       beforeDigestEnd=>sub { Digest(T_CS('\maybe@end@title')); }
+	      );
+DefConstructor('\title@cr[]',"<ltx:subtitle>",
+	       beforeDigest=>sub {  Digest(T_CS('\maybe@end@title')); });
+
+DefConstructor('\maybe@end@title',sub {
+  my($document)=@_;
+  if($document->isCloseable('ltx:title')){
+    $document->closeElement('ltx:title'); }
+  elsif($document->isCloseable('ltx:subtitle')){
+    $document->closeElement('ltx:subtitle'); }});
 
 #**********************************************************************
 # C.6 Displayed Paragraphs
@@ -842,14 +866,14 @@ DefPrimitive('\newenvironment OptionalMatch:* {}[][]{}{}', sub {
   my($stomach,$star,$name,$nargs,$opt,$begin,$end)=@_;
   $name = $name->toString;
   Error("Environment $name is already defined") if LookupDefinition(T_CS("\\$name"));
-  DefMacro(join('','\\',$name, convertLaTeXArgs($nargs,$opt)),$begin);
-  DefMacro(join('','\\end',$name),$end); });
+  DefMacro(join('','\csname ',$name,'\endcsname', convertLaTeXArgs($nargs,$opt)),$begin);
+  DefMacro(join('','\csname end',$name,'\endcsname'),$end); });
 
 DefPrimitive('\renewenvironment OptionalMatch:* {}[][]{}{}', sub {
   my($stomach,$star,$name,$nargs,$opt,$begin,$end)=@_;
   $name = $name->toString;
-  DefMacro(join('','\\',$name, convertLaTeXArgs($nargs,$opt)),$begin);
-  DefMacro(join('','\\end',$name),$end); });
+  DefMacro(join('','\csname ',$name,'\endcsname', convertLaTeXArgs($nargs,$opt)),$begin);
+  DefMacro(join('','\csname end',$name,'\endcsname'),$end); });
 
 #======================================================================
 # C.8.3 Theorem-like Environments
@@ -956,8 +980,7 @@ DefPrimitive('\setcounter{}{Number}',sub {
 
 DefPrimitive('\addtocounter{}{Number}',sub {
   my($stomach,$ctr,$value)=@_;
-  $ctr="\\c\@".$ctr->toString;
-  AssignValue($ctr=>LookupValue($ctr)->add($value),'global'); });
+  AssignValue('\c@'.($ctr->toString)=>CounterValue($ctr)->add($value),'global'); });
 
 DefPrimitive('\stepcounter{}',   sub { StepCounter($_[1]->toString); return; });
 DefPrimitive('\refstepcounter{}',sub { RefStepCounter($_[1]->toString); return; });

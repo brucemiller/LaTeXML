@@ -203,10 +203,10 @@ sub DefColumnType {
 sub NewCounter { 
   my($ctr,$within,%options)=@_;
   my $unctr = "UN$ctr";		# UNctr is counter for generating ID's for UN-numbered items.
-  DefRegister("\\c\@$ctr",Number(0));
+  DefRegister("\\csname c\@$ctr\\endcsname",Number(0));
   AssignValue("\\c\@$ctr"=>Number(0),'global');
   AssignValue("\\cl\@$ctr"=>Tokens(),'global') unless LookupValue("\\cl\@$ctr");
-  DefRegister("\\c\@$unctr",Number(0));
+  DefRegister("\\csname c\@$unctr\\endcsname",Number(0));
   AssignValue("\\c\@$unctr"=>Number(0),'global');
   AssignValue("\\cl\@$unctr"=>Tokens(),'global') unless LookupValue("\\cl\@$unctr");
   AssignValue("\\cl\@$within" =>
