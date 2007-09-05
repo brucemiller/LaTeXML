@@ -25,12 +25,14 @@ sub new {
   $self->registerHandler('ltx:document'      => \&section_handler);
   $self->registerHandler('ltx:bibliography'  => \&section_handler);
   $self->registerHandler('ltx:index'         => \&section_handler);
+  $self->registerHandler('ltx:part'          => \&section_handler);
   $self->registerHandler('ltx:chapter'       => \&section_handler);
   $self->registerHandler('ltx:section'       => \&section_handler);
   $self->registerHandler('ltx:appendix'      => \&section_handler);
   $self->registerHandler('ltx:subsection'    => \&section_handler);
   $self->registerHandler('ltx:subsubsection' => \&section_handler);
   $self->registerHandler('ltx:paragraph'     => \&section_handler);
+  $self->registerHandler('ltx:subparagraph'  => \&section_handler);
   $self->registerHandler('ltx:sidebar'       => \&section_handler);
 
   $self->registerHandler('ltx:table'         => \&labelled_handler);
@@ -38,6 +40,7 @@ sub new {
   $self->registerHandler('ltx:equation'      => \&labelled_handler);
   $self->registerHandler('ltx:equationmix'   => \&labelled_handler);
   $self->registerHandler('ltx:equationgroup' => \&labelled_handler);
+  $self->registerHandler('ltx:theorem'       => \&labelled_handler);
 
   $self->registerHandler('ltx:bibitem'       => \&bibitem_handler);
   $self->registerHandler('ltx:bibentry'      => \&bibentry_handler);
