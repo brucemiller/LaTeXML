@@ -35,8 +35,8 @@ use LaTeXML::Util::KeyVal;
 DefParameterType('Float',     sub{$_[0]->readFloat; });
 
 sub ReadPSDimension {
-  my($gullet)=@_;
-  my $scale = $_[0] || LookupValue('\psunit');
+  my($gullet,$scale)=@_;
+  $scale = LookupValue('\psunit') unless $scale;
   my $s = $gullet->readOptionalSigns;
   if   (defined (my $d = $gullet->readInternalDimension)){ ($s < 0 ? $d->negate : $d); }
   elsif(defined (   $d = $gullet->readInternalGlue)     ){ Dimension($s * $d->valueOf); }
@@ -80,7 +80,7 @@ DefParameterType('OptionalBracketed',\&ReadOptionalBracketed,
 		 reversion=>\&b_reversion, optional=>1);
 
 # read a Dimension scaled to 1cm insetad of \psunit
-sub ReadPSRegisterDimension { ReadPSDimension(Dimension('1cm')); }
+sub ReadPSRegisterDimension { ReadPSDimension($_[0],Dimension('1cm')); }
 
 # when redefining the origin, a coordinate is given as {x,y}
 sub ReadPSOrigin {
