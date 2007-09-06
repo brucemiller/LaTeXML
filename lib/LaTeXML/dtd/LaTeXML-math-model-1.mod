@@ -67,8 +67,8 @@
           size    CDATA #IMPLIED
           color   CDATA #IMPLIED
 	  scriptpos CDATA #IMPLIED
-	  thickness CDATA #IMPLIED
-	  possibleFunction CDATA #IMPLIED>
+	  thickness CDATA #IMPLIED>
+
 <!-- and alignment  ?? -->
 
 <!ELEMENT %LaTeXML.XMHint.qname; EMPTY>

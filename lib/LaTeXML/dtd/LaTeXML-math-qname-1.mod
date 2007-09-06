@@ -36,12 +36,6 @@
 <!ENTITY % LaTeXML-math.Math.class
 	 "%LaTeXML.XMath.qname;">
 
-<!--
-<!ENTITY % LaTeXML-math.XMath.class
-        "%LaTeXML.XMApp.qname; | %LaTeXML.XMTok.qname; | %LaTeXML.XMRef.qname;
-       | %LaTeXML.XMHint.qname; | %LaTeXML.XMArg.qname; | %LaTeXML.XMWrap.qname;
-       | %LaTeXML.XMDual.qname; | %LaTeXML.text.qname;">
--->
 <!ENTITY % LaTeXML-math.XMath.class
         "%LaTeXML.XMApp.qname; | %LaTeXML.XMTok.qname; | %LaTeXML.XMRef.qname;
        | %LaTeXML.XMHint.qname; | %LaTeXML.XMArg.qname; | %LaTeXML.XMWrap.qname;
@@ -55,7 +49,8 @@
 	 punctuation  CDATA #IMPLIED
 	 argopen CDATA #IMPLIED
 	 argclose CDATA #IMPLIED
-	 separators CDATA #IMPLIED">
+	 separators CDATA #IMPLIED
+	 possibleFunction CDATA #IMPLIED">
 <!-- open, close can end up on most/all elements ? -->
 
 
