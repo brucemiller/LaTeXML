@@ -80,7 +80,12 @@ sub addLine {
 ###
 sub nextColumn {
   my($self)=@_;
-  $$self{current_row}->column( ++$$self{current_column} ); }
+  my $colspec = $$self{current_row}->column( ++$$self{current_column} );
+  if(!$colspec){
+    Error("Extra alignment tab");
+    $$self{current_row}->addColumn(align=>'center');
+    $colspec = $$self{current_row}->column( $$self{current_column} ); }
+  $colspec; }
 
 sub currentColumnNumber {
   my($self)=@_;
@@ -93,6 +98,7 @@ sub currentColumn {
 sub getColumn {
   my($self,$n)=@_;
   $$self{current_row}->column($n); }
+
 
 # sub missingColumns {
 #   my($self)=@_;
@@ -230,7 +236,9 @@ sub ReadAlignmentTemplate {
       else {
 	push(@tokens,$op,$defn->getParameters->revertArguments(@args)); }}
     else {
-      Warn("Unrecognized tabular template \"".Stringify($op)."\""); last; }}
+      Warn("Unrecognized tabular template \"".Stringify($op)."\""); 
+#      last; 
+}}
   $LaTeXML::BUILD_TEMPLATE->setReversion(@tokens);
   return $LaTeXML::BUILD_TEMPLATE; }
 
@@ -294,7 +302,7 @@ sub addColumn {
   my($self,%properties)=@_;
   my $col = {%properties};
   my @before=();
-  push(@before,@{$$self{save_before}});
+  push(@before,@{$$self{save_before}}) if $$self{save_before};
   push(@before,$properties{before}->unlist) if $properties{before};
   $$col{before} = Tokens(@before);
   $$col{after}  = Tokens() unless $properties{after};
