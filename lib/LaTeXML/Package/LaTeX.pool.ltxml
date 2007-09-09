@@ -346,8 +346,7 @@ DefConstructor('\LoadClass[] Semiverbatim []',
 				  my $options=$whatsit->getArg(1);
 				  my $class=$whatsit->getArg(2);
 				  $options = [($options ? split(',',($options->toString)) :())];
-				  RequirePackage(ToString($class),
-						 type=>'cls', options=>$options); });
+				  LoadClass(ToString($class), options=>$options); });
 
 #======================================================================
 # C.5.3 Page Styles
@@ -696,6 +695,7 @@ DefMacro('\eqnarray',    '\@@eqnarray\@start@alignment');
 DefMacro('\endeqnarray', '\@finish@alignment\end@eqnarray');
 DefMacro('\csname eqnarray*\endcsname',    '\@@eqnarray*\@start@alignment');
 DefMacro('\csname endeqnarray*\endcsname', '\@finish@alignment\end@eqnarray');
+
 DefConstructor('\@@eqnarray OptionalMatch:* AlignmentBody:\end@eqnarray',
 	       sub {
 		 my($document,$star,$body,%props)=@_;
@@ -848,9 +848,9 @@ DefPrimitive('\DeclareSymbolFontAlphabet{}{}', sub {
 
 DefPrimitive('\DeclareMathAlphabet{}{}{}{}{}', sub {
   my ($stomach, $cs, $enc, $family, $series, $shape) = @_;
-  DefConstructor($cs, '', font=>{family=>$family->toString,
-				 series=>$series->toString,
-				 shape =>$shape->toString}); });
+  DefConstructor($cs->toString, '', font=>{family=>$family->toString,
+					   series=>$series->toString,
+					   shape =>$shape->toString}); });
 
 DefPrimitive('\DeclareFontShape{}{}{}{}{}{}', undef);
 DefPrimitive('\DeclareFontFamily{}{}{}', undef);
@@ -1740,6 +1740,7 @@ DefEnvironment('{picture} Pair OptionalPair',
 	       ." fill='black' stroke='black' unitlength='#unitlength'>"
 	       . "#body"
 	       ."</ltx:picture>",
+	       mode=>'text',
 	       beforeDigest=>\&before_picture,
 	       properties=>sub { (unitlength=>LookupValue('\unitlength'),
 				  picProperties(size=>picScale($_[1]))); },
