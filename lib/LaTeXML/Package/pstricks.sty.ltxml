@@ -407,7 +407,7 @@ sub DefPSConstructor {
   DefMacro($cmd.' OptionalMatch:* []', sub {
 	     my @exp = (T_BEGIN);
 	     push(@exp, T_CS('\psset'), T_BEGIN, $_[2]->unlist, T_END) if $_[2];
-	     push(@exp, T_CS($_[0]->getCS->getCSName().'@'));
+	     push(@exp, T_CS($cmd.'@'));
 	     push(@exp, T_OTHER('*')) if $_[1];
 	     @exp; });
   if ($options{attributes}) { $PSobjAttributes{$cmd} = $options{attributes}; delete $options{attributes}; }
@@ -660,7 +660,7 @@ DefSimplePSConstructor('\psgrid', 'PSCoord PSCoord PSCoord',
 DefMacro('\newpsobject {} {} {}', sub {
 	   my ($newName, $oldName, $keyval) = ("\\".$_[1]->toString, "\\".$_[2]->toString, $_[3]->toString);
 	   DefMacro($newName.' OptionalMatch:* []', sub {
-		      my ($name, $thiskey) = ($_[0]->getCS->getCSName, $_[2]);
+		      my ($name, $thiskey) = ($newname, $_[2]);
 		      my ($old, $key) = map(LookupValue('psobject_'.$name.$_), qw(old key));
 		      $thiskey = $thiskey ? $thiskey->toString : '';
 		      $key .= ',' if $key && $thiskey; $key .= $thiskey;
