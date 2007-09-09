@@ -536,9 +536,15 @@
   <xsl:if test="@span">
     <xsl:attribute name='span'><xsl:value-of select='@span'/></xsl:attribute>
   </xsl:if>
-  <xsl:if test="@align">
-    <xsl:attribute name='align'><xsl:value-of select='@align'/></xsl:attribute>
-  </xsl:if>
+  <xsl:choose>
+    <xsl:when test="starts-with(@align,'char:')">
+      <xsl:attribute name='align'>char</xsl:attribute>    
+      <xsl:attribute name='char'><xsl:value-of select="substring-after(@align,'char:')"/></xsl:attribute>
+    </xsl:when>
+    <xsl:when test="@align">
+      <xsl:attribute name='align'><xsl:value-of select='@align'/></xsl:attribute>
+    </xsl:when>
+  </xsl:choose>
 </xsl:template>
 
 <xsl:template match="ltx:thead">
@@ -577,9 +583,15 @@
   <xsl:if test="@rowspan">
     <xsl:attribute name='rowspan'><xsl:value-of select='@rowspan'/></xsl:attribute>
   </xsl:if>
-  <xsl:if test="@align">
-    <xsl:attribute name='align'><xsl:value-of select='@align'/></xsl:attribute>
-  </xsl:if>
+  <xsl:choose>
+    <xsl:when test="starts-with(@align,'char:')">
+      <xsl:attribute name='align'>char</xsl:attribute>    
+      <xsl:attribute name='char'><xsl:value-of select="substring-after(@align,'char:')"/></xsl:attribute>
+    </xsl:when>
+    <xsl:when test="@align">
+      <xsl:attribute name='align'><xsl:value-of select='@align'/></xsl:attribute>
+    </xsl:when>
+  </xsl:choose>
   <xsl:if test="@border">
     <xsl:attribute name='class'><xsl:value-of select='@border'/></xsl:attribute>
   </xsl:if>
