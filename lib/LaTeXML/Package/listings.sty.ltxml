@@ -1,0 +1,279 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  listings                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+#**********************************************************************
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+use LaTeXML::Util::KeyVal;
+
+#**********************************************************************
+our $default_keys=
+  'float=tbp,floatplacement=tbp,aboveskip=\medskipamount,belowskip=\medskipamount,'
+  .  'lineskip=0pt,boxpos=c,'
+  .'print=true,firstline=1,lastline=9999999,showlines=false,emptylines=9999999,gobble=0,'
+  .'style={},language={},printpod=false,usekeywordsintag=true,tagstyle={},'
+  .  'markfirstintag=false,makemacrouse=true'
+  .'basicstyle={},identifierstyle={},commentstyle=\itshape,stringstyle={},'
+  .  'keywordstyle=\bfseries,classoffset=0,'
+  .  'emph={},delim={},'
+  .'extendedchars=false,inputencoding={},upquote=false,tabsize=8,showtabs=false,'
+  .  'tabs={},showspaces=false,showstringspaces=true,formfeed=\bigbreak,'
+  .'numbers=none,stepnumber=1,numberfirstline=false,numberstyle={},numbersep=10pt,'
+  .  'numberblanklines=true,firstnumber=auto,name={},'
+  .'title={},caption={},label={},nolol=false,'
+  .  'captionpos=t,abovecaptionskip=\smallskipamount,belowcaptionskip=\smallskipamount,'
+  .'linewidth=\linewidth,xleftmargin=0pt,xrightmargin=0pt,resetmargins=false,breaklines=false,'
+  .  'prebreak={},postbreak={},breakindent=20pt,breakautoindent=true,'
+  .'frame=none,frameround=ffff,framesep=3pt,rulesep=2pt,framerule=0.4pt,'
+  .  'framexleftmargin=0pt,framexrightmargin=0pt,framextopmargin=0pt,framexbottommargin=0pt,'
+  .  'backgroundcolor={},rulecolor={},fillcolor={},rulesepcolor={},'
+  .  'frameshape={},'
+  .'index={},indexstyle=\lstindexmacro,'
+  .'columns=[c]fixed,flexiblecolumns=false,keepspaces=false,basewidth={0.6em,0.45em},'
+  .  'fontadjust=false,texcl=false,mathescape=false,escapechar={},escapeinside={},'
+  .  'escapebegin={},escapeend={},'
+  .'fancyvrb=false,fvcmdparams=\overlay1,morefvcmdparams={}';
+
+# ndkeywordstyle=keywordstyle,texcsstyle=keywordstyle,directivestyle=keywordstyle
+DefMacro('\lstindexmacro{}','\index{{\ttfamily #1}}');
+
+# 4.2 Typesetting listings
+DefPrimitive('\lstset RequiredKeyVals:LST', sub {
+  my($stomach,$keyvals)=@_;
+  my $prev = LookupValue('LISTING_KEYVALS');
+  AssignValue(LISTING_KEYVALS=>($prev ? mergeListingKeyvals($keyvals,$prev) : $keyvals) ); });
+
+our $EMPTY_CATTABLE=LaTeXML::State->new(catcodes=>'none');
+
+DefExpandable('\lstinline OptionalKeyVals:LST', sub {
+  my($gullet,$keyvals)=@_;
+  my $mouth = $gullet->getMouth;
+  my ($init,$body);
+  { local $STATE = $EMPTY_CATTABLE;
+    $init = $mouth->readToken;
+    $body = $mouth->readTokens($init); }
+  Invocation(T_CS('\@lstinline'),$keyvals, Tokens($init),$body)->unlist; });
+
+DefConstructor('\@lstinline OptionalKeyVals:LST {}{}',
+	       "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
+	       beforeDigest=>[sub { $_[0]->bgroup; MergeFont(family=>'typewriter'); }],
+	       afterDigest=>sub { $_[0]->egroup; },
+	       reversion=>'\lstinline#1#2#3#2');
+
+InstallDefinition(LaTeXML::Constructor
+		  ->new(T_CS('\begin{lstlisting}'),LaTeXML::Package::parseParameters('OptionalKeyVals:LST',
+								   '\begin{lstlisting}'),
+			"<ltx:verbatim font='#font'>#body</ltx:verbatim>",
+			beforeDigest=>[sub { $_[0]->bgroup; 
+					     AssignValue(current_environment=>'lstlisting');
+					     MergeFont(family=>'typewriter');
+					     Digest(T_CS('\par')); }],
+			afterDigest=>[sub {
+					my($stomach,$whatsit)=@_;
+					$stomach->egroup;
+					my $font = $whatsit->getFont;
+					my $loc  = $whatsit->getLocator;
+					my @lines = $stomach->getGullet
+					  ->getMouth->readRawLines("\\end{lstlisting}");
+					# Note last line ends up as Whatsit's "trailer"
+					$whatsit->setBody(map(LaTeXML::Box->new($_,$font,$loc,T_OTHER($_)),
+							      @lines, "\end{lstlisting}"));
+					return; }]));
+
+#DefConstructor('\lstinputlisting RequiredKeyVals:LST Semiverbatim',);
+
+# 4.3 Space and placement
+DefKeyVal('LST','float',''); # [*] t,b,p,h  [or defaults?]
+DefKeyVal('LST','floatplacement','');  # t,b,p
+DefKeyVal('LST','aboveskip','Dimension');
+DefKeyVal('LST','belowskip','Dimension');
+DefKeyVal('LST','lineskip','Dimension');
+DefKeyVal('LST','boxpos',''); # b,c,t
+
+# 4.4 Printed range
+DefKeyVal('LST','print','', 'true');
+DefKeyVal('LST','firstline','Number');
+DefKeyVal('LST','lastline','Number');
+DefKeyVal('LST','showlines','','true');
+DefKeyVal('LST','emptylines','');
+DefKeyVal('LST','gobble','Number');
+
+# 4.5 Language and styles
+DefKeyVal('LST','style','');
+DefKeyVal('LST','language','');
+DefKeyVal('LST','alsolanguage','');
+DefKeyVal('LST','defaultdialect','');
+DefKeyVal('LST','printpod','');
+DefKeyVal('LST','usekeywordsintag','');
+DefKeyVal('LST','tagstyle','');
+DefKeyVal('LST','markfirstintag','');
+DefKeyVal('LST','makemacrouse','');
+
+# 4.6 Appearance
+DefKeyVal('LST','basicstyle','');
+DefKeyVal('LST','identifierstyle','');
+DefKeyVal('LST','stringstyle','');
+DefKeyVal('LST','keywordstyle','');
+DefKeyVal('LST','ndkeywordstyle','');
+DefKeyVal('LST','classoffset','');
+DefKeyVal('LST','texcsstyle','');
+DefKeyVal('LST','directivestyle','');
+DefKeyVal('LST','emph','');
+DefKeyVal('LST','moreemph','');
+DefKeyVal('LST','deleteemph','');
+DefKeyVal('LST','emphstyle','');
+DefKeyVal('LST','delim','');
+DefKeyVal('LST','moredelim','');
+
+# 4.7 Getting characters right.
+DefKeyVal('LST','extendedchars','','true');
+DefKeyVal('LST','inputencoding','');
+DefKeyVal('LST','upquote','');
+DefKeyVal('LST','tabsize','Number');
+DefKeyVal('LST','showtabs','');
+DefKeyVal('LST','tab','');
+DefKeyVal('LST','showspaces','');
+DefKeyVal('LST','showstringspaces','');
+DefKeyVal('LST','formfeed','');
+
+# 4.8 Line numbers
+DefKeyVal('LST','numbers',''); # none | left | right
+DefKeyVal('LST','stepnumber','Number');
+DefKeyVal('LST','numberfirstline','');
+DefKeyVal('LST','numberstyle','');
+DefKeyVal('LST','numbersep','Dimension');
+DefKeyVal('LST','numberblanklines','');
+DefKeyVal('LST','firstnumber','Number');
+DefKeyVal('LST','name','');
+DefMacro('\thelstnumber','\arabic{lstnumber}');
+
+# 4.9 Captions
+DefKeyVal('LST','title','');
+DefKeyVal('LST','caption','');
+DefKeyVal('LST','label','Semiverbatim');
+DefKeyVal('LST','label','');
+DefKeyVal('LST','nolol','','true');
+
+DefPrimitive('\lstlistoflistings',undef);
+DefMacro('\lstlistlistingname','Listings');
+DefMacro('\lstlistingname','Listing');
+DefMacro('\thelstlisting','\arabic{lstlisting}');
+DefMacro('\thename','<current listing name>');
+
+DefKeyVal('LST','captionpos',''); #  t,b
+DefKeyVal('LST','abovecaptionskip','Dimension');
+DefKeyVal('LST','belowcaptionskip','Dimension');
+
+# 4.10 Margins and line shape
+DefKeyVal('LST','linewidth','Dimension');
+DefKeyVal('LST','xleftmargin','Dimension');
+DefKeyVal('LST','xrightmargin','Dimension');
+DefKeyVal('LST','resetmargins','');
+DefKeyVal('LST','breaklines','');
+DefKeyVal('LST','prebreak','');
+DefKeyVal('LST','postbreak','');
+DefKeyVal('LST','breakindent','Dimension');
+DefKeyVal('LST','breakautoindent','','true');
+
+# 4.11 Frames
+DefKeyVal('LST','frame',''); # none | leftline | topline | bottomline | lines | single | shadowbox
+DefKeyVal('LST','framearound',''); # t|f * 4
+DefKeyVal('LST','framesep','Dimension');
+DefKeyVal('LST','rulesep','Dimension');
+DefKeyVal('LST','framerule','Dimension');
+DefKeyVal('LST','framexleftmargin','Dimension');
+DefKeyVal('LST','framexrightmargin','Dimension');
+DefKeyVal('LST','framextopmargin','Dimension');
+DefKeyVal('LST','framexbottommargin','Dimension');
+DefKeyVal('LST','backgroundcolor','');
+DefKeyVal('LST','rulecolor','');
+DefKeyVal('LST','fillcolor','');
+DefKeyVal('LST','rulesepcolor','');
+
+# 4.12 Indexing
+DefKeyVal('LST','index','');
+DefKeyVal('LST','moreindex','');
+DefKeyVal('LST','deleteindex','');
+DefKeyVal('LST','indexstyle','');
+
+# 4.13 Column alignment
+DefKeyVal('LST','columns','');
+DefKeyVal('LST','flexiblecolumns','','true');
+DefKeyVal('LST','keepspaces','');
+DefKeyVal('LST','basewidth','Dimension'); #  or 2 Dimensions!!!!
+DefKeyVal('LST','fontadjust','','true');
+
+# 4.14 Escaping to LaTeX
+DefKeyVal('LST','texcl','','true');
+DefKeyVal('LST','mathescape','');
+DefKeyVal('LST','escapechar','');
+DefKeyVal('LST','escapeinside','');
+DefKeyVal('LST','escapebegin','');
+DefKeyVal('LST','escapeend','');
+
+# 4.15 Interface to fancyvrb
+DefKeyVal('LST','fancyvrb','');
+DefKeyVal('LST','fvcmdparams','');
+DefKeyVal('LST','morefvcmdparams','');
+
+# 4.16 Environments
+DefPrimitive('\lstnewenvironment {}[Number][]{}{}',undef);
+
+# 4.17 Language definitions
+DefPrimitive('\lstdefinelangage []{}[]{}{}[]',undef);
+DefPrimitive('\lstalias[]{}[]{}',undef);
+
+# keywords
+DefKeyVal('LSTDEF','keywordprefix','');
+DefKeyVal('LSTDEF','keywords','');
+DefKeyVal('LSTDEF','morekeywords','');
+DefKeyVal('LSTDEF','deletekeywords','');
+DefKeyVal('LSTDEF','ndkeywords','');
+DefKeyVal('LSTDEF','morendkeywords','');
+DefKeyVal('LSTDEF','deletendkeywords','');
+DefKeyVal('LSTDEF','texcs','');
+DefKeyVal('LSTDEF','moretexcs','');
+DefKeyVal('LSTDEF','deletetexcs','');
+DefKeyVal('LSTDEF','directives','');
+DefKeyVal('LSTDEF','moredirectives','');
+DefKeyVal('LSTDEF','deletedirectives','');
+DefKeyVal('LSTDEF','sensitive','');
+DefKeyVal('LSTDEF','alsoletter','');
+DefKeyVal('LSTDEF','alsodigit','');
+DefKeyVal('LSTDEF','alsoother','');
+DefKeyVal('LSTDEF','otherkeywords','');
+
+# Strings
+DefKeyVal('LSTDEF','string','');
+DefKeyVal('LSTDEF','morestring','');
+DefKeyVal('LSTDEF','deletestring','');
+
+# Comments
+DefKeyVal('LSTDEF','comment','');
+DefKeyVal('LSTDEF','morecomment','');
+DefKeyVal('LSTDEF','deletecomment','');
+DefKeyVal('LSTDEF','keywordcomment','');
+DefKeyVal('LSTDEF','morekeywordcomment','');
+DefKeyVal('LSTDEF','deletekeywordcomment','');
+DefKeyVal('LSTDEF','keywordcommentsemicolon','');
+DefKeyVal('LSTDEF','podcomment','');
+DefPrimitive('\lstdefinestyle {} RequiredKeyVals:LST',
+);
+
+DefPrimitive('\lstloadlanguages Semiverbatim', undef);
+
+
+#**********************************************************************
+1;
+
