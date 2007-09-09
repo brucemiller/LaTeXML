@@ -1,0 +1,55 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  dcolumn                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use LaTeXML::Package;
+use strict;
+
+sub absorbedString {
+  my($tokens)=@_;
+  my $capdocument = LaTeXML::Document->new($STATE->getModel);
+  my $capture = $capdocument->openElement('_Capture_', font=>LaTeXML::Font->new());
+  $capdocument->absorb(Digest($tokens));
+  my @nodes= $capdocument->findnodes("//ltx:XMath/*",$capture);
+  $nodes[0]->textContent; }
+
+#DefMacro('\DC@#1#2#3#4\DC@end','\def#1{#2}#4');
+#DefMacro('\DC@{}{}{} Until:\DC@end','#4');
+DefExpandable('\DC@{}{}{}',sub {
+  my($gullet,$delim,$todelim,$ndec)=@_;
+  $delim=$delim->toString;
+  if($delim ne $todelim->toString){
+    AssignCatcode('math:$delim'=>1);
+    DefMacro($delim,'\ROLE{PERIOD}{'.join('',map($_->toString,$todelim->revert)).'}');
+  }
+  if(LookupValue('IN_MATH')){
+    (); }
+  else {
+    Let('\DC@end',T_MATH);
+    (T_MATH); }});
+# NOTE: We should be making arrangements for this funny thing to still
+# be considered a number!
+
+DefMacro('\DC@end',']');
+#DefColumnType('D{}{}{}','>{\DC@{#1}{#2}{#3}}c<{\DC@end}');
+
+DefColumnType('D{}{}{}',sub { 
+  my($gullet,$delim,$todelim,$ndec)=@_;
+  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\DC@'),
+						     T_BEGIN,$delim->unlist,T_END,
+						     T_BEGIN,$todelim->unlist,T_END,
+						     T_BEGIN,$ndec->unlist,T_END),
+#				      align=>'char:'.Digest($todelim)->toString,
+				      align=>'char:'.absorbedString(Invocation(T_CS('\ensuremath'),$todelim)),
+				      after=>Tokens(T_CS('\DC@end')));
+   return; });
+
+1;
