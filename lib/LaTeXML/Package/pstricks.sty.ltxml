@@ -428,9 +428,10 @@ DefEnvironment('{pspicture} OptionalMatch:* [Float] PSCoord PSCoord',
 	       "<ltx:picture baseline='#2' ?#1(clip='yes')"
 	       . " %&SimplePairAttr(#c1,width,height)> #body </ltx:picture>",
 	       afterDigestBegin=> sub {
-		 my ($c0, $c1) = ($_[3], $_[4]);
-		 $_[0]->setProperty(c1=>$c1 ? Pair($c1->getX->substract($c0->getX),
-						   $c1->getY->substract($c0->getY)) : $c0);
+		 my($stomach,$whatsit)=@_;
+		 my($c0, $c1) = ($whatsit->getArg(3), $whatsit->getArg(4));
+		 $whatsit->setProperty(c1=>$c1 ? Pair($c1->getX->substract($c0->getX),
+						      $c1->getY->substract($c0->getY)) : $c0);
 		 return; });
 
 ##########################################################################################
