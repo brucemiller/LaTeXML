@@ -410,7 +410,20 @@ sub andSplit {
 DefMacro('\@author{}', '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
 DefExpandable('\author{}', sub { andSplit(T_CS('\@author'),$_[1]); });
 
-DefPrimitive('\maketitle', undef); # Doesn't matter.
+# Doesn't produce anything (we're already inserting frontmatter),
+# But, it does make the various frontmatter macros into no-ops.
+DefMacro('\maketitle',
+	 '\global\let\thanks\relax'
+	 .'\global\let\maketitle\relax'
+	 .'\global\let\@maketitle\relax'
+	 .'\global\let\@thanks\@empty'
+	 .'\global\let\@author\@empty'
+	 .'\global\let\@date\@empty'
+	 .'\global\let\@title\@empty'
+	 .'\global\let\title\relax'
+	 .'\global\let\author\relax'
+	 .'\global\let\date\relax'
+	 .'\global\let\and\relax');
 
 DefConstructor('\thanks{}', "<ltx:note class='thanks'>#1</ltx:note>");
 
