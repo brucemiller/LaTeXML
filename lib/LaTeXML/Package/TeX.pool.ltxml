@@ -1697,7 +1697,11 @@ sub scriptHandler {
 
     AssignValue(mathstyle=>$scriptstylemap{$style});
     # Now, get following boxes
-    my @stuff = $stomach->invokeToken($gullet->readXToken);
+#    my @stuff = $stomach->invokeToken($gullet->readXToken);
+    my @stuff=();
+    while(my $tok = $gullet->readXToken){
+      @stuff = $stomach->invokeToken($tok);
+      last if @stuff; }
     Fatal("Missing { in sub/super-script argument") unless @stuff;
     my $script = shift(@stuff);	# ONLY this box is the script!
     my $level = $stomach->getBoxingLevel;
@@ -2030,7 +2034,7 @@ DefPrimitive('\newskip   Token',sub { DefRegister($_[1]->toString=>Glue(0)); });
 DefPrimitive('\newmuskip Token',sub { DefRegister($_[1]->toString=>MuGlue(0)); });
 DefPrimitive('\newbox    Token',sub { DefRegister($_[1]->toString=>Tokens()); });
 DefPrimitive('\newhelp Token {}',sub { AssignValue($_[1]->toString=>$_[2]); });
-DefPrimitive('\newtoks   Token',sub { DefRegister($_[1]->toString=>Tokens(0)); });
+DefPrimitive('\newtoks   Token',sub { DefRegister($_[1]->toString=>Tokens()); });
 DefPrimitive('\newread Token',  sub { DefRegister($_[1]->toString=>Number(0)); });
 DefPrimitive('\newwrite Token', sub { DefRegister($_[1]->toString=>Number(0)); });
 DefPrimitive('\newfam Token',   sub { DefRegister($_[1]->toString=>Number(0)); });
