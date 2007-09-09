@@ -1115,7 +1115,7 @@ DefMacro('\@alignment@cr',
 	 .'\@open@row\@open@column\@open@inner@column');
 DefConstructor('\@alignment@cr@marker','',reversion=>'\cr');
 DefConstructor('\cr', "\n"); # Default binding.
-DefMacro('\crcr', '\cr');
+Let('\crcr', '\cr');
 
 DefMacro('\@alignment@newline OptionalMatch:* [Dimension]',
 	 '\@close@inner@column\@close@column\@close@row'
@@ -1272,7 +1272,8 @@ DefPrimitive('\@open@column SkipSpaces DeferredAlignmentBody:\@close@column', su
   $$colspec{span} = $span;
   $$colspec{empty} = 1 if $empty;
   for(my $i = $n0+1; $i <= $n1; $i++){
-    $alignment->getColumn($i)->{skipped}=1; }
+    my $c = $alignment->getColumn($i);
+    $c->{skipped}=1 if $c; }
 ## print STDERR " => align=$align, border=$border\n  ".Stringify($boxes)."\n";
 #
   $stomach->egroup;
@@ -1304,9 +1305,6 @@ DefPrimitive('\@open@inner@column',sub {
   my $colspec = $alignment->nextColumn;
 ##print STDERR "COLUMN: ".$alignment->currentColumnNumber." => ".$colspec."\n ";
 
-
-  if(!$colspec){
-    Error("Extra alignment tab"); }
   $stomach->bgroup;
   my $gullet = $stomach->getGullet;
   # Check for presence of \omit  (& \noalign?)
@@ -1370,7 +1368,7 @@ DefPrimitive('\halign BoxSpecification {}', sub {
   my @tokens = $contents->unlist;
   my @template = ();
   my $t;
-  while(!($t=shift(@tokens))->equals(T_CS('\cr'))){
+  while(@tokens && !( ($t=shift(@tokens))->equals(T_CS('\cr')))){
     push(@template,$t); }
   my $template = LaTeXML::AlignmentTemplate->new();
   my $b=1;
@@ -1546,7 +1544,7 @@ DefPrimitive('$', sub {
     $op = '\@@ENDDISPLAYMATH'; }
   elsif($mode eq 'inline_math'){
     $op = '\@@ENDINLINEMATH'; }
-  elsif($gullet->ifNext(T_MATH)){
+  elsif(!LookupValue('Alignment') && $gullet->ifNext(T_MATH)){
     $gullet->readToken;
     $op = '\@@BEGINDISPLAYMATH'; }
   $stomach->invokeToken(T_CS($op)); });
@@ -1972,24 +1970,29 @@ our %space_chars = (negthinspace=>'', thinspace=>"\x{2009}",
 DefMathLigature(sub { my($document,@nodes)=@_;
 		      my @chars = ();
 		      my $font = $document->getNodeFont($nodes[$#nodes]);
-		      my ($node,$best,$nbest,$s)=(undef,'',0,'');
-		      my $n=0;
-		      my $string='';
-		      while(($node = pop(@nodes))
-			    && ( ( ($document->getNodeQName($node) eq 'ltx:XMTok')
-				   && ((($node->getAttribute('role')||'') eq 'NUMBER')
-				       || ($node->textContent eq '.'))
-				   && defined($s=$node->textContent))
-				 || (($document->getNodeQName($node) eq 'ltx:XMHint')
-				     && ($s = $space_chars{$node->getAttribute('name')||''})))){
-			$n++; 
-			if((($string=$s.$string)
-			    =~ /^(\d|\x{2009}|\x{2005}|\x{2004})*\.?(\d|\x{2009}|\x{2005}|\x{2004})*$/)
-			   && ($string =~/\d/)){ # MUST have at least one digit!
-			  $best = $string, $nbest = $n; }}
-		      if($nbest > 1){
-			my $number = $best; $number =~ s/[^.\d]//g;
-			($nbest, $best, meaning=>$number, role=>'NUMBER'); }});
+		      my ($n,$node,$string,$number)=(0,undef,'','');
+		      while($node = pop(@nodes)){
+			my $qn = $document->getNodeQName($node);
+			if($qn =~ /^(ltx:XMTok|ltx:XMWrap)$/){
+			  my $r=($node->getAttribute('role')||'');
+			  if($r eq 'NUMBER'){
+			    $string = $node->textContent . $string;
+			    $number = $node->getAttribute('meaning') . $number; }
+			  elsif($r eq 'PERIOD'){
+			    $string = $node->textContent . $string;
+			    $number = '.'.$number; }
+			  else {
+			    last; }}
+			elsif($qn eq 'ltx:XMHint'){
+			  if(my $s = $space_chars{$node->getAttribute('name')}){
+			    $string = $s . $string; }
+			  else {
+			    last; }}
+			else {
+			  last; }
+			$n++; }
+		      if(($n > 1) && ($number =~ /\d/)){
+			($n, $string, meaning=>$number, role=>'NUMBER'); }});
 
 
 #======================================================================
@@ -2221,10 +2224,9 @@ DefRegister('\strutbox'=>Tokens());
 # TeX Book, Appendix B. p. 354
 
 # TODO: Not yet done!!
-# \ialign, and tabbing stuff!!!
+# tabbing stuff!!!
 
 DefMacro('\settabs', undef);
-DefPrimitive('\ialign', undef);
 
 #======================================================================
 # TeX Book, Appendix B. p. 355
