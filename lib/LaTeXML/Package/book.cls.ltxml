@@ -75,16 +75,12 @@ DefMacro('\theenumiii',         '\roman{enumiii}');
 DefMacro('\theenumiv',          '\Alph{enumiv}');
 
 Tag('ltx:appendix',autoClose=>1);
+AssignValue(counter_for_appendix=>'chapter');
 DefPrimitive('\appendix',sub{
-  NewCounter('section', 'document', idprefix=>'A',nested=>['subsection']);
-  Let('\\@@section'=>'\\@@appendix');
+  NewCounter('chapter', 'document', idprefix=>'A',nested=>['section']);
+  DefMacro('\thechapter', '\Alph{chapter}');
+  DefMacro('\chapter', '\@startsection{appendix}{}{}{}{}{}');
  });
-DefConstructor('\\@@appendix[][][]{}',
-	       "<ltx:appendix ?#1(refnum='#1') id='#2'>"
-	       . "<ltx:title>#4</ltx:title>"
-	       . "?#3(<ltx:toctitle>#3</ltx:toctitle>)",
-	       bounded=>1);
-
 
 #**********************************************************************
 1;

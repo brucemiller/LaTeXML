@@ -275,10 +275,7 @@ Tag('ltx:section',autoOpen=>1);
 #======================================================================
 # C.4.2 The Appendix
 #======================================================================
-# NOTE: 2 options:
-#  1) redefine \section, etc to produce <appendix>, <subappendix>, etc.
-#  2) Wrap remainder of doc with <appendix>
-# DefPrimitive('\appendix');
+# Handled in article,report or book.
 
 #======================================================================
 # C.4.3 Table of Contents
