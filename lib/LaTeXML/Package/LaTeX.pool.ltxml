@@ -77,7 +77,7 @@ DefConstructor('\documentstyle OptionalSemiverbatim Semiverbatim []',
 
 sub onlyPreamble {
   Error("The current command can only appear in the preamble")
-    if LookupValue("inPreamble"); 
+    unless LookupValue("inPreamble"); 
   return; }
 #**********************************************************************
 # C.1.  Commands and Environments.
