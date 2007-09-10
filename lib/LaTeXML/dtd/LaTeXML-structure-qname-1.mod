@@ -39,6 +39,7 @@
 <!ENTITY % LaTeXML.abstract.qname       "%LaTeXML.pfx;abstract">
 <!ENTITY % LaTeXML.acknowledgements.qname "%LaTeXML.pfx;acknowledgements">
 <!ENTITY % LaTeXML.keywords.qname       "%LaTeXML.pfx;keywords">
+<!ENTITY % LaTeXML.classification.qname "%LaTeXML.pfx;classfication">
 
 
 <!ENTITY % LaTeXML-structure.Person.class
@@ -47,6 +48,7 @@
 	 "%LaTeXML.title.qname; | %LaTeXML.toctitle.qname; | %LaTeXML.creator.qname;">
 <!ENTITY % LaTeXML-structure.FrontMatter.class
          "%LaTeXML.subtitle.qname; | %LaTeXML.date.qname; | %LaTeXML.abstract.qname;
-        | %LaTeXML.acknowledgements.qname; | %LaTeXML.keywords.qname;">
+        | %LaTeXML.acknowledgements.qname; | %LaTeXML.keywords.qname;
+	| %LaTeXML.classification.qname;">
 <!ENTITY % LaTeXML-structure.BackMatter.class
 	 "%LaTeXML.bibliography.qname; | %LaTeXML.appendix.qname; | %LaTeXML.index.qname;">

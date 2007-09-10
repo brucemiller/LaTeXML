@@ -118,3 +118,8 @@
 
 <!ELEMENT %LaTeXML.keywords.qname; %LaTeXML.Inline.model;>
 <!ATTLIST %LaTeXML.keywords.qname; %LaTeXML.Common.attrib;>
+
+<!ELEMENT %LaTeXML.classification.qname; %LaTeXML.Inline.model;>
+<!ATTLIST %LaTeXML.classification.qname;
+	  %LaTeXML.Common.attrib;
+	  scheme CDATA #IMPLIED>
