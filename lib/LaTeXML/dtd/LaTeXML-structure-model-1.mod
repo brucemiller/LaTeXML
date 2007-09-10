@@ -33,12 +33,14 @@
 
 <!ELEMENT %LaTeXML.part.qname;
           ((%LaTeXML.SectionalFrontMatter.class;)*,
+	  (%LaTeXML.Para.mix;)*,
 	  (%LaTeXML.chapter.qname;)*)>
 
 <!ELEMENT %LaTeXML.chapter.qname;
-          ((%LaTeXML.SectionalFrontMatter.class;)*, 
+          ((%LaTeXML.SectionalFrontMatter.class;)*,
+	  (%LaTeXML.Para.mix;)*, (%LaTeXML.subparagraph.qname;)*,
+	  (%LaTeXML.paragraph.qname;)*, (%LaTeXML.subsection.qname;)*,
 	  (%LaTeXML.section.qname;)*)>
-
 <!ELEMENT %LaTeXML.section.qname;
           ((%LaTeXML.SectionalFrontMatter.class;)*,
 	  (%LaTeXML.Para.mix;)*, (%LaTeXML.subparagraph.qname;)*,
