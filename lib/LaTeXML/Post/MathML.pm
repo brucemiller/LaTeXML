@@ -279,7 +279,10 @@ sub pmml_parenthesize {
 ##    my($tag,$attr,@children)=@$item;
 ##    ['m:mrow',$attr,($open ? (pmml_mo($open)):()),@children,($close ? (pmml_mo($close)):())]; }
   else {
-    ['m:mrow',{},($open ? (pmml_mo($open)):()),$item,($close ? (pmml_mo($close)):())]; }}
+    ['m:mrow',{},
+     ($open ? (pmml_mo($open,role=>'OPEN')):()),
+     $item,
+     ($close ? (pmml_mo($close,role=>'CLOSE')):())]; }}
 
 sub pmml_punctuate {
   my($separators,@items)=@_;
@@ -343,11 +346,16 @@ our %sizes=(tiny=>'small',script=>'small',footnote=>'small',small=>'small',
 	    normal=>'normal',
 	    large=>'big',Large=>'big',LARGE=>'big',huge=>'big',Huge=>'big');
 
+# These are the strings that should be known as fences in a normal operator dictionary.
+our %fences=('('=>1,')'=>1, '['=>1, ']'=>1, '{'=>1, '}'=>1, "\x{201C}"=>1,"\x{201D}"=>1,
+	     "\`"=>1, "'"=>1, "<"=>1,">"=>1, "\x{2329}"=>1,"\x{232A}"=>1,
+	     "\x{230A}"=>1, "\x{230B}"=>1, "\x{2308}"=>1,"\x{2309}"=>1);
+
 sub pmml_mi {
-  my($item)=@_;
-  my $font  = (ref $item ? $item->getAttribute('font') : undef) ||  $LaTeXML::MathML::FONT;
-  my $size  = (ref $item ? $item->getAttribute('size') : undef) || $LaTeXML::MathML::SIZE;
-  my $color = (ref $item ? $item->getAttribute('color') : undef) || $LaTeXML::MathML::COLOR;
+  my($item,%attr)=@_;
+  my $font  = (ref $item ? $item->getAttribute('font') : $attr{font}) ||  $LaTeXML::MathML::FONT;
+  my $size  = (ref $item ? $item->getAttribute('size') : $attr{size}) || $LaTeXML::MathML::SIZE;
+  my $color = (ref $item ? $item->getAttribute('color') : $attr{color}) || $LaTeXML::MathML::COLOR;
   my $text  = (ref $item ?  $item->textContent : $item);
   my $variant = ($font ? $mathvariants{$font} : '');
   if($font && !$variant){
@@ -361,16 +369,19 @@ sub pmml_mi {
    $text]; }
 
 sub pmml_mo {
-  my($item)=@_;
-  my $font  = (ref $item ? $item->getAttribute('font') : undef);
-  my $size  = (ref $item ? $item->getAttribute('size') : undef);
-  my $color = (ref $item ? $item->getAttribute('color') : undef);
+  my($item,%attr)=@_;
+  my $font  = (ref $item ? $item->getAttribute('font') : $attr{font});
+  my $size  = (ref $item ? $item->getAttribute('size') : $attr{size});
+  my $color = (ref $item ? $item->getAttribute('color') : $attr{color});
   my $text  = (ref $item ?  $item->textContent : $item);
   my $variant = ($font ? $mathvariants{$font} : '');
+  my $role  = (ref $item ? $item->getAttribute('role') : $attr{role});
+  my $isfence = $role && ($role =~/^(OPEN|CLOSE)$/);
   my $pos   = (ref $item && $item->getAttribute('scriptpos')) || 'post';
   ['m:mo',{($variant ? (mathvariant=>$variant):()),
 	   ($size    ? (mathsize=>$sizes{$size}):()),
 	   ($color   ? (mathcolor=>$color):()),
+	   ($isfence && !$fences{$text} ? (fence=>'true'):()),
 	   # If an operator has specifically located it's scripts,
 	   # don't let mathml move them.
 	   (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
