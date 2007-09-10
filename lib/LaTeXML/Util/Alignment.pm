@@ -217,17 +217,21 @@ sub ReadAlignmentTemplate {
   $gullet->skipSpaces;
   local $LaTeXML::BUILD_TEMPLATE = 
     LaTeXML::AlignmentTemplate->new(columns=>[], tokens=>[]);
-  my $open = $gullet->readToken;		# Better be {
-  my @tokens=($open);
+
+  my @tokens=(T_BEGIN);
+  my $nopens = 0;
+  while(my $open = $gullet->readToken){
+    if($open->equals(T_BEGIN)){ $nopens++; }
+    else { $gullet->unread($open); last; }}
   my $defn;
   while(my $op = $gullet->readToken){
     if($op->equals(T_SPACE)){}
     elsif($op->equals(T_END)){
-      push(@tokens,$op);
+      while(--$nopens && $gullet->readToken->equals(T_END)){}
+      Error("Unbalanced { in alignment template") if $nopens;
       last; }
     elsif(defined($defn=$STATE->lookupDefinition(T_CS('\NC@rewrite@'.ToString($op))))
        && $defn->isExpandable){
-#      $gullet->unread($defn->invoke($gullet)); }
       # A variation on $defn->invoke, so we can reconstruct the reversion
       my @args = $defn->readArguments($gullet);
       my @exp = $defn->doInvocation($gullet,@args);
@@ -236,9 +240,8 @@ sub ReadAlignmentTemplate {
       else {
 	push(@tokens,$op,$defn->getParameters->revertArguments(@args)); }}
     else {
-      Warn("Unrecognized tabular template \"".Stringify($op)."\""); 
-#      last; 
-}}
+      Warn("Unrecognized tabular template \"".Stringify($op)."\""); }}
+  push(@tokens,T_END);
   $LaTeXML::BUILD_TEMPLATE->setReversion(@tokens);
   return $LaTeXML::BUILD_TEMPLATE; }
 
