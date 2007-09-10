@@ -19,8 +19,7 @@
 # Addison Wesley, 1994
 # Appendix C. Reference Manual
 #**********************************************************************
-# NOTE: A lot of this should be in Primitives.pm 
-# either builtin, or inherited from plain.
+# NOTE: This will be loaded after TeX.pool.ltxml, so it inherits.
 #**********************************************************************
 package LaTeXML::Package::Pool;
 use strict;
