@@ -75,6 +75,10 @@ DefConstructor('\documentstyle OptionalSemiverbatim Semiverbatim []',
 	$stomach->getGullet->input($file); }}
     return;});
 
+sub onlyPreamble {
+  Error("The current command can only appear in the preamble")
+    if LookupValue("inPreamble"); 
+  return; }
 #**********************************************************************
 # C.1.  Commands and Environments.
 #**********************************************************************
@@ -321,6 +325,7 @@ DefRegister('\mathindent'   => Dimension(0));
 
 DefConstructor('\usepackage[] Semiverbatim',
 	       "<?latexml package='#2' ?#1(options='#1')?>",
+	       beforeDigest=>\&onlyPreamble,
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
 				  my $packages=$whatsit->getArg(2);
@@ -331,6 +336,7 @@ DefConstructor('\usepackage[] Semiverbatim',
 				  return});
 DefConstructor('\RequirePackage[] Semiverbatim []',
 	       "<?latexml package='#2' ?#1(options='#1')?>",
+	       beforeDigest=>\&onlyPreamble,
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
 				  my $package=$whatsit->getArg(2);
@@ -338,6 +344,7 @@ DefConstructor('\RequirePackage[] Semiverbatim []',
 				  RequirePackage(ToString($package), options=>$options); });
 DefConstructor('\LoadClass[] Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
+	       beforeDigest=>\&onlyPreamble,
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
 				  my $class=$whatsit->getArg(2);
@@ -2014,7 +2021,7 @@ sub make_message {
   my($cs,@args)=@_;
   join("\n",map(Expand($_)->toString,@args)); }
 
-DefMacro('\@onlypreamble{}',''); # Don't bother enforcing this.
+DefPrimitive('\@onlypreamble{}',\&onlyPreamble); # Don't bother enforcing this.
 
 DefMacro('\GenericError{}{}{}{}', sub{ Fatal(make_message(@_)); });
 DefMacro('\GenericWarning{}{}',   sub{ Warn(make_message(@_)); });
