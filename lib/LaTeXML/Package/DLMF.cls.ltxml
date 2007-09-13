@@ -39,9 +39,9 @@ DefPrimitive('\thischapter[]{}', sub {
   $chnum= ($chnum ? $chnum->toString : $chcode);
 
   AssignValue(DOCUMENTID=>$chnum,'global');
-  DefMacro('\thechapter',$chnum); 
-  DefMacro('\thechapter@ID',"C$chnum");
-  DefMacro('\@currentlabel',$chcode);
+  DefMacroI('\thechapter',undef,$chnum); 
+  DefMacroI('\thechapter@ID',undef,"C$chnum");
+  DefMacroI('\@currentlabel',undef,$chcode);
   AssignValue("\\c\@chapter"=>$chnum,'global');
   AssignValue(current_counter=>'chapter','local');
   AssignValue(Chapter=>$chnum,'global');
@@ -266,7 +266,7 @@ DefConstructor('\note{}', "^<ltx:note>#1</ltx:note>", mode=>'text', reversion=>'
 DefConstructor('\origref[]{}', "^<ltx:origref ref='#2'>#1</ltx:origref>", mode=>'text', reversion=>'');
 
 # New form of \index allows * (to hide from printed index)
-DefExpandable('\index OptionalMatch:*{}', sub { my($gullet,$star,$phrases)=@_;
+DefMacro('\index OptionalMatch:*{}', sub { my($gullet,$star,$phrases)=@_;
 						process_index_phrases($gullet,$phrases); });
 # Also, redefine phrase to add a keyword to the metadata.
 DefMacro('\@indexphrase[]{}','\@@indexphrase[#1]{#2}\@@indexkeyword[#1]{#2}');
@@ -358,7 +358,7 @@ DefConstructor('\@constraint OptionalMatch:* {}',
 	       "^<ltx:constraint hidden='?#1(yes)(no)'>#2</ltx:constraint>",
 	       mode=>'text', reversion=>'');
 
-DefExpandable('\constraint OptionalMatch:* [Default:,]{}',sub { 
+DefMacro('\constraint OptionalMatch:* [Default:,]{}',sub { 
   my($gullet,$starred,$punct,$constraint)=@_;
   if($starred){			# hidden.
     (T_CS('\@constraint'),T_OTHER('*'),T_BEGIN,$constraint->unlist,T_END); }

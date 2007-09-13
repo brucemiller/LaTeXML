@@ -48,7 +48,7 @@ sub toString {
 # Return the Tokens that would invoke the given definition with arguments.
 sub invocation {
   my($self,@args)=@_;
-  ($$self{cs},$$self{parameters}->revertArguments(@args)); }
+  ($$self{cs},($$self{parameters} ? $$self{parameters}->revertArguments(@args):())); }
 
 #**********************************************************************
 # Expandable control sequences (& Macros);  Expanded in the Gullet.

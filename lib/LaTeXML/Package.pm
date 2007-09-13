@@ -18,10 +18,12 @@ use LaTeXML::Definition;
 use LaTeXML::Parameters;
 use LaTeXML::Util::Pathname;
 use base qw(Exporter);
-our @EXPORT = (qw(&DefExpandable &DefMacro
-		  &DefPrimitive  &DefRegister
-		  &DefConstructor &DefMath &dualize_arglist
-		  &DefEnvironment
+our @EXPORT = (qw(&DefExpandable 
+		  &DefMacro &DefMacroI
+		  &DefPrimitive  &DefPrimitiveI &DefRegister &DefRegisterI
+		  &DefConstructor &DefConstructorI
+		  &dualize_arglist
+		  &DefMath &DefMathI &DefEnvironment &DefEnvironmentI
 		  &DefRewrite &DefMathRewrite
 		  &DefLigature &DefMathLigature
 		  &RequirePackage &LoadClass &FindFile
@@ -69,6 +71,12 @@ sub UTF {
   my($code)=@_;
   pack('U',$code); }
 
+sub coerceCS {
+  my($cs)=@_;
+  $cs = T_CS($cs) unless ref $cs;
+  $cs = T_CS(ToString($cs)) unless ref $cs eq 'LaTeXML::Token';
+  $cs;}
+
 sub parsePrototype {
   my($proto)=@_;
   my $oproto = $proto;
@@ -93,12 +101,25 @@ sub parsePrototype {
 # Convert a LaTeX-style argument spec to our Package form.
 # Ie. given $nargs and $optional, being the two optional arguments to
 # something like \newcommand, convert it to the form we use
-sub convertLaTeXArgs {
+sub XXXXconvertLaTeXArgs {
   my($nargs,$optional)=@_;
   $nargs = (ref $nargs ? $nargs->toString : $nargs || 0);
   my $default = ($optional ? $optional->toString : undef);
   join('', ($optional ? ($default ? "[Default:$default]" : "[]") : ''),
        map('{}',1..($optional ? $nargs-1 : $nargs))); }
+
+sub convertLaTeXArgs {
+  my($nargs,$optional)=@_;
+  $nargs = $nargs->toString if ref $nargs;
+  $nargs = 0 unless $nargs;
+  my @params = ();
+  if($optional){
+    push(@params,LaTeXML::Parameters::newParameter('Optional',
+						  "[Default:".$optional->toString."]",
+						  extra=>[$optional,undef]));
+    $nargs--; }
+  push(@params,map(LaTeXML::Parameters::newParameter('Plain','{}'), 1..$nargs));
+  LaTeXML::Parameters->new(@params); }
 
 #======================================================================
 # Convenience functions for writing definitions.
@@ -109,7 +130,7 @@ sub AssignValue  { $STATE->assignValue(@_); return; }
 sub PushValue    { $STATE->pushValue(@_);  return; }
 sub PopValue     { $STATE->popValue(@_); }
 sub UnshiftValue { $STATE->unshiftValue(@_);  return; }
-sub ShiftValue { $STATE->shiftValue(@_); }
+sub ShiftValue   { $STATE->shiftValue(@_); }
 sub LookupCatcode{ $STATE->lookupCatcode(@_); }
 sub AssignCatcode{ $STATE->assignCatcode(@_); return; }
 
@@ -128,7 +149,7 @@ sub Digest       { $STATE->getStomach->digest(@_); }
 sub ReadParameters {
   my($gullet,$spec)=@_;
   my $for = T_OTHER("Anonymous");
-  my $parm = LaTeXML::Parameters::parseParameters($spec,$for);
+  my $parm = parseParameters($spec,$for);
   $parm->readArguments($gullet,$for); }
 
 # Merge the current font with the style specifications
@@ -174,9 +195,9 @@ sub DefColumnType {
   $proto =~ s/^(.)//;
   my $char = $1;
   $proto =~ s/^\s*//;
-  my $params = LaTeXML::Parameters::parseParameters($proto,$char);
+  my $params = parseParameters($proto,$char);
   $expansion = TokenizeInternal($expansion) unless ref $expansion;
-  InstallDefinition(LaTeXML::Expandable->new(T_CS('\NC@rewrite@'.$char),$params,$expansion)); }
+  DefMacroI(T_CS('\NC@rewrite@'.$char),$params,$expansion); }
 
 #======================================================================
 # Counters
@@ -203,10 +224,10 @@ sub DefColumnType {
 sub NewCounter { 
   my($ctr,$within,%options)=@_;
   my $unctr = "UN$ctr";		# UNctr is counter for generating ID's for UN-numbered items.
-  DefRegister("\\csname c\@$ctr\\endcsname",Number(0));
+  DefRegisterI(T_CS("\\c\@$ctr"),undef,Number(0));
   AssignValue("\\c\@$ctr"=>Number(0),'global');
   AssignValue("\\cl\@$ctr"=>Tokens(),'global') unless LookupValue("\\cl\@$ctr");
-  DefRegister("\\csname c\@$unctr\\endcsname",Number(0));
+  DefRegisterI(T_CS("\\c\@$unctr"),undef,Number(0));
   AssignValue("\\c\@$unctr"=>Number(0),'global');
   AssignValue("\\cl\@$unctr"=>Tokens(),'global') unless LookupValue("\\cl\@$unctr");
   AssignValue("\\cl\@$within" =>
@@ -218,15 +239,19 @@ sub NewCounter {
 		     (LookupValue("\\cl\@UN$within") ? LookupValue("\\cl\@UN$within")->unlist :())),
 	      'global') if $within;
   AssignValue('nested_counters_'.$ctr =>$options{nested}) if $options{nested};
-  DefMacro("\\the$ctr","\\arabic{$ctr}");
+  DefMacroI(T_CS("\\the$ctr"),undef,"\\arabic{$ctr}",scope=>'global');
   my $prefix = $options{idprefix};
   if(defined $prefix){
     if($within){
-      DefMacro("\\the$ctr\@ID",
-	       "\\ifx\\\@empty\\the$within\@ID\\else\\the$within\@ID.\\fi $prefix\\\@$ctr\@ID"); }
+      DefMacroI(T_CS("\\the$ctr\@ID"),undef,
+	       "\\expandafter\\ifx\\csname the$within\@ID\\endcsname\\\@empty"
+	       ."\\else\\csname the$within\@ID\\endcsname.\\fi"
+	       ." $prefix\\csname \@$ctr\@ID\\endcsname",
+		scope=>'global'); }
     else {
-      DefMacro("\\the$ctr\@ID","$prefix\\\@$ctr\@ID"); }
-    DefMacro("\\\@$ctr\@ID","0"); }
+      DefMacroI(T_CS("\\the$ctr\@ID"),undef,"$prefix\\csname \@$ctr\@ID\\endcsname",
+		scope=>'global'); }
+    DefMacroI(T_CS("\\\@$ctr\@ID"),undef,"0",scope=>'global'); }
   return; }
 
 sub CounterValue {
@@ -252,12 +277,11 @@ sub StepCounter {
 sub RefStepCounter {
   my($ctr)=@_;
   my $v = StepCounter($ctr);
-  InstallDefinition(LaTeXML::Expandable->new(T_CS("\\\@$ctr\@ID"),undef,
-			       Tokens(Explode(LookupValue('\c@'.$ctr)->valueOf))),
-		   'global');
+  DefMacroI(T_CS("\\\@$ctr\@ID"),undef, Tokens(Explode(LookupValue('\c@'.$ctr)->valueOf)),
+	    scope=>'global');
   my $id = Expand(T_CS("\\the$ctr\@ID"));
-  InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentlabel'),undef,$v));
-  InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentID'),undef,$id));
+  DefMacroI(T_CS('\@currentlabel'),undef,$v);
+  DefMacroI(T_CS('\@currentID'),undef,$id);
 
   # Any scopes activated for previous value of this counter (& any nested counters) must be removed.
   # This may also include scopes activated for \label
@@ -281,11 +305,11 @@ sub RefStepID {
   my($ctr)=@_;
   my $unctr = "UN$ctr";
   my $v = StepCounter($unctr);
-  InstallDefinition(LaTeXML::Expandable->new(T_CS("\\\@$ctr\@ID"),undef,
-			Tokens(T_OTHER('x'),Explode(LookupValue('\c@'.$unctr)->valueOf))),
-		   'global');
+  DefMacroI(T_CS("\\\@$ctr\@ID"),undef,
+	    Tokens(T_OTHER('x'),Explode(LookupValue('\c@'.$unctr)->valueOf)),
+	    scope=>'global');
   my $id = Expand(T_CS("\\the$ctr\@ID"));
-  InstallDefinition(LaTeXML::Expandable->new(T_CS('\@currentID'),undef,$id));
+  DefMacroI(T_CS('\@currentID'),undef,$id);
   (id=>$id); }
 
 sub ResetCounter {
@@ -349,22 +373,22 @@ sub forbidMath() {
 our $expandable_options = {isConditional=>1, scope=>1};
 sub DefExpandable {
   my($proto,$expansion,%options)=@_;
-  CheckOptions("DefExpandable ($proto)",$expandable_options,%options);
-  my ($cs,$paramlist)=parsePrototype($proto);
-  $expansion = Tokens() unless defined $expansion;
-  $STATE->installDefinition(LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options),
-			    $options{scope});
-  return; }
+  Warn("DefExpandable ($proto) is deprecated; use DefMacro");
+  DefMacro($proto,$expansion,%options); }
 
 # Define a Macro: Essentially an alias for DefExpandable
 # For convenience, the $expansion can be a string which will be tokenized.
-our $macro_options = {scope=>1};
+our $macro_options = {isConditional=>1, scope=>1};
 sub DefMacro {
   my($proto,$expansion,%options)=@_;
   CheckOptions("DefMacro ($proto)",$macro_options,%options);
-  my ($cs,$paramlist)=parsePrototype($proto);
-  $expansion = Tokens() unless defined $expansion;
-  $expansion = TokenizeInternal($expansion) unless ref $expansion;
+  DefMacroI(parsePrototype($proto),$expansion,%options); }
+
+sub DefMacroI {
+  my($cs,$paramlist,$expansion,%options)=@_;
+  if(!defined $expansion){ $expansion = Tokens(); }
+  elsif(!ref $expansion) { $expansion = TokenizeInternal($expansion); }
+  $cs = coerceCS($cs);
   $STATE->installDefinition(LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options),
 			    $options{scope});
   return; }
@@ -382,8 +406,12 @@ our $primitive_options = {isPrefix=>1,scope=>1, requireMath=>1, forbidMath=>1,be
 sub DefPrimitive {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefPrimitive ($proto)",$primitive_options,%options);
-  my ($cs,$paramlist)=parsePrototype($proto);
+  DefPrimitiveI(parsePrototype($proto),$replacement,%options); }
+
+sub DefPrimitiveI {
+  my($cs,$paramlist,$replacement,%options)=@_;
   $replacement = sub { (); } unless defined $replacement;
+  $cs = coerceCS($cs);
   $STATE->installDefinition(LaTeXML::Primitive->new($cs,$paramlist,$replacement,
 						    beforeDigest=> flatten(($options{requireMath} ? (\&requireMath):()),
 									   ($options{forbidMath}  ? (\&forbidMath):()),
@@ -402,8 +430,12 @@ our %register_types = ('LaTeXML::Number'   =>'Number',
 sub DefRegister {
   my($proto,$value,%options)=@_;
   CheckOptions("DefRegsiter ($proto)",$register_options,%options);
+  DefRegisterI(parsePrototype($proto),$value,%options); }
+
+sub DefRegisterI {
+  my($cs,$paramlist,$value,%options)=@_;
+  $cs = coerceCS($cs);
   my $type = $register_types{ref $value};
-  my ($cs,$paramlist)=parsePrototype($proto);
   my $name = $cs->toString;
   my $getter = $options{getter} 
     || sub { LookupValue(join('',$name,map($_->toString,@_))) || $value; };
@@ -454,7 +486,11 @@ our $constructor_options = {mode=>1, requireMath=>1, forbidMath=>1, font=>1,
 sub DefConstructor {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefConstructor ($proto)",$constructor_options,%options);
-  my ($cs,$paramlist)=parsePrototype($proto);
+  DefConstructorI(parsePrototype($proto),$replacement,%options); }
+
+sub DefConstructorI {
+  my($cs,$paramlist,$replacement,%options)=@_;
+  $cs = coerceCS($cs);
   my $mode = $options{mode};
   my $bounded = $options{bounded};
   $STATE->installDefinition(LaTeXML::Constructor
@@ -515,9 +551,8 @@ sub dualize_arglist {
 #      push(@pargs, Invocation(T_CS('\@XMRef'),T_OTHER($id))); }
 
       StepCounter('@XMARG');
-      InstallDefinition(LaTeXML::Expandable->new(T_CS('\@@XMARG@ID'),undef,
-			 Tokens(Explode(LookupValue('\c@@XMARG')->valueOf))),
-		   'global');
+      DefMacroI(T_CS('\@@XMARG@ID'),undef, Tokens(Explode(LookupValue('\c@@XMARG')->valueOf)),
+		scope=>'global');
       my $id = Expand(T_CS('\the@XMARG@ID'));
       push(@cargs, Invocation(T_CS('\@XMArg'),$id,$arg));
       push(@pargs, Invocation(T_CS('\@XMRef'),$id)); }
@@ -531,8 +566,12 @@ sub dualize_arglist {
 sub DefMath {
   my($proto,$presentation,%options)=@_;
   CheckOptions("DefMath ($proto)",$math_options,%options);
-  my ($cs,$paramlist)=parsePrototype($proto);  
-  my $nargs = scalar($paramlist->getParameters);
+  DefMathI(parsePrototype($proto),$presentation,%options); }
+
+sub DefMathI {
+  my($cs,$paramlist,$presentation,%options)=@_;
+  $cs = coerceCS($cs);
+  my $nargs = ($paramlist ? scalar($paramlist->getParameters): 0);
   my $csname = $cs->getString;
   my $meaning = $options{meaning};
   my $name = $csname;
@@ -646,7 +685,12 @@ sub DefEnvironment {
   $proto =~ s/^\{([^\}]+)\}\s*//; # Pull off the environment name as {name}
   my $name = $1;
   my $paramlist=parseParameters($proto,"Environment $name");
+  DefEnvironmentI($name,$paramlist,$replacement,%options); }
+
+sub DefEnvironmentI {
+  my($name,$paramlist,$replacement,%options)=@_;
   my $mode = $options{mode};
+  $name = $name->toString if ref $name;
   # This is for the common case where the environment is opened by \begin{env}
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\begin{$name}"), $paramlist,$replacement,
@@ -1019,9 +1063,17 @@ nesting when skipping to \else or \fi).
 Defines the macro expansion for C<$prototype>.  If a C<$string> is supplied, it will be
 tokenized at definition time, and any macro arguments will be substituted for parameter
 indicators (eg #1) at expansion time; the result is used as the expansion of
-the control sequence.  The only option is C<scope>.
+the control sequence. 
+The only option, other than C<scope>, is C<isConditional> which should be true,
+for conditional control sequences (TeX uses these to keep track of conditional
+nesting when skipping to \else or \fi).
 
 If defined by C<$code>, the form is C<CODE($gullet,@args)>.
+
+=item C<< DefMacroI($cs,$paramlist,$string | $tokens | $code,%options); >>
+
+Internal form of C<DefMacro> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.
 
 =item C<< DefPrimitive($prototype,CODE($stomach,@args),%options); >>
 
@@ -1031,6 +1083,11 @@ but usually should return nothing (eg. end with return; ).
 
 The only option is for the special case: C<< isPrefix=>1 >> is used for assignment
 prefixes (like \global).
+
+=item C<< DefPrimitiveI($cs,$paramlist,CODE($stomach,@args),%options); >>
+
+Internal form of C<DefPrimitive> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.
 
 =item C<< DefRegister($prototype,$value,%options); >>
 
@@ -1056,6 +1113,11 @@ control sequence and argument values.  These options allow other means of fetchi
 storing the value.
 
 =back
+
+=item C<< DefRegisterI($cs,$paramlist,$value,%options); >>
+
+Internal form of C<DefRegister> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.
 
 =item C<< DefConstructor($prototype,$xmlpattern | $code,%options); >>
 
@@ -1193,6 +1255,11 @@ See L<scope>.
 
 =back
 
+=item C<< DefConstructorI($cs,$paramlist,$xmlpattern | $code,%options); >>
+
+Internal form of C<DefConstructor> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.
+
 =item C<< DefMath($prototype,$tex,%options); >>
 
 A common shorthand constructor; it defines a control sequence that creates a mathematical object,
@@ -1257,6 +1324,11 @@ so that changes to fonts, etc, are local.  Providing C<<noggroup=>1>> inhibits t
 
 =back
 
+=item C<< DefMathI($cs,$paramlist,$tex,%options); >>
+
+Internal form of C<DefMath> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.
+
 =item C<< DefEnvironment($prototype,$replacement,%options); >>
 
 Defines an Environment that generates a specific XML fragment.  The C<$replacement> is
@@ -1280,6 +1352,11 @@ It shares options with C<DefConstructor>:
 Additionally, C<afterDigestBegin> is effectively an C<afterDigest>
 for the C<\begin{env}> control sequence.
 
+
+=item C<< DefEnvironmentI($name,$paramlist,$replacement,%options); >>
+
+Internal form of C<DefEnvironment> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.
 
 =item C<< Let($token1,$token2); >>
 

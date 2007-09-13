@@ -20,11 +20,11 @@ use LaTeXML::Package;
 sub defineExcluded {
   my($stomach,$name)=@_;
   $name = $name->toString if ref $name;
-  InstallDefinition(LaTeXML::Constructor->new(T_CS("\\begin{$name}"),undef,'', reversion=>'',
-            afterDigest=>[sub {
-			    my($stomach,$whatsit)=@_;
-			    my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{$name}\n",1);
-			    NoteProgress("Skipped ".scalar(@lines)." for environment $name"); }]));
+  DefConstructorI(T_CS("\\begin{$name}"),undef,'', reversion=>'',
+		  afterDigest=>[sub {
+				  my($stomach,$whatsit)=@_;
+				  my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{$name}\n",1);
+				  NoteProgress("[Skipped $name (".scalar(@lines)." lines)]"); }]);
   return; }
 
 sub defineIncluded {
@@ -32,10 +32,10 @@ sub defineIncluded {
   $name = $name->toString if ref $name;
   # Note that we define the `magic' environment control sequences,
   # but DO NOT do any of the normal environ things, like \begingroup \endgroup!
-  InstallDefinition(LaTeXML::Expandable->new(T_CS("\\begin{$name}"),undef,
-					     Tokens(($before ? $before->unlist:()),T_CS('\ignorespaces'))));
-  InstallDefinition(LaTeXML::Expandable->new(T_CS("\\end{$name}"),undef,
-					     Tokens(($after ? $after->unlist:()),T_CS('\ignorespaces'))));
+  DefMacroI(T_CS("\\begin{$name}"),undef,
+	    Tokens(($before ? $before->unlist:()),T_CS('\ignorespaces')));
+  DefMacroI(T_CS("\\end{$name}"),undef,
+	    Tokens(($after ? $after->unlist:()),T_CS('\ignorespaces')));
   return; }
 
 defineExcluded(undef,'comment');

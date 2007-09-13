@@ -48,16 +48,18 @@ DefMacro('\htmladdtonavigation{}','');
 # These get excluded, since we probably don't even want to try to include html?
 #DefEnvironment('{rawhtml}','');
 #DefEnvironment('{htmlonly}','');
-InstallDefinition(LaTeXML::Constructor->new(T_CS("\\begin{rawhtml}"),undef,'', reversion=>'',
-   afterDigest=>[sub {
-		   my($stomach,$whatsit)=@_;
-		   my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{rawhtml}",0);
-		   NoteProgress("Skipped ".scalar(@lines)." for environment rawhtml"); }]));
-InstallDefinition(LaTeXML::Constructor->new(T_CS("\\begin{htmlonly}"),undef,'', reversion=>'',
-   afterDigest=>[sub {
-		   my($stomach,$whatsit)=@_;
-		   my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{htmlonly}",0);
-		   NoteProgress("Skipped ".scalar(@lines)." for environment htmlonly"); }]));
+DefConstructorI(T_CS("\\begin{rawhtml}"),undef,'', reversion=>'',
+		afterDigest=>[sub {
+				my($stomach,$whatsit)=@_;
+				my $end = "\\end{rawhtml}";
+				my @lines = $stomach->getGullet->getMouth->readRawLines($end,0);
+				NoteProgress("[Skip rawhtml (".scalar(@lines)."lines)]"); }]);
+DefConstructorI(T_CS("\\begin{htmlonly}"),undef,'', reversion=>'',
+		afterDigest=>[sub {
+				my($stomach,$whatsit)=@_;
+				my $end = "\\end{htmlonly}";
+				my @lines = $stomach->getGullet->getMouth->readRawLines($end,0);
+				NoteProgress("[Skip htmlonly (".scalar(@lines)."lines)]"); }]);
 DefMacro('\html{}','');
 DefEnvironment('{latexonly}','#body'); # Include this (?)
 DefMacro('\latex{}','#1');

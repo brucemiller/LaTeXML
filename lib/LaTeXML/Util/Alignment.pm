@@ -63,6 +63,11 @@ sub newRow {
   push(@{$$self{rows}}, $row);
   $row; }
 
+sub removeRow {
+  my($self)=@_;
+  my @rows = @{$$self{rows}};
+  pop(@rows);
+  $$self{rows} = [@rows]; }
 ###
 
 sub addLine {

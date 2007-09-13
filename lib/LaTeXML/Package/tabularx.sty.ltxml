@@ -19,13 +19,14 @@ DefMacro('\tabularx[]{Dimension}{}',
 	 '\@alignment@bindings{#3}\@@tabularx[#1]{#2}{#3}\@start@alignment');
 DefMacro('\endtabularx',
 	 '\@finish@alignment\@end@tabularx');
-Let('\@end@tabularx','\relax');
-DefConstructor('\@@tabularx[]{Dimension} Undigested AlignmentBody:\@end@tabularx',
+DefPrimitive('\@end@tabularx',sub{ $_[0]->egroup; });
+DefConstructor('\@@tabularx[]{Dimension} Undigested DigestedBody',
 	       sub { my($document,$pos,$width,$pat,$body,%props)=@_;
 		     constructAlignment($document,$body,attributes=>{position=>$pos,
 								     width=>$width->valueOf},
 					guess_headers=>1); },
 	       reversion=>'\begin{tabularx}[#1]{#2}{#3}#4\end{tabularx}',
+	       beforeDigest=>sub { $_[0]->bgroup; },
 	       mode=>'text');
 
 # Like p, but w/o explicit width...

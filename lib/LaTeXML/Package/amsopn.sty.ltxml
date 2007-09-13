@@ -20,7 +20,7 @@ use LaTeXML::Package;
 
 DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}',sub{
   my($stomach,$star,$cs,$text)=@_;
-  DefMath($cs->toString,$text,scriptpos=>($star ? 'mid':'post')); });
+  DefMathI($cs,undef,$text,scriptpos=>($star ? 'mid':'post')); });
 
 # See p.18
 # New functions (most are already in TeX)

@@ -658,8 +658,8 @@ DefSimplePSConstructor('\psgrid', 'PSCoord PSCoord PSCoord',
 ##########################################################################################
 
 DefMacro('\newpsobject {} {} {}', sub {
-	   my ($newName, $oldName, $keyval) = ("\\".$_[1]->toString, "\\".$_[2]->toString, $_[3]->toString);
-	   DefMacro($newName.' OptionalMatch:* []', sub {
+	   my ($newname, $oldName, $keyval) = ("\\".$_[1]->toString, "\\".$_[2]->toString, $_[3]->toString);
+	   DefMacro($newname.' OptionalMatch:* []', sub {
 		      my ($name, $thiskey) = ($newname, $_[2]);
 		      my ($old, $key) = map(LookupValue('psobject_'.$name.$_), qw(old key));
 		      $thiskey = $thiskey ? $thiskey->toString : '';
@@ -667,8 +667,8 @@ DefMacro('\newpsobject {} {} {}', sub {
 		      my @exp = (T_CS($old));  push(@exp, T_OTHER('*')) if $_[1];
 		      push(@exp, T_OTHER('['), Explode($key), T_OTHER(']')) if $key;
 		      @exp; });
-	   AssignValue('psobject_'.$newName.'old', $oldName);
-	   AssignValue('psobject_'.$newName.'key', $keyval);
+	   AssignValue('psobject_'.$newname.'old', $oldName);
+	   AssignValue('psobject_'.$newname.'key', $keyval);
 	   return; });
 
 DefMacro('\newpsstyle {} RequiredKeyVals:pstricks', sub {

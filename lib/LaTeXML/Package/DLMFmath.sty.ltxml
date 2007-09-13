@@ -276,13 +276,13 @@ DefMath('\qFactorial{}{}{}','\left(#1;#2\right)_{#3}',
 DefMath('\qBinomial{}{}{}', '\genfrac[]\z@{}{#1}{#2}_{#3}',
 	meaning=>'q-binomial');
 
-DefExpandable('\threej OptionalKeyword:@',
+DefMacro('\threej OptionalKeyword:@',
 	      sub { my($gullet,$at)=@_;
 		    ($at ? (T_CS('\threej@args')):(T_CS('\threej@text'))); });
-DefExpandable('\sixj OptionalKeyword:@',
+DefMacro('\sixj OptionalKeyword:@',
 	      sub { my($gullet,$at)=@_;
 		    ($at ? (T_CS('\sixj@args')):(T_CS('\sixj@text'))); });
-DefExpandable('\ninej OptionalKeyword:@',
+DefMacro('\ninej OptionalKeyword:@',
 	      sub { my($gullet,$at)=@_;
 		    ($at ? (T_CS('\ninej@args')):(T_CS('\ninej@text'))); });
 DefMath('\threej@text','3j', role=>'ID', reversion=>'3j',meaning=>'threej');
@@ -330,13 +330,13 @@ DefPrimitive('\defSpecFun{}[][]{} OptionalKeyVals:DefSpecFun {}', sub {
   $nargs  = $nargs->toString;
   my $role = ($keys && ToString($keys->getValue('role'))) 
     || ($nargs ?  'FUNCTION' : 'ATOM');
-  DefExpandable($cs.'@role',Tokens(T_OTHER($role)));
+  DefMacroI(T_CS($cs.'@role'),undef,Tokens(T_OTHER($role)));
   # Define with DefMath to create presentation & content cs's
-  DefMath($cs . convertLaTeXArgs($nparam,$optparam), $formatter, 
+  DefMathI($cs,convertLaTeXArgs($nparam,$optparam), $formatter, 
 	  role=>$role, operator_role=>$role, meaning=>$name, omcd=>'dlmf');
   # Then, redefine top-level macro to check for powers, args, etc.
-  DefExpandable($cs.convertLaTeXArgs($nparam,$optparam),
-		sub { expand_specfun($cs,$nargs,@_); });
+  DefMacroI($cs,convertLaTeXArgs($nparam,$optparam),
+	    sub { expand_specfun($cs,$nargs,@_); });
 
   # Read any argument formats & generate args macros
   my @argfmts=();
@@ -345,7 +345,9 @@ DefPrimitive('\defSpecFun{}[][]{} OptionalKeyVals:DefSpecFun {}', sub {
   push(@argfmts, Tokenize("\\!\\left(".join(',',map("#$_",1..$nargs))."\\right)"))
     unless @argfmts;
   for(my $i=0; $i <= $#argfmts; $i++){
-    DefMacro(join('',$cs,'@args',('@' x ($i+1)),('{}' x $nargs)),$argfmts[$i]->toString); }
+    DefMacroI(T_CS(join('',$cs,'@args',('@' x ($i+1)))),
+		   convertLaTeXArgs($nargs,undef),
+		   $argfmts[$i]->toString); }
 
   $gullet->skipSpaces;
   return; });
@@ -355,7 +357,7 @@ DefConstructor('\sf@apply{}{}', "<ltx:XMApp>#1#2</ltx:XMApp>",
     my($fcn,$args) = $_[0]->getArgs;
     ($fcn->revert,T_OTHER("@"),map( (T_BEGIN,$_->revert,T_END), $args->unlist)); });
 
-DefExpandable('\@PRIMES{}',sub { ((T_CS('\prime')) x $_[1]->toString); });
+DefMacro('\@PRIMES{}',sub { ((T_CS('\prime')) x $_[1]->toString); });
 DefMath('\diffop{}{}','{{#1}^{\@PRIMES{#2}}}');
 DefMath('\power{}{}',"{#1^{#2}}");
 

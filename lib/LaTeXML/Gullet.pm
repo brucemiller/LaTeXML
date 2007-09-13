@@ -418,7 +418,9 @@ sub readNumber {
   if   (defined (my $n = $self->readNormalInteger    )){ ($s < 0 ? $n->negate : $n); }
   elsif(defined (   $n = $self->readInternalDimension)){ Number($s * $n->valueOf); }
   elsif(defined (   $n = $self->readInternalGlue     )){ Number($s * $n->valueOf); }
-  else{ Warn("Missing number, treated as zero.");        Number(0); }}
+  else{ my $t = $self->readToken;
+	$self->unread($t);
+	Warn("Missing number, treated as zero at ".ToString($t));        Number(0); }}
 
 # <normal integer> = <internal integer> | <integer constant>
 #   | '<octal constant><one optional space> | "<hexadecimal constant><one optional space>

@@ -56,7 +56,7 @@ DefPrimitive('\lstset RequiredKeyVals:LST', sub {
 
 our $EMPTY_CATTABLE=LaTeXML::State->new(catcodes=>'none');
 
-DefExpandable('\lstinline OptionalKeyVals:LST', sub {
+DefMacro('\lstinline OptionalKeyVals:LST', sub {
   my($gullet,$keyvals)=@_;
   my $mouth = $gullet->getMouth;
   my ($init,$body);
@@ -71,25 +71,24 @@ DefConstructor('\@lstinline OptionalKeyVals:LST {}{}',
 	       afterDigest=>sub { $_[0]->egroup; },
 	       reversion=>'\lstinline#1#2#3#2');
 
-InstallDefinition(LaTeXML::Constructor
-		  ->new(T_CS('\begin{lstlisting}'),LaTeXML::Package::parseParameters('OptionalKeyVals:LST',
-								   '\begin{lstlisting}'),
-			"<ltx:verbatim font='#font'>#body</ltx:verbatim>",
-			beforeDigest=>[sub { $_[0]->bgroup; 
-					     AssignValue(current_environment=>'lstlisting');
-					     MergeFont(family=>'typewriter');
-					     Digest(T_CS('\par')); }],
-			afterDigest=>[sub {
-					my($stomach,$whatsit)=@_;
-					$stomach->egroup;
-					my $font = $whatsit->getFont;
-					my $loc  = $whatsit->getLocator;
-					my @lines = $stomach->getGullet
-					  ->getMouth->readRawLines("\\end{lstlisting}");
-					# Note last line ends up as Whatsit's "trailer"
-					$whatsit->setBody(map(LaTeXML::Box->new($_,$font,$loc,T_OTHER($_)),
-							      @lines, "\end{lstlisting}"));
-					return; }]));
+DefConstructorI(T_CS('\begin{lstlisting}'),LaTeXML::Package::parseParameters('OptionalKeyVals:LST',
+									     '\begin{lstlisting}'),
+		"<ltx:verbatim font='#font'>#body</ltx:verbatim>",
+		beforeDigest=>[sub { $_[0]->bgroup; 
+				     AssignValue(current_environment=>'lstlisting');
+				     MergeFont(family=>'typewriter');
+				     Digest(T_CS('\par')); }],
+		afterDigest=>[sub {
+				my($stomach,$whatsit)=@_;
+				$stomach->egroup;
+				my $font = $whatsit->getFont;
+				my $loc  = $whatsit->getLocator;
+				my @lines = $stomach->getGullet
+				  ->getMouth->readRawLines("\\end{lstlisting}");
+				# Note last line ends up as Whatsit's "trailer"
+				$whatsit->setBody(map(LaTeXML::Box->new($_,$font,$loc,T_OTHER($_)),
+						      @lines, "\end{lstlisting}"));
+				return; }]);
 
 #DefConstructor('\lstinputlisting RequiredKeyVals:LST Semiverbatim',);
 

@@ -41,7 +41,7 @@ DefConstructor('\@AC@long{}',"&LookupValue('ACRONYM\@long\@#1')");
 # \@ACR@{id}{text}
 DefConstructor('\@ACRO@{}{}',"<ltx:acronym name='#1'>#2</ltx:acronym>");
 
-DefExpandable('\@AC@if{}{}{}', sub { 
+DefMacro('\@AC@if{}{}{}', sub { 
   my($gullet,$id,$short,$long)=@_;
   my $key = 'ACROUSED@'.$_[1]->toString;
   if(LookupValue($key)){

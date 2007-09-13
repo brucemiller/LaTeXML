@@ -66,7 +66,7 @@ DefPrimitive('\lxDefMath{}[][]{} OptionalKeyVals:XMath', sub {
   my($name,$meaning,$cd,$role)= 
     $params && map($_ && $_->toString,map($params->getValue($_),
              qw(name meaning cd role)));
-  DefMath($cs->toString.convertLaTeXArgs($nargs,$opt),$presentation,
+  DefMathI($cs,convertLaTeXArgs($nargs,$opt),$presentation,
 	  name=>$name, meaning=>$meaning, omcd=>$cd, role=>$role);
 });
 #DefKeyVal('XMath',name,string);
@@ -171,9 +171,9 @@ sub next_declaration_id {
 ##  ($docid ? "$docid.XMD" : 'XMD').++$XMDeclID; }
 
   StepCounter('@XMDECL');
-  InstallDefinition(LaTeXML::Expandable->new(T_CS('\@@XMDECL@ID'),undef,
-                    Tokens(Explode(LookupValue('\c@@XMDECL')->valueOf))),
-		    'global');
+  DefMacroI(T_CS('\@@XMDECL@ID'),undef,
+	    Tokens(Explode(LookupValue('\c@@XMDECL')->valueOf)),
+	    scope=>'global');
   ToString(Expand(T_CS('\the@XMDECL@ID'))); }
 
 sub getDeclarationScope {

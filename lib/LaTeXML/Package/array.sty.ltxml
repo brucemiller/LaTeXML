@@ -18,6 +18,6 @@ DefColumnType('<{}',sub { $LaTeXML::BUILD_TEMPLATE->addAfter($_[1]->unlist); ret
 # NOTE:  Come back & check this; is the arglist right??
 DefPrimitive('\newcolumntype{}[][]{}',sub {
   my($stomach,$char,$nargs,$opt,$replacement)=@_;
-  DefMacro('\csname NC@rewrite@'.$char->toString.'\endcsname'.convertLaTeXArgs($nargs,$opt), $replacement); });
+  DefMacroI(T_CS('NC@rewrite@'.$char->toString),convertLaTeXArgs($nargs,$opt), $replacement); });
 
 1;

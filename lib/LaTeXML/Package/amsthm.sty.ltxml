@@ -56,7 +56,7 @@ DefPrimitive('\th@remark', sub {
 DefPrimitive('\newtheoremstyle{}{}{}{}{}{}{}{}{}', sub {
   my($stomach,$name,$spaceabove,$spacebelow,$bodyfont,
      $indent,$headfont,$headpunct,$spaceafter,$headspec)=@_;
-  DefMacro('\th@'.ToString($name), sub {
+  DefMacroI(T_CS('\th@'.ToString($name)), undef, sub {
 	     AssignValue('\thm@bodyfont' => $bodyfont);
 	     AssignValue('\thm@headfont' => $headfont);
 	     AssignValue('\thm@headpunct'=> $headpunct);
@@ -71,7 +71,7 @@ AssignValue('QED@stack',[]);
 # but we DO want to keep it in the formula...
 DefConstructor('\qed',
 	       "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
-DefExpandable('\qedhere', sub {
+DefMacro('\qedhere', sub {
   my $t = PopValue('QED@stack');
   PushValue('QED@stack',Tokens());
   $t; });
@@ -95,7 +95,8 @@ DefEnvironment("{proof} []",
 		   PushValue('QED@stack',T_CS('\qed'));
 		   Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
 	       beforeDigestEnd=>sub {
-		 Digest(PopValue('QED@stack')); }
+		 my $qed = PopValue('QED@stack');
+		 ($qed ? Digest($qed) :()); }
 	      );
 
 
