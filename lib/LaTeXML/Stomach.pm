@@ -99,7 +99,18 @@ our @forbidden_cc = (1,0,0,0, 0,0,1,0, 0,1,0,0, 0,0,0,1, 0,1);
 # possibly arguments will be parsed from the Gullet.
 # Otherwise, the token is simply digested: turned into an appropriate box.
 # Returns a list of boxes/whatsits.
+our @token_stack=();
+our $MAXSTACK=200;		# ?
 sub invokeToken {
+  my($self,$token)=@_;
+  push(@token_stack,$token);
+  if(scalar(@token_stack) > $MAXSTACK){
+    Fatal("Excessive recursion(?): ".join(', ',map(ToString($_),@token_stack))); }
+  my @result = $self->invokeToken_internal($token);
+  pop(@token_stack);
+  @result; }
+
+sub invokeToken_internal {
   my($self,$token)=@_;
   local $LaTeXML::CURRENT_TOKEN = $token;
   my $meaning = $STATE->lookupMeaning($token);
