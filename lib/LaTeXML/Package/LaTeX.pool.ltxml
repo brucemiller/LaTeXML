@@ -1551,9 +1551,9 @@ sub indexify {
     if($document->getNodeQName($node) eq 'ltx:Math'){
       indexify_tex($node->getAttribute('tex'));}
     else {
-      join('',map(indexify($_),$node->childNodes)); }}
+      join('',map(indexify($_,$document),$node->childNodes)); }}
   elsif($type == XML_DOCUMENT_FRAG_NODE){
-    join('',map(indexify($_),content_nodes($node))); }
+    join('',map(indexify($_,$document),content_nodes($node))); }
   else { ""; }}
 
 # Try to clean up a TeX string into something
@@ -1834,6 +1834,7 @@ sub before_picture {
   Let(T_CS('\qbezier'),  T_CS('\pic@qbezier'));
   Let(T_CS('\makebox'),  T_CS('\pic@makebox'));
   Let(T_CS('\framebox'), T_CS('\pic@framebox'));
+  Let(T_CS('\raisebox'), T_CS('\pic@raisebox'));
   Let(T_CS('\dashbox'),  T_CS('\pic@dashbox'));
   Let(T_CS('\frame'),    T_CS('\pic@frame'));
 }
@@ -1902,6 +1903,10 @@ DefConstructor('\pic@makebox Pair []{}',
 	       "<ltx:g %&PairAttr(#size,width,height) pos='#2'>#3</ltx:g>",
 	       alias=>'\makebox',
 	       properties=>sub { picProperties(size=>picScale($_[1])); });
+
+DefConstructor('\pic@raisebox{Dimension}[Dimension][Dimension]{}',
+	       "<ltx:g y='#1'>#4</ltx:g>",
+	       alias=>'\raisebox');
 
 DefConstructor('\pic@framebox Pair []{}',
 	       "<ltx:rect x='0' y='0' %&PairAttr(#size,width,height) stroke-width='#thick' fill='none'/>"
@@ -2184,6 +2189,10 @@ DefMacro('\@latex@info{}',
    }');
 DefMacro('\@latex@info@no@line{}',
   '\@latex@info{#1\@gobble}');
+
+DefPrimitive('\@setsize{}{}{}{}',undef);
+Let('\@warning','\@latex@warning');
+Let('\@@warning','\@latex@warning@no@line');
 
 #======================================================================
 RawTeX(<<'EOTeX');
