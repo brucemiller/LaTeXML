@@ -244,6 +244,9 @@ sub ReadAlignmentTemplate {
 	$gullet->unread(@exp); }
       else {
 	push(@tokens,$op,$defn->getParameters->revertArguments(@args)); }}
+    elsif($op->equals(T_BEGIN)){ # Wrong, but a safety valve
+      my $z = $gullet->readBalanced;
+      Warn("Unrecognized tabular template \"".Stringify($z)."\""); }
     else {
       Warn("Unrecognized tabular template \"".Stringify($op)."\""); }}
   push(@tokens,T_END);
