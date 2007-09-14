@@ -207,7 +207,9 @@ sub Stringify {
       foreach my $attr ($object->attributes){
 	my $name = $attr->nodeName;
 	next if $name =~ /^_/;
-	$attributes .= ' '. $name. "=\"".$attr->getData."\""; }
+	my $val = $attr->getData;
+	$val = substr($val,0,30)."..." if length($val)>35;
+	$attributes .= ' '. $name. "=\"".$val."\""; }
       "<".$nodename.$attributes. ($object->hasChildNodes ? ">..." : "/>");
     }
     elsif($object->nodeType == XML_TEXT_NODE){
