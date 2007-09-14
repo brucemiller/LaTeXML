@@ -490,7 +490,8 @@ sub getNecessaryTransform {
   $transf .= 'rotate(-90) scale(-1,1) ' if ($value eq 'true');
   Transform($transf); }
 
-DefConstructor('\psset RequiredKeyVals:pstricks', "?#need(<ltx:g transform='#transform'>)",
+DefConstructor('\psset RequiredKeyVals:pstricks',
+	       "?#need(<ltx:g transform='#transform'>)",
 	       afterDigest=> sub {
 		 my($stomach,$whatsit)=@_;
 		 setGraphParams(%{KeyVals($whatsit->getArg(1))});
@@ -530,7 +531,9 @@ DefPSConstructor('\psline', 'PSCoordList',
 		 "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
 		 . " points='&ptValue(#points)' fill='#fill'/>",
 		 attributes=>[qw(fill linecolor linewidth linearc dash showpoints)],
-		 afterDigest=>sub { $_[0]->setProperties(points=>($_[3]->getCount<2) ? PairList(ZeroPair, $_[3]->getPairs) : $_[3]); });
+		 afterDigest=>sub {
+		   my $c = $_[1]->getArg(3);
+		   $_[1]->setProperties(points=>($c->getCount<2) ? PairList(ZeroPair, $c->getPairs) : $c); });
 
 DefSimplePSConstructor('\qline', 'PSCoordList',
 		       "<ltx:line points='&ptValue(#1)' ".$PSLineAttr." />",
@@ -540,17 +543,20 @@ DefPSConstructor('\pspolygon', 'PSCoordList',
 		 "<ltx:polygon $PSLineAttr arc='&ptValue(#linearc)'"
 		 . " points='&ptValue(#points)' fill='#fill' showpoints='#showpoints' />",
 		 attributes=>[qw(fill linecolor linewidth linearc dash showpoints)],
-		 afterDigest=> sub { $_[0]->setProperty(points=>($_[2]->getCount<3) ? PairList(ZeroPair, $_[2]->getPairs) : $_[2]); });
+		 afterDigest=> sub {
+		   my $c = $_[1]->getArg(3);
+		   $_[1]->setProperty(points=>($c->getCount<3) ? PairList(ZeroPair, $c->getPairs) : $c); });
 
 DefPSConstructor('\psframe','PSCoordList',
 		 "<ltx:rect $PSLineAttr %&PairAttr(#c0,x,y) %&PairAttr(#c1,width,height)"
 		 . " rx='#arcval' fill='#fill' />",
 		 attributes=>[qw(fill linecolor linewidth dash)],
 		 afterDigest=>sub {
-		   my ($c0, $c1) = $_[2]->getPairs;
+		   my $c = $_[1]->getArg(3);
+		   my ($c0, $c1) = $c->getPairs;
 		   my ($p0, $p1) = $c1 ? ($c0, Pair($c1->getX->substract($c0->getX),
 						    $c1->getY->substract($c0->getY))) : (ZeroPair, $c0);
-		   $_[0]->setProperties(c0=>$p0, c1=>$p1, arcval=>arcValue($p1)); });
+		   $_[1]->setProperties(c0=>$p0, c1=>$p1, arcval=>arcValue($p1)); });
 
 
 ##########################################################################################
@@ -564,7 +570,7 @@ DefPSConstructor('\pscircle', 'ZeroPSCoord {PSDimension}',
 # set fill like this to prevent linestyle from influencing it
 DefConstructor('\qdisk PSCoord {PSDimension}',
 	       "<ltx:circle %&PairAttr(#1,x,y) r='&ptValue(#2)' fill='#myfill' stroke='none' />",
-	       afterDigest=>sub { $_[0]->setProperty(myfill=>LookupValue('\pslinecolor')); });
+	       afterDigest=>sub { $_[1]->setProperty(myfill=>LookupValue('\pslinecolor')); });
 
 DefPSConstructor('\pswedge', 'ZeroPSCoord {PSDimension} {PSAngle} {PSAngle}',
 		 "<ltx:wedge $PSLineAttr %&PairAttr(#2,x,y)"
@@ -574,8 +580,11 @@ DefPSConstructor('\pswedge', 'ZeroPSCoord {PSDimension} {PSAngle} {PSAngle}',
 DefPSConstructor('\psellipse', 'PSCoord PSCoord',
 		 "<ltx:ellipse $PSLineAttr %&PairAttr(#center,x,y) %&PairAttr(#radii,rx,ry) fill='#fill' />",
 		 attributes=>[qw(fill linecolor linewidth dash)],
-		 afterDigest=>sub {  $_[3] ? $_[0]->setProperties(center=>$_[2], radii=>$_[3]) :
-				       $_[0]->setProperties(center=>ZeroPair, radii=>$_[2]); });
+		 afterDigest=>sub { 
+		   my $c = $_[1]->getArg(3);
+		   my $r = $_[1]->getArg(4);
+		   $c ? $_[1]->setProperties(center=>$c, radii=>$r)
+		     : $_[1]->setProperties(center=>ZeroPair, radii=>$r); });
 
 DefPSConstructor('\psarc', 'ZeroPSCoord {PSDimension} {PSAngle} {PSAngle}',
 		 "<ltx:arc $PSLineAttr #!ARROWS %&PairAttr(#3,x,y) r='&ptValue(#4)' angle1='&trunc2(#5)'"
@@ -588,7 +597,7 @@ DefPSConstructor('\psarcn', 'Arrows ZeroPSCoord {PSDimension} {PSAngle} {PSAngle
 		 . " angle2='&trunc2(#5)' arcsepA='&ptValue(#arcsepB)' arcsepB='&ptValue(#arcsepA)'"
 		 . " fill='#fill' showpoints='#showpoints'/>",
 		 attributes=>[qw(fill linecolor linewidth dash showpoints arcsepA arcsepB)],
-		 afterDigest=>sub { psTerminators($_[0], reverseArrow($_[2])); });
+		 afterDigest=>sub { psTerminators($_[1], reverseArrow($_[1]->getArg(2))); });
 
 ##########################################################################################
 ## 8 Curves
@@ -598,8 +607,9 @@ DefPSConstructor('\psbezier', 'PSCoordList',
 		 "<ltx:bezier $PSLineAttr #!ARROWS showpoints='#showpoints' points='&ptValue(#pt)' />",
 		 attributes=>[qw(linecolor linewidth dash showpoints)],
 		 afterDigest=>sub {
-		   my $pt = ($_[3]->getCount < 4) ? PairList(ZeroPair(), $_[3]->getPairs()) : $_[3];
-		   $_[0]->setProperty(pt=>$pt); });
+		   my $c = $_[1]->getArg(3);
+		   my $pt = ($c->getCount < 4) ? PairList(ZeroPair(), $c->getPairs()) : $c;
+		   $_[1]->setProperty(pt=>$pt); });
 
 DefPSConstructor('\parabola', 'PSCoord PSCoord',
 		 "<ltx:parabola $PSLineAttr #!ARROWS %&PairAttr(#3,x0,y0) %&PairAttr(#4,x1,y1) />",
@@ -630,7 +640,7 @@ DefPSConstructor('\psdots', 'PSCoordList',
 		 . " showpoints='#showpoints' points='&ptValue(#2)'/>",
 		 attributes=>[qw(dotstyle dotscale dotangle showpoints)],
 		 afterDigest=>sub {
-		   $_[0]->setProperty(sz=>(LookupValue('\psdotstyle') || '') eq '|' ?
+		   $_[1]->setProperty(sz=>(LookupValue('\psdotstyle') || '') eq '|' ?
 				      LookupValue('\pstbarsize') : LookupValue('\psdotsize')); });
 
 ##########################################################################################
@@ -646,12 +656,12 @@ DefSimplePSConstructor('\psgrid', 'PSCoord PSCoord PSCoord',
 				       gridwidth gridcolor griddots gridlabels gridlabelcolor
 				       subgriddiv subgridwidth subgridcolor subgriddots)],
 		       afterDigest=> sub {
-			 my ($p0, $p1, $p2) = ($_[1], $_[2], $_[3]);
+			 my ($p0, $p1, $p2) = $_[1]->getArgs;
 			 if (!$p0) { $p0 = ZeroPair; $p1 = $p0; $p2 =Pair(LookupValue('\psxunit')->multiply(10),
 									  LookupValue('\psyunit')->multiply(10)); }
 			 elsif (!$p1 && $p0) { $p2 = $p0; $p0 = ZeroPair; $p1 = $p0; }
 			 elsif (!$p2 && $p1) { $p2 = $p1; $p1 = $p0; }
-			 $_[0]->setProperties(p0=>$p0, p1=>$p1, p2=>$p2); });
+			 $_[1]->setProperties(p0=>$p0, p1=>$p1, p2=>$p2); });
 
 ##########################################################################################
 ## 16 Custom styles
@@ -692,7 +702,7 @@ DefMacro('\rput OptionalMatch:* [] OptionalBracketed ZeroPSCoord', sub {
 DefConstructor('\rput@start OptionalMatch:* [] BracketedPSAngle PSCoord',
 	       "<ltx:g transform='&ptValue(#transform)' pos='#2'"
 	       . " ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
-	       afterDigest=>sub { finishLabelPut($_[0], $_[3], $_[4]); },
+	       afterDigest=>sub { finishLabelPut($_[1], $_[1]->getArg(3),$_[1]->getArg(4)); },
 	       alias=>'\rput');
 
 DefConstructor('\put@end {}', "#1 </ltx:g>",
@@ -712,11 +722,14 @@ DefConstructor('\uput@start OptionalMatch:* BracketedPSDimension [PSAngle] Brack
 	       "<ltx:g transform='&ptValue(#transform)'"
 	       . " ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub {
-		 my $pz = $_[5];
-		 if ($_[3]) {
-		   my ($ra, $dim) = (radians($_[3]->valueOf), $_[2] || LookupValue('\pslabelsep'));
+		 my $s  = $_[1]->getArg(2);
+		 my $a  = $_[1]->getArg(3);
+		 my $la = $_[1]->getArg(4);
+		 my $pz = $_[1]->getArg(5);
+		 if ($a) {
+		   my ($ra, $dim) = (radians($a->valueOf), $s || LookupValue('\pslabelsep'));
 		   $pz = Pair($pz->getX->add($dim->multiply(cos($ra))), $pz->getY->add($dim->multiply(sin($ra)))); }
-		 finishLabelPut($_[0], $_[4], $pz); },
+		 finishLabelPut($_[1], $ls, $pz); },
 	       alias=>'\uput');
 
 our %rput2uput = (l=>'r', b=>'u', r=>'l', t=>'d', bl=>'ur', br=>'ul', tr=>'dr', rl=>'dl',
