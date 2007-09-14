@@ -425,7 +425,7 @@ our %register_types = ('LaTeXML::Number'   =>'Number',
 		       'LaTeXML::Dimension'=>'Dimension',
 		       'LaTeXML::Glue'     =>'Glue',
 		       'LaTeXML::MuGlue'   =>'MuGlue',
-		       'LaTeXML::Tokens'   =>'any',
+		       'LaTeXML::Tokens'   =>'Tokens',
 		       );
 sub DefRegister {
   my($proto,$value,%options)=@_;
