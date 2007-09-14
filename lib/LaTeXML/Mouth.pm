@@ -88,9 +88,11 @@ sub getLocator {
     my $chars=$$self{chars};
     my $n = $$self{nchars}; 
     $c=$n-1 if $c >=$n;
-    my $p1 = join('',@$chars[0..$c-1])||''; chomp($p1);
-    my $p2 = join('',@$chars[$c..$n-1])||''; chomp($p2);
-    $msg .="\n  ".$p1."\n  ".(' ' x $c).'^'.' '.$p2; }
+    my $c0 = ($c > 50 ? $c-40 : 0);
+    my $cn = ($n-$c > 50 ? $c+40 : $n-1);
+    my $p1 = join('',@$chars[$c0..$c-1])||''; chomp($p1);
+    my $p2 = join('',@$chars[$c..$cn])||''; chomp($p2);
+    $msg .="\n  ".$p1."\n  ".(' ' x ($c-$c0)).'^'.' '.$p2; }
   $msg; }
 
 #**********************************************************************
