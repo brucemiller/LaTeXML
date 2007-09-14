@@ -187,6 +187,16 @@ sub readToken {
   return unless @$self;
   shift(@$self); }
 
+sub readTokens {
+  my($self,$until)=@_;
+  my @tokens=();
+  while(defined(my $token = $self->readToken())){
+    last if $until and $token->getString eq $until->getString;
+    push(@tokens,$token); }
+  while(@tokens && $tokens[$#tokens]->getCatcode == CC_SPACE){ # Remove trailing space
+    pop(@tokens); }
+  Tokens(@tokens); }
+
 sub getLocator { ''; }
 
 #**********************************************************************
