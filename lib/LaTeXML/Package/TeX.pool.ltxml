@@ -88,7 +88,7 @@ DefParameterType('MoveableBox', sub{
   my($gullet)=@_;
   $gullet->skipSpaces;
   my ($box,@stuff) = $STATE->getStomach->invokeToken($gullet->readXToken);
-  Fatal("A <box> was supposed to be here.".Stringify($box))
+  Error("A <box> was supposed to be here.".Stringify($box))
     unless $box && $box->isa('LaTeXML::Whatsit')
       && ($box->getDefinition->getCSName =~ /^(\\hbox|\\vbox||\\vtop)$/);
   $box; });
@@ -218,11 +218,14 @@ DefMacro('\ifodd Number',
 	      sub { ifHandler($_[0],$_[1]->valueOf % 2); },
 	     isConditional=>1);
 
-# \ifvmode
-# \ifhmode
+
+# NOTE: We don't KNOW if we're in vertical, horizontal or inner mode!!!!!!!
+DefMacro('\ifvmode', sub { ifHandler($_[0],0); }, isConditional=>1);
+DefMacro('\ifhmode', sub { ifHandler($_[0],0); }, isConditional=>1);
+DefMacro('\ifinner', sub { ifHandler($_[0],0); }, isConditional=>1);
+
 DefMacro('\ifmmode',sub { ifHandler($_[0],LookupValue('IN_MATH')); }, isConditional=>1);
 
-# \ifinner
 DefMacro('\if XToken XToken',
 	      sub { ifHandler($_[0],$_[1]->getCharcode == $_[2]->getCharcode); },
 	      isConditional=>1);
@@ -262,8 +265,7 @@ DefMacro('\ifhbox Number', sub { ifHandler($_[0],classify_box($_[1]) eq 'hbox');
 DefMacro('\ifvbox Number', sub { ifHandler($_[0],classify_box($_[1]) eq 'vbox');}, isConditional=>1);
 
 # Implementing this assumes we've got some notion of file numbers!!!
-# \ifeof Number
-
+DefMacro('\ifeof',  sub { ifHandler($_[0],0); }, isConditional=>1);
 DefMacro('\iftrue', sub { ifHandler($_[0],1); }, isConditional=>1);
 DefMacro('\iffalse',sub { ifHandler($_[0],0); }, isConditional=>1);
 
@@ -303,7 +305,7 @@ DefMacro('\csname',sub {
   Let($token, T_CS('\relax')) unless defined LookupMeaning($token);
   $token;  });
 
-DefPrimitive('\endcsname', sub { Fatal("Extra \csname"); });
+DefPrimitive('\endcsname', sub { Error("Extra \\endcsname"); return; });
 
 DefMacro('\expandafter Token Token',sub {
   my($gullet,$tok,$xtok)=@_;
@@ -345,7 +347,7 @@ DefMacro('\the Variable',sub {
   if(!$type){ 
     Error("You can't use ".ToString($defn->getCS)." after \\the"); return (); }
   my $value = $defn->valueOf(@args);
-  my @tokens = ($type eq 'any' ? $value->unlist : Explode($value->toString));
+  my @tokens = ($type eq 'Tokens' ? $value->unlist : Explode($value->toString));
   if($LaTeXML::NOEXPAND_THE){	# See \the for the sense in this.
     $gullet->neutralizeTokens(@tokens); }
   else {
@@ -707,7 +709,11 @@ DefPrimitive('\divide Variable SkipKeyword:by Number',sub {
   my($stomach,$var,$scale)=@_;
   return () unless $var;
   my($defn,@args)=@$var;
-  $defn->setValue($defn->valueOf(@args)->multiply(1/$scale->valueOf),@args); });
+  my $denom = $scale->valueOf;
+  if($denom == 0){
+    Error("Illegal division by 0; assuming 1");
+    $denom = 1; }
+  $defn->setValue($defn->valueOf(@args)->multiply(1/$denom),@args); });
 
 # <let assignment> = \futurelet <control sequence><token><token> 
 #   | \let<control sequence><equals><one optional space><token>
@@ -972,11 +978,11 @@ DefPrimitive('\aftergroup Token', sub { UnshiftValue(afterGroup=>$_[1]); });
 DefMacro('\uppercase {}',sub {
   my($gullet,$arg)=@_;
   map( ($_->getCharcode == CC_LETTER ? T_LETTER(uc($_->getString)):$_),
-       $arg->unlist); });
+       ($arg ? $arg->unlist :())); });
 DefMacro('\lowercase {}',sub {
   my($gullet,$arg)=@_;
   map( ($_->getCharcode == CC_LETTER ? T_LETTER(lc($_->getString)):$_),
-       $arg->unlist); });
+       ($arg ? $arg->unlist :())); });
 
 DefPrimitive('\message{}',sub {
   my($stomach,$stuff)=@_;
@@ -1301,6 +1307,7 @@ DefPrimitive('\@@eat@space',sub {
 # rule operators that digest into whatsits with certain properties...
 sub beforeCellUnlist {
   my($tokens)=@_; 
+  return () unless $tokens;
   my @toks = $tokens->unlist;
   my @new = ();
   while(my $t = shift(@toks)){
@@ -1312,6 +1319,7 @@ sub beforeCellUnlist {
 
 sub afterCellUnlist {
   my($tokens)=@_; 
+  return () unless $tokens;
   my @toks = $tokens->unlist;
   my @new = ();
   while(my $t = pop(@toks)){
@@ -2546,11 +2554,10 @@ DefMath('\bigoplus', "\x{2295}", role=>'SUMOP',
 DefMath('\biguplus', "\x{2296}", role=>'SUMOP',
 	scriptpos=>\&doScriptpos); # CIRCLED MINUS (N-ARY ?)
 
-
 DefConstructor('\limits', sub {
-   $_[0]->getNode->lastChild->setAttribute(scriptpos=>'mid'); });
+   $_[0]->getLastElement->setAttribute(scriptpos=>'mid'); });
 DefConstructor('\nolimits',sub {
-   $_[0]->getNode->lastChild->setAttribute(scriptpos=>'post'); });
+   $_[0]->getLastElement->setAttribute(scriptpos=>'post'); });
 
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.4. Binary Operation Symbols, p.42
@@ -2896,7 +2903,7 @@ DefConstructor('\right Token',"?#char(<ltx:XMTok role='#role' name='#name'>#char
 
 sub addDelimiterRole {
   my($document,$role)=@_;
-  my $node=$document->getNode->lastChild; # This should be the wrapper just added.
+  my $node=$document->getLastElement; # This should be the wrapper just added.
   my $delim_role = ($node->firstChild && $node->firstChild->getAttribute('role') || '');
   my $wrapper_role = ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR)$/ ? $role : $delim_role);
   $node->setAttribute(role=>$wrapper_role) if $wrapper_role; }
