@@ -17,12 +17,12 @@ use LaTeXML::Package;
 # See amsldoc
 
 DefMacro('\sphat',Tokens(T_SUPER,T_OTHER('^')));
-DefMacro('\spcheck',"^{\\vee}");
+DefMacro('\spcheck','^{\vee}');
 DefMacro('\sptilde',Tokens(T_SUPER,T_OTHER('~')));
-DefMacro('\spdot',"^{\dot}");
-DefMacro('\spddot',"^{\dot\dot}");
-DefMacro('\spdddot',"^{\dot\dot\dot}");
-DefMacro('\spbreve',"^{\\smile}"); # close enough?
+DefMacro('\spdot','^{\dot}');
+DefMacro('\spddot','^{\dot\dot}');
+DefMacro('\spdddot','^{\dot\dot\dot}');
+DefMacro('\spbreve','^{\smile}'); # close enough?
 
 # Oh what the heck...
 DefMacro('\fracwithdelims[]{}{}{}{}','#2\frac{#4}{#5}#3');
