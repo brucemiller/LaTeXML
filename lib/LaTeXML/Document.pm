@@ -63,7 +63,17 @@ sub getElement {
   my $node = $$self{node};
   $node = $node->parentNode if $node->getType == XML_TEXT_NODE;
   ($node->getType == XML_DOCUMENT_NODE ? undef : $node); }
-  
+
+sub getLastElement {
+  my($self)=@_;
+  my $node = $$self{node};
+  if($node->hasChildNodes){
+    my $n = $node->lastChild;
+    while($n && $n->nodeType != XML_ELEMENT_NODE){
+      $n = $node->previousSibling; }
+    $node = $n if $n; }
+  $node; }
+
 # And some utilities
 sub getNodePath {
   my($self,$levels)=@_;
