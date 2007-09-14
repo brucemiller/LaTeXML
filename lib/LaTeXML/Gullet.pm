@@ -129,13 +129,17 @@ sub getLocator {
   my $loc = (defined $$self{mouth} ? $$self{mouth}->getLocator($long) : '');
   if(!$loc || $long){
     my($mouth,$pb)=($$self{mouth},$$self{pushback});
-    $loc .= "\n  To be read again ".ToString(Tokens(@$pb)) if $long && @$pb;
+    my @pb = @$pb;
+    @pb = (@pb[0..50],T_OTHER('...')) if scalar(@pb) > 55;
+    $loc .= "\n  To be read again ".ToString(Tokens(@pb)) if $long && @pb;
     foreach my $frame ( @{$$self{mouthstack}} ){
       my($mouth,$pb)= @$frame;
+      my @pb = @$pb;
+      @pb = (@pb[0..50],T_OTHER('...')) if scalar(@pb) > 55;
       my $ml = $mouth->getLocator($long);
       $loc .= ' '.$ml if $ml;
       last if $loc && !$long;
-      $loc .= "\n  To be read again ".ToString(Tokens(@$pb)) if $long && @$pb;
+      $loc .= "\n  To be read again ".ToString(Tokens(@pb)) if $long && @pb;
     }}
   $loc; }
 
@@ -351,6 +355,7 @@ sub readValue {
   elsif($type eq 'Dimension' ){ $self->readDimension; }
   elsif($type eq 'Glue'  ){ $self->readGlue; }
   elsif($type eq 'MuGlue'){ $self->readMuGlue; }
+  elsif($type eq 'Tokens'){ $self->readTokensValue; }
   elsif($type eq 'any'   ){ $self->readArg; }
 }
 
@@ -363,6 +368,24 @@ sub readRegisterValue {
     $defn->valueOf($defn->readArguments($self)); }
   else {
     $self->unread($token); return; }}
+
+# Apparent behaviour of a token value (ie \toks#=<arg>)
+sub readTokensValue {
+  my($self)=@_;
+  my $token = $self->readNonSpace;
+  if(!defined $token){
+    undef; }
+  elsif($token->getCatcode == CC_BEGIN){
+    $self->readBalanced; }
+  elsif(my $defn = $STATE->lookupDefinition($token)){
+    if($defn->isRegister eq 'Tokens'){
+      $defn->valueOf($defn->readArguments($self)); }
+    elsif($defn->isExpandable){
+      Tokens($defn->invoke($self)); }
+    else {
+      $token; }}		# ?
+  else {
+    $token; }}
 
 #======================================================================
 # some helpers...
