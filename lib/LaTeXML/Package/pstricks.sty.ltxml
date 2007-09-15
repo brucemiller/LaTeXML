@@ -729,7 +729,7 @@ DefConstructor('\uput@start OptionalMatch:* BracketedPSDimension [PSAngle] Brack
 		 if ($a) {
 		   my ($ra, $dim) = (radians($a->valueOf), $s || LookupValue('\pslabelsep'));
 		   $pz = Pair($pz->getX->add($dim->multiply(cos($ra))), $pz->getY->add($dim->multiply(sin($ra)))); }
-		 finishLabelPut($_[1], $ls, $pz); },
+		 finishLabelPut($_[1], $la, $pz); },
 	       alias=>'\uput');
 
 our %rput2uput = (l=>'r', b=>'u', r=>'l', t=>'d', bl=>'ur', br=>'ul', tr=>'dr', rl=>'dl',
