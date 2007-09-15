@@ -1936,14 +1936,14 @@ DefConstructor('\shortstack[]{}',
 	       mode=>'text');
 
 DefMacro('\multiput Pair Pair {}{}',  sub {
-	   my($gullet,$pos,$d,$nt,$body)=@_;
-	   my($x,$y,$dx,$dy,$n)=map($_->toString, ($pos->getX,$pos->getY,$d->getX,$d->getY,$nt));
-	   my @exp=();
-	   for(my $i=0; $i<$n; $i++){
-	     push(@exp,T_CS('\put'),T_OTHER('('),Explode($x),T_OTHER(','),Explode($y),T_OTHER(')'),
-		  T_BEGIN,$body->unlist,T_END);
-	     $x += $dx; $y+=$dy; }
-	   @exp; });
+  my($gullet,$pos,$d,$nt,$body)=@_;
+  my($x,$y,$dx,$dy,$n)=map($_->toString, ($pos->getX,$pos->getY,$d->getX,$d->getY,$nt));
+  my @exp=();
+  for(my $i=0; $i<$n; $i++){
+    push(@exp,T_CS('\put'),T_OTHER('('),Explode($x),T_OTHER(','),Explode($y),T_OTHER(')'),
+	 T_BEGIN,$body->unlist,T_END);
+    $x += $dx; $y+=$dy; }
+  @exp; });
 
 sub add_picture_TeX {
   my($document,$node,$thing)=@_;
