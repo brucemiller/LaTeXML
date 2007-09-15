@@ -251,6 +251,8 @@ use base qw(LaTeXML::Mouth);
 sub new {
   my($class,$pathname)=@_;
   local *IN;
+  if(! -r $pathname){ Fatal("Input file is not readable: $pathname."); }
+  elsif(-B $pathname){Fatal("Input file appears to be binary: $pathname."); }
   open(IN,$pathname) || Fatal("Can't read from $pathname");
   my $shortpath=pathname_relative($pathname,pathname_cwd);
   my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN};
@@ -270,6 +272,8 @@ sub hasMoreInput {
   my($self)=@_;
   ($$self{colno} < $$self{nchars}) || $$self{IN}; }
 
+our $WARNED_8BIT=0;
+
 sub getNextLine {
   my($self)=@_;
   return undef unless $$self{IN};
@@ -277,6 +281,10 @@ sub getNextLine {
   my $line = <$fh>;
   if(! defined $line){
     close($fh); $$self{IN}=undef; }
+  # NEED a SWICTH -7bit or UTF or What???
+  if($line && $line =~ s/[\x80-\xFF]//g){
+    Warn("Stripping 8bit characters!") unless $WARNED_8BIT;
+    $WARNED_8BIT = 1; }
   $line; }
 
 sub stringify {
