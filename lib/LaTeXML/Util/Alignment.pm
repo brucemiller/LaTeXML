@@ -380,6 +380,7 @@ sub guess_alignment_headers {
   my @rows = collect_alignment_rows($document,$table,$alignment);
   # Flip the rows around to produce a column view.
   my @cols = ();
+  return unless @rows;
   for(my $c = 0; $c < scalar(@{$rows[0]}); $c++){
     push(@cols, [map($$_[$c], @rows)]); }
   # Attempt to recognize header lines.
