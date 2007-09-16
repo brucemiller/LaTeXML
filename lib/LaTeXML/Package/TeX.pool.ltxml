@@ -60,6 +60,9 @@ DefParameterType('OptionalSemiverbatim',sub{ $_[0]->readOptional; },
 
 DefParameterType('Undigested',  sub { $_[0]->readArg; }, undigested=>1,
 		reversion=>sub {  (T_BEGIN,$_[0]->revert,T_END); });
+DefParameterType('OptionalUndigested',  sub { $_[0]->readOptional; }, 
+		 undigested=>1, optional=>1,
+		reversion=>sub {  ($_[0] ? (T_OTHER('['),$_[0]->revert,T_OTHER(']')):()); });
 DefParameterType('UndigestedKey',  sub { $_[0]->readArg; }, undigested=>1);
 
 DefParameterType('Variable', sub {
@@ -96,7 +99,7 @@ DefParameterType('MoveableBox', sub{
 DefParameterType('BalancedParen', sub {
   my ($gullet) = @_;
   my $tok = $gullet->readXToken;
-  if (ref $tok && $tok->toString eq '(') {
+  if (ref $tok && ToString($tok) eq '(') {
     $gullet->readUntil(T_OTHER(')'));
   } else {
     $gullet->unread($tok) if ref $tok;
@@ -301,7 +304,7 @@ DefMacro('\csname',sub {
   my($token,@toks)=();
   while(($token = $gullet->readXToken()) && ($token->getString ne '\endcsname')){
     push(@toks,$token); }
-  $token = T_CS("\\".Tokens(@toks)->toString);
+  $token = T_CS("\\".ToString(Tokens(@toks)));
   Let($token, T_CS('\relax')) unless defined LookupMeaning($token);
   $token;  });
 
@@ -326,7 +329,7 @@ DefMacro('\splitbotmark',   sub { return; });
 
 DefMacro('\input TeXFileName',sub {
   my($gullet,$path)=@_;
-  $path = $path->toString;
+  $path = ToString($path);
   $path = $1 if $path =~ /^\{(.*)\}$/; # just in case
   if(my $file = FindFile($path)){
     $gullet->input($file); }
@@ -347,7 +350,7 @@ DefMacro('\the Variable',sub {
   if(!$type){ 
     Error("You can't use ".ToString($defn->getCS)." after \\the"); return (); }
   my $value = $defn->valueOf(@args);
-  my @tokens = ($type eq 'Tokens' ? $value->unlist : Explode($value->toString));
+  my @tokens = ($type eq 'Tokens' ? $value->unlist : Explode(ToString($value)));
   if($LaTeXML::NOEXPAND_THE){	# See \the for the sense in this.
     $gullet->neutralizeTokens(@tokens); }
   else {
@@ -503,7 +506,7 @@ sub parseDefParameters {
       if(@delim){ 
 	my $expected=Tokens(@delim);
 	push(@params, LaTeXML::Parameters::newParameter('Until',
-							'Until:'.$expected->toString,
+							'Until:'.ToString($expected),
 							extra=>[$expected])); }
       
       # Special case: trailing sole # => delimited by next opening brace.
@@ -520,7 +523,7 @@ sub parseDefParameters {
 	push(@lit,shift(@tokens)); }
       my $expected = Tokens(@lit);
       push(@params,LaTeXML::Parameters::newParameter('Match',
-						     'Match:'.$expected->toString,
+						     'Match:'.ToString($expected),
 						     extra=>[$expected],
 						     novalue=>1)); }
   }
@@ -652,7 +655,7 @@ sub abstract_font_size {
 DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
   my($stomach,$cs,$name)=@_;
   my $gullet = $stomach->getGullet;
-  $name = $name->toString;
+  $name = ToString($name);
   my %props=();
   my $size;
   if($name =~ /^$FONTREGEXP$/o){
@@ -1291,7 +1294,7 @@ DefPrimitive('\@open@inner@column',sub {
 DefPrimitive('\@@eat@space',sub {
 	       my $box;
 	       my @save=();
-	       while(($box = $LaTeXML::LIST[$#LaTeXML::LIST]) && ($box->toString=~/^\s*$/)){
+	       while(($box = $LaTeXML::LIST[$#LaTeXML::LIST]) && (ToString($box)=~/^\s*$/)){
 		 if($box->getProperty('alignmentIgnorable')){
 		   push(@save,pop(@LaTeXML::LIST)); }
 		 else {
@@ -1609,7 +1612,7 @@ DefMacro('\leqno Until:$', '\@@eqno{#1}$');
 # Revert to nothing, since it really doesn't belong in the TeX string(?)
 DefConstructor('\@@eqno{}',"^ refnum='#eqnum'",
 	       reversion=>'',
-	      afterDigest=>sub { my $num = $_[1]->getArg(1)->toString;
+	      afterDigest=>sub { my $num = ToString($_[1]->getArg(1));
 				 $num=~ s/^\{(.*)\}$/$1/;
 				 $num=~ s/^\((.*)\)$/$1/;
 				 $_[1]->setProperties(eqnum=>$num); });
@@ -1687,7 +1690,7 @@ sub scriptHandler {
 				  locator=>$gullet->getLocator,
 				  font=>$script->getFont,isMath=>1,
 				  level=>$level))
-      if $script->toString ne '{}';    # ONLY If Script is not empty!!!
+      if ToString($script) ne '{}';    # ONLY If Script is not empty!!!
     AssignValue(mathstyle=>$style); # revert
     @stuff; }
   else {			# Non math use of _ ??
@@ -1784,6 +1787,24 @@ sub chooseArgHandler {
 
   AssignValue(mathstyle=>$style);
   $closing; }			# leave the closing bit
+
+# Support here: Used by LaTeX, amsmath, but also amstex
+sub beforeFrac {
+  $_[0]->bgroup;
+  AssignValue(mathstyle=>$fracstylemap{LookupValue('mathstyle')}); }
+sub afterFrac  {
+  $_[0]->egroup;
+  $_[1]->setProperty('style',LookupValue('mathstyle')); }
+
+# Needed by amsmath (at least)
+sub beforeTFrac { $_[0]->bgroup; AssignValue(mathstyle=>'text');
+		  beforeFrac(@_); }
+sub afterTFrac  { afterFrac(@_); $_[0]->egroup; }
+
+sub beforeDFrac { $_[0]->bgroup; AssignValue(mathstyle=>'display'); 
+		  beforeFrac(@_); }
+sub afterDFrac  { afterFrac(@_); $_[0]->egroup; }
+
 
 # WHY did I change to top/bottom instead of #1,#2 ????
 # This will inhibit comparisons!!!!
@@ -2015,7 +2036,7 @@ DefPrimitive('\newbox    Token',sub {
   AssignValue(allocated_boxes=>$n+1,'global');
   AssignValue("box$n",LaTeXML::List->new());
   DefRegisterI($_[1],undef,Number($n));  });
-DefPrimitive('\newhelp Token {}', sub { AssignValue($_[1]->toString=>$_[2]); });
+DefPrimitive('\newhelp Token {}', sub { AssignValue(ToString($_[1])=>$_[2]); });
 DefPrimitive('\newtoks Token',    sub { DefRegisterI($_[1],undef,Tokens()); });
 DefPrimitive('\newread Token',    sub { DefRegisterI($_[1],undef,Number(0)); });
 DefPrimitive('\newwrite Token',   sub { DefRegisterI($_[1],undef,Number(0)); });
@@ -2042,7 +2063,7 @@ DefMacro('\voidb@x','');
 
 DefMacro('\newif Token',sub {
   my($ignore,$cs)=@_;
-  my $name = $cs->toString; $name =~ s/^\\if//;
+  my $name = ToString($cs); $name =~ s/^\\if//;
   DefMacroI($cs,undef, sub { ifHandler($_[0],LookupValue('Boolean:'.$name)); }, isConditional=>1);
   DefPrimitiveI(T_CS('\\'.$name.'true'),undef,, sub { AssignValue('Boolean:'.$name => 1); });
   DefPrimitiveI(T_CS('\\'.$name.'false'),undef,sub { AssignValue('Boolean:'.$name => 0); });  });
@@ -2065,7 +2086,7 @@ DefRegister('\interfootnotelinepenalty' => Number(100));
 
 DefMacro('\magstephalf','1095');
 our @mags=(1000,1200,1440,1728,2074,2488);
-DefMacro('\magstep{}', sub { Explode($mags[$_[1]->toString]);});
+DefMacro('\magstep{}', sub { Explode($mags[ToString($_[1])]);});
 
 #======================================================================
 # TeX Book, Appendix B, p. 350
@@ -3127,8 +3148,7 @@ DefConstructor('\@@leqalignno{}',
 DefRegister('\pageno'=>Number(0));
 DefRegister('\headline'=>Tokens());
 DefRegister('\footline'=>Tokens());
-DefMacro('\folio', sub {
-  Explode(LookupValue($_[1]->toString)->valueOf); });
+DefMacro('\folio', "1"); 	# What else?
 
 DefPrimitive('\nopagenumbers',undef);
 DefMacro('\advancepageno','\advance\pageno1\relax');
@@ -3349,7 +3369,7 @@ DefMath('\@INVISIBLECOMMA',"\x{2063}", reversion=>'',
 DefConstructor('\@XMArg{}{}',"<ltx:XMArg ?#1(id='#1')>#2</ltx:XMArg>", reversion=>'#2',
 	       properties=>{id=>'#1'});
 DefConstructor('\@XMRef{}',"<ltx:XMRef idref='#1'/>",
-	       reversion=>sub{ LookupValue('xref:'.$_[0]->getArg(1)->toString)->revert; });
+	       reversion=>sub{ LookupValue('xref:'.ToString($_[0]->getArg(1)))->revert; });
 
 DefConstructor('\@ERROR{}{}', "<ltx:ERROR type='#1'>#2</ltx:ERROR>");
 
