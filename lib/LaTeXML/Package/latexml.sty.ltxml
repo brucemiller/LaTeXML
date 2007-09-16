@@ -64,7 +64,7 @@ DefConstructor('\lxPunct{}',"<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>",
 DefPrimitive('\lxDefMath{}[][]{} OptionalKeyVals:XMath', sub {
   my($stomach,$cs,$nargs,$opt,$presentation,$params)=@_;
   my($name,$meaning,$cd,$role)= 
-    $params && map($_ && $_->toString,map($params->getValue($_),
+    $params && map($_ && ToString($_),map($params->getValue($_),
              qw(name meaning cd role)));
   DefMathI($cs,convertLaTeXArgs($nargs,$opt),$presentation,
 	  name=>$name, meaning=>$meaning, omcd=>$cd, role=>$role);
