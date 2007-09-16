@@ -19,7 +19,7 @@ use LaTeXML::Package;
 # until \endname or \end{name}, respectively
 sub defineExcluded {
   my($stomach,$name)=@_;
-  $name = $name->toString if ref $name;
+  $name = ToString($name);
   DefConstructorI(T_CS("\\begin{$name}"),undef,'', reversion=>'',
 		  afterDigest=>[sub {
 				  my($stomach,$whatsit)=@_;
@@ -29,7 +29,7 @@ sub defineExcluded {
 
 sub defineIncluded {
   my($stomach,$name,$before,$after)=@_;
-  $name = $name->toString if ref $name;
+  $name = ToString($name);
   # Note that we define the `magic' environment control sequences,
   # but DO NOT do any of the normal environ things, like \begingroup \endgroup!
   DefMacroI(T_CS("\\begin{$name}"),undef,
