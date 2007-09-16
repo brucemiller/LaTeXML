@@ -70,7 +70,7 @@ sub readKeyVals {
   my($gullet,$keyset,$close)=@_;
   my $startloc = $gullet->getLocator();
   my $open = $gullet->readToken;
-  $keyset = ($keyset ? $keyset->toString : '_anonymous_');
+  $keyset = ($keyset ? ToString($keyset) : '_anonymous_');
   my @kv=();
   while(1) {
     $gullet->skipSpaces; 
@@ -78,7 +78,7 @@ sub readKeyVals {
     my($ktoks,$delim)=$gullet->readUntil($T_EQ,$T_COMMA,$close);
     Error("Fell off end expecting ".Stringify($close)." while reading KeyVal key starting at $startloc")
       unless $delim;
-    my $key= $ktoks->toString; $key=~s/\s//g;
+    my $key= ToString($ktoks); $key=~s/\s//g;
     if($key){
       my $keydef=LookupValue('KEYVAL@'.$keyset.'@'.$key);
       my $value;
@@ -200,7 +200,7 @@ sub toString {
   while(@kv){
     my($key,$value)=(shift(@kv),shift(@kv));
     $string .= ', ' if $string;
-    $string .= $key.'='.$value->toString; }
+    $string .= $key.'='.ToString($value); }
   $string; }
 
 #======================================================================
