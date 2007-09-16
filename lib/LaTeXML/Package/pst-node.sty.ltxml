@@ -41,9 +41,9 @@ DefParameterType('RoundParenFloat',\&ReadRoundParenFloat,
 
 sub storeNode {
   my ($name, $address) = @_;
-  $name = $name->toString if ref $name;
+  $name = ToString($name);
   AssignValue('_psNODE'.$name, ActiveTransform->apply($address || ZeroPair()), 'global'); }
-sub getNode { ActiveTransform->unapply(LookupValue('_psNODE'.$_[0]->toString) || ZeroPair()); }
+sub getNode { ActiveTransform->unapply(LookupValue('_psNODE'.ToString($_[0])) || ZeroPair()); }
 
 sub nConnShiftUp {
   my ($p) = @_;
@@ -138,12 +138,12 @@ DefConstructor('\rnode [] {} {}', '#3',
 DefMacro('\Rnode PSCoord', sub {
 	   my($gullet,$coord)=@_;
 	   if ($coord) {
-	     $coord = $_[1]->toString; }
+	     $coord = ToString($_[1]); }
 	   else {
 	     my $rref = LookupDefinition(T_CS('\RnodeRef'));
 	     my @rref = $rref->invoke($gullet) if $rref;
-	     $coord = join('', map($_->toString, @rref)) if @rref;
-	     $coord = (LookupValue('\pshref')).','.(LookupValue('\psvref')->toString) unless $coord; }
+	     $coord = join('', map(ToString($_), @rref)) if @rref;
+	     $coord = (LookupValue('\pshref')).','.(ToString(LookupValue('\psvref'))) unless $coord; }
 	   (T_CS('\@Rnode'), T_OTHER('('), Explode($coord), T_OTHER(')')); });
 
 DefConstructor('\@Rnode PSCoord {} {}', '#3',
@@ -185,7 +185,7 @@ DefMacro('\cnodeput OptionalMatch:* [] OptionalBracketed ZeroPSCoord {} {}', sub
 	   my ($gullet, $star, $par, $angle, $coord, $name, $body) = @_;
 	   my @exp = (T_CS('\rput'));
 	   push(@exp, T_BEGIN, $angle->unlist, T_END) if $angle;
-	   push(@exp, T_OTHER('('), Explode($coord->toString), T_OTHER(')'), T_BEGIN, T_CS('\circlenode'));
+	   push(@exp, T_OTHER('('), Explode(ToString($coord)), T_OTHER(')'), T_BEGIN, T_CS('\circlenode'));
 	   push(@exp, T_OTHER('*')) if $star;
 	   push(@exp, T_OTHER('['), $par->unlist, T_OTHER(']')) if $par;
 	   push(@exp, T_BEGIN, $name->unlist, T_END, T_BEGIN, $body->unlist, T_END, T_END);
@@ -393,7 +393,7 @@ DefMacro('\lput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
 	    $_[1] ? T_OTHER('*') : (),
 	    $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
 	    $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (),
-	    $_[4] ? (T_OTHER('('), Explode($_[4]->toString), T_OTHER(')')) : (),
+	    $_[4] ? (T_OTHER('('), Explode(ToString($_[4])), T_OTHER(')')) : (),
 	    T_CS('\put@end')); });
 
 DefConstructor('\lput@start OptionalMatch:* [] BracketedPSAngle RoundParenFloat',
@@ -408,7 +408,7 @@ DefMacro('\aput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
 	    $_[1] ? T_OTHER('*') : (),
 	    $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
 	    $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (),
-	    $_[4] ? (T_OTHER('('), Explode($_[4]->toString), T_OTHER(')')) : (),
+	    $_[4] ? (T_OTHER('('), Explode(ToString($_[4])), T_OTHER(')')) : (),
 	    T_CS('\put@end')); });
 
 DefConstructor('\aput@start OptionalMatch:* [PSDimension] BracketedPSAngle RoundParenFloat',
@@ -428,7 +428,7 @@ DefMacro('\bput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
 	    $_[1] ? T_OTHER('*') : (),
 	    $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
 	    $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (),
-	    $_[4] ? (T_OTHER('('), Explode($_[4]->toString), T_OTHER(')')) : (),
+	    $_[4] ? (T_OTHER('('), Explode(ToString($_[4])), T_OTHER(')')) : (),
 	    T_CS('\put@end')); });
 
 DefConstructor('\bput@start OptionalMatch:* [PSDimension] BracketedPSAngle RoundParenFloat',
@@ -498,12 +498,12 @@ DefMacro('\Lput OptionalMatch:* OptionalBracketed [] OptionalBracketed RoundPare
 	   my ($gullet, $star, $labelsep, $refpoint, $rotation, $pos, $stuff) = @_;
 	   (T_CS('\lput'),
 	    $star ? T_OTHER('*') : (),
-	    $pos ? (T_OTHER('('), Explode($pos->toString), T_OTHER(')')) : (),
+	    $pos ? (T_OTHER('('), Explode(ToString($pos)), T_OTHER(')')) : (),
 	    T_BEGIN, T_CS('\Rput'),
 	    $labelsep ? (T_BEGIN, $labelsep->unlist, T_END) : (),
 	    $refpoint ? (T_OTHER('['), $refpoint->unlist, T_OTHER(']')) : (),
 	    $rotation ? (T_BEGIN, $rotation->unlist, T_END) : (),
-	    T_OTHER('('), Explode(ZeroPair->toString), T_OTHER(')'),
+	    T_OTHER('('), Explode(ToString(ZeroPair)), T_OTHER(')'),
 	    T_BEGIN, $stuff->unlist, T_END, T_END); });
 
 DefMacro('\Mput', '\Lput'); # Lput code is general enough to work for Mput too

@@ -31,13 +31,13 @@ use LaTeXML::Util::Color;
 # http://www.december.com/html/spec/colorsvg.html
 
 DefPrimitive('\definecolor{}{}{}', sub {
-	       AssignValue('color_'.$_[1]->toString, ConvertColor($_[2]->toString, $_[3]->toString));
-	       return; });
+  AssignValue('color_'.ToString($_[1]), ConvertColor(ToString($_[2]),ToString($_[3])));
+  return; });
 
 sub getColor {
   my($model,$spec) = @_;
-  $spec = $spec->toString;
-  $model ? ConvertColor($model->toString, $spec) : (LookupValue('color_'.$spec) || $spec); }
+  $spec = ToString($spec);
+  $model ? ConvertColor(ToString($model), $spec) : (LookupValue('color_'.$spec) || $spec); }
 
 # NOTE: Why are these defined as macros, rather than primitives?
 

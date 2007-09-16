@@ -31,8 +31,8 @@ DefEnvironment('{acronym}','<ltx:acronyms>#body</ltx:acronyms>',
 
 DefPrimitive('\acrodef{}[]{}', sub {
   my($stomach,$id,$short,$long)=@_;
-  $short = $id unless $short && $short->toString;
-  $id = $id->toString;
+  $short = $id unless $short && ToString($short);
+  $id = ToString($id);
   AssignValue('ACRONYM@short@'.$id => Digest($short),'global');
   AssignValue('ACRONYM@long@'.$id  => Digest($long),'global'); });
 
@@ -43,7 +43,7 @@ DefConstructor('\@ACRO@{}{}',"<ltx:acronym name='#1'>#2</ltx:acronym>");
 
 DefMacro('\@AC@if{}{}{}', sub { 
   my($gullet,$id,$short,$long)=@_;
-  my $key = 'ACROUSED@'.$_[1]->toString;
+  my $key = 'ACROUSED@'.ToString($_[1]);
   if(LookupValue($key)){
     $short->unlist; }
   else {

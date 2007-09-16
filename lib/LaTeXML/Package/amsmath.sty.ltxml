@@ -340,7 +340,7 @@ DefConstructor('\intertext{}', "#1", mode=>'text');
 # Section 3.11.1 Numbering hierarchy
 DefPrimitive('\numberwithin{}{}',sub {
   my($ignore,$counter,$within)=@_;
-  NewCounter($counter->toString,$within->toString); });
+  NewCounter(ToString($counter),ToString($within)); });
 
 # Section 3.11.2 Cross references to equation numbers
 DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#1'/>)");
@@ -763,7 +763,9 @@ Let('\Vec', '\vec');
 # And where does this go?
 DefPrimitive('\notag', undef);
 DefPrimitive('\allowdisplaybreaks', undef);
-
+DefConstructor('\tag OptionalMatch:* {}',
+	       '',
+	       mode=>'text');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
 

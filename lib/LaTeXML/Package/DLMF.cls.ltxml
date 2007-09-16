@@ -35,8 +35,8 @@ RequirePackage('latexml');
 # If we get this, we're doing a "chapter"
 DefPrimitive('\thischapter[]{}', sub {
   my($stomach,$chnum,$chcode)=@_;
-  $chcode=$chcode->toString;
-  $chnum= ($chnum ? $chnum->toString : $chcode);
+  $chcode=ToString($chcode);
+  $chnum= ($chnum ? ToString($chnum) : $chcode);
 
   AssignValue(DOCUMENTID=>$chnum,'global');
   DefMacroI('\thechapter',undef,$chnum); 
@@ -127,7 +127,7 @@ sub extractSourceNotes {
 DefConstructor('\\@@section{}[][][]{}',sub {
   my($document,$type,$refnum,$id,$toctitle,$title)=@_;
   $id = ToString($id);
-  $document->openElement("ltx:".$type->toString,refnum=>$refnum,id=>$id);
+  $document->openElement("ltx:".ToString($type),refnum=>$refnum,id=>$id);
   $document->insertElement('ltx:title',$title);
   $document->insertElement('ltx:toctitle',$toctitle) if $toctitle;
   $document->insertElement('ltx:metadata',undef, id=>$id.".info");

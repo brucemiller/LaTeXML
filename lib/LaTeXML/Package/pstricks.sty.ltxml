@@ -115,7 +115,7 @@ sub ZeroPair { Pair(Dimension(0), Dimension(0)); }
 # also return the default arrows ('\psarrows') if no argument found
 sub ReadArrows {
   my($gullet)=@_;
-  my $a = ReadOptionalBracketed($gullet); my $st = $a->toString if $a;
+  my $a = ReadOptionalBracketed($gullet); my $st = ToString($a) if $a;
   if ($a && ($st =~ /[^\(\)\s\-\>\<\|cCo\*\[\]]/ || $st !~ /\-/)) {
     $gullet->unread(T_BEGIN, $a->unlist, T_END);
     $a = undef; }
@@ -161,7 +161,6 @@ DefParameterType('Arrows',\&ReadArrows,
   sub labelRight { $_[0][2] =~ /\:/; }
 
   sub valueOf    { $_[0][0]->valueOf;  }
-  sub toString   { $_[0][0]->toString; }
   sub ptValue    { $_[0][0]->ptValue;  }
 
   sub revert     { (Explode($_[0][2]), (ref $_[0][1] ? $_[0][1]->revert() : Explode($_[0][1]))); }
@@ -264,12 +263,12 @@ sub setGraphParams {
   if (my $style = $params{'style'}) {
     delete $params{'style'};
     if (((ref $style) || '') eq 'ARRAY') { $style = ${$style}[$#{$style}]; }
-    $style = LookupValue('psstyle_'.$style->toString) if $style;
+    $style = LookupValue('psstyle_'.ToString($style)) if $style;
     %params = (%params, %{$style}) if $style; }
 
   while (my ($_key, $value) = each %params) {
     if (((ref $value) || '') eq 'ARRAY') { $value = ${$value}[$#{$value}]; }
-    my $strval = $value->toString;
+    my $strval = ToString($value);
     my @keys = $KeyHasABVariants{$_key} ? ($_key, $_key.'A', $_key.'B') : ($_key);
     foreach my $key(@keys) {
       if ($key eq 'unit') {
@@ -297,7 +296,7 @@ sub psGetLinecolor {
 
 sub psGetFill {
   my ($whatsit, $used) = @_;
-  my $star = $whatsit->getArg(1) ? ($whatsit->getArg(1)->toString eq '*' ? 1 : 0) : 0;
+  my $star = $whatsit->getArg(1) ? (ToString($whatsit->getArg(1)) eq '*' ? 1 : 0) : 0;
   if ($star) {
     $whatsit->setProperties(fill=>LookupValue('\pslinecolor'),linecolor=>'none',linewidth=>undef); }
   else {
@@ -370,14 +369,14 @@ sub arrowLength {
 our %arrow_reverse = ('>'=>'<','<'=>'>','['=>']',']'=>'[','('=>')',')'=>'(');
 sub reverseArrow {
   my ($a) = @_;
-  $a = $a->toString if ref $a;
+  $a = ToString($a);
   return unless $a;
   if ($a =~ /([^\-]+)-([^\-]+)/) { $a = "$2-$1"; }
   join('', map($arrow_reverse{$_} || $_, split(//,$a))); }
 
 sub psTerminators {
   my ($whatsit, $term) = @_;
-  if (ref $term) { $term = $term->toString; }
+  if (ref $term) { $term = ToString($term); }
   if ($term) {
     $term =~ s/\s//g; $term = '' if $term eq '-';
     $whatsit->setProperties(terminators=>$term, arrowlength=>arrowLength()) if $term; }
@@ -385,7 +384,7 @@ sub psTerminators {
 
 # for setting user-defined colors
 sub defineColor {
-  AssignValue('pscolor_'.$_[1]->toString, ConvertColor($_[0]->toString, $_[2]->toString));
+  AssignValue('pscolor_'.ToString($_[1]), ConvertColor(ToString($_[0], ToString($_[2])));
   return; }
 
 ####################################################################################
@@ -668,21 +667,21 @@ DefSimplePSConstructor('\psgrid', 'PSCoord PSCoord PSCoord',
 ##########################################################################################
 
 DefMacro('\newpsobject {} {} {}', sub {
-	   my ($newname, $oldName, $keyval) = ("\\".$_[1]->toString, "\\".$_[2]->toString, $_[3]->toString);
-	   DefMacro($newname.' OptionalMatch:* []', sub {
-		      my ($name, $thiskey) = ($newname, $_[2]);
-		      my ($old, $key) = map(LookupValue('psobject_'.$name.$_), qw(old key));
-		      $thiskey = $thiskey ? $thiskey->toString : '';
-		      $key .= ',' if $key && $thiskey; $key .= $thiskey;
-		      my @exp = (T_CS($old));  push(@exp, T_OTHER('*')) if $_[1];
-		      push(@exp, T_OTHER('['), Explode($key), T_OTHER(']')) if $key;
-		      @exp; });
-	   AssignValue('psobject_'.$newname.'old', $oldName);
-	   AssignValue('psobject_'.$newname.'key', $keyval);
-	   return; });
+  my ($newname, $oldName, $keyval) = ("\\".ToString($_[1]),"\\".ToString($_[2]),ToString($_[3]));
+  DefMacro($newname.' OptionalMatch:* []', sub {
+	     my ($name, $thiskey) = ($newname, $_[2]);
+	     my ($old, $key) = map(LookupValue('psobject_'.$name.$_), qw(old key));
+	     $thiskey = $thiskey ? ToString($thiskey) : '';
+	     $key .= ',' if $key && $thiskey; $key .= $thiskey;
+	     my @exp = (T_CS($old));  push(@exp, T_OTHER('*')) if $_[1];
+	     push(@exp, T_OTHER('['), Explode($key), T_OTHER(']')) if $key;
+	     @exp; });
+  AssignValue('psobject_'.$newname.'old', $oldName);
+  AssignValue('psobject_'.$newname.'key', $keyval);
+  return; });
 
 DefMacro('\newpsstyle {} RequiredKeyVals:pstricks', sub {
-	   AssignValue('psstyle_'.$_[1]->toString, KeyVals($_[2]));
+	   AssignValue('psstyle_'.ToString($_[1]), KeyVals($_[2]));
 	   return; });
 
 ##########################################################################################
@@ -697,7 +696,7 @@ sub finishLabelPut {
 
 DefMacro('\rput OptionalMatch:* [] OptionalBracketed ZeroPSCoord', sub {
 	   (T_BEGIN, T_CS('\rput@start'), $_[1] ? T_OTHER('*') : (), $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
-	    $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (), T_OTHER('('), Explode($_[4]->toString), T_OTHER(')'), T_CS('\put@end')); });
+	    $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (), T_OTHER('('), Explode(ToString($_[4])), T_OTHER(')'), T_CS('\put@end')); });
 
 DefConstructor('\rput@start OptionalMatch:* [] BracketedPSAngle PSCoord',
 	       "<ltx:g transform='&ptValue(#transform)' pos='#2'"
@@ -716,7 +715,7 @@ DefMacro('\uput OptionalMatch:* OptionalBracketed [] OptionalBracketed ZeroPSCoo
 	    $_[2] ? (T_BEGIN, $_[2]->unlist, T_END) : (),
 	    $_[3] ? (T_OTHER('['), $_[3]->unlist(), T_OTHER(']')) : (),
 	    $_[4] ? (T_BEGIN, $_[4]->unlist, T_END) : (), T_OTHER('('),
-	    Explode($_[5]->toString), T_OTHER(')'), T_CS('\put@end')); });
+	    Explode(ToString($_[5])), T_OTHER(')'), T_CS('\put@end')); });
 
 DefConstructor('\uput@start OptionalMatch:* BracketedPSDimension [PSAngle] BracketedPSAngle PSCoord',
 	       "<ltx:g transform='&ptValue(#transform)'"
@@ -736,17 +735,17 @@ our %rput2uput = (l=>'r', b=>'u', r=>'l', t=>'d', bl=>'ur', br=>'ul', tr=>'dr', 
                   lb=>'ur', rb=>'ul', rt=>'dr', lr=>'dl');
 DefMacro('\Rput OptionalMatch:* OptionalBracketed [] OptionalBracketed ZeroPSCoord', sub {
 	   my ($ignore, $star, $labelsep, $refangle, $rotation, $pos) = @_;
-	   if ($refangle) { $refangle = $rput2uput{$refangle->toString}; }
+	   if ($refangle) { $refangle = $rput2uput{ToString($refangle)}; }
 	   my @exp = (T_CS('\uput'), $star ? T_OTHER('*') : (), $labelsep ? (T_BEGIN, $labelsep->unlist, T_END) : (),
 		      $refangle ? (T_OTHER('['), Explode($refangle), T_OTHER(']')) : ());
 	   push(@exp, T_BEGIN, $rotation->unlist, T_END) if $rotation;
-	   push(@exp, T_OTHER('('), Explode($pos->toString), T_OTHER(')'));
+	   push(@exp, T_OTHER('('), Explode(ToString($pos)), T_OTHER(')'));
 	   @exp; });
 
 sub getPutExp {
   my ($st, $dt, $no, $body, @rp) = @_; my @exp = ();
   for (my $i = 0; $i < $no; $i++) {
-    push(@exp, @rp, T_OTHER('('), Explode($st->toString), T_OTHER(')'), T_BEGIN, $body->unlist, T_END);
+    push(@exp, @rp, T_OTHER('('), Explode(ToString($st)), T_OTHER(')'), T_BEGIN, $body->unlist, T_END);
     $st = Pair($st->getX->add($dt->getX), $st->getY->add($dt->getY)); }
   @exp; }
 
@@ -801,7 +800,7 @@ DefMacro('\cput OptionalMatch:* [] OptionalBracketed PSCoord {}', sub {
 	   my ($ignore, $star, $par, $angle, $coord, $body) = @_;
 	   my @exp = (T_CS('\rput'));
 	   push(@exp, T_BEGIN, $angle->unlist, T_END) if $angle;
-	   push(@exp, T_OTHER('('), Explode($coord->toString), T_OTHER(')'), T_BEGIN, T_CS('\pscirclebox'));
+	   push(@exp, T_OTHER('('), Explode(ToString($coord)), T_OTHER(')'), T_BEGIN, T_CS('\pscirclebox'));
 	   push(@exp, T_OTHER('*')) if $star;
 	   push(@exp, T_OTHER('['), $par->unlist, T_OTHER(']')) if $par;
 	   push(@exp, T_BEGIN, $body->unlist, T_END, T_END);
@@ -826,7 +825,7 @@ DefConstructor('\rotatedown {}', "<ltx:g transform='rotate(180)'> #1 </ltx:g>",
 	       bounded=>1, beforeDigest=>sub { ackTransform('rotate(180)'); });
 
 DefConstructor('\scalebox {} {}', "<ltx:g transform='scale(#1)'> #2 </ltx:g>",
-	       bounded=>1, beforeDigest=>sub { ackTransform('scale('.$_[1]->toString.')'); });
+	       bounded=>1, beforeDigest=>sub { ackTransform('scale('.ToString($_[1]).')'); });
 
 DefConstructor('\scaleboxto PSCoord {}',"<ltx:g scaleto='&ptValue(#1)'>#2</ltx:g>");
 

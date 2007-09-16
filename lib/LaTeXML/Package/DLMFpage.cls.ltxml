@@ -42,7 +42,7 @@ RequirePackage('latexml');
 
 DefPrimitive('\thisdocument{}', sub {
   my($stomach,$label)=@_;
-  $label=$label->toString;
+  $label=ToString($label);
   my $id = ($label =~ /^doc:(.*)$/ ? $1 : $label);
   DefMacro('\thedocument@ID',$id);
   AssignValue(DOCUMENTLABEL=>$label,'global');
@@ -115,7 +115,7 @@ DefConstructor('\bibliography Semiverbatim','');
 DefEnvironment('{wrapfigure} {} {Dimension}',
 	       "<ltx:block class='#float'>#body</ltx:block>",
 	       afterDigestBegin=>sub {
-		 my $dir = $_[1]->getArg(1)->toString;
+		 my $dir = ToString($_[1]->getArg(1));
 		 $_[1]->setProperty(float=>($dir eq 'r' ? 'floatright'
 					    : ($dir eq 'l' ? 'floatleft'
 					       : undef))); });

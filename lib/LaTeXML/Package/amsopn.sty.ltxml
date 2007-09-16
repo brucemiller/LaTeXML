@@ -41,10 +41,6 @@ DefMath('\varinjlim', '\underrightarrow{\lim}',
 DefMath('\varprojlim','\underleftarrow{\lim}',
 	role=>'LIMITOP', meaning=>'projective-limit');
 
-#DefPrimitive('\operatorname OptionalMatch:* {}',sub{
-#  my($ignore,$star,$name)=@_;
-#  DefMath(T_CS("\\".$name->toString),$name,scriptpos=>$star); }); # Hmm, is this right?
-
 # Hmm... OPERATOR or LIMITOP ??
 DefConstructor('\operatorname OptionalMatch:* {}',
 	       "<ltx:XMWrap role='OPERATOR' scriptpos='?#1(mid)(post)'>#2</ltx:XMWrap>",
