@@ -111,20 +111,20 @@ my %SUPDIGITS = (0=>"\x{2070}",1=>UTF(0xb9),2=>UTF(0xb2),3=>UTF(0xb3),4=>"\x{207
 		'+'=>"\x{207a}", '-'=>"\x{207b}");
 sub convert_sci {
   my($mantissa,$exponent)=@_;
-  $mantissa = $mantissa->toString;
+  $mantissa = ToString($mantissa);
   $mantissa =~ s/\\,/\x{2009}/g;
   $mantissa =~ s/\\:/\x{2005}/g;
   $mantissa =~ s/\\;/\x{2004}/g;
   $mantissa =~ s/\\ /\x{2002}/g;
   $mantissa =~ s/\\!//g;
-  $exponent = $exponent->toString;
+  $exponent = ToString($exponent);
   ($exponent
    ? join('',$mantissa,UTF(0xD7)."10",map($SUPDIGITS{$_}||'?',split('',$exponent))) 
    : $mantissa . UTF(0xA0).UTF(0xA0).UTF(0xA0)); } # for alignment spacing???
 
 sub convert_sci_mantissa {
   my($mantissa)=@_;
-  $mantissa = $mantissa->toString;
+  $mantissa = ToString($mantissa);
   $mantissa =~ s/\\,/\x{2009}/g;
   $mantissa =~ s/\\:/\x{2005}/g;
   $mantissa =~ s/\\;/\x{2004}/g;
@@ -133,7 +133,7 @@ sub convert_sci_mantissa {
   $mantissa; }
 sub convert_sci_exponent {
   my($exponent)=@_;
-  $exponent = $exponent->toString;
+  $exponent = ToString($exponent);
   ($exponent
    ? join('',UTF(0xD7)."10",map($SUPDIGITS{$_}||'?',split('',$exponent))) 
    : ""); }
@@ -312,7 +312,7 @@ DefMath('\BoltzmannConstant',"k", role=>'ID',
 # Special Functions
 DefPrimitive('\specFunObsolete{}{}',sub {
   my($defn,$old,$new)=@_;
-  DefMacro("\\".$old->toString,"\\".$new->toString); });
+  DefMacro("\\".ToString($old),"\\".ToString($new)); });
 
 sub count_tokens {
   my($gullet,$token)=@_;
@@ -325,9 +325,9 @@ sub count_tokens {
 DefPrimitive('\defSpecFun{}[][]{} OptionalKeyVals:DefSpecFun {}', sub {
   my($stomach,$name,$nparam,$optparam,$formatter,$keys,$nargs)=@_;
   my $gullet = $stomach->getGullet;
-  $name=$name->toString;
+  $name=ToString($name);
   my $cs = '\\'.$name;
-  $nargs  = $nargs->toString;
+  $nargs  = ToString($nargs);
   my $role = ($keys && ToString($keys->getValue('role'))) 
     || ($nargs ?  'FUNCTION' : 'ATOM');
   DefMacroI(T_CS($cs.'@role'),undef,Tokens(T_OTHER($role)));
@@ -346,8 +346,8 @@ DefPrimitive('\defSpecFun{}[][]{} OptionalKeyVals:DefSpecFun {}', sub {
     unless @argfmts;
   for(my $i=0; $i <= $#argfmts; $i++){
     DefMacroI(T_CS(join('',$cs,'@args',('@' x ($i+1)))),
-		   convertLaTeXArgs($nargs,undef),
-		   $argfmts[$i]->toString); }
+	      convertLaTeXArgs($nargs,undef),
+	      ToString($argfmts[$i])); }
 
   $gullet->skipSpaces;
   return; });
@@ -357,7 +357,7 @@ DefConstructor('\sf@apply{}{}', "<ltx:XMApp>#1#2</ltx:XMApp>",
     my($fcn,$args) = $_[0]->getArgs;
     ($fcn->revert,T_OTHER("@"),map( (T_BEGIN,$_->revert,T_END), $args->unlist)); });
 
-DefMacro('\@PRIMES{}',sub { ((T_CS('\prime')) x $_[1]->toString); });
+DefMacro('\@PRIMES{}',sub { ((T_CS('\prime')) x ToString($_[1])); });
 DefMath('\diffop{}{}','{{#1}^{\@PRIMES{#2}}}');
 DefMath('\power{}{}',"{#1^{#2}}");
 
