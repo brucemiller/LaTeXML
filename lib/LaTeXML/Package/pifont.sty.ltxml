@@ -22,7 +22,7 @@ our %PIFONT_MAP = (pzd=>\&dingbat_map);
 
 sub pichar {
   my($pifont,$number)=@_;
-  $pifont = $pifont->toString if ref $pifont;
+  $pifont = ToString($pifont);
   $number = $number->valueOf if ref $number;
   if(my $mapper = $PIFONT_MAP{$pifont}){
     &$mapper($number); }
@@ -53,7 +53,7 @@ DefEnvironment('{Pilist}{}{Number}',
 	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
 	       beforeDigest=>sub { beforeItemize('pilist'); },
 	       afterDigestBegin=>sub {
-		 AssignValue(pilist_pifont=>$_[1]->getArg(1)->toString); 
+		 AssignValue(pilist_pifont=>ToString($_[1]->getArg(1))); 
 		 AssignValue(pilist_base  =>$_[1]->getArg(2)->valueOf); },
 	       properties=>sub { RefStepCounter('@itemize'); });
 
@@ -61,7 +61,7 @@ DefEnvironment('{Piautolist}{}{Number}',
 	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
 	       beforeDigest=>sub { beforeItemize('piautolist'); },
 	       afterDigestBegin=>sub {
-		 AssignValue(pilist_pifont=>$_[1]->getArg(1)->toString);
+		 AssignValue(pilist_pifont=>ToString($_[1]->getArg(1)));
 		 AssignValue(pilist_base  =>$_[1]->getArg(2)->valueOf); },
 	       properties=>sub { RefStepCounter('@itemize'); });
 
