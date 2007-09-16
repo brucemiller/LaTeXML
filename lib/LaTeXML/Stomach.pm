@@ -110,6 +110,13 @@ sub invokeToken {
   pop(@token_stack);
   @result; }
 
+
+sub makeError {
+  my($document,$type,$content)=@_;
+  $document->openElement('ltx:ERROR',type=>ToString($type));
+  $document->absorb(ToString($content));
+  $document->closeElement('ltx:ERROR'); }
+
 sub invokeToken_internal {
   my($self,$token)=@_;
   local $LaTeXML::CURRENT_TOKEN = $token;
@@ -119,7 +126,7 @@ sub invokeToken_internal {
     $STATE->noteStatus(undefined=>$cs);
     Error("$cs is not defined.");
     $STATE->installDefinition(LaTeXML::Constructor->new($token,undef,
-			  "<ltx:ERROR type='undefined'>".$cs."</ltx:ERROR>")); #,mode=>'text');
+							sub { makeError($_[0],'undefined',$cs);}));
     $self->invokeToken($token); }
   elsif($meaning->isaDefinition){
     my @boxes = $meaning->invoke($self);
