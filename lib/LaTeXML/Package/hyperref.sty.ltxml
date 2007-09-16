@@ -19,11 +19,12 @@ DefMacro('\pdfcatalog{}','');
 DefRegister('\pdfcompresslevel',Number(0));
 sub cleanURL {
   my($url)=@_;
+  $url = ToString($url);
   $url =~ s/\\~{}/~/g;
   $url; }
 
 DefConstructor('\href Semiverbatim  Semiverbatim',"<ltx:ref href='#href'>#2</ltx:ref>",
-	       properties=>sub { (href=>cleanURL($_[1]->toString)); } );
+	       properties=>sub { (href=>cleanURL($_[1])); } );
 DefConstructor('\htmlref Semiverbatim  Semiverbatim',"<ltx:ref labelref='#2'>#1</ltx:ref>");
 
 1;
