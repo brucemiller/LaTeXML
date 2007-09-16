@@ -23,10 +23,10 @@ sub absorbedString {
 
 DefMacro('\DC@{}{}{}',sub {
   my($gullet,$delim,$todelim,$ndec)=@_;
-  $delim=$delim->toString;
-  if($delim ne $todelim->toString){
+  $delim=ToString($delim);
+  if($delim ne ToString($todelim)){
     AssignCatcode('math:$delim'=>1);
-    DefMacroI(T_CS($delim),undef,'\ROLE{PERIOD}{'.join('',map($_->toString,$todelim->revert)).'}');
+    DefMacroI(T_CS($delim),undef,'\ROLE{PERIOD}{'.join('',map(ToString($_),$todelim->revert)).'}');
   }
   if(LookupValue('IN_MATH')){
     (); }
