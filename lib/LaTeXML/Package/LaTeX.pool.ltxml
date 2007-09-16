@@ -56,9 +56,9 @@ DefConstructor('\documentclass OptionalSemiverbatim Semiverbatim []',
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
     my $options = $whatsit->getArg(1);
-    $options = $options->toString if defined $options;
+    $options = ToString($options) if defined $options;
     my @options = grep( !$ignorable_classoptions{$_}, split(/,\s*/, $options||''));
-    loadLaTeXClass($stomach,$whatsit->getArg(2)->toString,@options);
+    loadLaTeXClass($stomach,ToString($whatsit->getArg(2)),@options);
     return;});
 
 DefConstructor('\documentstyle OptionalSemiverbatim Semiverbatim []',
@@ -66,9 +66,9 @@ DefConstructor('\documentstyle OptionalSemiverbatim Semiverbatim []',
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
     my $options = $whatsit->getArg(1);
-    $options = $options->toString if defined $options;
+    $options = ToString($options) if defined $options;
     my @options = grep( !$ignorable_classoptions{$_}, split(/,\s*/, $options||''));
-    loadLaTeXClass($stomach,$whatsit->getArg(2)->toString,@options);
+    loadLaTeXClass($stomach,ToString($whatsit->getArg(2)),@options);
     # For documentstyle, some options mean to load styles!
     foreach my $option(@options) {
       if(my $file = FindFile($option,type=>'sty')){
@@ -105,7 +105,7 @@ sub onlyPreamble {
 
 DefMacro('\begin{}',sub { 
   my($gullet,$env)=@_;
-  my $name = $env && $env->toString;
+  my $name = $env && ToString($env);
   if(LookupDefinition(T_CS("\\begin{$name}"))){
     T_CS("\\begin{$name}"); } # Magic cs!
   else {			# If not defined, let stomach handle it.
@@ -113,7 +113,7 @@ DefMacro('\begin{}',sub {
 
 DefMacro('\end{}',  sub { 
   my($gullet,$env)=@_;
-  my $name = $env && $env->toString;
+  my $name = $env && ToString($env);
   my $t;
   if   (LookupDefinition($t=T_CS("\\end{$name}"))){ $t; } # Magic CS!
   elsif(LookupDefinition($t=T_CS("\\end$name")))  { ($t, T_CS('\endgroup')); }
@@ -172,12 +172,12 @@ DefEnvironment('{document}',
 # Such as interpreting certain sequences as section headings,
 # or math constructs.
 
-# Spacing; in Primitives.pm
+# Spacing; in TeX.pool.ltxml
 
-# Special Characters; in Primitives.pm
+# Special Characters; in TeX.pool.ltxml
 
 # Logos
-# \TeX is in Primitives.pm
+# \TeX is in TeX.pool.ltxml
 DefConstructor('\LaTeX', 'LaTeX');
 
 DefMacro('\today',sub { Explode(today()); });
@@ -187,10 +187,10 @@ DefConstructor('\emph{}', "<ltx:emph>#1</ltx:emph>", mode=>'text');
 #======================================================================
 # C.3.2 Making Paragraphs
 #======================================================================
-# \noindent, \indent, \par in Primitives.pm
+# \noindent, \indent, \par in TeX.pool.ltxml
 
 # Style parameters
-# \parindent, \baselineskip, \parskip alreadin in Primitives.pm
+# \parindent, \baselineskip, \parskip alreadin in TeX.pool.ltxml
 
 DefPrimitive('\linespread{}', undef);
 
@@ -213,7 +213,7 @@ DefPrimitive('\footnoterule',undef);
 #======================================================================
 # C.3.4 Accents and Special Symbols
 #======================================================================
-# See Primitives.pm
+# See TeX.pool.ltxml
 
 # See Section 3.3.2 Mathematical Symbols, below
 
@@ -267,7 +267,7 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
 # \@@section{type}[refnum][id][toctitle]{title}
 DefConstructor('\\@@section{}[][][]{}',sub {
   my($document,$type,$refnum,$id,$toctitle,$title)=@_;
-  $document->openElement("ltx:".$type->toString,refnum=>$refnum,id=>$id);
+  $document->openElement("ltx:".ToString($type),refnum=>$refnum,id=>$id);
   $document->insertElement('ltx:title',$title);
   $document->insertElement('ltx:toctitle',$toctitle) if $toctitle; },
   properties=>{refnum=>'#2',id=>'#3'},
@@ -309,9 +309,6 @@ NewCounter('tocdepth');
 #======================================================================
 # C.5.1 Document Class
 #======================================================================
-# \documentclass is defined in Primitives.pm, to automatically switch
-# to LaTeX mode when processing LaTeX files.
-
 # Style Parameters
 DefRegister('\bibindent'    => Dimension(0));
 DefRegister('\columnsep'    => Dimension(0));
@@ -334,8 +331,8 @@ DefConstructor('\usepackage[] Semiverbatim',
 				  my $options=$whatsit->getArg(1);
 				  my $packages=$whatsit->getArg(2);
 
-				  my @pkgs = split(',',$packages->toString);
-				  $options = [($options ? split(',',($options->toString)) :())];
+				  my @pkgs = split(',',ToString($packages));
+				  $options = [($options ? split(',',(ToString($options))) :())];
 				  map(RequirePackage($_,options=>$options),@pkgs);
 				  return});
 DefConstructor('\RequirePackage[] Semiverbatim []',
@@ -344,7 +341,7 @@ DefConstructor('\RequirePackage[] Semiverbatim []',
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
 				  my $package=$whatsit->getArg(2);
-				  $options = [($options ? split(',',($options->toString)) :())];
+				  $options = [($options ? split(',',(ToString($options))) :())];
 				  RequirePackage(ToString($package), options=>$options); });
 DefConstructor('\LoadClass[] Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
@@ -352,7 +349,7 @@ DefConstructor('\LoadClass[] Semiverbatim []',
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
 				  my $class=$whatsit->getArg(2);
-				  $options = [($options ? split(',',($options->toString)) :())];
+				  $options = [($options ? split(',',(ToString($options))) :())];
 				  LoadClass(ToString($class), options=>$options); });
 
 #======================================================================
@@ -627,7 +624,7 @@ DefMacro('\verb', sub {
   my ($init,$body);
   { local $STATE = $EMPTY_CATTABLE;
     $init = $mouth->readToken;
-    $init = $mouth->readToken if $init->toString eq '*'; # Should I bother handling \verb* ?
+    $init = $mouth->readToken if ToString($init) eq '*'; # Should I bother handling \verb* ?
     $body = $mouth->readTokens($init); }
   Invocation(T_CS('\@verb'),Tokens($init),$body)->unlist; });
 DefConstructor('\@verb{}{}', "<ltx:verbatim font='#font'>#2</ltx:verbatim>",
@@ -750,25 +747,7 @@ DefRegister('\mathindent' =>Dimension(0));
 # C.7.2 Common Structures
 #======================================================================
 # sub, superscript and prime are in Primitives.pm
-
-our %fracstylemap=(display=>'text', text=>'script',
-		   script=>'scriptscript', scriptscript=>'scriptscript');
-sub beforeFrac {
-  $_[0]->bgroup;
-  AssignValue(mathstyle=>$fracstylemap{LookupValue('mathstyle')}); }
-sub afterFrac  {
-  $_[0]->egroup;
-  $_[1]->setProperty('style',LookupValue('mathstyle')); }
-
-# Needed by amsmath (at least)
-sub beforeTFrac { $_[0]->bgroup; AssignValue(mathstyle=>'text');
-		  beforeFrac(@_); }
-sub afterTFrac  { afterFrac(@_); $_[0]->egroup; }
-
-sub beforeDFrac { $_[0]->bgroup; AssignValue(mathstyle=>'display'); 
-		  beforeFrac(@_); }
-sub afterDFrac  { afterFrac(@_); $_[0]->egroup; }
-
+# Underlying support in TeX.pool.ltxml
 DefConstructor('\frac{}{}',
 	       "<ltx:XMApp>"
 	       . "<ltx:XMTok meaning='div' role='MULOP' style='#style'/>"
@@ -864,20 +843,20 @@ DefPrimitive('\DeclareRobustCommand OptionalMatch:* {Token}[][]{}', sub {
 # we ignore font encoding
 DefPrimitive('\DeclareSymbolFont{}{}{}{}{}', sub {
   my ($stomach, $name, $enc, $family, $series, $shape) = @_;
-  AssignValue('fontdeclaration@'.$name->toString,
-	      {family=>$family->toString,
-	       series=>$series->toString,
-	       shape =>$shape->toString}); });
+  AssignValue('fontdeclaration@'.ToString($name),
+	      {family=>ToString($family),
+	       series=>ToString($series),
+	       shape =>ToString($shape)}); });
 DefPrimitive('\DeclareSymbolFontAlphabet{}{}', sub {
   my ($stomach, $cs, $name) = @_;
-  my $font = LookupValue('fontdeclarations@'.$name->toString) || {};
-  DefConstructorI(T_CS($cs->toString),undef,'', font=>$font); });
+  my $font = LookupValue('fontdeclarations@'.ToString($name)) || {};
+  DefConstructorI(T_CS(ToString($cs)),undef,'', font=>$font); });
 
 DefPrimitive('\DeclareMathAlphabet{}{}{}{}{}', sub {
   my ($stomach, $cs, $enc, $family, $series, $shape) = @_;
-  DefConstructorI(T_CS($cs->toString),undef, '', font=>{family=>$family->toString,
-							series=>$series->toString,
-							shape =>$shape->toString}); });
+  DefConstructorI(T_CS(ToString($cs)),undef, '', font=>{family=>ToString($family),
+							series=>ToString($series),
+							shape =>ToString($shape)}); });
 
 DefPrimitive('\DeclareFontShape{}{}{}{}{}{}', undef);
 DefPrimitive('\DeclareFontFamily{}{}{}', undef);
@@ -891,14 +870,14 @@ DefPrimitive('\DeclareSizeFunction{}{}', undef);
 
 DefPrimitive('\newenvironment OptionalMatch:* {}[][]{}{}', sub {
   my($stomach,$star,$name,$nargs,$opt,$begin,$end)=@_;
-  $name = $name->toString;
+  $name = ToString($name);
   Error("Environment $name is already defined") if LookupDefinition(T_CS("\\$name"));
   DefMacroI(T_CS("\\$name"), convertLaTeXArgs($nargs,$opt),$begin);
   DefMacroI(T_CS("\\end$name"),undef,$end); });
 
 DefPrimitive('\renewenvironment OptionalMatch:* {}[][]{}{}', sub {
   my($stomach,$star,$name,$nargs,$opt,$begin,$end)=@_;
-  $name = $name->toString;
+  $name = ToString($name);
   DefMacroI(T_CS("\\$name"), convertLaTeXArgs($nargs,$opt),$begin);
   DefMacroI(T_CS("\\end$name"),undef,$end); });
 
@@ -923,10 +902,10 @@ DefMacro('\@thmcountersep','.');
 
 DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
   my ($stomach, $flag, $thmset, $otherthmset, $text, $reset) = @_;
-  $thmset = $thmset->toString;
-  $otherthmset = $otherthmset && $otherthmset->toString;
+  $thmset = ToString($thmset);
+  $otherthmset = $otherthmset && ToString($otherthmset);
   $text   = undef unless $text->unlist;
-  $reset  = $reset ? $reset->toString : undef;
+  $reset  = $reset ? ToString($reset) : undef;
 
   my $counter = $otherthmset || $thmset;
   my $swap    = LookupValue('thm@swap') eq 'S';
@@ -940,7 +919,7 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 	      scope=>'global')
       if $reset; }
 
-  DefEnvironment("{$thmset}[]",
+  DefEnvironment("{$thmset} OptionalUndigested",
 		 "<ltx:theorem id='#id' refnum='#refnum'>"
 		 . "<ltx:title>#title</ltx:title>"
 		 .  "#body"
@@ -959,7 +938,7 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 			($b ? $b->unlist : ()));
 		   if($note){
 		     push(@toks,T_SPACE,T_OTHER('(')) if $text;
-		     push(@toks,$note->revert);
+		     push(@toks,$note->unlist);
 		     push(@toks,T_OTHER(')')) if $text; }
 		   push(@toks,T_CS('\the'),T_CS('\thm@headpunct'),T_END);
 		   $whatsit->setProperties(title=>Digest(Tokens(@toks)));
@@ -994,20 +973,20 @@ sub number_para {
 
 Tag('ltx:para',afterOpen=>\&number_para);
  
-DefPrimitive('\newcounter{}[]',sub { shift; NewCounter(map($_ && $_->toString,@_)); return;});
+DefPrimitive('\newcounter{}[]',sub { shift; NewCounter(map($_ && ToString($_),@_)); return;});
 
 DefPrimitive('\setcounter{}{Number}',sub {
   my($stomach,$ctr,$value)=@_;
-  $ctr="\\c\@".$ctr->toString;
+  $ctr="\\c\@".ToString($ctr);
   AssignValue($ctr=>$value,'global');
   return});
 
 DefPrimitive('\addtocounter{}{Number}',sub {
   my($stomach,$ctr,$value)=@_;
-  AssignValue('\c@'.($ctr->toString)=>CounterValue($ctr)->add($value),'global'); });
+  AssignValue('\c@'.(ToString($ctr))=>CounterValue($ctr)->add($value),'global'); });
 
-DefPrimitive('\stepcounter{}',   sub { StepCounter($_[1]->toString); return; });
-DefPrimitive('\refstepcounter{}',sub { RefStepCounter($_[1]->toString); return; });
+DefPrimitive('\stepcounter{}',   sub { StepCounter(ToString($_[1])); return; });
+DefPrimitive('\refstepcounter{}',sub { RefStepCounter(ToString($_[1])); return; });
 
 DefMacro('\value{}', sub {
   Explode(CounterValue($_[1])->valueOf);});
@@ -1285,7 +1264,7 @@ DefConstructor('\label Semiverbatim',
 	       "^ label='#1'",
 	       reversion=>'',
 	       afterDigest=>sub {
-		 my $label = $_[1]->getArg(1)->toString;
+		 my $label = ToString($_[1]->getArg(1));
 		 my $scope = 'label:'.$label;
 		 if(my $ctr = LookupValue('current_counter')){
 		   unshift(@{LookupValue('scopes_for_counter:'.$ctr)},$scope);
@@ -1399,7 +1378,7 @@ DefPrimitive('\input', sub {
     while(($token = $gullet->readXToken) && ($token->getCatcode != CC_SPACE)){
       push(@tokens,$token); }
     $path = Tokens(@tokens); }
-  $path = $path->toString if ref $path;
+  $path = ToString($path);
   if(my $file = FindFile($path)){
     $gullet->input($file); }
   else {
@@ -1413,7 +1392,7 @@ DefPrimitive('\input', sub {
 # But we're not bothering with that.
 DefPrimitive('\include{}',sub { 
   my($stomach,$path)=@_;
-  $path = $path->toString;
+  $path = ToString($path);
   my $table = LookupValue('including@only');
   if(!$table || $$table{$path}){
     if(my $file = FindFile($path)){
@@ -1427,7 +1406,7 @@ DefPrimitive('\include{}',sub {
 # [note, this will load name.tex, if it exists, else name]
 DefPrimitive('\includeonly{}',sub {
   my($stomach,$paths)=@_;
-  $paths = $paths->toString;
+  $paths = ToString($paths);
   my $table = LookupValue('including@only');
   AssignValue('including@only', $table = {}, 'global') unless $table;
   map( $$table{$_}=1, split(',',$paths));
@@ -1489,7 +1468,7 @@ sub process_index_phrases {
       @phrase=(); @sortas=();
       if($string eq '|'){
 	pop(@tokens);		# Remove the extra "!" stopbit.
-	my $extra = Tokens(@tokens)->toString;
+	my $extra = ToString(Tokens(@tokens));
 	if($extra =~ /^see/){
 	  push(@expansion,T_CS('\@indexsee'),@tokens[3..$#tokens]); }
 	elsif($extra eq '('){}	# ?
@@ -1688,7 +1667,7 @@ DefPrimitive('\samepage',undef);
 # \newlength{cmd}
 DefPrimitive('\newlength{Token}',sub {
   my($stomach,$cmd)=@_;
-  DefRegister($cmd->toString,Dimension(0)); });
+  DefRegister(ToString($cmd),Dimension(0)); });
 DefMacro('\setlength{}{}','#1#2\relax');
 DefMacro('\addtolength{}{}','\advance#1 #2\relax');
 DefMacro('\settowidth{}{}','#1 0pt\relax'); # Till we have an approximation of width
@@ -1725,16 +1704,24 @@ DefConstructor('\fbox{}',
 DefConstructor('\framebox[Dimension][]{}',
 	       "<ltx:text ?#1(width='#1') ?#2(pos='#2') framed='rectangle'>#3</ltx:text>",
 	       mode=>'text');
-DefPrimitive('\newsavebox{Token}',sub { AssignValue('box'.$_[1]->toString, LaTeXML::List->new()); });
+DefPrimitive('\newsavebox{Token}',sub { AssignValue('box'.ToString($_[1]), LaTeXML::List->new()); });
 DefPrimitive('\sbox{Token}{}',sub {
-   AssignValue('box'.$_[1]->toString, Digest($_[2])); return;});
+   AssignValue('box'.ToString($_[1]), Digest($_[2])); return;});
 DefPrimitive('\savebox{Token}[][]{}',sub {
-   AssignValue('box'.$_[1]->toString, Digest($_[4])); return;});
-DefEnvironment('{lrbox}{Token}','',
-  afterDigest=>sub{ 
-    my($stomach,$whatsit)=@_;
-    AssignValue('box'.$whatsit->getArg(1)->toString, $whatsit->getProperty('body')); });
-DefPrimitive('\usebox{Token}', sub { LookupValue('box'.$_[1]->toString);});
+   AssignValue('box'.ToString($_[1]), Digest($_[4])); return;});
+
+DefMacroI('\begin{lrbox}',LaTeXML::Parameters::parseParameters('{Token}','\begin{lrbox}'),
+	  '\@begin@lrbox #1');
+DefPrimitiveI('\end{lrbox}',undef,sub { $_[0]->egroup; });
+DefPrimitive('\@begin@lrbox Token', sub {
+  my($stomach,$token)=@_;
+  $stomach->bgroup;
+  my $font = $STATE->lookupValue('font');
+  my $loc  = $stomach->getGullet->getLocator;
+  my $box = LaTeXML::Box->new($stomach->digestNextBody(),$font,$loc);
+  AssignValue('box'.ToString($token), $box); });
+
+DefPrimitive('\usebox{Token}', sub { LookupValue('box'.ToString($_[1]));});
 
 DefConstructor('\parbox[]{Dimension}{}',
 	       "<ltx:minipage ?#2(width='#2') ?#1(pos='#1') justified='yes'>#3</ltx:minipage>",
@@ -1761,7 +1748,7 @@ sub ResolveReader {
   my ($itemtype) = @_;
   if(ref $itemtype eq 'CODE'){ $itemtype; }
   else {
-    $itemtype = $itemtype->toString if ref $itemtype;
+    $itemtype = ToString($itemtype);
     LaTeXML::Parameters::checkReaderFunction('Read'.$itemtype); }}
 
 sub ReadPair {
@@ -1937,7 +1924,7 @@ DefConstructor('\shortstack[]{}',
 
 DefMacro('\multiput Pair Pair {}{}',  sub {
   my($gullet,$pos,$d,$nt,$body)=@_;
-  my($x,$y,$dx,$dy,$n)=map($_->toString, ($pos->getX,$pos->getY,$d->getX,$d->getY,$nt));
+  my($x,$y,$dx,$dy,$n)=map(ToString($_), ($pos->getX,$pos->getY,$d->getX,$d->getY,$nt));
   my @exp=();
   for(my $i=0; $i<$n; $i++){
     push(@exp,T_CS('\put'),T_OTHER('('),Explode($x),T_OTHER(','),Explode($y),T_OTHER(')'),
@@ -2015,7 +2002,7 @@ DefConstructor('\textnormal{}', '#1',
 
 DefPrimitive('\mathversion{}',sub {
   my($stomach,$version)=@_;
-  $version = $version->toString;
+  $version = ToString($version);
   if($version eq 'bold'     ){ 
     AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>1), 'local'); }
   elsif($version eq 'normal'){ 
@@ -2027,7 +2014,7 @@ DefMacro('\newfont{}{}', '\font#1=#2\relax');
 #======================================================================
 # C.15.2 Changing the Type Size
 #======================================================================
-# Handled in Primitive.pm
+# Handled in TeX.pool.ltxml
 
 #======================================================================
 # C.15.3 Special Symbol
@@ -2091,7 +2078,7 @@ DefMacro('\ProvidesPackage{}[]','');
 DefMacro('\ProvidesFile{}[]','');
 DefMacro('\DeclareOption{}{}', sub {
   my($gullet,$option,$code)=@_;
-  DefMacroI(T_CS('\ds@'.$option->toString),undef,
+  DefMacroI(T_CS('\ds@'.ToString($option)),undef,
 	    Expand(Tokens($gullet->neutralizeTokens($code->unlist))));
   (); });
 DefMacro('\PassOptionsToPackage{}{}','');
@@ -2100,7 +2087,7 @@ DefMacro('\CurrentOption','');
 DefMacro('\OptionNotUsed','');
 DefMacro('\ExecuteOptions{}', sub{
   my($gullet,$options)=@_;
-  map(T_CS('\ds@'.$_),split(',',$options->toString)); });
+  map(T_CS('\ds@'.$_),split(',',ToString($options))); });
 DefMacro('\ProcessOptions','');
 
 # What should be done with these? :
@@ -2113,7 +2100,7 @@ DefMacro('\@ehc',"I can't help");
 
 sub make_message {
   my($cs,@args)=@_;
-  join("\n",map(Expand($_)->toString,@args)); }
+  join("\n",map(ToString(Expand($_)),@args)); }
 
 DefPrimitive('\@onlypreamble{}',\&onlyPreamble); # Don't bother enforcing this.
 
