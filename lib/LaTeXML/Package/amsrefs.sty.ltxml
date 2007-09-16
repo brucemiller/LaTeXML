@@ -155,7 +155,7 @@ DefEnvironment('{biblist}',"<ltx:biblist>#body</ltx:biblist>");
 DefConstructor('\MR{}',sub {
   my($document,$mrnumber)=@_;
   # Patch up old-style MathReviews numbers
-  my $id = $mrnumber->toString;
+  my $id = ToString($mrnumber);
   $id =~ s/\s+\\\#\s*/:/;
   $document->insertElement('ltx:bib-mr',
 			   LaTeXML::Box->new($id,$mrnumber->getFont,$mrnumber->getLocator,T_OTHER($id))); });
