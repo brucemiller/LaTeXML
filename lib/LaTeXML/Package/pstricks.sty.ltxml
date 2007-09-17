@@ -384,7 +384,7 @@ sub psTerminators {
 
 # for setting user-defined colors
 sub defineColor {
-  AssignValue('pscolor_'.ToString($_[1]), ConvertColor(ToString($_[0], ToString($_[2])));
+  AssignValue('pscolor_'.ToString($_[1]), ConvertColor(ToString($_[0]), ToString($_[2])));
   return; }
 
 ####################################################################################
