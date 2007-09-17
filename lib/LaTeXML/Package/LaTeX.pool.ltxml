@@ -2254,15 +2254,6 @@ DefMacro('\InputIfFileExists{}{}{}', sub{
     $if->unlist; }
   else { $else->unlist; }});
 
-#DefRegister('\@tempdima' => Dimension(0));
-#DefRegister('\@tempdimb' => Dimension(0));
-#DefRegister('\@tempdimc' => Dimension(0));
-#DefRegister('\@tempskipa' => Glue(0));
-#DefRegister('\@tempskipb' => Glue(0));
-#DefRegister('\@tempskipc' => Glue(0));
-#DefRegister('\@flushglue' => Glue(0));
-##DefRegister('\@tempboxa'  => Box());
-##DefRegister('\@temptokena'  => Tokens());
 RawTeX(<<'EOTeX');
 \def\@tempswafalse{\let\if@tempswa\iffalse}
 \def\@tempswatrue{\let\if@tempswa\iftrue}
