@@ -110,7 +110,7 @@
 	  %LaTeXML.Common.attrib;
 	  role CDATA #IMPLIED>
 
-<!ELEMENT %LaTeXML.abstract.qname;    (%LaTeXML.Para.mix;)*>
+<!ELEMENT %LaTeXML.abstract.qname;      (%LaTeXML.Block.mix;)*>
 <!ATTLIST %LaTeXML.abstract.qname;     %LaTeXML.Common.attrib;>
 
 <!ELEMENT %LaTeXML.acknowledgements.qname; %LaTeXML.Inline.model;>

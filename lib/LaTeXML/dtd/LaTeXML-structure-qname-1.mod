@@ -39,7 +39,7 @@
 <!ENTITY % LaTeXML.abstract.qname       "%LaTeXML.pfx;abstract">
 <!ENTITY % LaTeXML.acknowledgements.qname "%LaTeXML.pfx;acknowledgements">
 <!ENTITY % LaTeXML.keywords.qname       "%LaTeXML.pfx;keywords">
-<!ENTITY % LaTeXML.classification.qname "%LaTeXML.pfx;classfication">
+<!ENTITY % LaTeXML.classification.qname "%LaTeXML.pfx;classification">
 
 
 <!ENTITY % LaTeXML-structure.Person.class
