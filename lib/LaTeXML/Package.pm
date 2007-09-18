@@ -241,6 +241,8 @@ sub NewCounter {
   AssignValue('nested_counters_'.$ctr =>$options{nested}) if $options{nested};
   DefMacroI(T_CS("\\the$ctr"),undef,"\\arabic{$ctr}",scope=>'global');
   my $prefix = $options{idprefix};
+  AssignValue('@ID@prefix@'.$ctr=>$prefix) if $prefix;
+  $prefix = LookupValue('@ID@prefix@'.$ctr) unless $prefix;
   if(defined $prefix){
     if($within){
       DefMacroI(T_CS("\\the$ctr\@ID"),undef,
