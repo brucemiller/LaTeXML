@@ -2255,6 +2255,7 @@ DefMacro('\InputIfFileExists{}{}{}', sub{
   else { $else->unlist; }});
 
 RawTeX(<<'EOTeX');
+\chardef\active=13
 \def\@tempswafalse{\let\if@tempswa\iffalse}
 \def\@tempswatrue{\let\if@tempswa\iftrue}
 \let\if@tempswa\iffalse

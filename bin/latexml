@@ -14,6 +14,7 @@ my $identity = "latexml (LaTeXML version $LaTeXML::VERSION)";
 my($verbosity,$strict,$comments,$noparse,$includestyles)=(0,0,1,0,0);
 my ($format,$destination,$help,$showversion)=('xml','');
 my ($documentid);
+my $inputencoding;
 my (@paths,@preload,@debugs);
 GetOptions("destination=s" => \$destination,
 	   "output=s"  => \$destination,
@@ -27,6 +28,7 @@ GetOptions("destination=s" => \$destination,
 	   "box"       => sub { $format = 'box'; },
 	   "noparse"   => \$noparse,
 	   "includestyles"=> \$includestyles,
+	   "inputencoding=s"=>\$inputencoding,
 	   "comments!" => \$comments,
 	   "VERSION"   => \$showversion,
 	   "debug=s"   => sub { eval "\$LaTeXML::$_[1]::DEBUG=1; "; },
@@ -45,7 +47,7 @@ print STDERR "$identity\n" unless $verbosity < 0;
 
 my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[@paths],
 			  verbosity=>$verbosity, strict=>$strict,
-			  includeComments=>$comments,
+			  includeComments=>$comments,inputencoding=>$inputencoding,
 			  includeStyles=>$includestyles,
 			  documentid=>$documentid,
 			  nomathparse=>$noparse);
@@ -69,7 +71,7 @@ else {
 
 # ========================================
 # Now, convert to DOM and output, if desired.
-use Encode;
+#use Encode;
 my $serialized;
 if($digested){
     local $LaTeXML::Global::STATE = $$latexml{state};
@@ -128,6 +130,7 @@ latexml [options] texfile
                     and digestion.
  --noparse          suppresses parsing math
  --nocomments       omit comments from the output
+ --inputencoding=enc specify the input encoding.
  --VERSION          show version number.
  --debug=package    enables debugging output for the named
                     package
@@ -208,6 +211,16 @@ and the result is printed.
 
 Normally latexml preserves comments from the source file, and adds a comment every 25 lines as
 an aid in tracking the source.  The option --nocomments discards such comments.
+
+=item B<--inputencoding=>I<encoding>
+
+Specify the input encoding, eg. C<--inputencoding=iso-8859-1>.
+The encoding must be one known to Perl's Encode package.
+Note that this only enables the translation of the input bytes to
+UTF-8 used internally by LaTeXML, but does not affect catcodes.
+In such cases, you should be using the inputenc package.
+Note also that this does not affect the output encoding, which is
+always UTF-8.
 
 =item B<--VERSION>
 

@@ -44,6 +44,7 @@ sub new {
 		      'global');
   $state->assignValue(SEARCHPATHS=> [ @{$options{searchpaths} || []} ],'global');
   $state->assignValue(INCLUDE_STYLES=>$options{includeStyles}|| 0,'global');
+  $state->assignValue(INPUT_ENCODING=>$options{inputencoding}) if $options{inputencoding};
   bless {state   => $state, 
 	 nomathparse=>$options{nomathparse}||0,
 	 preload=>$options{preload},

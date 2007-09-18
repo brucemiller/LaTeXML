@@ -247,7 +247,7 @@ use strict;
 use LaTeXML::Global;
 use LaTeXML::Util::Pathname;
 use base qw(LaTeXML::Mouth);
-
+use Encode;
 sub new {
   my($class,$pathname)=@_;
   local *IN;
@@ -282,9 +282,12 @@ sub getNextLine {
   if(! defined $line){
     close($fh); $$self{IN}=undef; }
   # NEED a SWICTH -7bit or UTF or What???
-  if($line && $line =~ s/[\x80-\xFF]//g){
-    Warn("Stripping 8bit characters!") unless $WARNED_8BIT;
-    $WARNED_8BIT = 1; }
+#  if($line && $line =~ s/[\x80-\xFF]//g){
+#    Warn("Stripping 8bit characters!") unless $WARNED_8BIT;
+#    $WARNED_8BIT = 1; }
+  if($line){
+    if(my $encoding = $STATE->lookupValue('INPUT_ENCODING')){
+      $line = decode($encoding,$line); }}
   $line; }
 
 sub stringify {
