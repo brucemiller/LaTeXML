@@ -14,7 +14,10 @@
 
 body { background:#FFFFFF; color:#000000; }
 h1 { text-align:center; font-size: 150%; font-family:sans-serif;}
-.author { text-align:center; font-size: 150%; font-family:sans-serif; }
+.author { text-align:center; font-family:sans-serif; }
+.authorname { font-size: 130%; }
+.dedication { font-style:oblique; }
+.classification, .keywords { font-size:90%; margin-left:4em; }
 h2.subtitle
    {  border: none; background: transparent;
       text-align:center; font-size: 120%; font-family:sans-serif;}
@@ -24,6 +27,13 @@ h2 { border-top: 5px double #087d9d; border-left: 3px double #087d9d; background
 h3 { border-top: 1px solid #087d9d; border-left: 1px solid #087d9d;  background:#e7faff;
      padding-left:0.2em; margin-left:-0.3em;
      font-family:sans-serif; }
+/* h6 { display:run-in; }*/
+/*h6 { display:list-item; list-style-type:none; margin:0; padding:0; }*/
+/* Hack to simulate run-in! */
+h6 { display:inline; font-size:100%; font-family:sans-serif; }
+h6:after { content:" "; }
+h6 + div.para,
+h6 + p { display:inline; }
 
 span.sansserif  { font-family: sans-serif; }
 span.typewriter { font-family: monospace; }
@@ -55,15 +65,28 @@ img.math { vertical-align:middle }
 	   font-size:80%;
 	   margin-top:5px; border-top:1px solid #087d9d;}
 
+.equation { display:block; width:100%; }
+.equation .refnum { position:absolute; left:2em; }
+
 dl.description dt { margin-right:0.5em; float:left; }
 dl.description dd { margin-left:5em; }
 dl.description dl.description dd { margin-left:3em; }
 
+.bibliography dt { margin-right:0.5em; float:left; }
+.bibliography dd { margin-left:3em; }
+
+
+
+.abstract {margin:1em 4em 1em 4em; }
+.theorem  {margin:1em 0em 1em 0em; }
 .toc li,
 .indexlist li { list-style-type:none;  }
 .indexlist { margin-left:1em; padding-left:1em;}
-.nav li,
-.header li { padding:0.2em;}
+.navbar ul {margin-left:0em; padding-left:0em;}
+.navbar li,
+.header li { padding:0.1em 0.2em 0.1em 1em;}
+.navbar li > a { white-space:nowrap; display:block; overflow:hidden; }
+
 /*.header:before { content:url(latexml.png); }*/
 
 table { border-collapse:collapse; }

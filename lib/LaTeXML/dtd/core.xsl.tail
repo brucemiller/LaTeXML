@@ -132,6 +132,8 @@
 <xsl:template match="ltx:document | ltx:chapter | ltx:part 
 		     | ltx:section | ltx:subsection | ltx:subsubsection
 		     | ltx:paragraph | ltx:sidebar | ltx:bibliography | ltx:appendix | ltx:index">
+    <xsl:text>
+</xsl:text>
   <div class="{local-name()}">
     <xsl:call-template name="add_id"/>
     <xsl:apply-templates/>
@@ -144,15 +146,41 @@
   </div>
 </xsl:template>
 
-<xsl:template match="ltx:affiliation">
-  <div class='affiliation'><xsl:apply-templates/></div>
+<xsl:template match="ltx:personname">
+  <div class='authorname'>
+    <xsl:apply-templates/>
+  </div>
+</xsl:template>
+<xsl:template match="ltx:contact[@role='address']">
+  <div class='address'>
+    <xsl:apply-templates/>
+  </div>
+</xsl:template>
+<xsl:template match="ltx:contact[@role='email']">
+  <div class='address'><a href="{concat('mailto:',text())}"><xsl:apply-templates/></a></div>
+</xsl:template>
+
+<xsl:template match="ltx:contact[@role='dedicatory']">
+  <div class='dedication'><xsl:apply-templates/></div>
+</xsl:template>
+
+<xsl:template match="ltx:classification">
+  <div class='classification'>
+  <i><xsl:choose>
+  <xsl:when test='@scheme'><xsl:value-of select='@scheme'/></xsl:when>
+  <xsl:otherwise>Classification</xsl:otherwise>
+  </xsl:choose>: </i>
+  <xsl:apply-templates/></div>
+</xsl:template>
+<xsl:template match="ltx:keywords">
+  <div class='keywords'><i>Keywords: </i><xsl:apply-templates/></div>
 </xsl:template>
 
 <!-- put in footer -->
 <xsl:template match="ltx:date"/>
 
 <xsl:template match="ltx:abstract">
-  <div class='abstract'><h6>Abstract</h6><xsl:apply-templates/></div>
+  <div class='abstract'><h6>Abstract. </h6><xsl:apply-templates/></div>
 </xsl:template>
 
 <!--  ======================================================================
@@ -211,11 +239,15 @@
 <!-- and hope we haven't past 6!!! -->
 
 <xsl:template match="ltx:document/ltx:title">
+    <xsl:text>
+</xsl:text>
   <xsl:element name="{concat('h',$document_level)}">
     <xsl:call-template name="maketitle"/>
   </xsl:element>
 </xsl:template>
 <xsl:template match="ltx:document/ltx:subtitle">
+    <xsl:text>
+</xsl:text>
   <xsl:element name="{concat('h',$document_level+1)}">
     <xsl:attribute name="class">subtitle</xsl:attribute>
     <xsl:call-template name="maketitle"/>
@@ -223,51 +255,71 @@
 </xsl:template>
 
 <xsl:template match="ltx:part/ltx:title">
+    <xsl:text>
+</xsl:text>
   <xsl:element name="{concat('h',$part_level)}">
     <xsl:call-template name="maketitle"/>
   </xsl:element>
 </xsl:template>
 
 <xsl:template match="ltx:chapter/ltx:title">
+    <xsl:text>
+</xsl:text>
   <xsl:element name="{concat('h',$chapter_level)}">
     <xsl:call-template name="maketitle"/>
   </xsl:element>
 </xsl:template>
 <xsl:template match="ltx:section/ltx:title">
+    <xsl:text>
+</xsl:text>
   <xsl:element name="{concat('h',$section_level)}">
     <xsl:call-template name="maketitle"/>
   </xsl:element>
 </xsl:template>
 <xsl:template match="ltx:appendix/ltx:title">
+    <xsl:text>
+</xsl:text>
 <!--  <xsl:element name="{concat('h',$appendix_level)}">-->
   <xsl:element name="{concat('h',$section_level)}">
     Appendix <xsl:call-template name="maketitle"/></xsl:element>
 </xsl:template>
 <xsl:template match="ltx:bibliography/ltx:title">
+    <xsl:text>
+</xsl:text>
   <xsl:element name="{concat('h',$bibliography_level)}">
     <xsl:call-template name="maketitle"/></xsl:element>
 </xsl:template>
 <xsl:template match="ltx:index/ltx:title">
+    <xsl:text>
+</xsl:text>
   <xsl:element name="{concat('h',$index_level)}">
     <xsl:call-template name="maketitle"/></xsl:element>
 </xsl:template>
 
 <xsl:template match="ltx:subsection/ltx:title">
+    <xsl:text>
+</xsl:text>
   <xsl:element name="{concat('h',$subsection_level)}">
     <xsl:call-template name="maketitle"/>
   </xsl:element>
 </xsl:template>
 <xsl:template match="ltx:subsubsection/ltx:title">
+    <xsl:text>
+</xsl:text>
   <xsl:element name="{concat('h',$subsubsection_level)}">
     <xsl:call-template name="maketitle"/>
   </xsl:element>
 </xsl:template>
 <xsl:template match="ltx:paragraph/ltx:title">
+    <xsl:text>
+</xsl:text>
   <xsl:element name="{concat('h',$paragraph_level)}">
     <xsl:call-template name="maketitle"/>
   </xsl:element>
 </xsl:template>
 <xsl:template match="ltx:subparagraph/ltx:title">
+    <xsl:text>
+</xsl:text>
   <xsl:element name="{concat('h',$subparagraph_level)}">
     <xsl:call-template name="maketitle"/>
   </xsl:element>
@@ -444,7 +496,9 @@
 <xsl:template match="ltx:equation">
   <div class='equation'> 
     <xsl:call-template name="add_id"/>
-    <xsl:apply-templates select="@refnum"/>
+    <xsl:if test="@refnum">
+      <span class='refnum'>(<xsl:apply-templates select="@refnum"/>)</span>
+    </xsl:if>
     <span class='equationcontent'>
       <xsl:apply-templates select="ltx:Math"/>
     </span>
@@ -460,6 +514,8 @@
 </xsl:template>
 
 <xsl:template match="ltx:para">
+    <xsl:text>
+</xsl:text>
   <div class="para">
     <xsl:call-template name="add_id"/>
     <xsl:apply-templates/>
@@ -468,15 +524,21 @@
 
 
 <xsl:template match="ltx:p">
+    <xsl:text>
+</xsl:text>
   <p><xsl:apply-templates/></p>
 </xsl:template>
 
 <xsl:template match="ltx:block">
+    <xsl:text>
+</xsl:text>
   <div class="{@class}"><xsl:apply-templates/></div>
 </xsl:template>
 
 <xsl:template match="ltx:toccaption"/>
 <xsl:template match="ltx:table/ltx:caption">
+    <xsl:text>
+</xsl:text>
   <div class='caption'>  
     <xsl:if test="../@refnum">
       Table <xsl:apply-templates select="../@refnum"/><xsl:text>. </xsl:text>
@@ -485,6 +547,8 @@
   </div>
 </xsl:template>
 <xsl:template match="ltx:figure/ltx:caption">
+    <xsl:text>
+</xsl:text>
   <div class='caption'>  
     <xsl:if test="../@refnum">
       Figure <xsl:apply-templates select="../@refnum"/><xsl:text>. </xsl:text>
@@ -494,6 +558,8 @@
 </xsl:template>
 
 <xsl:template match="ltx:figure | ltx:table">
+    <xsl:text>
+</xsl:text>
   <div class='{local-name()}'>
   <xsl:call-template name="add_id"/>
     <xsl:apply-templates/>
@@ -501,6 +567,8 @@
 </xsl:template>
 
 <xsl:template match="ltx:theorem | ltx:proof">
+    <xsl:text>
+</xsl:text>
   <div class='{local-name()}'>
   <xsl:call-template name="add_id"/>
     <xsl:apply-templates/>
@@ -508,23 +576,22 @@
 </xsl:template>
 
 <xsl:template match="ltx:theorem/ltx:title | ltx:proof/ltx:title">
-  <span class="title">
-  <xsl:apply-templates/>
-<!--
-  <xsl:if test="../@refnum">
-    <xsl:text> </xsl:text><xsl:value-of select="../@refnum"/>
-  </xsl:if>
--->
-  </span>
+    <xsl:text>
+</xsl:text>
+  <h6><xsl:apply-templates/></h6>
 </xsl:template>
 
 <xsl:template match="ltx:tabular">
+    <xsl:text>
+</xsl:text>
   <table align='center'>
     <xsl:apply-templates/>
   </table>
 </xsl:template>
 
 <xsl:template match="ltx:colgroup">
+    <xsl:text>
+</xsl:text>
   <colgroup><xsl:call-template name="col-attributes"/><xsl:apply-templates/></colgroup>
 </xsl:template>
 
@@ -548,18 +615,26 @@
 </xsl:template>
 
 <xsl:template match="ltx:thead">
+    <xsl:text>
+</xsl:text>
   <thead><xsl:apply-templates/></thead>
 </xsl:template>
 
 <xsl:template match="ltx:tbody">
+    <xsl:text>
+</xsl:text>
   <tbody><xsl:apply-templates/></tbody>
 </xsl:template>
 
 <xsl:template match="ltx:tfoot">
+    <xsl:text>
+</xsl:text>
   <tfoot><xsl:apply-templates/></tfoot>
 </xsl:template>
 
 <xsl:template match="ltx:tr">
+    <xsl:text>
+</xsl:text>
   <tr><xsl:apply-templates/></tr>
 </xsl:template>
 
@@ -821,51 +896,8 @@
   <a href="{concat('mailto:',text())}"><xsl:value-of select="text()"/></a>
 </xsl:template>
 
-<xsl:template match="ltx:metadata">
-  <dl class="metadata">
-    <xsl:apply-templates/>
-  </dl>
-</xsl:template>
-
-<xsl:template match="ltx:sources">
-  <dt>Sources</dt>
-  <dd><ul><xsl:apply-templates/></ul></dd>
-</xsl:template>
-
-<xsl:template match="ltx:source">
-  <li class="source"><xsl:apply-templates select="node()"/></li>
-</xsl:template>
-
-<xsl:template match="ltx:notes">
-  <dt>Notes</dt>
-  <dd><ul><xsl:apply-templates/></ul></dd>
-</xsl:template>
-
-<xsl:template match="ltx:note">
-  <li class="note"><xsl:apply-templates select="node()"/></li>
-</xsl:template>
-
-<xsl:template match="ltx:keywords">
-  <dt>Keywords</dt>
-  <dd class="keywords"><ul><li><xsl:apply-templates/></li></ul></dd>
-</xsl:template>
-
-<xsl:template match="ltx:keyword">
-  <a href="{@href}" class="keyword"><xsl:apply-templates/></a>
-</xsl:template>
-
-<xsl:template match="referrers">
-  <dt>Ref'd&#160;by</dt>
-  <dd class="referrers"><ul><li><xsl:apply-templates/></li></ul></dd>
-</xsl:template>
-
-<xsl:template match="referrer">
-  <a href="{@href}" class='referrer'><xsl:apply-templates/></a>
-</xsl:template>
-
-<xsl:template match="ltx:acknowledgements">
-  <dt>Acknowledgments</dt>
-  <dd class='acknowledgements'><xsl:apply-templates select="node()"/></dd>
+<xsl:template match="ltx:metadata | ltx:sources | ltx:source | ltx:notes | ltx:note
+	      | ltx:keyword | ltx:referrers | ltx:referrer | ltx:acknowledgements">
 </xsl:template>
 
 </xsl:stylesheet>

@@ -62,21 +62,21 @@
     </xsl:element>
   </xsl:template>
 
+<!--
   <xsl:template match="ltx:equation[@refnum]">
     <div class='equation'> 
       <xsl:call-template name="add_id"/>
       <m:math display="block">
 	<m:mtable>
-<!--	  <m:mlabeledtr>-->
-<m:mtr>
+	  <m:mtr>
 	    <m:mtd><m:mtext>(<xsl:value-of select="@refnum"/>)</m:mtext></m:mtd>
 	    <m:mtd><xsl:apply-templates select="ltx:Math/m:math/node()"/></m:mtd>
-<!--	  </m:mlabeledtr>-->
 	</m:mtr>
 	</m:mtable>
       </m:math>
     </div>
   </xsl:template>
+-->
 
 <!--
   <xsl:template name="add_id">
