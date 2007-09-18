@@ -252,7 +252,7 @@ sub new {
   my($class,$pathname)=@_;
   local *IN;
   if(! -r $pathname){ Fatal("Input file is not readable: $pathname."); }
-  elsif(-B $pathname){Fatal("Input file appears to be binary: $pathname."); }
+  elsif((!-z $pathname) && (-B $pathname)){Fatal("Input file appears to be binary: $pathname."); }
   open(IN,$pathname) || Fatal("Can't read from $pathname");
   my $shortpath=pathname_relative($pathname,pathname_cwd);
   my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN};
