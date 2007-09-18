@@ -338,9 +338,14 @@ DefConstructor('\intertext{}', "#1", mode=>'text');
 # Section 3.11 Equation numbering
 
 # Section 3.11.1 Numbering hierarchy
-DefPrimitive('\numberwithin{}{}',sub {
-  my($ignore,$counter,$within)=@_;
-  NewCounter(ToString($counter),ToString($within)); });
+DefPrimitive('\numberwithin[]{}{}',sub {
+  my($ignore,$format,$counter,$within)=@_;
+  $format = ($format ? ToString($format) : '\arabic');
+  $counter = ToString($counter); $within = ToString($within);
+  NewCounter($counter,$within);
+  DefMacroI("\\the$counter",undef,
+	    "\\csname the$within\\endcsname.$format\{$counter\}", scope=>'global');
+ });
 
 # Section 3.11.2 Cross references to equation numbers
 DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#1'/>)");
