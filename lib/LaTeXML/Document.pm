@@ -554,6 +554,7 @@ sub openElement {
     next if $key eq 'locator';	# !!!
     my $value = $attributes{$key};
     $value = ToString($value) if ref $value;
+    $value =~ s/^\{(.*)\}$/$1/ if $value;	 # Strip outer {}
     next if (!defined $value) || ($value eq ''); # Skip if `empty'; but 0 is OK!
     my($ns,$name)=$self->decodeQName($key);
     ($ns ? $node->setAttributeNS($ns,$name=>$value) : $node->setAttribute($name=>$value)); }
