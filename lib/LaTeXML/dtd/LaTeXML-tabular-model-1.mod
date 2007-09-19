@@ -27,6 +27,7 @@
           span  CDATA #IMPLIED
           align CDATA #IMPLIED>
 
+<!ELEMENT %LaTeXML.col.qname; EMPTY>
 <!ATTLIST %LaTeXML.col.qname;
 	  %LaTeXML.Common.attrib; 
           span  CDATA #IMPLIED
