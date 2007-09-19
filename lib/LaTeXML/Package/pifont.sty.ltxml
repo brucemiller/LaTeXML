@@ -51,7 +51,7 @@ DefConstructor('\piautolist@item[]',
   
 DefEnvironment('{Pilist}{}{Number}',
 	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
-	       beforeDigest=>sub { beforeItemize('pilist'); },
+	       beforeDigest=>sub { beginItemize('pilist'); },
 	       afterDigestBegin=>sub {
 		 AssignValue(pilist_pifont=>ToString($_[1]->getArg(1))); 
 		 AssignValue(pilist_base  =>$_[1]->getArg(2)->valueOf); },
@@ -59,7 +59,7 @@ DefEnvironment('{Pilist}{}{Number}',
 
 DefEnvironment('{Piautolist}{}{Number}',
 	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
-	       beforeDigest=>sub { beforeItemize('piautolist'); },
+	       beforeDigest=>sub { beginItemize('piautolist'); },
 	       afterDigestBegin=>sub {
 		 AssignValue(pilist_pifont=>ToString($_[1]->getArg(1)));
 		 AssignValue(pilist_base  =>$_[1]->getArg(2)->valueOf); },
@@ -73,7 +73,7 @@ DefMacro('\ding{}','\Pisymbol{pzd}{#1}');
 
 DefEnvironment('{dinglist}{Number}',
 	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
-	       beforeDigest=>sub { beforeItemize('pilist'); },
+	       beforeDigest=>sub { beginItemize('pilist'); },
 	       afterDigestBegin=>sub {
 		 AssignValue(pilist_pifont=>'pzd'); 
 		 AssignValue(pilist_base  =>$_[1]->getArg(1)->valueOf); },
@@ -81,7 +81,7 @@ DefEnvironment('{dinglist}{Number}',
 
 DefEnvironment('{dingautolist}{Number}',
 	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
-	       beforeDigest=>sub { beforeItemize('piautolist'); },
+	       beforeDigest=>sub { beginItemize('piautolist'); },
 	       afterDigestBegin=>sub {
 		 AssignValue(pilist_pifont=>'pzd'); 
 		 AssignValue(pilist_base  =>$_[1]->getArg(1)->valueOf); },
