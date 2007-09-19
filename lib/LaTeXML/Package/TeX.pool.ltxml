@@ -2601,9 +2601,11 @@ DefMath('\biguplus', "\x{2296}", role=>'SUMOP',
 	scriptpos=>\&doScriptpos); # CIRCLED MINUS (N-ARY ?)
 
 DefConstructor('\limits', sub {
-   $_[0]->getLastElement->setAttribute(scriptpos=>'mid'); });
+   my $node = $_[0]->getNode;
+   ($_[0]->getLastChildElement($node)||$node)->setAttribute(scriptpos=>'mid'); });
 DefConstructor('\nolimits',sub {
-   $_[0]->getLastElement->setAttribute(scriptpos=>'post'); });
+   my $node = $_[0]->getNode;
+   ($_[0]->getLastChildElement($node)||$node)->setAttribute(scriptpos=>'post'); });
 
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.4. Binary Operation Symbols, p.42
@@ -2949,8 +2951,11 @@ DefConstructor('\right Token',"?#char(<ltx:XMTok role='#role' name='#name'>#char
 
 sub addDelimiterRole {
   my($document,$role)=@_;
-  my $node=$document->getLastElement; # This should be the wrapper just added.
-  my $delim_role = ($node->firstChild && $node->firstChild->getAttribute('role') || '');
+  my $current      = $document->getNode;
+  # This should be the wrapper just added.
+  my $node         = $document->getLastChildElement($current) || $current;
+  my $delim        = $node && $document->getFirstChildElement($node);
+  my $delim_role   = ($delim->getAttribute('role') || '');
   my $wrapper_role = ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR)$/ ? $role : $delim_role);
   $node->setAttribute(role=>$wrapper_role) if $wrapper_role; }
 
@@ -3414,14 +3419,14 @@ DefConstructor('\@hidden{}','',reversion=>'');
 
 DefRewrite(xpath=>'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
 	  replace=>sub { my($document,$wrap)=@_;
-			 my $node = $wrap->firstChild;
-			 foreach my $attribute ($wrap->attributes){
-			   if($attribute->nodeType == XML_ATTRIBUTE_NODE){
-			     my $attr = $attribute->nodeName;
-			     $node->setAttribute($attr,$attribute->getValue) unless $attr =~ /^_/; }}
-#			 $wrap->parentNode->replaceChild($node,$wrap); });
-			 ## WHY THIS????
-			 $document->getNode->appendChild($node); });
+			 if(my $node = $document->getFirstChildElement($wrap)){
+			   foreach my $attribute ($wrap->attributes){
+			     if($attribute->nodeType == XML_ATTRIBUTE_NODE){
+			       my $attr = $attribute->nodeName;
+			       $node->setAttribute($attr,$attribute->getValue)
+				 unless $attr =~ /^_/; }}
+			   ## WHY THIS????
+			   $document->getNode->appendChild($node); }});
 #**********************************************************************
 
 1;

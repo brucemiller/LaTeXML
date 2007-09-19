@@ -677,9 +677,9 @@ DefConstructor('\sideset{}{}{}', sub {
   my @scripts = (undef,undef,undef,undef);
 
   my $node = $document->insertElement('ltx:XMArg',$base);
+  my $ch   = $document->getFirstChildElement($node);
   my ($opx,$ignore)
-    = ($node->firstChild->getAttribute('scriptpos')||'post')
-      =~ /^(pre|mid|post)?(\d+)?$/;
+    = ($ch && $ch->getAttribute('scriptpos')||'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my $level = $props{level}||0;
   my $x  = 'pre';
   foreach my $group ($pre,$post){ # Best order?
