@@ -376,7 +376,7 @@ sub translate_constructor {
       if($float){
 	$code .= "\$savenode=\$document->floatToAttribute('$key');\n";
 	$float = undef; }
-      $code .= "\$document->getNode->setAttribute('$key',ToString(".translate_string()."));\n"; }
+      $code .= "\$document->getNode->setAttribute('$key',ToString(".translate_string().")) if \$savenode;\n"; }
     # Else random text
     elsif(s/^$TEXT_RE//so){	# Else, just some text.
       $code .= "\$document->absorb('".slashify($1)."');\n"; }
