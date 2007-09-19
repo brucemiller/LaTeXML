@@ -38,7 +38,7 @@ Let('\hyperrefhtml',   '\hyperrefdef');
 
 DefConstructor('\hypercite [] {}{} [] Semiverbatim',
 	       "<ltx:cite>#4 <ltx:bibref bibrefs='#5'>#2</ltx:bibref> #1</ltx:cite>");
-Let('\htmlcite{}{}','\hypercite');
+DefMacro('\htmlcite{}{}','\hypercite{#1}{}{#2}');
 DefMacro('\htmlimage{}','');
 DefMacro('\htmlborder{}','');
 DefEnvironment('{makeimage}','#body');
@@ -65,9 +65,8 @@ DefEnvironment('{latexonly}','#body'); # Include this (?)
 DefMacro('\latex{}','#1');
 DefMacro('\latexhtml{}{}','#1');
 
-DefMacro('\strikeout{}','');
-DefMacro('\url Semiverbatim','');
-DefMacro('\htmlurl Semiverbatim','');
+DefMacro('\strikeout{}','#1');
+DefMacro('\htmlurl Semiverbatim','\url{#1}');
 
 DefMacro('\HTMLset{}{}','');
 DefMacro('\htmlinfo','');

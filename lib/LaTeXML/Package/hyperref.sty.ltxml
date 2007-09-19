@@ -14,6 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
+RequirePackage('url');
 # Need some work here!?!?
 DefMacro('\pdfcatalog{}','');
 DefRegister('\pdfcompresslevel',Number(0));
