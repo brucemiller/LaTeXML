@@ -36,7 +36,7 @@ DefPrimitive('\acrodef{}[]{}', sub {
   AssignValue('ACRONYM@short@'.$id => Digest($short),'global');
   AssignValue('ACRONYM@long@'.$id  => Digest($long),'global'); });
 
-DefConstructor('\@AC@short{}',"&LooukpValue('ACRONYM\@short\@#1')");
+DefConstructor('\@AC@short{}',"&LookupValue('ACRONYM\@short\@#1')");
 DefConstructor('\@AC@long{}',"&LookupValue('ACRONYM\@long\@#1')");
 # \@ACR@{id}{text}
 DefConstructor('\@ACRO@{}{}',"<ltx:acronym name='#1'>#2</ltx:acronym>");
