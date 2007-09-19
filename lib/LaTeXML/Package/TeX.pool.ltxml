@@ -920,7 +920,9 @@ sub REF { $_[0] && $_[0]->{$_[1]}; }
 
 DefConstructor('\hbox BoxSpecification BoxContents',
 	       "<ltx:text width='&REF(#1,to)' pad-width='&REF(#1,spread)'>#2</ltx:text>",
-	       mode=>'text');
+	       mode=>'text',
+	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
+	       beforeDigest=>sub { Let(T_MATH,T_CS('\@text@alignment$')); });
 
 DefConstructor('\vbox BoxSpecification BoxContents',
 	       "<ltx:vbox valign='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:vbox>",
@@ -1130,6 +1132,27 @@ DefConstructor('\@alignment@hrule','',
 	       properties=>{isHorizontalRule=>1},
 	       alias=>'\hrule');
 
+# Special forms for $ appearing within alignments.
+# Note that $ within a math alignment (eg array environment),
+# switches to text mode! There's no $$ for display math.
+
+# This is the "normal" case: $ appearing with an alignment that is in text mode.
+# It's just like regular $, except it doesn't look for $$ (no display math).
+DefPrimitiveI('\@text@alignment$', undef, sub {
+  $_[0]->invokeToken(T_CS((LookupValue('IN_MATH') ?'\@@ENDINLINEMATH':'\@@BEGININLINEMATH'))); });
+
+# This one is for $ appearing within an alignment that's already math.
+# It switches to text mode.
+DefPrimitiveI('\@math@alignment$', undef, sub {
+  $_[0]->invokeToken(T_CS((LookupValue('IN_MATH') ?'\@@BEGININLINETEXT':'\@@ENDINLINETEXT'))); });
+DefConstructor('\@@BEGININLINETEXT',
+	       "<ltx:XMText>"
+	       .  "#body"
+	       ."</ltx:XMText>",
+	       alias=>'$', beforeDigest=> sub{ $_[0]->beginMode('text'); }, captureBody=>1);
+DefConstructor('\@@ENDINLINETEXT'   ,"", alias=>'$',
+	       beforeDigest=> sub{ $_[0]->endMode('text');});
+
 # ????
 DefPrimitive('\noalign', undef);
 DefMacro('\hidewidth','');
@@ -1164,6 +1187,7 @@ sub alignmentBindings {
   Let(T_CS('\hline'), T_CS('\@alignment@hline'));
   Let(T_CS('\hrule'), T_CS('\@alignment@hrule'));
   Let('\span',        T_CS('\@alignment@span'));
+  Let(T_MATH,  (LookupValue('IN_MATH') ? T_CS('\@math@alignment$') : T_CS('\@text@alignment$')));
   return; }
 
 DefPrimitive('\@alignment@bindings AlignmentTemplate',sub {
@@ -1517,7 +1541,8 @@ DefPrimitive('$', sub {
     $op = '\@@ENDDISPLAYMATH'; }
   elsif($mode eq 'inline_math'){
     $op = '\@@ENDINLINEMATH'; }
-  elsif(!LookupValue('Alignment') && $gullet->ifNext(T_MATH)){
+#  elsif(!LookupValue('Alignment') && $gullet->ifNext(T_MATH)){
+  elsif($gullet->ifNext(T_MATH)){
     $gullet->readToken;
     $op = '\@@BEGINDISPLAYMATH'; }
   $stomach->invokeToken(T_CS($op)); });
