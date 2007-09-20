@@ -21,7 +21,6 @@ use base qw(LaTeXML::Post);
 
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
 our $svgURI  = 'http://www.w3.org/2000/svg';
-our $svgPref = 'svg';
 
 my $NR = '[\-\+\d\.e]+';
 
@@ -33,7 +32,7 @@ sub process {
   local $LaTeXML::Post::SVG::DOCUMENT = $doc;
   if(my @svg = $self->find_svg_nodes($doc)){
     $self->Progress("Converting ".scalar(@svg)." pictures");
-    $doc->getDocumentElement->setNamespace($svgURI, $svgPref, 0);
+    $doc->addNamespace($svgURI,'svg');
     map(ProcessSVG($_), @svg);
     $doc->adjust_latexml_doctype('SVG'); } # Add SVG if LaTeXML dtd.
   $doc; }
@@ -41,7 +40,7 @@ sub process {
 sub find_svg_nodes { $_[1]->findnodes('//ltx:picture'); }
 
 sub getQName {
-  $LaTeXML::Post::MathML::DOCUMENT->getQName(@_); }
+  $LaTeXML::Post::SVG::DOCUMENT->getQName(@_); }
 
 ####################################
 ## fixes an svg node
