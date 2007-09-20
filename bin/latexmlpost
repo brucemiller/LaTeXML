@@ -250,6 +250,7 @@ if(!$prescan){
     my @csspaths=();
     if(@css && $destination){
       foreach my $css (@css){
+	$css .= '.css' unless $css =~ /\.css$/;
 	my $csssource = pathname_find($css,types=>['css'],paths=>[$sourcedir||'.'],
 				      installation_subdir=>'style');
 	my $csspath = pathname_absolute($css,pathname_directory($destination));
