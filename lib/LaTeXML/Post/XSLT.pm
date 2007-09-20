@@ -28,7 +28,7 @@ sub new {
   $self->Error("No stylesheet specified!") unless $stylesheet;
   if(!ref $stylesheet){
     my $pathname = pathname_find($stylesheet,
-				 types=>['xsl'],installation_subdir=>'dtd');
+				 types=>['xsl'],installation_subdir=>'style');
     $self->Error("No stylesheet \"$stylesheet\" found!")
       unless $pathname && -f $pathname;
     $stylesheet = XML::LibXML->new()->parse_file($pathname); }
