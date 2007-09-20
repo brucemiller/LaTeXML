@@ -3322,7 +3322,9 @@ sub LaTeXTrigger {
   $gullet->unread(T_CS("\\".$cs));
   (); }
 
-foreach my $trigger (qw(documentclass documentstyle newcommand
+foreach my $trigger (qw(documentclass documentstyle
+			newcommand renewcommand newenvironment renewenvironment
+			NeedsTeXFormat
 			makeatletter makeatother)){
   DefMacro("\\".$trigger, sub { LaTeXTrigger($_[0],$trigger); }); }
 
