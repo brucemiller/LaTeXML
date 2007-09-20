@@ -31,7 +31,6 @@ sub latexml_tests {
 	$Test->skip("No file $test.xml"); }
     }}}
 
-
 sub do_fail {
   my($name,$diag)=@_;
   { local $Test::Builder::Level =  $Test::Builder::Level+1;
@@ -49,7 +48,7 @@ sub skip_all {
 # NOTE: This assumes you will have successfully loaded LaTeXML.
 sub latexml_ok {
   my($texpath,$xmlpath,$name)=@_;
-  my($latexml,$dom);
+  my($latexml,$dom,$domstring);
 
   eval{ $latexml = LaTeXML->new(preload=>[], searchpath=>[], includeComments=>0,
 				verbosity=>-2); };
@@ -59,20 +58,18 @@ sub latexml_ok {
   return do_fail($name,"Couldn't convert $texpath: ".@!) unless $dom;
 
   { local $Test::Builder::Level =  $Test::Builder::Level+1;
-    is_xmlcontent($dom,$xmlpath,$name); }}
+      is_xmlcontent($latexml,$dom,$xmlpath,$name); }}
 
-#use Encode;
 sub is_xmlcontent {
-  my($xmldom,$path,$name)=@_;
+  my($latexml,$xmldom,$path,$name)=@_;
+  my($domstring);
   if(!defined $xmldom){
     do_fail($name,"The XML DOM was undefined for $name"); }
   else {
+    eval { $domstring = $latexml->DOMtoString($xmldom); };
+    return do_fail($name,"Couldn't convert dom to string: ".@!) unless $domstring;
     { local $Test::Builder::Level =  $Test::Builder::Level+1;
-#      is_filecontent([split('\n',$xmldom->toString(1))],$path,$name); }}}
-#      is_filecontent([split('\n',Encode::decode("utf-8",$xmldom->toString(1)))],$path,$name); }}}
-#      $xmldom->setEncoding("utf-8");
-      is_filecontent([split('\n',$xmldom->toString(1))],$path,$name); }}}
-
+      is_filecontent([split('\n',$domstring)],$path,$name); }}}
 
 sub is_filecontent {
   my($strings,$path,$name)=@_;

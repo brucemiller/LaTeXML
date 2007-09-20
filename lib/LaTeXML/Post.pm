@@ -13,6 +13,7 @@
 package LaTeXML::Post;
 use strict;
 use Time::HiRes;
+use Encode;
 use LaTeXML::Util::Pathname;
 
 sub new {
@@ -167,7 +168,12 @@ sub getSourceDirectory      { $_[0]->{sourceDirectory} || '.'; }
 sub getSearchPaths          { @{$_[0]->{searchpaths}}; }
 sub getDestination          { $_[0]->{destination}; }
 sub getDestinationDirectory { $_[0]->{destinationDirectory}; }
-sub toString                { $_[0]->{document}->toString(1); }
+sub toString                {
+  my($self)=@_;
+  if($XML::LibXML::VERSION < 1.63){
+    Encode::encode("utf-8",$$self{document}->toString(1)); }
+  else {
+    $$self{document}->toString(1); }}
 
 sub getDestinationExtension {
   my($self)=@_;

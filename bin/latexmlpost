@@ -24,13 +24,18 @@ my($stylesheet,$defaultcss,@css)=(undef,1);
 my($parallelmath,$mathimages)=(undef,undef);
 my($linelength,$keepXMath)=(undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
-my($split,$splitpath,$splitnaming)
-  =(undef,"//ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index",'id');
+my($split,$splitat,$splitpath,$splitnaming)=(undef,'section',undef,'id');
 my($prescan,$dbfile,$scan,$crossref)=(undef,undef,1,1);
 my($index,$permutedindex,$splitindex)=(1,undef,undef);
 my($splitbibliography,@bibliographies)=(undef);
 my @math_formats =();
 my %removed_math_formats=();
+my $splitback= "//ltx:bibliography | //ltx:appendix | //ltx:index";
+my %splitpaths =
+  (chapter=>"//ltx:chapter | $splitback",
+   section=>"//ltx:chapter | //ltx:section | $splitback",
+   subsection=>"//ltx:chapter | //ltx:section | //ltx:subsection | $splitback",
+   subsubsection=>"//ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | $splitback");
 
 
 # Get the command line arguments.
@@ -50,6 +55,7 @@ GetOptions("destination=s"=>sub { $destination = $_[1];
 	   "omitdoctype!"          =>\$omit_doctype,
 	   # Options for broader document set processing
 	   "split!"                =>\$split,
+	   "splitat=s"             =>sub { $splitat=$_[1]; $split=1 unless defined $split;},
 	   "splitpath=s"           =>sub { $splitpath=$_[1]; $split=1 unless defined $split;},
 	   "splitnaming=s"         =>sub { $splitnaming=$_[1]; $split=1 unless defined $split;},
 	   "index!"                =>\$index,
@@ -109,7 +115,10 @@ if($split && !defined $destination){
   Error("Must supply destination when using split"); }
 if($split){
   $splitnaming = checkOptionValue('--splitnaming',$splitnaming,
-				  qw(id idrelative label labelrelative)); }
+				  qw(id idrelative label labelrelative)); 
+  $splitat = checkOptionValue('--splitat',$splitat,keys %splitpaths);
+  $splitpath = $splitpaths{$splitat} unless defined $splitpath;
+}
 if($prescan && !$scan){
   Error("Makes no sense to prescan with scanning disabled"); }
 if($prescan && (!defined $dbfile)){
@@ -135,7 +144,7 @@ elsif($format eq 'html'){
   $picimages  = 1 unless defined $picimages;
   if(!defined $stylesheet){
     $stylesheet = "LaTeXML-html.xsl";
-    unshift(@css,"LaTeXML.css") if $defaultcss; }}
+    unshift(@css,"core.css") if $defaultcss; }}
 elsif($format eq 'xhtml'){
   Error("Default xhtml stylesheet does not support math images")
     if (!defined $stylesheet) && $mathimages;
@@ -149,7 +158,7 @@ elsif($format eq 'xhtml'){
   $dographics = 1 unless defined $dographics;
   if(!defined $stylesheet){
     $stylesheet = "LaTeXML-xhtml.xsl";
-    unshift(@css,"LaTeXML.css") if $defaultcss; }}
+    unshift(@css,"core.css") if $defaultcss; }}
 
 Error("Parallel math markup needs at least two formats")
   if $parallelmath && (scalar(@math_formats) < 2);
@@ -241,8 +250,8 @@ if(!$prescan){
     my @csspaths=();
     if(@css && $destination){
       foreach my $css (@css){
-	my $csssource = pathname_find($css,paths=>[$sourcedir||'.'],
-				      installation_subdir=>'dtd');
+	my $csssource = pathname_find($css,types=>['css'],paths=>[$sourcedir||'.'],
+				      installation_subdir=>'style');
 	my $csspath = pathname_absolute($css,pathname_directory($destination));
 	pathname_copy($csssource,$csspath)  if -f $csssource; 
 	push(@csspaths,$csspath); }}
@@ -306,11 +315,12 @@ latexmlpost [options] xmlfile
  --format=html|xhtml|xml requests the output format.
  --stylesheet=xslfile    requests the XSL transform using the
                          given xslfile as stylesheet.
- --css=cssfile           use the cssfile in html/xhtml 
+ --css=cssfile           adds a css stylesheet to html/xhtml
                          (can be repeated)
  --nodefaultcss          disables use of the default css stylesheet
  --split                 requests splitting each document
  --nosplit               disables the above (default)
+ --splitat               specifies what level to split the document
  --splitpath=xpath       specifies xpath expression for splitting
                          (default is section-like, if splitting)
  --splitnaming=(id|idrelative|label|labelrelative) specifies how
@@ -429,12 +439,17 @@ format (html or xhtml) will be used.
 
 Adds I<cssfile> as a css stylesheet to be used in the transformed html/xhtml.
 Multiple stylesheets can be used; they are included in the html in the
-order given, following the default C<LaTeXML.css>, unless that is inhibited
-(see B<--nodefaultcss>).
+order given, following the default C<core.css>, unless that is inhibited
+(see B<--nodefaultcss>). Some stylesheets included in the distribution are
+  --css=navbar-left   Puts a navigation bar on the left
+                      (default omits the navbar)
+  --css=navbar-right  Puts a navigation bar on the left
+  --css=theme-blue    A blue coloring theme for headings
+  --css=amsart        A style suitable for journal articles
 
 =item B<--nodefaultcss>
 
-Disables the inclusion of the default C<LaTeXML.css> stylesheet.
+Disables the inclusion of the default C<core.css> stylesheet.
 
 =back
 
@@ -447,6 +462,12 @@ Disables the inclusion of the default C<LaTeXML.css> stylesheet.
 Enables or disables (default) the splitting of documents into multiple `pages'.
 If enabled, the the document will be split into sections, bibliography,
 index and appendices (if any) by default, unless B<--splitpath> is specified.
+
+=item B<--splitat=>I<unit>
+
+Specifies what level of the document to split at. Should be one
+of C<chapter>, C<section> (the default), C<subsection> or C<subsubsection>.
+For more control, see C<--splitpath>.
 
 =item B<--splitpath=>I<xpath>
 

@@ -81,10 +81,7 @@ if($digested){
 	$serialized = $digested->toString; }
     else {
 	my $dom = $latexml->convertDocument($digested); 
-#	$serialized = $dom->toString(1);
-#	$serialized = Encode::decode("utf-8",$dom->toString(1));
-#	$dom->setEncoding("UTF8");
-	$serialized = $dom->toString(1);
+	$serialized = $latexml->DOMtoString($dom);
 
 
     }}

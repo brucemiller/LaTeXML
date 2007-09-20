@@ -20,6 +20,7 @@ use LaTeXML::Model;
 use LaTeXML::Object;
 use LaTeXML::MathParser;
 use LaTeXML::Util::Pathname;
+use Encode;
 our @ISA = (qw(LaTeXML::Object));
 
 #use LaTeXML::Document;
@@ -171,6 +172,12 @@ sub writeDOM {
   $dom->toFile("$name.xml",1);
   1; }
 
+sub DOMtoString {
+  my($self,$dom)=@_;
+  if($XML::LibXML::VERSION < 1.63){
+    Encode::encode("utf-8",$dom->toString(1)); }
+  else {
+    $dom->toString(1); }}
 #**********************************************************************
 # Should post processing be managed from here too?
 # Problem: with current DOM setup, I pretty much have to write the
@@ -222,25 +229,33 @@ Creates a new LaTeXML object for transforming TeX files into XML.
 
 Reads the TeX file C<$file>.tex, digests and converts it to XML, and saves it in C<$file>.xml.
 
-=item C<< $latexml->convertFile($file); >>
+=item C<< $doc = $latexml->convertFile($file); >>
 
 Reads the TeX file C<$file>, digests and converts it to XML and returns the L<XML::LibXML::Document>.
 
-=item C<< $latexml->convertString($string); >>
+=item C<< $doc = $latexml->convertString($string); >>
 
 Digests C<$string>, which presumably contains TeX markup, and converts it to XML 
 and returns the L<XML::LibXML::Document>.
 
-=item C<< $latexml->digestFile($file); >>
+=item C<< $latexml->writeDOM($doc,$name); >>
+
+Writes the XML document to $name.xml. 
+
+=item C<< $string = $latexml->DOMtoString($doc); >>
+
+Converts the XML document to a string (of utf8 bytes).
+
+=item C<< $box = $latexml->digestFile($file); >>
 
 Reads the TeX file C<$file>, and digests it returning the L<LaTeXML::Box> representation.
 
-=item C<< $latexml->digestString($string); >>
+=item C<< $box = $latexml->digestString($string); >>
 
 Digests C<$string>, which presumably contains TeX markup,
 returning the L<LaTeXML::Box> representation.
 
-=item C<< $latexml->convertDocument($digested); >>
+=item C<< $doc = $latexml->convertDocument($digested); >>
 
 Converts C<$digested> (the L<LaTeXML::Box> reprentation) into XML,
 returning the L<XML::LibXML::Document>.

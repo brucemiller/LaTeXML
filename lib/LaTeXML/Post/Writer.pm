@@ -38,12 +38,11 @@ sub process {
   my $string;
   if($$self{format} eq 'html'){
     $string = $xmldoc->toStringHTML;
-#    # Bug in LibXML?  This is probably even dangerous ??
-#    if($doc->getDocument->encoding =~ /utf-?8/i){
-#      $string = Encode::decode_utf8($string); }
   }
   else {
-    $string =  $xmldoc->toString;}
+    $string =  $xmldoc->toString; }
+  if($XML::LibXML::VERSION < 1.63){
+    $string = Encode::encode("utf-8",$string); }
 
   if(my $destination = $doc->getDestination){
     $self->Progress("Writing $destination");

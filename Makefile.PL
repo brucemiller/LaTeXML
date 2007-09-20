@@ -21,8 +21,9 @@ WriteMakefile(NAME => 'LaTeXML',
 	      VERSION_FROM => 'lib/LaTeXML.pm',
 	      AUTHOR => 'Bruce Miller <bruce.miller@nist.gov>',
 	      ABSTRACT => "transforms TeX and LaTeX into XML",
-	      PREREQ_PM => { 'XML::LibXML'  => 1.63,
-			     'XML::LibXSLT' => 1.62,
+	      PREREQ_PM => { 
+			    'XML::LibXML'  => 1.61, # But > 1.62 is better
+			    'XML::LibXSLT' => 1.58,
 #			     'XML::LibXML::XPathContext' => 0,
 			     'Parse::RecDescent' => 0,
 #			     'Image::Magick'=> 0
@@ -71,18 +72,18 @@ MakeGrammar
 # html must be in null namespace, xhtml must be in a specific namespace.
 sub compile_XSLTs {
   push(@EXCLUSIONS,
-       'blib/lib/LaTeXML/dtd/html.xsl.head', 'blib/lib/LaTeXML/dtd/xhtml.xsl.head',
-       'blib/lib/LaTeXML/dtd/core.xsl.tail');
+       'blib/lib/LaTeXML/style/html.xsl.head', 'blib/lib/LaTeXML/style/xhtml.xsl.head',
+       'blib/lib/LaTeXML/style/core.xsl.tail');
   $MORE_MAKERULES .= << 'MakeXSLT';
-all :: blib/lib/LaTeXML/dtd/LaTeXML-html.xsl
+all :: blib/lib/LaTeXML/style/LaTeXML-html.xsl
 
-all :: blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl
+all :: blib/lib/LaTeXML/style/LaTeXML-xhtml.xsl
 
-blib/lib/LaTeXML/dtd/LaTeXML-html.xsl: lib/LaTeXML/dtd/html.xsl.head lib/LaTeXML/dtd/core.xsl.tail
-	$(CAT) lib/LaTeXML/dtd/html.xsl.head lib/LaTeXML/dtd/core.xsl.tail > $(INST_LIB)/LaTeXML/dtd/LaTeXML-html.xsl
+blib/lib/LaTeXML/style/LaTeXML-html.xsl: lib/LaTeXML/style/html.xsl.head lib/LaTeXML/style/core.xsl.tail
+	$(CAT) lib/LaTeXML/style/html.xsl.head lib/LaTeXML/style/core.xsl.tail > $(INST_LIB)/LaTeXML/style/LaTeXML-html.xsl
 
-blib/lib/LaTeXML/dtd/LaTeXML-xhtml.xsl: lib/LaTeXML/dtd/xhtml.xsl.head lib/LaTeXML/dtd/core.xsl.tail
-	$(CAT) lib/LaTeXML/dtd/xhtml.xsl.head lib/LaTeXML/dtd/core.xsl.tail > $(INST_LIB)/LaTeXML/dtd/LaTeXML-xhtml.xsl
+blib/lib/LaTeXML/style/LaTeXML-xhtml.xsl: lib/LaTeXML/style/xhtml.xsl.head lib/LaTeXML/style/core.xsl.tail
+	$(CAT) lib/LaTeXML/style/xhtml.xsl.head lib/LaTeXML/style/core.xsl.tail > $(INST_LIB)/LaTeXML/style/LaTeXML-xhtml.xsl
 
 MakeXSLT
 }
