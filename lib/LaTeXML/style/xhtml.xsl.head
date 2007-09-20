@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ /=====================================================================\ 
+ |  Head of xhtml.xsl                                                  |
+ |  Stylesheet for converting LaTeXML documents to xhtml               |
+ |=====================================================================|
+ | Part of LaTeXML:                                                    |
+ |  Public domain software, produced as part of work done by the       |
+ |  United States Government & not subject to copyright in the US.     |
+ |=====================================================================|
+ | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+ | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+ \=========================================================ooo==U==ooo=/
+-->
+<xsl:stylesheet
+  version     = "1.0"
+  xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
+  xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
+  xmlns       = "http://www.w3.org/1999/xhtml"
+  xmlns:m     = "http://www.w3.org/1998/Math/MathML"
+  xmlns:svg   = "http://www.w3.org/2000/svg"
+  xmlns:string="http://exslt.org/strings"
+  exclude-result-prefixes = "ltx"
+  extension-element-prefixes="string"
+>
+
+<xsl:output method="xml"
+	    doctype-public = "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN"
+            doctype-system = "http://www.w3c.org/TR/MathML2/dtd/xhtml-math11-f.dtd"
+	    media-type     = 'application/xhtml+xml'
+	    encoding       = 'utf-8'/>
+    
+  <xsl:template match="ltx:Math">
+    <xsl:apply-templates select="m:math"/>
+  </xsl:template>
+
+  <xsl:template match="ltx:Math">
+    <xsl:apply-templates select="m:math"/>
+  </xsl:template>
+
+  <!-- Copy MathML, as is -->
+  <xsl:template match="*[namespace-uri() = 'http://www.w3.org/1998/Math/MathML']">
+    <xsl:element name="{name()}" namespace='http://www.w3.org/1998/Math/MathML'>
+      <xsl:for-each select="@*">
+        <xsl:attribute name="{name()}">
+          <xsl:value-of select="."/>
+        </xsl:attribute>
+      </xsl:for-each>
+      <xsl:apply-templates/>
+    </xsl:element>
+  </xsl:template>
+
+  <!-- Copy SVG, as is -->
+  <xsl:template match="*[namespace-uri() = 'http://www.w3.org/2000/svg']">
+    <xsl:element name="{name()}" namespace='http://www.w3.org/2000/svg'>
+      <xsl:for-each select="@*">
+        <xsl:attribute name="{name()}">
+          <xsl:value-of select="."/>
+        </xsl:attribute>
+      </xsl:for-each>
+      <xsl:apply-templates/>
+    </xsl:element>
+  </xsl:template>
+
+<!--
+  <xsl:template match="ltx:equation[@refnum]">
+    <div class='equation'> 
+      <xsl:call-template name="add_id"/>
+      <m:math display="block">
+	<m:mtable>
+	  <m:mtr>
+	    <m:mtd><m:mtext>(<xsl:value-of select="@refnum"/>)</m:mtext></m:mtd>
+	    <m:mtd><xsl:apply-templates select="ltx:Math/m:math/node()"/></m:mtd>
+	</m:mtr>
+	</m:mtable>
+      </m:math>
+    </div>
+  </xsl:template>
+-->
+
+<!--
+  <xsl:template name="add_id">
+    <xsl:choose>
+      <xsl:when test="@label">
+	<xsl:attribute name="id"><xsl:value-of select="@label"/></xsl:attribute>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:attribute name="id"><xsl:value-of select="generate-id()"/></xsl:attribute>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+-->
+  <xsl:template name="add_id">
+    <xsl:if test="@fragid">
+      <xsl:attribute name="id"><xsl:value-of select="@fragid"/></xsl:attribute>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="/">
+    <html xmlns:m     = "http://www.w3.org/1998/Math/MathML"
+	  xmlns:svg   = "http://www.w3.org/2000/svg">
+      <xsl:call-template name="head"/>
+      <xsl:call-template name="body"/>
+    </html>
+  </xsl:template>
+
+<!-- INCOMPLETE;  Must have core.xsl.tail appended!!!! -->

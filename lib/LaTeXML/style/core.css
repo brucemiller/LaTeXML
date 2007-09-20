@@ -1,0 +1,101 @@
+/*======================================================================
+ Core CSS for LaTeXML documents converted to (X)HTML */
+
+/* Generic Page layout */
+/* Header & footer */
+/*.header:before { content:url(latexml.png); }*/
+.header,.footer   { font-size:80%; }
+.header .previous { float:left; }
+.header .up,
+.footer           { display:block; text-align:center; }
+.header .next     { float:right; }
+.header li { padding:0.1em 0.2em 0.1em 1em;}
+
+/* Main content */
+.content { clear:both; padding-top:5px; border-top:1px solid; }
+.footer  { margin-top:5px;  border-top:1px solid; }
+
+/* if shown */
+.navbar .toc li { margin-left:-0.5em; }
+.navbar li { white-space:nowrap; display:block; overflow:hidden; }
+
+/*======================================================================
+ Titles & Frontmatter */
+h1 { text-align:center; font-size: 150%; font-family:sans-serif;}
+h2 { font-family:sans-serif; padding-left:0.2em; margin-left:-0.5em; }   
+h3 { font-family:sans-serif; padding-left:0.2em; margin-left:-0.3em; }
+/* h6 { display:run-in; }*/
+/* Hack to simulate run-in! */
+h6 { display:inline; font-size:100%; font-family:sans-serif; }
+h6:after { content:" "; }
+h6 + div.para,
+h6 + p { display:inline; }
+
+.subtitle    { text-align:center; font-size: 120%; font-family:sans-serif;
+	       padding-left:0.2em; margin-left:-0.5em; }
+.author      { text-align:center; font-family:sans-serif; }
+.authorname  { font-size: 130%; }
+.dedication  { font-style:oblique; }
+.classification,
+.keywords    { font-size:90%; margin-left:4em; }
+.abstract    { margin:1em 4em 1em 4em; }
+.toc li      { list-style-type:none;  }
+
+.navbar { display: none; } /* override! */
+.main { margin:0px; padding:1em 3em 1em 2em; }
+
+/*======================================================================
+ Blocks, Lists, Floats */
+img.math { vertical-align:middle }
+.equation { display:block; width:100%; }
+.equation .refnum { position:absolute; left:2em; }
+
+dl.description dt { margin-right:0.5em; float:left; }
+dl.description dd { margin-left:5em; }
+dl.description dl.description dd { margin-left:3em; }
+
+.theorem  {margin:1em 0em 1em 0em; }
+
+.bibliography dt { margin-right:0.5em; float:left; }
+.bibliography dd { margin-left:3em; }
+
+.indexlist li { list-style-type:none;  }
+.indexlist { margin-left:1em; padding-left:1em;}
+
+/*======================================================================
+ Borders and such */
+.framed  { border:1px solid black;}
+table { border-collapse:collapse; }
+/* Hmm... the star should be m:mtd */
+td.t,  th.t,  *[class~="t"]  { border-top:1px solid black; }
+td.r,  th.r,  *[class~="r"]  { border-right:1px solid black; }
+td.b,  th.b,  *[class~="b"]  { border-bottom:1px solid black; }
+td.l,  th.l,  *[class~="l"]  { border-left:1px solid black; }
+td.th, th.tt, *[class~="tt"] { border-top:3px double black; }
+td.rr, th.rr, *[class~="rr"] { border-right:3px double black; }
+td.bb, th.bb, *[class~="bb"] { border-bottom:3px double black; }
+td.ll, th.ll, *[class~="ll"] { border-left:3px double black; }
+
+/*======================================================================
+ Low-level Basics */
+.TINY       { font-size:50%; }
+.Tiny       { font-size:60%; }
+.tiny       { font-size:65%; }
+.script     { font-size:70%; }
+.footnote   { font-size:80%; }
+.small      { font-size:90%; }
+.normal     { font-size:100%; }
+.large      { font-size:110%; }
+.Large      { font-size:120%; }
+.LARGE      { font-size:140%; }
+.huge       { font-size:150%; }
+.Huge       { font-size:170%; }
+.HUGE       { font-size:200%; }
+.sansserif  { font-family: sans-serif; }
+.typewriter { font-family: monospace; }
+.bold       { font-weight: bold; }
+.italic     { font-style: italic; }
+.upright    { font-style: normal; }
+.slanted    { font-style: oblique; }
+.red        { color:red; }
+.center     { text-align:center; }

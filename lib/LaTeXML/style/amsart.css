@@ -1,0 +1,11 @@
+/* A somewhat amsart-like style */
+h1, h2, h3, h4, h5, h6, .author .authorname
+  { font-family:serif; font-variant:small-caps;}
+.author
+  { font-family:serif; }
+
+h1, h2, h3 
+  { text-align:center; color:#700303; }
+
+.para > p:first-child { text-indent: 2em; }
+p { text-align:justify; }
