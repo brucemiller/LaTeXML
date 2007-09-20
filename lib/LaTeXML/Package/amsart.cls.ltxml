@@ -1,0 +1,59 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  amsart                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# / Thanks to the arXMLiv group for 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#**********************************************************************
+# Document structure.
+
+LoadClass('ams_core');
+
+# amsart.cls.ltxml : journal article
+# amsproc.cls.ltxml : article in book proceedings
+# amsbook.cls.ltxml : monograph
+# gen-j-l.cls.ltxml "generic journal article" => amsart
+# gen-p-l.cls.ltxml "generic proceedings article" => amsproc
+# gen-m-l.cls.ltxml "monograph" => amsbook
+
+# # MANY more styles!
+# conm-p-l "Contemporary Mathematics proceedings series" 
+# (conm-p-l-version ?? )
+# And, the following from arXMLiv have similar naming format(?)
+# crmp-l.cls
+# dimacs-l.cls
+# era-l.cls
+# ert-l.cls
+# ert-like.cls
+# fic-l.cls
+# gsm-l.cls
+# iimas-amsproc.cls
+# iimas-conm-p-l.cls
+# jag-l.cls
+# jams-l.cls
+# mcom-1.cls
+# pcms-l.cls
+# proc-l.cls
+# psapm-l.cls
+# pspum-l.cls
+# tran-l.cls
+# (and tran-l-1.cls, tran-l2.cls, trans2-l.cls)
+
+#======================================================================
+# Sec. 5. Document Body
+Let('\specialsection','\chapter'); # Close enough?
+
+# #======================================================================
+1;

@@ -1,0 +1,175 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  ams_core [common support for amsart,amsproc,amsbook                | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# / Thanks to the arXMLiv group for 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#**********************************************************************
+# Document structure.
+
+LoadClass('article');
+
+# None of the options are vital, I think; deferred.
+# [tho loading an unwanted amsfonts could be an issue]
+# Options:
+#  a4paper, letterpaper
+#  landscape, portrait
+#  oneside, twoside
+#  draft, final
+#  e-only
+#  titlepage, notitlepage
+#  openright, openany
+#  onecolumn, twocolumn
+#  nomath
+#  noamsfonts (otherwise load amsfonts.sty)
+#  psamsfonts ( uses ps ams fonts)
+#  leqno, reqno
+#  centertags, tbtags,
+#  fleqn
+#  10pt, 11pt, 12pt, 8pt, 9pt,
+#  makeidx
+
+
+# #======================================================================
+# % Font size commands:
+# \larger (next font size up)
+# \smaller (next font size down)
+# \TINY 0, \Tiny 1, \tiny 2, \SMALL 3 == \scriptsize,  \Small 4 == \footnotesize,
+# \large 7, \Large 8, \LARGE 9, \huge 10, \Huge 11, \HUGE 12
+# \@xsetfontize
+DefConstructor('\TINY',          '', font=>{size=>'TINY'});
+DefConstructor('\Tiny',          '', font=>{size=>'Tiny'});
+Let('\SMALL','\scriptsize');
+Let('\Small','\footnotesize');
+DefConstructor('\HUGE',          '', font=>{size=>'HUGE'});
+
+# #======================================================================
+# # Sec. 3. The Preamble
+# # Included packages
+# amsmath, amsthm,
+# amsfonts (unless noamsfonts)
+
+RequirePackage('amsmath');
+RequirePackage('amsthm');
+RequirePackage('amsfonts');
+
+# # Useful packages:
+# amssymb,
+# amsmidx for multiple-indexes,
+# graphicx,
+# longtable,
+# upref makes references upcase?, upright?
+# xypic,
+
+# #======================================================================
+# # Sec. 4. Top Matter
+# # FrontMatter:
+DefMacro('\title[]{}',
+	 '\if.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
+	 .'\@add@frontmatter{ltx:title}{#2}');
+
+DefMacro('\author[]{}',
+ '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#2}}');
+
+DefMacro('\contrib[]{}',
+ '\@add@frontmatter{ltx:creator}[role=contributor]{\@personname{#2}}');
+
+DefConstructor('\@address{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\address[]{}','\@add@to@frontmatter{ltx:creator}{\@address{#2}}');
+
+
+DefConstructor('\@curraddr{}',"^ <ltx:contact role='current_address'>#1</ltx:contact>");
+DefMacro('\curraddr{}','\@add@to@frontmatter{ltx:creator}{\@curraddr{#1}}');
+
+
+DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
+
+
+DefConstructor('\@urladdr{}',"^ <ltx:contact role='url'>#1</ltx:contact>");
+DefMacro('\urladdr{}', '\@add@to@frontmatter{ltx:creator}{\@urladdr{#1}}');
+
+
+DefConstructor('\@dedicatory{}',"^ <ltx:contact role='dedicatory'>#1</ltx:contact>");
+DefMacro('\dedicatory{}', '\@add@to@frontmatter{ltx:creator}{\@dedicatory{#1}}');
+
+# \date{}
+DefMacro('\dateposted{}', '\@add@frontmatter{ltx:date}[role=posted]{#1}');
+
+# \thanks{} ( == ack, not latex's \thanks, not in author)
+DefMacro('\thanks{}',
+ '\@add@frontmatter{ltx:acknowledgements}{#1}');
+
+DefMacro('\translator[]{}',
+ '\@add@frontmatter{ltx:creator}[role=translator]{\@personname{#2}}');
+
+DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
+
+DefMacro('\subjclass[Default:1991]{}',
+	 '\@add@frontmatter{ltx:classification}[scheme={#1 Mathematics Subject Classification}]{#2}');
+
+# #======================================================================
+# # Sec. 5. Document Body
+
+# Mostly normal LaTeX 
+
+# For multiple indexes:
+# \usepackage{amsmidex}
+# \makeindex{name of index file}
+# \makeindex{name of index file}
+
+# \index{name of index}{index term}   ...
+# \Printindex{name of index}{title of index} ...
+
+#======================================================================
+# Sec 6. Floating objects: Figures and tables
+# Normal LaTeX 
+
+# For compatibility
+RawTeX(<<'EOTeX');
+\newenvironment{pf}{\begin{proof}{Proof}}{\end{proof}}
+\newenvironment{pf*}[1]{\begin{proof}{#1}}{\end{proof}}
+EOTeX
+
+# Excersise environments ??:
+# xca "must be defined with \theoremstyle{definition} and \newtheorem ???
+# xcb only for monographs, at end of chapter
+
+# #======================================================================
+# # Sec 7. Bibliographic References
+# \bibliographicstyle{}  amsplain or amsalpha
+# \bibliography{bibfile}
+# Normal LaTeX
+
+DefConstructor('\bysame',' by same author');
+
+# #======================================================================
+# # Sec 8 Monograph Formatting:
+# \documentclass{..}
+# preamble
+# \begin{document}
+# \frontmatter
+# frontmatter stuff
+# \maketitle
+# \include various preface, introduction, etc
+# \mainmatter
+# \include various chapters, appendices
+# \backmatter
+# commands for bibliography, indices
+# \end{document}
+
+
+# #======================================================================
+1;
