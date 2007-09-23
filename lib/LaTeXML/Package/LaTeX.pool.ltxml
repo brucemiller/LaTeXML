@@ -2275,6 +2275,12 @@ RawTeX(<<'EOTeX');
 \newtoks\@temptokena
 \newskip\@flushglue \@flushglue = 0pt plus 1fil
 
+\newcount\@eqcnt
+\newcount\@eqpen
+\newif\if@eqnsw\@eqnswtrue
+\newskip\@centering
+\@centering = 0pt plus 1000pt
+\let\@eqnsel=\relax
 EOTeX
 #======================================================================
 # Hair
