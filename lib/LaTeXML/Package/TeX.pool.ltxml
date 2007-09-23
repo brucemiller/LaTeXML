@@ -1174,7 +1174,7 @@ DefMacro('\@multicolumn {Number}  AlignmentTemplate {}', sub {
    ($column ? afterCellUnlist($$column{after}) : ()) ); });
 
 sub alignmentBindings {
-  my($template)=@_;
+  my($template,$mode)=@_;
   if($template && !ref $template){
     $template = parseAlignmentTemplate($template); }
   my $alignment = LaTeXML::Util::Alignment->new();
@@ -1187,12 +1187,13 @@ sub alignmentBindings {
   Let(T_CS('\hline'), T_CS('\@alignment@hline'));
   Let(T_CS('\hrule'), T_CS('\@alignment@hrule'));
   Let('\span',        T_CS('\@alignment@span'));
-  Let(T_MATH,  (LookupValue('IN_MATH') ? T_CS('\@math@alignment$') : T_CS('\@text@alignment$')));
+  $mode = LookupValue('MODE') unless $mode;
+  Let(T_MATH,  ($mode =~/math$/ ? T_CS('\@math@alignment$') : T_CS('\@text@alignment$')));
   return; }
 
-DefPrimitive('\@alignment@bindings AlignmentTemplate',sub {
-  my($stomach,$template)=@_;
-  alignmentBindings($template); });
+DefPrimitive('\@alignment@bindings AlignmentTemplate []',sub {
+  my($stomach,$template,$mode)=@_;
+  alignmentBindings($template,$mode); });
 
 #----------------------------------------------------------------------
 # To recognize where rows & columns start and stop, we need to
@@ -2957,7 +2958,7 @@ sub addDelimiterRole {
   my $delim        = $node && $document->getFirstChildElement($node);
   my $delim_role   = ($delim->getAttribute('role') || '');
   my $wrapper_role = ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR)$/ ? $role : $delim_role);
-  $node->setAttribute(role=>$wrapper_role) if $wrapper_role; }
+  $node->setAttribute(role=>$wrapper_role) if $node && $wrapper_role; }
 
 # Defined in e-Tex and other places.
 DefConstructor('\middle Token ',"<ltx:XMWrap style='stretchy'>#1</ltx:XMWrap>",

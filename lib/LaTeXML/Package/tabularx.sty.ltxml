@@ -16,7 +16,7 @@ use LaTeXML::Util::Alignment;
 RequirePackage('array');
 
 DefMacro('\tabularx[]{Dimension}{}',
-	 '\@alignment@bindings{#3}\@@tabularx[#1]{#2}{#3}\@start@alignment');
+	 '\@alignment@bindings{#3}[text]\@@tabularx[#1]{#2}{#3}\@start@alignment');
 DefMacro('\endtabularx',
 	 '\@finish@alignment\@end@tabularx');
 DefPrimitive('\@end@tabularx',sub{ $_[0]->egroup; });

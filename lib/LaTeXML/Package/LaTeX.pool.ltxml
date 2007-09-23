@@ -1184,7 +1184,7 @@ DefPrimitive('\@tabbing@bindings',sub {
 # [We'll ignore HTML's frame, rules and colgroup mechanisms.]
 
 # The Core alignment support is in LaTeXML::Util::Alignment and in TeX.ltxml
-DefMacro('\tabular[]{}',  '\@alignment@bindings{#2}\@@tabular[#1]{#2}\@start@alignment');
+DefMacro('\tabular[]{}',  '\@alignment@bindings{#2}[text]\@@tabular[#1]{#2}\@start@alignment');
 DefMacro('\endtabular',   '\@finish@alignment\@end@tabular');
 DefPrimitive('\@end@tabular',sub{ $_[0]->egroup; });
 # Note that the pattern will already have been interpreted by \@alignment@bindings,
@@ -1197,7 +1197,7 @@ DefConstructor('\@@tabular[] Undigested DigestedBody',
 	       beforeDigest=>sub { $_[0]->bgroup; },
 	       mode=>'text');
 DefMacro('\csname tabular*\endcsname{Dimension}[]{}',
-	 '\@alignment@bindings{#3}\@@tabular@{#1}[#2]{#3}\@start@alignment');
+	 '\@alignment@bindings{#3}[text]\@@tabular@{#1}[#2]{#3}\@start@alignment');
 DefMacro('\csname endtabular*\endcsname',
 	 '\@finish@alignment\@end@tabular@');
 DefConstructor('\@@tabular@{Dimension}[] Undigested DigestedBody',
