@@ -13,6 +13,8 @@
 use LaTeXML::Package;
 use strict;
 
+RequirePackage('array');
+
 sub absorbedString {
   my($tokens)=@_;
   my $capdocument = LaTeXML::Document->new($STATE->getModel);
