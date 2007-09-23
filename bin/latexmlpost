@@ -21,7 +21,7 @@ my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
 my($sourcedir,$destination)=(undef,undef);
 my($format,$urlstyle) = (undef,'server');
 my($stylesheet,$defaultcss,@css)=(undef,1);
-my($parallelmath,$mathimages)=(undef,undef);
+my($parallelmath,$mathimages,$mathimagemag)=(undef,undef,1.75);
 my($linelength,$keepXMath)=(undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
 my($split,$splitat,$splitpath,$splitnaming)=(undef,'section',undef,'id');
@@ -78,6 +78,7 @@ GetOptions("destination=s"=>sub { $destination = $_[1];
 #	   "mathml|mml!"  =>\$mathml,
 	   "parallelmath!"               => \$parallelmath,
 	   "mathimages!"                 => \$mathimages,
+	   "mathimagemagnification=f"    => \$mathimagemag,
 	   "presentationmathml|pmml"     => sub { addMathFormat('pmml'); },
 	   "contentmathml|cmml"          => sub { addMathFormat('cmml'); },
 	   "openmath|om"                 => sub { addMathFormat('om'); },
@@ -208,7 +209,7 @@ if(!$prescan){
 
   if($mathimages){
     require 'LaTeXML/Post/MathImages.pm';
-    push(@procs,LaTeXML::Post::MathImages->new(%OPTIONS)); }
+    push(@procs,LaTeXML::Post::MathImages->new(magnification=>$mathimagemag,%OPTIONS)); }
   if($picimages){
     require 'LaTeXML/Post/PictureImages.pm';
     push(@procs,LaTeXML::Post::PictureImages->new(%OPTIONS)); }
@@ -351,6 +352,7 @@ latexmlpost [options] xmlfile
  --mathimages            converts math to images
                          (default for html format)
  --nomathimages          disables the above
+ --mathimagemagnification=mag specifies image magnification factor
  --presentationmathml    converts math to Presentation MathML
                          (default for xhtml format)
  --pmml                  alias for --presentationmathml
@@ -574,6 +576,11 @@ depends on the format and other options.
 
 Requests or disables the conversion of math to images.
 Conversion is the default for html format.
+
+=item B<--mathimagemagnification=>I<factor>
+
+Specifies the magnification used for math images, if they are made.
+Default is 1.75.
 
 =item B<--presentationmathml>, B<--nopresentationmathml>
 

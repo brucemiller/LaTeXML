@@ -212,7 +212,7 @@ return <<EOPreamble;
 $packages
 \\setlength{\\hoffset}{0pt}\\setlength{\\voffset}{0pt}
 \\setlength{\\textwidth}{${w}pt}
-\\pagestyle{empty}\\title{}\\author{}\\date{}
+\\thispagestyle{empty}\\pagestyle{empty}\\title{}\\author{}\\date{}
 % Extra definitions for LaTeXML generated TeX
 \\def\\FCN#1{#1}
 \\newcommand{\\DUAL}[3][]{#3}% Use presentation form!!!
