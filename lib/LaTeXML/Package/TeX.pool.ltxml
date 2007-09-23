@@ -3325,7 +3325,7 @@ sub LaTeXTrigger {
 
 foreach my $trigger (qw(documentclass documentstyle
 			newcommand renewcommand newenvironment renewenvironment
-			NeedsTeXFormat
+			NeedsTeXFormat ProvidesPackage RequirePackage
 			makeatletter makeatother)){
   DefMacro("\\".$trigger, sub { LaTeXTrigger($_[0],$trigger); }); }
 
