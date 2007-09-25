@@ -1142,9 +1142,32 @@ DefPrimitiveI('\@text@alignment$', undef, sub {
   $_[0]->invokeToken(T_CS((LookupValue('IN_MATH') ?'\@@ENDINLINEMATH':'\@@BEGININLINEMATH'))); });
 
 # This one is for $ appearing within an alignment that's already math.
-# It switches to text mode.
+# This should switch to text mode (because it's balancing the hidden $
+# wrapping each alignment cell!!!!!!)
+# However, it should be like a normal $ if it's inside something like \mbox
+# that makes a text box!!!!!!
+# Gawd, this is awful!
+# NOTE: Probably the most "Right" thing to do would be to process
+# alignments in text mode only (like TeX), but then afterwards,
+# morph them into math arrays?
 DefPrimitiveI('\@math@alignment$', undef, sub {
-  $_[0]->invokeToken(T_CS((LookupValue('IN_MATH') ?'\@@BEGININLINETEXT':'\@@ENDINLINETEXT'))); });
+  my($stomach)=@_;
+  if(LookupValue('IN_FLIPPED_MODE')){ # If we're making a fake text string.
+    if(LookupValue('IN_MATH')){	# But we're somehow in math?
+      AssignValue(IN_FLIPPED_MODE=>0);
+      $stomach->invokeToken(T_CS('\@@ENDINLINEMATH')); }
+    else {
+      $stomach->invokeToken(T_CS('\@@ENDINLINETEXT')); }
+#    $stomach->egroup; 
+}
+  else {
+#    $stomach->bgroup;
+    AssignValue(IN_FLIPPED_MODE=>1);
+    if(LookupValue('IN_MATH')){	# If we're "still" in math
+      $stomach->invokeToken(T_CS('\@@BEGININLINETEXT')); }
+    else {
+      $stomach->invokeToken(T_CS('\@@BEGININLINEMATH')); }}});
+
 DefConstructor('\@@BEGININLINETEXT',
 	       "<ltx:XMText>"
 	       .  "#body"
