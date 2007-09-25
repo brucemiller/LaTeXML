@@ -77,14 +77,14 @@ The usage of these commands can be as simple as
 \end{quote}
 to convert a single document into \HTML,  or as complicated as
 \begin{quote}
- \cmd{latexml --output=doca.xml doca}\\
- \cmd{latexml --output=docb.xml docb}\\
+ \cmd{latexml --destination=doca.xml doca}\\
+ \cmd{latexml --destination=docb.xml docb}\\
   \hbox{}\hspace{1in}\ldots\\
- \cmd{latexmlpost --prescan --dbfile=my.db --dest=doca.xhtml doca}\\
- \cmd{latexmlpost --prescan --dbfile=my.db --dest=docb.xhtml docb}\\
+ \cmd{latexmlpost --prescan --dbfile=my.db --destination=doca.xhtml doca}\\
+ \cmd{latexmlpost --prescan --dbfile=my.db --destination=docb.xhtml docb}\\
   \hbox{}\hspace{1in}\ldots\\
- \cmd{latexmlpost --noscan --dbfile=my.db --dest=doca.xhtml doca}\\
- \cmd{latexmlpost --noscan --dbfile=my.db --dest=docb.xhtml docb}\\
+ \cmd{latexmlpost --noscan --dbfile=my.db --destination=doca.xhtml doca}\\
+ \cmd{latexmlpost --noscan --dbfile=my.db --destination=docb.xhtml docb}\\
   \hbox{}\hspace{1in}\ldots
 \end{quote}
 to convert a whole set of documents into a complete site.
@@ -103,7 +103,7 @@ one or more web documents or a complete site.
 \section[Conversion]{Basic \XML\ Conversion}\label{usage.conversion}\index{latexml!usage}
 The command
 \begin{quote}
- \cmd{latexml \textit{options} --output=\textit{doc}.xml \textit{doc}}
+ \cmd{latexml \textit{options} --destination=\textit{doc}.xml \textit{doc}}
 \end{quote}
 loads any required definition modules (see below),
 reads and digests the \TeX\ document \texttt{doc.tex}
@@ -120,7 +120,7 @@ environments are active and used for the processing.
 Definitions and customization modules, if present, are loaded in the following
 order:
 \begin{itemize}
-  \item \texttt{TeX.ltxml} core module.
+  \item \texttt{TeX.pool.ltxml} core module.
   \item \textit{preload}; any modules specified using the
     \begin{quote}
      \cmd{--preload=\textit{module}}
@@ -309,12 +309,9 @@ carried out before scanning, is requested by
 \end{quote}
 The document is split according to
 \begin{quote}
- \cmd{--splitpath=\textit{xpath}}
+ \cmd{--splitat=\textit{sectioningcommand}}
 \end{quote}
-The default xpath is
-\begin{quote}
- \cmd{//ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index}
-\end{quote}
+The default sectioning command is \texttt{section},
 which creates separate files for each section,
 bibliography, index and any appendices.
 The removed document nodes are replaced by a Table of Contents.
@@ -442,7 +439,7 @@ by the definitions of control sequences, either as macros, primitives or constru
 and other declarations specifying the document type, properties of \XML\ tags, ligatures, \ldots.
 These definitions and declarations are typically contained in `packages' which provide
 the implementation of \LaTeX\ classes and packages.  For example, the \LaTeX\ directive
-\verb|\usepackage{foo}| would cause \LaTeXML\ to load the file \code{foo.ltxml}.
+\verb|\usepackage{foo}| would cause \LaTeXML\ to load the file \code{foo.sty.ltxml}.
 This file would be sought in any of the directories in perl's \verb|@INC| list (typically
 including the current directory), or in a \verb|LaTeXML/Package| subdirectory of any of 
 those directories.  If no such file is found, \LaTeXML\ would look for \code{foo.sty} and

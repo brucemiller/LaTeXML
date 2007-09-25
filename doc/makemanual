@@ -24,8 +24,7 @@ use LaTeXML::Post::Writer;
 my $SRCDIR = $FindBin::RealBin;
 my $LOC = $SRCDIR."/..";
 my $DEST= "/local/www/site/htdocs/DigitalMathLib/LaTeXML";
-my $PDDEST = "$DEST/perldoc";
-
+my $MANDEST="$DEST/manual";
 BEGIN { $SIG{__DIE__} = \&confess; }
 
 #======================================================================
@@ -63,7 +62,7 @@ foreach my $name (@modules){
 
 #======================================================================
 # Process the LaTeX documentation
-print "Generating LaTeXML documentation in $DEST\n";
+print "Generating LaTeXML documentation in $MANDEST\n";
 my %POPTIONS=(verbosity=>0);
 LaTeXML->new(documentid=>'manual',%POPTIONS)->convertAndWriteFile('manual');
 my $DB = LaTeXML::Util::ObjectDB->new();
@@ -72,13 +71,17 @@ my $split='//ltx:chapter[@id] | //ltx:section[@id]'
 
 my $scanner =LaTeXML::Post::Scan->new(db=>$DB,%POPTIONS);
 my $format='html';
-my $csssource = 'latexml.css';
-my $css = "$DEST/manual/latexml.css";
-pathname_copy($csssource,$css);
+my @css = ("core.css","navbar-left.css","theme-blue.css","ltxmanual.css");
+my @csspaths=();
+foreach my $css (@css){
+  my $csssource = pathname_find($css,types=>['css'],paths=>['.'],installation_subdir=>'style');
+  my $csspath = pathname_absolute($css,pathname_directory($MANDEST));
+  pathname_copy($csssource,$csspath)  if -f $csssource;
+  push(@csspaths,$csspath); }
 
 LaTeXML::Post::ProcessChain(
    LaTeXML::Post::Document->newFromFile('manual.xml',
-					destination=>"$DEST/manual/index.$format"),
+					destination=>"$MANDEST/index.$format"),
 			    LaTeXML::Post::Split->new(db=>$DB,split_xpath=>$split,
 #						      splitnaming=>'id',
 #						      splitnaming=>'idrelative',
@@ -94,7 +97,7 @@ LaTeXML::Post::ProcessChain(
 			    LaTeXML::Post::MathML::Presentation->new(%POPTIONS),
 			    LaTeXML::Post::PurgeXMath->new(%POPTIONS),
 			    LaTeXML::Post::XSLT->new(stylesheet=>"LaTeXML-$format.xsl",
-						     css=>$css,%POPTIONS),
+						     css=>[@csspaths],%POPTIONS),
 			    LaTeXML::Post::Writer->new(format=>$format,%POPTIONS));
 
 pathname_copy("$LOC/Changes","$DEST/Changes");

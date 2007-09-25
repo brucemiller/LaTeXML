@@ -11,7 +11,7 @@
   <creator role="author">
     <personname>Bruce R. Miller</personname>
   </creator>
-  <date role="conversion">June 18, 2007</date>
+  <date role="conversion">September 25, 2007</date>
   <chapter id="manual.Ch1" refnum="1" label="intro">
     <title>Introduction</title>
     <section>
@@ -119,14 +119,14 @@ conversion to <ref href="http://www.w3.org/HTML/"><text font="typewriter">HTML</
 </quote>
         <p>to convert a single document into <ref href="http://www.w3.org/HTML/"><text font="typewriter">HTML</text></ref>,  or as complicated as</p>
         <quote>
-<text font="typewriter">latexml --output=doca.xml doca</text><break/>
-<text font="typewriter">latexml --output=docb.xml docb</text><break/>
+<text font="typewriter">latexml --destination=doca.xml doca</text><break/>
+<text font="typewriter">latexml --destination=docb.xml docb</text><break/>
 <text/>…<break/>
-<text font="typewriter">latexmlpost --prescan --dbfile=my.db --dest=doca.xhtml doca</text><break/>
-<text font="typewriter">latexmlpost --prescan --dbfile=my.db --dest=docb.xhtml docb</text><break/>
+<text font="typewriter">latexmlpost --prescan --dbfile=my.db --destination=doca.xhtml doca</text><break/>
+<text font="typewriter">latexmlpost --prescan --dbfile=my.db --destination=docb.xhtml docb</text><break/>
 <text/>…<break/>
-<text font="typewriter">latexmlpost --noscan --dbfile=my.db --dest=doca.xhtml doca</text><break/>
-<text font="typewriter">latexmlpost --noscan --dbfile=my.db --dest=docb.xhtml docb</text><break/>
+<text font="typewriter">latexmlpost --noscan --dbfile=my.db --destination=doca.xhtml doca</text><break/>
+<text font="typewriter">latexmlpost --noscan --dbfile=my.db --destination=docb.xhtml docb</text><break/>
 <text/>…</quote>
         <p>to convert a whole set of documents into a complete site.</p>
       </para>
@@ -153,7 +153,7 @@ one or more web documents or a complete site.</p>
       <para id="manual.Ch2.S1.p1">
         <p>The command</p>
         <quote>
-<text font="typewriter">latexml <text font="italic">options</text> --output=<text font="italic">doc</text>.xml <text font="italic">doc</text></text>
+<text font="typewriter">latexml <text font="italic">options</text> --destination=<text font="italic">doc</text>.xml <text font="italic">doc</text></text>
 </quote>
         <p>loads any required definition modules (see below),
 reads and digests the TeX document <text font="typewriter">doc.tex</text>
@@ -173,7 +173,7 @@ Definitions and customization modules, if present, are loaded in the following
 order:</p>
           <itemize id="manual.Ch2.I2">
             <item id="manual.Ch2.I2.i1">
-              <p><text font="typewriter">TeX.ltxml</text> core module.</p>
+              <p><text font="typewriter">TeX.pool.ltxml</text> core module.</p>
             </item>
             <item id="manual.Ch2.I2.i2">
               <p><text font="italic">preload</text>; any modules specified using the
@@ -452,13 +452,10 @@ carried out before scanning, is requested by</p>
 </quote>
         <p>The document is split according to</p>
         <quote>
-<text font="typewriter">--splitpath=<text font="italic">xpath</text></text>
+<text font="typewriter">--splitat=<text font="italic">sectioningcommand</text></text>
 </quote>
-        <p>The default xpath is</p>
-        <quote>
-<text font="typewriter">//ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index</text>
-</quote>
-        <p>which creates separate files for each section,
+        <p>The default sectioning command is <text font="typewriter">section</text>,
+which creates separate files for each section,
 bibliography, index and any appendices.
 The removed document nodes are replaced by a Table of Contents.</p>
       </para>
@@ -466,10 +463,10 @@ The removed document nodes are replaced by a Table of Contents.</p>
         <p>The extra files are named using either the id or label
 of the root node of each new page document according to</p>
         <quote>
-<!-- %**** manual.tex Line 325 **** --><text font="typewriter">--splitnaming=(id|idrelative|label|labelrelative)</text>
+<text font="typewriter">--splitnaming=(id|idrelative|label|labelrelative)</text>
 </quote>
         <p>The relative foms create shorter names in subdirectories for each
-level of splitting.
+<!-- %**** manual.tex Line 325 **** -->level of splitting.
 The <text font="typewriter">--urlstyle</text> option may also be useful here,
 as well as the <ref labelref="latexml">latexml</ref> option <text font="typewriter">--documentid</text>.</p>
       </para>
@@ -503,10 +500,10 @@ the option <text font="typewriter">--documentid</text> is particularly useful he
       </para>
       <para id="manual.Ch2.S4.p3">
         <p>Secondly, all <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> files must be split and scanned using
-<!-- %**** manual.tex Line 350 **** -->the command</p>
+the command</p>
         <quote>
 <text font="typewriter">latexmlpost --prescan --dbfile=<text font="italic">DB</text> --dest=<text font="italic">doci</text>.xhtml <text font="italic">doci</text></text>
-</quote>
+<!-- %**** manual.tex Line 350 **** --></quote>
         <p>where <text font="italic">DB</text> names a file to store the scanned data.
 Other conversions, including writing the output file, are skipped in this prescanning step.</p>
       </para>
@@ -534,12 +531,11 @@ and by defining rewrite rules to be applied to the constructed document tree.</p
       </para>
       <figure id="manual.Ch3.F1" placement="tb" refnum="3.1" label="fig:dataflow">
         <graphics graphic="dataflow" options="width=433.62pt"/>
-        <!-- %**** manual.tex Line 375 **** -->
         <caption>Flow of data through <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref>'s digestive tract.</caption>
       </figure>
       <para id="manual.Ch3.p2">
         <p>The top-level class, <ref class="package" labelref="LaTeXML">LaTeXML</ref>, manages the processing, providing several methods
-for converting a TeX document or string into an <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> document, with varying degrees
+<!-- %**** manual.tex Line 375 **** -->for converting a TeX document or string into an <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> document, with varying degrees
 of postprocessing and optionally writing the document to file.
 A <ref class="package" labelref="LaTeXML::State">LaTeXML::State</ref> object maintains the current state
 of processing, current definitions for control sequences and emulates the
@@ -577,10 +573,10 @@ and <verbatim font="typewriter">$MODEL</verbatim> to corresponding active object
       <para id="manual.Ch3.S1.p1">
         <p>Digestion is carried out primarily in a <emph>pull</emph> mode: The <ref class="package" labelref="LaTeXML::Stomach">LaTeXML::Stomach</ref>
 pulls expanded <ref class="package" labelref="LaTeXML::Token">LaTeXML::Token</ref>s from the <ref class="package" labelref="LaTeXML::Gullet">LaTeXML::Gullet</ref>, which itself pulls tokens from
-<!-- %**** manual.tex Line 400 **** -->the <ref class="package" labelref="LaTeXML::Mouth">LaTeXML::Mouth</ref>.  The <ref class="package" labelref="LaTeXML::Mouth">LaTeXML::Mouth</ref> converts characters from the plain text input
+the <ref class="package" labelref="LaTeXML::Mouth">LaTeXML::Mouth</ref>.  The <ref class="package" labelref="LaTeXML::Mouth">LaTeXML::Mouth</ref> converts characters from the plain text input
 into tokens according to the current category codes assigned to them (in the <ref class="package" labelref="LaTeXML::State">LaTeXML::State</ref>).
 The <ref class="package" labelref="LaTeXML::Gullet">LaTeXML::Gullet</ref> is responsible for expanding any macro or expandible
-tokens (when the current binding of the token in the <ref class="package" labelref="LaTeXML::State">LaTeXML::State</ref> is
+<!-- %**** manual.tex Line 400 **** -->tokens (when the current binding of the token in the <ref class="package" labelref="LaTeXML::State">LaTeXML::State</ref> is
 an <ref class="package" labelref="LaTeXML::Definition">LaTeXML::Expandable</ref> definition),
 and for parsing sequences of tokens into common core datatypes (numbers, dimensions, etc.).
 The <ref class="package" labelref="LaTeXML::Stomach">LaTeXML::Stomach</ref> digests these tokens by executing <ref class="package" labelref="LaTeXML::Definition">LaTeXML::Primitive</ref> control
@@ -607,10 +603,10 @@ and text.</p>
       </para>
       <para id="manual.Ch3.S2.p3">
         <p>A <ref class="package" labelref="LaTeXML::Model">LaTeXML::Model</ref> is maintained througout the digestion phase which accumulates
-<!-- %**** manual.tex Line 425 **** -->any document model declarations in particular the document type (currently only
+any document model declarations in particular the document type (currently only
 the DTD, but eventually may be RelaxNG based).  As LaTeX markup is more
 like <ref href="http://www.w3.org/MarkUp/SGML/"><text font="typewriter">HTML</text></ref> than <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref>, declarations may be used to indicate which elements may
-be automatically opened or closed when needed to build a document tree that matches
+<!-- %**** manual.tex Line 425 **** -->be automatically opened or closed when needed to build a document tree that matches
 the document type.  As an example, a <verbatim font="typewriter">&lt;subsection&gt;</verbatim> will automaticall be closed
 when a <verbatim font="typewriter">&lt;section&gt;</verbatim> is begun.</p>
       </para>
@@ -634,16 +630,16 @@ by the definitions of control sequences, either as macros, primitives or constru
 and other declarations specifying the document type, properties of <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> tags, ligatures, ….
 These definitions and declarations are typically contained in `packages' which provide
 the implementation of LaTeX classes and packages.  For example, the LaTeX directive
-<verbatim font="typewriter">\usepackage{foo}</verbatim> would cause <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> to load the file <text font="typewriter">foo.ltxml</text>.
+<verbatim font="typewriter">\usepackage{foo}</verbatim> would cause <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> to load the file <text font="typewriter">foo.sty.ltxml</text>.
 This file would be sought in any of the directories in perl's <verbatim font="typewriter">@INC</verbatim> list (typically
 including the current directory), or in a <verbatim font="typewriter">LaTeXML/Package</verbatim> subdirectory of any of
 those directories.  If no such file is found, <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> would look for <text font="typewriter">foo.sty</text> and
-attempt to process it.
-<!-- %**** manual.tex Line 450 **** --></p>
+attempt to process it.</p>
       </para>
       <para id="manual.Ch4.p2">
         <p>When processing a typical file, say <text font="italic">jobname</text><text font="typewriter">.tex</text>,
-the following packages are loaded:</p>
+the following packages are loaded:
+<!-- %**** manual.tex Line 450 **** --></p>
         <enumerate id="manual.Ch4.I1">
           <item id="manual.Ch4.I1.i1" refnum="1">
             <p>the core <text font="typewriter">TeX</text> package</p>
@@ -679,10 +675,10 @@ the various implementations of packages included with the distribution.</p>
       <para id="manual.Ch5.p1">
         <p>There are several issues that have to be dealt with in treating the mathematics.
 On the one hand, the TeX markup gives a pretty good indication of what the
-<!-- %**** manual.tex Line 475 **** -->author wants the math to look like, and so we would seem to have a good handle
+author wants the math to look like, and so we would seem to have a good handle
 on the conversion to presentation forms.  On the other hand, content formats
 are desirable as well; there are a few, but too few, clues about what the
-intent of the mathematics is.  And in fact, the generation of even Presentation
+<!-- %**** manual.tex Line 475 **** -->intent of the mathematics is.  And in fact, the generation of even Presentation
 MathML of high quality requires recognizing the mathematical structure, if not
 the actual semantics. The mathematics processing must therefore preserve the
 presentational information provided by the author, while inferring, likely
@@ -705,12 +701,11 @@ using <text font="typewriter">XMApp</text>, of a fraction operator; the resultin
 as atomic within its containing expression.This <emph>structure preserving</emph> character
 greatly simplifies the parsing task and helps reduce misinterpretation.</p>
       </para>
-      <!-- %**** manual.tex Line 500 **** -->
       <para id="manual.Ch5.p3">
         <p>The parser, invoked by the postprocessor, works only with the top-level lists of lexical tokens,
 or with those sublists contained in an <text font="typewriter">XMArg</text>.  The grammar works primarily through
 the name and grammatical role.  The name is given by an attribute, or the content if it is
-the same.  The role (things like ID, FUNCTION, OPERATOR, OPEN, …) is also given
+<!-- %**** manual.tex Line 500 **** -->the same.  The role (things like ID, FUNCTION, OPERATOR, OPEN, …) is also given
 by an attribute, or, if not present, the name is looked up in a document-specific
 dictionary (<text font="italic">jobname</text><text font="typewriter">.dict</text>), or in a default dictionary.</p>
       </para>
@@ -745,10 +740,10 @@ User supplied rules can be used here to clarify the intent of markup used in the
           </item>
           <item id="manual.Ch5.I2.i3">
             <p>Math Parsing; a grammar based parser is applied, depth first, to each level of the math.
-<!-- %**** manual.tex Line 525 **** -->In particular, at the top level of each math expression, as well as each
+In particular, at the top level of each math expression, as well as each
 subexpression within structured items (these will have been contained in
 an <text font="typewriter">XMArg</text> or <text font="typewriter">XMWrap</text> element).  This results in an expression tree
-that will hopefully be an accurate representation of the expression's structure,
+<!-- %**** manual.tex Line 525 **** -->that will hopefully be an accurate representation of the expression's structure,
 but may be ambigous in specifics (eg.`what the meaning of a superscript is).
 The parsing is driven almost entirely by the grammatical <text font="typewriter">role</text> assigned
 to each item.</p>
@@ -779,7 +774,6 @@ The <text font="typewriter">mode</text> attribute specifies whether the math sho
         <para id="manual.Ch5.S1.SS1.p2">
           <p>The following attributes can appear on all <text font="typewriter">XM</text> elements:</p>
           <description id="manual.Ch5.I3">
-            <!-- %**** manual.tex Line 550 **** -->
             <item id="manual.Ch5.I3.i1">
               <tag>
                 <text font="typewriter">role</text>
@@ -789,7 +783,8 @@ The <text font="typewriter">mode</text> attribute specifies whether the math sho
             <item id="manual.Ch5.I3.i2">
               <tag><text font="typewriter">open</text>, <text font="typewriter">close</text></tag>
               <p>parenthese or delimiters that were used to wrap the
-expression represented by this element.</p>
+expression represented by this element.
+<!-- %**** manual.tex Line 550 **** --></p>
             </item>
             <item id="manual.Ch5.I3.i3">
               <tag><text font="typewriter">argopen</text>, <text font="typewriter">argclose</text>, <text font="typewriter">separators</text></tag>
@@ -863,13 +858,14 @@ of the usual script position.</p>
                 </tag>
                 <p>represents the generalized application of some function or operator to arguments.
 The first child element is the operator, the remainig elements are the arguments.
-<!-- %**** manual.tex Line 575 **** -->Additional attributes:</p>
+Additional attributes:</p>
                 <description id="manual.Ch5.I4.I2">
                   <item id="manual.Ch5.I4.I2.i1">
                     <tag>
                       <text font="typewriter">name</text>
                     </tag>
-                    <p>the name that represents the meaning of the construct as a whole.</p>
+                    <p>the name that represents the meaning of the construct as a whole.
+<!-- %**** manual.tex Line 575 **** --></p>
                   </item>
                   <item id="manual.Ch5.I4.I2.i2">
                     <tag>
@@ -948,9 +944,10 @@ structured markup, such as <verbatim font="typewriter">\frac</verbatim>.  These 
                 </tag>
                 <p>refers to another subexpression,.  This is used to avoid duplicating
 arguments when constructing an <text font="typewriter">XMDual</text> to represent a function application, for example.
-<!-- %**** manual.tex Line 600 **** -->The arguments will be placed in the content branch (wrapped in an <text font="typewriter">XMArg</text>) while
+The arguments will be placed in the content branch (wrapped in an <text font="typewriter">XMArg</text>) while
 <text font="typewriter">XMRef</text>'s will be placed in the presentation branch.</p>
                 <description id="manual.Ch5.I4.I6">
+                  <!-- %**** manual.tex Line 600 **** -->
                   <item id="manual.Ch5.I4.I6.i1">
                     <tag>
                       <text font="typewriter">idref</text>
@@ -1002,8 +999,7 @@ case productions, no rigidly ordered precedence is given.</p>
               <tag>
                 <text font="typewriter">APPLYOP</text>
               </tag>
-              <p>an explicit infix application operator (high precedence).
-<!-- %**** manual.tex Line 625 **** --></p>
+              <p>an explicit infix application operator (high precedence).</p>
             </item>
             <item id="manual.Ch5.I5.i5">
               <tag>
@@ -1016,7 +1012,8 @@ case productions, no rigidly ordered precedence is given.</p>
                 <text font="typewriter">ARROW</text>
               </tag>
               <p>an arrow operator (with little semantic significance).
-treated equivalently to <text font="typewriter">RELOP</text>.</p>
+treated equivalently to <text font="typewriter">RELOP</text>.
+<!-- %**** manual.tex Line 625 **** --></p>
             </item>
             <item id="manual.Ch5.I5.i7">
               <tag>
@@ -1112,8 +1109,7 @@ analyzing the argument structure (eg bound variables and differentials within an
                 <text font="typewriter">FUNCTION</text>
               </tag>
               <p>a function which (may) apply to following arguments with higher
-precedence than addition and multiplication, or parenthesized arguments.
-<!-- %**** manual.tex Line 650 **** --></p>
+precedence than addition and multiplication, or parenthesized arguments.</p>
             </item>
             <item id="manual.Ch5.I5.i22">
               <tag>
@@ -1127,7 +1123,7 @@ precedence than addition and multiplication, or parenthesized arguments.
               </tag>
               <p>the usual superscript, where the script is treated as
 an argument, but the base will be determined by parsing. Note that this is not
-necessarily assumed to be a power. Very high precedence.</p>
+<!-- %**** manual.tex Line 650 **** -->necessarily assumed to be a power. Very high precedence.</p>
             </item>
             <item id="manual.Ch5.I5.i24">
               <tag>
@@ -1187,14 +1183,13 @@ the presentation style:</p>
       <para id="manual.Ch6.p1">
         <p>Lots…!</p>
         <itemize id="manual.Ch6.I1">
-          <!-- %**** manual.tex Line 675 **** -->
           <item id="manual.Ch6.I1.i1">
             <p>Lots of useful LaTeX packages have not been implemented, and those
 that are aren't necessarily complete.</p>
           </item>
           <item id="manual.Ch6.I1.i2">
             <p>TeX boxes aren't really complete, and in particular things like <verbatim font="typewriter">\ht0</verbatim>
-don't work.</p>
+<!-- %**** manual.tex Line 675 **** -->don't work.</p>
           </item>
           <item id="manual.Ch6.I1.i3">
             <p>Possibly useful to override (pre-override?) a macro defined in the source file;
@@ -1232,6 +1227,8 @@ that is, define it and silently ignore the definition given in the source.</p>
  --output=file      [obsolete synonym for --destination]
  --preload=module   requests loading of an optional module;
                     can be repeated
+ --includestyles    allows latexml to load raw *.sty file;
+                    by default it avoids this.
  --path=dir         adds dir to the paths searched for files,
                     modules, etc;
  --documentid=id    assign an id to the document root.
@@ -1244,6 +1241,7 @@ that is, define it and silently ignore the definition given in the source.</p>
                     and digestion.
  --noparse          suppresses parsing math
  --nocomments       omit comments from the output
+ --inputencoding=enc specify the input encoding.
  --VERSION          show version number.
  --debug=package    enables debugging output for the named
                     package
@@ -1265,18 +1263,36 @@ that is, define it and silently ignore the definition given in the source.</p>
             </item>
             <item id="manual.A1.I1.i2">
               <tag><text font="bold">–preload</text>=<text font="italic">module</text></tag>
-              <p><text/></p>
+              <p><text/>
+<!-- %**** pods/latexml.tex Line 50 **** --></p>
               <p>Requests the loading of an optional module or package.  This may be useful if the TeX code
 does not specificly require the module (eg. through input or usepackage).
-<!-- %**** pods/latexml.tex Line 50 **** --></p>
+For example, to force LaTeX mode, use <text font="typewriter">--preload=LaTeX.pool</text>.</p>
             </item>
             <item id="manual.A1.I1.i3">
+              <tag>
+                <text font="bold">–includestyles</text>
+              </tag>
+              <p><text/></p>
+              <p>This optional allows processing of style files (files with extensions <text font="typewriter">sty</text>,
+<text font="typewriter">cls</text>, <text font="typewriter">clo</text>, <text font="typewriter">cnf</text>).  By default, these files are ignored  unless a latexml
+implementation of them is found (with an extension of <text font="typewriter">ltxml</text>).</p>
+              <p>These style files generally fall into two classes:  Those
+that merely affect document style are ignorable in the XML.
+Others define new markup and document structure, often using
+deeper LaTeX macros to achieve their ends.  Although the omission
+will lead to other errors (missing macro definitions), it is
+unlikely that processing the TeX code in the style file will
+lead to a correct document.</p>
+            </item>
+            <item id="manual.A1.I1.i4">
               <tag><text font="bold">–path</text>=<text font="italic">dir</text></tag>
               <p><text/></p>
+              <!-- %**** pods/latexml.tex Line 75 **** -->
               <p>Add <text font="italic">dir</text> to the search paths used when searching for files, modules, style files, etc;
 somewhat like TEXINPUTS.  This option can be repeated.</p>
             </item>
-            <item id="manual.A1.I1.i4">
+            <item id="manual.A1.I1.i5">
               <tag><text font="bold">–documentid</text>=<text font="italic">id</text></tag>
               <p><text/></p>
               <p>Assigns an ID to the root element of the XML document.  This ID is generally
@@ -1284,39 +1300,39 @@ inherited as the prefix of ID's on all other elements within the document.
 This is useful when constructing a site of multiple documents so that
 all nodes have unique IDs.</p>
             </item>
-            <item id="manual.A1.I1.i5">
+            <item id="manual.A1.I1.i6">
               <tag>
                 <text font="bold">–quiet</text>
               </tag>
               <p><text/></p>
               <p>Reduces the verbosity of output during processing, used twice is pretty silent.</p>
             </item>
-            <item id="manual.A1.I1.i6">
+            <item id="manual.A1.I1.i7">
               <tag>
                 <text font="bold">–verbose</text>
               </tag>
               <p><text/></p>
               <p>Increases the verbosity of output during processing, used twice is pretty chatty.
-Can be useful for getting more details when errors occur.
-<!-- %**** pods/latexml.tex Line 75 **** --></p>
+Can be useful for getting more details when errors occur.</p>
             </item>
-            <item id="manual.A1.I1.i7">
+            <item id="manual.A1.I1.i8">
               <tag>
                 <text font="bold">–strict</text>
               </tag>
               <p><text/></p>
+              <!-- %**** pods/latexml.tex Line 100 **** -->
               <p>Specifies a strict processing mode. By default, undefined control sequences and
 invalid document constructs (that violate the DTD) give warning messages, but attempt
 to continue processing.  Using –strict makes them generate fatal errors.</p>
             </item>
-            <item id="manual.A1.I1.i8">
+            <item id="manual.A1.I1.i9">
               <tag>
                 <text font="bold">–xml</text>
               </tag>
               <p><text/></p>
               <p>Requests XML output; this is the default.</p>
             </item>
-            <item id="manual.A1.I1.i9">
+            <item id="manual.A1.I1.i10">
               <tag>
                 <text font="bold">–tex</text>
               </tag>
@@ -1324,40 +1340,54 @@ to continue processing.  Using –strict makes them generate fatal errors.</p>
               <p>Requests TeX output for debugging purposes;  processing is only carried out through expansion and digestion.
 This may not be quite valid TeX, since Unicode may be introduced.</p>
             </item>
-            <item id="manual.A1.I1.i10">
+            <item id="manual.A1.I1.i11">
               <tag>
                 <text font="bold">–box</text>
               </tag>
               <p><text/></p>
               <p>Requests Box output for debugging purposes;  processing is carried out through expansion and digestions,
 and the result is printed.</p>
-              <!-- %**** pods/latexml.tex Line 100 **** -->
             </item>
-            <item id="manual.A1.I1.i11">
+            <item id="manual.A1.I1.i12">
               <tag>
                 <text font="bold">–nocomments</text>
               </tag>
               <p><text/></p>
               <p>Normally latexml preserves comments from the source file, and adds a comment every 25 lines as
-an aid in tracking the source.  The option –nocomments discards such comments.</p>
+<!-- %**** pods/latexml.tex Line 125 **** -->an aid in tracking the source.  The option –nocomments discards such comments.</p>
             </item>
-            <item id="manual.A1.I1.i12">
+            <item id="manual.A1.I1.i13">
+              <tag>
+                <text font="bold">–inputencoding=</text>
+                <text font="italic">encoding</text>
+              </tag>
+              <p><text/></p>
+              <p>Specify the input encoding, eg. <text font="typewriter">--inputencoding=iso-8859-1</text>.
+The encoding must be one known to Perl's Encode package.
+Note that this only enables the translation of the input bytes to
+UTF-8 used internally by LaTeXML, but does not affect catcodes.
+In such cases, you should be using the inputenc package.
+Note also that this does not affect the output encoding, which is
+always UTF-8.</p>
+            </item>
+            <item id="manual.A1.I1.i14">
               <tag>
                 <text font="bold">–VERSION</text>
               </tag>
               <p><text/></p>
               <p>Shows the version number of the LaTeXML package..</p>
             </item>
-            <item id="manual.A1.I1.i13">
+            <item id="manual.A1.I1.i15">
               <tag><text font="bold">–debug</text>=<text font="italic">package</text></tag>
               <p><text/></p>
               <p>Enables debugging output for the named package. The package is given without the leading LaTeXML::.</p>
             </item>
-            <item id="manual.A1.I1.i14">
+            <item id="manual.A1.I1.i16">
               <tag>
                 <text font="bold">–help</text>
               </tag>
-              <p><text/></p>
+              <p><text/>
+<!-- %**** pods/latexml.tex Line 150 **** --></p>
               <p>Shows this help message.</p>
             </item>
           </description>
@@ -1365,7 +1395,6 @@ an aid in tracking the source.  The option –nocomments discards such comments.
       </subsection>
       <subsection id="manual.A1.Sx1.SSx3" label="latexml_See_also">
         <title>See also<indexmark><indexphrase key="latexml">latexml</indexphrase><indexphrase key="seealso">See also</indexphrase></indexmark></title>
-        <!-- %**** pods/latexml.tex Line 125 **** -->
         <para id="manual.A1.Sx1.SSx3.p1">
           <p><ref class="package" labelref="latexmlpost">latexmlpost</ref>, <ref class="package" labelref="LaTeXML">LaTeXML</ref></p>
         </para>
@@ -1393,10 +1422,12 @@ graphics inclusions for the web.</p>
  --format=html|xhtml|xml requests the output format.
  --stylesheet=xslfile    requests the XSL transform using the
                          given xslfile as stylesheet.
- --css=cssfile           use the cssfile in html/xhtml
-                         (for default XSL stylesheets)
+ --css=cssfile           adds a css stylesheet to html/xhtml
+                         (can be repeated)
+ --nodefaultcss          disables use of the default css stylesheet
  --split                 requests splitting each document
  --nosplit               disables the above (default)
+ --splitat               specifies what level to split the document
  --splitpath=xpath       specifies xpath expression for splitting
                          (default is section-like, if splitting)
  --splitnaming=(id|idrelative|label|labelrelative) specifies how
@@ -1426,6 +1457,7 @@ graphics inclusions for the web.</p>
  --mathimages            converts math to images
                          (default for html format)
  --nomathimages          disables the above
+ --mathimagemagnification=mag specifies image magnification factor
  --presentationmathml    converts math to Presentation MathML
                          (default for xhtml format)
  --pmml                  alias for --presentationmathml
@@ -1478,8 +1510,8 @@ to increase the amount of information.</p>
                   <text font="bold">–VERSION</text>
                 </tag>
                 <p><text/></p>
-                <p>Shows the version number of the LaTeXML package..</p>
                 <!-- %**** pods/latexmlpost.tex Line 100 **** -->
+                <p>Shows the version number of the LaTeXML package..</p>
               </item>
               <item id="manual.A1.I2.i3">
                 <tag>
@@ -1510,10 +1542,11 @@ the <text font="bold">–stylesheet</text> option.</p>
               </item>
               <item id="manual.A1.I3.i2">
                 <tag><text font="bold">–source</text>=<text font="italic">source</text></tag>
-                <p><text/></p>
+                <p><text/>
+<!-- %**** pods/latexmlpost.tex Line 125 **** --></p>
                 <p>Specifies the directory where the original latex source is located.
 Unless latexmlpost is run from that directory, or it can be determined
-<!-- %**** pods/latexmlpost.tex Line 125 **** -->from the xml filename, it may be necessary to specify this option in
+from the xml filename, it may be necessary to specify this option in
 order to find graphics and style files.</p>
               </item>
               <item id="manual.A1.I3.i3">
@@ -1535,16 +1568,28 @@ format (html or xhtml) will be used.</p>
               <item id="manual.A1.I3.i5">
                 <tag><text font="bold">–css</text>=<text font="italic">cssfile</text></tag>
                 <p><text/></p>
-                <p>Requests that the css file will be used in the transformed html/xhtml.
-It is passed as a parameter to the stylesheet.
-By default, the default stylesheets will use the included LaTeXML.css.</p>
+                <p>Adds <text font="italic">cssfile</text> as a css stylesheet to be used in the transformed html/xhtml.
+Multiple stylesheets can be used; they are included in the html in the
+order given, following the default <text font="typewriter">core.css</text>, unless that is inhibited
+<!-- %**** pods/latexmlpost.tex Line 150 **** -->(see <text font="bold">–nodefaultcss</text>). Some stylesheets included in the distribution are
+–css=navbar-left   Puts a navigation bar on the left
+(default omits the navbar)
+–css=navbar-right  Puts a navigation bar on the left
+–css=theme-blue    A blue coloring theme for headings
+–css=amsart        A style suitable for journal articles</p>
+              </item>
+              <item id="manual.A1.I3.i6">
+                <tag>
+                  <text font="bold">–nodefaultcss</text>
+                </tag>
+                <p><text/></p>
+                <p>Disables the inclusion of the default <text font="typewriter">core.css</text> stylesheet.</p>
               </item>
             </description>
           </para>
         </subsubsection>
         <subsubsection id="manual.A1.Sx2.SSx2.SSSx3" label="latexmlpost_Site_Crossreferencing_Options">
           <title>Site &amp; Crossreferencing Options<indexmark><indexphrase key="latexmlpost">latexmlpost</indexphrase><indexphrase key="sitecrossreferencingoptions">Site &amp; Crossreferencing Options</indexphrase></indexmark></title>
-          <!-- %**** pods/latexmlpost.tex Line 150 **** -->
           <para id="manual.A1.Sx2.SSx2.SSSx3.p1">
             <description id="manual.A1.I4">
               <item id="manual.A1.I4.i1">
@@ -1556,27 +1601,41 @@ index and appendices (if any) by default, unless <text font="bold">–splitpath<
               </item>
               <item id="manual.A1.I4.i2">
                 <tag>
+                  <text font="bold">–splitat=</text>
+                  <text font="italic">unit</text>
+                </tag>
+                <p><text/></p>
+                <!-- %**** pods/latexmlpost.tex Line 175 **** -->
+                <p>Specifies what level of the document to split at. Should be one
+of <text font="typewriter">chapter</text>, <text font="typewriter">section</text> (the default), <text font="typewriter">subsection</text> or <text font="typewriter">subsubsection</text>.
+For more control, see <text font="typewriter">--splitpath</text>.</p>
+              </item>
+              <item id="manual.A1.I4.i3">
+                <tag>
                   <text font="bold">–splitpath=</text>
                   <text font="italic">xpath</text>
                 </tag>
                 <p><text/></p>
                 <p>Specifies an XPath expression to select nodes that will generate separate
-pages.</p>
+pages. The default splitpath is
+//ltx:section |//ltx:bibliography |//ltx:appendix |//ltx:index</p>
+                <p>Specifying
+–splitpath="//ltx:section |//ltx:subsection |//ltx:bibliography |//ltx:appendix |//ltx:index"</p>
+                <p>would split the document at subsections as well as sections.</p>
               </item>
-              <item id="manual.A1.I4.i3">
+              <item id="manual.A1.I4.i4">
                 <tag><text font="bold">–splitnaming</text>=<text font="typewriter">(id|idrelative|label|labelrelative)</text></tag>
                 <p><text/></p>
                 <p>Specifies how to name the files for subdocuments created by splitting.
 The values <text font="typewriter">id</text> and <text font="typewriter">label</text> simply use the id or label of the subdocument's
-root node for it's filename.  <text font="typewriter">idrelative</text> and <text font="typewriter">labelrelative</text> use
+<!-- %**** pods/latexmlpost.tex Line 200 **** -->root node for it's filename.  <text font="typewriter">idrelative</text> and <text font="typewriter">labelrelative</text> use
 the portion of the id or label that follows the parent document's
 id or label. Furthermore, to impose structure and uniqueness,
 if a split document has children that are also split, that document
 (and it's children) will be in a separate subdirectory with the
-name index.
-<!-- %**** pods/latexmlpost.tex Line 175 **** --></p>
+name index.</p>
               </item>
-              <item id="manual.A1.I4.i4">
+              <item id="manual.A1.I4.i5">
                 <tag><text font="bold">–scan</text>, <text font="bold">–noscan</text></tag>
                 <p><text/></p>
                 <p>Enables (default) or disables the scanning of documents for ids, labels,
@@ -1584,7 +1643,7 @@ references, indexmarks, etc, for use in filling in refs, cites, index and
 so on.  It may be useful to disable when generating documents not based
 on the LaTeXML doctype.</p>
               </item>
-              <item id="manual.A1.I4.i5">
+              <item id="manual.A1.I4.i6">
                 <tag><text font="bold">–crossref</text>, <text font="bold">–nocrossref</text></tag>
                 <p><text/></p>
                 <p>Enables (default) or disables the filling in of references, hrefs, etc
@@ -1592,50 +1651,51 @@ based on a previous scan (either from <text font="typewriter">--scan</text>, or 
 It may be useful to disable when generating documents not based
 on the LaTeXML doctype.</p>
               </item>
-              <item id="manual.A1.I4.i6">
+              <item id="manual.A1.I4.i7">
                 <tag><text font="bold">–urlstyle</text>=<text font="typewriter">(server|negotiated|file)</text></tag>
-                <p><text/></p>
+                <p><text/>
+<!-- %**** pods/latexmlpost.tex Line 225 **** --></p>
                 <p>This option determines the way that URLs within the documents
 are formatted, depending on the way they are intended to be served.
 The default, <text font="typewriter">server</text>, eliminates unneccessary
 trailing <text font="typewriter">index.html</text>.  With <text font="typewriter">negotiated</text>, the trailing
 file extension (typically <text font="typewriter">html</text> or <text font="typewriter">xhtml</text>) are eliminated.
-<!-- %**** pods/latexmlpost.tex Line 200 **** -->The scheme <text font="typewriter">file</text> preserves complete (but relative) urls
+The scheme <text font="typewriter">file</text> preserves complete (but relative) urls
 so that the site can be browsed as files without any server.</p>
               </item>
-              <item id="manual.A1.I4.i7">
+              <item id="manual.A1.I4.i8">
                 <tag><text font="bold">–index</text>, <text font="bold">–noindex</text></tag>
                 <p><text/></p>
                 <p>Enables (default) or disables the generation of an index from indexmarks
 embedded within the document.  Enabling this has no effect unless
 there is an index element in the document (generated by <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMTok name="backslash" role="MULOP">\</XMTok></XMath></Math>printindex).</p>
               </item>
-              <item id="manual.A1.I4.i8">
+              <item id="manual.A1.I4.i9">
                 <tag><text font="bold">–splitindex</text>, <text font="bold">–nosplitindex</text></tag>
                 <p><text/></p>
                 <p>Enables or disables (default) the splitting of generated indexes
 into separate pages per initial letter.</p>
               </item>
-              <item id="manual.A1.I4.i9">
+              <item id="manual.A1.I4.i10">
                 <tag>
                   <text font="bold">–bibliography=</text>
                   <text font="italic">pathname</text>
                 </tag>
                 <p><text/></p>
+                <!-- %**** pods/latexmlpost.tex Line 250 **** -->
                 <p>Specifies a bibliography file generated from a BibTeX file.
 This is used to fill in a bibliography element.
 Explicit bibliographies generated by a <text font="typewriter">thebibliography</text> environment
 do not need this processing.  Enabling this has no effect unless
 there is an bibliography element in the document (generated by <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMTok name="backslash" role="MULOP">\</XMTok></XMath></Math>bibliography).</p>
-                <!-- %**** pods/latexmlpost.tex Line 225 **** -->
               </item>
-              <item id="manual.A1.I4.i10">
+              <item id="manual.A1.I4.i11">
                 <tag><text font="bold">–splitbibliography</text>, <text font="bold">–nosplitbibliography</text></tag>
                 <p><text/></p>
                 <p>Enables or disables (default) the splitting of generated bibliographies
 into separate pages per initial letter.</p>
               </item>
-              <item id="manual.A1.I4.i11">
+              <item id="manual.A1.I4.i12">
                 <tag>
                   <text font="bold">–prescan</text>
                 </tag>
@@ -1650,16 +1710,16 @@ A later pass then has complete information allowing all documents
 to reference each other, and also constructs an index and bibliography
 that reflects the entire document set.  The same effect (though less efficient)
 can be achieved by running <text font="typewriter">latexmlpost</text> twice, provided a <text font="typewriter">dbfile</text>
-is specified.</p>
+<!-- %**** pods/latexmlpost.tex Line 275 **** -->is specified.</p>
               </item>
-              <item id="manual.A1.I4.i12">
+              <item id="manual.A1.I4.i13">
                 <tag>
                   <text font="bold">–dbfile</text>
                   <text font="italic">=file</text>
                 </tag>
                 <p><text/></p>
                 <p>Specifies a filename to use for the crossreferencing data when
-<!-- %**** pods/latexmlpost.tex Line 250 **** -->using two-pass processing.  This file may reside in the intermediate
+using two-pass processing.  This file may reside in the intermediate
 destination directory.</p>
               </item>
             </description>
@@ -1679,15 +1739,24 @@ depends on the format and other options.</p>
                 <p><text/></p>
                 <p>Requests or disables the conversion of math to images.
 Conversion is the default for html format.</p>
+                <!-- %**** pods/latexmlpost.tex Line 300 **** -->
               </item>
               <item id="manual.A1.I5.i2">
+                <tag>
+                  <text font="bold">–mathimagemagnification=</text>
+                  <text font="italic">factor</text>
+                </tag>
+                <p><text/></p>
+                <p>Specifies the magnification used for math images, if they are made.
+Default is 1.75.</p>
+              </item>
+              <item id="manual.A1.I5.i3">
                 <tag><text font="bold">–presentationmathml</text>, <text font="bold">–nopresentationmathml</text></tag>
                 <p><text/></p>
                 <p>Requests or disables conversion of math to Presentation MathML.
 Conversion is the default for xhtml format.</p>
-                <!-- %**** pods/latexmlpost.tex Line 275 **** -->
               </item>
-              <item id="manual.A1.I5.i3">
+              <item id="manual.A1.I5.i4">
                 <tag>
                   <text font="bold">–linelength</text>
                   <text font="italic">=number</text>
@@ -1696,14 +1765,15 @@ Conversion is the default for xhtml format.</p>
                 <p>(Experimental) Applies line-breaking to the generated Presentation
 MathML such that it is no longer than <text font="italic">number</text> `characters'.</p>
               </item>
-              <item id="manual.A1.I5.i4">
+              <item id="manual.A1.I5.i5">
                 <tag><text font="bold">–contentmathml</text>, <text font="bold">–nocontentmathml</text></tag>
                 <p><text/></p>
                 <p>Requests or disables conversion of math to Content MathML.
 Conversion is disabled by default.
 <text font="bold">Note</text> that this conversion is only partially implemented.</p>
+                <!-- %**** pods/latexmlpost.tex Line 325 **** -->
               </item>
-              <item id="manual.A1.I5.i5">
+              <item id="manual.A1.I5.i6">
                 <tag>
                   <text font="bold">–openmath</text>
                 </tag>
@@ -1712,21 +1782,21 @@ Conversion is disabled by default.
 Conversion is disabled by default.
 <text font="bold">Note</text> that this conversion is only partially implemented.</p>
               </item>
-              <item id="manual.A1.I5.i6">
+              <item id="manual.A1.I5.i7">
                 <tag><text font="bold">–parallelmath</text>, <text font="bold">–noparallelmath</text></tag>
                 <p><text/></p>
                 <p>Requests or disables parallel math markup.
 Parallel markup is the default for xhtml formats when multiple math
-formats are requested.
-<!-- %**** pods/latexmlpost.tex Line 300 **** --></p>
+formats are requested.</p>
                 <p>This method uses the MathML <text font="typewriter">semantics</text> element with additional formats
 appearing as <text font="typewriter">annotation</text>'s.
 The first math format requested must be either Presentation or Content MathML;
 additional formats may be MathML or OpenMath.</p>
                 <p>If this option is disabled and multiple formats are requested, the
 representations are simply stored as separate children of the <text font="typewriter">Math</text> element.</p>
+                <!-- %**** pods/latexmlpost.tex Line 350 **** -->
               </item>
-              <item id="manual.A1.I5.i7">
+              <item id="manual.A1.I5.i8">
                 <tag>
                   <text font="bold">–keepXMath</text>
                 </tag>
@@ -1744,8 +1814,7 @@ this option preserves it.</p>
             <description id="manual.A1.I6">
               <item id="manual.A1.I6.i1">
                 <tag><text font="bold">–graphicsimages</text>, <text font="bold">–nographicsimages</text></tag>
-                <p><text/>
-<!-- %**** pods/latexmlpost.tex Line 325 **** --></p>
+                <p><text/></p>
                 <p>Enables (default) or disables the conversion of graphics inclusion
 to web-appropriate format (png).</p>
               </item>
@@ -1758,6 +1827,7 @@ and pstricks material into images.</p>
               <item id="manual.A1.I6.i3">
                 <tag><text font="bold">–svg</text>, <text font="bold">–nosvg</text></tag>
                 <p><text/></p>
+                <!-- %**** pods/latexmlpost.tex Line 375 **** -->
                 <p>Enables or disables (default) the conversion of picture environments
 and pstricks material to SVG.</p>
               </item>
@@ -1828,30 +1898,40 @@ and pstricks material to SVG.</p>
                 <p>Reads the TeX file $<text font="typewriter">file</text>.tex, digests and converts it to XML, and saves it in $<text font="typewriter">file</text>.xml.</p>
               </item>
               <item id="manual.A2.I1.i3">
-                <tag>$<text font="typewriter">latexml-&gt;convertFile($file);</text></tag>
+                <tag>$<text font="typewriter">doc = $latexml-&gt;convertFile($file);</text></tag>
                 <p><text/></p>
                 <p>Reads the TeX file $<text font="typewriter">file</text>, digests and converts it to XML and returns the <ref class="package" href="http://search.cpan.org/search?query=XML%3A%3ALibXML%3A%3ADocument&amp;mode=module">XML::LibXML::Document</ref>.</p>
                 <!-- %**** pods/LaTeXML.tex Line 50 **** -->
               </item>
               <item id="manual.A2.I1.i4">
-                <tag>$<text font="typewriter">latexml-&gt;convertString($string);</text></tag>
+                <tag>$<text font="typewriter">doc = $latexml-&gt;convertString($string);</text></tag>
                 <p><text/></p>
                 <p>Digests $<text font="typewriter">string</text>, which presumably contains TeX markup, and converts it to XML
 and returns the <ref class="package" href="http://search.cpan.org/search?query=XML%3A%3ALibXML%3A%3ADocument&amp;mode=module">XML::LibXML::Document</ref>.</p>
               </item>
               <item id="manual.A2.I1.i5">
-                <tag>$<text font="typewriter">latexml-&gt;digestFile($file);</text></tag>
+                <tag>$<text font="typewriter">latexml-&gt;writeDOM($doc,$name);</text></tag>
+                <p><text/></p>
+                <p>Writes the XML document to $name.xml.</p>
+              </item>
+              <item id="manual.A2.I1.i6">
+                <tag>$<text font="typewriter">string = $latexml-&gt;DOMtoString($doc);</text></tag>
+                <p><text/></p>
+                <p>Converts the XML document to a string (of utf8 bytes).</p>
+              </item>
+              <item id="manual.A2.I1.i7">
+                <tag>$<text font="typewriter">box = $latexml-&gt;digestFile($file);</text></tag>
                 <p><text/></p>
                 <p>Reads the TeX file $<text font="typewriter">file</text>, and digests it returning the <ref class="package" labelref="LaTeXML::Box">LaTeXML::Box</ref> representation.</p>
               </item>
-              <item id="manual.A2.I1.i6">
-                <tag>$<text font="typewriter">latexml-&gt;digestString($string);</text></tag>
+              <item id="manual.A2.I1.i8">
+                <tag>$<text font="typewriter">box = $latexml-&gt;digestString($string);</text></tag>
                 <p><text/></p>
                 <p>Digests $<text font="typewriter">string</text>, which presumably contains TeX markup,
-returning the <ref class="package" labelref="LaTeXML::Box">LaTeXML::Box</ref> representation.</p>
+<!-- %**** pods/LaTeXML.tex Line 75 **** -->returning the <ref class="package" labelref="LaTeXML::Box">LaTeXML::Box</ref> representation.</p>
               </item>
-              <item id="manual.A2.I1.i7">
-                <tag>$<text font="typewriter">latexml-&gt;convertDocument($digested);</text></tag>
+              <item id="manual.A2.I1.i9">
+                <tag>$<text font="typewriter">doc = $latexml-&gt;convertDocument($digested);</text></tag>
                 <p><text/></p>
                 <p>Converts $<text font="typewriter">digested</text> (the <ref class="package" labelref="LaTeXML::Box">LaTeXML::Box</ref> reprentation) into XML,
 returning the <ref class="package" href="http://search.cpan.org/search?query=XML%3A%3ALibXML%3A%3ADocument&amp;mode=module">XML::LibXML::Document</ref>.</p>
@@ -1861,7 +1941,6 @@ returning the <ref class="package" href="http://search.cpan.org/search?query=XML
         </subsubsection>
         <subsubsection id="manual.A2.Sx1.SSx2.SSSx2" label="LaTeXML_Customization">
           <title>Customization<indexmark><indexphrase key="latexml">LaTeXML</indexphrase><indexphrase key="customization">Customization</indexphrase></indexmark></title>
-          <!-- %**** pods/LaTeXML.tex Line 75 **** -->
           <para id="manual.A2.Sx1.SSx2.SSSx2.p1">
             <p>In the simplest case, LaTeXML will understand your source file and convert it
 automatically.  With more complicated (realistic) documents, you will likely
@@ -1875,6 +1954,7 @@ Likewise, the LaTeXML implementation of a TeX style file, say
             <p>See <ref class="package" labelref="LaTeXML::Package">LaTeXML::Package</ref> for documentation of these customization and
 implementation files.</p>
           </para>
+          <!-- %**** pods/LaTeXML.tex Line 100 **** -->
         </subsubsection>
       </subsection>
       <subsection id="manual.A2.Sx1.SSx3" label="LaTeXML_See_also">
@@ -1886,7 +1966,6 @@ implementation files.</p>
           <p>See <ref class="package" labelref="LaTeXML::Package">LaTeXML::Package</ref> for documentation of these customization and
 implementation files.</p>
         </para>
-        <!-- %**** pods/LaTeXML.tex Line 100 **** -->
         <para id="manual.A2.Sx1.SSx3.p3">
           <p>For cases when the high-level declarations described in <ref class="package" labelref="LaTeXML::Package">LaTeXML::Package</ref>
 are not enough, or for understanding more of LaTeXML's internals, see</p>
@@ -1904,6 +1983,7 @@ variables, definitions, etc.</p>
             <item id="manual.A2.I2.i2">
               <tag><ref class="package" labelref="LaTeXML::Token">LaTeXML::Token</ref>, <ref class="package" labelref="LaTeXML::Mouth">LaTeXML::Mouth</ref></tag>
               <p><text font="bold">and <ref class="package" labelref="LaTeXML::Gullet">LaTeXML::Gullet</ref></text></p>
+              <!-- %**** pods/LaTeXML.tex Line 125 **** -->
               <p>deal with tokens, tokenization of strings and files, and
 basic TeX sequences such as arguments, dimensions and so forth.</p>
             </item>
@@ -1914,8 +1994,7 @@ basic TeX sequences such as arguments, dimensions and so forth.</p>
             </item>
             <item id="manual.A2.I2.i4">
               <tag><ref class="package" labelref="LaTeXML::Document">LaTeXML::Document</ref>, <ref class="package" labelref="LaTeXML::Model">LaTeXML::Model</ref>,</tag>
-              <p><ref class="package" labelref="LaTeXML::Rewrite">LaTeXML::Rewrite</ref>
-<!-- %**** pods/LaTeXML.tex Line 125 **** --></p>
+              <p><ref class="package" labelref="LaTeXML::Rewrite">LaTeXML::Rewrite</ref></p>
               <p>dealing with conversion of the digested boxes into XML.</p>
             </item>
             <item id="manual.A2.I2.i5">
@@ -1932,7 +2011,8 @@ basic TeX sequences such as arguments, dimensions and so forth.</p>
             </item>
             <item id="manual.A2.I2.i7">
               <tag><ref class="package" labelref="LaTeXML::Global">LaTeXML::Global</ref>, <ref class="package" labelref="LaTeXML::Error">LaTeXML::Error</ref>,</tag>
-              <p><ref class="package" labelref="LaTeXML::Object">LaTeXML::Object</ref><text font="bold">, <ref class="package" labelref="LaTeXML::Font">LaTeXML::Font</ref></text></p>
+              <p><ref class="package" labelref="LaTeXML::Object">LaTeXML::Object</ref><text font="bold">, <ref class="package" labelref="LaTeXML::Font">LaTeXML::Font</ref></text>
+<!-- %**** pods/LaTeXML.tex Line 150 **** --></p>
               <p>other random modules.</p>
             </item>
           </description>
@@ -2746,22 +2826,41 @@ nesting when skipping to <Math mode="inline" tex="\backslash" text="backslash"><
                   <p>Defines the macro expansion for $<text font="typewriter">prototype</text>.  If a $<text font="typewriter">string</text> is supplied, it will be
 tokenized at definition time, and any macro arguments will be substituted for parameter
 indicators (eg #1) at expansion time; the result is used as the expansion of
-the control sequence.  The only option is <text font="typewriter">scope</text>.</p>
+the control sequence.
+The only option, other than <text font="typewriter">scope</text>, is <text font="typewriter">isConditional</text> which should be true,
+for conditional control sequences (TeX uses these to keep track of conditional
+nesting when skipping to <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMTok name="backslash" role="MULOP">\</XMTok></XMath></Math>else or <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMTok name="backslash" role="MULOP">\</XMTok></XMath></Math>fi).</p>
                   <p>If defined by $<text font="typewriter">code</text>, the form is <text font="typewriter">CODE($gullet,@args)</text>.</p>
                 </item>
                 <item id="manual.A2.I14.i3">
                   <tag>
+                    <text font="typewriter">DefMacroI($cs,$paramlist,$string |$tokens |$code,%options);</text>
+                  </tag>
+                  <p><text/></p>
+                  <p>Internal form of <text font="typewriter">DefMacro</text> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.</p>
+                </item>
+                <item id="manual.A2.I14.i4">
+                  <tag>
                     <text font="typewriter">DefPrimitive($prototype,CODE($stomach,@args),%options);</text>
                   </tag>
                   <p><text/></p>
+                  <!-- %**** pods/LaTeXML_Package.tex Line 250 **** -->
                   <p>Define a primitive control sequence.
 The CODE should return a list of digested items,
 but usually should return nothing (eg. end with return; ).</p>
                   <p>The only option is for the special case: <text font="typewriter">isPrefix=&gt;1</text> is used for assignment
 prefixes (like <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMTok name="backslash" role="MULOP">\</XMTok></XMath></Math>global).</p>
-                  <!-- %**** pods/LaTeXML_Package.tex Line 250 **** -->
                 </item>
-                <item id="manual.A2.I14.i4">
+                <item id="manual.A2.I14.i5">
+                  <tag>
+                    <text font="typewriter">DefPrimitiveI($cs,$paramlist,CODE($stomach,@args),%options);</text>
+                  </tag>
+                  <p><text/></p>
+                  <p>Internal form of <text font="typewriter">DefPrimitive</text> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.</p>
+                </item>
+                <item id="manual.A2.I14.i6">
                   <tag>
                     <text font="typewriter">DefRegister($prototype,$value,%options);</text>
                   </tag>
@@ -2771,6 +2870,7 @@ prefixes (like <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMT
 but registers are also handled by prototypes like <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMTok name="backslash" role="MULOP">\</XMTok></XMath></Math><text font="typewriter">count{Number}</text>. <text font="typewriter">DefRegister</text> arranges
 that the register value can be accessed when a numeric, dimension, … value is being read,
 and also defines the control sequence for assignment.</p>
+                  <!-- %**** pods/LaTeXML_Package.tex Line 275 **** -->
                   <p>Options are</p>
                   <description id="manual.A2.I14.I1">
                     <item id="manual.A2.I14.I1.i1">
@@ -2785,16 +2885,24 @@ and also defines the control sequence for assignment.</p>
                       <p><text font="bold">=item <text font="typewriter">setter</text>=&gt;CODE($value,@args)</text></p>
                       <p>By default the value is stored in the State's Value table under a name concatenating the
 control sequence and argument values.  These options allow other means of fetching and
-storing the value.
-<!-- %**** pods/LaTeXML_Package.tex Line 275 **** --></p>
+storing the value.</p>
                     </item>
                   </description>
                 </item>
-                <item id="manual.A2.I14.i5">
+                <item id="manual.A2.I14.i7">
+                  <tag>
+                    <text font="typewriter">DefRegisterI($cs,$paramlist,$value,%options);</text>
+                  </tag>
+                  <p><text/></p>
+                  <p>Internal form of <text font="typewriter">DefRegister</text> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.</p>
+                </item>
+                <item id="manual.A2.I14.i8">
                   <tag>
                     <text font="typewriter">DefConstructor($prototype,$xmlpattern |$code,%options);</text>
                   </tag>
-                  <p><text/></p>
+                  <p><text/>
+<!-- %**** pods/LaTeXML_Package.tex Line 300 **** --></p>
                   <p>The Constructor is where LaTeXML really starts getting interesting;
 invoking the control sequence will generate an arbitrary XML
 fragment in the document tree.  More specifically: during digestion, the arguments
@@ -2808,10 +2916,10 @@ The substitutions are of the following forms:</p>
                     <item id="manual.A2.I14.I2.i1">
                       <tag>#1, #2 … #name</tag>
                       <p><text/></p>
-                      <!-- %**** pods/LaTeXML_Package.tex Line 300 **** -->
                       <p>These are replaced by the corresponding argument (for #1) or property (for #name)
 stored with the Whatsit. Each are turned into a string when it appears as
 in an attribute position, or recursively processed when it appears as content.</p>
+                      <!-- %**** pods/LaTeXML_Package.tex Line 325 **** -->
                     </item>
                     <item id="manual.A2.I14.I2.i2">
                       <tag>&amp;<text font="typewriter">function(@args)</text></tag>
@@ -2835,11 +2943,10 @@ were given.</p>
                       <p><text/></p>
                       <p>If the constuctor <text font="italic">begins</text> with <text font="typewriter">^</text>, the XML fragment is allowed to <text font="italic">float up</text>
 to a parent node that is allowed to contain it, according to the Document Type.</p>
-                      <!-- %**** pods/LaTeXML_Package.tex Line 325 **** -->
                     </item>
                   </description>
                   <p>The Whatsit property <text font="typewriter">font</text> is defined by default.  Additional properties
-<text font="typewriter">body</text> and <text font="typewriter">trailer</text> are defined when <text font="typewriter">captureBody</text> is true, or for environments.
+<!-- %**** pods/LaTeXML_Package.tex Line 350 **** --><text font="typewriter">body</text> and <text font="typewriter">trailer</text> are defined when <text font="typewriter">captureBody</text> is true, or for environments.
 By using $<text font="typewriter">whatsit-&gt;setProperty(key=&gt;$value);</text> within <text font="typewriter">afterDigest</text>,
 or by using the <text font="typewriter">properties</text> option, other properties can be added.</p>
                   <p>DefConstructor options are</p>
@@ -2856,14 +2963,14 @@ or by using the <text font="typewriter">properties</text> option, other properti
                     </item>
                     <item id="manual.A2.I14.I3.i3">
                       <tag>requireMath=&gt;boolean</tag>
-                      <p><text/>
-<!-- %**** pods/LaTeXML_Package.tex Line 350 **** --></p>
+                      <p><text/></p>
                     </item>
                     <item id="manual.A2.I14.I3.i4">
                       <tag>forbidMath=&gt;boolean</tag>
                       <p><text/></p>
                       <p>These specify whether the given constructor can only appear,
-or cannot appear, in math mode.</p>
+or cannot appear, in math mode.
+<!-- %**** pods/LaTeXML_Package.tex Line 375 **** --></p>
                     </item>
                     <item id="manual.A2.I14.I3.i5">
                       <tag>font=&gt;{fontspec…}</tag>
@@ -2885,11 +2992,11 @@ The CODE is called with the $whatsit and digested arguments.</p>
                       <tag>properties=&gt;{prop=&gt;value,…}</tag>
                       <p><text font="bold">or CODE($stomach,#1,#2…)</text></p>
                       <p>This option supplies additional properties to be set on the
-<!-- %**** pods/LaTeXML_Package.tex Line 375 **** -->generated Whatsit.  In the first form, the values can
+generated Whatsit.  In the first form, the values can
 be of any type, but (1) if it is a code references, it takes
-the same args ($stomach,#1,#2,…) and should return a value.
+the same args ($stomach,#1,#2,...) and should return a value.
 and (2) if the value is a string, occurances of #1 (etc) are
-replaced by the corresponding argument.
+<!-- %**** pods/LaTeXML_Package.tex Line 400 **** -->replaced by the corresponding argument.
 In the second form, the code should return a hash of properties.</p>
                     </item>
                     <item id="manual.A2.I14.I3.i8">
@@ -2910,10 +3017,10 @@ modify the Whatsit, and/or add to the digested output.</p>
                     </item>
                     <item id="manual.A2.I14.I3.i10">
                       <tag>beforeConstruct=&gt;CODE($document,$whatsit)</tag>
-                      <p><text/>
-<!-- %**** pods/LaTeXML_Package.tex Line 400 **** --></p>
+                      <p><text/></p>
                       <p>Supplies CODE to execute before constructing the XML
 (generated by $replacement).</p>
+                      <!-- %**** pods/LaTeXML_Package.tex Line 425 **** -->
                     </item>
                     <item id="manual.A2.I14.I3.i11">
                       <tag>afterConstruct=&gt;CODE($document,$whatsit)</tag>
@@ -2936,10 +3043,10 @@ in cases where it isn't the command used in the $<text font="typewriter">prototy
                     </item>
                     <item id="manual.A2.I14.I3.i14">
                       <tag>nargs=&gt;$nargs</tag>
-                      <p><text/>
-<!-- %**** pods/LaTeXML_Package.tex Line 425 **** --></p>
+                      <p><text/></p>
                       <p>This gives a number of args for cases where it can't be infered directly
 from the $<text font="typewriter">prototype</text> (eg. when more args are explictly read by Daemons).</p>
+                      <!-- %**** pods/LaTeXML_Package.tex Line 450 **** -->
                     </item>
                     <item id="manual.A2.I14.I3.i15">
                       <tag>scope=&gt;$scope</tag>
@@ -2948,7 +3055,15 @@ from the $<text font="typewriter">prototype</text> (eg. when more args are expli
                     </item>
                   </description>
                 </item>
-                <item id="manual.A2.I14.i6">
+                <item id="manual.A2.I14.i9">
+                  <tag>
+                    <text font="typewriter">DefConstructorI($cs,$paramlist,$xmlpattern |$code,%options);</text>
+                  </tag>
+                  <p><text/></p>
+                  <p>Internal form of <text font="typewriter">DefConstructor</text> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.</p>
+                </item>
+                <item id="manual.A2.I14.i10">
                   <tag>
                     <text font="typewriter">DefMath($prototype,$tex,%options);</text>
                   </tag>
@@ -2959,7 +3074,8 @@ The options given can effectively create semantic macros that contribute to the 
 parsing of mathematical content.
 In particular, it generates an XMDual using the replacement $tex for the presentation.
 The content information is drawn from the name and options</p>
-                  <p>These <text font="typewriter">DefConstructor</text> options also apply:</p>
+                  <p>These <text font="typewriter">DefConstructor</text> options also apply:
+<!-- %**** pods/LaTeXML_Package.tex Line 475 **** --></p>
                   <verbatim font="typewriter">
   reversion, alias, beforeDigest, afterDigest,
   beforeConstruct, afterConstruct and scope.
@@ -2980,11 +3096,11 @@ The content information is drawn from the name and options</p>
                       <tag>omcd=&gt;cdname</tag>
                       <p><text/></p>
                       <p>gives the OpenMath content dictionary that name is from.</p>
+                      <!-- %**** pods/LaTeXML_Package.tex Line 500 **** -->
                     </item>
                     <item id="manual.A2.I14.I4.i4">
                       <tag>role=&gt;grammatical_role</tag>
-                      <p><text/>
-<!-- %**** pods/LaTeXML_Package.tex Line 475 **** --></p>
+                      <p><text/></p>
                       <p>adds a grammatical role attribute to the object; this specifies
 the grammatical role that the object plays in surrounding expressions.
 This direly needs documentation!</p>
@@ -3004,12 +3120,12 @@ object, or whether they will appear in the usual position.</p>
                     </item>
                     <item id="manual.A2.I14.I4.i7">
                       <tag>operator_role=&gt;grammatical_role</tag>
-                      <p><text/></p>
+                      <p><text/>
+<!-- %**** pods/LaTeXML_Package.tex Line 525 **** --></p>
                     </item>
                     <item id="manual.A2.I14.I4.i8">
                       <tag>operator_scriptpos=&gt;boolean</tag>
                       <p><text/></p>
-                      <!-- %**** pods/LaTeXML_Package.tex Line 500 **** -->
                       <p>These two are similar to <text font="typewriter">role</text> and <text font="typewriter">scriptpos</text>, but are used in
 unusual cases.  These apply to the given attributes to the operator token
 in the content branch.</p>
@@ -3022,7 +3138,15 @@ so that changes to fonts, etc, are local.  Providing &lt;<text font="typewriter"
                     </item>
                   </description>
                 </item>
-                <item id="manual.A2.I14.i7">
+                <item id="manual.A2.I14.i11">
+                  <tag>
+                    <text font="typewriter">DefMathI($cs,$paramlist,$tex,%options);</text>
+                  </tag>
+                  <p><text/></p>
+                  <p>Internal form of <text font="typewriter">DefMath</text> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.</p>
+                </item>
+                <item id="manual.A2.I14.i12">
                   <tag>
                     <text font="typewriter">DefEnvironment($prototype,$replacement,%options);</text>
                   </tag>
@@ -3030,14 +3154,13 @@ so that changes to fonts, etc, are local.  Providing &lt;<text font="typewriter"
                   <p>Defines an Environment that generates a specific XML fragment.  The $<text font="typewriter">replacement</text> is
 of the same form as that for DefConstructor, but will generally include reference to
 the #<text font="typewriter">body</text> property. Upon encountering a <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMTok name="backslash" role="MULOP">\</XMTok></XMath></Math><text font="typewriter">begin{env}</text>:  the mode is switched, if needed,
-else a new group is opened; then the environment name is noted; the beforeDigest daemon is run.
+<!-- %**** pods/LaTeXML_Package.tex Line 550 **** -->else a new group is opened; then the environment name is noted; the beforeDigest daemon is run.
 Then the Whatsit representing the begin command (but ultimately the whole environment) is created
 and the afterDigestBegin daemon is run.
 Next, the body will be digested and collected until the balancing <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMTok name="backslash" role="MULOP">\</XMTok></XMath></Math><text font="typewriter">end{env}</text>.   Then,
 any afterDigest daemon is run, the environment is ended, finally the mode is ended or
 the group is closed.  The body and <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMTok name="backslash" role="MULOP">\</XMTok></XMath></Math><text font="typewriter">end{env}</text> whatsit are added to the <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMTok name="backslash" role="MULOP">\</XMTok></XMath></Math><text font="typewriter">begin{env}</text>'s whatsit
 as body and trailer, respectively.</p>
-                  <!-- %**** pods/LaTeXML_Package.tex Line 525 **** -->
                   <p>It shares options with <text font="typewriter">DefConstructor</text>:</p>
                   <verbatim font="typewriter">
  mode, requireMath, forbidMath, properties, nargs,
@@ -3047,7 +3170,16 @@ as body and trailer, respectively.</p>
                   <p>Additionally, <text font="typewriter">afterDigestBegin</text> is effectively an <text font="typewriter">afterDigest</text>
 for the <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMTok name="backslash" role="MULOP">\</XMTok></XMath></Math><text font="typewriter">begin{env}</text> control sequence.</p>
                 </item>
-                <item id="manual.A2.I14.i8">
+                <item id="manual.A2.I14.i13">
+                  <tag>
+                    <text font="typewriter">DefEnvironmentI($name,$paramlist,$replacement,%options);</text>
+                  </tag>
+                  <p><text/></p>
+                  <!-- %**** pods/LaTeXML_Package.tex Line 575 **** -->
+                  <p>Internal form of <text font="typewriter">DefEnvironment</text> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.</p>
+                </item>
+                <item id="manual.A2.I14.i14">
                   <tag>
                     <text font="typewriter">Let($token1,$token2);</text>
                   </tag>
@@ -3062,8 +3194,7 @@ for the <Math mode="inline" tex="\backslash" text="backslash"><XMath><XMTok name
           <title>Document Declarations<indexmark><indexphrase key="latexmlpackage">LaTeXML::Package</indexphrase><indexphrase key="documentdeclarations">Document Declarations</indexphrase></indexmark></title>
           <para id="manual.A2.Sx6.SSx2.SSSx2.p1">
             <p>Constructors define how TeX markup will generate XML fragments, but the
-Document Model is used to control exactly how those fragments are assembled.
-<!-- %**** pods/LaTeXML_Package.tex Line 550 **** --></p>
+Document Model is used to control exactly how those fragments are assembled.</p>
           </para>
           <para id="manual.A2.Sx6.SSx2.SSSx2.p2">
             <description id="manual.A2.I15">
@@ -3074,6 +3205,7 @@ Document Model is used to control exactly how those fragments are assembled.
                 <p><text/></p>
                 <p>Declares properties of elements with the name $<text font="typewriter">tag</text>.</p>
                 <p>The recognized properties are:</p>
+                <!-- %**** pods/LaTeXML_Package.tex Line 600 **** -->
                 <description id="manual.A2.I15.I1">
                   <item id="manual.A2.I15.I1.i1">
                     <tag>autoOpen=&gt;boolean</tag>
@@ -3088,7 +3220,7 @@ This property can help match the more  SGML-like LaTeX to XML.</p>
                     <p><text/></p>
                     <p>Specifies whether this $tag can be automatically closed
 if needed to close an ancestor node, or insert
-<!-- %**** pods/LaTeXML_Package.tex Line 575 **** -->an element into an ancestor.
+an element into an ancestor.
 This property can help match the more  SGML-like LaTeX to XML.</p>
                   </item>
                   <item id="manual.A2.I15.I1.i3">
@@ -3097,6 +3229,7 @@ This property can help match the more  SGML-like LaTeX to XML.</p>
                     <p>Provides CODE to be run whenever a node with this $tag
 is opened.  It is called with the document being constructed,
 and the initiating digested object as arguments.</p>
+                    <!-- %**** pods/LaTeXML_Package.tex Line 625 **** -->
                   </item>
                   <item id="manual.A2.I15.I1.i4">
                     <tag>afterClose=&gt;CODE($document,$box)</tag>
@@ -3116,7 +3249,7 @@ and the initiating digested object as arguments.</p>
 to be used in the final document.  The hash <text font="typewriter">%namespaces</text> specifies
 the namespaces prefixes that are expected to be found in the DTD, along with
 each associated namespace URI.  Use the prefix #<text font="typewriter">default</text> for the default namespace
-<!-- %**** pods/LaTeXML_Package.tex Line 600 **** -->(ie. the namespace of non-prefixed elements in the DTD).</p>
+(ie. the namespace of non-prefixed elements in the DTD).</p>
                 <p>The prefixes defined for the DTD may be different from the prefixes used in
 implementation CODE (eg. in ltxml files; see RegisterNamespace).
 The generated document will use the namespaces and prefixes defined for the DTD.</p>
@@ -3126,6 +3259,7 @@ The generated document will use the namespaces and prefixes defined for the DTD.
                   <text font="typewriter">RegisterNamespace($prefix,$URL);</text>
                 </tag>
                 <p><text/></p>
+                <!-- %**** pods/LaTeXML_Package.tex Line 650 **** -->
                 <p>Declares the $<text font="typewriter">prefix</text> to be associated with the given $<text font="typewriter">URL</text>.
 These prefixes may be used in ltxml files, particularly for
 constructors, xpath expressions, etc.  They are not necessarily
@@ -3143,7 +3277,6 @@ We'll call it <text font="italic">applying ligatures</text>, for lack of a bette
           </para>
           <para id="manual.A2.Sx6.SSx2.SSSx3.p2">
             <description id="manual.A2.I16">
-              <!-- %**** pods/LaTeXML_Package.tex Line 625 **** -->
               <item id="manual.A2.I16.i1">
                 <tag>
                   <text font="typewriter">DefLigature($regexp,%options);</text>
@@ -3154,7 +3287,7 @@ be converted internally to a true regexp), to the text content.
 The only option is <text font="typewriter">fontTest=CODE($font)</text>; if given, then the substitution
 is applied only when <text font="typewriter">fontTest</text> returns true.</p>
                 <p>Predefined Ligatures combine sequences of "." or single-quotes into appropriate
-Unicode characters.</p>
+<!-- %**** pods/LaTeXML_Package.tex Line 675 **** -->Unicode characters.</p>
               </item>
               <item id="manual.A2.I16.i2">
                 <tag>
@@ -3167,7 +3300,7 @@ the text content of the first node with $<text font="typewriter">string</text> c
 The next $<text font="typewriter">n-1</text> nodes are removed.  If no replacement is called for, CODE
 should return undef.</p>
                 <p>Predefined Math Ligatures combine letter or digit Math Tokens (XMTok) into multicharacter
-<!-- %**** pods/LaTeXML_Package.tex Line 650 **** -->symbols or numbers, depending on the font (non math italic).</p>
+symbols or numbers, depending on the font (non math italic).</p>
               </item>
             </description>
           </para>
@@ -3189,7 +3322,7 @@ should return undef.</p>
                 <p><text/></p>
                 <p>These two declarations define document rewrite rules that are applied to the
 document tree after it has been constructed, but before math parsing, or
-any other postprocessing, is done.  The <text font="typewriter">%specification</text> consists of a
+<!-- %**** pods/LaTeXML_Package.tex Line 700 **** -->any other postprocessing, is done.  The <text font="typewriter">%specification</text> consists of a
 seqeuence of key/value pairs with the initial specs successively narrowing the
 selection of document nodes, and the remaining specs indicating how
 to modify or replace the selected nodes.</p>
@@ -3198,8 +3331,7 @@ to modify or replace the selected nodes.</p>
                   <item id="manual.A2.I17.I1.i1">
                     <tag>label =&gt;$label</tag>
                     <p><text/></p>
-                    <p>Selects the part of the document with label=$label
-<!-- %**** pods/LaTeXML_Package.tex Line 675 **** --></p>
+                    <p>Selects the part of the document with label=$label</p>
                   </item>
                   <item id="manual.A2.I17.I1.i2">
                     <tag>scope =&gt;$scope</tag>
@@ -3211,6 +3343,7 @@ a section with reference number "1.2.3"</p>
                   <item id="manual.A2.I17.I1.i3">
                     <tag>xpath =&gt;$xpath</tag>
                     <p><text/></p>
+                    <!-- %**** pods/LaTeXML_Package.tex Line 725 **** -->
                     <p>Select those nodes matching an explicit xpath expression.</p>
                   </item>
                   <item id="manual.A2.I17.I1.i4">
@@ -3224,7 +3357,6 @@ a section with reference number "1.2.3"</p>
                     <p>Selects text nodes that match the regular expression.</p>
                   </item>
                 </description>
-                <!-- %**** pods/LaTeXML_Package.tex Line 700 **** -->
                 <p>The following act upon the selected node:</p>
                 <description id="manual.A2.I17.I2">
                   <item id="manual.A2.I17.I2.i1">
@@ -3234,7 +3366,8 @@ a section with reference number "1.2.3"</p>
                   </item>
                   <item id="manual.A2.I17.I2.i2">
                     <tag>replace =&gt;$replacement</tag>
-                    <p><text/></p>
+                    <p><text/>
+<!-- %**** pods/LaTeXML_Package.tex Line 750 **** --></p>
                     <p>Interprets the $replacement as TeX code to generate nodes that will
 replace the selected nodes.</p>
                   </item>
@@ -3254,7 +3387,6 @@ replace the selected nodes.</p>
                 <p><text/></p>
                 <p>Finds an implementation (<text font="typewriter">*.sty</text> or <text font="typewriter">*.ltxml</text>) for the required $<text font="typewriter">package</text>,
 loading it as appropriate.</p>
-                <!-- %**** pods/LaTeXML_Package.tex Line 725 **** -->
               </item>
               <item id="manual.A2.I18.i2">
                 <tag>
@@ -3270,6 +3402,7 @@ implementation that can be handled simply using macros and primitives.</p>
         </subsubsection>
         <subsubsection id="manual.A2.Sx6.SSx2.SSSx6" label="LaTeXML::Package_Convenience_Functions">
           <title>Convenience Functions<indexmark><indexphrase key="latexmlpackage">LaTeXML::Package</indexphrase><indexphrase key="conveniencefunctions">Convenience Functions</indexphrase></indexmark></title>
+          <!-- %**** pods/LaTeXML_Package.tex Line 775 **** -->
           <para id="manual.A2.Sx6.SSx2.SSSx6.p1">
             <p>The following are exported as a convenience when writing definitions.</p>
           </para>
@@ -3287,7 +3420,6 @@ implementation that can be handled simply using macros and primitives.</p>
                 <p><text/></p>
                 <p>Assign $value to be associated with the the string $<text font="typewriter">name</text>, according
 to the given scoping rule.</p>
-                <!-- %**** pods/LaTeXML_Package.tex Line 750 **** -->
                 <p>Values are also used to specify most configuration parameters (which can
 therefor also be scoped).  The recognized configuration parameters are:</p>
                 <verbatim font="typewriter">
@@ -3313,7 +3445,7 @@ therefor also be scoped).  The recognized configuration parameters are:</p>
                 <p>This is like <text font="typewriter">AssignValue</text>, but pushes values onto
 the end of the value, which should be a LIST reference.
 Scoping is not handled here (yet?), it simply pushes the value
-<!-- %**** pods/LaTeXML_Package.tex Line 775 **** -->onto the last binding of $<text font="typewriter">name</text>.</p>
+onto the last binding of $<text font="typewriter">name</text>.</p>
               </item>
               <item id="manual.A2.I19.i4">
                 <tag>
@@ -3326,6 +3458,7 @@ the front of the values, which should be a LIST reference.</p>
               <item id="manual.A2.I19.i5">
                 <tag>$<text font="typewriter">value = LookupCatcode($char);</text></tag>
                 <p><text/></p>
+                <!-- %**** pods/LaTeXML_Package.tex Line 825 **** -->
                 <p>Lookup the current catcode associated with the the character $<text font="typewriter">char</text>.</p>
               </item>
               <item id="manual.A2.I19.i6">
@@ -3338,7 +3471,6 @@ according to the given scoping rule.</p>
                 <p>This method is also used to specify whether a given character is
 active in math mode, by using <text font="typewriter">math:$char</text> for the character,
 and using a value of 1 to specify that it is active.</p>
-                <!-- %**** pods/LaTeXML_Package.tex Line 800 **** -->
               </item>
               <item id="manual.A2.I19.i7">
                 <tag>$<text font="typewriter">meaning = LookupMeaning($token);</text></tag>
@@ -3350,7 +3482,8 @@ otherwise been defined.</p>
               <item id="manual.A2.I19.i8">
                 <tag>$<text font="typewriter">defn = LookupDefinition($token);</text></tag>
                 <p><text/></p>
-                <p>Looks up the current definition, if any, of the $<text font="typewriter">token</text>.</p>
+                <p>Looks up the current definition, if any, of the $<text font="typewriter">token</text>.
+<!-- %**** pods/LaTeXML_Package.tex Line 850 **** --></p>
               </item>
               <item id="manual.A2.I19.i9">
                 <tag>
@@ -3365,7 +3498,6 @@ control sequence.</p>
                 <p><text/></p>
                 <p>Processes and digestes the $<text font="typewriter">tokens</text>.  Any arguments needed by
 control sequences in $<text font="typewriter">tokens</text> must be contained within the $<text font="typewriter">tokens</text> itself.</p>
-                <!-- %**** pods/LaTeXML_Package.tex Line 825 **** -->
               </item>
               <item id="manual.A2.I19.i11">
                 <tag>
@@ -3392,7 +3524,6 @@ This function returns nothing so it can be easily used in beforeDigest, afterDig
                 </tag>
                 <p><text/></p>
                 <p>Formats the $<text font="typewriter">number</text> in (lowercase) roman numerals, returning a list of the tokens.</p>
-                <!-- %**** pods/LaTeXML_Package.tex Line 850 **** -->
               </item>
               <item id="manual.A2.I19.i13">
                 <tag>
@@ -3410,7 +3541,8 @@ This function returns nothing so it can be easily used in beforeDigest, afterDig
                 <tag>
                   <text font="typewriter">@tokens = Invocation($cs,@args);</text>
                 </tag>
-                <p><text/></p>
+                <p><text/>
+<!-- %**** pods/LaTeXML_Package.tex Line 900 **** --></p>
                 <p>Constructs a sequence of tokens that would invoke the token $<text font="typewriter">cs</text>
 on the arguments.</p>
               </item>
@@ -3427,7 +3559,6 @@ on the arguments.</p>
                 </tag>
                 <p><text/></p>
                 <p>Defines a new Parameter type, $<text font="typewriter">type</text>, with CODE for its reader.</p>
-                <!-- %**** pods/LaTeXML_Package.tex Line 875 **** -->
                 <p>Options are:</p>
                 <description id="manual.A2.I19.I1">
                   <item id="manual.A2.I19.I1.i1">
@@ -3435,6 +3566,7 @@ on the arguments.</p>
                     <p><text/></p>
                     <p>This CODE is responsible for converting a previously parsed argument back
 into a sequence of Token's.</p>
+                    <!-- %**** pods/LaTeXML_Package.tex Line 925 **** -->
                   </item>
                   <item id="manual.A2.I19.I1.i2">
                     <tag>optional=&gt;boolean</tag>
@@ -3450,7 +3582,6 @@ simply be passed over.</p>
                   <item id="manual.A2.I19.I1.i4">
                     <tag>semiverbatim=&gt;boolean</tag>
                     <p><text/></p>
-                    <!-- %**** pods/LaTeXML_Package.tex Line 900 **** -->
                     <p>whether the catcode table should be modified before reading tokens.</p>
                   </item>
                 </description>
@@ -3756,8 +3887,7 @@ size of ems and so forth (but currently doesn't))</p>
               </item>
             </description>
           </para>
-          <!-- %**** manual.tex Line 700 **** 
-     %\section{Digestion-related Modules}-->
+          <!-- %\section{Digestion-related Modules} -->
         </subsubsection>
       </subsection>
     </section>
@@ -3862,6 +3992,7 @@ undef if none.</p>
 so that a <text font="typewriter">LaTeXML::Tokens</text> can serve as a <ref class="package" labelref="LaTeXML::Mouth">LaTeXML::Mouth</ref>.</p>
               </item>
             </description>
+            <!-- %**** manual.tex Line 700 **** -->
           </para>
         </subsubsection>
       </subsection>
@@ -5198,7 +5329,6 @@ It has a complicated set of options that I'll document shortly.</p>
   <appendix id="manual.A5" refnum="E" label="dtd">
     <title><ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> DocType</title>
     <toctitle>DocType</toctitle>
-    <!-- %**** manual.tex Line 725 **** -->
     <section>
       <para id="manual.A5.p1">
         <p>Not yet documented.</p>
