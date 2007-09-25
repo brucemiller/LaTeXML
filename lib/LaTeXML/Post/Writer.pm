@@ -40,9 +40,9 @@ sub process {
     $string = $xmldoc->toStringHTML;
   }
   else {
-    $string =  $xmldoc->toString; }
-  if($XML::LibXML::VERSION < 1.63){
-    $string = Encode::encode("utf-8",$string); }
+    $string =  $xmldoc->toString;
+    if($XML::LibXML::VERSION < 1.63){
+      $string = Encode::encode("utf-8",$string); }}
 
   if(my $destination = $doc->getDestination){
     $self->Progress("Writing $destination");
