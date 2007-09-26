@@ -5,10 +5,12 @@
 /* Header & footer */
 /*.header:before { content:url(latexml.png); }*/
 .header,.footer   { font-size:80%; }
-.header .previous { float:left; }
+.header .previous,
+.footer .previous { float:left; }
 .header .up,
 .footer           { display:block; text-align:center; }
-.header .next     { float:right; }
+.header .next,
+.footer .next     { float:right; }
 .header li { padding:0.1em 0.2em 0.1em 1em;}
 
 /* Main content */
