@@ -442,7 +442,13 @@ DefMacro('\abstractname','Abstract'); # never used?
 # are simply output?
 # This is horrible hackery; What we really need, I think, is the
 # ability to bind some sort of "Do <this> when we create a text box"...
-DefEnvironment('{titlepage}','<ltx:title>#body',
+# ON Second Thought...
+# For the time being, ignore titlepage!
+# Maybe we could do some of this if there is no title/author
+# otherwise defined? Ugh!
+DefEnvironment('{titlepage}','');
+
+DefEnvironment('{ZZZZZZZZZZZtitlepage}','<ltx:title>#body',
 	      beforeDigest=>sub { Let("\\\\",'\title@cr');
 				  Let('\par','\relax');
 				  Let('\centering','\relax');
