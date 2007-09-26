@@ -2,76 +2,74 @@
 <!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section>
-    <para id="p1">
-      <p>An Array</p>
-      <equation id="Ex1">
-        <Math mode="display" tex="\begin{array}[]{ccc}a&amp;b&amp;c\\ c&amp;&amp;d\\\\ e&amp;f\\\end{array}" text="Array[[a, b, c], [c, , d], [, , ], [e, f, ]]">
-          <XMath>
-            <XMArray role="ARRAY">
-              <XMRow>
-                <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                </XMCell>
-                <XMCell/>
-                <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell/>
-                <XMCell/>
-                <XMCell/>
-              </XMRow>
-              <XMRow>
-                <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                </XMCell>
-                <XMCell/>
-              </XMRow>
-            </XMArray>
-          </XMath>
-        </Math>
-      </equation>
-      <equation id="Ex2">
-        <Math mode="display" tex="\matrix{a&amp;b\cr c&amp;d}" text="Matrix[[a, b], [c, d]]">
-          <XMath>
-            <XMArray name="Matrix">
-              <XMRow>
-                <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
-                </XMCell>
-              </XMRow>
-            </XMArray>
-          </XMath>
-        </Math>
-      </equation>
-      <p>Done.</p>
-    </para>
-  </section>
+  <para id="p1">
+    <p>An Array</p>
+    <equation id="Ex1">
+      <Math mode="display" tex="\begin{array}[]{ccc}a&amp;b&amp;c\\ c&amp;&amp;d\\\\ e&amp;f\\\end{array}" text="Array[[a, b, c], [c, , d], [, , ], [e, f, ]]">
+        <XMath>
+          <XMArray role="ARRAY">
+            <XMRow>
+              <XMCell align="center">
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              </XMCell>
+              <XMCell align="center">
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+              </XMCell>
+              <XMCell align="center">
+                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              </XMCell>
+            </XMRow>
+            <XMRow>
+              <XMCell align="center">
+                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              </XMCell>
+              <XMCell/>
+              <XMCell align="center">
+                <XMTok role="UNKNOWN" font="italic">d</XMTok>
+              </XMCell>
+            </XMRow>
+            <XMRow>
+              <XMCell/>
+              <XMCell/>
+              <XMCell/>
+            </XMRow>
+            <XMRow>
+              <XMCell align="center">
+                <XMTok role="UNKNOWN" font="italic">e</XMTok>
+              </XMCell>
+              <XMCell align="center">
+                <XMTok role="UNKNOWN" font="italic">f</XMTok>
+              </XMCell>
+              <XMCell/>
+            </XMRow>
+          </XMArray>
+        </XMath>
+      </Math>
+    </equation>
+    <equation id="Ex2">
+      <Math mode="display" tex="\matrix{a&amp;b\cr c&amp;d}" text="Matrix[[a, b], [c, d]]">
+        <XMath>
+          <XMArray name="Matrix">
+            <XMRow>
+              <XMCell align="center">
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              </XMCell>
+              <XMCell align="center">
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+              </XMCell>
+            </XMRow>
+            <XMRow>
+              <XMCell align="center">
+                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              </XMCell>
+              <XMCell align="center">
+                <XMTok role="UNKNOWN" font="italic">d</XMTok>
+              </XMCell>
+            </XMRow>
+          </XMArray>
+        </XMath>
+      </Math>
+    </equation>
+    <p>Done.</p>
+  </para>
 </document>

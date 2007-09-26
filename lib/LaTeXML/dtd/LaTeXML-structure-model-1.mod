@@ -28,6 +28,7 @@
 
 <!ELEMENT %LaTeXML.document.qname;
           ((%LaTeXML.FrontMatter.class;)*,
+	  (%LaTeXML.Para.mix;)*,
 	  (%LaTeXML.part.qname;)*,(%LaTeXML.chapter.qname;)*,(%LaTeXML.section.qname;)*,
 	  (%LaTeXML.BackMatter.class;)*)>
 

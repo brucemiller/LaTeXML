@@ -2,229 +2,227 @@
 <!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section>
-    <para id="p1">
-      <equation id="E1" refnum="1">
-        <Math mode="display" tex="x&amp;=&amp;17y\\ y&amp;&gt;&amp;a+b+c+d+e+f+g+h+i+j+\\&amp;&amp;k+l+m+n+o+p" text="eqnarray[[x, =, 17 * y], [y, less, a + b + c + d + e + f + g + h + i + LimitFrom@(j, +)], [, , k + l + m + n + o + p]]">
-          <XMath>
-            <XMArray name="eqnarray">
-              <XMRow>
-                <XMCell align="right">
-                  <XMTok role="UNKNOWN" font="italic">x</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok meaning="eq" role="RELOP">=</XMTok>
-                </XMCell>
-                <XMCell align="left">
-                  <XMApp>
-                    <XMTok role="MULOP">⁢</XMTok>
-                    <XMTok meaning="17" role="NUMBER">17</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">y</XMTok>
-                  </XMApp>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell align="right">
+  <para id="p1">
+    <equation id="E1" refnum="1">
+      <Math mode="display" tex="x&amp;=&amp;17y\\ y&amp;&gt;&amp;a+b+c+d+e+f+g+h+i+j+\\&amp;&amp;k+l+m+n+o+p" text="eqnarray[[x, =, 17 * y], [y, less, a + b + c + d + e + f + g + h + i + LimitFrom@(j, +)], [, , k + l + m + n + o + p]]">
+        <XMath>
+          <XMArray name="eqnarray">
+            <XMRow>
+              <XMCell align="right">
+                <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              </XMCell>
+              <XMCell align="center">
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
+              </XMCell>
+              <XMCell align="left">
+                <XMApp>
+                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok meaning="17" role="NUMBER">17</XMTok>
                   <XMTok role="UNKNOWN" font="italic">y</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok meaning="greater" role="RELOP">&gt;</XMTok>
-                </XMCell>
-                <XMCell align="left">
+                </XMApp>
+              </XMCell>
+            </XMRow>
+            <XMRow>
+              <XMCell align="right">
+                <XMTok role="UNKNOWN" font="italic">y</XMTok>
+              </XMCell>
+              <XMCell align="center">
+                <XMTok meaning="greater" role="RELOP">&gt;</XMTok>
+              </XMCell>
+              <XMCell align="left">
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">g</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">h</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">i</XMTok>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">d</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">e</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">g</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">h</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                    <XMApp>
-                      <XMTok name="LimitFrom"/>
-                      <XMTok role="UNKNOWN" font="italic">j</XMTok>
-                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    </XMApp>
-                  </XMApp>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell/>
-                <XMCell/>
-                <XMCell align="left">
-                  <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">k</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">l</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">m</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">n</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">o</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">p</XMTok>
-                  </XMApp>
-                </XMCell>
-              </XMRow>
-            </XMArray>
-          </XMath>
-        </Math>
-      </equation>
-    </para>
-    <para id="p2">
-      <equation id="Ex1">
-        <Math mode="display" tex="x&amp;\ll&amp;y+i+\cdots+y_{n}\\&amp;\leq&amp;z" text="eqnarray[[x, much-less, y + i + cdots + y _ n], [, less-eq, z]]">
-          <XMath>
-            <XMArray name="eqnarray">
-              <XMRow>
-                <XMCell align="right">
-                  <XMTok role="UNKNOWN" font="italic">x</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok meaning="much-less" name="ll" role="RELOP">≪</XMTok>
-                </XMCell>
-                <XMCell align="left">
-                  <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">y</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                    <XMTok name="cdots" role="ID">⋯</XMTok>
-                    <XMApp>
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
-                      <XMTok role="UNKNOWN" font="italic">y</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">n</XMTok>
-                    </XMApp>
-                  </XMApp>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell/>
-                <XMCell align="center">
-                  <XMTok meaning="less-eq" name="leq" role="RELOP">≤</XMTok>
-                </XMCell>
-                <XMCell align="left">
-                  <XMTok role="UNKNOWN" font="italic">z</XMTok>
-                </XMCell>
-              </XMRow>
-            </XMArray>
-          </XMath>
-        </Math>
-      </equation>
-    </para>
-    <para id="p3">
-      <equation id="Ex2">
-        <Math mode="display" tex="y&amp;&gt;&amp;a+b+c+d+e+f+g+h+i+j\\&amp;&amp;\mbox{}+k+l+m+n+o+p" text="eqnarray[[y, less, a + b + c + d + e + f + g + h + i + j], [, , [] + k + l + m + n + o + p]]">
-          <XMath>
-            <XMArray name="eqnarray">
-              <XMRow>
-                <XMCell align="right">
-                  <XMTok role="UNKNOWN" font="italic">y</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok meaning="greater" role="RELOP">&gt;</XMTok>
-                </XMCell>
-                <XMCell align="left">
-                  <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">d</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">e</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">g</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">h</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                    <XMTok name="LimitFrom"/>
                     <XMTok role="UNKNOWN" font="italic">j</XMTok>
-                  </XMApp>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell/>
-                <XMCell/>
-                <XMCell align="left">
-                  <XMApp>
                     <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMText>
-                      <text/>
-                    </XMText>
-                    <XMTok role="UNKNOWN" font="italic">k</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">l</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">m</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMCell>
+            </XMRow>
+            <XMRow>
+              <XMCell/>
+              <XMCell/>
+              <XMCell align="left">
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">k</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">l</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">m</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">n</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">o</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">p</XMTok>
+                </XMApp>
+              </XMCell>
+            </XMRow>
+          </XMArray>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para id="p2">
+    <equation id="Ex1">
+      <Math mode="display" tex="x&amp;\ll&amp;y+i+\cdots+y_{n}\\&amp;\leq&amp;z" text="eqnarray[[x, much-less, y + i + cdots + y _ n], [, less-eq, z]]">
+        <XMath>
+          <XMArray name="eqnarray">
+            <XMRow>
+              <XMCell align="right">
+                <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              </XMCell>
+              <XMCell align="center">
+                <XMTok meaning="much-less" name="ll" role="RELOP">≪</XMTok>
+              </XMCell>
+              <XMCell align="left">
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">y</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                  <XMTok name="cdots" role="ID">⋯</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">y</XMTok>
                     <XMTok role="UNKNOWN" font="italic">n</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">o</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">p</XMTok>
                   </XMApp>
-                </XMCell>
-              </XMRow>
-            </XMArray>
-          </XMath>
-        </Math>
-      </equation>
-    </para>
-    <para id="p4">
-      <equation id="Ex3">
-        <Math mode="display" tex="\omit\span\omit\span\omit w+x+y+z=\mbox{}\\&amp;&amp;a+b+c+d+e+f+g+h+i+j+\\&amp;&amp;k+l+m+n+o+p" text="eqnarray[[w + x + y + z = []], [, , a + b + c + d + e + f + g + h + i + LimitFrom@(j, +)], [, , k + l + m + n + o + p]]">
-          <XMath>
-            <XMArray name="eqnarray">
-              <XMRow>
-                <XMCell align="left" colspan="3">
-                  <XMApp>
-                    <XMTok meaning="eq" role="RELOP">=</XMTok>
-                    <XMApp>
-                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">w</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">x</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">y</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">z</XMTok>
-                    </XMApp>
-                    <XMText>
-                      <text/>
-                    </XMText>
-                  </XMApp>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell/>
-                <XMCell/>
-                <XMCell align="left">
+                </XMApp>
+              </XMCell>
+            </XMRow>
+            <XMRow>
+              <XMCell/>
+              <XMCell align="center">
+                <XMTok meaning="less-eq" name="leq" role="RELOP">≤</XMTok>
+              </XMCell>
+              <XMCell align="left">
+                <XMTok role="UNKNOWN" font="italic">z</XMTok>
+              </XMCell>
+            </XMRow>
+          </XMArray>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para id="p3">
+    <equation id="Ex2">
+      <Math mode="display" tex="y&amp;&gt;&amp;a+b+c+d+e+f+g+h+i+j\\&amp;&amp;\mbox{}+k+l+m+n+o+p" text="eqnarray[[y, less, a + b + c + d + e + f + g + h + i + j], [, , [] + k + l + m + n + o + p]]">
+        <XMath>
+          <XMArray name="eqnarray">
+            <XMRow>
+              <XMCell align="right">
+                <XMTok role="UNKNOWN" font="italic">y</XMTok>
+              </XMCell>
+              <XMCell align="center">
+                <XMTok meaning="greater" role="RELOP">&gt;</XMTok>
+              </XMCell>
+              <XMCell align="left">
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">g</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">h</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">j</XMTok>
+                </XMApp>
+              </XMCell>
+            </XMRow>
+            <XMRow>
+              <XMCell/>
+              <XMCell/>
+              <XMCell align="left">
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMText>
+                    <text/>
+                  </XMText>
+                  <XMTok role="UNKNOWN" font="italic">k</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">l</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">m</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">n</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">o</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">p</XMTok>
+                </XMApp>
+              </XMCell>
+            </XMRow>
+          </XMArray>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para id="p4">
+    <equation id="Ex3">
+      <Math mode="display" tex="\omit\span\omit\span\omit w+x+y+z=\mbox{}\\&amp;&amp;a+b+c+d+e+f+g+h+i+j+\\&amp;&amp;k+l+m+n+o+p" text="eqnarray[[w + x + y + z = []], [, , a + b + c + d + e + f + g + h + i + LimitFrom@(j, +)], [, , k + l + m + n + o + p]]">
+        <XMath>
+          <XMArray name="eqnarray">
+            <XMRow>
+              <XMCell align="left" colspan="3">
+                <XMApp>
+                  <XMTok meaning="eq" role="RELOP">=</XMTok>
                   <XMApp>
                     <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">d</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">e</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">g</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">h</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                    <XMApp>
-                      <XMTok name="LimitFrom"/>
-                      <XMTok role="UNKNOWN" font="italic">j</XMTok>
-                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    </XMApp>
+                    <XMTok role="UNKNOWN" font="italic">w</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">x</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">y</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">z</XMTok>
                   </XMApp>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell/>
-                <XMCell/>
-                <XMCell align="left">
+                  <XMText>
+                    <text/>
+                  </XMText>
+                </XMApp>
+              </XMCell>
+            </XMRow>
+            <XMRow>
+              <XMCell/>
+              <XMCell/>
+              <XMCell align="left">
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">g</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">h</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">i</XMTok>
                   <XMApp>
+                    <XMTok name="LimitFrom"/>
+                    <XMTok role="UNKNOWN" font="italic">j</XMTok>
                     <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">k</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">l</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">m</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">n</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">o</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">p</XMTok>
                   </XMApp>
-                </XMCell>
-              </XMRow>
-            </XMArray>
-          </XMath>
-        </Math>
-      </equation>
-    </para>
-  </section>
+                </XMApp>
+              </XMCell>
+            </XMRow>
+            <XMRow>
+              <XMCell/>
+              <XMCell/>
+              <XMCell align="left">
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">k</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">l</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">m</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">n</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">o</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">p</XMTok>
+                </XMApp>
+              </XMCell>
+            </XMRow>
+          </XMArray>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
 </document>

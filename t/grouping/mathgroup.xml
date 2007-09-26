@@ -2,52 +2,50 @@
 <!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section>
-    <para id="p1">
-      <p>Expect Original : Original</p>
-    </para>
-    <para id="p2">
-      <p>Expect a + Original: <Math mode="inline" tex="a+\mbox{Original}" text="a + [Original]"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMText><text>Original</text></XMText></XMApp></XMath></Math></p>
-    </para>
-    <para id="p3">
-      <p>Expect Original : Original</p>
-    </para>
-    <para id="p4">
-      <p>Expect InBox + Original:  <text>InBox</text> + Original</p>
-    </para>
-    <para id="p5">
-      <p>Expect Original : Original</p>
-    </para>
-    <para id="p6">
-      <p>Expect a + InlineMath: <Math mode="inline" tex="a+\hbox{InlineMath}" text="a + [InlineMath]"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMText><text>InlineMath</text></XMText></XMApp></XMath></Math></p>
-    </para>
-    <para id="p7">
-      <p>Expect Original : Original</p>
-    </para>
-    <para id="p8">
-      <p>Expect a + DisplayMath :</p>
-      <equation id="Ex1">
-        <Math mode="display" tex="a+\hbox{DisplayMath}" text="a + [DisplayMath]">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMText>
-                <text>DisplayMath</text>
-              </XMText>
-            </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-    </para>
-    <para id="p9">
-      <p>Expect Original : Original</p>
-    </para>
-    <para id="p10">
-      <p>Expect a + InText + InlineMath: <Math mode="inline" tex="a+\hbox{InText}+\hbox{InlineMath}" text="a + [InText] + [InlineMath]"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMText><text>InText</text></XMText><XMText><text>InlineMath</text></XMText></XMApp></XMath></Math></p>
-    </para>
-    <para id="p11">
-      <p>Expect Original : Original</p>
-    </para>
-  </section>
+  <para id="p1">
+    <p>Expect Original : Original</p>
+  </para>
+  <para id="p2">
+    <p>Expect a + Original: <Math mode="inline" tex="a+\mbox{Original}" text="a + [Original]"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMText><text>Original</text></XMText></XMApp></XMath></Math></p>
+  </para>
+  <para id="p3">
+    <p>Expect Original : Original</p>
+  </para>
+  <para id="p4">
+    <p>Expect InBox + Original:  <text>InBox</text> + Original</p>
+  </para>
+  <para id="p5">
+    <p>Expect Original : Original</p>
+  </para>
+  <para id="p6">
+    <p>Expect a + InlineMath: <Math mode="inline" tex="a+\hbox{InlineMath}" text="a + [InlineMath]"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMText><text>InlineMath</text></XMText></XMApp></XMath></Math></p>
+  </para>
+  <para id="p7">
+    <p>Expect Original : Original</p>
+  </para>
+  <para id="p8">
+    <p>Expect a + DisplayMath :</p>
+    <equation id="Ex1">
+      <Math mode="display" tex="a+\hbox{DisplayMath}" text="a + [DisplayMath]">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMText>
+              <text>DisplayMath</text>
+            </XMText>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para id="p9">
+    <p>Expect Original : Original</p>
+  </para>
+  <para id="p10">
+    <p>Expect a + InText + InlineMath: <Math mode="inline" tex="a+\hbox{InText}+\hbox{InlineMath}" text="a + [InText] + [InlineMath]"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMText><text>InText</text></XMText><XMText><text>InlineMath</text></XMText></XMApp></XMath></Math></p>
+  </para>
+  <para id="p11">
+    <p>Expect Original : Original</p>
+  </para>
 </document>

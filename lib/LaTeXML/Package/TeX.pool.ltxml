@@ -3330,7 +3330,8 @@ DefConstructor('\buildrel Until:\over {}',
 # This is used for plain TeX, but needs to be undone for LaTeX!
 DocType("ltx:document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd', 
 	'#default'=>"http://dlmf.nist.gov/LaTeXML");
-Tag('ltx:section', autoClose=>1, autoOpen=>1);
+#Tag('ltx:section', autoClose=>1, autoOpen=>1);
+Tag('ltx:section', autoClose=>1);
 Tag('ltx:document', autoClose=>1, autoOpen=>1);
 
 # No, \documentclass isn't really a primitive -- It's not even TeX!

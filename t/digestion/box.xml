@@ -2,157 +2,155 @@
 <!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section>
-    <para id="p1">
-      <p>Box 0 is horizontal</p>
-    </para>
-    <para id="p2">
-      <p>Box 1 is horizontal</p>
-    </para>
-    <para id="p3">
-      <p>Box 2 is vertical</p>
-    </para>
-    <para id="p4">
-      <p>Using…
+  <para id="p1">
+    <p>Box 0 is horizontal</p>
+  </para>
+  <para id="p2">
+    <p>Box 1 is horizontal</p>
+  </para>
+  <para id="p3">
+    <p>Box 2 is vertical</p>
+  </para>
+  <para id="p4">
+    <p>Using…
 <vbox valign="bottom"><text>Hello</text>,<text>Goodbye</text></vbox></p>
-    </para>
-    <para id="p5">
-      <p>Box 3 is horizontal</p>
-    </para>
-    <para id="p6">
-      <p>Box 4 is empty</p>
-    </para>
-    <para id="p7">
-      <equation id="Ex1">
-        <Math mode="display" tex="a+\hbox{a}" text="a + [a]">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMText>
+  </para>
+  <para id="p5">
+    <p>Box 3 is horizontal</p>
+  </para>
+  <para id="p6">
+    <p>Box 4 is empty</p>
+  </para>
+  <para id="p7">
+    <equation id="Ex1">
+      <Math mode="display" tex="a+\hbox{a}" text="a + [a]">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMText>
+              <text>a</text>
+            </XMText>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation id="Ex2">
+      <Math mode="display" tex="a+\vbox{a}" text="a + [a]">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMText>
+              <vbox valign="bottom">a</vbox>
+            </XMText>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para id="p8">
+    <equation id="Ex3">
+      <Math mode="display" tex="a+\vbox{\hbox{a}\hbox{a}}" text="a + [aa]">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMText>
+              <vbox valign="bottom">
                 <text>a</text>
-              </XMText>
-            </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-      <equation id="Ex2">
-        <Math mode="display" tex="a+\vbox{a}" text="a + [a]">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMText>
-                <vbox valign="bottom">a</vbox>
-              </XMText>
-            </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-    </para>
-    <para id="p8">
-      <equation id="Ex3">
-        <Math mode="display" tex="a+\vbox{\hbox{a}\hbox{a}}" text="a + [aa]">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMText>
-                <vbox valign="bottom">
-                  <text>a</text>
-                  <text>a</text>
-                </vbox>
-              </XMText>
-            </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-      <equation id="Ex4">
-        <Math mode="display" tex="a+\vtop{\hbox{a}\hbox{a}}" text="a + [aa]">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMText>
+                <text>a</text>
+              </vbox>
+            </XMText>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation id="Ex4">
+      <Math mode="display" tex="a+\vtop{\hbox{a}\hbox{a}}" text="a + [aa]">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMText>
+              <vbox valign="top">
+                <text>a</text>
+                <text>a</text>
+              </vbox>
+            </XMText>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para id="p9">
+    <equation id="Ex5">
+      <Math mode="display" tex="a-\lower 4.3pt\vtop{\hbox{a}}" text="a - [a]">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="minus" role="ADDOP">-</XMTok>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMText>
+              <text raise="-4.29998779296875pt" font="italic">
                 <vbox valign="top">
-                  <text>a</text>
-                  <text>a</text>
+                  <text font="upright">a</text>
                 </vbox>
-              </XMText>
-            </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-    </para>
-    <para id="p9">
-      <equation id="Ex5">
-        <Math mode="display" tex="a-\lower 4.3pt\vtop{\hbox{a}}" text="a - [a]">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="minus" role="ADDOP">-</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMText>
-                <text raise="-4.29998779296875pt" font="italic">
-                  <vbox valign="top">
-                    <text font="upright">a</text>
-                  </vbox>
-                </text>
-              </XMText>
-            </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-      <equation id="Ex6">
-        <Math mode="display" tex="a-\lower 4.3pt\vbox{\hbox{a}}" text="a - [a]">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="minus" role="ADDOP">-</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMText>
-                <text raise="-4.29998779296875pt" font="italic">
-                  <vbox valign="bottom">
-                    <text font="upright">a</text>
-                  </vbox>
-                </text>
-              </XMText>
-            </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-    </para>
-    <para id="p10">
-      <equation id="Ex7">
-        <Math mode="display" tex="a-\lower 4.3pt\hbox{a}" text="a - [a]">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="minus" role="ADDOP">-</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMText>
-                <text raise="-4.29998779296875pt" font="italic">
+              </text>
+            </XMText>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation id="Ex6">
+      <Math mode="display" tex="a-\lower 4.3pt\vbox{\hbox{a}}" text="a - [a]">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="minus" role="ADDOP">-</XMTok>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMText>
+              <text raise="-4.29998779296875pt" font="italic">
+                <vbox valign="bottom">
                   <text font="upright">a</text>
-                </text>
-              </XMText>
-            </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-    </para>
-    <para id="p11">
-      <equation id="Ex8">
-        <Math mode="display" tex="a-\lower 4.3pt\hbox{a}" text="a - [a]">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="minus" role="ADDOP">-</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMText>
-                <text raise="-4.29998779296875pt" font="italic">
-                  <text font="upright">a</text>
-                </text>
-              </XMText>
-            </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-    </para>
-  </section>
+                </vbox>
+              </text>
+            </XMText>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para id="p10">
+    <equation id="Ex7">
+      <Math mode="display" tex="a-\lower 4.3pt\hbox{a}" text="a - [a]">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="minus" role="ADDOP">-</XMTok>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMText>
+              <text raise="-4.29998779296875pt" font="italic">
+                <text font="upright">a</text>
+              </text>
+            </XMText>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para id="p11">
+    <equation id="Ex8">
+      <Math mode="display" tex="a-\lower 4.3pt\hbox{a}" text="a - [a]">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="minus" role="ADDOP">-</XMTok>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMText>
+              <text raise="-4.29998779296875pt" font="italic">
+                <text font="upright">a</text>
+              </text>
+            </XMText>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
 </document>

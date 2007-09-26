@@ -3,36 +3,54 @@
 <?latexml class="article"?>
 <?latexml package="latexml"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section>
-    <para id="p1">
-      <equation id="Ex1">
-        <Math mode="display" tex="\{ a\}" text="set@(a)">
-          <XMath>
+  <para id="p1">
+    <equation id="Ex1">
+      <Math mode="display" tex="\{ a\}" text="set@(a)">
+        <XMath>
+          <XMApp>
+            <XMTok name="set" role="FENCED" argclose="}" argopen="{"/>
+            <XMTok role="ID" font="italic">a</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation id="Ex2">
+      <Math mode="display" tex="\{ a:a\in b\}" text="ConditionalSet@(a, a in b)">
+        <XMath>
+          <XMApp>
+            <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators=";"/>
+            <XMTok role="ID" font="italic">a</XMTok>
             <XMApp>
-              <XMTok name="set" role="FENCED" argclose="}" argopen="{"/>
+              <XMTok meaning="in" role="RELOP">∈</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
+              <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-      <equation id="Ex2">
-        <Math mode="display" tex="\{ a:a\in b\}" text="ConditionalSet@(a, a in b)">
-          <XMath>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation id="Ex3">
+      <Math mode="display" tex="\{ a|a\in b\}" text="ConditionalSet@(a, a in b)">
+        <XMath>
+          <XMApp>
+            <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators="|"/>
+            <XMTok role="ID" font="italic">a</XMTok>
             <XMApp>
-              <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators=";"/>
+              <XMTok meaning="in" role="RELOP">∈</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
-              <XMApp>
-                <XMTok meaning="in" role="RELOP">∈</XMTok>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
-              </XMApp>
+              <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-      <equation id="Ex3">
-        <Math mode="display" tex="\{ a|a\in b\}" text="ConditionalSet@(a, a in b)">
-          <XMath>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para id="p2">
+    <equation id="Ex4">
+      <Math mode="display" tex="\{ a|a\in b\} _{{c=0}}" text="(ConditionalSet@(a, a in b)) _ (c = 0)">
+        <XMath>
+          <XMApp>
+            <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
             <XMApp>
               <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators="|"/>
               <XMTok role="ID" font="italic">a</XMTok>
@@ -42,34 +60,14 @@
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-    </para>
-    <para id="p2">
-      <equation id="Ex4">
-        <Math mode="display" tex="\{ a|a\in b\} _{{c=0}}" text="(ConditionalSet@(a, a in b)) _ (c = 0)">
-          <XMath>
             <XMApp>
-              <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-              <XMApp>
-                <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators="|"/>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMApp>
-                  <XMTok meaning="in" role="RELOP">∈</XMTok>
-                  <XMTok role="ID" font="italic">a</XMTok>
-                  <XMTok role="ID" font="italic">b</XMTok>
-                </XMApp>
-              </XMApp>
-              <XMApp>
-                <XMTok meaning="eq" role="RELOP">=</XMTok>
-                <XMTok role="ID" font="italic">c</XMTok>
-                <XMTok meaning="0" role="NUMBER">0</XMTok>
-              </XMApp>
+              <XMTok meaning="eq" role="RELOP">=</XMTok>
+              <XMTok role="ID" font="italic">c</XMTok>
+              <XMTok meaning="0" role="NUMBER">0</XMTok>
             </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-    </para>
-  </section>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
 </document>
