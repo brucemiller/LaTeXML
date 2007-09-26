@@ -9,6 +9,7 @@
 \begin{document}
 \maketitle
 \tableofcontents
+%%%======================================================================
 \chapter{Introduction}\label{intro}
 For many, \LaTeX\ is the prefered format for document authoring, particularly those
 involving significant mathematical content and where quality typesetting is desired.
@@ -64,6 +65,7 @@ on the commands and modules comprising the system.
 
 If all else fails, you can consult the source code, or the author.
 
+%%%======================================================================
 \chapter{Using \LaTeXML}\label{usage}
 The main commands provided by the \LaTeXML\ system are
 \begin{description}
@@ -100,13 +102,14 @@ using \ltxcmd{latexmlpost},
 in which one or more \TeX\ sources can be converted into
 one or more web documents or a complete site.
 
+%%%----------------------------------------------------------------------
 \section[Conversion]{Basic \XML\ Conversion}\label{usage.conversion}\index{latexml!usage}
 The command
 \begin{quote}
- \cmd{latexml \textit{options} --destination=\textit{doc}.xml \textit{doc}}
+ \cmd{latexml \textit{options} --destination=\varfile[xml]{doc} \varfile{doc}}
 \end{quote}
 loads any required definition modules (see below),
-reads and digests the \TeX\ document \texttt{doc.tex}
+reads, tokenizes, expands and digests the \TeX\ document \texttt{doc.tex}
 (or from standard input, if \texttt{-} is given for the filename),
 converts it to \XML,
 performs some document rewriting, parses the mathematical content
@@ -114,31 +117,43 @@ and writes the result in \texttt{doc.xml}.
 For details on the processing, see Chapter \ref{architecture},
 and Chapter \ref{math} for more information about math parsing.
 
-\paragraph{Modules}
+\paragraph{Module Loading}
 A first consideration is what definitions for control sequences and
 environments are active and used for the processing.
 Definitions and customization modules, if present, are loaded in the following
 order:
-\begin{itemize}
-  \item \texttt{TeX.pool.ltxml} core module.
-  \item \textit{preload}; any modules specified using the
-    \begin{quote}
-     \cmd{--preload=\textit{module}}
-    \end{quote}
-    option. If the module filename is given without extension,
-    a \code{.ltxml} version will be prefered, otherwise \code{.sty} will
-    be sought and attempted.
+\begin{description}
+  \item[\texttt{TeX.pool.ltxml}] the core module is always loaded.
+  \item[\cmd{--preload=\varfile{module}}] causes loading of \varfile[ltxml]{module}.
+    For example, \cmd{--preload=LaTeX.pool} can be useful to force \LaTeX-mode
+    if \LaTeXML\ fails to recognize it.
     This option can be repeated, and the modules will be loaded in the
     given order.
-  \item \code{\textit{doc}.latexml} a document-specific customization module
+  \item[\varfile{doc}\texttt{.latexml}] a document-specific customization module
     is loaded if present.
-  \item \texttt{LaTeX.ltxml}, the core latex module is loaded
-    upon encountering a \verb|\documentclass| command, as in \LaTeX\ files,
-    along with the appropriate document class module (eg. \texttt{article.ltxml}).
-  \item Any modules loaded by \verb|\usepackage| or \verb|\input| are
-    also loaded during processing, with a \code{.ltxml} implementation, if found,
-    prefered over \code{.sty}.
-\end{itemize}
+\end{description}
+As processing proceeds, additional modules may be loaded as follows.
+\begin{description}
+  \item[\texttt{LaTeX.pool.ltxml}] the core latex module, is loaded
+    upon encountering certain recognizably \LaTeX-specific commands, such as
+    \verb|\documentclass|.
+  \item[\code{\cs{documentclass}\{\varfile{class}\}}]
+     loads \varfile[cls.ltxml]{class}.
+     (Old style \verb|\documentstyle| behaves similarly, along with any required packages).
+  \item[\code{\cs{usepackage}\{\textit{package}\}}] (or related commands) loads
+    \varfile[sty.ltxml]{package}.  Normally, \LaTeXML\ will not
+    attempt to read the \varfile[sty]{package} file, as these
+    often involve \LaTeX\ internals meaningless to the generation of \XML.
+    This behavior can be overridden with the option
+    \begin{quote}
+      \cmd{--includestyles}
+    \end{quote}
+    A selective, per-file, option may be developed in the future --- please
+    provide use cases.
+  \item[\code{\cs{input}\{\varfile{file}\}}] loads the first
+    \varfile[tex.ltxml]{file}, \varfile[tex]{file}, 
+    \varfile[ltxml]{file} or \varfile{file} that is found.
+\end{description}
 Some of these modules (esp.~\code{TeX} and \code{LaTeX}), are parts of
 the \LaTeXML\ distribution; others are supplied by the user, or can be
 overridden by the user.
@@ -147,7 +162,7 @@ See Chapter \ref{customization} for details about what can go in these modules.
 Directories to search (in addition to the working directory)
 for modules and other files can be specified using
 \begin{quote}
-  \cmd{--path=\textit{directory}}
+  \cmd{--path=\varfile{directory}}
 \end{quote}
 This option can be repeated.
 
@@ -171,13 +186,15 @@ of source documents.
 See the documentation for the command \ltxcmd{latexml} for
 less common options.
 
+%%%----------------------------------------------------------------------
 \section[Postprocessing]{Basic Postprocessing}\label{usage.single}\index{latexmlpost!usage}
 In the simplest situation, you have a single \TeX\ source document
 from which you want to generate a single output document.
 The command
 \begin{quote}
- \cmd{latexmlpost \textit{options} --dest=doc.xhtml doc}
+ \cmd{latexmlpost \textit{options} --destination=doc.xhtml doc}
 \end{quote}
+or similarly with \code{--destination=doc.html},
 will carry out a set of appropriate transformations in sequence:
 \begin{itemize}
   \item scanning of labels and ids;
@@ -227,7 +244,7 @@ depending on how the terms have been written.
 \paragraph{Bibliography}
 Bibilographic data from BibTeX can be provided with the option
 \begin{quote}
-  \cmd{--bibliography=\textit{xmlbibfile}}
+  \cmd{--bibliography=\varfile[xml]{bibfile}}
 \end{quote}
 However, the tools to convert a BibTeX file to \XML\ are
 not yet provided with the distribution.
@@ -294,25 +311,29 @@ controlled by
 If you wish to provide your own \XSLT\ stylesheet, or
 a different \CSS\ stylesheet, the options 
 \begin{quote}
-\code{--stylesheet=\textit{stylesheet.xsl}}\\
-\code{--css=\textit{stylesheet.css}}
+\code{--stylesheet=\varfile[xsl]{stylesheet}}\\
+\code{--css=\varfile[css]{stylesheet}}
 \end{quote}
- can be used.  To develop such stylesheets, a knowledge
+ can be used.  The \code{--css} option can be repeated to accumulate several stylesheets;
+for example, the distribution provides several \code{navbar-left.css}, \code{navbar-right.css},
+\code{theme-blue.css} and \code{amsart.css}, in addition to the \code{core.css} stylesheet
+which is included by default.
+
+To develop such stylesheets, a knowledge
 of the \LaTeXML\ document type is necessary; See Appendix \ref{dtd}.
 
+%%%----------------------------------------------------------------------
 \section[Splitting]{Splitting the Output}\label{usage.multiple}\index{latexmlpost!usage!split pages}
 For larger documents, it is often desirable to break the 
 result into several interlinked pages. This split,
 carried out before scanning, is requested by 
 \begin{quote}
- \cmd{--split}
+ \cmd{--splitat=\textit{level}}
 \end{quote}
-The document is split according to
-\begin{quote}
- \cmd{--splitat=\textit{sectioningcommand}}
-\end{quote}
-The default sectioning command is \texttt{section},
-which creates separate files for each section,
+where \textit{level} is one of \texttt{chapter},
+\texttt{section}, \texttt{subsection}, or \texttt{subsubsection}.
+For example, \texttt{section} would split the document into
+chapters (if any) and sections, along with separate
 bibliography, index and any appendices.
 The removed document nodes are replaced by a Table of Contents.
 
@@ -327,11 +348,12 @@ The \code{--urlstyle} option may also be useful here,
 as well as the \ltxcmd{latexml} option \code{--documentid}.
 
 Additionally, the index and bibliography can be split
-into separate pages per initial using the options
+into separate pages according to the initial letter of entries by using the options
 \begin{quote}
   \cmd{--splitindex} and \cmd{--splitbibliography}
 \end{quote}
 
+%%%----------------------------------------------------------------------
 \section[Sites]{Site processing}\label{usage.site}\index{latexmlpost!usage!site}
 A more complicated situation combines several \TeX\ sources
 into a single interlinked site consisting of multiple pages
@@ -340,24 +362,30 @@ The games one must play with \LaTeX's aux files to satisfy cross-references
 between these documents are not covered here, but the situation is handled
 by \LaTeXML\ in the following fashion.
 
-First, all \TeX\ sources must be converted to \XML, as before;
-the option \code{--documentid} is particularly useful here.
+\begin{description}
+\item[Conversion] First, all \TeX\ sources must be converted
+   to \XML, using \ltxcmd{latexml}.  Since every target-able element
+   in all files to be combined must have a unique identifier, it is useful to
+   prefix each identifier with a unique value for each file. 
+   The \ltxcmd{latexml} option \code{--documentid=\textit{id}} provides this.
 
-Secondly, all \XML\ files must be split and scanned using
-the command
-\begin{quote}
- \cmd{latexmlpost --prescan --dbfile=\textit{DB} --dest=\textit{doci}.xhtml \textit{doci}}
-\end{quote}
-where \textit{DB} names a file to store the scanned data.
-Other conversions, including writing the output file, are skipped in this prescanning step.
+ \item[Scanning] Secondly, all \XML\ files must be split and scanned using
+  the command
+  \begin{quote}
+   \cmd{latexmlpost --prescan --dbfile=\varfile{DB} --dest=\varfile[xhtml]{doci} \varfile{doci}}
+  \end{quote}
+  where \varfile{DB} names a file in which to store the scanned data.
+  Other conversions, including writing the output file, are skipped in this prescanning step.
+ 
+ \item[Pagination] Finally, all \XML\ files are cross-referenced and converted into
+   the final format using the command
+   \begin{quote}
+     \cmd{latexmlpost --noscan --dbfile=\varfile{DB} --dest=\varfile[xhtml]{doci} \varfile{doci}}
+   \end{quote}
+   which skips the unnecessary scanning step.
+\end{description}
 
-Finally, all \XML\ files are cross-referenced and converted as before
-using the command
-\begin{quote}
- \cmd{latexmlpost --noscan --dbfile=\textit{DB} --dest=\textit{doci}.xhtml \textit{doci}}
-\end{quote}
-which skips the unnecessary scanning step.
-
+%%%======================================================================
 \chapter{Architecture}\label{architecture}
 Like \TeX, \LaTeXML\ is data-driven: the text and executable control
 sequences (ie.~macros and primitives)
@@ -391,6 +419,7 @@ the parsing of mathematics is covered in detail in Chapter \ref{math}.
 The \ltxpkg{} object binds \verb|$STATE|, \verb|$GULLET|, \verb|$STOMACH|,
 and \verb|$MODEL| to corresponding active objects during processing.
 
+%%%----------------------------------------------------------------------
 \section{Digestion}\label{architecture.digestion}
 Digestion is carried out primarily in a \emph{pull} mode: The \ltxpkg{Stomach}
 pulls expanded \ltxpkg{Token}s from the \ltxpkg{Gullet}, which itself pulls tokens from 
@@ -406,6 +435,7 @@ to \ltxpkg{Constructor}s into \ltxpkg{Whatsit}s, and converting the remaining to
 into a recursive structure consisting of
 \ltxpkg{Box}es and \ltxpkg{List}s and of \ltxpkg{Box}es.
 
+%%%----------------------------------------------------------------------
 \section{Construction}\label{architecture.construction}
 The main (intentional) deviation of \LaTeXML's digestion from that of \TeX\ is in the
 extension of control sequences to include \ltxpkg{Constructor}s responsible for constructing
@@ -426,6 +456,7 @@ be automatically opened or closed when needed to build a document tree that matc
 the document type.  As an example, a \verb|<subsection>| will automaticall be closed
 when a \verb|<section>| is begun.
 
+%%%----------------------------------------------------------------------
 \section{Rewriting}\label{architecture.rewriting}
 Once the basic document is constructed, \ltxpkg{Rewrite} rules are applied which can
 perform various functions. Ligatures and combining mathematics digits and letters (in certain fonts)
@@ -433,6 +464,7 @@ into composite math tokens are handled this way.  Additionally, declarations
 of the type or grammatical role of math tokens can be applied here.
 
 
+%%%======================================================================
 \chapter{Customization}\label{customization}
 The processsing of the \LaTeX\ document and its  conversion into \XML\ is affected
 by the definitions of control sequences, either as macros, primitives or constructors, 
@@ -445,12 +477,12 @@ including the current directory), or in a \verb|LaTeXML/Package| subdirectory of
 those directories.  If no such file is found, \LaTeXML\ would look for \code{foo.sty} and
 attempt to process it.
 
-When processing a typical file, say \textit{jobname}\texttt{.tex}, 
+When processing a typical file, say \varfile[tex]{jobname}, 
 the following packages are loaded:
 \begin{enumerate}
 \item the core \code{TeX} package
 \item any packages named with the \verb|--preload| option,
-\item a file \textit{jobname}\texttt{.latexml}, if present;
+\item a file \varfile[latexml]{jobname}, if present;
       this provides for document-specific declarations.
 \end{enumerate}
 Document processing then commences; by default, \LaTeXML\ assumes that the document is plain \TeX.
@@ -459,13 +491,14 @@ as a package for the named document class are loaded.
 
 \LaTeXML\ implementations are provided for a number of the standard \LaTeX\ packages,
 although many implement only part of the functionality.  Contributed implementations are,
-of course, welcome.  These files, as well as the document specific \textit{jobname}\texttt{.latexml},
+of course, welcome.  These files, as well as the document specific \varfile[latexml]{jobname},
 are essentially Perl modules, but use the facilities described in \perldoc{LaTeXML::Package}.
 
 Much more needs to be explained here, but for the time being,
 please consult the documentation for the module \ltxpkg{Package}, and
 the various implementations of packages included with the distribution.
 
+%%%======================================================================
 \chapter{Mathematics}\label{math}
 There are several issues that have to be dealt with in treating the mathematics.
 On the one hand, the \TeX\ markup gives a pretty good indication of what the
@@ -499,7 +532,7 @@ or with those sublists contained in an \tag{XMArg}.  The grammar works primarily
 the name and grammatical role.  The name is given by an attribute, or the content if it is
 the same.  The role (things like ID, FUNCTION, OPERATOR, OPEN, \ldots) is also given
 by an attribute, or, if not present, the name is looked up in a document-specific
-dictionary (\textit{jobname}\texttt{.dict}), or in a default dictionary.
+dictionary (\varfile[dict]{jobname}), or in a default dictionary.
 
 Additional exceptions that need fuller explanation are: 
 \begin{itemize}
@@ -509,6 +542,7 @@ the semantic and presentational forms.
 during parsing, but probably shouldn't.
 \end{itemize}
 
+%%%----------------------------------------------------------------------
 \section{Math Details}\label{math.details}
 \LaTeXML\ processes mathematical material by proceeding through several stages:
 \begin{itemize}
@@ -666,6 +700,7 @@ the presentation style:
 \end{description}
 
 % Some 
+%%%======================================================================
 \chapter{ToDo}\label{todo}
 Lots\ldots!
 \begin{itemize}
@@ -678,12 +713,15 @@ Lots\ldots!
 \item \ldots um, \ldots \emph{documentation}!
 \end{itemize}
 
+%%%======================================================================
 \printindex\label{idx}
+%%%======================================================================
 \appendix
 \chapter[Commands]{Command Documentation}\label{commands}
 \include{pods/latexml}
 \include{pods/latexmlpost}
 
+%%%======================================================================
 \chapter[Modules]{Core Module Documentation}\label{coremodules}
 \include{pods/LaTeXML}
 \include{pods/LaTeXML_Object}
@@ -712,12 +750,15 @@ Lots\ldots!
 %\section{Math-related Modules}
 \include{pods/LaTeXML_MathParser}
 
+%%%======================================================================
 \chapter[Utility Modules]{Utility Module Documentation}\label{utilitymodules}
 \include{pods/LaTeXML_Util_Pathname}
 
+%%%======================================================================
 \chapter[Postprocessing Modules]{Postprocessing Module Documentation}\label{postmodules}
 \include{pods/LaTeXML_Post}
 
+%%%======================================================================
 \chapter[DocType]{\LaTeXML\ DocType}\label{dtd}
 Not yet documented.
 

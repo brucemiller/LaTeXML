@@ -11,12 +11,12 @@
   <creator role="author">
     <personname>Bruce R. Miller</personname>
   </creator>
-  <date role="conversion">September 25, 2007</date>
+  <date role="conversion">September 26, 2007</date>
+  <!-- %%%====================================================================== -->
   <chapter id="manual.Ch1" refnum="1" label="intro">
     <title>Introduction</title>
-    <section>
-      <para id="manual.Ch1.p1">
-        <p>For many, LaTeX is the prefered format for document authoring, particularly those
+    <para id="manual.Ch1.p1">
+      <p>For many, LaTeX is the prefered format for document authoring, particularly those
 involving significant mathematical content and where quality typesetting is desired.
 On the other hand, content-oriented <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> is an extremely useful representation for documents,
 allowing them to be used, and reused, for a variety of purposes, not least,
@@ -24,39 +24,39 @@ presentation on the Web. Yet, the style and intent of LaTeX markup, as compare
 documents from the former format to the latter.
 Perhaps ironically, these difficulties can be particularly large for mathematical material,
 where there is a tendency for the markup to focus on appearance rather than meaning.</p>
-      </para>
-      <para id="manual.Ch1.p2">
-        <p>The choice of LaTeX for authoring, and <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> for delivery were natural and uncontroversial
-choices for the <ref href="http://dlmf.nist.gov">Digital Library of Mathematical Functions</ref>.
-<!-- %**** manual.tex Line 25 **** -->Faced with the need to perform this conversion and the lack of suitable tools to perform it,
+    </para>
+    <para id="manual.Ch1.p2">
+      <p>The choice of LaTeX for authoring, and <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> for delivery were natural and uncontroversial
+<!-- %**** manual.tex Line 25 **** -->choices for the <ref href="http://dlmf.nist.gov">Digital Library of Mathematical Functions</ref>.
+Faced with the need to perform this conversion and the lack of suitable tools to perform it,
 the DLMF project proceeded to develop thier own tool, <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref>, for this purpose.
 This document describes a <emph>preview</emph> release of <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref>.</p>
-      </para>
-      <paragraph id="manual.Ch1.S0.SS0.SSS0.P1">
-        <title>Design Goals</title>
-        <para id="manual.Ch1.S0.SS0.SSS0.P1.p1">
-          <p>The idealistic goals of <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> are:</p>
-          <itemize id="manual.Ch1.I1">
-            <item id="manual.Ch1.I1.i1">
-              <p>Faithful emulation of TeX's behaviour.</p>
-            </item>
-            <item id="manual.Ch1.I1.i2">
-              <p>Easily extensible.</p>
-            </item>
-            <item id="manual.Ch1.I1.i3">
-              <p>Lossless; preserving both semantic and presentation cues.</p>
-            </item>
-            <item id="manual.Ch1.I1.i4">
-              <p>Uses abstract LaTeX-like, extensible, document type.</p>
-            </item>
-            <item id="manual.Ch1.I1.i5">
-              <p>Determine the semantics of mathematical content
+    </para>
+    <paragraph id="manual.Ch1.S0.SS0.SSS0.P1">
+      <title>Design Goals</title>
+      <para id="manual.Ch1.S0.SS0.SSS0.P1.p1">
+        <p>The idealistic goals of <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> are:</p>
+        <itemize id="manual.Ch1.I1">
+          <item id="manual.Ch1.I1.i1">
+            <p>Faithful emulation of TeX's behaviour.</p>
+          </item>
+          <item id="manual.Ch1.I1.i2">
+            <p>Easily extensible.</p>
+          </item>
+          <item id="manual.Ch1.I1.i3">
+            <p>Lossless; preserving both semantic and presentation cues.</p>
+          </item>
+          <item id="manual.Ch1.I1.i4">
+            <p>Uses abstract LaTeX-like, extensible, document type.</p>
+          </item>
+          <item id="manual.Ch1.I1.i5">
+            <p>Determine the semantics of mathematical content
 (<emph>Good</emph> Presentation <ref href="http://www.w3.org/Math/"><text font="typewriter">MathML</text></ref>, eventually Content <ref href="http://www.w3.org/Math/"><text font="typewriter">MathML</text></ref> and <ref href="http://www.openmath.org/"><text font="typewriter">OpenMath</text></ref>).</p>
-            </item>
-          </itemize>
-        </para>
-        <para id="manual.Ch1.S0.SS0.SSS0.P1.p2">
-          <p>As these goals are not entirely practical, or even somewhat contradictory,
+          </item>
+        </itemize>
+      </para>
+      <para id="manual.Ch1.S0.SS0.SSS0.P1.p2">
+        <p>As these goals are not entirely practical, or even somewhat contradictory,
 they are implicitly modified by ``as much as possible.''
 Completely mimicing TeX's behaviour would seem to require the sneakiest modifications
 to TeX, itself.  `Ease of use' is, of course, in the eye of the beholder.
@@ -66,16 +66,16 @@ text is needed to properly interpret any particular fragment.
 Thus, rather than pretend to provide a `turn-key' solution,
 we expect that document-specific declarations or tuning to be necessary
 to faithfully convert documents.  Towards this end, we provide a variety
-of means to customize the processing and declare the author's intent.
-<!-- %**** manual.tex Line 50 **** -->At the same time, especially for new documents, we encourage a more logical,
+<!-- %**** manual.tex Line 50 **** -->of means to customize the processing and declare the author's intent.
+At the same time, especially for new documents, we encourage a more logical,
 content-oriented markup style, over a purely presentation-oriented style.</p>
-        </para>
-      </paragraph>
-      <paragraph id="manual.Ch1.S0.SS0.SSS0.P2">
-        <title>Overview of this Manual</title>
-        <toctitle>Overview</toctitle>
-        <para id="manual.Ch1.S0.SS0.SSS0.P2.p1">
-          <p>Chapter <ref labelref="usage"/> describes the usage of <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref>, along with
+      </para>
+    </paragraph>
+    <paragraph id="manual.Ch1.S0.SS0.SSS0.P2">
+      <title>Overview of this Manual</title>
+      <toctitle>Overview</toctitle>
+      <para id="manual.Ch1.S0.SS0.SSS0.P2.p1">
+        <p>Chapter <ref labelref="usage"/> describes the usage of <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref>, along with
 common use cases and techniques.  Chapter <ref labelref="architecture"/> describes
 the system architecture in some detail. Strategies for customization
 and implementation of new packages is described in Chapter <ref labelref="customization"/>.
@@ -85,40 +85,39 @@ An overview of outstanding issues and planned future improvements
 are given in Chapter <ref labelref="todo"/>.
 Finally, the Appendices <ref labelref="commands"/>, <ref labelref="coremodules"/> give detailed documentation
 on the commands and modules comprising the system.</p>
-        </para>
-        <para id="manual.Ch1.S0.SS0.SSS0.P2.p2">
-          <p>If all else fails, you can consult the source code, or the author.</p>
-        </para>
-      </paragraph>
-    </section>
+      </para>
+      <para id="manual.Ch1.S0.SS0.SSS0.P2.p2">
+        <p>If all else fails, you can consult the source code, or the author.</p>
+      </para>
+      <!-- %%%====================================================================== -->
+    </paragraph>
   </chapter>
   <chapter id="manual.Ch2" refnum="2" label="usage">
     <title>Using <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref></title>
-    <section>
-      <para id="manual.Ch2.p1">
-        <p>The main commands provided by the <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> system are</p>
-        <description id="manual.Ch2.I1">
-          <item id="manual.Ch2.I1.i1">
-            <tag>
-              <ref labelref="latexml">latexml</ref>
-            </tag>
-            <p>for converting TeX sources to <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref>.</p>
-          </item>
-          <item id="manual.Ch2.I1.i2">
-            <tag>
-              <ref labelref="latexmlpost">latexmlpost</ref>
-            </tag>
-            <p>for various postprocessing tasks including
-conversion to <ref href="http://www.w3.org/HTML/"><text font="typewriter">HTML</text></ref>, processing images, conversion to <ref href="http://www.w3.org/Math/"><text font="typewriter">MathML</text></ref> and so on.</p>
-          </item>
-        </description>
-        <p>The usage of these commands can be as simple as
+    <para id="manual.Ch2.p1">
+      <p>The main commands provided by the <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> system are</p>
+      <description id="manual.Ch2.I1">
+        <item id="manual.Ch2.I1.i1">
+          <tag>
+            <ref labelref="latexml">latexml</ref>
+          </tag>
+          <p>for converting TeX sources to <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref>.</p>
+        </item>
+        <item id="manual.Ch2.I1.i2">
+          <tag>
+            <ref labelref="latexmlpost">latexmlpost</ref>
+          </tag>
+          <p>for various postprocessing tasks including
+conversion to <ref href="http://www.w3.org/HTML/"><text font="typewriter">HTML</text></ref>, processing images, conversion to <ref href="http://www.w3.org/Math/"><text font="typewriter">MathML</text></ref> and so on.
 <!-- %**** manual.tex Line 75 **** --></p>
-        <quote>
+        </item>
+      </description>
+      <p>The usage of these commands can be as simple as</p>
+      <quote>
 <text font="typewriter">latexml doc.tex | latexmpost --dest=doc.xhtml</text>
 </quote>
-        <p>to convert a single document into <ref href="http://www.w3.org/HTML/"><text font="typewriter">HTML</text></ref>,  or as complicated as</p>
-        <quote>
+      <p>to convert a single document into <ref href="http://www.w3.org/HTML/"><text font="typewriter">HTML</text></ref>,  or as complicated as</p>
+      <quote>
 <text font="typewriter">latexml --destination=doca.xml doca</text><break/>
 <text font="typewriter">latexml --destination=docb.xml docb</text><break/>
 <text/>…<break/>
@@ -128,21 +127,21 @@ conversion to <ref href="http://www.w3.org/HTML/"><text font="typewriter">HTML</
 <text font="typewriter">latexmlpost --noscan --dbfile=my.db --destination=doca.xhtml doca</text><break/>
 <text font="typewriter">latexmlpost --noscan --dbfile=my.db --destination=docb.xhtml docb</text><break/>
 <text/>…</quote>
-        <p>to convert a whole set of documents into a complete site.</p>
-      </para>
-      <para id="manual.Ch2.p2">
-        <p>How best to use the commands depends, of course, on what you
+      <p>to convert a whole set of documents into a complete site.</p>
+    </para>
+    <para id="manual.Ch2.p2">
+      <p>How best to use the commands depends, of course, on what you
 are trying to achieve.  In the next section, we'll describe
 the use of <ref labelref="latexml">latexml</ref>, which will be sufficient
 if the <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> representation is what you want, or if you
 intend to carry out any further processing with your own
 <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref>-tools.  The following sections consider a sequence of
-successively more complicated postprocessing situations,
+<!-- %**** manual.tex Line 100 **** -->successively more complicated postprocessing situations,
 using <ref labelref="latexmlpost">latexmlpost</ref>,
-<!-- %**** manual.tex Line 100 **** -->in which one or more TeX sources can be converted into
+in which one or more TeX sources can be converted into
 one or more web documents or a complete site.</p>
-      </para>
-    </section>
+    </para>
+    <!-- %%%__ -->
     <section id="manual.Ch2.S1" refnum="2.1" label="usage.conversion">
       <title>Basic <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> Conversion</title>
       <toctitle>Conversion</toctitle>
@@ -156,7 +155,7 @@ one or more web documents or a complete site.</p>
 <text font="typewriter">latexml <text font="italic">options</text> --destination=<text font="italic">doc</text>.xml <text font="italic">doc</text></text>
 </quote>
         <p>loads any required definition modules (see below),
-reads and digests the TeX document <text font="typewriter">doc.tex</text>
+reads, tokenizes, expands and digests the TeX document <text font="typewriter">doc.tex</text>
 (or from standard input, if <text font="typewriter">-</text> is given for the filename),
 converts it to <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref>,
 performs some document rewriting, parses the mathematical content
@@ -165,43 +164,73 @@ For details on the processing, see Chapter <ref labelref="architecture"/>,
 and Chapter <ref labelref="math"/> for more information about math parsing.</p>
       </para>
       <paragraph id="manual.Ch2.S1.SS0.SSS0.P1">
-        <title>Modules</title>
+        <title>Module Loading</title>
         <para id="manual.Ch2.S1.SS0.SSS0.P1.p1">
           <p>A first consideration is what definitions for control sequences and
 environments are active and used for the processing.
 Definitions and customization modules, if present, are loaded in the following
-order:</p>
-          <itemize id="manual.Ch2.I2">
+order:
+<!-- %**** manual.tex Line 125 **** --></p>
+          <description id="manual.Ch2.I2">
             <item id="manual.Ch2.I2.i1">
-              <p><text font="typewriter">TeX.pool.ltxml</text> core module.</p>
+              <tag>
+                <text font="typewriter">TeX.pool.ltxml</text>
+              </tag>
+              <p>the core module is always loaded.</p>
             </item>
             <item id="manual.Ch2.I2.i2">
-              <p><text font="italic">preload</text>; any modules specified using the
-<!-- %**** manual.tex Line 125 **** --></p>
-              <quote>
-<text font="typewriter">--preload=<text font="italic">module</text></text>
-</quote>
-              <p>option. If the module filename is given without extension,
-a <text font="typewriter">.ltxml</text> version will be prefered, otherwise <text font="typewriter">.sty</text> will
-be sought and attempted.
+              <tag>
+                <text font="typewriter">--preload=<text font="italic">module</text></text>
+              </tag>
+              <p>causes loading of <text font="typewriter italic">module<text font="upright">.ltxml</text></text>.
+For example, <text font="typewriter">--preload=LaTeX.pool</text> can be useful to force LaTeX-mode
+if <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> fails to recognize it.
 This option can be repeated, and the modules will be loaded in the
 given order.</p>
             </item>
             <item id="manual.Ch2.I2.i3">
-              <p><text font="typewriter italic">doc<text font="upright">.latexml</text></text> a document-specific customization module
+              <tag>
+                <text font="typewriter italic">doc<text font="upright">.latexml</text></text>
+              </tag>
+              <p>a document-specific customization module
 is loaded if present.</p>
             </item>
-            <item id="manual.Ch2.I2.i4">
-              <p><text font="typewriter">LaTeX.ltxml</text>, the core latex module is loaded
-upon encountering a <verbatim font="typewriter">\documentclass</verbatim> command, as in LaTeX files,
-along with the appropriate document class module (eg. <text font="typewriter">article.ltxml</text>).</p>
+          </description>
+          <p>As processing proceeds, additional modules may be loaded as follows.</p>
+          <description id="manual.Ch2.I3">
+            <item id="manual.Ch2.I3.i1">
+              <tag>
+                <text font="typewriter">LaTeX.pool.ltxml</text>
+              </tag>
+              <p>the core latex module, is loaded
+upon encountering certain recognizably LaTeX-specific commands, such as
+<verbatim font="typewriter">\documentclass</verbatim>.</p>
             </item>
-            <item id="manual.Ch2.I2.i5">
-              <p>Any modules loaded by <verbatim font="typewriter">\usepackage</verbatim> or <verbatim font="typewriter">\input</verbatim> are
-also loaded during processing, with a <text font="typewriter">.ltxml</text> implementation, if found,
-prefered over <text font="typewriter">.sty</text>.</p>
+            <item id="manual.Ch2.I3.i2">
+              <tag>\<text font="typewriter">documentclass{<text font="italic">class}</text></text></tag>
+              <p>loads <text font="typewriter italic">class<text font="upright">.cls.ltxml</text></text>.
+(Old style <verbatim font="typewriter">\documentstyle</verbatim> behaves similarly, along with any required packages).</p>
             </item>
-          </itemize>
+            <item id="manual.Ch2.I3.i3">
+              <tag>\<text font="typewriter">usepackage{<text font="italic">package}</text></text></tag>
+              <p>(or related commands) loads
+<text font="typewriter italic">package<text font="upright">.sty.ltxml</text></text>.  Normally, <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> will not
+attempt to read the <text font="typewriter italic">package<text font="upright">.sty</text></text> file, as these
+often involve LaTeX internals meaningless to the generation of <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref>.
+This behavior can be overridden with the option</p>
+              <quote>
+<text font="typewriter">--includestyles</text>
+<!-- %**** manual.tex Line 150 **** --></quote>
+              <p>A selective, per-file, option may be developed in the future — please
+provide use cases.</p>
+            </item>
+            <item id="manual.Ch2.I3.i4">
+              <tag>\<text font="typewriter">input{<text font="italic">file}</text></text></tag>
+              <p>loads the first
+<text font="typewriter italic">file<text font="upright">.tex.ltxml</text></text>, <text font="typewriter italic">file<text font="upright">.tex</text></text>,
+<text font="typewriter italic">file<text font="upright">.ltxml</text></text> or <text font="typewriter italic">file</text> that is found.</p>
+            </item>
+          </description>
           <p>Some of these modules (esp. <text font="typewriter">TeX</text> and <text font="typewriter">LaTeX</text>), are parts of
 the <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> distribution; others are supplied by the user, or can be
 overridden by the user.
@@ -211,7 +240,7 @@ See Chapter <ref labelref="customization"/> for details about what can go in the
           <p>Directories to search (in addition to the working directory)
 for modules and other files can be specified using</p>
           <quote>
-<!-- %**** manual.tex Line 150 **** --><text font="typewriter">--path=<text font="italic">directory</text></text>
+<text font="typewriter">--path=<text font="italic">directory</text></text>
 </quote>
           <p>This option can be repeated.</p>
         </para>
@@ -224,6 +253,7 @@ during processing can be controlled using</p>
           <quote>
 <text font="typewriter">--verbose</text> and <text font="typewriter">--quiet</text>
 </quote>
+          <!-- %**** manual.tex Line 175 **** -->
           <p>They can  be repeated to get even more or fewer details.</p>
         </para>
         <para id="manual.Ch2.S1.SS0.SSS0.P2.p2">
@@ -240,6 +270,7 @@ of source documents.</p>
           <p>See the documentation for the command <ref labelref="latexml">latexml</ref> for
 less common options.</p>
         </para>
+        <!-- %%%__ -->
       </paragraph>
     </section>
     <section id="manual.Ch2.S2" refnum="2.2" label="usage.single">
@@ -249,32 +280,33 @@ less common options.</p>
         <indexphrase key="latexmlpost">latexmlpost</indexphrase>
         <indexphrase key="usage">usage</indexphrase>
       </indexmark>
-      <!-- %**** manual.tex Line 175 **** -->
       <para id="manual.Ch2.S2.p1">
         <p>In the simplest situation, you have a single TeX source document
 from which you want to generate a single output document.
 The command</p>
         <quote>
-<text font="typewriter">latexmlpost <text font="italic">options</text> --dest=doc.xhtml doc</text>
+<text font="typewriter">latexmlpost <text font="italic">options</text> --destination=doc.xhtml doc</text>
 </quote>
-        <p>will carry out a set of appropriate transformations in sequence:</p>
-        <itemize id="manual.Ch2.I3">
-          <item id="manual.Ch2.I3.i1">
+        <p>or similarly with <text font="typewriter">--destination=doc.html</text>,
+will carry out a set of appropriate transformations in sequence:</p>
+        <itemize id="manual.Ch2.I4">
+          <!-- %**** manual.tex Line 200 **** -->
+          <item id="manual.Ch2.I4.i1">
             <p>scanning of labels and ids;</p>
           </item>
-          <item id="manual.Ch2.I3.i2">
+          <item id="manual.Ch2.I4.i2">
             <p>filling in the index and bibliography (if needed);</p>
           </item>
-          <item id="manual.Ch2.I3.i3">
+          <item id="manual.Ch2.I4.i3">
             <p>cross-referencing;</p>
           </item>
-          <item id="manual.Ch2.I3.i4">
+          <item id="manual.Ch2.I4.i4">
             <p>conversion of math;</p>
           </item>
-          <item id="manual.Ch2.I3.i5">
+          <item id="manual.Ch2.I4.i5">
             <p>conversion of graphics and picture environments to web format (png);</p>
           </item>
-          <item id="manual.Ch2.I3.i6">
+          <item id="manual.Ch2.I4.i6">
             <p>applying an <ref href="http://www.w3.org/Style/XSL/"><text font="typewriter">XSLT</text></ref> stylesheet.</p>
           </item>
         </itemize>
@@ -283,19 +315,18 @@ by the file extension of <text font="typewriter">--destination</text>, or by the
         <quote>
 <text font="typewriter">--format=(xhtml|html|xml)</text>
 </quote>
-        <description id="manual.Ch2.I4">
-          <item id="manual.Ch2.I4.i1">
+        <description id="manual.Ch2.I5">
+          <item id="manual.Ch2.I5.i1">
             <tag>html</tag>
             <p>math and graphics are converted to png images;
 the <text font="typewriter">LaTeXML-html.xslt</text> stylesheet is used.</p>
           </item>
-          <item id="manual.Ch2.I4.i2">
+          <item id="manual.Ch2.I5.i2">
             <tag>xhtml</tag>
             <p>math is converted to Presentation <ref href="http://www.w3.org/Math/"><text font="typewriter">MathML</text></ref>, other graphics to images;
-the <text font="typewriter">LaTeXML-xhtml.xslt</text> stylesheet is used.
-<!-- %**** manual.tex Line 200 **** --></p>
+the <text font="typewriter">LaTeXML-xhtml.xslt</text> stylesheet is used.</p>
           </item>
-          <item id="manual.Ch2.I4.i3">
+          <item id="manual.Ch2.I5.i3">
             <tag>xml</tag>
             <p>no math, graphics or <ref href="http://www.w3.org/Style/XSL/"><text font="typewriter">XSLT</text></ref> conversion is carried out.</p>
           </item>
@@ -307,6 +338,7 @@ documentation <ref labelref="latexmlpost">latexmlpost</ref>, as well as Appendix
       </para>
       <paragraph id="manual.Ch2.S2.SS0.SSS0.P1">
         <title>Scanning</title>
+        <!-- %**** manual.tex Line 225 **** -->
         <para id="manual.Ch2.S2.SS0.SSS0.P1.p1">
           <p>The scanning step collects information about all labels, ids,
 indexing commands, cross-references and so on, to be used
@@ -328,7 +360,7 @@ but can be disabled by</p>
 </quote>
           <p>Thus <verbatim font="typewriter">\index{term a!term b}</verbatim> also shows up as <verbatim font="typewriter">\index{term b!term a}</verbatim>.
 This leads to a more complete, but possibly rather silly, index,
-<!-- %**** manual.tex Line 225 **** -->depending on how the terms have been written.</p>
+depending on how the terms have been written.</p>
         </para>
       </paragraph>
       <paragraph id="manual.Ch2.S2.SS0.SSS0.P3">
@@ -336,10 +368,10 @@ This leads to a more complete, but possibly rather silly, index,
         <para id="manual.Ch2.S2.SS0.SSS0.P3.p1">
           <p>Bibilographic data from BibTeX can be provided with the option</p>
           <quote>
-<text font="typewriter">--bibliography=<text font="italic">xmlbibfile</text></text>
+<text font="typewriter">--bibliography=<text font="italic">bibfile</text>.xml</text>
 </quote>
           <p>However, the tools to convert a BibTeX file to <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> are
-not yet provided with the distribution.</p>
+<!-- %**** manual.tex Line 250 **** -->not yet provided with the distribution.</p>
         </para>
       </paragraph>
       <paragraph id="manual.Ch2.S2.SS0.SSS0.P4">
@@ -352,21 +384,20 @@ The option</p>
 <text font="typewriter">--urlstyle=(server|negotiated|file)</text>
 </quote>
           <p>can control the format of urls with the document.</p>
-          <description id="manual.Ch2.I5">
-            <item id="manual.Ch2.I5.i1">
+          <description id="manual.Ch2.I6">
+            <item id="manual.Ch2.I6.i1">
               <tag>server</tag>
               <p>formats urls appropriate for use from a web server.
 In particular, trailing <text font="typewriter">index.html</text> are omitted. (default)</p>
             </item>
-            <item id="manual.Ch2.I5.i2">
+            <item id="manual.Ch2.I6.i2">
               <tag>negotiated</tag>
               <p>formats urls appropriate for use by a server
 that implements content negotiation. File extensions for <text font="typewriter">html</text>
 and <text font="typewriter">xhtml</text> are omitted.  This enables you to set up a server
-that serves the appropriate format depending on the browser being used.
-<!-- %**** manual.tex Line 250 **** --></p>
+that serves the appropriate format depending on the browser being used.</p>
             </item>
-            <item id="manual.Ch2.I5.i3">
+            <item id="manual.Ch2.I6.i3">
               <tag>file</tag>
               <p>formats urls explicitly, with full filename and extension.
 This allows the files to be browsed from the local filesystem.</p>
@@ -380,7 +411,7 @@ This allows the files to be browsed from the local filesystem.</p>
           <p>Specific conversions of the mathematics can be requested
 using the options</p>
           <quote>
-<text font="typewriter">--mathimages</text>   converts math to png images,<break/>
+<!-- %**** manual.tex Line 275 **** --><text font="typewriter">--mathimages</text>   converts math to png images,<break/>
 <text font="typewriter">--presentationmathml</text> (or <text font="typewriter">--pmml</text>) converts to Presentation <ref href="http://www.w3.org/Math/"><text font="typewriter">MathML</text></ref><break/>
 <text font="typewriter">--contentmathml</text> (or <text font="typewriter">--cmml</text>) converts to Content <ref href="http://www.w3.org/Math/"><text font="typewriter">MathML</text></ref><break/>
 <text font="typewriter">--openmath</text> (or <text font="typewriter">--om</text>) converts to <ref href="http://www.openmath.org/"><text font="typewriter">OpenMath</text></ref></quote>
@@ -395,8 +426,7 @@ However, the option</p>
 <text font="typewriter">--parallelmath</text>
 </quote>
           <p>can be used to generate parallel <ref href="http://www.w3.org/Math/"><text font="typewriter">MathML</text></ref> markup, provided the first
-conversion is either <text font="typewriter">--pmml</text> or <text font="typewriter">--cmml</text>.
-<!-- %**** manual.tex Line 275 **** --></p>
+conversion is either <text font="typewriter">--pmml</text> or <text font="typewriter">--cmml</text>.</p>
         </para>
       </paragraph>
       <paragraph id="manual.Ch2.S2.SS0.SSS0.P6">
@@ -409,6 +439,7 @@ using</p>
           <quote>
 <text font="typewriter">--graphicsimages</text> or <text font="typewriter">--nographicsimages</text>
 </quote>
+          <!-- %**** manual.tex Line 300 **** -->
           <p>Similarly, the conversion of <text font="typewriter">picture</text> environments can be controlled with</p>
           <quote>
 <text font="typewriter">--pictureimages</text> or <text font="typewriter">--nopictureimages</text>
@@ -426,13 +457,20 @@ controlled by</p>
           <p>If you wish to provide your own <ref href="http://www.w3.org/Style/XSL/"><text font="typewriter">XSLT</text></ref> stylesheet, or
 a different <ref href="http://www.w3.org/Style/CSS/"><text font="typewriter">CSS</text></ref> stylesheet, the options</p>
           <quote>
-<text font="typewriter">--stylesheet=<text font="italic">stylesheet.xsl</text></text><break/>
-<text font="typewriter">--css=<text font="italic">stylesheet.css</text></text>
+<text font="typewriter">--stylesheet=<text font="italic">stylesheet</text>.xsl</text><break/>
+<text font="typewriter">--css=<text font="italic">stylesheet</text>.css</text>
 </quote>
-          <!-- %**** manual.tex Line 300 **** -->
-          <p>can be used.  To develop such stylesheets, a knowledge
+          <p>can be used.  The <text font="typewriter">--css</text> option can be repeated to accumulate several stylesheets;
+for example, the distribution provides several <text font="typewriter">navbar-left.css</text>, <text font="typewriter">navbar-right.css</text>,
+<text font="typewriter">theme-blue.css</text> and <text font="typewriter">amsart.css</text>, in addition to the <text font="typewriter">core.css</text> stylesheet
+which is included by default.</p>
+        </para>
+        <para id="manual.Ch2.S2.SS0.SSS0.P7.p2">
+          <p>To develop such stylesheets, a knowledge
 of the <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> document type is necessary; See Appendix <ref labelref="dtd"/>.</p>
         </para>
+        <!-- %**** manual.tex Line 325 **** 
+     %%%__-->
       </paragraph>
     </section>
     <section id="manual.Ch2.S3" refnum="2.3" label="usage.multiple">
@@ -448,14 +486,12 @@ of the <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML
 result into several interlinked pages. This split,
 carried out before scanning, is requested by</p>
         <quote>
-<text font="typewriter">--split</text>
+<text font="typewriter">--splitat=<text font="italic">level</text></text>
 </quote>
-        <p>The document is split according to</p>
-        <quote>
-<text font="typewriter">--splitat=<text font="italic">sectioningcommand</text></text>
-</quote>
-        <p>The default sectioning command is <text font="typewriter">section</text>,
-which creates separate files for each section,
+        <p>where <text font="italic">level</text> is one of <text font="typewriter">chapter</text>,
+<text font="typewriter">section</text>, <text font="typewriter">subsection</text>, or <text font="typewriter">subsubsection</text>.
+For example, <text font="typewriter">section</text> would split the document into
+chapters (if any) and sections, along with separate
 bibliography, index and any appendices.
 The removed document nodes are replaced by a Table of Contents.</p>
       </para>
@@ -466,17 +502,19 @@ of the root node of each new page document according to</p>
 <text font="typewriter">--splitnaming=(id|idrelative|label|labelrelative)</text>
 </quote>
         <p>The relative foms create shorter names in subdirectories for each
-<!-- %**** manual.tex Line 325 **** -->level of splitting.
+level of splitting.
 The <text font="typewriter">--urlstyle</text> option may also be useful here,
 as well as the <ref labelref="latexml">latexml</ref> option <text font="typewriter">--documentid</text>.</p>
       </para>
+      <!-- %**** manual.tex Line 350 **** -->
       <para id="manual.Ch2.S3.p3">
         <p>Additionally, the index and bibliography can be split
-into separate pages per initial using the options</p>
+into separate pages according to the initial letter of entries by using the options</p>
         <quote>
 <text font="typewriter">--splitindex</text> and <text font="typewriter">--splitbibliography</text>
 </quote>
       </para>
+      <!-- %%%__ -->
     </section>
     <section id="manual.Ch2.S4" refnum="2.4" label="usage.site">
       <title>Site processing</title>
@@ -495,88 +533,99 @@ between these documents are not covered here, but the situation is handled
 by <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> in the following fashion.</p>
       </para>
       <para id="manual.Ch2.S4.p2">
-        <p>First, all TeX sources must be converted to <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref>, as before;
-the option <text font="typewriter">--documentid</text> is particularly useful here.</p>
-      </para>
-      <para id="manual.Ch2.S4.p3">
-        <p>Secondly, all <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> files must be split and scanned using
+        <description id="manual.Ch2.I7">
+          <item id="manual.Ch2.I7.i1">
+            <tag>Conversion</tag>
+            <p>First, all TeX sources must be converted
+to <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref>, using <ref labelref="latexml">latexml</ref>.  Since every target-able element
+in all files to be combined must have a unique identifier, it is useful to
+prefix each identifier with a unique value for each file.
+The <ref labelref="latexml">latexml</ref> option <text font="typewriter">--documentid=<text font="italic">id</text></text> provides this.</p>
+          </item>
+          <item id="manual.Ch2.I7.i2">
+            <tag>Scanning</tag>
+            <p>Secondly, all <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> files must be split and scanned using
 the command</p>
-        <quote>
-<text font="typewriter">latexmlpost --prescan --dbfile=<text font="italic">DB</text> --dest=<text font="italic">doci</text>.xhtml <text font="italic">doci</text></text>
-<!-- %**** manual.tex Line 350 **** --></quote>
-        <p>where <text font="italic">DB</text> names a file to store the scanned data.
+            <quote>
+<!-- %**** manual.tex Line 375 **** --><text font="typewriter">latexmlpost --prescan --dbfile=<text font="italic">DB</text> --dest=<text font="italic">doci</text>.xhtml <text font="italic">doci</text></text>
+</quote>
+            <p>where <text font="typewriter italic">DB</text> names a file in which to store the scanned data.
 Other conversions, including writing the output file, are skipped in this prescanning step.</p>
-      </para>
-      <para id="manual.Ch2.S4.p4">
-        <p>Finally, all <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> files are cross-referenced and converted as before
-using the command</p>
-        <quote>
+          </item>
+          <item id="manual.Ch2.I7.i3">
+            <tag>Pagination</tag>
+            <p>Finally, all <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> files are cross-referenced and converted into
+the final format using the command</p>
+            <quote>
 <text font="typewriter">latexmlpost --noscan --dbfile=<text font="italic">DB</text> --dest=<text font="italic">doci</text>.xhtml <text font="italic">doci</text></text>
 </quote>
-        <p>which skips the unnecessary scanning step.</p>
+            <p>which skips the unnecessary scanning step.</p>
+          </item>
+        </description>
       </para>
+      <!-- %%%====================================================================== -->
     </section>
   </chapter>
   <chapter id="manual.Ch3" refnum="3" label="architecture">
     <title>Architecture</title>
-    <section>
-      <para id="manual.Ch3.p1">
-        <p>Like TeX, <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> is data-driven: the text and executable control
+    <para id="manual.Ch3.p1">
+      <p>Like TeX, <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> is data-driven: the text and executable control
 sequences (ie. macros and primitives)
 in the source file (and any packages loaded) direct the processing.
 The user exerts control over the conversion, and customizes it, by
 providing alternative <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref>-specific implementations of the control sequences and packages,
 by declaring properties of the desired document structure,
 and by defining rewrite rules to be applied to the constructed document tree.</p>
-      </para>
-      <figure id="manual.Ch3.F1" placement="tb" refnum="3.1" label="fig:dataflow">
-        <graphics graphic="dataflow" options="width=433.62pt"/>
-        <caption>Flow of data through <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref>'s digestive tract.</caption>
-      </figure>
-      <para id="manual.Ch3.p2">
-        <p>The top-level class, <ref class="package" labelref="LaTeXML">LaTeXML</ref>, manages the processing, providing several methods
-<!-- %**** manual.tex Line 375 **** -->for converting a TeX document or string into an <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> document, with varying degrees
+    </para>
+    <figure id="manual.Ch3.F1" placement="tb" refnum="3.1" label="fig:dataflow">
+      <graphics graphic="dataflow" options="width=433.62pt"/>
+      <!-- %**** manual.tex Line 400 **** -->
+      <caption>Flow of data through <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref>'s digestive tract.</caption>
+    </figure>
+    <para id="manual.Ch3.p2">
+      <p>The top-level class, <ref class="package" labelref="LaTeXML">LaTeXML</ref>, manages the processing, providing several methods
+for converting a TeX document or string into an <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> document, with varying degrees
 of postprocessing and optionally writing the document to file.
 A <ref class="package" labelref="LaTeXML::State">LaTeXML::State</ref> object maintains the current state
 of processing, current definitions for control sequences and emulates the
 TeX's scoping rules.
 The processing is broken into the following stages</p>
-        <description id="manual.Ch3.I1">
-          <item id="manual.Ch3.I1.i1">
-            <tag>Digestion</tag>
-            <p>the TeX-like digestion phase which converts the input into boxes.</p>
-          </item>
-          <item id="manual.Ch3.I1.i2">
-            <tag>Construction</tag>
-            <p>converts the resulting boxes into an <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> DOM.</p>
-          </item>
-          <item id="manual.Ch3.I1.i3">
-            <tag>Rewriting</tag>
-            <p>applies rewrite rules to modify the DOM.</p>
-          </item>
-          <item id="manual.Ch3.I1.i4">
-            <tag>Math Parsing</tag>
-            <p>parses the tokenized mathematics.</p>
-          </item>
-        </description>
-        <p>See Figure <ref labelref="fig:dataflow"/> for illustration.
+      <description id="manual.Ch3.I1">
+        <item id="manual.Ch3.I1.i1">
+          <tag>Digestion</tag>
+          <p>the TeX-like digestion phase which converts the input into boxes.</p>
+        </item>
+        <item id="manual.Ch3.I1.i2">
+          <tag>Construction</tag>
+          <p>converts the resulting boxes into an <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> DOM.</p>
+        </item>
+        <item id="manual.Ch3.I1.i3">
+          <tag>Rewriting</tag>
+          <p>applies rewrite rules to modify the DOM.</p>
+        </item>
+        <item id="manual.Ch3.I1.i4">
+          <tag>Math Parsing</tag>
+          <p>parses the tokenized mathematics.</p>
+        </item>
+      </description>
+      <p>See Figure <ref labelref="fig:dataflow"/> for illustration.
 The first three stages are discussed in the following sections;
 the parsing of mathematics is covered in detail in Chapter <ref labelref="math"/>.</p>
-      </para>
-      <para id="manual.Ch3.p3">
-        <p>The <ref class="package" labelref="LaTeXML">LaTeXML</ref> object binds <verbatim font="typewriter">$STATE</verbatim>, <verbatim font="typewriter">$GULLET</verbatim>, <verbatim font="typewriter">$STOMACH</verbatim>,
+    </para>
+    <para id="manual.Ch3.p3">
+      <p>The <ref class="package" labelref="LaTeXML">LaTeXML</ref> object binds <verbatim font="typewriter">$STATE</verbatim>, <verbatim font="typewriter">$GULLET</verbatim>, <verbatim font="typewriter">$STOMACH</verbatim>,
 and <verbatim font="typewriter">$MODEL</verbatim> to corresponding active objects during processing.</p>
-      </para>
-    </section>
+    </para>
+    <!-- %%%__ -->
     <section id="manual.Ch3.S1" refnum="3.1" label="architecture.digestion">
       <title>Digestion</title>
       <para id="manual.Ch3.S1.p1">
         <p>Digestion is carried out primarily in a <emph>pull</emph> mode: The <ref class="package" labelref="LaTeXML::Stomach">LaTeXML::Stomach</ref>
-pulls expanded <ref class="package" labelref="LaTeXML::Token">LaTeXML::Token</ref>s from the <ref class="package" labelref="LaTeXML::Gullet">LaTeXML::Gullet</ref>, which itself pulls tokens from
+<!-- %**** manual.tex Line 425 **** -->pulls expanded <ref class="package" labelref="LaTeXML::Token">LaTeXML::Token</ref>s from the <ref class="package" labelref="LaTeXML::Gullet">LaTeXML::Gullet</ref>, which itself pulls tokens from
 the <ref class="package" labelref="LaTeXML::Mouth">LaTeXML::Mouth</ref>.  The <ref class="package" labelref="LaTeXML::Mouth">LaTeXML::Mouth</ref> converts characters from the plain text input
 into tokens according to the current category codes assigned to them (in the <ref class="package" labelref="LaTeXML::State">LaTeXML::State</ref>).
 The <ref class="package" labelref="LaTeXML::Gullet">LaTeXML::Gullet</ref> is responsible for expanding any macro or expandible
-<!-- %**** manual.tex Line 400 **** -->tokens (when the current binding of the token in the <ref class="package" labelref="LaTeXML::State">LaTeXML::State</ref> is
+tokens (when the current binding of the token in the <ref class="package" labelref="LaTeXML::State">LaTeXML::State</ref> is
 an <ref class="package" labelref="LaTeXML::Definition">LaTeXML::Expandable</ref> definition),
 and for parsing sequences of tokens into common core datatypes (numbers, dimensions, etc.).
 The <ref class="package" labelref="LaTeXML::Stomach">LaTeXML::Stomach</ref> digests these tokens by executing <ref class="package" labelref="LaTeXML::Definition">LaTeXML::Primitive</ref> control
@@ -585,6 +634,7 @@ to <ref class="package" labelref="LaTeXML::Definition">LaTeXML::Constructor</ref
 into a recursive structure consisting of
 <ref class="package" labelref="LaTeXML::Box">LaTeXML::Box</ref>es and <ref class="package" labelref="LaTeXML::Box">LaTeXML::List</ref>s and of <ref class="package" labelref="LaTeXML::Box">LaTeXML::Box</ref>es.</p>
       </para>
+      <!-- %%%__ -->
     </section>
     <section id="manual.Ch3.S2" refnum="3.2" label="architecture.construction">
       <title>Construction</title>
@@ -599,17 +649,19 @@ whatever arguments were passed to the control sequence.</p>
 an <text font="typewriter">XML::LibXML::Document</text> structure, and having it absorb the digested lists, boxes
 and whatsits.  Generally, boxes represent text which is converted to text nodes within the
 document. Whatsits generally create a document fragment involving elements, attributes
-and text.</p>
+and text.
+<!-- %**** manual.tex Line 450 **** --></p>
       </para>
       <para id="manual.Ch3.S2.p3">
         <p>A <ref class="package" labelref="LaTeXML::Model">LaTeXML::Model</ref> is maintained througout the digestion phase which accumulates
 any document model declarations in particular the document type (currently only
 the DTD, but eventually may be RelaxNG based).  As LaTeX markup is more
 like <ref href="http://www.w3.org/MarkUp/SGML/"><text font="typewriter">HTML</text></ref> than <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref>, declarations may be used to indicate which elements may
-<!-- %**** manual.tex Line 425 **** -->be automatically opened or closed when needed to build a document tree that matches
+be automatically opened or closed when needed to build a document tree that matches
 the document type.  As an example, a <verbatim font="typewriter">&lt;subsection&gt;</verbatim> will automaticall be closed
 when a <verbatim font="typewriter">&lt;section&gt;</verbatim> is begun.</p>
       </para>
+      <!-- %%%__ -->
     </section>
     <section id="manual.Ch3.S3" refnum="3.3" label="architecture.rewriting">
       <title>Rewriting</title>
@@ -619,73 +671,72 @@ perform various functions. Ligatures and combining mathematics digits and letter
 into composite math tokens are handled this way.  Additionally, declarations
 of the type or grammatical role of math tokens can be applied here.</p>
       </para>
+      <!-- %%%====================================================================== -->
     </section>
   </chapter>
   <chapter id="manual.Ch4" refnum="4" label="customization">
     <title>Customization</title>
-    <section>
-      <para id="manual.Ch4.p1">
-        <p>The processsing of the LaTeX document and its  conversion into <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> is affected
+    <para id="manual.Ch4.p1">
+      <p>The processsing of the LaTeX document and its  conversion into <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> is affected
 by the definitions of control sequences, either as macros, primitives or constructors,
 and other declarations specifying the document type, properties of <ref href="http://www.w3.org/XML/"><text font="typewriter">XML</text></ref> tags, ligatures, ….
 These definitions and declarations are typically contained in `packages' which provide
 the implementation of LaTeX classes and packages.  For example, the LaTeX directive
 <verbatim font="typewriter">\usepackage{foo}</verbatim> would cause <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> to load the file <text font="typewriter">foo.sty.ltxml</text>.
-This file would be sought in any of the directories in perl's <verbatim font="typewriter">@INC</verbatim> list (typically
+<!-- %**** manual.tex Line 475 **** -->This file would be sought in any of the directories in perl's <verbatim font="typewriter">@INC</verbatim> list (typically
 including the current directory), or in a <verbatim font="typewriter">LaTeXML/Package</verbatim> subdirectory of any of
 those directories.  If no such file is found, <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> would look for <text font="typewriter">foo.sty</text> and
 attempt to process it.</p>
-      </para>
-      <para id="manual.Ch4.p2">
-        <p>When processing a typical file, say <text font="italic">jobname</text><text font="typewriter">.tex</text>,
-the following packages are loaded:
-<!-- %**** manual.tex Line 450 **** --></p>
-        <enumerate id="manual.Ch4.I1">
-          <item id="manual.Ch4.I1.i1" refnum="1">
-            <p>the core <text font="typewriter">TeX</text> package</p>
-          </item>
-          <item id="manual.Ch4.I1.i2" refnum="2">
-            <p>any packages named with the <verbatim font="typewriter">--preload</verbatim> option,</p>
-          </item>
-          <item id="manual.Ch4.I1.i3" refnum="3">
-            <p>a file <text font="italic">jobname</text><text font="typewriter">.latexml</text>, if present;
+    </para>
+    <para id="manual.Ch4.p2">
+      <p>When processing a typical file, say <text font="typewriter italic">jobname<text font="upright">.tex</text></text>,
+the following packages are loaded:</p>
+      <enumerate id="manual.Ch4.I1">
+        <item id="manual.Ch4.I1.i1" refnum="1">
+          <p>the core <text font="typewriter">TeX</text> package</p>
+        </item>
+        <item id="manual.Ch4.I1.i2" refnum="2">
+          <p>any packages named with the <verbatim font="typewriter">--preload</verbatim> option,</p>
+        </item>
+        <item id="manual.Ch4.I1.i3" refnum="3">
+          <p>a file <text font="typewriter italic">jobname<text font="upright">.latexml</text></text>, if present;
 this provides for document-specific declarations.</p>
-          </item>
-        </enumerate>
-        <p>Document processing then commences; by default, <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> assumes that the document is plain TeX.
+        </item>
+      </enumerate>
+      <p>Document processing then commences; by default, <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> assumes that the document is plain TeX.
 However, if a <verbatim font="typewriter">\documentclass</verbatim> directive is encountered, the <text font="typewriter">LaTeX</text> package, as well
 as a package for the named document class are loaded.</p>
-      </para>
-      <para id="manual.Ch4.p3">
-        <p><ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> implementations are provided for a number of the standard LaTeX packages,
+    </para>
+    <para id="manual.Ch4.p3">
+      <p><ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> implementations are provided for a number of the standard LaTeX packages,
 although many implement only part of the functionality.  Contributed implementations are,
-of course, welcome.  These files, as well as the document specific <text font="italic">jobname</text><text font="typewriter">.latexml</text>,
+of course, welcome.  These files, as well as the document specific <text font="typewriter italic">jobname<text font="upright">.latexml</text></text>,
 are essentially Perl modules, but use the facilities described in <ref href="perldoc/LaTeXML/Package.html"><text font="typewriter">LaTeXML::Package</text></ref>.</p>
-      </para>
-      <para id="manual.Ch4.p4">
-        <p>Much more needs to be explained here, but for the time being,
+    </para>
+    <para id="manual.Ch4.p4">
+      <p>Much more needs to be explained here, but for the time being,
 please consult the documentation for the module <ref class="package" labelref="LaTeXML::Package">LaTeXML::Package</ref>, and
-the various implementations of packages included with the distribution.</p>
-      </para>
-    </section>
+the various implementations of packages included with the distribution.
+<!-- %**** manual.tex Line 500 **** --></p>
+    </para>
+    <!-- %%%====================================================================== -->
   </chapter>
   <chapter id="manual.Ch5" refnum="5" label="math">
     <title>Mathematics</title>
-    <section>
-      <para id="manual.Ch5.p1">
-        <p>There are several issues that have to be dealt with in treating the mathematics.
+    <para id="manual.Ch5.p1">
+      <p>There are several issues that have to be dealt with in treating the mathematics.
 On the one hand, the TeX markup gives a pretty good indication of what the
 author wants the math to look like, and so we would seem to have a good handle
 on the conversion to presentation forms.  On the other hand, content formats
 are desirable as well; there are a few, but too few, clues about what the
-<!-- %**** manual.tex Line 475 **** -->intent of the mathematics is.  And in fact, the generation of even Presentation
+intent of the mathematics is.  And in fact, the generation of even Presentation
 MathML of high quality requires recognizing the mathematical structure, if not
 the actual semantics. The mathematics processing must therefore preserve the
 presentational information provided by the author, while inferring, likely
 with some help, the mathematical content.</p>
-      </para>
-      <para id="manual.Ch5.p2">
-        <p>From a parsing point of view, the TeX-like processing serves as the lexer,
+    </para>
+    <para id="manual.Ch5.p2">
+      <p>From a parsing point of view, the TeX-like processing serves as the lexer,
 tokenizing the input which <ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> will then parse
 [perhaps eventually a type-analysis phase will be added].
 Of course, there are a few twists.
@@ -696,33 +747,33 @@ Another twist is that, although LaTeX's math markup is not nearly
 as semantic as we might like, there is considerable semantics and structure in the
 markup that we can exploit. For example, given a <verbatim font="typewriter">\frac</verbatim>, we've already
 established the numerator and denominator which can be parsed individually,
-but the fraction as a whole can be directly represented as an application,
+<!-- %**** manual.tex Line 525 **** -->but the fraction as a whole can be directly represented as an application,
 using <text font="typewriter">XMApp</text>, of a fraction operator; the resulting structure can be treated
 as atomic within its containing expression.This <emph>structure preserving</emph> character
 greatly simplifies the parsing task and helps reduce misinterpretation.</p>
-      </para>
-      <para id="manual.Ch5.p3">
-        <p>The parser, invoked by the postprocessor, works only with the top-level lists of lexical tokens,
+    </para>
+    <para id="manual.Ch5.p3">
+      <p>The parser, invoked by the postprocessor, works only with the top-level lists of lexical tokens,
 or with those sublists contained in an <text font="typewriter">XMArg</text>.  The grammar works primarily through
 the name and grammatical role.  The name is given by an attribute, or the content if it is
-<!-- %**** manual.tex Line 500 **** -->the same.  The role (things like ID, FUNCTION, OPERATOR, OPEN, …) is also given
+the same.  The role (things like ID, FUNCTION, OPERATOR, OPEN, …) is also given
 by an attribute, or, if not present, the name is looked up in a document-specific
-dictionary (<text font="italic">jobname</text><text font="typewriter">.dict</text>), or in a default dictionary.</p>
-      </para>
-      <para id="manual.Ch5.p4">
-        <p>Additional exceptions that need fuller explanation are:</p>
-        <itemize id="manual.Ch5.I1">
-          <item id="manual.Ch5.I1.i1">
-            <p><ref class="package" labelref="LaTeXML::Definition">LaTeXML::Constructor</ref>s may wish to create a dual object (<text font="typewriter">XMDual</text>) whose children are
+dictionary (<text font="typewriter italic">jobname<text font="upright">.dict</text></text>), or in a default dictionary.</p>
+    </para>
+    <para id="manual.Ch5.p4">
+      <p>Additional exceptions that need fuller explanation are:</p>
+      <itemize id="manual.Ch5.I1">
+        <item id="manual.Ch5.I1.i1">
+          <p><ref class="package" labelref="LaTeXML::Definition">LaTeXML::Constructor</ref>s may wish to create a dual object (<text font="typewriter">XMDual</text>) whose children are
 the semantic and presentational forms.</p>
-          </item>
-          <item id="manual.Ch5.I1.i2">
-            <p>Spacing and similar markup generates <text font="typewriter">XMHint</text> elements, which are currently ignored
+        </item>
+        <item id="manual.Ch5.I1.i2">
+          <p>Spacing and similar markup generates <text font="typewriter">XMHint</text> elements, which are currently ignored
 during parsing, but probably shouldn't.</p>
-          </item>
-        </itemize>
-      </para>
-    </section>
+        </item>
+      </itemize>
+    </para>
+    <!-- %%%__ -->
     <section id="manual.Ch5.S1" refnum="5.1" label="math.details">
       <title>Math Details</title>
       <para id="manual.Ch5.S1.p1">
@@ -730,7 +781,7 @@ during parsing, but probably shouldn't.</p>
         <itemize id="manual.Ch5.I2">
           <item id="manual.Ch5.I2.i1">
             <p>Basic processing of macros, primitives and constructors resulting in
-an XML document; the math is primarily represented by a sequence of
+<!-- %**** manual.tex Line 550 **** -->an XML document; the math is primarily represented by a sequence of
 tokens (<text font="typewriter">XMTok</text>) or structured items (<text font="typewriter">XMApp</text>, <text font="typewriter">XMDual</text>) and
 hints (<text font="typewriter">XMHint</text>, which are ignored).</p>
           </item>
@@ -743,7 +794,7 @@ User supplied rules can be used here to clarify the intent of markup used in the
 In particular, at the top level of each math expression, as well as each
 subexpression within structured items (these will have been contained in
 an <text font="typewriter">XMArg</text> or <text font="typewriter">XMWrap</text> element).  This results in an expression tree
-<!-- %**** manual.tex Line 525 **** -->that will hopefully be an accurate representation of the expression's structure,
+that will hopefully be an accurate representation of the expression's structure,
 but may be ambigous in specifics (eg.`what the meaning of a superscript is).
 The parsing is driven almost entirely by the grammatical <text font="typewriter">role</text> assigned
 to each item.</p>
@@ -764,7 +815,8 @@ serves as the container for the various representations of the math, including
 images (through attributes <text font="typewriter">mathimage</text>, <text font="typewriter">width</text> and <text font="typewriter">height</text>),
 textual (through attributes <text font="typewriter">tex</text>, <text font="typewriter">content-tex</text> and <text font="typewriter">text</text>),
 <ref href="http://www.w3.org/Math/"><text font="typewriter">MathML</text></ref> and the internal representation itself.
-The <text font="typewriter">mode</text> attribute specifies whether the math should be in display or inline mode.</p>
+The <text font="typewriter">mode</text> attribute specifies whether the math should be in display or inline mode.
+<!-- %**** manual.tex Line 575 **** --></p>
       </para>
       <subsection id="manual.Ch5.S1.SS1" refnum="5.1.1" label="math.details.representation">
         <title>Internal Math Representation</title>
@@ -783,8 +835,7 @@ The <text font="typewriter">mode</text> attribute specifies whether the math sho
             <item id="manual.Ch5.I3.i2">
               <tag><text font="typewriter">open</text>, <text font="typewriter">close</text></tag>
               <p>parenthese or delimiters that were used to wrap the
-expression represented by this element.
-<!-- %**** manual.tex Line 550 **** --></p>
+expression represented by this element.</p>
             </item>
             <item id="manual.Ch5.I3.i3">
               <tag><text font="typewriter">argopen</text>, <text font="typewriter">argclose</text>, <text font="typewriter">separators</text></tag>
@@ -835,7 +886,8 @@ the content for identifying the token.</p>
                     <tag>
                       <text font="typewriter">style</text>
                     </tag>
-                    <p>?</p>
+                    <p>?
+<!-- %**** manual.tex Line 600 **** --></p>
                   </item>
                   <item id="manual.Ch5.I4.I1.i5">
                     <tag>
@@ -864,8 +916,7 @@ Additional attributes:</p>
                     <tag>
                       <text font="typewriter">name</text>
                     </tag>
-                    <p>the name that represents the meaning of the construct as a whole.
-<!-- %**** manual.tex Line 575 **** --></p>
+                    <p>the name that represents the meaning of the construct as a whole.</p>
                   </item>
                   <item id="manual.Ch5.I4.I2.i2">
                     <tag>
@@ -928,7 +979,7 @@ may otherwise be difficult to interpret — the parser is more forgiving about t
                   <text font="typewriter">XMArg</text>
                 </tag>
                 <p>serves to wrap individual arguments or subexpressions, created by
-structured markup, such as <verbatim font="typewriter">\frac</verbatim>.  These subexpressions can be parsed individually.</p>
+<!-- %**** manual.tex Line 625 **** -->structured markup, such as <verbatim font="typewriter">\frac</verbatim>.  These subexpressions can be parsed individually.</p>
                 <description id="manual.Ch5.I4.I5">
                   <item id="manual.Ch5.I4.I5.i1">
                     <tag>
@@ -947,7 +998,6 @@ arguments when constructing an <text font="typewriter">XMDual</text> to represen
 The arguments will be placed in the content branch (wrapped in an <text font="typewriter">XMArg</text>) while
 <text font="typewriter">XMRef</text>'s will be placed in the presentation branch.</p>
                 <description id="manual.Ch5.I4.I6">
-                  <!-- %**** manual.tex Line 600 **** -->
                   <item id="manual.Ch5.I4.I6.i1">
                     <tag>
                       <text font="typewriter">idref</text>
@@ -975,7 +1025,7 @@ that way, never appearing explicitly in the grammar.</p>
 These values can be specified in the <text font="typewriter">role</text> attribute during the initial
 document construction or by rewrite rules.  Although the precedence of operators
 is loosely described in the following, since the grammar contains various special
-case productions, no rigidly ordered precedence is given.</p>
+<!-- %**** manual.tex Line 650 **** -->case productions, no rigidly ordered precedence is given.</p>
           <description id="manual.Ch5.I5">
             <item id="manual.Ch5.I5.i1">
               <tag>
@@ -1012,8 +1062,7 @@ case productions, no rigidly ordered precedence is given.</p>
                 <text font="typewriter">ARROW</text>
               </tag>
               <p>an arrow operator (with little semantic significance).
-treated equivalently to <text font="typewriter">RELOP</text>.
-<!-- %**** manual.tex Line 625 **** --></p>
+treated equivalently to <text font="typewriter">RELOP</text>.</p>
             </item>
             <item id="manual.Ch5.I5.i7">
               <tag>
@@ -1095,7 +1144,7 @@ For example, for an operator <Math mode="inline" tex="A" text="A"><XMath><XMTok 
               <p>a general operator, but lower precedence, such as a <Math mode="inline" tex="P" text="P"><XMath><XMTok role="UNKNOWN" font="italic">P</XMTok></XMath></Math> preceding
 an integral to denote the principal value.
 Note that <text font="typewriter">SUMOP</text>, <text font="typewriter">INTOP</text>, <text font="typewriter">LIMITOP</text>, <text font="typewriter">DIFFOP</text> and <text font="typewriter">BIGOP</text> are treated
-equivalently by the grammar, but are distinguished to facilitate (<emph>eventually!</emph>)
+<!-- %**** manual.tex Line 675 **** -->equivalently by the grammar, but are distinguished to facilitate (<emph>eventually!</emph>)
 analyzing the argument structure (eg bound variables and differentials within an integral).
 <text font="bold">Note</text> are <text font="typewriter">SUMOP</text> and <text font="typewriter">LIMITOP</text> significantly different in this sense?</p>
             </item>
@@ -1123,7 +1172,7 @@ precedence than addition and multiplication, or parenthesized arguments.</p>
               </tag>
               <p>the usual superscript, where the script is treated as
 an argument, but the base will be determined by parsing. Note that this is not
-<!-- %**** manual.tex Line 650 **** -->necessarily assumed to be a power. Very high precedence.</p>
+necessarily assumed to be a power. Very high precedence.</p>
             </item>
             <item id="manual.Ch5.I5.i24">
               <tag>
@@ -1169,42 +1218,44 @@ the presentation style:</p>
                 <text font="typewriter">STACKED</text>
               </tag>
               <p>corresponds to stacked structures, such as
-<verbatim font="typewriter">\atop</verbatim>, and the presentation of binomial coefficients.</p>
+<verbatim font="typewriter">\atop</verbatim>, and the presentation of binomial coefficients.
+<!-- %**** manual.tex Line 700 **** --></p>
             </item>
           </description>
         </para>
-        <!-- %Some -->
+        <!-- %Some 
+     %%%======================================================================-->
       </subsection>
     </section>
   </chapter>
   <chapter id="manual.Ch6" refnum="6" label="todo">
     <title>ToDo</title>
-    <section>
-      <para id="manual.Ch6.p1">
-        <p>Lots…!</p>
-        <itemize id="manual.Ch6.I1">
-          <item id="manual.Ch6.I1.i1">
-            <p>Lots of useful LaTeX packages have not been implemented, and those
+    <para id="manual.Ch6.p1">
+      <p>Lots…!</p>
+      <itemize id="manual.Ch6.I1">
+        <item id="manual.Ch6.I1.i1">
+          <p>Lots of useful LaTeX packages have not been implemented, and those
 that are aren't necessarily complete.</p>
-          </item>
-          <item id="manual.Ch6.I1.i2">
-            <p>TeX boxes aren't really complete, and in particular things like <verbatim font="typewriter">\ht0</verbatim>
-<!-- %**** manual.tex Line 675 **** -->don't work.</p>
-          </item>
-          <item id="manual.Ch6.I1.i3">
-            <p>Possibly useful to override (pre-override?) a macro defined in the source file;
+        </item>
+        <item id="manual.Ch6.I1.i2">
+          <p>TeX boxes aren't really complete, and in particular things like <verbatim font="typewriter">\ht0</verbatim>
+don't work.</p>
+        </item>
+        <item id="manual.Ch6.I1.i3">
+          <p>Possibly useful to override (pre-override?) a macro defined in the source file;
 that is, define it and silently ignore the definition given in the source.</p>
-          </item>
-          <item id="manual.Ch6.I1.i4">
-            <p>…um, …<emph>documentation</emph>!</p>
-          </item>
-        </itemize>
-      </para>
-    </section>
+        </item>
+        <item id="manual.Ch6.I1.i4">
+          <p>…um, …<emph>documentation</emph>!</p>
+        </item>
+      </itemize>
+    </para>
+    <!-- %%%====================================================================== -->
   </chapter>
   <index id="manual.idx">
     <title>Index</title>
   </index>
+  <!-- %%%====================================================================== -->
   <appendix id="manual.A1" refnum="A" label="commands">
     <title>Command Documentation</title>
     <toctitle>Commands</toctitle>
@@ -1840,6 +1891,8 @@ and pstricks material to SVG.</p>
         <para id="manual.A1.Sx2.SSx3.p1">
           <p><ref class="package" labelref="latexml">latexml</ref>, <ref class="package" labelref="LaTeXML">LaTeXML</ref></p>
         </para>
+        <!-- %%%====================================================================== 
+     %**** manual.tex Line 725 ****-->
       </subsection>
     </section>
   </appendix>
@@ -3992,7 +4045,6 @@ undef if none.</p>
 so that a <text font="typewriter">LaTeXML::Tokens</text> can serve as a <ref class="package" labelref="LaTeXML::Mouth">LaTeXML::Mouth</ref>.</p>
               </item>
             </description>
-            <!-- %**** manual.tex Line 700 **** -->
           </para>
         </subsubsection>
       </subsection>
@@ -5168,7 +5220,8 @@ before it, otherwise, all rules</p>
               </item>
             </description>
           </para>
-          <!-- %\section{Math-related Modules} -->
+          <!-- %**** manual.tex Line 750 **** 
+     %\section{Math-related Modules}-->
         </subsubsection>
       </subsection>
     </section>
@@ -5307,6 +5360,7 @@ This is used to generate warning messages.</p>
               </item>
             </description>
           </para>
+          <!-- %%%====================================================================== -->
         </subsubsection>
       </subsection>
     </section>
@@ -5314,6 +5368,7 @@ This is used to generate warning messages.</p>
   <appendix id="manual.A3" refnum="C" label="utilitymodules">
     <title>Utility Module Documentation</title>
     <toctitle>Utility Modules</toctitle>
+    <!-- %%%====================================================================== -->
   </appendix>
   <appendix id="manual.A4" refnum="D" label="postmodules">
     <title>Postprocessing Module Documentation</title>
@@ -5324,15 +5379,14 @@ This is used to generate warning messages.</p>
         <p>LaTeXML::Post is the driver for various postprocessing operations.
 It has a complicated set of options that I'll document shortly.</p>
       </para>
+      <!-- %%%====================================================================== -->
     </section>
   </appendix>
   <appendix id="manual.A5" refnum="E" label="dtd">
     <title><ref href="http://dlmf.nist.gov/LaTeXML/"><text font="typewriter">LaTeXML</text></ref> DocType</title>
     <toctitle>DocType</toctitle>
-    <section>
-      <para id="manual.A5.p1">
-        <p>Not yet documented.</p>
-      </para>
-    </section>
+    <para id="manual.A5.p1">
+      <p>Not yet documented.</p>
+    </para>
   </appendix>
 </document>

@@ -75,7 +75,7 @@ my @css = ("core.css","navbar-left.css","theme-blue.css","ltxmanual.css");
 my @csspaths=();
 foreach my $css (@css){
   my $csssource = pathname_find($css,types=>['css'],paths=>['.'],installation_subdir=>'style');
-  my $csspath = pathname_absolute($css,pathname_directory($MANDEST));
+  my $csspath = pathname_absolute($css,$MANDEST);
   pathname_copy($csssource,$csspath)  if -f $csssource;
   push(@csspaths,$csspath); }
 

@@ -15,7 +15,8 @@ DefMacro('\method {}','\texttt{->#1}');
 DefMacro('\tag {}','\texttt{#1}');
 DefMacro('\attr {}','\texttt{#1}');
 DefMacro('\perldoc {}','\texttt{perldoc #1}');
-
+DefMacro('\varfile[]{}','\texttt{\textit{#2}\ifx.#1.\else.#1\fi}');
+DefConstructor('\cs{}','\#1', font=>{family=>'typewriter'});
 # Perverse!
 DefMacro('\perldoc{}', '\URL[\texttt{#1}]{\@perldocurl{#1}}');
 DefMacro('\@perldocurl[]{}', sub { 
