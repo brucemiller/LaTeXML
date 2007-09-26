@@ -122,11 +122,17 @@
 </xsl:template>
 
 <xsl:template name="footer">
-  <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1]">
+  <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1] | //ltx:navigation/ltx:ref">
     <xsl:text>
 </xsl:text>
     <div class='footer'>
       <xsl:value-of select='//ltx:date/node()'/>
+    <xsl:text>
+</xsl:text>
+      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='previous']"/>
+    <xsl:text>
+</xsl:text>
+      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='next']"/>
     </div>
   </xsl:if>
 </xsl:template>
@@ -748,7 +754,8 @@
 
 <xsl:template match="ltx:item" mode="description">
   <dt><xsl:apply-templates select="ltx:tag"/></dt>
-  <dd><xsl:apply-templates select="*[position() &gt; 1]"/></dd>
+<!--  <dd><xsl:apply-templates select="*[position() &gt; 1]"/></dd>-->
+  <dd><xsl:apply-templates select="*[local-name() != 'tag']"/></dd>
 </xsl:template>
 
 <xsl:template match="ltx:tag">
