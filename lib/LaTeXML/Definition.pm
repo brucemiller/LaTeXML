@@ -313,7 +313,10 @@ use LaTeXML::Global;
 
 our $VALUE_RE = "(\\#|\\&[\\w\\:]*\\()";
 our $COND_RE  = "\\?$VALUE_RE";
-our $QNAME_RE = "([\\w\\-_:]+)";
+#our $QNAME_RE = "([\\w\\-_:]+)";
+# Attempt to follow XML Spec, Appendix B
+our $QNAME_RE = "((?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:)"
+  .              "(?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:|\\p{M}|\\p{Lm}|\\p{Nd}|\\.|\\-)*)";
 our $TEXT_RE  = "(.[^\\#<\\?\\)\\&\\,]*)";
 
 our $GEN=0;
@@ -373,10 +376,15 @@ sub translate_constructor {
     # Attribute: a=v; assigns in current node? [May conflict with random text!?!]
     elsif(s|^$QNAME_RE\s*=\s*||so){
       my $key = $1;
-      if($float){
-	$code .= "\$savenode=\$document->floatToAttribute('$key');\n";
-	$float = undef; }
-      $code .= "\$document->getNode->setAttribute('$key',ToString(".translate_string().")) if \$savenode;\n"; }
+      my $value = translate_string();
+      if(defined $value){
+	if($float){
+	  $code .= "\$savenode=\$document->floatToAttribute('$key');\n";
+	  $float = undef; }
+	$code .= "\$document->getElement->setAttribute('$key',ToString(".$value."));\n"; }
+      else {			# Whoops, must have been random text, after all.
+print STDERR "Whoops! Wasn't an attribute assignment: \"$key\"\n";
+	$code .= "\$document->absorb('".slashify($key)."=');\n"; }}
     # Else random text
     elsif(s/^$TEXT_RE//so){	# Else, just some text.
       $code .= "\$document->absorb('".slashify($1)."');\n"; }
