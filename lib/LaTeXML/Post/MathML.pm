@@ -205,7 +205,7 @@ sub pmml_internal {
   elsif($tag eq 'ltx:XMDual'){
     my($content,$presentation) = element_nodes($node);
     pmml($presentation); }
-  elsif($tag eq 'ltx:XMWrap'){	# Only present if parsing failed!
+  elsif(($tag eq 'ltx:XMWrap')||($tag eq 'ltx:XMArg')){	# Only present if parsing failed!
     pmml_row(map(pmml($_),element_nodes($node))); }
   elsif($tag eq 'ltx:XMApp'){
     my($op,@args) = element_nodes($node);
