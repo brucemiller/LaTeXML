@@ -251,6 +251,12 @@ __END__
 C<LaTeXML::Parameters> - formal parameters,
 including C<LaTeXML::Parameter>.
 
+=begin latex
+
+\label{LaTeXML::Parameter}
+
+=end latex
+
 =head1 DESCRIPTION
 
 Provides a representation for the formal parameters of L<LaTeXML::Definition>s:
