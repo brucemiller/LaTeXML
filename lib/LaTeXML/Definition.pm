@@ -505,6 +505,13 @@ C<LaTeXML::Definition>  - Control sequence definitions,
 including specializations C<LaTeXML::Expandable>, C<LaTeXML::Primitive>, 
 C<LaTeXML::Register>, C<LaTeXML::Constructor>
 
+=begin latex
+
+\label{LaTeXML::Expandable}\label{LaTeXML::Primitive}\label{LaTeXML::Register}
+\label{LaTeXML::CharDef}\label{LaTeXML::Constructor}\label{LaTeXML::ConstructorCompiler}
+
+=end latex
+
 =head1 DESCRIPTION
 
 These represent the various executables corresponding to control sequences.
