@@ -237,6 +237,13 @@ This module defines various dimension and number-like data objects
  LaTeXML::Pair        represents pairs of numbers
  LaTeXML::Pairlist    represents list of pairs.
 
+=begin latex
+
+\label{LaTeXML::Float}\label{LaTeXML::Dimension}\label{LaTeXML::MuDimension}
+\label{LaTeXML::Glue}\label{LaTeXML::MuGlue}\label{LaTeXML::Pair}\label{LaTeXML::PairList}
+
+=end latex
+
 =head2 Common methods
 
 The following methods apply to all objects.
