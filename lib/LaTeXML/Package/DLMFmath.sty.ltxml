@@ -150,8 +150,10 @@ DefConstructor('\Sci{}{}',sub {
 
 DefConstructor('\Sci@Exp{}',
 	       sub { my($document,$exp,%props)=@_;
-		     $document->insertMathToken(convert_sci_exponent($exp),
-						font=>$props{font}, role=>'NUMBER'); },
+		     $exp = ToString($exp);
+		     if($exp ne ''){
+		       $document->insertMathToken(convert_sci_exponent($exp),
+						  font=>$props{font}, role=>'NUMBER'); }},
 	      reversion=>sub { my $exp = $_[0]->getArg(1);
 			      ($exp->unlist ? (T_CS('\times'),T_OTHER('1'),T_OTHER('0'),
 					       T_SUPER,T_BEGIN,$exp->revert,T_END)
