@@ -267,6 +267,12 @@ C<LaTeXML::MathList> represents a sequence of digested things in math;
 C<LaTeXML::Whatsit> represents a digested object that can generate
 arbitrary elements in the XML Document.
 
+=begin latex
+
+\label{LaTeXML::MathBox}\label{LaTeXML::List}\label{LaTeXML::MathList}\label{LaTeXML::Whatsit}
+
+=end latex
+
 =head2 Common Methods
 
 All these classes extend L<LaTeXML::Object> and so implement
