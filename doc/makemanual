@@ -25,13 +25,16 @@ my $SRCDIR = $FindBin::RealBin;
 my $LOC = $SRCDIR."/..";
 my $DEST= "/local/www/site/htdocs/DigitalMathLib/LaTeXML";
 my $MANDEST="$DEST/manual";
+my $GENDIR = "generated";
+my $DTDLOC = "$LOC/lib/LaTeXML/dtd/";
+
 BEGIN { $SIG{__DIE__} = \&confess; }
 
 #======================================================================
 print "Converting PODs to LaTeX\n";
 # Prepare LaTeX from various POD's
 my @exes = (qw(latexml latexmlpost));
-my @modules = (qw(LaTeXML 
+my @modules = (qw(LaTeXML
 		  LaTeXML::Box LaTeXML::Definition LaTeXML::Document
 		  LaTeXML::Error LaTeXML::Font LaTeXML::Global LaTeXML::Gullet
 		  LaTeXML::MathParser LaTeXML::Model LaTeXML::Mouth
@@ -43,7 +46,7 @@ my @modules = (qw(LaTeXML
 foreach my $name (@exes){
   my $podconverter = MyPodConverter->new();
   my $src  = "$LOC/bin/$name";
-  my $dest = "pods/$name.tex";
+  my $dest = "$GENDIR/$name.tex";
   pathname_mkdir(pathname_directory($dest));
   $podconverter->parse_from_file($src,$dest); }
 
@@ -55,11 +58,24 @@ foreach my $name (@modules){
   my $dest = $name;
   my @heir = split('::',$name);
   $dest =~ s|::|_|g;
-  $dest = "pods/$dest.tex";
+  $dest = "$GENDIR/$dest.tex";
 #  $podconverter->Head1Level(scalar(@heir)-1);
   pathname_mkdir(pathname_directory($dest));
   $podconverter->parse_from_file($src,$dest); }
 
+#======================================================================
+print "Converting DTD to LaTeX\n";
+
+my $module = DTD::Module->newFromFile($DTDLOC,"LaTeXML.dtd");
+open(DTDOUT,">$GENDIR/dtd.tex") or die "Couldn't open dtd.tex for output:$!";
+print DTDOUT $module->toLaTeX;
+close(DTDOUT);
+
+#======================================================================
+# Generate pdf.
+system("pdflatex manual") == 0 or warn "pdflatex of manual failed:$!";
+system("pdflatex manual") == 0 or warn "pdflatex of manual failed:$!";
+exit(0);
 #======================================================================
 # Process the LaTeX documentation
 print "Generating LaTeXML documentation in $MANDEST\n";
@@ -70,7 +86,7 @@ my $split='//ltx:chapter[@id] | //ltx:section[@id]'
   . '| //ltx:bibliography[@id] | //ltx:appendix[@id] | //ltx:index';
 
 my $scanner =LaTeXML::Post::Scan->new(db=>$DB,%POPTIONS);
-my $format='html';
+my $format='xhtml';
 my @css = ("core.css","navbar-left.css","theme-blue.css","ltxmanual.css");
 my @csspaths=();
 foreach my $css (@css){
@@ -83,9 +99,6 @@ LaTeXML::Post::ProcessChain(
    LaTeXML::Post::Document->newFromFile('manual.xml',
 					destination=>"$MANDEST/index.$format"),
 			    LaTeXML::Post::Split->new(db=>$DB,split_xpath=>$split,
-#						      splitnaming=>'id',
-#						      splitnaming=>'idrelative',
-#						      splitnaming=>'label',
 						      splitnaming=>'labelrelative',
 						      %POPTIONS),
 			    $scanner,
@@ -138,7 +151,7 @@ sub head {
 sub interior_sequence {
   my ($self,$seq_command, $seq_argument, $pod_seq) = @_;
   if($seq_command eq 'L'){
-    "\\podlink{$seq_argument}"; }
+    "\\pod{$seq_argument}"; }
   else {
     $self->SUPER::interior_sequence($seq_command,$seq_argument,$pod_seq); }}
 
@@ -151,3 +164,299 @@ sub _replace_special_chars_late {
   $paragraph;}
 
 #======================================================================
+package DTD::Object;
+
+our %ENTITY=();
+our $DEBUG;
+#BEGIN{$DEBUG=1;}
+# Save & return (Parameter) Entities.
+sub getEntity {
+  my($self,$name)=@_;
+  $ENTITY{$name}; }
+
+sub putEntity {
+  my($self,$name,$entity)=@_;
+  $ENTITY{$name} = $entity; }
+
+sub isInteresting {
+  my($self,$name)=@_;
+  $name !~ /(^LaTeXML-|^LaTeXML\.xmlns|(prefixed|prefix|pfx|qname|mod|module|base|extra)$)/; }
+
+# this expands all parameter entities
+sub expand {
+  my($self,$string)=@_;
+  while($string =~ s/\%([^\;]+?)\;/$ENTITY{$1}->value/eg){};
+  $string; }
+
+sub TeXify {
+  my($self,$string)=@_;
+  print STDERR "TeXify \"$string\$\n" if $DEBUG;
+  while(($string =~ s/\%([^\;]+?\.qname)\;/'\elementref{'.($ENTITY{$1}->value).'}'/eg)
+	|| ($string =~ s/\%(LaTeXML-[^\;]+?|LaTeXML\.xmlns\.[^\;]+?|[^\;]+?\.(prefixed|prefix|pfx|mod|module|base|extra))\;/$ENTITY{$1}->value/eg)
+       ){};
+  while($string =~ s/\%([^\;]+?)\;/ \\entityref{$1} /g){};
+  $string =~ s/\#/\\#/g;
+  $string =~ s/_/\\_/g;
+  $string =~ s/\|/~\\textbar~/g;
+  $string =~ s/\s+/ /g;
+  $string; }
+
+sub TeXifyAttributes {
+  my($self,$attlist)=@_;
+  print STDERR "TeXify attributes \"$attlist\$\n" if $DEBUG;
+  my @attr=();
+  while($attlist =~ s/\%(LaTeXML-[^\;]+?|LaTeXML\.xmlns\.[^\;]+?|[^\;]+?\.(prefixed|prefix|pfx|mod|module|base|extra))\;/$ENTITY{$1}->value/eg){}
+  while($attlist){
+    if($attlist =~ s/^\s*\%([^\;]+?)\;\s*//){
+      push(@attr," \\entityref{$1} "); }
+    elsif($attlist =~ s/^\s*(\S+)\s+(\S+)\s+(\S+)\s*//){
+      my($att,$type,$requiredness)=($1,$2,$3);
+      $att = $self->TeXify($att);
+      $type= $self->TeXify($type);
+      my $entry = "\\attr{$att}";
+      if($type eq 'CDATA'){}
+      elsif($type =~ /^\w/){ $entry .="~[$type]"; }
+      else                 { $entry .="~$type"; }
+      push(@attr,$entry); }}
+  join(', ',@attr); }
+
+sub TeXifyText {
+  my($self,$string)=@_;
+  print STDERR "TeXify text \"$string\$\n" if $DEBUG;
+  $string =~ s/\#/\\#/g;
+  $string =~ s/_/\\_/g;
+  $string =~ s/\|/\$|\$/g;
+  # Recognize an itemization of attributes.
+  if($string =~ /\n\s+@/s){
+    $string =~ s/^(.*?)\n\s+@/@/s;
+    my $repl = $1."\n\\begin{description}\n";
+    while($string =~ s/^\s*@([\w\-_:]+)//s){
+      my $attr = "\\attr{$1}";
+      while($string =~ s/^,\s*@([\w\-_:]+)//){
+	$attr .= ", \\attr{$1}"; }
+      $string =~ s/^(.*?)(\n\s+@|$)/$2/s;
+      $repl .= "\\item[$attr] $1\n"; }
+    $string = $repl."\\end{description}\n".$string; }
+  # Recognize @(..) for attribute,
+  # & <...> for element
+  $string =~ s/\s+/ /g;
+  $string =~ s/@([\w\-_:]+)/\\attr{$1}/gs;
+  $string =~ s/<([^>]+)>/\\elementref{$1}/gs;
+  $string =~ s/^\s*//;  $string =~ s/\s*$//;
+  $string; }
+
+#======================================================================
+package DTD::Module;
+use base qw(DTD::Object);
+
+our $DEBUG;
+#BEGIN{$DEBUG=1;}
+sub new {
+  my($class,$rootdir,$name)=@_;
+  my $self = {name=>$name,rootdir=>$rootdir, entries=>[], elements=>{}};
+  bless $self,$class; }
+
+sub newFromFile {
+  my($class,$rootdir,$name)=@_;
+  my $filename = "$rootdir/$name";
+  open(IN,$filename) or die "Couldn't open $filename: $!";
+  local $/=undef;
+  my $data = <IN>;
+  close(IN);
+
+  $class->new($rootdir,$name)->parse($data); }
+
+#----------------------------------------------------------------------
+sub parse {
+  my($self,$string)=@_;
+  my $comment = undef;
+  while($string){
+    $string =~ s/^(\s*)//;
+    # Comment; If written as <!--%  Use as documentation of the following declaration.
+    if($string =~ s/^\<\!\-\-(%?)(.*?)\-\-\>\n?//s){
+      my($noteworthy,$text)=($1,$2);
+      print STDERR "Comment \"$text\"\n" if $DEBUG;
+      if(!$noteworthy){ 
+	$comment = undef; }
+      elsif($string =~ s/^\n+//s){
+	$self->addComment($text);
+	$comment = undef; }
+      else {
+	$comment = ($noteworthy ? $text : undef); }}
+    else {
+      # Parameter entity
+      if($string =~ s/^\<\!ENTITY\s+(%)\s+(\S+)\s+(SYSTEM\s+)?\"(.*?)\"\s*\>//s){
+	# Entity definition
+	my($param_p,$name,$system,$value)=($1,$2,$3,$4);
+	print STDERR "Parameter \"$name\"\n" if $DEBUG;
+	$self->addEntity($name,$system,$value,$comment); }
+      # Invoking a Parameter Entity at top-level
+      elsif($string =~ s/^\%(\S+);//s){
+	my $name = $1;
+	my $entity = $self->getEntity($name);
+	print STDERR "Expand \"$name\"\n" if $DEBUG;
+	if(! defined $entity){
+	  die "Entity $name is not defined\n"; }
+	my $xvalue = $self->expand($entity->value);
+	if($entity->isSystem){
+	  $self->addModule((ref $self)->newFromFile($$self{rootdir},$xvalue)); }
+	else {
+	  $self->parse($xvalue); }}
+      # Conditional inclusion
+      elsif($string =~ s/^\<\!\[\s*([^\[\s]+)\s*\[(.*?)\]\]\>//s){
+	my($test,$expansion) = ($1,$2);
+	print STDERR "Conditional \"$test\"\n" if $DEBUG;
+	$test = $self->expand($test);
+	if   (($test||'') eq 'IGNORE'){}
+	elsif(($test||'') eq 'INCLUDE'){
+	  $self->parse($expansion); }
+	else {
+	  die "Conditional value \"$test\" is not IGNORE or INCLUDE\n"; }}
+      # Attribute List definition
+      elsif($string =~ s/^\<\!ATTLIST\s+(\S+)\s+(.*?)\>//s){
+	my($name,$attrs)=($1,$2);
+	print STDERR "Element \"$name\"\n" if $DEBUG;
+	my $element = $self->getElement($name);
+	$element->setAttributes($attrs,$comment); }
+      # Element Model definition
+      elsif($string =~ s/^\<\!ELEMENT\s+(\S+)\s+(.*?)\>//s){
+	my($name,$model)=($1,$2);
+	print STDERR "Attributes \"$name\"\n" if $DEBUG;
+	my $element = $self->getElement($name);
+	$element->setModel($model,$comment); }
+      # Anything else is unknown!
+      elsif($string) {
+	$string = substr($string,0,100) if length($string) > 100;
+	die "Unrecognized at: \"$string\"\n"; }
+      $comment = undef; }}
+  $self; }
+
+#----------------------------------------------------------------------
+sub addComment {
+  my($self,$text)=@_;
+  push(@{$$self{entries}},    DTD::Comment->new($text)); }
+
+sub addModule {
+  my($self,$module)=@_;
+  push(@{$$self{entries}},    $module); }
+
+sub addEntity {
+  my($self,$name,$system,$value,$comment)=@_;
+  if(! $self->getEntity($name)){			  # If not already stored
+    my $entity = DTD::Entity->new($name,$system,$value,$comment);
+    $self->putEntity($name,$entity);
+    if($self->isInteresting($name)){
+      push(@{$$self{entries}}, $entity); 		    # add to list
+    }}}
+
+sub getElement {
+  my($self,$name)=@_;
+  $name = $self->expand($name);
+  my $element = $$self{elements}{$name};
+  if(!$element){
+    $element = DTD::Element->new($name);
+    $$self{elements}{$name} = $element;
+    push(@{$$self{entries}}, $element); }
+  $element; }
+
+#----------------------------------------------------------------------
+sub toLaTeX{
+  my($self)=@_;
+  my $name = $$self{name};
+  $name = $1 if $name =~ /^LaTeXML-(\w+)(-model)?-1\.mod$/;
+  my $body = "";
+  my $mods = "";
+  my $indesc = 0;
+  if(my @objects = @{$$self{entries}}){
+    foreach my $item (@objects){
+      if(ref $item eq 'DTD::Module'){
+	$mods .= $item->toLaTeX; }
+      elsif(ref $item eq 'DTD::Comment'){
+	if($indesc){ $body .= "\\end{description}\n"; $indesc = 0; }
+	$body .= $item->toLaTeX; }
+      else {
+	if(!$indesc){ $body .= "\\begin{description}\n"; $indesc = 1; }
+	$body .= $item->toLaTeX; }}}
+  if($indesc){ $body .= "\\end{description}\n"; }
+  if($body){
+    "\\begin{dtdmodule}{$name}\n$body\\end{dtdmodule}\n$mods"; }
+  else { $mods; }}
+
+#======================================================================
+package DTD::Comment;
+use base qw(DTD::Object);
+
+sub new {
+  my($class,$text)=@_;
+  bless {text=>$text}, $class; }
+
+sub toLaTeX {
+  my($self)=@_;
+  "\\par\\noindent ".$self->TeXifyText($$self{text}); }
+
+#======================================================================
+package DTD::Entity;
+use base qw(DTD::Object);
+
+# Parameter entities only...
+sub new {
+  my($class,$name,$system,$value,$comment)=@_;
+  my $self = {name=>$name, system=>$system, comment=>$comment};
+  bless $self,$class; 
+  $value =~ s/^\s+//s;  $value =~ s/\s+^//s;
+  $$self{value} = $value;
+  $self; }
+
+sub isSystem { $_[0]->{system}; }
+sub value    { $_[0]->{value}; }
+
+sub toLaTeX {
+  my($self,$out)=@_;
+  my $name = $$self{name};
+  my $value= ($name =~ /\.attrib$/
+	      ? $self->TeXifyAttributes($$self{value})
+	      : $self->TeXify($$self{value}));
+  my $doc = $$self{comment}||'';
+  my $v = $$self{value};
+  while($v =~ s/\%([^\;]+)\;//){
+    my $e = $1;
+    if(my $entity = (!$self->isInteresting($e)) && $self->getEntity($e)){
+      if(my $more = $$entity{comment}){
+	$doc .= ' '.$more; }}}
+  $doc = $self->TeXifyText($doc);
+  "\\entitydef{$name}{$value}{$doc}\n"; }
+
+#======================================================================
+package DTD::Element;
+use base qw(DTD::Object);
+
+sub new {
+  my($class,$name)=@_;
+  my $self = {name=>$name};
+  bless $self,$class; }
+
+sub setAttributes {
+  my($self,$attrs,$comment)=@_;
+  $attrs =~ s/^\s+//s;  $attrs =~ s/\s+^//s;
+  $$self{attributes} = $attrs; 
+  $$self{attributes_doc} = $comment; }
+
+sub setModel {
+  my($self,$model,$comment)=@_;
+  $model =~ s/^\s+//s;  $model =~ s/\s+^//s; $model =~ s/\s+/ /sg;
+  $$self{model} = $model;
+  $$self{model_doc} = $comment; }
+
+sub toLaTeX {
+  my($self)=@_;
+  my $name  = $$self{name};
+  my $model = $$self{model};
+  $model = ($model eq 'EMPTY' ? "\\textit{empty}" : $self->TeXify($model));
+  my $attr  = $$self{attributes}||'';
+  $attr =~ s/\%LaTeXML.Common.attrib;\s*//s if $attr;
+  $attr = $self->TeXifyAttributes($attr) if $attr;
+  my $modeldoc= $self->TeXifyText($$self{model_doc}||'');
+  my $attrdoc = $self->TeXifyText($$self{attributes_doc}||'');
+
+  "\\elementdef{$name}{$model}{$modeldoc}{$attr}{$attrdoc}\n"; }
+

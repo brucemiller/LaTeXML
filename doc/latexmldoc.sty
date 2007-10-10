@@ -2,10 +2,9 @@
 % Collected separately so I can override for LaTeXML
 %======================================================================
 \usepackage{latexml}
-\usepackage{url}
 
-%\usepackage[T1]{fontenc}
-%\usepackage{textcomp}
+\let\@@LaTeXML\LaTeXML
+\def\LaTeXML{\ifHy@pdfstring LaTeXML\else\@@LaTeXML\fi}
 
 \def\URL{\@ifnextchar[{\@URL}{\@@URL}}%]
 \def\@@URL{\begingroup\Url}
@@ -61,18 +60,52 @@
   \end{titlepage}%
 }
 \usepackage{graphicx}
-\newcommand{\ltxpkg}[1]{\if.#1.\texttt{LaTeXML}\else\texttt{LaTeXML::#1}\fi}
-\newcommand{\ltxcmd}[1]{\texttt{#1}}
 
-\newcommand{\podlink}[1]{\texttt{#1}}
+\newcommand{\ltxcmd}[1]{\htmlref{\texttt{#1}}{#1}}
+
+\def\@@ltxprefix{LaTeXML}
+\def\@@pkgprefix#1::#2\end{#1}
+\newcommand{\pod}[1]{%
+  {\edef\@prefix{\@@pkgprefix#1::\end}
+  \ifx\@@ltxprefix\@prefix
+     \htmlref{\texttt{#1}}{#1}%
+  \else
+     \href{http://search.cpan.org/search?query=#1&mode=module}{\texttt{#1}}%
+  \fi}}
 
 \newcommand{\cmd}[1]{\texttt{#1}}
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\method}[1]{\texttt{->#1}}
-\newcommand{\tag}[1]{\texttt{#1}}
 \newcommand{\attr}[1]{\texttt{#1}}
-\newcommand{\perldoc}[1]{\texttt{perldoc #1}}
 
 \newcommand{\varfile}[2][]{\texttt{\textit{#2}\ifx.#1.\else.#1\fi}}
 \newcommand{\cs}[1]{\texttt{$\backslash$#1}}
+%======================================================================
+% For generated documentation of DTD.
+\newenvironment{dtdmodule}[1]{%
+  \section*{Module \texttt{#1}}\label{dtd.module.#1}
+   \raggedright
+}{}
+%  \begin{description}}{\end{description}}
+
+% \elementdef{name}{model}{modeldoc}{attributes}{attrdoc}
+\newcommand{\elementdef}[5]{
+  \item[\hypertarget{dtd.element.#1}{\texttt{#1}}]:#2  
+    \if.#3.\else \par\noindent #3\fi
+    \if.#4#5.\else \parindent=-1em\par\textbf{attributes: }#4 \par\noindent #5\fi
+}
+
+% \entitydef{name}{value}{documentation}
+\newcommand{\entitydef}[3]{%
+  \item[\hypertarget{dtd.entity.#1}{\texttt{#1}}] $\equiv$ #2
+   \if.#3.\else \par\noindent #3\fi
+}
+
+%\newcommand{\moduleref}[1]{\hyperlink{dtd.module.#1}{\texttt{#1}}}
+\newcommand{\moduleref}[1]{\htmlref{\texttt{#1}}{dtd.module.#1}}
+\newcommand{\entityref}[1]{\hyperlink{dtd.entity.#1}{\texttt{\%#1;}}}
+\newcommand{\elementref}[1]{\hyperlink{dtd.element.#1}{\texttt{#1}}}
+
+%======================================================================
+\usepackage[colorlinks=true]{hyperref}
 %======================================================================

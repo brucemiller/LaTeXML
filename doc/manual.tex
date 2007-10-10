@@ -399,10 +399,10 @@ and by defining rewrite rules to be applied to the constructed document tree.
 \includegraphics[width=\columnwidth]{dataflow}
 \caption{Flow of data through \LaTeXML's digestive tract.\label{fig:dataflow}}
 \end{figure}
-The top-level class, \ltxpkg{}, manages the processing, providing several methods
+The top-level class, \pod{LaTeXML}, manages the processing, providing several methods
 for converting a \TeX\ document or string into an \XML\ document, with varying degrees
 of postprocessing and optionally writing the document to file.
-A \ltxpkg{State} object maintains the current state
+A \pod{LaTeXML::State} object maintains the current state
 of processing, current definitions for control sequences and emulates the
 \TeX's scoping rules.
 The processing is broken into the following stages
@@ -416,39 +416,39 @@ See Figure \ref{fig:dataflow} for illustration.
 The first three stages are discussed in the following sections;
 the parsing of mathematics is covered in detail in Chapter \ref{math}.
 
-The \ltxpkg{} object binds \verb|$STATE|, \verb|$GULLET|, \verb|$STOMACH|,
+The \pod{LaTeXML} object binds \verb|$STATE|, \verb|$GULLET|, \verb|$STOMACH|,
 and \verb|$MODEL| to corresponding active objects during processing.
 
 %%%----------------------------------------------------------------------
 \section{Digestion}\label{architecture.digestion}
-Digestion is carried out primarily in a \emph{pull} mode: The \ltxpkg{Stomach}
-pulls expanded \ltxpkg{Token}s from the \ltxpkg{Gullet}, which itself pulls tokens from 
-the \ltxpkg{Mouth}.  The \ltxpkg{Mouth} converts characters from the plain text input
-into tokens according to the current category codes assigned to them (in the \ltxpkg{State}).  
-The \ltxpkg{Gullet} is responsible for expanding any macro or expandible
-tokens (when the current binding of the token in the \ltxpkg{State} is 
-an \ltxpkg{Expandable} definition), 
+Digestion is carried out primarily in a \emph{pull} mode: The \pod{LaTeXML::Stomach}
+pulls expanded \pod{LaTeXML::Token}s from the \pod{LaTeXML::Gullet}, which itself pulls tokens from 
+the \pod{LaTeXML::Mouth}.  The \pod{LaTeXML::Mouth} converts characters from the plain text input
+into tokens according to the current category codes assigned to them (in the \pod{LaTeXML::State}).  
+The \pod{LaTeXML::Gullet} is responsible for expanding any macro or expandible
+tokens (when the current binding of the token in the \pod{LaTeXML::State} is 
+an \pod{LaTeXML::Expandable} definition), 
 and for parsing sequences of tokens into common core datatypes (numbers, dimensions, etc.).
-The \ltxpkg{Stomach} digests these tokens by executing \ltxpkg{Primitive} control 
+The \pod{LaTeXML::Stomach} digests these tokens by executing \pod{LaTeXML::Primitive} control 
 sequences (generally for side effect), converting control sequences bound
-to \ltxpkg{Constructor}s into \ltxpkg{Whatsit}s, and converting the remaining tokens
+to \pod{LaTeXML::Constructor}s into \pod{LaTeXML::Whatsit}s, and converting the remaining tokens
 into a recursive structure consisting of
-\ltxpkg{Box}es and \ltxpkg{List}s and of \ltxpkg{Box}es.
+\pod{LaTeXML::Box}es and \pod{LaTeXML::List}s and of \pod{LaTeXML::Box}es.
 
 %%%----------------------------------------------------------------------
 \section{Construction}\label{architecture.construction}
 The main (intentional) deviation of \LaTeXML's digestion from that of \TeX\ is in the
-extension of control sequences to include \ltxpkg{Constructor}s responsible for constructing
-\XML\ document fragments, and \ltxpkg{Whatsit}s to represent thier digested form including
+extension of control sequences to include \pod{LaTeXML::Constructor}s responsible for constructing
+\XML\ document fragments, and \pod{LaTeXML::Whatsit}s to represent thier digested form including
 whatever arguments were passed to the control sequence.
 
-\emph{Construction} thus consists of creating an \ltxpkg{Document}, containing
-an \code{XML::LibXML::Document} structure, and having it absorb the digested lists, boxes
+\emph{Construction} thus consists of creating an \pod{LaTeXML::Document}, containing
+an \pod{XML::LibXML::Document} structure, and having it absorb the digested lists, boxes
 and whatsits.  Generally, boxes represent text which is converted to text nodes within the
 document. Whatsits generally create a document fragment involving elements, attributes
 and text.  
 
-A \ltxpkg{Model} is maintained througout the digestion phase which accumulates
+A \pod{LaTeXML::Model} is maintained througout the digestion phase which accumulates
 any document model declarations in particular the document type (currently only
 the DTD, but eventually may be RelaxNG based).  As \LaTeX\ markup is more
 like \SGML\ than \XML, declarations may be used to indicate which elements may
@@ -458,7 +458,7 @@ when a \verb|<section>| is begun.
 
 %%%----------------------------------------------------------------------
 \section{Rewriting}\label{architecture.rewriting}
-Once the basic document is constructed, \ltxpkg{Rewrite} rules are applied which can
+Once the basic document is constructed, \pod{LaTeXML::Rewrite} rules are applied which can
 perform various functions. Ligatures and combining mathematics digits and letters (in certain fonts)
 into composite math tokens are handled this way.  Additionally, declarations
 of the type or grammatical role of math tokens can be applied here.
@@ -492,10 +492,10 @@ as a package for the named document class are loaded.
 \LaTeXML\ implementations are provided for a number of the standard \LaTeX\ packages,
 although many implement only part of the functionality.  Contributed implementations are,
 of course, welcome.  These files, as well as the document specific \varfile[latexml]{jobname},
-are essentially Perl modules, but use the facilities described in \perldoc{LaTeXML::Package}.
+are essentially Perl modules, but use the facilities described in \pod{LaTeXML::Package}.
 
 Much more needs to be explained here, but for the time being,
-please consult the documentation for the module \ltxpkg{Package}, and
+please consult the documentation for the module \pod{LaTeXML::Package}, and
 the various implementations of packages included with the distribution.
 
 %%%======================================================================
@@ -515,7 +515,7 @@ From a parsing point of view, the \TeX-like processing serves as the lexer,
 tokenizing the input which \LaTeXML\ will then parse
 [perhaps eventually a type-analysis phase will be added].
 Of course, there are a few twists.
-For one, the tokens, represented by \tag{XMTok}, can carry extra attributes
+For one, the tokens, represented by \elementref{XMTok}, can carry extra attributes
 such as font and style, but also the name, meaning and grammatical role,
 with defaults that can be overridden by the author --- more on those, in a moment.
 Another twist is that, although \LaTeX's math markup is not nearly
@@ -523,12 +523,12 @@ as semantic as we might like, there is considerable semantics and structure in t
 markup that we can exploit. For example, given a \verb|\frac|, we've already
 established the numerator and denominator which can be parsed individually,
 but the fraction as a whole can be directly represented as an application,
-using \tag{XMApp}, of a fraction operator; the resulting structure can be treated
+using \elementref{XMApp}, of a fraction operator; the resulting structure can be treated
 as atomic within its containing expression.This \emph{structure preserving} character
 greatly simplifies the parsing task and helps reduce misinterpretation.
 
 The parser, invoked by the postprocessor, works only with the top-level lists of lexical tokens,
-or with those sublists contained in an \tag{XMArg}.  The grammar works primarily through
+or with those sublists contained in an \elementref{XMArg}.  The grammar works primarily through
 the name and grammatical role.  The name is given by an attribute, or the content if it is
 the same.  The role (things like ID, FUNCTION, OPERATOR, OPEN, \ldots) is also given
 by an attribute, or, if not present, the name is looked up in a document-specific
@@ -536,9 +536,9 @@ dictionary (\varfile[dict]{jobname}), or in a default dictionary.
 
 Additional exceptions that need fuller explanation are: 
 \begin{itemize}
- \item \ltxpkg{Constructor}s may wish to create a dual object (\tag{XMDual}) whose children are 
+ \item \pod{LaTeXML::Constructor}s may wish to create a dual object (\elementref{XMDual}) whose children are 
 the semantic and presentational forms.
- \item Spacing and similar markup generates \tag{XMHint} elements, which are currently ignored
+ \item Spacing and similar markup generates \elementref{XMHint} elements, which are currently ignored
 during parsing, but probably shouldn't.
 \end{itemize}
 
@@ -548,25 +548,25 @@ during parsing, but probably shouldn't.
 \begin{itemize}
 \item Basic processing of macros, primitives and constructors resulting in
    an XML document; the math is primarily represented by a sequence of
-   tokens (\tag{XMTok}) or structured items (\tag{XMApp}, \tag{XMDual}) and
-   hints (\tag{XMHint}, which are ignored).
+   tokens (\elementref{XMTok}) or structured items (\elementref{XMApp}, \elementref{XMDual}) and
+   hints (\elementref{XMHint}, which are ignored).
 \item Document tree rewriting, where rules are applied to modify the document tree.
    User supplied rules can be used here to clarify the intent of markup used in the document.
 \item Math Parsing; a grammar based parser is applied, depth first, to each level of the math.
    In particular, at the top level of each math expression, as well as each
    subexpression within structured items (these will have been contained in
-   an \tag{XMArg} or \tag{XMWrap} element).  This results in an expression tree
+   an \elementref{XMArg} or \elementref{XMWrap} element).  This results in an expression tree
    that will hopefully be an accurate representation of the expression's structure,
    but may be ambigous in specifics (eg.`what the meaning of a superscript is).
    The parsing is driven almost entirely by the grammatical \attr{role} assigned
    to each item.
 \item \emph{Not yet implemented} a following stage must be developed to resolve
    the semantic ambiguities by analyzing and augmenting the expression tree.
-\item Target conversion: from the internal \tag{XM} representation to
+\item Target conversion: from the internal \texttt{XM*} representation to
    \MathML\ or \OpenMath.
 \end{itemize}
 
-The \tag{Math} element is a top-level container for any math mode material; it
+The \elementref{Math} element is a top-level container for any math mode material; it
 serves as the container for the various representations of the math, including
 images (through attributes \attr{mathimage}, \attr{width} and \attr{height}), 
 textual (through attributes \attr{tex}, \attr{content-tex} and \attr{text}),
@@ -574,22 +574,22 @@ textual (through attributes \attr{tex}, \attr{content-tex} and \attr{text}),
 The \attr{mode} attribute specifies whether the math should be in display or inline mode.
 
 \subsection{Internal Math Representation}\label{math.details.representation}
-The \tag{XMath} element is the container for the internal representation
+The \elementref{XMath} element is the container for the internal representation
 
-The following attributes can appear on all \tag{XM} elements:
+The following attributes can appear on all \texttt{XM*} elements:
 \begin{description}
 \item[\attr{role}] the grammatical role that this element plays 
 \item[\attr{open}, \attr{close}] parenthese or delimiters that were used to wrap the
    expression represented by this element.
 \item[\attr{argopen}, \attr{argclose}, \attr{separators}] delimiters on an function or operator
-   (the first element of an \tag{XMApp})  that were used to delimit the arguments of the function.
+   (the first element of an \elementref{XMApp})  that were used to delimit the arguments of the function.
     The separators is a string of the punctuation characters used to separate arguments.
-\item[\attr{xml:id}] a unique identifier to allow reference (\tag{XMRef}) to this element.
+\item[\attr{xml:id}] a unique identifier to allow reference (\elementref{XMRef}) to this element.
 \end{description}
 
 \paragraph{Math Tags} The following tags are used for the intermediate math representation:
 \begin{description}
-\item[\tag{XMTok}] represents a math token. It may contain text for presentation.
+\item[\elementref{XMTok}] represents a math token. It may contain text for presentation.
    Additional attributes are:
   \begin{description}
    \item[\attr{name}] the name that represents the `meaning' of the token; this overrides
@@ -601,35 +601,35 @@ The following attributes can appear on all \tag{XM} elements:
    \item[\attr{stackscripts}] whether scripts should be stacked above/below the item, instead
      of the usual script position.
   \end{description}
-\item[\tag{XMApp}] represents the generalized application of some function or operator to arguments.
+\item[\elementref{XMApp}] represents the generalized application of some function or operator to arguments.
    The first child element is the operator, the remainig elements are the arguments.
    Additional attributes:
   \begin{description}
     \item[\attr{name}] the name that represents the meaning of the construct as a whole.
     \item[\attr{stackscripts}] ?
   \end{description}
-\item[\tag{XMDual}] combines representations of the content (the first child) and presentation
+\item[\elementref{XMDual}] combines representations of the content (the first child) and presentation
    (the second child), useful when the two structures are not easily related.
-\item[\tag{XMHint}] represents spacing or other apparent purely presentation material.
+\item[\elementref{XMHint}] represents spacing or other apparent purely presentation material.
   \begin{description}
     \item[\attr{name}] names the effect that the hint was intended to achieve.
     \item[\attr{style}] ?
   \end{description}
-\item[\tag{XMWrap}] serves to assert the expected type or role of a subexpression that
+\item[\elementref{XMWrap}] serves to assert the expected type or role of a subexpression that
   may otherwise be difficult to interpret --- the parser is more forgiving about these.
   \begin{description}
     \item[\attr{name}] ?
     \item[\attr{style}] ?
   \end{description}
-\item[\tag{XMArg}] serves to wrap individual arguments or subexpressions, created by
+\item[\elementref{XMArg}] serves to wrap individual arguments or subexpressions, created by
   structured markup, such as \verb|\frac|.  These subexpressions can be parsed individually.
   \begin{description}
     \item[\attr{rule}] the grammar rule that this subexpression should match.
   \end{description}
-\item[\tag{XMRef}] refers to another subexpression,.  This is used to avoid duplicating
-  arguments when constructing an \tag{XMDual} to represent a function application, for example.  
-  The arguments will be placed in the content branch (wrapped in an \tag{XMArg}) while
-  \tag{XMRef}'s will be placed in the presentation branch.
+\item[\elementref{XMRef}] refers to another subexpression,.  This is used to avoid duplicating
+  arguments when constructing an \elementref{XMDual} to represent a function application, for example.  
+  The arguments will be placed in the content branch (wrapped in an \elementref{XMArg}) while
+  \elementref{XMRef}'s will be placed in the presentation branch.
   \begin{description}
     \item[\attr{idref}] the identifier of the referenced math subexpression.
   \end{description}
@@ -718,50 +718,59 @@ Lots\ldots!
 %%%======================================================================
 \appendix
 \chapter[Commands]{Command Documentation}\label{commands}
-\include{pods/latexml}
-\include{pods/latexmlpost}
+\include{generated/latexml}
+\include{generated/latexmlpost}
 
 %%%======================================================================
 \chapter[Modules]{Core Module Documentation}\label{coremodules}
-\include{pods/LaTeXML}
-\include{pods/LaTeXML_Object}
-\include{pods/LaTeXML_Definition}
-\include{pods/LaTeXML_Global}
-\include{pods/LaTeXML_Error}
-\include{pods/LaTeXML_Package}
-\include{pods/LaTeXML_Parameters}
-\include{pods/LaTeXML_State}
+\include{generated/LaTeXML}
+\include{generated/LaTeXML_Object}
+\include{generated/LaTeXML_Definition}
+\include{generated/LaTeXML_Global}
+\include{generated/LaTeXML_Error}
+\include{generated/LaTeXML_Package}
+\include{generated/LaTeXML_Parameters}
+\include{generated/LaTeXML_State}
 
 %\section{Digestion-related Modules}
 
-\include{pods/LaTeXML_Token}
-\include{pods/LaTeXML_Box}
-\include{pods/LaTeXML_Number}
-\include{pods/LaTeXML_Font}
-\include{pods/LaTeXML_Mouth}
-\include{pods/LaTeXML_Gullet}
-\include{pods/LaTeXML_Stomach}
+\include{generated/LaTeXML_Token}
+\include{generated/LaTeXML_Box}
+\include{generated/LaTeXML_Number}
+\include{generated/LaTeXML_Font}
+\include{generated/LaTeXML_Mouth}
+\include{generated/LaTeXML_Gullet}
+\include{generated/LaTeXML_Stomach}
 
 %\section{Construction-related Modules}
-\include{pods/LaTeXML_Document}
-\include{pods/LaTeXML_Model}
-\include{pods/LaTeXML_Rewrite}
+\include{generated/LaTeXML_Document}
+\include{generated/LaTeXML_Model}
+\include{generated/LaTeXML_Rewrite}
 
 %\section{Math-related Modules}
-\include{pods/LaTeXML_MathParser}
+\include{generated/LaTeXML_MathParser}
 
 %%%======================================================================
 \chapter[Utility Modules]{Utility Module Documentation}\label{utilitymodules}
-\include{pods/LaTeXML_Util_Pathname}
+\include{generated/LaTeXML_Util_Pathname}
 
 %%%======================================================================
 \chapter[Postprocessing Modules]{Postprocessing Module Documentation}\label{postmodules}
-\include{pods/LaTeXML_Post}
+\include{generated/LaTeXML_Post}
 
 %%%======================================================================
 \chapter[DocType]{\LaTeXML\ DocType}\label{dtd}
-Not yet documented.
+The document type used by \LaTeXML\ is modular in the sense
+that it is composed of several modules that define different
+sets of elements related to, eg., inline content, block content,
+math and high-level document structure.  This allows the possibility
+of mixing models or extension by predefining certain parameter entities.
+However, in order to present a more readable summary of the model,
+most lower level parameter entities have been expanded in the following.
+Customizers are recommended to study the actual dtd modules for
+detailed guidelines.
 
+\include{generated/dtd}
 \end{document}
 
 %======================================================================
@@ -770,74 +779,74 @@ Not yet documented.
 \chapter{Object Hierarchy}\label{hierarchy}
 {\small
 \begin{description}
-  \item[\ltxpkg{Object}]: Abstract base class.
+  \item[\pod{LaTeXML::Object}]: Abstract base class.
   \begin{description}
     % In Token.pm
-    \item[\ltxpkg{Token}]: A \TeX\ token: character/string with category code.
-    \item[\ltxpkg{Tokens}]: A list of \ltxpkg{Token}s.
-    \item[\ltxpkg{Number}]: A \TeX\ number.
+    \item[\pod{LaTeXML::Token}]: A \TeX\ token: character/string with category code.
+    \item[\pod{LaTeXML::Tokens}]: A list of \pod{LaTeXML::Token}s.
+    \item[\pod{LaTeXML::Number}]: A \TeX\ number.
     \begin{description}
-      \item[\ltxpkg{Dimension}]: A \TeX\ dimension; number with unit.
+      \item[\pod{LaTeXML::Dimension}]: A \TeX\ dimension; number with unit.
       \begin{description}
-        \item[\ltxpkg{MuDimension}]: A \TeX\ math-mode dimension.
-        \item[\ltxpkg{Glue}]:  A \TeX\ dimension with shrink and stretch.
+        \item[\pod{LaTeXML::MuDimension}]: A \TeX\ math-mode dimension.
+        \item[\pod{LaTeXML::Glue}]:  A \TeX\ dimension with shrink and stretch.
         \begin{description}
-          \item[\ltxpkg{MuGlue}]: A \TeX\ math-mode glue.
+          \item[\pod{LaTeXML::MuGlue}]: A \TeX\ math-mode glue.
         \end{description}
       \end{description}
     \end{description}
     % In Box.pm
-    \item[\ltxpkg{Box}]: A digested character/string; base class for digested objects.
+    \item[\pod{LaTeXML::Box}]: A digested character/string; base class for digested objects.
     \begin{description}
-      \item[\ltxpkg{MathBox}]: A digested character token in math.
-      \item[\ltxpkg{Comment}]: A digested comment.
-      \item[\ltxpkg{List}]: A list of text-mode boxes.
+      \item[\pod{LaTeXML::MathBox}]: A digested character token in math.
+      \item[\pod{LaTeXML::Comment}]: A digested comment.
+      \item[\pod{LaTeXML::List}]: A list of text-mode boxes.
       \begin{description}
-        \item[\ltxpkg{MathList}]: A list of math-mode boxes.
+        \item[\pod{LaTeXML::MathList}]: A list of math-mode boxes.
       \end{description}
-      \item[\ltxpkg{Whatsit}]: A special digested object with arguments and properties; has its own
+      \item[\pod{LaTeXML::Whatsit}]: A special digested object with arguments and properties; has its own
              rules for conversion into an document fragment.
     \end{description}
     % In Font.pm
-    \item[\ltxpkg{Font}]: A representation of a font, attached to digested objects.
+    \item[\pod{LaTeXML::Font}]: A representation of a font, attached to digested objects.
     \begin{description}
-      \item[\ltxpkg{MathFont}]: A font in math; special rules for merging.
+      \item[\pod{LaTeXML::MathFont}]: A font in math; special rules for merging.
     \end{description}
     % In Node.pm
-    \item[\ltxpkg{Document}]: A representation of the document under construction.
+    \item[\pod{LaTeXML::Document}]: A representation of the document under construction.
     % In Definition.pm
-    \item[\ltxpkg{Definition}]: Represents the action of executable control sequences
+    \item[\pod{LaTeXML::Definition}]: Represents the action of executable control sequences
     \begin{description}
-      \item[\ltxpkg{Expandable}]: A definition expandable in the Gullet, (eg.~a macro).
-      \item[\ltxpkg{Primitive}]: Definition for primitives, carried out in Stomach.
+      \item[\pod{LaTeXML::Expandable}]: A definition expandable in the Gullet, (eg.~a macro).
+      \item[\pod{LaTeXML::Primitive}]: Definition for primitives, carried out in Stomach.
       \begin{description}
-        \item[\ltxpkg{Register}]: A definition for \TeX\ registers.
-        \item[\ltxpkg{Constructor}]: A definition that constructs document fragments;
+        \item[\pod{LaTeXML::Register}]: A definition for \TeX\ registers.
+        \item[\pod{LaTeXML::Constructor}]: A definition that constructs document fragments;
              generates a Whatsit during digestion.
       \end{description}
     \end{description}
     % In Parameters.pm
-    \item[\ltxpkg{Parameters}]: A collection of \ltxpkg{Parameter} representing a definition's
+    \item[\pod{LaTeXML::Parameters}]: A collection of \pod{LaTeXML::Parameter} representing a definition's
         parameter list.
-    \item[\ltxpkg{Parameter}]: A definition's parameter, including type, optional, etc.
+    \item[\pod{LaTeXML::Parameter}]: A definition's parameter, including type, optional, etc.
 %    \item[\LTXKeyVals]: Representation of \LaTeX-style Key-Value lists.
     % In Mouth.pm
-    \item[\ltxpkg{Mouth}]: The organ that converts characters (eg.~from files) into \ltxpkg{Token}s.
+    \item[\pod{LaTeXML::Mouth}]: The organ that converts characters (eg.~from files) into \pod{LaTeXML::Token}s.
     \begin{description}
-      \item[\ltxpkg{FileMouth}]: A mouth that tokenizes input from a file.
+      \item[\pod{LaTeXML::FileMouth}]: A mouth that tokenizes input from a file.
       \begin{description}      
-        \item[\ltxpkg{StyleMouth}]: A file mouth for reading style files.
+        \item[\pod{LaTeXML::StyleMouth}]: A file mouth for reading style files.
       \end{description}
-      \item[\ltxpkg{PerlMouth}]: A fake mouth for reading perl modules.
+      \item[\pod{LaTeXML::PerlMouth}]: A fake mouth for reading perl modules.
     \end{description}
     % In Gullet.pm
-    \item[\ltxpkg{Gullet}]: The organ that expands \ltxpkg{Token}s into other sequences of tokens;
+    \item[\pod{LaTeXML::Gullet}]: The organ that expands \pod{LaTeXML::Token}s into other sequences of tokens;
       also provides common `parsing' operations such as reading numbers, delimited lists of tokens, etc.
     % In Stomach.pm
-    \item[\ltxpkg{Stomach}]: The organ that digests \ltxpkg{Token}s, converting them to a tree of
+    \item[\pod{LaTeXML::Stomach}]: The organ that digests \pod{LaTeXML::Token}s, converting them to a tree of
        digested boxes; also contains the current state of grouping, bindings of definitions, etc.
     % In Model.pm
-    \item[\ltxpkg{Model}]: Represents the model of the document, extracted from the DTD.
+    \item[\pod{LaTeXML::Model}]: Represents the model of the document, extracted from the DTD.
   \end{description}
 \end{description}
 }
