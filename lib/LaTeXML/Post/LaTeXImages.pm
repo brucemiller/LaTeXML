@@ -55,14 +55,19 @@ sub new {
 # $self->findTeXNodes($doc) => @nodes;
 sub findTeXNodes { (); }
 
-# $self->setTeXImage($doc,$node,$imagepath,$width,$height);
-sub setTeXImage {}
-
 # $self->extractTeX($doc,$node)=>$texstring;
 sub extractTeX { ""; }
 
 # $self->format_tex($texstring)
 sub format_tex { ""; }
+
+# $self->setTeXImage($doc,$node,$imagepath,$width,$height);
+# This is the default
+sub setTeXImage {
+  my($self,$doc,$node,$path,$width,$height)=@_;
+  $node->setAttribute('imagesrc',$path);
+  $node->setAttribute('imagewidth',$width);
+  $node->setAttribute('imageheight',$height); }
 
 #**********************************************************************
 # Generating & Processing the LaTeX source.

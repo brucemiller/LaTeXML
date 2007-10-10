@@ -34,13 +34,6 @@ sub extractTeX {
   $tex =~ s/\n//g;		# and stray CR's
   ($tex =~ /^\s*$/ ? undef : "\\begin$mode $tex\\end$mode"); }
 
-# Record the math image's (relative) filename, width & height for this node.
-sub setTeXImage {
-  my($self,$doc,$node,$path,$width,$height)=@_;
-  $node->setAttribute('imagesrc',$path);
-  $node->setAttribute('imagewidth',$width);
-  $node->setAttribute('imageheight',$height); }
-
 # Definitions needed for processing inline & display math images
 sub preamble {
   my($self,$doc)=@_;

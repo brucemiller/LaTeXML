@@ -122,9 +122,9 @@ sub get_type_map {
 # width and height.
 sub setGraphicsSrc {
   my($self,$node,$src,$width,$height)=@_;
-  $node->setAttribute('src',$src);
-  $node->setAttribute('width',$width);
-  $node->setAttribute('height',$height);
+  $node->setAttribute('imagesrc',$src);
+  $node->setAttribute('imagewidth',$width);
+  $node->setAttribute('imageheight',$height);
 }
 
 sub processGraphic {

@@ -36,13 +36,6 @@ sub extractTeX {
   # xunitlength, yunitlength for pstricks???
   "\\beginPICTURE $tex\\endPICTURE"; }
 
-# Record the picture image's (relative) filename, width & height for this node.
-sub setTeXImage {
-  my($self,$doc,$node,$path,$width,$height)=@_;
-  $node->setAttribute('imagesrc',$path);
-  $node->setAttribute('imagewidth',$width);
-  $node->setAttribute('imageheight',$height); }
-
 # Definitions needed for processing inline & display picture images
 sub preamble {
   my($self,$doc)=@_;
