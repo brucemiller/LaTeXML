@@ -14,7 +14,6 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-RequirePackage('url');
 # Need some work here!?!?
 DefMacro('\pdfcatalog{}','');
 DefRegister('\pdfcompresslevel',Number(0));
@@ -24,8 +23,50 @@ sub cleanURL {
   $url =~ s/\\~{}/~/g;
   $url; }
 
-DefConstructor('\href Semiverbatim  Semiverbatim',"<ltx:ref href='#href'>#2</ltx:ref>",
-	       properties=>sub { (href=>cleanURL($_[1])); } );
-DefConstructor('\htmlref Semiverbatim  Semiverbatim',"<ltx:ref labelref='#2'>#1</ltx:ref>");
+# \href{url}{text}
+DefConstructor('\href Semiverbatim  Semiverbatim',
+	       "<ltx:ref href='#href'>#2</ltx:ref>",
+	       properties=>sub { (href=>cleanURL(LookupValue('BASE_URL').$_[1])); } );
+# \url{url}
+DefConstructor('\url Semiverbatim',"<ltx:ref href='#href'>#1</ltx:ref>",
+	       properties=>sub { (href=>cleanURL(LookupValue('BASE_URL').$_[1])); } );
 
+# \nolinkurl{url}
+DefConstructor('\nolinkurl Semiverbatim','#1');
+
+# \hyperbaseurl{url}
+AssignValue(BASE_URL=>'');
+DefPrimitive('\hyperbaseurl Semiverbatim',sub { AssignValue(BASE_URL=>$_[1]); });
+
+# \hyperimage{url}
+# ?
+# \hyperdef{category}{name}{text}
+DefConstructor('\hyperdef Semiverbatim Semiverbatim Semiverbatim',
+	       "<ltx:anchor id='#id'>#3</ltx:anchor>",
+	       properties=>sub { (id=>$_[1].'.'.$_[2]); } );
+DefConstructor('\hyperref Semiverbatim Semiverbatim Semiverbatim Semiverbatim',
+	       "<ltx:ref href='#href'>#4</ltx:ref>",
+	       properties=>sub { (href=>cleanURL(LookupValue('BASE_URL').$_[1]
+						 .'#'.$_[2].'.'.$_[3])); } );
+
+DefConstructor('\htmlref Semiverbatim  Semiverbatim',
+	       "<ltx:ref labelref='#2'>#1</ltx:ref>");
+
+
+# \hyperlink{name}{text}
+# \hypertarget{name}{text}
+DefConstructor('\hyperlink Semiverbatim {}',
+	       "<ltx:ref idref='#1'>#2</ltx:ref>");
+DefConstructor('\hypertarget Semiverbatim {}',
+	       "<ltx:anchor id='#1'>#2</ltx:anchor>");
+
+# Hmm...
+DefMacro('\autoref Semiverbatim','\ref{#1}');
+
+# Covered in LaTeX.pool, but non-ref character is ignored.
+# \ref*{label} 
+# \pageref*{label}
+
+# \pdfstringdef{macroname}{texstring}
+# ???
 1;
