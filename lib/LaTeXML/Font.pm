@@ -287,6 +287,12 @@ __END__
 C<LaTeXML::Font> - representation of fonts,
 along with the specialization C<LaTeXML::MathFont>.
 
+=begin latex
+
+\label{LaTeXML::MathFont}
+
+=end latex
+
 =head1 DESCRIPTION
 
 This module defines Font objects.
