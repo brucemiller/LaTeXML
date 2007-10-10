@@ -13,7 +13,7 @@
   </para>
   <para id="p4">
     <p>Using…
-<vbox valign="bottom"><text>Hello</text>,<text>Goodbye</text></vbox></p>
+<inline-block vattach="bottom"><text>Hello</text>,<text>Goodbye</text></inline-block></p>
   </para>
   <para id="p5">
     <p>Box 3 is horizontal</p>
@@ -42,7 +42,7 @@
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMText>
-              <vbox valign="bottom">a</vbox>
+              <inline-block vattach="bottom">a</inline-block>
             </XMText>
           </XMApp>
         </XMath>
@@ -57,10 +57,10 @@
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMText>
-              <vbox valign="bottom">
+              <inline-block vattach="bottom">
                 <text>a</text>
                 <text>a</text>
-              </vbox>
+              </inline-block>
             </XMText>
           </XMApp>
         </XMath>
@@ -73,10 +73,10 @@
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMText>
-              <vbox valign="top">
+              <inline-block vattach="top">
                 <text>a</text>
                 <text>a</text>
-              </vbox>
+              </inline-block>
             </XMText>
           </XMApp>
         </XMath>
@@ -91,10 +91,10 @@
             <XMTok meaning="minus" role="ADDOP">-</XMTok>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMText>
-              <text raise="-4.29998779296875pt" font="italic">
-                <vbox valign="top">
+              <text yoffset="-4.29998779296875pt" font="italic">
+                <inline-block vattach="top">
                   <text font="upright">a</text>
-                </vbox>
+                </inline-block>
               </text>
             </XMText>
           </XMApp>
@@ -108,10 +108,10 @@
             <XMTok meaning="minus" role="ADDOP">-</XMTok>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMText>
-              <text raise="-4.29998779296875pt" font="italic">
-                <vbox valign="bottom">
+              <text yoffset="-4.29998779296875pt" font="italic">
+                <inline-block vattach="bottom">
                   <text font="upright">a</text>
-                </vbox>
+                </inline-block>
               </text>
             </XMText>
           </XMApp>
@@ -127,7 +127,7 @@
             <XMTok meaning="minus" role="ADDOP">-</XMTok>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMText>
-              <text raise="-4.29998779296875pt" font="italic">
+              <text yoffset="-4.29998779296875pt" font="italic">
                 <text font="upright">a</text>
               </text>
             </XMText>
@@ -144,7 +144,7 @@
             <XMTok meaning="minus" role="ADDOP">-</XMTok>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMText>
-              <text raise="-4.29998779296875pt" font="italic">
+              <text yoffset="-4.29998779296875pt" font="italic">
                 <text font="upright">a</text>
               </text>
             </XMText>
