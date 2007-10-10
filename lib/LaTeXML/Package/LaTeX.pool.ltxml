@@ -486,13 +486,10 @@ DefEnvironment('{centering}',
 # NOTE: center the _line_ (till \\ or \par or ?) ! How to get it?
 DefPrimitive('\centering',undef);
 
-# Hmm, not sure here about using minipage.
-# In fact, probably centering & minipage should combine into some
-# sort of generic block, with attributes...
 DefEnvironment('{flushleft}',
-	       "<ltx:minipage justified='left'>#body</ltx:minipage>");
+	       "<ltx:block class='flushleft' align='left'>#body</ltx:block>");
 DefEnvironment('{flushright}',
-	       "<ltx:minipage justified='right'>#body</ltx:minipage>");
+	       "<ltx:block class='flushright' align='right'>#body</ltx:block>");
 
 #======================================================================-
 # C.6.1 Quotations and Verse
@@ -502,11 +499,11 @@ DefEnvironment('{quote}',
 	       '<ltx:quote>#body</ltx:quote>',
 	       beforeDigest=>sub{ Let('\\\\','\@block@cr');} );
 DefEnvironment('{quotation}',
-	       '<ltx:quotation>#body</ltx:quotation>',
+	       '<ltx:quote>#body</ltx:quote>',
 	       beforeDigest=>sub{ Let('\\\\','\@block@cr'); });
 # NOTE: Handling of \\ within these environments?
 DefEnvironment('{verse}',
-	       '<ltx:quotation class="verse">#body</ltx:quotation>',
+	       '<ltx:quote class="verse">#body</ltx:quote>',
 	       beforeDigest=>sub{ Let('\\\\','\@block@cr');});
 
 #======================================================================
@@ -1195,9 +1192,16 @@ DefMacro('\endtabular',   '\@finish@alignment\@end@tabular');
 DefPrimitive('\@end@tabular',sub{ $_[0]->egroup; });
 # Note that the pattern will already have been interpreted by \@alignment@bindings,
 # so make it Undigested here!
+
+sub translateAttachment {
+  my($pos)=@_;
+  $pos = ($pos ? ToString($pos) : '');
+  ($pos eq 't' ? 'top' : ($pos eq 'b' ? 'bottom' : undef)); } # undef meaning 'middle'
+
 DefConstructor('\@@tabular[] Undigested DigestedBody',
 	       sub { my($document,$pos,$pat,$body,%props)=@_;
-		     constructAlignment($document,$body,attributes=>{position=>$pos},
+		     constructAlignment($document,$body,
+					attributes=>{vattach=>translateAttachment($pos)},
 					guess_headers=>1); },
 	       reversion=>'\begin{tabular}[#1]{#2}#3\end{tabular}',
 	       beforeDigest=>sub { $_[0]->bgroup; },
@@ -1208,7 +1212,9 @@ DefMacro('\csname endtabular*\endcsname',
 	 '\@finish@alignment\@end@tabular@');
 DefConstructor('\@@tabular@{Dimension}[] Undigested DigestedBody',
 	       sub { my($document,$width,$pos,$pat,$body,%props)=@_;
-		     constructAlignment($document,$body,attributes=>{position=>$pos,width=>$width},
+		     constructAlignment($document,$body,
+					attributes=>{vattach=>translateAttachment($pos),
+						     width=>$width},
 					guess_headers=>1); },
 	       beforeDigest=>sub { $_[0]->bgroup; },
 	       reversion=>'\begin{tabular*}{#1}[#2]{#3}#4\end{tabular*}',
@@ -1249,8 +1255,9 @@ DefMacro('\endarray',
 DefPrimitive('\@end@array',sub{ $_[0]->egroup; });
 DefConstructor('\@@array[] Undigested DigestedBody',
 	       sub { my($document,$pos,$pat,$body,%props)=@_;
-		     constructAlignment($document,$body,attributes=>{position=>$pos,
-								     role=>'ARRAY'}); },
+		     constructAlignment($document,$body,
+					attributes=>{vattach=>translateAttachment($pos),
+						     role=>'ARRAY'}); },
 	       beforeDigest=>sub { $_[0]->bgroup; },
 	       reversion=>'\begin{array}[#1]{#2}#3\end{array}');
 
@@ -1283,8 +1290,9 @@ DefConstructor('\label Semiverbatim',
 		 return; });
 
 # These will get filled in during postprocessing.
-DefConstructor('\ref Semiverbatim', "<ltx:ref labelref='#1'/>");
-DefConstructor('\pageref Semiverbatim', "<ltx:ref labelref='#1'/>"); # Same??
+# * is added to accommodate hyperref
+DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#2'/>");
+DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#2'/>"); # Same??
 #======================================================================
 # C.11.3 Bibliography and Citation
 #======================================================================
@@ -1358,7 +1366,7 @@ sub makecite {
   $document->closeElement('ltx:cite'); }
 
 # Most of this is really natbib style.
-DefConstructor('\cite[][] Semiverbatim',       sub { makecite(1,undef,@_); });
+DefConstructor('\cite [][] Semiverbatim',      sub { makecite(1,undef,@_); });
 DefConstructor('\citet[][] Semiverbatim',      sub { makecite(0,undef,@_); });
 DefConstructor('\citep[][] Semiverbatim',      sub { makecite(1,undef,@_); });
 DefConstructor('\citeauthor[][] Semiverbatim', sub { makecite(0,'author',@_); });
@@ -1732,15 +1740,15 @@ DefPrimitive('\@begin@lrbox Token', sub {
 DefPrimitive('\usebox{Token}', sub { LookupValue('box'.ToString($_[1]));});
 
 DefConstructor('\parbox[]{Dimension}{}',
-	       "<ltx:minipage ?#2(width='#2') ?#1(pos='#1') justified='yes'>#3</ltx:minipage>",
+	       "<ltx:inline-block ?#2(width='#2') ?#1(vattach='#1') align='justified'>#3</ltx:inline-block>",
 	       mode=>'text');
 DefEnvironment('{minipage}[]{Dimension}',
-	       "<ltx:minipage ?#2(width='#2') ?#1(pos='#1') justified='yes'>#body</ltx:minipage>",
+	       "<ltx:inline-block ?#2(width='#2') ?#1(vattach='#1') align='justified'>#body</ltx:inline-block>",
 	       mode=>'text');
 DefConstructor('\rule[Dimension]{Dimension}{Dimension}', 
-	       "<ltx:rule ?#1(raise='#1') width='#2' height='#3'/>");
+	       "<ltx:rule ?#1(yoffset='#1') width='#2' height='#3'/>");
 DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
-	       "<ltx:text raise='#1'>#4</ltx:text>",
+	       "<ltx:text yoffset='#1'>#4</ltx:text>",
 	       mode=>'text');
 
 #**********************************************************************
@@ -2063,7 +2071,7 @@ DefConstructor('\textvisiblespace',"\x{2420}"); # SYMBOL FOR SPACE;  Not really 
 DefConstructor('\textellipsis',"\x{2026}"); # HORIZONTAL ELLIPSIS
 DefConstructor('\textregistered',UTF(0xAE)); # REGISTERED SIGN
 DefConstructor('\texttrademark',"\x{2122}");  # TRADE MARK SIGN
-DefConstructor('\textsuperscript{}',"<ltx:text raise='0.5em'>#1</ltx:text>");
+DefConstructor('\textsuperscript{}',"<ltx:text yoffset='0.5em'>#1</ltx:text>");
 DefConstructor('\textordfeminine',UTF(0xAA)); # FEMININE ORDINAL INDICATOR
 DefConstructor('\textordmasculine',UTF(0xBA)); # MASCULINE ORDINAL INDICATOR
 

@@ -898,24 +898,6 @@ DefParameterType('BoxContents',sub {
   $contents; },
 		 undigested=>1); # Cause it already is digested!
 
-# DefConstructor('\XXXhbox', "<ltx:text width='#to' pad-width='#spread'>#body</ltx:text>",
-# 	       afterDigest=>sub { read_box_spec(@_); read_box_contents(@_); },
-# 	       mode=>'text',
-# 	       reversion=>sub { (T_CS('\hbox'),revert_spec($_[0],'to'),revert_spec($_[0],'spread'),
-# 				 T_BEGIN,$_[0]->getProperty('body')->revert); }); # body has }
-
-# DefConstructor('\XXXvbox', "<ltx:vbox valign='bottom' height='#to' pad-height='#spread'>#body</ltx:vbox>",
-# 	       afterDigest=>sub { read_box_spec(@_); read_box_contents(@_); },
-# 	       mode=>'text',
-# 	       reversion=>sub { (T_CS('\vbox'),revert_spec($_[0],'to'),revert_spec($_[0],'spread'),
-# 				 T_BEGIN,$_[0]->getProperty('body')->revert); }); # body has }
-
-# DefConstructor('\XXXvtop', "<ltx:vbox valign='top' height='#to' pad-height='#spread'>#body</ltx:vbox>",
-# 	       afterDigest=>sub { read_box_spec(@_); read_box_contents(@_); },
-# 	       mode=>'text',
-# 	       reversion=>sub { (T_CS('\vtop'),revert_spec($_[0],'to'),revert_spec($_[0],'spread'),
-# 				 T_BEGIN,$_[0]->getProperty('body')->revert); }); # body has }
-
 sub REF { $_[0] && $_[0]->{$_[1]}; }
 
 DefConstructor('\hbox BoxSpecification BoxContents',
@@ -925,11 +907,11 @@ DefConstructor('\hbox BoxSpecification BoxContents',
 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@text@alignment$')); });
 
 DefConstructor('\vbox BoxSpecification BoxContents',
-	       "<ltx:vbox valign='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:vbox>",
+	       "<ltx:inline-block vattach='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
 	       mode=>'text');
 
 DefConstructor('\vtop BoxSpecification BoxContents',
-	       "<ltx:vbox valign='top' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:vbox>",
+	       "<ltx:inline-block vattach='top' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
 	       mode=>'text');
 
 sub read_rule_spec {
@@ -1038,13 +1020,13 @@ foreach my $op ('\vskip Glue', '\vfil', '\vfill', '\vss', '\vfilneg',
 
 # \moveleft<dimen><box>, \moveright<dimen><box>
 DefConstructor('\moveleft Dimension MoveableBox',
-	       "<ltx:text shift='#y'>#2</ltx:text>",
+	       "<ltx:text xoffset='#x'>#2</ltx:text>",
 	       afterDigest=>sub{
-		 $_[1]->setProperty(y=>$_[1]->getArg(1)->multiply(-1)); });
+		 $_[1]->setProperty(x=>$_[1]->getArg(1)->multiply(-1)); });
 DefConstructor('\moveright Dimension MoveableBox',
-	       "<ltx:text shift='#y'>#2</ltx:text>",
+	       "<ltx:text xoffset='#x'>#2</ltx:text>",
 	       afterDigest=>sub{
-		 $_[1]->setProperty(y=>$_[1]->getArg(1)); });
+		 $_[1]->setProperty(x=>$_[1]->getArg(1)); });
 
 # \unvbox<8bit>, \unvcopy<8bit>
 DefMacro('\unvbox Number',sub {
@@ -1060,7 +1042,6 @@ DefMacro('\unvcopy Number',sub {
 #======================================================================
 
 Tag('ltx:td',        afterClose=>\&trimNodeWhitespace);
-Tag('ltx:td-between',afterClose=>\&trimNodeWhitespace);
 
 #----------------------------------------------------------------------
 # Primitive column types;
@@ -1146,23 +1127,24 @@ DefPrimitiveI('\@text@alignment$', undef, sub {
 # wrapping each alignment cell!!!!!!)
 # However, it should be like a normal $ if it's inside something like \mbox
 # that makes a text box!!!!!!
+# This is all complicated by the need to know _how_ we got into or out of math mode!
 # Gawd, this is awful!
 # NOTE: Probably the most "Right" thing to do would be to process
-# alignments in text mode only (like TeX), but then afterwards,
-# morph them into math arrays?
+# alignments in text mode only (like TeX), sneaking $'s in where needed,
+# but then afterwards, morph them into math arrays?
+# This would be complicated by the need to hide these $ from untex.
 DefPrimitiveI('\@math@alignment$', undef, sub {
   my($stomach)=@_;
-  if(LookupValue('IN_FLIPPED_MODE')){ # If we're making a fake text string.
+  if(LookupValue('MATH_ALIGN_$_BEGUN')){ # If we're begun making _something_ with $.
+      my @l=();
     if(LookupValue('IN_MATH')){	# But we're somehow in math?
-      AssignValue(IN_FLIPPED_MODE=>0);
-      $stomach->invokeToken(T_CS('\@@ENDINLINEMATH')); }
+      @l = $stomach->invokeToken(T_CS('\@@ENDINLINEMATH')); }
     else {
-      $stomach->invokeToken(T_CS('\@@ENDINLINETEXT')); }
-#    $stomach->egroup; 
-}
+      @l = $stomach->invokeToken(T_CS('\@@ENDINLINETEXT')); }
+      AssignValue('MATH_ALIGN_$_BEGUN'=>0); # Reset this AFTER finishing the something
+      @l; }
   else {
-#    $stomach->bgroup;
-    AssignValue(IN_FLIPPED_MODE=>1);
+    AssignValue('MATH_ALIGN_$_BEGUN'=>1); # Note that we've begun something
     if(LookupValue('IN_MATH')){	# If we're "still" in math
       $stomach->invokeToken(T_CS('\@@BEGININLINETEXT')); }
     else {
@@ -1516,11 +1498,11 @@ DefPrimitive('\hfilneg',undef);
 # OR something that expands into one!!
 
 DefConstructor('\lower Dimension MoveableBox',
-	       "<ltx:text raise='#y'>#2</ltx:text>",
+	       "<ltx:text yoffset='#y'>#2</ltx:text>",
 	       afterDigest=>sub{
 		 $_[1]->setProperty(y=>$_[1]->getArg(1)->multiply(-1)); });
 DefConstructor('\raise Dimension MoveableBox',
-	       "<ltx:text raise='#y'>#2</ltx:text>",
+	       "<ltx:text yoffset='#y'>#2</ltx:text>",
 	       afterDigest=>sub{
 		 $_[1]->setProperty(y=>$_[1]->getArg(1)); });
 
@@ -2979,7 +2961,7 @@ sub addDelimiterRole {
   # This should be the wrapper just added.
   my $node         = $document->getLastChildElement($current) || $current;
   my $delim        = $node && $document->getFirstChildElement($node);
-  my $delim_role   = ($delim->getAttribute('role') || '');
+  my $delim_role   = (($delim && $delim->getAttribute('role')) || '');
   my $wrapper_role = ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR)$/ ? $role : $delim_role);
   $node->setAttribute(role=>$wrapper_role) if $node && $wrapper_role; }
 
@@ -3428,7 +3410,7 @@ DefConstructor('\@XMArg{}{}',"<ltx:XMArg ?#1(id='#1')>#2</ltx:XMArg>", reversion
 DefConstructor('\@XMRef{}',"<ltx:XMRef idref='#1'/>",
 	       reversion=>sub{ LookupValue('xref:'.ToString($_[0]->getArg(1)))->revert; });
 
-DefConstructor('\@ERROR{}{}', "<ltx:ERROR type='#1'>#2</ltx:ERROR>");
+DefConstructor('\@ERROR{}{}', "<ltx:ERROR class='#1'>#2</ltx:ERROR>");
 
 #**********************************************************************
 DefConstructor('\WildCard',"<_WildCard_/>");
