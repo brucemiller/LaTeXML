@@ -113,7 +113,7 @@ sub invokeToken {
 
 sub makeError {
   my($document,$type,$content)=@_;
-  $document->openElement('ltx:ERROR',type=>ToString($type));
+  $document->openElement('ltx:ERROR',class=>ToString($type));
   $document->absorb(ToString($content));
   $document->closeElement('ltx:ERROR'); }
 
