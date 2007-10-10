@@ -41,6 +41,7 @@ sub new {
   $self->registerHandler('ltx:equationmix'   => \&labelled_handler);
   $self->registerHandler('ltx:equationgroup' => \&labelled_handler);
   $self->registerHandler('ltx:theorem'       => \&labelled_handler);
+  $self->registerHandler('ltx:anchor'        => \&labelled_handler);
 
   $self->registerHandler('ltx:bibitem'       => \&bibitem_handler);
   $self->registerHandler('ltx:bibentry'      => \&bibentry_handler);
