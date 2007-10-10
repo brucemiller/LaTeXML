@@ -34,18 +34,19 @@
      Misc Elements
      can appear in block or inline contexts. -->
 
-<!ENTITY % LaTeXML.quote.qname          "%LaTeXML.pfx;quote">
-<!ENTITY % LaTeXML.quotation.qname      "%LaTeXML.pfx;quotation">
-<!ENTITY % LaTeXML.minipage.qname       "%LaTeXML.pfx;minipage">
+<!ENTITY % LaTeXML.inline-block.qname "%LaTeXML.pfx;inline-block">
+<!ENTITY % LaTeXML.quote.qname        "%LaTeXML.pfx;quote">
+
 
 <!-- ======================================================================
      Declare contributions to various classes. -->
+
 <!ENTITY % LaTeXML-block.Block.class
 	 "%LaTeXML.p.qname;
 	| %LaTeXML.equation.qname;  | %LaTeXML.equationgroup.qname;
 	| %LaTeXML.quote.qname; | %LaTeXML.centering.qname;
 	| %LaTeXML.block.qname;" >
 <!ENTITY % LaTeXML-block.Misc.class
-	 "| %LaTeXML.minipage.qname; | %LaTeXML.verbatim.qname;">
+	 "| %LaTeXML.inline-block.qname; | %LaTeXML.verbatim.qname;">
 <!ENTITY % LaTeXML-block.Para.class
-	 "%LaTeXML.para.qname; | %LaTeXML.quotation.qname;">
+	 "%LaTeXML.para.qname;">

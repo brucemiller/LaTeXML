@@ -20,8 +20,5 @@
 
 <!ENTITY % LaTeXML-float.Para.class
 	 "| %LaTeXML.figure.qname; | %LaTeXML.table.qname;" >
-<!-- Additional extensibility:
-     Additional Figure/Table content can be added via %LaTeXML-extra.Caption.class;
-  -->
 <!ENTITY % LaTeXML-float.Caption.class
 	 "%LaTeXML.caption.qname; | %LaTeXML.toccaption.qname;">

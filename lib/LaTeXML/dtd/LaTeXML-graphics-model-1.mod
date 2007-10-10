@@ -13,12 +13,15 @@
 -->
 
 
+<!--% A graphical insertion of an external file.-->
 <!ELEMENT %LaTeXML.graphics.qname; EMPTY>
+<!--%
+    @graphics the path to the graphics file
+    @options an encoding of the scaling and positioning options
+             to be used in processing the graphic.
+-->
 <!ATTLIST %LaTeXML.graphics.qname;
-	  %LaTeXML.Common.attrib; 
+	  %LaTeXML.Common.attrib;
+	  %LaTeXML.Imageable.attrib;
           graphic CDATA #REQUIRED
-          options CDATA #IMPLIED
-          src     CDATA #IMPLIED
-          width   CDATA #IMPLIED
-          height  CDATA #IMPLIED>
-<!-- last 3 not used directly in latexml -->
+          options CDATA #IMPLIED>

@@ -33,6 +33,7 @@
 <!-- Extensibility:
      Alternative math representations can be added via %LaTeXML-extra.Math.class;
      -->
+
 <!ENTITY % LaTeXML-math.Math.class
 	 "%LaTeXML.XMath.qname;">
 
@@ -42,6 +43,14 @@
        | %LaTeXML.XMDual.qname; | %LaTeXML.XMText.qname;
        | %LaTeXML.XMArray.qname;">
 
+<!--% <XMath> attributes include 
+
+     @role  The role that this item plays in the Grammar.
+     @open, @close fences around the object;
+     @argopen, @argclose, @punctuation fences and punctuation around and within
+            the arguments when this object is applied to arguments;
+     @possibleFunction the parser suspects this may be used as a function.
+ -->
 <!ENTITY % LaTeXML-math.XMath.attrib "
          role    CDATA #IMPLIED
 	 open    CDATA #IMPLIED
@@ -51,7 +60,6 @@
 	 argclose CDATA #IMPLIED
 	 separators CDATA #IMPLIED
 	 possibleFunction CDATA #IMPLIED">
-<!-- open, close can end up on most/all elements ? -->
 
 
 

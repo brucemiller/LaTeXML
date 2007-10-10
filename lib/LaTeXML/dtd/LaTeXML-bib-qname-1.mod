@@ -77,7 +77,8 @@
 <!ENTITY % LaTeXML-bib.bibblock.qname       "%LaTeXML-bib.pfx;bibblock">
 
 
-<!-- The content model of the bibliographic bibentry; all fields that can be contained -->
+<!--% The content model of a bibliographic entry (<bibentry>). These elements have
+     a direct correspondence to BibTeX fields. -->
 <!ENTITY % LaTeXML-bib.Bibentry.class
 	 "%LaTeXML-bib.bib-author.qname; | %LaTeXML-bib.bib-editor.qname; | %LaTeXML-bib.bib-translator.qname;
 	  | %LaTeXML-bib.bib-title.qname; | %LaTeXML-bib.bib-subtitle.qname; | %LaTeXML-bib.bib-booktitle.qname;
@@ -93,7 +94,8 @@
 	  | %LaTeXML-bib.bib-language.qname; | %LaTeXML-bib.bib-url.qname;
           | %LaTeXML-bib.bib-eprint.qname; | %LaTeXML-bib.bib-preprint.qname; | %LaTeXML-bib.bib-note.qname;">
 
-<!-- The content model of the bibliographic name fields (author, editor, translator)-->
+<!--% The content model of the bibliographic name fields
+     (<bib-author>, <bib-editor>, <bib-translator>)-->
 <!ENTITY % LaTeXML-bib.Bibname.model
          "(%LaTeXML-bib.surname.qname;,
 	  (%LaTeXML-bib.givenname.qname;)?,

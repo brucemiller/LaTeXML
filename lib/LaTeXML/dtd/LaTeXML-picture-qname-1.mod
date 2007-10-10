@@ -38,6 +38,7 @@
 	  | %LaTeXML.wedge.qname; | %LaTeXML.ellipse.qname; | %LaTeXML.polygon.qname;
 	  | %LaTeXML.bezier.qname;">
 
+<!--% These attributes correspond roughly to SVG, but need documentation.-->
 <!ENTITY % LaTeXML-picture.Picture.attrib
 	 "x CDATA #IMPLIED
 	  y CDATA #IMPLIED
@@ -63,6 +64,7 @@
 	  arcsepB CDATA #IMPLIED
           curvature CDATA #IMPLIED">
 
+<!--% These attributes correspond roughly to SVG, but need documentation.-->
 <!ENTITY % LaTeXML-picture.PictureGroup.attrib
 	  "pos CDATA #IMPLIED
 	   framed (yes|no) 'no'

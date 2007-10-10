@@ -12,17 +12,17 @@
  \=========================================================ooo==U==ooo=/
 -->
 
+<!--% A theorem or similar object. Attribute @class can be used to distinguish. -->
 <!ELEMENT %LaTeXML.theorem.qname;
           ((%LaTeXML.title.qname;)?,
 	  (%LaTeXML.Block.mix;)*)>
-
 <!ATTLIST %LaTeXML.theorem.qname;
 	  %LaTeXML.Common.attrib; 
           %LaTeXML.Labelled.attrib;>
 
+<!--% A proof or similar object. Attribute @class can be used to distinguish. -->
 <!ELEMENT %LaTeXML.proof.qname;
           ((%LaTeXML.title.qname;)?,
 	  (%LaTeXML.Block.mix;)*)>
-
 <!ATTLIST %LaTeXML.proof.qname;
 	  %LaTeXML.Common.attrib;>

@@ -17,7 +17,6 @@
 
 <!ENTITY % LaTeXML.text.qname      "%LaTeXML.pfx;text">
 <!ENTITY % LaTeXML.emph.qname      "%LaTeXML.pfx;emph">
-<!ENTITY % LaTeXML.vbox.qname      "%LaTeXML.pfx;vbox">
 <!ENTITY % LaTeXML.rule.qname      "%LaTeXML.pfx;rule">
 
 
@@ -31,8 +30,7 @@
      Inclusion -->
 
 <!ENTITY % LaTeXML-text.Inline.class
-	 "%LaTeXML.text.qname; | %LaTeXML.emph.qname;
-	| %LaTeXML.vbox.qname;  | %LaTeXML.rule.qname;" >
+	 "%LaTeXML.text.qname;  | %LaTeXML.emph.qname; | %LaTeXML.rule.qname;" >
 
 <!ENTITY % LaTeXML-text.Meta.class
 	 "| %LaTeXML.note.qname; | %LaTeXML.ERROR.qname;" >
