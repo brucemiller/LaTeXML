@@ -1190,7 +1190,7 @@ or cannot appear, in math mode.
 =item  font=>{fontspec...}
 
 Specifies the font to be set by this invocation.
-See L<"MergeFont">
+See L</MergeFont>
 If the font change is to only apply to this construct,
 you would also use C<<bounded=>1>>.
 
@@ -1253,7 +1253,7 @@ from the C<$prototype> (eg. when more args are explictly read by Daemons).
 
 =item  scope=>$scope
 
-See L<scope>.
+See L</scope>.
 
 =back
 
@@ -1301,7 +1301,7 @@ This direly needs documentation!
 =item  font=>{fontspec}
 
 Specifies the font to be used for when creating this object.
-See L<MergeFont>.
+See L</MergeFont>.
 
 
 =item scriptpos=>boolean
