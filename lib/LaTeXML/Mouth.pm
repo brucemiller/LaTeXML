@@ -368,6 +368,12 @@ __END__
 
 C<LaTeXML::Mouth> - tokenize the input.
 
+=begin latex
+
+\label{LaTeXML::FileMouth}\label{LaTeXML::StyleMouth}\label{LaTeXML::PerlMouth}
+
+=end latex
+
 =head1 DESCRIPTION
 
 A C<LaTeXML::Mouth> (and subclasses) is responsible for I<tokenizing>, ie.
