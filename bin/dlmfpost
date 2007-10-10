@@ -220,7 +220,7 @@ sub process {
   $base =~ s/\bindex//;
   $doc->getDocumentElement->setAttribute(url=>"DLMF:/$base");
   $base =~ s/[^\/]*$//;		# trim back to directory.
-  foreach my $n ($doc->findnodes('//@src|//@magsrc|//@vrml|//@image|//@imagesrc|//@href')){
+  foreach my $n ($doc->findnodes('//@imagesrc|//@vrml|//@href')){
     my $path = $n->value;
     next if (! defined $path) || $path =~ /^(\w+:|\/)/;
     $n->setValue("DLMF:/". pathname_make(dir=>$base, name=>$path)); }
@@ -685,7 +685,7 @@ BEGIN { @VRML_EXTRA = qw(dlmf_proto.wrl sml_rec_proto.wrl
 
 sub processGraphic {
   my($self,$doc,$node)=@_;
-  return if $node->getAttribute('src'); # Already has a src defined?
+  return if $node->getAttribute('imagesrc'); # Already has a src defined?
   my $source = $self->findGraphicsFile($doc,$node);
   return $self->Warn("Missing graphic for ".$node->toString."; skipping") unless $source;
   my $transform = $self->getTransform($node);
@@ -758,9 +758,9 @@ sub processGraphic {
   my($self,$doc,$node)=@_;
   my $source = $node->getAttribute('graphic');
   if(!$source || ($source eq 'DLMF:/images/noimage.png')){
-    $node->setAttribute('src','DLMF:/style/noimage.png');
-    $node->setAttribute('width',100);
-    $node->setAttribute('height',100); }
+    $node->setAttribute('imagesrc','DLMF:/style/noimage.png');
+    $node->setAttribute('imagewidth',100);
+    $node->setAttribute('imageheight',100); }
   else {
     $self->SUPER::processGraphic($doc,$node); }}
 
