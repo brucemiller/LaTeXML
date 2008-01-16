@@ -110,8 +110,8 @@ into boxes; Some objects, such as numbers can just return themselves.
 
 =item C<< $object->beAbsorbed($document); >>
 
-Do whatever is needed (typically by invoking appropriate methods on
-the C<$document>) to absorb the C<$object> into the C<$document>.
+Do whatever is needed to absorb the C<$object> into the C<$document>,
+typically by invoking appropriate methods on the C<$document>.
 
 =back
 
