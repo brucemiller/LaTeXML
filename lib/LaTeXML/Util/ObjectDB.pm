@@ -263,7 +263,7 @@ sub show {
   my $string = "ObjectDB Entry for: $$self{key}\n";
   foreach my $attr (grep($_ ne 'key', keys %{$self})){
     $string .= wrap(sprintf(' %16s : ',$attr),(' 'x20), showvalue($self->getValue($attr)))."\n"; }
-}
+  $string; }
 
 sub showvalue {
   my($value)=@_;
