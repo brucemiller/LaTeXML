@@ -31,8 +31,8 @@ sub process {
   $doc->getDocument->removeInternalSubset if $$self{omit_doctype};
 
   my $root = $xmldoc->documentElement;
-  $root->removeAttribute('id')
-    if ($root->getAttribute('id')||'') eq  'TEMPORARY_DOCUMENT_ID';
+  $root->removeAttribute('xml:id')
+    if ($root->getAttribute('xml:id')||'') eq  'TEMPORARY_DOCUMENT_ID';
 
 #  my $string = ($$self{format} eq 'html' ? $xmldoc->toStringHTML : $xmldoc->toString(1));
   my $string;
@@ -40,7 +40,7 @@ sub process {
     $string = $xmldoc->toStringHTML;
   }
   else {
-    $string =  $xmldoc->toString;
+    $string =  $xmldoc->toString(1);
     if($XML::LibXML::VERSION < 1.63){
       $string = Encode::encode("utf-8",$string); }}
 
