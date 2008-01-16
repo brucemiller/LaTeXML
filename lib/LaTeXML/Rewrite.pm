@@ -22,13 +22,27 @@ sub new {
   while(@specs){
     my($op,$pattern) = (shift(@specs),shift(@specs));
    push(@clauses,['uncompiled',$op,$pattern]); }
-  bless {mode=>$mode, math=>($mode eq 'math'), clauses=>[@clauses]}, $class; }
+  bless {mode=>$mode, math=>($mode eq 'math'), clauses=>[@clauses], labels=>{}}, $class; }
 
 sub clauses { @{$_[0]->{clauses}}; }
 
 sub rewrite {
   my($self,$document,$node)=@_;
+  foreach my $node ($document->findnodes('//*[@labels]')){
+    my $labels = $node->getAttribute('labels');
+    if(my $id = $node->getAttribute('xml:id')){
+      foreach my $label (split(/ /,$labels)){
+	$$self{labels}{$label}=$id; }}
+    else {
+      Warn("Node has labels \"$labels\" but no xml:id ".Stringify($node)); }}
     $self->applyClause($document,$node,0,$self->clauses); }
+
+sub getLabelID {
+  my($self,$label)=@_;
+  if(my $id = $$self{labels}{LaTeXML::Package::CleanLabel($label)}){ $id; }
+  else {
+    Error("No id for label $label in Rewrite");
+    undef; }}
 
 # Rewrite spec as input
 #   scope  => $scope  : a scope like "section:1.2.3" or "label:eq.one"; translated to xpath
@@ -159,15 +173,20 @@ sub compileClause {
   my($oop,$opattern)=($op,$pattern);
   if   ($op eq 'label'){
     if(ref $pattern eq 'ARRAY'){
-      $op='multi_select'; $pattern = [map(["descendant-or-self::*[\@label='$_']",1], @$pattern)]; }
+#      $op='multi_select'; $pattern = [map(["descendant-or-self::*[\@label='$_']",1], @$pattern)]; }
+      
+      $op='multi_select'; $pattern = [map(["descendant-or-self::*[\@xml:id='$_']",1],
+					  map($self->getLabelID($_),@$pattern))]; }
     else {
-      $op='select'; $pattern=["descendant-or-self::*[\@label='$pattern']",1]; }}
+#      $op='select'; $pattern=["descendant-or-self::*[\@label='$pattern']",1]; }}
+      $op='select'; $pattern=["descendant-or-self::*[\@xml:id='".$self->getLabelID($pattern)."']",1]; }}
   elsif($op eq 'scope'){
     $op='select';
     if($pattern =~ /^label:(.*)$/){
-      $pattern=["descendant-or-self::*[\@label='$1']",1]; }
+#      $pattern=["descendant-or-self::*[\@label='$1']",1]; }
+      $pattern=["descendant-or-self::*[\@xml:id='".$self->getLabelID($1)."']",1]; }
     elsif($pattern =~ /^id:(.*)$/){
-      $pattern=["descendant-or-self::*[\@id='$1']",1]; }
+      $pattern=["descendant-or-self::*[\@xml:id='$1']",1]; }
     elsif($pattern =~ /^(.*):(.*)$/){
       $pattern=["descendant-or-self::*[local-name()='$1' and \@refnum='$2']",1]; }
     else {
