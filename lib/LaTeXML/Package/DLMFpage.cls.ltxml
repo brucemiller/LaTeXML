@@ -19,17 +19,8 @@ use LaTeXML::Package;
 #**********************************************************************
 # Document
 #**********************************************************************
-DocType("ltx:document","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
-	'#default'=>"http://dlmf.nist.gov/LaTeXML");
-
-RequirePackage('graphicx');
-RequirePackage('amsmath');
-RequirePackage('amssymb');
-RequirePackage('DLMFmath');
-RequirePackage('url');
-RequirePackage('comment');
-RequirePackage('latexml');
-
+RelaxNGSchema("DLMF");
+RequirePackage('DLMFsupport');
 
 # Something like \label;
 # Need to impose some standard format like
@@ -45,19 +36,22 @@ DefPrimitive('\thisdocument{}', sub {
   $label=ToString($label);
   my $id = ($label =~ /^doc:(.*)$/ ? $1 : $label);
   DefMacro('\thedocument@ID',$id);
-  AssignValue(DOCUMENTLABEL=>$label,'global');
+  AssignValue(DOCUMENTLABEL=>CleanLabel($label),'global');
   AssignValue(DOCUMENTID=>$id,'global'); });
 
 DefEnvironment('{document}',
-	       "<ltx:document label='#label' id='#id'>#body</ltx:document>",
-	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
+	       "<ltx:document labels='#label' xml:id='#id'>#body</ltx:document>",
+	       beforeDigest=> sub { AssignValue(inPreamble=>0);
+				    Digest(T_CS('\@add@source@date')); },
 	       afterDigestBegin=>sub {
 		 $_[1]->setProperties(label=>LookupValue('DOCUMENTLABEL'),
 				      id=>LookupValue('DOCUMENTID')); },
 	       afterDigest=> sub { $_[0]->getGullet->flush; return; });
 
 DefConstructor('\longref [] Semiverbatim',
-	       "<ltx:ref ?#1(show='#1')(show='typerefnum. title') labelref='#2'/>");
+	       "<ltx:ref ?#1(show='#1')(show='typerefnum. title') labelref='#label'/>",
+	       properties=>sub { (label=>CleanLabel($_[2])); });
+
 DefConstructor('\longcite [] Semiverbatim',
 	       "<ltx:bibref ?#1(show='#1')(show='title (author, year)') bibrefs='#2'/>");
 
@@ -119,18 +113,6 @@ DefEnvironment('{wrapfigure} {} {Dimension}',
 		 $_[1]->setProperty(float=>($dir eq 'r' ? 'floatright'
 					    : ($dir eq 'l' ? 'floatleft'
 					       : undef))); });
-#**********************************************************************
-# Table enhancement
-
-DefConstructor('\thinhline','',
-	       afterDigest=>sub { LookupValue('Alignment')->addLine('T'); });
-
-#**********************************************************************
-DefConstructor('\VRML Semiverbatim', "<ltx:VRML href='#1'/>");
-DefConstructor('\GAMSclass{}',         "<ltx:GAMS class='#1'/>");
-DefConstructor('\GAMSpackage{}',       "<ltx:GAMS package='#1'/>");
-DefConstructor('\GAMSclasspackage{}{}',"<ltx:GAMS class='#1' package='#2'/>");
-DefConstructor('\GAMSmodule{}{}{}',    "<ltx:GAMS package='#1' module='#2' module_id='#3'/>");
 
 #**********************************************************************
 1;
