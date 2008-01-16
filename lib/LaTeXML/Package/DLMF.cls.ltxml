@@ -13,24 +13,13 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
-
+use XML::LibXML;
 #**********************************************************************
 # Document
 #**********************************************************************
-DocType("ltx:document","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
-	'#default'=>"http://dlmf.nist.gov/LaTeXML");
+RelaxNGSchema("DLMF");
 
-
-RequirePackage('graphicx');
-RequirePackage('color');
-RequirePackage('amsmath');
-RequirePackage('amssymb');
-RequirePackage('DLMFmath');
-RequirePackage('url');
-RequirePackage('comment');
-RequirePackage('tabularx');
-RequirePackage('latexml');
-
+RequirePackage('DLMFsupport');
 
 # If we get this, we're doing a "chapter"
 DefPrimitive('\thischapter[]{}', sub {
@@ -46,9 +35,7 @@ DefPrimitive('\thischapter[]{}', sub {
   AssignValue(current_counter=>'chapter','local');
   AssignValue(Chapter=>$chnum,'global');
   AssignValue(ChapterID=>"C$chnum",'global');
-  AssignValue(ChapterLabel=>"ch:$chcode",'global');  
-  DocType("ltx:chapter","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
-	  '#default'=>"http://dlmf.nist.gov/LaTeXML");
+  AssignValue(ChapterLabel=>CleanLabel("ch:$chcode"),'global');
   Tag('ltx:chapter', afterOpen=>\&insertDLMFFrontMatter);
   Tag('ltx:chapter', afterClose=>\&extractSourceNotes);
 });
@@ -59,13 +46,14 @@ sub LookupChapterMetaID { ToString(LookupValue('ChapterID')).".info"; }
   
 DefEnvironment('{document}',
 	       "?&LookupValue(Chapter)"
-	       .  "(<ltx:chapter id='&LookupValue(ChapterID)' refnum='&LookupValue(Chapter)'"
-	       .         " label='&LookupValue(ChapterLabel)'>"
-	       .      "<ltx:metadata id='&LookupChapterMetaID()'/>"
+	       .  "(<ltx:chapter xml:id='&LookupValue(ChapterID)' refnum='&LookupValue(Chapter)'"
+	       .         " labels='&LookupValue(ChapterLabel)'>"
+	       .      "<ltx:metadata xml:id='&LookupChapterMetaID()'/>"
 	       .      "#body"
 	       .    "</ltx:chapter>)"
 	       .  "(<ltx:document>#body</ltx:document>)",
-	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
+	       beforeDigest=> sub { AssignValue(inPreamble=>0); 
+				    Digest(T_CS('\@add@source@date')); },
 	       afterDigest=> sub { $_[0]->getGullet->flush; return; });
 
 sub insertDLMFFrontMatter {
@@ -79,45 +67,7 @@ sub extractSourceNotes {
   # Extract "source" notes from References \part (if any), and remove the part.
   my $ch = ToString(LookupValue('ChapterID'));
   if(my $pt = $doc->findnode("//ltx:part[child::ltx:title[text() = 'References']]")){
-    $pt->parentNode->removeChild($pt);
-    ## Since the Sources section seems to have evolved into a COPY of all the
-    ## annotations throughout the chapter, there's little sense adding it back
-    ## to the sections
-    if(0){
-    if(my $gen= $doc->findnode("ltx:section[child::ltx:title"
-			       ."[text()='General References']]",$pt)){
-      if(my $meta = $doc->findnode("ltx:metadata[\@id='$ch.info']",
-				   $doc->getDocument->documentElement)){
-	$doc->setNode($meta);
-	my $note = $doc->openElement('ltx:note',class=>'source');
-	map($note->appendChild($_),$doc->findnodes("descendant::ltx:p/node()",$gen));
-	$doc->closeElement('ltx:note'); }
-      else {
-	Warn("No metadata node found for $ch"); }}
-#    else {  # This is optional...
-#      Warn("No 'General References' section found"); }
-    if(my $oth = $doc->findnode("ltx:section[child::ltx:title"
-				     ."[text()='Sources']]",$pt)){
-      foreach my $item ($doc->findnodes("descendant::ltx:description/ltx:item",$oth)){
-	my $tag= $doc->findnode('ltx:tag',$item);
-	$tag->parentNode->removeChild($tag);
-	foreach my $label (map($_->getAttribute('labelref'),
-			       $doc->findnodes("ltx:ref",$tag))){
-	  if(my $sec = $doc->findnode("//ltx:section[\@label = '$label']")){
-	    my $id = $sec->getAttribute('id');
-	    if(my $meta = $doc->findnode("ltx:metadata[\@id='$id.info']",$sec)){
-	      $doc->setNode($meta);
-	      my $note = $doc->openElement('ltx:note',class=>'source');
-	      map($note->appendChild($_), $item->childNodes());
-	      $doc->closeElement('ltx:note'); }
-	    else {
-	      Warn("No metadata node found for $id"); }}
-	  else {
-	    Warn("No matching section for 'Sources' entry $label"); }}
-      }}
-    else {
-      Warn("No 'Sources' section found"); }
-  }}
+    $pt->parentNode->removeChild($pt); }
   else {
     Warn("No 'References' part found"); }
   $doc->setNode($savenode); }
@@ -127,10 +77,10 @@ sub extractSourceNotes {
 DefConstructor('\\@@section{}[][][]{}',sub {
   my($document,$type,$refnum,$id,$toctitle,$title)=@_;
   $id = ToString($id);
-  $document->openElement("ltx:".ToString($type),refnum=>$refnum,id=>$id);
+  $document->openElement("ltx:".ToString($type),refnum=>$refnum,'xml:id'=>$id);
   $document->insertElement('ltx:title',$title);
   $document->insertElement('ltx:toctitle',$toctitle) if $toctitle;
-  $document->insertElement('ltx:metadata',undef, id=>$id.".info");
+  $document->insertElement('ltx:metadata',undef, 'xml:id'=>$id.".info");
 },
   properties=>{refnum=>'#2',id=>'#3'},
   bounded=>1);
@@ -197,7 +147,7 @@ NewCounter('@XMDECL','section',idprefix=>'XMD');
 DefPrimitive('\status{}', sub{ AssignValue(chapter_status=>$_[1]); });
 
 DefMacro('\author[]{}',
- '\@add@frontmatter{ltx:creator}[role=author,idref=\ifx.#1.\else bio:#1\fi]{\@personname{#2}}');
+ '\@add@frontmatter{ltx:creator}[role=author,idref=\ifx.#1.\else bio.#1\fi]{\@personname{#2}}');
 
 DefConstructor('\@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
 DefMacro('\affiliation{}','\@add@to@frontmatter{ltx:creator}{\@affiliation{#1}}');
@@ -212,7 +162,12 @@ DefConstructor('\addCopyright{}{}','');#"<ltx:copyright year='#1'>#2</ltx:copyri
 DefConstructor('\acknowledgements{}', '^<ltx:acknowledgements>#1</ltx:acknowledgements>');
 
 DefConstructor('\@galleryitem Semiverbatim Semiverbatim',
-	       "<ltx:galleryitem labelref='#1' graphic='#2'/>");
+	       "<ltx:galleryitem labelref='#label' graphic='#2'/>",
+	       properties=>sub { 
+		 (ToString($_[1])
+		  ? (label=>CleanLabel(ToString(Digest(T_CS('\thechapter'))).".".ToString($_[1]),
+				       "SIDEBAR"))
+		  : ()); });
 DefMacro('\galleryitem Semiverbatim Semiverbatim',
 	 '\@add@to@frontmatter{ltx:gallery}{\@galleryitem{\ifx.#1.\else sb:\thechapter.#1\fi}{#2}}'
 	.'\gdef\default@gallery{}');
@@ -249,7 +204,7 @@ DefEnvironment('{electroniconly}','#body');
 DefMacro('\onlyelectronic{}',"#1"); # macro? constructor?
 
 DefEnvironment('{sidebar}{}{}{}',
-	       "<ltx:sidebar name='#1' label='#label' id='#id'>"
+	       "<ltx:sidebar labels='#label' xml:id='#id'>"
 	       . "<ltx:title>#2</ltx:title>"
 	       . "<ltx:creator role='author'><ltx:personname>#3</ltx:personname></ltx:creator>"
 	       . "#body"
@@ -258,7 +213,8 @@ DefEnvironment('{sidebar}{}{}{}',
 		 Let('\thesection','\thesidebar');
 		 Let('\thesection@ID','\thesidebar@ID'); },
 	       properties=> sub { (RefStepCounter('sidebar'),
-				   label => sub { "sb:".ToString(Digest(T_CS('\thechapter'))).".".ToString($_[1]); }); });
+				   label => sub { CleanLabel(ToString(Digest(T_CS('\thechapter'))).".".ToString($_[1]),
+							     "SIDEBAR"); }); });
 
 #**********************************************************************
 # Metadata
@@ -272,10 +228,10 @@ DefMacro('\index OptionalMatch:*{}', sub { my($gullet,$star,$phrases)=@_;
 DefMacro('\@indexphrase[]{}','\@@indexphrase[#1]{#2}\@@indexkeyword[#1]{#2}');
 DefConstructor('\@@indexphrase[]{}',
 	       "<ltx:indexphrase key='#key'>#2</ltx:indexphrase>",
-	       properties=>{key=>sub { cleanIndexKey($_[1]); }});
+	       properties=>{key=>sub { CleanIndexKey($_[1]); }});
 DefConstructor('\@@indexkeyword[]{}',
 	       "^<ltx:indexkeyword key='#key'>#2</ltx:indexkeyword>",
-	       properties=>{key=>sub { cleanIndexKey($_[1]); }});
+	       properties=>{key=>sub { CleanIndexKey($_[1]); }});
 Tag('ltx:indexkeyword',afterClose=>\&addIndexKey);
 
 # NOTE: the "^" prefix allows these to float up out of math mode.
@@ -301,8 +257,8 @@ DefMacro('\indexlong{}','\index{#1}');
 
 # Redefine to accept optional (ignored) arg.
 DefEnvironment('{equation}[]',
-	       "<ltx:equation id='#id' refnum='#refnum'>"
-	       . "<ltx:metadata id='#id.info'/>"
+	       "<ltx:equation xml:id='#id' refnum='#refnum'>"
+	       . "<ltx:metadata xml:id='#id.info'/>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>"
 	       .   "#body"
@@ -310,9 +266,10 @@ DefEnvironment('{equation}[]',
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       properties=> sub { RefStepCounter('equation') });
+	       properties=> sub { RefStepCounter('equation') },
+	       afterConstruct=>\&maybeResplitAMSAlign);
 DefEnvironment('{equation*}[]',
-	       "<ltx:equation id='#id'>"
+	       "<ltx:equation xml:id='#id'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>"
 	       .   "#body"
@@ -320,42 +277,248 @@ DefEnvironment('{equation*}[]',
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       properties=> sub { RefStepID('equation') });
+	       properties=> sub { RefStepID('equation') },
+	       afterConstruct=>\&maybeResplitAMSAlign);
+
+# If the equation contains a single aligned environment,
+# We'd like to split it into several unnumbered aligned equations,
+# and convert the equation into an equationgroup.
+sub maybeResplitAMSAlign {
+  my($document,$whatsit)=@_;
+  if(my $equation = $document->getLastChildElement($document->getNode)){
+    my $id = $equation->getAttribute('xml:id');
+    my @maths = $document->findnodes('ltx:Math',$equation);
+    if(scalar(@maths)==1){
+      my @mnodes = $document->getChildElements($document->getFirstChildElement($maths[0]));
+      if((scalar(@mnodes)==1) && ($document->getNodeQName($mnodes[0]) eq 'ltx:XMArray')
+	 && (($mnodes[0]->getAttribute('name')||'') eq 'aligned')){
+	$maths[0]->unbindNode;
+	$equation->setNodeName('equationgroup');
+	my $equationgroup = $equation;
+	foreach my $mtr ($document->getChildElements($mnodes[0])){
+	  # new equation for each row.
+	  my $eqn  = addNewChildLate($document,$equationgroup,'ltx:equation');
+	  $document->setAttribute($eqn,'xml:id'=>$document->modifyID($id."X"));
+	  my @mtds = $document->getChildElements($mtr);
+	  while(@mtds){
+	    my $lhs = shift(@mtds)->firstChild; # content has an XMArg!
+	    my $rhs = shift(@mtds)->firstChild;
+	    my $cloned_lhs = cloneMath($document,$lhs);
+	    my $cloned_rhs = cloneMath($document,$rhs);
+	    my $lhs_box = $document->getNodeBox($lhs);
+	    my $rhs_box = $document->getNodeBox($rhs);
+	    my $fork = addNewChildLate($document,$eqn,'ltx:MathFork');
+	    # Copy essentials to new node.
+	    if(my $font = $lhs->getAttribute('_font')){
+	      $fork->setAttribute(_font=>$font); }
+	    if(my $box = $lhs->getAttribute('_box')){
+	      $fork->setAttribute(_box=>$box); }
+	    # Synthesize the main branch by combining the lhs & rhs.
+	    my $math = addNewChildLate($document,$fork,'ltx:Math');
+	    my @nodes = ($lhs->childNodes,$rhs->childNodes);
+
+	    appendTeXfromBox($document,$math,$lhs_box);
+	    appendTeXfromBox($document,$math,$rhs_box);
+
+	    my $xmath = addNewChildLate($document,$math,'ltx:XMath');
+	    map($xmath->appendChild($_), @nodes);
+	    # Now, add a branch, with the lhs & rhs separated.
+	    my $branch = addNewChildLate($document,$fork,'ltx:MathBranch');
+
+	    my $ltd=addEquationgroupSplitEquationTD($document,$branch,'right',$cloned_lhs->childNodes);
+	    my $rtd=addEquationgroupSplitEquationTD($document,$branch,'left',$cloned_rhs->childNodes);
+	    appendTeXfromBox($document,$ltd->firstChild,$lhs_box);
+	    appendTeXfromBox($document,$rtd->firstChild,$rhs_box);
+      }}}}}}
+
+# Append the TeX from the boxes to $node
+sub appendTeXfromBox {
+  my($document,$node,@boxes)=@_;
+  if(@boxes){
+    my $tex = $node->getAttribute('tex') || '';
+    my $ctex =$node->getAttribute('content-tex') || $tex;
+    local $LaTeXML::DUAL_BRANCH = 'presentation';
+    $tex = join(' ',grep($_,$tex,map((s/^\s*\\displaystyle\s*//&&$_)||$_,map(UnTeX($_),@boxes))));
+    $LaTeXML::DUAL_BRANCH = 'content';
+    $ctex = join(' ',grep($_,$ctex,map(UnTeX($_),@boxes)));
+    $tex =~ s/^\s*\\displaystyle\s*//; # strip leading \displaystyle
+    $ctex =~ s/\\displaystyle\s*//g;   # strip all \displaystyle
+    $node->setAttribute(tex=>'\displaystyle '.$tex);
+    $node->setAttribute('content-tex'=>$ctex) unless $ctex eq $tex; }}
 
 # equationmix contains several math environments, 
 # Each math produces inline math, BUT we've set displaystyle in them!
-# Although equationmix is handled differently in LaTeX, <equation>'s model is adequate.
-DefEnvironment('{equationmix}[]',
-	       "<ltx:equation id='#id' refnum='#refnum'>"
-	       . "<ltx:metadata id='#id.info'/>"
-	       . "#body"
+# Let's try making equationmix like equationgroup.
+# We can't easily tell (till later) how much space we've got to pack math's into,
+# so let's just align them all on seperate rows.
+
+DefMacro('\begin@equationmix@math','\[');
+# This tries to read any trailing punctuation (actually, non \begin or \end!) and wrap as text.
+DefMacro('\end@equationmix@math',sub {
+  my($gullet)=@_;
+  my($tok,@toks);
+  while(($tok = $gullet->readToken)
+	&& !($tok->equals(T_CS('\begin')) || $tok->equals(T_CS('\end')))){
+    push(@toks,$tok); }
+  $gullet->unread($tok) if $tok;
+  while(@toks && ($toks[0]->getCatcode == CC_SPACE)){ shift(@toks); }
+  while(@toks && ($toks[$#toks]->getCatcode == CC_SPACE)){ pop(@toks); }
+  ((@toks ? (T_CS('\hbox'),T_BEGIN,@toks,T_END) : ()),
+   T_CS('\]'));
+ });
+
+DefEnvironment('{equationmix@math}',
+	       "<ltx:equation xml:id='#id'>"
+	       . "<ltx:Math>"
+	       .  "<ltx:XMath>"
+	       .   "#body"
+	       .  "</ltx:XMath>"
+	       . "</ltx:Math>"
+	       . "#insertion"
 	       ."</ltx:equation>",
-	       properties=> sub { RefStepCounter('equation') },
-	       # NOTE: We'd like to have displaystyle (but NOT mode=display!) for enclosed math env!
-	       # Use displaystyles for math environments within here.
-	       beforeDigest => sub {
-		 DefEnvironment('{math}',
-				"<ltx:Math mode='inline'><ltx:XMath>#body</ltx:XMath></ltx:Math>",
-				mode=>'inline_math',
-				beforeDigest=>sub { AssignValue(mathstyle=>'display'); });
-	       }
-);
-DefEnvironment('{equationmix*}[]',
-	       "<ltx:equation id='#id'>#body</ltx:equation>",
-	       properties=> sub { RefStepID('equation') });
-# NOTE: I haven't handled the subequation case!!! (where equations themselves get numbered!)
-DefEnvironment('{equationgroup}[]', 
-	       "<ltx:equationgroup id='#id' refnum='#refnum'>"
-	       . "<ltx:metadata id='#id.info'/>"
+	       mode=>'display_math',
+	       properties=> sub { RefStepID('equation') },
+	       beforeDigest=> sub{ $_[0]->beginMode('display_math'); },
+	       afterDigest=>sub {
+		 my($stomach,$whatsit)=@_; # This is the whatsit for the \end!!!
+		 $stomach->endMode('display_math');
+		 my $gullet = $stomach->getGullet;
+		 my($tok,@toks);
+		 while(($tok = $gullet->readToken)
+		       && !($tok->equals(T_CS('\begin')) || $tok->equals(T_CS('\end')))){
+		   push(@toks,$tok); }
+		 $gullet->unread($tok) if $tok;
+		 while(@toks && ($toks[0]->getCatcode == CC_SPACE)){ shift(@toks); }
+		 while(@toks && ($toks[$#toks]->getCatcode == CC_SPACE)){ pop(@toks); }
+		 if(@toks){
+		   $whatsit->setProperty(insertion=>Digest(Tokens(T_CS('\hbox'),T_BEGIN,@toks,T_END))); }
+		 return; },
+	       beforeConstruct=>sub {
+		 $_[1]->setProperty(insertion=>$_[1]->getProperty('trailer')->getProperty('insertion')); });
+
+DefEnvironment('{equationmix}[]', 
+	       "<ltx:equationgroup xml:id='#id' refnum='#refnum'>"
+	       . "<ltx:metadata xml:id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:equationgroup>",
-	       properties=> sub { RefStepCounter('equation') });
+	       properties=> sub { RefStepCounter('equation') },
+	       beforeDigest => sub {
+		 Let(T_CS('\begin{math}'),T_CS('\begin{equationmix@math}'));
+		 Let(T_CS('\end{math}'),T_CS('\end{equationmix@math}')); },
+	       afterConstruct=>\&alignEquationgroupEquations);
+DefEnvironment('{equationmix*}[]',
+	       "?#nogroup(#body)(<ltx:equationgroup xml:id='#id'>#body</ltx:equationgroup>)",
+	       properties=> sub { RefStepID('equationgroup') },
+	       beforeDigest => sub {
+		 Let(T_CS('\begin{math}'),T_CS('\begin{equationmix@math}'));
+		 Let(T_CS('\end{math}'),T_CS('\end{equationmix@math}')); },
+	       beforeConstruct=>sub {
+		 my($document,$whatsit)=@_;
+		 if($document->findnodes('ancestor-or-self::ltx:equationgroup',
+					 $document->getNode)){
+		   $whatsit->setProperty(nogroup=>1); }},
+	       afterConstruct=>\&alignEquationgroupEquations);
+
+# NOTE: I haven't handled the subequation case!!! (where equations themselves get numbered!)
+DefEnvironment('{equationgroup}[]', 
+	       "<ltx:equationgroup xml:id='#id' refnum='#refnum'>"
+	       . "<ltx:metadata xml:id='#id.info'/>"
+	       . "#body"
+	       ."</ltx:equationgroup>",
+	       properties=> sub { RefStepCounter('equation') },
+	       afterConstruct=>\&alignEquationgroupEquations);
 DefEnvironment('{equationgroup*}[]',
-	       "<ltx:equationgroup id='#id'>#body</ltx:equationgroup>",
-	       properties=> sub { RefStepID('equationgroup') });
+	       "<ltx:equationgroup xml:id='#id'>#body</ltx:equationgroup>",
+	       properties=> sub { RefStepID('equationgroup') },
+	       afterConstruct=>\&alignEquationgroupEquations);
+
+# Since equationgroup aligns equations within them, we'd like to use the MathFork
+# mechanism to provide aligned chunks.  But we're doing it backwards from
+# eqnarray: We need to split each equation, rather than reassemble them.
+# Presumably _top_ level relations are the right places (sum/integral limits are boxed).
+# Even worse, we've got to attach TeX to the new Math nodes, derived from
+# the boxes that created the equation. But the association between nodes & boxes
+# is tricky; a single whatsit box can create multiple nodes.
+ sub alignEquationgroupEquations {
+   my($document,$whatsit)=@_;
+   if(my $equationgroup = $document->getLastChildElement($document->getNode)){
+     # Remove any intertext insertions that have ended up empty.
+     foreach my $inter ($document->findnodes('ltx:text | ltx:block',$equationgroup)){
+       $equationgroup->removeChild($inter) unless $inter->childNodes; }
+     foreach my $equation ($document->findnodes('ltx:equation',$equationgroup)){
+       my @maths=$document->findnodes('ltx:Math',$equation);
+       if(scalar(@maths)==1){ 	# Single Math in equation
+
+	 # First, we copy the math, and look for a relation.
+	 my $copy = cloneMath($document,$maths[0]);
+	 my @nodes = $copy->firstChild->childNodes; # nodes inside the XMath
+	 my @boxes = $document->getNodeBox($maths[0])->getBody->unlist;
+	 # move the copied nodes into the 1st td until we get a relation.
+	 my (@lhs,@lhs_boxes);
+	 while(@nodes && (($nodes[0]->nodeType != XML_ELEMENT_NODE)
+			  || (($nodes[0]->getAttribute('role')||'') !~/^(RELOP|ARROW)/))){
+	   push(@lhs,shift(@nodes)); }
+	 if(@nodes){
+	   my $relbox = $nodes[0]->getAttribute('_box');
+	   while(@boxes && (("".$boxes[0]) ne $relbox)){
+	     push(@lhs_boxes,shift(@boxes)); }}
+	 else {
+	   push(@lhs_boxes,@boxes); @boxes=(); }
+
+	 # If we didn't find BOTH an appropriate relation node AND box, GIVE UP!!!
+	 next unless scalar(@nodes) and scalar(@boxes);
+
+	 # Otherwise, create an appropriate fork, add the whole equation,
+	 # and add the lhs and rhs(s) into separate tr/td's
+	 my $fork = addNewChildLate($document,$equation,'ltx:MathFork');
+	 $equation->insertBefore($fork,$maths[0]);
+	 $fork->appendChild($maths[0]); # Move Math into MathFork.
+	 # Copy essentials to new node.
+	 if(my $font = $maths[0]->getAttribute('_font')){
+	   $fork->setAttribute(_font=>$font); }
+	 if(my $boxid = $maths[0]->getAttribute('_box')){
+	   $fork->setAttribute(_box=>$boxid); }
+	 # Add a branch with a tr.
+	 my $branch = addNewChildLate($document,$fork,'ltx:MathBranch');
+
+	 do {
+	   my(@rhs,@rhs_boxes);
+	   push(@rhs,shift(@nodes)) if @nodes;
+	   push(@rhs_boxes,shift(@boxes)) if @boxes;
+	   while(@nodes && (($nodes[0]->nodeType != XML_ELEMENT_NODE)
+			    || (($nodes[0]->getAttribute('role')||'') !~/^(RELOP|ARROW)/))){
+	     push(@rhs,shift(@nodes)); }
+	   if(@nodes){
+	     my $relbox = $nodes[0]->getAttribute('_box');
+	     while(@boxes && (("".$boxes[0]) ne $relbox)){
+	       push(@rhs_boxes,shift(@boxes)); }}
+	   else {
+	     push(@rhs_boxes,@boxes); @boxes=(); }
+
+	   my $tr     = addNewChildLate($document,$branch,'ltx:tr');
+	   my $ltd = addEquationgroupSplitEquationTD($document,$tr,'right',@lhs);
+	   my $rtd = addEquationgroupSplitEquationTD($document,$tr,'left',@rhs);
+	   appendTeXfromBox($document,$ltd->firstChild,@lhs_boxes);
+	   appendTeXfromBox($document,$rtd->firstChild,@rhs_boxes);
+	   @lhs=(); @lhs_boxes=();
+	 } while(@nodes);
+       }}}
+   return; }
+
+# Add a new td to a manually split equation,
+# assumes nodes are already appropriately cloned.
+sub addEquationgroupSplitEquationTD {
+  my($document,$tr,$align,@nodes)=@_;
+  my $td    = addNewChildLate($document,$tr,'ltx:td');
+  $td->setAttribute(align=>$align);
+  if(@nodes){
+    my $math  = addNewChildLate($document,$td,'ltx:Math');
+    my $xmath = addNewChildLate($document,$math,'ltx:XMath');
+    map($xmath->appendChild($_), @nodes); }
+  $td; }
 
 DefConstructor('\@constraint OptionalMatch:* {}',
-	       "^<ltx:constraint hidden='?#1(yes)(no)'>#2</ltx:constraint>",
+	       "^<ltx:constraint hidden='?#1(true)(false)'>#2</ltx:constraint>",
 	       mode=>'text', reversion=>'');
 
 DefMacro('\constraint OptionalMatch:* [Default:,]{}',sub { 
@@ -371,50 +534,29 @@ DefMacro('\constraint OptionalMatch:* [Default:,]{}',sub {
 # Redefine to include metadata block.
 
 DefEnvironment('{figure}[]',
-	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
-	       . "<ltx:metadata id='#id.info'/>"
+	       "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       . "<ltx:metadata xml:id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:figure>",
 	       properties=> sub { RefStepCounter('figure') });
 DefEnvironment('{figure*}[]',
-	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
-	       . "<ltx:metadata id='#id.info'/>"
+	       "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       . "<ltx:metadata xml:id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:figure>",
 	       properties=> sub { RefStepCounter('figure') });
 DefEnvironment('{table}[]',
-	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
-	       . "<ltx:metadata id='#id.info'/>"
+	       "<ltx:table xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       . "<ltx:metadata xml:id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:table>",
 	       properties=> sub { RefStepCounter('table')} );
 DefEnvironment('{table*}[]',
-	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
-	       . "<ltx:metadata id='#id.info'/>"
+	       "<ltx:table xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       . "<ltx:metadata xml:id='#id.info'/>"
 	       . "#body"
 	       ."</ltx:table>",
 	       properties=> sub { RefStepCounter('table')} );
-
-#**********************************************************************
-# Table enhancement
-
-DefConstructor('\thinhline','',
-	       afterDigest=>sub { LookupValue('Alignment')->addLine('T'); },
-	       reversion=>'');
-
-# Paragraph similar to X
-DefColumnType('P',sub {
-  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\hbox'),T_BEGIN),
-				      after=>Tokens(T_END),
-				      align=>'justify'); return; });
-
-#**********************************************************************
-DefConstructor('\DLMF',                '<ltx:ref href="http://dlmf.nist.gov">DLMF</ltx:ref>');
-DefConstructor('\VRML Semiverbatim', "<ltx:VRML href='#1'/>");
-DefConstructor('\GAMSclass{}',         "<ltx:GAMS class='#1'/>");
-DefConstructor('\GAMSpackage{}',       "<ltx:GAMS package='#1'/>");
-DefConstructor('\GAMSclasspackage{}{}',"<ltx:GAMS class='#1' package='#2'/>");
-DefConstructor('\GAMSmodule{}{}{}',    "<ltx:GAMS package='#1' module='#2' module_id='#3'/>");
 
 #**********************************************************************
 1;
