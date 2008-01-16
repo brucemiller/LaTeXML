@@ -228,21 +228,83 @@ C<LaTeXML::Number> - representation of numbers, dimensions, skips and glue.
 
 This module defines various dimension and number-like data objects
 
- LaTeXML::Number      represents numbers,
- LaTeXML::Float       represents floating-point numbers,
- LaTeXML::Dimension   represents dimensions,
- LaTeXML::MuDimension represents math dimensions,
- LaTeXML::Glue        represents glue (skips),
- LaTeXML::MuGlue      represents math glue,
- LaTeXML::Pair        represents pairs of numbers
- LaTeXML::Pairlist    represents list of pairs.
+=over 4
+
+=item C<LaTeXML::Number>
+
+represents numbers,
+
+=item C<LaTeXML::Float>
 
 =begin latex
 
-\label{LaTeXML::Float}\label{LaTeXML::Dimension}\label{LaTeXML::MuDimension}
-\label{LaTeXML::Glue}\label{LaTeXML::MuGlue}\label{LaTeXML::Pair}\label{LaTeXML::PairList}
+\label{LaTeXML::Float}
 
 =end latex
+
+represents floating-point numbers,
+
+=item C<LaTeXML::Dimension>
+
+=begin latex
+
+\label{LaTeXML::Dimension}
+
+=end latex
+
+represents dimensions,
+
+=item C<LaTeXML::MuDimension>
+
+=begin latex
+
+\label{LaTeXML::MuDimension}
+
+=end latex
+
+represents math dimensions,
+
+=item C<LaTeXML::Glue>
+
+=begin latex
+
+\label{LaTeXML::Glue}
+
+=end latex
+
+represents glue (skips),
+
+=item C<LaTeXML::MuGlue>
+
+=begin latex
+
+\label{LaTeXML::MuGlue}
+
+=end latex
+
+represents math glue,
+
+=item C<LaTeXML::Pair>
+
+=begin latex
+
+\label{LaTeXML::Pair}
+
+=end latex
+
+represents pairs of numbers
+
+=item C<LaTeXML::Pairlist>
+
+=begin latex
+
+\label{LaTeXML::PairList}
+
+=end latex
+
+represents list of pairs.
+
+=back
 
 =head2 Common methods
 
