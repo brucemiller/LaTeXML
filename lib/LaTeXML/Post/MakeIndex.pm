@@ -32,6 +32,7 @@ sub process {
   my($self,$doc)=@_;
   my($index,$tree);
   if($index = $doc->findnode('//ltx:index')){
+    $doc->addDate();
     my($allkeys,$tree)= $self->build_tree($doc,$index);
     if($tree){
       if($$self{split}){
@@ -52,8 +53,8 @@ sub build_tree {
   my($self,$doc,$index)=@_;
   if(my @keys = grep(/^INDEX:/,$$self{db}->getKeys)){
     $self->Progress("processing ".scalar(@keys)." index entries");
-#    my $id = $doc->getDocumentElement->getAttribute('id');
-    my $id = $index->getAttribute('id');
+#    my $id = $doc->getDocumentElement->getAttribute('xml:id');
+    my $id = $index->getAttribute('xml:id');
     my $allkeys={''=>{id=>$id,phrases=>[]}};
     my $tree = {subtrees=>{},referrers=>{}, id=>$id};
     foreach my $key (@keys){
@@ -151,15 +152,16 @@ sub makeIndexEntry {
   my @links = ();
    # Note sort of keys here is questionable!
   if(keys %$refs){
-    push(@links,', ',conjoin(map(makeIndexRefs($doc,$_,sort keys %{$$refs{$_}}),
+    push(@links,conjoin(map(makeIndexRefs($doc,$_,sort keys %{$$refs{$_}}),
 				 sort keys %$refs))); }
   if($seealso){
-    push(@links, ', ',
+    push(@links,
+	 (@links ? (', '):()),
 	 ['ltx:text',{font=>'italic'},(keys %$refs ? "see also " : "see ")],
 	 conjoin(map(['ltx:ref',{idref=>$_->{id}},@{$_->{phrases}}],
 		     grep($_, map($$allkeys{$_},sort keys %$seealso))))); }
 
-  ['ltx:indexentry',{id=>$$tree{id}},
+  ['ltx:indexentry',{'xml:id'=>$$tree{id}},
    ['ltx:indexphrase',{},$doc->trimChildNodes($$tree{phrase})],
    (@links ? (['ltx:indexrefs',{},@links]):()),
    makeIndexList($doc,$allkeys,$tree)]; }
