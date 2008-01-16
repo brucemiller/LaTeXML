@@ -17,31 +17,37 @@ use LaTeXML::Package;
 #**********************************************************************
 # Document
 #**********************************************************************
-DocType("ltx:bibliography","-//NIST LaTeXML//LaTeXML DLMF Chapter",'DLMF.dtd',
-	'#default'=>"http://dlmf.nist.gov/LaTeXML");
+RelaxNGSchema("DLMF");
+RequirePackage('DLMFsupport');
+RequirePackage('amsrefs');
+
 DefMacro('\thedocument@ID','bib');
 DefEnvironment('{document}',
-	       "<ltx:bibliography id='#id'>#body</ltx:bibliography>",
-	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
+	       "<ltx:bibliography xml:id='#id'>"
+	       .  "<ltx:title>Bibliography</ltx:title>"
+	       .  "#body"
+	       ."</ltx:bibliography>",
+	       beforeDigest=> sub { AssignValue(inPreamble=>0);
+				    Digest(T_CS('\@add@source@date')); },
 	       afterDigestBegin=>sub { 
 		 Let('\thebibliography@ID','\thedocument@ID');
 		 $_[1]->setProperty(id=>Expand(T_CS('\thebibliography@ID'))); });
 
-# Load special functions & other required packages.
-RequirePackage('latexml');
-RequirePackage('DLMFmath');
-RequirePackage('amsmath');
-RequirePackage('amsrefs');
-RequirePackage('url');
+
+Tag('ltx:bibliography', afterOpen=>\&insertFrontMatter);
 
 DefKeyVal('amsrefs','text_url','BibURL');
 DefKeyVal('amsrefs','abstract_url','BibURL');
 
-# Oh, and these too...
-DefConstructor('\GAMSclass{}',"<ltx:GAMS class='#1'/>");
-DefConstructor('\GAMSpackage{}',"<ltx:GAMS package='#1'/>");
-DefConstructor('\GAMSclasspackage{}{}',"<ltx:GAMS class='#1' package='#2'/>");
-DefConstructor('\GAMSmodule{}{}{}',"<ltx:GAMS package='#1' module='#2' module_id='#3'/>");
+DefKeyVal('amsrefs','links','BibURL');
+DefConstructor('\amsrefs@links{}',      "<ltx:bib-links>#1</ltx:bib-links>");
+
+DefConstructor('\amsrefs@zblno{}',
+	       "<ltx:bib-identifier scheme='zbl' id='#1' href='#href'>ZentralBlatt</ltx:bib-identifier>",
+	       properties=>sub {
+		 my $id = ToString($_[1]);
+		 (id=>$id,
+		  href=>"http://www.zentralblatt-math.org/zmath/en/search/?q=an:$id"); });
 
 #**********************************************************************
 1;
