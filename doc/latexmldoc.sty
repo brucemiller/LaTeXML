@@ -85,27 +85,36 @@
 \newenvironment{dtdmodule}[1]{%
   \section*{Module \texttt{#1}}\label{dtd.module.#1}
    \raggedright
-}{}
-%  \begin{description}}{\end{description}}
+  \begin{description}}{\end{description}}
 
-% \elementdef{name}{model}{modeldoc}{attributes}{attrdoc}
-\newcommand{\elementdef}[5]{
-  \item[\hypertarget{dtd.element.#1}{\texttt{#1}}]:#2  
-    \if.#3.\else \par\noindent #3\fi
-    \if.#4#5.\else \parindent=-1em\par\textbf{attributes: }#4 \par\noindent #5\fi
+% \elementdef{name}{doc}{attributes}{content}
+\newcommand{\elementdef}[4]{
+  \item[\hypertarget{dtd.element.#1}{\texttt{#1}}] \hspace{1em} #2
+    \if.#3.\else \parindent=-1em\par\textbf{attributes: } #3\fi
+    \if.#4.\else \parindent=-1em\par\textbf{content: }#4\fi
 }
 
-% \entitydef{name}{value}{documentation}
-\newcommand{\entitydef}[3]{%
-  \item[\hypertarget{dtd.entity.#1}{\texttt{#1}}] $\equiv$ #2
-   \if.#3.\else \par\noindent #3\fi
+% \attrdef{name}{doc}{content}
+\newcommand{\attrdef}[3]{
+  \item[\texttt{#1}] \hspace{1em} #2
+    \parindent=-1em\par\textbf{=} \if.#3.\textit{text}\else #3\fi
+}
+% \entitydef{name}{doc}{value}
+\newcommand{\entitydef}[3]{
+   \item[\hypertarget{dtd.entity.#1}{\texttt{#1}}] \hspace{1em} #2
+    \parindent=-1em\par\textbf{==}\if.#3.()\else #3\fi
 }
 
-%\newcommand{\moduleref}[1]{\hyperlink{dtd.module.#1}{\texttt{#1}}}
+% \entityadd{name}{combiner}{doc}{value}
+\newcommand{\entityadd}[4]{
+  \item[\texttt{#1}] \hspace{1em} #3
+    \if.#4.\else \par\noindent\textbf{#2 } #4\fi
+}
+
 \newcommand{\moduleref}[1]{\htmlref{\texttt{#1}}{dtd.module.#1}}
-\newcommand{\entityref}[1]{\hyperlink{dtd.entity.#1}{\texttt{\%#1;}}}
+\newcommand{\entityref}[1]{\hyperlink{dtd.entity.#1}{\texttt{#1}}}
 \newcommand{\elementref}[1]{\hyperlink{dtd.element.#1}{\texttt{#1}}}
 
 %======================================================================
-\usepackage[colorlinks=true]{hyperref}
+\usepackage[colorlinks=true, plainpages=false, pdfpagelabels]{hyperref}
 %======================================================================

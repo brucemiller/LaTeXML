@@ -1,14 +1,16 @@
-\documentclass{report}
+\documentclass{book}
 \usepackage{latexmldoc}
 \usepackage{makeidx}
 \makeindex
 
-\title{The \LaTeXML\ Manual}
+\title{\LaTeXML: The Manual}
 \subtitle{A \LaTeX\ to \XML\ Converter;\\ \emph{Version~0.6.0}}
 \author{Bruce R.~Miller}
 \begin{document}
+\frontmatter
 \maketitle
 \tableofcontents
+\mainmatter
 %%%======================================================================
 \chapter{Introduction}\label{intro}
 For many, \LaTeX\ is the prefered format for document authoring, particularly those
@@ -79,14 +81,14 @@ The usage of these commands can be as simple as
 \end{quote}
 to convert a single document into \HTML,  or as complicated as
 \begin{quote}
- \cmd{latexml --destination=doca.xml doca}\\
- \cmd{latexml --destination=docb.xml docb}\\
+ \cmd{latexml --dest=A.xml doca}\\
+ \cmd{latexml --dest=B.xml docb}\\
   \hbox{}\hspace{1in}\ldots\\
- \cmd{latexmlpost --prescan --dbfile=my.db --destination=doca.xhtml doca}\\
- \cmd{latexmlpost --prescan --dbfile=my.db --destination=docb.xhtml docb}\\
+ \cmd{latexmlpost --prescan --dbfile=my.db --dest=A.xhtml A}\\
+ \cmd{latexmlpost --prescan --dbfile=my.db --dest=B.xhtml B}\\
   \hbox{}\hspace{1in}\ldots\\
- \cmd{latexmlpost --noscan --dbfile=my.db --destination=doca.xhtml doca}\\
- \cmd{latexmlpost --noscan --dbfile=my.db --destination=docb.xhtml docb}\\
+ \cmd{latexmlpost --noscan --dbfile=my.db --dest=A.xhtml A}\\
+ \cmd{latexmlpost --noscan --dbfile=my.db --dest=B.xhtml B}\\
   \hbox{}\hspace{1in}\ldots
 \end{quote}
 to convert a whole set of documents into a complete site.
@@ -125,8 +127,9 @@ order:
 \begin{description}
   \item[\texttt{TeX.pool.ltxml}] the core module is always loaded.
   \item[\cmd{--preload=\varfile{module}}] causes loading of \varfile[ltxml]{module}.
-    For example, \cmd{--preload=LaTeX.pool} can be useful to force \LaTeX-mode
-    if \LaTeXML\ fails to recognize it.
+    For example, if \LaTeXML\ fails to recognize a \LaTeX\ document 
+    \cmd{--preload=LaTeX.pool} can be useful to force \LaTeX-mode.
+    Or if you want
     This option can be repeated, and the modules will be loaded in the
     given order.
   \item[\varfile{doc}\texttt{.latexml}] a document-specific customization module
@@ -139,20 +142,21 @@ As processing proceeds, additional modules may be loaded as follows.
     \verb|\documentclass|.
   \item[\code{\cs{documentclass}\{\varfile{class}\}}]
      loads \varfile[cls.ltxml]{class}.
-     (Old style \verb|\documentstyle| behaves similarly, along with any required packages).
-  \item[\code{\cs{usepackage}\{\textit{package}\}}] (or related commands) loads
-    \varfile[sty.ltxml]{package}.  Normally, \LaTeXML\ will not
+     (legacy \verb|\documentstyle| behaves similarly, along with any required packages).
+  \item[\code{\cs{usepackage}\{\textit{package}\}}] (or related) loads
+    \varfile[sty.ltxml]{package}.  \LaTeXML\ will not
     attempt to read the \varfile[sty]{package} file, as these
-    often involve \LaTeX\ internals meaningless to the generation of \XML.
-    This behavior can be overridden with the option
+    often involve \LaTeX\ internals meaningless to the generation of \XML,
+    unless forced to with the option
     \begin{quote}
       \cmd{--includestyles}
     \end{quote}
     A selective, per-file, option may be developed in the future --- please
     provide use cases.
-  \item[\code{\cs{input}\{\varfile{file}\}}] loads the first
+  \item[\code{\cs{input}\{\varfile{file}\}}] loads an appropriate version
+     of \varfile{file}, specifically the first found of:
     \varfile[tex.ltxml]{file}, \varfile[tex]{file}, 
-    \varfile[ltxml]{file} or \varfile{file} that is found.
+    \varfile[ltxml]{file} or \varfile{file}.
 \end{description}
 Some of these modules (esp.~\code{TeX} and \code{LaTeX}), are parts of
 the \LaTeXML\ distribution; others are supplied by the user, or can be
@@ -210,10 +214,10 @@ by the file extension of \code{--destination}, or by the option
  \cmd{--format=(xhtml|html|xml)}
 \end{quote}
 \begin{description}
- \item[html] math and graphics are converted to png images;
-    the \code{LaTeXML-html.xslt} stylesheet is used.
- \item[xhtml] math is converted to Presentation \MathML, other graphics to images;
-    the \code{LaTeXML-xhtml.xslt} stylesheet is used.
+ \item[html] both math and graphics are converted to png images;
+    the stylesheet \code{LaTeXML-html.xslt} is used.
+ \item[xhtml] math is converted to Presentation \MathML, other graphics are converted to images;
+    the stylesheet \code{LaTeXML-xhtml.xslt}  is used.
  \item[xml] no math, graphics or \XSLT\ conversion is carried out.
 \end{description}
 Of course, all of these conversions can be controlled or overridden
@@ -227,9 +231,9 @@ indexing commands, cross-references and so on, to be used
 in the following postprocessing stages.
 
 \paragraph{Indexing}
-An index is built from \verb|\index| markup, provided 
+An index is built from \verb|\index| markup, if
 \code{makeidx}'s \verb|\printindex| command has been used,
-but can be disabled by
+but this can be disabled by
 \begin{quote}
   \cmd{--noindex}
 \end{quote}
@@ -273,9 +277,9 @@ Specific conversions of the mathematics can be requested
 using the options
 \begin{quote}
  \code{--mathimages}   converts math to png images,\\
- \code{--presentationmathml} (or \code{--pmml}) converts to Presentation \MathML\\
- \code{--contentmathml} (or \code{--cmml}) converts to Content \MathML\\
- \code{--openmath} (or \code{--om}) converts to \OpenMath
+ \code{--presentationmathml} (or \code{--pmml}) creates Presentation \MathML\\
+ \code{--contentmathml} (or \code{--cmml}) creates Content \MathML\\
+ \code{--openmath} (or \code{--om}) creates \OpenMath
 \end{quote}
 (Each of these options can also be negated if needed, eg.~\code{--nomathimages})
 It must be pointed out that the Content \MathML\ and \OpenMath\
@@ -291,8 +295,8 @@ can be used to generate parallel \MathML\ markup, provided the first
 conversion is either \code{--pmml} or \code{--cmml}.
 
 \paragraph[Graphics]{Graphics processing}
-Conversion of graphics (eg.~included using \verb|\includegraphics| from
-the \code{graphics} or \code{graphicx} packages) can be enabled or disabled
+Conversion of graphics (eg.~from the \code{graphic(s|x)} packages' 
+\verb|\includegraphics|) can be enabled or disabled
 using
 \begin{quote}
  \code{--graphicsimages} or \code{--nographicsimages}
@@ -308,19 +312,24 @@ controlled by
 \end{quote}
 
 \paragraph{Stylesheet}
-If you wish to provide your own \XSLT\ stylesheet, or
-a different \CSS\ stylesheet, the options 
+If you wish to provide your own \XSLT\  or
+\CSS\ stylesheets, the options 
 \begin{quote}
 \code{--stylesheet=\varfile[xsl]{stylesheet}}\\
 \code{--css=\varfile[css]{stylesheet}}
 \end{quote}
- can be used.  The \code{--css} option can be repeated to accumulate several stylesheets;
-for example, the distribution provides several \code{navbar-left.css}, \code{navbar-right.css},
-\code{theme-blue.css} and \code{amsart.css}, in addition to the \code{core.css} stylesheet
+ can be used.  The \code{--css} option can be repeated to include multiple stylesheets;
+for example, the distribution provides several in addition to the \code{core.css} stylesheet
 which is included by default.
+\begin{description}
+\item[\code{navbar-left.css}] Places a navigation bar on the left.
+\item[\code{navbar-right.css}] Places a navigation bar on the left.
+\item[\code{theme-blue.css}] Colors various features in a soft blue.
+\item[\code{amsart.css}] A style appropriate for many journal articles.
+\end{description}
 
 To develop such stylesheets, a knowledge
-of the \LaTeXML\ document type is necessary; See Appendix \ref{dtd}.
+of the \LaTeXML\ document type is necessary; See Appendix \ref{schema}.
 
 %%%----------------------------------------------------------------------
 \section[Splitting]{Splitting the Output}\label{usage.multiple}\index{latexmlpost!usage!split pages}
@@ -372,7 +381,7 @@ by \LaTeXML\ in the following fashion.
  \item[Scanning] Secondly, all \XML\ files must be split and scanned using
   the command
   \begin{quote}
-   \cmd{latexmlpost --prescan --dbfile=\varfile{DB} --dest=\varfile[xhtml]{doci} \varfile{doci}}
+   \cmd{latexmlpost --prescan --dbfile=\varfile{DB} --dest=\varfile[xhtml]{i} \varfile{i}}
   \end{quote}
   where \varfile{DB} names a file in which to store the scanned data.
   Other conversions, including writing the output file, are skipped in this prescanning step.
@@ -380,7 +389,7 @@ by \LaTeXML\ in the following fashion.
  \item[Pagination] Finally, all \XML\ files are cross-referenced and converted into
    the final format using the command
    \begin{quote}
-     \cmd{latexmlpost --noscan --dbfile=\varfile{DB} --dest=\varfile[xhtml]{doci} \varfile{doci}}
+     \cmd{latexmlpost --noscan --dbfile=\varfile{DB} --dest=\varfile[xhtml]{i} \varfile{i}}
    \end{quote}
    which skips the unnecessary scanning step.
 \end{description}
@@ -566,8 +575,8 @@ during parsing, but probably shouldn't.
    \MathML\ or \OpenMath.
 \end{itemize}
 
-The \elementref{Math} element is a top-level container for any math mode material; it
-serves as the container for the various representations of the math, including
+The \elementref{Math} element is a top-level container for any math mode material,
+serving as the container for various representations of the math including
 images (through attributes \attr{mathimage}, \attr{width} and \attr{height}), 
 textual (through attributes \attr{tex}, \attr{content-tex} and \attr{text}),
 \MathML\ and the internal representation itself.  
@@ -684,7 +693,7 @@ case productions, no rigidly ordered precedence is given.
   necessarily assumed to be a power. Very high precedence.
 \item[\code{POSTSUBSCRIPT}] Similar to \code{POSTSUPERSCRIPT} for subscripts.
 \item[\code{FLOATINGSUPERSCRIPT}] A special case for a superscript on an empty base,
-  ie. \verb|{}^{x}|.  This is often used to place a pre-superscript or for
+  ie. \verb|{}^{x}|.  It is often used to place a pre-superscript or for
   non-math uses (eg. \verb|10${}^{th}|).
 \item[\code{FLOATINGSUBSCRIPT}] Similar to \code{POSTSUPERSCRIPT} for subscripts.
 \item[\code{POSTFIX}] for a postfix operator
@@ -714,16 +723,15 @@ Lots\ldots!
 \end{itemize}
 
 %%%======================================================================
-\printindex\label{idx}
-%%%======================================================================
 \appendix
 \chapter[Commands]{Command Documentation}\label{commands}
-\include{generated/latexml}
+% input the 1st, to avoid quasi-blank page; include the rest
+\input{generated/latexml}
 \include{generated/latexmlpost}
 
 %%%======================================================================
 \chapter[Modules]{Core Module Documentation}\label{coremodules}
-\include{generated/LaTeXML}
+\input{generated/LaTeXML}
 \include{generated/LaTeXML_Object}
 \include{generated/LaTeXML_Definition}
 \include{generated/LaTeXML_Global}
@@ -752,101 +760,25 @@ Lots\ldots!
 
 %%%======================================================================
 \chapter[Utility Modules]{Utility Module Documentation}\label{utilitymodules}
-\include{generated/LaTeXML_Util_Pathname}
+\input{generated/LaTeXML_Util_Pathname}
 
 %%%======================================================================
 \chapter[Postprocessing Modules]{Postprocessing Module Documentation}\label{postmodules}
-\include{generated/LaTeXML_Post}
+\input{generated/LaTeXML_Post}
 
 %%%======================================================================
-\chapter[DocType]{\LaTeXML\ DocType}\label{dtd}
+\chapter[Schema]{\LaTeXML\ Schema}\label{schema}
 The document type used by \LaTeXML\ is modular in the sense
 that it is composed of several modules that define different
 sets of elements related to, eg., inline content, block content,
 math and high-level document structure.  This allows the possibility
 of mixing models or extension by predefining certain parameter entities.
-However, in order to present a more readable summary of the model,
-most lower level parameter entities have been expanded in the following.
-Customizers are recommended to study the actual dtd modules for
-detailed guidelines.
 
-\include{generated/dtd}
+\input{generated/schema}
+
+%%%======================================================================
+\backmatter
+\printindex\label{idx}
+
 \end{document}
 
-%======================================================================
-% OMITTED
-% and probably out-of-date
-\chapter{Object Hierarchy}\label{hierarchy}
-{\small
-\begin{description}
-  \item[\pod{LaTeXML::Object}]: Abstract base class.
-  \begin{description}
-    % In Token.pm
-    \item[\pod{LaTeXML::Token}]: A \TeX\ token: character/string with category code.
-    \item[\pod{LaTeXML::Tokens}]: A list of \pod{LaTeXML::Token}s.
-    \item[\pod{LaTeXML::Number}]: A \TeX\ number.
-    \begin{description}
-      \item[\pod{LaTeXML::Dimension}]: A \TeX\ dimension; number with unit.
-      \begin{description}
-        \item[\pod{LaTeXML::MuDimension}]: A \TeX\ math-mode dimension.
-        \item[\pod{LaTeXML::Glue}]:  A \TeX\ dimension with shrink and stretch.
-        \begin{description}
-          \item[\pod{LaTeXML::MuGlue}]: A \TeX\ math-mode glue.
-        \end{description}
-      \end{description}
-    \end{description}
-    % In Box.pm
-    \item[\pod{LaTeXML::Box}]: A digested character/string; base class for digested objects.
-    \begin{description}
-      \item[\pod{LaTeXML::MathBox}]: A digested character token in math.
-      \item[\pod{LaTeXML::Comment}]: A digested comment.
-      \item[\pod{LaTeXML::List}]: A list of text-mode boxes.
-      \begin{description}
-        \item[\pod{LaTeXML::MathList}]: A list of math-mode boxes.
-      \end{description}
-      \item[\pod{LaTeXML::Whatsit}]: A special digested object with arguments and properties; has its own
-             rules for conversion into an document fragment.
-    \end{description}
-    % In Font.pm
-    \item[\pod{LaTeXML::Font}]: A representation of a font, attached to digested objects.
-    \begin{description}
-      \item[\pod{LaTeXML::MathFont}]: A font in math; special rules for merging.
-    \end{description}
-    % In Node.pm
-    \item[\pod{LaTeXML::Document}]: A representation of the document under construction.
-    % In Definition.pm
-    \item[\pod{LaTeXML::Definition}]: Represents the action of executable control sequences
-    \begin{description}
-      \item[\pod{LaTeXML::Expandable}]: A definition expandable in the Gullet, (eg.~a macro).
-      \item[\pod{LaTeXML::Primitive}]: Definition for primitives, carried out in Stomach.
-      \begin{description}
-        \item[\pod{LaTeXML::Register}]: A definition for \TeX\ registers.
-        \item[\pod{LaTeXML::Constructor}]: A definition that constructs document fragments;
-             generates a Whatsit during digestion.
-      \end{description}
-    \end{description}
-    % In Parameters.pm
-    \item[\pod{LaTeXML::Parameters}]: A collection of \pod{LaTeXML::Parameter} representing a definition's
-        parameter list.
-    \item[\pod{LaTeXML::Parameter}]: A definition's parameter, including type, optional, etc.
-%    \item[\LTXKeyVals]: Representation of \LaTeX-style Key-Value lists.
-    % In Mouth.pm
-    \item[\pod{LaTeXML::Mouth}]: The organ that converts characters (eg.~from files) into \pod{LaTeXML::Token}s.
-    \begin{description}
-      \item[\pod{LaTeXML::FileMouth}]: A mouth that tokenizes input from a file.
-      \begin{description}      
-        \item[\pod{LaTeXML::StyleMouth}]: A file mouth for reading style files.
-      \end{description}
-      \item[\pod{LaTeXML::PerlMouth}]: A fake mouth for reading perl modules.
-    \end{description}
-    % In Gullet.pm
-    \item[\pod{LaTeXML::Gullet}]: The organ that expands \pod{LaTeXML::Token}s into other sequences of tokens;
-      also provides common `parsing' operations such as reading numbers, delimited lists of tokens, etc.
-    % In Stomach.pm
-    \item[\pod{LaTeXML::Stomach}]: The organ that digests \pod{LaTeXML::Token}s, converting them to a tree of
-       digested boxes; also contains the current state of grouping, bindings of definitions, etc.
-    % In Model.pm
-    \item[\pod{LaTeXML::Model}]: Represents the model of the document, extracted from the DTD.
-  \end{description}
-\end{description}
-}

@@ -19,13 +19,14 @@ DefConstructor('\cs{}','\#1', font=>{family=>'typewriter'});
 
 
 DefConstructor('\ltxcmd{}',
-	       "<ltx:ref labelref='#1'>#1</ltx:ref>");
+	       "<ltx:ref labelref='#label'>#1</ltx:ref>",
+	       properties=>sub { (label=>CleanLabel($_[1])); });
 
 DefConstructor('\pod{}', "<ltx:ref href='#href' labelref='#ref'>#1</ltx:ref>",
 	       afterDigest=>sub{
 		 my $name = $_[1]->getArg(1)->toString;
 		 if($name =~ /^LaTeXML/){
-		   $_[1]->setProperty(ref=>$name); }
+		   $_[1]->setProperty(ref=>CleanLabel($name)); }
 		 else {
 		   $name =~ s/::/%3A%3A/g;
 		   my $url = "http://search.cpan.org/search?query=$name&mode=module";
@@ -38,21 +39,35 @@ RawTeX(<<'EOTeX');
    \raggedright
   \begin{description}}{\end{description}}
 
-% \elementdef{name}{model}{modeldoc}{attributes}{attrdoc}
-\newcommand{\elementdef}[5]{
-  \item[\hypertarget{dtd.element.#1}{\texttt{#1}}]:#2  
-    \if.#3.\else \par\noindent #3\fi
-    \if.#4#5.\else \par\noindent\textbf{attributes: }#4 \par\noindent #5\fi
-}
-% \entitydef{name}{value}{documentation}
-\newcommand{\entitydef}[3]{%
-  \item[\hypertarget{dtd.entity.#1}{\texttt{#1}}] $\equiv$ #2
-   \if.#3.\else \par\noindent #3\fi
+% \elementdef{name}{doc}{attributes}{content}
+\newcommand{\elementdef}[4]{
+  \item[\hypertarget{dtd.element.#1}{\texttt{#1}}] \hspace{1em} #2
+    \if.#3.\else \parindent=-1em\par\textbf{attributes: } #3\fi
+    \if.#4.\else \parindent=-1em\par\textbf{content: }#4\fi
 }
 
+% \attrdef{name}{doc}{content}
+\newcommand{\attrdef}[3]{
+  \item[\texttt{#1}] \hspace{1em} #2
+    \parindent=-1em\par\textbf{=} \if.#3.\textit{text}\else #3\fi
+}
+% \entitydef{name}{doc}{value}
+\newcommand{\entitydef}[3]{
+   \item[\hypertarget{dtd.entity.#1}{\texttt{#1}}] \hspace{1em} #2
+    \parindent=-1em\par\textbf{==}\if.#3.()\else #3\fi
+}
+
+% \entityadd{name}{combiner}{doc}{value}
+\newcommand{\entityadd}[4]{
+  \item[\texttt{#1}] \hspace{1em} #3
+    \if.#4.\else \par\noindent\textbf{#2 } #4\fi
+}
+
+%\newcommand{\moduleref}[1]{\hyperlink{dtd.module.#1}{\texttt{#1}}}
 \newcommand{\moduleref}[1]{\htmlref{\texttt{#1}}{dtd.module.#1}}
-\newcommand{\entityref}[1]{\hyperlink{dtd.entity.#1}{\texttt{\%#1;}}}
+\newcommand{\entityref}[1]{\hyperlink{dtd.entity.#1}{\texttt{#1}}}
 \newcommand{\elementref}[1]{\hyperlink{dtd.element.#1}{\texttt{#1}}}
+
 EOTeX
 
 #======================================================================
