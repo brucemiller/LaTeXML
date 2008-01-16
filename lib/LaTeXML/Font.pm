@@ -287,12 +287,6 @@ __END__
 C<LaTeXML::Font> - representation of fonts,
 along with the specialization C<LaTeXML::MathFont>.
 
-=begin latex
-
-\label{LaTeXML::MathFont}
-
-=end latex
-
 =head1 DESCRIPTION
 
 This module defines Font objects.
@@ -315,7 +309,15 @@ The attributes are
 They are usually merged against the current font, attempting to mimic the,
 sometimes counter-intuitive, way that TeX does it,  particularly for math
 
-Additionally, C<LaTeXML::MathFont> supports C<$font->specialize($string);> for
+=head2 C<LaTeXML::MathFont>
+
+=begin latex
+
+\label{LaTeXML::MathFont}
+
+=end latex
+
+C<LaTeXML::MathFont> supports C<$font->specialize($string);> for
 computing a font reflecting how the specific C<$string> would be printed when
 C<$font> is active; This (attempts to) handle the curious ways that lower case
 greek often doesn't get a different font.  In particular, it recognizes the
