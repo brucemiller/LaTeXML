@@ -55,10 +55,10 @@ sub process {
   else {
     $doc; }}
 
-# Need to sort (cited) on author+year+title, [NOT on the key!!!]
+# ================================================================================
+# Sort (cited) bibentries on author+year+title, [NOT on the key!!!]
 # and then check whether author+year is unique!!!
 
-# ================================================================================
 sub getBibEntries {
   my($self,$doc)=@_;
 
@@ -125,7 +125,7 @@ sub getQName {
 sub formatBibEntry {
   my($self,$doc,$entry)=@_;
   my $bibentry = $$entry{bibentry};
-  my $id   = $bibentry->getAttribute('id');
+  my $id   = $bibentry->getAttribute('xml:id');
   my $key  = $bibentry->getAttribute('key');
   my $type = $bibentry->getAttribute('type');
   my $spec = $FMT_SPEC{$type};
@@ -133,7 +133,7 @@ sub formatBibEntry {
   local @LaTeXML::Post::MakeBibliography::SUFFIX = ($$entry{suffix} ? ($$entry{suffix}):());
 
   warn "\nNo formatting specification for bibentry of type $type" unless $spec;
-  # Format the data in blocks, with the first being bib-label, rest bib-block.
+  # Format the data in blocks, with the first being bib-label, rest bibblock.
   my @blocks = ();
   foreach my $blockspec (@$spec){
     my($blockname,@linespecs)=@$blockspec;
@@ -148,11 +148,11 @@ sub formatBibEntry {
       push(@x,$post) if $post; }
     push(@blocks,[$blockname,{},@x]) if @x;
   }
-  push(@blocks,['ltx:bib-block',{},"Cited by: ",
+  push(@blocks,['ltx:bibblock',{},"Cited by: ",
 		$doc->conjoin(', ',map(['ltx:ref',{idref=>$_, show=>'typerefnum'}],
 				       @{$$entry{referrers}}))]);
 
-  ['ltx:bibitem',{id=>$id, key=>$key, type=>$type},@blocks]; }
+  ['ltx:bibitem',{'xml:id'=>$id, key=>$key, type=>$type},@blocks]; }
 
 # ================================================================================
 # Formatting aids.
@@ -215,40 +215,36 @@ sub do_date { @_; }
 sub do_title { (['ltx:text',{font=>'italic'},@_]); }
 sub do_bold  { (['ltx:text',{font=>'bold'},@_]); }
 sub do_edition { (@_," edition"); } # If a number, should convert to cardinal!
-sub do_isbn { my @l = map( (", ",$_), @_); @l[1..$#l]; }
 sub do_thesis_type { @_; }
-sub do_eprint { @_; }
 sub do_pages { (" pp.\N{NO-BREAK SPACE}",@_); } # Non breaking space
 
 our $LINKS;
 BEGIN{
-    $LINKS = "ltx:bib-doi | ltx:bib-links | ltx:bib-url"
-	." | ltx:bib-mrnumber | ltx:bib-mrreviewer | ltx:bib-review";
+    $LINKS = "ltx:bib-links | ltx:bib-review | ltx:bib-identifier | ltx:bib-url"
 }
 
 sub do_links {
   my(@nodes)=@_;
   my @links=();
 
-  my($mrreviewer) = grep( getQName($_) eq 'ltx:bib-mrreviewer', @nodes);
-
   foreach my $node (@nodes){
-    my $href = $node->textContent;
+    my $scheme = $node->getAttribute('scheme') || '';
+    my $href   = $node->getAttribute('href');
     my $tag = getQName($node);
-    if   ($tag eq 'ltx:bib-doi'         ){
-      push(@links,['ltx:ref',{href=>"http://dx.doi.org/".$href},"FullText"]); }
-    elsif($tag eq 'ltx:bib-links'       ){
-      push(@links, map($_->cloneNode(1),
-		       $LaTeXML::Post::MakeBibliography::DOCUMENT->findnodes('ltx:ref | ltx:GAMS',$node))); }
-    elsif($tag eq 'ltx:bib-mrnumber'    ){
-      push(@links,['ltx:ref',{href=>"http://www.ams.org/mathscinet-getitem?mr=".$href},
-		   "MathReviews",
-		   ($mrreviewer ? (" (",$mrreviewer->childNodes,")"):())]); }
-    elsif($tag eq 'ltx:bib-review'      ){
-      push(@links,['ltx:ref',{href=>$href},"Review"]); }
+    if(($tag eq 'ltx:bib-identifier') || ($tag eq 'ltx:bib-review')){
+      if($href){
+	push(@links,['ltx:ref',{href=>$href, class=>$scheme},
+		     map($_->cloneNode(1),$node->childNodes)]); }
+      else {
+	push(@links,['ltx:text',{class=>$scheme},
+		     map($_->cloneNode(1),$node->childNodes)]); }}
+    elsif($tag eq 'ltx:bib-links'){
+      push(@links,['ltx:text',{},map($_->cloneNode(1),$node->childNodes)]); }
     elsif($tag eq 'ltx:bib-url'         ){
-      push(@links,['ltx:ref',{href=>$href},"Other"]); }}
-  @links = map((",\n",$_),@links);
+      push(@links,['ltx:ref',{href=>$href},
+		   map($_->cloneNode(1),$node->childNodes)]); }}
+
+  @links = map((",\n",$_),@links); # non-string join()
   @links[1..$#links]; }
 
 # ================================================================================
@@ -260,7 +256,7 @@ BEGIN{
 #  type => [block_format, ...]
 #  block_format = [block_name, fieldformat,...]
 #  fieldformat == [xpath, punct, prestring, operatorname, poststring]
-# The first block should typically be 'tag', the rest 'bib-block'.
+# The first block should typically be 'tag', the rest 'bibblock'.
 
 %FMT_SPEC=
   (article=>[ ['ltx:tag',
@@ -270,22 +266,20 @@ BEGIN{
 	       ['ltx:bib-author/ltx:surname','', '', \&do_cite_names,''],
 	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
 	       ['ltx:bib-title',             '', '', \&do_cite_title,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-part'     , ''  , '', \&do_any,''],
 	       ['ltx:bib-journal'  , ', ', '', \&do_any,''],
 	       ['ltx:bib-volume'   , ' ' , '', \&do_bold,''],
 	       ['ltx:bib-number'   , ' ' , '(', \&do_any,')'],
-	       ['ltx:bib-eprint'   , ', ', '', \&do_eprint,''],
 	       ['ltx:bib-status'   , ', ', '(', \&do_any,')'],
 	       ['ltx:bib-pages'    , ', ', '', \&do_pages,''],
 	       ['ltx:bib-language' , ' ' , '(', \&do_any,')'],
-	       ['ltx:bib-issn'     , ' ' , '[ISSN ',\&do_any,']'],
 	       ['true'             , '.']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-note'     ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       [$LINKS             ,'', 'Links: ',\&do_links,'']]],
    book=>   [ ['ltx:tag',
 	       ['ltx:bib-author'   , ''  , '', \&do_authors,''],
@@ -295,9 +289,9 @@ BEGIN{
 	       ['ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname','', '', \&do_cite_names,''],
 	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
 	       ['ltx:bib-title',             '', '', \&do_cite_title,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-type'     , ''  , '', \&do_any,''],
 	       ['ltx:bib-booktitle', ', ', '', \&do_title,''],
 	       ['ltx:bib-edition'  , ', ', '', \&do_edition,''],
@@ -307,13 +301,12 @@ BEGIN{
 	       ['ltx:bib-publisher', ', ', ' ', \&do_any,''],
 	       ['ltx:bib-organization',', ',' ', \&do_any,''],
 	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
-	       ['ltx:bib-isbn'     , ' ' , '[ISBN ',\&do_isbn,']'],
 	       ['ltx:bib-status'   , ' ' , '(',\&do_any,')'],
 	       ['ltx:bib-language' , ' ' , '(',\&do_any,')'],
 	       ['true','.']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       [$LINKS          ,'', 'Links: ',\&do_links,'']]],
    'collection.article'=>[
 	      ['ltx:tag',
@@ -323,12 +316,12 @@ BEGIN{
 	       ['ltx:bib-author/ltx:surname','', '', \&do_cite_names,''],
 	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
 	       ['ltx:bib-title',             '', '', \&do_cite_title,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-type'     , ''  , '', \&do_any,''],
 	       ['ltx:bib-booktitle', ' ' , 'in ', \&do_title,',']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-edition'  , ''  , '', \&do_edition,''],
 	       ['ltx:bib-editor'   , ', ', '', \&do_editorsB,''],
 	       ['ltx:bib-series'   , ', ', '', \&do_any,''],
@@ -338,13 +331,12 @@ BEGIN{
 	       ['ltx:bib-organization',', ','', \&do_any,''],
 	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
 	       ['ltx:bib-pages'    , ', ', '', \&do_pages,''],
-	       ['ltx:bib-isbn'     , ' ' , '[ISBN ',\&do_isbn,']'],
 	       ['ltx:bib-status'   , ' ' , '(',\&do_any,')'],
 	       ['ltx:bib-language' , ' ' , '(', \&do_any,')'],
 	       ['true','.']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       [$LINKS          ,'', 'Links: ',\&do_links,'']]],
    report=>[  ['ltx:tag',
 	       ['ltx:bib-author'   , ''  , '', \&do_authors,''],
@@ -354,12 +346,12 @@ BEGIN{
 	       ['ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname','', '', \&do_cite_names,''],
 	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
 	       ['ltx:bib-title',             '', '', \&do_cite_title,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-type'     , ''  , '', \&do_any,''],
 	       ['ltx:bib-booktitle', ', ', ' in ',\&do_title,',']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-number'   , ''  , 'Technical Report ',\&do_any,''],
 	       ['ltx:bib-series'   , ', ', '',\&do_any,''],
 	       ['ltx:bib-volume'   , ', ', 'Vol. ',\&do_any,''],
@@ -368,14 +360,12 @@ BEGIN{
 	       ['ltx:bib-organization',', ', ' ',\&do_any,''],
 	       ['ltx:bib-institution',', ', ' ',\&do_any,''],
 	       ['ltx:bib-place'    , ', ', ' ',\&do_any,''],
-	       ['ltx:bib-isbn'     , ', ', '[ISBN ',\&do_isbn,']'],
-	       ['ltx:bib-eprint'   , ', ', '',\&do_eprint,''],
 	       ['ltx:bib-status'   , ', ', '(',\&do_any,')'],
 	       ['ltx:bib-language' , ' ' , '(',\&do_any,')'],
 	       ['true','.']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       [$LINKS          ,'','Links: ',\&do_links,'']]],
    thesis=>[  ['ltx:tag',
 	       ['ltx:bib-author', ''  , '', \&do_authors,''],
@@ -385,9 +375,9 @@ BEGIN{
 	       ['ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname','', '', \&do_cite_names,''],
 	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
 	       ['ltx:bib-title',             '', '', \&do_cite_title,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-type'     , ' ' , '',\&do_thesis_type,''],
 	       ['ltx:bib-part'     , ', ', 'Part ',\&do_any,''],
 	       ['ltx:bib-institution',', ','',\&do_any,''],
@@ -395,9 +385,9 @@ BEGIN{
 	       ['ltx:bib-status'   , ', ', '(',\&do_any,')'],
 	       ['ltx:bib-language' , ', ', '(',\&do_any,')'],
 	       ['true','.']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       [$LINKS          ,'','Links: ',\&do_links,'']]],
    website=>[ ['ltx:tag',
 	       ['ltx:bib-title'     ,  ''  , '', \&do_any, ''],
@@ -405,15 +395,15 @@ BEGIN{
 	      ['ltx:bib-citekeys',
 	       ['ltx:bib-title',   '', '', \&do_cite_names,''],
 	       ['true',            '', '(Website)']],
-#	      ['ltx:bib-block',
+#	      ['ltx:bibblock',
 #	       ['ltx:bib-url',     '', '', sub { (['a',{href=>$_[0]->textContent},'Website']); },'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-organization',', ',' ', \&do_any,''],
 	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
 	       ['true','.']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       [$LINKS          ,'','Links: ',\&do_links,'']]],
    software=>[['ltx:tag',
 	       ['ltx:bib-key'       ,  ''  , '', \&do_any, ''],
@@ -421,15 +411,15 @@ BEGIN{
 	      ['ltx:bib-citekeys',
 	       ['ltx:bib-key',         '', '', \&do_cite_names,''],
 	       ['ltx:bib-type',        '', '', \&do_cite_year,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-title'     ,  ''  , '', \&do_any, '']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-organization',', ',' ', \&do_any,''],
 	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
 	       ['true','.']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bib-block',
+	      ['ltx:bibblock',
 	       [$LINKS          ,'','Links: ',\&do_links,'']]],
 
 );
