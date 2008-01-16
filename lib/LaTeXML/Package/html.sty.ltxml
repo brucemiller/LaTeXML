@@ -30,7 +30,9 @@ DefConstructor('\htmlclear','<ltx:br/>');
 DefMacro('\bodytext{}','');
 DefMacro('\htmlbody','');
 
-DefConstructor('\hyperrefdef {} {}{} Semiverbatim', "<ltx:ref labelref='#4'>#1</ltx:ref>");
+DefConstructor('\hyperrefdef {} {}{} Semiverbatim', "<ltx:ref labelref='#label'>#1</ltx:ref>",
+	       properties=>sub { (label=>CleanLabel($_[4])); });
+
 Let('\hyperrefhyper',  '\hyperrefdef');
 Let('\hyperrefpagedef','\hyperrefdef');
 Let('\hyperrefnoref',  '\hyperrefdef');

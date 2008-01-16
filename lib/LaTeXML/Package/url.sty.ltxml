@@ -14,5 +14,87 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-DefConstructor('\url Semiverbatim',"<ltx:ref href='#1'>#1</ltx:ref>");
+AssignValue(BASE_URL=>'');
+
+# Ignorable stuff, since we're not doing linebreaks.
+DefMacro('\UrlBreaks','');
+DefMacro('\UrlBigBreaks','');
+DefMacro('\UrlNoBreaks','');
+DefMacro('\UrlOrds','');
+DefMacro('\UrlSpecials','');
+
+# Font style definitions.
+DefMacro('\urlstyle{}','\expandafter\protect\csname url@#1style\endcsname');
+DefMacro('\url@ttstyle','\def\UrlFont{\ttfamily}');
+DefMacro('\url@rmstyle','\def\UrlFont{\rmfamily}');
+DefMacro('\url@sfstyle','\def\UrlFont{\sffamily}');
+DefMacro('\url@samestyle','');
+DefMacro('\UrlFont','\ttfamily');
+
+# Bracketting.
+Let('\UrlLeft','\@empty');
+Let('\UrlRight','\@empty');
+
+# \DeclareUrlCommand\cmd{settings}
+# Have this expand into \@Url w/ the declared cmd as arg, so it gets reflected in XML.
+DefMacro('\DeclareUrlCommand{}{}','\def#1{\begingroup #2\@Url#1}');
+
+our $EMPTY_CATTABLE=LaTeXML::State->new(catcodes=>'none');
+
+# This is an extended version of \Url that takes an extra token as 1st arg.
+# That token is the cs that invoked it, so that it can be reflected in the generated XML,
+# as well as used to generate the reversion.
+# In any case, we read the verbatim arg, and build a Whatsit for @@Url
+DefMacro('\@Url Token', sub {
+  my($gullet,$cmd)=@_;
+  my $mouth = $gullet->getMouth;
+  my($open,$close,$url);
+  $open = $gullet->readToken;
+  {
+    local $STATE = $EMPTY_CATTABLE; 
+    if($open->equals(T_BEGIN)){
+      $STATE->assignCatcode('{'=>CC_BEGIN); # Put these back!
+      $STATE->assignCatcode('}'=>CC_END);
+      $open = T_OTHER('{'); $close = T_OTHER('}');
+      $url = $gullet->readBalanced; }
+    else {
+      $close = $open = T_OTHER($open->toString);
+      $url = $mouth->readTokens($close); }}
+  my @toks = map(T_OTHER($_->toString),$url->unlist);
+  (Invocation(T_CS('\@@Url'),
+	      T_OTHER($cmd->toString),Tokens($open),Tokens($close),
+	      Tokens(@toks),
+	      Tokens(T_CS('\UrlFont'),T_CS('\UrlLeft'),@toks,T_CS('\UrlRight')))->unlist,
+   T_CS('\endgroup')); });
+
+# Define \Url, in case its used; won't be represented as nicely
+DefMacro('\Url', sub {
+  my($gullet)=@_;
+  $gullet->unread(T_OTHER('\Url'));
+  (T_CS('\@Url')); });
+
+# \@@Url cmd {open}{close}{url}{formattedurl}
+DefConstructor('\@@Url Token {}{}{}{}',
+	       "<ltx:ref href='#href' class='#class'>#5</ltx:ref>",
+	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[4])),
+				  class=>sub { my $c=ToString($_[1]); $c =~ s/^\\//; $c; } ); },
+	      reversion=>'#1#2#4#3');
+
+# These are the expansions of \DeclareUrlCommand
+DefMacro('\path','\begingroup\urlstyle{tt}\@Url\path');
+DefMacro('\url','\begingroup\@Url\url');
+
+# \urldef{newcmd}\cmd{arg}
+# Kinda tricky, since we need to get the expansion of \cmd as the value of \newcmd
+# Along with the annoying \endgroup that must balance the one always preceding \Url!
+DefPrimitive('\urldef{}',sub {
+  my($stomach,$cmd)=@_;
+  my $gullet = $stomach->getGullet;
+  my @expansion = $stomach->digestNextBody(T_CS('\endgroup'));
+  my $expansion = LaTeXML::List->new(@expansion);
+  $stomach->endgroup;
+  DefPrimitiveI($cmd,undef,sub { @expansion; });
+  (); });
+
+
 1;
