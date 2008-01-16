@@ -319,10 +319,10 @@ latexmlpost [options] xmlfile
                          given xslfile as stylesheet.
  --css=cssfile           adds a css stylesheet to html/xhtml
                          (can be repeated)
- --nodefaultcss          disables use of the default css stylesheet
+ --nodefaultcss          disables use of default css stylesheet
  --split                 requests splitting each document
  --nosplit               disables the above (default)
- --splitat               specifies what level to split the document
+ --splitat               specifies level to split the document
  --splitpath=xpath       specifies xpath expression for splitting
                          (default is section-like, if splitting)
  --splitnaming=(id|idrelative|label|labelrelative) specifies how
@@ -352,7 +352,7 @@ latexmlpost [options] xmlfile
  --mathimages            converts math to images
                          (default for html format)
  --nomathimages          disables the above
- --mathimagemagnification=mag specifies image magnification factor
+ --mathimagemagnification=mag specifies magnification factor
  --presentationmathml    converts math to Presentation MathML
                          (default for xhtml format)
  --pmml                  alias for --presentationmathml
@@ -368,8 +368,8 @@ latexmlpost [options] xmlfile
  --parallelmath          requests parallel math markup for MathML
                          (default when multiple math formats)
  --noparallelmath        disables the above
- --graphicsimages        converts graphics to images (default)
- --nographicsimages      disables the above
+ --graphicimages        converts graphics to images (default)
+ --nographicimages      disables the above
  --pictureimages         converts picture environments to
                          images (default)
  --nopictureimages       disables the above
@@ -389,16 +389,16 @@ If xmlfile is '-', latexmlpost reads the XML from standard input.
 
 =over 4
 
-=item B<--verbose>
+=item C<--verbose>
 
 Requests informative output as processing proceeds. Can be repeated
 to increase the amount of information.
 
-=item B<--VERSION>
+=item C<--VERSION>
 
 Shows the version number of the LaTeXML package..
 
-=item B<--help>
+=item C<--help>
 
 Shows this help message.
 
@@ -408,7 +408,7 @@ Shows this help message.
 
 =over 4
 
-=item B<--format>=C<(html|xhtml|xml)>
+=item C<--format>=C<(html|xhtml|xml)>
 
 Specifies the output format for post processing. 
 html format converts the material to html and the mathematics to png images.
@@ -418,39 +418,39 @@ graphics will be converted to web-friendly formats and/or copied to the
 destination directory.  By default, the output is left in LaTeXML's xml,
 but the math is parsed and converted to presentation MathML.
 For html and xhtml, a default stylesheet is provided, but see
-the B<--stylesheet> option.
+the C<--stylesheet> option.
 
-=item B<--source>=I<source>
+=item C<--source>=I<source>
 
 Specifies the directory where the original latex source is located.
 Unless latexmlpost is run from that directory, or it can be determined
 from the xml filename, it may be necessary to specify this option in
 order to find graphics and style files.
 
-=item B<--destination=>I<destination>
+=item C<--destination=>I<destination>
 
 Specifies the destination file and directory.  The directory is needed for
 mathimages and graphics processing.
 
-=item B<--stylesheet>=I<xslfile>
+=item C<--stylesheet>=I<xslfile>
 
 Requests the XSL transformation of the document using the given xslfile as stylesheet.
 If the stylesheet is omitted, a `standard' one appropriate for the
 format (html or xhtml) will be used.
 
-=item B<--css>=I<cssfile>
+=item C<--css>=I<cssfile>
 
 Adds I<cssfile> as a css stylesheet to be used in the transformed html/xhtml.
 Multiple stylesheets can be used; they are included in the html in the
-order given, following the default C<core.css>, unless that is inhibited
-(see B<--nodefaultcss>). Some stylesheets included in the distribution are
+order given, following the default C<core.css>
+(but see C<--nodefaultcss>). Some stylesheets included in the distribution are
   --css=navbar-left   Puts a navigation bar on the left
-                      (default omits the navbar)
+                      (default omits navbar)
   --css=navbar-right  Puts a navigation bar on the left
   --css=theme-blue    A blue coloring theme for headings
   --css=amsart        A style suitable for journal articles
 
-=item B<--nodefaultcss>
+=item C<--nodefaultcss>
 
 Disables the inclusion of the default C<core.css> stylesheet.
 
@@ -460,30 +460,31 @@ Disables the inclusion of the default C<core.css> stylesheet.
 
 =over 4
 
-=item B<--split>, B<--nosplit>
+=item C<--split>, C<--nosplit>
 
 Enables or disables (default) the splitting of documents into multiple `pages'.
 If enabled, the the document will be split into sections, bibliography,
-index and appendices (if any) by default, unless B<--splitpath> is specified.
+index and appendices (if any) by default, unless C<--splitpath> is specified.
 
-=item B<--splitat=>I<unit>
+=item C<--splitat=>I<unit>
 
 Specifies what level of the document to split at. Should be one
 of C<chapter>, C<section> (the default), C<subsection> or C<subsubsection>.
 For more control, see C<--splitpath>.
 
-=item B<--splitpath=>I<xpath>
+=item C<--splitpath=>I<xpath>
 
 Specifies an XPath expression to select nodes that will generate separate
 pages. The default splitpath is
   //ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index
 
 Specifying
-  --splitpath="//ltx:section | //ltx:subsection | //ltx:bibliography | //ltx:appendix | //ltx:index"
+  --splitpath="//ltx:section | //ltx:subsection | //ltx:bibliography
+              | //ltx:appendix | //ltx:index"
 
 would split the document at subsections as well as sections.
 
-=item B<--splitnaming>=C<(id|idrelative|label|labelrelative)>
+=item C<--splitnaming>=C<(id|idrelative|label|labelrelative)>
 
 Specifies how to name the files for subdocuments created by splitting.
 The values C<id> and C<label> simply use the id or label of the subdocument's
@@ -494,21 +495,21 @@ if a split document has children that are also split, that document
 (and it's children) will be in a separate subdirectory with the
 name index.
 
-=item B<--scan>, B<--noscan>
+=item C<--scan>, C<--noscan>
 
 Enables (default) or disables the scanning of documents for ids, labels,
 references, indexmarks, etc, for use in filling in refs, cites, index and
 so on.  It may be useful to disable when generating documents not based
 on the LaTeXML doctype.
 
-=item B<--crossref>, B<--nocrossref>
+=item C<--crossref>, C<--nocrossref>
 
 Enables (default) or disables the filling in of references, hrefs, etc
 based on a previous scan (either from C<--scan>, or C<--dbfile>)
 It may be useful to disable when generating documents not based
 on the LaTeXML doctype.
 
-=item B<--urlstyle>=C<(server|negotiated|file)>
+=item C<--urlstyle>=C<(server|negotiated|file)>
 
 This option determines the way that URLs within the documents
 are formatted, depending on the way they are intended to be served.
@@ -518,31 +519,31 @@ file extension (typically C<html> or C<xhtml>) are eliminated.
 The scheme C<file> preserves complete (but relative) urls
 so that the site can be browsed as files without any server.
 
-=item B<--index>, B<--noindex>
+=item C<--index>, C<--noindex>
 
 Enables (default) or disables the generation of an index from indexmarks
 embedded within the document.  Enabling this has no effect unless
 there is an index element in the document (generated by \printindex).
 
-=item B<--splitindex>, B<--nosplitindex>
+=item C<--splitindex>, C<--nosplitindex>
 
 Enables or disables (default) the splitting of generated indexes
 into separate pages per initial letter.
 
-=item B<--bibliography=>I<pathname>
+=item C<--bibliography=>I<pathname>
 
-Specifies a bibliography file generated from a BibTeX file.
-This is used to fill in a bibliography element.
-Explicit bibliographies generated by a C<thebibliography> environment
+Specifies a bibliography file generated from a BibTeX file
+and used to fill in a bibliography element.
+Hand-written bibliographies placed in a C<thebibliography> environment
 do not need this processing.  Enabling this has no effect unless
 there is an bibliography element in the document (generated by \bibliography).
 
-=item B<--splitbibliography>, B<--nosplitbibliography>
+=item C<--splitbibliography>, C<--nosplitbibliography>
 
 Enables or disables (default) the splitting of generated bibliographies
 into separate pages per initial letter.
 
-=item B<--prescan>
+=item C<--prescan>
 
 By default C<latexmlpost> processes a single document into one
 (or more; see C<--split>) destination files in a single pass.
@@ -556,7 +557,7 @@ that reflects the entire document set.  The same effect (though less efficient)
 can be achieved by running C<latexmlpost> twice, provided a C<dbfile>
 is specified.
 
-=item B<--dbfile>I<=file>
+=item C<--dbfile>I<=file>
 
 Specifies a filename to use for the crossreferencing data when
 using two-pass processing.  This file may reside in the intermediate
@@ -572,39 +573,39 @@ depends on the format and other options.
 
 =over 4
 
-=item B<--mathimages>, B<--nomathimages>
+=item C<--mathimages>, C<--nomathimages>
 
 Requests or disables the conversion of math to images.
 Conversion is the default for html format.
 
-=item B<--mathimagemagnification=>I<factor>
+=item C<--mathimagemagnification=>I<factor>
 
 Specifies the magnification used for math images, if they are made.
 Default is 1.75.
 
-=item B<--presentationmathml>, B<--nopresentationmathml>
+=item C<--presentationmathml>, C<--nopresentationmathml>
 
 Requests or disables conversion of math to Presentation MathML.
 Conversion is the default for xhtml format.
 
-=item B<--linelength>I<=number>
+=item C<--linelength>I<=number>
 
-(Experimental) Applies line-breaking to the generated Presentation
-MathML such that it is no longer than I<number> `characters'.
+(Experimental) Line-breaks the generated Presentation
+MathML so that it is no longer than I<number> `characters'.
 
-=item B<--contentmathml>, B<--nocontentmathml>
+=item C<--contentmathml>, C<--nocontentmathml>
 
 Requests or disables conversion of math to Content MathML.
 Conversion is disabled by default.
 B<Note> that this conversion is only partially implemented.
 
-=item B<--openmath>
+=item C<--openmath>
 
 Requests or disables conversion of math to OpenMath.
 Conversion is disabled by default.
 B<Note> that this conversion is only partially implemented.
 
-=item B<--parallelmath>, B<--noparallelmath>
+=item C<--parallelmath>, C<--noparallelmath>
 
 Requests or disables parallel math markup.
 Parallel markup is the default for xhtml formats when multiple math
@@ -618,7 +619,7 @@ additional formats may be MathML or OpenMath.
 If this option is disabled and multiple formats are requested, the
 representations are simply stored as separate children of the C<Math> element.
 
-=item B<--keepXMath>
+=item C<--keepXMath>
 
 By default, when any of the MathML or OpenMath conversions
 are used, the intermediate math representation will be removed;
@@ -630,17 +631,17 @@ this option preserves it.
 
 =over 4
 
-=item B<--graphicsimages>, B<--nographicsimages>
+=item C<--graphicimages>, C<--nographicimages>
 
-Enables (default) or disables the conversion of graphics inclusion
+Enables (default) or disables the conversion of graphics
 to web-appropriate format (png).
 
-=item B<--pictureimages>, B<--nopictureimages>
+=item C<--pictureimages>, C<--nopictureimages>
 
 Enables (default) or disables the conversion of picture environments
 and pstricks material into images.
 
-=item B<--svg>, B<--nosvg>
+=item C<--svg>, C<--nosvg>
 
 Enables or disables (default) the conversion of picture environments
 and pstricks material to SVG.
