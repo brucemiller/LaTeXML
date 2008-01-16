@@ -1,0 +1,97 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  DLMFsupport                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+use LaTeXML::Util::Pathname;
+
+# This collects some common support definitions for 
+#   DLMF.cls.ltxml, DLMFpage.cls.ltx, etc
+#**********************************************************************
+# Document
+#**********************************************************************
+RelaxNGSchema("DLMF");
+
+RequirePackage('graphicx');
+RequirePackage('color');
+RequirePackage('amsmath');
+RequirePackage('amssymb');
+RequirePackage('DLMFmath');
+RequirePackage('url');
+RequirePackage('comment');
+RequirePackage('tabularx');
+RequirePackage('latexml');
+
+#**********************************************************************
+# Find the source file date from the CVS data.
+
+# Returns a hash of filesnames=>cvs revision number
+
+our @MonthNames=(qw( January February March April May June
+		     July August September October November December));
+
+DefMacro('\@source@date',sub {
+  my $pathname = LookupValue('SOURCEFILE');
+  my($dir,$name,$ext)=pathname_split($pathname);
+  my $file = $name;
+  $file .= ".$ext" if $ext;
+  my $date;
+  if(open(CVS,"$dir/CVS/Entries")){
+    my($version,$wday,$mon,$mday,$time,$year);
+    while(<CVS>){
+      if(m|^/\Q$file\E/([^/]*)/(\w+)\s+(\w+)\s+(\d+)\s+(\d+:\d+:\d+)\s+(\d+)/[^/]*/$|){
+	($version,$wday,$mon,$mday,$time,$year)=($1,$2,$3,$4,$5,$6); }}
+    close(CVS);
+    if($year){
+      my ($month) = grep( /^\Q$mon\E/,@MonthNames);
+      $date = $month." ".$mday.", ".$year; }}
+  if(!$date){
+    my ($sec,$min,$hour,$mday,$mon,$year)=localtime(pathname_timestamp($pathname));
+    $date = $MonthNames[$mon]." ".$mday.", ".(1900+$year); }
+  Explode($date); });
+
+DefMacro('\@add@source@date','\@add@frontmatter{ltx:date}[role=creation]{\@source@date}');
+
+#**********************************************************************
+# Table enhancement
+
+PushValue(ALIGNMENT_LINE_COMMANDS=>T_CS('\thinhline'));
+
+DefConstructor('\thinhline','',
+	       afterDigest=>sub { LookupValue('Alignment')->addLine('T'); });
+
+# Paragraph similar to X
+DefColumnType('P',sub {
+  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\hbox'),T_BEGIN),
+				      after=>Tokens(T_END),
+				      align=>'justify'); return; });
+
+#**********************************************************************
+# More Link support.
+
+DefConstructor('\longref [] Semiverbatim',
+	       "<ltx:ref ?#1(show='#1')(show='typerefnum. title') labelref='#label'/>",
+	       properties=>sub { (label=>CleanLabel($_[2])); });
+
+DefConstructor('\longcite [] Semiverbatim',
+	       "<ltx:bibref ?#1(show='#1')(show='title (author, year)') bibrefs='#2'/>");
+
+DefConstructor('\DLMF',                '<ltx:ref href="http://dlmf.nist.gov">DLMF</ltx:ref>');
+DefConstructor('\VRML Semiverbatim', "<ltx:VRML href='#1'/>");
+DefConstructor('\GAMSclass{}',         "<ltx:GAMS class='#1'/>");
+DefConstructor('\GAMSpackage{}',       "<ltx:GAMS package='#1'/>");
+DefConstructor('\GAMSclasspackage{}{}',"<ltx:GAMS class='#1' package='#2'/>");
+DefConstructor('\GAMSmodule{}{}{}',    "<ltx:GAMS package='#1' module='#2' module_id='#3'/>");
+
+#**********************************************************************
+1;
