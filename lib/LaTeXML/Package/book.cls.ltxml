@@ -16,9 +16,7 @@ package LaTeXML::Package::Pool;
 
 #**********************************************************************
 # Document structure.
-
-DocType("ltx:document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd', 
-	'#default'=>"http://dlmf.nist.gov/LaTeXML");
+RelaxNGSchema("LaTeXML");
 
 DefMacro('\@ptsize','0');	# should depend on options...
 RawTeX(<<'EOTeX');
@@ -82,5 +80,21 @@ DefPrimitive('\appendix',sub{
   DefMacro('\chapter', '\@startsection{appendix}{}{}{}{}{}');
  });
 
+# General document structure:
+# \documentclass{..}
+# preamble
+# \begin{document}
+# \frontmatter
+DefPrimitive('\frontmatter',undef); # Do we need this?
+# frontmatter stuff
+# \maketitle
+# \include various preface, introduction, etc
+# \mainmatter
+DefPrimitive('\mainmatter',undef);
+# \include various chapters, appendices
+# \backmatter
+DefPrimitive('\backmatter',undef);
+# commands for bibliography, indices
+# \end{document}
 #**********************************************************************
 1;
