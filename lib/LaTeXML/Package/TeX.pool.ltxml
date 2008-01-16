@@ -946,6 +946,14 @@ DefConstructor('\hrule', "<ltx:rule height='#height' depth='#depth' width='#widt
 DefConstructor('{','#body', beforeDigest=>sub{$_[0]->bgroup;}, captureBody=>1);
 DefConstructor('}',  '',    beforeDigest=>sub{$_[0]->egroup;});
 
+# These are for those screwy cases where you need to create a group like box,
+# more than just bgroup, egroup,
+# BUT you DON'T want extra {, } showing up in any untex-ing.
+DefConstructor('\@hidden@bgroup','#body', beforeDigest=>sub{$_[0]->bgroup;}, captureBody=>1,
+	       reversion=>sub { $_[0]->getProperty('body')->revert; });
+DefConstructor('\@hidden@egroup','',afterDigest=>sub { $_[0]->egroup; },
+	      reversion=>'');
+
 DefPrimitive('\begingroup',sub { $_[0]->begingroup; });
 DefPrimitive('\endgroup',  sub { $_[0]->endgroup; });
 
@@ -1182,7 +1190,14 @@ sub alignmentBindings {
   my($template,$mode)=@_;
   if($template && !ref $template){
     $template = parseAlignmentTemplate($template); }
-  my $alignment = LaTeXML::Util::Alignment->new();
+  $mode = LookupValue('MODE') unless $mode;
+  my $ismath = $mode =~/math$/;
+  my $container = ($ismath ? 'ltx:XMArray' : 'ltx:tabular');
+  my $rowtype   = ($ismath ? 'ltx:XMRow'   : 'ltx:tr');
+  my $coltype   = ($ismath ? 'ltx:XMCell'  : 'ltx:td');
+  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>$container,
+						rowElement=>$rowtype,
+						colElement=>$coltype);
   AssignValue(Alignment=>$alignment);
   $alignment->setTemplate($template) if $template;
   Let(T_ALIGN,        T_CS('\@alignment@align'));
@@ -1192,8 +1207,8 @@ sub alignmentBindings {
   Let(T_CS('\hline'), T_CS('\@alignment@hline'));
   Let(T_CS('\hrule'), T_CS('\@alignment@hrule'));
   Let('\span',        T_CS('\@alignment@span'));
-  $mode = LookupValue('MODE') unless $mode;
-  Let(T_MATH,  ($mode =~/math$/ ? T_CS('\@math@alignment$') : T_CS('\@text@alignment$')));
+
+  Let(T_MATH,  ($ismath ? T_CS('\@math@alignment$') : T_CS('\@text@alignment$')));
   return; }
 
 DefPrimitive('\@alignment@bindings AlignmentTemplate []',sub {
@@ -1215,7 +1230,7 @@ DefConstructor('\@open@alignment SkipSpaces DigestedBody',
 	       afterDigest=>sub { $_[1]->setProperty(alignment=>LookupValue('Alignment')); });
 
 #----------------------------------------------------------------------
-# Row; The content is stuffed inot the Alignment, so we don't construct anything here.
+# Row; The content is stuffed into the Alignment, so we don't construct anything here.
 DefPrimitive('\@close@row',sub { $_[0]->egroup;} );
 DefConstructor('\@open@row SkipSpaces DigestedBody',
 	       "",
@@ -1295,6 +1310,10 @@ DefPrimitive('\@open@column SkipSpaces DigestedBody', sub {
 	       AssignValue(alignmentStartColumn=>LookupValue('Alignment')->currentColumnNumber); 
 	       $_[0]->bgroup; });
 
+AssignValue(ALIGNMENT_LINE_COMMANDS=>[]);
+PushValue(ALIGNMENT_LINE_COMMANDS=>T_CS('\hline'));
+PushValue(ALIGNMENT_LINE_COMMANDS=>T_CS('\cline'));
+
 DefMacro('\@close@inner@column', sub {
 	   (T_CS('\@@eat@space'),
 	    afterCellUnlist(LookupValue('Alignment')->currentColumn->{after}),
@@ -1306,11 +1325,13 @@ DefPrimitive('\@open@inner@column',sub {
   $stomach->bgroup;
   my $gullet = $stomach->getGullet;
   my @lines=();
+  my @line_tokens = @{LookupValue('ALIGNMENT_LINE_COMMANDS')};
   $$colspec{empty}=0;		# Assume the column isn't empty
   # Scan for leading \omit, skipping over (& saving) \hline.
   while(my $tok=$gullet->readXToken){
     if($tok->equals(T_SPACE)){ } # Skip leading space
-    elsif($tok->equals(T_CS('\hline')) || $tok->equals(T_CS('\cline'))){ # Save lines
+#    elsif($tok->equals(T_CS('\hline')) || $tok->equals(T_CS('\cline'))){ # Save lines
+    elsif(grep($tok->equals($_),@line_tokens)){ # Save line commands
       push(@lines,$stomach->invokeToken($tok)); }
     else {
       if($tok->equals(T_CS('\omit'))){ # \omit removes the before/after tokens for this column.
@@ -1321,6 +1342,12 @@ DefPrimitive('\@open@inner@column',sub {
   $gullet->unread(beforeCellUnlist($$colspec{before}));
   (@lines,$STATE->getStomach->digestNextBody()); });
 
+# NOTE: This isn't quite right, I think.
+# It should remove spaces that were already digested before the end of a column (& or \\),
+# they come before the material that the column spec inserts.
+# However, comparing ToString to \s can make anything that reverts to '' disappear!
+# (unless it's explicitly marked with alignmentIgnorable).
+# This seems risky and backwards; safer would be to say explicitly what _can_ be discarded?
 DefPrimitive('\@@eat@space',sub {
 	       my $box;
 	       my @save=();
@@ -1588,8 +1615,8 @@ sub add_TeX {
     my $tex = UnTeX($thing);
     $LaTeXML::DUAL_BRANCH = 'content';
     my $ctex = UnTeX($thing);
-    $node->setAttribute('tex',$tex);
-    $node->setAttribute('content-tex',$ctex) if $ctex ne $tex;
+    $document->setAttribute($node,tex=>$tex);
+    $document->setAttribute($node,'content-tex'=>$ctex) if $ctex ne $tex;
     $thing->setProperty('_added_tex',1); }}
 
 # Same as add_TeX, but add the code from the body of the object.
@@ -1601,8 +1628,8 @@ sub add_body_TeX {
       my $tex = UnTeX($body);
       $LaTeXML::DUAL_BRANCH = 'content';
       my $ctex = UnTeX($body);
-      $node->setAttribute('tex',$tex);
-      $node->setAttribute('content-tex',$ctex) if $ctex ne $tex;
+      $document->setAttribute($node,tex=>$tex);
+      $document->setAttribute($node,'content-tex'=>$ctex) if $ctex ne $tex;
     }
     $thing->setProperty('_added_body_tex',1); }}
 
@@ -1614,9 +1641,9 @@ sub cleanup_Math {
   # If the Math contains ONLY XMath that ONLY contain XMText,
   # it apparently isn't math at all!?!  So pull up the contents of the XMText's.
   foreach my $xnode ($mathnode->childNodes){
-    return unless $document->getNodeQName($xnode) eq 'ltx:XMath';
+    return unless $document->getModel->getNodeQName($xnode) eq 'ltx:XMath';
     foreach my $mnode ($xnode->childNodes){
-      return unless $document->getNodeQName($mnode) eq 'ltx:XMText';
+      return unless $document->getModel->getNodeQName($mnode) eq 'ltx:XMText';
     }}
   # Replace Math/XMath/XMText/* by *
   replace_node($mathnode,
@@ -1983,7 +2010,7 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 			my $string='';
 			my $s='';
 			while(($node = pop(@nodes))
-			      && ($document->getNodeQName($node) eq 'ltx:XMTok')
+			      && ($document->getModel->getNodeQName($node) eq 'ltx:XMTok')
 			      && ($document->getNodeFont($node)->equals($font))
 			      && (!$node->hasAttribute('name'))
 			      && (($node->getAttribute('role')||'UNKNOWN') eq 'UNKNOWN')
@@ -2005,7 +2032,7 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 		      my $font = $document->getNodeFont($nodes[$#nodes]);
 		      my ($n,$node,$string,$number)=(0,undef,'','');
 		      while($node = pop(@nodes)){
-			my $qn = $document->getNodeQName($node);
+			my $qn = $document->getModel->getNodeQName($node);
 			if($qn =~ /^(ltx:XMTok|ltx:XMWrap)$/){
 			  my $r=($node->getAttribute('role')||'');
 			  if($r eq 'NUMBER'){
@@ -2608,10 +2635,10 @@ DefMath('\biguplus', "\x{2296}", role=>'SUMOP',
 
 DefConstructor('\limits', sub {
    my $node = $_[0]->getNode;
-   ($_[0]->getLastChildElement($node)||$node)->setAttribute(scriptpos=>'mid'); });
+   $_[0]->setAttribute($_[0]->getLastChildElement($node)||$node,scriptpos=>'mid'); });
 DefConstructor('\nolimits',sub {
    my $node = $_[0]->getNode;
-   ($_[0]->getLastChildElement($node)||$node)->setAttribute(scriptpos=>'post'); });
+   $_[0]->setAttribute($_[0]->getLastChildElement($node)||$node,scriptpos=>'post'); });
 
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.4. Binary Operation Symbols, p.42
@@ -2733,9 +2760,9 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 		      my ($n1,$n2,$op)=($nodes[$#nodes-1],$nodes[$#nodes]);
 		      my $c;
 		      if(defined $n1
-			 && (($document->getNodeQName($n1) eq 'ltx:XMTok')
+			 && (($document->getModel->getNodeQName($n1) eq 'ltx:XMTok')
 			     && ($n1->textContent eq 'not'))
-			 && (($document->getNodeQName($n2) eq 'ltx:XMTok')
+			 && (($document->getModel->getNodeQName($n2) eq 'ltx:XMTok')
 			     &&  $NOTS{$c=$n2->textContent})){
 			my $m = $n2->getAttribute('meaning');
 			my $n = $n2->getAttribute('name') || $c;
@@ -2812,7 +2839,7 @@ DefConstructor('\dots',
 
 DefMathLigature(sub { my($document,@nodes)=@_;
 		      if((scalar(@nodes) > 3)
-			 && ! grep( ($document->getNodeQName($_) ne 'ltx:XMTok')|| ($_->textContent ne "\x{22C5}"),
+			 && ! grep( ($document->getModel->getNodeQName($_) ne 'ltx:XMTok')|| ($_->textContent ne "\x{22C5}"),
 				    @nodes[$#nodes-2 .. $#nodes])){
 			(3, "\x{22EF}", name=>'cdots', role=>'ID'); }});
 ##DefRewrite(regexp=>"/\\.\\.\\./\x{2026}/"); # ldots
@@ -2822,7 +2849,7 @@ DefLigature("/\\.\\.\\./\x{2026}/", fontTest=>sub { $_[0]->getFamily ne 'typewri
 
 DefMathLigature(sub { my($document,@nodes)=@_;
 		      if((scalar(@nodes) >= 3)
-			 && ! grep( ($document->getNodeQName($_) ne 'ltx:XMTok')||($_->textContent ne "."),
+			 && ! grep( ($document->getModel->getNodeQName($_) ne 'ltx:XMTok')||($_->textContent ne "."),
 				    @nodes[$#nodes-2 .. $#nodes])){
 			(3, "\x{2026}", name=>'ldots', role=>'ID'); }});
 
@@ -2930,8 +2957,12 @@ our %DELIMITER_MAP =
 sub lookup_delimiter {
   $DELIMITER_MAP{$_[0]}; }
 
-# However, it isn't clear that these should get roles of OPEN|CLOSE (?)
-DefConstructor('\left Token',"?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)#body#trailer",
+# This is a little messier than you'd think.
+# These effectively create a group between the \left,\right.
+DefMacro('\left Token','\@left #1\@hidden@bgroup');
+DefMacro('\right Token','\@hidden@egroup\@right #1');
+DefConstructor('\@left Token',
+	       "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)(<ltx:XMHint/>)",
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $delim = ToString($whatsit->getArg(1));
 				  if($delim eq '.'){}
@@ -2941,9 +2972,10 @@ DefConstructor('\left Token',"?#char(<ltx:XMTok role='#role' name='#name'>#char<
 							    name=>$$entry{name});}
 				  else {
 				    Warn("Missing delimiter $delim (. inserted)"); }
-				  $_[0]->bgroup; },
-	       captureBody=>1);
-DefConstructor('\right Token',"?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)",
+				  return; },
+	       alias=>'\left');
+DefConstructor('\@right Token',
+	       "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)(<ltx:XMHint/>)",
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $delim = ToString($whatsit->getArg(1));
 				  if($delim eq '.'){}
@@ -2953,7 +2985,8 @@ DefConstructor('\right Token',"?#char(<ltx:XMTok role='#role' name='#name'>#char
 							    name=>$$entry{name}); }
 				  else {
 				    Warn("Missing delimiter $delim (. inserted)"); }
-				  $_[0]->egroup; });
+				  return; },
+	       alias=>'\right');
 
 sub addDelimiterRole {
   my($document,$role)=@_;
@@ -2963,7 +2996,7 @@ sub addDelimiterRole {
   my $delim        = $node && $document->getFirstChildElement($node);
   my $delim_role   = (($delim && $delim->getAttribute('role')) || '');
   my $wrapper_role = ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR)$/ ? $role : $delim_role);
-  $node->setAttribute(role=>$wrapper_role) if $node && $wrapper_role; }
+  $document->setAttribute($node,role=>$wrapper_role) if $node && $wrapper_role; }
 
 # Defined in e-Tex and other places.
 DefConstructor('\middle Token ',"<ltx:XMWrap style='stretchy'>#1</ltx:XMWrap>",
@@ -3258,9 +3291,6 @@ DefMacro('\%',Tokens(T_OTHER('%')));
 DefConstructor("\\\$", "\$");
 DefConstructor('\_',   '_');
 
-
-### How did this get added ?
-#### DefMath('\dot',"\x{22C5}", role=>'MULOP');	# DOT OPERATOR
 # Discretionary times; just treat as invisible ?
 DefMath('\*',"\x{2062}", role=>'MULOP'); # INVISIBLE TIMES (or MULTIPLICATION SIGN = 00D7)
 
@@ -3309,10 +3339,8 @@ DefConstructor('\buildrel Until:\over {}',
 #**********************************************************************
 # LaTeX Hook
 #**********************************************************************
-# This is used for plain TeX, but needs to be undone for LaTeX!
-DocType("ltx:document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd', 
-	'#default'=>"http://dlmf.nist.gov/LaTeXML");
-#Tag('ltx:section', autoClose=>1, autoOpen=>1);
+# This is used for plain TeX, but needs to be undone for LaTeX (or...)!
+RelaxNGSchema("LaTeXML");
 Tag('ltx:section', autoClose=>1);
 Tag('ltx:document', autoClose=>1, autoOpen=>1);
 
@@ -3377,10 +3405,10 @@ DefConstructor('\@ASSERT@MEANING{}{}','#2',reversion=>'#2',
 sub addMeaningRec {
   my($document,$node,$meaning)=@_;
   if($node->nodeType == XML_ELEMENT_NODE){
-    if($document->getNodeQName($node) eq 'ltx:XMTok'){
+    if($document->getModel->getNodeQName($node) eq 'ltx:XMTok'){
       if((($node->getAttribute('role')||'UNKNOWN') eq 'UNKNOWN')
 	 && !$node->getAttribute('meaning')){
-	$node->setAttribute(meaning=>$meaning); }}
+	$document->setAttribute($node,meaning=>$meaning); }}
     else {
       foreach my $c ($node->childNodes){
 	addMeaningRec($document,$c,$meaning); }}}}
@@ -3405,7 +3433,7 @@ DefMath('\@INVISIBLECOMMA',"\x{2063}", reversion=>'',
 
 # Would be nice to make the ID argument optional, but since these can appear in
 # optional arguments to other macros, we'll end up nesting [] !!
-DefConstructor('\@XMArg{}{}',"<ltx:XMArg ?#1(id='#1')>#2</ltx:XMArg>", reversion=>'#2',
+DefConstructor('\@XMArg{}{}',"<ltx:XMArg ?#1(xml:id='#1')>#2</ltx:XMArg>", reversion=>'#2',
 	       properties=>{id=>'#1'});
 DefConstructor('\@XMRef{}',"<ltx:XMRef idref='#1'/>",
 	       reversion=>sub{ LookupValue('xref:'.ToString($_[0]->getArg(1)))->revert; });
@@ -3432,7 +3460,7 @@ DefRewrite(xpath=>'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
 			   foreach my $attribute ($wrap->attributes){
 			     if($attribute->nodeType == XML_ATTRIBUTE_NODE){
 			       my $attr = $attribute->nodeName;
-			       $node->setAttribute($attr,$attribute->getValue)
+			       $document->setAttribute($node,$attr=>$attribute->getValue)
 				 unless $attr =~ /^_/; }}
 			   ## WHY THIS????
 			   $document->getNode->appendChild($node); }});
