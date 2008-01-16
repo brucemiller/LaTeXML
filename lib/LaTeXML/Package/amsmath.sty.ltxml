@@ -20,6 +20,7 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
+no warnings 'redefine';
 
 # TODO:
 #   Interesting options for limits placement
@@ -51,15 +52,37 @@ RequirePackage('amsopn');
 # individual equations.  These sequences can then be passed to the math parser
 # and hopefully recognized.
 #
-# The secondary objective is not yet fully carried out.
-# The idea is to insert additional hint or punctuation tokens that indicate the
-# requested alignment points or linebreaks.  Currently hints are discarded
-# before parsing.  Presumably, they need to be attached to neighboring tokens,
-# and preserved through the parsing process?
-# Hopefully, there would be enough attributes remaining for the presentation
-# mathml generator to reconstruct an appropriate alignment afterwards.
+# We'll try to leverage the equationgroup/equation/MathFork arrangement
+# to achieve the secondary objective.
+# Where this doesn't work out, we'll insert additional hint or punctuation tokens
+# that indicate the requested alignment points or linebreaks.
+#  Currently hints are discarded before parsing.
 
-# Note that the default implementation of \\ (in LaTeX) is to generate an XMHint.
+Let('\notag','\nonumber');
+DefPrimitive('\tag OptionalMatch:* {}', sub {
+	       AssignValue(EQUATIONROW_NUMBER=>ToString(Digest($_[2])), 'global'); });
+
+DefMacro('\@ams@intertext{}',
+	 '\multicolumn{1}{l}{\@@ams@intertext{#1}}\nonumber\@alignment@newline');
+DefConstructor('\@@ams@intertext{}',
+	       "<ltx:block class='intertext'>#1</ltx:block>",
+	       mode=>'text');
+
+sub amsalignBindings {
+  my($template)=@_;
+  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>'ltx:equationgroup',
+						rowElement=>'ltx:equation',
+						colElement=>'_Capture_');
+  AssignValue(Alignment=>$alignment);
+  $alignment->setTemplate($template);
+  Let(T_ALIGN,        T_CS('\@alignment@align'));
+  Let(T_CS("\\\\"),   T_CS('\@alignment@newline'));
+  Let(T_CS('\cr'),    T_CS('\@alignment@cr'));
+  Let('\span',        T_CS('\@alignment@span'));
+  Let(T_CS('\@open@row'),T_CS('\@equationgroup@open@row'));
+  Let(T_CS('\@close@row'),T_CS('\@equationgroup@close@row'));
+  Let(T_CS('\intertext'),T_CS('\@ams@intertext'));
+  return; }
 
 #======================================================================
 # Section 3.1 introduction
@@ -73,8 +96,13 @@ RequirePackage('amsopn');
 # Section 3.3 Split equations without alignment
 
 # Multiline is for single equations, but split on multiple lines, using \\ to separate lines.
+# Justifies the 1st line left, last line right, and middle ones centered.
+# Very useful when you are trying to fit a long equation into a known space,
+# but preserving the alignment seems less useful in the vaguer XML context,
+# particularly since there's no real alignment of columns that convey symmetry.
+# So... For now, we'll just turn into a single equation, ignoring the line breaks.
 DefEnvironment('{multline}',
-	       "<ltx:equation refnum='#refnum' id='#id'>"
+	       "<ltx:equation refnum='#refnum' xml:id='#id'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>#body</ltx:XMath>"
 	       . "</ltx:Math>"
@@ -93,8 +121,11 @@ DefEnvironment('{multline*}',
 # Section 3.4 Split equations with alignment
 
 # split is used within other math environments to provide line breaks and alignment.
-# It is not entirely clear the contents necessarily represent any complete mathematical entity,
-# so the begin and end also yield XMHint's!
+# Since it's already within math, the MathFork branching doesn't work here.
+# Should we use a math alignment stucture?
+# [in which case it isn't clear how to get the high-level presentation vs. semantic]
+# Or just turn the markup into XMHint's; effectively ignoring them.
+# The latter, for now.
 DefEnvironment('{split}',
 	       "<ltx:XMHint name='split-begin'/>#body<ltx:XMHint name='split-end'/>",
 	       beforeDigest=>sub{ DefConstructor("&","<ltx:XMHint name='align'/>"); });
@@ -102,51 +133,44 @@ DefEnvironment('{split}',
 #======================================================================
 # Section 3.5 Equation groups without alignment
 
-DefConstructor('\@@gather@newline OptionalMatch:* [Dimension]',
-	       "   </ltx:XMath>"
-	       . "</ltx:Math>"
-	       ."</ltx:equation>"
-	       ."<ltx:equation refnum='#refnum' id='#id'>"
-	       . "<ltx:Math mode='display'>"
-	       .  "<ltx:XMath>",
-	       properties=> sub { RefStepCounter('equation') },
-	       alias=>'\\\\');
-DefConstructor('\@@gather@newline@nonum OptionalMatch:* [Dimension]',
-	       "   </ltx:XMath>"
-	       ." </ltx:Math>"
-	       ."</ltx:equation>"
-	       ."<ltx:equation>"
-	       . "<ltx:Math mode='display'>"
-	       .  "<ltx:XMath>",
-	       alias=>'\\\\');
+DefConstructor('\@@amsgather SkipSpaces DigestedBody',
+	       sub {
+		 my($document,$body,%props)=@_;
+		 processAMSGatherRows($document,constructAlignment($document,$body,
+								 class=>'gather')); },
+	       beforeDigest=>sub { $_[0]->bgroup; });
+DefPrimitive('\end@amsgather',sub{ $_[0]->egroup; });
 
-# gather collects several equations, separated by \\
-# NOTE: This gets the structure right, but the addition of tex property isn't cooperating.
-DefEnvironment('{gather}',
-	       "<ltx:equationgroup>"
-	       . "<ltx:equation refnum='#refnum' id='#id'>"
-	       .  "<ltx:Math mode='display'>"
-	       .   "<ltx:XMath>"
-	       .    "#body"
-	       .   "</ltx:XMath>"
-	       .  "</ltx:Math>"
-	       . "</ltx:equation>"
-	       ."</ltx:equationgroup>",
-	       mode=>'display_math',
-	       beforeDigest=>sub{  Let("\\\\",'\@@gather@newline'); },
-	       properties=> sub { RefStepCounter('equation') });
-DefEnvironment('{gather*}',
-	       "<ltx:equationgroup>"
-	       . "<ltx:equation>"
-	       .  "<ltx:Math mode='display'>"
-	       .   "<ltx:XMath>"
-	       .    "#body"
-	       .   "</ltx:XMath>"
-	       .  "</ltx:Math>"
-	       . "</ltx:equation>"
-	       ."</ltx:equationgroup>",
-	       mode=>'display_math',
-	       beforeDigest=>sub{ Let("\\\\",'\@@gather@newline@nonum'); });
+# Set up single centered column.
+DefPrimitive('\@amsgather@bindings', sub {
+  my $col = {before=>Tokens(T_CS('\hfil'),T_MATH,T_CS('\displaystyle')),
+	      after=>Tokens(T_MATH,T_CS('\hfil'))};
+  amsalignBindings(LaTeXML::AlignmentTemplate->new(columns=>[$col]));
+});
+
+# Each equation row (except intertext) consists of pairs (LHS, =RHS); group accordingly.
+# Since each column is a single equation, we'll skip the MathFork stuff,
+# and just pull the math content up past the _Capture_
+sub processAMSGatherRows {
+  my($document,$equationgroup)=@_;
+  foreach my $equation ($document->getChildElements($equationgroup)){
+    my @cells = $document->getChildElements($equation);
+    my @cell1cont = $document->getChildElements($cells[0]);
+    # Check if this equation is really an intertext
+    if((scalar(@cells)==1) && (scalar(@cell1cont)==1)
+       && ($document->getNodeQName($cell1cont[0]) eq 'ltx:block')){
+      $equation->replaceNode($cell1cont[0]); } # Replace equation with the block.
+    else {
+      equationgroupFlattenCols($document,$equation); }}}
+
+DefMacro('\gather',
+	 '\@amsgather@bindings\@@amsgather\@equationgroup@number\@start@alignment');
+DefMacro('\endgather',
+	 '\@finish@alignment\end@amsgather');
+DefMacro('\csname gather*\endcsname',
+	 '\@amsgather@bindings\@@amsgather\@equationgroup@nonumber\@start@alignment');
+DefMacro('\csname endgather*\endcsname',
+	 '\@finish@alignment\end@amsgather');
 
 #======================================================================
 # Section 3.6 Equation groups with mutual alignment
@@ -155,118 +179,71 @@ DefEnvironment('{gather*}',
 # that each pair should constitute an equation:
 #    lhs & = rhs & lhs & = rhs ...
 # where each lhs is right aligned, and rhs is left aligned.
+# We'll use the equationgroup/equation/MathFork mechanism
+# similar to eqnarray.
 
-DefConstructor('\@@align@newline OptionalMatch:* [Dimension]',
-	       "</ltx:XMath></ltx:Math></ltx:equation>"
-	       ."<ltx:equation refnum='#refnum' id='#id'>"
-	       . "<ltx:Math mode='display'>"
-	       .  "<ltx:XMath>",
-	       properties=> sub { RefStepCounter('equation') },
-	       beforeDigest=>sub{ Let('&','\@@align@odd'); },
-	       alias=>'\\\\');
-DefConstructor('\@@align@newline@nonum OptionalMatch:* [Dimension]',
-	       "</ltx:XMath></ltx:Math></ltx:equation>"
-	       ."<ltx:equation>"
-	       . "<ltx:Math mode='display'>"
-	       .  "<ltx:XMath>",
-	       beforeDigest=>sub{ Let('&','\@@align@odd'); },
-	       alias=>'\\\\');
-DefConstructor('\@@align@odd',"<ltx:XMHint name='align'/>",
-	       afterDigest=>sub{ Let('&','\@@align@even'); },
-	       alias=>'&');
-DefConstructor('\@@align@even',
-	       "</ltx:XMath></ltx:Math></ltx:equation>"
-	       ."<ltx:equation>"
-	       . "<ltx:Math mode='display'>"
-	       .  "<ltx:XMath>",
-	       afterDigest=>sub{ Let('&','\@@align@odd'); },
-	       alias=>'&');
 
-# Question: Should the extra "equations" in each row be <equation> or just <Math> ????
-DefEnvironment('{align}',
-	       "<ltx:equationgroup>"
-	       . "<ltx:equation refnum='#refnum' id='#id'>"
-	       .  "<ltx:Math mode='display'>"
-	       .   "<ltx:XMath>"
-	       .     "#body"
-	       .   "</ltx:XMath>"
-	       .  "</ltx:Math>"
-	       . "</ltx:equation>"
-	       ."</ltx:equationgroup>",
-	       mode=>'display_math',
-	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline'); },
-	       properties=> sub { RefStepCounter('equation') });
+DefConstructor('\@@amsalign SkipSpaces DigestedBody',
+	       sub {
+		 my($document,$body,%props)=@_;
+		 processAMSAlignRows($document,constructAlignment($document,$body,
+								 class=>'align')); },
+	       beforeDigest=>sub { $_[0]->bgroup; });
+DefPrimitive('\end@amsalign',sub{ $_[0]->egroup; });
 
-DefEnvironment('{align*}',
-	       "<ltx:equationgroup>"
-	       . "<ltx:equation>"
-	       .  "<ltx:Math mode='display'>"
-	       .   "<ltx:XMath>"
-	       .    "#body"
-	       .   "</ltx:XMath>"
-	       .  "</ltx:Math>"
-	       . "</ltx:equation>"
-	       ."</ltx:equationgroup>",
-	       mode=>'display_math',
-	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline@nonum'); });
+# Set up repeated pairs of columns.
+DefPrimitive('\@amsalign@bindings', sub {
+  my $col1 = {before=>Tokens(T_CS('\hfil'),T_MATH,T_CS('\displaystyle')),
+	      after=>Tokens(T_MATH)};
+  my $col2 = {before=>Tokens(T_MATH,T_CS('\displaystyle')),
+	      after=>Tokens(T_MATH,T_CS('\hfil'))};
+  amsalignBindings(LaTeXML::AlignmentTemplate->new(repeated=>[$col1,$col2]));
+});
 
-# flalign typesets in the full column width.
-# We'll ignore that distinction for now. 
-DefEnvironment('{flalign}',
-	       "<ltx:equationgroup>"
-	       . "<ltx:equation refnum='#refnum' id='#id'>"
-	       .  "<ltx:Math mode='display'>"
-	       .   "<ltx:XMath>"
-	       .    "#body"
-	       .   "</ltx:XMath>"
-	       .  "</ltx:Math>"
-	       . "</ltx:equation>"
-	       ."</ltx:equationgroup>",
-	       mode=>'display_math',
-	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline'); },
-	       properties=> sub { RefStepCounter('equation') });
+# Each equation row (except intertext) consists of pairs (LHS, =RHS); group accordingly.
+sub processAMSAlignRows {
+  my($document,$equationgroup)=@_;
+  foreach my $equation ($document->getChildElements($equationgroup)){
+    my @cells = $document->getChildElements($equation);
+    my @cell1cont = $document->getChildElements($cells[0]);
+    # Check if this equation is really an intertext
+    if((scalar(@cells)==1) && (scalar(@cell1cont)==1)
+       && ($document->getNodeQName($cell1cont[0]) eq 'ltx:block')){
+      $equation->replaceNode($cell1cont[0]); } # Replace equation with the block.
+    else {
+      equationgroupJoinCols($document,2,$equation); }}}
 
-DefEnvironment('{flalign*}',
-	       "<ltx:equationgroup>"
-	       . "<ltx:equation>"
-	       .  "<ltx:Math mode='display'>"
-	       .   "<ltx:XMath>"
-	       .    "#body"
-	       .   "</ltx:XMath>"
-	       .  "</ltx:Math>"
-	       . "</ltx:equation>"
-	       ."</ltx:equationgroup>",
-	       mode=>'display_math',
-	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline@nonum'); });
+DefMacro('\align',
+	 '\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment');
+DefMacro('\endalign',
+	 '\@finish@alignment\end@amsalign');
+DefMacro('\csname align*\endcsname',
+	 '\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment');
+DefMacro('\csname endalign*\endcsname',
+	 '\@finish@alignment\end@amsalign');
+
+# flalign typesets in the full column width (seems perverse to me).
+# So, for the time being, it's treated exactly like align.
+DefMacro('\flalign',
+	 '\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment');
+DefMacro('\endflalign',
+	 '\@finish@alignment\end@amsalign');
+DefMacro('\csname flalign*\endcsname',
+	 '\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment');
+DefMacro('\csname endflalign*\endcsname',
+	 '\@finish@alignment\end@amsalign');
 
 # alignat doesn't stretch the columns out as much (?)
-# We'll ignore that distinction for now. 
-DefEnvironment('{alignat}{}',
-	       "<ltx:equationgroup>"
-	       . "<ltx:equation refnum='#refnum' id='#id'>"
-	       .  "<ltx:Math mode='display'>"
-	       .   "<ltx:XMath>"
-	       .    "#body"
-	       .   "</ltx:XMath>"
-	       .  "</ltx:Math>"
-	       . "</ltx:equation>"
-	       ."</ltx:equationgroup>",
-	       mode=>'display_math',
-	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline'); },
-	       properties=> sub { RefStepCounter('equation') });
-
-DefEnvironment('{alignat*}{}',
-	       "<ltx:equationgroup>"
-	       . "<ltx:equation>"
-	       .  "<ltx:Math mode='display'>"
-	       .   "<ltx:XMath>"
-	       .    "#body"
-	       .   "</ltx:XMath>"
-	       .  "</ltx:Math>"
-	       . "</ltx:equation>"
-	       ."</ltx:equationgroup>",
-	       mode=>'display_math',
-	       beforeDigest=>sub{ Let('&','\@@align@odd'); Let("\\\\",'\@@align@newline@nonum'); });
+# and takes the number of column pairs (which we don't need?)
+# We'll ignore these distinctions for now.
+DefMacro('\alignat{}',
+	 '\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment');
+DefMacro('\endalignat',
+	 '\@finish@alignment\end@amsalign');
+DefMacro('\csname alignat*\endcsname{}',
+	 '\@amsalign@bindings\@@amsalign\@@equationgroup@nonumber\@start@alignment');
+DefMacro('\csname endalignat*\endcsname',
+	 '\@finish@alignment\end@amsalign');
 
 #======================================================================
 # Section 3.7. Alignmnet building blocks
@@ -286,31 +263,53 @@ DefEnvironment('{gathered}[]',
 	       . "#body"
 	       ."<ltx:XMHint name='gathered-end'/>");
 
-DefConstructor('\@@aligned@newline OptionalMatch:* [Dimension]',
-	       "</ltx:XMath></ltx:Math>"
-	       ."<ltx:Math mode='display'><ltx:XMath>",
-	       properties=> sub { RefStepCounter('equation') },
-	       beforeDigest=>sub{ Let('&','\@@aligned@odd'); },
-	       alias=>'\\\\');
-DefConstructor('\@@aligned@odd',"<ltx:XMHint name='align'/>",
-	       afterDigest=>sub{ Let('&','\@@aligned@even'); },
-	       alias=>'&');
-DefConstructor('\@@aligned@even',
-	       "</ltx:XMath></ltx:Math>"
-	       . "<ltx:Math mode='display'><ltx:XMath>",
-	       afterDigest=>sub{ Let('&','\@@aligned@odd'); },
-	       alias=>'&');
+# DefConstructor('\@@aligned@newline OptionalMatch:* [Dimension]',
+# 	       "</ltx:XMath></ltx:Math>"
+# 	       ."<ltx:Math mode='display'><ltx:XMath>",
+# 	       beforeDigest=>sub{ Let('&','\@@aligned@odd'); },
+# 	       alias=>'\\\\');
+# DefConstructor('\@@aligned@odd',"<ltx:XMHint name='align'/>",
+# 	       afterDigest=>sub{ Let('&','\@@aligned@even'); },
+# 	       alias=>'&');
+# DefConstructor('\@@aligned@even',
+# 	       "</ltx:XMath></ltx:Math>"
+# 	       . "<ltx:Math mode='display'><ltx:XMath>",
+# 	       afterDigest=>sub{ Let('&','\@@aligned@odd'); },
+# 	       alias=>'&');
 
-DefEnvironment('{aligned}[]',
-	       "<ltx:XMHint name='aligned-begin'/>"
-	       . "#body"
-	       ."<ltx:XMHint name='aligned-end'/>",
-	       beforeDigest=>sub{ Let('&','\@@aligned@odd'); Let("\\\\",'\@@aligned@newline'); });
-DefEnvironment('{alignedat}{}[]',
-	       "<ltx:XMHint name='aligned-begin'/>"
-	       . "#body"
-	       ."<ltx:XMHint name='aligned-end'/>",
-	       beforeDigest=>sub{ Let('&','\@@aligned@odd'); Let("\\\\",'\@@aligned@newline'); });
+# DefEnvironment('{aligned}[]',
+# 	       "<ltx:XMHint name='aligned-begin'/>"
+# 	       . "#body"
+# 	       ."<ltx:XMHint name='aligned-end'/>",
+# 	       beforeDigest=>sub{ Let('&','\@@aligned@odd'); Let("\\\\",'\@@aligned@newline'); });
+# DefEnvironment('{alignedat}{}[]',
+# 	       "<ltx:XMHint name='aligned-begin'/>"
+# 	       . "#body"
+# 	       ."<ltx:XMHint name='aligned-end'/>",
+# 	       beforeDigest=>sub{ Let('&','\@@aligned@odd'); Let("\\\\",'\@@aligned@newline'); });
+
+DefMacro('\aligned[]',    '\@@amsaligned\@start@alignment');
+DefMacro('\endaligned',   '\@finish@alignment\@end@amsaligned');
+DefMacro('\alignedat{}[]','\@@amsaligned\@start@alignment');
+DefMacro('\endalignedat', '\@finish@alignment\@end@amsaligned');
+
+# NOTE: If this is the only child of an equation, it would seem better
+# to rewrite the thing into an equationgroup/equation/MathFork construct!
+# Besides, the MathML alignment (at least in firefox), pretty much sucks.
+DefPrimitive('\@end@amsaligned',sub{ $_[0]->egroup; });
+DefConstructor('\@@amsaligned DigestedBody',
+	       sub { my($document,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{name=>'aligned'}); },
+	       beforeDigest=>sub { $_[0]->bgroup;
+				   my $col1 = {before=>Tokens(T_CS('\hfil'),
+							      T_CS('\displaystyle'))};
+				   my $col2 = {before=>Tokens(T_CS('\displaystyle')),
+					       after=>Tokens(T_CS('\hfil'))};
+				   my $template
+				     = LaTeXML::AlignmentTemplate->new(repeated=>[$col1,$col2]);
+				   alignmentBindings($template); },
+	       reversion=>'\begin{aligned}#1\end{aligned}');
+
 
 DefMacro('\cases',   '\@@cases\@start@alignment');
 DefMacro('\endcases', '\@finish@alignment\@end@cases');
@@ -332,7 +331,8 @@ DefMacro('\displaybreak[]','');	# Ignorable
 #======================================================================
 # Section 3.10 Interrupting a display
 
-DefConstructor('\intertext{}', "#1", mode=>'text');
+# default when not used inside an appropriate alignment.
+DefConstructor('\intertext{}', "<ltx:block class='intertext'>#1</ltx:block>", mode=>'text');
 
 #======================================================================
 # Section 3.11 Equation numbering
@@ -348,7 +348,9 @@ DefPrimitive('\numberwithin[]{}{}',sub {
  });
 
 # Section 3.11.2 Cross references to equation numbers
-DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#1'/>)");
+DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label'/>)",
+	       properties=>sub { (label=>CleanLabel($_[1])); });
+
 
 # Section 3.11.3 Subordinate numbering sequences.
 DefEnvironment('{subequations}',"<ltx:equationgroup refnum='#refnum'>#body</ltx:equationgroup>",
@@ -596,15 +598,24 @@ DefConstructor('\genfrac{}{}{Dimension}{}{}{}',
 
 #======================================================================
 # Section 4.12 Continued fractions
-# Is \cfracstyle my own invention? (I know I've redefined \cfrac in DLMFmath)
+# I think \cfracstyle my own invention? (I know I've redefined \cfrac in DLMFmath)
+# XMDual doesn't seem quite appropriate, since the args (denominators) get
+# divided up so oddly in the inline case.
+# I've left it to a special case in conversion to pmml.
 DefConstructor('\cfrac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok>cfrac</ltx:XMTok>"
+	       . "<ltx:XMTok name='cfrac' style='#style'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg>"
 	       . "<ltx:XMArg>#2</ltx:XMArg>"
-	       ."</ltx:XMApp>");
+	       ."</ltx:XMApp>",
+	      properties=>sub{ (style=>LookupValue('CFRACSTYLE')); });
+AssignValue(CFRACSTYLE=>'display');
 # This should get incorporated into any \cfrac's that are constructed in scope.
-DefConstructor('\cfracstyle{}',''); # "<ltx:XMHint name='cfracstyle'/>");
+DefConstructor('\cfracstyle{}','',
+	       afterDigest=>sub{ 
+		 my $style = ToString($_[1]->getArg(1));
+		 $style = ($style eq 'd' ? 'display' : ($style eq 'i' ? 'inline' : $style));
+		 AssignValue(CFRACSTYLE=>$style); });
 
 #======================================================================
 # Section 4.13 Smash options
@@ -701,7 +712,7 @@ DefConstructor('\sideset{}{}{}', sub {
 	$node = $new; }
       else { warn("Non sub/superscript in \\sideset: ".Stringify($script)); }}
     $x = 'post'; }
-  $node->setAttribute(scriptpos=>$opx) if $opx;
+  $document->setAttribute($node,scriptpos=>$opx) if $opx;
 });
 
 #======================================================================
@@ -766,11 +777,7 @@ Let('\Bar', '\bar');
 Let('\Vec', '\vec');
 
 # And where does this go?
-DefPrimitive('\notag', undef);
 DefPrimitive('\allowdisplaybreaks', undef);
-DefConstructor('\tag OptionalMatch:* {}',
-	       '',
-	       mode=>'text');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
 
