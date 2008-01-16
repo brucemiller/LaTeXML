@@ -25,7 +25,7 @@ DefMacro('\acl{}','\@ACRO@{#1}{\acffont{\@AC@long{#1}}}');
 DefMacro('\acf{}','\@ACRO@{#1}{\acffont{\@AC@long{#1}}\acfsfont{(\@AC@short{#1})}}');
 
 
-DefEnvironment('{acronym}','<ltx:acronyms>#body</ltx:acronyms>',
+DefEnvironment('{acronym}',"<ltx:definition class='acronyms'>#body</ltx:definition>",
 	      beforeDigest=>sub { DefMacro('\acro{}[]{}', 
 					   '\acrodef{#1}[#2]{#3}\item[\acs{#1}]\acl{#1} '); });
 
