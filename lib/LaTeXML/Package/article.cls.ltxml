@@ -16,9 +16,8 @@ package LaTeXML::Package::Pool;
 
 #**********************************************************************
 # Document structure.
+RelaxNGSchema("LaTeXML");
 
-DocType("ltx:document","-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd',
-	'#default'=>"http://dlmf.nist.gov/LaTeXML");
 
 DefMacro('\@ptsize','0');	# should depend on options...
 RawTeX(<<'EOTeX');
@@ -46,6 +45,7 @@ DefMacro('\thesubparagraph', '');
 NewCounter('equation', 'document', idprefix=>'E');
 NewCounter('figure',   'document', idprefix=>'F');
 NewCounter('table',    'document', idprefix=>'T');
+
 DefMacro('\theequation', '\arabic{equation}');
 DefMacro('\thefigure',   '\arabic{figure}');
 DefMacro('\thetable',    '\arabic{table}');
