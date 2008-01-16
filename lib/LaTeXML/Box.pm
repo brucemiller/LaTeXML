@@ -259,19 +259,55 @@ C<LaTeXML::Box> - Representations of digested objects.
 
 =head1 DESCRIPTION
 
-These represent various kinds of digested objects:
-C<LaTeXML::Box> represents text in a particular font;
-C<LaTeXML::MathBox> represents a math token in a particular font;
-C<LaTeXML::List> represents a sequence of digested things in text;
-C<LaTeXML::MathList> represents a sequence of digested things in math;
-C<LaTeXML::Whatsit> represents a digested object that can generate
-arbitrary elements in the XML Document.
+These represent various kinds of digested objects
+
+=over 4
+
+=item C<LaTeXML::Box>
+
+represents text in a particular font;
+
+=item C<LaTeXML::MathBox>
 
 =begin latex
 
-\label{LaTeXML::MathBox}\label{LaTeXML::List}\label{LaTeXML::MathList}\label{LaTeXML::Whatsit}
+\label{LaTeXML::MathBox}
 
 =end latex
+
+represents a math token in a particular font;
+
+=item C<LaTeXML::List>
+
+=begin latex
+
+\label{LaTeXML::List}
+
+=end latex
+
+represents a sequence of digested things in text;
+
+=item C<LaTeXML::MathList>
+
+=begin latex
+
+\label{LaTeXML::MathList}
+
+=end latex
+
+represents a sequence of digested things in math;
+
+=item C<LaTeXML::Whatsit>
+
+=begin latex
+
+\label{LaTeXML::Whatsit}
+
+=end latex
+
+represents a digested object that can generate arbitrary elements in the XML Document.
+
+=back
 
 =head2 Common Methods
 
@@ -335,7 +371,7 @@ Note that the font is stored in the data properties under 'font'.
 
 =item C<< $defn = $whatsit->getDefinition; >>
 
-Returns the L<LaTeXML::Definition> responsible for creating this C<$whatsit>.
+Returns the L<LaTeXML::Definition> responsible for creating the C<$whatsit>.
 
 =item C<< $value = $whatsit->getProperty($key); >>
 
