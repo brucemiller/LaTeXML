@@ -20,6 +20,7 @@
 /* if shown */
 .navbar .toc li { margin-left:-0.5em; }
 .navbar li { white-space:nowrap; display:block; overflow:hidden; }
+.navbar li .here { white-space:normal; overflow:visible; }
 
 /*======================================================================
  Titles & Frontmatter */
@@ -36,8 +37,8 @@ h6 + p { display:inline; }
 .subtitle    { text-align:center; font-size: 120%; font-family:sans-serif;
 	       padding-left:0.2em; margin-left:-0.5em; }
 .author      { text-align:center; font-family:sans-serif; }
-.authorname  { font-size: 130%; }
-.dedication  { font-style:oblique; }
+.author .personname  { font-size: 130%; }
+.dedicatory  { font-style:oblique; }
 .classification,
 .keywords    { font-size:90%; margin-left:4em; }
 .abstract    { margin:1em 4em 1em 4em; }
@@ -50,8 +51,9 @@ h6 + p { display:inline; }
  Blocks, Lists, Floats */
 .inline-block { display:inline-block; }
 img.math { vertical-align:middle }
-.equation { display:block; width:100%; text-align:center; }
-.equation .refnum { position:absolute; left:2em; }
+div.equation { display:block; width:95%; text-align:center; }
+.equation span.refnum.left { position:absolute; left:2em; }
+.equation span.refnum.right { position:absolute; right:2em; }
 
 dl.description dt { margin-right:0.5em; float:left;
 	            font-weight:bold; }
@@ -69,6 +71,7 @@ dl.description dl.description dd { margin-left:3em; }
 /*======================================================================
  Borders and such */
 .framed  { border:1px solid black;}
+.tabular td, .tabular th { padding:0.1em 0.5em; }
 table { border-collapse:collapse; }
 /* Hmm... the star should be m:mtd */
 td.t,  th.t,  *[class~="t"]  { border-top:1px solid black; }
@@ -102,4 +105,14 @@ td.ll, th.ll, *[class~="ll"] { border-left:3px double black; }
 .upright    { font-style: normal; }
 .slanted    { font-style: oblique; }
 .red        { color:red; }
-.center     { text-align:center; }
+.centering  { text-align:center; }
+.ERROR      { color:red; }
+/*======================================================================
+ pop-up footnotes */
+.note .note_content {display:none; }
+.note .mark { color:blue; }
+.note:hover .note_content 
+   { display:block; position:absolute; z-index:10;
+     width: 70%; right:5%;
+     background:#E0E0E0;
+     border:3px outset gray; }
