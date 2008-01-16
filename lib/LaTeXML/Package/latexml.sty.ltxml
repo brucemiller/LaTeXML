@@ -107,7 +107,7 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
 	       sub { my($document,$flag,$kv,$pattern,%props)=@_;
 		     if(my $id = $props{id}){
 		       my $save = $document->floatToElement('ltx:declare');
-		       $document->openElement('ltx:declare',id=>$id);
+		       $document->openElement('ltx:declare','xml:id'=>$id);
 		       if(my $tag = $kv->getValue('tag')){
 			 $document->insertElement('ltx:tag',$tag); }
 		       $document->closeElement('ltx:declare');
