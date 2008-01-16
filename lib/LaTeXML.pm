@@ -26,7 +26,7 @@ our @ISA = (qw(LaTeXML::Object));
 #use LaTeXML::Document;
 
 use vars qw($VERSION);
-$VERSION = "0.5.99";
+$VERSION = "0.5.999";
 
 #**********************************************************************
 
@@ -101,6 +101,7 @@ sub digestFile {
 
   my $pathname = pathname_find($file,types=>['tex','']);
   Fatal("Cannot find TeX file $file") unless $pathname;
+  $STATE->assignValue(SOURCEFILE=>$pathname);
   my($dir,$name,$ext)=pathname_split($pathname);
   $STATE->pushValue(SEARCHPATHS=>$dir);
   $STATE->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode($name))));
@@ -152,7 +153,7 @@ sub convertDocument {
   my $document  = LaTeXML::Document->new($model);
 
   NoteBegin("Building");
-  $model->loadDocType(); # If needed?
+  $model->loadSchema(); # If needed?
   if(my $paths = $STATE->lookupValue('SEARCHPATHS')){
     if($STATE->lookupValue('INCLUDE_COMMENTS')){
       $document->insertPI('latexml',searchpaths=>join(',',@$paths)); }}
@@ -231,11 +232,12 @@ Reads the TeX file C<$file>.tex, digests and converts it to XML, and saves it in
 
 =item C<< $doc = $latexml->convertFile($file); >>
 
-Reads the TeX file C<$file>, digests and converts it to XML and returns the L<XML::LibXML::Document>.
+Reads the TeX file C<$file>, digests and converts it to XML and returns the
+resulting L<XML::LibXML::Document>.
 
 =item C<< $doc = $latexml->convertString($string); >>
 
-Digests C<$string>, which presumably contains TeX markup, and converts it to XML 
+Digests C<$string>, presumably containing TeX markup, converts it to XML
 and returns the L<XML::LibXML::Document>.
 
 =item C<< $latexml->writeDOM($doc,$name); >>
