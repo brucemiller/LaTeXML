@@ -141,7 +141,8 @@ DefMacro('\protect',undef);
 #======================================================================
 # In math, \\ is just a formatting hint, unless within an array, cases, .. environment.
 DefConstructor("\\\\ OptionalMatch:* [Dimension]",
-	       "?#isMath(<ltx:XMHint name='\\'/>)(\n)", alias=>"\\\\\n");
+#	       "?#isMath(<ltx:XMHint name='\\'/>)(\n)", alias=>"\\\\\n");
+	       "?#isMath(<ltx:XMHint name='\\'/>)(<ltx:break/>)", alias=>"\\\\\n");
 
 #**********************************************************************
 # C.2. The Structure of the Document
@@ -153,7 +154,7 @@ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
 #   \end{document}
 
 DefEnvironment('{document}',
-	       "<ltx:document id='#id'>#body</ltx:document>",
+	       "<ltx:document xml:id='#id'>#body</ltx:document>",
 	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
 	       afterDigestBegin=>sub { $_[1]->setProperty(id=>Expand(T_CS('\thedocument@ID'))); },
 	       afterDigest=> sub { $_[0]->getGullet->flush; return; });
@@ -269,7 +270,7 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
 # \@@section{type}[refnum][id][toctitle]{title}
 DefConstructor('\\@@section{}[][][]{}',sub {
   my($document,$type,$refnum,$id,$toctitle,$title)=@_;
-  $document->openElement("ltx:".ToString($type),refnum=>$refnum,id=>$id);
+  $document->openElement("ltx:".ToString($type),refnum=>$refnum,'xml:id'=>$id);
   $document->insertElement('ltx:title',$title);
   $document->insertElement('ltx:toctitle',$toctitle) if $toctitle; },
   properties=>{refnum=>'#2',id=>'#3'},
@@ -528,23 +529,23 @@ sub RefStepItemCounter {
   RefStepCounter('enum'.ToString(Tokens(roman(LookupValue('itemlevel'))))); }
 
 DefConstructor('\itemize@item[]',
-	       "<ltx:item id='#id'>?#1(<ltx:tag>#1</ltx:tag>)",
+	       "<ltx:item xml:id='#id'>?#1(<ltx:tag>#1</ltx:tag>)",
 	       properties=>sub{ RefStepItemCounter(); });
 DefConstructor('\enumerate@item[]',
-	       "<ltx:item id='#id' refnum='#refnum'>?#1(<ltx:tag>#1</ltx:tag>)",
+	       "<ltx:item xml:id='#id' refnum='#refnum'>?#1(<ltx:tag>#1</ltx:tag>)",
 	       properties=>sub{ RefStepItemCounter(); });
 DefConstructor('\description@item[]',
-	       "<ltx:item id='#id'>?#1(<ltx:tag>#1</ltx:tag>)",
+	       "<ltx:item xml:id='#id'>?#1(<ltx:tag>#1</ltx:tag>)",
 	       properties=>sub{ RefStepItemCounter(); });
   
 DefEnvironment('{itemize}',
-	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
+	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
 	       properties=>sub { beginItemize('itemize'); });
 DefEnvironment('{enumerate}',
-	       "<ltx:enumerate  id='#id'>#body</ltx:enumerate>",
+	       "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
 	       properties=>sub { beginItemize('enumerate'); });
 DefEnvironment('{description}',
-	       "<ltx:description  id='#id'>#body</ltx:description>",
+	       "<ltx:description  xml:id='#id'>#body</ltx:description>",
 	       properties=>sub { beginItemize('description'); });
 
 # NOTE: Do I need to do anything with
@@ -664,7 +665,7 @@ DefEnvironment('{math}',
 	       ."</ltx:Math>",
 	       mode=>'inline_math');
 DefEnvironment('{equation}',
-	       "<ltx:equation id='#id' refnum='#refnum'>"
+	       "<ltx:equation xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>"
 	       .   "#body"
@@ -674,7 +675,7 @@ DefEnvironment('{equation}',
 	       mode=>'display_math',
 	       properties=> sub { RefStepCounter('equation') });
 DefEnvironment('{equation*}',
-	       "<ltx:equation id='#id'>"
+	       "<ltx:equation xml:id='#id'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>"
 	       .   "#body"
@@ -684,13 +685,9 @@ DefEnvironment('{equation*}',
 	       mode=>'display_math',
 	       properties=> sub { RefStepID('equation') });
 
-# NOTE: This has to interact with equation to CANCEL (or backtrack?) the
-# numbering?
-DefPrimitive('\nonumber',undef);
-
 # Define \( ..\) and \[ ... \] to act like environments.
 DefConstructor('\[',
-	       "<ltx:equation id='#id'>"
+	       "<ltx:equation xml:id='#id'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>"
 	       .   "#body"
@@ -716,42 +713,331 @@ DefMacro('\ensuremath{}', sub {
   if(LookupValue('IN_MATH')){ @$stuff; }
   else { (T_MATH,@$stuff,T_MATH); }});
 
-# NOTE: The numbering isn't right.
-# And the parseability will have to be worked on!
-# Also, the TeX gets alignments, so we'll have to be careful creating images!!
+# ========================================
+# eqnarray, etal
+# Tricky! There's a conflict between a math-level alignment (which
+# intermingles non-math things like labels, refnums, intertext),
+# and a text-level alignment (which fragments the math's logical structure).
+# Our solution is to attempt to synthesize a logical structure of
+# an equationgroup containing equations, but using MathFork structures
+# to hide the intended aligmnents.
+# Then, XSLT can be used in the end to either display in a logical
+# (but non-aligned format), or display fully aligned (but hiding the semantics).
+#======================================================================
+# Equation Groups
+#   <equationgroup> representing aligned collections of equations
+#   in particular, eqnarray and amsmath's align, ...
+# The intended usage is a sequence of patterns like
+#     LHS & REL & RHS
+# When the LHS is empty, it likely implies a continuation of the previous (or multirelation).
+# When both the LHS & REL are empty, it likely implies a continuation of the previous RHS
+#======================================================================
+# The strategy here is to use the alignment mechanism to construct
+# an initial form:
+#  <equationgroup>   as the overall container
+#    <equation>      for each row; this can receive id, refnum & label attributes
+#      <_Capture_>   to capture each columns math.
+# After the initial construction (but before any rewriting & parsing)
+# we scan through the equations combining the ones that appear (heuristically)
+# to be single equations on several rows (either as multi-relations, or
+# rhs's of multiple rows)
+#  The combinations are represented by a MathFork container which
+# holds both the apparently meaningful complete equation, along with
+# the rows & columns that show the desired alignment.
+# Each of those columns contains a <Math>, thus these can also be parsed,
+# and converted to MathML or images. 
+#
+# Thus, both forms are present: A presentation-oriented stylesheet can
+# thus represent the eqnarray by a table with aligned math chunks.
+# A content-oriented stylesheet can select the composed meaningful pieces.
 
-DefMacro('\eqnarray',    '\@@eqnarray\@start@alignment');
-DefMacro('\endeqnarray', '\@finish@alignment\end@eqnarray');
-DefMacro('\csname eqnarray*\endcsname',    '\@@eqnarray*\@start@alignment');
-DefMacro('\csname endeqnarray*\endcsname', '\@finish@alignment\end@eqnarray');
+# ========================================
+# The following set deal with numbering the equations (rows) that make up an equationgroup.
+DefPrimitive('\@equationgroup@number',   sub {  AssignValue(EQUATIONGROUP_NUMBER=>'_AUTO_'); });
+DefPrimitive('\@equationgroup@nonumber', sub {  AssignValue(EQUATIONGROUP_NUMBER=>0); });
+DefPrimitive('\nonumber',sub { AssignValue(EQUATIONROW_NUMBER=>0, 'global'); } );
 
-DefConstructor('\@@eqnarray OptionalMatch:* SkipSpaces DigestedBody',
-	       sub {
-		 my($document,$star,$body,%props)=@_;
-		 $document->openElement('ltx:equation',refnum=>$props{refnum},id=>$props{id});
-		 $document->openElement('ltx:Math',mode=>'display');
-		 $document->openElement('ltx:XMath');
-		 constructAlignment($document,$body,attributes=>{name=>'eqnarray'});
-		 $document->closeElement('ltx:XMath');
-		 $document->closeElement('ltx:Math');
-		 $document->closeElement('ltx:equation'); },
-	       mode=>'display_math',
-	       beforeDigest=>sub {$_[0]->bgroup; alignmentBindings('rcl'); },
-	       properties=> sub { ($_[1] ? RefStepID('equation') : RefStepCounter('equation')); },
-	       afterDigest=>sub { 
-		 $_[1]->setProperty(body=>$_[1]->getArg(2));},	# So we get TeX
-	       reversion=>'\begin{eqnarray#1}#2\end{eqnarray#1}');
-DefPrimitive('\end@eqnarray',sub{ $_[0]->egroup; });
+# Alternate versions of alignment open/close@row that deal with numbering.
+# Depending on how an eqnarray ends, we might end up with an empty equation, which will be deleted.
+# If non-empty, we'll set an id, and perhaps a refnum.
+DefPrimitive('\@equationgroup@close@row',sub { $_[0]->egroup;} );
+DefConstructor('\@equationgroup@open@row SkipSpaces DigestedBody',
+	       "",
+	       reversion=>'#1',
+	       beforeDigest=>sub { $_[0]->bgroup;
+				   LookupValue('Alignment')->newRow;
+				   AssignValue(EQUATIONROW_NUMBER
+					       =>LookupValue('EQUATIONGROUP_NUMBER'),'global');
+				   return; },
+	       afterDigest=>sub {
+ 		 my($stomach,$whatsit)=@_;
+ 		 if($whatsit->getArg(1)->unlist){ # If non-empty row, possibly we'll number
+		   my $num = LookupValue('EQUATIONROW_NUMBER');
+		   my %props=();
+		   if(!$num){               %props = RefStepID('equation'); }
+		   elsif($num eq '_AUTO_'){ %props = RefStepCounter('equation'); }
+		   else { %props = RefStepID('equation');
+			  $props{refnum} = $num; }
+		   # GACK: Store the refnum & id in the alignment's row structure!
+		   # [wouldn't it be nicer to be using Whatsits inside the alignment?]
+		   my $row = LookupValue('Alignment')->currentRow;
+		   $$row{id} = $props{id};
+		   $$row{refnum} = $props{refnum}; }
+		 return; });
+
+# ========================================
+# Some special kinds of rows...
 DefMacro('\lefteqn{}','\multicolumn{3}{l}{#1\mbox{}}');
+# \intertext (in amsmath)
+
+# ========================================
+# eqnarray
+DefMacro('\eqnarray',
+	 '\@eqnarray@bindings\@@eqnarray\@equationgroup@number\@start@alignment');
+DefMacro('\endeqnarray',
+	 '\@finish@alignment\end@eqnarray');
+DefMacro('\csname eqnarray*\endcsname',
+	 '\@eqnarray@bindings\@@eqnarray\@equationgroup@nonumber\@start@alignment');
+DefMacro('\csname endeqnarray*\endcsname',
+	 '\@finish@alignment\end@eqnarray');
+
+DefPrimitive('\@eqnarray@bindings', sub {
+  eqnarrayBindings(); });
+
+sub eqnarrayBindings {
+  my $col1 = {before=>Tokens(T_CS('\hfil'),T_MATH,T_CS('\displaystyle')),
+	      after=>Tokens(T_MATH)};
+  my $col2 = {before=>Tokens(T_CS('\hfil'),T_MATH,T_CS('\displaystyle')),
+	      after=>Tokens(T_MATH,T_CS('\hfil'))};
+  my $col3 = {before=>Tokens(T_MATH,T_CS('\displaystyle')),
+	      after=>Tokens(T_MATH,T_CS('\hfil'))};
+  my $template = LaTeXML::AlignmentTemplate->new(columns=>[$col1,$col2,$col3]);
+  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>'ltx:equationgroup',
+						rowElement=>'ltx:equation',
+						colElement=>'_Capture_');
+  AssignValue(Alignment=>$alignment);
+  $alignment->setTemplate($template);
+  Let(T_ALIGN,        T_CS('\@alignment@align'));
+  Let(T_CS("\\\\"),   T_CS('\@alignment@newline'));
+  Let(T_CS('\cr'),    T_CS('\@alignment@cr'));
+  Let('\span',        T_CS('\@alignment@span'));
+  Let(T_CS('\@open@row'),T_CS('\@equationgroup@open@row'));
+  Let(T_CS('\@close@row'),T_CS('\@equationgroup@close@row'));
+  return; }
+
+DefConstructor('\@@eqnarray SkipSpaces DigestedBody',
+	       sub {
+		 my($document,$body,%props)=@_;
+		 eqnarrayRegroupEquations($document,constructAlignment($document,$body,
+								      class=>'eqnarray')); },
+	       beforeDigest=>sub { $_[0]->bgroup; });
+DefPrimitive('\end@eqnarray',sub{ $_[0]->egroup; });
+
+# ========================================
+# Some tools for analyzing the equationgroup after we've constructed it.
+# ========================================
+
+# ========================================
+# For eqnarray, the "meaningful" unit will be at least one row,
+# but often multiple rows.
+# When the 1st column is empty, the row is assumed to continue the previous equation (if any!)
+# When the 2nd column is also empty, it presumably continues the previous RHS.
+# We'll combine these cases into a single equation, but remember the alignment structure.
+# However, if more than 1 such row has refnums, we probably don't want to combine.
+# NOTE: intertext are not (yet) handled here; Can they appear?
+sub eqnarrayRegroupEquations {
+  my($document,$equationgroup)=@_;
+  my @eqs = ();
+  my $numbered=0;
+  my $oddness=0;
+  foreach my $equation ($document->getChildElements($equationgroup)){
+    my @cells = $document->getChildElements($equation); # The _Capture_'s representing each column.
+    my $class = 'unknown';
+    if($cells[0]->hasChildNodes){ # 1st column non-empty; Presumably a new "equation"
+      $class = 'new'; }
+    elsif(!scalar(@eqs)){	     # Else 1st is empty, but if no previous equation?
+      $class = 'odd'; }
+    elsif($cells[1]->hasChildNodes){ # 1st is empty & 2nd non-empty (Rel?); Probably continues
+      if($numbered && $equation->hasAttribute('refnum')){ # Separately numbered continuation?
+	$class = 'new';  } # Keep it as separate equation, even though missing LHS
+      else {
+	$class = 'continue'; }} # Continues as multiequation
+    else{			# 1st & 2nd is empty
+      if($numbered && $equation->hasAttribute('refnum') # Separately numbered AND labeled?
+	 && $equation->hasAttribute('labels')){
+	$class = 'odd'; }	# must keep separate, but weird!
+      else {
+	$class = 'continue'; }} # Else, continues RHS.
+    if(($class eq 'new') || ($class eq 'odd')){
+      $numbered = $equation->hasAttribute('refnum');
+      push(@eqs,[$equation]);
+      $oddness ++ if $class eq 'odd'; }
+    else {
+      $numbered |= $equation->hasAttribute('refnum');
+      push(@{$eqs[$#eqs]},$equation); }
+  }
+  Warn("Unrecognized equation patterns ($oddness) in eqnarray") if $oddness;
+  # Now rearrange things appropriately.
+  foreach my $eqset (@eqs){
+    my @subeqs = @$eqset;
+    if(scalar(@subeqs) > 1){    # Combine equations with multiple rows
+      eqnarrayJoinRows($document,$equationgroup,@$eqset); }
+    else {			# Else fixup columns of single-row equations
+      equationgroupJoinCols($document,3,$subeqs[0]); }}
+}
+
+# ========================================
+# Tools for rearranging equations in equationgroups
+
+# Given a set of rows to be collected into a single equation,
+# create the equation w/appropriate attributes, and
+# collect the math fragments into a MathFork structure.
+sub eqnarrayJoinRows {
+  my($document,$equationgroup,@equations)=@_;
+  # Make a new equation, with a single MathFork container
+  my $equation = addNewChildLate($document,$equationgroup,'ltx:equation');
+  $equationgroup->insertBefore($equation,$equations[0]); # Move to correct position.
+  # move labels, id, refnum to new equation
+  my($labels,$id,$refnum);
+  foreach my $eq (@equations){
+    if(my $l = $eq->getAttribute('labels')){
+      $labels = ($labels ? "$labels $l" : $l); }
+    $id     = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
+    $refnum = $eq->getAttribute('refnum') if $eq->hasAttribute('refnum');
+  }
+  $equation->setAttribute(labels=>$labels) if $labels;
+  $equation->setAttribute('xml:id'=>$id) if $id;
+  $equation->setAttribute(refnum=>$refnum) if $refnum;
+
+  # Scan equations to see which ones likely are continuations of previous
+  my($main,$branch)=addMathFork($document,$equation);
+  foreach my $eq (@equations){
+    $eq->unbindNode;
+    my $tr = addNewChildLate($document,$branch,'ltx:tr');
+    foreach my $cell ($document->getChildElements($eq)){
+      addColumnToMathFork($document,$main,$tr,$cell); }}
+}
+
+# Tricky bit for creating nodes late in the game,
+# 
+sub addNewChildLate {
+  my($document,$node,$tag)=@_;
+  my ($nsuri,$localname) = (undef,$tag);
+  ($nsuri,$localname)= $document->getModel->decodeQName($tag) unless $tag eq '_Capture_';
+  my $newnode = $node->addNewChild($nsuri,$localname);
+  # Copy essentials to new node.
+  if(my $font = $node->getAttribute('_font')){
+    $newnode->setAttribute(_font=>$font); }
+  if(my $box = $node->getAttribute('_box')){
+    $newnode->setAttribute(_box=>$box); }
+  $newnode; }
+
+# Given an equation generated in an equationgroup, 
+# collect each $ncols columns into a MathFork structure,
+# with the formatted portion being the columns.
+sub equationgroupJoinCols {
+  my($document,$ncols,$equation)=@_;
+  my ($col,$main,$branch)=(0,undef,undef);
+  foreach my $cell ($document->getChildElements($equation)){
+    if(($col++ % $ncols) == 0){	# Create new MathFork every $ncols cells.
+      ($main,$branch)=addMathFork($document,$equation); }
+    addColumnToMathFork($document,$main,$branch,$cell); }}
+
+# Use this where you don't want any MathFork stuff.
+# It just pulls the contents out of the _Capture_.
+sub equationgroupFlattenCols {
+  my($document,$equation)=@_;
+  my @cells = $document->getChildElements($equation);
+  foreach my $cell (@cells){
+    foreach my $c ($document->getChildElements($cell)){
+      $equation->insertBefore($c,$cell);
+    $cell->unbindNode; }}}
+
+# ========================================
+# Support for above.
+
+# Add a MathFork to the given equation,
+# returning the new nodes for the XMath in the main branch,
+# and the 1st alternate branch.
+sub addMathFork {
+  my($document,$equation)=@_;
+  my $fork  = addNewChildLate($document,$equation,'ltx:MathFork');
+  my $main  = addNewChildLate($document,$fork,'ltx:Math');
+  my $xmath = addNewChildLate($document,$main,'ltx:XMath');
+  my $branch= addNewChildLate($document,$fork,'ltx:MathBranch');
+  ($main,$branch); }
+
+# Add a td (table column) to $branch in a MathFork,
+# and also to the main branch.
+sub addColumnToMathFork {
+  my($document,$main,$branch,$cell)=@_;
+  my $td = addNewChildLate($document,$branch,'ltx:td');
+  if(my $align = $cell->getAttribute('align')){
+    $td->setAttribute(align=>$align); }
+  addToMathFork($document,$main,$td,$cell); }
+
+# Here's the really nasty part.
+# The content of each cell can end up in the main branch of MathFork
+# and in the td's tucked into the MathBranch. Thus, any id's in the math,
+# (especially from XMDual/XMArg+XMRef constructs) will be duplicated!
+# So, we have to clone the node, and patch up those ids, and refs to them.
+# Worse, if any id's are referenced externally, they presumably should
+# point to the main MathFork branch!!
+#
+# Given a _Capture_ node $cell containing math, put it's contents
+# into $xcontent (an XMath in the main branch of the MathFork),
+# AND add a cloned td to $row (in a MathBranc of the MathFork).
+sub cloneMath {
+  my($document,$math)=@_;
+  my $copy = $math->cloneNode(1);
+  my %idmap=();
+  # Find all id's defined in the copy and change the id.
+  foreach my $node ($document->findnodes('.//*[@xml:id]',$copy)){
+    my $id = $node->getAttribute('xml:id');
+    # Trust document to bump the id to a unique one!
+    my $newid = $document->modifyID($id);
+    $document->recordID($newid,$node);
+    $node->setAttribute('xml:id'=>$newid);
+    $idmap{$id}=$newid; }
+  # Now, replace all references to those modified ids.
+  foreach my $node ($document->findnodes('.//*[@idref]',$copy)){
+    my $id = $node->getAttribute('idref');
+    $node->setAttribute(idref=>$idmap{$id}) if $idmap{$id}; }
+  $copy; }
+
+sub addToMathFork {
+  my($document,$main,$branch,$cell)=@_;
+  $cell->unbindNode;
+  if(my $math  = $cell->firstChild){
+    if(my $xmath = $math->firstChild){
+      my $copy = cloneMath($document,$cell);
+      # Now, we can add the contents of the cell to the main branch
+      foreach my $item ($document->getChildElements($xmath)){
+	$main->firstChild->appendChild($item); }
+      # And we need to add the tex!!
+      # Since each cell was captured in its own Math, it has a valid chunk of tex.
+      # We just need to paste them together appropriately.
+      if(my $x_tex = $math->getAttribute('tex')){
+	my $x_ctex = $math->getAttribute('content-tex') || $x_tex; 
+	my $tex = $main->getAttribute('tex') || '';
+	my $ctex =$main->getAttribute('content-tex') || $tex;
+	$tex = join(' ',grep($_,map((s/^\s*\\displaystyle\s*//&&$_)||$_,$tex,$x_tex)));
+	$ctex = join(' ',grep($_,$ctex,$x_ctex));
+	$ctex =~ s/\\displaystyle\s*//g;   # strip all \displaystyle
+	$main->setAttribute(tex=>'\displaystyle '.$tex);
+	$main->setAttribute('content-tex'=>$ctex) unless $ctex eq $tex; }
+      # and the modified copy to the alternative branch.
+      $branch->appendChild($copy->firstChild); }
+  }}
 
 # Style Parameters
-#  \abovedisplayskip \abovedisplayshortskip, \jot are in Primitives.pm
+#  \abovedisplayskip \abovedisplayshortskip, \jot are in TeX.pool
 DefRegister('\mathindent' =>Dimension(0)); 
 
 #======================================================================
 # C.7.2 Common Structures
 #======================================================================
-# sub, superscript and prime are in Primitives.pm
+# sub, superscript and prime are in TeX.pool
 # Underlying support in TeX.pool.ltxml
 DefConstructor('\frac{}{}',
 	       "<ltx:XMApp>"
@@ -760,13 +1046,13 @@ DefConstructor('\frac{}{}',
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
 
-# Ellipsis: See Primitives
+# Ellipsis: See TeX.pool
 
 #======================================================================
 # C.7.3 Mathematical Symbols
 #======================================================================
 # See Tables 3.3 through 3.8 (pp 41--44)
-# Defined in Primitives.pm
+# Defined in TeX.pool
 # [Possibly some are strictly LaTeX and should be moved here?]
 
 #======================================================================
@@ -777,7 +1063,7 @@ DefConstructor('\frac{}{}',
 #======================================================================-
 # C.7.5 Delimiters
 #======================================================================-
-# All this is already in Primitives.pm
+# All this is already in TeX.pool
 
 DefConstructor('\stackrel{}{}',
 	       "<ltx:XMApp role='RELOP'>"
@@ -790,12 +1076,12 @@ DefConstructor('\stackrel{}{}',
 #======================================================================-
 # C.7.6 Putting One Thing Above Another
 #======================================================================-
-# All this is already in Primitives.pm
+# All this is already in TeX.pool
 
 #======================================================================-
 # C.7.7 Spacing
 #======================================================================-
-# All this is already in Primitives.pm
+# All this is already in TeX.pool
 
 #======================================================================
 # C.7.8 Changing Style
@@ -925,7 +1211,7 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
       if $reset; }
 
   DefEnvironment("{$thmset} OptionalUndigested",
-		 "<ltx:theorem id='#id' refnum='#refnum'>"
+		 "<ltx:theorem xml:id='#id' refnum='#refnum'>"
 		 . "<ltx:title>#title</ltx:title>"
 		 .  "#body"
 		 ."</ltx:theorem>",
@@ -963,20 +1249,7 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 # For LaTeX documents, We want id's on para, as well as sectional units.
 # However, para get created implicitly on Document construction, rather than
 # explicitly during digestion (via a whatsit), we can't use the usual LaTeX counter mechanism.
-sub number_para {
-  my($document,$node,$whatsit)=@_;
-  # Get prefix from first parent with an id.
-  my(@parents)=$document->findnodes('ancestor::*[@id]',$node); # find 1st id'd parent.
-  my $prefix= (@parents ? $parents[$#parents]->getAttribute('id')."." : '');
-
-  # Get the previous number within parent; Worried about intervening elements around para's, but...
-  my(@siblings)=$document->findnodes("preceding-sibling::ltx:para",$node);
-  my $n=1;
-  $n = $1+1  if(@siblings && $siblings[$#siblings]->getAttribute('id')=~/(\d+)$/);
-
-  $node->setAttribute(id=>$prefix."p$n"); }
-
-Tag('ltx:para',afterOpen=>\&number_para);
+Tag('ltx:para',afterOpen=>sub { GenerateID(@_,'p'); });
  
 DefPrimitive('\newcounter{}[]',sub { shift; NewCounter(map($_ && ToString($_),@_)); return;});
 
@@ -1032,22 +1305,22 @@ DefMacro('\fnsymbol{}',sub {
 DefConstructor('\caption[]{}',
 	       "<ltx:caption>#2</ltx:caption>\n?#1(<ltx:toccaption>#1</ltx:toccaption>)");
 DefEnvironment('{figure}[]',
-	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:figure>",
 	       properties=> sub { RefStepCounter('figure') });
 DefEnvironment('{figure*}[]',
-	       "<ltx:figure id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:figure>",
 	       properties=> sub { RefStepCounter('figure') });
 DefEnvironment('{table}[]',
-	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       "<ltx:table xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:table>",
 	       properties=> sub { RefStepCounter('table')} );
 DefEnvironment('{table*}[]',
-	       "<ltx:table id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       "<ltx:table xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:table>",
 	       properties=> sub { RefStepCounter('table')} );
@@ -1151,7 +1424,9 @@ DefPrimitive('\@tabbing@pushtabs',undef);
 DefPrimitive('\@tabbing@poptabs',undef);
 
 sub tabbingBindings {
-  my $alignment = LaTeXML::Util::Alignment->new();
+  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>'ltx:tabular',
+						rowElement=>'ltx:tr',
+						colElement=>'ltx:td');
   my $template = LaTeXML::AlignmentTemplate->new(repeated=>[{after=>Tokens(T_CS('\hfil'))}]);
   $alignment->setTemplate($template);
   AssignValue(Alignment=>$alignment);
@@ -1274,10 +1549,33 @@ DefPrimitive('\nofiles',undef);
 # C.11.2 Cross-References
 #======================================================================
 
-# \label attaches a label to the nearest parent that can accept a label attribute
-DefConstructor('\label Semiverbatim',
-	       "^ label='#1'",
+# \label attaches a label to the nearest parent that can accept a labels attribute
+# Note that latex essentially allows redundant labels, but we can record only one!!!
+# No; next version. Find nearest that can accept a refnum attribute.
+# Or, better yet (more latex-like??) nearest that HAS a refnum!?!
+DefConstructor('\label Semiverbatim', sub {
+		 my($document,$label)=@_;
+		 $label = CleanLabel($label);
+##		 my $savenode = $document->floatToAttribute('refnum');
+		 my $savenode = $document->floatToAttribute('labels');
+		 my $node = $document->getNode;
+		 my $prev = $node->getAttribute('labels');
+		 $document->setAttribute($node,labels=>($prev ? $prev." ".$label : $label)); 
+		 $document->setNode($savenode); },
+
+##		 my @prev = LaTeXML::Document::precedingNodes($document->getNode);
+##		 while(@prev && (($prev[0]->getType != XML_ELEMENT_NODE) || (!$prev[0]->hasAttribute('refnum')))){
+##		   shift(@prev); }
+##		 if(my $node = shift(@prev)){
+##		   my $prev = $node->getAttribute('labels');
+##		   $document->setAttribute($node,labels=>($prev ? $prev." ".$label : $label)); }
+##		 else {
+##		   Error("No current node can accept labels; at ".Stringify($document->getNode)); }},
+
+
+###	       "^ label='#1'",
 	       reversion=>'',
+	       properties=>{alignmentIgnorable=>1},
 	       afterDigest=>sub {
 		 my $label = ToString($_[1]->getArg(1));
 		 my $scope = 'label:'.$label;
@@ -1291,8 +1589,10 @@ DefConstructor('\label Semiverbatim',
 
 # These will get filled in during postprocessing.
 # * is added to accommodate hyperref
-DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#2'/>");
-DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#2'/>"); # Same??
+DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label'/>",
+	      properties=>sub { (label=>CleanLabel($_[2])); });
+DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label'/>", # Same??
+	      properties=>sub { (label=>CleanLabel($_[2])); });
 #======================================================================
 # C.11.3 Bibliography and Citation
 #======================================================================
@@ -1300,7 +1600,7 @@ DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#2'/
 DefMacro('\thebibliography@id','');
 # NOTE: Not really complete, since I haven't dealt with bibliographies!
 DefConstructor('\bibliography Semiverbatim',
-	       "<ltx:bibliography files='#1' id='#id'/>",
+	       "<ltx:bibliography files='#1' xml:id='#id'/>",
 	       afterDigest=>sub { 
 		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
 		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
@@ -1308,7 +1608,7 @@ DefConstructor('\bibliography Semiverbatim',
 DefMacro('\refname','References');
 DefPrimitive('\bibliographystyle{}', undef);
 DefEnvironment('{thebibliography}{}',
-	       "<ltx:bibliography id='#id'>"
+	       "<ltx:bibliography xml:id='#id'>"
 	       . "<ltx:title>#refname</ltx:title>"
 	       . "<ltx:biblist>#body</ltx:biblist>"
 	       ."</ltx:bibliography>",
@@ -1320,22 +1620,19 @@ DefEnvironment('{thebibliography}{}',
 		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  });
 
 
-sub cleanBibKey {
-  my($key)=@_;
-  $key = lc(ToString($key));
-  $key =~ s/\s//g;
-  $key; }
 # NOTE: 
 DefMacro('\the@bibitem','\arabic{enumiv}');
 DefConstructor('\bibitem[] Semiverbatim',
-	       "<ltx:bibitem key='#key' id='#id'><ltx:tag open='[' close=']'>#tag</ltx:tag><ltx:bibblock>",
+	       "<ltx:bibitem key='#key' xml:id='#id'><ltx:tag open='[' close=']'>#tag</ltx:tag><ltx:bibblock>",
 	       afterDigest=>sub {
 		 my $tag = $_[1]->getArg(1);
-		 my $key = cleanBibKey($_[1]->getArg(2));
+		 my $key = CleanBibKey($_[1]->getArg(2));
 		 if(!$tag){
 		   RefStepCounter('enumiv');
 		   $tag = Digest(Expand(T_CS('\the@bibitem'))); }
 		 my $id  = ToString(Expand(T_CS('\thebibliography@ID'))).".".$key;
+		 # colon isn't quite allowed (must look like namespace prefix!)
+		 $id =~ s/:/../g; # Hopefully this is unique enough
 		 $_[1]->setProperties(tag=>$tag, key=>$key, id=>$id); });
 DefConstructor('\newblock',"<ltx:bibblock>");
 Tag('ltx:bibitem', autoClose=>1);
@@ -1347,7 +1644,7 @@ Tag('ltx:bibblock', autoClose=>1);
 # Only sane solution is to downcase the keys in both places.
 sub makecite {
   my($parenthesized,$show, $document,$phrase1,$phrase2,$refs,%props)=@_;
-  $refs = cleanBibKey($refs);
+  $refs = CleanBibKey($refs);
   my($pre,$post)=(defined $phrase1 && defined $phrase2
 		  ? ($phrase1,$phrase2)
 		  : (undef,   $phrase1));
@@ -1501,18 +1798,11 @@ sub process_index_phrases {
 
 DefMacro('\index{}', \&process_index_phrases);
 
-sub cleanIndexKey {
-  my($key)=@_;
-  $key = ToString($key);
-  $key =~ s/[^a-zA-Z0-9]//g;
-  $key =~ tr|A-Z|a-z|;
-  $key; }
-
 DefConstructor('\@index[]{}',"^<ltx:indexmark style='#1'>#2</ltx:indexmark>",
 	       mode=>'text', reversion=>'');
 DefConstructor('\@indexphrase[]{}',
 	       "<ltx:indexphrase key='#key'>#2</ltx:indexphrase>",
-	       properties=>{key=>sub { cleanIndexKey($_[1]); }});
+	       properties=>{key=>sub { CleanIndexKey($_[1]); }});
 DefConstructor('\@indexsee{}',
 	       "<ltx:indexphrase see_also_marker='1'>#1</ltx:indexphrase>");
 
@@ -1525,10 +1815,10 @@ sub addIndexKey {
   if($node->getAttribute('see_also_marker')){
     my $key = $node->getAttribute('key') || indexify($node,$document);
     my $indexmark = $node->parentNode;
-    $indexmark->setAttribute(see_also=>$key);
+    $document->setAttribute($indexmark,see_also=>$key);
     $indexmark->removeChild($node); }
   elsif(!$node->getAttribute('key')) {
-    $node->setAttribute(key=>indexify($node,$document)); }}
+    $document->setAttribute($node,key=>indexify($node,$document)); }}
 
 #======================================================================
 # This converts an indexphrase node into a sortable string.
@@ -1543,7 +1833,7 @@ sub indexify {
     $string =~ s/\s//g;		# Or remove entirely? Eventually worry about many=>1 mapping???
     lc($string); }		# Worry..
   elsif($type == XML_ELEMENT_NODE){
-    if($document->getNodeQName($node) eq 'ltx:Math'){
+    if($document->getModel->getNodeQName($node) eq 'ltx:Math'){
       indexify_tex($node->getAttribute('tex'));}
     else {
       join('',map(indexify($_,$document),$node->childNodes)); }}
@@ -1572,8 +1862,6 @@ Tag('ltx:indexentry', autoClose=>1);
 sub closeIndexPhrase {
   my($document)=@_;
   if($document->isCloseable('ltx:indexphrase')){
-#    my $inode = $document->getElement;
-#    $inode->setAttribute(key=>cleanIndexKey($inode->textContent));
     $document->closeElement('ltx:indexphrase'); }}
 
 sub doIndexItem {
@@ -1600,7 +1888,7 @@ DefConstructor('\index@subsubitem',sub { doIndexItem($_[0],3); });
 DefConstructor('\index@done',      sub { doIndexItem($_[0],0); });
 
 DefEnvironment('{theindex}', 
-	       "<ltx:index id='#id'>"
+	       "<ltx:index xml:id='#id'>"
 	       .  "<ltx:title>Index</ltx:title>"
 	       .  "#body"
 	       ."</ltx:index>",
@@ -1646,7 +1934,7 @@ DefPrimitive('\nolinebreak[]',undef);
 # \\ already defined
 DefConstructor('\newline',"\n");
 DefPrimitive('\-',undef);	# We don't do hyphenation.
-# \hyphenation in Primitives.pm
+# \hyphenation in TeX.pool
 
 DefPrimitive('\sloppy',undef);
 DefPrimitive('\fussy',undef);
@@ -1740,11 +2028,13 @@ DefPrimitive('\@begin@lrbox Token', sub {
 DefPrimitive('\usebox{Token}', sub { LookupValue('box'.ToString($_[1]));});
 
 DefConstructor('\parbox[]{Dimension}{}',
-	       "<ltx:inline-block ?#2(width='#2') ?#1(vattach='#1') align='justified'>#3</ltx:inline-block>",
-	       mode=>'text');
+	       "<ltx:inline-block ?#2(width='#2') vattach='#vattach' align='justified'>#3</ltx:inline-block>",
+	       mode=>'text',
+	       properties=>sub { (vattach=>translateAttachment($_[1])); });
 DefEnvironment('{minipage}[]{Dimension}',
-	       "<ltx:inline-block ?#2(width='#2') ?#1(vattach='#1') align='justified'>#body</ltx:inline-block>",
-	       mode=>'text');
+	       "<ltx:inline-block ?#2(width='#2') vattach='#vattach' align='justified'>#body</ltx:inline-block>",
+	       mode=>'text',
+	       properties=>sub { (vattach=>translateAttachment($_[1])); });
 DefConstructor('\rule[Dimension]{Dimension}{Dimension}', 
 	       "<ltx:rule ?#1(yoffset='#1') width='#2' height='#3'/>");
 DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
@@ -1925,13 +2215,13 @@ DefConstructor('\pic@dashbox {Float} Pair [] {}',
 	       properties=>sub { picProperties(dash=>picScale($_[1]),size=>picScale($_[2])); });
 
 DefConstructor('\pic@frame{}',
-	       "<ltx:g framed='yes' stroke-width='#thick'>#1</ltx:g>",
+	       "<ltx:g framed='true' stroke-width='#thick'>#1</ltx:g>",
 	       alias=>'\frame',
 	       properties=>sub { picProperties(); });
 
 our %alignments = (l=>'left',c=>'center',r=>'right');
 DefConstructor('\shortstack[]{}',
-	       "<ltx:vbox align='#align'><ltx:text>#2</ltx:text></ltx:vbox>",
+	       "<ltx:inline-block align='#align'><ltx:text>#2</ltx:text></ltx:inline-block>",
 	       bounded=>1,
 	       beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
 						 "</ltx:text><ltx:text>", alias=>"\\\\\n"); },
@@ -1948,16 +2238,6 @@ DefMacro('\multiput Pair Pair {}{}',  sub {
     $x += $dx; $y+=$dy; }
   @exp; });
 
-sub add_picture_TeX {
-  my($document,$node,$thing)=@_;
-  if($thing && !$thing->getProperty('_added_tex')){
-    local $LaTeXML::PICTURE_SCALE = Dimension('1pt')->valueOf;
-    my $tex = ToString(Tokens($thing->revert));
-    $tex = "\\setlength{\\unitlength}{".ToString($thing->getProperty('unitlength'))."}".$tex;
-    $node->setAttribute(tex=>$tex); }
-  $thing->setProperty('_added_tex',1); }
-
-#Tag('ltx:picture',   afterOpen=>\&add_picture_TeX);
 Tag('ltx:picture',   afterOpen=>\&add_TeX);
 
 Tag('ltx:g', afterClose=> sub {
@@ -2059,7 +2339,8 @@ DefConstructor('\textdagger',"\x{2021}");    # DAGGER
 DefConstructor('\textparagraph',UTF(0xB6)); # PILCROW SIGN
 DefConstructor('\textperiodcentered',"\x{22C5}"); # DOT OPERATOR
 DefConstructor('\textsection',UTF(0xA7));	      # SECTION SIGN
-DefConstructor('\textcircled{}',"<ltx:text framed='circle'>#1</ltx:text>");
+#DefConstructor('\textcircled{}',"<ltx:text framed='circle'>#1</ltx:text>");
+DefAccent('\textcircled',UTF(0x20DD),UTF(0x25EF)); # Defined in TeX.pool
 DefConstructor('\textless',"<");
 DefConstructor('\textgreater',">");
 DefConstructor('\textcopyright',UTF(0xA9)); # COPYRIGHT SIGN
@@ -2240,7 +2521,7 @@ DefMacro('\math@fontstrue','');
 DefMacro('\selectfont','');
 
 #======================================================================
-# Various symbols, accents, etc from Chapter 3 defined in Primitives.pm
+# Various symbols, accents, etc from Chapter 3 defined in TeX.pool
 
 #**********************************************************************
 # Semi-Undocumented stuff
