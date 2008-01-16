@@ -116,7 +116,7 @@ sub Explode {
 
 sub UnTeX {
   my($thing)=@_;
-  ToString(Tokens(ref $thing ? $thing->revert : Explode($thing))); }
+  (defined $thing ? ToString(Tokens(ref $thing ? $thing->revert : Explode($thing))) : undef); }
 
 #======================================================================
 # Constructors for number and dimension types.
@@ -199,10 +199,7 @@ sub Stringify {
   # Have to handle LibXML stuff explicitly (unless we want to add methods...?)
   elsif($object->isa('XML::LibXML::Node')){
     if($object->nodeType == XML_ELEMENT_NODE){ 
-      my $nodename = $object->localname;
-      my $ns    = $object->namespaceURI;
-      if($ns && ($ns=$LaTeXML::Global::STATE->getModel->getNamespacePrefix($ns))){
-	$nodename = "$ns:$nodename"; }
+      my $tag = $LaTeXML::Global::STATE->getModel->getNodeQName($object);
       my $attributes ='';
       foreach my $attr ($object->attributes){
 	my $name = $attr->nodeName;
@@ -210,7 +207,7 @@ sub Stringify {
 	my $val = $attr->getData;
 	$val = substr($val,0,30)."..." if length($val)>35;
 	$attributes .= ' '. $name. "=\"".$val."\""; }
-      "<".$nodename.$attributes. ($object->hasChildNodes ? ">..." : "/>");
+      "<".$tag.$attributes. ($object->hasChildNodes ? ">..." : "/>");
     }
     elsif($object->nodeType == XML_TEXT_NODE){
       "XMLText[".$object->data."]"; }
