@@ -59,6 +59,22 @@ sub registerHandler {
 sub process {
   my($self,$doc)=@_;
   my $root = $doc->getDocumentElement;
+
+  # I think we really need an ID here to establish the root node in the DB,
+  # even if the document didn't have one originally.
+  # And for the common case of a single docucment, we'd like to be silent about it,
+  # UNLESS there seem to be multiple documents which would lead to a conflict.
+  my $id = $root->getAttribute('xml:id');
+  if(! defined $id){
+    $id = "Document";
+    if(my $preventry = $$self{db}->lookup("ID:$id")){
+      my $loc = $self->storableLocation($doc);
+      my $prevloc = $preventry->getValue('location');
+      if($loc ne $prevloc){
+	$self->Warn("Using default ID=\"$id\", "
+		    ."but there's an apparent conflict with location $loc and previous $prevloc");}}
+    $root->setAttribute('xml:id'=>$id); }
+
   $self->scan($doc,$root, $$doc{parent_id});
   $self->Progress("Scanned; DBStatus: ".$$self{db}->status);
   $doc; }
@@ -80,7 +96,7 @@ sub scanChildren {
 # unique within the given page.
 sub inPageID {
   my($self,$doc,$id)=@_;
-  my $baseid = $doc->getDocumentElement->getAttribute('id') || '';
+  my $baseid = $doc->getDocumentElement->getAttribute('xml:id') || '';
   if($baseid eq $id){
     undef; }
   elsif($baseid && ($id =~ /^\Q$baseid\E\.(.*)$/)){
@@ -94,28 +110,32 @@ sub storableLocation {
   my($self,$doc)=@_;
   $$self{db}->storablePathname($doc->getDestination); }
 
+sub noteLabels {
+  my($self,$node)=@_;
+  if(my $id = $node->getAttribute('xml:id')){
+    if(my $labels = $node->getAttribute('labels')){
+      my @labels= split(' ',$node->getAttribute('labels'));
+      foreach my $label (@labels){
+	$$self{db}->register($label,id=>$id); }
+      [@labels]; }}}
+
 sub default_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  my $id = $node->getAttribute('id');
+  my $id = $node->getAttribute('xml:id');
   if($id){
-    my $label = $node->getAttribute('label');
-    $$self{db}->register("LABEL:$label",id=>$id) if $label;
-    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, label=>$label,
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, labels=>$self->noteLabels($node),
 			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id)); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub section_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  my $id = $node->getAttribute('id');
+  my $id = $node->getAttribute('xml:id');
   if($id){
-    my $label = $node->getAttribute('label');
-    $$self{db}->register("LABEL:$label",id=>$id) if $label;
-#    my $title = $doc->findnode('ltx:toctitle | ltx:title',$node);
     my ($title) = ($doc->findnodes('ltx:toctitle',$node),$doc->findnodes('ltx:title',$node));
     if($title){
       $title = $title->cloneNode(1);
       map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$title)); }
-    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, label=>$label,
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
 			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
 			 title=>$title, children=>[],
@@ -128,11 +148,9 @@ sub section_handler {
 
 sub labelled_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  my $id = $node->getAttribute('id');
+  my $id = $node->getAttribute('xml:id');
   if($id){
-    my $label = $node->getAttribute('label');
-    $$self{db}->register("LABEL:$label",id=>$id) if $label;
-    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, label=>$label,
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
 			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum')); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
@@ -140,7 +158,7 @@ sub labelled_handler {
 sub ref_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   if(my $label = $node->getAttribute('labelref')){ # Only record refs of labels
-    my $entry = $$self{db}->register("LABEL:$label");
+    my $entry = $$self{db}->register($label);
     $entry->noteAssociation(referrers=>$parent_id); }}
 
 sub bibref_handler {
@@ -171,7 +189,7 @@ sub indexmark_handler {
 # For a bibitem, we'll store the usual info in the DB.
 sub bibitem_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  my $id = $node->getAttribute('id');
+  my $id = $node->getAttribute('xml:id');
   if($id){
     if(my $key = $node->getAttribute('key')){
       $$self{db}->register("BIBLABEL:$key",id=>$id); }
@@ -186,7 +204,7 @@ sub bibitem_handler {
 # For a bibentry, we'll only store the citation key, so we know it's there.
 sub bibentry_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  my $id = $node->getAttribute('id');
+  my $id = $node->getAttribute('xml:id');
   if($id){
     if(my $key = $node->getAttribute('key')){
       $$self{db}->register("BIBLABEL:$key",id=>$id); }}
