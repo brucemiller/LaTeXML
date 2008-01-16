@@ -211,12 +211,6 @@ __END__
 C<LaTeXML::Token> - representation of a token,
 and C<LaTeXML::Tokens>, representing lists of tokens.
 
-=begin latex
-
-\label{LaTeXML::Tokens}
-
-=end latex
-
 =head1 DESCRIPTION
 
 This module defines Tokens (C<LaTeXML::Token>, C<LaTeXML::Tokens>)
@@ -274,6 +268,12 @@ undef if none.
 =back
 
 =head2 Tokens methods
+
+=begin latex
+
+\label{LaTeXML::Tokens}
+
+=end latex
 
 The following methods are specific to C<LaTeXML::Tokens>.
 
