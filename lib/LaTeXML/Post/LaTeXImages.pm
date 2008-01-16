@@ -15,12 +15,14 @@ use strict;
 use DB_File;
 use Image::Magick;
 use LaTeXML::Util::Pathname;
+use File::Temp qw(tempdir);
+use File::Path;
 use base qw(LaTeXML::Post);
 
 #======================================================================
 
 # Other silly constants that might want changing?
-our $TMP = '/tmp';
+##our $TMP = '/tmp';
 our $LATEXCMD='latex'; #(or elatex)
 
 # Usefull DVIPS options:
@@ -117,9 +119,11 @@ sub process {
   $self->Progress("Found $nuniq unique tex strings (of $ntotal); "
 		  .scalar(@pending)." to generate");
   if(@pending){			# if any images need processing
-    my $workdir=pathname_concat($TMP,"LaTeXML$$");
-    pathname_mkdir($workdir) or 
-      return $self->Error("Couldn't create LaTeXImages working dir $workdir: $!");
+##    my $workdir=pathname_concat($TMP,"LaTeXML$$");
+##    pathname_mkdir($workdir) or 
+##      return $self->Error("Couldn't create LaTeXImages working dir $workdir: $!");
+    my $workdir=tempdir("LaTeXMLXXXXXX", CLEANUP=>0);
+    my $preserve_tmpdir = 0;
 
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir=>$workdir,name=>$jobname,type=>'tex');
@@ -142,13 +146,16 @@ sub process {
 
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
     if($err != 0){
+      $preserve_tmpdir = 1;
       $self->Warn("latex ($command) returned code $err (!= 0) for image generation: $@\n See $workdir/$jobname.log"); }
     if(! -f "$workdir/$jobname.dvi"){
+      $preserve_tmpdir = 1;
       return $self->Error("LaTeX ($command) somehow failed: See $workdir/$jobname.log"); }
+
     # === Run dvips to extract individual postscript files.
     my $mag = int($$self{magnification}*1000);
     system("cd $workdir ; $DVIPSCMD -x$mag -o imgx $jobname.dvi") == 0 
-      or return $self->Error("Couldn't execute dvips: $!");
+      or return $self->Error("Couldn't execute dvips (see $workdir for clues): $!");
 
     # === Convert each image to appropriate type and put in place.
     my ($index,$ndigits)= (0,1+int(log( $doc->cacheLookup((ref $self).':_max_image_')||1)/log(10)));
@@ -163,8 +170,9 @@ sub process {
       else {
 	$self->Warn("Missing image $src; See $workdir/$jobname.log"); }}
     # Cleanup
-    (system("rm -rf $workdir")==0) or 
-      warn "Couldn't cleanup LaTeXImages workingdirectory $workdir: $!";
+##    (system("rm -rf $workdir")==0) or 
+##      warn "Couldn't cleanup LaTeXImages workingdirectory $workdir: $!";
+    rmtree($workdir) unless $preserve_tmpdir;
   }
 
   # Finally, modify the original document to record the associated images.
