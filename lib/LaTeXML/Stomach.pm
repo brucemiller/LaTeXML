@@ -113,9 +113,11 @@ sub invokeToken {
 
 sub makeError {
   my($document,$type,$content)=@_;
+  my $savenode = $document->floatToElement('ltx:ERROR');
   $document->openElement('ltx:ERROR',class=>ToString($type));
   $document->absorb(ToString($content));
-  $document->closeElement('ltx:ERROR'); }
+  $document->closeElement('ltx:ERROR'); 
+  $document->setNode($savenode) if $savenode; }
 
 sub invokeToken_internal {
   my($self,$token)=@_;
