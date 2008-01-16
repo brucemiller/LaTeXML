@@ -649,7 +649,7 @@ C<LaTeXML::Gullet> - expands expandable tokens and parses common token sequences
 
 =head1 DESCRIPTION
 
-The C<LaTeXML::Gullet> reads tokens (L<LaTeXML::Token>) from a L<LaTeXML::Mouth>.
+A C<LaTeXML::Gullet> reads tokens (L<LaTeXML::Token>) from a L<LaTeXML::Mouth>.
 It is responsible for expanding macros and expandable control sequences,
 if the current definition associated with the token in the L<LaTeXML::State>
 is an L<LaTeXML::Expandable> definition. The C<LaTeXML::Gullet> also provides a
