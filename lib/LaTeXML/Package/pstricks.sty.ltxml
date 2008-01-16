@@ -424,7 +424,7 @@ sub DefSimplePSConstructor {
 ####################################################################################
 
 DefEnvironment('{pspicture} OptionalMatch:* [Float] PSCoord PSCoord',
-	       "<ltx:picture baseline='#2' ?#1(clip='yes')"
+	       "<ltx:picture baseline='#2' ?#1(clip='true')"
 	       . " %&SimplePairAttr(#c1,width,height)> #body </ltx:picture>",
 	       afterDigestBegin=> sub {
 		 my($stomach,$whatsit)=@_;
@@ -700,7 +700,7 @@ DefMacro('\rput OptionalMatch:* [] OptionalBracketed ZeroPSCoord', sub {
 
 DefConstructor('\rput@start OptionalMatch:* [] BracketedPSAngle PSCoord',
 	       "<ltx:g transform='&ptValue(#transform)' pos='#2'"
-	       . " ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub { finishLabelPut($_[1], $_[1]->getArg(3),$_[1]->getArg(4)); },
 	       alias=>'\rput');
 
@@ -719,7 +719,7 @@ DefMacro('\uput OptionalMatch:* OptionalBracketed [] OptionalBracketed ZeroPSCoo
 
 DefConstructor('\uput@start OptionalMatch:* BracketedPSDimension [PSAngle] BracketedPSAngle PSCoord',
 	       "<ltx:g transform='&ptValue(#transform)'"
-	       . " ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub {
 		 my $s  = $_[1]->getArg(2);
 		 my $a  = $_[1]->getArg(3);
@@ -771,28 +771,28 @@ DefMacro('\multips OptionalBracketed PSCoord PSCoord {Number} {}', sub {
 ##########################################################################################
 
 DefPSConstructor('\psframebox', '{}',
-		 "<ltx:g framed='yes' fillframe='yes' fill='#fillcolor'"
+		 "<ltx:g framed='true' fillframe='true' fill='#fillcolor'"
 		 . " ?#1(stroke='#fillcolor')(stroke='#linecolor')>#2</ltx:g>",
 		 attributes=>[qw(linecolor fillcolor)]);
 
 DefPSConstructor('\psdblframebox', '{}',
-		 "<ltx:g framed='yes' fillframe='yes'"
+		 "<ltx:g framed='true' fillframe='true'"
 		 . " doubleline='true' doublesep='#linewidth' fill='#fillcolor'"
 		 . " ?#1(stroke='#fillcolor')(stroke='#linecolor')>#2</ltx:g>",
 		 attributes=>[qw(linecolor fillcolor)]);
 
 DefPSConstructor('\psshadowbox', '{}',
-		 "<ltx:g framed='yes' fillframe='yes' shadowbox='true' fill='#fillcolor'"
+		 "<ltx:g framed='true' fillframe='true' shadowbox='true' fill='#fillcolor'"
 		 . " ?#1(stroke='#fillcolor')(stroke='#linecolor')>#2</ltx:g>",
 		 attributes=>[qw(linecolor fillcolor)]);
 
 DefPSConstructor('\pscirclebox', '{}',
-		 "<ltx:g framed='yes' fillframe='yes' frametype='circle' fill='#fillcolor'"
+		 "<ltx:g framed='true' fillframe='true' frametype='circle' fill='#fillcolor'"
 		 . " ?#1(stroke='#fillcolor')(stroke='#linecolor')>#2</ltx:g>",
 		 attributes=>[qw(linecolor fillcolor)]);
 
 DefPSConstructor('\psovalbox', '{}',
-		 "<ltx:g framed='yes' fillframe='yes' frametype='oval' fill='#fillcolor'"
+		 "<ltx:g framed='true' fillframe='true' frametype='oval' fill='#fillcolor'"
 		 . " ?#1(stroke='#fillcolor')(stroke='#linecolor')>#2</ltx:g>",
 		 attributes=>[qw(linecolor fillcolor)]);
 
