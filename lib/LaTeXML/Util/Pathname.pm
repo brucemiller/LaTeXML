@@ -35,6 +35,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw( &pathname_find &pathname_findall
 		  &pathname_make &pathname_canonical
 		  &pathname_split &pathname_directory &pathname_name &pathname_type
+		  &pathname_timestamp
 		  &pathname_concat
 		  &pathname_relative &pathname_absolute
 		  &pathname_is_absolute 
@@ -88,11 +89,11 @@ sub pathname_directory {
   my($dir,$name,$type)=pathname_split(@_);
   $dir; }
 
-sub pathname_name { 
+sub pathname_name {
   my($dir,$name,$type)=pathname_split(@_);
   $name; }
 
-sub pathname_type { 
+sub pathname_type {
   my($dir,$name,$type)=pathname_split(@_);
   $type; }
 
@@ -120,6 +121,9 @@ sub pathname_absolute {
 
 #======================================================================
 # Actual file system operations.
+sub pathname_timestamp {
+  -f $_[0] ? (stat($_[0]))[9] : 0; }
+
 sub pathname_cwd { cwd(); }
 
 sub pathname_mkdir {
@@ -138,7 +142,7 @@ sub pathname_mkdir {
 sub pathname_copy {
   my($source,$destination)=@_;
   # If it _needs_ to be copied:
-  if((!-f $destination) || (-M $source < -M $destination)){
+  if((!-f $destination) || (pathname_timestamp($source) > pathname_timestamp($destination))){
     pathname_mkdir(pathname_directory($destination)) or return undef;
 ###    if($^O =~ /^(MSWin32|NetWare)$/){ # Windows
 ###      # According to Ioan, this should work:
@@ -226,3 +230,134 @@ sub candidate_pathnames {
 
 #======================================================================
 1;
+
+__END__
+
+=pod 
+
+=head1 NAME
+
+C<LaTeXML::Util::Pathname>  - portable pathname and file-system utilities
+
+=head1 DESCRIPTION
+
+This module combines the functionality L<File::Spec> and L<File::Basename> to
+give a consistent set of filename utilties for LaTeXML.
+A pathname is represented by a simple string.
+
+=head2 Pathname Manipulations
+
+=over 4
+
+=item C<< $path = pathname_make(%peices); >>
+
+Constructs a pathname from the keywords in pieces
+  dir   : directory
+  name  : the filename (possibly with extension)
+  type  : the filename extension
+
+=item C<< ($dir,$name,$type) = pathname_split($path); >>
+
+Splits the pathname C<$path> into the components: directory, name and type.
+
+=item C<< $path = pathname_canonical($path); >>
+
+Canonicallizes the pathname C<$path> by simplifying repeated slashes,
+dots representing the current or parent directory, etc.
+
+=item C<< $dir = pathname_directory($path); >>
+
+Returns the directory component of the pathname C<$path>.
+
+=item C<< $name = pathname_name($path); >>
+
+Returns the name component of the pathname C<$path>.
+
+=item C<< $type = pathname_type($path); >>
+
+Returns the type component of the pathname C<$path>.
+
+=item C<< $path = pathname_concat($dir,$file); >>
+
+Returns the pathname resulting from concatenating
+the directory C<$dir> and filename C<$file>.
+
+=item C<< $boole = pathname_is_absolute($path); >>
+
+Returns whether the pathname C<$path> appears to be an absolute pathname.
+
+=item C<< $path = pathname_relative($path,$base); >>
+
+Returns the path to file C<$path> relative to the directory C<$base>.
+
+=item C<< $path = pathname_absolute($path,$base); >>
+
+Returns the absolute pathname resulting from interpretting
+C<$path> relative to the directory C<$base>.  If C<$path>
+is already absolute, it is returned unchanged.
+
+=back
+
+=head2 File System Operations
+
+=over 4
+
+=item C<< $modtime = pathname_timestamp($path); >>
+
+Returns the modification time of the file named by C<$path>,
+or undef if the file does not exist.
+
+=item C<< $path = pathname_cwd(); >>
+
+Returns the current working directory.
+
+=item C<< $dir = pathname_mkdir($dir); >>
+
+Creates the directory C<$dir> and all missing ancestors.
+It returns C<$dir> if successful, else undef.
+
+=item C<< $dest = pathname_copy($source,$dest); >>
+
+Copies the file C<$source> to C<$dest> if needed;
+ie. if C<$dest> is missing or older than C<$source>.
+It preserves the timestamp of C<$source>.
+
+=item C<< $path = pathname_find($name,%options); >>
+
+Finds the first file named C<$name> that exists 
+and that matches the specification
+in the keywords C<%options>.  
+An absolute pathname is returned.
+
+If C<$name> is not already an absolute pathname, then
+the option C<paths> determines directories to recursively search.
+It should be a list of pathnames, any relative paths
+are interpreted relative to the current directory.
+If C<paths> is omitted, then the current directory is searched.
+
+If the option C<installation_subdir> is given, it
+indicates, in addition to the above, a directory relative
+to the LaTeXML installation directory to search.
+This allows files included with the distribution to be found.
+
+The C<types> option specifies a list of filetypes to search for.
+If not supplied, then the filename must match exactly.
+
+=item C<< @paths = pathname_findall($name,%options); >>
+
+This performs the same operation as C<pathname_find>,
+but returns all matching paths that exist.
+
+=back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut
+
