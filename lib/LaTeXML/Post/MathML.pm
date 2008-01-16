@@ -238,7 +238,7 @@ sub pmml_internal {
       foreach my $col (element_nodes($row)){
 	my $a = $col->getAttribute('align');
 	my $b = $col->getAttribute('border');
-	my $h = (($col->getAttribute('thead')||'') eq 'yes') && 'thead';
+	my $h = (($col->getAttribute('thead')||'') eq 'true') && 'thead';
 	my $c = ($b ? ($h ? "$b $h" : $b) : $h);
 	my $cs = $col->getAttribute('colspan');
 	my $rs = $col->getAttribute('rowspan');
@@ -325,6 +325,7 @@ our %mathvariants = ('upright'          =>'normal',
 		     'bold italic'      =>'bold-italic',
 		     'doublestruck'     =>'double-struck',
 		     'blackboard'       =>'double-struck',
+		     'blackboard upright'=>'double-struck',
 		     'fraktur bold'     => 'bold-fraktur',
 		     'script'           => 'script',
 		     'script italic'    => 'script',
@@ -456,7 +457,7 @@ sub pmml_script_handler {
     last unless (getQName($xop) eq 'ltx:XMTok');
     my ($ny) = ($xop->getAttribute('role')||'') =~ /^(SUPER|SUB)SCRIPTOP$/;
     last unless $ny;
-    my ($nx,$nl)= ($xop->getAttribute('scriptpos')||'postsup0')
+    my ($nx,$nl)= ($xop->getAttribute('scriptpos')||'post0')
       =~ /^(pre|mid|post)?(\d+)?$/;
     last unless ($x ne 'mid') || ($nx eq 'mid');
 
@@ -969,7 +970,12 @@ sub do_cfrac {
 
 DefMathML('Apply:?:cfrac', sub {
   my($op,$numer,$denom)=@_;
-  pmml_row(do_cfrac($numer,$denom)); });
+  my $style = $op->getAttribute('style')||'display';
+  if($style eq 'inline'){
+    pmml_row(do_cfrac($numer,$denom)); }
+  else {
+    local $LaTeXML::MathML::STYLE = $stylestep{'display'};
+    ['m:mfrac',{},pmml($numer),pmml($denom)]; }});
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Specific converters for Presentation, Content, or Parallel.
@@ -980,24 +986,73 @@ DefMathML('Apply:?:cfrac', sub {
 package LaTeXML::Post::MathML::Presentation;
 use strict;
 use base qw(LaTeXML::Post::MathML);
-use LaTeXML::Util::MathMLLinebreaker;
 
 sub translateNode {
   my($self,$doc,$xmath,$style,$embedding)=@_;
   my @trans = $self->pmml_top($xmath,$style);
   my $m = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
-  if($style eq 'display'){
-    if(my $linelength = $$self{linelength}){
-      my $breaker = LaTeXML::Util::MathMLLinebreaker->new();
-      if(!$breaker->fitToWidth($m,$linelength,1)){
-	my $p = $doc->findnode('ancestor::*[@id]',$xmath);
-	my $id = $p && $p->getAttribute('id');
-	warn "Couldn't fit math at $id to $linelength"; }}}
   # Wrap unless already embedding within MathML.
   ($embedding =~ /^m:/ ? @trans 
    : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},$m]); }
 
 sub getEncodingName { 'MathML-Presentation'; }
+
+#================================================================================
+# Presentation MathML with Line breaking
+# Not at all sure how this will integrate with Parallel markup...
+package LaTeXML::Post::MathML::PresentationLineBreak;
+use strict;
+use base qw(LaTeXML::Post::MathML::Presentation);
+use LaTeXML::Util::MathMLLinebreaker;
+
+sub getEncodingName { 'MathML-Presentation'; }
+
+sub processNode {
+  my($self,$doc,$math)=@_;
+  my $mode = $math->getAttribute('mode')||'inline';
+  my $xmath = $doc->findnode('ltx:XMath',$math);
+  my $style = ($mode eq 'display' ? 'display' : 'text');
+
+  # If this is in a MathBranch, it's safe to line-break.
+  # Although, we don't really know what length to break to!!!
+  if($doc->findnodes('ancestor::ltx:MathBranch',$math)){
+    $doc->addNodes($math,$self->translateNodeLinebreaks($doc,$xmath,$style)); }
+  # If it's otherwise in a MathFork, it's the main branch.
+  # Or, if it's an unmolested inline math,
+  # Just do a straight conversion to pmml
+  elsif($doc->findnodes('ancestor::ltx:MathFork',$math)
+	|| ($mode eq 'inline')){
+    $doc->addNodes($math,$self->translateNode($doc,$xmath,$style,'ltx:Math')); }
+  # Finally, for a display, we'll want to REPLACE the math by a fork
+  else {
+    $doc->addNodes($math->parentNode,['ltx:MathFork',{}]);
+    my $fork=$math->parentNode->lastChild;
+    $math->parentNode->insertBefore($fork,$math);
+    $fork->appendChild($math);
+    $doc->addNodes($math,$self->translateNode($doc,$xmath,$style,'ltx:Math'));
+    $doc->addNodes($fork,['ltx:MathBranch',{},
+			  ['ltx:Math',
+			   {map(($_=>$math->getAttribute($_)),
+				qw(mode tex content-tex text imagesrc imagewidth imageheight))},
+			   $self->translateNodeLinebreaks($doc,$xmath,$style)]]);
+ }}
+
+sub translateNodeLinebreaks {
+  my($self,$doc,$xmath,$style)=@_;
+  my @trans = $self->pmml_top($xmath,$style);
+  my $m = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
+  my $linelength = $$self{linelength} || 80;
+  my $breaker = LaTeXML::Util::MathMLLinebreaker->new();
+  my($replacement,$success)=$breaker->fitToWidth($m,$linelength,1);
+  if(!$success){
+    my $p = $doc->findnode('ancestor::*[@xml:id]',$xmath);
+    my $id = $p && $p->getAttribute('xml:id');
+    warn "Couldn't fit math at $id to $linelength"; }
+  else {
+    $m = $replacement; }
+
+  ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},$m]; }
+
 
 #================================================================================
 # Content MathML
