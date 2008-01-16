@@ -64,6 +64,8 @@ DefMath('\diffd',"\x{2146}",
 DefMacro('\opminus',   "(-1)");
 
 # \cfrac covered in amsmath.
+AssignValue(CFRACSTYLE=>'inline'); # But our default is inline.
+
 # \midvert, \midVert ??
 
 DefMath('\floor{}','\left\lfloor#1\right\rfloor', meaning=>'floor');
@@ -109,7 +111,7 @@ DefConstructor('\lrselection{}',
 my %SUPDIGITS = (0=>"\x{2070}",1=>UTF(0xb9),2=>UTF(0xb2),3=>UTF(0xb3),4=>"\x{2074}",
 		 5=>"\x{2075}",6=>"\x{2076}",7=>"\x{2077}",8=>"\x{2078}",9=>"\x{2079}",
 		'+'=>"\x{207a}", '-'=>"\x{207b}");
-sub convert_sci {
+sub sci_to_unicode {
   my($mantissa,$exponent)=@_;
   $mantissa = ToString($mantissa);
   $mantissa =~ s/\\,/\x{2009}/g;
@@ -122,27 +124,21 @@ sub convert_sci {
    ? join('',$mantissa,UTF(0xD7)."10",map($SUPDIGITS{$_}||'?',split('',$exponent))) 
    : $mantissa . UTF(0xA0).UTF(0xA0).UTF(0xA0)); } # for alignment spacing???
 
-sub convert_sci_mantissa {
-  my($mantissa)=@_;
+sub sci_to_text {
+  my($mantissa,$exponent)=@_;
   $mantissa = ToString($mantissa);
-  $mantissa =~ s/\\,/\x{2009}/g;
-  $mantissa =~ s/\\:/\x{2005}/g;
-  $mantissa =~ s/\\;/\x{2004}/g;
-  $mantissa =~ s/\\ /\x{2002}/g;
-  $mantissa =~ s/\\!//g;
-  $mantissa; }
-sub convert_sci_exponent {
-  my($exponent)=@_;
+  $mantissa =~ s/(\\,|\\:|\\;|\\ |\\!|\s)//g;
   $exponent = ToString($exponent);
-  ($exponent
-   ? join('',UTF(0xD7)."10",map($SUPDIGITS{$_}||'?',split('',$exponent))) 
-   : ""); }
+  $exponent =~ s/(\\,|\\:|\\;|\\ |\\!|\s)//g;
+  $exponent = "+".$exponent if $exponent && $exponent !~ /^(\+|\-)/;
+  ($exponent ? join('',$mantissa,"e",$exponent) : $mantissa); }
 
 DefConstructor('\Sci{}{}',sub {
   my($document,$mantissa,$exponent,%props)=@_;
-  my $string = convert_sci($mantissa,$exponent);
+  my $string = sci_to_unicode($mantissa,$exponent);
   ($props{isMath} 
-   ? $document->insertMathToken($string,font=>$props{font},role=>'NUMBER')
+   ? $document->insertMathToken($string,font=>$props{font},
+				role=>'NUMBER',meaning=>sci_to_text($mantissa,$exponent))
    : $document->openText($string,$props{font})); });
 
 # Worry about alignment later...
@@ -152,8 +148,9 @@ DefConstructor('\Sci@Exp{}',
 	       sub { my($document,$exp,%props)=@_;
 		     $exp = ToString($exp);
 		     if($exp ne ''){
-		       $document->insertMathToken(convert_sci_exponent($exp),
-						  font=>$props{font}, role=>'NUMBER'); }},
+		       $document->insertMathToken(sci_to_unicode("",$exp),
+						  font=>$props{font}, role=>'NUMBER',
+						  meaning=>sci_to_text("1.0",$exp)); }},
 	      reversion=>sub { my $exp = $_[0]->getArg(1);
 			      ($exp->unlist ? (T_CS('\times'),T_OTHER('1'),T_OTHER('0'),
 					       T_SUPER,T_BEGIN,$exp->revert,T_END)
@@ -333,9 +330,26 @@ DefPrimitive('\defSpecFun{}[][]{} OptionalKeyVals:DefSpecFun {}', sub {
   my $role = ($keys && ToString($keys->getValue('role'))) 
     || ($nargs ?  'FUNCTION' : 'ATOM');
   DefMacroI(T_CS($cs.'@role'),undef,Tokens(T_OTHER($role)));
+  # A bit of craziness.
+  # DLMFfcns redefines \sin, etc to take @-form args, etc.
+  # However, unless we're careful, UnTeX'ing these will result in
+  # tex properties having \mathrm{sin} instead of \sin!!!
+  if(my $prevdefn = LookupDefinition(T_CS($cs))){ # Already defined (by LaTeX?)
+    if(($prevdefn->getLocator =~ /(La)?TeX.pool/) # Simple defn, defined by TeX or LaTeX.
+       && !LookupDefinition(T_CS($cs.'@presentation'))
+       && !LookupDefinition(T_CS($cs.'@content'))){
+      # We need to get at the original definition, but Let won't work,
+      # since reversion/invocation/... gives you the real cs name; You end up infinite recursion.
+      # So,we try to recreate the definition under \cs@original.
+      my $props = $$prevdefn{properties};
+      my $origrole = ($props && (ref $props eq 'HASH') && $$props{role});
+      my $origmeaning = ($props && (ref $props eq 'HASH') && $$props{meaning}) || $name;
+      my $orig = T_CS($cs.'@original');
+      DefMathI($orig,undef,$name,role=>$role,alias=>$cs, meaning=>$name);
+      $formatter = Tokens($orig); }}
   # Define with DefMath to create presentation & content cs's
   DefMathI($cs,convertLaTeXArgs($nparam,$optparam), $formatter, 
-	  role=>$role, operator_role=>$role, meaning=>$name, omcd=>'dlmf');
+	   role=>$role, operator_role=>$role, meaning=>$name, omcd=>'dlmf');
   # Then, redefine top-level macro to check for powers, args, etc.
   DefMacroI($cs,convertLaTeXArgs($nparam,$optparam),
 	    sub { expand_specfun($cs,$nargs,@_); });
