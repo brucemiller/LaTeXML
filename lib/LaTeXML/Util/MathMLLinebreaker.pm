@@ -56,17 +56,25 @@ sub new {
 
 sub fitToWidth {
   my($self,$math,$width,$displaystyle)=@_;
+  # Check for end punctuation.
+  my @n;
+  local $LaTeXML::MathMLLineBreaker::PUNCT;
+  if((nodeName($math) eq 'm:mrow') && (scalar(@n=nodeChildren($math))==2)
+     && (nodeName($n[1]) eq 'm:mo') && (textContent($n[1]) =~ /^[\.\,\;]$/)){
+    $math = $n[0]; $LaTeXML::MathMLLineBreaker::PUNCT = $n[1]; }
   my $layouts = $self->computeLayouts($math,$width,$displaystyle);
   map(showLayout($_),@$layouts) if $DEBUG;
   my $best = $$layouts[-1];
   applyLayout($math,$best);
-  ($$best{width} <= $width); }
+  if($LaTeXML::MathMLLineBreaker::PUNCT){
+    $math = ['m:mrow',{},$math,$LaTeXML::MathMLLineBreaker::PUNCT]; }
+  ($math, $$best{width} <= $width); }
 
 sub computeLayouts {
   my($self,$math,$width,$displaystyle)=@_;
-  print STDERR "Starting layout of $math\n" if $DEBUG;
+  print STDERR "Starting layout of $math\n" if $DEBUG > 1;
   my $layouts = layout($math,$width,0,$displaystyle, 0, 1);
-  print STDERR "Done layout\n" if $DEBUG;
+  print STDERR "Done layout\n" if $DEBUG > 1;
   $layouts; }
 
 sub describeLayouts {
@@ -85,7 +93,7 @@ sub showLayout {
   my($layout,$indent)=@_;
   $indent = 0 unless $indent;
   my $pre = (' ') x (2*$indent);
-  print $pre.$$layout{type}." ".layoutDescriptor($layout)."\n";
+  print $pre.layoutDescriptor($layout)."\n";
   if($$layout{children}){
     map($$_{penalty} && showLayout($_,$indent+1),@{$$layout{children}}); }
 }
@@ -112,22 +120,29 @@ sub layoutDescriptor {
 # but the _LAST_ item within a line.
 sub applyLayout {
   my($math,$layout)=@_;
-  map(applyLayout($math,$_), @{$$layout{children}} ) if $$layout{children};
+#  map(applyLayout($math,$_), @{$$layout{children}} ) if $$layout{children};
   if(my $breakset = $$layout{breakset}){
+    print "Applying ".layoutDescriptor($layout)."\n";
     my $node = $$layout{node};
     my @children = nodeChildren($node);
     my @rows = split_row($breakset,@children);
     # Replace any "converted" leading operators (ie. invisible times => \times)
     foreach my $row (@rows[1..$#rows]){
       my $op = $$row[0];
+print STDERR "  Split at ".textContent($op)."\n";
       my $newop;
       if((nodeName($op) eq 'm:mo') && ($newop=$CONVERTOPS{textContent($op)})){
 	splice(@$op,2,scalar(@$op)-2, $newop); }}
+    if($LaTeXML::MathMLLineBreaker::PUNCT){
+      $rows[$#rows] = [@{$rows[$#rows]},$LaTeXML::MathMLLineBreaker::PUNCT];
+      $LaTeXML::MathMLLineBreaker::PUNCT = undef; }
     splice(@$node,2,scalar(@children),
 	   ["m:mtable",{align=>'baseline 1', columnalign=>'left'},
 	    ["m:mtr",{},["m:mtd",{}, @{shift(@rows)}]],
 	    map( ["m:mtr",{},["m:mtd",{}, ["m:mspace",{width=>$INDENTATION."em"}],@$_]],@rows)  ] );
-  }}
+  }
+  map(applyLayout($math,$_), @{$$layout{children}} ) if $$layout{children};
+}
 
 # This would use <mspace> with linebreak attribute to break a row.
 # Unfortunately, Mozillae ignore this attribute...
@@ -192,7 +207,7 @@ sub layout {
   $name =~ s/\w://;
   my $handler = "layout_$name";
   eval { $handler = \&$handler; };
-  print STDERR "",('  ' x $level),"$name: ",$node,"...\n" if $DEBUG;
+  print STDERR "",('  ' x $level),"$name: ",$node,"...\n" if $DEBUG > 1;
   my $layouts = &$handler($node,$target,$level, $displaystyle||0, $scriptlevel||0, $demerits||1); 
   my $nlayouts = scalar(@$layouts);
   my @layouts = prunesort($target,@$layouts);
@@ -202,7 +217,7 @@ sub layout {
     .($pruned < $nlayouts ? " pruned to $pruned":"")
       ." ".layoutDescriptor($$layouts[0])
 	.($nlayouts > 1 ? "...".layoutDescriptor($$layouts[$nlayouts-1]) : "")
-      ."\n" if $DEBUG;
+      ."\n" if $DEBUG > 1;
   [@layouts]; }
 
 sub prunesort {
@@ -297,7 +312,7 @@ sub asRow {
 	(@breaks
 	 ? ", breaks@".join(",",map("[".join(',',@$_)."]",@breaks))."(".scalar(@breaksets)." sets)"
 	 : "")."\n"
-    if $DEBUG;
+    if $DEBUG > 1;
 
   my @layouts = ();
   # For each set of breaks within the row and for each set of sizings of children
