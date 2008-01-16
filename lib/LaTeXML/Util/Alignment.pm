@@ -30,9 +30,14 @@ our @EXPORT= (qw(
 # (where initially, each XMCell will contain an XMArg to indicate
 # individual parsing of each cell's content is desired)
 
+# data should have:
+#   containerElement => name of the container element
+#   rowElement => name of row element
+#   colElement => name of col element.
 sub new {
-  my($class)=@_;
-  bless { template=>LaTeXML::AlignmentTemplate->new(), rows=>[],
+  my($class, %data)=@_;
+  bless { %data,
+	  template=>LaTeXML::AlignmentTemplate->new(), rows=>[],
 	  current_column=>0, current_row=>undef}, $class; }
 
 ###
@@ -179,33 +184,32 @@ sub beAbsorbed {
 	      if(my $ccol = $$rrow{columns}[$jj]){
 		$$ccol{skipped}=1; }}}}}}}
 
-  $document->openElement(($ismath ? 'ltx:XMArray' : 'ltx:tabular'),%attributes);
+  # We _should_ attach boxes to the alignment and rows,
+  # but (ATM) we've only got sensible boxes for the cells.
+  $document->openElement($$self{containerElement},%attributes);
   foreach my $row (@{$$self{rows}}){
-    $document->openElement(($ismath ? 'ltx:XMRow' : 'ltx:tr'));
-#print STDERR "Absorbing row: ".$row->show."\n";
+    $document->openElement($$self{rowElement},
+			   'xml:id'=>$$row{id},refnum=>$$row{refnum});
     foreach my $cell (@{$$row{columns}}){
       next if $$cell{skipped};
       # Normalize the border attribute
       my $border = join(' ',sort(map(split(/ */,$_),$$cell{border}||'')));
       $border =~ s/(.) \1/$1$1/g;
-      my %attr = (align=>$$cell{align}, width=>$$cell{width},
-		  (($$cell{span}||1) != 1 ? (colspan=>$$cell{span}) : ()),
-		  (($$cell{rowspan}||1) != 1 ? (rowspan=>$$cell{rowspan}) : ()),
-		  ($border ? (border=>$border):()));
       my $empty = !$$cell{boxes} || !scalar($$cell{boxes}->unlist);
-      if($ismath){
-	$$cell{cell} = $document->openElement('ltx:XMCell',%attr);
-	$document->openElement('ltx:XMArg', rule=>'Anything,') unless $empty; }
-      else {
-	$$cell{cell} = $document->openElement('ltx:td',%attr); }
-      $document->absorb($$cell{boxes}) unless $empty;
-      if($ismath){
-	$document->closeElement('ltx:XMArg') unless $empty;
-	$document->closeElement('ltx:XMCell'); }
-      else {
-	$document->closeElement('ltx:td'); }}
-    $document->closeElement(($ismath ? 'ltx:XMRow' : 'ltx:tr')); }
-  $document->closeElement($ismath ? 'ltx:XMArray' : 'ltx:tabular');
+      $$cell{cell} = $document->openElement($$self{colElement},
+					    align=>$$cell{align}, width=>$$cell{width},
+					    (($$cell{span}||1) != 1 ? (colspan=>$$cell{span}) : ()),
+					    (($$cell{rowspan}||1) != 1 ? (rowspan=>$$cell{rowspan}) : ()),
+					    ($border ? (border=>$border):()));
+      if(!$empty){
+	local $LaTeXML::BOX = $$cell{boxes};
+	$document->openElement('ltx:XMArg', rule=>'Anything,') if $ismath;
+	$document->absorb($$cell{boxes});
+	$document->closeElement('ltx:XMArg') if $ismath;
+      }
+      $document->closeElement($$self{colElement}); }
+    $document->closeElement($$self{rowElement}); }
+  $document->closeElement($$self{containerElement});
 }
 
 #======================================================================
@@ -371,7 +375,7 @@ sub guess_alignment_headers {
   # OR Maybe we should only do this within table environments???
   return if $document->findnodes("ancestor::ltx:tabular",$table);
 
-  my $tag = $document->getNodeQName($table);
+  my $tag = $document->getModel->getNodeQName($table);
   my $ismath = $tag eq 'ltx:XMArray';
   local $LaTeXML::TR = ($ismath ? 'ltx:XMRow' : 'ltx:tr');
   local $LaTeXML::TD = ($ismath ? 'ltx:XMCell' : 'ltx:td');
@@ -456,7 +460,7 @@ sub classify_alignment_cell {
 	$class .= 't' 
 	  unless $text=~/^\s*$/ || (($class eq 'm') && ($text=~/^\s*[\.,;]\s*$/)); }
       elsif($chtype == XML_ELEMENT_NODE){
-	my $chtag = $document->getNodeQName($ch);
+	my $chtag = $document->getModel->getNodeQName($ch);
 	if($chtag eq 'ltx:text'){ # Font would be useful, but haven't "resolved" it, yet!
 	  $class .= 't' unless $class eq 't'; }
 	elsif($chtag eq 'ltx:Math'){
@@ -532,7 +536,7 @@ sub alignment_characterize_lines {
 	       && (( ($i==0) && !$$cell{($axis==0 ? 'l' : 't')} )
 		   ||(($i==$nn) && !$$cell{($axis == 0 ? 'r' : 'b')}))){}
 	    else {
-	      $$cell{cell}->setAttribute(thead=>'yes');}}
+	      $$cell{cell}->setAttribute(thead=>'true');}}
 	  $i++; }}
       last; }}
   1; }
