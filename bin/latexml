@@ -15,7 +15,8 @@ my($verbosity,$strict,$comments,$noparse,$includestyles)=(0,0,1,0,0);
 my ($format,$destination,$help,$showversion)=('xml','');
 my ($documentid);
 my $inputencoding;
-my (@paths,@preload,@debugs);
+my @paths = ('.');
+my (@preload,@debugs);
 GetOptions("destination=s" => \$destination,
 	   "output=s"  => \$destination,
 	   "preload=s" => \@preload,
@@ -57,7 +58,7 @@ if($destination){
   if(my $dir =pathname_directory($destination)){
     pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }}
 if(my @baddirs = grep(! -d $_, @paths)){
-  warn "$identity: path directories do not exits: ".join(', ',@baddirs)."\n"; }
+  warn "$identity: these path directories do not exist: ".join(', ',@baddirs)."\n"; }
 binmode(STDERR,":utf8");
 # ========================================
 # First read and digest whatever we're given.
@@ -109,7 +110,7 @@ C<latexml> - transforms a TeX/LaTeX file into XML.
 latexml [options] texfile
 
  Options:
- --destination=file specifies destination file; default to stdout.
+ --destination=file specifies destination file (default stdout).
  --output=file      [obsolete synonym for --destination]
  --preload=module   requests loading of an optional module;
                     can be repeated
@@ -139,17 +140,17 @@ If texfile is '-', latexml reads the TeX source from standard input.
 
 =over 4
 
-=item B<--destination>=I<file>
+=item C<--destination>=I<file>
 
 Specifies the destination file; by default the XML is written to stdout.
 
-=item B<--preload>=I<module>
+=item C<--preload>=I<module>
 
 Requests the loading of an optional module or package.  This may be useful if the TeX code
 does not specificly require the module (eg. through input or usepackage).
-For example, to force LaTeX mode, use C<--preload=LaTeX.pool>.
+For example, use C<--preload=LaTeX.pool> to force LaTeX mode.
 
-=item B<--includestyles>
+=item C<--includestyles>
 
 This optional allows processing of style files (files with extensions C<sty>,
 C<cls>, C<clo>, C<cnf>).  By default, these files are ignored  unless a latexml
@@ -163,53 +164,53 @@ will lead to other errors (missing macro definitions), it is
 unlikely that processing the TeX code in the style file will
 lead to a correct document.
 
-=item B<--path>=I<dir>
+=item C<--path>=I<dir>
 
 Add I<dir> to the search paths used when searching for files, modules, style files, etc;
 somewhat like TEXINPUTS.  This option can be repeated.
 
-=item B<--documentid>=I<id>
+=item C<--documentid>=I<id>
 
 Assigns an ID to the root element of the XML document.  This ID is generally
 inherited as the prefix of ID's on all other elements within the document.
 This is useful when constructing a site of multiple documents so that
 all nodes have unique IDs.
 
-=item B<--quiet>
+=item C<--quiet>
 
 Reduces the verbosity of output during processing, used twice is pretty silent.
 
-=item B<--verbose>
+=item C<--verbose>
 
 Increases the verbosity of output during processing, used twice is pretty chatty.
 Can be useful for getting more details when errors occur.
 
-=item B<--strict>
+=item C<--strict>
 
 Specifies a strict processing mode. By default, undefined control sequences and
 invalid document constructs (that violate the DTD) give warning messages, but attempt
 to continue processing.  Using --strict makes them generate fatal errors.
 
-=item B<--xml>
+=item C<--xml>
 
 Requests XML output; this is the default.
 
-=item B<--tex>
+=item C<--tex>
 
 Requests TeX output for debugging purposes;  processing is only carried out through expansion and digestion.
 This may not be quite valid TeX, since Unicode may be introduced.
 
-=item B<--box>
+=item C<--box>
 
 Requests Box output for debugging purposes;  processing is carried out through expansion and digestions,
 and the result is printed.
 
-=item B<--nocomments>
+=item C<--nocomments>
 
 Normally latexml preserves comments from the source file, and adds a comment every 25 lines as
 an aid in tracking the source.  The option --nocomments discards such comments.
 
-=item B<--inputencoding=>I<encoding>
+=item C<--inputencoding=>I<encoding>
 
 Specify the input encoding, eg. C<--inputencoding=iso-8859-1>.
 The encoding must be one known to Perl's Encode package.
@@ -219,15 +220,15 @@ In such cases, you should be using the inputenc package.
 Note also that this does not affect the output encoding, which is
 always UTF-8.
 
-=item B<--VERSION>
+=item C<--VERSION>
 
 Shows the version number of the LaTeXML package..
 
-=item B<--debug>=I<package>
+=item C<--debug>=I<package>
 
 Enables debugging output for the named package. The package is given without the leading LaTeXML::.
 
-=item B<--help>
+=item C<--help>
 
 Shows this help message.
 
