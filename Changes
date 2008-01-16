@@ -1,3 +1,31 @@
+0.5.x  2008-01-16
+     - Major check-in of accumulated changes
+     - Added a MathFork/MathBranch construct to represent
+       math with alternative structures, especially alignment.
+       This allows representing eg. eqnarray as a group
+       of equations. Each equation has a MathFork where
+       the main branch is the complete equation (hopefully semantic),
+       and the branch contains 1 or more tr each containing 3 td.
+       Thus both the meaning and the structured alignment can
+       be preserved.
+     - Change to use xml:id instead of id.
+     - Changed common attribute label to labels (plural)
+       along with support in postprocessing, etc.
+       This is since LaTeX in principle allows multiple labels
+       to attach to the same place.
+       The labels are also stored as "LABEL:text" instead of just "text",
+       so that the same mechanism can be leveraged for other
+       crossreferencing later (eg. acronyms,etc).
+     - Some generic exported support functions to ease the above
+       CleanLabel, CleanIndexKey, CleanBibKey, CleanURL, GenerateID
+
+0.5.x  2007-12-01
+     - Conversion to RelaxNG Schema.
+       (currently only recognizes XML format)
+       Use RelaxNGSchema($schema) to declare the schema to use.
+     - Continued refinement and simplification of model.
+     - Use xml:id instead of id.
+
 0.5.x  2007-10-10
      - Began revising documentation.
        Added documentation of DTD; this led to refining
