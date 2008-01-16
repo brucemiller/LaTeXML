@@ -368,25 +368,47 @@ __END__
 
 C<LaTeXML::Mouth> - tokenize the input.
 
-=begin latex
-
-\label{LaTeXML::FileMouth}\label{LaTeXML::StyleMouth}\label{LaTeXML::PerlMouth}
-
-=end latex
-
 =head1 DESCRIPTION
 
 A C<LaTeXML::Mouth> (and subclasses) is responsible for I<tokenizing>, ie.
 converting plain text and strings into L<LaTeXML::Token>s according to the
 current category codes (catcodes) stored in the C<LaTeXML::State>.
 
+=over 4
 
-C<LaTeXML::FileMouth> specializes C<LaTeXML::Mouth> to tokenize from a file.
-C<LaTeXML::StyleMouth> further specializes C<LaTeXML::FileMouth> for processing
+=item C<LaTeXML::FileMouth>
+
+=begin latex
+
+\label{LaTeXML::FileMouth}
+
+=end latex
+
+specializes C<LaTeXML::Mouth> to tokenize from a file.
+
+=item C<LaTeXML::StyleMouth>
+
+=begin latex
+
+\label{LaTeXML::StyleMouth}
+
+=end latex
+
+further specializes C<LaTeXML::FileMouth> for processing
 style files, setting the catcode for C<@> and ignoring comments.
 
-C<LaTeXML::PerlMouth> is not really a Mouth in the above sense, but is used
+=item C<LaTeXML::PerlMouth>
+
+=begin latex
+
+\label{LaTeXML::PerlMouth}
+
+=end latex
+
+is not really a Mouth in the above sense, but is used
 to definitions from perl modules with exensions C<.ltxml> and C<.latexml>.
+
+=back
 
 =head2 Creating Mouths
 
