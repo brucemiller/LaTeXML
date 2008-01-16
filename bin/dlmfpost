@@ -111,15 +111,15 @@ sub process {
   if($doc->getQName($root) eq 'ltx:chapter'){
     my @docs = ($doc);
     my @toc = ();
-    my $chapid = $root->getAttribute('id');
+    my $chapid = $root->getAttribute('xml:id');
     my $prev = undef;
     # Remove parts and sections, making sections into sequence of subpages;
     # parts only appear in chapter's TOC.
     foreach my $part ($doc->findnodes('//ltx:part')){
-      my $partid = $part->getAttribute('id');
+      my $partid = $part->getAttribute('xml:id');
       my @parttoc = ();
       foreach my $section ($doc->findnodes('ltx:section',$part)){
-	my $secid = $section->getAttribute('id');
+	my $secid = $section->getAttribute('xml:id');
 	my $secdoc = $doc->newDocument($section,
 				       destination=>$self->getPageName($doc,$section));
 	push(@docs,$secdoc);
@@ -127,7 +127,7 @@ sub process {
 						     idref=>$secid}]]);
 	$secdoc->addNavigation(up      =>$chapid);
 	$secdoc->addNavigation(up      =>$partid);
-	$secdoc->addNavigation(previous=>$prev->getDocumentElement->getAttribute('id')) if $prev;
+	$secdoc->addNavigation(previous=>$prev->getDocumentElement->getAttribute('xml:id')) if $prev;
 	$prev->addNavigation(  next    =>$secid) if $prev;
 	$prev = $secdoc; 
 	# Magnify any figures in the sections.
@@ -138,7 +138,7 @@ sub process {
 	    $magfigure->addNavigation(up      =>$secid);
 	    push(@docs,$magfigure); }}
       }
-      push(@toc,['ltx:tocentry',{id=>$partid, label=>$part->getAttribute('label')},
+      push(@toc,['ltx:tocentry',{'xml:id'=>$partid, labels=>$part->getAttribute('labels')},
 		 ['ltx:span',{},
 		  $doc->findnode('ltx:toctitle | ltx:title',$part)->childNodes,
 		  $doc->findnodes('ltx:indexmark',$part)], # Need to copy these _somewhere_!!
@@ -159,7 +159,7 @@ sub process {
 # Used ONLY within chapters for sections & sidebars.
 sub getPageName {
   my($self,$doc,$sec)=@_;
-  my $id = $sec->getAttribute('id');
+  my $id = $sec->getAttribute('xml:id');
   my $name = $id;
   if($id =~ /C\d+\.(SB\d+)$/){ $name = $1; }
   elsif($id =~ /^C\d+\.S(\d+)$/){ $name = $1; } 
@@ -170,7 +170,7 @@ sub magnifyFigure {
   my @magnifiable = $doc->findnodes('.//ltx:graphics[contains(@options,"magnifiable=true")]'
 				    .' | .//ltx:picture',$figure);
   if(@magnifiable){
-    my $figid = $figure->getAttribute('id');
+    my $figid = $figure->getAttribute('xml:id');
     $figid =~ /\.([^\.]+)$/;
     my $name = "$1.mag";
     my $magfigid = $figid.".mag";
@@ -180,16 +180,16 @@ sub magnifyFigure {
     my $root = $magdoc->getDocumentElement;
     # replace all ID's and related IDREF's, remove label's
     my %ids=();
-    foreach my $n ($magdoc->findnodes('.//*[@id]')){
-      my $id = $n->getAttribute('id');
+    foreach my $n ($magdoc->findnodes('.//*[@xml:id]')){
+      my $id = $n->getAttribute('xml:id');
       my $newid = ($id =~ /^(.*)\.info$/ ? "$1.mag.info" : $id.".mag");
-      $n->setAttribute(id=>$newid);
+      $n->setAttribute('xml:id'=>$newid);
       $ids{$id}=$newid; }
     foreach my $n ($magdoc->findnodes('.//*[@idref]')){
       my $id = $n->getAttribute('idref');
       $n->setAttribute(idref=>$ids{$id}) if $ids{$id}; }
-    foreach my $n ($magdoc->findnodes('.//*[@label]')){
-      $n->removeAttribute('label'); }
+    foreach my $n ($magdoc->findnodes('.//*[@labels]')){
+      $n->removeAttribute('labels'); }
 
     # Arrange for the figures to be scaled.
     foreach my $gr ($magdoc->findnodes('.//ltx:graphics[contains(@options,"magnifiable=true")]')){
@@ -252,11 +252,9 @@ sub new {
 # So, we want to make an ID entry for it, like for sectional units.
 sub tocentry_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  my $id = $node->getAttribute('id');
+  my $id = $node->getAttribute('xml:id');
   if($id){
-    if(my $label = $node->getAttribute('label')){
-      $$self{db}->register("LABEL:$label",id=>$id); }
-    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
 			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
 			 title=>$doc->findnode('ltx:span',$node)); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
@@ -267,7 +265,7 @@ sub declare_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   if($parent_id){
     if(my $tag = $doc->findnode('ltx:tag',$node)){
-      if(my $decl_id = $node->getAttribute('id')){
+      if(my $decl_id = $node->getAttribute('xml:id')){
 	$$self{db}->register("DECLARATION:local:$decl_id",
 			     parent=>$parent_id, tag=>$tag,
 			     textform => textualize($doc,$tag));
@@ -299,16 +297,13 @@ sub mark_handler {
 # but do not need to be ranked as "cited by" the notation lists.
 sub notation_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  my $id = $node->getAttribute('id');
+  my $id = $node->getAttribute('xml:id');
   if($id){
-    my $label = $node->getAttribute('label');
-    $$self{db}->register("LABEL:$label",id=>$id) if $label;
-#    my $title = $doc->findnode('ltx:toctitle | ltx:title',$node);
     my ($title) = ($doc->findnodes('ltx:toctitle',$node),$doc->findnodes('ltx:title',$node));
     if($title){
       $title = $title->cloneNode(1);
       map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$title)); }
-    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, label=>$label,
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
 			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
 			 title=>$title, children=>[],
@@ -412,7 +407,7 @@ sub process {
   my($self,$doc)=@_;
   # Fill in metadata
   foreach my $meta ($doc->findnodes('descendant::ltx:metadata')){
-    my($id)= $meta->getAttribute('id') =~ /^(.*)\.info$/;
+    my($id)= $meta->getAttribute('xml:id') =~ /^(.*)\.info$/;
     # Connect links to index
     foreach my $ikey ($doc->findnodes('descendant::ltx:indexkeyword',$meta)){
       my $keyid = 'idx.'.$ikey->getAttribute('key');
@@ -422,14 +417,19 @@ sub process {
 	$ikey->parentNode->removeChild($ikey); }}
     # Add Referrers
     if(my $identry = $$self{db}->lookup("ID:$id")){
-      if(my $label = $identry->getValue('label')){
-	if(my $entry = $$self{db}->lookup("LABEL:$label")){
-	  if(my $referrers = $entry->getValue('referrers')){
-	    # NOTE: Possibly reimplement the compressed ref list ?
-	    $doc->addNodes($meta,['ltx:referrers',{},
-				  $doc->conjoin(', ',
-						map(['ltx:ref',{idref=>$_,show=>'typerefnum'}],
-						    sort keys %$referrers))]); }}}}
+      if(my $labels = $identry->getValue('labels')){
+	my %referrers = ();
+	# collect all referrers of all labels on this node.
+	foreach my $label (@$labels){
+	  if(my $entry = $$self{db}->lookup($label)){
+	    if(my $refs = $entry->getValue('referrers')){ # note: referrers are on label entries
+	      map($referrers{$_}=1, keys %$refs); }}}
+	if(%referrers){
+	  # NOTE: Possibly reimplement the compressed ref list ?
+	  $doc->addNodes($meta,['ltx:referrers',{},
+				$doc->conjoin(', ',
+					      map(['ltx:ref',{idref=>$_,show=>'typerefnum'}],
+						  sort keys %referrers))]); }}}
     # Compile list of Symbols Used w/links to "definitions"
     if($doc->getQName($meta->parentNode) =~ /^ltx:equation/){ # Only for equations?
       # Better would be "all Math not contained by another element with metadata" (Ha)
@@ -483,7 +483,7 @@ sub containedResourcePathname {
 	shift(@sibs); $suffix = chr(ord($suffix)+1); }}
 #    my $name = ($doc->getDestination =~ /index.xml$/ 
 #		? $container->getAttribute('fragid')
-#		: $container->getAttribute('id'));
+#		: $container->getAttribute('xml:id'));
     my($parentdir,$parentname,$parenttype)=pathname_split($doc->getDestination);
     my $name = ($parentname eq 'index'
 		? $container->getAttribute('fragid')
@@ -541,8 +541,9 @@ sub writeEncodedResource {
 package DLMFEquationResourceMap;
 use base qw(DLMFResourceMap);
 our $exclusion;
-BEGIN{ $exclusion = 'ancestor::ltx:metadata | ancestor::ltx:mark'
-	 .' | ancestor::ltx:indexphrase  | ancestor::ltx:constraint'; }
+BEGIN{ $exclusion = 'ancestor::ltx:metadata | ancestor::ltx:mark | ancestor::ltx:declare'
+	 .' | ancestor::ltx:indexphrase  | ancestor::ltx:constraint'
+	   .' | ancestor::ltx:MathBranch'; }
 sub getResourceContainer {
   my($self,$doc,$node) = @_;
   # Exclude math that's contained within things like notations, metadata, etc.
@@ -593,13 +594,15 @@ sub preamble {
 sub setTeXImage {
   my($self,$doc,$node,$image,$width,$height)=@_;
   $self->SUPER::setTeXImage($doc,$node,$image,$width,$height);
-  $self->noteEncodedResource($doc,$node,$image);
-  if(my $tex = $node->getAttribute('tex')){
-    if(($node->getAttribute('mode')||'inline') eq 'inline'){
-      $tex = '$'.$tex.'$'; }
-    else {
-      $tex = '\['.$tex.'\]'; }
-    $self->writeEncodedResource($doc,$node,$image,$tex,'tex'); }
+  # Generate a TeX resource for this math; but only if it is NOT a formatted branch.
+  if(!$doc->findnode('ancestor::ltx:MathBranch',$node)){
+    $self->noteEncodedResource($doc,$node,$image);
+    if(my $tex = $node->getAttribute('tex')){
+      if(($node->getAttribute('mode')||'inline') eq 'inline'){
+	$tex = '$'.$tex.'$'; }
+      else {
+	$tex = '\['.$tex.'\]'; }
+      $self->writeEncodedResource($doc,$node,$image,$tex,'tex'); }}
 }
 #======================================================================
 # Conversion of Math to Presentation MathML
@@ -607,7 +610,7 @@ sub setTeXImage {
 #======================================================================
 package DLMFpMML;
 use strict;
-use base qw(DLMFEquationResourceMap DLMFSymbols LaTeXML::Post::MathML::Presentation);
+use base qw(DLMFEquationResourceMap DLMFSymbols LaTeXML::Post::MathML::PresentationLineBreak);
 
 our $XLINKURI;
 BEGIN{ $XLINKURI = "http://www.w3.org/1999/xlink"; }
@@ -620,22 +623,33 @@ sub processNode {
   my($self,$doc,$math)=@_;
   local $DLMF::CURRENT_DOC = $doc;
 # WHY is xpath failing here??
-#  my ($ancestor)=$doc->findnode('ancestor::*[@id]',$math);
-#  local $DLMF::CURRENT_ID = ($ancestor ? $ancestor->getAttribute('id') : undef);
+#  my ($ancestor)=$doc->findnode('ancestor::*[@xml:id]',$math);
+#  local $DLMF::CURRENT_ID = ($ancestor ? $ancestor->getAttribute('xml:id') : undef);
   local $DLMF::CURRENT_ID;
+  # Get info to pass to augmentNode
   my $p = $math;
   while($p){ 
-    last if $DLMF::CURRENT_ID = $p->getAttribute('id');
+    last if $DLMF::CURRENT_ID = $p->getAttribute('xml:id');
     $p = $p->parentNode; }
   if(!$DLMF::CURRENT_ID){
     print STDERR "No parent id for ".$math->toString."\n"; }
 
   $self->SUPER::processNode($doc,$math);
-  if(my $resource = $self->desiredResourcePathname($doc,$math,undef,'pmml')){
-    if(my $pmml = $doc->findnode('m:math',$math)){
-      $self->writeEncodedResource($doc,$math,$resource,
-				  $pmml->cloneNode(1)->toString,'pmml'); }}}
+  # Generate a pmml resource for this math; but only if it is NOT a formatted branch.
+  if(!$doc->findnode('ancestor::ltx:MathBranch',$math)){
+    if(my $resource = $self->desiredResourcePathname($doc,$math,undef,'pmml')){
+      if(my $pmml = $doc->findnode('m:math',$math)){
+	my $clone = $pmml->cloneNode(1);
+	# Remove all xlink nodes from the pmml resource.
+	foreach my $xlink ($doc->findnodes("descendant-or-self::*/attribute::xlink:*",$clone)){
+	  $xlink->parentNode->removeAttribute($xlink->nodeName); }
+	my $string = $clone->toString;
+	if($string !~ /\Wxlink:/){	     # If we succeeded in removing xlinks, remove decl
+	  $string =~ s/\Wxmlns:xlink=(\"|\')\Q$XLINKURI\E\1//; }
+	$self->writeEncodedResource($doc,$math,$resource,$string,'pmml'); }}}}
 
+# NOTE: We'd really like to only augment the displayed pmml, right?
+# ie. not clutter up the stored one.
 sub augmentNode {
   my($self,$node,$mathml)=@_;
   my $db = $$self{crossref}{db};
@@ -679,10 +693,6 @@ sub findGraphicsFile {
 			  : $$self{graphicsSourceTypes})); }
   else { undef; }}
 
-our @VRML_EXTRA;
-BEGIN { @VRML_EXTRA = qw(dlmf_proto.wrl sml_rec_proto.wrl
-			four.gif legendXYZ.gif smap.gif); }
-
 sub processGraphic {
   my($self,$doc,$node)=@_;
   return if $node->getAttribute('imagesrc'); # Already has a src defined?
@@ -711,13 +721,32 @@ sub processGraphic {
 
       # Too much variability in auxilliary vrml files; copy 'em all *proto* & *.gif ???
       my $srcdir = pathname_directory($vrmlsrc);
-      opendir(DIR, $srcdir) or $self->Warn("Couldn't read files from VRML directory $srcdir: $!");
-      my @vrmlaux = readdir(DIR);
-      closedir(DIR);
+#      opendir(DIR, $srcdir) or $self->Warn("Couldn't read files from VRML directory $srcdir: $!");
+#       my @vrmlaux = readdir(DIR);
+#       closedir(DIR);
+#       my $dstdir = pathname_directory($doc->checkDestination($image));
+#       foreach my $extra (@vrmlaux){
+# 	next if $extra =~ /^\./;
+# 	next unless ($extra =~ /proto/) || ($extra =~ /\.gif$/);
+# 	pathname_copy(pathname_concat($srcdir,$extra),
+# 		      pathname_concat($dstdir,$extra)); }
+
+      # Scan the vrml file for any other (apparent) filenames.
+      # These are likely resources (proto, images,... ) needed
+      my %vrmlaux = ();
+      my @scan = ($vrmlsrc);
+      while(my $wrl = shift(@scan)){
+	if(open(WRL,$wrl)){
+	  while(<WRL>){
+	    if(/\"([a-zA-Z0-9\-_]+?\.(wrl|gif|png))(\#[a-zA-Z0-9\-_]+?)?\"/){
+	      my $res = $1;
+	      push(@scan,pathname_concat($srcdir,$res)) if !$vrmlaux{$res} && $res=~/\.wrl$/;
+	      $vrmlaux{$res}++; }}
+	  close(WRL); }
+	else {
+	  $self->Warn("Couldn't scan vrml file for extra resources: $!"); }}
       my $dstdir = pathname_directory($doc->checkDestination($image));
-      foreach my $extra (@vrmlaux){
-	next if $extra =~ /^\./;
-	next unless ($extra =~ /proto/) || ($extra =~ /\.gif$/);
+      foreach my $extra (keys %vrmlaux){
 	pathname_copy(pathname_concat($srcdir,$extra),
 		      pathname_concat($dstdir,$extra)); }
     }
@@ -776,6 +805,7 @@ use XML::LibXML;
 sub process {
   my($self,$doc)=@_;
   if(my $notations = $doc->findnode('//ltx:notations')){
+    $doc->addDate();
     my $entries = $self->getNotationEntries($doc);
     if($$self{split}){
       # Separate by initial.
