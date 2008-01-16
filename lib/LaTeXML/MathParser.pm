@@ -58,8 +58,8 @@ sub parseMath {
   local $LaTeXML::MathParser::DOCUMENT = $document;
   $self->clear;			# Not reentrant!
   $$self{idcache}={};
-  foreach my $node ($document->findnodes("//*[\@id]")){
-    $$self{idcache}{$node->getAttribute('id')} = $node; }
+  foreach my $node ($document->findnodes("//*[\@xml:id]")){
+    $$self{idcache}{$node->getAttribute('xml:id')} = $node; }
 
   if(my @math =  $document->findnodes('descendant-or-self::ltx:XMath')){
     NoteBegin("Math Parsing"); NoteProgress(scalar(@math)." formulae ...");
@@ -84,7 +84,7 @@ sub parseMath {
   $document; }
 
 sub getQName {
-  $LaTeXML::MathParser::DOCUMENT->getNodeQName(@_); }
+  $LaTeXML::MathParser::DOCUMENT->getModel->getNodeQName(@_); }
 
 # ================================================================================
 sub clear {
@@ -190,10 +190,10 @@ sub node_location {
   my($node)=@_;
   my $n = $node;
   while($n && (ref $n !~ /^XML::LibXML::Document/) # Sometimes DocuementFragment ???
-	&& !$n->getAttribute('refnum') && !$n->getAttribute('label')){
+	&& !$n->getAttribute('refnum') && !$n->getAttribute('labels')){
     $n = $n->parentNode; }
   if($n && (ref $n !~ /^XML::LibXML::Document/)){
-    my($r,$l)=($n->getAttribute('refnum'),$n->getAttribute('label'));
+    my($r,$l)=($n->getAttribute('refnum'),$n->getAttribute('labels'));
     ($r && $l ? "$r ($l)" : $r || $l); }
   else {
     'Unknown'; }}
@@ -235,8 +235,8 @@ sub parse_rec {
       NoteProgress($TAG_FEEDBACK{$tag}||'.') if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1;
       if(my $role = $node->getAttribute('role')){
 	$result->setAttribute('role',$role); }
-      if(my $id = $node->getAttribute('id')){ # Update the node associated w/ id
-	$result->setAttribute('id'=>$id);
+      if(my $id = $node->getAttribute('xml:id')){ # Update the node associated w/ id
+	$result->setAttribute('xml:id'=>$id);
 	$$self{idcache}{$id} = $result; }
       $node->parentNode->replaceChild($result,$node); }
     $result; }
@@ -329,17 +329,18 @@ sub parse_internal {
   # NOTE: Should do script hack??
   if((! defined $result) || $textified){
     if($LaTeXML::MathParser::STRICT || (($STATE->lookupValue('VERBOSITY')||0)>1)){
+      my $loc = "";
       if(! $LaTeXML::MathParser::WARNED){
 	$LaTeXML::MathParser::WARNED=1;
 	my $box = $document->getNodeBox($LaTeXML::MathParser::XNODE);
-	Warn("In formula \"".ToString($box)." from ".$box->getLocator); }
+	$loc = "In formula \"".ToString($box)." from ".$box->getLocator."\n"; }
       $textified =~ s/^\s*//;
       my @rest=split(/ /,$textified);
       my $pos = scalar(@nodes) - scalar(@rest);
       my $parsed  = join(' ',map(node_string($_,$document),@nodes[0..$pos-1]));
       my $toparse = join(' ',map(node_string($_,$document),@nodes[$pos..$#nodes]));
       my $lexeme = node_location($nodes[$pos] || $nodes[$pos-1] || $mathnode);
-      Warn("  MathParser failed to match rule $rule for ".getQName($mathnode)." at pos. $pos in $lexeme at\n   "
+      Warn($loc."  MathParser failed to match rule $rule for ".getQName($mathnode)." at pos. $pos in $lexeme at\n   "
 	   . ($parsed ? $parsed."   \n".(' ' x (length($parsed)-2)) : '')."> ".$toparse);
     }
     undef; }
