@@ -29,7 +29,7 @@ sub process {
   my $root = $doc->getDocumentElement;
   # RISKY and annoying; to split, we really need an id on the root.
   # Writer will remove it.
-  $root->setAttribute(id=>'TEMPORARY_DOCUMENT_ID') unless $root->hasAttribute('id');
+  $root->setAttribute('xml:id'=>'TEMPORARY_DOCUMENT_ID') unless $root->hasAttribute('xml:id');
 
   my @docs = ($doc);
   my @pages = $self->getPages($doc);
@@ -37,7 +37,7 @@ sub process {
   @pages = grep($_->parentNode->parentNode,@pages); # Strip out the root node.
   if(@pages){
     $self->Progress("Splitting into ".scalar(@pages)." pages");
-    my $tree = {node=>$root,id=>$root->getAttribute('id'),name=>$doc->getDestination,children=>[]};
+    my $tree = {node=>$root,id=>$root->getAttribute('xml:id'),name=>$doc->getDestination,children=>[]};
     # Group the pages into a tree, in case they are nested.
     my $haschildren={};
     foreach my $page (@pages){
@@ -49,8 +49,8 @@ sub process {
     # Add navigation to the sequence.
     if(!$$self{no_navigation}){
       for(my $i=0; $i<$#docs; $i++){
-	$docs[$i]->addNavigation(next=>$docs[$i+1]->getDocumentElement->getAttribute('id'));
-	$docs[$i+1]->addNavigation(previous=>$docs[$i]->getDocumentElement->getAttribute('id')); }}
+	$docs[$i]->addNavigation(next=>$docs[$i+1]->getDocumentElement->getAttribute('xml:id'));
+	$docs[$i+1]->addNavigation(previous=>$docs[$i]->getDocumentElement->getAttribute('xml:id')); }}
   }
   @docs; }
 
@@ -71,7 +71,7 @@ sub presortPages {
   else {
     $$haschildren{$$tree{node}->localname}=1; # Wrong key for this!?!
     push(@{$$tree{children}},
-	 {node=>$page,upid=>$$tree{id}, id=>$page->getAttribute('id'),parent=>$tree,children=>[]}); }}
+	 {node=>$page,upid=>$$tree{id}, id=>$page->getAttribute('xml:id'),parent=>$tree,children=>[]}); }}
 
 # Is $node an descendant of $possibleparent?
 # Probably even belongs somewhere else??
@@ -93,7 +93,7 @@ sub prenamePages {
 # Process a sequence of page entries, removing them and generating documents for each.
 sub processPages {
   my($self,$doc,@entries)=@_;
-  my $rootid = $doc->getDocumentElement->getAttribute('id');
+  my $rootid = $doc->getDocumentElement->getAttribute('xml:id');
   my @docs=();
   while(@entries){
     my $parent = $entries[0]->{node}->parentNode;
@@ -111,7 +111,7 @@ sub processPages {
       my $entry = shift(@entries);
       my $page = $$entry{node};
       shift(@removed);
-      my $id = $page->getAttribute('id');
+      my $id = $page->getAttribute('xml:id');
       my $tocentry =['ltx:tocentry',{},
 		     ['ltx:ref',{class=>'toc',show=>'typerefnum title', idref=>$id}]];
       if($page->localname =~ /^appendix/){
@@ -137,13 +137,15 @@ sub getPageName {
   my($self,$doc,$page,$parent,$parentpath,$recursive)=@_;
   my $asdir;
   my $naming = $$self{splitnaming};
-  my $attr = ($naming =~ /^id/ ? 'id'
-	      : ($naming =~ /^label/ ? 'label' : undef));
+  my $attr = ($naming =~ /^id/ ? 'xml:id'
+	      : ($naming =~ /^label/ ? 'labels' : undef));
   my $name  = $page->getAttribute($attr);
+  $name =~ s/\s+.*// if $name;		# Truncate in case multiple labels.
+  $name =~ s/^LABEL:// if $name;
   if(!$name){
-    if(($attr eq 'label') && ($name=$page->getAttribute('id'))){
+    if(($attr eq 'label') && ($name=$page->getAttribute('xml:id'))){
       $self->Warn($doc->getQName($page)." has no $attr attribute for pathname; using id=$name"); 
-      $attr='id'; }
+      $attr='xml:id'; }
     else {
       $self->Warn($doc->getQName($page)." has no $attr attribute for pathname");
       $name="FOO".++$COUNTER; }}
