@@ -36,7 +36,7 @@ sub makeSubCollectionDocuments {
   my @docs = ();
 
   my $roottag = $doc->getQName($root);
-  my $rootid = $root->getAttribute('id');
+  my $rootid = $root->getAttribute('xml:id');
 
   my @initials = sort keys %collections;
   my $init0  = $initials[0];
@@ -47,7 +47,7 @@ sub makeSubCollectionDocuments {
   map($root->removeChild($_), @titles);
   for(my $i=0; $i<=$#ids; $i++){
     my $subdoc = ($i == 0 ? $doc
-		  : $doc->newDocument([$roottag,{id=>$ids[$i][0]}],
+		  : $doc->newDocument([$roottag,{'xml:id'=>$ids[$i][0]}],
 				      destination=>$self->getPageName($doc,$ids[$i][1])));
     push(@docs,$subdoc);
     $subdoc->addNodes($subdoc->findnode('//'.$roottag),
