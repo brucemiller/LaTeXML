@@ -35,13 +35,13 @@ DefConstructor('\Pisymbol{}{Number}', sub {
   $document->openText(pichar($pifont,$code),$props{font}); });
 
 DefConstructor('\pilist@item[]',
-	       "<ltx:item id='#id'><ltx:tag>#refnum</ltx:tag>",
+	       "<ltx:item xml:id='#id'><ltx:tag>#refnum</ltx:tag>",
 	       properties=>sub{
 		 (RefStepItemCounter(),
 		  refnum=>pichar(LookupValue('pilist_pifont'),
 			      LookupValue('pilist_base'))); });
 DefConstructor('\piautolist@item[]',
-	       "<ltx:item id='#id' refnum='#refnum'><ltx:tag>#refnum</ltx:tag>",
+	       "<ltx:item xml:id='#id' refnum='#refnum'><ltx:tag>#refnum</ltx:tag>",
 	       properties=>sub{
 		 my $lvl = ToString(Tokens(roman(LookupValue('itemlevel'))));
 		 (RefStepItemCounter(),
@@ -50,7 +50,7 @@ DefConstructor('\piautolist@item[]',
 			      +LookupValue('\c@enum'.$lvl)->valueOf)); });
   
 DefEnvironment('{Pilist}{}{Number}',
-	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
+	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
 	       beforeDigest=>sub { beginItemize('pilist'); },
 	       afterDigestBegin=>sub {
 		 AssignValue(pilist_pifont=>ToString($_[1]->getArg(1))); 
@@ -58,7 +58,7 @@ DefEnvironment('{Pilist}{}{Number}',
 	       properties=>sub { RefStepCounter('@itemize'); });
 
 DefEnvironment('{Piautolist}{}{Number}',
-	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
+	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
 	       beforeDigest=>sub { beginItemize('piautolist'); },
 	       afterDigestBegin=>sub {
 		 AssignValue(pilist_pifont=>ToString($_[1]->getArg(1)));
@@ -72,7 +72,7 @@ DefPrimitive('\Pifill{}{Number}',undef);
 DefMacro('\ding{}','\Pisymbol{pzd}{#1}');
 
 DefEnvironment('{dinglist}{Number}',
-	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
+	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
 	       beforeDigest=>sub { beginItemize('pilist'); },
 	       afterDigestBegin=>sub {
 		 AssignValue(pilist_pifont=>'pzd'); 
@@ -80,7 +80,7 @@ DefEnvironment('{dinglist}{Number}',
 	       properties=>sub { RefStepCounter('@itemize'); });
 
 DefEnvironment('{dingautolist}{Number}',
-	       "<ltx:itemize id='#id'>#body</ltx:itemize>",
+	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
 	       beforeDigest=>sub { beginItemize('piautolist'); },
 	       afterDigestBegin=>sub {
 		 AssignValue(pilist_pifont=>'pzd'); 
