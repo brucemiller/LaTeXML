@@ -28,7 +28,7 @@ our @EXPORT = (qw(&DefExpandable
 		  &DefLigature &DefMathLigature
 		  &RequirePackage &LoadClass &FindFile
 		  &RawTeX
-		  &Tag &DocType &RegisterNamespace
+		  &Tag &DocType &RelaxNGSchema &RegisterNamespace
 		  &convertLaTeXArgs
 		  &UTF),
 
@@ -39,7 +39,8 @@ our @EXPORT = (qw(&DefExpandable
 		  &LookupCatcode &AssignCatcode
 		 &LookupMeaning &LookupDefinition &InstallDefinition &Let),
 	       # Counter support
-	       qw(&NewCounter &CounterValue &StepCounter &RefStepCounter &RefStepID &ResetCounter),
+	       qw(&NewCounter &CounterValue &StepCounter &RefStepCounter &RefStepID &ResetCounter
+		  &GenerateID),
 	       # Math & font state.
 	       qw(&MergeFont),
 	       # Explicit digestion
@@ -50,6 +51,9 @@ our @EXPORT = (qw(&DefExpandable
 		  &Expand &Invocation &ReadParameters),
 	       # Random low-level token operations.
 	       qw(&roman &Roman),
+
+	       # Random cleaners
+	       qw(&CleanLabel &CleanIndexKey &CleanBibKey &CleanURL),
 
 	       qw(&CheckOptions),
 
@@ -176,6 +180,38 @@ sub roman_aux {
 sub roman { Explode(roman_aux(@_)); }
 # Convert the number to upper case roman numerals, returning a list of LaTeXML::Token
 sub Roman { Explode(uc(roman_aux(@_))); }
+
+#======================================================================
+# Cleaners
+#======================================================================
+# Gradually rethink all these and clarify.
+#  Are they intended to be valid ID's (or fragment ids?)
+
+sub CleanLabel {
+  my($label,$prefix)=@_;
+  my $key = ToString($label);
+  $key =~ s/\s+/_/g;
+  ($prefix||"LABEL").":".$key; }
+
+sub CleanIndexKey {
+  my($key)=@_;
+  $key = ToString($key);
+  $key =~ s/[^a-zA-Z0-9]//g;
+  $key =~ tr|A-Z|a-z|;
+  $key; }
+
+# used as id.
+sub CleanBibKey {
+  my($key)=@_;
+  $key = lc(ToString($key));
+  $key =~ s/\s//g;
+  $key; }
+
+sub CleanURL {
+  my($url)=@_;
+  $url = ToString($url);
+  $url =~ s/\\~{}/~/g;
+  $url; }
 
 #======================================================================
 # Defining new Control-sequence Parameter types.
@@ -322,6 +358,24 @@ sub ResetCounter {
     foreach my $c ($nested->unlist){
       ResetCounter($c->toString); }}
   return;}
+
+#**********************************************************************
+# This function computes an xml:id for a node, if it hasn't already got one.
+# It is suitable for use in Tag afterOpen as
+#  Tag('ltx:para',afterOpen=>sub { GenerateID(@_,'p'); });
+# It generates an id of the form <parentid>.<prefix><number>
+sub GenerateID {
+  my($document,$node,$whatsit,$prefix)=@_;
+  if(!$node->hasAttribute('xml:id')){
+    my $parent =  $document->findnode('ancestor::*[@xml:id][1]',$node)
+      || $document->getDocument->documentElement;
+    my $ctrkey = '_ID_counter_'.$prefix;
+    my $ctr = ($parent && $parent->getAttribute($ctrkey)) || 0;
+    my $parent_id = $parent && $parent->getAttribute('xml:id');
+    my $id = ($parent_id ? $parent_id."." : '').$prefix. (++$ctr);
+    $parent->setAttribute($ctrkey=>$ctr) if $parent;
+    $document->setAttribute($node,'xml:id'=>$id);
+}}
 
 #======================================================================
 # Readers for reading various data types
@@ -705,10 +759,12 @@ sub DefEnvironmentI {
 							 $options{beforeDigest}),
 				   afterDigest =>flatten($options{afterDigestBegin}),
 				   beforeConstruct=> flatten(sub{$STATE->pushFrame;},$options{beforeConstruct}),
+				   # Curiously, it's the \begin whose afterConstruct gets called.
+				   afterConstruct => flatten($options{afterConstruct},sub{$STATE->popFrame;}),
 				   nargs=>$options{nargs},
 				   captureBody=>1, 
-				   properties=>$options{properties}||{}),
-			     $options{scope});
+				   properties=>$options{properties}||{},
+				  ), $options{scope});
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\end{$name}"),"","",
 				   beforeDigest =>flatten($options{beforeDigestEnd}),
@@ -721,8 +777,7 @@ sub DefEnvironmentI {
 							    return; },
 							($mode ? (sub { $_[0]->endMode($mode);})
 							 :(sub{$_[0]->egroup;}))),
-				   afterConstruct => flatten($options{afterConstruct},sub{$STATE->popFrame;})),
-			     $options{scope});
+				  ),$options{scope});
   # For the uncommon case opened by \csname env\endcsname
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\$name"), $paramlist,$replacement,
@@ -733,6 +788,8 @@ sub DefEnvironmentI {
 							 $options{beforeDigest}),
 				   afterDigest =>flatten($options{afterDigestBegin}),
 				   beforeConstruct=> flatten(sub{$STATE->pushFrame;},$options{beforeConstruct}),
+				   # Curiously, it's the \begin whose afterConstruct gets called.
+				   afterConstruct => flatten($options{afterConstruct},sub{$STATE->popFrame;}),
 				   nargs=>$options{nargs},
 				   captureBody=>1,
 				   properties=>$options{properties}||{}),
@@ -742,8 +799,7 @@ sub DefEnvironmentI {
 				   beforeDigest =>flatten($options{beforeDigestEnd}),
 				   afterDigest=>flatten($options{afterDigest},
 							($mode ? (sub { $_[0]->endMode($mode);}):())),
-				   afterConstruct => flatten($options{afterConstruct},sub{$STATE->popFrame;})),
-			     $options{scope});
+				  ),$options{scope});
   return; }
 
 #======================================================================
@@ -774,6 +830,12 @@ sub DocType {
   $STATE->getModel->setDocType($rootelement,$pubid,$sysid,%namespaces);
   return; }
 
+# What verb here? Set, Choose,...
+sub RelaxNGSchema {
+  my($schema)=@_;
+  $STATE->getModel->setRelaxNGSchema($schema);
+  return; }
+  
 sub RegisterNamespace {
   my($prefix,$namespace)=@_;
   $STATE->getModel->registerNamespace($prefix,$namespace);
@@ -912,6 +974,8 @@ installed C<LaTeXML/Package> directory for realistic examples.
   # Use a special DocType, if not LaTeXML.dtd
   DocType("rootelement","-//Your Site//Your DocType",'your.dtd',
           prefix=>"http://whatever/");
+  # Or use a RelaxNG schema
+  RelaxNGSchema("MySchema");
 
   # Allow sometag elements to be automatically closed if needed
   Tag('pre:sometag', autoClose=>1);
@@ -1400,6 +1464,9 @@ This property can help match the more  SGML-like LaTeX to XML.
 Provides CODE to be run whenever a node with this $tag
 is opened.  It is called with the document being constructed,
 and the initiating digested object as arguments.
+It is called after the node has been created, and after
+any initial attributes due to the constructor (passed to openElement)
+are added.
 
 =item afterClose=>CODE($document,$box)
 
@@ -1421,6 +1488,12 @@ each associated namespace URI.  Use the prefix C<#default> for the default names
 The prefixes defined for the DTD may be different from the prefixes used in
 implementation CODE (eg. in ltxml files; see RegisterNamespace).
 The generated document will use the namespaces and prefixes defined for the DTD.
+
+=item C<< RelaxNGSchema($schemaname); >>
+
+Specifies the schema to use for determining document model.
+You can leave off the extension; it will look for C<.rng>,
+and maybe eventually, C<.rnc> once that is implemented.
 
 =item C<< RegisterNamespace($prefix,$URL); >>
 
@@ -1540,6 +1613,63 @@ implementation that can be handled simply using macros and primitives.
 
 =back
 
+=head2 Counters and IDs
+
+=over 4
+
+=item C<< NewCounter($ctr,$within,%options); >>
+
+Defines a new counter, like LaTeX's \newcounter, but extended.
+It defines a counter that can be used to generate reference numbers,
+and defines \the$ctr, etc. It also defines an "uncounter" which
+can be used to generate ID's (xml:id) for unnumbered objects.
+C<$ctr> is the name of the counter.  If defined, C<$within> is the name
+of another counter which, when incremented, will cause this counter
+to be reset.
+The options are
+
+   idprefix  Specifies a prefix to be used when using this counter
+             to generate ID's.
+   nested    Not sure that this is even sane.
+
+=item C<< $num = CounterValue($ctr); >>
+
+Fetches the value associated with the counter C<$ctr>.
+
+=item C<< $tokens = StepCounter($ctr); >>
+
+Like C<\stepcounter>, steps the counter and returns the expansion of
+C<\the$ctr>.  Usually you should use C<RefStepCounter($ctr)> instead.
+
+=item C<< $keys = RefStepCounter($ctr); >>
+
+Like C<\refstepcounter>, it steps the counter and returns the keys
+C<refnum=>$refnum, id=>$id>, making it suitable for use in
+a C<properties> option to constructors.  The C<id> is generated
+in parallel with the reference number to assist debugging.
+
+=item C<< $keys = RefStepID($ctr); >>
+
+Analogous to C<RefStepCounter>, but only steps the "uncounter",
+and returns only the id;  This is useful for unnumbered cases
+of objects that normally get both a refnum and id.
+
+=item C<< ResetCounter($ctr); >>
+
+Resets the counter C<$ctr> to zero.
+
+=item C<< GenerateID($document,$node,$whatsit,$prefix); >>
+
+Generates an ID for nodes during the construction phase, useful
+for cases where the counter based scheme is inappropriate.
+The calling pattern makes it appropriate for use in Tag, as in
+   Tag('ltx:para',sub { GenerateID(@_,'p'); })
+
+If C<$node> doesn't already have an xml:id set, it computes an
+appropriate id by concatenating the xml:id of the closest
+ancestor with an id (if any), the prefix and a unique counter.
+
+=back
 
 =head2 Convenience Functions
 
@@ -1681,6 +1811,14 @@ simply be passed over.
 whether the catcode table should be modified before reading tokens.
 
 =back
+
+=item C<< DefColumnType($proto,$expansion); >>
+
+Defines a new column type for tabular and arrays.
+C<$proto> is the prototype for the pattern, analogous to the pattern
+used for other definitions, except that macro being defined is a single character.
+The C<$expansion> is a string specifying what it should expand into,
+typically more verbose column specification.
 
 =back
 
