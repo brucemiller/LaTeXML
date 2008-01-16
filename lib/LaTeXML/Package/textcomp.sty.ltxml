@@ -39,7 +39,7 @@ our %textcomp_accents
       newtie           =>'\t');
 map(Let(T_CS('\\'.$_)=>T_CS($textcomp_accents{$_})),keys %textcomp_accents);
 
-DefConstructor('\textcircled{}', "<ltx:text framed='circle'>#1</ltx:text>"); # ?
+#DefConstructor('\textcircled{}', "<ltx:text framed='circle'>#1</ltx:text>"); # ?
 
 ## \t
 
