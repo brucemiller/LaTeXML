@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
 <?latexml package="latexml"?>
 <?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>Grouping in multi-relations</title>
-    <para id="S1.p1">
-      <equation id="Ex1">
+    <para xml:id="S1.p1">
+      <equation xml:id="Ex1">
         <Math mode="display" tex="a=b=c=d=e" text="a = b = c = d = e">
           <XMath>
             <XMApp>
@@ -25,7 +25,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex2">
+      <equation xml:id="Ex2">
         <Math mode="display" tex="a=b,c=d" text="Formulae@(a = b, c = d)">
           <XMath>
             <XMApp>
@@ -44,7 +44,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex3">
+      <equation xml:id="Ex3">
         <Math mode="display" tex="a=b,c,d,e" text="a = Collection@(b, c, d, e)">
           <XMath>
             <XMApp>
@@ -61,7 +61,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex4">
+      <equation xml:id="Ex4">
         <Math mode="display" tex="a=b,c,d=e" text="Formulae@(a = Collection@(b, c), d = e)">
           <XMath>
             <XMApp>
@@ -84,7 +84,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex5">
+      <equation xml:id="Ex5">
         <Math mode="display" tex="a=b&gt;c\le d=e" text="a = b less c less-eq d = e">
           <XMath>
             <XMApp>
@@ -103,10 +103,10 @@
         </Math>
       </equation>
     </para>
-    <paragraph id="S1.SS0.SSS0.P1">
+    <paragraph xml:id="S1.SS0.SSS0.P1">
       <title>But period is somewhat different!</title>
-      <para id="S1.SS0.SSS0.P1.p1">
-        <equation id="Ex6">
+      <para xml:id="S1.SS0.SSS0.P1.p1">
+        <equation xml:id="Ex6">
           <Math mode="display" tex="a=b,c.d=e" text="Formulae@(a = Collection@(b, c), d = e)">
             <XMath>
               <XMApp>
@@ -129,7 +129,7 @@
             </XMath>
           </Math>
         </equation>
-        <equation id="Ex7">
+        <equation xml:id="Ex7">
           <Math mode="display" tex="a=b.c,d=e" text="Formulae@(a = b, Collection@(c, d) = e)">
             <XMath>
               <XMApp>
@@ -155,10 +155,10 @@
       </para>
     </paragraph>
   </section>
-  <section id="S2" refnum="2">
+  <section refnum="2" xml:id="S2">
     <title>Arrows as meta-relation</title>
-    <para id="S2.p1">
-      <equation id="Ex8">
+    <para xml:id="S2.p1">
+      <equation xml:id="Ex8">
         <Math mode="display" tex="a=b\rightarrow c\le d=e" text="a = b rightarrow c less-eq d = e">
           <XMath>
             <XMApp>
@@ -176,7 +176,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex9">
+      <equation xml:id="Ex9">
         <Math mode="display" tex="a=b,c\rightarrow d=e" text="Formulae@(a = b, c rightarrow d = e)">
           <XMath>
             <XMApp>
@@ -198,7 +198,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex10">
+      <equation xml:id="Ex10">
         <Math mode="display" tex="a=b\leftrightarrow c\le d=e" text="a = b leftrightarrow c less-eq d = e">
           <XMath>
             <XMApp>
@@ -220,7 +220,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex11">
+      <equation xml:id="Ex11">
         <Math mode="display" tex="a=b,c\leftrightarrow d=e" text="a = Collection@(b, c) leftrightarrow d = e">
           <XMath>
             <XMApp>
@@ -245,10 +245,10 @@
       </equation>
     </para>
   </section>
-  <section id="S3" refnum="3">
+  <section refnum="3" xml:id="S3">
     <title>Other Meta relations</title>
-    <para id="S3.p1">
-      <equation id="Ex12">
+    <para xml:id="S3.p1">
+      <equation xml:id="Ex12">
         <Math mode="display" tex="a(&lt;e)" text="Annotated@(a, Empty less e)">
           <XMath>
             <XMApp>
@@ -263,7 +263,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex13">
+      <equation xml:id="Ex13">
         <Math mode="display" tex="a;(&lt;e)" text="Annotated@(a, Empty less e)">
           <XMath>
             <XMApp>
@@ -278,7 +278,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex14">
+      <equation xml:id="Ex14">
         <Math mode="display" tex="a=b+c+d(&lt;e)" text="a = Annotated@(b + c + d, Empty less e)">
           <XMath>
             <XMApp>
@@ -302,7 +302,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex15">
+      <equation xml:id="Ex15">
         <Math mode="display" tex="a=b+c+d\mod e" text="a = mod@(b + c + d, e)">
           <XMath>
             <XMApp>

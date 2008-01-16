@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>Testing</title>
-    <para id="S1.p1">
+    <para xml:id="S1.p1">
       <p>Testing raw tex macros:
 Expect inline math: xx<Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math>xx</p>
     </para>
-    <para id="S1.p2">
+    <para xml:id="S1.p2">
       <p>Expect display math: xx</p>
       <equation>
         <Math mode="display" tex="a+b" text="a + b">
@@ -23,33 +23,33 @@ Expect inline math: xx<Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><
       </equation>
       <p>xx</p>
     </para>
-    <para id="S1.p3">
+    <para xml:id="S1.p3">
       <p>Expect 2 empty maths: xxa+bxx</p>
     </para>
-    <para id="S1.p4">
+    <para xml:id="S1.p4">
       <p>Testing latex macros
 Expect (onearg: one) (onearg: one)
 Expect (twoarg: one two) (twoarg: one ; two)
 Expect (twoargopt: one ; two) (twoargopt: one ; two)
 Expect (twoargopt: missing ; two)(twoargopt: missing ; two)</p>
     </para>
-    <para id="S1.p5">
+    <para xml:id="S1.p5">
       <p>Testing whitespace:
 Expect (twoarg: a ; b) (twoarg: a ; b)
 Expect (textwoarg: a ; b) (textwoarg: a ; b)
 Expect (twoargopt: a ; b) (twoargopt: a ; b)</p>
     </para>
-    <para id="S1.p6">
+    <para xml:id="S1.p6">
       <p>Expecting (beep) : (beep)</p>
     </para>
-    <para id="S1.p7">
+    <para xml:id="S1.p7">
       <p>Expecting (foo) : (foo)</p>
     </para>
-    <para id="S1.p8">
+    <para xml:id="S1.p8">
       <p>Expect [[x]] : [[x]]Expect (y(x)y) : (y(x)y)
 Expect [[x]] : [[x]]</p>
     </para>
-    <para id="S1.p9">
+    <para xml:id="S1.p9">
       <p>Expect NOW a LATER b MUCHLATER c: NOW a LATER b MUCHLATER c</p>
     </para>
   </section>

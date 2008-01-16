@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>One</title>
-    <para id="S1.p1">
+    <para xml:id="S1.p1">
       <p>Expect Section 1:Section 1.</p>
     </para>
   </section>
-  <section id="S2" refnum="2">
+  <section refnum="2" xml:id="S2">
     <title>Two</title>
-    <para id="S2.p1">
+    <para xml:id="S2.p1">
       <p>Expect Unknown: Unknown.</p>
-      <equation id="E1" refnum="1">
+      <equation refnum="1" xml:id="E1">
         <Math mode="display" tex="\mbox{Equation 1}=\mbox{Equation 1}" text="[Equation 1] = [Equation 1]">
           <XMath>
             <XMApp>
@@ -29,46 +29,46 @@
       </equation>
       <p>Expect Unknown: Unknown.</p>
     </para>
-    <subsection id="S2.SS1" refnum="2.1">
+    <subsection refnum="2.1" xml:id="S2.SS1">
       <title>Two pt one</title>
-      <para id="S2.SS1.p1">
+      <para xml:id="S2.SS1.p1">
         <p>Expect Subsection 2.1: Subsection 2.1</p>
       </para>
     </subsection>
-    <subsection id="S2.SS2" refnum="2.2">
+    <subsection refnum="2.2" xml:id="S2.SS2">
       <title>Two point two</title>
-      <para id="S2.SS2.p1">
+      <para xml:id="S2.SS2.p1">
         <p>Expect Unknown: Unknown.</p>
       </para>
     </subsection>
-    <subsection id="S2.SS3" refnum="2.3" label="labelled">
+    <subsection refnum="2.3" xml:id="S2.SS3" labels="LABEL:labelled">
       <title>Two point three</title>
-      <para id="S2.SS3.p1">
+      <para xml:id="S2.SS3.p1">
         <p>Expect Labelled subsection: Labelled subsection</p>
       </para>
     </subsection>
-    <subsection id="S2.SS4" refnum="2.4">
+    <subsection refnum="2.4" xml:id="S2.SS4">
       <title>Two point four</title>
-      <para id="S2.SS4.p1">
+      <para xml:id="S2.SS4.p1">
         <p>Expect Unknown: Unknown.</p>
       </para>
     </subsection>
   </section>
-  <section id="S3" refnum="3">
+  <section refnum="3" xml:id="S3">
     <title>Three</title>
-    <para id="S3.p1">
+    <para xml:id="S3.p1">
       <p>Expect Section 3:Section 3.</p>
     </para>
-    <subsection id="S3.SS1" refnum="3.1">
+    <subsection refnum="3.1" xml:id="S3.SS1">
       <title>Three point one</title>
-      <para id="S3.SS1.p1">
+      <para xml:id="S3.SS1.p1">
         <p>Expect Section 3: Section 3.</p>
       </para>
     </subsection>
   </section>
-  <section id="S4" refnum="4">
+  <section refnum="4" xml:id="S4">
     <title>Four</title>
-    <para id="S4.p1">
+    <para xml:id="S4.p1">
       <p>Expect Unknown: Unknown.</p>
     </para>
   </section>

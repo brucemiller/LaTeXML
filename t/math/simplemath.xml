@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <title>Testing Simple Math Parsing</title>
-  <para id="p1">
+  <para xml:id="p1">
     <p>Inline math <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="ID" font="italic">a</XMTok><XMTok role="ID" font="italic">b</XMTok></XMApp></XMath></Math>.</p>
   </para>
-  <para id="p2">
+  <para xml:id="p2">
     <equation>
       <Math mode="display" tex="a+b+123" text="a + b + 123">
         <XMath>
@@ -35,7 +35,7 @@
       </Math>
     </equation>
   </para>
-  <para id="p3">
+  <para xml:id="p3">
     <equation>
       <Math mode="display" tex="f_{D}f(a+b)" text="f _ D * f@(a + b)">
         <XMath>
@@ -92,9 +92,9 @@
       </Math>
     </equation>
   </para>
-  <section id="S1" refnum="1" label="sec:restricted">
+  <section refnum="1" xml:id="S1" labels="LABEL:sec:restricted">
     <title>Restricted</title>
-    <para id="S1.p1">
+    <para xml:id="S1.p1">
       <equation>
         <Math mode="display" tex="a(x)+b(x)+123" text="a@(x) + b@(x) + 123">
           <XMath>

@@ -1,100 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>Itemize</title>
-    <para id="S1.p1">
-      <itemize id="I1">
-        <item id="I1.i1" label="it:one">
-          <p>One, but not <ref labelref="en:one"/></p>
+    <para xml:id="S1.p1">
+      <itemize xml:id="I1">
+        <item xml:id="I1.i1" labels="LABEL:it:one">
+          <p>One, but not <ref labelref="LABEL:en:one"/></p>
         </item>
-        <item id="I1.i2" label="it:two">
-          <p>Two, but not <ref labelref="en:two"/></p>
+        <item xml:id="I1.i2" labels="LABEL:it:two">
+          <p>Two, but not <ref labelref="LABEL:en:two"/></p>
         </item>
-        <item id="I1.i3" label="it:three">
-          <p>Three, but not <ref labelref="en:three"/></p>
+        <item xml:id="I1.i3" labels="LABEL:it:three">
+          <p>Three, but not <ref labelref="LABEL:en:three"/></p>
         </item>
       </itemize>
     </para>
   </section>
-  <section id="S2" refnum="2">
+  <section refnum="2" xml:id="S2">
     <title>Enumerate</title>
-    <para id="S2.p1">
-      <enumerate id="I2">
-        <item id="I2.i1" refnum="1" label="en:one">
-          <p>One , but not <ref labelref="de:one"/></p>
+    <para xml:id="S2.p1">
+      <enumerate xml:id="I2">
+        <item refnum="1" xml:id="I2.i1" labels="LABEL:en:one">
+          <p>One , but not <ref labelref="LABEL:de:one"/></p>
         </item>
-        <item id="I2.i2" refnum="2" label="en:two">
-          <p>Two , but not <ref labelref="de:two"/></p>
+        <item refnum="2" xml:id="I2.i2" labels="LABEL:en:two">
+          <p>Two , but not <ref labelref="LABEL:de:two"/></p>
         </item>
-        <item id="I2.i3" refnum="3" label="en:three">
-          <p>Three , but not <ref labelref="de:three"/></p>
+        <item refnum="3" xml:id="I2.i3" labels="LABEL:en:three">
+          <p>Three , but not <ref labelref="LABEL:de:three"/></p>
         </item>
       </enumerate>
     </para>
   </section>
-  <section id="S3" refnum="3">
+  <section refnum="3" xml:id="S3">
     <title>Description</title>
-    <para id="S3.p1">
-      <description id="I3">
-        <item id="I3.i1" label="de:one">
+    <para xml:id="S3.p1">
+      <description xml:id="I3">
+        <item xml:id="I3.i1" labels="LABEL:de:one">
           <tag>One</tag>
-          <p>, but not <ref labelref="it:one"/></p>
+          <p>, but not <ref labelref="LABEL:it:one"/></p>
         </item>
-        <item id="I3.i2" label="de:two">
+        <item xml:id="I3.i2" labels="LABEL:de:two">
           <tag>Two</tag>
-          <p>, but not <ref labelref="it:two"/></p>
+          <p>, but not <ref labelref="LABEL:it:two"/></p>
         </item>
-        <item id="I3.i3" label="de:three">
+        <item xml:id="I3.i3" labels="LABEL:de:three">
           <tag>Three</tag>
-          <p>, but not <ref labelref="it:three"/></p>
+          <p>, but not <ref labelref="LABEL:it:three"/></p>
         </item>
       </description>
     </para>
   </section>
-  <section id="S4" refnum="4">
+  <section refnum="4" xml:id="S4">
     <title>Nested Enumerate</title>
-    <para id="S4.p1">
-      <enumerate id="I4">
-        <item id="I4.i1" refnum="1">
+    <para xml:id="S4.p1">
+      <enumerate xml:id="I4">
+        <item refnum="1" xml:id="I4.i1">
           <p>One</p>
-          <enumerate id="I4.I1">
-            <item id="I4.I1.i1" refnum="a">
+          <enumerate xml:id="I4.I1">
+            <item refnum="a" xml:id="I4.I1.i1">
               <p>One</p>
             </item>
-            <item id="I4.I1.i2" refnum="b">
+            <item refnum="b" xml:id="I4.I1.i2">
               <p>Two</p>
             </item>
-            <item id="I4.I1.i3" refnum="c">
+            <item refnum="c" xml:id="I4.I1.i3">
               <p>Three</p>
             </item>
           </enumerate>
         </item>
-        <item id="I4.i2" refnum="2">
+        <item refnum="2" xml:id="I4.i2">
           <p>Two</p>
-          <enumerate id="I4.I2">
-            <item id="I4.I2.i1" refnum="a">
+          <enumerate xml:id="I4.I2">
+            <item refnum="a" xml:id="I4.I2.i1">
               <p>One</p>
             </item>
-            <item id="I4.I2.i2" refnum="b">
+            <item refnum="b" xml:id="I4.I2.i2">
               <p>Two</p>
             </item>
-            <item id="I4.I2.i3" refnum="c">
+            <item refnum="c" xml:id="I4.I2.i3">
               <p>Three</p>
             </item>
           </enumerate>
         </item>
-        <item id="I4.i3" refnum="3">
+        <item refnum="3" xml:id="I4.i3">
           <p>Three</p>
-          <enumerate id="I4.I3">
-            <item id="I4.I3.i1" refnum="a">
+          <enumerate xml:id="I4.I3">
+            <item refnum="a" xml:id="I4.I3.i1">
               <p>One</p>
             </item>
-            <item id="I4.I3.i2" refnum="b">
+            <item refnum="b" xml:id="I4.I3.i2">
               <p>Two</p>
             </item>
-            <item id="I4.I3.i3" refnum="c">
+            <item refnum="c" xml:id="I4.I3.i3">
               <p>Three</p>
             </item>
           </enumerate>

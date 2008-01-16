@@ -1,8 +1,29 @@
 \documentclass{article}
 \usepackage{url}
 \begin{document}
-\frenchspacing
-\obeylines
-A test of 
-urls: \url{http://typingsoft.com/all_typing_tutors.htm}.
+\section{Basic URLS}
+Basic url: \url{http://example.com/~user} or \url|http://example.com/~user|.
+
+And even: \url{http://example.com/\~{}user} or \url|http://example.com/\~{}user|.
+
+Path url: \path{/foo/bar/baz} or \path|/foo/bar/baz|
+
+Verbatimness \path{C:\foo\bar\baz} or \path|C:\foo\bar\baz|
+
+\section{Styles}
+\DeclareUrlCommand\email{\urlstyle{sf}}
+
+Email: \email{myself%node@gateway.net} or  \email|myself%node@gateway.net|.
+
+\section{Defined urls}
+
+\urldef{\myselfa}\url{myself%node@gateway.net}
+\urldef{\myselfb}\email|myself%node@gateway.net|
+
+Myself: \myselfa\ or \myselfb.
+
+\section{Bracketting}
+\DeclareUrlCommand\fancyurl{\def\UrlLeft{<url:\ }\def\UrlRight{>}\urlstyle{tt}}
+Fancy url: \fancyurl{http://example.com/~user} or \fancyurl|http://example.com/~user|.
+
 \end{document}

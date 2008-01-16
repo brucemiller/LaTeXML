@@ -8,8 +8,7 @@ use LaTeXML::Package;
 # Case 1: The DTD and code use no Namespaces.
 # The XML output should also have no namespaces.
 #======================================================================
-DocType("song","-//NIST LaTeXML//LaTeXML Poem",'song.dtd',
-	'#default'=>undef); # Disable default.
+DocType("song","-//NIST LaTeXML//LaTeXML Poem",'ns1.dtd');
 
 Tag('song',  autoOpen=>1, autoClose=>1);
 Tag('verse', autoOpen=>1, autoClose=>1);

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
 <?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <para id="p1">
-    <equation id="Ex1">
+  <para xml:id="p1">
+    <equation xml:id="Ex1">
       <Math mode="display" tex="\begin{matrix}a&amp;b\\ c\\\end{matrix}" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray name="Matrix">
@@ -25,7 +25,7 @@
         </XMath>
       </Math>
     </equation>
-    <equation id="Ex2">
+    <equation xml:id="Ex2">
       <Math mode="display" tex="\begin{pmatrix}a&amp;b\\ c\\\end{pmatrix}" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray close=")" name="Matrix" open="(">
@@ -46,7 +46,7 @@
         </XMath>
       </Math>
     </equation>
-    <equation id="Ex3">
+    <equation xml:id="Ex3">
       <Math mode="display" tex="\begin{bmatrix}a&amp;b\\ c\\\end{bmatrix}" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray close="]" name="Matrix" open="[">
@@ -67,7 +67,7 @@
         </XMath>
       </Math>
     </equation>
-    <equation id="Ex4">
+    <equation xml:id="Ex4">
       <Math mode="display" tex="\begin{Bmatrix}a&amp;b\\ c\\\end{Bmatrix}" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray close="}" name="Matrix" open="{">
@@ -88,7 +88,7 @@
         </XMath>
       </Math>
     </equation>
-    <equation id="Ex5">
+    <equation xml:id="Ex5">
       <Math mode="display" tex="\begin{vmatrix}a&amp;b\\ c\\\end{vmatrix}" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray close="|" name="Matrix" open="|">
@@ -109,7 +109,7 @@
         </XMath>
       </Math>
     </equation>
-    <equation id="Ex6">
+    <equation xml:id="Ex6">
       <Math mode="display" tex="\begin{Vmatrix}a&amp;b\\ c\\\end{Vmatrix}" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray close="∥" name="Matrix" open="∥">
@@ -130,7 +130,7 @@
         </XMath>
       </Math>
     </equation>
-    <equation id="Ex7">
+    <equation xml:id="Ex7">
       <Math mode="display" tex="\begin{smallmatrix}a&amp;b\\ c\\\end{smallmatrix}" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray name="Matrix">

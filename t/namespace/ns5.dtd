@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT song (verse*)>
+<!ATTLIST song 
+	  xmlns CDATA #FIXED "http://outer.com/"
+	  xmlns:inner CDATA  #FIXED "http://inner.com/">
+<!ELEMENT verse (inner:line*)>
+<!ELEMENT inner:line (#PCDATA)>

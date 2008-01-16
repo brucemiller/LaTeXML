@@ -1,10 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
 <?latexml package="url"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <para id="p1">
-    <p>A test of
-urls: <ref href="http://typingsoft.com/all_typing_tutors.htm">http://typingsoft.com/all_typing_tutors.htm</ref>.</p>
-  </para>
+  <section refnum="1" xml:id="S1">
+    <title>Basic URLS</title>
+    <para xml:id="S1.p1">
+      <p>Basic url: <ref class="url" href="http://example.com/~user"><text font="typewriter">http://example.com/~user</text></ref> or <ref class="url" href="http://example.com/~user"><text font="typewriter">http://example.com/~user</text></ref>.</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>And even: <ref class="url" href="http://example.com/~user"><text font="typewriter">http://example.com/\~{}user</text></ref> or <ref class="url" href="http://example.com/~user"><text font="typewriter">http://example.com/\~{}user</text></ref>.</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>Path url: <ref class="path" href="/foo/bar/baz"><text font="typewriter">/foo/bar/baz</text></ref> or <ref class="path" href="/foo/bar/baz"><text font="typewriter">/foo/bar/baz</text></ref></p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>Verbatimness <ref class="path" href="C:\foo\bar\baz"><text font="typewriter">C:\foo\bar\baz</text></ref> or <ref class="path" href="C:\foo\bar\baz"><text font="typewriter">C:\foo\bar\baz</text></ref></p>
+    </para>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title>Styles</title>
+    <para xml:id="S2.p1">
+      <p>Email: <ref class="email" href="myself%node@gateway.net"><text font="sansserif">myself%node@gateway.net</text></ref> or  <ref class="email" href="myself%node@gateway.net"><text font="sansserif">myself%node@gateway.net</text></ref>.</p>
+    </para>
+  </section>
+  <section refnum="3" xml:id="S3">
+    <title>Defined urls</title>
+    <para xml:id="S3.p1">
+      <p>Myself: <ref class="url" href="myself%node@gateway.net"><text font="typewriter">myself%node@gateway.net</text></ref> or <ref class="email" href="myself%node@gateway.net"><text font="sansserif">myself%node@gateway.net</text></ref>.</p>
+    </para>
+  </section>
+  <section refnum="4" xml:id="S4">
+    <title>Bracketting</title>
+    <para xml:id="S4.p1">
+      <p>Fancy url: <ref class="fancyurl" href="http://example.com/~user"><text font="typewriter">&lt;url: http://example.com/~user&gt;</text></ref> or <ref class="fancyurl" href="http://example.com/~user"><text font="typewriter">&lt;url: http://example.com/~user&gt;</text></ref>.</p>
+    </para>
+  </section>
 </document>

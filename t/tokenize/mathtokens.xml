@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <para id="p1">
-    <equation id="Ex1">
+  <para xml:id="p1">
+    <equation xml:id="Ex1">
       <Math mode="display" tex="abc\not=\mathrm{abc}\not=\mathit{abc}\ldots" text="a * b * c not-eq abc not-eq abc * ldots">
         <XMath>
           <XMApp>
@@ -26,7 +26,7 @@
         </XMath>
       </Math>
     </equation>
-    <equation id="Ex2">
+    <equation xml:id="Ex2">
       <Math mode="display" tex="\pi\approx 3.1415\; 926" text="pi approx 3.1415926">
         <XMath>
           <XMApp>
@@ -37,7 +37,7 @@
         </XMath>
       </Math>
     </equation>
-    <equation id="Ex3">
+    <equation xml:id="Ex3">
       <Math mode="display" tex="a\cdot b\cdot c\cdot\cdot\cdot" text="(a cdot b cdot c) * cdots">
         <XMath>
           <XMApp>

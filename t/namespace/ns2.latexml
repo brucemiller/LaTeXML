@@ -14,8 +14,7 @@ use LaTeXML::Package;
 
 RegisterNamespace(incode=>"http://example.com/");
 
-DocType("incode:song","-//NIST LaTeXML//LaTeXML Poem",'song.dtd',
-        '#default'=>"http://example.com/");
+DocType("incode:song","-//NIST LaTeXML//LaTeXML Poem",'ns2.dtd');
 
 Tag('incode:song',  autoOpen=>1, autoClose=>1);
 Tag('incode:verse', autoOpen=>1, autoClose=>1);

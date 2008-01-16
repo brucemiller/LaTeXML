@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>Testing</title>
-    <para id="S1.p1">
+    <para xml:id="S1.p1">
       <p>Expecting (beep) : (beep)</p>
     </para>
-    <para id="S1.p2">
+    <para xml:id="S1.p2">
       <p>Expecting (foo) : (foo)</p>
     </para>
-    <para id="S1.p3">
+    <para xml:id="S1.p3">
       <p>Expecting (Bar): (Bar)</p>
     </para>
-    <para id="S1.p4">
+    <para xml:id="S1.p4">
       <p>Expecting (BAR): BAR</p>
     </para>
-    <para id="S1.p5">
+    <para xml:id="S1.p5">
       <p>Expecting (Bar): (Bar)</p>
     </para>
-    <para id="S1.p6">
+    <para xml:id="S1.p6">
       <p>Expecting (BAR): BAR</p>
     </para>
-    <para id="S1.p7">
+    <para xml:id="S1.p7">
       <p>Expecting (BAR): BAR</p>
     </para>
   </section>

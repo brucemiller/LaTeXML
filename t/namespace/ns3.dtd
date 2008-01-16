@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT example:song (example:verse*)>
+<!ATTLIST song 
+	  xmlns:example CDATA #FIXED "http://example.com/">
+<!ELEMENT example:verse (example:line*)>
+<!ELEMENT example:line (#PCDATA)>

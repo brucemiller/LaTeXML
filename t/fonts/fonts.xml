@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <para id="p1">
+  <para xml:id="p1">
     <tabular>
       <tbody>
         <tr>
@@ -681,7 +681,7 @@
       </tbody>
     </tabular>
   </para>
-  <para id="p2">
+  <para xml:id="p2">
     <p>roman <text font="italic">roman-italic</text>  <text font="sansserif">sans <text font="slanted">sans-slant</text></text></p>
   </para>
 </document>

@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>Testing Choose</title>
-    <para id="S1.p1">
+    <para xml:id="S1.p1">
       <p>beep hello, BEEP. beep.</p>
     </para>
-    <para id="S1.p2">
+    <para xml:id="S1.p2">
       <p>1. <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math></p>
     </para>
-    <para id="S1.p3">
+    <para xml:id="S1.p3">
       <p>2. <Math mode="inline" tex="a\choose b" text="binomial@(a, b)"><XMath><XMApp close=")" open="("><XMTok meaning="binomial" role="STACKED"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math></p>
     </para>
-    <para id="S1.p4">
+    <para xml:id="S1.p4">
       <p>3. <Math mode="inline" tex="a+{b\choose c}+d" text="a + binomial@(b, c) + d"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp close=")" open="("><XMTok meaning="binomial" role="STACKED" style="text"/><XMTok role="UNKNOWN" font="italic">b</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp></XMath></Math></p>
     </para>
-    <para id="S1.p5">
+    <para xml:id="S1.p5">
       <p>4. <Math mode="inline" tex="a+{b\choose c}+d" text="a + binomial@(b, c) + d"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp close=")" open="("><XMTok meaning="binomial" role="STACKED" style="text"/><XMTok role="UNKNOWN" font="italic">b</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp></XMath></Math></p>
     </para>
-    <para id="S1.p6">
+    <para xml:id="S1.p6">
       <p>5. <Math mode="inline" tex="a+{b\choose c}+d" text="a + binomial@(b, c) + d"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp close=")" open="("><XMTok meaning="binomial" role="STACKED" style="text"/><XMTok role="UNKNOWN" font="italic">b</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp></XMath></Math></p>
     </para>
-    <para id="S1.p7">
+    <para xml:id="S1.p7">
       <p>6. <Math mode="inline" tex="a+b\choose c+d" text="binomial@(a + b, c + d)"><XMath><XMApp close=")" open="("><XMTok meaning="binomial" role="STACKED" style="text"/><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp></XMApp></XMath></Math></p>
     </para>
   </section>

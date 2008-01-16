@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <para id="p1">
+  <para xml:id="p1">
     <p>Box 0 is horizontal</p>
   </para>
-  <para id="p2">
+  <para xml:id="p2">
     <p>Box 1 is horizontal</p>
   </para>
-  <para id="p3">
+  <para xml:id="p3">
     <p>Box 2 is vertical</p>
   </para>
-  <para id="p4">
+  <para xml:id="p4">
     <p>Using…
 <inline-block vattach="bottom"><text>Hello</text>,<text>Goodbye</text></inline-block></p>
   </para>
-  <para id="p5">
+  <para xml:id="p5">
     <p>Box 3 is horizontal</p>
   </para>
-  <para id="p6">
+  <para xml:id="p6">
     <p>Box 4 is empty</p>
   </para>
-  <para id="p7">
-    <equation id="Ex1">
+  <para xml:id="p7">
+    <equation xml:id="Ex1">
       <Math mode="display" tex="a+\hbox{a}" text="a + [a]">
         <XMath>
           <XMApp>
@@ -35,7 +35,7 @@
         </XMath>
       </Math>
     </equation>
-    <equation id="Ex2">
+    <equation xml:id="Ex2">
       <Math mode="display" tex="a+\vbox{a}" text="a + [a]">
         <XMath>
           <XMApp>
@@ -49,8 +49,8 @@
       </Math>
     </equation>
   </para>
-  <para id="p8">
-    <equation id="Ex3">
+  <para xml:id="p8">
+    <equation xml:id="Ex3">
       <Math mode="display" tex="a+\vbox{\hbox{a}\hbox{a}}" text="a + [aa]">
         <XMath>
           <XMApp>
@@ -66,7 +66,7 @@
         </XMath>
       </Math>
     </equation>
-    <equation id="Ex4">
+    <equation xml:id="Ex4">
       <Math mode="display" tex="a+\vtop{\hbox{a}\hbox{a}}" text="a + [aa]">
         <XMath>
           <XMApp>
@@ -83,8 +83,8 @@
       </Math>
     </equation>
   </para>
-  <para id="p9">
-    <equation id="Ex5">
+  <para xml:id="p9">
+    <equation xml:id="Ex5">
       <Math mode="display" tex="a-\lower 4.3pt\vtop{\hbox{a}}" text="a - [a]">
         <XMath>
           <XMApp>
@@ -101,7 +101,7 @@
         </XMath>
       </Math>
     </equation>
-    <equation id="Ex6">
+    <equation xml:id="Ex6">
       <Math mode="display" tex="a-\lower 4.3pt\vbox{\hbox{a}}" text="a - [a]">
         <XMath>
           <XMApp>
@@ -119,8 +119,8 @@
       </Math>
     </equation>
   </para>
-  <para id="p10">
-    <equation id="Ex7">
+  <para xml:id="p10">
+    <equation xml:id="Ex7">
       <Math mode="display" tex="a-\lower 4.3pt\hbox{a}" text="a - [a]">
         <XMath>
           <XMApp>
@@ -136,8 +136,8 @@
       </Math>
     </equation>
   </para>
-  <para id="p11">
-    <equation id="Ex8">
+  <para xml:id="p11">
+    <equation xml:id="Ex8">
       <Math mode="display" tex="a-\lower 4.3pt\hbox{a}" text="a - [a]">
         <XMath>
           <XMApp>

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>Testing Verbatim</title>
-    <para id="S1.p1">
+    <para xml:id="S1.p1">
       <p>Normal <text font="bold">Bold</text> stuff.</p>
     </para>
-    <para id="S1.p2">
+    <para xml:id="S1.p2">
       <verbatim font="typewriter">
 AbNormal {\bf NonBold} stuff.
 </verbatim>
     </para>
-    <para id="S1.p3">
+    <para xml:id="S1.p3">
       <verbatim font="typewriter"> xxx
 AbNormal {\bf NonBold} stuff.
 xxx    
@@ -20,13 +20,13 @@ xxx
       <p>yyy
 More Normal <text font="bold">Bold</text> stuff.</p>
     </para>
-    <para id="S1.p4">
+    <para xml:id="S1.p4">
       <p>Some inline <verbatim font="typewriter">\verb</verbatim> verbatim.</p>
     </para>
-    <para id="S1.p5">
+    <para xml:id="S1.p5">
       <p><text>More inline <verbatim font="typewriter">\verb</verbatim> verbatim.</text></p>
     </para>
-    <para id="S1.p6">
+    <para xml:id="S1.p6">
       <p>x<text width="144.54pt"><text font="bold">x<verbatim font="typewriter">\verb</verbatim>y.</text></text>y</p>
     </para>
   </section>

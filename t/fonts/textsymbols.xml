@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>Text Symbols</title>
-    <para id="S1.p1">
+    <para xml:id="S1.p1">
       <tabular>
         <tbody>
           <tr>
@@ -137,9 +137,7 @@
             <td align="left">
               <verbatim font="typewriter">\textcircled{x}</verbatim>
             </td>
-            <td align="left">
-              <text framed="circle">x</text>
-            </td>
+            <td align="left">x⃝</td>
           </tr>
           <tr>
             <td align="left">

@@ -8,9 +8,10 @@ BEGIN { plan tests => 1; }
 use LaTeXML::Post;
 use LaTeXML::Post::MathML;
 
-# For each test $name there should be $name.tex and $name.xml
-# (the latter from a previous `good' run of latexml $name).
-# We transform $name.tex and compare the result to $name.xml
+# For each test $name there should be $name.xml and $name-post.xml
+# (the latter from a previous `good' run of 
+#  latexmlpost --dest=$name-post.xml --pmml --noscan --nocrossref --keepXMath $name
+#).
 
 dotest('t/post/simplemath');
 
@@ -31,7 +32,7 @@ sub dotest{
   my($doc) = LaTeXML::Post::ProcessChain(
                LaTeXML::Post::Document->newFromFile("$name.xml",validate=>1),
 	       @procs);
-  my $output = $doc->toString(1);
+  my $output = $doc->toString;
 
   return ok(0,1,"Couldn't process $name.xml") unless $doc;
 

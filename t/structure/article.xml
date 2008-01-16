@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>First Section</title>
-    <para id="S1.p1">
+    <para xml:id="S1.p1">
       <p>Begin first paragraph,</p>
-      <equation id="E1" refnum="1">
+      <equation refnum="1" xml:id="E1">
         <Math mode="display" tex="a+b," text="a + b">
           <XMath>
             <XMApp punctuation=",">
@@ -18,8 +18,8 @@
         </Math>
       </equation>
     </para>
-    <para id="S1.p2">
-      <equation id="E2" refnum="2">
+    <para xml:id="S1.p2">
+      <equation refnum="2" xml:id="E2">
         <Math mode="display" tex="c+d," text="c + d">
           <XMath>
             <XMApp punctuation=",">
@@ -31,26 +31,26 @@
         </Math>
       </equation>
     </para>
-    <figure id="F1" refnum="1">
+    <figure refnum="1" xml:id="F1">
       <p>A Figure</p>
       <caption>A Figure</caption>
     </figure>
-    <table id="T1" refnum="1">
+    <table refnum="1" xml:id="T1">
       <p>A Figure</p>
       <caption>A Figure</caption>
     </table>
-    <para id="S1.p3">
-      <enumerate id="I1">
-        <item id="I1.i1" refnum="1">
+    <para xml:id="S1.p3">
+      <enumerate xml:id="I1">
+        <item refnum="1" xml:id="I1.i1">
           <p>one</p>
         </item>
-        <item id="I1.i2" refnum="2">
+        <item refnum="2" xml:id="I1.i2">
           <p>two</p>
-          <enumerate id="I1.I1">
-            <item id="I1.I1.i1" refnum="a">
+          <enumerate xml:id="I1.I1">
+            <item refnum="a" xml:id="I1.I1.i1">
               <p>one</p>
             </item>
-            <item id="I1.I1.i2" refnum="b">
+            <item refnum="b" xml:id="I1.I1.i2">
               <p>two</p>
             </item>
           </enumerate>
@@ -58,11 +58,11 @@
       </enumerate>
     </para>
   </section>
-  <section id="S2" refnum="2">
+  <section refnum="2" xml:id="S2">
     <title>Second Section</title>
-    <para id="S2.p1">
+    <para xml:id="S2.p1">
       <p>Begin first paragraph,</p>
-      <equation id="E3" refnum="3">
+      <equation refnum="3" xml:id="E3">
         <Math mode="display" tex="a+b," text="a + b">
           <XMath>
             <XMApp punctuation=",">
@@ -74,8 +74,8 @@
         </Math>
       </equation>
     </para>
-    <para id="S2.p2">
-      <equation id="E4" refnum="4">
+    <para xml:id="S2.p2">
+      <equation refnum="4" xml:id="E4">
         <Math mode="display" tex="c+d," text="c + d">
           <XMath>
             <XMApp punctuation=",">
@@ -87,26 +87,26 @@
         </Math>
       </equation>
     </para>
-    <figure id="F2" refnum="2">
+    <figure refnum="2" xml:id="F2">
       <p>A Figure</p>
       <caption>A Figure</caption>
     </figure>
-    <table id="T2" refnum="2">
+    <table refnum="2" xml:id="T2">
       <p>A Figure</p>
       <caption>A Figure</caption>
     </table>
-    <para id="S2.p3">
-      <enumerate id="I2">
-        <item id="I2.i1" refnum="1">
+    <para xml:id="S2.p3">
+      <enumerate xml:id="I2">
+        <item refnum="1" xml:id="I2.i1">
           <p>one</p>
         </item>
-        <item id="I2.i2" refnum="2">
+        <item refnum="2" xml:id="I2.i2">
           <p>two</p>
-          <enumerate id="I2.I1">
-            <item id="I2.I1.i1" refnum="a">
+          <enumerate xml:id="I2.I1">
+            <item refnum="a" xml:id="I2.I1.i1">
               <p>one</p>
             </item>
-            <item id="I2.I1.i2" refnum="b">
+            <item refnum="b" xml:id="I2.I1.i2">
               <p>two</p>
             </item>
           </enumerate>

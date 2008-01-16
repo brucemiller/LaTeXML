@@ -4,13 +4,11 @@
 use strict;
 use LaTeXML::Package;
 
-RegisterNamespace(undef,undef,1); # No namespace
 # Don't need to respect source newlines
 AssignValue(PRESERVE_NEWLINES=>0);
 
 # We'll use a DTD for a (trivial) Song, containing verses with lines.
-DocType("song","-//NIST LaTeXML//LaTeXML Poem",'xii.dtd',
-	'#default'=>undef); # Disable default.
+DocType("song","-//NIST LaTeXML//LaTeXML Poem",'xii.dtd');
 
 # There's no explicit \begin{document}, so let the poem automatically open.
 Tag('song', autoOpen=>1);

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
 <?latexml package="latexml"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>Integration and Summation</title>
-    <para id="S1.p1">
-      <equation id="Ex1">
+    <para xml:id="S1.p1">
+      <equation xml:id="Ex1">
         <Math mode="display" tex="\sum _{{a=0}}^{\infty}f_{a}(c^{a})" text="((sum _ (a = 0)) ^ infinity)@((f _ a)@(c ^ a))">
           <XMath>
             <XMApp>
@@ -39,7 +39,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex2">
+      <equation xml:id="Ex2">
         <Math mode="display" tex="\sum _{{a=0}}^{\infty}\sum _{{b=-a}}^{a}f_{a}(c^{a})g_{b}(c^{b})" text="((sum _ (a = 0)) ^ infinity)@(((sum _ (b = - a)) ^ a)@((f _ a)@(c ^ a) * (g _ b)@(c ^ b)))">
           <XMath>
             <XMApp>
@@ -105,7 +105,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex3">
+      <equation xml:id="Ex3">
         <Math mode="display" tex="\sum _{{a=0}}^{\infty}\sum _{{b=-a}}^{a}\lim _{{c\rightarrow 0}}f_{a}(c^{a})g_{b}(c^{b})" text="((sum _ (a = 0)) ^ infinity)@(((sum _ (b = - a)) ^ a)@((limit _ (c rightarrow 0))@((f _ a)@(c ^ a) * (g _ b)@(c ^ b))))">
           <XMath>
             <XMApp>
@@ -184,10 +184,10 @@
       </equation>
     </para>
   </section>
-  <section id="S2" refnum="2">
+  <section refnum="2" xml:id="S2">
     <title>Operators</title>
-    <para id="S2.p1">
-      <equation id="Ex4">
+    <para xml:id="S2.p1">
+      <equation xml:id="Ex4">
         <Math mode="display" tex="Da" text="D@(a)">
           <XMath>
             <XMApp>
@@ -197,7 +197,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex5">
+      <equation xml:id="Ex5">
         <Math mode="display" tex="Df" text="D@(f)">
           <XMath>
             <XMApp>
@@ -207,7 +207,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex6">
+      <equation xml:id="Ex6">
         <Math mode="display" tex="Df(a)" text="(D@(f))@(a)">
           <XMath>
             <XMApp>
@@ -220,7 +220,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex7">
+      <equation xml:id="Ex7">
         <Math mode="display" tex="DGHf" text="D@(G@(H@(f)))">
           <XMath>
             <XMApp>
@@ -236,7 +236,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex8">
+      <equation xml:id="Ex8">
         <Math mode="display" tex="DGHf(a)" text="(D@(G@(H@(f))))@(a)">
           <XMath>
             <XMApp>
@@ -255,7 +255,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex9">
+      <equation xml:id="Ex9">
         <Math mode="display" tex="D(a)(b)" text="(D@(a))@(b)">
           <XMath>
             <XMApp>

@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>Basic</title>
-    <para id="S1.p1">
+    <para xml:id="S1.p1">
       <p>Math: <Math mode="inline" tex="a=b" text="a = b"><XMath><XMApp><XMTok meaning="eq" role="RELOP">=</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math>
 <picture fill="black" height="100pt" stroke="black" unitlength="1pt" width="100pt" tex="\begin{picture}(100,100)\put(0,0){\line(1,0){100}}&#10;\end{picture}"><g transform="translate(0,0)"><line points="0,0 100,0" stroke-width="0.4"/></g></picture></p>
     </para>
   </section>
-  <section id="S2" refnum="2">
+  <section refnum="2" xml:id="S2">
     <title>Pictures</title>
-    <paragraph id="S2.SS0.SSS0.P1">
+    <paragraph xml:id="S2.SS0.SSS0.P1">
       <title>Lines:</title>
-      <para id="S2.SS0.SSS0.P1.p1">
+      <para xml:id="S2.SS0.SSS0.P1.p1">
         <p>using integers, scaling with floats, LaTeXcounters, TeX counters.
 All should be the same.</p>
       </para>
-      <para id="S2.SS0.SSS0.P1.p2">
+      <para xml:id="S2.SS0.SSS0.P1.p2">
         <picture fill="black" height="100pt" stroke="black" unitlength="1pt" width="100pt" tex="\begin{picture}(100,100)\put(0,0){\line(1,0){100}}&#10;\put(0,0){\line(1,1){50}}&#10;\put(0,0){\line(0,1){100}}&#10;\end{picture}">
           <g transform="translate(0,0)">
             <line points="0,0 100,0" stroke-width="0.4"/>
@@ -41,7 +41,7 @@ All should be the same.</p>
           </g>
         </picture>
       </para>
-      <para id="S2.SS0.SSS0.P1.p3">
+      <para xml:id="S2.SS0.SSS0.P1.p3">
         <picture fill="black" height="100pt" stroke="black" unitlength="1pt" width="100pt" tex="\begin{picture}(100,100)\put(0,0){\line(1,0){100}}&#10;\put(0,0){\line(1,1){50}}&#10;\put(0,0){\line(0,1){100}}&#10;\end{picture}">
           <g transform="translate(0,0)">
             <line points="0,0 100,0" stroke-width="0.4"/>
@@ -66,9 +66,9 @@ All should be the same.</p>
         </picture>
       </para>
     </paragraph>
-    <paragraph id="S2.SS0.SSS0.P2">
+    <paragraph xml:id="S2.SS0.SSS0.P2">
       <title>Vectors:</title>
-      <para id="S2.SS0.SSS0.P2.p1">
+      <para xml:id="S2.SS0.SSS0.P2.p1">
         <picture fill="black" height="100pt" stroke="black" unitlength="1pt" width="100pt" tex="\begin{picture}(100,100)(-100,-100)\put(0,0){\vector(-1,0){100}}&#10;\put(0,0){\vector(-1,-1){100}}&#10;\put(0,0){\vector(0,-1){100}}&#10;\end{picture}">
           <g transform="translate(0,0)">
             <line points="0,0 -100,0" stroke-width="0.4" terminators="-&gt;"/>
@@ -82,9 +82,9 @@ All should be the same.</p>
         </picture>
       </para>
     </paragraph>
-    <paragraph id="S2.SS0.SSS0.P3">
+    <paragraph xml:id="S2.SS0.SSS0.P3">
       <title>Boxes;</title>
-      <para id="S2.SS0.SSS0.P3.p1">
+      <para xml:id="S2.SS0.SSS0.P3.p1">
         <picture fill="black" height="100pt" stroke="black" unitlength="1pt" width="100pt" tex="\begin{picture}(100,100)\put(0,0){\bf A}&#10;\put(15,15){\framebox(15,15){A}}&#10;\put(30,30){\framebox(15,15){\bf A}}&#10;\put(45,45){\framebox(15,15){A}}&#10;\put(60,20){\frame{\shortstack{A\\&#10; B\\&#10;\bf C\\&#10; D}}}&#10;\put(75,20){\framebox(15,80){\shortstack{A\\&#10;\bf B\\&#10; C\\&#10; D}}}&#10;\end{picture}">
           <g transform="translate(0,0)">
             <text font="bold">A</text>
@@ -108,32 +108,32 @@ All should be the same.</p>
             </g>
           </g>
           <g transform="translate(60,20)">
-            <g framed="yes" stroke-width="0.4">
-              <vbox>
+            <g framed="true" stroke-width="0.4">
+              <inline-block>
                 <text font="bold">A</text>
                 <text font="bold">B</text>
                 <text font="bold">C</text>
                 <text font="bold">D</text>
-              </vbox>
+              </inline-block>
             </g>
           </g>
           <g transform="translate(75,20)">
             <rect fill="none" height="80" stroke-width="0.4" width="15" x="0" y="0"/>
             <g height="80" width="15">
-              <vbox>
+              <inline-block>
                 <text font="bold">A</text>
                 <text font="bold">B</text>
                 <text font="bold">C</text>
                 <text font="bold">D</text>
-              </vbox>
+              </inline-block>
             </g>
           </g>
         </picture>
       </para>
     </paragraph>
-    <paragraph id="S2.SS0.SSS0.P4">
+    <paragraph xml:id="S2.SS0.SSS0.P4">
       <title>Circles:</title>
-      <para id="S2.SS0.SSS0.P4.p1">
+      <para xml:id="S2.SS0.SSS0.P4.p1">
         <picture fill="black" height="100pt" stroke="black" unitlength="1pt" width="100pt" tex="\begin{picture}(100,100)\put(30,30){\circle{30}\vector(0,1){15}\circle*{5}}&#10;\put(70,70){\oval(60,30)}&#10;\end{picture}">
           <g transform="translate(30,30)">
             <circle fill="none" r="15.2" stroke-width="0.4" x="0" y="0"/>
@@ -146,18 +146,18 @@ All should be the same.</p>
         </picture>
       </para>
     </paragraph>
-    <paragraph id="S2.SS0.SSS0.P5">
+    <paragraph xml:id="S2.SS0.SSS0.P5">
       <title>Curves:</title>
-      <para id="S2.SS0.SSS0.P5.p1">
+      <para xml:id="S2.SS0.SSS0.P5.p1">
         <picture fill="black" height="100pt" stroke="black" unitlength="1pt" width="100pt" tex="\begin{picture}(100,100)\qbezier(40,80)(80,120)(100,80)\qbezier[50](40,89)(80,129)(100,89)\end{picture}">
           <bezier points="40,80 80,120 100,80" stroke-width="0.4"/>
           <bezier displayedpoints="50" points="40,89 80,129 100,89" stroke-width="0.4"/>
         </picture>
       </para>
     </paragraph>
-    <paragraph id="S2.SS0.SSS0.P6">
+    <paragraph xml:id="S2.SS0.SSS0.P6">
       <title>Repeats:</title>
-      <para id="S2.SS0.SSS0.P6.p1">
+      <para xml:id="S2.SS0.SSS0.P6.p1">
         <picture fill="black" height="100pt" stroke="black" unitlength="1pt" width="100pt" tex="\begin{picture}(100,100)\put(0,0){a}\put(10,10){a}\put(20,20){a}\put(30,30){a}\put(40,40){a}\put(50,50){a}\put(60,60){a}\put(70,70){a}\put(80,80){a}\put(90,90){a}\put(100,100){a}&#10;\end{picture}">
           <g transform="translate(0,0)">
             <text>a</text>
@@ -194,7 +194,7 @@ All should be the same.</p>
           </g>
         </picture>
       </para>
-      <para id="S2.SS0.SSS0.P6.p2">
+      <para xml:id="S2.SS0.SSS0.P6.p2">
         <picture fill="black" height="100pt" stroke="black" unitlength="1pt" width="100pt" tex="\begin{picture}(100,100)\put(10,10){\circle{5}}&#10;\put(20,20){\framebox(10,10){\circle{5}}}&#10;\put(30,30){\framebox(10,10)[l]{\circle{5}}}&#10;\put(40,40){\framebox(10,10)[r]{\circle{5}}}&#10;\put(50,50){\framebox(10,10)[t]{\circle{5}}}&#10;\put(60,60){\framebox(10,10)[b]{\circle{5}}}&#10;\end{picture}">
           <g transform="translate(10,10)">
             <circle fill="none" r="2.7" stroke-width="0.4" x="0" y="0"/>

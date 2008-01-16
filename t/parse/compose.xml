@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
 <?latexml package="latexml"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>Compositions</title>
-    <para id="S1.p1">
-      <equation id="Ex1">
+    <para xml:id="S1.p1">
+      <equation xml:id="Ex1">
         <Math mode="display" tex="(f*g)(x)" text="composition@(f, g) * x">
           <XMath>
             <XMApp>
@@ -21,7 +21,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex2">
+      <equation xml:id="Ex2">
         <Math mode="display" tex="(f*g*h)(x)" text="composition@(composition@(f, g), h) * x">
           <XMath>
             <XMApp>
@@ -42,10 +42,10 @@
       </equation>
     </para>
   </section>
-  <section id="S2" refnum="2">
+  <section refnum="2" xml:id="S2">
     <title>Implicit lambdas?</title>
-    <para id="S2.p1">
-      <equation id="Ex3">
+    <para xml:id="S2.p1">
+      <equation xml:id="Ex3">
         <Math mode="display" tex="(y^{2}*f)(x)" text="composition@(y ^ 2, f) * x">
           <XMath>
             <XMApp>
@@ -64,7 +64,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex4">
+      <equation xml:id="Ex4">
         <Math mode="display" tex="(yy^{2}*f)(x)" text="composition@(y * y ^ 2, f) * x">
           <XMath>
             <XMApp>
@@ -87,7 +87,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex5">
+      <equation xml:id="Ex5">
         <Math mode="display" tex="(y^{2}*f)(x)" text="composition@(y ^ 2, f) * x">
           <XMath>
             <XMApp>
@@ -106,7 +106,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex6">
+      <equation xml:id="Ex6">
         <Math mode="display" tex="(f*y^{2})(x)" text="composition@(f, y ^ 2) * x">
           <XMath>
             <XMApp>
@@ -127,10 +127,10 @@
       </equation>
     </para>
   </section>
-  <section id="S3" refnum="3">
+  <section refnum="3" xml:id="S3">
     <title>Dubious forms, probably should fail parsing</title>
-    <para id="S3.p1">
-      <equation id="Ex7">
+    <para xml:id="S3.p1">
+      <equation xml:id="Ex7">
         <Math mode="display" tex="yy^{2}*fx">
           <XMath>
             <XMTok role="ID" font="italic">y</XMTok>
@@ -144,7 +144,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex8">
+      <equation xml:id="Ex8">
         <Math mode="display" tex="f*y^{2}x" text="composition@(f, y ^ 2) * x">
           <XMath>
             <XMApp>
@@ -163,7 +163,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation id="Ex9">
+      <equation xml:id="Ex9">
         <Math mode="display" tex="f*y^{2}(x)" text="(composition@(f, y ^ 2))@(x)">
           <XMath>
             <XMApp>

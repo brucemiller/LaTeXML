@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>Normal Use</title>
-    <para id="S1.p1">
+    <para xml:id="S1.p1">
       <tabular>
         <tbody>
           <tr>
@@ -20,8 +20,8 @@
         </tbody>
       </tabular>
     </para>
-    <para id="S1.p2">
-      <equation id="Ex1">
+    <para xml:id="S1.p2">
+      <equation xml:id="Ex1">
         <tabular>
           <tbody>
             <tr>
@@ -39,10 +39,10 @@
       </equation>
     </para>
   </section>
-  <section id="S2" refnum="2">
+  <section refnum="2" xml:id="S2">
     <title>Perverse Use</title>
-    <para id="S2.p1">
-      <equation id="Ex2">
+    <para xml:id="S2.p1">
+      <equation xml:id="Ex2">
         <Math mode="display" tex="\begin{array}[]{cc}m&amp;$t$\end{array}" text="Array[[m, [t]]]">
           <XMath>
             <XMArray role="ARRAY">
@@ -59,8 +59,8 @@
         </Math>
       </equation>
     </para>
-    <para id="S2.p2">
-      <equation id="Ex3">
+    <para xml:id="S2.p2">
+      <equation xml:id="Ex3">
         <Math mode="display" tex="\begin{array}[]{cc}\mbox{t}&amp;\mbox{$m$}\end{array}" text="Array[[[t], [m]]]">
           <XMath>
             <XMArray role="ARRAY">
@@ -87,8 +87,8 @@
         </Math>
       </equation>
     </para>
-    <para id="S2.p3">
-      <equation id="Ex4">
+    <para xml:id="S2.p3">
+      <equation xml:id="Ex4">
         <Math mode="display" tex="\begin{array}[]{cc}\mbox{t}&amp;\mbox{$m$, $n$}\end{array}" text="Array[[[t], [m, n]]]">
           <XMath>
             <XMArray role="ARRAY">
@@ -110,10 +110,10 @@
       </equation>
     </para>
   </section>
-  <section id="S3" refnum="3">
+  <section refnum="3" xml:id="S3">
     <title>Very Perverse</title>
-    <para id="S3.p1">
-      <equation id="Ex5">
+    <para xml:id="S3.p1">
+      <equation xml:id="Ex5">
         <Math mode="display" tex="\begin{array}[]{cc}m&amp;$\hbox{$m$}$\end{array}" text="Array[[m, [m]]]">
           <XMath>
             <XMArray role="ARRAY">

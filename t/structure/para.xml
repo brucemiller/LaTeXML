@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article" "LaTeXML.dtd">
 <?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <section id="S1" refnum="1">
+  <section refnum="1" xml:id="S1">
     <title>Display Math</title>
-    <para id="S1.p1">
+    <para xml:id="S1.p1">
       <p>Begin first paragraph,</p>
-      <equation id="Ex1">
+      <equation xml:id="Ex1">
         <Math mode="display" tex="a+b," text="a + b">
           <XMath>
             <XMApp punctuation=",">
@@ -19,11 +19,11 @@
       </equation>
       <p>continuing paragraph.</p>
     </para>
-    <para id="S1.p2">
+    <para xml:id="S1.p2">
       <p>Single line paragraph.</p>
     </para>
-    <para id="S1.p3">
-      <equation id="Ex2">
+    <para xml:id="S1.p3">
+      <equation xml:id="Ex2">
         <Math mode="display" tex="a+b." text="a + b">
           <XMath>
             <XMApp punctuation=".">
@@ -35,48 +35,48 @@
         </Math>
       </equation>
     </para>
-    <para id="S1.p4">
+    <para xml:id="S1.p4">
       <p>Another single line paragraph.</p>
     </para>
   </section>
-  <section id="S2" refnum="2">
+  <section refnum="2" xml:id="S2">
     <title>Itemizations</title>
-    <para id="S2.p1">
+    <para xml:id="S2.p1">
       <p>Begin first paragraph,</p>
-      <itemize id="I1">
-        <item id="I1.i1">
+      <itemize xml:id="I1">
+        <item xml:id="I1.i1">
           <p>A</p>
         </item>
-        <item id="I1.i2">
+        <item xml:id="I1.i2">
           <p>B</p>
         </item>
       </itemize>
       <p>continuing paragraph.</p>
     </para>
-    <para id="S2.p2">
+    <para xml:id="S2.p2">
       <p>Single line paragraph.</p>
     </para>
-    <para id="S2.p3">
-      <itemize id="I2">
-        <item id="I2.i1">
+    <para xml:id="S2.p3">
+      <itemize xml:id="I2">
+        <item xml:id="I2.i1">
           <p>A</p>
         </item>
-        <item id="I2.i2">
+        <item xml:id="I2.i2">
           <p>B</p>
         </item>
       </itemize>
     </para>
-    <para id="S2.p4">
+    <para xml:id="S2.p4">
       <p>Another single line paragraph.</p>
     </para>
-    <para id="S2.p5">
+    <para xml:id="S2.p5">
       <p>Multiple Para within item</p>
-      <itemize id="I3">
-        <item id="I3.i1">
+      <itemize xml:id="I3">
+        <item xml:id="I3.i1">
           <p>A</p>
           <p>B</p>
         </item>
-        <item id="I3.i2">
+        <item xml:id="I3.i2">
           <p>C</p>
         </item>
       </itemize>
