@@ -70,7 +70,7 @@ MakeGrammar
 # Add rules to generate XSLT files for html & xhtml.
 # We concatenate separate head & tail files, rather than use xslt's include, due to namespace issues:
 # html must be in null namespace, xhtml must be in a specific namespace.
-sub compile_XSLTs {
+sub XXcompile_XSLTs {
   push(@EXCLUSIONS,
        'blib/lib/LaTeXML/style/html.xsl.head', 'blib/lib/LaTeXML/style/xhtml.xsl.head',
        'blib/lib/LaTeXML/style/core.xsl.tail');
@@ -87,6 +87,24 @@ blib/lib/LaTeXML/style/LaTeXML-xhtml.xsl: lib/LaTeXML/style/xhtml.xsl.head lib/L
 
 MakeXSLT
 }
+
+sub compile_XSLTs {
+  my $styledir = 'lib/LaTeXML/style';
+  $$MORE_MACROS{XSLTTOHTML}
+    = '$(PERLRUN) -p -e \'s@\s*xmlns\s*=\s*(\"|\'\\\'\')http://www.w3.org/1999/xhtml\1@@\' ';
+  opendir(DIR,$styledir);
+  my @xhtmls = grep(/^LaTeXML-(.*)-xhtml.xsl$/,readdir(DIR));
+  closedir(DIR);
+  foreach my $xhtml (@xhtmls){
+    my $html = $xhtml; $html =~ s/-xhtml.xsl$/-html.xsl/;
+    $MORE_MAKERULES .= <<"MakeXSLT";
+all :: blib/$styledir/$html
+
+blib/$styledir/$html : $styledir/$xhtml
+	\$(XSLTTOHTML) $styledir/$xhtml > blib/$styledir/$html
+
+MakeXSLT
+}}
 
 #======================================================================
 # Install included TeX style file(s) into the standard TEXMFLOCAL,
