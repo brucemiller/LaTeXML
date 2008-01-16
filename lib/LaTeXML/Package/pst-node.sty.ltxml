@@ -164,7 +164,7 @@ DefPSConstructor('\Cnode', 'ZeroPSCoord {}',
 		 afterDigest=>sub { storeNode($_[1]->getArg(4), $_[1]->getArg(2)); });
 
 DefPSConstructor('\circlenode', '{} {}',
-		 "<ltx:g framed='yes' fillframe='yes' frametype='circle'"
+		 "<ltx:g framed='true' fillframe='true' frametype='circle'"
 		 . "  fill='#fillcolor' ?#1(stroke='#fillcolor')(stroke='#linecolor')> #3 </ltx:g>",
 		 attributes=>[qw(linecolor fillcolor)],
 		 afterDigest=>sub { storeNode($_[1]->getArg(2)); });
@@ -192,7 +192,7 @@ DefMacro('\cnodeput OptionalMatch:* [] OptionalBracketed ZeroPSCoord {} {}', sub
 	   @exp; });
 
 DefPSConstructor('\ovalnode', '{} {}',
-		 "<ltx:g framed='yes' fillframe='yes' frametype='oval'"
+		 "<ltx:g framed='true' fillframe='true' frametype='oval'"
 		 . " fill='#fillcolor' ?#1(stroke='#fillcolor')(stroke='#linecolor')> #3 </ltx:g>",
 		 attributes=>[qw(linecolor fillcolor)],
 		 afterDigest=>sub { storeNode($_[1]->getArg(2)); });
@@ -398,7 +398,7 @@ DefMacro('\lput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
 
 DefConstructor('\lput@start OptionalMatch:* [] BracketedPSAngle RoundParenFloat',
 	       "<ltx:g transform='&ptValue(#transform)' pos='#2'"
-	       . " ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub { finishLabelPut($_[0], $_[3], computeLabelPos($_[4])); },
 	       alias=>'\lput');
 
@@ -413,7 +413,7 @@ DefMacro('\aput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
 
 DefConstructor('\aput@start OptionalMatch:* [PSDimension] BracketedPSAngle RoundParenFloat',
 	       "<ltx:g transform='&ptValue(#transform)'"
-	       . " ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub {
 		 my ($whatsit, $labelsep, $angle, $pos) = ($_[0], $_[2], $_[3], $_[4]);
 		 my $p = computeLabelPos($pos);
@@ -433,7 +433,7 @@ DefMacro('\bput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
 
 DefConstructor('\bput@start OptionalMatch:* [PSDimension] BracketedPSAngle RoundParenFloat',
 	       "<ltx:g transform='&ptValue(#transform)'"
-	       . " ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub {
 		 my ($whatsit, $labelsep, $angle, $pos) = ($_[0], $_[2], $_[3], $_[4]);
 		 my $p = computeLabelPos($pos);
@@ -451,7 +451,7 @@ DefMacro('\mput OptionalMatch:* []', sub {
 
 DefConstructor('\mput@start OptionalMatch:* []',
 	       "<ltx:g transform='&ptValue(#transform)' pos='#2'"
-	       . " ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub { finishLabelPut($_[0], undef, computeLabelPos()); },
 	       alias=>'\mput');
 
@@ -464,7 +464,7 @@ DefMacro('\Aput OptionalMatch:* []', sub {
 
 DefConstructor('\Aput@start OptionalMatch:* [PSDimension]',
 	       "<ltx:g transform='&ptValue(#transform)'"
-	       . " ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub {
 		 my ($whatsit, $labelsep) = ($_[0], $_[2]);
 		 my $p = computeLabelPos();
@@ -482,7 +482,7 @@ DefMacro('\Bput OptionalMatch:* []', sub {
 
 DefConstructor('\Bput@start OptionalMatch:* [PSDimension]',
 	       "<ltx:g transform='&ptValue(#transform)'"
-	       . " ?#1(framed='yes' fillframe='yes' boxsep='no' fill='#fillcolor')>",
+	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub {
 		 my ($whatsit, $labelsep) = ($_[0], $_[2]);
 		 my $p = computeLabelPos();
