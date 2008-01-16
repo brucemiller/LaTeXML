@@ -64,8 +64,10 @@ sub note_missing {
 
 sub fill_in_navigation {
   my($self,$doc)=@_;
-  if(my $id = $doc->getDocumentElement->getAttribute('id')){
+  if(my $id = $doc->getDocumentElement->getAttribute('xml:id')){
     if(my $entry = $$self{db}->lookup("ID:$id")){
+      # Add navigation in any case?
+      $doc->addNodes($doc->getDocumentElement, ['ltx:navigation',{}]);
       if(my $nav = $doc->findnode('//ltx:navigation')){
 	my $h_id = $id;
 	# Generate Downward TOC
@@ -90,7 +92,8 @@ sub navtoc_aux {
   my($self,$id, $relative_to)=@_;
   if(my $entry = $$self{db}->lookup("ID:$id")){
     if(($entry->getValue('location')||'') eq $relative_to){
-      if(my $kids = $entry->getValue('children')){
+      my $kids = $entry->getValue('children');
+      if($kids && @$kids){
 	return (['ltx:toclist',{},map(['ltx:tocentry',{},
 				       ['ltx:ref',{class=>'toc',show=>'refnum title',idref=>$_}],
 				       $self->navtoc_aux($_,$relative_to)],
@@ -102,7 +105,7 @@ sub fill_in_frags {
   my $db = $$self{db};
   # Any nodes with an ID will get a fragid;
   # This is the id/name that will be used within xhtml/html.
-  foreach my $node ($doc->findnodes('//@id')){
+  foreach my $node ($doc->findnodes('//@xml:id')){
     if(my $entry = $db->lookup("ID:".$node->value)){
       if(my $fragid = $entry->getValue('fragid')){
 	$node->parentNode->setAttribute(fragid=>$fragid); }}}}
@@ -120,7 +123,7 @@ sub fill_in_refs {
     if(!$id){
       if(my $label = $ref->getAttribute('labelref')){
 	my $entry;
-	if(($entry = $db->lookup("LABEL:$label")) && ($id=$entry->getValue('id'))){
+	if(($entry = $db->lookup($label)) && ($id=$entry->getValue('id'))){
 	  $show = 'refnum' unless $show; }
 	else {
 	  $self->note_missing('Label',$label);
