@@ -381,7 +381,7 @@ sub translate_constructor {
 	if($float){
 	  $code .= "\$savenode=\$document->floatToAttribute('$key');\n";
 	  $float = undef; }
-	$code .= "\$document->getElement->setAttribute('$key',ToString(".$value."));\n"; }
+	$code .= "\$document->setAttribute(\$document->getElement,'$key',ToString(".$value."));\n"; }
       else {			# Whoops, must have been random text, after all.
 print STDERR "Whoops! Wasn't an attribute assignment: \"$key\"\n";
 	$code .= "\$document->absorb('".slashify($key)."=');\n"; }}
@@ -501,31 +501,34 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Definition>  - Control sequence definitions,
-including specializations C<LaTeXML::Expandable>, C<LaTeXML::Primitive>, 
-C<LaTeXML::Register>, C<LaTeXML::Constructor>
-
-=begin latex
-
-\label{LaTeXML::Expandable}\label{LaTeXML::Primitive}\label{LaTeXML::Register}
-\label{LaTeXML::CharDef}\label{LaTeXML::Constructor}\label{LaTeXML::ConstructorCompiler}
-
-=end latex
+C<LaTeXML::Definition>  - Control sequence definitions.
 
 =head1 DESCRIPTION
 
 These represent the various executables corresponding to control sequences.
-See L<LaTeXML::Package> for the most convenient means of creating them.
+See L<LaTeXML::Package> for the most convenient means to create them.
 
 =over 4
 
 =item C<LaTeXML::Expandable>
 
-represents macros and other expandable control sequences like C<\if>, etc
+=begin latex
+
+\label{LaTeXML::Expandable}
+
+=end latex
+
+represents macros and other expandable control sequences
 that are carried out in the Gullet during expansion. The results of invoking an
-C<LaTeXML::Expandable> should result in a list of C<LaTeXML::Token>s.
+C<LaTeXML::Expandable> should be a list of C<LaTeXML::Token>s.
 
 =item C<LaTeXML::Primitive>
+
+=begin latex
+
+\label{LaTeXML::Primitive}
+
+=end latex
 
 represents primitive control sequences that are primarily carried out
 for side effect during digestion in the L<LaTeXML::Stomach> and for changing
@@ -535,13 +538,35 @@ or C<LaTeXML::Whatsit>).
 
 =item C<LaTeXML::Register>
 
+=begin latex
+
+\label{LaTeXML::Register}
+
+=end latex
+
 is set up as a speciallized primitive with a getter and setter
 to access and store values in the Stomach.
 
+=item C<LaTeXML::CharDef>
+
+=begin latex
+
+\label{LaTeXML::CharDef}
+
+=end latex
+
+represents a further specialized Register for chardef.
+
 =item C<LaTeXML::Constructor>
 
+=begin latex
+
+\label{LaTeXML::Constructor}
+
+=end latex
+
 represents control sequences that contribute arbitrary XML fragments
-to the document tree.  During digestion, these control sequences record the arguments 
+to the document tree.  During digestion, a C<LaTeXML::Constuctor> records the arguments 
 used in the invokation to produce a L<LaTeXML::Whatsit>.  The resulting L<LaTeXML::Whatsit>
 (usually) generates an XML document fragment when absorbed by an instance of L<LaTeXML::Document>.
 Additionally, a C<LaTeXML::Constructor> may have beforeDigest and afterDigest daemons
@@ -596,10 +621,10 @@ that are executed before and after digestion.  These can be useful for changing 
 
 =head2 More about Primitives
 
-Primitive definitions may have lists of subroutines, called C<beforeDigest> and C<afterDigest>,
+Primitive definitions may have lists of daemon subroutines, C<beforeDigest> and C<afterDigest>,
 that are executed before (and before the arguments are read) and after digestion.
 These should either end with C<return;>, C<()>, or return a list of digested 
-objects (L<LaTeXML::Box> or similar) that will be contributed to the current list.
+objects (L<LaTeXML::Box>, etc) that will be contributed to the current list.
 
 =head2 More about Registers
 
@@ -624,7 +649,13 @@ Assign a value to the register, by invoking it's C<setter> function.
 
 =head2 More about Constructors
 
-A constructor has as it's C<replacement> either a subroutine, or a string pattern representing
+=begin latex
+
+\label{LaTeXML::ConstructorCompiler}
+
+=end latex
+
+A constructor has as it's C<replacement> a subroutine or a string pattern representing
 the XML fragment it should generate.  In the case of a string pattern, the pattern is
 compiled into a subroutine on first usage by the internal class C<LaTeXML::ConstructorCompiler>.
 Like primitives, constructors may have C<beforeDigest> and C<afterDigest>.
