@@ -76,7 +76,7 @@ sub makeViewBox {
   my ($minx, $maxx, $miny, $maxy) = map($_ || 0, @{getSVGBounds($node)});
   $w = $maxx-$minx if $maxx-$minx>$w; $h = $maxy-$miny if $maxy-$miny>$h;
   $node->setAttribute(viewBox=>"$minx $miny $w $h");
-  $node->setAttribute(overflow=>'visible') if (($node->getAttribute('clip') || '') ne 'yes');
+  $node->setAttribute(overflow=>'visible') if (($node->getAttribute('clip') || '') ne 'true');
   $node->removeAttribute('clip');
 }
 
@@ -109,7 +109,7 @@ our %converters = ('ltx:picture'=>\&convertPicture, 'ltx:path'  =>\&convertPath,
 		   'ltx:g'      =>\&convertG,       'ltx:text'  =>\&convertText,
 		   'ltx:polygon'=>\&convertPolygon, 'ltx:line'  =>\&convertLine,
 		   'ltx:rect'   =>\&convertRect,    'ltx:bezier'=>\&convertBezier,
-		   'ltx:vbox'   =>\&convertVbox,    'ltx:circle'=>\&convertCircle,
+		   'ltx:inline-block'=>\&convertVbox,'ltx:circle'=>\&convertCircle,
 		   'ltx:ellipse'=>\&convertEllipse, 'ltx:wedge' =>\&convertWedge,
 		   'ltx:arc'    =>\&convertArc);
 sub convertNode {
@@ -129,20 +129,35 @@ sub convertPath {
   map(convertNode($newNode,$_), element_nodes($node));
   $newNode; }
 
-sub convertPicture {
+sub XXXconvertPicture {
   my ($parent,$node) = @_;
   my $newNode = $parent->addNewChild($svgURI, 'g');
   $newNode->setAttribute(transform=>'scale(1 -1)');
   map(convertNode($newNode,$_), element_nodes($node));
   $newNode; }
 
+# I think we need to shift the origin to the bottom before we mirror the y scale!
+sub convertPicture {
+  my ($parent,$node) = @_;
+  # I'm sure I'm not understanding Ioan's computation methods, here, but...
+
+  my ($minx, $maxx, $miny, $maxy) = map($_ || 0, @{getSVGBounds($node)});
+  my $h = $maxy-$miny;
+
+  my $mvNode = $parent->addNewChild($svgURI, 'g');
+  $mvNode->setAttribute(transform=>"translate(0,$h)");
+  my $scaleNode = $mvNode->addNewChild($svgURI, 'g');
+  $scaleNode->setAttribute(transform=>'scale(1 -1)');
+  map(convertNode($scaleNode,$_), element_nodes($node));
+  $mvNode; }
+
 sub convertG {
   my ($parent,$node) = @_; 
   my ($xoff, $yoff) = boxContentPos($node);
   my $newNode = $parent->addNewChild($svgURI, 'g');
   mergeTransform($node, "translate($xoff, $yoff)") if ($xoff || $yoff);
-  if((($node->getAttribute('framed') || '') eq 'yes')
-     && (($node->getAttribute('fillframe') || '') eq 'yes')){
+  if((($node->getAttribute('framed') || '') eq 'true')
+     && (($node->getAttribute('fillframe') || '') eq 'true')){
     my $bgName = getFillFrame($node->getAttribute('fill') || 'white');
     $newNode->setAttribute(filter=>"url(#$bgName)"); }
   copy_attributes($newNode, $node, CA_EXCEPT,
