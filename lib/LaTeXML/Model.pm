@@ -12,20 +12,22 @@
 
 package LaTeXML::Model;
 use strict;
-use XML::LibXML;
 use XML::LibXML::Common qw(:libxml);
 use XML::LibXML::XPathContext;
 use LaTeXML::Global;
 use LaTeXML::Font;
-use LaTeXML::Util::Pathname;
 use LaTeXML::Rewrite;
+#use LaTeXML::Model::DTD;
+#use LaTeXML::Model::RelaxNG;
 use base qw(LaTeXML::Object);
 
 #**********************************************************************
+our($STD_PUBLIC_ID,$STD_SYSTEM_ID)=("-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd');
+our $LTX_NAMESPACE = "http://dlmf.nist.gov/LaTeXML";
 sub new {
   my($class,%options)=@_;
   my $self = bless {xpath=> XML::LibXML::XPathContext->new(),
-		    namespace_prefixes=>{}, namespaces=>{}, 
+		    code_namespace_prefixes=>{}, code_namespaces=>{}, 
 		    doctype_namespaces=>{},
 		    rewrites=>[], ligatures=>[], mathligatures=>[],
 		    %options},$class;
@@ -33,38 +35,37 @@ sub new {
   $self->registerNamespace('xml',"http://www.w3.org/XML/1998/namespace");
   $self; }
 
-sub getRootName { $_[0]->{roottag}; }
-sub getPublicID { $_[0]->{public_id}; }
-sub getSystemID { $_[0]->{system_id}; }
-
-sub getDTD {
-  my($self)=@_;
-  $self->loadDocType unless $$self{doctype_loaded};
-  $$self{dtd}; }
-
-sub getXPath { $_[0]->{xpath}; }
-
-#**********************************************************************
-# DocType
-#**********************************************************************
-
 sub setDocType {
   my($self,$roottag,$publicid,$systemid,%namespaces)=@_;
-  $$self{roottag}=$roottag;
-  $self->setTagProperty('#Document','model',{$roottag=>1}) if $roottag;
-  $$self{public_id}   =$publicid;
-  $$self{system_id}   =$systemid;
-  foreach my $prefix (keys %namespaces){
-    $self->registerDocTypeNamespace($prefix=>$namespaces{$prefix}); }
-}
-# Hmm, rather than messing with roottag, we could extract all
-# possible root tags from the doctype, then put the tag of the
-# document root in the doctype declaration.
-# Well, ANY element could conceivably be a root element....
-# but is that desirable? Not really, ....
+  require 'LaTeXML/Model/DTD.pm';
+  $$self{schema} = LaTeXML::Model::DTD->new($self,$roottag,$publicid,$systemid,%namespaces); }
 
-# Question: if we don't have a doctype, can we rig the queries to
-# let it build a `reasonable' document?
+sub setRelaxNGSchema {
+  my($self,$schema)=@_;
+  require 'LaTeXML/Model/RelaxNG.pm';
+  $$self{schema} = LaTeXML::Model::RelaxNG->new($self,$schema); }
+
+sub getSchema { $_[0]->{schema}; }
+
+sub loadSchema {
+  my($self)=@_;
+
+  if(!$$self{schema}){
+    Warn("No DTD declared...assuming LaTeXML!");
+    # article ??? or what ? undef gives problems!
+    $self->setDocType(undef,$STD_PUBLIC_ID,$STD_SYSTEM_ID,
+		      '#default'=>$LTX_NAMESPACE);
+    $$self{permissive}=1;	# Actually, they could have declared all sorts of Tags....
+  }
+  if(!$$self{schema_loaded}){
+    $$self{schema}->loadSchema;
+    $self->computeIndirect;
+    $self->describeModel if $LaTeXML::Model::DEBUG;
+    $$self{schema_loaded}=1; }}
+
+sub addSchemaDeclaration {
+  my($self,$document,$tag)=@_;
+  $$self{schema}->addSchemaDeclaration($document,$tag); }
 
 #**********************************************************************
 # Namespaces
@@ -74,84 +75,135 @@ sub setDocType {
 #
 # Coding: this namespace mapping associates prefixes to namespace URIs for
 #   use in the latexml code, constructors and such.
-#   This must be a one to one mapping
+#   This must be a one to one mapping and there are no default namespaces.
 # DocType: this namespace mapping associates prefixes to namespace URIs
 #   as used in the Document Type description (DTD), and will be the
 #   set of prefixes used in the generated output.
-sub registerNamespace {
-  my($self,$prefix,$namespace)=@_;
-#  if($prefix && $namespace){
-  if($prefix){
-    if($namespace){
-      $$self{namespace_prefixes}{$namespace}=$prefix;
-      $$self{namespaces}{$prefix}=$namespace;
-      $$self{xpath}->registerNs($prefix,$namespace); }
-    else {
-print STDERR "Removing namespace for $prefix\n";
-      my $prev = $$self{namespaces}{$prefix};
-      delete $$self{namespace_prefixes}{$prev} if $prev;
-      delete $$self{namespaces}{$prefix}; }
-  }}
 
+sub registerNamespace {
+  my($self,$codeprefix,$namespace)=@_;
+  if($namespace){
+    $$self{code_namespace_prefixes}{$namespace}=$codeprefix;
+    $$self{code_namespaces}{$codeprefix}=$namespace;
+    $$self{xpath}->registerNs($codeprefix,$namespace); }
+  else {
+    my $prev = $$self{code_namespaces}{$codeprefix};
+    delete $$self{code_namespace_prefixes}{$prev} if $prev;
+    delete $$self{code_namespaces}{$codeprefix}; }}
+
+our $NAMESPACE_ERROR=0;
+
+# Get the (code) prefix associated with $namespace,
+# creating a dummy prefix and signalling an error if none has been registered.
 sub getNamespacePrefix {
   my($self,$namespace)=@_;
-  $$self{namespace_prefixes}{$namespace}; }
+  if($namespace){
+    my $codeprefix = $$self{code_namespace_prefixes}{$namespace};
+    if(! defined $codeprefix){
+      $self->registerNamespace($codeprefix = "namespace".(++$NAMESPACE_ERROR), $namespace);
+      Warn("No prefix registered for namespace $namespace (using $codeprefix)"); }
+    $codeprefix; }}
 
 sub getNamespace {
-  my($self,$prefix)=@_;
-  $$self{namespaces}{$prefix}; }
+  my($self,$codeprefix)=@_;
+  my $ns = $$self{code_namespaces}{$codeprefix};
+  if(! defined $ns){
+    $self->registerNamespace($codeprefix,
+			     $ns = "http://example.com/namespace".(++$NAMESPACE_ERROR));
+    Error("No namespace registered for prefix $codeprefix (using $ns)"); }
+  $ns; }
 
-#sub getRegisteredNamespaces {
-#    my($self)=@_;
-#    keys %{$$self{namespace_prefixes}}; }
-
-# This registers a prefix & namespace as used in the DTD.
-# The prefix may be different from the one used in latexml code,
-# HOWEVER, the namespace must have a corresponding prefix.
-# use "#default" for non-prefixed namespaces.
-sub registerDocTypeNamespace {
-  my($self,$prefix,$namespace)=@_;
-##  if($prefix && $namespace){
-##    $$self{doctype_namespaces}{$prefix}=$namespace; }}
-  if($prefix){
-    if($namespace){
-      $$self{doctype_namespaces}{$prefix}=$namespace; }
-    else {
-      delete $$self{doctype_namespaces}{$prefix}; }
-  }}
-
-
-sub getDocTypeNamespace {
-  my($self,$prefix)=@_;
-  $$self{doctype_namespaces}{$prefix}; }
-
-sub getDocTypeNamespaces {
-    my($self)=@_;
-    %{$$self{doctype_namespaces}}; }
-
-sub normalizeDocTypeName {
-  my($self,$dtdname)=@_;
-  if($dtdname =~ /^#PCDATA|ANY$/){
-    $dtdname; }
-  elsif($dtdname =~ /^([^:]+):(.+)/){
-    my($dtd_prefix,$name) = ($1,$2);
-    if(my $ns = $$self{doctype_namespaces}{$dtd_prefix}){
-      if(my $code_prefix = $$self{namespace_prefixes}{$ns}){
-	$code_prefix.":".$name; }
-      else {
-	Error("No prefix has been registered for the DTD namespace \"$ns\"");
-	$name; }}
-    else {
-      Error("No namespace has been registered for the DTD prefix \"$dtd_prefix\"");
-      $name; }}
-  elsif(my $ns = $$self{doctype_namespaces}{'#default'}){
-    if(my $code_prefix = $$self{namespace_prefixes}{$ns}){
-      $code_prefix.":".$dtdname; }
-    else {
-      Error("No prefix has been registered for the DTD namespace \"$ns\"");
-      $dtdname; }}
+sub registerDocumentNamespace {
+  my($self,$docprefix,$namespace)=@_;
+  $docprefix = '#default' unless defined $docprefix;
+  if($namespace){
+    $$self{document_namespace_prefixes}{$namespace}=$docprefix;
+    $$self{document_namespaces}{$docprefix}=$namespace; }
   else {
-    $dtdname; }}
+    my $prev = $$self{document_namespaces}{$docprefix};
+    delete $$self{document_namespace_prefixes}{$prev} if $prev;
+    delete $$self{document_namespaces}{$docprefix}; }}
+
+sub getDocumentNamespacePrefix {
+  my($self,$namespace)=@_;
+  if($namespace){
+    my $docprefix = $$self{document_namespace_prefixes}{$namespace};
+    if(! defined $docprefix){
+      $self->registerDocumentNamespace($docprefix = "namespace".(++$NAMESPACE_ERROR), $namespace);
+      Warn("No document prefix registered for namespace $namespace (using $docprefix)"); }
+    ($docprefix eq '#default' ? '' : $docprefix); }}
+
+sub getDocumentNamespace {
+  my($self,$docprefix)=@_;
+  $docprefix = '#default' unless defined $docprefix;
+  my $ns = $$self{document_namespaces}{$docprefix};
+  if(($docprefix ne '#default') && (! defined $ns)){
+    $self->registerDocumentNamespace($docprefix,
+				     $ns = "http://example.com/namespace".(++$NAMESPACE_ERROR));
+    Error("No namespace registered for document prefix $docprefix (using $ns)"); }
+  $ns; }
+
+# Given a Qualified name, possibly prefixed with a namespace prefix,
+# as defined by the code namespace mapping,
+# return the NamespaceURI and localname.
+sub decodeQName {
+  my($self,$codetag)=@_;
+  if($codetag =~ /^([^:]+):(.+)$/){
+    my($prefix,$localname)=($1,$2);
+    return (undef, $codetag) if $prefix eq 'xml';
+    my $ns = $$self{code_namespaces}{$1};
+    Error("No namespace has been registered for the prefix \"$prefix\"") unless $ns;
+    ($ns, $localname); }
+  else {
+    (undef, $codetag); }}
+
+sub encodeQName {
+  my($self,$ns,$name)=@_;
+  my $codeprefix = $ns && $self->getNamespacePrefix($ns);
+  ($codeprefix ? "$codeprefix:$name" : $name); }
+
+# Get the node's qualified name in standard form
+# Ie. using the registered (code) prefix for that namespace.
+# NOTE: Reconsider how _Capture_ & _WildCard_ should be integrated!?!
+sub getNodeQName {
+  my($self,$node)=@_;
+  my $type = $node->nodeType;
+  if($type == XML_TEXT_NODE){
+    '#PCDATA'; }
+  elsif($type == XML_DOCUMENT_NODE){
+    '#Document'; }
+  elsif($type == XML_COMMENT_NODE){
+    '#Comment'; }
+  elsif($type == XML_PI_NODE){
+    '#ProcessingInstruction'; }
+  elsif($type == XML_DTD_NODE){
+    '#DTD'; }
+  # Need others?
+  elsif($type != XML_ELEMENT_NODE){
+    Fatal("Cannot get Qualified Name for node ".Stringify($node)); }
+  elsif(my $ns = $node->namespaceURI){
+    my $prefix = $$self{code_namespace_prefixes}{$ns};
+    Error("No prefix has been registered for the namespace \"$ns\"") unless $prefix;
+    $prefix.":".$node->localname; }
+  else {
+    $node->localname; }}
+
+# Given a Document QName, convert to "code" form
+# Used to convert a possibly prefixed name from the DTD
+# (using the DTD's prefixes)
+# into a prefixed name using the Code's prefixes
+# NOTE: Used only for DTD
+sub recodeDocumentQName {
+  my($self,$docQName)=@_;
+  my($docprefix,$name)=(undef,$docQName);
+  if($docQName =~ /^(#PCDATA|#Comment|ANY|#ProcessingInstruction|#Document)$/){
+    $docQName; }
+  else {
+    ($docprefix,$name) = ($1,$2)  if $docQName =~ /^([^:]+):(.+)/;
+    $self->encodeQName($self->getDocumentNamespace($docprefix),$name); }}
+
+# Get an XPath context that knows about our namespace mappings.
+sub getXPath { $_[0]->{xpath}; }
 
 #**********************************************************************
 # Accessors
@@ -163,16 +215,23 @@ sub setTagProperty {
 
 sub getTagProperty {
   my($self,$tag,$prop)=@_;
+  $tag = $self->getNodeQName($tag) if ref $tag; # In case tag is a node.
   $$self{tagprop}{$tag}{$prop}; }
+
 
 #**********************************************************************
 # Document Structure Queries
 #**********************************************************************
+# NOTE: These are public, but perhaps should be passed
+# to submodel, in case it can evolve to more precision?
+# However, it would need more context to do that.
 
 # Can an element with (qualified name) $tag contain a $childtag element?
 sub canContain {
   my($self,$tag,$childtag)=@_;
-  $self->loadDocType unless $$self{doctype_loaded};
+  $self->loadSchema unless $$self{schema_loaded};
+  $tag      = $self->getNodeQName($tag)      if ref $tag; # In case tag is a node.
+  $childtag = $self->getNodeQName($childtag) if ref $childtag; # In case tag is a node.
   # Handle obvious cases explicitly.
   return 0 if $tag eq '#PCDATA';
   return 0 if $tag eq '#Comment';
@@ -182,6 +241,7 @@ sub canContain {
   return 1 if $childtag eq '_WildCard_';
   return 1 if $childtag eq '#Comment';
   return 1 if $childtag eq '#ProcessingInstruction';
+  return 1 if $childtag eq '#DTD';
 #  return 1 if $$self{permissive}; # No DTD? Punt!
   return 1 if $$self{permissive} && ($tag eq '#Document') && ($childtag ne '#PCDATA'); # No DTD? Punt!
   # Else query tag properties.
@@ -193,126 +253,53 @@ sub canContain {
 # And if so, return the tag to open.
 sub canContainIndirect {
   my($self,$tag,$childtag)=@_;
-  $self->loadDocType unless $$self{doctype_loaded};
+  $self->loadSchema unless $$self{schema_loaded};
+  $tag      = $self->getNodeQName($tag)      if ref $tag; # In case tag is a node.
+  $childtag = $self->getNodeQName($childtag) if ref $childtag; # In case tag is a node.
   $$self{tagprop}{$tag}{indirect_model}{$childtag}; }
 
 sub canContainSomehow {
   my($self,$tag,$childtag)=@_;
+  $tag      = $self->getNodeQName($tag)      if ref $tag; # In case tag is a node.
+  $childtag = $self->getNodeQName($childtag) if ref $childtag; # In case tag is a node.
   $self->canContain($tag,$childtag) ||  $self->canContainIndirect($tag,$childtag); }
 
 # Can this node be automatically closed, if needed?
 sub canAutoClose {
   my($self,$tag)=@_;
-  $self->loadDocType unless $$self{doctype_loaded};
+  $self->loadSchema unless $$self{schema_loaded};
+  $tag = $self->getNodeQName($tag) if ref $tag; # In case tag is a node.
   return 1 if $tag eq '#PCDATA';
   return 1 if $tag eq '#Comment';
   $$self{tagprop}{$tag}{autoClose}; }
 
 sub canHaveAttribute {
   my($self,$tag,$attrib)=@_;
-  $self->loadDocType unless $$self{doctype_loaded};
+  $self->loadSchema unless $$self{schema_loaded};
+  $tag = $self->getNodeQName($tag) if ref $tag; # In case tag is a node.
+  return 0 if $tag eq '#PCDATA';
+  return 0 if $tag eq '#Comment';
+  return 0 if $tag eq '#Document';
+  return 0 if $tag eq '#ProcessingInstruction';
+  return 0 if $tag eq '#DTD';
   return 1 if $attrib eq 'xml:id';
   return 1 if $$self{permissive};
   $$self{tagprop}{$tag}{attributes}{$attrib}; }
 
-#**********************************************************************
-# DTD Analysis
-#**********************************************************************
-# Uses XML::LibXML to read in the DTD. Then extracts a simplified
-# model: which elements can appear within each element, ignoring
-# (for now) the ordering, repeat, etc, of the elements.
-# From this, and the Tag declarations of autoOpen (that an
-# element can be opened automatically, if needed) we derive an implicit model.
-# Thus, if we want to insert an element (or, say #PCDATA) into an
-# element that doesn't allow it, we may find an implied element
-# to create & insert, and insert the #PCDATA into it.
 
-sub loadDocType {
+#**********************************************************************
+# Support for filling in the model from a Schema.
+sub computeIndirect {
   my($self)=@_;
-  $$self{doctype_loaded}=1;
-  NoteBegin("Loading DocType");
-  if(!$$self{system_id}){
-    Warn("No DTD declared...assuming LaTeXML!");
-    # article ??? or what ? undef gives problems!
-    $self->setDocType(undef,"-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd',
-		      '#default'=>"http://dlmf.nist.gov/LaTeXML");
-    $$self{permissive}=1;	# Actually, they could have declared all sorts of Tags....
-#    return; 
-  }
-  # Parse the DTD
-  NoteBegin("Loading XML catalogs");
-  foreach my $catalog (	pathname_findall('catalog',
-					 paths=>$STATE->lookupValue('SEARCHPATHS'),
-					 installation_subdir=>'dtd')){
-    NoteProgress("Loading catalog $catalog. ");
-    XML::LibXML->load_catalog($catalog); }
-  NoteEnd("Loading XML catalogs");
-
-  NoteBegin("Loading DTD for $$self{public_id} $$self{system_id}");
-  # NOTE: setting XML_DEBUG_CATALOG makes this Fail!!!
-  my $dtd = XML::LibXML::Dtd->new($$self{public_id},$$self{system_id});
-  if($dtd){
-    NoteProgress(" via catalog "); }
-  else { # Couldn't find dtd in catalog, try finding the file. (search path?)
-    my $dtdfile = pathname_find($$self{system_id},
-				paths=>$STATE->lookupValue('SEARCHPATHS'),
-				installation_subdir=>'dtd');
-    if($dtdfile){
-      NoteProgress(" from $dtdfile ");
-      $dtd = XML::LibXML::Dtd->new($$self{public_id},$dtdfile);
-      NoteProgress(" from $dtdfile ") if $dtd;
-      Error("Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed")
-	unless $dtd;
-      }
-    else {
-      Error("Couldn't find DTD \"$$self{public_id}\" \"$$self{system_id}\" failed"); }}
-#  NoteEnd("Loading DTD for $$self{public_id} $$self{system_id}");		# Done reading DTD
-  return unless $dtd;
-
-  $$self{dtd}=$dtd;
-  NoteBegin("Analyzing DTD");
-  # Extract all possible children for each tag.
-  foreach my $node ($dtd->childNodes()){
-    if($node->nodeType() == XML_ELEMENT_DECL()){
-      my $decl = $node->toString();
-      chomp($decl);
-      if($decl =~ /^<!ELEMENT\s+([a-zA-Z0-9\-\_\:]+)\s+(.*)>$/){
-	my($tag,$model)=($1,$2);
-	$$self{tagprop}{$tag}{preferred_prefix} = $1 	if $tag =~ /^([^:]+):(.+)/;
-	$tag = $self->normalizeDocTypeName($tag);
-	$model=~ s/[\+\*\?\,\(\)\|]/ /g;
-	$model=~ s/\s+/ /g; $model=~ s/^\s+//; $model=~ s/\s+$//;
-	my @model = map($self->normalizeDocTypeName($_),split(/ /,$model));
-	$$self{tagprop}{$tag}{model}={ map(($_ => 1), @model)};
-      }
-      else { warn("Warning: got \"$decl\" from DTD");}
-    }
-    elsif($node->nodeType() == XML_ATTRIBUTE_DECL()){
-      if($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-9-]+)\s+([a-zA-Z0-9-]+)\s+(.*)>$/){
-	my($tag,$attr)=($1,$2);
-	$tag = $self->normalizeDocTypeName($tag);
-	$$self{tagprop}{$tag}{attributes}{$attr}=1; }}
-    }
   # Determine any indirect paths to each descendent via an `autoOpen-able' tag.
   foreach my $tag (keys %{$$self{tagprop}}){
-    local %::DESC=();
-    computeDescendents($self,$tag,''); 
-    $$self{tagprop}{$tag}{indirect_model}={%::DESC}; }
+    if($$self{tagprop}{$tag}{model}){
+      local %::DESC=();
+      computeDescendents($self,$tag,''); 
+      $$self{tagprop}{$tag}{indirect_model}={%::DESC}; }}
   # PATCHUP
   if($$self{permissive}){
     $$self{tagprop}{'#Document'}{indirect_model}{'#PCDATA'}='ltx:p'; }
-  NoteEnd("Analyzing DTD");		# Done analyzing
-
-  if($LaTeXML::Model::DEBUG){
-    print STDERR "Doctype\n";
-    foreach my $tag (sort keys %{$$self{tagprop}}){
-      print STDERR "$tag can contain ".join(', ',sort keys %{$$self{tagprop}{$tag}{model}})."\n"
-	if keys %{$$self{tagprop}{$tag}{model}};
-      print STDERR "$tag can indirectly contain ".
-	join(', ',sort keys %{$$self{tagprop}{$tag}{indirect_model}})."\n"
-	  if keys %{$$self{tagprop}{$tag}{indirect_model}};
-    }}
-  NoteEnd("Loading DocType");		# done Loading
 }
 
 sub computeDescendents {
@@ -320,11 +307,24 @@ sub computeDescendents {
   foreach my $kid (keys %{$$self{tagprop}{$tag}{model}}){
     next if $::DESC{$kid};
     $::DESC{$kid}=$start if $start;
-    if($$self{tagprop}{$kid}{autoOpen}){
+    if(($kid ne '#PCDATA') && $$self{tagprop}{$kid}{autoOpen}){
       computeDescendents($self,$kid,$start||$kid); }
   }
 }
 
+sub describeModel {
+  my($self)=@_;
+  print STDERR "Doctype\n";
+  foreach my $tag (sort keys %{$$self{tagprop}}){
+    if(my $model = $$self{tagprop}{$tag}{model}){
+      if(keys %$model){
+	print STDERR "$tag can contain ".join(', ',sort keys %{$$self{tagprop}{$tag}{model}})."\n";}
+      if(my $indirect = $$self{tagprop}{$tag}{indirect_model}){
+	print STDERR "$tag can indirectly contain ". join(', ',sort keys %$indirect)."\n"
+	  if keys %$indirect; }}
+      else {
+	print STDERR "$tag is empty\n"; }
+  }}
 
 #**********************************************************************
 sub addLigature {
@@ -366,6 +366,18 @@ sub applyRewrites {
     last if $until_rule && ($rule eq $until_rule);
     $rule->rewrite($document,$node); }}
 
+
+#**********************************************************************
+package LaTeXML::Model::Schema;
+
+sub new {
+  my($class)=@_;
+  bless {},$class; }
+
+sub addSchemaDeclaration {
+  my($self,$xmldocument,$tag)=@_;
+}
+
 #**********************************************************************
 1;
 
@@ -381,8 +393,8 @@ C<LaTeXML::Model> - represents the Document Model
 
 C<LaTeXML::Model> encapsulates information about the document model to be used
 in converting a digested document into XML by the L<LaTeXML::Document>.
-This information is based on the DTD, but may also be modified by
-modules implementing various macro packages; thus the model may not be
+This information is based on the document schema (eg, DTD, RelaxNG),
+but is also modified by package modules; thus the model may not be
 complete until digestion is completed.
 
 The kinds of information that is relevant is not only the content model
@@ -390,10 +402,9 @@ The kinds of information that is relevant is not only the content model
 such as whether an element can be implicitly opened or closed, if needed
 to insert a new element into the document.
 
-Currently, only a DTD is understood (no schema yet), and even there, the 
-stored model is only approximate.  For example, we only record that
-certain elements can appear within another; we don't preserve any
-information about required order or number of instances.
+Currently, only an approximation to the schema is understood and used.
+For example, we only record that certain elements can appear within another;
+we don't preserve any information about required order or number of instances.
 
 =head2 Model Creation
 
@@ -411,19 +422,6 @@ document to be built without following any particular content model.
 
 =over 4
 
-=item C<< $name = $model->getRootName; >>
-
-Return the name of the expected root element.
-
-=item C<< $publicid = $model->getPublicID; >>
-
-Return the public identifier for the document type.
-
-=item C<< $systemid = $model->getSystemID; >>
-
-Return the system identifier for the document type
-(typically a filename for the DTD).
-
 =item C<< $model->setDocType($rootname,$publicid,$systemid,%namespaces); >>
 
 Declares the expected rootelement, the public and system ID's of the document type
@@ -436,6 +434,18 @@ The generated document will use the namespaces and prefixes defined here.
 =back
 
 =head2 Namespaces
+
+Note that there are I<two> namespace mappings between namespace URIs and prefixes
+that are relevant to L<LaTeXML>.
+The `code' mapping is the one used in code implementing packages, and in
+particular, constructors defined within those packages.  The prefix C<ltx>
+is used consistently to refer to L<LaTeXML>'s own namespace
+(C<http://dlmf.nist.gov/LaTeXML)>. 
+
+The other mapping, the `document' mapping, is used in the created document;
+this may be different from the `code' mapping in order to accommodate
+DTDs, for example, or for use by other applications that expect
+a rigid namespace mapping.
 
 =over 4
 
