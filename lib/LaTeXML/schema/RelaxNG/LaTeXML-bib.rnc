@@ -1,0 +1,296 @@
+# /=====================================================================\ 
+# |  LaTeXML-bib.rnc                                                    |
+# | RelaxNG model for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+# Would be nice to use somebody elses already-developed DTD...
+
+# Some notes:
+# There're two classes of things here:
+# bibentry : which would be the translation of a .bib file
+# bibitem  : which would be the formatted items in a latex bibliography environment.
+#	   This latter has typically lost much information during formatting.
+
+biblist =
+## A list of bibliographic \elementref{bibentry} or \elementref{bibitem}.
+element biblist {
+  Common.attributes,
+  (bibentry | bibitem)*  }
+
+bibentry =
+## Semantic representation of a bibliography entry, 
+## typically resulting from parsing BibTeX
+element bibentry {
+  Common.attributes,
+  ID.attributes,
+  attribute key { text },
+  attribute type { text },
+  Bibentry.class*  }
+
+bib-author =
+## Author of a bibliographic entry.
+element bib-author {
+  Common.attributes,
+  Bibname.model }
+
+bib-editor =
+## Editor of a bibliographic entry.
+element bib-editor {
+  Common.attributes,
+  Bibname.model }
+
+bib-translator =
+## Translator of a bibliographic entry.
+element bib-translator {
+  Common.attributes,
+  Bibname.model }
+
+surname =
+## Surname of an author, editor or translator.
+element surname {
+  Inline.model }
+
+givenname =
+## Given name of an author, editor or translator.
+element givenname {
+  Inline.model }
+
+initials =
+## Initials of an author, editor or translator.
+element initials {
+  Inline.model }
+
+lineage =
+## Lineage of an author, editor or translator. (eg. von)
+element lineage {
+  Inline.model }
+
+bib-title =
+## Title of a bibliographic entry.
+element bib-title {
+  Common.attributes,
+  Inline.model }
+
+bib-subtitle =
+## Subtitle of a bibliographic entry.
+element bib-subtitle {
+  Common.attributes,
+  Inline.model }
+
+bib-booktitle =
+## Title of the book containing a bibliographic entry.
+element bib-booktitle {
+  Common.attributes,
+  Inline.model }
+
+bib-key =
+## Unique key of a bibliographic entry.
+element bib-key {
+  Common.attributes,
+  Inline.model }
+
+bib-journal =
+## Journal of a bibliographic entry.
+element bib-journal {
+  Common.attributes,
+  Inline.model }
+
+bib-series =
+## Series of a bibliographic entry.
+element bib-series {
+  Common.attributes,
+  Inline.model }
+
+bib-conference =
+## Conference of a bibliographic entry.
+element bib-conference {
+  Common.attributes,
+  Inline.model }
+
+bib-publisher =
+## Publisher of a bibliographic entry.
+element bib-publisher {
+  Common.attributes,
+  Inline.model }
+
+bib-organization =
+## Organization responsible for a bibliographic entry.
+element bib-organization {
+  Common.attributes,
+  Inline.model }
+
+bib-institution =
+## Institution responsible for a bibliographic entry.
+element bib-institution {
+  Common.attributes,
+  Inline.model }
+
+bib-address =
+## Address of party  responsible for a bibliographic entry.
+element bib-address {
+  Common.attributes,
+  Inline.model }
+
+bib-volume =
+## Volume of a bibliographic entry.
+element bib-volume {
+  Common.attributes,
+  Inline.model }
+
+bib-number =
+## Number of a bibliographic entry.
+element bib-number {
+  Common.attributes,
+  Inline.model }
+
+bib-pages =
+## Pages of a bibliographic entry.
+element bib-pages {
+  Common.attributes,
+  Inline.model }
+
+bib-part =
+## Part of a bibliographic entry.
+element bib-part {
+  Common.attributes,
+  Inline.model }
+
+bib-date =
+## Date of a bibliographic entry.
+element bib-date {
+  Common.attributes,
+  Inline.model }
+
+bib-edition =
+## Edition of a bibliographic entry.
+element bib-edition {
+  Common.attributes,
+  Inline.model }
+
+bib-status =
+## Status of a bibliographic entry.
+element bib-status {
+  Common.attributes,
+  Inline.model }
+
+bib-type =
+## Type of a bibliographic entry.
+element bib-type {
+  Common.attributes,
+  Inline.model }
+
+bib-identifier =
+## Some form of document identfier. The content is descriptive.
+element bib-identifier {
+  Common.attributes,
+  ## indicates what sort of identifier it is: such as 
+  ## \code{doi}, \code{issn}, \code{isbn}, \code{mr}, or others.
+  attribute scheme { text }?,
+  ## the identifier.
+  attribute id { text}?,
+  ## a url to the document, if available
+  attribute href { text}?,
+  Inline.model }
+
+bib-review =
+## Review of a bibliographic entry. The content is descriptive.
+element bib-review {
+  Common.attributes,
+  ## indicates what sort of identifier it is: such as 
+  ## \code{doi}, \code{issn}, \code{isbn}, \code{mr}, or others.
+  attribute scheme { text }?,
+  ## the identifier.
+  attribute id { text}?,
+  ## a url to the review, if available
+  attribute href { text}?,
+  Inline.model }
+
+bib-links =
+## Links to other things like preprints, source code, etc.
+element bib-links {
+  Common.attributes,
+  Inline.model }
+
+bib-language =
+## Language of a bibliographic entry.
+element bib-language {
+  Common.attributes,
+  Inline.model }
+
+bib-url =
+## A URL for a bibliographic entry. The content is descriptive
+element bib-url {
+  Common.attributes,
+  attribute href { text }?,
+  Inline.model }
+
+bib-note =
+## Notes about a bibliographic entry.
+element bib-note {
+  Common.attributes,
+  Inline.model }
+
+# ======================================================================
+# bibitem is the formatted, presentation, form, typically information has been lost;
+# it basically contains a biblabel and several bibblock's
+# ======================================================================
+
+bibitem =
+## A formatted bibliographic item, typically as written explicit
+## in a LaTeX article. This has generally lost most of the semantics
+## present in the BibTeX data.
+element bibitem {
+  Common.attributes,
+  ID.attributes,
+  attribute key { text },
+  tag?, bibblock* }
+
+bibblock =
+## A block of data appearing within a \elementref{bibitem}.
+element bibblock {
+  Inline.model }
+
+Bibentry.class =
+  bib-author
+  | bib-editor
+  | bib-translator
+  | bib-title
+  | bib-subtitle
+  | bib-booktitle
+  | bib-key
+  | bib-journal
+  | bib-series
+  | bib-conference
+  | bib-publisher
+  | bib-organization
+  | bib-institution
+  | bib-address
+  | bib-volume
+  | bib-number
+  | bib-pages
+  | bib-part
+  | bib-date
+  | bib-edition
+  | bib-status
+  | bib-type
+  | bib-language
+  | bib-url
+  | bib-note
+  | bib-identifier
+  | bib-review
+  | bib-links
+
+
+## The content model of the bibliographic name fields
+## (\elementref{bib-author}, \elementref{bib-editor}, \elementref{bib-translator})
+Bibname.model =
+  surname,  givenname?, initials?, lineage?

@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  /=====================================================================\ 
+  |  LaTeXML-block.rnc                                                  |
+  | RelaxNG model for LaTeXML generated documents                       |
+  |=====================================================================|
+  | Part of LaTeXML:                                                    |
+  |  Public domain software, produced as part of work done by the       |
+  |  United States Government & not subject to copyright in the US.     |
+  |=====================================================================|
+  | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+  | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+  \=========================================================ooo==U==ooo=/
+-->
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <define name="Block.class" combine="choice">
+    <a:documentation>The block module defines the following `physical' block elements.</a:documentation>
+    <choice>
+      <ref name="p"/>
+      <ref name="equation"/>
+      <ref name="equationgroup"/>
+      <ref name="quote"/>
+      <ref name="centering"/>
+      <ref name="block"/>
+      <ref name="itemize"/>
+      <ref name="enumerate"/>
+      <ref name="description"/>
+    </choice>
+  </define>
+  <define name="Misc.class" combine="choice">
+    <a:documentation>Additionally, it defines these miscellaneous elements that can appear
+in both inline and block contexts.</a:documentation>
+    <choice>
+      <ref name="inline-block"/>
+      <ref name="verbatim"/>
+      <ref name="break"/>
+      <ref name="graphics"/>
+    </choice>
+  </define>
+  <define name="EquationMeta.class">
+    <a:documentation>Additional Metadata that can be present in equations.</a:documentation>
+    <ref name="constraint"/>
+  </define>
+  <define name="p">
+    <element name="p">
+      <a:documentation>A physical paragraph.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="centering">
+    <element name="centering">
+      <a:documentation>A physical block that centers its content.
+NOTE: Reconsider this; perhaps should be a property on other blocks?</a:documentation>
+      <ref name="Common.attributes"/>
+      <zeroOrMore>
+        <choice>
+          <ref name="caption"/>
+          <ref name="toccaption"/>
+          <ref name="Block.model"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="constraint">
+    <element name="constraint">
+      <a:documentation>A constraint upon an equation.</a:documentation>
+      <optional>
+        <attribute name="hidden">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="equation">
+    <element name="equation">
+      <a:documentation>An Equation.  The model is just Inline which includes \elementref{Math},
+the main expected ingredient.
+However, other things can end up in display math, too, so we use Inline.
+Note that tabular is here only because it's a common, if misguided, idiom;
+the processor will lift such elements out of math, when possible</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <choice>
+          <ref name="Math"/>
+          <ref name="MathFork"/>
+          <ref name="text"/>
+          <ref name="tabular"/>
+          <ref name="Meta.class"/>
+          <ref name="EquationMeta.class"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="equationgroup">
+    <element name="equationgroup">
+      <a:documentation>A group of equations, perhaps aligned (Though this is nowhere recorded).</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <choice>
+          <ref name="equationgroup"/>
+          <ref name="equation"/>
+          <ref name="block"/>
+          <ref name="Meta.class"/>
+          <ref name="EquationMeta.class"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="MathFork">
+    <element name="MathFork">
+      <a:documentation>A wrapper for Math that provides alternative,
+but typically less semantically meaningful,
+formatted representations.
+The first child is the meaningful form,
+the extra children provide formatted forms,
+for example being table rows or cells arising from an eqnarray.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Math"/>
+      <zeroOrMore>
+        <ref name="MathBranch"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="MathBranch">
+    <element name="MathBranch">
+      <a:documentation>A container for an alternatively formatted math representation.</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="format"/>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Math"/>
+          <ref name="tr"/>
+          <ref name="td"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="quote">
+    <element name="quote">
+      <a:documentation>A quotation.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="block">
+    <element name="block">
+      <a:documentation>A generic block (fallback).</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Positionable.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="break">
+    <element name="break">
+      <a:documentation>A forced line break.</a:documentation>
+      <ref name="Common.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="inline-block">
+    <element name="inline-block">
+      <a:documentation>An inline block. Actually, can appear in inline or block mode, but
+typesets its contents as a block.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Positionable.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="verbatim">
+    <element name="verbatim">
+      <a:documentation>Verbatim content</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="font">
+          <a:documentation>the font to use; generally typewriter.</a:documentation>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="itemize">
+    <element name="itemize">
+      <a:documentation>An itemized list.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
+      <zeroOrMore>
+        <ref name="item"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="enumerate">
+    <element name="enumerate">
+      <a:documentation>An enumerated list.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
+      <zeroOrMore>
+        <ref name="item"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="description">
+    <element name="description">
+      <a:documentation>A description list. The \elementref{item}s within are expected to have a \elementref{tag}
+which represents the term being described in each \elementref{item}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
+      <zeroOrMore>
+        <ref name="item"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="item">
+    <element name="item">
+      <a:documentation>An item within a list.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <optional>
+        <ref name="tag"/>
+      </optional>
+      <ref name="Block.model"/>
+    </element>
+  </define>
+  <define name="tag">
+    <element name="tag">
+      <a:documentation>A tag within an item indicating the term or bullet for a given item.</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="open">
+          <a:documentation>specifies an open delimiters used to display the tag.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="close">
+          <a:documentation>specifies an close delimiters used to display the tag.</a:documentation>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="graphics">
+    <element name="graphics">
+      <a:documentation>A graphical insertion of an external file.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Imageable.attributes"/>
+      <attribute name="graphic">
+        <a:documentation>the path to the graphics file</a:documentation>
+      </attribute>
+      <optional>
+        <attribute name="options">
+          <a:documentation>an encoding of the scaling and positioning options
+to be used in processing the graphic.</a:documentation>
+        </attribute>
+      </optional>
+      <empty/>
+    </element>
+  </define>
+</grammar>

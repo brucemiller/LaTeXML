@@ -1,0 +1,36 @@
+#!/bin/bash
+
+
+cd RelaxNG
+
+for name in LaTeXML DLMF; do
+  echo "Converting $name.rnc to $name.rng"
+  trang $name.rnc $name.rng
+
+  # Trang can't convert the schema to dtd mainly because we're gradually
+  # combining the defines for models.
+  # However, if we first simplify and flatten to a single rng, it can convert.
+  #
+  # The stylesheet simplification.xsl does the simplification.
+  # It is by Eric van der Vlist, from
+  #    http://downloads.xmlschemata.org/relax-ng/utilities/simplification.xsl
+  # [linked from http://www.relaxng.org]
+  #
+  # However, this stylesheet looses the namespace declaration!!!!!
+  #
+  # Simplify the rng
+
+  echo "Simplifying $name.rng"
+  xsltproc --stringparam out-name /tmp/$name-simplified- ../simplification.xsl $name.rng
+
+  echo "Converting simplified $name.rng to $name.dtd"
+  # Now, we can convert to dtd
+  trang /tmp/$name-simplified-7-22.rng /tmp/$name.dtd
+
+  echo "Patching $name.dtd"
+  # However, as said, the namespace declaration got lost
+  # so we'll fix it up...
+  sed -e "s/xmlns CDATA #FIXED ''/xmlns CDATA #FIXED 'http:\/\/dlmf.nist.gov\/LaTeXML'/" \
+     /tmp/$name.dtd  > ../dtd/$name.dtd
+done
+#======================================================================

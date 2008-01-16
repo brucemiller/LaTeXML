@@ -1,0 +1,88 @@
+# /=====================================================================\ 
+# |  LaTeXML-para.rnc                                                   |
+# | RelaxNG model for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+## This module `logical' block elements.
+Para.class |=
+     para
+   | theorem | proof
+   | figure | table
+
+para =
+## A Logical paragraph. It has an \attr{id}, but not a \attr{label}.
+element para {
+  Common.attributes,
+  ID.attributes,
+
+  Block.model }
+
+theorem =
+## A theorem or similar object. The \attr{class} attribute can be used to distinguish
+## different kinds of theorem.
+element theorem {
+  Common.attributes,
+  Labelled.attributes,
+
+  title?, Block.model  }
+
+proof =
+## A proof or similar object. The \attr{class} attribute can be used to distinguish
+## different kinds of proof.
+element proof {
+  Common.attributes,
+  Labelled.attributes,
+
+  title?, Block.model }
+
+## These are the additional elements representing figure and
+## table captions.
+## NOTE: Could title sensibly be reused here, instead?
+## Or, should caption be used for theorem and proof?
+Caption.class = caption | toccaption
+
+figure =
+## A  figure, possibly captioned.
+element figure {
+  Common.attributes,
+  Labelled.attributes,
+
+  ## the floating placement parameter that determines where the object is displayed.
+  attribute placement { text }?,
+
+  (Block.model | Caption.class)* }
+
+table =
+## A  Table, possibly captioned. This is not necessarily a \elementref{tabular}.
+element table {
+  Common.attributes,
+  Labelled.attributes,
+
+  ## the floating placement parameter that determines where the object is displayed.
+  attribute placement { text }?,
+
+  (Block.model | Caption.class)*  }
+
+caption =
+## A caption for a \elementref{table} or \elementref{figure}.
+element caption {
+  Common.attributes,
+
+  Inline.model }
+
+toccaption =
+## A short form of \elementref{table} or \elementref{figure} caption,
+## used for lists of figures or similar.
+element toccaption {
+  Common.attributes,
+
+  Inline.model }

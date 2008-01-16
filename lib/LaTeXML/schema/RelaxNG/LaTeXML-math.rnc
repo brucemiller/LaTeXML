@@ -1,0 +1,283 @@
+# /=====================================================================\ 
+# |  LaTeXML-math.rnc                                                   |
+# | RelaxNG model for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+## The math module defines LaTeXML's internal representation of mathematical
+## content, including the basic math container \elementref{Math}.  This element is
+## considered inline, as it will be contained within some other block-level
+## element, eg. \elementref{equation} for display-math.
+Inline.class |= Math
+
+## This class defines the content of the \elementref{Math} element.
+## Additionally, it could contain MathML or OpenMath, after postprocessing.
+Math.class   = XMath
+
+## These elements comprise the internal math representation, being
+## the content of the \elementref{XMath} element.
+XMath.class = 
+    XMApp  | XMTok  | XMRef  | XMHint | XMArg
+  | XMWrap | XMDual | XMText | XMArray
+
+
+
+Math =
+## Outer container for all math. This holds the internal 
+## \elementref{XMath} representation, as well as image data and other representations.
+element Math {
+  Common.attributes,
+  Imageable.attributes,
+
+  ## display or inline mode.
+  attribute mode { "display" | "inline" }?,
+
+  ## reconstruction of the \TeX\ that generated the math.
+  attribute tex { text }?,
+
+  ## more semantic version of \attr{tex}.
+  attribute content-tex { text }?,
+
+  ## a textified representation of the math.
+  attribute text { text }?,
+
+  Math.class* }
+
+XMath.attributes =
+
+  ## The role that this item plays in the Grammar.
+  attribute role { text }?,
+
+  ## an open delimiter to enclose the object;
+  attribute open { text }?,
+
+  ## an close delimiter to enclose the object;
+  attribute close { text }?,
+
+  ## an open delimiter to enclose the argument list,
+  ## when this token is applied to arguments with \elementref{XMApp}.
+  attribute argopen { text }?,
+
+  ## a close delimiter to enclose the argument list,
+  ## when this token is applied to arguments with \elementref{XMApp}.
+  attribute argclose { text }?,
+
+  ## characters to separate arguments,
+  ## when this token is applied to arguments with \elementref{XMApp}.
+  ## Can be multiple characters for different argument positions;
+  ## the last character is repeated if there aren't enough.
+  attribute separators { text }?,
+
+  ## trailing (presumably non-semantic) punctuation.
+  attribute punctuation { text }?,
+
+  ## an annotation placed by the parser when it suspects this token may be used as a function.
+  attribute possibleFunction { text }?
+
+XMath =
+## Internal representation of mathematics.
+element XMath {
+  Common.attributes,
+
+  XMath.class* }
+
+XMTok =
+## General mathematical token.
+element XMTok {
+  Common.attributes,
+  XMath.attributes,
+  ID.attributes,
+
+  ## The name of the token, typically the control sequence that created it.
+  attribute name { text }?,
+
+  ## A more semantic name corresponding to the intended meaning,
+  ## such as the OpenMath name.
+  attribute meaning { text }?,
+
+  ## The OpenMath CD for which \attr{meaning} is a symbol.
+  attribute omcd { text }?,
+
+  ## Various random styling information. NOTE This needs to be made consistent.
+  attribute style { text }?,
+
+  ## The font, size a used for the symbol.
+  attribute font { text }?,
+
+  ## The size for the symbol, not presumed to be meaningful(?)
+  attribute size { text }?,
+
+  ## The color (CSS format) for the symbol, not presumed to be meaningful(?)
+  attribute color { text }?,
+
+  ## An encoding of the position of this token as a sub/superscript, used
+  ## to handle aligned and nested scripts, both pre and post.
+  ## It is a concatenation of (pre|mid|post), which indicates the horizontal
+  ## positioning of the script with relation to it's base, and a counter
+  ## indicating the level. These are used to position the scripts, 
+  ## and to pair up aligned sub- and superscripts.
+  ## NOTE: Clarify where this appears: token, base, script operator, apply?
+  attribute scriptpos { text }?,
+
+  ## NOTE: How is this used?
+  attribute thickness { text }?,
+
+  text* }
+
+XMApp =
+## Generalized application of a function, operator, whatever (the first child)
+## to arguments (the remaining children).
+## The attributes are a subset of those for \elementref{XMTok}.
+element XMApp {
+  Common.attributes,
+  XMath.attributes,
+  ID.attributes,
+
+  ## The name of the token, typically the control sequence that created it.
+  attribute name { text }?,
+
+  ## A more semantic name corresponding to the intended meaning,
+  ## such as the OpenMath name.
+  attribute meaning { text }?,
+
+  ## An encoding of the position of this token as a sub/superscript, used
+  ## to handle aligned and nested scripts, both pre and post.
+  attribute scriptpos { text }?,
+
+  XMath.class* }
+
+XMDual =
+## Parallel markup of content (first child) and presentation (second child)
+## of a mathematical object.
+## Typically, the arguments are shared between the two branches:
+## they appear in the content branch, with \attr{id}'s,
+## and \elementref{XMRef} is used in the presentation branch
+element XMDual {
+  Common.attributes,
+  XMath.attributes,
+  ID.attributes,
+
+  XMath.class, XMath.class }
+
+XMHint =
+## Various spacing items, generally ignored in parsing.
+## The attributes are a subset of those for \elementref{XMTok}.
+element XMHint {
+  Common.attributes,
+  XMath.attributes,
+  ID.attributes,
+  attribute name { text }?,
+  attribute meaning { text }?,
+  attribute style { text }?,
+
+  empty }
+
+XMText =
+## Text appearing within math.
+element XMText {
+  Common.attributes,
+  XMath.attributes,
+  ID.attributes,
+
+  (text | Inline.class | Misc.class)* }
+
+XMWrap =
+## Wrapper for a sequence of tokens used to assert the role of the
+## contents in its parent. This element generally disappears after parsing.
+## The attributes are a subset of those for \elementref{XMTok}.
+element XMWrap {
+  Common.attributes,
+  XMath.attributes,
+  ID.attributes,
+
+  attribute name { text }?,
+
+  ## A more semantic name corresponding to the intended meaning,
+  ## such as the OpenMath name.
+  attribute meaning { text }?,
+
+  attribute style { text }?,
+
+  XMath.class* }
+
+XMArg =
+## Wrapper for an argument to a structured macro.
+## It implies that its content can be parsed independently of its parent,
+## and thus generally disappears after parsing.
+element XMArg {
+  Common.attributes,
+  XMath.attributes,
+  ID.attributes,
+  attribute rule { text }?,
+
+  XMath.class* }
+
+XMRef =
+## Structure sharing element typically used in the presentation
+## branch of an \elementref{XMDual} to refer to the arguments present in the content branch.
+element XMRef {
+  Common.attributes,
+  XMath.attributes,
+  ID.attributes,
+  IDREF.attributes,
+
+  empty }
+
+XMArray =
+## Math Array/Alignment structure.
+# The attributes are a subset of those for \elementref{XMTok} or of \elementref{tabular}.
+element XMArray {
+  Common.attributes,
+  XMath.attributes,
+  ID.attributes,
+  attribute name { text }?,
+  attribute meaning { text }?,
+  attribute style { text }?,
+  attribute vattach { "top" | "bottom" }?,
+  attribute width { text }?,
+
+  XMRow* }
+
+XMRow =
+## A row in a math alignment.
+element XMRow {
+  Common.attributes,
+
+  XMCell* }
+
+XMCell =
+## A cell in a row of a math alignment.
+element XMCell {
+  Common.attributes,
+
+  ## indicates how many columns this cell spans or covers.
+  attribute colspan { xsd:nonNegativeInteger }?,
+
+  ## indicates how many rows this cell spans or covers.
+  attribute rowpan { xsd:nonNegativeInteger }?,
+
+# This would have been clearer, but messes up conversion to dtd
+#  attribute align { "left" | "right" | "center" | "justify" | text }?,
+  ##  specifies the alignment of the content.
+  attribute align { text }?,
+
+  ## specifies the desired width for the column.
+  attribute width { text }?,
+
+  ## records a sequence of t or tt, r or rr, b or bb and l or ll
+  ## for borders or doubled borders on any side of the cell.
+  attribute border { text }?,
+
+  ## whether this cell corresponds to a table head or foot.
+  attribute thead {xsd:boolean}?,
+
+  XMath.class* }
+

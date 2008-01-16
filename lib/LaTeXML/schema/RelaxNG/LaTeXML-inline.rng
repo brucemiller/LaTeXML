@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  /=====================================================================\ 
+  |  LaTeXML-inline.rnc                                                 |
+  | RelaxNG model for LaTeXML generated documents                       |
+  |=====================================================================|
+  | Part of LaTeXML:                                                    |
+  |  Public domain software, produced as part of work done by the       |
+  |  United States Government & not subject to copyright in the US.     |
+  |=====================================================================|
+  | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+  | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+  \=========================================================ooo==U==ooo=/
+-->
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+  <define name="Inline.class" combine="choice">
+    <a:documentation>The inline module defines basic inline elements used throughout </a:documentation>
+    <choice>
+      <ref name="text"/>
+      <ref name="emph"/>
+      <ref name="acronym"/>
+      <ref name="rule"/>
+      <ref name="anchor"/>
+      <ref name="ref"/>
+      <ref name="cite"/>
+      <ref name="bibref"/>
+    </choice>
+  </define>
+  <define name="Meta.class" combine="choice">
+    <a:documentation>Additionally, it defines these meta elements. These are generally hidden,
+and can appear in inline and block contexts.</a:documentation>
+    <choice>
+      <ref name="note"/>
+      <ref name="indexmark"/>
+      <ref name="ERROR"/>
+    </choice>
+  </define>
+  <define name="text">
+    <element name="text">
+      <a:documentation>General container for styled text.
+Attributes cover a variety of styling and position shifting properties.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Positionable.attributes"/>
+      <optional>
+        <attribute name="font">
+          <a:documentation>the font to use (describe!)</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="size">
+          <a:documentation>the text size to use (describe!)</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="color">
+          <a:documentation>the color to use; any CSS compatible color specification.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="framed">
+          <a:documentation>the kind of frame or outline for the text.</a:documentation>
+          <choice>
+            <value>rectangle</value>
+            <value>underline</value>
+          </choice>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="emph">
+    <element name="emph">
+      <a:documentation>Emphasized text.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="acronym">
+    <element name="acronym">
+      <a:documentation>Represents an acronym.</a:documentation>
+      <ref name="Common.attributes"/>
+      <attribute name="name">
+        <a:documentation>should be used to indicate the expansion of the acronym.</a:documentation>
+      </attribute>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="rule">
+    <element name="rule">
+      <a:documentation>A Rule.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Positionable.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="ref">
+    <element name="ref">
+      <a:documentation>A hyperlink reference to some other object. 
+When converted to HTML, the content would be the content of the anchor.
+The destination can be specified by one of the 
+attributes \attr{labelref}, \attr{idref} or \attr{href};
+Missing fields will usually be filled in during postprocessing,
+based on data extracted from the document(s).</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="IDREF.attributes">
+        <a:documentation>reference to an internal identifier.</a:documentation>
+      </ref>
+      <optional>
+        <attribute name="labelref">
+          <a:documentation>reference to a LaTeX labelled object.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="href">
+          <a:documentation>reference to an arbitrary url.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="show">
+          <a:documentation>an encoding of how the text content should be filled in.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="title">
+          <a:documentation>gives a longer form description of the target,
+this would typically appear as a tooltip in HTML.
+Typically filled in by postprocessor.</a:documentation>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="anchor">
+    <element name="anchor">
+      <a:documentation>Inline anchor.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="cite">
+    <element name="cite">
+      <a:documentation>A container for a bibliographic citation. The model is inline to
+allow arbitrary comments before and after the expected \elementref{bibref}(s)
+which are the specific citation.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bibref">
+    <element name="bibref">
+      <a:documentation>A bibliographic citation refering to a specific bibliographic item.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="IDREF.attributes"/>
+      <optional>
+        <attribute name="bibrefs">
+          <a:documentation>a comma separated list of bibliographic keys.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="show">
+          <a:documentation>encodes which of author(s), year, title, etc will
+be displayed. NOTE: Describe this.</a:documentation>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="note">
+    <element name="note">
+      <a:documentation>Metadata that covers several `out of band' annotations.
+It's content allows both inline and block-level content.</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="mark">
+          <a:documentation>indicates the desired visible marker to be linked to the note.</a:documentation>
+        </attribute>
+      </optional>
+      <ref name="Flow.model"/>
+    </element>
+  </define>
+  <!-- should mark be more like label/refnum ? -->
+  <define name="ERROR">
+    <element name="ERROR">
+      <a:documentation>error object for undefined control sequences, or whatever</a:documentation>
+      <ref name="Common.attributes"/>
+      <zeroOrMore>
+        <text/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="indexmark">
+    <element name="indexmark">
+      <a:documentation>Metadata to record an indexing position. The content is 
+a sequence of \elementref{indexphrase}, each representing a level in
+a multilevel indexing entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="see_also">
+          <a:documentation>a flattened form (like \attr{key}) of another \elementref{indexmark},
+used to crossreference.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="style">
+          <a:documentation>NOTE: describe this.</a:documentation>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <ref name="indexphrase"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="indexphrase">
+    <element name="indexphrase">
+      <a:documentation>A phrase within an \elementref{indexmark}</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="key">
+          <a:documentation>a flattened form of the phrase for generating an \attr{ID}.</a:documentation>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+</grammar>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  /=====================================================================\ 
+  |  LaTeXML-tabular.rnc                                                |
+  | RelaxNG model for LaTeXML generated documents                       |
+  |=====================================================================|
+  | Part of LaTeXML:                                                    |
+  |  Public domain software, produced as part of work done by the       |
+  |  United States Government & not subject to copyright in the US.     |
+  |=====================================================================|
+  | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+  | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+  \=========================================================ooo==U==ooo=/
+-->
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <define name="Misc.class" combine="choice">
+    <a:documentation>This module defines the basic tabular, or alignment, structure.
+It is roughly parallel to the HTML model.</a:documentation>
+    <ref name="tabular"/>
+  </define>
+  <define name="tabular">
+    <element name="tabular">
+      <a:documentation>An alignment structure corresponding to tabular  or various similar forms.
+The model is basically a copy of HTML4's table.</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="vattach">
+          <a:documentation>which row's baseline aligns with the container's baseline.</a:documentation>
+          <choice>
+            <value>top</value>
+            <value>middle</value>
+            <value>bottom</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="width">
+          <a:documentation>the desired width of the tabular.</a:documentation>
+          <ref name="Length.type"/>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="thead"/>
+          <ref name="tfoot"/>
+          <ref name="tbody"/>
+          <ref name="tr"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="thead">
+    <element name="thead">
+      <a:documentation>A container for a set of rows that correspond to the header of the tabular.</a:documentation>
+      <ref name="Common.attributes"/>
+      <zeroOrMore>
+        <ref name="tr"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="tfoot">
+    <element name="tfoot">
+      <a:documentation>A container for a set of rows that correspond to the footer of the tabular.</a:documentation>
+      <ref name="Common.attributes"/>
+      <zeroOrMore>
+        <ref name="tr"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="tbody">
+    <element name="tbody">
+      <a:documentation>A container for a set of rows corresponding to the body of the tabular.</a:documentation>
+      <ref name="Common.attributes"/>
+      <zeroOrMore>
+        <ref name="tr"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="tr">
+    <element name="tr">
+      <a:documentation>A row of a tabular.</a:documentation>
+      <ref name="Common.attributes"/>
+      <zeroOrMore>
+        <ref name="td"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="td">
+    <element name="td">
+      <a:documentation>A cell in a row of a tabular.</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="colspan">
+          <a:documentation>indicates how many columns this cell spans or covers.</a:documentation>
+          <data type="nonNegativeInteger"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="rowspan">
+          <a:documentation>indicates how many rows this cell spans or covers.</a:documentation>
+          <data type="nonNegativeInteger"/>
+        </attribute>
+      </optional>
+      <optional>
+        <!--
+          This would have been clearer, but messes up conversion to dtd
+           attribute align { "left" | "right" | "center" | "justify" | text }?,
+        -->
+        <attribute name="align">
+          <a:documentation> specifies the alignment of the content.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="width">
+          <a:documentation>specifies the desired width for the column.</a:documentation>
+          <ref name="Length.type"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="border">
+          <a:documentation>records a sequence of t or tt, r or rr, b or bb and l or ll
+for borders or doubled borders on any side of the cell.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="thead">
+          <a:documentation>whether this cell corresponds to a table head or foot.</a:documentation>
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <ref name="Flow.model"/>
+    </element>
+  </define>
+</grammar>

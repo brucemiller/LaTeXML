@@ -1,0 +1,251 @@
+# /=====================================================================\ 
+# |  LaTeXML-structure.rnc                                              |
+# | RelaxNG model for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+document =
+## The document root.
+element document {
+  Common.attributes,
+  Labelled.attributes,
+
+  (FrontMatter.class | SectionalFrontMatter.class)*,
+  Para.model, part*, chapter*, section*,
+  BackMatter.class* }
+
+part =
+## A part within a document.
+element part {
+  Common.attributes,
+  Labelled.attributes,
+
+  SectionalFrontMatter.class*,
+  Para.model, chapter*}
+
+chapter =
+## A Chapter within a document.
+element chapter {
+  Common.attributes,
+  Labelled.attributes,
+
+  SectionalFrontMatter.class*,
+  Para.model, subparagraph*,  paragraph*,  subsection*,  section* }
+
+section =
+## A Section within a document.
+element section {
+  Common.attributes,
+  Labelled.attributes,
+
+  SectionalFrontMatter.class*,
+  Para.model, subparagraph*, paragraph*, subsection*  }
+
+appendix =
+## An Appendix within a document.
+element appendix {
+  Common.attributes,
+  Labelled.attributes,
+
+  SectionalFrontMatter.class*,
+  Para.model, subparagraph*, paragraph*,  subsection*, section* }
+
+subsection =
+## A Subsection within a document.
+element subsection {
+  Common.attributes,
+  Labelled.attributes,
+
+  SectionalFrontMatter.class*,
+  Para.model, subparagraph*, paragraph*, subsubsection* }
+
+subsubsection =
+## A Subsubsection within a document.
+element subsubsection {
+  Common.attributes,
+  Labelled.attributes,
+
+  SectionalFrontMatter.class*,
+  Para.model, subparagraph*, paragraph* }
+
+paragraph =
+## A Paragraph within a document. This corresponds to a `formal' marked, possibly labelled
+## LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.
+element paragraph {
+  Common.attributes,
+  Labelled.attributes,
+
+  SectionalFrontMatter.class*,
+  Para.model, subparagraph* }
+
+subparagraph =
+## A Subparagraph within a document.
+element subparagraph {
+  Common.attributes,
+  Labelled.attributes,
+
+  SectionalFrontMatter.class*,
+  Para.model }
+
+bibliography =
+## A Bibliography within a document.
+element bibliography {
+  Common.attributes,
+  Labelled.attributes,
+
+  ## the list of bib files used to create the bibliograph.
+  attribute files { text }?,
+
+  FrontMatter.class*,
+  SectionalFrontMatter.class*,
+  biblist* }
+
+index =
+## An Index within a document.
+element index {
+  Common.attributes,
+  Labelled.attributes,
+
+  SectionalFrontMatter.class*,
+  indexlist* }
+
+indexlist =
+## An index generated from the collection of \elementref{indexmark} in a document
+## (or document collection).
+element indexlist {
+  Common.attributes,
+  ID.attributes,
+
+  indexentry* }
+
+indexentry =
+## An entry in an \elementref{indexlist} consisting of a phrase, references to
+## points in the document where the phrase was found, and possibly
+## a nested \elementref{indexlist} represented index levels below this one.
+element indexentry {
+  Common.attributes,
+  ID.attributes,
+
+  indexphrase, indexrefs?, indexlist? }
+
+indexrefs =
+## A container for the references (\elementref{ref}) to where an \elementref{indexphrase} was
+## encountered in the document. The model is Inline to allow
+## arbitrary text, in addition to the expected \elementref{ref}'s.
+element indexrefs {
+  Common.attributes,
+
+  Inline.model }
+
+title =
+## The title of a document, section or similar document structure container.
+element title {
+  Common.attributes,
+
+  Inline.model }
+
+toctitle =
+## The short form of a title, for use in tables of contents or similar.
+element toctitle {
+  Common.attributes,
+
+  Inline.model }
+
+subtitle =
+## A subtitle, or secondary title.
+element subtitle {
+  Common.attributes,
+
+  Inline.model }
+
+# NOTE: This should be aligned with Bibname.
+
+personname =
+## A person's name.
+element personname {
+  Common.attributes,
+
+  Inline.model }
+
+creator =
+## Generalized document creator.
+element creator {
+  Common.attributes,
+
+  ## indicates the role of the person in creating the docment.
+  ## Values include author, editor and translator, 
+  ## but is open-ended to support extension.
+  attribute role { text }?,
+
+  (Person.class | Misc.class)* }
+
+contact =
+## Generalized contact information for a document creator.
+element contact {
+  Common.attributes,
+
+  ## indicates the type of contact information contained.
+  ## Values include address, current_address, affiliation, thanks, 
+  ## email, url, dedicatory to cover various common constructs,
+  ## but is open-ended to support extension.
+  attribute role { text }?,
+
+  Inline.model }
+
+date =
+## Generalized document date.
+element date {
+  Common.attributes,
+
+  ## indicates the relevance of the date to the document.
+  ## Values include creation, but is open-ended to support extension.
+  attribute role { text }?,
+
+  Inline.model }
+
+abstract =
+## A document abstract.
+element abstract {
+  Common.attributes,
+
+  Block.model }
+
+acknowledgements =
+## Acknowledgements for the document.
+element acknowledgements {
+  Common.attributes,
+
+  Inline.model }
+
+keywords =
+## Keywords for the document. The content is freeform.
+element keywords {
+  Common.attributes,
+
+  Inline.model }
+
+classification =
+## A classification of the document.
+element classification {
+  Common.attributes,
+
+  ## indicates what classification scheme was used.
+  attribute scheme { text }?,
+
+  Inline.model }
+
+Person.class = personname | contact
+SectionalFrontMatter.class = title | toctitle | creator
+
+FrontMatter.class =
+  subtitle | date | abstract | acknowledgements
+  | keywords | classification
+BackMatter.class = bibliography | appendix | index

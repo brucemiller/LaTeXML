@@ -1,0 +1,41 @@
+# /=====================================================================\ 
+# |  LaTeXML.rnc                                                        |
+# | Document Type for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+include "LaTeXML-common.rnc"
+include "LaTeXML-inline.rnc"
+include "LaTeXML-block.rnc"
+include "LaTeXML-para.rnc"
+include "LaTeXML-math.rnc"
+
+include "LaTeXML-tabular.rnc"
+include "LaTeXML-picture.rnc"
+include "LaTeXML-structure.rnc"
+include "LaTeXML-bib.rnc"
+
+## Combined model for inline content.
+Inline.model = (text | Inline.class | Misc.class | Meta.class)*
+
+## Combined model for physical block-level content.
+Block.model =
+  (Block.class | Misc.class | Meta.class)*
+
+## Combined model for general flow containing both inline and block level content.
+Flow.model = 
+  (text | Inline.class | Block.class | Misc.class | Meta.class)*
+
+## Combined model for logical block-level context.
+Para.model = (Para.class | Meta.class)*
+
+start = document

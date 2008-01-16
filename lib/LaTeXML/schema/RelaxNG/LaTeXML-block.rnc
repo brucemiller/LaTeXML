@@ -1,0 +1,190 @@
+# /=====================================================================\ 
+# |  LaTeXML-block.rnc                                                  |
+# | RelaxNG model for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+## The block module defines the following `physical' block elements.
+Block.class |= 
+   p | equation | equationgroup | quote
+ | centering | block
+ | itemize | enumerate | description
+
+
+## Additionally, it defines these miscellaneous elements that can appear
+## in both inline and block contexts.
+Misc.class  |= inline-block | verbatim | break | graphics
+
+## Additional Metadata that can be present in equations.
+EquationMeta.class = constraint
+
+p =
+## A physical paragraph.
+element p {
+  Common.attributes,
+
+  Inline.model  }
+
+centering =
+## A physical block that centers its content.
+## NOTE: Reconsider this; perhaps should be a property on other blocks?
+element centering {
+  Common.attributes,
+
+  (caption | toccaption | Block.model)*  }
+
+constraint = 
+## A constraint upon an equation.
+element constraint {
+  attribute hidden { xsd:boolean }?,
+  Inline.model }
+
+equation =
+## An Equation.  The model is just Inline which includes \elementref{Math},
+## the main expected ingredient.
+## However, other things can end up in display math, too, so we use Inline.
+## Note that tabular is here only because it's a common, if misguided, idiom;
+## the processor will lift such elements out of math, when possible
+element equation {
+  Common.attributes,
+  Labelled.attributes,
+
+  (Math | MathFork  | \text | tabular | Meta.class | EquationMeta.class)*  }
+
+equationgroup =
+## A group of equations, perhaps aligned (Though this is nowhere recorded).
+element equationgroup {
+  Common.attributes,
+  Labelled.attributes,
+
+  (equationgroup | equation | block | Meta.class | EquationMeta.class)* }
+
+MathFork =
+## A wrapper for Math that provides alternative,
+## but typically less semantically meaningful,
+## formatted representations.
+## The first child is the meaningful form,
+## the extra children provide formatted forms,
+## for example being table rows or cells arising from an eqnarray.
+element MathFork {
+  Common.attributes,
+
+  Math, MathBranch*}
+
+MathBranch =
+## A container for an alternatively formatted math representation.
+element MathBranch {
+  Common.attributes,
+  attribute format { text }?,
+
+  (Math|tr|td)* }
+
+quote =
+## A quotation.
+element quote {
+  Common.attributes,
+
+  Inline.model  }
+
+block =
+## A generic block (fallback).
+element block {
+  Common.attributes,
+  Positionable.attributes,
+
+  Inline.model  }
+
+break =
+## A forced line break.
+element break { 
+  Common.attributes,
+
+  empty }
+
+inline-block =
+## An inline block. Actually, can appear in inline or block mode, but
+## typesets its contents as a block.
+element inline-block {
+  Common.attributes,
+  Positionable.attributes,
+
+  Inline.model }
+
+verbatim =
+## Verbatim content
+element verbatim {
+  Common.attributes,
+
+  ## the font to use; generally typewriter.
+  attribute font { text }?,
+
+  Inline.model  }
+
+itemize =
+## An itemized list.
+element itemize {
+  Common.attributes,
+  ID.attributes,
+
+  item* }
+
+enumerate =
+## An enumerated list.
+element enumerate {
+  Common.attributes,
+  ID.attributes,
+
+  item* }
+
+description =
+## A description list. The \elementref{item}s within are expected to have a \elementref{tag}
+## which represents the term being described in each \elementref{item}.
+element description {
+  Common.attributes,
+  ID.attributes,
+
+  item* }
+
+item =
+## An item within a list.
+element item {
+  Common.attributes,
+  Labelled.attributes,
+
+  tag?, Block.model }
+
+tag =
+## A tag within an item indicating the term or bullet for a given item.
+element tag {
+  Common.attributes,
+
+  ## specifies an open delimiters used to display the tag.
+  attribute open { text }?,
+
+  ## specifies an close delimiters used to display the tag.
+  attribute close { text }?,
+
+  Inline.model }
+
+graphics =
+## A graphical insertion of an external file.
+element graphics {
+  Common.attributes,
+  Imageable.attributes,
+
+  ## the path to the graphics file
+  attribute graphic { text },
+
+  ## an encoding of the scaling and positioning options
+  ## to be used in processing the graphic.
+  attribute options { text }?,
+
+  empty  }

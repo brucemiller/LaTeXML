@@ -1,0 +1,137 @@
+# /=====================================================================\ 
+# |  LaTeXML-classes.rnc                                                |
+# | Document Type for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+
+# Basic element classes:
+
+## All strictly inline elements.
+Inline.class = notAllowed
+
+## All `physical' block elements. 
+## A physical block is typically displayed as a block, but
+## may not constitute a complete logical unit.
+Block.class = notAllowed
+
+## Additional miscellaneous elements that can appear in
+## both inline and block contexts.
+Misc.class = notAllowed
+
+## All logical block level elements.
+## A logical block typically contains one or more physical block elements.
+## For example, a common situation might be \elementref{p},\elementref{equation},\elementref{p},
+## where the entire sequence comprises a single sentence.
+Para.class = notAllowed
+
+## All metadata elements, typically representing hidden data.
+Meta.class = notAllowed
+
+# ======================================================================
+# Attribute types
+
+## The type for attributes specifying a length.
+## Should be a number followed by a length, typically px.
+## NOTE: To be narrowed later.
+Length.type = text
+
+## The type for attributes specifying a color.
+## NOTE: To be narrowed later.
+Color.type = text
+
+# ======================================================================
+## Attributes shared by ALL elements.
+Common.attributes =
+
+#  ## provides for namespace declaration.
+#  attribute xmlns { text }?,
+
+  ## a space separated list of tokens, as in CSS.
+  ## The \attr{class} can be used to add differentiate different instances of elements
+  ## without introducing new element declarations; 
+  ## it generally shouldn't be used for deep semantic distinctions, however.
+  ## This attribute is carried over to HTML and can be used for CSS selection.
+  attribute class { xsd:NMTOKENS }?
+
+## Attributes for elements that can be cross-referenced
+## from inside or outside the document.
+ID.attributes = 
+
+  ## the unique identifier of the element, 
+  ## usually generated automatically by the latexml.
+  attribute xml:id { xsd:ID }?
+
+## Attributes for elements that can cross-reference other elements.
+IDREF.attributes =
+
+  ## the identifier of the referred-to element.
+  attribute idref { xsd:IDREF }?
+
+## Attributes for elements that can be labelled from within LaTeX.
+Labelled.attributes =
+  ID.attributes,
+
+  ## Records the various labels that LaTeX uses for crossreferencing.
+  ## It consists of space separated labels for the element.
+  ## The \cs{label} macro provides the label prefixed by \texttt{LABEL:};
+  ## (note that \cs{label} can put more than one label on an object!)
+  ## Spaces in a label are replaced by underscore.
+  ## other mechanisms may use other prefix (\texttt{ID:} is reserved!)
+  attribute labels { text }?,
+
+  ## the reference number (ie. section number, equation number, etc) of the object.
+  attribute refnum { text }?
+
+
+## Attributes shared by low-level, generic inline and block elements
+## that can be sized or shifted.
+Positionable.attributes =
+
+  ## the desired width of the box
+  attribute width { Length.type }?,
+
+  ## the desired height of the box
+  attribute height { Length.type }?,
+
+  ## the desired depth of the box
+  attribute depth { Length.type }?,
+
+  ## extra width beyond the boxes natural size.
+  attribute pad-width { Length.type }?,
+
+  ## extra height beyond the boxes natural size.
+  attribute pad-height { Length.type }?,
+
+  ## horizontal shift the position of the box.
+  attribute xoffset { Length.type }?,
+
+  ## vertical shift the position of the box.
+  attribute yoffset { Length.type }?,
+
+  ## alignment of material within the box.
+  attribute align { "left" | "center" | "right" | "justified" }?,
+
+  ## specifies which line of the box is aligned to the baseline of the containing object.
+  attribute vattach { "top" | "middle" | "bottom" }?
+
+## Attributes for elements that may be converted to image form
+## during postprocessing, such as math, graphics, pictures, etc.
+Imageable.attributes =
+
+  ## the file, possibly generated from other data.
+  attribute imagesrc { xsd:anyURI }?,
+
+  ## the width in pixels of \attr{imagesrc}.
+  attribute imagewidth { xsd:nonNegativeInteger}?,
+
+  ## the height in pixels of \attr{imagesrc}.
+  attribute imageheight { xsd:nonNegativeInteger }?

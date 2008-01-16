@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  /=====================================================================\ 
+  |  LaTeXML-picture.rnc                                                |
+  | RelaxNG model for LaTeXML generated documents                       |
+  |=====================================================================|
+  | Part of LaTeXML:                                                    |
+  |  Public domain software, produced as part of work done by the       |
+  |  United States Government & not subject to copyright in the US.     |
+  |=====================================================================|
+  | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+  | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+  \=========================================================ooo==U==ooo=/
+-->
+<!--
+  ======================================================================
+  Picture; Experimental, possibly should evolve to SVG?
+  ======================================================================
+-->
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <define name="Misc.class" combine="choice">
+    <a:documentation>This module defines a picture environment, roughly a subset of SVG.
+NOTE: Consider whether it is sensible to drop this and incorporate SVG itself.</a:documentation>
+    <ref name="picture"/>
+  </define>
+  <define name="Picture.class">
+    <choice>
+      <ref name="g"/>
+      <ref name="rect"/>
+      <ref name="line"/>
+      <ref name="circle"/>
+      <ref name="path"/>
+      <ref name="arc"/>
+      <ref name="wedge"/>
+      <ref name="ellipse"/>
+      <ref name="polygon"/>
+      <ref name="bezier"/>
+    </choice>
+  </define>
+  <define name="Picture.attributes">
+    <a:documentation>These attributes correspond roughly to SVG, but need documentation.</a:documentation>
+    <optional>
+      <attribute name="x"/>
+    </optional>
+    <optional>
+      <attribute name="y"/>
+    </optional>
+    <optional>
+      <attribute name="r"/>
+    </optional>
+    <optional>
+      <attribute name="rx"/>
+    </optional>
+    <optional>
+      <attribute name="ry"/>
+    </optional>
+    <optional>
+      <attribute name="width"/>
+    </optional>
+    <optional>
+      <attribute name="height"/>
+    </optional>
+    <optional>
+      <attribute name="fill"/>
+    </optional>
+    <optional>
+      <attribute name="stroke"/>
+    </optional>
+    <optional>
+      <attribute name="stroke-width"/>
+    </optional>
+    <optional>
+      <attribute name="stroke-dasharray"/>
+    </optional>
+    <optional>
+      <attribute name="transform"/>
+    </optional>
+    <optional>
+      <attribute name="terminators"/>
+    </optional>
+    <optional>
+      <attribute name="arrowlength"/>
+    </optional>
+    <optional>
+      <attribute name="points"/>
+    </optional>
+    <optional>
+      <attribute name="showpoints"/>
+    </optional>
+    <optional>
+      <attribute name="displayedpoints"/>
+    </optional>
+    <optional>
+      <attribute name="arc"/>
+    </optional>
+    <optional>
+      <attribute name="angle1"/>
+    </optional>
+    <optional>
+      <attribute name="angle2"/>
+    </optional>
+    <optional>
+      <attribute name="arcsepA"/>
+    </optional>
+    <optional>
+      <attribute name="arcsepB"/>
+    </optional>
+    <optional>
+      <attribute name="curvature"/>
+    </optional>
+  </define>
+  <define name="PictureGroup.attributes">
+    <a:documentation>These attributes correspond roughly to SVG, but need documentation.</a:documentation>
+    <optional>
+      <attribute name="pos"/>
+    </optional>
+    <optional>
+      <attribute name="framed">
+        <data type="boolean"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="frametype" a:defaultValue="rect">
+        <choice>
+          <value>rect</value>
+          <value>circle</value>
+          <value>oval</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="fillframe">
+        <data type="boolean"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="boxsep"/>
+    </optional>
+    <optional>
+      <attribute name="shadowbox">
+        <data type="boolean"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="doubleline">
+        <data type="boolean"/>
+      </attribute>
+    </optional>
+  </define>
+  <define name="picture">
+    <element name="picture">
+      <a:documentation>A picture environment.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <ref name="Imageable.attributes"/>
+      <optional>
+        <attribute name="clip">
+          <data type="boolean"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="baseline"/>
+      </optional>
+      <optional>
+        <attribute name="unitlength"/>
+      </optional>
+      <optional>
+        <attribute name="xunitlength"/>
+      </optional>
+      <optional>
+        <attribute name="yunitlength"/>
+      </optional>
+      <optional>
+        <attribute name="tex"/>
+      </optional>
+      <optional>
+        <attribute name="content-tex"/>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Picture.class"/>
+          <ref name="Inline.class"/>
+          <ref name="Misc.class"/>
+          <ref name="Meta.class"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="g">
+    <element name="g">
+      <a:documentation>A graphical grouping; the content is inherits by the transformations, 
+positioning and other properties.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <ref name="PictureGroup.attributes"/>
+      <zeroOrMore>
+        <choice>
+          <ref name="Picture.class"/>
+          <ref name="Inline.class"/>
+          <ref name="Misc.class"/>
+          <ref name="Meta.class"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="rect">
+    <element name="rect">
+      <a:documentation>A rectangle within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="line">
+    <element name="line">
+      <a:documentation>A line within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="polygon">
+    <element name="polygon">
+      <a:documentation>A polygon within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="wedge">
+    <element name="wedge">
+      <a:documentation>A wedge within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="arc">
+    <element name="arc">
+      <a:documentation>An arc within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="circle">
+    <element name="circle">
+      <a:documentation>A circle within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="ellipse">
+    <element name="ellipse">
+      <a:documentation>An ellipse within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="path">
+    <element name="path">
+      <a:documentation>A path within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="bezier">
+    <element name="bezier">
+      <a:documentation>A bezier curve within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+</grammar>

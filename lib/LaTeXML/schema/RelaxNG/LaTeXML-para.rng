@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  /=====================================================================\ 
+  |  LaTeXML-para.rnc                                                   |
+  | RelaxNG model for LaTeXML generated documents                       |
+  |=====================================================================|
+  | Part of LaTeXML:                                                    |
+  |  Public domain software, produced as part of work done by the       |
+  |  United States Government & not subject to copyright in the US.     |
+  |=====================================================================|
+  | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+  | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+  \=========================================================ooo==U==ooo=/
+-->
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+  <define name="Para.class" combine="choice">
+    <a:documentation>This module `logical' block elements.</a:documentation>
+    <choice>
+      <ref name="para"/>
+      <ref name="theorem"/>
+      <ref name="proof"/>
+      <ref name="figure"/>
+      <ref name="table"/>
+    </choice>
+  </define>
+  <define name="para">
+    <element name="para">
+      <a:documentation>A Logical paragraph. It has an \attr{id}, but not a \attr{label}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
+      <ref name="Block.model"/>
+    </element>
+  </define>
+  <define name="theorem">
+    <element name="theorem">
+      <a:documentation>A theorem or similar object. The \attr{class} attribute can be used to distinguish
+different kinds of theorem.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <optional>
+        <ref name="title"/>
+      </optional>
+      <ref name="Block.model"/>
+    </element>
+  </define>
+  <define name="proof">
+    <element name="proof">
+      <a:documentation>A proof or similar object. The \attr{class} attribute can be used to distinguish
+different kinds of proof.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <optional>
+        <ref name="title"/>
+      </optional>
+      <ref name="Block.model"/>
+    </element>
+  </define>
+  <define name="Caption.class">
+    <a:documentation>These are the additional elements representing figure and
+table captions.
+NOTE: Could title sensibly be reused here, instead?
+Or, should caption be used for theorem and proof?</a:documentation>
+    <choice>
+      <ref name="caption"/>
+      <ref name="toccaption"/>
+    </choice>
+  </define>
+  <define name="figure">
+    <element name="figure">
+      <a:documentation>A  figure, possibly captioned.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <optional>
+        <attribute name="placement">
+          <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Block.model"/>
+          <ref name="Caption.class"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="table">
+    <element name="table">
+      <a:documentation>A  Table, possibly captioned. This is not necessarily a \elementref{tabular}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <optional>
+        <attribute name="placement">
+          <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Block.model"/>
+          <ref name="Caption.class"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="caption">
+    <element name="caption">
+      <a:documentation>A caption for a \elementref{table} or \elementref{figure}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="toccaption">
+    <element name="toccaption">
+      <a:documentation>A short form of \elementref{table} or \elementref{figure} caption,
+used for lists of figures or similar.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+</grammar>

@@ -1,0 +1,153 @@
+# /=====================================================================\ 
+# |  LaTeXML-picture.rnc                                                |
+# | RelaxNG model for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+# ======================================================================
+# Picture; Experimental, possibly should evolve to SVG?
+# ======================================================================
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+
+## This module defines a picture environment, roughly a subset of SVG.
+## NOTE: Consider whether it is sensible to drop this and incorporate SVG itself.
+Misc.class |= picture
+
+Picture.class =
+  g | rect | line | circle | path
+ | arc | wedge | ellipse | polygon | bezier
+
+
+
+## These attributes correspond roughly to SVG, but need documentation.
+Picture.attributes =
+  attribute x { text }?,
+  attribute y { text }?,
+  attribute r { text }?,
+  attribute rx { text }?,
+  attribute ry { text }?,
+  attribute width { text }?,
+  attribute height { text }?,
+  attribute fill { text }?,
+  attribute stroke { text }?,
+  attribute stroke-width { text }?,
+  attribute stroke-dasharray { text }?,
+  attribute transform { text }?,
+  attribute terminators { text }?,
+  attribute arrowlength { text }?,
+  attribute points { text }?,
+  attribute showpoints { text }?,
+  attribute displayedpoints { text }?,
+  attribute arc { text }?,
+  attribute angle1 { text }?,
+  attribute angle2 { text }?,
+  attribute arcsepA { text }?,
+  attribute arcsepB { text }?,
+  attribute curvature { text }?
+
+## These attributes correspond roughly to SVG, but need documentation.
+PictureGroup.attributes =
+  attribute pos { text }?,
+  attribute framed {xsd:boolean}?,
+  [ a:defaultValue = "rect" ]
+  attribute frametype { "rect" | "circle" | "oval" }?,
+  attribute fillframe {xsd:boolean }?,
+  attribute boxsep { text }?,
+  attribute shadowbox {xsd:boolean}?,
+  attribute doubleline {xsd:boolean}?
+
+picture =
+## A picture environment.
+element picture {
+  Common.attributes,
+  Picture.attributes,
+  Imageable.attributes,
+  attribute clip {xsd:boolean}?,
+  attribute baseline { text }?,
+  attribute unitlength { text }?,
+  attribute xunitlength { text }?,
+  attribute yunitlength { text }?,
+  attribute tex { text }?,
+  attribute content-tex { text }?,
+  (Picture.class | Inline.class | Misc.class | Meta.class)* }
+
+g =
+## A graphical grouping; the content is inherits by the transformations, 
+## positioning and other properties.
+element g {
+  Common.attributes,
+  Picture.attributes,
+  PictureGroup.attributes,
+  (Picture.class | Inline.class | Misc.class | Meta.class)* }
+
+rect =
+## A rectangle within a \elementref{picture}.
+element rect {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+
+line =
+## A line within a \elementref{picture}.
+element line {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+
+polygon =
+## A polygon within a \elementref{picture}.
+element polygon {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+
+wedge =
+## A wedge within a \elementref{picture}.
+element wedge {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+
+arc =
+## An arc within a \elementref{picture}.
+element arc {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+
+circle =
+## A circle within a \elementref{picture}.
+element circle {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+
+ellipse =
+## An ellipse within a \elementref{picture}.
+element ellipse {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+
+path =
+## A path within a \elementref{picture}.
+element path {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+
+bezier =
+## A bezier curve within a \elementref{picture}.
+element bezier {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+

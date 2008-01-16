@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  /=====================================================================\ 
+  |  LaTeXML-bib.rnc                                                    |
+  | RelaxNG model for LaTeXML generated documents                       |
+  |=====================================================================|
+  | Part of LaTeXML:                                                    |
+  |  Public domain software, produced as part of work done by the       |
+  |  United States Government & not subject to copyright in the US.     |
+  |=====================================================================|
+  | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+  | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+  \=========================================================ooo==U==ooo=/
+-->
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+  <!-- Would be nice to use somebody elses already-developed DTD... -->
+  <!--
+    Some notes:
+    There're two classes of things here:
+    bibentry : which would be the translation of a .bib file
+    bibitem  : which would be the formatted items in a latex bibliography environment.
+    	   This latter has typically lost much information during formatting.
+  -->
+  <define name="biblist">
+    <element name="biblist">
+      <a:documentation>A list of bibliographic \elementref{bibentry} or \elementref{bibitem}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <zeroOrMore>
+        <choice>
+          <ref name="bibentry"/>
+          <ref name="bibitem"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="bibentry">
+    <element name="bibentry">
+      <a:documentation>Semantic representation of a bibliography entry, 
+typically resulting from parsing BibTeX</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
+      <attribute name="key"/>
+      <attribute name="type"/>
+      <zeroOrMore>
+        <ref name="Bibentry.class"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="bib-author">
+    <element name="bib-author">
+      <a:documentation>Author of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Bibname.model"/>
+    </element>
+  </define>
+  <define name="bib-editor">
+    <element name="bib-editor">
+      <a:documentation>Editor of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Bibname.model"/>
+    </element>
+  </define>
+  <define name="bib-translator">
+    <element name="bib-translator">
+      <a:documentation>Translator of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Bibname.model"/>
+    </element>
+  </define>
+  <define name="surname">
+    <element name="surname">
+      <a:documentation>Surname of an author, editor or translator.</a:documentation>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="givenname">
+    <element name="givenname">
+      <a:documentation>Given name of an author, editor or translator.</a:documentation>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="initials">
+    <element name="initials">
+      <a:documentation>Initials of an author, editor or translator.</a:documentation>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="lineage">
+    <element name="lineage">
+      <a:documentation>Lineage of an author, editor or translator. (eg. von)</a:documentation>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-title">
+    <element name="bib-title">
+      <a:documentation>Title of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-subtitle">
+    <element name="bib-subtitle">
+      <a:documentation>Subtitle of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-booktitle">
+    <element name="bib-booktitle">
+      <a:documentation>Title of the book containing a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-key">
+    <element name="bib-key">
+      <a:documentation>Unique key of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-journal">
+    <element name="bib-journal">
+      <a:documentation>Journal of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-series">
+    <element name="bib-series">
+      <a:documentation>Series of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-conference">
+    <element name="bib-conference">
+      <a:documentation>Conference of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-publisher">
+    <element name="bib-publisher">
+      <a:documentation>Publisher of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-organization">
+    <element name="bib-organization">
+      <a:documentation>Organization responsible for a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-institution">
+    <element name="bib-institution">
+      <a:documentation>Institution responsible for a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-address">
+    <element name="bib-address">
+      <a:documentation>Address of party  responsible for a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-volume">
+    <element name="bib-volume">
+      <a:documentation>Volume of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-number">
+    <element name="bib-number">
+      <a:documentation>Number of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-pages">
+    <element name="bib-pages">
+      <a:documentation>Pages of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-part">
+    <element name="bib-part">
+      <a:documentation>Part of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-date">
+    <element name="bib-date">
+      <a:documentation>Date of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-edition">
+    <element name="bib-edition">
+      <a:documentation>Edition of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-status">
+    <element name="bib-status">
+      <a:documentation>Status of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-type">
+    <element name="bib-type">
+      <a:documentation>Type of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-identifier">
+    <element name="bib-identifier">
+      <a:documentation>Some form of document identfier. The content is descriptive.</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="scheme">
+          <a:documentation>indicates what sort of identifier it is: such as 
+\code{doi}, \code{issn}, \code{isbn}, \code{mr}, or others.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="id">
+          <a:documentation>the identifier.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="href">
+          <a:documentation>a url to the document, if available</a:documentation>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-review">
+    <element name="bib-review">
+      <a:documentation>Review of a bibliographic entry. The content is descriptive.</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="scheme">
+          <a:documentation>indicates what sort of identifier it is: such as 
+\code{doi}, \code{issn}, \code{isbn}, \code{mr}, or others.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="id">
+          <a:documentation>the identifier.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="href">
+          <a:documentation>a url to the review, if available</a:documentation>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-links">
+    <element name="bib-links">
+      <a:documentation>Links to other things like preprints, source code, etc.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-language">
+    <element name="bib-language">
+      <a:documentation>Language of a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-url">
+    <element name="bib-url">
+      <a:documentation>A URL for a bibliographic entry. The content is descriptive</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="href"/>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="bib-note">
+    <element name="bib-note">
+      <a:documentation>Notes about a bibliographic entry.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <!--
+    ======================================================================
+    bibitem is the formatted, presentation, form, typically information has been lost;
+    it basically contains a biblabel and several bibblock's
+    ======================================================================
+  -->
+  <define name="bibitem">
+    <element name="bibitem">
+      <a:documentation>A formatted bibliographic item, typically as written explicit
+in a LaTeX article. This has generally lost most of the semantics
+present in the BibTeX data.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
+      <attribute name="key"/>
+      <optional>
+        <ref name="tag"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="bibblock"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="bibblock">
+    <element name="bibblock">
+      <a:documentation>A block of data appearing within a \elementref{bibitem}.</a:documentation>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="Bibentry.class">
+    <choice>
+      <ref name="bib-author"/>
+      <ref name="bib-editor"/>
+      <ref name="bib-translator"/>
+      <ref name="bib-title"/>
+      <ref name="bib-subtitle"/>
+      <ref name="bib-booktitle"/>
+      <ref name="bib-key"/>
+      <ref name="bib-journal"/>
+      <ref name="bib-series"/>
+      <ref name="bib-conference"/>
+      <ref name="bib-publisher"/>
+      <ref name="bib-organization"/>
+      <ref name="bib-institution"/>
+      <ref name="bib-address"/>
+      <ref name="bib-volume"/>
+      <ref name="bib-number"/>
+      <ref name="bib-pages"/>
+      <ref name="bib-part"/>
+      <ref name="bib-date"/>
+      <ref name="bib-edition"/>
+      <ref name="bib-status"/>
+      <ref name="bib-type"/>
+      <ref name="bib-language"/>
+      <ref name="bib-url"/>
+      <ref name="bib-note"/>
+      <ref name="bib-identifier"/>
+      <ref name="bib-review"/>
+      <ref name="bib-links"/>
+    </choice>
+  </define>
+  <define name="Bibname.model">
+    <a:documentation>The content model of the bibliographic name fields
+(\elementref{bib-author}, \elementref{bib-editor}, \elementref{bib-translator})</a:documentation>
+    <ref name="surname"/>
+    <optional>
+      <ref name="givenname"/>
+    </optional>
+    <optional>
+      <ref name="initials"/>
+    </optional>
+    <optional>
+      <ref name="lineage"/>
+    </optional>
+  </define>
+</grammar>

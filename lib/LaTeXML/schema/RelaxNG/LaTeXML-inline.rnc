@@ -1,0 +1,176 @@
+# /=====================================================================\ 
+# |  LaTeXML-inline.rnc                                                 |
+# | RelaxNG model for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+## The inline module defines basic inline elements used throughout 
+Inline.class |= 
+    \text | emph | acronym | rule
+  | anchor | ref | cite | bibref
+
+## Additionally, it defines these meta elements. These are generally hidden,
+## and can appear in inline and block contexts.
+Meta.class   |= note |  indexmark | ERROR
+
+\text =
+## General container for styled text.
+## Attributes cover a variety of styling and position shifting properties.
+element text {
+  Common.attributes,
+  Positionable.attributes,
+
+  ## the font to use (describe!)
+  attribute font { text }?,
+
+  ## the text size to use (describe!)
+  attribute size { text }?,
+
+  ## the color to use; any CSS compatible color specification.
+  attribute color { text }?,
+
+  ## the kind of frame or outline for the text.
+  attribute framed { "rectangle" | "underline"}?,
+
+  Inline.model }
+
+emph =
+## Emphasized text.
+element emph {
+  Common.attributes,
+
+  Inline.model }
+
+acronym =
+## Represents an acronym.
+element acronym {
+  Common.attributes,
+
+  ## should be used to indicate the expansion of the acronym.
+  attribute name { text },
+  Inline.model }
+
+rule =
+## A Rule.
+element rule {
+  Common.attributes,
+
+  Positionable.attributes,
+
+  empty }
+
+ref =
+## A hyperlink reference to some other object. 
+## When converted to HTML, the content would be the content of the anchor.
+## The destination can be specified by one of the 
+## attributes \attr{labelref}, \attr{idref} or \attr{href};
+## Missing fields will usually be filled in during postprocessing,
+## based on data extracted from the document(s).
+element ref {
+  Common.attributes,
+
+  ## reference to an internal identifier.
+  IDREF.attributes,
+
+  ## reference to a LaTeX labelled object.
+  attribute labelref { text }?,
+
+  ## reference to an arbitrary url.
+  attribute href { text }?,
+
+  ## an encoding of how the text content should be filled in.
+  attribute show { text }?,
+
+  ## gives a longer form description of the target,
+  ## this would typically appear as a tooltip in HTML.
+  ## Typically filled in by postprocessor.
+  attribute title { text }?,
+
+  Inline.model }
+
+anchor =
+## Inline anchor.
+element anchor {
+  Common.attributes,
+  ID.attributes,
+
+  Inline.model }
+
+cite =
+## A container for a bibliographic citation. The model is inline to
+## allow arbitrary comments before and after the expected \elementref{bibref}(s)
+## which are the specific citation.
+element cite {
+  Common.attributes,
+
+  Inline.model }
+
+bibref =
+## A bibliographic citation refering to a specific bibliographic item.
+element bibref {
+  Common.attributes,
+  IDREF.attributes,
+
+  ## a comma separated list of bibliographic keys.
+  attribute bibrefs { text }?,
+
+  ## encodes which of author(s), year, title, etc will
+  ## be displayed. NOTE: Describe this.
+  attribute show { text }?,
+
+  Inline.model }
+
+note =
+## Metadata that covers several `out of band' annotations.
+## It's content allows both inline and block-level content.
+element note {
+  Common.attributes,
+
+  ## indicates the desired visible marker to be linked to the note.
+  attribute mark { text }?,
+
+  Flow.model }
+
+# should mark be more like label/refnum ?
+
+ERROR =
+## error object for undefined control sequences, or whatever
+element ERROR {
+  Common.attributes,
+
+  text* }
+
+indexmark =
+## Metadata to record an indexing position. The content is 
+## a sequence of \elementref{indexphrase}, each representing a level in
+## a multilevel indexing entry.
+element indexmark {
+  Common.attributes,
+  ## a flattened form (like \attr{key}) of another \elementref{indexmark},
+  ## used to crossreference.
+  attribute see_also { text }?,
+
+  ## NOTE: describe this.
+  attribute style { text }?,
+
+  indexphrase* }
+
+indexphrase =
+## A phrase within an \elementref{indexmark}
+element indexphrase {
+  Common.attributes,
+
+  ## a flattened form of the phrase for generating an \attr{ID}.
+  attribute key { text }?,
+
+  Inline.model }
+

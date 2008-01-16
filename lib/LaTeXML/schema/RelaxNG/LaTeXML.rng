@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  /=====================================================================\ 
+  |  LaTeXML.rnc                                                        |
+  | Document Type for LaTeXML generated documents                       |
+  |=====================================================================|
+  | Part of LaTeXML:                                                    |
+  |  Public domain software, produced as part of work done by the       |
+  |  United States Government & not subject to copyright in the US.     |
+  |=====================================================================|
+  | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+  | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+  \=========================================================ooo==U==ooo=/
+-->
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+  <include href="LaTeXML-common.rng"/>
+  <include href="LaTeXML-inline.rng"/>
+  <include href="LaTeXML-block.rng"/>
+  <include href="LaTeXML-para.rng"/>
+  <include href="LaTeXML-math.rng"/>
+  <include href="LaTeXML-tabular.rng"/>
+  <include href="LaTeXML-picture.rng"/>
+  <include href="LaTeXML-structure.rng"/>
+  <include href="LaTeXML-bib.rng"/>
+  <define name="Inline.model">
+    <a:documentation>Combined model for inline content.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <text/>
+        <ref name="Inline.class"/>
+        <ref name="Misc.class"/>
+        <ref name="Meta.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <define name="Block.model">
+    <a:documentation>Combined model for physical block-level content.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="Block.class"/>
+        <ref name="Misc.class"/>
+        <ref name="Meta.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <define name="Flow.model">
+    <a:documentation>Combined model for general flow containing both inline and block level content.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <text/>
+        <ref name="Inline.class"/>
+        <ref name="Block.class"/>
+        <ref name="Misc.class"/>
+        <ref name="Meta.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <define name="Para.model">
+    <a:documentation>Combined model for logical block-level context.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="Para.class"/>
+        <ref name="Meta.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <start>
+    <ref name="document"/>
+  </start>
+</grammar>

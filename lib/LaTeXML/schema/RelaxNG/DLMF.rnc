@@ -1,0 +1,204 @@
+# /=====================================================================\ 
+# |  LaTeXML.rnc                                                        |
+# | Document Type for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+#======================================================================
+
+include "LaTeXML-common.rnc"
+
+#======================================================================
+# Inline
+
+# Include inline, but remove note from Meta.class.
+# We want it to migrate into the metadata container.
+include "LaTeXML-inline.rnc" {
+  Meta.class   |= indexmark | ERROR | declare | mark}
+
+# Extra Inline elements
+# Is this really needed? Isn't it a case of ref?
+email = element email {
+  Inline.model }
+
+VRML = element VRML {
+  attribute href { text }?,
+  empty }
+
+GAMS = element GAMS {
+  attribute class { text }?,
+  attribute package { text }?,
+  attribute module { text }?,
+  attribute module_id { text }?,
+  empty }
+
+Inline.class |= email | VRML | GAMS
+
+#======================================================================
+
+include "LaTeXML-block.rnc"
+
+EquationMeta.class |= metadata
+
+#======================================================================
+include "LaTeXML-para.rnc"
+# Extra Para elements 
+
+figuregroup = element figuregroup { figure*}
+tablegroup  = element tablegroup  { table* }
+
+begin_onecolumn = element begin_onecolumn { empty }
+end_onecolumn   = element end_onecolumn   { empty }
+
+electroniconly = element electroniconly { Flow.model }
+printonly      = element printonly { Flow.model }
+
+Para.class |= figuregroup | tablegroup | begin_onecolumn | end_onecolumn
+Misc.class |= electroniconly | printonly
+
+# Extra Metadata
+
+origref = element origref {
+  attribute ref { text }?,
+  Inline.model }
+
+declare = element declare {
+  ID.attributes,
+  tag? }
+
+mark = element mark {
+  attribute type { text }?,
+  tag?,\text }
+
+metadata = element metadata {
+  ID.attributes,
+  (note|origref|indexkeyword|acknowledgements)* }
+
+indexkeyword = element indexkeyword {
+  attribute key { text }?,
+  Inline.model }
+
+# Add metadata alongside captions, so we can get it in figures & tables.
+Caption.class |= metadata
+
+#======================================================================
+include "LaTeXML-math.rnc"
+
+# Add dec_id attribute to XMath ????
+# It's for the id of this when used as declaration (or something)
+XMath.attributes &= attribute dec_id { text }?
+
+#======================================================================
+include "LaTeXML-tabular.rnc"
+include "LaTeXML-picture.rnc"
+#======================================================================
+# Document structure.
+# The key here is the perversity of swapping chapter & part.
+# Also, we're allowing chapter be a main document element
+# with FrontMatter
+# We're also stricterabout chapter and part's contents
+include "LaTeXML-structure.rnc" {
+  chapter = element chapter {
+    Common.attributes,
+    Labelled.attributes,
+
+    # Expand FrontMatter.class w/o acknowledgements, so they move to metadata
+    (  subtitle | date | abstract | keywords | classification
+    # Add the additional gallery items
+     | sidebar | gallery | copyright 
+    # and the normal sectional frontmatter
+     | SectionalFrontMatter.class | Meta.class)*,
+    part* }
+  part = element part {
+    Common.attributes,
+    Labelled.attributes,
+    (SectionalFrontMatter.class | Meta.class)*,
+    section* }
+  # Redefined to allow idref.
+  creator = element creator {
+    Common.attributes,
+    attribute idref { text }?,
+    attribute role { text }?,
+    (Person.class | Misc.class)* }
+}
+
+# Extra chapter FrontMatter
+sidebar = element sidebar {
+  Labelled.attributes,
+  attribute name { text }?,
+  (FrontMatter.class | SectionalFrontMatter.class)*, Para.model }
+
+gallery = element gallery {
+  galleryitem* }
+
+galleryitem = element galleryitem {
+  attribute graphic { text }?,
+  attribute name { text }?,
+  attribute labelref { text }?,
+  graphics* }
+
+# Isn't this already covered somewhere in frontmatter?
+copyright = element copyright {
+  attribute year { text }?,
+  Inline.model}
+
+SectionalFrontMatter.class |= metadata
+
+#======================================================================
+# Notations
+notations =
+## A Notation document.
+element notations {
+  Common.attributes,
+  Labelled.attributes,
+
+  SectionalFrontMatter.class*,
+  notationlist* }
+
+notationlist =
+## An notation list generated from the collection of \elementref{Mark} in a document
+## (or document collection).
+element notationlist {
+  Common.attributes,
+  ID.attributes,
+
+  notationitem* }
+
+notationitem =
+## An entry in an \elementref{notationlist} consisting of a phrase, references to
+## points in the document where the phrase was found, and possibly
+## a nested \elementref{notationlist} represented notation levels below this one.
+element notationitem {
+  Common.attributes,
+  ID.attributes,
+
+  tag,\text }
+#======================================================================
+# Bibliography
+include "LaTeXML-bib.rnc"
+
+#======================================================================
+# Combine the contributions from the several modules
+
+## Combined model for inline content.
+Inline.model = (text | Inline.class | Misc.class | Meta.class)*
+
+## Combined model for physical block-level content.
+Block.model = (Block.class | Misc.class | Meta.class)*
+
+## Combined model for general flow containing both inline and block level content.
+Flow.model =  (text | Inline.class | Block.class | Misc.class | Meta.class)*
+
+## Combined model for logical block-level context.
+Para.model = (Para.class | Meta.class)*
+
+start = document | chapter | bibliography | index | notations

@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  /=====================================================================\ 
+  |  LaTeXML-structure.rnc                                              |
+  | RelaxNG model for LaTeXML generated documents                       |
+  |=====================================================================|
+  | Part of LaTeXML:                                                    |
+  |  Public domain software, produced as part of work done by the       |
+  |  United States Government & not subject to copyright in the US.     |
+  |=====================================================================|
+  | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+  | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+  \=========================================================ooo==U==ooo=/
+-->
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+  <define name="document">
+    <element name="document">
+      <a:documentation>The document root.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <choice>
+          <ref name="FrontMatter.class"/>
+          <ref name="SectionalFrontMatter.class"/>
+        </choice>
+      </zeroOrMore>
+      <ref name="Para.model"/>
+      <zeroOrMore>
+        <ref name="part"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="chapter"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="section"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="BackMatter.class"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="part">
+    <element name="part">
+      <a:documentation>A part within a document.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <ref name="SectionalFrontMatter.class"/>
+      </zeroOrMore>
+      <ref name="Para.model"/>
+      <zeroOrMore>
+        <ref name="chapter"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="chapter">
+    <element name="chapter">
+      <a:documentation>A Chapter within a document.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <ref name="SectionalFrontMatter.class"/>
+      </zeroOrMore>
+      <ref name="Para.model"/>
+      <zeroOrMore>
+        <ref name="subparagraph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="paragraph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="subsection"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="section"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="section">
+    <element name="section">
+      <a:documentation>A Section within a document.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <ref name="SectionalFrontMatter.class"/>
+      </zeroOrMore>
+      <ref name="Para.model"/>
+      <zeroOrMore>
+        <ref name="subparagraph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="paragraph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="subsection"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="appendix">
+    <element name="appendix">
+      <a:documentation>An Appendix within a document.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <ref name="SectionalFrontMatter.class"/>
+      </zeroOrMore>
+      <ref name="Para.model"/>
+      <zeroOrMore>
+        <ref name="subparagraph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="paragraph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="subsection"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="section"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="subsection">
+    <element name="subsection">
+      <a:documentation>A Subsection within a document.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <ref name="SectionalFrontMatter.class"/>
+      </zeroOrMore>
+      <ref name="Para.model"/>
+      <zeroOrMore>
+        <ref name="subparagraph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="paragraph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="subsubsection"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="subsubsection">
+    <element name="subsubsection">
+      <a:documentation>A Subsubsection within a document.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <ref name="SectionalFrontMatter.class"/>
+      </zeroOrMore>
+      <ref name="Para.model"/>
+      <zeroOrMore>
+        <ref name="subparagraph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="paragraph"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="paragraph">
+    <element name="paragraph">
+      <a:documentation>A Paragraph within a document. This corresponds to a `formal' marked, possibly labelled
+LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <ref name="SectionalFrontMatter.class"/>
+      </zeroOrMore>
+      <ref name="Para.model"/>
+      <zeroOrMore>
+        <ref name="subparagraph"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="subparagraph">
+    <element name="subparagraph">
+      <a:documentation>A Subparagraph within a document.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <ref name="SectionalFrontMatter.class"/>
+      </zeroOrMore>
+      <ref name="Para.model"/>
+    </element>
+  </define>
+  <define name="bibliography">
+    <element name="bibliography">
+      <a:documentation>A Bibliography within a document.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <optional>
+        <attribute name="files">
+          <a:documentation>the list of bib files used to create the bibliograph.</a:documentation>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <ref name="FrontMatter.class"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="SectionalFrontMatter.class"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="biblist"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="index">
+    <element name="index">
+      <a:documentation>An Index within a document.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <ref name="SectionalFrontMatter.class"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="indexlist"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="indexlist">
+    <element name="indexlist">
+      <a:documentation>An index generated from the collection of \elementref{indexmark} in a document
+(or document collection).</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
+      <zeroOrMore>
+        <ref name="indexentry"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="indexentry">
+    <element name="indexentry">
+      <a:documentation>An entry in an \elementref{indexlist} consisting of a phrase, references to
+points in the document where the phrase was found, and possibly
+a nested \elementref{indexlist} represented index levels below this one.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
+      <ref name="indexphrase"/>
+      <optional>
+        <ref name="indexrefs"/>
+      </optional>
+      <optional>
+        <ref name="indexlist"/>
+      </optional>
+    </element>
+  </define>
+  <define name="indexrefs">
+    <element name="indexrefs">
+      <a:documentation>A container for the references (\elementref{ref}) to where an \elementref{indexphrase} was
+encountered in the document. The model is Inline to allow
+arbitrary text, in addition to the expected \elementref{ref}'s.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="title">
+    <element name="title">
+      <a:documentation>The title of a document, section or similar document structure container.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="toctitle">
+    <element name="toctitle">
+      <a:documentation>The short form of a title, for use in tables of contents or similar.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="subtitle">
+    <element name="subtitle">
+      <a:documentation>A subtitle, or secondary title.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <!-- NOTE: This should be aligned with Bibname. -->
+  <define name="personname">
+    <element name="personname">
+      <a:documentation>A person's name.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="creator">
+    <element name="creator">
+      <a:documentation>Generalized document creator.</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="role">
+          <a:documentation>indicates the role of the person in creating the docment.
+Values include author, editor and translator, 
+but is open-ended to support extension.</a:documentation>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Person.class"/>
+          <ref name="Misc.class"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="contact">
+    <element name="contact">
+      <a:documentation>Generalized contact information for a document creator.</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="role">
+          <a:documentation>indicates the type of contact information contained.
+Values include address, current_address, affiliation, thanks, 
+email, url, dedicatory to cover various common constructs,
+but is open-ended to support extension.</a:documentation>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="date">
+    <element name="date">
+      <a:documentation>Generalized document date.</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="role">
+          <a:documentation>indicates the relevance of the date to the document.
+Values include creation, but is open-ended to support extension.</a:documentation>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="abstract">
+    <element name="abstract">
+      <a:documentation>A document abstract.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Block.model"/>
+    </element>
+  </define>
+  <define name="acknowledgements">
+    <element name="acknowledgements">
+      <a:documentation>Acknowledgements for the document.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="keywords">
+    <element name="keywords">
+      <a:documentation>Keywords for the document. The content is freeform.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="classification">
+    <element name="classification">
+      <a:documentation>A classification of the document.</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="scheme">
+          <a:documentation>indicates what classification scheme was used.</a:documentation>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="Person.class">
+    <choice>
+      <ref name="personname"/>
+      <ref name="contact"/>
+    </choice>
+  </define>
+  <define name="SectionalFrontMatter.class">
+    <choice>
+      <ref name="title"/>
+      <ref name="toctitle"/>
+      <ref name="creator"/>
+    </choice>
+  </define>
+  <define name="FrontMatter.class">
+    <choice>
+      <ref name="subtitle"/>
+      <ref name="date"/>
+      <ref name="abstract"/>
+      <ref name="acknowledgements"/>
+      <ref name="keywords"/>
+      <ref name="classification"/>
+    </choice>
+  </define>
+  <define name="BackMatter.class">
+    <choice>
+      <ref name="bibliography"/>
+      <ref name="appendix"/>
+      <ref name="index"/>
+    </choice>
+  </define>
+</grammar>

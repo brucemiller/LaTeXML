@@ -1,0 +1,88 @@
+# /=====================================================================\ 
+# |  LaTeXML-tabular.rnc                                                |
+# | RelaxNG model for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+## This module defines the basic tabular, or alignment, structure.
+## It is roughly parallel to the HTML model.
+Misc.class |= tabular
+
+tabular =
+## An alignment structure corresponding to tabular  or various similar forms.
+## The model is basically a copy of HTML4's table.
+element tabular {
+  Common.attributes,
+
+  ## which row's baseline aligns with the container's baseline.
+  attribute vattach { "top" | "middle" | "bottom" }?,
+
+  ## the desired width of the tabular.
+  attribute width { Length.type }?,
+
+  (thead | tfoot | tbody | tr)*  }
+
+thead =
+## A container for a set of rows that correspond to the header of the tabular.
+element thead {
+  Common.attributes,
+
+  tr* }
+
+tfoot =
+## A container for a set of rows that correspond to the footer of the tabular.
+element tfoot {
+  Common.attributes,
+
+  tr* }
+
+tbody =
+## A container for a set of rows corresponding to the body of the tabular.
+element tbody {
+  Common.attributes,
+
+  tr* }
+
+tr =
+## A row of a tabular.
+element tr {
+  Common.attributes,
+
+  td* }
+
+td =
+## A cell in a row of a tabular.
+element td {
+  Common.attributes,
+
+  ## indicates how many columns this cell spans or covers.
+  attribute colspan { xsd:nonNegativeInteger }?,
+
+  ## indicates how many rows this cell spans or covers.
+  attribute rowspan { xsd:nonNegativeInteger }?,
+
+# This would have been clearer, but messes up conversion to dtd
+#  attribute align { "left" | "right" | "center" | "justify" | text }?,
+  ##  specifies the alignment of the content.
+  attribute align { text }?,
+
+  ## specifies the desired width for the column.
+  attribute width { Length.type }?,
+
+  ## records a sequence of t or tt, r or rr, b or bb and l or ll
+  ## for borders or doubled borders on any side of the cell.
+  attribute border { text }?,
+
+  ## whether this cell corresponds to a table head or foot.
+  attribute thead {xsd:boolean}?,
+
+  Flow.model }
+
