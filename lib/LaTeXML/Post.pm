@@ -110,11 +110,17 @@ sub new {
   $data{namespaces}={ltx=>$NSURI} unless $data{namespaces};
   $data{namespaceURIs}={$NSURI=>'ltx'} unless $data{namespaceURIs};
 
+  # Extract data from latexml's ProcessingInstructions
+  # I'd like to provide structured access to the PI's for those modules that need them,
+  # but it isn't quite clear what that api should be.
+  $data{processingInstructions}=
+    [map($_->textContent,$XPATH->findnodes('.//processing-instruction("latexml")',$xmldoc))];
+
   if(!$data{searchpaths}){
     my @paths = ();
     push(@paths,pathname_absolute($data{sourceDirectory})) if $data{sourceDirectory};
-    foreach my $pi ($XPATH->findnodes('.//processing-instruction("latexml")',$xmldoc)){
-      if($pi->textContent =~ /^\s*searchpaths\s*=\s*([\"\'])(.*?)\1\s*$/){
+    foreach my $pi (@{$data{processingInstructions}}){
+      if($pi =~ /^\s*searchpaths\s*=\s*([\"\'])(.*?)\1\s*$/){
 	push(@paths,split(',',$2)); }}
     $data{searchpaths} = [@paths]; }
 
@@ -129,35 +135,40 @@ sub newFromFile {
   if(!$options{sourceDirectory}){
     my($vol,$dir,$name) = File::Spec->splitpath($source);
     $options{sourceDirectory} = $dir || '.'; }
-  $class->new(createParser(%options)->parse_file($source),
-	      %options); }
+  my $doc = $class->new(createParser(%options)->parse_file($source),%options); 
+  $doc->validate if $$doc{validate};
+  $doc; }
 
 sub newFromString {
   my($class,$string,%options)=@_;
   $options{sourceDirectory} = '.' unless $options{sourceDirectory};
-  $class->new(createParser(%options)->parse_string($string),
-	      %options); }
+  my $doc = $class->new(createParser(%options)->parse_string($string),%options);
+  $doc->validate if $$doc{validate};
+  $doc; }
 
 sub newFromSTDIN {
   my($class,%options)=@_;
   my $string;
   { local $/ = undef; $string = <>; }
   $options{sourceDirectory} = '.' unless $options{sourceDirectory};
-  $class->new(createParser(%options)->parse_string($string),
-	      %options); }
+  my $doc = $class->new(createParser(%options)->parse_string($string),%options);
+  $doc->validate if $$doc{validate};
+  $doc; }
 
 sub createParser {
   my(%options)=@_;
   # Read in the XML, unless it already is a Doc.
   my $XMLParser = XML::LibXML->new();
-  if($options{validate}){ # First, load the LaTeXML catalog in case it's needed...
-    map(XML::LibXML->load_catalog($_),
-	pathname_find('catalog',installation_subdir=>'dtd'));
-    $XMLParser->load_ext_dtd(1);  # DO load dtd.
-    $XMLParser->validation(1); }
-  else {
-    $XMLParser->load_ext_dtd(0);
-    $XMLParser->validation(0); }
+##  if($options{validate}){ # First, load the LaTeXML catalog in case it's needed...
+##    map(XML::LibXML->load_catalog($_),
+##	pathname_find('catalog',installation_subdir=>'dtd'));
+##    $XMLParser->load_ext_dtd(1);  # DO load dtd.
+##    $XMLParser->validation(1); }
+##  else {
+#    $XMLParser->load_ext_dtd(0);
+#    $XMLParser->load_ext_dtd(1);
+    $XMLParser->validation(0); 
+##}
   $XMLParser->keep_blanks(0);	# This allows formatting the output.
   $XMLParser; }
 
@@ -188,6 +199,36 @@ sub checkDestination {
   $dest; }
 
 #======================================================================
+sub validate {
+  my($self)=@_;
+  # First, load the LaTeXML catalog in case it's needed...
+  map(XML::LibXML->load_catalog($_),
+      pathname_findall('catalog',installation_subdir=>'schema'));
+  # Check for a RelaxNGSchema PI
+  my $schema;
+  foreach my $pi (@{$$self{processingInstructions}}){
+    if($pi =~ /^\s*RelaxNGSchema\s*=\s*([\"\'])(.*?)\1\s*$/){
+      $schema = $2; }}
+  if($schema){			# Validate using rng
+    $schema .= ".rng" unless $schema =~ /\.rng$/;
+#    print STDERR "Validating using schema $schema\n";
+    my $rng = XML::LibXML::RelaxNG->new(location=>$schema);
+    eval { $rng->validate($$self{document}); };
+    if($@){
+      die "Error during RelaxNG validation  (".$schema."):\n".substr($@,0,200); }}
+  elsif(my $decldtd = $$self{document}->internalSubset){ # Else look for DTD Declaration
+#    print STDERR "Validating using DTD ".$decldtd->publicId." at ".$decldtd->systemId."\n";
+    my $dtd = XML::LibXML::Dtd->new($decldtd->publicId,$decldtd->systemId);
+    if(!$dtd){
+      die "Failed to load DTD ".$decldtd->publicId." at ".$decldtd->systemId; }
+    eval { $$self{document}->validate($dtd); };
+    if($@){
+      die "Error during DTD validation  (".$decldtd->systemId."):\n$@"; }}
+  else {			# Nothing found to validate with
+    warn "No Schema or DTD found for this document";  }
+}
+
+#======================================================================
 sub findnodes {
   my($self,$path,$node)=@_;
   $XPATH->findnodes($path,$node || $$self{document}); }
@@ -202,6 +243,7 @@ sub addNamespace{
   my($self,$nsuri,$prefix)=@_;
   $$self{namespaces}{$prefix}=$nsuri;
   $$self{namespaceURIs}{$nsuri}=$prefix;
+  $XPATH->registerNs($prefix=>$nsuri);
   $self->getDocumentElement->setNamespace($nsuri,$prefix,0); }
 
 sub getQName {
@@ -232,7 +274,7 @@ sub addNodes {
 	foreach my $key (keys %$attributes){
 	  next unless defined $$attributes{$key};
 	  my($attrprefix,$attrname)= $key =~ /^(.*):(.*)$/;
-	  if($attrprefix){
+	  if($attrprefix && ($attrprefix ne 'xml')){
 	    my $attrnsuri = $attrprefix && $$self{namespaces}{$attrprefix};
 	    $new->setAttributeNS($attrnsuri,$attrname, $$attributes{$key}); }
 	  else {
@@ -270,6 +312,8 @@ sub addNodes {
     elsif(defined $child){
       $node->appendTextNode($child); }}}
 
+our @MonthNames=(qw( January February March April May June
+		     July August September October November December));
 sub newDocument {
   my($self,$root,%options)=@_;
   my $xmldoc = XML::LibXML::Document->new("1.0","UTF-8");
@@ -302,7 +346,7 @@ sub newDocument {
   else {
     die "Dont know how to use $root as document element"; }
 
-  my $root_id = $self->getDocumentElement->getAttribute('id');
+  my $root_id = $self->getDocumentElement->getAttribute('xml:id');
   my $doc = $self->new($xmldoc,
 		       ($parent_id ? (parent_id=>$parent_id) : ()),
 		       ($root_id   ? (split_from_id=>$root_id) : ()),
@@ -311,12 +355,24 @@ sub newDocument {
   # Copy any processing instructions.
   foreach my $pi ($self->findnodes(".//processing-instruction('latexml')")){
     $doc->getDocument->appendChild($pi->cloneNode); }
-  # If new document has no date, but $self's document has some, copy them.
-  if(!$doc->findnodes('ltx:date',$doc->getDocumentElement)){
-    if(my @dates = $self->findnodes('ltx:date',$self->getDocumentElement)){
-      $doc->addNodes($doc->getDocumentElement,@dates); }}
+  # If new document has no date, try to add one
+  $doc->addDate($self);
+
   # Finally, return the new document.
   $doc; }
+
+sub addDate {
+  my($self,$fromdoc)=@_;
+  if(!$self->findnodes('ltx:date',$self->getDocumentElement)){
+    my @dates;
+    #  $fromdoc's document has some, so copy them.
+    if($fromdoc && (@dates = $fromdoc->findnodes('ltx:date',$fromdoc->getDocumentElement))){
+      $self->addNodes($self->getDocumentElement,@dates); }
+    else {
+      my ($sec,$min,$hour,$mday,$mon,$year)=localtime(time());
+      $self->addNodes($self->getDocumentElement,
+		      ['ltx:date',{role=>'creation'},
+		       $MonthNames[$mon]." ".$mday.", ".(1900+$year)]); }}}
 
 sub copy_attributes {
   my($newnode,$oldnode)=@_;
@@ -390,8 +446,8 @@ sub findNodeByID {
   my($self,$id)=@_;
   if(!$$self{idcache}){
     $$self{idcache}={};
-    foreach my $node ($self->findnodes("//*[\@id]")){
-      $$self{idcache}{$node->getAttribute('id')} = $node; }}
+    foreach my $node ($self->findnodes("//*[\@xml:id]")){
+      $$self{idcache}{$node->getAttribute('xml:id')} = $node; }}
   $$self{idcache}{$id}; }
 
 sub realizeXMNode {
