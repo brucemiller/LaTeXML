@@ -106,7 +106,6 @@ sub new {
     my($vol,$dir,$name)=File::Spec->splitpath($data{destination});
     $data{destinationDirectory} = $dir || '.'; }
   $data{document}=$xmldoc;
-  $data{idcache} = undef;
   $data{namespaces}={ltx=>$NSURI} unless $data{namespaces};
   $data{namespaceURIs}={$NSURI=>'ltx'} unless $data{namespaceURIs};
 
@@ -124,7 +123,11 @@ sub new {
 	push(@paths,split(',',$2)); }}
     $data{searchpaths} = [@paths]; }
 
-  bless {%data}, $class; }
+  my $self = bless {%data}, $class; 
+  $$self{idcache} = {};
+  foreach my $node ($self->findnodes("//*[\@xml:id]")){
+    $$self{idcache}{$node->getAttribute('xml:id')} = $node; }
+  $self; }
 
 sub Error {
   my($self,$msg)=@_;
@@ -261,6 +264,10 @@ sub getQName {
 # The $tagname should have a namespace prefix whose URI has been
 # registered with addNamespace.
 
+# Note that we're currently ignoring duplicated ids.
+# these should only happen from rearrangement and copying of document fragments
+# with embedded bits of math in them, which have those XMTok/XMRef pairs.
+# If those are the cases, we should end up finding the original id'd item, anyway, right?
 sub addNodes {
   my($self,$node,@data)=@_;
   foreach my $child (@data){
@@ -274,7 +281,12 @@ sub addNodes {
 	foreach my $key (keys %$attributes){
 	  next unless defined $$attributes{$key};
 	  my($attrprefix,$attrname)= $key =~ /^(.*):(.*)$/;
-	  if($attrprefix && ($attrprefix ne 'xml')){
+	  my $value = $$attributes{$key};
+	  if($key eq 'xml:id'){	# Ignore duplicated IDs!!!
+	    if(!defined $$self{idcache}{$value}){
+	      $$self{idcache}{$value} = $new;
+	      $new->setAttribute($key, $value); }}
+	  elsif($attrprefix && ($attrprefix ne 'xml')){
 	    my $attrnsuri = $attrprefix && $$self{namespaces}{$attrprefix};
 	    $new->setAttributeNS($attrnsuri,$attrname, $$attributes{$key}); }
 	  else {
@@ -282,35 +294,42 @@ sub addNodes {
 	}}
       $self->addNodes($new,@children); }
     elsif((ref $child) =~ /^XML::LibXML::/){
-      # NOTE: Watch this space for possible namespace mangling.
-#      $node->appendChild($$self{document}->importNode($child));
-#      $node->addChild($$self{document}->importNode($child));
-#      $node->appendChild($$self{document}->adoptNode($child));
-      # This version seems to work, but assumes the $child isn't 
-      # still part of some other document.   BUT that's risky
-#      $node->addChild($child);
-##      my $newchild = $$self{document}->importNode($child);
-##      $node->appendChild($newchild);
-##      $newchild->setNamespace($child->namespaceURI,$child->prefix,1)
-##	if $child->nodeType == XML_ELEMENT_NODE;
-
-##      if(0){
-      # So, we walk through the to-be-added node, copying it's data & children.
       my $type = $child->nodeType;
       if($type == XML_ELEMENT_NODE){
-	my $newnode = $node->addNewChild($child->namespaceURI,$child->localname);
-	copy_attributes($newnode,$child);
-	$self->addNodes($newnode,$child->childNodes); }
+	my $new = $node->addNewChild($child->namespaceURI,$child->localname);
+	foreach my $attr ($child->attributes){
+	  my $atype = $attr->nodeType;
+	  if($atype == XML_ATTRIBUTE_NODE){
+	    my $key = $attr->nodeName;
+	    if($key eq 'xml:id'){
+	      my $value = $attr->getValue;
+	      if(!defined $$self{idcache}{$value}){
+		$$self{idcache}{$value} = $new;
+		$new->setAttribute($key, $value); }}
+	    elsif(my $ns = $attr->namespaceURI){
+	      $new->setAttributeNS($ns,$attr->localname,$attr->getValue); }
+	    else {
+	      $new->setAttribute( $attr->localname,$attr->getValue); }}
+	}
+	$self->addNodes($new, $child->childNodes); }
       elsif($type == XML_DOCUMENT_FRAG_NODE){
 	$self->addNodes($node,$child->childNodes); }
       elsif($type == XML_TEXT_NODE){
 	$node->appendTextNode($child->textContent); }
-##    }
     }
     elsif(ref $child){
       warn "Dont know how to add $child to $node; ignoring"; }
     elsif(defined $child){
       $node->appendTextNode($child); }}}
+
+sub removeNodes {
+  my($self,@nodes)=@_;
+  foreach my $node (@nodes){
+    foreach my $idd ($self->findnodes("//*[\@xml:id]",$node)){
+      my $id = $idd->getAttribute('xml:id');
+      if(($$self{idcache}{$id}||'') eq $idd){
+	delete $$self{idcache}{$id}; }}
+    $node->unlinkNode; }}
 
 our @MonthNames=(qw( January February March April May June
 		     July August September October November December));
@@ -374,19 +393,6 @@ sub addDate {
 		      ['ltx:date',{role=>'creation'},
 		       $MonthNames[$mon]." ".$mday.", ".(1900+$year)]); }}}
 
-sub copy_attributes {
-  my($newnode,$oldnode)=@_;
-  foreach my $child ($oldnode->attributes){
-    my $type = $child->nodeType;
-    if($type == XML_ATTRIBUTE_NODE){
-      if(my $ns = $child->namespaceURI){
-	$newnode->setAttributeNS($ns,$child->localname,$child->getValue); }
-      else {
-	$newnode->setAttribute($child->localname,$child->getValue); }}
-    elsif($type == XML_NAMESPACE_DECL){}
-    else {
-      warn "Dont know how to add $child to $newnode; ignoring"; }}}
-
 #======================================================================
 # Given a list of nodes (or node constructors [tag,attr,content...])
 # conjoin given a conjunction like ',' or a pair like [',', ' and ']
@@ -433,7 +439,7 @@ sub trimChildNodes {
 
 sub addNavigation {
   my($self,$direction,$id)=@_;
-  my $ref = ['ltx:ref',{class=>$direction,show=>'typerefnum. title',idref=>$id}];
+  my $ref = ['ltx:ref',{idref=>$id,class=>$direction,show=>'fulltitle'}];
   if(my $nav = $self->findnode('//ltx:navigation')){
     $self->addNodes($nav,$ref); }
   else {
@@ -444,17 +450,17 @@ sub addNavigation {
 
 sub findNodeByID {
   my($self,$id)=@_;
-  if(!$$self{idcache}){
-    $$self{idcache}={};
-    foreach my $node ($self->findnodes("//*[\@xml:id]")){
-      $$self{idcache}{$node->getAttribute('xml:id')} = $node; }}
   $$self{idcache}{$id}; }
 
 sub realizeXMNode {
   my($self,$node)=@_;
-  (($node->localname eq 'XMRef') && ($node->getNamespaceURI eq $NSURI)
-   ? $node=$self->findNodeByID($node->getAttribute('idref'))
-   : $node); }
+  if($self->getQName($node) eq 'ltx:XMRef'){
+    my $realnode = $self->findNodeByID($node->getAttribute('idref'));
+    return $self->Error("Cannot find a node with xml:id=".$node->getAttribute('idref'))
+      unless $realnode;
+    $realnode; }
+  else {
+    $node; }}
 
 #======================================================================
 # adjust_latexml_doctype($doc,"Foo","Bar") =>
