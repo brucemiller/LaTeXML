@@ -19,8 +19,7 @@ sub process {
   my($self,$doc)=@_;
   if(my @math = $doc->findnodes('//ltx:XMath')){
     $self->Progress("Removing ".scalar(@math)." Intermediate XMath nodes");
-    foreach my $math (@math){
-      $math->parentNode->removeChild($math); }}
+    $doc->removeNodes(@math); }
   $doc; }
 
 # ================================================================================
