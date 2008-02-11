@@ -37,9 +37,11 @@ our %ignorable_classoptions
 		   openright openany onecolumn twocolumn 
 		   notitlepage titlepage openbib leqno fleqn));
 
+# Let's try just starting with this set (since we've loaded LaTeX)
+AssignValue(inPreamble=>1);	# \begin{document} will clear this.
 sub loadLaTeXClass {
   my($stomach,$class,@options)=@_;
-  AssignValue(inPreamble=>1);	# \begin{document} will clear this.
+#  AssignValue(inPreamble=>1);	# \begin{document} will clear this.
   my $classfile = FindFile($class,type=>"cls");
   if(!$classfile || ($classfile =~ /\.cls$/)){
     Warn("No LaTeXML implementation of class $class found, using article");
@@ -416,6 +418,8 @@ sub andSplit {
 
 DefMacro('\@author{}', '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
 DefMacro('\author{}', sub { andSplit(T_CS('\@author'),$_[1]); });
+
+DefMacro('\@add@conversion@date','\@add@frontmatter{ltx:date}[role=creation]{\today}');
 
 # Doesn't produce anything (we're already inserting frontmatter),
 # But, it does make the various frontmatter macros into no-ops.
@@ -1266,6 +1270,17 @@ DefPrimitive('\addtocounter{}{Number}',sub {
 DefPrimitive('\stepcounter{}',   sub { StepCounter(ToString($_[1])); return; });
 DefPrimitive('\refstepcounter{}',sub { RefStepCounter(ToString($_[1])); return; });
 
+DefPrimitive('\@addtoreset{}{}',sub {
+  my($stomach,$ctr,$within)=@_;
+  $ctr = ToString($ctr);
+  $within = ToString($within);
+  my $unctr = "UN$ctr"; # UNctr is counter for generating ID's for UN-numbered items.
+  AssignValue("\\cl\@$within" =>
+	      Tokens(T_CS($ctr),T_CS($unctr),
+		     (LookupValue("\\cl\@$within") ? LookupValue("\\cl\@$within")->unlist :())),
+	      'global'); 
+  return; });
+
 DefMacro('\value{}', sub {
   Explode(CounterValue($_[1])->valueOf);});
 DefMacro('\arabic{}',sub {
@@ -1992,7 +2007,7 @@ DefPrimitive('\newtoks{Token}',  sub { DefRegisterI($_[1],undef,Tokens()); });
 #======================================================================
 DefPrimitive('\hspace OptionalMatch:* {}',undef);
 DefPrimitive('\vspace OptionalMatch:* {}',undef);
-# \addvspace{len}
+DefPrimitive('\addvspace {}',undef);
 # \hfill, \vfill
 
 #======================================================================
