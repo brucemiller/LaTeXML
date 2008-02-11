@@ -37,6 +37,9 @@ sub new {
   if((!ref $stylesheet) || !($stylesheet->can('transform'))){
     $self->Error("Stylesheet \"$stylesheet\" is not a usable stylesheet!"); }
   $$self{stylesheet}=$stylesheet;
+  my %params = ();
+  %params = %{$options{parameters}} if $options{parameters};
+  $$self{parameters}={%params};
   $self; }
 
 sub process {
@@ -46,7 +49,8 @@ sub process {
   my $cssparam = ($css ? join('|',map(pathname_relative($_,$dir),@$css)) : undef);
   # Copy the CSS file to the destination. if found & needed.
   $doc->new($$self{stylesheet}->transform($doc->getDocument,
-					  ($cssparam ? (CSS=>"'$cssparam'") :()))); }
+					  ($cssparam ? (CSS=>"'$cssparam'") :()),
+					  %{$$self{parameters}})); }
 
 # ================================================================================
 1;
