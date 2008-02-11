@@ -39,6 +39,12 @@ sub process {
     return $doc if $doc->findnodes('//ltx:bibitem',$bib); # Already populated?
     my $entries = $self->getBibEntries($doc);
 
+    # Remove any bibentry's (these should have been converted to bibitems)
+    $doc->removeNodes($doc->findnodes('//ltx:bibentry'));
+    foreach my $biblist ($doc->findnodes('//ltx:biblist')){
+      $doc->removeNodes($biblist)
+	unless grep($_->nodeType == XML_ELEMENT_NODE, $biblist->childNodes); }
+
     if($$self{split}){
       # Separate by initial.
       my $split = {};
@@ -149,8 +155,7 @@ sub formatBibEntry {
     push(@blocks,[$blockname,{},@x]) if @x;
   }
   push(@blocks,['ltx:bibblock',{},"Cited by: ",
-		$doc->conjoin(', ',map(['ltx:ref',{idref=>$_, show=>'typerefnum'}],
-				       @{$$entry{referrers}}))]);
+		$doc->conjoin(', ',map(['ltx:ref',{idref=>$_}], @{$$entry{referrers}}))]);
 
   ['ltx:bibitem',{'xml:id'=>$id, key=>$key, type=>$type},@blocks]; }
 
