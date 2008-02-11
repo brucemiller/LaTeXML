@@ -227,7 +227,7 @@
 <xsl:template match="ltx:tocentry">
   <xsl:text>
   </xsl:text>
-  <li><xsl:call-template name='add_id'/><xsl:apply-templates/></li>
+  <li class="{f:classes(.)}"><xsl:call-template name='add_id'/><xsl:apply-templates/></li>
 </xsl:template>
 
 <xsl:template match="ltx:tocentry" mode="short">
