@@ -44,7 +44,7 @@ sub makeSubCollectionDocuments {
   # Patchup the main node; Replace title, add nav, add the 1st subcollection.
   my @titles = $doc->findnodes('//ltx:title | //ltx:toctitle',$root);
   my @titlestuff = $doc->trimChildNodes($titles[0]);
-  map($root->removeChild($_), @titles);
+  $doc->removeNodes(@titles);
   for(my $i=0; $i<=$#ids; $i++){
     my $subdoc = ($i == 0 ? $doc
 		  : $doc->newDocument([$roottag,{'xml:id'=>$ids[$i][0]}],
@@ -56,7 +56,9 @@ sub makeSubCollectionDocuments {
 		       ['ltx:toclist',{},
 			map(($_ == $i
 			     ? ['ltx:tocentry',{},$ids[$_][1]]
-			     : ['ltx:tocentry',{},['ltx:ref',{idref=>$ids[$_][0]},$ids[$_][1]]]),
+			     : ['ltx:tocentry',{},['ltx:ref',
+						   {idref=>$ids[$_][0],show=>'refnum'},
+						   $ids[$_][1]]]),
 			    0..$#ids)]],
 		      $collections{$ids[$i][1]});
     if($i > 0){
