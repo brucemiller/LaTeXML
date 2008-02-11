@@ -1120,6 +1120,9 @@ DefConstructor('\@alignment@hrule','',
 	       afterDigest=>sub { LookupValue('Alignment')->addLine('t'); },
 	       properties=>{isHorizontalRule=>1},
 	       alias=>'\hrule');
+DefConstructor('\@alignment@vrule','',
+	       properties=>{isVerticalRule=>1},
+	       alias=>'\vrule');
 
 # Special forms for $ appearing within alignments.
 # Note that $ within a math alignment (eg array environment),
@@ -1206,6 +1209,7 @@ sub alignmentBindings {
   Let(T_CS('\cr'),    T_CS('\@alignment@cr'));
   Let(T_CS('\hline'), T_CS('\@alignment@hline'));
   Let(T_CS('\hrule'), T_CS('\@alignment@hrule'));
+  Let(T_CS('\vrule'), T_CS('\@alignment@vrule'));
   Let('\span',        T_CS('\@alignment@span'));
 
   Let(T_MATH,  ($ismath ? T_CS('\@math@alignment$') : T_CS('\@text@alignment$')));
@@ -2323,10 +2327,6 @@ DefPrimitive('\narrower',undef);
 # Note: could be circumstances where you'd want modular frontmatter?
 # (ie. frontmatter for each sectional unit)
 AssignValue(frontmatter=>{},'global');
-
-push(@{ LookupValue('frontmatter')->{date}},
-     ['ltx:date',{role=>'conversion'}, today()])
-  if LookupValue('INCLUDE_COMMENTS');
 
 # Add a new frontmatter item that will be enclosed in <$tag %attr>...</$tag>
 # The content is the result of digesting $tokens.
