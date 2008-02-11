@@ -196,28 +196,23 @@ sub scanPattern {
 
     # Element description
     if($relaxop eq 'rng:element'){
-      my $name = $node->getAttribute('name');
-      if($name){
-	$name = $$self{model}->encodeQName($ns,$name); }
+      if(my $name = $node->getAttribute('name')){
+	(['element',$$self{model}->encodeQName($ns,$name),
+	  map($self->scanPattern($_,$ns),@children)]); }
       else {
 	my $namenode = shift(@children);
-#	$name = $self->scanNameClass(shift(@children),$ns);
-	warn "Cannot yet decipher ".$namenode->toString."\n Treating as ANY"; 
-	return ('ANY'); }
-      (['element',$name,map($self->scanPattern($_,$ns),@children)]); }
+	my @names = $self->scanNameClass($namenode,$ns);
+	map(['element',$_,map($self->scanPattern($_,$ns),@children)], @names); }}
     # Attribute description
     elsif($relaxop eq 'rng:attribute'){
       $ns = $node->getAttribute('ns'); # ONLY explicit declaration!
-      my $name = $node->getAttribute('name');
-      if($name){
-	$name = $$self{model}->encodeQName($ns,$name); }
+      if(my $name = $node->getAttribute('name')){
+	(['attribute',$$self{model}->encodeQName($ns,$name),
+	  map($self->scanPattern($_,$ns),@children)]); }
       else {
 	my $namenode = shift(@children);
-#	$name = $self->scanNameClass(shift(@children),$ns);
-	warn "Cannot yet decipher: Ignoring attribute ".$namenode->toString; }
-      if($name) {
-	(['attribute',$name,map($self->scanPattern($_,$ns),@children)]); 
-      } else { (); }}
+	my @names = $self->scanNameClass($namenode,$ns);
+	map(['attribute',$_,map($self->scanPattern($_,$ns),@children)], @names); }}
     # Various combiners
     elsif($relaxop =~ /^rng:(group|interleave|choice|optional|zeroOrMore|oneOrMore|list)$/){
       my $op = $1;
@@ -297,13 +292,27 @@ sub scanGrammarContent {
     (); }}
 
 sub scanNameClass {
-  my($self,$node,$inherit_ns)=@_;
+  my($self,$node,$ns)=@_;
   my $relaxop = getRelaxOp($node);
-  if($relaxop =~ /^rng:(name|anyName|nsName|choice)$/){
-    # Can't yet decipher!!!
-    undef; }
+  if($relaxop eq 'rng:name'){
+    ($$self{model}->encodeQName($ns,$node->textContent)); }
+  elsif($relaxop eq 'rng:anyName'){
+    warn "RelaxNG: treating ".$node->toString." as ANY"
+      if $node->hasChildNodes;
+    ('ANY'); }
+  elsif($relaxop eq 'rng:nsName'){
+    warn "RelaxNG: treating ".$node->toString." as ANY";
+    # NOTE: We _could_ conceivably use a namespace predicate,
+    # but Model has to be extended to support it!
+    ('ANY'); }
+  elsif($relaxop eq 'rng:choice'){
+    my %names=();
+    foreach my $choice ($node->childNodes){
+      map($names{$_}=1, $self->scanNameClass($choice,$ns)); }
+    ($names{ANY} ? ('ANY') : keys %names); }
   else {
-    die "Expected a name element, got ".$node->nodeName; }}
+    die "Expected a name element (rng:name|rng:anyName|rng:nsName|rng:choice), got "
+      .$node->nodeName; }}
 
 #======================================================================
 # Simplify
