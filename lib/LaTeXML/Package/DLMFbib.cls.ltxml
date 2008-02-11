@@ -28,7 +28,8 @@ DefEnvironment('{document}',
 	       .  "#body"
 	       ."</ltx:bibliography>",
 	       beforeDigest=> sub { AssignValue(inPreamble=>0);
-				    Digest(T_CS('\@add@source@date')); },
+				    Digest(T_CS('\@add@source@date'));
+				    Digest(T_CS('\@add@conversion@date')); },
 	       afterDigestBegin=>sub { 
 		 Let('\thebibliography@ID','\thedocument@ID');
 		 $_[1]->setProperty(id=>Expand(T_CS('\thebibliography@ID'))); });

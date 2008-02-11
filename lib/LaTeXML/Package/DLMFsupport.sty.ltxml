@@ -39,6 +39,8 @@ RequirePackage('latexml');
 
 our @MonthNames=(qw( January February March April May June
 		     July August September October November December));
+our %cvsmonths=( Jan=>1, Feb=>2, Mar=>3, Apr=>4, May=>5, Jun=>6,
+		 Jul=>7, Aug=>8, Sep=>9, Oct=>10, Nov=>11, Dec=>12);
 
 DefMacro('\@source@date',sub {
   my $pathname = LookupValue('SOURCEFILE');
@@ -53,21 +55,31 @@ DefMacro('\@source@date',sub {
 	($version,$wday,$mon,$mday,$time,$year)=($1,$2,$3,$4,$5,$6); }}
     close(CVS);
     if($year){
-      my ($month) = grep( /^\Q$mon\E/,@MonthNames);
-      $date = $month." ".$mday.", ".$year; }}
+      $date = sprintf("%4d-%02d-%02d",$year,$cvsmonths{$mon},$mday); }}
   if(!$date){
     my ($sec,$min,$hour,$mday,$mon,$year)=localtime(pathname_timestamp($pathname));
-    $date = $MonthNames[$mon]." ".$mday.", ".(1900+$year); }
+    $date = sprintf("%4d-%02d-%02d",(1900+$year),$mon+1,$mday); }
   Explode($date); });
 
+sub today_iso {
+  sprintf("%4d-%02d-%02d",
+	  LookupValue('\year')->valueOf, 
+	  LookupValue('\month')->valueOf,
+	  LookupValue('\day')->valueOf); }
+
+DefMacro('\today@iso',sub { Explode(today_iso()); });
+
 DefMacro('\@add@source@date','\@add@frontmatter{ltx:date}[role=creation]{\@source@date}');
+# Redefine to use ISO format.
+DefMacro('\@add@conversion@date','\@add@frontmatter{ltx:date}[role=conversion]{\today@iso}');
 
 #**********************************************************************
-# Table enhancement
+# table enhancement
 
 PushValue(ALIGNMENT_LINE_COMMANDS=>T_CS('\thinhline'));
 
 DefConstructor('\thinhline','',
+	       properties=>{isHorizontalRule=>1},
 	       afterDigest=>sub { LookupValue('Alignment')->addLine('T'); });
 
 # Paragraph similar to X

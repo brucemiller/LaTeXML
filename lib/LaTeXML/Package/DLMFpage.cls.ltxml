@@ -42,7 +42,8 @@ DefPrimitive('\thisdocument{}', sub {
 DefEnvironment('{document}',
 	       "<ltx:document labels='#label' xml:id='#id'>#body</ltx:document>",
 	       beforeDigest=> sub { AssignValue(inPreamble=>0);
-				    Digest(T_CS('\@add@source@date')); },
+				    Digest(T_CS('\@add@source@date'));
+				    Digest(T_CS('\@add@conversion@date')); },
 	       afterDigestBegin=>sub {
 		 $_[1]->setProperties(label=>LookupValue('DOCUMENTLABEL'),
 				      id=>LookupValue('DOCUMENTID')); },

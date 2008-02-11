@@ -53,7 +53,8 @@ DefEnvironment('{document}',
 	       .    "</ltx:chapter>)"
 	       .  "(<ltx:document>#body</ltx:document>)",
 	       beforeDigest=> sub { AssignValue(inPreamble=>0); 
-				    Digest(T_CS('\@add@source@date')); },
+				    Digest(T_CS('\@add@source@date')); 
+				    Digest(T_CS('\@add@conversion@date')); },
 	       afterDigest=> sub { $_[0]->getGullet->flush; return; });
 
 sub insertDLMFFrontMatter {
@@ -235,16 +236,16 @@ DefConstructor('\@@indexkeyword[]{}',
 Tag('ltx:indexkeyword',afterClose=>\&addIndexKey);
 
 # NOTE: the "^" prefix allows these to float up out of math mode.
-DefConstructor('\MarkDefn {}{}',
-	       "^<ltx:mark type='definition'>"
-	       .  "<ltx:tag>#1</ltx:tag>"
-	       .  "<ltx:text>#2</ltx:text>"
+DefConstructor('\MarkDefn []{}{}',
+	       "^<ltx:mark sortkey='#1' type='definition'>"
+	       .  "<ltx:tag>#2</ltx:tag>"
+	       .  "<ltx:text>#3</ltx:text>"
 	       ."</ltx:mark>",
 	       mode=>'text', reversion=>'');
-DefConstructor('\MarkNotation {}{}',
-	       "^<ltx:mark type='notation'>"
-	       .  "<ltx:tag>#1</ltx:tag>"
-	       .  "<ltx:text>#2</ltx:text>"
+DefConstructor('\MarkNotation []{}{}',
+	       "^<ltx:mark sortkey='#1' type='notation'>"
+	       .  "<ltx:tag>#2</ltx:tag>"
+	       .  "<ltx:text>#3</ltx:text>"
 	       ."</ltx:mark>",
 	       mode=>'text', reversion=>'');
 
@@ -334,7 +335,7 @@ sub maybeResplitAMSAlign {
 # Append the TeX from the boxes to $node
 sub appendTeXfromBox {
   my($document,$node,@boxes)=@_;
-  if(@boxes){
+  if($node && @boxes){
     my $tex = $node->getAttribute('tex') || '';
     my $ctex =$node->getAttribute('content-tex') || $tex;
     local $LaTeXML::DUAL_BRANCH = 'presentation';
