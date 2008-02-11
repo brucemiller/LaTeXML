@@ -170,13 +170,9 @@ sub makeIndexEntry {
 # let's just do the first.
 sub makeIndexRefs {
   my($doc,$id,@styles)=@_;
-#  map( ((($_||'normal') ne 'normal')
-#	? ['ltx:text',{font=>$_},['ltx:ref',{idref=>$id, show=>'typerefnum'}]]
-#	: ['ltx:ref',{idref=>$id, show=>'typerefnum'}]),
-#       @styles); }
   ((($styles[0]||'normal') ne 'normal')
-   ? ['ltx:text',{font=>$styles[0]},['ltx:ref',{idref=>$id, show=>'typerefnum'}]]
-   : ['ltx:ref',{idref=>$id, show=>'typerefnum'}]); }
+   ? ['ltx:text',{font=>$styles[0]},['ltx:ref',{idref=>$id}]]
+   : ['ltx:ref',{idref=>$id}]); }
 
 # ================================================================================
 sub conjoin {
