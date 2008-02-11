@@ -908,7 +908,7 @@
                      |classification|title|toctitle|creator)*,
                     (para|theorem|proof|figure|table|note|indexmark
                      |ERROR)*,
-                    part*,chapter*,section*,
+                    paragraph*,section*,chapter*,part*,
                     (bibliography|appendix|index)*)>
 <!ATTLIST document
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'

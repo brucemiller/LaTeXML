@@ -174,3 +174,8 @@ element indexphrase {
 
   Inline.model }
 
+# Test code
+#Inline.class |= special
+#special = element special { AnyElement* }
+#AnyAttribute = attribute * { text }*
+#AnyElement = element * { AnyAttribute, text}

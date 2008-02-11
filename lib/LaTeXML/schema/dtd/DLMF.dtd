@@ -439,7 +439,8 @@
 <!ELEMENT ns1:mark (tag?,text)>
 <!ATTLIST ns1:mark
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  type CDATA #IMPLIED>
+  type CDATA #IMPLIED
+  sortkey CDATA #IMPLIED>
 
 <!ELEMENT ns1:metadata (note|origref|indexkeyword|acknowledgements)*>
 <!ATTLIST ns1:metadata
@@ -1072,7 +1073,7 @@
                         (para|theorem|proof|figure|table|figuregroup
                          |tablegroup|begin_onecolumn|end_onecolumn
                          |indexmark|ERROR|declare|mark)*,
-                        part*,chapter*,section*,
+                        paragraph*,section*,chapter*,part*,
                         (bibliography|appendix|index)*)>
 <!ATTLIST ns1:document
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'

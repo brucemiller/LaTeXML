@@ -26,13 +26,16 @@
       </zeroOrMore>
       <ref name="Para.model"/>
       <zeroOrMore>
-        <ref name="part"/>
+        <ref name="paragraph"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="section"/>
       </zeroOrMore>
       <zeroOrMore>
         <ref name="chapter"/>
       </zeroOrMore>
       <zeroOrMore>
-        <ref name="section"/>
+        <ref name="part"/>
       </zeroOrMore>
       <zeroOrMore>
         <ref name="BackMatter.class"/>
