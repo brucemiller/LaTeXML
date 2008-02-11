@@ -20,20 +20,20 @@ use base qw(LaTeXML::Post);
 our $PILCROW = "\N{PILCROW SIGN}";
 our $SECTION = "\N{SECTION SIGN}";
 our %TYPEPREFIX = 
-  (equation     =>'Eq.',
-   equationmix  =>'Eq.',
-   equationgroup=>'Eq.',
-   figure       =>'Fig.',
-   table        =>'Tab.',
-   chapter      =>'Ch.',
-   part         =>'Pt.',
-   section      =>$SECTION,
-   subsection   =>$SECTION,
-   subsubsection=>$SECTION,
-   paragraph    =>$PILCROW,
-   subparagraph =>$PILCROW,
-   para         =>'p',
-#   appendix     =>'App.',
+  ('ltx:equation'     =>'Eq.',
+   'ltx:equationmix'  =>'Eq.',
+   'ltx:equationgroup'=>'Eq.',
+   'ltx:figure'       =>'Fig.',
+   'ltx:table'        =>'Tab.',
+   'ltx:chapter'      =>'Ch.',
+   'ltx:part'         =>'Pt.',
+   'ltx:section'      =>$SECTION,
+   'ltx:subsection'   =>$SECTION,
+   'ltx:subsubsection'=>$SECTION,
+   'ltx:paragraph'    =>$PILCROW,
+   'ltx:subparagraph' =>$PILCROW,
+   'ltx:para'         =>'p',
+#   'ltx:appendix'     =>'App.',
  );
 
 sub new {
@@ -41,6 +41,8 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{db}       = $options{db};
   $$self{urlstyle} = $options{urlstyle};
+  $$self{toc_show} = ($options{number_sections} ? "typerefnum title" : "title");
+  $$self{ref_show} = ($options{number_sections} ? "typerefnum" : "title");
   $self; }
 
 sub process {
@@ -69,6 +71,8 @@ sub fill_in_navigation {
       # Add navigation in any case?
       $doc->addNodes($doc->getDocumentElement, ['ltx:navigation',{}]);
       if(my $nav = $doc->findnode('//ltx:navigation')){
+	my $startref =$doc->findnode('ltx:ref[@class="start"]',$nav);
+	my $start_id = $startref && $startref->getAttribute('idref');
 	my $h_id = $id;
 	# Generate Downward TOC
 	my $navtoc= $self->navtoc_aux($id, $entry->getValue('location'));
@@ -76,15 +80,16 @@ sub fill_in_navigation {
 	my $p_id;
 	while(($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))){
 	  $navtoc = ['ltx:toclist',{},
-		     map(['ltx:tocentry',{},
-			  ['ltx:ref',{class=>'toc',show=>'refnum title',idref=>$_}],
+		     map(['ltx:tocentry',
+			  {($_ eq $id ? (class=>'self'):())},
+			  ['ltx:ref',{class=>'toc',idref=>$_,show=>'fulltitle'}],
 			  (($_ eq $h_id) && $navtoc ? ($navtoc) : ())],
 			 @{ $entry->getValue('children')||[] })];
 	  $h_id = $p_id; }
 	$navtoc = ['ltx:toclist',{},
 		   ['ltx:tocentry',{},
-		    ['ltx:ref',{class=>'toc',show=>'refnum title',idref=>$h_id}],
-		    $navtoc]] if $h_id;
+		    ['ltx:ref',{class=>'toc',show=>'fulltitle',idref=>$h_id}],
+		    $navtoc]] if $h_id && (!$start_id || ($start_id ne $h_id));
 	$doc->addNodes($nav,$navtoc); }
     }}}
 
@@ -95,7 +100,7 @@ sub navtoc_aux {
       my $kids = $entry->getValue('children');
       if($kids && @$kids){
 	return (['ltx:toclist',{},map(['ltx:tocentry',{},
-				       ['ltx:ref',{class=>'toc',show=>'refnum title',idref=>$_}],
+				       ['ltx:ref',{class=>'toc',show=>'fulltitle',idref=>$_}],
 				       $self->navtoc_aux($_,$relative_to)],
 				      @$kids)]); }}}
   (); }
@@ -120,11 +125,14 @@ sub fill_in_refs {
     next if $tag eq 'ltx:XMRef'; # Blech; list those TO fill-in, or list those to exclude?
     my $id = $ref->getAttribute('idref');
     my $show = $ref->getAttribute('show');
+    $show = $$self{ref_show} unless $show;
+    $show = $$self{toc_show} if $show eq 'fulltitle';
     if(!$id){
       if(my $label = $ref->getAttribute('labelref')){
 	my $entry;
 	if(($entry = $db->lookup($label)) && ($id=$entry->getValue('id'))){
-	  $show = 'refnum' unless $show; }
+	  $show =~ s/^type//; 	# Since author may have put explicit \S\ref... in! 
+	}
 	else {
 	  $self->note_missing('Label',$label);
 	  if(!$ref->textContent){
@@ -139,7 +147,7 @@ sub fill_in_refs {
 	if(my $titlestring = $self->generateTitle($id)){
 	  $ref->setAttribute(title=>$titlestring); }}
       if(!$ref->textContent && !(($tag eq 'ltx:graphics') || ($tag eq 'ltx:picture'))){
-	$doc->addNodes($ref,$self->generateRef($doc,$id,$show || 'typerefnum')); }
+	$doc->addNodes($ref,$self->generateRef($doc,$id,$show)); }
       if(my $entry = $$self{db}->lookup("ID:$id")){
 	$ref->setAttribute(stub=>1) if $entry->getValue('stub'); }
     }}}
@@ -158,7 +166,7 @@ sub fill_in_bibrefs {
     my ($p,$s) = ($bibref->parentNode, undef);
     while(($s = $p->lastChild) && ($$s != $$bibref)){ # Remove & Save following siblings.
       unshift(@save,$p->removeChild($s)); }
-    $p->removeChild($bibref);
+    $doc->removeNodes($bibref);
     $doc->addNodes($p,$self->make_bibcite($doc,$show,split(/,/,$bibref->getAttribute('bibrefs'))));
     map($p->appendChild($_),@save); # Put these back.
  }}
@@ -316,7 +324,7 @@ sub generateTitle {
     $title = $title->textContent if $title && ref $title;
     $title =~ s/^\s+// if $title;
     $title =~ s/\s+$// if $title;
-    my $refnum = $entry->getValue('refnum');
+    my $refnum = ($$self{number_sections} ? $entry->getValue('refnum') : '');
     $refnum = $refnum->textContent if $refnum && ref $refnum;
     $refnum =~ s/^\s+// if $refnum;
     $refnum =~ s/\s+$// if $refnum;
