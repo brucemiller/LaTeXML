@@ -110,10 +110,10 @@ sub processPages {
     while(@entries && @removed && ${$entries[0]->{node}} == ${$removed[0]}){
       my $entry = shift(@entries);
       my $page = $$entry{node};
-      shift(@removed);
+      $doc->removeNodes(shift(@removed));
       my $id = $page->getAttribute('xml:id');
       my $tocentry =['ltx:tocentry',{},
-		     ['ltx:ref',{class=>'toc',show=>'typerefnum title', idref=>$id}]];
+		     ['ltx:ref',{class=>'toc', idref=>$id, show=>'fulltitle'}]];
       if($page->localname =~ /^appendix/){
 	push(@apptoc,$tocentry); }
       else {
