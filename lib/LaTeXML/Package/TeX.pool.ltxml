@@ -2503,7 +2503,8 @@ DefConstructor('\;',"?#isMath(<ltx:XMHint name='thickspace'/>)(\x{2004})",
 	      properties=>{isSpace=>1}); # THREE-PER-EM SPACE
 DefConstructor('\:',"?#isMath(<ltx:XMHint name='medspace'/>)(\x{2005})",
 	      properties=>{isSpace=>1});  # FOUR-PER-EM SPACE
-DefConstructor('\ ',"?#isMath(<ltx:XMHint name='medspace'/>)(\x{2002})",
+#DefConstructor('\ ',"?#isMath(<ltx:XMHint name='medspace'/>)(\x{2002})",
+DefConstructor('\ ',"?#isMath(<ltx:XMHint name='medspace'/>)(".UTF(0xA0).")",
 	      properties=>{isSpace=>1}); # EN SPACE
 DefConstructor('\/',"?#isMath(<ltx:XMHint name='italiccorr'/>)()",
 	      properties=>{isSpace=>1});
