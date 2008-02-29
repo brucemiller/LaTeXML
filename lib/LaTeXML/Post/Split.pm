@@ -48,6 +48,8 @@ sub process {
     push(@docs,$self->processPages($doc,@{$$tree{children}}));
     # Add navigation to the sequence.
     if(!$$self{no_navigation}){
+      my $rootid = $doc->getDocumentElement->getAttribute('xml:id');
+      $doc->addNavigation(start=>$rootid) if $rootid;
       for(my $i=0; $i<$#docs; $i++){
 	$docs[$i]->addNavigation(next=>$docs[$i+1]->getDocumentElement->getAttribute('xml:id'));
 	$docs[$i+1]->addNavigation(previous=>$docs[$i]->getDocumentElement->getAttribute('xml:id')); }}
@@ -104,6 +106,7 @@ sub processPages {
       unshift(@removed,$sib);
       last if $$sib == ${$entries[0]->{node}}; }
     # Build toc from adjacent nodes that are being extracted.
+    my $hit_appendices=0;
     my @toc = ();
     my @apptoc = ();
     # Process a sequence of adjacent pages; these will go into the same TOC.
@@ -114,7 +117,8 @@ sub processPages {
       my $id = $page->getAttribute('xml:id');
       my $tocentry =['ltx:tocentry',{},
 		     ['ltx:ref',{class=>'toc', idref=>$id, show=>'fulltitle'}]];
-      if($page->localname =~ /^appendix/){
+      $hit_appendices |= $page->localname =~ /^appendix/;
+      if($hit_appendices){
 	push(@apptoc,$tocentry); }
       else {
 	push(@toc,$tocentry); }
@@ -143,7 +147,7 @@ sub getPageName {
   $name =~ s/\s+.*// if $name;		# Truncate in case multiple labels.
   $name =~ s/^LABEL:// if $name;
   if(!$name){
-    if(($attr eq 'label') && ($name=$page->getAttribute('xml:id'))){
+    if(($attr eq 'labels') && ($name=$page->getAttribute('xml:id'))){
       $self->Warn($doc->getQName($page)." has no $attr attribute for pathname; using id=$name"); 
       $attr='xml:id'; }
     else {
