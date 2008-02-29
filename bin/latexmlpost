@@ -20,6 +20,7 @@ my $identity = "latexmlpost (LaTeXML version $LaTeXML::VERSION)";
 my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
 my($sourcedir,$destination)=(undef,undef);
 my($format,$urlstyle) = (undef,'server');
+my($numbersections)=(1);
 my($stylesheet,$defaultcss,@css)=(undef,1);
 my($parallelmath,$mathimages,$mathimagemag)=(undef,undef,1.75);
 my($linelength,$keepXMath)=(undef,undef);
@@ -39,35 +40,44 @@ my %splitpaths =
 
 
 # Get the command line arguments.
-GetOptions("destination=s"=>sub { $destination = $_[1];
+GetOptions("verbose+"              =>\$verbosity,
+	   "VERSION"      =>\$showversion,
+	   "help|?"       =>\$help,
+	   # Source Options
+	   "sourcedirectory=s"     =>\$sourcedir,
+	   "validate!"             =>\$validate,
+
+	   # Basics
+	   "format=s"              =>\$format,
+	   "destination=s"=>sub { $destination = $_[1];
 				  if(!defined $format){
 				    $format='xhtml' if $destination=~/\.xhtml$/;
 				    $format='html'  if $destination=~/\.html$/; }},
-	   "sourcedirectory=s"     =>\$sourcedir,
-	   "verbose+"              =>\$verbosity,
+	   "omitdoctype!"          =>\$omit_doctype,
+	   "numbersections!"       =>\$numbersections,
 	   # Some general XSLT/CSS options.
 	   "stylesheet=s"          =>\$stylesheet,
 	   "css=s"                 =>\@css,
 	   "defaultcss!"           =>\$defaultcss,
-	   "format=s"              =>\$format,
-	   "urlstyle=s"            =>$urlstyle,
-	   "validate!"             =>\$validate,
-	   "omitdoctype!"          =>\$omit_doctype,
 	   # Options for broader document set processing
 	   "split!"                =>\$split,
 	   "splitat=s"             =>sub { $splitat=$_[1]; $split=1 unless defined $split;},
 	   "splitpath=s"           =>sub { $splitpath=$_[1]; $split=1 unless defined $split;},
 	   "splitnaming=s"         =>sub { $splitnaming=$_[1]; $split=1 unless defined $split;},
+	   "scan!"                 =>\$scan,
+	   "crossref!"             =>\$crossref,
+	   "urlstyle=s"            =>$urlstyle,
+	   # Generating indices
 	   "index!"                =>\$index,
 	   "permutedindex!"        =>\$permutedindex,
 	   "splitindex!"           =>\$splitindex,
+	   # Generating Bibliographies
 	   "bibliography=s"        =>\@bibliographies,
 	   "splitbibliography!"    =>\$splitbibliography,
-	   "scan!"                 =>\$scan,
-	   "crossref!"             =>\$crossref,
 	   # Options for two phase processing
 	   "prescan"               =>\$prescan,
 	   "dbfile=s"              =>\$dbfile,
+
 	   # Various choices for math processing.
 	   # Note: Could want OM embedded in mml annotation, too.
 	   # In general, could(?) want multiple math reps within <Math>
@@ -76,17 +86,17 @@ GetOptions("destination=s"=>sub { $destination = $_[1];
 	   # So, need to separate multiple transformations from the combination.
 	   # However, IF combining, then will need to support a id/ref mechanism.
 #	   "mathml|mml!"  =>\$mathml,
-	   "parallelmath!"               => \$parallelmath,
 	   "mathimages!"                 => \$mathimages,
 	   "mathimagemagnification=f"    => \$mathimagemag,
+	   "linelength=i"                =>\$linelength,
 	   "presentationmathml|pmml"     => sub { addMathFormat('pmml'); },
 	   "contentmathml|cmml"          => sub { addMathFormat('cmml'); },
 	   "openmath|om"                 => sub { addMathFormat('om'); },
 	   "nopresentationmathml|nopmml" => sub { removeMathFormat('pmml'); },
 	   "nocontentmathml|nocmml"      => sub { removeMathFormat('cmml'); },
 	   "noopenmath|noom"             => sub { removeMathFormat('om'); },
+	   "parallelmath!"               => \$parallelmath,
 	   "keepXMath!"                  =>\$keepXMath,
-	   "linelength=i"                =>\$linelength,
 	   # For graphics: vaguely similar issues, but more limited.
 	   # includegraphics images (eg. ps) can be converted to webimages (eg.png)
 	   # picture/pstricks images can be converted to png or possibly svg.
@@ -94,8 +104,6 @@ GetOptions("destination=s"=>sub { $destination = $_[1];
 	   "svg!"          =>\$svg,
 	   "pictureimages!"=>\$picimages,
 
-	   "VERSION"      =>\$showversion,
-	   "help|?"       =>\$help,
 	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
 if($showversion){ print STDERR "$identity\n"; exit(1); }
@@ -205,6 +213,7 @@ if(!$prescan){
   if($crossref){
     require 'LaTeXML/Post/CrossRef.pm';
     push(@procs,LaTeXML::Post::CrossRef->new(db=>$DB,urlstyle=>$urlstyle,format=>$format,
+					     ($numbersections ? (number_sections=>1):()),
 					     %OPTIONS)); }
 
   if($mathimages){
@@ -257,7 +266,12 @@ if(!$prescan){
 	my $csspath = pathname_absolute($css,pathname_directory($destination));
 	pathname_copy($csssource,$csspath)  if -f $csssource; 
 	push(@csspaths,$csspath); }}
-    push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet, css=>[@csspaths],%OPTIONS)); }
+    push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,
+					 css=>[@csspaths],
+					 parameters=>{number_sections
+						      =>($numbersections ?"true()":"false()")
+						     },
+					 %OPTIONS)); }
 
   push(@procs,LaTeXML::Post::Writer->new(format=>$format,omit_doctype=>$omit_doctype,%OPTIONS));
 }
@@ -312,14 +326,24 @@ graphics inclusions for the web.
 latexmlpost [options] xmlfile
 
  Options:
- --destination=file      specifies output file (and directory).
- --source=sourcedir      specifies directory of source TeX file.
+ --verbose               shows progress during processing.
+ --VERSION               show version number.
+ --help                  shows help message.
+ --sourcedirectory=sourcedir specifies directory of source TeX file.
+ --validate, --novalidate Enables (the default) or disables
+                         validation of the source xml.
  --format=html|xhtml|xml requests the output format.
+ --destination=file      specifies output file (and directory).
+ --omitdoctype           omits the Doctype declaration,
+ --noomitdoctype         disbles the omission (the default)
+ --numbersections        enables (the default) the inclusion
+                         of section numbers in titles and crossrefs.
+ --nonumbersections      disbles the above
  --stylesheet=xslfile    requests the XSL transform using the
                          given xslfile as stylesheet.
  --css=cssfile           adds a css stylesheet to html/xhtml
                          (can be repeated)
- --nodefaultcss          disables use of default css stylesheet
+ --nodefaultcss          disables inclusion of default css stylesheet
  --split                 requests splitting each document
  --nosplit               disables the above (default)
  --splitat               specifies level to split the document
@@ -327,16 +351,6 @@ latexmlpost [options] xmlfile
                          (default is section-like, if splitting)
  --splitnaming=(id|idrelative|label|labelrelative) specifies how
                          to name split files (def. idrelative).
- --index                 requests filling in the index (default)
- --noindex               disables the above
- --permutedindex         permutes index phrases in the index
- --nopermutedindex       disables the above (default)
- --splitindex            Splits the index into pages per initial.
- --nosplitindex          disables the above (default)
- --bibliography=file     specifies a bibliography file
- --splitbibliography     splits the bibliography into pages per
-                         initial.
- --nosplitbibliography   disables the above (default)
  --scan                  scans documents to extract ids, labels, 
                          section titles, etc. (default)
  --noscan                disables the above
@@ -344,6 +358,17 @@ latexmlpost [options] xmlfile
  --nocrossref            disables the above
  --urlstyle=(server|negotiated|file) format to use for urls
                          (default server).
+ --index                 requests filling in the index (default)
+ --noindex               disables the above
+ --splitindex            Splits the index into pages per initial.
+ --nosplitindex          disables the above (default)
+ --permutedindex         permutes index phrases in the index
+ --nopermutedindex       disables the above (default)
+ --bibliography=file     specifies a bibliography file
+ --splitbibliography     splits the bibliography into pages per
+                         initial.
+ --nosplitbibliography   disables the above (default)
+
  --prescan               carries out only the split (if enabled)
                          and scan, storing cross-referencing data
                          in dbfile
@@ -368,6 +393,8 @@ latexmlpost [options] xmlfile
  --parallelmath          requests parallel math markup for MathML
                          (default when multiple math formats)
  --noparallelmath        disables the above
+ --keepXMath             preserves the intermediate XMath
+                         representation (default is to remove)
  --graphicimages        converts graphics to images (default)
  --nographicimages      disables the above
  --pictureimages         converts picture environments to
@@ -375,11 +402,6 @@ latexmlpost [options] xmlfile
  --nopictureimages       disables the above
  --svg                   converts picture environments to SVG
  --nosvg                 disables the above (default)
- --keepXMath             preserves the intermediate XMath
-                         representation (default is to remove)
- --verbose               shows progress during processing.
- --VERSION               show version number.
- --help                  shows help message.
 
 If xmlfile is '-', latexmlpost reads the XML from standard input.
 
@@ -404,6 +426,23 @@ Shows this help message.
 
 =back
 
+=head2 Source Options
+
+=over 4
+
+=item C<--sourcedirectory>=I<source>
+
+Specifies the directory where the original latex source is located.
+Unless latexmlpost is run from that directory, or it can be determined
+from the xml filename, it may be necessary to specify this option in
+order to find graphics and style files.
+
+=item C<--validate>, C<--novalidate>
+
+Enables (or disables) the validation of the source XML document (the default).
+
+=back
+
 =head2 Format Options
 
 =over 4
@@ -411,26 +450,29 @@ Shows this help message.
 =item C<--format>=C<(html|xhtml|xml)>
 
 Specifies the output format for post processing. 
-html format converts the material to html and the mathematics to png images.
-xhtml format converts to xhtml and uses presentation MathML (after attempting
+C<html> format converts the material to html and the mathematics to png images.
+C<xhtml> format converts to xhtml and uses presentation MathML (after attempting
 to parse the mathematics) for representing the math.  In both cases, any
 graphics will be converted to web-friendly formats and/or copied to the
-destination directory.  By default, the output is left in LaTeXML's xml,
+destination directory.  By default, C<xml>, the output is left in LaTeXML's xml,
 but the math is parsed and converted to presentation MathML.
 For html and xhtml, a default stylesheet is provided, but see
 the C<--stylesheet> option.
-
-=item C<--source>=I<source>
-
-Specifies the directory where the original latex source is located.
-Unless latexmlpost is run from that directory, or it can be determined
-from the xml filename, it may be necessary to specify this option in
-order to find graphics and style files.
 
 =item C<--destination=>I<destination>
 
 Specifies the destination file and directory.  The directory is needed for
 mathimages and graphics processing.
+
+=item C<--omitdoctype>, C<--noomitdoctype>
+
+Omits (or includes) the document type declaration.
+The default is to include it if the document model was based on a DTD.
+
+=item C<--numbersections>, C<--nonumbersections>
+
+Includes (default), or disables the inclusion of section, equation, etc,
+numbers in the formatted document and crossreference links.
 
 =item C<--stylesheet>=I<xslfile>
 
@@ -444,11 +486,11 @@ Adds I<cssfile> as a css stylesheet to be used in the transformed html/xhtml.
 Multiple stylesheets can be used; they are included in the html in the
 order given, following the default C<core.css>
 (but see C<--nodefaultcss>). Some stylesheets included in the distribution are
-  --css=navbar-left   Puts a navigation bar on the left
+  --css=navbar-left   Puts a navigation bar on the left.
                       (default omits navbar)
-  --css=navbar-right  Puts a navigation bar on the left
-  --css=theme-blue    A blue coloring theme for headings
-  --css=amsart        A style suitable for journal articles
+  --css=navbar-right  Puts a navigation bar on the left.
+  --css=theme-blue    A blue coloring theme for headings.
+  --css=amsart        A style suitable for journal articles.
 
 =item C<--nodefaultcss>
 
