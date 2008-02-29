@@ -117,7 +117,14 @@ based on data extracted from the document(s).</a:documentation>
       </optional>
       <optional>
         <attribute name="show">
-          <a:documentation>an encoding of how the text content should be filled in.</a:documentation>
+          <a:documentation>a pattern encoding how the text content should be filled in during
+postprocessing, if it is empty.
+It consists of the words
+  \texttt{type} (standing for the object type, eg. Ch.),
+  \texttt{refnum} and \texttt{title}
+mixed with arbitrary characters. The 
+It can also be \texttt{fulltitle}, which indicates the title 
+with prefix and type if section numbering is enabled.</a:documentation>
         </attribute>
       </optional>
       <optional>
@@ -159,8 +166,10 @@ which are the specific citation.</a:documentation>
       </optional>
       <optional>
         <attribute name="show">
-          <a:documentation>encodes which of author(s), year, title, etc will
-be displayed. NOTE: Describe this.</a:documentation>
+          <a:documentation>a pattern encoding how the text content (of an empty bibref) will be filled in.
+Consists of strings \texttt{author}, \texttt{year} and \texttt{title}
+(to be replaced by data from the bibliographic item)
+mixed with arbitrary characters.</a:documentation>
         </attribute>
       </optional>
       <ref name="Inline.model"/>

@@ -57,9 +57,12 @@ Common.attributes =
 
   ## a space separated list of tokens, as in CSS.
   ## The \attr{class} can be used to add differentiate different instances of elements
-  ## without introducing new element declarations; 
-  ## it generally shouldn't be used for deep semantic distinctions, however.
+  ## without introducing new element declarations.
+  ## However, this generally shouldn't be used for deep semantic distinctions.
   ## This attribute is carried over to HTML and can be used for CSS selection.
+  ## [Note that the default XSLT stylesheets for html and xhtml
+  ## add the latexml element names to the class of html elements
+  ## for more convenience in using CSS.]
   attribute class { xsd:NMTOKENS }?
 
 ## Attributes for elements that can be cross-referenced
@@ -80,12 +83,13 @@ IDREF.attributes =
 Labelled.attributes =
   ID.attributes,
 
+
   ## Records the various labels that LaTeX uses for crossreferencing.
+  ## (note that \cs{label} can associate more than one label with an object!)
   ## It consists of space separated labels for the element.
   ## The \cs{label} macro provides the label prefixed by \texttt{LABEL:};
-  ## (note that \cs{label} can put more than one label on an object!)
   ## Spaces in a label are replaced by underscore.
-  ## other mechanisms may use other prefix (\texttt{ID:} is reserved!)
+  ## Other mechanisms (like acro?) might use other prefixes (but \texttt{ID:} is reserved!)
   attribute labels { text }?,
 
   ## the reference number (ie. section number, equation number, etc) of the object.

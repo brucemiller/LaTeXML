@@ -87,7 +87,14 @@ element ref {
   ## reference to an arbitrary url.
   attribute href { text }?,
 
-  ## an encoding of how the text content should be filled in.
+  ## a pattern encoding how the text content should be filled in during
+  ## postprocessing, if it is empty.
+  ## It consists of the words
+  ##   \texttt{type} (standing for the object type, eg. Ch.),
+  ##   \texttt{refnum} and \texttt{title}
+  ## mixed with arbitrary characters. The 
+  ## It can also be \texttt{fulltitle}, which indicates the title 
+  ## with prefix and type if section numbering is enabled.
   attribute show { text }?,
 
   ## gives a longer form description of the target,
@@ -123,8 +130,10 @@ element bibref {
   ## a comma separated list of bibliographic keys.
   attribute bibrefs { text }?,
 
-  ## encodes which of author(s), year, title, etc will
-  ## be displayed. NOTE: Describe this.
+  ## a pattern encoding how the text content (of an empty bibref) will be filled in.
+  ## Consists of strings \texttt{author}, \texttt{year} and \texttt{title}
+  ## (to be replaced by data from the bibliographic item)
+  ## mixed with arbitrary characters.
   attribute show { text }?,
 
   Inline.model }
