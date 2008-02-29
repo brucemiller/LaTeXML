@@ -77,29 +77,30 @@ sub getBibEntries {
       $ntotal++;
       my $bibkey = $bibentry->getAttribute('key');
       if($citations{$bibkey}){
+	delete $citations{$bibkey};
 	my $dbentry = $$self{db}->lookup("BIBLABEL:$bibkey");
-	$ncited++;
-	my $names='';
-	if(my $n = $doc->findnode('ltx:bib-key',$bibentry)){
-	  $names = $n->textContent; }
-	elsif(my @ns = $doc->findnodes('ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname',
-					$bibentry)){
-	  if(@ns > 2){    $names = $ns[0]->textContent .' et.al'; }
-	  elsif(@ns > 1){ $names = $ns[0]->textContent .' and '. $ns[1]->textContent; }
-	  else          { $names = $ns[0]->textContent; }}
-	elsif(my $t = $doc->findnode('ltx:bib-title',$bibentry)){
-	  $names = $t->textContent; }
-	my $date = $doc->findnode('ltx:bib-date | ltx:bib-type',$bibentry);
-	my $title =$doc->findnode('ltx:bib-title',$bibentry);
-	$date = ($date ? $date->textContent : '');
-	$title= ($title ?$title->textContent : '');
-
-	my $sortkey = lc(join('.',$names,$date,$title,$bibkey));
-	my $referrers = $dbentry->getValue('referrers');
-	$$entries{$sortkey} = {bibentry=>$bibentry, ay=>"$names.$date",
-			       initial=>$doc->initial($names,1), 
-			       referrers=> ($referrers ? [sort keys %$referrers]:[])};
-	delete $citations{$bibkey}; }}}
+	if(my $referrers = $dbentry->getValue('referrers')){
+	  $ncited++;
+	  my $names='';
+	  if(my $n = $doc->findnode('ltx:bib-key',$bibentry)){
+	    $names = $n->textContent; }
+	  elsif(my @ns = $doc->findnodes('ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname',
+					 $bibentry)){
+	    if(@ns > 2){    $names = $ns[0]->textContent .' et.al'; }
+	    elsif(@ns > 1){ $names = $ns[0]->textContent .' and '. $ns[1]->textContent; }
+	    else          { $names = $ns[0]->textContent; }}
+	  elsif(my $t = $doc->findnode('ltx:bib-title',$bibentry)){
+	    $names = $t->textContent; }
+	  my $date = $doc->findnode('ltx:bib-date | ltx:bib-type',$bibentry);
+	  my $title =$doc->findnode('ltx:bib-title',$bibentry);
+	  $date = ($date ? $date->textContent : '');
+	  $title= ($title ?$title->textContent : '');
+	  
+	  my $sortkey = lc(join('.',$names,$date,$title,$bibkey));
+	  $$entries{$sortkey} = {bibentry=>$bibentry, ay=>"$names.$date",
+				 initial=>$doc->initial($names,1), 
+				 referrers=> ($referrers ? [sort keys %$referrers]:[])};
+	}}}}
   $self->Progress("$ntotal bibentries, $ncited cited");
   # Remaining citations were never found!
   $self->Progress("Missing bib keys ".join(', ',keys %citations)) if keys %citations;
