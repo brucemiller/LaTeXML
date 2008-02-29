@@ -142,7 +142,8 @@ sub section_handler {
 			 stub=>$node->getAttribute('stub'));
     if(my $p = $parent_id && $$self{db}->lookup("ID:$parent_id")){
       if(my $sib = $p->getValue('children')){
-	push(@$sib,$id); }}
+	if(! grep($_ eq $id,@$sib)){
+	  push(@$sib,$id); }}}
   }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
