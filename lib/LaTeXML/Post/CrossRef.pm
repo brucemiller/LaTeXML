@@ -268,52 +268,63 @@ sub generateURL {
 # show is a string containing substrings 'type', 'refnum' and 'title'
 # (standing for the type prefix, refnum and title of the id'd object)
 # and any other random characters; the
-# Temporarily, normal and all are also accepted as formats.
 our $NBSP = pack('U',0xA0);
 sub generateRef {
   my($self,$doc,$id,$show)=@_;
-  my $saveshow = $show;
+  my $fallback_show = ($show !~ /title/ ? "title" : "refnum");
+  my @fallback=();
+  # Find entry associated with $id, or first ancestor, that can fill in the show pattern.
   while(my $entry = $id && $$self{db}->lookup("ID:$id")){
-    my $OK=0;
-    my @stuff=();
-    while($show){
-      if($show =~ s/^typerefnum(\.?\s*)//){
-	my $r = $1;
-	$r =~ s/\s+/$NBSP/ if $r;
-	my @rest = ($1 ? ($1):());
-	if(my $refnum = $entry->getValue('refnum')){
-	  my $type   = $entry->getValue('type');
-	  $OK = 1;
-	  push(@stuff, ['ltx:span',{class=>'refnum'},
-			($type && $TYPEPREFIX{$type} ? ($TYPEPREFIX{$type}) :()),
-			$doc->trimChildNodes($refnum),
-			($r ? ($r):())]); }}
-      elsif($show =~ s/^type(\.?\s*)//){
-	my $r = $1;
-	$r =~ s/\s+/$NBSP/ if $r;
-	my $type   = $entry->getValue('type');
-	if($type && $TYPEPREFIX{$type}){
-	  $OK = 1;
-	  push(@stuff, $TYPEPREFIX{$type},($r ? ($r):())); }}
-      elsif($show =~ s/^refnum(\.?\s*)//){
-	my $r = $1;
-	$r =~ s/\s+/$NBSP/ if $r;
-	if(my $refnum = $entry->getValue('refnum')){
-	  $OK = 1;
-	  push(@stuff, ['ltx:span',{class=>'refnum'},
-			$doc->trimChildNodes($refnum),
-			($r ? ($r):())]); }}
-      elsif($show =~ s/^title//){
-	if(my $title = $entry->getValue('title')){
-	  $OK = 1;
-	  push(@stuff, ['ltx:span',{class=>'title'},$doc->trimChildNodes($title)]); }}
-      elsif($show =~ s/^(.)//){
-	push(@stuff, $1); }}
-    return @stuff if $OK;
-    $show = $saveshow; 
+    my @stuff = $self->generateRef_aux($doc,$entry,$show);
+    return @stuff if @stuff;
+    @fallback = $self->generateRef_aux($doc,$entry,$fallback_show) unless @fallback;
     $id = $entry->getValue('parent'); }
-  ('?'); }
+  (@fallback ? @fallback : ("?")); }
 
+# Interpret a "Show" pattern for a given DB entry.
+# The pattern can contain substrings to be substituted
+#   type   => the type prefix (eg Ch. or similar)
+#   refnum => the reference number
+#   title  => the title.
+# and any other random characters which are preserved.
+sub generateRef_aux {
+  my($self,$doc,$entry,$show)=@_;
+  my $OK=0;
+  my @stuff=();
+  while($show){
+    if($show =~ s/^typerefnum(\.?\s*)//){
+      my $r = $1;
+      $r =~ s/\s+/$NBSP/ if $r;
+      my @rest = ($1 ? ($1):());
+      if(my $refnum = $entry->getValue('refnum')){
+	my $type   = $entry->getValue('type');
+	$OK = 1;
+	push(@stuff, ['ltx:span',{class=>'refnum'},
+		      ($type && $TYPEPREFIX{$type} ? ($TYPEPREFIX{$type}) :()),
+		      $doc->trimChildNodes($refnum),
+		      ($r ? ($r):())]); }}
+    elsif($show =~ s/^type(\.?\s*)//){
+      my $r = $1;
+      $r =~ s/\s+/$NBSP/ if $r;
+      my $type   = $entry->getValue('type');
+      if($type && $TYPEPREFIX{$type}){
+	$OK = 1;
+	push(@stuff, $TYPEPREFIX{$type},($r ? ($r):())); }}
+    elsif($show =~ s/^refnum(\.?\s*)//){
+      my $r = $1;
+      $r =~ s/\s+/$NBSP/ if $r;
+      if(my $refnum = $entry->getValue('refnum')){
+	$OK = 1;
+	push(@stuff, ['ltx:span',{class=>'refnum'},
+		      $doc->trimChildNodes($refnum),
+		      ($r ? ($r):())]); }}
+    elsif($show =~ s/^title//){
+      if(my $title = $entry->getValue('title')){
+	$OK = 1;
+	push(@stuff, ['ltx:span',{class=>'title'},$doc->trimChildNodes($title)]); }}
+    elsif($show =~ s/^(.)//){
+      push(@stuff, $1); }}
+  ($OK ? @stuff : ()); }
 
 sub generateTitle {
   my($self,$id)=@_;
