@@ -514,9 +514,9 @@ sub documentModules {
   foreach my $module (@{$$self{modules}}){
     my($op,$name,@content)=@$module;
     $docs = join("\n",$docs,
-		 "\\begin{dtdmodule}{$name}",
+		 "\\begin{schemamodule}{$name}",
 		 map($self->toTeX($_),@content),
-		 "\\end{dtdmodule}"); }
+		 "\\end{schemamodule}"); }
   $docs; }
 
 sub cleanTeX {
@@ -617,7 +617,7 @@ sub toTeXSplit {
       else { $content .= " ".$self->toTeX($item); }}}
   my $attrent = join(', ',@attr_entities);
   if($attr && $attrent){
-    $attr = "\\begin{description}\n\\item[$attrent]\n$attr\\end{description}"; }
+    $attr = "\\begin{description}\n\\item[$attrent] included\n$attr\\end{description}"; }
   elsif($attr){ 
     $attr = "\\begin{description}$attr\\end{description}"; }
   else {
