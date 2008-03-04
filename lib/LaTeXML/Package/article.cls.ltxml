@@ -15,6 +15,21 @@ use LaTeXML::Package;
 package LaTeXML::Package::Pool;
 
 #**********************************************************************
+# Option handling
+foreach my $option (qw(10pt 11pt 12pt 
+		       letterpaper legalpaper executivepaper a4paper a5paper b5paper
+		       landscape
+		       final draft
+		       oneside twoside
+		       openright openany
+		       onecolumn twocolumn 
+		       notitlepage titlepage
+		       openbib
+		       leqno fleqn)){
+  DeclareOption($option,undef); }
+ProcessOptions();
+
+#**********************************************************************
 # Document structure.
 RelaxNGSchema("LaTeXML");
 

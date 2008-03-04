@@ -30,37 +30,17 @@ no warnings 'redefine';
 
 #**********************************************************************
 # Basic \documentclass & \documentstyle
-our %ignorable_classoptions 
-  = map(($_=>1),qw(10pt 11pt 12pt 
-		   letterpaper legalpaper executivepaper a4paper a5paper b5paper
-		   landscape final draft oneside twoside
-		   openright openany onecolumn twocolumn 
-		   notitlepage titlepage openbib leqno fleqn));
 
 # Let's try just starting with this set (since we've loaded LaTeX)
 AssignValue(inPreamble=>1);	# \begin{document} will clear this.
-sub loadLaTeXClass {
-  my($stomach,$class,@options)=@_;
-#  AssignValue(inPreamble=>1);	# \begin{document} will clear this.
-  my $classfile = FindFile($class,type=>"cls");
-  if(!$classfile || ($classfile =~ /\.cls$/)){
-    Warn("No LaTeXML implementation of class $class found, using article");
-    if($classfile = FindFile("article.cls")){
-      $stomach->getGullet->input($classfile,undef,options=>[@options]); }
-    else {
-      Fatal("Installation error: Cannot find article implementation!"); }}
-  else {
-    $stomach->getGullet->input($classfile,undef,options=>[@options]); }
-  return; }
 
 DefConstructor('\documentclass OptionalSemiverbatim Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
     my $options = $whatsit->getArg(1);
-    $options = ToString($options) if defined $options;
-    my @options = grep( !$ignorable_classoptions{$_}, split(/,\s*/, $options||''));
-    loadLaTeXClass($stomach,ToString($whatsit->getArg(2)),@options);
+    LoadClass(ToString($whatsit->getArg(2)),
+	      options=>[ ($options ? split(/,\s*/, ToString($options)) : ()) ]);
     return;});
 
 DefConstructor('\documentstyle OptionalSemiverbatim Semiverbatim []',
@@ -68,13 +48,15 @@ DefConstructor('\documentstyle OptionalSemiverbatim Semiverbatim []',
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
     my $options = $whatsit->getArg(1);
-    $options = ToString($options) if defined $options;
-    my @options = grep( !$ignorable_classoptions{$_}, split(/,\s*/, $options||''));
-    loadLaTeXClass($stomach,ToString($whatsit->getArg(2)),@options);
-    # For documentstyle, some options mean to load styles!
-    foreach my $option(@options) {
-      if(my $file = FindFile($option,type=>'sty')){
-	$stomach->getGullet->input($file); }}
+    DeclareOption(undef,sub {
+      my $maybepkg = ToString(Digest(T_CS('\CurrentOption')));
+      if(my $file = FindFile($maybepkg,type=>'sty')){
+	RequirePackage($maybepkg); }
+      else {
+	Warn("documentstyle option $maybepkg not handled"); }
+      return; });
+    LoadClass(ToString($whatsit->getArg(2)),
+	      options=>[ ($options ? split(/,\s*/, ToString($options)) : ()) ]);
     return;});
 
 sub onlyPreamble {
@@ -336,8 +318,8 @@ DefConstructor('\usepackage[] Semiverbatim',
 				  my $options=$whatsit->getArg(1);
 				  my $packages=$whatsit->getArg(2);
 
-				  my @pkgs = split(',',ToString($packages));
-				  $options = [($options ? split(',',(ToString($options))) :())];
+				  my @pkgs = split(/,\s*/,ToString($packages));
+				  $options = [($options ? split(/,\s*/,(ToString($options))) :())];
 				  map(RequirePackage($_,options=>$options),@pkgs);
 				  return});
 DefConstructor('\RequirePackage[] Semiverbatim []',
@@ -346,7 +328,7 @@ DefConstructor('\RequirePackage[] Semiverbatim []',
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
 				  my $package=$whatsit->getArg(2);
-				  $options = [($options ? split(',',(ToString($options))) :())];
+				  $options = [($options ? split(/,\s*/,(ToString($options))) :())];
 				  RequirePackage(ToString($package), options=>$options); });
 DefConstructor('\LoadClass[] Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
@@ -354,7 +336,7 @@ DefConstructor('\LoadClass[] Semiverbatim []',
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
 				  my $class=$whatsit->getArg(2);
-				  $options = [($options ? split(',',(ToString($options))) :())];
+				  $options = [($options ? split(/,\s*/,(ToString($options))) :())];
 				  LoadClass(ToString($class), options=>$options); });
 
 #======================================================================
@@ -1737,7 +1719,7 @@ DefPrimitive('\includeonly{}',sub {
   $paths = ToString($paths);
   my $table = LookupValue('including@only');
   AssignValue('including@only', $table = {}, 'global') unless $table;
-  map( $$table{$_}=1, split(',',$paths));
+  map( $$table{$_}=1, split(/,\s*/,$paths));
   return; });
 
 #Environment('filecontents','{}',?
@@ -2388,19 +2370,23 @@ DefMacro('\NeedsTeXFormat{}[]','');
 DefMacro('\ProvidesClass{}[]','');
 DefMacro('\ProvidesPackage{}[]','');
 DefMacro('\ProvidesFile{}[]','');
-DefMacro('\DeclareOption{}{}', sub {
-  my($gullet,$option,$code)=@_;
-  DefMacroI(T_CS('\ds@'.ToString($option)),undef,
-	    Expand(Tokens($gullet->neutralizeTokens($code->unlist))));
-  (); });
-DefMacro('\PassOptionsToPackage{}{}','');
-DefMacro('\PassOptionsToClass{}{}','');
+DefPrimitive('\DeclareOption{}{}', sub {
+  my($stomach,$option,$code)=@_;
+  DeclareOption(ToString($option),$code); });
+DefPrimitive('\PassOptionsToPackage{}{}', sub {
+  my($stomach,$name,$options)=@_;
+  PassOptions($name,'pkg',split(/,\s*/,ToString(Digest($options)))); });
+DefPrimitive('\PassOptionsToClass{}{}', sub {
+  my($stomach,$name,$options)=@_;
+  PassOptions($name,'cls',split(/,\s*/,ToString(Digest($options)))); });
 DefMacro('\CurrentOption','');
 DefMacro('\OptionNotUsed','');
-DefMacro('\ExecuteOptions{}', sub{
+DefPrimitive('\ExecuteOptions{}', sub{
   my($gullet,$options)=@_;
-  map(T_CS('\ds@'.$_),split(',',ToString($options))); });
-DefMacro('\ProcessOptions','');
+  ExecuteOptions(split(/,\s*/,ToString(Digest($options)))); });
+DefPrimitive('\ProcessOptions OptionalMatch:*',sub {
+  my($stomach,$star)=@_;
+ ProcessOptions( ($star ? (inorder=>1):()) ); });
 
 # What should be done with these? :
 DefMacro('\AtEndOfPackage{}','');
