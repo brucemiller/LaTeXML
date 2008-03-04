@@ -30,9 +30,6 @@ sub new {
 # However, if things are included via some other `package', presumably
 # that package will be responsible for loading those extra pacakges, so
 # they should be ignored too, right?
-# NOTE: options from usepackage, etc, get carried to here.
-# For latexml implementations, the global $LaTeXML::PACKAGE_OPTIONS gets 
-# bound to them, but NOTHING is done to pass them to TeX style files!
 
 # HMM: the packageLoaded check only makes sense for style files, and
 # is probably only important for latexml implementations?
@@ -40,7 +37,6 @@ sub input {
   my($self,$name,$types,%options)=@_;
   $name = $name->toString if ref $name;
   # Try to find a Package implementing $name.
-  local @LaTeXML::PACKAGE_OPTIONS = @{$options{options}||[]};
   $name = $1 if $name =~ /^\{(.*)\}$/; # just in case
   my $file = pathname_find($name,paths=>$STATE->lookupValue('SEARCHPATHS'),
 			   types=>$types, installation_subdir=>'Package');
