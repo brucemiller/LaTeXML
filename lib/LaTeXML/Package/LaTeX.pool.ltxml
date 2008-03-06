@@ -1627,9 +1627,12 @@ DefConstructor('\bibitem[] Semiverbatim',
 		 if(!$tag){
 		   RefStepCounter('enumiv');
 		   $tag = Digest(Expand(T_CS('\the@bibitem'))); }
-		 my $id  = ToString(Expand(T_CS('\thebibliography@ID'))).".".$key;
-		 # colon isn't quite allowed (must look like namespace prefix!)
-		 $id =~ s/:/../g; # Hopefully this is unique enough
+		 my $id = undef;
+		 # Sometimes people put {} !?! Perhaps no id is safe here?
+		 if($key){
+		   $id = ToString(Expand(T_CS('\thebibliography@ID'))).".".$key;
+		   # colon isn't quite allowed (must look like namespace prefix!)
+		   $id =~ s/:/../g; } # Hopefully this is unique enough
 		 $_[1]->setProperties(tag=>$tag, key=>$key, id=>$id); });
 DefConstructor('\newblock',"<ltx:bibblock>");
 Tag('ltx:bibitem', autoClose=>1);
