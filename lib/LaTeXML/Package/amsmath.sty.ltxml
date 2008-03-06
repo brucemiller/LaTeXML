@@ -59,8 +59,13 @@ RequirePackage('amsopn');
 #  Currently hints are discarded before parsing.
 
 Let('\notag','\nonumber');
-DefPrimitive('\tag OptionalMatch:* {}', sub {
-	       AssignValue(EQUATIONROW_NUMBER=>ToString(Digest($_[2])), 'global'); });
+#DefPrimitive('\tag OptionalMatch:* {}', sub {
+#	       AssignValue(EQUATIONROW_NUMBER=>ToString(Digest($_[2])), 'global'); });
+
+DefConstructor('\tag OptionalMatch:* {}', '',
+	       afterDigest=>sub {
+		 AssignValue(EQUATIONROW_NUMBER=>ToString(Digest($_[2])), 'global'); },
+	       mode=>'text');
 
 DefMacro('\@ams@intertext{}',
 	 '\multicolumn{1}{l}{\@@ams@intertext{#1}}\nonumber\@alignment@newline');
