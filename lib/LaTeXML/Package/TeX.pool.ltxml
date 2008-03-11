@@ -65,6 +65,15 @@ DefParameterType('OptionalUndigested',  sub { $_[0]->readOptional; },
 		reversion=>sub {  ($_[0] ? (T_OTHER('['),$_[0]->revert,T_OTHER(']')):()); });
 DefParameterType('UndigestedKey',  sub { $_[0]->readArg; }, undigested=>1);
 
+DefParameterType('DefToken', sub {
+  my($gullet)=@_;
+  my $token = $gullet->readToken;
+  while($token->equals(T_BEGIN)){
+    my @toks = grep(!$_->equals(T_SPACE),$gullet->readBalanced->unlist);
+    $token = shift(@toks);
+    $gullet->unread(@toks); }
+  $token; });
+
 DefParameterType('Variable', sub {
   my($gullet)=@_;
   my $token = $gullet->readXToken;
@@ -1090,7 +1099,8 @@ DefMacro('\@alignment@align',
 	 .'\@open@column\@open@inner@column');
 DefConstructor('\@alignment@align@marker','',reversion=>'&');
 
-DefMacro('\@alignment@span',
+#DefMacro('\@alignment@span',
+DefMacro('\span',
 	 '\@close@inner@column'
 	 .'\@alignment@span@marker'
 	 .'\@open@inner@column');
@@ -1137,7 +1147,8 @@ DefPrimitiveI('\@text@alignment$', undef, sub {
 # This should switch to text mode (because it's balancing the hidden $
 # wrapping each alignment cell!!!!!!)
 # However, it should be like a normal $ if it's inside something like \mbox
-# that makes a text box!!!!!!
+# that itself makes a text box!!!!!!
+# Thus, we need to know at what boxing level we started the last math or text.
 # This is all complicated by the need to know _how_ we got into or out of math mode!
 # Gawd, this is awful!
 # NOTE: Probably the most "Right" thing to do would be to process
@@ -1146,7 +1157,8 @@ DefPrimitiveI('\@text@alignment$', undef, sub {
 # This would be complicated by the need to hide these $ from untex.
 DefPrimitiveI('\@math@alignment$', undef, sub {
   my($stomach)=@_;
-  if(LookupValue('MATH_ALIGN_$_BEGUN')){ # If we're begun making _something_ with $.
+  my $level = $stomach->getBoxingLevel;
+  if((LookupValue('MATH_ALIGN_$_BEGUN')||0) == $level){ # If we're begun making _something_ with $.
       my @l=();
     if(LookupValue('IN_MATH')){	# But we're somehow in math?
       @l = $stomach->invokeToken(T_CS('\@@ENDINLINEMATH')); }
@@ -1155,7 +1167,7 @@ DefPrimitiveI('\@math@alignment$', undef, sub {
       AssignValue('MATH_ALIGN_$_BEGUN'=>0); # Reset this AFTER finishing the something
       @l; }
   else {
-    AssignValue('MATH_ALIGN_$_BEGUN'=>1); # Note that we've begun something
+    AssignValue('MATH_ALIGN_$_BEGUN'=>$level+1); # Note that we've begun something
     if(LookupValue('IN_MATH')){	# If we're "still" in math
       $stomach->invokeToken(T_CS('\@@BEGININLINETEXT')); }
     else {
@@ -1210,7 +1222,7 @@ sub alignmentBindings {
   Let(T_CS('\hline'), T_CS('\@alignment@hline'));
   Let(T_CS('\hrule'), T_CS('\@alignment@hrule'));
   Let(T_CS('\vrule'), T_CS('\@alignment@vrule'));
-  Let('\span',        T_CS('\@alignment@span'));
+#  Let('\span',        T_CS('\@alignment@span'));
 
   Let(T_MATH,  ($ismath ? T_CS('\@math@alignment$') : T_CS('\@text@alignment$')));
   return; }
