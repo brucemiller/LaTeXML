@@ -83,7 +83,7 @@ sub amsalignBindings {
   Let(T_ALIGN,        T_CS('\@alignment@align'));
   Let(T_CS("\\\\"),   T_CS('\@alignment@newline'));
   Let(T_CS('\cr'),    T_CS('\@alignment@cr'));
-  Let('\span',        T_CS('\@alignment@span'));
+#  Let('\span',        T_CS('\@alignment@span'));
   Let(T_CS('\@open@row'),T_CS('\@equationgroup@open@row'));
   Let(T_CS('\@close@row'),T_CS('\@equationgroup@close@row'));
   Let(T_CS('\intertext'),T_CS('\@ams@intertext'));
@@ -133,7 +133,9 @@ DefEnvironment('{multline*}',
 # The latter, for now.
 DefEnvironment('{split}',
 	       "<ltx:XMHint name='split-begin'/>#body<ltx:XMHint name='split-end'/>",
-	       beforeDigest=>sub{ DefConstructor("&","<ltx:XMHint name='align'/>"); });
+	       beforeDigest=>sub{
+		 DefConstructor("&","<ltx:XMHint name='align'/>");
+		 DefConstructor("\\\\","<ltx:XMHint name='newline'/>"); });
 
 #======================================================================
 # Section 3.5 Equation groups without alignment
