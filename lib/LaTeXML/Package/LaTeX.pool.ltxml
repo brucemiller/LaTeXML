@@ -806,7 +806,7 @@ sub eqnarrayBindings {
   Let(T_ALIGN,        T_CS('\@alignment@align'));
   Let(T_CS("\\\\"),   T_CS('\@alignment@newline'));
   Let(T_CS('\cr'),    T_CS('\@alignment@cr'));
-  Let('\span',        T_CS('\@alignment@span'));
+#  Let('\span',        T_CS('\@alignment@span'));
   Let(T_CS('\@open@row'),T_CS('\@equationgroup@open@row'));
   Let(T_CS('\@close@row'),T_CS('\@equationgroup@close@row'));
   return; }
@@ -1095,22 +1095,22 @@ DefConstructor('\mathnormal{}', '#1', bounded=>1, requireMath=>1,
 # C.8.1 Defining Commands
 #======================================================================
 
-DefPrimitive('\newcommand OptionalMatch:* {Token}[][]{}', sub {
+DefPrimitive('\newcommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
   Error(Stringify($cs)." is already defined") if LookupDefinition($cs);
   DefMacroI($cs,convertLaTeXArgs($nargs,$opt),$body); });
 
-DefPrimitive('\renewcommand OptionalMatch:* {Token}[][]{}', sub {
+DefPrimitive('\renewcommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
   DefMacroI($cs,convertLaTeXArgs($nargs,$opt),$body); });
 
-DefPrimitive('\providecommand OptionalMatch:* {Token}[][]{}', sub {
+DefPrimitive('\providecommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
   return if LookupDefinition($cs);
   DefMacroI($cs, convertLaTeXArgs($nargs,$opt),$body); });
 
 # Need to figure out exactly what `robust' means to LaTeXML...
-DefPrimitive('\DeclareRobustCommand OptionalMatch:* {Token}[][]{}', sub {
+DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
   return if LookupDefinition($cs);
   DefMacroI($cs, convertLaTeXArgs($nargs,$opt),$body); });
@@ -1969,7 +1969,7 @@ DefPrimitive('\samepage',undef);
 # \fill
 # \stretch
 # \newlength{cmd}
-DefPrimitive('\newlength{Token}',sub {
+DefPrimitive('\newlength DefToken',sub {
   my($stomach,$cmd)=@_;
   DefRegister(ToString($cmd),Dimension(0)); });
 DefMacro('\setlength{}{}','#1#2\relax');
@@ -1980,12 +1980,12 @@ DefMacro('\settodepth{}{}','#1 0pt\relax'); # "
 
 # Assuming noone tries to get clever with figuring out the allocation of 
 # numbers, these become simple DefRegister's
-DefPrimitive('\newcount{Token}', sub { DefRegisterI($_[1],undef,Number(0)); });
-DefPrimitive('\newdimen{Token}', sub { DefRegisterI($_[1],undef,Dimension(0)); });
-DefPrimitive('\newskip{Token}',  sub { DefRegisterI($_[1],undef,Glue(0)); });
-DefPrimitive('\newmuskip{Token}',sub { DefRegisterI($_[1],undef,MuGlue(0)); });
-#DefPrimitive('\newbox{Token}',  sub { DefRegisterI($_[1],undef,LaTeXML::Box->new()); });
-DefPrimitive('\newtoks{Token}',  sub { DefRegisterI($_[1],undef,Tokens()); });
+DefPrimitive('\newcount DefToken', sub { DefRegisterI($_[1],undef,Number(0)); });
+DefPrimitive('\newdimen DefToken', sub { DefRegisterI($_[1],undef,Dimension(0)); });
+DefPrimitive('\newskip DefToken',  sub { DefRegisterI($_[1],undef,Glue(0)); });
+DefPrimitive('\newmuskip DefToken',sub { DefRegisterI($_[1],undef,MuGlue(0)); });
+#DefPrimitive('\newbox DefToken',  sub { DefRegisterI($_[1],undef,LaTeXML::Box->new()); });
+DefPrimitive('\newtoks DefToken',  sub { DefRegisterI($_[1],undef,Tokens()); });
 
 #======================================================================
 # C.13.2 Space
@@ -2008,10 +2008,10 @@ DefConstructor('\fbox{}',
 DefConstructor('\framebox[Dimension][]{}',
 	       "<ltx:text ?#1(width='#1') ?#2(pos='#2') framed='rectangle'>#3</ltx:text>",
 	       mode=>'text');
-DefPrimitive('\newsavebox{Token}',sub { AssignValue('box'.ToString($_[1]), LaTeXML::List->new()); });
-DefPrimitive('\sbox{Token}{}',sub {
+DefPrimitive('\newsavebox DefToken',sub { AssignValue('box'.ToString($_[1]), LaTeXML::List->new()); });
+DefPrimitive('\sbox DefToken{}',sub {
    AssignValue('box'.ToString($_[1]), Digest($_[2])); return;});
-DefPrimitive('\savebox{Token}[][]{}',sub {
+DefPrimitive('\savebox DefToken[][]{}',sub {
    AssignValue('box'.ToString($_[1]), Digest($_[4])); return;});
 
 DefMacroI('\begin{lrbox}',LaTeXML::Parameters::parseParameters('{Token}','\begin{lrbox}'),
@@ -2025,16 +2025,21 @@ DefPrimitive('\@begin@lrbox Token', sub {
   my $box = LaTeXML::Box->new($stomach->digestNextBody(),$font,$loc);
   AssignValue('box'.ToString($token), $box); });
 
-DefPrimitive('\usebox{Token}', sub { LookupValue('box'.ToString($_[1]));});
+DefPrimitive('\usebox DefToken', sub { LookupValue('box'.ToString($_[1]));});
 
 DefConstructor('\parbox[]{Dimension}{}',
 	       "<ltx:inline-block ?#2(width='#2') vattach='#vattach' align='justified'>#3</ltx:inline-block>",
-	       mode=>'text',
-	       properties=>sub { (vattach=>translateAttachment($_[1])); });
+	       mode=>'text', bounded=>1,
+	       properties=>sub { (vattach=>translateAttachment($_[1])); },
+	       beforeDigest=>sub {
+		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
+
 DefEnvironment('{minipage}[]{Dimension}',
 	       "<ltx:inline-block ?#2(width='#2') vattach='#vattach' align='justified'>#body</ltx:inline-block>",
 	       mode=>'text',
-	       properties=>sub { (vattach=>translateAttachment($_[1])); });
+	       properties=>sub { (vattach=>translateAttachment($_[1])); },
+	       beforeDigest=>sub {
+		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
 DefConstructor('\rule[Dimension]{Dimension}{Dimension}', 
 	       "<ltx:rule ?#1(yoffset='#1') width='#2' height='#3'/>");
 DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
