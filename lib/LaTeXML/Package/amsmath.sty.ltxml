@@ -248,7 +248,7 @@ DefMacro('\alignat{}',
 DefMacro('\endalignat',
 	 '\@finish@alignment\end@amsalign');
 DefMacro('\csname alignat*\endcsname{}',
-	 '\@amsalign@bindings\@@amsalign\@@equationgroup@nonumber\@start@alignment');
+	 '\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment');
 DefMacro('\csname endalignat*\endcsname',
 	 '\@finish@alignment\end@amsalign');
 
@@ -360,15 +360,18 @@ DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label'/>)",
 
 
 # Section 3.11.3 Subordinate numbering sequences.
-DefEnvironment('{subequations}',"<ltx:equationgroup refnum='#refnum'>#body</ltx:equationgroup>",
-	       beforeDigest=>sub { NewCounter('parentequation');
-				   RefStepCounter('equation');
-				   AssignValue("\\c\@parentequation"=>LookupValue("\\c\@equation"));
-				   AssignValue("\\c\@equation",Number(0));
-				   Let('\theparentequation','\theequation');
-				   DefMacro('\theequation','\theparentequation\alph{equation}'); },
-	       afterDigest =>sub{ AssignValue("\\c\@equation"=>LookupValue("\\c\@parentequation")); },
-	       properties=> {refnum=>sub {  Expand(T_CS("\\theparentequation")); }});
+DefEnvironment('{subequations}',"<ltx:equationgroup refnum='#refnum' xml:id='#id'>#body</ltx:equationgroup>",
+	       afterDigestBegin=>sub {
+		 my($stomach,$whatsit)=@_;
+		 my %eqn = RefStepCounter('equation');
+		 AssignValue(SAVED_EQUATION_NUMBER=>LookupValue('\c@equation'));
+		 $whatsit->setProperties(%eqn);
+		 ResetCounter('equation');
+		 DefMacro('\theequation',UnTeX($eqn{refnum}).'\alph{equation}');
+		 DefMacro('\theequation@ID',UnTeX($eqn{id}).'.\@equation@ID');
+	       },
+	       afterDigest =>sub{ 
+		 AssignValue('\c@equation',LookupValue('SAVED_EQUATION_NUMBER'),'global'); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 4: Miscellaneous mathematical features
@@ -496,7 +499,8 @@ DefMacro('\uproot{}','');
 
 DefConstructor('\boxed{}',
 	       "<ltx:XMWrap style='boxed'><ltx:XMArg>#1</ltx:XMArg></ltx:XMWrap>");
-
+DefMath('\implies',  "\x{27F9}", role=>'ARROW');
+DefMath('\impliedby',"\x{27F8}", role=>'ARROW');
 #======================================================================
 # Section 4.8 Over and under arrows
 
