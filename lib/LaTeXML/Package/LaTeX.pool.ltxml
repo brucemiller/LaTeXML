@@ -1139,6 +1139,11 @@ DefPrimitive('\DeclareFontShape{}{}{}{}{}{}', undef);
 DefPrimitive('\DeclareFontFamily{}{}{}', undef);
 DefPrimitive('\DeclareSizeFunction{}{}', undef);
 
+# Ultimately need:
+#  \DeclareMathSymbol{cs}{type}{font?}{codepoint?}
+#  \DeclareMathDelimiter{
+# and a bunch more!
+# HOWEVER, how can I convert a point in a font into anything useful?
 #======================================================================
 # C.8.2 Defining Environments
 #======================================================================
