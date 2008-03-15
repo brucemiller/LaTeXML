@@ -124,7 +124,7 @@ DefMacro('\protect',undef);
 # C.1.6 The \\ Command
 #======================================================================
 # In math, \\ is just a formatting hint, unless within an array, cases, .. environment.
-DefConstructor("\\\\ OptionalMatch:* [Dimension]",
+DefConstructor("\\\\ OptionalMatch:* [Glue]",
 #	       "?#isMath(<ltx:XMHint name='\\'/>)(\n)", alias=>"\\\\\n");
 	       "?#isMath(<ltx:XMHint name='\\'/>)(<ltx:break/>)", alias=>"\\\\\n");
 
@@ -773,7 +773,8 @@ DefConstructor('\@equationgroup@open@row SkipSpaces DigestedBody',
 
 # ========================================
 # Some special kinds of rows...
-DefMacro('\lefteqn{}','\multicolumn{3}{l}{#1\mbox{}}');
+DefMacro('\lefteqn{}',
+	 '\if@in@alignment\multicolumn{3}{l}{#1\mbox{}}\else\rlap{$\displaystyle #1$}\fi');
 # \intertext (in amsmath)
 
 # ========================================
