@@ -1116,10 +1116,28 @@ DefConstructor('\@alignment@cr@marker','',reversion=>'\cr');
 DefConstructor('\cr', "\n"); # Default binding.
 Let('\crcr', '\cr');
 
-DefMacro('\@alignment@newline OptionalMatch:* [Dimension]',
-	 '\@close@inner@column\@close@column\@close@row'
-	 .'\@alignment@newline@marker'
-	 .'\@open@row\@open@column\@open@inner@column');
+#DefMacro('\@alignment@newline OptionalMatch:* [Dimension]',
+#	 '\@close@inner@column\@close@column\@close@row'
+#	 .'\@alignment@newline@marker'
+#	 .'\@open@row\@open@column\@open@inner@column');
+
+# NOTE that this does NOT skip spaces before * or []!!!!!
+#  As if: \@alignment@newline OptionalMatch:* [Dimension]
+DefMacro('\@alignment@newline', sub {
+  my($gullet)=@_;
+  my $next = $gullet->readToken;
+  my($star,$optional);
+  if($next && $next->equals(T_OTHER('*'))){
+    $star = 1;
+    $next = $gullet->readToken; }
+  if($next && $next->equals(T_OTHER('['))){
+    $optional = $gullet->readUntil(T_OTHER(']')); 
+    $next = undef; }
+  $gullet->unread($next) if $next; 
+  (T_CS('\@close@inner@column'), T_CS('\@close@column'), T_CS('\@close@row'),
+   T_CS('\@alignment@newline@marker'),
+   T_CS('\@open@row'), T_CS('\@open@column'), T_CS('\@open@inner@column')); });
+
 DefConstructor('\@alignment@newline@marker','',reversion=>'\\\\');
 
 DefConstructor('\@alignment@hline','',
@@ -1200,6 +1218,8 @@ DefMacro('\@multicolumn {Number}  AlignmentTemplate {}', sub {
    ($column ? beforeCellUnlist($$column{before}) : ()),
    $tokens->unlist,
    ($column ? afterCellUnlist($$column{after}) : ()) ); });
+
+DefMacro('\if@in@alignment', sub { ifHandler($_[0],LookupValue('Alignment')); }, isConditional=>1);
 
 sub alignmentBindings {
   my($template,$mode)=@_;
