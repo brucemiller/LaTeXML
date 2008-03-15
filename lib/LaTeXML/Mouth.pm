@@ -22,8 +22,9 @@ use base qw(LaTeXML::Object);
 sub new {
   my($class,$string)=@_;
   my $self = {string=>$string,source=>"Anonmymous String"};
-  $$self{buffer}=[split("\n",$string)];
+#  $$self{buffer}=[split("\n",$string)];
   bless $self,$class;
+  $$self{buffer}=[$self->splitString($string)];
   $self->initialize;
   $self; }
 
@@ -43,6 +44,16 @@ sub finish {
   $$self{chars}=[];
   $$self{nchars}=0;
 }
+
+# This is (hopefully) a platform independent way of splitting a string
+# into "lines" ending with CRLF, CR or LF (DOS, Mac or Unix).
+sub splitString {
+  my($self,$string)=@_;
+#  $string =~ s/(?:\015\012|\015|\012)$//; # Remove trailing lineend, if any
+#  $string =~ s/(?:\015\012|\015|\012)/\n/sg; #  Normalize remaining
+#  ($string ? split("\n",$string) : ("")); }		  # And split.
+  $string =~ s/(?:\015\012|\015|\012)/\n/sg; #  Normalize remaining
+  split("\n",$string); }		  # And split.
 
 sub getNextLine {
   my($self)=@_;
@@ -255,7 +266,7 @@ sub new {
   elsif((!-z $pathname) && (-B $pathname)){Fatal("Input file appears to be binary: $pathname."); }
   open(IN,$pathname) || Fatal("Can't read from $pathname");
   my $shortpath=pathname_relative($pathname,pathname_cwd);
-  my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN};
+  my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN, buffer=>[]};
   bless $self,$class;
   $self->initialize;
   NoteBegin("Processing $$self{source}");
@@ -270,17 +281,38 @@ sub finish {
 
 sub hasMoreInput {
   my($self)=@_;
-  ($$self{colno} < $$self{nchars}) || $$self{IN}; }
-
+#  ($$self{colno} < $$self{nchars}) || $$self{IN}; }
+  ($$self{colno} < $$self{nchars}) || scalar(@{$$self{buffer}}) || $$self{IN}; }
 our $WARNED_8BIT=0;
 
-sub getNextLine {
+sub XXXgetNextLine {
   my($self)=@_;
   return undef unless $$self{IN};
   my $fh = \*{$$self{IN}};
   my $line = <$fh>;
   if(! defined $line){
     close($fh); $$self{IN}=undef; }
+  # NEED a SWICTH -7bit or UTF or What???
+#  if($line && $line =~ s/[\x80-\xFF]//g){
+#    Warn("Stripping 8bit characters!") unless $WARNED_8BIT;
+#    $WARNED_8BIT = 1; }
+  if($line){
+    if(my $encoding = $STATE->lookupValue('INPUT_ENCODING')){
+      $line = decode($encoding,$line); }}
+  $line; }
+
+sub getNextLine {
+  my($self)=@_;
+  if(! scalar(@{$$self{buffer}})){
+    return undef unless $$self{IN};
+    my $fh = \*{$$self{IN}};
+    my $line = <$fh>;
+    if(! defined $line){
+      close($fh); $$self{IN}=undef; }
+    else {
+      push(@{$$self{buffer}}, $self->splitString($line)); }}
+
+  my $line = (shift(@{$$self{buffer}})||''). "\n"; # put line ending back!
   # NEED a SWICTH -7bit or UTF or What???
 #  if($line && $line =~ s/[\x80-\xFF]//g){
 #    Warn("Stripping 8bit characters!") unless $WARNED_8BIT;
