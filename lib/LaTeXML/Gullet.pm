@@ -180,7 +180,7 @@ sub readToken {
 # Unread tokens are assumed to be not-yet expanded.
 sub unread {
   my($self,@tokens)=@_;
-  unshift(@{$$self{pushback}},@tokens); }
+  unshift(@{$$self{pushback}}, map($_->unlist,@tokens)); }
 
 # Read the next non-expandable token (expanding tokens until there's a non-expandable one).
 # Note that most tokens pass through here, so be Fast & Clean! readToken is folded in.
