@@ -382,11 +382,6 @@ sub psTerminators {
     $whatsit->setProperties(terminators=>$term, arrowlength=>arrowLength()) if $term; }
   return; }
 
-# for setting user-defined colors
-sub defineColor {
-  AssignValue('pscolor_'.ToString($_[1]), ConvertColor(ToString($_[0]), ToString($_[2])));
-  return; }
-
 ####################################################################################
 ## Special constructor; this will automatically handle the optional argument for
 ## setting graphis parameters by changing it into a properly nested \psset
@@ -395,6 +390,10 @@ sub defineColor {
 #sub afterPSObject  { psDefaultParameters($_[0]); LookupDefinition(T_END)->invoke; }
 sub afterPSObject  { psDefaultParameters($_[1]); $_[0]->egroup; }
 
+# NOTE: This defines a macro with 2 additional leading args: OptionalMatch:* []
+# AND it defines a constructor with 1 addtional leading arg: OptionalMatch:*
+# THUS, any constructor code needs to increment the arg positions by 1
+# UNLESS the replacement has #!ARROWS, in which case increment by 2  !!!!
 sub DefPSConstructor {
   my ($cmd, $args, $replacement, %options) = @_;
   my @after = $options{afterDigest} ? ($options{afterDigest}) : ();
@@ -437,10 +436,14 @@ DefEnvironment('{pspicture} OptionalMatch:* [Float] PSCoord PSCoord',
 ## 2 Color
 ##########################################################################################
 
-DefMacro('\newgray{}{}', \&defineColor);
-DefMacro('\newrgbcolor{}{}', \&defineColor);
-DefMacro('\newhsbcolor{}{}', \&defineColor);
-DefMacro('\newcmykcolor{}{}', \&defineColor);
+DefMacro('\newgray{}{}',sub {
+  AssignValue('pscolor_'.ToString($_[1]), ConvertColor('gray', ToString($_[2]))); });
+DefMacro('\newrgbcolor{}{}', sub {
+  AssignValue('pscolor_'.ToString($_[1]), ConvertColor('rgb', ToString($_[2]))); });
+DefMacro('\newhsbcolor{}{}', sub {
+  AssignValue('pscolor_'.ToString($_[1]), ConvertColor('hsb', ToString($_[2]))); });
+DefMacro('\newcmykcolor{}{}', sub {
+  AssignValue('pscolor_'.ToString($_[1]), ConvertColor('cmyk', ToString($_[2]))); });
 
 ##########################################################################################
 ## 3 Setting graphics Parameters
@@ -543,7 +546,7 @@ DefPSConstructor('\pspolygon', 'PSCoordList',
 		 . " points='&ptValue(#points)' fill='#fill' showpoints='#showpoints' />",
 		 attributes=>[qw(fill linecolor linewidth linearc dash showpoints)],
 		 afterDigest=> sub {
-		   my $c = $_[1]->getArg(3);
+		   my $c = $_[1]->getArg(2);
 		   $_[1]->setProperty(points=>($c->getCount<3) ? PairList(ZeroPair, $c->getPairs) : $c); });
 
 DefPSConstructor('\psframe','PSCoordList',
@@ -551,7 +554,7 @@ DefPSConstructor('\psframe','PSCoordList',
 		 . " rx='#arcval' fill='#fill' />",
 		 attributes=>[qw(fill linecolor linewidth dash)],
 		 afterDigest=>sub {
-		   my $c = $_[1]->getArg(3);
+		   my $c = $_[1]->getArg(2);
 		   my ($c0, $c1) = $c->getPairs;
 		   my ($p0, $p1) = $c1 ? ($c0, Pair($c1->getX->substract($c0->getX),
 						    $c1->getY->substract($c0->getY))) : (ZeroPair, $c0);
@@ -580,8 +583,8 @@ DefPSConstructor('\psellipse', 'PSCoord PSCoord',
 		 "<ltx:ellipse $PSLineAttr %&PairAttr(#center,x,y) %&PairAttr(#radii,rx,ry) fill='#fill' />",
 		 attributes=>[qw(fill linecolor linewidth dash)],
 		 afterDigest=>sub { 
-		   my $c = $_[1]->getArg(3);
-		   my $r = $_[1]->getArg(4);
+		   my $c = $_[1]->getArg(2);
+		   my $r = $_[1]->getArg(3);
 		   $c ? $_[1]->setProperties(center=>$c, radii=>$r)
 		     : $_[1]->setProperties(center=>ZeroPair, radii=>$r); });
 
@@ -695,7 +698,9 @@ sub finishLabelPut {
   t_Translation($p); t_Rotation($angle, 1);  }
 
 DefMacro('\rput OptionalMatch:* [] OptionalBracketed ZeroPSCoord', sub {
-	   (T_BEGIN, T_CS('\rput@start'), $_[1] ? T_OTHER('*') : (), $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
+	   (
+##### NEEDED?	    T_BEGIN, 
+	    T_CS('\rput@start'), $_[1] ? T_OTHER('*') : (), $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
 	    $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (), T_OTHER('('), Explode(ToString($_[4])), T_OTHER(')'), T_CS('\put@end')); });
 
 DefConstructor('\rput@start OptionalMatch:* [] BracketedPSAngle PSCoord',
@@ -706,7 +711,8 @@ DefConstructor('\rput@start OptionalMatch:* [] BracketedPSAngle PSCoord',
 
 DefConstructor('\put@end {}', "#1 </ltx:g>",
 #	       afterDigest=>sub { LookupDefinition(T_END)->invoke; }, alias=>' ');
-	       afterDigest=>sub { $_[0]->egroup; }, alias=>' ');
+#### NEEDED?	       afterDigest=>sub { $_[0]->egroup; }, 
+	       alias=>' ', mode=>'text');
 
 DefMacro('\uput OptionalMatch:* OptionalBracketed [] OptionalBracketed ZeroPSCoord', sub {
 	   (T_BEGIN,
@@ -845,7 +851,7 @@ sub beforePSCustom {
 }
 
 # NOTE: colors in contents of g may be wrong; more constructors need to be defined
-DefPSConstructor('\pscustom', '{}', "<ltx:g> #3 </ltx:g>",
+DefPSConstructor('\pscustom', '{}', "<ltx:g> #2 </ltx:g>",
 		 beforeDigest=> sub { beforePSCustom; });
 
 ##########################################################################################
