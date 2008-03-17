@@ -180,7 +180,7 @@ sub readToken {
 # Unread tokens are assumed to be not-yet expanded.
 sub unread {
   my($self,@tokens)=@_;
-  unshift(@{$$self{pushback}}, map($_->unlist,@tokens)); }
+  unshift(@{$$self{pushback}}, map($_->unlist,grep($_,@tokens))); }
 
 # Read the next non-expandable token (expanding tokens until there's a non-expandable one).
 # Note that most tokens pass through here, so be Fast & Clean! readToken is folded in.
@@ -482,7 +482,7 @@ sub readFloat {
     $self->unread($token) if $token && $token->getCatcode!=CC_SPACE;
     $n = $string; }
   else {
-    $self->unread($token);
+    $self->unread($token) if $token;
     $n = $self->readNormalInteger;
     $n = $n->valueOf if defined $n; }
   (defined $n ? Float($s*$n) : undef); }
