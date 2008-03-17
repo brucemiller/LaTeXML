@@ -466,32 +466,55 @@
     <equationgroup>
       <equation xml:id="Ex9">
         <MathFork>
-          <Math tex="\displaystyle a+b+c+d+e+f+g+h+i+j+ k+l+m+n+o+p" text="a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p">
+          <Math tex="\displaystyle w+x+y+z= a+b+c+d+e+f+g+h+i+j+ k+l+m+n+o+p" text="w + x + y + z = a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p">
             <XMath>
               <XMApp>
-                <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                <XMTok role="UNKNOWN" font="italic">d</XMTok>
-                <XMTok role="UNKNOWN" font="italic">e</XMTok>
-                <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                <XMTok role="UNKNOWN" font="italic">g</XMTok>
-                <XMTok role="UNKNOWN" font="italic">h</XMTok>
-                <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                <XMTok role="UNKNOWN" font="italic">j</XMTok>
-                <XMTok role="UNKNOWN" font="italic">k</XMTok>
-                <XMTok role="UNKNOWN" font="italic">l</XMTok>
-                <XMTok role="UNKNOWN" font="italic">m</XMTok>
-                <XMTok role="UNKNOWN" font="italic">n</XMTok>
-                <XMTok role="UNKNOWN" font="italic">o</XMTok>
-                <XMTok role="UNKNOWN" font="italic">p</XMTok>
+                <XMTok meaning="eq" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">w</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">x</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">y</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">z</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">g</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">h</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">j</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">k</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">l</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">m</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">n</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">o</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">p</XMTok>
+                </XMApp>
               </XMApp>
             </XMath>
           </Math>
           <MathBranch>
             <tr>
-              <td align="left"/>
+              <td align="left">
+                <Math mode="inline" tex="\displaystyle w+x+y+z=">
+                  <XMath>
+                    <XMTok role="UNKNOWN" font="italic">w</XMTok>
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">x</XMTok>
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">y</XMTok>
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">z</XMTok>
+                    <XMTok meaning="eq" role="RELOP">=</XMTok>
+                  </XMath>
+                </Math>
+              </td>
             </tr>
             <tr>
               <td align="right"/>
