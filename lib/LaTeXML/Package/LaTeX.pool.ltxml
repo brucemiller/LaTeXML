@@ -391,11 +391,12 @@ sub andSplit {
   my($cs,$tokens)=@_;
   my @items = ();
   my @toks=();
-  foreach my $t ($tokens->unlist){
-    if($t->equals(T_CS('\and'))){
-      push(@items,[@toks]); @toks=();}
-    else {
-      push(@toks,$t); }}
+  if($tokens){
+    foreach my $t ($tokens->unlist){
+      if($t->equals(T_CS('\and'))){
+	push(@items,[@toks]); @toks=();}
+      else {
+	push(@toks,$t); }}}
   map( ($cs,T_BEGIN,@$_,T_END), @items,[@toks]); }
 
 DefMacro('\@author{}', '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
@@ -774,7 +775,7 @@ DefConstructor('\@equationgroup@open@row SkipSpaces DigestedBody',
 # ========================================
 # Some special kinds of rows...
 DefMacro('\lefteqn{}',
-	 '\if@in@alignment\multicolumn{3}{l}{#1\mbox{}}\else\rlap{$\displaystyle #1$}\fi');
+	 '\if@in@alignment\multicolumn{3}{l}{$\displaystyle #1$\mbox{}}\else\rlap{$\displaystyle #1$}\fi');
 # \intertext (in amsmath)
 
 # ========================================
@@ -1058,7 +1059,8 @@ DefConstructor('\stackrel{}{}',
 	       .  "<ltx:XMWrap>#2</ltx:XMWrap>"
 	       .  "<ltx:XMWrap>#1</ltx:XMWrap>"
 	       ."</ltx:XMApp>",
-	       properties=>{scriptpos=>sub{ "mid".$_[1]->getProperty('level'); }}
+#	       properties=>{scriptpos=>sub{ "mid".$_[1]->getProperty('level'); }}
+	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }}
 );
 #======================================================================-
 # C.7.6 Putting One Thing Above Another
@@ -1269,20 +1271,25 @@ DefPrimitive('\@addtoreset{}{}',sub {
 	      'global'); 
   return; });
 
-DefMacro('\value{}', sub {
-  Explode(CounterValue($_[1])->valueOf);});
-DefMacro('\arabic{}',sub {
-  Explode(CounterValue($_[1])->valueOf); });
-DefMacro('\roman{}', sub {
-  roman(CounterValue($_[1])->valueOf); });
-DefMacro('\Roman{}', sub {
-  Roman(CounterValue($_[1])->valueOf); });
+DefMacro('\value{}',   sub {  Explode(CounterValue($_[1])->valueOf);});
+DefMacro('\@arabic{}', sub {  Explode(LookupValue(ToString($_[1]))->valueOf); });
+DefMacro('\arabic{}',  sub {  Explode(CounterValue($_[1])->valueOf); });
+DefMacro('\@roman{}',  sub {  roman(LookupValue(ToString($_[1]))->valueOf); });
+DefMacro('\roman{}',   sub {  roman(CounterValue($_[1])->valueOf); });
+DefMacro('\@Roman{}',  sub {  Roman(LookupValue(ToString($_[1]))->valueOf); });
+DefMacro('\Roman{}',   sub {  Roman(CounterValue($_[1])->valueOf); });
+DefMacro('\@alph{}',  sub {
+  T_OTHER(chr(LookupValue(ToString($_[1]))->valueOf+ord('a')-1));});
 DefMacro('\alph{}',  sub {
   T_OTHER(chr(CounterValue($_[1])->valueOf+ord('a')-1));});
+DefMacro('\@Alph{}',  sub {
+  T_OTHER(chr(LookupValue(ToString($_[1]))->valueOf+ord('A')-1));});
 DefMacro('\Alph{}',  sub {
   T_OTHER(chr(CounterValue($_[1])->valueOf+ord('A')-1));});
 our @fnsymbols=("*", "\x{2020}", "\x{2021}", UTF(0xA7), UTF(0xB6),
 		"\x{2225}", "**", "\x{2020}\x{2020}","\x{2021}\x{2021}");
+DefMacro('\@fnsymbol{}',sub { 
+		T_OTHER($fnsymbols[LookupValue(ToString($_[1]))->valueOf-1]);});
 DefMacro('\fnsymbol{}',sub { 
 		T_OTHER($fnsymbols[CounterValue($_[1])->valueOf-1]);});
 
