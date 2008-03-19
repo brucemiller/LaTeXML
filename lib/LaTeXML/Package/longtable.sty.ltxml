@@ -1,0 +1,128 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  longtable                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use LaTeXML::Package;
+use LaTeXML::Util::Alignment;
+
+#======================================================================
+# NOTE: The way the headers & footers are captured causes trailing \hlines
+# to generate empty rows.
+#======================================================================
+# Environment \begin{longtable}[align]{pattern} ... \end{longtable}
+DefMacro('\longtable[]{}',
+	 '\@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
+DefMacro('\endlongtable',
+##	 '\@longtable@tails'
+	 '\@finish@alignment\@end@tabular');
+
+DefConstructor('\@@longtable [] Undigested DigestedBody', sub {
+  my($document,$pos,$pat,$body,%props)=@_;
+  $document->openElement('ltx:table',
+			 'xml:id'=>$props{id},
+			 refnum=>$props{refnum});
+  my $alignment = $body->getProperty('alignment');
+  # Insert caption and toccaption, if any were encountered.
+  if(my $caption = LookupValue('LONGTABLE_CAPTION')){
+    $document->insertElement('ltx:caption',$caption); }
+  if(my $toccaption = LookupValue('LONGTABLE_TOCCAPTION')){
+    $document->insertElement('ltx:toccaption',$toccaption); }
+  # Reinsert the head and foot into the alignment.
+  if(my $head = LookupValue('LONGTABLE_HEAD')){
+    $alignment->prependRows(@{$head}); }
+  if(my $foot = LookupValue('LONGTABLE_FOOT')){
+    $alignment->appendRows(@{$foot}); }
+  # Now do the construction.
+  constructAlignment($document,$body,guess_headers=>0); 
+  $document->closeElement('ltx:table'); },
+	       reversion=>'\begin{longtable}[#1]{#2}#3\end{longtable}',
+	       beforeDigest=>sub { $_[0]->bgroup; },
+	       properties=> sub { RefStepCounter('table')},
+	       mode=>'text');
+
+DefPrimitive('\@longtable@bindings AlignmentTemplate',sub { longtableBindings($_[1]); });
+
+sub longtableBindings {
+  my($template)=@_;
+  alignmentBindings($template,'text'); 
+  Let(T_CS('\endfirsthead'), T_CS('\@longtable@endfirsthead'));
+  Let(T_CS('\endhead'),      T_CS('\@longtable@endhead'));
+  Let(T_CS('\endfoot'),      T_CS('\@longtable@endfoot'));
+  Let(T_CS('\endlastfoot'),  T_CS('\@longtable@endlastfoot'));
+  Let(T_CS('\caption'),      T_CS('\@longtable@caption'));
+  AssignValue(LONGTABLE_CAPTION=>undef,'global'); # Clear these vars.
+  AssignValue(LONGTABLE_TOCCAPTION=>undef,'global');
+  AssignValue(LONGTABLE_HEAD=>undef,'global');
+  AssignValue(LONGTABLE_FOOT=>undef,'global');
+  return; }
+
+#======================================================================
+# These macros appear within the longtable, at the beginning.
+# They cut of the previous lines to be used as headers or footers.
+
+DefMacro('\@longtable@endfirsthead',
+	 '\@close@inner@column\@close@column\@close@row'
+	 .'\@longtable@grab{FIRSTHEAD}'
+	 .'\@open@row\@open@column\@open@inner@column');
+DefMacro('\@longtable@endhead',
+	 '\@close@inner@column\@close@column\@close@row'
+	 .'\@longtable@grab{HEAD}'
+	 .'\@open@row\@open@column\@open@inner@column');
+DefMacro('\@longtable@endfoot',
+	 '\@close@inner@column\@close@column\@close@row'
+	 .'\@longtable@grab{FOOT}'
+	 .'\@open@row\@open@column\@open@inner@column');
+DefMacro('\@longtable@endlastfoot',
+	 '\@close@inner@column\@close@column\@close@row'
+	 .'\@longtable@grab{LASTFOOT}'
+	 .'\@open@row\@open@column\@open@inner@column');
+DefMacro('\@longtable@kill',
+	 '\@close@inner@column\@close@column\@close@row'
+	 .'\@longtable@kill@marker'
+	 .'\@open@row\@open@column\@open@inner@column');
+
+DefPrimitive('\@longtable@grab{}', sub {
+  my($stomach,$name)=@_;
+  $name = ToString($name);
+  my $alignment = LookupValue('Alignment');
+  # Remove all preceding rows.
+  my @rows = ();
+  while(my $row = $alignment->removeRow){
+    map($$_{head}=1, $row->columns);
+    unshift(@rows,$row); }
+  if(($name eq 'FIRSTHEAD') || (($name eq 'HEAD') && !LookupValue('LONGTABLE_HEAD'))){
+    AssignValue(LONGTABLE_HEAD=>[@rows], 'global'); }
+  elsif(($name eq 'LASTFOOT') || (($name eq 'FOOT') && !LookupValue('LONGTABLE_FOOT'))){
+    AssignValue(LONGTABLE_FOOT=>[@rows], 'global'); }
+  return; });
+
+DefConstructor('\@longtable@kill@marker','',reversion=>'\kill',
+	       afterDigest=>sub { LookupValue('Alignment')->removeRow; return; });
+
+#======================================================================
+# Caption gets redefined.  We'll need to grab it and make it part
+# of the table, rather than the tabular.
+DefPrimitive('\@longtable@caption OptionalMatch:* []{}', sub {
+  my($stomach,$star,$toccapton,$caption)=@_;
+  AssignValue(LONGTABLE_CAPTION=>$caption,'global');
+  AssignValue(LONGTABLE_TOCCAPTION=>$toccaption,'global'); 
+  LookupValue('Alignment')->removeRow; # Remove the "row" this was in, too.
+  return;
+});
+
+#======================================================================
+
+DefRegister('\LTLeft' =>Dimension(0));
+DefRegister('\LTRight' =>Dimension(0));
+
+#======================================================================
+1;
