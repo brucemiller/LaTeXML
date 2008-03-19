@@ -71,8 +71,21 @@ sub newRow {
 sub removeRow {
   my($self)=@_;
   my @rows = @{$$self{rows}};
-  pop(@rows);
-  $$self{rows} = [@rows]; }
+  if(@rows){
+    my $row = pop(@rows);
+    $$self{rows} = [@rows]; 
+    $row; }
+  else {
+    undef; }}
+
+sub prependRows {
+  my($self,@rows)=@_;
+  unshift(@{$$self{rows}},@rows); }
+
+sub appendRows {
+  my($self,@rows)=@_;
+  push(@{$$self{rows}},@rows); }
+
 ###
 
 sub addLine {
@@ -108,7 +121,6 @@ sub currentColumn {
 sub getColumn {
   my($self,$n)=@_;
   $$self{current_row}->column($n); }
-
 
 # sub missingColumns {
 #   my($self)=@_;
@@ -200,7 +212,8 @@ sub beAbsorbed {
 					    align=>$$cell{align}, width=>$$cell{width},
 					    (($$cell{span}||1) != 1 ? (colspan=>$$cell{span}) : ()),
 					    (($$cell{rowspan}||1) != 1 ? (rowspan=>$$cell{rowspan}) : ()),
-					    ($border ? (border=>$border):()));
+					    ($border ? (border=>$border):()),
+					    ($$cell{head} ? (thead=>'true'):()));
       if(!$empty){
 	local $LaTeXML::BOX = $$cell{boxes};
 	$document->openElement('ltx:XMArg', rule=>'Anything,') if $ismath;
@@ -321,6 +334,7 @@ sub addColumn {
   push(@before,$properties{before}->unlist) if $properties{before};
   $$col{before} = Tokens(@before);
   $$col{after}  = Tokens() unless $properties{after};
+  $$col{head}   = $properties{head};
   $$col{empty}  = 1;
   $$self{save_before}=[];
   $$self{current_column} = $col;
@@ -357,6 +371,10 @@ sub column {
       my %dup = %{  $rep[($i-$$self{non_repeating}) % $m] };
       push(@{$$self{columns}},{%dup}); }}
   $$self{columns}->[$n-1]; }
+
+sub columns {
+  my($self)=@_;
+  @{$$self{columns}}; }
 
 }
 

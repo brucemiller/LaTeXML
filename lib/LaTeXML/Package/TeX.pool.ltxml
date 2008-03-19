@@ -1280,6 +1280,9 @@ DefConstructor('\@open@row SkipSpaces DigestedBody',
 # rowspan > 1. Also, inner columns recognize \omit which removes the
 # before & after tokens which would otherwise wrap the inner column.
 
+DefPrimitive('\@tabular@begin@heading', sub { AssignValue(IN_TABULAR_HEAD=>1,'global'); });
+DefPrimitive('\@tabular@end@heading', sub { AssignValue(IN_TABULAR_HEAD=>0,'global'); });
+
 DefPrimitive('\@close@column',sub { $_[0]->egroup;} );
 DefPrimitive('\@open@column SkipSpaces DigestedBody', sub {
   my($stomach,$boxes)=@_;
@@ -1337,6 +1340,7 @@ DefPrimitive('\@open@column SkipSpaces DigestedBody', sub {
   $$colspec{boxes} = $boxes;
   $$colspec{span}  = $n1-$n0+1;
   $$colspec{empty} = 1 if $empty;
+  $$colspec{head}  = LookupValue('IN_TABULAR_HEAD');
   for(my $i = $n0+1; $i <= $n1; $i++){
     my $c = $alignment->getColumn($i);
     $c->{skipped}=1 if $c; }
