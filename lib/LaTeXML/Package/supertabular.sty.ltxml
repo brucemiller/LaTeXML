@@ -1,0 +1,146 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  supertabular                                                       | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use LaTeXML::Package;
+use LaTeXML::Util::Alignment;
+
+
+# Environment \begin{supertabular}{pattern} ... \end{supertabular}
+DefMacro('\supertabular{}',
+	 '\@supertabular@topcaption'
+	 .'\@alignment@bindings{#1}[text]\@@supertabular{#1}\@start@alignment'
+	 .'\@supertabular@head');
+DefMacro('\endsupertabular',
+	 '\@supertabular@tail'
+	 .'\@finish@alignment\@end@tabular'
+	 .'\@supertabular@bottomcaption');
+
+DefConstructor('\@@supertabular Undigested DigestedBody',
+	       sub { my($document,$pat,$body,%props)=@_;
+		     constructAlignment($document,$body,
+					guess_headers=>0); },
+	       reversion=>'\begin{supertabular}{#1}#2\end{supertabular}',
+	       beforeDigest=>sub { $_[0]->bgroup; },
+	       mode=>'text');
+
+# Environment \begin{supertabular*}{width}{pattern} ... \end{supertabular*}
+DefMacro('\csname supertabular*\endcsname{Dimension}{}',
+	 '\@supertabular@topcaption'
+	 .'\@alignment@bindings{#1}[text]\@@supertabular@{#1}{#2}\@start@alignment'
+	 .'\@supertabular@head');
+DefMacro('\csname endsupertabular*\endcsname',
+	 '\@supertabular@tail'
+	 .'\@finish@alignment\@end@tabular'
+	 .'\@supertabular@bottomcaption');
+
+DefConstructor('\@@supertabular@ {Dimension} Undigested DigestedBody',
+	       sub { my($document,$width,$pat,$body,%props)=@_;
+		     constructAlignment($document,$body,
+					attributes=>{width=>$width},
+					guess_headers=>0); },
+	       reversion=>'\begin{supertabular}{#1}#2\end{supertabular}',
+	       beforeDigest=>sub { $_[0]->bgroup; },
+	       mode=>'text');
+
+# The following 2 environments set the tabular in (or as if in) a minipage.
+# I don't know what significance that might have, so they're basically
+# copies of the above.
+
+# Environment \begin{mpsupertabular}{pattern} ... \end{mpsupertabular}
+DefMacro('\mpsupertabular{}',
+	 '\@supertabular@topcaption'
+	 .'\@alignment@bindings{#1}[text]\@@supertabular{#1}\@start@alignment'
+	 .'\@supertabular@head');
+DefMacro('\endmpsupertabular',
+	 '\@supertabular@tail'
+	 .'\@finish@alignment\@end@tabular'
+	 .'\@supertabular@bottomcaption');
+
+# Environment \begin{mpsupertabular*}{width}{pattern} ... \end{mpsupertabular*}
+DefMacro('\csname mpsupertabular*\endcsname{Dimension}{}',
+	 '\@supertabular@topcaption'
+	 .'\@alignment@bindings{#1}[text]\@@supertabular@{#1}{#2}\@start@alignment'
+	 .'\@supertabular@head');
+DefMacro('\csname mpendsupertabular*\endcsname',
+	 '\@supertabular@tail'
+	 .'\@finish@alignment\@end@tabular'
+	 .'\@supertabular@bottomcaption');
+
+#======================================================================
+# Table headings/footers.
+
+# These should appear BEFORE the supertabular environment
+# Record the Tokens() for the various headings, footers and captions for later.
+DefPrimitive('\tablehead{}',     sub { AssignValue(SUPERTABULAR_HEAD=>$_[1]) });
+DefPrimitive('\tablefirsthead{}',sub { AssignValue(SUPERTABULAR_FIRSTHEAD=>$_[1]) });
+DefPrimitive('\tabletail{}',     sub { AssignValue(SUPERTABULAR_TAIL=>$_[1]) });
+DefPrimitive('\tablelasttail{}', sub { AssignValue(SUPERTABULAR_LASTTAIL=>$_[1]) });
+
+# These insert the appropriate header/footer into the supertabular.
+
+# We're not going to break the table into pages, so just take the firsthead,
+# instead of head, if it was given.  Analogously for tail
+DefMacro('\@supertabular@head', sub {
+ my $head = LookupValue('SUPERTABULAR_FIRSTHEAD') || LookupValue('SUPERTABULAR_HEAD');
+ ($head ? (T_CS('\@tabular@begin@heading'),$head->unlist,T_CS('\@tabular@end@heading')): ()); });
+
+DefMacro('\@supertabular@tail', sub {
+ my $tail = LookupValue('SUPERTABULAR_LASTTAIL') || LookupValue('SUPERTABULAR_TAIL');
+ ($tail ? (T_CS('\@tabular@begin@heading'),$tail->unlist,T_CS('\@tabular@end@heading')): ()); });
+
+#======================================================================
+# Captions
+
+RawTeX(<<'EOTeX');
+\newif\if@topcaption\@topcaptiontrue
+EOTeX
+
+# These should appear BEFORE the supertabular environment
+# Record the Tokens() for the various headings, footers and captions for later.
+DefPrimitive('\topcaption []{}',    sub { 
+  AssignValue(SUPERTABULAR_TOPTOCCAPTION=>$_[1]);
+  AssignValue(SUPERTABULAR_TOPCAPTION=>$_[2]);    });
+DefPrimitive('\bottomcaption []{}', sub { 
+  AssignValue(SUPERTABULAR_BOTTOMTOCCAPTION=>$_[1]);
+  AssignValue(SUPERTABULAR_BOTTOMCAPTION=>$_[2]);  });
+DefPrimitive('\tablecaption []{}',  sub { 
+  AssignValue(SUPERTABULAR_TOCCAPTION=>$_[1]);
+  AssignValue(SUPERTABULAR_CAPTION=>$_[2]);   });
+
+# Place appropriate captions.
+# We're just going to use \caption, assuming that there's a table environment around it.
+DefMacro('\@supertabular@topcaption', sub {
+  my $top = LookupValue('Boolean:@topcaption');
+  my($cap,$toccap);
+  if($cap = LookupValue('SUPERTABULAR_TOPCAPTION')){
+    $toccap=LookupValue('SUPERTABULAR_TOPTOCCAPTION'); }
+  elsif($top && ($cap = LookupValue('SUPERTABULAR_CAPTION'))){
+    $toccap=LookupValue('SUPERTABULAR_TOCCAPTION'); }
+  ($cap ? Invocation(T_CS('\caption'),$toccap,$cap)->unlist : ()); });
+
+DefMacro('\@supertabular@bottomcaption', sub {
+  my $top = LookupValue('Boolean:@topcaption');
+  my($cap,$toccap);
+  if($cap = LookupValue('SUPERTABULAR_BOTTOMCAPTION')){
+    $toccap=LookupValue('SUPERTABULAR_BOTTOMTOCCAPTION'); }
+  elsif(!$top && ($cap = LookupValue('SUPERTABULAR_CAPTION'))){
+    $toccap=LookupValue('SUPERTABULAR_TOCCAPTION'); }
+  ($cap ? Invocation(T_CS('\caption'),$toccap,$cap)->unlist : ()); });
+
+#======================================================================
+
+DefMacro('\shrinkheight{Dimension}','');
+
+#======================================================================
+
+1;
