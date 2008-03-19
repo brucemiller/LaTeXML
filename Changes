@@ -1,3 +1,23 @@
+0.5.x  2008-03-18
+     - Added implementation for supertabular and longtable
+       (the latter isn't perfect; it produces empty rows after
+       header/footers)
+     - random minor fixes
+0.5.x  2008-03-03
+     - Added support for class & package options
+       with new exported functions in LaTeXML::Package
+       (DeclareOption, PassOptions, ProcessOptions, ExecuteOptions).
+     - Modular XSLT: individual XSLT files correspond
+       to the Schema modules and are assembled into
+       composite html and xhtml versions.
+     - Option to latexmlpost to suppress section numbering.
+     - new package ifpdf
+     - more consistent date formatting
+     - switch to using id in html instead of <a name=...
+     - make "\ " generate no-break-space (more portable)
+     - random other minor fixes.
+     - documentation improvement
+
 0.5.x  2008-01-16
      - Major check-in of accumulated changes
      - Added a MathFork/MathBranch construct to represent
