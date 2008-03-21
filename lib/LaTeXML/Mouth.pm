@@ -342,7 +342,7 @@ sub new {
   local *IN;
   open(IN,$pathname) || Fatal("Can't read from $pathname");
   my $shortpath=pathname_relative($pathname,pathname_cwd);
-  my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN};
+  my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN, buffer=>[]};
   bless $self,$class;
   $self->initialize;
   NoteBegin("Style $$self{source}");
