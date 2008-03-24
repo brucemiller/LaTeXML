@@ -70,8 +70,11 @@ sub loadSchema {
       showSchema($mod); }}
 
   # The resulting @schema should contain the "start" of the grammar.
-  my($startcontent)=extractContent('#Document',map($self->expand($_),@schema));
+###  my($startcontent)=$self->extractContent('#Document',map($self->expand($_),@schema));
+  my($startcontent)=$self->extractContent('#Document',@schema);
   $$self{model}->setTagProperty('#Document','model',$startcontent);
+  if($LaTeXML::Model::RelaxNG::DEBUG){
+    print "========================\nStart\n".join(', ',keys %$startcontent)."\n"; }
 
   # NOTE: Do something automatic about this too!?!
   # We'll need to generate namespace prefixes for all namespaces found in the doc!
@@ -79,15 +82,20 @@ sub loadSchema {
 
   # Distill the info into allowed children & attributes for each element.
   foreach my $tag (sort keys %{$$self{elements}}){
-    my @body = map($self->expand($_), @{$$self{elements}{$tag}});
-    my($content,$attributes) = extractContent($tag,@body);
+###    my @body = map($self->expand($_), @{$$self{elements}{$tag}});
+    if($tag eq 'ANY'){
+      # Ignore any internal structure (side effect of restricted names)
+      $$self{model}->setTagProperty($tag,'model',{ANY=>1});
+      next; }
+    my @body = @{$$self{elements}{$tag}};
+    my($content,$attributes) = $self->extractContent($tag,@body);
     $$self{model}->setTagProperty($tag,'model',$content);
     $$self{model}->setTagProperty($tag,'attributes',$attributes); }
   NoteEnd("Loading RelaxNG $$self{name}"); }
 
 # Return two hashrefs for content & attributes
 sub extractContent {
-  my($tag,@body)=@_;
+  my($self,$tag,@body)=@_;
   my(%attr,%child);
   while(@body){
     my $item = shift(@body);
@@ -97,9 +105,21 @@ sub extractContent {
       elsif($op eq 'elementref'){ $child{$name}=1; }
       elsif($op eq 'doc'){}
       elsif($op eq 'combination'){ push(@body,@args); }
-      elsif($op eq 'grammar'){     push(@body,extractStart(@args)); }
-      elsif($op eq 'module'){      push(@body,extractStart(@args)); }
-      else { print STDERR "Unknown child $op of element $tag in extractContent\n"; }}
+      elsif($op eq 'grammar'){     push(@body,$self->extractStart(@args)); }
+      elsif($op eq 'module'){      push(@body,$self->extractStart(@args)); }
+### An attempt to avoid ->expand !?!?!
+      elsif(($op eq 'ref') || ($op eq 'parentref')){
+	if(my $el = $$self{elementdefs}{$name}){
+	  push(@body,['elementref',$el]); }
+	elsif(my $expansion = $$self{defs}{$name}){
+	  push(@body,@$expansion); }
+      }
+      elsif($op eq 'element'){
+	$child{$name}=1; }	# ???
+      elsif(($op eq 'value') || ($op eq 'data')){
+	$child{'#PCDATA'} = 1; }
+### end expand avoidance additions.
+      else { print STDERR "Unknown child $op [$name] of element $tag in extractContent\n"; }}
     elsif($item eq '#PCDATA'){  $child{'#PCDATA'}=1; }}
   ({%child},{%attr}); }
 
@@ -331,14 +351,14 @@ sub eqOp {
   (ref $form eq 'ARRAY') && ($$form[0] eq $op); }
 
 sub extractStart {
-  my(@items)=@_;
+  my($self,@items)=@_;
   my @starts = ();
   foreach my $item (@items){
     if(ref $item eq 'ARRAY'){
       my($op,$name,@args)=@$item;
       if($op eq 'start'){ push(@starts,@args); }
-      elsif($op eq 'module'){ push(@starts,extractStart(@args)); }
-      elsif($op eq 'grammar'){ push(@starts,extractStart(@args)); }
+      elsif($op eq 'module'){ push(@starts,$self->extractStart(@args)); }
+      elsif($op eq 'grammar'){ push(@starts,$self->extractStart(@args)); }
     }}
   @starts; }
 
