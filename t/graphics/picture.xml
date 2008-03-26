@@ -92,7 +92,7 @@ All should be the same.</p>
           <g transform="translate(15,15)">
             <rect fill="none" height="15" stroke-width="0.4" width="15" x="0" y="0"/>
             <g height="15" width="15">
-              <text font="bold">A</text>
+              <text>A</text>
             </g>
           </g>
           <g transform="translate(30,30)">
@@ -104,15 +104,17 @@ All should be the same.</p>
           <g transform="translate(45,45)">
             <rect fill="none" height="15" stroke-width="0.4" width="15" x="0" y="0"/>
             <g height="15" width="15">
-              <text font="bold">A</text>
+              <text>A</text>
             </g>
           </g>
           <g transform="translate(60,20)">
             <g framed="true" stroke-width="0.4">
               <inline-block>
-                <text font="bold">A</text>
-                <text font="bold">B</text>
-                <text font="bold">C</text>
+                <text>A</text>
+                <text>B</text>
+                <text>
+                  <text font="bold">C</text>
+                </text>
                 <text font="bold">D</text>
               </inline-block>
             </g>
@@ -121,8 +123,10 @@ All should be the same.</p>
             <rect fill="none" height="80" stroke-width="0.4" width="15" x="0" y="0"/>
             <g height="80" width="15">
               <inline-block>
-                <text font="bold">A</text>
-                <text font="bold">B</text>
+                <text>A</text>
+                <text>
+                  <text font="bold">B</text>
+                </text>
                 <text font="bold">C</text>
                 <text font="bold">D</text>
               </inline-block>
