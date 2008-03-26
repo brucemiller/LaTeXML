@@ -34,7 +34,7 @@ no warnings 'redefine';
 # Let's try just starting with this set (since we've loaded LaTeX)
 AssignValue(inPreamble=>1);	# \begin{document} will clear this.
 
-DefConstructor('\documentclass OptionalSemiverbatim Semiverbatim []',
+DefConstructor('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
@@ -43,7 +43,7 @@ DefConstructor('\documentclass OptionalSemiverbatim Semiverbatim []',
 	      options=>[ ($options ? split(/,\s*/, ToString($options)) : ()) ]);
     return;});
 
-DefConstructor('\documentstyle OptionalSemiverbatim Semiverbatim []',
+DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
@@ -843,15 +843,17 @@ sub eqnarrayRegroupEquations {
     my $class = 'unknown';
     if($cells[0]->hasChildNodes){ # 1st column non-empty; Presumably a new "equation"
       $class = 'new'; }
-    elsif(!scalar(@eqs)){	     # Else 1st is empty, but if no previous equation?
-      $class = 'odd'; }
     elsif($cells[1]->hasChildNodes){ # 1st is empty & 2nd non-empty (Rel?); Probably continues
-      if($numbered && $equation->hasAttribute('refnum')){ # Separately numbered continuation?
+      if(!scalar(@eqs)){	     # But if no previous equation?
+	$class = 'odd'; }
+      elsif($numbered && $equation->hasAttribute('refnum')){ # Separately numbered continuation?
 	$class = 'new';  } # Keep it as separate equation, even though missing LHS
       else {
 	$class = 'continue'; }} # Continues as multiequation
     else{			# 1st & 2nd is empty
-      if($numbered && $equation->hasAttribute('refnum') # Separately numbered AND labeled?
+      if(!scalar(@eqs)){	     # But if no previous equation?
+	$class = 'odd'; }
+      elsif($numbered && $equation->hasAttribute('refnum') # Separately numbered AND labeled?
 	 && $equation->hasAttribute('labels')){
 	$class = 'odd'; }	# must keep separate, but weird!
       else {
@@ -864,6 +866,11 @@ sub eqnarrayRegroupEquations {
       $numbered |= $equation->hasAttribute('refnum');
       push(@{$eqs[$#eqs]},$equation); }
   }
+  # NOTE: A common (mis-)use of eqnarray seems to be to have all the 1st 2 columns empty.
+  # This amounts to simply a bunch of left aligned equations.
+  # We probably shouldn't warn in that case, and should extract the "simple" equations...
+  # BUT, not done yet.
+
   Warn("Unrecognized equation patterns ($oddness) in eqnarray") if $oddness;
   # Now rearrange things appropriately.
   foreach my $eqset (@eqs){
@@ -2166,7 +2173,8 @@ DefEnvironment('{picture} Pair OptionalPair',
 
 DefConstructor('\put Pair {}',
 	       "<ltx:g transform='#pos'>#2</ltx:g>",
-	       properties=>sub { pos=>'translate('.ptValue(picScale($_[1])).')'; });
+	       properties=>sub { pos=>'translate('.ptValue(picScale($_[1])).')'; },
+	       mode=>'text');
 
 DefConstructor('\pic@line Pair {Float}',
 	       "<ltx:line points='#points' stroke-width='#thick'/>",
