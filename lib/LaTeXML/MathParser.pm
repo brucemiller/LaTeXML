@@ -213,7 +213,16 @@ sub parse {
 
   if(my $result = $self->parse_rec($xnode,'Anything,',$document)){
     # Add text representation to the containing Math element.
-    $xnode->parentNode->setAttribute('text',text_form($result)); }
+    my $p = $xnode->parentNode;
+    # This is a VERY screwy situation? How can the parent be a document fragment??
+    # This has got to be a LibXML bug???
+    if($p->nodeType == XML_DOCUMENT_FRAG_NODE){
+      my @n = $p->childNodes;
+      if(scalar(@n)==1){
+	$p = $n[0]; }
+      else {
+	Fatal("Mystery: XMath node has DOCUMENT_FRAGMENT for parent!"); }}
+    $p->setAttribute('text',text_form($result)); }
 }
 
 our %TAG_FEEDBACK=('ltx:XMArg'=>'a','ltx:XMWrap'=>'w');
