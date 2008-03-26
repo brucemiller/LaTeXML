@@ -24,6 +24,11 @@ DefMacro('\longtable[]{}',
 DefMacro('\endlongtable',
 ##	 '\@longtable@tails'
 	 '\@finish@alignment\@end@tabular');
+DefMacro('\csname longtable*\endcsname []{}',
+	 '\@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
+DefMacro('\csname endlongtable*\endcsname',
+##	 '\@longtable@tails'
+	 '\@finish@alignment\@end@tabular');
 
 DefConstructor('\@@longtable [] Undigested DigestedBody', sub {
   my($document,$pos,$pat,$body,%props)=@_;
@@ -120,9 +125,13 @@ DefPrimitive('\@longtable@caption OptionalMatch:* []{}', sub {
 });
 
 #======================================================================
-
-DefRegister('\LTLeft' =>Dimension(0));
-DefRegister('\LTRight' =>Dimension(0));
+# Not used, but must be defined.
+DefRegister('\LTLeft'  =>Glue(0));
+DefRegister('\LTRight' =>Glue(0));
+DefRegister('\LTPre'   =>Glue(0));
+DefRegister('\LTPost'  =>Glue(0));
+DefRegister('\LTcapwidth'  =>Glue(0));
+DefRegister('\LTchunksize'  =>Number(20));
 
 #======================================================================
 1;
