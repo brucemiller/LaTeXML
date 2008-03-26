@@ -503,7 +503,7 @@ DefMacro('\Lput OptionalMatch:* OptionalBracketed [] OptionalBracketed RoundPare
 	    $labelsep ? (T_BEGIN, $labelsep->unlist, T_END) : (),
 	    $refpoint ? (T_OTHER('['), $refpoint->unlist, T_OTHER(']')) : (),
 	    $rotation ? (T_BEGIN, $rotation->unlist, T_END) : (),
-	    T_OTHER('('), Explode(ToString(ZeroPair)), T_OTHER(')'),
+	    T_OTHER('('), Explode(ToString(ZeroPair())), T_OTHER(')'),
 	    T_BEGIN, $stuff->unlist, T_END, T_END); });
 
 DefMacro('\Mput', '\Lput'); # Lput code is general enough to work for Mput too
