@@ -24,7 +24,7 @@ sub new {
   my $self = {string=>$string,source=>"Anonmymous String"};
 #  $$self{buffer}=[split("\n",$string)];
   bless $self,$class;
-  $$self{buffer}=[$self->splitString($string)];
+  $$self{buffer}=[(defined $string ? $self->splitString($string) : ())];
   $self->initialize;
   $self; }
 
