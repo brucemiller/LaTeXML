@@ -366,10 +366,10 @@ sub column {
   my $N = scalar(@{$$self{columns}});
   if(($n > $N) && $$self{repeating}){
     my @rep = @{$$self{repeated}};
-    my $m = scalar(@rep);
-    for(my $i=$N; $i<$n; $i++){
-      my %dup = %{  $rep[($i-$$self{non_repeating}) % $m] };
-      push(@{$$self{columns}},{%dup}); }}
+    if(my $m = scalar(@rep)){
+      for(my $i=$N; $i<$n; $i++){
+	my %dup = %{  $rep[($i-$$self{non_repeating}) % $m] };
+	push(@{$$self{columns}},{%dup}); }}}
   $$self{columns}->[$n-1]; }
 
 sub columns {
