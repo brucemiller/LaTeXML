@@ -170,12 +170,16 @@ sub processAMSGatherRows {
     else {
       equationgroupFlattenCols($document,$equation); }}}
 
+# Note that some people use align or gather inside equation, which seems to "work"
+# So, we'll treat align as aligned in such cases.
 DefMacro('\gather',
-	 '\@amsgather@bindings\@@amsgather\@equationgroup@number\@start@alignment');
+	 '\ifmmode\let\endgather\endgathered\gathered\else'
+	 .'\@amsgather@bindings\@@amsgather\@equationgroup@number\@start@alignment\fi');
 DefMacro('\endgather',
 	 '\@finish@alignment\end@amsgather');
 DefMacro('\csname gather*\endcsname',
-	 '\@amsgather@bindings\@@amsgather\@equationgroup@nonumber\@start@alignment');
+	 '\ifmmode\expandafter\let\csname endgather*\endcsname\endgathered\gathered\else'
+	 .'\@amsgather@bindings\@@amsgather\@equationgroup@nonumber\@start@alignment\fi');
 DefMacro('\csname endgather*\endcsname',
 	 '\@finish@alignment\end@amsgather');
 
@@ -220,23 +224,29 @@ sub processAMSAlignRows {
     else {
       equationgroupJoinCols($document,2,$equation); }}}
 
+# Note that some people use align or gather inside equation, which seems to "work"
+# So, we'll treat align as aligned in such cases.
 DefMacro('\align',
-	 '\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment');
+	 '\ifmmode\let\endalign\endaligned\aligned\else'
+	 .'\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
 DefMacro('\endalign',
 	 '\@finish@alignment\end@amsalign');
 DefMacro('\csname align*\endcsname',
-	 '\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment');
+	 '\ifmmode\expandafter\let\csname endalign*\endcsname\endaligned\aligned\else'
+	 .'\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
 DefMacro('\csname endalign*\endcsname',
 	 '\@finish@alignment\end@amsalign');
 
 # flalign typesets in the full column width (seems perverse to me).
 # So, for the time being, it's treated exactly like align.
 DefMacro('\flalign',
-	 '\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment');
+	 '\ifmmode\let\endfalign\endaligned\aligned\else'
+	 .'\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
 DefMacro('\endflalign',
 	 '\@finish@alignment\end@amsalign');
 DefMacro('\csname flalign*\endcsname',
-	 '\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment');
+	 '\ifmmode\expandafter\let\csname endfalign*\endcsname\endaligned\aligned\else'
+	 .'\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
 DefMacro('\csname endflalign*\endcsname',
 	 '\@finish@alignment\end@amsalign');
 
@@ -244,11 +254,13 @@ DefMacro('\csname endflalign*\endcsname',
 # and takes the number of column pairs (which we don't need?)
 # We'll ignore these distinctions for now.
 DefMacro('\alignat{}',
-	 '\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment');
+	 '\ifmmode\let\endalignat\endalignedat\alignedat{#1}\else'
+	 .'\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
 DefMacro('\endalignat',
 	 '\@finish@alignment\end@amsalign');
 DefMacro('\csname alignat*\endcsname{}',
-	 '\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment');
+	 '\ifmmode\expandafter\let\csname endalignat*\endcsname\endalignedat\alignedat{#1}\else'
+	 .'\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
 DefMacro('\csname endalignat*\endcsname',
 	 '\@finish@alignment\end@amsalign');
 
@@ -269,31 +281,6 @@ DefEnvironment('{gathered}[]',
 	       "<ltx:XMHint name='gathered-begin'/>"
 	       . "#body"
 	       ."<ltx:XMHint name='gathered-end'/>");
-
-# DefConstructor('\@@aligned@newline OptionalMatch:* [Dimension]',
-# 	       "</ltx:XMath></ltx:Math>"
-# 	       ."<ltx:Math mode='display'><ltx:XMath>",
-# 	       beforeDigest=>sub{ Let('&','\@@aligned@odd'); },
-# 	       alias=>'\\\\');
-# DefConstructor('\@@aligned@odd',"<ltx:XMHint name='align'/>",
-# 	       afterDigest=>sub{ Let('&','\@@aligned@even'); },
-# 	       alias=>'&');
-# DefConstructor('\@@aligned@even',
-# 	       "</ltx:XMath></ltx:Math>"
-# 	       . "<ltx:Math mode='display'><ltx:XMath>",
-# 	       afterDigest=>sub{ Let('&','\@@aligned@odd'); },
-# 	       alias=>'&');
-
-# DefEnvironment('{aligned}[]',
-# 	       "<ltx:XMHint name='aligned-begin'/>"
-# 	       . "#body"
-# 	       ."<ltx:XMHint name='aligned-end'/>",
-# 	       beforeDigest=>sub{ Let('&','\@@aligned@odd'); Let("\\\\",'\@@aligned@newline'); });
-# DefEnvironment('{alignedat}{}[]',
-# 	       "<ltx:XMHint name='aligned-begin'/>"
-# 	       . "#body"
-# 	       ."<ltx:XMHint name='aligned-end'/>",
-# 	       beforeDigest=>sub{ Let('&','\@@aligned@odd'); Let("\\\\",'\@@aligned@newline'); });
 
 DefMacro('\aligned[]',    '\@@amsaligned\@start@alignment');
 DefMacro('\endaligned',   '\@finish@alignment\@end@amsaligned');
