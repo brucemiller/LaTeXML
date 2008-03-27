@@ -2620,6 +2620,7 @@ DefMath('\angle',    "\x{2220}");		   # ANGLE
 DefMath('\forall',   "\x{2200}", role=>'BIGOP', meaning=>'forall'); # FOR ALL
 DefMath('\exists',   "\x{2203}", role=>'BIGOP', meaning=>'exists'); # THERE EXISTS
 DefMath('\neg',      UTF(0xAC), role=>'FUNCTION', meaning=>'not'); # NOT SIGN
+DefMath('\lnot',     UTF(0xAC), role=>'FUNCTION', meaning=>'not'); # NOT SIGN
 DefMath('\flat',     "\x{266D}"); # MUSIC FLAT SIGN
 DefMath('\natural',  "\x{266E}"); # MUSIC NATURAL SIGN
 DefMath('\sharp',    "\x{266F}"); # MUSIC SHARP SIGN
