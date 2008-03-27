@@ -17,6 +17,7 @@ use LaTeXML::Global;
 use LaTeXML::Definition;
 use LaTeXML::Parameters;
 use LaTeXML::Util::Pathname;
+use Text::Balanced;
 use base qw(Exporter);
 our @EXPORT = (qw(&DefExpandable
 		  &DefMacro &DefMacroI
@@ -754,9 +755,13 @@ our $environment_options = {mode=>1, requireMath=>1, forbidMath=>1,
 sub DefEnvironment {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefEnvironment ($proto)",$environment_options,%options);
-  $proto =~ s/^\{([^\}]+)\}\s*//; # Pull off the environment name as {name}
-  my $name = $1;
-  my $paramlist=parseParameters($proto,"Environment $name");
+##  $proto =~ s/^\{([^\}]+)\}\s*//; # Pull off the environment name as {name}
+##  my $paramlist=parseParameters($proto,"Environment $name");
+##  my $name = $1;
+  my($name,$paramspec)=Text::Balanced::extract_bracketed($proto,'{}');
+  $name =~ s/[\{\}]//g;
+  $paramspec =~ s/^\s*//;
+  my $paramlist=parseParameters($paramspec,"Environment $name");
   DefEnvironmentI($name,$paramlist,$replacement,%options); }
 
 sub DefEnvironmentI {
