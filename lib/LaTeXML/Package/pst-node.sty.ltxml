@@ -388,7 +388,7 @@ sub computeLabelPos {
   $p; }
 
 DefMacro('\lput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
-	   (T_BEGIN, 
+	   (## T_BEGIN, 
 	    T_CS('\lput@start'),
 	    $_[1] ? T_OTHER('*') : (),
 	    $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
@@ -403,7 +403,7 @@ DefConstructor('\lput@start OptionalMatch:* [] BracketedPSAngle RoundParenFloat'
 	       alias=>'\lput');
 
 DefMacro('\aput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
-	   (T_BEGIN,
+	   ( ## T_BEGIN,
 	    T_CS('\aput@start'),
 	    $_[1] ? T_OTHER('*') : (),
 	    $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
@@ -423,7 +423,7 @@ DefConstructor('\aput@start OptionalMatch:* [PSDimension] BracketedPSAngle Round
 	       alias=>'\aput');
 
 DefMacro('\bput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
-	   (T_BEGIN,
+	   (## T_BEGIN,
 	    T_CS('\bput@start'),
 	    $_[1] ? T_OTHER('*') : (),
 	    $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
@@ -443,7 +443,7 @@ DefConstructor('\bput@start OptionalMatch:* [PSDimension] BracketedPSAngle Round
 	       alias=>'\bput');
 
 DefMacro('\mput OptionalMatch:* []', sub {
-	   (T_BEGIN,
+	   (##T_BEGIN,
 	    T_CS('\mput@start'),
 	    $_[1] ? T_OTHER('*') : (),
 	    $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
@@ -452,11 +452,11 @@ DefMacro('\mput OptionalMatch:* []', sub {
 DefConstructor('\mput@start OptionalMatch:* []',
 	       "<ltx:g transform='&ptValue(#transform)' pos='#2'"
 	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
-	       afterDigest=>sub { finishLabelPut($_[0], undef, computeLabelPos()); },
+	       afterDigest=>sub { finishLabelPut($_[1], undef, computeLabelPos()); },
 	       alias=>'\mput');
 
 DefMacro('\Aput OptionalMatch:* []', sub {
-	   (T_BEGIN,
+	   (##T_BEGIN,
 	    T_CS('\Aput@start'),
 	    $_[1] ? T_OTHER('*') : (),
 	    $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
@@ -466,7 +466,7 @@ DefConstructor('\Aput@start OptionalMatch:* [PSDimension]',
 	       "<ltx:g transform='&ptValue(#transform)'"
 	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub {
-		 my ($whatsit, $labelsep) = ($_[0], $_[2]);
+		 my ($stomach,$whatsit, $labelsep) = @_;
 		 my $p = computeLabelPos();
 		 $labelsep = $labelsep || LookupValue('\pslabelsep');
 		 $p = Pair($p->getX->add($labelsep), $p->getY->add($labelsep));
@@ -474,7 +474,7 @@ DefConstructor('\Aput@start OptionalMatch:* [PSDimension]',
 	       alias=>'\Aput');
 
 DefMacro('\Bput OptionalMatch:* []', sub {
-	   (T_BEGIN,
+	   (##T_BEGIN,
 	    T_CS('\Bput@start'),
 	    $_[1] ? T_OTHER('*') : (),
 	    $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
@@ -484,7 +484,7 @@ DefConstructor('\Bput@start OptionalMatch:* [PSDimension]',
 	       "<ltx:g transform='&ptValue(#transform)'"
 	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub {
-		 my ($whatsit, $labelsep) = ($_[0], $_[2]);
+		 my ($stomach,$whatsit, $labelsep) = @_;
 		 my $p = computeLabelPos();
 		 $labelsep = $labelsep || LookupValue('\pslabelsep');
 		 $p = Pair($p->getX->substract($labelsep), $p->getY->substract($labelsep));

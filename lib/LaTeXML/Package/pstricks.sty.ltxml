@@ -715,7 +715,7 @@ DefConstructor('\put@end {}', "#1 </ltx:g>",
 	       alias=>' ', mode=>'text');
 
 DefMacro('\uput OptionalMatch:* OptionalBracketed [] OptionalBracketed ZeroPSCoord', sub {
-	   (T_BEGIN,
+	   (##T_BEGIN,
 	    T_CS('\uput@start'),
 	    $_[1] ? T_OTHER('*') : (),
 	    $_[2] ? (T_BEGIN, $_[2]->unlist, T_END) : (),
