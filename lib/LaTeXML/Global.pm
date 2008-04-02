@@ -37,6 +37,7 @@ our @EXPORT = (
 	       # Token constructors
 	       qw( &T_BEGIN &T_END &T_MATH &T_ALIGN &T_PARAM &T_SUB &T_SUPER &T_SPACE 
 		   &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
+		   &T_CR
 		   &Token &Tokens
 		   &Tokenize &TokenizeInternal &Explode &UnTeX),
 	       # Number & Dimension constructors
@@ -63,6 +64,7 @@ use constant CC_SUPER   =>  7;  sub T_SUPER()  { bless ['^',   7], 'LaTeXML::Tok
 use constant CC_SUB     =>  8;  sub T_SUB()    { bless ['_',   8], 'LaTeXML::Token'; }
 use constant CC_IGNORE  =>  9;
 use constant CC_SPACE   => 10;  sub T_SPACE()  { bless [' ',  10], 'LaTeXML::Token'; }
+                                sub T_CR()     { bless ["\n", 10], 'LaTeXML::Token'; }
 use constant CC_LETTER  => 11;  sub T_LETTER   { bless [$_[0],11], 'LaTeXML::Token'; }
 use constant CC_OTHER   => 12;  sub T_OTHER    { bless [$_[0],12], 'LaTeXML::Token'; }
 use constant CC_ACTIVE  => 13;  sub T_ACTIVE   { bless [$_[0],13], 'LaTeXML::Token'; }
