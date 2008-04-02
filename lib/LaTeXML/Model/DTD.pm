@@ -22,12 +22,9 @@ use base qw(LaTeXML::Model::Schema);
 # NOTE: Arglist is DTD specific.
 # Effectively asks for DTD submodel.
 sub new {
-  my($class,$model,$roottag,$publicid,$systemid,%namespaces)=@_;
+  my($class,$model,$roottag,$publicid,$systemid)=@_;
   my $self = {model=>$model,roottag=>$roottag,public_id=>$publicid,system_id=>$systemid};
   bless $self,$class;
-  # Eventually, this needs to be derived from DTD!!!
-  foreach my $prefix (keys %namespaces){
-    $$self{model}->registerDocumentNamespace($prefix=>$namespaces{$prefix}); }
   $self; }
 
 # Question: if we don't have a doctype, can we rig the queries to

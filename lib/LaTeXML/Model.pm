@@ -36,9 +36,9 @@ sub new {
   $self; }
 
 sub setDocType {
-  my($self,$roottag,$publicid,$systemid,%namespaces)=@_;
+  my($self,$roottag,$publicid,$systemid)=@_;
   require 'LaTeXML/Model/DTD.pm';
-  $$self{schema} = LaTeXML::Model::DTD->new($self,$roottag,$publicid,$systemid,%namespaces); }
+  $$self{schema} = LaTeXML::Model::DTD->new($self,$roottag,$publicid,$systemid); }
 
 sub setRelaxNGSchema {
   my($self,$schema)=@_;
@@ -53,8 +53,8 @@ sub loadSchema {
   if(!$$self{schema}){
     Warn("No DTD declared...assuming LaTeXML!");
     # article ??? or what ? undef gives problems!
-    $self->setDocType(undef,$STD_PUBLIC_ID,$STD_SYSTEM_ID,
-		      '#default'=>$LTX_NAMESPACE);
+    $self->setDocType(undef,$STD_PUBLIC_ID,$STD_SYSTEM_ID);
+    $self->registerDocumentNamespace('#default'=>$LTX_NAMESPACE);
     $$self{permissive}=1;	# Actually, they could have declared all sorts of Tags....
   }
   if(!$$self{schema_loaded}){

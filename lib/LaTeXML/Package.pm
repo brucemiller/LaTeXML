@@ -851,13 +851,19 @@ sub Tag {
 
 sub DocType {
   my($rootelement,$pubid,$sysid,%namespaces)=@_;
-  $STATE->getModel->setDocType($rootelement,$pubid,$sysid,%namespaces);
+  my $model = $STATE->getModel;
+  $model->setDocType($rootelement,$pubid,$sysid);
+  foreach my $prefix (keys %namespaces){
+    $model->registerDocumentNamespace($prefix=>$namespaces{$prefix}); }
   return; }
 
 # What verb here? Set, Choose,...
 sub RelaxNGSchema {
-  my($schema)=@_;
-  $STATE->getModel->setRelaxNGSchema($schema);
+  my($schema,%namespaces)=@_;
+  my $model = $STATE->getModel;
+  $model->setRelaxNGSchema($schema,);
+  foreach my $prefix (keys %namespaces){
+    $model->registerDocumentNamespace($prefix=>$namespaces{$prefix}); }
   return; }
   
 sub RegisterNamespace {
