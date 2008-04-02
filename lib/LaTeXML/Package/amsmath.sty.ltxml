@@ -135,7 +135,8 @@ DefEnvironment('{split}',
 	       "<ltx:XMHint name='split-begin'/>#body<ltx:XMHint name='split-end'/>",
 	       beforeDigest=>sub{
 		 DefConstructor("&","<ltx:XMHint name='align'/>");
-		 DefConstructor("\\\\","<ltx:XMHint name='newline'/>"); });
+		 DefConstructor("\\\\","<ltx:XMHint name='newline'/>",
+				reversion=>Tokens(T_CS("\\\\"),T_CR)); });
 
 #======================================================================
 # Section 3.5 Equation groups without alignment
@@ -664,13 +665,17 @@ DefConstructor('\substack{}',
 	       . "<ltx:XMTok name='Collection' role='STACKED'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]","</ltx:XMArg><ltx:XMArg>"); });
+	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
+							     "</ltx:XMArg><ltx:XMArg>",
+							     reversion=>Tokens(T_CS("\\\\"),T_CR)); });
 DefEnvironment('{subarray}[]',
 	       "<ltx:XMApp>"
 	       . "<ltx:XMTok name='Collection' alignment='#1'/>"
 	       . "<ltx:XMArg>#body</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	       beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]","</ltx:XMArg><ltx:XMArg>"); });
+	       beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
+						 "</ltx:XMArg><ltx:XMArg>",
+						 reversion=>Tokens(T_CS("\\\\"),T_CR)); });
 
 #======================================================================
 # Section 7.2 the \sideset command

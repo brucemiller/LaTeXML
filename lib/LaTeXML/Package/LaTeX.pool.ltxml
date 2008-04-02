@@ -125,8 +125,8 @@ DefMacro('\protect',undef);
 #======================================================================
 # In math, \\ is just a formatting hint, unless within an array, cases, .. environment.
 DefConstructor("\\\\ OptionalMatch:* [Glue]",
-#	       "?#isMath(<ltx:XMHint name='\\'/>)(\n)", alias=>"\\\\\n");
-	       "?#isMath(<ltx:XMHint name='\\'/>)(<ltx:break/>)", alias=>"\\\\\n");
+	       "?#isMath(<ltx:XMHint name='\\'/>)(<ltx:break/>)",
+	       reversion=>Tokens(T_CS("\\\\"),T_CR));
 
 #**********************************************************************
 # C.2. The Structure of the Document
@@ -482,10 +482,11 @@ DefEnvironment('{flushright}',
 #======================================================================-
 # C.6.1 Quotations and Verse
 #======================================================================-
-DefConstructor('\@block@cr', "<ltx:break/>");
+DefConstructor('\@block@cr', "<ltx:break/>",
+	       reversion=>Tokens(T_CS("\\\\"),T_CR));
 DefEnvironment('{quote}',   
 	       '<ltx:quote>#body</ltx:quote>',
-	       beforeDigest=>sub{ Let('\\\\','\@block@cr');} );
+	       beforeDigest=>sub{ Let('\\\\','\@block@cr');});
 DefEnvironment('{quotation}',
 	       '<ltx:quote>#body</ltx:quote>',
 	       beforeDigest=>sub{ Let('\\\\','\@block@cr'); });
@@ -1412,7 +1413,7 @@ DefMacro('\@tabbing@newline OptionalMatch:* [Dimension]',
 	 '\@close@inner@column\@close@column\@close@row'
 	 .'\@tabbing@newline@marker'
 	 .'\@open@row\@open@column\@open@inner@column\@tabbing@start@tabs');
-DefConstructor('\@tabbing@newline@marker','',reversion=>'\\\\');
+DefConstructor('\@tabbing@newline@marker','',reversion=>Tokens(T_CS("\\\\"),T_CR));
 
 DefMacro('\@tabbing@kill',
 	 '\@close@inner@column\@close@column\@close@row'
@@ -2250,7 +2251,8 @@ DefConstructor('\shortstack[]{}',
 	       "<ltx:inline-block align='#align'><ltx:text>#2</ltx:text></ltx:inline-block>",
 	       bounded=>1,
 	       beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
-						 "</ltx:text><ltx:text>", alias=>"\\\\\n"); },
+						 "</ltx:text><ltx:text>",
+						 reversion=>Tokens(T_CS("\\\\"),T_CR)); },
 	       properties=>{ align=>sub { ($_[1] ? $alignments{ToString($_[0])} : undef); }},
 	       mode=>'text');
 

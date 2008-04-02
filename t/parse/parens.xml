@@ -91,7 +91,7 @@
     <title>Cases</title>
     <para xml:id="S3.p1">
       <equation xml:id="Ex7">
-        <Math mode="display" tex="\left.\begin{array}[]{l}a\\ b\end{array}\right\}=\left\{\begin{array}[]{l}c\\ d\end{array}\right." text="RCases@(Array[[a], [b]]) = LCases@(Array[[c], [d]])">
+        <Math mode="display" tex="\left.\begin{array}[]{l}a\\&#10;b\end{array}\right\}=\left\{\begin{array}[]{l}c\\&#10;d\end{array}\right." text="RCases@(Array[[a], [b]]) = LCases@(Array[[c], [d]])">
           <XMath>
             <XMApp>
               <XMTok meaning="eq" role="RELOP">=</XMTok>
@@ -132,7 +132,7 @@
     </para>
     <para xml:id="S3.p2">
       <equation xml:id="Ex8">
-        <Math mode="display" tex="\left(\begin{array}[]{l}c\\ d\end{array}\right)" text="Array[[c], [d]]">
+        <Math mode="display" tex="\left(\begin{array}[]{l}c\\&#10;d\end{array}\right)" text="Array[[c], [d]]">
           <XMath>
             <XMArray role="ARRAY" open="(" close=")">
               <XMRow>
@@ -150,7 +150,7 @@
         </Math>
       </equation>
       <equation xml:id="Ex9">
-        <Math mode="display" tex="(a+\left(\begin{array}[]{l}c\\ d\end{array}\right)+b)" text="a + Array[[c], [d]] + b">
+        <Math mode="display" tex="(a+\left(\begin{array}[]{l}c\\&#10;d\end{array}\right)+b)" text="a + Array[[c], [d]] + b">
           <XMath>
             <XMApp open="(" close=")">
               <XMTok meaning="plus" role="ADDOP">+</XMTok>

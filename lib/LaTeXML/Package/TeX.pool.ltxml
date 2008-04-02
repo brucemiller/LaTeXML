@@ -1138,7 +1138,7 @@ DefMacro('\@alignment@newline', sub {
    T_CS('\@alignment@newline@marker'),
    T_CS('\@open@row'), T_CS('\@open@column'), T_CS('\@open@inner@column')); });
 
-DefConstructor('\@alignment@newline@marker','',reversion=>'\\\\');
+DefConstructor('\@alignment@newline@marker','',reversion=>Tokens(T_CS("\\\\"),T_CR));
 
 DefConstructor('\@alignment@hline','',
 	       afterDigest=>sub { LookupValue('Alignment')->addLine('t'); },
@@ -2084,7 +2084,8 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 			  else {
 			    last; }}
 			elsif($qn eq 'ltx:XMHint'){
-			  if(my $s = $space_chars{$node->getAttribute('name')}){
+			  my $s;
+			  if(($s = $node->getAttribute('name'))&&($s = $space_chars{$s})){
 			    $string = $s . $string; }
 			  else {
 			    last; }}
