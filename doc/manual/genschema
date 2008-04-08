@@ -1,0 +1,71 @@
+#!/usr/bin/perl -w
+use strict;
+use FindBin;
+use Carp;
+use Getopt::Long qw(:config no_ignore_case);
+use Pod::Usage;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+my $WORKDIR   = $FindBin::RealBin;
+my $SRCDIR    = $WORKDIR."/../..";
+my $SCHEMADIR = "$SRCDIR/lib/LaTeXML/schema/RelaxNG";
+
+my $identity = "genschema (part of LaTeXML)";
+my($force,$help)=(0,0);
+GetOptions("force!"    => \$force,
+	   "help"         => \$help,
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+
+#======================================================================
+# Prepare LaTeX describing the Document Schema
+# This goes into an appendix of the manual
+#======================================================================
+my $schemadoc = "$WORKDIR/schema.tex";
+if($force || (!-f $schemadoc) || (-M $SCHEMADIR < -M $schemadoc)){
+  print "Converting Schema in $SCHEMADIR to LaTeX\n";
+  open(SCHEMAOUT,">$schemadoc") or die "Couldn't open $schemadoc for output:$!";
+  print SCHEMAOUT RelaxNGDocumenter::documentSchema("LaTeXML.rng");
+  close(SCHEMAOUT);
+}
+
+#======================================================================
+package RelaxNGDocumenter;
+# Leverage the extracted Schema structure to create documentation.
+use strict;
+use lib "$FindBin::RealBin/../../blib/lib";
+use LaTeXML;
+use LaTeXML::Model;
+use LaTeXML::Model::RelaxNG;
+
+sub documentSchema {
+  my($name)=@_;
+  my $latexml= LaTeXML->new(searchpaths=>['.'], verbosity=>1);
+  local $LaTeXML::STATE    = $$latexml{state};
+  my $model = $LaTeXML::STATE->getModel();
+  $model->registerNamespace(ltx=>"http://dlmf.nist.gov/LaTeXML");
+  my $relaxng = $$model{schema} = LaTeXML::Model::RelaxNG->new($model,$name);
+
+  my @schema = $relaxng->scanExternal($name);
+  @schema = map($relaxng->simplify($_),@schema);
+
+  $relaxng->documentModules; }
+
+#======================================================================
+__END__
+
+=head1 NAME
+
+C<genschema> - convert LaTeXML's Schema definitions to LaTeX documentation.
+
+=head1 SYNOPSIS
+
+genschema [options]
+
+ Options:
+  --force     Force regeneration of LaTeX from Schema definition.
+              (default: only if needed)
+  --help      Shows this help.
+
+=cut
+#**********************************************************************

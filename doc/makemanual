@@ -5,40 +5,18 @@ use lib "$FindBin::RealBin/../blib/lib";
 use Carp;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
-use Pod::LaTeX;
-use Pod::Html;
-use Pod::Find;
-use LaTeXML;
-use LaTeXML::Util::Pathname;
-use LaTeXML::Post;
-use LaTeXML::Util::ObjectDB;
-use LaTeXML::Post::Split;
-use LaTeXML::Post::Scan;
-use LaTeXML::Post::CrossRef;
-use LaTeXML::Post::MakeIndex;
-use LaTeXML::Post::Graphics;
-use LaTeXML::Post::MathML;
-use LaTeXML::Post::PurgeXMath;
-use LaTeXML::Post::XSLT;
-use LaTeXML::Post::Writer;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 my $WORKDIR   = $FindBin::RealBin;
 my $SRCDIR    = $WORKDIR."/..";
-my $SCHEMADIR = "$SRCDIR/lib/LaTeXML/schema/rng";
-my $EXEDIR    = "$SRCDIR/bin";
-my $MODULEDIR = "$SRCDIR/lib";
-# NOTE: Rethink where these things should go, whether the docs should
-# be part of distribution, etc.
-# probably requires separate step for make dist ?
-# Or a separate script to make a Release (copy docs, changes, to web, etc)
+my $BINDIR    = $WORKDIR."/../blib/script";
+
 my $DEST      = "/local/www/site/htdocs/DigitalMathLib/LaTeXML";
 my $MANDEST   = "$DEST/manual";
-my $GENDIR    = "$WORKDIR/generated";
 
-my $identity = "makemanual (LaTeXML version $LaTeXML::VERSION)";
+my $identity = "makemanual (part of LaTeXML)";
 my($forcepod,$forceschema)=(0,0);
-my($makepdf,$makehtml)=(1,1);
+my($makepdf,$makehtml)=(0,1);
 my($help,$showversion)=(0,0);
 GetOptions("forcepod!"    => \$forcepod,
 	   "forceschema!" => \$forceschema,
@@ -54,54 +32,11 @@ BEGIN { $SIG{__DIE__} = \&confess; }
 #======================================================================
 # Generate Appendices from PODS, Schema, etc
 print "".('='x60)."\nGenerating Appendices\n";
-#======================================================================
-# Prepare LaTeX from various executable's and module's PODs
-# These go into appendices of the manual
-#======================================================================
-my @exes = (qw(latexml latexmlpost));
-# would be nice to automatically discover documentable modules
-my @modules = (qw(LaTeXML
-		  LaTeXML::Box LaTeXML::Definition LaTeXML::Document
-		  LaTeXML::Error LaTeXML::Font LaTeXML::Global LaTeXML::Gullet
-		  LaTeXML::MathParser LaTeXML::Model LaTeXML::Mouth
-		  LaTeXML::Number LaTeXML::Object LaTeXML::Package
-		  LaTeXML::Parameters LaTeXML::Post LaTeXML::Rewrite
-		  LaTeXML::State LaTeXML::Stomach LaTeXML::Token
-		  LaTeXML::Util::Pathname));
+system("manual/genpods".($forcepod ? " --force":""))==0
+  or warn "Failed to generate pods?";
+system("manual/genschema".($forceschema ? " --force":""))==0
+  or warn "Failed to generate schema documentation?";
 
-foreach my $name (@exes){
-  my $src  = "$EXEDIR/$name";
-  my $dest = "$GENDIR/$name.tex";
-  if($forcepod || (!-f $dest) || (-M $src < -M $dest)){
-    print "Converting POD for $name to LaTeX\n";
-    my $podconverter = MyPodConverter->new();
-    pathname_mkdir(pathname_directory($dest));
-    $podconverter->parse_from_file($src,$dest); }}
-
-foreach my $name (@modules){
-  my $src = $name;
-  $src =~ s|::|/|g;
-  $src = "$MODULEDIR/$src.pm";
-  my $dest = $name;
-  $dest =~ s|::|_|g;
-  $dest = "$GENDIR/$dest.tex";
-  if($forcepod || (!-f $dest) || (-M $src < -M $dest)){
-    print "Converting POD for $name to LaTeX\n";
-    my $podconverter = MyPodConverter->new();
-    pathname_mkdir(pathname_directory($dest));
-    $podconverter->parse_from_file($src,$dest); }}
-
-#======================================================================
-# Prepare LaTeX describing the Document Schema
-# This goes into an appendix of the manual
-#======================================================================
-my $schemadoc = "$GENDIR/schema.tex";
-if($forceschema || (!-f $schemadoc) || (-M $SCHEMADIR < -M $schemadoc)){
-  print "Converting Schema in $SCHEMADIR to LaTeX\n";
-  open(SCHEMAOUT,">$schemadoc") or die "Couldn't open $schemadoc for output:$!";
-  print SCHEMAOUT RelaxNGDocumenter::documentSchema("LaTeXML.rng");
-  close(SCHEMAOUT);
-}
 #======================================================================
 # Generate pdf form of manual
 #======================================================================
@@ -119,113 +54,19 @@ if($makepdf){
 # Would be nice to avoid running if uptodate
 if($makehtml){
   print "".('='x60)."\nGenerating html for manual\n";
-  my %POPTIONS=(verbosity=>0);
-  LaTeXML->new(documentid=>'manual',%POPTIONS)->convertAndWriteFile('manual');
-  my $DB = LaTeXML::Util::ObjectDB->new();
-  my $split='//ltx:chapter[@xml:id] | //ltx:section[@xml:id]'
-    . '| //ltx:bibliography[@xml:id] | //ltx:appendix[@xml:id] | //ltx:index';
-
-  my $scanner =LaTeXML::Post::Scan->new(db=>$DB,%POPTIONS);
-  my $format='xhtml';
-  my @css = ("core.css","navbar-left.css","theme-blue.css","ltxmanual.css");
-  my @csspaths=();
-  foreach my $css (@css){
-    my $csssource = pathname_find($css,types=>['css'],paths=>['.'],installation_subdir=>'style');
-    my $csspath = pathname_absolute($css,$MANDEST);
-    pathname_copy($csssource,$csspath)  if -f $csssource;
-    push(@csspaths,$csspath); }
-
-  LaTeXML::Post::ProcessChain(
-      LaTeXML::Post::Document->newFromFile('manual.xml',
-					   destination=>"$MANDEST/index.$format"),
-      LaTeXML::Post::Split->new(db=>$DB,split_xpath=>$split,
-				splitnaming=>'labelrelative',
-				%POPTIONS),
-      $scanner,
-      LaTeXML::Post::MakeIndex->new(db=>$DB,scanner=>$scanner,%POPTIONS),
-      LaTeXML::Post::CrossRef->new(db=>$DB,urlstyle=>'server',format=>$format,%POPTIONS),
-      LaTeXML::Post::Graphics->new(%POPTIONS),
-      LaTeXML::Post::MathML::Presentation->new(%POPTIONS),
-      LaTeXML::Post::PurgeXMath->new(%POPTIONS),
-      LaTeXML::Post::XSLT->new(stylesheet=>"LaTeXML-$format.xsl",
-			       css=>[@csspaths],%POPTIONS),
-      LaTeXML::Post::Writer->new(format=>$format,%POPTIONS),
-     );
-  # Huh? This doesn't belong here!!!
-  pathname_copy("$SRCDIR/Changes","$DEST/Changes");
-}
-#======================================================================
-package MyPodConverter;
-use base qw(Pod::LaTeX);
-
-sub new {
-  my($class,@args)=@_;
-  my $self = $class->SUPER::new(@args);
-  $self->Head1Level(1);
-#  $self->LevelNoNum(3);
-  $self->LevelNoNum(1);
-  $self->ReplaceNAMEwithSection(1);
-  $self->AddPreamble(0);
-  $self->AddPostamble(0);
-  $self->select('!AUTHOR|COPYRIGHT');
-  $self; }
-
-our %titles;
-our %ignore;
-BEGIN{
-  %titles=("SYNOPSIS"=>"Synopsis",
-	   "OPTIONS AND ARGUMENTS"=>"Options \\& Arguments",
-	   "DESCRIPTION"=>"Description",
-	   "SEE ALSO"=>"See also",
-	   "METHODS"=>"Methods",
-	  ); 
+  system("$BINDIR/latexml --dest=manual/manual.xml manual/manual")==0
+    or die "Failed to convert Manual to XML";
+  system("$BINDIR/latexmlpost"
+	 ." --dest=$DEST/manual/index.xhtml"
+	 ." --split  --splitnaming=labelrelative"
+	 ." --urlstyle=server"
+	 ." --css=../latexmldoc.css"
+	 ." manual/manual") ==0
+	   or die "Failed to postprocess manual";
 }
 
-# Redefined to beautify POD headings
-sub head {
-  my($self,$level,$title,$parobj)=@_;
-  my $newtitle = $titles{$title} || $title;
-  $self->SUPER::head($level,$newtitle,$parobj); }
-
-# Redefined to translate links to our PODs
-sub interior_sequence {
-  my ($self,$seq_command, $seq_argument, $pod_seq) = @_;
-  if($seq_command eq 'L'){
-    "\\pod{$seq_argument}"; }
-  else {
-    $self->SUPER::interior_sequence($seq_command,$seq_argument,$pod_seq); }}
-
-# Redefined to avoid unnecessary math.
-sub _replace_special_chars_late {
-  my($self,$paragraph)=@_;
-  $paragraph =~ s/</\\textless /g;
-  $paragraph =~ s/>/\\textgreater /g;
-  $paragraph =~ s/\|/\\textbar /g;
-  $paragraph;}
-
-#======================================================================
-package RelaxNGDocumenter;
-
-use strict;
-use LaTeXML;
-use LaTeXML::Model;
-use LaTeXML::Model::RelaxNG;
-
-sub documentSchema {
-  my($name)=@_;
-
-  my $latexml= LaTeXML->new(searchpaths=>['.'],
-			    verbosity=>1);
-#  $LaTeXML::Model::DEBUG = 1;
-  local $LaTeXML::STATE    = $$latexml{state};
-  my $model = $LaTeXML::STATE->getModel();
-  $model->registerNamespace(ltx=>"http://dlmf.nist.gov/LaTeXML");
-  my $relaxng = $$model{schema} = LaTeXML::Model::RelaxNG->new($model,$name);
-
-  my @schema = $relaxng->scanExternal($name);
-  @schema = map($relaxng->simplify($_),@schema);
-
-  $relaxng->documentModules; }
+# Huh? This doesn't belong here!!!
+##  pathname_copy("$SRCDIR/Changes","$DEST/Changes");
 
 #======================================================================
 __END__

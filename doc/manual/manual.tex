@@ -1,9 +1,9 @@
 \documentclass{book}
-\usepackage{latexmldoc}
+\usepackage{../sty/latexmldoc}
 \usepackage{makeidx}
 \makeindex
 
-\title{\LaTeXML: The Manual}
+\title{\LaTeXML\ \emph{The Manual}}
 \subtitle{A \LaTeX\ to \XML\ Converter;\\ \emph{Version~0.6.0}}
 \author{Bruce R.~Miller}
 \begin{document}
@@ -405,7 +405,9 @@ by declaring properties of the desired document structure,
 and by defining rewrite rules to be applied to the constructed document tree.
 
 \begin{figure}[tb]
-\includegraphics[width=\columnwidth]{dataflow}
+\begin{center}
+\includegraphics{figures/digestion}
+\end{center}
 \caption{Flow of data through \LaTeXML's digestive tract.\label{fig:dataflow}}
 \end{figure}
 The top-level class, \pod{LaTeXML}, manages the processing, providing several methods
@@ -726,45 +728,45 @@ Lots\ldots!
 \appendix
 \chapter[Commands]{Command Documentation}\label{commands}
 % input the 1st, to avoid quasi-blank page; include the rest
-\input{generated/latexml}
-\include{generated/latexmlpost}
+\input{pods/latexml}
+\include{pods/latexmlpost}
 
 %%%======================================================================
 \chapter[Modules]{Core Module Documentation}\label{coremodules}
-\input{generated/LaTeXML}
-\include{generated/LaTeXML_Object}
-\include{generated/LaTeXML_Definition}
-\include{generated/LaTeXML_Global}
-\include{generated/LaTeXML_Error}
-\include{generated/LaTeXML_Package}
-\include{generated/LaTeXML_Parameters}
-\include{generated/LaTeXML_State}
+\input{pods/LaTeXML}
+\include{pods/LaTeXML_Object}
+\include{pods/LaTeXML_Definition}
+\include{pods/LaTeXML_Global}
+\include{pods/LaTeXML_Error}
+\include{pods/LaTeXML_Package}
+\include{pods/LaTeXML_Parameters}
+\include{pods/LaTeXML_State}
 
 %\section{Digestion-related Modules}
 
-\include{generated/LaTeXML_Token}
-\include{generated/LaTeXML_Box}
-\include{generated/LaTeXML_Number}
-\include{generated/LaTeXML_Font}
-\include{generated/LaTeXML_Mouth}
-\include{generated/LaTeXML_Gullet}
-\include{generated/LaTeXML_Stomach}
+\include{pods/LaTeXML_Token}
+\include{pods/LaTeXML_Box}
+\include{pods/LaTeXML_Number}
+\include{pods/LaTeXML_Font}
+\include{pods/LaTeXML_Mouth}
+\include{pods/LaTeXML_Gullet}
+\include{pods/LaTeXML_Stomach}
 
 %\section{Construction-related Modules}
-\include{generated/LaTeXML_Document}
-\include{generated/LaTeXML_Model}
-\include{generated/LaTeXML_Rewrite}
+\include{pods/LaTeXML_Document}
+\include{pods/LaTeXML_Model}
+\include{pods/LaTeXML_Rewrite}
 
 %\section{Math-related Modules}
-\include{generated/LaTeXML_MathParser}
+\include{pods/LaTeXML_MathParser}
 
 %%%======================================================================
 \chapter[Utility Modules]{Utility Module Documentation}\label{utilitymodules}
-\input{generated/LaTeXML_Util_Pathname}
+\input{pods/LaTeXML_Util_Pathname}
 
 %%%======================================================================
 \chapter[Postprocessing Modules]{Postprocessing Module Documentation}\label{postmodules}
-\input{generated/LaTeXML_Post}
+\input{pods/LaTeXML_Post}
 
 %%%======================================================================
 \chapter[Schema]{\LaTeXML\ Schema}\label{schema}
@@ -774,11 +776,11 @@ sets of elements related to, eg., inline content, block content,
 math and high-level document structure.  This allows the possibility
 of mixing models or extension by predefining certain parameter entities.
 
-\input{generated/schema}
+\input{schema}
 
 %%%======================================================================
 \backmatter
-\printindex\label{idx}
+\printindex
 
 \end{document}
 

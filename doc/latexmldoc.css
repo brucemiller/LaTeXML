@@ -1,0 +1,103 @@
+
+body { margin:0; background:#cfd2e6; color:#000000; }
+
+.navbar {
+   display:block!important;
+   position:fixed; left:10px; top:10px; width:232px;
+   margin:0; padding:0; 
+   font-weight: bold; font-size: 85%;
+   overflow:clip; z-index:10;
+   color:#a82ee6;
+}
+.navbar a {
+   color:#a82ee6;
+}
+.navbar .start {
+  display:block; font-size:170%; text-align:center;}
+
+.main {
+   position:absolute; left:240px; top:60px; 
+   margin:0 20px 0 0; padding:0;
+ }
+.navbar ul {
+   list-style:none;
+   margin:0 0 0 20px; padding:0;
+}
+.navbar a {
+   display:block;
+   text-decoration:none;
+}
+.navbar a:hover {
+   background:#701f99; 
+   color:#e6eaff;
+}
+.navbar li {
+   border-top: 1px solid transparent;
+   border-bottom: 1px solid transparent;
+}
+.navbar li.self {
+   background:#e6eaff; 
+   border-top: 1px solid #701f99;
+   border-left: 1px solid #701f99;
+   border-bottom: 1px solid #701f99;
+}
+.content {
+   margin:30px 0px 0 0; padding:10px;
+   background:#e6eaff;
+   border: 2px solid #701f99;
+   min-height:500px;
+}
+.title {
+   text-align:left;
+   margin:0;
+   color:#a82ee6;
+}
+.paragraph-title {
+   display:inline; float:left; height:1ex;
+   font-size: 100%;
+   margin:5px 10px 5px 5px;
+   padding:5px 10px 5px 5px;
+}
+.paragraph .para p:first-child { margin-top:0; }
+
+.subsection,
+.paragraph {
+   margin: 5px 10px 5px 5px;
+   padding:5px;
+}
+.para {
+   background:#f2f4ff;
+   margin:5px; padding:5px 10px;
+   border: 1px solid #B0B0B0;
+}
+
+.navbar .start .ref .text {
+   visibility:hidden; }
+
+.navbar .start .ref {
+   width:215px; height:50px; display:block;
+   background-image:url(latexml.png); }
+
+.navbar .start .emph {
+   display:block; }
+
+.navbar > .toc:before {
+   display:block;
+   content:url(mascot.png);
+}
+
+
+a.up:before { content:"\261D "; }
+a.next:after { content:" \261E"; }
+a.previous:before { content:"\261C "; }
+
+
+h1, h2, h3,
+.author, .navbar,
+.header, .footer {
+  font-family: "Bitstream Vera Sans",Verdana, sans-serif;
+}
+
+.footer {
+  border:none; 
+}

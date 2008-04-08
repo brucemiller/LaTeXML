@@ -1,0 +1,18 @@
+#!/bin/sh
+
+DEST=/local/www/site/htdocs/DigitalMathLib/LaTeXML
+
+# Make dvi for comparison.
+# latex homepage
+# rm *.aux *.log *.out
+
+# Make xml and then xhtml
+cp -p graphics/latexml.png ${DEST}/
+cp -p graphics/mascot.png ${DEST}/
+
+testlatexml --dest=home/homepage.xml home/homepage
+testlatexmlpost -dest=${DEST}/index.html \
+   --split --css=latexmldoc.css  --nonumbersections --splitnaming=label \
+   home/homepage
+
+

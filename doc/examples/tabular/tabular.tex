@@ -1,0 +1,17 @@
+\documentclass{article}
+% Tabular example from LaTeX manual, p.205
+\begin{document}
+\begin{tabular}{|r||r@{--}l|p{1.25in}|}
+\hline
+\multicolumn{4}{|c|}{GG\&A Hoofed Stock}
+  \\ \hline\hline
+&\multicolumn{2}{c|}{Price}& \\ \cline{2-3}
+\multicolumn{1}{|c||}{Year}
+& \multicolumn{1}{r@{\,\vline\,}}{low}
+& high & \multicolumn{1}{c|}{Comments}
+ \\ \hline
+1971 &  97 & 245 & Bad year.\\ \hline
+  72 & 245 & 245 & Light trading due to a heavy winter. \\ \hline
+  73 & 245 & 2001 & No gnus was very good gnus this year. \\ \hline
+\end{tabular}
+\end{document}

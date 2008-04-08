@@ -8,6 +8,7 @@ RequirePackage('graphicx');
 RequirePackage('hyperref');
 
 DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
+DefMacro('\toctitle{}','\@add@frontmatter{ltx:toctitle}{#1}');
 
 # Various other typographic bits
 DefMacro('\cmd {}','\texttt{#1}');
@@ -15,7 +16,7 @@ DefMacro('\code {}','\texttt{#1}');
 DefMacro('\method {}','\texttt{->#1}');
 DefMacro('\attr {}','\texttt{#1}');
 DefMacro('\varfile[]{}','\texttt{\textit{#2}\ifx.#1.\else.#1\fi}');
-DefConstructor('\cs{}','\#1', font=>{family=>'typewriter'});
+DefMacro('\cs{}','\texttt{\textbackslash #1}');
 
 
 DefConstructor('\ltxcmd{}',
@@ -33,27 +34,27 @@ DefConstructor('\pod{}', "<ltx:ref href='#href' labelref='#ref'>#1</ltx:ref>",
 		   $_[1]->setProperty(href=>$url); }});
 
 RawTeX(<<'EOTeX');
-% For generated documentation of DTD.
-\newenvironment{dtdmodule}[1]{%
-  \section*{Module \texttt{#1}}\label{dtd.module.#1}
+% For generated documentation of Schema.
+\newenvironment{schemamodule}[1]{%
+  \section*{Module \texttt{#1}}\label{schema.module.#1}
    \raggedright
   \begin{description}}{\end{description}}
 
 % \elementdef{name}{doc}{attributes}{content}
 \newcommand{\elementdef}[4]{
-  \item[\hypertarget{dtd.element.#1}{\texttt{#1}}] \hspace{1em} #2
-    \if.#3.\else \parindent=-1em\par\textbf{attributes: } #3\fi
-    \if.#4.\else \parindent=-1em\par\textbf{content: }#4\fi
+  \item[\hypertarget{schema.element.#1}{\texttt{#1}}] \hspace{1em} #2
+    \if.#3.\else \par\moveleft 2em \hbox{\textbf{attributes: }} #3\fi
+    \if.#4.\else \par\moveleft 2em \hbox{\textbf{content: }}#4\fi
 }
 
 % \attrdef{name}{doc}{content}
 \newcommand{\attrdef}[3]{
   \item[\texttt{#1}] \hspace{1em} #2
-    \parindent=-1em\par\textbf{=} \if.#3.\textit{text}\else #3\fi
+    \if.#3.\else\parindent=-1em\par\textbf{=} #3\fi
 }
 % \entitydef{name}{doc}{value}
 \newcommand{\entitydef}[3]{
-   \item[\hypertarget{dtd.entity.#1}{\texttt{#1}}] \hspace{1em} #2
+   \item[\hypertarget{schema.entity.#1}{\texttt{#1}}] \hspace{1em} #2
     \parindent=-1em\par\textbf{==}\if.#3.()\else #3\fi
 }
 
@@ -63,10 +64,10 @@ RawTeX(<<'EOTeX');
     \if.#4.\else \par\noindent\textbf{#2 } #4\fi
 }
 
-%\newcommand{\moduleref}[1]{\hyperlink{dtd.module.#1}{\texttt{#1}}}
-\newcommand{\moduleref}[1]{\htmlref{\texttt{#1}}{dtd.module.#1}}
-\newcommand{\entityref}[1]{\hyperlink{dtd.entity.#1}{\texttt{#1}}}
-\newcommand{\elementref}[1]{\hyperlink{dtd.element.#1}{\texttt{#1}}}
+%\newcommand{\moduleref}[1]{\hyperlink{schema.module.#1}{\texttt{#1}}}
+\newcommand{\moduleref}[1]{\htmlref{\texttt{#1}}{schema.module.#1}}
+\newcommand{\entityref}[1]{\hyperlink{schema.entity.#1}{\texttt{#1}}}
+\newcommand{\elementref}[1]{\hyperlink{schema.element.#1}{\texttt{#1}}}
 
 EOTeX
 

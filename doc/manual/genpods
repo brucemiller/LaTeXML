@@ -1,0 +1,125 @@
+#!/usr/bin/perl -w
+use strict;
+use FindBin;
+use lib "$FindBin::RealBin/../blib/lib";
+use Getopt::Long qw(:config no_ignore_case);
+use Pod::Usage;
+use Pod::LaTeX;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Prepare LaTeX from various executable's and module's PODs
+# These go into appendices of the manual
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+my $WORKDIR = $FindBin::RealBin;
+my $SRCDIR  = $WORKDIR."/../..";
+my $GENDIR  = "$WORKDIR/pods";
+
+my $identity = "genpods (part of LaTeXML)";
+my($force,$help)=(0,0);
+GetOptions("force!"    => \$force,
+	   "help"         => \$help,
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+
+#======================================================================
+my @exes = (qw(latexml latexmlpost));
+# would be nice to automatically discover documentable modules
+my @modules = (qw(LaTeXML
+		  LaTeXML::Box LaTeXML::Definition LaTeXML::Document
+		  LaTeXML::Error LaTeXML::Font LaTeXML::Global LaTeXML::Gullet
+		  LaTeXML::MathParser LaTeXML::Model LaTeXML::Mouth
+		  LaTeXML::Number LaTeXML::Object LaTeXML::Package
+		  LaTeXML::Parameters LaTeXML::Post LaTeXML::Rewrite
+		  LaTeXML::State LaTeXML::Stomach LaTeXML::Token
+		  LaTeXML::Util::Pathname));
+
+if(! -d $GENDIR){
+  mkdir($GENDIR) or die "Couldn't create directory for pods: $!"; }
+
+foreach my $name (@exes){
+  my $src  = "$SRCDIR/bin/$name";
+  my $dest = "$GENDIR/$name.tex";
+  if($force || (!-f $dest) || (-M $src < -M $dest)){
+    print "Converting POD for $name to LaTeX\n";
+    my $podconverter = MyPodConverter->new();
+    $podconverter->parse_from_file($src,$dest); }}
+
+foreach my $name (@modules){
+  my $src = $name;
+  $src =~ s|::|/|g;
+  $src = "$SRCDIR/lib/$src.pm";
+  my $dest = $name;
+  $dest =~ s|::|_|g;
+  $dest = "$GENDIR/$dest.tex";
+  if($force || (!-f $dest) || (-M $src < -M $dest)){
+    print "Converting POD for $name to LaTeX\n";
+    my $podconverter = MyPodConverter->new();
+    $podconverter->parse_from_file($src,$dest); }}
+
+#======================================================================
+package MyPodConverter;
+use base qw(Pod::LaTeX);
+
+sub new {
+  my($class,@args)=@_;
+  my $self = $class->SUPER::new(@args);
+  $self->Head1Level(1);
+#  $self->LevelNoNum(3);
+  $self->LevelNoNum(1);
+  $self->ReplaceNAMEwithSection(1);
+  $self->AddPreamble(0);
+  $self->AddPostamble(0);
+  $self->select('!AUTHOR|COPYRIGHT');
+  $self; }
+
+our %titles;
+our %ignore;
+BEGIN{
+  %titles=("SYNOPSIS"=>"Synopsis",
+	   "OPTIONS AND ARGUMENTS"=>"Options \\& Arguments",
+	   "DESCRIPTION"=>"Description",
+	   "SEE ALSO"=>"See also",
+	   "METHODS"=>"Methods",
+	  ); 
+}
+
+# Redefined to beautify POD headings
+sub head {
+  my($self,$level,$title,$parobj)=@_;
+  my $newtitle = $titles{$title} || $title;
+  $self->SUPER::head($level,$newtitle,$parobj); }
+
+# Redefined to translate links to our PODs
+sub interior_sequence {
+  my ($self,$seq_command, $seq_argument, $pod_seq) = @_;
+  if($seq_command eq 'L'){
+    "\\pod{$seq_argument}"; }
+  else {
+    $self->SUPER::interior_sequence($seq_command,$seq_argument,$pod_seq); }}
+
+# Redefined to avoid unnecessary math.
+sub _replace_special_chars_late {
+  my($self,$paragraph)=@_;
+  $paragraph =~ s/</\\textless /g;
+  $paragraph =~ s/>/\\textgreater /g;
+  $paragraph =~ s/\|/\\textbar /g;
+  $paragraph;}
+
+#======================================================================
+__END__
+
+=head1 NAME
+
+C<genpods> - convert LaTeXML POD documentation for manual.
+
+=head1 SYNOPSIS
+
+genpods [options]
+
+ Options:
+  --force        Force regeneration of LaTeX from POD documentation
+                    (default: only if needed)
+  --help            Shows this help.
+
+=cut
+#**********************************************************************

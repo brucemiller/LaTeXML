@@ -2,6 +2,10 @@
 % Collected separately so I can override for LaTeXML
 %======================================================================
 \usepackage{latexml}
+%======================================================================
+\def\toctitle#1{}
+
+%======================================================================
 
 \let\@@LaTeXML\LaTeXML
 \def\LaTeXML{\ifHy@pdfstring LaTeXML\else\@@LaTeXML\fi}
@@ -82,7 +86,7 @@
 \newcommand{\cs}[1]{\texttt{$\backslash$#1}}
 %======================================================================
 % For generated documentation of DTD.
-\newenvironment{dtdmodule}[1]{%
+\newenvironment{schemamodule}[1]{%
   \section*{Module \texttt{#1}}\label{dtd.module.#1}
    \raggedright
   \begin{description}}{\end{description}}

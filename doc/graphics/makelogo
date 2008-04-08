@@ -1,0 +1,24 @@
+#!/bin/bash
+
+cwd=`pwd`
+tmpdir=/tmp/
+tmpfile=makelogo$$
+
+cd $tmpdir
+
+cat > $tmpfile.tex <<EOF
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{color}
+\definecolor{headingcolor}{rgb}{0.44,0.12,0.6}
+\thispagestyle{empty}
+\mag=12000\relax
+\begin{document}
+\color{headingcolor}\LaTeXML
+\end{document}
+EOF
+
+latex  $tmpfile.tex
+dvips -q -S1 -i -E -j0 -o $tmpfile.ps $tmpfile.dvi
+convert  -transparent white $tmpfile.001 -adaptive-resize 225x50  $cwd/latexml.png
+
