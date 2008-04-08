@@ -77,7 +77,7 @@
   </para>
   <para>
     <equation>
-      <Math mode="display" tex="s(x)=\cases{+1&amp;\hbox{whatever}\cr-1&amp;\hbox{$x&lt;0$}\cr 0}" text="s * x = Cases[[+ 1, [whatever]], [- 1, [xless0]], [0, ]]">
+      <Math mode="display" tex="s(x)=\cases{+1&amp;\hbox{whatever}\cr-1&amp;\hbox{$x&lt;0$}\cr 0}" text="s * x = Cases[[+ 1, [whatever]], [- 1, [lessx0]], [0, ]]">
         <XMath>
           <XMApp>
             <XMTok meaning="eq" role="RELOP">=</XMTok>
@@ -110,11 +110,13 @@
                 <XMCell align="left">
                   <XMText>
                     <text>
-                      <Math mode="inline" tex="x&lt;0">
+                      <Math mode="inline" tex="x&lt;0" text="x less 0">
                         <XMath>
-                          <XMTok role="UNKNOWN" font="italic">x</XMTok>
-                          <XMTok meaning="less" role="RELOP">&lt;</XMTok>
-                          <XMTok meaning="0" role="NUMBER">0</XMTok>
+                          <XMApp>
+                            <XMTok meaning="less" role="RELOP">&lt;</XMTok>
+                            <XMTok role="UNKNOWN" font="italic">x</XMTok>
+                            <XMTok meaning="0" role="NUMBER">0</XMTok>
+                          </XMApp>
                         </XMath>
                       </Math>
                     </text>

@@ -29,6 +29,7 @@
 package LaTeXML::Post::MathML;
 use strict;
 use LaTeXML::Util::LibXML;
+use XML::LibXML;
 use base qw(LaTeXML::Post);
 
 our $mmlURI = "http://www.w3.org/1998/Math/MathML";
@@ -44,7 +45,7 @@ sub process {
   my($self,$doc)=@_;
   local $LaTeXML::Post::MathML::DOCUMENT = $doc;
   if(my @maths = $self->find_math_nodes($doc)){
-    $self->Progress("Converting ".scalar(@maths)." formulae");
+    $self->Progress($doc,"Converting ".scalar(@maths)." formulae");
     $doc->addNamespace($mmlURI,'m');
     foreach my $math (@maths){
       $self->processNode($doc,$math); }
@@ -251,6 +252,8 @@ sub pmml_internal {
     my $result = ['m:mtable',{rowspacing=>"0.2ex", columnspacing=>"0.4em"},@rows];
     $result = ['m:mstyle',{@$styleattr},$result] if $styleattr;
     $result; }
+  elsif($tag eq 'ltx:XMText'){
+    pmml_row(map(pmml_text($_), $node->childNodes)); }
   else {
     my $text = $node->textContent; #  Spaces are significant here
     $text =~ s/^\s+/$NBSP/;
@@ -491,6 +494,31 @@ sub pmml_script_handler {
   else {
     if($x eq 'mid'){ do_overunder('m:munderover',$base,$posts[0][0],$posts[0][1]); }
     else           { do_subsup('m:msubsup',$base,$posts[0][0],$posts[0][1]); }}}
+
+# Handle text contents.
+# Note that (currently) MathML doesn't allow math nested in m:mtext,
+# nor in fact any other markup within m:mtext,
+# but LaTeXML creates that, if the document is structured that way.
+# Here we try to flatten the contents to strings, but keep the math as math
+sub pmml_text {
+  my($node)=@_;
+  return () unless $node;
+  my $type = $node->nodeType;
+  if($type == XML_TEXT_NODE){
+    my $string = $node->textContent;
+    $string =~ s/^\s/$NBSP/;     $string =~ s/\s$/$NBSP/;
+    (['m:mtext',{},$string]); }
+  elsif($type == XML_DOCUMENT_FRAG_NODE){
+    map(pmml_text($_), $node->childNodes); }
+  elsif($type == XML_ELEMENT_NODE){
+    my $tag = getQName($node);
+    if($tag eq 'ltx:Math'){
+      my $xmath = $LaTeXML::Post::MathML::DOCUMENT->findnode('ltx:XMath',$node);
+      ($xmath ? pmml($xmath) : ()); }
+    else {			# Just recurse on raw content????
+      map(pmml_text($_), $node->childNodes); }}
+  else {
+    (); }}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Support functions for Content MathML

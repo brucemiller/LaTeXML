@@ -61,7 +61,7 @@ sub parseMath {
   foreach my $node ($document->findnodes("//*[\@xml:id]")){
     $$self{idcache}{$node->getAttribute('xml:id')} = $node; }
 
-  if(my @math =  $document->findnodes('descendant-or-self::ltx:XMath')){
+  if(my @math =  $document->findnodes('descendant-or-self::ltx:XMath[not(ancestor::ltx:XMath)]')){
     NoteBegin("Math Parsing"); NoteProgress(scalar(@math)." formulae ...");
     local $LaTeXML::MathParser::CAPTURE = $document->getDocument->documentElement->addNewChild($nsURI,'XMath');
     foreach my $math (@math){
@@ -231,6 +231,9 @@ our %TAG_FEEDBACK=('ltx:XMArg'=>'a','ltx:XMWrap'=>'w');
 sub parse_rec {
   my($self,$node,$rule,$document)=@_;
   $self->parse_children($node,$document);
+  # This will only handle 1 layer nesting (successfully?)
+  foreach my $nested ($document->findnodes('descendant::ltx:XMath',$node)){
+    $self->parse($nested,$document); }
   my $tag  = getQName($node);
   if(my $requested_rule = $node->getAttribute('rule')){
     $rule = $requested_rule; }
