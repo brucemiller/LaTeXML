@@ -61,7 +61,8 @@ my $scanner = DLMFScan->new(db=>$DB,%OPTIONS);
 my @procs=(DLMFSplit->new(%OPTIONS));
 push(@procs,$scanner) if $scan;
 
-my $crossref = DLMFCrossRef->new(db=>$DB,format=>'xml',urlstyle=>'negotiated',%OPTIONS);
+my $crossref = DLMFCrossRef->new(db=>$DB,format=>'xml',
+				 number_sections=>1,urlstyle=>'negotiated',%OPTIONS);
 if(!$prescan){
   push(@procs,
        LaTeXML::Post::MakeIndex->new(db=>$DB,split=>1,scanner=>$scanner,%OPTIONS),
@@ -117,14 +118,14 @@ sub process {
     # parts only appear in chapter's TOC.
     foreach my $part ($doc->findnodes('//ltx:part')){
       my $partid = $part->getAttribute('xml:id');
+      delete $$doc{idcache}{$partid}; # NOTE: We're MOVING the Part ID!!!!!
       my @parttoc = ();
       foreach my $section ($doc->findnodes('ltx:section',$part)){
 	my $secid = $section->getAttribute('xml:id');
 	my $secdoc = $doc->newDocument($section,
 				       destination=>$self->getPageName($doc,$section));
 	push(@docs,$secdoc);
-	push(@parttoc,['ltx:tocentry',{},['ltx:ref',{class=>'toc',show=>'typerefnum title',
-						     idref=>$secid}]]);
+	push(@parttoc,['ltx:tocentry',{},['ltx:ref',{class=>'toc',show=>'fulltitle',idref=>$secid}]]);
 	$secdoc->addNavigation(up      =>$chapid);
 	$secdoc->addNavigation(up      =>$partid);
 	$secdoc->addNavigation(previous=>$prev->getDocumentElement->getAttribute('xml:id')) if $prev;
@@ -143,7 +144,7 @@ sub process {
 		  $doc->findnode('ltx:toctitle | ltx:title',$part)->childNodes,
 		  $doc->findnodes('ltx:indexmark',$part)], # Need to copy these _somewhere_!!
 		 ['ltx:toclist',{tocindent=>5},@parttoc]]);
-      $part->parentNode->removeChild($part); }
+      $doc->removeNodes($part); }
     $doc->addNodes($root,['ltx:toclist',{tocindent=>0},@toc]); 
     # Now, handle any sidebars...
     foreach my $sidebar ($doc->findnodes('//ltx:sidebar')){
@@ -151,7 +152,7 @@ sub process {
 				     destination=>$self->getPageName($doc,$sidebar));
       $sbdoc->addNavigation(up      =>$chapid);
       push(@docs,$sbdoc); 
-      $sidebar->parentNode->removeChild($sidebar); }
+      $doc->removeNodes($sidebar); }
 
     @docs; }
   else { $doc; }}
@@ -184,7 +185,9 @@ sub magnifyFigure {
       my $id = $n->getAttribute('xml:id');
       my $newid = ($id =~ /^(.*)\.info$/ ? "$1.mag.info" : $id.".mag");
       $n->setAttribute('xml:id'=>$newid);
-      $ids{$id}=$newid; }
+      $ids{$id}=$newid; 
+      delete $$magdoc{idcache}{$id};
+      $$magdoc{idcache}{$newid} = $n; }
     foreach my $n ($magdoc->findnodes('.//*[@idref]')){
       my $id = $n->getAttribute('idref');
       $n->setAttribute(idref=>$ids{$id}) if $ids{$id}; }
@@ -220,6 +223,17 @@ sub process {
   $base =~ s/\bindex//;
   $doc->getDocumentElement->setAttribute(url=>"DLMF:/$base");
   $base =~ s/[^\/]*$//;		# trim back to directory.
+  # Copy any locally linked resources
+  my $paths = [$doc->getSearchPaths];
+  foreach my $n ($doc->findnodes('//ltx:ref[@href and not(@idref) and not(@labelref)]')){
+    my $url = $n->getAttribute('href');
+    if($url !~ /^(\w+:|\/)/){
+      if(my $src = pathname_find($url,paths=>$paths)){
+	my $dst = $doc->checkDestination($url);
+	print STDERR "copying local resource: $src => $dst\n";
+	pathname_copy($src,$dst);
+    }}}
+
   foreach my $n ($doc->findnodes('//@imagesrc|//@vrml|//@href')){
     my $path = $n->value;
     next if (! defined $path) || $path =~ /^(\w+:|\/)/;
@@ -227,7 +241,7 @@ sub process {
   # And remove any metadata containers if empty 
   foreach my $meta ($doc->findnodes('descendant::ltx:metadata')){
     if(! $meta->hasChildNodes){
-      $meta->parentNode->removeChild($meta); }}
+      $doc->removeNodes($meta); }}
 
   $self->SUPER::process($doc); }
 
@@ -276,6 +290,7 @@ sub mark_handler {
   # See preprocess_symbols for the extraction of the "defined" symbol (if any)
   # Also recognize marks for definition, notation...
   my $type =  $node->getAttribute('type');
+  my $sort =  $node->getAttribute('sortkey');
   my $tagnode = $doc->findnode('child::ltx:tag',$node);
   my $textnode= $doc->findnode('child::ltx:text',$node);
   if($type eq 'definition'){
@@ -288,7 +303,7 @@ sub mark_handler {
 			 textform => textualize($doc,$tagnode,":",$textnode)); }
 #  $$self{db}->register("NOTATION:".$tagnode->cloneNode(1),
   $$self{db}->register("NOTATION:".$tagnode->cloneNode(1)->toString,
-		       parent=>$parent_id, tag=>$tagnode, text=>$textnode); 
+		       parent=>$parent_id, tag=>$tagnode, text=>$textnode, sortkey=>$sort);
 }
 
 # This is a copy of Scan's section_handler, BUT without the recursion.
@@ -398,6 +413,8 @@ sub isAncestor {
 
 #======================================================================
 # Customized CrossRef
+# (1) Augment the metadata withreferrers
+# (2) Soften references into stubbed chapters
 #======================================================================
 package DLMFCrossRef;
 use base qw(LaTeXML::Post::CrossRef DLMFSymbols);
@@ -414,7 +431,7 @@ sub process {
       if($$self{db}->lookup("ID:$keyid")){
 	$ikey->setAttribute(idref=>$keyid); }
       else {
-	$ikey->parentNode->removeChild($ikey); }}
+	$doc->removeNodes($ikey); }}
     # Add Referrers
     if(my $identry = $$self{db}->lookup("ID:$id")){
       if(my $labels = $identry->getValue('labels')){
@@ -428,7 +445,7 @@ sub process {
 	  # NOTE: Possibly reimplement the compressed ref list ?
 	  $doc->addNodes($meta,['ltx:referrers',{},
 				$doc->conjoin(', ',
-					      map(['ltx:ref',{idref=>$_,show=>'typerefnum'}],
+					      map(['ltx:ref',{idref=>$_}],
 						  sort keys %referrers))]); }}}
     # Compile list of Symbols Used w/links to "definitions"
     if($doc->getQName($meta->parentNode) =~ /^ltx:equation/){ # Only for equations?
@@ -440,6 +457,27 @@ sub process {
       $doc->addNodes($meta,['ltx:symbols-used',{},@$used]) if @$used; }
   }
   $self->SUPER::process($doc); }
+
+# Find @labelref's that link into stubbed chapters
+sub fill_in_refs {
+  my($self,$doc)=@_;
+  my $db = $$self{db};
+  foreach my $ref ($doc->findnodes('descendant::*[@labelref]')){
+    my $label = $ref->getAttribute('labelref');
+    my $entry = $db->lookup($label);
+    # If no ID assigned, and label in recognized format
+    if(!( $entry && $entry->getValue('id')) && ($label =~ /^LABEL:(ch|sec|eq|fig|tab):(\w+)\./)){
+      my $ch = $2;		# reference to this chapter!
+      if(my $chap_entry = $db->lookup("LABEL:ch:$ch")){ # Chap has label
+	if(my $chap_id = $chap_entry->getValue('id')){	# And ID
+	  if(my $chap_id_entry = $db->lookup("ID:$chap_id")){ # And entry for ID
+	    if($chap_id_entry->getValue('stub')){	      # BUT it is a stub!!!
+	      # Then, set idref to refer to the stubbed chapter.
+	      $ref->setAttribute(idref=>$chap_id);
+	      # But, still make note of this reference
+	      $self->note_missing('Stubbed label',$label);
+	    }}}}}}
+  $self->SUPER::fill_in_refs($doc); }
 
 #======================================================================
 # Abstract Mixin class for coordinating resource names with reference numbers.
@@ -682,7 +720,10 @@ use base qw(DLMFFigureResourceMap LaTeXML::Post::Graphics);
 
 # Graphics in "2D" subdirs tend to be line drawings: 
 # To get smoother scaling, prefer the postscript source to an already rasterized.
-sub findGraphicsFile {
+# NO: Let's let the default method search...
+# I think I've sorted out some of the conversion problems,
+# and now Graphics will also process *.ai!
+sub XXXXXXfindGraphicFile {
   my($self,$doc,$node)=@_;
   if(my $name = $node->getAttribute('graphic')){
     # Let's try _always_ using the postscript
@@ -693,10 +734,42 @@ sub findGraphicsFile {
 			  : $$self{graphicsSourceTypes})); }
   else { undef; }}
 
+# Prefer the postscript or pdf versions
+sub getGraphicsSourceTypes {
+  my($self)=@_;
+  (#'jpg','jpeg',		# jpegs, if given first choice
+   'eps','ps','ai',		# Otherwise prefer ps/pdf over gif which are likely obsolete
+   $self->SUPER::getGraphicsSourceTypes); }
+
+sub getTypeProperties {
+  my($self,$source,$options)=@_;
+  my %props = $self->SUPER::getTypeProperties($source,$options);
+  (%props,autocrop=>1); }
+
+sub desiredResourcePathname {
+  my($self,$doc,$node,$source,$type)=@_;
+  if($doc->findnode('//ltx:document')){ # If a regular document.
+    LaTeXML::Post::desiredResourcePathname($self,$doc,$node,$source,$type); }
+  else {
+    $self->SUPER::desiredResourcePathname($doc,$node,$source,$type); }}
+
+sub generateResourcePathname {
+  my($self,$doc,$node,$source,$type)=@_;
+  if($doc->findnode('//ltx:document')){ # If a regular document.
+    # For bio photographs, keep the photo_name format!
+    if((($doc->getDocumentElement->getAttribute('xml:id') || '') =~ /^bio./)
+       && ($source=~/photo_/)){
+      my $name = pathname_name($source);
+      pathname_make(name=>$name, type=>$type); }
+    else {
+      LaTeXML::Post::generateResourcePathname($self,$doc,$node,$source,$type); }}
+  else {
+    $self->SUPER::generateResourcePathname($doc,$node,$source,$type); }}
+
 sub processGraphic {
   my($self,$doc,$node)=@_;
   return if $node->getAttribute('imagesrc'); # Already has a src defined?
-  my $source = $self->findGraphicsFile($doc,$node);
+  my $source = $self->findGraphicFile($doc,$node);
   return $self->Warn("Missing graphic for ".$node->toString."; skipping") unless $source;
   my $transform = $self->getTransform($node);
 
@@ -709,7 +782,7 @@ sub processGraphic {
   my($image,$width,$height)=$self->transformGraphic($doc,$node,$source,$transform);
   return unless $image;
 
-  $self->setGraphicsSrc($node,$image,$width,$height);
+  $self->setGraphicSrc($node,$image,$width,$height);
   $self->noteEncodedResource($doc,$node,$image);
   $self->copyEncodedResource($doc,$node,$image,$source,'eps');
 
@@ -806,6 +879,98 @@ sub process {
   my($self,$doc)=@_;
   if(my $notations = $doc->findnode('//ltx:notations')){
     $doc->addDate();
+    my @entries = $self->getNotationEntries($doc);
+    if($$self{split}){
+      # Separate by initial.
+      my $split = {};
+      foreach my $entry (@entries){
+	push(@{$$split{$$entry{initial}}},$entry); }
+      map($self->rescan($_),
+	  $self->makeSubCollectionDocuments($doc,$notations,
+					    map( ($_=>$self->makeNotationsList($doc,@{$$split{$_}})),
+						 keys %$split))); }
+    else {
+      $doc->addNodes($notations,$self->makeNotationsList($doc,@entries));
+      $self->rescan($doc); }}
+  else {
+    $doc; }}
+
+our %NOTATION_ALIA;		# At end
+
+sub getNotationEntries {
+  my($self,$doc)=@_;
+  my @entries = ();
+  my @keys = grep(/^NOTATION:/,$$self{db}->getKeys);
+  $self->Progress($doc,scalar(@keys)." notation entries to process");
+  foreach my $key (@keys){
+    my $notation = $$self{db}->lookup($key);
+    my $tagnode  =  $doc->getDocument->adoptNode($notation->getValue('tag'));
+    my $textnode =  $doc->getDocument->adoptNode($notation->getValue('text'));
+    my $sortkey  =  $notation->getValue('sortkey');
+    my $initial  = ($sortkey =~ /^([a-zA-Z])/ ? uc($1) : '*');
+
+    # Check if text starts with "= fcn" or "propto fcn"
+    my $intermsof = [];
+    if(my $definer = $doc->findnode('.//ltx:Math/ltx:XMath/ltx:XMApp['
+				    .' child::*[position()=1][@role="RELOP"]'
+				    .']/child::*[position()=3]', $tagnode)){
+      my @symbols = $self->extractMathSymbols($doc,$definer);
+      ($intermsof) = $self->makeSymbolDefinitionLinks($doc,undef,grep(/^global/,@symbols)); }
+    my @sortform = split(/\s/,$sortkey);
+    push(@entries,
+	 {initial=>$initial, sortform=>[@sortform],
+	  formatted=>['ltx:notationitem',{},
+		      $tagnode, 
+		      ['ltx:text',{},$doc->trimChildNodes($textnode),'; ',
+		       ['ltx:ref',{idref=>$notation->getValue('parent')}],
+		       (@$intermsof ? (['ltx:break'],
+				       ['ltx:text',{size=>'small'},'(with ',@$intermsof,')']):())
+		      ]]});
+  }
+  @entries; }
+
+sub makeNotationsList {
+  my($self,$doc,@entries)=@_;
+  ['ltx:notationlist',{},
+   map($$_{formatted}, sort cmpNotation @entries)]; }
+
+#======================================================================
+# Evolve this into a sort equivalent to makeindex's sort
+# Once it works, migrate it to MakeIndex!
+
+sub cmpNotation {
+  my @atokens = @{$$DLMFMakeNotations::a{sortform}};
+  my @btokens = @{$$DLMFMakeNotations::b{sortform}};
+  my @a = @atokens;
+  my @b = @btokens;
+  while(@a && @b){
+    my $atoken = shift(@a);
+    my $btoken = shift(@b);
+    my $c = lc($atoken) cmp lc($btoken);
+    return $c if $c; }
+  return (@a ? +1 : -1) unless !@a && !@b;
+  @a = @atokens;
+  @b = @btokens;
+  while(@a && @b){
+    my $atoken = shift(@a);
+    my $btoken = shift(@b);
+    my $c = $atoken cmp $btoken;
+    return $c if $c; }
+  (!@a && !@b ? 0 : (@a ? +1 : -1)); }
+
+#======================================================================
+# MakeNotation
+#======================================================================
+package XXXXXXXDLMFMakeNotations;
+use strict;
+use base qw(LaTeXML::Post::Collector DLMFSymbols);
+use XML::LibXML;
+
+# Need a dummy stub document containing <notations>
+sub process {
+  my($self,$doc)=@_;
+  if(my $notations = $doc->findnode('//ltx:notations')){
+    $doc->addDate();
     my $entries = $self->getNotationEntries($doc);
     if($$self{split}){
       # Separate by initial.
@@ -829,13 +994,13 @@ sub getNotationEntries {
   my($self,$doc)=@_;
   my $entries = {};
   my @keys = grep(/^NOTATION:/,$$self{db}->getKeys);
-  $self->Progress(scalar(@keys)." notation entries to process");
+  $self->Progress($doc,scalar(@keys)." notation entries to process");
   foreach my $key (@keys){
     my $notation = $$self{db}->lookup($key);
     my $tagnode  =  $doc->getDocument->adoptNode($notation->getValue('tag'));
     my $textnode =  $doc->getDocument->adoptNode($notation->getValue('text'));
 
-    # Get the sortform list from the Math representation.
+    # get the sortform list from the Math representation.
     my @sortform = makeNotationSortform($doc,$doc->findnode('.//ltx:XMath',$tagnode));
 
     # Study the first token to establish which notation page,
@@ -885,6 +1050,7 @@ sub makeNotationsList {
   my @entries = 
   ['ltx:notationlist',{},
    map($$_{formatted}, sort cmpNotation (values %$entries))]; }
+
 
 #======================================================================
 # Sort Comparison function for sorting a list of entries(hashes)

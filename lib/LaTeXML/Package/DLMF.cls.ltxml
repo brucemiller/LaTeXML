@@ -40,8 +40,6 @@ DefPrimitive('\thischapter[]{}', sub {
   Tag('ltx:chapter', afterClose=>\&extractSourceNotes);
 });
 
-DefMacro('\toctitle{}', '\@add@frontmatter{ltx:toctitle}{#1}');
-
 sub LookupChapterMetaID { ToString(LookupValue('ChapterID')).".info"; }
   
 DefEnvironment('{document}',
@@ -170,7 +168,8 @@ DefConstructor('\@galleryitem Semiverbatim Semiverbatim',
 				       "SIDEBAR"))
 		  : ()); });
 DefMacro('\galleryitem Semiverbatim Semiverbatim',
-	 '\@add@to@frontmatter{ltx:gallery}{\@galleryitem{\ifx.#1.\else sb:\thechapter.#1\fi}{#2}}'
+#	 '\@add@to@frontmatter{ltx:gallery}{\@galleryitem{\ifx.#1.\else sb:\thechapter.#1\fi}{#2}}'
+	 '\@add@to@frontmatter{ltx:gallery}{\@galleryitem{#1}{#2}}'
 	.'\gdef\default@gallery{}');
 
 DefMacro('\default@gallery',
@@ -255,31 +254,7 @@ DefMacro('\indexnew{}','\index{#1}');
 DefMacro('\indexlong{}','\index{#1}');
 #**********************************************************************
 # More Math environments.
-
-# Redefine to accept optional (ignored) arg.
-DefEnvironment('{equation}[]',
-	       "<ltx:equation xml:id='#id' refnum='#refnum'>"
-	       . "<ltx:metadata xml:id='#id.info'/>"
-	       . "<ltx:Math mode='display'>"
-	       .  "<ltx:XMath>"
-	       .   "#body"
-	       .  "</ltx:XMath>"
-	       . "</ltx:Math>"
-	       ."</ltx:equation>",
-	       mode=>'display_math',
-	       properties=> sub { RefStepCounter('equation') },
-	       afterConstruct=>\&maybeResplitAMSAlign);
-DefEnvironment('{equation*}[]',
-	       "<ltx:equation xml:id='#id'>"
-	       . "<ltx:Math mode='display'>"
-	       .  "<ltx:XMath>"
-	       .   "#body"
-	       .  "</ltx:XMath>"
-	       . "</ltx:Math>"
-	       ."</ltx:equation>",
-	       mode=>'display_math',
-	       properties=> sub { RefStepID('equation') },
-	       afterConstruct=>\&maybeResplitAMSAlign);
+# See als DLMFsupport
 
 # If the equation contains a single aligned environment,
 # We'd like to split it into several unnumbered aligned equations,

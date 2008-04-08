@@ -35,6 +35,9 @@ RequirePackage('latexml');
 #**********************************************************************
 # Find the source file date from the CVS data.
 
+DefMacro('\toctitle{}', '\@add@frontmatter{ltx:toctitle}{#1}');
+
+
 # Returns a hash of filesnames=>cvs revision number
 
 our @MonthNames=(qw( January February March April May June
@@ -74,6 +77,33 @@ DefMacro('\@add@source@date','\@add@frontmatter{ltx:date}[role=creation]{\@sourc
 DefMacro('\@add@conversion@date','\@add@frontmatter{ltx:date}[role=conversion]{\today@iso}');
 
 #**********************************************************************
+# Assume equations handled breqn like.
+# Redefine to accept optional (ignored) arg.
+DefEnvironment('{equation}[]',
+	       "<ltx:equation xml:id='#id' refnum='#refnum'>"
+	       . "<ltx:metadata xml:id='#id.info'/>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>"
+	       .   "#body"
+	       .  "</ltx:XMath>"
+	       . "</ltx:Math>"
+	       ."</ltx:equation>",
+	       mode=>'display_math',
+	       properties=> sub { RefStepCounter('equation') },
+	       afterConstruct=>\&maybeResplitAMSAlign);
+DefEnvironment('{equation*}[]',
+	       "<ltx:equation xml:id='#id'>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>"
+	       .   "#body"
+	       .  "</ltx:XMath>"
+	       . "</ltx:Math>"
+	       ."</ltx:equation>",
+	       mode=>'display_math',
+	       properties=> sub { RefStepID('equation') },
+	       afterConstruct=>\&maybeResplitAMSAlign);
+
+#**********************************************************************
 # table enhancement
 
 PushValue(ALIGNMENT_LINE_COMMANDS=>T_CS('\thinhline'));
@@ -91,12 +121,24 @@ DefColumnType('P',sub {
 #**********************************************************************
 # More Link support.
 
+# \href{url}{text}; Same as hyperref.
+DefConstructor('\href Semiverbatim  Semiverbatim',
+	       "<ltx:ref href='#href'>#2</ltx:ref>",
+	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[1]))); } );
+
 DefConstructor('\longref [] Semiverbatim',
 	       "<ltx:ref ?#1(show='#1')(show='typerefnum. title') labelref='#label'/>",
 	       properties=>sub { (label=>CleanLabel($_[2])); });
 
 DefConstructor('\longcite [] Semiverbatim',
-	       "<ltx:bibref ?#1(show='#1')(show='title (author, year)') bibrefs='#2'/>");
+	       "<ltx:cite>"
+	       .  "<ltx:bibref ?#1(show='#1')(show='title (author, year)') bibrefs='#bibkey'/>"
+	       ."</ltx:cite>",
+	      properties=>sub { (bibkey=>CleanBibKey($_[2])); });
+
+DefConstructor('\idref [] Semiverbatim',
+	       "<ltx:ref ?#1(show='#1')(show='typerefnum. title') idref='#d'/>",
+	       properties=>sub { (id=>CleanLabel($_[2])); });
 
 DefConstructor('\DLMF',                '<ltx:ref href="http://dlmf.nist.gov">DLMF</ltx:ref>');
 DefConstructor('\VRML Semiverbatim', "<ltx:VRML href='#1'/>");
@@ -104,6 +146,28 @@ DefConstructor('\GAMSclass{}',         "<ltx:GAMS class='#1'/>");
 DefConstructor('\GAMSpackage{}',       "<ltx:GAMS package='#1'/>");
 DefConstructor('\GAMSclasspackage{}{}',"<ltx:GAMS class='#1' package='#2'/>");
 DefConstructor('\GAMSmodule{}{}{}',    "<ltx:GAMS package='#1' module='#2' module_id='#3'/>");
+
+DefConstructor('\PDFIcon',
+	       "<ltx:graphics imagesrc='DLMF:/style/pdf.png' description='PDF'"
+	       .            " imagewidth='15' imageheight='15'/>");
+
+#**********************************************************************
+# Redefine w/o open & close on tag.
+DefConstructor('\bibitem[] Semiverbatim',
+	       "<ltx:bibitem key='#key' xml:id='#id'><ltx:tag>#tag</ltx:tag><ltx:bibblock>",
+	       afterDigest=>sub {
+		 my $tag = $_[1]->getArg(1);
+		 my $key = CleanBibKey($_[1]->getArg(2));
+		 if(!$tag){
+		   RefStepCounter('enumiv');
+		   $tag = Digest(Expand(T_CS('\the@bibitem'))); }
+		 my $id = undef;
+		 # Sometimes people put {} !?! Perhaps no id is safe here?
+		 if($key){
+		   $id = ToString(Expand(T_CS('\thebibliography@ID'))).".".$key;
+		   # colon isn't quite allowed (must look like namespace prefix!)
+		   $id =~ s/:/../g; } # Hopefully this is unique enough
+		 $_[1]->setProperties(tag=>$tag, key=>$key, id=>$id); });
 
 #**********************************************************************
 1;

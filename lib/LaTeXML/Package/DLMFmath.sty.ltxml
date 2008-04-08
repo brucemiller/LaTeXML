@@ -42,6 +42,7 @@ DefMath('\Im',       "Im", role=>'OPFUNCTION', meaning=>'imagpart');
 
 DefMath('\realpart{}', "\x{211C}", meaning=>'realpart'); # BLACK-LETTER CAPITAL R
 DefMath('\imagpart{}', "\x{2111}", meaning=>'imagpart'); # BLACK-LETTER CAPITAL I
+DefMath('\conj{}',     UTF(0xAF),  meaning=>'conjugate', operator_role=>'OVERACCENT');
 
 # Convoluted to get presentation to revert to i,e, etc, but content as \iunit, etc.
 DefMath('\iunit',"\x{2148}",
@@ -80,30 +81,42 @@ DefMath('\pgcd{}', '\left(#1\right)', meaning=>'gcd');
 DefConstructor('\selection{}',
 	       "<ltx:XMApp>"
 	       . "<ltx:XMTok name='selection' role='STACKED'/>"
-	       . "<ltx:XMArg>#1</ltx:XMArg>"
+	       . "<ltx:XMArg rule='Anything,'>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]","</ltx:XMArg><ltx:XMArg>"); });
+	       bounded=>1, beforeDigest=>sub{
+		 DefConstructor("\\\\ OptionalMatch:* [Dimension]",
+				"</ltx:XMArg><ltx:XMArg rule='Anything,'>",
+				reversion=>Tokens(T_CS("\\\\"),T_CR)); });
 
 DefConstructor('\rselection{}',
 	       "<ltx:XMApp close='}'>"
 	       . "<ltx:XMTok name='selection' role='STACKED'/>"
-	       . "<ltx:XMArg>#1</ltx:XMArg>"
+	       . "<ltx:XMArg rule='Anything,'>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]","</ltx:XMArg><ltx:XMArg>"); });
+	       bounded=>1, beforeDigest=>sub{
+		 DefConstructor("\\\\ OptionalMatch:* [Dimension]",
+				"</ltx:XMArg><ltx:XMArg rule='Anything,'>",
+				reversion=>Tokens(T_CS("\\\\"),T_CR)); });
 
 DefConstructor('\lselection{}',
 	       "<ltx:XMApp open='{'>"
 	       . "<ltx:XMTok name='selection' role='STACKED'/>"
-	       . "<ltx:XMArg>#1</ltx:XMArg>"
+	       . "<ltx:XMArg rule='Anything,'>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]","</ltx:XMArg><ltx:XMArg>"); });
+	       bounded=>1, beforeDigest=>sub{
+		 DefConstructor("\\\\ OptionalMatch:* [Dimension]",
+				"</ltx:XMArg><ltx:XMArg rule='Anything,'>",
+				reversion=>Tokens(T_CS("\\\\"),T_CR)); });
 
 DefConstructor('\lrselection{}',
 	       "<ltx:XMApp open='{' close='}'>"
 	       . "<ltx:XMTok name='selection' role='STACKED'/>"
-	       . "<ltx:XMArg>#1</ltx:XMArg>"
+	       . "<ltx:XMArg rule='Anything,'>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]","</ltx:XMArg><ltx:XMArg>"); });
+	       bounded=>1, beforeDigest=>sub{
+		 DefConstructor("\\\\ OptionalMatch:* [Dimension]",
+				"</ltx:XMArg><ltx:XMArg rule='Anything,'>",
+				reversion=>Tokens(T_CS("\\\\"),T_CR)); });
 
 #**********************************************************************
 # Numbers
@@ -288,13 +301,13 @@ DefMath('\threej@text','3j', role=>'ID', reversion=>'3j',meaning=>'threej');
 DefMath('\sixj@text',  '6j', role=>'ID', reversion=>'6j',meaning=>'sixj');
 DefMath('\ninej@text', '9j', role=>'ID', reversion=>'9j',meaning=>'ninej');
 DefMath('\threej@args {}{}{}{}{}{}',
-	'\begin{pmatrix}#1&#2&#3\\\\#4&#5&#6\end{pmatrix}',
+	'\begin{pmatrix}#1&#2&#3\\\\ #4&#5&#6\end{pmatrix}',
 	meaning=>'threej');
 DefMath('\sixj@args {}{}{}{}{}{}',
-	'\begin{Bmatrix}#1&#2&#3\\\\#4&#5&#6\end{Bmatrix}',
+	'\begin{Bmatrix}#1&#2&#3\\\\ #4&#5&#6\end{Bmatrix}',
 	meaning=>'sixj');
 DefMath('\ninej@args {}{}{}{}{}{}{}{}{}',
-	'\begin{Bmatrix}#1&#2&#3\\\\#4&#5&#6\\\\#7&#8&#9\end{Bmatrix}',
+	'\begin{Bmatrix}#1&#2&#3\\\\ #4&#5&#6\\\\ #7&#8&#9\end{Bmatrix}',
 	meaning=>'ninej');
 
 # Paper over for AbstractJacobi
@@ -398,6 +411,7 @@ sub expand_specfun {
   # Check for function arguments
   if(my $variant = count_tokens($gullet,T_OTHER('@'))){
     my $argsmacro = LookupDefinition(T_CS($cs.'@args'.('@' x $variant)));
+    $argsmacro = LookupDefinition(T_CS($cs.'@args@')) unless $argsmacro;
     my($cargs,$pargs)=dualize_arglist($argsmacro->readArguments($gullet));
     Invocation(T_CS('\DUAL'),
 	       T_OTHER('ATOM'),
