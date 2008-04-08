@@ -138,4 +138,7 @@ Imageable.attributes =
   attribute imagewidth { xsd:nonNegativeInteger}?,
 
   ## the height in pixels of \attr{imagesrc}.
-  attribute imageheight { xsd:nonNegativeInteger }?
+  attribute imageheight { xsd:nonNegativeInteger }?,
+
+  ## a description of the image
+  attribute description { text }?

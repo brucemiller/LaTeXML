@@ -168,18 +168,25 @@
 		       | ltx:equation[1]/ltx:MathFork/ltx:MathBranch[1][not(ltx:tr or ltx:td)]
 		       | ltx:equation[1]/ltx:Math "/>
     <xsl:param name="ncolumns" select="count($columns)"/>
-    <table width="100%" class='{f:classes(.)}'>
-      <xsl:call-template name="add_id"/>
+    <table class='{f:classes(.)}'><xsl:call-template name="add_id"/>
       <xsl:text>
       </xsl:text>
-      <xsl:if test="$eqnopos ='left'" ><col width='0*'/></xsl:if> <!-- Column for left number-->
-      <xsl:if test="$eqpos  !='left'" ><col width='2*'/></xsl:if> <!-- Column for centering -->
-      <!-- Columns for data:
-	   Check if they seem to be "pairwise" (eg. from align env.)-->
-      <colgroup span="{$ncolumns}"
-		width="{f:if(($ncolumns > 3) and ($ncolumns mod 2 = 0), '1*', '0*')}"/>
-      <xsl:if test="$eqpos  !='right'"><col width="2*"/></xsl:if>	<!-- Column for centering-->
-      <xsl:if test="$eqnopos ='right'"><col width="0*"/></xsl:if> <!-- column for right number-->
+      <!-- How to align and center?
+           One option is colgroup with spacing col's having width='1*'
+	   But this confuses IE.
+	   Alternative is css with width='50%'. (intended to mean "up to 50%")
+	   Of course, IE tries to really do 50%... sigh.
+	   So, we use css and (try to) hide those rules from IE.
+	   -->
+      <!--
+	  <colgroup>
+	  <xsl:if test="$eqnopos ='left'" ><col width='0*'/></xsl:if>
+	  <xsl:if test="$eqpos  !='left'" ><col width='2*'/></xsl:if>
+	  <colgroup span="{$ncolumns}"
+	            width="{f:if(($ncolumns > 3) and ($ncolumns mod 2 = 0), '1*', '0*')}"/>
+          <xsl:if test="$eqpos  !='right'"><col width="2*"/></xsl:if>
+	  <xsl:if test="$eqnopos ='right'"><col width="0*"/></xsl:if>
+	  </colgroup>-->
       <xsl:text>
       </xsl:text>
       <xsl:apply-templates select="." mode="aligned">
@@ -203,15 +210,18 @@ Currently we assume the content will be placed in a single tr/td. -->
 		       | ltx:MathFork/ltx:MathBranch[1][not(ltx:tr or ltx:td)]
 		       | ltx:Math "/>
     <xsl:param name="ncolumns" select="count($columns)"/>
-    <table width="100%" class='{f:classes(.)}'>
-      <xsl:call-template name="add_id"/>
+    <table class='{f:classes(.)}'><xsl:call-template name="add_id"/>
       <xsl:text>
       </xsl:text>
-      <xsl:if test="$eqnopos ='left'" ><col width='0*'/></xsl:if> <!-- Column for left number-->
-      <xsl:if test="$eqpos  !='left'" ><col width='2*'/></xsl:if> <!-- Column for centering -->
-      <col span="{$ncolumns}" width="0*"/>          <!-- Column for data -->
-      <xsl:if test="$eqpos  !='right'"><col width="2*"/></xsl:if> <!-- Column for centering-->
-      <xsl:if test="$eqnopos ='right'"><col width="0*"/></xsl:if> <!-- column for right number-->
+      <!-- 
+	   <colgroup>
+	   <xsl:if test="$eqnopos ='left'" ><col width='0*'/></xsl:if>
+	   <xsl:if test="$eqpos  !='left'" ><col width='2*'/></xsl:if>
+	   <col span="{$ncolumns}" width="0*"/>
+	   <xsl:if test="$eqpos  !='right'"><col width="2*"/></xsl:if>
+	   <xsl:if test="$eqnopos ='right'"><col width="0*"/></xsl:if>
+	   <xsl:if test="$eqnopos ='right'"><col width='100*'/></xsl:if>
+	   </colgroup>-->
       <xsl:text>
       </xsl:text>
       <xsl:apply-templates select="." mode="aligned">
@@ -233,21 +243,17 @@ Currently we assume the content will be placed in a single tr/td. -->
     <xsl:param name="side"/>				       <!-- left or right -->
     <xsl:choose>
       <xsl:when test="$eqnopos != $side"/>                       <!-- Wrong side: Nothing -->
-      <xsl:when test="ancestor-or-self::ltx:equationgroup[@refnum]"> <!-- equationgroup is numbered! -->
+      <xsl:when test="ancestor-or-self::ltx:equationgroup[@refnum]"> <!-- eqn.group is numbered! -->
 	<!-- place number only for 1st row -->
 	<xsl:if test="(ancestor-or-self::ltx:tr and not(preceding-sibling::ltx:tr))
 		      or (not(ancestor-or-self::ltx:tr) and not(preceding-sibling::ltx:equation))">
 	  <xsl:variable name="nrows"
 			select="count(
-				ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation
-				/ltx:MathFork/ltx:MathBranch[1]/ltx:tr
-				| ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation
-				[ltx:MathFork/ltx:MathBranch[1]/ltx:td]
-				| ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation
-				[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
-				| ancestor-or-self::ltx:equationgroup[@refnum][ltx:constraint or ltx:metadata]
-				| ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation
-				[ltx:constraint]
+ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation/ltx:MathFork/ltx:MathBranch[1]/ltx:tr
+| ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation[ltx:MathFork/ltx:MathBranch[1]/ltx:td]
+| ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
+| ancestor-or-self::ltx:equationgroup[@refnum][ltx:constraint or ltx:metadata]
+| ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation[ltx:constraint]
 				)"/>
 	  <td rowspan="{$nrows}" nowrap="yes" valign='middle' align="{$side}">
 	    <xsl:apply-templates select="ancestor-or-self::ltx:equationgroup/@refnum"/>
@@ -290,11 +296,11 @@ Currently we assume the content will be placed in a single tr/td. -->
     <xsl:call-template name="eqnumtd">			       <!--Place left number, if any-->
       <xsl:with-param name='side' select="'left'"/>
     </xsl:call-template>
-    <xsl:if test="$eqpos != 'left'"><td/></xsl:if> <!-- column for centering -->
+    <xsl:if test="$eqpos != 'left'"><td class="eqpad"/></xsl:if><!-- column for centering -->
   </xsl:template>
 
   <xsl:template name="eq-right">
-    <xsl:if test="$eqpos != 'right'"><td/></xsl:if> <!-- Column for centering-->
+    <xsl:if test="$eqpos != 'right'"><td class="eqpad"/></xsl:if> <!-- Column for centering-->
     <xsl:call-template name="eqnumtd">
       <xsl:with-param name='side' select="'right'"/>
     </xsl:call-template>
@@ -320,7 +326,6 @@ Currently we assume the content will be placed in a single tr/td. -->
     <xsl:param name="ncolumns"/>
     <xsl:apply-templates select="ltx:equationgroup | ltx:equation | ltx:block" mode="aligned">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
-
     </xsl:apply-templates>
     <xsl:call-template name="equation-meta-aligned">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
@@ -335,10 +340,10 @@ Currently we assume the content will be placed in a single tr/td. -->
 	<!--<tbody class='{f:classes(.)}'><xsl:call-template name="add_id"/>-->
 
 	<tr valign="baseline" class='{f:classes(.)}'><xsl:call-template name="add_id"/>
-	<xsl:call-template name="eq-left"/>
-	<xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td"
-			     mode="aligned"/>
-	<xsl:call-template name="eq-right"/>
+	  <xsl:call-template name="eq-left"/>
+	  <xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td"
+			       mode="aligned"/>
+	  <xsl:call-template name="eq-right"/>
 	</tr>
 	<xsl:for-each select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[position() &gt; 1]">
 	  <tr valign="baseline">
@@ -347,30 +352,8 @@ Currently we assume the content will be placed in a single tr/td. -->
 	    <xsl:call-template name="eq-right"/>
 	  </tr>
 	</xsl:for-each>
-
-	<!--
-	    <xsl:for-each select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr"
-	    ><xsl:if test="position() = 1"><xsl:call-template name="add_id"/></xsl:if>
-	    <tr valign="baseline">
-	    <xsl:call-template name="eq-left"/>
-	    <xsl:apply-templates select="ltx:td" mode="aligned"/>
-	    <xsl:call-template name="eq-right"/>
-	    </tr>
-	    </xsl:for-each>
-	-->
 	<!--</tbody>-->
       </xsl:when>
-      <!-- Should Math or MathFork w/o tr&td each be getting thier own cells? -->
-      <!--
-	  <xsl:when test="ltx:MathFork/ltx:MathBranch[1]/ltx:td"  xml:space="preserve">
-	  <tr valign="baseline"  class='{f:classes(.)}'><xsl:call-template name="add_id"/>
-	  <xsl:call-template name="eq-left"/>
-	  <xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/ltx:td"
-	  mode="aligned"/>
-	  <xsl:call-template name="eq-right"/>
-	  </tr>
-	  </xsl:when>
-      -->
       <xsl:when test="ltx:MathFork/ltx:MathBranch[1]"  xml:space="preserve">
 	<tr valign="baseline"  class='{f:classes(.)}'><xsl:call-template name="add_id"/>
 	<xsl:call-template name="eq-left"/>
@@ -419,7 +402,6 @@ Currently we assume the content will be placed in a single tr/td. -->
       <tr>
 	<td align='right' colspan="{1+$ncolumns
 				   +f:if($eqpos != 'left',1,0)+f:if($eqpos != 'right',1,0)}">
-<!--	  <xsl:apply-templates select="ltx:constraint[not(@hidden='true')]" mode="aligned"/>-->
 	  <xsl:apply-templates select="ltx:constraint[not(@hidden='true')]"/>
 	  <xsl:apply-templates select="ltx:metadata" mode="meta"/>
 	</td>
@@ -427,13 +409,6 @@ Currently we assume the content will be placed in a single tr/td. -->
     </xsl:if>
   </xsl:template>
 
-<!--
-  <xsl:template match="ltx:constraint"/>
-
-  <xsl:template match="ltx:constraint" mode="aligned">
-    <xsl:apply-templates/>
-  </xsl:template>
--->
   <xsl:template match="ltx:constraint">
     <span class="{f:classes(.)}"><xsl:apply-templates/></span>
     <span class="eqnend"/>
@@ -484,7 +459,7 @@ Currently we assume the content will be placed in a single tr/td. -->
 
   <xsl:template match="ltx:graphics">
     <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}" class="{f:classes(.)}"
-	 alt="{../figure/caption/text()}"/>		       <!--anything better? -->
+	 alt="{f:if(../ltx:figure/ltx:caption,../ltx:figure/ltx:caption/text(),@description)}"/>		       <!--anything better? -->
   </xsl:template>
 
 </xsl:stylesheet>

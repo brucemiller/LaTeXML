@@ -307,6 +307,7 @@
   imagesrc CDATA #IMPLIED
   imagewidth CDATA #IMPLIED
   imageheight CDATA #IMPLIED
+  description CDATA #IMPLIED
   graphic CDATA #REQUIRED
   options CDATA #IMPLIED>
 
@@ -463,6 +464,7 @@
   imagesrc CDATA #IMPLIED
   imagewidth CDATA #IMPLIED
   imageheight CDATA #IMPLIED
+  description CDATA #IMPLIED
   mode (display|inline) #IMPLIED
   tex CDATA #IMPLIED
   content-tex CDATA #IMPLIED
@@ -737,6 +739,7 @@
   imagesrc CDATA #IMPLIED
   imagewidth CDATA #IMPLIED
   imageheight CDATA #IMPLIED
+  description CDATA #IMPLIED
   clip NMTOKEN #IMPLIED
   baseline CDATA #IMPLIED
   unitlength CDATA #IMPLIED
