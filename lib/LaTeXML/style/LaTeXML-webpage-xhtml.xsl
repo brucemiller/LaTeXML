@@ -35,7 +35,12 @@
   </xsl:text>
   <head><xsl:text>
     </xsl:text>
-    <title><xsl:value-of select="normalize-space(*/ltx:title)"/></title><xsl:text>
+    <title>
+      <xsl:value-of select="normalize-space(*/ltx:title)"/>
+      <xsl:for-each select="//ltx:navigation/ltx:ref[@class='up']"
+		    > in <xsl:value-of select="@title"/></xsl:for-each>
+    </title>
+    <xsl:text>
     </xsl:text>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <xsl:if test="/*/ltx:navigation/ltx:ref[@class='start']"><xsl:text>
@@ -148,18 +153,6 @@
 </xsl:template>
 
 <xsl:template match="ltx:navigation"/>
-
-<xsl:template match="ltx:navigation/ltx:ref">
-  <xsl:text>
-  </xsl:text>
-  <a href="{@href}" class="{f:classes(.)}" title="{@title}"><xsl:value-of select="@class"/>: <xsl:apply-templates/></a>
-</xsl:template>
-
-<xsl:template match="ltx:navigation/ltx:ref[@class='start']">
-  <xsl:text>
-  </xsl:text>
-  <a href="{@href}" class="{f:classes(.)}" title="{@title}"><xsl:apply-templates/></a>
-</xsl:template>
 
 <!--  ======================================================================
       Tables of Contents.
