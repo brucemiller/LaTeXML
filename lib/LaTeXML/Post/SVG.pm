@@ -31,7 +31,7 @@ sub process {
   my ($self, $doc) = @_;
   local $LaTeXML::Post::SVG::DOCUMENT = $doc;
   if(my @svg = $self->find_svg_nodes($doc)){
-    $self->Progress("Converting ".scalar(@svg)." pictures");
+    $self->Progress($doc,"Converting ".scalar(@svg)." pictures");
     $doc->addNamespace($svgURI,'svg');
     map(ProcessSVG($_), @svg);
     $doc->adjust_latexml_doctype('SVG'); } # Add SVG if LaTeXML dtd.

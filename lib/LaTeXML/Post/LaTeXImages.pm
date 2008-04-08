@@ -38,7 +38,7 @@ our $DVIPSCMD='dvips -q -S1 -i -E -j0';
 #   source         : (dir)
 #   magnification  : typically something like 1.5 or 1.75
 #   maxwidth       : maximum page width, in pixels (whenever line breaking is possible)
-#   dpi            : assumed DPI for the target medium (default 100)
+#   dpi            : assumed DPI for the target medium (default 90)
 #   background     : color of background (for anti-aliasing, since it is made transparent)
 #   imagetype      : typically 'png' or 'gif'.
 sub new {
@@ -46,7 +46,7 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{magnification} = $options{magnification} || 1.75;
   $$self{maxwidth}      = $options{maxwidth} || 800;
-  $$self{dpi}           = $options{dpi} || 100;
+  $$self{dpi}           = $options{dpi} || 90;
   $$self{background}    = $options{background} || "#FFFFFF";
   $$self{imagetype}     = $options{imagetype} || 'png';
   $self; }
@@ -116,7 +116,7 @@ sub process {
       next if -f pathname_concat($destdir,$1); }
     push(@pending,$entry); }
 
-  $self->Progress("Found $nuniq unique tex strings (of $ntotal); "
+  $self->Progress($doc,"Found $nuniq unique tex strings (of $ntotal); "
 		  .scalar(@pending)." to generate");
   if(@pending){			# if any images need processing
 ##    my $workdir=pathname_concat($TMP,"LaTeXML$$");
@@ -165,7 +165,7 @@ sub process {
 	my $reldest = $$entry{reldest} 
 	  ||  $self->generateResourcePathname($doc,$$entry{nodes}[0],undef,$$self{imagetype});
 	my $dest = $doc->checkDestination($reldest);
-	my($w,$h) = $self->convert_image($src,$dest);
+	my($w,$h) = $self->convert_image($doc,$src,$dest);
 	$doc->cacheStore($$entry{key},"$reldest;$w;$h"); }
       else {
 	$self->Warn("Missing image $src; See $workdir/$jobname.log"); }}
@@ -237,7 +237,7 @@ EOPreamble
 #======================================================================
 
 sub convert_image {
-  my($self,$src,$dest)=@_;
+  my($self,$doc,$src,$dest)=@_;
   my $image = Image::Magick->new(antialias=>'True', background=>$$self{background}); 
   my $ncolors=16;
   my $err = $image->Read($src);
@@ -253,7 +253,7 @@ sub convert_image {
   my ($w,$h) = $image->Get('width','height');
   $image->Transparent(color=>$$self{background});
 
-  $self->ProgressDetailed("Converting $src => $dest ($w x $h)");
+  $self->ProgressDetailed($doc,"Converting $src => $dest ($w x $h)");
   
   $image->Write(filename=>$dest);
   ($w,$h); }

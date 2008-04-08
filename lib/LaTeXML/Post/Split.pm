@@ -36,7 +36,7 @@ sub process {
   # Weird test: exclude the "whole document" from the list (?)
   @pages = grep($_->parentNode->parentNode,@pages); # Strip out the root node.
   if(@pages){
-    $self->Progress("Splitting into ".scalar(@pages)." pages");
+    $self->Progress($doc,"Splitting into ".scalar(@pages)." pages");
     my $tree = {node=>$root,id=>$root->getAttribute('xml:id'),name=>$doc->getDestination,children=>[]};
     # Group the pages into a tree, in case they are nested.
     my $haschildren={};

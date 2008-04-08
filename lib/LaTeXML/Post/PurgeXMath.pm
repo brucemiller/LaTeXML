@@ -18,7 +18,7 @@ use base qw(LaTeXML::Post);
 sub process {
   my($self,$doc)=@_;
   if(my @math = $doc->findnodes('//ltx:XMath')){
-    $self->Progress("Removing ".scalar(@math)." Intermediate XMath nodes");
+    $self->Progress($doc,"Removing ".scalar(@math)." Intermediate XMath nodes");
     $doc->removeNodes(@math); }
   $doc; }
 

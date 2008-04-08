@@ -27,48 +27,55 @@ use base qw(LaTeXML::Post);
 #   trivial_scaling : If true, web images that only need scaling will be used as-is
 #                     assuming the user agent scale the image.
 #   background      : background color when filling or transparency.
-#   type_map        : hash of types=>hash.
+#   typeProperties  : hash of types=>hash.
 #        The hash for each type can have the following 
-#           type        : the type to convert the file to.
+#           destination_type : the type to convert the file to if different.
 #           transparent : if true, the background color will be made transparent.
 #           quality     : the `quality' used for the image.
 #           ncolors     : the image will be quantized to ncolors.
 #           prescale    : If true, and there are leading (or only) scaling commands,
 #                         compute the new image size and re-read the image into that size
 #                         This is useful for getting the best antialiasing for postscript, eg.
+#          unit= (pixel|point) :  What unit the image size is given in.
+#          autocrop     : if the image should be cropped (trimmed) when loaded.
 sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
-  $$self{dppt}               = (($options{dpi}||100)/72.0); # Dots per point.
+  $$self{dppt}               = (($options{dpi} || 90)/72.0); # Dots per point.
   $$self{ignoreOptions}      = $options{ignoreOptions}   || [];
   $$self{trivial_scaling}    = $options{trivial_scaling}  || 1;
   $$self{graphicsSourceTypes}= $options{graphicsSourceTypes}
-    || [qw(png gif jpg jpeg eps ps)];
-  $$self{type_map}           = $options{type_map}
-    || { ps  =>{type=>'png', prescale=>1,
-		transparent=>1, ncolors=>'400%',
-		quality=>90},
-	 eps =>{type=>'png', prescale=>1,
-		transparent=>1, ncolors=>'400%',
-		quality=>90},
-	 jpg =>{type=>'jpg',ncolors=>'400%'},
-	 jpeg=>{type=>'jpeg', ncolors=>'400%'},
-	 gif =>{type=>'gif', 
-		transparent=>1, ncolors=>'400%'},
-	 png =>{type=>'png', transparent=>1,
-		ncolors=>'400%'}};
+    || [qw(png gif jpg jpeg 
+	   eps ps ai)];
+  $$self{typeProperties}           = $options{typeProperties}
+    || {
+	ai  =>{destination_type=>'png',
+	       transparent=>1, 
+	       prescale=>1, ncolors=>'400%', quality=>90, unit=>'point'},
+	ps  =>{destination_type=>'png', transparent=>1, 
+	       prescale=>1, ncolors=>'400%', quality=>90,  unit=>'point'},
+	eps =>{destination_type=>'png', transparent=>1, 
+	       prescale=>1, ncolors=>'400%', quality=>90,  unit=>'point'},
+	jpg =>{destination_type=>'jpg',
+	       ncolors=>'400%', unit=>'pixel'},
+	jpeg=>{destination_type=>'jpeg',
+	       ncolors=>'400%', unit=>'pixel'},
+	gif =>{destination_type=>'gif',  transparent=>1,
+	       ncolors=>'400%', unit=>'pixel'},
+	png =>{destination_type=>'png',  transparent=>1,
+	       ncolors=>'400%', unit=>'pixel'}},
   $$self{background}        = $options{background}       || "#FFFFFF";
   $self; }
 
 sub process {
   my($self,$doc)=@_;
   local $LaTeXML::Post::Graphics::SEARCHPATHS
-    = [$doc->getSearchPaths, $self->findGraphicsPaths($doc)];
-  $self->ProgressDetailed("Using graphicspaths: "
+    = [map(pathname_canonical($_), $doc->getSearchPaths, $self->findGraphicsPaths($doc))];
+  $self->ProgressDetailed($doc,"Using graphicspaths: "
 			  .join(', ',@$LaTeXML::Post::Graphics::SEARCHPATHS));
 
   if(my @nodes = $self->selectGraphicsNodes($doc)){
-    $self->Progress(scalar(@nodes)." graphics nodes to process");
+    $self->Progress($doc,scalar(@nodes)." graphics nodes to process");
     foreach my $node (@nodes){
       $self->processGraphic($doc,$node);  }
     $doc->closeCache; }		# If opened.
@@ -96,15 +103,20 @@ sub selectGraphicsNodes {
   my($self,$doc)=@_;
   $doc->findnodes('//ltx:graphics'); }
 
+sub getGraphicsSourceTypes {
+  my($self)=@_;
+  @{$$self{graphicsSourceTypes}}; }
+
 # Return the pathname to an appropriate image.
-sub findGraphicsFile {
+sub findGraphicFile {
   my($self,$doc,$node)=@_;
   if(my $name = $node->getAttribute('graphic')){
     pathname_find($name,paths=>$LaTeXML::Post::Graphics::SEARCHPATHS,
-		  types=>$$self{graphicsSourceTypes}); }
+		  types=>[$self->getGraphicsSourceTypes]); }
   else {
     undef; }}
 
+#======================================================================
 # Return the Transform to be used for this node
 # Default is based on parsing the graphicx options
 sub getTransform {
@@ -113,14 +125,14 @@ sub getTransform {
   ($options ? $self->parseOptions($options) : []); }
 
 # Get a hash of the image processing properties to be applied to this image.
-sub get_type_map {
+sub getTypeProperties {
   my($self,$source,$options)=@_;
   my($dir,$name,$type)=pathname_split($source);
-  $$self{type_map}{$type}; }
+  %{$$self{typeProperties}{$type}}; }
 
 # Set the attributes of the graphics node to record the image file name,
 # width and height.
-sub setGraphicsSrc {
+sub setGraphicSrc {
   my($self,$node,$src,$width,$height)=@_;
   $node->setAttribute('imagesrc',$src);
   $node->setAttribute('imagewidth',$width);
@@ -129,12 +141,12 @@ sub setGraphicsSrc {
 
 sub processGraphic {
   my($self,$doc,$node)=@_;
-  my $source = $self->findGraphicsFile($doc,$node);
+  my $source = $self->findGraphicFile($doc,$node);
   if(!$source){
     $self->Warn("Missing graphic for ".$node->toString."; skipping"); return; }
   my $transform = $self->getTransform($node);
   my($image,$width,$height)=$self->transformGraphic($doc,$node,$source,$transform); 
-  $self->setGraphicsSrc($node,$image,$width,$height) if $image;
+  $self->setGraphicSrc($node,$image,$width,$height) if $image;
 }
 
 #======================================================================
@@ -146,11 +158,11 @@ sub transformGraphic {
   my ($reldir,$name,$srctype)
     = pathname_split(pathname_relative($source,$sourcedir));
   my $key = (ref $self).':'.join('|',"$reldir$name.$srctype", map(join(' ',@$_),@$transform));
-  $self->ProgressDetailed("Processing $key");
+  $self->ProgressDetailed($doc,"Processing $source as key=$key");
 
-  my $map       = $self->get_type_map($source,$transform);
-  return warn "Don't know what to do with graphics file format $source" unless $map;
-  my $type = $$map{type} || $srctype;
+  my %properties       = $self->getTypeProperties($source,$transform);
+  return warn "Don't know what to do with graphics file format $source" unless %properties;
+  my $type = $properties{destination_type} || $srctype;
   my $reldest = $self->desiredResourcePathname($doc,$node,$source,$type);
   if(my $prev = $doc->cacheLookup($key)){	# Image was processed on previous run?
     $prev =~ /^(.*?)\|(\d+)\|(\d+)$/;
@@ -158,35 +170,39 @@ sub transformGraphic {
     if((!defined $reldest) || ($cached eq $reldest)){
       my $dest =  pathname_make(dir=>$doc->getDestinationDirectory,name=>$cached);
       if(-f $dest && (-M $source >= -M $dest)){
-	$self->ProgressDetailed(">> Reuse $cached @ $width x $height");
+	$self->ProgressDetailed($doc,">> Reuse $cached @ $width x $height");
 	return ($cached,$width,$height); }}}
   $reldest = $self->generateResourcePathname($doc,$node,$source,$type) unless $reldest;
   my $dest = $doc->checkDestination($reldest);
+  $self->ProgressDetailed($doc,"Destination $dest");
   # Trivial scaling case: Use original image with different width & height.
   my ($image,$width,$height);
   if($$self{trivial_scaling} && ($type eq $srctype) && !grep(!($_->[0]=~/^scale/),@$transform)){
-    ($width,$height)=$self->trivial_scaling($source,$transform);
+    ($width,$height)=$self->trivial_scaling($doc,$source,$transform);
     pathname_copy($source, $dest) or warn("Couldn't copy $source to $dest: $!");
-    $self->ProgressDetailed(">> Copied to $reldest for $width x $height"); }
+    $self->ProgressDetailed($doc,">> Copied to $reldest for $width x $height"); }
   else {
-    ($image,$width,$height) =$self->complex_transform($source,$transform, $map);
-    $self->ProgressDetailed(">> Writing to $dest ");
+    ($image,$width,$height) =$self->complex_transform($doc,$source,$transform, %properties);
+    $self->ProgressDetailed($doc,">> Writing to $dest ");
     $image->Write(filename=>$dest) and warn "Couldn't write image $dest: $!"; }
 
   $doc->cacheStore($key,"$reldest|$width|$height");
-  $self->ProgressDetailed(">> done with $key");
+  $self->ProgressDetailed($doc,">> done with $key");
   ($reldest,$width,$height); }
 
 #======================================================================
 # Compute the desired image size (width,height)
 sub trivial_scaling {
-  my($self,$source,$transform)=@_;
-
+  my($self,$doc,$source,$transform)=@_;
   my $image = Image::Magick->new(); 
+  #### NOTE: (Apr 2, 2008; ImageMagick 6.3.5.9, Perl 5.8.8-38)
+  #### Suddenly, this is failing to read (some?) jpeg images
+  #### terminating the script with an otherwise unexplained
+  ####   "No such file or directory"
+  #### WTF!?!?!?!?
   if(!$image->Read($source)){}	# ????
 #  $image->
   my($w,$h) = $image->Get('width','height');
-
   foreach my $trans (@$transform){
     my($op,$a1,$a2,$a3,$a4)=@$trans;
     if($op eq 'scale'){		# $a1 => scale
@@ -200,7 +216,7 @@ sub trivial_scaling {
 
 # Transform the image, returning (image,width,height);
 sub complex_transform {
-  my($self,$source,$transform, $map)=@_;
+  my($self,$doc,$source,$transform, %properties)=@_;
   my $image = Image::Magick->new(); 
   $image->Set(antialias=>1);
   if(!$image->Read($source)){
@@ -208,32 +224,38 @@ sub complex_transform {
 #    warn("Failed to read image $source"); 
 #    return; 
 }
+  $image->Trim() if $properties{autocrop};
   my $orig_ncolors = $image->Get('colors');
   my ($w,$h) = $image->Get('width','height');
   my @transform = @$transform;
+  # If native unit is points, we at least need to scale by dots/point.
+  # [tho' other scalings may override this]
+  if(($properties{unit}||'pixel') eq 'point'){
+    push(@transform, ['scale',$$self{dppt}]); }
 
   # For prescaling, compute the desired size and re-read the image into that size,
   # with an appropriate density set.  This will give much better anti-aliasing.
   # Actually, we'll set the density & size up a further factor of $F, and then downscale.
-  if($$map{prescale}){
+  if($properties{prescale}){
     my($w0,$h0)=($w,$h);
     while(@transform && ($transform[0]->[0] =~ /^scale/)){
       my($op,$a1,$a2,$a3,$a4)=@{shift(@transform)};
       if($op eq 'scale'){	# $a1 => scale
 	($w,$h)=(ceil($w*$a1),ceil($h*$a1)); }
       elsif($op eq 'scale-to'){ 
-	# $a1 => width, $a2 => height, $a3 => preserve aspect ratio.
+	# $a1 => width (pts), $a2 => height (pts), $a3 => preserve aspect ratio.
 	if($a3){ # If keeping aspect ratio, ignore the most extreme request
 	  if($a1/$w < $a2/$h) { $a2 = $h*$a1/$w; }
 	  else                { $a1 = $w*$a2/$h; }}
 	($w,$h)=(ceil($a1*$$self{dppt}),ceil($a2*$$self{dppt})); }}
     my $X = 4;			# Expansion factor
     my($dx,$dy)=(int($X * 72 * $w/$w0),int($X * 72 * $h/$h0)); 
-    $self->ProgressDetailed(">> reloading to desired size $w x $h (density = $dx x $dy)");
+    $self->ProgressDetailed($doc,">> reloading to desired size $w x $h (density = $dx x $dy)");
     $image = Image::Magick->new();
     $image->Set(antialias=>1);
     $image->Set(density=>$dx.'x'.$dy); # Load at prescaled, higher density
     $image->Read($source);
+    $image->Trim() if $properties{autocrop};
     $image->Set(colorspace=>'RGB');
     $image->Scale(geometry=>int(100/$X)."%"); # Now downscale.
     ($w,$h) = $image->Get('width','height'); }
@@ -246,7 +268,7 @@ sub complex_transform {
       $notes .= " scale to $w x $h";
       $image->Scale(width=>$w,height=>$h); }
     elsif($op eq 'scale-to'){ 
-      # $a1 => width, $a2 => height, $a3 => preserve aspect ratio.
+      # $a1 => width (pts), $a2 => height (pts), $a3 => preserve aspect ratio.
       if($a3){ # If keeping aspect ratio, ignore the most extreme request
 	if($a1/$w < $a2/$h) { $a2 = $h*$a1/$w; }
 	else                { $a1 = $w*$a2/$h; }}
@@ -286,22 +308,22 @@ sub complex_transform {
       $image=$nimage; 
       ($w,$h)=($ww,$hh);
     }}
-  if(my $trans = $$map{transparent}){
+  if(my $trans = $properties{transparent}){
     $notes .= " transparent=$$self{background}"; 
     $image->Transparent($$self{background}); }
 
   my $curr_ncolors = $image->Get('colors');
-  if(my $req_ncolors = $$map{ncolors}){
+  if(my $req_ncolors = $properties{ncolors}){
     $req_ncolors = int($orig_ncolors * $1/ 100) if $req_ncolors =~ /^([\d]*)\%$/;
     if($req_ncolors < $curr_ncolors){
     $notes .= " quantize $orig_ncolors => $req_ncolors";
     $image->Quantize(colors=>$req_ncolors);  }}
 
-  if(my $quality = $$map{quality}){
+  if(my $quality = $properties{quality}){
     $notes .= " quality=$quality";
-    $image->Set('quality',$$map{quality}); }
+    $image->Set('quality',$properties{quality}); }
 
-  $self->ProgressDetailed(">> Transformed : $notes") if $notes;
+  $self->ProgressDetailed($doc,">> Transformed : $notes") if $notes;
   ($image,$w,$h); }
 
 sub min { ($_[0] < $_[1] ? $_[0] : $_[1]); }

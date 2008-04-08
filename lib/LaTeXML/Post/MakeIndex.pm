@@ -52,7 +52,7 @@ sub process {
 sub build_tree {
   my($self,$doc,$index)=@_;
   if(my @keys = grep(/^INDEX:/,$$self{db}->getKeys)){
-    $self->Progress("processing ".scalar(@keys)." index entries");
+    $self->Progress($doc,"processing ".scalar(@keys)." index entries");
 #    my $id = $doc->getDocumentElement->getAttribute('xml:id');
     my $id = $index->getAttribute('xml:id');
     my $allkeys={''=>{id=>$id,phrases=>[]}};

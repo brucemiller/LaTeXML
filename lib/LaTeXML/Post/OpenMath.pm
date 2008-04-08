@@ -34,7 +34,7 @@ sub process {
   my($self,$doc)=@_;
   local $LaTeXML::Post::OpenMath::DOCUMENT = $doc;
   if(my @maths = $self->find_math_nodes($doc)){
-    $self->Progress("Converting ".scalar(@maths)." formulae");
+    $self->Progress($doc,"Converting ".scalar(@maths)." formulae");
     $doc->addNamespace($omURI,'om');
     foreach my $math (@maths){
       $self->processNode($doc,$math); }

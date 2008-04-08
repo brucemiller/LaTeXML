@@ -39,7 +39,7 @@ sub ProcessChain {
     @docs = map($processor->process($_),@docs);
     my $elapsed = Time::HiRes::tv_interval($t0,[Time::HiRes::gettimeofday]);
     my $mem =  `ps -p $$ -o size=`; chomp($mem);
-    $processor->Progress(sprintf(" %.2f sec; $mem KB",$elapsed));
+    $processor->Progress($doc,sprintf(" %.2f sec; $mem KB",$elapsed));
   }
   @docs; }
 
@@ -53,12 +53,12 @@ sub Warn {
   print STDERR "".(ref $self)." Warning: $msg\n" if $$self{verbosity}>-1; }
 
 sub Progress {
-  my($self,$msg)=@_;
-  print STDERR "".(ref $self).": $msg\n" if $$self{verbosity}>0; }
+  my($self,$doc,$msg)=@_;
+  print STDERR "".(ref $self)."[".$doc->getDestination."]: $msg\n" if $$self{verbosity}>0; }
 
 sub ProgressDetailed {
-  my($self,$msg)=@_;
-  print STDERR "".(ref $self).": $msg\n" if $$self{verbosity}>1; }
+  my($self,$doc,$msg)=@_;
+  print STDERR "".(ref $self)."[".$doc->getDestination."]: $msg\n" if $$self{verbosity}>1; }
 
 #======================================================================
 # Some postprocessors will want to create a bunch of "resource"s,

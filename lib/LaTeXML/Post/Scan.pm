@@ -76,7 +76,7 @@ sub process {
     $root->setAttribute('xml:id'=>$id); }
 
   $self->scan($doc,$root, $$doc{parent_id});
-  $self->Progress("Scanned; DBStatus: ".$$self{db}->status);
+  $self->Progress($doc,"Scanned; DBStatus: ".$$self{db}->status);
   $doc; }
 
 sub scan {

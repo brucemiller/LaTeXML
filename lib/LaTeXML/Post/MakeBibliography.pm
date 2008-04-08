@@ -101,9 +101,9 @@ sub getBibEntries {
 				 initial=>$doc->initial($names,1), 
 				 referrers=> ($referrers ? [sort keys %$referrers]:[])};
 	}}}}
-  $self->Progress("$ntotal bibentries, $ncited cited");
+  $self->Progress($doc,"$ntotal bibentries, $ncited cited");
   # Remaining citations were never found!
-  $self->Progress("Missing bib keys ".join(', ',keys %citations)) if keys %citations;
+  $self->Progress($doc,"Missing bib keys ".join(', ',keys %citations)) if keys %citations;
 
   # Sort the bibentries according to author+year+title+bibkey
   # If any neighboring entries have same author+year, set a suffix: a,b,...
@@ -139,6 +139,9 @@ sub formatBibEntry {
   local $LaTeXML::Post::MakeBibliography::DOCUMENT = $doc;
   local @LaTeXML::Post::MakeBibliography::SUFFIX = ($$entry{suffix} ? ($$entry{suffix}):());
 
+  # NOTE: $id may have already been associated with the bibentry
+  # Break the association so it associates with the bibitem
+  delete $$doc{idcache}{$id};
   warn "\nNo formatting specification for bibentry of type $type" unless $spec;
   # Format the data in blocks, with the first being bib-label, rest bibblock.
   my @blocks = ();

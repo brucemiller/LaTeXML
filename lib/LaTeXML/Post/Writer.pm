@@ -45,7 +45,7 @@ sub process {
       $string = Encode::encode("utf-8",$string); }}
 
   if(my $destination = $doc->getDestination){
-    $self->Progress("Writing $destination");
+    $self->Progress($doc,"Writing $destination");
     pathname_mkdir($doc->getDestinationDirectory)
       or return die("Couldn't create directory ".$doc->getDestinationDirectory.": $!");
 #    open(OUT,">:utf8",$destination)
