@@ -1,0 +1,251 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{alltt}
+\usepackage{hyperref}
+\usepackage{../sty/latexmldoc}
+\newcommand{\current}{0.5.99}
+\title{\LaTeXML\ \emph{A \LaTeX\ to XML Converter}}
+%\toctitle{A \LaTeX\ to XML Converter}
+\begin{document}
+\maketitle
+
+%============================================================
+The \emph{Current release} is \htmlref{\current}{download}.
+
+In the process of developing the
+\href{http://dlmf.nist.gov/}{Digital Library of Mathematical Functions},
+we needed a means of transforming
+the LaTeX sources of our material into XML which would be used
+for further manipulations, rearrangements and construction of the web site.
+In particular, a true `Digital Library' should focus on the \emph{semantics}
+of the material, and so we should convert the mathematical material into both
+content and presentation MathML.
+At the time, we found no software suitable to our needs, so we began
+development of LaTeXML in-house.  
+
+In brief, \texttt{latexml} is a program, written in Perl, that attempts to
+faithfully mimic \TeX's behaviour, but produces XML instead of dvi.
+The document model of the target XML makes explicit the model implied
+by \LaTeX.
+The processing and model are both extensible; you can define
+the mapping between \TeX\ constructs and the XML fragments to be created.
+A postprocessor, \texttt{latexmlpost} converts this
+XML into other formats such as HTML or XHTML, with options
+to convert the math into MathML (currently only presentation) or images.
+
+\emph{Caveats} This is still a \emph{preview release} of LaTeXML.
+It isn't finished, there are large gaps in the coverage,
+particularly in missing implementations of the many useful \LaTeX\ packages.
+But is beginning to stabilize and interested parties
+are invited to try it out, give feedback and even to help out.
+
+
+%============================================================
+\section{Examples}\label{examples}
+At the moment, the best example of \LaTeXML's output is 
+the \href{http://dlmf.nist.gov/}{DLMF} itself
+--- the preview  will soon contain several chapters.
+It is perhaps not a fair example, in that there is much
+special-purpose processing to generate cross-referencing and metadata that is not
+part of LaTeXML by default. Nevertheless, it gives an indication of the
+math conversion and other features possible.
+
+\begin{description}
+\item[\href{http://dlmf.nist.gov/contents/}{DLMF}]
+   The Digitial Library of Mathematical Functions was the
+   primary instigator for this project.
+\item[\href{manual/}{LaTeXML Manual}]
+   The \LaTeXML\ User's manual.
+\item[\href{examples/tabular/tabular.xhtml}{LaTeX tabular}]
+    from the \LaTeX\ manual, p.205.
+    (\href{examples/tabular/tabular.tex}{\TeX},
+     \href{examples/tabular/tabular.dvi}{dvi})
+\item[These pages] were produced using \LaTeXML, as well.
+\end{description}
+
+\section{Download}\label{download}
+\paragraph{Current Release}
+\href{LaTeXML-\current.tar.gz}{LaTeXML-\current.tar.gz};
+See also the \href{Changes}{Change Log}.
+
+\paragraph{SVN Repository}
+Browsable at \url{https://svn.mathweb.org/repos/LaTeXML}.
+Anonymous checkout is available using the command:
+\begin{alltt}
+  svn co https://svn.mathweb.org/repos/LaTeXML
+\end{alltt}
+
+\paragraph{Archive}
+\href{archive/LaTeXML-0.5.1.tar.gz}{0.5.9},
+\href{archive/LaTeXML-0.5.1.tar.gz}{0.5.1},
+\href{archive/LaTeXML-0.5.0.tar.gz}{0.5.0},
+\href{archive/LaTeXML-0.4.1.tar.gz}{0.4.1},
+\href{archive/LaTeXML-0.4.0.tar.gz}{0.4.0},
+\href{archive/LaTeXML-0.3.2.tar.gz}{0.3.2},
+\href{archive/LaTeXML-0.3.1.tar.gz}{0.3.1},
+\href{archive/LaTeXML-0.3.0.tar.gz}{0.3.0},
+\href{archive/LaTeXML-0.2.99.tar.gz}{0.2.99},
+\href{archive/LaTeXML-0.2.2.tar.gz}{0.2.2},
+\href{archive/LaTeXML-0.2.1.tar.gz}{0.2.2},
+\href{archive/LaTeXML-0.2.0.tar.gz}{0.2.0},
+\href{archive/LaTeXML-0.1.2.tar.gz}{0.1.2},
+\href{archive/LaTeXML-0.1.1.tar.gz}{0.1.1},
+\href{archive/LaTeXML-0.1.0.tar.gz}{0.1.0}.
+
+\paragraph{Licence}
+As this software was developed as part of work done by the
+United States Government, it is not subject to copyright,
+and is in the public domain.
+Note that according to
+\href{http://www.gnu.org/licences/license-list.html#PublicDomain}{Gnu.org}
+public domain is compatible with GPL.
+
+%============================================================
+\section{Installation}\label{install}
+
+\LaTeXML\ itself is written in `pure' Perl, but requires several
+perl modules available from CPAN or your OS distribution.
+Some of the modules provide Perl bindings to libraries
+written in C or C++, and thus require those libraries to have been installed.
+A recent \href{http://www.perl.org/}{Perl}
+with sufficient Unicode support is required: version 5.8 or later.
+
+\subsection{Prerequisites}
+
+% %3A%3A for :: ???
+\begin{description}
+\item[\href{http://search.cpan.org/search?query=Parse::RecDescent&mode=module}{Parse::RecDescent}]
+    A useful grammar based parser module.
+\item[\href{http://search.cpan.org/search?query=Image::Magick&mode=module}{Image::Magick}]
+    This module provides bindings to the \href{http://www.imagemagick.org/}{ImageMagick} library.
+\item[\href{http://search.cpan.org/search?query=XML::LibXML&mode=module}{XML::LibXML}]
+    This module provides bindings to the C library libxml2
+    (available from \href{http://www.xmlsoft.org}{xmlsoft}.
+    At least version 1.61 is required, unless the separate \texttt{XML::LibXML::XPathContext}
+    package is installed (but it is not standard in many distributions).
+\item[\href{http://search.cpan.org/search?query=XML::LibXSLT&mode=module}{XML::LibXSLT}]
+    This module provides bindings to the C library libxslt
+    (from \href{http://www.xmlsoft.org}{xmlsoft},
+%  <li><tt><a href="http://search.cpan.org/search?query=XML::LibXML::XPathContext&mode=module">XML::LibXML::XPathContext</a></tt>
+%      Depends on the XML::LibXML module.
+\item[\href{http://search.cpan.org/search?query=DB_File&mode=module}{DB\_File}]
+    This module is usually part of a standard Perl installation, provided
+    \href{http://www.sleepycat.com}{BerkeleyDB} is installed.
+\item[\href{http://search.cpan.org/search?query=Test::Simple&mode=module}{Test::Simple}]
+    This module is usually(?) part of a standard Perl installation.
+\end{description}
+
+\paragraph{CPAN}
+Assuming that all the required C packages are already installed on your system,
+  the following command should be sufficient to install the required perl 
+  modules (typically as root):
+\begin{alltt}
+   perl -MCPAN -e shell
+   install Parse::RecDescent, XML::LibXML, XML::LibXSLT, DB_File
+   quit
+\end{alltt}
+The \texttt{Image::Magick} module often installs best by enabling the
+perl bindings as part of compiling and installing the main ImageMagick package.
+
+\paragraph[RPM-based systems]{RPM-based systems (Fedora, RedHat, CentOS)}
+For Fedora, RedHat, or similar rpm-based distributions,
+the prerequisites (and thier dependencies) can be installed using
+(as root):
+\begin{alltt}
+   yum install perl-Parse-RecDescent  \textbackslash\\
+     ImageMagick ImageMagick-perl  \textbackslash\\
+     libxml2 perl-XML-LibXML libxslt perl-XML-LibXSLT \textbackslash\\
+     perl-Test-Simple
+\end{alltt}
+
+\paragraph{Debian-based systems}
+For Debian based distributions, presumably including Ubuntu, the following
+command  should install the prerequisites:
+\begin{alltt}
+   sudo apt-get install   \textbackslash\\
+      libparse-recdescent-perl \textbackslash\\
+      libxml2 libxml-libxml-perl \textbackslash\\
+      libxslt1 libxml-libxslt-perl  \textbackslash\\
+      imagemagick perlmagick
+\end{alltt}
+Some \href{http://rhaptos.org/devblog/reedstrm/latexml}{notes} on installation on Debian
+based systems are also available.
+
+\paragraph{MacOS}
+To be done.
+
+\paragraph{Windows}
+To be done.
+
+\subsection{Installing}
+Installation of \LaTeXML\ from source is via the usual Perl module incantations:
+\begin{alltt}
+   tar zxvf latexml-\current.tar.gz
+   cd latexml-\current\\
+   perl Makefile.PL
+   make
+   make test
+\end{alltt}
+and then, as root:
+\begin{alltt}
+   make install
+\end{alltt}
+(See \texttt{perl perlmodinstall} for more details, if needed.)
+
+I hope, in the near future, to be able to provide precompiled packages
+for at least some of the above OS's.
+
+%============================================================
+\section{Documentation}\label{docs}
+If you're lucky, all that should be needed to convert
+a \TeX\ file, \textit{mydoc}\texttt{.tex} to XML, and
+then to XHTML+MathML would be:
+\begin{alltt}
+   latexml --dest=\textit{mydoc}.xml \textit{mydoc}
+   latexmlpost -dest=\textit{somewhere/mydoc}.xhtml \textit{mydoc}.xml
+\end{alltt}
+This will carry out a default transformation into XHTML+MathML.  If you
+give the destination extension with html, it will generate HTML+images.
+
+If you're not so lucky, or want to get fancy, well \ldots dig deeper:
+\begin{description}
+\item[\href{manual/index.xhtml}{LaTeXML Manual}]
+    Overview of LaTeXML.
+\item[\href{manual/commands/latexml.xhtml}{\texttt{latexml}}]
+    describes the \texttt{latexml} command.
+\item[\href{manual/commands/latexmlpost.xhtml}{\texttt{latexmlpost} command}]
+   describes the \texttt{latexmlpost} command for postprocessing.
+\end{description}
+
+% Possibly, eventually, want to expose:
+%   http://www.mathweb.org/wiki/????
+% But, it doesn't have anything in it yet.
+
+%============================================================
+\section{Contacts \& Support}\label{contact}
+
+\paragraph{Mailing List}
+There is a low-volume mailing list for questions, support and comments.
+See \href{http://lists.jacobs-university.de/mailman/listinfo/project-latexml}{\texttt{latexml-project}} for subscription information.
+
+
+\paragraph{Bug-Tracker}
+  There is a Trac bug-tracking system for reporting bugs, or checking the
+  status of previously reported bugs at
+ \href{https://trac.mathweb.org/LaTeXML/}{Bug-Tracker}.
+
+
+\paragraph{Thanks} to our friends at
+the \href{http://kwarc.info}{KWARC Research Group}
+for hosting the mailing list, Trac system and svn repository,
+as well as general moral support.
+Thanks also to \href{http://nist.gov/sima}{Systems Integration for Manufacturing Applications}
+for funding portions of the research and development.
+
+\paragraph{Author} \href{mailto:bruce.miller@nist.gov}{Bruce Miller}.
+%============================================================
+\section{Privacy Notice}\label{privacy}
+We adhere to \href{http://www.nist.gov/public_affairs/privacy.htm}{NIST's Privacy, Security and Accessibility Policy}.
+%============================================================
+
+\end{document}
