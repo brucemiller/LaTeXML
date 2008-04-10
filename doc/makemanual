@@ -1,72 +1,63 @@
 #!/usr/bin/perl -w
 use strict;
 use FindBin;
-use lib "$FindBin::RealBin/../blib/lib";
+use lib "$FindBin::RealBin/../blib/lib",$FindBin::RealBin;
 use Carp;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
+use MakeTools;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-my $WORKDIR   = $FindBin::RealBin;
-my $SRCDIR    = $WORKDIR."/..";
-my $BINDIR    = $WORKDIR."/../blib/script";
+# Assume this script is in LaTeXML's doc directory!
+my $DOCDIR   = $FindBin::RealBin;
+# Use latexml from blib!
+my $LATEXMLDIR = "$DOCDIR/..";
+$ENV{PATH} = "$LATEXMLDIR/blib/script:$ENV{PATH}";
 
-my $DEST      = "/local/www/site/htdocs/DigitalMathLib/LaTeXML";
-my $MANDEST   = "$DEST/manual";
+my $MANDIR   = "$DOCDIR/manual";
+my $WEBDEST  = "/local/www/site/htdocs/LaTeXML";
 
 my $identity = "makemanual (part of LaTeXML)";
-my($forcepod,$forceschema)=(0,0);
-my($makepdf,$makehtml)=(0,1);
-my($help,$showversion)=(0,0);
-GetOptions("forcepod!"    => \$forcepod,
-	   "forceschema!" => \$forceschema,
-	   "pdf!"         => \$makepdf,
-	   "html!"        => \$makehtml,
+my($force,$help)=(0,0);
+GetOptions("force!"    => \$force,
 	   "help"         => \$help,
 	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
-if($showversion){ print STDERR "$identity\n"; exit(1); }
 
 BEGIN { $SIG{__DIE__} = \&confess; }
 
 #======================================================================
 # Generate Appendices from PODS, Schema, etc
-print "".('='x60)."\nGenerating Appendices\n";
-system("manual/genpods".($forcepod ? " --force":""))==0
+#======================================================================
+heading("Extracting Appendices");
+system("$MANDIR/genpods".($force ? " --force":""))==0
   or warn "Failed to generate pods?";
-system("manual/genschema".($forceschema ? " --force":""))==0
+system("$MANDIR/genschema".($force ? " --force":""))==0
   or warn "Failed to generate schema documentation?";
+my $version;
+{ use LaTeXML;
+  $version = $LaTeXML::VERSION; }
+saveData("$MANDIR/release.tex", "\\def\\CurrentVersion{$version}\n");
 
 #======================================================================
-# Generate pdf form of manual
+# Now generate the manual
 #======================================================================
-# Would be nice to avoid running if uptodate
-if($makepdf){
-  print "".('='x60)."\nGenerating manual.pdf\n";
-  system("pdflatex manual") == 0 or warn "pdflatex of manual failed(?):$!";
-  system("makeindex -s manual.ist manual") == 0 or warn "makeindex of manual failed(?):$!";
-  # Can I be smart about how many times it needs to run?
-  system("pdflatex manual") == 0 or warn "pdflatex of manual failed(?):$!";
-}
-#======================================================================
-# Generate html form of manual
-#======================================================================
-# Would be nice to avoid running if uptodate
-if($makehtml){
-  print "".('='x60)."\nGenerating html for manual\n";
-  system("$BINDIR/latexml --dest=manual/manual.xml manual/manual")==0
-    or die "Failed to convert Manual to XML";
-  system("$BINDIR/latexmlpost"
-	 ." --dest=$DEST/manual/index.xhtml"
-	 ." --split  --splitnaming=labelrelative"
-	 ." --urlstyle=server"
-	 ." --css=../latexmldoc.css"
-	 ." manual/manual") ==0
-	   or die "Failed to postprocess manual";
-}
+heading("Generating pdf of manual");
+pdflatex("$MANDIR/manual.tex",
+	 dependencies=>["$DOCDIR/sty/latexmldoc.sty", "$MANDIR/release.tex",
+			"$MANDIR/schema.tex","$MANDIR/pods"],
+	 indexoptions=>[],
+	 force=>$force);
+copy("$MANDIR/manual.pdf","$LATEXMLDIR/manual.pdf");
+copy("$MANDIR/manual.pdf","$WEBDEST/manual.pdf");
 
-# Huh? This doesn't belong here!!!
-##  pathname_copy("$SRCDIR/Changes","$DEST/Changes");
+heading("Generating xhtml of manual");
+latexml("$MANDIR/manual.tex"=>"$WEBDEST/manual/index.xhtml",
+	dependencies=>["$DOCDIR/sty/latexmldoc.sty.ltxml", "$MANDIR/release.tex",
+		       "$MANDIR/schema.tex","$MANDIR/pods"],
+	postoptions=>["--split","--splitnaming=labelrelative",
+		      "--urlstyle=server","--css=../latexmldoc.css"],
+	force=>$force);
 
 #======================================================================
 __END__
@@ -80,14 +71,8 @@ C<makemanual> - generate manual for LaTeXML
 makemanual [options]
 
  Options:
-  --forcepod        Force regeneration of LaTeX from POD documentation
-                    (default: only if needed)
-  --forceschema     Force regeneration of LaTeX from Schema definition.
-                    (default: only if needed)
-  --pdf             Generate manual.pdf (default: yes)
-  --html            Generate html documentation (default: yes)
+  --force           Force regeneration (default: only if needed)
   --help            Shows this help.
-  --version         Shows the LaTeXML version.
 
 =cut
 #**********************************************************************

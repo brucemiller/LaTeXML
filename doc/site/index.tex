@@ -3,14 +3,15 @@
 \usepackage{alltt}
 \usepackage{hyperref}
 \usepackage{../sty/latexmldoc}
-\newcommand{\current}{0.5.99}
+\input{releases.tex}
+\newcommand{\PDFIcon}{\includegraphics{pdf}}
+
 \title{\LaTeXML\ \emph{A \LaTeX\ to XML Converter}}
-%\toctitle{A \LaTeX\ to XML Converter}
 \begin{document}
 \maketitle
 
 %============================================================
-The \emph{Current release} is \htmlref{\current}{download}.
+The \emph{Current release} is \htmlref{\CurrentVersion}{download}.
 
 In the process of developing the
 \href{http://dlmf.nist.gov/}{Digital Library of Mathematical Functions},
@@ -55,17 +56,17 @@ math conversion and other features possible.
    The Digitial Library of Mathematical Functions was the
    primary instigator for this project.
 \item[\href{manual/}{LaTeXML Manual}]
-   The \LaTeXML\ User's manual.
-\item[\href{examples/tabular/tabular.xhtml}{LaTeX tabular}]
+   The \LaTeXML\ User's manual (\href{manual.pdf}{\PDFIcon}).
+\item[\href{examples/tabular/tabular.html}{LaTeX tabular}]
     from the \LaTeX\ manual, p.205.
     (\href{examples/tabular/tabular.tex}{\TeX},
-     \href{examples/tabular/tabular.dvi}{dvi})
+     \href{examples/tabular/tabular.pdf}{\PDFIcon})
 \item[These pages] were produced using \LaTeXML, as well.
 \end{description}
 
 \section{Download}\label{download}
-\paragraph{Current Release}
-\href{LaTeXML-\current.tar.gz}{LaTeXML-\current.tar.gz};
+\paragraph{Current Release:}
+\CurrentRelease.
 See also the \href{Changes}{Change Log}.
 
 \paragraph{SVN Repository}
@@ -75,23 +76,6 @@ Anonymous checkout is available using the command:
   svn co https://svn.mathweb.org/repos/LaTeXML
 \end{alltt}
 
-\paragraph{Archive}
-\href{archive/LaTeXML-0.5.1.tar.gz}{0.5.9},
-\href{archive/LaTeXML-0.5.1.tar.gz}{0.5.1},
-\href{archive/LaTeXML-0.5.0.tar.gz}{0.5.0},
-\href{archive/LaTeXML-0.4.1.tar.gz}{0.4.1},
-\href{archive/LaTeXML-0.4.0.tar.gz}{0.4.0},
-\href{archive/LaTeXML-0.3.2.tar.gz}{0.3.2},
-\href{archive/LaTeXML-0.3.1.tar.gz}{0.3.1},
-\href{archive/LaTeXML-0.3.0.tar.gz}{0.3.0},
-\href{archive/LaTeXML-0.2.99.tar.gz}{0.2.99},
-\href{archive/LaTeXML-0.2.2.tar.gz}{0.2.2},
-\href{archive/LaTeXML-0.2.1.tar.gz}{0.2.2},
-\href{archive/LaTeXML-0.2.0.tar.gz}{0.2.0},
-\href{archive/LaTeXML-0.1.2.tar.gz}{0.1.2},
-\href{archive/LaTeXML-0.1.1.tar.gz}{0.1.1},
-\href{archive/LaTeXML-0.1.0.tar.gz}{0.1.0}.
-
 \paragraph{Licence}
 As this software was developed as part of work done by the
 United States Government, it is not subject to copyright,
@@ -99,6 +83,9 @@ and is in the public domain.
 Note that according to
 \href{http://www.gnu.org/licences/license-list.html#PublicDomain}{Gnu.org}
 public domain is compatible with GPL.
+
+\paragraph{Archived Releases:}
+\PreviousReleases.
 
 %============================================================
 \section{Installation}\label{install}
@@ -180,8 +167,8 @@ To be done.
 \subsection{Installing}
 Installation of \LaTeXML\ from source is via the usual Perl module incantations:
 \begin{alltt}
-   tar zxvf latexml-\current.tar.gz
-   cd latexml-\current\\
+   tar zxvf LaTeXML-\CurrentVersion.tar.gz
+   cd LaTeXML-\CurrentVersion\\
    perl Makefile.PL
    make
    make test
@@ -210,7 +197,7 @@ give the destination extension with html, it will generate HTML+images.
 If you're not so lucky, or want to get fancy, well \ldots dig deeper:
 \begin{description}
 \item[\href{manual/index.xhtml}{LaTeXML Manual}]
-    Overview of LaTeXML.
+    Overview of LaTeXML (\href{manual.pdf}{\PDFIcon}).
 \item[\href{manual/commands/latexml.xhtml}{\texttt{latexml}}]
     describes the \texttt{latexml} command.
 \item[\href{manual/commands/latexmlpost.xhtml}{\texttt{latexmlpost} command}]

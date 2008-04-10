@@ -1,18 +1,121 @@
-#!/bin/sh
+#!/usr/bin/perl -w
+use strict;
+use FindBin;
+use lib "$FindBin::RealBin/../blib/lib";
+use Carp;
+use Getopt::Long qw(:config no_ignore_case);
+use Pod::Usage;
+use MakeTools;
 
-DEST=/local/www/site/htdocs/DigitalMathLib/LaTeXML
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Build the LaTeXML site
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Assume we're running from LaTeXML's doc directory.
+my $DOCDIR   = $FindBin::RealBin;
+# Use latexml from blib!
+my $LATEXMLDIR = "$DOCDIR/..";
+$ENV{PATH} = "$LATEXMLDIR/blib/script:$ENV{PATH}";
 
-# Make dvi for comparison.
-# latex homepage
-# rm *.aux *.log *.out
+#my $WEBDIR = "/local/www/site/htdocs/DigitalMathLib/LaTeXML";
+my $WEBDIR = "/local/www/site/htdocs/LaTeXML";
 
-# Make xml and then xhtml
-cp -p graphics/latexml.png ${DEST}/
-cp -p graphics/mascot.png ${DEST}/
+my $identity = "makesite (part of LaTeXML)";
+my($force,$help,$verbosity)=(0,0,0);
+GetOptions("force!"  => \$force,
+	   "help"    => \$help,
+	   verbose   => sub { $verbosity++; },
+	   quiet     => sub { $verbosity--; },
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
 
-testlatexml --dest=home/homepage.xml home/homepage
-testlatexmlpost -dest=${DEST}/index.html \
-   --split --css=latexmldoc.css  --nonumbersections --splitnaming=label \
-   home/homepage
+BEGIN { $SIG{__DIE__} = \&confess; }
+#======================================================================
+setVerbosity($verbosity);
 
+# Generate the main pages
+my $RELEASEDOC = "$DOCDIR/site/releases.tex";
+heading("Generating site pages");
+# copy images referenced from the CSS.
+copy("$DOCDIR/graphics/latexml.png","$WEBDIR/images/latexml.png");
+copy("$DOCDIR/graphics/mascot.png","$WEBDIR/images/mascot.png");
 
+getReleases();
+
+latexml("$DOCDIR/site/index.tex","$WEBDIR/index.html",
+	dependencies=>["$DOCDIR/sty/latexmldoc.sty.ltxml", $RELEASEDOC],
+	postoptions=>["--split",
+		      "--css=latexmldoc.css",
+		      "--nonumbersections",
+		      "--splitnaming=label"],
+	force=>$force);
+
+# Generate the examples.
+my @examples = (qw(tabular));
+foreach my $example (@examples){
+  heading("Generating example $example");
+  my $source   = "$DOCDIR/site/examples/$example/$example.tex";
+  my $destname = "$WEBDIR/examples/$example/$example";
+  copy($source,"$destname.tex");
+  latexml($source,"$destname.html",force=>$force);
+  pdflatex($source,force=>$force);
+  copy("$DOCDIR/site/examples/$example/$example.pdf", "$destname.pdf"); }
+
+# Make the manual (if not already done)
+system("$DOCDIR/makemanual",($force ? ("--force"):()))==0
+  or die "Failed to make manual";
+
+# How much of "Making a new Release" should be incorporated? Where?
+# To make a new release:
+#    adjust $VERSION in LaTeXML.pm
+#    add an entry to Changes
+#    makemanual
+#    make distclean
+#    make dist
+#    mv the new tarball to $WEBDIR/releases/
+#    [Other distribution formats? rpm,...]
+#    makesite.
+copy("$LATEXMLDIR/Changes", "$WEBDIR/Changes");
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sub getReleases {
+  # Scan the releases directory for all released versions.
+  opendir(REL,"$WEBDIR/releases") or die "Couldn't read releases directory: $!";
+  my @files = readdir(REL);
+  closedir(REL);
+  my %links=();
+  foreach my $file (@files){
+    if($file =~ /^LaTeXML-(.*?)\.(tar\.gz|rpm|deb|ppm)$/){
+      my($num,$type)=($1,$2);
+      $links{$num}{$type} = "\\href{releases/$file}{$type}"; }}
+  my @versions = reverse sort keys %links;
+  my @releases = ();
+  foreach my $release (@versions){
+    my $formats = $links{$release};
+    push(@releases,"$release ".join(",\n",map($$formats{$_}, sort keys %$formats))); }
+
+  saveData($RELEASEDOC,
+	   "\\def\\CurrentVersion{$versions[0]}\n"
+	   ."\\def\\CurrentRelease{".shift(@releases)."}\n"
+	   ."\\def\\PreviousReleases{".join(";\n", @releases)."}\n");
+}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+__END__
+
+=head1 NAME
+
+C<makesite> makes LaTeXML's site
+
+=head1 SYNOPSIS
+
+makesite [options]
+
+Options:
+
+  --force   Forces rebuilding even when timestamps dont indicate it.
+  --help    Shows this help message.
+  --quiet   Runs more quietly
+  --verbose Runs more noisily
+
+=cut
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
