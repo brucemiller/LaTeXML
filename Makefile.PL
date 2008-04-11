@@ -7,14 +7,14 @@ use strict;
 
 our $DLMF = grep(/DLMF/,@ARGV);
 
-our @TEXSTYLES = ('texmf/latexml.sty');
 our @EXCLUSIONS=();
-our $MORE_MACROS = {CAT=>'$(PERLRUN) -MExtUtils::Command -e cat'};
+our $MORE_MACROS = {};
 our $MORE_MAKERULES='';
 
 compile_MathGrammar();
 compile_XSLTs();
 install_TeXStyles();
+add_rpm_support();
 check_ImageMagick();
 
 WriteMakefile(NAME => 'LaTeXML',
@@ -31,6 +31,7 @@ WriteMakefile(NAME => 'LaTeXML',
 	      EXE_FILES => [ 'bin/latexml', 'bin/latexmlpost', 'bin/latexmlfind',
 			     ($DLMF ? ('bin/dlmfpost') : ())],
 	      macro => $MORE_MACROS,
+	      depend => {metafile=>'specfile'},
 	      );
 
 #**********************************************************************
@@ -43,7 +44,7 @@ sub MY::libscan {
     return ""; }
   $self->MY::SUPER::libscan($path); }
 
-# Additional Makefile rules.
+# Append any additional Makefile rules added by the following.
 sub MY::postamble {
   shift->MY::SUPER::postamble(@_) . $MORE_MAKERULES; }
 
@@ -56,6 +57,7 @@ sub MY::postamble {
 sub compile_MathGrammar {
   push(@EXCLUSIONS,'blib/lib/LaTeXML/MathGrammar');
   $MORE_MAKERULES .= <<'MakeGrammar';
+
 pure_all :: blib/lib/LaTeXML/MathGrammar.pm
 
 blib/lib/LaTeXML/MathGrammar.pm: lib/LaTeXML/MathGrammar
@@ -68,26 +70,10 @@ MakeGrammar
 
 #======================================================================
 # Add rules to generate XSLT files for html & xhtml.
-# We concatenate separate head & tail files, rather than use xslt's include, due to namespace issues:
-# html must be in null namespace, xhtml must be in a specific namespace.
-sub XXcompile_XSLTs {
-  push(@EXCLUSIONS,
-       'blib/lib/LaTeXML/style/html.xsl.head', 'blib/lib/LaTeXML/style/xhtml.xsl.head',
-       'blib/lib/LaTeXML/style/core.xsl.tail');
-  $MORE_MAKERULES .= << 'MakeXSLT';
-all :: blib/lib/LaTeXML/style/LaTeXML-html.xsl
-
-all :: blib/lib/LaTeXML/style/LaTeXML-xhtml.xsl
-
-blib/lib/LaTeXML/style/LaTeXML-html.xsl: lib/LaTeXML/style/html.xsl.head lib/LaTeXML/style/core.xsl.tail
-	$(CAT) lib/LaTeXML/style/html.xsl.head lib/LaTeXML/style/core.xsl.tail > $(INST_LIB)/LaTeXML/style/LaTeXML-html.xsl
-
-blib/lib/LaTeXML/style/LaTeXML-xhtml.xsl: lib/LaTeXML/style/xhtml.xsl.head lib/LaTeXML/style/core.xsl.tail
-	$(CAT) lib/LaTeXML/style/xhtml.xsl.head lib/LaTeXML/style/core.xsl.tail > $(INST_LIB)/LaTeXML/style/LaTeXML-xhtml.xsl
-
-MakeXSLT
-}
-
+# Generally, we've only written XHTML versions (clean xml) of XSLT,
+# but these need to be converted to HTML by (at least) removing 
+# the namespace declaration since HTML must be in null namespace,
+# whereas XHTML must be in a specific namespace.
 sub compile_XSLTs {
   my $styledir = 'lib/LaTeXML/style';
   $$MORE_MACROS{XSLTTOHTML}
@@ -98,6 +84,7 @@ sub compile_XSLTs {
   foreach my $xhtml (@xhtmls){
     my $html = $xhtml; $html =~ s/-xhtml.xsl$/-html.xsl/;
     $MORE_MAKERULES .= <<"MakeXSLT";
+
 all :: blib/$styledir/$html
 
 blib/$styledir/$html : $styledir/$xhtml
@@ -108,29 +95,49 @@ MakeXSLT
 
 #======================================================================
 # Install included TeX style file(s) into the standard TEXMFLOCAL,
-# Iff there seems to be one!
 sub install_TeXStyles {
-  # Find the texhash program
-  my($texhash,$texmflocal);
-  if(($texhash = `which texhash`)
-     && ($texmflocal = `kpsewhich --expand-var=\'\$TEXMFLOCAL\'`)){
-    chomp($texhash); chomp($texmflocal);
-
-    $$MORE_MACROS{TEXHASH}=$texhash;
-    $$MORE_MACROS{TEXMFLOCAL}=$texmflocal;
-    $$MORE_MACROS{TEXSTYLES} = join(' ',@TEXSTYLES);
-
     $MORE_MAKERULES .= <<'InstallTeXStyles';
+
 install::
-	$(MKPATH) $(TEXMFLOCAL)/tex/latex/latexml/
-	$(CP) $(TEXSTYLES) $(TEXMFLOCAL)/tex/latex/latexml/
-	$(TEXHASH)
+	$(PERLRUN) blib/lib/LaTeXML/texmf/install.PL
 
 InstallTeXStyles
-  }
+}
+
+#======================================================================
+# Make an rpm specfile to include in the distribution.
+# This only runs if cpan2rpm is available
+# We need to patch the resulting specfile, since we can't add
+# to %post, %postun directly from cpan2rpm,
+# but we need to run texhash to include (or cleanup) our additional style files.
+#
+# This also adds an rpm target
+sub add_rpm_support {
+  my $cpan2rpm = `which cpan2rpm`; chomp($cpan2rpm);
+  if($cpan2rpm){
+    $$MORE_MACROS{CPAN2RPM}=$cpan2rpm;
+    $MORE_MAKERULES .= <<'EndRPM'
+
+specfile :
+	$(CPAN2RPM) --spec-only --spec=$(DISTVNAME)/LaTeXML.spec .
+	echo -e "\n%post\n" >> $(DISTVNAME)/LaTeXML.spec
+	echo -e "\n[ -x /usr/bin/texhash ] && /usr/bin/texhash\n" >> $(DISTVNAME)/LaTeXML.spec
+	echo -e "\n%postun\n" >> $(DISTVNAME)/LaTeXML.spec
+	echo -e "\n[ -x /usr/bin/texhash ] && /usr/bin/texhash\n" >> $(DISTVNAME)/LaTeXML.spec
+
+rpm : tardist
+	rpmbuild -ta $(DISTVNAME).tar$(SUFFIX)
+
+EndRPM
+}
   else {
-    warn "Could not find TeX installation\n"
-      ."Skipping install of LaTeXML's TeX style files: ".join(', ',@TEXSTYLES)."\n"; }}
+    $MORE_MAKERULES .= <<'EndRPM'
+
+specfile :
+	$(NOECHO) $(NOOP)
+
+EndRPM
+}}
 
 #======================================================================
 # ImageMagick is only used in postprocessing, and is somewhat optional.

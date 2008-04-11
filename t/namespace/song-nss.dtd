@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!ELEMENT outer:song (outer:verse*)>
-<!ATTLIST song 
-	  xmlns:outer CDATA #IMPLIED
-	  xmlns:inner CDATA #IMPLIED>
-<!ELEMENT outer:verse (inner:line*)>
-<!ELEMENT inner:line (#PCDATA)>

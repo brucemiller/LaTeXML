@@ -5,10 +5,10 @@ Changes
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.SKIP
-META.yml
 README
 INSTALL
 LaTeXML.ppd
+manual.pdf
 #==================================================
 # Executables
 #==================================================
@@ -16,18 +16,6 @@ bin/dlmfpost
 bin/latexml
 bin/latexmlfind
 bin/latexmlpost
-#==================================================
-# Documentation
-#  This needs to reflect built documentation?
-#==================================================
-doc/makemanual
-doc/latexmldoc.css
-doc/sty/latexmldoc.sty.ltxml
-doc/sty/latexmldoc.sty
-doc/manual/manual.tex
-doc/manual/genschema
-doc/manual/genpods
-# doc/manual/manual.pdf
 #==================================================
 # Core Modules
 #==================================================
@@ -65,7 +53,7 @@ lib/LaTeXML/Post/MakeIndex.pm
 lib/LaTeXML/Post/MathImages.pm
 lib/LaTeXML/Post/MathML.pm
 lib/LaTeXML/Post/OpenMath.pm
-lib/LaTeXML/Post/PictureIMages.pm
+lib/LaTeXML/Post/PictureImages.pm
 lib/LaTeXML/Post/PurgeXMath.pm
 lib/LaTeXML/Post/Scan.pm
 lib/LaTeXML/Post/Split.pm
@@ -234,7 +222,8 @@ lib/LaTeXML/Package/yfonts.sty.ltxml
 #==================================================
 # TeX package
 #==================================================
-texmf/latexml.sty
+lib/LaTeXML/texmf/install.PL
+lib/LaTeXML/texmf/latexml.sty
 #==================================================
 # Test Suite.
 #==================================================
@@ -286,6 +275,9 @@ t/alignment/tabular.xml
 t/alignment/tabularstar.dvi
 t/alignment/tabularstar.tex
 t/alignment/tabularstar.xml
+t/ams/amsdisplay.dvi
+t/ams/amsdisplay.tex
+t/ams/amsdisplay.xml
 t/ams/matrix.dvi
 t/ams/matrix.tex
 t/ams/matrix.xml

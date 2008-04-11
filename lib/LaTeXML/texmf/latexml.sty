@@ -1,0 +1,105 @@
+% /=====================================================================\ %
+% |  latexml.sty                                                        | %
+% | Style file for latexml documents                                    | %
+% |=====================================================================| %
+% | Part of LaTeXML:                                                    | %
+% |  Public domain software, produced as part of work done by the       | %
+% |  United States Government & not subject to copyright in the US.     | %
+% |---------------------------------------------------------------------| %
+% | Bruce Miller <bruce.miller@nist.gov>                        %_%     | %
+% | http://dlmf.nist.gov/LaTeXML/                              (o o)    | %
+% \=========================================================ooo==U==ooo=/ %
+
+% NOTE: Figure out where this should go.
+%  At least should define various `semantic enhancement' macros that
+% authors using latexml might want.
+% But, be careful not to step on the toes of other packages (naming scheme),
+% Nor, to assume to much about what semantics authors might want.
+
+\providecommand{\lxDocumentID}[1]{}%
+
+% NOTE: Am I stepping on toes by including these here?
+% Common markup junk for LaTeXML docs.
+\providecommand{\XML}{\textsc{xml}}%
+\providecommand{\SGML}{\textsc{sgml}}%
+\providecommand{\HTML}{\textsc{html}}%
+\providecommand{\XHTML}{\textsc{xhtml}}%
+\providecommand{\XSLT}{\textsc{xslt}}%
+\providecommand{\CSS}{\textsc{css}}%
+\providecommand{\MathML}{MathML}%
+\providecommand{\OpenMath}{OpenMath}%
+
+\RequirePackage{url}
+% Shorthand to present a URL the actual text (also linked in HTML)
+% \URL[alternative text]{url}
+\def\URL{\@ifnextchar[{\@URL}{\@@URL}}%]
+%\def\@@URL{\begingroup\def\UrlLeft##1\UrlRight{\stepcounter{footnote}%
+%[Footnote~\thefootnote\footnotetext{##1}]}\Url}
+\def\@@URL{\begingroup\Url}
+\def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\texttt{##1}}}\Url}
+
+% The LaTeXML Logo.
+\DeclareRobustCommand{\LaTeXML}{L\kern-.36em%
+        {\sbox\z@ T%
+         \vbox to\ht\z@{\hbox{\check@mathfonts
+                              \fontsize\sf@size\z@
+                              \math@fontsfalse\selectfont
+                              A}%
+                        \vss}%
+        }%
+        \kern-.15em%
+%        T\kern-.1667em\lower.5ex\hbox{E}\kern-.125em\relax
+%        {\tt XML}}
+        T\kern-.1667em\lower.4ex\hbox{E}\kern-0.05em\relax
+        {\scshape xml}}%
+
+% Math definining macro.
+% Define a math function such that the TeX output is what you might
+% expect, while providing the semantic hooks for generating useful xml.
+
+% \lxMathDef{cmd}[nargs][optional]{expansion}[semanticprops]
+\providecommand{\lxMathDef}{\lx@mathdef}
+\def\lx@mathdef#1{%
+  \@ifnextchar[{\lx@mathdef@a{#1}}{\lx@mathdef@a{#1}[]}}
+\def\lx@mathdef@a#1[#2]{%
+  \@ifnextchar[{\lx@mathdef@opt{#1}[#2]}{\lx@mathdef@noopt{#1}[#2]}}
+\def\lx@mathdef@opt#1[#2][#3]#4{%
+  \providecommand{#1}[#2][#3]{#4}%
+  \@ifnextchar[{\lx@@skipopt}{}}
+\def\lx@mathdef@noopt#1[#2]#3{%
+  \providecommand{#1}[#2]{#3}%
+  \@ifnextchar[{\lx@@skipopt}{}}
+\def\lx@@skipopt[#1]{}
+
+% \lxDeclare[declarations]{match}
+\newcommand{\lxDeclare}[2][]{}%
+% \LxDeclRef{label}
+\newcommand{\lxRefDeclaration}[1]{}%
+% \LxMathDef{\cs}[nargs][optargs]{presentation}[declarations]
+\def\lxDefMath#1{\@ifnextchar[{\LxDefMath@}{\LxDefMath@[]}}%
+\def\lxDefMath@[#1]{\@ifnextchar[{\LxDefMath@@}{\LxDefMath@@[]}}%
+\def\lxDefMath@@[#1]#2{\@ifnextchar[{\LxDefMath@@@}{}}%
+\def\lxDefMath@@@[#1]{}%
+
+% NOTE: It would be good to incorporate Scoping into this macro.
+% As defined, it obeys TeX's usual grouping scope.
+% However, scoping by `module' (M.Kohlhase's approach) and/or
+% `document' scoping could be useful.
+
+% In module scoping, the definition is only available within a
+% module environment that defines it, AND in other module envs
+% that `use' it.
+
+% In document scoping, the definition would only be available within
+% the current sectional unit.  I'm not sure the best way to achieve this 
+% within latex, itself, but have ideas about latexml...
+% But, perhaps it is only the declarative aspects that are important to
+% latexml...
+
+% Expose other declarative macros
+\def\LXMID#1#2{\expandafter\gdef\csname xmarg#1\endcsname{#2}\csname xmarg#1\endcsname}
+\def\LXMRef#1{\csname xmarg#1\endcsname}
+\providecommand{\lxFcn}[1]{#1}
+\providecommand{\lxID}[1]{#1}
+\providecommand{\lxPunct}[1]{#1}
+

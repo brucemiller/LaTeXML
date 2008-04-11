@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!ELEMENT example:song (example:verse*)>
-<!ATTLIST song 
-	  xmlns:example CDATA #IMPLIED>
-<!ELEMENT example:verse (example:line*)>
-<!ELEMENT example:line (#PCDATA)>

@@ -8,6 +8,7 @@ use Pod::Usage;
 use LaTeXML;
 use LaTeXML::Post;
 use LaTeXML::Post::Writer;
+use LaTeXML::Post::Scan;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::ObjectDB;
 
@@ -194,7 +195,7 @@ if($split){
   push(@procs,LaTeXML::Post::Split->new(split_xpath=>$splitpath,splitnaming=>$splitnaming,
 					%OPTIONS)); }
 
-require 'LaTeXML/Post/Scan.pm';
+##require 'LaTeXML/Post/Scan.pm';
 our $scanner = ($scan || $DB) && LaTeXML::Post::Scan->new(db=>$DB,%OPTIONS);
 if($scan){
   push(@procs,$scanner); }
