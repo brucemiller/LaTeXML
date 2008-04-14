@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 use FindBin;
-use lib "$FindBin::RealBin/../blib/lib";
+use lib "$FindBin::RealBin/../blib/lib",$FindBin::RealBin;
 use Carp;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
@@ -83,20 +83,32 @@ sub getReleases {
   my @files = readdir(REL);
   closedir(REL);
   my %links=();
+  my($newesttarball,$newestrpm)=("0","0");
   foreach my $file (@files){
-    if($file =~ /^LaTeXML-(.*?)\.(tar\.gz|rpm|deb|ppm)$/){
-      my($num,$type)=($1,$2);
-      $links{$num}{$type} = "\\href{releases/$file}{$type}"; }}
+    if($file =~ /^LaTeXML-(.*?)\.tar\.gz$/){
+      my $num=$1;
+      $newesttarball = $num if $num gt $newesttarball;
+      $links{$num}{tarball}{file} = "\\href{$file}{$file}";
+      $links{$num}{tarball}{link} = "\\href{releases/$file}{$num\\nobreakspace(tar.gz)}"; }
+    elsif($file =~ /^perl-LaTeXML-(.*?)-\d+\.noarch\.rpm$/){
+      my $num= $1;
+      $newestrpm = $num if $num gt $newestrpm;
+      $links{$num}{rpm}{file} = "\\href{$file}{$file}";
+      $links{$num}{rpm}{link} = "\\href{releases/$file}{$num\\nobreakspace(RPM)}"; }
+    # handle other formats here. (ppm, deb)
+  }
   my @versions = reverse sort keys %links;
   my @releases = ();
   foreach my $release (@versions){
     my $formats = $links{$release};
-    push(@releases,"$release ".join(",\n",map($$formats{$_}, sort keys %$formats))); }
+    push(@releases,join(",\n",map($$formats{$_}{link}, sort keys %$formats))); }
 
   saveData($RELEASEDOC,
 	   "\\def\\CurrentVersion{$versions[0]}\n"
-	   ."\\def\\CurrentRelease{".shift(@releases)."}\n"
-	   ."\\def\\PreviousReleases{".join(";\n", @releases)."}\n");
+	   ."\\def\\CurrentTarball{".$links{$newesttarball}{tarball}{file}."}\n"
+	   ."\\def\\CurrentRPM{".$links{$newestrpm}{rpm}{file}."}\n"
+	   ."\\def\\CurrentRelease{".$releases[0]."}\n"
+	   ."\\def\\AllReleases{".join(";\n", @releases)."}\n");
 }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

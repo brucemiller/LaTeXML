@@ -85,11 +85,12 @@ Note that according to
 public domain is compatible with GPL.
 
 \paragraph{Archived Releases:}
-\PreviousReleases.
+\AllReleases.
 
 %============================================================
 \section{Installation}\label{install}
 
+\subsection{Prerequisites}
 \LaTeXML\ itself is written in `pure' Perl, but requires several
 perl modules available from CPAN or your OS distribution.
 Some of the modules provide Perl bindings to libraries
@@ -97,8 +98,7 @@ written in C or C++, and thus require those libraries to have been installed.
 A recent \href{http://www.perl.org/}{Perl}
 with sufficient Unicode support is required: version 5.8 or later.
 
-\subsection{Prerequisites}
-
+The following additional Perl modules are required:
 % %3A%3A for :: ???
 \begin{description}
 \item[\href{http://search.cpan.org/search?query=Parse::RecDescent&mode=module}{Parse::RecDescent}]
@@ -122,10 +122,9 @@ with sufficient Unicode support is required: version 5.8 or later.
     This module is usually(?) part of a standard Perl installation.
 \end{description}
 
-\paragraph{CPAN}
+\subsection{From Source}
 Assuming that all the required C packages are already installed on your system,
-  the following command should be sufficient to install the required perl 
-  modules (typically as root):
+  use CPAN to install the required perl modules (typically as root):
 \begin{alltt}
    perl -MCPAN -e shell
    install Parse::RecDescent, XML::LibXML, XML::LibXSLT, DB_File
@@ -134,40 +133,9 @@ Assuming that all the required C packages are already installed on your system,
 The \texttt{Image::Magick} module often installs best by enabling the
 perl bindings as part of compiling and installing the main ImageMagick package.
 
-\paragraph[RPM-based systems]{RPM-based systems (Fedora, RedHat, CentOS)}
-For Fedora, RedHat, or similar rpm-based distributions,
-the prerequisites (and thier dependencies) can be installed using
-(as root):
+Installation proceeds via the usual Perl module incantations:
 \begin{alltt}
-   yum install perl-Parse-RecDescent  \textbackslash\\
-     ImageMagick ImageMagick-perl  \textbackslash\\
-     libxml2 perl-XML-LibXML libxslt perl-XML-LibXSLT \textbackslash\\
-     perl-Test-Simple
-\end{alltt}
-
-\paragraph{Debian-based systems}
-For Debian based distributions, presumably including Ubuntu, the following
-command  should install the prerequisites:
-\begin{alltt}
-   sudo apt-get install   \textbackslash\\
-      libparse-recdescent-perl \textbackslash\\
-      libxml2 libxml-libxml-perl \textbackslash\\
-      libxslt1 libxml-libxslt-perl  \textbackslash\\
-      imagemagick perlmagick
-\end{alltt}
-Some \href{http://rhaptos.org/devblog/reedstrm/latexml}{notes} on installation on Debian
-based systems are also available.
-
-\paragraph{MacOS}
-To be done.
-
-\paragraph{Windows}
-To be done.
-
-\subsection{Installing}
-Installation of \LaTeXML\ from source is via the usual Perl module incantations:
-\begin{alltt}
-   tar zxvf LaTeXML-\CurrentVersion.tar.gz
+   tar zxvf  \CurrentTarball\\
    cd LaTeXML-\CurrentVersion\\
    perl Makefile.PL
    make
@@ -179,8 +147,50 @@ and then, as root:
 \end{alltt}
 (See \texttt{perl perlmodinstall} for more details, if needed.)
 
-I hope, in the near future, to be able to provide precompiled packages
-for at least some of the above OS's.
+
+\subsection[RPM-based systems]{RPM-based systems (Fedora, RedHat, CentOS)}
+For Fedora (and perhaps other similar) distributions, 
+after you've dowloaded the LaTeXML RPM, the following
+command should install LaTeXML along with any missing prerequisites:
+\begin{alltt}
+   yum localinstall \CurrentRPM
+\end{alltt}
+
+Unfortunately, more conservative distributions
+(such as RedHat Enterprise and CentOS)
+do not have recent enough releases of the prerequisites available.
+I am working on a workaround for this problem.
+% \begin{alltt}
+%    yum install perl-Parse-RecDescent  \textbackslash\\
+%      ImageMagick ImageMagick-perl  \textbackslash\\
+%      libxml2 perl-XML-LibXML libxslt perl-XML-LibXSLT \textbackslash\\
+%      perl-Test-Simple
+% \end{alltt}
+
+\subsection{Debian-based systems}
+For Debian based distributions, presumably including Ubuntu, the following
+command  should install the prerequisites:
+\begin{alltt}
+   sudo apt-get install   \textbackslash\\
+      libparse-recdescent-perl \textbackslash\\
+      libxml2 libxml-libxml-perl \textbackslash\\
+      libxslt1 libxml-libxslt-perl  \textbackslash\\
+      imagemagick perlmagick
+\end{alltt}
+You can then continue by installing LaTeXML from source, as above.
+
+Some \href{http://rhaptos.org/devblog/reedstrm/latexml}{notes} on installation on Debian
+based systems are also available.
+
+\subsection{MacOS}
+Many of the prerequisite packages are available via `fink' (I think).
+You can then continue by installing LaTeXML from source, as above.
+
+\subsection{Windows}
+Many of the prerequisite packages are available in
+ppm form (for \href{ActivePerl}{http://activestate.com/} (I think).
+I will attempt to generate a ppm for LaTeXML in the near
+future, depending on user interest --- and assistance!
 
 %============================================================
 \section{Documentation}\label{docs}
