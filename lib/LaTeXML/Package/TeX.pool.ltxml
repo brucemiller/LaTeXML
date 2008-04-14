@@ -2303,6 +2303,8 @@ DefPrimitive('\nobreak',undef);
 DefPrimitive('\allowbreak',undef);
 DefConstructor("~","?#isMath(<ltx:XMHint name='nobreakspace'/>)(".UTF(0xA0).")",
 	      properties=>{isSpace=>1}); # NO-BREAK SPACE
+DefConstructor('\nobreakspace',"?#isMath(<ltx:XMHint name='nobreakspace'/>)(".UTF(0xA0).")",
+	      properties=>{isSpace=>1}); # NO-BREAK SPACE
 
 DefMacro('\slash','/');
 DefPrimitive('\filbreak',undef);

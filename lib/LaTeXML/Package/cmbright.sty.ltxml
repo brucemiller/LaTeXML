@@ -15,5 +15,8 @@ use strict;
 use LaTeXML::Package;
 
 # Nothing to do here.
+Let(T_CS('\upDelta'),T_CS('\Delta'));
+Let(T_CS('\upOmega'),T_CS('\Omega'));
+DefMath('\mathsterling',UTF(0xA3));	 # POUND SIGN
 
 1;

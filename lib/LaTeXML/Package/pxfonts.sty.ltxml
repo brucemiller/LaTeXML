@@ -14,6 +14,6 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-# Nothing to do here.
-
+# As far as LaTeXML is concerned, these are identical.
+RequirePackage('txfonts');
 1;

@@ -117,7 +117,7 @@ our %textcomp_money
     textregistered     =>UTF(0xAE),
     textservicemark    =>"\x{2120}",
     texttrademark      =>"\x{2122}");
-map(DefConstructor('\\'.$_,$textcomp_numerals{$_}),keys %textcomp_numerals);
+map(DefConstructor('\\'.$_,$textcomp_money{$_}),keys %textcomp_money);
 
 #======================================================================
 # Footnote symbols

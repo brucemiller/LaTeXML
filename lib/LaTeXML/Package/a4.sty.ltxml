@@ -17,4 +17,6 @@ use LaTeXML::Package;
 #**********************************************************************
 # Nothing to do here!
 #**********************************************************************
+DefMacro('\WideMargins','');
+DefRegister('\ExtraWidth'=>Dimension(0));
 1;

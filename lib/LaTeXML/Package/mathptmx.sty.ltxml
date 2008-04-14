@@ -15,4 +15,17 @@ use strict;
 use LaTeXML::Package;
 
 # Nothing to do here.
+# Is this the right approach?
+DefMath('\omicron', "\x{03BF}"); # GREEK SMALL LETTER OMICRON
+Let(T_CS('\upDelta'),T_CS('\Delta'));
+Let(T_CS('\upGamma'),T_CS('\Gamma'));
+Let(T_CS('\upLambda'),T_CS('\Lambda'));
+Let(T_CS('\upOmega'),T_CS('\Omega'));
+Let(T_CS('\upPhi'),T_CS('\Phi'));
+Let(T_CS('\upPi'),T_CS('\Pi'));
+Let(T_CS('\upPsi'),T_CS('\Psi'));
+Let(T_CS('\upSigma'),T_CS('\Sigma'));
+Let(T_CS('\upTheta'),T_CS('\Theta'));
+Let(T_CS('\upUpsilon'),T_CS('\Upsilon'));
+Let(T_CS('\upXi'),T_CS('\Xi'));
 1;

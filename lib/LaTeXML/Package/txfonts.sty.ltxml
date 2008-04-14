@@ -14,6 +14,47 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-# Nothing to do here.
+RequirePackage('amssymb');
+
+DefMath('\alphaup',     "\x{03B1}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER ALPHA
+DefMath('\betaup',      "\x{03B2}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER BETA
+DefMath('\gammaup',     "\x{03B3}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER GAMMA
+DefMath('\deltaup',     "\x{03B4}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER DELTA
+DefMath('\epsilonup'  , "\x{03F5}", font=>{shape=>'upright',forceshape=>1}); # GREEK LUNATE EPSILON SYMBOL
+DefMath('\varepsilonup',"\x{03B5}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER EPSILON
+DefMath('\zetaup',      "\x{03B6}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER ZETA
+DefMath('\etaup',       "\x{03B7}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER ETA
+DefMath('\thetaup',     "\x{03B8}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER THETA
+DefMath('\varthetaup',  "\x{03D1}", font=>{shape=>'upright',forceshape=>1}); # GREEK THETA SYMBOL
+DefMath('\iotaup',      "\x{03B9}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER IOTA
+DefMath('\kappaup',     "\x{03BA}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER KAPPA
+DefMath('\lambdaup',    "\x{03BB}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER LAMDA
+DefMath('\muup',        "\x{03BC}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER MU
+DefMath('\nuup',        "\x{03BD}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER NU
+DefMath('\xiup',        "\x{03BE}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER XI
+DefMath('\piup',        "\x{03C0}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER PI
+DefMath('\varpiup',     "\x{03D6}", font=>{shape=>'upright',forceshape=>1}); # GREEK PI SYMBOL
+DefMath('\rhoup',       "\x{03C1}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER RHO
+DefMath('\varrhoup',    "\x{03F1}", font=>{shape=>'upright',forceshape=>1}); # GREEK RHO SYMBOL
+DefMath('\sigmaup',     "\x{03C3}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER SIGMA
+DefMath('\varsigmaup',  "\x{03C2}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER FINAL SIGMA
+DefMath('\tauup',       "\x{03C4}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER TAU
+DefMath('\upsilonup',   "\x{03C5}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER UPSILON
+DefMath('\phiup',       "\x{03D5}", font=>{shape=>'upright',forceshape=>1}); # GREEK PHI SYMBOL
+DefMath('\varphiup',    "\x{03C6}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER PHI
+DefMath('\chiup',       "\x{03C7}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER CHI
+DefMath('\psiup',       "\x{03C8}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER PSI
+DefMath('\omegaup',     "\x{03C9}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER OMEGA
+DefMath('\Gammaup',     "\x{0393}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER GAMMA
+DefMath('\Deltaup',     "\x{0394}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER DELTA
+DefMath('\Thetaup',     "\x{0398}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER THETA
+DefMath('\Lambdaup',    "\x{039B}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER LAMDA
+DefMath('\Xiup',        "\x{039E}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER XI
+DefMath('\Piup',        "\x{03A0}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER PI
+DefMath('\Sigmaup',     "\x{03A3}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER SIGMA
+DefMath('\Upsilonup',   "\x{03A5}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER UPSILON
+DefMath('\Phiup',       "\x{03A6}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER PHI
+DefMath('\Psiup',       "\x{03A8}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER PSI
+DefMath('\Omegaup',     "\x{03A9}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER OMEGA
 
 1;
