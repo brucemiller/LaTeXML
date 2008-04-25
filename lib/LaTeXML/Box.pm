@@ -203,8 +203,9 @@ sub revert {
 	if $spec ne '';
     }
     else {
-      if(my $alias = $defn->getAlias){
-	push(@tokens, T_CS($alias)); }
+      my $alias = $defn->getAlias;
+      if(defined $alias){
+	push(@tokens, T_CS($alias)) if $alias ne ''; }
       else {
 	push(@tokens,$defn->getCS); }
       if(my $parameters = $defn->getParameters){
