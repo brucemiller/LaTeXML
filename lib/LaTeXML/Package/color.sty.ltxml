@@ -30,9 +30,13 @@ use LaTeXML::Util::Color;
 # http://tex.loria.fr/graph-pack/grf/grf.pdf
 # http://www.december.com/html/spec/colorsvg.html
 
-DefPrimitive('\definecolor{}{}{}', sub {
-  AssignValue('color_'.ToString($_[1]), ConvertColor(ToString($_[2]),ToString($_[3])));
-  return; });
+#DefPrimitive('\definecolor{}{}{}', sub {
+#  AssignValue('color_'.ToString($_[1]), ConvertColor(ToString($_[2]),ToString(Expand($_[3]))));
+#  return; });
+DefConstructor('\definecolor{}{}{}', "",
+		afterDigest=>sub {
+		  my($name,$model,$color)=map(ToString($_),$_[1]->getArgs(1,2,3));
+		  AssignValue('color_'.$name,ConvertColor($model,$color)); });
 
 sub getColor {
   my($model,$spec) = @_;

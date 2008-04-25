@@ -2266,7 +2266,14 @@ DefMacro('\multiput Pair Pair {}{}',  sub {
     $x += $dx; $y+=$dy; }
   @exp; });
 
-Tag('ltx:picture',   afterOpen=>\&add_TeX);
+Tag('ltx:picture',
+    afterOpen=>sub {
+      my($document,$node,$thing)=@_;
+      if($thing && (ref $thing eq 'LaTeXML::Whatsit') && !$thing->getProperty('_added_tex')){
+	my $tex = UnTeX($thing);
+	$tex =~ s/\n//sg;		# no cr's in pictures?
+	$document->setAttribute($node,tex=>$tex);
+	$thing->setProperty('_added_tex',1); }});
 
 Tag('ltx:g', afterClose=> sub {
       my ($document,$node) = @_;

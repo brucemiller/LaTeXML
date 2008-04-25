@@ -154,7 +154,7 @@ sub process {
 
     # === Run dvips to extract individual postscript files.
     my $mag = int($$self{magnification}*1000);
-    system("cd $workdir ; $DVIPSCMD -x$mag -o imgx $jobname.dvi") == 0 
+    system("cd $workdir ; TEXINPUTS=$texinputs $DVIPSCMD -x$mag -o imgx $jobname.dvi") == 0 
       or return $self->Error("Couldn't execute dvips (see $workdir for clues): $!");
 
     # === Convert each image to appropriate type and put in place.

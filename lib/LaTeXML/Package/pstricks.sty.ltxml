@@ -387,13 +387,20 @@ sub psTerminators {
 ## setting graphis parameters by changing it into a properly nested \psset
 ####################################################################################
 
-#sub afterPSObject  { psDefaultParameters($_[0]); LookupDefinition(T_END)->invoke; }
-sub afterPSObject  { psDefaultParameters($_[1]); $_[0]->egroup; }
+#sub afterPSObject  { psDefaultParameters($_[1]); LookupDefinition(T_END)->invoke; }
+sub afterPSObject  { psDefaultParameters($_[1]); Digest(T_END); }
+#sub afterPSObject  { psDefaultParameters($_[1]); $_[0]->egroup; }
 
 # NOTE: This defines a macro with 2 additional leading args: OptionalMatch:* []
 # AND it defines a constructor with 1 addtional leading arg: OptionalMatch:*
 # THUS, any constructor code needs to increment the arg positions by 1
 # UNLESS the replacement has #!ARROWS, in which case increment by 2  !!!!
+# NOTE: This also sticks a T_BEGIN in front, so that it can locally
+#  set parameters using \psset.  Then, it's obligated to skneak a close in
+# via afterPSObject (which also, mysteriously, sets parameters to default?).
+# 
+# SOMETHING is not really quite right here...
+#   At least, it's a clumsy way to go about an admittedly tricky task.
 sub DefPSConstructor {
   my ($cmd, $args, $replacement, %options) = @_;
   my @after = $options{afterDigest} ? ($options{afterDigest}) : ();
@@ -430,6 +437,7 @@ DefEnvironment('{pspicture} OptionalMatch:* [Float] PSCoord PSCoord',
 		 my($c0, $c1) = ($whatsit->getArg(3), $whatsit->getArg(4));
 		 $whatsit->setProperty(c1=>$c1 ? Pair($c1->getX->substract($c0->getX),
 						      $c1->getY->substract($c0->getY)) : $c0);
+		 Let(T_CS('\par'),T_CS('\relax'));
 		 return; });
 
 ##########################################################################################
@@ -709,10 +717,10 @@ DefConstructor('\rput@start OptionalMatch:* [] BracketedPSAngle PSCoord',
 	       afterDigest=>sub { finishLabelPut($_[1], $_[1]->getArg(3),$_[1]->getArg(4)); },
 	       alias=>'\rput');
 
-DefConstructor('\put@end {}', "#1 </ltx:g>",
+DefConstructor('\put@end {}', "#1</ltx:g>",
 #	       afterDigest=>sub { LookupDefinition(T_END)->invoke; }, alias=>' ');
 #### NEEDED?	       afterDigest=>sub { $_[0]->egroup; }, 
-	       alias=>' ', mode=>'text');
+	       alias=>'', mode=>'text');
 
 DefMacro('\uput OptionalMatch:* OptionalBracketed [] OptionalBracketed ZeroPSCoord', sub {
 	   (##T_BEGIN,
