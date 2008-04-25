@@ -445,9 +445,14 @@ sub openMathText_internal {
     my($nmatched, $newstring, %attr) = &{$$ligature{matcher}}($self,@sibs);
     if($nmatched){
 ##      print STDERR "Matched $nmatched => \"$newstring\"\n";
+      my @boxes = ($self->getNodeBox($node));
       $node->firstChild->setData($newstring);
       for(my $i=0; $i<$nmatched-1; $i++){
-	$node->parentNode->removeChild($node->previousSibling); }
+	my $remove = $node->previousSibling;
+	unshift(@boxes,$self->getNodeBox($remove));
+	$node->parentNode->removeChild($remove); }
+      if(scalar(@boxes) > 1){
+	$self->setNodeBox($node,LaTeXML::MathList->new(@boxes)); }
       foreach my $key (keys %attr){
 	$node->setAttribute($key=>$attr{$key}); }
       last; }}			# Hmm.. last? Or restart matches?
