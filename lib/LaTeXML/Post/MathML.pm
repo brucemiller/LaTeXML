@@ -277,10 +277,13 @@ sub pmml_parenthesize {
   my($item,$open,$close)=@_;
   if(!$open && !$close){
     $item; }
-## Maybe better not open the contained mrow; seems to affect bracket size in Moz.
-##  elsif($item && (ref $item)  && ($item->[0] eq 'mrow')){
-##    my($tag,$attr,@children)=@$item;
-##    ['m:mrow',$attr,($open ? (pmml_mo($open)):()),@children,($close ? (pmml_mo($close)):())]; }
+## Maybe better not open the contained mrow; seems to affect bracket size in Moz.???
+  elsif($item && (ref $item)  && ($item->[0] eq 'm:mrow')){
+    my($tag,$attr,@children)=@$item;
+    ['m:mrow',$attr,
+     ($open ? (pmml_mo($open)):()),
+     @children,
+     ($close ? (pmml_mo($close)):())]; }
   else {
     ['m:mrow',{},
      ($open ? (pmml_mo($open,role=>'OPEN')):()),
@@ -1068,19 +1071,12 @@ sub processNode {
 sub translateNodeLinebreaks {
   my($self,$doc,$xmath,$style)=@_;
   my @trans = $self->pmml_top($xmath,$style);
-  my $m = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
+  my $mml = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
   my $linelength = $$self{linelength} || 80;
   my $breaker = LaTeXML::Util::MathMLLinebreaker->new();
-  my($replacement,$success)=$breaker->fitToWidth($m,$linelength,1);
-  if(!$success){
-    my $p = $doc->findnode('ancestor::*[@xml:id]',$xmath);
-    my $id = $p && $p->getAttribute('xml:id');
-    warn "Couldn't fit math at $id to $linelength"; }
-  else {
-    $m = $replacement; }
 
-  ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},$m]; }
-
+  ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},
+   $breaker->fitToWidth($xmath,$mml,$linelength,1)]; }
 
 #================================================================================
 # Content MathML
