@@ -310,6 +310,7 @@ sub maybeResplitAMSAlign {
 # Append the TeX from the boxes to $node
 sub appendTeXfromBox {
   my($document,$node,@boxes)=@_;
+  @boxes = grep(defined $_, @boxes);
   if($node && @boxes){
     my $tex = $node->getAttribute('tex') || '';
     my $ctex =$node->getAttribute('content-tex') || $tex;
@@ -428,7 +429,8 @@ DefEnvironment('{equationgroup*}[]',
 	 # First, we copy the math, and look for a relation.
 	 my $copy = cloneMath($document,$maths[0]);
 	 my @nodes = $copy->firstChild->childNodes; # nodes inside the XMath
-	 my @boxes = $document->getNodeBox($maths[0])->getBody->unlist;
+#	 my @boxes = $document->getNodeBox($maths[0])->getBody->unlist;
+	 my @boxes = grep(defined $_,map($document->getNodeBox($_), @nodes));
 	 # move the copied nodes into the 1st td until we get a relation.
 	 my (@lhs,@lhs_boxes);
 	 while(@nodes && (($nodes[0]->nodeType != XML_ELEMENT_NODE)
