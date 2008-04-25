@@ -1,0 +1,33 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# | pst-grad.sty                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML                                                     | #
+# |                                                                     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+RequirePackage('pstricks');
+
+###########################################################################
+## Additional key-value pairs
+###########################################################################
+# NOTE: None of these are yet being carried into the XML,
+# and thus not converted usefully to SVG.
+# However, the current status allows them to be propogated to image generation.
+
+# Actually, none of these have to even be declared.
+# Allows fillstyle=gradient.
+# gradbegin=<color>
+# gradend=<color>
+# gradlines=<int>
+# gradmidpoint=<Number>
+# gradangle=<angle>
+
+1;

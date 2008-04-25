@@ -1,0 +1,56 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# | multido.sty                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML                                                     | #
+# |                                                                     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+###########################################################################
+## 
+###########################################################################
+DefMacro('\multido{}{Number}{}',sub {
+  my($gullet,$variables,$repetitions,$actions)=@_;
+  my @vars=();
+  my @expansion=();
+  $gullet->openMouth($variables,1);
+  while(my $var = $gullet->readToken){
+    $var->getCSName =~ /^\\(d|n|i|r)/i;
+    my $type = $1;
+    Error("Wrong format for multido variable: ".ToString($var)) unless $type;
+    $gullet->readKeyword("=")
+      or Error("Missing = in multido variables");
+    my($init,$step);
+    if   ($type eq 'd'){ $init = $gullet->readDimension; }
+    elsif($type eq 'n'){ $init = $gullet->readNumber; }
+    elsif($type eq 'i'){ $init = $gullet->readNumber; }
+    elsif($type eq 'r'){ $init = $gullet->readFloat; }
+    $gullet->readKeyword("+")
+      or Error("Missing + in multido variables");
+    if   ($type eq 'd'){ $step = $gullet->readDimension; }
+    elsif($type eq 'n'){ $step = $gullet->readNumber; }
+    elsif($type eq 'i'){ $step = $gullet->readNumber; }
+    elsif($type eq 'r'){ $step = $gullet->readFloat; }
+    push(@expansion,T_CS('\def'),$var,T_BEGIN,$init->revert,T_END);
+    push(@vars,[$var,$init,$step]);
+    last unless $gullet->readKeyword(",");
+  }
+  $gullet->closeMouth;
+  # Now, accumulate $repetitions copies of $actions
+  # with @vars set appropriately.
+  my $n = $repetitions->valueOf;
+  for(my $i=0; $i<$n; $i++){
+    push(@expansion, $actions->unlist);
+    foreach my $entry (@vars){
+      $$entry[1] = $$entry[1]->add($$entry[2]);
+      push(@expansion,T_CS('\def'),$$entry[0],T_BEGIN,$$entry[1]->revert,T_END); }}
+  @expansion; });
+
+1;
