@@ -34,7 +34,7 @@ DefMacro('\includegraphics OptionalMatch:* []',
 
 DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbatim',
 	       "<ltx:graphics graphic='#3' options='#2?#1(,clip=true)'/>",
-	      alias=>'\@includegraphicx');
+	      alias=>'\includegraphics');
 
 
 #**********************************************************************
