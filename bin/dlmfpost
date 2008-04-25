@@ -599,6 +599,7 @@ sub desiredResourcePathname {
 # Mixin class for managing resources associated with graphical things in numbered figures
 #======================================================================
 package DLMFFigureResourceMap;
+use LaTeXML::Util::Pathname;
 use base qw(DLMFResourceMap);
 
 sub getResourceContainer {
@@ -607,9 +608,25 @@ sub getResourceContainer {
 
 sub desiredResourcePathname {
   my($self,$doc,$node,$source,$type)=@_;
-  $self->containedResourcePathname($doc,$node,
-				   'descendant::ltx:graphics | descendant::ltx:picture',
-				   $type); }
+  if($doc->findnode('//ltx:document')){ # If a regular document.
+    LaTeXML::Post::desiredResourcePathname($self,$doc,$node,$source,$type); }
+  else {
+    $self->containedResourcePathname($doc,$node,
+				     'descendant::ltx:graphics | descendant::ltx:picture',
+				     $type); }}
+
+sub generateResourcePathname {
+  my($self,$doc,$node,$source,$type)=@_;
+  if($doc->findnode('//ltx:document')){ # If a regular document.
+    # For bio photographs, keep the photo_name format!
+    if((($doc->getDocumentElement->getAttribute('xml:id') || '') =~ /^bio./)
+       && ($source=~/photo_/)){
+      my $name = pathname_name($source);
+      pathname_make(name=>$name, type=>$type); }
+    else {
+      LaTeXML::Post::generateResourcePathname($self,$doc,$node,$source,$type); }}
+  else {
+    $self->SUPER::generateResourcePathname($doc,$node,$source,$type); }}
 
 #======================================================================
 # Conversion of Math to Images, 
@@ -745,26 +762,6 @@ sub getTypeProperties {
   my($self,$source,$options)=@_;
   my %props = $self->SUPER::getTypeProperties($source,$options);
   (%props,autocrop=>1); }
-
-sub desiredResourcePathname {
-  my($self,$doc,$node,$source,$type)=@_;
-  if($doc->findnode('//ltx:document')){ # If a regular document.
-    LaTeXML::Post::desiredResourcePathname($self,$doc,$node,$source,$type); }
-  else {
-    $self->SUPER::desiredResourcePathname($doc,$node,$source,$type); }}
-
-sub generateResourcePathname {
-  my($self,$doc,$node,$source,$type)=@_;
-  if($doc->findnode('//ltx:document')){ # If a regular document.
-    # For bio photographs, keep the photo_name format!
-    if((($doc->getDocumentElement->getAttribute('xml:id') || '') =~ /^bio./)
-       && ($source=~/photo_/)){
-      my $name = pathname_name($source);
-      pathname_make(name=>$name, type=>$type); }
-    else {
-      LaTeXML::Post::generateResourcePathname($self,$doc,$node,$source,$type); }}
-  else {
-    $self->SUPER::generateResourcePathname($doc,$node,$source,$type); }}
 
 sub processGraphic {
   my($self,$doc,$node)=@_;
