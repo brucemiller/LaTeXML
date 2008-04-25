@@ -2807,8 +2807,13 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 			     &&  $NOTS{$c=$n2->textContent})){
 			my $m = $n2->getAttribute('meaning');
 			my $n = $n2->getAttribute('name') || $c;
+			my $r = $n2->getAttribute('role');
 			(2,  $NOTS{$c}, 
-			 ($m ? (meaning=>"not-$m"):(name=>"not-$n"))); }});
+###			 ($m ? (meaning=>"not-$m"):(name=>"not-$n"))); }});
+			 ($m ? (meaning=>"not-$m"):()),
+			 ($n ? (name=>"not-$n") :()),
+			 ($r ? (role=>$r):()),
+			); }});
 
 #----------------------------------------------------------------------
 # \joinrel
@@ -3333,7 +3338,7 @@ DefConstructor("\\\$", "\$");
 DefConstructor('\_',   '_');
 
 # Discretionary times; just treat as invisible ?
-DefMath('\*',"\x{2062}", role=>'MULOP'); # INVISIBLE TIMES (or MULTIPLICATION SIGN = 00D7)
+DefMath('\*',"\x{2062}", role=>'MULOP', name=>''); # INVISIBLE TIMES (or MULTIPLICATION SIGN = 00D7)
 
 
 # These 3 should have some `name' assigned ... but what???
