@@ -195,13 +195,6 @@ sub register {
 
   $entry; }
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#  Pathnames stored in the DB, will be portable if made relative to the
-# DB's location.
-sub storablePathname {
-  my($self,$path)=@_;
-  ($$self{dbfile} ? pathname_relative($path,$$self{dbfile}) : $path); }
-
 #********************************************************************************
 # DB Entries
 #********************************************************************************
