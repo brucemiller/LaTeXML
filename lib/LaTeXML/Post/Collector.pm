@@ -48,6 +48,7 @@ sub makeSubCollectionDocuments {
   for(my $i=0; $i<=$#ids; $i++){
     my $subdoc = ($i == 0 ? $doc
 		  : $doc->newDocument([$roottag,{'xml:id'=>$ids[$i][0]}],
+				      parentDocument=>$doc,
 				      destination=>$self->getPageName($doc,$ids[$i][1])));
     push(@docs,$subdoc);
     $subdoc->addNodes($subdoc->findnode('//'.$roottag),

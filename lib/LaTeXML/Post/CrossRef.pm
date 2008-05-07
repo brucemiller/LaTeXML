@@ -57,7 +57,7 @@ sub process {
     my @msgs=();
     foreach my $type (sort keys %LaTeXML::Post::CrossRef::MISSING){
       push(@msgs,$type.": ".join(', ',sort keys %{$LaTeXML::Post::CrossRef::MISSING{$type}}));}
-    $self->Warn("Missing keys in ".$doc->getDestination.":\n  ".join(";\n  ",@msgs)); }
+    $self->Warn($doc,"Missing keys:\n  ".join(";\n  ",@msgs)); }
   $doc; }
 
 sub note_missing {
@@ -75,7 +75,7 @@ sub fill_in_navigation {
 	my $start_id = $startref && $startref->getAttribute('idref');
 	my $h_id = $id;
 	# Generate Downward TOC
-	my $navtoc= $self->navtoc_aux($id, $entry->getValue('location'));
+	my $navtoc= $self->navtoc_aux($id, $entry->getValue('location')||'');
 	# And Upward Context
 	my $p_id;
 	while(($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))){
@@ -243,7 +243,7 @@ sub generateURL {
   my($object,$location);
   if(($object = $$self{db}->lookup("ID:".$id))
      && ($location = $object->getValue('location'))){
-    my $doclocation = $$self{db}->storablePathname($doc->getDestination);
+    my $doclocation = $self->siteRelativePathname($doc->getDestination);
     my $url = pathname_relative('/'.$location,  '/'.pathname_directory($doclocation));
     my $format = $$self{format} || 'xml';
     my $urlstyle = $$self{urlstyle}||'file';

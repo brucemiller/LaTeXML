@@ -63,7 +63,7 @@ sub build_tree {
       my $xml = $doc->getDocument->adoptNode($phrases);
       my @phrases = $doc->findnodes('ltx:indexphrase',$xml);
       if(!scalar(@phrases)){
-	$self->Warn("Missing phrases in indexmark: $key");
+	$self->Warn($doc,"Missing phrases in indexmark: $key");
 	next; }
 
       if($$self{permuted}){

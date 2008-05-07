@@ -125,7 +125,8 @@ sub processPages {
       # Due to the way document building works, we remove & process children pages
       # BEFORE processing this page.
       my @childdocs = $self->processPages($doc,@{$$entry{children}});
-      my $subdoc = $doc->newDocument($page,destination=>$$entry{name},parent_id=>$$entry{upid});
+      my $subdoc = $doc->newDocument($page,destination=>$$entry{name},
+				     parentDocument=>$doc,parent_id=>$$entry{upid});
       $subdoc->addNavigation(start=>$rootid) if $rootid;
       $subdoc->addNavigation(up=>$$entry{upid});
       push(@docs,$subdoc,@childdocs); }
@@ -148,10 +149,10 @@ sub getPageName {
   $name =~ s/^LABEL:// if $name;
   if(!$name){
     if(($attr eq 'labels') && ($name=$page->getAttribute('xml:id'))){
-      $self->Warn($doc->getQName($page)." has no $attr attribute for pathname; using id=$name"); 
+      $self->Warn($doc,$doc->getQName($page)." has no $attr attribute for pathname; using id=$name"); 
       $attr='xml:id'; }
     else {
-      $self->Warn($doc->getQName($page)." has no $attr attribute for pathname");
+      $self->Warn($doc,$doc->getQName($page)." has no $attr attribute for pathname");
       $name="FOO".++$COUNTER; }}
   if($naming =~ /relative$/){
     my $pname = $parent->getAttribute($attr);

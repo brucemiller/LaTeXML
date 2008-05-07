@@ -121,13 +121,13 @@ sub process {
   if(@pending){			# if any images need processing
 ##    my $workdir=pathname_concat($TMP,"LaTeXML$$");
 ##    pathname_mkdir($workdir) or 
-##      return $self->Error("Couldn't create LaTeXImages working dir $workdir: $!");
+##      return $self->Error($doc,"Couldn't create LaTeXImages working dir $workdir: $!");
     my $workdir=tempdir("LaTeXMLXXXXXX", CLEANUP=>0);
     my $preserve_tmpdir = 0;
 
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir=>$workdir,name=>$jobname,type=>'tex');
-    open(TEX,">$texfile") or return $self->Error("Cant write to $texfile: $!");
+    open(TEX,">$texfile") or return $self->Error($doc,"Cant write to $texfile: $!");
     print TEX $self->pre_preamble($doc);
     print TEX "\\makeatletter\n";
     print TEX $self->preamble($doc)."\n";
@@ -147,15 +147,15 @@ sub process {
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
     if($err != 0){
       $preserve_tmpdir = 1;
-      $self->Warn("latex ($command) returned code $err (!= 0) for image generation: $@\n See $workdir/$jobname.log"); }
+      $self->Warn($doc,"latex ($command) returned code $err (!= 0) for image generation: $@\n See $workdir/$jobname.log"); }
     if(! -f "$workdir/$jobname.dvi"){
       $preserve_tmpdir = 1;
-      return $self->Error("LaTeX ($command) somehow failed: See $workdir/$jobname.log"); }
+      return $self->Error($doc,"LaTeX ($command) somehow failed: See $workdir/$jobname.log"); }
 
     # === Run dvips to extract individual postscript files.
     my $mag = int($$self{magnification}*1000);
     system("cd $workdir ; TEXINPUTS=$texinputs $DVIPSCMD -x$mag -o imgx $jobname.dvi") == 0 
-      or return $self->Error("Couldn't execute dvips (see $workdir for clues): $!");
+      or return $self->Error($doc,"Couldn't execute dvips (see $workdir for clues): $!");
 
     # === Convert each image to appropriate type and put in place.
     my ($index,$ndigits)= (0,1+int(log( $doc->cacheLookup((ref $self).':_max_image_')||1)/log(10)));
@@ -168,7 +168,7 @@ sub process {
 	my($w,$h) = $self->convert_image($doc,$src,$dest);
 	$doc->cacheStore($$entry{key},"$reldest;$w;$h"); }
       else {
-	$self->Warn("Missing image $src; See $workdir/$jobname.log"); }}
+	$self->Warn($doc,"Missing image $src; See $workdir/$jobname.log"); }}
     # Cleanup
 ##    (system("rm -rf $workdir")==0) or 
 ##      warn "Couldn't cleanup LaTeXImages workingdirectory $workdir: $!";
@@ -199,7 +199,7 @@ sub find_documentclass_and_packages {
     elsif($$entry{package}){
       push(@packages,[$$entry{package},$$entry{options}||'']); }
   }
-  $self->Error("No document class found") unless $class;
+  $self->Error($doc,"No document class found") unless $class;
   ([$class,$classoptions],@packages); }
 
 #======================================================================

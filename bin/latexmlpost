@@ -27,7 +27,7 @@ my($parallelmath,$mathimages,$mathimagemag)=(undef,undef,1.75);
 my($linelength,$keepXMath)=(undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
 my($split,$splitat,$splitpath,$splitnaming)=(undef,'section',undef,'id');
-my($prescan,$dbfile,$scan,$crossref)=(undef,undef,1,1);
+my($prescan,$dbfile,$scan,$crossref,$sitedir)=(undef,undef,1,1,undef);
 my($index,$permutedindex,$splitindex)=(1,undef,undef);
 my($splitbibliography,@bibliographies)=(undef);
 my @math_formats =();
@@ -78,7 +78,7 @@ GetOptions("verbose+"              =>\$verbosity,
 	   # Options for two phase processing
 	   "prescan"               =>\$prescan,
 	   "dbfile=s"              =>\$dbfile,
-
+	   "sitedirectory=s"       =>\$sitedir,
 	   # Various choices for math processing.
 	   # Note: Could want OM embedded in mml annotation, too.
 	   # In general, could(?) want multiple math reps within <Math>
@@ -182,7 +182,10 @@ Error("Parallel math markup can only be based on MathML")
 binmode(STDERR,":utf8");
 #binmode(STDOUT,":utf8");
 print STDERR "$identity\n" if $verbosity > 0;
-our %OPTIONS = (verbosity=>$verbosity||0);
+our %OPTIONS = (verbosity=>$verbosity||0,
+	       siteDirectory=>(defined $sitedir ? $sitedir
+			       : (defined $dbfile ? pathname_directory($dbfile)
+				  : ".")));
 
 if(defined $dbfile && !-f $dbfile){
   pathname_mkdir(pathname_directory($dbfile)); }
@@ -375,6 +378,7 @@ latexmlpost [options] xmlfile
                          in dbfile
                          (default is complete processing)
  --dbfile=dbfile         specifies file to store crossreferences
+ --sitedirectory=dir     specifies the base directory of the site
  --mathimages            converts math to images
                          (default for html format)
  --nomathimages          disables the above
@@ -605,6 +609,12 @@ is specified.
 Specifies a filename to use for the crossreferencing data when
 using two-pass processing.  This file may reside in the intermediate
 destination directory.
+
+=item C<--sitedirectory=>I<dir>
+
+Specifies the base directory of the overall web site.
+Pathnames in the database are stored in a form relative
+to this directory to make it more portable.
 
 =back
 

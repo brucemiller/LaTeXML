@@ -68,11 +68,12 @@ sub process {
   if(! defined $id){
     $id = "Document";
     if(my $preventry = $$self{db}->lookup("ID:$id")){
-      my $loc = $self->storableLocation($doc);
-      my $prevloc = $preventry->getValue('location');
-      if($loc ne $prevloc){
-	$self->Warn("Using default ID=\"$id\", "
-		    ."but there's an apparent conflict with location $loc and previous $prevloc");}}
+      if(my $dest = $doc->getDestination){
+	my $loc = $self->siteRelativePathname($dest);
+	my $prevloc = $preventry->getValue('location');
+	if($loc ne $prevloc){
+	  $self->Warn($doc,"Using default ID=\"$id\", "
+		      ."but there's an apparent conflict with location $loc and previous $prevloc");}}}
     $root->setAttribute('xml:id'=>$id); }
 
   $self->scan($doc,$root, $$doc{parent_id});
@@ -106,10 +107,6 @@ sub inPageID {
   else {
     $id; }}
 
-sub storableLocation {
-  my($self,$doc)=@_;
-  $$self{db}->storablePathname($doc->getDestination); }
-
 sub noteLabels {
   my($self,$node)=@_;
   if(my $id = $node->getAttribute('xml:id')){
@@ -124,7 +121,8 @@ sub default_handler {
   my $id = $node->getAttribute('xml:id');
   if($id){
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, labels=>$self->noteLabels($node),
-			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id)); }
+			 location=>$self->siteRelativePathname($doc->getDestination),
+			 fragid=>$self->inPageID($doc,$id)); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub section_handler {
@@ -136,7 +134,8 @@ sub section_handler {
       $title = $title->cloneNode(1);
       map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$title)); }
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
-			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
+			 location=>$self->siteRelativePathname($doc->getDestination),
+			 fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
 			 title=>$title, children=>[],
 			 stub=>$node->getAttribute('stub'));
@@ -152,7 +151,8 @@ sub labelled_handler {
   my $id = $node->getAttribute('xml:id');
   if($id){
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
-			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
+			 location=>$self->siteRelativePathname($doc->getDestination),
+			 fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum')); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
@@ -195,7 +195,8 @@ sub bibitem_handler {
     if(my $key = $node->getAttribute('key')){
       $$self{db}->register("BIBLABEL:$key",id=>$id); }
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,
-			 location=>$self->storableLocation($doc), fragid=>$self->inPageID($doc,$id),
+			 location=>$self->siteRelativePathname($doc->getDestination),
+			 fragid=>$self->inPageID($doc,$id),
 			 names =>$doc->findnode('ltx:bib-citekeys/ltx:cite-names',$node),
 			 year  =>$doc->findnode('ltx:bib-citekeys/ltx:cite-year',$node),
 			 refnum=>$doc->findnode('ltx:tag',$node),

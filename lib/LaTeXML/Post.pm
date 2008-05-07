@@ -21,7 +21,8 @@ sub new {
   my $self = bless {%options}, $class; 
   $$self{verbosity} = 0 unless defined $$self{verbosity};
   $$self{resourceDirectory} = $options{resourceDirectory};
-  $$self{resourcePrefix} = $options{resourcePrefix};
+  $$self{resourcePrefix}    = $options{resourcePrefix};
+  $$self{siteDirectory}     = $options{siteDirectory};
   $self; }
 
 sub getNamespace            { $_[0]->{namespace} || "http://dlmf.nist.gov/LaTeXML"; }
@@ -45,20 +46,32 @@ sub ProcessChain {
 
 #======================================================================
 sub Error {
-  my($self,$msg)=@_;
-  die "".(ref $self)." Error: $msg"; }
+  my($self,$doc,$msg)=@_;
+  my $dest= $doc && $doc->getDestination;
+  die "".(ref $self).($dest ? "[".$dest."]" : '')." Error: $msg"; }
 
 sub Warn {
-  my($self,$msg)=@_;
-  print STDERR "".(ref $self)." Warning: $msg\n" if $$self{verbosity}>-1; }
+  my($self,$doc,$msg)=@_;
+  my $dest= $doc && $doc->getDestination;
+  print STDERR "".(ref $self).($dest ? "[".$dest."]" : '').": Warning: $msg\n" if $$self{verbosity}>-1; }
 
 sub Progress {
   my($self,$doc,$msg)=@_;
-  print STDERR "".(ref $self)."[".$doc->getDestination."]: $msg\n" if $$self{verbosity}>0; }
+  my $dest= $doc && $doc->getDestination;
+  print STDERR "".(ref $self).($dest ? "[".$dest."]" : '').": $msg\n" if $$self{verbosity}>0; }
 
 sub ProgressDetailed {
   my($self,$doc,$msg)=@_;
-  print STDERR "".(ref $self)."[".$doc->getDestination."]: $msg\n" if $$self{verbosity}>1; }
+  my $dest= $doc && $doc->getDestination;
+  print STDERR "".(ref $self).($dest ? "[".$dest."]" : '').": $msg\n" if $$self{verbosity}>1; }
+
+#======================================================================
+# Return a pathname relative to the site base directory
+sub siteRelativePathname {
+  my($self,$pathname)=@_;
+  (defined $pathname ? pathname_relative($pathname, $$self{siteDirectory}) : undef); }
+
+sub getSiteDirectory { $_[0]->{siteDirectory}; }
 
 #======================================================================
 # Some postprocessors will want to create a bunch of "resource"s,
@@ -135,6 +148,7 @@ sub Error {
 
 sub newFromFile {
   my($class,$source,%options)=@_;
+  $options{source} = $source;
   if(!$options{sourceDirectory}){
     my($vol,$dir,$name) = File::Spec->splitpath($source);
     $options{sourceDirectory} = $dir || '.'; }
@@ -178,10 +192,20 @@ sub createParser {
 
 sub getDocument             { $_[0]->{document}; }
 sub getDocumentElement      { $_[0]->{document}->documentElement; }
+sub getSource               { $_[0]->{source}; }
 sub getSourceDirectory      { $_[0]->{sourceDirectory} || '.'; }
 sub getSearchPaths          { @{$_[0]->{searchpaths}}; }
 sub getDestination          { $_[0]->{destination}; }
 sub getDestinationDirectory { $_[0]->{destinationDirectory}; }
+
+sub getParentDocument { $_[0]->{parentDocument}; }
+sub getAncestorDocument { 
+  my($self)=@_;
+  my($doc,$d) = $self;
+  while($d = $$doc{parentDocument}){
+    $doc = $d; }
+  $doc; }
+
 sub toString                {
   my($self)=@_;
   if($XML::LibXML::VERSION < 1.63){

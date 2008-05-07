@@ -25,17 +25,17 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{css} = $options{css};
   my $stylesheet = $options{stylesheet};
-  $self->Error("No stylesheet specified!") unless $stylesheet;
+  $self->Error(undef,"No stylesheet specified!") unless $stylesheet;
   if(!ref $stylesheet){
     my $pathname = pathname_find($stylesheet,
 				 types=>['xsl'],installation_subdir=>'style');
-    $self->Error("No stylesheet \"$stylesheet\" found!")
+    $self->Error(undef,"No stylesheet \"$stylesheet\" found!")
       unless $pathname && -f $pathname;
     $stylesheet = XML::LibXML->new()->parse_file($pathname); }
   if(ref $stylesheet eq 'XML::LibXML::Document'){
     $stylesheet = XML::LibXSLT->new()->parse_stylesheet($stylesheet); }
   if((!ref $stylesheet) || !($stylesheet->can('transform'))){
-    $self->Error("Stylesheet \"$stylesheet\" is not a usable stylesheet!"); }
+    $self->Error(undef,"Stylesheet \"$stylesheet\" is not a usable stylesheet!"); }
   $$self{stylesheet}=$stylesheet;
   my %params = ();
   %params = %{$options{parameters}} if $options{parameters};
