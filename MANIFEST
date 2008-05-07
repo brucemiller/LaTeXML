@@ -12,7 +12,6 @@ manual.pdf
 #==================================================
 # Executables
 #==================================================
-bin/dlmfpost
 bin/latexml
 bin/latexmlfind
 bin/latexmlpost
@@ -76,7 +75,6 @@ lib/LaTeXML/Util/Transform.pm
 # Document Model
 #==================================================
 lib/LaTeXML/schema/catalog
-lib/LaTeXML/schema/dtd/DLMF.dtd
 lib/LaTeXML/schema/dtd/LaTeXML.dtd
 lib/LaTeXML/schema/RelaxNG/LaTeXML.rnc
 lib/LaTeXML/schema/RelaxNG/LaTeXML.rng
@@ -98,8 +96,6 @@ lib/LaTeXML/schema/RelaxNG/LaTeXML-structure.rnc
 lib/LaTeXML/schema/RelaxNG/LaTeXML-structure.rng
 lib/LaTeXML/schema/RelaxNG/LaTeXML-tabular.rnc
 lib/LaTeXML/schema/RelaxNG/LaTeXML-tabular.rng
-lib/LaTeXML/schema/RelaxNG/DLMF.rnc
-lib/LaTeXML/schema/RelaxNG/DLMF.rng
 #==================================================
 # XSLT & CSS Support
 #==================================================
@@ -161,11 +157,6 @@ lib/LaTeXML/Package/comment.sty.ltxml
 lib/LaTeXML/Package/concmath.sty.ltxml
 lib/LaTeXML/Package/courier.sty.ltxml
 lib/LaTeXML/Package/dcolumn.sty.ltxml
-lib/LaTeXML/Package/DLMFbib.cls.ltxml
-lib/LaTeXML/Package/DLMF.cls.ltxml
-lib/LaTeXML/Package/DLMFmath.sty.ltxml
-lib/LaTeXML/Package/DLMFpage.cls.ltxml
-lib/LaTeXML/Package/DLMFsupport.sty.ltxml
 lib/LaTeXML/Package/epsfig.sty.ltxml
 lib/LaTeXML/Package/epsf.sty.ltxml
 lib/LaTeXML/Package/eucal.sty.ltxml
