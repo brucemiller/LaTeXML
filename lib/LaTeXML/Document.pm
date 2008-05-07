@@ -451,8 +451,11 @@ sub openMathText_internal {
 	my $remove = $node->previousSibling;
 	unshift(@boxes,$self->getNodeBox($remove));
 	$node->parentNode->removeChild($remove); }
-      if(scalar(@boxes) > 1){
-	$self->setNodeBox($node,LaTeXML::MathList->new(@boxes)); }
+## This fragment replaces the node's box by the composite boxes it replaces
+## HOWEVER, this gets things out of sync because parent lists of boxes still
+## have the old ones.  Unless we could recursively replace all of them, we'd better skip it(??)
+##    if(scalar(@boxes) > 1){
+##	$self->setNodeBox($node,LaTeXML::MathList->new(@boxes)); }
       foreach my $key (keys %attr){
 	$node->setAttribute($key=>$attr{$key}); }
       last; }}			# Hmm.. last? Or restart matches?
