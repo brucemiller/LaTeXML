@@ -75,12 +75,14 @@ sub pathname_split {
   $type = $1 if $name =~ s/\.([^\.]+)$//;
   ($dir,$name,$type); }
 
+use Carp;
 sub pathname_canonical {
   my($pathname)=@_;
+confess "Undefined pathname!" unless defined $pathname;
 #  File::Spec->canonpath($pathname); }
   $pathname =~ s|//+|/|g;
   $pathname =~ s|/\./|/|g;
-  while($pathname =~ s|/[^/]+/\.\./|/|){}
+  while($pathname =~ s/\/[^\/]+\/\.\.(\/|$)/$1/){}
   $pathname =~ s|^\./||;
   $pathname; }
 
