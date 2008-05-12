@@ -212,6 +212,8 @@ sub pre_preamble {
   my ($class,$options) = @{shift(@classdata)};
   $options = "[$options]" if $options && ($options !~ /^\[.*\]$/);
   my $packages='';
+  my $dest = $doc->getDestination;
+  my $description = ($dest ? "% Destination $dest" : "");
   foreach my $pkgdata (@classdata){
     my($package,$options)=@$pkgdata;
     $options = "[$options]" if $options && ($options !~ /^\[.*\]$/);
@@ -222,6 +224,7 @@ return <<EOPreamble;
 \\batchmode
 \\def\\inlatexml{true}
 \\documentclass$options\{$class\}
+$description
 $packages
 \\setlength{\\hoffset}{0pt}\\setlength{\\voffset}{0pt}
 \\setlength{\\textwidth}{${w}pt}
