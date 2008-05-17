@@ -130,10 +130,10 @@ sub new {
 
   if(!$data{searchpaths}){
     my @paths = ();
-    push(@paths,pathname_absolute($data{sourceDirectory})) if $data{sourceDirectory};
     foreach my $pi (@{$data{processingInstructions}}){
       if($pi =~ /^\s*searchpaths\s*=\s*([\"\'])(.*?)\1\s*$/){
 	push(@paths,split(',',$2)); }}
+    push(@paths,pathname_absolute($data{sourceDirectory})) if $data{sourceDirectory};
     $data{searchpaths} = [@paths]; }
 
   my $self = bless {%data}, $class; 
