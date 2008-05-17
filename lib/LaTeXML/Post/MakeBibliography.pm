@@ -62,59 +62,89 @@ sub process {
     $doc; }}
 
 # ================================================================================
+# Get all cited bibentries from the requested bibliography files.
 # Sort (cited) bibentries on author+year+title, [NOT on the key!!!]
 # and then check whether author+year is unique!!!
 
 sub getBibEntries {
   my($self,$doc)=@_;
 
-  my %citations = map( (/^BIBLABEL:(.*)$/ ? ($1=>1) : ()),$$self{db}->getKeys);
-  my $entries = {};
-  my($ntotal,$ncited)=(0,0);
+  # First, scan the bib files for all ltx:bibentry's, (hash key is bibkey)
+  # Also, record the citations from each bibentry to others.
+  my %entries=();
   foreach my $bibfile (@{$$self{bibliographies}}){
     my $bibdoc = $doc->newFromFile($bibfile);
     foreach my $bibentry ($bibdoc->findnodes('//ltx:bibentry')){
-      $ntotal++;
       my $bibkey = $bibentry->getAttribute('key');
-      if($citations{$bibkey}){
-	delete $citations{$bibkey};
-	my $dbentry = $$self{db}->lookup("BIBLABEL:$bibkey");
-	if(my $referrers = $dbentry->getValue('referrers')){
-	  $ncited++;
-	  my $names='';
-	  if(my $n = $doc->findnode('ltx:bib-key',$bibentry)){
-	    $names = $n->textContent; }
-	  elsif(my @ns = $doc->findnodes('ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname',
-					 $bibentry)){
-	    if(@ns > 2){    $names = $ns[0]->textContent .' et.al'; }
-	    elsif(@ns > 1){ $names = $ns[0]->textContent .' and '. $ns[1]->textContent; }
-	    else          { $names = $ns[0]->textContent; }}
-	  elsif(my $t = $doc->findnode('ltx:bib-title',$bibentry)){
-	    $names = $t->textContent; }
-	  my $date = $doc->findnode('ltx:bib-date | ltx:bib-type',$bibentry);
-	  my $title =$doc->findnode('ltx:bib-title',$bibentry);
-	  $date = ($date ? $date->textContent : '');
-	  $title= ($title ?$title->textContent : '');
-	  
-	  my $sortkey = lc(join('.',$names,$date,$title,$bibkey));
-	  $$entries{$sortkey} = {bibentry=>$bibentry, ay=>"$names.$date",
-				 initial=>$doc->initial($names,1), 
-				 referrers=> ($referrers ? [sort keys %$referrers]:[])};
-	}}}}
-  $self->Progress($doc,"$ntotal bibentries, $ncited cited");
-  # Remaining citations were never found!
-  $self->Progress($doc,"Missing bib keys ".join(', ',keys %citations)) if keys %citations;
+      $entries{$bibkey}{bibkey}   = $bibkey; 
+      $entries{$bibkey}{bibentry} = $bibentry;
+      $entries{$bibkey}{citations}= [map(split(',',$_->value),
+					 $bibdoc->findnodes('.//@bibrefs',$bibentry))];
+    }}
+  # Now, collect all bibkeys that were cited in other documents (NOT the bibliography)
+  # And note any referrers to them (also only those outside the bib)
+  my @queue = ();
+  foreach my $dbkey ($$self{db}->getKeys){
+    if($dbkey =~ /^BIBLABEL:(.*)$/){
+      my $bibkey = $1;
+      if(my $referrers = $$self{db}->lookup($dbkey)->getValue('referrers')){
+	my $e;
+	foreach my $refr (keys %$referrers){
+	  if(($e=$$self{db}->lookup("ID:$refr")) && (($e->getValue('type')||'') ne 'ltx:bibitem')){
+	    $entries{$bibkey}{referrers}{$refr} = 1; }}
+	push(@queue,$bibkey); }}}
+  # For each bibkey in the queue, complete and include the entry
+  # And add any keys cited from within each include entry
+  my %seen_keys = ();
+  my %missing_keys = ();
+  my $included = {};		# included entries (hash key is sortkey)
+  while(my $bibkey = shift(@queue)){
+    next if $seen_keys{$bibkey}; # Done already.
+    $seen_keys{$bibkey}=1;
+    if(my $bibentry = $entries{$bibkey}{bibentry}){
+      my $entry = $entries{$bibkey};
+      # Extract names, year and title from bibentry.
+      my $names='';
+      if(my $n = $doc->findnode('ltx:bib-key',$bibentry)){
+	$names = $n->textContent; }
+      elsif(my @ns = $doc->findnodes('ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname',
+				     $bibentry)){
+	if(@ns > 2){    $names = $ns[0]->textContent .' et.al'; }
+	elsif(@ns > 1){ $names = $ns[0]->textContent .' and '. $ns[1]->textContent; }
+	else          { $names = $ns[0]->textContent; }}
+      elsif(my $t = $doc->findnode('ltx:bib-title',$bibentry)){
+	$names = $t->textContent; }
+      my $date = $doc->findnode('ltx:bib-date | ltx:bib-type',$bibentry);
+      my $title =$doc->findnode('ltx:bib-title',$bibentry);
+      $date  = ($date  ? $date->textContent  : '');
+      $title = ($title ? $title->textContent : '');
+      $$entry{ay}      = "$names.$date";
+      $$entry{initial} = $doc->initial($names,1);
+      # Include this entry keyed using a sortkey.
+      $$included{lc(join('.',$names,$date,$title,$bibkey))} = $entry;
+      # And, since we're including this entry, we'll need to include any that it cites!
+      push(@queue,@{$$entry{citations}}) if $$entry{citations}; }
+    else {
+      $missing_keys{$bibkey}=1; }}
+  # Now that we know which entries will be included, note their citations as bibreferrers.
+  foreach my $sortkey (keys %$included){
+    my $entry  = $$included{$sortkey};
+    my $bibkey = $$entry{bibkey};
+    map( $entries{$_}{bibreferrers}{$bibkey}=1, @{$$entry{citations}}); }
 
-  # Sort the bibentries according to author+year+title+bibkey
+  $self->Progress($doc,(scalar keys %entries)." bibentries, ".(scalar keys %$included)." cited");
+  $self->Progress($doc,"Missing bibkeys ".join(', ',sort keys %missing_keys)) if keys %missing_keys;
+
+  # Finally, sort the bibentries according to author+year+title+bibkey
   # If any neighboring entries have same author+year, set a suffix: a,b,...
-  my @keys = sort keys %$entries;
-  while(my $key = shift(@keys)){
+  my @sortkeys = sort keys %$included;
+  while(my $sortkey = shift(@sortkeys)){
     my $i=0;
-    while(@keys && ($$entries{$key}{ay} eq $$entries{$keys[0]}{ay})){
-      $$entries{$key}{suffix}='a';
-      $$entries{$keys[0]}{suffix} = chr(ord('a')+(++$i));
-      shift(@keys); }}
-  $entries; }
+    while(@sortkeys && ($$included{$sortkey}{ay} eq $$included{$sortkeys[0]}{ay})){
+      $$included{$sortkey}{suffix}='a';
+      $$included{$sortkeys[0]}{suffix} = chr(ord('a')+(++$i));
+      shift(@sortkeys); }}
+  $included; }
 
 # ================================================================================
 # Convert hash of bibentry(s) into biblist of bibitem(s)
@@ -158,8 +188,11 @@ sub formatBibEntry {
       push(@x,$post) if $post; }
     push(@blocks,[$blockname,{},@x]) if @x;
   }
-  push(@blocks,['ltx:bibblock',{},"Cited by: ",
-		$doc->conjoin(', ',map(['ltx:ref',{idref=>$_}], @{$$entry{referrers}}))]);
+  # Add a Cited by block.
+  my @citedby=map(['ltx:ref',{idref=>$_}], sort keys %{$$entry{referrers}});
+  push(@citedby,['ltx:bibref',{bibrefs=>join(',',sort keys %{$$entry{bibreferrers}})}])
+    if $$entry{bibreferrers};
+  push(@blocks,['ltx:bibblock',{},"Cited by: ",$doc->conjoin(', ',@citedby)]);
 
   ['ltx:bibitem',{'xml:id'=>$id, key=>$key, type=>$type},@blocks]; }
 
@@ -229,7 +262,7 @@ sub do_pages { (" pp.\N{NO-BREAK SPACE}",@_); } # Non breaking space
 
 our $LINKS;
 BEGIN{
-    $LINKS = "ltx:bib-links | ltx:bib-review | ltx:bib-identifier | ltx:bib-url"
+    $LINKS = "ltx:bib-links | ltx:bib-review | ltx:bib-identifier | ltx:bib-url";
 }
 
 sub do_links {

@@ -210,7 +210,10 @@ sub bibentry_handler {
   if($id){
     if(my $key = $node->getAttribute('key')){
       $$self{db}->register("BIBLABEL:$key",id=>$id); }}
-  $self->scanChildren($doc,$node,$id || $parent_id); }
+## No, let's not scan the content of the bibentry
+## until it gets formatted and re-scanned by MakeBibliography.
+##  $self->scanChildren($doc,$node,$id || $parent_id); 
+}
 
 # Do nothing (particularly, DO NOT note ids/idrefs!)
 # Actually, what I want to do is avoid recursion!!!
