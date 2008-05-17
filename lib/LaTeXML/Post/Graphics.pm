@@ -70,7 +70,7 @@ sub new {
 sub process {
   my($self,$doc)=@_;
   local $LaTeXML::Post::Graphics::SEARCHPATHS
-    = [map(pathname_canonical($_), $doc->getSearchPaths, $self->findGraphicsPaths($doc))];
+    = [map(pathname_canonical($_),$self->findGraphicsPaths($doc), $doc->getSearchPaths)];
   $self->ProgressDetailed($doc,"Using graphicspaths: "
 			  .join(', ',@$LaTeXML::Post::Graphics::SEARCHPATHS));
 
@@ -169,7 +169,8 @@ sub transformGraphic {
     my ($cached,$width,$height)=($1,$2,$3);
     if((!defined $reldest) || ($cached eq $reldest)){
       my $dest =  pathname_make(dir=>$doc->getDestinationDirectory,name=>$cached);
-      if(-f $dest && (-M $source >= -M $dest)){
+#      if(-f $dest && (-M $source >= -M $dest)){
+      if(pathname_timestamp($source) < pathname_timestamp($dest)){
 	$self->ProgressDetailed($doc,">> Reuse $cached @ $width x $height");
 	return ($cached,$width,$height); }}}
   $reldest = $self->generateResourcePathname($doc,$node,$source,$type) unless $reldest;
