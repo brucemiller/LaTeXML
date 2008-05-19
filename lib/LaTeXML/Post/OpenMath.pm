@@ -25,7 +25,7 @@
 # ================================================================================
 package LaTeXML::Post::OpenMath;
 use strict;
-use LaTeXML::Util::LibXML;
+use LaTeXML::Common::XML;
 use base qw(LaTeXML::Post);
 
 our $omURI = "http://www.openmath.org/OpenMath";

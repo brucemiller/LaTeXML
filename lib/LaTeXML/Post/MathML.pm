@@ -28,8 +28,7 @@
 
 package LaTeXML::Post::MathML;
 use strict;
-use LaTeXML::Util::LibXML;
-use XML::LibXML;
+use LaTeXML::Common::XML;
 use base qw(LaTeXML::Post);
 
 our $mmlURI = "http://www.w3.org/1998/Math/MathML";

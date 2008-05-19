@@ -13,7 +13,7 @@
 package LaTeXML::Post::Split;
 use strict;
 use LaTeXML::Util::Pathname;
-use XML::LibXML;
+use LaTeXML::Common::XML;
 use base qw(LaTeXML::Post);
 
 sub new {

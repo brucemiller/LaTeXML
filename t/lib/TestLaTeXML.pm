@@ -66,7 +66,7 @@ sub is_xmlcontent {
   if(!defined $xmldom){
     do_fail($name,"The XML DOM was undefined for $name"); }
   else {
-    eval { $domstring = $latexml->DOMtoString($xmldom); };
+    eval { $domstring = $xmldom->toString(1); };
     return do_fail($name,"Couldn't convert dom to string: ".@!) unless $domstring;
     { local $Test::Builder::Level =  $Test::Builder::Level+1;
       is_filecontent([split('\n',$domstring)],$path,$name); }}}

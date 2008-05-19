@@ -12,13 +12,10 @@
 
 package LaTeXML::Model;
 use strict;
-use XML::LibXML::Common qw(:libxml);
-use XML::LibXML::XPathContext;
 use LaTeXML::Global;
 use LaTeXML::Font;
 use LaTeXML::Rewrite;
-#use LaTeXML::Model::DTD;
-#use LaTeXML::Model::RelaxNG;
+use LaTeXML::Common::XML;
 use base qw(LaTeXML::Object);
 
 #**********************************************************************
@@ -26,7 +23,7 @@ our($STD_PUBLIC_ID,$STD_SYSTEM_ID)=("-//NIST LaTeXML//LaTeXML article",'LaTeXML.
 our $LTX_NAMESPACE = "http://dlmf.nist.gov/LaTeXML";
 sub new {
   my($class,%options)=@_;
-  my $self = bless {xpath=> XML::LibXML::XPathContext->new(),
+  my $self = bless {xpath=> LaTeXML::Common::XML::XPath->new(),
 		    code_namespace_prefixes=>{}, code_namespaces=>{}, 
 		    doctype_namespaces=>{},
 		    rewrites=>[], ligatures=>[], mathligatures=>[],
@@ -85,7 +82,7 @@ sub registerNamespace {
   if($namespace){
     $$self{code_namespace_prefixes}{$namespace}=$codeprefix;
     $$self{code_namespaces}{$codeprefix}=$namespace;
-    $$self{xpath}->registerNs($codeprefix,$namespace); }
+    $$self{xpath}->registerNS($codeprefix,$namespace); }
   else {
     my $prev = $$self{code_namespaces}{$codeprefix};
     delete $$self{code_namespace_prefixes}{$prev} if $prev;

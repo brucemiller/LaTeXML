@@ -173,12 +173,6 @@ sub writeDOM {
   $dom->toFile("$name.xml",1);
   1; }
 
-sub DOMtoString {
-  my($self,$dom)=@_;
-  if($XML::LibXML::VERSION < 1.63){
-    Encode::encode("utf-8",$dom->toString(1)); }
-  else {
-    $dom->toString(1); }}
 #**********************************************************************
 # Should post processing be managed from here too?
 # Problem: with current DOM setup, I pretty much have to write the
@@ -243,10 +237,6 @@ and returns the L<XML::LibXML::Document>.
 =item C<< $latexml->writeDOM($doc,$name); >>
 
 Writes the XML document to $name.xml. 
-
-=item C<< $string = $latexml->DOMtoString($doc); >>
-
-Converts the XML document to a string (of utf8 bytes).
 
 =item C<< $box = $latexml->digestFile($file); >>
 

@@ -13,7 +13,6 @@
 package LaTeXML::Document;
 use strict;
 use LaTeXML::Global;
-use XML::LibXML;
 use Unicode::Normalize;
 use base qw(LaTeXML::Object);
 

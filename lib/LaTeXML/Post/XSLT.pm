@@ -13,8 +13,8 @@
 package LaTeXML::Post::XSLT;
 use strict;
 use LaTeXML::Util::Pathname;
-use XML::LibXML;
-use XML::LibXSLT;
+use LaTeXML::Common::XML;
+###use XML::LibXSLT;
 use base qw(LaTeXML::Post);
 
 # Useful Options:
@@ -31,9 +31,8 @@ sub new {
 				 types=>['xsl'],installation_subdir=>'style');
     $self->Error(undef,"No stylesheet \"$stylesheet\" found!")
       unless $pathname && -f $pathname;
-    $stylesheet = XML::LibXML->new()->parse_file($pathname); }
-  if(ref $stylesheet eq 'XML::LibXML::Document'){
-    $stylesheet = XML::LibXSLT->new()->parse_stylesheet($stylesheet); }
+    $stylesheet = $pathname; }
+  $stylesheet = LaTeXML::Common::XML::XSLT->new($stylesheet);
   if((!ref $stylesheet) || !($stylesheet->can('transform'))){
     $self->Error(undef,"Stylesheet \"$stylesheet\" is not a usable stylesheet!"); }
   $$self{stylesheet}=$stylesheet;

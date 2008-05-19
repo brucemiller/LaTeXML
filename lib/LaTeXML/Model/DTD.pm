@@ -13,8 +13,6 @@
 package LaTeXML::Model::DTD;
 use strict;
 use LaTeXML::Util::Pathname;
-use XML::LibXML;
-use XML::LibXML::Common qw(:libxml);
 use LaTeXML::Global;
 use base qw(LaTeXML::Model::Schema);
 

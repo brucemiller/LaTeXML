@@ -14,7 +14,6 @@
 package LaTeXML::Rewrite;
 use strict;
 use LaTeXML::Global;
-use XML::LibXML;
 
 sub new {
   my($class,$mode,@specs)=@_;

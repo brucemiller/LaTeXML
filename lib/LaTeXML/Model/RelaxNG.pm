@@ -13,12 +13,11 @@
 package LaTeXML::Model::RelaxNG;
 use strict;
 use LaTeXML::Util::Pathname;
-use XML::LibXML;
-use XML::LibXML::Common;
+use LaTeXML::Common::XML;
 use LaTeXML::Global;
 use base qw(LaTeXML::Model::Schema);
 
-our $XMLPARSER = XML::LibXML->new();
+our $XMLPARSER = LaTeXML::Common::XML::Parser->new();
 
 #  $schema->documentModules;
 
@@ -42,10 +41,6 @@ sub new {
 
 sub addSchemaDeclaration {
   my($self,$document,$tag)=@_;
-  # NOTE: TEMPORARY for running make test!
-  # [since all the test xml files have the declaration in]
-##  my($pid,$sid)=("-//NIST LaTeXML//LaTeXML article",'LaTeXML.dtd');
-##  $document->getDocument->createInternalSubset($tag,$pid,$sid); 
   $document->insertPI('latexml',RelaxNGSchema=>$$self{name});
 }
 
@@ -182,7 +177,8 @@ sub scanExternal {
     #  Hopefully, just a file, not a URL?
     local @LaTeXML::Model::RelaxNG::PATHS
       = (pathname_directory($path),@LaTeXML::Model::RelaxNG::PATHS);
-    my $node = $XMLPARSER->parse_file($path)->documentElement;
+###    my $node = $XMLPARSER->parse_file($path)->documentElement;
+    my $node = $XMLPARSER->parseFile($path)->documentElement;
     (['module',$mod,$self->scanPattern($node,$inherit_ns)]); }
   else {
     Error("Couldn't find RelaxNG schema $name"); 
@@ -289,7 +285,7 @@ sub scanGrammarContent {
 	local @LaTeXML::Model::RelaxNG::PATHS
 	  = (pathname_directory($path),@LaTeXML::Model::RelaxNG::PATHS);
 	#  Hopefully, just a file, not a URL?
-	my $doc = $XMLPARSER->parse_file($path)->documentElement;
+	my $doc = $XMLPARSER->parseFile($path)->documentElement;
 	my @patterns;
 	# Ignore the grammar level, if any, since we do NOT establish a binding with include
 	if(getRelaxOp($doc) eq 'rng:grammar'){

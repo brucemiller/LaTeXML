@@ -14,7 +14,7 @@ use strict;
 use Exporter;
 use LaTeXML::Global;
 use LaTeXML::Post;
-use LaTeXML::Util::LibXML;
+use LaTeXML::Common::XML;
 use LaTeXML::Util::Transform;
 use LaTeXML::Util::Geometry;
 use base qw(LaTeXML::Post);

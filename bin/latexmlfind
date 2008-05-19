@@ -4,8 +4,7 @@ use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
-use XML::LibXML;
-use XML::LibXML::XPathContext;
+use LaTeXML::Common::XML;
 use Text::Wrap;
 
 #**********************************************************************
@@ -38,9 +37,8 @@ my $source = $ARGV[0];
 print STDERR "$identity\n" unless $verbosity < 0;
 binmode(STDOUT,":utf8");	# Make sure output can handle UTF8
 
-my $DOC = XML::LibXML->new->parse_file($source);
-my $XPATH = XML::LibXML::XPathContext->new;
-$XPATH->registerNs(ltxml=>"http://dlmf.nist.gov/LaTeXML");
+my $DOC = LaTeXML::Common::XML::Parser->parseFile($source);
+my $XPATH = LaTeXML::Common::XML::XPath->new(ltxml=>"http://dlmf.nist.gov/LaTeXML");
 $XPATH->registerFunction('match-font',\&LaTeXML::Font::match_font);
 
 # Objects being labelled sections, equations, etc.

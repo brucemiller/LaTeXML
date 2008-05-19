@@ -11,7 +11,6 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Post::PurgeXMath;
 use strict;
-use LaTeXML::Util::LibXML;
 use base qw(LaTeXML::Post);
 
 # ================================================================================

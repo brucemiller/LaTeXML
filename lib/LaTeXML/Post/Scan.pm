@@ -12,7 +12,7 @@
 package LaTeXML::Post::Scan;
 use strict;
 use LaTeXML::Util::Pathname;
-use XML::LibXML;
+use LaTeXML::Common::XML;
 use base qw(LaTeXML::Post);
 
 # NOTE: This module is one that probably needs a lot of customizability.

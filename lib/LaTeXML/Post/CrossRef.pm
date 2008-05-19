@@ -13,7 +13,7 @@
 package LaTeXML::Post::CrossRef;
 use strict;
 use LaTeXML::Util::Pathname;
-use XML::LibXML;
+use LaTeXML::Common::XML;
 use charnames qw(:full);
 use base qw(LaTeXML::Post);
 

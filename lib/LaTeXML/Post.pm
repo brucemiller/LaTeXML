@@ -98,15 +98,13 @@ sub generateResourcePathname {
 #**********************************************************************
 package LaTeXML::Post::Document;
 use strict;
-use XML::LibXML;
-use XML::LibXML::XPathContext;
+use LaTeXML::Common::XML;
 use LaTeXML::Util::Pathname;
 use DB_File;
 use Unicode::Normalize;
 
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
-our $XPATH = XML::LibXML::XPathContext->new();
-$XPATH->registerNs(ltx=>$NSURI);
+our $XPATH = LaTeXML::Common::XML::XPath->new(ltx=>$NSURI);
 
 sub new {
   my($class,$xmldoc,%options)=@_;
@@ -152,14 +150,14 @@ sub newFromFile {
   if(!$options{sourceDirectory}){
     my($vol,$dir,$name) = File::Spec->splitpath($source);
     $options{sourceDirectory} = $dir || '.'; }
-  my $doc = $class->new(createParser(%options)->parse_file($source),%options); 
+  my $doc = $class->new(LaTeXML::Common::XML::Parser->new()->parseFile($source),%options);
   $doc->validate if $$doc{validate};
   $doc; }
 
 sub newFromString {
   my($class,$string,%options)=@_;
   $options{sourceDirectory} = '.' unless $options{sourceDirectory};
-  my $doc = $class->new(createParser(%options)->parse_string($string),%options);
+  my $doc = $class->new(LaTeXML::Common::XML::Parser->new()->parseString($string),%options);
   $doc->validate if $$doc{validate};
   $doc; }
 
@@ -168,27 +166,9 @@ sub newFromSTDIN {
   my $string;
   { local $/ = undef; $string = <>; }
   $options{sourceDirectory} = '.' unless $options{sourceDirectory};
-  my $doc = $class->new(createParser(%options)->parse_string($string),%options);
+  my $doc = $class->new(LaTeXML::Common::XML::Parser()->parseString($string),%options);
   $doc->validate if $$doc{validate};
   $doc; }
-
-sub createParser {
-  my(%options)=@_;
-  # Read in the XML, unless it already is a Doc.
-  my $XMLParser = XML::LibXML->new();
-##  if($options{validate}){ # First, load the LaTeXML catalog in case it's needed...
-##    map(XML::LibXML->load_catalog($_),
-##	pathname_find('catalog',installation_subdir=>'dtd'));
-##    $XMLParser->load_ext_dtd(1);  # DO load dtd.
-##    $XMLParser->validation(1); }
-##  else {
-#    $XMLParser->load_ext_dtd(0);
-#    $XMLParser->load_ext_dtd(1);
-    $XMLParser->validation(0); 
-##}
-  $XMLParser->keep_blanks(0);	# This allows formatting the output.
-  $XMLParser; }
-
 
 sub getDocument             { $_[0]->{document}; }
 sub getDocumentElement      { $_[0]->{document}->documentElement; }
@@ -206,12 +186,9 @@ sub getAncestorDocument {
     $doc = $d; }
   $doc; }
 
-sub toString                {
+sub toString {
   my($self)=@_;
-  if($XML::LibXML::VERSION < 1.63){
-    Encode::encode("utf-8",$$self{document}->toString(1)); }
-  else {
-    $$self{document}->toString(1); }}
+  $$self{document}->toString(1); }
 
 sub getDestinationExtension {
   my($self)=@_;
@@ -270,7 +247,7 @@ sub addNamespace{
   my($self,$nsuri,$prefix)=@_;
   $$self{namespaces}{$prefix}=$nsuri;
   $$self{namespaceURIs}{$nsuri}=$prefix;
-  $XPATH->registerNs($prefix=>$nsuri);
+  $XPATH->registerNS($prefix=>$nsuri);
   $self->getDocumentElement->setNamespace($nsuri,$prefix,0); }
 
 sub getQName {

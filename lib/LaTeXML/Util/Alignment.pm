@@ -12,8 +12,6 @@
 
 package LaTeXML::Util::Alignment;
 use strict;
-use XML::LibXML;
-use LaTeXML::Util::LibXML;
 use LaTeXML::Package;
 use Exporter;
 

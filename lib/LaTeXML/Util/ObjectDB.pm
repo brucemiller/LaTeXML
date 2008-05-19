@@ -200,10 +200,9 @@ sub register {
 #********************************************************************************
 package LaTeXML::Util::ObjectDB::Entry;
 use strict;
-use XML::LibXML;
+use LaTeXML::Common::XML;
 
-our $XMLParser = XML::LibXML->new();
-$XMLParser->clean_namespaces(1);
+our $XMLParser = LaTeXML::Common::XML::Parser->new();
 
 sub new {
   my($class,$key,%data)=@_;
@@ -212,15 +211,12 @@ sub new {
 sub key { $_[0]->{key}; }
 
 # Get/Set a value (column) in the DBRow entry, noting whether it modifies the entry.
+# Note that XML data is stored in it's serialized form, prefixed by "XML::".
 sub getValue {
   my($self,$attr)=@_;
   my $value = $$self{$attr}; 
   if($value && $value =~ /^XML::/){
-    $value = $XMLParser->parse_xml_chunk(substr($value,5));
-    # Simplify, if we get a single node Document Fragment.
-    if($value && (ref $value eq 'XML::LibXML::DocumentFragment')) {
-      my @k = $value->childNodes;
-      $value = $k[0] if(scalar(@k) == 1); }}
+    $value = $XMLParser->parseChunk(substr($value,5)); }
   $value; }
 
 sub setValues {

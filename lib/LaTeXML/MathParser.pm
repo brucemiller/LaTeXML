@@ -17,7 +17,6 @@ package LaTeXML::MathParser;
 use strict;
 use Parse::RecDescent;
 use LaTeXML::Global;
-use XML::LibXML;
 use base (qw(Exporter));
 
 our @EXPORT_OK = (qw(&Lookup &New &Apply &ApplyNary &recApply
@@ -118,22 +117,18 @@ sub note_unknown {
 # ================================================================================
 # Some more XML utilities, but math specific (?)
 
-sub new_node {
+# NOTE: Recheck whether these are better integrated within LaTeXML::Common::XML
+sub new_math_node {
   my($tag)=@_;
   my $node = $LaTeXML::MathParser::CAPTURE->addNewChild($nsURI,$tag);
   $node; }
-
-sub element_nodes {
-  my($node)=@_;
-  grep( $_->nodeType == XML_ELEMENT_NODE, $node->childNodes); }
-
 
 # Append the given nodes (which might also be array ref's of nodes, or even strings)
 # to $node.  This takes care to clone any node that already has a parent.
 # We have to be _extremely_ careful when rearranging trees when using XML::LibXML!!!
 # If we add one node to another, it is _silently_ removed from it's previous
 # parent, if any! Hopefully, this test is sufficient?
-sub append_nodes {
+sub append_math_nodes {
   my($node,@children)=@_;
   foreach my $child (@children){
 
@@ -242,7 +237,7 @@ sub parse_rec {
    if($tag eq 'ltx:XMath'){	# Replace content of XMath
      NoteProgress('['.++$$self{n_parsed}.']');
      map($node->removeChild($_),element_nodes($node));
-     append_nodes($node,$result); }
+     append_math_nodes($node,$result); }
     else {			# Replace node for XMArg, XMWrap; preserve some attributes
       NoteProgress($TAG_FEEDBACK{$tag}||'.') if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1;
       if(my $role = $node->getAttribute('role')){
@@ -462,9 +457,7 @@ sub Lookup {
 # $content is an array of nodes (which may need to be cloned if still attached)
 sub New {
   my($name,$content,%attributes)=@_;
-#  my $node=XML::LibXML::Element->new('XMTok');
-#  $node->setNamespace($nsURI,'ltx',1);
-  my $node=new_node('XMTok');
+  my $node=new_math_node('XMTok');
 
   $node->appendText($content) if $content;
   $attributes{name} = $name if $name;
@@ -497,10 +490,8 @@ sub Annotate {
 # Apply $op to the list of arguments
 sub Apply {
   my($op,@args)=@_;
-#  my $node=XML::LibXML::Element->new('XMApp');
-#  $node->setNamespace($nsURI,'ltx',1);
-  my $node=new_node('XMApp');
-  append_nodes($node,$op,@args);
+  my $node=new_math_node('XMApp');
+  append_math_nodes($node,$op,@args);
   $node; }
 
 # Apply $op to a `delimited' list of arguments of the form

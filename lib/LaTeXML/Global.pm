@@ -21,11 +21,11 @@
 #======================================================================
 package LaTeXML::Global;
 use strict;
-use XML::LibXML;
+use LaTeXML::Common::XML;
 use Time::HiRes;
 
 use base qw(Exporter);
-our @EXPORT = ( 
+our  @EXPORT = ( 
 	       # Global STATE; This gets bound by LaTeXML.pm
 	       qw( *STATE),
 	       # Catcode constants
@@ -45,7 +45,9 @@ our @EXPORT = (
 	       # Error & Progress reporting
 	       qw( &NoteProgress &NoteBegin &NoteEnd &Fatal &Error &Warn ),
 	       # And some generics
-	       qw(&Stringify &ToString  &Equals)
+	       qw(&Stringify &ToString  &Equals),
+	       # And, anything exported from LaTeXML::Common::XML
+	       @LaTeXML::Common::XML::EXPORT
 );
 
 #======================================================================
