@@ -727,7 +727,8 @@ DefConstructor('\sideset{}{}{}', sub {
 
 DefMath('\iint', "\x{222C}", meaning=>'doubleintegral', role=>'INTOP'); # DOUBLE INTEGRAL
 DefMath('\iiint',"\x{222D}", meaning=>'tripleintegral', role=>'INTOP'); # TRIPLE INTEGRAL
-DefMath('\iiiint',"\x{222C}\x{222C}", meaning=>'quadrupleintegral', role=>'INTOP'); # 2 "DOUBLE INTEGRAL"s ??
+DefMath('\iiiint',"\x{2A0C}", meaning=>'quadrupleintegral', role=>'INTOP');
+DefMath('\idotsint',"\x{222B}\x{22EF}\x{222B}", meaning=>'multipleintegral', role=>'INTOP');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 8 Commutative diagrams

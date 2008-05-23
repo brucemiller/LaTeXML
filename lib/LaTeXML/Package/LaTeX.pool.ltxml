@@ -1613,6 +1613,8 @@ DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#lab
 # C.11.3 Bibliography and Citation
 #======================================================================
 
+DefMacro('\bibname','Bibliography');
+
 DefMacro('\thebibliography@id','');
 # NOTE: Not really complete, since I haven't dealt with bibliographies!
 DefConstructor('\bibliography Semiverbatim',
@@ -1905,6 +1907,8 @@ DefConstructor('\index@item',      sub { doIndexItem($_[0],1); });
 DefConstructor('\index@subitem',   sub { doIndexItem($_[0],2); });
 DefConstructor('\index@subsubitem',sub { doIndexItem($_[0],3); });
 DefConstructor('\index@done',      sub { doIndexItem($_[0],0); });
+
+DefMacro('\indexname','Index');
 
 DefEnvironment('{theindex}', 
 	       "<ltx:index xml:id='#id'>"
@@ -2623,6 +2627,26 @@ DefPrimitive('\makeatother', sub { AssignCatcode('@'=>CC_OTHER, 'local'); });
 #**********************************************************************
 # Sundry (is this ams ?)
 DefConstructor('\textprime',UTF(0xB4)); # ACUTE ACCENT
+
+#**********************************************************************
+# Should be defined in each (or many) package, but it's not going to
+# get set correctly or maintained, so...
+DefMacro('\fileversion','');
+DefMacro('\filedate','');
+
+# Following isn't used anywhere, but should be defined.
+RawTeX(<<'EOTeX');
+\newcommand\labelenumi{\theenumi.}
+\newcommand\labelenumii{(\theenumii)}
+\newcommand\labelenumiii{\theenumiii.}
+\newcommand\labelenumiv{\theenumiv.}
+\newcommand\labelitemi{\textbullet}
+\newcommand\labelitemii{\normalfont\bfseries \textendash}
+\newcommand\labelitemiii{\textasteriskcentered}
+\newcommand\labelitemiv{\textperiodcentered}
+\newcommand\partname{Part}
+\newcommand\chaptername{Chapter}
+EOTeX
 
 #**********************************************************************
 1;

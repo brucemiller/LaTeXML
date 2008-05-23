@@ -22,6 +22,20 @@ DefConstructor('\frakfamily', '', font=>{family=>'fraktur'});
 DefConstructor('\swabfamily', '', font=>{family=>'schwabacher'});
 DefConstructor('\gothfamily', '', font=>{family=>'gothic'});
 
+# SHOULD set up fancy initials...
+DefMacro('\initfamily','');
 DefPrimitive('\fraklines',undef);
 
+DefConstructor('\yinipar{}','\par\noindent\yinitpar{#1}');
+# SHOULD set the initial in fancy font.
+DefConstructor('\yinitpar{}','#1');
+
+# Nothing likely to every be used, but for completeness...
+DefMacro('\gothdefault','ygoth');
+DefMacro('\swabdefault','yswab');
+DefMacro('\frakdefault','yfrak');
+DefMacro('\initdefault','yinitas');
+
+Let('\grq','\textquoteleft');
+Let('\grqq','\textquotedblleft');
 1;
