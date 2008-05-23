@@ -43,12 +43,15 @@ DefMacro('\bib{}{} RequiredKeyVals:amsrefs', sub{
   my @body = ();
   my @rawpairs = $keyvals->getPairs;
   my($mrrev,$mrnum);
+  my($zblrev,$zblnum);
   my @pairs;
   while(@rawpairs){
     my($field,$value)=(shift(@rawpairs),shift(@rawpairs));
     $field=lc($field);
-    if($field eq 'mrreviewer'){ $mrrev = $value; }
-    elsif($field eq 'mrnumber'){ $mrnum = $value; }
+    if   ($field eq 'mrreviewer') { $mrrev = $value; }
+    elsif($field eq 'mrnumber')   { $mrnum = $value; }
+    elsif($field eq 'zblreviewer'){ $zblrev = $value; }
+    elsif($field eq 'zblno')      { $zblnum = $value; }
     else { push(@pairs,$field,$value); }}
   while(@pairs){
     my($field,$value)=(shift(@pairs),shift(@pairs));
@@ -62,6 +65,10 @@ DefMacro('\bib{}{} RequiredKeyVals:amsrefs', sub{
     push(@body,T_CS('\amsrefs@mr'),
 	 ($mrnum ? $mrnum->unlist : (T_BEGIN,T_END)),
 	 ($mrrev ? $mrrev->unlist : (T_BEGIN,T_END)));}
+  if($zblnum || $zblrev){
+    push(@body,T_CS('\amsrefs@zbl'),
+	 ($zblnum ? $zblnum->unlist : (T_BEGIN,T_END)),
+	 ($zblrev ? $zblrev->unlist : (T_BEGIN,T_END)));}
   Invocation(T_CS('\@bib'),$key,$type,Tokens(@body))->unlist; });
 
 DefConstructor('\@bib{}{}{}',
@@ -140,6 +147,16 @@ DefConstructor('\amsrefs@mr {}{}',
 		   $id = $1; $isreview = 1; }
 		 my $href ="http://www.ams.org/mathscinet-getitem?mr=".$id;
 		 (isreview=>$isreview, id=>$id, href=>$href, reviewer=>$reviewer); });
+
+DefConstructor('\amsrefs@zbl {}{}',
+	       "?#reviewer"
+	       . "(<ltx:bib-review scheme='zbl' id='#id' href='#href'>ZentralBlatt (#reviewer)</ltx:bib-review>)"
+	       . "(<ltx:bib-review scheme='zbl' id='#id' href='#href'>ZentralBlatt</ltx:bib-review>)",
+	       properties=>sub {
+		 my $id = ToString($_[1]);
+		 my $reviewer = $_[2];
+		 my $href ="http://www.zentralblatt-math.org/zmath/en/search/?q=an:$id";
+		 (id=>$id, href=>$href, reviewer=>$reviewer); });
 
 # Recognize names in BibTeX formats:
 #   First von Last
