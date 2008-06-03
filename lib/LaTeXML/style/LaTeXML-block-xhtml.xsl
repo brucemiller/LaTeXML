@@ -84,12 +84,21 @@
     <xsl:value-of select="//processing-instruction()[local-name()='latexml'][contains(.,'class')]"/>
   </xsl:param>
   <!-- Equation numbers on left, or default right? -->
+  <!--
   <xsl:param name="eqnopos"
 	     select="f:if(contains(substring-after($classPI,'options'),'leqno'),'left','right')"/>
+  -->
+  <xsl:param name="eqnopos"
+	     select="f:if(//processing-instruction('latexml')[contains(substring-after(.,'options'),'leqno')],'left','right')"/>
 
   <!-- Displayed equations centered, or indented on left? -->
+  <!--
   <xsl:param name="eqpos"
 	     select="f:if(contains(substring-after($classPI,'options'),'fleqn'),'left','center')"/>
+  -->
+  <xsl:param name="eqpos"
+	     select="f:if(//processing-instruction('latexml')[contains(substring-after(.,'options'),'fleqn')],'left','center')"/>
+
 
   <xsl:template match="ltx:equation/@refnum | ltx:equationgroup/@refnum"
 		>(<span class='refnum'><xsl:value-of select="."/></span>)</xsl:template>
@@ -438,10 +447,19 @@ ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation/ltx:MathFo
     </dl>
   </xsl:template>
 
-  <xsl:template match="ltx:item" xml:space="preserve">
-    <li class="{f:classes(.)}"><xsl:call-template name="add_id"/>
-    <xsl:apply-templates/>
-    </li>
+  <xsl:template match="ltx:item">
+    <xsl:choose>
+      <xsl:when test="child::ltx:tag"  xml:space="preserve">
+	<li class="{concat(f:classes(.),' nobullet')}"><xsl:call-template name="add_id"/>
+	<xsl:apply-templates/>
+	</li>
+      </xsl:when>
+      <xsl:otherwise xml:space="preserve">
+	<li class="{f:classes(.)}"><xsl:call-template name="add_id"/>
+	<xsl:apply-templates/>
+	</li>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="ltx:item" mode="description" xml:space="preserve">
