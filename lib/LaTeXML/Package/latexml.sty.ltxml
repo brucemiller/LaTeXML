@@ -37,6 +37,8 @@ DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 # Exposing internal functionality of LaTeXML to the LaTeX document.
 #======================================================================
 
+DefConstructor('\lxAddClass{}',"^ class='#1'");
+
 #======================================================================
 # \LXMID{id}{math}  Associate the identifier id with the given math expression.
 DefMacro('\LXMID{}{}','\@XMArg{#1}{#2}');
