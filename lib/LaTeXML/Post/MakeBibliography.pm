@@ -275,15 +275,15 @@ sub do_links {
     my $tag = getQName($node);
     if(($tag eq 'ltx:bib-identifier') || ($tag eq 'ltx:bib-review')){
       if($href){
-	push(@links,['ltx:ref',{href=>$href, class=>$scheme},
+	push(@links,['ltx:ref',{href=>$href, class=>"$scheme externallink"},
 		     map($_->cloneNode(1),$node->childNodes)]); }
       else {
-	push(@links,['ltx:text',{class=>$scheme},
+	push(@links,['ltx:text',{class=>"$scheme externallink"},
 		     map($_->cloneNode(1),$node->childNodes)]); }}
     elsif($tag eq 'ltx:bib-links'){
-      push(@links,['ltx:text',{},map($_->cloneNode(1),$node->childNodes)]); }
+      push(@links,['ltx:text',{class=>"externallink"},map($_->cloneNode(1),$node->childNodes)]); }
     elsif($tag eq 'ltx:bib-url'         ){
-      push(@links,['ltx:ref',{href=>$href},
+      push(@links,['ltx:ref',{href=>$href, class=>'externallink'},
 		   map($_->cloneNode(1),$node->childNodes)]); }}
 
   @links = map((",\n",$_),@links); # non-string join()
@@ -322,7 +322,7 @@ BEGIN{
 	      ['ltx:bibblock',
 	       ['ltx:bib-note'     ,'', "Note: ",\&do_any,'']],
 	      ['ltx:bibblock',
-	       [$LINKS             ,'', 'Links: ',\&do_links,'']]],
+	       [$LINKS             ,'', 'External Links: ',\&do_links,'']]],
    book=>   [ ['ltx:tag',
 	       ['ltx:bib-author'   , ''  , '', \&do_authors,''],
 	       ['ltx:bib-editor'   , ', ', '', \&do_editorsA,''],
@@ -349,7 +349,7 @@ BEGIN{
 	      ['ltx:bibblock',
 	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
 	      ['ltx:bibblock',
-	       [$LINKS          ,'', 'Links: ',\&do_links,'']]],
+	       [$LINKS          ,'', 'External Links: ',\&do_links,'']]],
    'collection.article'=>[
 	      ['ltx:tag',
 	       ['ltx:bib-author'   , ''  , '', \&do_authors,''],
@@ -379,7 +379,7 @@ BEGIN{
 	      ['ltx:bibblock',
 	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
 	      ['ltx:bibblock',
-	       [$LINKS          ,'', 'Links: ',\&do_links,'']]],
+	       [$LINKS          ,'', 'External Links: ',\&do_links,'']]],
    report=>[  ['ltx:tag',
 	       ['ltx:bib-author'   , ''  , '', \&do_authors,''],
 	       ['ltx:bib-editor'   , ', ', '', \&do_editorsA,''],
@@ -408,7 +408,7 @@ BEGIN{
 	      ['ltx:bibblock',
 	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
 	      ['ltx:bibblock',
-	       [$LINKS          ,'','Links: ',\&do_links,'']]],
+	       [$LINKS          ,'','External Links: ',\&do_links,'']]],
    thesis=>[  ['ltx:tag',
 	       ['ltx:bib-author', ''  , '', \&do_authors,''],
 	       ['ltx:bib-editor'   , ', ', '', \&do_editorsA,''],
@@ -430,7 +430,7 @@ BEGIN{
 	      ['ltx:bibblock',
 	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
 	      ['ltx:bibblock',
-	       [$LINKS          ,'','Links: ',\&do_links,'']]],
+	       [$LINKS          ,'','External Links: ',\&do_links,'']]],
    website=>[ ['ltx:tag',
 	       ['ltx:bib-title'     ,  ''  , '', \&do_any, ''],
 	       ['true'      , ' '  , '(Website)']],
@@ -446,7 +446,7 @@ BEGIN{
 	      ['ltx:bibblock',
 	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
 	      ['ltx:bibblock',
-	       [$LINKS          ,'','Links: ',\&do_links,'']]],
+	       [$LINKS          ,'','External Links: ',\&do_links,'']]],
    software=>[['ltx:tag',
 	       ['ltx:bib-key'       ,  ''  , '', \&do_any, ''],
 	       ['ltx:bib-type'      , ' '  , '', \&do_type, '']],
@@ -462,7 +462,7 @@ BEGIN{
 	      ['ltx:bibblock',
 	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
 	      ['ltx:bibblock',
-	       [$LINKS          ,'','Links: ',\&do_links,'']]],
+	       [$LINKS          ,'','External Links: ',\&do_links,'']]],
 
 );
 
