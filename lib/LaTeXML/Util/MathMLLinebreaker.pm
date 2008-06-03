@@ -50,7 +50,7 @@ our $DEBUG = 0;
 our $NOBREAK = 99999999;  # penalty=$NOBREAK means don't break at all.
 our $POORBREAK_FACTOR= 10;	  # to make breaks less desirable.
 our $BADBREAK_FACTOR = 100;	  # to make breaks much less desirable.
-our $CONVERSION_FACTOR = 5;	  # to make breaks at converted ops less desirable
+our $CONVERSION_FACTOR = 2;	  # to make breaks at converted ops less desirable
 
 # TODO: Integrate default operator dictionary, and recognize attributes
 # TODO: all addops, relops,
@@ -375,7 +375,8 @@ sub asRow {
 
   # Multiple children, possibly with breaks
   # Get the set of layouts for each child
-  my @child_layouts = map(layout($_,$target,$level+1,$displaystyle,$scriptlevel,$demerits),
+##  my @child_layouts = map(layout($_,$target,$level+1,$displaystyle,$scriptlevel,$demerits),
+  my @child_layouts = map(layout($_,$target,$level+1,$displaystyle,$scriptlevel,$demerits+1),
 			  @children);
 
   # Now, we need all possible break points within the row itself.
@@ -397,7 +398,8 @@ sub asRow {
 	push(@breaks, [$i,$content,$demerits]); }
       elsif($CONVERTOPS{$content}){
 	$lhs_pos = 0;
-	push(@breaks, [$i,$content,$demerits*$CONVERSION_FACTOR]); }
+##	push(@breaks, [$i,$content,$demerits*$CONVERSION_FACTOR]); }
+	push(@breaks, [$i,$content,$demerits+$CONVERSION_FACTOR]); }
     }}
   my $indentation = ($lhs_pos ? $lhs_width : 2);
 
@@ -472,7 +474,8 @@ BREAKSET:  foreach my $breakset (reverse @breaksets){ # prunes better reversed?
 	  $rowheight = max($rowheight,$h+$d); }
 	push(@layouts, { node=>$node,type=>$type,
 			 penalty=>$penalty,
-			 width=>$width, height=>$height, depth=>$depth, 
+			 width=>$width, height=>$height, depth=>$depth,
+			 area=>$width*($depth+$height),
 			 indentation=>$indentation, rowheight=>$rowheight, lhs_pos=>$lhs_pos,
 			 (scalar(@$breakset) ? (breakset=>$breakset):()),
 			 hasbreak=>scalar(@$breakset)||scalar(grep($$_{hasbreak},@$children_layout)),
@@ -480,6 +483,13 @@ BREAKSET:  foreach my $breakset (reverse @breaksets){ # prunes better reversed?
 	@layouts = prunesort($target,@layouts); }}
 ##      }}
 ##  @layouts = prunesort($target,@layouts);
+
+  ## Add a penalty for smallest area (?)
+  my($maxarea,$minarea) = (0,999999999);
+  map($maxarea = max($maxarea,$$_{area}),@layouts);
+  map($minarea = min($minarea,$$_{area}),@layouts);
+  map( $$_{penalty} *= (1+($$_{area} -$minarea)/$maxarea), @layouts);
+  @layouts = prunesort($target,@layouts);
 
 ##  print STDERR "",("  " x $level), $type," pruned $pruned\n" if $pruned && ($DEBUG>1);
   Warn("Row (".nodeName($node).") got no layouts!") unless @layouts;
