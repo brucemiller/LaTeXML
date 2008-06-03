@@ -55,6 +55,12 @@ div.equation { display:block; width:95%; text-align:center; }
 .equation span.refnum.left { position:absolute; left:2em; }
 .equation span.refnum.right { position:absolute; right:2em; }
 
+.equation td { width:auto; }
+table.equation,
+table.equationgroup { width:100%; }
+/* Hide this from IE */
+tr > td.eqpad { width:50%; }
+
 dl.description dt { margin-right:0.5em; float:left;
 	            font-weight:bold; }
 dl.description dd { margin-left:5em; }
