@@ -312,7 +312,17 @@ sub pmml_infix {
   if(scalar(@args) == 1){	# Infix with 1 arg is presumably Prefix!
     push(@items,(ref $op ? pmml($op) : pmml_mo($op)),pmml($args[0])); }
   else {
-    push(@items, pmml(shift(@args)));
+    ## push(@items, pmml(shift(@args)));
+    # Experiment at flattening?
+    my $role = getOperatorRole($op);
+    my $arg1 = realize(shift(@args));
+    if(($role eq 'ADDOP')
+       && (getQName($arg1) eq 'ltx:XMApp')
+       && !$arg1->getAttribute('open') && !$arg1->getAttribute('close')
+       && (getOperatorRole((element_nodes($arg1))[0]) eq $role)){
+      push(@items, pmml_unrow(pmml($arg1))); }
+    else {
+      push(@items, pmml($arg1)); }
     while(@args){
       push(@items,(ref $op ? pmml($op) : pmml_mo($op)));
       push(@items,pmml(shift(@args))); }}
