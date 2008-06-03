@@ -67,10 +67,11 @@ sub pathname_make {
 # If pathname is absolute, dir starts with volume or '/'
 sub pathname_split {
   my($pathname)=@_;
+  $pathname = pathname_canonical($pathname);
   my($vol,$dir,$name)=File::Spec->splitpath($pathname);
   # Hmm, for /, we get $dir = / but we want $vol='/'  ?????
   if($vol) { $dir = $vol.$dir; }
-  elsif(pathname_is_absolute($pathname)){ $dir = $SEP.$dir; }
+  elsif(File::Spec->file_name_is_absolute($pathname)){ $dir = $SEP.$dir; }
   my $type = '';
   $type = $1 if $name =~ s/\.([^\.]+)$//;
   ($dir,$name,$type); }
@@ -80,6 +81,7 @@ sub pathname_canonical {
   my($pathname)=@_;
 confess "Undefined pathname!" unless defined $pathname;
 #  File::Spec->canonpath($pathname); }
+  $pathname =~ s|^~|$ENV{HOME}|;
   $pathname =~ s|//+|/|g;
   $pathname =~ s|/\./|/|g;
   while($pathname =~ s/\/[^\/]+\/\.\.(\/|$)/$1/){}
@@ -109,7 +111,7 @@ sub pathname_concat {
 # pathname_is_absolute($pathname) => (0|1)
 sub pathname_is_absolute {
   my($pathname)=@_;
-  $pathname && File::Spec->file_name_is_absolute($pathname); }
+  $pathname && File::Spec->file_name_is_absolute(pathname_canonical($pathname)); }
 
 # pathname_relative($pathname,$base) => $relativepathname
 # Return $pathname as a pathname relative to $base.
@@ -119,7 +121,7 @@ sub pathname_relative {
 
 sub pathname_absolute {
   my($pathname,$base)=@_;
-  File::Spec->rel2abs($pathname,$base); }
+  File::Spec->rel2abs(pathname_canonical($pathname),$base && pathname_canonical($base)); }
 
 #======================================================================
 # Actual file system operations.
@@ -131,6 +133,7 @@ sub pathname_cwd { cwd(); }
 sub pathname_mkdir {
   my($directory)=@_;
   return undef unless $directory;
+  $directory = pathname_canonical($directory);
   my($volume,$dirs,$last)=File::Spec->splitpath($directory);
   my(@dirs)=(File::Spec->splitdir($dirs),$last);
   for(my $i=0; $i <= $#dirs; $i++){
@@ -144,6 +147,8 @@ sub pathname_mkdir {
 sub pathname_copy {
   my($source,$destination)=@_;
   # If it _needs_ to be copied:
+  $source      = pathname_canonical($source);
+  $destination = pathname_canonical($destination);
   if((!-f $destination) || (pathname_timestamp($source) > pathname_timestamp($destination))){
     pathname_mkdir(pathname_directory($destination)) or return undef;
 ###    if($^O =~ /^(MSWin32|NetWare)$/){ # Windows
@@ -196,12 +201,13 @@ sub pathname_findall {
 sub candidate_pathnames {
   my($pathname,%options)=@_;
   my @dirs=('');
+  $pathname = pathname_canonical($pathname);
   if(!pathname_is_absolute($pathname)){
     my $cwd = pathname_cwd();
     # Complete the search paths by prepending current dir to relative paths,
     # but have at least the current dir.
     @dirs = ($options{paths}
-	     ? map( (pathname_is_absolute($_) ? $_ : pathname_concat($cwd,$_)),
+	     ? map( (pathname_is_absolute($_) ? pathname_canonical($_) : pathname_concat($cwd,$_)),
 		    @{$options{paths}})
 	     : ($cwd));
     # And, if installation dir specified, append it.

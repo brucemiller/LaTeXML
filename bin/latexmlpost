@@ -120,6 +120,10 @@ if($xmlfile ne '-'){
 # Sanity check and Completion of options.
 #======================================================================
 
+$sourcedir   = $sourcedir   && pathname_canonical($sourcedir);
+$destination = $destination && pathname_canonical($destination);
+$sitedir     = $sitedir     && pathname_canonical($sitedir);
+
 # Sanity check & option completion for known output formats.
 if($split && !defined $destination){
   Error("Must supply destination when using split"); }

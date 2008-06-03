@@ -46,17 +46,19 @@ my $source = $ARGV[0];
 # Do the processing.
 print STDERR "$identity\n" unless $verbosity < 0;
 
+@paths = map(pathname_canonical($_),@paths);
 my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[@paths],
 			  verbosity=>$verbosity, strict=>$strict,
 			  includeComments=>$comments,inputencoding=>$inputencoding,
 			  includeStyles=>$includestyles,
 			  documentid=>$documentid,
 			  nomathparse=>$noparse);
-
 # Check that destination is valid before wasting any time...
 if($destination){
+  $destination = pathname_canonical($destination);
   if(my $dir =pathname_directory($destination)){
     pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }}
+
 if(my @baddirs = grep(! -d $_, @paths)){
   warn "$identity: these path directories do not exist: ".join(', ',@baddirs)."\n"; }
 binmode(STDERR,":utf8");
