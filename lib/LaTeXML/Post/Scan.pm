@@ -35,8 +35,9 @@ sub new {
   $self->registerHandler('ltx:subparagraph'  => \&section_handler);
   $self->registerHandler('ltx:sidebar'       => \&section_handler);
 
-  $self->registerHandler('ltx:table'         => \&labelled_handler);
-  $self->registerHandler('ltx:figure'        => \&labelled_handler);
+  $self->registerHandler('ltx:table'         => \&captioned_handler);
+  $self->registerHandler('ltx:figure'        => \&captioned_handler);
+
   $self->registerHandler('ltx:equation'      => \&labelled_handler);
   $self->registerHandler('ltx:equationmix'   => \&labelled_handler);
   $self->registerHandler('ltx:equationgroup' => \&labelled_handler);
@@ -144,6 +145,22 @@ sub section_handler {
 	if(! grep($_ eq $id,@$sib)){
 	  push(@$sib,$id); }}}
   }
+  $self->scanChildren($doc,$node,$id || $parent_id); }
+
+sub captioned_handler {
+  my($self,$doc,$node,$tag,$parent_id)=@_;
+  my $id = $node->getAttribute('xml:id');
+  if($id){
+    my ($caption) = ($doc->findnodes('descendant::ltx:toccaption',$node),
+		     $doc->findnodes('descendant::ltx:caption',$node));
+    if($caption){
+      $caption = $caption->cloneNode(1);
+      map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$caption)); }
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
+			 location=>$self->siteRelativePathname($doc->getDestination),
+			 fragid=>$self->inPageID($doc,$id),
+			 refnum=>$node->getAttribute('refnum'),
+			 caption=>$caption);  }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub labelled_handler {
