@@ -88,12 +88,12 @@ sub getReleases {
     if($file =~ /^LaTeXML-(.*?)\.tar\.gz$/){
       my $num=$1;
       $newesttarball = $num if $num gt $newesttarball;
-      $links{$num}{tarball}{file} = "\\href{$file}{$file}";
+      $links{$num}{tarball}{file} = "\\href{releases/$file}{$file}";
       $links{$num}{tarball}{link} = "\\href{releases/$file}{$num\\nobreakspace(tar.gz)}"; }
     elsif($file =~ /^perl-LaTeXML-(.*?)-\d+\.noarch\.rpm$/){
       my $num= $1;
       $newestrpm = $num if $num gt $newestrpm;
-      $links{$num}{rpm}{file} = "\\href{$file}{$file}";
+      $links{$num}{rpm}{file} = "\\href{releases/$file}{$file}";
       $links{$num}{rpm}{link} = "\\href{releases/$file}{$num\\nobreakspace(RPM)}"; }
     # handle other formats here. (ppm, deb)
   }
