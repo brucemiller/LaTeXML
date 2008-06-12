@@ -26,7 +26,9 @@
      ====================================================================== -->
 
 <xsl:template match="ltx:text">
- <span style="{f:positioning(.)}" class="{concat(f:classes(.),' ',@font)}">
+ <span style="{f:positioning(.)}" class="{concat(f:classes(.),
+					 f:if(@font,concat(' ',@font),''),
+					 f:if(@size,concat(' ',@size),''))}">
    <xsl:apply-templates/>
  </span>
 </xsl:template>
