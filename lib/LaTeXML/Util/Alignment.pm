@@ -162,7 +162,9 @@ sub constructAlignment {
 
   my %attr = ($props{attributes} ? %{$props{attributes}} : ());
   my $node = $alignment->beAbsorbed($document,%attr);
-  if($props{guess_headers}){
+  # If requested to guess headers (unless cells are already marked)
+  if($props{guess_headers}
+     && !$document->findnodes('descendant::ltx:td[contains(@class,"thead")]',$node)){
     guess_alignment_headers($document,$node,$alignment); }
   $node; }
 
