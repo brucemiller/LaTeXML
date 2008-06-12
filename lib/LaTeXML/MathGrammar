@@ -41,8 +41,9 @@
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Top Level expressions; Just about anything?
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# In particular, many inline formula contain `half' a formula, with the lead-in
-# text effectively being the LHS. 
+# Note in particular, that many inline formula contain `half' a formula,
+# with the lead-in text effectively being the LHS. eg. function $=foo$;
+# similarly you can end up with a missing RHS, $x=$ even.
 
 Start	: Anything /^\Z/			{ $item[1]; }
 
@@ -52,6 +53,7 @@ Anything : Formulae
 	 | OPEN modifierFormula CLOSE	  { Fence($item[1],$item[2],$item[3]); }
          | MODIFIER
  	 | MODIFIEROP Expression          { Apply($item[1],New('Empty'),$item[2]);}
+	 | METARELOP Formula		  { Apply($item[1],New('Empty'),$item[2]); }
 	 | anyop
 
 # a top level rule for sub and superscripts that can accept all sorts of junk.
@@ -87,6 +89,7 @@ Formula : Expression extendFormula[$item[1]]
 extendFormula : 
 	  punctExpr(s) maybeRHS[$arg[0],map(@$_,@{$item[1]})]
 	| relop Expression moreRHS[$arg[0],$item[1],$item[2]]
+	| relop /^\Z/    { NewFormula($arg[0],$item[1], New('Empty')); }
 	| { $arg[0]; }
 
 # maybeRHS[$expr,(punct,$expr)*]; 
@@ -120,6 +123,7 @@ maybeColRHS :
 
 punctExpr : PUNCT Expression			{ [$item[1],$item[2]]; }
 relopExpr : relop Expression			{ [$item[1],$item[2]]; }
+	  | relop /^\Z/				{ [$item[1], New('Empty')]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # `Modifier' formula, things like $<0$, that might follow another formula or text.
