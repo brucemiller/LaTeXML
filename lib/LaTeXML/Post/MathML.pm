@@ -276,18 +276,21 @@ sub pmml_parenthesize {
   my($item,$open,$close)=@_;
   if(!$open && !$close){
     $item; }
-## Maybe better not open the contained mrow; seems to affect bracket size in Moz.???
-  elsif($item && (ref $item)  && ($item->[0] eq 'm:mrow')){
-    my($tag,$attr,@children)=@$item;
-    ['m:mrow',$attr,
-     ($open ? (pmml_mo($open)):()),
-     @children,
-     ($close ? (pmml_mo($close)):())]; }
+  # OR, maybe we should just use mfenced?
   else {
-    ['m:mrow',{},
-     ($open ? (pmml_mo($open,role=>'OPEN')):()),
-     $item,
-     ($close ? (pmml_mo($close,role=>'CLOSE')):())]; }}
+    ['m:mfenced', {open=>($open||''), close=>($close||'')}, $item]; }}
+# ## Maybe better not open the contained mrow; seems to affect bracket size in Moz.???
+#   elsif($item && (ref $item)  && ($item->[0] eq 'm:mrow')){
+#     my($tag,$attr,@children)=@$item;
+#     ['m:mrow',$attr,
+#      ($open ? (pmml_mo($open)):()),
+#      @children,
+#      ($close ? (pmml_mo($close)):())]; }
+#   else {
+#     ['m:mrow',{},
+#      ($open ? (pmml_mo($open,role=>'OPEN')):()),
+#      $item,
+#      ($close ? (pmml_mo($close,role=>'CLOSE')):())]; }}
 
 sub pmml_punctuate {
   my($separators,@items)=@_;
