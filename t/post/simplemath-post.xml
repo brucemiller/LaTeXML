@@ -50,11 +50,9 @@
             <m:mrow>
               <m:mi>f</m:mi>
               <m:mo>⁡</m:mo>
-              <m:mrow>
-                <m:mo>(</m:mo>
+              <m:mfenced open="(" close=")">
                 <m:mn>123</m:mn>
-                <m:mo>)</m:mo>
-              </m:mrow>
+              </m:mfenced>
             </m:mrow>
           </m:mrow>
         </m:math>
@@ -92,13 +90,13 @@
             <m:mrow>
               <m:mi>f</m:mi>
               <m:mo>⁡</m:mo>
-              <m:mrow>
-                <m:mo>(</m:mo>
-                <m:mi>a</m:mi>
-                <m:mo>+</m:mo>
-                <m:mi>b</m:mi>
-                <m:mo>)</m:mo>
-              </m:mrow>
+              <m:mfenced open="(" close=")">
+                <m:mrow>
+                  <m:mi>a</m:mi>
+                  <m:mo>+</m:mo>
+                  <m:mi>b</m:mi>
+                </m:mrow>
+              </m:mfenced>
             </m:mrow>
           </m:mrow>
         </m:math>
@@ -128,13 +126,13 @@
               <m:mn>1</m:mn>
             </m:msub>
             <m:mo>⁢</m:mo>
-            <m:mrow>
-              <m:mo>(</m:mo>
-              <m:mi>a</m:mi>
-              <m:mo>+</m:mo>
-              <m:mi>b</m:mi>
-              <m:mo>)</m:mo>
-            </m:mrow>
+            <m:mfenced open="(" close=")">
+              <m:mrow>
+                <m:mi>a</m:mi>
+                <m:mo>+</m:mo>
+                <m:mi>b</m:mi>
+              </m:mrow>
+            </m:mfenced>
           </m:mrow>
         </m:math>
       </Math>
@@ -188,21 +186,17 @@
               <m:mrow>
                 <m:mi>a</m:mi>
                 <m:mo>⁡</m:mo>
-                <m:mrow>
-                  <m:mo>(</m:mo>
+                <m:mfenced open="(" close=")">
                   <m:mi>x</m:mi>
-                  <m:mo>)</m:mo>
-                </m:mrow>
+                </m:mfenced>
               </m:mrow>
               <m:mo>+</m:mo>
               <m:mrow>
                 <m:mi>b</m:mi>
                 <m:mo>⁡</m:mo>
-                <m:mrow>
-                  <m:mo>(</m:mo>
+                <m:mfenced open="(" close=")">
                   <m:mi>x</m:mi>
-                  <m:mo>)</m:mo>
-                </m:mrow>
+                </m:mfenced>
               </m:mrow>
               <m:mo>+</m:mo>
               <m:mn>123</m:mn>
