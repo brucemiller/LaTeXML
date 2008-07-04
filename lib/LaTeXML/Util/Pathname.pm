@@ -84,7 +84,8 @@ confess "Undefined pathname!" unless defined $pathname;
   $pathname =~ s|^~|$ENV{HOME}|;
   $pathname =~ s|//+|/|g;
   $pathname =~ s|/\./|/|g;
-  while($pathname =~ s/\/[^\/]+\/\.\.(\/|$)/$1/){}
+  # Collapse any foo/.. patterns, but not ../..
+  while($pathname =~ s|/(?!\.\./)[^/]+/\.\.(/\|$)|$1|){}
   $pathname =~ s|^\./||;
   $pathname; }
 
