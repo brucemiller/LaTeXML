@@ -47,6 +47,7 @@ sub new {
 
 sub process {
   my($self,$doc)=@_;
+  $self->ProgressDetailed($doc,"Beginning cross-references");
   my $root = $doc->getDocumentElement;
   local %LaTeXML::Post::CrossRef::MISSING=();
   $self->fill_in_navigation($doc);
@@ -58,6 +59,7 @@ sub process {
     foreach my $type (sort keys %LaTeXML::Post::CrossRef::MISSING){
       push(@msgs,$type.": ".join(', ',sort keys %{$LaTeXML::Post::CrossRef::MISSING{$type}}));}
     $self->Warn($doc,"Missing keys:\n  ".join(";\n  ",@msgs)); }
+  $self->ProgressDetailed($doc,"done cross-references");
   $doc; }
 
 sub note_missing {
@@ -119,7 +121,7 @@ sub fill_in_frags {
 sub fill_in_refs {
   my($self,$doc)=@_;
   my $db = $$self{db};
-  print STDERR "Filling in refs\n" if $$self{verbosity}>1;
+  $self->ProgressDetailed($doc,"Filling in refs");
   foreach my $ref ($doc->findnodes('descendant::*[@idref or @labelref]')){
     my $tag = $doc->getQName($ref);
     next if $tag eq 'ltx:XMRef'; # Blech; list those TO fill-in, or list those to exclude?
@@ -157,7 +159,7 @@ sub fill_in_refs {
 # (eg. concise author/year combinations for multiple bibrefs)
 sub fill_in_bibrefs {
   my($self,$doc)=@_;
-  print STDERR "Filling in bibrefs\n" if $$self{verbosity}>1;
+  $self->ProgressDetailed($doc,"Filling in bibrefs");
   my $db = $$self{db};
   foreach my $bibref ($doc->findnodes('descendant::ltx:bibref')){
     my $show   = $bibref->getAttribute('show');
