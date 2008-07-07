@@ -5,15 +5,22 @@
 use ExtUtils::MakeMaker;
 use strict;
 
-our $DLMF = grep(/DLMF/,@ARGV);
-
+# Use "perl Makefile.PL OLD" if you only have access to an old version
+# of XML::LibXML (ie. before 1.61). This is necessary because we will
+# have an additional dependency (XML::LibXML::XPathContext), and it
+# would be too late to add that dependence when we discover which
+# version of XML::LibXML we end up with.
+# "Enterprise" Linuxes, like Centos and RedHat Enterprise are likely
+# to be stuck with such older versions (till now).
+our $OLD = grep(/OLD/,@ARGV);
 our @EXCLUSIONS=();
 our $MORE_MACROS = {};
 our $MORE_MAKERULES='';
 
 compile_MathGrammar();
 compile_XSLTs();
-install_TeXStyles();
+# Let's simplify and leave out installing the style file (for now?)
+## install_TeXStyles();
 add_rpm_support();
 check_ImageMagick();
 
@@ -22,16 +29,22 @@ WriteMakefile(NAME => 'LaTeXML',
 	      AUTHOR => 'Bruce Miller <bruce.miller@nist.gov>',
 	      ABSTRACT => "transforms TeX and LaTeX into XML",
 	      PREREQ_PM => { 
-			    'XML::LibXML'  => 1.61, # But > 1.62 is better
+			    # If we have an "old" version of XML::LibXML,
+			    # we also need XPathContext.
+			    # But we can't determine that additional dependence
+			    # after we've already started resolving dependences!
+			    ($OLD
+			     ? ( 'XML::LibXML'  => 1.58,
+				 'XML::LibXML::XPathContext' => 0)
+			     : ( 'XML::LibXML'  => 1.61)), # But > 1.62 is better
 			    'XML::LibXSLT' => 1.58,
-#			     'XML::LibXML::XPathContext' => 0,
+
 			     'Parse::RecDescent' => 0,
 #			     'Image::Magick'=> 0
 			   },
-	      EXE_FILES => [ 'bin/latexml', 'bin/latexmlpost', 'bin/latexmlfind',
-			     ($DLMF ? ('bin/dlmfpost') : ())],
+	      EXE_FILES => [ 'bin/latexml', 'bin/latexmlpost', 'bin/latexmlfind'],
 	      macro => $MORE_MACROS,
-	      depend => {metafile=>'specfile'},
+#	      depend => {metafile=>'specfile'},
 	      );
 
 #**********************************************************************
@@ -107,12 +120,26 @@ InstallTeXStyles
 #======================================================================
 # Make an rpm specfile to include in the distribution.
 # This only runs if cpan2rpm is available
+# This also adds an rpm target
+sub add_rpm_support {
+  my $cpan2rpm = `which cpan2rpm`; chomp($cpan2rpm);
+  my $cpan2rpmargs = ($OLD ? '--make-maker="OLD"' : '');
+  if($cpan2rpm){
+    $$MORE_MACROS{CPAN2RPM}=$cpan2rpm;
+    $$MORE_MACROS{CPAN2RPMARGS}=$cpan2rpmargs;
+    $MORE_MAKERULES .= <<'EndRPM'
+
+rpm : tardist
+	$(CPAN2RPM) --no-sign $(CPAN2RPMARGS) $(DISTVNAME).tar$(SUFFIX)
+
+EndRPM
+}}
+
+# Let's skip this complication (installing the style file) for now.
 # We need to patch the resulting specfile, since we can't add
 # to %post, %postun directly from cpan2rpm,
 # but we need to run texhash to include (or cleanup) our additional style files.
-#
-# This also adds an rpm target
-sub add_rpm_support {
+sub add_rpm_support_complex {
   my $cpan2rpm = `which cpan2rpm`; chomp($cpan2rpm);
   if($cpan2rpm){
     $$MORE_MACROS{CPAN2RPM}=$cpan2rpm;
