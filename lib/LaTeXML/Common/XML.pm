@@ -39,33 +39,31 @@ use Encode;
 
 use base qw(Exporter);
 our @EXPORT = (
-	       # Export these symbols from XML::LibXML
+	       # Export just these symbols from XML::LibXML
 	       # Possibly (if/when we abstract away from XML::LibXML), we should be selective?
-#  	       qw(
-#  		   XML_ELEMENT_NODE
-#  		   XML_ATTRIBUTE_NODE
-#  		   XML_TEXT_NODE
-#  		   XML_CDATA_SECTION_NODE
-#  		   XML_ENTITY_REF_NODE
-#  		   XML_ENTITY_NODE
-#  		   XML_PI_NODE
-#  		   XML_COMMENT_NODE
-#  		   XML_DOCUMENT_NODE
-#  		   XML_DOCUMENT_TYPE_NODE
-#  		   XML_DOCUMENT_FRAG_NODE
-#  		   XML_NOTATION_NODE
-#  		   XML_HTML_DOCUMENT_NODE
-#  		   XML_DTD_NODE
-#  		   XML_ELEMENT_DECL
-#  		   XML_ATTRIBUTE_DECL
-#  		   XML_ENTITY_DECL
-#  		   XML_NAMESPACE_DECL
-#  		   XML_XINCLUDE_END
-#  		   XML_XINCLUDE_START
-#  		   encodeToUTF8
-#  		   decodeFromUTF8
-#  		   XML_XMLNS_NS
-#  		   XML_XML_NS),
+  	       qw(
+  		   XML_ELEMENT_NODE
+  		   XML_ATTRIBUTE_NODE
+  		   XML_TEXT_NODE
+  		   XML_CDATA_SECTION_NODE
+  		   XML_ENTITY_REF_NODE
+  		   XML_ENTITY_NODE
+  		   XML_PI_NODE
+  		   XML_COMMENT_NODE
+  		   XML_DOCUMENT_NODE
+  		   XML_DOCUMENT_TYPE_NODE
+  		   XML_DOCUMENT_FRAG_NODE
+  		   XML_NOTATION_NODE
+  		   XML_HTML_DOCUMENT_NODE
+  		   XML_DTD_NODE
+  		   XML_ELEMENT_DECL
+  		   XML_ATTRIBUTE_DECL
+  		   XML_ENTITY_DECL
+  		   XML_NAMESPACE_DECL
+  		   XML_XINCLUDE_END
+  		   XML_XINCLUDE_START
+  		   encodeToUTF8
+  		   decodeFromUTF8),
 	       @XML::LibXML::EXPORT,
 	       # Possibly (later) export these utility functions
 	       qw(&element_nodes &text_in_node &new_node &append_nodes &clear_node &maybe_clone 
@@ -80,6 +78,15 @@ use constant CA_OVERWRITE => 2;
 use constant CA_MERGE => 4;
 use constant CA_EXCEPT => 128;
 
+# We won't export XML_XMLNS_NS and XML_XML_NS, since
+#  1. They were added after XML::LibXML 1.58, and
+#  2. we'd be better off keeping their use local, anyway.
+local $LaTeXML::Common::XML::XMLNS_NS;
+local $LaTeXML::Common::XML::XML_NS;
+BEGIN {
+    $LaTeXML::Common::XML::XMLNS_NS = 'http://www.w3.org/2000/xmlns/';
+    $LaTeXML::Common::XML::XML_NS   = 'http://www.w3.org/XML/1998/namespace';
+}
 #======================================================================
 # XML Utilities
 sub element_nodes {
@@ -205,7 +212,7 @@ sub xmlns_XML_LibXML_Element_getAttribute {
     my($self,$name)=@_;
     if($name =~ /^xml:(.*)$/){
 	my $attr = $1;
-	$self->getAttributeNS(XML_XML_NS,$attr); }
+	$self->getAttributeNS($LaTeXML::Common::XML::XML_NS,$attr); }
     else {
 	original_XML_LibXML_Element_getAttribute($self,$name); }}
 
@@ -213,7 +220,7 @@ sub xmlns_XML_LibXML_Element_hasAttribute {
     my($self,$name)=@_;
     if($name =~ /^xml:(.*)$/){
 	my $attr = $1;
-	$self->hasAttributeNS(XML_XML_NS,$attr); }
+	$self->hasAttributeNS($LaTeXML::Common::XML::XML_NS,$attr); }
     else {
 	original_XML_LibXML_Element_hasAttribute($self,$name); }}
 
@@ -221,7 +228,7 @@ sub xmlns_XML_LibXML_Element_setAttribute {
     my($self,$name,$value)=@_;
     if($name =~ /^xml:(.*)$/){
 	my $attr = $1;
-	$self->setAttributeNS(XML_XML_NS,$attr,$value); }
+	$self->setAttributeNS($LaTeXML::Common::XML::XML_NS,$attr,$value); }
     else {
 	original_XML_LibXML_Element_setAttribute($self,$name,$value); }}
 
@@ -229,9 +236,9 @@ BEGIN {
    if($XML::LibXML::VERSION < 1.63){
      *XML::LibXML::Document::toString =   *encoding_XML_LibXML_Document_toString; }
    if($XML::LibXML::VERSION < 1.59){
-     *XML::LibXML::Element::getAttribute =   *encoding_XML_LibXML_Element_getAttribute;
-     *XML::LibXML::Element::hasAttribute =   *encoding_XML_LibXML_Element_hasAttribute;
-     *XML::LibXML::Element::setAttribute =   *encoding_XML_LibXML_Element_setAttribute; }
+     *XML::LibXML::Element::getAttribute =   *xmlns_XML_LibXML_Element_getAttribute;
+     *XML::LibXML::Element::hasAttribute =   *xmlns_XML_LibXML_Element_hasAttribute;
+     *XML::LibXML::Element::setAttribute =   *xmlns_XML_LibXML_Element_setAttribute; }
 }
 ######################################################################
 # Subclasses
@@ -241,7 +248,7 @@ package LaTeXML::Common::XML::Parser;
 sub new {
   my($class)=@_;
   my $parser = XML::LibXML->new();
-  $parser->clean_namespaces(1);
+###  $parser->clean_namespaces(1);
   $parser->validation(0);
   $parser->keep_blanks(0);	# This allows formatting the output.
   bless {parser=>$parser}, $class; }
@@ -256,11 +263,32 @@ sub parseString {
 
 sub parseChunk {
   my($self,$string)=@_;
+  my $hasxmlns = $string =~/\Wxml:id\W/;
+# print STDERR "\nFISHY!!\n" if $hasxmlns;
   my $xml = $$self{parser}->parse_xml_chunk($string);
   # Simplify, if we get a single node Document Fragment.
+  #[which we, apparently, always do]
   if($xml && (ref $xml eq 'XML::LibXML::DocumentFragment')) {
     my @k = $xml->childNodes;
     $xml = $k[0] if(scalar(@k) == 1); }
+#  $xml = $xml->cloneNode(1);
+  ####
+  # In 1.58, the prefix for the XML_NS, which should be DEFINED to be "xml"
+  # is sometimes unbound, leading to mysterious segfaults!!!
+  if(($XML::LibXML::VERSION < 1.59) && $hasxmlns){
+#print STDERR "Patchup...\n";
+    # Re-create all xml:id entrys, hopefully with correct NS!
+    # We assume all id are, in fact, xml:id,
+    # because we seemingly can't probe the namespace!
+    foreach my $attr ($xml->findnodes("descendant-or-self::*/attribute::*[local-name()='id']")){
+      my $element = $attr->parentNode;
+      my $id = $attr->getValue();
+#print STDERR "RESET ID: $id\n";
+      $attr->unbindNode();
+      $element->setAttributeNS($LaTeXML::Common::XML::XML_NS,'id',$id); 
+    }
+#    print STDERR "\nXML: ".$xml->toString."\n";
+    }
   $xml; }
 
 ######################################################################
