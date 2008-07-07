@@ -197,9 +197,9 @@ sub getDestinationExtension {
 sub checkDestination {
   my($self,$reldest)=@_;
   my $dest = pathname_concat($self->getDestinationDirectory,$reldest);
-  my $destdir = pathname_directory($dest);
-  pathname_mkdir($destdir)
-      or return $self->Error("Could not create directory $destdir for $reldest: $!"); 
+  if(my $destdir = pathname_directory($dest)){
+    pathname_mkdir($destdir)
+      or return $self->Error("Could not create directory $destdir for $reldest: $!"); }
   $dest; }
 
 #======================================================================

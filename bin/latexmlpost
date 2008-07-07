@@ -192,7 +192,8 @@ our %OPTIONS = (verbosity=>$verbosity||0,
 				  : ".")));
 
 if(defined $dbfile && !-f $dbfile){
-  pathname_mkdir(pathname_directory($dbfile)); }
+  if(my $dbdir = pathname_directory($dbfile)){
+    pathname_mkdir($dbdir); }}
 my $DB = LaTeXML::Util::ObjectDB->new(dbfile=>$dbfile,%OPTIONS);
 
 # Create the processors:

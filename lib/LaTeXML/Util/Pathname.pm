@@ -151,7 +151,8 @@ sub pathname_copy {
   $source      = pathname_canonical($source);
   $destination = pathname_canonical($destination);
   if((!-f $destination) || (pathname_timestamp($source) > pathname_timestamp($destination))){
-    pathname_mkdir(pathname_directory($destination)) or return undef;
+    if(my $destdir = pathname_directory($destination)){
+      pathname_mkdir($destdir) or return undef; }
 ###    if($^O =~ /^(MSWin32|NetWare)$/){ # Windows
 ###      # According to Ioan, this should work:
 ###      system("xcopy /P $source $destination")==0 or return undef; }
