@@ -51,14 +51,14 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
       if(my $file = FindFile($maybepkg,type=>'sty')){
 	RequirePackage($maybepkg); }
       else {
-	Warn("documentstyle option $maybepkg not handled"); }
+	Warn(":unexpected:$maybepkg documentstyle option $maybepkg not handled"); }
       return; });
     LoadClass(ToString($whatsit->getArg(2)),
 	      options=>[ ($options ? split(/,\s*/, ToString($options)) : ()) ]);
     return;});
 
 sub onlyPreamble {
-  Error("The current command can only appear in the preamble")
+  Error(":unexpected The current command can only appear in the preamble")
     unless LookupValue("inPreamble"); 
   return; }
 #**********************************************************************
@@ -870,7 +870,7 @@ sub eqnarrayRegroupEquations {
   # We probably shouldn't warn in that case, and should extract the "simple" equations...
   # BUT, not done yet.
 
-  Warn("Unrecognized equation patterns ($oddness) in eqnarray") if $oddness;
+  Warn(":unexpected:<eqnarray> Unrecognized equation patterns ($oddness) in eqnarray") if $oddness;
   # Now rearrange things appropriately.
   foreach my $eqset (@eqs){
     my @subeqs = @$eqset;
@@ -1106,7 +1106,7 @@ DefConstructor('\mathnormal{}', '#1', bounded=>1, requireMath=>1,
 
 DefPrimitive('\newcommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
-  Error(Stringify($cs)." is already defined") if LookupDefinition($cs);
+  Error(":unexpected:\\newcommand ".Stringify($cs)." is already defined") if LookupDefinition($cs);
   DefMacroI($cs,convertLaTeXArgs($nargs,$opt),$body); });
 
 DefPrimitive('\renewcommand OptionalMatch:* DefToken [][]{}', sub {
@@ -1162,7 +1162,7 @@ DefPrimitive('\DeclareSizeFunction{}{}', undef);
 DefPrimitive('\newenvironment OptionalMatch:* {}[][]{}{}', sub {
   my($stomach,$star,$name,$nargs,$opt,$begin,$end)=@_;
   $name = ToString($name);
-  Error("Environment $name is already defined") if LookupDefinition(T_CS("\\$name"));
+  Error(":unexpected:\\newenvironment Environment $name is already defined") if LookupDefinition(T_CS("\\$name"));
   DefMacroI(T_CS("\\$name"), convertLaTeXArgs($nargs,$opt),$begin);
   DefMacroI(T_CS("\\end$name"),undef,$end); });
 
@@ -1579,16 +1579,6 @@ DefConstructor('\label Semiverbatim', sub {
 		 $document->setAttribute($node,labels=>($prev ? $prev." ".$label : $label)); 
 		 $document->setNode($savenode); },
 
-##		 my @prev = LaTeXML::Document::precedingNodes($document->getNode);
-##		 while(@prev && (($prev[0]->getType != XML_ELEMENT_NODE) || (!$prev[0]->hasAttribute('refnum')))){
-##		   shift(@prev); }
-##		 if(my $node = shift(@prev)){
-##		   my $prev = $node->getAttribute('labels');
-##		   $document->setAttribute($node,labels=>($prev ? $prev." ".$label : $label)); }
-##		 else {
-##		   Error("No current node can accept labels; at ".Stringify($document->getNode)); }},
-
-
 ###	       "^ label='#1'",
 	       reversion=>'',
 	       properties=>{alignmentIgnorable=>1},
@@ -1717,8 +1707,8 @@ DefPrimitive('\input', sub {
     $gullet->input($file); }
   else {
     $STATE->noteStatus(missing=>$path);
-    Error("Cannot find file $path "
-	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
+    Error(":missing_file:$path Cannot find file $path in paths "
+	  .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   return; });
 
 # Note that even excluded files SHOULD have the effects of their inclusion
@@ -1733,8 +1723,8 @@ DefPrimitive('\include{}',sub {
       $stomach->getGullet->input($file); }
     else {
       $STATE->noteStatus(missing=>$path);
-      Error("Cannot find file $path "
-	    ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }}
+      Error(":missing_file:$path Cannot find file $path in paths "
+	    .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }}
   return; });
 
 # [note, this will load name.tex, if it exists, else name]
@@ -2090,7 +2080,7 @@ sub ReadPair {
   my $itemreader;
   if(!$itemtype){ $itemreader=\&ReadFloat; }
   else { $itemreader = ResolveReader($itemtype); }
-  if(!$itemreader){ Error("Cannot find reader for Pair items from $itemtype"); }
+  if(!$itemreader){ Error(":misdefined:<unknown> Cannot find reader for Pair items from $itemtype"); }
   $gullet->skipSpaces;
   if($gullet->ifNext(T_OTHER('('))){
     $gullet->readToken;  $gullet->skipSpaces;
@@ -2340,7 +2330,7 @@ DefPrimitive('\mathversion{}',sub {
     AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>1), 'local'); }
   elsif($version eq 'normal'){ 
     AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>0), 'local'); }
-  else { Error("Unknown math verison \"$version\""); }});
+  else { Error(":unexpected:$version Unknown math verison \"$version\""); }});
 
 DefMacro('\newfont{}{}', '\font#1=#2\relax');
 
@@ -2438,7 +2428,7 @@ DefMacro('\@ehc',"I can't help");
 
 sub make_message {
   my($cs,@args)=@_;
-  join("\n",map(ToString(Expand($_)),@args)); }
+  ":latex ".join("\n",map(ToString(Expand($_)),@args)); }
 
 DefPrimitive('\@onlypreamble{}',\&onlyPreamble); # Don't bother enforcing this.
 

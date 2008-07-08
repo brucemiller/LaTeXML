@@ -80,7 +80,7 @@ DefParameterType('Variable', sub {
   if((defined $defn) && $defn->isRegister && !$defn->isReadonly){
     [$defn,$defn->readArguments($gullet)]; }
   else {
-    Error("Attempt to use ".($token||'')." as a variable");
+    Error(":expected:<variable> A <variable> was supposed to be here, got".Stringify($token));
     undef; }});
 
 DefParameterType('TeXFileName', sub {
@@ -99,7 +99,7 @@ DefParameterType('MoveableBox', sub{
   my($gullet)=@_;
   $gullet->skipSpaces;
   my ($box,@stuff) = $STATE->getStomach->invokeToken($gullet->readXToken);
-  Error("A <box> was supposed to be here.".Stringify($box))
+  Error(":expected:<box>  A <box> was supposed to be here, got ".Stringify($box))
     unless $box && $box->isa('LaTeXML::Whatsit')
       && ($box->getDefinition->getCSName =~ /^(\\hbox|\\vbox||\\vtop)$/);
   $box; });
@@ -175,7 +175,7 @@ sub skipConditionalBody {
 	return; }
       elsif(($defn eq $else_def) && $nskips){
 	return; }}}
-  Fatal("Conditional fell off end"); }
+  Fatal(":expected:\\fi Missing \\fi or \\else, conditional fell off end"); }
 
 # NOTE: See Definition setting current_if_level before conditionals!
 
@@ -188,7 +188,8 @@ sub elseHandler {
   my($gullet)=@_;
   my ($curr,$level) = (LookupValue('current_if_level'),LookupValue('if_level'));
   if(!$curr){
-    Error("Stray \\else [$curr,$level]"); return; }
+    Error(":unexpected:\\else  Didn't expect an \\else since we seem not to be in an \\if");
+    return; }
   elsif($curr > $level){
     (T_CS('\relax'),T_CS('\else')); }
   else {
@@ -198,7 +199,8 @@ sub fiHandler {
   my($gullet)=@_;
   my ($curr,$level) = (LookupValue('current_if_level'),LookupValue('if_level'));
   if(!$curr){
-    Error("Stray \\fi [$curr,$level]"); return; }
+    Error(":unexpected:\\fi  Didn't expect an \\fi here since we seem not to be in an \\fi");
+    return; }
   elsif($curr > $level){
     (T_CS('\relax'),T_CS('\fi')); }
   else {
@@ -217,7 +219,7 @@ sub compare {
   if   ($rel->equals(T_OTHER('<'))){ $a < $b; }
   elsif($rel->equals(T_OTHER('='))){ $a == $b; }
   elsif($rel->equals(T_OTHER('>'))){ $a > $b; }
-  else { Error("Non-relation token: ".Stringify($rel)." in comparison conditional"); }}
+  else { Error(":expected:<relationaltoken> Expected a relational token but got ".Stringify($rel)." in comparison conditional"); }}
 
 DefMacro('\ifnum Number Token Number', 
 	      sub { ifHandler($_[0],compare($_[1]->valueOf,$_[2],$_[3]->valueOf)); },
@@ -316,7 +318,7 @@ DefMacro('\csname',sub {
   Let($token, T_CS('\relax')) unless defined LookupMeaning($token);
   $token;  });
 
-DefPrimitive('\endcsname', sub { Error("Extra \\endcsname"); return; });
+DefPrimitive('\endcsname', sub { Error(":unexpected:\\endcsname Extra \\endcsname"); return; });
 
 DefMacro('\expandafter Token Token',sub {
   my($gullet,$tok,$xtok)=@_;
@@ -343,8 +345,8 @@ DefMacro('\input TeXFileName',sub {
     $gullet->input($file); }
   else {
     $STATE->noteStatus(missing=>$path);
-    Error("Cannot find file $path "
-	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
+    Error(":missing_file:$path Cannot find $path in paths "
+	  .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   return; });
 
 DefMacro('\endinput',sub { $_[0]->closeMouth(1); return; });
@@ -356,7 +358,8 @@ DefMacro('\the Variable',sub {
   my($defn,@args) = @$variable;
   my $type = $defn->isRegister;
   if(!$type){ 
-    Error("You can't use ".ToString($defn->getCS)." after \\the"); return (); }
+    my $cs = ToString($defn->getCS);
+    Error(":unexpected:\\the$cs You can't use $cs after \\the"); return (); }
   my $value = $defn->valueOf(@args);
   my @tokens = ($type eq 'Tokens' ? $value->unlist : Explode(ToString($value)));
   if($LaTeXML::NOEXPAND_THE){	# See \the for the sense in this.
@@ -501,7 +504,7 @@ sub parseDefParameters {
     my $t=shift(@tokens);
     if($t->getCatcode == CC_PARAM){
       $n++; $t=shift(@tokens); 
-	Fatal("Parameters for \"".ToString($cs)."\" not in order in ".ToString($params))
+	Fatal(":expected:#$n Parameters for \"".ToString($cs)."\" not in order in ".ToString($params))
 	  unless $n == (ord($t->getString)-ord('0'));
       # Check for delimiting text following the parameter #n
       my @delim=();
@@ -673,7 +676,7 @@ DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
     $props{series}= $font_series{$sr} unless $props{series};
     $props{shape} = $font_shape{$sh}  unless $props{shape}; }
   else {
-    Warn("Unrecognized font \"$name\"; ".ToString($cs)." will have no effect"); }
+    Warn(":unexpected:$name Unrecognized font \"$name\"; ".ToString($cs)." will have no effect"); }
 
   if($gullet->readKeyword('at')){
     $size = $gullet->readDimension->ptValue; }
@@ -722,7 +725,7 @@ DefPrimitive('\divide Variable SkipKeyword:by Number',sub {
   my($defn,@args)=@$var;
   my $denom = $scale->valueOf;
   if($denom == 0){
-    Error("Illegal division by 0; assuming 1");
+    Error(":misdefined:$scale Illegal \\divide by 0; assuming 1");
     $denom = 1; }
   $defn->setValue($defn->valueOf(@args)->multiply(1/$denom),@args); });
 
@@ -1609,7 +1612,7 @@ DefPrimitive('$', sub {
   my $op = '\@@BEGININLINEMATH';
   if($mode eq 'display_math'){
     if($gullet->ifNext(T_MATH)){ $gullet->readToken; }
-    else { Fatal("Missing \$"); }
+    else { Fatal(":expected:\$ Missing \$ closing display math."); }
     $op = '\@@ENDDISPLAYMATH'; }
   elsif($mode eq 'inline_math'){
     $op = '\@@ENDINLINEMATH'; }
@@ -1779,7 +1782,7 @@ sub scriptHandler {
     while(my $tok = $gullet->readXToken){
       @stuff = $stomach->invokeToken($tok);
       last if @stuff; }
-    Fatal("Missing { in sub/super-script argument") unless @stuff;
+    Fatal(":expected:{ Missing { in sub/super-script argument") unless @stuff;
     my $script = shift(@stuff);	# ONLY this box is the script!
     my $level = $stomach->getBoxingLevel;
     unshift(@stuff,
@@ -1792,7 +1795,7 @@ sub scriptHandler {
     @stuff; }
   else {			# Non math use of _ ??
     my $c = (($op eq 'SUPERSCRIPT') ? '^' : '_');
-    Error("Script $c can only appear in math mode");
+    Error(":unexpected:$c Script $c can only appear in math mode");
     LaTeXML::Box->new($c,
 		      $STATE->lookupValue('font'),$gullet->getLocator,
 		      (($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
@@ -2005,7 +2008,7 @@ DefPrimitive('\unboldmath',sub { AssignValue(mathfont=>LookupValue('mathfont')->
 
 # & gives an error except within the right context 
 # (which should redefine it!)
-DefConstructor('&',sub { Error("Stray \"&\""); });
+DefConstructor('&',sub { Error(":unexpected:& Stray alignment \"&\""); });
 
 #**********************************************************************
 # Plain;  Extracted from Appendix B.
@@ -3016,7 +3019,7 @@ DefConstructor('\@left Token',
 							    char=>$$entry{char},
 							    name=>$$entry{name});}
 				  else {
-				    Warn("Missing delimiter $delim (. inserted)"); }
+				    Warn(":expected:. Missing delimiter $delim (. inserted)"); }
 				  return; },
 	       alias=>'\left');
 DefConstructor('\@right Token',
@@ -3029,7 +3032,7 @@ DefConstructor('\@right Token',
 							    char=>$$entry{char},
 							    name=>$$entry{name}); }
 				  else {
-				    Warn("Missing delimiter $delim (. inserted)"); }
+				    Warn(":expected:. Missing delimiter $delim (. inserted)"); }
 				  return; },
 	       alias=>'\right');
 
@@ -3398,7 +3401,7 @@ sub LaTeXTrigger {
   if(my $poolfile = FindFile("LaTeX.pool")){
     $gullet->input($poolfile); }
   else {
-    Fatal("Installation error: Cannot find LaTeX pool module!"); }
+    Fatal(":missing_file:LaTeX.pool.ltxml Installation error: Cannot find LaTeX pool module!"); }
   $gullet->unread(T_CS("\\".$cs));
   (); }
 
@@ -3425,7 +3428,7 @@ DefConstructor('\DUAL[]{}{}',
 		 elsif($LaTeXML::DUAL_BRANCH eq 'presentation'){
 		   $presentation->revert; }
 		 else{
-		   Warn("Unknown DUAL_BRANCH: $LaTeXML::DUAL_BRANCH");
+		   Warn(":misdefined:$LaTeXML::DUAL_BRANCH Unknown DUAL_BRANCH: $LaTeXML::DUAL_BRANCH");
 		   $whatsit->getDefinition->invocation($role,$content,
 						       $presentation); }
 	       });

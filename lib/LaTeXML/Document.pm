@@ -158,11 +158,11 @@ sub recordID {
     my $badid = $id;
     $id = $self->modifyID($id);
     if($$self{idstore}{$id}){
-      Fatal("ID attribute xml:id=$badid duplicated on ".Stringify($object)
+      Fatal(":malformed ID attribute xml:id=$badid duplicated on ".Stringify($object)
 	    ." was set on ".Stringify($prev)."\n using $id instead"
 	    ." AND we ran out of adjustments!!"); }
     else {
-      Error("ID attribute xml:id=$badid duplicated on ".Stringify($object)
+      Error(":malformed ID attribute xml:id=$badid duplicated on ".Stringify($object)
 	    ." was set on ".Stringify($prev)."\n using $id instead"); }}
   $$self{idstore}{$id}=$object; 
   $id; }
@@ -206,7 +206,7 @@ sub setNodeFont {
   if($node->nodeType == XML_ELEMENT_NODE){
     $node->setAttribute(_font=>$fontid); }
   else {
-    Warn("Can't set font on node ".Stringify($node)); }}
+    Warn(":malformed Can't set font on node ".Stringify($node)); }}
 
 sub getNodeFont {
   my($self,$node)=@_;
@@ -279,7 +279,7 @@ sub find_insertion_point {
       $self->closeNode_internal($closeto); # Close the auto closeable nodes.
       $self->find_insertion_point($qname); }	    # Then retry, possibly w/auto open's
     else {					    # Didn't find a legit place.
-      Error(($qname eq '#PCDATA' ? $qname : '<'.$qname.'>')." isn't allowed in ".Stringify($$self{node}));
+      Error(":malformed:$qname ".($qname eq '#PCDATA' ? $qname : '<'.$qname.'>')." isn't allowed in ".Stringify($$self{node}));
       $$self{node}; }}}	# But we'll do it anyway, unless Error => Fatal.
 
 # Closing a text node is a good time to apply regexps (aka. Ligatures)
@@ -344,7 +344,7 @@ sub floatToElement {
 	if ($$savenode ne $$n) && $LaTeXML::Document::DEBUG;
    $savenode; }
   else { 
-    Warn("No open node can accept <$qname> at ".Stringify($$self{node}))
+    Warn(":malformed No open node can accept <$qname> at ".Stringify($$self{node}))
       unless $$self{model}->canContainSomehow($$self{node},$qname);
     undef; }}
 
@@ -358,7 +358,7 @@ sub floatToAttribute {
     $$self{node}=$n;
     $savenode; }
   else {
-    Warn("No open node can get attribute \"$key\"");
+    Warn(":malformed No open node can get attribute \"$key\"");
     undef; }}
 
 # Add the given attribute to the nearest node that is allowed to have it.
@@ -370,7 +370,7 @@ sub addAttribute {
   while(($node->nodeType != XML_DOCUMENT_NODE) && ! $$self{model}->canHaveAttribute($node,$key)){
     $node = $node->parentNode; }
   if($node->nodeType == XML_DOCUMENT_NODE){
-    Error("Attribute $key (=>$value) not allowed in ".Stringify($$self{node})." or ancestors"); }
+    Error(":malformed Attribute $key (=>$value) not allowed in ".Stringify($$self{node})." or ancestors"); }
   else {
     $self->setAttribute($node,$key,$value); }}
 
@@ -512,10 +512,10 @@ sub closeElement {
     push(@cant_close,$t) unless $$self{model}->canAutoClose($node);
     $node = $node->parentNode; }
   if($node->nodeType == XML_DOCUMENT_NODE){ # Didn't find $qname at all!!
-    Error("Attempt to close ".($qname eq '#PCDATA' ? $qname : '</'.$qname.'>').", which isn't open; in ".$self->getNodePath); }
+    Error(":malformed Attempt to close ".($qname eq '#PCDATA' ? $qname : '</'.$qname.'>').", which isn't open; in ".$self->getNodePath); }
   else {			# Found node.
     # Intervening non-auto-closeable nodes!!
-    Error("Closing ".($qname eq '#PCDATA' ? $qname : '</'.$qname.'>')." whose open descendents (".
+    Error(":malformed Closing ".($qname eq '#PCDATA' ? $qname : '</'.$qname.'>')." whose open descendents (".
 	  join(', ',map(Stringify($_),@cant_close)).") dont auto-close")
       if @cant_close;
     # So, now close up to the desired node.

@@ -106,7 +106,7 @@ sub token_prettyname {
     $name .= "{$desc}" if $desc; }
   else {
     $name = 'Unknown';
-    Warn("MathParser: What is this: \"".$node->toString."\"?"); }
+    Warn(":parse  What is this: \"".$node->toString."\"?"); }
   $name; }
 
 sub note_unknown {
@@ -216,7 +216,7 @@ sub parse {
       if(scalar(@n)==1){
 	$p = $n[0]; }
       else {
-	Fatal("Mystery: XMath node has DOCUMENT_FRAGMENT for parent!"); }}
+	Fatal(":internal:Mystery: XMath node has DOCUMENT_FRAGMENT for parent!"); }}
     $p->setAttribute('text',text_form($result)); }
 }
 
@@ -347,7 +347,7 @@ sub parse_internal {
       my $parsed  = join(' ',map(node_string($_,$document),@nodes[0..$pos-1]));
       my $toparse = join(' ',map(node_string($_,$document),@nodes[$pos..$#nodes]));
       my $lexeme = node_location($nodes[$pos] || $nodes[$pos-1] || $mathnode);
-      Warn($loc."  MathParser failed to match rule $rule for ".getQName($mathnode)." at pos. $pos in $lexeme at\n   "
+      Warn(":parse:$rule ".$loc."  MathParser failed to match rule $rule for ".getQName($mathnode)." at pos. $pos in $lexeme at\n   "
 	   . ($parsed ? $parsed."   \n".(' ' x (length($parsed)-2)) : '')."> ".$toparse);
     }
     undef; }
@@ -670,7 +670,7 @@ sub NewScript {
   $app; }
 
 # ================================================================================
-sub Problem { Warn("MATH Problem? ",@_); }
+sub Problem { Warn(":parse MATH Problem? ",@_); }
 
 # Note that an UNKNOWN token may have been used as a function.
 # For simplicity in the grammar, we accept a token that has sub|super scripts applied.

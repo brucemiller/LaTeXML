@@ -61,14 +61,14 @@ use base qw(LaTeXML::Definition);
 #    isConditional: whether this expandable is some form of \ifxxx
 sub new {
   my($class,$cs,$parameters,$expansion,%traits)=@_;
-  Fatal("Defining Expandable ".Stringify($cs)." but expansion is neither Tokens nor CODE: $expansion.")
+  Fatal(":misdefined:".Stringify($cs)." expansion is neither Tokens nor CODE: $expansion.")
     unless (ref $expansion) =~ /^(LaTeXML::Tokens|CODE)$/;
   if(ref $expansion eq 'LaTeXML::Tokens'){
     my $level=0;
     foreach my $t ($expansion->unlist){
       $level++ if $t->equals(T_BEGIN);
       $level-- if $t->equals(T_END); }
-    Fatal("Defining Macro ".Stringify($cs).": replacement has unbalanced {}: ".ToString($expansion)) if $level;  }
+    Fatal(":misdefined:".Stringify($cs)." expansion has unbalanced {}: ".ToString($expansion)) if $level;  }
   bless {cs=>$cs, parameters=>$parameters, expansion=>$expansion,
 	 locator=>"defined ".$STATE->getStomach->getGullet->getLocator,
 	 %traits}, $class; }
@@ -123,7 +123,7 @@ use base qw(LaTeXML::Definition);
 sub new {
   my($class,$cs,$parameters,$replacement,%traits)=@_;
   # Could conceivably have $replacement being a List or Box?
-  Fatal("Defining Primitive ".Stringify($cs)." but replacement is not CODE: $replacement.")
+  Fatal(":misdefined:".Stringify($cs)."  Primitive replacement is not CODE: $replacement.")
     unless ref $replacement eq 'CODE';
   bless {cs=>$cs, parameters=>$parameters, replacement=>$replacement,
 	 locator=>"defined ".$STATE->getStomach->getGullet->getLocator, %traits}, $class; }
@@ -211,7 +211,7 @@ sub new {
 	 locator=>"defined ".$STATE->getStomach->getGullet->getLocator, %traits}, $class; }
 
 sub valueOf  { $_[0]->{value}; }
-sub setValue { Error("Cannot assign to chardef ".$_[0]->getCSName); return; }
+sub setValue { Error(":unexpected:".$_[0]->getCSName." Cannot assign to chardef ".$_[0]->getCSName); return; }
 sub invoke   { 
   my($self,$stomach)=@_;
   $stomach->invokeToken($$self{char}); }
@@ -236,7 +236,7 @@ use base qw(LaTeXML::Primitive);
 #    properties : a hash of default values for properties to store in the Whatsit.
 sub new {
   my($class,$cs,$parameters,$replacement,%traits)=@_;
-  Fatal("Defining Constructor ".Stringify($cs)." but replacement is not a string or CODE: $replacement")
+  Fatal(":misdefined:".Stringify($cs)." Constructor replacement is not a string or CODE: $replacement")
     unless (defined $replacement) && (!(ref $replacement) || (ref $replacement eq 'CODE'));
   bless {cs=>$cs, parameters=>$parameters, replacement=>$replacement,
 	 locator=>"defined ".$STATE->getStomach->getGullet->getLocator, %traits,
@@ -340,7 +340,7 @@ sub compileConstructor {
 ###print STDERR "Compilation of \"$constructor\" => \n$code\n";
 
   eval $code;
-  Fatal("Compilation of \"$constructor\" => \n$code\nFailed; $@") if $@; 
+  Fatal(":misdefined:$name Compilation of \"$constructor\" => \n$code\nFailed; $@") if $@; 
   \&$name; }
 
 sub translate_constructor {
@@ -356,7 +356,7 @@ sub translate_constructor {
     elsif(s|^\s*<\?$QNAME_RE||so){
       my($pi,$av) = ($1, translate_avpairs());
       $code .= "\$document->insertPI('$pi'".($av? ", $av" : '').");\n";
-      Fatal("Missing \"?>\" in constructor template at \"$_\"") unless s|^\s*\?>||; }
+      Fatal(":misdefined:$LaTeXML::ConstructorCompiler::Name Missing \"?>\" in constructor template at \"$_\"") unless s|^\s*\?>||; }
     # Open tag: <name a=v ...> or .../> (for empty element)
     elsif(s|^\s*<$QNAME_RE||so){
       my($tag,$av) = ($1,translate_avpairs());
@@ -366,7 +366,7 @@ sub translate_constructor {
 	$float = undef; }
       $code .= "\$document->openElement('$tag'".($av? ", $av" : '').");\n";
       $code .= "\$document->closeElement('$tag');\n" if s|^/||; # Empty element.
-      Fatal("Missing \">\" in constructor template at \"$_\"") unless s|^>||; }
+      Fatal(":misdefined:$LaTeXML::ConstructorCompiler::Name Missing \">\" in constructor template at \"$_\"") unless s|^>||; }
     # Close tag: </name>
     elsif(s|^\s*</$QNAME_RE\s*>||so){
       $code .= "\$document->closeElement('$1');\n"; }
@@ -411,7 +411,7 @@ sub parse_conditional {
     $else =~ s/^\(// if $else;    $else =~ s/\)$// if $else;
     ($bool,$if,$else); }
   else {
-    Fatal("Unbalanced conditional in constructor template \"$_\""); }}
+    Fatal(":misdefined:$LaTeXML::ConstructorCompiler::Name Unbalanced conditional in constructor template \"$_\""); }}
 
 # Parse a substitutable value from the constructor (in $_)
 # Recognizes the #1, #prop, and also &function(args,...)
@@ -426,13 +426,13 @@ sub translate_value {
       if(/^\s*([\'\"])/){ push(@args,translate_string()); }
       else              { push(@args,translate_value()); }
       last unless s/^\s*\,\s*//; }
-    Error("Missing ')' in &$fcn(...) in constructor pattern for $LaTeXML::ConstructorCompiler::NAME")
+    Error(":expected:) Missing ')' in &$fcn(...) in constructor pattern for $LaTeXML::ConstructorCompiler::NAME")
       unless s/\)//;
     $value = "$fcn(".join(',',@args).")"; }
   elsif(s/^\#(\d+)//     ){	# Recognize an explicit #1 for whatsit args
     my $n = $1;
     if(($n < 1) || ($n > $LaTeXML::ConstructorCompiler::NARGS)){
-      Error("Illegal argument number $n in constructor for "
+      Error(":unexpected:#$n Illegal argument number $n in constructor for "
 	    ."$LaTeXML::ConstructorCompiler::NAME which takes $LaTeXML::ConstructorCompiler::NARGS args");
       $value = "\"Missing\""; }
     else {

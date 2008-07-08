@@ -103,7 +103,7 @@ sub nextColumn {
   my($self)=@_;
   my $colspec = $$self{current_row}->column( ++$$self{current_column} );
   if(!$colspec){
-    Error("Extra alignment tab");
+    Error(":unexpected:& Extra alignment tab");
     $$self{current_row}->addColumn(align=>'center');
     $colspec = $$self{current_row}->column( $$self{current_column} ); }
   $colspec; }
@@ -250,7 +250,7 @@ sub ReadAlignmentTemplate {
     if($op->equals(T_SPACE)){}
     elsif($op->equals(T_END)){
       while(--$nopens && $gullet->readToken->equals(T_END)){}
-      Error("Unbalanced { in alignment template") if $nopens;
+      Error(":expected:} Unbalanced { in alignment template") if $nopens;
       last; }
     elsif(defined($defn=$STATE->lookupDefinition(T_CS('\NC@rewrite@'.ToString($op))))
        && $defn->isExpandable){
@@ -263,9 +263,9 @@ sub ReadAlignmentTemplate {
 	push(@tokens,$op,$defn->getParameters->revertArguments(@args)); }}
     elsif($op->equals(T_BEGIN)){ # Wrong, but a safety valve
       my $z = $gullet->readBalanced;
-      Warn("Unrecognized tabular template \"".Stringify($z)."\""); }
+      Warn(":unexpected:".Stringify($z)." Unrecognized tabular template \"".Stringify($z)."\""); }
     else {
-      Warn("Unrecognized tabular template \"".Stringify($op)."\""); }}
+      Warn(":unexpected:".Stringify($op)." Unrecognized tabular template \"".Stringify($op)."\""); }}
   push(@tokens,T_END);
   $LaTeXML::BUILD_TEMPLATE->setReversion(@tokens);
   return $LaTeXML::BUILD_TEMPLATE; }

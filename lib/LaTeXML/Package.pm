@@ -102,11 +102,7 @@ sub parsePrototype {
   elsif($proto =~ s/^(.)//){ # Match an active char
     ($cs) = TokenizeInternal($1)->unlist; }
   else {
-    Fatal("Definition prototype doesn't have proper control sequence: \"$proto\""); }
-##  $proto =~ s/^(\\?[a-zA-Z@]+|\\?.)//; # Match a cs, env name,...
-##  my($cs,@junk) = TokenizeInternal($1)->unlist;
-##  Fatal("Definition prototype doesn't have proper control sequence:"
-##	.($cs?$cs->toString:'')." then ".join('',map(ToString($_),@junk))." in \"$oproto\" ") if @junk;
+    Fatal(":misdefined:$proto Definition prototype doesn't have proper control sequence: \"$proto\""); }
   $proto =~ s/^\s*//;
   ($cs, parseParameters($proto,$cs)); }
 
@@ -306,7 +302,7 @@ sub CounterValue {
   $ctr = $ctr->toString if ref $ctr;
   my $value = LookupValue('\c@'.$ctr);
   if(!$value){
-    Warn("Counter $ctr was not defined; assuming 0");
+    Warn(":expected:<counter> Counter $ctr was not defined; assuming 0");
     $value = Number(0); }
   $value; }
 
@@ -405,7 +401,7 @@ sub Invocation        {
   if(my $defn = LookupDefinition((ref $token ? $token : T_CS($token)))){
     Tokens($defn->invocation(@args)); }
   else {
-    Fatal("Cannot invoke ".Stringify($token)."; it is undefined");
+    Fatal(":undefined:".Stringify($token)." Cannot invoke ".Stringify($token)."; it is undefined");
     Tokens(); }}
 
 #======================================================================
@@ -414,15 +410,15 @@ sub Invocation        {
 sub CheckOptions {
   my($operation,$allowed,%options)=@_;
   my @badops = grep(!$$allowed{$_}, keys %options);
-  Error($operation." does not accept options:".join(', ',@badops)) if @badops;
+  Error(":misdefined:$operation $operation does not accept options:".join(', ',@badops)) if @badops;
 }
 
 sub requireMath() {
-  Error("Current operation can only appear in math mode") unless LookupValue('IN_MATH');
+  Error(":unexpected:<unknown> Current operation can only appear in math mode") unless LookupValue('IN_MATH');
   return; }
 
 sub forbidMath() {
-  Error("Current operation can not appear in math mode") if LookupValue('IN_MATH');
+  Error(":unexpected:<unknown> Current operation can not appear in math mode") if LookupValue('IN_MATH');
   return; }
 
 
@@ -441,7 +437,7 @@ sub forbidMath() {
 our $expandable_options = {isConditional=>1, scope=>1};
 sub DefExpandable {
   my($proto,$expansion,%options)=@_;
-  Warn("DefExpandable ($proto) is deprecated; use DefMacro");
+  Warn(":misdefined:DefExpandable DefExpandable ($proto) is deprecated; use DefMacro");
   DefMacro($proto,$expansion,%options); }
 
 # Define a Macro: Essentially an alias for DefExpandable
@@ -515,7 +511,7 @@ sub DefRegisterI {
   my $setter = $options{setter} 
     || ($options{readonly}
 	? sub { my($value,@args)=@_; 
-		Error("Cannot assign to register $name"); return; }
+		Error(":unexpected:$name Cannot assign to register $name"); return; }
 	: sub { my($value,@args)=@_; 
 		AssignValue(join('',$name,map($_->toString,@args)) => $value); });
   # Not really right to set the value!
@@ -791,8 +787,7 @@ sub DefEnvironmentI {
 				   beforeDigest =>flatten($options{beforeDigestEnd}),
 				   afterDigest=>flatten($options{afterDigest},
 							sub { my $env = LookupValue('current_environment');
-#							      Error("Cannot close environment $name; current is $env")
-							      Error("Cannot close environment $name; current are "
+							      Error(":unexpected:\\end{$name} Cannot close environment $name; current are "
 								    .join(', ',$STATE->lookupStackedValues('current_environment')))
 								unless $env && $name eq $env; 
 							    return; },
@@ -968,7 +963,7 @@ sub ProcessOptions {
   foreach my $option (@declaredoptions){
     Let(T_CS('\ds@'.$option),T_CS('\relax')) if $option;}
 
-  Warn("Unrecognized options passed to $name.$ext: ".join(', ',sort keys %unhandled))
+  Warn(":unexpected:<options> Unrecognized options passed to $name.$ext: ".join(', ',sort keys %unhandled))
     if keys %unhandled;
   # Eventually, we'll report unused global options (@unusedoptionlist)
   return; }
@@ -991,7 +986,7 @@ sub ExecuteOptions {
       Digest($cs); }
     else {
       $unhandled{$option}=1; }}
-  Warn("Unrecognized options passed to ExecuteOptions: ".join(', ',sort keys %unhandled))
+  Warn(":unexpected:<option> Unrecognized options passed to ExecuteOptions: ".join(', ',sort keys %unhandled))
     if keys %unhandled; 
   return; }
 
@@ -1011,7 +1006,7 @@ sub RequirePackage {
   }
   else {
     $STATE->noteStatus(missing=>$package);
-    Error("Cannot find package $package"
+    Error(":missing_file:$package Cannot find package $package"
 	  .($options{type} eq 'sty' ? '' : "(w/type=$options{type})")
 	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   return; }
@@ -1031,9 +1026,9 @@ sub LoadClass {
   # reset options
   my $classfile = FindFile($class, type=>$options{type}, raw=>$options{raw});
   if(!$classfile || ($classfile =~ /\.cls$/)){
-    Warn("No LaTeXML implementation of class $class found, using article");
+    Warn(":missing_file:$class.cls.ltxml No LaTeXML implementation of class $class found, using article");
     if(!($classfile = FindFile("article.cls"))){
-      Fatal("Installation error: Cannot find article implementation!"); }}
+      Fatal(":missing_file:article.cls.ltxml Installation error: Cannot find article implementation!"); }}
   $STATE->getStomach->getGullet->input($classfile,undef,%options);
   # And reset options afterwards, too.
   return; }

@@ -94,7 +94,7 @@ sub parseParameters {
       my @extra = map(TokenizeInternal($_),split('\|',$extra||''));
       push(@params,newParameter($type,$spec,extra=>[@extra])); }
     else {
-      Fatal("Unrecognized parameter specification at \"$proto\" for ".Stringify($for)); }}
+      Fatal(":misdefined:".Stringify($for)." Unrecognized parameter specification at \"$proto\""); }}
   LaTeXML::Parameters->new(@params); }
 
 # Create a parameter reading object for a specific type.
@@ -119,7 +119,7 @@ sub newParameter {
     else {
       my $reader = checkReaderFunction("Read$type");
       $descriptor = { reader=>$reader} if $reader; }}
-  Fatal("Unrecognized parameter type in \"$spec\"") unless $descriptor;
+  Fatal(":misdefined:<unknown> Unrecognized parameter type in \"$spec\"") unless $descriptor;
   LaTeXML::Parameter->new($spec,type=>$type, %{$descriptor},%options); }
 
 # Check whether a reader function is accessible within LaTeXML::Package::Pool
@@ -174,7 +174,7 @@ sub readArguments {
     my $value = $parameter->read($gullet);
     if((!defined $value) && !$$parameter{optional}){
       my $tok = $gullet->readToken;
-      Error("Missing argument ".ToString($parameter)." for ".ToString($fordefn)
+      Error(":expected:".ToString($parameter)." Missing argument ".ToString($parameter)." for ".ToString($fordefn)
 	    .($tok ? "; next is ".Stringify($tok) : " input is empty"));
       $gullet->unread($tok) if $tok; }
     push(@args,$value) unless $$parameter{novalue}; }
@@ -189,7 +189,7 @@ sub readArgumentsAndDigest {
     my $value = $parameter->read($gullet);
     if((!defined $value) && !$$parameter{optional}){
       my $tok = $gullet->readToken;
-      Error("Missing argument ".ToString($parameter)." for ".ToString($fordefn)
+      Error(":expected:".ToString($parameter)."Missing argument ".ToString($parameter)." for ".ToString($fordefn)
 	    .($tok ? "; next is ".Stringify($tok) : " input is empty"));
       $gullet->unread($tok) if $tok; }
     if(!$$parameter{novalue}){
@@ -204,7 +204,7 @@ sub reparseArgument {
     my @values = $self->readArguments($gullet);
     $gullet->skipSpaces;
     if(my $junk =$gullet->readToken){
-      Error("Left over stuff in argument for ".Stringify($self).":".Stringify($junk)); }
+      Error(":unexpected:".Stringify($junk)." Left over stuff in argument for ".Stringify($self).":".Stringify($junk)); }
     $gullet->closeMouth;
     @values; }
   else {

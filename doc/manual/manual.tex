@@ -780,6 +780,80 @@ of mixing models or extension by predefining certain parameter entities.
 \input{schema}
 
 %%%======================================================================
+\chapter{Error Codes}\label{errorcodes}
+Warning and Error messages are printed to STDERR during the execution
+of \ltxcmd{latexml} and \ltxcmd{latexmlpost}.
+\begin{description}
+\item[Warnings] are generally
+informative that the generated result may not be as good as it can be,
+but is most likely properly formed.  A typical warning is that
+the math parser failed to recognize an expression.
+\item[Errors] generally indicate a more serious problem that is likely
+to lead to a malformed result.  A typical error would be an undefined
+control sequence.  Generally, processing continues so that you can
+(hopefully) solve all errors at once.
+\item[Fatals] are errors so serious as to make it unlikely that processing
+can continue; the system is likely to be out-of-sync, for example
+not knowing from which  point in the input to continue reading.
+A fatal error is also generated when too many (typically 100 regular errors
+have been encountered.
+\end{description}
+
+Warning and Error messages are slightly structured to allow
+unattended processing of documents to classify the degree
+of success in processing. A typical message satisfies the following regular expression:
+\begin{verbatim}
+  (Warning|Error|Fatal)(:\S*)\s+(.*)
+\end{verbatim}
+The type is followed by one or more keywords separated by colons,
+then a space, and a human readable error message.
+Generally, this line is followed by one or more lines describing
+where in the source document the error occured (or was detected).
+For example:
+\begin{verbatim}
+  Error:undefined:\foo The control sequence \foo is undefined.
+\end{verbatim}
+
+Some of the more common keywords following the message type are listed below,
+where we assume that \textit{arg} is the second keyword (if any).
+
+The following errors are generally due to malformed \TeX\ input, 
+incomplete \LaTeXML\ bindings, or bindings that
+do not properly account for the way \TeX, or the macros, are actually used.
+\begin{description}
+\item[\texttt{undefined}]: \textit{arg} indicates the undefined control sequence.
+\item[\texttt{expected}]: \textit{arg} was expected in the input but missing.
+ The expected thing will likely either be a control sequence or something like
+ \verb|<variable>| to indicate that a variable was expected.
+\item[\texttt{unexpected}]: \textit{arg} was not expected to appear in the input.
+\item[\texttt{missing\_file}]: the file \textit{arg} could not be found.
+  Also used when the file is otherwise not readable or processable.
+\item[\texttt{latex}]: An error or message generated from \LaTeX\ code.
+\item[\texttt{parse}]: An issue parsing the mathematics.
+\end{description}
+
+The following errors are more likely due to programming errors in the
+\LaTeXML\ core, or in binding files, or in the document model.
+\begin{description}
+\item[\texttt{perl}]: A perl-level error or warning,not specifically recognized
+ by LaTeXML, was encountered.
+ A second keyword will typically be one of \texttt{die}, \texttt{interrupt} or \texttt{warn}.
+\item[\texttt{malformed}]: some sort of malformed XML problem.
+\item[\texttt{model}]: some sort of problem with the document model or schema.
+\item[\texttt{misdefined}]: Some sort of error in the definition of \textit{arg}.
+\item[\texttt{internal}]: Something unexpected happened; most likey an
+internal coding error within \LaTeXML.
+\item[\texttt{too\_many}]: Too many error were encountered.
+\end{description}
+
+
+Should there be an additional level that identifies the processing stage?
+Eg.~ mouth, gullet, stomach, intestine, \ldots ?
+That might semi-automatically distinguish expected, unexpected, malformed?
+Or does it?
+
+
+%%%======================================================================
 \backmatter
 \printindex
 

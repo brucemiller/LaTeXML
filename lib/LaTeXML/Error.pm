@@ -21,7 +21,7 @@ use LaTeXML::Global;
 # Synthesize an error message describing what happened, and where.
 sub generateMessage {
   my($type,$message,$long,@extra)=@_;
-  my @lines=("\n".$type.": ".$message);
+  my @lines=("\n".$type.($message =~ /^:/ ? '' : ": ").$message);
   $long = 0 if $STATE->lookupValue('VERBOSITY') < -1;
   $long ++  if $STATE->lookupValue('VERBOSITY') > +1;
   my $nstack =  ($long > 1 ? undef : ($long ? 4 : 1));
@@ -32,7 +32,9 @@ sub generateMessage {
     push(@lines,join('',map(' <= '.trim(Stringify($_)),@objects))) if @objects; }
   if(my $stomach = $STATE->getStomach){
     push(@lines,$stomach->getGullet->getLocator($long)); }
-  join("\n",grep($_,@lines, @extra)); }
+  @lines = grep($_,@lines, @extra);
+  chomp(@lines);
+  join("\n",@lines); }
 
 sub Locator {
   my($object)=@_;

@@ -125,11 +125,11 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
 				  CheckOptions("\\lxDeclare keys",$declare_keys,%{$keys->getKeyVals});
 				  foreach my $key (qw(role tag name meaning replace)){
 				    if(my $value = $keys->getValue($key)){
-				      Warn("Repeated $key: ".join('; ',map(Stringify($_),@$value)))
+				      Warn(":unexpected:$key Repeated $key: ".join('; ',map(Stringify($_),@$value)))
 					if ref $value eq 'ARRAY'; }}
 				  my $id = ($keys->getValue('tag') ? next_declaration_id() : undef);
 				  if($id && LookupValue('InPreamble')){
-				    Warn("Declaration with tag cannot appear in preamble"
+				    Warn(":unexpected:tag Declaration with tag cannot appear in preamble"
 					 .Stringify($whatsit)); }
 				  $whatsit->setProperties(scope   => getDeclarationScope($keys),
 							  role    => ToString($keys->getValue('role')),
@@ -161,7 +161,7 @@ DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}','',
 					 map(createDeclarationRewrite($document,$scope,$_),
 					     @$declaration); }
 				       else {
-					 Warn("No Declaration with label=$label was found"); }}},
+					 Warn(":unexpected:$label No Declaration with label=$label was found"); }}},
 	       properties=>{alignmentIgnorable=>1},
 	       reversion=>'');
 

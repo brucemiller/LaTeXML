@@ -181,7 +181,7 @@ sub scanExternal {
     my $node = $XMLPARSER->parseFile($path)->documentElement;
     (['module',$mod,$self->scanPattern($node,$inherit_ns)]); }
   else {
-    Error("Couldn't find RelaxNG schema $name"); 
+    Error(":missing_file:$name Couldn't find RelaxNG schema $name"); 
     (); }}
 
 sub getRelaxOp {
@@ -260,7 +260,7 @@ sub scanPattern {
     elsif($relaxop =~ /^rnga:documentation$/){
       (['doc',undef,$node->textContent]); }
     else {
-      Warn("Didn't expect $relaxop in RelaxNG Schema (scanPattern)");
+      Warn(":model Didn't expect $relaxop in RelaxNG Schema (scanPattern)");
       (); }}
   else {
     (); }}
@@ -302,7 +302,7 @@ sub scanGrammarContent {
 	else {
 	  (['module',$mod,@patterns]); }}
       else {
-	Error("Couldn't find RelaxNG schema $name"); 
+	Error(":missing_file:$name Couldn't find RelaxNG schema $name"); 
 	(); }}}
   else {
     (); }}

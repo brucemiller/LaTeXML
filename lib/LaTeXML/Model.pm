@@ -48,7 +48,7 @@ sub loadSchema {
   my($self)=@_;
 
   if(!$$self{schema}){
-    Warn("No DTD declared...assuming LaTeXML!");
+    Warn(":model No DTD declared...assuming LaTeXML!");
     # article ??? or what ? undef gives problems!
     $self->setDocType(undef,$STD_PUBLIC_ID,$STD_SYSTEM_ID);
     $self->registerDocumentNamespace('#default'=>$LTX_NAMESPACE);
@@ -98,7 +98,7 @@ sub getNamespacePrefix {
     my $codeprefix = $$self{code_namespace_prefixes}{$namespace};
     if(! defined $codeprefix){
       $self->registerNamespace($codeprefix = "namespace".(++$NAMESPACE_ERROR), $namespace);
-      Warn("No prefix registered for namespace $namespace (using $codeprefix)"); }
+      Warn(":model No prefix registered for namespace $namespace (using $codeprefix)"); }
     $codeprefix; }}
 
 sub getNamespace {
@@ -107,7 +107,7 @@ sub getNamespace {
   if(! defined $ns){
     $self->registerNamespace($codeprefix,
 			     $ns = "http://example.com/namespace".(++$NAMESPACE_ERROR));
-    Error("No namespace registered for prefix $codeprefix (using $ns)"); }
+    Error(":model No namespace registered for prefix $codeprefix (using $ns)"); }
   $ns; }
 
 sub registerDocumentNamespace {
@@ -127,7 +127,7 @@ sub getDocumentNamespacePrefix {
     my $docprefix = $$self{document_namespace_prefixes}{$namespace};
     if(! defined $docprefix){
       $self->registerDocumentNamespace($docprefix = "namespace".(++$NAMESPACE_ERROR), $namespace);
-      Warn("No document prefix registered for namespace $namespace (using $docprefix)"); }
+      Warn(":model No document prefix registered for namespace $namespace (using $docprefix)"); }
     ($docprefix eq '#default' ? '' : $docprefix); }}
 
 sub getDocumentNamespace {
@@ -137,7 +137,7 @@ sub getDocumentNamespace {
   if(($docprefix ne '#default') && (! defined $ns)){
     $self->registerDocumentNamespace($docprefix,
 				     $ns = "http://example.com/namespace".(++$NAMESPACE_ERROR));
-    Error("No namespace registered for document prefix $docprefix (using $ns)"); }
+    Error(":model No namespace registered for document prefix $docprefix (using $ns)"); }
   $ns; }
 
 # Given a Qualified name, possibly prefixed with a namespace prefix,
@@ -149,7 +149,7 @@ sub decodeQName {
     my($prefix,$localname)=($1,$2);
     return (undef, $codetag) if $prefix eq 'xml';
     my $ns = $$self{code_namespaces}{$1};
-    Error("No namespace has been registered for the prefix \"$prefix\"") unless $ns;
+    Error(":model No namespace has been registered for the prefix \"$prefix\"") unless $ns;
     ($ns, $localname); }
   else {
     (undef, $codetag); }}
@@ -177,10 +177,10 @@ sub getNodeQName {
     '#DTD'; }
   # Need others?
   elsif($type != XML_ELEMENT_NODE){
-    Fatal("Cannot get Qualified Name for node ".Stringify($node)); }
+    Fatal(":malformed Cannot get Qualified Name for node ".Stringify($node)); }
   elsif(my $ns = $node->namespaceURI){
     my $prefix = $$self{code_namespace_prefixes}{$ns};
-    Error("No prefix has been registered for the namespace \"$ns\"") unless $prefix;
+    Error(":model No prefix has been registered for the namespace \"$ns\"") unless $prefix;
     $prefix.":".$node->localname; }
   else {
     $node->localname; }}
@@ -328,7 +328,7 @@ sub addLigature {
   my($self,$regexp,%options)=@_;
   my $code =  "sub { \$_[0] =~ s${regexp}g; }";
   my $fcn = eval $code;
-  Error("Failed to compile regexp pattern \"$regexp\" into \"$code\": $!") if $@;
+  Error(":misdefined:<ligature> Failed to compile regexp pattern \"$regexp\" into \"$code\": $!") if $@;
   unshift(@{$$self{ligatures}}, { regexp=>$regexp, code=>$fcn, %options}); }
 
 sub getLigatures {

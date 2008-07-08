@@ -24,16 +24,16 @@ DefMacro('\multido{}{Number}{}',sub {
   while(my $var = $gullet->readToken){
     $var->getCSName =~ /^\\(d|n|i|r)/i;
     my $type = $1;
-    Error("Wrong format for multido variable: ".ToString($var)) unless $type;
+    Error(":unexpected:".ToString($var)." Wrong format for multido variable: ".ToString($var)) unless $type;
     $gullet->readKeyword("=")
-      or Error("Missing = in multido variables");
+      or Error(":expected:= Missing = in multido variables");
     my($init,$step);
     if   ($type eq 'd'){ $init = $gullet->readDimension; }
     elsif($type eq 'n'){ $init = $gullet->readNumber; }
     elsif($type eq 'i'){ $init = $gullet->readNumber; }
     elsif($type eq 'r'){ $init = $gullet->readFloat; }
     $gullet->readKeyword("+")
-      or Error("Missing + in multido variables");
+      or Error(":expected:+ Missing + in multido variables");
     if   ($type eq 'd'){ $step = $gullet->readDimension; }
     elsif($type eq 'n'){ $step = $gullet->readNumber; }
     elsif($type eq 'i'){ $step = $gullet->readNumber; }

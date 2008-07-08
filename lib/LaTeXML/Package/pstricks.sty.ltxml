@@ -44,7 +44,7 @@ sub ReadPSDimension {
 							     { Dimension($s * $d->valueOf * $unit); }
 							   else
 							     { $scale->multiply($s * $d->valueOf); }}
-  else{ Warn("Missing number, treated as zero.");          Dimension(0); }}
+  else{ Warn(":expected:<number> Missing number, treated as zero.");          Dimension(0); }}
 
 sub b_reversion { $_[0] ? (T_BEGIN, $_[0]->revert, T_END) :(); }
 
@@ -69,7 +69,7 @@ sub ReadOptionalBracketed {
     my $itemreader;
     if (!$itemtype) { $itemreader = sub { $gullet->readBalanced;}; }
     else { $itemreader = ResolveReader($itemtype); }
-    if(!$itemreader){ Error("Cannot find reader for optional curly-bracketed argument from $itemtype"); }
+    if(!$itemreader){ Error(":misdefined:<unknown> Cannot find reader for optional curly-bracketed argument from $itemtype"); }
     $gullet->readToken; $gullet->skipSpaces;
     my $item = &$itemreader($gullet);
     $gullet->skipSpaces;

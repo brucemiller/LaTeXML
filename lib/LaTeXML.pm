@@ -87,8 +87,9 @@ sub digestFile {
   my $stomach  = $STATE->getStomach; # The current Stomach;
   my $gullet   = $stomach->getGullet;
   # And, set fancy error handler for ANY die!
-  local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
-  local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',@_)); }; # ??
+  local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',":perl:die ",@_)); };
+  local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',":perl:interrupt ",@_)); }; # ??
+  local $SIG{__WARN__} = sub { LaTeXML::Error::Warn(join('',":perl:warn ",@_)); };
 
   NoteBegin("Digesting $file");
   $stomach->initialize;
@@ -97,10 +98,10 @@ sub digestFile {
     if(my $loadpath = pathname_find("$preload.ltxml",paths=>$paths,installation_subdir=>'Package')){
       $gullet->input($loadpath); }
     else {
-      Fatal("Couldn't find $preload to preload"); }}
+      Fatal(":missing_file:$preload Couldn't find $preload to preload"); }}
 
   my $pathname = pathname_find($file,types=>['tex','']);
-  Fatal("Cannot find TeX file $file") unless $pathname;
+  Fatal(":missing_file:$file Cannot find TeX file $file") unless $pathname;
   $STATE->assignValue(SOURCEFILE=>$pathname);
   my($dir,$name,$ext)=pathname_split($pathname);
   $STATE->pushValue(SEARCHPATHS=>$dir);
@@ -108,7 +109,7 @@ sub digestFile {
   $gullet->input($pathname);
   my $list = LaTeXML::List->new($stomach->digestNextBody);
   if(my $env = $STATE->lookupValue('current_environment')){
-    Error("Input ended while environment $env was open"); } 
+    Error(":expected:\\end{$env} Input ended while environment $env was open"); } 
   $gullet->flush;
   NoteEnd("Digesting $file");
   $list; }
@@ -119,8 +120,9 @@ sub digestString {
   my $stomach  = $STATE->getStomach; # The current Stomach;
   my $gullet   = $stomach->getGullet;
   # And, set fancy error handler for ANY die!
-  local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
-  local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',@_)); }; # ??
+  local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',":perl:die ",@_)); };
+  local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',":perl:interrupt ",@_)); }; # ??
+  local $SIG{__WARN__} = sub { LaTeXML::Error::Warn(join('',":perl:warn ",@_)); };
 
   NoteBegin("Digesting string");
   $stomach->initialize;
@@ -129,13 +131,13 @@ sub digestString {
     if(my $loadpath = pathname_find("$preload.ltxml",paths=>$paths,installation_subdir=>'Package')){
       $gullet->input($loadpath); }
     else {
-      Fatal("Couldn't find $preload to preload"); }}
+      Fatal(":missing_file:$preload Couldn't find $preload to preload"); }}
 
   $gullet->openMouth(LaTeXML::Mouth->new($string),0);
   $STATE->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode("Unknown"))));
   my $list = LaTeXML::List->new($stomach->digestNextBody); 
   if(my $env = $STATE->lookupValue('current_environment')){
-    Error("Input ended while environment $env was open"); } 
+    Error(":expected:\\end{$env} Input ended while environment $env was open"); } 
   $gullet->flush;
   NoteEnd("Digesting string");
   $list; }
@@ -146,8 +148,9 @@ sub convertDocument {
   my $model    = $STATE->getModel;   # The document model.
 
   # And, set fancy error handler for ANY die!
-  local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',@_)); };
-  local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',@_)); }; # ??
+  local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',":perl:die ",@_)); };
+  local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',":perl:interrupt ",@_)); }; # ??
+  local $SIG{__WARN__} = sub { LaTeXML::Error::Warn(join('',":perl:warn ",@_)); };
 
   local $LaTeXML::DUAL_BRANCH= '';
   my $document  = LaTeXML::Document->new($model);

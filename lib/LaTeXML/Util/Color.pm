@@ -28,7 +28,7 @@ sub ConvertColor {
     elsif ($model =~ /cmyk/) { $color = '#'.CMYK2RGB($spec); }
     elsif ($model =~ /hsb/)  { $color = '#'.HSB2RGB($spec); }
     elsif ($model =~ /named/){ $color = $spec; }
-    else { Warn("Unknown color model: $model"); }
+    else { Warn(":unexpected:$model Unknown color model: $model"); }
     $color; }
 
 sub RGB { my ($_r, $_g, $_b) = map(round($_*255), _ValueList($_[0]));

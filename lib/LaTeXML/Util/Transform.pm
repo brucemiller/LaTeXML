@@ -43,7 +43,7 @@ sub new {
 		$self = _multiply($self, [1, $s/$c, 0, 1, 0, 0]) if $c != 0; }
 	    elsif ($transform =~ s/^matrix\(([^\s]+) ([^\s]+) ([^\s]+) ([^\s]+) ([^\s]+) ([^\)]+)\)//) {
 		$self = _multiply($self, [$1, $2, $3, $4, $5, $6]); }
-	    else { Error("Unable to parse transform '$transform'"); last; }}}
+	    else { Error(":misdefined:<transform> Unable to parse transform '$transform'"); last; }}}
     bless($self, $class); }
 
 sub isIdentity {

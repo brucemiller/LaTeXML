@@ -194,7 +194,7 @@ sub deactivateScope {
 	  shift(@{$$self{table}{$key}});
 	  $$self{undo}[0]{$key}--; }
 	else {
-	  Warn("Unassigning $key from $value, but stack is ".join(', ',@{$$self{table}{$key}})); }}}}}
+	  Warn(":internal Unassigning $key from $value, but stack is ".join(', ',@{$$self{table}{$key}})); }}}}}
 #======================================================================
 # Units.
 #   Put here since it could concievably evolve to depend on the current font.
@@ -214,7 +214,7 @@ sub convertUnit {
   else{
     my $sp = $UNITS{$unit}; 
     if(!$sp){
-      Warn("Unknown unit \"$unit\"; assuming pt.");
+      Warn(":expected:<unit> Unknown unit \"$unit\"; assuming pt.");
       $sp = $UNITS{'pt'}; }
     $sp; }}
 

@@ -13,7 +13,9 @@ my $DOCDIR   = $FindBin::RealBin;
 # Use latexml from blib!
 my $LATEXMLDIR = "$DOCDIR/..";
 $ENV{PATH} = "$LATEXMLDIR/blib/script:$ENV{PATH}";
-
+$ENV{TEXINPUTS} = "$LATEXMLDIR/blib/lib/LaTeXML/texmf"
+  .($ENV{TEXINPUTS} ? ":".$ENV{TEXINPUTS} : '')
+  ."::";
 my $MANDIR   = "$DOCDIR/manual";
 my $WEBDEST  = "/local/www/site/htdocs/LaTeXML";
 

@@ -110,7 +110,7 @@ sub TokenizeInternal {
 
 # Return a LaTeXML::Tokens made from the arguments (tokens)
 sub Tokens {
-  map( ((ref $_) && $_->isaToken)|| Fatal("Expected Token, got ".Stringify($_)), @_);
+  map( ((ref $_) && $_->isaToken)|| Fatal(":misdefined:<unknown> Expected Token, got ".Stringify($_)), @_);
   LaTeXML::Tokens->new(@_); }
 
 # Explode a string into a list of tokens w/catcode OTHER (except space).
@@ -180,7 +180,7 @@ sub Error {
     print STDERR LaTeXML::Error::generateMessage("Error",$msg,1,"Continuing... Expect trouble.\n")
       unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -1; }
   if(($LaTeXML::Global::STATE->getStatus('error')||0) > $MAXERRORS){
-    Fatal("Too many errors!"); }
+    Fatal(":too_many:$MAXERRORS Too many errors!"); }
   return; }
 
 sub Warn {

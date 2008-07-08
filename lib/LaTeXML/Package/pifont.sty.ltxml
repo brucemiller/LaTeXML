@@ -27,7 +27,7 @@ sub pichar {
   if(my $mapper = $PIFONT_MAP{$pifont}){
     &$mapper($number); }
   else {
-    Error("Unknown pi font $pifont");
+    Error(":undefined:$pifont Unknown pi font $pifont");
     "?"; }}
 
 DefConstructor('\Pisymbol{}{Number}', sub {

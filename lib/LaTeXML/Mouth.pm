@@ -231,7 +231,7 @@ sub readRawLines {
     else {
       $line = $self->getNextLine; 
       if(!defined $line){
-	Error("Fell off end trying to match a lines to \"$endline\" from ".Stringify($self));
+	Error(":expected:$endline Fell off end trying to match a lines to \"$endline\" from ".Stringify($self));
 	last; }
       $line =~ s/\s*$/\n/s if defined $line;	# Is this right? 
       $$self{lineno}++;
@@ -262,9 +262,9 @@ use Encode;
 sub new {
   my($class,$pathname)=@_;
   local *IN;
-  if(! -r $pathname){ Fatal("Input file is not readable: $pathname."); }
-  elsif((!-z $pathname) && (-B $pathname)){Fatal("Input file appears to be binary: $pathname."); }
-  open(IN,$pathname) || Fatal("Can't read from $pathname");
+  if(! -r $pathname){ Fatal(":missing_file:$pathname Input file is not readable."); }
+  elsif((!-z $pathname) && (-B $pathname)){Fatal(":missing_file:$pathname Input file appears to be binary."); }
+  open(IN,$pathname) || Fatal(":missing_file:$pathname Can't read: ",$!);
   my $shortpath=pathname_relative($pathname,pathname_cwd);
   my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN, buffer=>[]};
   bless $self,$class;
@@ -292,10 +292,6 @@ sub XXXgetNextLine {
   my $line = <$fh>;
   if(! defined $line){
     close($fh); $$self{IN}=undef; }
-  # NEED a SWICTH -7bit or UTF or What???
-#  if($line && $line =~ s/[\x80-\xFF]//g){
-#    Warn("Stripping 8bit characters!") unless $WARNED_8BIT;
-#    $WARNED_8BIT = 1; }
   if($line){
     if(my $encoding = $STATE->lookupValue('INPUT_ENCODING')){
       $line = decode($encoding,$line); }}
@@ -313,10 +309,6 @@ sub getNextLine {
       push(@{$$self{buffer}}, $self->splitString($line)); }}
 
   my $line = (shift(@{$$self{buffer}})||''). "\n"; # put line ending back!
-  # NEED a SWICTH -7bit or UTF or What???
-#  if($line && $line =~ s/[\x80-\xFF]//g){
-#    Warn("Stripping 8bit characters!") unless $WARNED_8BIT;
-#    $WARNED_8BIT = 1; }
   if($line){
     if(my $encoding = $STATE->lookupValue('INPUT_ENCODING')){
       $line = decode($encoding,$line); }}
@@ -340,7 +332,7 @@ use base qw(LaTeXML::FileMouth);
 sub new {
   my($class,$pathname)=@_;
   local *IN;
-  open(IN,$pathname) || Fatal("Can't read from $pathname");
+  open(IN,$pathname) || Fatal(":missing_file:$pathname Can't read: ",$!);
   my $shortpath=pathname_relative($pathname,pathname_cwd);
   my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN, buffer=>[]};
   bless $self,$class;

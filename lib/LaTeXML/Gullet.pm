@@ -42,7 +42,7 @@ sub input {
 			   types=>$types, installation_subdir=>'Package');
   if(! $file) {
     $STATE->noteStatus(missing=>$name);
-    Error("Cannot find file $name of type ".join(', ',@{$types||[]})
+    Error(":missing_file:$name Cannot find file $name of type ".join(', ',@{$types||[]})
 	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
 #  elsif($file =~ /\.(ltxml|latexml)$/){		# Perl module.
   elsif($file =~ /\.ltxml$/){		# Perl module.
@@ -51,13 +51,13 @@ sub input {
     $self->openMouth(LaTeXML::PerlMouth->new($file),0);
     my $pmouth = $$self{mouth};
     do $file; 
-    Fatal("Package $name had an error:\n  $@") if $@; 
+    Fatal(":perl:die Package $name had an error:\n  $@") if $@; 
     $self->closeMouth if $pmouth eq $$self{mouth}; # Close immediately, unless recursive input
   }
   elsif($file =~ /\.(pool|sty|cls|clo|cnf)$/){	# (attempt to) interpret a style file.
     return if $STATE->lookupValue($file.'_loaded');
     if(! ($options{raw} || $STATE->lookupValue('INCLUDE_STYLES'))){
-      Warn("Ignoring style file $file");
+      Warn(":unexpected:$file Ignoring style file $file");
       return; }
     $STATE->assignValue($file.'_loaded'=>1,'global');
     $self->openMouth(LaTeXML::StyleMouth->new($file), 0);  }
@@ -71,7 +71,7 @@ sub input {
       $self->openMouth(LaTeXML::PerlMouth->new($conf),0);
       my $pmouth = $$self{mouth};
       do $conf; 
-      Fatal("Configuration file $conf had an error:\n  $@") if $@; 
+      Fatal(":perl:die Configuration file $conf had an error:\n  $@") if $@; 
       $self->closeMouth if $pmouth eq $$self{mouth}; # Close immediately, unless rec. input
     }
     # NOW load the input --- UNLESS INHIBITTED!!!
@@ -96,7 +96,8 @@ sub openMouth {
 sub closeMouth {
   my($self,$forced)=@_;
   if(!$forced && (@{$$self{pushback}} || $$self{mouth}->hasMoreInput)){
-    Error("Closing mouth with input remaining: ".Stringify($self->readToken)); }
+    my $next = Stringify($self->readToken);
+    Error(":unexpected:$next Closing mouth with input remaining: $next"); }
   $$self{mouth}->finish;
   if(@{$$self{mouthstack}}){
     ($$self{mouth},$$self{pushback},$$self{autoclose}) = @{ shift(@{$$self{mouthstack}}) }; }
@@ -195,9 +196,6 @@ sub readXToken {
   while(1){
     if(!defined($token = (@{$$self{pushback}} ? shift(@{$$self{pushback}}) : $$self{mouth}->readToken() ))){
       return undef unless $$self{autoclose} && $toplevel && @{$$self{mouthstack}};
-
-#      print STDERR "Closing ".Stringify($$self{mouth})."\n ".LaTeXML::Error::stacktrace()."\n";
-
       $self->closeMouth; }		# Next input stream.
     elsif(($cc = $$token[1]) == CC_NOTEXPANDED){ # NOTE: Inlined ->getCatcode
       # Should only occur IMMEDIATELY after expanding \noexpand (by readXToken),
@@ -439,7 +437,7 @@ sub readNumber {
   elsif(defined (   $n = $self->readInternalGlue     )){ Number($s * $n->valueOf); }
   else{ my $t = $self->readToken;
 	$self->unread($t);
-	Warn("Missing number, treated as zero at ".ToString($t));        Number(0); }}
+	Warn(":expected:<number> Missing number, treated as zero at ".ToString($t));        Number(0); }}
 
 # <normal integer> = <internal integer> | <integer constant>
 #   | '<octal constant><one optional space> | "<hexadecimal constant><one optional space>
@@ -501,10 +499,10 @@ sub readDimension {
   elsif(defined (   $d = $self->readFactor)           ){ 
     my $unit = $self->readUnit;
     if(!defined $unit){
-      Warn("Illegal unit of measure (pt inserted).");
+      Warn(":expected:<unit> Illegal unit of measure (pt inserted).");
       $unit = 65536; }
     Dimension($s * $d * $unit); }
-  else{ Warn("Missing number, treated as zero.");        Dimension(0); }}
+  else{ Warn(":expected:<number> Missing number, treated as zero.");        Dimension(0); }}
 
 # <unit of measure> = <optional spaces><internal unit>
 #     | <optional true><physical unit><one optional space>
@@ -542,11 +540,11 @@ sub readMuDimension {
   if   (defined (my $m = $self->readFactor        )){
     my $munit = $self->readMuUnit;
     if(!defined $munit){
-      Warn("Illegal unit of measure (mu inserted).");
+      Warn(":expected:<unit> Illegal unit of measure (mu inserted).");
       $munit = $STATE->convertUnit('mu'); }
     MuDimension($s * $m * $munit); }
   elsif(defined (   $m = $self->readInternalMuGlue)){ MuDimension($s * $m->valueOf); }
-  else{ Warn("Expecting mudimen; assuming 0 ");       MuDimension(0); }}
+  else{ Warn(":expected:<mudimen> Expecting mudimen; assuming 0 ");       MuDimension(0); }}
 
 sub readMuUnit {
   my($self)=@_;
@@ -569,7 +567,7 @@ sub readGlue {
   else{
     my $d = $self->readDimension;
     if(!$d){
-      Warn("Missing number, treated as zero."); return Glue(0); }
+      Warn(":expected:<number> Missing number, treated as zero."); return Glue(0); }
     $d = $d->negate if $s < 0;
     my($r1,$f1,$r2,$f2);
     ($r1,$f1) = $self->readRubber if $self->readKeyword('plus');
@@ -589,13 +587,13 @@ sub readRubber {
   elsif($mu){
     my $u = $self->readMuUnit;
     if(!defined $u){
-      Warn("Illegal unit of measure (mu inserted).");
+      Warn(":expected:<unit> Illegal unit of measure (mu inserted).");
       $u = $STATE->convertUnit('mu'); }
     ($s*$f*$u,0); }
   else {
     my $u = $self->readUnit;
     if(!defined $u){
-      Warn("Illegal unit of measure (pt inserted).");
+      Warn(":expected:<unit> Illegal unit of measure (pt inserted).");
       $u = 65536; }
     ($s*$f*$u,0); }}
 
@@ -617,7 +615,7 @@ sub readMuGlue {
   else{
     my $d = $self->readMuDimension;
     if(!$d){
-      Warn("Missing number, treated as zero."); return MuGlue(0); }
+      Warn(":expected:<number> Missing number, treated as zero."); return MuGlue(0); }
     $d = $d->negate if $s < 0;
     my($r1,$f1,$r2,$f2);
     ($r1,$f1) = $self->readRubber(1) if $self->readKeyword('plus');
