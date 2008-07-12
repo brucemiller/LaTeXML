@@ -15,6 +15,19 @@ use LaTeXML::Package;
 DefColumnType('>{}',sub { $LaTeXML::BUILD_TEMPLATE->addBefore($_[1]->unlist); return; });
 DefColumnType('<{}',sub { $LaTeXML::BUILD_TEMPLATE->addAfter($_[1]->unlist); return; });
 
+# This is the same as p
+# but really needs to specify vertical alignment as centered
+DefColumnType('m{Dimension}',sub {
+  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\hbox'),T_BEGIN),#Tokens(T_BEGIN),
+				      after=>Tokens(T_END),
+				      align=>'justify', width=>$_[1]); return; });
+# This is also the same as p
+# but really needs to specify vertical alignment as bottom
+DefColumnType('b{Dimension}',sub {
+  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\hbox'),T_BEGIN),#Tokens(T_BEGIN),
+				      after=>Tokens(T_END),
+				      align=>'justify', width=>$_[1]); return; });
+
 # NOTE:  Come back & check this; is the arglist right??
 DefPrimitive('\newcolumntype{}[][]{}',sub {
   my($stomach,$char,$nargs,$opt,$replacement)=@_;
