@@ -2042,9 +2042,10 @@ DefPrimitiveI('\end{lrbox}',undef,sub { $_[0]->egroup; });
 DefPrimitive('\@begin@lrbox Token', sub {
   my($stomach,$token)=@_;
   $stomach->bgroup;
-  my $font = $STATE->lookupValue('font');
-  my $loc  = $stomach->getGullet->getLocator;
-  my $box = LaTeXML::Box->new($stomach->digestNextBody(),$font,$loc);
+#  my $font = $STATE->lookupValue('font');
+#  my $loc  = $stomach->getGullet->getLocator;
+#  my $box = LaTeXML::Box->new($stomach->digestNextBody(),$font,$loc);
+  my $box = LaTeXML::List->new($stomach->digestNextBody());
   AssignValue('box'.ToString($token), $box); });
 
 DefPrimitive('\usebox DefToken', sub { 
