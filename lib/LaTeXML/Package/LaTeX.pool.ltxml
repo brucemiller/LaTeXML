@@ -1275,6 +1275,15 @@ DefPrimitive('\@addtoreset{}{}',sub {
 	      Tokens(T_CS($ctr),T_CS($unctr),
 		     (LookupValue("\\cl\@$within") ? LookupValue("\\cl\@$within")->unlist :())),
 	      'global'); 
+  # This counter might be doing double duty generating ID's as well, so we may need to patch up.
+  my $prefix = LookupValue('@ID@prefix@'.$ctr);
+  if(defined $prefix){
+    DefMacroI(T_CS("\\the$ctr\@ID"),undef,
+	      "\\expandafter\\ifx\\csname the$within\@ID\\endcsname\\\@empty"
+	      ."\\else\\csname the$within\@ID\\endcsname.\\fi"
+	      ." $prefix\\csname \@$ctr\@ID\\endcsname",
+	      scope=>'global');
+    DefMacroI(T_CS("\\\@$ctr\@ID"),undef,"0",scope=>'global'); }
   return; });
 
 DefMacro('\value{}',   sub {  Explode(CounterValue($_[1])->valueOf);});
@@ -2038,7 +2047,8 @@ DefPrimitive('\@begin@lrbox Token', sub {
   my $box = LaTeXML::Box->new($stomach->digestNextBody(),$font,$loc);
   AssignValue('box'.ToString($token), $box); });
 
-DefPrimitive('\usebox DefToken', sub { LookupValue('box'.ToString($_[1]));});
+DefPrimitive('\usebox DefToken', sub { 
+  LookupValue('box'.ToString($_[1])) || LaTeXML::Box->new();});
 
 DefConstructor('\parbox[]{Dimension}{}',
 	       "<ltx:inline-block ?#2(width='#2') vattach='#vattach' align='justified'>#3</ltx:inline-block>",
