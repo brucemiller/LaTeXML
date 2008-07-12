@@ -391,7 +391,8 @@ sub GenerateID {
 
 sub StartSemiverbatim() {
   $STATE->pushFrame;
-  map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%');}  # should '%' too ?
+  # I had % here, originally, but found a problem and took it out; but be warned!!
+  map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#'); }
 sub EndSemiverbatim() {  $STATE->popFrame; }
 
 sub Expand            { $STATE->getStomach->getGullet->expandTokens(@_); }

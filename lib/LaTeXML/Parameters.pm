@@ -189,7 +189,7 @@ sub readArgumentsAndDigest {
     my $value = $parameter->read($gullet);
     if((!defined $value) && !$$parameter{optional}){
       my $tok = $gullet->readToken;
-      Error(":expected:".ToString($parameter)."Missing argument ".ToString($parameter)." for ".ToString($fordefn)
+      Error(":expected:".ToString($parameter)." Missing argument ".ToString($parameter)." for ".ToString($fordefn)
 	    .($tok ? "; next is ".Stringify($tok) : " input is empty"));
       $gullet->unread($tok) if $tok; }
     if(!$$parameter{novalue}){
@@ -230,8 +230,9 @@ sub read {
   # Hmmm, seem to still need it...
   if($$self{semiverbatim}){
       $STATE->pushFrame;
+      # I had % here, originally, but found a problem and took it out; but be warned!!
       map($STATE->assignCatcode($_=>CC_OTHER,'local'),
-	  '^','_','@','~','&','$','#','%'); }
+	  '^','_','@','~','&','$','#'); }
   my $value = &{$$self{reader}}($gullet,@{$$self{extra}||[]});
   $value = $value->neutralize if $$self{semiverbatim} && (ref $value)
     && $value->can('neutralize'); 
