@@ -915,7 +915,9 @@ DefConstructor('\hbox BoxSpecification BoxContents',
 	       "<ltx:text width='&REF(#1,to)' pad-width='&REF(#1,spread)'>#2</ltx:text>",
 	       mode=>'text',
 	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
-	       beforeDigest=>sub { Let(T_MATH,T_CS('\@text@alignment$')); });
+	       # And also things like \centerline that will end up bumping up to block level!
+	       beforeDigest=>sub { Let(T_MATH,T_CS('\@text@alignment$'));
+				   Let(T_CS('\centerline'),T_CS('\relax')); });
 
 DefConstructor('\vbox BoxSpecification BoxContents',
 	       "<ltx:inline-block vattach='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
