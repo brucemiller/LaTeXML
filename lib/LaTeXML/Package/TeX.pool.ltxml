@@ -1995,9 +1995,23 @@ DefConstructor('\abovewithdelims Token Token Dimension',
 #======================================================================
 DefConstructor('\cal', '', requireMath=>1, font=>{family=>'caligraphic'});
 
-DefConstructor('\@end@emph','</ltx:emph>');
-DefConstructor('\em',"<ltx:emph>", 
-	       afterDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@end@emph')); });
+# In principle, <ltx:emph> is a nice markup for emphasized.
+# Unfortunately, TeX really just treats it as a font switch.
+# Something like:  \em et.al. \rm more stuff
+# works in TeX, but in our case, since there is no explicit {},
+# the <ltx:emph> stays open!  Ugh!
+# This could still be made to work, but merge font would
+# need to look at any open <ltx:emph>, and then somehow close it!
+## DefConstructor('\@end@emph','</ltx:emph>');
+## DefConstructor('\em',"<ltx:emph>", 
+## 	       afterDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@end@emph')); });
+# So, we'll just toggle between shape = italic and normal, for now. Sigh.
+DefConstructor('\em', '',
+	       beforeDigest=>sub {
+		 my $font = LookupValue('font');
+		 my $shape = $font->getShape;
+		 AssignValue(font=>$font->merge(shape=>($shape eq 'italic' ? 'normal' : 'italic')),
+			     'local'); });
 
 # Change math font while still in text!
 DefPrimitive('\boldmath',  sub { AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>1), 'local'); },
