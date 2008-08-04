@@ -488,7 +488,7 @@ BREAKSET:  foreach my $breakset (reverse @breaksets){ # prunes better reversed?
   my($maxarea,$minarea) = (0,999999999);
   map($maxarea = max($maxarea,$$_{area}),@layouts);
   map($minarea = min($minarea,$$_{area}),@layouts);
-  map( $$_{penalty} *= (1+($$_{area} -$minarea)/$maxarea), @layouts);
+  map( $$_{penalty} *= (1+($$_{area} -$minarea)/$maxarea), @layouts) if $maxarea > $minarea;
   @layouts = prunesort($target,@layouts);
 
 ##  print STDERR "",("  " x $level), $type," pruned $pruned\n" if $pruned && ($DEBUG>1);
