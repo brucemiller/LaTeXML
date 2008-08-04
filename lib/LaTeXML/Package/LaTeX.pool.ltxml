@@ -1106,7 +1106,9 @@ DefConstructor('\mathnormal{}', '#1', bounded=>1, requireMath=>1,
 
 DefPrimitive('\newcommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
-  Error(":unexpected:\\newcommand ".Stringify($cs)." is already defined") if LookupDefinition($cs);
+  my $key = "defined:".Stringify($cs);
+  Error(":unexpected:\\newcommand ".Stringify($cs)." is already defined") if LookupValue($key);
+  AssignValue($key=>1);		# only if defined by \newcommand, not \def!
   DefMacroI($cs,convertLaTeXArgs($nargs,$opt),$body); });
 
 DefPrimitive('\renewcommand OptionalMatch:* DefToken [][]{}', sub {
@@ -1115,7 +1117,8 @@ DefPrimitive('\renewcommand OptionalMatch:* DefToken [][]{}', sub {
 
 DefPrimitive('\providecommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
-  return if LookupDefinition($cs);
+  my $key = "defined:".Stringify($cs);
+  return if LookupValue($key);
   DefMacroI($cs, convertLaTeXArgs($nargs,$opt),$body); });
 
 # Need to figure out exactly what `robust' means to LaTeXML...
