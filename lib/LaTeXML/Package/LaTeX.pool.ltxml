@@ -832,43 +832,74 @@ DefPrimitive('\end@eqnarray',sub{ $_[0]->egroup; });
 # We'll combine these cases into a single equation, but remember the alignment structure.
 # However, if more than 1 such row has refnums, we probably don't want to combine.
 # NOTE: intertext are not (yet) handled here; Can they appear?
+
 sub eqnarrayRegroupEquations {
   my($document,$equationgroup)=@_;
+  # Scan the "equations" to see what pattern of columns are present.
+  my @rows = ();
+  foreach my $rownode ($document->getChildElements($equationgroup)){
+    my @cells = $document->getChildElements($rownode); # The _Capture_'s representing each column.
+    push(@rows,{node=>$rownode, cols=>[@cells],
+		L=>($cells[0] && $cells[0]->hasChildNodes),
+		M=>($cells[1] && $cells[1]->hasChildNodes),
+		R=>($cells[2] && $cells[2]->hasChildNodes),
+		numbered=>$rownode->hasAttribute('refnum'),
+		labelled=>$rownode->hasAttribute('label') });  }
+  my $nL = scalar(grep($$_{L}, @rows));
+  my $nM = scalar(grep($$_{M}, @rows));
+  my $nR = scalar(grep($$_{R}, @rows));
+
+  # NOTE: A common (mis-)use of eqnarray seems to be to have all the 1st or last 2 columns empty.
+  # This amounts to simply a bunch of left aligned equations.
+  # However, if some of these start with a relation,
+  # presumably it's a single equation. (?)
+  # [Another heuristic might be the presence of \left. or \right.?]
+  if($nL && !$nM && !$nR){	# All LHS!
+    if(grep( (($$_{cols}[0]->firstChild->getAttribute('role') || '') eq 'RELOP'),@rows)){
+      eqnarrayJoinRows($document,$equationgroup,map($$_{node},@rows)); }
+    else {
+      foreach my $row (@rows){
+	equationgroupJoinCols($document,3,$$row{node}); }}
+    return; }
+  if($nR && !$nM && !$nL){	# All RHS!
+    if(grep( (($$_{cols}[2]->firstChild->getAttribute('role') || '') eq 'RELOP'),@rows)){
+      eqnarrayJoinRows($document,$equationgroup,map($$_{node},@rows)); }
+    else {
+      foreach my $row (@rows){
+	equationgroupJoinCols($document,3,$$row{node}); }}
+    return; }
+
   my @eqs = ();
   my $numbered=0;
   my $oddness=0;
-  foreach my $equation ($document->getChildElements($equationgroup)){
-    my @cells = $document->getChildElements($equation); # The _Capture_'s representing each column.
+  foreach my $row (@rows){
     my $class = 'unknown';
-    if($cells[0]->hasChildNodes){ # 1st column non-empty; Presumably a new "equation"
+    if($$row{L}){ # 1st column non-empty; Presumably a new "equation"
       $class = 'new'; }
-    elsif($cells[1]->hasChildNodes){ # 1st is empty & 2nd non-empty (Rel?); Probably continues
+    elsif($$row{M}){ # 1st is empty & 2nd non-empty (Rel?); Probably continues
       if(!scalar(@eqs)){	     # But if no previous equation?
 	$class = 'odd'; }
-      elsif($numbered && $equation->hasAttribute('refnum')){ # Separately numbered continuation?
+      elsif($numbered && $$row{numbered}){ # Separately numbered continuation?
 	$class = 'new';  } # Keep it as separate equation, even though missing LHS
       else {
 	$class = 'continue'; }} # Continues as multiequation
     else{			# 1st & 2nd is empty
       if(!scalar(@eqs)){	     # But if no previous equation?
 	$class = 'odd'; }
-      elsif($numbered && $equation->hasAttribute('refnum') # Separately numbered AND labeled?
-	 && $equation->hasAttribute('labels')){
+      elsif($numbered && $$row{numbered} # Separately numbered AND labeled?
+	 && $$row{labelled}){
 	$class = 'odd'; }	# must keep separate, but weird!
       else {
 	$class = 'continue'; }} # Else, continues RHS.
+
     if(($class eq 'new') || ($class eq 'odd')){
-      $numbered = $equation->hasAttribute('refnum');
-      push(@eqs,[$equation]);
+      $numbered = $$row{numbered};
+      push(@eqs,[$$row{node}]);
       $oddness ++ if $class eq 'odd'; }
     else {
-      $numbered |= $equation->hasAttribute('refnum');
-      push(@{$eqs[$#eqs]},$equation); }
+      $numbered |= $$row{numbered};
+      push(@{$eqs[$#eqs]},$$row{node}); }
   }
-  # NOTE: A common (mis-)use of eqnarray seems to be to have all the 1st 2 columns empty.
-  # This amounts to simply a bunch of left aligned equations.
-  # We probably shouldn't warn in that case, and should extract the "simple" equations...
-  # BUT, not done yet.
 
   Warn(":unexpected:<eqnarray> Unrecognized equation patterns ($oddness) in eqnarray") if $oddness;
   # Now rearrange things appropriately.
@@ -968,6 +999,8 @@ sub addColumnToMathFork {
   my $td = addNewChildLate($document,$branch,'ltx:td');
   if(my $align = $cell->getAttribute('align')){
     $td->setAttribute(align=>$align); }
+  if(my $colspan = $cell->getAttribute('colspan')){
+    $td->setAttribute(colspan=>$colspan); }
   addToMathFork($document,$main,$td,$cell); }
 
 # Here's the really nasty part.
