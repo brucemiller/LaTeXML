@@ -386,7 +386,7 @@ ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation/ltx:MathFo
 
   <!-- NOTE: This is pretty wacky.  Maybe we should move the text inside the equation? -->
   <xsl:template match="ltx:td" mode="aligned">
-    <td class="{f:classes(.)}" align="{@align}" nowrap="yes">
+    <td class="{f:classes(.)}" align="{@align}" nowrap="yes" colspan="{f:if(@colspan,@colspan,1)}">
       <xsl:apply-templates/><xsl:if test="(self::* = ../ltx:td[position()=last()])
       and (parent::* = ../../ltx:tr[position()=last()])
       and ancestor::ltx:MathFork/following-sibling::*[position()=1][self::ltx:text]"
