@@ -267,13 +267,18 @@ if(!$prescan){
   if($stylesheet){
     require 'LaTeXML/Post/XSLT.pm'; 
     my @csspaths=();
-    if(@css && $destination){
+    if(@css){
       foreach my $css (@css){
 	$css .= '.css' unless $css =~ /\.css$/;
-	my $csssource = pathname_find($css,types=>['css'],paths=>[$sourcedir||'.'],
-				      installation_subdir=>'style');
+	# Dance, if dest is current dir, we'll find the old css before the new one!
+	my @csssources = map(pathname_canonical($_),
+			     pathname_findall($css,types=>['css'],
+					      ($sourcedir ? (paths=>[$sourcedir]):()),
+					      installation_subdir=>'style'));
 	my $csspath = pathname_absolute($css,pathname_directory($destination));
-	pathname_copy($csssource,$csspath)  if -f $csssource; 
+	while(@csssources && ($csssources[0] eq $csspath)){ shift(@csssources); }
+	my $csssource = shift(@csssources);
+	pathname_copy($csssource,$csspath)  if -f $csssource;
 	push(@csspaths,$csspath); }}
     push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,
 					 css=>[@csspaths],
