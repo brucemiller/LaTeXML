@@ -2027,14 +2027,22 @@ DefPrimitive('\samepage',undef);
 # \fill
 # \stretch
 # \newlength{cmd}
+DefPrimitive('\@check@length DefToken',sub {
+  my($stomach,$cs)=@_;
+  my $defn = LookupDefinition($cs);
+  if(!$defn || !$defn->isRegister){
+    Warn(":undefined:".ToString($cs)." is not a length; defining it now");
+    DefRegisterI($cs,undef,Dimension(0)); }
+  return; });
+
 DefPrimitive('\newlength DefToken',sub {
-  my($stomach,$cmd)=@_;
-  DefRegister(ToString($cmd),Dimension(0)); });
-DefMacro('\setlength{}{}','#1#2\relax');
-DefMacro('\addtolength{}{}','\advance#1 #2\relax');
-DefMacro('\settowidth{}{}','#1 0pt\relax'); # Till we have an approximation of width
-DefMacro('\settoheight{}{}','#1 0pt\relax'); # "
-DefMacro('\settodepth{}{}','#1 0pt\relax'); # "
+  my($stomach,$cs)=@_;
+  DefRegisterI($cs,undef,Dimension(0)); });
+DefMacro('\setlength{}{}','\@check@length{#1}#1#2\relax');
+DefMacro('\addtolength{}{}','\@check@length{#1}\advance#1 #2\relax');
+DefMacro('\settowidth{}{}','\@check@length{#1}#1 0pt\relax'); # Till we have an approximation of width
+DefMacro('\settoheight{}{}','\@check@length{#1}#1 0pt\relax'); # "
+DefMacro('\settodepth{}{}','\@check@length{#1}#1 0pt\relax'); # "
 
 # Assuming noone tries to get clever with figuring out the allocation of 
 # numbers, these become simple DefRegister's
