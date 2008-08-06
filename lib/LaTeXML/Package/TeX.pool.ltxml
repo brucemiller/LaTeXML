@@ -624,6 +624,7 @@ our %font_family=(cmr=>{family=>'serif'},      cmss=>{family=>'sansserif'},
 		  eur=>{family=>'serif'},      eus=>{family=>'script'},
 		  euf=>{family=>'fraktur'},    euex=>{family=>'symbol'},
 		  # The following are actually math fonts.
+		  ms=>{family=>'symbol'},
 		  ccm=>{family=>'serif', shape=>'italic'},
 		  cmex=>{family=>'symbol'}, # Not really symbol, but...
 		  cmsy=>{family=>'symbol'},
@@ -638,7 +639,7 @@ our %font_family=(cmr=>{family=>'serif'},      cmss=>{family=>'sansserif'},
 		  );
 
 our %font_series=(''=>'medium',m=>'medium', mc=>'medium', 
-		  b=>'bold',bc=>'bold', bx=>'bold', sb=>'bold', sbc=>'bold');
+		  b=>'bold',bc=>'bold', bx=>'bold', sb=>'bold', sbc=>'bold', bm=>'bold');
 our %font_shape =(''=>'upright',n=>'upright', i=>'italic',it=>'italic',
 		  sl=>'slanted', sc=>'smallcaps', csc=>'smallcaps');
 
@@ -646,7 +647,7 @@ our $FONTREGEXP
   = '('.join('|',sort { -($a cmp $b) } keys %font_family).')'
   . '('.join('|',sort { -($a cmp $b) } keys %font_series).')'
   . '('.join('|',sort { -($a cmp $b) } keys %font_shape).')'
-  . '(\d+)';
+  . '(\d*)';
   
 # Decode a font size in points into a "logical" size.
 our @font_size_map=(0.60=>'tiny',   0.75=>'script', 0.85=>'footnote',0.95=>'small',
