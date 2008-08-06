@@ -40,7 +40,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:bibitem/ltx:tag">
-    <span class="{concat(f:classes(.),' bibitem-tag')}"><xsl:apply-templates/><xsl:value-of select="@close"/></span>
+    <span class="{concat(f:classes(.),' bibitem-tag')}"><xsl:value-of select="@open"/><xsl:apply-templates/><xsl:value-of select="@close"/></span>
   </xsl:template>
 
   <xsl:template match="ltx:bib-citekeys"/>
