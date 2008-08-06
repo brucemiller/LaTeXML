@@ -70,6 +70,9 @@ dl.description dl.description dd { margin-left:3em; }
 
 .bibliography dt { margin-right:0.5em; float:left; }
 .bibliography dd { margin-left:3em; }
+.biblist { list-style-type:none; }
+.bibitem-tag { font-weight:bold; margin-left:-2em; width:3em; }
+.bibitem-tag + div { display:inline; }
 
 .indexlist li { list-style-type:none;  }
 .indexlist { margin-left:1em; padding-left:1em;}
