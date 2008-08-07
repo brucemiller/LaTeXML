@@ -256,6 +256,8 @@ sub DefColumnType {
 # Keywords:
 #  idprefix : specifies a prefix to be used in formatting ID's for document structure elements
 #           counted by this counter.  Ie. subsection 3 in section 2 might get: id="S2.SS3"
+#  idwithin : specifies that the ID is composed from $idwithin's ID,, even though
+#           the counter isn't numbered within it.  (mainly to avoid duplicated ids)
 #   nested : a list of counters that correspond to scopes which are "inside" this one.
 #           Whenever any definitions scoped to this counter are deactivated,
 #           the inner counter's scopes are also deactivated.
@@ -285,10 +287,10 @@ sub NewCounter {
   AssignValue('@ID@prefix@'.$ctr=>$prefix) if $prefix;
   $prefix = LookupValue('@ID@prefix@'.$ctr) unless $prefix;
   if(defined $prefix){
-    if($within){
+    if(my $idwithin = $options{idwithin} || $within){
       DefMacroI(T_CS("\\the$ctr\@ID"),undef,
-	       "\\expandafter\\ifx\\csname the$within\@ID\\endcsname\\\@empty"
-	       ."\\else\\csname the$within\@ID\\endcsname.\\fi"
+	       "\\expandafter\\ifx\\csname the$idwithin\@ID\\endcsname\\\@empty"
+	       ."\\else\\csname the$idwithin\@ID\\endcsname.\\fi"
 	       ." $prefix\\csname \@$ctr\@ID\\endcsname",
 		scope=>'global'); }
     else {
@@ -391,8 +393,9 @@ sub GenerateID {
 
 sub StartSemiverbatim() {
   $STATE->pushFrame;
-  # I had % here, originally, but found a problem and took it out; but be warned!!
-  map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#'); }
+  map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%'); 
+  return; }
+
 sub EndSemiverbatim() {  $STATE->popFrame; }
 
 sub Expand            { $STATE->getStomach->getGullet->expandTokens(@_); }
