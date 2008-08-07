@@ -113,6 +113,7 @@ DefEnvironment('{multline}',
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
+	       beforeDigest=>sub {   Let(T_MATH,T_CS('\@math@alignment$')); },
 	       properties=> sub { RefStepCounter('equation') });
 DefEnvironment('{multline*}',
 	       "<ltx:equation>"
@@ -120,6 +121,7 @@ DefEnvironment('{multline*}',
 	       .  "<ltx:XMath>#body</ltx:XMath>"
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
+	       beforeDigest=>sub {   Let(T_MATH,T_CS('\@math@alignment$')); },
 	       mode=>'display_math');
 
 #======================================================================
