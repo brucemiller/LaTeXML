@@ -1,0 +1,21 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  amstex                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# / Thanks to the arXMLiv group for 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use strict;
+use LaTeXML::Package;
+
+# amstex.sty is obsolete; It is  recommended to try to use amsmath instead.
+RequirePackage('amsmath');
+
+1;
