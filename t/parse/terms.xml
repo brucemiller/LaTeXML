@@ -6,7 +6,7 @@
   <section refnum="1" xml:id="S1">
     <title>Basic math</title>
     <para xml:id="S1.p1">
-      <equation xml:id="Ex1">
+      <equation xml:id="S1.Ex1">
         <Math mode="display" tex="a+b+c-d+e" text="((a + b + c) - d) + e">
           <XMath>
             <XMApp>
@@ -26,7 +26,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex2">
+      <equation xml:id="S1.Ex2">
         <Math mode="display" tex="a+bc-de" text="(a + b * c) - d * e">
           <XMath>
             <XMApp>
@@ -49,7 +49,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex3">
+      <equation xml:id="S1.Ex3">
         <Math mode="display" tex="abc/de" text="((a * b * c) / d) * e">
           <XMath>
             <XMApp>
@@ -69,7 +69,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex4">
+      <equation xml:id="S1.Ex4">
         <Math mode="display" tex="a\times b\times c/d\times e" text="((a times b times c) / d) times e">
           <XMath>
             <XMApp>
@@ -94,7 +94,7 @@
   <section refnum="2" xml:id="S2">
     <title>Evaluate At</title>
     <para xml:id="S2.p1">
-      <equation xml:id="Ex5">
+      <equation xml:id="S2.Ex5">
         <Math mode="display" tex="a|_{\infty}" text="AT@(a, infinity)">
           <XMath>
             <XMApp>
@@ -105,7 +105,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex6">
+      <equation xml:id="S2.Ex6">
         <Math mode="display" tex="ab|_{{a=0}}cd|_{{c=0}}e" text="AT@(AT@(a * b, a = 0) * c * d, c = 0) * e">
           <XMath>
             <XMApp>
@@ -146,7 +146,7 @@
   <section refnum="3" xml:id="S3">
     <title>Absolute values</title>
     <para xml:id="S3.p1">
-      <equation xml:id="Ex7">
+      <equation xml:id="S3.Ex7">
         <Math mode="display" tex="|a|" text="abs@(a)">
           <XMath>
             <XMApp>
@@ -156,7 +156,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex8">
+      <equation xml:id="S3.Ex8">
         <Math mode="display" tex="||a||" text="abs@(abs@(a))">
           <XMath>
             <XMApp>
@@ -169,7 +169,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex9">
+      <equation xml:id="S3.Ex9">
         <Math mode="display" tex="|a|_{\infty}" text="(abs@(a)) _ infinity">
           <XMath>
             <XMApp>
@@ -183,7 +183,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex10">
+      <equation xml:id="S3.Ex10">
         <Math mode="display" tex="|a+b|" text="abs@(a + b)">
           <XMath>
             <XMApp>
@@ -197,7 +197,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex11">
+      <equation xml:id="S3.Ex11">
         <Math mode="display" tex="|a-|b||" text="abs@(a - abs@(b))">
           <XMath>
             <XMApp>
@@ -219,7 +219,7 @@
   <section refnum="4" xml:id="S4">
     <title>Failures w/o Backtracking</title>
     <para xml:id="S4.p1">
-      <equation xml:id="Ex12">
+      <equation xml:id="S4.Ex12">
         <Math mode="display" tex="||a|-|b||">
           <XMath>
             <XMTok role="VERTBAR">|</XMTok>
@@ -234,7 +234,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex13">
+      <equation xml:id="S4.Ex13">
         <Math mode="display" tex="||a|-b|">
           <XMath>
             <XMTok role="VERTBAR">|</XMTok>
@@ -247,7 +247,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex14">
+      <equation xml:id="S4.Ex14">
         <Math mode="display" tex="|a|b|_{\infty}">
           <XMath>
             <XMTok role="VERTBAR">|</XMTok>
@@ -261,7 +261,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex15">
+      <equation xml:id="S4.Ex15">
         <Math mode="display" tex="|ab|_{\infty}c|">
           <XMath>
             <XMTok role="VERTBAR">|</XMTok>

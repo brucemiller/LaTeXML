@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="url"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <para xml:id="p1">
+    <p>Text <ref class="url" href="http://foo/bar"><text font="typewriter">http://foo/bar</text></ref>
+and
+<ref class="url" href="http://foo/baz%bar"><text font="typewriter">http://foo/baz%bar</text></ref>
+done.</p>
+  </para>
+  <para xml:id="p2">
+    <p>Verbatim <verbatim font="typewriter">a_b</verbatim> done.</p>
+  </para>
+</document>

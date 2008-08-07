@@ -6,7 +6,7 @@
   <section refnum="1" xml:id="S1">
     <title>Basic math</title>
     <para xml:id="S1.p1">
-      <equation xml:id="Ex1">
+      <equation xml:id="S1.Ex1">
         <Math mode="display" tex="((a+b)-c)" text="(a + b) - c">
           <XMath>
             <XMApp open="(" close=")">
@@ -21,7 +21,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex2">
+      <equation xml:id="S1.Ex2">
         <Math mode="display" tex="(a+(b-c))" text="a + (b - c)">
           <XMath>
             <XMApp open="(" close=")">
@@ -41,7 +41,7 @@
   <section refnum="2" xml:id="S2">
     <title>Intervals</title>
     <para xml:id="S2.p1">
-      <equation xml:id="Ex3">
+      <equation xml:id="S2.Ex3">
         <Math mode="display" tex="(a,b)" text="open_interval@(a, b)">
           <XMath>
             <XMApp>
@@ -52,7 +52,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex4">
+      <equation xml:id="S2.Ex4">
         <Math mode="display" tex="[a,b)" text="closed_open_interval@(a, b)">
           <XMath>
             <XMApp>
@@ -63,7 +63,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex5">
+      <equation xml:id="S2.Ex5">
         <Math mode="display" tex="(a,b]" text="open_closed_interval@(a, b)">
           <XMath>
             <XMApp>
@@ -74,7 +74,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex6">
+      <equation xml:id="S2.Ex6">
         <Math mode="display" tex="[a,b]" text="closed_interval@(a, b)">
           <XMath>
             <XMApp>
@@ -90,7 +90,7 @@
   <section refnum="3" xml:id="S3">
     <title>Cases</title>
     <para xml:id="S3.p1">
-      <equation xml:id="Ex7">
+      <equation xml:id="S3.Ex7">
         <Math mode="display" tex="\left.\begin{array}[]{l}a\\&#10;b\end{array}\right\}=\left\{\begin{array}[]{l}c\\&#10;d\end{array}\right." text="RCases@(Array[[a], [b]]) = LCases@(Array[[c], [d]])">
           <XMath>
             <XMApp>
@@ -131,7 +131,7 @@
       </equation>
     </para>
     <para xml:id="S3.p2">
-      <equation xml:id="Ex8">
+      <equation xml:id="S3.Ex8">
         <Math mode="display" tex="\left(\begin{array}[]{l}c\\&#10;d\end{array}\right)" text="Array[[c], [d]]">
           <XMath>
             <XMArray role="ARRAY" open="(" close=")">
@@ -149,7 +149,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex9">
+      <equation xml:id="S3.Ex9">
         <Math mode="display" tex="(a+\left(\begin{array}[]{l}c\\&#10;d\end{array}\right)+b)" text="a + Array[[c], [d]] + b">
           <XMath>
             <XMApp open="(" close=")">
@@ -177,7 +177,7 @@
   <section refnum="4" xml:id="S4">
     <title>Atop</title>
     <para xml:id="S4.p1">
-      <equation xml:id="Ex10">
+      <equation xml:id="S4.Ex10">
         <Math mode="display" tex="a+{b\atop c}+d" text="a + STACKED@(b, c) + d">
           <XMath>
             <XMApp>
@@ -193,7 +193,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex11">
+      <equation xml:id="S4.Ex11">
         <Math mode="display" tex="a+\left[b\atop c\right]+d" text="a + STACKED@(b, c) + d">
           <XMath>
             <XMApp>
@@ -214,7 +214,7 @@
   <section refnum="5" xml:id="S5">
     <title>Delimiters</title>
     <para xml:id="S5.p1">
-      <equation xml:id="Ex12">
+      <equation xml:id="S5.Ex12">
         <Math mode="display" tex="\left({a\over b}\right)" text="a / b">
           <XMath>
             <XMApp open="(" close=")">
@@ -225,7 +225,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex13">
+      <equation xml:id="S5.Ex13">
         <Math mode="display" tex="\left[{a\over b}\right]" text="a / b">
           <XMath>
             <XMApp open="[" close="]">
@@ -236,7 +236,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex14">
+      <equation xml:id="S5.Ex14">
         <Math mode="display" tex="\left[{a\over b}\right]" text="a / b">
           <XMath>
             <XMApp open="[" close="]">
@@ -247,7 +247,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex15">
+      <equation xml:id="S5.Ex15">
         <Math mode="display" tex="\left\{{a\over b}\right\}" text="set@(a / b)">
           <XMath>
             <XMApp>
@@ -261,7 +261,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex16">
+      <equation xml:id="S5.Ex16">
         <Math mode="display" tex="\left\{{a\over b}\right\}" text="set@(a / b)">
           <XMath>
             <XMApp>
@@ -275,7 +275,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex17">
+      <equation xml:id="S5.Ex17">
         <Math mode="display" tex="\left\lfloor{a\over b}\right\rfloor" text="floor@(a / b)">
           <XMath>
             <XMApp>
@@ -289,7 +289,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex18">
+      <equation xml:id="S5.Ex18">
         <Math mode="display" tex="\left\lceil{a\over b}\right\rceil" text="ceiling@(a / b)">
           <XMath>
             <XMApp>
@@ -303,7 +303,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex19">
+      <equation xml:id="S5.Ex19">
         <Math mode="display" tex="\left&lt;{a\over b}\right&gt;" text="a / b">
           <XMath>
             <XMApp open="〈" close="〉">
@@ -314,7 +314,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex20">
+      <equation xml:id="S5.Ex20">
         <Math mode="display" tex="\left\langle{a\over b}\right\rangle" text="a / b">
           <XMath>
             <XMApp open="〈" close="〉">
@@ -325,7 +325,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex21">
+      <equation xml:id="S5.Ex21">
         <Math mode="display" tex="\left|{a\over b}\right|" text="abs@(a / b)">
           <XMath>
             <XMApp>
@@ -339,7 +339,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex22">
+      <equation xml:id="S5.Ex22">
         <Math mode="display" tex="\left|{a\over b}\right|" text="abs@(a / b)">
           <XMath>
             <XMApp>
@@ -353,7 +353,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex23">
+      <equation xml:id="S5.Ex23">
         <Math mode="display" tex="\left\|{a\over b}\right\|" text="a / b">
           <XMath>
             <XMApp open="∥" close="∥">
@@ -364,7 +364,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex24">
+      <equation xml:id="S5.Ex24">
         <Math mode="display" tex="\left\|{a\over b}\right\|" text="a / b">
           <XMath>
             <XMApp open="∥" close="∥">
@@ -375,7 +375,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex25">
+      <equation xml:id="S5.Ex25">
         <Math mode="display" tex="\left\uparrow{a\over b}\right\downarrow" text="a / b">
           <XMath>
             <XMApp open="↑">
@@ -386,7 +386,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex26">
+      <equation xml:id="S5.Ex26">
         <Math mode="display" tex="\left\Uparrow{a\over b}\right\Downarrow" text="a / b">
           <XMath>
             <XMApp open="⇑">
@@ -397,7 +397,7 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ex27">
+      <equation xml:id="S5.Ex27">
         <Math mode="display" tex="\left\updownarrow{a\over b}\right\Updownarrow" text="a / b">
           <XMath>
             <XMApp open="↕">
@@ -410,7 +410,7 @@
       </equation>
     </para>
     <para xml:id="S5.p2">
-      <equation xml:id="Ex28">
+      <equation xml:id="S5.Ex28">
         <Math mode="display" tex="a+\left\langle{b\over c}\right\rangle+d" text="a + b / c + d">
           <XMath>
             <XMApp>
@@ -428,7 +428,7 @@
       </equation>
     </para>
     <para xml:id="S5.p3">
-      <equation xml:id="Ex29">
+      <equation xml:id="S5.Ex29">
         <Math mode="display" tex="{a\over b}\left/{c\over d}\right." text="(a / b) / (c / d)">
           <XMath>
             <XMApp>
