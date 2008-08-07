@@ -57,9 +57,9 @@ DefMacro('\thesubsubsection','\thesubsection.\arabic{subsubsection}');
 DefMacro('\theparagraph',    '');
 DefMacro('\thesubparagraph', '');
 
-NewCounter('equation', 'document', idprefix=>'E');
-NewCounter('figure',   'document', idprefix=>'F');
-NewCounter('table',    'document', idprefix=>'T');
+NewCounter('equation', 'document', idprefix=>'E', idwithin=>'section');
+NewCounter('figure',   'document', idprefix=>'F', idwithin=>'section');
+NewCounter('table',    'document', idprefix=>'T', idwithin=>'section');
 
 DefMacro('\theequation', '\arabic{equation}');
 DefMacro('\thefigure',   '\arabic{figure}');
