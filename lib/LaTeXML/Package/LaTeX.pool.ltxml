@@ -2673,6 +2673,10 @@ DefPrimitive('\makeatother', sub { AssignCatcode('@'=>CC_OTHER, 'local'); });
 # Sundry (is this ams ?)
 DefConstructor('\textprime',UTF(0xB4)); # ACUTE ACCENT
 
+RawTeX(<<'EOTeX');
+\let\endgraf=\par
+\let\endline=\cr
+EOTeX
 #**********************************************************************
 # Should be defined in each (or many) package, but it's not going to
 # get set correctly or maintained, so...
