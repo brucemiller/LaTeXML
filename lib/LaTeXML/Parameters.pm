@@ -229,10 +229,12 @@ sub read {
   # cleanup after the fact!
   # Hmmm, seem to still need it...
   if($$self{semiverbatim}){
+    # Nasty Hack: If immediately followed by %, should discard the comment
+    # EVEN if semiverbatim makes % into other!
+    if(my $peek = $gullet->readToken){ $gullet->unread($peek); }
       $STATE->pushFrame;
-      # I had % here, originally, but found a problem and took it out; but be warned!!
       map($STATE->assignCatcode($_=>CC_OTHER,'local'),
-	  '^','_','@','~','&','$','#'); }
+	  '^','_','@','~','&','$','#','%'); }
   my $value = &{$$self{reader}}($gullet,@{$$self{extra}||[]});
   $value = $value->neutralize if $$self{semiverbatim} && (ref $value)
     && $value->can('neutralize'); 
