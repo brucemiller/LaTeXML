@@ -660,6 +660,11 @@ sub DefMathI {
     if ($nargs > 0) && !defined $options{operator_role};
   $options{reversion} = Tokenize($options{reversion})
     if $options{reversion} && !ref $options{reversion};
+  # Store some data for introspection
+  AssignValue("math_definition:$csname",
+	      {role=>$options{role},
+	       meaning=>$options{meaning},
+	       nargs=>$nargs});
   my %common =(alias=>$options{alias}||$cs->getString,
 	       (defined $options{reversion}
 		? (reversion=>$options{reversion}) : ()),
