@@ -1,30 +1,145 @@
 #!/usr/bin/perl -w
-#**********************************************************************
-# Prepare the test suite using a (hopefully) good version of LaTeXML.
-# Generate XML files for each TeX file on the command line.
-# test.t compares these to the xml generated on a test system.
-#**********************************************************************
+# /=====================================================================\ #
+# |  maketests                                                          | #
+# | Test Maintenance tool                                               | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+use strict;
 use FindBin;
 use lib "$FindBin::RealBin/../blib/lib";
+use Getopt::Long qw(:config no_ignore_case);
+use Pod::Usage;
 use LaTeXML;
 use LaTeXML::Util::Pathname;
+use Algorithm::Diff;
 
+#======================================================================
+my $identity = "maketests (LaTeXML version $LaTeXML::VERSION)";
+my ($doxml,$dodvi,$docompare)=();
+my ($verbosity,$help,$showversion)=(0);
+GetOptions("xml!" => \$doxml,
+	   "dvi!" => \$dodvi,
+	   "compare!"=>\$docompare,
+	   "quiet"     => sub { $verbosity--; },
+	   "verbose"   => sub { $verbosity++; },
+	   "VERSION"   => \$showversion,
+	   "help"      => \$help,
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+if($showversion){ print STDERR "$identity\n"; exit(1); }
+pod2usage(-message=>"$identity\nMissing test TeX file", 
+	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
+my $source = $ARGV[0];
+
+#======================================================================
 # hmm... could be even more helpful
 #  copy xml to a backup and compare ?
-foreach my $file (@ARGV){
-  my($dir,$name,$ext)=pathname_split($file);
-  gen_xml($dir,$name);
-  gen_dvi($dir,$name);
+# or compare option
+# What about if $ARG is a directory? Do all tests in that directory? 
+foreach my $src_file (@ARGV){
+  $src_file .= ".tex" unless $src_file =~ /\.tex$/;
+  if(! -f $src_file){
+    die "There seems to be no test case $src_file"; }
+  my($dir,$name,$ext)=pathname_split($src_file);
+  my $xml_file = pathname_concat($dir,"$name.xml");
+  my $dvi_file = pathname_concat($dir,"$name.dvi");
+  my $src_time = pathname_timestamp($src_file);
+  my $xml_time = pathname_timestamp($xml_file);
+  my $dvi_time = pathname_timestamp($dvi_file);
+  if($docompare){
+    compare_xml($dir,$name);  }
+  else {
+    # Possibly remake xml
+    if(defined $doxml ? $doxml : !(-f $xml_file) || ($src_time > $xml_time)){
+      gen_xml($dir,$name); }
+    elsif(! defined $doxml){
+      print STDERR "Test case $xml_file seems uptodate\n"; }
+    # Possibly remake dvi
+    if( (defined $dodvi ? $dodvi : !(-f $xml_file) || ($src_time > $dvi_time))){
+      gen_dvi($dir,$name); }
+    elsif(! defined $dodvi){
+      print STDERR "Test case $dvi_file seems uptodate\n"; }
+  }
 }
-#**********************************************************************
+#======================================================================
+
+# Question!
+#   How should the comparison be done?
+#   * Incorporate a diff algorithm?  Probably yes
+#   * What form of the XML should be diff'd ?
+#     Primarily a question of whitespace,
+#     but potentially also namespace, PI, comments ?
+#     Forms:
+#     - the literal straight output of latexml?
+#     - a normalized form that puts one element per line?
+# Whatever form, it is most useful if it is the same form
+# as is used by "make test" itself!
+# Or should it???
+# The normalized form is most sensible for comparison,
+# but the literal form is most expected(?) for test!!
+# (else, we're ignoring whitespace changes in test)
+sub compare_xml {
+  my($dir,$name)=@_;
+  #========================================
+  # Generate the XML from the current latexml
+  my $latexml= LaTeXML->new(preload=>[], searchpath=>[], includeComments=>0);
+  my $file = pathname_concat($dir,$name);
+  my $newdom = $latexml->convertFile(pathname_concat($dir,$name))
+    or die "Failed to convert $file.tex: $!";
+  my $newlines = stringifyDom($newdom);
+
+  #========================================
+  # Read in the expected xml.
+  my $parser = XML::LibXML->new();
+  my $olddom = $parser->parse_file("$file.xml");
+  my $oldlines = stringifyDom($olddom);
+
+  #========================================
+  # Do the comparison
+  print "\n".("="x40)."\nCompare Expected $dir/$name to current output XML:\n";
+  my $diff = Algorithm::Diff->new($oldlines,$newlines);
+  while(  $diff->Next()  ) {
+    next   if  $diff->Same();
+    my $sep = '';
+    if(  ! $diff->Items(2)  ) {
+      printf "Missing: %d,%dd%d\n", $diff->Get(qw( Min1 Max1 Max2 )); }
+    elsif(  ! $diff->Items(1)  ) {
+      printf "Added: %da%d,%d\n", $diff->Get(qw( Max1 Min2 Max2 )); }
+    else {
+      $sep = "---\n";
+      printf "Changed: %d,%dc%d,%d\n", $diff->Get(qw( Min1 Max1 Min2 Max2 )); }
+    print "< $_\n"   for  $diff->Items(1);
+    print $sep;
+    print "> $_\n"   for  $diff->Items(2);
+  }
+}
+
+sub stringifyDom {
+  my($dom)=@_;
+  my $string = $dom->toString(1);
+#  $string =~ s/^\s+//gm;
+#  $string =~ s/\s+$//gm;
+#  $string =~ s/\n+/\n/gs;
+#  $dom = $parser->parse_string($string);
+#  my $normstring = $dom->toStringC14N();
+#  $normstring =~ s/[ \t]//g if $stripwhite;
+  [split("\n",$string)]; }
+
 sub gen_xml {
   my($dir,$name)=@_;
   my $latexml= LaTeXML->new(preload=>[], searchpath=>[], includeComments=>0);
   my $file = pathname_concat($dir,$name);
   if(-f "$file.xml"){
     rename("$file.xml", "$file.xml.bak"); }
-  $latexml->convertAndWriteFile(pathname_concat($dir,$name))
-    or die "Failed to create $dir/$name.xml: $!"
+  $latexml->convertAndWriteFile($file)
+    or die "Failed to create $file.xml: $!"
   }
 
 sub gen_dvi {
@@ -53,5 +168,180 @@ sub gen_dvi {
       unlink($f); }}
   chdir($cwd) if $dir;
 }
-#**********************************************************************
+#======================================================================
+__END__
+
+=pod 
+
+=head1 NAME
+
+C<maketests [options] testcases...> - LaTeXML test maintenance tool
+
+=head1 SYNOPSIS
+
+Use
+
+   make test
+
+from the build directory to run all tests.
+
+To compare the current latexml output for
+I<set/case> against the expected output:
+
+   maketests --compare set/case
+
+To regenerate the xml for a specific case,
+that is, to assert that the XML as it is currently
+generated is what should now be expected for that case,
+use
+
+   maketests set/case
+
+For help and description of the test framework:
+
+   maketests --help
+
+=head1 OVERVIEW
+
+LaTeXML includes a set of test cases for validating
+the compilation and installation, as well as for
+verifying the impact of changes to the system.
+
+Tests are conducted using the standard  L<Test::Builder> module,
+by executing
+
+   make test
+
+from the top level build directory.  It reports
+whether all tests are completed successfully,
+or which tests failed to generate the expected XML,
+typically showing the first mismatching line.
+
+=head2 Test Suite Organization
+
+Tests are collected in sets in the C<t> subdirectory of the LaTeXML build directory.
+Each set tests related functionality and is represented by
+its own subdirectory (eg. I<t/someset>), and a driver program (eg. I<44_someset.t>)
+in the C<t> directory.
+The driver runs all the test cases in given set's directory.
+
+Each test case, say I<case>, within a test set consists of 3 files:
+
+   case.tex   The source TeX file
+   case.xml   The expected XML output from latexml
+   case.dvi   The result of running latex; This file is
+       only for understanding the effect of the TeX markup.
+
+[The driver program and all three files for each testcase
+should be under SVN control.]
+
+=head2 Testing
+
+The C<make test> command should be run whenever LaTeXML is modified
+to verify that unexpected changes to the generated
+XML have not been introduced.  Given the nature
+of TeX and LaTeXML, such surprises can be frequent!
+
+When failed tests are discovered, the command
+
+  maketest --compare set/case
+
+can be run to see the differences between the
+expected output and the currently generated output.
+If the new output is not correct, you must continue
+refining LaTeXML until all tests pass.
+However, if the new output is preferred for
+whatever reason, the command
+
+  maketest set/case
+
+should be used to update the test.
+
+Whenever new functionality is added to LaTeXML,
+new test cases or even new sets of test cases
+should be added.
+
+See the documentation below for more details about
+these forms of C<maketest>, and the documentation
+for L<Test::Builder> for more
+information about testing Perl modules.
+
+=head1 TESTING OPERATIONS
+
+=head2 Comparing XML Output
+
+When a test fails, it is often unclear exactly
+how the output has changed; C<make test> only
+reports the first differing line of XML.
+The command
+
+   maketests --compare set/case ...
+
+will generate the new output compare it
+to the expected output in a diff-like manner.
+Multiple testcases can be given on the command line.
+
+Note that to aid in comprehension, the XML is
+reformatted to start and end each element on a new line.
+In contrast, the testing in C<make test> compares the
+literal XML without changing whitespace.
+Thus, changes that only affect whitespace will
+report a failed test from C<make test>,
+but C<maketests --compare> will report the output
+as identical!
+
+=head2 Updating a Test Case
+
+Occasionally, modifications to latexml or its binding files change the
+expectations about what the generated XML should look like;
+presumably the new version is better.  Or sometimes, you
+wish to improve the test by making it more comprehensive.
+
+In such cases, the test case(s) will need to be updated by
+regenerating the expected xml, and the dvi if the tex changed.
+Simply run
+
+   maketests set/case ...
+
+Multiple testcases can be given on the command line to be updated.
+
+To force regeneration of the dvi, use:
+
+   maketests --dvi set/case ...
+
+Remember to commit any changed files.
+
+=head2 Adding a Test Case
+
+To add a new test case, I<newcase>, to an existing test set, I<set>,
+create the appropriate TeX file C<t/set/newcase.tex> that
+involves the markup to be tested.
+Then run
+
+   maketests set/newcase ...
+
+to create the required I<set/newtest.xml> and I<set/newcase.dvi>
+files. Multiple testcases can be added at once.
+
+Remember to add all three files to the SVN repository.
+
+=head2 Adding a Test Set
+
+To create a new set of tests, say I<newset>, create 
+the directory I<t/newset> to contain the test cases
+and a driver program, I<t/##_newset.t>, (choose a number
+for I<##> to specifies when this test set will run in the sequence).
+The driver should look like:
+
+   use FindBin;
+   use lib "$FindBin::Bin/lib";
+   use TestLaTeXML;
+   latexml_tests("t/newset");
+
+Then add any desired testcases as described above.
+Remember to add the directory, driver and any tests
+to the SVN repository.
+
+=cut
+
 
