@@ -198,17 +198,20 @@ sub beAbsorbed {
 
   # We _should_ attach boxes to the alignment and rows,
   # but (ATM) we've only got sensible boxes for the cells.
-  $document->openElement($$self{containerElement},%attributes);
+#  $document->openElement($$self{containerElement},%attributes);
+  &{$$self{openContainer}}($document,%attributes);
   foreach my $row (@{$$self{rows}}){
-    $document->openElement($$self{rowElement},
-			   'xml:id'=>$$row{id},refnum=>$$row{refnum});
+#    $document->openElement($$self{rowElement},
+#			   'xml:id'=>$$row{id},refnum=>$$row{refnum});
+    &{$$self{openRow}}($document,'xml:id'=>$$row{id},refnum=>$$row{refnum});
     foreach my $cell (@{$$row{columns}}){
       next if $$cell{skipped};
       # Normalize the border attribute
       my $border = join(' ',sort(map(split(/ */,$_),$$cell{border}||'')));
       $border =~ s/(.) \1/$1$1/g;
       my $empty = !$$cell{boxes} || !scalar($$cell{boxes}->unlist);
-      $$cell{cell} = $document->openElement($$self{colElement},
+#      $$cell{cell} = $document->openElement($$self{colElement},
+      $$cell{cell} = &{$$self{openColumn}}($document,
 					    align=>$$cell{align}, width=>$$cell{width},
 					    (($$cell{span}||1) != 1 ? (colspan=>$$cell{span}) : ()),
 					    (($$cell{rowspan}||1) != 1 ? (rowspan=>$$cell{rowspan}) : ()),
@@ -220,9 +223,12 @@ sub beAbsorbed {
 	$document->absorb($$cell{boxes});
 	$document->closeElement('ltx:XMArg') if $ismath;
       }
-      $document->closeElement($$self{colElement}); }
-    $document->closeElement($$self{rowElement}); }
-  $document->closeElement($$self{containerElement});
+#      $document->closeElement($$self{colElement}); }
+      &{$$self{closeColumn}}($document); }
+#    $document->closeElement($$self{rowElement}); }
+    &{$$self{closeRow}}($document); }
+#  $document->closeElement($$self{containerElement});
+  &{$$self{closeContainer}}($document);
 }
 
 #======================================================================
