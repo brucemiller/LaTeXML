@@ -75,9 +75,17 @@ DefConstructor('\@@ams@intertext{}',
 
 sub amsalignBindings {
   my($template)=@_;
-  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>'ltx:equationgroup',
-						rowElement=>'ltx:equation',
-						colElement=>'_Capture_');
+#  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>'ltx:equationgroup',
+#						rowElement=>'ltx:equation',
+#						colElement=>'_Capture_');
+  my $alignment = LaTeXML::Util::Alignment
+    ->new(openContainer =>sub{ $_[0]->openElement('ltx:equationgroup',@_[1..$#_]); },
+	  closeContainer=>sub{ $_[0]->closeElement('ltx:equationgroup'); },
+	  openRow       =>sub{ $_[0]->openElement('ltx:equation',@_[1..$#_]); },
+	  closeRow      =>sub{ $_[0]->closeElement('ltx:equation'); },
+	  openColumn    =>sub{ $_[0]->openElement('_Capture_',@_[1..$#_]); },
+	  closeColumn   =>sub{ $_[0]->closeElement('_Capture_'); });
+
   AssignValue(Alignment=>$alignment);
   $alignment->setTemplate($template);
   Let(T_ALIGN,        T_CS('\@alignment@align'));
@@ -143,6 +151,7 @@ DefEnvironment('{split}',
 #======================================================================
 # Section 3.5 Equation groups without alignment
 
+# NOTE: Does this need provision to deal with metadata?
 DefConstructor('\@@amsgather SkipSpaces DigestedBody',
 	       sub {
 		 my($document,$body,%props)=@_;
@@ -219,6 +228,7 @@ sub processAMSAlignRows {
   my($document,$equationgroup)=@_;
   foreach my $equation ($document->getChildElements($equationgroup)){
     my @cells = $document->getChildElements($equation);
+    shift(@cells) if $document->getNodeQName($cells[0]) eq 'ltx:metadata';
     my @cell1cont = $document->getChildElements($cells[0]);
     # Check if this equation is really an intertext
     if((scalar(@cells)==1) && (scalar(@cell1cont)==1)
