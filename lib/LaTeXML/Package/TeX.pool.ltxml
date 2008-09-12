@@ -1112,8 +1112,8 @@ DefMacro('\span',
 	 .'\@alignment@span@marker'
 	 .'\@open@inner@column');
 DefConstructor('\@alignment@span@marker','',reversion=>'\span',
-	      properties=>{alignmentIgnorable=>1});
-DefConstructor('\omit','',properties=>{alignmentIgnorable=>1});
+	      properties=>{alignmentSkippable=>1});
+DefConstructor('\omit','',properties=>{alignmentSkippable=>1});
 
 DefMacro('\@alignment@cr',
 	 '\@close@inner@column\@close@column\@close@row'
@@ -1237,9 +1237,16 @@ sub alignmentBindings {
   my $container = ($ismath ? 'ltx:XMArray' : 'ltx:tabular');
   my $rowtype   = ($ismath ? 'ltx:XMRow'   : 'ltx:tr');
   my $coltype   = ($ismath ? 'ltx:XMCell'  : 'ltx:td');
-  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>$container,
-						rowElement=>$rowtype,
-						colElement=>$coltype);
+#  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>$container,
+#						rowElement=>$rowtype,
+#						colElement=>$coltype);
+  my $alignment = LaTeXML::Util::Alignment
+    ->new(openContainer =>sub{ $_[0]->openElement($container,@_[1..$#_]); },
+	  closeContainer=>sub{ $_[0]->closeElement($container); },
+	  openRow       =>sub{ $_[0]->openElement($rowtype,@_[1..$#_]); },
+	  closeRow      =>sub{ $_[0]->closeElement($rowtype); },
+	  openColumn    =>sub{ $_[0]->openElement($coltype,@_[1..$#_]); },
+	  closeColumn   =>sub{ $_[0]->closeElement($coltype); });
   AssignValue(Alignment=>$alignment);
   $alignment->setTemplate($template) if $template;
   Let(T_ALIGN,        T_CS('\@alignment@align'));
@@ -1299,7 +1306,9 @@ DefPrimitive('\@open@column SkipSpaces DigestedBody', sub {
   my $colspec = $alignment->getColumn($n0);
   my $align=  $$colspec{align} || 'left';
   my $border= '';
-  # Scan boxes for borders & hfill whatsits, adjusting $align and $border
+  # Peel off any boxes from both sides until we get the "meat" of the column.
+  # from this we can establish borders, alignment and emptiness.
+  # But we, of course, immediately put them back...
   my @boxes = $boxes->unlist;
   my @saveleft=();
   my @saveright=();
@@ -1310,11 +1319,12 @@ DefPrimitive('\@open@column SkipSpaces DigestedBody', sub {
       $border .= 'l'; shift(@boxes); }
     elsif($boxes[0]->getProperty('isHorizontalRule')){
       push(@saveleft,shift(@boxes)); }
-    elsif($boxes[0]->getProperty('alignmentIgnorable')){
+    elsif($boxes[0]->getProperty('alignmentSkippable')){
       push(@saveleft,shift(@boxes)); }
     elsif(ref $boxes[0] eq 'LaTeXML::Comment'){
       push(@saveleft,shift(@boxes)); }
-    elsif($boxes[0]->getProperty('isSpace')){
+#    elsif($boxes[0]->getProperty('isSpace')){
+    elsif(isEmpty($boxes[0])){
       shift(@boxes);}
     else {
       last; }}
@@ -1326,11 +1336,12 @@ DefPrimitive('\@open@column SkipSpaces DigestedBody', sub {
       $border .= 'r'; pop(@boxes); }
     elsif($boxes[$#boxes]->getProperty('isHorizontalRule')){
       unshift(@saveright,pop(@boxes)); }
-    elsif($boxes[$#boxes]->getProperty('alignmentIgnorable')){
+    elsif($boxes[$#boxes]->getProperty('alignmentSkippable')){
       unshift(@saveright,pop(@boxes)); }
     elsif(ref $boxes[$#boxes] eq 'LaTeXML::Comment'){
       unshift(@saveleft,pop(@boxes)); }
-    elsif($boxes[$#boxes]->getProperty('isSpace')){
+#    elsif($boxes[$#boxes]->getProperty('isSpace')){
+    elsif(isEmpty($boxes[$#boxes])){
       pop(@boxes);}
     else {
       last; }}
@@ -1377,7 +1388,6 @@ DefPrimitive('\@open@inner@column',sub {
   # Scan for leading \omit, skipping over (& saving) \hline.
   while(my $tok=$gullet->readXToken){
     if($tok->equals(T_SPACE)){ } # Skip leading space
-#    elsif($tok->equals(T_CS('\hline')) || $tok->equals(T_CS('\cline'))){ # Save lines
     elsif(grep($tok->equals($_),@line_tokens)){ # Save line commands
       push(@lines,$stomach->invokeToken($tok)); }
     else {
@@ -1389,23 +1399,24 @@ DefPrimitive('\@open@inner@column',sub {
   $gullet->unread(beforeCellUnlist($$colspec{before}));
   (@lines,$STATE->getStomach->digestNextBody()); });
 
-# NOTE: This isn't quite right, I think.
-# It should remove spaces that were already digested before the end of a column (& or \\),
-# they come before the material that the column spec inserts.
-# However, comparing ToString to \s can make anything that reverts to '' disappear!
-# (unless it's explicitly marked with alignmentIgnorable).
-# This seems risky and backwards; safer would be to say explicitly what _can_ be discarded?
+# NOTE: Watch here for problems with alignments.
+# The previous version threw away too much stuff (esp. metadata).
+# This one, I think, is more careful.
+# The issue is that it should throw away spaces (or things like spaces?)
+# so that various omit/span/fill/etc is properly recognized when analyzing columns.
 DefPrimitive('\@@eat@space',sub {
 	       my $box;
 	       my @save=();
-	       while(($box = $LaTeXML::LIST[$#LaTeXML::LIST]) && (ToString($box)=~/^\s*$/)){
-		 if($box->getProperty('alignmentIgnorable')){
+	       while($box = $LaTeXML::LIST[$#LaTeXML::LIST]){
+		 if($box->getProperty('alignmentSkippable')
+		       || $box->getProperty('isFill')){
 		   push(@save,pop(@LaTeXML::LIST)); }
+		 elsif(isEmpty($box)){
+		   pop(@LaTeXML::LIST); }
 		 else {
-		   pop(@LaTeXML::LIST); }}
+		   last; }}
 	       push(@LaTeXML::LIST,@save);
 	       return; });
-
 
 # Yet more special case hacking. Sometimes the order of tokens works for
 # TeX, but confuses us... In particular the order of $ and \hfil!
@@ -1748,17 +1759,33 @@ DefConstructor('\@@eqno{}',"^ refnum='#eqnum'",
 our %scriptstylemap=(display=>'script', text=>'script', 
 		     script=>'scriptscript', scriptscript=>'scriptscript');
 
+# Note that this is also being used by alignment.
 sub isEmpty {
   my($box)=@_;
-my $is=
-  (!$box || $box->getProperty('isSpace')
-   || ((ref $box eq 'LaTeXML::Whatsit')
-       && ($box->getDefinition eq $STATE->lookupMeaning(T_BEGIN))
-       && !grep(!isEmpty($_), $box->getBody->unlist))); 
+  my $ref = ref $box;
+  if(! $box ){ return 1; }
+  elsif($ref eq 'LaTeXML::Comment'){ return 1; }
+  elsif($ref eq 'LaTeXML::Box'){ return $box->getString =~ /^\s*$/; }
+  elsif($ref eq 'LaTeXML::MathBox'){ return $box->getString =~ /^\s*$/; }
+  elsif($ref eq 'LaTeXML::Whatsit'){
+    return 1 if $box->getProperty('isSpace'); # A space-like Whatsit
+    if(($box->getDefinition eq $STATE->lookupMeaning(T_BEGIN))
+       && !grep(!isEmpty($_), $box->getBody->unlist)){
+      return 1; }}
+  return 0; }
+    
+# my $is=
+#   (!$box
+#    || ($ref eq 'LaTeXML::Comment')
+#    || $box->getProperty('isSpace') # A space-like Whatsit
+#    || (($ref =~ /^LaTeXML::(Math)?Box$/) && ($box->getString =~ /^\s*$/)) # Space plain box
+#    || (($ref eq 'LaTeXML::Whatsit') # Whatsit with nothing in it.
+#        && ($box->getDefinition eq $STATE->lookupMeaning(T_BEGIN))
+#        && !grep(!isEmpty($_), $box->getBody->unlist))); 
 
-##print STDERR "Box ".Stringify($box)." is empty: ".($is ? "yes":"no")."\n";
-  $is;
-}
+# ##print STDERR "Box ".Stringify($box)." is empty: ".($is ? "yes":"no")."\n";
+#   $is;
+# }
   
 sub scriptHandler {
   my($stomach,$op)=@_;
