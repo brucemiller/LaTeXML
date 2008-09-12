@@ -799,9 +799,17 @@ sub eqnarrayBindings {
   my $col3 = {before=>Tokens(T_MATH,T_CS('\displaystyle')),
 	      after=>Tokens(T_MATH,T_CS('\hfil'))};
   my $template = LaTeXML::AlignmentTemplate->new(columns=>[$col1,$col2,$col3]);
-  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>'ltx:equationgroup',
-						rowElement=>'ltx:equation',
-						colElement=>'_Capture_');
+#  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>'ltx:equationgroup',
+#						rowElement=>'ltx:equation',
+#						colElement=>'_Capture_');
+  my $alignment = LaTeXML::Util::Alignment
+    ->new(openContainer =>sub{ $_[0]->openElement('ltx:equationgroup',@_[1..$#_]); },
+	  closeContainer=>sub{ $_[0]->closeElement('ltx:equationgroup'); },
+	  openRow       =>sub{ $_[0]->openElement('ltx:equation',@_[1..$#_]); },
+	  closeRow      =>sub{ $_[0]->closeElement('ltx:equation'); },
+	  openColumn    =>sub{ $_[0]->openElement('_Capture_',@_[1..$#_]); },
+	  closeColumn   =>sub{ $_[0]->closeElement('_Capture_'); });
+
   AssignValue(Alignment=>$alignment);
   $alignment->setTemplate($template);
   Let(T_ALIGN,        T_CS('\@alignment@align'));
@@ -964,6 +972,7 @@ sub equationgroupJoinCols {
   my($document,$ncols,$equation)=@_;
   my ($col,$main,$branch)=(0,undef,undef);
   foreach my $cell ($document->getChildElements($equation)){
+    next unless $document->getNodeQName($cell) eq '_Capture_';
     if(($col++ % $ncols) == 0){	# Create new MathFork every $ncols cells.
       ($main,$branch)=addMathFork($document,$equation); }
     addColumnToMathFork($document,$main,$branch,$cell); }}
@@ -1485,9 +1494,17 @@ DefPrimitive('\@tabbing@pushtabs',undef);
 DefPrimitive('\@tabbing@poptabs',undef);
 
 sub tabbingBindings {
-  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>'ltx:tabular',
-						rowElement=>'ltx:tr',
-						colElement=>'ltx:td');
+#  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>'ltx:tabular',
+#						rowElement=>'ltx:tr',
+#						colElement=>'ltx:td');
+  my $alignment = LaTeXML::Util::Alignment
+    ->new(openContainer =>sub{ $_[0]->openElement('ltx:tabular',@_[1..$#_]); },
+	  closeContainer=>sub{ $_[0]->closeElement('ltx:tabular'); },
+	  openRow       =>sub{ $_[0]->openElement('ltx:tr',@_[1..$#_]); },
+	  closeRow      =>sub{ $_[0]->closeElement('ltx:tr'); },
+	  openColumn    =>sub{ $_[0]->openElement('ltx:td',@_[1..$#_]); },
+	  closeColumn   =>sub{ $_[0]->closeElement('ltx:td'); });
+
   my $template = LaTeXML::AlignmentTemplate->new(repeated=>[{after=>Tokens(T_CS('\hfil'))}]);
   $alignment->setTemplate($template);
   AssignValue(Alignment=>$alignment);
@@ -1626,7 +1643,7 @@ DefConstructor('\label Semiverbatim', sub {
 
 ###	       "^ label='#1'",
 	       reversion=>'',
-	       properties=>{alignmentIgnorable=>1},
+	       properties=>{alignmentSkippable=>1},
 	       afterDigest=>sub {
 		 my $label = ToString($_[1]->getArg(1));
 		 my $scope = 'label:'.$label;
@@ -2003,6 +2020,7 @@ DefEnvironment('{sloppypar}','#body');
 #======================================================================
 DefPrimitive('\pagebreak[]',undef);
 DefPrimitive('\nopagebreak[]',undef);
+DefPrimitive('\columnbreak',undef); # latex? or multicol?
 DefPrimitive('\enlargethispage OptionalMatch:* {}',undef);
 
 DefPrimitive('\clearpage',undef); # Could possibly mean something?
