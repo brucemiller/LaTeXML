@@ -313,7 +313,7 @@ sub closeNode_internal {
   print STDERR "Closing ".Stringify($node)." => ".Stringify($closeto)."\n" if $LaTeXML::Document::DEBUG;
   $$self{node} = $closeto; }
 
-sub precedingNodes {
+sub XXXgetInsertionCandidates {
   my($node)=@_;
   my @nodes = ();
   # Check the current element FIRST, then build list of candidates.
@@ -330,14 +330,44 @@ sub precedingNodes {
     $node = $node->parentNode; }
   @nodes; }
 
-# find an preceding sibling or ancestor node that can contain an element $qname
-# returns undef if no such place
+sub getInsertionCandidates {
+  my($node)=@_;
+  my @nodes = ();
+  # Check the current element FIRST, then build list of candidates.
+  my $first = $node;
+  $first = $first->parentNode if $first && $first->getType == XML_TEXT_NODE;
+  my $isCapture = $first && $first->localname eq '_Capture_';
+  push(@nodes,$first) if $first && $first->getType != XML_DOCUMENT_NODE && !$isCapture;
+  $node = $node->lastChild if $node && $node->hasChildNodes;
+  while($node && ($node->nodeType != XML_DOCUMENT_NODE)){
+    my $n = $node;
+    while($n){
+      if(($n->localname || '') eq '_Capture_'){
+	push(@nodes,element_nodes($n)); }
+      else {
+	push(@nodes,$n); }
+      $n = $n->previousSibling; }
+    $node = $node->parentNode; }
+  push(@nodes,$first) if $isCapture;
+  @nodes; }
+
+# The following two "floatTo" operations find an appropriate point
+# within the document tree preceding the current insertion point.
+# They return undef (& issue a warning) if such a point cannot be found.
+# Otherwise, they move the current insertion point to the appropriate node,
+# and return the previous insertion point.
+# After you make whatever changes (insertions or whatever) to the tree,
+# you should do
+#   $document->setNode($savenode)
+# to reset the insertion point to where it had been.
+
+# Find a node in the document that can contain an element $qname
 sub floatToElement {
   my($self,$qname)=@_;
-  my @prev = precedingNodes($$self{node});
-  while(@prev && ! $$self{model}->canContain($prev[0],$qname)){
-    shift(@prev); }
-  if(my $n = shift(@prev)){
+  my @candidates = getInsertionCandidates($$self{node});
+  while(@candidates && ! $$self{model}->canContain($candidates[0],$qname)){
+    shift(@candidates); }
+  if(my $n = shift(@candidates)){
     my $savenode = $$self{node};
     $$self{node}=$n;
     print STDERR "Floating from ".Stringify($savenode)." to ".Stringify($n)." for $qname\n" 
@@ -348,12 +378,13 @@ sub floatToElement {
       unless $$self{model}->canContainSomehow($$self{node},$qname);
     undef; }}
 
+# Find a node in the document that can accept the attribute $key
 sub floatToAttribute {
   my($self,$key)=@_;
-  my @prev = precedingNodes($$self{node});
-  while(@prev && ! $$self{model}->canHaveAttribute($prev[0],$key)){
-    shift(@prev); }
-  if(my $n = shift(@prev)){
+  my @candidates = getInsertionCandidates($$self{node});
+  while(@candidates && ! $$self{model}->canHaveAttribute($candidates[0],$key)){
+    shift(@candidates); }
+  if(my $n = shift(@candidates)){
     my $savenode = $$self{node};
     $$self{node}=$n;
     $savenode; }
