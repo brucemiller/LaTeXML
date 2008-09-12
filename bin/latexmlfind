@@ -37,8 +37,8 @@ my $source = $ARGV[0];
 print STDERR "$identity\n" unless $verbosity < 0;
 binmode(STDOUT,":utf8");	# Make sure output can handle UTF8
 
-my $DOC = LaTeXML::Common::XML::Parser->parseFile($source);
-my $XPATH = LaTeXML::Common::XML::XPath->new(ltxml=>"http://dlmf.nist.gov/LaTeXML");
+my $DOC = LaTeXML::Common::XML::Parser->new()->parseFile($source);
+my $XPATH = LaTeXML::Common::XML::XPath->new(ltx=>"http://dlmf.nist.gov/LaTeXML");
 $XPATH->registerFunction('match-font',\&LaTeXML::Font::match_font);
 
 # Objects being labelled sections, equations, etc.
@@ -48,10 +48,10 @@ our $ROOT_OBJECT = {type=>'Document',
 
 foreach my $symbol (@symbols){
   collect_matches("Symbols \"$symbol\"",
-	       "//ltxml:Math[descendant::ltxml:XMTok[\@name='$symbol' or text()='$symbol']"
-	       #                                   BUT which isn't in presentation branch of an XMDual!!
-	       #                                   ie. no ancestor w/preceding sibling has parent = XMDual
-	       .                                   "[not(ancestor-or-self::*[preceding-sibling::*][parent::ltxml:XMDual])]"
+	       "//ltx:Math[descendant::ltx:XMTok[\@name='$symbol' or text()='$symbol']"
+	       #                        BUT which isn't in presentation branch of an XMDual!!
+	       #                        ie. no ancestor w/preceding sibling has parent = XMDual
+	       .                       "[not(ancestor-or-self::*[preceding-sibling::*][parent::ltx:XMDual])]"
 
 		 ."]"); }
 foreach my $spec (@unknowns){
@@ -60,18 +60,18 @@ foreach my $spec (@unknowns){
   $font = $1 if $symbol=~ s/{([\w\s]*)}$//;
   collect_matches("Unknown \"$spec\"",
 	       # Find Math containing an XMTok, with role=UNKNOWN
-	       "//ltxml:Math[descendant::ltxml:XMTok[\@role='UNKNOWN']"
-	       #                                    whose name or content is the requested symbol
-	       .                                   "[\@name='$symbol' or text()='$symbol']"
-	       .                                   ($font ? "[\@font='$font']" : '')
-	       #                                   BUT which isn't in presentation branch of an XMDual!!
-	       #                                   ie. no ancestor w/preceding sibling has parent = XMDual
-	       .                                   "[not(ancestor-or-self::*[preceding-sibling::*][parent::ltxml:XMDual])]"
+	       "//ltx:Math[descendant::ltx:XMTok[\@role='UNKNOWN']"
+	       #                         whose name or content is the requested symbol
+	       .                        "[\@name='$symbol' or text()='$symbol']"
+	       .                        ($font ? "[\@font='$font']" : '')
+	       #                         BUT which isn't in presentation branch of an XMDual!!
+	       #                        ie. no ancestor w/preceding sibling has parent = XMDual
+	       .                       "[not(ancestor-or-self::*[preceding-sibling::*][parent::ltx:XMDual])]"
 	       .                                   "]"); }
 
 foreach my $symbol (@posfuncs){
   collect_matches("Possible function \"$symbol\"",
-	       "//ltxml:Math[descendant::ltxml:XMTok[\@possibleFunction='yes']"
+	       "//ltx:Math[descendant::ltx:XMTok[\@possibleFunction='yes']"
 	       .                                   "[\@name='$symbol' or text()='$symbol']"
 	       .                                   "]"); }
 
@@ -110,20 +110,20 @@ sub id_object {
   while(1){
     $node = $node->parentNode;
     return $ROOT_OBJECT if $node->nodeType != XML_ELEMENT_NODE;
-    last if $id = $node->getAttribute('id'); }
+    last if $id = $node->getAttribute('xml:id'); }
   if(my $object = $OBJECTS{$id}){
     return $object; }
   else {
     my $parent_object = id_object($node);
     my $type = $node->localname;
-    my $label  = $node->getAttribute('label');
+    my $labels  = $node->getAttribute('labels');
     my $refnum = $node->getAttribute('refnum');
-    my($title) = $XPATH->findnodes("child::ltxml:toctitle | child::ltxml:title",$node);
+    my($title) = $XPATH->findnodes("child::ltx:toctitle | child::ltx:title",$node);
     my $desc = ($refnum ? ($title ? "$refnum. ".$title->textContent : $refnum)
 		: ($title ? $title->textContent : ''));
     $desc =~ s/\s+/ /g;
     $OBJECTS{$id}=$object
-      = {id=>$id, label=>$label, type=>$type, description=>$desc, children=>[], items=>[]};
+      = {id=>$id, labels=>$labels, type=>$type, description=>$desc, children=>[], items=>[]};
     push(@{$$parent_object{children}}, $object);
     $object; }}
 
@@ -132,7 +132,7 @@ sub show_matches {
   $indent = '' unless defined $indent;
   print $indent."$$object{type}:"
     .($$object{id} ? " ID=$$object{id}":'')
-      .($$object{label} ? " Label=$$object{label}":'')
+      .($$object{labels} ? " Labels=$$object{labels}":'')
 	.($$object{description}? " \"$$object{description}\"":"")."\n";
   if(!$SKELETON){
     foreach my $item (@{ $$object{items} }){
