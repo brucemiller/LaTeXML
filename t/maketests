@@ -123,7 +123,8 @@ sub compare_xml {
 
 sub stringifyDom {
   my($dom)=@_;
-  my $string = $dom->toString(1);
+#  my $string = $dom->toString(1);
+  my $string = $dom->toString(2);
 #  $string =~ s/^\s+//gm;
 #  $string =~ s/\s+$//gm;
 #  $string =~ s/\n+/\n/gs;
