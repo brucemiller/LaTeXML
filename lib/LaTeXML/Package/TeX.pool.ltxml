@@ -1130,7 +1130,7 @@ Let('\crcr', '\cr');
 
 # NOTE that this does NOT skip spaces before * or []!!!!!
 #  As if: \@alignment@newline OptionalMatch:* [Dimension]
-DefMacro('\@alignment@newline', sub {
+sub readNewlineArgs {
   my($gullet)=@_;
   my $next = $gullet->readToken;
   my($star,$optional);
@@ -1141,6 +1141,11 @@ DefMacro('\@alignment@newline', sub {
     $optional = $gullet->readUntil(T_OTHER(']')); 
     $next = undef; }
   $gullet->unread($next) if $next; 
+  ($star,$optional); }
+
+DefMacro('\@alignment@newline', sub {
+  my($gullet)=@_;
+  readNewlineArgs($gullet);
   (T_CS('\@close@inner@column'), T_CS('\@close@column'), T_CS('\@close@row'),
    T_CS('\@alignment@newline@marker'),
    T_CS('\@open@row'), T_CS('\@open@column'), T_CS('\@open@inner@column')); });
