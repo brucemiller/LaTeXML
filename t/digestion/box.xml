@@ -13,7 +13,7 @@
   </para>
   <para xml:id="p4">
     <p>Using…
-<inline-block vattach="bottom"><text>Hello</text>,<text>Goodbye</text></inline-block></p>
+<inline-block vattach="bottom"><p><text>Hello</text>,<text>Goodbye</text></p></inline-block></p>
   </para>
   <para xml:id="p5">
     <p>Box 3 is horizontal</p>
@@ -42,7 +42,9 @@
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMText>
-              <inline-block vattach="bottom">a</inline-block>
+              <inline-block vattach="bottom">
+                <p>a</p>
+              </inline-block>
             </XMText>
           </XMApp>
         </XMath>
@@ -58,8 +60,10 @@
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMText>
               <inline-block vattach="bottom">
-                <text>a</text>
-                <text>a</text>
+                <p>
+                  <text>a</text>
+                  <text>a</text>
+                </p>
               </inline-block>
             </XMText>
           </XMApp>
@@ -74,8 +78,10 @@
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMText>
               <inline-block vattach="top">
-                <text>a</text>
-                <text>a</text>
+                <p>
+                  <text>a</text>
+                  <text>a</text>
+                </p>
               </inline-block>
             </XMText>
           </XMApp>
@@ -93,7 +99,9 @@
             <XMText>
               <text yoffset="-4.299988pt" font="italic">
                 <inline-block vattach="top">
-                  <text font="upright">a</text>
+                  <p>
+                    <text font="upright">a</text>
+                  </p>
                 </inline-block>
               </text>
             </XMText>
@@ -110,7 +118,9 @@
             <XMText>
               <text yoffset="-4.299988pt" font="italic">
                 <inline-block vattach="bottom">
-                  <text font="upright">a</text>
+                  <p>
+                    <text font="upright">a</text>
+                  </p>
                 </inline-block>
               </text>
             </XMText>

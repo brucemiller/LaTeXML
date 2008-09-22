@@ -195,10 +195,10 @@
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
-<!ELEMENT inline-block (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                        |bibref|Math|inline-block|verbatim|break
-                        |graphics|tabular|picture|note|indexmark
-                        |ERROR)*>
+<!ELEMENT inline-block (p|equation|equationgroup|quote|centering|block
+                        |itemize|enumerate|description|inline-block
+                        |verbatim|break|graphics|tabular|picture|note
+                        |indexmark|ERROR)*>
 <!ATTLIST inline-block
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
