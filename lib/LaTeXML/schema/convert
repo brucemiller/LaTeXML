@@ -3,7 +3,7 @@
 
 cd RelaxNG
 
-for name in LaTeXML DLMF; do
+for name in LaTeXML; do
   echo "Converting $name.rnc to $name.rng"
   trang $name.rnc $name.rng
 
