@@ -2113,15 +2113,17 @@ DefPrimitive('\@begin@lrbox Token', sub {
 DefPrimitive('\usebox DefToken', sub { 
   LookupValue('box'.ToString($_[1])) || LaTeXML::Box->new();});
 
-DefConstructor('\parbox[]{Dimension}{}',
-	       "<ltx:inline-block ?#2(width='#2') vattach='#vattach' align='justified'>#3</ltx:inline-block>",
+# NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
+# for height and inner-pos.  We're ignoring them, for now, though.
+DefConstructor('\parbox[][][]{Dimension}{}',
+	       "<ltx:inline-block ?#4(width='#4') vattach='#vattach' align='justified'>#5</ltx:inline-block>",
 	       mode=>'text', bounded=>1,
 	       properties=>sub { (vattach=>translateAttachment($_[1])); },
 	       beforeDigest=>sub {
 		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
 
-DefEnvironment('{minipage}[]{Dimension}',
-	       "<ltx:inline-block ?#2(width='#2') vattach='#vattach' align='justified'>#body</ltx:inline-block>",
+DefEnvironment('{minipage}[][][]{Dimension}',
+	       "<ltx:inline-block ?#4(width='#4') vattach='#vattach' align='justified'>#body</ltx:inline-block>",
 	       mode=>'text',
 	       properties=>sub { (vattach=>translateAttachment($_[1])); },
 	       beforeDigest=>sub {
