@@ -290,10 +290,22 @@ DefMacro('\csname endalignat*\endcsname',
 # these potentially separate equations will be awkward anyway!
 
 # So, we just leave Hint markers for & and \\
+# Hmm...
+DefMacro('\@noop@newline', sub {
+  my($gullet)=@_;
+  readNewlineArgs($gullet);	# ignore
+  (T_CS('\@noop@newline@marker')); });
+
+DefConstructor('\@noop@newline@marker',
+	       "?#isMath(<ltx:XMHint name='newline'/>)(\n)",
+	       properties=>{isSpace=>1});
+
 DefEnvironment('{gathered}[]',
 	       "<ltx:XMHint name='gathered-begin'/>"
 	       . "#body"
-	       ."<ltx:XMHint name='gathered-end'/>");
+	       ."<ltx:XMHint name='gathered-end'/>",
+	      beforeDigest=>sub{
+		Let(T_CS('\\\\'),T_CS('\@noop@newline')); });
 
 DefMacro('\aligned[]',    '\@@amsaligned\@start@alignment');
 DefMacro('\endaligned',   '\@finish@alignment\@end@amsaligned');
