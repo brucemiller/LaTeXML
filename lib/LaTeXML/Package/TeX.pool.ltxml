@@ -3535,7 +3535,13 @@ DefMath('\@INVISIBLECOMMA',"\x{2063}", reversion=>'',
 DefConstructor('\@XMArg{}{}',"<ltx:XMArg ?#1(xml:id='#1')>#2</ltx:XMArg>", reversion=>'#2',
 	       properties=>{id=>'#1'});
 DefConstructor('\@XMRef{}',"<ltx:XMRef idref='#1'/>",
-	       reversion=>sub{ LookupValue('xref:'.ToString($_[0]->getArg(1)))->revert; });
+	       reversion=>sub{ 
+		 my($whatsit)=@_;
+		 my $id = $_[0]->getArg(1);
+		 if(my $reversion = LookupValue('xref:'.ToString($id))){
+		   $reversion->revert; }
+		else {
+		   $whatsit->getDefinition->invocation($id); }});
 
 DefConstructor('\@ERROR{}{}', "<ltx:ERROR class='#1'>#2</ltx:ERROR>");
 
