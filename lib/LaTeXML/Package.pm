@@ -661,10 +661,11 @@ sub DefMathI {
   $options{reversion} = Tokenize($options{reversion})
     if $options{reversion} && !ref $options{reversion};
   # Store some data for introspection
-  AssignValue("math_definition:$csname",
-	      {role=>$options{role},
-	       meaning=>$options{meaning},
-	       nargs=>$nargs});
+  AssignValue(join("##","math_definition",$csname,$nargs,
+		   $options{role}||'',$name||'',(defined $options{meaning} ? $options{meaning} :''),
+		   $STATE->getStomach->getGullet->getMouth->getSource,
+		   (ref $presentation ? '' : $presentation))=>1, global=>1);
+
   my %common =(alias=>$options{alias}||$cs->getString,
 	       (defined $options{reversion}
 		? (reversion=>$options{reversion}) : ()),
