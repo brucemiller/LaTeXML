@@ -106,6 +106,10 @@ sub getLocator {
     $msg .="\n  ".$p1."\n  ".(' ' x ($c-$c0)).'^'.' '.$p2; }
   $msg; }
 
+sub getSource {
+  my($self)=@_;
+  $$self{source}; }
+
 #**********************************************************************
 # See The TeXBook, Chapter 8, The Characters You Type, pp.46--47.
 #**********************************************************************
@@ -376,6 +380,10 @@ sub getLocator {
   my $path = $$self{pathname};
   my $line = LaTeXML::Error::line_in_file($path);
   $path.($line ? " line $line":''); }
+
+sub getSource {
+  my($self)=@_;
+  $$self{source}; }
 
 sub hasMoreInput { 0; }
 sub readToken { undef; }
