@@ -5,14 +5,20 @@
 use ExtUtils::MakeMaker;
 use strict;
 
-# Use "perl Makefile.PL OLD" if you only have access to an old version
-# of XML::LibXML (ie. before 1.61). This is necessary because we will
-# have an additional dependency (XML::LibXML::XPathContext), and it
-# would be too late to add that dependence when we discover which
-# version of XML::LibXML we end up with.
-# "Enterprise" Linuxes, like Centos and RedHat Enterprise are likely
-# to be stuck with such older versions (till now).
-our $OLD = grep(/OLD/,@ARGV);
+#======================================================================
+# Use "perl Makefile.PL <options>"
+# Build options are:
+#   OLD_LIBXML  : if you only have access to an old version of XML::LibXML (ie. before 1.61).
+#     This is necessary because we will have an additional dependency
+#     (XML::LibXML::XPathContext), and it would be too late to add that
+#     dependence when we discover which version of XML::LibXML we end up with.
+#     "Enterprise" Linuxes, like Centos and RedHat Enterprise are likely
+#     to be stuck with such older versions (till now).
+#   CENTOS : sets OLD_LIBXML and specifies an appropriate rpm version
+
+our $OLD_LIBXML = grep(/OLD_LIBXML/,@ARGV);
+our $CENTOS     = grep(/CENTOS/,@ARGV);
+$OLD_LIBXML = 1 if $CENTOS;
 our @EXCLUSIONS=();
 our $MORE_MACROS = {};
 our $MORE_MAKERULES='';
@@ -20,8 +26,11 @@ our $MORE_MAKERULES='';
 compile_MathGrammar();
 compile_XSLTs();
 # Let's simplify and leave out installing the style file (for now?)
-## install_TeXStyles();
-add_rpm_support();
+## add_rpm_support();
+# Let's try again.
+install_TeXStyles();
+add_rpm_support_complex();
+
 check_ImageMagick();
 
 WriteMakefile(NAME => 'LaTeXML',
@@ -34,7 +43,7 @@ WriteMakefile(NAME => 'LaTeXML',
 			    # we also need XPathContext.
 			    # But we can't determine that additional dependence
 			    # after we've already started resolving dependences!
-			    ($OLD
+			    ($OLD_LIBXML
 			     ? ( 'XML::LibXML'  => 1.58,
 				 'XML::LibXML::XPathContext' => 0)
 			     : ( 'XML::LibXML'  => 1.61)), # But > 1.62 is better
@@ -45,7 +54,7 @@ WriteMakefile(NAME => 'LaTeXML',
 			   },
 	      EXE_FILES => [ 'bin/latexml', 'bin/latexmlpost', 'bin/latexmlfind'],
 	      macro => $MORE_MACROS,
-#	      depend => {metafile=>'specfile'},
+	      depend => {metafile=>'specfile'},
 	      );
 
 #**********************************************************************
@@ -109,6 +118,7 @@ MakeXSLT
 
 #======================================================================
 # Install included TeX style file(s) into the standard TEXMFLOCAL,
+# [note that this script has to handle the indirect installation for rpms!]
 sub install_TeXStyles {
     $MORE_MAKERULES .= <<'InstallTeXStyles';
 
@@ -124,7 +134,12 @@ InstallTeXStyles
 # This also adds an rpm target
 sub add_rpm_support {
   my $cpan2rpm = `which cpan2rpm`; chomp($cpan2rpm);
-  my $cpan2rpmargs = ($OLD ? '--make-maker="OLD"' : '');
+  my $cpan2rpmargs = join(' ',grep($_,
+				   '--no-prfx',
+				   '--packager="Bruce Miller <bruce.miller@nist.gov>"',
+				   '--license="Public Domain"',
+				   ($CENTOS ? "--release=1centos" : undef),
+				   ($OLD_LIBXML ? '--make-maker="OLD_LIBXML"' : undef)));
   if($cpan2rpm){
     $$MORE_MACROS{CPAN2RPM}=$cpan2rpm;
     $$MORE_MACROS{CPAN2RPMARGS}=$cpan2rpmargs;
@@ -142,12 +157,19 @@ EndRPM
 # but we need to run texhash to include (or cleanup) our additional style files.
 sub add_rpm_support_complex {
   my $cpan2rpm = `which cpan2rpm`; chomp($cpan2rpm);
+  my $cpan2rpmargs = join(' ',grep($_,
+				   '--no-prfx',
+				   '--packager="Bruce Miller <bruce.miller@nist.gov>"',
+				   '--license="Public Domain"',
+				   ($CENTOS ? "--release=1centos" : undef),
+				   ($OLD_LIBXML ? '--make-maker="OLD_LIBXML"' : undef)));
   if($cpan2rpm){
     $$MORE_MACROS{CPAN2RPM}=$cpan2rpm;
+    $$MORE_MACROS{CPAN2RPMARGS}=$cpan2rpmargs;
     $MORE_MAKERULES .= <<'EndRPM'
 
 specfile :
-	$(CPAN2RPM) --spec-only --spec=$(DISTVNAME)/LaTeXML.spec .
+	$(CPAN2RPM) --spec-only $(CPAN2RPMARGS) --spec=$(DISTVNAME)/LaTeXML.spec .
 	echo -e "\n%post\n" >> $(DISTVNAME)/LaTeXML.spec
 	echo -e "\n[ -x /usr/bin/texhash ] && /usr/bin/texhash\n" >> $(DISTVNAME)/LaTeXML.spec
 	echo -e "\n%postun\n" >> $(DISTVNAME)/LaTeXML.spec
