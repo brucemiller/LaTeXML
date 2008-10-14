@@ -42,7 +42,7 @@ DefConstructor('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []',
     return;});
 
 DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
-	       "<?latexml class='#2' ?#1(options='#1')?>",
+	       "<?latexml class='#2' ?#1(options='#1') oldstyle='true'?>",
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
     my $options = $whatsit->getArg(1);
