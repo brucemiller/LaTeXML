@@ -48,20 +48,19 @@ sub preamble {
   # We'll assume the xheight is 6pts?
 
 return <<EOPreamble;
-\\newbox\\sizebox
 \\def\\AdjustInline{%
-  \\\@tempdima=\\ht\\sizebox\\advance\\\@tempdima-6pt\\advance\\\@tempdima-\\dp\\sizebox
+  \\\@tempdima=\\ht\\lxImageBox\\advance\\\@tempdima-6pt\\advance\\\@tempdima-\\dp\\lxImageBox
   \\ifdim\\\@tempdima>0pt
-    \\advance\\\@tempdima\\dp\\sizebox\\dp\\sizebox=\\\@tempdima
+    \\advance\\\@tempdima\\dp\\lxImageBox\\dp\\lxImageBox=\\\@tempdima
   \\else\\ifdim\\\@tempdima>0pt
-     \\advance\\\@tempdima-\\ht\\sizebox\\ht\\sizebox=-\\\@tempdima
+     \\advance\\\@tempdima-\\ht\\lxImageBox\\ht\\lxImageBox=-\\\@tempdima
   \\fi\\fi}
 % For Inline, typeset in box, then extend box so height=depth; then we can center it
-\\def\\beginINLINE{\\setbox\\sizebox\\hbox\\bgroup\\(}
-\\def\\endINLINE{\\)\\egroup\\AdjustInline\\fbox{\\copy\\sizebox}}
+\\def\\beginINLINE{\\lxBeginImage\\(}
+\\def\\endINLINE{\\)\\lxEndImage\\AdjustInline\\lxShowImage}
 % For Display, same as inline, but set displaystyle.
-\\def\\beginDISPLAY{\\setbox\\sizebox\\hbox\\bgroup\\(\\displaystyle}
-\\def\\endDISPLAY{\\)\\egroup\\AdjustInline\\fbox{\\copy\\sizebox}}
+\\def\\beginDISPLAY{\\lxBeginImage\\(\\displaystyle}
+\\def\\endDISPLAY{\\)\\lxEndImage\\AdjustInline\\lxShowImage}
 EOPreamble
 }
 #======================================================================

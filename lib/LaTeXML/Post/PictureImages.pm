@@ -40,9 +40,8 @@ sub extractTeX {
 sub preamble {
   my($self,$doc)=@_;
 return <<EOPreamble;
-\\newbox\\sizebox
-\\def\\beginPICTURE{\\setbox\\sizebox\\hbox\\bgroup}
-\\def\\endPICTURE{\\egroup\\fbox{\\copy\\sizebox}}
+\\def\\beginPICTURE{\\lxBeginImage}
+\\def\\endPICTURE{\\lxEndImage\\lxShowImage}
 EOPreamble
 }
 #======================================================================

@@ -188,19 +188,21 @@ sub process {
 # Get a list blah, blah...
 sub find_documentclass_and_packages {
   my($self,$doc)=@_;
-  my ($class,$classoptions,@packages);
+  my ($class,$classoptions,$oldstyle,@packages);
   foreach my $pi ($doc->findnodes(".//processing-instruction('latexml')")){
     my $data = $pi->textContent;
     my $entry={};
     while($data=~ s/\s*([\w\-\_]*)=([\"\'])(.*?)\2//){
       $$entry{$1}=$3; }
     if($$entry{class}){
-      $class=$$entry{class}; $classoptions=$$entry{options}||'onecolumn'; }
+      $class=$$entry{class}; 
+      $classoptions=$$entry{options}||'onecolumn';
+      $oldstyle=$$entry{oldstyle}; }
     elsif($$entry{package}){
       push(@packages,[$$entry{package},$$entry{options}||'']); }
   }
   $self->Error($doc,"No document class found") unless $class;
-  ([$class,$classoptions],@packages); }
+  ([$class,$classoptions,$oldstyle],@packages); }
 
 #======================================================================
 # Generating & Processing the LaTeX source.
@@ -209,8 +211,9 @@ sub find_documentclass_and_packages {
 sub pre_preamble {
   my($self,$doc)=@_;
   my @classdata = $self->find_documentclass_and_packages($doc);
-  my ($class,$options) = @{shift(@classdata)};
+  my ($class,$options,$oldstyle) = @{shift(@classdata)};
   $options = "[$options]" if $options && ($options !~ /^\[.*\]$/);
+  my $documentcommand = ($oldstyle ? "\\documentstyle" : "\\documentclass");
   my $packages='';
   my $dest = $doc->getDestination;
   my $description = ($dest ? "% Destination $dest" : "");
@@ -223,15 +226,66 @@ sub pre_preamble {
 return <<EOPreamble;
 \\batchmode
 \\def\\inlatexml{true}
-\\documentclass$options\{$class\}
+$documentcommand$options\{$class\}
 $description
 $packages
+\\makeatletter
 \\setlength{\\hoffset}{0pt}\\setlength{\\voffset}{0pt}
 \\setlength{\\textwidth}{${w}pt}
 \\thispagestyle{empty}\\pagestyle{empty}\\title{}\\author{}\\date{}
 % Extra definitions for LaTeXML generated TeX
 \\def\\FCN#1{#1}
-\\newcommand{\\DUAL}[3][]{#3}% Use presentation form!!!
+\\def\\DUAL{\\\@ifnextchar[{\\\@DUAL}{\\\@DUAL[]}}
+\\def\\\@DUAL[#1]#2#3{#3}% Use presentation form!!!
+\\newbox\\lxImageBox
+\\newdimen\\lxImageBoxSep
+\\setlength\\lxImageBoxSep{3\\p\@}
+\\newdimen\\lxImageBoxRule
+\\setlength\\lxImageBoxRule{0.4\\p\@}
+\\def\\XXXXXlxShowImage{%
+  \\\@tempdima\\lxImageBoxRule
+  \\advance\\\@tempdima\\lxImageBoxSep
+  \\advance\\\@tempdima\\dp\\lxImageBox
+  \\hbox{%
+    \\lower\\\@tempdima\\hbox{%
+      \\vbox{%
+        \\hrule\\\@height\\lxImageBoxRule
+        \\hbox{%
+          \\vrule\\\@width\\lxImageBoxRule
+          \\vbox{%
+            \\vskip\\lxImageBoxSep
+            \\box\\lxImageBox
+            \\vskip\\lxImageBoxSep}%
+          \\vrule\\\@width\\lxImageBoxRule}%
+        \\hrule\\\@height\\lxImageBoxRule}%
+         }%
+        }%
+}%
+\\def\\lxShowImage{%
+  \\\@tempdima\\lxImageBoxRule
+  \\advance\\\@tempdima\\lxImageBoxSep
+  \\advance\\\@tempdima\\dp\\lxImageBox
+  \\hbox{%
+    \\lower\\\@tempdima\\hbox{%
+      \\vbox{%
+        \\hrule\\\@height\\lxImageBoxRule%\\\@width\\lxImageBoxRule
+        \\hbox{%
+          \\vrule\\\@width\\lxImageBoxRule%\\\@height\\lxImageBoxRule
+          \\vbox{%
+           \\vskip\\lxImageBoxSep
+          \\box\\lxImageBox
+           \\vskip\\lxImageBoxSep
+           }%
+          \\vrule\\\@width\\lxImageBoxRule%\\\@height\\lxImageBoxRule
+          }%
+        \\hrule\\\@height\\lxImageBoxRule%\\\@width\\lxImageBoxRule
+         }%
+         }%
+        }%
+}%
+\\def\\lxBeginImage{\\setbox\\lxImageBox\\hbox\\bgroup\\color\@begingroup\\kern\\lxImageBoxSep}
+\\def\\lxEndImage{\\kern\\lxImageBoxSep\\color\@endgroup\\egroup}
+\\makeatother
 EOPreamble
 }
 
@@ -248,6 +302,7 @@ sub convert_image {
     warn "Image conversion failed to read $src: $err"; return; }
   $image->Transparent(color=>$$self{background});
 
+  $image->Trim;
   $image->Shave(width=>3,height=>3);
 # Quantizing PNG's messes up transparency!
 # And it doesn't really seem to reduce the image size much anyway.
