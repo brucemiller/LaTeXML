@@ -2,32 +2,37 @@
 
 #======================================================================
 # This script can be run at install time (or later)
-# to install LaTeX style in the standard texmf directory
+# to install LaTeX style files accompanying LaTeXML in TeX's texmf directory
+#
+# This is
 #======================================================================
 use strict;
 use FindBin;
 
+#----------------------------------------------------------------------
+# Locations
+#----------------------------------------------------------------------
+# Find the stylefiles located in the SAME directory as this script!
+my $sourcedir = $FindBin::RealBin;
 
 # Find the local texmf; typically /usr/local/share/texmf
 my $texmflocal = `kpsewhich --expand-var='\$TEXMFLOCAL'`;
 fail("No usable TeX installation found.") unless $texmflocal;
 chomp($texmflocal);
 
-# IF this environment variable is set, we're presumably building an RPM?
-# Then we need to install to the temporary installation.
-# They'll get put in the right place later... (or ?)
-# AND, we'll still need to run texhash after the REAL install!!!
-if($ENV{RPM_BUILD_ROOT}){
-  $texmflocal = $ENV{RPM_BUILD_ROOT}.$texmflocal; }
-
-# Check that the current user can actually write there.
-## fail("The texmf directory is not writable by the current user.")
-##   unless  -w $texmflocal;
-
-# Find the stylefiles located in the same directory as this script!
-my $sourcedir = $FindBin::RealBin;
 my $destdir   = "$texmflocal/tex/latex/latexml";
 
+# IF $RPM_BUILD_ROOT environment variable is set,
+# we're presumably building an RPM??
+# Then be sure to install to that dir!
+# The files will get put in the right place later... (or ?)
+# We still need to run texhash after the REAL install!!!
+if($ENV{RPM_BUILD_ROOT}){
+  $destdir = $ENV{RPM_BUILD_ROOT}.$destdir; }
+
+#----------------------------------------------------------------------
+# Installation
+#----------------------------------------------------------------------
 # Use ExtUtils::Command for the filesystem operations,
 # in the hope that it will do the Right Thing(?)
 
@@ -35,25 +40,20 @@ my $destdir   = "$texmflocal/tex/latex/latexml";
 system('perl', "-MExtUtils::Command","-e mkpath",$destdir) == 0
   or fail("Couldn't create texmf directory $destdir");
 
-### opendir(STYLES,$sourcedir) or fail("Couldn't read style directory $sourcedir");
-### my @styles = map("$sourcedir/$_",grep(/\.sty$/,readdir(STYLES)));
-### closedir(STYLES);
-
 # And copy the styles there.
-### system('perl',"-MExtUtils::Command","-e cp",@styles,$destdir) == 0
 system('perl',"-MExtUtils::Command","-e cp","$sourcedir/*.sty",$destdir) == 0
   or fail("Couldn't copy the styles to $destdir");
 
-# Finally, tell TeX to update it's search path hash tables.
-# But note that if we're building an RPM, we want to do it when the
-# package REALLY gets installed.
-# ??? Use the cpan2rpm otion:  --epilogue="post:texhash"
-
+#----------------------------------------------------------------------
+# Updating TeX
+#----------------------------------------------------------------------
+# If we're NOT building an rpm, we tell TeX to update it's search path tables.
+# If we ARE building an rpm, this will have to be handled in the specfile.
 if(! $ENV{RPM_BUILD_ROOT}){
   system('texhash')==0
-    or fail("Couldn't run texhash to update TeX's search paths: $!");
-}
+    or fail("Couldn't run texhash to update TeX's search paths: $!"); }
 
+#----------------------------------------------------------------------
 # We print a warning message, but return 0,
 # so that this doesn't stop installation.
 sub fail {
