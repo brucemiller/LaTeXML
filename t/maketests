@@ -123,15 +123,8 @@ sub compare_xml {
 
 sub stringifyDom {
   my($dom)=@_;
-#  my $string = $dom->toString(1);
   my $string = $dom->toString(2);
-#  $string =~ s/^\s+//gm;
-#  $string =~ s/\s+$//gm;
-#  $string =~ s/\n+/\n/gs;
-#  $dom = $parser->parse_string($string);
-#  my $normstring = $dom->toStringC14N();
-#  $normstring =~ s/[ \t]//g if $stripwhite;
-  [split("\n",$string)]; }
+  [grep(/\S/,split("\n",$string))]; }
 
 sub gen_xml {
   my($dir,$name)=@_;
