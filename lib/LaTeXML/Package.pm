@@ -662,7 +662,8 @@ sub DefMathI {
     if $options{reversion} && !ref $options{reversion};
   # Store some data for introspection
   AssignValue(join("##","math_definition",$csname,$nargs,
-		   $options{role}||'',$name||'',(defined $options{meaning} ? $options{meaning} :''),
+		   $options{role}||$options{operator_role}||'',$name||'',
+		   (defined $options{meaning} ? $options{meaning} :''),
 		   $STATE->getStomach->getGullet->getMouth->getSource,
 		   (ref $presentation ? '' : $presentation))=>1, global=>1);
 
