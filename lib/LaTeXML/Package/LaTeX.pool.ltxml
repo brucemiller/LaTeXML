@@ -1077,7 +1077,7 @@ DefRegister('\mathindent' =>Dimension(0));
 # Underlying support in TeX.pool.ltxml
 DefConstructor('\frac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='div' role='MULOP' style='#style'/>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' style='#style'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);

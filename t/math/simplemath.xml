@@ -40,7 +40,7 @@
       <Math mode="display" tex="f_{D}f(a+b)" text="f _ D * f@(a + b)">
         <XMath>
           <XMApp>
-            <XMTok role="MULOP">⁢</XMTok>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
             <XMApp>
               <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
               <XMTok role="ID" font="italic">f</XMTok>
@@ -62,7 +62,7 @@
       <Math mode="display" tex="f_{1}(a+b)" text="f _ 1 * (a + b)">
         <XMath>
           <XMApp>
-            <XMTok role="MULOP">⁢</XMTok>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
             <XMApp>
               <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
               <XMTok role="ID" font="italic">f</XMTok>
@@ -81,7 +81,7 @@
       <Math mode="display" tex="\hat{f}a" text="hat@(f) * a">
         <XMath>
           <XMApp>
-            <XMTok role="MULOP">⁢</XMTok>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
             <XMApp role="ID">
               <XMTok name="hat" role="OVERACCENT">^</XMTok>
               <XMTok role="FUNCTION" font="italic">f</XMTok>

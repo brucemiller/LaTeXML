@@ -298,7 +298,8 @@ DefMacro('\@noop@newline', sub {
 
 DefConstructor('\@noop@newline@marker',
 	       "?#isMath(<ltx:XMHint name='newline'/>)(\n)",
-	       properties=>{isSpace=>1});
+	       properties=>{isSpace=>1},
+	       reversion=>"\\\\");
 
 DefEnvironment('{gathered}[]',
 	       "<ltx:XMHint name='gathered-begin'/>"
@@ -335,7 +336,7 @@ DefMacro('\endcases', '\@finish@alignment\@end@cases');
 DefPrimitive('\@end@cases',sub{ $_[0]->egroup; });
 DefConstructor('\@@cases DigestedBody',
 	       sub { my($document,$body,%props)=@_;
-		     constructAlignment($document,$body,attributes=>{name=>'Cases',open=>'{'}); },
+		     constructAlignment($document,$body,attributes=>{meaning=>'cases',open=>'{'}); },
 	       beforeDigest=>sub { $_[0]->bgroup; alignmentBindings('ll'); },
 	       reversion=>'\begin{cases}#1\end{cases}');
 
@@ -511,8 +512,8 @@ DefMacro('\uproot{}','');
 
 DefConstructor('\boxed{}',
 	       "<ltx:XMWrap style='boxed'><ltx:XMArg>#1</ltx:XMArg></ltx:XMWrap>");
-DefMath('\implies',  "\x{27F9}", role=>'ARROW');
-DefMath('\impliedby',"\x{27F8}", role=>'ARROW');
+DefMath('\implies',  "\x{27F9}", role=>'ARROW', meaning=>'implies');
+DefMath('\impliedby',"\x{27F8}", role=>'ARROW', meaning=>'implied-by');
 #======================================================================
 # Section 4.8 Over and under arrows
 
@@ -520,7 +521,7 @@ DefMath('\impliedby',"\x{27F8}", role=>'ARROW');
 DefMath('\underrightarrow{}',    "\x{2192}", operator_role=>'UNDERACCENT');
 DefMath('\underleftarrow{}',     "\x{2190}", operator_role=>'UNDERACCENT');
 DefMath('\overleftrightarrow{}', "\x{2194}", operator_role=>'OVERACCENT');
-DefMath('\underlefrighttarrow{}',"\x{2194}", operator_role=>'UNDERACCENT');
+DefMath('\underleftrightarrow{}',"\x{2194}", operator_role=>'UNDERACCENT');
 
 #======================================================================
 # Section 4.9 Extensible arrows
@@ -562,19 +563,19 @@ DefConstructor('\underset{}{}',
 
 DefConstructor('\tfrac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='div' role='MULOP' style='#style'/>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' style='#style'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeTFrac, afterDigest =>\&afterTFrac);
 DefConstructor('\dfrac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='div' role='MULOP' style='#style'/>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' style='#style'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeDFrac, afterDigest =>\&afterDFrac);
 DefConstructor('\ifrac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='div' role='MULOP' style='inline'/>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' style='inline'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
@@ -603,7 +604,7 @@ DefConstructor('\dbinom{}{}',
 # Section 4.11.3 The \genfrac command
 DefConstructor('\genfrac{}{}{Dimension}{}{}{}',
 	       "<ltx:XMApp open='#open' close='#close'>"
-	       . "<ltx:XMTok ?&IsZero(#3)(role='STACKED')(role='MULOP' meaning='div')"
+	       . "<ltx:XMTok ?&IsZero(#3)(role='STACKED')(role='MULOP' meaning='divide')"
 	       .           " thickness='#3' style='?#4(#4)(#style)'/>"
 	       . "<ltx:XMArg>#5</ltx:XMArg>"
 	       . "<ltx:XMArg>#6</ltx:XMArg>"
@@ -668,8 +669,8 @@ DefMath('\rVert',"\x{2225}", role=>'CLOSE'); # PARALLEL TO
 #======================================================================
 # Section 5.2 \mod and it's relatives
 # \bmod, \pmod which are already in LaTeX
-DefMath('\mod',    'mod', role=>'MODIFIEROP');
-DefMath('\pod{}', '(#1)', role=>'MODIFIER'); # Well, sorta postfix..
+DefMath('\mod',    'mod', role=>'MODIFIEROP', meaning=>'modulo');
+DefMath('\pod{}', '(#1)', role=>'MODIFIER',   meaning=>'modulo'); # Well, sorta postfix..
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 6 The \text command
@@ -683,10 +684,10 @@ DefMath('\pod{}', '(#1)', role=>'MODIFIER'); # Well, sorta postfix..
 #======================================================================
 # Section 7.1 Multiline subscripts and superscripts
 #  \substack, \begin{subarray}
-
+# These make the combining operator be list, but often formulae would be better
 DefConstructor('\substack{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok name='Collection' role='STACKED'/>"
+	       . "<ltx:XMTok name='list' role='STACKED'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
@@ -694,7 +695,7 @@ DefConstructor('\substack{}',
 							     reversion=>Tokens(T_CS("\\\\"),T_CR)); });
 DefEnvironment('{subarray}[]',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok name='Collection' alignment='#1'/>"
+	       . "<ltx:XMTok name='list' alignment='#1'/>"
 	       . "<ltx:XMArg>#body</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
@@ -749,10 +750,10 @@ DefConstructor('\sideset{}{}{}', sub {
 #======================================================================
 # Section 7.4 Multiple integral signs
 
-DefMath('\iint', "\x{222C}", meaning=>'doubleintegral', role=>'INTOP'); # DOUBLE INTEGRAL
-DefMath('\iiint',"\x{222D}", meaning=>'tripleintegral', role=>'INTOP'); # TRIPLE INTEGRAL
-DefMath('\iiiint',"\x{2A0C}", meaning=>'quadrupleintegral', role=>'INTOP');
-DefMath('\idotsint',"\x{222B}\x{22EF}\x{222B}", meaning=>'multipleintegral', role=>'INTOP');
+DefMath('\iint', "\x{222C}", meaning=>'double-integral', role=>'INTOP'); # DOUBLE INTEGRAL
+DefMath('\iiint',"\x{222D}", meaning=>'triple-integral', role=>'INTOP'); # TRIPLE INTEGRAL
+DefMath('\iiiint',"\x{2A0C}", meaning=>'quadruple-integral', role=>'INTOP');
+DefMath('\idotsint',"\x{222B}\x{22EF}\x{222B}", meaning=>'multiple-integral', role=>'INTOP');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 8 Commutative diagrams

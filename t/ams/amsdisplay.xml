@@ -8,7 +8,7 @@
       <Math mode="display" tex="a=b" text="a = b">
         <XMath>
           <XMApp>
-            <XMTok meaning="eq" role="RELOP">=</XMTok>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMTok role="UNKNOWN" font="italic">b</XMTok>
           </XMApp>
@@ -19,7 +19,7 @@
       <Math mode="display" tex="a=b" text="a = b">
         <XMath>
           <XMApp>
-            <XMTok meaning="eq" role="RELOP">=</XMTok>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMTok role="UNKNOWN" font="italic">b</XMTok>
           </XMApp>
@@ -30,9 +30,9 @@
       <Math mode="display" tex="\begin{split} a&amp;=b+c-c\\&#10;&amp;\quad+e-f\\&#10;&amp;=g+h\\&#10;&amp;=i\end{split}" text="a = (((b + c) - c) + e) - f = g + h = i">
         <XMath>
           <XMApp>
-            <XMTok name="MultiRelation"/>
+            <XMTok meaning="multirelation"/>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
-            <XMTok meaning="eq" role="RELOP">=</XMTok>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
             <XMApp>
               <XMTok meaning="minus" role="ADDOP">-</XMTok>
               <XMApp>
@@ -50,13 +50,13 @@
               </XMApp>
               <XMTok role="UNKNOWN" font="italic">f</XMTok>
             </XMApp>
-            <XMTok meaning="eq" role="RELOP">=</XMTok>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="UNKNOWN" font="italic">g</XMTok>
               <XMTok role="UNKNOWN" font="italic">h</XMTok>
             </XMApp>
-            <XMTok meaning="eq" role="RELOP">=</XMTok>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
             <XMTok role="UNKNOWN" font="italic">i</XMTok>
           </XMApp>
         </XMath>
@@ -88,7 +88,7 @@
         <Math mode="inline" tex="\displaystyle a_{1}=b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1">
           <XMath>
             <XMApp>
-              <XMTok meaning="eq" role="RELOP">=</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMApp>
                 <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -115,7 +115,7 @@
         <Math mode="inline" tex="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" text="a _ 2 = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
           <XMath>
             <XMApp>
-              <XMTok meaning="eq" role="RELOP">=</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMApp>
                 <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -161,7 +161,7 @@
           <Math tex="\displaystyle a_{1} =b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1">
             <XMath>
               <XMApp>
-                <XMTok meaning="eq" role="RELOP">=</XMTok>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                   <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -196,11 +196,11 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{1}+c_{1}" text="Empty = b _ 1 + c _ 1">
+              <Math mode="inline" tex="\displaystyle=b_{1}+c_{1}" text="absent = b _ 1 + c _ 1">
                 <XMath>
                   <XMApp>
-                    <XMTok meaning="eq" role="RELOP">=</XMTok>
-                    <XMTok name="Empty"/>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
                     <XMApp>
                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
                       <XMApp>
@@ -226,7 +226,7 @@
           <Math tex="\displaystyle a_{2} =b_{2}+c_{2}-d_{2}+e_{2}" text="a _ 2 = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
             <XMath>
               <XMApp>
-                <XMTok meaning="eq" role="RELOP">=</XMTok>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                   <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -277,11 +277,11 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{2}+c_{2}-d_{2}+e_{2}" text="Empty = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
+              <Math mode="inline" tex="\displaystyle=b_{2}+c_{2}-d_{2}+e_{2}" text="absent = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
                 <XMath>
                   <XMApp>
-                    <XMTok meaning="eq" role="RELOP">=</XMTok>
-                    <XMTok name="Empty"/>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
                     <XMApp>
                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
                       <XMApp>
@@ -325,7 +325,7 @@
           <Math tex="\displaystyle a_{{11}} =b_{{11}}" text="a _ 11 = b _ 11">
             <XMath>
               <XMApp>
-                <XMTok meaning="eq" role="RELOP">=</XMTok>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                   <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -352,11 +352,11 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{11}}" text="Empty = b _ 11">
+              <Math mode="inline" tex="\displaystyle=b_{{11}}" text="absent = b _ 11">
                 <XMath>
                   <XMApp>
-                    <XMTok meaning="eq" role="RELOP">=</XMTok>
-                    <XMTok name="Empty"/>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
                     <XMApp>
                       <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                       <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -372,7 +372,7 @@
           <Math tex="\displaystyle a_{{12}} =b_{{12}}" text="a _ 12 = b _ 12">
             <XMath>
               <XMApp>
-                <XMTok meaning="eq" role="RELOP">=</XMTok>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                   <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -399,11 +399,11 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{12}}" text="Empty = b _ 12">
+              <Math mode="inline" tex="\displaystyle=b_{{12}}" text="absent = b _ 12">
                 <XMath>
                   <XMApp>
-                    <XMTok meaning="eq" role="RELOP">=</XMTok>
-                    <XMTok name="Empty"/>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
                     <XMApp>
                       <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                       <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -421,7 +421,7 @@
           <Math tex="\displaystyle a_{{21}} =b_{{21}}" text="a _ 21 = b _ 21">
             <XMath>
               <XMApp>
-                <XMTok meaning="eq" role="RELOP">=</XMTok>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                   <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -448,11 +448,11 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{21}}" text="Empty = b _ 21">
+              <Math mode="inline" tex="\displaystyle=b_{{21}}" text="absent = b _ 21">
                 <XMath>
                   <XMApp>
-                    <XMTok meaning="eq" role="RELOP">=</XMTok>
-                    <XMTok name="Empty"/>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
                     <XMApp>
                       <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                       <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -468,7 +468,7 @@
           <Math tex="\displaystyle a_{{22}} =b_{{22}}+c_{{22}}" text="a _ 22 = b _ 22 + c _ 22">
             <XMath>
               <XMApp>
-                <XMTok meaning="eq" role="RELOP">=</XMTok>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                   <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -503,11 +503,11 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{22}}+c_{{22}}" text="Empty = b _ 22 + c _ 22">
+              <Math mode="inline" tex="\displaystyle=b_{{22}}+c_{{22}}" text="absent = b _ 22 + c _ 22">
                 <XMath>
                   <XMApp>
-                    <XMTok meaning="eq" role="RELOP">=</XMTok>
-                    <XMTok name="Empty"/>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
                     <XMApp>
                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
                       <XMApp>
@@ -535,7 +535,7 @@
           <Math tex="\displaystyle a_{{11}} =b_{{11}}" text="a _ 11 = b _ 11">
             <XMath>
               <XMApp>
-                <XMTok meaning="eq" role="RELOP">=</XMTok>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                   <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -562,11 +562,11 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{11}}" text="Empty = b _ 11">
+              <Math mode="inline" tex="\displaystyle=b_{{11}}" text="absent = b _ 11">
                 <XMath>
                   <XMApp>
-                    <XMTok meaning="eq" role="RELOP">=</XMTok>
-                    <XMTok name="Empty"/>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
                     <XMApp>
                       <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                       <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -582,7 +582,7 @@
           <Math tex="\displaystyle a_{{12}} =b_{{12}}" text="a _ 12 = b _ 12">
             <XMath>
               <XMApp>
-                <XMTok meaning="eq" role="RELOP">=</XMTok>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                   <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -609,11 +609,11 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{12}}" text="Empty = b _ 12">
+              <Math mode="inline" tex="\displaystyle=b_{{12}}" text="absent = b _ 12">
                 <XMath>
                   <XMApp>
-                    <XMTok meaning="eq" role="RELOP">=</XMTok>
-                    <XMTok name="Empty"/>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
                     <XMApp>
                       <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                       <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -631,7 +631,7 @@
           <Math tex="\displaystyle a_{{21}} =b_{{21}}" text="a _ 21 = b _ 21">
             <XMath>
               <XMApp>
-                <XMTok meaning="eq" role="RELOP">=</XMTok>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                   <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -658,11 +658,11 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{21}}" text="Empty = b _ 21">
+              <Math mode="inline" tex="\displaystyle=b_{{21}}" text="absent = b _ 21">
                 <XMath>
                   <XMApp>
-                    <XMTok meaning="eq" role="RELOP">=</XMTok>
-                    <XMTok name="Empty"/>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
                     <XMApp>
                       <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                       <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -678,7 +678,7 @@
           <Math tex="\displaystyle a_{{22}} =b_{{22}}+c_{{22}}" text="a _ 22 = b _ 22 + c _ 22">
             <XMath>
               <XMApp>
-                <XMTok meaning="eq" role="RELOP">=</XMTok>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
                   <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -713,11 +713,11 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{22}}+c_{{22}}" text="Empty = b _ 22 + c _ 22">
+              <Math mode="inline" tex="\displaystyle=b_{{22}}+c_{{22}}" text="absent = b _ 22 + c _ 22">
                 <XMath>
                   <XMApp>
-                    <XMTok meaning="eq" role="RELOP">=</XMTok>
-                    <XMTok name="Empty"/>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
                     <XMApp>
                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
                       <XMApp>

@@ -7,12 +7,12 @@
     <title>Compositions</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
-        <Math mode="display" tex="(f*g)(x)" text="composition@(f, g) * x">
+        <Math mode="display" tex="(f*g)(x)" text="compose@(f, g) * x">
           <XMath>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMApp open="(" close=")">
-                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
                 <XMTok role="FUNCTION" font="italic">f</XMTok>
                 <XMTok role="FUNCTION" font="italic">g</XMTok>
               </XMApp>
@@ -22,14 +22,14 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex2">
-        <Math mode="display" tex="(f*g*h)(x)" text="composition@(composition@(f, g), h) * x">
+        <Math mode="display" tex="(f*g*h)(x)" text="compose@(compose@(f, g), h) * x">
           <XMath>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMApp open="(" close=")">
-                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
                 <XMApp>
-                  <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                  <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
                   <XMTok role="FUNCTION" font="italic">f</XMTok>
                   <XMTok role="FUNCTION" font="italic">g</XMTok>
                 </XMApp>
@@ -46,12 +46,12 @@
     <title>Implicit lambdas?</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex3">
-        <Math mode="display" tex="(y^{2}*f)(x)" text="composition@(y ^ 2, f) * x">
+        <Math mode="display" tex="(y^{2}*f)(x)" text="compose@(y ^ 2, f) * x">
           <XMath>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMApp open="(" close=")">
-                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
                 <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                   <XMTok role="ID" font="italic">y</XMTok>
@@ -65,14 +65,14 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex4">
-        <Math mode="display" tex="(yy^{2}*f)(x)" text="composition@(y * y ^ 2, f) * x">
+        <Math mode="display" tex="(yy^{2}*f)(x)" text="compose@(y * y ^ 2, f) * x">
           <XMath>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMApp open="(" close=")">
-                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
                 <XMApp>
-                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok role="ID" font="italic">y</XMTok>
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
@@ -88,12 +88,12 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex5">
-        <Math mode="display" tex="(y^{2}*f)(x)" text="composition@(y ^ 2, f) * x">
+        <Math mode="display" tex="(y^{2}*f)(x)" text="compose@(y ^ 2, f) * x">
           <XMath>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMApp open="(" close=")">
-                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
                 <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                   <XMTok role="ID" font="italic">y</XMTok>
@@ -107,12 +107,12 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex6">
-        <Math mode="display" tex="(f*y^{2})(x)" text="composition@(f, y ^ 2) * x">
+        <Math mode="display" tex="(f*y^{2})(x)" text="compose@(f, y ^ 2) * x">
           <XMath>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMApp open="(" close=")">
-                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
                 <XMTok role="FUNCTION" font="italic">f</XMTok>
                 <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
@@ -138,19 +138,19 @@
             <XMApp role="POSTSUPERSCRIPT" scriptpos="2">
               <XMTok meaning="2" role="NUMBER">2</XMTok>
             </XMApp>
-            <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+            <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
             <XMTok role="FUNCTION" font="italic">f</XMTok>
             <XMTok role="ID" font="italic">x</XMTok>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S3.Ex8">
-        <Math mode="display" tex="f*y^{2}x" text="composition@(f, y ^ 2) * x">
+        <Math mode="display" tex="f*y^{2}x" text="compose@(f, y ^ 2) * x">
           <XMath>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMApp>
-                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
                 <XMTok role="FUNCTION" font="italic">f</XMTok>
                 <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
@@ -164,11 +164,11 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex9">
-        <Math mode="display" tex="f*y^{2}(x)" text="(composition@(f, y ^ 2))@(x)">
+        <Math mode="display" tex="f*y^{2}(x)" text="(compose@(f, y ^ 2))@(x)">
           <XMath>
             <XMApp>
               <XMApp argclose=")" argopen="(">
-                <XMTok meaning="composition" role="COMPOSEOP">*</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
                 <XMTok role="FUNCTION" font="italic">f</XMTok>
                 <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>

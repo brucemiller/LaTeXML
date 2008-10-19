@@ -19,17 +19,17 @@ use Parse::RecDescent;
 use LaTeXML::Global;
 use base (qw(Exporter));
 
-our @EXPORT_OK = (qw(&Lookup &New &Apply &ApplyNary &recApply
+our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
 		     &Annotate &InvisibleTimes
-		     &NewFormulae &NewFormula &NewCollection
+		     &NewFormulae &NewFormula &NewList
 		     &ApplyDelimited &NewScript
 		     &LeftRec
 		     &Arg &Problem &MaybeFunction
 		     &isMatchingClose &Fence));
 our %EXPORT_TAGS = (constructors
-		    => [qw(&Lookup &New &Apply &ApplyNary &recApply
+		    => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
 			   &Annotate &InvisibleTimes
-			   &NewFormulae &NewFormula &NewCollection
+			   &NewFormulae &NewFormula &NewList
 			   &ApplyDelimited &NewScript
 			   &LeftRec
 			   &Arg &Problem &MaybeFunction
@@ -290,7 +290,7 @@ sub parse_internal {
   my $nnodes = scalar(@nodes);
   
   if($nnodes == 0){	     # No nodes => Empty  (maybe the wrong thing to do, but ...
-    $result = New('Empty'); }
+    $result = Absent(); }
   elsif($nnodes == 1){		# One node? What's to parse?
     $result = $nodes[0]; }
   else {
@@ -370,9 +370,11 @@ sub text_form {
   $text; }
 
 
-our %PREFIX_ALIAS=(SUPERSCRIPTOP=>'^',SUBSCRIPTOP=>'_', "\x{2062}"=>'*',
-		   eq=>'=',less=>'<',greater=>'<',
-		   plus=>'+',minus=>'-',div=>'/');
+our %PREFIX_ALIAS=(SUPERSCRIPTOP=>'^',SUBSCRIPTOP=>'_', times=>=>'*',
+		   'equals'=>'=','less-than'=>'<','greater-than'=>'>',
+		   'less-than-or-equals'=>'<=','greater-than-or-equals'=>'>=',
+		   'much-less-than'=>'<<','much-greater-than'=>'>>',
+		   'plus'=>'+','minus'=>'-','divide'=>'/');
 # Put infix, along with `binding power'
 our %IS_INFIX = (METARELOP=>1, 
 		 RELOP=>2, ARROW=>2,
@@ -397,12 +399,12 @@ sub textrec {
     elsif($role eq 'POSTFIX'){
       $bp = 10000;
       $string = textrec($args[0],$bp,$name).textrec($op); }
-    elsif($name eq 'MultiRelation'){
+    elsif($name eq 'multirelation'){
       $bp = 2;
       $string = join(' ',map(textrec($_,$bp,$name),@args)); }
-    elsif($name eq 'Fenced'){
-      $bp = -1;			# to force parentheses
-      $string = join(', ',map(textrec($_),@args)); }
+##    elsif($name eq 'fenced'){
+##      $bp = -1;			# to force parentheses
+##      $string = join(', ',map(textrec($_),@args)); }
     else {
       $bp = 500;
       $string = textrec($op,10000,$name) .'@(' . join(', ',map(textrec($_),@args)). ')'; }
@@ -456,11 +458,11 @@ sub Lookup {
 # Make a new Token node with given name, content, and attributes.
 # $content is an array of nodes (which may need to be cloned if still attached)
 sub New {
-  my($name,$content,%attributes)=@_;
+  my($meaning,$content,%attributes)=@_;
   my $node=new_math_node('XMTok');
 
   $node->appendText($content) if $content;
-  $attributes{name} = $name if $name;
+  $attributes{meaning} = $meaning if $meaning;
   foreach my $key (sort keys %attributes){
     my $value = $attributes{$key};
     if(defined $value){
@@ -469,6 +471,8 @@ sub New {
   $node; }
 
 
+sub Absent { New('absent'); }
+  
 # Get n-th arg of an XMApp.
 sub Arg {
   my($node,$n)=@_;
@@ -528,30 +532,34 @@ sub extract_separators {
 # Some special cases 
 
 sub InvisibleTimes {
-  New('',"\x{2062}", role=>'MULOP'); }
+  New('times',"\x{2062}", role=>'MULOP'); }
 
 # This specifies the "meaning" of things within a pair
 # of open/close delimiters, depending on the number of things.
-# Reall should be customizable?
-# Note that the "Fenced" case (n==1) doesn't actually give a meaning,
-# but just generates open/close attributes on the object.
-# Should I just check left@right against enclose1 ?
+# Really should be customizable?
+# Note that these are all Best Guesses, but really can have
+# alternate interpretations depending on context, field, etc.
+# Question: Is there enough context to guess better?
+# For example, whether (a,b) is an interval or list?
+#  (both could reasonably be preceded by \in )
 our %balanced = ( '(' => ')', '['=>']', '{'=>'}', 
 		  '|'=>'|', '||'=>'||',
 		  "\x{230A}"=>"\x{230B}", # lfloor, rfloor
 		  "\x{2308}"=>"\x{2309}", # lceil, rceil
 		  "\x{2329}"=>"\x{232A}");
-our %enclose1 = ( '(@)'=>'Fenced', '[@]'=>'Fenced', '{@}'=>'set',
-		  '|@|'=>'abs', '||@||'=>'norm',
+# For enclosing a single object
+# Note that the default here is just to put open/closed attributes on the single object
+our %enclose1 = ('{@}'=>'set',	# alternatively, just variant parentheses
+		  '|@|'=>'absolute-value', '||@||'=>'norm',
 		  "\x{230A}@\x{230B}"=>'floor',
 		  "\x{2308}@\x{2309}"=>'ceiling' );
-our %enclose2 = ( '(@)'=>'open_interval', '[@]'=>'closed_interval',
-		  '(@]'=>'open_closed_interval', '[@)'=>'closed_open_interval',
-		  '{@}'=>'set',
-		  # Nah, too weird.
-		  #'{@}'=>'SchwarzianDerivative',
-		  # "\x{2329}@\x{232A}"=>'Distribution'
+# For enclosing two objects
+our %enclose2 = ( '(@)'=>'open-interval', # alternatively, just a list
+		  '[@]'=>'closed-interval',
+		  '(@]'=>'open-closed-interval', '[@)'=>'closed-open-interval',
+		  '{@}'=>'set',	# alternatively, just a list ?
 		);
+# For enclosing more than 2 objects.
 our %encloseN = ( '(@)'=>'vector','{@}'=>'set',);
 
 sub isMatchingClose {
@@ -574,11 +582,11 @@ sub Fence {
   my $key = $open.'@'.$close;
   my $n = int(scalar(@stuff)-2+1)/2;
   my $op = ($n==1
-	    ?  ($enclose1{$key} || 'Fenced')
+	    ?  $enclose1{$key}
 	    : ($n==2 
-	      ? ($enclose2{$key} || 'Collection')
-	       : ($encloseN{$key} || 'Collection')));
-  if(($n==1) && ($op eq 'Fenced')){ # Simple case.
+	      ? ($enclose2{$key} || 'list')
+	       : ($encloseN{$key} || 'list')));
+  if(($n==1) && (!defined $op)){ # Simple case.
     my $node = $stuff[1];
     $node->setAttribute(open=>$open) if $open;
     $node->setAttribute(close=>$close) if $close;
@@ -593,7 +601,7 @@ sub NewFormulae {
   if(scalar(@stuff)==1){ $stuff[0]; }
   else { 
     my ($seps,@formula)=extract_separators(@stuff);
-    Apply(New('Formulae',undef, separators=>$seps),@formula);}}
+    Apply(New('formulae',undef, separators=>$seps),@formula);}}
 
 # A Formula is an alternation of expr (relationalop expr)*
 # It presumably would be equivalent to (expr1 relop1 expr2) AND (expr2 relop2 expr3) ...
@@ -603,14 +611,14 @@ sub NewFormula {
   my $n = scalar(@args);
   if   ($n == 1){ $args[0];}
   elsif($n == 3){ Apply($args[1],$args[0],$args[2]); }
-  else          { Apply(New('MultiRelation'),@args); }}
+  else          { Apply(New('multirelation'),@args); }}
 
-sub NewCollection {
+sub NewList {
   my(@stuff)=@_;
   if(@stuff == 1){ $stuff[0]; }
   else {
     my ($seps,@items)=extract_separators(@stuff);
-    Apply(New('Collection',undef, separators=>$seps, role=>'FENCED'),@items);}}
+    Apply(New('list',undef, separators=>$seps, role=>'FENCED'),@items);}}
 
 # Given alternation of expr (addop expr)*, compose the tree (left recursive),
 # flattenning portions that have the same operator
@@ -760,7 +768,7 @@ Creates an invisible times operator.
 Checks whether C<$open> and C<$close> form a `normal' pair of
 delimiters, or if either is ".".
 
-=item C<< $node=>Fence(@stuff); >>
+=item C<< $node = Fence(@stuff); >>
 
 Given a delimited sequence of nodes, starting and ending with open/close delimiters,
 and with intermediate nodes separated by punctuation or such, attempt to guess what
@@ -774,9 +782,9 @@ This would be a good candidate for customization!
 Given a set of formulas, construct a C<Formulae> application, if there are more than one,
 else just return the first.
 
-=item C<< $node = NewCollection(@stuff); >>
+=item C<< $node = NewList(@stuff); >>
 
-Given a set of expressions, construct a C<Collection> application, if there are more than one,
+Given a set of expressions, construct a C<list> application, if there are more than one,
 else just return the first.
 
 =item C<< $node = LeftRec($arg1,@more); >>

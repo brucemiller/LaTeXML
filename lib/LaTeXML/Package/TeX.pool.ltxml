@@ -1961,7 +1961,7 @@ DefConstructor('\choose',
 		  $whatsit->getProperty('bottom')->revert); });
 DefConstructor('\over',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='div' style='#style' role='MULOP'/>"
+	       . "<ltx:XMTok meaning='divide' style='#style' role='MULOP'/>"
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -1985,7 +1985,7 @@ DefConstructor('\atop',
 		  $whatsit->getProperty('bottom')->revert); });
 DefConstructor('\overwithdelims Token Token',
 	       "<ltx:XMApp open='#1' close='#2'>"
-	       . "<ltx:XMTok meaning='div' style='#style' role='MULOP'/>"
+	       . "<ltx:XMTok meaning='divide' style='#style' role='MULOP'/>"
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -2015,7 +2015,7 @@ sub IsZero {
 
 DefConstructor('\abovewithdelims Token Token Dimension',
 	       "<ltx:XMApp open='#1' close='#2'>"
-	       . "<ltx:XMTok ?&IsZero(#3)(role='STACKED')(role='MULOP' meaning='div')"
+	       . "<ltx:XMTok ?&IsZero(#3)(role='STACKED')(role='MULOP' meaning='divide')"
 	       .           " style='#style' thickness='#3'/>"
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
@@ -2075,13 +2075,13 @@ DefConstructor('&',sub { Error(":unexpected:& Stray alignment \"&\""); });
 #======================================================================
 # Properties for plain characters.
 # These are allowed in plain text, but need to act a bit special in math.
-DefMath('=','=', role=>'RELOP', meaning=>'eq');
-DefMath('>','>', role=>'RELOP', meaning=>'greater');
-DefMath('<','<', role=>'RELOP', meaning=>'less');
+DefMath('=','=', role=>'RELOP', meaning=>'equals');
+DefMath('>','>', role=>'RELOP', meaning=>'greater-than');
+DefMath('<','<', role=>'RELOP', meaning=>'less-than');
 DefMath('+','+', role=>'ADDOP', meaning=>'plus');
 DefMath('-','-', role=>'ADDOP', meaning=>'minus');
 DefMath('*','*', role=>'MULOP', meaning=>'times');
-DefMath('/','/', role=>'MULOP', meaning=>'div', style=>'inline');
+DefMath('/','/', role=>'MULOP', meaning=>'divide', style=>'inline');
 DefMath('!','!', role=>'POSTFIX', meaning=>'factorial');
 DefMath(',',',', role=>'PUNCT');
 DefMath('.','.', role=>'PERIOD');
@@ -2607,90 +2607,90 @@ DefConstructor('\/',"?#isMath(<ltx:XMHint name='italiccorr'/>)()",
 #----------------------------------------------------------------------
 #  Actually from LaTeX; Table 3.3, Greek, p.41
 #----------------------------------------------------------------------
-DefMath('\alpha',     "\x{03B1}"); # GREEK SMALL LETTER ALPHA
-DefMath('\beta',      "\x{03B2}"); # GREEK SMALL LETTER BETA
-DefMath('\gamma',     "\x{03B3}"); # GREEK SMALL LETTER GAMMA
-DefMath('\delta',     "\x{03B4}"); # GREEK SMALL LETTER DELTA
-DefMath('\epsilon'  , "\x{03F5}"); # GREEK LUNATE EPSILON SYMBOL
-DefMath('\varepsilon',"\x{03B5}"); # GREEK SMALL LETTER EPSILON
-DefMath('\zeta',      "\x{03B6}"); # GREEK SMALL LETTER ZETA
-DefMath('\eta',       "\x{03B7}"); # GREEK SMALL LETTER ETA
-DefMath('\theta',     "\x{03B8}"); # GREEK SMALL LETTER THETA
-DefMath('\vartheta',  "\x{03D1}"); # GREEK THETA SYMBOL
-DefMath('\iota',      "\x{03B9}"); # GREEK SMALL LETTER IOTA
-DefMath('\kappa',     "\x{03BA}"); # GREEK SMALL LETTER KAPPA
-DefMath('\lambda',    "\x{03BB}"); # GREEK SMALL LETTER LAMDA
-DefMath('\mu',        "\x{03BC}"); # GREEK SMALL LETTER MU
-DefMath('\nu',        "\x{03BD}"); # GREEK SMALL LETTER NU
-DefMath('\xi',        "\x{03BE}"); # GREEK SMALL LETTER XI
-DefMath('\pi',        "\x{03C0}"); # GREEK SMALL LETTER PI
-DefMath('\varpi',     "\x{03D6}"); # GREEK PI SYMBOL
-DefMath('\rho',       "\x{03C1}"); # GREEK SMALL LETTER RHO
-DefMath('\varrho',    "\x{03F1}"); # GREEK RHO SYMBOL
-DefMath('\sigma',     "\x{03C3}"); # GREEK SMALL LETTER SIGMA
-DefMath('\varsigma',  "\x{03C2}"); # GREEK SMALL LETTER FINAL SIGMA
-DefMath('\tau',       "\x{03C4}"); # GREEK SMALL LETTER TAU
-DefMath('\upsilon',   "\x{03C5}"); # GREEK SMALL LETTER UPSILON
-DefMath('\phi',       "\x{03D5}"); # GREEK PHI SYMBOL
-DefMath('\varphi',    "\x{03C6}"); # GREEK SMALL LETTER PHI
-DefMath('\chi',       "\x{03C7}"); # GREEK SMALL LETTER CHI
-DefMath('\psi',       "\x{03C8}"); # GREEK SMALL LETTER PSI
-DefMath('\omega',     "\x{03C9}"); # GREEK SMALL LETTER OMEGA
-DefMath('\Gamma',     "\x{0393}"); # GREEK CAPITAL LETTER GAMMA
-DefMath('\Delta',     "\x{0394}"); # GREEK CAPITAL LETTER DELTA
-DefMath('\Theta',     "\x{0398}"); # GREEK CAPITAL LETTER THETA
-DefMath('\Lambda',    "\x{039B}"); # GREEK CAPITAL LETTER LAMDA
-DefMath('\Xi',        "\x{039E}"); # GREEK CAPITAL LETTER XI
-DefMath('\Pi',        "\x{03A0}"); # GREEK CAPITAL LETTER PI
-DefMath('\Sigma',     "\x{03A3}"); # GREEK CAPITAL LETTER SIGMA
-DefMath('\Upsilon',   "\x{03A5}"); # GREEK CAPITAL LETTER UPSILON
-DefMath('\Phi',       "\x{03A6}"); # GREEK CAPITAL LETTER PHI
-DefMath('\Psi',       "\x{03A8}"); # GREEK CAPITAL LETTER PSI
-DefMath('\Omega',     "\x{03A9}"); # GREEK CAPITAL LETTER OMEGA
+DefMath('\alpha',     "\x{03B1}");
+DefMath('\beta',      "\x{03B2}");
+DefMath('\gamma',     "\x{03B3}");
+DefMath('\delta',     "\x{03B4}");
+DefMath('\epsilon'  , "\x{03F5}");
+DefMath('\varepsilon',"\x{03B5}");
+DefMath('\zeta',      "\x{03B6}");
+DefMath('\eta',       "\x{03B7}");
+DefMath('\theta',     "\x{03B8}");
+DefMath('\vartheta',  "\x{03D1}");
+DefMath('\iota',      "\x{03B9}");
+DefMath('\kappa',     "\x{03BA}");
+DefMath('\lambda',    "\x{03BB}");
+DefMath('\mu',        "\x{03BC}");
+DefMath('\nu',        "\x{03BD}");
+DefMath('\xi',        "\x{03BE}");
+DefMath('\pi',        "\x{03C0}");
+DefMath('\varpi',     "\x{03D6}");
+DefMath('\rho',       "\x{03C1}");
+DefMath('\varrho',    "\x{03F1}");
+DefMath('\sigma',     "\x{03C3}");
+DefMath('\varsigma',  "\x{03C2}");
+DefMath('\tau',       "\x{03C4}");
+DefMath('\upsilon',   "\x{03C5}");
+DefMath('\phi',       "\x{03D5}");
+DefMath('\varphi',    "\x{03C6}");
+DefMath('\chi',       "\x{03C7}");
+DefMath('\psi',       "\x{03C8}");
+DefMath('\omega',     "\x{03C9}");
+DefMath('\Gamma',     "\x{0393}");
+DefMath('\Delta',     "\x{0394}");
+DefMath('\Theta',     "\x{0398}");
+DefMath('\Lambda',    "\x{039B}");
+DefMath('\Xi',        "\x{039E}");
+DefMath('\Pi',        "\x{03A0}");
+DefMath('\Sigma',     "\x{03A3}");
+DefMath('\Upsilon',   "\x{03A5}");
+DefMath('\Phi',       "\x{03A6}");
+DefMath('\Psi',       "\x{03A8}");
+DefMath('\Omega',     "\x{03A9}");
 
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.7. Miscellaneous Symbols, p.43
 #----------------------------------------------------------------------
 # Some should be differential operators, qualifiers, ...
-DefMath('\aleph',    "\x{2135}");   # ALEF SYMBOL
-DefMath('\hbar',     "\x{210F}", role=>'ID');	# PLANCK CONSTANT OVER TWO PI
-DefMath('\imath',    "\x{0131}");   # LATIN SMALL LETTER DOTLESS I
-DefMath('\jmath',    "j");	    # Unicode?
-DefMath('\ell',      "\x{2113}");   # SCRIPT SMALL L
-DefMath('\wp',       "\x{2118}", meaning=>'Weierstrassp'); # SCRIPT CAPITAL P
-DefMath('\Re',       "\x{211C}", role=>'OPFUNCTION', meaning=>'realpart'); # BLACK LETTER CAPITAL R
-DefMath('\Im',       "\x{2111}", role=>'OPFUNCTION', meaning=>'imagpart'); # BLACK LETTER CAPITAL I
-DefMath('\mho',      "\x{2127}");   # INVERTED OHM SIGN
+DefMath('\aleph',    "\x{2135}");
+DefMath('\hbar',     "\x{210F}", role=>'ID', meaning=>'Planck-constant-over-2pi');
+DefMath('\imath',    "\x{0131}");
+DefMath('\jmath',    "j");
+DefMath('\ell',      "\x{2113}");
+DefMath('\wp',       "\x{2118}", meaning=>'Weierstrass-p');
+DefMath('\Re',       "\x{211C}", role=>'OPFUNCTION', meaning=>'real-part');
+DefMath('\Im',       "\x{2111}", role=>'OPFUNCTION', meaning=>'imaginary-part');
+DefMath('\mho',      "\x{2127}");
 
-DefMath('\prime',    "\x{2032}", role=>'SUPOP');    # PRIME
-DefMath('\emptyset', "\x{2205}", role=>'ID', meaning=>'emptyset');	    # EMPTY SET
-DefMath('\nabla',    "\x{2207}", role=>'OPERATOR'); # NABLA
-DefMath('\surd',     "\x{221A}", role=>'OPERATOR');  # SQUARE ROOT
-DefMath('\top',      "\x{22A4}");		     # DOWN TACK
-DefMath('\bot',      "\x{22A5}");		     # UP TACK
-DefMath('\|',        "\x{2225}", role=>'VERTBAR', name=>'||'); # PARALLEL TO
-DefMath('\angle',    "\x{2220}");		   # ANGLE
+DefMath('\prime',    "\x{2032}", role=>'SUPOP');
+DefMath('\emptyset', "\x{2205}", role=>'ID', meaning=>'empty-set');
+DefMath('\nabla',    "\x{2207}", role=>'OPERATOR');
+DefMath('\surd',     "\x{221A}", role=>'OPERATOR', meaning=>'root');
+DefMath('\top',      "\x{22A4}", role=>'ADDOP', meaning=>'top');
+DefMath('\bot',      "\x{22A5}", role=>'ADDOP', meaning=>'bottom');
+DefMath('\|',        "\x{2225}", role=>'VERTBAR', name=>'||', meaning=>'parallel-to');
+DefMath('\angle',    "\x{2220}");
 
 # NOTE: This is probably the wrong role.
 # Also, should probably carry info about Binding for OpenMath
-DefMath('\forall',   "\x{2200}", role=>'BIGOP', meaning=>'forall'); # FOR ALL
-DefMath('\exists',   "\x{2203}", role=>'BIGOP', meaning=>'exists'); # THERE EXISTS
-DefMath('\neg',      UTF(0xAC), role=>'FUNCTION', meaning=>'not'); # NOT SIGN
-DefMath('\lnot',     UTF(0xAC), role=>'FUNCTION', meaning=>'not'); # NOT SIGN
-DefMath('\flat',     "\x{266D}"); # MUSIC FLAT SIGN
-DefMath('\natural',  "\x{266E}"); # MUSIC NATURAL SIGN
-DefMath('\sharp',    "\x{266F}"); # MUSIC SHARP SIGN
-DefMath('\backslash',UTF(0x5C), role=>'MULOP');    # REVERSE SOLIDUS
-DefMath('\partial',  "\x{2202}", role=>'OPERATOR'); # PARTIAL DIFFERENTIAL
+DefMath('\forall',   "\x{2200}", role=>'BIGOP', meaning=>'for-all');
+DefMath('\exists',   "\x{2203}", role=>'BIGOP', meaning=>'exists');
+DefMath('\neg',      UTF(0xAC), role=>'FUNCTION', meaning=>'not');
+DefMath('\lnot',     UTF(0xAC), role=>'FUNCTION', meaning=>'not');
+DefMath('\flat',     "\x{266D}");
+DefMath('\natural',  "\x{266E}");
+DefMath('\sharp',    "\x{266F}");
+DefMath('\backslash',UTF(0x5C), role=>'MULOP');
+DefMath('\partial',  "\x{2202}", role=>'OPERATOR', meaning=>'partial-differential');
 
-DefMath('\infty',    "\x{221E}", role=>'ID', meaning=>'infinity'); # INFINITY
-DefMath('\Box',      "\x{25A1}");  # WHITE SQUARE
-DefMath('\Diamond',  "\x{25C7}");  # WHITE DIAMOND
-DefMath('\triangle', "\x{25B3}");  # WHITE UP-POINTING TRIANGLE
-DefMath('\clubsuit', "\x{2663}");  # BLACK CLUB SUIT
-DefMath('\diamondsuit',"\x{2662}");	# WHITE DIAMOND SUIT
-DefMath('\heartsuit',"\x{2661}");	# WHITE HEART SUIT
-DefMath('\spadesuit',"\x{2660}");	# BLACK SPADE SUIT
+DefMath('\infty',    "\x{221E}", role=>'ID', meaning=>'infinity');
+DefMath('\Box',      "\x{25A1}");
+DefMath('\Diamond',  "\x{25C7}");
+DefMath('\triangle', "\x{25B3}");
+DefMath('\clubsuit', "\x{2663}");
+DefMath('\diamondsuit',"\x{2662}");
+DefMath('\heartsuit',"\x{2661}");
+DefMath('\spadesuit',"\x{2660}");
 
 #----------------------------------------------------------------------
 DefMath('\smallint',"\x{222B}", meaning=>'integral', role=>'INTOP', 
@@ -2701,31 +2701,46 @@ DefMath('\smallint',"\x{222B}", meaning=>'integral', role=>'INTOP',
 #----------------------------------------------------------------------
 sub doScriptpos { (LookupValue('mathstyle') eq 'display' ? 'mid' : 'post'); }
 
-DefMath('\sum',      "\x{2211}", role=>'SUMOP', meaning=>'sum',
-	scriptpos=>\&doScriptpos); # N-ARY SUMMATION
-DefMath('\prod',     "\x{220F}", role=>'SUMOP', meaning=>'product',
-	scriptpos=>\&doScriptpos); # N-ARY PRODUCT
-DefMath('\coprod',   "\x{2210}", role=>'SUMOP', meaning=>'coproduct',
-	scriptpos=>\&doScriptpos); # N-ARY COPRODUCT
-DefMath('\int',      "\x{222B}", role=>'INTOP', meaning=>'integral'); # INTEGRAL
-DefMath('\oint',     "\x{222E}", role=>'INTOP', meaning=>'contour-integral'); # CONTOUR INTEGRAL
-DefMath('\bigcap',   "\x{22C2}", role=>'SUMOP', meaning=>'intersection',
-	scriptpos=>\&doScriptpos); # N-ARY INTERSECTION
-DefMath('\bigcup',   "\x{22C3}", role=>'SUMOP', meaning=>'union',
-	scriptpos=>\&doScriptpos); # N-ARY UNION
-DefMath('\bigsqcup', "\x{2294}", role=>'SUMOP', scriptpos=>\&doScriptpos); # SQUARE CUP (N-ARY ???)
-DefMath('\bigvee',   "\x{22C1}", role=>'SUMOP', meaning=>'or',
-	scriptpos=>\&doScriptpos); # N-ARY LOGICAL OR
-DefMath('\bigwedge', "\x{22C0}", role=>'SUMOP', meaning=>'and',
-	scriptpos=>\&doScriptpos); # N-ARY LOGICAL AND
+DefMath('\sum',      "\x{2211}", role=>'SUMOP',
+	meaning=>'sum',
+	scriptpos=>\&doScriptpos);
+DefMath('\prod',     "\x{220F}", role=>'SUMOP',
+	meaning=>'product',
+	scriptpos=>\&doScriptpos);
+DefMath('\coprod',   "\x{2210}", role=>'SUMOP',
+	meaning=>'coproduct',
+	scriptpos=>\&doScriptpos);
+DefMath('\int',      "\x{222B}", role=>'INTOP',
+	meaning=>'integral');
+DefMath('\oint',     "\x{222E}", role=>'INTOP',
+	meaning=>'contour-integral');
+DefMath('\bigcap',   "\x{22C2}", role=>'SUMOP',
+	meaning=>'intersection',
+	scriptpos=>\&doScriptpos);
+DefMath('\bigcup',   "\x{22C3}", role=>'SUMOP',
+	meaning=>'union',
+	scriptpos=>\&doScriptpos);
+DefMath('\bigsqcup', "\x{2294}", role=>'SUMOP',
+	meaning=>'square-union',
+	scriptpos=>\&doScriptpos);
+DefMath('\bigvee',   "\x{22C1}", role=>'SUMOP',
+	meaning=>'or',
+	scriptpos=>\&doScriptpos);
+DefMath('\bigwedge', "\x{22C0}", role=>'SUMOP',
+	meaning=>'and',
+	scriptpos=>\&doScriptpos);
 DefMath('\bigodot',  "\x{22A1}", role=>'SUMOP',
-	scriptpos=>\&doScriptpos); # CIRCLED DOT OPERATOR (N-ARY ???)
+	#meaning=> ?
+	scriptpos=>\&doScriptpos);
 DefMath('\bigotimes',"\x{2297}", role=>'SUMOP',
-	scriptpos=>\&doScriptpos); # CIRCLED TIMES (N-ARY ?)
+	meaning=>'tensor-product',
+	scriptpos=>\&doScriptpos);
 DefMath('\bigoplus', "\x{2295}", role=>'SUMOP',
-	scriptpos=>\&doScriptpos); # CIRCLED PLUS (N-ARY ?)
+	meaning=>'direct-sum',
+	scriptpos=>\&doScriptpos);
 DefMath('\biguplus', "\x{2296}", role=>'SUMOP',
-	scriptpos=>\&doScriptpos); # CIRCLED MINUS (N-ARY ?)
+	meaning=>'symmetric-difference',
+	scriptpos=>\&doScriptpos);
 
 DefConstructor('\limits', sub {
    my $node = $_[0]->getNode;
@@ -2737,100 +2752,100 @@ DefConstructor('\nolimits',sub {
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.4. Binary Operation Symbols, p.42
 #----------------------------------------------------------------------
-DefMath('\pm',        UTF(0xB1), role=>'ADDOP', meaning=>'plus-minus'); # PLUS-MINUS SIGN
-DefMath('\mp',        "\x{2213}", role=>'ADDOP', meaning=>'minus-plus'); # MINUS-OR-PLUS SIGN
-DefMath('\times',     UTF(0xD7), role=>'MULOP', meaning=>'times'); # MULTIPLICATION SIGN
-DefMath('\div',       UTF(0xF7), role=>'MULOP', meaning=>'div'); # DIVISION SIGN
-DefMath('\ast',       "\x{2217}", role=>'MULOP'); # ASTERISK OPERATOR
-DefMath('\star',      "\x{22C6}", role=>'MULOP'); # STAR OPERATOR
-DefMath('\circ',      "\x{2218}", role=>'MULOP'); # RING OPERATOR
-DefMath('\bullet',    "\x{2219}", role=>'MULOP'); # BULLET OPERATOR
-DefMath('\cdot',      "\x{22C5}", role=>'MULOP'); # DOT OPERATOR
+DefMath('\pm',        UTF(0xB1), role=>'ADDOP', meaning=>'plus-or-minus');
+DefMath('\mp',        "\x{2213}", role=>'ADDOP', meaning=>'minus-or-plus');
+DefMath('\times',     UTF(0xD7), role=>'MULOP', meaning=>'times');
+DefMath('\div',       UTF(0xF7), role=>'MULOP', meaning=>'divide');
+DefMath('\ast',       "\x{2217}", role=>'MULOP');
+DefMath('\star',      "\x{22C6}", role=>'MULOP');
+DefMath('\circ',      "\x{2218}", role=>'MULOP', meaning=>'compose');
+DefMath('\bullet',    "\x{2219}", role=>'MULOP');
+DefMath('\cdot',      "\x{22C5}", role=>'MULOP');
 
 # Need to classify set operations more carefully....
-DefMath('\cap',       "\x{2229}", role=>'ADDOP', meaning=>'intersection'); # INTERSECTION
-DefMath('\cup',       "\x{222A}", role=>'ADDOP', meaning=>'union'); # UNION
-DefMath('\uplus',     "\x{228C}", role=>'ADDOP'); # MULTISET
-DefMath('\sqcap',     "\x{2293}", role=>'ADDOP'); # SQUARE CAP
-DefMath('\sqcup',     "\x{2294}", role=>'ADDOP'); # SQUARE CUP
-DefMath('\vee',       "\x{2228}", role=>'ADDOP', meaning=>'or'); # LOGICAL OR
-DefMath('\lor',       "\x{2228}", role=>'ADDOP', meaning=>'or'); # LOGICAL OR
-DefMath('\wedge',     "\x{2227}", role=>'ADDOP', meaning=>'and'); # LOGICAL AND
-DefMath('\land',      "\x{2227}", role=>'ADDOP', meaning=>'and'); # LOGICAL AND
-DefMath('\setminus',  "\x{2216}", role=>'ADDOP', meaning=>'set-minus'); # SET MINUS
-DefMath('\wr',        "\x{2240}", role=>'MULOP'); # WREATH PRODUCT
+DefMath('\cap',       "\x{2229}", role=>'ADDOP', meaning=>'intersection');
+DefMath('\cup',       "\x{222A}", role=>'ADDOP', meaning=>'union');
+DefMath('\uplus',     "\x{228C}", role=>'ADDOP');
+DefMath('\sqcap',     "\x{2293}", role=>'ADDOP', meaning=>'square-intersection');
+DefMath('\sqcup',     "\x{2294}", role=>'ADDOP', meaning=>'square-union');
+DefMath('\vee',       "\x{2228}", role=>'ADDOP', meaning=>'or');
+DefMath('\lor',       "\x{2228}", role=>'ADDOP', meaning=>'or');
+DefMath('\wedge',     "\x{2227}", role=>'ADDOP', meaning=>'and');
+DefMath('\land',      "\x{2227}", role=>'ADDOP', meaning=>'and');
+DefMath('\setminus',  "\x{2216}", role=>'ADDOP', meaning=>'set-minus');
+DefMath('\wr',        "\x{2240}", role=>'MULOP');
 
 # Should this block be ADDOP or something else?
-DefMath('\diamond',        "\x{22C4}", role=>'ADDOP'); # DIAMOND OPERATOR
-DefMath('\bigtriangleup',  "\x{25B3}", role=>'ADDOP'); # WHITE UP-POINTING TRIANGLE
-DefMath('\bigtriangledown',"\x{25BD}", role=>'ADDOP'); # WHITE DOWN-POINTING TRIANGLE
-DefMath('\triangleleft',   "\x{25C1}", role=>'ADDOP'); # WHITE LEFT-POINTING SMALL TRIANGLE
-DefMath('\triangleright',  "\x{25B7}", role=>'ADDOP'); # WHITE RIGHT-POINTING SMALL TRIANGLE
-DefMath('\lhd',            "\x{22B2}", role=>'ADDOP'); # NORMAL SUBGROUP OF
-DefMath('\rhd',            "\x{22B3}", role=>'ADDOP'); # CONTAINS AS NORMAL SUBGROUP
-DefMath('\unlhd',          "\x{22B4}", role=>'ADDOP'); # NORMAL SUBGROUP OF OR EQUAL TO
-DefMath('\unrhd',          "\x{22B5}", role=>'ADDOP'); # CONTAINS AS NORMAL SUBGROUP OR EQUAL TO
+DefMath('\diamond',        "\x{22C4}", role=>'ADDOP');
+DefMath('\bigtriangleup',  "\x{25B3}", role=>'ADDOP');
+DefMath('\bigtriangledown',"\x{25BD}", role=>'ADDOP');
+DefMath('\triangleleft',   "\x{25C1}", role=>'ADDOP');
+DefMath('\triangleright',  "\x{25B7}", role=>'ADDOP');
+DefMath('\lhd',            "\x{22B2}", role=>'ADDOP', meaning=>'subgroup-of');
+DefMath('\rhd',            "\x{22B3}", role=>'ADDOP', meaning=>'contains-as-subgroup');
+DefMath('\unlhd',          "\x{22B4}", role=>'ADDOP', meaning=>'subgroup-of-or-equals');
+DefMath('\unrhd',          "\x{22B5}", role=>'ADDOP', meaning=>'contains-as-subgroup-or-equals');
 
-DefMath('\oplus',     "\x{2295}", role=>'ADDOP'); # CIRCLED PLUS
-DefMath('\ominus',    "\x{2296}", role=>'ADDOP'); # CIRCLED MINUS
-DefMath('\otimes',    "\x{2297}", role=>'MULOP'); # CIRCLED TIMES
-DefMath('\oslash',    "\x{2298}", role=>'MULOP'); # CIRCLED DIVISION SLASH
-DefMath('\odot',      "\x{2299}", role=>'MULOP'); # CIRCLED DOT OPERATOR
-DefMath('\bigcirc',   "\x{25CB}", role=>'MULOP'); # WHITE CIRCLE
-DefMath('\dagger',    "\x{2020}", role=>'MULOP'); # DAGGER
-DefMath('\ddagger',   "\x{2021}", role=>'MULOP'); # DOUBLE DAGGER
-DefMath('\amalg',     "\x{2210}", role=>'MULOP'); # N-ARY COPRODUCT
+DefMath('\oplus',     "\x{2295}", role=>'ADDOP', meaning=>'direct-sum');
+DefMath('\ominus',    "\x{2296}", role=>'ADDOP', meaning=>'symmetric-difference');
+DefMath('\otimes',    "\x{2297}", role=>'MULOP', meaning=>'tensor-product');
+DefMath('\oslash',    "\x{2298}", role=>'MULOP');
+DefMath('\odot',      "\x{2299}", role=>'MULOP', meaning=>'direct-product');
+DefMath('\bigcirc',   "\x{25CB}", role=>'MULOP');
+DefMath('\dagger',    "\x{2020}", role=>'MULOP');
+DefMath('\ddagger',   "\x{2021}", role=>'MULOP');
+DefMath('\amalg',     "\x{2210}", role=>'MULOP', meaning=>'coproduct');
 
 #----------------------------------------------------------------------
 # LaTeX; Table 3.5. Relation Symbols, p.43
 #----------------------------------------------------------------------
-DefMath('\le',        "\x{2264}", role=>'RELOP', meaning=>'less-eq'); # LESS-THAN OR EQUAL TO
-DefMath('\ge',        "\x{2265}", role=>'RELOP', meaning=>'greater-eq'); # GREATER-THAN OR EQUAL TO
-DefMath('\ne',        "\x{2260}", role=>'RELOP', meaning=>'not-eq'); # NOT EQUAL TO
+DefMath('\le',        "\x{2264}", role=>'RELOP', meaning=>'less-than-or-equals');
+DefMath('\ge',        "\x{2265}", role=>'RELOP', meaning=>'greater-than-or-equals');
+DefMath('\ne',        "\x{2260}", role=>'RELOP', meaning=>'not-equals');
  
-DefMath('\leq',       "\x{2264}", role=>'RELOP', meaning=>'less-eq'); # LESS-THAN OR EQUAL TO
-DefMath('\prec',      "\x{227A}", role=>'RELOP', meaning=>'precedes'); # PRECEDES
-DefMath('\preceq',    "\x{2AAF}", role=>'RELOP', meaning=>'precedes-eq'); # PRECEDES ABOVE SINGLE-LINE EQUALS SIGN
-DefMath('\ll',        "\x{226A}", role=>'RELOP', meaning=>'much-less'); # MUCH LESS-THAN
-DefMath('\subset',    "\x{2282}", role=>'RELOP', meaning=>'subset'); # SUBSET OF
-DefMath('\subseteq',  "\x{2286}", role=>'RELOP', meaning=>'subset-eq'); # SUBSET OF OR EQUAL TO
-DefMath('\sqsubset',  "\x{228F}", role=>'RELOP'); # SQUARE IMAGE OF (latexsym package only!!)
-DefMath('\sqsubseteq',"\x{2291}", role=>'RELOP'); # SQUARE IMAGE OF OR EQUAL TO
-DefMath('\in',        "\x{2208}", role=>'RELOP', meaning=>'in'); # ELEMENT OF
-DefMath('\vdash',     "\x{22A3}", role=>'RELOP'); # LEFT TACK
+DefMath('\leq',       "\x{2264}", role=>'RELOP', meaning=>'less-than-or-equals');
+DefMath('\prec',      "\x{227A}", role=>'RELOP', meaning=>'precedes');
+DefMath('\preceq',    "\x{2AAF}", role=>'RELOP', meaning=>'precedes-or-equals');
+DefMath('\ll',        "\x{226A}", role=>'RELOP', meaning=>'much-less-than');
+DefMath('\subset',    "\x{2282}", role=>'RELOP', meaning=>'subset-of');
+DefMath('\subseteq',  "\x{2286}", role=>'RELOP', meaning=>'subset-of-or-equals');
+DefMath('\sqsubset',  "\x{228F}", role=>'RELOP', meaning=>'square-image-of');
+DefMath('\sqsubseteq',"\x{2291}", role=>'RELOP', meaning=>'square-image-of-or-equals');
+DefMath('\in',        "\x{2208}", role=>'RELOP', meaning=>'element-of');
+DefMath('\vdash',     "\x{22A2}", role=>'METARELOP', meaning=>'proves');
 
-DefMath('\geq',       "\x{2265}", role=>'RELOP', meaning=>'greater-eq'); # GREATER-THAN OR EQUAL TO
-DefMath('\succ',      "\x{227B}", role=>'RELOP', meaning=>'succeeds'); # SUCCEEDS
-DefMath('\succeq',    "\x{2AB0}", role=>'RELOP', meaning=>'succeeds-eq'); # SUCCEEDS ABOVE SINGLE-LINE EQUALS SIGN
-DefMath('\gg',        "\x{226B}", role=>'RELOP', meaning=>'much-greater'); # MUCH GREATER-THAN
-DefMath('\supset',    "\x{2283}", role=>'RELOP', meaning=>'superset'); # SUPERSET OF
-DefMath('\supseteq',  "\x{2287}", role=>'RELOP', meaning=>'superset-eq'); # SUPERSET OF OR EQUAL TO
-DefMath('\sqsupset',  "\x{2290}", role=>'RELOP'); # SQUARE ORIGINAL OF (latexsym only!)
-DefMath('\sqsupseteq',"\x{2292}", role=>'RELOP'); # SQUARE ORIGINAL OF OR EQUAL TO
-DefMath('\ni',        "\x{220B}", role=>'RELOP', meaning=>'contains'); # CONTAINS AS MEMBER
-DefMath('\dashv',     "\x{22A2}", role=>'RELOP'); # RIGHT TACK
+DefMath('\geq',       "\x{2265}", role=>'RELOP', meaning=>'greater-than-or-equals');
+DefMath('\succ',      "\x{227B}", role=>'RELOP', meaning=>'succeeds');
+DefMath('\succeq',    "\x{2AB0}", role=>'RELOP', meaning=>'succeeds-or-equals');
+DefMath('\gg',        "\x{226B}", role=>'RELOP', meaning=>'much-greater-than');
+DefMath('\supset',    "\x{2283}", role=>'RELOP', meaning=>'superset-of');
+DefMath('\supseteq',  "\x{2287}", role=>'RELOP', meaning=>'superset-of-or-equals');
+DefMath('\sqsupset',  "\x{2290}", role=>'RELOP', meaning=>'square-original-of');
+DefMath('\sqsupseteq',"\x{2292}", role=>'RELOP', meaning=>'square-original-of-or-equals');
+DefMath('\ni',        "\x{220B}", role=>'RELOP', meaning=>'contains');
+DefMath('\dashv',     "\x{22A3}", role=>'METARELOP', meaning=>'does-not-prove');
 
-DefMath('\equiv',     "\x{2261}", role=>'RELOP', meaning=>'equiv'); # IDENTICAL TO
-DefMath('\sim',       "\x{223C}", role=>'RELOP', meaning=>'similar'); # TILDE OPERATOR
-DefMath('\simeq',     "\x{2243}", role=>'RELOP', meaning=>'similar-eq'); # ASYMPTOTICALLY EQUAL TO
-DefMath('\asymp',     "\x{224D}", role=>'RELOP', meaning=>'asymp'); # EQUIVALENT TO
-DefMath('\approx',    "\x{2248}", role=>'RELOP', meaning=>'approx'); # ALMOST EQUAL TO
-DefMath('\cong',      "\x{2245}", role=>'RELOP'); # APPROXIMATELY EQUAL TO
-DefMath('\neq',       "\x{2260}", role=>'RELOP', meaning=>'not-eq'); # NOT EQUAL TO
-DefMath('\doteq',     "\x{2250}", role=>'RELOP'); # APPROACHES THE LIMIT
-DefMath('\notin',     "\x{2209}", role=>'RELOP', meaning=>'not-in'); # NOT AN ELEMENT OF
+DefMath('\equiv',     "\x{2261}", role=>'RELOP', meaning=>'identical-to');
+DefMath('\sim',       "\x{223C}", role=>'RELOP', meaning=>'similar-to');
+DefMath('\simeq',     "\x{2243}", role=>'RELOP', meaning=>'similar-to-or-equals');
+DefMath('\asymp',     "\x{224D}", role=>'RELOP', meaning=>'asymptotically-equals');
+DefMath('\approx',    "\x{2248}", role=>'RELOP', meaning=>'almost-equals');
+DefMath('\cong',      "\x{2245}", role=>'RELOP', meaning=>'approximately-equals');
+DefMath('\neq',       "\x{2260}", role=>'RELOP', meaning=>'not-equals');
+DefMath('\doteq',     "\x{2250}", role=>'RELOP', meaning=>'approaches-limit');
+DefMath('\notin',     "\x{2209}", role=>'RELOP', meaning=>'not-element-of');
 
-DefMath('\models',    "\x{22A7}", role=>'RELOP'); # MODELS
-DefMath('\perp',      "\x{22A5}", role=>'RELOP'); # UP TACK
+DefMath('\models',    "\x{22A7}", role=>'RELOP', meaning=>'models');
+DefMath('\perp',      "\x{27C2}", role=>'RELOP', meaning=>'perpendicular-to');
 DefMath('\mid',       "\x{2223}", role=>'VERTBAR'); # DIVIDES (RELOP?) ?? well, sometimes...
-DefMath('\parallel',  "\x{2225}", role=>'VERTBAR'); # PARALLEL TO
+DefMath('\parallel',  "\x{2225}", role=>'VERTBAR', meaning=>'parallel-to');
 DefMath('\bowtie',    "\x{22C8}", role=>'RELOP');   # BOWTIE
-DefMath('\Join',      "\x{2A1D}", role=>'RELOP');   # JOIN
+DefMath('\Join',      "\x{2A1D}", role=>'RELOP', meaning=>'join');
 DefMath('\smile',     "\x{2323}", role=>'RELOP');   # SMILE
 DefMath('\frown',     "\x{2322}", role=>'RELOP');   # FROWN
-DefMath('\propto',    "\x{221D}", role=>'RELOP', meaning=>'proportional'); # PROPORTIONAL TO
+DefMath('\propto',    "\x{221D}", role=>'RELOP', meaning=>'proportional-to');
 
-DefMath('\not',"not", role=>'PREFIX');
+DefMath('\not',"not", role=>'PREFIX', meaning=>'not');
 
 #----------------------------------------------------------------------
 # Match negations of many operators
@@ -2876,7 +2891,8 @@ DefMath('\Relbar',     "=", role=>'RELOP'); # ???
 #----------------------------------------------------------------------
 # LaTeX; Table 3.6. Arrow Symbols, p.43
 #----------------------------------------------------------------------
-# (treat them as RELOP for now ???)
+# Arrows get treated somewhat like relations (or meta-relations),
+# but it's hard to associate any particular "meaning" to them.
 
 DefMath('\leftarrow',         "\x{2190}", role=>'ARROW'); # LEFTWARDS ARROW
 DefMath('\Leftarrow',         "\x{21D0}", role=>'ARROW'); # LEFTWARDS DOUBLE ARROW
@@ -2885,7 +2901,7 @@ DefMath('\Rightarrow',        "\x{21D2}", role=>'ARROW'); # RIGHTWARDS DOUBLE AR
 DefMath('\leftrightarrow',    "\x{2194}", role=>'METARELOP');	# LEFT RIGHT ARROW
 DefMath('\Leftrightarrow',    "\x{21D4}", role=>'METARELOP'); # LEFT RIGHT DOUBLE ARROW
 DefMath('\iff',               "\x{21D4}", role=>'METARELOP', meaning=>'iff'); # LEFT RIGHT DOUBLE ARROW
-DefMath('\mapsto',            "\x{21A6}", role=>'ARROW', meaning=>'mapsto'); # RIGHTWARDS ARROW FROM BAR
+DefMath('\mapsto',            "\x{21A6}", role=>'ARROW', meaning=>'maps-to');
 DefMath('\hookleftarrow',     "\x{21A9}", role=>'ARROW'); # LEFTWARDS ARROW WITH HOOK
 DefMath('\leftharpoonup',     "\x{21BC}", role=>'ARROW'); # LEFTWARDS HARPOON WITH BARB UPWARDS
 DefMath('\leftharpoondown',   "\x{21BD}", role=>'ARROW'); # LEFTWARDS HARPOON WITH BARB DOWNWARDS
@@ -2901,7 +2917,7 @@ DefMath('\longmapsto',        "\x{27FC}", role=>'ARROW'); # LONG RIGHTWARDS ARRO
 DefMath('\hookrightarrow',    "\x{21AA}", role=>'ARROW'); # RIGHTWARDS ARROW WITH HOOK
 DefMath('\rightharpoonup',    "\x{21C0}", role=>'ARROW'); # RIGHTWARDS HARPOON WITH BARB UPWARDS
 DefMath('\rightharpoondown',  "\x{21C1}", role=>'ARROW'); # RIGHTWARDS HARPOON WITH BARB DOWNWARDS
-DefMath('\leadsto',           "\x{219D}", role=>'ARROW', meaning=>'leadsto'); # RIGHTWARDS WAVE ARROW
+DefMath('\leadsto',           "\x{219D}", role=>'ARROW', meaning=>'leads-to');
 
 DefMath('\uparrow',           "\x{2191}", role=>'ARROW'); # UPWARDS ARROW
 DefMath('\Uparrow',           "\x{21D1}", role=>'ARROW'); # UPWARDS DOUBLE ARROW
@@ -2996,6 +3012,9 @@ DefMacro('\overleftarrow{}',  '\ifmmode\math@overleftarrow{#1}\else$\math@overle
 #----------------------------------------------------------------------
 # LaTeX; Table 3.10. Delimiters, p.47
 #----------------------------------------------------------------------
+# The meaning of OPEN/CLOSE tends to depend upon the pairing,
+# rather than the individual tokens.
+# This meaning is handled in MathParser (for now)
 
 ##DefMath('\{',        '{',        role=>'OPEN');
 DefConstructor('\{',
@@ -3174,7 +3193,7 @@ DefConstructor('\sqrt[]{}',
 	       "?#1(<ltx:XMApp><ltx:XMTok meaning='root'/>"
 	       .     "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       .   "</ltx:XMApp>)"
-	       .  "(<ltx:XMApp><ltx:XMTok meaning='sqrt'/>"
+	       .  "(<ltx:XMApp><ltx:XMTok meaning='square-root'/>"
 	       .    "<ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>)");
 
 DefConstructor('\root Until:\of {}',
@@ -3186,23 +3205,23 @@ DefConstructor('\root Until:\of {}',
 # LaTeX; Table 3.9. Log-like Functions, p.44.
 #----------------------------------------------------------------------
 # NOTE: Classifying some as TRIGFUNCTION might clarify 'pi' ambiguities ?
-DefMath('\arccos', "arccos", role=>'OPFUNCTION', meaning=>'arccos');
-DefMath('\arcsin', "arcsin", role=>'OPFUNCTION', meaning=>'arcsin');
-DefMath('\arctan', "arctan", role=>'OPFUNCTION', meaning=>'arctan');
-DefMath('\arg',    "arg", role=>'OPFUNCTION',    meaning=>'arg');
+DefMath('\arccos', "arccos", role=>'OPFUNCTION', meaning=>'inverse-cosine');
+DefMath('\arcsin', "arcsin", role=>'OPFUNCTION', meaning=>'inverse-sine');
+DefMath('\arctan', "arctan", role=>'OPFUNCTION', meaning=>'inverse-tangent');
+DefMath('\arg',    "arg", role=>'OPFUNCTION',    meaning=>'argument');
 
-DefMath('\cos',    "cos",  role=>'TRIGFUNCTION', meaning=>'cos');
-DefMath('\cosh',   "cosh", role=>'TRIGFUNCTION', meaning=>'cosh');
-DefMath('\cot',    "cot",  role=>'TRIGFUNCTION', meaning=>'cot');
-DefMath('\coth',   "coth", role=>'TRIGFUNCTION', meaning=>'coth');
+DefMath('\cos',    "cos",  role=>'TRIGFUNCTION', meaning=>'cosine');
+DefMath('\cosh',   "cosh", role=>'TRIGFUNCTION', meaning=>'hyperbolic-cosine');
+DefMath('\cot',    "cot",  role=>'TRIGFUNCTION', meaning=>'cotangent');
+DefMath('\coth',   "coth", role=>'TRIGFUNCTION', meaning=>'hyperbolic-cotangent');
 
-DefMath('\csc',    "csc", role=>'TRIGFUNCTION',  meaning=>'cosec');
+DefMath('\csc',    "csc", role=>'TRIGFUNCTION',  meaning=>'cosecant');
 DefMath('\deg',    "deg", role=>'OPFUNCTION',    meaning=>'degree');
-DefMath('\det',    "det", role=>'LIMITOP',       meaning=>'det',
+DefMath('\det',    "det", role=>'LIMITOP',       meaning=>'determinant',
 	scriptpos=>\&doScriptpos);
-DefMath('\dim',    "dim", role=>'LIMITOP',       meaning=>'dim');
+DefMath('\dim',    "dim", role=>'LIMITOP',       meaning=>'dimension');
 
-DefMath('\exp',    "exp", role=>'OPFUNCTION',    meaning=>'exp');
+DefMath('\exp',    "exp", role=>'OPFUNCTION',    meaning=>'exponential');
 DefMath('\gcd',    "gcd", role=>'OPFUNCTION',    meaning=>'gcd',
 	scriptpos=>\&doScriptpos);
 DefMath('\hom',    "hom", role=>'OPFUNCTION');
@@ -3218,28 +3237,28 @@ DefMath('\liminf', "lim inf", role=>'LIMITOP',   meaning=>'limit-infimum',
 
 DefMath('\limsup', "lim sup", role=>'LIMITOP',   meaning=>'limit-supremum',
 	scriptpos=>\&doScriptpos);
-DefMath('\ln',     "ln",  role=>'OPFUNCTION',    meaning=>'ln');
-DefMath('\log',    "log", role=>'OPFUNCTION',    meaning=>'log');
-DefMath('\max',    "max", role=>'LIMITOP',       meaning=>'max',
+DefMath('\ln',     "ln",  role=>'OPFUNCTION',    meaning=>'natural-logarithm');
+DefMath('\log',    "log", role=>'OPFUNCTION',    meaning=>'logarithm');
+DefMath('\max',    "max", role=>'LIMITOP',       meaning=>'maximum',
 	scriptpos=>\&doScriptpos);
 
-DefMath('\min',    "min", role=>'LIMITOP',       meaning=>'min',
+DefMath('\min',    "min", role=>'LIMITOP',       meaning=>'minimum',
 	scriptpos=>\&doScriptpos);
 DefMath('\Pr',     "Pr",  role=>'OPFUNCTION', scriptpos=>\&doScriptpos);
-DefMath('\sec',    "sec", role=>'TRIGFUNCTION',  meaning=>'sec');
-DefMath('\sin',    "sin", role=>'TRIGFUNCTION',  meaning=>'sin');
+DefMath('\sec',    "sec", role=>'TRIGFUNCTION',  meaning=>'secant');
+DefMath('\sin',    "sin", role=>'TRIGFUNCTION',  meaning=>'sine');
 
-DefMath('\sinh',   "sinh", role=>'TRIGFUNCTION', meaning=>'sinh');
+DefMath('\sinh',   "sinh", role=>'TRIGFUNCTION', meaning=>'hyperbolic-sine');
 DefMath('\sup',    "sup",  role=>'LIMITOP',      meaning=>'supremum',
 	scriptpos=>\&doScriptpos);
-DefMath('\tan',    "tan",  role=>'TRIGFUNCTION', meaning=>'tan');
-DefMath('\tanh',   "tanh", role=>'TRIGFUNCTION', meaning=>'tanh');
+DefMath('\tan',    "tan",  role=>'TRIGFUNCTION', meaning=>'tangent');
+DefMath('\tanh',   "tanh", role=>'TRIGFUNCTION', meaning=>'hyperbolic-tangent');
 
 #----------------------------------------------------------------------
 # Modulo
 
-DefMath('\pmod{}', '(\textrm{mod} #1)', role=>'MODIFIER');
-DefMath('\bmod',   'mod', role=>'MODIFIEROP');
+DefMath('\pmod{}', '\;\;(\textrm{mod} #1)', role=>'MODIFIER'); #  , meaning=>'modulo');
+DefMath('\bmod',   'mod', role=>'MODIFIEROP', meaning=>'modulo');
 
 #======================================================================
 # TeX Book, Appendix B. p. 362
@@ -3275,7 +3294,7 @@ DefMacro('\cases{}',
 	 '\@@cases{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@cases{}',
 	       sub { my($document,$body,%props)=@_;
-		     constructAlignment($document,$body,attributes=>{name=>'Cases'}); },
+		     constructAlignment($document,$body,attributes=>{meaning=>'cases'}); },
 	       reversion=>'\cases{#1}', bounded=>1,
 	       beforeDigest=>sub { 
  		 my $col1 = {before=>Tokens(), after=>Tokens(T_CS('\hfil'))};
@@ -3391,7 +3410,7 @@ DefConstructor("\\\$", "\$");
 DefConstructor('\_',   '_');
 
 # Discretionary times; just treat as invisible ?
-DefMath('\*',"\x{2062}", role=>'MULOP', name=>''); # INVISIBLE TIMES (or MULTIPLICATION SIGN = 00D7)
+DefMath('\*',"\x{2062}", role=>'MULOP', name=>'', meaning=>'times'); # INVISIBLE TIMES (or MULTIPLICATION SIGN = 00D7)
 
 
 # These 3 should have some `name' assigned ... but what???

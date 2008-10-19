@@ -4,21 +4,21 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
-      <Math mode="display" tex="abc\not=\mathrm{abc}\not=\mathit{abc}\ldots" text="a * b * c not-eq abc not-eq abc * ldots">
+      <Math mode="display" tex="abc\not=\mathrm{abc}\not=\mathit{abc}\ldots" text="a * b * c not-equals abc not-equals abc * ldots">
         <XMath>
           <XMApp>
-            <XMTok name="MultiRelation"/>
+            <XMTok meaning="multirelation"/>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMTok role="UNKNOWN" font="italic">b</XMTok>
               <XMTok role="UNKNOWN" font="italic">c</XMTok>
             </XMApp>
-            <XMTok meaning="not-eq" role="RELOP" name="not-=">≠</XMTok>
+            <XMTok meaning="not-equals" role="RELOP" name="not-=">≠</XMTok>
             <XMTok role="UNKNOWN">abc</XMTok>
-            <XMTok meaning="not-eq" role="RELOP" name="not-=">≠</XMTok>
+            <XMTok meaning="not-equals" role="RELOP" name="not-=">≠</XMTok>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">abc</XMTok>
               <XMTok name="ldots" role="ID">…</XMTok>
             </XMApp>
@@ -27,10 +27,10 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex2">
-      <Math mode="display" tex="\pi\approx 3.1415\; 926" text="pi approx 3.1415926">
+      <Math mode="display" tex="\pi\approx 3.1415\; 926" text="pi almost-equals 3.1415926">
         <XMath>
           <XMApp>
-            <XMTok meaning="approx" role="RELOP">≈</XMTok>
+            <XMTok meaning="almost-equals" name="approx" role="RELOP">≈</XMTok>
             <XMTok name="pi" role="UNKNOWN" font="italic">π</XMTok>
             <XMTok meaning="3.1415926" role="NUMBER">3.1415 926</XMTok>
           </XMApp>
@@ -41,7 +41,7 @@
       <Math mode="display" tex="a\cdot b\cdot c\cdot\cdot\cdot" text="(a cdot b cdot c) * cdots">
         <XMath>
           <XMApp>
-            <XMTok role="MULOP">⁢</XMTok>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
             <XMApp>
               <XMTok name="cdot" role="MULOP">⋅</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>

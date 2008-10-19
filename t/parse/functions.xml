@@ -10,7 +10,7 @@
         <Math mode="display" tex="g(a)=g(b)" text="g@(a) = g@(b)">
           <XMath>
             <XMApp>
-              <XMTok meaning="eq" role="RELOP">=</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMApp>
                 <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">g</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -27,7 +27,7 @@
         <Math mode="display" tex="f(a)=g(h(c))" text="f@(a) = g@(h@(c))">
           <XMath>
             <XMApp>
-              <XMTok meaning="eq" role="RELOP">=</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMApp>
                 <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">f</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -44,16 +44,16 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex3">
-        <Math mode="display" tex="h(c)=\sin a^{2}" text="h@(c) = sin@(a ^ 2)">
+        <Math mode="display" tex="h(c)=\sin a^{2}" text="h@(c) = sine@(a ^ 2)">
           <XMath>
             <XMApp>
-              <XMTok meaning="eq" role="RELOP">=</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMApp>
                 <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">h</XMTok>
                 <XMTok role="ID" font="italic">c</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok meaning="sin" role="TRIGFUNCTION">sin</XMTok>
+                <XMTok meaning="sine" role="TRIGFUNCTION">sin</XMTok>
                 <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                   <XMTok role="ID" font="italic">a</XMTok>
@@ -65,10 +65,10 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex4">
-        <Math mode="display" tex="\sin f(a)" text="sin@(f@(a))">
+        <Math mode="display" tex="\sin f(a)" text="sine@(f@(a))">
           <XMath>
             <XMApp>
-              <XMTok meaning="sin" role="TRIGFUNCTION">sin</XMTok>
+              <XMTok meaning="sine" role="TRIGFUNCTION">sin</XMTok>
               <XMApp>
                 <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">f</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -83,16 +83,16 @@
     <title>Trigonometric functions</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex5">
-        <Math mode="display" tex="\sin a+\tan b" text="sin@(a) + tan@(b)">
+        <Math mode="display" tex="\sin a+\tan b" text="sine@(a) + tangent@(b)">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMApp>
-                <XMTok meaning="sin" role="TRIGFUNCTION">sin</XMTok>
+                <XMTok meaning="sine" role="TRIGFUNCTION">sin</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok meaning="tan" role="TRIGFUNCTION">tan</XMTok>
+                <XMTok meaning="tangent" role="TRIGFUNCTION">tan</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
@@ -100,28 +100,28 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex6">
-        <Math mode="display" tex="\sin a\cos b\neq\sin(a\cos b)" text="sin@(a) * cos@(b) not-eq sin@(a * cos@(b))">
+        <Math mode="display" tex="\sin a\cos b\neq\sin(a\cos b)" text="sine@(a) * cosine@(b) not-equals sine@(a * cosine@(b))">
           <XMath>
             <XMApp>
-              <XMTok meaning="not-eq" name="neq" role="RELOP">≠</XMTok>
+              <XMTok meaning="not-equals" name="neq" role="RELOP">≠</XMTok>
               <XMApp>
-                <XMTok role="MULOP">⁢</XMTok>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
                 <XMApp>
-                  <XMTok meaning="sin" role="TRIGFUNCTION">sin</XMTok>
+                  <XMTok meaning="sine" role="TRIGFUNCTION">sin</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                 </XMApp>
                 <XMApp>
-                  <XMTok meaning="cos" role="TRIGFUNCTION">cos</XMTok>
+                  <XMTok meaning="cosine" role="TRIGFUNCTION">cos</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
                 </XMApp>
               </XMApp>
               <XMApp>
-                <XMTok meaning="sin" role="TRIGFUNCTION" argclose=")" argopen="(">sin</XMTok>
+                <XMTok meaning="sine" role="TRIGFUNCTION" argclose=")" argopen="(">sin</XMTok>
                 <XMApp>
-                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMApp>
-                    <XMTok meaning="cos" role="TRIGFUNCTION">cos</XMTok>
+                    <XMTok meaning="cosine" role="TRIGFUNCTION">cos</XMTok>
                     <XMTok role="ID" font="italic">b</XMTok>
                   </XMApp>
                 </XMApp>
@@ -131,22 +131,22 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex7">
-        <Math mode="display" tex="\sin 2\pi\neq\log 2x^{2}" text="sin@(2 * pi) not-eq log@(2 * x ^ 2)">
+        <Math mode="display" tex="\sin 2\pi\neq\log 2x^{2}" text="sine@(2 * pi) not-equals logarithm@(2 * x ^ 2)">
           <XMath>
             <XMApp>
-              <XMTok meaning="not-eq" name="neq" role="RELOP">≠</XMTok>
+              <XMTok meaning="not-equals" name="neq" role="RELOP">≠</XMTok>
               <XMApp>
-                <XMTok meaning="sin" role="TRIGFUNCTION">sin</XMTok>
+                <XMTok meaning="sine" role="TRIGFUNCTION">sin</XMTok>
                 <XMApp>
-                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok meaning="2" role="NUMBER">2</XMTok>
                   <XMTok name="pi" role="UNKNOWN" font="italic">π</XMTok>
                 </XMApp>
               </XMApp>
               <XMApp>
-                <XMTok meaning="log" role="OPFUNCTION">log</XMTok>
+                <XMTok meaning="logarithm" role="OPFUNCTION">log</XMTok>
                 <XMApp>
-                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok meaning="2" role="NUMBER">2</XMTok>
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
@@ -168,7 +168,7 @@
         <Math mode="display" tex="fgh" text="f * g * h">
           <XMath>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok role="FUNCTION" font="italic">f</XMTok>
               <XMTok role="FUNCTION" font="italic">g</XMTok>
               <XMTok role="FUNCTION" font="italic">h</XMTok>
@@ -180,7 +180,7 @@
         <Math mode="display" tex="fgha" text="f * g * h * a">
           <XMath>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok role="FUNCTION" font="italic">f</XMTok>
               <XMTok role="FUNCTION" font="italic">g</XMTok>
               <XMTok role="FUNCTION" font="italic">h</XMTok>
@@ -229,7 +229,7 @@
         <Math mode="display" tex="f^{{\prime}}(a)=a^{2}" text="(f ^ prime)@(a) = a ^ 2">
           <XMath>
             <XMApp>
-              <XMTok meaning="eq" role="RELOP">=</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMApp>
                 <XMApp argclose=")" argopen="(">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
@@ -251,7 +251,7 @@
         <Math mode="display" tex="f^{2}(a)=g^{b}(2)" text="(f ^ 2)@(a) = (g ^ b)@(2)">
           <XMath>
             <XMApp>
-              <XMTok meaning="eq" role="RELOP">=</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMApp>
                 <XMApp argclose=")" argopen="(">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
@@ -278,28 +278,28 @@
     <title>Scripts</title>
     <para xml:id="S5.p1">
       <equation xml:id="S5.Ex14">
-        <Math mode="display" tex="\ln a=\log _{e}a=\ln _{{+}}b" text="ln@(a) = (log _ e)@(a) = (ln _ +)@(b)">
+        <Math mode="display" tex="\ln a=\log _{e}a=\ln _{{+}}b" text="natural-logarithm@(a) = (logarithm _ e)@(a) = (natural-logarithm _ +)@(b)">
           <XMath>
             <XMApp>
-              <XMTok name="MultiRelation"/>
+              <XMTok meaning="multirelation"/>
               <XMApp>
-                <XMTok meaning="ln" role="OPFUNCTION">ln</XMTok>
+                <XMTok meaning="natural-logarithm" role="OPFUNCTION">ln</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
               </XMApp>
-              <XMTok meaning="eq" role="RELOP">=</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMApp>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-                  <XMTok meaning="log" role="OPFUNCTION">log</XMTok>
+                  <XMTok meaning="logarithm" role="OPFUNCTION">log</XMTok>
                   <XMTok role="ID" font="italic">e</XMTok>
                 </XMApp>
                 <XMTok role="ID" font="italic">a</XMTok>
               </XMApp>
-              <XMTok meaning="eq" role="RELOP">=</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMApp>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-                  <XMTok meaning="ln" role="OPFUNCTION">ln</XMTok>
+                  <XMTok meaning="natural-logarithm" role="OPFUNCTION">ln</XMTok>
                   <XMTok meaning="plus" role="ADDOP">+</XMTok>
                 </XMApp>
                 <XMTok role="ID" font="italic">b</XMTok>

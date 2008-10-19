@@ -35,13 +35,13 @@
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMApp>
-                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
                   <XMTok role="ID" font="italic">c</XMTok>
                 </XMApp>
               </XMApp>
               <XMApp>
-                <XMTok role="MULOP">⁢</XMTok>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
                 <XMTok role="ID" font="italic">d</XMTok>
                 <XMTok role="ID" font="italic">e</XMTok>
               </XMApp>
@@ -53,11 +53,11 @@
         <Math mode="display" tex="abc/de" text="((a * b * c) / d) * e">
           <XMath>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMApp>
-                <XMTok meaning="div" role="MULOP" style="inline">/</XMTok>
+                <XMTok meaning="divide" role="MULOP" style="inline">/</XMTok>
                 <XMApp>
-                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
                   <XMTok role="ID" font="italic">c</XMTok>
@@ -70,12 +70,12 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex4">
-        <Math mode="display" tex="a\times b\times c/d\times e" text="((a times b times c) / d) times e">
+        <Math mode="display" tex="a\times b\times c/d\times e" text="((a * b * c) / d) * e">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">×</XMTok>
               <XMApp>
-                <XMTok meaning="div" role="MULOP" style="inline">/</XMTok>
+                <XMTok meaning="divide" role="MULOP" style="inline">/</XMTok>
                 <XMApp>
                   <XMTok meaning="times" role="MULOP">×</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
@@ -95,10 +95,10 @@
     <title>Evaluate At</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex5">
-        <Math mode="display" tex="a|_{\infty}" text="AT@(a, infinity)">
+        <Math mode="display" tex="a|_{\infty}" text="evaluated-at@(a, infinity)">
           <XMath>
             <XMApp>
-              <XMTok name="AT"/>
+              <XMTok meaning="evaluated-at"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
             </XMApp>
@@ -106,23 +106,23 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex6">
-        <Math mode="display" tex="ab|_{{a=0}}cd|_{{c=0}}e" text="AT@(AT@(a * b, a = 0) * c * d, c = 0) * e">
+        <Math mode="display" tex="ab|_{{a=0}}cd|_{{c=0}}e" text="evaluated-at@(evaluated-at@(a * b, a = 0) * c * d, c = 0) * e">
           <XMath>
             <XMApp>
-              <XMTok role="MULOP">⁢</XMTok>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMApp>
-                <XMTok name="AT"/>
+                <XMTok meaning="evaluated-at"/>
                 <XMApp>
-                  <XMTok role="MULOP">⁢</XMTok>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMApp>
-                    <XMTok name="AT"/>
+                    <XMTok meaning="evaluated-at"/>
                     <XMApp>
-                      <XMTok role="MULOP">⁢</XMTok>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMTok role="ID" font="italic">a</XMTok>
                       <XMTok role="ID" font="italic">b</XMTok>
                     </XMApp>
                     <XMApp>
-                      <XMTok meaning="eq" role="RELOP">=</XMTok>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
                       <XMTok role="ID" font="italic">a</XMTok>
                       <XMTok meaning="0" role="NUMBER">0</XMTok>
                     </XMApp>
@@ -131,7 +131,7 @@
                   <XMTok role="ID" font="italic">d</XMTok>
                 </XMApp>
                 <XMApp>
-                  <XMTok meaning="eq" role="RELOP">=</XMTok>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
                   <XMTok role="ID" font="italic">c</XMTok>
                   <XMTok meaning="0" role="NUMBER">0</XMTok>
                 </XMApp>
@@ -147,22 +147,22 @@
     <title>Absolute values</title>
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex7">
-        <Math mode="display" tex="|a|" text="abs@(a)">
+        <Math mode="display" tex="|a|" text="absolute-value@(a)">
           <XMath>
             <XMApp>
-              <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
               <XMTok role="ID" font="italic">a</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S3.Ex8">
-        <Math mode="display" tex="||a||" text="abs@(abs@(a))">
+        <Math mode="display" tex="||a||" text="absolute-value@(absolute-value@(a))">
           <XMath>
             <XMApp>
-              <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
               <XMApp>
-                <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
+                <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
                 <XMTok role="ID" font="italic">a</XMTok>
               </XMApp>
             </XMApp>
@@ -170,12 +170,12 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex9">
-        <Math mode="display" tex="|a|_{\infty}" text="(abs@(a)) _ infinity">
+        <Math mode="display" tex="|a|_{\infty}" text="(absolute-value@(a)) _ infinity">
           <XMath>
             <XMApp>
               <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
               <XMApp>
-                <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
+                <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
                 <XMTok role="ID" font="italic">a</XMTok>
               </XMApp>
               <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
@@ -184,10 +184,10 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex10">
-        <Math mode="display" tex="|a+b|" text="abs@(a + b)">
+        <Math mode="display" tex="|a+b|" text="absolute-value@(a + b)">
           <XMath>
             <XMApp>
-              <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
               <XMApp>
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -198,15 +198,15 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex11">
-        <Math mode="display" tex="|a-|b||" text="abs@(a - abs@(b))">
+        <Math mode="display" tex="|a-|b||" text="absolute-value@(a - absolute-value@(b))">
           <XMath>
             <XMApp>
-              <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
               <XMApp>
                 <XMTok meaning="minus" role="ADDOP">-</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMApp>
-                  <XMTok name="abs" role="FENCED" argclose="|" argopen="|"/>
+                  <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
                   <XMTok role="ID" font="italic">b</XMTok>
                 </XMApp>
               </XMApp>

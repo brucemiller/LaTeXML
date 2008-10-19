@@ -8,20 +8,20 @@
       <Math mode="display" tex="\{ a\}" text="set@(a)">
         <XMath>
           <XMApp>
-            <XMTok name="set" role="FENCED" argclose="}" argopen="{"/>
+            <XMTok meaning="set" role="FENCED" argclose="}" argopen="{"/>
             <XMTok role="ID" font="italic">a</XMTok>
           </XMApp>
         </XMath>
       </Math>
     </equation>
     <equation xml:id="S0.Ex2">
-      <Math mode="display" tex="\{ a:a\in b\}" text="ConditionalSet@(a, a in b)">
+      <Math mode="display" tex="\{ a:a\in b\}" text="conditional-set@(a, a element-of b)">
         <XMath>
           <XMApp>
-            <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators=";"/>
+            <XMTok meaning="conditional-set" role="FENCED" argclose="}" argopen="{" separators=";"/>
             <XMTok role="ID" font="italic">a</XMTok>
             <XMApp>
-              <XMTok meaning="in" role="RELOP">∈</XMTok>
+              <XMTok meaning="element-of" name="in" role="RELOP">∈</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -30,13 +30,13 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex3">
-      <Math mode="display" tex="\{ a|a\in b\}" text="ConditionalSet@(a, a in b)">
+      <Math mode="display" tex="\{ a|a\in b\}" text="conditional-set@(a, a element-of b)">
         <XMath>
           <XMApp>
-            <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators="|"/>
+            <XMTok meaning="conditional-set" role="FENCED" argclose="}" argopen="{" separators="|"/>
             <XMTok role="ID" font="italic">a</XMTok>
             <XMApp>
-              <XMTok meaning="in" role="RELOP">∈</XMTok>
+              <XMTok meaning="element-of" name="in" role="RELOP">∈</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -47,21 +47,21 @@
   </para>
   <para xml:id="p2">
     <equation xml:id="S0.Ex4">
-      <Math mode="display" tex="\{ a|a\in b\} _{{c=0}}" text="(ConditionalSet@(a, a in b)) _ (c = 0)">
+      <Math mode="display" tex="\{ a|a\in b\} _{{c=0}}" text="(conditional-set@(a, a element-of b)) _ (c = 0)">
         <XMath>
           <XMApp>
             <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
             <XMApp>
-              <XMTok name="ConditionalSet" role="FENCED" argclose="}" argopen="{" separators="|"/>
+              <XMTok meaning="conditional-set" role="FENCED" argclose="}" argopen="{" separators="|"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMApp>
-                <XMTok meaning="in" role="RELOP">∈</XMTok>
+                <XMTok meaning="element-of" name="in" role="RELOP">∈</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
             <XMApp>
-              <XMTok meaning="eq" role="RELOP">=</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">c</XMTok>
               <XMTok meaning="0" role="NUMBER">0</XMTok>
             </XMApp>

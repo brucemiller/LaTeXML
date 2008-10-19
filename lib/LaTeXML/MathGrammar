@@ -52,8 +52,8 @@ Anything : Formulae
 	 | modifierFormula
 	 | OPEN modifierFormula CLOSE	  { Fence($item[1],$item[2],$item[3]); }
          | MODIFIER
- 	 | MODIFIEROP Expression          { Apply($item[1],New('Empty'),$item[2]);}
-	 | METARELOP Formula		  { Apply($item[1],New('Empty'),$item[2]); }
+ 	 | MODIFIEROP Expression          { Apply($item[1],Absent(),$item[2]);}
+	 | METARELOP Formula		  { Apply($item[1],Absent(),$item[2]); }
 	 | anyop
 
 # a top level rule for sub and superscripts that can accept all sorts of junk.
@@ -68,7 +68,7 @@ Superscript : Formulae | relop | ADDOP | MULOP | supops
 # operators [Think of     $a=b=c$ vs $a=b, c=d$  vs. $a=b,c,d$  .. ]
 # and group them into Formulae (collections of relations), including relations
 # which have punctuated collections of Expression(s) on either the LHS or RHS, 
-# as well as `MultiRelation' like a = b = c, or simply punctuated collections of
+# as well as `multirelation' like a = b = c, or simply punctuated collections of
 # Expression(s)
 
 Formulae : Formula moreFormulae[$item[1]]
@@ -89,14 +89,14 @@ Formula : Expression extendFormula[$item[1]]
 extendFormula : 
 	  punctExpr(s) maybeRHS[$arg[0],map(@$_,@{$item[1]})]
 	| relop Expression moreRHS[$arg[0],$item[1],$item[2]]
-	| relop /^\Z/    { NewFormula($arg[0],$item[1], New('Empty')); }
+	| relop /^\Z/    { NewFormula($arg[0],$item[1], Absent()); }
 	| { $arg[0]; }
 
 # maybeRHS[$expr,(punct,$expr)*]; 
 #    Could have RELOP Expression (which means the (collected LHS) relation RHS)
 #    or done (just collection)
-maybeRHS : relopExpr(s) { NewFormula(NewCollection(@arg),map(@$_,@{$item[1]})); }
-	| { NewCollection(@arg); }
+maybeRHS : relopExpr(s) { NewFormula(NewList(@arg),map(@$_,@{$item[1]})); }
+	| { NewList(@arg); }
 # --- either line could be followed by (>0)
 # For the latter, does a,b,c (<0) mean c<0 or all of them are <0 ????
 
@@ -113,9 +113,9 @@ moreRHS : PUNCT Expression maybeColRHS[@arg,$item[1],$item[2]]
 maybeColRHS :
         relop Expression moreRHS[$arg[$#arg],$item[1],$item[2]]
 	 { NewFormulae(NewFormula($arg[0],$arg[1],
-			NewCollection(@arg[2..$#arg-2])),$arg[$#arg-1],$item[3]); }
+			NewList(@arg[2..$#arg-2])),$arg[$#arg-1],$item[3]); }
 	| PUNCT Expression maybeColRHS[@arg,$item[1],$item[2]]
-	| { NewFormula($arg[0],$arg[1],NewCollection(@arg[2..$#arg])); }
+	| { NewFormula($arg[0],$arg[1],NewList(@arg[2..$#arg])); }
 # --- 1st line handles it through more RHS ???
 # --- 2nd line could be preceded by (>0) if it ends formula
 # --- 3rd line could be followed by (>0)
@@ -123,16 +123,16 @@ maybeColRHS :
 
 punctExpr : PUNCT Expression			{ [$item[1],$item[2]]; }
 relopExpr : relop Expression			{ [$item[1],$item[2]]; }
-	  | relop /^\Z/				{ [$item[1], New('Empty')]; }
+	  | relop /^\Z/				{ [$item[1], Absent()]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # `Modifier' formula, things like $<0$, that might follow another formula or text.
 # Empty is a placeholder for the missing thing... (?)
 
-#modifierFormula : relopExpr(s) { NewFormula(New('Empty'),map(@{$_},@{$item[1]}));}
+#modifierFormula : relopExpr(s) { NewFormula(Absent(),map(@{$_},@{$item[1]}));}
 modifierFormula : relop Expression punctExpr(s?) 
-		 { NewFormula(New('Empty'),$item[1],
-			      NewCollection($item[2],map(@$_,@{$item[3]})));}
+		 { NewFormula(Absent(),$item[1],
+			      NewList($item[2],map(@$_,@{$item[3]})));}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Expressions; sums of terms
@@ -140,7 +140,7 @@ modifierFormula : relop Expression punctExpr(s?)
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Expressions : Expression punctExpr(s?)
-				{ NewCollection($item[1],map(@$_,@{$item[2]})); }
+				{ NewList($item[1],map(@$_,@{$item[2]})); }
 
 Expression  : SignedTerm moreTerms[[],$item[1]] addExpressionModifier[$item[2]]
 
@@ -152,20 +152,20 @@ moreTerms    : ADDOP moreTerms2[$arg[0],$arg[1],$item[1]]
 #  by another term, or if not, it presumably represents a limiting form
 #  like "a+" (ie a from above)
 moreTerms2   : Term moreTerms[ [@{$arg[0]},$arg[1],$arg[2]],$item[1] ]
-	    | { LeftRec(@{$arg[0]},Apply(New('LimitFrom'),$arg[1],$arg[2])); }
+	    | { LeftRec(@{$arg[0]},Apply(New('limit-from'),$arg[1],$arg[2])); }
 
 
 addExpressionModifier :
 	  PUNCT(?) OPEN relop Expression balancedClose[$item[2]]
-	    { Apply(New('Annotated'),$arg[0],
- 		    Fence($item[2], Apply($item[3],New('Empty'),$item[4]),$item[5])); }
+	    { Apply(New('annotated'),$arg[0],
+ 		    Fence($item[2], Apply($item[3],Absent(),$item[4]),$item[5])); }
         | PUNCT(?) OPEN Expression relop Expression
 	  	    moreRHS[$item[3],$item[4],$item[5]] balancedClose[$item[2]]
-            { Apply(New('Annotated'),$arg[0],Fence($item[2],$item[6],$item[7])); }
+            { Apply(New('annotated'),$arg[0],Fence($item[2],$item[6],$item[7])); }
 	| PUNCT(?) OPEN MODIFIEROP Expression balancedClose[$item[2]]
             { Apply($item[3],$arg[0],$item[4]); }
         | MODIFIER
-            { Apply(New('Annotated'),$arg[0],$item[1]); }
+            { Apply(New('annotated'),$arg[0],$item[1]); }
 	| MODIFIEROP Expression
             { Apply($item[1],$arg[0],$item[2]); }
 	| { $arg[0]; }
@@ -190,7 +190,7 @@ moreFactors :
 	| COMPOSEOP makeComposition[$arg[0],$item[1]]
         | { ($forbidEvalAt ? undef : 1); }
 	  evalAtOp POSTSUBSCRIPT
-	  	   moreFactors[Apply(New('AT'),$arg[0],Arg($item[3],0))]
+	  	   moreFactors[Apply(New('evaluated-at'),$arg[0],Arg($item[3],0))]
  	| Factor moreFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
 	| { $arg[0]; }
 
@@ -203,8 +203,9 @@ moreFactors :
 Factor	: 
 	# These 2nd two are Iffy; hopefully the 1st rule will protect from backtrack?
 	  OPEN ARRAY CLOSE  { Fence($item[1],$item[2],$item[3]); }
-	| OPEN ARRAY  { Annotate(Apply(New('LCases'),$item[2]),open=>$item[1]); }
-	| ARRAY CLOSE { Annotate(Apply(New('RCases'),$item[1]),close=>$item[2]); }
+	  # perhaps only when OPEN or CLOSED is { or } ??
+	| OPEN ARRAY  { Annotate(Apply(New('cases'),$item[2]),open=>$item[1]); }
+	| ARRAY CLOSE { Annotate(Apply(New('cases'),$item[1]),close=>$item[2]); }
 	| preScripted['FUNCTION'] addArgs[$item[1]]
 	| preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
 	| preScripted['TRIGFUNCTION'] addTrigFunArgs[$item[1]]
@@ -319,9 +320,9 @@ factorOpenExpr :
 # Sets special cases
 # A conditionalized set
 scriptFactorOpen : Formula suchThatOp Formulae balancedClose[$arg[0]]
-###	  {  ApplyDelimited(New('ConditionalSet',undef,role=>'FENCED'),
+###	  {  ApplyDelimited(New('conditional-set',undef,role=>'FENCED'),
 ###	                    $arg[0], $item[1],$item[2], $item[3],$item[4]); }
-	  addScripts[ApplyDelimited(New('ConditionalSet',undef,role=>'FENCED'),
+	  addScripts[ApplyDelimited(New('conditional-set',undef,role=>'FENCED'),
 	                            $arg[0], $item[1],$item[2], $item[3],$item[4])]
         # Else fall through to normal factorOpen
         | factorOpen[$arg[0]]
@@ -468,9 +469,9 @@ bigop   : BIGOP | SUMOP | INTOP | LIMITOP | DIFFOP
 operator: OPERATOR
 
 # SUPOP is really only \prime(s) (?)
-supops   : SUPOP(s)				{ New('prime'.scalar(@{$item[1]}),
-	   					      join('',map($_->textContent,
-							   @{$item[1]}))); }
+supops   : SUPOP(s)				{ New(undef,
+	   					      join('',map($_->textContent,@{$item[1]})),
+ 						       name=>'prime'.scalar(@{$item[1]})); }
 
 # ================================================================================
 # And some special cases...
