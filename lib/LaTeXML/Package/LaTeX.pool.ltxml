@@ -1667,7 +1667,7 @@ DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#lab
 
 DefMacro('\bibname','Bibliography');
 
-DefMacro('\thebibliography@id','');
+DefMacro('\thebibliography@ID','');
 # NOTE: Not really complete, since I haven't dealt with bibliographies!
 DefConstructor('\bibliography Semiverbatim',
 	       "<ltx:bibliography files='#1' xml:id='#id'/>",
