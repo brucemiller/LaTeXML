@@ -916,7 +916,7 @@ sub FindFile {
 sub DeclareOption {
   my($option,$code)=@_;
   $option = ToString($option) if ref $option;
-  PushValue('@declaredoptions',$option);
+  PushValue('@declaredoptions',$option) if $option;
   my $cs = ($option ? '\ds@'.$option : '\default@ds');
   # print STDERR "Declaring option: ".($option ? $option : '<default>')."\n";
   if((!defined $code) || (ref $code eq 'CODE')){
@@ -933,12 +933,10 @@ sub PassOptions {
   # print STDERR "Passing to $name.$ext options: ".join(', ',@options)."\n";
   return; }
 
-# Process the options to the currently loading package or class.
-# if options is explicitly given, these options are processed (in order),
-# otherwise, the options that were passed on the \usepackage (or equiv) are executed.
+# Process the options passed to the currently loading package or class.
 # If inorder=>1, they are processed in the order given (like \ProcessOptions*),
 # otherwise, they are processed in the order declared.
-# Unless noundefine=>1 (like for \ExecuteOptions), all option defintions
+# Unless noundefine=>1 (like for \ExecuteOptions), all option definitions
 # undefined after execution.
 our $processoptions_options = {inorder=>1};
 sub ProcessOptions {
@@ -948,44 +946,39 @@ sub ProcessOptions {
   my $ext  = ToString(Digest(T_CS('\@currext')));
   # print STDERR "Processing options for $name.$ext\n";
 
-  my @classoptionlist = @{LookupValue('@classoptionlist')};
   my @declaredoptions = @{LookupValue('@declaredoptions')};
   my @curroptions     = @{LookupValue('opt@'.$name.'.'.$ext)};
-  my @usedoptions     = ( ($ext eq 'cls' ? () : @classoptionlist), @curroptions);
-  # Execute options in order on \usepackage (etc) lines. (eg. \ProcessOptions*)
-  if($options{inorder}){	# as in \ProcessOptions*
-    if($ext ne 'cls'){		# Handle any global class options handled by package
-      foreach my $option (@classoptionlist){
-	if(grep($option eq $_,@declaredoptions)){
-	  useOption($option,T_CS('\ds@'.$option)); }}}}
-  else {			# Handle in declared order (\ProcessOptions)
+  # Execute options in declared order (unless \ProcessOptions*)
+  if(! $options{inorder}){
     foreach my $option (@declaredoptions){
-      if($option && grep($option eq $_,@usedoptions)){
-	useOption($option,T_CS('\ds@'.$option)); }}}
-  # Then handle remaining used options
-  # Including those to be handled by default@ds
+      if(grep($option eq $_,@curroptions)){
+	@curroptions = grep($option ne $_, @curroptions); # Remove it, since it's been handled.
+	# print STDERR "\nUsing option $option\n";
+	DefMacroI('\CurrentOption',undef,$option);
+	Digest(T_CS('\ds@'.$option)); }}}
+  # Now handle any remaining options (eg. default options), in the given order.
+  # which is all of them, for \ProcessOptions*
   my $defaultcs = T_CS('\default@ds');
-  my %unhandled=();
+  $defaultcs = undef unless LookupDefinition($defaultcs);
+  my @unused=();
   foreach my $option (@curroptions){
+    DefMacroI('\CurrentOption',undef,$option);
     my $cs = T_CS('\ds@'.$option);
-    if(LookupDefinition($cs)){           useOption($option,$cs); }
-    elsif(LookupDefinition($defaultcs)){ useOption($option,$defaultcs); }
-    else {                               $unhandled{$option}=1; }}
+    if(LookupDefinition($cs)){
+      # print STDERR "\nUsing option $option\n";
+      Digest($cs); }
+    elsif($defaultcs){
+      # print STDERR "\nUsing option $option with default handler\n";
+      Digest($defaultcs); }
+    else {
+      push(@unused,$option); }}
+  # Now, undefine the handlers.
   foreach my $option (@declaredoptions){
     Let(T_CS('\ds@'.$option),T_CS('\relax')) if $option;}
 
-  Warn(":unexpected:<options> Unrecognized options passed to $name.$ext: ".join(', ',sort keys %unhandled))
-    if keys %unhandled;
-  # Eventually, we'll report unused global options (@unusedoptionlist)
+  Warn(":unexpected:<options> Unrecognized options passed to $name.$ext: ".join(', ',@unused))
+    if @unused;
   return; }
-
-sub useOption {
-  my($option,$optioncs)=@_;
-  # print STDERR "Using option $option (".Stringify($optioncs).")\n";
-  DefMacroI('\CurrentOption',undef,$option);
-  AssignValue('@unusedoptionlist',[grep($option ne $_,@{LookupValue('@unusedoptionlist')})]);
-  Digest($optioncs);
-  Let(T_CS('\ds@'.$option),T_CS('\relax')); } # don't undefine \default@cs!!
 
 sub ExecuteOptions {
   my(@options)=@_;
@@ -1027,12 +1020,19 @@ sub LoadClass {
   my($class,%options)=@_;
   $class = ToString($class) if ref $class;
   CheckOptions("LoadClass ($class)",$loadclass_options,%options);
+  # If we're already loading a class, we'll copy it's options to the current one
+  # since we're really only going to load a single base class.
+  # NOTE: IF this is sometimes a problem, should we control this with an option to LoadClass?
+  my @inherited_options = 
+    (LookupDefinition(T_CS('\@currname'))
+     ? @{LookupValue('opt@'.ToString(Digest(T_CS('\@currname'))).
+		     ".".ToString(Digest(T_CS('\@currext'))))}
+     :());
   $options{type} = 'cls' unless $options{type};
   DefMacroI('\@currname',undef,$class);
   DefMacroI('\@currext',undef,$options{type});
-  PushValue('@classoptionlist',@{$options{options} || []});
-  PassOptions($class,$options{type},@{$options{options} || []});
-  PushValue('@unusedoptionlist',@{$options{options} || []});
+  PassOptions($class,$options{type},@{$options{options} || []}, @inherited_options);
+#print STDERR "\n $class class options: ".join(', ',@{LookupValue('opt@'.$class.'.'.$options{type})})."\n";
   # What about "global options" ??????
   # reset options
   my $classfile = FindFile($class, type=>$options{type}, raw=>$options{raw});
