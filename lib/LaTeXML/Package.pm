@@ -1353,7 +1353,7 @@ to the replacement C<$xmlpattern>, or by executing C<CODE>.
 The C<$xmlpattern> is simply a bit of XML as a string with certain substitutions to be made.
 The substitutions are of the following forms:
 
-If code is supplied,  the form is C<CODE($document,@args,$properties)>
+If code is supplied,  the form is C<CODE($document,@args,%properties)>
 
 =over
 
