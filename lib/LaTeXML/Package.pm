@@ -29,7 +29,8 @@ our @EXPORT = (qw(&DefExpandable
 
 	       # Class, Package and File loading.
 	       qw(&RequirePackage &LoadClass &FindFile
-		  &DeclareOption &PassOptions &ProcessOptions &ExecuteOptions),
+		  &DeclareOption &PassOptions &ProcessOptions &ExecuteOptions
+		  &AddToMacro),
 
 	       # Counter support
 	       qw(&NewCounter &CounterValue &StepCounter &RefStepCounter &RefStepID &ResetCounter
@@ -944,40 +945,39 @@ sub ProcessOptions {
   CheckOptions("ProcessOptions",$processoptions_options,%options);
   my $name = ToString(Digest(T_CS('\@currname')));
   my $ext  = ToString(Digest(T_CS('\@currext')));
-  # print STDERR "Processing options for $name.$ext\n";
 
   my @declaredoptions = @{LookupValue('@declaredoptions')};
   my @curroptions     = @{LookupValue('opt@'.$name.'.'.$ext)};
+#  print STDERR "\nProcessing options for $name.$ext: ".join(', ',@curroptions)."\n";
+
+  my $defaultcs = T_CS('\default@ds');
   # Execute options in declared order (unless \ProcessOptions*)
-  if(! $options{inorder}){
+
+  if($options{inorder}){	# Execute options in order (eg. \ProcessOptions*)
+    foreach my $option (@curroptions){
+      DefMacroI('\CurrentOption',undef,$option);
+      my $cs = T_CS('\ds@'.$option);
+      if(LookupDefinition($cs)){
+#	print STDERR "\nUsing option $option to $name.$ext\n";
+	Digest($cs); }
+      elsif($defaultcs){
+#	print STDERR "\nUsing option $option to $name.$ext with default handler\n";
+	Digest($defaultcs); }}}
+  else {			# Execute options in declared order (eg. \ProcessOptions)
     foreach my $option (@declaredoptions){
       if(grep($option eq $_,@curroptions)){
 	@curroptions = grep($option ne $_, @curroptions); # Remove it, since it's been handled.
-	# print STDERR "\nUsing option $option\n";
+#	 print STDERR "\nUsing option $option  to $name.$ext\n";
 	DefMacroI('\CurrentOption',undef,$option);
-	Digest(T_CS('\ds@'.$option)); }}}
-  # Now handle any remaining options (eg. default options), in the given order.
-  # which is all of them, for \ProcessOptions*
-  my $defaultcs = T_CS('\default@ds');
-  $defaultcs = undef unless LookupDefinition($defaultcs);
-  my @unused=();
-  foreach my $option (@curroptions){
-    DefMacroI('\CurrentOption',undef,$option);
-    my $cs = T_CS('\ds@'.$option);
-    if(LookupDefinition($cs)){
-      # print STDERR "\nUsing option $option\n";
-      Digest($cs); }
-    elsif($defaultcs){
-      # print STDERR "\nUsing option $option with default handler\n";
-      Digest($defaultcs); }
-    else {
-      push(@unused,$option); }}
-  # Now, undefine the handlers.
+	Digest(T_CS('\ds@'.$option)); }}
+    # Now handle any remaining options (eg. default options), in the given order.
+    foreach my $option (@curroptions){
+      DefMacroI('\CurrentOption',undef,$option);
+#      print STDERR "\nUsing option $option to $name.$ext with default handler\n";
+      Digest($defaultcs); }}
+  # Now, undefine the handlers?
   foreach my $option (@declaredoptions){
-    Let(T_CS('\ds@'.$option),T_CS('\relax')) if $option;}
-
-  Warn(":unexpected:<options> Unrecognized options passed to $name.$ext: ".join(', ',@unused))
-    if @unused;
+    Let(T_CS('\ds@'.$option),T_CS('\relax')); }
   return; }
 
 sub ExecuteOptions {
@@ -994,54 +994,71 @@ sub ExecuteOptions {
     if keys %unhandled; 
   return; }
 
+sub resetOptions {
+  AssignValue('@declaredoptions',[]);
+  Let(T_CS('\default@ds'),
+      (ToString(Digest(T_CS('\@currext'))) eq 'cls'
+       ? T_CS('\OptionNotUsed') : T_CS('\@unknownoptionerror')));
+}
+
+sub AddToMacro {
+  my($cs,$tokens)=@_;
+  # Needs error checking!
+  my $defn = LookupDefinition($cs);
+  DefMacroI($cs,undef,Tokens($$defn{expansion}->unlist,$tokens->unlist)); }
+
 our $require_options = {options=>1, type=>1, raw=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   $package = ToString($package) if ref $package;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
   $options{type} = 'sty' unless $options{type};
+  my $type = $options{type};
   DefMacroI('\@currname',undef,$package);
-  DefMacroI('\@currext',undef,$options{type});
+  DefMacroI('\@currext',undef,$type);
   # reset options
-  PassOptions($package,$options{type},@{$options{options} || []});
-  if(my $file = FindFile($package, type=>$options{type}, raw=>$options{raw})){
-    $STATE->getStomach->getGullet->input($file,undef,%options); 
-    # And reset options afterwards, too.
-  }
+  resetOptions();
+  PassOptions($package,$type,@{$options{options} || []});
+  if(my $file = FindFile($package, type=>$type, raw=>$options{raw})){
+    DefMacroI(T_CS("\\$package.$type-hook"),undef,$options{after} || '');
+    my $gullet = $STATE->getStomach->getGullet;
+    $gullet->openMouth(Tokens(T_CS("\\$package.$type-hook")));
+    $gullet->input($file,undef,%options); 
+    resetOptions(); } # And reset options afterwards, too.
   else {
     $STATE->noteStatus(missing=>$package);
     Error(":missing_file:$package Cannot find package $package"
-	  .($options{type} eq 'sty' ? '' : "(w/type=$options{type})")
+	  .($type eq 'sty' ? '' : "(w/type=$type)")
 	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   return; }
 
-our $loadclass_options = {options=>1};
+our $loadclass_options = {options=>1, withoptions=>1, after=>1};
 sub LoadClass {
   my($class,%options)=@_;
   $class = ToString($class) if ref $class;
   CheckOptions("LoadClass ($class)",$loadclass_options,%options);
-  # If we're already loading a class, we'll copy it's options to the current one
-  # since we're really only going to load a single base class.
-  # NOTE: IF this is sometimes a problem, should we control this with an option to LoadClass?
-  my @inherited_options = 
-    (LookupDefinition(T_CS('\@currname'))
-     ? @{LookupValue('opt@'.ToString(Digest(T_CS('\@currname'))).
-		     ".".ToString(Digest(T_CS('\@currext'))))}
-     :());
   $options{type} = 'cls' unless $options{type};
+  my $type = $options{type};
+  # For \LoadClassWithOptions, pass the options from the outer class to the inner one.
+  if($options{withoptions} && LookupDefinition(T_CS('\@currname'))){
+    PassOptions($class,$type,
+		@{LookupValue('opt@'.ToString(Digest(T_CS('\@currname'))).
+			      ".".ToString(Digest(T_CS('\@currext'))))}); }
   DefMacroI('\@currname',undef,$class);
-  DefMacroI('\@currext',undef,$options{type});
-  PassOptions($class,$options{type},@{$options{options} || []}, @inherited_options);
-#print STDERR "\n $class class options: ".join(', ',@{LookupValue('opt@'.$class.'.'.$options{type})})."\n";
+  DefMacroI('\@currext',undef,$type);
+  PassOptions($class,$type,@{$options{options} || []});
   # What about "global options" ??????
-  # reset options
-  my $classfile = FindFile($class, type=>$options{type}, raw=>$options{raw});
+  resetOptions();
+  my $classfile = FindFile($class, type=>$type, raw=>$options{raw});
   if(!$classfile || ($classfile =~ /\.cls$/)){
     Warn(":missing_file:$class.cls.ltxml No LaTeXML implementation of class $class found, using article");
     if(!($classfile = FindFile("article.cls"))){
       Fatal(":missing_file:article.cls.ltxml Installation error: Cannot find article implementation!"); }}
-  $STATE->getStomach->getGullet->input($classfile,undef,%options);
-  # And reset options afterwards, too.
+  DefMacroI(T_CS("\\$class.$type-hook"),undef,$options{after} || '');
+  my $gullet = $STATE->getStomach->getGullet;
+  $gullet->openMouth(Tokens(T_CS("\\$class.$type-hook")));
+  $gullet->input($classfile,undef,%options);
+  resetOptions();  # And reset options afterwards, too.
   return; }
 
 

@@ -38,24 +38,37 @@ DefConstructor('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []',
     my($stomach,$whatsit)=@_;
     my $options = $whatsit->getArg(1);
     LoadClass(ToString($whatsit->getArg(2)),
-	      options=>[ ($options ? split(/,\s*/, ToString($options)) : ()) ]);
+	      options=>[ ($options ? split(/,\s*/, ToString($options)) : ()) ],
+	      after=>Tokens(T_CS('\warn@unusedclassoptions')));
     return;});
+
+AssignValue('@unusedoptionlist',[]);
+DefPrimitive('\warn@unusedclassoptions',sub {
+  my $name = ToString(Digest(T_CS('\@currname')));
+  my $type = ToString(Digest(T_CS('\@currext')));
+  foreach my $option (@{LookupValue('@unusedoptionlist')}){
+    Warn(":unexpected:<option>:$option Unexpected option $option passed to $name.$type"); }
+  AssignValue('@unusedoptionlist',[]); });
 
 DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1') oldstyle='true'?>",
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
     my $options = $whatsit->getArg(1);
-    DeclareOption(undef,sub {
-      my $maybepkg = ToString(Digest(T_CS('\CurrentOption')));
-      if(my $file = FindFile($maybepkg,type=>'sty')){
-	RequirePackage($maybepkg); }
-      else {
-	Warn(":unexpected:$maybepkg documentstyle option $maybepkg not handled"); }
-      return; });
     LoadClass(ToString($whatsit->getArg(2)),
-	      options=>[ ($options ? split(/,\s*/, ToString($options)) : ()) ]);
+	      options=>[ ($options ? split(/,\s*/, ToString($options)) : ()) ],
+	      after=>Tokens(T_CS('\compat@loadpackages')));
     return;});
+
+DefPrimitive('\compat@loadpackages',sub {
+  my $name = ToString(Digest(T_CS('\@currname')));
+  my $type = ToString(Digest(T_CS('\@currext')));
+  foreach my $option (@{LookupValue('@unusedoptionlist')}){
+    if(FindFile($option,type=>'sty')){
+      RequirePackage($option); }
+    else {
+      Warn(":unexpected:<option>:$option Unexpected option $option passed to $name.$type"); }}
+  AssignValue('@unusedoptionlist',[]); });
 
 sub onlyPreamble {
   Error(":unexpected The current command can only appear in the preamble")
@@ -336,6 +349,69 @@ DefConstructor('\LoadClass[] Semiverbatim []',
 				  my $class=$whatsit->getArg(2);
 				  $options = [($options ? split(/,\s*/,(ToString($options))) :())];
 				  LoadClass(ToString($class), options=>$options); });
+
+# Related internal macros for package definition
+# Internals used in Packages
+DefMacro('\NeedsTeXFormat{}[]','');
+DefMacro('\ProvidesClass{}[]','');
+DefMacro('\ProvidesPackage{}[]','');
+DefMacro('\ProvidesFile{}[]','');
+
+DefPrimitive('\DeclareOption{}{}', sub {
+  my($stomach,$option,$code)=@_;
+  DeclareOption(ToString($option),$code); });
+
+DefPrimitive('\PassOptionsToPackage{}{}', sub {
+  my($stomach,$name,$options)=@_;
+  PassOptions($name,'pkg',split(/,\s*/,ToString(Digest($options)))); });
+
+DefPrimitive('\PassOptionsToClass{}{}', sub {
+  my($stomach,$name,$options)=@_;
+  PassOptions($name,'cls',split(/,\s*/,ToString(Digest($options)))); });
+
+DefConstructor('\LoadClassWithOptions Semiverbatim []',
+	       "<?latexml class='#1'?>",
+	       beforeDigest=>\&onlyPreamble,
+	       afterDigest=>sub { my($stomach,$whatsit)=@_;
+				  my $class=$whatsit->getArg(1);
+				  LoadClass(ToString($class), withoptions=>1); });
+
+DefMacro('\CurrentOption','');
+
+DefPrimitive('\OptionNotUsed',sub {
+  if(my $option = ToString(Digest(T_CS('\CurrentOption')))){
+    my $name = ToString(Digest(T_CS('\@currname')));
+    my $type = ToString(Digest(T_CS('\@currext')));
+    if($type eq 'cls'){
+      PushValue('@unusedoptionlist',$option); }}
+  return; });
+
+DefPrimitive('\@unknownoptionerror',sub {
+  if(my $option = ToString(Digest(T_CS('\CurrentOption')))){
+    my $name = ToString(Digest(T_CS('\@currname')));
+    my $type = ToString(Digest(T_CS('\@currext')));
+    Warn(":unexpected:<option>:$option Unexpected option $option passed to $name.$type"); }
+  return; });
+
+DefPrimitive('\ExecuteOptions{}', sub{
+  my($gullet,$options)=@_;
+  ExecuteOptions(split(/,\s*/,ToString(Digest($options)))); });
+
+DefPrimitive('\ProcessOptions OptionalMatch:*',sub {
+  my($stomach,$star)=@_;
+ ProcessOptions( ($star ? (inorder=>1):()) ); });
+
+DefMacro('\AtEndOfPackage{}',sub {
+  my($gullet,$code)=@_;
+  my $name = ToString(Digest(T_CS('\@currname')));
+  my $type = ToString(Digest(T_CS('\@currext')));
+  AddToMacro(T_CS("\\$name.$type-hook"),$code); });
+
+Let(T_CS('\AtEndOfClass'),T_CS('\AtEndOfPackage'));
+
+DefMacro('\AtBeginDocument{}','');
+DefMacro('\AtEndDocument{}','');
+
 
 #======================================================================
 # C.5.3 Page Styles
@@ -2470,34 +2546,6 @@ DefMacro('\@nameuse{}','\csname #1\endcsname');
 DefMacro('\@spaces','\space\space\space\space');
 Let('\@sptoken',T_SPACE);
 #======================================================================
-# Internals used in Packages
-DefMacro('\NeedsTeXFormat{}[]','');
-DefMacro('\ProvidesClass{}[]','');
-DefMacro('\ProvidesPackage{}[]','');
-DefMacro('\ProvidesFile{}[]','');
-DefPrimitive('\DeclareOption{}{}', sub {
-  my($stomach,$option,$code)=@_;
-  DeclareOption(ToString($option),$code); });
-DefPrimitive('\PassOptionsToPackage{}{}', sub {
-  my($stomach,$name,$options)=@_;
-  PassOptions($name,'pkg',split(/,\s*/,ToString(Digest($options)))); });
-DefPrimitive('\PassOptionsToClass{}{}', sub {
-  my($stomach,$name,$options)=@_;
-  PassOptions($name,'cls',split(/,\s*/,ToString(Digest($options)))); });
-DefMacro('\CurrentOption','');
-DefMacro('\OptionNotUsed','');
-DefPrimitive('\ExecuteOptions{}', sub{
-  my($gullet,$options)=@_;
-  ExecuteOptions(split(/,\s*/,ToString(Digest($options)))); });
-DefPrimitive('\ProcessOptions OptionalMatch:*',sub {
-  my($stomach,$star)=@_;
- ProcessOptions( ($star ? (inorder=>1):()) ); });
-
-# What should be done with these? :
-DefMacro('\AtEndOfPackage{}','');
-DefMacro('\AtEndOfClass{}','');
-DefMacro('\AtBeginDocument{}','');
-DefMacro('\AtEndDocument{}','');
 
 DefMacro('\@ehc',"I can't help");
 
