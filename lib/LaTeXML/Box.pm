@@ -24,6 +24,7 @@ sub getString  { $_[0][0]; }	# Return the string contents of the box
 sub getFont    { $_[0][1]; }	# Return the font this box uses.
 sub isMath     { 0; }		# Box is text mode.
 sub getLocator { $_[0][2]; }
+sub getSource  { $_[0][2]; }
 
 # So a Box can stand in for a List
 sub unlist     { ($_[0]); }	# Return list of the boxes

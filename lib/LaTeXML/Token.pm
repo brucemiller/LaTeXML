@@ -70,6 +70,7 @@ sub getCatcode { $_[0]->[1]; }
 # Defined so a Token or Tokens can be used interchangeably.
 sub unlist { ($_[0]); }
 sub getLocator { ''; }
+sub getSource  { ''; }
 
 our @NEUTRALIZABLE=(0,0,0,1,
 		    1,0,1,1,
@@ -198,7 +199,7 @@ sub readTokens {
   Tokens(@tokens); }
 
 sub getLocator { ''; }
-
+sub getSource  { ''; }
 #**********************************************************************
 1;
 
