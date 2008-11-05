@@ -17,6 +17,6 @@ use strict;
 use LaTeXML::Package;
 
 # Generic AMS Monograph
-LoadClass('amsbook');
+LoadClass('amsbook', withoptions=>1);
 
 1;

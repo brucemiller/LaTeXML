@@ -17,6 +17,6 @@ use strict;
 use LaTeXML::Package;
 
 # Generic AMS Proceedings
-LoadClass('amsprocs');
+LoadClass('amsprocs', withoptions=>1);
 
 1;

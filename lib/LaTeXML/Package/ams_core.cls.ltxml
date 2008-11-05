@@ -19,28 +19,22 @@ use LaTeXML::Package;
 #**********************************************************************
 # Document structure.
 
-LoadClass('article');
-
 # None of the options are vital, I think; deferred.
-# [tho loading an unwanted amsfonts could be an issue]
-# Options:
-#  a4paper, letterpaper
-#  landscape, portrait
-#  oneside, twoside
-#  draft, final
-#  e-only
-#  titlepage, notitlepage
-#  openright, openany
-#  onecolumn, twocolumn
-#  nomath
-#  noamsfonts (otherwise load amsfonts.sty)
-#  psamsfonts ( uses ps ams fonts)
-#  leqno, reqno
-#  centertags, tbtags,
-#  fleqn
-#  10pt, 11pt, 12pt, 8pt, 9pt,
-#  makeidx
+# [though loading an unwanted amsfonts (noamsfonts) could be an issue]
 
+foreach my $option (qw(a4paper letterpaper landscape portrait
+		       oneside twoside draft final  e-only
+		       titlepage notitlepage
+		       openright openany onecolumn twocolumn
+		       nomath noamsfonts psamsfonts
+		       leqno reqno centertags tbtags fleqn
+		       8pt 9pt 10pt 11pt 12pt
+		       makeidx)){
+  DeclareOption($option,undef); }
+ProcessOptions();
+
+# I think all options are (non)handled above, so don't need to pass any.
+LoadClass('article');
 
 # #======================================================================
 # % Font size commands:

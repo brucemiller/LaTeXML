@@ -16,7 +16,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-LoadClass('ams_core');
+LoadClass('ams_core', withoptions=>1);
 
 # #======================================================================
 # # Sec 8 Monograph Formatting:

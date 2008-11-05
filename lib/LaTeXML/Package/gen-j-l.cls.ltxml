@@ -17,6 +17,6 @@ use strict;
 use LaTeXML::Package;
 
 # Generic AMS Journal
-LoadClass('amsart');
+LoadClass('amsart', withoptions=>1);
 
 1;
