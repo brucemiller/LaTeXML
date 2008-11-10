@@ -84,6 +84,10 @@ sub appendRows {
   my($self,@rows)=@_;
   push(@{$$self{rows}},@rows); }
 
+sub rows {
+  my($self)=@_;
+  @{$$self{rows}}; }
+
 ###
 
 sub addLine {
