@@ -1,0 +1,510 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  aas_support.sty.ltxml                                              | #
+# | Support for various AAS styles/classes for LaTeXML                  | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# / Thanks to the arXMLiv group for 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# AAS : American Astronomical Society
+# Derived from aasguide
+# I have the suspicion that AAS style is strongly related to RevTeX,
+# but I don't see it ever made explicit.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# 2.1.3 Editorial Information
+
+DefMacro('\received{}', '\@add@frontmatter{ltx:date}[role=received]{#1}');
+DefMacro('\revised{}',  '\@add@frontmatter{ltx:date}[role=revised]{#1}');
+DefMacro('\accepted{}', '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
+
+# Could add more metadata..
+DefMacro('\journalid{}{}','');
+DefMacro('\articleid{}{}','');
+DefMacro('\paperid{}','');
+
+#\ccc{code}
+DefMacro('\ccc{}','');		# Ignorable?
+#\cpright{type}{year}   Should be recorded somehow?
+# type is AAS, ASP, PD, none
+DefMacro('\cpright{}{}', '\@add@frontmatter{ltx:note}[class=copyright]{\copyright #2: #1}');
+
+#======================================================================
+# 2.1.4 Short Comment
+
+DefMacro('\slugcomment{}','\@add@frontmatter{ltx:note}[class=slugcomment]{#1}');
+
+#======================================================================
+# 2.1.5 Running Heads
+
+DefMacro('\shorttitle{}', '\@add@frontmatter{ltx:toctitle}{#1}');
+DefMacro('\shortauthors{}','');	# not useful?
+DefMacro('\lefthead', '\shorttitle'); # Obsolete form
+DefMacro('\righthead','\shortauthors'); # Obsolete form
+
+#======================================================================
+# 2.2 Starting the Main Body
+# normal LaTeX
+
+#======================================================================
+# 2.3 Title and Author Information
+
+DefMacro('\author{}',
+ '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
+
+DefConstructor('\@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\affil{}','\@add@to@frontmatter{ltx:creator}{\@affiliation{#1}}');
+
+DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
+# Redefine to straight email address after document begin.
+AddToMacro(T_CS('\@startsection@hook'),TokenizeInternal('\let\email\@@email'));
+
+# Ideally, this would add a contact to whatever author was identified with the mark!
+# \altaffilmark{keynumber}
+# \altaffiltext{keynumber}{text}
+DefMacro('\altaffilmark{}','');
+DefMacro('\altaffiltext{}{}','');
+
+DefPrimitive('\and',undef);
+DefMacro('\authoremail','\email');  # Obsolete form
+#======================================================================
+# 2.4 Abstract
+# normal LaTeX
+
+#======================================================================
+# 2.5 Keywords
+
+DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
+
+#======================================================================
+# 2.6 Comments to Editors
+
+# Perhaps this should actually disappear?
+# DefConstructor('\notetoeditor{}',"<ltx:note class='toeditor'>#1</ltx:note>");
+DefMacro('\notetoeditor{}','');
+
+#======================================================================
+# 2.7 Sections
+# normal LaTeX
+
+#======================================================================
+# 2.8 Figure and Table Placement
+
+# These tell where the table/figure labeled with \label{key} ought to appear;
+# the assumption is the tables/figures are at the end of the document.
+# Best would be if we moved them to there the \placeXXX is!
+# \placetable{key}
+# \placefigure{key}
+# For now, we ignore them, however.
+DefMacro('\placetable{}','');
+DefMacro('\placefigure{}','');
+
+#======================================================================
+# 2.9 Acknowledgements
+
+# acts like \section{Acknowledgements}, rather than container.
+Tag("ltx:acknowledgements", autoClose=>1);
+DefConstructor('\acknowledgements', "<ltx:acknowledgements>");
+Let(T_CS('\acknowledgments'),T_CS('\acknowledgements'));
+
+#======================================================================
+# 2.10 Facilities
+
+# Ultimately, this would get some more explicit semantic markup, but..
+# \facility{facilityID}
+DefConstructor('\facility{}',"<ltx:text class='facility'>#1</ltx:text>");
+
+#======================================================================
+# 2.11 Appendices
+# almost normal LaTeX
+DefPrimitive('\appendix',sub{
+  NewCounter('section', 'document', idprefix=>'A',nested=>['subsection']);
+  NewCounter('equation', 'section', idprefix=>'E');
+  DefMacro('\thesection', '\Alph{section}');
+  DefMacro('\theequation','\thesection\arabic{equation}');
+  DefMacro('\section', '\@startsection{appendix}{}{}{}{}{}');
+ });
+
+#======================================================================
+# 2.12 Equations
+# mostly normal LaTeX
+
+# Basically, {mathletters} is a copy of AMSMath's {subequations}... Isn't it?
+DefEnvironment('{mathletters}',
+	       "<ltx:equationgroup>#body</ltx:equationgroup>",
+	       afterDigestBegin=>sub {
+		 my($stomach,$whatsit)=@_;
+		 my %eqn = RefStepCounter('equation');
+		 AssignValue(SAVED_EQUATION_NUMBER=>LookupValue('\c@equation'));
+		 ResetCounter('equation');
+		 DefMacro('\theequation',UnTeX($eqn{refnum}).'\alph{equation}');
+		 DefMacro('\theequation@ID',UnTeX($eqn{id}).'.\@equation@ID');
+	       },
+	       afterDigest =>sub{ 
+		 AssignValue('\c@equation',LookupValue('SAVED_EQUATION_NUMBER'),'global'); });
+
+# \eqnum{text}  specifies equation number inside an equation
+# Basically, AMSMath's \tag ?
+DefConstructor('\eqnum {}', '',
+	       afterDigest=>sub {
+		 AssignValue(EQUATIONROW_NUMBER=>ToString(Digest($_[1])), 'global'); },
+	       mode=>'text');
+
+#======================================================================
+# 2.13 Citations and Bibliography
+
+#======================================================================
+# 2.13.1 The thebibliography Environment 
+# normal LaTeX
+
+#======================================================================
+# 2.13.2 Specifying Bibliographic and Citation Information
+
+# NOTE: Need to extract natbib from DLMF.cls!!!!
+# RequirePackage('natbib');
+
+# \bibitem[author(year)]{key} bibdata...
+
+#======================================================================
+# 2.13.3 The references Environment
+
+# Is this the right treatment?
+# Is the same true for RevTeX?
+DefEnvironment('{references}',
+	       "<ltx:bibliography xml:id='#id'>"
+	       . "<ltx:title>#refname</ltx:title>"
+	       . "<ltx:biblist>#body</ltx:biblist>"
+	       ."</ltx:bibliography>",
+	       afterDigestBegin=>sub { 
+		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
+		 ResetCounter('enumiv');
+		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
+		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
+		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  
+		 # VERY dubious!
+		 Let(T_CS('\par'),T_CS('\non@bibitem')); });
+Let(T_CS('\reference'),T_CS('\bibitem'));
+DefMacro('\non@bibitem','\bibitem{}');
+#======================================================================
+# 2.13.4 Abbreviations for Journal Names
+
+DefMacro('\aj','{AJ}');	       # Astronomical Journal
+DefMacro('\araa','{ARA\&A}');  # Annual Review of Astron and Astrophys
+DefMacro('\apj','{ApJ}');      # Astrophysical Journal
+DefMacro('\apjl','{ApJ}');     # Astrophysical Journal, Letters
+DefMacro('\apjs','{ApJS}');    # Astrophysical Journal, Supplement
+DefMacro('\ao','{Appl.~Opt.}');	# Applied Optics
+DefMacro('\apss','{Ap\&SS}');	# Astrophysics and Space Science
+DefMacro('\aap','{A\&A}');	# Astronomy and Astrophysics
+DefMacro('\aapr','{A\&A~Rev.}'); # Astronomy and Astrophysics Reviews
+DefMacro('\aaps','{A\&AS}'); # Astronomy and Astrophysics, Supplement
+DefMacro('\azh','{AZh}');    # Astronomicheskii Zhurnal
+DefMacro('\baas','{BAAS}');  # Bulletin of the AAS
+DefMacro('\jrasc','{JRASC}');	# Journal of the RAS of Canada
+DefMacro('\memras','{MmRAS}');	# Memoirs of the RAS
+DefMacro('\mnras','{MNRAS}');	# Monthly Notices of the RAS
+DefMacro('\pra','{Phys.~Rev.~A}'); # Physical Review A: General Physics
+DefMacro('\prb','{Phys.~Rev.~B}'); # Physical Review B: Solid State
+DefMacro('\prc','{Phys.~Rev.~C}'); # Physical Review C
+DefMacro('\prd','{Phys.~Rev.~D}'); # Physical Review D
+DefMacro('\pre','{Phys.~Rev.~E}'); # Physical Review E
+DefMacro('\prl','{Phys.~Rev.~Lett.}'); # Physical Review Letters
+DefMacro('\pasp','{PASP}');	       # Publications of the ASP
+DefMacro('\pasj','{PASJ}');	       # Publications of the ASJ
+DefMacro('\qjras','{QJRAS}');	       # Quarterly Journal of the RAS
+DefMacro('\skytel','{S\&T}');	       # Sky and Telescope
+DefMacro('\solphys','{Sol.~Phys.}');   # Solar Physics
+DefMacro('\sovast','{Soviet~Ast.}');   # Soviet Astronomy
+DefMacro('\ssr','{Space~Sci.~Rev.}');  # Space Science Reviews
+DefMacro('\zap','{ZAp}');	       # Zeitschrift fuer Astrophysik
+DefMacro('\nat','{Nature}');           # Nature
+DefMacro('\iaucirc','{IAU~Circ.}');    # IAU Cirulars
+DefMacro('\aplett','{Astrophys.~Lett.}'); # Astrophysics Letters
+DefMacro('\apspr','{Astrophys.~Space~Phys.~Res.}'); # Astrophysics Space Physics Research
+DefMacro('\bain','{Bull.~Astron.~Inst.~Netherlands}'); # Bulletin Astronomical Institute of the Netherlands
+DefMacro('\fcp','{Fund.~Cosmic~Phys.}'); # Fundamental Cosmic Physics
+DefMacro('\gca','{Geochim.~Cosmochim.~Acta}'); # Geochimica Cosmochimica Acta
+DefMacro('\grl','{Geophys.~Res.~Lett.}'); # Geophysics Research Letters
+DefMacro('\jcp','{J.~Chem.~Phys.}'); # Journal of Chemical Physics
+DefMacro('\jgr','{J.~Geophys.~Res.}'); # Journal of Geophysics Research
+DefMacro('\jqsrt','{J.~Quant.~Spec.~Radiat.~Transf.}');	# Journal of Quantitiative Spectroscopy and Radiative Trasfer
+DefMacro('\memsai','{Mem.~Soc.~Astron.~Italiana}'); # Mem. Societa Astronomica Italiana
+DefMacro('\nphysa','{Nucl.~Phys.~A}'); # Nuclear Physics A
+DefMacro('\physrep','{Phys.~Rep.}');   # Physics Reports
+DefMacro('\physscr','{Phys.~Scr}');    # Physica Scripta
+DefMacro('\planss','{Planet.~Space~Sci.}'); # Planetary Space Science
+DefMacro('\procspie','{Proc.~SPIE}');	    # Proceedings of the SPIE
+Let(T_CS('\astap'),T_CS('\aap'));
+Let(T_CS('\apjlett'),T_CS('\apjl'));
+Let(T_CS('\apjsupp'),T_CS('\apjs'));
+Let(T_CS('\applopt'),T_CS('\ao'));
+
+#======================================================================
+# 2.14.1 Electronic Art
+
+RequirePackage('graphicx');
+# \begin{figure}
+#   \figurenum{text}
+#   \epsscale{num}
+#   \plotone{epsfile}
+#   \plottwo{epsfile}{epsfile}
+#   \caption{text}
+# \end{figure}
+DefMacro('\figurenum{}','\def\thefigure{#1}');
+# Note: This needs an UnRefStepCounter('figure');
+# or at least, defer the refstep till late enough to skip if needed?
+
+DefMacro('\epsscale{}','');
+DefMacro('\plotone Semiverbatim','\includegraphics[width=\textwidth]{#1}');
+DefMacro('\plottwo Semiverbatim Semiverbatim',
+	 '\hbox{\includegraphics[width=\textwidth]{#1}\includegraphics[width=\textwidth]{#2}}');
+
+# \plotfiddle{epsfile}{vsize}{rot}{hsf}{vsf}{htrans}{vtrans}
+# Ugh...
+DefMacro('\plotfiddle Semiverbatim {}{}{}{}{}{}','\includegraphics[height={#2},width={#6}]{#1}');
+
+#======================================================================
+# 2.14.2 Figure Captions
+
+# For figures added externally; Used at end of file.
+# \figcaption[filename]{text\label{key}}
+DefMacro('\figcaption[Semiverbatim]{}','\begin{figure}[#1]#2\end{figure}');
+
+#======================================================================
+# 2.15 Tables
+
+DefMacro('\dummytable','\refstepcounter{table}');
+
+#======================================================================
+# 2.15.1 The deluxetable Environment
+# \begin{deluxetable}{cols}
+#    preamble
+#    \startdata
+#    data
+#    \enddata
+#    \tablenotetext,\tablecomments,\tablerefs
+# \end{deluxetable}
+
+DefMacro('\deluxetable{}','\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
+DefMacro('\set@deluxetable@template AlignmentTemplate',sub {
+   AssignValue('@deluxetable@template',$_[1]); });
+
+DefMacro('\startdata',  '\@deluxetable@bindings\@@deluxetabular\@start@alignment\hline\hline\@deluxetable@header');
+DefMacro('\enddata',    '\hline\@finish@alignment\@end@deluxetabular');
+
+DefPrimitive('\@deluxetable@bindings',sub {
+  alignmentBindings(LookupValue('@deluxetable@template'),'text'); });
+DefConstructor('\@@deluxetabular DigestedBody',
+	       sub { my($document,$body,%props)=@_;
+		     constructAlignment($document,$body); },
+	       reversion=>'\begin{tabular}[#1]{#2}#3\end{tabular}',
+	       beforeDigest=>sub { $_[0]->bgroup; },
+	       mode=>'text');
+DefPrimitive('\@end@deluxetabular',sub{ $_[0]->egroup; });
+
+DefMacro('\enddeluxetable','\end{table}');
+
+#======================================================================
+# 2.15.2 Preamble to the deluxetable
+
+DefMacro('\tabletypesize{}','');	# Ignorable
+DefMacro('\rotate','');			# Ignorable ?
+DefMacro('\tablewidth{Dimension}','');	# Ignorable?
+DefMacro('\tablenum{}','\def\thetable{#1}');
+# Note: This needs an UnRefStepCounter('table');
+
+DefMacro('\tablecolumns{Number}',''); # Ignorable ???
+
+Let(T_CS('\tablecaption'),T_CS('\caption'));
+
+DefMacro('\tablehead{}','\def\@deluxetable@header{#1\\\\\hline}');
+DefMacro('\colhead{}','#1');
+
+# Mark the existing rows as being headers
+DefPrimitive('\@mark@tableheader',sub {
+  my $alignment = LookupValue('Alignment');
+  foreach my $row ($alignment->rows){
+    map($$_{head}=1, $row->columns); }
+  return; });
+
+DefMacro('\nl',         '\\\\'); # Obsolete form
+DefMacro('\nextline',   '\\\\'); # Obsolete form
+DefMacro('\tablevspace','\\\\'); # Obsolete form
+DefMacro('\tablebreak', '\\\\'); # Obsolete form
+
+#======================================================================
+# 2.15.3 Content of deluxetable
+
+DefMacro('\phn','\phantom{0}');
+DefMacro('\phd','\phantom{.}');
+DefMacro('\phs','\phantom{+}');
+DefMacro('\phm{}','\phantom{string}');
+
+DefMacro('\tablebreak','');	# Ignorable; we're not splitting tables.
+DefMacro('\nodata','');		# Ignorable
+
+DefMacro('\cutinhead{}','\hline\multicolumn{\@alignment@ncolumns}{c}{#1}\\\\\hline');
+DefMacro('\sidehead{}','\hline\multicolumn{\@alignment@ncolumns}{l}{#1}\\\\\hline');
+
+#======================================================================
+# 2.15.4 The table Environment
+# normal LaTeX
+
+DefMacro('\tableline','\hline');
+
+# NOTE: DOM should reattach the footnotetext to the footnotemark ?
+# Same problem in LaTeX.pool...
+# In general the mark & text _could_ come in either order...
+# so, it really has to be at end of processing (rewrite?)
+DefConstructor('\tablenotemark{}',""); # ????
+DefConstructor('\tablenotetext{}{}',
+	       "<ltx:note class='footnote' ?#1(mark='#1')>#2</ltx:note>",
+	       mode=>'text');
+
+DefMacro('\tablerefs{}',    'References. -- #1');
+DefMacro('\tablecomments{}','Note. -- #1');
+
+#======================================================================
+# 2.17 Miscellaneous
+#======================================================================
+# 2.17.1 Celestial Objects and Data Sets
+
+# Ultimately, this would get some more explicit semantic markup, but..
+# \objectname[catalogid]{text}
+# \dataset[catalogid]{text}
+DefConstructor('\objectname OptionalSemiverbatim Semiverbatim',
+	       "<ltx:text class='objectname'>#1 (catalog #2)</ltx:text>");
+Let(T_CS('\object'),T_CS('\objectname')); # ???
+DefConstructor('\dataset OptionalSemiverbatim Semiverbatim',
+	       "<ltx:text class='dataset'>#1 (catalog #2)</ltx:text>");
+
+#======================================================================
+# 2.17.2 Ionic Species and Chemical Bonds
+
+# Note that semantics could be useful!
+#  \ion{element}{level}
+DefMacro('\ion{}{}','{#1 \uppercase{\romannumeral #2}}');
+
+# NOTE: These are almost totally wrong...
+DefConstructor('\sbond',"\x{2212}");
+DefConstructor('\dbond',"=");
+DefConstructor('\tbond',"\x{2261}");
+
+#======================================================================
+# 2.17.3 Fractions
+
+# \case{1}{2} == textstyle fraction
+# AND, apparently allowed in text mode!
+DefMacro('\case{}{}','\ensuremath{\text@frac{#1}{#2}}');
+DefConstructor('\text@frac{}{}',
+	       "<ltx:XMApp>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' style='#style'/>"
+	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       beforeDigest=>\&beforeTFrac, afterDigest =>\&afterTFrac);
+Let(T_CS('\slantfrac'),T_CS('\case'));
+#======================================================================
+# 2.17.4 Astronomical Symbols
+# See aassymbols document.
+# Table 1: Additional AASTeX symbols
+
+# \lesssim,\gtrsim in amssymb
+Let(T_CS('\a'),T_CS('\lesssim'));
+Let(T_CS('\ga'),T_CS('\gtrsim'));
+DefConstructor('\micron',UTF(0xB5)."m");
+DefConstructor('\sun',"\x{2609}");
+DefConstructor('\earth',"\x{2295}");
+DefConstructor('\diameter',"\x{2300}");
+DefConstructor('\sq',"\x{25A1}");
+
+DefConstructor('\arcdeg',UTF(0xB0));
+Let(T_CS('\degr'),T_CS('\arcdeg'));
+DefConstructor('\arcmin',"\x{2032}");
+DefConstructor('\arcsec',"\x{2033}");
+
+# Hmm, will this work?
+DefConstructor('\aas@@fstack{}',
+	       "<ltx:XMApp role='POSTFIX'>"
+	       .  "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
+	       .  "<ltx:XMTok>.</ltx:XMTok>"
+	       .  "<ltx:XMWrap>#1</ltx:XMWrap>"
+	       ."</ltx:XMApp>",
+	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }},
+	       mode=>'math', bounded=>1);
+DefMacro('\aas@fstack{}','\ensuremath{\aas@@fstack{#1}}');
+DefMacro('\fd','\aas@fstack{d}');
+DefMacro('\fh','\aas@fstack{h}');
+DefMacro('\fm','\aas@fstack{m}');
+DefMacro('\fs','\aas@fstack{s}');
+DefMacro('\fdg','\aas@fstack{\circ}');
+DefMacro('\farcm','\aas@fstack{\prime}');
+DefMacro('\farcs','\aas@fstack{\prime\prime}');
+DefMacro('\fp','\aas@fstack{p}');
+
+DefMacro('\onehalf','\ifmmode\case{1}{2}\else\text@onehalf\fi');
+DefConstructor('\text@onehalf',UTF(0xBD));
+DefMacro('\onethird','\ifmmode\case{1}{3}\else\text@onethird\fi');
+DefConstructor('\text@onethird',"\x{2153}");
+DefMacro('\twothirds','\ifmmode\case{2}{3}\else\text@twothirds\fi');
+DefConstructor('\text@twothirds',"\x{2154}");
+DefMacro('\onequarter','\ifmmode\case{1}{4}\else\text@onequarter\fi');
+DefConstructor('\text@onequarter',UTF(0xBC));
+DefMacro('\threequarters','\ifmmode\case{3}{4}\else\text@threequarters\fi');
+DefConstructor('\text@threequarters',UTF(0xBE));
+DefConstructor('\ubvr',"UBVR",    bounded=>1, font=>{shape=>'italic'});
+DefConstructor('\ub',"U\x{2000}B",bounded=>1, font=>{shape=>'italic'});
+DefConstructor('\bv',"B\x{2000}V",bounded=>1, font=>{shape=>'italic'});
+DefConstructor('\vr',"V\x{2000}R",bounded=>1, font=>{shape=>'italic'});
+DefConstructor('\ur',"U\x{2000}R",bounded=>1, font=>{shape=>'italic'});
+
+# Remaining tables standard LaTeX or amssymb
+RequirePackage('latexsym');
+RequirePackage('amssymb');
+
+#======================================================================
+# 2.17.5 Hypertext Constructs
+# \anchor{href}{text}
+RequirePackage('url');
+
+DefConstructor('\anchor Semiverbatim Semiverbatim',
+	       "<ltx:ref href='#href'>#2</ltx:ref>",
+	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[1]))); } );
+# \url{text}
+DefConstructor('\url Semiverbatim',
+	       "<ltx:ref href='#href'>#1</ltx:ref>",
+	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[1]))); } );
+
+
+# This should be in effect only after frontmatter
+# \email{address}
+DefConstructor('\@@email Semiverbatim',
+	       "<ltx:ref href='#href'>#1</ltx:ref>",
+	       properties=>sub { (href=>CleanURL("mailto:".ToString($_[1]))); } );
+
+# RequirePackage('verbatim');
+
+#======================================================================
+# 2.18 Concluding
+# normal LaTeX
+
+# Number equations within sections
+DefMacro('\eqsecnum',
+	 '\@addtoreset{equation}{section}'
+	 .'\def\theequation{\arabic{section}-\arabic{equation}}'); 
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

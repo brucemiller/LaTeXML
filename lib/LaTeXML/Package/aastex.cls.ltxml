@@ -1,0 +1,42 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  aastex                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# / Thanks to the arXMLiv group for 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Class Options
+# Ignorable options
+foreach my $option (qw(10pt 11pt 12pt
+		       manuscript preprint preprint2 longabstract
+		       tighten landscape
+		       aasms4 aaspp4 aas2pp4 aj_pt4 apjpt4 astro
+		       flushrt)){
+  DeclareOption($option,undef); }
+
+# Number equations within sections
+DeclareOption('eqsecnum', sub { Digest(Tokenize('\AtEndOfClass{\eqsecnum}')); });
+
+DeclareOption(undef,sub {
+  PassOption('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
+
+ProcessOptions();
+
+LoadClass('article');
+RequirePackage('aas_support');
+
+# #======================================================================
+1;
