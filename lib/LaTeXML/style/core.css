@@ -92,6 +92,9 @@ td.rr, th.rr, *[class~="rr"] { border-right:3px double black; }
 td.bb, th.bb, *[class~="bb"] { border-bottom:3px double black; }
 td.ll, th.ll, *[class~="ll"] { border-left:3px double black; }
 
+td[align="left"], th[align="left"],
+td[align="right"], th[align="right"],
+td[align="center"], th[align="center"] { white-space:nowrap; }
 /*======================================================================
  Low-level Basics */
 .TINY       { font-size:50%; }
