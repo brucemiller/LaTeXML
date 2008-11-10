@@ -17,9 +17,10 @@
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
     xmlns       = "http://www.w3.org/1999/xhtml"
+    xmlns:func  = "http://exslt.org/functions"
     xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
-    extension-element-prefixes="f"
-    exclude-result-prefixes = "ltx f">
+    extension-element-prefixes="func f"
+    exclude-result-prefixes = "ltx func f">
 
   <!-- ======================================================================
        Various Blocks
@@ -168,15 +169,37 @@
   <!-- ======================================================================
        Aligned templates -->
 
+  <func:function name="f:countcolumns">
+    <xsl:param name="equation"/>
+    <func:result><xsl:value-of select="count(ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td
+                                           | ltx:MathFork/ltx:MathBranch[1]/ltx:td
+					   | ltx:MathFork/ltx:MathBranch[1][not(ltx:tr or ltx:td)]
+					   | ltx:Math)"/></func:result>
+  </func:function>
+
+  <func:function name="f:maxcolumns">
+    <xsl:param name="equations"/>    
+    <xsl:for-each select="$equations">
+      <xsl:sort select="f:countcolumns(.)" data-type="number" order="descending"/>
+      <xsl:if test="position()=1">
+	<func:result><xsl:value-of select="f:countcolumns(.)"/></func:result>
+      </xsl:if>
+    </xsl:for-each>
+  </func:function>
+
   <xsl:template name="equationgroup-aligned">
     <!-- Hopefully the 1st equation row will sufficiently represent the pattern.
 	 Really should be some complex of max's of sum's of... -->
+<!--
     <xsl:param name="columns"
 	       select="  ltx:equation[1]/ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td
 		       | ltx:equation[1]/ltx:MathFork/ltx:MathBranch[1]/ltx:td
 		       | ltx:equation[1]/ltx:MathFork/ltx:MathBranch[1][not(ltx:tr or ltx:td)]
 		       | ltx:equation[1]/ltx:Math "/>
     <xsl:param name="ncolumns" select="count($columns)"/>
+-->
+<!--    <xsl:param name="ncolumns" select="f:countcolumns(ltx:equation[1])"/>-->
+    <xsl:param name="ncolumns" select="f:maxcolumns(ltx:equation | ltx:equationgroup/ltx:equation)"/>
     <table class='{f:classes(.)}'><xsl:call-template name="add_id"/>
       <xsl:text>
       </xsl:text>
@@ -213,12 +236,15 @@
 
 Currently we assume the content will be placed in a single tr/td. -->
   <xsl:template name="equation-aligned">
+<!--
     <xsl:param name="columns" 
 	       select="  ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td
 		       | ltx:MathFork/ltx:MathBranch[1]/ltx:td
 		       | ltx:MathFork/ltx:MathBranch[1][not(ltx:tr or ltx:td)]
 		       | ltx:Math "/>
     <xsl:param name="ncolumns" select="count($columns)"/>
+-->
+    <xsl:param name="ncolumns" select="f:countcolumns(.)"/>
     <table class='{f:classes(.)}'><xsl:call-template name="add_id"/>
       <xsl:text>
       </xsl:text>
@@ -374,7 +400,7 @@ ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation/ltx:MathFo
       <xsl:otherwise xml:space="preserve">
 	<tr valign="baseline"  class='{f:classes(.)}'><xsl:call-template name="add_id"/>
 	<xsl:call-template name="eq-left"/>
-	<td  nowrap="yes" align="{$eqpos}"><xsl:apply-templates select="ltx:Math | ltx:text"/></td>
+	<td  nowrap="yes" align="{$eqpos}" colspan="{$ncolumns}"><xsl:apply-templates select="ltx:Math | ltx:text"/></td>
 	<xsl:call-template name="eq-right"/>
 	</tr>
       </xsl:otherwise>
