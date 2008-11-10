@@ -1014,8 +1014,8 @@ sub RequirePackage {
   CheckOptions("RequirePackage ($package)",$require_options,%options);
   $options{type} = 'sty' unless $options{type};
   my $type = $options{type};
-  DefMacroI('\@currname',undef,$package);
-  DefMacroI('\@currext',undef,$type);
+  DefMacroI('\@currname',undef,Tokens(Explode($package)));
+  DefMacroI('\@currext',undef,Tokens(Explode($type)));
   # reset options
   resetOptions();
   PassOptions($package,$type,@{$options{options} || []});
@@ -1044,8 +1044,8 @@ sub LoadClass {
     PassOptions($class,$type,
 		@{LookupValue('opt@'.ToString(Digest(T_CS('\@currname'))).
 			      ".".ToString(Digest(T_CS('\@currext'))))}); }
-  DefMacroI('\@currname',undef,$class);
-  DefMacroI('\@currext',undef,$type);
+  DefMacroI('\@currname',undef,Tokens(Explode($class)));
+  DefMacroI('\@currext',undef,Tokens(Explode($type)));
   PassOptions($class,$type,@{$options{options} || []});
   # What about "global options" ??????
   resetOptions();
