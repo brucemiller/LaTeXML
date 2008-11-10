@@ -383,7 +383,7 @@ sub translate_constructor {
 	  $float = undef; }
 	$code .= "\$document->setAttribute(\$document->getElement,'$key',ToString(".$value."));\n"; }
       else {			# Whoops, must have been random text, after all.
-print STDERR "Whoops! Wasn't an attribute assignment: \"$key\"\n";
+#print STDERR "Whoops! Wasn't an attribute assignment: \"$key\"\n";
 	$code .= "\$document->absorb('".slashify($key)."=');\n"; }}
     # Else random text
     elsif(s/^$TEXT_RE//so){	# Else, just some text.
