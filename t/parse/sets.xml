@@ -18,7 +18,7 @@
       <Math mode="display" tex="\{ a:a\in b\}" text="conditional-set@(a, a element-of b)">
         <XMath>
           <XMApp>
-            <XMTok meaning="conditional-set" role="FENCED" argclose="}" argopen="{" separators=";"/>
+            <XMTok meaning="conditional-set" role="FENCED" argclose="}" argopen="{" separators=":"/>
             <XMTok role="ID" font="italic">a</XMTok>
             <XMApp>
               <XMTok meaning="element-of" name="in" role="RELOP">∈</XMTok>
