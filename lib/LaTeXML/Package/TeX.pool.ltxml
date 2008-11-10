@@ -2093,10 +2093,21 @@ DefMath('!','!', role=>'POSTFIX', meaning=>'factorial');
 DefMath(',',',', role=>'PUNCT');
 DefMath('.','.', role=>'PERIOD');
 DefMath(';',';', role=>'PUNCT');
-DefMath(':',';', role=>'METARELOP', name=>'colon'); # Seems like good default role
 DefMath('(','(', role=>'OPEN'); DefMath(')',')', role=>'CLOSE');
 DefMath('[','[', role=>'OPEN'); DefMath(']',']', role=>'CLOSE');
 DefMath('|','|', role=>'VERTBAR');
+
+#DefMath(':',';', role=>'METARELOP', name=>'colon'); # Seems like good default role
+AssignCatcode('math::'=>1, 'global');
+DefMacro(':',sub{
+  my($gullet)=@_;
+  if($gullet->ifNext(T_OTHER('='))){
+    $gullet->readToken;
+    T_CS('\@colonequal'); }
+  else {
+    T_CS('\@colon'); }});
+DefMath('\@colon',     ':', role=>'METARELOP', name=>'colon',reversion=>':'); # Seems like good default role
+DefMath('\@colonequal',':=', role=>'RELOP', meaning=>'assign',reversion=>':=');
 
 #======================================================================
 # Combine letters, when the fonts are right. (sorta related to mathcode)
