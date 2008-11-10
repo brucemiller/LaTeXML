@@ -1220,6 +1220,9 @@ DefMacro('\multispan{Number}', sub {
   $span = $span->valueOf;
   (T_CS('\omit'),map((T_CS('\span'),T_CS('\omit')), 1..$span-1)); });
 
+DefRegisterI('\@alignment@ncolumns',undef,Dimension(0),
+	       getter=>sub { Number(scalar(LookupValue('Alignment')->getTemplate->columns)); });
+
 DefMacro('\@multicolumn {Number}  AlignmentTemplate {}', sub {
   my($gullet,$span,$template,$tokens)=@_;
   my $column = $template->column(1);
@@ -1264,6 +1267,10 @@ sub alignmentBindings {
 #  Let('\span',        T_CS('\@alignment@span'));
 
   Let(T_MATH,  ($ismath ? T_CS('\@math@alignment$') : T_CS('\@text@alignment$')));
+
+  Let(T_CS('\@open@row'),T_CS('\default@open@row'));
+  Let(T_CS('\@close@row'),T_CS('\default@close@row'));
+
   return; }
 
 DefPrimitive('\@alignment@bindings AlignmentTemplate []',sub {
@@ -1286,8 +1293,8 @@ DefConstructor('\@open@alignment SkipSpaces DigestedBody',
 
 #----------------------------------------------------------------------
 # Row; The content is stuffed into the Alignment, so we don't construct anything here.
-DefPrimitive('\@close@row',sub { $_[0]->egroup;} );
-DefConstructor('\@open@row SkipSpaces DigestedBody',
+DefPrimitive('\default@close@row',sub { $_[0]->egroup;} );
+DefConstructor('\default@open@row SkipSpaces DigestedBody',
 	       "",
 	       reversion=>'#1',
 	       beforeDigest=>sub { $_[0]->bgroup; LookupValue('Alignment')->newRow; return;});
@@ -2468,12 +2475,14 @@ DefPrimitive('\@add@to@frontmatter {} [] {}', sub {
 # This is called by afterOpen (by default on <ltx:document>) to
 # output any frontmatter that was accumulated.
 
+my @frontmatter_elements = (qw(ltx:title ltx:toctitle ltx:subtitle
+			     ltx:creator ltx:date
+			   ltx:abstract ltx:keywords ltx:classification ltx:acknowledgements));
+my %frontmatter_elements = map(($_=>1),@frontmatter_elements);
 sub insertFrontMatter {
   my($document)=@_;
   my $frontmatter = LookupValue('frontmatter');
-  foreach my $key ('ltx:title','ltx:toctitle','ltx:subtitle','ltx:creator','ltx:date',
-		   grep($_ !~/^(ltx:title|ltx:toctitle|ltx:subtitle|ltx:creator|ltx:date)$/, 
-			keys %$frontmatter)){
+  foreach my $key (@frontmatter_elements,grep(!$frontmatter_elements{$_},keys %$frontmatter)){
     if(my $list = $$frontmatter{$key}){
       # Dubious, but assures that frontmatter appears in text mode...
       local $LaTeXML::BOX = LaTeXML::Box->new('', $STATE->lookupValue('font'),'',T_SPACE);
