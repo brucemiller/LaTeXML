@@ -24,6 +24,7 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
+use LaTeXML::Util::Pathname;
 no warnings 'redefine';
 
 #**********************************************************************
@@ -148,11 +149,17 @@ DefConstructor("\\\\ OptionalMatch:* [Glue]",
 #    text
 #   \end{document}
 
+AssignValue('@at@begin@document',[]);
+AssignValue('@at@end@document',[]);
 DefEnvironment('{document}',
 	       "<ltx:document xml:id='#id'>#body</ltx:document>",
 	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
-	       afterDigestBegin=>sub { $_[1]->setProperty(id=>Expand(T_CS('\thedocument@ID'))); },
-	       afterDigest=> sub { $_[0]->getGullet->flush; return; });
+	       afterDigestBegin=>sub {
+		 $_[1]->setProperty(id=>Expand(T_CS('\thedocument@ID')));
+		 Digest(Tokens(@{LookupValue('@at@begin@document')}));  },
+	       afterDigest=> sub {
+		 $_[0]->getGullet->flush; 
+		 Digest(Tokens(@{LookupValue('@at@end@document')}));  });
 
 #**********************************************************************
 # C.3. Sentences and Paragraphs
@@ -246,18 +253,21 @@ DefMacro('\subparagraph',  '\@startsection{subparagraph}{}{}{}{}{}');
 map(Tag("ltx:$_", autoClose=>1),
     qw(part chapter section subsection subsubsection paragraph subparagraph));
 
+DefMacro('\@startsection@hook','');
 DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
   my($gullet,$type,$level,$ignore3,$ignore4,$ignore5,$ignore6,$flag)=@_;
   my $ctr = LookupValue('counter_for_'.ToString($type)) || ToString($type);
   if($flag){
     RefStepID($ctr);
-    (T_CS('\\@@section'),
+    (T_CS('\@startsection@hook'),
+     T_CS('\\@@section'),
      T_BEGIN,$type->unlist,T_END,
      T_OTHER('['),T_OTHER(']'),
      T_OTHER('['),T_CS('\@currentID'),T_OTHER(']')); }
   else {
     RefStepCounter($ctr);
-    (T_CS('\\@@section'),
+    (T_CS('\@startsection@hook'),
+     T_CS('\\@@section'),
      T_BEGIN,$type->unlist,T_END,
      T_OTHER('['),T_CS('\@currentlabel'),T_OTHER(']'),
      T_OTHER('['),T_CS('\@currentID'),T_OTHER(']')); }});
@@ -409,8 +419,8 @@ DefMacro('\AtEndOfPackage{}',sub {
 
 Let(T_CS('\AtEndOfClass'),T_CS('\AtEndOfPackage'));
 
-DefMacro('\AtBeginDocument{}','');
-DefMacro('\AtEndDocument{}','');
+DefMacro('\AtBeginDocument{}',sub { PushValue('@at@begin@document', $_[1]->unlist); });
+DefMacro('\AtEndDocument{}',  sub { PushValue('@at@end@document', $_[1]->unlist); });
 
 
 #======================================================================
@@ -495,7 +505,16 @@ DefMacro('\maketitle',
 
 DefConstructor('\thanks{}', "<ltx:note class='thanks'>#1</ltx:note>");
 
-DefEnvironment('{abstract}','<ltx:abstract>#body</ltx:abstract>');
+#DefEnvironment('{abstract}','<ltx:abstract>#body</ltx:abstract>');
+# Annoying special case; environment doesn't allow me to get tokens to do add@frontmatter
+DefEnvironment('{abstract}','',
+	       afterDigestBegin=>sub { AssignValue(inPreamble=>0); },
+	       afterDigest=> sub {
+		 my $frontmatter = LookupValue('frontmatter');
+		 push(@{$$frontmatter{'ltx:abstract'}},
+		      ['ltx:abstract',undef,@LaTeXML::LIST]);
+		 return; });
+
 DefMacro('\abstractname','Abstract'); # never used?
 
 # Hmm, titlepage is likely to be hairy, low-level markup,
@@ -1841,7 +1860,14 @@ DefPrimitive('\input', sub {
       push(@tokens,$token); }
     $path = Tokens(@tokens); }
   $path = ToString($path);
-  if(my $file = FindFile($path)){
+  # HEURISTIC! First check if equivalent style file, but only IFF we are in preamble
+  my ($dir,$name,$type) = pathname_split($path);
+  my $newpath;
+  if((! $dir) && ($type eq 'tex') && LookupValue('inPreamble') &&
+     ($newpath=FindFile($name,type=>'sty'))){
+    Warn(":override Overriding input of $path with $newpath");
+    RequirePackage($name); }
+  elsif(my $file = FindFile($path)){
     $gullet->input($file); }
   else {
     $STATE->noteStatus(missing=>$path);
