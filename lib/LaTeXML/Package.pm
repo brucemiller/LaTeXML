@@ -1007,13 +1007,18 @@ sub AddToMacro {
   my $defn = LookupDefinition($cs);
   DefMacroI($cs,undef,Tokens($$defn{expansion}->unlist,$tokens->unlist)); }
 
-our $require_options = {options=>1, type=>1, raw=>1};
+our $require_options = {options=>1, withoptions=>1, type=>1, raw=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   $package = ToString($package) if ref $package;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
   $options{type} = 'sty' unless $options{type};
   my $type = $options{type};
+  # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
+  if($options{withoptions} && LookupDefinition(T_CS('\@currname'))){
+    PassOptions($package,$type,
+		@{LookupValue('opt@'.ToString(Digest(T_CS('\@currname'))).
+			      ".".ToString(Digest(T_CS('\@currext'))))}); }
   DefMacroI('\@currname',undef,Tokens(Explode($package)));
   DefMacroI('\@currext',undef,Tokens(Explode($type)));
   # reset options
