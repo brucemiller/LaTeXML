@@ -1580,6 +1580,7 @@ DefPrimitive('\end',sub { $_[0]->getGullet->flush; return; });
 #    | \hskip | \hfil | \hfill | \hss | \hfilneg 
 #    | \accent | \discretionary | \- | \<space> | $
 
+DefPrimitive('\noboundary',undef);
 DefPrimitive('\hskip Glue',undef);
 DefPrimitive('\mskip MuGlue', undef);
 DefPrimitive('\hss',undef);
@@ -1957,6 +1958,30 @@ sub afterDFrac  { afterFrac(@_); $_[0]->egroup; }
 DefConstructor('\choose',
 	       "<ltx:XMApp open='(' close=')'>"
 	       . "<ltx:XMTok meaning='binomial' role='STACKED' style='#style'/>"
+	       . "<ltx:XMArg>#top</ltx:XMArg>"
+	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       afterDigest=>\&chooseArgHandler,
+	       reversion=>sub {
+		 my($whatsit)=@_;
+		 ($whatsit->getProperty('top')->revert,
+		  T_CS('\choose'),
+		  $whatsit->getProperty('bottom')->revert); });
+DefConstructor('\brace',
+	       "<ltx:XMApp open='{' close='}'>"
+	       . "<ltx:XMTok role='STACKED' style='#style'/>" # what meaning?
+	       . "<ltx:XMArg>#top</ltx:XMArg>"
+	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       afterDigest=>\&chooseArgHandler,
+	       reversion=>sub {
+		 my($whatsit)=@_;
+		 ($whatsit->getProperty('top')->revert,
+		  T_CS('\choose'),
+		  $whatsit->getProperty('bottom')->revert); });
+DefConstructor('\brack',
+	       "<ltx:XMApp open='[' close=']'>"
+	       . "<ltx:XMTok role='STACKED' style='#style'/>" # what meaning?
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -2417,6 +2442,7 @@ DefPrimitive('\hang',undef);
 # and close!
 DefConstructor('\item{}','#1');
 DefConstructor('\itemitem{}','#1');
+DefConstructor('\makelabel{}','#1');
 
 DefMacro('\textindent{}','#1');
 

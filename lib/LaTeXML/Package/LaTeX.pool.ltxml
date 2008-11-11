@@ -182,6 +182,9 @@ DefEnvironment('{document}',
 # Logos
 # \TeX is in TeX.pool.ltxml
 DefConstructor('\LaTeX', 'LaTeX');
+DefConstructor('\LaTeXe', 'LaTeX2e');
+DefMacro('\fmtname','LaTeXML');
+DefMacro('\fmtversion','XXXX/XX/XX');
 
 DefMacro('\today',sub { Explode(today()); });
 
@@ -200,10 +203,15 @@ DefPrimitive('\linespread{}', undef);
 #======================================================================
 # C.3.3 Footnotes
 #======================================================================
-# NOTE: probably should default the mark to some counter?
+
+NewCounter('footnote');
+DefMacro('\thefootnote','\arabic{footnote}');
+
 DefConstructor('\footnote[]{}',
-	       "<ltx:note class='footnote' ?#1(mark='#1')>#2</ltx:note>",
-	       mode=>'text');
+	       "<ltx:note class='footnote' mark='#refnum'>#2</ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
 # NOTE: DOM should reattach the footnotetext to the footnotemark ?
 #  Hmm, in general the mark & text _could_ come in either order...
 DefConstructor('\footnotemark[]',""); # ????
@@ -379,6 +387,13 @@ DefPrimitive('\PassOptionsToClass{}{}', sub {
   my($stomach,$name,$options)=@_;
   PassOptions($name,'cls',split(/,\s*/,ToString(Digest($options)))); });
 
+DefConstructor('\RequirePackageWithOptions Semiverbatim []',
+	       "<?latexml package='#1'?>",
+	       beforeDigest=>\&onlyPreamble,
+	       afterDigest=>sub { my($stomach,$whatsit)=@_;
+				  my $package=$whatsit->getArg(1);
+				  RequirePackage(ToString($package), withoptions=>1); });
+
 DefConstructor('\LoadClassWithOptions Semiverbatim []',
 	       "<?latexml class='#1'?>",
 	       beforeDigest=>\&onlyPreamble,
@@ -553,6 +568,9 @@ DefConstructor('\maybe@end@title',sub {
 
 DefMacro('\sectionmark{}','');
 DefMacro('\subsectionmark{}','');
+DefMacro('\subsubsectionmark{}','');
+DefMacro('\paragraphmark{}','');
+DefMacro('\subparagraphmark{}','');
 DefMacro('\@oddfoot','');
 DefMacro('\@oddhed','');
 DefMacro('\@evenfoot','');
@@ -659,6 +677,12 @@ DefRegister('\itemindent'    => Dimension(0));
 DefRegister('\labelwidth'    => Dimension(0));
 DefRegister('\labelsep'      => Dimension(0));
 DefRegister('\@totalleftmargin'=> Dimension(0));
+DefRegister('\leftmargini'   => Dimension(0));
+DefRegister('\leftmarginii'  => Dimension(0));
+DefRegister('\leftmarginiii' => Dimension(0));
+DefRegister('\leftmarginiv'  => Dimension(0));
+DefRegister('\leftmarginv'   => Dimension(0));
+DefRegister('\leftmarginvi'  => Dimension(0));
 
 # NOTE: Eventually use \makelabel to construct the list ?
 #\makelabel{label}
@@ -1248,6 +1272,8 @@ DefPrimitive('\newcommand OptionalMatch:* DefToken [][]{}', sub {
   AssignValue($key=>1);		# only if defined by \newcommand, not \def!
   DefMacroI($cs,convertLaTeXArgs($nargs,$opt),$body); });
 
+DefPrimitive('\CheckCommand OptionalMatch:* DefToken [][]{}', undef);
+
 DefPrimitive('\renewcommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
   DefMacroI($cs,convertLaTeXArgs($nargs,$opt),$body); });
@@ -1264,6 +1290,47 @@ DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [][]{}', sub {
   return if LookupDefinition($cs);
   DefMacroI($cs, convertLaTeXArgs($nargs,$opt),$body); });
 
+# There are a bunch of ways in LaTeX to assign a command to
+# a particular point within a font (which has one of many encodings)
+# Since we have no practical way of knowing what that point is,
+# and we really want to create unicode, we just ignore this stuff (but warn).
+sub ignoredDefinition {
+  my($stomach,$command,$cs)=@_;
+  Warn(":unexpected:".ToString($cs)." ignoring $command definition of ".toString($cs)); }
+
+DefPrimitive('\DeclareTextAccent{}{}{}',
+	     sub { ignoredDefinition('DeclareTextAccent',$_[1]);});
+DefPrimitive('\DeclareTextAccentDefault{}{}',
+	     sub { ignoredDefinition('DeclareTextAccentDefault',$_[1]);});
+DefPrimitive('\DeclareTextCommand{}{}{}',
+	     sub { ignoredDefinition('DeclareTextCommand',$_[1]);});
+DefPrimitive('\DeclareTextCommandDefault{}[][]{}',
+	     sub { ignoredDefinition('DeclareTextCommandDefault',$_[1]);});
+DefPrimitive('\ProvideTextCommand{}{}{}',
+	     sub { ignoredDefinition('ProvideTextCommand',$_[1]);});
+DefPrimitive('\ProvideTextCommandDefault{}[][]{}',
+	     sub { ignoredDefinition('ProvideTextCommandDefault',$_[1]);});
+DefPrimitive('\DeclareTextComposite{}{}{}{}',
+	     sub { ignoredDefinition('DeclareTextComposite',$_[1]);});
+DefPrimitive('\DeclareTextCompositeCommand{}{}{}{}',
+	     sub { ignoredDefinition('DeclareTextCompositeCommand',$_[1]);});
+DefPrimitive('\DeclareTextSymbol{}{}{}',
+	     sub { ignoredDefinition('DeclareTextSymbol',$_[1]);});
+DefPrimitive('\DeclareTextSymbolDefault{}{}',
+	     sub { ignoredDefinition('DeclareTextSymbolDefault',$_[1]);});
+DefPrimitive('\UndeclareTextCommand{}{}',undef);
+DefPrimitive('\UseTextSymbol{}{}',undef);
+DefPrimitive('\UseTextAccent{}{}',undef);
+
+DefPrimitive('\DeclareMathAccent{}{}{}{}',
+	     sub { ignoredDefinition('DeclareMathAccent',$_[1]);});
+DefPrimitive('\DeclareMathDelimiter{}{}{}{}',
+	     sub { ignoredDefinition('DeclareMathAccent',$_[1]);});
+DefPrimitive('\DeclareMathRadical{}{}{}{}{}',
+	     sub { ignoredDefinition('DeclareMathAccent',$_[1]);});
+DefPrimitive('\DeclareMathVersion{}',undef);
+DefPrimitive('\DeclarePreloadSizes{}{}{}{}{}',undef);
+
 # The next font declaration commands are based on
 # http://tex.loria.fr/general/new/fntguide.html
 # we ignore font encoding
@@ -1278,21 +1345,34 @@ DefPrimitive('\DeclareSymbolFontAlphabet{}{}', sub {
   my $font = LookupValue('fontdeclarations@'.ToString($name)) || {};
   DefConstructorI(T_CS(ToString($cs)),undef,'', font=>$font); });
 
+DefPrimitive('\DeclareMathSizes{}{}{}{}',undef);
 DefPrimitive('\DeclareMathAlphabet{}{}{}{}{}', sub {
   my ($stomach, $cs, $enc, $family, $series, $shape) = @_;
   DefConstructorI(T_CS(ToString($cs)),undef, '', font=>{family=>ToString($family),
 							series=>ToString($series),
 							shape =>ToString($shape)}); });
-
+DefMacro('\newmathalphabet{}{}{}',''); # or expand int DeclareMathAlphabet?
 DefPrimitive('\DeclareFontShape{}{}{}{}{}{}', undef);
 DefPrimitive('\DeclareFontFamily{}{}{}', undef);
 DefPrimitive('\DeclareSizeFunction{}{}', undef);
 
-# Ultimately need:
-#  \DeclareMathSymbol{cs}{type}{font?}{codepoint?}
-#  \DeclareMathDelimiter{
-# and a bunch more!
-# HOWEVER, how can I convert a point in a font into anything useful?
+DefPrimitive('\DeclareMathSymbol{}{}{}{}',
+	     sub { ignoredDefinition('DeclareMathSymbol',$_[1]);});
+
+DefPrimitive('\DeclareFixedFont{}{}{}{}{}{}',undef);
+DefPrimitive('\DeclareErrorFont{}{}{}{}{}',undef);
+DefPrimitive('\DeclareFontEncoding{}{}{}',undef);
+DefPrimitive('\DeclareFontSubstitution{}{}{}{}',undef);
+DefPrimitive('\DeclareFontEncodingDefaults{}{}',undef);
+DefMacro('\LastDeclaredEncoding','');
+
+DefPrimitive('\SetSymbolFont{}{}{}{}{}{}',undef);
+DefPrimitive('\SetMathAlphabet{}{}{}{}{}{}',undef);
+DefPrimitive('\addtoversion{}{}',undef);
+DefPrimitive('\TextSymbolUnavailable{}',undef);
+
+DefPrimitive('\fontencoding{}',undef);
+
 #======================================================================
 # C.8.2 Defining Environments
 #======================================================================
@@ -1501,7 +1581,7 @@ NewCounter('totalnumber');
 DefMacro('\textfraction',"0.25");
 DefMacro('\floatpagefraction',"0.25");
 NewCounter('dbltopnumber');
-DefMacro('\dblfloatpagefraction',"0.25");
+DefMacro('\dbltopfraction',"0.7");
 DefMacro('\dblfloatpagefraction',"0.25");
 DefRegister('\floatsep'     => Glue(0));
 DefRegister('\textfloatsep' => Glue(0));
@@ -1516,6 +1596,9 @@ DefRegister('\@fpbot'      => Glue(0));
 DefRegister('\@dblfptop'   => Glue(0));
 DefRegister('\@dblfpsep'   => Glue(0));
 DefRegister('\@dblfpbot'   => Glue(0));
+Let(T_CS('\topfigrule'),T_CS('\relax'));
+Let(T_CS('\botfigrule'),T_CS('\relax'));
+Let(T_CS('\dblfigrule'),T_CS('\relax'));
 
 DefMacro('\figurename','Figure'); # Never used?
 DefMacro('\tablename','Table'); # Never used?
@@ -1535,6 +1618,8 @@ DefRegister('\marginparpush',Dimension(0));
 #======================================================================
 # C.10.1 The tabbing Environment
 #======================================================================
+DefRegister('\tabbingsep'=>Dimension(0));
+
 DefMacro('\tabbing',   '\@tabbing@bindings\@@tabbing\@start@alignment');
 DefMacro('\endtabbing','\@finish@alignment\@end@tabbing');
 DefPrimitive('\@end@tabbing',sub{ $_[0]->egroup; });
@@ -1687,9 +1772,10 @@ DefConstructor('\cline{}','',
 
 DefConstructor('\vline',"",	# ???
 	       properties=>{isVerticalRule=>1},);
-DefRegister('\arraycolsep',Dimension(0));
-DefRegister('\tabcolsep',Dimension(0));
+DefRegister('\arraycolsep',   Dimension(0));
+DefRegister('\tabcolsep',     Dimension(0));
 DefRegister('\arrayrulewidth',Dimension(0));
+DefRegister('\doublerulesep', Dimension(0));
 DefMacro('\extracolsep{}','');
 DefMacro('\arraystretch',"1");
 
@@ -1842,6 +1928,7 @@ DefConstructor('\nocite Semiverbatim', ''); # Eventually needs to be recognized 
 # Ignore for now...
 DefPrimitive('\defcitealias Semiverbatim {}',undef);
 DefMacro('\citetalias Semiverbatim','\citet{#1}');
+DefMacro('\citation{}','');
 
 #======================================================================
 # C.11.4 Splitting the input
@@ -2083,6 +2170,7 @@ DefPrimitive('\indexspace',  undef);
 # ---- Glossary (TBD)
 # NOTE:
 # DefConstructor('\glossary','{}',sub { ...
+DefPrimitive('\makeindex',undef);
 DefPrimitive('\makeglossary',undef);
 
 #======================================================================
@@ -2116,6 +2204,7 @@ DefPrimitive('\-',undef);	# We don't do hyphenation.
 DefPrimitive('\sloppy',undef);
 DefPrimitive('\fussy',undef);
 DefEnvironment('{sloppypar}','#body');
+DefMacro('\nobreakdashes','-');
 
 #======================================================================
 # C.12.2 Page Breaking
@@ -2173,22 +2262,34 @@ DefPrimitive('\newmuskip DefToken',sub { DefRegisterI($_[1],undef,MuGlue(0)); })
 #DefPrimitive('\newbox DefToken',  sub { DefRegisterI($_[1],undef,LaTeXML::Box->new()); });
 DefPrimitive('\newtoks DefToken',  sub { DefRegisterI($_[1],undef,Tokens()); });
 
+DefRegister('\fill',Glue(0,'1fill'));
+
 #======================================================================
 # C.13.2 Space
 #======================================================================
 DefPrimitive('\hspace OptionalMatch:* {}',undef);
 DefPrimitive('\vspace OptionalMatch:* {}',undef);
 DefPrimitive('\addvspace {}',undef);
+DefPrimitive('\addpenalty {}',undef);
 # \hfill, \vfill
 
 #======================================================================
 # C.13.3 Boxes
 #======================================================================
+# Can't really get these!
+DefMacro('\height','0pt');
+DefMacro('\totalheight','0pt');
+DefMacro('\depth','0pt');
+DefMacro('\width','0pt');
+
 DefConstructor('\mbox{}',
 	       "<ltx:text>#1</ltx:text>", mode=>'text');
 DefConstructor('\makebox[Dimension][]{}',
 	       "<ltx:text ?#1(width='#1') ?#2(pos='#2')>#3</ltx:text>",
 	       mode=>'text');
+DefRegister('\fboxrule', Dimension(0));
+DefRegister('\fboxsep',  Dimension(0));
+
 DefConstructor('\fbox{}',
 	       "<ltx:text framed='rectangle'>#1</ltx:text>", mode=>'text');
 DefConstructor('\framebox[Dimension][]{}',
@@ -2314,6 +2415,27 @@ sub picProperties {
 
 #----------------------------------------------------------------------
 # the code
+DefMacro('\qbeziermax','500');
+DefPrimitive('\line Pair {Float}',
+	     sub { Error(":unexpected:\\line cannot appear outside of picture environment"); });
+DefPrimitive('\vector Pair {Float}',
+	     sub { Error(":unexpected:\\vector cannot appear outside of picture environment"); });
+DefPrimitive('\circle OptionalMatch:* {Float}',
+	     sub { Error(":unexpected:\circle cannot appear outside of picture environment"); });
+DefPrimitive('\oval [Float] Pair []',
+	     sub { Error(":unexpected:\\oval cannot appear outside of picture environment"); });
+DefPrimitive('\qbezier [Number] Pair Pair Pair',
+	     sub { Error(":unexpected:\\qbezier cannot appear outside of picture environment"); });
+DefPrimitive('\makebox Pair []{}',
+	     sub { Error(":unexpected:\\makebox cannot appear outside of picture environment"); });
+DefPrimitive('\raisebox{Dimension}[Dimension][Dimension]{}',
+	     sub { Error(":unexpected:\\raisebox cannot appear outside of picture environment"); });
+DefPrimitive('\framebox Pair []{}',
+	     sub { Error(":unexpected:\\framebox cannot appear outside of picture environment"); });
+DefPrimitive('\dashbox {Float} Pair [] {}',
+	     sub { Error(":unexpected:\\dashbox cannot appear outside of picture environment"); });
+DefPrimitive('\frame{}',
+	     sub { Error(":unexpected:\\frame cannot appear outside of picture environment"); });
 sub before_picture {
   Let(T_CS('\line'),     T_CS('\pic@line'));
   Let(T_CS('\vector'),   T_CS('\pic@vector'));
@@ -2511,6 +2633,8 @@ DefPrimitive('\mathversion{}',sub {
 
 DefMacro('\newfont{}{}', '\font#1=#2\relax');
 
+Let(T_CS('\normalcolor'),T_CS('\relax'));
+
 #======================================================================
 # C.15.2 Changing the Type Size
 #======================================================================
@@ -2559,7 +2683,7 @@ DefConstructor('\texttrademark',"\x{2122}");  # TRADE MARK SIGN
 DefConstructor('\textsuperscript{}',"<ltx:text yoffset='0.5em'>#1</ltx:text>");
 DefConstructor('\textordfeminine',UTF(0xAA)); # FEMININE ORDINAL INDICATOR
 DefConstructor('\textordmasculine',UTF(0xBA)); # MASCULINE ORDINAL INDICATOR
-
+DefMacro('\SS','SS');			       # ?
 
 #**********************************************************************
 # Other stuff
@@ -2571,6 +2695,10 @@ DefMacro('\@nameuse{}','\csname #1\endcsname');
 
 DefMacro('\@spaces','\space\space\space\space');
 Let('\@sptoken',T_SPACE);
+
+Let(T_CS('\MakeUppercase'),T_CS('\uppercase'));
+Let(T_CS('\MakeLowercase'),T_CS('\lowercase'));
+
 #======================================================================
 
 DefMacro('\@ehc',"I can't help");
@@ -2585,6 +2713,7 @@ DefMacro('\GenericError{}{}{}{}', sub{ Fatal(make_message(@_)); });
 DefMacro('\GenericWarning{}{}',   sub{ Warn(make_message(@_)); });
 DefMacro('\GenericInfo{}{}{}{}',  sub{ print STDERR "Info: ".make_message(@_)."\n"; });
 
+Let(T_CS('\MessageBreak'),T_CS('\relax'));
 DefMacro('\PackageError{}{}{}',
   ' \GenericError{%
       (#1)\@spaces\@spaces\@spaces\@spaces
@@ -2699,6 +2828,17 @@ DefMacro('\fontsize{}{}','');
 DefMacro('\math@fontsfalse','');
 DefMacro('\math@fontstrue','');
 DefMacro('\selectfont','');
+
+DefMacro('\defaultscriptratio','.7');
+DefMacro('\defaultscriptscriptratio','.5');
+
+#======================================================================
+DefMacro('\loggingoutput','');
+DefMacro('\loggingall','');
+DefMacro('\tracingfonts','');
+DefMacro('\showoverfull','');
+DefMacro('\showoutput','');
+DefMacro('\wlog{}','');
 
 #======================================================================
 # Various symbols, accents, etc from Chapter 3 defined in TeX.pool

@@ -88,6 +88,7 @@ DefMacro('\authoremail','\email');  # Obsolete form
 # 2.5 Keywords
 
 DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
+Let(T_CS('\subjectheadings'),T_CS('\keywords'));
 
 #======================================================================
 # 2.6 Comments to Editors
@@ -100,6 +101,7 @@ DefMacro('\notetoeditor{}','');
 # 2.7 Sections
 # normal LaTeX
 
+# Except that they apparently allow subsubsubsections! Ugh!
 #======================================================================
 # 2.8 Figure and Table Placement
 
@@ -111,6 +113,19 @@ DefMacro('\notetoeditor{}','');
 # For now, we ignore them, however.
 DefMacro('\placetable{}','');
 DefMacro('\placefigure{}','');
+DefMacro('\placeplate{}','');
+
+NewCounter('plate');
+DefEnvironment('{plate}[]',
+	       "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1') class='plate'>"
+	       . "#body"
+	       ."</ltx:figure>",
+	       properties=> sub { RefStepCounter('plate') });
+DefEnvironment('{plate*}[]',
+	       "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1') class='plate'>"
+	       . "#body"
+	       ."</ltx:figure>",
+	       properties=> sub { RefStepCounter('plate') });
 
 #======================================================================
 # 2.9 Acknowledgements
@@ -323,8 +338,10 @@ DefMacro('\enddeluxetable','\end{table}');
 DefMacro('\tabletypesize{}','');	# Ignorable
 DefMacro('\rotate','');			# Ignorable ?
 DefMacro('\tablewidth{Dimension}','');	# Ignorable?
+DefMacro('\platewidth{Dimension}','');	# Ignorable?
 DefMacro('\tablenum{}','\def\thetable{#1}');
 # Note: This needs an UnRefStepCounter('table');
+DefMacro('\platenum{}','\def\theplate{#1}');
 
 DefMacro('\tablecolumns{Number}',''); # Ignorable ???
 
@@ -425,8 +442,37 @@ Let(T_CS('\slantfrac'),T_CS('\case'));
 Let(T_CS('\a'),T_CS('\lesssim'));
 Let(T_CS('\ga'),T_CS('\gtrsim'));
 DefConstructor('\micron',UTF(0xB5)."m");
-DefConstructor('\sun',"\x{2609}");
-DefConstructor('\earth',"\x{2295}");
+DefMacro('\Sun','\sun');
+DefMacro('\Sol','\sun');
+DefConstructor('\sun',     "\x{2609}");
+DefConstructor('\Mercury', "\x{263F}");
+DefConstructor('\Venus',   "\x{2640}");
+DefMacro('\Earth','\earth');
+DefMacro('\Terra','\earth');
+DefConstructor('\earth',   "\x{2295}");
+DefConstructor('\Mars',    "\x{2642}");
+DefConstructor('\Jupiter', "\x{2643}");
+DefConstructor('\Saturn',  "\x{2644}");
+DefConstructor('\Uranus',  "\x{2645}");
+DefConstructor('\Neptune', "\x{2646}");
+DefConstructor('\Pluto',   "\x{2647}");
+DefConstructor('\Moon',     "\x{263D}"); # Not sure if this is the right Moon?
+DefMacro('\Luna','\Moon');
+DefConstructor('\Aries',       "\x{2648}");
+DefMacro('\VEq','\Aries');	# Vernal Equinox
+DefConstructor('\Taurus',      "\x{2649}");
+DefConstructor('\Gemini',      "\x{264A}");
+DefConstructor('\Cancer',      "\x{264B}");
+DefConstructor('\Leo',         "\x{264C}");
+DefConstructor('\Virgo',       "\x{264D}");
+DefConstructor('\Libra',       "\x{264E}");
+DefMacro('\AVEq','\Libra');	# Autumnal Equinox
+DefConstructor('\Scorpius',    "\x{264F}");
+DefConstructor('\Sagittarius', "\x{2650}");
+DefConstructor('\Capricornus', "\x{2651}");
+DefConstructor('\Aquarius',    "\x{2652}");
+DefConstructor('\Pisces',      "\x{2653}");
+
 DefConstructor('\diameter',"\x{2300}");
 DefConstructor('\sq',"\x{25A1}");
 
@@ -505,6 +551,8 @@ DefMacro('\eqsecnum',
 	 '\@addtoreset{equation}{section}'
 	 .'\def\theequation{\arabic{section}-\arabic{equation}}'); 
 
+DefMacro('\singlespace','');
+DefMacro('\doublespace','');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
