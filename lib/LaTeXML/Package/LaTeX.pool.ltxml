@@ -2416,8 +2416,7 @@ sub picProperties {
 #----------------------------------------------------------------------
 # the code
 DefMacro('\qbeziermax','500');
-DefPrimitive('\line Pair {Float}',
-	     sub { Error(":unexpected:\\line cannot appear outside of picture environment"); });
+# Careful; some of these have meanings outside of picture!
 DefPrimitive('\vector Pair {Float}',
 	     sub { Error(":unexpected:\\vector cannot appear outside of picture environment"); });
 DefPrimitive('\circle OptionalMatch:* {Float}',
@@ -2426,12 +2425,6 @@ DefPrimitive('\oval [Float] Pair []',
 	     sub { Error(":unexpected:\\oval cannot appear outside of picture environment"); });
 DefPrimitive('\qbezier [Number] Pair Pair Pair',
 	     sub { Error(":unexpected:\\qbezier cannot appear outside of picture environment"); });
-DefPrimitive('\makebox Pair []{}',
-	     sub { Error(":unexpected:\\makebox cannot appear outside of picture environment"); });
-DefPrimitive('\raisebox{Dimension}[Dimension][Dimension]{}',
-	     sub { Error(":unexpected:\\raisebox cannot appear outside of picture environment"); });
-DefPrimitive('\framebox Pair []{}',
-	     sub { Error(":unexpected:\\framebox cannot appear outside of picture environment"); });
 DefPrimitive('\dashbox {Float} Pair [] {}',
 	     sub { Error(":unexpected:\\dashbox cannot appear outside of picture environment"); });
 DefPrimitive('\frame{}',
