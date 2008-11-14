@@ -520,36 +520,26 @@ DefMacro('\maketitle',
 
 DefConstructor('\thanks{}', "<ltx:note class='thanks'>#1</ltx:note>");
 
-#DefEnvironment('{abstract}','<ltx:abstract>#body</ltx:abstract>');
-# Annoying special case; environment doesn't allow me to get tokens to do add@frontmatter
+# DefEnvironment('{abstract}','<ltx:abstract>#body</ltx:abstract>');
+# Annoying special case; 2 problems.
+# (1) environment doesn't allow me to get the material to do add@frontmatter
+#   so we've got to do it a bit more manually.
+# (2) Apparently, LaTeX _perversely_ allows \abstract{...} to work!
+#   [ie. no \begin{},\end{}, and not even \endabstract!]
+#   And of course, if it works, people do it.
+#   LaTeXML, however, MUST know when the abstract ends!
+#   So, we use the section hook, to say it must have ended by now (at least)
 DefEnvironment('{abstract}','',
-	       afterDigestBegin=>sub { AssignValue(inPreamble=>0); },
-	       afterDigest=> sub {
+ 	       afterDigestBegin=>sub {
+ 		 AssignValue(inPreamble=>0);
+		 AddToMacro(T_CS('\@startsection@hook'),T_CS('\maybe@end@abstract')); },
+ 	       afterDigest=> sub {
 		 my $frontmatter = LookupValue('frontmatter');
-		 push(@{$$frontmatter{'ltx:abstract'}},
-		      ['ltx:abstract',undef,@LaTeXML::LIST]);
-		 return; });
-
-# HACK ALERT!!!! This is perverse & somewhat Risky
-# It seems that latex lets people get away with writing
-# \abstract{my abstract...}
-# instead of as an environment, and it seems to work!
-# the \endabstract doesn't do anything absolutely essential
-# from latex's point of view.
-# And if LaTeX allows it, people will DO it!
-# Check the definition of \begin,\end:
-# The following will NOT take effect if people use the \begin{abstract}..\end{abstract},
-# but only if they explicitly write \abstract
-# It will do the correct thing if they write \abstract{...}
-# It NOT if they write \abstract .... \endabstract
-# (which seems silly actually).
-# So, let's try this for arXMLiv purposes
-DefMacro('\abstract{}','\@add@frontmatter{ltx:abstract}{#1}');
-
-# This definition at least gives us a warning in case we get outsmarted!
-DefPrimitive('\endabstract',sub {
-  Warn(":unexpected:\\endabstract Our heuristic to make \\abstract{} work as a non-environment has been outsmarted.");
-  return; });
+ 		 push(@{$$frontmatter{'ltx:abstract'}},
+ 		      ['ltx:abstract',undef,@LaTeXML::LIST]);
+		 DefMacroI('\maybe@end@abstract','');
+ 		 return; });
+DefMacro('\maybe@end@abstract','\endabstract');
 
 DefMacro('\abstractname','Abstract'); # never used?
 
