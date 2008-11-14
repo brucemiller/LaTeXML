@@ -439,7 +439,7 @@ Let(T_CS('\slantfrac'),T_CS('\case'));
 # Table 1: Additional AASTeX symbols
 
 # \lesssim,\gtrsim in amssymb
-Let(T_CS('\a'),T_CS('\lesssim'));
+Let(T_CS('\la'),T_CS('\lesssim'));
 Let(T_CS('\ga'),T_CS('\gtrsim'));
 DefConstructor('\micron',UTF(0xB5)."m");
 DefMacro('\Sun','\sun');
@@ -466,7 +466,7 @@ DefConstructor('\Cancer',      "\x{264B}");
 DefConstructor('\Leo',         "\x{264C}");
 DefConstructor('\Virgo',       "\x{264D}");
 DefConstructor('\Libra',       "\x{264E}");
-DefMacro('\AVEq','\Libra');	# Autumnal Equinox
+DefMacro('\AEq','\Libra');	# Autumnal Equinox
 DefConstructor('\Scorpius',    "\x{264F}");
 DefConstructor('\Sagittarius', "\x{2650}");
 DefConstructor('\Capricornus', "\x{2651}");
