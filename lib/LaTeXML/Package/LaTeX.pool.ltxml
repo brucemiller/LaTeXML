@@ -530,6 +530,27 @@ DefEnvironment('{abstract}','',
 		      ['ltx:abstract',undef,@LaTeXML::LIST]);
 		 return; });
 
+# HACK ALERT!!!! This is perverse & somewhat Risky
+# It seems that latex lets people get away with writing
+# \abstract{my abstract...}
+# instead of as an environment, and it seems to work!
+# the \endabstract doesn't do anything absolutely essential
+# from latex's point of view.
+# And if LaTeX allows it, people will DO it!
+# Check the definition of \begin,\end:
+# The following will NOT take effect if people use the \begin{abstract}..\end{abstract},
+# but only if they explicitly write \abstract
+# It will do the correct thing if they write \abstract{...}
+# It NOT if they write \abstract .... \endabstract
+# (which seems silly actually).
+# So, let's try this for arXMLiv purposes
+DefMacro('\abstract{}','\@add@frontmatter{ltx:abstract}{#1}');
+
+# This definition at least gives us a warning in case we get outsmarted!
+DefPrimitive('\endabstract',sub {
+  Warn(":unexpected:\\endabstract Our heuristic to make \\abstract{} work as a non-environment has been outsmarted.");
+  return; });
+
 DefMacro('\abstractname','Abstract'); # never used?
 
 # Hmm, titlepage is likely to be hairy, low-level markup,
