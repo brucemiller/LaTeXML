@@ -233,6 +233,7 @@ use base qw(LaTeXML::Primitive);
 #    reversion : CODE or TOKENS for reverting to TeX form
 #    captureBody : whether to capture the following List as a `body` 
 #        (for environments, math modes)
+#        If this is a token, it is the token that will be matched to end the body.
 #    properties : a hash of default values for properties to store in the Whatsit.
 sub new {
   my($class,$cs,$parameters,$replacement,%traits)=@_;
@@ -287,8 +288,8 @@ sub invoke {
   my @post = $self->executeAfterDigest($stomach,$whatsit);
   if(my $id = $props{id}){
     $STATE->assignValue('xref:'.$id=>$whatsit,'global'); }
-  if($$self{captureBody}){
-    $whatsit->setBody(@post,$stomach->digestNextBody); @post=(); }
+  if(my $cap = $$self{captureBody}){
+    $whatsit->setBody(@post,$stomach->digestNextBody((ref $cap ? $cap : undef))); @post=(); }
   (@pre,$whatsit,@post); }
 
 sub doAbsorbtion {

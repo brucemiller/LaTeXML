@@ -819,7 +819,7 @@ sub DefEnvironmentI {
 				   # Curiously, it's the \begin whose afterConstruct gets called.
 				   afterConstruct => flatten($options{afterConstruct},sub{$STATE->popFrame;}),
 				   nargs=>$options{nargs},
-				   captureBody=>1,
+				   captureBody=>T_CS("\\end$name"), # Required to capture!!
 				   properties=>$options{properties}||{}),
 			     $options{scope});
   $STATE->installDefinition(LaTeXML::Constructor
@@ -1476,10 +1476,11 @@ Supplies CODE to execute before constructing the XML
 
 Supplies CODE to execute after constructing the XML.
 
-=item  captureBody=>boolean
+=item  captureBody=>boolean or Token
 
 if true, arbitrary following material will be accumulated into
-a `body' until the current grouping level is reverted.
+a `body' until the current grouping level is reverted,
+or till the C<Token> is encountered if the option is a C<Token>.
 This body is available as the C<body> property of the Whatsit.
 This is used by environments and math.
 
