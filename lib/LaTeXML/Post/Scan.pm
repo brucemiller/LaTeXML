@@ -213,11 +213,13 @@ sub bibitem_handler {
       $$self{db}->register("BIBLABEL:$key",id=>$id); }
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,
 			 location=>$self->siteRelativePathname($doc->getDestination),
-			 fragid=>$self->inPageID($doc,$id),
-			 names =>$doc->findnode('ltx:bib-citekeys/ltx:cite-names',$node),
-			 year  =>$doc->findnode('ltx:bib-citekeys/ltx:cite-year',$node),
-			 refnum=>$doc->findnode('ltx:tag',$node),
-			 title=>$doc->findnode('ltx:bib-citekeys/ltx:cite-title',$node)); }
+			 fragid  =>$self->inPageID($doc,$id),
+			 names   =>$doc->findnode('ltx:bib-citekeys/ltx:cite-names',$node),
+			 fullnames =>$doc->findnode('ltx:bib-citekeys/ltx:cite-fullnames',$node),
+			 year    =>$doc->findnode('ltx:bib-citekeys/ltx:cite-year',$node),
+			 number  =>$doc->findnode('ltx:bib-citekeys/ltx:cite-number',$node),
+			 refnum  =>$doc->findnode('ltx:tag',$node),
+			 title  =>$doc->findnode('ltx:bib-citekeys/ltx:cite-title',$node)); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 # For a bibentry, we'll only store the citation key, so we know it's there.

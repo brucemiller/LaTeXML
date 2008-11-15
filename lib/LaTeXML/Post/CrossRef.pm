@@ -169,7 +169,8 @@ sub fill_in_bibrefs {
     while(($s = $p->lastChild) && ($$s != $$bibref)){ # Remove & Save following siblings.
       unshift(@save,$p->removeChild($s)); }
     $doc->removeNodes($bibref);
-    $doc->addNodes($p,$self->make_bibcite($doc,$show,split(/,/,$bibref->getAttribute('bibrefs'))));
+#    $doc->addNodes($p,$self->make_bibcite($doc,$show,split(/,/,$bibref->getAttribute('bibrefs'))));
+    $doc->addNodes($p,$self->make_bibcite($doc,$bibref));
     map($p->appendChild($_),@save); # Put these back.
  }}
 
@@ -179,7 +180,7 @@ sub fill_in_bibrefs {
 
 # WORK OUT the fallback when BibTeX wasn't used...
 # IE. explicit thebibliography
-sub make_bibcite {
+sub XXXXXmake_bibcite {
   my($self,$doc, $show,@keys)=@_;
     my @data = ();
     foreach my $key (@keys){
@@ -239,6 +240,92 @@ sub make_bibcite {
       push(@refs,['ltx:ref',$$datum{attr},@stuff]); 
       $show=$saveshow; }
     $doc->conjoin(', ',@refs); }}
+
+
+sub make_bibcite {
+  my($self,$doc,$bibref)=@_;
+  my $show = $bibref->getAttribute('show');
+  my @keys = split(/,/,$bibref->getAttribute('bibrefs'));
+  my $sep  = $bibref->getAttribute('separator') || ', ';
+  my $yysep= $bibref->getAttribute('yyseparator') || ', ';
+  my @phrases = $bibref->getChildNodes();	  # get the ltx;note's in the bibref!
+  # Collect all the data from the bibliography
+  my @data = ();
+  foreach my $key (@keys){
+    if(my $bentry = $$self{db}->lookup("BIBLABEL:$key")){
+      if(my $id = $bentry->getValue('id')){
+	if(my $entry = $$self{db}->lookup("ID:$id")){
+	  my $names = $entry->getValue('names');
+	  my $fnames= $entry->getValue('fullnames');
+	  my $year  = $entry->getValue('year');
+	  my $number= $entry->getValue('number');
+	  my $title = $entry->getValue('title');
+	  my $refnum= $entry->getValue('refnum'); # This come's from the \bibitem, w/o BibTeX
+	  $show = 'refnum' unless $names;	    # Disable author-year format!
+	  # fullnames ?
+	  push(@data,{names    =>[$doc->trimChildNodes($names)],
+		      namestext=>($names ? $names->textContent :''),
+		      fullnames=>[$doc->trimChildNodes(($fnames ? $fnames : $names))],
+		      year     =>[$doc->trimChildNodes($year)],
+		      rawyear  =>($year ? $year->getAttribute('rawyear') : undef),
+		      suffix   =>($year ? $year->getAttribute('suffix') : undef),
+		      number   =>[$doc->trimChildNodes($number)],
+		      refnum   =>[$doc->trimChildNodes($refnum)],
+		      title    =>[$doc->trimChildNodes($title)],
+		      attr=>{idref=>$id,
+			     href=>$self->generateURL($doc,$id),
+			     ($title ? (title=>$title->textContent):())}}); }}}
+    else {
+      $self->note_missing('Citation',$key); }}
+  my $checkdups = ($show =~ /author/i) && ($show =~ /(year|number)/i);
+  my @refs=();
+  my $saveshow = $show;
+  while(@data){
+    my $datum = shift(@data);
+    my $didref = 0;
+    my @stuff=();
+    $show=$saveshow;
+    while($show){
+      if($show =~ s/^author//i){
+	push(@stuff,@{$$datum{names}}); }
+      if($show =~ s/^fullauthor//i){
+	push(@stuff,@{$$datum{fullnames}}); }
+      elsif($show =~ s/^title//i){
+	push(@stuff,@{$$datum{title}}); }
+      elsif($show =~ s/^refnum//i){
+	push(@stuff,@{$$datum{refnum}}); }
+      elsif($show =~ s/^phrase(\d)//i){
+	push(@stuff,$phrases[$1-1]->childNodes) if $phrases[$1-1]; }
+      elsif($show =~ s/^year//i){
+	if($checkdups && @data && ($$datum{namestext} eq $data[0]{namestext})){
+	  push(@stuff,['ltx:ref',$$datum{attr},@{$$datum{year}}]);
+	  # NOTE: This needs to deal with YEARa,b situations too!
+	  while($checkdups && @data && ($$datum{namestext} eq $data[0]{namestext})){
+	    my $next = shift(@data);
+	    push(@stuff, $yysep);
+	    if((($$datum{rawyear}||'x') eq ($$next{rawyear}||'y')) && $$next{suffix}){
+	      push(@stuff,['ltx:ref',$$next{attr},$$next{suffix}]);  }
+	    else {
+	      push(@stuff,['ltx:ref',$$next{attr},@{$$next{year}}]);  }}
+	  $didref=1; }
+	else {
+	  push(@stuff,@{$$datum{year}}); }}
+      elsif($show =~ s/^number//i){
+	if($checkdups && @data && ($$datum{namestext} eq $data[0]{namestext})){
+	  push(@stuff,['ltx:ref',$$datum{attr},@{$$datum{number}}]);
+	  while($checkdups && @data && ($$datum{namestext} eq $data[0]{namestext})){
+	    my $next = shift(@data);
+	    push(@stuff, ", ");	# GET FROM bibref!
+	    push(@stuff,['ltx:ref',$$next{attr},@{$$next{number}}]);  }
+	  $didref=1; }
+	else {
+	  push(@stuff,@{$$datum{number}}); }}
+      elsif($show =~ s/^(.)//){
+	push(@stuff, $1); }}
+    push(@refs,
+	 (@refs ? ($sep) : ()),
+	 ($didref ? @stuff : (['ltx:ref',$$datum{attr},@stuff]))); }
+  @refs; }
 
 sub generateURL {
   my($self,$doc,$id)=@_;

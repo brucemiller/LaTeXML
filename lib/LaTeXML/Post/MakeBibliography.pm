@@ -21,10 +21,11 @@ our %FMT_SPEC;
 # Options:
 #   bibliographies : list of xml file names containing bibliographies (from bibtex)
 #   split  : whether the split into separate pages by initial.
-# Possibly:
-#   Optionally use numeric citations? Currently set up for author-year.
-#   (for numeric how would we split?)
-
+# NOTE:
+#  Ultimately needs to respond to the desired bibligraphic style
+#     Currently set up primarily for author-year
+#     What about numerical citations? (how would we split the bib?)
+#     But we should presumably encode a number anyway...
 sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
@@ -109,7 +110,7 @@ sub getBibEntries {
 	$names = $n->textContent; }
       elsif(my @ns = $doc->findnodes('ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname',
 				     $bibentry)){
-	if(@ns > 2){    $names = $ns[0]->textContent .' et.al'; }
+	if(@ns > 2){    $names = $ns[0]->textContent .' et al'; }
 	elsif(@ns > 1){ $names = $ns[0]->textContent .' and '. $ns[1]->textContent; }
 	else          { $names = $ns[0]->textContent; }}
       elsif(my $t = $doc->findnode('ltx:bib-title',$bibentry)){
@@ -152,6 +153,7 @@ sub getBibEntries {
 sub makeBibliographyList {
   my($self,$doc,$entries)=@_;
   local $LaTeXML::Post::MakeBibliography::DOCUMENT = $doc;
+  local $LaTeXML::Post::MakeBibliography::NUMBER = 0;
   ['ltx:biblist',{},
    map($self->formatBibEntry($doc,$$entries{$_}), sort keys %$entries)]; }
 
@@ -168,6 +170,7 @@ sub formatBibEntry {
   my $spec = $FMT_SPEC{$type};
   local $LaTeXML::Post::MakeBibliography::DOCUMENT = $doc;
   local @LaTeXML::Post::MakeBibliography::SUFFIX = ($$entry{suffix} ? ($$entry{suffix}):());
+  $LaTeXML::Post::MakeBibliography::NUMBER++;
 
   # NOTE: $id may have already been associated with the bibentry
   # Break the association so it associates with the bibitem
@@ -234,21 +237,30 @@ sub do_editorsB {
 sub do_cite_names { 
   my(@names)=@_;
   if(@names > 2){
-    @names = ($names[0]->childNodes,' ',['ltx:emph',{},'et.al.']); }
+    my $name1 = $names[0];
+    my @fullnames = ();
+    while(@names){
+      my $name = shift(@names);
+      push(@fullnames,', ') if @names && @fullnames;
+      push(@fullnames,' and ') if !@names;
+      push(@fullnames, $name->childNodes); }
+    (['ltx:cite-names',{}, $name1->childNodes,' ',['ltx:emph',{},'et al.']],
+     ['ltx:cite-fullnames',{}, @fullnames]); }
   elsif(@names > 1){
-    @names = ($names[0]->childNodes,' and ',$names[1]->childNodes); }
+  (['ltx:cite-names',{},$names[0]->childNodes,' and ',$names[1]->childNodes]); }
   elsif(@names){
-    @names = $names[0]->childNodes; }
-  (['ltx:cite-names',{},@names]); }
+    (['ltx:cite-names',{}, $names[0]->childNodes]); }}
 
-# NOTE: The TargetDB will manage any a,b, etc
 sub do_cite_year {
   my($year_or_text)=@_;
-  (['ltx:cite-year',{},
+  (['ltx:cite-year',{rawyear=>(ref $year_or_text ? $year_or_text->textContent : $year_or_text),
+		     suffix=>$LaTeXML::Post::MakeBibliography::SUFFIX[0]},
     (ref $year_or_text ? $year_or_text->childNodes : $year_or_text),
     @LaTeXML::Post::MakeBibliography::SUFFIX]); }
 
 sub do_cite_title { (['ltx:cite-title',{},@_]); }
+
+sub do_cite_number { (['ltx:cite-number',{},$LaTeXML::Post::MakeBibliography::NUMBER]); }
 
 # Other fields.
 sub do_year { ('(',@_,@LaTeXML::Post::MakeBibliography::SUFFIX,')'); }
@@ -307,7 +319,8 @@ BEGIN{
 	      ['ltx:bib-citekeys',
 	       ['ltx:bib-author/ltx:surname','', '', \&do_cite_names,''],
 	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
-	       ['ltx:bib-title',             '', '', \&do_cite_title,'']],
+	       ['ltx:bib-title',             '', '', \&do_cite_title,''],
+	       ['true',                      '', '', \&do_cite_number,'']],
 	      ['ltx:bibblock',
 	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      ['ltx:bibblock',
@@ -330,7 +343,8 @@ BEGIN{
 	      ['ltx:bib-citekeys',
 	       ['ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname','', '', \&do_cite_names,''],
 	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
-	       ['ltx:bib-title',             '', '', \&do_cite_title,'']],
+	       ['ltx:bib-title',             '', '', \&do_cite_title,''],
+	       ['true',                      '', '', \&do_cite_number,'']],
 	      ['ltx:bibblock',
 	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      ['ltx:bibblock',
@@ -357,7 +371,8 @@ BEGIN{
 	      ['ltx:bib-citekeys',
 	       ['ltx:bib-author/ltx:surname','', '', \&do_cite_names,''],
 	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
-	       ['ltx:bib-title',             '', '', \&do_cite_title,'']],
+	       ['ltx:bib-title',             '', '', \&do_cite_title,''],
+	       ['true',                      '', '', \&do_cite_number,'']],
 	      ['ltx:bibblock',
 	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      ['ltx:bibblock',
@@ -387,7 +402,8 @@ BEGIN{
 	      ['ltx:bib-citekeys',
 	       ['ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname','', '', \&do_cite_names,''],
 	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
-	       ['ltx:bib-title',             '', '', \&do_cite_title,'']],
+	       ['ltx:bib-title',             '', '', \&do_cite_title,''],
+	       ['true',                      '', '', \&do_cite_number,'']],
 	      ['ltx:bibblock',
 	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      ['ltx:bibblock',
@@ -416,7 +432,8 @@ BEGIN{
 	      ['ltx:bib-citekeys',
 	       ['ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname','', '', \&do_cite_names,''],
 	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
-	       ['ltx:bib-title',             '', '', \&do_cite_title,'']],
+	       ['ltx:bib-title',             '', '', \&do_cite_title,''],
+	       ['true',                      '', '', \&do_cite_number,'']],
 	      ['ltx:bibblock',
 	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      ['ltx:bibblock',
@@ -436,7 +453,8 @@ BEGIN{
 	       ['true'      , ' '  , '(Website)']],
 	      ['ltx:bib-citekeys',
 	       ['ltx:bib-title',   '', '', \&do_cite_names,''],
-	       ['true',            '', '(Website)']],
+	       ['true',            '', '(Website)'],
+	       ['true',                      '', '', \&do_cite_number,'']],
 #	      ['ltx:bibblock',
 #	       ['ltx:bib-url',     '', '', sub { (['a',{href=>$_[0]->textContent},'Website']); },'']],
 	      ['ltx:bibblock',
@@ -452,7 +470,8 @@ BEGIN{
 	       ['ltx:bib-type'      , ' '  , '', \&do_type, '']],
 	      ['ltx:bib-citekeys',
 	       ['ltx:bib-key',         '', '', \&do_cite_names,''],
-	       ['ltx:bib-type',        '', '', \&do_cite_year,'']],
+	       ['ltx:bib-type',        '', '', \&do_cite_year,''],
+	       ['true',                      '', '', \&do_cite_number,'']],
 	      ['ltx:bibblock',
 	       ['ltx:bib-title'     ,  ''  , '', \&do_any, '']],
 	      ['ltx:bibblock',
