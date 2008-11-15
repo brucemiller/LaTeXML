@@ -18,7 +18,7 @@ element document {
   Common.attributes,
   Labelled.attributes,
 
-  (FrontMatter.class | SectionalFrontMatter.class)*,
+  (FrontMatter.class | SectionalFrontMatter.class | Meta.class)*,
   Para.model, paragraph*,section*, chapter*, part*, 
   BackMatter.class* }
 
@@ -248,4 +248,6 @@ SectionalFrontMatter.class = title | toctitle | creator
 FrontMatter.class =
   subtitle | date | abstract | acknowledgements
   | keywords | classification
+# Let Backmatter contain Para since often figures, etc follow a paper!
 BackMatter.class = bibliography | appendix | index | acknowledgements
+		 | Para.class | Meta.class

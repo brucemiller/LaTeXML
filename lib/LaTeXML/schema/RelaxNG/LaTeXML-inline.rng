@@ -172,6 +172,16 @@ Consists of strings \texttt{author}, \texttt{year} and \texttt{title}
 mixed with arbitrary characters.</a:documentation>
         </attribute>
       </optional>
+      <optional>
+        <attribute name="separator">
+          <a:documentation>separator between formatted references</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="yyseparator">
+          <a:documentation>separator between formatted years when duplicate authors are combined.</a:documentation>
+        </attribute>
+      </optional>
       <ref name="Inline.model"/>
     </element>
   </define>

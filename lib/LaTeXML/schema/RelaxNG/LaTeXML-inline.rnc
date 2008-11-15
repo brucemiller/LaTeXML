@@ -136,6 +136,12 @@ element bibref {
   ## mixed with arbitrary characters.
   attribute show { text }?,
 
+  ## separator between formatted references
+  attribute separator { text }?,
+
+  ## separator between formatted years when duplicate authors are combined.
+  attribute yyseparator { text }?,
+
   Inline.model }
 
 note =

@@ -84,7 +84,9 @@
   class NMTOKENS #IMPLIED
   idref IDREF #IMPLIED
   bibrefs CDATA #IMPLIED
-  show CDATA #IMPLIED>
+  show CDATA #IMPLIED
+  separator CDATA #IMPLIED
+  yyseparator CDATA #IMPLIED>
 
 <!ELEMENT note (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
                 |Math|p|equation|equationgroup|quote|centering|block
@@ -908,11 +910,14 @@
   curvature CDATA #IMPLIED>
 
 <!ELEMENT document ((subtitle|date|abstract|acknowledgements|keywords
-                     |classification|title|toctitle|creator)*,
+                     |classification|title|toctitle|creator|note
+                     |indexmark|ERROR)*,
                     (para|theorem|proof|figure|table|note|indexmark
                      |ERROR)*,
                     paragraph*,section*,chapter*,part*,
-                    (bibliography|appendix|index|acknowledgements)*)>
+                    (bibliography|appendix|index|acknowledgements|para
+                     |theorem|proof|figure|table|note|indexmark
+                     |ERROR)*)>
 <!ATTLIST document
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1381,7 +1386,7 @@
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
   xml:id ID #IMPLIED
-  key CDATA #REQUIRED>
+  key CDATA #IMPLIED>
 
 <!ELEMENT bibblock (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics

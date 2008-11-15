@@ -251,7 +251,7 @@ bibitem =
 element bibitem {
   Common.attributes,
   ID.attributes,
-  attribute key { text },
+  attribute key { text }?,
   tag?, bibblock* }
 
 bibblock =

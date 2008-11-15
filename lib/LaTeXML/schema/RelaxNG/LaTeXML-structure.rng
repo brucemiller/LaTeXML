@@ -22,6 +22,7 @@
         <choice>
           <ref name="FrontMatter.class"/>
           <ref name="SectionalFrontMatter.class"/>
+          <ref name="Meta.class"/>
         </choice>
       </zeroOrMore>
       <ref name="Para.model"/>
@@ -387,12 +388,15 @@ Values include creation, but is open-ended to support extension.</a:documentatio
       <ref name="classification"/>
     </choice>
   </define>
+  <!-- Let Backmatter contain Para since often figures, etc follow a paper! -->
   <define name="BackMatter.class">
     <choice>
       <ref name="bibliography"/>
       <ref name="appendix"/>
       <ref name="index"/>
       <ref name="acknowledgements"/>
+      <ref name="Para.class"/>
+      <ref name="Meta.class"/>
     </choice>
   </define>
 </grammar>

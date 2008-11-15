@@ -314,7 +314,9 @@ in a LaTeX article. This has generally lost most of the semantics
 present in the BibTeX data.</a:documentation>
       <ref name="Common.attributes"/>
       <ref name="ID.attributes"/>
-      <attribute name="key"/>
+      <optional>
+        <attribute name="key"/>
+      </optional>
       <optional>
         <ref name="tag"/>
       </optional>
