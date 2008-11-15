@@ -219,7 +219,8 @@ sub validate {
     my $rng = XML::LibXML::RelaxNG->new(location=>$schema);
     eval { $rng->validate($$self{document}); };
     if($@){
-      die "Error during RelaxNG validation  (".$schema."):\n".substr($@,0,200); }}
+#      die "Error during RelaxNG validation  (".$schema."):\n".substr($@,0,200); }}
+      die "Error during RelaxNG validation  (".$schema."):\n".$@; }}
   elsif(my $decldtd = $$self{document}->internalSubset){ # Else look for DTD Declaration
 #    print STDERR "Validating using DTD ".$decldtd->publicId." at ".$decldtd->systemId."\n";
     my $dtd = XML::LibXML::Dtd->new($decldtd->publicId,$decldtd->systemId);
