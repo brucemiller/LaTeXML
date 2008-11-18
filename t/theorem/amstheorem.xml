@@ -131,7 +131,7 @@ variant fonts and other differences.</p>
     </para>
     <theorem xml:id="Thmvarthmx1">
       <title>
-        <text font="bold">Theorem 3.6 in <cite>[<bibref bibrefs="thatone"/>]</cite>.</text>
+        <text font="bold">Theorem 3.6 in <cite>[<bibref bibrefs="thatone" separator="," show="Number" yyseparator=","/>]</cite>.</text>
       </title>
       <p>
         <text font="italic">No hyperlinking available here yet … but that's not a
@@ -274,7 +274,7 @@ standing on the corners of a triangle <Math mode="inline" tex="T" text="T"><XMat
     <title>References</title>
     <biblist>
       <bibitem key="thatone" xml:id="bib.thatone">
-        <tag close="]" open="[">1</tag>
+        <bibtag close="]" open="[" role="refnum">1</bibtag>
         <bibblock> Dummy entry.
 </bibblock>
       </bibitem>
