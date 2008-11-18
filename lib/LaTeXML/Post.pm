@@ -126,13 +126,14 @@ sub new {
   $data{processingInstructions}=
     [map($_->textContent,$XPATH->findnodes('.//processing-instruction("latexml")',$xmldoc))];
 
-  if(!$data{searchpaths}){
-    my @paths = ();
-    foreach my $pi (@{$data{processingInstructions}}){
-      if($pi =~ /^\s*searchpaths\s*=\s*([\"\'])(.*?)\1\s*$/){
-	push(@paths,split(',',$2)); }}
-    push(@paths,pathname_absolute($data{sourceDirectory})) if $data{sourceDirectory};
-    $data{searchpaths} = [@paths]; }
+  # Combine specified paths with any from the PI's
+  my @paths = ();
+  @paths = @{$data{searchpaths}} if $data{searchpaths};
+  foreach my $pi (@{$data{processingInstructions}}){
+    if($pi =~ /^\s*searchpaths\s*=\s*([\"\'])(.*?)\1\s*$/){
+      push(@paths,split(',',$2)); }}
+  push(@paths,pathname_absolute($data{sourceDirectory})) if $data{sourceDirectory};
+  $data{searchpaths} = [@paths];
 
   my $self = bless {%data}, $class; 
   $$self{idcache} = {};
@@ -216,7 +217,13 @@ sub validate {
   if($schema){			# Validate using rng
     $schema .= ".rng" unless $schema =~ /\.rng$/;
 #    print STDERR "Validating using schema $schema\n";
-    my $rng = XML::LibXML::RelaxNG->new(location=>$schema);
+    my $rng;
+    eval { $rng = XML::LibXML::RelaxNG->new(location=>$schema); };
+    if($@){			# Failed to load schema from catalog
+      my $schemapath = pathname_find($schema,paths=>[$self->getSearchPaths]);
+      eval { $rng = XML::LibXML::RelaxNG->new(location=>$schemapath); };
+    }
+    die "Failed to load RelaxNG schema $schema:\n$@" unless $rng;
     eval { $rng->validate($$self{document}); };
     if($@){
 #      die "Error during RelaxNG validation  (".$schema."):\n".substr($@,0,200); }}
