@@ -177,77 +177,12 @@ sub fill_in_bibrefs {
 # Given a list of bibkeys, construct links to them.
 # Mostly tuned to author-year style.
 # Combines when multiple bibitems share the same authors.
-
-# WORK OUT the fallback when BibTeX wasn't used...
-# IE. explicit thebibliography
-sub XXXXXmake_bibcite {
-  my($self,$doc, $show,@keys)=@_;
-    my @data = ();
-    foreach my $key (@keys){
-      if(my $bentry = $$self{db}->lookup("BIBLABEL:$key")){
-	if(my $id = $bentry->getValue('id')){
-	  if(my $entry = $$self{db}->lookup("ID:$id")){
-	    my $names = $entry->getValue('names');
-	    my $year  = $entry->getValue('year');
-	    my $title = $entry->getValue('title');
-	    my $refnum= $entry->getValue('refnum'); # This come's from the \bibitem, w/o BibTeX
-	    $show = 'refnum' unless $names;	    # Disable author-year format!
-	    push(@data,{names    =>[$doc->trimChildNodes($names)],
-			namestext=>($names ? $names->textContent :''),
-			year     =>[$doc->trimChildNodes($year)],
-			refnum   =>[$doc->trimChildNodes($refnum)],
-			title    =>[$doc->trimChildNodes($title)],
-			attr=>{idref=>$id,
-			       href=>$self->generateURL($doc,$id),
-			       ($title ? (title=>$title->textContent):())}}); }}}
-      else {
-	$self->note_missing('Citation',$key); }}
-  if(!$show){			# Default is like author(year), but combine same authors
-    my @stuff=();
-    while(@data){
-      push(@stuff,', ') if @stuff;
-      my $datum = shift(@data);
-      my @group = ();
-      while($$datum{namestext} && @data
-	    && ($$datum{namestext} eq $data[0]->{namestext})){
-	push(@group,shift(@data)); }
-      if(@group){
-	push(@stuff,@{$$datum{names}},
-	     '(',['ltx:ref',$$datum{attr}, @{$$datum{year}}]);
-	foreach my $next (@group){
-	  push(@stuff,', ', ['ltx:ref',$$next{attr}, @{$$next{year}}]); }
-	push(@stuff,')'); }
-      else {
-	push(@stuff,
-	     ['ltx:ref',$$datum{attr}, @{$$datum{names}},'(', @{$$datum{year}},')']); }}
-    @stuff; }
-  else {
-    my @refs=();
-    my $saveshow = $show;
-    foreach my $datum (@data){
-      my @stuff=();
-      while($show){
-	if(($show =~ s/^author//) || ($show =~ s/^names//)){
-	  push(@stuff,@{$$datum{names}}); }
-	elsif(($show =~ s/^year//) || ($show =~ s/^date//)){
-	  push(@stuff,@{$$datum{year}}); }
-	elsif($show =~ s/^title//){
-	  push(@stuff,@{$$datum{title}}); }
-	elsif($show =~ s/^refnum//){
-	  push(@stuff,@{$$datum{refnum}}); }
-	elsif($show =~ s/^(.)//){
-	  push(@stuff, $1); }}
-      push(@refs,['ltx:ref',$$datum{attr},@stuff]); 
-      $show=$saveshow; }
-    $doc->conjoin(', ',@refs); }}
-
-
 sub make_bibcite {
   my($self,$doc,$bibref)=@_;
   my $show = $bibref->getAttribute('show');
   my @keys = split(/,/,$bibref->getAttribute('bibrefs'));
-  my $sep  = $bibref->getAttribute('separator') || ', ';
-  my $yysep= $bibref->getAttribute('yyseparator') || ', ';
+  my $sep  = $bibref->getAttribute('separator') || ',';
+  my $yysep= $bibref->getAttribute('yyseparator') || ',';
   my @phrases = $bibref->getChildNodes();	  # get the ltx;note's in the bibref!
   # Collect all the data from the bibliography
   my @data = ();
@@ -255,23 +190,26 @@ sub make_bibcite {
     if(my $bentry = $$self{db}->lookup("BIBLABEL:$key")){
       if(my $id = $bentry->getValue('id')){
 	if(my $entry = $$self{db}->lookup("ID:$id")){
-	  my $names = $entry->getValue('names');
-	  my $fnames= $entry->getValue('fullnames');
-	  my $year  = $entry->getValue('year');
-	  my $number= $entry->getValue('number');
-	  my $title = $entry->getValue('title');
-	  my $refnum= $entry->getValue('refnum'); # This come's from the \bibitem, w/o BibTeX
-	  $show = 'refnum' unless $names;	    # Disable author-year format!
+	  my $authors  = $entry->getValue('authors');
+	  my $fauthors = $entry->getValue('fullauthors');
+	  my $year     = $entry->getValue('year');
+	  my $number   = $entry->getValue('number');
+	  my $title    = $entry->getValue('title');
+	  my $refnum   = $entry->getValue('refnum'); # This come's from the \bibitem, w/o BibTeX
+	  my($rawyear,$suffix);
+	  if($year && ($year->textContent) =~ /^(\d\d\d\d)(\w)$/){
+	    ($rawyear,$suffix)=($1,$2); }
+	  $show = 'refnum' unless $authors || $fauthors;	    # Disable author-year format!
 	  # fullnames ?
-	  push(@data,{names    =>[$doc->trimChildNodes($names)],
-		      namestext=>($names ? $names->textContent :''),
-		      fullnames=>[$doc->trimChildNodes(($fnames ? $fnames : $names))],
-		      year     =>[$doc->trimChildNodes($year)],
-		      rawyear  =>($year ? $year->getAttribute('rawyear') : undef),
-		      suffix   =>($year ? $year->getAttribute('suffix') : undef),
-		      number   =>[$doc->trimChildNodes($number)],
-		      refnum   =>[$doc->trimChildNodes($refnum)],
-		      title    =>[$doc->trimChildNodes($title)],
+	  push(@data,{authors     =>[$doc->trimChildNodes($authors || $fauthors)],
+		      fullauthors =>[$doc->trimChildNodes($fauthors || $authors)],
+		      authortext  =>($authors||$fauthors ? ($authors||$fauthors)->textContent :''),
+		      year        =>[$doc->trimChildNodes($year)],
+		      rawyear     =>$rawyear,
+		      suffix      =>$suffix,
+		      number      =>[$doc->trimChildNodes($number)],
+		      refnum      =>[$doc->trimChildNodes($refnum)],
+		      title       =>[$doc->trimChildNodes($title)],
 		      attr=>{idref=>$id,
 			     href=>$self->generateURL($doc,$id),
 			     ($title ? (title=>$title->textContent):())}}); }}}
@@ -286,10 +224,10 @@ sub make_bibcite {
     my @stuff=();
     $show=$saveshow;
     while($show){
-      if($show =~ s/^author//i){
-	push(@stuff,@{$$datum{names}}); }
-      if($show =~ s/^fullauthor//i){
-	push(@stuff,@{$$datum{fullnames}}); }
+      if($show =~ s/^authors?//i){
+	push(@stuff,@{$$datum{authors}}); }
+      elsif($show =~ s/^fullauthors?//i){
+	push(@stuff,@{$$datum{fullauthors}}); }
       elsif($show =~ s/^title//i){
 	push(@stuff,@{$$datum{title}}); }
       elsif($show =~ s/^refnum//i){
@@ -297,33 +235,25 @@ sub make_bibcite {
       elsif($show =~ s/^phrase(\d)//i){
 	push(@stuff,$phrases[$1-1]->childNodes) if $phrases[$1-1]; }
       elsif($show =~ s/^year//i){
-	if($checkdups && @data && ($$datum{namestext} eq $data[0]{namestext})){
-	  push(@stuff,['ltx:ref',$$datum{attr},@{$$datum{year}}]);
-	  # NOTE: This needs to deal with YEARa,b situations too!
-	  while($checkdups && @data && ($$datum{namestext} eq $data[0]{namestext})){
-	    my $next = shift(@data);
-	    push(@stuff, $yysep);
-	    if((($$datum{rawyear}||'x') eq ($$next{rawyear}||'y')) && $$next{suffix}){
-	      push(@stuff,['ltx:ref',$$next{attr},$$next{suffix}]);  }
-	    else {
-	      push(@stuff,['ltx:ref',$$next{attr},@{$$next{year}}]);  }}
-	  $didref=1; }
-	else {
-	  push(@stuff,@{$$datum{year}}); }}
+	push(@stuff,['ltx:ref',$$datum{attr},@{$$datum{year}}]);
+	$didref=1; 
+	while($checkdups && @data && ($$datum{authortext} eq $data[0]{authortext})){
+	  my $next = shift(@data);
+	  push(@stuff, $yysep,' ');
+	  if((($$datum{rawyear}||'no_year_1') eq ($$next{rawyear}||'no_year_2')) && $$next{suffix}){
+	    push(@stuff,['ltx:ref',$$next{attr},$$next{suffix}]);  }
+	  else {
+	    push(@stuff,['ltx:ref',$$next{attr},@{$$next{year}}]);  }}}
       elsif($show =~ s/^number//i){
-	if($checkdups && @data && ($$datum{namestext} eq $data[0]{namestext})){
-	  push(@stuff,['ltx:ref',$$datum{attr},@{$$datum{number}}]);
-	  while($checkdups && @data && ($$datum{namestext} eq $data[0]{namestext})){
-	    my $next = shift(@data);
-	    push(@stuff, ", ");	# GET FROM bibref!
-	    push(@stuff,['ltx:ref',$$next{attr},@{$$next{number}}]);  }
-	  $didref=1; }
-	else {
-	  push(@stuff,@{$$datum{number}}); }}
+	push(@stuff,['ltx:ref',$$datum{attr},@{$$datum{number}}]);
+	$didref=1;
+	while($checkdups && @data && ($$datum{authortext} eq $data[0]{authortext})){
+	  my $next = shift(@data);
+	  push(@stuff,$yysep,' ',['ltx:ref',$$next{attr},@{$$next{number}}]);  }}
       elsif($show =~ s/^(.)//){
 	push(@stuff, $1); }}
     push(@refs,
-	 (@refs ? ($sep) : ()),
+	 (@refs ? ($sep,' ') : ()),
 	 ($didref ? @stuff : (['ltx:ref',$$datum{attr},@stuff]))); }
   @refs; }
 

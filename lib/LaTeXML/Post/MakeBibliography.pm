@@ -66,6 +66,12 @@ sub process {
 # Get all cited bibentries from the requested bibliography files.
 # Sort (cited) bibentries on author+year+title, [NOT on the key!!!]
 # and then check whether author+year is unique!!!
+# Returns a list of hashes containing:
+#  bibkey : the bibliographic entry's key
+#  bibentry : the bibentry node
+#  citations : array of bib keys that are cited somewhere within this bibentry
+#  referrers : array of ID's of places that refer to this bibentry
+#  suffix    : a,b... if adjacent author/year are identical.
 
 sub getBibEntries {
   my($self,$doc)=@_;
@@ -167,21 +173,72 @@ sub formatBibEntry {
   my $id   = $bibentry->getAttribute('xml:id');
   my $key  = $bibentry->getAttribute('key');
   my $type = $bibentry->getAttribute('type');
-  my $spec = $FMT_SPEC{$type};
+  my @blockspecs = @{ $FMT_SPEC{$type} || [] };
+
   local $LaTeXML::Post::MakeBibliography::DOCUMENT = $doc;
-  local @LaTeXML::Post::MakeBibliography::SUFFIX = ($$entry{suffix} ? ($$entry{suffix}):());
-  $LaTeXML::Post::MakeBibliography::NUMBER++;
+  local $LaTeXML::Post::MakeBibliography::SUFFIX = $$entry{suffix};
+  my $number = ++$LaTeXML::Post::MakeBibliography::NUMBER;
 
   # NOTE: $id may have already been associated with the bibentry
   # Break the association so it associates with the bibitem
   delete $$doc{idcache}{$id};
-  warn "\nNo formatting specification for bibentry of type $type" unless $spec;
+  warn "\nNo formatting specification for bibentry of type $type" unless @blockspecs;
+
+  #------------------------------
+  # Format the bibtag's
+  my @tags=();
+  push(@tags,['ltx:bibtag',{role=>'number'},$number]);
+
+  my @names = $doc->findnodes('ltx:bib-author/ltx:surname',$bibentry);
+  @names = $doc->findnodes('ltx:bib-editor/ltx:surname',$bibentry) unless @names;
+  if(@names > 2){
+    push(@tags,['ltx:bibtag',{role=>'authors'},
+		$names[0]->childNodes,['ltx:emph',{},' et al.']]);
+    my @fnames=();
+    foreach my $n (@names[0..$#names-1]){
+      push(@fnames,$n->childNodes,', '); }
+    push(@tags,['ltx:bibtag',{role=>'fullauthors'},@fnames,'and ',$names[-1]->childNodes]); }
+  elsif(@names > 1){
+    push(@tags,['ltx:bibtag',{role=>'authors'},
+		$names[0]->childNodes,' and ',$names[1]->childNodes]); }
+  elsif(@names){
+    push(@tags,['ltx:bibtag',{role=>'authors'},$names[0]->childNodes]); }
+  # HACK!!!
+  elsif(($type eq 'software') && (@names = $doc->findnodes('ltx:bib-key',$bibentry))){
+    push(@tags,['ltx:bibtag',{role=>'authors'},map($_->childNodes,@names)]); }
+
+  my $year;
+  if($year = $doc->findnode('ltx:bib-date',$bibentry)){
+    push(@tags,['ltx:bibtag',{role=>'year'},$year->childNodes,($$entry{suffix} ||'')]); }
+  # HACK!!!
+  elsif($type eq 'software'){
+    push(@tags,['ltx:bibtag',{role=>'year'},$year = $type]); }
+
+  if(my $title = $doc->findnode('ltx:bib-title',$bibentry)){
+    push(@tags,['ltx:bibtag',{role=>'title'},$title->childNodes]); }
+
+  # And finally, the refnum; we need to know the desired citation style!
+  # This is screwy!!!
+  my $style = 'authoryear';	# else 'number'
+  $style = 'number' unless $year && @names;
+  if($style eq 'number'){
+    push(@tags,['ltx:bibtag',{role=>'refnum'},$number]); }
+  else {
+    shift(@blockspecs);		# Skip redundant 1st block!!
+    if(my @authors = $doc->findnodes('ltx:bib-author',$bibentry)){
+      push(@tags,['ltx:bibtag',{role=>'refnum'},
+		  do_authors(@authors),' (',$year->childNodes,')']); }
+    elsif(my @editors = $doc->findnodes('ltx:bib-editor',$bibentry)){
+      push(@tags,['ltx:bibtag',{role=>'refnum'},
+		  do_editorsA(@editors),' (',$year->childNodes,')']); }
+  }
+
+  #------------------------------
   # Format the data in blocks, with the first being bib-label, rest bibblock.
   my @blocks = ();
-  foreach my $blockspec (@$spec){
-    my($blockname,@linespecs)=@$blockspec;
+  foreach my $blockspec (@blockspecs){
     my @x =();
-    foreach my $row (@linespecs){
+    foreach my $row (@$blockspec){
       my($xpath,$punct,$pre,$op,$post)=@$row;
       my @nodes = ($xpath eq 'true' ? () : $doc->findnodes($xpath,$bibentry));
       next unless @nodes || ($xpath eq 'true');
@@ -189,7 +246,7 @@ sub formatBibEntry {
       push(@x,$pre) if $pre;
       push(@x,&$op(map($_->cloneNode(1),@nodes))) if $op;
       push(@x,$post) if $post; }
-    push(@blocks,[$blockname,{},@x]) if @x;
+    push(@blocks,['ltx:bibblock',{},@x]) if @x;
   }
   # Add a Cited by block.
   my @citedby=map(['ltx:ref',{idref=>$_}], sort keys %{$$entry{referrers}});
@@ -197,13 +254,23 @@ sub formatBibEntry {
     if $$entry{bibreferrers};
   push(@blocks,['ltx:bibblock',{},"Cited by: ",$doc->conjoin(', ',@citedby)]);
 
-  ['ltx:bibitem',{'xml:id'=>$id, key=>$key, type=>$type},@blocks]; }
+  ['ltx:bibitem',{'xml:id'=>$id, key=>$key, type=>$type},
+   @tags,
+   @blocks]; }
 
 # ================================================================================
 # Formatting aids.
 sub do_any  { @_; }
 
 # Stuff for Author(s) & Editor(s)
+sub do_name {
+  my($node)=@_;
+  my $init= $LaTeXML::Post::MakeBibliography::DOCUMENT->findnode('ltx:initials',$node);
+  my $sur = $LaTeXML::Post::MakeBibliography::DOCUMENT->findnode('ltx:surname',$node);
+# Why, oh Why do we need the _extra_ cloneNode ???
+  ( ($init ? ($init->cloneNode(1)->childNodes,' '):()),$sur->cloneNode(1)->childNodes); }
+#  ( ($init ? (content_nodes($init),' '):()),content_nodes($sur)); }
+
 sub do_names {
   my(@names)=@_;
   my @stuff=();
@@ -212,16 +279,17 @@ sub do_names {
     push(@stuff, do_name($name)); }
   @stuff; }
 
-sub do_name {
-  my($node)=@_;
-  my ($init)= $LaTeXML::Post::MakeBibliography::DOCUMENT->findnodes('ltx:initials',$node);
-  my ($sur) = $LaTeXML::Post::MakeBibliography::DOCUMENT->findnodes('ltx:surname',$node);
-# Why, oh Why do we need the _extra_ cloneNode ???
-  ( ($init ? ($init->cloneNode(1)->childNodes,' '):()), $sur->cloneNode(1)->childNodes); }
-#  ( ($init ? (content_nodes($init),' '):()),content_nodes($sur)); }
+sub do_names_short {
+  my(@names)=@_;
+  if(@names > 2){
+    ($names[0]->childNodes,' ',['ltx:emph',{},'et al.']); }
+  elsif(@names > 1){
+  ($names[0]->childNodes,' and ',$names[1]->childNodes); }
+  elsif(@names){
+    ($names[0]->childNodes); }}
 
 sub do_authors { do_names(@_); }
-sub do_editorsA {
+sub do_editorsA {		# Should be used in citation tags?
   my @n = do_names(@_);
   if(scalar(@_)>1) { push(@n," (Eds.)"); }
   elsif(scalar(@_)){ push(@n," (Ed.)"); }
@@ -232,40 +300,10 @@ sub do_editorsB {
   elsif(scalar(@_)){ push(@x," Ed."); }
   (@x ? ("(",@x,")") : ()); }
 
-# These two are used for generating the citation keys.
-# (Used to fill in the text of \cite{})
-sub do_cite_names { 
-  my(@names)=@_;
-  if(@names > 2){
-    my $name1 = $names[0];
-    my @fullnames = ();
-    while(@names){
-      my $name = shift(@names);
-      push(@fullnames,', ') if @names && @fullnames;
-      push(@fullnames,' and ') if !@names;
-      push(@fullnames, $name->childNodes); }
-    (['ltx:cite-names',{}, $name1->childNodes,' ',['ltx:emph',{},'et al.']],
-     ['ltx:cite-fullnames',{}, @fullnames]); }
-  elsif(@names > 1){
-  (['ltx:cite-names',{},$names[0]->childNodes,' and ',$names[1]->childNodes]); }
-  elsif(@names){
-    (['ltx:cite-names',{}, $names[0]->childNodes]); }}
-
-sub do_cite_year {
-  my($year_or_text)=@_;
-  (['ltx:cite-year',{rawyear=>(ref $year_or_text ? $year_or_text->textContent : $year_or_text),
-		     suffix=>$LaTeXML::Post::MakeBibliography::SUFFIX[0]},
-    (ref $year_or_text ? $year_or_text->childNodes : $year_or_text),
-    @LaTeXML::Post::MakeBibliography::SUFFIX]); }
-
-sub do_cite_title { (['ltx:cite-title',{},@_]); }
-
-sub do_cite_number { (['ltx:cite-number',{},$LaTeXML::Post::MakeBibliography::NUMBER]); }
-
-# Other fields.
 sub do_year { ('(',@_,@LaTeXML::Post::MakeBibliography::SUFFIX,')'); }
 sub do_type { ('(',@_,')'); }
-sub do_date { @_; }
+
+# Other fields.
 sub do_title { (['ltx:text',{font=>'italic'},@_]); }
 sub do_bold  { (['ltx:text',{font=>'bold'},@_]); }
 sub do_edition { (@_," edition"); } # If a number, should convert to cardinal!
@@ -273,9 +311,9 @@ sub do_thesis_type { @_; }
 sub do_pages { (" pp.\N{NO-BREAK SPACE}",@_); } # Non breaking space
 
 our $LINKS;
-BEGIN{
+#BEGIN{
     $LINKS = "ltx:bib-links | ltx:bib-review | ltx:bib-identifier | ltx:bib-url";
-}
+#}
 
 sub do_links {
   my(@nodes)=@_;
@@ -304,27 +342,22 @@ sub do_links {
 # ================================================================================
 # Formatting specifications.
 # Adpated from amsrefs.sty
-BEGIN{
+#BEGIN{
 
-# Structure is:
-#  type => [block_format, ...]
-#  block_format = [block_name, fieldformat,...]
-#  fieldformat == [xpath, punct, prestring, operatorname, poststring]
-# The first block should typically be 'tag', the rest 'bibblock'.
+# For each bibliographic type, 
+# the specification is an array representing each bibblock.
+# Each biblock is an array of field specifications.
+# Each field specification is:
+#   [xpath, punct, prestring, operatorname, poststring]
+# NOTE That the first block is only shown for numeric style,
+# since otherwise athors will already be shown in the bibtag@refnum!!!
+# Ugh...
 
 %FMT_SPEC=
-  (article=>[ ['ltx:tag',
-	       ['ltx:bib-author'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-date'     , ' ' , '', \&do_year,'']],
-	      ['ltx:bib-citekeys',
-	       ['ltx:bib-author/ltx:surname','', '', \&do_cite_names,''],
-	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
-	       ['ltx:bib-title',             '', '', \&do_cite_title,''],
-	       ['true',                      '', '', \&do_cite_number,'']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-part'     , ''  , '', \&do_any,''],
+  (article=> [[['ltx:bib-author'   , ''  , '', \&do_authors,''],
+	       ['ltx:date'         , ''  , '', \&do_year,'']],
+	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
+	      [['ltx:bib-part'     , ''  , '', \&do_any,''],
 	       ['ltx:bib-journal'  , ', ', '', \&do_any,''],
 	       ['ltx:bib-volume'   , ' ' , '', \&do_bold,''],
 	       ['ltx:bib-number'   , ' ' , '(', \&do_any,')'],
@@ -332,23 +365,13 @@ BEGIN{
 	       ['ltx:bib-pages'    , ', ', '', \&do_pages,''],
 	       ['ltx:bib-language' , ' ' , '(', \&do_any,')'],
 	       ['true'             , '.']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-note'     ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bibblock',
-	       [$LINKS             ,'', 'External Links: ',\&do_links,'']]],
-   book=>   [ ['ltx:tag',
-	       ['ltx:bib-author'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-editor'   , ', ', '', \&do_editorsA,''],
-	       ['ltx:bib-date'     , ' ' , '', \&do_year,'']],
-	      ['ltx:bib-citekeys',
-	       ['ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname','', '', \&do_cite_names,''],
-	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
-	       ['ltx:bib-title',             '', '', \&do_cite_title,''],
-	       ['true',                      '', '', \&do_cite_number,'']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-type'     , ''  , '', \&do_any,''],
+	      [['ltx:bib-note'     ,'', "Note: ",\&do_any,'']],
+	      [[$LINKS             ,'', 'External Links: ',\&do_links,'']]],
+   book=>   [ [['ltx:bib-author'   , ''  , '', \&do_authors,''],
+	       ['ltx:bib-editor'   , ''  , '', \&maybe_editorsA,''],
+	       ['ltx:date'         , ''  , '', \&do_year,'']],
+	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
+	      [['ltx:bib-type'     , ''  , '', \&do_any,''],
 	       ['ltx:bib-booktitle', ', ', '', \&do_title,''],
 	       ['ltx:bib-edition'  , ', ', '', \&do_edition,''],
 	       ['ltx:bib-series'   , ', ', '', \&do_any,''],
@@ -360,26 +383,15 @@ BEGIN{
 	       ['ltx:bib-status'   , ' ' , '(',\&do_any,')'],
 	       ['ltx:bib-language' , ' ' , '(',\&do_any,')'],
 	       ['true','.']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bibblock',
-	       [$LINKS          ,'', 'External Links: ',\&do_links,'']]],
+	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
+	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
    'collection.article'=>[
-	      ['ltx:tag',
-	       ['ltx:bib-author'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-date'     , ' ' , '', \&do_year,'']],
-	      ['ltx:bib-citekeys',
-	       ['ltx:bib-author/ltx:surname','', '', \&do_cite_names,''],
-	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
-	       ['ltx:bib-title',             '', '', \&do_cite_title,''],
-	       ['true',                      '', '', \&do_cite_number,'']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-type'     , ''  , '', \&do_any,''],
+	      [['ltx:bib-author'   , ''  , '', \&do_authors,''],
+	       ['ltx:date'         , ''  , '', \&do_year,'']],
+	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
+	      [['ltx:bib-type'     , ''  , '', \&do_any,''],
 	       ['ltx:bib-booktitle', ' ' , 'in ', \&do_title,',']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-edition'  , ''  , '', \&do_edition,''],
+	      [['ltx:bib-edition'  , ''  , '', \&do_edition,''],
 	       ['ltx:bib-editor'   , ', ', '', \&do_editorsB,''],
 	       ['ltx:bib-series'   , ', ', '', \&do_any,''],
 	       ['ltx:bib-volume'   , ', ', 'Vol. ',\&do_any,''],
@@ -391,26 +403,15 @@ BEGIN{
 	       ['ltx:bib-status'   , ' ' , '(',\&do_any,')'],
 	       ['ltx:bib-language' , ' ' , '(', \&do_any,')'],
 	       ['true','.']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bibblock',
-	       [$LINKS          ,'', 'External Links: ',\&do_links,'']]],
-   report=>[  ['ltx:tag',
-	       ['ltx:bib-author'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-editor'   , ', ', '', \&do_editorsA,''],
-	       ['ltx:bib-date'     , ' ' , '', \&do_year,'']],
-	      ['ltx:bib-citekeys',
-	       ['ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname','', '', \&do_cite_names,''],
-	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
-	       ['ltx:bib-title',             '', '', \&do_cite_title,''],
-	       ['true',                      '', '', \&do_cite_number,'']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-type'     , ''  , '', \&do_any,''],
+	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
+	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
+   report=>[  [['ltx:bib-author'   , ''  , '', \&do_authors,''],
+	       ['ltx:bib-editor'   , ''  , '', \&maybe_editorsA,''],
+	       ['ltx:date'         , ''  , '', \&do_year,'']],
+	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
+	      [['ltx:bib-type'     , ''  , '', \&do_any,''],
 	       ['ltx:bib-booktitle', ', ', ' in ',\&do_title,',']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-number'   , ''  , 'Technical Report ',\&do_any,''],
+	      [['ltx:bib-number'   , ''  , 'Technical Report ',\&do_any,''],
 	       ['ltx:bib-series'   , ', ', '',\&do_any,''],
 	       ['ltx:bib-volume'   , ', ', 'Vol. ',\&do_any,''],
 	       ['ltx:bib-part'     , ', ', 'Part ',\&do_any,''],
@@ -421,67 +422,37 @@ BEGIN{
 	       ['ltx:bib-status'   , ', ', '(',\&do_any,')'],
 	       ['ltx:bib-language' , ' ' , '(',\&do_any,')'],
 	       ['true','.']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bibblock',
-	       [$LINKS          ,'','External Links: ',\&do_links,'']]],
-   thesis=>[  ['ltx:tag',
-	       ['ltx:bib-author', ''  , '', \&do_authors,''],
-	       ['ltx:bib-editor'   , ', ', '', \&do_editorsA,''],
-	       ['ltx:bib-date'     , ' ' , '', \&do_year,'']],
-	      ['ltx:bib-citekeys',
-	       ['ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname','', '', \&do_cite_names,''],
-	       ['ltx:bib-date',              '', '', \&do_cite_year,''],
-	       ['ltx:bib-title',             '', '', \&do_cite_title,''],
-	       ['true',                      '', '', \&do_cite_number,'']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-type'     , ' ' , '',\&do_thesis_type,''],
+	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
+	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
+   thesis=>[  [['ltx:bib-author'   , ''  , '', \&do_authors,''],
+	       ['ltx:bib-editor'   , ''  , '', \&maybe_editorsA,''],
+	       ['ltx:date'         , ''  , '', \&do_year,'']],
+	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
+	      [['ltx:bib-type'     , ' ' , '',\&do_thesis_type,''],
 	       ['ltx:bib-part'     , ', ', 'Part ',\&do_any,''],
 	       ['ltx:bib-institution',', ','',\&do_any,''],
 	       ['ltx:bib-place'    , ', ', '',\&do_any,''],
 	       ['ltx:bib-status'   , ', ', '(',\&do_any,')'],
 	       ['ltx:bib-language' , ', ', '(',\&do_any,')'],
 	       ['true','.']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bibblock',
-	       [$LINKS          ,'','External Links: ',\&do_links,'']]],
-   website=>[ ['ltx:tag',
-	       ['ltx:bib-title'     ,  ''  , '', \&do_any, ''],
-	       ['true'      , ' '  , '(Website)']],
-	      ['ltx:bib-citekeys',
-	       ['ltx:bib-title',   '', '', \&do_cite_names,''],
-	       ['true',            '', '(Website)'],
-	       ['true',                      '', '', \&do_cite_number,'']],
-#	      ['ltx:bibblock',
-#	       ['ltx:bib-url',     '', '', sub { (['a',{href=>$_[0]->textContent},'Website']); },'']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-organization',', ',' ', \&do_any,''],
+	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
+	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
+   website=>[ [['ltx:title'        , ''  , '', \&do_any,''],
+	       ['true'             , ''  , '', '(Website)']],
+##	      [['ltx:bib-url',     '', '', sub { (['a',{href=>$_[0]->textContent},'Website']); },'']],
+	      [['ltx:bib-organization',', ',' ', \&do_any,''],
 	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
 	       ['true','.']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bibblock',
-	       [$LINKS          ,'','External Links: ',\&do_links,'']]],
-   software=>[['ltx:tag',
-	       ['ltx:bib-key'       ,  ''  , '', \&do_any, ''],
-	       ['ltx:bib-type'      , ' '  , '', \&do_type, '']],
-	      ['ltx:bib-citekeys',
-	       ['ltx:bib-key',         '', '', \&do_cite_names,''],
-	       ['ltx:bib-type',        '', '', \&do_cite_year,''],
-	       ['true',                      '', '', \&do_cite_number,'']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-title'     ,  ''  , '', \&do_any, '']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-organization',', ',' ', \&do_any,''],
+	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
+	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
+   software=>[[['ltx:bib-key'       , ''  , '', \&do_any,''],
+	       ['ltx:bib-type'      , ''  , '', \&do_type,'']],
+	      [['ltx:bib-title'     ,  ''  , '', \&do_any, '']],
+	      [['ltx:bib-organization',', ',' ', \&do_any,''],
 	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
 	       ['true','.']],
-	      ['ltx:bibblock',
-	       ['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      ['ltx:bibblock',
-	       [$LINKS          ,'','External Links: ',\&do_links,'']]],
+	      [['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
+	      [[$LINKS          ,'','External Links: ',\&do_links,'']]],
 
 );
 
@@ -497,7 +468,7 @@ $FMT_SPEC{inproceedings} = $FMT_SPEC{'collection.article'};
 $FMT_SPEC{inbook} = $FMT_SPEC{'collection.article'};
 $FMT_SPEC{techreport}  = $FMT_SPEC{report};
 
-}
+#}
 
 # ================================================================================
 1;

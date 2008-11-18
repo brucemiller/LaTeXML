@@ -121,7 +121,8 @@ DefMacro('\end{}',  sub {
 # Because of the way we `move information', revertable and pre-processed,
 # I don't think we actually need to do anything ... 
 # [Course that means we're not _really_ TeX!]
-DefMacro('\protect',undef);
+
+Let(T_CS('\protect'),T_CS('\relax'));
 
 #======================================================================
 # C.1.4 Declarations
@@ -1868,7 +1869,8 @@ DefConstructor('\bibliography Semiverbatim',
 		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
 		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID')))); });
 DefMacro('\refname','References');
-DefPrimitive('\bibliographystyle{}', undef);
+DefPrimitive('\bibstyle{}', undef);
+DefMacro('\bibliographystyle{}', '\bibstyle{#1}');
 DefEnvironment('{thebibliography}{}',
 	       "<ltx:bibliography xml:id='#id'>"
 	       . "<ltx:title>#refname</ltx:title>"
@@ -1885,7 +1887,7 @@ DefEnvironment('{thebibliography}{}',
 # NOTE: 
 DefMacro('\the@bibitem','\arabic{enumiv}');
 DefConstructor('\bibitem[] Semiverbatim',
-	       "<ltx:bibitem key='#key' xml:id='#id'><ltx:tag open='[' close=']'>#tag</ltx:tag><ltx:bibblock>",
+	       "<ltx:bibitem key='#key' xml:id='#id'><ltx:bibtag role='refnum' open='[' close=']'>#tag</ltx:bibtag><ltx:bibblock>",
 	       afterDigest=>sub {
 		 my $tag = $_[1]->getArg(1);
 		 my $key = CleanBibKey($_[1]->getArg(2));
@@ -1903,42 +1905,70 @@ DefConstructor('\newblock',"<ltx:bibblock>");
 Tag('ltx:bibitem', autoClose=>1);
 Tag('ltx:bibblock', autoClose=>1);
 
-# Here's an annoyance: The case of the keys have to agree in LaTeX,
-# but can be different from the BibTeX!!!
-# (bibtex matches case insensitively)
-# Only sane solution is to downcase the keys in both places.
-sub makecite {
-  my($parenthesized,$show, $document,$phrase1,$phrase2,$refs,%props)=@_;
-  $refs = CleanBibKey($refs);
-  my($pre,$post)=(defined $phrase1 && defined $phrase2
-		  ? ($phrase1,$phrase2)
-		  : (undef,   $phrase1));
-  $document->openElement('ltx:cite');
-  $document->openText('[',$props{font}) if $parenthesized;
-  if($pre){
-    $document->openText('(',$props{font}) unless $parenthesized;
-    $document->absorb($pre);
-    $document->openText(($parenthesized ? ', ' : ')'),$props{font}); }
-  $document->insertElement('ltx:bibref',undef,bibrefs=>$refs, show=>$show);
-  if($post){
-    $document->openText(($parenthesized ? ', ' : '('),$props{font});
-    $document->absorb($post);
-    $document->openText(')',$props{font}) unless $parenthesized; }
-  $document->openText(']',$props{font}) if $parenthesized;
-  $document->closeElement('ltx:cite'); }
+#----------------------------------------------------------------------
+# We've got the same problem as LaTeX: Lather, Rinse, Repeat.
+# It would be nice to know the bib info at digestion time
+#  * whether author lists will collapse
+#  * whether there are "a","b".. extensions on the year.
+# We could process the bibliography first, (IF it is a separate *.bib!)
+# but won't know which entries are included (and so can't resolve the a/b/c..)
+# until we've finished looking at (all of) the source(s) that will refer to them!
+#
+# We can do this in 2 passes, however
+#  (1) convert (latexml) both the source document(s) and the bibliography
+#  (2) extract the required bibitems and integrate (latexmlpost) it into the documents.
+# [Note that for mult-document sites, step (2) becomes 2 stages: scan and integrate]
+#
+# Here's the general layout.
+#   <ltx:cite> contains everything that the citations produce,
+#     including parens, pre-note, punctunation that precede the <ltx:bibcite>
+#     and punctuation, post-note, parens, that follow it.
+#   <ltx:bibcite show="string" bibrefs="keys" sep="" yysep="">phrases</ltx:bibcite>
+#     encodes the actual citation.
+#
+#     bibrefs : lists the bibliographic keys that will be used
+#     show    : gives the pattern for formatting using data from the bibliography
+#       It can contain:
+#         authors or fullauthors
+#         year
+#         number
+#         phrase1,phrase2,... selects one of the phrases from the content of the <ltx:bibref>
+#     This format is used as follows:
+#       If author and year is present, and a subset of the citations share the same authors,
+#         then the format is used, but the year is repeated for each citation in the subset,
+#         as a link to the bib entry.
+#       Otherwise, the format is applied to each entry.
+#
+# The design is intended to support natbib, as well as plain LaTeX.
 
-# Most of this is really natbib style.
-DefConstructor('\cite [][] Semiverbatim',      sub { makecite(1,undef,@_); });
-DefConstructor('\citet[][] Semiverbatim',      sub { makecite(0,undef,@_); });
-DefConstructor('\citep[][] Semiverbatim',      sub { makecite(1,undef,@_); });
-DefConstructor('\citeauthor[][] Semiverbatim', sub { makecite(0,'author',@_); });
-DefConstructor('\citeyear[][] Semiverbatim',   sub { makecite(0,'year',@_); });
-DefConstructor('\citeyearpar[][] Semiverbatim',sub { makecite(1,'year',@_); });
+AssignValue(CITE_OPEN=>T_OTHER('['));
+AssignValue(CITE_CLOSE=>T_OTHER(']'));
+AssignValue(CITE_SEPARATOR=>T_OTHER(','));
+AssignValue(CITE_YY_SEPARATOR=>T_OTHER(','));
+AssignValue(CITE_NOTE_SEPARATOR=>T_OTHER(','));
 
-DefConstructor('\nocite Semiverbatim', ''); # Eventually needs to be recognized by MakeBibliography
-# Ignore for now...
-DefPrimitive('\defcitealias Semiverbatim {}',undef);
-DefMacro('\citetalias Semiverbatim','\citet{#1}');
+DefConstructor('\@@cite{}',"<ltx:cite>#1</ltx:cite>");
+
+DefConstructor('\@@bibref{} Semiverbatim {}{}',
+	       "<ltx:bibref show='#1' bibrefs='#bibrefs'"
+	       .          " separator='#separator' yyseparator='#yyseparator'>#3#4</ltx:bibref>",
+	      properties=>sub { (bibrefs=>CleanBibKey($_[2]),
+				 separator=>ToString(Digest(LookupValue('CITE_SEPARATOR'))),
+				 yyseparator=>ToString(Digest(LookupValue('CITE_YY_SEPARATOR')))); });
+DefConstructor('\@@citephrase{}',"<ltx:text>#1</ltx:text>");
+
+DefMacro('\cite[] Semiverbatim', sub {
+  my($gullet,$post,$keys)=@_;
+  my($open,$close,$ns)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
+  $post = undef unless $post && $post->unlist;
+  Invocation(T_CS('\@@cite'),
+	     Tokens($open->unlist,
+		    Invocation(T_CS('\@@bibref'),T_OTHER("Number"),$keys, undef,undef)->unlist,
+		    ($post ? ($ns->unlist,T_SPACE,$post->unlist):()),$close->unlist)); });
+
+# NOTE: Eventually needs to be recognized by MakeBibliography
+DefConstructor('\nocite Semiverbatim', '');
+
 DefMacro('\citation{}','');
 
 #======================================================================
@@ -2706,6 +2736,8 @@ Let(T_CS('\MakeLowercase'),T_CS('\lowercase'));
 #======================================================================
 
 DefMacro('\@ehc',"I can't help");
+
+DefMacro('\@gobble{}','');
 
 sub make_message {
   my($cs,@args)=@_;
