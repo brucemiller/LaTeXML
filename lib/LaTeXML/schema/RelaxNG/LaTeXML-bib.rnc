@@ -252,7 +252,16 @@ element bibitem {
   Common.attributes,
   ID.attributes,
   attribute key { text }?,
-  tag?, bibblock* }
+  bibtag*, bibblock* }
+
+bibtag =
+## Various formatted tags for bibliographic items.
+## Typically @role refnum is shown in the displayed bibliography, 
+## other roles (number, authors, fullauthors, year, title) may be extracted
+## for generating citations.
+element bibtag {
+  attribute role { text }?,
+  Inline.model }
 
 bibblock =
 ## A block of data appearing within a \elementref{bibitem}.

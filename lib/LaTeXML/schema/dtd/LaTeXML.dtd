@@ -1381,12 +1381,19 @@
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
-<!ELEMENT bibitem (tag?,bibblock*)>
+<!ELEMENT bibitem (bibtag*,bibblock*)>
 <!ATTLIST bibitem
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
   xml:id ID #IMPLIED
   key CDATA #IMPLIED>
+
+<!ELEMENT bibtag (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
+                  |Math|inline-block|verbatim|break|graphics|tabular
+                  |picture|note|indexmark|ERROR)*>
+<!ATTLIST bibtag
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  role CDATA #IMPLIED>
 
 <!ELEMENT bibblock (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics

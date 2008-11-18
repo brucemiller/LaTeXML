@@ -5,9 +5,15 @@
   <public publicId="-//NIST LaTeXML//LaTeXML article"
           uri="dtd/LaTeXML.dtd"/>
 
-  <public publicId="-//NIST LaTeXML//LaTeXML DLMF Chapter" 
-          uri="dtd/DLMF.dtd"/>
-  <system systemId="LaTeXML.rng" uri="RelaxNG/LaTeXML.rng"/>
-  <system systemId="DLMF.rng" uri="RelaxNG/DLMF.rng"/>
+  <system systemId="LaTeXML.rng"           uri="RelaxNG/LaTeXML.rng"/>
+  <system systemId="LaTeXML-common.rng"    uri="RelaxNG/LaTeXML-common.rng"/>
+  <system systemId="LaTeXML-bib.rng"       uri="RelaxNG/LaTeXML-bib.rng"/>
+  <system systemId="LaTeXML-block.rng"     uri="RelaxNG/LaTeXML-block.rng"/>
+  <system systemId="LaTeXML-inline.rng"    uri="RelaxNG/LaTeXML-inline.rng"/>
+  <system systemId="LaTeXML-math.rng"      uri="RelaxNG/LaTeXML-math.rng"/>
+  <system systemId="LaTeXML-para.rng"      uri="RelaxNG/LaTeXML-para.rng"/>
+  <system systemId="LaTeXML-picture.rng"   uri="RelaxNG/LaTeXML-picture.rng"/>
+  <system systemId="LaTeXML-structure.rng" uri="RelaxNG/LaTeXML-structure.rng"/>
+  <system systemId="LaTeXML-tabular.rng"   uri="RelaxNG/LaTeXML-tabular.rng"/>
 </catalog>
 
