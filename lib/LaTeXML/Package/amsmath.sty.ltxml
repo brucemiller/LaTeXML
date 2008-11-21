@@ -64,7 +64,8 @@ Let('\notag','\nonumber');
 
 DefConstructor('\tag OptionalMatch:* {}', '',
 	       afterDigest=>sub {
-		 AssignValue(EQUATIONROW_NUMBER=>ToString(Digest($_[2])), 'global'); },
+#		 AssignValue(EQUATIONROW_NUMBER=>ToString(Digest($_[2])), 'global'); },
+		 AssignValue(EQUATIONROW_NUMBER=>ToString($_[2]), 'global'); },
 	       mode=>'text');
 
 DefMacro('\@ams@intertext{}',
