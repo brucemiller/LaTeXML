@@ -410,7 +410,9 @@ DefConstructor('\NAT@@wrout{}{}{}{}{} Semiverbatim',
 	       ."?#2(<ltx:bibtag role='year'>#2</ltx:bibtag>)"
 	       ."?#3(<ltx:bibtag role='authors'>#3</ltx:bibtag>)"
 	       ."?#4(<ltx:bibtag role='fullauthors'>#4</ltx:bibtag>)"
-	       ."?#5(<ltx:bibtag role='refnum'>#5</ltx:bibtag>)"
+	       ."?#5(<ltx:bibtag role='refnum'>#5</ltx:bibtag>)",
+	       # Allow plain & in here ???
+	       bounded=>1, beforeDigest=>sub{ Let(T_ALIGN,T_CS('\&')); }
 	      );
 
 DefConstructor('\@@lbibitem Semiverbatim',
