@@ -1893,8 +1893,15 @@ DefEnvironment('{thebibliography}',
 		 ResetCounter('enumiv');
 		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
 		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
-		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  });
+		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  
+		 # Since SOME people seem to write bibliographies w/o \bibitem,
+		 # just blank lines between apparent entries,
+		 # this HACK seems to fix it.
+		 # Does it screw up valid bibliographies?
+		 Let(T_CS('\par'),T_CS('\non@bibitem')); });
 
+# A bibitem with now key or label...
+DefMacro('\non@bibitem','\bibitem{}');
 
 # NOTE: 
 DefMacro('\the@bibitem','\arabic{enumiv}');
