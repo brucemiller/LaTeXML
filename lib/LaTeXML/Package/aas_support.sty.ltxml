@@ -385,8 +385,10 @@ DefMacro('\tableline','\hline');
 # Same problem in LaTeX.pool...
 # In general the mark & text _could_ come in either order...
 # so, it really has to be at end of processing (rewrite?)
-DefConstructor('\tablenotemark{}',""); # ????
-DefConstructor('\tablenotetext{}{}',
+DefMacro('\tablenotemark{}','');
+#DefConstructor('\tablenotemark{}',""); # ????
+DefMacro('\tablenotetext{}{}','\@tablenotetext{$\mathrm{#1}$}{#2}');
+DefConstructor('\@tablenotetext{}{}',
 	       "<ltx:note class='footnote' ?#1(mark='#1')>#2</ltx:note>",
 	       mode=>'text');
 
