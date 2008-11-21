@@ -1867,7 +1867,8 @@ DefMacro('\bibname','Bibliography');
 
 DefMacro('\thebibliography@ID','');
 # NOTE: Not really complete, since I haven't dealt with bibliographies!
-DefConstructor('\bibliography Semiverbatim',
+DefMacro('\bibliography Semiverbatim', '\ifx.#1.\else\@bibliography{#1}\fi');
+DefConstructor('\@bibliography Semiverbatim',
 	       "<ltx:bibliography files='#1' xml:id='#id'/>",
 	       afterDigest=>sub { 
 		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
