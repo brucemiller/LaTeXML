@@ -288,7 +288,7 @@ DefMacro('\plottwo Semiverbatim Semiverbatim',
 
 # \plotfiddle{epsfile}{vsize}{rot}{hsf}{vsf}{htrans}{vtrans}
 # Ugh...
-DefMacro('\plotfiddle Semiverbatim {}{}{}{}{}{}','\includegraphics[height={#2},width={#6}]{#1}');
+DefMacro('\plotfiddle Semiverbatim {}{}{}{}{}{}','\includegraphics[width=#4pt,height=#5pt]{#1}');
 
 #======================================================================
 # 2.14.2 Figure Captions
