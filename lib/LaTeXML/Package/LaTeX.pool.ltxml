@@ -1874,12 +1874,18 @@ DefConstructor('\bibliography Semiverbatim',
 DefMacro('\refname','References');
 DefPrimitive('\bibstyle{}', undef);
 DefMacro('\bibliographystyle{}', '\bibstyle{#1}');
-DefEnvironment('{thebibliography}{}',
+DefEnvironment('{thebibliography}',
 	       "<ltx:bibliography xml:id='#id'>"
 	       . "<ltx:title>#refname</ltx:title>"
 	       . "<ltx:biblist>#body</ltx:biblist>"
 	       ."</ltx:bibliography>",
 	       afterDigestBegin=>sub { 
+		 my($stomach)=@_;
+		 # NOTE that in some perverse situations (revtex?)
+		 # it seems to be allowable to omit the argument
+		 # It's ignorable for latexml anyway, so we'll just read it if its there.
+		 my $gullet = $stomach->getGullet;
+		 $gullet->readArg if $gullet->ifNext(T_BEGIN);
 		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
 		 ResetCounter('enumiv');
 		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
