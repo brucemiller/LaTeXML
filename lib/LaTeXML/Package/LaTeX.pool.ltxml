@@ -825,10 +825,12 @@ DefConstructor('\(' ,
 	       captureBody=>1);
 DefConstructor('\)'   ,"", beforeDigest=> sub{ $_[0]->endMode('inline_math'); });
 
-DefMacro('\ensuremath{}', sub {
+# Keep from expanding too early, if in alignments, or such.
+DefMacro('\ensuremath', '\protect\@ensuremath');
+DefMacro('\@ensuremath{}', sub {
   my($gullet,$stuff)=@_;
-  if(LookupValue('IN_MATH')){ @$stuff; }
-  else { (T_MATH,@$stuff,T_MATH); }});
+  if(LookupValue('IN_MATH')){ $stuff->unlist; }
+  else { (T_MATH,$stuff->unlist,T_MATH); }});
 
 # ========================================
 # eqnarray, etal
