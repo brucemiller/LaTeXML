@@ -2475,7 +2475,7 @@ DefPrimitive('\@add@frontmatter {} OptionalKeyVals {}', sub {
   my $frontmatter = LookupValue('frontmatter');
   my $inpreamble = LookupValue('inPreamble');
   AssignValue(inPreamble=>0);
-  my $datum = Digest($tokens);
+  my $datum = Digest(Tokens(T_BEGIN,$tokens->unlist,T_END));
   AssignValue(inPreamble=>$inpreamble);
   push(@{$$frontmatter{$tag}},[$tag,$attr,$datum]);
   return; });
@@ -2493,7 +2493,7 @@ DefPrimitive('\@add@to@frontmatter {} [] {}', sub {
 
   my $inpreamble = LookupValue('inPreamble');
   AssignValue(inPreamble=>0);
-  my $datum = Digest($tokens);
+  my $datum = Digest(Tokens(T_BEGIN,$tokens->unlist,T_END));
   AssignValue(inPreamble=>$inpreamble);
 
   if($label){
