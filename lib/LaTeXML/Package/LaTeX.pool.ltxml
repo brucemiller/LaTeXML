@@ -993,15 +993,18 @@ sub eqnarrayRegroupEquations {
   # However, if some of these start with a relation,
   # presumably it's a single equation. (?)
   # [Another heuristic might be the presence of \left. or \right.?]
+  my $t;
   if($nL && !$nM && !$nR){	# All LHS!
-    if(grep( (($$_{cols}[0]->firstChild->getAttribute('role') || '') eq 'RELOP'),@rows)){
+    if(grep( ($t=$$_{cols}[0])&&($t=$t->firstChild)&& (($t->getAttribute('role') || '') eq 'RELOP'),
+	     @rows)){
       eqnarrayJoinRows($document,$equationgroup,map($$_{node},@rows)); }
     else {
       foreach my $row (@rows){
 	equationgroupJoinCols($document,3,$$row{node}); }}
     return; }
   if($nR && !$nM && !$nL){	# All RHS!
-    if(grep( (($$_{cols}[2]->firstChild->getAttribute('role') || '') eq 'RELOP'),@rows)){
+    if(grep( ($t=$$_{cols}[2])&&($t=$t->firstChild)&&(($t->getAttribute('role') || '') eq 'RELOP'),
+	     @rows)){
       eqnarrayJoinRows($document,$equationgroup,map($$_{node},@rows)); }
     else {
       foreach my $row (@rows){
@@ -1308,7 +1311,7 @@ DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [][]{}', sub {
 # and we really want to create unicode, we just ignore this stuff (but warn).
 sub ignoredDefinition {
   my($stomach,$command,$cs)=@_;
-  Warn(":unexpected:".ToString($cs)." ignoring $command definition of ".toString($cs)); }
+  Warn(":unexpected:".ToString($cs)." ignoring $command definition of ".ToString($cs)); }
 
 DefPrimitive('\DeclareTextAccent{}{}{}',
 	     sub { ignoredDefinition('DeclareTextAccent',$_[1]);});
