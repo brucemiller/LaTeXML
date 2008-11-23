@@ -1840,22 +1840,24 @@ DefPrimitive('\nofiles',undef);
 # Note that latex essentially allows redundant labels, but we can record only one!!!
 # No; next version. Find nearest that can accept a refnum attribute.
 # Or, better yet (more latex-like??) nearest that HAS a refnum!?!
-DefConstructor('\label Semiverbatim', sub {
-		 my($document,$label)=@_;
-		 $label = CleanLabel($label);
+DefConstructor('\label Semiverbatim',  sub {
+ 		 my($document,$olabel,%props)=@_;
+# 		 $label = CleanLabel($label);
+		 my $label = $props{label};
 ##		 my $savenode = $document->floatToAttribute('refnum');
-		 my $savenode = $document->floatToAttribute('labels');
-		 my $node = $document->getNode;
-		 my $prev = $node->getAttribute('labels');
-		 $document->setAttribute($node,labels=>($prev ? $prev." ".$label : $label)); 
-		 $document->setNode($savenode); },
-
-###	       "^ label='#1'",
+ 		 my $savenode = $document->floatToAttribute('labels');
+ 		 my $node = $document->getNode;
+ 		 my $prev = $node->getAttribute('labels');
+ 		 $document->setAttribute($node,labels=>($prev ? $prev." ".$label : $label)); 
+ 		 $document->setNode($savenode); },
+###	       "^ labels='#label'",
 	       reversion=>'',
 	       properties=>{alignmentSkippable=>1},
 	       afterDigest=>sub {
-		 my $label = ToString($_[1]->getArg(1));
-		 my $scope = 'label:'.$label;
+#		 my $label = ToString($_[1]->getArg(1));
+		 my $label = CleanLabel(ToString($_[1]->getArg(1)));
+		 $_[1]->setProperty(label=>$label);
+		 my $scope = $label; $scope =~ s/^LABEL:/label:/;
 		 if(my $ctr = LookupValue('current_counter')){
 		   unshift(@{LookupValue('scopes_for_counter:'.$ctr)},$scope);
 		   $STATE->activateScope($scope);
@@ -1907,12 +1909,17 @@ DefEnvironment('{thebibliography}',
 		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  
 		 # Since SOME people seem to write bibliographies w/o \bibitem,
 		 # just blank lines between apparent entries,
-		 # this HACK seems to fix it.
-		 # Does it screw up valid bibliographies?
+		 # Making \par do a \bibitem{} works, but screws up valid
+		 # bibliographies with blank lines!
+		 # So, let's do some redirection!
+		 Let(T_CS('\save@bibitem'),T_CS('\bibitem'));
+		 Let(T_CS('\save@par'),T_CS('\par'));
+		 Let(T_CS('\bibitem'),T_CS('\tricky@bibitem'));
 		 Let(T_CS('\par'),T_CS('\non@bibitem')); });
 
 # A bibitem with now key or label...
-DefMacro('\non@bibitem','\bibitem{}');
+DefMacro('\tricky@bibitem','\let\bibitem\save@bibitem\let\par\save@par\bibitem'); # Redefine to normal bibitem
+DefMacro('\non@bibitem','\save@bibitem{}');
 
 # NOTE: 
 DefMacro('\the@bibitem','\arabic{enumiv}');
