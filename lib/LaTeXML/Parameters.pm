@@ -233,8 +233,9 @@ sub read {
     # EVEN if semiverbatim makes % into other!
     if(my $peek = $gullet->readToken){ $gullet->unread($peek); }
       $STATE->pushFrame;
-      map($STATE->assignCatcode($_=>CC_OTHER,'local'),
-	  '^','_','@','~','&','$','#','%'); }
+    map($STATE->assignCatcode($_=>CC_OTHER,'local'),
+	  '^','_','@','~','&','$','#','%',"'",' ');  # include space!
+    $STATE->assignCatcode('math:\''=>0,'local'); }
   my $value = &{$$self{reader}}($gullet,@{$$self{extra}||[]});
   $value = $value->neutralize if $$self{semiverbatim} && (ref $value)
     && $value->can('neutralize'); 

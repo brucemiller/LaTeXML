@@ -394,7 +394,9 @@ sub GenerateID {
 
 sub StartSemiverbatim() {
   $STATE->pushFrame;
-  map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%'); 
+  # include space!
+  map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%',"'",' '); 
+  $STATE->assignCatcode('math:\''=>0,'local');
   return; }
 
 sub EndSemiverbatim() {  $STATE->popFrame; }
