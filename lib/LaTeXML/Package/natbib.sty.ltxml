@@ -65,10 +65,10 @@ DefMacro('\cite[] Semiverbatim', sub {
   $post = undef unless $post && $post->unlist;
   if(LookupValue('CITE_STYLE') eq 'numbers'){
      Invocation(T_CS('\@@cite'),
-		Tokens($open->unlist,
-		       Invocation(T_CS('\@@bibref'),T_OTHER("Number"),$keys,undef,undef)->unlist,
-		       ($post ? ($ns->unlist,T_SPACE,$post->unlist):()),
-		       $close->unlist)); }
+		Tokens($open,
+		       Invocation(T_CS('\@@bibref'),T_OTHER("Number"),$keys,undef,undef),
+		       ($post ? ($ns,T_SPACE,$post):()),
+		       $close)); }
   else {
      Invocation(T_CS('\@@cite'),
 		Invocation(T_CS('\@@bibref'),
@@ -76,8 +76,7 @@ DefMacro('\cite[] Semiverbatim', sub {
 			   $keys,
 			   Invocation(T_CS('\@@citephrase'),$open),
 			   Invocation(T_CS('\@@citephrase'),
-				      Tokens(($post ? ($ns->unlist,T_SPACE,$post->unlist):()),
-					     $close->unlist)))); }
+				      Tokens(($post ? ($ns,T_SPACE,$post):()), $close)))); }
   });
 
 DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
@@ -89,7 +88,7 @@ DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
   my $author = ($star ? "FullAuthors" : "Authors");
   if(LookupValue('CITE_STYLE') eq 'numbers'){
      Invocation(T_CS('\@@cite'),
-		Tokens(($pre  ? ($pre->unlist,T_SPACE):()),
+		Tokens(($pre  ? ($pre,T_SPACE):()),
 		       Invocation(T_CS('\@@bibref'),
 				  T_OTHER("$author Phrase1NumberPhrase2"),
 				  $keys,
@@ -102,10 +101,9 @@ DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
 			   T_OTHER("$author Phrase1YearPhrase2"),
 			   $keys,
 			   Invocation(T_CS('\@@citephrase'),
-				      Tokens($open->unlist,($pre ? ($pre->unlist,T_SPACE):()))),
+				      Tokens($open,($pre ? ($pre,T_SPACE):()))),
 			   Invocation(T_CS('\@@citephrase'),
-				      Tokens(($post ? ($ns->unlist,T_SPACE,$post->unlist):()),
-					     $close->unlist)))); }
+				      Tokens(($post ? ($ns,T_SPACE,$post):()),$close)))); }
   });
 
 DefMacro('\citep OptionalMatch:* [][] Semiverbatim', sub {
@@ -118,20 +116,18 @@ DefMacro('\citep OptionalMatch:* [][] Semiverbatim', sub {
   my $author = ($star ? "FullAuthors" : "Authors");
   if(LookupValue('CITE_STYLE') eq 'numbers'){
      Invocation(T_CS('\@@cite'),
-		Tokens($open->unlist,($pre  ? ($pre->unlist,T_SPACE):()),
-		       Invocation(T_CS('\@@bibref'),
-				  T_OTHER("Number"),
-				  $keys, undef,undef)->unlist,
-		       ($post ? ($ns->unlist,T_SPACE,$post->unlist):()),$close->unlist)); }
+		Tokens($open,($pre  ? ($pre,T_SPACE):()),
+		       Invocation(T_CS('\@@bibref'),T_OTHER("Number"),$keys, undef,undef),
+		       ($post ? ($ns,T_SPACE,$post):()),$close)); }
   else {
      Invocation(T_CS('\@@cite'),
-		Tokens($open->unlist,($pre  ? ($pre->unlist,T_SPACE):()),
+		Tokens($open->unlist,($pre  ? ($pre,T_SPACE):()),
 		       Invocation(T_CS('\@@bibref'),
 				  T_OTHER("${author}Phrase1Year"),
 				  $keys,
 				  Invocation(T_CS('\@@citephrase'),$ay),
-				  undef)->unlist,
-		       ($post ? ($ns->unlist,T_SPACE,$post->unlist):()),$close->unlist)); }
+				  undef),
+		       ($post ? ($ns,T_SPACE,$post):()),$close)); }
   });
 
 #======================================================================
@@ -182,9 +178,9 @@ DefMacro('\citeyearpar Semiverbatim', sub {
   my($gullet,$keys)=@_;
   my($open,$close)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE));
   Invocation(T_CS('\@@cite'),
-	     Tokens($open->unlist,
-		    Invocation(T_CS('\@@bibref'),T_OTHER("Year"),$keys,undef,undef)->unlist,
-		    $close->unlist)); });
+	     Tokens($open,
+		    Invocation(T_CS('\@@bibref'),T_OTHER("Year"),$keys,undef,undef),
+		    $close)); });
 
 #======================================================================
 # 2.5 Forcing Upper Cased Name
@@ -223,12 +219,12 @@ DefMacro('\citepalias Semiverbatim', sub {
   my($gullet,$key)=@_;
   my($open,$close)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE));
   Invocation(T_CS('\@@cite'),
-	     Tokens($open->unlist,
+	     Tokens($open,
 		    Invocation(T_CS('\@@bibref'),
 			       T_OTHER("Phrase1"),
 			       $key,
 			       Invocation(T_CS('\@@citephrase'),T_CS('\al@'.ToString($key)))),
-		    $close->unlist)); });
+		    $close)); });
 
 #======================================================================
 # 2.9 Selecting Citation Punctuation
@@ -396,17 +392,15 @@ EOTeX
 # So, we'll do one extra step, and format the refnum form
 DefMacro('\NAT@wrout{}{}{}{} Semiverbatim', sub {
   my($gullet,$number,$year,$authors,$fullauthors,$key)=@_;
-  my $style = LookupValue('CITE_STYLE');
+  my($style,$open,$close)=map(LookupValue($_),qw(CITE_STYLE CITE_OPEN CITE_CLOSE));
   $style = 'number' unless $authors->unlist && $year->unlist;
   if($style eq 'number'){
     Invocation(T_CS('\NAT@@wrout'),$number,$year,$authors,$fullauthors,
-	       Tokens(LookupValue('CITE_OPEN')->unlist,$number->unlist,LookupValue('CITE_CLOSE')->unlist),
+	       Tokens($open,$number,$close),
 	       $key)->unlist; }
   else {
     Invocation(T_CS('\NAT@@wrout'),$number,$year,$authors,$fullauthors,
-	       Tokens($authors->unlist,T_SPACE,
-		      LookupValue('CITE_OPEN')->unlist,$year->unlist,
-		      LookupValue('CITE_CLOSE')->unlist),
+	       Tokens($authors,T_SPACE,$open,$year,$close),
 	       $key)->unlist; }});
 
 DefConstructor('\NAT@@wrout{}{}{}{}{} Semiverbatim',

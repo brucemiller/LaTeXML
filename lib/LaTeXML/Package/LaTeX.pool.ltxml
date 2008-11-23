@@ -1999,9 +1999,9 @@ DefMacro('\cite[] Semiverbatim', sub {
   my($open,$close,$ns)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
   $post = undef unless $post && $post->unlist;
   Invocation(T_CS('\@@cite'),
-	     Tokens($open->unlist,
-		    Invocation(T_CS('\@@bibref'),T_OTHER("Number"),$keys, undef,undef)->unlist,
-		    ($post ? ($ns->unlist,T_SPACE,$post->unlist):()),$close->unlist)); });
+	     Tokens($open,
+		    Invocation(T_CS('\@@bibref'),T_OTHER("Number"),$keys, undef,undef),
+		    ($post ? ($ns,T_SPACE,$post):()),$close)); });
 
 # NOTE: Eventually needs to be recognized by MakeBibliography
 DefConstructor('\nocite Semiverbatim', '');
