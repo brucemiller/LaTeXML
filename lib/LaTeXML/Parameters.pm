@@ -193,7 +193,9 @@ sub readArgumentsAndDigest {
 	    .($tok ? "; next is ".Stringify($tok) : " input is empty"));
       $gullet->unread($tok) if $tok; }
     if(!$$parameter{novalue}){
+      StartSemiverbatim() if $$parameter{semiverbatim}; # Corner case?
       $value = $value->beDigested($stomach) if (ref $value) && !$$parameter{undigested};
+      EndSemiverbatim() if $$parameter{semiverbatim}; # Corner case?
       push(@args,$value); }}
   @args; }
 
@@ -232,15 +234,12 @@ sub read {
     # Nasty Hack: If immediately followed by %, should discard the comment
     # EVEN if semiverbatim makes % into other!
     if(my $peek = $gullet->readToken){ $gullet->unread($peek); }
-      $STATE->pushFrame;
-    map($STATE->assignCatcode($_=>CC_OTHER,'local'),
-	  '^','_','@','~','&','$','#','%',"'",' ');  # include space!
-    $STATE->assignCatcode('math:\''=>0,'local'); }
+    StartSemiverbatim(); }
   my $value = &{$$self{reader}}($gullet,@{$$self{extra}||[]});
   $value = $value->neutralize if $$self{semiverbatim} && (ref $value)
     && $value->can('neutralize'); 
   if($$self{semiverbatim}){
-    $STATE->popFrame; }
+    EndSemiverbatim(); }
   $value; }
 
 #======================================================================

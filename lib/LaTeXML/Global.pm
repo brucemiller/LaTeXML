@@ -39,7 +39,8 @@ our  @EXPORT = (
 		   &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
 		   &T_CR
 		   &Token &Tokens
-		   &Tokenize &TokenizeInternal &Explode &UnTeX),
+		   &Tokenize &TokenizeInternal &Explode &UnTeX
+		   &StartSemiverbatim &EndSemiverbatim),
 	       # Number & Dimension constructors
 	       qw( &Number &Float &Dimension &MuDimension &Glue &MuGlue &Pair &PairList),
 	       # Error & Progress reporting
@@ -105,13 +106,26 @@ sub TokenizeInternal {
   local $LaTeXML::STATE = $STY_CATTABLE;
   LaTeXML::Mouth->new($string)->readTokens; }
 
+sub StartSemiverbatim() {
+  $LaTeXML::STATE->pushFrame;
+  # include space!
+  map($LaTeXML::STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%',"'",' ');
+  $LaTeXML::STATE->assignCatcode('math:\''=>0,'local');
+  return; }
+
+sub EndSemiverbatim() {  $LaTeXML::STATE->popFrame; }
+
 #======================================================================
 # Token List constructors.
 
 # Return a LaTeXML::Tokens made from the arguments (tokens)
 sub Tokens {
-  map( ((ref $_) && $_->isaToken)|| Fatal(":misdefined:<unknown> Expected Token, got ".Stringify($_)), @_);
-  LaTeXML::Tokens->new(@_); }
+  my(@tokens)=@_;
+  # Flatten any Tokens to Token's
+  @tokens = map( ( (((ref $_)||'') eq 'LaTeXML::Tokens') ? $_->unlist : $_), @tokens);
+  # And complain about any remaining Non-Token's
+  map( ((ref $_) && $_->isaToken)|| Fatal(":misdefined:<unknown> Expected Token, got ".Stringify($_)), @tokens);
+  LaTeXML::Tokens->new(@tokens); }
 
 # Explode a string into a list of tokens w/catcode OTHER (except space).
 sub Explode {
@@ -303,6 +317,10 @@ returning a L<LaTeXML::Tokens>.
 =item C<< @tokens = Explode($string); >>
 
 Returns a list of the tokens corresponding to the characters in C<$string>.
+
+=item C<< StartSemiVerbatim(); ... ; EndSemiVerbatim(); >>
+
+Desable disable most TeX catcodes.
 
 =back
 

@@ -48,8 +48,7 @@ our @EXPORT = (qw(&DefExpandable
 		  &RawTeX &Let),
 
 	       # Support for structured/argument readers
-	       qw(&ReadParameters &DefParameterType  &DefColumnType
-		  &StartSemiverbatim &EndSemiverbatim),
+	       qw(&ReadParameters &DefParameterType  &DefColumnType),
 
 	       # Access to State
 	       qw(&LookupValue &AssignValue
@@ -391,15 +390,6 @@ sub GenerateID {
 #======================================================================
 # Readers for reading various data types
 #======================================================================
-
-sub StartSemiverbatim() {
-  $STATE->pushFrame;
-  # include space!
-  map($STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%',"'",' '); 
-  $STATE->assignCatcode('math:\''=>0,'local');
-  return; }
-
-sub EndSemiverbatim() {  $STATE->popFrame; }
 
 sub Expand            { $STATE->getStomach->getGullet->expandTokens(@_); }
 
@@ -1977,10 +1967,6 @@ C<$proto> is the prototype for the pattern, analogous to the pattern
 used for other definitions, except that macro being defined is a single character.
 The C<$expansion> is a string specifying what it should expand into,
 typically more verbose column specification.
-
-=item C<< StartSemiVerbatim(); ... ; EndSemiVerbatim(); >>
-
-Reads an argument delimted by braces, while disabling most TeX catcodes.
 
 =back
 
