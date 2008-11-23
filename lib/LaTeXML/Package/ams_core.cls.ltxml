@@ -132,10 +132,9 @@ DefMacro('\subjclass[Default:1991]{}',
 # Normal LaTeX 
 
 # For compatibility
-RawTeX(<<'EOTeX');
-\newenvironment{pf}{\begin{proof}{Proof}}{\end{proof}}
-\newenvironment{pf*}[1]{\begin{proof}{#1}}{\end{proof}}
-EOTeX
+if(LookupValue('2.09_COMPATIBIITY')){
+  RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}');
+  RawTeX('\newenvironment{pf*}[1]{\begin{@proof}[#1]}{\end{@proof}'); }
 
 # Excersise environments ??:
 # xca "must be defined with \theoremstyle{definition} and \newtheorem ???
