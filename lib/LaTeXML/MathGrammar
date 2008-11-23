@@ -57,8 +57,20 @@ Anything : Formulae
 	 | anyop
 
 # a top level rule for sub and superscripts that can accept all sorts of junk.
-Subscript   : Formulae | relop | ADDOP | MULOP
-Superscript : Formulae | relop | ADDOP | MULOP | supops
+Subscript   : aSubscript   (PUNCT aSubscript {[$item[1],$item[2]]; })(s?)
+	         { NewList($item[1],map(@$_,@{$item[2]})); }
+
+Superscript : aSuperscript (PUNCT aSuperscript {[$item[1],$item[2]]; })(s?)
+	         { NewList($item[1],map(@$_,@{$item[2]})); }
+
+aSubscript   : Formulae
+ 	 | anyop Expression               { Apply($item[1],Absent(),$item[2]);}
+	 | anyop
+
+aSuperscript : supops
+	 | Formulae 
+ 	 | anyop Expression               { Apply($item[1],Absent(),$item[2]);}
+	 | anyop
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Formulae  (relations or grouping of expressions or relations)
@@ -127,7 +139,7 @@ relopExpr : relop Expression			{ [$item[1],$item[2]]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # `Modifier' formula, things like $<0$, that might follow another formula or text.
-# Empty is a placeholder for the missing thing... (?)
+# Absent() is a placeholder for the missing thing... (?)
 
 #modifierFormula : relopExpr(s) { NewFormula(Absent(),map(@{$_},@{$item[1]}));}
 modifierFormula : relop Expression punctExpr(s?) 
@@ -457,7 +469,7 @@ nestOperators :
 #  Useful combinations or subsets of terminals.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-anyop   : relop | METARELOP | ARROW | ADDOP | MULOP 
+anyop   : relop | METARELOP | ARROW | ADDOP | MULOP | MODIFIEROP
 	| preScripted['bigop']
 	| OPERATOR addScripts[$item[1]]
 
