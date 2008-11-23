@@ -30,6 +30,10 @@ no warnings 'redefine';
 #**********************************************************************
 # Basic \documentclass & \documentstyle
 
+AssignValue('2.09_COMPATIBIITY'=>0);
+DefMacro('\if@compatibility',sub { ifHandler($_[0],LookupValue('2.09_COMPATIBIITY')); },
+	 isConditional=>1);
+
 # Let's try just starting with this set (since we've loaded LaTeX)
 AssignValue(inPreamble=>1);	# \begin{document} will clear this.
 
@@ -56,6 +60,7 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
     my $options = $whatsit->getArg(1);
+    AssignValue('2.09_COMPATIBIITY'=>1);
     LoadClass(ToString($whatsit->getArg(2)),
 	      options=>[ ($options ? split(/,\s*/, ToString($options)) : ()) ],
 	      after=>Tokens(T_CS('\compat@loadpackages')));
@@ -766,14 +771,15 @@ DefConstructor('\@verb{}{}', "<ltx:verbatim font='#font'>#2</ltx:verbatim>",
 # C.7.1 Math Mode Environments
 #======================================================================
 DefEnvironment('{displaymath}', 
-	       "<ltx:equation>"
+	       "<ltx:equation xml:id='#id'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>"
 	       .   "#body"
 	       .  "</ltx:XMath>"
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
-	       mode=>'display_math');
+	       mode=>'display_math',
+	       properties=> sub { RefStepID('equation') });
 DefEnvironment('{math}',
 	       "<ltx:Math mode='inline'>"
 	       . "<ltx:XMath>"
@@ -906,8 +912,15 @@ DefConstructor('\@equationgroup@open@row SkipSpaces DigestedBody',
 
 # ========================================
 # Some special kinds of rows...
+DefMacro('\if@in@firstcolumn',sub {
+	   my $x = LookupValue('Alignment');
+	   $x = ($x ? $x->currentColumnNumber : 9);
+	   ifHandler($_[0],$x < 2); },
+	 isConditional=>1);
+# A bit more defensiveness, since people abuse eqnarray so badly.
+# Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
-	 '\if@in@alignment\multicolumn{3}{l}{$\displaystyle #1$\mbox{}}\else\rlap{$\displaystyle #1$}\fi');
+	 '\if@in@firstcolumn\multicolumn{3}{l}{$\displaystyle #1$\mbox{}}\else\rlap{$\displaystyle #1$}\fi');
 # \intertext (in amsmath)
 
 # ========================================
@@ -925,16 +938,13 @@ DefPrimitive('\@eqnarray@bindings', sub {
   eqnarrayBindings(); });
 
 sub eqnarrayBindings {
-  my $col1 = {before=>Tokens(T_CS('\hfil'),T_MATH,T_CS('\displaystyle')),
-	      after=>Tokens(T_MATH)};
-  my $col2 = {before=>Tokens(T_CS('\hfil'),T_MATH,T_CS('\displaystyle')),
-	      after=>Tokens(T_MATH,T_CS('\hfil'))};
-  my $col3 = {before=>Tokens(T_MATH,T_CS('\displaystyle')),
-	      after=>Tokens(T_MATH,T_CS('\hfil'))};
+  my $col1 = {before=>Tokens(T_CS('\hfil'),T_MATH,T_CS('\@hidden@bgroup'),T_CS('\displaystyle')),
+	      after=>Tokens(T_CS('\@hidden@egroup'),T_MATH)};
+  my $col2 = {before=>Tokens(T_CS('\hfil'),T_MATH,T_CS('\@hidden@bgroup'),T_CS('\displaystyle')),
+	      after=>Tokens(T_CS('\@hidden@egroup'),T_MATH,T_CS('\hfil'))};
+  my $col3 = {before=>Tokens(T_MATH,T_CS('\@hidden@bgroup'),T_CS('\displaystyle')),
+	      after=>Tokens(T_CS('\@hidden@egroup'),T_MATH,T_CS('\hfil'))};
   my $template = LaTeXML::AlignmentTemplate->new(columns=>[$col1,$col2,$col3]);
-#  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>'ltx:equationgroup',
-#						rowElement=>'ltx:equation',
-#						colElement=>'_Capture_');
   my $alignment = LaTeXML::Util::Alignment
     ->new(openContainer =>sub{ $_[0]->openElement('ltx:equationgroup',@_[1..$#_]); },
 	  closeContainer=>sub{ $_[0]->closeElement('ltx:equationgroup'); },
@@ -1045,7 +1055,8 @@ sub eqnarrayRegroupEquations {
       push(@{$eqs[$#eqs]},$$row{node}); }
   }
 
-  Warn(":unexpected:<eqnarray> Unrecognized equation patterns ($oddness) in eqnarray") if $oddness;
+  Warn(":unexpected:<eqnarray> Unrecognized equation patterns ($oddness) in eqnarray")
+    if (scalar(@rows) > 1) && $oddness;
   # Now rearrange things appropriately.
   foreach my $eqset (@eqs){
     my @subeqs = @$eqset;
@@ -2853,7 +2864,6 @@ RawTeX(<<'EOTeX');
 \newif\if@reversemargin \@reversemarginfalse
 \newif\if@mparswitch    \@mparswitchfalse
 \newcount\col@number    \@ne
-\newif\if@compatibility
 \newif\if@filesw \@fileswtrue
 \newif\if@partsw \@partswfalse
 EOTeX
