@@ -2060,7 +2060,8 @@ DefConstructor('\abovewithdelims Token Token Dimension',
 		  $whatsit->getProperty('bottom')->revert); });
 
 #======================================================================
-DefConstructor('\cal', '', requireMath=>1, font=>{family=>'caligraphic'});
+#DefConstructor('\cal', '', requireMath=>1, font=>{family=>'caligraphic'});
+DefConstructor('\cal', '', font=>{family=>'caligraphic'});
 
 # In principle, <ltx:emph> is a nice markup for emphasized.
 # Unfortunately, TeX really just treats it as a font switch.
@@ -3227,7 +3228,7 @@ DefConstructor('\hphantom{}',"?#isMath(<ltx:XMHint name='hphantom'/>)()",
 	      properties=>{isSpace=>1});
 DefConstructor('\vphantom{}',"?#isMath(<ltx:XMHint name='vphantom'/>)()",
 	      properties=>{isSpace=>1});
-DefConstructor('\mathstrut{}',"?#isMath(<ltx:XMHint name='mathstrut'/>)()",
+DefConstructor('\mathstrut',"?#isMath(<ltx:XMHint name='mathstrut'/>)()",
 	      properties=>{isSpace=>1});
 DefConstructor('\smash{}',"#1"); # well, what?
 
