@@ -77,7 +77,7 @@ DefMacro('\qedhere', sub {
   $t; });
 
 DefMacro('\proofname','Proof');
-DefEnvironment("{proof} []",
+DefEnvironment('{@proof} []',
 	       "<ltx:proof>"
 	       ."<ltx:title>#title</ltx:title>"
 	       ."#body"
@@ -99,6 +99,8 @@ DefEnvironment("{proof} []",
 		 ($qed ? Digest($qed) :()); }
 	      );
 
+if(! LookupValue('2.09_COMPATIBIITY')){
+  RawTeX('\newenvironment{proof}{\begin{@proof}}{\end{@proof}'); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # from older versions of amsthm.sty
