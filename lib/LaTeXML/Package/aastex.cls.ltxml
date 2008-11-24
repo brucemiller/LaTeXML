@@ -31,7 +31,7 @@ foreach my $option (qw(10pt 11pt 12pt
 DeclareOption('eqsecnum', sub { Digest(Tokenize('\AtEndOfClass{\eqsecnum}')); });
 
 DeclareOption(undef,sub {
-  PassOption('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
+  PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
 
 ProcessOptions();
 
