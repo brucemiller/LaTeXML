@@ -46,8 +46,9 @@ sub documentSchema {
   $model->registerNamespace(ltx=>"http://dlmf.nist.gov/LaTeXML");
   my $relaxng = $$model{schema} = LaTeXML::Model::RelaxNG->new($model,$name);
 
-  my @schema = $relaxng->scanExternal($name);
-  @schema = map($relaxng->simplify($_),@schema);
+##  my @schema = $relaxng->scanExternal($name);
+##  @schema = map($relaxng->simplify($_),@schema);
+  $relaxng->loadSchema;
 
   $relaxng->documentModules; }
 

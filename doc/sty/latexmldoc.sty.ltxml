@@ -2,7 +2,9 @@
 #======================================================================
 # Collected separately so I can override for LaTeXML
 #======================================================================
+package LaTeXML::Package::Pool;
 use LaTeXML::Package;
+
 RequirePackage('latexml');
 RequirePackage('graphicx');
 RequirePackage('hyperref');
@@ -15,6 +17,7 @@ DefMacro('\cmd {}','\texttt{#1}');
 DefMacro('\code {}','\texttt{#1}');
 DefMacro('\method {}','\texttt{->#1}');
 DefMacro('\attr {}','\texttt{#1}');
+DefMacro('\attrval {}','\texttt{#1}');
 DefMacro('\varfile[]{}','\texttt{\textit{#2}\ifx.#1.\else.#1\fi}');
 DefMacro('\cs{}','\texttt{\textbackslash #1}');
 
@@ -33,40 +36,54 @@ DefConstructor('\pod{}', "<ltx:ref href='#href' labelref='#ref'>#1</ltx:ref>",
 		   my $url = "http://search.cpan.org/search?query=$name&mode=module";
 		   $_[1]->setProperty(href=>$url); }});
 
+DefEnvironment('{moduledescription}',
+	       "<ltx:description  xml:id='#id' class='moduledescription'>#body</ltx:description>",
+	       properties=>sub { beginItemize('description'); });
+
+DefEnvironment('{elementdescription}',
+	       "<ltx:description  xml:id='#id' class='elementdescription'>#body</ltx:description>",
+	       properties=>sub { beginItemize('description'); });
+
+DefEnvironment('{patterndescription}',
+	       "<ltx:description  xml:id='#id' class='patterndescription'>#body</ltx:description>",
+	       properties=>sub { beginItemize('description'); });
+
 RawTeX(<<'EOTeX');
 % For generated documentation of Schema.
-\newenvironment{schemamodule}[1]{%
-  \section*{Module \texttt{#1}}\label{schema.module.#1}
-   \raggedright
-  \begin{description}}{\end{description}}
+\newcommand{\@defname}[1]{\textup{\textbf{\texttt{#1}}}}
+\newcommand{\typename}[1]{\textit{#1}}
 
-% \elementdef{name}{doc}{attributes}{content}
-\newcommand{\elementdef}[4]{
-  \item[\hypertarget{schema.element.#1}{\texttt{#1}}] \hspace{1em} #2
-    \if.#3.\else \par\moveleft 2em \hbox{\textbf{attributes: }} #3\fi
-    \if.#4.\else \par\moveleft 2em \hbox{\textbf{content: }}#4\fi
+\newenvironment{schemamodule}[1]{%
+  \section*{Module \@defname{#1}}\label{schema.module.#1}
+   \raggedright
+  \begin{moduledescription}}{\end{moduledescription}}
+
+% \elementdef{name}{doc}{body}
+\newcommand{\elementdef}[3]{
+  \item[\textit{Element }\hypertarget{schema.element.#1}{\@defname{#1}}] \hspace{1em} #2
+    \if.#3.\else\begin{elementdescription}#3\end{elementdescription}\fi
 }
 
 % \attrdef{name}{doc}{content}
 \newcommand{\attrdef}[3]{
-  \item[\texttt{#1}] \hspace{1em} #2
-    \if.#3.\else\parindent=-1em\par\textbf{=} #3\fi
-}
-% \entitydef{name}{doc}{value}
-\newcommand{\entitydef}[3]{
-   \item[\hypertarget{schema.entity.#1}{\texttt{#1}}] \hspace{1em} #2
-    \parindent=-1em\par\textbf{==}\if.#3.()\else #3\fi
+  \item[\textit{Attribute }\@defname{#1}] =\ #3\par\noindent #2
 }
 
-% \entityadd{name}{combiner}{doc}{value}
-\newcommand{\entityadd}[4]{
-  \item[\texttt{#1}] \hspace{1em} #3
-    \if.#4.\else \par\noindent\textbf{#2 } #4\fi
+% \patterndef{name}{doc}{body}
+\newcommand{\patterndef}[3]{
+   \item[\textit{Pattern }\hypertarget{schema.pattern.#1}{\@defname{#1}}] \hspace{1em} #2
+    \if.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
+}
+
+% \patternadd{name}{doc}{body}
+\newcommand{\patternadd}[3]{
+  \item[\textit{Add to }\@defname{#1}] \hspace{1em} #2
+    \if.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
 }
 
 %\newcommand{\moduleref}[1]{\hyperlink{schema.module.#1}{\texttt{#1}}}
 \newcommand{\moduleref}[1]{\htmlref{\texttt{#1}}{schema.module.#1}}
-\newcommand{\entityref}[1]{\hyperlink{schema.entity.#1}{\texttt{#1}}}
+\newcommand{\patternref}[1]{\hyperlink{schema.pattern.#1}{\texttt{#1}}}
 \newcommand{\elementref}[1]{\hyperlink{schema.element.#1}{\texttt{#1}}}
 
 EOTeX

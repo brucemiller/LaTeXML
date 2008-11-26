@@ -6,7 +6,7 @@ body { margin:0; background:#cfd2e6; color:#000000; }
    position:fixed; left:10px; top:10px; width:232px;
    margin:0; padding:0; 
    font-weight: bold; font-size: 85%;
-   overflow:clip; z-index:10;
+   overflow:hidden; z-index:10;
    color:#a82ee6;
 }
 .navbar a {
@@ -101,3 +101,10 @@ h1, h2, h3,
 .footer {
   border:none; 
 }
+
+
+dl.description.moduledescription dt,
+dl.description.elementdescription dt,
+dl.description.patterndescription dt
+ { margin-right:0.5em; float:left;
+   font-weight:normal; }

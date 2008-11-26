@@ -21,8 +21,11 @@ my $WEBDEST  = "/local/www/site/htdocs/LaTeXML";
 
 my $identity = "makemanual (part of LaTeXML)";
 my($force,$help)=(0,0);
-GetOptions("force!"    => \$force,
-	   "help"         => \$help,
+my ($dopdf,$doxhtml)=(1,1);
+GetOptions("force!"  => \$force,
+	   "help"    => \$help,
+	   "pdf!"    => \$dopdf,
+	   "xhtml!"  => \$doxhtml,
 	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
 
@@ -44,23 +47,26 @@ saveData("$MANDIR/release.tex", "\\def\\CurrentVersion{$version}\n");
 #======================================================================
 # Now generate the manual
 #======================================================================
-heading("Generating pdf of manual");
-pdflatex("$MANDIR/manual.tex",
-	 dependencies=>["$DOCDIR/sty/latexmldoc.sty", "$MANDIR/release.tex",
-			"$MANDIR/schema.tex","$MANDIR/pods"],
-	 indexoptions=>[],
-	 force=>$force);
-copy("$MANDIR/manual.pdf","$LATEXMLDIR/manual.pdf");
-copy("$MANDIR/manual.pdf","$WEBDEST/manual.pdf");
+if($dopdf){
+  heading("Generating pdf of manual");
+  pdflatex("$MANDIR/manual.tex",
+	   dependencies=>["$DOCDIR/sty/latexmldoc.sty", "$MANDIR/release.tex",
+			  "$MANDIR/schema.tex","$MANDIR/pods"],
+	   indexoptions=>[],
+	   force=>$force);
+  copy("$MANDIR/manual.pdf","$LATEXMLDIR/manual.pdf");
+  copy("$MANDIR/manual.pdf","$WEBDEST/manual.pdf");
+}
 
-heading("Generating xhtml of manual");
-latexml("$MANDIR/manual.tex"=>"$WEBDEST/manual/index.xhtml",
-	dependencies=>["$DOCDIR/sty/latexmldoc.sty.ltxml", "$MANDIR/release.tex",
-		       "$MANDIR/schema.tex","$MANDIR/pods"],
-	postoptions=>["--split","--splitnaming=labelrelative",
-		      "--urlstyle=server","--css=../latexmldoc.css"],
-	force=>$force);
-
+if($doxhtml){
+  heading("Generating xhtml of manual");
+  latexml("$MANDIR/manual.tex"=>"$WEBDEST/manual/index.xhtml",
+	  dependencies=>["$DOCDIR/sty/latexmldoc.sty.ltxml", "$MANDIR/release.tex",
+			 "$MANDIR/schema.tex","$MANDIR/pods"],
+	  postoptions=>["--split","--splitnaming=labelrelative",
+			"--urlstyle=server","--css=../latexmldoc.css"],
+	  force=>$force);
+}
 #======================================================================
 __END__
 
