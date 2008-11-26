@@ -385,7 +385,7 @@ sub do_links {
 	       ['true','.']],
 	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
 	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
-   'collection.article'=>[
+   'incollection'=>[
 	      [['ltx:bib-author'   , ''  , '', \&do_authors,''],
 	       ['ltx:date'         , ''  , '', \&do_year,'']],
 	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
@@ -462,10 +462,10 @@ $FMT_SPEC{proceedings} = $FMT_SPEC{book};
 $FMT_SPEC{manual}      = $FMT_SPEC{book};
 $FMT_SPEC{misc}        = $FMT_SPEC{book};
 $FMT_SPEC{unpublished} = $FMT_SPEC{book};
-$FMT_SPEC{'proceedings.article'} = $FMT_SPEC{'collection.article'};
-$FMT_SPEC{incollection} = $FMT_SPEC{'collection.article'};
-$FMT_SPEC{inproceedings} = $FMT_SPEC{'collection.article'};
-$FMT_SPEC{inbook} = $FMT_SPEC{'collection.article'};
+$FMT_SPEC{'collection.article'}  = $FMT_SPEC{incollection};
+$FMT_SPEC{'proceedings.article'} = $FMT_SPEC{incollection};
+$FMT_SPEC{inproceedings}         = $FMT_SPEC{incollection};
+$FMT_SPEC{inbook}                = $FMT_SPEC{incollection};
 $FMT_SPEC{techreport}  = $FMT_SPEC{report};
 
 #}
