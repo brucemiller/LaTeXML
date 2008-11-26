@@ -43,17 +43,45 @@ Attributes cover a variety of styling and position shifting properties.</a:docum
       <ref name="Positionable.attributes"/>
       <optional>
         <attribute name="font">
-          <a:documentation>the font to use (describe!)</a:documentation>
+          <a:documentation>Indicates the font to use. It consists of a space separated sequence
+of values representing the
+family (\texttt{serif}, \texttt{sansserif}, \texttt{math}, \texttt{typewriter},
+    \texttt{caligraphic}, \texttt{fraktur}, \texttt{script}, \ldots),
+series (\texttt{medium}, \texttt{bold}, \ldots),
+and shape (\texttt{upright}, \texttt{italic}, \texttt{slanted}, \texttt{smallcaps}, \ldots).
+Only the values differing from the current context are given.
+Each component is open-ended, for extensibility; it is thus unclear
+whether unknown values specify family, series or shape.
+In postprocessing, these values are carried to the \attr{class} attribute,
+and can thus be effected by CSS.</a:documentation>
         </attribute>
       </optional>
       <optional>
         <attribute name="size">
-          <a:documentation>the text size to use (describe!)</a:documentation>
+          <a:documentation>Indicates the text size to use. The values are modeled after the
+more abstract \LaTeX\ font size switches, rather than point-sizes.
+The values are open-ended for extensibility;
+In postprocessing, these values are carried to the \attr{class} attribute,
+and can thus be effected by CSS.</a:documentation>
+          <choice>
+            <value>Huge</value>
+            <value>huge</value>
+            <value>LARGE</value>
+            <value>Large</value>
+            <value>large</value>
+            <value>normal</value>
+            <value>small</value>
+            <value>footnote</value>
+            <value>tiny</value>
+            <text/>
+          </choice>
         </attribute>
       </optional>
       <optional>
         <attribute name="color">
-          <a:documentation>the color to use; any CSS compatible color specification.</a:documentation>
+          <a:documentation>the color to use; any CSS compatible color specification.
+In postprocessing, these values are carried to the \attr{class} attribute,
+and can thus be effected by CSS.</a:documentation>
         </attribute>
       </optional>
       <optional>
@@ -62,6 +90,7 @@ Attributes cover a variety of styling and position shifting properties.</a:docum
           <choice>
             <value>rectangle</value>
             <value>underline</value>
+            <text/>
           </choice>
         </attribute>
       </optional>
@@ -107,7 +136,8 @@ based on data extracted from the document(s).</a:documentation>
       </ref>
       <optional>
         <attribute name="labelref">
-          <a:documentation>reference to a LaTeX labelled object.</a:documentation>
+          <a:documentation>reference to a LaTeX labelled object;
+See the \attr{labels} attribute of \patternref{Labelled.attributes}.</a:documentation>
         </attribute>
       </optional>
       <optional>
@@ -161,13 +191,15 @@ which are the specific citation.</a:documentation>
       <ref name="IDREF.attributes"/>
       <optional>
         <attribute name="bibrefs">
-          <a:documentation>a comma separated list of bibliographic keys.</a:documentation>
+          <a:documentation>a comma separated list of bibliographic keys.
+(See the \attr{key} attribute of \elementref{bibitem} and \elementref{bibentry})</a:documentation>
         </attribute>
       </optional>
       <optional>
         <attribute name="show">
           <a:documentation>a pattern encoding how the text content (of an empty bibref) will be filled in.
-Consists of strings \texttt{author}, \texttt{year} and \texttt{title}
+Consists of strings \texttt{author}, \texttt{fullauthor}, \texttt{year},
+\texttt{number} and \texttt{title}
 (to be replaced by data from the bibliographic item)
 mixed with arbitrary characters.</a:documentation>
         </attribute>

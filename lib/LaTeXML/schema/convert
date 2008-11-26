@@ -22,15 +22,19 @@ for name in LaTeXML; do
 
   echo "Simplifying $name.rng"
   xsltproc --stringparam out-name /tmp/$name-simplified- ../simplification.xsl $name.rng
+  # The resulting simplified schema is now in /tmp/$name-simplified-7-22.rng
+
+  echo "Dumbing down the schema for DTD conversion"
+  xsltproc ../dtd-dumbdown.xsl /tmp/$name-simplified-7-22.rng > /tmp/$name-dumbed.rng
 
   echo "Converting simplified $name.rng to $name.dtd"
   # Now, we can convert to dtd
-  trang /tmp/$name-simplified-7-22.rng /tmp/$name.dtd
+  trang /tmp/$name-dumbed.rng /tmp/$name.dtd
 
   echo "Patching $name.dtd"
-  # However, as said, the namespace declaration got lost
-  # so we'll fix it up...
-  sed -e "s/xmlns CDATA #FIXED ''/xmlns CDATA #FIXED 'http:\/\/dlmf.nist.gov\/LaTeXML'/" \
-     /tmp/$name.dtd  > ../dtd/$name.dtd
+   # However, as said, the namespace declaration got lost
+   # so we'll fix it up...
+   sed -e "s/xmlns CDATA #FIXED ''/xmlns CDATA #FIXED 'http:\/\/dlmf.nist.gov\/LaTeXML'/" \
+      /tmp/$name.dtd  > ../dtd/$name.dtd
 done
 #======================================================================

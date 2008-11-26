@@ -18,7 +18,7 @@
   font CDATA #IMPLIED
   size CDATA #IMPLIED
   color CDATA #IMPLIED
-  framed (rectangle|underline) #IMPLIED>
+  framed CDATA #IMPLIED>
 
 <!ELEMENT emph (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
                 |Math|inline-block|verbatim|break|graphics|tabular
@@ -138,7 +138,7 @@
                       |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST constraint
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  hidden NMTOKEN #IMPLIED>
+  hidden CDATA #IMPLIED>
 
 <!ELEMENT equation (Math|MathFork|text|tabular|note|indexmark|ERROR
                     |constraint)*>
@@ -534,7 +534,7 @@
   align CDATA #IMPLIED
   width CDATA #IMPLIED
   border CDATA #IMPLIED
-  thead NMTOKEN #IMPLIED>
+  thead CDATA #IMPLIED>
 
 <!ELEMENT tabular (thead|tfoot|tbody|tr)*>
 <!ATTLIST tabular
@@ -575,7 +575,7 @@
   align CDATA #IMPLIED
   width CDATA #IMPLIED
   border CDATA #IMPLIED
-  thead NMTOKEN #IMPLIED>
+  thead CDATA #IMPLIED>
 
 <!ELEMENT picture (g|rect|line|circle|path|arc|wedge|ellipse|polygon
                    |bezier|text|emph|acronym|rule|anchor|ref|cite|bibref
@@ -611,7 +611,7 @@
   imagewidth CDATA #IMPLIED
   imageheight CDATA #IMPLIED
   description CDATA #IMPLIED
-  clip NMTOKEN #IMPLIED
+  clip CDATA #IMPLIED
   baseline CDATA #IMPLIED
   unitlength CDATA #IMPLIED
   xunitlength CDATA #IMPLIED
@@ -650,12 +650,12 @@
   arcsepB CDATA #IMPLIED
   curvature CDATA #IMPLIED
   pos CDATA #IMPLIED
-  framed NMTOKEN #IMPLIED
+  framed CDATA #IMPLIED
   frametype (rect|circle|oval) #IMPLIED
-  fillframe NMTOKEN #IMPLIED
+  fillframe CDATA #IMPLIED
   boxsep CDATA #IMPLIED
-  shadowbox NMTOKEN #IMPLIED
-  doubleline NMTOKEN #IMPLIED>
+  shadowbox CDATA #IMPLIED
+  doubleline CDATA #IMPLIED>
 
 <!ELEMENT rect EMPTY>
 <!ATTLIST rect
@@ -912,9 +912,12 @@
 <!ELEMENT document ((subtitle|date|abstract|acknowledgements|keywords
                      |classification|title|toctitle|creator|note
                      |indexmark|ERROR)*,
-                    (para|theorem|proof|figure|table|note|indexmark
-                     |ERROR)*,
-                    paragraph*,section*,chapter*,part*,
+                    (((((para|theorem|proof|figure|table|note|indexmark
+                         |ERROR)*
+                        |paragraph)
+                       |section)
+                      |chapter)
+                     |part)*,
                     (bibliography|appendix|index|acknowledgements|para
                      |theorem|proof|figure|table|note|indexmark
                      |ERROR)*)>
@@ -926,8 +929,8 @@
   refnum CDATA #IMPLIED>
 
 <!ELEMENT part ((title|toctitle|creator)*,
-                (para|theorem|proof|figure|table|note|indexmark|ERROR)*,
-                chapter*)>
+                ((para|theorem|proof|figure|table|note|indexmark|ERROR)*
+                 |chapter)*)>
 <!ATTLIST part
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -936,9 +939,13 @@
   refnum CDATA #IMPLIED>
 
 <!ELEMENT chapter ((title|toctitle|creator)*,
-                   (para|theorem|proof|figure|table|note|indexmark
-                    |ERROR)*,
-                   subparagraph*,paragraph*,subsection*,section*)>
+                   ((((((para|theorem|proof|figure|table|note|indexmark
+                         |ERROR)*
+                        |subparagraph)
+                       |paragraph)
+                      |subsubsection)
+                     |subsection)
+                    |section)*)>
 <!ATTLIST chapter
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -947,9 +954,12 @@
   refnum CDATA #IMPLIED>
 
 <!ELEMENT section ((title|toctitle|creator)*,
-                   (para|theorem|proof|figure|table|note|indexmark
-                    |ERROR)*,
-                   subparagraph*,paragraph*,subsection*)>
+                   (((((para|theorem|proof|figure|table|note|indexmark
+                        |ERROR)*
+                       |subparagraph)
+                      |paragraph)
+                     |subsubsection)
+                    |subsection)*)>
 <!ATTLIST section
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -958,9 +968,13 @@
   refnum CDATA #IMPLIED>
 
 <!ELEMENT appendix ((title|toctitle|creator)*,
-                    (para|theorem|proof|figure|table|note|indexmark
-                     |ERROR)*,
-                    subparagraph*,paragraph*,subsection*,section*)>
+                    ((((((para|theorem|proof|figure|table|note|indexmark
+                          |ERROR)*
+                         |subparagraph)
+                        |paragraph)
+                       |subsubsection)
+                      |subsection)
+                     |section)*)>
 <!ATTLIST appendix
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -969,9 +983,11 @@
   refnum CDATA #IMPLIED>
 
 <!ELEMENT subsection ((title|toctitle|creator)*,
-                      (para|theorem|proof|figure|table|note|indexmark
-                       |ERROR)*,
-                      subparagraph*,paragraph*,subsubsection*)>
+                      ((((para|theorem|proof|figure|table|note|indexmark
+                          |ERROR)*
+                         |subparagraph)
+                        |paragraph)
+                       |subsubsection)*)>
 <!ATTLIST subsection
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -980,9 +996,10 @@
   refnum CDATA #IMPLIED>
 
 <!ELEMENT subsubsection ((title|toctitle|creator)*,
-                         (para|theorem|proof|figure|table|note|indexmark
-                          |ERROR)*,
-                         subparagraph*,paragraph*)>
+                         (((para|theorem|proof|figure|table|note
+                            |indexmark|ERROR)*
+                           |subparagraph)
+                          |paragraph)*)>
 <!ATTLIST subsubsection
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -991,9 +1008,9 @@
   refnum CDATA #IMPLIED>
 
 <!ELEMENT paragraph ((title|toctitle|creator)*,
-                     (para|theorem|proof|figure|table|note|indexmark
-                      |ERROR)*,
-                     subparagraph*)>
+                     ((para|theorem|proof|figure|table|note|indexmark
+                       |ERROR)*
+                      |subparagraph)*)>
 <!ATTLIST paragraph
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1002,8 +1019,7 @@
   refnum CDATA #IMPLIED>
 
 <!ELEMENT subparagraph ((title|toctitle|creator)*,
-                        (para|theorem|proof|figure|table|note|indexmark
-                         |ERROR)*)>
+                        ((para|theorem|proof|figure|table|note|indexmark|ERROR)*)*)>
 <!ATTLIST subparagraph
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1013,7 +1029,10 @@
 
 <!ELEMENT bibliography ((subtitle|date|abstract|acknowledgements
                          |keywords|classification)*,
-                        (title|toctitle|creator)*,biblist*)>
+                        (title|toctitle|creator)*,
+                        ((para|theorem|proof|figure|table|note|indexmark
+                          |ERROR)*
+                         |biblist)*)>
 <!ATTLIST bibliography
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1022,7 +1041,10 @@
   refnum CDATA #IMPLIED
   files CDATA #IMPLIED>
 
-<!ELEMENT index ((title|toctitle|creator)*,indexlist*)>
+<!ELEMENT index ((title|toctitle|creator)*,
+                 ((para|theorem|proof|figure|table|note|indexmark
+                   |ERROR)*
+                  |indexlist)*)>
 <!ATTLIST index
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED

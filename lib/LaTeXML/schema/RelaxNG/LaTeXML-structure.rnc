@@ -12,113 +12,158 @@
 
 default namespace = "http://dlmf.nist.gov/LaTeXML"
 
+#======================================================================
+
 document =
 ## The document root.
 element document {
-  Common.attributes,
-  Labelled.attributes,
+  Sectional.attributes,
 
   (FrontMatter.class | SectionalFrontMatter.class | Meta.class)*,
-  Para.model, paragraph*,section*, chapter*, part*, 
+  document.body.class*,
   BackMatter.class* }
+
+## The content allowable as the main body of the document.
+document.body.class = Para.model | paragraph | section | chapter | part
+
+#----------------------------------------------------------------------
 
 part =
 ## A part within a document.
 element part {
-  Common.attributes,
-  Labelled.attributes,
+  Sectional.attributes,
 
   SectionalFrontMatter.class*,
-  Para.model, chapter*}
+  part.body.class* }
+
+## The content allowable as the main body of a part.
+part.body.class = Para.model | chapter
+
+#----------------------------------------------------------------------
 
 chapter =
 ## A Chapter within a document.
 element chapter {
-  Common.attributes,
-  Labelled.attributes,
+  Sectional.attributes,
 
   SectionalFrontMatter.class*,
-  Para.model, subparagraph*,  paragraph*,  subsection*,  section* }
+  chapter.body.class* }
+
+## The content allowable as the main body of a chapter.
+chapter.body.class = Para.model | subparagraph | paragraph | subsubsection | subsection | section
+
+#----------------------------------------------------------------------
 
 section =
 ## A Section within a document.
 element section {
-  Common.attributes,
-  Labelled.attributes,
+  Sectional.attributes,
 
   SectionalFrontMatter.class*,
-  Para.model, subparagraph*, paragraph*, subsection*  }
+  section.body.class* }
+
+## The content allowable as the main body of a section.
+section.body.class = Para.model | subparagraph | paragraph | subsubsection | subsection
+
+#----------------------------------------------------------------------
 
 appendix =
 ## An Appendix within a document.
 element appendix {
-  Common.attributes,
-  Labelled.attributes,
+  Sectional.attributes,
 
   SectionalFrontMatter.class*,
-  Para.model, subparagraph*, paragraph*,  subsection*, section* }
+  appendix.body.class* }
+
+## The content allowable as the main body of a chapter.
+appendix.body.class = Para.model | subparagraph | paragraph | subsubsection | subsection | section
+
+#----------------------------------------------------------------------
 
 subsection =
 ## A Subsection within a document.
 element subsection {
-  Common.attributes,
-  Labelled.attributes,
+  Sectional.attributes,
 
   SectionalFrontMatter.class*,
-  Para.model, subparagraph*, paragraph*, subsubsection* }
+  subsection.body.class* }
+
+## The content allowable as the main body of a chapter.
+subsection.body.class = Para.model | subparagraph | paragraph | subsubsection
+
+#----------------------------------------------------------------------
 
 subsubsection =
 ## A Subsubsection within a document.
 element subsubsection {
-  Common.attributes,
-  Labelled.attributes,
+  Sectional.attributes,
 
   SectionalFrontMatter.class*,
-  Para.model, subparagraph*, paragraph* }
+  subsubsection.body.class* }
+
+## The content allowable as the main body of a chapter.
+subsubsection.body.class = Para.model | subparagraph | paragraph
+
+#----------------------------------------------------------------------
 
 paragraph =
 ## A Paragraph within a document. This corresponds to a `formal' marked, possibly labelled
 ## LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.
 element paragraph {
-  Common.attributes,
-  Labelled.attributes,
+  Sectional.attributes,
 
   SectionalFrontMatter.class*,
-  Para.model, subparagraph* }
+  paragraph.body.class* }
+
+## The content allowable as the main body of a chapter.
+paragraph.body.class = Para.model | subparagraph
+
+#----------------------------------------------------------------------
 
 subparagraph =
 ## A Subparagraph within a document.
 element subparagraph {
-  Common.attributes,
-  Labelled.attributes,
+  Sectional.attributes,
 
   SectionalFrontMatter.class*,
-  Para.model }
+  subparagraph.body.class* }
+
+## The content allowable as the main body of a chapter.
+subparagraph.body.class = Para.model
+
+#----------------------------------------------------------------------
 
 bibliography =
 ## A Bibliography within a document.
 element bibliography {
-  Common.attributes,
-  Labelled.attributes,
+  Sectional.attributes,
 
   ## the list of bib files used to create the bibliograph.
   attribute files { text }?,
 
   FrontMatter.class*,
   SectionalFrontMatter.class*,
-  biblist* }
+  bibliography.body.class* }
+
+## The content allowable as the main body of a chapter.
+bibliography.body.class = Para.model | biblist
+
+#----------------------------------------------------------------------
 
 index =
 ## An Index within a document.
 element index {
-  Common.attributes,
-  Labelled.attributes,
+  Sectional.attributes,
 
   SectionalFrontMatter.class*,
-  indexlist* }
+  index.body.class* }
+
+## The content allowable as the main body of a chapter.
+index.body.class = Para.model | indexlist
 
 indexlist =
-## An index generated from the collection of \elementref{indexmark} in a document
+## A heirarchical index generated. Typically generated during postprocessing
+## from the collection of \elementref{indexmark} in the document
 ## (or document collection).
 element indexlist {
   Common.attributes,
@@ -144,6 +189,8 @@ element indexrefs {
   Common.attributes,
 
   Inline.model }
+
+#======================================================================
 
 title =
 ## The title of a document, section or similar document structure container.
@@ -181,33 +228,39 @@ element creator {
   Common.attributes,
 
   ## indicates the role of the person in creating the docment.
-  ## Values include author, editor and translator, 
-  ## but is open-ended to support extension.
-  attribute role { text }?,
+  ## Commonly useful values are specified, but is open-ended to support extension.
+  attribute role { "author" | "editor" | "translator" | "contributor" | "translator" | text }?,
 
   (Person.class | Misc.class)* }
 
+## The content allowed in authors, editors, etc.
+Person.class = personname | contact
+
 contact =
 ## Generalized contact information for a document creator.
+## Note that this element can be repeated to give different types 
+## of contact information (using \attr{role}) for the same creator.
 element contact {
   Common.attributes,
 
   ## indicates the type of contact information contained.
-  ## Values include address, current_address, affiliation, thanks, 
-  ## email, url, dedicatory to cover various common constructs,
-  ## but is open-ended to support extension.
-  attribute role { text }?,
+  ## Commonly useful values are specified, but is open-ended to support extension.
+  attribute role { "affiliation" | "address" | "current_address" | "email" | "url"
+                 | "thanks" | "dedicatory" | text }?,
 
   Inline.model }
 
 date =
 ## Generalized document date.
+## Note that this element can be repeated to give the dates
+## of different events (using \attr{role}) for the same document.
 element date {
   Common.attributes,
 
   ## indicates the relevance of the date to the document.
-  ## Values include creation, but is open-ended to support extension.
-  attribute role { text }?,
+  ## Commonly useful values are specified, but is open-ended to support extension.
+  attribute role { "creation" | "conversion" | "posted" | "received"
+                 | "revised" | "accepted" | text }?,
 
   Inline.model }
 
@@ -242,12 +295,25 @@ element classification {
 
   Inline.model }
 
-Person.class = personname | contact
+#======================================================================
+
+## Attributes shared by all sectional elements
+Sectional.attributes =
+  Common.attributes,
+  Labelled.attributes
+
+## The content allowed for the front matter of each sectional unit,
+## and the document.
 SectionalFrontMatter.class = title | toctitle | creator
 
+## The content allowed (in addition to \patternref{SectionalFrontMatter.class})
+## for the front matter of a document.
 FrontMatter.class =
   subtitle | date | abstract | acknowledgements
   | keywords | classification
-# Let Backmatter contain Para since often figures, etc follow a paper!
+
+## The content allowed a the end of a document.
+## Note that this includes random trailing Block and Para material,
+## to support articles with figures and similar data appearing `at end'.
 BackMatter.class = bibliography | appendix | index | acknowledgements
 		 | Para.class | Meta.class

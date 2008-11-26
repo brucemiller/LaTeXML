@@ -29,17 +29,34 @@ element text {
   Common.attributes,
   Positionable.attributes,
 
-  ## the font to use (describe!)
+  ## Indicates the font to use. It consists of a space separated sequence
+  ## of values representing the
+  ## family (\texttt{serif}, \texttt{sansserif}, \texttt{math}, \texttt{typewriter},
+  ##     \texttt{caligraphic}, \texttt{fraktur}, \texttt{script}, \ldots),
+  ## series (\texttt{medium}, \texttt{bold}, \ldots),
+  ## and shape (\texttt{upright}, \texttt{italic}, \texttt{slanted}, \texttt{smallcaps}, \ldots).
+  ## Only the values differing from the current context are given.
+  ## Each component is open-ended, for extensibility; it is thus unclear
+  ## whether unknown values specify family, series or shape.
+  ## In postprocessing, these values are carried to the \attr{class} attribute,
+  ## and can thus be effected by CSS.
   attribute font { text }?,
 
-  ## the text size to use (describe!)
-  attribute size { text }?,
+  ## Indicates the text size to use. The values are modeled after the
+  ## more abstract \LaTeX\ font size switches, rather than point-sizes.
+  ## The values are open-ended for extensibility;
+  ## In postprocessing, these values are carried to the \attr{class} attribute,
+  ## and can thus be effected by CSS.
+  attribute size { "Huge" | "huge" | "LARGE" | "Large" | "large" | "normal"
+                 | "small" | "footnote" | "tiny" | text }?,
 
   ## the color to use; any CSS compatible color specification.
+  ## In postprocessing, these values are carried to the \attr{class} attribute,
+  ## and can thus be effected by CSS.
   attribute color { text }?,
 
   ## the kind of frame or outline for the text.
-  attribute framed { "rectangle" | "underline"}?,
+  attribute framed { "rectangle" | "underline" | text }?,
 
   Inline.model }
 
@@ -81,7 +98,8 @@ element ref {
   ## reference to an internal identifier.
   IDREF.attributes,
 
-  ## reference to a LaTeX labelled object.
+  ## reference to a LaTeX labelled object;
+  ## See the \attr{labels} attribute of \patternref{Labelled.attributes}.
   attribute labelref { text }?,
 
   ## reference to an arbitrary url.
@@ -128,10 +146,12 @@ element bibref {
   IDREF.attributes,
 
   ## a comma separated list of bibliographic keys.
+  ## (See the \attr{key} attribute of \elementref{bibitem} and \elementref{bibentry})
   attribute bibrefs { text }?,
 
   ## a pattern encoding how the text content (of an empty bibref) will be filled in.
-  ## Consists of strings \texttt{author}, \texttt{year} and \texttt{title}
+  ## Consists of strings \texttt{author}, \texttt{fullauthor}, \texttt{year},
+  ## \texttt{number} and \texttt{title}
   ## (to be replaced by data from the bibliographic item)
   ## mixed with arbitrary characters.
   attribute show { text }?,

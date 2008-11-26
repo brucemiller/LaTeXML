@@ -13,11 +13,11 @@
   \=========================================================ooo==U==ooo=/
 -->
 <grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+  <!-- ====================================================================== -->
   <define name="document">
     <element name="document">
       <a:documentation>The document root.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
+      <ref name="Sectional.attributes"/>
       <zeroOrMore>
         <choice>
           <ref name="FrontMatter.class"/>
@@ -25,172 +25,201 @@
           <ref name="Meta.class"/>
         </choice>
       </zeroOrMore>
-      <ref name="Para.model"/>
       <zeroOrMore>
-        <ref name="paragraph"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="section"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="chapter"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="part"/>
+        <ref name="document.body.class"/>
       </zeroOrMore>
       <zeroOrMore>
         <ref name="BackMatter.class"/>
       </zeroOrMore>
     </element>
   </define>
+  <define name="document.body.class">
+    <a:documentation>The content allowable as the main body of the document.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="paragraph"/>
+      <ref name="section"/>
+      <ref name="chapter"/>
+      <ref name="part"/>
+    </choice>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="part">
     <element name="part">
       <a:documentation>A part within a document.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
+      <ref name="Sectional.attributes"/>
       <zeroOrMore>
         <ref name="SectionalFrontMatter.class"/>
       </zeroOrMore>
-      <ref name="Para.model"/>
       <zeroOrMore>
-        <ref name="chapter"/>
+        <ref name="part.body.class"/>
       </zeroOrMore>
     </element>
   </define>
+  <define name="part.body.class">
+    <a:documentation>The content allowable as the main body of a part.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="chapter"/>
+    </choice>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="chapter">
     <element name="chapter">
       <a:documentation>A Chapter within a document.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
+      <ref name="Sectional.attributes"/>
       <zeroOrMore>
         <ref name="SectionalFrontMatter.class"/>
       </zeroOrMore>
-      <ref name="Para.model"/>
       <zeroOrMore>
-        <ref name="subparagraph"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="paragraph"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="subsection"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="section"/>
+        <ref name="chapter.body.class"/>
       </zeroOrMore>
     </element>
   </define>
+  <define name="chapter.body.class">
+    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="subparagraph"/>
+      <ref name="paragraph"/>
+      <ref name="subsubsection"/>
+      <ref name="subsection"/>
+      <ref name="section"/>
+    </choice>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="section">
     <element name="section">
       <a:documentation>A Section within a document.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
+      <ref name="Sectional.attributes"/>
       <zeroOrMore>
         <ref name="SectionalFrontMatter.class"/>
       </zeroOrMore>
-      <ref name="Para.model"/>
       <zeroOrMore>
-        <ref name="subparagraph"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="paragraph"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="subsection"/>
+        <ref name="section.body.class"/>
       </zeroOrMore>
     </element>
   </define>
+  <define name="section.body.class">
+    <a:documentation>The content allowable as the main body of a section.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="subparagraph"/>
+      <ref name="paragraph"/>
+      <ref name="subsubsection"/>
+      <ref name="subsection"/>
+    </choice>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="appendix">
     <element name="appendix">
       <a:documentation>An Appendix within a document.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
+      <ref name="Sectional.attributes"/>
       <zeroOrMore>
         <ref name="SectionalFrontMatter.class"/>
       </zeroOrMore>
-      <ref name="Para.model"/>
       <zeroOrMore>
-        <ref name="subparagraph"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="paragraph"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="subsection"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="section"/>
+        <ref name="appendix.body.class"/>
       </zeroOrMore>
     </element>
   </define>
+  <define name="appendix.body.class">
+    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="subparagraph"/>
+      <ref name="paragraph"/>
+      <ref name="subsubsection"/>
+      <ref name="subsection"/>
+      <ref name="section"/>
+    </choice>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="subsection">
     <element name="subsection">
       <a:documentation>A Subsection within a document.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
+      <ref name="Sectional.attributes"/>
       <zeroOrMore>
         <ref name="SectionalFrontMatter.class"/>
       </zeroOrMore>
-      <ref name="Para.model"/>
       <zeroOrMore>
-        <ref name="subparagraph"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="paragraph"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="subsubsection"/>
+        <ref name="subsection.body.class"/>
       </zeroOrMore>
     </element>
   </define>
+  <define name="subsection.body.class">
+    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="subparagraph"/>
+      <ref name="paragraph"/>
+      <ref name="subsubsection"/>
+    </choice>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="subsubsection">
     <element name="subsubsection">
       <a:documentation>A Subsubsection within a document.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
+      <ref name="Sectional.attributes"/>
       <zeroOrMore>
         <ref name="SectionalFrontMatter.class"/>
       </zeroOrMore>
-      <ref name="Para.model"/>
       <zeroOrMore>
-        <ref name="subparagraph"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="paragraph"/>
+        <ref name="subsubsection.body.class"/>
       </zeroOrMore>
     </element>
   </define>
+  <define name="subsubsection.body.class">
+    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="subparagraph"/>
+      <ref name="paragraph"/>
+    </choice>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="paragraph">
     <element name="paragraph">
       <a:documentation>A Paragraph within a document. This corresponds to a `formal' marked, possibly labelled
 LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
+      <ref name="Sectional.attributes"/>
       <zeroOrMore>
         <ref name="SectionalFrontMatter.class"/>
       </zeroOrMore>
-      <ref name="Para.model"/>
       <zeroOrMore>
-        <ref name="subparagraph"/>
+        <ref name="paragraph.body.class"/>
       </zeroOrMore>
     </element>
   </define>
+  <define name="paragraph.body.class">
+    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="subparagraph"/>
+    </choice>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="subparagraph">
     <element name="subparagraph">
       <a:documentation>A Subparagraph within a document.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
+      <ref name="Sectional.attributes"/>
       <zeroOrMore>
         <ref name="SectionalFrontMatter.class"/>
       </zeroOrMore>
-      <ref name="Para.model"/>
+      <zeroOrMore>
+        <ref name="subparagraph.body.class"/>
+      </zeroOrMore>
     </element>
   </define>
+  <define name="subparagraph.body.class">
+    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <ref name="Para.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bibliography">
     <element name="bibliography">
       <a:documentation>A Bibliography within a document.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
+      <ref name="Sectional.attributes"/>
       <optional>
         <attribute name="files">
           <a:documentation>the list of bib files used to create the bibliograph.</a:documentation>
@@ -203,26 +232,41 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
         <ref name="SectionalFrontMatter.class"/>
       </zeroOrMore>
       <zeroOrMore>
-        <ref name="biblist"/>
+        <ref name="bibliography.body.class"/>
       </zeroOrMore>
     </element>
   </define>
+  <define name="bibliography.body.class">
+    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="biblist"/>
+    </choice>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="index">
     <element name="index">
       <a:documentation>An Index within a document.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
+      <ref name="Sectional.attributes"/>
       <zeroOrMore>
         <ref name="SectionalFrontMatter.class"/>
       </zeroOrMore>
       <zeroOrMore>
-        <ref name="indexlist"/>
+        <ref name="index.body.class"/>
       </zeroOrMore>
     </element>
   </define>
+  <define name="index.body.class">
+    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="indexlist"/>
+    </choice>
+  </define>
   <define name="indexlist">
     <element name="indexlist">
-      <a:documentation>An index generated from the collection of \elementref{indexmark} in a document
+      <a:documentation>A heirarchical index generated. Typically generated during postprocessing
+from the collection of \elementref{indexmark} in the document
 (or document collection).</a:documentation>
       <ref name="Common.attributes"/>
       <ref name="ID.attributes"/>
@@ -256,6 +300,7 @@ arbitrary text, in addition to the expected \elementref{ref}'s.</a:documentation
       <ref name="Inline.model"/>
     </element>
   </define>
+  <!-- ====================================================================== -->
   <define name="title">
     <element name="title">
       <a:documentation>The title of a document, section or similar document structure container.</a:documentation>
@@ -292,8 +337,15 @@ arbitrary text, in addition to the expected \elementref{ref}'s.</a:documentation
       <optional>
         <attribute name="role">
           <a:documentation>indicates the role of the person in creating the docment.
-Values include author, editor and translator, 
-but is open-ended to support extension.</a:documentation>
+Commonly useful values are specified, but is open-ended to support extension.</a:documentation>
+          <choice>
+            <value>author</value>
+            <value>editor</value>
+            <value>translator</value>
+            <value>contributor</value>
+            <value>translator</value>
+            <text/>
+          </choice>
         </attribute>
       </optional>
       <zeroOrMore>
@@ -304,16 +356,33 @@ but is open-ended to support extension.</a:documentation>
       </zeroOrMore>
     </element>
   </define>
+  <define name="Person.class">
+    <a:documentation>The content allowed in authors, editors, etc.</a:documentation>
+    <choice>
+      <ref name="personname"/>
+      <ref name="contact"/>
+    </choice>
+  </define>
   <define name="contact">
     <element name="contact">
-      <a:documentation>Generalized contact information for a document creator.</a:documentation>
+      <a:documentation>Generalized contact information for a document creator.
+Note that this element can be repeated to give different types 
+of contact information (using \attr{role}) for the same creator.</a:documentation>
       <ref name="Common.attributes"/>
       <optional>
         <attribute name="role">
           <a:documentation>indicates the type of contact information contained.
-Values include address, current_address, affiliation, thanks, 
-email, url, dedicatory to cover various common constructs,
-but is open-ended to support extension.</a:documentation>
+Commonly useful values are specified, but is open-ended to support extension.</a:documentation>
+          <choice>
+            <value>affiliation</value>
+            <value>address</value>
+            <value>current_address</value>
+            <value>email</value>
+            <value>url</value>
+            <value>thanks</value>
+            <value>dedicatory</value>
+            <text/>
+          </choice>
         </attribute>
       </optional>
       <ref name="Inline.model"/>
@@ -321,12 +390,23 @@ but is open-ended to support extension.</a:documentation>
   </define>
   <define name="date">
     <element name="date">
-      <a:documentation>Generalized document date.</a:documentation>
+      <a:documentation>Generalized document date.
+Note that this element can be repeated to give the dates
+of different events (using \attr{role}) for the same document.</a:documentation>
       <ref name="Common.attributes"/>
       <optional>
         <attribute name="role">
           <a:documentation>indicates the relevance of the date to the document.
-Values include creation, but is open-ended to support extension.</a:documentation>
+Commonly useful values are specified, but is open-ended to support extension.</a:documentation>
+          <choice>
+            <value>creation</value>
+            <value>conversion</value>
+            <value>posted</value>
+            <value>received</value>
+            <value>revised</value>
+            <value>accepted</value>
+            <text/>
+          </choice>
         </attribute>
       </optional>
       <ref name="Inline.model"/>
@@ -365,13 +445,15 @@ Values include creation, but is open-ended to support extension.</a:documentatio
       <ref name="Inline.model"/>
     </element>
   </define>
-  <define name="Person.class">
-    <choice>
-      <ref name="personname"/>
-      <ref name="contact"/>
-    </choice>
+  <!-- ====================================================================== -->
+  <define name="Sectional.attributes">
+    <a:documentation>Attributes shared by all sectional elements</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Labelled.attributes"/>
   </define>
   <define name="SectionalFrontMatter.class">
+    <a:documentation>The content allowed for the front matter of each sectional unit,
+and the document.</a:documentation>
     <choice>
       <ref name="title"/>
       <ref name="toctitle"/>
@@ -379,6 +461,8 @@ Values include creation, but is open-ended to support extension.</a:documentatio
     </choice>
   </define>
   <define name="FrontMatter.class">
+    <a:documentation>The content allowed (in addition to \patternref{SectionalFrontMatter.class})
+for the front matter of a document.</a:documentation>
     <choice>
       <ref name="subtitle"/>
       <ref name="date"/>
@@ -388,8 +472,10 @@ Values include creation, but is open-ended to support extension.</a:documentatio
       <ref name="classification"/>
     </choice>
   </define>
-  <!-- Let Backmatter contain Para since often figures, etc follow a paper! -->
   <define name="BackMatter.class">
+    <a:documentation>The content allowed a the end of a document.
+Note that this includes random trailing Block and Para material,
+to support articles with figures and similar data appearing `at end'.</a:documentation>
     <choice>
       <ref name="bibliography"/>
       <ref name="appendix"/>
