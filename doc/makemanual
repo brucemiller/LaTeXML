@@ -21,7 +21,7 @@ my $WEBDEST  = "/local/www/site/htdocs/LaTeXML";
 
 my $identity = "makemanual (part of LaTeXML)";
 my($force,$help)=(0,0);
-my ($dopdf,$doxhtml)=(1,1);
+my ($dopdf,$doxhtml)=(undef,undef);
 GetOptions("force!"  => \$force,
 	   "help"    => \$help,
 	   "pdf!"    => \$dopdf,
@@ -30,6 +30,13 @@ GetOptions("force!"  => \$force,
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
 
 BEGIN { $SIG{__DIE__} = \&confess; }
+
+if((! defined $dopdf) && (! defined $doxhtml)){
+  $dopdf = $doxhtml = 1; }
+elsif(!defined $dopdf){
+  $dopdf = 1 if defined $doxhtml && !$doxhtml;}
+elsif(!defined $doxhtml){
+  $doxhtml = 1 if defined $dopdf && !$dopdf;}
 
 #======================================================================
 # Generate Appendices from PODS, Schema, etc
