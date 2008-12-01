@@ -559,7 +559,11 @@ DefMacro('\abstractname','Abstract'); # never used?
 # For the time being, ignore titlepage!
 # Maybe we could do some of this if there is no title/author
 # otherwise defined? Ugh!
-DefEnvironment('{titlepage}','');
+
+#DefEnvironment('{titlepage}','');
+# Or perhaps it's better just to ignore the markers?
+DefMacro('\titlepage','');
+DefMacro('\endtitlepage','');
 
 DefEnvironment('{ZZZZZZZZZZZtitlepage}','<ltx:title>#body',
 	      beforeDigest=>sub { Let("\\\\",'\title@cr');
@@ -1895,13 +1899,16 @@ DefEnvironment('{thebibliography}',
 	       . "<ltx:title>#refname</ltx:title>"
 	       . "<ltx:biblist>#body</ltx:biblist>"
 	       ."</ltx:bibliography>",
+	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
 	       afterDigestBegin=>sub { 
 		 my($stomach)=@_;
 		 # NOTE that in some perverse situations (revtex?)
 		 # it seems to be allowable to omit the argument
 		 # It's ignorable for latexml anyway, so we'll just read it if its there.
 		 my $gullet = $stomach->getGullet;
+		 $gullet->skipSpaces;
 		 $gullet->readArg if $gullet->ifNext(T_BEGIN);
+#		 $gullet->skipSpaces; # And AFTER to avoid prematurely triggering \par!!!
 		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
 		 ResetCounter('enumiv');
 		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
@@ -1914,14 +1921,27 @@ DefEnvironment('{thebibliography}',
 		 # So, let's do some redirection!
 		 Let(T_CS('\save@bibitem'),T_CS('\bibitem'));
 		 Let(T_CS('\save@par'),T_CS('\par'));
-		 Let(T_CS('\bibitem'),T_CS('\tricky@bibitem'));
-		 Let(T_CS('\par'),T_CS('\non@bibitem')); });
+		 Let(T_CS('\bibitem'),T_CS('\restoring@bibitem'));
+		 Let(T_CS('\par'),T_CS('\par@in@bibliography')); 
+	       });
 
+DefMacro('\par@in@bibliography',sub {
+  my($gullet)=@_;
+  $gullet->skipSpaces;
+  my $tok = $gullet->readToken;
+  # If next token is another \par, or a REAL \bibitem, 
+  if($tok->equals(T_CS('\par')) || $tok->equals(T_CS('\bibitem'))){
+    ($tok); }			# then this \par expands into what followed
+  else {			# Else, put it back, and start a bibitem.
+    $gullet->unread($tok);
+    (T_CS('\save@bibitem'),T_BEGIN,T_END); }});
+
+# If we hit a real \bibitem, put \par & \bibitem back to correct defn, and then \bibitem.
 # A bibitem with now key or label...
-DefMacro('\tricky@bibitem','\let\bibitem\save@bibitem\let\par\save@par\bibitem'); # Redefine to normal bibitem
-DefMacro('\non@bibitem','\save@bibitem{}');
+DefMacro('\restoring@bibitem',
+	 '\let\bibitem\save@bibitem\let\par\save@par\bibitem');
 
-# NOTE: 
+
 DefMacro('\the@bibitem','\arabic{enumiv}');
 DefConstructor('\bibitem[] Semiverbatim',
 	       "<ltx:bibitem key='#key' xml:id='#id'><ltx:bibtag role='refnum' open='[' close=']'>#tag</ltx:bibtag><ltx:bibblock>",
