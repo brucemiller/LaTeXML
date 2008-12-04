@@ -201,7 +201,10 @@ sub find_documentclass_and_packages {
     elsif($$entry{package}){
       push(@packages,[$$entry{package},$$entry{options}||'']); }
   }
-  $self->Error($doc,"No document class found") unless $class;
+  if(!$class){
+    $self->Warn($doc,"No document class found; using article");
+    $class = 'article'; }
+
   ([$class,$classoptions,$oldstyle],@packages); }
 
 #======================================================================
