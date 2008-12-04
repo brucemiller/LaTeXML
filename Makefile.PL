@@ -123,7 +123,7 @@ sub install_TeXStyles {
     $MORE_MAKERULES .= <<'InstallTeXStyles';
 
 install::
-	$(PERLRUN) blib/lib/LaTeXML/texmf/install.PL
+	$(PERLRUN) blib/lib/LaTeXML/texmf/install.PL --prefix=$(DESTDIR)
 
 InstallTeXStyles
 }
