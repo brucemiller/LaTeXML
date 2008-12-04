@@ -1,0 +1,599 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  BibTeX.pool                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+use Text::Balanced qw(extract_bracketed);
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Design Notes
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Documents consulted:
+#   BibTeX documents
+#   amsrefs documents
+#   biblatex
+# with the result that there are a large number of semi-standard
+# entry types and fields that might need to be supported.
+#======================================================================
+# I hate to reinvent "Bibliography as XML",
+# since I'm hardly expert in the issues involved.
+# However, it is hard to see how best to adapt another
+# Bibliographic XML schema. The first thing is that
+# the content model of leaf nodes would need to be changed
+# from "text" to Inline.model (usually; maybe even occasionally Block (eg. abstract?))
+#
+# Some candidate formats that google "bibtex xml" turns up:
+#  BibTeXML http://bibtexml.sourceforge.net/
+#  MODS (LOC) See http://www.scripps.edu/~cdputnam/software/bibutils/
+#     and  http://www.loc.gov/standards/mods/
+# The latter, at least, can deal with more structure:
+# eg. the book in an inbook is itself effectively an embedded bibentry,
+# rather than just fields like booktitle, ...
+# Is this sort of inference worthwhile?
+#======================================================================
+# Small questions:
+#  * Do we want to Warn about missing Required Fields?
+#  * Do we sort fields?  (presumably based on entry type)
+#  * How many `common' extra fields should we handle?
+#    New elements? or microformats (ie. overload w/a role attribute?)
+#  * Do we need a naming convention for customization of BibTeX?
+#     *.bst.ltxml is misleading? (bst deals more with bibitem style)
+#      [Currently MakeBibliography does the job that a bst does!]
+#      [or could we embed style info in the *.bib.xml ?]
+# Bigger question:
+#   * Should this module focus on bibentry generation
+#   * Or generate bibentry+bibitem pairs?
+#     [still can't do a/b... suffixing until inclusion time!]
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Customizability
+# There are 3 mechanisms to customize the conversion
+# of BibTeX entries: defining an alias for the entry type;
+# handlers for the fields, and handlers to complete the entry.
+#
+# ALIAS: To cause entries of type foo to be treated as of type bar, define
+#   \@bib@entry@foo@alias => bar
+# ("foo" will be called the "origtype" in the following).
+#
+# HANDLERS: Fields are processed by invoking (on the field value)
+# the first of the following macro/constructors that is defined:
+#   \bib@field@<type>@<field>
+#   \bib@field@<origtype>@<field>  (if an alias was defined)
+#   \bib@field@default@<field>
+# If no handler is defined, 
+#   \bib@field@default@default{field}{value}
+# is used; it is initially bound to \bib@field@@ignore, which ignores the field.
+# An alternative would be
+#   \bib@field@@random  stores as <ltx:bib-random field='field'>...
+#
+#
+# COMPLETION: Finally, additions to the entry can be made by defining
+# a 'complete' macro/constructor. ALL of the following
+# are run, if they are defined:
+#   \bib@entry@<type>@complete
+#   \bib@field@<origtype>@complete  (if an alias was defined)
+#   \bib@entry@default@complete
+#
+# Defining Handlers and Completers:
+#   The argument for handlers is the field's value.
+# The parameter types Semiverbatim and Digested are often useful here.
+# Semiverbatim for fields that may contain something like a url.
+# Digested is good for general fields that may contain macros
+# (like \url) that change catcodes; Digested acts somewhat as if
+# \protect had been strategically scattered throughout.
+#
+# Within any of these handlers or completers, you may want to use
+#     currentBibEntryField('fieldname')
+# to get the string value (rather than digested value) for
+# the given field, or you may use it to test for the presence
+# of some other field.
+#
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Build a sequence of commands that will process the
+# entry and its fields, depending on what sorts of
+# aliases and commands have been defined.
+DefPrimitive('\ProcessBibTeXEntry Semiverbatim',sub {
+  my($stomach,$key)=@_;
+  $key = ToString($key);
+  my $entry = LookupValue('BIBENTRY@'.$key);
+  my $origtype = $entry->getType;
+  my $type = $origtype;
+  my $alias_defn = T_CS('\bib@entry@'.$type.'@alias');
+  if(LookupDefinition($alias_defn)){
+    $type = ToString(Digest($alias_defn)); }
+
+  my @tex = (join('','\begin{bib@entry}{',$type,'}{',$key,'}'));
+  foreach my $pair ($entry->getFields){
+    my($field,$value)= @$pair;
+    my($handler) = grep(LookupDefinition(T_CS('\\'.$_)),
+			'bib@field@'.$type.'@'.$field,
+			($origtype ne $type 
+			 ? ('bib@field@'.$origtype.'@'.$field) : ()),
+			'bib@field@default@'.$field);
+    if($handler){
+      push(@tex, join('','\csname ',$handler,'\endcsname{',$value,'}')); }
+    else {
+      push(@tex, join('','\csname bib@field@default@default\endcsname{',$field,'}{',$value,'}')); }}
+  # Add all entry completers
+  foreach my $completer (grep(LookupDefinition(T_CS('\\'.$_)),
+			      'bib@entry@'.$type.'@complete',
+			      ($origtype ne $type 
+			       ? ('bib@entry@'.$origtype.'@complete'):()),
+			      'bib@entry@default@complete')){
+    push(@tex,join('','\csname ',$completer,'\endcsname')); }
+  my $tex = join("\n",@tex,'\end{bib@entry}');
+
+  $stomach->getGullet->openMouth(LaTeXML::Mouth->new($tex));
+  (); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Processing Entries
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Math ID's within the bibliography.
+DefMacro('\the@XMARG@ID','\thebibliography@ID.XM\arabic{@XMARG}');
+
+DefEnvironment('{bibtex@bibliography}',
+	       "<ltx:bibliography xml:id='#id'>"
+	       . "<ltx:title>#refname</ltx:title>"
+	       . "<ltx:biblist>#body</ltx:biblist>"
+	       ."</ltx:bibliography>",
+	       beforeDigest=>sub {
+		 AssignValue(inPreamble=>0); },
+	       afterDigestBegin=>sub { 
+		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
+		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
+		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
+		 $_[1]->setProperty(refname=>Digest(T_CS('\refname'))); });
+
+DefEnvironment('{bib@entry} Semiverbatim Semiverbatim',
+	       "<ltx:bibentry type='#1' key='#key' xml:id='#id'>#body</ltx:bibentry>",
+ 	       afterDigestBegin=>sub {
+		 my $key = CleanBibKey($_[1]->getArg(2));
+ 		 AssignValue('CURRENT@BIBKEY'=>$key);
+		 my $id = ToString(Expand(T_CS('\thebibliography@ID'))).".".$key;
+		 # colon isn't quite allowed (must look like namespace prefix!)
+		 $id =~ s/:/../g;  # Hopefully this is unique enough
+		 $_[1]->setProperties(key=>$key, id=>$id); });
+
+sub currentBibKey   { LookupValue('CURRENT@BIBKEY'); }
+sub currentBibEntry { LookupValue('BIBENTRY@'.currentBibKey()); }
+sub currentBibEntryField { currentBibEntry()->getField($_[0]); }
+
+DefMacro('\bib@entry@default@complete',
+	 '\bib@synthesize@mr\bib@synthesize@zbl');
+
+# Hmm, should this be something like an "add default field value"?
+DefMacro('\bib@addtype{}',sub {
+  my($gullet,$type)=@_;
+  if(currentBibEntryField('type')){
+    (); }
+  else {
+    Invocation(T_CS('\bib@field@default@type'),$type)->unlist; }});
+
+#======================================================================
+# Default field handlers
+
+# This ignores the field.
+DefMacro('\bib@field@@ignore Semiverbatim Semiverbatim','');
+
+# By default, we handle all unknown fields by ignoring them.
+Let(T_CS('\bib@field@default@default'),T_CS('\bib@field@@ignore'));
+
+DefConstructor('\bib@field@@random Semiverbatim Digested',
+	       "<ltx:bib-random field='#1'>#2</ltx:bib-random>");
+
+#======================================================================
+# The Standard BibTeX Entries
+
+# Make phdthesis & mastersthesis => thesis
+# but add type field, unless already present.
+DefMacro('\bib@entry@phdthesis@alias','thesis');
+DefMacro('\bib@entry@phdthesis@complete','\bib@addtype{Ph.D. Thesis}');
+
+DefMacro('\bib@entry@mastersthesis@alias','thesis');
+DefMacro('\bib@entry@mastersthesis@complete','\bib@addtype{Master\'s Thesis}');
+
+DefMacro('\bib@entry@techreport@alias','report');
+DefMacro('\bib@entry@techreport@complete','\bib@addtype{Technical report}');
+
+#======================================================================
+# Common non-standard entry types.
+DefMacro('\bib@entry@conference@alias','inproceedings');
+DefMacro('\bib@entry@conference@electronic','online');
+DefMacro('\bib@entry@www@electronic','online');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Processing Fields
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# The Standard BibTeX Fields
+
+# address : Publisher's address
+DefConstructor('\bib@field@default@address Digested',
+	       "<ltx:bib-address>#1</ltx:bib-address>");
+
+# annote : annotations; I'll assume annote is equivalent to note.
+DefConstructor('\bib@field@default@annote Digested',
+	       "<ltx:bib-note>#1</ltx:bib-note>");
+
+# author : The name(s) of the author(s); this gets NameList treatment
+DefConstructor('\bib@field@@author {}',
+	       "<ltx:bib-author>#1</ltx:bib-author>");
+DefMacro('\bib@field@default@author {}', sub {
+   map(Invocation(T_CS('\bib@field@@author'),$_),
+       processBibNameList(currentBibEntryField('author'))); });
+
+# booktitle : the title of a book if only part of it is being cited.
+DefConstructor('\bib@field@default@booktitle Digested',
+	       "<ltx:bib-booktitle>#1</ltx:bib-booktitle>");
+
+# chapter : the chapter number (of a book, presumably inbook or similar)
+# IMPLEMENT THIS!
+
+# crossref : the key of a cross-referenced entry
+# ? should mix the fields?
+# IMPLEMENT THIS!
+
+# date : iso formatted yyy-mm-dd
+#  year (& month, day) fields can generate this element, as well.
+DefConstructor('\bib@field@default@date Digested',
+	       "<ltx:bib-date>#1</ltx:bib-date>");
+
+# edition : the edition of a book
+DefConstructor('\bib@field@default@edition {}',
+	       "<ltx:bib-edition>#edition</ltx:bib-edition>",
+	      afterDigest=>sub {
+		# Do we really want to do this? AMSRefs did...
+		my $ed = currentBibEntryField('edition');
+		if($ed =~ /^(\d+)(st|nd|rd|th)$/){
+		  $ed = $1; }
+		$_[1]->setProperty(edition=>Digest(Tokenize($ed))); });
+
+# editor : The name(s) of the editor(s); this gets NameList treatment
+DefConstructor('\bib@field@@editor {}',
+	       "<ltx:bib-editor>#1</ltx:bib-editor>");
+DefMacro('\bib@field@default@editor {}', sub {
+   map(Invocation(T_CS('\bib@field@@editor'),$_),
+       processBibNameList(currentBibEntryField('editor'))); });
+
+# howpublished : if something non-standard
+# IMPLEMENT THIS!
+
+# institution : an institution involved in publishing, possibloy distinct from publisher
+DefConstructor('\bib@field@default@institution Digested',
+	       "<ltx:bib-institution>#1</ltx:bib-institution>");
+
+# journal : the journal that an article is part of
+DefConstructor('\bib@field@default@journal Digested',
+	       "<ltx:bib-journal>#1</ltx:bib-journal>");
+
+# key : a normally hidden field for ordering
+DefConstructor('\bib@field@default@key Digested',
+	       "<ltx:bib-key>#1</ltx:bib-key>");
+
+# note : miscellaneous annotation
+DefConstructor('\bib@field@default@note Digested',
+	       "<ltx:bib-note>#1</ltx:bib-note>");
+
+# number : the number of a journal, magazine, or whatever
+DefConstructor('\bib@field@default@number Digested',
+	       "<ltx:bib-number>#1</ltx:bib-number>");
+
+# organization : a conference sponsor
+DefConstructor('\bib@field@default@organization Digested',
+	       "<ltx:bib-organization>#1</ltx:bib-organization>");
+
+# pages : the page or page range
+DefConstructor('\bib@field@default@pages {}',
+	       "<ltx:bib-pages>#pages</ltx:bib-pages>",
+	      afterDigest=>sub {
+		my $range = processRange(currentBibEntryField('pages'));
+		$_[1]->setProperty(pages=>Digest(Tokenize($range))); });
+
+sub processRange {
+  my($range)=@_;
+  $range =~ s/-+/--/g;		# Force - to -- (ligature will turn into endash
+  $range; }
+
+# publisher : the name of the publisher
+DefConstructor('\bib@field@default@publisher Digested',
+	       "<ltx:bib-publisher>#1</ltx:bib-publisher>");
+
+# school : The school where a thesis was written; analogous to institution
+DefConstructor('\bib@field@default@school Digested',
+	       "<ltx:bib-institution>#1</ltx:bib-institution>");
+
+# series : the series of books a book was published in.
+DefConstructor('\bib@field@default@series Digested',
+	       "<ltx:bib-series>#1</ltx:bib-series>");
+
+# title : the title of the work.
+DefConstructor('\bib@field@default@title Digested',
+	       "<ltx:bib-title>#1</ltx:bib-title>");
+
+# type : the type of a report
+DefConstructor('\bib@field@default@type Digested',
+	       "<ltx:bib-type>#1</ltx:bib-type>");
+
+# volume : the volume of a journal or multi-volume work
+DefConstructor('\bib@field@default@volume Digested',
+	       "<ltx:bib-volume>#1</ltx:bib-volume>");
+
+# year : the year of publication.
+# Note that month and day do not directly contribute entries;
+# year incorporates them if found.
+DefMacro('\bib@field@default@year {}', sub {
+  if(currentBibEntryField('date')){
+    (); }			# Ignore this, if we've already been given a date field.
+  else {
+    my $date  = currentBibEntryField('year');
+    my $month = currentBibEntryField('month');
+    my $day   = currentBibEntryField('day');
+    # What if month or day is given, but not year ???
+    if(defined $month){
+      $date .= '-'.($month=~/^\d$/ ? '0'.$month : $month); 
+      if(defined $day){
+	$date .= '-'.($day  =~/^\d$/ ? '0'.$day   : $day  ); }}
+    Invocation(T_CS('\bib@field@default@date'),Tokenize($date))->unlist; }});
+
+#======================================================================
+# Non-Standard but Common (?) fields.
+
+# affiliation : the author's affiliation
+# IMPLEMENT THIS!
+# Seems like this should be tucked into author (or editor...)?
+
+# abstract : a copy of the abstract
+# IMPLEMENT THIS!
+
+# archive : specifies where this is archived (URL?)
+DefConstructor('\bib@field@default@archive Digested',
+	       "<ltx:bib-links>Archive: #1</ltx:bib-links>");
+
+# contents : a table of contents
+# IMPLEMENT THIS!
+
+# copyright : copyright information
+# IMPLEMENT THIS!
+
+# eprint : specifies an electronic publication; Is this a URL?
+DefConstructor('\bib@field@default@eprint Digested',
+	       "<ltx:bib-links>#1</ltx:bib-links>");
+
+# preprint : specifies an electronic publication (not a URL).
+DefConstructor('\bib@field@default@preprint Digested',
+	       "<ltx:bib-links>Preprint: #1</ltx:bib-links>");
+
+# keywords : a list of subject keywords
+# IMPLEMENT THIS!
+
+# language : the language a document is in.
+DefConstructor('\bib@field@default@language Digested',
+	       "<ltx:bib-language>#1</ltx:bib-language>");
+
+# place, location : A location associated with the entry, eg. the city of a conference
+Let('\bib@field@default@place',   '\bib@field@default@address');
+Let('\bib@field@default@location','\bib@field@default@address');
+
+# translator : The names(s) of any translator(s); this gets NameList treatment
+DefConstructor('\bib@field@@translator {}',
+	       "<ltx:bib-translator>#1</ltx:bib-translator>");
+DefMacro('\bib@field@default@translator {}', sub {
+   map(Invocation(T_CS('\bib@field@@translator'),$_),
+       processBibNameList(currentBibEntryField('translator'))); });
+
+DefConstructor('\bib@field@default@subtitle Digested',
+	       "<ltx:bib-subtitle>#1</ltx:bib-subtitle>");
+
+DefConstructor('\bib@field@default@conference Digested',
+	       "<ltx:bib-conference>#1</ltx:bib-conference>");
+DefConstructor('\bib@field@default@meeting Digested',
+	       "<ltx:bib-conference>#1</ltx:bib-conference>");
+
+DefConstructor('\bib@field@default@part Digested',
+	       "<ltx:bib-part>#1</ltx:bib-part>");
+
+DefConstructor('\bib@field@default@status Digested',
+	       "<ltx:bib-status>#1</ltx:bib-status>");
+
+# url : specifies a URL where the work can be found.
+DefConstructor('\bib@field@default@url Semiverbatim',
+	       "<ltx:bib-url href='#1'>Link</ltx:bib-url>");
+
+#======================================================================
+# Interesting Identifiers
+# doi : Document Object Identifier
+DefConstructor('\bib@field@default@doi Semiverbatim',
+	       "<ltx:bib-identifier scheme='doi' id='#1' href='#href'>Document</ltx:bib-identifier>",
+	       properties=>sub { 
+		 my $id = processIdentifier($_[1]);
+		 (id=>$id, href=>"http://dx.doi.org/$id"); });
+
+# ISBN : the International Standard Book Number
+# Is there any useful URL that could be associated here?
+DefConstructor('\bib@field@default@isbn Semiverbatim',
+	       "<ltx:bib-identifier scheme='isbn' id='#id'>ISBN #1</ltx:bib-identifier>",
+	       properties=>sub {
+		 (id=>processIdentifier($_[1])); });
+
+# ISSN : the International Standard Serial Number (eg. of a Journal)
+# Is there any useful URL that could be associated here?
+DefConstructor('\bib@field@default@issn Semiverbatim',
+	       "<ltx:bib-identifier scheme='issn' id='#id'>ISSN #1</ltx:bib-identifier>",
+	       properties=>sub { 
+		 (id=>processIdentifier($_[1])); });
+
+# LCCN : the Library of Congress Call Number
+DefConstructor('\bib@field@default@lccn Semiverbatim',
+	       "<ltx:bib-identifier scheme='lccn' id='#id'>LCCN #1</ltx:bib-identifier>",
+	       properties=>sub { 
+		 (id=>processIdentifier($_[1])); });
+
+# PII : the Publisher Item Identifier (?)
+DefConstructor('\bib@field@default@pii Semiverbatim',
+	       "<ltx:bib-identifier scheme='pii' id='#id'>PII #1</ltx:bib-identifier>",
+	       properties=>sub { 
+		 (id=>processIdentifier($_[1])); });
+
+sub processIdentifier {
+  my($string)=@_;
+  $string = ToString($string) if ref $string;
+  $string =~ s/^\s+//;
+  $string =~ s/\s+$//;
+  $string; }
+
+#======================================================================
+# Reviews.
+
+DefConstructor('\bib@field@default@review Digested',
+	       "<ltx:bib-review>Review #1</ltx:bib-review>");
+
+# mrnumber is a common non-standard field
+# mrreviewer isn't
+# zblno, zblreviewer are analogous, but not common.
+#
+# I'm synthesize 1 field from mrrnumber & mrreviewer (as done in DLMF)
+# Similarly for zblno & zblreviewer.
+DefMacro('\bib@synthesize@mr',sub {
+  my $mrnumber  = currentBibEntryField('mrnumber');
+  my $mrreviewer= currentBibEntryField('mrreviewer');
+  if($mrnumber || $mrreviewer){
+    Invocation(T_CS('\bib@@mr'),Tokenize($mrnumber),
+	       ($mrreviewer ? Tokenize($mrreviewer) : Tokens())); }
+  else {
+    (); }});
+
+DefConstructor('\bib@@mr {}{}',
+	       "?#isreview"
+	       . "(?#reviewer"
+	       .   "(<ltx:bib-review scheme='mr' id='#id' href='#href'>MathReview (#reviewer)</ltx:bib-review>)"
+	       .   "(<ltx:bib-review scheme='mr' id='#id' href='#href'>MathReview</ltx:bib-review>))"
+	       . "(<ltx:bib-identifier scheme='mr' id='#id' href='#href'>MathReview Entry</ltx:bib-identifier>)",
+	       properties=>sub {
+		 my $id = ToString($_[1]);
+		 $id =~ s/^\s+//; $id =~ s/\s+$//;
+		 my $reviewer = $_[2];
+		 my $isreview = ToString($reviewer) ne '';
+		 if($id =~ /^\s*MR(\d+)\s+\(.*\)\s*$/){ # If extra number, there's a review
+		   $id = $1; $isreview = 1; }
+		 my $href ="http://www.ams.org/mathscinet-getitem?mr=".$id;
+		 (isreview=>$isreview, id=>$id, href=>$href, reviewer=>$reviewer); });
+
+DefMacro('\bib@synthesize@zbl',sub {
+  my $zblno     = currentBibEntryField('zblno');
+  my $zblreviewer= currentBibEntryField('zblreviewer');
+  if($zblno || $zblreviewer){
+    Invocation(T_CS('\bib@@zbl'),Tokenize($zblno),
+	       ($zblreviewer ? Tokenize($zblreviewer) : Tokens())); }
+  else {
+    (); }});
+
+DefConstructor('\bib@@zbl {}{}',
+	       "?#reviewer"
+	       . "(<ltx:bib-review scheme='zbl' id='#id' href='#href'>ZentralBlatt (#reviewer)</ltx:bib-review>)"
+	       . "(<ltx:bib-review scheme='zbl' id='#id' href='#href'>ZentralBlatt</ltx:bib-review>)",
+	       properties=>sub {
+		 my $id = ToString($_[1]);
+		 my $reviewer = $_[2];
+		 my $href ="http://www.zentralblatt-math.org/zmath/en/search/?q=an:$id";
+		 (id=>$id, href=>$href, reviewer=>$reviewer); });
+
+#======================================================================
+# Extra fields used in DLMF (elsewhere?)
+
+DefConstructor('\bib@field@default@links Digested',
+	       "<ltx:bib-links>#1</ltx:bib-links>");
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Processing BibTeX Name formats
+# Multiple names are separated by " and " and be ended by " and others".
+# BibTeX distinguishes 4 name components: First, Last, von and Jr., in 3 formats:
+#    First von Last
+#    von Last, First
+#    von Last, Jr, First
+# I suppose BibTeX is more worried about "von" since it does all sorts of case mangling?
+# We'll just combine "von Last" as Surname.
+# This simplifies the processing of all but the first case.
+
+sub processBibNameList {
+  my($string)=@_;
+  my @names = ();
+  my @words = splitWords($string);
+  my $etal =0;
+  # NOTE: Should formally represent the etal???
+  if(($words[$#words-1] eq 'and') && ($words[$#words] =~ /^(others|et\s*al\.?)$/)){
+    pop(@words); pop(@words); $etal=1; }
+  while(@words){
+    my @phrases=();
+    my @phrase=();
+    while(@words){
+      my $word = shift(@words);
+      last if $word eq 'and';
+      if ($word eq ','){
+	push(@phrases,[@phrase]); @phrase=(); }
+      else {
+	push(@phrase,$word); }}
+    push(@phrases,[@phrase]) if @phrase;
+
+    my($given,$surname,$jr);
+    if(scalar(@phrases) == 3){	# von Last, Jr, First
+      $surname = join(' ',@{$phrases[0]});
+      $jr      = join(' ',@{$phrases[1]});
+      $given   = join(' ',@{$phrases[2]}); }
+    elsif(scalar(@phrases) == 2){ # von Last, First
+      $surname = join(' ',@{$phrases[0]});
+      $given   = join(' ',@{$phrases[1]}); }
+    else {			# First von Last
+      my @words = @{$phrases[0]};
+      my @first;
+      while(@words && ($words[0] !~ /^[a-z]/)){ # This case test is not correct!!!
+	push(@first,shift(@words));}
+      push(@words,pop(@first)) unless @words;
+      $given   = join(' ',@first);
+      $surname = join(' ',@words); }
+    push(@names,Tokens(($surname  ? Invocation(T_CS('\bib@surname'), Tokenize($surname)) : ()),
+		       ($given    ? Invocation(T_CS('\bib@given'),   Tokenize($given)) : ()),
+		       ($jr       ? Invocation(T_CS('\bib@lineage'), Tokenize($jr)) : ())));
+  }
+  @names; }
+
+# Split into space separated words, but ignore spaces within {}
+sub splitWords {
+  my($string)=@_;
+  my @words = ();
+  $string =~ s/^\s+//;
+  my $word = '';
+  while($string){
+    if($string =~ s/^(,?)\s+//s){
+      push(@words,$word) if $word;
+      push(@words,$1) if $1;
+      $word = ''; }
+    elsif($string =~ s/^([^\{\s,]+)//){
+      $word .= $1; }
+    elsif($string =~ /^\{/){
+      $word .= extract_bracketed($string,'{}'); }
+    elsif($string =~ s/^(.)//){
+      $word .= $1; }}
+  push(@words,$word) if $word;
+  @words; }
+
+DefConstructor('\bib@surname{}',  "<ltx:surname>#1</ltx:surname>");
+DefConstructor('\bib@given{}',    "<ltx:givenname>#1</ltx:givenname>");
+DefConstructor('\bib@lineage{}',  "<ltx:lineage>#1</ltx:lineage>");
+
+#**********************************************************************
+1;
