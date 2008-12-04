@@ -35,35 +35,71 @@ NewCounter('@XMARG','document',idprefix=>'XM');
 
 #======================================================================
 # Define parsers for standard parameter types.
+
+# Skip any spaces, but don't contribute an argument.
 DefParameterType('SkipSpaces', sub{$_[0]->skipSpaces; }, novalue=>1);
+
+# Read the next token
 DefParameterType('Token',      sub{$_[0]->readToken; });
+
+# Read the next token, after expanding any expandable ones.
 DefParameterType('XToken',     sub{$_[0]->readXToken; });
+
+# Read a number
 DefParameterType('Number',     sub{$_[0]->readNumber; });
+
+# Read a dimension
 DefParameterType('Dimension',  sub{$_[0]->readDimension; });
+
+# Read a Glue (aka skip)
 DefParameterType('Glue',       sub{$_[0]->readGlue; });
+
+# Read a MuDimension (math)
 DefParameterType('MuDimension',sub{$_[0]->readMuDimension; });
+
+# Read a MuGlue (math)
 DefParameterType('MuGlue',     sub{$_[0]->readMuGlue; });
+
+# Read until the next (balanced) open brace {
+# used for the last TeX-style delimited argument
 DefParameterType('UntilBrace', sub{ 
   my($gullet)=@_;
   my $value=$gullet->readUntil(T_BEGIN);
   $gullet->unread(T_BEGIN);
   $value; });
+
+# Read a matching keyword, eg. Match:=
 DefParameterType('Match',      sub{shift->readMatch(@_); });
+
+# Read a keyword; eg. Keyword:to
+# (like Match, but ignores catcodes)
 DefParameterType('Keyword',    sub{shift->readKeyword(@_); });
+
+# Read balanced material (?)
 DefParameterType('Balanced',   sub{$_[0]->readBalanced; });
+
+# Read a Semiverbatim argument; ie w/ most catcodes neutralized.
 DefParameterType('Semiverbatim',sub{ $_[0]->readArg; }, semiverbatim=>1,
 		 reversion=>sub { (T_BEGIN,$_[0]->revert,T_END); });
+
+# Read a LaTeX-style optional argument (ie. in []), but the contents read as Semiverbatim.
 DefParameterType('OptionalSemiverbatim',sub{ $_[0]->readOptional; },
 		 semiverbatim=>1, optional=>1,
 		 reversion=>sub { ($_[0] ? (T_OTHER('['),$_[0]->revert,T_OTHER(']')) : ()); });
 
+# Read an argument that will not be digested.
 DefParameterType('Undigested',  sub { $_[0]->readArg; }, undigested=>1,
 		reversion=>sub {  (T_BEGIN,$_[0]->revert,T_END); });
+
+# Read a LaTeX-style optional argument (ie. in []), but it will not be digested.
 DefParameterType('OptionalUndigested',  sub { $_[0]->readOptional; }, 
 		 undigested=>1, optional=>1,
 		reversion=>sub {  ($_[0] ? (T_OTHER('['),$_[0]->revert,T_OTHER(']')):()); });
+
+# Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey',  sub { $_[0]->readArg; }, undigested=>1);
 
+# Read a token as used when defining it, ie. it may be enclosed in braces.
 DefParameterType('DefToken', sub {
   my($gullet)=@_;
   my $token = $gullet->readToken;
@@ -73,6 +109,7 @@ DefParameterType('DefToken', sub {
     $gullet->unread(@toks); }
   $token; });
 
+# Read a variable, ie. a token (after expansion) that is a writable register.
 DefParameterType('Variable', sub {
   my($gullet)=@_;
   my $token = $gullet->readXToken;
@@ -104,6 +141,8 @@ DefParameterType('MoveableBox', sub{
       && ($box->getDefinition->getCSName =~ /^(\\hbox|\\vbox||\\vtop)$/);
   $box; });
 
+# Read a parenthesis delimited argument.
+# Note that this does NOT balance () within the argument.
 DefParameterType('BalancedParen', sub {
   my ($gullet) = @_;
   my $tok = $gullet->readXToken;
@@ -115,7 +154,37 @@ DefParameterType('BalancedParen', sub {
    reversion=> sub {
      (T_OTHER('('), $_[0]->revert, T_OTHER(')')); });
 
+
+# Read a digested argument.
+# The usual parameter (generally written as {}) gets
+# tokenized and digested in separate stages (like TeX),
+# and so it is tokenized w/o recognizing any special macros within (eg. \url).
+# This parameter gets digested until the (required) opening { is balanced.
+# It is useful when the content would usually need to have been \protect'd
+# in order to correctly deal with catcodes.
+DefParameterType('Digested', sub {
+  my($gullet)=@_;
+  $gullet->skipSpaces;
+  my $tok = $gullet->readToken;
+  if($tok->equals(T_BEGIN)){
+    Digest($tok);
+    my $ismath     = $STATE->lookupValue('IN_MATH');
+    my @list = $STATE->getStomach->digestNextBody();
+    # In most (all?) cases, we're really looking for a single Whatsit here...
+    @list = grep(ref $_ ne 'LaTeXML::Comment', @list);
+    (scalar(@list) == 1 ? $list[0] 
+     : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); }
+  else {
+    ($tok);			# or error??
+    }},
+		 undigested=>1,		# since _already_ digested.
+		 reversion=>sub { (T_BEGIN,$_[0]->revert,T_END); });
+
 # Reads until the current group has ended.
+# This is useful for environment-like constructs,
+# particularly alignments (which may or may not be actual environments),
+# but which need special treatment of some of their content
+# as the expansion is carried out.
 DefParameterType('DigestedBody', sub {
   my($gullet)=@_;
   my $ismath     = $STATE->lookupValue('IN_MATH');
@@ -125,7 +194,6 @@ DefParameterType('DigestedBody', sub {
   (scalar(@list) == 1 ? $list[0] 
    : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); },
  undigested=>1);
-
 
 # In addition to the standard TeX Dimension, there are various LaTeX constructs
 # (particularly, the LaTeX picture environment, and the various pstricks packages)
