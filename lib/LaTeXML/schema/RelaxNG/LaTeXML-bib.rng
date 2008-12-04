@@ -110,12 +110,6 @@ those types recognized by BibTeX, but is also open-ended for extensibility.</a:d
       <ref name="Inline.model"/>
     </element>
   </define>
-  <define name="initials">
-    <element name="initials">
-      <a:documentation>Initials of an author, editor or translator.</a:documentation>
-      <ref name="Inline.model"/>
-    </element>
-  </define>
   <define name="lineage">
     <element name="lineage">
       <a:documentation>Lineage of an author, editor or translator. (eg. von)</a:documentation>
@@ -427,9 +421,6 @@ for generating citations.</a:documentation>
     <ref name="surname"/>
     <optional>
       <ref name="givenname"/>
-    </optional>
-    <optional>
-      <ref name="initials"/>
     </optional>
     <optional>
       <ref name="lineage"/>

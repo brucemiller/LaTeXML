@@ -1174,17 +1174,17 @@
   key CDATA #REQUIRED
   type CDATA #REQUIRED>
 
-<!ELEMENT bib-author (surname,givenname?,initials?,lineage?)>
+<!ELEMENT bib-author (surname,givenname?,lineage?)>
 <!ATTLIST bib-author
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
-<!ELEMENT bib-editor (surname,givenname?,initials?,lineage?)>
+<!ELEMENT bib-editor (surname,givenname?,lineage?)>
 <!ATTLIST bib-editor
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
-<!ELEMENT bib-translator (surname,givenname?,initials?,lineage?)>
+<!ELEMENT bib-translator (surname,givenname?,lineage?)>
 <!ATTLIST bib-translator
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
@@ -1199,12 +1199,6 @@
                      |bibref|Math|inline-block|verbatim|break|graphics
                      |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST givenname
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
-
-<!ELEMENT initials (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                    |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
-<!ATTLIST initials
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
 
 <!ELEMENT lineage (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref

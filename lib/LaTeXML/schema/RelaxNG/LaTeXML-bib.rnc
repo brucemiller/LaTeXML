@@ -75,11 +75,6 @@ givenname =
 element givenname {
   Inline.model }
 
-initials =
-## Initials of an author, editor or translator.
-element initials {
-  Inline.model }
-
 lineage =
 ## Lineage of an author, editor or translator. (eg. von)
 element lineage {
@@ -313,4 +308,4 @@ Bibentry.class =
 ## The content model of the bibliographic name fields
 ## (\elementref{bib-author}, \elementref{bib-editor}, \elementref{bib-translator})
 Bibname.model =
-  surname,  givenname?, initials?, lineage?
+  surname,  givenname?, lineage?
