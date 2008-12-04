@@ -30,15 +30,39 @@ use strict;
 # for the TeX fragments to assist in debugging message later.
 # Column number is currently kinda flubbed up.
 #**********************************************************************
+our %default_macros =(jan=>"January",   feb=>"February", mar=>"March",    apr=>"April",
+		      may=>"May",       jun=>"June",     jul=>"July",     aug=>"August",
+		      sep=>"September", oct=>"October",  nov=>"November", dec=>"December",
+		      acmcs=>"ACM Computing Surveys",
+		      acta=>"Acta Informatica",
+		      cacm=>"Communications of the ACM",
+		      ibmjrd=>"IBM Journal of Research and Development",
+		      ibmsj=>"IBM Systems Journal",
+		      ieeese=>"IEEE Transactions on Software Engineering",
+		      ieeetc=>"IEEE Transactions on Computers",
+		      ieeetcad=>"IEEE Transactions on Computer-Aided Design of Integrated Circuits",
+		      ipl=>"Information Processing Letters",
+		      jacm=>"Journal of the ACM",
+		      jcss=>"Journal of Computer and System Sciences",
+		      scp=>"Science of Computer Programming",
+		      sicomp=>"SIAM Journal on Computing",
+		      tocs=>"ACM Transactions on Computer Systems",
+		      tods=>"ACM Transactions on Database Systems",
+		      tog=>"ACM Transactions on Graphics",
+		      toms=>"ACM Transactions on Mathematical Software",
+		      toois=>"ACM Transactions on Office Information Systems",
+		      toplas=>"ACM Transactions on Programming Languages and Systems",
+		      tcs=>"Theoretical Computer Science");
+#======================================================================
 
 sub newFromFile {
   my($class,$bibname)=@_;
-  my $self = {source=>$bibname, preamble=>[], entries=>[], macros=>{}};
+  my $self = {source=>$bibname, preamble=>[], entries=>[], macros=>{%default_macros}};
   bless $self,$class;
   my $paths = $STATE->lookupValue('SEARCHPATHS');
   my $file = pathname_find($bibname,types=>['bib'],paths=>$paths);
-  die "Couldn't find file $bibname in ".join(', ',@$paths) unless $file;
-  open(BIB,$file) or die "Couldn't open $file: $!";
+  Fatal(":missing_file:$file Couldn't find file $bibname in ".join(', ',@$paths)) unless $file;
+  open(BIB,$file) or Fatal(":missing_file:$file Couldn't open: $!");
   $$self{file} = $bibname;
   $$self{lines} = [<BIB>];
   $$self{line} = shift(@{$$self{lines}});
@@ -48,7 +72,7 @@ sub newFromFile {
 
 sub newFromString {
   my($class,$string)=@_;
-  my $self = {source=>"<Unknown>", preamble=>[], entries=>[], macros=>{}};
+  my $self = {source=>"<Unknown>", preamble=>[], entries=>[], macros=>{%default_macros}};
   bless $self,$class;
 
   $$self{file} = "<anonymous>";
@@ -70,6 +94,11 @@ sub toTeX {
        map('\ProcessBibTeXEntry{'.$_->getKey.'}',@{$$self{entries}}),
        '\end{bibtex@bibliography}'); }
 
+# This lets Bib support formatted error messages.
+sub getLocator {
+  my($self)=@_;
+  "at $$self{source}; line $$self{lineno}\n  $$self{line}"; }
+
 #======================================================================
 #  Greg Ward has a pretty good description of the BibTeX data format
 #  as part of his btparser package (See CPAN)
@@ -82,7 +111,7 @@ sub parseTopLevel {
   NoteBegin("Preparsing Bibliography $$self{source}");
   while($self->skipJunk){
     my $type = $self->parseName;
-    $self->parseWarning("BibTeX \"\@$type\" is nasty!") unless $type =~ /^[a-z]+$/;
+    Warn(":unexpected:$type BibTeX type \"\@$type\" is nasty!") unless $type =~ /^[a-z]+$/;
     if   ($type eq 'preamble'){ $self->parsePreamble; }
     elsif($type eq 'string')  { $self->parseMacro; }
     elsif($type eq 'comment') { $self->parseComment; }
@@ -99,11 +128,11 @@ our %CLOSE=("{"=>"}","("=>")");
 sub parsePreamble{
   my($self)=@_;
   $self->skipWhite;
-  ($$self{line}=~ s/^([\(\{])//) or $self->parseError("Expected ( or {");
+  ($$self{line}=~ s/^([\(\{])//) or Fatal(":expected:({ Expected ( or {");
   my $open = $1;
   push(@{$$self{preamble}}, $self->parseValue());
   $self->skipWhite;
-  ($$self{line}=~ s/^(\Q$CLOSE{$open}\E)//) or $self->parseError("Expected $CLOSE{$open}");
+  ($$self{line}=~ s/^(\Q$CLOSE{$open}\E)//) or Fatal(":expected:$CLOSE{$open}");
 }
 
 # @string open [name = value]* close
@@ -111,7 +140,7 @@ sub parsePreamble{
 sub parseMacro {
   my($self)=@_;
   $self->skipWhite;
-  ($$self{line}=~ s/^([\(\{])//) or $self->parseError("Expected ( or {");
+  ($$self{line}=~ s/^([\(\{])//) or Fatal(":expected:({ Expected ( or {");
   my $open = $1;
   foreach my $macro ($self->parseFields($open)){
     $$self{macros}{$$macro[0]} = $$macro[1]; }}
@@ -128,7 +157,7 @@ sub parseComment {
 sub parseEntry{
   my($self,$type)=@_;
   $self->skipWhite;
-  ($$self{line}=~ s/^([\(\{])//) or $self->parseError("Expected ( or {");
+  ($$self{line}=~ s/^([\(\{])//) or Fatal(":expected:({ Expected ( or {");
   my $open = $1;
   my $key = $self->parseName();
   $self->skipWhite;
@@ -142,16 +171,16 @@ sub parseFields {
   my $closed;
   do {
     my $name = $self->parseName;
-    $self->parseWarning("BibTeX field name \"$name\" has awkward characters") unless $name =~ /^[a-z_].*$/;
+    Warn(":unexpected:$name BibTeX field name \"$name\" has awkward characters") unless $name =~ /^[a-z_].*$/;
     $self->skipWhite;
-    ($$self{line}=~ s/^=//) or $self->parseError("Expected =");
+    ($$self{line}=~ s/^=//) or Fatal(":expected:= Expected an =");
     push(@fields,[$name,$self->parseValue]);
     $self->skipWhite;
   } while ($$self{line} =~ s/^,//) && $self->skipWhite
     && ! ($closed=($$self{line} =~ s/^(\Q$CLOSE{$open}\E)//));
   if(!$closed){
     $self->skipWhite;
-    ($$self{line}=~ s/^(\Q$CLOSE{$open}\E)//) or $self->parseError("Expected $CLOSE{$open}"); }
+    ($$self{line}=~ s/^(\Q$CLOSE{$open}\E)//) or Fatal(":expected:$CLOSE{$open}"); }
   @fields; }
 
 #==============================
@@ -183,7 +212,7 @@ sub parseString {
     while(! defined($string = extract_bracketed($$self{line},'{}'))){
       $self->extendLine; }}	# Fetch another line if we haven't balanced, yet.
   else {
-    $self->parseError("Expected a string delimited by \"..\", (..) or {..}"); }
+    Fatal(":expected:string Expected a string delimited by \"..\", (..) or {..}"); }
   $string =~ s/^.//;		# Remove the delimiters.
   $string =~ s/.$//;
   $string; }
@@ -191,7 +220,7 @@ sub parseString {
 sub extendLine {
   my($self)=@_;
   my $nextline = shift(@{$$self{lines}});
-  $self->parserError("Input ended while parsing string") unless defined $nextline;
+  Fatal(":unexpected:EOF Input ended while parsing string") unless defined $nextline;
   $$self{line} .= $nextline;
   $$self{lineno} ++; }
 
@@ -205,11 +234,13 @@ sub parseValue {
     if($$self{line} =~ /^[\"\{]/){
       $value .= $self->parseString; }
     elsif(my $name = $self->parseName){
-      my $macro = $$self{macros}{$name};
-      $self->parseError("The macro $name is not defined") unless defined $macro;
+      my $macro = ($name =~ /^\d+$/ ? $name : $$self{macros}{$name});
+      if(!defined $macro){
+	Error(":unexpected:$name The macro $name is not defined");
+	$macro=''; }
       $value .= $macro; }
     else { 
-      $self->parseError("Expected a value"); }
+      Error(":expected:value a value"); }
     $self->skipWhite;
   } while $$self{line} =~ s/^#//;
   $value; }
@@ -238,14 +269,6 @@ sub skipJunk {
     $$self{line} = $nextline || "";
     $$self{lineno}++;
     return unless defined $nextline; }}
-
-sub parseError {
-  my($self,$message)=@_;
-  die "Error: $message\n at $$self{file}, line $$self{lineno} : $$self{line}"; }
-
-sub parseWarning {
-  my($self,$message)=@_;
-  print STDERR "Warning: $message\n at $$self{file}, line $$self{lineno} : $$self{line}\n"; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package LaTeXML::Bib::BibEntry;
