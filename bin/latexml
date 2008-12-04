@@ -15,6 +15,7 @@ my($verbosity,$strict,$comments,$noparse,$includestyles)=(0,0,1,0,0);
 my ($format,$destination,$help,$showversion)=('xml','');
 my ($documentid);
 my $inputencoding;
+my $mode = 'auto';
 my @paths = ('.');
 my (@preload,@debugs);
 GetOptions("destination=s" => \$destination,
@@ -27,6 +28,7 @@ GetOptions("destination=s" => \$destination,
 	   "xml"       => sub { $format = 'xml'; },
 	   "tex"       => sub { $format = 'tex'; },
 	   "box"       => sub { $format = 'box'; },
+	   "bibtex"    => sub { $mode='bibtex'; },
 	   "noparse"   => \$noparse,
 	   "includestyles"=> \$includestyles,
 	   "inputencoding=s"=>\$inputencoding,
@@ -43,7 +45,7 @@ pod2usage(-message=>"$identity\nMissing input TeX file",
 my $source = $ARGV[0];
 
 #**********************************************************************
-# Do the processing.
+# Set up the processing.
 print STDERR "$identity\n" unless $verbosity < 0;
 
 @paths = map(pathname_canonical($_),@paths);
@@ -62,15 +64,20 @@ if($destination){
 if(my @baddirs = grep(! -d $_, @paths)){
   warn "$identity: these path directories do not exist: ".join(', ',@baddirs)."\n"; }
 binmode(STDERR,":utf8");
+
+$mode = 'bibtex' if ($mode eq 'auto') && ($source =~ /\.bib$/);
 # ========================================
 # First read and digest whatever we're given.
 my $digested;
+
 if($source eq '-'){
-    my $content;
-    { local $/ = undef; $content = <>; }
-    $digested = $latexml->digestString($content); }
+  my $content;
+  { local $/ = undef; $content = <>; }
+  $digested = $latexml->digestString($content); }
+elsif($mode eq 'bibtex'){
+  $digested = $latexml->digestBibTeXFile($source); }
 else {
-    $digested = $latexml->digestFile($source); }
+  $digested = $latexml->digestFile($source); }
 
 # ========================================
 # Now, convert to DOM and output, if desired.
@@ -236,7 +243,7 @@ Shows this help message.
 
 =head1 SEE ALSO
 
-L<latexmlpost>, L<LaTeXML>
+L<latexmlpost>, L<latexmlbib>, L<LaTeXML>
 
 =cut
 #**********************************************************************

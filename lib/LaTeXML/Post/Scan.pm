@@ -219,7 +219,9 @@ sub bibitem_handler {
 			 year        =>$doc->findnode('ltx:bibtag[@role="year"]',$node),
 			 number      =>$doc->findnode('ltx:bibtag[@role="number"]',$node),
 			 refnum      =>$doc->findnode('ltx:bibtag[@role="refnum"]',$node),
-			 title       =>$doc->findnode('ltx:bibtag[@role="title"]',$node)); }
+			 title       =>$doc->findnode('ltx:bibtag[@role="title"]',$node),
+			 keytag      =>$doc->findnode('ltx:bibtag[@role="key"]',$node),
+			 typetag     =>$doc->findnode('ltx:bibtag[@role="type"]',$node)); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 # For a bibentry, we'll only store the citation key, so we know it's there.

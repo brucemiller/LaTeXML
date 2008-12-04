@@ -278,7 +278,7 @@ if(!$prescan){
 	my $csspath = pathname_absolute($css,pathname_directory($destination));
 	while(@csssources && ($csssources[0] eq $csspath)){ shift(@csssources); }
 	my $csssource = shift(@csssources);
-	pathname_copy($csssource,$csspath)  if -f $csssource;
+	pathname_copy($csssource,$csspath)  if $csssource && -f $csssource;
 	push(@csspaths,$csspath); }}
     push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,
 					 css=>[@csspaths],
@@ -713,7 +713,7 @@ and pstricks material to SVG.
 
 =head1 SEE ALSO
 
-L<latexml>, L<LaTeXML>
+L<latexml>, L<latexmlbib>, L<LaTeXML>
 
 =cut
 #**********************************************************************

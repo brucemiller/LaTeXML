@@ -179,8 +179,13 @@ sub fill_in_bibrefs {
 # Combines when multiple bibitems share the same authors.
 sub make_bibcite {
   my($self,$doc,$bibref)=@_;
-  my $show = $bibref->getAttribute('show');
+
   my @keys = split(/,/,$bibref->getAttribute('bibrefs'));
+  my $show = $bibref->getAttribute('show');
+  if(!$show){
+    $self->Warn($doc,"No show in bibref ".join(', ',@keys)); 
+    $show = 'refnum'; }
+
   my $sep  = $bibref->getAttribute('separator') || ',';
   my $yysep= $bibref->getAttribute('yyseparator') || ',';
   my @phrases = $bibref->getChildNodes();	  # get the ltx;note's in the bibref!
@@ -192,24 +197,26 @@ sub make_bibcite {
 	if(my $entry = $$self{db}->lookup("ID:$id")){
 	  my $authors  = $entry->getValue('authors');
 	  my $fauthors = $entry->getValue('fullauthors');
+	  my $keytag   = $entry->getValue('keytag');
 	  my $year     = $entry->getValue('year');
+	  my $typetag  = $entry->getValue('typetag');
 	  my $number   = $entry->getValue('number');
 	  my $title    = $entry->getValue('title');
 	  my $refnum   = $entry->getValue('refnum'); # This come's from the \bibitem, w/o BibTeX
 	  my($rawyear,$suffix);
 	  if($year && ($year->textContent) =~ /^(\d\d\d\d)(\w)$/){
 	    ($rawyear,$suffix)=($1,$2); }
-	  $show = 'refnum' unless $authors || $fauthors;	    # Disable author-year format!
+	  $show = 'refnum' unless $authors || $fauthors || $keytag; # Disable author-year format!
 	  # fullnames ?
-	  push(@data,{authors     =>[$doc->trimChildNodes($authors || $fauthors)],
-		      fullauthors =>[$doc->trimChildNodes($fauthors || $authors)],
+	  push(@data,{authors     =>[$doc->trimChildNodes($authors || $fauthors || $keytag)],
+		      fullauthors =>[$doc->trimChildNodes($fauthors || $authors || $keytag)],
 		      authortext  =>($authors||$fauthors ? ($authors||$fauthors)->textContent :''),
-		      year        =>[$doc->trimChildNodes($year)],
+		      year        =>[$doc->trimChildNodes($year || $typetag)],
 		      rawyear     =>$rawyear,
 		      suffix      =>$suffix,
 		      number      =>[$doc->trimChildNodes($number)],
 		      refnum      =>[$doc->trimChildNodes($refnum)],
-		      title       =>[$doc->trimChildNodes($title)],
+		      title       =>[$doc->trimChildNodes($title || $keytag)],
 		      attr=>{idref=>$id,
 			     href=>$self->generateURL($doc,$id),
 			     ($title ? (title=>$title->textContent):())}}); }}}

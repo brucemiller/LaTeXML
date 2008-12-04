@@ -38,6 +38,7 @@ sub process {
 
   if(my $bib = $doc->findnode('//ltx:bibliography')){
     return $doc if $doc->findnodes('//ltx:bibitem',$bib); # Already populated?
+    local $LaTeXML::Post::MakeBibliography::NUMBER = 0;
     my $entries = $self->getBibEntries($doc);
 
     # Remove any bibentry's (these should have been converted to bibitems)
@@ -159,7 +160,6 @@ sub getBibEntries {
 sub makeBibliographyList {
   my($self,$doc,$entries)=@_;
   local $LaTeXML::Post::MakeBibliography::DOCUMENT = $doc;
-  local $LaTeXML::Post::MakeBibliography::NUMBER = 0;
   ['ltx:biblist',{},
    map($self->formatBibEntry($doc,$$entries{$_}), sort keys %$entries)]; }
 
@@ -187,8 +187,9 @@ sub formatBibEntry {
   #------------------------------
   # Format the bibtag's
   my @tags=();
-  push(@tags,['ltx:bibtag',{role=>'number'},$number]);
+  push(@tags,['ltx:bibtag',{role=>'number'},$number]); # number tag
 
+  # Set up authors and fullauthors tags
   my @names = $doc->findnodes('ltx:bib-author/ltx:surname',$bibentry);
   @names = $doc->findnodes('ltx:bib-editor/ltx:surname',$bibentry) unless @names;
   if(@names > 2){
@@ -203,35 +204,47 @@ sub formatBibEntry {
 		$names[0]->childNodes,' and ',$names[1]->childNodes]); }
   elsif(@names){
     push(@tags,['ltx:bibtag',{role=>'authors'},$names[0]->childNodes]); }
-  # HACK!!!
-  elsif(($type eq 'software') && (@names = $doc->findnodes('ltx:bib-key',$bibentry))){
-    push(@tags,['ltx:bibtag',{role=>'authors'},map($_->childNodes,@names)]); }
 
-  my $year;
-  if($year = $doc->findnode('ltx:bib-date',$bibentry)){
-    push(@tags,['ltx:bibtag',{role=>'year'},$year->childNodes,($$entry{suffix} ||'')]); }
-  # HACK!!!
-  elsif($type eq 'software'){
-    push(@tags,['ltx:bibtag',{role=>'year'},$year = $type]); }
+  # Put a key tag, to use in place of authors if needed (esp for software, websites, etc)
+  my $keytag;
+  if($keytag = $doc->findnode('ltx:bib-key',$bibentry)){
+    push(@tags,['ltx:bibtag',{role=>'key'},$keytag->childNodes]); }
 
+  my @year=();
+  if(my $date = $doc->findnode('ltx:bib-date',$bibentry)){
+    @year = $date->childNodes;
+    if(my $datetext = $date->textContent){
+      if($datetext=~/^(\d\d\d\d)/){ # Extract 4 digit year, if any
+	@year = ($1); }}
+    push(@tags,['ltx:bibtag',{role=>'year'},@year,($$entry{suffix} ||'')]); }
+
+  # Store a type tag, to use in place of year, if needed (esp for software, ...)
+  my $typetag;
+  if($typetag = $doc->findnode('ltx:bib-type',$bibentry)){
+    push(@tags,['ltx:bibtag',{role=>'bibtype'},$typetag->childNodes]); }
+
+  # put in the title
   if(my $title = $doc->findnode('ltx:bib-title',$bibentry)){
     push(@tags,['ltx:bibtag',{role=>'title'},$title->childNodes]); }
 
   # And finally, the refnum; we need to know the desired citation style!
   # This is screwy!!!
   my $style = 'authoryear';	# else 'number'
-  $style = 'number' unless $year && @names;
+  $style = 'number' unless (@names || $keytag) && (@year || $typetag);
   if($style eq 'number'){
     push(@tags,['ltx:bibtag',{role=>'refnum'},$number]); }
   else {
     shift(@blockspecs);		# Skip redundant 1st block!!
+    my @rfnames;
     if(my @authors = $doc->findnodes('ltx:bib-author',$bibentry)){
-      push(@tags,['ltx:bibtag',{role=>'refnum'},
-		  do_authors(@authors),' (',$year->childNodes,')']); }
+      @rfnames = do_authors(@authors); }
     elsif(my @editors = $doc->findnodes('ltx:bib-editor',$bibentry)){
-      push(@tags,['ltx:bibtag',{role=>'refnum'},
-		  do_editorsA(@editors),' (',$year->childNodes,')']); }
-  }
+      @rfnames = do_editorsA(@editors); }
+    else {
+      @rfnames = $keytag->childNodes; }
+    my @rfyear  = (@year  ? @year  : ($typetag ? $typetag->childNodes : ()));
+
+    push(@tags,['ltx:bibtag',{role=>'refnum'},@rfnames,' (',@rfyear,')']); }
 
   #------------------------------
   # Format the data in blocks, with the first being bib-label, rest bibblock.
@@ -250,7 +263,8 @@ sub formatBibEntry {
   }
   # Add a Cited by block.
   my @citedby=map(['ltx:ref',{idref=>$_}], sort keys %{$$entry{referrers}});
-  push(@citedby,['ltx:bibref',{bibrefs=>join(',',sort keys %{$$entry{bibreferrers}})}])
+  push(@citedby,['ltx:bibref',{bibrefs=>join(',',sort keys %{$$entry{bibreferrers}}),
+			       show=>'refnum'}])
     if $$entry{bibreferrers};
   push(@blocks,['ltx:bibblock',{},"Cited by: ",$doc->conjoin(', ',@citedby)]);
 
@@ -265,11 +279,16 @@ sub do_any  { @_; }
 # Stuff for Author(s) & Editor(s)
 sub do_name {
   my($node)=@_;
-  my $init= $LaTeXML::Post::MakeBibliography::DOCUMENT->findnode('ltx:initials',$node);
+  # NOTE: This should be a formatting option; use initials or full first names.
+  my $first = $LaTeXML::Post::MakeBibliography::DOCUMENT->findnode('ltx:givenname',$node);
+  if($first){			# && use initials
+    $first = join('',map( (/\.$/ ? "$_ " : (/^(.)/ ? "$1. " : '')),
+			  split(/\s/,$first->textContent))); }
+  else {
+    $first = (); }
   my $sur = $LaTeXML::Post::MakeBibliography::DOCUMENT->findnode('ltx:surname',$node);
 # Why, oh Why do we need the _extra_ cloneNode ???
-  ( ($init ? ($init->cloneNode(1)->childNodes,' '):()),$sur->cloneNode(1)->childNodes); }
-#  ( ($init ? (content_nodes($init),' '):()),content_nodes($sur)); }
+  ( $first,$sur->cloneNode(1)->childNodes); }
 
 sub do_names {
   my(@names)=@_;

@@ -20,13 +20,14 @@ use LaTeXML::Model;
 use LaTeXML::Object;
 use LaTeXML::MathParser;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Bib;
 use Encode;
 our @ISA = (qw(LaTeXML::Object));
 
 #use LaTeXML::Document;
 
 use vars qw($VERSION);
-$VERSION = "0.6.0";
+$VERSION = "0.6.1";
 
 #**********************************************************************
 
@@ -83,6 +84,134 @@ sub getStatusMessage {
 sub digestFile {
   my($self,$file)=@_;
   $file =~ s/\.tex$//;
+  $self->withState(sub {
+     my($state)=@_;
+     NoteBegin("Digesting $file");
+     $self->initializeState('TeX.pool', @{$$self{preload} || []});
+
+     my $pathname = pathname_find($file,types=>['tex','']);
+     Fatal(":missing_file:$file Cannot find TeX file $file") unless $pathname;
+     $state->assignValue(SOURCEFILE=>$pathname);
+     my($dir,$name,$ext)=pathname_split($pathname);
+     $state->pushValue(SEARCHPATHS=>$dir);
+     $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,
+							Tokens(Explode($name))));
+     $state->getStomach->getGullet->input($pathname);
+     my $list = $self->finishDigestion;
+     NoteEnd("Digesting $file");
+     $list; });
+}
+sub digestString {
+  my($self,$string)=@_;
+  $self->withState(sub {
+     my($state)=@_;
+     NoteBegin("Digesting string");
+     $self->initializeState('TeX.pool', @{$$self{preload} || []});
+
+     $state->getStomach->getGullet->openMouth(LaTeXML::Mouth->new($string),0);
+###     $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,
+###						       Tokens(Explode("Unknown"))));
+     my $line = $self->finishDigestion;
+     NoteEnd("Digesting string");
+     $line; });
+}
+
+sub digestBibTeXFile {
+  my($self,$file)=@_;
+  $file =~ s/\.bib$//;
+  $self->withState(sub {
+     my($state)=@_;
+     NoteBegin("Digesting bibliography $file");
+     # NOTE: This is set up to do BibTeX for LaTeX (not other flavors, if any)
+     $self->initializeState('TeX.pool','LaTeX.pool', 'BibTeX.pool', @{$$self{preload} || []});
+     my $pathname = pathname_find($file,types=>['bib','']);
+     Fatal(":missing_file:$file Cannot find TeX file $file") unless $pathname;
+     my $bib = LaTeXML::Bib->newFromFile($file);
+     my($dir,$name,$ext)=pathname_split($pathname);
+     $state->pushValue(SEARCHPATHS=>$dir);
+     $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,
+							Tokens(Explode($name))));
+     my $tex = $bib->toTeX;
+     $state->getStomach->getGullet->openMouth(LaTeXML::Mouth->new($tex),0);
+     my $line = $self->finishDigestion;
+     NoteEnd("Digesting bibliography $file");
+     $line; });
+}
+
+sub finishDigestion {
+  my($self)=@_;
+  my $state = $$self{state};
+  my $stomach  = $state->getStomach; # The current Stomach;
+  my $list = LaTeXML::List->new($stomach->digestNextBody);
+  if(my $env = $state->lookupValue('current_environment')){
+    Error(":expected:\\end{$env} Input ended while environment $env was open"); } 
+  $stomach->getGullet->flush;
+  $list; }
+
+sub convertDocument {
+  my($self,$digested)=@_;
+  $self->withState(sub {
+     my($state)=@_;
+     my $model    = $state->getModel;   # The document model.
+     my $document  = LaTeXML::Document->new($model);
+     NoteBegin("Building");
+     $model->loadSchema(); # If needed?
+     if(my $paths = $state->lookupValue('SEARCHPATHS')){
+       if($state->lookupValue('INCLUDE_COMMENTS')){
+	 $document->insertPI('latexml',searchpaths=>join(',',@$paths)); }}
+     $document->absorb($digested);
+     NoteEnd("Building");
+
+     NoteBegin("Rewriting");
+     $model->applyRewrites($document,$document->getDocument->documentElement);
+     NoteEnd("Rewriting");
+
+     LaTeXML::MathParser->new()->parseMath($document) unless $$self{nomathparse};
+     $document->finalize(); });
+}
+
+sub withState {
+  my($self,$closure)=@_;
+  local $STATE    = $$self{state};
+  # And, set fancy error handler for ANY die!
+  local $SIG{__DIE__}  = sub { LaTeXML::Error::Fatal(join('',":perl:die ",@_)); };
+  local $SIG{INT}      = sub { LaTeXML::Error::Fatal(join('',":perl:interrupt ",@_)); }; # ??
+  local $SIG{__WARN__} = sub { LaTeXML::Error::Warn(join('',":perl:warn ",@_)); };
+  local $LaTeXML::DUAL_BRANCH= '';
+
+  &$closure($STATE); }
+
+sub initializeState {
+  my($self,@files)=@_;
+  my $stomach  = $STATE->getStomach; # The current Stomach;
+  my $gullet = $stomach->getGullet;
+  $stomach->initialize;
+  my $paths = $STATE->lookupValue('SEARCHPATHS');
+  foreach my $preload (@files){
+    if(my $loadpath = pathname_find("$preload.ltxml",paths=>$paths,installation_subdir=>'Package')){
+      $gullet->input($loadpath); }
+    else {
+      Fatal(":missing_file:$preload Couldn't find $preload to preload"); }}
+
+  # NOTE: This is seemingly a result of a not-quite-right
+  # processing model.  Opening a new mouth to tokenize & digest
+  # the bibtex material lets the macros do the right-thing as far as
+  # catcodes, etc.
+  # HOWEVER, it goes in at the FRONT of the line; pending preloads
+  # may not get finished.
+  # Probably the right solution is to immediately process included, interpreted, style files?
+  my @pending = ();
+  while($gullet->getMouth->hasMoreInput){
+    push(@pending,$stomach->digestNextBody); }
+  @pending = map($_->unlist,@pending);
+  if(@pending){
+    Warn(":unexpected:<boxes> Got boxes from preloaded modules: ".join(Stringify($_),@pending));}
+}
+
+###
+sub XXXXdigestFile {
+  my($self,$file)=@_;
+  $file =~ s/\.tex$//;
   local $STATE    = $$self{state};
   my $stomach  = $STATE->getStomach; # The current Stomach;
   my $gullet   = $stomach->getGullet;
@@ -114,7 +243,7 @@ sub digestFile {
   NoteEnd("Digesting $file");
   $list; }
 
-sub digestString {
+sub XXXdigestString {
   my($self,$string)=@_;
   local $STATE    = $$self{state};
   my $stomach  = $STATE->getStomach; # The current Stomach;
@@ -142,7 +271,7 @@ sub digestString {
   NoteEnd("Digesting string");
   $list; }
 
-sub convertDocument {
+sub XXXconvertDocument {
   my($self,$digested)=@_;
   local $STATE    = $$self{state};
   my $model    = $STATE->getModel;   # The document model.
