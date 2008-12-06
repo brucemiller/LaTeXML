@@ -1409,7 +1409,9 @@
                   |picture|note|indexmark|ERROR)*>
 <!ATTLIST bibtag
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  role CDATA #IMPLIED>
+  role CDATA #IMPLIED
+  open CDATA #IMPLIED
+  close CDATA #IMPLIED>
 
 <!ELEMENT bibblock (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics

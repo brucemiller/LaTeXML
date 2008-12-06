@@ -368,11 +368,22 @@ present in the BibTeX data.</a:documentation>
   <define name="bibtag">
     <element name="bibtag">
       <a:documentation>Various formatted tags for bibliographic items.
-Typically @role refnum is shown in the displayed bibliography, 
-other roles (number, authors, fullauthors, year, title) may be extracted
-for generating citations.</a:documentation>
+Typically @role refnum is shown in the displayed bibliography,
+as the beginning of the item.  Other roles 
+(eg. number, authors, fullauthors, year, title) record formatted
+info to be used for filling in citations (\elementref{bibref}).</a:documentation>
       <optional>
         <attribute name="role"/>
+      </optional>
+      <optional>
+        <attribute name="open">
+          <a:documentation>A delimiter for formatting the refnum in the bibliography</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="close">
+          <a:documentation>A delimiter for formatting the refnum in the bibliography</a:documentation>
+        </attribute>
       </optional>
       <ref name="Inline.model"/>
     </element>

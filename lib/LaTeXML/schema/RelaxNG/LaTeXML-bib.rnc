@@ -262,11 +262,16 @@ element bibitem {
 
 bibtag =
 ## Various formatted tags for bibliographic items.
-## Typically @role refnum is shown in the displayed bibliography, 
-## other roles (number, authors, fullauthors, year, title) may be extracted
-## for generating citations.
+## Typically @role refnum is shown in the displayed bibliography,
+## as the beginning of the item.  Other roles 
+## (eg. number, authors, fullauthors, year, title) record formatted
+## info to be used for filling in citations (\elementref{bibref}).
 element bibtag {
   attribute role { text }?,
+  ## A delimiter for formatting the refnum in the bibliography
+  attribute open { text }?,
+  ## A delimiter for formatting the refnum in the bibliography
+  attribute close { text }?,
   Inline.model }
 
 bibblock =
