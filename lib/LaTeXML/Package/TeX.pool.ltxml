@@ -165,18 +165,18 @@ DefParameterType('BalancedParen', sub {
 DefParameterType('Digested', sub {
   my($gullet)=@_;
   $gullet->skipSpaces;
-  my $tok = $gullet->readToken;
-  if($tok->equals(T_BEGIN)){
-    Digest($tok);
-    my $ismath     = $STATE->lookupValue('IN_MATH');
-    my @list = $STATE->getStomach->digestNextBody();
-    # In most (all?) cases, we're really looking for a single Whatsit here...
-    @list = grep(ref $_ ne 'LaTeXML::Comment', @list);
-    (scalar(@list) == 1 ? $list[0] 
-     : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); }
+  my $ismath     = $STATE->lookupValue('IN_MATH');
+  my $token = $gullet->readXToken;
+  my @list=();
+  if($token->equals(T_BEGIN)){
+    Digest($token);
+    @list = $STATE->getStomach->digestNextBody(); }
   else {
-    ($tok);			# or error??
-    }},
+    @list = $STATE->getStomach->invokeToken($token); }
+  # In most (all?) cases, we're really looking for a single Whatsit here...
+  @list = grep(ref $_ ne 'LaTeXML::Comment', @list);
+  (scalar(@list) == 1 ? $list[0] 
+   : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); },
 		 undigested=>1,		# since _already_ digested.
 		 reversion=>sub { (T_BEGIN,$_[0]->revert,T_END); });
 
