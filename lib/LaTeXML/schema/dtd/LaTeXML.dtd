@@ -1159,14 +1159,33 @@
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
-<!ELEMENT bibentry (bib-author|bib-editor|bib-translator|bib-title
-                    |bib-subtitle|bib-booktitle|bib-key|bib-journal
-                    |bib-series|bib-conference|bib-publisher
-                    |bib-organization|bib-institution|bib-address
-                    |bib-volume|bib-number|bib-pages|bib-part|bib-date
-                    |bib-edition|bib-status|bib-type|bib-language
-                    |bib-url|bib-note|bib-identifier|bib-review
-                    |bib-links)*>
+<!ELEMENT bibitem (bibtag*,bibblock*)>
+<!ATTLIST bibitem
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  xml:id ID #IMPLIED
+  key CDATA #IMPLIED>
+
+<!ELEMENT bibtag (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
+                  |Math|inline-block|verbatim|break|graphics|tabular
+                  |picture|note|indexmark|ERROR)*>
+<!ATTLIST bibtag
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  role CDATA #IMPLIED
+  open CDATA #IMPLIED
+  close CDATA #IMPLIED>
+
+<!ELEMENT bibblock (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
+                    |bibref|Math|inline-block|verbatim|break|graphics
+                    |tabular|picture|note|indexmark|ERROR)*>
+<!ATTLIST bibblock
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
+
+<!ELEMENT bibentry (bib-name|bib-title|bib-subtitle|bib-key|bib-type
+                    |bib-date|bib-publisher|bib-organization|bib-place
+                    |bib-part|bib-related|bib-edition|bib-status
+                    |bib-language|bib-url|bib-note|bib-extract
+                    |bib-identifier|bib-review|bib-links)*>
 <!ATTLIST bibentry
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1174,20 +1193,11 @@
   key CDATA #REQUIRED
   type CDATA #REQUIRED>
 
-<!ELEMENT bib-author (surname,givenname?,lineage?)>
-<!ATTLIST bib-author
+<!ELEMENT bib-name (surname,givenname?,lineage?)>
+<!ATTLIST bib-name
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
-
-<!ELEMENT bib-editor (surname,givenname?,lineage?)>
-<!ATTLIST bib-editor
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
-
-<!ELEMENT bib-translator (surname,givenname?,lineage?)>
-<!ATTLIST bib-translator
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  role CDATA #IMPLIED>
 
 <!ELEMENT surname (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
                    |Math|inline-block|verbatim|break|graphics|tabular
@@ -1222,14 +1232,6 @@
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
-<!ELEMENT bib-booktitle (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                         |bibref|Math|inline-block|verbatim|break
-                         |graphics|tabular|picture|note|indexmark
-                         |ERROR)*>
-<!ATTLIST bib-booktitle
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
-
 <!ELEMENT bib-key (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
                    |Math|inline-block|verbatim|break|graphics|tabular
                    |picture|note|indexmark|ERROR)*>
@@ -1237,27 +1239,20 @@
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
-<!ELEMENT bib-journal (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                       |bibref|Math|inline-block|verbatim|break|graphics
-                       |tabular|picture|note|indexmark|ERROR)*>
-<!ATTLIST bib-journal
+<!ELEMENT bib-type (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
+                    |bibref|Math|inline-block|verbatim|break|graphics
+                    |tabular|picture|note|indexmark|ERROR)*>
+<!ATTLIST bib-type
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
-<!ELEMENT bib-series (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                      |bibref|Math|inline-block|verbatim|break|graphics
-                      |tabular|picture|note|indexmark|ERROR)*>
-<!ATTLIST bib-series
+<!ELEMENT bib-date (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
+                    |bibref|Math|inline-block|verbatim|break|graphics
+                    |tabular|picture|note|indexmark|ERROR)*>
+<!ATTLIST bib-date
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
-
-<!ELEMENT bib-conference (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                          |bibref|Math|inline-block|verbatim|break
-                          |graphics|tabular|picture|note|indexmark
-                          |ERROR)*>
-<!ATTLIST bib-conference
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  role CDATA #IMPLIED>
 
 <!ELEMENT bib-publisher (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                          |bibref|Math|inline-block|verbatim|break
@@ -1275,55 +1270,32 @@
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
-<!ELEMENT bib-institution (#PCDATA|text|emph|acronym|rule|anchor|ref
-                           |cite|bibref|Math|inline-block|verbatim|break
-                           |graphics|tabular|picture|note|indexmark
-                           |ERROR)*>
-<!ATTLIST bib-institution
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
-
-<!ELEMENT bib-address (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                       |bibref|Math|inline-block|verbatim|break|graphics
-                       |tabular|picture|note|indexmark|ERROR)*>
-<!ATTLIST bib-address
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
-
-<!ELEMENT bib-volume (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                      |bibref|Math|inline-block|verbatim|break|graphics
-                      |tabular|picture|note|indexmark|ERROR)*>
-<!ATTLIST bib-volume
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
-
-<!ELEMENT bib-number (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                      |bibref|Math|inline-block|verbatim|break|graphics
-                      |tabular|picture|note|indexmark|ERROR)*>
-<!ATTLIST bib-number
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
-
-<!ELEMENT bib-pages (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
+<!ELEMENT bib-place (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                      |bibref|Math|inline-block|verbatim|break|graphics
                      |tabular|picture|note|indexmark|ERROR)*>
-<!ATTLIST bib-pages
+<!ATTLIST bib-place
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
+
+<!ELEMENT bib-related (bib-name|bib-title|bib-subtitle|bib-key|bib-type
+                       |bib-date|bib-publisher|bib-organization
+                       |bib-place|bib-part|bib-related|bib-edition
+                       |bib-status|bib-language|bib-url|bib-note
+                       |bib-extract|bib-identifier|bib-review
+                       |bib-links)*>
+<!ATTLIST bib-related
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  type CDATA #IMPLIED
+  role CDATA #IMPLIED>
 
 <!ELEMENT bib-part (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics
                     |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bib-part
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
-
-<!ELEMENT bib-date (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                    |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
-<!ATTLIST bib-date
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  role CDATA #IMPLIED>
 
 <!ELEMENT bib-edition (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                        |bibref|Math|inline-block|verbatim|break|graphics
@@ -1336,13 +1308,6 @@
                       |bibref|Math|inline-block|verbatim|break|graphics
                       |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bib-status
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
-
-<!ELEMENT bib-type (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                    |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
-<!ATTLIST bib-type
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
@@ -1390,31 +1355,18 @@
   class NMTOKENS #IMPLIED
   href CDATA #IMPLIED>
 
+<!ELEMENT bib-extract (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
+                       |bibref|Math|inline-block|verbatim|break|graphics
+                       |tabular|picture|note|indexmark|ERROR)*>
+<!ATTLIST bib-extract
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  role CDATA #IMPLIED>
+
 <!ELEMENT bib-note (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics
                     |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bib-note
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
-
-<!ELEMENT bibitem (bibtag*,bibblock*)>
-<!ATTLIST bibitem
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
-  xml:id ID #IMPLIED
-  key CDATA #IMPLIED>
-
-<!ELEMENT bibtag (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                  |Math|inline-block|verbatim|break|graphics|tabular
-                  |picture|note|indexmark|ERROR)*>
-<!ATTLIST bibtag
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  role CDATA #IMPLIED
-  open CDATA #IMPLIED
-  close CDATA #IMPLIED>
-
-<!ELEMENT bibblock (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                    |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
-<!ATTLIST bibblock
-  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
+  role CDATA #IMPLIED>

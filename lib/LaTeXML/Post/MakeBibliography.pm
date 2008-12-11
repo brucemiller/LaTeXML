@@ -115,14 +115,15 @@ sub getBibEntries {
       my $names='';
       if(my $n = $doc->findnode('ltx:bib-key',$bibentry)){
 	$names = $n->textContent; }
-      elsif(my @ns = $doc->findnodes('ltx:bib-author/ltx:surname | ltx:bib-editor/ltx:surname',
+      elsif(my @ns = $doc->findnodes('ltx:bib-name[@role="author"]/ltx:surname'
+				     .' | ltx:bib-name[@role="editor"]/ltx:surname',
 				     $bibentry)){
 	if(@ns > 2){    $names = $ns[0]->textContent .' et al'; }
 	elsif(@ns > 1){ $names = $ns[0]->textContent .' and '. $ns[1]->textContent; }
 	else          { $names = $ns[0]->textContent; }}
       elsif(my $t = $doc->findnode('ltx:bib-title',$bibentry)){
 	$names = $t->textContent; }
-      my $date = $doc->findnode('ltx:bib-date | ltx:bib-type',$bibentry);
+      my $date = $doc->findnode('ltx:bib-date[@role="publication"] | ltx:bib-type',$bibentry);
       my $title =$doc->findnode('ltx:bib-title',$bibentry);
       $date  = ($date  ? $date->textContent  : '');
       $title = ($title ? $title->textContent : '');
@@ -190,8 +191,8 @@ sub formatBibEntry {
   push(@tags,['ltx:bibtag',{role=>'number'},$number]); # number tag
 
   # Set up authors and fullauthors tags
-  my @names = $doc->findnodes('ltx:bib-author/ltx:surname',$bibentry);
-  @names = $doc->findnodes('ltx:bib-editor/ltx:surname',$bibentry) unless @names;
+  my @names = $doc->findnodes('ltx:bib-name[@role="author"]/ltx:surname',$bibentry);
+  @names = $doc->findnodes('ltx:bib-name[@role="editor"]/ltx:surname',$bibentry) unless @names;
   if(@names > 2){
     push(@tags,['ltx:bibtag',{role=>'authors'},
 		$names[0]->childNodes,['ltx:emph',{},' et al.']]);
@@ -211,7 +212,7 @@ sub formatBibEntry {
     push(@tags,['ltx:bibtag',{role=>'key'},$keytag->childNodes]); }
 
   my @year=();
-  if(my $date = $doc->findnode('ltx:bib-date',$bibentry)){
+  if(my $date = $doc->findnode('ltx:bib-date[@role="publication"]',$bibentry)){
     @year = $date->childNodes;
     if(my $datetext = $date->textContent){
       if($datetext=~/^(\d\d\d\d)/){ # Extract 4 digit year, if any
@@ -236,9 +237,9 @@ sub formatBibEntry {
   else {
     shift(@blockspecs);		# Skip redundant 1st block!!
     my @rfnames;
-    if(my @authors = $doc->findnodes('ltx:bib-author',$bibentry)){
+    if(my @authors = $doc->findnodes('ltx:bib-name[@role="author"]',$bibentry)){
       @rfnames = do_authors(@authors); }
-    elsif(my @editors = $doc->findnodes('ltx:bib-editor',$bibentry)){
+    elsif(my @editors = $doc->findnodes('ltx:bib-name[@role="editor"]',$bibentry)){
       @rfnames = do_editorsA(@editors); }
     else {
       @rfnames = $keytag->childNodes; }
@@ -373,29 +374,28 @@ sub do_links {
 # Ugh...
 
 %FMT_SPEC=
-  (article=> [[['ltx:bib-author'   , ''  , '', \&do_authors,''],
-	       ['ltx:date'         , ''  , '', \&do_year,'']],
+  (article=> [[['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
+	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
 	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      [['ltx:bib-part'     , ''  , '', \&do_any,''],
-	       ['ltx:bib-journal'  , ', ', '', \&do_any,''],
-	       ['ltx:bib-volume'   , ' ' , '', \&do_bold,''],
-	       ['ltx:bib-number'   , ' ' , '(', \&do_any,')'],
+	      [['ltx:bib-part[@role="part"]'     , ''  , '', \&do_any,''],
+	       ['ltx:bib-related/ltx:bib-title'  , ', ', '', \&do_any,''],
+	       ['ltx:bib-part[@role="volume"]'   , ' ' , '', \&do_bold,''],
+	       ['ltx:bib-part[@role="number"]'   , ' ' , '(', \&do_any,')'],
 	       ['ltx:bib-status'   , ', ', '(', \&do_any,')'],
-	       ['ltx:bib-pages'    , ', ', '', \&do_pages,''],
+	       ['ltx:bib-part[@role="pages"]'    , ', ', '', \&do_pages,''],
 	       ['ltx:bib-language' , ' ' , '(', \&do_any,')'],
 	       ['true'             , '.']],
 	      [['ltx:bib-note'     ,'', "Note: ",\&do_any,'']],
 	      [[$LINKS             ,'', 'External Links: ',\&do_links,'']]],
-   book=>   [ [['ltx:bib-author'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-editor'   , ''  , '', \&maybe_editorsA,''],
-	       ['ltx:date'         , ''  , '', \&do_year,'']],
+   book=>   [ [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
+	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&maybe_editorsA,''],
+	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
 	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      [['ltx:bib-type'     , ''  , '', \&do_any,''],
-	       ['ltx:bib-booktitle', ', ', '', \&do_title,''],
 	       ['ltx:bib-edition'  , ', ', '', \&do_edition,''],
-	       ['ltx:bib-series'   , ', ', '', \&do_any,''],
-	       ['ltx:bib-volume'   , ', ', 'Vol. ', \&do_any,''],
-	       ['ltx:bib-part'     , ', ', 'Part ', \&do_any,''],
+	       ['ltx:bib-part[@role="series"]'   , ', ', '', \&do_any,''],
+	       ['ltx:bib-part[@role="volume"]'   , ', ', 'Vol. ', \&do_any,''],
+	       ['ltx:bib-part[@role="part"]'     , ', ', 'Part ', \&do_any,''],
 	       ['ltx:bib-publisher', ', ', ' ', \&do_any,''],
 	       ['ltx:bib-organization',', ',' ', \&do_any,''],
 	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
@@ -405,51 +405,50 @@ sub do_links {
 	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
 	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
    'incollection'=>[
-	      [['ltx:bib-author'   , ''  , '', \&do_authors,''],
-	       ['ltx:date'         , ''  , '', \&do_year,'']],
+	      [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
+	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
 	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      [['ltx:bib-type'     , ''  , '', \&do_any,''],
-	       ['ltx:bib-booktitle', ' ' , 'in ', \&do_title,',']],
+	       ['ltx:bib-related[@type="book"]/ltx:bib-title', ' ' , 'in ', \&do_title,',']],
 	      [['ltx:bib-edition'  , ''  , '', \&do_edition,''],
-	       ['ltx:bib-editor'   , ', ', '', \&do_editorsB,''],
-	       ['ltx:bib-series'   , ', ', '', \&do_any,''],
-	       ['ltx:bib-volume'   , ', ', 'Vol. ',\&do_any,''],
-	       ['ltx:bib-part'     , ', ', 'Part ',\&do_any,''],
+	       ['ltx:bib-name[@role="editor"]'   , ', ', '', \&do_editorsB,''],
+	       ['ltx:bib-related/ltx:bib-part[@role="series"]', ', ', '', \&do_any,''],
+	       ['ltx:bib-related/ltx:bib-part[@role="volume"]', ', ', 'Vol. ',\&do_any,''],
+	       ['ltx:bib-related/ltx:bib-part[@role="part"]', ', ', 'Part ',\&do_any,''],
 	       ['ltx:bib-publisher', ', ', ' ', \&do_any,''],
 	       ['ltx:bib-organization',', ','', \&do_any,''],
 	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
-	       ['ltx:bib-pages'    , ', ', '', \&do_pages,''],
+	       ['ltx:bib-part[@role="pages"]'    , ', ', '', \&do_pages,''],
 	       ['ltx:bib-status'   , ' ' , '(',\&do_any,')'],
 	       ['ltx:bib-language' , ' ' , '(', \&do_any,')'],
 	       ['true','.']],
 	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
 	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
-   report=>[  [['ltx:bib-author'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-editor'   , ''  , '', \&maybe_editorsA,''],
-	       ['ltx:date'         , ''  , '', \&do_year,'']],
+   report=>[  [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
+	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&maybe_editorsA,''],
+	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
 	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      [['ltx:bib-type'     , ''  , '', \&do_any,''],
-	       ['ltx:bib-booktitle', ', ', ' in ',\&do_title,',']],
-	      [['ltx:bib-number'   , ''  , 'Technical Report ',\&do_any,''],
-	       ['ltx:bib-series'   , ', ', '',\&do_any,''],
-	       ['ltx:bib-volume'   , ', ', 'Vol. ',\&do_any,''],
-	       ['ltx:bib-part'     , ', ', 'Part ',\&do_any,''],
+	      [['ltx:bib-type'     , ''  , '', \&do_any,'']],
+	      [['ltx:bib-part[@role="number"]'   , ''  , 'Technical Report ',\&do_any,''],
+	       ['ltx:bib-part[@role="series"]'   , ', ', '',\&do_any,''],
+	       ['ltx:bib-part[@role="volume"]'   , ', ', 'Vol. ',\&do_any,''],
+	       ['ltx:bib-part[@role="part"]'     , ', ', 'Part ',\&do_any,''],
 	       ['ltx:bib-publisher', ', ', ' ',\&do_any,''],
 	       ['ltx:bib-organization',', ', ' ',\&do_any,''],
-	       ['ltx:bib-institution',', ', ' ',\&do_any,''],
 	       ['ltx:bib-place'    , ', ', ' ',\&do_any,''],
 	       ['ltx:bib-status'   , ', ', '(',\&do_any,')'],
 	       ['ltx:bib-language' , ' ' , '(',\&do_any,')'],
 	       ['true','.']],
 	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
 	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
-   thesis=>[  [['ltx:bib-author'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-editor'   , ''  , '', \&maybe_editorsA,''],
-	       ['ltx:date'         , ''  , '', \&do_year,'']],
+   thesis=>[  [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
+	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&maybe_editorsA,''],
+	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
 	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      [['ltx:bib-type'     , ' ' , '',\&do_thesis_type,''],
-	       ['ltx:bib-part'     , ', ', 'Part ',\&do_any,''],
-	       ['ltx:bib-institution',', ','',\&do_any,''],
+	       ['ltx:bib-part[@role="part"]'     , ', ', 'Part ',\&do_any,''],
+	       ['ltx:bib-publisher',', ','',\&do_any,''],
+	       ['ltx:bib-organization',', ','',\&do_any,''],
 	       ['ltx:bib-place'    , ', ', '',\&do_any,''],
 	       ['ltx:bib-status'   , ', ', '(',\&do_any,')'],
 	       ['ltx:bib-language' , ', ', '(',\&do_any,')'],

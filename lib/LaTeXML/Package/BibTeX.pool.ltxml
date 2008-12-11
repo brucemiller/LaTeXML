@@ -13,6 +13,7 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
+use LaTeXML::Util::KeyVal;
 use Text::Balanced qw(extract_bracketed);
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -116,6 +117,14 @@ DefPrimitive('\ProcessBibTeXEntry Semiverbatim',sub {
     $type = ToString(Digest($alias_defn)); }
 
   my @tex = (join('','\begin{bib@entry}{',$type,'}{',$key,'}'));
+  # Add all entry preparers
+  foreach my $preparer (grep(LookupDefinition(T_CS('\\'.$_)),
+			      'bib@entry@'.$type.'@prepare',
+			      ($origtype ne $type 
+			       ? ('bib@entry@'.$origtype.'@prepare'):()),
+			      'bib@entry@default@prepare')){
+    push(@tex,join('','\csname ',$preparer,'\endcsname')); }
+  # Add a handler for each field
   foreach my $pair ($entry->getFields){
     my($field,$value)= @$pair;
     my($handler) = grep(LookupDefinition(T_CS('\\'.$_)),
@@ -172,8 +181,17 @@ sub currentBibKey   { LookupValue('CURRENT@BIBKEY'); }
 sub currentBibEntry { LookupValue('BIBENTRY@'.currentBibKey()); }
 sub currentBibEntryField { currentBibEntry()->getField($_[0]); }
 
+#======================================================================
+DefMacro('\bib@entry@default@prepare','');
 DefMacro('\bib@entry@default@complete',
 	 '\bib@synthesize@mr\bib@synthesize@zbl');
+
+#======================================================================
+# Supporters
+
+DefConstructor('\bib@@field {} OptionalKeyVals Digested', sub {
+  my($document,$tag,$attr,$content)=@_;
+  $document->insertElement(ToString($tag),$content,($attr ? $attr->getHash : ())); });
 
 # Hmm, should this be something like an "add default field value"?
 DefMacro('\bib@addtype{}',sub {
@@ -182,6 +200,36 @@ DefMacro('\bib@addtype{}',sub {
     (); }
   else {
     Invocation(T_CS('\bib@field@default@type'),$type)->unlist; }});
+
+sub bibAddToContainer {
+  my($document,$tag,$data,%attr)=@_;
+  my $currentnode = $document->getNode;
+  my $entry = $document->findnode('ancestor-or-self::ltx:bibentry | ancestor-or-self::ltx:bib-related',
+				  $currentnode);
+
+  my $xpath = $tag;
+  $xpath .= '['.join(' and ',map("\@$_='".ToString($attr{$_})."'",keys %attr)).']'
+    if keys %attr;
+  if(my $rel = $document->findnode($xpath,$entry)){
+    $document->setNode($rel);
+    $document->absorb($data);
+    $document->setNode($currentnode); }
+  else {
+    $document->insertElement($tag,$data,%attr); }}
+
+# Insert the argument into the bib-related node in the current bibentry.
+# \bib@addtorelated{type}{role}
+DefConstructor('\bib@addto@related {}{} Digested',sub {
+  my($document,$type,$role,$data)=@_;
+  bibAddToContainer($document,'ltx:bib-related',$data,type=>$type,role=>$role); });
+
+# author : The name(s) of the author(s); this gets NameList treatment
+DefConstructor('\bib@@@name{}{}',
+	       "<ltx:bib-name role='#1'>#2</ltx:bib-name>");
+DefMacro('\bib@@names{}{}', sub {
+   my($gullet,$field,$ignore)=@_;
+   map(Invocation(T_CS('\bib@@@name'),$field,$_),
+       processBibNameList(currentBibEntryField(ToString($field)))); });
 
 #======================================================================
 # Default field handlers
@@ -195,143 +243,225 @@ Let(T_CS('\bib@field@default@default'),T_CS('\bib@field@@ignore'));
 DefConstructor('\bib@field@@random Semiverbatim Digested',
 	       "<ltx:bib-random field='#1'>#2</ltx:bib-random>");
 
-#======================================================================
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # The Standard BibTeX Entries
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# Make phdthesis & mastersthesis => thesis
-# but add type field, unless already present.
-DefMacro('\bib@entry@phdthesis@alias','thesis');
-DefMacro('\bib@entry@phdthesis@complete','\bib@addtype{Ph.D. Thesis}');
+#======================================================================
+# Article
+#  required: author,title,journal, year
+#  optional: volume,number,pages,month,note
+# An article gets a related item for the Journal.
+
+# journal : the journal that an article is part of
+DefMacro('\bib@field@article@journal',
+	 '\bib@addto@related{journal}{host}\bib@@field{ltx:bib-title}');
+
+#======================================================================
+# Book
+#  required: author or editor, title, publisher, year
+#  optional: volume or number, series, address, edition, month, note
+
+#======================================================================
+# Booklet
+#  required: title
+#  optional: author, howpublished, address, month, year, note
+
+#======================================================================
+# conference
+DefMacro('\bib@entry@conference@alias','inproceedings');
+
+#======================================================================
+# inbook
+#   required: author or editor, title, chapter and/or pages, publisher, year
+#   optional: volume or number, series, type, address, edition, month, note
+# inbook gets a related item for the book, with fields:
+#    editor, publisher, booktitle, volume or number, series, address, edition.
+DefMacro('\bib@field@inbook@booktitle',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-title}');
+DefMacro('\bib@field@inbook@editor',
+	 '\bib@addto@related{book}{host}\bib@@names{editor}');
+DefMacro('\bib@field@inbook@publisher',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-publisher}');
+DefMacro('\bib@field@inbook@number',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=number]');
+DefMacro('\bib@field@inbook@volume',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=volume]');
+DefMacro('\bib@field@inbook@series',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=series]');
+DefMacro('\bib@field@inbook@address',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-place}');
+DefMacro('\bib@field@inbook@edition',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-edition}');
+
+#======================================================================
+# incollection
+#  required: author, title, booktitle, publisher, year
+#  optional: editor, volume or number, series, type, chapter, pages,
+#    address, edition, month, note.
+# incollection gets a related item book, with fields:
+#    booktitle, publisher, editor, volume or number, series, address, edition
+DefMacro('\bib@field@incollection@booktitle',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-title}');
+DefMacro('\bib@field@incollection@editor',
+	 '\bib@addto@related{book}{host}\bib@@names{editor}');
+DefMacro('\bib@field@incollection@publisher',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-publisher}');
+DefMacro('\bib@field@incollection@number',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=number]');
+DefMacro('\bib@field@incollection@volume',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=volume]');
+DefMacro('\bib@field@incollection@series',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=series]');
+DefMacro('\bib@field@incollection@address',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-place}');
+DefMacro('\bib@field@incollection@edition',
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-edition}');
+
+#======================================================================
+# inproceedings
+#   required: author, title, booktitle, year
+#   optional: editor, volume or number, series, pages, address, month,
+#     organization, publisher, note.
+# inproceedings gets a related item proceedings, with fields:
+#   booktitle, editor,volume or number, series, address, organization, publisher
+DefMacro('\bib@field@inproceedings@booktitle',
+	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-title}');
+DefMacro('\bib@field@inproceedings@editor',
+	 '\bib@addto@related{proceedings}{host}\bib@@names{editor}');
+DefMacro('\bib@field@inproceedings@number',
+	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-part}[role=number]');
+DefMacro('\bib@field@inproceedings@volume',
+	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-part}[role=volume]');
+DefMacro('\bib@field@inproceedings@series',
+	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-part}[role=series]');
+DefMacro('\bib@field@inproceedings@organization',
+	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-organization}');
+DefMacro('\bib@field@inproceedings@publisher',
+	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-publisher}');
+
+DefMacro('\bib@field@inproceedings@conference',
+	 '\bib@addto@related{conference}{event}\bib@@field{ltx:bib-title}');
+DefMacro('\bib@field@inproceedings@meeting',
+	 '\bib@addto@related{conference}{event}\bib@@field{ltx:bib-title}');
+DefMacro('\bib@field@inproceedings@location',
+	 '\bib@addto@related{conference}{event}\bib@@field{ltx:bib-place}');
+DefMacro('\bib@field@inproceedings@place',
+	 '\bib@addto@related{conference}{event}\bib@@field{ltx:bib-place}');
+
+#======================================================================
+# manual
+#   required: title,
+#   optional: author, organization, address, edition, month, yeaer, note.
+
+#======================================================================
+# mastersthesis
+#   required: author, title, school, year,
+#   optional: type, address, month, note
 
 DefMacro('\bib@entry@mastersthesis@alias','thesis');
 DefMacro('\bib@entry@mastersthesis@complete','\bib@addtype{Master\'s Thesis}');
 
+#======================================================================
+# misc
+#   required: none
+#   optional: author, title, howpublished, month, year, note
+
+#======================================================================
+# phdthesis
+#   required: author, title, school, year,
+#   optional: type, address, month, note.
+
+DefMacro('\bib@entry@phdthesis@alias','thesis');
+DefMacro('\bib@entry@phdthesis@complete','\bib@addtype{Ph.D. Thesis}');
+
+#======================================================================
+# proceedings
+#   required: title, year
+#   optional: editor, volume or number, series, address, month,
+#     organization, publisher, note
+
+#======================================================================
+# techreport
+#   required: author, title, institution, year
+#   optional: type, number, address, month, note.
 DefMacro('\bib@entry@techreport@alias','report');
 DefMacro('\bib@entry@techreport@complete','\bib@addtype{Technical report}');
 
 #======================================================================
+# unpublished
+#   required: author, title, note
+#   optional: month, year
+
+#======================================================================
 # Common non-standard entry types.
-DefMacro('\bib@entry@conference@alias','inproceedings');
-DefMacro('\bib@entry@conference@electronic','online');
-DefMacro('\bib@entry@www@electronic','online');
+DefMacro('\bib@entry@electronic@alias','online');
+DefMacro('\bib@entry@www@alias','online');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Processing Fields
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Default handlers
 
 #======================================================================
-# The Standard BibTeX Fields
-
-# address : Publisher's address
-DefConstructor('\bib@field@default@address Digested',
-	       "<ltx:bib-address>#1</ltx:bib-address>");
-
-# annote : annotations; I'll assume annote is equivalent to note.
-DefConstructor('\bib@field@default@annote Digested',
-	       "<ltx:bib-note>#1</ltx:bib-note>");
+# Agents...
 
 # author : The name(s) of the author(s); this gets NameList treatment
-DefConstructor('\bib@field@@author {}',
-	       "<ltx:bib-author>#1</ltx:bib-author>");
-DefMacro('\bib@field@default@author {}', sub {
-   map(Invocation(T_CS('\bib@field@@author'),$_),
-       processBibNameList(currentBibEntryField('author'))); });
+DefMacro('\bib@field@default@author',
+	 '\bib@@names{author}');
 
-# booktitle : the title of a book if only part of it is being cited.
-DefConstructor('\bib@field@default@booktitle Digested',
-	       "<ltx:bib-booktitle>#1</ltx:bib-booktitle>");
+# editor : The name(s) of the editor(s); this gets NameList treatment
+DefMacro('\bib@field@default@editor',
+	 '\bib@@names{editor}');
 
-# chapter : the chapter number (of a book, presumably inbook or similar)
-# IMPLEMENT THIS!
+# translator : The names(s) of any translator(s); this gets NameList treatment
+DefMacro('\bib@field@default@translator',
+	 '\bib@@names{translator}');
 
-# crossref : the key of a cross-referenced entry
-# ? should mix the fields?
-# IMPLEMENT THIS!
+#======================================================================
+# Titles
+
+# title : the title of the work.
+DefMacro('\bib@field@default@title',
+	 '\bib@@field{ltx:bib-title}');
+
+DefMacro('\bib@field@default@subtitle',
+	 '\bib@@field{ltx:bib-subtitle}');
+
+#======================================================================
+# Origin info.
 
 # date : iso formatted yyy-mm-dd
 #  year (& month, day) fields can generate this element, as well.
-DefConstructor('\bib@field@default@date Digested',
-	       "<ltx:bib-date>#1</ltx:bib-date>");
+DefMacro('\bib@field@default@date',
+	 '\bib@@field{ltx:bib-date}[role=publication]');
 
 # edition : the edition of a book
-DefConstructor('\bib@field@default@edition {}',
-	       "<ltx:bib-edition>#edition</ltx:bib-edition>",
-	      afterDigest=>sub {
-		# Do we really want to do this? AMSRefs did...
-		my $ed = currentBibEntryField('edition');
-		if($ed =~ /^(\d+)(st|nd|rd|th)$/){
-		  $ed = $1; }
-		$_[1]->setProperty(edition=>Digest(Tokenize($ed))); });
+DefMacro('\bib@field@default@edition',
+	 '\bib@@field{ltx:bib-edition}');
 
-# editor : The name(s) of the editor(s); this gets NameList treatment
-DefConstructor('\bib@field@@editor {}',
-	       "<ltx:bib-editor>#1</ltx:bib-editor>");
-DefMacro('\bib@field@default@editor {}', sub {
-   map(Invocation(T_CS('\bib@field@@editor'),$_),
-       processBibNameList(currentBibEntryField('editor'))); });
-
-# howpublished : if something non-standard
-# IMPLEMENT THIS!
-
-# institution : an institution involved in publishing, possibloy distinct from publisher
-DefConstructor('\bib@field@default@institution Digested',
-	       "<ltx:bib-institution>#1</ltx:bib-institution>");
-
-# journal : the journal that an article is part of
-DefConstructor('\bib@field@default@journal Digested',
-	       "<ltx:bib-journal>#1</ltx:bib-journal>");
-
-# key : a normally hidden field for ordering
-DefConstructor('\bib@field@default@key Digested',
-	       "<ltx:bib-key>#1</ltx:bib-key>");
-
-# note : miscellaneous annotation
-DefConstructor('\bib@field@default@note Digested',
-	       "<ltx:bib-note>#1</ltx:bib-note>");
-
-# number : the number of a journal, magazine, or whatever
-DefConstructor('\bib@field@default@number Digested',
-	       "<ltx:bib-number>#1</ltx:bib-number>");
-
-# organization : a conference sponsor
-DefConstructor('\bib@field@default@organization Digested',
-	       "<ltx:bib-organization>#1</ltx:bib-organization>");
-
-# pages : the page or page range
-DefConstructor('\bib@field@default@pages {}',
-	       "<ltx:bib-pages>#pages</ltx:bib-pages>",
-	      afterDigest=>sub {
-		my $range = processRange(currentBibEntryField('pages'));
-		$_[1]->setProperty(pages=>Digest(Tokenize($range))); });
-
-sub processRange {
-  my($range)=@_;
-  $range =~ s/-+/--/g;		# Force - to -- (ligature will turn into endash
-  $range; }
+# address : Publisher's address
+DefMacro('\bib@field@default@address',
+	 '\bib@@field{ltx:bib-place}');
 
 # publisher : the name of the publisher
-DefConstructor('\bib@field@default@publisher Digested',
-	       "<ltx:bib-publisher>#1</ltx:bib-publisher>");
+DefMacro('\bib@field@default@publisher',
+	 '\bib@@field{ltx:bib-publisher}');
+
+# institution : an institution involved in publishing, (distinct from publisher?)
+DefMacro('\bib@field@default@institution',
+	 '\bib@@field{ltx:bib-organization}');
+
+# organization : a conference sponsor
+DefMacro('\bib@field@default@organization',
+	 '\bib@@field{ltx:bib-organization}');
 
 # school : The school where a thesis was written; analogous to institution
-DefConstructor('\bib@field@default@school Digested',
-	       "<ltx:bib-institution>#1</ltx:bib-institution>");
+DefMacro('\bib@field@default@school',
+	 '\bib@@field{ltx:bib-organization}');
 
-# series : the series of books a book was published in.
-DefConstructor('\bib@field@default@series Digested',
-	       "<ltx:bib-series>#1</ltx:bib-series>");
-
-# title : the title of the work.
-DefConstructor('\bib@field@default@title Digested',
-	       "<ltx:bib-title>#1</ltx:bib-title>");
-
-# type : the type of a report
-DefConstructor('\bib@field@default@type Digested',
-	       "<ltx:bib-type>#1</ltx:bib-type>");
-
-# volume : the volume of a journal or multi-volume work
-DefConstructor('\bib@field@default@volume Digested',
-	       "<ltx:bib-volume>#1</ltx:bib-volume>");
+DefMacro('\bib@field@default@status',
+	 '\bib@@field{ltx:bib-status}');
 
 # year : the year of publication.
 # Note that month and day do not directly contribute entries;
@@ -348,7 +478,66 @@ DefMacro('\bib@field@default@year {}', sub {
       $date .= '-'.($month=~/^\d$/ ? '0'.$month : $month); 
       if(defined $day){
 	$date .= '-'.($day  =~/^\d$/ ? '0'.$day   : $day  ); }}
-    Invocation(T_CS('\bib@field@default@date'),Tokenize($date))->unlist; }});
+    (T_CS('\bib@field@default@date'),T_BEGIN,Tokenize($date)->unlist,T_END); }});
+
+# howpublished : if something non-standard
+DefMacro('\bib@field@default@howpublished',
+	 '\bib@@field{ltx:bib-note}[role=publication]');
+
+#======================================================================
+# Part info.
+
+# chapter : the chapter number (of a book, presumably inbook or similar)
+DefMacro('\bib@field@default@chapter',
+	 '\bib@@field{ltx:bib-part}[role=chapter]');
+
+# number : the number of a journal, magazine, or whatever
+DefMacro('\bib@field@default@number',
+	 '\bib@@field{ltx:bib-part}[role=number]');
+
+# volume : the volume of a journal or multi-volume work
+DefMacro('\bib@field@default@volume',
+	 '\bib@@field{ltx:bib-part}[role=volume]');
+
+DefMacro('\bib@field@default@part',
+	 '\bib@@field{ltx:bib-part}[role=part]');
+
+# series : the series of books a book was published in.
+DefMacro('\bib@field@default@series',
+	 '\bib@@field{ltx:bib-part}[role=series]');
+
+# pages : the page or page range
+DefMacro('\bib@field@default@pages',
+	 '\bib@@field{ltx:bib-part}[role=pages]\bib@@pages');
+
+DefConstructor('\bib@@pages{}',"#pages",
+	       afterDigest=>sub {
+		 my $pages = currentBibEntryField('pages');
+		 $pages =~ s/-+/--/g;		# Force - to -- (ligature will turn into endash
+		 $_[1]->setProperty(pages=>Digest(Tokenize($pages))); });
+
+#======================================================================
+# The Standard BibTeX Fields
+
+# annote : annotations; I'll assume annote is equivalent to note.
+DefMacro('\bib@field@default@annote',
+	 '\bib@@field{ltx:bib-note}[role=annotation]');
+
+# crossref : the key of a cross-referenced entry
+# ? should mix the fields?
+# IMPLEMENT THIS!
+
+# key : a normally hidden field for ordering
+DefConstructor('\bib@field@default@key Digested',
+	       "<ltx:bib-key>#1</ltx:bib-key>");
+
+# note : miscellaneous annotation
+DefMacro('\bib@field@default@note',
+	 '\bib@@field{ltx:bib-note}[role=annotation]');
+
+# type : the type of a report
+DefConstructor('\bib@field@default@type Digested',
+	       "<ltx:bib-type>#1</ltx:bib-type>");
 
 #======================================================================
 # Non-Standard but Common (?) fields.
@@ -358,57 +547,36 @@ DefMacro('\bib@field@default@year {}', sub {
 # Seems like this should be tucked into author (or editor...)?
 
 # abstract : a copy of the abstract
-# IMPLEMENT THIS!
+DefMacro('\bib@field@default@abstract',
+	 '\bib@@field{ltx:bib-extract}[role=abstract]');
 
 # archive : specifies where this is archived (URL?)
-DefConstructor('\bib@field@default@archive Digested',
-	       "<ltx:bib-links>Archive: #1</ltx:bib-links>");
+DefMacro('\bib@field@default@archive',
+	 '\bib@@field{ltx:bib-links}'); # add text? or role?
 
 # contents : a table of contents
-# IMPLEMENT THIS!
+DefMacro('\bib@field@default@contents',
+	 '\bib@@field{ltx:bib-extract}[role=contents]');
 
 # copyright : copyright information
-# IMPLEMENT THIS!
+DefMacro('\bib@field@default@copyright',
+	 '\bib@@field{ltx:bib-date}[role=copyright]');
 
 # eprint : specifies an electronic publication; Is this a URL?
-DefConstructor('\bib@field@default@eprint Digested',
-	       "<ltx:bib-links>#1</ltx:bib-links>");
+DefMacro('\bib@field@default@eprint',
+	 '\bib@@field{ltx:bib-links}'); # add text? or role?
 
 # preprint : specifies an electronic publication (not a URL).
-DefConstructor('\bib@field@default@preprint Digested',
-	       "<ltx:bib-links>Preprint: #1</ltx:bib-links>");
+DefMacro('\bib@field@default@preprint',
+	 '\bib@@field{ltx:bib-links}'); # add text? or role?
 
 # keywords : a list of subject keywords
-# IMPLEMENT THIS!
+DefMacro('\bib@field@default@keywords',
+	 '\bib@@field{ltx:bib-extract}[role=keywords]');
 
 # language : the language a document is in.
-DefConstructor('\bib@field@default@language Digested',
-	       "<ltx:bib-language>#1</ltx:bib-language>");
-
-# place, location : A location associated with the entry, eg. the city of a conference
-Let('\bib@field@default@place',   '\bib@field@default@address');
-Let('\bib@field@default@location','\bib@field@default@address');
-
-# translator : The names(s) of any translator(s); this gets NameList treatment
-DefConstructor('\bib@field@@translator {}',
-	       "<ltx:bib-translator>#1</ltx:bib-translator>");
-DefMacro('\bib@field@default@translator {}', sub {
-   map(Invocation(T_CS('\bib@field@@translator'),$_),
-       processBibNameList(currentBibEntryField('translator'))); });
-
-DefConstructor('\bib@field@default@subtitle Digested',
-	       "<ltx:bib-subtitle>#1</ltx:bib-subtitle>");
-
-DefConstructor('\bib@field@default@conference Digested',
-	       "<ltx:bib-conference>#1</ltx:bib-conference>");
-DefConstructor('\bib@field@default@meeting Digested',
-	       "<ltx:bib-conference>#1</ltx:bib-conference>");
-
-DefConstructor('\bib@field@default@part Digested',
-	       "<ltx:bib-part>#1</ltx:bib-part>");
-
-DefConstructor('\bib@field@default@status Digested',
-	       "<ltx:bib-status>#1</ltx:bib-status>");
+DefMacro('\bib@field@default@language',
+	 '\bib@@field{ltx:bib-language}');
 
 # url : specifies a URL where the work can be found.
 DefConstructor('\bib@field@default@url Semiverbatim',

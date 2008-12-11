@@ -87,9 +87,9 @@ DefConstructor('\amsrefs@default{}{}',
 DefConstructor('\amsrefs@key{}',          "<ltx:bib-key>#1</ltx:bib-key>");
 DefConstructor('\amsrefs@type{}',         "<ltx:bib-type>#1</ltx:bib-type>");
 
-DefConstructor('\amsrefs@author{}',       "<ltx:bib-author>#1</ltx:bib-author>");
-DefConstructor('\amsrefs@editor{}',       "<ltx:bib-editor>#1</ltx:bib-editor>");
-DefConstructor('\amsrefs@translator{}',   "<ltx:bib-translator>#1</ltx:bib-translator>");
+DefConstructor('\amsrefs@author{}',       "<ltx:bib-name role='author'>#1</ltx:bib-name>");
+DefConstructor('\amsrefs@editor{}',       "<ltx:bib-name role='editor'>#1</ltx:bib-name>");
+DefConstructor('\amsrefs@translator{}',   "<ltx:bib-name role='translator'>#1</ltx:bib-name>");
 
 DefConstructor('\amsrefs@date{}',         "<ltx:bib-date>#1</ltx:bib-date>");
 Let('\amsrefs@year','\amsrefs@date');
@@ -101,9 +101,9 @@ DefConstructor('\amsrefs@booktitle{}',    "<ltx:bib-booktitle>#1</ltx:bib-bookti
 DefConstructor('\amsrefs@journal{}',      "<ltx:bib-journal>#1</ltx:bib-journal>");
 DefConstructor('\amsrefs@series{}',       "<ltx:bib-series>#1</ltx:bib-series>");
 DefConstructor('\amsrefs@conference{}',   "<ltx:bib-conference>#1</ltx:bib-conference>");
-DefConstructor('\amsrefs@volume{}',       "<ltx:bib-volume>#1</ltx:bib-volume>");
-DefConstructor('\amsrefs@number{}',       "<ltx:bib-number>#1</ltx:bib-number>");
-DefConstructor('\amsrefs@part{}',         "<ltx:bib-part>#1</ltx:bib-part>");
+DefConstructor('\amsrefs@volume{}',       "^<ltx:bib-part role='volume'>#1</ltx:bib-part>");
+DefConstructor('\amsrefs@number{}',       "^<ltx:bib-part role='number'>#1</ltx:bib-part>");
+DefConstructor('\amsrefs@part{}',         "^<ltx:bib-part role='part'>#1</ltx:bib-part>");
 DefConstructor('\amsrefs@edition{}',      "<ltx:bib-edition>#1</ltx:bib-edition>");
 DefConstructor('\amsrefs@status{}',       "<ltx:bib-status>#1</ltx:bib-status>");
 
