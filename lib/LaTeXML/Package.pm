@@ -937,7 +937,6 @@ sub ProcessOptions {
   CheckOptions("ProcessOptions",$processoptions_options,%options);
   my $name = ToString(Digest(T_CS('\@currname')));
   my $ext  = ToString(Digest(T_CS('\@currext')));
-
   my @declaredoptions = @{LookupValue('@declaredoptions')};
   my @curroptions     = @{LookupValue('opt@'.$name.'.'.$ext)};
 #  print STDERR "\nProcessing options for $name.$ext: ".join(', ',@curroptions)."\n";
@@ -1007,10 +1006,10 @@ sub RequirePackage {
   $options{type} = 'sty' unless $options{type};
   my $type = $options{type};
   # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
-  if($options{withoptions} && LookupDefinition(T_CS('\@currname'))){
-    PassOptions($package,$type,
-		@{LookupValue('opt@'.ToString(Digest(T_CS('\@currname'))).
-			      ".".ToString(Digest(T_CS('\@currext'))))}); }
+  my $prevname = LookupDefinition(T_CS('\@currname')) && ToString(Digest(T_CS('\@currname')));
+  my $prevext  = LookupDefinition(T_CS('\@currext')) && ToString(Digest(T_CS('\@currext')));
+  if($options{withoptions} && $prevname){
+    PassOptions($package,$type,@{LookupValue('opt@'.$prevname.".".$prevext)}); }
   DefMacroI('\@currname',undef,Tokens(Explode($package)));
   DefMacroI('\@currext',undef,Tokens(Explode($type)));
   # reset options
@@ -1019,8 +1018,11 @@ sub RequirePackage {
   if(my $file = FindFile($package, type=>$type, raw=>$options{raw})){
     DefMacroI(T_CS("\\$package.$type-hook"),undef,$options{after} || '');
     my $gullet = $STATE->getStomach->getGullet;
-    $gullet->openMouth(Tokens(T_CS("\\$package.$type-hook")));
+##    $gullet->openMouth(Tokens(T_CS("\\$package.$type-hook")));
     $gullet->input($file,undef,%options); 
+    Digest(T_CS("\\$package.$type-hook"));
+    DefMacroI('\@currname',undef,Tokens(Explode($prevname))) if $prevname;
+    DefMacroI('\@currext',undef,Tokens(Explode($prevext))) if $prevext;
     resetOptions(); } # And reset options afterwards, too.
   else {
     $STATE->noteStatus(missing=>$package);
@@ -1036,11 +1038,11 @@ sub LoadClass {
   CheckOptions("LoadClass ($class)",$loadclass_options,%options);
   $options{type} = 'cls' unless $options{type};
   my $type = $options{type};
+  my $prevname = LookupDefinition(T_CS('\@currname')) && ToString(Digest(T_CS('\@currname')));
+  my $prevext  = LookupDefinition(T_CS('\@currext')) && ToString(Digest(T_CS('\@currext')));
   # For \LoadClassWithOptions, pass the options from the outer class to the inner one.
-  if($options{withoptions} && LookupDefinition(T_CS('\@currname'))){
-    PassOptions($class,$type,
-		@{LookupValue('opt@'.ToString(Digest(T_CS('\@currname'))).
-			      ".".ToString(Digest(T_CS('\@currext'))))}); }
+  if($options{withoptions} && $prevname){
+    PassOptions($class,$type,@{LookupValue('opt@'.$prevname.".".$prevext)}); }
   DefMacroI('\@currname',undef,Tokens(Explode($class)));
   DefMacroI('\@currext',undef,Tokens(Explode($type)));
   PassOptions($class,$type,@{$options{options} || []});
@@ -1053,8 +1055,11 @@ sub LoadClass {
       Fatal(":missing_file:article.cls.ltxml Installation error: Cannot find article implementation!"); }}
   DefMacroI(T_CS("\\$class.$type-hook"),undef,$options{after} || '');
   my $gullet = $STATE->getStomach->getGullet;
-  $gullet->openMouth(Tokens(T_CS("\\$class.$type-hook")));
+##  $gullet->openMouth(Tokens(T_CS("\\$class.$type-hook")));
   $gullet->input($classfile,undef,%options);
+  Digest(T_CS("\\$class.$type-hook"));
+  DefMacroI('\@currname',undef,Tokens(Explode($prevname))) if $prevname;
+  DefMacroI('\@currext',undef,Tokens(Explode($prevext))) if $prevext;
   resetOptions();  # And reset options afterwards, too.
   return; }
 
