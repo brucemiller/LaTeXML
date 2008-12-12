@@ -30,7 +30,7 @@ foreach my $substyle (qw(aps pra prb prc prd pre prl prstab rmp osa osameet opex
 
 # Options that load packages; but DO NOT load them yet!!
 my @revtex_toload=();
-foreach my pkg (qw(amsfonts amssymb amsmath)){
+foreach my $pkg (qw(amsfonts amssymb amsmath)){
   DeclareOption($pkg, sub{ push(@revtex_toload,$pkg); return; });
   DeclareOption("no$pkg", sub{ @revtex_toload=grep($_ ne $pkg,@revtex_toload); return; }); }
 
