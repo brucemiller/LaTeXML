@@ -1737,6 +1737,9 @@ sub tabbingBindings {
   Let(T_CS('\pushtabs'), T_CS('\@tabbing@pushtabs'));
   Let(T_CS('\poptabs'),  T_CS('\@tabbing@poptabs'));
 #  Let(T_CS('\a'),        T_CS('\@tabbing@accent'));
+  Let(T_CS('\@open@row'),T_CS('\default@open@row'));
+  Let(T_CS('\@close@row'),T_CS('\default@close@row'));
+
   return; }
 
 DefPrimitive('\@tabbing@bindings',sub {
