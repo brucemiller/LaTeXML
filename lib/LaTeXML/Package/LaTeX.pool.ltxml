@@ -302,6 +302,7 @@ DefConstructor('\\@@section{}[][][]{}',sub {
 #======================================================================
 # Handled in article,report or book.
 DefMacro('\appendixname','Appendix'); # never used?
+DefMacro('\appendixesname','Appendixes');
 
 #======================================================================
 # C.4.3 Table of Contents
@@ -667,6 +668,7 @@ DefEnvironment('{enumerate}',
 DefEnvironment('{description}',
 	       "<ltx:description  xml:id='#id'>#body</ltx:description>",
 	       properties=>sub { beginItemize('description'); });
+DefMacro('\descriptionlabel{}','#1');
 
 # NOTE: Do I need to do anything with
 # \labelitemi, labelitemii, labelitemiii or labelitemiv ?
@@ -1633,7 +1635,10 @@ Let(T_CS('\botfigrule'),T_CS('\relax'));
 Let(T_CS('\dblfigrule'),T_CS('\relax'));
 
 DefMacro('\figurename','Figure'); # Never used?
+DefMacro('\figuresname','Figures'); # Never used?
 DefMacro('\tablename','Table'); # Never used?
+DefMacro('\tablesname','Tables');
+
 #======================================================================
 # C.9.2 Marginal Notes
 #======================================================================
