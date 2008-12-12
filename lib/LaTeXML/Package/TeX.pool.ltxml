@@ -1536,7 +1536,8 @@ DefPrimitive('\halign BoxSpecification {}', sub {
   my @tokens = $contents->unlist;
   my @template = ();
   my $t;
-  while(@tokens && !( ($t=shift(@tokens))->equals(T_CS('\cr')))){
+  my $crdef = LookupDefinition(T_CS('\cr'));
+  while(@tokens && ((LookupDefinition($t=shift(@tokens))||'none') ne $crdef)){
     push(@template,$t); }
   my $template = LaTeXML::AlignmentTemplate->new();
   my $b=1;
