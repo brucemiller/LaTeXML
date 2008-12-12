@@ -1,0 +1,43 @@
+# -*- CPERL -*-
+# /======================================================= #
+# |  revtex3_support.sty - Implementation for LaTeXML     | #
+# |                                                       | #
+# |=======================================================| #
+# | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
+# | Copyright (c) 2008 arXMLiv group                      | #
+# | Catalin David <c.david@jacobs-university.de>	  | #
+# | Released to Public Domain 		                  | #
+# =======================================================/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+DeclareOption('amsfonts', sub{ RequirePackage('amsfonts'); });
+DeclareOption('amssymb',  sub{ RequirePackage('amssymb'); });
+DeclareOption('amsmath',  sub{ RequirePackage('amsmath'); });
+ProcessOptions();
+
+RequirePackage('revtex4_support');
+
+#======================================================================
+# The following are additional or different definitions from revtex4_support
+
+DefMacro('\eqsecnum',''); 	# ?
+
+DefEnvironment('{mathletters}',
+	       "<ltx:equationgroup>#body</ltx:equationgroup>",
+	       afterDigestBegin=>sub {
+		 my($stomach,$whatsit)=@_;
+		 my %eqn = RefStepCounter('equation');
+		 AssignValue(SAVED_EQUATION_NUMBER=>LookupValue('\c@equation'));
+		 ResetCounter('equation');
+		 DefMacro('\theequation',UnTeX($eqn{refnum}).'\alph{equation}');
+		 DefMacro('\theequation@ID',UnTeX($eqn{id}).'.\@equation@ID');
+	       },
+	       afterDigest =>sub{ 
+		 AssignValue('\c@equation',LookupValue('SAVED_EQUATION_NUMBER'),'global'); });
+
+#**********************************************************************
+
+1;

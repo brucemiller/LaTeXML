@@ -1,0 +1,18 @@
+# -*- CPERL -*-
+# /======================================================= #
+# |  revtex4_support.sty - Implementation for LaTeXML     | #
+# |                                                       | #
+# |=======================================================| #
+# | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
+# | Copyright (c) 2008 arXMLiv group                      | #
+# | Catalin David <c.david@jacobs-university.de>	  | #
+# | Released to Public Domain 		                  | #
+# =======================================================/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+RequirePackage('revtex4_support');
+
+1;

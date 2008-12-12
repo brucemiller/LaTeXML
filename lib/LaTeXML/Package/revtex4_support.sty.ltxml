@@ -1,0 +1,271 @@
+# -*- CPERL -*-
+# /======================================================= #
+# |  revtex4_support.sty - Implementation for LaTeXML     | #
+# |                                                       | #
+# |=======================================================| #
+# | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
+# | Copyright (c) 2008 arXMLiv group                      | #
+# | Catalin David <c.david@jacobs-university.de>	  | #
+# | Released to Public Domain 		                  | #
+# =======================================================/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+RequirePackage('hyperref');
+RequirePackage('natbib');	# not necessarily loaded?
+RequirePackage('revsymb');
+RequirePackage('url');
+RequirePackage('longtable');
+
+# Aligned to RevTeX4 Authors guide (auguide)
+
+#======================================================================
+# 4. The Front Matter
+#======================================================================
+
+# 4.3
+DefMacro('\doauthor{}{}{}','#1 #2 #3'); # -- ??
+DefMacro('\address','\affiliation');
+# DefMacro('\affiliation','');
+DefConstructor('\@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\affiliation{}','\@add@to@frontmatter{ltx:creator}{\@affiliation{#1}}');
+DefMacro('\altaddress','\altaffiliation');
+DefMacro('\altaffiliation','\affiliation');
+DefMacro('\andname','and');
+DefMacro('\collaboration',''); # Should have a look at this too
+# \noaffiliation
+
+DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\email [] Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@email{#2}}');
+DefMacro('\homepage{}','\@add@to@frontmatter{ltx:creator}{\@homepage{#1}}');
+
+DefMacro('\firstname',''); # \let\firstname\@firstofone ??
+DefConstructor('\surname{}',"#1");
+
+# 4.4
+DefMacro('\abstractname','Abstract');
+
+# 4.5
+DefConstructor('\pacs{}',"<ltx:text class='classification'>PACS. #1.</ltx:text>");
+
+# 4.6
+DefMacro('\keywords{}','\@add@frontmatter{ltx:keywords}{#1}');
+
+# 4.7
+DefMacro('\preprint{}', undef);
+
+# Extra stuff
+DefMacro('\blankaffiliation','');
+DefMacro('\checkindate','\today');
+
+#======================================================================
+# 5. The body of the paper
+#======================================================================
+
+# 5.3
+DefMacro('\widetext', '');
+DefMacro('\endwidetext', '');
+# These are called obsolete, but I can't even find them in earlier RevTeX's!
+DefMacro('\narrowtext','');
+DefMacro('\endnarrowtext','');
+DefMacro('\mediumtext','');
+DefMacro('\endmediumtext','');
+
+# 5.5
+DefEnvironment('{acknowledgements}','#body');#defined, but... 
+DefEnvironment('{acknowledgments}','#body');
+DefMacro('\acknowledgmentsname','Acknowledgements');
+
+# Extra stuff
+DefMacro('\thesection','\Roman{section}'); # Apparently the desired style.
+
+DefMacro('\thepagegrid','one');
+DefMacro('\onecolumngrid','');
+DefMacro('\twocolumngrid','');
+DefMacro('\restorecolumngrid','');
+DefPrimitive('\twocolumn', undef);
+DefConstructor('\rotatebox{Number}{}','#2'); # dummy defn, unless graphics loaded
+DefMacro('\pagesofar','');
+
+
+DefConstructor('\endnote[]{}',
+	       "<ltx:note class='endnote' mark='#refnum'>#2</ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
+## DefConstructor('\endnotemark[]',"");
+DefConstructor('\endnotetext[]{}',
+	       "<ltx:note class='endnote' ?#1(mark='#1')>#2</ltx:note>",
+	       mode=>'text');
+
+#======================================================================
+# 6. Math and Equations
+#======================================================================
+
+# 6.5
+# recommends amsmath's {subequations}
+
+# Extra stuff
+Let('\case','\frac');
+Let('\slantfrac','\frac');
+DefConstructor('\text{}', "<ltx:text>#1</ltx:text>", mode=>'text');
+
+# RevTeX3 (obsolete in RevTeX4)
+DefConstructor('\bm{}', '#1', bounded=>1, requireMath=>1, font=>{forcebold=>1});
+DefConstructor('\bbox{}', '#1', bounded=>1, requireMath=>1, font=>{forcebold=>1});
+DefConstructor('\pmb{}', '#1', bounded=>1, requireMath=>1, font=>{forcebold=>1,
+								  family=>'blackboard'});
+DefConstructor('\eqnum {}', '',
+	       afterDigest=>sub {
+		 AssignValue(EQUATIONROW_NUMBER=>ToString($_[1]), 'global'); },
+	       mode=>'text');
+
+# Redefined in revtex3_support
+DefMacro('\mathletters','');
+DefMacro('\endmathletters','');
+
+#======================================================================
+# 7. Footnotes
+#======================================================================
+
+#======================================================================
+# 8. Citations and References
+#======================================================================
+DefMacro('\onlinecite','\citealp');
+
+Let('\textcite','\citet');
+
+
+# RevTeX3; Obsolete for RevTeX4 (but semi-implemented there)
+DefEnvironment('{references}', ## This can be commented out since it is obsolete.
+	       "<ltx:bibliography xml:id='#id'>"
+	       . "<ltx:title>#refname</ltx:title>"
+	       . "<ltx:biblist>#body</ltx:biblist>"
+	       ."</ltx:bibliography>",
+	       afterDigestBegin=>sub { 
+		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
+		 ResetCounter('enumiv');
+		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
+		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
+		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  });
+
+#======================================================================
+# 9. Figures and Artwork
+#======================================================================
+
+#======================================================================
+# 10. Tables
+#======================================================================
+
+# Used to put double rules before & after a tabular.
+DefEnvironment('{ruledtabular}','#body');
+# !!! DefEnvironment('{quasitable}',''); #??
+DefMacro('\squeezetable',''); #presentational
+
+# Extra stuff
+DefMacro('\toprule', '\hline\hline');
+DefMacro('\colrule','\hline');
+DefMacro('\botrule','\hline\hline');
+DefMacro('\frstrut','');
+DefMacro('\lrstrut','');
+Let('\tableftsep','\tabcolsep');
+Let('\tabmidsep','\tabcolsep');
+Let('\tabrightsep','\tabcolsep');
+
+Let(T_CS('\tablenote'),T_CS('\footnote'));
+Let(T_CS('\tablenotemark'),T_CS('\footnotemark'));
+Let(T_CS('\tablenotetext'),T_CS('\footnotetext'));
+
+# RevTeX3 (obsolete in RevTeX4)
+Let('\tableline','\colrule');
+
+#======================================================================
+# 11. Placement of Figures, Tables and Other Floats
+#======================================================================
+
+DefPrimitive('\printfigures OptionalMatch:*',undef);
+DefPrimitive('\printtables OptionalMatch:*',undef);
+DefMacro('\oneapage','');
+DefMacro('\printendnotes','');
+
+#======================================================================
+# 12. Rotating Floats
+#======================================================================
+
+# Rotates the page
+DefEnvironment('{turnpage}','#body');
+
+
+#======================================================================
+# 13. RevTeX 4 symbols and the revsymb package
+#======================================================================
+
+#======================================================================
+# 14.  Other RevTeX 4 Features
+#======================================================================
+
+#======================================================================
+# XX.  Extra stuff
+#======================================================================
+
+Let(T_CS('\MakeTextLowercase'), T_CS('\lowercase'));
+Let(T_CS('\MakeTextUppercase'),T_CS('\uppercase'));
+DefMacro('\NoCaseChange','');
+
+# Macro & Control stuff.
+#  Are these really intended for authors to use?
+DefMacro('\absbox',''); #what does \newbox\absbox mean?
+DefMacro('\addstuff{}{}','');
+DefMacro('\appdef{}{}','');
+DefMacro('\gappdef{}{}','');
+DefMacro('\prepdef{}{}','');
+DefMacro('\lineloop{}','');
+DefMacro('\loopuntil{}','');
+DefMacro('\loopwhile{}','');
+DefMacro('\traceoutput', '');
+DefMacro('\tracingplain', '');
+DefMacro('\removephantombox','');
+DefMacro('\removestuff','');
+DefMacro('\replacestuff{}{}','');
+DefMacro('\say[]',   '\typeout{<\noexpand#1=\meaning#1>}');
+DefMacro('\saythe[]','\typeout{<\noexpand#1=\the#1>}');
+
+
+# Various extra i18n stuff.
+DefMacro('\copyrightname','??'); # ?? is that ok? that is what the .sty says, but... 
+DefMacro('\journalname','??');
+DefMacro('\lofname','List of Figures');
+DefMacro('\lotname','List of Tables');
+DefMacro('\notesname','Notes');
+DefMacro('\numbername','number');
+DefMacro('\ppname','pp');
+DefMacro('\tocname','Contents');
+DefMacro('\volumename','volume');
+
+# Apparently some sort of document information?
+DefMacro('\volumenumber{}','#1');
+DefMacro('\volumeyear{}','#1');
+DefMacro('\issuenumber{}','#1');
+DefMacro('\bibinfo{}{}','#2');
+DefMacro('\eprint{}','eprint #1');
+DefMacro('\eid{}','#1');
+DefMacro('\startpage{}','\pageref{FirstPage}{#1}');
+DefMacro('\endpage', '\pageref{LastPage}{#1}');
+
+# Other pointless stuff.
+DefMacro('\flushing','');
+DefMacro('\triggerpar','\par');
+DefMacro('\fullinterlineskip','');
+DefRegister('\footbox'=>LaTeXML::Box->new());
+DefRegister('\intertabularlinepenalty'=>Number('100'));
+
+# These are called obsolete, but I can't even find them in earlier RevTeX's!
+DefMacro('\FL','');
+DefMacro('\FR','');
+DefMacro('\draft','');
+DefMacro('\tighten', '');
+
+#======================================================================
+1;

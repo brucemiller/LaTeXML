@@ -1,0 +1,86 @@
+# -*- CPERL -*-
+# /=======================================================\ #
+# |  revsymb.sty - Implementation for LaTeXML             | #
+# |                                                       | #
+# |=======================================================| #
+# |  Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/      | #
+# | Copyright (c) 2006 arXMLiv group                      | #
+# | Released under the GNU Public License                 | #
+# \=======================================================/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+DefMath('\lambdabar',"\x{03BB}\x{0304}");
+DefConstructor('\mathbb{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'blackboard'});
+DefMacro('\Bbb{}','\mathbb{#1}');
+
+DefConstructor('\biglb Token',"<ltx:XMWrap style='big'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); },
+	       font=>{series=>'bold'});
+DefConstructor('\bigrb Token',"<ltx:XMWrap style='big'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); },
+	       font=>{series=>'bold'});
+DefConstructor('\Biglb Token',"<ltx:XMWrap style='Big'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); },
+	       font=>{series=>'bold'});
+DefConstructor('\Bigrb Token',"<ltx:XMWrap style='Big'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); },
+	       font=>{series=>'bold'});
+DefConstructor('\bigglb Token',"<ltx:XMWrap style='bigg'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); },
+	       font=>{series=>'bold'});
+DefConstructor('\biggrb Token',"<ltx:XMWrap style='bigg'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); },
+	       font=>{series=>'bold'});
+DefConstructor('\Bigglb Token',"<ltx:XMWrap style='Bigg'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); },
+	       font=>{series=>'bold'});
+DefConstructor('\Biggrb Token',"<ltx:XMWrap style='Bigg'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); },
+	       font=>{series=>'bold'});
+
+DefMath('\gtrsim',             "\x{2273}", role=>'RELOP',
+	meaning=>'greater-than-or-equivalent-to');
+DefMath('\lesssim',            "\x{2272}", role=>'RELOP',
+	meaning=>'less-than-or-similar-to');
+Let('\agt', '\gtrsim');
+Let('\alt', '\lesssim');
+
+DefMath('\precsim',            "\x{227E}", role=>'RELOP',
+	meaning=>'precedes-or-equivalent-to');
+DefMath('\succsim',            "\x{227F}", role=>'RELOP',
+	meaning=>'succeeds-or-equivalent-to');
+Let('\altprecsim','\precsim');
+Let('\altsuccsim','\succsim');
+
+###\mathring
+#DefAccent('\overcirc', "\x{030A}", UTF(0x02DA)); # COMBINING RING ABOVE
+DefMath('\mathring{}', "\x{030A}", operator_role=>'OVERACCENT'); # should be in latex???
+Let('\overcirc','\mathring');
+
+DefMath('\dddot{}', "\x{02D9}\x{02D9}\x{02D9}",operator_role=>'OVERACCENT'); # DOT ABOVE
+Let('\overdots','\dddot');
+DefMath('\triangleq',          "\x{225C}", role=>'RELOP'); # DELTA EQUAL TO
+Let('\corresponds','\triangleq');
+
+# \frak
+
+#DefAccent('\loarrow{}',  "\x{20D6}", UTF(0x2190)); # COMBINING LEFT ARROW ABOVE
+#DefAccent('\roarrow{}',  "\x{20D7}", UTF(0x2192)); # COMBINING RIGHT ARROW ABOVE
+DefMath('\loarrow{}',  "\x{20D6}", operator_role=>'OVERACCENT');
+DefMath('\roarrow{}',  "\x{20D7}", operator_role=>'OVERACCENT');
+
+# \mathfrak
+DefConstructor('\openone', '1', font=>{family=>'blackboard'});
+
+#DefAccent('\overstar', "\x{0359}", UTF(0x002A)); # COMBINNING ASTERISK BELOW (should be ABOVE, but no code available)
+#DefAccent('\tensor',   "\x{20E1}", UTF(0x2194)); # COMBINING LEFT RIGHT ARROW ABOVE
+DefMath('\overstar{}',  "\x{0359}", operator_role=>'OVERACCENT');
+DefMath('\tensor{}',  "\x{20E1}", operator_role=>'OVERACCENT');
+
+# \vereq
+
+#**********************************************************************
+1;

@@ -1,0 +1,35 @@
+# -*- CPERL -*-
+# /=======================================================\ #
+# |  revtex.ltxml - Implementation for LaTeXML            | #
+# |                                                       | #
+# |=======================================================| #
+# | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
+# | Copyright (c) 2006 arXMLiv group                      | #
+# | Released under the GNU Public License                 | #
+# \=======================================================/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+# The following specify sub-styles; I'll assume they're irrelevant for now.
+foreach my $option (qw(aps osa aip pra prb prc prd prl rmp seg manuscript eqsecnum
+		       preprint tighten floats)){
+  DeclareOption($substyle, undef); }
+
+# Options that load packages; but DO NOT load them yet!!
+my @revtex_toload=();
+foreach my pkg (qw(amsfonts amssymb)){
+  DeclareOption($pkg, sub{ push(@revtex_toload,$pkg); return; });
+  DeclareOption("no$pkg", sub{ @revtex_toload=grep($_ ne $pkg,@revtex_toload); return; }); }
+
+# Anything else is for article.
+DeclareOption(undef,sub {
+  PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
+
+ProcessOptions();
+LoadClass('article');
+RequirePackage('revtex3_support');
+map(RequirePackage($_),@revtex_toload);
+
+1;
