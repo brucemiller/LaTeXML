@@ -1,0 +1,397 @@
+#!/usr/bin/perl -w
+use strict;
+use FindBin;
+use lib "$FindBin::RealBin/../lib";
+use Getopt::Long qw(:config no_ignore_case);
+use Pod::Usage;
+use LaTeXML;
+use LaTeXML::Util::Pathname;
+
+# latexmlpost
+
+use File::Spec;
+use LaTeXML::Post;
+#use LaTeXML::Post::Writer;
+use LaTeXML::Util::ObjectDB;
+
+#**********************************************************************
+# Parse command line
+
+my $identity = "latexmlmath (LaTeXML version $LaTeXML::VERSION)";
+my($verbosity,$strict,$noparse,$includestyles)=(0,0,0,0);
+my ($destination,$help,$showversion)=('','');
+my ($documentid);
+my $inputencoding;
+my($parallelmath,$xmath,$mathimages,$mathimagemag)=(undef,undef,undef,1.75);
+my($linelength)=(undef);
+my @math_formats =();
+my %removed_math_formats=();
+
+my @paths = ('.');
+my (@preload,@debugs);
+GetOptions("destination=s" => \$destination,
+	   "output=s"  => \$destination,
+	   "preload=s" => \@preload,
+	   "path=s"    => \@paths,
+	   "quiet"     => sub { $verbosity--; },
+	   "verbose"   => sub { $verbosity++; },
+	   "strict"    => \$strict,
+	   "noparse"   => \$noparse,
+	   "includestyles"=> \$includestyles,
+	   "inputencoding=s"=>\$inputencoding,
+
+	   # Various choices for math processing.
+	   # Note: Could want OM embedded in mml annotation, too.
+	   # In general, could(?) want multiple math reps within <Math>
+	   # OR, multiple math reps combined with <mml:sematics>
+	   #   or, in fact, _other_ parallel means? (om?, omdoc? ...)
+	   # So, need to separate multiple transformations from the combination.
+	   # However, IF combining, then will need to support a id/ref mechanism.
+	   # NOTE: These should probably allow pathnames as the destination?
+	   "XMath"                       => \$xmath,
+#	   "mathml|mml!"  =>\$mathml,
+	   "mathimages!"                 => \$mathimages,
+	   "mathimagemagnification=f"    => \$mathimagemag,
+	   "linelength=i"                =>\$linelength,
+	   "presentationmathml|pmml"     => sub { addMathFormat('pmml'); },
+	   "contentmathml|cmml"          => sub { addMathFormat('cmml'); },
+	   "openmath|om"                 => sub { addMathFormat('om'); },
+	   "nopresentationmathml|nopmml" => sub { removeMathFormat('pmml'); },
+	   "nocontentmathml|nocmml"      => sub { removeMathFormat('cmml'); },
+	   "noopenmath|noom"             => sub { removeMathFormat('om'); },
+	   "parallelmath!"               => \$parallelmath,
+
+	   "VERSION"   => \$showversion,
+	   "debug=s"   => sub { eval "\$LaTeXML::$_[1]::DEBUG=1; "; },
+	   "documentid=s" => \$documentid,
+	   "help"      => \$help,
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+if($showversion){ print STDERR "$identity\n"; exit(1); }
+pod2usage(-message=>"$identity\nMissing input TeX file", 
+	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
+
+binmode(STDERR,":utf8");
+print STDERR "$identity\n" unless $verbosity < 0;
+
+#======================================================================
+# TeX Source
+#======================================================================
+# First read and digest whatever we're given.
+my $tex = join(' ',@ARGV);
+if($tex eq '-'){
+  my $content;
+  { local $/ = undef; $tex = <>; }}
+
+my $texdoc = <<EODoc;
+\\documentclass{article}
+\\begin{document}
+\\[ $tex \\]
+\\end{document}
+EODoc
+
+#======================================================================
+# Digest the TeX
+#======================================================================
+@paths = map(pathname_canonical($_),@paths);
+if(my @baddirs = grep(! -d $_, @paths)){
+  warn "$identity: these path directories do not exist: ".join(', ',@baddirs)."\n"; }
+
+my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[@paths],
+			  verbosity=>$verbosity, strict=>$strict,
+			  includeComments=>0,inputencoding=>$inputencoding,
+			  includeStyles=>$includestyles,
+			  documentid=>$documentid,
+			  nomathparse=>$noparse);
+# # Check that destination is valid before wasting any time...
+# if($destination){
+#   $destination = pathname_canonical($destination);
+#   if(my $dir =pathname_directory($destination)){
+#     pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }}
+
+my $digested = $latexml->digestString($texdoc);
+
+#======================================================================
+# Convert to XML DOM
+#======================================================================
+my $dom = $latexml->convertDocument($digested);
+
+#======================================================================
+# Postprocess to convert the math to whatever desired forms.
+#======================================================================
+
+# Some things latexml does don't make sense here.
+#  alignment structures (w/ multiple math fragments)
+#  linebreaking ?
+our %OPTIONS = (verbosity=>$verbosity||0);
+
+my $DB = LaTeXML::Util::ObjectDB->new(%OPTIONS);
+
+# Create the processors:
+my @procs = ();
+if($mathimages){
+  require 'LaTeXML/Post/MathImages.pm';
+  push(@procs,LaTeXML::Post::MathImages->new(magnification=>$mathimagemag,%OPTIONS)); }
+if(@math_formats){
+  my @mprocs=();
+  foreach my $fmt (@math_formats){
+    if($fmt eq 'pmml'){
+      require 'LaTeXML/Post/MathML.pm';
+      push(@mprocs,LaTeXML::Post::MathML::Presentation->new(
+            (defined $linelength ? (linelength=>$linelength):()),
+							    %OPTIONS)); }
+    elsif($fmt eq 'cmml'){
+      require 'LaTeXML/Post/MathML.pm';
+      push(@mprocs,LaTeXML::Post::MathML::Content->new(%OPTIONS)); }
+    elsif($fmt eq 'om'){
+      require 'LaTeXML/Post/OpenMath.pm';
+      push(@mprocs,LaTeXML::Post::OpenMath->new(%OPTIONS)); }}
+  if($parallelmath){
+    require 'LaTeXML/Post/MathML.pm';
+    push(@procs,LaTeXML::Post::MathML::Parallel->new(math_processors=>[@mprocs],%OPTIONS)); }
+  else {
+    push(@procs,@mprocs); }}
+
+#push(@procs,LaTeXML::Post::Writer->new(format=>$format,%OPTIONS));
+
+# Figure how to define a Reader processor (?)
+# that initialize the thing by reading several files (the rest of the command line).
+my ($postdom) = LaTeXML::Post::ProcessChain(LaTeXML::Post::Document->new($dom),@procs);
+$DB->finish;
+
+#======================================================================
+# Now, pull the stuff out!
+#======================================================================
+
+# Here's the rub;
+#   It makes sense to offer png, pmml, cmml, even om, XMath & parallel...
+# How do we deliver it? 
+#    png to file, obviously (but the size? evntl, baseline?)
+#    what about the rest?
+#    individually to files?
+#    only offer parallel for multiple formats? then to stdout.
+# If there's only one output (other than png), we can print to stdout.
+
+if($xmath){
+  my $xm = $postdom->findnode("//*[local-name() = 'XMath']");
+  print $xm->toString."\n" if $xm; }
+else {
+  my ($mml) = $postdom->findnodes("//*[local-name() = 'math']");
+  print $mml->toString."\n" if $mml;
+}
+
+#======================================================================
+# helpers
+#======================================================================
+
+sub addMathFormat {
+  my($fmt)=@_;
+  push(@math_formats,$fmt) 
+    unless grep($_ eq $fmt,@math_formats) || $removed_math_formats{$fmt}; }
+sub removeMathFormat {
+  my($fmt)=@_;
+  @math_formats = grep($_ ne $fmt, @math_formats);
+  $removed_math_formats{$fmt}=1; }
+
+#**********************************************************************
+__END__
+
+=head1 NAME
+
+C<latexml> - transforms a TeX/LaTeX file into XML.
+
+=head1 SYNOPSIS
+
+latexml [options] texfile
+
+ Options:
+ --destination=file specifies destination file (default stdout).
+ --output=file      [obsolete synonym for --destination]
+ --preload=module   requests loading of an optional module;
+                    can be repeated
+ --includestyles    allows latexml to load raw *.sty file;
+                    by default it avoids this.
+ --path=dir         adds dir to the paths searched for files,
+                    modules, etc; 
+ --documentid=id    assign an id to the document root.
+ --quiet            suppress messages (can repeat)
+ --verbose          more informative output (can repeat)
+ --strict           makes latexml less forgiving of errors
+ --noparse          suppresses parsing math
+ --nocomments       omit comments from the output
+ --inputencoding=enc specify the input encoding.
+ --VERSION          show version number.
+ --debug=package    enables debugging output for the named
+                    package
+ --help             shows this help message.
+
+ --mathimages            converts math to images
+                         (default for html format)
+ --nomathimages          disables the above
+ --mathimagemagnification=mag specifies magnification factor
+ --presentationmathml    converts math to Presentation MathML
+                         (default for xhtml format)
+ --pmml                  alias for --presentationmathml
+ --nopresentationmathml  disables the above
+ --linelength=n          formats presentation mathml to a
+                         linelength max of n characters
+ --contentmathml         converts math to Content MathML
+ --nocontentmathml       disables the above (default)
+ --cmml                  alias for --contentmathml
+ --openmath              converts math to OpenMath
+ --noopenmath            disables the above (default)
+ --om                    alias for --openmath
+ --parallelmath          requests parallel math markup for MathML
+                         (default when multiple math formats)
+ --noparallelmath        disables the above
+
+If texfile is '-', latexml reads the TeX source from standard input.
+
+=head1 OPTIONS AND ARGUMENTS
+
+=over 4
+
+=item C<--destination>=I<file>
+
+Specifies the destination file; by default the XML is written to stdout.
+
+=item C<--preload>=I<module>
+
+Requests the loading of an optional module or package.  This may be useful if the TeX code
+does not specificly require the module (eg. through input or usepackage).
+For example, use C<--preload=LaTeX.pool> to force LaTeX mode.
+
+=item C<--includestyles>
+
+This optional allows processing of style files (files with extensions C<sty>,
+C<cls>, C<clo>, C<cnf>).  By default, these files are ignored  unless a latexml
+implementation of them is found (with an extension of C<ltxml>).
+
+These style files generally fall into two classes:  Those
+that merely affect document style are ignorable in the XML.
+Others define new markup and document structure, often using
+deeper LaTeX macros to achieve their ends.  Although the omission
+will lead to other errors (missing macro definitions), it is
+unlikely that processing the TeX code in the style file will
+lead to a correct document.
+
+=item C<--path>=I<dir>
+
+Add I<dir> to the search paths used when searching for files, modules, style files, etc;
+somewhat like TEXINPUTS.  This option can be repeated.
+
+=item C<--documentid>=I<id>
+
+Assigns an ID to the root element of the XML document.  This ID is generally
+inherited as the prefix of ID's on all other elements within the document.
+This is useful when constructing a site of multiple documents so that
+all nodes have unique IDs.
+
+=item C<--quiet>
+
+Reduces the verbosity of output during processing, used twice is pretty silent.
+
+=item C<--verbose>
+
+Increases the verbosity of output during processing, used twice is pretty chatty.
+Can be useful for getting more details when errors occur.
+
+=item C<--strict>
+
+Specifies a strict processing mode. By default, undefined control sequences and
+invalid document constructs (that violate the DTD) give warning messages, but attempt
+to continue processing.  Using --strict makes them generate fatal errors.
+
+=item C<--inputencoding=>I<encoding>
+
+Specify the input encoding, eg. C<--inputencoding=iso-8859-1>.
+The encoding must be one known to Perl's Encode package.
+Note that this only enables the translation of the input bytes to
+UTF-8 used internally by LaTeXML, but does not affect catcodes.
+In such cases, you should be using the inputenc package.
+Note also that this does not affect the output encoding, which is
+always UTF-8.
+
+=item C<--VERSION>
+
+Shows the version number of the LaTeXML package..
+
+=item C<--debug>=I<package>
+
+Enables debugging output for the named package. The package is given without the leading LaTeXML::.
+
+=item C<--help>
+
+Shows this help message.
+
+=back
+
+=head2 Math Options
+
+These options specify how math should be converted into other formats.
+Multiple formats can be requested; how they will be combined
+depends on the format and other options.
+
+=over 4
+
+=item C<--mathimages>, C<--nomathimages>
+
+Requests or disables the conversion of math to images.
+Conversion is the default for html format.
+
+=item C<--mathimagemagnification=>I<factor>
+
+Specifies the magnification used for math images, if they are made.
+Default is 1.75.
+
+=item C<--presentationmathml>, C<--nopresentationmathml>
+
+Requests or disables conversion of math to Presentation MathML.
+Conversion is the default for xhtml format.
+
+=item C<--linelength>I<=number>
+
+(Experimental) Line-breaks the generated Presentation
+MathML so that it is no longer than I<number> `characters'.
+
+=item C<--contentmathml>, C<--nocontentmathml>
+
+Requests or disables conversion of math to Content MathML.
+Conversion is disabled by default.
+B<Note> that this conversion is only partially implemented.
+
+=item C<--openmath>
+
+Requests or disables conversion of math to OpenMath.
+Conversion is disabled by default.
+B<Note> that this conversion is only partially implemented.
+
+=item C<--parallelmath>, C<--noparallelmath>
+
+Requests or disables parallel math markup.
+Parallel markup is the default for xhtml formats when multiple math
+formats are requested.
+
+This method uses the MathML C<semantics> element with additional formats
+appearing as C<annotation>'s.
+The first math format requested must be either Presentation or Content MathML;
+additional formats may be MathML or OpenMath.
+
+If this option is disabled and multiple formats are requested, the
+representations are simply stored as separate children of the C<Math> element.
+
+=item C<--keepXMath>
+
+By default, when any of the MathML or OpenMath conversions
+are used, the intermediate math representation will be removed;
+this option preserves it.
+
+=back
+
+=head1 SEE ALSO
+
+L<latexml>, L<latexmlpost>, L<LaTeXML>
+
+=cut
+#**********************************************************************
+
