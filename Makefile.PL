@@ -52,7 +52,7 @@ WriteMakefile(NAME => 'LaTeXML',
 			     'Parse::RecDescent' => 0,
 #			     'Image::Magick'=> 0
 			   },
-	      EXE_FILES => [ 'bin/latexml', 'bin/latexmlpost', 'bin/latexmlfind'],
+	      EXE_FILES => [ 'bin/latexml','bin/latexmlpost','bin/latexmlfind','bin/latexmlmath'],
 	      macro => $MORE_MACROS,
 	      depend => {metafile=>'specfile'},
 	      );
@@ -119,11 +119,16 @@ MakeXSLT
 #======================================================================
 # Install included TeX style file(s) into the standard TEXMFLOCAL,
 # [note that this script has to handle the indirect installation for rpms!]
+#
+# FIGURE THIS OUT; We want to append
+#      --prefix=$(DESTDIR)
+# to install.PL so that it can "install" to staging directories
+# but for manual $(DESTDIR) is empty, so install.PL complains...
 sub install_TeXStyles {
     $MORE_MAKERULES .= <<'InstallTeXStyles';
 
 install::
-	$(PERLRUN) blib/lib/LaTeXML/texmf/install.PL --prefix=$(DESTDIR)
+	$(PERLRUN) blib/lib/LaTeXML/texmf/install.PL
 
 InstallTeXStyles
 }
