@@ -19,7 +19,7 @@ foreach my $option (qw(aps osa aip pra prb prc prd prl rmp seg manuscript eqsecn
 
 # Options that load packages; but DO NOT load them yet!!
 my @revtex_toload=();
-foreach my pkg (qw(amsfonts amssymb)){
+foreach my $pkg (qw(amsfonts amssymb)){
   DeclareOption($pkg, sub{ push(@revtex_toload,$pkg); return; });
   DeclareOption("no$pkg", sub{ @revtex_toload=grep($_ ne $pkg,@revtex_toload); return; }); }
 
