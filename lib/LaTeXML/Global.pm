@@ -192,7 +192,7 @@ sub Error {
   else {
     $LaTeXML::Global::STATE->noteStatus('error');
     print STDERR LaTeXML::Error::generateMessage("Error",$msg,1,"Continuing... Expect trouble.\n")
-      unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -1; }
+      unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -2; }
   if(($LaTeXML::Global::STATE->getStatus('error')||0) > $MAXERRORS){
     Fatal(":too_many:$MAXERRORS Too many errors!"); }
   return; }
@@ -201,7 +201,7 @@ sub Warn {
   my($msg)=@_;
   $LaTeXML::Global::STATE->noteStatus('warning');
   print STDERR LaTeXML::Error::generateMessage("Warning",$msg,0)
-    unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < 0; 
+    unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -1; 
   return; }
 
 #**********************************************************************
@@ -238,11 +238,25 @@ sub ToString {
   my($object)=@_;
   (defined $object ? (((ref $object) && !$NOBLESS{ref $object}) ? $object->toString : "$object"):''); }
 
+# Just how deep of an equality test should this be?
 sub Equals {
   my($a,$b)=@_;
-  (defined $a) && (defined $b)
-    && ( ((ref $a) && (ref $b) && ((ref $a) eq (ref $b)) && !$NOBLESS{ref $a})
-	 ? $a->equals($b) : ($a eq $b)); }
+  return 1 if !(defined $a) && !(defined $b); # both undefined, equal, I guess
+  return 0 unless (defined $a) && (defined $b); # else both must be defined
+  my $refa = (ref $a) || '_notype_';
+  my $refb = (ref $b) || '_notype_';
+  return 0 if $refa ne $refb;					# same type?
+  return $a eq $b if ($refa eq '_notype_') || $NOBLESS{$refa}; # Deep comparison of builtins?
+  return 1 if $a->equals($b);					# semi-shallow comparison?
+  # Special cases? (should be methods, but that embeds State knowledge too low)
+  if($refa eq 'LaTeXML::Token'){ # Check if they've been \let to the same defn.
+    my $defa = $LaTeXML::Global::STATE->lookupDefinition($a);
+    my $defb = $LaTeXML::Global::STATE->lookupDefinition($b);
+    return $defa && $defb && ($defa eq $defb); }
+  return 0; }
+
+#    && ( ((ref $a) && (ref $b) && ((ref $a) eq (ref $b)) && !$NOBLESS{ref $a})
+#	 ? $a->equals($b) : ($a eq $b)); }
 
 #**********************************************************************
 1;
