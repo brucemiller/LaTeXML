@@ -61,8 +61,11 @@ sub digestNextBody {
   local @LaTeXML::LIST=();
   while(defined($token=$$self{gullet}->readXToken(1))){ # Done if we run out of tokens
     push(@LaTeXML::LIST, $self->invokeToken($token));
-    last if $terminal and $token->equals($terminal);
+    last if $terminal and Equals($token,$terminal);
     last if $initdepth > scalar(@{$$self{boxing}}); } # if we've closed the initial mode.
+  Error(":unexpected:".($token ? ToString($token) : "EndOfInput")
+       ." body should have ended with ".ToString($terminal))
+    if $terminal and ! Equals($token,$terminal);
   push(@LaTeXML::LIST,LaTeXML::List->new()) unless $token; # Dummy `trailer' if none explicit.
   @LaTeXML::LIST; }
 
