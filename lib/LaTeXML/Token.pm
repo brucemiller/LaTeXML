@@ -261,11 +261,6 @@ or 256 if it is a control sequence.
 
 Return the catcode of the C<$token>.
 
-=item C<< $defn = $token->getDefinition; >>
-
-Return the current definition associated with C<$token> in C<$STATE>, or
-undef if none.
-
 =back
 
 =head2 Tokens methods
