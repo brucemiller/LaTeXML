@@ -499,7 +499,7 @@ sub andSplit {
   my @toks=();
   if($tokens){
     foreach my $t ($tokens->unlist){
-      if($t->equals(T_CS('\and'))){
+      if(Equals($t,T_CS('\and'))){
 	push(@items,[@toks]); @toks=();}
       else {
 	push(@toks,$t); }}}
@@ -531,7 +531,7 @@ DefConstructor('\thanks{}', "<ltx:note class='thanks'>#1</ltx:note>");
 # Annoying special case; 2 problems.
 # (1) environment doesn't allow me to get the material to do add@frontmatter
 #   so we've got to do it a bit more manually.
-# (2) Apparently, LaTeX _perversely_ allows \abstract{...} to work!
+# (2) Apparently, LaTeX _perversely_ allows \abstract to work!
 #   [ie. no \begin{},\end{}, and not even \endabstract!]
 #   And of course, if it works, people do it.
 #   LaTeXML, however, MUST know when the abstract ends!
@@ -563,14 +563,16 @@ DefMacro('\abstractname','Abstract'); # never used?
 
 #DefEnvironment('{titlepage}','');
 # Or perhaps it's better just to ignore the markers?
-DefMacro('\titlepage','');
-DefMacro('\endtitlepage','');
+#DefMacro('\titlepage','');
+#DefMacro('\endtitlepage','');
 
-DefEnvironment('{ZZZZZZZZZZZtitlepage}','<ltx:title>#body',
-	      beforeDigest=>sub { Let("\\\\",'\title@cr');
-				  Let('\par','\relax');
+# Or perhaps not....
+# There's a title and other stuff in here, but how could we guess?
+DefEnvironment('{titlepage}','<ltx:para class="titlepage">#body',
+	      beforeDigest=>sub { #Let("\\\\",'\title@cr');
+				  #Let('\par','\relax');
 				  Let('\centering','\relax');
-				  DefEnvironment('{center}','#body');
+				  #DefEnvironment('{center}','#body');
 				  DefEnvironment('{abstract}',
 						 '<ltx:abstract>#body</ltx:abstract>',
 						 beforeDigest=>sub { 
@@ -578,15 +580,19 @@ DefEnvironment('{ZZZZZZZZZZZtitlepage}','<ltx:title>#body',
 				return; },
 	       beforeDigestEnd=>sub { Digest(T_CS('\maybe@end@title')); }
 	      );
-DefConstructor('\title@cr[]',"<ltx:subtitle>",
-	       beforeDigest=>sub {  Digest(T_CS('\maybe@end@title')); });
+#DefConstructor('\title@cr[]',"<ltx:subtitle>",
+#	       beforeDigest=>sub {  Digest(T_CS('\maybe@end@title')); });
 
+# DefConstructor('\maybe@end@title',sub {
+#   my($document)=@_;
+#   if($document->isCloseable('ltx:title')){
+#     $document->closeElement('ltx:title'); }
+#   elsif($document->isCloseable('ltx:subtitle')){
+#     $document->closeElement('ltx:subtitle'); }});
 DefConstructor('\maybe@end@title',sub {
   my($document)=@_;
-  if($document->isCloseable('ltx:title')){
-    $document->closeElement('ltx:title'); }
-  elsif($document->isCloseable('ltx:subtitle')){
-    $document->closeElement('ltx:subtitle'); }});
+  if($document->isCloseable('ltx:para')){
+    $document->closeElement('ltx:para'); }});
 
 DefMacro('\sectionmark{}','');
 DefMacro('\subsectionmark{}','');
@@ -1938,7 +1944,7 @@ DefMacro('\par@in@bibliography',sub {
   $gullet->skipSpaces;
   my $tok = $gullet->readToken;
   # If next token is another \par, or a REAL \bibitem, 
-  if($tok->equals(T_CS('\par')) || $tok->equals(T_CS('\bibitem'))){
+  if(Equals($tok,T_CS('\par')) || Equals($tok,T_CS('\bibitem'))){
     ($tok); }			# then this \par expands into what followed
   else {			# Else, put it back, and start a bibitem.
     $gullet->unread($tok);
