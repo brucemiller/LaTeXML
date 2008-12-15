@@ -224,7 +224,7 @@ DefParameterType('DigestedBody', sub {
 #   0 : skip to \fi
 #  -1 : skip to \else, if any, or \fi
 #   n : skip to n-th \or, if any, or \else, if any, or \fi.
-sub skipConditionalBody {
+sub XXXskipConditionalBody {
   my($gullet,$nskips)=@_;
   my $fi_def   = LookupDefinition(T_CS('\fi'));
   my $or_def   = LookupDefinition(T_CS('\or'));
@@ -242,6 +242,24 @@ sub skipConditionalBody {
       elsif(($defn eq $or_def) && (++$n_ors == $nskips)){
 	return; }
       elsif(($defn eq $else_def) && $nskips){
+	return; }}}
+  Fatal(":expected:\\fi Missing \\fi or \\else, conditional fell off end"); }
+
+sub skipConditionalBody {
+  my($gullet,$nskips)=@_;
+  my $level=1;
+  my $n_ors = 0;
+  while(my $t= $gullet->readToken){
+    if(defined(my $defn = LookupDefinition($t))){
+      if($defn->isExpandable && $defn->isConditional){
+	$level++; }
+      elsif(Equals($t,T_CS('\fi')) && (!--$level)){
+	fiHandler($gullet); return; }
+      elsif($level > 1){	# Ignore nested \else,\or
+      }
+      elsif(Equals($t,T_CS('\or')) && (++$n_ors == $nskips)){
+	return; }
+      elsif(Equals($t,T_CS('\else')) && $nskips){
 	return; }}}
   Fatal(":expected:\\fi Missing \\fi or \\else, conditional fell off end"); }
 
@@ -1471,9 +1489,11 @@ DefPrimitive('\@open@inner@column',sub {
     elsif(grep($tok->equals($_),@line_tokens)){ # Save line commands
       push(@lines,$stomach->invokeToken($tok)); }
     else {
-      if($tok->equals(T_CS('\omit'))){ # \omit removes the before/after tokens for this column.
+##      if($tok->equals(T_CS('\omit'))){ # \omit removes the before/after tokens for this column.
+      if(Equals($tok,T_CS('\omit'))){ # \omit removes the before/after tokens for this column.
 	$$colspec{before}=$$colspec{after}=Tokens(); }
-      elsif($tok->equals(T_CS('\@@eat@space'))){ # First non-empty token implies column is empty.
+##      elsif($tok->equals(T_CS('\@@eat@space'))){ # First non-empty token implies column is empty.
+      elsif(Equals($tok,T_CS('\@@eat@space'))){ # First non-empty token implies column is empty.
 	$$colspec{empty}=1; }
       $gullet->unread($tok); last; }}
   $gullet->unread(beforeCellUnlist($$colspec{before}));
@@ -1509,7 +1529,8 @@ sub beforeCellUnlist {
   my @toks = $tokens->unlist;
   my @new = ();
   while(my $t = shift(@toks)){
-    if($t->equals(T_MATH) && @toks && $toks[0]->equals(T_CS('\hfil'))){
+##    if($t->equals(T_MATH) && @toks && $toks[0]->equals(T_CS('\hfil'))){
+    if(Equals($t,T_MATH) && @toks && Equals($toks[0],T_CS('\hfil'))){
       push(@new,shift(@toks)); unshift(@toks,$t); }
     else {
       push(@new, $t); }}
@@ -1521,7 +1542,8 @@ sub afterCellUnlist {
   my @toks = $tokens->unlist;
   my @new = ();
   while(my $t = pop(@toks)){
-    if($t->equals(T_MATH) && @toks && $toks[$#toks]->equals(T_CS('\hfil'))){
+##    if($t->equals(T_MATH) && @toks && $toks[$#toks]->equals(T_CS('\hfil'))){
+    if(Equals($t,T_MATH) && @toks && Equals($toks[$#toks],T_CS('\hfil'))){
       unshift(@new,pop(@toks)); push(@toks,$t); }
     else {
       unshift(@new, $t); }}
@@ -1536,8 +1558,7 @@ DefPrimitive('\halign BoxSpecification {}', sub {
   my @tokens = $contents->unlist;
   my @template = ();
   my $t;
-  my $crdef = LookupDefinition(T_CS('\cr'));
-  while(@tokens && ((LookupDefinition($t=shift(@tokens))||'none') ne $crdef)){
+  while(@tokens && !Equals($t=shift(@tokens), T_CS('\cr'))){
     push(@template,$t); }
   my $template = LaTeXML::AlignmentTemplate->new();
   my $b=1;
@@ -1695,7 +1716,6 @@ DefMacro('\discretionary{}{}{}','#3'); # No hyphenation here!
 DefPrimitive('\-',undef);
 DefPrimitive('\setlanguage Number',undef);
 
-DefMacro('\newpage','');
 
 #======================================================================
 # Math mode stuff
@@ -2475,6 +2495,7 @@ DefConstructor('\nobreakspace',"?#isMath(<ltx:XMHint name='nobreakspace'/>)(".UT
 DefMacro('\slash','/');
 DefPrimitive('\filbreak',undef);
 DefMacro('\goodbreak','\par');
+Let('\newpage','\eject');
 DefMacro('\eject','\par');
 DefMacro('\supereject','\par');
 DefPrimitive('\removelastskip',undef);
