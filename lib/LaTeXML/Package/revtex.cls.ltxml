@@ -12,9 +12,11 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
+foreach my $option (qw(manuscript eqsecnum preprint tighten floats)){
+  DeclareOption($option, undef); }
+
 # The following specify sub-styles; I'll assume they're irrelevant for now.
-foreach my $option (qw(aps osa aip pra prb prc prd prl rmp seg manuscript eqsecnum
-		       preprint tighten floats)){
+foreach my $substyle (qw(aps osa aip pra prb prc prd prl rmp seg)){
   DeclareOption($substyle, undef); }
 
 # Options that load packages; but DO NOT load them yet!!
