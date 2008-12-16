@@ -2495,8 +2495,8 @@ DefConstructor('\nobreakspace',"?#isMath(<ltx:XMHint name='nobreakspace'/>)(".UT
 DefMacro('\slash','/');
 DefPrimitive('\filbreak',undef);
 DefMacro('\goodbreak','\par');
-Let('\newpage','\eject');
 DefMacro('\eject','\par');
+Let('\newpage','\eject');
 DefMacro('\supereject','\par');
 DefPrimitive('\removelastskip',undef);
 DefMacro('\smallbreak','\par');
