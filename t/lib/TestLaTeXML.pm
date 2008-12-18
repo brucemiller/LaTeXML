@@ -51,7 +51,8 @@ sub latexml_ok {
   my($latexml,$dom,$domstring);
 
   eval{ $latexml = LaTeXML->new(preload=>[], searchpath=>[], includeComments=>0,
-				verbosity=>-2); };
+#				verbosity=>-2); };
+				verbosity=>-1); };
   return do_fail($name,"Couldn't instanciate LaTeXML: ".@!) unless $latexml;
 
   eval { $dom = $latexml->convertFile($texpath); };
