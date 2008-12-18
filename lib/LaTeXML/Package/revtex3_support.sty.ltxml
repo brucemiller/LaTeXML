@@ -25,8 +25,11 @@ RequirePackage('revtex4_support');
 
 DefMacro('\eqsecnum',''); 	# ?
 
+# Hmm, this seems to allow random chunks of text within;
+# it really only specifies the numbering, not alignment or ...
 DefEnvironment('{mathletters}',
-	       "<ltx:equationgroup>#body</ltx:equationgroup>",
+#	       "<ltx:equationgroup>#body</ltx:equationgroup>",
+	       "#body",
 	       afterDigestBegin=>sub {
 		 my($stomach,$whatsit)=@_;
 		 my %eqn = RefStepCounter('equation');
