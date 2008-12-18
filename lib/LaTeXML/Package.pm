@@ -312,6 +312,8 @@ sub StepCounter {
   my($ctr)=@_;
   my $value = CounterValue($ctr);
   AssignValue("\\c\@$ctr"=>$value->add(Number(1)),'global');
+  DefMacroI(T_CS("\\\@$ctr\@ID"),undef, Tokens(Explode(LookupValue('\c@'.$ctr)->valueOf)),
+	    scope=>'global');
   # and reset any within counters!
   if(my $nested = LookupValue("\\cl\@$ctr")){
     foreach my $c ($nested->unlist){
