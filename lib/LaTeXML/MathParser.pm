@@ -20,19 +20,21 @@ use LaTeXML::Global;
 use base (qw(Exporter));
 
 our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
-		     &Annotate &InvisibleTimes
+		     &Annotate &InvisibleTimes &InvisibleComma
 		     &NewFormulae &NewFormula &NewList
 		     &ApplyDelimited &NewScript
 		     &LeftRec
 		     &Arg &Problem &MaybeFunction
+		     &SawNotation &IsNotationAllowed
 		     &isMatchingClose &Fence));
 our %EXPORT_TAGS = (constructors
 		    => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
-			   &Annotate &InvisibleTimes
+			   &Annotate &InvisibleTimes &InvisibleComma
 			   &NewFormulae &NewFormula &NewList
 			   &ApplyDelimited &NewScript
 			   &LeftRec
 			   &Arg &Problem &MaybeFunction
+			   &SawNotation &IsNotationAllowed
 			   &isMatchingClose &Fence)]);
 our $nsURI = "http://dlmf.nist.gov/LaTeXML";
 our $nsXML = "http://www.w3.org/XML/1998/namespace";
@@ -175,12 +177,6 @@ sub getTokenContent { # Get the Token's content, or fall back to name.
    : (defined ($x=$node->getAttribute('name')) ? $x
       : undef)); }
 
-sub node_string {
-  my($node,$document)=@_;
-  my $role = $node->getAttribute('role') || 'UNKNOWN';
-  my $box = $document->getNodeBox($node);
-  ($box ? ToString($box) : text_form($node)). "[[$role]]"; }
-
 sub node_location {
   my($node)=@_;
   my $n = $node;
@@ -196,10 +192,10 @@ sub node_location {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Parser
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Top-level per-formula parse.
 # We do a depth-first traversal of the content of the XMath element,
-# since various sub-elements act as containers of nominally complete
-# subexpressions.
-# XMArg and XMWrap
+# since various sub-elements (XMArg & XMWrap) act as containers of
+# nominally complete subexpressions.
 sub parse {
   my($self,$xnode,$document)=@_;
   local $LaTeXML::MathParser::STRICT = 1;
@@ -232,7 +228,7 @@ sub parse_rec {
   my $tag  = getQName($node);
   if(my $requested_rule = $node->getAttribute('rule')){
     $rule = $requested_rule; }
-  if(my $result= $self->parse_internal($node,$document,$rule)){
+  if(my $result= $self->parse_single($node,$document,$rule)){
     $$self{passed}{$tag}++;
    if($tag eq 'ltx:XMath'){	# Replace content of XMath
      NoteProgress('['.++$$self{n_parsed}.']');
@@ -271,94 +267,139 @@ sub parse_children {
 }}
 
 
-# ================================================================================
-
-sub parse_internal {
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Low-level Parser: parse a single expression
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Convert to textual form for processing by MathGrammar
+sub parse_single {
   my($self,$mathnode,$document,$rule)=@_;
-  #  Remove Hints!
-  my @nodes = element_nodes($mathnode);
-  @nodes = grep( getQName($_) ne 'ltx:XMHint', @nodes);
+  my @nodes = grep( getQName($_) ne 'ltx:XMHint', # Strip out Hints
+		    element_nodes($mathnode));
 
+  my($punct,$result,$unparsed);
   # Extract trailing punctuation, if rule allows it.
-  my ($punct, $result,$textified);
   if($rule =~ s/,$//){
     my ($x,$r) = ($nodes[$#nodes]);
     $punct = ($x && (getQName($x) eq 'ltx:XMTok')
-	      && ($r = $x->getAttribute('role'))
-	      && (($r eq 'PUNCT')||($r eq 'PERIOD'))
+	      && ($r = $x->getAttribute('role')) && (($r eq 'PUNCT')||($r eq 'PERIOD'))
 	      ? pop(@nodes) : ''); }
-  my $nnodes = scalar(@nodes);
-  
-  if($nnodes == 0){	     # No nodes => Empty  (maybe the wrong thing to do, but ...
-    $result = Absent(); }
-  elsif($nnodes == 1){		# One node? What's to parse?
-    $result = $nodes[0]; }
+
+  if(scalar(@nodes) < 2){	# Too few nodes? What's to parse?
+    $result = $nodes[0] || Absent(); }
   else {
     if($LaTeXML::MathParser::DEBUG){
-      if(my $string = join(' ',map(node_string($_,$document),@nodes))){
-	print STDERR "Parsing \"$string\"\n"; }}
+      $::RD_TRACE=1;		# Turn on MathGrammar tracing
+      my $box = $document->getNodeBox($LaTeXML::MathParser::XNODE);
+      print STDERR "\n".('=' x 40).
+	"\nParsing formula \"".ToString($box)."\" from ".$box->getLocator
+	  ."\n == \"".join(' ',map(node_string($_,$document),@nodes))."\"\n"; }
 
-    # Generate a textual token for each node; The parser operates on this encoded string.
-    local $LaTeXML::MathParser::LEXEMES = {};
-    my $i = 0;
-    $textified='';
-    foreach my $node (@nodes){
-      my $tag = getQName($node);
-      my $rnode = $node;
-      if($tag eq 'ltx:XMRef'){
-	if(my $id = $node->getAttribute('id')){
-	  $rnode = $$self{idcache}{$id};
-	  $tag = getQName($rnode); }}
-      my $text = getTokenMeaning($node);
-      $text = 'Unknown' unless defined $text;
-      my $role = $rnode->getAttribute('role');
-#      $role = ($tag eq 'ltx:XMTok' ? 'UNKNOWN' : 'ATOM') unless defined $role;
-      if(!defined $role){
-	if($tag eq 'ltx:XMTok'){
-	  $role = 'UNKNOWN'; }
-	elsif($tag eq 'ltx:XMDual'){
-	  $role = $node->firstChild->getAttribute('role'); }
-	$role = 'ATOM' unless defined $role; }
-      my $lexeme      = $role.":".$text.":".++$i;
-      $lexeme =~ s/\s//g;
-      $self->note_unknown($rnode)
-	if ($role eq 'UNKNOWN') && $LaTeXML::MathParser::STRICT;
-      $$LaTeXML::MathParser::LEXEMES{$lexeme} = $node;
-      $textified .= ' '.$lexeme; }
+    # Now do the actual parse.
+    ($result,$unparsed) = $self->parse_internal($rule,@nodes); }
 
-    #print STDERR "MathParse Node:\"".join(' ',map(node_string($_,$document),@nodes))."\"\n => \"$textified\"\n";
-
-    # Finally, apply the parser to the textified sequence.
-    local $LaTeXML::MathParser::PARSER = $self;
-    $result = $$self{internalparser}->$rule(\$textified); }
-
-  # Failure: report on what/where
+  # Failure? No result or uparsed lexemes remain.
   # NOTE: Should do script hack??
-  if((! defined $result) || $textified){
-    if($LaTeXML::MathParser::STRICT || (($STATE->lookupValue('VERBOSITY')||0)>1)){
-      my $loc = "";
-      if(! $LaTeXML::MathParser::WARNED){
-	$LaTeXML::MathParser::WARNED=1;
-	my $box = $document->getNodeBox($LaTeXML::MathParser::XNODE);
-	$loc = "In formula \"".ToString($box)." from ".$box->getLocator."\n"; }
-      $textified =~ s/^\s*//;
-      my @rest=split(/ /,$textified);
-      my $pos = scalar(@nodes) - scalar(@rest);
-      my $parsed  = join(' ',map(node_string($_,$document),@nodes[0..$pos-1]));
-      my $toparse = join(' ',map(node_string($_,$document),@nodes[$pos..$#nodes]));
-      my $lexeme = node_location($nodes[$pos] || $nodes[$pos-1] || $mathnode);
-      Warn(":parse:$rule ".$loc."  MathParser failed to match rule $rule for ".getQName($mathnode)." at pos. $pos in $lexeme at\n   "
-	   . ($parsed ? $parsed."   \n".(' ' x (length($parsed)-2)) : '')."> ".$toparse);
-    }
+  if((! defined $result) || $unparsed){
+    $self->failureReport($document,$mathnode,$rule,$unparsed,@nodes);
     undef; }
   # Success!
   else {
     $result->setAttribute('punctuation',getTokenContent($punct)) if $punct;
+    if($LaTeXML::MathParser::DEBUG){
+      print STDERR "\n=>".ToString($result)."\n"; }
     $result; }}
 
-# ================================================================================
-# Conversion to a less ambiguous, mostly-prefix form.
+sub parse_internal {
+  my($self,$rule,@nodes)=@_;
+  #------------
+  # Generate a textual token for each node; The parser operates on this encoded string.
+  local $LaTeXML::MathParser::LEXEMES = {};
+  my $i=0;
+  my $lexemes = '';
+  foreach my $node (@nodes){
+    my $role = $self->getGrammaticalRole($node);
+    my $text = getTokenMeaning($node);
+    $text = 'Unknown' unless defined $text;
+    my $lexeme      = $role.":".$text.":".++$i;
+    $lexeme =~ s/\s//g;
+    $$LaTeXML::MathParser::LEXEMES{$lexeme} = $node;
+    $lexemes .= ' '.$lexeme; }
 
+  #------------
+  # apply the parser to the textified sequence.
+  local $LaTeXML::MathParser::PARSER = $self;
+  local %LaTeXML::MathParser::SEEN_NOTATIONS = ();
+  local %LaTeXML::MathParser::DISALLOWED_NOTATIONS = ();
+  local $LaTeXML::MathParser::MAX_ABS_DEPTH = 1;
+  my $unparsed = $lexemes;
+  my $result = $$self{internalparser}->$rule(\$unparsed);
+  if(((! defined $result) || $unparsed) # If parsing Failed
+     && $LaTeXML::MathParser::SEEN_NOTATIONS{QM}){ # & Saw some QM stuff.
+    $LaTeXML::MathParser::DISALLOWED_NOTATIONS{QM} = 1; # Retry w/o QM notations
+    $unparsed = $lexemes;
+    $result = $$self{internalparser}->$rule(\$unparsed); }
+  while(((! defined $result) || $unparsed) # If parsing Failed
+	&& ($LaTeXML::MathParser::SEEN_NOTATIONS{AbsFail}) # & Attempted deeper abs nesting?
+	&& ($LaTeXML::MathParser::MAX_ABS_DEPTH < 3)){	   # & Not ridiculously deep
+      delete $LaTeXML::MathParser::SEEN_NOTATIONS{AbsFail};
+      ++$LaTeXML::MathParser::MAX_ABS_DEPTH; # Try deeper.
+      $unparsed = $lexemes;
+      $result = $$self{internalparser}->$rule(\$unparsed); }
+
+  # If still failed, try other strategies?
+
+  ($result,$unparsed); }
+
+sub getGrammaticalRole {
+  my($self,$node)=@_;
+  my $tag = getQName($node);
+  my $rnode = $node;
+  if($tag eq 'ltx:XMRef'){
+    if(my $id = $node->getAttribute('id')){
+      $rnode = $$self{idcache}{$id};
+      $tag = getQName($rnode); }}
+  my $role = $rnode->getAttribute('role');
+  if(!defined $role){
+    if($tag eq 'ltx:XMTok'){
+      $role = 'UNKNOWN'; }
+    elsif($tag eq 'ltx:XMDual'){
+      $role = $node->firstChild->getAttribute('role'); }
+    $role = 'ATOM' unless defined $role; }
+  $self->note_unknown($rnode) if ($role eq 'UNKNOWN') && $LaTeXML::MathParser::STRICT;
+  $role; }
+
+sub failureReport {
+  my($self,$document,$mathnode,$rule,$unparsed,@nodes)=@_;
+  if($LaTeXML::MathParser::STRICT || (($STATE->lookupValue('VERBOSITY')||0)>1)){
+    my $loc = "";
+    # If we haven't already done it for this formula, show the original TeX.
+    if(! $LaTeXML::MathParser::WARNED){
+      $LaTeXML::MathParser::WARNED=1;
+      my $box = $document->getNodeBox($LaTeXML::MathParser::XNODE);
+      $loc = "In formula \"".ToString($box)." from ".$box->getLocator."\n"; }
+    $unparsed =~ s/^\s*//;
+    my @rest=split(/ /,$unparsed);
+    my $pos = scalar(@nodes) - scalar(@rest);
+    # Break up the input at the point where the parse failed.
+    my $parsed  = join(' ',map(node_string($_,$document),@nodes[0..$pos-1]));
+    my $toparse = join(' ',map(node_string($_,$document),@nodes[$pos..$#nodes]));
+    my $lexeme = node_location($nodes[$pos] || $nodes[$pos-1] || $mathnode);
+    Warn(":parse:$rule ".$loc."  MathParser failed to match rule $rule for "
+	 .getQName($mathnode)." at pos. $pos in $lexeme at\n   "
+	 . ($parsed ? $parsed."   \n".(' ' x (length($parsed)-2)) : '')."> ".$toparse);
+    }}
+
+# used for debugging & failure reporting.
+sub node_string {
+  my($node,$document)=@_;
+  my $role = $node->getAttribute('role') || 'UNKNOWN';
+  my $box = $document->getNodeBox($node);
+  ($box ? ToString($box) : text_form($node)). "[[$role]]"; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Conversion to a less ambiguous, mostly-prefix form.
+# Mostly for debugging information?
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub text_form {
   my($node)=@_;
 #  $self->textrec($node,0); }
@@ -489,6 +530,20 @@ sub Annotate {
   $node; }
 
 # ================================================================================
+# A "notation" is a language construct or set thereof.
+
+# Called in the grammar to record the fact that a notations was seen.
+# and controlling rule subsets that recognize of notations to re
+# Records
+sub SawNotation {
+  my($notation, $node)=@_;
+  $LaTeXML::MathParser::SEEN_NOTATIONS{$notation} = 1; }
+
+sub IsNotationAllowed {
+  my($notation)=@_;
+  ($LaTeXML::MathParser::DISALLOWED_NOTATIONS{$notation} ? undef : 1); }
+
+# ================================================================================
 # Mid-level constructors
 
 # Apply $op to the list of arguments
@@ -531,8 +586,9 @@ sub extract_separators {
 # ================================================================================
 # Some special cases 
 
-sub InvisibleTimes {
-  New('times',"\x{2062}", role=>'MULOP'); }
+sub InvisibleTimes { New('times',"\x{2062}", role=>'MULOP'); }
+
+sub InvisibleComma { New('',"\x{2063}", role=>'PUNCT'); }
 
 # This specifies the "meaning" of things within a pair
 # of open/close delimiters, depending on the number of things.
@@ -550,9 +606,11 @@ our %balanced = ( '(' => ')', '['=>']', '{'=>'}',
 # For enclosing a single object
 # Note that the default here is just to put open/closed attributes on the single object
 our %enclose1 = ('{@}'=>'set',	# alternatively, just variant parentheses
-		  '|@|'=>'absolute-value', '||@||'=>'norm',
-		  "\x{230A}@\x{230B}"=>'floor',
-		  "\x{2308}@\x{2309}"=>'ceiling' );
+		 '|@|'=>'absolute-value', '||@||'=>'norm',
+		 "\x{230A}@\x{230B}"=>'floor',
+		 "\x{2308}@\x{2309}"=>'ceiling',
+		 '<@>'=>'expectation', # or just average?
+		 '<@|'=>'bra', '|@>'=>'ket');
 # For enclosing two objects
 our %enclose2 = ( '(@)'=>'open-interval', # alternatively, just a list
 		  '[@]'=>'closed-interval',
