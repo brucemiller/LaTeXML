@@ -1515,13 +1515,18 @@ DefPrimitive('\newcounter{}[]',sub { shift; NewCounter(map($_ && ToString($_),@_
 
 DefPrimitive('\setcounter{}{Number}',sub {
   my($stomach,$ctr,$value)=@_;
-  $ctr="\\c\@".ToString($ctr);
-  AssignValue($ctr=>$value,'global');
+  $ctr = ToString($ctr);
+  AssignValue('\c@'.$ctr=>$value,'global');
+  DefMacroI(T_CS("\\\@$ctr\@ID"),undef, Tokens(Explode($value->valueOf)),scope=>'global');
   return});
 
 DefPrimitive('\addtocounter{}{Number}',sub {
   my($stomach,$ctr,$value)=@_;
-  AssignValue('\c@'.(ToString($ctr))=>CounterValue($ctr)->add($value),'global'); });
+  $ctr = ToString($ctr);
+  my $v = CounterValue($ctr)->add($value);
+  AssignValue('\c@'.$ctr=>$v,'global'); 
+  DefMacroI(T_CS("\\\@$ctr\@ID"),undef, Tokens(Explode($v->valueOf)),scope=>'global');
+  return; });
 
 DefPrimitive('\stepcounter{}',   sub { StepCounter(ToString($_[1])); return; });
 DefPrimitive('\refstepcounter{}',sub { RefStepCounter(ToString($_[1])); return; });
@@ -2018,7 +2023,8 @@ AssignValue(CITE_SEPARATOR=>T_OTHER(','));
 AssignValue(CITE_YY_SEPARATOR=>T_OTHER(','));
 AssignValue(CITE_NOTE_SEPARATOR=>T_OTHER(','));
 
-DefConstructor('\@@cite{}',"<ltx:cite>#1</ltx:cite>");
+DefConstructor('\@@cite{}',"<ltx:cite>#1</ltx:cite>",
+	       mode=>'text');
 
 DefConstructor('\@@bibref{} Semiverbatim {}{}',
 	       "<ltx:bibref show='#1' bibrefs='#bibrefs'"
@@ -2026,7 +2032,8 @@ DefConstructor('\@@bibref{} Semiverbatim {}{}',
 	      properties=>sub { (bibrefs=>CleanBibKey($_[2]),
 				 separator=>ToString(Digest(LookupValue('CITE_SEPARATOR'))),
 				 yyseparator=>ToString(Digest(LookupValue('CITE_YY_SEPARATOR')))); });
-DefConstructor('\@@citephrase{}',"<ltx:text>#1</ltx:text>");
+DefConstructor('\@@citephrase{}',"<ltx:text>#1</ltx:text>",
+	       mode=>'text');
 
 DefMacro('\cite[] Semiverbatim', sub {
   my($gullet,$post,$keys)=@_;
