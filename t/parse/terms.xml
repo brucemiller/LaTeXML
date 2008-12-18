@@ -157,14 +157,11 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex8">
-        <Math mode="display" tex="||a||" text="absolute-value@(absolute-value@(a))">
+        <Math mode="display" tex="||a||" text="norm@(a)">
           <XMath>
             <XMApp>
-              <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
-              <XMApp>
-                <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
-                <XMTok role="ID" font="italic">a</XMTok>
-              </XMApp>
+              <XMTok meaning="norm" role="FENCED" argclose="||" argopen="||"/>
+              <XMTok role="ID" font="italic">a</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -220,59 +217,57 @@
     <title>Failures w/o Backtracking</title>
     <para xml:id="S4.p1">
       <equation xml:id="S4.Ex12">
-        <Math mode="display" tex="||a|-|b||">
+        <Math mode="display" tex="||a|-|b||" text="absolute-value@(absolute-value@(a) - absolute-value@(b))">
           <XMath>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMTok role="ID" font="italic">a</XMTok>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMTok meaning="minus" role="ADDOP">-</XMTok>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMTok role="ID" font="italic">b</XMTok>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMTok role="VERTBAR">|</XMTok>
+            <XMApp>
+              <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+              <XMApp>
+                <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                <XMApp>
+                  <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S4.Ex13">
-        <Math mode="display" tex="||a|-b|">
+        <Math mode="display" tex="||a|-b|" text="absolute-value@(absolute-value@(a) - b)">
           <XMath>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMTok role="ID" font="italic">a</XMTok>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMTok meaning="minus" role="ADDOP">-</XMTok>
-            <XMTok role="ID" font="italic">b</XMTok>
-            <XMTok role="VERTBAR">|</XMTok>
+            <XMApp>
+              <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+              <XMApp>
+                <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                <XMApp>
+                  <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                </XMApp>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
+            </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S4.Ex14">
-        <Math mode="display" tex="|a|b|_{\infty}">
+        <Math mode="display" tex="|a|b|_{\infty}" text="evaluated-at@(absolute-value@(a) * b, infinity)">
           <XMath>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMTok role="ID" font="italic">a</XMTok>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMTok role="ID" font="italic">b</XMTok>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMApp role="POSTSUBSCRIPT" scriptpos="2">
+            <XMApp>
+              <XMTok meaning="evaluated-at"/>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMApp>
+                  <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                </XMApp>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
               <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
             </XMApp>
-          </XMath>
-        </Math>
-      </equation>
-      <equation xml:id="S4.Ex15">
-        <Math mode="display" tex="|ab|_{\infty}c|">
-          <XMath>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMTok role="ID" font="italic">a</XMTok>
-            <XMTok role="ID" font="italic">b</XMTok>
-            <XMTok role="VERTBAR">|</XMTok>
-            <XMApp role="POSTSUBSCRIPT" scriptpos="2">
-              <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
-            </XMApp>
-            <XMTok role="ID" font="italic">c</XMTok>
-            <XMTok role="VERTBAR">|</XMTok>
           </XMath>
         </Math>
       </equation>
