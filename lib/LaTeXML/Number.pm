@@ -98,7 +98,7 @@ sub new {
   my($class,$sp,$plus,$pfill,$minus,$mfill)=@_;
   if((!defined $plus) && (!defined $pfill) && (!defined $minus) && (!defined $mfill)){
     if($sp =~ /^(\d*\.?\d*)$/){}
-    elsif($sp =~ /^(\d*\.?\d*)(\w\w)(\s+plus(\d*\.?\d*)(fil|fill|filll|[a-zA-Z][a-zA-Z))(\s+minus(\d*\.?\d*)(fil|fill|filll|[a-zA-Z][a-zA-Z]))?$/){
+    elsif($sp =~ /^(\d*\.?\d*)(\w\w)(\s+plus\s*(\d*\.?\d*)(fil|fill|filll|[a-zA-Z][a-zA-Z]))?(\s+minus\s*(\d*\.?\d*)(fil|fill|filll|[a-zA-Z][a-zA-Z]))?$/){
       my($f,$u,$p,$pu,$m,$mu)=($1,$2,$4,$5,$7,$8);
       $sp = $f * $STATE->convertUnit($u);
       if(!$pu){}
