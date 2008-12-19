@@ -73,7 +73,7 @@ AnythingAny :
  	| MODIFIEROP Expression           { Apply($item[1],Absent(),$item[2]);}
 	| METARELOP Formula		  { Apply($item[1],Absent(),$item[2]); }
 	| anyop (PUNCT(?) anyop {[$item[1]->[0]||InvisibleComma(), $item[2]]})(s)
-	    			          { NewList($item[1],@{$item[2]}); }
+	    			          { NewList($item[1],map(@$_,@{$item[2]})); }
         | FLOATSUPERSCRIPT FLOATSUBSCRIPT  { NewScript(NewScript(Absent(),$item[1]),$item[2]); }
         | FLOATSUBSCRIPT FLOATSUPERSCRIPT  { NewScript(NewScript(Absent(),$item[1]),$item[2]); }
         | FLOATSUPERSCRIPT  { NewScript(Absent(),$item[1]); }
