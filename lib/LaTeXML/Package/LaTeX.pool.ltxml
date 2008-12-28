@@ -640,6 +640,8 @@ DefEnvironment('{verse}',
 Tag('ltx:item', autoClose=>1);
 DefConstructor('\item[]',
 	       "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
+DefConstructor('\subitem[]',
+	       "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
 
 AssignValue(itemlevel=>0,'global');
 
@@ -2178,6 +2180,8 @@ sub process_index_phrases {
   @expansion; }
 
 DefMacro('\index{}', \&process_index_phrases);
+# NOTE: ignore \glossary for now (the arg is like index entry)
+DefMacro('\glossary{}', '');
 
 DefConstructor('\@index[]{}',"^<ltx:indexmark style='#1'>#2</ltx:indexmark>",
 	       mode=>'text', reversion=>'');
@@ -2286,10 +2290,8 @@ DefEnvironment('{theindex}',
 
 DefPrimitive('\indexspace',  undef);
 
-# ---- Glossary (TBD)
-# NOTE:
-# DefConstructor('\glossary','{}',sub { ...
 DefPrimitive('\makeindex',undef);
+# ?
 DefPrimitive('\makeglossary',undef);
 
 #======================================================================
@@ -2730,8 +2732,7 @@ DefConstructor('\textsl{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text
 	       bounded=>1, font=>{shape=>'slanted'});
 DefConstructor('\textsc{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{shape=>'smallcaps'});
-
-DefConstructor('\textnormal{}', '#1',
+DefConstructor('\textnormal{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{family=>'serif',series=>'medium',shape=>'upright'});
 
 DefPrimitive('\mathversion{}',sub {
@@ -2985,7 +2986,6 @@ DefMacro('\InputIfFileExists{}{}{}', sub{
   else { $else->unlist; }});
 
 RawTeX(<<'EOTeX');
-\chardef\active=13
 \def\@tempswafalse{\let\if@tempswa\iffalse}
 \def\@tempswatrue{\let\if@tempswa\iftrue}
 \let\if@tempswa\iffalse
