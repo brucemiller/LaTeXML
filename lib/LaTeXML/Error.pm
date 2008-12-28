@@ -30,8 +30,12 @@ sub generateMessage {
     push(@lines,"In ".trim(Stringify($top)).' '.Stringify(Locator($top)));
     push(@objects,'...') if @objects && defined $nstack;
     push(@lines,join('',map(' <= '.trim(Stringify($_)),@objects))) if @objects; }
+  my $docloc;
   if(my $stomach = $STATE->getStomach){
-    push(@lines,$stomach->getGullet->getLocator($long)); }
+    $docloc = $stomach->getGullet->getLocator($long); }
+  if(!$docloc && $LaTeXML::BOX){ # In constructor?
+    $docloc = Locator($LaTeXML::BOX); }
+  push(@lines,$docloc) if $docloc;
   @lines = grep($_,@lines, @extra);
   chomp(@lines);
   join("\n",@lines); }
