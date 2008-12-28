@@ -31,6 +31,6 @@ DefColumnType('b{Dimension}',sub {
 # NOTE:  Come back & check this; is the arglist right??
 DefPrimitive('\newcolumntype{}[][]{}',sub {
   my($stomach,$char,$nargs,$opt,$replacement)=@_;
-  DefMacroI(T_CS('NC@rewrite@'.ToString($char)),convertLaTeXArgs($nargs,$opt), $replacement); });
+  DefMacroI(T_CS('\NC@rewrite@'.ToString($char)),convertLaTeXArgs($nargs,$opt), $replacement); });
 
 1;
