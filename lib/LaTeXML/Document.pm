@@ -554,10 +554,17 @@ sub closeElement {
     $node; }}
 
 # Check whether it is possible to open $qname at this point,
-# possibly by autoOpen'ing other tags.
+# possibly by autoOpen'ing & autoClosing other tags.
 sub isOpenable {
   my($self,$qname)=@_;
-  $$self{model}->canContainSomehow($$self{node},$qname); }
+  my $model = $$self{model};
+  my $node = $$self{node};
+  while($node){
+    return 1 if $model->canContainSomehow($node,$qname);
+    return 0 unless $model->canAutoClose($model->getNodeQName($node));
+    $node = $node->parentNode; }
+  return 0; }
+#  $$self{model}->canContainSomehow($$self{node},$qname); }
 
 # Check whether it is possible to close each element in @tags,
 # any intervening nodes must be autocloseable.
