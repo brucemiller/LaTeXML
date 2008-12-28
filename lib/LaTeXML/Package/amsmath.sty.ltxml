@@ -71,8 +71,7 @@ DefConstructor('\tag OptionalMatch:* {}', '',
 DefMacro('\@ams@intertext{}',
 	 '\multicolumn{1}{l}{\@@ams@intertext{#1}}\nonumber\@alignment@newline');
 DefConstructor('\@@ams@intertext{}',
-	       "<ltx:block class='intertext'>#1</ltx:block>",
-	       mode=>'text');
+	       "<ltx:block class='intertext'>#1</ltx:block>");
 
 sub amsalignBindings {
   my($template)=@_;
@@ -145,9 +144,12 @@ DefEnvironment('{multline*}',
 DefEnvironment('{split}',
 	       "<ltx:XMHint name='split-begin'/>#body<ltx:XMHint name='split-end'/>",
 	       beforeDigest=>sub{
+		 # Just dummy up these definitions; they shouldn't do much special now.
 		 DefConstructor("&","<ltx:XMHint name='align'/>");
 		 DefConstructor("\\\\","<ltx:XMHint name='newline'/>",
-				reversion=>Tokens(T_CS("\\\\"),T_CR)); });
+				reversion=>Tokens(T_CS("\\\\"),T_CR)); 
+		 DefConstructor('\intertext{}',
+				"<ltx:block class='intertext'>#1</ltx:block>", mode=>'text'); });
 
 #======================================================================
 # Section 3.5 Equation groups without alignment
@@ -806,6 +808,7 @@ Let('\Breve', '\breve');
 Let('\Bar', '\bar');
 Let('\Vec', '\vec');
 
+DefMath('\mathring{}', "\x{030A}", operator_role=>'OVERACCENT'); # should be in latex???
 # And where does this go?
 DefPrimitive('\allowdisplaybreaks', undef);
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
