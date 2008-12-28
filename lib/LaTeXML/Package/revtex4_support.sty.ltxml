@@ -18,6 +18,8 @@ RequirePackage('natbib');	# not necessarily loaded?
 RequirePackage('revsymb');
 RequirePackage('url');
 RequirePackage('longtable');
+# Not sure this strictly required
+RequirePackage('dcolumn');
 
 # Aligned to RevTeX4 Authors guide (auguide)
 
@@ -180,6 +182,9 @@ Let(T_CS('\tablenotetext'),T_CS('\footnotetext'));
 
 # RevTeX3 (obsolete in RevTeX4)
 Let('\tableline','\colrule');
+
+# This seems to be implied.
+RawTeX('\newcolumntype{d}{D{.}{.}{-1}}');
 
 #======================================================================
 # 11. Placement of Figures, Tables and Other Floats
