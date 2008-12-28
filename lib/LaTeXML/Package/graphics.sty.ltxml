@@ -29,10 +29,14 @@ DefParameterType('GraphixDimension',  sub{
 # Unimplemented, for now: What should be the result?
 # Would seem to require different treatment if the content was ONLY \includegraphic,
 # or more general text.
-DefConstructor('\scalebox{}[]{}','#3');
-DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension}{}','#4');
-DefConstructor('\rotatebox{Number}{}','#2');
-DefConstructor('\reflectbox{}','#1');
+DefConstructor('\scalebox{}[]{}','#3',
+	       mode=>'text');
+DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension}{}','#4',
+	       mode=>'text');
+DefConstructor('\rotatebox{Number}{}','#2',
+	       mode=>'text');
+DefConstructor('\reflectbox{}','#1',
+	       mode=>'text');
 
 DefConstructor('\graphicspath Semiverbatim',"<?latexml graphicspath='#1'?>");
 
