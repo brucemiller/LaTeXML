@@ -447,7 +447,7 @@ DefMacro('\the Variable',sub {
     my $cs = ToString($defn->getCS);
     Error(":unexpected:\\the$cs You can't use $cs after \\the"); return (); }
   my $value = $defn->valueOf(@args);
-  my @tokens = ($type eq 'Tokens' ? $value->unlist : Explode(ToString($value)));
+  my @tokens = ($type eq 'Tokens' ? ($value ? $value->unlist :()) : Explode(ToString($value)));
   if($LaTeXML::NOEXPAND_THE){	# See \the for the sense in this.
     $gullet->neutralizeTokens(@tokens); }
   else {
@@ -976,7 +976,7 @@ DefPrimitive('\sbox Number SkipMatch:= {}', sub {
   AssignValue('box'.$_[1]->valueOf => shift(@stuff));
   @stuff;});
 
-DefPrimitive('\box Number', sub { LookupValue('box'.$_[1]->valueOf); });
+DefPrimitive('\box Number', sub { LookupValue('box'.$_[1]->valueOf) || (); });
 
 sub revert_spec {
   my($whatsit,$keyword)=@_;
@@ -1008,12 +1008,33 @@ DefConstructor('\hbox BoxSpecification BoxContents',
 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@text@alignment$'));
 				   Let(T_CS('\centerline'),T_CS('\relax')); });
 
-DefConstructor('\vbox BoxSpecification BoxContents',
-	       "<ltx:inline-block vattach='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
+# SHOULD Be a little smarter: if we're already in a block level context, don't open inline-block
+# but that doesn't really quite capture the logic....
+DefConstructor('\vbox BoxSpecification BoxContents', 
+"<ltx:inline-block vattach='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
+# sub {		 my($document,$spec,$content)=@_;
+# 		 if($document->isOpenable('ltx:block')){ # If already at block level
+# 		   $document->absorb($content); }
+# 		 else {
+# 		   $document->insertElement('ltx:inline-block',
+# 					    $content,
+# 					    vattach=>'bottom',
+# 					    height=>$spec && $$spec{height},
+# 					    'pad-height'=>$spec && $$spec{spread}); }},
+
 	       mode=>'text');
 
-DefConstructor('\vtop BoxSpecification BoxContents',
-	       "<ltx:inline-block vattach='top' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
+DefConstructor('\vtop BoxSpecification BoxContents', 
+ "<ltx:inline-block vattach='top' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
+# sub {		 my($document,$spec,$content)=@_;
+# 		 if($document->isOpenable('ltx:block')){ # If already at block level
+# 		   $document->absorb($content); }
+# 		 else {
+# 		   $document->insertElement('ltx:inline-block',
+# 					    $content,
+# 					    vattach=>'top',
+# 					    height=>$spec && $$spec{height},
+# 					    'pad-height'=>$spec && $$spec{spread}); }},
 	       mode=>'text');
 
 sub read_rule_spec {
@@ -1469,6 +1490,7 @@ DefPrimitive('\@open@column SkipSpaces DigestedBody', sub {
 AssignValue(ALIGNMENT_LINE_COMMANDS=>[]);
 PushValue(ALIGNMENT_LINE_COMMANDS=>T_CS('\hline'));
 PushValue(ALIGNMENT_LINE_COMMANDS=>T_CS('\cline'));
+PushValue(ALIGNMENT_LINE_COMMANDS=>T_CS('\label'));
 
 DefMacro('\@close@inner@column', sub {
 	   (T_CS('\@@eat@space'),
@@ -1482,12 +1504,15 @@ DefPrimitive('\@open@inner@column',sub {
   my $gullet = $stomach->getGullet;
   my @lines=();
   my @line_tokens = @{LookupValue('ALIGNMENT_LINE_COMMANDS')};
+  my @savedtokens=();
   $$colspec{empty}=0;		# Assume the column isn't empty
   # Scan for leading \omit, skipping over (& saving) \hline.
   while(my $tok=$gullet->readXToken){
     if($tok->equals(T_SPACE)){ } # Skip leading space
     elsif(grep($tok->equals($_),@line_tokens)){ # Save line commands
       push(@lines,$stomach->invokeToken($tok)); }
+    elsif(Equals($tok,T_BEGIN)){ # Crazy... seems { doesn't "block" \omit!
+      push(@savedtokens,$tok); }
     else {
 ##      if($tok->equals(T_CS('\omit'))){ # \omit removes the before/after tokens for this column.
       if(Equals($tok,T_CS('\omit'))){ # \omit removes the before/after tokens for this column.
@@ -1496,6 +1521,7 @@ DefPrimitive('\@open@inner@column',sub {
       elsif(Equals($tok,T_CS('\@@eat@space'))){ # First non-empty token implies column is empty.
 	$$colspec{empty}=1; }
       $gullet->unread($tok); last; }}
+  $gullet->unread(@savedtokens);
   $gullet->unread(beforeCellUnlist($$colspec{before}));
   (@lines,$STATE->getStomach->digestNextBody()); });
 
@@ -1711,7 +1737,7 @@ DefConstructor('\vspace{}',"");
 # \indent, \noindent, \par; see above.
 
 # \accent Number ????
-
+DefMacro('\accent Number','');	       # How should these be translated? Depends on font??
 DefMacro('\discretionary{}{}{}','#3'); # No hyphenation here!
 DefPrimitive('\-',undef);
 DefPrimitive('\setlanguage Number',undef);
@@ -2286,6 +2312,7 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 # TeX Book, Appendix B, p. 345
 
 RawTeX('
+  \chardef\active=13
   \chardef\@ne=1
   \chardef\tw@=2
   \chardef\thr@@=3
@@ -3141,11 +3168,12 @@ DefMath('\math@overrightarrow{}', "\x{2192}", operator_role=>'OVERACCENT',
 DefMath('\math@overleftarrow{}', "\x{2190}", operator_role=>'OVERACCENT', 
 	name=>'overleftarrow', alias=>'\overleftarrow');
 
-DefMacro('\underline{}',      '\ifmmode\math@underline{#1}\else\text@underline{#1}\fi');
+# Careful: Use \protect so that it doesn't expand too early in alignments, etc.
+DefMacro('\underline{}',      '\protect\ifmmode\math@underline{#1}\else\text@underline{#1}\fi');
 Let('\underbar','\underline');	# Will anyone notice?
 
-DefMacro('\overrightarrow{}', '\ifmmode\math@overrightarrow{#1}\else$\math@overrightarrow{#1}$\fi');
-DefMacro('\overleftarrow{}',  '\ifmmode\math@overleftarrow{#1}\else$\math@overleftarrow{#1}$\fi');
+DefMacro('\overrightarrow{}', '\protect\ifmmode\math@overrightarrow{#1}\else$\math@overrightarrow{#1}$\fi');
+DefMacro('\overleftarrow{}',  '\protect\ifmmode\math@overleftarrow{#1}\else$\math@overleftarrow{#1}$\fi');
 
 #----------------------------------------------------------------------
 # LaTeX; Table 3.10. Delimiters, p.47
