@@ -55,10 +55,7 @@ DefMath('\succsim',            "\x{227F}", role=>'RELOP',
 Let('\altprecsim','\precsim');
 Let('\altsuccsim','\succsim');
 
-###\mathring
-#DefAccent('\overcirc', "\x{030A}", UTF(0x02DA)); # COMBINING RING ABOVE
-DefMath('\mathring{}', "\x{030A}", operator_role=>'OVERACCENT'); # should be in latex???
-Let('\overcirc','\mathring');
+DefMath('\overcirc{}', "\x{030A}", operator_role=>'OVERACCENT'); # same as mathring
 
 DefMath('\dddot{}', "\x{02D9}\x{02D9}\x{02D9}",operator_role=>'OVERACCENT'); # DOT ABOVE
 Let('\overdots','\dddot');
