@@ -364,7 +364,8 @@ our %mathvariants = ('upright'          =>'normal',
 
 our %sizes=(tiny=>'small',script=>'small',footnote=>'small',small=>'small',
 	    normal=>'normal',
-	    large=>'big',Large=>'big',LARGE=>'big',huge=>'big',Huge=>'big');
+	    large=>'big',Large=>'big',LARGE=>'big',huge=>'big',Huge=>'big',
+	    big=>'1.1em', Big=>'1.5em', bigg=>'2.0em', Bigg=>'2.5em');
 
 # These are the strings that should be known as fences in a normal operator dictionary.
 our %fences=('('=>1,')'=>1, '['=>1, ']'=>1, '{'=>1, '}'=>1, "\x{201C}"=>1,"\x{201D}"=>1,
@@ -396,12 +397,15 @@ sub pmml_mo {
   my $text  = (ref $item ?  $item->textContent : $item);
   my $variant = ($font ? $mathvariants{$font} : '');
   my $role  = (ref $item ? $item->getAttribute('role') : $attr{role});
+  my $style = (ref $item ? $item->getAttribute('style') : $attr{style});
+  my $isstretchy = $style && ($style =~ /\bstretchy\b/);
   my $isfence = $role && ($role =~/^(OPEN|CLOSE)$/);
   my $pos   = (ref $item && $item->getAttribute('scriptpos')) || 'post';
   ['m:mo',{($variant ? (mathvariant=>$variant):()),
 	   ($size    ? (mathsize=>$sizes{$size}):()),
 	   ($color   ? (mathcolor=>$color):()),
-	   ($isfence && !$fences{$text} ? (fence=>'true'):()),
+	   ($isfence    && !$fences{$text} ? (fence=>'true'):()),
+	   ($isstretchy ? (stretchy=>'true') : ()),
 	   # If an operator has specifically located it's scripts,
 	   # don't let mathml move them.
 	   (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
