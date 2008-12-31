@@ -1,0 +1,24 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amscd}
+\newcommand{\End}{\operatorname{End}}
+\newcommand{\cov}{\operatorname{cov}}
+\newcommand{\non}{\operatorname{non}}
+\newcommand{\add}{\operatorname{add}}
+\newcommand{\cf}{\operatorname{cf}}
+\begin{document}
+\begin{equation}
+\begin{CD}
+S^{{\mathcal{W}}_\Lambda}\otimes T @>j>> T\\
+@VVV @VV{\End P}V\\
+(S\otimes T)/I @= (Z\otimes T)/J
+\end{CD}
+\end{equation}
+\begin{equation}
+\begin{CD}
+\cov(\mathcal{L}) @>>> \non(\mathcal{K}) @>>> \cf(\mathcal{K}) @>>> \cf(\mathcal{L})\\
+@VVV @AAA @AAA @VVV\\
+\add(\mathcal{L}) @>>> \add(\mathcal{K}) @>>> \cov(\mathcal{K}) @>>> \non(\mathcal{L})
+\end{CD}
+\end{equation}
+\end{document}

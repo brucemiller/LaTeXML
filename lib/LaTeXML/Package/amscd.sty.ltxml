@@ -1,0 +1,110 @@
+# -*- CPERL -*-
+# /=======================================================\ #
+# |  amscd - Implementation for LaTeXML                   | #
+# |                                                       | #
+# |=======================================================| #
+# |  Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/      | #
+# | Copyright (c) 2006 arXMLiv group                      | #
+# | Released under the GNU Public License                 | #
+# \=======================================================/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Note that the amscd authors themselves point out that amcsd is limited,
+# only covering array-like commutative diagrams, and they suggest
+# diagram, xypic or kuvio as alternatives.
+#
+# However, it is just that simplicity that mkes it possible to represent
+# the commutative diagram in straight latexml math, w/o resorting to
+# the more general svg(-like) problems.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DefMacro('\CD',    '\@@CD\@start@alignment');
+DefMacro('\endCD', '\@finish@alignment\@end@CD');
+DefPrimitive('\@end@CD',sub{ $_[0]->egroup; });
+DefConstructor('\@@CD DigestedBody',
+	       sub { my($document,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{name=>'Matrix'}); },
+	       beforeDigest=>sub {
+	        $_[0]->bgroup;
+	        alignmentBindings(MatrixTemplate()); 
+		AssignCatcode('math:@'=>1);
+		Let(T_CS('@'),T_CS('\cd@')); },
+	       reversion=>'\begin{matrix}#1\end{matrix}');
+
+DefMacro('\cd@ Token',sub {
+  my($gullet,$token)=@_;
+  (T_CS('@'.ToString($token))); });
+
+DefMacroI(T_CS('@>'),LaTeXML::Parameters::parseParameters('Until:> Until:>','@>..>..>'),
+	       '&\cd@stack{\rightarrowfill@}{#1}{#2}&');
+DefMacroI(T_CS('@)'),LaTeXML::Parameters::parseParameters('Until:) Until:)','@)..)..)'),
+	       '&\cd@stack{\rightarrowfill@}{#1}{#2}&');
+DefMacroI(T_CS('@<'),LaTeXML::Parameters::parseParameters('Until:< Until:<','@<..<..<'),
+	       '&\cd@stack{\leftarrowfill@}{#1}{#2}&');
+DefMacroI(T_CS('@('),LaTeXML::Parameters::parseParameters('Until:( Until:(','@(..(..('),
+	       '&\cd@stack{\leftarrowfill@}{#1}{#2}&');
+
+DefMacroI(T_CS('@A'),LaTeXML::Parameters::parseParameters('Until:A Until:A','@A..A..A'),
+	       '\cd@adjacent{\Big\uparrow}{#1}{#2}&&');
+DefMacroI(T_CS('@V'),LaTeXML::Parameters::parseParameters('Until:V Until:V','@V..V..V'),
+	       '\cd@adjacent{\Big\downarrow}{#1}{#2}&&');
+
+DefMacroI(T_CS('@='),undef,
+	       '&\wideequals@&');
+DefMacroI(T_CS('@|'),undef,
+	       '\Big\Vert&&');
+DefMacroI(T_CS('@\vert'),undef,
+	       '\Big\Vert&&');
+DefMacroI(T_CS('@.'),undef,
+	       '&&');
+
+DefRegister('\minaw@'=>Dimension('11.111pt'));
+
+
+# deal with under, over & underover!
+DefConstructor('\cd@stack{}{}{}', sub {
+  my($document,$op,$over,$under,%props)=@_;
+  my $scriptpos = $props{scriptpos};
+  if($under->unlist){
+    $document->openElement('ltx:XMApp'); # Role?
+    $document->insertElement('ltx:XMTok',undef,role=>'SUBSCRIPTOP', scriptpos=>$scriptpos);
+    if($over->unlist){
+      $document->openElement('ltx:XMApp'); # Role?
+      $document->insertElement('ltx:XMTok',undef,role=>'SUPERSCRIPTOP', scriptpos=>$scriptpos);
+      $document->insertElement('ltx:XMWrap',$op);
+      $document->insertElement('ltx:XMWrap',$over);
+      $document->closeElement('ltx:XMApp'); }
+    else {
+      $document->insertElement('ltx:XMWrap',$op); }
+    $document->insertElement('ltx:XMWrap',$under);
+    $document->closeElement('ltx:XMApp'); }
+  elsif($over->unlist){
+    $document->openElement('ltx:XMApp'); # Role?
+    $document->insertElement('ltx:XMTok',undef,role=>'SUPERSCRIPTOP', scriptpos=>$scriptpos);
+    $document->insertElement('ltx:XMWrap',$op);
+    $document->insertElement('ltx:XMWrap',$over);
+    $document->closeElement('ltx:XMApp'); }
+  else {
+    $document->insertElement('ltx:XMWrap',$op); }},
+	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }});
+
+# \cd@adj{}{}{}
+# Temporary...
+# Later deal with vertically centering the side things, parser issues...
+DefMacro('\cd@adjacent{}{}{}','{#2}{#1}{#3}');
+
+
+# This isn't really having the desired effect when transformed to MathML and
+# displayed in Firefox.... have I got it right; has Firefox???
+DefMath('\leftarrowfill@',  "\x{2190}", role=>'ARROW', style=>'stretchy'); # , size=>'Bigg');
+DefMath('\rightarrowfill@', "\x{2192}", role=>'ARROW', style=>'stretchy'); # , size=>'Bigg');
+DefMath('\wideequals@',     "=",        role=>'ARROW', style=>'stretchy'); # , size=>'Bigg');
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+1;
