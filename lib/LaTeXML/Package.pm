@@ -600,7 +600,7 @@ sub DefConstructorI {
 # If the $presentation seems to be TeX (ie. it involves #1... but not ONLY!)
 our $math_options = {name=>1, meaning=>1, omcd=>1, reversion=>1, alias=>1,
 		     role=>1, operator_role=>1, reorder=>1, dual=>1,
-		     style=>1, font=>1,
+		     style=>1, font=>1, size=>1,
 		     scriptpos=>1,operator_scriptpos=>1,
 		     beforeDigest=>1, afterDigest=>1, scope=>1, nogroup=>1};
 our $XMID=0;
@@ -648,7 +648,7 @@ sub DefMathI {
   $name = undef if (defined $name)
     && (($name eq $presentation) || ($name eq '')
 	|| ((defined $meaning) && ($meaning eq $name)));
-  my $attr="name='#name' meaning='#meaning' omcd='#omcd' style='#style'";
+  my $attr="name='#name' meaning='#meaning' omcd='#omcd' style='#style' size='#size'";
   $options{role} = 'UNKNOWN'
     if ($nargs == 0) && !defined $options{role};
   $options{operator_role} = 'UNKNOWN'
@@ -684,6 +684,7 @@ sub DefMathI {
 			      role => $options{role},
 			      operator_role=>$options{operator_role},
 			      style=>$options{style}, 
+			      size=>$options{size},
 			      scriptpos=>$options{scriptpos},
 			      operator_scriptpos=>$options{operator_scriptpos}},
 	       scope=>$options{scope});
