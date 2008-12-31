@@ -297,6 +297,13 @@ the outer object is a part of this object.</a:documentation>
           </choice>
         </attribute>
       </optional>
+      <optional>
+        <attribute name="bibrefs">
+          <a:documentation>If the bibrefs attribute is given, it is the key of another object in the bibliography,
+and this element should be empty; otherwise the object should be described by
+the content of the element.</a:documentation>
+        </attribute>
+      </optional>
       <zeroOrMore>
         <ref name="Bibentry.class"/>
       </zeroOrMore>

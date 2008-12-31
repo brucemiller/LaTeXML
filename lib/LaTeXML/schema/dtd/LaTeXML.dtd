@@ -1287,7 +1287,8 @@
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
   type CDATA #IMPLIED
-  role CDATA #IMPLIED>
+  role CDATA #IMPLIED
+  bibrefs CDATA #IMPLIED>
 
 <!ELEMENT bib-part (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics

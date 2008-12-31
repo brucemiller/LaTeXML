@@ -181,6 +181,10 @@ element bib-related {
   ## Particularly important is \attrval{host} which indicates that
   ## the outer object is a part of this object.
   attribute role { ("host" | "event" | "original" | text) }?,
+  ## If the bibrefs attribute is given, it is the key of another object in the bibliography,
+  ## and this element should be empty; otherwise the object should be described by
+  ## the content of the element.
+  attribute bibrefs { text }?,
   Bibentry.class* }
 
 # ---------------------------------------------------------------------
