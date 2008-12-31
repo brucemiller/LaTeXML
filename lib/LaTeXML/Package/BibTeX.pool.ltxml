@@ -106,7 +106,31 @@ use Text::Balanced qw(extract_bracketed);
 # Build a sequence of commands that will process the
 # entry and its fields, depending on what sorts of
 # aliases and commands have been defined.
-DefPrimitive('\ProcessBibTeXEntry Semiverbatim',sub {
+DefMacro('\ProcessBibTeXEntry Semiverbatim',
+	 '\bibentry@prepare{#1}\bibentry@create{#1}');
+
+DefPrimitive('\bibentry@prepare Semiverbatim',sub {
+  my($stomach,$key)=@_;
+  $key = ToString($key);
+  my $entry = LookupValue('BIBENTRY@'.$key);
+  
+  my $origtype = $entry->getType;
+  my $type = $origtype;
+  my $alias_defn = T_CS('\bib@entry@'.$type.'@alias');
+  if(LookupDefinition($alias_defn)){
+    $type = ToString(Digest($alias_defn)); }
+
+  # invoke ALL entry preparers
+  $stomach->bgroup;
+  AssignValue('CURRENT@BIBKEY'=>$key);
+  Digest(Tokens(grep(LookupDefinition($_),
+		  T_CS('\bib@entry@'.$type.'@prepare'),
+		  ($origtype ne $type ? (T_CS('\bib@entry@'.$origtype.'@prepare')):()),
+		  T_CS('\bib@entry@default@prepare'))));
+  $stomach->egroup;
+  return; });
+
+DefPrimitive('\bibentry@create Semiverbatim',sub {
   my($stomach,$key)=@_;
   $key = ToString($key);
   my $entry = LookupValue('BIBENTRY@'.$key);
@@ -117,14 +141,7 @@ DefPrimitive('\ProcessBibTeXEntry Semiverbatim',sub {
     $type = ToString(Digest($alias_defn)); }
 
   my @tex = (join('','\begin{bib@entry}{',$type,'}{',$key,'}'));
-  # Add all entry preparers
-  foreach my $preparer (grep(LookupDefinition(T_CS('\\'.$_)),
-			      'bib@entry@'.$type.'@prepare',
-			      ($origtype ne $type 
-			       ? ('bib@entry@'.$origtype.'@prepare'):()),
-			      'bib@entry@default@prepare')){
-    push(@tex,join('','\csname ',$preparer,'\endcsname')); }
-  # Add a handler for each field
+  # Add the most specific handler for each field
   foreach my $pair ($entry->getFields){
     my($field,$value)= @$pair;
     my($handler) = grep(LookupDefinition(T_CS('\\'.$_)),
@@ -136,7 +153,7 @@ DefPrimitive('\ProcessBibTeXEntry Semiverbatim',sub {
       push(@tex, join('','\csname ',$handler,'\endcsname{',$value,'}')); }
     else {
       push(@tex, join('','\csname bib@field@default@default\endcsname{',$field,'}{',$value,'}')); }}
-  # Add all entry completers
+  # Add ALL entry completers
   foreach my $completer (grep(LookupDefinition(T_CS('\\'.$_)),
 			      'bib@entry@'.$type.'@complete',
 			      ($origtype ne $type 
@@ -182,10 +199,22 @@ sub currentBibEntry { LookupValue('BIBENTRY@'.currentBibKey()); }
 sub currentBibEntryField { currentBibEntry()->getField($_[0]); }
 
 #======================================================================
-DefMacro('\bib@entry@default@prepare','');
+DefMacro('\bib@entry@default@prepare', sub {
+	   copyCrossrefFields(qw(date year month day)); });
+
 DefMacro('\bib@entry@default@complete',
 	 '\bib@synthesize@mr\bib@synthesize@zbl');
 
+sub copyCrossrefFields {
+  my(@fields)=@_;
+  my $entry = currentBibEntry();
+  if(my $xref = $entry->getField('crossref')){
+    if(my $xentry = LookupValue('BIBENTRY@'.CleanBibKey($xref))){
+      foreach my $field (@fields){
+	if(! defined $entry->getField($field)){
+	  if(my $value = $xentry->getField($field)){
+	    $entry->addField($field,$value); }}}}}
+  return; }
 #======================================================================
 # Supporters
 
@@ -212,7 +241,7 @@ sub bibAddToContainer {
     if keys %attr;
   if(my $rel = $document->findnode($xpath,$entry)){
     $document->setNode($rel);
-    $document->absorb($data);
+    $document->absorb($data) if $data;
     $document->setNode($currentnode); }
   else {
     $document->insertElement($tag,$data,%attr); }}
@@ -253,6 +282,8 @@ DefConstructor('\bib@field@@random Semiverbatim Digested',
 #  optional: volume,number,pages,month,note
 # An article gets a related item for the Journal.
 
+DefMacro('\bib@entry@article@prepare', sub { copyCrossrefFields(qw(author title journal)); });
+
 # journal : the journal that an article is part of
 DefMacro('\bib@field@article@journal',
 	 '\bib@addto@related{journal}{host}\bib@@field{ltx:bib-title}');
@@ -262,10 +293,15 @@ DefMacro('\bib@field@article@journal',
 #  required: author or editor, title, publisher, year
 #  optional: volume or number, series, address, edition, month, note
 
+DefMacro('\bib@entry@book@prepare', sub { copyCrossrefFields(qw(author editor title publisher)); });
+
+
 #======================================================================
 # Booklet
 #  required: title
 #  optional: author, howpublished, address, month, year, note
+
+DefMacro('\bib@entry@booklet@prepare', sub { copyCrossrefFields(qw(title)); });
 
 #======================================================================
 # conference
@@ -277,6 +313,8 @@ DefMacro('\bib@entry@conference@alias','inproceedings');
 #   optional: volume or number, series, type, address, edition, month, note
 # inbook gets a related item for the book, with fields:
 #    editor, publisher, booktitle, volume or number, series, address, edition.
+DefMacro('\bib@entry@inbook@prepare', sub {
+	   copyCrossrefFields(qw(author editor title chapter pages publisher)); });
 DefMacro('\bib@field@inbook@booktitle',
 	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-title}');
 DefMacro('\bib@field@inbook@editor',
@@ -301,6 +339,9 @@ DefMacro('\bib@field@inbook@edition',
 #    address, edition, month, note.
 # incollection gets a related item book, with fields:
 #    booktitle, publisher, editor, volume or number, series, address, edition
+DefMacro('\bib@entry@incollection@prepare', sub {
+	   copyCrossrefFields(qw(author title booktitle publisher)); });
+
 DefMacro('\bib@field@incollection@booktitle',
 	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-title}');
 DefMacro('\bib@field@incollection@editor',
@@ -325,6 +366,9 @@ DefMacro('\bib@field@incollection@edition',
 #     organization, publisher, note.
 # inproceedings gets a related item proceedings, with fields:
 #   booktitle, editor,volume or number, series, address, organization, publisher
+DefMacro('\bib@entry@inproceedings@prepare', sub {
+	   copyCrossrefFields(qw(author title booktitle publisher)); });
+
 DefMacro('\bib@field@inproceedings@booktitle',
 	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-title}');
 DefMacro('\bib@field@inproceedings@editor',
@@ -354,10 +398,14 @@ DefMacro('\bib@field@inproceedings@place',
 #   required: title,
 #   optional: author, organization, address, edition, month, yeaer, note.
 
+DefMacro('\bib@entry@manual@prepare', sub { copyCrossrefFields(qw(title)); });
+
 #======================================================================
 # mastersthesis
 #   required: author, title, school, year,
 #   optional: type, address, month, note
+
+DefMacro('\bib@entry@thesis@prepare', sub { copyCrossrefFields(qw(author title school));  });
 
 DefMacro('\bib@entry@mastersthesis@alias','thesis');
 DefMacro('\bib@entry@mastersthesis@complete','\bib@addtype{Master\'s Thesis}');
@@ -381,11 +429,22 @@ DefMacro('\bib@entry@phdthesis@complete','\bib@addtype{Ph.D. Thesis}');
 #   optional: editor, volume or number, series, address, month,
 #     organization, publisher, note
 
+DefMacro('\bib@entry@proceedings@prepare', sub { copyCrossrefFields(qw(title)); });
+
+DefMacro('\bib@field@proceedings@booktitle', sub {
+  my($gullet)=@_;
+  if(currentBibEntryField('title')){ # Already have a title.
+    $gullet->readArg;
+    (); }
+  else {			# Else use this as the title.
+    (TokenizeInternal('\bib@@field{ltx:bib-title}')->unlist); }});
+
 #======================================================================
 # techreport
 #   required: author, title, institution, year
 #   optional: type, number, address, month, note.
 DefMacro('\bib@entry@techreport@alias','report');
+DefMacro('\bib@entry@report@prepare', sub { copyCrossrefFields(qw(author title institution)); });
 DefMacro('\bib@entry@techreport@complete','\bib@addtype{Technical report}');
 
 #======================================================================
@@ -393,10 +452,15 @@ DefMacro('\bib@entry@techreport@complete','\bib@addtype{Technical report}');
 #   required: author, title, note
 #   optional: month, year
 
+DefMacro('\bib@entry@unpublished@prepare', sub { copyCrossrefFields(qw(author title)); });
+
+
 #======================================================================
 # Common non-standard entry types.
-DefMacro('\bib@entry@electronic@alias','online');
-DefMacro('\bib@entry@www@alias','online');
+DefMacro('\bib@entry@online@alias',    'website');
+DefMacro('\bib@entry@electronic@alias','website');
+DefMacro('\bib@entry@www@alias',       'website');
+DefMacro('\bib@entry@webpage@alias',   'website');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Processing Fields
@@ -524,8 +588,9 @@ DefMacro('\bib@field@default@annote',
 	 '\bib@@field{ltx:bib-note}[role=annotation]');
 
 # crossref : the key of a cross-referenced entry
-# ? should mix the fields?
-# IMPLEMENT THIS!
+DefConstructor('\bib@field@default@crossref Semiverbatim',sub {
+  my($document,$key)=@_;
+  bibAddToContainer($document,'ltx:bib-related',undef,role=>'host',bibrefs=>CleanBibKey($key)); });
 
 # key : a normally hidden field for ordering
 DefConstructor('\bib@field@default@key Digested',
@@ -743,14 +808,14 @@ sub processBibNameList {
 sub splitWords {
   my($string)=@_;
   my @words = ();
-  $string =~ s/^\s+//;
+  $string =~ s/^[\s~]+//;
   my $word = '';
   while($string){
-    if($string =~ s/^(,?)\s+//s){
+    if($string =~ s/^(,?)[\s~]+//s){
       push(@words,$word) if $word;
       push(@words,$1) if $1;
       $word = ''; }
-    elsif($string =~ s/^([^\{\s,]+)//){
+    elsif($string =~ s/^([^\{\s,~]+)//){
       $word .= $1; }
     elsif($string =~ /^\{/){
       $word .= extract_bracketed($string,'{}'); }
