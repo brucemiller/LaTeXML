@@ -286,6 +286,11 @@ sub getKey    { $_[0]->{key}; }
 sub getFields { @{$_[0]->{fieldlist}}; }
 sub getField  { $_[0]->{fieldmap}{$_[1]}; }
 
+sub addField  {
+  my($self,$field,$value)=@_;
+  push(@{ $$self{fieldlist}},[$field,$value]);
+  $$self{fieldmap}{$field} = $value; }
+
 #**********************************************************************
 1;
 
