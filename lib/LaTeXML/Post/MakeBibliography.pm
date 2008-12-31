@@ -84,13 +84,18 @@ sub getBibEntries {
     my $bibdoc = $doc->newFromFile($bibfile);
     foreach my $bibentry ($bibdoc->findnodes('//ltx:bibentry')){
       my $bibkey = $bibentry->getAttribute('key');
+      my $bibid  = $bibentry->getAttribute('xml:id');
       $entries{$bibkey}{bibkey}   = $bibkey; 
       $entries{$bibkey}{bibentry} = $bibentry;
       $entries{$bibkey}{citations}= [map(split(',',$_->value),
 					 $bibdoc->findnodes('.//@bibrefs',$bibentry))];
+      # Also, register the key with the DB, if the bibliography hasn't already been scanned.
+      $$self{db}->register("BIBLABEL:$bibkey",id=>$bibid);
     }}
   # Now, collect all bibkeys that were cited in other documents (NOT the bibliography)
   # And note any referrers to them (also only those outside the bib)
+  my $citestar = $$self{db}->lookup('BIBLABEL:*');
+
   my @queue = ();
   foreach my $dbkey ($$self{db}->getKeys){
     if($dbkey =~ /^BIBLABEL:(.*)$/){
@@ -100,7 +105,10 @@ sub getBibEntries {
 	foreach my $refr (keys %$referrers){
 	  if(($e=$$self{db}->lookup("ID:$refr")) && (($e->getValue('type')||'') ne 'ltx:bibitem')){
 	    $entries{$bibkey}{referrers}{$refr} = 1; }}
+	push(@queue,$bibkey); }
+      elsif($citestar){		# If \cite{*} include all of them.
 	push(@queue,$bibkey); }}}
+
   # For each bibkey in the queue, complete and include the entry
   # And add any keys cited from within each include entry
   my %seen_keys = ();
@@ -254,8 +262,9 @@ sub formatBibEntry {
     my @x =();
     foreach my $row (@$blockspec){
       my($xpath,$punct,$pre,$op,$post)=@$row;
+      my $negated = $xpath =~ s/^!\s*//;
       my @nodes = ($xpath eq 'true' ? () : $doc->findnodes($xpath,$bibentry));
-      next unless @nodes || ($xpath eq 'true');
+      next unless ($xpath eq 'true') || ($negated ? !@nodes : @nodes);
       push(@x,$punct) if $punct && @x;
       push(@x,$pre) if $pre;
       push(@x,&$op(map($_->cloneNode(1),@nodes))) if $op;
@@ -267,7 +276,7 @@ sub formatBibEntry {
   push(@citedby,['ltx:bibref',{bibrefs=>join(',',sort keys %{$$entry{bibreferrers}}),
 			       show=>'refnum'}])
     if $$entry{bibreferrers};
-  push(@blocks,['ltx:bibblock',{},"Cited by: ",$doc->conjoin(', ',@citedby)]);
+  push(@blocks,['ltx:bibblock',{},"Cited by: ",$doc->conjoin(', ',@citedby)]) if @citedby;
 
   ['ltx:bibitem',{'xml:id'=>$id, key=>$key, type=>$type},
    @tags,
@@ -330,6 +339,9 @@ sub do_edition { (@_," edition"); } # If a number, should convert to cardinal!
 sub do_thesis_type { @_; }
 sub do_pages { (" pp.\N{NO-BREAK SPACE}",@_); } # Non breaking space
 
+sub do_crossref {
+  (['ltx:cite',{},['ltx:bibref',{bibrefs=>$_[0]->getAttribute('bibrefs'), show=>'refnum'}]]); }
+
 our $LINKS;
 #BEGIN{
     $LINKS = "ltx:bib-links | ltx:bib-review | ltx:bib-identifier | ltx:bib-url";
@@ -388,7 +400,7 @@ sub do_links {
 	      [['ltx:bib-note'     ,'', "Note: ",\&do_any,'']],
 	      [[$LINKS             ,'', 'External Links: ',\&do_links,'']]],
    book=>   [ [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&maybe_editorsA,''],
+	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&do_editorsA,''],
 	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
 	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      [['ltx:bib-type'     , ''  , '', \&do_any,''],
@@ -409,6 +421,7 @@ sub do_links {
 	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
 	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      [['ltx:bib-type'     , ''  , '', \&do_any,''],
+	       ['ltx:bib-related[@bibrefs]', ' ','in ',\&do_crossref,','],
 	       ['ltx:bib-related[@type="book"]/ltx:bib-title', ' ' , 'in ', \&do_title,',']],
 	      [['ltx:bib-edition'  , ''  , '', \&do_edition,''],
 	       ['ltx:bib-name[@role="editor"]'   , ', ', '', \&do_editorsB,''],
@@ -425,7 +438,7 @@ sub do_links {
 	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
 	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
    report=>[  [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&maybe_editorsA,''],
+	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&do_editorsA,''],
 	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
 	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      [['ltx:bib-type'     , ''  , '', \&do_any,'']],
@@ -442,7 +455,7 @@ sub do_links {
 	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
 	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
    thesis=>[  [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&maybe_editorsA,''],
+	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&do_editorsA,''],
 	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
 	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      [['ltx:bib-type'     , ' ' , '',\&do_thesis_type,''],
@@ -455,8 +468,12 @@ sub do_links {
 	       ['true','.']],
 	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
 	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
-   website=>[ [['ltx:title'        , ''  , '', \&do_any,''],
-	       ['true'             , ''  , '', '(Website)']],
+   website=>[ [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
+	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&do_editorsA,''],
+	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,''],
+	       ['ltx:title'        , ''  , '', \&do_any,''],
+	       ['ltx:bib-type'     , ''  , '', \&do_any,''],
+	       ['! ltx:bib-type'   , ''  , '', sub { ('(Website)'); }]],
 ##	      [['ltx:bib-url',     '', '', sub { (['a',{href=>$_[0]->textContent},'Website']); },'']],
 	      [['ltx:bib-organization',', ',' ', \&do_any,''],
 	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
@@ -480,6 +497,7 @@ $FMT_SPEC{proceedings} = $FMT_SPEC{book};
 $FMT_SPEC{manual}      = $FMT_SPEC{book};
 $FMT_SPEC{misc}        = $FMT_SPEC{book};
 $FMT_SPEC{unpublished} = $FMT_SPEC{book};
+$FMT_SPEC{booklet}     = $FMT_SPEC{book};
 $FMT_SPEC{'collection.article'}  = $FMT_SPEC{incollection};
 $FMT_SPEC{'proceedings.article'} = $FMT_SPEC{incollection};
 $FMT_SPEC{inproceedings}         = $FMT_SPEC{incollection};
