@@ -418,7 +418,7 @@ sub do_links {
 	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
    'incollection'=>[
 	      [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
+	       ['ltx:bib-date[@role="publication"]', ''  , '', \&do_year,'']],
 	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
 	      [['ltx:bib-type'     , ''  , '', \&do_any,''],
 	       ['ltx:bib-related[@bibrefs]', ' ','in ',\&do_crossref,','],
