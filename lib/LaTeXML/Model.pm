@@ -176,7 +176,7 @@ sub getNodeQName {
   elsif($type == XML_DTD_NODE){
     '#DTD'; }
   # Need others?
-  elsif($type != XML_ELEMENT_NODE){
+  elsif(($type != XML_ELEMENT_NODE) && ($type != XML_ATTRIBUTE_NODE)){
     Fatal(":malformed Cannot get Qualified Name for node ".Stringify($node)); }
   elsif(my $ns = $node->namespaceURI){
     my $prefix = $$self{code_namespace_prefixes}{$ns};
