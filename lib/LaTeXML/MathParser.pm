@@ -64,11 +64,8 @@ sub parseMath {
 
   if(my @math =  $document->findnodes('descendant-or-self::ltx:XMath[not(ancestor::ltx:XMath)]')){
     NoteBegin("Math Parsing"); NoteProgress(scalar(@math)." formulae ...");
-    local $LaTeXML::MathParser::CAPTURE = $document->getDocument->documentElement->addNewChild($nsURI,'XMath');
     foreach my $math (@math){
       $self->parse($math,$document); }
-
-    $LaTeXML::MathParser::CAPTURE->parentNode->removeChild($LaTeXML::MathParser::CAPTURE);
 
     NoteProgress("\nMath parsing succeeded:"
 		 .join('',map( "\n   $_: ".$$self{passed}{$_}."/".($$self{passed}{$_}+$$self{failed}{$_}),
@@ -119,47 +116,6 @@ sub note_unknown {
 # ================================================================================
 # Some more XML utilities, but math specific (?)
 
-# NOTE: Recheck whether these are better integrated within LaTeXML::Common::XML
-sub new_math_node {
-  my($tag)=@_;
-  my $node = $LaTeXML::MathParser::CAPTURE->addNewChild($nsURI,$tag);
-  $node; }
-
-# Append the given nodes (which might also be array ref's of nodes, or even strings)
-# to $node.  This takes care to clone any node that already has a parent.
-# We have to be _extremely_ careful when rearranging trees when using XML::LibXML!!!
-# If we add one node to another, it is _silently_ removed from it's previous
-# parent, if any! Hopefully, this test is sufficient?
-sub append_math_nodes {
-  my($node,@children)=@_;
-  foreach my $child (@children){
-
-    my $parent = $child->parentNode;
-    if($parent && ! $parent->isSameNode($LaTeXML::MathParser::CAPTURE)){
-      insert_clone($node,$child); }
-    else {
-      $node->appendChild($child); }}}
-
-# insert the clone of $node into $parent.
-# This version attempts to use the namespace existing in $parent
-# to avoid introducing new declarations.
-sub insert_clone {
-  my($parent,$node)=@_;
-  my $new = $parent->addNewChild($node->namespaceURI,$node->localname);
-  foreach my $attr ($node->attributes){
-    if($attr->nodeType == XML_ATTRIBUTE_NODE){
-      if(my $ns = $attr->namespaceURI){
-	$new->setAttributeNS($ns,$attr->localname,$attr->getValue); }
-      else {
-	$new->setAttribute($attr->localname,$attr->getValue); }}}
-  foreach my $child ($node->childNodes){
-    my $type = $child->nodeType;
-    if   ($type == XML_ELEMENT_NODE){ insert_clone($new,$child); }
-    elsif($type == XML_TEXT_NODE)     { $new->appendText($child->textContent); }
-    # entity, cdata, ...
-  }
-  $new; }
-
 # Get the Token's  meaning, else name, else content, else role
 sub getTokenMeaning {
   my($node)=@_;
@@ -169,13 +125,6 @@ sub getTokenMeaning {
       : (($x= $node->textContent) ne '' ? $x
 	 : (defined ($x=$node->getAttribute('role')) ? $x
 	    : undef)))); }
-
-sub getTokenContent { # Get the Token's content, or fall back to name.
-  my($node)=@_;
-  my $x;
-  (($x=$node->textContent) ne '' ? $x
-   : (defined ($x=$node->getAttribute('name')) ? $x
-      : undef)); }
 
 sub node_location {
   my($node)=@_;
@@ -196,6 +145,14 @@ sub node_location {
 # We do a depth-first traversal of the content of the XMath element,
 # since various sub-elements (XMArg & XMWrap) act as containers of
 # nominally complete subexpressions.
+# We do these first for two reasons.
+# Firstly, since after parsing, the parent will be rebuilt from the result,
+# we lose the node "identity"; ie. we can't find the child to replace it!
+# Secondly, in principle (although this isn't used yet), parsing the
+# child could reveal something interesting about it; say, it's effective role.
+# Then, this information could be used when parsing the parent.
+# In fact, this could work the other way too; parsing the parent could tell
+# us something about what the child must be....
 sub parse {
   my($self,$xnode,$document)=@_;
   local $LaTeXML::MathParser::STRICT = 1;
@@ -223,6 +180,8 @@ sub parse_rec {
   my($self,$node,$rule,$document)=@_;
   $self->parse_children($node,$document);
   # This will only handle 1 layer nesting (successfully?)
+  # Note that this would have been found by the top level xpath,
+  # but we've got to worry about node identity: the parent is being rebuilt
   foreach my $nested ($document->findnodes('descendant::ltx:XMath',$node)){
     $self->parse($nested,$document); }
   my $tag  = getQName($node);
@@ -230,18 +189,17 @@ sub parse_rec {
     $rule = $requested_rule; }
   if(my $result= $self->parse_single($node,$document,$rule)){
     $$self{passed}{$tag}++;
-   if($tag eq 'ltx:XMath'){	# Replace content of XMath
+   if($tag eq 'ltx:XMath'){	# Replace the content of XMath with parsed result
      NoteProgress('['.++$$self{n_parsed}.']');
      map($node->removeChild($_),element_nodes($node));
-     append_math_nodes($node,$result); }
-    else {			# Replace node for XMArg, XMWrap; preserve some attributes
+     XML_addNodes($node,$result);
+     $result = [element_nodes($node)]->[0]; }
+    else {			# Replace the whole node for XMArg, XMWrap; preserve some attributes
       NoteProgress($TAG_FEEDBACK{$tag}||'.') if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1;
-      if(my $role = $node->getAttribute('role')){
-	$result->setAttribute('role',$role); }
-      if(my $id = $node->getAttribute('xml:id')){ # Update the node associated w/ id
-	$result->setAttribute('xml:id'=>$id);
-	$$self{idcache}{$id} = $result; }
-      $node->parentNode->replaceChild($result,$node); }
+      $result = Annotate($result,
+			 role=>$node->getAttribute('role'),
+			 'xml:id'=>$node->getAttribute('xml:id'));
+      $result = XML_replaceNode($result,$node); }
     $result; }
   else {
     if($tag eq 'ltx:XMath'){
@@ -261,11 +219,87 @@ sub parse_children {
     elsif($tag eq 'ltx:XMWrap'){
       local $LaTeXML::MathParser::STRICT=0;
       $self->parse_rec($child,'Anything',$document); }
-#    elsif(($tag eq 'ltx:XMApp')||($tag eq 'ltx:XMDual')){
     elsif($tag =~ /^ltx:(XMApp|XMDual|XMArray|XMRow|XMCell)$/){
       $self->parse_children($child,$document); }
 }}
 
+#======================================================================
+# Candidates for Common::XML ?
+sub XML_replaceNode {
+  my($new,$old)=@_;
+  my $parent = $old->parentNode;
+  my @following = ();		# Collect the matching and following nodes
+  while(my $sib = $parent->lastChild){
+    $parent->removeChild($sib);
+    last if $$sib == $$old;
+    unshift(@following,$sib); }
+  XML_addNodes($parent,$new);
+  my $inserted = $parent->lastChild;
+  map($parent->appendChild($_),@following); # No need for clone
+  $inserted; }
+
+##### DAMN!!!
+# append_nodes in Common::XML does _NOT_ interpret the array representation!
+# That code is currently only in Post!
+
+# This is a copy from Post::Document
+my %sortalias =(open=>'zbopen',close=>'zclose',
+		argopen=>'zzzzopen',argclose=>'zzzzclose', separators=>'zzzzseparators',
+		scriptpos=>'zzzscriptpos');
+sub XML_addNodes {
+  my($node,@data)=@_;
+  foreach my $child (@data){
+    if(ref $child eq 'ARRAY'){
+      my($tag,$attributes,@children)=@$child;
+      my($prefix,$localname)= $tag =~ /^(.*):(.*)$/;
+      my $nsuri = $prefix && $LaTeXML::MathParser::DOCUMENT->getModel->getNamespace($prefix);
+      warn "No namespace on $tag" unless $nsuri;
+      my $new = $node->addNewChild($nsuri,$localname);
+      if($attributes){
+###	foreach my $key (keys %$attributes){
+	foreach my $key (sort {($sortalias{$a}||$a) cmp ($sortalias{$b}||$b)} keys %$attributes){
+	  next unless defined $$attributes{$key};
+	  my($attrprefix,$attrname)= $key =~ /^(.*):(.*)$/;
+	  my $value = $$attributes{$key};
+	  if($key eq 'xml:id'){	# Ignore duplicated IDs!!!
+#	    if(!defined $$self{idcache}{$value}){
+#	      $$self{idcache}{$value} = $new;
+	      $new->setAttribute($key, $value); }#}
+	  elsif($attrprefix && ($attrprefix ne 'xml')){
+	    my $attrnsuri = $attrprefix && $LaTeXML::MathParser::DOCUMENT->getModel->getNamespace($attrprefix);
+	    $new->setAttributeNS($attrnsuri,$attrname, $$attributes{$key}); }
+	  else {
+	    $new->setAttribute($key, $$attributes{$key}); }
+	}}
+      XML_addNodes($new,@children); }
+    elsif((ref $child) =~ /^XML::LibXML::/){
+      my $type = $child->nodeType;
+      if($type == XML_ELEMENT_NODE){
+	my $new = $node->addNewChild($child->namespaceURI,$child->localname);
+	foreach my $attr ($child->attributes){
+	  my $atype = $attr->nodeType;
+	  if($atype == XML_ATTRIBUTE_NODE){
+	    my $key = $attr->nodeName;
+	    if($key eq 'xml:id'){
+	      my $value = $attr->getValue;
+#	      if(!defined $$self{idcache}{$value}){
+#		$$self{idcache}{$value} = $new;
+		$new->setAttribute($key, $value); }#}
+	    elsif(my $ns = $attr->namespaceURI){
+	      $new->setAttributeNS($ns,$attr->localname,$attr->getValue); }
+	    else {
+	      $new->setAttribute( $attr->localname,$attr->getValue); }}
+	}
+	XML_addNodes($new, $child->childNodes); }
+      elsif($type == XML_DOCUMENT_FRAG_NODE){
+	XML_addNodes($node,$child->childNodes); }
+      elsif($type == XML_TEXT_NODE){
+	$node->appendTextNode($child->textContent); }
+    }
+    elsif(ref $child){
+      warn "Dont know how to add $child to $node; ignoring"; }
+    elsif(defined $child){
+      $node->appendTextNode($child); }}}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Low-level Parser: parse a single expression
@@ -282,7 +316,7 @@ sub parse_single {
     my ($x,$r) = ($nodes[$#nodes]);
     $punct = ($x && (getQName($x) eq 'ltx:XMTok')
 	      && ($r = $x->getAttribute('role')) && (($r eq 'PUNCT')||($r eq 'PERIOD'))
-	      ? pop(@nodes) : ''); }
+	      ? pop(@nodes) : undef); }
 
   if(scalar(@nodes) < 2){	# Too few nodes? What's to parse?
     $result = $nodes[0] || Absent(); }
@@ -304,7 +338,7 @@ sub parse_single {
     undef; }
   # Success!
   else {
-    $result->setAttribute('punctuation',getTokenContent($punct)) if $punct;
+    $result = Annotate($result,punctuation=>$punct);
     if($LaTeXML::MathParser::DEBUG){
       print STDERR "\n=>".ToString($result)."\n"; }
     $result; }}
@@ -469,8 +503,9 @@ sub textrec {
        '['.join(', ',map(($_->firstChild ? textrec($_->firstChild):''),element_nodes($row))).']');}
     $name.'['.join(', ',@rows).']';  }
   else {
-    my $string = ($tag eq 'ltx:XMText' ? $node->textContent : $node->getAttribute('tex') || '?');
-      "[$string]"; }}
+#    my $string = ($tag eq 'ltx:XMText' ? $node->textContent : $node->getAttribute('tex') || '?');
+    my $string = $node->textContent;
+    "[$string]"; }}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Cute! Were it NOT for Sub/Superscripts, the whole parsing process only
@@ -491,77 +526,142 @@ sub textrec {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # ================================================================================
+# Morph these away!!!
+# What's the point?
+# So that we can do the parse, obtaining a parse tree,
+# but WITHOUT modifying, moving, or otherwise affecting the existing nodes.
+# This is so we can (potentially) keep the parsed & unparsed separate,
+# and even try out Earley style parsers that give multiple parse trees.
+#
+# In principle, the existing code allows that, but undoubtedly has leaks
+# where the existing nodes get altered (esp. attributes added/changed).
+# Also, some code is quite convoluted in order to keep namespace declarations clean.
+#
+# Much easier approach is to use the array rep, then let Common::XML code
+# build/clone as needed; this should get the namespaces right.
+# Also, we can defer doing the Lookup till later...
+# However, this means that the API that the MathGrammar sees, may
+# be passing us: 
+#    strings (either explicit, or lexemes!
+#       can we assume lexeme names will never be mistaken for explicit strings?
+#    arrays (representing nodes to be built)
+#    nodes (? at least embedded in the arrays)
+# So, this is simpler?
+#
+# How many "partial trees" get built during parsing that eventually fail?
+# ================================================================================
+
+# ================================================================================
 # Low-level accessors
 sub Lookup {
   my($lexeme)=@_;
   $$LaTeXML::MathParser::LEXEMES{$lexeme}; }
 
+# The following accessors work on both the LibXML and ARRAY representations
+sub p_getValue {
+  my($node)=@_;
+  if(! defined $node){
+    undef; }
+  elsif(ref $node eq 'XML::LibXML::Element'){
+    my $x;
+    (($x=$node->textContent) ne '' ? $x # get content, or fall back to name
+     : (defined ($x=$node->getAttribute('name')) ? $x
+	: undef)); }
+  else {
+    # should do same here? [for array rep]
+    # something like join('',map(p_getValue($_),@args)) || $$node[1]{name}
+    $node; }}
+
+sub p_getTokenMeaning {
+  my($item)=@_;
+  if(! defined $item){ undef; }
+  elsif(ref $item eq 'ARRAY'){
+    my($op,$attr,@args)=@$item;
+    $$attr{meaning} || $$attr{name} || $args[0] || $$attr{role}; }
+  elsif(ref $item eq 'XML::LibXML::Element'){
+    getTokenMeaning($item); }}
+
+sub p_getAttribute {
+  my($item,$key)=@_;
+  if(! defined $item){ undef; }
+  elsif(ref $item eq 'ARRAY'){                $$item[1]{$key}; }
+  elsif(ref $item eq 'XML::LibXML::Element'){ $item->getAttribute($key); }}
+
+sub p_element_nodes {
+  my($item)=@_;
+  if(! defined $item){ (); }
+  elsif(ref $item eq 'ARRAY'){ my($op,$attr,@args)=@$item; @args; }
+  elsif(ref $item eq 'XML::LibXML::Element'){ element_nodes($item); }}
+
+sub p_getQName {
+  my($item)=@_;
+  if(! defined $item){ undef; }
+  elsif(ref $item eq 'ARRAY'){ $$item[0]; }
+  elsif(ref $item eq 'XML::LibXML::Element'){ getQName($item); }}
+
+
 # Make a new Token node with given name, content, and attributes.
 # $content is an array of nodes (which may need to be cloned if still attached)
 sub New {
   my($meaning,$content,%attributes)=@_;
-  my $node=new_math_node('XMTok');
-
-  $node->appendText($content) if $content;
-  $attributes{meaning} = $meaning if $meaning;
+  my %attr=();
+  $attr{meaning} = $meaning if $meaning;
   foreach my $key (sort keys %attributes){
-    my $value = $attributes{$key};
-    if(defined $value){
-      $value = getTokenContent($value) if ref $value;
-      $node->setAttribute($key, $value); }}
-  $node; }
+    my $value = p_getValue($attributes{$key});
+    $attr{$key}=$value if defined $value; }
+  ['ltx:XMTok',{%attr}, ($content ? ($content):())]; }
 
-
+# Some handy shorthands.
 sub Absent { New('absent'); }
-  
+sub InvisibleTimes { New('times',"\x{2062}", role=>'MULOP'); }
+sub InvisibleComma { New(undef,"\x{2063}", role=>'PUNCT'); }
+
 # Get n-th arg of an XMApp.
+# However, this is really only used to get the script out of a sub/super script
 sub Arg {
   my($node,$n)=@_;
-  my @args = element_nodes($node);
-  $args[$n]; }			# will get cloned if/when needed.
+  if(ref $node eq 'ARRAY'){
+    $$node[$n+2]; }
+  else {
+    my @args = element_nodes($node);
+    $args[$n]; }}			# will get cloned if/when needed.
 
 # Add more attributes to a node.
+# Values can be strings or nodes whose text content is used.
 sub Annotate {
-  my($node,%attribs)=@_;
-  foreach my $attr (sort keys %attribs){
-    my $value = $attribs{$attr};
-    $value = getTokenContent($value) if ref $value;
-    $node->setAttribute($attr,$value) if defined $value; }
+  my($node,%attributes)=@_;
+  my %attrib = ();
+  # first scan & convert any attributes, to make sure there really are any values.
+  foreach my $attr (keys %attributes){
+    my $value = p_getValue($attributes{$attr});
+    $attrib{$attr} = $value if defined $value; }
+  if(keys %attrib){		# Any attributes to assign?
+    # If we've gotten a real XML node, convert to array representation
+    # We do NOT want to modify any of the original XML!!!!
+    if(ref $node ne 'ARRAY'){
+      $node = [getQName($node),
+	       { map( (getQName($_)=>$_->getValue),
+		      grep($_->nodeType == XML_ATTRIBUTE_NODE, $node->attributes)) },
+	       $node->childNodes]; }
+    map($$node[1]{$_}=$attrib{$_}, keys %attrib); } # Now add them.
   $node; }
-
-# ================================================================================
-# A "notation" is a language construct or set thereof.
-
-# Called in the grammar to record the fact that a notations was seen.
-# and controlling rule subsets that recognize of notations to re
-# Records
-sub SawNotation {
-  my($notation, $node)=@_;
-  $LaTeXML::MathParser::SEEN_NOTATIONS{$notation} = 1; }
-
-sub IsNotationAllowed {
-  my($notation)=@_;
-  ($LaTeXML::MathParser::DISALLOWED_NOTATIONS{$notation} ? undef : 1); }
 
 # ================================================================================
 # Mid-level constructors
 
 # Apply $op to the list of arguments
+# args may be array-rep or lexemes (or nodes?)
 sub Apply {
   my($op,@args)=@_;
-  my $node=new_math_node('XMApp');
-  append_math_nodes($node,$op,@args);
-  $node; }
+  ['ltx:XMApp',{},$op,@args]; }
 
 # Apply $op to a `delimited' list of arguments of the form
 #     open, expr (punct expr)* close
 # after extracting the opening and closing delimiters, and the separating punctuation
 sub ApplyDelimited {
   my($op,@stuff)=@_;
-  my $open =shift(@stuff);
-  my $close=pop(@stuff);
-  $open  = getTokenContent($open)  if ref $open;
-  $close = getTokenContent($close) if ref $close;
+  my $open  = shift(@stuff);
+  my $close = pop(@stuff);
   my ($seps,@args)=extract_separators(@stuff);
   Apply(Annotate($op, argopen=>$open, argclose=>$close, separators=>$seps),@args); }
 
@@ -579,16 +679,12 @@ sub extract_separators {
   if(@stuff){
     push(@args,shift(@stuff));
     while(@stuff){
-      $punct .= shift(@stuff)->textContent;
+      $punct .= p_getValue(shift(@stuff));
       push(@args,shift(@stuff)); }}
   ($punct,@args); }
 
 # ================================================================================
 # Some special cases 
-
-sub InvisibleTimes { New('times',"\x{2062}", role=>'MULOP'); }
-
-sub InvisibleComma { New('',"\x{2063}", role=>'PUNCT'); }
 
 # This specifies the "meaning" of things within a pair
 # of open/close delimiters, depending on the number of things.
@@ -622,8 +718,8 @@ our %encloseN = ( '(@)'=>'vector','{@}'=>'set',);
 
 sub isMatchingClose {
   my($open,$close)=@_;
-  my $oname = getTokenContent($open);
-  my $cname = getTokenContent($close);
+  my $oname = p_getValue($open);
+  my $cname = p_getValue($close);
   my $expect = $balanced{$oname};
   (defined $expect) && ($expect eq $cname); }
 
@@ -635,9 +731,9 @@ sub Fence {
   my(@stuff)=@_;
   # Peak at delimiters to guess what kind of construct this is.
   my ($open,$close) = ($stuff[0],$stuff[$#stuff]);
-  $open  = getTokenContent($open)  if ref $open;
-  $close = getTokenContent($close) if ref $close;
-  my $key = $open.'@'.$close;
+  my $o  = p_getValue($open);
+  my $c = p_getValue($close);
+  my $key = $o.'@'.$c;
   my $n = int(scalar(@stuff)-2+1)/2;
   my $op = ($n==1
 	    ?  $enclose1{$key}
@@ -645,10 +741,7 @@ sub Fence {
 	      ? ($enclose2{$key} || 'list')
 	       : ($encloseN{$key} || 'list')));
   if(($n==1) && (!defined $op)){ # Simple case.
-    my $node = $stuff[1];
-    $node->setAttribute(open=>$open) if $open;
-    $node->setAttribute(close=>$close) if $close;
-    $node; }
+    Annotate($stuff[1],open=>($open ? $open : undef), close=>($close ? $close : undef)); }
   else {
     ApplyDelimited(New($op,undef,role=>'FENCED'),@stuff); }}
 
@@ -685,46 +778,46 @@ sub LeftRec {
   my($arg1,@more)=@_;
   if(@more){
     my $op = shift(@more);
-    my $opname = getTokenMeaning($op);
+    my $opname = p_getTokenMeaning($op);
     my @args = ($arg1,shift(@more));
-    while(@more && ($opname eq getTokenMeaning($more[0]))){
+    while(@more && ($opname eq p_getTokenMeaning($more[0]))){
       shift(@more);
       push(@args,shift(@more)); }
     LeftRec(Apply($op,@args),@more); }
   else {
     $arg1; }}
 
-# Like apply, but if ops in $arg1 (but NOT $arg2) are the same, then combine as nary.
+# Like apply($op,$arg1,$arg2), but if $op is same as the operator in $arg1 is the same,
+# then combine as nary.
 sub ApplyNary {
   my($op,$arg1,$arg2)=@_;
-  my $opname = getTokenMeaning($op);  
+  my $opname = p_getTokenMeaning($op);
   my @args = ();
-  if(getQName($arg1) eq 'ltx:XMApp'){
-    my($op1,@args1)=element_nodes($arg1);
-    if((getTokenMeaning($op1) eq $opname)
-       && !grep($_ ,map(($op->getAttribute($_)||'<none>') ne ($op1->getAttribute($_)||'<none>'),
+  if(p_getQName($arg1) eq 'ltx:XMApp'){
+    my($op1,@args1)=p_element_nodes($arg1);
+    if((p_getTokenMeaning($op1) eq $opname)
+       && !grep($_ ,map((p_getAttribute($op,$_)||'<none>') ne (p_getAttribute($op1,$_)||'<none>'),
 			qw(style)))) { # Check ops are used in similar way
       push(@args,@args1); }
     else {
       push(@args,$arg1); }}
   else {
     push(@args,$arg1); }
-  push(@args,$arg2); 
-  Apply($op,@args); }
+  Apply($op,@args,$arg2); }
 
 # ================================================================================
 # Construct an appropriate application of sub/superscripts
-# Accounting for whether it precedes (float), is over/under (if base requests),
+# This accounts for script positioning:
+#   Whether it precedes (float), is over/under (if base requests),
 # or follows (normal case), along with whether sub/super.
+#   the alignment of multiple sub/superscripts derived from the binding level when created.
+# scriptpos = (pre|mod|post) number; where number is the binding-level.
 sub NewScript {
   my($base,$script)=@_;
   my $role;
-  my ($bx,$bl) = ($base->getAttribute('scriptpos')||'post')
-    =~ /^(pre|mid|post)?(\d+)?$/;
-  my ($sx,$sl) = ($script->getAttribute('scriptpos')||'post')
-    =~ /^(pre|mid|post)?(\d+)?$/;
-  my ($x,$y) = $script->getAttribute('role')
-    =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT$/;
+  my ($bx,$bl) = (p_getAttribute($base,'scriptpos')||'post')  =~ /^(pre|mid|post)?(\d+)?$/;
+  my ($sx,$sl) = (p_getAttribute($script,'scriptpos')||'post')=~ /^(pre|mid|post)?(\d+)?$/;
+  my ($x,$y)   = p_getAttribute($script,'role')               =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT$/;
   $x = ($x eq 'FLOAT' ? 'pre' : $bx || 'post');
   my $t;
   my $l = $sl || $bl ||
@@ -732,8 +825,22 @@ sub NewScript {
      && ($t->getProperty('level'))) || 0;
   my $app = Apply(New(undef,undef, role=>$y.'SCRIPTOP',scriptpos=>"$x$l"),
 		  $base,Arg($script,0));
-  $app->setAttribute(scriptpos=>"$bx") if $bx ne 'post';
+  $$app[1]{scriptpos}=$bx if $bx ne 'post';
   $app; }
+
+# ================================================================================
+# A "notation" is a language construct or set thereof.
+
+# Called from the grammar to record the fact that a notation was seen.
+sub SawNotation {
+  my($notation, $node)=@_;
+  $LaTeXML::MathParser::SEEN_NOTATIONS{$notation} = 1; }
+
+# Called by the grammar to determine whether we should try productions
+# which involve the given notation.
+sub IsNotationAllowed {
+  my($notation)=@_;
+  ($LaTeXML::MathParser::DISALLOWED_NOTATIONS{$notation} ? undef : 1); }
 
 # ================================================================================
 sub Problem { Warn(":parse MATH Problem? ",@_); }
@@ -743,9 +850,13 @@ sub Problem { Warn(":parse MATH Problem? ",@_); }
 sub MaybeFunction {
   my($token)=@_;
   my $self = $LaTeXML::MathParser::PARSER;
-  while(getQName($token) eq 'ltx:XMApp'){
+  while(p_getQName($token) eq 'ltx:XMApp'){
     $token = Arg($token,1); }
   my $name = token_prettyname($token);
+  # DANGER!!
+  # We want to be using Annotate here, but we're screwed up by the
+  # potential "embellishing" of the function token.
+  # (ie. the descent above past all XMApp's)
   $token->setAttribute('possibleFunction','yes');
   $$self{maybe_functions}{$name}++ 
     unless !$LaTeXML::MathParser::STRICT or   $$self{suspicious_tokens}{$token};

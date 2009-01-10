@@ -419,8 +419,6 @@ factorOpenExpr :
 # A conditionalized set
 scriptFactorOpen :
           Formula suchThatOp Formulae balancedClose[$arg[0]]
-###	  {  ApplyDelimited(New('conditional-set',undef,role=>'FENCED'),
-###	                    $arg[0], $item[1],$item[2], $item[3],$item[4]); }
 	  addScripts[ApplyDelimited(New('conditional-set',undef,role=>'FENCED'),
 	                            $arg[0], $item[1],$item[2], $item[3],$item[4])]
         # Else fall through to normal factorOpen
@@ -429,7 +427,7 @@ scriptFactorOpen :
 # The "such that" that can appear in a sets like {a "such that" predicate(a)}
 # accept vertical bars, and colon
 suchThatOp : MIDDLE | VERTBAR 
-	 | /METARELOP:colon:\d+/ { Lookup($item[1]); }
+	 | /METARELOP:colon:\d+/	{ Lookup($item[1]); }
 # ================================================================================
 # Function args, etc.
 
@@ -598,57 +596,74 @@ balancedClose : CLOSE { isMatchingClose($arg[0],$item[1]) && $item[1]; }
 # The "evaluated at" operator, typically a vertical bar followed by a subscript
 # equation. But it is ofen used in \left. \right| pairs!
 evalAtOp : VERTBAR
-	 | /CLOSE:\|:\d+/  { Lookup($item[1]); }
+	 | /CLOSE:\|:\d+/	{ Lookup($item[1]); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Terminals.
+# Terminals / Lexer
 #   These correspond to the TeX tokens.
 # The Lexer strings are of the form TYPE:NAME:NUMBER where
 #    TYPE is the grammatical role, or part of speech,
 #    NAME is the specific name (semantic or presentation) of the token 
 #    NUMBER is the position of the specific token in the current token sequence.
+#
+# NOTE: RecDescent doesn't clearly distinguish lexing from parsing
+# and so it allows us to interpret the same item as several distinct
+# terminals; Presumably other parsers would not allow this.
+# In a couple of cases, we have symbols that can be used in a few
+# different ways:
+#   | as vertical bar, open or close, also as a close used for eval-at!
+#   : as meta-relation, as such-that
+#   <, >  can be relop or part of brackets (eg. qm, etc)
+# Perhaps these symbols should get a special role reflecting it's specialness
+# and then have pseudo-terminals that combine (eg. relop == RELOP | langle)
+# This nibbles at the edge of the Ambiguity issue; if it turns out that
+# a multi-meaning symbol gets used in a particular way, we'd want to assure
+# that it's role, meaning, etc, gets changed to reflect the specific usage!
+#
+# Upon reflection, this implies that OPEN|CLOSE are rather awkward as roles.
+# \left< can be an OPEN _or_ RELOP
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-ATOM     	: /ATOM:\S*:\d+/            { Lookup($item[1]); }
-UNKNOWN		: /UNKNOWN:\S*:\d+/ 	    { Lookup($item[1]); }
-ID		: /ID:\S*:\d+/ 		    { Lookup($item[1]); }
-ARRAY		: /ARRAY:\S*:\d+/	    { Lookup($item[1]); }
-NUMBER      	: /NUMBER:\S*:\d+/ 	    { Lookup($item[1]); }
-PUNCT		: /PUNCT:\S*:\d+/ 	    { Lookup($item[1]); }
-PERIOD		: /PERIOD:\S*:\d+/ 	    { Lookup($item[1]); }
-RELOP		: /RELOP:\S*:\d+/ 	    { Lookup($item[1]); }
-LANGLE          : /RELOP:less-than:\d+/     { Lookup($item[1]); }
-		| /OPEN:langle:\d+/         { Lookup($item[1]); }
-RANGLE          : /RELOP:greater-than:\d+/  { Lookup($item[1]); }
-		| /CLOSE:rangle:\d+/        { Lookup($item[1]); }
-METARELOP	: /METARELOP:\S*:\d+/ 	    { Lookup($item[1]); }
-MODIFIEROP      : /MODIFIEROP:\S*:\d+/ 	    { Lookup($item[1]); }
-MODIFIER        : /MODIFIER:\S*:\d+/ 	    { Lookup($item[1]); }
-ARROW		: /ARROW:\S*:\d+/ 	    { Lookup($item[1]); }
-ADDOP		: /ADDOP:\S*:\d+/ 	    { Lookup($item[1]); }
-MULOP		: /MULOP:\S*:\d+/ 	    { Lookup($item[1]); }
-POSTFIX		: /POSTFIX:\S*:\d+/ 	    { Lookup($item[1]); }
-FUNCTION        : /FUNCTION:\S*:\d+/ 	    { Lookup($item[1]); }
-OPFUNCTION      : /OPFUNCTION:\S*:\d+/ 	    { Lookup($item[1]); }
-TRIGFUNCTION    : /TRIGFUNCTION:\S*:\d+/    { Lookup($item[1]); }
-APPLYOP		: /APPLYOP:\S*:\d+/ 	    { Lookup($item[1]); }
-COMPOSEOP	: /COMPOSEOP:\S*:\d+/ 	    { Lookup($item[1]); }
-SUPOP		: /SUPOP:\S*:\d+/ 	    { Lookup($item[1]); }
-OPEN		: /OPEN:\S*:\d+/ 	    { Lookup($item[1]); }
-SCRIPTOPEN	: /OPEN:\{:\d+/ 	    { Lookup($item[1]); }
-CLOSE		: /CLOSE:\S*:\d+/ 	    { Lookup($item[1]); }
-MIDDLE		: /MIDDLE:\S*:\d+/ 	    { Lookup($item[1]); }
-VERTBAR		: /VERTBAR:\S*:\d+/ 	    { Lookup($item[1]); }
-BIGOP		: /BIGOP:\S*:\d+/ 	    { Lookup($item[1]); }
-SUMOP		: /SUMOP:\S*:\d+/ 	    { Lookup($item[1]); }
-INTOP		: /INTOP:\S*:\d+/ 	    { Lookup($item[1]); }
-LIMITOP		: /LIMITOP:\S*:\d+/ 	    { Lookup($item[1]); }
-DIFFOP		: /DIFFOP:\S*:\d+/ 	    { Lookup($item[1]); }
-OPERATOR	: /OPERATOR:\S*:\d+/ 	    { Lookup($item[1]); }
-##DIFF		: /DIFF:\S*:\d+/ 	    { Lookup($item[1]); }
-POSTSUBSCRIPT   : /POSTSUBSCRIPT:\S*:\d+/   { Lookup($item[1]); }
-POSTSUPERSCRIPT : /POSTSUPERSCRIPT:\S*:\d+/ { Lookup($item[1]); }
-FLOATSUPERSCRIPT : /FLOATSUPERSCRIPT:\S*:\d+/ { Lookup($item[1]); }
-FLOATSUBSCRIPT	: /FLOATSUBSCRIPT:\S*:\d+/  { Lookup($item[1]); }
+ATOM     	: /ATOM:\S*:\d+/		{ Lookup($item[1]); }
+UNKNOWN		: /UNKNOWN:\S*:\d+/		{ Lookup($item[1]); }
+ID		: /ID:\S*:\d+/			{ Lookup($item[1]); }
+ARRAY		: /ARRAY:\S*:\d+/		{ Lookup($item[1]); }
+NUMBER      	: /NUMBER:\S*:\d+/		{ Lookup($item[1]); }
+PUNCT		: /PUNCT:\S*:\d+/		{ Lookup($item[1]); }
+PERIOD		: /PERIOD:\S*:\d+/		{ Lookup($item[1]); }
+RELOP		: /RELOP:\S*:\d+/		{ Lookup($item[1]); }
+LANGLE          : /RELOP:less-than:\d+/		{ Lookup($item[1]); }
+		| /OPEN:langle:\d+/		{ Lookup($item[1]); }
+RANGLE          : /RELOP:greater-than:\d+/	{ Lookup($item[1]); }
+		| /CLOSE:rangle:\d+/		{ Lookup($item[1]); }
+METARELOP	: /METARELOP:\S*:\d+/		{ Lookup($item[1]); }
+MODIFIEROP      : /MODIFIEROP:\S*:\d+/		{ Lookup($item[1]); }
+MODIFIER        : /MODIFIER:\S*:\d+/		{ Lookup($item[1]); }
+ARROW		: /ARROW:\S*:\d+/		{ Lookup($item[1]); }
+ADDOP		: /ADDOP:\S*:\d+/		{ Lookup($item[1]); }
+MULOP		: /MULOP:\S*:\d+/		{ Lookup($item[1]); }
+POSTFIX		: /POSTFIX:\S*:\d+/		{ Lookup($item[1]); }
+FUNCTION        : /FUNCTION:\S*:\d+/		{ Lookup($item[1]); }
+OPFUNCTION      : /OPFUNCTION:\S*:\d+/		{ Lookup($item[1]); }
+TRIGFUNCTION    : /TRIGFUNCTION:\S*:\d+/	{ Lookup($item[1]); }
+APPLYOP		: /APPLYOP:\S*:\d+/		{ Lookup($item[1]); }
+COMPOSEOP	: /COMPOSEOP:\S*:\d+/		{ Lookup($item[1]); }
+SUPOP		: /SUPOP:\S*:\d+/		{ Lookup($item[1]); }
+OPEN		: /OPEN:\S*:\d+/		{ Lookup($item[1]); }
+SCRIPTOPEN	: /OPEN:\{:\d+/			{ Lookup($item[1]); }
+CLOSE		: /CLOSE:\S*:\d+/		{ Lookup($item[1]); }
+MIDDLE		: /MIDDLE:\S*:\d+/		{ Lookup($item[1]); }
+VERTBAR		: /VERTBAR:\S*:\d+/		{ Lookup($item[1]); }
+BIGOP		: /BIGOP:\S*:\d+/		{ Lookup($item[1]); }
+SUMOP		: /SUMOP:\S*:\d+/		{ Lookup($item[1]); }
+INTOP		: /INTOP:\S*:\d+/		{ Lookup($item[1]); }
+LIMITOP		: /LIMITOP:\S*:\d+/		{ Lookup($item[1]); }
+DIFFOP		: /DIFFOP:\S*:\d+/		{ Lookup($item[1]); }
+OPERATOR	: /OPERATOR:\S*:\d+/		{ Lookup($item[1]); }
+##DIFF		: /DIFF:\S*:\d+/		{ Lookup($item[1]); }
+POSTSUBSCRIPT   : /POSTSUBSCRIPT:\S*:\d+/	{ Lookup($item[1]); }
+POSTSUPERSCRIPT : /POSTSUPERSCRIPT:\S*:\d+/	{ Lookup($item[1]); }
+FLOATSUPERSCRIPT : /FLOATSUPERSCRIPT:\S*:\d+/	{ Lookup($item[1]); }
+FLOATSUBSCRIPT	: /FLOATSUBSCRIPT:\S*:\d+/	{ Lookup($item[1]); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
