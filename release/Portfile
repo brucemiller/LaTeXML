@@ -1,0 +1,64 @@
+# $Id$
+#======================================================================
+# Portfile for LaTeXML
+# (draft)
+#======================================================================
+PortSystem 1.0
+name LaTeXML
+version 0.6.1
+categories tex
+maintainers bruce.miller@nist.gov
+description LaTeXML converts TeX to XML
+long_description \
+   LaTeXML converts TeX to XML,\
+   including XHTML with MathML.
+
+homepage http://dlmf.nist.gov/LaTeXML/
+platforms darwin
+# master_sites http://dlmf.nist.gov/LaTeXML/releases/
+master_sites file:///Users/miller/tmp/
+checksums md5 f73cccf764ab596fe905a9f0d459f67a
+##         sha1 e6bb15d2b7b4eb063191cc465a63d4b7a2070520 \
+##         rmd160 44a0d5c0113cec7403ad1615c7652054cc7c950c
+# Use:
+# md5 LaTeXML-0.6.1.tar.gz
+# openssl sha1 LaTeXML-0.6.1.tar.gz
+# openssl rmd160 LaTeXML-0.6.1.tar.gz
+#============================================================
+# Dependencies
+depends_lib port:p5-parse-recdescent \
+  	    port:p5-xml-libxml \
+  	    port:p5-xml-libxslt \
+	    bin:texhash:texlive
+# That last seems to be the way to depend on TeX
+# being installed, without necessarily requiring
+# _specifically_ texlive (eg MacTeX or something
+# else perhaps can work, if /usr/texbin is in
+# binpath in macports.conf)
+#============================================================
+# Configuration
+# Override configure to do it the perl way.
+configure.cmd perl Makefile.PL
+
+# Note that installation does
+#   make install DESTDIR=${destroot}
+# which stages the installation to $destroot, NOT the eventual final installation.
+
+# We also need Image::Magick, but macports doesn't (yet?)
+# support dependencies on variants; we need +perl
+post-configure {
+   if { [catch {system "perl -MImage::Magick -e ''"} ] != 0 } then {
+       ui_msg "Image::Magick is missing; Please install using"
+       ui_msg "   port install ImageMagick +perl"
+    }
+}
+
+#============================================================
+# Do this to enable testing
+# test.run yes
+
+#============================================================
+# Get TeX to notice our style files, since this isn't done
+# when staging the installation to ${destpath}
+post-activate { system "mktexlsr" }
+

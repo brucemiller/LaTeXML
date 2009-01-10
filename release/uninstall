@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Ugly, hacky...
+# use this only for source installs, not rpm
+rm /usr/local/bin/latexml
+rm /usr/local/bin/latexmlfind
+rm /usr/local/bin/latexmlpost
+rm /usr/local/bin/latexmlmath
+
+rm /usr/local/lib/perl5/site_perl/5.10.0/LaTeXML.pm
+rm -rf /usr/local/lib/perl5/site_perl/5.10.0/LaTeXML
+
+rm /usr/local/share/man/man1/latexml.1
+rm /usr/local/share/man/man1/latexmlfind.1
+rm /usr/local/share/man/man1/latexmlpost.1
+rm /usr/local/share/man/man1/latexmlmath.1
+
+rm /usr/local/share/man/man3/LaTeXML.3pm
+rm /usr/local/share/man/man3/LaTeXML::*.3pm
+
+rm /usr/local/lib/perl5/site_perl/5.10.0/i386-linux-thread-multi/auto/LaTeXML/.packlist
+
+rm -rf /usr/local/share/texmf/tex/latex/latexml
+mktexlsr
+

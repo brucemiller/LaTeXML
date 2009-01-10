@@ -1,0 +1,13 @@
+#!/usr/bin/perl -w
+use strict;
+
+print "Searching.... (warnings may appear)\n";
+my $latexml = `which latexml`; chomp($latexml);
+my $latexmlmodule = (system("perl -MLaTeXML -e 'OK'") == 0);
+my $latexmlsty = `kpsewhich latexml.sty`;
+
+print "... done \n";
+print "latexml executable : ".($latexml || "was NOT found")."\n";
+print "LaTeXML Module     : ".($latexmlmodule ? "was found" : "was NOT found")."\n";
+print "latexml stylefile  : ".($latexmlsty || "was NOT found")."\n";
+

@@ -14,22 +14,25 @@ use strict;
 #     dependence when we discover which version of XML::LibXML we end up with.
 #     "Enterprise" Linuxes, like Centos and RedHat Enterprise are likely
 #     to be stuck with such older versions (till now).
-#   CENTOS : sets OLD_LIBXML and specifies an appropriate rpm version
+#   TEXMF=<texmfdir> : Installs the tex style files to this texmf tree,
+#     rather than where kpsewhich says TEXMFLOCAL is (useful for spec files?)
+#======================================================================
 
 our $OLD_LIBXML = grep(/OLD_LIBXML/,@ARGV);
-our $CENTOS     = grep(/CENTOS/,@ARGV);
-$OLD_LIBXML = 1 if $CENTOS;
+
+our $TEXMF;
+my ($texmfspec) = grep(/^TEXMF/,@ARGV);
+if($texmfspec &&  $texmfspec =~ /^TEXMF\s*=(.*)$/){
+  $TEXMF=$1;
+  @ARGV = grep($_ ne $texmfspec,@ARGV); # Remove so MakeMaker doesn't fret.
+}
 our @EXCLUSIONS=();
 our $MORE_MACROS = {};
 our $MORE_MAKERULES='';
 
 compile_MathGrammar();
 compile_XSLTs();
-# Let's simplify and leave out installing the style file (for now?)
-## add_rpm_support();
-# Let's try again.
 install_TeXStyles();
-add_rpm_support_complex();
 
 check_ImageMagick();
 
@@ -48,13 +51,11 @@ WriteMakefile(NAME => 'LaTeXML',
 				 'XML::LibXML::XPathContext' => 0)
 			     : ( 'XML::LibXML'  => 1.61)), # But > 1.62 is better
 			    'XML::LibXSLT' => 1.58,
-
 			     'Parse::RecDescent' => 0,
 #			     'Image::Magick'=> 0
 			   },
 	      EXE_FILES => [ 'bin/latexml','bin/latexmlpost','bin/latexmlfind','bin/latexmlmath'],
 	      macro => $MORE_MACROS,
-	      depend => {metafile=>'specfile'},
 	      );
 
 #**********************************************************************
@@ -125,74 +126,35 @@ MakeXSLT
 # to install.PL so that it can "install" to staging directories
 # but for manual $(DESTDIR) is empty, so install.PL complains...
 sub install_TeXStyles {
-    $MORE_MAKERULES .= <<'InstallTeXStyles';
+  if(! $TEXMF){
+    my $kpsewhich = `which kpsewhich`; chomp($kpsewhich);
+    $TEXMF = $kpsewhich && `$kpsewhich --expand-var='\$TEXMFLOCAL'`;
+    chomp($TEXMF);
+    if(! $TEXMF){
+      warn "Warning: no TeX installation found.\n", 
+	"  TeX is NOT required, but LaTeXML will have limited functionality.\n";
+      return; }}
 
-install::
-	$(PERLRUN) blib/lib/LaTeXML/texmf/install.PL
+  $$MORE_MACROS{INST_TEXMFDIR}       = '$(INST_LIB)/LaTeXML/texmf';
+  $$MORE_MACROS{INSTALLTEXMFDIR}     = "$TEXMF/tex/latex/latexml";
+  $$MORE_MACROS{DESTINSTALLTEXMFDIR} = '$(DESTDIR)$(INSTALLTEXMFDIR)';
+
+  $MORE_MAKERULES .= <<'InstallTeXStyles';
+
+pure_install ::
+	$(NOECHO) $(MKPATH) $(DESTINSTALLTEXMFDIR)
+	$(NOECHO) $(MOD_INSTALL) \
+		read $(INSTALLTEXMFDIR)/.packlist \
+		write $(DESTINSTALLTEXMFDIR)/.packlist \
+		$(INST_TEXMFDIR) $(DESTINSTALLTEXMFDIR)
+	- test -w $(INSTALLTEXMFDIR) && mktexlsr
+
+uninstall ::
+	$(NOECHO) $(UNINSTALL) $(INSTALLTEXMFDIR)/.packlist
+	- test -w $(INSTALLTEXMFDIR) && mktexlsr
 
 InstallTeXStyles
 }
-
-#======================================================================
-# Make an rpm specfile to include in the distribution.
-# This only runs if cpan2rpm is available
-# This also adds an rpm target
-sub add_rpm_support {
-  my $cpan2rpm = `which cpan2rpm`; chomp($cpan2rpm);
-  my $cpan2rpmargs = join(' ',grep($_,
-				   '--no-prfx',
-				   '--packager="Bruce Miller <bruce.miller@nist.gov>"',
-				   '--license="Public Domain"',
-				   ($CENTOS ? "--release=1centos" : undef),
-				   ($OLD_LIBXML ? '--make-maker="OLD_LIBXML"' : undef)));
-  if($cpan2rpm){
-    $$MORE_MACROS{CPAN2RPM}=$cpan2rpm;
-    $$MORE_MACROS{CPAN2RPMARGS}=$cpan2rpmargs;
-    $MORE_MAKERULES .= <<'EndRPM'
-
-rpm : tardist
-	$(CPAN2RPM) --no-sign $(CPAN2RPMARGS) $(DISTVNAME).tar$(SUFFIX)
-
-EndRPM
-}}
-
-# Let's skip this complication (installing the style file) for now.
-# We need to patch the resulting specfile, since we can't add
-# to %post, %postun directly from cpan2rpm,
-# but we need to run texhash to include (or cleanup) our additional style files.
-sub add_rpm_support_complex {
-  my $cpan2rpm = `which cpan2rpm`; chomp($cpan2rpm);
-  my $cpan2rpmargs = join(' ',grep($_,
-				   '--no-prfx',
-				   '--packager="Bruce Miller <bruce.miller@nist.gov>"',
-				   '--license="Public Domain"',
-				   ($CENTOS ? "--release=1centos" : undef),
-				   ($OLD_LIBXML ? '--make-maker="OLD_LIBXML"' : undef)));
-  if($cpan2rpm){
-    $$MORE_MACROS{CPAN2RPM}=$cpan2rpm;
-    $$MORE_MACROS{CPAN2RPMARGS}=$cpan2rpmargs;
-    $MORE_MAKERULES .= <<'EndRPM'
-
-specfile :
-	$(CPAN2RPM) --spec-only $(CPAN2RPMARGS) --spec=$(DISTVNAME)/LaTeXML.spec .
-	echo -e "\n%post\n" >> $(DISTVNAME)/LaTeXML.spec
-	echo -e "\n[ -x /usr/bin/texhash ] && /usr/bin/texhash\n" >> $(DISTVNAME)/LaTeXML.spec
-	echo -e "\n%postun\n" >> $(DISTVNAME)/LaTeXML.spec
-	echo -e "\n[ -x /usr/bin/texhash ] && /usr/bin/texhash\n" >> $(DISTVNAME)/LaTeXML.spec
-
-rpm : tardist
-	rpmbuild -ta $(DISTVNAME).tar$(SUFFIX)
-
-EndRPM
-}
-  else {
-    $MORE_MAKERULES .= <<'EndRPM'
-
-specfile :
-	$(NOECHO) $(NOOP)
-
-EndRPM
-}}
 
 #======================================================================
 # ImageMagick is only used in postprocessing, and is somewhat optional.

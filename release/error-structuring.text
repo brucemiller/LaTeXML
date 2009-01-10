@@ -1,0 +1,30 @@
+Some initial thoughts on structuring error  & warning messages.
+
+Proposed regexp:
+  /^(Error|Warning|Fatal)(:\S*)*\s+(.*)$/
+
+Eg.
+  Error:undefined:\somemacro The macro \somemacro is undefined.
+or
+  Warning:mathparse:somerule Unrecognized pattern blah blah.
+
+
+Try grepping for Error and Warning to generate a set of
+useful keywords:
+
+Error:unexpected:?  A <box> was supposed to be here
+Error:unexpected:\else  Stray \else ...
+Error:unexpected:?  Non-relation token
+Error:unexpected:\endcsname
+
+Error:unexpected:&
+
+Error:missing_file:$path
+
+Error:redefinition:\foo
+
+Error:undefined:\foo
+
+Error:cant_create:$file Couldn't create file
+
+Warning:unexpected:
