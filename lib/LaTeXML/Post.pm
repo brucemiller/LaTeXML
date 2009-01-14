@@ -106,6 +106,14 @@ use Unicode::Normalize;
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
 our $XPATH = LaTeXML::Common::XML::XPath->new(ltx=>$NSURI);
 
+# Useful options:
+#   destination = the ultimate destination file for this document to be written.
+#   destinationDirectory = the directory it will be stored in (derived from $destination)
+#   namespaces = a hash of namespace prefix => namespace uri
+#   namespaceURIs = reverse hash of above.
+#   nocache = a boolean, disables storing of permanent LaTeXML.cache
+#     the cache is used to remember things like image conversions from previous runs.
+#   searchpaths = array of paths to search for other resources
 sub new {
   my($class,$xmldoc,%options)=@_;
   my %data = ();
@@ -139,6 +147,8 @@ sub new {
   $$self{idcache} = {};
   foreach my $node ($self->findnodes("//*[\@xml:id]")){
     $$self{idcache}{$node->getAttribute('xml:id')} = $node; }
+  # Possibly disable permanent cache?
+  $$self{cache} = {} if $data{nocache};
   $self; }
 
 sub Error {
