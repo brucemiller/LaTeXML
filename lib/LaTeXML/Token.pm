@@ -104,8 +104,8 @@ sub beDigested {
 sub equals {
   my($a,$b)=@_;
   (defined $b
-   && (ref $a) eq (ref $b)) 
-    && ($$a[1] eq $$b[1])
+   && (ref $a) eq (ref $b))
+    && ($$a[1] == $$b[1])
       && ($primitive_catcode[$$a[1]] || ($$a[0] eq $$b[0])); }
 
 # Primarily for error reporting.
