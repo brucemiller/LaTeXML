@@ -56,26 +56,52 @@ our  @EXPORT = (
 #  CC_whatever names the catcode numbers
 #  T_whatever creates a token with the corresponding catcode, 
 #   some take a string argument, if they don't have a `standard' character.
+
 use constant CC_ESCAPE  =>  0;
-use constant CC_BEGIN   =>  1;  sub T_BEGIN()  { bless ['{',   1], 'LaTeXML::Token'; }
-use constant CC_END     =>  2;  sub T_END()    { bless ['}',   2], 'LaTeXML::Token'; }
-use constant CC_MATH    =>  3;  sub T_MATH()   { bless ['$',   3], 'LaTeXML::Token'; }
-use constant CC_ALIGN   =>  4;  sub T_ALIGN()  { bless ['&',   4], 'LaTeXML::Token'; }
+use constant CC_BEGIN   =>  1;
+use constant CC_END     =>  2;
+use constant CC_MATH    =>  3;
+use constant CC_ALIGN   =>  4;
 use constant CC_EOL     =>  5;
-use constant CC_PARAM   =>  6;  sub T_PARAM()  { bless ['#',   6], 'LaTeXML::Token'; }
-use constant CC_SUPER   =>  7;  sub T_SUPER()  { bless ['^',   7], 'LaTeXML::Token'; }
-use constant CC_SUB     =>  8;  sub T_SUB()    { bless ['_',   8], 'LaTeXML::Token'; }
+use constant CC_PARAM   =>  6;
+use constant CC_SUPER   =>  7;
+use constant CC_SUB     =>  8;
 use constant CC_IGNORE  =>  9;
-use constant CC_SPACE   => 10;  sub T_SPACE()  { bless [' ',  10], 'LaTeXML::Token'; }
-                                sub T_CR()     { bless ["\n", 10], 'LaTeXML::Token'; }
-use constant CC_LETTER  => 11;  sub T_LETTER   { bless [$_[0],11], 'LaTeXML::Token'; }
-use constant CC_OTHER   => 12;  sub T_OTHER    { bless [$_[0],12], 'LaTeXML::Token'; }
-use constant CC_ACTIVE  => 13;  sub T_ACTIVE   { bless [$_[0],13], 'LaTeXML::Token'; }
-use constant CC_COMMENT => 14;  sub T_COMMENT  { bless ['%'.($_[0]||''),14], 'LaTeXML::Token'; }
+use constant CC_SPACE   => 10;
+use constant CC_LETTER  => 11;
+use constant CC_OTHER   => 12;
+use constant CC_ACTIVE  => 13;
+use constant CC_COMMENT => 14;
 use constant CC_INVALID => 15;  
 # Extended Catcodes for expanded output.
-use constant CC_CS      => 16;  sub T_CS       { bless [$_[0],16], 'LaTeXML::Token'; }
+use constant CC_CS      => 16;
 use constant CC_NOTEXPANDED => 17;
+# Can use constants here; they should never be modified.
+our $CONSTANT_T_BEGIN = bless ['{',   1], 'LaTeXML::Token';
+our $CONSTANT_T_END   = bless ['}',   2], 'LaTeXML::Token';
+our $CONSTANT_T_MATH  = bless ['$',   3], 'LaTeXML::Token';
+our $CONSTANT_T_ALIGN = bless ['&',   4], 'LaTeXML::Token';
+our $CONSTANT_T_PARAM = bless ['#',   6], 'LaTeXML::Token';
+our $CONSTANT_T_SUPER = bless ['^',   7], 'LaTeXML::Token';
+our $CONSTANT_T_SUB   = bless ['_',   8], 'LaTeXML::Token';
+our $CONSTANT_T_SPACE = bless [' ',  10], 'LaTeXML::Token';
+our $CONSTANT_T_CR    = bless ["\n", 10], 'LaTeXML::Token';
+
+# Too bad we can't REALLY get inlining here...
+sub T_BEGIN() { $CONSTANT_T_BEGIN; }
+sub T_END()   { $CONSTANT_T_END; }
+sub T_MATH()  { $CONSTANT_T_MATH; }
+sub T_ALIGN() { $CONSTANT_T_ALIGN; }
+sub T_PARAM() { $CONSTANT_T_PARAM; }
+sub T_SUPER() { $CONSTANT_T_SUPER; }
+sub T_SUB()   { $CONSTANT_T_SUB; }
+sub T_SPACE() { $CONSTANT_T_SPACE; }
+sub T_CR()    { $CONSTANT_T_CR; }
+sub T_LETTER  { bless [$_[0],11], 'LaTeXML::Token'; }
+sub T_OTHER   { bless [$_[0],12], 'LaTeXML::Token'; }
+sub T_ACTIVE  { bless [$_[0],13], 'LaTeXML::Token'; }
+sub T_COMMENT { bless ['%'.($_[0]||''),14], 'LaTeXML::Token'; }
+sub T_CS      { bless [$_[0],16], 'LaTeXML::Token'; }
 
 sub Token {
   my($string,$cc)=@_;
