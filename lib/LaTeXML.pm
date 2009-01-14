@@ -14,6 +14,7 @@ package LaTeXML;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::Error;
+use LaTeXML::State;
 use LaTeXML::Stomach;
 use LaTeXML::Document;
 use LaTeXML::Model;
