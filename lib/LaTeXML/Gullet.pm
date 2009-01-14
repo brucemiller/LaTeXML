@@ -13,6 +13,8 @@
 package LaTeXML::Gullet;
 use strict;
 use LaTeXML::Global;
+use LaTeXML::Mouth;
+use LaTeXML::Number;
 use LaTeXML::Util::Pathname;
 use base qw(LaTeXML::Object);
 #**********************************************************************
