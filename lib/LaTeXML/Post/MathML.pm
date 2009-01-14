@@ -1058,7 +1058,7 @@ sub translateNode {
   my @trans = $self->cmml_top($xmath);
   # Wrap unless already embedding within MathML.
   ($embedding =~ /^m:/ ? @trans 
-   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},@trans]); }
+   : ['m:math',{},@trans]); }
 
 sub getEncodingName { 'MathML-Content'; }
 
