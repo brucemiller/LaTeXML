@@ -216,6 +216,7 @@ sub pre_preamble {
   my @classdata = $self->find_documentclass_and_packages($doc);
   my ($class,$options,$oldstyle) = @{shift(@classdata)};
   $options = "[$options]" if $options && ($options !~ /^\[.*\]$/);
+  $options = '' unless defined $options;
   my $documentcommand = ($oldstyle ? "\\documentstyle" : "\\documentclass");
   my $packages='';
   my $dest = $doc->getDestination;
