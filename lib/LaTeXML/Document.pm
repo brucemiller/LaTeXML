@@ -257,8 +257,7 @@ sub openText_internal {
 # or down (inserting auto-openable elements), as needed.
 sub find_insertion_point {
   my($self,$qname)=@_;
-  # Skip up past a current text node, if any.
-  $$self{node} = $self->closeText_internal($$self{node});
+  $self->closeText_internal;	# Close any current text node.
   my $cur_qname = $$self{model}->getNodeQName($$self{node});
   # If $qname is allowed at the current point, we're done.
   if($$self{model}->canContain($cur_qname,$qname)){
@@ -284,9 +283,10 @@ sub find_insertion_point {
 
 # Closing a text node is a good time to apply regexps (aka. Ligatures)
 sub closeText_internal {
-  my($self,$node)=@_;
+  my($self)=@_;
+  my $node = $$self{node};
   if($node->nodeType == XML_TEXT_NODE){ # Current node is text?
-    my $parent  = $$self{node}->parentNode; 
+    my $parent  = $node->parentNode; 
     my $font = $self->getNodeFont($parent);
     my $string = $node->data;
     my $ostring = $string;
@@ -295,16 +295,18 @@ sub closeText_internal {
       next if ($fonttest = $$ligature{fontTest}) && !&$fonttest($font);
       $string =~ &{$$ligature{code}}($string); }
     $node->setData($string) unless $string eq $ostring;
+    $$self{node}=$parent;	# Now, effectively Closed
     $parent; }
   else {
     $node; }}
   
+# Close $node, and any current nodes below it.
 # No checking! Use this when you've already verified that $node can be closed.
+# and, of course, $node must be current or some ancestor of it!!!
 sub closeNode_internal {
   my($self,$node)=@_;
   my $closeto = $node->parentNode; # Grab now in case afterClose screws the structure.
-  my $n = $$self{node};
-  $n = $self->closeText_internal($n);
+  my $n = $self->closeText_internal; # Close any open text node.
   while($n->nodeType == XML_ELEMENT_NODE){
     if(my $post= $$self{model}->getTagProperty($n,'afterClose')){
       map(&$_($self,$n,$LaTeXML::BOX),@$post); }
@@ -312,23 +314,6 @@ sub closeNode_internal {
     $n = $n->parentNode; }
   print STDERR "Closing ".Stringify($node)." => ".Stringify($closeto)."\n" if $LaTeXML::Document::DEBUG;
   $$self{node} = $closeto; }
-
-sub XXXgetInsertionCandidates {
-  my($node)=@_;
-  my @nodes = ();
-  # Check the current element FIRST, then build list of candidates.
-  my $first = $node;
-  $first = $first->parentNode if $first && $first->getType == XML_TEXT_NODE;
-  push(@nodes,$first) if $first && $first->getType != XML_DOCUMENT_NODE;
-  $node = $node->lastChild if $node && $node->hasChildNodes;
-  my $n;
-  while($node && ($node->nodeType != XML_DOCUMENT_NODE)){
-    push(@nodes,$node);
-    while($n = $node->previousSibling){
-      push(@nodes,$n);
-      $node = $n; }
-    $node = $node->parentNode; }
-  @nodes; }
 
 sub getInsertionCandidates {
   my($node)=@_;
@@ -432,8 +417,7 @@ sub openText {
      && !(($node->nodeType == XML_TEXT_NODE) && # And not appending text in same font.
 	  ($font->distance($self->getNodeFont($node->parentNode))==0))){
     # then we'll need to do some open/close to get fonts matched.
-###    $node = $node->parentNode if $node->nodeType == XML_TEXT_NODE;
-    $node = $self->closeText_internal($node);
+    $node = $self->closeText_internal; # Close text node, if any.
     my ($bestdiff,$closeto)=(99999,$node);
     my $n = $node;
     while($n->nodeType != XML_DOCUMENT_NODE){
@@ -534,8 +518,8 @@ sub openElement {
 sub closeElement {
   my($self,$qname)=@_;
   print STDERR "Close element $qname at ".Stringify($$self{node})."\n" if $LaTeXML::Document::DEBUG;
+  $self->closeText_internal();
   my ($node, @cant_close) = ($$self{node});
-  $node = $node->parentNode if $node->nodeType == XML_TEXT_NODE;
   while($node->nodeType != XML_DOCUMENT_NODE){
     my $t = $$self{model}->getNodeQName($node);
     # autoclose until node of same name BUT also close nodes opened' for font switches!
@@ -550,7 +534,7 @@ sub closeElement {
 	  join(', ',map(Stringify($_),@cant_close)).") dont auto-close")
       if @cant_close;
     # So, now close up to the desired node.
-    $self->closeNode_internal($node); 
+    $self->closeNode_internal($node);
     $node; }}
 
 # Check whether it is possible to open $qname at this point,
@@ -622,8 +606,7 @@ sub insertComment {
   my($self,$text)=@_;
   chomp($text);
   $text =~ s/\-\-+/__/g;
-  if($$self{node}->nodeType == XML_TEXT_NODE){  # Get above plain text node!
-    $$self{node} = $$self{node}->parentNode; }
+  $self->closeText_internal;	# Close any open text node.
   my $comment;
   if($$self{node}->nodeType == XML_DOCUMENT_NODE){
     push(@{$$self{pending}}, $comment = $$self{document}->createComment(' '.$text.' ')); }
@@ -641,9 +624,7 @@ sub insertPI {
   # We'll just put these on the document itself.
   my $data = join(' ',map($_."=\"".ToString($attrib{$_})."\"",keys %attrib));
   my $pi = $$self{document}->createProcessingInstruction($op,$data);
-
-  if($$self{node}->nodeType == XML_TEXT_NODE){  # Get above plain text node!
-    $$self{node} = $$self{node}->parentNode; }
+  $self->closeText_internal;	# Close any open text node
   if($$self{node}->nodeType == XML_DOCUMENT_NODE){
     push(@{$$self{pending}}, $pi); }
   else {
