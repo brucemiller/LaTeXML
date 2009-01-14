@@ -17,6 +17,7 @@
 package LaTeXML::Mouth;
 use strict;
 use LaTeXML::Global;
+use LaTeXML::Token;
 use base qw(LaTeXML::Object);
 
 sub new {
@@ -73,7 +74,8 @@ sub getNextChar {
   my($self)=@_;
   if($$self{colno} < $$self{nchars}){
     my $ch = $$self{chars}->[$$self{colno}++];
-    my $cc = $STATE->lookupCatcode($ch);
+##    my $cc = $STATE->lookupCatcode($ch);
+    my $cc = $$STATE{table}{'catcode:'.$ch}[0]; # $STATE->lookupCatcode($ch); OPEN CODED!
     if((defined $cc) && ($cc == CC_SUPER)	# Possible convert ^^x
        && ($$self{colno}+1 < $$self{nchars}) && ($ch eq $$self{chars}->[$$self{colno}])){
       my $c=ord($$self{chars}->[$$self{colno}+1]);
@@ -164,11 +166,11 @@ my @DISPATCH
       T_SUB,			# T_SUB
       sub { $_[0]->readToken; }, # T_IGNORE
       T_SPACE,			 # T_SPACE
-      sub { $LETTER{$_[1]} || ($LETTER{$_[1]}=Token($_[1],$_[2])); }, # T_LETTER
-      sub { $OTHER{$_[1]}  || ($OTHER{$_[1]} =Token($_[1],$_[2])); }, # T_OTHER
-      sub { $ACTIVE{$_[1]} || ($ACTIVE{$_[1]}=Token($_[1],$_[2])); }, # T_ACTIVE
+      sub { $LETTER{$_[1]} || ($LETTER{$_[1]}=T_LETTER($_[1])); }, # T_LETTER
+      sub { $OTHER{$_[1]}  || ($OTHER{$_[1]} =T_OTHER($_[1])); }, # T_OTHER
+      sub { $ACTIVE{$_[1]} || ($ACTIVE{$_[1]}=T_ACTIVE($_[1])); }, # T_ACTIVE
       \&handle_comment,		# T_COMMENT
-      sub { Token($_[1],CC_OTHER); } # T_INVALID (we could get unicode!)
+      sub { T_OTHER($_[1]); } # T_INVALID (we could get unicode!)
 );
 
 # Read the next token, or undef if exhausted.
@@ -190,7 +192,8 @@ sub readToken {
     $$self{chars}=[split('',$line)];
     $$self{nchars} = scalar(@{$$self{chars}});
     while(($$self{colno} < $$self{nchars})
-	  && (($STATE->lookupCatcode($$self{chars}->[$$self{colno}])||CC_OTHER)==CC_SPACE)){
+##	  && (($STATE->lookupCatcode($$self{chars}->[$$self{colno}])||CC_OTHER)==CC_SPACE)){
+	  && (($$STATE{table}{'catcode:'.$$self{chars}->[$$self{colno}]}[0]||CC_OTHER)==CC_SPACE)){
       $$self{colno}++; }
 
     # Sneak a comment out, every so often.
@@ -202,7 +205,7 @@ sub readToken {
   # ==== Extract next token from line.
   my($ch,$cc)=$self->getNextChar;
   my $dispatch = $DISPATCH[$cc];
-  (ref $dispatch eq 'CODE' ? &$dispatch($self,$ch,$cc) : $dispatch);
+  (ref $dispatch eq 'CODE' ? &$dispatch($self,$ch) : $dispatch);
 }
 
 #**********************************************************************
