@@ -13,10 +13,10 @@
 package LaTeXML::Stomach;
 use strict;
 use LaTeXML::Global;
-use LaTeXML::State;
+#use LaTeXML::State;
 use LaTeXML::Gullet;
-use LaTeXML::Token;
-use LaTeXML::Number;
+#use LaTeXML::Token;
+#use LaTeXML::Number;
 use LaTeXML::Box;
 use LaTeXML::Mouth;
 use LaTeXML::Font;
