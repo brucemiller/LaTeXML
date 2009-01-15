@@ -75,7 +75,8 @@ sub getNextChar {
   if($$self{colno} < $$self{nchars}){
     my $ch = $$self{chars}->[$$self{colno}++];
 ##    my $cc = $STATE->lookupCatcode($ch);
-    my $cc = $$STATE{table}{'catcode:'.$ch}[0]; # $STATE->lookupCatcode($ch); OPEN CODED!
+##    my $cc = $$STATE{table}{'catcode:'.$ch}[0]; # $STATE->lookupCatcode($ch); OPEN CODED!
+    my $cc = $$STATE{table}{catcode}{$ch}[0]; # $STATE->lookupCatcode($ch); OPEN CODED!
     if((defined $cc) && ($cc == CC_SUPER)	# Possible convert ^^x
        && ($$self{colno}+1 < $$self{nchars}) && ($ch eq $$self{chars}->[$$self{colno}])){
       my $c=ord($$self{chars}->[$$self{colno}+1]);
@@ -193,7 +194,8 @@ sub readToken {
     $$self{nchars} = scalar(@{$$self{chars}});
     while(($$self{colno} < $$self{nchars})
 ##	  && (($STATE->lookupCatcode($$self{chars}->[$$self{colno}])||CC_OTHER)==CC_SPACE)){
-	  && (($$STATE{table}{'catcode:'.$$self{chars}->[$$self{colno}]}[0]||CC_OTHER)==CC_SPACE)){
+##	  && (($$STATE{table}{'catcode:'.$$self{chars}->[$$self{colno}]}[0]||CC_OTHER)==CC_SPACE)){
+	  && (($$STATE{table}{catcode}{$$self{chars}->[$$self{colno}]}[0]||CC_OTHER)==CC_SPACE)){
       $$self{colno}++; }
 
     # Sneak a comment out, every so often.
