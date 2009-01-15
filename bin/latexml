@@ -129,6 +129,7 @@ latexml [options] texfile
  --quiet            suppress messages (can repeat)
  --verbose          more informative output (can repeat)
  --strict           makes latexml less forgiving of errors
+ --bibtex           processes the file as a BibTeX bibliography.
  --xml              requests xml output (default).
  --tex              requests TeX output after expansion.
  --box              requests box output after expansion
@@ -142,6 +143,8 @@ latexml [options] texfile
  --help             shows this help message.
 
 If texfile is '-', latexml reads the TeX source from standard input.
+If texfile has an explicit extention of C<.bib>, it is processed
+as a BibTeX bibliography.
 
 =head1 OPTIONS AND ARGUMENTS
 
@@ -197,6 +200,19 @@ Can be useful for getting more details when errors occur.
 Specifies a strict processing mode. By default, undefined control sequences and
 invalid document constructs (that violate the DTD) give warning messages, but attempt
 to continue processing.  Using --strict makes them generate fatal errors.
+
+=item C<--bibtex>
+
+Forces latexml to treat the file as a BibTeX bibliography.
+Note that the timing is slightly different than the usual
+case with BibTeX and LaTeX.  In the latter case, BibTeX simply
+selects and formats a subset of the bibliographic entries; the
+actual TeX expansion is carried out when the result is included
+in a LaTeX document.  In contrast, latexml processes and expands
+the entire bibliography; the selection of entries is done
+during postprocessing.  This also means that any packages
+that define macros used in the bibliography must be
+specified using the C<--preload> option.
 
 =item C<--xml>
 
