@@ -408,13 +408,16 @@ sub addAttribute {
 
 sub openText {
   my($self,$text,$font)=@_;
-  return if $text=~/^\s+$/ && 
-    (($$self{node}->nodeType == XML_DOCUMENT_NODE) # Ignore initial whitespace
-     || (($$self{node}->nodeType == XML_ELEMENT_NODE) && !$$self{model}->canContain($$self{node},'#PCDATA')));
-  print STDERR "Insert text \"$text\" /".Stringify($font)." at ".Stringify($$self{node})."\n" if $LaTeXML::Document::DEBUG;
   my $node = $$self{node};
-  if(($node->nodeType != XML_DOCUMENT_NODE) # If not at document begin
-     && !(($node->nodeType == XML_TEXT_NODE) && # And not appending text in same font.
+  my $t = $node->nodeType;
+  return if $text=~/^\s+$/ && 
+    (($t == XML_DOCUMENT_NODE) # Ignore initial whitespace
+     || (($t == XML_ELEMENT_NODE) && !$$self{model}->canContain($node,'#PCDATA')));
+  print STDERR "Insert text \"$text\" /".Stringify($font)." at ".Stringify($node)."\n"
+    if $LaTeXML::Document::DEBUG;
+
+  if(($t != XML_DOCUMENT_NODE) # If not at document begin
+     && !(($t == XML_TEXT_NODE) && # And not appending text in same font.
 	  ($font->distance($self->getNodeFont($node->parentNode))==0))){
     # then we'll need to do some open/close to get fonts matched.
     $node = $self->closeText_internal; # Close text node, if any.
