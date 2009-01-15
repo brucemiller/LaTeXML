@@ -95,8 +95,6 @@ sub digest {
   $$self{gullet}->closeMouth;
   $list; }
 
-our @forbidden_cc = (1,0,0,0, 0,0,1,0, 0,1,0,0, 0,0,0,1, 0,1);
-
 # Invoke a token; 
 # If it is a primitive or constructor, the definition will be invoked,
 # possibly arguments will be parsed from the Gullet.
@@ -122,6 +120,8 @@ sub makeError {
   $document->closeElement('ltx:ERROR'); 
   $document->setNode($savenode) if $savenode; }
 
+our @forbidden_cc = (1,0,0,0, 0,0,1,0, 0,1,0,0, 0,0,0,1, 0,1);
+
 sub invokeToken_internal {
   my($self,$token)=@_;
   local $LaTeXML::CURRENT_TOKEN = $token;
@@ -136,14 +136,20 @@ sub invokeToken_internal {
   elsif($meaning->isaDefinition){
     my @boxes = $meaning->invoke($self);
     my @err = grep( (! ref $_) || (! $_->isaBox), @boxes);
-    Fatal(":misdefined:".ToString($token)." Execution yielded non boxes: ".join(',',map(Stringify($_),@err))) if @err;
+    Fatal(":misdefined:".ToString($token)." Execution yielded non boxes: "
+	  .join(',',map(Stringify($_),grep( (! ref $_) || (! $_->isaBox), @boxes))))
+      if grep( (! ref $_) || (! $_->isaBox), @boxes);
     $STATE->clearPrefixes unless $meaning->isPrefix; # Clear prefixes unless we just set one.
     @boxes; }
   elsif($meaning->isaToken) {
     my $cc = $meaning->getCatcode;
     $STATE->clearPrefixes; # prefixes shouldn't apply here.
-    if(($cc == CC_SPACE) && ($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble') )){ 
-      (); }
+    if($cc == CC_SPACE){
+      if(($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble') )){ 
+	(); }
+      else {
+	LaTeXML::Box->new($meaning->getString, $STATE->lookupValue('font'),
+			  $$self{gullet}->getLocator,$meaning); }}
     elsif($cc == CC_COMMENT){
       LaTeXML::Comment->new($meaning->getString); }
     elsif($forbidden_cc[$cc]){
