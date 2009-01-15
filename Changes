@@ -1,4 +1,23 @@
-0.6.0  2008-04-09
+0.6.x  2009-01-14 (rev. 740)
+       Preparation for release 0.7.0
+     - New packages:
+       revtex and revtex4 classes and styles
+       (Thanks Deyan Ginve <d.ginev@jacobs-university.de>
+       and Catalin David <c.david@jacobs-university.de>)
+       aas styles, amscd, lscape
+     - latexml now processes BibTeX files
+     - latexmlmath; new command for creating images or MathML
+       for individual math expressions.
+     - Improvements to MathGrammar for bra-ket notations,
+       assignment, and other presentation markup like odd sub/superscripts
+     - Improved option handling
+     - More consistent math meaning "ontology"
+     - Some documentation improvements
+     - Rearranged Makefile & dependencies to port to Centos, MacOS
+     - Many additional macros, robustness fixes
+     - Clarified progress and error messages.
+
+0.6.0  2008-04-09 (rev 485)
        Released.
      - Reorganized site and manual building.
        Unfortunately, the manual isn't as extensively rewritten
