@@ -121,26 +121,24 @@ sub flush {
   $$self{autoclose}=1;
   $$self{mouthstack}=[]; }
 
-
 # User feedback for where something (error?) occurred.
 sub getLocator {
   my($self,$long)=@_;
   my $loc = (defined $$self{mouth} ? $$self{mouth}->getLocator($long) : '');
   if(!$loc || $long){
-    my($mouth,$pb)=($$self{mouth},$$self{pushback});
-    my @pb = @$pb;
-    @pb = (@pb[0..50],T_OTHER('...')) if scalar(@pb) > 55;
-    $loc .= "\n  To be read again ".ToString(Tokens(@pb)) if $long && @pb;
+    $loc .= show_pushback($$self{pushback}) if $long;
     foreach my $frame ( @{$$self{mouthstack}} ){
-      my($mouth,$pb)= @$frame;
-      my @pb = @$pb;
-      @pb = (@pb[0..50],T_OTHER('...')) if scalar(@pb) > 55;
-      my $ml = $mouth->getLocator($long);
+      my $ml = $$frame[0]->getLocator($long);
       $loc .= ' '.$ml if $ml;
       last if $loc && !$long;
-      $loc .= "\n  To be read again ".ToString(Tokens(@pb)) if $long && @pb;
-    }}
+      $loc .= show_pushback($$frame[1]) if $long; }}
   $loc; }
+
+sub show_pushback {
+  my($pb)=@_;
+  my @pb = @$pb;
+  @pb = (@pb[0..50],T_OTHER('...')) if scalar(@pb) > 55;
+  (@pb ? "\n  To be read again ".ToString(Tokens(@pb)) : ''); }
 
 #**********************************************************************
 # Return $tokens with all tokens expanded
@@ -192,7 +190,6 @@ sub unread {
 # if one is available, and will also pass comments.
 sub readXToken {
   my($self,$toplevel)=@_;
-####$toplevel=1;
   return shift(@{$$self{pending_comments}}) if $toplevel && @{$$self{pending_comments}};
   my($token,$cc,$defn);
   while(1){
