@@ -381,6 +381,8 @@ DefMacro('\ifcase Number', sub {
 
 DefPrimitive('\relax',undef);
 DefMacro('\number Number',       sub { Explode($_[1]->valueOf); });
+# define it here (only approxmiately), since it's already useful.
+Let(T_CS('\protect'),T_CS('\relax'));
 
 #======================================================================
 
