@@ -355,7 +355,7 @@ If not supplied, then the filename must match exactly.
 
 =item C<< @paths = pathname_findall($name,%options); >>
 
-This performs the same operation as C<pathname_find>,
+Like C<pathname_find>,
 but returns all matching paths that exist.
 
 =back
