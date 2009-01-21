@@ -127,7 +127,7 @@ DefMacro('\end{}',  sub {
 # I don't think we actually need to do anything ... 
 # [Course that means we're not _really_ TeX!]
 
-Let(T_CS('\protect'),T_CS('\relax'));
+# \protect is already in TeX for obscure reasons...
 
 #======================================================================
 # C.1.4 Declarations
@@ -738,7 +738,8 @@ DefConstructorI(T_CS('\begin{verbatim}'),undef,
 		beforeDigest=>[sub { $_[0]->bgroup; 
 				     AssignValue(current_environment=>'verbatim');
 				     MergeFont(family=>'typewriter');
-					     Digest(T_CS('\par')); }],
+				     # Digest(T_CS('\par')); # NO! See beforeConstruct!
+				   }],
 		afterDigest=>[sub {
 				my($stomach,$whatsit)=@_;
 				$stomach->egroup;
@@ -749,7 +750,8 @@ DefConstructorI(T_CS('\begin{verbatim}'),undef,
 				# Note last line ends up as Whatsit's "trailer"
 				$whatsit->setBody(map(LaTeXML::Box->new($_,$font,$loc,T_OTHER($_)),
 						      @lines, $end));
-				return; }]);
+				return; }],
+		beforeConstruct=>sub { $_[0]->maybeCloseElement('ltx:p'); });
 
 # WARNING: This code binds $STATE to a simple State object with known fixed catcodes.
 # The State normally contains ALL the bindings, etc and links to other important objects.
@@ -772,6 +774,9 @@ DefMacro('\verb', sub {
 DefConstructor('\@verb{}{}', "<ltx:verbatim font='#font'>#2</ltx:verbatim>",
 	       beforeDigest=>[sub { $_[0]->bgroup; MergeFont(family=>'typewriter'); }],
 	       afterDigest=>sub { $_[0]->egroup; },
+	       # Since ltx:verbatim is both inline & block, we have to fudge inline mode
+	       beforeConstruct=>sub { $_[0]->getModel->canContain($_[0]->getElement,'#PCDATA')
+					|| $_[0]->openElement('ltx:p'); },
 	       reversion=>'\verb#1#2#1');
 
 # This is defined by the alltt package.
