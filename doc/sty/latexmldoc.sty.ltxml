@@ -11,7 +11,7 @@ RequirePackage('hyperref');
 
 DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
 DefMacro('\toctitle{}','\@add@frontmatter{ltx:toctitle}{#1}');
-
+DefMacro('\BibTeX','BibTeX');
 # Various other typographic bits
 DefMacro('\cmd {}','\texttt{#1}');
 DefMacro('\code {}','\texttt{#1}');
@@ -29,12 +29,17 @@ DefConstructor('\ltxcmd{}',
 DefConstructor('\pod{}', "<ltx:ref href='#href' labelref='#ref'>#1</ltx:ref>",
 	       afterDigest=>sub{
 		 my $name = $_[1]->getArg(1)->toString;
-		 if($name =~ /^LaTeXML/){
+		 if(($name =~ /^LaTeXML/) || ($name =~ /^latexml/)){
 		   $_[1]->setProperty(ref=>CleanLabel($name)); }
 		 else {
 		   $name =~ s/::/%3A%3A/g;
 		   my $url = "http://search.cpan.org/search?query=$name&mode=module";
 		   $_[1]->setProperty(href=>$url); }});
+
+DefConstructor('\ltxpod{}', "<ltx:ref labelref='#ref'>#1</ltx:ref>",
+	       afterDigest=>sub{
+		 my $name = $_[1]->getArg(1)->toString;
+		 $_[1]->setProperty(ref=>CleanLabel("LaTeXML::".$name)); });
 
 DefEnvironment('{moduledescription}',
 	       "<ltx:description  xml:id='#id' class='moduledescription'>#body</ltx:description>",

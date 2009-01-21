@@ -9,7 +9,7 @@
 
 \let\@@LaTeXML\LaTeXML
 \def\LaTeXML{\ifHy@pdfstring LaTeXML\else\@@LaTeXML\fi}
-
+\def\BibTeX{{\rm B}{\sc ib}\TeX}
 \def\URL{\@ifnextchar[{\@URL}{\@@URL}}%]
 \def\@@URL{\begingroup\Url}
 \def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\texttt{##1}}}\Url}
@@ -69,13 +69,26 @@
 
 \def\@@ltxprefix{LaTeXML}
 \def\@@pkgprefix#1::#2\end{#1}
+\def\@@latexmlcmd{latexml}
+\def\@@latexmlpostcmd{latexmlpost}
+\def\@@latexmlmathcmd{latexmlmath}
 \newcommand{\pod}[1]{%
   {\edef\@prefix{\@@pkgprefix#1::\end}
+   \edef\@podcmd{#1}
   \ifx\@@ltxprefix\@prefix
+     \htmlref{\texttt{#1}}{#1}%
+  \else\ifx\@podcmd\@@latexmlcmd
+     \htmlref{\texttt{#1}}{#1}%
+  \else\ifx\@podcmd\@@latexmlpostcmd
+     \htmlref{\texttt{#1}}{#1}%
+  \else\ifx\@podcmd\@@latexmlmathcmd
      \htmlref{\texttt{#1}}{#1}%
   \else
      \href{http://search.cpan.org/search?query=#1&mode=module}{\texttt{#1}}%
-  \fi}}
+  \fi\fi\fi\fi}}
+
+\newcommand{\ltxpod}[1]{%
+  \htmlref{\texttt{#1}}{LaTeXML::#1}}
 
 \newcommand{\cmd}[1]{\texttt{#1}}
 \newcommand{\code}[1]{\texttt{#1}}
@@ -129,5 +142,7 @@
 \newcommand{\elementref}[1]{\hyperlink{schema.element.#1}{\texttt{#1}}}
 
 %======================================================================
-\usepackage[colorlinks=true, plainpages=false, pdfpagelabels]{hyperref}
+\usepackage[colorlinks=true, linkcolor=cyan, citecolor=cyan, urlcolor=blue,
+            plainpages=false, pdfpagelabels]{hyperref}
+
 %======================================================================
