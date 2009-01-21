@@ -318,7 +318,7 @@ is carried out, and can be customized.
 =item C<< my $bib = LaTeXML::Bib->newFromFile($bibname); >>
 
 Creates a C<LaTeXML::Bib> object representing a bibliography
-from a database file.
+from a BibTeX database file.
 
 =item C<< my $bib = LaTeXML::Bib->newFromString($string); >>
 
