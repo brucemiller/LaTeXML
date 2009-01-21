@@ -216,7 +216,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Package::keyval>, C<LaTeXML::KeyVal> -- support for keyvals
+C<LaTeXML::Util::KeyVal> -- support for keyvals
 
 =head1 DESCRIPTION
 
