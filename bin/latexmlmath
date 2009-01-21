@@ -212,15 +212,15 @@ latexml [options] texmath
  --noparse                  disables parsing of math
                             (not useful for cMML or openmath)
  --preload=file             loads a style file.
- --includestyles            allows latexml to process raw *.sty files
+ --includestyles            allows processing raw *.sty files
                             (normally it avoids this)
  --path=dir                 adds a search path for style files.
  --quiet                    reduces verbosity (can be repeated)
  --verbose                  increases verbosity (can be repeated)
- --strict                   makes latexml more strict about errors.
+ --strict                   be more strict about errors.
  --documentid=id            assign an id to the document root.
- --debug=package            enables debugging output for the named
-                            package
+ --debug=package            enables debugging output for the
+                            named package
  --VERSION                  show version number and exit.
  --help                     shows this help message.
 
