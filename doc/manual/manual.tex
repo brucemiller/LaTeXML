@@ -41,13 +41,14 @@ This document describes a \emph{preview} release of \LaTeXML.
 \end{itemize}
 
 As these goals are not entirely practical, or even somewhat contradictory,
-they are implicitly modified by ``as much as possible.''
-Completely mimicing \TeX's behaviour would seem to require the sneakiest modifications
-to \TeX, itself.  `Ease of use' is, of course, in the eye of the beholder.
+they are implicitly modified by \emph{as much as possible}.
+Completely mimicing \TeX's, and \LaTeX's, behaviour would seem to require the
+sneakiest modifications to \TeX, itself; redefining \LaTeX's internals does 
+not really guarantee compatibility. ``Ease of use'' is, of course, in the eye of the beholder.
 More significantly, few documents are likely to have completely unambiguous
 mathematics markup; human understanding of both the topic and the surrounding 
 text is needed to properly interpret any particular fragment.
-Thus, rather than pretend to provide a `turn-key' solution,
+Thus, rather than pretend to provide a ``turn-key'' solution,
 we expect that document-specific declarations or tuning to be necessary
 to faithfully convert documents.  Towards this end, we provide a variety
 of means to customize the processing and declare the author's intent.
@@ -63,8 +64,14 @@ The special considerations for mathematics, including details of representation
 and how to improve the conversion, are covered in Chapter \ref{math}.
 An overview of outstanding issues and planned future improvements
 are given in Chapter \ref{todo}.
-Finally, the Appendices \ref{commands}, \ref{coremodules} give detailed documentation
-on the commands and modules comprising the system.
+
+Finally, the Appendices give detailed documentation the system components:
+Appendix \ref{commands} describes the programs provided by the system;
+Appendices \ref{coremodules} and \ref{utilitymodules} describes the core and utility modules 
+comprising the system, while Appendix \ref{postmodules} describes the postprocessing modules;
+Appendix \ref{schema} describes the \XML\ schema used by \LaTeXML;
+finally, Appendix \ref{errorcodes} gives an overview of the warning and
+error messages that \LaTeXML\ may generate.
 
 If all else fails, you can consult the source code, or the author.
 
@@ -72,27 +79,31 @@ If all else fails, you can consult the source code, or the author.
 \chapter{Using \LaTeXML}\label{usage}
 The main commands provided by the \LaTeXML\ system are
 \begin{description}
-\item[\ltxcmd{latexml}] for converting \TeX\ sources to \XML.
+\item[\ltxcmd{latexml}] for converting \TeX\ and \BibTeX\ sources to \XML.
 \item[\ltxcmd{latexmlpost}] for various postprocessing tasks including
 conversion to \HTML, processing images, conversion to \MathML\ and so on.
 \end{description}
-The usage of these commands can be as simple as
-\begin{quote}
+\noindent The usage of these commands can be as simple as
+{\small\begin{quote}
  \cmd{latexml doc.tex | latexmpost --dest=doc.xhtml}
-\end{quote}
-to convert a single document into \HTML,  or as complicated as
-\begin{quote}
- \cmd{latexml --dest=A.xml doca}\\
- \cmd{latexml --dest=B.xml docb}\\
+\end{quote}}%
+\noindent to convert a single document into \HTML,  or as complicated as
+{\small\begin{quote}\raggedright
+ \cmd{latexml --dest=1.xml ch1}\\
+ \cmd{latexml --dest=2.xml ch2}\\
   \hbox{}\hspace{1in}\ldots\\
- \cmd{latexmlpost --prescan --dbfile=my.db --dest=A.xhtml A}\\
- \cmd{latexmlpost --prescan --dbfile=my.db --dest=B.xhtml B}\\
+ \cmd{latexml --dest=b.xml b}\\
+ \cmd{latexml --dest=B.xml B.bib}\\
+ \cmd{latexmlpost --prescan --db=my.db --bib=B.xml --dest=1.xhtml 1}\\
+ \cmd{latexmlpost --prescan --db=my.db --bib=B.xml --dest=2.xhtml 2}\\
   \hbox{}\hspace{1in}\ldots\\
- \cmd{latexmlpost --noscan --dbfile=my.db --dest=A.xhtml A}\\
- \cmd{latexmlpost --noscan --dbfile=my.db --dest=B.xhtml B}\\
-  \hbox{}\hspace{1in}\ldots
-\end{quote}
-to convert a whole set of documents into a complete site.
+ \cmd{latexmlpost --prescan --db=my.db --bib=B.xml --dest=b.xhtml b}\\
+ \cmd{latexmlpost --noscan --db=my.db --bib=B.xml --dest=1.xhtml 1}\\
+ \cmd{latexmlpost --noscan --db=my.db --bib=B.xml --dest=2.xhtml 2}\\
+  \hbox{}\hspace{1in}\ldots\\
+ \cmd{latexmlpost --noscan --db=my.db --bib=B.xml --dest=b.xhtml b}\\
+\end{quote}}%
+\noindent to convert a whole set of documents, including a bibliography, into a complete site.
 
 How best to use the commands depends, of course, on what you
 are trying to achieve.  In the next section, we'll describe
@@ -104,6 +115,9 @@ successively more complicated postprocessing situations,
 using \ltxcmd{latexmlpost},
 in which one or more \TeX\ sources can be converted into
 one or more web documents or a complete site.
+
+Additionally, there is a convenience command \ltxcmd{latexmlmath}
+for converting individual formula into various formats.
 
 %%%----------------------------------------------------------------------
 \section[Conversion]{Basic \XML\ Conversion}\label{usage.conversion}\index{latexml!usage}
@@ -117,10 +131,13 @@ reads, tokenizes, expands and digests the \TeX\ document \texttt{doc.tex}
 converts it to \XML,
 performs some document rewriting, parses the mathematical content
 and writes the result in \texttt{doc.xml}.
+If \textit{doc} has an explicit extension of \texttt{.bib}, or if
+the \cmd{--bibtex} extension is used, the file will be processed
+as a \BibTeX\ bibliography (see below).
 For details on the processing, see Chapter \ref{architecture},
 and Chapter \ref{math} for more information about math parsing.
 
-\paragraph{Module Loading}
+\paragraph{Module Loading}\label{usage.conversion.loading}
 A first consideration is what definitions for control sequences and
 environments are active and used for the processing.
 Definitions and customization modules, if present, are loaded in the following
@@ -133,6 +150,8 @@ order:
     Or if you want
     This option can be repeated, and the modules will be loaded in the
     given order.
+    [You do \emph{not} need to preload modules that are already invoked from
+    the document source, as described below.]
   \item[\varfile{doc}\texttt{.latexml}] a document-specific customization module
     is loaded if present.
 \end{description}
@@ -141,10 +160,11 @@ As processing proceeds, additional modules may be loaded as follows.
   \item[\texttt{LaTeX.pool.ltxml}] the core latex module, is loaded
     upon encountering certain recognizably \LaTeX-specific commands, such as
     \verb|\documentclass|.
-  \item[\code{\cs{documentclass}\{\varfile{class}\}}]
+  \item[\cs{documentclass}\{\varfile{class}\textnormal\}]
      loads \varfile[cls.ltxml]{class}.
-     (legacy \verb|\documentstyle| behaves similarly, along with any required packages).
-  \item[\code{\cs{usepackage}\{\textit{package}\}}] (or related) loads
+     (legacy \verb|\documentstyle| behaves similarly, and attempts to load packages for
+      unrecognized options).
+  \item[\cs{usepackage}\{\textit{package}\}] (or related) loads
     \varfile[sty.ltxml]{package}.  \LaTeXML\ will not
     attempt to read the \varfile[sty]{package} file, as these
     often involve \LaTeX\ internals meaningless to the generation of \XML,
@@ -154,8 +174,9 @@ As processing proceeds, additional modules may be loaded as follows.
     \end{quote}
     A selective, per-file, option may be developed in the future --- please
     provide use cases.
-  \item[\code{\cs{input}\{\varfile{file}\}}] loads an appropriate version
+  \item[\cs{input}\{\varfile{file}\}] loads an appropriate version
      of \varfile{file}, specifically the first found of:
+    \varfile[sty.ltxml]{file} (if in \LaTeX-mode)
     \varfile[tex.ltxml]{file}, \varfile[tex]{file}, 
     \varfile[ltxml]{file} or \varfile{file}.
 \end{description}
@@ -170,6 +191,21 @@ for modules and other files can be specified using
   \cmd{--path=\varfile{directory}}
 \end{quote}
 This option can be repeated.
+
+\paragraph{\BibTeX\ processing}
+If the source file has an explicit extension of \texttt{.bib},
+or if the \cmd{--bibtex} option is used, the source will be
+treated as a \BibTeX\ database.
+
+Note that the timing is slightly different than the usual
+case with \BibTeX\ and \LaTeX.  Normally, \BibTeX\ simply
+selects and formats a subset of the bibliographic entries; the
+actual \TeX\ expansion is carried out when the result is included
+in a \LaTeX\ document.  In contrast, \cmd{latexml} processes and expands
+the entire bibliography; the selection of entries is done
+during postprocessing.  This also means that any packages
+that define macros used in the bibliography must be
+specified using the \cmd{--preload} option.
 
 \paragraph{Other Options}
 The number and detail of progress and debugging messages printed
@@ -251,8 +287,11 @@ Bibilographic data from BibTeX can be provided with the option
 \begin{quote}
   \cmd{--bibliography=\varfile[xml]{bibfile}}
 \end{quote}
-However, the tools to convert a BibTeX file to \XML\ are
-not yet provided with the distribution.
+The bibliography would have typically been produced by running
+\cmd{latexml --dest=bibfile.xml bibfile.bib}.
+Note that the \XML\ file, bibfile, is not used to directly produce
+an \HTML-formatted bibliography, rather it is used to fill in
+the \verb|\bibliography{..}| within a \TeX\ document.
 
 \paragraph{Cross-Referencing}
 In this stage, the scanned information is used to fill in the
@@ -345,6 +384,7 @@ where \textit{level} is one of \texttt{chapter},
 For example, \texttt{section} would split the document into
 chapters (if any) and sections, along with separate
 bibliography, index and any appendices.
+(See also \code{--splitxpath} in \ltxcmd{latexml}.)
 The removed document nodes are replaced by a Table of Contents.
 
 The extra files are named using either the id or label
@@ -354,8 +394,7 @@ of the root node of each new page document according to
 \end{quote}
 The relative foms create shorter names in subdirectories for each
 level of splitting.
-The \code{--urlstyle} option may also be useful here,
-as well as the \ltxcmd{latexml} option \code{--documentid}.
+(See also \code{--urlstyle} and  \code{--documentid} in \ltxcmd{latexml}.)
 
 Additionally, the index and bibliography can be split
 into separate pages according to the initial letter of entries by using the options
@@ -368,9 +407,6 @@ into separate pages according to the initial letter of entries by using the opti
 A more complicated situation combines several \TeX\ sources
 into a single interlinked site consisting of multiple pages
 and a composite index and bibliography.
-The games one must play with \LaTeX's aux files to satisfy cross-references
-between these documents are not covered here, but the situation is handled
-by \LaTeXML\ in the following fashion.
 
 \begin{description}
 \item[Conversion] First, all \TeX\ sources must be converted
@@ -395,123 +431,708 @@ by \LaTeXML\ in the following fashion.
    which skips the unnecessary scanning step.
 \end{description}
 
+%%%----------------------------------------------------------------------
+\section{Individual Formula}\label{usage.latexmlmath}
+For cases where you'd just like to convert a single formula to, say, \MathML,
+and don't mind the overhead, we've combined the pre- and post-processing into
+a single, handy, command \ltxcmd{latexmlmath}.  For example,
+\begin{verbatim}
+  latexmlmath --pmml=- \\frac{b\\pm\\sqrt{b^2-4ac}}{2a}
+\end{verbatim}
+will print the \MathML\ to standard output.  
+To convert the formula to a \texttt{png} image, say \texttt{quad.png},
+use the option \code{--mathimage=quad.png}.
+
 %%%======================================================================
 \chapter{Architecture}\label{architecture}
-Like \TeX, \LaTeXML\ is data-driven: the text and executable control
-sequences (ie.~macros and primitives)
-in the source file (and any packages loaded) direct the processing.
-The user exerts control over the conversion, and customizes it, by 
-providing alternative \LaTeXML-specific implementations of the control sequences and packages,
-by declaring properties of the desired document structure,
-and by defining rewrite rules to be applied to the constructed document tree.
+As has been said, \LaTeXML\ consists of two main programs:
+\ltxcmd{latexml} responsible for converting the \TeX\ source into \XML;
+and \ltxcmd{latexmlpost} responsible for converting to target formats.
+See Figure \ref{fig:dataflow} for illustration.
 
 \begin{figure}[tb]
 \begin{center}
-\includegraphics{figures/digestion}
+\includegraphics[width=\textwidth]{figures/digestion}
 \end{center}
 \caption{Flow of data through \LaTeXML's digestive tract.\label{fig:dataflow}}
 \end{figure}
+
+The intention is that all semantics of the original document is
+preserved by \ltxcmd{latexml}, or even inferred by parsing;
+\ltxcmd{latexmlpost} is for formatting and conversion.
+Depending on your needs, the \LaTeXML\ document resulting from \ltxcmd{latexml} may be
+sufficient. Alternatively, you may want to enhance the document
+by applying third party programs before postprocessing.
+
+%%%----------------------------------------------------------------------
+\section{latexml architecture}\label{latexmlarchitecture}
+Like \TeX, \ltxcmd{latexml} is data-driven: the text and executable control
+sequences (ie.~macros and primitives)
+in the source file (and any packages loaded) direct the processing.
+For \LaTeXML, the user exerts control over the conversion, and customizes it, by 
+providing alternative bindings of the control sequences and packages,
+by declaring properties of the desired document structure,
+and by defining rewrite rules to be applied to the constructed document tree.
+
 The top-level class, \pod{LaTeXML}, manages the processing, providing several methods
 for converting a \TeX\ document or string into an \XML\ document, with varying degrees
-of postprocessing and optionally writing the document to file.
-A \pod{LaTeXML::State} object maintains the current state
-of processing, current definitions for control sequences and emulates the
-\TeX's scoping rules.
+of postprocessing and writing the document to file.
+It binds a \ltxpod{State} object (to \verb|$STATE|) to maintain the current state
+of bindings for control sequence definitions and emulates \TeX's scoping rules.
 The processing is broken into the following stages
 \begin{description}
- \item[Digestion] the \TeX-like digestion phase which converts the input into boxes.
- \item[Construction] converts the resulting boxes into an \XML\ DOM.
- \item[Rewriting] applies rewrite rules to modify the DOM.
- \item[Math Parsing] parses the tokenized mathematics.
+   \item[Digestion] the \TeX-like digestion phase which converts the input into boxes.
+   \item[Construction] converts the resulting boxes into an \XML\ DOM.
+   \item[Rewriting] applies rewrite rules to modify the DOM.
+   \item[Math Parsing] parses the tokenized mathematics.
+   \item[Serialization] converts the \XML\ DOM to a string, or writes to file.
 \end{description}
-See Figure \ref{fig:dataflow} for illustration.
-The first three stages are discussed in the following sections;
-the parsing of mathematics is covered in detail in Chapter \ref{math}.
-
-The \pod{LaTeXML} object binds \verb|$STATE|, \verb|$GULLET|, \verb|$STOMACH|,
-and \verb|$MODEL| to corresponding active objects during processing.
 
 %%%----------------------------------------------------------------------
-\section{Digestion}\label{architecture.digestion}
-Digestion is carried out primarily in a \emph{pull} mode: The \pod{LaTeXML::Stomach}
-pulls expanded \pod{LaTeXML::Token}s from the \pod{LaTeXML::Gullet}, which itself pulls tokens from 
-the \pod{LaTeXML::Mouth}.  The \pod{LaTeXML::Mouth} converts characters from the plain text input
-into tokens according to the current category codes assigned to them (in the \pod{LaTeXML::State}).  
-The \pod{LaTeXML::Gullet} is responsible for expanding any macro or expandible
-tokens (when the current binding of the token in the \pod{LaTeXML::State} is 
-an \pod{LaTeXML::Expandable} definition), 
-and for parsing sequences of tokens into common core datatypes (numbers, dimensions, etc.).
-The \pod{LaTeXML::Stomach} digests these tokens by executing \pod{LaTeXML::Primitive} control 
-sequences (generally for side effect), converting control sequences bound
-to \pod{LaTeXML::Constructor}s into \pod{LaTeXML::Whatsit}s, and converting the remaining tokens
-into a recursive structure consisting of
-\pod{LaTeXML::Box}es and \pod{LaTeXML::List}s and of \pod{LaTeXML::Box}es.
+\subsection{Digestion}\label{architecture.digestion}
+Digestion is carried out primarily in a \emph{pull} mode: The \ltxpod{Stomach}
+pulls expanded \ltxpod{Token}s from the \ltxpod{Gullet}, which itself pulls \ltxpod{Token}s from 
+the \ltxpod{Mouth}.  The \ltxpod{Mouth} converts characters from the plain text input
+into \ltxpod{Token}s according to the current \emph{catcodes} (category codes) assigned to
+them (as bound in the \ltxpod{State}).  
+The \ltxpod{Gullet} is responsible for expanding macros,
+that is, control sequences currently bound to \ltxpod{Expandable}s
+and for parsing sequences of tokens into common core datatypes
+(\ltxpod{Number}, \ltxpod{Dimension}, etc.).
+See \ref{customization.latexml.expansion} for how to define macros
+and affect expansion.
+
+The \ltxpod{Stomach} then digests these tokens by executing \ltxpod{Primitive} control 
+sequences, generally for side effect, and converting the remainder
+to \ltxpod{List}s of \ltxpod{Box}es and \ltxpod{Whatsit}s
+Normally, textual tokens are converted to \ltxpod{Box}es.
+The main (intentional) deviation of \LaTeXML's digestion from that of \TeX\ is
+the introduction of a new type of definition, a \ltxpod{Constructor},
+responsible for constructing \XML\ fragments.
+A control sequence bound to \ltxpod{Constructor} is digested by
+reading and processing its arguments and wrapping these up in a \ltxpod{Whatsit}.
+Before- and after-daemons, essentially anonymous primitives, associated with
+the \ltxpod{Constructor} are executed before and after digesting the \ltxpod{Constructor}
+arguments' markup, which can affect the context of that digestion, as well
+as augmenting the \ltxpod{Whatsit} with additional properties.
+See \ref{customization.latexml.digestion} for how to define primitives
+and affect digestion.
+
 
 %%%----------------------------------------------------------------------
-\section{Construction}\label{architecture.construction}
-The main (intentional) deviation of \LaTeXML's digestion from that of \TeX\ is in the
-extension of control sequences to include \pod{LaTeXML::Constructor}s responsible for constructing
-\XML\ document fragments, and \pod{LaTeXML::Whatsit}s to represent thier digested form including
-whatever arguments were passed to the control sequence.
+\subsection{Construction}\label{architecture.construction}
 
-\emph{Construction} thus consists of creating an \pod{LaTeXML::Document}, containing
-an \pod{XML::LibXML::Document} structure, and having it absorb the digested lists, boxes
-and whatsits.  Generally, boxes represent text which is converted to text nodes within the
-document. Whatsits generally create a document fragment involving elements, attributes
-and text.  
+Given the \ltxpod{List} of \ltxpod{Box}es and \ltxpod{Whatsit}s,
+we proceed to constructing an \XML\ document.
+This consists of creating an \ltxpod{Document} object, containing
+a libxml2 document, \pod{XML::LibXML::Document}, and having it absorb the digested
+material. Absorbing a \ltxpod{Box} converts it to text content, with provision
+made to track and set the current font.
+A \ltxpod{Whatsit} is absorbed by invoking the associated \ltxpod{Constructor}
+to insert an appropriate \XML\ fragment, including elements and attributes,
+and recursively processing their arguments as necessary
+See \ref{customization.latexml.construction} for how to define
+constructors.
 
-A \pod{LaTeXML::Model} is maintained througout the digestion phase which accumulates
-any document model declarations in particular the document type (currently only
-the DTD, but eventually may be RelaxNG based).  As \LaTeX\ markup is more
-like \SGML\ than \XML, declarations may be used to indicate which elements may
+A \ltxpod{Model} is maintained througout the digestion phase which accumulates
+any document model declarations, in particular the document type (RelaxNG is
+preferred, but DTD is also supported).  As \LaTeX\ markup is more
+like \SGML\ than \XML, additional declarations may be used (see \code{Tag} in \ltxpod{Package})
+to indicate which elements may
 be automatically opened or closed when needed to build a document tree that matches
 the document type.  As an example, a \verb|<subsection>| will automaticall be closed
-when a \verb|<section>| is begun.
+when a \verb|<section>| is begun.  Additionally, extra bits of code can
+be executed whenever particularly elements are openned or closed (also
+specified by \code{Tag}).
+See \ref{customization.latexml.schema} for how to affect the schema.
 
 %%%----------------------------------------------------------------------
-\section{Rewriting}\label{architecture.rewriting}
-Once the basic document is constructed, \pod{LaTeXML::Rewrite} rules are applied which can
+\subsection{Rewriting}\label{architecture.rewriting}
+Once the basic document is constructed, \ltxpod{Rewrite} rules are applied which can
 perform various functions. Ligatures and combining mathematics digits and letters (in certain fonts)
 into composite math tokens are handled this way.  Additionally, declarations
-of the type or grammatical role of math tokens can be applied here.
+of the type or grammatical role of math tokens can be applied here
+See \ref{customization.latexml.rewriting} for how to define rewrite rules.
 
+%%%----------------------------------------------------------------------
+\subsection{MathParsing}\label{architecture.mathparsing}
+After rewriting, a grammar based parser is applied to the mathematical
+nodes in order to infer, at least, the structure of the expressions,
+if not the meaning.
+Mathematics parsing, and how to control it, is covered in detail in Chapter \ref{math}.
+
+%%%----------------------------------------------------------------------
+\subsection{Serialization}\label{architecture.serialization}
+Here, we simple convert the DOM into string form, and output it.
+
+%%%----------------------------------------------------------------------
+\section{latexmlpost architecture}\label{latexmlpostarchitecture}
+\LaTeXML's postprocessor is primarily for format conversion.
+It operates by applying a sequence of filters responsible for
+transforming or splitting documents, or their parts, from one format to another.
+
+Exactly which postprocessing filter modules are applied depends
+on the commandline options to \ltxcmd{latexmlpost}.
+Postprocessing filter modules are generally applied in the following order:
+\begin{description}
+  \item[Split] splits the document into several `page' documents,
+   according to \cmd{--split} or \cmd{--splitxpath} options.
+  \item[Scan] scans the document for all ID's, labels and cross-references.
+    This data may be stored in an external database,  depending on the \cmd{--db} option.
+  \item[MakeIndex] fills in the \elementref{index} element (due to a \verb|\printindex|)
+   with material generated by \verb|index|.
+  \item[MakeBibliography] fills in the \elementref{bibliography} element
+   (from \verb|\bibliography|) with material extracted from the
+   file specified by the \cmd{--bibilography} option, for all \verb|\cite|'d items.
+  \item[CrossRef] establishes all cross-references between documents and
+   parts thereof, filling in the references with appropriate text for the hyperlink.
+  \item[MathImages, MathML, OpenMath] performs various conversions of the
+   internal Math representation.
+  \item[PictureImages, Graphics, SVG] performs various graphics conversions.
+  \item[XSLT] applies an XSLT transformation to each document.
+  \item[Writer] writes the document to a file in the appropriate location.
+\end{description}
+See \ref{customization.latexmlpost} for how to customize the postprocessing.
 
 %%%======================================================================
 \chapter{Customization}\label{customization}
-The processsing of the \LaTeX\ document and its  conversion into \XML\ is affected
-by the definitions of control sequences, either as macros, primitives or constructors, 
-and other declarations specifying the document type, properties of \XML\ tags, ligatures, \ldots.
-These definitions and declarations are typically contained in `packages' which provide
-the implementation of \LaTeX\ classes and packages.  For example, the \LaTeX\ directive
-\verb|\usepackage{foo}| would cause \LaTeXML\ to load the file \code{foo.sty.ltxml}.
-This file would be sought in any of the directories in perl's \verb|@INC| list (typically
-including the current directory), or in a \verb|LaTeXML/Package| subdirectory of any of 
-those directories.  If no such file is found, \LaTeXML\ would look for \code{foo.sty} and
-attempt to process it.
+The processsing of the \LaTeX\ document, its  conversion into \XML\ and ultimately
+to \XHTML\ or other formats can be customized in various ways, at
+different stages of processing and in different levels of complexity.
+Depending on what you are trying to achieve, some approaches may be easier
+than others: Recall Larry Wall's adage ``There's more than one way to do it.''
 
-When processing a typical file, say \varfile[tex]{jobname}, 
-the following packages are loaded:
-\begin{enumerate}
-\item the core \code{TeX} package
-\item any packages named with the \verb|--preload| option,
-\item a file \varfile[latexml]{jobname}, if present;
-      this provides for document-specific declarations.
-\end{enumerate}
-Document processing then commences; by default, \LaTeXML\ assumes that the document is plain \TeX.
-However, if a \verb|\documentclass| directive is encountered, the \code{LaTeX} package, as well
-as a package for the named document class are loaded.
+To teach \LaTeXML\ about new macros, to implement bindings for a
+package not yet covered, or to modify the way \TeX\ control sequences
+are converted to \XML, you will want to look at \ref{customization.latexml}.
+To modify the way that \XML\ is converted to other formats such as \HTML,
+see \ref{customization.latexmlpost}.
 
-\LaTeXML\ implementations are provided for a number of the standard \LaTeX\ packages,
-although many implement only part of the functionality.  Contributed implementations are,
-of course, welcome.  These files, as well as the document specific \varfile[latexml]{jobname},
-are essentially Perl modules, but use the facilities described in \pod{LaTeXML::Package}.
+A particularly powerful strategy when you have control over the
+source documents is to develop a semantically oriented \LaTeX\ style file,
+say \texttt{smacros.sty}, and then provide a \LaTeXML\ binding
+as \texttt{smacros.sty.ltxml}. In the \LaTeX\ version, you may style
+the terms as you like; in the \LaTeXML\ version, you could control
+the conversion so as to preserve the semantics in the \XML.
+If \LaTeXML's schema is insufficient, then you would need to extend it
+with your own representation; although that is beyond the scope of
+the current manual, see the discussion below in \ref{customization.latexml.schema}.
+In such a case, you would also need to extend the \XSLT\ stylesheets,
+as discussed in \ref{customization.latexmlpost.xslt}.
 
-Much more needs to be explained here, but for the time being,
-please consult the documentation for the module \pod{LaTeXML::Package}, and
-the various implementations of packages included with the distribution.
+%%%----------------------------------------------------------------------
+\section{latexml Customization}\label{customization.latexml}
+This layer of customization deals with modifying the way a \LaTeX\ document
+is transformed into \LaTeXML's \XML.
+In \ref{usage.conversion.loading} the loading of various modules was
+described.  The facilities described in the following subsections
+apply in all such cases, whether used to customize the processing
+of a particular document or to implement a new \LaTeX\ package.
+We make no attempt to be comprehensive here; please consult
+the documentation for \ltxpod{Global} and \ltxpod{Package},
+as well as the binding files included with the system
+for more guidance.
+
+A \LaTeXML\ binding is actually a Perl module, and as such, 
+a familiarity with Perh is helpful.
+They must begin something like:
+\begin{verbatim}
+use LaTeXML::Package;
+use strict;
+\end{verbatim}
+and end with a line
+\begin{verbatim}
+   1;
+\end{verbatim}
+which tells Perl that the module has loaded successfully.
+In between, comes any Perl code you wish, along with the definitions
+and declarations as described here.
+
+\subsection[Expansion]{Expansion \& Macros}\label{customization.latexml.expansion}
+Macros are defined using \texttt{DefMacro}, such as the pointless:
+\begin{verbatim}
+  DefMacro('\mybold{}','\textbf{#1}');
+\end{verbatim}
+The two arguments to \texttt{DefMacro} we call
+the \emph{prototype} and the \emph{replacement}.
+In the prototype, the \verb|{}| specifies a single normal \TeX\ parameter.
+The replacement is here a string which will
+be tokenized and the \verb|#1| will be replaced by the
+tokens of the argument. Presumably the entire result will
+eventually be further expanded and or processed.
+
+Whereas, \TeX\ normally uses \verb|#1|, and \LaTeX\ has developed
+a complex scheme where it is often necessary to peek ahead token
+by token to recognize optional arguments, we have attempted
+to develop a suggestive, and easier to use, notation for parameters.
+Thus a prototype \verb|\foo{}| specifies a single normal argument,
+wheere \verb|\foo[]{}| would take an optional argument followed
+by a required one.  More complex argument prototypes can be
+found in \ltxpod{Package}.
+As in \TeX, the macro's arguments are neither expanded
+nor digested until the expansion itself is further
+expanded or digested.
+
+The macro's replacement can also be Perl code, typically an
+anonymous \texttt{sub}, which gets the current \ltxpod{Gullet}
+followed by the macro's arguments as its arguments.  It must
+return a list of \ltxpod{Token}'s which will be used as the
+expansion of the macro.  The following two examples show
+alternative ways of writing the above macro:
+\begin{verbatim}
+  DefMacro('\mybold{}', sub {
+    my($gullet,$arg)=@_;
+    (T_CS('\textbf'),T_BEGIN,$arg,T_END); });
+\end{verbatim}
+or alternatively
+\begin{verbatim}
+  DefMacro('\mybold{}', sub {
+    Invocation(T_CS('\textbf'),$_[1]); });
+\end{verbatim}
+
+Functions that are useful for dealing with \ltxpod{Token}s and writing macros
+include the following:
+\begin{itemize}
+\item \raggedright \verb|CC_ESCAPE|, \verb|CC_BEGIN|, \verb|CC_END|, \verb|CC_MATH|,
+      \verb|CC_ALIGN|, \verb|CC_EOL|, \verb|CC_PARAM|, \verb|CC_SUPER|,
+      \verb|CC_SUB|,   \verb|CC_IGNORE|, \verb|CC_SPACE|, \verb|CC_LETTER|,
+      \verb|CC_OTHER|, \verb|CC_ACTIVE|, \verb|CC_COMMENT|, \verb|CC_INVALID|
+    represent constants for the corresponding \TeX\ catcodes.
+%       \verb|CC_CS|, \verb|CC_NOTEXPANDED|
+\item  \raggedright \verb|T_BEGIN|, \verb|T_END|, \verb|T_MATH|, \verb|T_ALIGN|,
+      \verb|T_PARAM|, \verb|T_SUB|, \verb|T_SUPER|, \verb|T_SPACE|,
+      \verb|T_CR|
+  represent constants for tokens with the appropriate content and catcode.
+\item \verb|T_LETTER($char)|, \verb|T_OTHER($char)|, \verb|T_ACTIVE($char)|,
+  create tokens of the appropriate catcode with the given text content.
+%     \verb|T_COMMENT($string)|,
+\item \verb|T_CS($cs)| creates a control sequence token; 
+  the string \verb|$cs| should typically begin with the slash.
+\item \verb|Token($string,$catcode)| creates a token with the given content and catcode.
+\item \verb|Tokens($token,...)| creates a \ltxpod{Tokens} object which
+   represents a list of \ltxpod{Token}s.
+\item \verb|Tokenize($string)| converts the string to a \ltxpod{Tokens},
+   using \TeX's standard catcode assignments.
+\item \verb|TokenizeInternal($string)| like \texttt{Tokenize}, but
+   treating \verb|@| as a letter.
+\item \verb|Explode($string)| converts the string to a \ltxpod{Tokens} where
+   letter character are given catcode \verb|CC_OTHER|.
+\item \verb|Expand($tokens| expands \verb|$tokens| (a \ltxpod{Tokens}), returning
+  a \ltxpod{Tokens}; there should be no expandable tokens in the result.
+\item \verb|Invocation($cstoken,$arg,...)| Returns a \ltxpod{Tokens} representing
+  the sequence needed to invoke \verb|$cstoken| on the given arguments (each are
+  \ltxpod{Tokens}, or undef for an unsupplied optional argument).
+\end{itemize}
+
+% Are any of the keyword options worth bringing up?
+% Probably I should at least mention that they are there...
+
+\subsection[Digestion]{Digestion \& Primitives}\label{customization.latexml.digestion}
+Other than for implementing \TeX's own primitives,
+\texttt{DefPrimitive} is needed less often than \texttt{DefMacro} or \texttt{DefConstructor}.
+ The main thing to keep in mind
+is that primitives are processed after macro expansion,
+by the \ltxpod{Stomach}.  They are most useful for
+side-effects, changing the \ltxpod{State}.
+
+The replacement (which can only be code) gets
+the \ltxpod{Stomach} and the control sequence arguments
+as arguments; like macros, these arguments are not expanded or digested
+by default, they must be explicitly digested if necessary.
+The replacement code must either return nothing (eg. ending with \verb|return;|) or
+should return a list (ie. a Perl list \verb|(...)|)
+of digested \ltxpod{Box}es or \ltxpod{Whatsit}s.
+
+% DefRegister ?
+
+Nevertheless, functions dealing with digestion and state are important for
+writing before \& after daemons in constructors, so we give an overview here.
+\begin{itemize}
+\item \verb|Digest($tokens)|
+digests \verb|$tokens| (a \ltxpod{Tokens}), returning a list of \ltxpod{Box}es and \ltxpod{Whatsit}s.
+\item \verb|Let($token1,$token2)| gives \verb|$token1| the same meaning as \verb|$token2|,
+ like \verb|\let|.
+\end{itemize}
+
+\paragraph{Bindings} The following functions are useful for accessing and storing
+information in the current \ltxpod{State}. It maintains a stack-like structure
+that mimics \TeX's approach to binding; braces \verb|{| and \verb|}| open
+and close stack frames.  (The \ltxpod{Stomach} methods \texttt{bgroup} and \texttt{egroup}
+can be used when explicitly needed.)
+\begin{itemize}
+\item \verb|LookupValue($symbol)|, \verb|AssignValue($string,$value,$scope)|
+ maintain arbitrary values in the current \ltxpod{State}, looking up or assigning
+ the current value  bound to \verb|$symbol| (a string).
+ For assignments,  the \verb|$scope| can be \texttt{'local'}
+  (the default, if \verb|$scope| is omitted),
+  which changes the binding in the current stack frame.
+  If \verb|$scope| is \texttt{'global'}, it assigns the value globally
+  by undoing all bindings.
+  The \verb|$scope| can also be another string, which indicates a named scope
+   --- but that is a more advanced topic.
+\item \raggedright \verb|PushValue($symbol,$value,...)|, \verb|PopValue($symbol)|,
+      \verb|UnshiftValue($symbol,$value,...|, \verb|ShiftValue($symbol)|
+  These maintain the value of \verb|$symbol| as a list, with the operatations
+  having the same sense as in Perl; modifications are always global.
+\item \verb|LookupCatcode($char)|, \verb|AssignCatcode($char,$catcode,$scope)|
+  maintain the catcodes associated with characters.
+\item \verb|LookupMeaning($token)|, \verb|LookupDefinition($token)|
+ looks up the current meaning of the token,  being any executable definition bound for it.
+ If there is no such defniition \texttt{LookupMeaning} returns the token itself, 
+ \texttt{LookupDefinition} returns \texttt{undef}.
+%  \verb|InstallDefinition()|
+\end{itemize}
+
+\paragraph{Counters}
+% Should this go under Constructors?
+The following functions maintain \LaTeX-like counters, and generally
+also associate an \texttt{ID} with them.  A counter's print form
+(ie. \verb|\theequation| for equations) often ends up on the \attr{refnum} attribute
+of elements; the associated \texttt{ID} is used for the \attr{xml:id} attribute.
+\begin{itemize}
+\item \verb|NewCounter($name,$within,%options)|,
+  creates a \LaTeX-style counters.  When \verb|$within| is used, 
+  the given counter will be reset whenever the counter \verb|$within| is incremented.
+  This also causes the associated \texttt{ID} to be prefixed with \verb|$within|'s \texttt{ID}.
+  The option \verb|idprefix=>$string| causes the \texttt{ID} to be prefixed with that string.
+  For example,
+\begin{verbatim}
+  NewCounter('section', 'document', idprefix=>'S');
+  NewCounter('equation','document', idprefix=>'E',
+             idwithin=>'section');
+\end{verbatim}
+would cause the third equation in the second section to have \verb|ID='S2.E3'|.
+\item  \verb|CounterValue($name)| returns the \ltxpod{Number} representing the current value.
+\item  \verb|ResetCounter($name)| resets the counter to 0.
+\item \verb|StepCounter($name)| steps the counter (and resets any others `within' it),
+  and returns the expansion of \verb|\the$name|.
+\item \verb|RefStepCounter($name)| steps the counter and any ID's associated with it.
+  It returns a hash containing \texttt{refnum} (expansion of \verb|\the$name|)
+  and \texttt{id} (expansion of \verb|\the$name@ID|)
+\item \verb|RefStepID($name)| steps the ID associated with the counter, without
+  actually stepping the counter; this is useful for unnumbered units that normally
+  would have both a refnum and ID.
+%\verb|GenerateID()|
+\end{itemize}
+
+\subsection[Construction]{Construction \& Constructors}\label{customization.latexml.construction}
+Constructors are where things get interesting, but also complex; they are
+responsible for defining how the \XML\ is built.  There are basic
+constructors corresponding to normal control sequences, as well as
+environments. Mathematics generally comes down to constructors, as well,
+but is covered in Chapter \ref{math}.
+
+Here are a couple of trivial examples of constructors:
+\begin{verbatim}
+DefConstructor('\emph{}',
+               "<ltx:emph>#1</ltx:emph>", mode=>'text');
+DefConstructor('\item[]',
+	       "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
+DefEnvironment('{quote}',   
+	       '<ltx:quote>#body</ltx:quote>',
+	       beforeDigest=>sub{ Let('\\\\','\@block@cr');});
+DefConstructor('\footnote[]{}',
+	       "<ltx:note class='footnote' mark='#refnum'>#2</ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
+\end{verbatim}
+
+\par\noindent\verb|DefConstructor($prototype,$replacement,%options)|
+\par
+The  \verb|$replacement| for a constructor describes the \XML\ to
+be generated during the construction phase. It can either be a string
+representing the \XML\ as a pattern (described below), or a
+subroutine \verb|CODE($document,$arg1,...%props)|
+receiving the arguments and properties from the \ltxpod{Whatsit};
+it would invoke the methods of \ltxpod{Document} to construct the desired \XML.
+The pattern as illustrated above, simply represents a serialization of the
+desired \XML.  In addition to literal replacement, the following may appear:
+\begin{itemize}
+\item \verb|#1,#2,...#name| inserts the construction of the argument
+or property in the \XML;
+\item \verb|&function($a,$b,...)| invokes the named function on the
+given arguments and inserts its value in place;
+\item \verb|?COND(pattern)| or \verb|?COND(ifpattern)(elsepattern)|
+conditionally inserts the patterns depending on the result of the conditional.
+\texttt{COND} would typically be testing the presence of an argument, \verb|#1|,
+or property \verb|#name| or invoking a function;
+\item \verb|^| if this appears at the beginning of the pattern,
+the replacement is allowed to \emph{float} up the current tree to whereever
+it might be allowed.
+\end{itemize}
+
+Options:
+\begin{itemize}
+\item \verb.mode=>('math'|'text'). switches to math or text mode, if needed;
+\item \verb|requireMath=>1|, \verb|forbidMath=>1| requires, or forbids,
+  this constructor to appear in math mode;
+\item \verb|bounded=>1| specifies that all digestion (of arguments and daemons)
+  will take place within an implicit \TeX\ group, so that any side-effects
+  are localized, rather than affecting the global state;
+\item \verb|font=>{%hash}|
+  switches the font used for any created text;
+  recognized font keys are \texttt{family}, \texttt{series}, \texttt{shape}, \texttt{size},
+  \texttt{color};
+\item \verb.properties=> {%hash} | CODE($stomach,$arg1,...).
+  provides a set of properties to store in the \ltxpod{Whatsit} for eventual use
+  in the constructor \verb|$replacement|.  If a subroutine is used,
+  it also should return a hash of properties;
+\item \verb|beforeDigest=>CODE($stomach)|,\\
+      \verb|afterDigest=>CODE($stomach,$whatsit)|
+  provides code to be digested before and after digesting the arguments of
+  the constructor, typically to alter the context of the digestion (before),
+  or to augment the properties of the \ltxpod{Whatsit} (after);
+\item  \verb|beforeConstruct=>CODE($document,$whatsit)|,\\
+      \verb|afterConstruct=>CODE($document,$whatit)|
+  provides code to be run before and after the main \verb|$replacement|
+  is effected; occassionaly it is convenient to use the pattern
+  form for the main \verb|$replacement|, but one still wants to execute
+  a bit of Perl code, as well;
+%\item \verb|nargs|  HUH?
+\item \verb.captureBody=>(1 | $token).
+  specifies that an additional argument (like an environment body) wiil
+  be read until the current \TeX\ grouping ends, or until the specified \verb|$token|
+  is encountered. This argument is available to \verb|$replacement| as \verb|$body|;
+\item \verb.scope=>('global'|'local'|$name). specifies whether this
+  definition is made globally, or in the current stack frame (default),
+  (or in a named scope);
+\item \verb&reversion=>$string|CODE(...)&,
+   \verb|alias=>$cs|
+  can be used when the \ltxpod{Whatsit} needs to be reverted into \TeX\ code,
+  and the default of simply reassembling based on the prototype is not desired.
+  See the code for examples.
+\end{itemize}
+
+Some additional functions useful when writing constructors:
+\begin{itemize}
+\item \verb|ToString($stuff)| converts \verb|$stuff| to a string.
+\item \raggedright \verb|CleanLabel($arg)|,
+   \verb|CleanIndexKey($arg)|,
+   \verb|CleanBibKey($arg)|,
+   \verb|CleanURL($arg)|
+  cleans up arguments (converting to string, handling invalid characters, etc)
+  to make the argument appropriate for use as an attribute representing
+  a label, index ID, etc.
+\item \verb|UTF($hex)| returns the Unicode character for the given
+codepoint; this is useful for characters below \texttt{0x100} where
+Perl becomes confused about the encoding.
+\end{itemize}
+
+\par\noindent \verb|DefEnvironment($prototypte,$replacement,%options)|
+\par Environments are largely a special case of constructors,
+but the prototype starts with \verb|{envname}|, rather than \verb|\cmd|,
+the replacement will also typically involve \verb|#body| representing
+the contents of the environment.
+
+\texttt{DefEnvironment} takes the same options as  \texttt{DefConstructor},
+with the addition of
+\begin{itemize}
+\item \verb|afterDigestBegin=>CODE($stomach,$whatsit)|
+provides code to digest after the \verb|\begin{env}| is digested;
+\item \verb|beforeDigestEnd=>CODE($stomach)|
+provides code to digest before the \verb|\end{env}| is digested.
+\end{itemize}
+
+For those cases where you do not want an environment to correspond
+to a constructor, you may still (as in \LaTeX), define the
+two control sequences \verb|\envname| and \verb|\endenvname|
+as you like.
+
+\subsection{Document Model}\label{customization.latexml.schema}
+The following declarations are typically only needed when customizing
+the schema used by \LaTeXML.
+\begin{itemize}
+\item \verb|RelaxNGSchema($schema,%namespaces)| declares the created
+ \XML\ document should be fit to the RelaxNG schema in \verb|$schema|;
+ A file \verb|$schema.rng| should be findable in the current search paths.
+(Note that currently, \LaTeXML\ is unable to directly parse compact notation).
+\item \verb|RegisterNamespace($prefix,$url)| associates the
+ prefix with the given namespace url.  This allows you to use \verb|$prefix|
+ as a namespace prefix when writing \ltxpod{Constructor} patterns or XPath expressions.
+\item \verb|Tag($tag,%properties)| specifies properties for the given \XML\ \verb|$tag|.
+Recognized properties include:
+\verb|autoOpen=>1| indicates that the tag
+can automatically be opened if needed to create a valid document;
+\verb|autoClose=>1| indicates that the tag can automatically be closed if needed to create
+a valid document;
+\verb|afterOpen=>$code| specifies code to be executed before opening the tag;
+the code is passed the \ltxpod{Document} being constructed as well as the
+\ltxpod{Box} (or \ltxpod{Whatsit}) responsible for its creation;
+\verb|afterClose=>code| similar to \texttt{afterOpen}, but executed after closing
+the element.
+% DocType
+\end{itemize}
+
+\subsection{Rewriting}\label{customization.latexml.rewriting}
+The following functions are a bit tricky to use (and describe),
+but can be quite useful in some circumstances.
+\begin{itemize}
+\item \verb|DefLigature($regexp,%options)| applies a regular expression
+to substitute textnodes after they are closed; the only option is \verb|fontTest=>$code|
+which restricts the ligature to text nodes where the current font passes \verb|&$code($font)|.
+\item \verb|DefMathLigature($code)| allows replacement of sequences of math nodes.
+It applies \verb|$code| to the current \ltxpod{Document}
+and each sequence of math nodes encountered in the document; if a replacement should
+occur, \verb|$code| should return a list of the form \verb|($n,$string,%attributes)|
+in which case, the text content of the first node is replaced by \verb|$string|,
+the given attributes are added, and the following \verb|$n-1| nodes are removed.
+\item \verb|DefRewrite(%spec)|, \verb|DefMathRewrite(%spec)| defines document
+rewrite rules. These specifications describe what document nodes match:
+\begin{itemize}
+\item \verb|label=>$label| restricts to nodes contained within an element whose
+  \attr{labels} includes \verb|$label|;
+\item \verb|scope=>$scope| generalizes \texttt{label}; the most useful form
+ a string like \texttt{'section:1.3.2'} where it matches the \elementref{section}
+  element whose \attr{refnum} is \texttt{1.3.2};
+\item \verb|xpath=>$xpath| selects nodes matching the given XPath;
+\item \verb|match=>$tex| selects nodes that look like what processing
+ the \TeX\ string \verb|$tex| would produce;
+\item \verb|regexp=>$regexp| selects text nodes that match the given regular expression.
+\end{itemize}
+The following specifications describe what to do with the matched nodes:
+\begin{itemize}
+\item \verb|attributes=>{%attr}| adds the given attributes to the matching nodes;
+\item \verb|replace=>$tex| replaces the matching nodes with the result
+of processing the \TeX\ string \verb|$tex|.
+\end{itemize}
+\end{itemize}
+
+\subsection{Packages and Options}\label{customization.latexml.packages}
+The following declarations are useful for defining \LaTeXML\ bindings,
+including option handling.
+As when defining \LaTeX\ packages, the following, if needed at all,
+need to appear in the order shown.
+\begin{itemize}
+%===== Declarations of options
+\item \verb|DeclareOption($option,$handler)| specifies the handler
+for \verb|$option| when it is passed to the current package or class.
+If \verb|$option| is \texttt{undef}, it defines the default handler,
+for options that are otherwise unrecognized.
+\verb|$handler| can be either a string to be expanded, or a sub which
+is executed like a primitive.
+\item \verb|PassOptions($name,$type,@options)|  specifies that the
+given options should be passed to the package (if \verb|$type| is \texttt{sty})
+or class (if \verb|$type| is \texttt{cls}) \verb|$name|, if it is ever loaded.
+%===== Execution of options
+\item \verb|ProcessOptions(%keys)| processes any options that have
+been passed to the current package or class.  If \verb|inorder=>1| is
+specified, the options will be processed in the order passed to the
+package (\verb|\ProcessOptions*|); otherwise they will be processed
+in the declared order (\verb|\ProcessOptions|).
+\item \verb|ExecuteOptions(@options)|
+executes the handlers for the specific set of options \verb|@options|.
+%===== Package loading
+\item \verb|RequirePackage($pkgname,%keys)| loads the specified package.
+The keyword options have the following effect: \verb|options=>$options|
+can provide an explicit array of string specifying the options to pass to the package;
+\verb|withoptions=>1| means that the options passed to the currently loading
+class or package should be passed to the requested package;
+\verb|type=>$ext| specifies the type of the package file (default is \texttt{sty});
+\verb|raw=>1| specifies that reading the raw style file (eg. \texttt{pkg.sty})
+is permissible if there is no specific \LaTeXML\ binding (eg. \texttt{pkg.sty.ltxml})
+\verb|after=>$after| specifies a string or \ltxpod{Tokens} to be expanded
+after the package has finished loading.
+\item \verb|LoadClass($classname,%keys)|
+Similar to \texttt{RequirePackage}, but loads a class file (\verb|type=>'cls'|).
+%==== Special commands
+\item \verb|AddToMacro($cstoken,$tokens)| a little used utilty to add
+material to the expansion of \verb|$cstoken|, like an \verb|\edef|;
+typically used to add code to a class or package hook.
+\end{itemize}
+
+\subsection{Miscellaneous}\label{customization.latexml.misc}
+Other useful stuff:
+\begin{itemize}
+\item \verb|RawTeX($texstring)| expands and processes the \verb|$texstring|;
+This is typically useful to include definitions copied from a \TeX\ stylefile,
+when they are approriate for \LaTeXML, as is.
+\end{itemize}
+
+%\verb|MergeFont()|
+
+%%%----------------------------------------------------------------------
+\section{latexmlpost Customization}\label{customization.latexmlpost}
+The current postprocessing framework works by passing the document through
+a sequence of postprocessing filter modules. Each module is responsible
+for carrying out a specific transformation, augmentation or conversion
+on the document.   In principle, this architecture has the flexibility to
+employ new filters to perform new or customized conversions.
+However, the driver, \ltxcmd{latexmlpost}, currently provides no
+convenient means to instanciate and incorporate outside filters, short
+of developing your own specialized version.
+
+Consequently, we will consider custom postprocessing filters outside
+the scope of this manual (but of course, you are welcome to explore
+the code, or contact us with suggestions).
+
+The two areas where customization is most practical is in altering
+the XSLT transforms used and extending the \CSS\ stylesheets.
+
+\subsection{XSLT}\label{customization.latexmlpost.xslt}
+\LaTeXML\ provides stylesheets for transforming its \XML\ format
+to \XHTML\ and \HTML. These stylesheets are modular with components
+corresponding to the schema modules.  Probably the best strategy
+for customizing the transform involves making a copy of the standard
+base stylesheets, \texttt{LaTeXML-xhtml.xsl} and
+\texttt{LaTeXML-html.xsl},  found at
+\textit{installationdir}\texttt{/LaTeXML/style/}
+--- they're short, consisting mainly of sequence of  \texttt{xsl:include} ---
+and adding your own rules, or including your own modules.
+The two stylesheets differ primarily in their use of namespaces
+and handling of math.
+
+Naturally, this requires a familiarity with \LaTeXML's schema (see \ref{schema}),
+as well as \XSLT\ and \XHTML.  See the other stylesheet modules in the same directory
+as the base stylesheet for guidance.
+
+Conversion to formats other than \XHTML\ are, of course, possible, as well,
+but are neither supplied nor covered here.
+How complex the transformation will be depends on the extent
+that the \LaTeXML\ schema can be mapped to the desired one,
+and to what extent \LaTeXML\ has lost or hidden information
+represented in the original document.  Again, familiarity with the schema is needed,
+and the provided \XHTML\ stylesheets may suggest an approach.
+
+\subsection{CSS}\label{customization.latexmlpost.css}
+\CSS\ stylesheets can be supplied to \ltxcmd{latexmlpost} to
+be included in the generated documents in addition to, or as a
+replacement for, the standard stylesheet \texttt{core.css}.
+See the directory
+\textit{installationdir}\texttt{/LaTeXML/style/}
+for samples.
+
+To best take advantage of this capability so as to design
+\CSS\ rules with the correct specificity, the following points are helpful:
+\begin{itemize}
+\item \LaTeXML\ converts the \TeX\ to its own schema,
+  with structural elements (like \elementref{equation}) getting their own tag;
+  others are transformed to something more generic, such as \elementref{note}.
+  In the latter case, a class attribute is often used to distinguish.
+  For example, a \verb|\footnote| generates
+\begin{verbatim}
+  <note class='footnote'>...
+\end{verbatim}
+  whereas an \verb|\endnote| generates
+\begin{verbatim}
+  <note class='endnote'>...
+\end{verbatim}
+\item The provided \XSLT\ stylesheets transform \LaTeXML's schema to \XHTML,
+  generating a combined class attribute consisting of any class attributes
+  already present as well as the \LaTeXML\ tag name.
+  However, there are some variations on the theme.
+  For example, \LaTeX's \verb|\section| yeilds a \LaTeXML\ element \elementref{section},
+  with a \elementref{title} element underneath.  When transformed to
+  \XHTML, the former becomes a \verb|<div class='section'>|,
+  while the latter becomes \verb|<h2 class='section-title'>|
+ (for example, the h-level may vary with the document structure),
+\end{itemize}
 
 %%%======================================================================
 \chapter{Mathematics}\label{math}
+
+%\verb|DefMath($prototype,$replacement,%options)|
+
 There are several issues that have to be dealt with in treating the mathematics.
 On the one hand, the \TeX\ markup gives a pretty good indication of what the
 author wants the math to look like, and so we would seem to have a good handle
@@ -548,7 +1169,7 @@ dictionary (\varfile[dict]{jobname}), or in a default dictionary.
 
 Additional exceptions that need fuller explanation are: 
 \begin{itemize}
- \item \pod{LaTeXML::Constructor}s may wish to create a dual object (\elementref{XMDual}) whose children are 
+ \item \ltxpod{Constructor}s may wish to create a dual object (\elementref{XMDual}) whose children are 
 the semantic and presentational forms.
  \item Spacing and similar markup generates \elementref{XMHint} elements, which are currently ignored
 during parsing, but probably shouldn't.
@@ -569,7 +1190,7 @@ during parsing, but probably shouldn't.
    subexpression within structured items (these will have been contained in
    an \elementref{XMArg} or \elementref{XMWrap} element).  This results in an expression tree
    that will hopefully be an accurate representation of the expression's structure,
-   but may be ambigous in specifics (eg.`what the meaning of a superscript is).
+   but may be ambigous in specifics (eg. what the meaning of a superscript is).
    The parsing is driven almost entirely by the grammatical \attr{role} assigned
    to each item.
 \item \emph{Not yet implemented} a following stage must be developed to resolve
@@ -604,7 +1225,7 @@ The following attributes can appear on all \texttt{XM*} elements:
 \item[\elementref{XMTok}] represents a math token. It may contain text for presentation.
    Additional attributes are:
   \begin{description}
-   \item[\attr{name}] the name that represents the `meaning' of the token; this overrides
+   \item[\attr{name}] the name that represents the \emph{meaning} of the token; this overrides
       the content for identifying the token.
    \item[\attr{omcd}] the \OpenMath\ content dictionary that the name belongs to.
    \item[\attr{font}] the font to be used for presenting the content.
@@ -716,14 +1337,35 @@ the presentation style:
 \chapter{ToDo}\label{todo}
 Lots\ldots!
 \begin{itemize}
-\item Lots of useful \LaTeX\ packages have not been implemented, and those
+\item Many useful \LaTeX\ packages have not been implemented, and those
   that are aren't necessarily complete.
-\item \TeX\ boxes aren't really complete, and in particular things like \verb|\ht0|
-  don't work.
-\item Possibly useful to override (pre-override?) a macro defined in the source file;
-  that is, define it and silently ignore the definition given in the source.
+
+  Contributed bindings are, of course, welcome!
+\item Low-level \TeX\ capabilities, such as text modes (eg. vertical, horizonatal),
+ box details like width and depth, as well as fonts,  aren't mimicked faithfully,
+  although it isn't clear how much can be done at the `semantic' level.
+\item When dealing with archival material, it may be useful to lock some definitions.
+  For example, some people redefine eqnarray in terms of lower level primitives
+  to get better spacing. Unfortunately, this keeps \LaTeXML\ from recognizing it
+  as an eqnarray!
+\item a richer math grammar, better inferencing of math structure,
+  better inferencing of math \emph{meaning}\ldots and thus better
+  Content MathML and OpenMath support!
+\item Could be faster.
+\item Easier customization of the document schema, XSLT stylesheets.
 \item \ldots um, \ldots \emph{documentation}!
 \end{itemize}
+
+%%%======================================================================
+\chapter*{Acknowledgements}\label{acknowledgements}
+Thanks to the DLMF project and it's Editors ---
+Frank Olver, Dan Lozier, Ron Boisvert, and Charles Clark ---
+for providing the motivation and opportunity to pursue this.
+
+Thanks to the arXMLiv project, in particular Michael Kohlhase and Heinrich Stamerjohanns,
+for providing a rich testbed and testing framework to exercise the system.
+Additionally, thanks to Ioan Sucan, Deyan Ginev
+and Catalin David for testing help and for implementing additional packages.
 
 %%%======================================================================
 \appendix
@@ -731,6 +1373,7 @@ Lots\ldots!
 % input the 1st, to avoid quasi-blank page; include the rest
 \input{pods/latexml}
 \include{pods/latexmlpost}
+\include{pods/latexmlmath}
 
 %%%======================================================================
 \chapter[Modules]{Core Module Documentation}\label{coremodules}
@@ -761,9 +1404,12 @@ Lots\ldots!
 %\section{Math-related Modules}
 \include{pods/LaTeXML_MathParser}
 
+\include{pods/LaTeXML_Bib}
+
 %%%======================================================================
 \chapter[Utility Modules]{Utility Module Documentation}\label{utilitymodules}
 \input{pods/LaTeXML_Util_Pathname}
+\input{pods/LaTeXML_Util_KeyVal}
 
 %%%======================================================================
 \chapter[Postprocessing Modules]{Postprocessing Module Documentation}\label{postmodules}
@@ -782,7 +1428,14 @@ of mixing models or extension by predefining certain parameter entities.
 %%%======================================================================
 \chapter{Error Codes}\label{errorcodes}
 Warning and Error messages are printed to STDERR during the execution
-of \ltxcmd{latexml} and \ltxcmd{latexmlpost}.
+of \ltxcmd{latexml} and \ltxcmd{latexmlpost}.  As with \TeX, it is
+not always possible to indicate where the real underying mistake
+originated; sometimes it is only realized later on that some problem
+has occurred, such as a missing brace. Moreover, whereas error messages
+from \TeX\ may be safely assumed to indicate errors with the source
+document, with \LaTeXML\ they may also indicate \LaTeXML's inability
+to figure out what you wanted, or simply bugs in \LaTeXML, itself.
+
 \begin{description}
 \item[Warnings] are generally
 informative that the generated result may not be as good as it can be,
@@ -832,12 +1485,12 @@ do not properly account for the way \TeX, or the macros, are actually used.
 \item[\texttt{parse}]: An issue parsing the mathematics.
 \end{description}
 
-The following errors are more likely due to programming errors in the
+The following errors are more likely to be due to programming errors in the
 \LaTeXML\ core, or in binding files, or in the document model.
 \begin{description}
 \item[\texttt{perl}]: A perl-level error or warning,not specifically recognized
  by LaTeXML, was encountered.
- A second keyword will typically be one of \texttt{die}, \texttt{interrupt} or \texttt{warn}.
+The second keyword will typically \texttt{die}, \texttt{interrupt} or \texttt{warn}.
 \item[\texttt{malformed}]: some sort of malformed XML problem.
 \item[\texttt{model}]: some sort of problem with the document model or schema.
 \item[\texttt{misdefined}]: Some sort of error in the definition of \textit{arg}.
