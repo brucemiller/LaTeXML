@@ -343,21 +343,22 @@ latexmlpost [options] xmlfile
  --verbose               shows progress during processing.
  --VERSION               show version number.
  --help                  shows help message.
- --sourcedirectory=sourcedir specifies directory of source TeX file.
+ --sourcedirectory=sourcedir specifies directory of the original
+                         source TeX file.
  --validate, --novalidate Enables (the default) or disables
                          validation of the source xml.
  --format=html|xhtml|xml requests the output format.
  --destination=file      specifies output file (and directory).
  --omitdoctype           omits the Doctype declaration,
  --noomitdoctype         disbles the omission (the default)
- --numbersections        enables (the default) the inclusion
-                         of section numbers in titles and crossrefs.
+ --numbersections        enables (the default) the inclusion of
+                         section numbers in titles and crossrefs.
  --nonumbersections      disbles the above
  --stylesheet=xslfile    requests the XSL transform using the
                          given xslfile as stylesheet.
  --css=cssfile           adds a css stylesheet to html/xhtml
                          (can be repeated)
- --nodefaultcss          disables inclusion of default css stylesheet
+ --nodefaultcss          disables the default css stylesheet
  --split                 requests splitting each document
  --nosplit               disables the above (default)
  --splitat               specifies level to split the document
@@ -382,7 +383,6 @@ latexmlpost [options] xmlfile
  --splitbibliography     splits the bibliography into pages per
                          initial.
  --nosplitbibliography   disables the above (default)
-
  --prescan               carries out only the split (if enabled)
                          and scan, storing cross-referencing data
                          in dbfile
