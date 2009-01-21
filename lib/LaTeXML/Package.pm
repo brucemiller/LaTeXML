@@ -1001,7 +1001,7 @@ sub AddToMacro {
   my $defn = LookupDefinition($cs);
   DefMacroI($cs,undef,Tokens($$defn{expansion}->unlist,$tokens->unlist)); }
 
-our $require_options = {options=>1, withoptions=>1, type=>1, raw=>1};
+our $require_options = {options=>1, withoptions=>1, type=>1, raw=>1, after=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   $package = ToString($package) if ref $package;
@@ -1140,7 +1140,8 @@ installed C<LaTeXML/Package> directory for realistic examples.
   # Use a RelaxNG schema
   RelaxNGSchema("MySchema");
   # Or use a special DocType if you have to:
-  # DocType("rootelement","-//Your Site//Your DocType",'your.dtd',
+  # DocType("rootelement",
+  #         "-//Your Site//Your DocType",'your.dtd',
   #          prefix=>"http://whatever/");
   #
   # Allow sometag elements to be automatically closed if needed
@@ -1693,8 +1694,8 @@ of another counter which, when incremented, will cause this counter
 to be reset.
 The options are
 
-   idprefix  Specifies a prefix to be used when using this counter
-             to generate ID's.
+   idprefix  Specifies a prefix to be used to generate ID's
+             when using this counter
    nested    Not sure that this is even sane.
 
 =item C<< $num = CounterValue($ctr); >>
@@ -1703,19 +1704,20 @@ Fetches the value associated with the counter C<$ctr>.
 
 =item C<< $tokens = StepCounter($ctr); >>
 
-Like C<\stepcounter>, steps the counter and returns the expansion of
+Analog of C<\stepcounter>, steps the counter and returns the expansion of
 C<\the$ctr>.  Usually you should use C<RefStepCounter($ctr)> instead.
 
 =item C<< $keys = RefStepCounter($ctr); >>
 
-Like C<\refstepcounter>, it steps the counter and returns the keys
-C<refnum=>$refnum, id=>$id>, making it suitable for use in
-a C<properties> option to constructors.  The C<id> is generated
-in parallel with the reference number to assist debugging.
+Analog of C<\refstepcounter>, steps the counter and returns a hash
+containing the keys C<refnum=>$refnum, id=>$id>.  This makes it
+suitable for use in a C<properties> option to constructors.
+The C<id> is generated in parallel with the reference number
+to assist debugging.
 
 =item C<< $keys = RefStepID($ctr); >>
 
-Analogous to C<RefStepCounter>, but only steps the "uncounter",
+Like to C<RefStepCounter>, but only steps the "uncounter",
 and returns only the id;  This is useful for unnumbered cases
 of objects that normally get both a refnum and id.
 
@@ -2056,7 +2058,7 @@ control sequence.
 =item C<< CleanLabel($label,$prefix); >>
 
 Cleans a C<$label> of disallowed characters,
-and prepends C<$prefix> (or C<LABEL>, if none given).
+prepending C<$prefix> (or C<LABEL>, if none given).
 
 =item C<< CleanIndexKey($key); >>
 
