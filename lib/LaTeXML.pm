@@ -438,7 +438,7 @@ representation of LaTeX macros, primitives, registers and constructors.
 
 the math parser.
 
-=item L<LaTeXML::Global>, L<LaTeXML::Error>, L<LaTeXML::Object>, L<LaTeXML::Font>
+=item L<LaTeXML::Global>, L<LaTeXML::Error>, L<LaTeXML::Object>
 
 other random modules.
 
