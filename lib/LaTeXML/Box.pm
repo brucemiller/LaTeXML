@@ -373,7 +373,7 @@ Note that the font is stored in the data properties under 'font'.
 
 =item C<< $defn = $whatsit->getDefinition; >>
 
-Returns the L<LaTeXML::Definition> responsible for creating the C<$whatsit>.
+Returns the L<LaTeXML::Definition> responsible for creating C<$whatsit>.
 
 =item C<< $value = $whatsit->getProperty($key); >>
 
