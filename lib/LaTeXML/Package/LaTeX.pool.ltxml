@@ -30,8 +30,8 @@ no warnings 'redefine';
 #**********************************************************************
 # Basic \documentclass & \documentstyle
 
-AssignValue('2.09_COMPATIBIITY'=>0);
-DefMacro('\if@compatibility',sub { ifHandler($_[0],LookupValue('2.09_COMPATIBIITY')); },
+#AssignValue('2.09_COMPATIBILITY'=>0);
+DefMacro('\if@compatibility',sub { ifHandler($_[0],LookupValue('2.09_COMPATIBILITY')); },
 	 isConditional=>1);
 
 # Let's try just starting with this set (since we've loaded LaTeX)
@@ -57,10 +57,11 @@ DefPrimitive('\warn@unusedclassoptions',sub {
 
 DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1') oldstyle='true'?>",
+  beforeDigest=>sub {
+    AssignValue('2.09_COMPATIBILITY'=>1,'global'); },
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
     my $options = $whatsit->getArg(1);
-    AssignValue('2.09_COMPATIBIITY'=>1);
     LoadClass(ToString($whatsit->getArg(2)),
 	      options=>[ ($options ? split(/,\s*/, ToString($options)) : ()) ],
 	      after=>Tokens(T_CS('\compat@loadpackages')));
