@@ -132,7 +132,7 @@ DefMacro('\subjclass[Default:1991]{}',
 # Normal LaTeX 
 
 # For compatibility
-if(LookupValue('2.09_COMPATIBIITY')){
+if(LookupValue('2.09_COMPATIBILITY')){
   RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}');
   RawTeX('\newenvironment{pf*}[1]{\begin{@proof}[#1]}{\end{@proof}'); }
 
