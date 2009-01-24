@@ -99,8 +99,8 @@ DefEnvironment('{@proof} []',
 		 ($qed ? Digest($qed) :()); }
 	      );
 
-if(! LookupValue('2.09_COMPATIBIITY')){
-  RawTeX('\newenvironment{proof}{\begin{@proof}}{\end{@proof}'); }
+## ??  if(! LookupValue('2.09_COMPATIBILITY')){
+  RawTeX('\newenvironment{proof}{\begin{@proof}}{\end{@proof}');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # from older versions of amsthm.sty
