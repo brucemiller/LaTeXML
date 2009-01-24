@@ -24,6 +24,8 @@ RequirePackage('revtex4_support');
 # The following are additional or different definitions from revtex4_support
 
 DefMacro('\eqsecnum',''); 	# ?
+DefMacro('\tightenlines','');
+DefMacro('\wideabs','');	# wide abstract? takes an arg, but avoid reading it
 
 # Hmm, this seems to allow random chunks of text within;
 # it really only specifies the numbering, not alignment or ...
