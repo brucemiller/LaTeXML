@@ -273,4 +273,40 @@ DefMacro('\draft','');
 DefMacro('\tighten', '');
 
 #======================================================================
+# The following really should only be defined for aps substyles
+# which include pra, etc.
+# I'll just define them all, and hope for no conflicts(?)
+
+DefMacro('\ao',   'Appl.~Opt.~');
+DefMacro('\ap',   'Appl.~Phys.~');
+DefMacro('\apl',  'Appl.~Phys.~Lett.~');
+DefMacro('\apj',  'Astrophys.~J.~');
+DefMacro('\bell', 'Bell Syst.~Tech.~J.~');
+DefMacro('\jqe',  'IEEE J.~Quantum Electron.~');
+DefMacro('\assp', 'IEEE Trans.~Acoust.~Speech Signal Process.~');
+DefMacro('\aprop','IEEE Trans.~Antennas Propag.~');
+DefMacro('\mtt',  'IEEE Trans.~Microwave Theory Tech.~');
+DefMacro('\iovs', 'Invest.~Opthalmol.~Vis.~Sci.~');
+DefMacro('\jcp',  'J.~Chem.~Phys.~');
+DefMacro('\jmo',  'J.~Mod.~Opt.~');
+DefMacro('\josa', 'J.~Opt.~Soc.~Am.~');
+DefMacro('\josaa','J.~Opt.~Soc.~Am.~A ');
+DefMacro('\josab','J.~Opt.~Soc.~Am.~B ');
+DefMacro('\jpp',  'J.~Phys.~(Paris) ');
+DefMacro('\nat',  'Nature (London) ');
+DefMacro('\oc',   'Opt.~Commun.~');
+DefMacro('\ol',   'Opt.~Lett.~');
+DefMacro('\pl',   'Phys.~Lett.~');
+DefMacro('\pra',  'Phys.~Rev.~A ');
+DefMacro('\prb',  'Phys.~Rev.~B ');
+DefMacro('\prc',  'Phys.~Rev.~C ');
+DefMacro('\prd',  'Phys.~Rev.~D ');
+DefMacro('\pre',  'Phys.~Rev.~E ');
+DefMacro('\prl',  'Phys.~Rev.~Lett.~');
+DefMacro('\rmp',  'Rev.~Mod.~Phys.~');
+DefMacro('\pspie','Proc.~Soc.~Photo-Opt.~Instrum.~Eng.~');
+DefMacro('\sjqe', 'Sov.~J.~Quantum Elecron.~');
+DefMacro('\vr',   'Vision Res.~');
+
+#======================================================================
 1;
