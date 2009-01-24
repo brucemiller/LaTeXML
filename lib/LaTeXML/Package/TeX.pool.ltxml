@@ -2241,6 +2241,7 @@ DefMath('[','[', role=>'OPEN'); DefMath(']',']', role=>'CLOSE');
 DefMath('|','|', role=>'VERTBAR');
 
 #DefMath(':',';', role=>'METARELOP', name=>'colon'); # Seems like good default role
+
 AssignCatcode('math::'=>1, 'global');
 DefMacro(':',sub{
   my($gullet)=@_;
@@ -3207,6 +3208,14 @@ DefMath('\rfloor',   "\x{230B}", role=>'CLOSE'); # RIGHT FLOOR
 DefMath('\rceil',    "\x{2309}", role=>'CLOSE'); # RIGHT CEILING
 DefMath('\rangle',   "\x{232A}", role=>'CLOSE');	# RIGHT-POINTING ANGLE BRACKET
 
+# Not sure these should be defined here, or latex, or even latex compat mode.
+DefMath('\lgroup',"(", font=>{series=>'bold'}, role=>'OPEN');
+DefMath('\rgroup',")", font=>{series=>'bold'}, role=>'CLOSE');
+DefMath('\bracevert',  "|", font=>{series=>'bold'}, role=>'VERTBAR');
+
+## DefMath('\lmoustache',"???", font=>{series=>'bold'}, role=>'OPEN');
+## DefMath('\rmoustache',"???", font=>{series=>'bold'}, role=>'OPEN');
+
 # TeX marks some symbols as delimiters which can be used with \left,\right,
 # but many of which have different grammatical roles otherwise, eg. arrows, <, >.
 # Short of setting up TeX's complicated encoding machinery, I need an explicit
@@ -3326,6 +3335,8 @@ DefConstructor('\Bigg Token',"<ltx:XMWrap size='Bigg'>#1</ltx:XMWrap>",
 Let('\vert','|');
 ##DefMath('\Vert',"\x{2225}", role=>'VERTBAR'); # PARALLEL TO
 Let('\Vert','\|');
+
+
 #======================================================================
 # TeX Book, Appendix B. p. 360
 
