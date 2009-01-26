@@ -808,7 +808,6 @@ Let('\Breve', '\breve');
 Let('\Bar', '\bar');
 Let('\Vec', '\vec');
 
-DefMath('\mathring{}', "\x{030A}", operator_role=>'OVERACCENT'); # should be in latex???
 # And where does this go?
 DefPrimitive('\allowdisplaybreaks', undef);
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
