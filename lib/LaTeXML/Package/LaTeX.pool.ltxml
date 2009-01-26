@@ -269,6 +269,7 @@ map(Tag("ltx:$_", autoClose=>1),
     qw(part chapter section subsection subsubsection paragraph subparagraph));
 
 DefMacro('\@startsection@hook','');
+
 DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
   my($gullet,$type,$level,$ignore3,$ignore4,$ignore5,$ignore6,$flag)=@_;
   my $ctr = LookupValue('counter_for_'.ToString($type)) || ToString($type);
@@ -298,6 +299,7 @@ DefConstructor('\\@@section{}[][][]{}',sub {
 
 # Not sure if this is best, but if no explicit \section'ing...
 #### Tag('ltx:section',autoOpen=>1);
+
 #======================================================================
 # C.4.2 The Appendix
 #======================================================================
@@ -537,6 +539,7 @@ DefConstructor('\thanks{}', "<ltx:note class='thanks'>#1</ltx:note>");
 #   And of course, if it works, people do it.
 #   LaTeXML, however, MUST know when the abstract ends!
 #   So, we use the section hook, to say it must have ended by now (at least)
+# Probably there are other places (eg in titlepage?) that should force the close??
 DefEnvironment('{abstract}','',
  	       afterDigestBegin=>sub {
  		 AssignValue(inPreamble=>0);
@@ -1921,13 +1924,14 @@ DefConstructor('\@bibliography Semiverbatim',
 DefMacro('\refname','References');
 DefPrimitive('\bibstyle{}', undef);
 DefMacro('\bibliographystyle{}', '\bibstyle{#1}');
-DefEnvironment('{thebibliography}',
+
+# Should be an environment, but people seem to want to misuse it.
+DefConstructor('\thebibliography',
 	       "<ltx:bibliography xml:id='#id'>"
 	       . "<ltx:title>#refname</ltx:title>"
-	       . "<ltx:biblist>#body</ltx:biblist>"
-	       ."</ltx:bibliography>",
+	       . "<ltx:biblist>",
 	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
-	       afterDigestBegin=>sub { 
+	       afterDigest=>sub { 
 		 my($stomach)=@_;
 		 # NOTE that in some perverse situations (revtex?)
 		 # it seems to be allowable to omit the argument
@@ -1951,6 +1955,12 @@ DefEnvironment('{thebibliography}',
 		 Let(T_CS('\bibitem'),T_CS('\restoring@bibitem'));
 		 Let(T_CS('\par'),T_CS('\par@in@bibliography')); 
 	       });
+# Close the bibliography
+DefConstructor('\endthebibliography',
+	       "</ltx:biblist></ltx:bibliography>");
+# auto close the bibliography and contained biblist.
+Tag('ltx:biblist',autoClose=>1);
+Tag('ltx:bibliography',autoClose=>1);
 
 DefMacro('\par@in@bibliography',sub {
   my($gullet)=@_;
@@ -2077,7 +2087,7 @@ DefPrimitive('\input', sub {
   # HEURISTIC! First check if equivalent style file, but only IFF we are in preamble
   my ($dir,$name,$type) = pathname_split($path);
   my $newpath;
-  if((! $dir) && ($type eq 'tex') && LookupValue('inPreamble') &&
+  if((! $dir) && (!$type || ($type eq 'tex')) && LookupValue('inPreamble') &&
      ($newpath=FindFile($name,type=>'sty'))){
     Warn(":override Overriding input of $path with $newpath");
     RequirePackage($name); }
