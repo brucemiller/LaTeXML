@@ -63,6 +63,11 @@ DefMacro('\preprint{}', undef);
 DefMacro('\blankaffiliation','');
 DefMacro('\checkindate','\today');
 
+DefMacro('\received[]{}', '\@add@frontmatter{ltx:date}[role=received]{#2}');
+DefMacro('\revised[]{}',  '\@add@frontmatter{ltx:date}[role=revised]{#2}');
+DefMacro('\accepted[]{}', '\@add@frontmatter{ltx:date}[role=accepted]{#2}');
+DefMacro('\published[]{}','\@add@frontmatter{ltx:date}[role=published]{#2}');
+
 #======================================================================
 # 5. The body of the paper
 #======================================================================
