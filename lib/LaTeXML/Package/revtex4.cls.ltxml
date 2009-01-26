@@ -34,6 +34,10 @@ foreach my $pkg (qw(amsfonts amssymb amsmath)){
   DeclareOption($pkg, sub{ push(@revtex_toload,$pkg); return; });
   DeclareOption("no$pkg", sub{ @revtex_toload=grep($_ ne $pkg,@revtex_toload); return; }); }
 
+DeclareOption("osajnl",sub {
+  push(@revtex_toload,'graphics');
+  DefMacro('\ocis','\pacs'); });
+
 # Anything else is for article.
 DeclareOption(undef,sub {
   PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
