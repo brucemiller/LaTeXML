@@ -50,7 +50,7 @@ DefConstructor('\surname{}',"#1");
 DefMacro('\abstractname','Abstract');
 
 # 4.5
-DefConstructor('\pacs{}',"<ltx:text class='classification'>PACS. #1.</ltx:text>");
+DefMacro('\pacs{}','\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
 
 # 4.6
 DefMacro('\keywords{}','\@add@frontmatter{ltx:keywords}{#1}');
@@ -76,8 +76,17 @@ DefMacro('\mediumtext','');
 DefMacro('\endmediumtext','');
 
 # 5.5
-DefEnvironment('{acknowledgements}','#body');#defined, but... 
-DefEnvironment('{acknowledgments}','#body');
+# Normally, we'd define the acknowledgements environment simply as:
+# DefEnvironment('{acknowledgements}',
+# 	       "<ltx:acknowledgements>#body</ltx:acknowledgements>");
+# However, people seem to insist on "misusing" it, by just saying
+# \acknowledgements... which actually "works".
+# So, we just open it, and let it autoclose.
+DefConstructor('\acknowledgements',"<ltx:acknowledgements>");
+DefConstructor('\acknowledgments', "<ltx:acknowledgements>");
+DefConstructor('\endacknowledgements',"</ltx:acknowledgements>");
+DefConstructor('\endacknowledgments', "</ltx:acknowledgements>");
+Tag("ltx:acknowledgements", autoClose=>1);
 DefMacro('\acknowledgmentsname','Acknowledgements');
 
 # Extra stuff
@@ -141,17 +150,20 @@ Let('\textcite','\citet');
 
 
 # RevTeX3; Obsolete for RevTeX4 (but semi-implemented there)
-DefEnvironment('{references}', ## This can be commented out since it is obsolete.
+# Should be a simple environment, but tends to be misused, so define separately
+DefConstructor('\references',
 	       "<ltx:bibliography xml:id='#id'>"
 	       . "<ltx:title>#refname</ltx:title>"
-	       . "<ltx:biblist>#body</ltx:biblist>"
-	       ."</ltx:bibliography>",
-	       afterDigestBegin=>sub { 
+	       . "<ltx:biblist>",
+	       afterDigest=>sub { 
 		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
 		 ResetCounter('enumiv');
 		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
 		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
 		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  });
+DefConstructor('\endreferences',
+	       "</ltx:biblist></ltx:bibliography>");
+# bibliography and biblist are already set as autoClose.
 
 #======================================================================
 # 9. Figures and Artwork
