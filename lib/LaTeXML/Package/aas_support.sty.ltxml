@@ -197,19 +197,21 @@ RequirePackage('natbib');
 
 # Is this the right treatment?
 # Is the same true for RevTeX?
-DefEnvironment('{references}',
+DefConstructor('\references',
 	       "<ltx:bibliography xml:id='#id'>"
 	       . "<ltx:title>#refname</ltx:title>"
-	       . "<ltx:biblist>#body</ltx:biblist>"
-	       ."</ltx:bibliography>",
-	       afterDigestBegin=>sub { 
+	       . "<ltx:biblist>",
+	       afterDigest=>sub { 
 		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
 		 ResetCounter('enumiv');
 		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
 		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
 		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  
-		 # VERY dubious!
-		 Let(T_CS('\par'),T_CS('\non@bibitem')); });
+		 # Fix for missing \bibitems!
+		 setupPseudoBibitem(); });
+DefConstructor('\endreferences',
+	       "</ltx:biblist></ltx:bibliography>");
+
 Let(T_CS('\reference'),T_CS('\bibitem'));
 
 #======================================================================
