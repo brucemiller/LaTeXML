@@ -2226,8 +2226,8 @@ DefConstructor('&',sub { Error(":unexpected:& Stray alignment \"&\""); });
 # Properties for plain characters.
 # These are allowed in plain text, but need to act a bit special in math.
 DefMath('=','=', role=>'RELOP', meaning=>'equals');
-DefMath('>','>', role=>'RELOP', meaning=>'greater-than');
-DefMath('<','<', role=>'RELOP', meaning=>'less-than');
+#DefMath('>','>', role=>'RELOP', meaning=>'greater-than');
+#DefMath('<','<', role=>'RELOP', meaning=>'less-than');
 DefMath('+','+', role=>'ADDOP', meaning=>'plus');
 DefMath('-','-', role=>'ADDOP', meaning=>'minus');
 DefMath('*','*', role=>'MULOP', meaning=>'times');
@@ -2242,6 +2242,7 @@ DefMath('|','|', role=>'VERTBAR');
 
 #DefMath(':',';', role=>'METARELOP', name=>'colon'); # Seems like good default role
 
+# It seems that "MathLigature" should be adapted to make this sort of thing easy!
 AssignCatcode('math::'=>1, 'global');
 DefMacro(':',sub{
   my($gullet)=@_;
@@ -2252,6 +2253,31 @@ DefMacro(':',sub{
     T_CS('\@colon'); }});
 DefMath('\@colon',     ':', role=>'METARELOP', name=>'colon',reversion=>':'); # Seems like good default role
 DefMath('\@colonequal',':=', role=>'RELOP', meaning=>'assign',reversion=>':=');
+
+AssignCatcode('math:<'=>1, 'global');
+AssignCatcode('math:>'=>1, 'global');
+DefMacro('<',sub{
+  my($gullet)=@_;
+  if($gullet->ifNext(T_OTHER('<'))){
+    $gullet->readToken;
+    T_CS('\ll'); }
+  # leq ? hmmmm
+  else {
+    T_CS('\@@<'); }});
+
+DefMacro('>',sub{
+  my($gullet)=@_;
+  if($gullet->ifNext(T_OTHER('>'))){
+    $gullet->readToken;
+    T_CS('\gg'); }
+  elsif($gullet->ifNext(T_OTHER('='))){
+    $gullet->readToken;
+    T_CS('\geq'); }
+  else {
+    T_CS('\@@>'); }});
+
+DefMathI('\@@>',undef, '>', role=>'RELOP', meaning=>'greater-than', name=>'', reversion=>'>');
+DefMathI('\@@<',undef, '<', role=>'RELOP', meaning=>'less-than',    name=>'', reversion=>'<');
 
 #======================================================================
 # Combine letters, when the fonts are right. (sorta related to mathcode)
