@@ -237,6 +237,9 @@ DefPrimitive('\footnoterule',undef);
 
 # See Section 3.3.2 Mathematical Symbols, below
 
+# Should this be here?
+DefMath('\mathring{}', "\x{030A}", operator_role=>'OVERACCENT');
+
 #**********************************************************************
 # C.4 Sectioning and Table of Contents
 #**********************************************************************
@@ -1945,22 +1948,26 @@ DefConstructor('\thebibliography',
 		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
 		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
 		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  
-		 # Since SOME people seem to write bibliographies w/o \bibitem,
-		 # just blank lines between apparent entries,
-		 # Making \par do a \bibitem{} works, but screws up valid
-		 # bibliographies with blank lines!
-		 # So, let's do some redirection!
-		 Let(T_CS('\save@bibitem'),T_CS('\bibitem'));
-		 Let(T_CS('\save@par'),T_CS('\par'));
-		 Let(T_CS('\bibitem'),T_CS('\restoring@bibitem'));
-		 Let(T_CS('\par'),T_CS('\par@in@bibliography')); 
-	       });
+		 # Fix for missing \bibitems!
+		 setupPseudoBibitem(); });
+
 # Close the bibliography
 DefConstructor('\endthebibliography',
 	       "</ltx:biblist></ltx:bibliography>");
 # auto close the bibliography and contained biblist.
 Tag('ltx:biblist',autoClose=>1);
 Tag('ltx:bibliography',autoClose=>1);
+
+# Since SOME people seem to write bibliographies w/o \bibitem,
+# just blank lines between apparent entries,
+# Making \par do a \bibitem{} works, but screws up valid
+# bibliographies with blank lines!
+# So, let's do some redirection!
+sub setupPseudoBibitem {
+  Let(T_CS('\save@bibitem'),T_CS('\bibitem'));
+  Let(T_CS('\save@par'),T_CS('\par'));
+  Let(T_CS('\bibitem'),T_CS('\restoring@bibitem'));
+  Let(T_CS('\par'),T_CS('\par@in@bibliography'));  }
 
 DefMacro('\par@in@bibliography',sub {
   my($gullet)=@_;
