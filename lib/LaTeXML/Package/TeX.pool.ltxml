@@ -2813,6 +2813,11 @@ DefConstructor('\ ',"?#isMath(<ltx:XMHint name='medspace'/>)(".UTF(0xA0).")",
 DefConstructor('\/',"?#isMath(<ltx:XMHint name='italiccorr'/>)()",
 	      properties=>{isSpace=>1});
 
+# What kind of magic might allow \mskip to translate these back into the above?
+DefMacro('\thinmuskip', "3 mu");
+DefMacro('\medmuskip',  "4mu plus 2mu minus 4mu");
+DefMacro('\thickmuskip',"5mu plus 5mu");
+
 #======================================================================
 # TeX Book, Appendix B. p. 358
 
