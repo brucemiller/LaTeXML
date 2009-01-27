@@ -15,7 +15,11 @@ use strict;
 use LaTeXML::Package;
 use LaTeXML::Util::KeyVal;
 
-#**********************************************************************
+#======================================================================
+# Leverage the BibTeX implementation
+#======================================================================
+RequirePackage('BibTeX',type=>'pool');
+
 # \bib{key}{type}{keyval pairs}
 
 DefParameterType('BibURL',sub {
@@ -33,209 +37,35 @@ DefParameterType('BibURL',sub {
   semiverbatim=>1);
 
 DefKeyVal('amsrefs','url','BibURL');
-DefKeyVal('amsrefs','author','BibName');
-DefKeyVal('amsrefs','editor','BibName');
-DefKeyVal('amsrefs','translator','BibName');
 
 # \bib{key}{type}{keyval-pairs}
 DefMacro('\bib{}{} RequiredKeyVals:amsrefs', sub{
   my($gullet,$key,$type,$keyvals)=@_;
-  my @body = ();
+  $key = CleanBibKey(ToString($key));
   my @rawpairs = $keyvals->getPairs;
-  my($mrrev,$mrnum);
-  my($zblrev,$zblnum);
-  my @pairs;
+  my @fields;
   while(@rawpairs){
-    my($field,$value)=(shift(@rawpairs),shift(@rawpairs));
-    $field=lc($field);
-    if   ($field eq 'mrreviewer') { $mrrev = $value; }
-    elsif($field eq 'mrnumber')   { $mrnum = $value; }
-    elsif($field eq 'zblreviewer'){ $zblrev = $value; }
-    elsif($field eq 'zblno')      { $zblnum = $value; }
-    else { push(@pairs,$field,$value); }}
-  while(@pairs){
-    my($field,$value)=(shift(@pairs),shift(@pairs));
-    $field=lc($field);
-    my $cmd = T_CS('\amsrefs@'.$field);
-    if(LookupDefinition($cmd)){
-      push(@body,$cmd,$value->unlist); }
-    else {
-      push(@body,T_CS('\amsrefs@default'),T_OTHER($field),$value->unlist); }}
-  if($mrnum || $mrrev){
-    push(@body,T_CS('\amsrefs@mr'),
-	 ($mrnum ? $mrnum->unlist : (T_BEGIN,T_END)),
-	 ($mrrev ? $mrrev->unlist : (T_BEGIN,T_END)));}
-  if($zblnum || $zblrev){
-    push(@body,T_CS('\amsrefs@zbl'),
-	 ($zblnum ? $zblnum->unlist : (T_BEGIN,T_END)),
-	 ($zblrev ? $zblrev->unlist : (T_BEGIN,T_END)));}
-  Invocation(T_CS('\@bib'),$key,$type,Tokens(@body))->unlist; });
+    push(@fields, [lc(shift(@rawpairs)),ToString(shift(@rawpairs))]); }
+  AssignValue('BIBENTRY@'.$key=>LaTeXML::Bib::BibEntry->new(ToString($type),$key,@fields));
+  Invocation(T_CS('\ProcessBibTeXEntry'),T_OTHER($key)); });
 
-DefConstructor('\@bib{}{}{}',
-		 "<ltx:bibentry key='#key' xml:id='#id' type='#2'>#3</ltx:bibentry>",
-	       afterDigest=>sub {
-		 my($stomach,$whatsit)=@_;
-		 my $key = CleanBibKey($whatsit->getArg(1));
-		 my $id  = ToString(Expand(T_CS('\thebibliography@ID'))).".".$key;
-		 # colon isn't quite allowed (must look like namespace prefix!)
-		 $id =~ s/:/../g; # Hopefully this is unique enough
-		 $_[1]->setProperties(key=>$key, id=>$id); });
+#======================================================================
+DefEnvironment('{bibdiv}',
+	       "<ltx:bibliography xml:id='#id'>"
+	       . "<ltx:title>#refname</ltx:title>"
+	       . "#body"
+	       ."</ltx:bibliography>",
+	       afterDigestBegin=>sub { 
+		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
+		 ResetCounter('enumiv');
+		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
+		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
+		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  
+	       });
 
-DefConstructor('\amsrefs@default{}{}',
-	       "<ltx:bib-random field='#1'>#2</ltx:bib-random>");
-
-DefConstructor('\amsrefs@key{}',          "<ltx:bib-key>#1</ltx:bib-key>");
-DefConstructor('\amsrefs@type{}',         "<ltx:bib-type>#1</ltx:bib-type>");
-
-DefConstructor('\amsrefs@author{}',       "<ltx:bib-name role='author'>#1</ltx:bib-name>");
-DefConstructor('\amsrefs@editor{}',       "<ltx:bib-name role='editor'>#1</ltx:bib-name>");
-DefConstructor('\amsrefs@translator{}',   "<ltx:bib-name role='translator'>#1</ltx:bib-name>");
-
-DefConstructor('\amsrefs@date{}',         "<ltx:bib-date>#1</ltx:bib-date>");
-Let('\amsrefs@year','\amsrefs@date');
-
-DefConstructor('\amsrefs@title{}',        "<ltx:bib-title>#1</ltx:bib-title>");
-DefConstructor('\amsrefs@subtitle{}',     "<ltx:bib-subtitle>#1</ltx:bib-subtitle>");
-DefConstructor('\amsrefs@booktitle{}',    "<ltx:bib-booktitle>#1</ltx:bib-booktitle>");
-
-DefConstructor('\amsrefs@journal{}',      "<ltx:bib-journal>#1</ltx:bib-journal>");
-DefConstructor('\amsrefs@series{}',       "<ltx:bib-series>#1</ltx:bib-series>");
-DefConstructor('\amsrefs@conference{}',   "<ltx:bib-conference>#1</ltx:bib-conference>");
-DefConstructor('\amsrefs@volume{}',       "^<ltx:bib-part role='volume'>#1</ltx:bib-part>");
-DefConstructor('\amsrefs@number{}',       "^<ltx:bib-part role='number'>#1</ltx:bib-part>");
-DefConstructor('\amsrefs@part{}',         "^<ltx:bib-part role='part'>#1</ltx:bib-part>");
-DefConstructor('\amsrefs@edition{}',      "<ltx:bib-edition>#1</ltx:bib-edition>");
-DefConstructor('\amsrefs@status{}',       "<ltx:bib-status>#1</ltx:bib-status>");
-
-DefConstructor('\amsrefs@publisher{}',    "<ltx:bib-publisher>#1</ltx:bib-publisher>");
-DefConstructor('\amsrefs@organization{}', "<ltx:bib-organization>#1</ltx:bib-organization>");
-DefConstructor('\amsrefs@institution{}',  "<ltx:bib-institution>#1</ltx:bib-institution>");
-DefConstructor('\amsrefs@address{}',      "<ltx:bib-address>#1</ltx:bib-address>");
-Let('\amsrefs@place','\amsrefs@address');
-
-DefConstructor('\amsrefs@pages{}',        "<ltx:bib-pages>#1</ltx:bib-pages>");
-
-DefConstructor('\amsrefs@language{}',    "<ltx:bib-language>#1</ltx:bib-language>");
-DefConstructor('\amsrefs@url{}',         "<ltx:bib-url href='#1'>Link</ltx:bib-url>");
-DefConstructor('\amsrefs@eprint{}',      "<ltx:bib-links>#1</ltx:bib-links>");
-DefConstructor('\amsrefs@note{}',        "<ltx:bib-note>#1</ltx:bib-note>");
-
-DefConstructor('\amsrefs@issn{}',
-	       "<ltx:bib-identifier scheme='issn' id='#id'>ISSN #1</ltx:bib-identifier>",
-	       properties=>sub { (id=>ToString($_[1])); });
-DefConstructor('\amsrefs@isbn{}',
-	       "<ltx:bib-identifier scheme='isbn' id='#id'>ISBN #1</ltx:bib-identifier>",
-	       properties=>sub { (id=>ToString($_[1])); });
-DefConstructor('\amsrefs@doi{}',
-	       "<ltx:bib-identifier scheme='doi' id='#1' href='#href'>Document</ltx:bib-identifier>",
-	       properties=>sub { 
-		 my $id = ToString($_[1]);
-		 (id=>$id, href=>"http://dx.doi.org/$id"); });
-DefConstructor('\amsrefs@review{}',
-	       "<ltx:bib-review>Review #1</ltx:bib-review>");
-DefConstructor('\amsrefs@mr {}{}',
-	       "?#isreview"
-	       . "(?#reviewer"
-	       .   "(<ltx:bib-review scheme='mr' id='#id' href='#href'>MathReview (#reviewer)</ltx:bib-review>)"
-	       .   "(<ltx:bib-review scheme='mr' id='#id' href='#href'>MathReview</ltx:bib-review>))"
-	       . "(<ltx:bib-identifier scheme='mr' id='#id' href='#href'>MathReview Entry</ltx:bib-identifier>)",
-	       properties=>sub {
-		 my $id = ToString($_[1]);
-		 my $reviewer = $_[2];
-		 my $isreview = ToString($reviewer) ne '';
-		 if($id =~ /^\s*MR(\d+)\s+\(.*\)\s*$/){ # If extra number, there's a review
-		   $id = $1; $isreview = 1; }
-		 my $href ="http://www.ams.org/mathscinet-getitem?mr=".$id;
-		 (isreview=>$isreview, id=>$id, href=>$href, reviewer=>$reviewer); });
-
-DefConstructor('\amsrefs@zbl {}{}',
-	       "?#reviewer"
-	       . "(<ltx:bib-review scheme='zbl' id='#id' href='#href'>ZentralBlatt (#reviewer)</ltx:bib-review>)"
-	       . "(<ltx:bib-review scheme='zbl' id='#id' href='#href'>ZentralBlatt</ltx:bib-review>)",
-	       properties=>sub {
-		 my $id = ToString($_[1]);
-		 my $reviewer = $_[2];
-		 my $href ="http://www.zentralblatt-math.org/zmath/en/search/?q=an:$id";
-		 (id=>$id, href=>$href, reviewer=>$reviewer); });
-
-# Recognize names in BibTeX formats:
-#   First von Last
-#   von Last, First
-#   von Last, Jr, First
-
-sub ReadBibName {
-  my($gullet)=@_;
-  my $entry = $gullet->readArg();
-  my @tokens = $entry->unlist;
-  # First phase of analysis: Break the entry into words, phrases,
-  # while respecting the `protection' of braces and noticing
-  # commas, von prefixes.
-  my @groups=();
-  my @phrase=();
-  my @word=();
-  my ($vonsplit)=(0);
-  while(my $tok = shift(@tokens)){
-    if($tok->equals(T_BEGIN)){	# Collect up balanced brace, temporarily treat group as letter.
-      my $level=1;
-      my @x=($tok);
-      while($level && ($tok = shift(@tokens))){
-	if($tok->equals(T_BEGIN)){ $level++; }
-	elsif($tok->equals(T_END)){ $level--; }
-	push(@x,$tok); }
-      push(@word,Tokens(@x)); }
-    elsif($tok->equals(T_OTHER(','))){
-      push(@phrase,[@word]); @word=();
-      push(@groups,[@phrase]); @phrase=(); }
-    elsif(($tok->equals(T_SPACE)) || ($tok->equals(T_ACTIVE('~')))){
-      if(@word){
-	push(@phrase,[@word]); @word=(); }}
-    elsif(!scalar(@word) && !$vonsplit
-	  && ($tok->getCatcode == CC_LETTER) && ($tok->getString =~ /[a-z]/)){
-      push(@word,$tok);
-      push(@groups,[@phrase]); @phrase=(); $vonsplit=1; }
-    else {
-      push(@word,$tok); }}
-  push(@phrase,[@word]) if @word;
-  push(@groups,[@phrase]) if @phrase;
-
-  # Having split the entry into phrases, recognize the pattern of name components
-  my($surname,$given,$jr);
-  if($vonsplit){
-    ($given,$surname,$jr)= @groups; }
-  elsif(scalar(@groups)>2) {
-    ($surname,$jr,$given)=@groups; }
-  elsif((scalar(@groups)==1) && (scalar(@{$groups[0]})>1)){
-    ($surname,$given)= ([pop(@{$groups[0]})],$groups[0]); }
-  else {
-    ($surname,$given)=@groups; }
-  my $initials= ($given? [map([$_->[0],T_OTHER('.')], @$given)] : undef);
-
-  Tokens( T_BEGIN,
-	  ($surname  ? flatten_name_component('\bib@surname',$surname) :()),
-	  ($given    ? flatten_name_component('\bib@given',$given) :()),
-	  ($initials ? flatten_name_component('\bib@initials',$initials) :()),
-	  ($jr       ? flatten_name_component('\bib@lineage',$jr) :()),
-	  T_END); }
-
-sub flatten_name_component {
-  my($cs,$component)=@_;
-  my @tokens = ();
-  foreach my $word (@$component){
-    push(@tokens,T_SPACE) if @tokens;
-    push(@tokens,map($_->unlist,@$word)); }
-  LookupDefinition(T_CS($cs))->invocation(Tokens(@tokens)); }
-
-
-DefConstructor('\bib@surname{}',  "<ltx:surname>#1</ltx:surname>");
-DefConstructor('\bib@given{}',    "<ltx:givenname>#1</ltx:givenname>");
-DefConstructor('\bib@initials{}', "<ltx:initials>#1</ltx:initials>");
-DefConstructor('\bib@lineage{}',  "<ltx:lineage>#1</ltx:lineage>");
-
-DefEnvironment('{bibdiv}','#body');
 DefEnvironment('{biblist}',"<ltx:biblist>#body</ltx:biblist>");
 
-
-#**********************************************************************
+#======================================================================
 # Other Defns (presumably from textcmds?)
 
 DefConstructor('\MR{}',
