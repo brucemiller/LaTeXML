@@ -1,0 +1,27 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  bbm                                                                | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+#
+# See amsfndoc
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+#
+DefConstructor('\mathbbm{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'blackboard'});
+# This should be both blackboard AND sansserif, but those are conflicting families!
+# Seemingly the blackboard is the most important?
+DefConstructor('\mathbbmss{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'blackboard'});
+# Ditto blackboard and typewriter...
+DefConstructor('\mathbbmtt{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'blackboard'});
+
+
+1;
