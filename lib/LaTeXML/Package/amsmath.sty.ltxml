@@ -69,9 +69,9 @@ DefConstructor('\tag OptionalMatch:* {}', '',
 	       mode=>'text');
 
 DefMacro('\@ams@intertext{}',
-	 '\multicolumn{1}{l}{\@@ams@intertext{#1}}\nonumber\@alignment@newline');
+	 '\@alignment@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@alignment@newline');
 DefConstructor('\@@ams@intertext{}',
-	       "<ltx:block class='intertext'>#1</ltx:block>");
+	       "<ltx:block class='intertext'>#1</ltx:block>", mode=>'text');
 
 sub amsalignBindings {
   my($template)=@_;
@@ -182,6 +182,8 @@ sub processAMSGatherRows {
     if((scalar(@cells)==1) && (scalar(@cell1cont)==1)
        && ($document->getNodeQName($cell1cont[0]) eq 'ltx:block')){
       $equation->replaceNode($cell1cont[0]); } # Replace equation with the block.
+    elsif((scalar(@cells)==1) && (scalar(@cell1cont)==0)){ # Empty row? Remove it!
+      $equationgroup->removeChild($equation); }
     else {
       equationgroupFlattenCols($document,$equation); }}}
 
@@ -237,6 +239,8 @@ sub processAMSAlignRows {
     if((scalar(@cells)==1) && (scalar(@cell1cont)==1)
        && ($document->getNodeQName($cell1cont[0]) eq 'ltx:block')){
       $equation->replaceNode($cell1cont[0]); } # Replace equation with the block.
+    elsif((scalar(@cells)==1) && (scalar(@cell1cont)==0)){ # Empty row? Remove it!
+      $equationgroup->removeChild($equation); }
     else {
       equationgroupJoinCols($document,2,$equation); }}}
 
