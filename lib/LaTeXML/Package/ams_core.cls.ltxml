@@ -114,6 +114,13 @@ DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\subjclass[Default:1991]{}',
 	 '\@add@frontmatter{ltx:classification}[scheme={#1 Mathematics Subject Classification}]{#2}');
 
+DefMacro('\copyrightinfo{}{}',
+	 '\@add@frontmatter{ltx:note}[class=copyright]{\copyright #1: #2}');
+
+DefMacro('\pagespan{}{}','');	# ?
+DefMacro('\PII{}',
+	 '\@add@frontmatter{ltx:classification}[scheme=PII]{#1}');
+
 # #======================================================================
 # # Sec. 5. Document Body
 
