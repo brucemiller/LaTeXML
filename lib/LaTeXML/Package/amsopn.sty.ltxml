@@ -45,6 +45,9 @@ DefMath('\varprojlim','\underleftarrow{\lim}',
 DefConstructor('\operatorname OptionalMatch:* {}',
 	       "<ltx:XMWrap role='OPERATOR' scriptpos='?#1(mid)(post)'>#2</ltx:XMWrap>",
 	       bounded=>1, requireMath=>1, font=>{family=>'serif'});
+DefConstructor('\operatornamewithlimits {}',
+	       "<ltx:XMWrap role='OPERATOR' scriptpos='mid'>#1</ltx:XMWrap>",
+	       bounded=>1, requireMath=>1, font=>{family=>'serif'});
 
 #**********************************************************************
 1;
