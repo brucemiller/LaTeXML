@@ -341,7 +341,8 @@ DefMacro('\ifx Token Token', sub {
   if(defined $def1 != defined $def2){	       # Don't both have defs or not have defs
     $bool=0; }
   elsif(!defined $def1 && !defined $def2){	# Neither have defs
-    $bool = $_[1]->equals($_[2]); }		# compare the tokens themselves.
+    $bool = ($token1->getCatcode  == $token2->getCatcode)
+      &&    ($token1->getCharcode == $token2->getCharcode); }
   elsif($def1->equals($def2)){	# Same defn (hopefully covers same primitives ???)
     $bool = 1; }		# But what about same \chardefs, etc....
   ifHandler($gullet,$bool); },
@@ -1331,6 +1332,8 @@ DefMacro('\multispan{Number}', sub {
 
 DefRegisterI('\@alignment@ncolumns',undef,Dimension(0),
 	       getter=>sub { Number(scalar(LookupValue('Alignment')->getTemplate->columns)); });
+DefRegisterI('\@alignment@column',undef,Dimension(0),
+	       getter=>sub { Number(LookupValue('Alignment')->currentColumnNumber); });
 
 DefMacro('\@multicolumn {Number}  AlignmentTemplate {}', sub {
   my($gullet,$span,$template,$tokens)=@_;
@@ -1851,10 +1854,25 @@ sub replace_node {
 
 Let('\vcenter', '\vbox');
 
-# May need further work to integrate; probably needs to be displayed,
-# and should be added as refnum attribute to some container.
-DefMacro('\eqno Until:$', '\@@eqno{#1}$');
-DefMacro('\leqno Until:$', '\@@eqno{#1}$');
+# Really should just be defined as:
+#   DefMacro('\eqno Until:$', '\@@eqno{#1}$');
+# but this messes up use in latex (since \endequation expands into $...)
+# How can I know
+DefMacro('\eqno',sub {
+  my($gullet)=@_;
+  my @stuff=();
+  # This is risky!!!
+  while(my $t = $gullet->readXToken){
+    if(! defined $t){
+      Fatal(":unexpected:\eqno fell of the end!"); }
+    # What do I need to explicitly list here!?!?!? UGGH!
+    elsif(Equals($t,T_MATH)
+       || Equals($t,T_CS('\end{equation}'))|| Equals($t,T_CS('\end{equation*}'))){
+      return (Invocation(T_CS('\@@eqno'),Tokens(@stuff)), $t); }
+    else {
+      push(@stuff,$t); }}});
+
+Let('\leqno','\eqno');
 # Revert to nothing, since it really doesn't belong in the TeX string(?)
 DefConstructor('\@@eqno{}',"^ refnum='#eqnum'",
 	       reversion=>'',
