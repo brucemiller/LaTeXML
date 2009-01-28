@@ -1005,6 +1005,7 @@ our $require_options = {options=>1, withoptions=>1, type=>1, raw=>1, after=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   $package = ToString($package) if ref $package;
+  $package =~ s/^\s*//;  $package =~ s/\s*$//;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
   $options{type} = 'sty' unless $options{type};
   my $type = $options{type};
@@ -1038,6 +1039,7 @@ our $loadclass_options = {options=>1, withoptions=>1, after=>1};
 sub LoadClass {
   my($class,%options)=@_;
   $class = ToString($class) if ref $class;
+  $class =~ s/^\s*//;  $class =~ s/\s*$//;
   CheckOptions("LoadClass ($class)",$loadclass_options,%options);
   $options{type} = 'cls' unless $options{type};
   my $type = $options{type};
