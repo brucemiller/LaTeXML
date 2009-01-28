@@ -367,8 +367,13 @@ sub clone {
 sub show {
   my($self)=@_;
   my @strings=();
+  push(@strings,"\nColumns:\n");
   foreach my $col(@{$$self{columns}}){
     push(@strings, "\n{".join(', ',map("$_=>".Stringify($$col{$_}),keys %$col)).'}'); }
+  if($$self{repeating}){
+    push(@strings,"\nRepeated Columns:\n");
+    foreach my $col(@{$$self{repeated}}){
+      push(@strings, "\n{".join(', ',map("$_=>".Stringify($$col{$_}),keys %$col)).'}'); }}
   join(', ',@strings); }
 
 sub column {
