@@ -696,8 +696,15 @@ DefMacro('\descriptionlabel{}','#1');
 # These are unlikely to generate what is wanted, but list, trivlist
 # don't give enough idea of the logical structure.
 # And, they can contain \item, so we need some list-like structure.
+# \begin{list}{number counter}{prelim}
 DefEnvironment('{list}{}{}',
-	       "<ltx:itemize default_label='#1' declarations='#2'>#body</ltx:itemize>");
+	       "<ltx:itemize>#body</ltx:itemize>",
+	       properties=>sub { beginItemize('list'); });
+
+DefConstructor('\list@item[]',
+	       "<ltx:item xml:id='#id'>?#1(<ltx:tag>#1</ltx:tag>)",
+	       properties=>sub{ RefStepItemCounter(); });
+
 DefEnvironment('{trivlist}',
 	       '<ltx:itemize><ltx:item>#body</ltx:itemize>');
 
