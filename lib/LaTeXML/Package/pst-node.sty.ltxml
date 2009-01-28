@@ -42,8 +42,8 @@ DefParameterType('RoundParenFloat',\&ReadRoundParenFloat,
 sub storeNode {
   my ($name, $address) = @_;
   $name = ToString($name);
-  AssignValue('_psNODE'.$name, ActiveTransform->apply($address || ZeroPair()), 'global'); }
-sub getNode { ActiveTransform->unapply(LookupValue('_psNODE'.ToString($_[0])) || ZeroPair()); }
+  AssignValue('_psNODE'.$name, ActiveTransform()->apply($address || ZeroPair()), 'global'); }
+sub getNode { ActiveTransform()->unapply(LookupValue('_psNODE'.ToString($_[0])) || ZeroPair()); }
 
 sub nConnShiftUp {
   my ($p) = @_;
@@ -123,7 +123,8 @@ sub getDefaultLabelPos {
   $defaultLabelPos{$cmd} || 0.5; }
 
 sub nodeExt {
-  my ($N, $arm, $angle) = @_; $angle = radians($angle);
+  my ($N, $arm, $angle) = @_; 
+  $angle = radians((ref $angle ? $angle->valueOf : $angle));
   Pair($N->getX->add($arm->multiply(cos($angle))), $N->getY->add($arm->multiply(sin($angle)))); }
 sub nodeExtA { nodeExt($_[0], LookupValue('\psarmA'), LookupValue('\psangleA')); }
 sub nodeExtB { nodeExt($_[0], LookupValue('\psarmB'), LookupValue('\psangleB')); }

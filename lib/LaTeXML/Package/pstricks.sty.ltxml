@@ -165,7 +165,9 @@ DefParameterType('Arrows',\&ReadArrows,
 
   sub revert     { (Explode($_[0][2]), (ref $_[0][1] ? $_[0][1]->revert() : Explode($_[0][1]))); }
 
-  1; }
+  1; 
+}
+
 sub ReadPSAngle {
   my($gullet)=@_;
   $gullet->skipSpaces; my $pre = '';
@@ -254,6 +256,7 @@ $PSArrow = "terminators='#terminators' arrowlength='#arrowlength'";
 	       unit=>1, xunit=>1, yunit=>1, runit=>1, arcsep=>1, arcsepA=>1,
 	       arcsepB=>1, arrows=>1, origin=>1, dash=>1, doublesep=>1, arrowsize=>1,
 	       arrowinset=>1, arrowlength=>1, dotsize=>1, tbarsize=>1, dotangle=>1,
+	       angleA=>1, angleB=>1, arcangle=>1, arcangleA=>1, arcangleB=>1,
 	       dotsep=>1);
 
 %KeyHasABVariants = (arcsep=>1);
