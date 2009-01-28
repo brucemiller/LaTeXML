@@ -224,27 +224,6 @@ DefParameterType('DigestedBody', sub {
 #   0 : skip to \fi
 #  -1 : skip to \else, if any, or \fi
 #   n : skip to n-th \or, if any, or \else, if any, or \fi.
-sub XXXskipConditionalBody {
-  my($gullet,$nskips)=@_;
-  my $fi_def   = LookupDefinition(T_CS('\fi'));
-  my $or_def   = LookupDefinition(T_CS('\or'));
-  my $else_def = LookupDefinition(T_CS('\else'));
-  my $level=1;
-  my $n_ors = 0;
-  while(my $t= $gullet->readToken){
-    if(defined(my $defn = LookupDefinition($t))){
-      if($defn->isExpandable && $defn->isConditional){
-	$level++; }
-      elsif(($defn eq $fi_def) && (!--$level)){
-	fiHandler($gullet); return; }
-      elsif($level > 1){	# Ignore nested \else,\or
-      }
-      elsif(($defn eq $or_def) && (++$n_ors == $nskips)){
-	return; }
-      elsif(($defn eq $else_def) && $nskips){
-	return; }}}
-  Fatal(":expected:\\fi Missing \\fi or \\else, conditional fell off end"); }
-
 sub skipConditionalBody {
   my($gullet,$nskips)=@_;
   my $level=1;
@@ -996,7 +975,8 @@ DefParameterType('BoxSpecification',sub {
 # but parameter think's it's just parsing from gullet...
 DefParameterType('BoxContents',sub {
   my($gullet)=@_;
-  $gullet->readUntil(T_BEGIN);
+  my $t;
+  while(($t=$gullet->readToken) && !Equals($t,T_BEGIN)){} # Skip till { or \bgroup
   my($contents,@stuff) = $STATE->getStomach->invokeToken(T_BEGIN);
   $contents; },
 		 undigested=>1); # Cause it already is digested!
@@ -1014,7 +994,7 @@ DefConstructor('\hbox BoxSpecification BoxContents',
 # SHOULD Be a little smarter: if we're already in a block level context, don't open inline-block
 # but that doesn't really quite capture the logic....
 DefConstructor('\vbox BoxSpecification BoxContents', 
-"<ltx:inline-block vattach='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
+ "<ltx:inline-block vattach='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
 # sub {		 my($document,$spec,$content)=@_;
 # 		 if($document->isOpenable('ltx:block')){ # If already at block level
 # 		   $document->absorb($content); }
@@ -1024,8 +1004,7 @@ DefConstructor('\vbox BoxSpecification BoxContents',
 # 					    vattach=>'bottom',
 # 					    height=>$spec && $$spec{height},
 # 					    'pad-height'=>$spec && $$spec{spread}); }},
-
-	       mode=>'text');
+ 	       mode=>'text');
 
 DefConstructor('\vtop BoxSpecification BoxContents', 
  "<ltx:inline-block vattach='top' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
@@ -1373,6 +1352,7 @@ sub alignmentBindings {
   Let(T_CS("\\\\"),   T_CS('\@alignment@newline'));
   Let(T_CS('\tabularnewline'),   T_CS('\@alignment@newline'));
   Let(T_CS('\cr'),    T_CS('\@alignment@cr'));
+  Let(T_CS('\crcr'),  T_CS('\@alignment@cr'));
   Let(T_CS('\hline'), T_CS('\@alignment@hline'));
   Let(T_CS('\hrule'), T_CS('\@alignment@hrule'));
   Let(T_CS('\vrule'), T_CS('\@alignment@vrule'));
@@ -1584,32 +1564,82 @@ sub afterCellUnlist {
 #----------------------------------------------------------------------
 # \halign, See Chap.22
 
-DefPrimitive('\halign BoxSpecification {}', sub {
+DefPrimitive('\halign BoxSpecification', sub {
   my($stomach,$spec,$contents)=@_;
-  my @tokens = $contents->unlist;
+  my $gullet=$stomach->getGullet;
+  my $t = $gullet->readNonSpace;
+  Error(":expected:\\bgroup Missing \\halign box") unless Equals($t,T_BEGIN);
+
+  $stomach->bgroup; 
+  Let(T_ALIGN,'\undefined');	# KEEP these from being expanded here!!!
+  Let('\span','\undefined');
+  Let('\omit','\undefined');
+  # Read the template up till something equivalent to \cr
   my @template = ();
-  my $t;
-  while(@tokens && !Equals($t=shift(@tokens), T_CS('\cr'))){
+  while(($t=$gullet->readXToken) && !Equals($t,T_CS('\cr'))){
     push(@template,$t); }
-  my $template = LaTeXML::AlignmentTemplate->new();
-  my $b=1;
+
+  # Read the rest until balanced }
+  my @tokens = ();
+  my $level=1;
+  while($level && ($t=$gullet->readXToken)){
+    if(Equals($t,T_BEGIN)){ $level++; }
+    elsif(Equals($t,T_END)){ $level--; }
+    push(@tokens,$t) if $level; }
+  $stomach->egroup; 
+
+  my $ismath     = $STATE->lookupValue('IN_MATH');
+  my $b=1;			# true if we're before a # in current column
   my @pre=();
-  foreach my $t (@template){
+  my @post=();
+  my @cols=();
+  my @nonreps=();
+  foreach my $t (@template, T_ALIGN){ # put & at end, to save column!
     if($t->equals(T_PARAM)){
-      $template->addColumn(before=>Tokens(@pre)); 
-      @pre=(); $b=0; }
+      $b=0; }
     elsif($t->equals(T_ALIGN)){
-      if($b){ $template->setRepeating; }
-      else {  $b=1; }}
+      if($b){ @nonreps=@cols; @cols=(); } # A & while we're before a column means Repeated columns
+      else {				  # Finished column spec; add it
+	# Try some magic for math, so we can create a valid math matrix (maybe!)
+	# DAMN \halign can't be in math, anyway.
+	# So, to get a matrix, we'll have to rewrite the alignment!
+ 	if($ismath){
+	  push(@pre,T_MATH); unshift(@post,T_MATH); }
+	push(@cols,{before=>Tokens(stripDupMath(beforeCellUnlist(Tokens(@pre)))),
+		    after =>Tokens(stripDupMath(afterCellUnlist(Tokens(@post))))});
+	@pre=@post=(); $b=1; }}
     elsif($b){
       push(@pre,$t) unless !@pre && $t->equals(T_SPACE); }
     else {
-      $template->addAfter($t); }}
+      push(@post,$t) unless !@post && $t->equals(T_SPACE); }}
+
+  my $template = LaTeXML::AlignmentTemplate->new((@nonreps ?
+						  (columns=>[@nonreps],repeated=>[@cols])
+						  :(columns=>[@cols])));
 #  print STDERR "Template = ".Stringify(Tokens(@template))."\n => ".$template->show."\n";
+
+  $stomach->bgroup;
   alignmentBindings($template);
-  Digest(Invocation(T_CS('\@halign'),
-		    $spec,Tokens(@template),
-		    Tokens(T_CS('\@start@alignment'),@tokens,T_CS('\@finish@alignment')))); });
+  my @boxes = Digest(Invocation(T_CS('\@halign'),
+				$spec,Tokens(@template),
+				Tokens(T_CS('\@start@alignment'),
+				       @tokens,
+				       T_CS('\@finish@alignment'))));
+  $stomach->egroup; 
+  @boxes; });
+
+# Cleanup the pre & post tokens for halign columns in math mode.
+# If a pair of $..$ enclose stuff that is "OK" in math mode, we don't need the $.
+# Note that the 1st $ is switching OUT of math mode!
+sub stripDupMath {
+   my(@tokens)=@_;
+   my @poss = grep(Equals($tokens[$_],T_MATH), 0..$#tokens);
+###   pop(@poss) if scalar(@poss) % 2; # Get pairs!
+   shift(@poss) if scalar(@poss) % 2; # Get pairs!
+   while(@poss){
+     my($p2,$p1)=(pop(@poss),pop(@poss));
+     splice(@tokens,$p1,2) if $p2==$p1+1; }
+   @tokens; }
 
 DefConstructor('\@halign BoxSpecification Undigested {}', 
 	       sub {
