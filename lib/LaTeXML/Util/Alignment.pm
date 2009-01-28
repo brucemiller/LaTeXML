@@ -432,7 +432,8 @@ sub guess_alignment_headers {
   if($n{d} == 1){			# Or any other heuristic?
     foreach my $r (@rows){
       foreach my $c (@$r){
-	$$c{cell_type}='d'; $$c{cell}->removeAttribute('thead'); }}}
+	$$c{cell_type}='d'; 
+	$$c{cell}->removeAttribute('thead') if $$c{cell}; }}}
   # Regroup the rows into thead & tbody elements.
   alignment_regroup($document,$table,@rows)
     unless $ismath;
