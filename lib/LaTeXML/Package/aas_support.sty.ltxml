@@ -67,6 +67,9 @@ DefMacro('\author{}',
 DefConstructor('\@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
 DefMacro('\affil{}','\@add@to@frontmatter{ltx:creator}{\@affiliation{#1}}');
 
+DefConstructor('\@authoraddr{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\authoraddr{}','\@add@to@frontmatter{ltx:creator}{\@authoraddr{#1}}');
+
 DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
 # Redefine to straight email address after document begin.
