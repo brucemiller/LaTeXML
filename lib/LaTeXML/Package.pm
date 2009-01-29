@@ -433,7 +433,7 @@ sub forbidMath() {
 # substituted for any #1,...), or a sub which returns a list of tokens (or just return;).
 # Those tokens, if any, will be reinserted into the input.
 # There are no options to these definitions.
-our $expandable_options = {isConditional=>1, scope=>1};
+our $expandable_options = {isConditional=>1, scope=>1, locked=>1};
 sub DefExpandable {
   my($proto,$expansion,%options)=@_;
   Warn(":misdefined:DefExpandable DefExpandable ($proto) is deprecated; use DefMacro");
@@ -441,7 +441,7 @@ sub DefExpandable {
 
 # Define a Macro: Essentially an alias for DefExpandable
 # For convenience, the $expansion can be a string which will be tokenized.
-our $macro_options = {isConditional=>1, scope=>1};
+our $macro_options = {isConditional=>1, scope=>1, locked=>1};
 sub DefMacro {
   my($proto,$expansion,%options)=@_;
   CheckOptions("DefMacro ($proto)",$macro_options,%options);
@@ -454,6 +454,7 @@ sub DefMacroI {
   $cs = coerceCS($cs);
   $STATE->installDefinition(LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options),
 			    $options{scope});
+  AssignValue(ToString($cs).":locked"=>1) if $options{locked};
   return; }
 
 sub RawTeX {
@@ -470,7 +471,8 @@ sub RawTeX {
 #    isPrefix  : 1 for things like \global, \long, etc.
 #    registerType : for parameters (but needs to be worked into DefParameter, below).
 
-our $primitive_options = {isPrefix=>1,scope=>1, requireMath=>1, forbidMath=>1,beforeDigest=>1};
+our $primitive_options = {isPrefix=>1,scope=>1, requireMath=>1,
+			  forbidMath=>1,beforeDigest=>1, locked=>1};
 sub DefPrimitive {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefPrimitive ($proto)",$primitive_options,%options);
@@ -486,6 +488,7 @@ sub DefPrimitiveI {
 									   $options{beforeDigest}),
 						    isPrefix=>$options{isPrefix}),
 			    $options{scope});
+  AssignValue(ToString($cs).":locked"=>1) if $options{locked};
   return; }
 
 our $register_options = {readonly=>1, getter=>1, setter=>1};
@@ -550,7 +553,7 @@ sub flatten {
 our $constructor_options = {mode=>1, requireMath=>1, forbidMath=>1, font=>1,
 			    reversion=>1, properties=>1, alias=>1, nargs=>1,
 			    beforeDigest=>1, afterDigest=>1, beforeConstruct=>1, afterConstruct=>1,
-			    captureBody=>1, scope=>1, bounded=>1};
+			    captureBody=>1, scope=>1, bounded=>1, locked=>1};
 sub DefConstructor {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefConstructor ($proto)",$constructor_options,%options);
@@ -581,7 +584,7 @@ sub DefConstructorI {
 				  captureBody => $options{captureBody},
 				  properties  => $options{properties}||{}),
 			    $options{scope});
-
+  AssignValue(ToString($cs).":locked"=>1) if $options{locked};
   return; }
 
 # DefMath Define a Mathematical symbol or function.
@@ -602,7 +605,7 @@ our $math_options = {name=>1, meaning=>1, omcd=>1, reversion=>1, alias=>1,
 		     role=>1, operator_role=>1, reorder=>1, dual=>1,
 		     style=>1, font=>1, size=>1,
 		     scriptpos=>1,operator_scriptpos=>1,
-		     beforeDigest=>1, afterDigest=>1, scope=>1, nogroup=>1};
+		     beforeDigest=>1, afterDigest=>1, scope=>1, nogroup=>1,locked=>1};
 our $XMID=0;
 sub next_id {
 ##  "LXID".$XMID++; }
@@ -745,6 +748,7 @@ sub DefMathI {
 	  .   join('',map("<ltx:XMArg>#$_</ltx:XMArg>", 1..$nargs))
 	  ."</ltx:XMApp>"),
          %common), $options{scope}); }
+  AssignValue(ToString($cs).":locked"=>1) if $options{locked};
   return; }
 
 #======================================================================
@@ -754,7 +758,7 @@ our $environment_options = {mode=>1, requireMath=>1, forbidMath=>1,
 			    properties=>1, nargs=>1, font=>1,
 			    beforeDigest=>1, afterDigest=>1, beforeConstruct=>1, afterConstruct=>1,
 			    afterDigestBegin=>1, beforeDigestEnd=>1,
-			    scope=>1};
+			    scope=>1, locked=>1};
 sub DefEnvironment {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefEnvironment ($proto)",$environment_options,%options);
@@ -823,6 +827,11 @@ sub DefEnvironmentI {
 				   afterDigest=>flatten($options{afterDigest},
 							($mode ? (sub { $_[0]->endMode($mode);}):())),
 				  ),$options{scope});
+  if($options{locked}){
+    AssignValue("\\begin{$name}:locked"=>1);
+    AssignValue("\\end{$name}:locked"=>1);
+    AssignValue("\\$name:locked"=>1);
+    AssignValue("\\end$name:locked"=>1); }
   return; }
 
 #======================================================================
