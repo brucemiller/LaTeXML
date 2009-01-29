@@ -134,6 +134,10 @@ sub getLocator {
       $loc .= show_pushback($$frame[1]) if $long; }}
   $loc; }
 
+sub getSource {
+  my($self)=@_;
+  defined $$self{mouth} && $$self{mouth}->getSource; }
+
 sub show_pushback {
   my($pb)=@_;
   my @pb = @$pb;
