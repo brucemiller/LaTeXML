@@ -168,7 +168,15 @@ sub lookupDefinition {
 # And a shorthand for installing definitions
 sub installDefinition {
   my($self,$definition,$scope)=@_;
-  assign_internal($self,'meaning',$definition->getCS->getCSName => $definition, $scope); }
+  # Locked definitions!!! (or should this test be in assignMeaning?)
+  # Ignore attempts to (re)define $cs from tex sources
+  my $cs= $definition->getCS->getCSName;
+  if($self->lookupValue("$cs:locked")){
+    if(my $s = $self->getStomach->getGullet->getSource){
+      if($s =~ /\.tex$/){
+	Warn(":override:$cs Ignoring redefinition of $cs in $s\n");
+	return; }}}
+  assign_internal($self,'meaning',$cs => $definition, $scope); }
 
 #======================================================================
 sub pushFrame {
