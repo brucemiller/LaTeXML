@@ -261,13 +261,13 @@ DefMath('\mathring{}', "\x{030A}", operator_role=>'OVERACCENT');
 
 # These are defined in terms of \@startsection so that
 # casual user redefinitions work, too.
-DefMacro('\chapter',       '\@startsection{chapter}{}{}{}{}{}');
-DefMacro('\part',          '\@startsection{part}{}{}{}{}{}');
-DefMacro('\section',       '\@startsection{section}{}{}{}{}{}');
-DefMacro('\subsection',    '\@startsection{subsection}{}{}{}{}{}');
-DefMacro('\subsubsection', '\@startsection{subsubsection}{}{}{}{}{}');
-DefMacro('\paragraph',     '\@startsection{paragraph}{}{}{}{}{}');
-DefMacro('\subparagraph',  '\@startsection{subparagraph}{}{}{}{}{}');
+DefMacro('\chapter',       '\@startsection{chapter}{}{}{}{}{}', locked=>1);
+DefMacro('\part',          '\@startsection{part}{}{}{}{}{}', locked=>1);
+DefMacro('\section',       '\@startsection{section}{}{}{}{}{}', locked=>1);
+DefMacro('\subsection',    '\@startsection{subsection}{}{}{}{}{}', locked=>1);
+DefMacro('\subsubsection', '\@startsection{subsubsection}{}{}{}{}{}', locked=>1);
+DefMacro('\paragraph',     '\@startsection{paragraph}{}{}{}{}{}', locked=>1);
+DefMacro('\subparagraph',  '\@startsection{subparagraph}{}{}{}{}{}', locked=>1);
 map(Tag("ltx:$_", autoClose=>1),
     qw(part chapter section subsection subsubsection paragraph subparagraph));
 
@@ -552,7 +552,8 @@ DefEnvironment('{abstract}','',
  		 push(@{$$frontmatter{'ltx:abstract'}},
  		      ['ltx:abstract',undef,@LaTeXML::LIST]);
 		 DefMacroI('\maybe@end@abstract','');
- 		 return; });
+ 		 return; },
+	       locked=>1);
 DefMacro('\maybe@end@abstract','\endabstract');
 
 DefMacro('\abstractname','Abstract'); # never used?
@@ -585,8 +586,8 @@ DefEnvironment('{titlepage}','<ltx:para class="titlepage">#body',
 						 beforeDigest=>sub { 
 						   Digest(T_CS('\maybe@end@title')); });
 				return; },
-	       beforeDigestEnd=>sub { Digest(T_CS('\maybe@end@title')); }
-	      );
+	       beforeDigestEnd=>sub { Digest(T_CS('\maybe@end@title')); },
+	       locked=>1);
 #DefConstructor('\title@cr[]',"<ltx:subtitle>",
 #	       beforeDigest=>sub {  Digest(T_CS('\maybe@end@title')); });
 
@@ -676,13 +677,16 @@ DefConstructor('\description@item[]',
   
 DefEnvironment('{itemize}',
 	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-	       properties=>sub { beginItemize('itemize'); });
+	       properties=>sub { beginItemize('itemize'); },
+	       locked=>1);
 DefEnvironment('{enumerate}',
 	       "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
-	       properties=>sub { beginItemize('enumerate'); });
+	       properties=>sub { beginItemize('enumerate'); },
+	       locked=>1);
 DefEnvironment('{description}',
 	       "<ltx:description  xml:id='#id'>#body</ltx:description>",
-	       properties=>sub { beginItemize('description'); });
+	       properties=>sub { beginItemize('description'); },
+	       locked=>1);
 DefMacro('\descriptionlabel{}','#1');
 
 # NOTE: Do I need to do anything with
@@ -818,14 +822,16 @@ DefEnvironment('{displaymath}',
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       properties=> sub { RefStepID('equation') });
+	       properties=> sub { RefStepID('equation') },
+	       locked=>1);
 DefEnvironment('{math}',
 	       "<ltx:Math mode='inline'>"
 	       . "<ltx:XMath>"
 	       .  "#body"
 	       . "</ltx:XMath>"
 	       ."</ltx:Math>",
-	       mode=>'inline_math');
+	       mode=>'inline_math',
+	       locked=>1);
 DefEnvironment('{equation}',
 	       "<ltx:equation xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:Math mode='display'>"
@@ -835,7 +841,8 @@ DefEnvironment('{equation}',
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       properties=> sub { RefStepCounter('equation') });
+	       properties=> sub { RefStepCounter('equation') },
+	       locked=>1);
 DefEnvironment('{equation*}',
 	       "<ltx:equation xml:id='#id'>"
 	       . "<ltx:Math mode='display'>"
@@ -845,7 +852,8 @@ DefEnvironment('{equation*}',
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       properties=> sub { RefStepID('equation') });
+	       properties=> sub { RefStepID('equation') },
+	       locked=>1);
 
 # Define \( ..\) and \[ ... \] to act like environments.
 DefConstructor('\[',
@@ -858,7 +866,8 @@ DefConstructor('\[',
 	       ."</ltx:equation>",
 	       beforeDigest=> sub{ $_[0]->beginMode('display_math'); },
 	       captureBody=>1,
-	       properties=> sub { RefStepID('equation') });
+	       properties=> sub { RefStepID('equation') },
+	       locked=>1);
 DefConstructor('\]'  ,"",beforeDigest=> sub{ $_[0]->endMode('display_math'); });
 DefConstructor('\(' ,
 	       "<ltx:Math mode='inline'>"
@@ -867,7 +876,8 @@ DefConstructor('\(' ,
 	       . "</ltx:XMath>"
 	       ."</ltx:Math>",
 	       beforeDigest=> sub{ $_[0]->beginMode('inline_math'); },
-	       captureBody=>1);
+	       captureBody=>1,
+	       locked=>1);
 DefConstructor('\)'   ,"", beforeDigest=> sub{ $_[0]->endMode('inline_math'); });
 
 # Keep from expanding too early, if in alignments, or such.
@@ -965,13 +975,17 @@ DefMacro('\lefteqn{}',
 # ========================================
 # eqnarray
 DefMacro('\eqnarray',
-	 '\@eqnarray@bindings\@@eqnarray\@equationgroup@number\@start@alignment');
+	 '\@eqnarray@bindings\@@eqnarray\@equationgroup@number\@start@alignment',
+	 locked=>1);
 DefMacro('\endeqnarray',
-	 '\@finish@alignment\end@eqnarray');
+	 '\@finish@alignment\end@eqnarray',
+	 locked=>1);
 DefMacro('\csname eqnarray*\endcsname',
-	 '\@eqnarray@bindings\@@eqnarray\@equationgroup@nonumber\@start@alignment');
+	 '\@eqnarray@bindings\@@eqnarray\@equationgroup@nonumber\@start@alignment',
+	 locked=>1);
 DefMacro('\csname endeqnarray*\endcsname',
-	 '\@finish@alignment\end@eqnarray');
+	 '\@finish@alignment\end@eqnarray',
+	 locked=>1);
 
 DefPrimitive('\@eqnarray@bindings', sub {
   eqnarrayBindings(); });
@@ -1962,11 +1976,13 @@ DefConstructor('\thebibliography',
 		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
 		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  
 		 # Fix for missing \bibitems!
-		 setupPseudoBibitem(); });
+		 setupPseudoBibitem(); },
+	      locked=>1);
 
 # Close the bibliography
 DefConstructor('\endthebibliography',
-	       "</ltx:biblist></ltx:bibliography>");
+	       "</ltx:biblist></ltx:bibliography>",
+	      locked=>1);
 # auto close the bibliography and contained biblist.
 Tag('ltx:biblist',autoClose=>1);
 Tag('ltx:bibliography',autoClose=>1);
