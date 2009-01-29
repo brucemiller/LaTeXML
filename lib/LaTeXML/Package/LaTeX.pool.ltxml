@@ -2107,8 +2107,9 @@ DefPrimitive('\input', sub {
   # HEURISTIC! First check if equivalent style file, but only IFF we are in preamble
   my ($dir,$name,$type) = pathname_split($path);
   my $newpath;
-  if((! $dir) && (!$type || ($type eq 'tex')) && LookupValue('inPreamble') &&
-     ($newpath=FindFile($name,type=>'sty'))){
+  if((! $dir) && (!$type || ($type eq 'tex')) # Attempt to load raw TeX
+     && (LookupValue('inPreamble') || !FindFile($name)) # And should/could be style file
+     && ($newpath=FindFile($name,type=>'sty'))){	# and there IS such a style file
     Warn(":override Overriding input of $path with $newpath");
     RequirePackage($name); }
   elsif(my $file = FindFile($path)){
