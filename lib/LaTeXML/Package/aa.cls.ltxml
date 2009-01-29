@@ -105,6 +105,8 @@ DefMacro('\AALogo','Astronomy and Astrophysics');
 
 DefConstructor('\acknowledgements',"<ltx:acknowledgements>");
 DefConstructor('\endacknowledgements',"</ltx:acknowledgements>");
+DefConstructor('\acknowledgement',"<ltx:acknowledgements>");
+DefConstructor('\endacknowledgement',"</ltx:acknowledgements>");
 Tag("ltx:acknowledgements", autoClose=>1);
 DefMacro('\acknowledgmentsname','Acknowledgements');
 
@@ -125,6 +127,9 @@ EoTeX
 
 DefMacro('\noteaddname','Note added in proof');
 DefEnvironment('{noteadd}',"<ltx:note>#body</ltx:note>");
+
+# Undocumented, but something like:
+DefMacro('\thesaurus{}','');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Figures
