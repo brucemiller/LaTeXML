@@ -874,11 +874,12 @@ DefRegister('\catcode Number',Number(0),
 			   $cc = CC_OTHER unless defined $cc;
 			   Number($cc); },
 	     setter=>sub { AssignCatcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
-# \mathcode
-# \lccode
-# \uccode
-# \sfcode
-# \delcode
+# Stub definitions ???
+DefRegister('\mathcode Number',Number(0));
+DefRegister('\sfcode Number',Number(0));
+DefRegister('\lccode Number',Number(0));
+DefRegister('\uccode Number',Number(0));
+DefRegister('\delcode Number',Number(0));
 DefRegister('\hyphenchar{}',Number(ord('-')));
 DefRegister('\skewchar{}',Number(0)); # no idea what the default is here
 
