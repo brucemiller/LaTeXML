@@ -16,6 +16,7 @@ use LaTeXML::Package;
 use Unicode::Normalize;
 use LaTeXML::Util::Alignment;
 use LaTeXML::Util::KeyVal;
+use LaTeXML::Util::Pathname;
 no warnings 'redefine';
 
 RegisterNamespace(ltx=>"http://dlmf.nist.gov/LaTeXML");
@@ -409,8 +410,15 @@ DefMacro('\input TeXFileName',sub {
   my($gullet,$path)=@_;
   $path = ToString($path);
   $path = $1 if $path =~ /^\{(.*)\}$/; # just in case
+  my ($dir,$name,$type) = pathname_split($path);
+  my $newpath;
   if(my $file = FindFile($path)){
     $gullet->input($file); }
+  # Possibly we should be trying for a style file (& we may end up in latex mode)
+  elsif((! $dir) && (!$type || ($type eq 'tex')) # Attempt to load raw TeX
+     && ($newpath=FindFile($name,type=>'sty'))){	# and there IS such a style file
+    Warn(":override Overriding input of $path with $newpath");
+    RequirePackage($name); }
   else {
     $STATE->noteStatus(missing=>$path);
     Error(":missing_file:$path Cannot find $path in paths "
