@@ -88,10 +88,11 @@ DefMacro('\theenumiv',          '\Alph{enumiv}');
 Tag('ltx:appendix',autoClose=>1);
 # Actually we should be using section counter
 AssignValue(counter_for_appendix=>'section');
+DefMacro('\appendix@section', '\@startsection{appendix}{}{}{}{}{}');
 DefPrimitive('\appendix',sub{
   NewCounter('section', 'document', idprefix=>'A',nested=>['subsection']);
   DefMacro('\thesection', '\Alph{section}');
-  DefMacro('\section', '\@startsection{appendix}{}{}{}{}{}');
+  Let('\section','\appendix@section');
  });
 
 #**********************************************************************

@@ -90,10 +90,11 @@ DefMacro('\theenumiv',          '\Alph{enumiv}');
 
 Tag('ltx:appendix',autoClose=>1);
 AssignValue(counter_for_appendix=>'chapter');
+DefMacro('\appendix@chapter', '\@startsection{appendix}{}{}{}{}{}');
 DefPrimitive('\appendix',sub{
   NewCounter('chapter', 'document', idprefix=>'A',nested=>['section']);
   DefMacro('\thechapter', '\Alph{chapter}');
-  DefMacro('\chapter', '\@startsection{appendix}{}{}{}{}{}');
+  Let('\chapter','\appendix@chapter');
  });
 
 # General document structure:
