@@ -41,6 +41,16 @@ DefMacro('\ccc{}','');		# Ignorable?
 # type is AAS, ASP, PD, none
 DefMacro('\cpright{}{}', '\@add@frontmatter{ltx:note}[class=copyright]{\copyright #2: #1}');
 
+# Editorial additions?
+DefMacro('\journal{}','');
+DefMacro('\volume{}','');
+DefMacro('\issue{}','');
+DefMacro('\SGMLbi{}','#1');
+DefMacro('\SGMLbsc{}','#1');
+DefMacro('\SGMLclc{}','#1');
+DefMacro('\SGMLentity{}','#1');	# Actually should produce &#1; !!!
+DefMacro('\SGML{}','');
+
 #======================================================================
 # 2.1.4 Short Comment
 
@@ -184,6 +194,7 @@ DefConstructor('\eqnum {}', '',
 #======================================================================
 # 2.13 Citations and Bibliography
 
+DefMacro('\markcite{}','');	# apparently like \cite w/o text?
 #======================================================================
 # 2.13.1 The thebibliography Environment 
 # normal LaTeX
@@ -561,8 +572,14 @@ DefMacro('\eqsecnum',
 	 '\@addtoreset{equation}{section}'
 	 .'\def\theequation{\arabic{section}-\arabic{equation}}'); 
 
+#======================================================================
+# Random extra bits
 DefMacro('\singlespace','');
 DefMacro('\doublespace','');
+DefMacro('\tighten','');
+DefMacro('\tightenlines','');
+DefMacro('\nohyphenation','');
+DefMacro('\offhyphenation','');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
