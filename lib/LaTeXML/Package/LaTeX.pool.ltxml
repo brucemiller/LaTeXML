@@ -519,7 +519,8 @@ DefMacro('\@add@conversion@date','\@add@frontmatter{ltx:date}[role=creation]{\to
 # Doesn't produce anything (we're already inserting frontmatter),
 # But, it does make the various frontmatter macros into no-ops.
 DefMacro('\maketitle',
-	 '\global\let\thanks\relax'
+	 '\@startsection@hook'	
+	 .'\global\let\thanks\relax'
 	 .'\global\let\maketitle\relax'
 	 .'\global\let\@maketitle\relax'
 	 .'\global\let\@thanks\@empty'
