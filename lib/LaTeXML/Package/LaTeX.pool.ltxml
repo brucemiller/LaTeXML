@@ -626,6 +626,16 @@ DefEnvironment('{flushleft}',
 DefEnvironment('{flushright}',
 	       "<ltx:block class='flushright' align='right'>#body</ltx:block>");
 
+# Occasionally used as non-environments!?!
+# What should be the impact?
+# basically, \flushleft should more or less be equal to raggedright...
+DefMacro('\flushleft','\raggedright');
+DefMacro('\endflushleft','');
+DefMacro('\flushright','\raggedleft');
+DefMacro('\endflushright','');
+DefMacro('\center','');
+DefMacro('\endcenter','');
+
 #======================================================================-
 # C.6.1 Quotations and Verse
 #======================================================================-
