@@ -2523,13 +2523,16 @@ RawTeX('
 # (some of these were defined on different pages? or even latex...)
 Tag('ltx:text',autoOpen=>1,autoClose=>1);
 
-DefConstructor('\rm', '',  font=>{family=>'serif'});
-DefConstructor('\sf', '',  font=>{family=>'sansserif'});
-DefConstructor('\bf',  '', font=>{series=>'bold'});
-DefConstructor('\it',  '', font=>{shape=>'italic'});
-DefConstructor('\tt',  '', font=>{family=>'typewriter'});
-DefConstructor('\sl',  '', font=>{shape=>'slanted'});# No effect in math ?
-DefConstructor('\sc',  '', font=>{shape=>'smallcaps'});# No effect in math ?
+# Note that these, unlike \rmfamily, should set the other attributes to the defaults!
+DefConstructor('\rm', '',  font=>{family=>'serif', series=>'medium', shape=>'upright'});
+DefConstructor('\sf', '',  font=>{family=>'sansserif', series=>'medium', shape=>'upright'});
+DefConstructor('\bf',  '', font=>{series=>'bold',  family=>'serif', shape=>'upright'});
+DefConstructor('\it',  '', font=>{shape=>'italic', family=>'serif', series=>'medium'});
+DefConstructor('\tt',  '', font=>{family=>'typewriter', series=>'medium', shape=>'upright'});
+# No effect in math for the following 2 ?
+DefConstructor('\sl',  '', font=>{shape=>'slanted',   family=>'serif', series=>'medium'});
+DefConstructor('\sc',  '', font=>{shape=>'smallcaps', family=>'serif', series=>'medium'});
+
 DefConstructor('\tiny',          '', font=>{size=>'tiny'});
 DefConstructor('\scriptsize',    '', font=>{size=>'script'});
 DefConstructor('\footnotesize',  '', font=>{size=>'footnote'});
