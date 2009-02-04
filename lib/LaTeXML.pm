@@ -160,6 +160,10 @@ sub convertDocument {
      if(my $paths = $state->lookupValue('SEARCHPATHS')){
        if($state->lookupValue('INCLUDE_COMMENTS')){
 	 $document->insertPI('latexml',searchpaths=>join(',',@$paths)); }}
+     foreach my $preload (@{$$self{preload}}){
+       next if $preload=~/\.pool$/;
+       $preload =~ s/\.sty$//;
+       $document->insertPI('latexml',package=>$preload); }
      $document->absorb($digested);
      NoteEnd("Building");
 
