@@ -1,0 +1,173 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  paralist                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Package Options
+# Ignorable options
+foreach my $option (qw(alwaysadjust neveradjust neverdecrease increaseonly
+		       newitem olditem newenum oldenum
+		       defblank pointedenum pointlessenum
+		     cfg nocfg flushright flushleft)){
+  DeclareOption($option,undef); }
+
+# pointedenum, pointlessenum should give nested enumeration levels (pointless w/o trailing '.')
+
+ProcessOptions();
+
+#======================================================================
+# paralist defines 9 environments named:
+#  (compact | inpara | aspara)(enum | item | desc)
+# The general class is:
+#   enum for enumeration,
+#   item for itemize,
+#   desc for description
+# The formatting is
+#   inpara : done inline. This is tricky w/LaTeXML's model, since itemize is a block.
+#             we'll just turn them into text.
+#   compact: same as normal, but w/less spacing above & below
+#   aspara : same as normal, but each item is formatted as a paragraph
+#            (ie. leftmargin is normal)
+# These last two can be treated as normally (although some css could be used)
+#======================================================================
+DefRegister('\pltopsep'   =>Dimension(0));
+DefRegister('\plpartopsep'=>Dimension(0));
+DefRegister('\plitemsep'  =>Dimension(0));
+DefRegister('\plpaarsep'  =>Dimension(0));
+
+DefMacro('\setdefaultleftmargin{}{}{}{}{}{}',''); # Ignore?
+#======================================================================
+# Enumerations
+
+sub setParalistEnum {
+  my($stuff,$level)=@_;
+  if(defined $stuff){
+    $level = LookupValue('itemlevel') unless defined $level;
+    $level = ToString(Tokens(roman(LookupValue('itemlevel'))));
+    my @in = $stuff->unlist;
+    my @out = ();
+    my $ctr = T_OTHER('enum'.$level);
+    while(my $t = shift(@in)){
+      if(Equals($t,T_BEGIN)){
+	push(@out,$t);
+	my $level=1;
+	while($level && ($t=shift(@in))){
+	  if(Equals($t,T_BEGIN)){ $level++; }
+	  elsif(Equals($t,T_END)){ $level--; }
+	  push(@out,$t); }}
+      elsif(Equals($t,T_LETTER('A'))){
+	push(@out,Invocation(T_CS('\Alph'),$ctr)); }
+      elsif(Equals($t,T_LETTER('a'))){
+	push(@out,Invocation(T_CS('\alph'),$ctr)); }
+      elsif(Equals($t,T_LETTER('I'))){
+	push(@out,Invocation(T_CS('\Roman'),$ctr)); }
+      elsif(Equals($t,T_LETTER('i'))){
+	push(@out,Invocation(T_CS('\roman'),$ctr)); }
+      elsif(Equals($t,T_LETTER('1'))){
+	push(@out,Invocation(T_CS('\arabic'),$ctr)); }
+      else {
+	push(@out,$t); }}
+    DefMacroI('\theenum'.$level,undef,Tokens(@out)); }
+  return; }
+
+DefMacro('\setdefaultenum{}{}{}{}',sub {
+  my($gullet,$tag1,$tag2,$tag3,$tag4)=@_;
+  setParalistEnum($tag1,1);
+  setParalistEnum($tag2,2);
+  setParalistEnum($tag3,3);
+  setParalistEnum($tag4,4); });
+
+DefConstructor('\inparaenum@item[]',
+	       "<ltx:anchor xml:id='#id'>#refnum</ltx:anchor> ",
+	       properties=>sub{ RefStepItemCounter(); });
+DefEnvironment('{inparaenum} OptionalUndigested',
+	       "<ltx:text xml:id='#id'>#body</ltx:text>",
+	       properties=>sub { beginItemize('inparaenum'); },
+	       afterDigestBegin=>sub { setParalistEnum($_[1]->getArg(1)); });
+
+DefConstructor('\paralistenum@item[]',
+	       "<ltx:item xml:id='#id' refnum='#refnum'>?#refnum(<ltx:tag>#refnum</ltx:tag>)",
+	       properties=>sub{ RefStepItemCounter(); });
+DefEnvironment('{compactenum} OptionalUndigested',
+	       "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
+	       properties=>sub { beginItemize('paralistenum'); },
+	       afterDigestBegin=>sub { setParalistEnum($_[1]->getArg(1)); });
+DefEnvironment('{asparaenum} OptionalUndigested',
+	       "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
+	       properties=>sub { beginItemize('paralistenum'); },
+	       afterDigestBegin=>sub { setParalistEnum($_[1]->getArg(1)); });
+
+#======================================================================
+# Itemizations
+
+# This isn't really satisfactory.
+# We should record the marker used for the item,
+# but it really should NOT be #refnum (which should be quasi unique)
+# and is not \theenumi.. (which should be a counter value)
+sub setParalistItem {
+  my($stuff,$level)=@_;
+  if(defined $stuff){
+    $level = LookupValue('itemlevel') unless defined $level;
+    $level = ToString(Tokens(roman(LookupValue('itemlevel'))));
+    DefMacroI('\theenum'.$level,undef,$stuff); }
+  return; }
+
+DefMacro('\setdefaultitem{}{}{}{}',sub {
+  my($gullet,$tag1,$tag2,$tag3,$tag4)=@_;
+  setParalistItem($tag1,1);
+  setParalistItem($tag2,2);
+  setParalistItem($tag3,3);
+  setParalistItem($tag4,4); });
+
+DefConstructor('\inparaitem@item []',
+	       "<ltx:anchor xml:id='#id'>#refnum</ltx:anchor> ",
+	       properties=>sub{ RefStepItemCounter(); });
+DefEnvironment('{inparaitem} OptionalUndigested',
+	       "<ltx:text xml:id='#id'>#body</ltx:text>",
+	       properties=>sub { beginItemize('inparaitem'); },
+	       afterDigestBegin=>sub { setParalistItem($_[1]->getArg(1)); });
+
+DefConstructor('\paralistitem@item OptionalUndigested',
+	       "<ltx:item xml:id='#id'>?#refnum(<ltx:tag>#refnum</ltx:tag>)",
+	       properties=>sub{ RefStepItemCounter(); });
+DefEnvironment('{compactitem} OptionalUndigested',
+	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
+	       properties=>sub { beginItemize('paralistitem'); },
+	       afterDigestBegin=>sub { setParalistItem($_[1]->getArg(1)); });
+DefEnvironment('{asparaitem} OptionalUndigested',
+	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
+	       properties=>sub { beginItemize('paralistitem'); },
+	       afterDigestBegin=>sub { setParalistItem($_[1]->getArg(1)); });
+
+#======================================================================
+# Descriptions
+DefConstructor('\inparadesc@item[]',
+	       "<ltx:anchor xml:id='#id'>#1</ltx:anchor> ",
+	       properties=>sub{ RefStepItemCounter(); });
+DefEnvironment('{inparadesc}',
+	       "<ltx:text xml:id='#id'>#body</ltx:text>",
+	       properties=>sub { beginItemize('inparadesc'); });
+
+DefEnvironment('{compactdesc}',
+	       "<ltx:description xml:id='#id'>#body</ltx:description>",
+	       properties=>sub { beginItemize('description'); });
+DefEnvironment('{asparadesc}',
+	       "<ltx:description xml:id='#id'>#body</ltx:description>",
+	       properties=>sub { beginItemize('description'); });
+# \paradescriptionlabel{}
+
+#======================================================================
+
+1;
