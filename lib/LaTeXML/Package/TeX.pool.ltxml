@@ -2622,7 +2622,7 @@ DefMacro('\bigbreak','\par');
 DefMacro('\line','\hbox to \hsize');
 DefMacro('\leftline{}','\line{#1\hss}');
 DefMacro('\rightline{}','\line{\hss#1}');
-DefConstructor('\centerline{}',"<ltx:centering>#1</ltx:centering>");
+DefConstructor('\centerline{}',"<ltx:centering>#1</ltx:centering>", bounded=>1);
 DefMacro('\llap{}','\hbox{#1}');
 DefMacro('\rlap{}','\hbox{#1}');
 DefMacro('\m@th','\mathsurround=0pt ');
