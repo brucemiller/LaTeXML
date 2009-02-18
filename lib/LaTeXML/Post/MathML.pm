@@ -546,6 +546,11 @@ sub pmml_text {
 
 sub cmml_top {
   my($self,$node)=@_;
+  local $LaTeXML::MathML::PROCESSOR = $self;
+  local $LaTeXML::MathML::STYLE = 'text';
+  local $LaTeXML::MathML::FONT  = find_inherited_attribute($node,'font');
+  local $LaTeXML::MathML::SIZE  = find_inherited_attribute($node,'size');
+  local $LaTeXML::MathML::COLOR = find_inherited_attribute($node,'color');
   cmml($node); }
 
 sub cmml {
@@ -563,12 +568,16 @@ sub cmml {
   elsif($tag eq 'ltx:XMWrap'){	# Only present if parsing failed!
     pmml_row(map(pmml($_),element_nodes($node))); } # ????
   elsif($tag eq 'ltx:XMApp'){
-    my($op,@args) = element_nodes($node);
-    if(!$op){
-      ['m:merror',{},['m:mtext',{},"Missing Operator"]]; }
+    # Experiment: If XMApp has role ID, we treat it as a "Decorated Symbol"
+    if(($node->getAttribute('role')||'') eq 'ID'){
+      cmml_decoratedSymbol($node); }
     else {
-      my $rop = realize($op);		# NOTE: Could loose open/close on XMRef ???
-      &{ lookupContent('Apply',$rop->getAttribute('role'),getTokenMeaning($rop)) }($op,@args); }}
+      my($op,@args) = element_nodes($node);
+      if(!$op){
+	['m:merror',{},['m:mtext',{},"Missing Operator"]]; }
+      else {
+	my $rop = realize($op);		# NOTE: Could loose open/close on XMRef ???
+	&{ lookupContent('Apply',$rop->getAttribute('role'),getTokenMeaning($rop)) }($op,@args); }}}
   elsif($tag eq 'ltx:XMTok'){
     &{ lookupContent('Token',$node->getAttribute('role'),getTokenMeaning($node)) }($node); }
   elsif($tag eq 'ltx:XMHint'){	# ????
@@ -579,14 +588,15 @@ sub cmml {
 # Or csymbol if there's some kind of "defining" attribute?
 sub cmml_ci {
   my($item)=@_;
-  my $font    = (ref $item ? $item->getAttribute('font') : undef);
-  my $variant = ($font && $mathvariants{$font})||'';
   my $content = (ref $item ?  $item->textContent : $item);
-  if($content =~ /^.$/){	# Single char?
-    if($variant eq 'italic'){ $variant = ''; } # Defaults to italic
-    elsif(!$variant){ $variant = 'normal'; }}  # must say so explicitly.
-#  ['m:csymbol',{($variant ? (mathvariant=>$variant) : ())},$content]; }
   ['m:ci',{},$content]; }
+
+# Experimental; for an XMApp with role=ID, we treat it as a ci
+# or ultimately as csymbol, if it had defining attributes,
+# but we format its contents as pmml
+sub cmml_decoratedSymbol {
+  my($item)=@_;
+  ['m:ci',{},pmml($item)]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Tranlators
