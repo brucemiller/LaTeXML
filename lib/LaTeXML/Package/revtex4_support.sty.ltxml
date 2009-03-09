@@ -28,6 +28,8 @@ RequirePackage('dcolumn');
 #======================================================================
 
 # 4.3
+DefMacro('\title[]{}', '\@add@frontmatter{ltx:title}{#2}');
+
 DefMacro('\doauthor{}{}{}','#1 #2 #3'); # -- ??
 DefMacro('\address','\affiliation');
 # DefMacro('\affiliation','');
