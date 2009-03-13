@@ -2912,7 +2912,7 @@ DefMath('\Omega',     "\x{03A9}");
 #----------------------------------------------------------------------
 # Some should be differential operators, qualifiers, ...
 DefMath('\aleph',    "\x{2135}");
-DefMath('\hbar',     "\x{210F}", role=>'ID', meaning=>'Planck-constant-over-2pi');
+DefMath('\hbar',     "\x{210F}", role=>'ID', meaning=>'Planck-constant-over-2-pi');
 DefMath('\imath',    "\x{0131}");
 DefMath('\jmath',    "j");
 DefMath('\ell',      "\x{2113}");
@@ -3020,6 +3020,7 @@ DefMath('\star',      "\x{22C6}", role=>'MULOP');
 DefMath('\circ',      "\x{2218}", role=>'MULOP', meaning=>'compose');
 DefMath('\bullet',    "\x{2219}", role=>'MULOP');
 DefMath('\cdot',      "\x{22C5}", role=>'MULOP');
+   ##  , meaning=>'inner-product');  that's pushing it a bit far...
 
 # Need to classify set operations more carefully....
 DefMath('\cap',       "\x{2229}", role=>'ADDOP', meaning=>'intersection');
@@ -3233,7 +3234,8 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 # LaTeX; Table 3.11. Math Mode Accents, p.50.
 # Are these all TeX (or LaTeX)?
 
-DefMath('\hat{}',       UTF(0x5E), operator_role=>'OVERACCENT'); # CIRCUMFLEX ACCENT
+#DefMath('\hat{}',       UTF(0x5E), operator_role=>'OVERACCENT'); # CIRCUMFLEX ACCENT
+DefMath('\hat{}',       "\x{2303}", operator_role=>'OVERACCENT');
 DefMath('\check{}',     "\x{2713}", operator_role=>'OVERACCENT'); # CHECK MARK
 DefMath('\breve{}',     "\x{02D8}", operator_role=>'OVERACCENT'); # BREVE
 DefMath('\acute{}',     UTF(0xB4), operator_role=>'OVERACCENT'); # ACUTE ACCENT
