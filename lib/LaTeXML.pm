@@ -172,8 +172,10 @@ sub convertDocument {
      NoteEnd("Rewriting");
 
      LaTeXML::MathParser->new()->parseMath($document) unless $$self{nomathparse};
-     $document->finalize(); });
-}
+     NoteBegin("Finalizing");
+     my $xmldoc = $document->finalize(); 
+     NoteEnd("Finalizing");
+     $xmldoc; }); }
 
 sub withState {
   my($self,$closure)=@_;
@@ -212,98 +214,6 @@ sub initializeState {
   if(@pending){
     Warn(":unexpected:<boxes> Got boxes from preloaded modules: ".join(Stringify($_),@pending));}
 }
-
-###
-sub XXXXdigestFile {
-  my($self,$file)=@_;
-  $file =~ s/\.tex$//;
-  local $STATE    = $$self{state};
-  my $stomach  = $STATE->getStomach; # The current Stomach;
-  my $gullet   = $stomach->getGullet;
-  # And, set fancy error handler for ANY die!
-  local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',":perl:die ",@_)); };
-  local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',":perl:interrupt ",@_)); }; # ??
-  local $SIG{__WARN__} = sub { LaTeXML::Error::Warn(join('',":perl:warn ",@_)); };
-
-  NoteBegin("Digesting $file");
-  $stomach->initialize;
-  my $paths = $STATE->lookupValue('SEARCHPATHS');
-  foreach my $preload ('TeX.pool', @{$$self{preload} || []}){
-    if(my $loadpath = pathname_find("$preload.ltxml",paths=>$paths,installation_subdir=>'Package')){
-      $gullet->input($loadpath); }
-    else {
-      Fatal(":missing_file:$preload Couldn't find $preload to preload"); }}
-
-  my $pathname = pathname_find($file,types=>['tex','']);
-  Fatal(":missing_file:$file Cannot find TeX file $file") unless $pathname;
-  $STATE->assignValue(SOURCEFILE=>$pathname);
-  my($dir,$name,$ext)=pathname_split($pathname);
-  $STATE->pushValue(SEARCHPATHS=>$dir);
-  $STATE->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode($name))));
-  $gullet->input($pathname);
-  my $list = LaTeXML::List->new($stomach->digestNextBody);
-  if(my $env = $STATE->lookupValue('current_environment')){
-    Error(":expected:\\end{$env} Input ended while environment $env was open"); } 
-  $gullet->flush;
-  NoteEnd("Digesting $file");
-  $list; }
-
-sub XXXdigestString {
-  my($self,$string)=@_;
-  local $STATE    = $$self{state};
-  my $stomach  = $STATE->getStomach; # The current Stomach;
-  my $gullet   = $stomach->getGullet;
-  # And, set fancy error handler for ANY die!
-  local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',":perl:die ",@_)); };
-  local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',":perl:interrupt ",@_)); }; # ??
-  local $SIG{__WARN__} = sub { LaTeXML::Error::Warn(join('',":perl:warn ",@_)); };
-
-  NoteBegin("Digesting string");
-  $stomach->initialize;
-  my $paths = $STATE->lookupValue('SEARCHPATHS');
-  foreach my $preload ('TeX.pool', @{$$self{preload} || []}){
-    if(my $loadpath = pathname_find("$preload.ltxml",paths=>$paths,installation_subdir=>'Package')){
-      $gullet->input($loadpath); }
-    else {
-      Fatal(":missing_file:$preload Couldn't find $preload to preload"); }}
-
-  $gullet->openMouth(LaTeXML::Mouth->new($string),0);
-  $STATE->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,Tokens(Explode("Unknown"))));
-  my $list = LaTeXML::List->new($stomach->digestNextBody); 
-  if(my $env = $STATE->lookupValue('current_environment')){
-    Error(":expected:\\end{$env} Input ended while environment $env was open"); } 
-  $gullet->flush;
-  NoteEnd("Digesting string");
-  $list; }
-
-sub XXXconvertDocument {
-  my($self,$digested)=@_;
-  local $STATE    = $$self{state};
-  my $model    = $STATE->getModel;   # The document model.
-
-  # And, set fancy error handler for ANY die!
-  local $SIG{__DIE__} = sub { LaTeXML::Error::Fatal(join('',":perl:die ",@_)); };
-  local $SIG{INT} = sub { LaTeXML::Error::Fatal(join('',":perl:interrupt ",@_)); }; # ??
-  local $SIG{__WARN__} = sub { LaTeXML::Error::Warn(join('',":perl:warn ",@_)); };
-
-  local $LaTeXML::DUAL_BRANCH= '';
-  my $document  = LaTeXML::Document->new($model);
-
-  NoteBegin("Building");
-  $model->loadSchema(); # If needed?
-  if(my $paths = $STATE->lookupValue('SEARCHPATHS')){
-    if($STATE->lookupValue('INCLUDE_COMMENTS')){
-      $document->insertPI('latexml',searchpaths=>join(',',@$paths)); }}
-  $document->absorb($digested);
-  NoteEnd("Building");
-
-  NoteBegin("Rewriting");
-  $model->applyRewrites($document,$document->getDocument->documentElement);
-  NoteEnd("Rewriting");
-
-  LaTeXML::MathParser->new()->parseMath($document) unless $$self{nomathparse};
-  my $xml = $document->finalize();
-  $xml; }
 
 sub writeDOM {
   my($self,$dom,$name)=@_;
