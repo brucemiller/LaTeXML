@@ -232,18 +232,29 @@ sub xmlns_XML_LibXML_Element_setAttribute {
     else {
 	original_XML_LibXML_Element_setAttribute($self,$name,$value); }}
 
+our $xml_libxml_version;
 BEGIN {
-   if($XML::LibXML::VERSION < 1.63){
-     *XML::LibXML::Document::toString =   *encoding_XML_LibXML_Document_toString; }
-   if($XML::LibXML::VERSION < 1.59){
-     *XML::LibXML::Element::getAttribute =   *xmlns_XML_LibXML_Element_getAttribute;
-     *XML::LibXML::Element::hasAttribute =   *xmlns_XML_LibXML_Element_hasAttribute;
-     *XML::LibXML::Element::setAttribute =   *xmlns_XML_LibXML_Element_setAttribute; }
+  $xml_libxml_version = $XML::LibXML::VERSION;
+  $xml_libxml_version =~ s/_\d+$//;
+###  print STDERR "XML::LibXML Version $XML::LibXML::VERSION => $xml_libxml_version\n";
+
+  if($xml_libxml_version < 1.63){
+    *XML::LibXML::Document::toString =   *encoding_XML_LibXML_Document_toString; }
+  if($xml_libxml_version < 1.59){
+    *XML::LibXML::Element::getAttribute =   *xmlns_XML_LibXML_Element_getAttribute;
+    *XML::LibXML::Element::hasAttribute =   *xmlns_XML_LibXML_Element_hasAttribute;
+    *XML::LibXML::Element::setAttribute =   *xmlns_XML_LibXML_Element_setAttribute; }
 }
 ######################################################################
 # Subclasses
 ######################################################################
 package LaTeXML::Common::XML::Parser;
+
+our $xml_libxml_version;
+BEGIN {
+  $xml_libxml_version = $XML::LibXML::VERSION;
+  $xml_libxml_version =~ s/_\d+$//;
+}
 
 sub new {
   my($class)=@_;
@@ -275,7 +286,7 @@ sub parseChunk {
   ####
   # In 1.58, the prefix for the XML_NS, which should be DEFINED to be "xml"
   # is sometimes unbound, leading to mysterious segfaults!!!
-  if(($XML::LibXML::VERSION < 1.59) && $hasxmlns){
+  if(($xml_libxml_version < 1.59) && $hasxmlns){
 #print STDERR "Patchup...\n";
     # Re-create all xml:id entrys, hopefully with correct NS!
     # We assume all id are, in fact, xml:id,
