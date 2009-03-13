@@ -237,7 +237,8 @@ sub validate {
     eval { $rng->validate($$self{document}); };
     if($@){
 #      die "Error during RelaxNG validation  (".$schema."):\n".substr($@,0,200); }}
-      die "Error during RelaxNG validation  (".$schema."):\n".$@; }}
+      die "Error during RelaxNG validation  (".$schema."):\n".$@
+	."\nEither fix the source document, or use the --novalidate option\n"; }}
   elsif(my $decldtd = $$self{document}->internalSubset){ # Else look for DTD Declaration
 #    print STDERR "Validating using DTD ".$decldtd->publicId." at ".$decldtd->systemId."\n";
     my $dtd = XML::LibXML::Dtd->new($decldtd->publicId,$decldtd->systemId);
@@ -245,7 +246,8 @@ sub validate {
       die "Failed to load DTD ".$decldtd->publicId." at ".$decldtd->systemId; }
     eval { $$self{document}->validate($dtd); };
     if($@){
-      die "Error during DTD validation  (".$decldtd->systemId."):\n$@"; }}
+      die "Error during DTD validation  (".$decldtd->systemId."):\n$@"
+	."\nEither fix the source document, or use the --novalidate option\n"; }}
   else {			# Nothing found to validate with
     warn "No Schema or DTD found for this document";  }
 }
