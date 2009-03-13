@@ -702,7 +702,8 @@ our %balanced = ( '(' => ')', '['=>']', '{'=>'}',
 # For enclosing a single object
 # Note that the default here is just to put open/closed attributes on the single object
 our %enclose1 = ('{@}'=>'set',	# alternatively, just variant parentheses
-		 '|@|'=>'absolute-value', '||@||'=>'norm',
+		 '|@|'=>'absolute-value',
+		 '||@||'=>'norm', "\x{2225}@\x{2225}"=>'norm',
 		 "\x{230A}@\x{230B}"=>'floor',
 		 "\x{2308}@\x{2309}"=>'ceiling',
 		 '<@>'=>'expectation', # or just average?

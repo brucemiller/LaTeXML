@@ -354,23 +354,29 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex23">
-        <Math mode="display" tex="\left\|{a\over b}\right\|" text="a / b">
+        <Math mode="display" tex="\left\|{a\over b}\right\|" text="norm@(a / b)">
           <XMath>
-            <XMApp open="∥" close="∥">
-              <XMTok meaning="divide" role="MULOP" style="display"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
+            <XMApp>
+              <XMTok meaning="norm" role="FENCED" argclose="∥" argopen="∥"/>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex24">
-        <Math mode="display" tex="\left\|{a\over b}\right\|" text="a / b">
+        <Math mode="display" tex="\left\|{a\over b}\right\|" text="norm@(a / b)">
           <XMath>
-            <XMApp open="∥" close="∥">
-              <XMTok meaning="divide" role="MULOP" style="display"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
+            <XMApp>
+              <XMTok meaning="norm" role="FENCED" argclose="∥" argopen="∥"/>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok role="ID" font="italic">a</XMTok>
+                <XMTok role="ID" font="italic">b</XMTok>
+              </XMApp>
             </XMApp>
           </XMath>
         </Math>
