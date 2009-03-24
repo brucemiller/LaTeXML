@@ -1,0 +1,375 @@
+#!/usr/bin/perl -w
+
+use strict;
+use Getopt::Long qw(:config no_ignore_case);
+use Pod::Usage;
+use FindBin;
+# Assume we're in the tools directory of a development version of latexml (next to lib, blib..)
+use lib "$FindBin::RealBin/../blib/lib";
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# texscan : TeX class/style file scanner for LaTeXML.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+my $identity = 'texscan';
+my($help)=(0);
+local $::VERBOSITY = 0;
+my ($show,$internal,$cumulative) = ('diff',0,0);
+my $do_all=0;
+my @paths = ();
+GetOptions("tex"         => sub { $show='tex'; },
+	   "latexml"     => sub { $show='latexml'; },
+	   "diff"        => sub { $show='diff'; },
+	   "internal!"   => \$internal,
+	   "cumulative!" => \$cumulative,
+	   "help"        => \$help,
+	   "verbose"     => sub { $::VERBOSITY++; },
+	   "quiet"       => sub { $::VERBOSITY--; },
+	   "path=s"      => \@paths,
+	   "all"         => \$do_all,
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Find available package/class implementations
+# [Should get this from LaTeXML?]
+our $LTXPACKAGEDIR = "$FindBin::RealBin/../blib/lib/LaTeXML/Package/";
+
+my @files = ();
+if($do_all){
+  foreach my $dir ($LTXPACKAGEDIR,@paths){
+    opendir(DIR,$dir) or die "Couldn't read LaTeXML Package directory $dir: $!";
+    foreach my $file (sort readdir(DIR)){
+      push(@files, $1) if $file =~ /^(.*)\.ltxml$/; }
+    closedir(DIR); }}
+else {
+ @files = @ARGV; }
+
+print "".("="x50)."\n";
+print "   Excluding internal symbols\n" unless $internal;
+foreach my $name (@files){
+  print "".("="x50)."\n";
+  if($show eq 'tex'){
+    print "Showing symbols in LaTeX package $name\n";
+    my $pkg = StylePackage->new($name,internal=>$internal,cumulative=>$cumulative,
+					searchpaths=>[@paths]);
+    $pkg->show if $pkg; }
+  elsif($show eq 'latexml'){
+    print "Showing symbols in LaTeXML implementation $name\n";
+    my $pkg = ImplementationPackage->new($name,internal=>$internal,cumulative=>$cumulative,
+					searchpaths=>[@paths]);
+    $pkg->show if $pkg; }
+  elsif($show eq 'diff'){
+    print "Showing unimplemented symbols for package $name\n";
+    my $spkg = StylePackage->new($name,internal=>$internal,cumulative=>$cumulative,
+					searchpaths=>[@paths]);
+    next unless $spkg;
+    my $ipkg = ImplementationPackage->new($name,internal=>$internal,cumulative=>1,
+					  searchpaths=>[@paths]);
+    next unless $ipkg;
+    $spkg->subtract($ipkg);
+    $spkg->show; }
+}
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Need to make a distinction here between
+#   incremental or local or ????
+# and  cummulative, or 
+# What do I call these?
+# The basic idea is that packages load other packages,
+# and LaTeXML loads packages on top of the TeX and LaTeX pools.
+# This matters because in many cases they are just redefining
+# things in a way that doesn't matter for LaTeXML,
+# so we don't want count every \def as a NEW definition!
+#
+# Of course, which form you want depends on what you're doing with the
+# list of symbols.
+#
+# Also, of course, the stragegy for computing each set depends on
+# whether it comes from a TeX style or a LaTeXML implementation.
+package Package;
+
+sub new {
+  my($class,$name,%options)=@_;
+  bless {name=>$name, %options, symbols=>{}, environments=>{}, used=>{}}, $class; }
+
+sub show {
+  my($self)=@_;
+#  print "".("="x50)."\nStyle $$self{name}\n";
+  print "   ".($$self{cumulative} ? "Including":"Excluding")
+    ."symbols from : ".join(', ',sort keys %{$$self{uses}})."\n"
+    if keys %{$$self{uses}} && $::VERBOSITY;
+  my @syms = sort keys %{$$self{symbols}};
+  my @envs = sort keys %{$$self{environments}};
+  print "   Macros : ".(@syms ? join(', ',@syms) : "None")."\n";
+  print "   Environments: ".(@envs ? join(', ',@envs) : "None")."\n";
+}
+
+# remove any internal symbols (those containing '@')
+sub removeInternals {
+  my($self)=@_;
+  foreach my $cs (keys %{$$self{symbols}}){
+    delete $$self{symbols}{$cs} if $cs =~ /\@/; }
+  foreach my $cs (keys %{$$self{environments}}){
+    delete $$self{environments}{$cs} if $cs =~ /\@/; }
+}
+
+# Convert any \foo, \endfoo combinations into an (assumed) environment.
+sub convertEnvironments {
+  my($self)=@_;
+  foreach my $cs (keys %{$$self{symbols}}){
+    if($cs =~ /^\\begin\{(.*)\}$/){
+      my $env = $1;
+      my $endenv = "\\end{$env}";
+      $$self{environments}{$env}=1;
+      delete $$self{symbols}{$cs};
+      delete $$self{symbols}{$endenv}; }
+    elsif($cs =~ /^\\(.*)$/){
+      my $env = $1;
+      my $endcs = "\\end$env";
+      if($$self{symbols}{$endcs}){
+	$$self{environments}{$env}=1;
+	delete $$self{symbols}{$cs};
+	delete $$self{symbols}{$endcs}; }}
+  }}
+
+sub afterscan {
+  my($self)=@_;
+  foreach my $use (keys %{$$self{uses}}){
+    delete $$self{uses}{$use} if ($use eq $$self{name}) || $use=~/\\/; }
+
+  $self->removeInternals unless $$self{internal};
+  $self->convertEnvironments;
+  delete $$self{symbols}{'\csname'};
+  delete $$self{environment}{'csname'};
+}
+
+# Add any symbols defined in $package into the $self.
+sub add {
+  my($self,$package)=@_;
+  foreach my $cs (%{$$package{symbols}}){
+    $$self{symbols}{$cs} =1; }
+  foreach my $env (%{$$package{environments}}){
+    $$self{environments}{$env}=1; }
+  $self; }
+
+# Remove any symbols defined in $package from the $self.
+sub subtract {
+  my($self,$package)=@_;
+  foreach my $cs (%{$$package{symbols}}){
+    delete $$self{symbols}{$cs}; }
+  foreach my $env (%{$$package{environments}}){
+    delete $$self{environments}{$env}; }
+  $self; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# A package scanned from a (La)TeX style/class file.
+# The patterns need to be worked on;
+# Some operations very sneakily end up defining symbols,
+# which we'll miss if we don't work at it.
+# Initially, we only notice the expressions that are explicitly defined.
+# So, we miss anything defined in used packages,
+# And, we also miss symbols that are simply redefined.
+# Thus, to get an accurate list, even for non-cumulative,
+#  we still need to scan any used packages and remove their definitions.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# NOTE: we still need to sort out the "base" issue:
+# Should load latex.ltx and fonttext.ltx for class files
+# but also article.cls, size10.clo and  for style files.
+# these would then be added or subtracted as needed.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+package StylePackage;
+use strict;
+use LaTeXML::Util::Pathname;
+use base qw(Package);
+
+our $CSREGEXP;
+our $ARGREGEXP;
+our $BRACEREGEXP;
+our $OPTREGEXP;
+
+BEGIN {
+  $CSREGEXP    = qr/(\\[\w\@]+)/;
+#  $ARGREGEXP   = qr/\{([^\}]+)\}/;
+  $ARGREGEXP   = qr/(?:\{([^\}\#]+)\}|(\\[\w\@]+))/;
+  $BRACEREGEXP = qr/\{([^\}\#]+)\}/;
+  $OPTREGEXP   = qr/(\[[^\]]*\])?/; }
+
+sub new {
+  my($class,$name,%options)=@_;
+  my $self = $class->newRaw($name,%options);
+  return unless $self;
+  $self->afterscan;
+
+  if($$self{name} !~ /\.ltx$/){
+    my @used = keys %{$$self{uses}};
+    push(@used,"latex.ltx","fonttext.ltx");
+    push(@used,"article.cls","size10.clo") unless $$self{name} eq "article.cls";
+    if($$self{cumulative}){
+      print "Adding symbols from used packages\n"  if $::VERBOSITY;
+      foreach my $used (@used){
+	my $pkg = $class->newRaw($used,cumulative=>1);
+	$self->add($pkg) if $pkg; }}
+    else {
+      print "Removing symbols from used packages\n"  if $::VERBOSITY;
+      foreach my $used (@used){
+	my $pkg = $class->newRaw($used,cumulative=>1);
+	$self->subtract($pkg) if $pkg; }}}
+  $self; }
+
+sub newRaw {
+  my($class,$name,%options)=@_;
+  $name = "latex.ltx" if $name eq "LaTeX.pool";
+  my $file = `kpsewhich $name`; chomp($file);
+  if(!$file){
+    $file = pathname_find($name,paths=>$options{searchpaths}); }
+  if(!$file){
+    print "WARN: No stylefile found for $name\n"; return undef; }
+  print "Scanning style of $name\n  [$file]\n" if $::VERBOSITY;
+
+  my $self = $class->SUPER::new($name,%options);
+  # Scan the stylefile for apparently defined symbols
+
+  open(STYLE,$file) or die "Couldn't open stylefile $file: $!";
+  while(<STYLE>){
+    s/%(.*)$//;
+    # Various standard definitions
+    if(/\\(?:def|xdef|gdef|edef)$CSREGEXP/o){
+      $$self{symbols}{$1} = 1; }
+    elsif(/\\new(?:count|dimen|skip|muskip|box|help|toks|read|write|fam|language|insert)$CSREGEXP/o){
+      $$self{symbols}{$1} = 1; }
+    elsif(/\\newif\\if([\w\@]+)/){
+      $$self{symbols}{"\\if$1"} = 1;
+      $$self{symbols}{"\\${1}true"} = 1;
+      $$self{symbols}{"\\${1}false"} = 1; }
+    elsif(/\\(?:renew|new|provide)command\*?$ARGREGEXP/o){
+      $$self{symbols}{$1||$2} = 1; }
+    elsif(/\\(?:Declare|Provide)(?:Text|Robust)Command(?:Default)?\*?$ARGREGEXP/o){
+      $$self{symbols}{$1||$2} = 1; }
+    elsif(/\\let$CSREGEXP\s*=?$CSREGEXP/o){
+      $$self{symbols}{$1} = 1; }
+    # Defining math/text symbols
+    elsif(/\\DeclareMath(?:Symbol|Accent|Delimiter)$ARGREGEXP/o){
+      $$self{symbols}{$1||$2} = 1; }
+    elsif(/\\re\@DeclareMath(?:Symbol|Accent|Delimiter)$ARGREGEXP/o){ # txfonts
+      $$self{symbols}{$1||$2} = 1; }
+    # Other packages used.
+    elsif(/\\usepackage$OPTREGEXP$BRACEREGEXP/o){
+      map($$self{uses}{"$_.sty"}=1, split(/,/,$2)); }
+    elsif(/\\RequirePackage$OPTREGEXP$BRACEREGEXP/o){
+      map($$self{uses}{"$_.sty"}=1, split(/,/,$2)); }
+    # Environments?
+    elsif(/\\(re)?newenvironment\*?$BRACEREGEXP/o){
+      $$self{environments}{$2}=1; }
+  }
+  $self; }
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# A package scanned from a LaTeXML implementation.
+# This gets its list of symbols by loading the package into LaTeXML,
+# and then extracting all defined symbols from the STATE table.
+# In order to be able to load the package, TeX.pool and LaTeX.pool
+# must be loadd, and by executing the laod, any included packages
+# are automatically included (ie. it is initially cumulative)
+# To compute the non-cumulative list takes more work:
+# We must find all included packages, load them, and subtract them.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# NOTE: we still need to sort out the "base" issue:
+# Should load TeX,LaTeX, for class files
+# but also article for style files.
+# these would then be subtracted for non-cumulative.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+package ImplementationPackage;
+use strict;
+use base qw(Package);
+use LaTeXML;
+use LaTeXML::Util::Pathname;
+
+sub new {
+  my($class,$name,%options)=@_;
+  my $self = $class->SUPER::new($name,%options);
+
+  print "Loading $name into LaTeXML\n"  if $::VERBOSITY;
+  my $latexml = LaTeXML->new(searchpaths=>($options{searchpaths} || []));
+  my @load = ("TeX.pool", "LaTeX.pool", $name);
+
+  local $LaTeXML::STATE    = $$latexml{state};
+  my $stomach  = $LaTeXML::STATE->getStomach; # The current Stomach;
+  my $gullet   = $stomach->getGullet;
+  $stomach->initialize;
+  my $paths = $LaTeXML::STATE->lookupValue('SEARCHPATHS');
+
+  my @pkgs = ("TeX.pool","LaTeX.pool");
+  push(@pkgs,$name) unless $name eq 'latex.ltx';
+  foreach my $pkg (@pkgs){
+    my $loadpath = pathname_find("$pkg.ltxml",paths=>$paths,installation_subdir=>'Package');
+    if(!$loadpath){
+      print "WARN: Couldn't find LaTeXML implementation for $pkg\n"; return undef; }
+    if($pkg =~ /(.*)\.sty$/)   {  LaTeXML::Package::RequirePackage($1); }
+    elsif($pkg =~ /(.*)\.cls$/){  LaTeXML::Package::LoadClass($1); }
+    else                       {  $gullet->input($loadpath); }}
+
+  print "Scanning defined symbols\n"  if $::VERBOSITY;
+  my $table = $LaTeXML::STATE->{table}{meaning};
+  foreach my $entry (keys %{$table}){
+    if($entry =~ /^(\\.*)$/){
+      $$self{symbols}{$1} = 1; }
+    elsif($entry =~ /^(.*)\.ltxml_loaded$/){
+      $$self{used}{$1} = 1; }}
+
+  $self->afterscan;
+
+  if($name ne 'latex.ltx'){
+    my @used = keys %{$$self{uses}};
+    push(@used,"latex.ltx");
+    if($$self{cumulative}){}	# Nothing to do.
+    else {
+      print "Removing symbols from used packages\n"  if $::VERBOSITY;
+      foreach my $used (@used){
+	my $pkg = $class->new($used,cumulative=>1);
+	$self->subtract($pkg) if $pkg; }}}
+  $self; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+__END__
+
+=head1 NAME
+
+C<texscan> I<options> I<stylefile> ...
+
+=head1 SYNOPSIS
+
+makesite [options] styles
+
+Options:
+  --tex         Show the symbols defined in a (La)TeX package or class.
+  --latexml     Show the symbols defined in a LaTeXML implementation.
+  --diff        Show the symbols defined in a (La)TeX package or class,
+                but not yet defined in the corresponding LaTeXML implementation.
+  --internal    Include internal symbols (including '@'), default no.
+  --cumulative  Include the cumulative definitions,
+                Ie. all symbols defined in the package and all packages
+                it uses, including LaTeX, itself.
+                Default is not cumulative, which also excludes any symbols
+                that are redefinitions of symbols from latex or included packages
+  --all         Scan all implementation files.
+  --help        Shows this help message.
+  --quiet       Runs more quietly
+  --verbose     Runs more noisily
+
+
+A tool to scan for control sequences defined in LaTeX classes or
+style files, and then check whether they're defined in a
+LaTeXML implementation file.
+
+=head1 Limitations
+
+This tool needs to be smarter, or have a more complete set of patterns,
+to recognize the range of forms that effectively define symbols
+in LaTeX class and style files.
+
+=cut
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

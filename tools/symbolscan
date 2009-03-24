@@ -1,0 +1,453 @@
+#!/usr/bin/perl -w
+
+use strict;
+use Getopt::Long qw(:config no_ignore_case);
+use Pod::Usage;
+use FindBin;
+# Assume we're in the tools directory of a development version of latexml (next to lib, blib..)
+use lib "$FindBin::RealBin/../blib/lib";
+use LaTeXML;
+use LaTeXML::Util::Pathname;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# symbolscan : Scans for math symbol definitions in LaTeXML binding files.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+my $identity = 'symbolscan';
+my($help)=(0);
+local $::VERBOSITY = 0;
+my ($FORMATTED,$CUMULATIVE,$INTERNAL)=(1,0,0);
+my ($UNICODETHESAURUS,$THESAURUS)=(0,0);
+my $DO_ALL=0;
+my @SEARCHPATHS = ();
+GetOptions("help"        => \$help,
+	   "verbose"     => sub { $::VERBOSITY++; },
+	   "quiet"       => sub { $::VERBOSITY--; },
+	   "path=s"      => \@SEARCHPATHS,
+	   "formatted!"  => \$FORMATTED,
+	   "cumulative!" => \$CUMULATIVE,
+	   "internal!"   => \$INTERNAL,
+	   "unicodethesaurus" => \$UNICODETHESAURUS,
+	   "thesaurus"   => \$THESAURUS,
+	   "all"         => \$DO_ALL,
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+
+######################################################################
+# Find the packages, classes implementations that we should look at.
+# [Should get this from LaTeXML?]
+our $LTXPACKAGEDIR = "$FindBin::RealBin/../blib/lib/LaTeXML/Package/";
+
+@SEARCHPATHS = map( (s|^~/|$ENV{HOME}/| ? $_ : $_), @SEARCHPATHS);
+$INTERNAL=1 if $THESAURUS || $UNICODETHESAURUS;
+$CUMULATIVE=1 if $THESAURUS || $UNICODETHESAURUS;
+
+# See what package files we're going to analyze
+my $pkgs = [ ($DO_ALL ? allPackages() : ()) , @ARGV];
+
+# Load the packages, extract the symbols
+my $state = loadPackages($pkgs);
+my $symbols = sortSymbols(extractSymbols($state,$pkgs));
+
+# and format the result.
+if($UNICODETHESAURUS){
+  my $thesaurus = completeUnicodeThesaurus($symbols);
+  binmode(STDOUT,":utf8");
+  printThesaurus($thesaurus); }
+elsif($THESAURUS){
+  my $thesaurus = completeThesaurus($symbols);
+  printThesaurus($thesaurus); }
+elsif($FORMATTED){
+  formatSymbols($symbols); }
+# Or just list the symbols
+else {
+  foreach my $entry (@$symbols){
+    print join(', ',$$entry{cs},
+	       ($$entry{role}||''),
+	       ($$entry{meaning}|| ''),
+	       ($$entry{presentation}||''),
+	       $$entry{package})
+      ."\n"; }
+}
+
+######################################################################
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Get a list of all implemented classes & packages.
+sub allPackages {
+  my @pkgs = ();
+  push(@pkgs,"TeX.pool","LaTeX.pool");
+  foreach my $dir ($LTXPACKAGEDIR,@SEARCHPATHS){
+    opendir(DIR,$dir) or die "Couldn't read LaTeXML Package directory $dir: $!";
+    foreach my $file (sort readdir(DIR)){
+      next if $file =~ /pxfonts.sty.ltxml$/; # This duplicates txfonts!
+      ## ONLY include style files (cls files generally don't define math?)
+      push(@pkgs, $1) if $file =~ /^(.*?\.sty)\.ltxml$/; }
+    closedir(DIR); }
+  @pkgs; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Create a LaTeXML parser, Load all of the requested packages into it,
+# (along with the TeX and LaTeX pools, if necessary)
+# and return the STATE.
+sub loadPackages {
+  my($pkgs)=@_;
+
+  my @pkgs = @$pkgs;
+  # Require LaTeX & TeX if needed and not present.
+  if(grep(/\.(cls|sty)$/,@pkgs) && !grep(/^(.*\/)?LaTeX\.pool$/,@pkgs)){
+      unshift(@pkgs,"LaTeX.pool"); }
+  if(grep(/^(.*\/)?LaTeX.pool$/,@pkgs) && !grep(/^(.*\/)?TeX\.pool$/,@pkgs)){
+    unshift(@pkgs,"TeX.pool"); }
+
+  # Create and initialize the LaTeXML parser
+  my $latexml = LaTeXML->new(searchpaths=>[@SEARCHPATHS]);
+  local $LaTeXML::STATE = $$latexml{state};
+  my $stomach  = $LaTeXML::STATE->getStomach; # The current Stomach;
+  my $gullet   = $stomach->getGullet;
+  $stomach->initialize;
+  my $paths = $LaTeXML::STATE->lookupValue('SEARCHPATHS');
+
+  # Load all of the requested packages into LaTeXML
+  foreach my $pkg (@pkgs){
+    my $loadpath = pathname_find($pkg,types=>['ltxml',''],
+				 paths=>$paths,installation_subdir=>'Package');
+    if(!$loadpath){
+      print STDERR "WARN: Couldn't find LaTeXML implementation for $pkg\n"; return undef; }
+    if($pkg =~ /(.*)\.sty$/)   {  LaTeXML::Package::RequirePackage($1); }
+    elsif($pkg =~ /(.*)\.cls$/){  LaTeXML::Package::LoadClass($1); }
+    else                       {  $gullet->input($loadpath); }}
+
+  # And, digest in case there is any pending plain TeX.
+  $stomach->digestNextBody;
+
+  $LaTeXML::STATE; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Given the LaTeXML STATE, and the desired packages,
+# find all the math symbols that have been defined.
+# Skips internal symbols (w/ @), unless $INTERNAL is set
+# Skips symbols from other packages, unless $CUMULATIVE is set.
+sub extractSymbols {
+  my($state,$pkgs)=@_;
+
+  my %includes = ();
+  foreach my $pkg (@$pkgs){
+    if($pkg =~ m/^(.*?\/)?([^\/]*?)\.(cls|sty|pool)(\.ltxml)?$/){
+      $includes{$2}=1; }}
+    
+  # Pick out all the defined Math Symbols
+#  print STDERR "Scanning defined symbols in $name\n"  if $::VERBOSITY;
+  my $table = $state->{table}{value};
+  my @symbols = ();
+  foreach my $key (keys %{$table}){
+    if($key =~ /^math_definition##/){
+      my($ignore,$cs,$nargs,$role,$name,$meaning,$source,$pres)=split('##',$key);
+      next if !$INTERNAL && $cs =~ /@/;
+      $role = '' if $role eq 'UNKNOWN';
+      my $pkg     = $2 if $source =~ m/^(.*?)\/([^\/]*?)\.(cls|sty|pool)(\.ltxml)?$/;
+      next if $pkg && !$CUMULATIVE && !$includes{$pkg};
+      push(@symbols,
+	   {cs=>$cs, nargs=>$nargs,
+	    role=>$role, name=>$name,meaning=>$meaning,
+	    presentation=>$pres,
+	    package=>$pkg || 'unknown'}); }}
+  [@symbols]; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Sort the symbols and collapse duplicates from different packages.
+sub sortSymbols {
+  my($symbols)=@_;
+  my $z = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzz';
+  my @symbols = sort {
+    (($$a{role}||$z) cmp ($$b{role}||$z))
+      || (($$a{meaning}||$z) cmp ($$b{meaning}||$z))
+	|| (($$a{cs}||$z) cmp ($$b{cs}||$z))
+	  || (($$a{package}||$z) cmp ($$b{package}||$z)); }
+    @$symbols;
+
+  if(my $current = shift(@symbols)){
+    my @filtered = ($current);
+    while(@symbols){
+      my $next = shift(@symbols);
+      if(($$current{cs} eq $$next{cs})
+	 && (($$current{role}||$z) eq ($$next{role}||$z))
+	 && (($$current{meaning}||$z) eq ($$next{meaning}||$z))
+	 && (($$current{nargs}||$z) eq ($$next{nargs}||$z))
+	 && (($$current{presentation}||$z) eq ($$next{presentation}||$z))){
+	$$current{package} .= ','.$$next{package}; }
+      else {
+	push(@filtered,$current=$next); }}
+    @symbols=@filtered; }
+  [@symbols]; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Format the symbols in a table (in a TeX document)
+# Need some smarts about what packages to use!!!
+sub formatSymbols {
+  my($symbols)=@_;
+  print "\\documentclass{article}\n";
+  print "\\usepackage{latexsym}\n";
+#  print "\\usepackage{mathptm}\n";
+  print "\\usepackage{supertabular}\n";
+  print "\\usepackage{amsmath}\n";
+  print "\\usepackage{cmbright}\n";
+  print "\\usepackage{txfonts}\n";
+  ##
+  print "\\advance\\oddsidemargin-2cm\\relax\n";
+  print "\\begin{document}\n";
+  print "{\\scriptsize\n";
+  print " \\tablehead{Macro & Example & Role & Meaning & Unicode & Packages\\\\ \\hline}\n";
+  print "\\begin{supertabular}{llllll}\n";
+  foreach my $entry (@$symbols){
+    my $cs      = $$entry{cs};
+    my $role    = $$entry{role};
+    $role = ($role ne '' ?  "\\texttt{$role}" : '');
+    my $meaning = $$entry{meaning};
+    $meaning = ($meaning ne '' ?  "\\texttt{$meaning}" : '') ;
+    my $nargs   = $$entry{nargs};
+    my $invocation = ($nargs ? join("",$cs,map("{".chr(ord('a')+$_-1)."}",1..$nargs)) : $cs);
+    my $presentation = (defined $$entry{presentation})&&($$entry{presentation}!~/(\\|\#|\^)/)
+			? $$entry{presentation} : '';
+    $presentation =~ s/(\#|\^)/\\$1/g;
+    $presentation =~ s/([^\000-\177])/'\\&\#'.sprintf('%04x',(ord($1))).';'/eg;
+
+    my $package = $$entry{package};
+    print "\\verb#$cs # & \$$invocation\$ & $role & $meaning & $presentation & $package \\\\\n";
+  }
+  print "\\end{supertabular}}\n";
+  print "\\end{document}\n"; 
+}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Convert the list of symbols into a thesaurus
+# Next step will be to read in an existing thesaurus and merge it.
+
+our %unicode_map;
+our %name_map;
+our %alias_map;
+our %split_stopwords;
+
+# Complete the Mapping tables from token CONTENT to various aliases
+sub completeUnicodeThesaurus {
+  my($symbols)=@_;
+  my $thesaurus = {};
+  foreach my $entry (@$symbols){
+    my $presentation = (defined $$entry{presentation})&&($$entry{presentation}!~/(\\|\#|\^)/)
+			? $$entry{presentation} : '';
+    if($presentation
+       && ($presentation !~ /^\d+$/) # omit pure numbers
+       && ($presentation !~ /^[a-zA-Z]$/) #  or single latin letters
+       && ($presentation !~ /[\s_^]/)){	  # or stuff with markup in them.
+      my @keywords = grep( $_ ne $presentation,
+			   generateThesaurusKeywords($presentation,$$entry{name},$$entry{meaning}));
+      map($$thesaurus{$presentation}{$_}=1, @keywords); }}
+  $thesaurus; }
+
+sub completeThesaurus {
+  my($symbols)=@_;
+  my $thesaurus = {};
+  foreach my $entry (@$symbols){
+    my $meaning = $$entry{meaning};
+    if($meaning ne ''){
+      my @keywords = grep( $_ ne $meaning,
+			   generateThesaurusKeywords(undef,$$entry{name},$meaning));
+      map($$thesaurus{$meaning}{$_}=1, @keywords); }}
+  $thesaurus; }
+
+sub generateThesaurusKeywords{
+  my($presentation,$name,$meaning)=@_;
+  my %keywords = ();
+  if($presentation){
+    if(my $p_alia = $unicode_map{$presentation}){
+      map($keywords{$_}=1, split(/\s/,$p_alia)); }}
+  if($name && ($name !~ /@/)){
+    $keywords{$name} = 1; 
+    #	if($name ne lc($name)){
+    #	  $keywords{'big'.lc($name)}=1; }
+    if(my $n_alia = $name_map{$name}){
+      map($keywords{$_}=1, split(/\s/,$n_alia)); }}
+  if($meaning){
+    $keywords{$meaning}=1;
+    my @splits = split(/-/,$meaning);
+    if(scalar(@splits) > 1){
+      map($keywords{$_}=1, grep(!$split_stopwords{$_}, @splits)); }}
+
+  foreach my $k (keys %keywords){
+    if(my $alia = $alias_map{$k}){
+      map($keywords{$_}=1, split(/\s/,$alia)); }}
+  foreach my $k (keys %keywords){
+    my $lc= lc($k);
+    if(($k ne $lc) && (length($k)<=2)){
+      $keywords{$lc}=1;
+      $keywords{"big$lc"}=1; }}
+  keys %keywords; }
+
+sub printThesaurus {
+  my($thesaurus)=@_;
+  foreach my $key (sort keys %$thesaurus){
+    print join(' ',$key, sort keys %{$$thesaurus{$key}})."\n"; }}
+
+
+# Compute a set of aliases from the macro name (w/o \) and meaning
+our %searchform;
+BEGIN{
+ %searchform=(
+	      # Uppercase greek
+	      Gamma =>'biggamma',   Delta  =>'bigdelta',   Theta =>'bigtheta',
+	      Lambda=>'biglambda',  Xi     =>'bigxi',      Pi    =>'bigpi',
+	      Sigma =>'bigsigma',   Upsilon=>'bigupsilon', Phi   =>'bigphi',
+	      Psi   =>'bigpsi',     Omega  =>'bigomega',
+	      # Short forms
+	      integral=>'int',
+	      # Abdou's shorthands
+	      # We should probably refine these at the query end
+	      # but for now...
+	      'plus-or-minus'=>'plusminus', # from +-
+	      'minus-or-plus' =>'minusplus', # from -+
+	      # ~= => cong ??
+	      # .= => doteq ??
+	      # <-   leftarrow  ???? Is it in there?
+	      'not-equals'=>'neq', # !=
+	      'less-than'=>'lt',   # <
+	      'less-than-or-equals'=>'leq', # <=
+	      'not-less-than'=>'notlt',	    # !<
+	      'not-less-than-or-equals'=>'notleq', # !<=
+	      'greater-than'=>'gt',		   # >
+	      'greater-than-or-equals'=>'geq',	   # >=
+	      'not-greater-than'=>'notgt',	   # !>
+	      'not-greater-than-or-equals'=>'notgeq', # !>=
+	      'Rightarrow'=>'rightdoublearrow',		# =>
+	      'Leftrightarrow'=>'leftrightdoublearrow', # <=>
+	      'rvert'=>'norm',				# ??
+	      'absolute-value'=>'norm',
+	      );
+}
+sub computeAliases {
+  my($name, $meaning)=@_;
+  # Use the macro name as an alias,
+  # split the meaning at hypens to get separate words
+  my %aliases = ();
+  foreach my $a (grep($_,$name, $meaning,split('-',$meaning))){
+    next if $a eq '';
+    $aliases{$a}=1;
+    if(my $aa = $searchform{$a}){
+      $aliases{$aa}=1; }}
+  [sort keys %aliases]; }
+
+BEGIN {
+  %unicode_map =
+    ("\x{03B1}"=>'alpha',
+     "\x{03B2}"=>'beta',
+     "\x{03B3}"=>'gamma',
+     "\x{03B4}"=>'delta',
+     "\x{03F5}"=>'epsilon',
+     "\x{03B5}"=>'varepsilon epsilon',
+     "\x{03B6}"=>'zeta',
+     "\x{03B7}"=>'eta',
+     "\x{03B8}"=>'theta',
+     "\x{03D1}"=>'vartheta theta',
+     "\x{03B9}"=>'iota',
+     "\x{03BA}"=>'kappa',
+     "\x{03BB}"=>'lambda',
+     "\x{03BC}"=>'mu',
+     "\x{03BD}"=>'nu',
+     "\x{03BE}"=>'xi',
+     "\x{03C0}"=>'pi',
+     "\x{03D6}"=>'varpi pi',
+     "\x{03C1}"=>'rho',
+     "\x{03F1}"=>'varrho rho',
+     "\x{03C3}"=>'sigma',
+     "\x{03C2}"=>'varsigma sigma',
+     "\x{03C4}"=>'tau',
+     "\x{03C5}"=>'upsilon',
+     "\x{03D5}"=>'phi',
+     "\x{03C6}"=>'varphi phi',
+     "\x{03C7}"=>'chi',
+     "\x{03C8}"=>'psi',
+     "\x{03C9}"=>'omega',
+     "\x{0393}"=>'Gamma',
+     "\x{0394}"=>'Delta',
+     "\x{0398}"=>'Theta',
+     "\x{039B}"=>'Lambda',
+     "\x{039E}"=>'Xi',
+     "\x{03A0}"=>'Pi',
+     "\x{03A3}"=>'Sigma',
+     "\x{03A5}"=>'Upsilon',
+     "\x{03A6}"=>'Phi',
+     "\x{03A8}"=>'Psi',
+     "\x{03A9}"=>'Omega',
+
+#     "\x{211C}"=>'re bigre',
+#     "\x{2111}"=>'im bigim',
+
+     "\x{2190}"=>'arrow leftarrow',
+     "\x{2192}"=>'arrow rightarrow',
+     "\x{21D0}"=>'arrow leftarrow double leftdoublearrow',
+     "\x{21D2}"=>'arrow rightarrow double rightdoublearrow',
+
+     );
+# %name_map;
+  %alias_map =
+    (Alpha=>'alpha bigalpha', Beta=>'beta bigbeta b bigb', Gamma=>'gamma biggamma', Delta=>'delta bigdelta',
+     Epsilon=>'epsilon bigepsilon e bige', Zeta=>'zeta bigzeta z bigz', Eta=>'eta bigeta h bigh',
+     Theta=>'theta bigtheta', Iota=>'iota bigiota i bigi', Kappa=>'kappa bigkappa k bigk',
+     Lambda=>'lambda biglambda', Mu=>'mu bigmu m bigm', Nu=>'nu bignu n bign', 
+     Xi=>'xi bigxi x bigx', Pi=>'pi bigpi', Rho=>'rho bigrho r bigr', Sigma=>'sigma bigsigma',
+     Tau=>'tau bigtau t bigt', Upsilon=>'upsilon bigupsilon y bigy', Phi=>'phi bigphi',
+     Chi=>'chi bigchi x bigx', Psi=>'psi bigpsi', Omega=>'omega bigomega',
+     cosine=>'trigonometric', sine=>'trigonometric', tangent=>'trigonometric',
+     secant=>'trigonometric', cosecant=>'trigonometric', cotangent=>'trigonometric',
+     integral=>'int',
+     divide=>'div frac', product=>'times',
+     rvert=>'abs absolute-value norm', norm=>'abs absolute-value', abs=>'norm absolute-value',
+     conj=>'conjugate',
+     'less-than'=>'lt', 'greater-than'=>'gt',
+     'less-than-or-equals'=>'le leq', 'greater-than-or-equals'=>'ge geq',
+     'cdot'=>'dot', 'cdots'=>'dot dots', 'vdots'=>'dot dots', 'ddots'=>'dot dots',
+     'overbrace'=>'brace', 'underbrace'=>'brace', hat=>'circumflex', bar=>'macron overline',
+     overline=>'bar',
+     ddot=>'dot diaresis double',
+     'very-much-less-than'=>'less-than',
+     'very-much-greater-than'=>'greater-than',
+     );
+
+  %split_stopwords = map(($_=>1), qw(and or than of by as to very much));
+}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+__END__
+
+=head1 NAME
+
+C<texscan> I<options> I<stylefile> ...
+
+=head1 SYNOPSIS
+
+makesite [options] styles
+
+Options:
+  --formatted   Generates a TeX file containing tables of the meanings
+  --thesaurus   Generates a thesaurus file of mappings from meanings
+                to search words
+  --unicodethesaurus   Generates a thesaurus file of mappings from
+                the unicode content of symbols to search words
+  --all         Scan all implementation files.
+  --path=dir    Add a search path for implementation files
+  --help        Shows this help message.
+  --quiet       Runs more quietly
+  --verbose     Runs more noisily
+
+
+A tool to scan for control sequences defined in LaTeX classes or
+style files, and then check whether they're defined in a
+LaTeXML implementation file.
+
+=head1 Limitations
+
+This tool needs to be smarter, or have a more complete set of patterns,
+to recognize the range of forms that effectively define symbols
+in LaTeX class and style files.
+
+=cut
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
