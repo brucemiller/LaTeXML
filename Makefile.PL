@@ -19,7 +19,6 @@ use strict;
 #======================================================================
 
 our $OLD_LIBXML = grep(/OLD_LIBXML/,@ARGV);
-
 our $TEXMF;
 my ($texmfspec) = grep(/^TEXMF/,@ARGV);
 if($texmfspec &&  $texmfspec =~ /^TEXMF\s*=(.*)$/){
@@ -34,14 +33,13 @@ compile_MathGrammar();
 compile_XSLTs();
 install_TeXStyles();
 
-check_ImageMagick();
-
 WriteMakefile(NAME => 'LaTeXML',
 	      VERSION_FROM => 'lib/LaTeXML.pm',
 	      AUTHOR => 'Bruce Miller <bruce.miller@nist.gov>',
 	      ABSTRACT => "transforms TeX and LaTeX into XML",
 	      PREREQ_PM => { 
 			    'Test::Simple'=>0,
+			    'DB_File'=>0,
 			    # If we have an "old" version of XML::LibXML,
 			    # we also need XPathContext.
 			    # But we can't determine that additional dependence
@@ -52,7 +50,7 @@ WriteMakefile(NAME => 'LaTeXML',
 			     : ( 'XML::LibXML'  => 1.61)), # But > 1.62 is better
 			    'XML::LibXSLT' => 1.58,
 			     'Parse::RecDescent' => 0,
-#			     'Image::Magick'=> 0
+			    'Image::Magick'=> 0,
 			   },
 	      EXE_FILES => [ 'bin/latexml','bin/latexmlpost','bin/latexmlfind','bin/latexmlmath'],
 	      macro => $MORE_MACROS,
@@ -82,9 +80,9 @@ sub compile_MathGrammar {
   push(@EXCLUSIONS,'blib/lib/LaTeXML/MathGrammar');
   $MORE_MAKERULES .= <<'MakeGrammar';
 
-pure_all :: blib/lib/LaTeXML/MathGrammar.pm
+pure_all :: $(INST_LIBDIR)/LaTeXML/MathGrammar.pm
 
-blib/lib/LaTeXML/MathGrammar.pm: lib/LaTeXML/MathGrammar
+$(INST_LIBDIR)/LaTeXML/MathGrammar.pm: lib/LaTeXML/MathGrammar
 	$(PERLRUN) -MParse::RecDescent - lib/LaTeXML/MathGrammar LaTeXML::MathGrammar
 	$(NOECHO) $(MKPATH) $(INST_LIBDIR)/LaTeXML
 	$(MV) MathGrammar.pm blib/lib/LaTeXML/MathGrammar.pm
@@ -99,23 +97,25 @@ MakeGrammar
 # the namespace declaration since HTML must be in null namespace,
 # whereas XHTML must be in a specific namespace.
 sub compile_XSLTs {
-  my $styledir = 'lib/LaTeXML/style';
+  my $styledir = 'LaTeXML/style';
   $$MORE_MACROS{XSLTTOHTML}
     = '$(PERLRUN) -p -e \'s@\s*xmlns\s*=\s*(\"|\'\\\'\')http://www.w3.org/1999/xhtml\1@@\' ';
-  opendir(DIR,$styledir);
+  opendir(DIR,"lib/$styledir");
   my @xhtmls = grep(/^LaTeXML-(.*)-xhtml.xsl$/,readdir(DIR));
   closedir(DIR);
+  my @conversions=();
   foreach my $xhtml (@xhtmls){
     my $html = $xhtml; $html =~ s/-xhtml.xsl$/-html.xsl/;
     $MORE_MAKERULES .= <<"MakeXSLT";
 
-all :: blib/$styledir/$html
+pure_all :: \$(INST_LIBDIR)/LaTeXML/style/$html
 
-blib/$styledir/$html : $styledir/$xhtml
-	\$(XSLTTOHTML) $styledir/$xhtml > blib/$styledir/$html
+\$(INST_LIBDIR)/$styledir/$html: lib/$styledir/$xhtml
+	\$(NOECHO) \$(MKPATH) \$(INST_LIBDIR)/$styledir
+	\$(XSLTTOHTML) lib/$styledir/$xhtml > \$(INST_LIBDIR)/$styledir/$html
 
 MakeXSLT
-}}
+  }}
 
 #======================================================================
 # Install included TeX style file(s) into the standard TEXMFLOCAL,
@@ -155,16 +155,6 @@ uninstall ::
 
 InstallTeXStyles
 }
-
-#======================================================================
-# ImageMagick is only used in postprocessing, and is somewhat optional.
-# Also, it's trickier to install, so let's not require it.
-sub check_ImageMagick {
-  eval "require Image::Magick; 0";
-  if ($@) {
-    warn "Warning: Image::Magick not found.\n", 
-      "  This module is NOT required, but you will not be able to process images\n",
-	"  to convert math or graphics to images files for use on the web.\n"; }}
 
 #======================================================================
 
