@@ -52,6 +52,9 @@ sub new {
 	ai  =>{destination_type=>'png',
 	       transparent=>1, 
 	       prescale=>1, ncolors=>'400%', quality=>90, unit=>'point'},
+	pdf =>{destination_type=>'png',
+	       transparent=>1, 
+	       prescale=>1, ncolors=>'400%', quality=>90, unit=>'point'},
 	ps  =>{destination_type=>'png', transparent=>1, 
 	       prescale=>1, ncolors=>'400%', quality=>90,  unit=>'point'},
 	eps =>{destination_type=>'png', transparent=>1, 
@@ -75,7 +78,7 @@ sub process {
 			  .join(', ',@$LaTeXML::Post::Graphics::SEARCHPATHS));
 
   if(my @nodes = $self->selectGraphicsNodes($doc)){
-    $self->Progress($doc,scalar(@nodes)." graphics nodes to process");
+     $self->Progress($doc,scalar(@nodes)." graphics nodes to process");
     foreach my $node (@nodes){
       $self->processGraphic($doc,$node);  }
     $doc->closeCache; }		# If opened.
@@ -180,12 +183,14 @@ sub transformGraphic {
   my ($image,$width,$height);
   if($$self{trivial_scaling} && ($type eq $srctype) && !grep(!($_->[0]=~/^scale/),@$transform)){
     ($width,$height)=$self->trivial_scaling($doc,$source,$transform);
+    return unless $width && $height;
     pathname_copy($source, $dest) or warn("Couldn't copy $source to $dest: $!");
     $self->ProgressDetailed($doc,">> Copied to $reldest for $width x $height"); }
   else {
     ($image,$width,$height) =$self->complex_transform($doc,$source,$transform, %properties);
+    return unless $image && $width && $height;
     $self->ProgressDetailed($doc,">> Writing to $dest ");
-    $image->Write(filename=>$dest) and warn "Couldn't write image $dest: $!"; }
+    $self->ImageWrite($doc,$image,$dest) or return; }
 
   $doc->cacheStore($key,"$reldest|$width|$height");
   $self->ProgressDetailed($doc,">> done with $key");
@@ -195,15 +200,9 @@ sub transformGraphic {
 # Compute the desired image size (width,height)
 sub trivial_scaling {
   my($self,$doc,$source,$transform)=@_;
-  my $image = Image::Magick->new(); 
-  #### NOTE: (Apr 2, 2008; ImageMagick 6.3.5.9, Perl 5.8.8-38)
-  #### Suddenly, this is failing to read (some?) jpeg images
-  #### terminating the script with an otherwise unexplained
-  ####   "No such file or directory"
-  #### WTF!?!?!?!?
-  if(!$image->Read($source)){}	# ????
-#  $image->
-  my($w,$h) = $image->Get('width','height');
+  my $image = $self->ImageRead($doc,$source) or return;
+  my($w,$h) = $self->ImageGet($doc,$image,'width','height');
+  return unless $w && $h;
   foreach my $trans (@$transform){
     my($op,$a1,$a2,$a3,$a4)=@$trans;
     if($op eq 'scale'){		# $a1 => scale
@@ -218,16 +217,12 @@ sub trivial_scaling {
 # Transform the image, returning (image,width,height);
 sub complex_transform {
   my($self,$doc,$source,$transform, %properties)=@_;
-  my $image = Image::Magick->new(); 
-  $image->Set(antialias=>1);
-  if(!$image->Read($source)){
-# ?????? Seems to have read it???
-#    warn("Failed to read image $source"); 
-#    return; 
-}
-  $image->Trim() if $properties{autocrop};
-  my $orig_ncolors = $image->Get('colors');
-  my ($w,$h) = $image->Get('width','height');
+  my $image = $self->ImageRead($doc,$source,antialias=>1) or return;
+  $self->ImageOp($doc,$image,'Trim') or return if $properties{autocrop};
+  my $orig_ncolors = $self->ImageGet($doc,$image,'colors');
+  return unless $orig_ncolors;
+  my ($w,$h) = $self->ImageGet($doc,$image,'width','height');
+  return unless $w && $h;
   my @transform = @$transform;
   # If native unit is points, we at least need to scale by dots/point.
   # [tho' other scalings may override this]
@@ -252,14 +247,12 @@ sub complex_transform {
     my $X = 4;			# Expansion factor
     my($dx,$dy)=(int($X * 72 * $w/$w0),int($X * 72 * $h/$h0)); 
     $self->ProgressDetailed($doc,">> reloading to desired size $w x $h (density = $dx x $dy)");
-    $image = Image::Magick->new();
-    $image->Set(antialias=>1);
-    $image->Set(density=>$dx.'x'.$dy); # Load at prescaled, higher density
-    $image->Read($source);
-    $image->Trim() if $properties{autocrop};
-    $image->Set(colorspace=>'RGB');
-    $image->Scale(geometry=>int(100/$X)."%"); # Now downscale.
-    ($w,$h) = $image->Get('width','height'); }
+    $image = $self->ImageRead($doc,$source, antialias=>1, density=>$dx.'x'.$dy) or return;
+    $self->ImageOp($doc,$image,'Trim')  or return if $properties{autocrop};
+    $self->ImageSet($doc,$image, colorspace=>'RGB') or return;
+    $self->ImageOp($doc,$image,'Scale',geometry=>int(100/$X)."%") or return; # Now downscale.
+    ($w,$h) = $self->ImageGet($doc,$image,'width','height');
+    return unless $w && $h; }
 
   my $notes='';
   foreach my $trans (@transform){
@@ -267,7 +260,7 @@ sub complex_transform {
     if($op eq 'scale'){		# $a1 => scale
       ($w,$h)=(ceil($w*$a1),ceil($h*$a1));
       $notes .= " scale to $w x $h";
-      $image->Scale(width=>$w,height=>$h); }
+      $self->ImageOp($doc,$image,'Scale',width=>$w,height=>$h) or return; }
     elsif($op eq 'scale-to'){ 
       # $a1 => width (pts), $a2 => height (pts), $a3 => preserve aspect ratio.
       if($a3){ # If keeping aspect ratio, ignore the most extreme request
@@ -275,10 +268,11 @@ sub complex_transform {
 	else                { $a1 = $w*$a2/$h; }}
       ($w,$h)=(ceil($a1*$$self{dppt}),ceil($a2*$$self{dppt}));
       $notes .= " scale-to $w x $h";
-      $image->Scale(width=>$w,height=>$h); }
+      $self->ImageOp($doc,$image,'Scale',width=>$w,height=>$h) or return; }
     elsif($op eq 'rotate'){
-      $image->Rotate(degrees=>-$a1,color=>$$self{background});
-      ($w,$h) = $image->Get('width','height'); 
+      $self->ImageOp($doc,$image,'Rotate',degrees=>-$a1,color=>$$self{background}) or return;
+      ($w,$h) = $self->ImageGet($doc,$image,'width','height'); 
+      return unless $w && $h;
       $notes .= " rotate $a1 to $w x $h"; }
     # In the following two, note that TeX's coordinates are relative to lower left corner,
     # but ImageMagick's coordinates are relative to upper left.
@@ -296,39 +290,79 @@ sub complex_transform {
       if(($x0 > 0) || ($y0 > 0) || ($x0+$ww < $w) || ($y0+$hh < $h)){
 	my $x0p=max($x0,0); $x0 = min($x0,0);
 	my $y0p=max($y0,0); $y0 = min($y0,0);
-	$image->Crop(x=>$x0p, width =>min($ww,$w-$x0p),
-		     y=>$y0p, height=>min($hh,$h-$y0p));
+	$self->ImageOp($doc,$image,'Crop',x=>$x0p, width =>min($ww,$w-$x0p),
+		       y=>$y0p, height=>min($hh,$h-$y0p)) or return;
 	$w = min($ww+$x0, $w-$x0p);
 	$h = min($hh+$y0, $h-$y0p); 
 	$notes .= " crop $w x $h @ $x0p,$y0p"; }
       # No direct `padding' operation in ImageMagick
-      my $nimage = Image::Magick->new();
-      $nimage->Set('size',"$ww x $hh");
-      $nimage->Read("xc:$$self{background}");
-      $nimage->Composite(image=>$image, compose=>'over', x=>-$x0, y=>-$y0);
+      my $nimage = $self->ImageRead($doc,"xc:$$self{background}", size=>"$ww x $hh") or return;
+      $self->ImageOp($doc,$nimage,'Composite',image=>$image, compose=>'over', x=>-$x0, y=>-$y0) or return;
       $image=$nimage; 
       ($w,$h)=($ww,$hh);
     }}
   if(my $trans = $properties{transparent}){
     $notes .= " transparent=$$self{background}"; 
-    $image->Transparent($$self{background}); }
+    $self->ImageOp($doc,$image,'Transparent',$$self{background}) or return; }
 
-  my $curr_ncolors = $image->Get('colors');
-  if(my $req_ncolors = $properties{ncolors}){
-    $req_ncolors = int($orig_ncolors * $1/ 100) if $req_ncolors =~ /^([\d]*)\%$/;
-    if($req_ncolors < $curr_ncolors){
-    $notes .= " quantize $orig_ncolors => $req_ncolors";
-    $image->Quantize(colors=>$req_ncolors);  }}
+  if(my $curr_ncolors = $self->ImageGet($doc,$image,'colors')){
+    if(my $req_ncolors = $properties{ncolors}){
+      $req_ncolors = int($orig_ncolors * $1/ 100) if $req_ncolors =~ /^([\d]*)\%$/;
+      if($req_ncolors < $curr_ncolors){
+	$notes .= " quantize $orig_ncolors => $req_ncolors";
+	$self->ImageOp($doc,$image,'Quantize',colors=>$req_ncolors) or return;  }}}
 
   if(my $quality = $properties{quality}){
     $notes .= " quality=$quality";
-    $image->Set('quality',$properties{quality}); }
+    $self->ImageSet($doc,$image, quality=>$properties{quality}) or return; }
 
   $self->ProgressDetailed($doc,">> Transformed : $notes") if $notes;
   ($image,$w,$h); }
 
 sub min { ($_[0] < $_[1] ? $_[0] : $_[1]); }
 sub max { ($_[0] > $_[1] ? $_[0] : $_[1]); }
+
+# Wrap up ImageMagick's methods to give more useful & consistent error handling.
+# These all return non-zero on success!
+# so, you generally want to do $self->ImageOp(...) or return;
+
+# This reads a new image, setting the given properties BEFORE ingesting the image data.
+sub ImageRead {
+  my($self,$doc,$source,@args)=@_;
+  my $image = Image::Magick->new();
+  $self->ImageOp($doc,$image,'Set',@args) or return;
+  $self->ImageOp($doc,$image,'Read',$source) or return;
+  $image; }
+
+sub ImageWrite {
+  my($self,$doc,$image,$destination)=@_;
+  # In the perverse case that we've ended up with a sequence of images; flatten them.
+  if(@$image > 1){
+    my $fimage = $image->Flatten(); # Just in case we ended up with pieces!?!?!?
+    $image = $fimage if $fimage; }
+  $self->ImageOp($doc,$image,'Write',filename=>$destination) or return; }
+
+sub ImageGet {
+  my($self,$doc,$image,@args)=@_;
+  my @values = $image->Get(@args);
+  @values; }
+
+sub ImageSet {
+  my($self,$doc,$image,@args)=@_;
+  $self->ImageOp($doc,$image,'Set',@args); }
+
+sub ImageOp {
+  my($self,$doc,$image,$operation,@args)=@_;
+  my $retval = $image->$operation(@args);
+  return 1 unless $retval;
+  $retval =~ /(\d+)/;
+  my $retcode = $1;
+  if($retcode < 400){		# Warning
+    $self->Warn($doc,"Image Warning: operation $operation (".join(', ',@args).") returned $retval"); 
+    1; }
+  else {			# Error
+    $self->Warn($doc,"Image Error: $operation (".join(', ',@args).") returned $retval");
+    0; }}
 
 #**********************************************************************
 # Note that viewport is supposed to be relative to bounding box,
