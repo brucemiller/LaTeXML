@@ -867,6 +867,8 @@ DefEnvironment('{equation*}',
 	       locked=>1);
 
 # Define \( ..\) and \[ ... \] to act like environments.
+# I would have thought these should be locked, but it seems relatively common to
+# redefine them as \left[ \right] and \left( \right) !
 DefConstructor('\[',
 	       "<ltx:equation xml:id='#id'>"
 	       . "<ltx:Math mode='display'>"
@@ -877,8 +879,7 @@ DefConstructor('\[',
 	       ."</ltx:equation>",
 	       beforeDigest=> sub{ $_[0]->beginMode('display_math'); },
 	       captureBody=>1,
-	       properties=> sub { RefStepID('equation') },
-	       locked=>1);
+	       properties=> sub { RefStepID('equation') });
 DefConstructor('\]'  ,"",beforeDigest=> sub{ $_[0]->endMode('display_math'); });
 DefConstructor('\(' ,
 	       "<ltx:Math mode='inline'>"
@@ -887,8 +888,7 @@ DefConstructor('\(' ,
 	       . "</ltx:XMath>"
 	       ."</ltx:Math>",
 	       beforeDigest=> sub{ $_[0]->beginMode('inline_math'); },
-	       captureBody=>1,
-	       locked=>1);
+	       captureBody=>1);
 DefConstructor('\)'   ,"", beforeDigest=> sub{ $_[0]->endMode('inline_math'); });
 
 # Keep from expanding too early, if in alignments, or such.
