@@ -747,7 +747,7 @@ DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
   my $gullet = $stomach->getGullet;
   $name = ToString($name);
   my %props=();
-  my $size;
+  my $size = 1;
   if($name =~ /^$FONTREGEXP$/o){
     my($fm,$sr,$sh)=($1,$2,$3);
     $size = $4;
@@ -810,7 +810,7 @@ DefPrimitive('\divide Variable SkipKeyword:by Number',sub {
 
 # <let assignment> = \futurelet <control sequence><token><token> 
 #   | \let<control sequence><equals><one optional space><token>
-DefPrimitive('\let Token SkipMatch:= Token', sub {
+DefPrimitive('\let Token SkipMatch:= SkipSpaces Token', sub {
   my($stomach,$token1,$token2)=@_;
   Let($token1, $token2);
   return;  });
@@ -2459,7 +2459,7 @@ DefMacro('\voidb@x','');
 #======================================================================
 # TeX Book, Appendix B, p. 348
 
-DefMacro('\newif Token',sub {
+DefMacro('\newif DefToken',sub {
   my($ignore,$cs)=@_;
   my $name = ToString($cs); $name =~ s/^\\if//;
   DefMacroI($cs,undef, sub { ifHandler($_[0],LookupValue('Boolean:'.$name)); }, isConditional=>1);
@@ -3824,7 +3824,8 @@ DefMath('\@INVISIBLECOMMA',"\x{2063}", reversion=>'',
 # Would be nice to make the ID argument optional, but since these can appear in
 # optional arguments to other macros, we'll end up nesting [] !!
 DefConstructor('\@XMArg{}{}',"<ltx:XMArg ?#1(xml:id='#1')>#2</ltx:XMArg>", reversion=>'#2',
-	       properties=>{id=>'#1'});
+	       properties=>{id=>'#1'},
+	       bounded=>1, beforeDigest=>sub { AssignValue(mathstyle=>'text') });
 DefConstructor('\@XMRef{}',"<ltx:XMRef idref='#1'/>",
 	       reversion=>sub{ 
 		 my($whatsit)=@_;
