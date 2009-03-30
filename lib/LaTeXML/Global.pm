@@ -44,7 +44,7 @@ our  @EXPORT = (
 	       # Number & Dimension constructors
 	       qw( &Number &Float &Dimension &MuDimension &Glue &MuGlue &Pair &PairList),
 	       # Error & Progress reporting
-	       qw( &NoteProgress &NoteBegin &NoteEnd &Fatal &Error &Warn ),
+	       qw( &NoteProgress &NoteBegin &NoteEnd &Fatal &Error &Warn &Info),
 	       # And some generics
 	       qw(&Stringify &ToString  &Equals),
 	       # And, anything exported from LaTeXML::Common::XML
@@ -223,10 +223,20 @@ sub Error {
     Fatal(":too_many:$MAXERRORS Too many errors!"); }
   return; }
 
+# Warning message; results may be OK, but somewhat unlikely
 sub Warn {
   my($msg)=@_;
   $LaTeXML::Global::STATE->noteStatus('warning');
   print STDERR LaTeXML::Error::generateMessage("Warning",$msg,0)
+    unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -1; 
+  return; }
+
+# Informational message; results likely unaffected
+# but the message may give clues about subsequent warnings or errors
+sub Info {
+  my($msg)=@_;
+  $LaTeXML::Global::STATE->noteStatus('info');
+  print STDERR LaTeXML::Error::generateMessage("Info",$msg,0)
     unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -1; 
   return; }
 

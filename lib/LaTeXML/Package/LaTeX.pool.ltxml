@@ -52,7 +52,7 @@ DefPrimitive('\warn@unusedclassoptions',sub {
   my $name = ToString(Digest(T_CS('\@currname')));
   my $type = ToString(Digest(T_CS('\@currext')));
   foreach my $option (@{LookupValue('@unusedoptionlist')}){
-    Warn(":unexpected:<option>:$option Unexpected option $option passed to $name.$type"); }
+    Info(":unexpected:<option>:$option Unexpected option $option passed to $name.$type"); }
   AssignValue('@unusedoptionlist',[]); });
 
 DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
@@ -74,7 +74,7 @@ DefPrimitive('\compat@loadpackages',sub {
     if(FindFile($option,type=>'sty')){
       RequirePackage($option); }
     else {
-      Warn(":unexpected:<option>:$option Unexpected option $option passed to $name.$type"); }}
+      Info(":unexpected:<option>:$option Unexpected option $option passed to $name.$type"); }}
   AssignValue('@unusedoptionlist',[]); });
 
 sub onlyPreamble {
@@ -428,7 +428,7 @@ DefPrimitive('\@unknownoptionerror',sub {
   if(my $option = ToString(Digest(T_CS('\CurrentOption')))){
     my $name = ToString(Digest(T_CS('\@currname')));
     my $type = ToString(Digest(T_CS('\@currext')));
-    Warn(":unexpected:<option>:$option Unexpected option $option passed to $name.$type"); }
+    Info(":unexpected:<option>:$option Unexpected option $option passed to $name.$type"); }
   return; });
 
 DefPrimitive('\ExecuteOptions{}', sub{
@@ -577,6 +577,10 @@ DefMacro('\abstractname','Abstract'); # never used?
 
 # Or perhaps not....
 # There's a title and other stuff in here, but how could we guess?
+# Well, there's likely to be a sequence of <p><text font="xx" size="yy">...</text></p>
+# Presumably the earlier, larger one is title, rest are authors/affiliations...
+# Particularly, if they start with a pseudo superscript or other "marker", they're probably affil!
+# For now, we just give an info message
 DefEnvironment('{titlepage}','<ltx:para class="titlepage">#body',
 	      beforeDigest=>sub { #Let("\\\\",'\title@cr');
 				  #Let('\par','\relax');
@@ -586,6 +590,7 @@ DefEnvironment('{titlepage}','<ltx:para class="titlepage">#body',
 						 '<ltx:abstract>#body</ltx:abstract>',
 						 beforeDigest=>sub { 
 						   Digest(T_CS('\maybe@end@title')); });
+				  Info(":unexpected:titlepage Frontmatter will not be well-structured");
 				return; },
 	       beforeDigestEnd=>sub { Digest(T_CS('\maybe@end@title')); },
 	       locked=>1);
@@ -2137,7 +2142,7 @@ DefPrimitive('\input', sub {
   if((! $dir) && (!$type || ($type eq 'tex')) # Attempt to load raw TeX
      && (LookupValue('inPreamble') || !FindFile($name)) # And should/could be style file
      && ($newpath=FindFile($name,type=>'sty'))){	# and there IS such a style file
-    Warn(":override Overriding input of $path with $newpath");
+    Info(":override Overriding input of $path with $newpath");
     RequirePackage($name); }
   elsif(my $file = FindFile($path)){
     $gullet->input($file); }

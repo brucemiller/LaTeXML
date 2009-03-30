@@ -132,11 +132,13 @@ sub isPrefix      { $_[0]->{isPrefix}; }
 
 sub executeBeforeDigest {
   my($self,$stomach)=@_;
+  local $LaTeXML::State::UNLOCKED=1;
   my $pre = $$self{beforeDigest};
   ($pre ? map(&$_($stomach), @$pre) : ()); }
 
 sub executeAfterDigest {
   my($self,$stomach,@whatever)=@_;
+  local $LaTeXML::State::UNLOCKED=1;
   my $post = $$self{afterDigest};
   ($post ? map(&$_($stomach,@whatever), @$post) : ()); }
 

@@ -171,10 +171,10 @@ sub installDefinition {
   # Locked definitions!!! (or should this test be in assignMeaning?)
   # Ignore attempts to (re)define $cs from tex sources
   my $cs= $definition->getCS->getCSName;
-  if($self->lookupValue("$cs:locked")){
+  if($self->lookupValue("$cs:locked") && !$LaTeXML::State::UNLOCKED){
     if(my $s = $self->getStomach->getGullet->getSource){
       if($s =~ /\.tex$/){
-	Warn(":override:$cs Ignoring redefinition of $cs in $s\n");
+	Info(":override:$cs Ignoring redefinition of $cs in $s\n");
 	return; }}}
   assign_internal($self,'meaning',$cs => $definition, $scope); }
 

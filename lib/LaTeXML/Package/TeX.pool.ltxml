@@ -417,7 +417,7 @@ DefMacro('\input TeXFileName',sub {
   # Possibly we should be trying for a style file (& we may end up in latex mode)
   elsif((! $dir) && (!$type || ($type eq 'tex')) # Attempt to load raw TeX
      && ($newpath=FindFile($name,type=>'sty'))){	# and there IS such a style file
-    Warn(":override Overriding input of $path with $newpath");
+    Info(":override Overriding input of $path with $newpath");
     RequirePackage($name); }
   else {
     $STATE->noteStatus(missing=>$path);
@@ -755,7 +755,7 @@ DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
     $props{series}= $font_series{$sr} unless $props{series};
     $props{shape} = $font_shape{$sh}  unless $props{shape}; }
   else {
-    Warn(":unexpected:$name Unrecognized font \"$name\"; ".ToString($cs)." will have no effect"); }
+    Info(":unexpected:$name Unrecognized font \"$name\"; ".ToString($cs)." will have no effect"); }
 
   if($gullet->readKeyword('at')){
     $size = $gullet->readDimension->ptValue; }
