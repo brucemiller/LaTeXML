@@ -36,6 +36,7 @@ Math =
 element Math {
   Common.attributes,
   Imageable.attributes,
+  ID.attributes,
 
   ## display or inline mode.
   attribute mode { "display" | "inline" }?,
