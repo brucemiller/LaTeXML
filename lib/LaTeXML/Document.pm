@@ -269,7 +269,8 @@ sub find_insertion_point {
   else {			# Now we're getting more desparate...
     # Check if we can auto close some nodes, and _then_ insert the $qname.
     my ($node,$closeto) = ($$self{node});
-    while(($node->nodeType != XML_DOCUMENT_NODE) && $$self{model}->canAutoClose($node)){
+    while(($node->nodeType != XML_DOCUMENT_NODE)
+	  && $$self{model}->canAutoClose($node) && !$node->getAttribute('_noautoclose')){
       my $parent = $node->parentNode;
       if($$self{model}->canContainSomehow($parent,$qname)){
 	$closeto=$node; last; }
@@ -321,7 +322,7 @@ sub getInsertionCandidates {
   # Check the current element FIRST, then build list of candidates.
   my $first = $node;
   $first = $first->parentNode if $first && $first->getType == XML_TEXT_NODE;
-  my $isCapture = $first && $first->localname eq '_Capture_';
+  my $isCapture = $first && ($first->localname||'') eq '_Capture_';
   push(@nodes,$first) if $first && $first->getType != XML_DOCUMENT_NODE && !$isCapture;
   $node = $node->lastChild if $node && $node->hasChildNodes;
   while($node && ($node->nodeType != XML_DOCUMENT_NODE)){
@@ -431,7 +432,7 @@ sub openText {
 	$bestdiff = $d;
 	$closeto = $n;
 	last if ($d == 0); }
-      last unless ($$self{model}->getNodeQName($n) eq $FONT_ELEMENT_NAME);
+      last unless ($$self{model}->getNodeQName($n) eq $FONT_ELEMENT_NAME) && !$n->getAttribute('_noautoclose');
       $n = $n->parentNode; }
     $$self{node} = $closeto if $closeto ne $node;	# Move to best starting point for this text.
     $self->openElement($FONT_ELEMENT_NAME,font=>$font,_fontswitch=>1) if $bestdiff > 0; # Open if needed.
@@ -527,7 +528,7 @@ sub closeElement {
     my $t = $$self{model}->getNodeQName($node);
     # autoclose until node of same name BUT also close nodes opened' for font switches!
     last if ($t eq $qname) && !( ($t eq $FONT_ELEMENT_NAME) && $node->getAttribute('_fontswitch'));
-    push(@cant_close,$t) unless $$self{model}->canAutoClose($node);
+    push(@cant_close,$t) unless $$self{model}->canAutoClose($node) && !$node->getAttribute('_noautoclose');
     $node = $node->parentNode; }
   if($node->nodeType == XML_DOCUMENT_NODE){ # Didn't find $qname at all!!
     Error(":malformed Attempt to close ".($qname eq '#PCDATA' ? $qname : '</'.$qname.'>').", which isn't open; in ".$self->getNodePath); }
@@ -548,7 +549,7 @@ sub isOpenable {
   my $node = $$self{node};
   while($node){
     return 1 if $model->canContainSomehow($node,$qname);
-    return 0 unless $model->canAutoClose($model->getNodeQName($node));
+    return 0 unless $model->canAutoClose($model->getNodeQName($node)) && !$node->getAttribute('_noautoclose');
     $node = $node->parentNode; }
   return 0; }
 #  $$self{model}->canContainSomehow($$self{node},$qname); }
@@ -566,7 +567,7 @@ sub isCloseable {
       return if $node->nodeType == XML_DOCUMENT_NODE;
       my $this_qname = $$self{model}->getNodeQName($node);
       last if $this_qname eq $qname;
-      return unless $$self{model}->canAutoClose($this_qname);
+      return unless $$self{model}->canAutoClose($this_qname) && !$node->getAttribute('_noautoclose');
       $node = $node->parentNode; }
     $node = $node->parentNode if @tags; }
   $node; }
