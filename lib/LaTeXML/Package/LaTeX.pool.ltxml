@@ -262,7 +262,7 @@ DefMath('\mathring{}', "\x{030A}", operator_role=>'OVERACCENT');
 # These are defined in terms of \@startsection so that
 # casual user redefinitions work, too.
 DefMacro('\chapter',       '\@startsection{chapter}{}{}{}{}{}', locked=>1);
-DefMacro('\part',          '\@startsection{part}{}{}{}{}{}', locked=>1);
+DefMacro('\part',          '\@startsection{part}{}{}{}{}{}'); # not locked since sometimes redefined as partition?
 DefMacro('\section',       '\@startsection{section}{}{}{}{}{}', locked=>1);
 DefMacro('\subsection',    '\@startsection{subsection}{}{}{}{}{}', locked=>1);
 DefMacro('\subsubsection', '\@startsection{subsubsection}{}{}{}{}{}', locked=>1);
@@ -581,15 +581,16 @@ DefMacro('\abstractname','Abstract'); # never used?
 # Presumably the earlier, larger one is title, rest are authors/affiliations...
 # Particularly, if they start with a pseudo superscript or other "marker", they're probably affil!
 # For now, we just give an info message
-DefEnvironment('{titlepage}','<ltx:para class="titlepage">#body',
+DefEnvironment('{titlepage}','<ltx:titlepage>#body',
 	      beforeDigest=>sub { #Let("\\\\",'\title@cr');
 				  #Let('\par','\relax');
 				  Let('\centering','\relax');
 				  #DefEnvironment('{center}','#body');
 				  DefEnvironment('{abstract}',
 						 '<ltx:abstract>#body</ltx:abstract>',
-						 beforeDigest=>sub { 
-						   Digest(T_CS('\maybe@end@title')); });
+#						 beforeDigest=>sub { 
+#						   Digest(T_CS('\maybe@end@title')); }
+);
 				  Info(":unexpected:titlepage Frontmatter will not be well-structured");
 				return; },
 	       beforeDigestEnd=>sub { Digest(T_CS('\maybe@end@title')); },
@@ -605,8 +606,8 @@ DefEnvironment('{titlepage}','<ltx:para class="titlepage">#body',
 #     $document->closeElement('ltx:subtitle'); }});
 DefConstructor('\maybe@end@title',sub {
   my($document)=@_;
-  if($document->isCloseable('ltx:para')){
-    $document->closeElement('ltx:para'); }});
+  if($document->isCloseable('ltx:titlepage')){
+    $document->closeElement('ltx:titlepage'); }});
 
 DefMacro('\sectionmark{}','');
 DefMacro('\subsectionmark{}','');
@@ -620,27 +621,37 @@ DefMacro('\@evenfoot','');
 #**********************************************************************
 # C.6 Displayed Paragraphs
 #**********************************************************************
-DefEnvironment('{center}',
-	       '<ltx:centering>#body</ltx:centering>');
-DefEnvironment('{centering}',
-	       '<ltx:centering>#body</ltx:centering>');
-# NOTE: center the _line_ (till \\ or \par or ?) ! How to get it?
-DefPrimitive('\centering',undef);
+sub aligningEnvironment {
+  my($class,$document,%props)=@_;
+  my $prev = $document->getNode->lastChild;
+  $document->absorb($props{body});
+  $document->maybeCloseElement('ltx:p');
+  my @new = $document->getChildElements($document->getNode);
+  if($prev && grep($$prev == $$_, @new)){ # $prev is sibling of added nodes
+    while( ${$new[0]} != $$prev){ shift(@new); }
+    shift(@new); }
+  map(addClass($_,$class), @new);		  # Add class attribute to any remaining nodes.
+}
 
-DefEnvironment('{flushleft}',
-	       "<ltx:block class='flushleft' align='left'>#body</ltx:block>");
-DefEnvironment('{flushright}',
-	       "<ltx:block class='flushright' align='right'>#body</ltx:block>");
+sub addClass {
+  my($node,$class)=@_;
+  if($node->hasAttribute('class')){
+    $node->setAttribute(class=>$node->getAttribute('class').' '.$class); }
+  else {
+    $node->setAttribute(class=>$class); }}
 
-# Occasionally used as non-environments!?!
-# What should be the impact?
-# basically, \flushleft should more or less be equal to raggedright...
-DefMacro('\flushleft','\raggedright');
-DefMacro('\endflushleft','');
-DefMacro('\flushright','\raggedleft');
-DefMacro('\endflushright','');
-DefMacro('\center','');
-DefMacro('\endcenter','');
+DefEnvironment('{center}',sub { aligningEnvironment('centering',@_); });
+DefEnvironment('{flushleft}',sub { aligningEnvironment('flushleft',@_); });
+DefEnvironment('{flushright}',sub { aligningEnvironment('flushright',@_); });
+
+# These add an operation to be carried out when the current group ends.
+# These operators will add alignment (class) attributes to each "line" in the current block.
+DefPrimitive('\centering',  sub { UnshiftValue(afterGroup=>T_CS('\@add@centering')); });
+DefPrimitive('\raggedright', sub { UnshiftValue(afterGroup=>T_CS('\@add@flushright')); });
+DefPrimitive('\raggedleft',  sub { UnshiftValue(afterGroup=>T_CS('\@add@flushleft')); });
+DefConstructor('\@add@centering',  sub { map(addClass($_,'centering'),  $_[0]->getChildElements($_[0]->getNode)); });
+DefConstructor('\@add@flushright', sub { map(addClass($_,'flushright'), $_[0]->getChildElements($_[0]->getNode)); });
+DefConstructor('\@add@flushleft',  sub { map(addClass($_,'flushleft'),  $_[0]->getChildElements($_[0]->getNode)); });
 
 #======================================================================-
 # C.6.1 Quotations and Verse
@@ -1925,11 +1936,11 @@ DefConstructor('\label Semiverbatim',  sub {
 # 		 $label = CleanLabel($label);
 		 my $label = $props{label};
 ##		 my $savenode = $document->floatToAttribute('refnum');
- 		 my $savenode = $document->floatToAttribute('labels');
- 		 my $node = $document->getNode;
- 		 my $prev = $node->getAttribute('labels');
- 		 $document->setAttribute($node,labels=>($prev ? $prev." ".$label : $label)); 
- 		 $document->setNode($savenode); },
+ 		 if(my $savenode = $document->floatToAttribute('labels')){
+		   my $node = $document->getNode;
+		   my $prev = $node->getAttribute('labels');
+		   $document->setAttribute($node,labels=>($prev ? $prev." ".$label : $label)); 
+		   $document->setNode($savenode); }},
 ###	       "^ labels='#label'",
 	       reversion=>'',
 	       properties=>{alignmentSkippable=>1},
@@ -1998,6 +2009,7 @@ DefConstructor('\thebibliography',
 # Close the bibliography
 DefConstructor('\endthebibliography',
 	       "</ltx:biblist></ltx:bibliography>",
+	       afterDigest=>sub { Digest(T_CS('\appendix')); },
 	      locked=>1);
 # auto close the bibliography and contained biblist.
 Tag('ltx:biblist',autoClose=>1);
@@ -2102,7 +2114,7 @@ DefConstructor('\@@bibref{} Semiverbatim {}{}',
 	      properties=>sub { (bibrefs=>CleanBibKey($_[2]),
 				 separator=>ToString(Digest(LookupValue('CITE_SEPARATOR'))),
 				 yyseparator=>ToString(Digest(LookupValue('CITE_YY_SEPARATOR')))); });
-DefConstructor('\@@citephrase{}',"<ltx:text>#1</ltx:text>",
+DefConstructor('\@@citephrase{}',"<ltx:text _noautoclose='1'>#1</ltx:text>",
 	       mode=>'text');
 
 DefMacro('\cite[] Semiverbatim', sub {
@@ -2472,18 +2484,18 @@ DefMacro('\totalheight','0pt');
 DefMacro('\depth','0pt');
 DefMacro('\width','0pt');
 
-DefConstructor('\mbox{}',
-	       "<ltx:text>#1</ltx:text>", mode=>'text');
+DefConstructor('\mbox {}',
+	       "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text');
 DefConstructor('\makebox[Dimension][]{}',
-	       "<ltx:text ?#1(width='#1') ?#2(pos='#2')>#3</ltx:text>",
+	       "<ltx:text ?#1(width='#1') ?#2(pos='#2') _noautoclose='1'>#3</ltx:text>",
 	       mode=>'text');
 DefRegister('\fboxrule', Dimension(0));
 DefRegister('\fboxsep',  Dimension(0));
 
 DefConstructor('\fbox{}',
-	       "<ltx:text framed='rectangle'>#1</ltx:text>", mode=>'text');
+	       "<ltx:text framed='rectangle' _noautoclose='1'>#1</ltx:text>", mode=>'text');
 DefConstructor('\framebox[Dimension][]{}',
-	       "<ltx:text ?#1(width='#1') ?#2(pos='#2') framed='rectangle'>#3</ltx:text>",
+	       "<ltx:text ?#1(width='#1') ?#2(pos='#2') framed='rectangle' _noautoclose='1'>#3</ltx:text>",
 	       mode=>'text');
 DefPrimitive('\newsavebox DefToken',sub { AssignValue('box'.ToString($_[1]), LaTeXML::List->new()); });
 DefPrimitive('\sbox DefToken{}',sub {
@@ -2524,7 +2536,7 @@ DefEnvironment('{minipage}[][][]{Dimension}',
 DefConstructor('\rule[Dimension]{Dimension}{Dimension}', 
 	       "<ltx:rule ?#1(yoffset='#1') width='#2' height='#3'/>");
 DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
-	       "<ltx:text yoffset='#1'>#4</ltx:text>",
+	       "<ltx:text yoffset='#1' _noautoclose='1'>#4</ltx:text>",
 	       mode=>'text');
 
 #**********************************************************************
@@ -2722,10 +2734,10 @@ DefConstructor('\pic@frame{}',
 
 our %alignments = (l=>'left',c=>'center',r=>'right');
 DefConstructor('\shortstack[]{}',
-	       "<ltx:inline-block align='#align'><ltx:text>#2</ltx:text></ltx:inline-block>",
+	       "<ltx:inline-block align='#align'><ltx:text _noautoclose='1'>#2</ltx:text></ltx:inline-block>",
 	       bounded=>1,
 	       beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
-						 "</ltx:text><ltx:text>",
+						 "</ltx:text><ltx:text _noautoclose='1'>",
 						 reversion=>Tokens(T_CS("\\\\"),T_CR)); },
 	       properties=>{ align=>sub { ($_[1] ? $alignments{ToString($_[0])} : undef); }},
 	       mode=>'text');
@@ -2782,26 +2794,26 @@ DefConstructor('\normalfont', '', font=>{family=>'serif', series=>'medium', shap
 DefConstructor('\verbatim@font', '', font=>{family=>'typewriter', series=>'medium', shape=>'upright'});
 
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
-DefConstructor('\textmd{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text',
+DefConstructor('\textmd{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{series=>'medium'});
-DefConstructor('\textbf{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text',
+DefConstructor('\textbf{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{series=>'bold'});
-DefConstructor('\textrm{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text',
+DefConstructor('\textrm{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{family=>'serif'});
-DefConstructor('\textsf{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text',
+DefConstructor('\textsf{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{family=>'sansserif'});
-DefConstructor('\texttt{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text',
+DefConstructor('\texttt{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{family=>'typewriter'});
 
-DefConstructor('\textup{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text',
+DefConstructor('\textup{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{shape=>'upright'});
-DefConstructor('\textit{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text',
+DefConstructor('\textit{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{shape=>'italic'});
-DefConstructor('\textsl{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text',
+DefConstructor('\textsl{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{shape=>'slanted'});
-DefConstructor('\textsc{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text',
+DefConstructor('\textsc{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{shape=>'smallcaps'});
-DefConstructor('\textnormal{}', "?#isMath(<ltx:text>#1</ltx:text>)(#1)", mode=>'text',
+DefConstructor('\textnormal{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{family=>'serif',series=>'medium',shape=>'upright'});
 
 DefPrimitive('\mathversion{}',sub {
@@ -2862,7 +2874,7 @@ DefConstructor('\textvisiblespace',"\x{2420}"); # SYMBOL FOR SPACE;  Not really 
 DefConstructor('\textellipsis',"\x{2026}"); # HORIZONTAL ELLIPSIS
 DefConstructor('\textregistered',UTF(0xAE)); # REGISTERED SIGN
 DefConstructor('\texttrademark',"\x{2122}");  # TRADE MARK SIGN
-DefConstructor('\textsuperscript{}',"<ltx:text yoffset='0.5em'>#1</ltx:text>");
+DefConstructor('\textsuperscript{}',"<ltx:text yoffset='0.5em' _noautoclose='1'>#1</ltx:text>");
 DefConstructor('\textordfeminine',UTF(0xAA)); # FEMININE ORDINAL INDICATOR
 DefConstructor('\textordmasculine',UTF(0xBA)); # MASCULINE ORDINAL INDICATOR
 DefMacro('\SS','SS');			       # ?
