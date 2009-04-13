@@ -28,7 +28,7 @@
 
   <!-- no class here, since ltx:p it is generated behind the scenes (?)-->
   <xsl:template match="ltx:p" xml:space="preserve">
-    <p><xsl:apply-templates/></p>
+    <p class="{f:classes(.)}"><xsl:apply-templates/></p>
   </xsl:template>
 
   <xsl:template match="ltx:quote" xml:space="preserve">
@@ -38,10 +38,6 @@
   </xsl:template>
 
   <xsl:template match="ltx:block" xml:space="preserve">
-    <div class="{f:classes(.)}"><xsl:apply-templates/></div>
-  </xsl:template>
-
-  <xsl:template match="ltx:centering">
     <div class="{f:classes(.)}"><xsl:apply-templates/></div>
   </xsl:template>
 
