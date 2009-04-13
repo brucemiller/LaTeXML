@@ -787,17 +787,18 @@ DefMath('\idotsint',"\x{222B}\x{22EF}\x{222B}", meaning=>'multiple-integral', ro
 #======================================================================
 # Section 9.4 Italic Greek letters
 # I think this is sufficient:
-DefMacro('\varGamma',   '\mathit{\Gamma}');
-DefMacro('\varSigma',   '\mathit{\Sigma}');
-DefMacro('\varDelta',   '\mathit{\Delta}');
-DefMacro('\varUpsilon', '\mathit{\Upsilon}');
-DefMacro('\varTheta',   '\mathit{\Theta}');
-DefMacro('\varPhi',     '\mathit{\Phi}');
-DefMacro('\varLambda',  '\mathit{\Lambda}');
-DefMacro('\varPsi',     '\mathit{\Psi}');
-DefMacro('\varXi',      '\mathit{\Xi}');
-DefMacro('\varOmega',   '\mathit{\Omega}');
-DefMacro('\varPi',      '\mathit{\Pi}');
+
+DefMath('\varGamma',   "\x{0393}",font=>{shape=>'italic'});
+DefMath('\varSigma',   "\x{03A3}",font=>{shape=>'italic'});
+DefMath('\varDelta',   "\x{0394}",font=>{shape=>'italic'});
+DefMath('\varUpsilon', "\x{03A5}",font=>{shape=>'italic'});
+DefMath('\varTheta',   "\x{0398}",font=>{shape=>'italic'});
+DefMath('\varPhi',     "\x{03A6}",font=>{shape=>'italic'});
+DefMath('\varLambda',  "\x{039B}",font=>{shape=>'italic'});
+DefMath('\varPsi',     "\x{03A8}",font=>{shape=>'italic'});
+DefMath('\varXi',      "\x{039E}",font=>{shape=>'italic'});
+DefMath('\varOmega',   "\x{03A9}",font=>{shape=>'italic'});
+DefMath('\varPi',      "\x{03A0}",font=>{shape=>'italic'});
 
 #======================================================================
 # And some random other weird naming
