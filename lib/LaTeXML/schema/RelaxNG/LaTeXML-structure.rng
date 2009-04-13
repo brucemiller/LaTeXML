@@ -23,6 +23,7 @@
           <ref name="FrontMatter.class"/>
           <ref name="SectionalFrontMatter.class"/>
           <ref name="Meta.class"/>
+          <ref name="titlepage"/>
         </choice>
       </zeroOrMore>
       <zeroOrMore>
@@ -443,6 +444,23 @@ Commonly useful values are specified, but is open-ended to support extension.</a
         </attribute>
       </optional>
       <ref name="Inline.model"/>
+    </element>
+  </define>
+  <!--
+    ======================================================================
+    Fallback
+  -->
+  <define name="titlepage">
+    <element name="titlepage">
+      <a:documentation>block of random stuff marked as a titlepage</a:documentation>
+      <ref name="Sectional.attributes"/>
+      <zeroOrMore>
+        <choice>
+          <ref name="FrontMatter.class"/>
+          <ref name="SectionalFrontMatter.class"/>
+          <ref name="Block.class"/>
+        </choice>
+      </zeroOrMore>
     </element>
   </define>
   <!-- ====================================================================== -->

@@ -20,7 +20,6 @@
       <ref name="equation"/>
       <ref name="equationgroup"/>
       <ref name="quote"/>
-      <ref name="centering"/>
       <ref name="block"/>
       <ref name="itemize"/>
       <ref name="enumerate"/>
@@ -46,20 +45,6 @@ in both inline and block contexts.</a:documentation>
       <a:documentation>A physical paragraph.</a:documentation>
       <ref name="Common.attributes"/>
       <ref name="Inline.model"/>
-    </element>
-  </define>
-  <define name="centering">
-    <element name="centering">
-      <a:documentation>A physical block that centers its content.
-NOTE: Reconsider this; perhaps should be a property on other blocks?</a:documentation>
-      <ref name="Common.attributes"/>
-      <zeroOrMore>
-        <choice>
-          <ref name="caption"/>
-          <ref name="toccaption"/>
-          <ref name="Block.model"/>
-        </choice>
-      </zeroOrMore>
     </element>
   </define>
   <define name="constraint">

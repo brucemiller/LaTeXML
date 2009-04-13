@@ -19,7 +19,7 @@ document =
 element document {
   Sectional.attributes,
 
-  (FrontMatter.class | SectionalFrontMatter.class | Meta.class)*,
+  (FrontMatter.class | SectionalFrontMatter.class | Meta.class | titlepage)*,
   document.body.class*,
   BackMatter.class* }
 
@@ -294,6 +294,16 @@ element classification {
   attribute scheme { text }?,
 
   Inline.model }
+
+#======================================================================
+# Fallback
+
+titlepage =
+## block of random stuff marked as a titlepage
+element titlepage {
+  Sectional.attributes,
+
+  (FrontMatter.class | SectionalFrontMatter.class | Block.class)* }
 
 #======================================================================
 

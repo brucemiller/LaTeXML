@@ -14,8 +14,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## The block module defines the following `physical' block elements.
 Block.class |= 
-   p | equation | equationgroup | quote
- | centering | block
+   p | equation | equationgroup | quote | block
  | itemize | enumerate | description
 
 
@@ -32,14 +31,6 @@ element p {
   Common.attributes,
 
   Inline.model  }
-
-centering =
-## A physical block that centers its content.
-## NOTE: Reconsider this; perhaps should be a property on other blocks?
-element centering {
-  Common.attributes,
-
-  (caption | toccaption | Block.model)*  }
 
 constraint = 
 ## A constraint upon an equation.
