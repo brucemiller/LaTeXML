@@ -7,7 +7,7 @@
     <title>Basic math</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
-        <Math mode="display" tex="a+b+c-d+e" text="((a + b + c) - d) + e">
+        <Math mode="display" tex="a+b+c-d+e" xml:id="S1.Ex1.m1" text="((a + b + c) - d) + e">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -27,7 +27,7 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex2">
-        <Math mode="display" tex="a+bc-de" text="(a + b * c) - d * e">
+        <Math mode="display" tex="a+bc-de" xml:id="S1.Ex2.m1" text="(a + b * c) - d * e">
           <XMath>
             <XMApp>
               <XMTok meaning="minus" role="ADDOP">-</XMTok>
@@ -50,7 +50,7 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex3">
-        <Math mode="display" tex="abc/de" text="((a * b * c) / d) * e">
+        <Math mode="display" tex="abc/de" xml:id="S1.Ex3.m1" text="((a * b * c) / d) * e">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -70,7 +70,7 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex4">
-        <Math mode="display" tex="a\times b\times c/d\times e" text="((a * b * c) / d) * e">
+        <Math mode="display" tex="a\times b\times c/d\times e" xml:id="S1.Ex4.m1" text="((a * b * c) / d) * e">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">×</XMTok>
@@ -95,7 +95,7 @@
     <title>Evaluate At</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex5">
-        <Math mode="display" tex="a|_{\infty}" text="evaluated-at@(a, infinity)">
+        <Math mode="display" tex="a|_{\infty}" xml:id="S2.Ex5.m1" text="evaluated-at@(a, infinity)">
           <XMath>
             <XMApp>
               <XMTok meaning="evaluated-at"/>
@@ -106,7 +106,7 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex6">
-        <Math mode="display" tex="ab|_{{a=0}}cd|_{{c=0}}e" text="evaluated-at@(evaluated-at@(a * b, a = 0) * c * d, c = 0) * e">
+        <Math mode="display" tex="ab|_{{a=0}}cd|_{{c=0}}e" xml:id="S2.Ex6.m1" text="evaluated-at@(evaluated-at@(a * b, a = 0) * c * d, c = 0) * e">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -147,7 +147,7 @@
     <title>Absolute values</title>
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex7">
-        <Math mode="display" tex="|a|" text="absolute-value@(a)">
+        <Math mode="display" tex="|a|" xml:id="S3.Ex7.m1" text="absolute-value@(a)">
           <XMath>
             <XMApp>
               <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
@@ -157,7 +157,7 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex8">
-        <Math mode="display" tex="||a||" text="norm@(a)">
+        <Math mode="display" tex="||a||" xml:id="S3.Ex8.m1" text="norm@(a)">
           <XMath>
             <XMApp>
               <XMTok meaning="norm" role="FENCED" argclose="||" argopen="||"/>
@@ -167,7 +167,7 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex9">
-        <Math mode="display" tex="|a|_{\infty}" text="(absolute-value@(a)) _ infinity">
+        <Math mode="display" tex="|a|_{\infty}" xml:id="S3.Ex9.m1" text="(absolute-value@(a)) _ infinity">
           <XMath>
             <XMApp>
               <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
@@ -181,7 +181,7 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex10">
-        <Math mode="display" tex="|a+b|" text="absolute-value@(a + b)">
+        <Math mode="display" tex="|a+b|" xml:id="S3.Ex10.m1" text="absolute-value@(a + b)">
           <XMath>
             <XMApp>
               <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
@@ -195,7 +195,7 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex11">
-        <Math mode="display" tex="|a-|b||" text="absolute-value@(a - absolute-value@(b))">
+        <Math mode="display" tex="|a-|b||" xml:id="S3.Ex11.m1" text="absolute-value@(a - absolute-value@(b))">
           <XMath>
             <XMApp>
               <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
@@ -217,7 +217,7 @@
     <title>Failures w/o Backtracking</title>
     <para xml:id="S4.p1">
       <equation xml:id="S4.Ex12">
-        <Math mode="display" tex="||a|-|b||" text="absolute-value@(absolute-value@(a) - absolute-value@(b))">
+        <Math mode="display" tex="||a|-|b||" xml:id="S4.Ex12.m1" text="absolute-value@(absolute-value@(a) - absolute-value@(b))">
           <XMath>
             <XMApp>
               <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
@@ -237,7 +237,7 @@
         </Math>
       </equation>
       <equation xml:id="S4.Ex13">
-        <Math mode="display" tex="||a|-b|" text="absolute-value@(absolute-value@(a) - b)">
+        <Math mode="display" tex="||a|-b|" xml:id="S4.Ex13.m1" text="absolute-value@(absolute-value@(a) - b)">
           <XMath>
             <XMApp>
               <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
@@ -254,7 +254,7 @@
         </Math>
       </equation>
       <equation xml:id="S4.Ex14">
-        <Math mode="display" tex="|a|b|_{\infty}" text="evaluated-at@(absolute-value@(a) * b, infinity)">
+        <Math mode="display" tex="|a|b|_{\infty}" xml:id="S4.Ex14.m1" text="evaluated-at@(absolute-value@(a) * b, infinity)">
           <XMath>
             <XMApp>
               <XMTok meaning="evaluated-at"/>

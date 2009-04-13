@@ -7,7 +7,7 @@
     <title>Basic math</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
-        <Math mode="display" tex="((a+b)-c)" text="(a + b) - c">
+        <Math mode="display" tex="((a+b)-c)" xml:id="S1.Ex1.m1" text="(a + b) - c">
           <XMath>
             <XMApp open="(" close=")">
               <XMTok meaning="minus" role="ADDOP">-</XMTok>
@@ -22,7 +22,7 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex2">
-        <Math mode="display" tex="(a+(b-c))" text="a + (b - c)">
+        <Math mode="display" tex="(a+(b-c))" xml:id="S1.Ex2.m1" text="a + (b - c)">
           <XMath>
             <XMApp open="(" close=")">
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -42,7 +42,7 @@
     <title>Intervals</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex3">
-        <Math mode="display" tex="(a,b)" text="open-interval@(a, b)">
+        <Math mode="display" tex="(a,b)" xml:id="S2.Ex3.m1" text="open-interval@(a, b)">
           <XMath>
             <XMApp>
               <XMTok meaning="open-interval" role="FENCED" argclose=")" argopen="(" separators=","/>
@@ -53,7 +53,7 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex4">
-        <Math mode="display" tex="[a,b)" text="closed-open-interval@(a, b)">
+        <Math mode="display" tex="[a,b)" xml:id="S2.Ex4.m1" text="closed-open-interval@(a, b)">
           <XMath>
             <XMApp>
               <XMTok meaning="closed-open-interval" role="FENCED" argclose=")" argopen="[" separators=","/>
@@ -64,7 +64,7 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex5">
-        <Math mode="display" tex="(a,b]" text="open-closed-interval@(a, b)">
+        <Math mode="display" tex="(a,b]" xml:id="S2.Ex5.m1" text="open-closed-interval@(a, b)">
           <XMath>
             <XMApp>
               <XMTok meaning="open-closed-interval" role="FENCED" argclose="]" argopen="(" separators=","/>
@@ -75,7 +75,7 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex6">
-        <Math mode="display" tex="[a,b]" text="closed-interval@(a, b)">
+        <Math mode="display" tex="[a,b]" xml:id="S2.Ex6.m1" text="closed-interval@(a, b)">
           <XMath>
             <XMApp>
               <XMTok meaning="closed-interval" role="FENCED" argclose="]" argopen="[" separators=","/>
@@ -91,7 +91,7 @@
     <title>Cases</title>
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex7">
-        <Math mode="display" tex="\left.\begin{array}[]{l}a\\&#10;b\end{array}\right\}=\left\{\begin{array}[]{l}c\\&#10;d\end{array}\right." text="cases@(Array[[a], [b]]) = cases@(Array[[c], [d]])">
+        <Math mode="display" tex="\left.\begin{array}[]{l}a\\&#10;b\end{array}\right\}=\left\{\begin{array}[]{l}c\\&#10;d\end{array}\right." xml:id="S3.Ex7.m1" text="cases@(Array[[a], [b]]) = cases@(Array[[c], [d]])">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -132,7 +132,7 @@
     </para>
     <para xml:id="S3.p2">
       <equation xml:id="S3.Ex8">
-        <Math mode="display" tex="\left(\begin{array}[]{l}c\\&#10;d\end{array}\right)" text="Array[[c], [d]]">
+        <Math mode="display" tex="\left(\begin{array}[]{l}c\\&#10;d\end{array}\right)" xml:id="S3.Ex8.m1" text="Array[[c], [d]]">
           <XMath>
             <XMArray role="ARRAY" open="(" close=")">
               <XMRow>
@@ -150,7 +150,7 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex9">
-        <Math mode="display" tex="(a+\left(\begin{array}[]{l}c\\&#10;d\end{array}\right)+b)" text="a + Array[[c], [d]] + b">
+        <Math mode="display" tex="(a+\left(\begin{array}[]{l}c\\&#10;d\end{array}\right)+b)" xml:id="S3.Ex9.m1" text="a + Array[[c], [d]] + b">
           <XMath>
             <XMApp open="(" close=")">
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -178,7 +178,7 @@
     <title>Atop</title>
     <para xml:id="S4.p1">
       <equation xml:id="S4.Ex10">
-        <Math mode="display" tex="a+{b\atop c}+d" text="a + STACKED@(b, c) + d">
+        <Math mode="display" tex="a+{b\atop c}+d" xml:id="S4.Ex10.m1" text="a + STACKED@(b, c) + d">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -194,7 +194,7 @@
         </Math>
       </equation>
       <equation xml:id="S4.Ex11">
-        <Math mode="display" tex="a+\left[b\atop c\right]+d" text="a + STACKED@(b, c) + d">
+        <Math mode="display" tex="a+\left[b\atop c\right]+d" xml:id="S4.Ex11.m1" text="a + STACKED@(b, c) + d">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -215,7 +215,7 @@
     <title>Delimiters</title>
     <para xml:id="S5.p1">
       <equation xml:id="S5.Ex12">
-        <Math mode="display" tex="\left({a\over b}\right)" text="a / b">
+        <Math mode="display" tex="\left({a\over b}\right)" xml:id="S5.Ex12.m1" text="a / b">
           <XMath>
             <XMApp open="(" close=")">
               <XMTok meaning="divide" role="MULOP" style="display"/>
@@ -226,7 +226,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex13">
-        <Math mode="display" tex="\left[{a\over b}\right]" text="a / b">
+        <Math mode="display" tex="\left[{a\over b}\right]" xml:id="S5.Ex13.m1" text="a / b">
           <XMath>
             <XMApp open="[" close="]">
               <XMTok meaning="divide" role="MULOP" style="display"/>
@@ -237,7 +237,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex14">
-        <Math mode="display" tex="\left[{a\over b}\right]" text="a / b">
+        <Math mode="display" tex="\left[{a\over b}\right]" xml:id="S5.Ex14.m1" text="a / b">
           <XMath>
             <XMApp open="[" close="]">
               <XMTok meaning="divide" role="MULOP" style="display"/>
@@ -248,7 +248,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex15">
-        <Math mode="display" tex="\left\{{a\over b}\right\}" text="set@(a / b)">
+        <Math mode="display" tex="\left\{{a\over b}\right\}" xml:id="S5.Ex15.m1" text="set@(a / b)">
           <XMath>
             <XMApp>
               <XMTok meaning="set" role="FENCED" argclose="}" argopen="{"/>
@@ -262,7 +262,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex16">
-        <Math mode="display" tex="\left\{{a\over b}\right\}" text="set@(a / b)">
+        <Math mode="display" tex="\left\{{a\over b}\right\}" xml:id="S5.Ex16.m1" text="set@(a / b)">
           <XMath>
             <XMApp>
               <XMTok meaning="set" role="FENCED" argclose="}" argopen="{"/>
@@ -276,7 +276,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex17">
-        <Math mode="display" tex="\left\lfloor{a\over b}\right\rfloor" text="floor@(a / b)">
+        <Math mode="display" tex="\left\lfloor{a\over b}\right\rfloor" xml:id="S5.Ex17.m1" text="floor@(a / b)">
           <XMath>
             <XMApp>
               <XMTok meaning="floor" role="FENCED" argclose="⌋" argopen="⌊"/>
@@ -290,7 +290,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex18">
-        <Math mode="display" tex="\left\lceil{a\over b}\right\rceil" text="ceiling@(a / b)">
+        <Math mode="display" tex="\left\lceil{a\over b}\right\rceil" xml:id="S5.Ex18.m1" text="ceiling@(a / b)">
           <XMath>
             <XMApp>
               <XMTok meaning="ceiling" role="FENCED" argclose="⌉" argopen="⌈"/>
@@ -304,7 +304,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex19">
-        <Math mode="display" tex="\left&lt;{a\over b}\right&gt;" text="a / b">
+        <Math mode="display" tex="\left&lt;{a\over b}\right&gt;" xml:id="S5.Ex19.m1" text="a / b">
           <XMath>
             <XMApp open="〈" close="〉">
               <XMTok meaning="divide" role="MULOP" style="display"/>
@@ -315,7 +315,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex20">
-        <Math mode="display" tex="\left\langle{a\over b}\right\rangle" text="a / b">
+        <Math mode="display" tex="\left\langle{a\over b}\right\rangle" xml:id="S5.Ex20.m1" text="a / b">
           <XMath>
             <XMApp open="〈" close="〉">
               <XMTok meaning="divide" role="MULOP" style="display"/>
@@ -326,7 +326,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex21">
-        <Math mode="display" tex="\left|{a\over b}\right|" text="absolute-value@(a / b)">
+        <Math mode="display" tex="\left|{a\over b}\right|" xml:id="S5.Ex21.m1" text="absolute-value@(a / b)">
           <XMath>
             <XMApp>
               <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
@@ -340,7 +340,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex22">
-        <Math mode="display" tex="\left|{a\over b}\right|" text="absolute-value@(a / b)">
+        <Math mode="display" tex="\left|{a\over b}\right|" xml:id="S5.Ex22.m1" text="absolute-value@(a / b)">
           <XMath>
             <XMApp>
               <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
@@ -354,7 +354,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex23">
-        <Math mode="display" tex="\left\|{a\over b}\right\|" text="norm@(a / b)">
+        <Math mode="display" tex="\left\|{a\over b}\right\|" xml:id="S5.Ex23.m1" text="norm@(a / b)">
           <XMath>
             <XMApp>
               <XMTok meaning="norm" role="FENCED" argclose="∥" argopen="∥"/>
@@ -368,7 +368,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex24">
-        <Math mode="display" tex="\left\|{a\over b}\right\|" text="norm@(a / b)">
+        <Math mode="display" tex="\left\|{a\over b}\right\|" xml:id="S5.Ex24.m1" text="norm@(a / b)">
           <XMath>
             <XMApp>
               <XMTok meaning="norm" role="FENCED" argclose="∥" argopen="∥"/>
@@ -382,7 +382,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex25">
-        <Math mode="display" tex="\left\uparrow{a\over b}\right\downarrow" text="a / b">
+        <Math mode="display" tex="\left\uparrow{a\over b}\right\downarrow" xml:id="S5.Ex25.m1" text="a / b">
           <XMath>
             <XMApp open="↑">
               <XMTok meaning="divide" role="MULOP" style="display"/>
@@ -393,7 +393,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex26">
-        <Math mode="display" tex="\left\Uparrow{a\over b}\right\Downarrow" text="a / b">
+        <Math mode="display" tex="\left\Uparrow{a\over b}\right\Downarrow" xml:id="S5.Ex26.m1" text="a / b">
           <XMath>
             <XMApp open="⇑">
               <XMTok meaning="divide" role="MULOP" style="display"/>
@@ -404,7 +404,7 @@
         </Math>
       </equation>
       <equation xml:id="S5.Ex27">
-        <Math mode="display" tex="\left\updownarrow{a\over b}\right\Updownarrow" text="a / b">
+        <Math mode="display" tex="\left\updownarrow{a\over b}\right\Updownarrow" xml:id="S5.Ex27.m1" text="a / b">
           <XMath>
             <XMApp open="↕">
               <XMTok meaning="divide" role="MULOP" style="display"/>
@@ -417,7 +417,7 @@
     </para>
     <para xml:id="S5.p2">
       <equation xml:id="S5.Ex28">
-        <Math mode="display" tex="a+\left\langle{b\over c}\right\rangle+d" text="a + b / c + d">
+        <Math mode="display" tex="a+\left\langle{b\over c}\right\rangle+d" xml:id="S5.Ex28.m1" text="a + b / c + d">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -435,7 +435,7 @@
     </para>
     <para xml:id="S5.p3">
       <equation xml:id="S5.Ex29">
-        <Math mode="display" tex="{a\over b}\left/{c\over d}\right." text="(a / b) / (c / d)">
+        <Math mode="display" tex="{a\over b}\left/{c\over d}\right." xml:id="S5.Ex29.m1" text="(a / b) / (c / d)">
           <XMath>
             <XMApp>
               <XMTok role="MULOP" font="italic">/</XMTok>

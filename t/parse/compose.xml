@@ -7,7 +7,7 @@
     <title>Compositions</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
-        <Math mode="display" tex="(f*g)(x)" text="compose@(f, g) * x">
+        <Math mode="display" tex="(f*g)(x)" xml:id="S1.Ex1.m1" text="compose@(f, g) * x">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -22,7 +22,7 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex2">
-        <Math mode="display" tex="(f*g*h)(x)" text="compose@(compose@(f, g), h) * x">
+        <Math mode="display" tex="(f*g*h)(x)" xml:id="S1.Ex2.m1" text="compose@(compose@(f, g), h) * x">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -46,7 +46,7 @@
     <title>Implicit lambdas?</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex3">
-        <Math mode="display" tex="(y^{2}*f)(x)" text="compose@(y ^ 2, f) * x">
+        <Math mode="display" tex="(y^{2}*f)(x)" xml:id="S2.Ex3.m1" text="compose@(y ^ 2, f) * x">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -65,7 +65,7 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex4">
-        <Math mode="display" tex="(yy^{2}*f)(x)" text="compose@(y * y ^ 2, f) * x">
+        <Math mode="display" tex="(yy^{2}*f)(x)" xml:id="S2.Ex4.m1" text="compose@(y * y ^ 2, f) * x">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -88,7 +88,7 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex5">
-        <Math mode="display" tex="(y^{2}*f)(x)" text="compose@(y ^ 2, f) * x">
+        <Math mode="display" tex="(y^{2}*f)(x)" xml:id="S2.Ex5.m1" text="compose@(y ^ 2, f) * x">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -107,7 +107,7 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex6">
-        <Math mode="display" tex="(f*y^{2})(x)" text="compose@(f, y ^ 2) * x">
+        <Math mode="display" tex="(f*y^{2})(x)" xml:id="S2.Ex6.m1" text="compose@(f, y ^ 2) * x">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>

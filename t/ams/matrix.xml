@@ -5,7 +5,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
-      <Math mode="display" tex="\begin{matrix}a&amp;b\\&#10;c\\&#10;\end{matrix}" text="Matrix[[a, b], [c]]">
+      <Math mode="display" tex="\begin{matrix}a&amp;b\\&#10;c\\&#10;\end{matrix}" xml:id="S0.Ex1.m1" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray name="Matrix">
             <XMRow>
@@ -26,7 +26,7 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex2">
-      <Math mode="display" tex="\begin{pmatrix}a&amp;b\\&#10;c\\&#10;\end{pmatrix}" text="Matrix[[a, b], [c]]">
+      <Math mode="display" tex="\begin{pmatrix}a&amp;b\\&#10;c\\&#10;\end{pmatrix}" xml:id="S0.Ex2.m1" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray close=")" name="Matrix" open="(">
             <XMRow>
@@ -47,7 +47,7 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex3">
-      <Math mode="display" tex="\begin{bmatrix}a&amp;b\\&#10;c\\&#10;\end{bmatrix}" text="Matrix[[a, b], [c]]">
+      <Math mode="display" tex="\begin{bmatrix}a&amp;b\\&#10;c\\&#10;\end{bmatrix}" xml:id="S0.Ex3.m1" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray close="]" name="Matrix" open="[">
             <XMRow>
@@ -68,7 +68,7 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex4">
-      <Math mode="display" tex="\begin{Bmatrix}a&amp;b\\&#10;c\\&#10;\end{Bmatrix}" text="Matrix[[a, b], [c]]">
+      <Math mode="display" tex="\begin{Bmatrix}a&amp;b\\&#10;c\\&#10;\end{Bmatrix}" xml:id="S0.Ex4.m1" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray close="}" name="Matrix" open="{">
             <XMRow>
@@ -89,7 +89,7 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex5">
-      <Math mode="display" tex="\begin{vmatrix}a&amp;b\\&#10;c\\&#10;\end{vmatrix}" text="Matrix[[a, b], [c]]">
+      <Math mode="display" tex="\begin{vmatrix}a&amp;b\\&#10;c\\&#10;\end{vmatrix}" xml:id="S0.Ex5.m1" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray close="|" name="Matrix" open="|">
             <XMRow>
@@ -110,7 +110,7 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex6">
-      <Math mode="display" tex="\begin{Vmatrix}a&amp;b\\&#10;c\\&#10;\end{Vmatrix}" text="Matrix[[a, b], [c]]">
+      <Math mode="display" tex="\begin{Vmatrix}a&amp;b\\&#10;c\\&#10;\end{Vmatrix}" xml:id="S0.Ex6.m1" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray close="∥" name="Matrix" open="∥">
             <XMRow>
@@ -131,7 +131,7 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex7">
-      <Math mode="display" tex="\begin{smallmatrix}a&amp;b\\&#10;c\\&#10;\end{smallmatrix}" text="Matrix[[a, b], [c]]">
+      <Math mode="display" tex="\begin{smallmatrix}a&amp;b\\&#10;c\\&#10;\end{smallmatrix}" xml:id="S0.Ex7.m1" text="Matrix[[a, b], [c]]">
         <XMath>
           <XMArray name="Matrix">
             <XMRow>

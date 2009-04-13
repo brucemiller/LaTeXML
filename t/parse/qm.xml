@@ -6,64 +6,64 @@
   <section refnum="1" xml:id="S1">
     <title>Relations</title>
     <para xml:id="S1.p1">
-      <p>Relations: <Math mode="inline" tex="a&lt;b&lt;c" text="a less b less c"><XMath><XMApp><XMTok meaning="multirelation"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok meaning="less-than" role="RELOP">&lt;</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok><XMTok meaning="less-than" role="RELOP">&lt;</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math></p>
+      <p>Relations: <Math mode="inline" tex="a&lt;b&lt;c" xml:id="S1.p1.m1" text="a less b less c"><XMath><XMApp><XMTok meaning="multirelation"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok meaning="less-than" role="RELOP">&lt;</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok><XMTok meaning="less-than" role="RELOP">&lt;</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S1.p2">
-      <p>Relations: <Math mode="inline" tex="&gt;a" text="absent &gt; a"><XMath><XMApp><XMTok meaning="greater-than" role="RELOP">&gt;</XMTok><XMTok meaning="absent"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
+      <p>Relations: <Math mode="inline" tex="&gt;a" xml:id="S1.p2.m1" text="absent &gt; a"><XMath><XMApp><XMTok meaning="greater-than" role="RELOP">&gt;</XMTok><XMTok meaning="absent"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S1.p3">
-      <p>Relations: <Math mode="inline" tex="a&gt;" text="a &gt; absent"><XMath><XMApp><XMTok meaning="greater-than" role="RELOP">&gt;</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok meaning="absent"/></XMApp></XMath></Math></p>
+      <p>Relations: <Math mode="inline" tex="a&gt;" xml:id="S1.p3.m1" text="a &gt; absent"><XMath><XMApp><XMTok meaning="greater-than" role="RELOP">&gt;</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok meaning="absent"/></XMApp></XMath></Math></p>
     </para>
   </section>
   <section refnum="2" xml:id="S2">
     <title>Quantum Mechanics Notations</title>
     <para xml:id="S2.p1">
-      <p>Expectation: <Math mode="inline" tex="&lt;a&gt;" text="expectation@(a)"><XMath><XMApp><XMTok meaning="expectation" role="FENCED" argclose="&gt;" argopen="&lt;"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
+      <p>Expectation: <Math mode="inline" tex="&lt;a&gt;" xml:id="S2.p1.m1" text="expectation@(a)"><XMath><XMApp><XMTok meaning="expectation" role="FENCED" argclose="&gt;" argopen="&lt;"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S2.p2">
-      <p>Bra: <Math mode="inline" tex="&lt;a|" text="bra@(a)"><XMath><XMApp><XMTok meaning="bra" role="FENCED" argclose="|" argopen="&lt;"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
+      <p>Bra: <Math mode="inline" tex="&lt;a|" xml:id="S2.p2.m1" text="bra@(a)"><XMath><XMApp><XMTok meaning="bra" role="FENCED" argclose="|" argopen="&lt;"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S2.p3">
-      <p>Bra: <Math mode="inline" tex="&lt;a,b,c|" text="bra@(list@(a, b, c))"><XMath><XMApp><XMTok meaning="bra" role="FENCED" argclose="|" argopen="&lt;"/><XMApp><XMTok meaning="list" role="FENCED" separators=",,"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMApp></XMath></Math></p>
+      <p>Bra: <Math mode="inline" tex="&lt;a,b,c|" xml:id="S2.p3.m1" text="bra@(list@(a, b, c))"><XMath><XMApp><XMTok meaning="bra" role="FENCED" argclose="|" argopen="&lt;"/><XMApp><XMTok meaning="list" role="FENCED" separators=",,"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S2.p4">
-      <p>Bra: <Math mode="inline" tex="&lt;\phi=0|" text="bra@(phi = 0)"><XMath><XMApp><XMTok meaning="bra" role="FENCED" argclose="|" argopen="&lt;"/><XMApp><XMTok meaning="equals" role="RELOP">=</XMTok><XMTok name="phi" role="UNKNOWN" font="italic">ϕ</XMTok><XMTok meaning="0" role="NUMBER">0</XMTok></XMApp></XMApp></XMath></Math></p>
+      <p>Bra: <Math mode="inline" tex="&lt;\phi=0|" xml:id="S2.p4.m1" text="bra@(phi = 0)"><XMath><XMApp><XMTok meaning="bra" role="FENCED" argclose="|" argopen="&lt;"/><XMApp><XMTok meaning="equals" role="RELOP">=</XMTok><XMTok name="phi" role="UNKNOWN" font="italic">ϕ</XMTok><XMTok meaning="0" role="NUMBER">0</XMTok></XMApp></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S2.p5">
-      <p>Ket: <Math mode="inline" tex="|b&gt;" text="ket@(b)"><XMath><XMApp><XMTok meaning="ket" role="FENCED" argclose="&gt;" argopen="|"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math></p>
+      <p>Ket: <Math mode="inline" tex="|b&gt;" xml:id="S2.p5.m1" text="ket@(b)"><XMath><XMApp><XMTok meaning="ket" role="FENCED" argclose="&gt;" argopen="|"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S2.p6">
-      <p>Braket <Math mode="inline" tex="&lt;a|b&gt;" text="inner-product@(bra@(a), ket@(b))"><XMath><XMApp><XMTok meaning="inner-product"/><XMApp><XMTok meaning="bra" role="FENCED" argclose="|" argopen="&lt;"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMApp><XMTok meaning="ket" role="FENCED" argclose="&gt;" argopen="|"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMApp></XMath></Math></p>
+      <p>Braket <Math mode="inline" tex="&lt;a|b&gt;" xml:id="S2.p6.m1" text="inner-product@(bra@(a), ket@(b))"><XMath><XMApp><XMTok meaning="inner-product"/><XMApp><XMTok meaning="bra" role="FENCED" argclose="|" argopen="&lt;"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMApp><XMTok meaning="ket" role="FENCED" argclose="&gt;" argopen="|"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S2.p7">
-      <p>Also <Math mode="inline" tex="&lt;a|f|b&gt;" text="inner-product@(bra@(a), f@(ket@(b)))"><XMath><XMApp><XMTok meaning="inner-product"/><XMApp><XMTok meaning="bra" role="FENCED" argclose="|" argopen="&lt;"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMApp><XMTok role="UNKNOWN" font="italic">f</XMTok><XMApp><XMTok meaning="ket" role="FENCED" argclose="&gt;" argopen="|"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMApp></XMApp></XMath></Math></p>
+      <p>Also <Math mode="inline" tex="&lt;a|f|b&gt;" xml:id="S2.p7.m1" text="inner-product@(bra@(a), f@(ket@(b)))"><XMath><XMApp><XMTok meaning="inner-product"/><XMApp><XMTok meaning="bra" role="FENCED" argclose="|" argopen="&lt;"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMApp><XMTok role="UNKNOWN" font="italic">f</XMTok><XMApp><XMTok meaning="ket" role="FENCED" argclose="&gt;" argopen="|"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMApp></XMApp></XMath></Math></p>
     </para>
   </section>
   <section refnum="3" xml:id="S3">
     <title>Absolute Values</title>
     <para xml:id="S3.p1">
-      <p>abs <Math mode="inline" tex="|a|" text="absolute-value@(a)"><XMath><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
+      <p>abs <Math mode="inline" tex="|a|" xml:id="S3.p1.m1" text="absolute-value@(a)"><XMath><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S3.p2">
-      <p>norm <Math mode="inline" tex="||a||" text="norm@(a)"><XMath><XMApp><XMTok meaning="norm" role="FENCED" argclose="||" argopen="||"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
+      <p>norm <Math mode="inline" tex="||a||" xml:id="S3.p2.m1" text="norm@(a)"><XMath><XMApp><XMTok meaning="norm" role="FENCED" argclose="||" argopen="||"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S3.p3">
-      <p>expr <Math mode="inline" tex="|a|-|b|" text="absolute-value@(a) - absolute-value@(b)"><XMath><XMApp><XMTok meaning="minus" role="ADDOP">-</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMApp></XMath></Math></p>
+      <p>expr <Math mode="inline" tex="|a|-|b|" xml:id="S3.p3.m1" text="absolute-value@(a) - absolute-value@(b)"><XMath><XMApp><XMTok meaning="minus" role="ADDOP">-</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S3.p4">
-      <p>nested <Math mode="inline" tex="||a|-|b||" text="absolute-value@(absolute-value@(a) - absolute-value@(b))"><XMath><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMApp><XMTok meaning="minus" role="ADDOP">-</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMApp></XMApp></XMath></Math></p>
+      <p>nested <Math mode="inline" tex="||a|-|b||" xml:id="S3.p4.m1" text="absolute-value@(absolute-value@(a) - absolute-value@(b))"><XMath><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMApp><XMTok meaning="minus" role="ADDOP">-</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMApp></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S3.p5">
-      <p>non-nested <Math mode="inline" tex="a|a|+b|b|+c|c|" text="a * absolute-value@(a) + b * absolute-value@(b) + c * absolute-value@(c)"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMApp></XMApp></XMath></Math></p>
+      <p>non-nested <Math mode="inline" tex="a|a|+b|b|+c|c|" xml:id="S3.p5.m1" text="a * absolute-value@(a) + b * absolute-value@(b) + c * absolute-value@(c)"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMApp></XMApp></XMath></Math></p>
     </para>
   </section>
   <section refnum="4" xml:id="S4">
     <title>Mixtures that look like QM</title>
     <para xml:id="S4.p1">
-      <p>abs and rel: <Math mode="inline" tex="a&lt;c|c|" text="a less c * absolute-value@(c)"><XMath><XMApp><XMTok meaning="less-than" role="RELOP">&lt;</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMApp></XMApp></XMath></Math></p>
+      <p>abs and rel: <Math mode="inline" tex="a&lt;c|c|" xml:id="S4.p1.m1" text="a less c * absolute-value@(c)"><XMath><XMApp><XMTok meaning="less-than" role="RELOP">&lt;</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMApp></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S4.p2">
-      <p>worse <Math mode="inline" tex="|a|&lt;\min\left|z\pm\left(z^{{2}}-1\right)^{{{1/2}}}\right|" text="absolute-value@(a) less minimum@(absolute-value@(z plus-or-minus (z ^ 2 - 1) ^ (1 / 2)))"><XMath><XMApp><XMTok meaning="less-than" role="RELOP">&lt;</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMApp><XMTok meaning="minimum" role="LIMITOP" scriptpos="post">min</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMApp><XMTok meaning="plus-or-minus" name="pm" role="ADDOP">±</XMTok><XMTok role="UNKNOWN" font="italic">z</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp open="(" close=")"><XMTok meaning="minus" role="ADDOP">-</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post4"/><XMTok role="UNKNOWN" font="italic">z</XMTok><XMTok meaning="2" role="NUMBER">2</XMTok></XMApp><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp><XMApp><XMTok meaning="divide" role="MULOP" style="inline">/</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok><XMTok meaning="2" role="NUMBER">2</XMTok></XMApp></XMApp></XMApp></XMApp></XMApp></XMApp></XMath></Math></p>
+      <p>worse <Math mode="inline" tex="|a|&lt;\min\left|z\pm\left(z^{{2}}-1\right)^{{{1/2}}}\right|" xml:id="S4.p2.m1" text="absolute-value@(a) less minimum@(absolute-value@(z plus-or-minus (z ^ 2 - 1) ^ (1 / 2)))"><XMath><XMApp><XMTok meaning="less-than" role="RELOP">&lt;</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMApp><XMTok meaning="minimum" role="LIMITOP" scriptpos="post">min</XMTok><XMApp><XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/><XMApp><XMTok meaning="plus-or-minus" name="pm" role="ADDOP">±</XMTok><XMTok role="UNKNOWN" font="italic">z</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp open="(" close=")"><XMTok meaning="minus" role="ADDOP">-</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post4"/><XMTok role="UNKNOWN" font="italic">z</XMTok><XMTok meaning="2" role="NUMBER">2</XMTok></XMApp><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp><XMApp><XMTok meaning="divide" role="MULOP" style="inline">/</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok><XMTok meaning="2" role="NUMBER">2</XMTok></XMApp></XMApp></XMApp></XMApp></XMApp></XMApp></XMath></Math></p>
     </para>
   </section>
 </document>

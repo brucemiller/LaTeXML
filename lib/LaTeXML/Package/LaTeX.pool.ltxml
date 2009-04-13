@@ -914,6 +914,9 @@ DefMacro('\@ensuremath{}', sub {
   if(LookupValue('IN_MATH')){ $stuff->unlist; }
   else { (T_MATH,$stuff->unlist,T_MATH); }});
 
+# Since the arXMLiv folks keep wanting ids on all math, let's try this!
+Tag('ltx:Math',afterOpen=>sub { GenerateID(@_,'m'); });
+
 # ========================================
 # eqnarray, etal
 # Tricky! There's a conflict between a math-level alignment (which

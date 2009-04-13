@@ -4,7 +4,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
-      <Math mode="display" tex="abc\not=\mathrm{abc}\not=\mathit{abc}\ldots" text="a * b * c not-equals abc not-equals abc * ldots">
+      <Math mode="display" tex="abc\not=\mathrm{abc}\not=\mathit{abc}\ldots" xml:id="S0.Ex1.m1" text="a * b * c not-equals abc not-equals abc * ldots">
         <XMath>
           <XMApp>
             <XMTok meaning="multirelation"/>
@@ -27,7 +27,7 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex2">
-      <Math mode="display" tex="\pi\approx 3.1415\; 926" text="pi almost-equals 3.1415926">
+      <Math mode="display" tex="\pi\approx 3.1415\; 926" xml:id="S0.Ex2.m1" text="pi almost-equals 3.1415926">
         <XMath>
           <XMApp>
             <XMTok meaning="almost-equals" name="approx" role="RELOP">≈</XMTok>
@@ -38,7 +38,7 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex3">
-      <Math mode="display" tex="a\cdot b\cdot c\cdot\cdot\cdot" text="(a cdot b cdot c) * cdots">
+      <Math mode="display" tex="a\cdot b\cdot c\cdot\cdot\cdot" xml:id="S0.Ex3.m1" text="(a cdot b cdot c) * cdots">
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>

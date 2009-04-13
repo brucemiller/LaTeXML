@@ -4,11 +4,11 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <title>Testing Simple Math Parsing</title>
   <para xml:id="p1">
-    <p>Inline math <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="ID" font="italic">a</XMTok><XMTok role="ID" font="italic">b</XMTok></XMApp></XMath></Math>.</p>
+    <p>Inline math <Math mode="inline" tex="a+b" xml:id="p1.m1" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="ID" font="italic">a</XMTok><XMTok role="ID" font="italic">b</XMTok></XMApp></XMath></Math>.</p>
   </para>
   <para xml:id="p2">
     <equation>
-      <Math mode="display" tex="a+b+123" text="a + b + 123">
+      <Math mode="display" tex="a+b+123" xml:id="p2.m1" text="a + b + 123">
         <XMath>
           <XMApp>
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -20,7 +20,7 @@
       </Math>
     </equation>
     <equation>
-      <Math mode="display" tex="a+b+f(123)" text="a + b + f@(123)">
+      <Math mode="display" tex="a+b+f(123)" xml:id="p2.m2" text="a + b + f@(123)">
         <XMath>
           <XMApp>
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -37,7 +37,7 @@
   </para>
   <para xml:id="p3">
     <equation>
-      <Math mode="display" tex="f_{D}f(a+b)" text="f _ D * f@(a + b)">
+      <Math mode="display" tex="f_{D}f(a+b)" xml:id="p3.m1" text="f _ D * f@(a + b)">
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -59,7 +59,7 @@
       </Math>
     </equation>
     <equation>
-      <Math mode="display" tex="f_{1}(a+b)" text="f _ 1 * (a + b)">
+      <Math mode="display" tex="f_{1}(a+b)" xml:id="p3.m2" text="f _ 1 * (a + b)">
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -78,7 +78,7 @@
       </Math>
     </equation>
     <equation>
-      <Math mode="display" tex="\hat{f}a" text="hat@(f) * a">
+      <Math mode="display" tex="\hat{f}a" xml:id="p3.m3" text="hat@(f) * a">
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -96,7 +96,7 @@
     <title>Restricted</title>
     <para xml:id="S1.p1">
       <equation>
-        <Math mode="display" tex="a(x)+b(x)+123" text="a@(x) + b@(x) + 123">
+        <Math mode="display" tex="a(x)+b(x)+123" xml:id="S1.p1.m1" text="a@(x) + b@(x) + 123">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
