@@ -282,9 +282,9 @@ DefMacro('\fi',   \&fiHandler);
 
 sub compare {
   my($a,$rel,$b)=@_;
-  if   ($rel->equals(T_OTHER('<'))){ $a < $b; }
-  elsif($rel->equals(T_OTHER('='))){ $a == $b; }
-  elsif($rel->equals(T_OTHER('>'))){ $a > $b; }
+  if   ($rel->equals(T_OTHER('<')) || $rel->equals(T_CS('\@@<'))){ $a < $b; }
+  elsif($rel->equals(T_OTHER('='))                              ){ $a == $b; }
+  elsif($rel->equals(T_OTHER('>')) || $rel->equals(T_CS('\@@>'))){ $a > $b; }
   else { Error(":expected:<relationaltoken> Expected a relational token but got ".Stringify($rel)." in comparison conditional"); }}
 
 DefMacro('\ifnum Number Token Number', 
@@ -993,12 +993,13 @@ DefParameterType('BoxContents',sub {
 sub REF { $_[0] && $_[0]->{$_[1]}; }
 
 DefConstructor('\hbox BoxSpecification BoxContents',
-	       "<ltx:text width='&REF(#1,to)' pad-width='&REF(#1,spread)'>#2</ltx:text>",
-	       mode=>'text',
-	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
-	       # And also things like \centerline that will end up bumping up to block level!
-	       beforeDigest=>sub { Let(T_MATH,T_CS('\@text@alignment$'));
-				   Let(T_CS('\centerline'),T_CS('\relax')); });
+	       "<ltx:text width='&REF(#1,to)' pad-width='&REF(#1,spread)' _noautoclose='1'>#2</ltx:text>",
+ 	       mode=>'text',
+ 	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
+ 	       # And also things like \centerline that will end up bumping up to block level!
+ 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@text@alignment$'));
+ 				   Let(T_CS('\centerline'),T_CS('\relax')); });
+
 
 # SHOULD Be a little smarter: if we're already in a block level context, don't open inline-block
 # but that doesn't really quite capture the logic....
@@ -1142,11 +1143,11 @@ foreach my $op ('\vskip Glue', '\vfil', '\vfill', '\vss', '\vfilneg',
 
 # \moveleft<dimen><box>, \moveright<dimen><box>
 DefConstructor('\moveleft Dimension MoveableBox',
-	       "<ltx:text xoffset='#x'>#2</ltx:text>",
+	       "<ltx:text xoffset='#x' _noautoclose='1'>#2</ltx:text>",
 	       afterDigest=>sub{
 		 $_[1]->setProperty(x=>$_[1]->getArg(1)->multiply(-1)); });
 DefConstructor('\moveright Dimension MoveableBox',
-	       "<ltx:text xoffset='#x'>#2</ltx:text>",
+	       "<ltx:text xoffset='#x' _noautoclose='1'>#2</ltx:text>",
 	       afterDigest=>sub{
 		 $_[1]->setProperty(x=>$_[1]->getArg(1)); });
 
@@ -1218,7 +1219,9 @@ DefMacro('\@alignment@cr',
 	 .'\@alignment@cr@marker'
 	 .'\@open@row\@open@column\@open@inner@column');
 DefConstructor('\@alignment@cr@marker','',reversion=>'\cr');
-DefConstructor('\cr', "\n"); # Default binding.
+DefConstructor('\default@cr', "\n"); # Default binding.
+Let('\cr','\default@cr');
+#DefConstructor('\cr', "\n"); # Default binding.
 Let('\crcr', '\cr');
 
 #DefMacro('\@alignment@newline OptionalMatch:* [Dimension]',
@@ -1583,6 +1586,9 @@ DefPrimitive('\halign BoxSpecification', sub {
   Let(T_ALIGN,'\undefined');	# KEEP these from being expanded here!!!
   Let('\span','\undefined');
   Let('\omit','\undefined');
+  Let('\cr',  '\default@cr');
+  Let('\crcr','\default@cr');
+  Let("\\\\", '\default@cr');
   # Read the template up till something equivalent to \cr
   my @template = ();
   while(($t=$gullet->readXToken) && !Equals($t,T_CS('\cr'))){
@@ -1756,11 +1762,11 @@ DefPrimitive('\hfilneg',undef);
 # OR something that expands into one!!
 
 DefConstructor('\lower Dimension MoveableBox',
-	       "<ltx:text yoffset='#y'>#2</ltx:text>",
+	       "<ltx:text yoffset='#y'  _noautoclose='1'>#2</ltx:text>",
 	       afterDigest=>sub{
 		 $_[1]->setProperty(y=>$_[1]->getArg(1)->multiply(-1)); });
 DefConstructor('\raise Dimension MoveableBox',
-	       "<ltx:text yoffset='#y'>#2</ltx:text>",
+	       "<ltx:text yoffset='#y' _noautoclose='1'>#2</ltx:text>",
 	       afterDigest=>sub{
 		 $_[1]->setProperty(y=>$_[1]->getArg(1)); });
 
@@ -2622,7 +2628,7 @@ DefMacro('\bigbreak','\par');
 DefMacro('\line','\hbox to \hsize');
 DefMacro('\leftline{}','\line{#1\hss}');
 DefMacro('\rightline{}','\line{\hss#1}');
-DefConstructor('\centerline{}',"<ltx:centering>#1</ltx:centering>", bounded=>1);
+DefConstructor('\centerline{}',"<ltx:p class='centering'>#1</ltx:p>", bounded=>1);
 DefMacro('\llap{}','\hbox{#1}');
 DefMacro('\rlap{}','\hbox{#1}');
 DefMacro('\m@th','\mathsurround=0pt ');
@@ -3258,7 +3264,7 @@ DefMath('\underbrace{}',"\x{FE38}", operator_role=>'UNDERACCENT', # PRESENTATION
 
 DefMath('\math@underline{}', UTF(0xAF), operator_role=>'UNDERACCENT', 
 	name=>'underline', alias=>'\underline');
-DefConstructor('\text@underline{}', "<ltx:text framed='underline'>#1</ltx:text>");
+DefConstructor('\text@underline{}', "<ltx:text framed='underline' _noautoclose='1'>#1</ltx:text>");
 DefMath('\math@overrightarrow{}', "\x{2192}", operator_role=>'OVERACCENT', 
 	name=>'overrightarrow', alias=>'\overrightarrow');
 DefMath('\math@overleftarrow{}', "\x{2190}", operator_role=>'OVERACCENT', 
@@ -3438,7 +3444,7 @@ Let('\Vert','\|');
 
 DefMacro('\mathchoice{}{}{}{}',sub {
   my($gullet,$d,$t,$s,$ss)=@_;
-  my $style = LookupValue('mathstyle');
+  my $style = LookupValue('mathstyle') || 'display';
   if   ($style eq 'display'){ $d->unlist; }
   elsif($style eq 'text'   ){ $t->unlist; }
   elsif($style eq 'script' ){ $s->unlist; }
@@ -3690,13 +3696,13 @@ DefMath('\*',"\x{2062}", role=>'MULOP', name=>'', meaning=>'times'); # INVISIBLE
 # NOTE that \mathord and \mathbin aren't really right here.
 # We need a finer granularity than TeX does: an ORD could be several things,
 # a BIN could be a MULOP or ADDOP.
-DefConstructor('\mathord{}',"<ltx:XMWrap role='ID'>#1</ltx:XMWrap>");
-DefConstructor('\mathop{}', "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>");
-DefConstructor('\mathbin{}', "<ltx:XMWrap role='ADDOP'>#1</ltx:XMWrap>");
-DefConstructor('\mathrel{}',"<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>");
-DefConstructor('\mathopen{}', "<ltx:XMWrap role='OPEN'>#1</ltx:XMWrap>");
-DefConstructor('\mathclose{}', "<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>");
-DefConstructor('\mathpunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>");
+DefConstructor('\mathord{}',"<ltx:XMWrap role='ID'>#1</ltx:XMWrap>", bounded=>1);
+DefConstructor('\mathop{}', "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", bounded=>1);
+DefConstructor('\mathbin{}', "<ltx:XMWrap role='ADDOP'>#1</ltx:XMWrap>", bounded=>1);
+DefConstructor('\mathrel{}',"<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>", bounded=>1);
+DefConstructor('\mathopen{}', "<ltx:XMWrap role='OPEN'>#1</ltx:XMWrap>", bounded=>1);
+DefConstructor('\mathclose{}', "<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>", bounded=>1);
+DefConstructor('\mathpunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>", bounded=>1);
 
 
 DefMacro('\hiderel{}', "#1"); # Just ignore, for now...
