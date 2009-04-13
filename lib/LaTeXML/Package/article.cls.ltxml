@@ -91,8 +91,8 @@ AssignValue(counter_for_appendix=>'section');
 DefMacro('\appendix@section', '\@startsection{appendix}{}{}{}{}{}');
 DefPrimitive('\appendix',sub{
   NewCounter('section', 'document', idprefix=>'A',nested=>['subsection']);
-  DefMacro('\thesection', '\Alph{section}');
-  Let('\section','\appendix@section');
+  DefMacro('\thesection', '\Alph{section}'.'global');
+  Let('\section','\appendix@section','global');
  });
 
 #**********************************************************************
