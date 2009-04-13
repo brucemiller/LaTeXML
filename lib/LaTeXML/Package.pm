@@ -146,10 +146,10 @@ sub LookupMeaning      { $STATE->lookupMeaning(@_); }
 sub LookupDefinition   { $STATE->lookupDefinition(@_); }
 sub InstallDefinition  { $STATE->installDefinition(@_); }
 sub Let {
-  my($token1,$token2)=@_;
+  my($token1,$token2,$scope)=@_;
   ($token1)=TokenizeInternal($token1)->unlist unless ref $token1;
   ($token2)=TokenizeInternal($token2)->unlist unless ref $token2;
-  $STATE->assignMeaning($token1,$STATE->lookupMeaning($token2)); 
+  $STATE->assignMeaning($token1,$STATE->lookupMeaning($token2),$scope); 
   return; }
 
 sub Digest {
