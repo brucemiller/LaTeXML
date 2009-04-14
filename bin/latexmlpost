@@ -67,7 +67,7 @@ GetOptions("verbose+"              =>\$verbosity,
 	   "splitnaming=s"         =>sub { $splitnaming=$_[1]; $split=1 unless defined $split;},
 	   "scan!"                 =>\$scan,
 	   "crossref!"             =>\$crossref,
-	   "urlstyle=s"            =>$urlstyle,
+	   "urlstyle=s"            =>\$urlstyle,
 	   # Generating indices
 	   "index!"                =>\$index,
 	   "permutedindex!"        =>\$permutedindex,
