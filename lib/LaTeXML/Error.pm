@@ -148,13 +148,6 @@ sub objectStack {
 	last if $maxdepth && (scalar(@objects) >= $maxdepth); }}}
   @objects; }
 
-sub line_in_file {
-  my($file)=@_;
-  my $frame=0;
-  while(my($pkg,$cfile,$line) = caller($frame++)){
-    return $line if $cfile eq $file; }
-  undef; }
-
 #**********************************************************************
 1;
 
@@ -199,11 +192,6 @@ function was invoked.
 Return a list of objects invoked on the stack.  This procedure only
 considers those stackframes which involve methods, and the objects are
 those (unique) objects that the method was called on.
-
-=item C<< $line = LaTeXML::Error:line_in_file($file); >>
-
-This returns the line number in $file that is currently being executed,
-assuming that some stackframe is invoking code defined in that file.
 
 =back
 
