@@ -270,7 +270,9 @@ sub ReadAlignmentTemplate {
       if(@exp){			# This just expanded into other stuff
 	$gullet->unread(@exp); }
       else {
-	push(@tokens,$op,$defn->getParameters->revertArguments(@args)); }}
+	push(@tokens,$op);
+	if(my $param = $defn->getParameters){
+	  push(@tokens,$param->revertArguments(@args)); }}}
     elsif($op->equals(T_BEGIN)){ # Wrong, but a safety valve
       my $z = $gullet->readBalanced;
       Warn(":unexpected:".Stringify($z)." Unrecognized tabular template \"".Stringify($z)."\""); }
