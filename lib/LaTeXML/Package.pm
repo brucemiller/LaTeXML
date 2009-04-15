@@ -696,9 +696,9 @@ sub DefMathI {
   #   \cs              macro that expands into \DUAL{pres}{content}
   #   \cs@content      constructor creates the content branch
   #   \cs@presentation macro that expands into code in the presentation branch.
-  if((ref $presentation eq 'CODE')
-     || ((ref $presentation) && grep($_->equals(T_PARAM),$presentation->unlist))
-     || ($presentation =~ /\#\d|\\./)){
+###  if((ref $presentation eq 'CODE')
+###     || ((ref $presentation) && grep($_->equals(T_PARAM),$presentation->unlist))
+  if((ref $presentation) || ($presentation =~ /\#\d|\\./)){
     my $cont_cs = T_CS($csname."\@content");
     my $pres_cs = T_CS($csname."\@presentation");
     # Make the original CS expand into a DUAL invoking a presentation macro and content constructor
