@@ -200,7 +200,6 @@ sub readToken {
 
     # Sneak a comment out, every so often.
     if(!($$self{lineno} % 25)){
-      NoteProgress("[#$$self{lineno}]");
       return T_COMMENT("**** $$self{source} Line $$self{lineno} ****")
 	if $STATE->lookupValue('INCLUDE_COMMENTS'); }
   }
@@ -322,6 +321,8 @@ sub getNextLine {
   if($line){
     if(my $encoding = $STATE->lookupValue('INPUT_ENCODING')){
       $line = decode($encoding,$line); }}
+  if(!($$self{lineno} % 25)){
+    NoteProgress("[#$$self{lineno}]"); }
   $line; }
 
 sub stringify {
@@ -384,7 +385,10 @@ sub finish {
 sub getLocator {
   my($self)=@_;
   my $path = $$self{pathname};
-  my $line = LaTeXML::Error::line_in_file($path);
+  my $frame=2;
+  my($pkg,$file,$line);
+  while(($pkg,$file,$line) = caller($frame++)){
+    last if $file eq $path; }
   $path.($line ? " line $line":''); }
 
 sub getSource {
