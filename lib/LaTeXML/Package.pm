@@ -159,7 +159,7 @@ sub ReadParameters {
   my($gullet,$spec)=@_;
   my $for = T_OTHER("Anonymous");
   my $parm = parseParameters($spec,$for);
-  $parm->readArguments($gullet,$for); }
+  ($parm ? $parm->readArguments($gullet,$for) : ()); }
 
 # Merge the current font with the style specifications
 sub MergeFont { AssignValue(font=>LookupValue('font')->merge(@_), 'local'); }
@@ -450,7 +450,6 @@ sub DefMacro {
 sub DefMacroI {
   my($cs,$paramlist,$expansion,%options)=@_;
   if(!defined $expansion){ $expansion = Tokens(); }
-  elsif(!ref $expansion) { $expansion = TokenizeInternal($expansion); }
   $cs = coerceCS($cs);
   $STATE->installDefinition(LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options),
 			    $options{scope});
@@ -524,11 +523,7 @@ sub DefRegisterI {
   return; }
 
 sub flatten {
-  my @list=();
-  foreach my $item (@_){
-    if(ref $item eq 'ARRAY'){ push(@list,@$item); }
-    elsif(defined $item)    { push(@list,$item); }}
-  [@list]; }
+  [map((defined $_ ? (ref $_ eq 'ARRAY' ? @$_ : ($_)) : ()), @_)]; }
 
 #======================================================================
 # Define a constructor control sequence. 
@@ -701,7 +696,9 @@ sub DefMathI {
   #   \cs              macro that expands into \DUAL{pres}{content}
   #   \cs@content      constructor creates the content branch
   #   \cs@presentation macro that expands into code in the presentation branch.
-  if((ref $presentation) || ($presentation =~ /\#\d|\\./)){
+  if((ref $presentation eq 'CODE')
+     || ((ref $presentation) && grep($_->equals(T_PARAM),$presentation->unlist))
+     || ($presentation =~ /\#\d|\\./)){
     my $cont_cs = T_CS($csname."\@content");
     my $pres_cs = T_CS($csname."\@presentation");
     # Make the original CS expand into a DUAL invoking a presentation macro and content constructor
@@ -1008,7 +1005,8 @@ sub AddToMacro {
   my($cs,$tokens)=@_;
   # Needs error checking!
   my $defn = LookupDefinition($cs);
-  DefMacroI($cs,undef,Tokens($$defn{expansion}->unlist,$tokens->unlist)); }
+##  DefMacroI($cs,undef,Tokens($$defn{expansion}->unlist,$tokens->unlist)); }
+  DefMacroI($cs,undef,Tokens($defn->getExpansion->unlist,$tokens->unlist)); }
 
 our $require_options = {options=>1, withoptions=>1, type=>1, raw=>1, after=>1};
 sub RequirePackage {
