@@ -36,5 +36,11 @@ for name in LaTeXML; do
    # so we'll fix it up...
    sed -e "s/xmlns CDATA #FIXED ''/xmlns CDATA #FIXED 'http:\/\/dlmf.nist.gov\/LaTeXML'/" \
       /tmp/$name.dtd  > ../dtd/$name.dtd
+
+  echo "Precompiling $name.rng schema to $name.model"
+  perl -I ~/latexml/blib/lib/ -MLaTeXML \
+       -e 'LaTeXML->new()->withState(sub{ $_[0]->getModel->compileSchema; });' \
+       > ../$name.model
+
 done
 #======================================================================

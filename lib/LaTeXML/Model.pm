@@ -16,6 +16,7 @@ use LaTeXML::Global;
 use LaTeXML::Font;
 use LaTeXML::Rewrite;
 use LaTeXML::Common::XML;
+use LaTeXML::Util::Pathname;
 use base qw(LaTeXML::Object);
 
 #**********************************************************************
@@ -34,35 +35,78 @@ sub new {
 
 sub setDocType {
   my($self,$roottag,$publicid,$systemid)=@_;
-  require 'LaTeXML/Model/DTD.pm';
-  $$self{schema} = LaTeXML::Model::DTD->new($self,$roottag,$publicid,$systemid); }
+  $$self{schemadata}=['DTD',$roottag,$publicid,$systemid]; }
 
 sub setRelaxNGSchema {
   my($self,$schema)=@_;
-  require 'LaTeXML/Model/RelaxNG.pm';
-  $$self{schema} = LaTeXML::Model::RelaxNG->new($self,$schema); }
-
-sub getSchema { $_[0]->{schema}; }
+  $$self{schemadata}=['RelaxNG',$schema]; }
 
 sub loadSchema {
   my($self)=@_;
+  return $$self{schema} if $$self{schema_loaded};
+  my $name;
 
-  if(!$$self{schema}){
-    Warn(":model No DTD declared...assuming LaTeXML!");
+  if(!$$self{schemadata}){
+    Warn(":model No Schema Model declared...assuming LaTeXML!");
     # article ??? or what ? undef gives problems!
-    $self->setDocType(undef,$STD_PUBLIC_ID,$STD_SYSTEM_ID);
-    $self->registerDocumentNamespace('#default'=>$LTX_NAMESPACE);
-    $$self{permissive}=1;	# Actually, they could have declared all sorts of Tags....
-  }
-  if(!$$self{schema_loaded}){
-    $$self{schema}->loadSchema;
-    $self->computeIndirect;
-    $self->describeModel if $LaTeXML::Model::DEBUG;
-    $$self{schema_loaded}=1; }}
+    $self->setRelaxNGSchema("LaTeXML");
+    $self->registerNamespace(ltx=>$LTX_NAMESPACE);
+    $$self{permissive}=1; }	# Actually, they could have declared all sorts of Tags....
+
+  my($type,@data)=@{$$self{schemadata}};
+  if($type eq 'DTD'){
+    my($roottag,$publicid,$systemid)=@data;
+    require 'LaTeXML/Model/DTD.pm';
+    $name = $systemid;
+    $$self{schema} = LaTeXML::Model::DTD->new($self,$roottag,$publicid,$systemid); }
+  elsif($type eq 'RelaxNG'){
+    ($name)=@data;
+    require 'LaTeXML/Model/RelaxNG.pm';
+    $$self{schema} = LaTeXML::Model::RelaxNG->new($self,$name); }
+
+  if(my $compiled = !$$self{no_compiled}
+     && pathname_find($name, paths=>$STATE->lookupValue('SEARCHPATHS'),
+		      types=>['model'], installation_subdir=>'schema')){
+    $self->loadCompiledSchema($compiled); }
+  else {
+    $$self{schema}->loadSchema; }
+  $self->computeIndirect;
+  $self->describeModel if $LaTeXML::Model::DEBUG;
+  $$self{schema_loaded}=1;
+  $$self{schema}; }
 
 sub addSchemaDeclaration {
   my($self,$document,$tag)=@_;
   $$self{schema}->addSchemaDeclaration($document,$tag); }
+
+#=====================================================================
+# Make provision to precompile the schema.
+sub compileSchema {
+  my($self)=@_;
+  $$self{no_compiled}=1;
+  $self->loadSchema;
+  foreach my $prefix (keys %{$$self{document_namespaces}}){
+    print $prefix.'='.$$self{document_namespaces}{$prefix}."\n"; }
+  foreach my $tag (keys %{$$self{tagprop}}){
+    print $tag
+      .'{'.join(',',sort keys %{$$self{tagprop}{$tag}{attributes}}).'}'
+      .'('.join(',',sort keys %{$$self{tagprop}{$tag}{model}}).')'."\n"; }}
+
+sub loadCompiledSchema {
+  my($self,$file)=@_;
+  open(MODEL,$file) or Fatal(":missing_file:$file Couldn't read Compiled Model $file");
+  my $line;
+  while($line = <MODEL>){
+    if($line =~ /^([^\{]+)\{(.*?)\}\((.*?)\)$/){
+      my($tag,$attr,$children)=($1,$2,$3);
+      $self->setTagProperty($tag,'attributes',{map(($_=>1),split(/,/,$attr))});
+      $self->setTagProperty($tag,'model',{map(($_=>1),split(/,/,$children))}); }
+    elsif($line =~ /^([^=]+)=(.*?)$/){
+      my($prefix,$namespace)=($1,$2);
+      $self->registerDocumentNamespace($prefix,$namespace); }
+    else {
+      Fatal(":internal:$file Compiled model $file is malformatted at \"$line\""); }
+  }}
 
 #**********************************************************************
 # Namespaces
