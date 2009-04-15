@@ -95,7 +95,7 @@ sub parseParameters {
       push(@params,newParameter($type,$spec,extra=>[@extra])); }
     else {
       Fatal(":misdefined:".Stringify($for)." Unrecognized parameter specification at \"$proto\""); }}
-  LaTeXML::Parameters->new(@params); }
+  (@params ? LaTeXML::Parameters->new(@params) : undef); }
 
 # Create a parameter reading object for a specific type.
 # If either a declared entry or a function Read<Type> accessible from LaTeXML::Package::Pool
