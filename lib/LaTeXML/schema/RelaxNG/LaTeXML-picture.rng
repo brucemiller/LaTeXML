@@ -35,6 +35,11 @@ NOTE: Consider whether it is sensible to drop this and incorporate SVG itself.</
       <ref name="ellipse"/>
       <ref name="polygon"/>
       <ref name="bezier"/>
+      <ref name="parabola"/>
+      <ref name="curve"/>
+      <ref name="dots"/>
+      <ref name="grid"/>
+      <ref name="clip"/>
     </choice>
   </define>
   <define name="Picture.attributes">
@@ -273,6 +278,63 @@ positioning and other properties.</a:documentation>
       <ref name="Common.attributes"/>
       <ref name="Picture.attributes"/>
       <empty/>
+    </element>
+  </define>
+  <define name="curve">
+    <element name="curve">
+      <a:documentation>A curve within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="parabola">
+    <element name="parabola">
+      <a:documentation>A parabola curve within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="dots">
+    <element name="dots">
+      <a:documentation>A sequence of dots (?) within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="grid">
+    <element name="grid">
+      <a:documentation>A grid within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <empty/>
+    </element>
+  </define>
+  <define name="clip">
+    <element name="clip">
+      <a:documentation>Establishes a clipping region within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <zeroOrMore>
+        <ref name="clippath"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="clippath">
+    <element name="clippath">
+      <a:documentation>Establishes a clipping region within a \elementref{picture}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Picture.attributes"/>
+      <zeroOrMore>
+        <choice>
+          <ref name="Picture.class"/>
+          <ref name="Inline.class"/>
+          <ref name="Misc.class"/>
+          <ref name="Meta.class"/>
+        </choice>
+      </zeroOrMore>
     </element>
   </define>
 </grammar>

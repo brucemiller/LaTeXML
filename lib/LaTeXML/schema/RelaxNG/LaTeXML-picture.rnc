@@ -24,6 +24,7 @@ Misc.class |= picture
 Picture.class =
   g | rect | line | circle | path
  | arc | wedge | ellipse | polygon | bezier
+ | parabola | curve | dots | grid | clip
 
 
 
@@ -150,4 +151,46 @@ element bezier {
   Common.attributes,
   Picture.attributes,
   empty }
+
+curve =
+## A curve within a \elementref{picture}.
+element curve {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+
+parabola =
+## A parabola curve within a \elementref{picture}.
+element parabola {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+
+dots =
+## A sequence of dots (?) within a \elementref{picture}.
+element dots {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+
+grid =
+## A grid within a \elementref{picture}.
+element grid {
+  Common.attributes,
+  Picture.attributes,
+  empty }
+
+clip =
+## Establishes a clipping region within a \elementref{picture}.
+element clip {
+  Common.attributes,
+  Picture.attributes,
+  clippath* }
+
+clippath =
+## Establishes a clipping region within a \elementref{picture}.
+element clippath {
+  Common.attributes,
+  Picture.attributes,
+  (Picture.class | Inline.class | Misc.class | Meta.class)* }
 
