@@ -33,7 +33,7 @@ element theorem {
   Common.attributes,
   Labelled.attributes,
 
-  title?, Block.model  }
+  title?, Para.model  }
 
 proof =
 ## A proof or similar object. The \attr{class} attribute can be used to distinguish
@@ -42,7 +42,7 @@ element proof {
   Common.attributes,
   Labelled.attributes,
 
-  title?, Block.model }
+  title?, Para.model }
 
 ## These are the additional elements representing figure and
 ## table captions.

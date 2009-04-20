@@ -7,13 +7,19 @@
     <para xml:id="S1.p1">
       <itemize xml:id="I1">
         <item xml:id="I1.i1" labels="LABEL:it:one">
-          <p>One, but not <ref labelref="LABEL:en:one"/></p>
+          <para xml:id="I1.i1.p1">
+            <p>One, but not <ref labelref="LABEL:en:one"/></p>
+          </para>
         </item>
         <item xml:id="I1.i2" labels="LABEL:it:two">
-          <p>Two, but not <ref labelref="LABEL:en:two"/></p>
+          <para xml:id="I1.i2.p1">
+            <p>Two, but not <ref labelref="LABEL:en:two"/></p>
+          </para>
         </item>
         <item xml:id="I1.i3" labels="LABEL:it:three">
-          <p>Three, but not <ref labelref="LABEL:en:three"/></p>
+          <para xml:id="I1.i3.p1">
+            <p>Three, but not <ref labelref="LABEL:en:three"/></p>
+          </para>
         </item>
       </itemize>
     </para>
@@ -23,13 +29,19 @@
     <para xml:id="S2.p1">
       <enumerate xml:id="I2">
         <item refnum="1" xml:id="I2.i1" labels="LABEL:en:one">
-          <p>One , but not <ref labelref="LABEL:de:one"/></p>
+          <para xml:id="I2.i1.p1">
+            <p>One , but not <ref labelref="LABEL:de:one"/></p>
+          </para>
         </item>
         <item refnum="2" xml:id="I2.i2" labels="LABEL:en:two">
-          <p>Two , but not <ref labelref="LABEL:de:two"/></p>
+          <para xml:id="I2.i2.p1">
+            <p>Two , but not <ref labelref="LABEL:de:two"/></p>
+          </para>
         </item>
         <item refnum="3" xml:id="I2.i3" labels="LABEL:en:three">
-          <p>Three , but not <ref labelref="LABEL:de:three"/></p>
+          <para xml:id="I2.i3.p1">
+            <p>Three , but not <ref labelref="LABEL:de:three"/></p>
+          </para>
         </item>
       </enumerate>
     </para>
@@ -40,15 +52,21 @@
       <description xml:id="I3">
         <item xml:id="I3.i1" labels="LABEL:de:one">
           <tag>One</tag>
-          <p>, but not <ref labelref="LABEL:it:one"/></p>
+          <para xml:id="I3.i1.p1">
+            <p>, but not <ref labelref="LABEL:it:one"/></p>
+          </para>
         </item>
         <item xml:id="I3.i2" labels="LABEL:de:two">
           <tag>Two</tag>
-          <p>, but not <ref labelref="LABEL:it:two"/></p>
+          <para xml:id="I3.i2.p1">
+            <p>, but not <ref labelref="LABEL:it:two"/></p>
+          </para>
         </item>
         <item xml:id="I3.i3" labels="LABEL:de:three">
           <tag>Three</tag>
-          <p>, but not <ref labelref="LABEL:it:three"/></p>
+          <para xml:id="I3.i3.p1">
+            <p>, but not <ref labelref="LABEL:it:three"/></p>
+          </para>
         </item>
       </description>
     </para>
@@ -58,46 +76,70 @@
     <para xml:id="S4.p1">
       <enumerate xml:id="I4">
         <item refnum="1" xml:id="I4.i1">
-          <p>One</p>
-          <enumerate xml:id="I4.I1">
-            <item refnum="a" xml:id="I4.I1.i1">
-              <p>One</p>
-            </item>
-            <item refnum="b" xml:id="I4.I1.i2">
-              <p>Two</p>
-            </item>
-            <item refnum="c" xml:id="I4.I1.i3">
-              <p>Three</p>
-            </item>
-          </enumerate>
+          <para xml:id="I4.i1.p1">
+            <p>One</p>
+            <enumerate xml:id="I4.I1">
+              <item refnum="a" xml:id="I4.I1.i1">
+                <para xml:id="I4.I1.i1.p1">
+                  <p>One</p>
+                </para>
+              </item>
+              <item refnum="b" xml:id="I4.I1.i2">
+                <para xml:id="I4.I1.i2.p1">
+                  <p>Two</p>
+                </para>
+              </item>
+              <item refnum="c" xml:id="I4.I1.i3">
+                <para xml:id="I4.I1.i3.p1">
+                  <p>Three</p>
+                </para>
+              </item>
+            </enumerate>
+          </para>
         </item>
         <item refnum="2" xml:id="I4.i2">
-          <p>Two</p>
-          <enumerate xml:id="I4.I2">
-            <item refnum="a" xml:id="I4.I2.i1">
-              <p>One</p>
-            </item>
-            <item refnum="b" xml:id="I4.I2.i2">
-              <p>Two</p>
-            </item>
-            <item refnum="c" xml:id="I4.I2.i3">
-              <p>Three</p>
-            </item>
-          </enumerate>
+          <para xml:id="I4.i2.p1">
+            <p>Two</p>
+            <enumerate xml:id="I4.I2">
+              <item refnum="a" xml:id="I4.I2.i1">
+                <para xml:id="I4.I2.i1.p1">
+                  <p>One</p>
+                </para>
+              </item>
+              <item refnum="b" xml:id="I4.I2.i2">
+                <para xml:id="I4.I2.i2.p1">
+                  <p>Two</p>
+                </para>
+              </item>
+              <item refnum="c" xml:id="I4.I2.i3">
+                <para xml:id="I4.I2.i3.p1">
+                  <p>Three</p>
+                </para>
+              </item>
+            </enumerate>
+          </para>
         </item>
         <item refnum="3" xml:id="I4.i3">
-          <p>Three</p>
-          <enumerate xml:id="I4.I3">
-            <item refnum="a" xml:id="I4.I3.i1">
-              <p>One</p>
-            </item>
-            <item refnum="b" xml:id="I4.I3.i2">
-              <p>Two</p>
-            </item>
-            <item refnum="c" xml:id="I4.I3.i3">
-              <p>Three</p>
-            </item>
-          </enumerate>
+          <para xml:id="I4.i3.p1">
+            <p>Three</p>
+            <enumerate xml:id="I4.I3">
+              <item refnum="a" xml:id="I4.I3.i1">
+                <para xml:id="I4.I3.i1.p1">
+                  <p>One</p>
+                </para>
+              </item>
+              <item refnum="b" xml:id="I4.I3.i2">
+                <para xml:id="I4.I3.i2.p1">
+                  <p>Two</p>
+                </para>
+              </item>
+              <item refnum="c" xml:id="I4.I3.i3">
+                <para xml:id="I4.I3.i3.p1">
+                  <p>Three</p>
+                </para>
+              </item>
+            </enumerate>
+          </para>
         </item>
       </enumerate>
     </para>

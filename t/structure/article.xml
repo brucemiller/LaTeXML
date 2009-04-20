@@ -42,18 +42,26 @@
     <para xml:id="S1.p3">
       <enumerate xml:id="I1">
         <item refnum="1" xml:id="I1.i1">
-          <p>one</p>
+          <para xml:id="I1.i1.p1">
+            <p>one</p>
+          </para>
         </item>
         <item refnum="2" xml:id="I1.i2">
-          <p>two</p>
-          <enumerate xml:id="I1.I1">
-            <item refnum="a" xml:id="I1.I1.i1">
-              <p>one</p>
-            </item>
-            <item refnum="b" xml:id="I1.I1.i2">
-              <p>two</p>
-            </item>
-          </enumerate>
+          <para xml:id="I1.i2.p1">
+            <p>two</p>
+            <enumerate xml:id="I1.I1">
+              <item refnum="a" xml:id="I1.I1.i1">
+                <para xml:id="I1.I1.i1.p1">
+                  <p>one</p>
+                </para>
+              </item>
+              <item refnum="b" xml:id="I1.I1.i2">
+                <para xml:id="I1.I1.i2.p1">
+                  <p>two</p>
+                </para>
+              </item>
+            </enumerate>
+          </para>
         </item>
       </enumerate>
     </para>
@@ -98,18 +106,26 @@
     <para xml:id="S2.p3">
       <enumerate xml:id="I2">
         <item refnum="1" xml:id="I2.i1">
-          <p>one</p>
+          <para xml:id="I2.i1.p1">
+            <p>one</p>
+          </para>
         </item>
         <item refnum="2" xml:id="I2.i2">
-          <p>two</p>
-          <enumerate xml:id="I2.I1">
-            <item refnum="a" xml:id="I2.I1.i1">
-              <p>one</p>
-            </item>
-            <item refnum="b" xml:id="I2.I1.i2">
-              <p>two</p>
-            </item>
-          </enumerate>
+          <para xml:id="I2.i2.p1">
+            <p>two</p>
+            <enumerate xml:id="I2.I1">
+              <item refnum="a" xml:id="I2.I1.i1">
+                <para xml:id="I2.I1.i1.p1">
+                  <p>one</p>
+                </para>
+              </item>
+              <item refnum="b" xml:id="I2.I1.i2">
+                <para xml:id="I2.I1.i2.p1">
+                  <p>two</p>
+                </para>
+              </item>
+            </enumerate>
+          </para>
         </item>
       </enumerate>
     </para>

@@ -232,9 +232,8 @@
   xml:id ID #IMPLIED>
 
 <!ELEMENT item (tag?,
-                (p|equation|equationgroup|quote|block|itemize|enumerate
-                 |description|inline-block|verbatim|break|graphics
-                 |tabular|picture|note|indexmark|ERROR)*)>
+                (para|theorem|proof|figure|table|note|indexmark
+                 |ERROR)*)>
 <!ATTLIST item
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -271,9 +270,8 @@
   xml:id ID #IMPLIED>
 
 <!ELEMENT theorem (title?,
-                   (p|equation|equationgroup|quote|block|itemize
-                    |enumerate|description|inline-block|verbatim|break
-                    |graphics|tabular|picture|note|indexmark|ERROR)*)>
+                   (para|theorem|proof|figure|table|note|indexmark
+                    |ERROR)*)>
 <!ATTLIST theorem
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -282,9 +280,8 @@
   refnum CDATA #IMPLIED>
 
 <!ELEMENT proof (title?,
-                 (p|equation|equationgroup|quote|block|itemize|enumerate
-                  |description|inline-block|verbatim|break|graphics
-                  |tabular|picture|note|indexmark|ERROR)*)>
+                 (para|theorem|proof|figure|table|note|indexmark
+                  |ERROR)*)>
 <!ATTLIST proof
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -568,9 +565,10 @@
   thead CDATA #IMPLIED>
 
 <!ELEMENT picture (g|rect|line|circle|path|arc|wedge|ellipse|polygon
-                   |bezier|text|emph|acronym|rule|anchor|ref|cite|bibref
-                   |Math|inline-block|verbatim|break|graphics|tabular
-                   |picture|note|indexmark|ERROR)*>
+                   |bezier|parabola|curve|dots|grid|clip|text|emph
+                   |acronym|rule|anchor|ref|cite|bibref|Math
+                   |inline-block|verbatim|break|graphics|tabular|picture
+                   |note|indexmark|ERROR)*>
 <!ATTLIST picture
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -610,9 +608,9 @@
   content-tex CDATA #IMPLIED>
 
 <!ELEMENT g (g|rect|line|circle|path|arc|wedge|ellipse|polygon|bezier
-             |text|emph|acronym|rule|anchor|ref|cite|bibref|Math
-             |inline-block|verbatim|break|graphics|tabular|picture|note
-             |indexmark|ERROR)*>
+             |parabola|curve|dots|grid|clip|text|emph|acronym|rule
+             |anchor|ref|cite|bibref|Math|inline-block|verbatim|break
+             |graphics|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST g
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -899,12 +897,185 @@
   arcsepB CDATA #IMPLIED
   curvature CDATA #IMPLIED>
 
+<!ELEMENT curve EMPTY>
+<!ATTLIST curve
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  x CDATA #IMPLIED
+  y CDATA #IMPLIED
+  r CDATA #IMPLIED
+  rx CDATA #IMPLIED
+  ry CDATA #IMPLIED
+  width CDATA #IMPLIED
+  height CDATA #IMPLIED
+  fill CDATA #IMPLIED
+  stroke CDATA #IMPLIED
+  stroke-width CDATA #IMPLIED
+  stroke-dasharray CDATA #IMPLIED
+  transform CDATA #IMPLIED
+  terminators CDATA #IMPLIED
+  arrowlength CDATA #IMPLIED
+  points CDATA #IMPLIED
+  showpoints CDATA #IMPLIED
+  displayedpoints CDATA #IMPLIED
+  arc CDATA #IMPLIED
+  angle1 CDATA #IMPLIED
+  angle2 CDATA #IMPLIED
+  arcsepA CDATA #IMPLIED
+  arcsepB CDATA #IMPLIED
+  curvature CDATA #IMPLIED>
+
+<!ELEMENT parabola EMPTY>
+<!ATTLIST parabola
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  x CDATA #IMPLIED
+  y CDATA #IMPLIED
+  r CDATA #IMPLIED
+  rx CDATA #IMPLIED
+  ry CDATA #IMPLIED
+  width CDATA #IMPLIED
+  height CDATA #IMPLIED
+  fill CDATA #IMPLIED
+  stroke CDATA #IMPLIED
+  stroke-width CDATA #IMPLIED
+  stroke-dasharray CDATA #IMPLIED
+  transform CDATA #IMPLIED
+  terminators CDATA #IMPLIED
+  arrowlength CDATA #IMPLIED
+  points CDATA #IMPLIED
+  showpoints CDATA #IMPLIED
+  displayedpoints CDATA #IMPLIED
+  arc CDATA #IMPLIED
+  angle1 CDATA #IMPLIED
+  angle2 CDATA #IMPLIED
+  arcsepA CDATA #IMPLIED
+  arcsepB CDATA #IMPLIED
+  curvature CDATA #IMPLIED>
+
+<!ELEMENT dots EMPTY>
+<!ATTLIST dots
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  x CDATA #IMPLIED
+  y CDATA #IMPLIED
+  r CDATA #IMPLIED
+  rx CDATA #IMPLIED
+  ry CDATA #IMPLIED
+  width CDATA #IMPLIED
+  height CDATA #IMPLIED
+  fill CDATA #IMPLIED
+  stroke CDATA #IMPLIED
+  stroke-width CDATA #IMPLIED
+  stroke-dasharray CDATA #IMPLIED
+  transform CDATA #IMPLIED
+  terminators CDATA #IMPLIED
+  arrowlength CDATA #IMPLIED
+  points CDATA #IMPLIED
+  showpoints CDATA #IMPLIED
+  displayedpoints CDATA #IMPLIED
+  arc CDATA #IMPLIED
+  angle1 CDATA #IMPLIED
+  angle2 CDATA #IMPLIED
+  arcsepA CDATA #IMPLIED
+  arcsepB CDATA #IMPLIED
+  curvature CDATA #IMPLIED>
+
+<!ELEMENT grid EMPTY>
+<!ATTLIST grid
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  x CDATA #IMPLIED
+  y CDATA #IMPLIED
+  r CDATA #IMPLIED
+  rx CDATA #IMPLIED
+  ry CDATA #IMPLIED
+  width CDATA #IMPLIED
+  height CDATA #IMPLIED
+  fill CDATA #IMPLIED
+  stroke CDATA #IMPLIED
+  stroke-width CDATA #IMPLIED
+  stroke-dasharray CDATA #IMPLIED
+  transform CDATA #IMPLIED
+  terminators CDATA #IMPLIED
+  arrowlength CDATA #IMPLIED
+  points CDATA #IMPLIED
+  showpoints CDATA #IMPLIED
+  displayedpoints CDATA #IMPLIED
+  arc CDATA #IMPLIED
+  angle1 CDATA #IMPLIED
+  angle2 CDATA #IMPLIED
+  arcsepA CDATA #IMPLIED
+  arcsepB CDATA #IMPLIED
+  curvature CDATA #IMPLIED>
+
+<!ELEMENT clip (clippath)*>
+<!ATTLIST clip
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  x CDATA #IMPLIED
+  y CDATA #IMPLIED
+  r CDATA #IMPLIED
+  rx CDATA #IMPLIED
+  ry CDATA #IMPLIED
+  width CDATA #IMPLIED
+  height CDATA #IMPLIED
+  fill CDATA #IMPLIED
+  stroke CDATA #IMPLIED
+  stroke-width CDATA #IMPLIED
+  stroke-dasharray CDATA #IMPLIED
+  transform CDATA #IMPLIED
+  terminators CDATA #IMPLIED
+  arrowlength CDATA #IMPLIED
+  points CDATA #IMPLIED
+  showpoints CDATA #IMPLIED
+  displayedpoints CDATA #IMPLIED
+  arc CDATA #IMPLIED
+  angle1 CDATA #IMPLIED
+  angle2 CDATA #IMPLIED
+  arcsepA CDATA #IMPLIED
+  arcsepB CDATA #IMPLIED
+  curvature CDATA #IMPLIED>
+
+<!ELEMENT clippath (g|rect|line|circle|path|arc|wedge|ellipse|polygon
+                    |bezier|parabola|curve|dots|grid|clip|text|emph
+                    |acronym|rule|anchor|ref|cite|bibref|Math
+                    |inline-block|verbatim|break|graphics|tabular
+                    |picture|note|indexmark|ERROR)*>
+<!ATTLIST clippath
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  x CDATA #IMPLIED
+  y CDATA #IMPLIED
+  r CDATA #IMPLIED
+  rx CDATA #IMPLIED
+  ry CDATA #IMPLIED
+  width CDATA #IMPLIED
+  height CDATA #IMPLIED
+  fill CDATA #IMPLIED
+  stroke CDATA #IMPLIED
+  stroke-width CDATA #IMPLIED
+  stroke-dasharray CDATA #IMPLIED
+  transform CDATA #IMPLIED
+  terminators CDATA #IMPLIED
+  arrowlength CDATA #IMPLIED
+  points CDATA #IMPLIED
+  showpoints CDATA #IMPLIED
+  displayedpoints CDATA #IMPLIED
+  arc CDATA #IMPLIED
+  angle1 CDATA #IMPLIED
+  angle2 CDATA #IMPLIED
+  arcsepA CDATA #IMPLIED
+  arcsepB CDATA #IMPLIED
+  curvature CDATA #IMPLIED>
+
 <!ELEMENT document ((subtitle|date|abstract|acknowledgements|keywords
                      |classification|title|toctitle|creator|note
                      |indexmark|ERROR|titlepage)*,
-                    (((((para|theorem|proof|figure|table|note|indexmark
-                         |ERROR)*
-                        |paragraph)
+                    ((((((para|theorem|proof|figure|table|note|indexmark
+                          |ERROR)*
+                         |paragraph)
+                        |subsection)
                        |section)
                       |chapter)
                      |part)*,
