@@ -63,7 +63,7 @@ sub digestNextBody {
     push(@LaTeXML::LIST, $self->invokeToken($token));
     last if $terminal and Equals($token,$terminal);
     last if $initdepth > scalar(@{$$self{boxing}}); } # if we've closed the initial mode.
-  Error(":unexpected:".($token ? ToString($token) : "EndOfInput")
+  Warn(":unexpected:".($token ? ToString($token) : "EndOfInput")
        ." body should have ended with ".ToString($terminal))
     if $terminal and ! Equals($token,$terminal);
   push(@LaTeXML::LIST,LaTeXML::List->new()) unless $token; # Dummy `trailer' if none explicit.
@@ -134,6 +134,8 @@ sub invokeToken_internal {
 							sub { makeError($_[0],'undefined',$cs);}));
     $self->invokeToken($token); }
   elsif($meaning->isaDefinition){
+    if($token->equals(T_CS('\par') && $STATE->lookupValue('inPreamble') )){
+      return (); }
     my @boxes = $meaning->invoke($self);
     my @err = grep( (! ref $_) || (! $_->isaBox), @boxes);
     Fatal(":misdefined:".ToString($token)." Execution yielded non boxes: "
