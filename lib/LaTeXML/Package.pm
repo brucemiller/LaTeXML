@@ -412,12 +412,14 @@ sub CheckOptions {
   Error(":misdefined:$operation $operation does not accept options:".join(', ',@badops)) if @badops;
 }
 
-sub requireMath() {
-  Error(":unexpected:<unknown> Current operation can only appear in math mode") unless LookupValue('IN_MATH');
+sub requireMath {
+  my $cs = ToString($_[0]);
+  Warn(":unexpected:$cs $cs should only appear in math mode") unless LookupValue('IN_MATH');
   return; }
 
-sub forbidMath() {
-  Error(":unexpected:<unknown> Current operation can not appear in math mode") if LookupValue('IN_MATH');
+sub forbidMath {
+  my $cs = ToString($_[0]);
+  Warn(":unexpected:$cs $cs should not appear in math mode") if LookupValue('IN_MATH');
   return; }
 
 
@@ -481,11 +483,12 @@ sub DefPrimitiveI {
   my($cs,$paramlist,$replacement,%options)=@_;
   $replacement = sub { (); } unless defined $replacement;
   $cs = coerceCS($cs);
-  $STATE->installDefinition(LaTeXML::Primitive->new($cs,$paramlist,$replacement,
-						    beforeDigest=> flatten(($options{requireMath} ? (\&requireMath):()),
-									   ($options{forbidMath}  ? (\&forbidMath):()),
-									   $options{beforeDigest}),
-						    isPrefix=>$options{isPrefix}),
+  $STATE->installDefinition(LaTeXML::Primitive
+			    ->new($cs,$paramlist,$replacement,
+				  beforeDigest=> flatten(($options{requireMath} ? (sub{requireMath($cs);}):()),
+							 ($options{forbidMath}  ? (sub{forbidMath($cs);}):()),
+							 $options{beforeDigest}),
+				  isPrefix=>$options{isPrefix}),
 			    $options{scope});
   AssignValue(ToString($cs).":locked"=>1) if $options{locked};
   return; }
@@ -561,8 +564,8 @@ sub DefConstructorI {
   my $bounded = $options{bounded};
   $STATE->installDefinition(LaTeXML::Constructor
 			    ->new($cs,$paramlist,$replacement,
-				  beforeDigest=> flatten(($options{requireMath} ? (\&requireMath):()),
-							 ($options{forbidMath}  ? (\&forbidMath):()),
+				  beforeDigest=> flatten(($options{requireMath} ? (sub{requireMath($cs);}):()),
+							 ($options{forbidMath}  ? (sub{forbidMath($cs);}):()),
 							 ($mode ? (sub { $_[0]->beginMode($mode); })
 							  :($bounded ? (sub {$_[0]->bgroup;}) :()) ),
 							 ($options{font}? (sub { MergeFont(%{$options{font}});}):()),
@@ -663,7 +666,7 @@ sub DefMathI {
   my %common =(alias=>$options{alias}||$cs->getString,
 	       (defined $options{reversion}
 		? (reversion=>$options{reversion}) : ()),
-	       beforeDigest=> flatten(\&requireMath,
+	       beforeDigest=> flatten(sub{requireMath($csname);},
 				      ($options{nogroup}
 				       ? ()
 				       :(sub{$_[0]->bgroup;})),
@@ -775,8 +778,8 @@ sub DefEnvironmentI {
   # This is for the common case where the environment is opened by \begin{env}
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\begin{$name}"), $paramlist,$replacement,
-				   beforeDigest=>flatten(($options{requireMath} ? (\&requireMath):()),
-							 ($options{forbidMath}  ? (\&forbidMath):()),
+				   beforeDigest=>flatten(($options{requireMath} ? (sub{requireMath($name);}):()),
+							 ($options{forbidMath}  ? (sub{forbidMath($name);}):()),
 							 ($mode ? (sub { $_[0]->beginMode($mode);})
 							  : (sub {$_[0]->bgroup;})),
 							 sub { AssignValue(current_environment=>$name); },
@@ -805,8 +808,8 @@ sub DefEnvironmentI {
   # For the uncommon case opened by \csname env\endcsname
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\$name"), $paramlist,$replacement,
-				   beforeDigest=>flatten(($options{requireMath} ? (\&requireMath):()),
-							 ($options{forbidMath}  ? (\&forbidMath):()),
+				   beforeDigest=>flatten(($options{requireMath} ? (sub{requireMath($name);}):()),
+							 ($options{forbidMath}  ? (sub{forbidMath($name);}):()),
 							 ($mode ? (sub { $_[0]->beginMode($mode);}):()),
 							 ($options{font}? (sub { MergeFont(%{$options{font}});}):()),
 							 $options{beforeDigest}),
