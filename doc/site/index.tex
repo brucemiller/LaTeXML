@@ -65,18 +65,20 @@ math conversion and other features possible.
 \end{description}
 
 \section{Download}\label{download}
-\paragraph{Current Release:}
+See \ref{install} for installation instructions, including OS-specific notes.
+
+\paragraph{Current Release:}\label{download.current}
 \CurrentRelease.
 See also the \href{Changes}{Change Log}.
 
-\paragraph{SVN Repository}
+\paragraph{SVN Repository}\label{download.svn}
 Browsable at \url{https://svn.mathweb.org/repos/LaTeXML}.
 Anonymous checkout is available using the command:
 \begin{alltt}
   svn co https://svn.mathweb.org/repos/LaTeXML
 \end{alltt}
 
-\paragraph{Licence}
+\paragraph{Licence}\label{license}
 As this software was developed as part of work done by the
 United States Government, it is not subject to copyright,
 and is in the public domain.
@@ -84,19 +86,27 @@ Note that according to
 \href{http://www.gnu.org/licences/license-list.html#PublicDomain}{Gnu.org}
 public domain is compatible with GPL.
 
-\paragraph{Archived Releases:}
+\paragraph{Archived Releases:}\label{archive}
 \AllReleases.
 
 %============================================================
 \section{Installation}\label{install}
-
-\subsection{Prerequisites}
 \LaTeXML\ itself is written in `pure' Perl, but requires several
-perl modules available from CPAN or your OS distribution.
-Some of the modules provide Perl bindings to libraries
-written in C or C++, and thus require those libraries to have been installed.
-A recent \href{http://www.perl.org/}{Perl}
+perl modules.  A recent \href{http://www.perl.org/}{Perl}
 with sufficient Unicode support is required: version 5.8 or later.
+An installation of \TeX\ is also needed.
+
+
+There are several options for installation.
+You may install \LaTeXML\ \ref{install.source}
+(whether using the tarball or checkout from \ref{download.svn})
+or, for some operating systems, there may be prepared binaries.
+Likewise, you may install the prerequisies from their sources,
+CPAN or use the facilities of your operating system.
+Check \ref{install.osnotes} for your operating system
+for notes that may simplify the installation.
+
+\subsection{Prerequisites from CPAN}
 
 The following additional Perl modules are required:
 % %3A%3A for :: ???
@@ -107,7 +117,7 @@ The following additional Perl modules are required:
     This module provides bindings to the \href{http://www.imagemagick.org/}{ImageMagick} library.
 \item[\href{http://search.cpan.org/search?query=XML::LibXML&mode=module}{XML::LibXML}]
     This module provides bindings to the C library libxml2
-    (available from \href{http://www.xmlsoft.org}{xmlsoft}.
+    (available from \href{http://www.xmlsoft.org}{xmlsoft}).
     At least version 1.61 is required, unless the separate \texttt{XML::LibXML::XPathContext}
     package is installed (but it is not standard in many distributions).
 \item[\href{http://search.cpan.org/search?query=XML::LibXSLT&mode=module}{XML::LibXSLT}]
@@ -122,8 +132,7 @@ The following additional Perl modules are required:
     This module is usually(?) part of a standard Perl installation.
 \end{description}
 
-\subsection{From Source}
-Assuming that all the required C packages are already installed on your system,
+Assuming that all the required C packages (for libxml2 and libxslt) are already installed on your system,
   use CPAN to install the required perl modules (typically as root):
 \begin{alltt}
    perl -MCPAN -e shell
@@ -133,6 +142,7 @@ Assuming that all the required C packages are already installed on your system,
 The \texttt{Image::Magick} module often installs best by enabling the
 perl bindings as part of compiling and installing the main ImageMagick package.
 
+\subsection{From Source}\label{install.source}
 Installation proceeds via the usual Perl module incantations:
 \begin{alltt}
    tar zxvf  \CurrentTarball\\
@@ -148,26 +158,30 @@ and then, as root:
 (See \texttt{perl perlmodinstall} for more details, if needed.)
 
 
-\subsection[RPM-based systems]{RPM-based systems (Fedora, RedHat, CentOS)}
+\subsection[OS-Specific Notes]{Operating System Specific Notes}\label{install.osnotes}
+
+\subsubsection[Fedora-based systems]{Fedora-based systems}\label{install.fedora}
 For Fedora (and perhaps other similar) distributions, 
 after you've dowloaded the LaTeXML RPM, the following
 command should install LaTeXML along with any missing prerequisites:
 \begin{alltt}
-   yum localinstall \CurrentRPM
+   yum --nogpgcheck localinstall \CurrentRPM
 \end{alltt}
 
+\subsubsection[Enterprise systems]{Enterprise-style RPM-based systems (RedHat, Centos)}\label{install.enterprise}
 Unfortunately, more conservative distributions
 (such as RedHat Enterprise and CentOS)
 do not have recent enough releases of the prerequisites available.
 I am working on a workaround for this problem.
 % \begin{alltt}
-%    yum install perl-Parse-RecDescent  \textbackslash\\
+%    yum --nogpgcheck install perl-Parse-RecDescent  \textbackslash\\
 %      ImageMagick ImageMagick-perl  \textbackslash\\
 %      libxml2 perl-XML-LibXML libxslt perl-XML-LibXSLT \textbackslash\\
 %      perl-Test-Simple
 % \end{alltt}
 
-\subsection{Debian-based systems}
+
+\subsubsection{Debian-based systems}\label{install.debian}
 For Debian based distributions, presumably including Ubuntu, the following
 command  should install the prerequisites:
 \begin{alltt}
@@ -182,11 +196,24 @@ You can then continue by installing LaTeXML from source, as above.
 Some \href{http://rhaptos.org/devblog/reedstrm/latexml}{notes} on installation on Debian
 based systems are also available.
 
-\subsection{MacOS}
-Many of the prerequisite packages are available via `fink' (I think).
+\subsubsection{MacOS}\label{install.macos}
+Many of the prerequisite packages are available via
+\href{MacPorts}{http://www.macports.org}.
+To install them, use
+\begin{alltt}
+  sudo port install    \textbackslash\\
+      p5-xml-libxml p5-xml-libxslt  \textbackslash\\
+      p5-parse-recdescent p5-perlmagick
+\end{alltt}
+
 You can then continue by installing LaTeXML from source, as above.
 
-\subsection{Windows}
+\emph{Note} there have been issues reported regarding \verb|DB_File|
+not being installed;  Apparently you must install the 
+the db `variant' of perl, rather than the gdbm variant
+(whatever that means).
+
+\subsubsection{Windows}\label{install.windows}
 Many of the prerequisite packages are available in
 ppm form (for \href{ActivePerl}{http://activestate.com/} (I think).
 I will attempt to generate a ppm for LaTeXML in the near
