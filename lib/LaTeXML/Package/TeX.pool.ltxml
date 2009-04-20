@@ -171,7 +171,7 @@ DefParameterType('Digested', sub {
   my @list=();
   if($token->equals(T_BEGIN)){
     Digest($token);
-    @list = $STATE->getStomach->digestNextBody(); }
+    @list = $STATE->getStomach->digestNextBody(); pop(@list); }
   else {
     @list = $STATE->getStomach->invokeToken($token); }
   # In most (all?) cases, we're really looking for a single Whatsit here...
@@ -875,6 +875,18 @@ DefPrimitive('\toksdef Token SkipMatch:= Number',sub {
 #   | <chardef token> | <mathchardef token> | \parshape | \inputlineno
 #   | \hyphenchar<font> | \skewchar<font> | \badness
 
+DefRegister('\lastpenalty',Number(0), readonly=>1);
+
+# \parshape !?!??
+
+#DefRegister('\inputlineno',Number(0),
+#            readonly=>1,
+#	     getter=>{ Number($stomach->getGullet->getMouth????? ->lineno); });
+
+# \skewchar ???
+
+DefRegister('\badness',Number(0), readonly=>1);
+
 # <codename> = \catcode | \mathcode | \lccode | \uccode | \sfcode | \delcode
 
 DefRegister('\catcode Number',Number(0),
@@ -891,12 +903,6 @@ DefRegister('\delcode Number',Number(0));
 DefRegister('\hyphenchar{}',Number(ord('-')));
 DefRegister('\skewchar{}',Number(0)); # no idea what the default is here
 
-# \parshape !?!??
-#DefRegister('\inputlineno',Number(0),
-#            readonly=>1,
-#	     getter=>{ Number($stomach->getGullet->getMouth????? ->lineno); });
-# \skewchar
-
 DefMacro('\hyphenation{}', Tokens()); # Well, what ?
 
 
@@ -911,6 +917,9 @@ DefMacro('\scriptscriptfont Number SkipMatch:= Token', sub { return; });
 
 # <internal dimen> = <dimen parameter> | <special dimen> | \lastkern
 #    | <dimendef token> | \dimen<8bit> | <box dimension><8bit> | \fontdimen<number><font>
+
+DefRegister('\lastkern'=>Dimension(0), readonly=>1);
+
 # <box dimension> = \ht | \wd | \dp
 
 # Need some clever getter & setters!
@@ -921,6 +930,8 @@ DefRegister('\dp Number',Dimension(0));
 #   Could be handled by setting dimensions whenever the box itself is set?
 
 # <internal glue> = <glue parameter> | \lastskip | <skipdef token> | \skip<8bit>
+
+DefRegister('\lastskip'=>Glue(0), readonly=>1);
 
 # <internal muglue> = <muglue parameter> | \lastskip | <muskipdef token> | \muskip<8bit>
 
@@ -3219,22 +3230,22 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 # LaTeX; Table 3.11. Math Mode Accents, p.50.
 # Are these all TeX (or LaTeX)?
 
-DefMath('\hat{}',       "\x{2303}", operator_role=>'OVERACCENT');
-DefMath('\check{}',     "\x{2713}", operator_role=>'OVERACCENT'); # CHECK MARK
-DefMath('\breve{}',     "\x{02D8}", operator_role=>'OVERACCENT'); # BREVE
-DefMath('\acute{}',     UTF(0xB4),  operator_role=>'OVERACCENT'); # ACUTE ACCENT
-DefMath('\grave{}',     UTF(0x60),  operator_role=>'OVERACCENT'); # GRAVE ACCENT
-DefMath('\tilde{}',     UTF(0x7E),  operator_role=>'OVERACCENT'); # TILDE
-DefMath('\bar{}',       UTF(0xAF),  operator_role=>'OVERACCENT'); # MACRON
-DefMath('\vec{}',       "\x{2192}", operator_role=>'OVERACCENT'); # RIGHTWARDS ARROW
-DefMath('\dot{}',       "\x{02D9}", operator_role=>'OVERACCENT'); # DOT ABOVE
-DefMath('\ddot{}',      UTF(0xA8),  operator_role=>'OVERACCENT'); # DIAERESIS
-DefMath('\overline{}',  UTF(0xAF),  operator_role=>'OVERACCENT'); # MACRON
-DefMath('\overbrace{}', "\x{FE37}", operator_role=>'OVERACCENT',  # PRESENTATION FORM FOR VERTICAL LEFT CURLY BRACKET
+DefMath('\hat Digested',       "\x{2303}", operator_role=>'OVERACCENT');
+DefMath('\check Digested',     "\x{2713}", operator_role=>'OVERACCENT'); # CHECK MARK
+DefMath('\breve Digested',     "\x{02D8}", operator_role=>'OVERACCENT'); # BREVE
+DefMath('\acute Digested',     UTF(0xB4),  operator_role=>'OVERACCENT'); # ACUTE ACCENT
+DefMath('\grave Digested',     UTF(0x60),  operator_role=>'OVERACCENT'); # GRAVE ACCENT
+DefMath('\tilde Digested',     UTF(0x7E),  operator_role=>'OVERACCENT'); # TILDE
+DefMath('\bar Digested',       UTF(0xAF),  operator_role=>'OVERACCENT'); # MACRON
+DefMath('\vec Digested',       "\x{2192}", operator_role=>'OVERACCENT'); # RIGHTWARDS ARROW
+DefMath('\dot Digested',       "\x{02D9}", operator_role=>'OVERACCENT'); # DOT ABOVE
+DefMath('\ddot Digested',      UTF(0xA8),  operator_role=>'OVERACCENT'); # DIAERESIS
+DefMath('\overline Digested',  UTF(0xAF),  operator_role=>'OVERACCENT'); # MACRON
+DefMath('\overbrace Digested', "\x{FE37}", operator_role=>'OVERACCENT',  # PRESENTATION FORM FOR VERTICAL LEFT CURLY BRACKET
 	scriptpos=>'mid');
-DefMath('\widehat{}',   UTF(0x5E),  operator_role=>'OVERACCENT'); # CIRCUMFLEX ACCENT [plain? also amsfonts]
-DefMath('\widetilde{}', UTF(0x7E),  operator_role=>'OVERACCENT');  # TILDE [plain? also amsfonts]
-DefMath('\underbrace{}',"\x{FE38}", operator_role=>'UNDERACCENT', # PRESENTATION FORM FOR VERTICAL RIGHT CURLY BRACKET
+DefMath('\widehat Digested',   UTF(0x5E),  operator_role=>'OVERACCENT'); # CIRCUMFLEX ACCENT [plain? also amsfonts]
+DefMath('\widetilde Digested', UTF(0x7E),  operator_role=>'OVERACCENT');  # TILDE [plain? also amsfonts]
+DefMath('\underbrace Digested',"\x{FE38}", operator_role=>'UNDERACCENT', # PRESENTATION FORM FOR VERTICAL RIGHT CURLY BRACKET
 	scriptpos=>'mid');
 
 # NOTE that all the above accents REQUIRE math mode
@@ -3435,7 +3446,7 @@ DefConstructor('\smash{}',"#1"); # well, what?
 # TeX Book, Appendix B. p. 361
 
 # This is actually LaTeX's definition, but let's just do it this way.
-DefConstructor('\sqrt[]{}',
+DefConstructor('\sqrt[] Digested',
 	       "?#1(<ltx:XMApp><ltx:XMTok meaning='root'/>"
 	       .     "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       .   "</ltx:XMApp>)"
