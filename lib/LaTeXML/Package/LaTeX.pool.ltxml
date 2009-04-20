@@ -360,7 +360,7 @@ DefConstructor('\usepackage[] Semiverbatim',
 				  my $options=$whatsit->getArg(1);
 				  my $packages=$whatsit->getArg(2);
 
-				  my @pkgs = split(/,\s*/,ToString($packages));
+				  my @pkgs = grep($_,grep(!/^\s*%/,split(/,\s*/,ToString($packages))));
 				  $options = [($options ? split(/,\s*/,(ToString($options))) :())];
 				  map(RequirePackage($_,options=>$options),@pkgs);
 				  return});
@@ -2027,7 +2027,10 @@ sub setupPseudoBibitem {
   Let(T_CS('\save@bibitem'),T_CS('\bibitem'));
   Let(T_CS('\save@par'),T_CS('\par'));
   Let(T_CS('\bibitem'),T_CS('\restoring@bibitem'));
-  Let(T_CS('\par'),T_CS('\par@in@bibliography'));  }
+  Let(T_CS('\par'),T_CS('\par@in@bibliography'));
+  # Moreover, some people use \item instead of \bibitem
+  Let(T_CS('\item'),T_CS('\item@in@bibliography'));
+  }
 
 DefMacroI('\par@in@bibliography',undef, sub {
   my($gullet)=@_;
@@ -2039,6 +2042,8 @@ DefMacroI('\par@in@bibliography',undef, sub {
   else {			# Else, put it back, and start a bibitem.
     $gullet->unread($tok);
     (T_CS('\save@bibitem'),T_BEGIN,T_END); }});
+
+DefMacroI('\item@in@bibliography', undef, '\save@bibitem{}');
 
 # If we hit a real \bibitem, put \par & \bibitem back to correct defn, and then \bibitem.
 # A bibitem with now key or label...
@@ -2738,7 +2743,8 @@ DefConstructor('\shortstack[]{}',
 	       bounded=>1,
 	       beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
 						 "</ltx:text><ltx:text _noautoclose='1'>",
-						 reversion=>Tokens(T_CS("\\\\"),T_CR)); },
+						 reversion=>Tokens(T_CS("\\\\"),T_CR)); 
+				  Let(T_MATH, T_CS('\@text@alignment$')); },
 	       properties=>{ align=>sub { ($_[1] ? $alignments{ToString($_[0])} : undef); }},
 	       mode=>'text');
 
@@ -2791,6 +2797,7 @@ DefConstructorI('\scshape',  undef, '', forbidMath=>1, font=>{shape=>'smallcaps'
 
 DefConstructorI('\normalfont',    undef, '', font=>{family=>'serif', series=>'medium', shape=>'upright'});
 DefConstructorI('\verbatim@font', undef, '', font=>{family=>'typewriter', series=>'medium', shape=>'upright'});
+Let(T_CS('\reset@font'),T_CS('\normalfont'));
 
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
 DefConstructor('\textmd{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
@@ -2876,6 +2883,10 @@ DefConstructor('\textsuperscript{}', "<ltx:text yoffset='0.5em' _noautoclose='1'
 DefConstructorI('\textordfeminine',  undef, UTF(0xAA)); # FEMININE ORDINAL INDICATOR
 DefConstructorI('\textordmasculine', undef, UTF(0xBA)); # MASCULINE ORDINAL INDICATOR
 DefMacroI('\SS',undef, 'SS');			       # ?
+
+
+DefConstructor('\sqrtsign Digested',
+	       "<ltx:XMApp><ltx:XMTok meaning='square-root'/><ltx:XMArg>#1</ltx:XMArg></ltx:XMApp>");
 
 #**********************************************************************
 # Other stuff
@@ -3065,6 +3076,15 @@ DefMacro('\@ifnextchar Token {}{}', sub {
   ( LaTeXML::Expandable::substituteTokens($token->equals($next) ? $if : $else),$next); });
 
 Let(T_CS('\@ifnext'), T_CS('\@ifnextchar')); # ????
+
+DefMacro('\@ifstar {}{}', sub {
+  my($gullet,$if,$else)=@_;
+  my $next = $gullet->readNonSpace;
+  # NOTE: Not actually substituting, but collapsing ## pairs!!!!
+  if(T_OTHER('*')->equals($next)){
+    LaTeXML::Expandable::substituteTokens($if); }
+  else {
+    (LaTeXML::Expandable::substituteTokens($else),$next); }});
 
 DefMacro('\@ifundefined{}{}{}',sub {
   my($gullet,$name,$if,$else)=@_;
