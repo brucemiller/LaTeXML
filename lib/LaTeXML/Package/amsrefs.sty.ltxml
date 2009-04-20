@@ -50,6 +50,12 @@ DefMacro('\bib{}{} RequiredKeyVals:amsrefs', sub{
   Invocation(T_CS('\ProcessBibTeXEntry'),T_OTHER($key)); });
 
 #======================================================================
+# Someday may want to try to decipher, but ...
+DefMacro('\BibSpec{}{}',Tokens());
+
+# ?
+Let(T_CS('\cites'),T_CS('\cite'));
+#======================================================================
 DefEnvironment('{bibdiv}',
 	       "<ltx:bibliography xml:id='#id'>"
 	       . "<ltx:title>#refname</ltx:title>"
