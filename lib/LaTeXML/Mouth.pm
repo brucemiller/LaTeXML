@@ -138,7 +138,8 @@ sub handle_escape {		# Read control sequence
 sub handle_EOL {
   my($self)=@_;
   ($$self{colno}==1
-   ? ($STATE->lookupValue('inPreamble') ? T_SPACE : T_CS('\par'))
+#   ? ($STATE->lookupValue('inPreamble') ? T_SPACE : T_CS('\par'))
+   ? T_CS('\par')
    : ($STATE->lookupValue('PRESERVE_NEWLINES') ? Token("\n",CC_SPACE) : T_SPACE)); 
 }
 
