@@ -60,7 +60,7 @@ RawTeX(<<'EOTeX');
 
 \newenvironment{schemamodule}[1]{%
   \section*{Module \@defname{#1}}\label{schema.module.#1}
-   \raggedright
+%   \raggedright
   \begin{moduledescription}}{\end{moduledescription}}
 
 % \elementdef{name}{doc}{body}
