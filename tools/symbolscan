@@ -409,6 +409,7 @@ BEGIN {
      ddot=>'dot diaresis double',
      'very-much-less-than'=>'less-than',
      'very-much-greater-than'=>'greater-than',
+     'square-root'=>'sqrt',
      );
 
   %split_stopwords = map(($_=>1), qw(and or than of by as to very much));
