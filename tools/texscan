@@ -6,7 +6,7 @@ use Pod::Usage;
 use FindBin;
 # Assume we're in the tools directory of a development version of latexml (next to lib, blib..)
 use lib "$FindBin::RealBin/../blib/lib";
-
+use LaTeXML::Util::Pathname;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # texscan : TeX class/style file scanner for LaTeXML.
@@ -14,21 +14,26 @@ use lib "$FindBin::RealBin/../blib/lib";
 my $identity = 'texscan';
 my($help)=(0);
 local $::VERBOSITY = 0;
-my ($show,$internal,$cumulative) = ('diff',0,0);
+my ($show,$internal,$cumulative,$base) = ('diff',0,0,undef);
 my $do_all=0;
 my @paths = ();
 GetOptions("tex"         => sub { $show='tex'; },
 	   "latexml"     => sub { $show='latexml'; },
 	   "diff"        => sub { $show='diff'; },
+	   "signature"   => sub { $show='signature'; },
+	   "stub"        => sub { $show='stub'; },
 	   "internal!"   => \$internal,
 	   "cumulative!" => \$cumulative,
 	   "help"        => \$help,
 	   "verbose"     => sub { $::VERBOSITY++; },
 	   "quiet"       => sub { $::VERBOSITY--; },
 	   "path=s"      => \@paths,
+	   "base=s"      => \$base,
 	   "all"         => \$do_all,
 	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>0, -output=>\*STDOUT) 
+  unless $do_all or @ARGV;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Find available package/class implementations
@@ -45,137 +50,193 @@ if($do_all){
 else {
  @files = @ARGV; }
 
-print "".("="x50)."\n";
-print "   Excluding internal symbols\n" unless $internal;
-foreach my $name (@files){
-  print "".("="x50)."\n";
+foreach my $file (@files){
   if($show eq 'tex'){
-    print "Showing symbols in LaTeX package $name\n";
-    my $pkg = StylePackage->new($name,internal=>$internal,cumulative=>$cumulative,
-					searchpaths=>[@paths]);
-    $pkg->show if $pkg; }
+    print "".("="x50)."\n";
+    print "Showing symbols in LaTeX package $file\n";
+    if(my $pkg = StylePackage->new($file,searchpaths=>[@paths])){
+      $pkg->removeInclusions unless $cumulative; # default NOT cumulative
+      $pkg->removeInternal unless $internal;	 # default NOT internal
+      $pkg->convertEnvironments;
+      $pkg->show; }}
   elsif($show eq 'latexml'){
-    print "Showing symbols in LaTeXML implementation $name\n";
-    my $pkg = ImplementationPackage->new($name,internal=>$internal,cumulative=>$cumulative,
-					searchpaths=>[@paths]);
-    $pkg->show if $pkg; }
+    print "".("="x50)."\n";
+    print "Showing symbols in LaTeXML implementation $file\n";
+    if(my $pkg = ImplementationPackage->new($file,searchpaths=>[@paths])){
+      $pkg->removeInclusions unless $cumulative; # default NOT cumulative
+      $pkg->removeInternal unless $internal;	 # default NOT internal
+      $pkg->convertEnvironments;
+      $pkg->show; }}
   elsif($show eq 'diff'){
-    print "Showing unimplemented symbols for package $name\n";
-    my $spkg = StylePackage->new($name,internal=>$internal,cumulative=>$cumulative,
-					searchpaths=>[@paths]);
-    next unless $spkg;
-    my $ipkg = ImplementationPackage->new($name,internal=>$internal,cumulative=>1,
-					  searchpaths=>[@paths]);
-    next unless $ipkg;
-    $spkg->subtract($ipkg);
-    $spkg->show; }
+    print "".("="x50)."\n";
+    print "Showing unimplemented symbols for package $file\n";
+    if(my $pkg = StylePackage->new($file,searchpaths=>[@paths])){
+      if(my $ipkg = ImplementationPackage->new($file,searchpaths=>[@paths])){
+	$pkg->subtract($ipkg);
+	$pkg->removeInclusions unless $cumulative; # default NOT cumulative
+	$pkg->removeInternal unless $internal;	    # default NOT internal
+	$pkg->convertEnvironments;
+	$pkg->show; }}}
+  elsif($show eq 'signature'){
+    if(my $pkg = StylePackage->new($file,searchpaths=>[@paths])){
+      $pkg->removeBase;
+      $pkg->removeInclusions if (defined $cumulative) && ($cumulative==0); # default IS cumulative
+      $pkg->removeInternal unless $internal; # default NOT internal
+      $pkg->convertEnvironments;
+      $pkg->signature; }}
+  elsif($show eq 'stub'){
+    if(my $pkg = StylePackage->new($file,searchpaths=>[@paths])){
+      $pkg->removeBase;
+      $pkg->removeInternal unless $internal; # default NOT internal
+      $pkg->generateStub($base); }}
 }
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Need to make a distinction here between
-#   incremental or local or ????
-# and  cummulative, or 
-# What do I call these?
-# The basic idea is that packages load other packages,
-# and LaTeXML loads packages on top of the TeX and LaTeX pools.
-# This matters because in many cases they are just redefining
-# things in a way that doesn't matter for LaTeXML,
-# so we don't want count every \def as a NEW definition!
-#
-# Of course, which form you want depends on what you're doing with the
-# list of symbols.
-#
-# Also, of course, the stragegy for computing each set depends on
-# whether it comes from a TeX style or a LaTeXML implementation.
-package Package;
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Abstract Package package.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# To put things on common footing --- or at least as common as we can
+# --- we initially load a package or class by "cumulative" & "internal".
+# Additionally, we load latex.ltx, possibly article.cls...
+# Think of it this way: The basic load/scan of a package contains all
+# control sequences that would be accessible if the package were
+# loaded "normally".  Thus loading a class also has latex.ltx's symbols.
+# Loading a style file also has some class, might as well be article, symbols.
+# (this only affects *.cls and *.sty files)
+#
+# ->new gets a copy of the class, so you can use add, subtract and
+# various remove methods (which are otherwise `destructive') to get
+# the collection of symbols you want.
+# newInternal loads as needed and caches the result, so that a
+# large collection of packages can be processed in batch.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+package Package;
+use LaTeXML::Util::Pathname;
+
+our %CACHE;
+
+# Get a copy of the Package for $path; all subpackages & internal symbols are included.
 sub new {
-  my($class,$name,%options)=@_;
-  bless {name=>$name, %options, symbols=>{}, environments=>{}, used=>{}}, $class; }
+  my($classorself,$path,%options)=@_;
+  my $package = $classorself->newInternal($path, searchpaths=>$options{searchpaths})->clone;
+  foreach my $add ($package->getBase){
+    if(my $pkg = $package->newInternal($add)){
+      $package->add($pkg); }}
+  $package; }
+
+# Get the cached version of Package;
+# you must use ->clone() if you're going to modify it.
+sub newInternal {
+  my($classorself,$path,%options)=@_;
+  my $class = ref $classorself || $classorself;
+  my($dir,$name,$type)=pathname_split($path);
+  $name .= '.'.$type if $type;
+  $name = "latex.ltx" if $name eq "LaTeX.pool";
+  $dir = '.' unless $dir;
+
+  if(my $cached = $CACHE{$class}{$name}){
+    return $cached; }
+
+  my @paths = ();
+  push(@paths,$dir);
+  push(@paths,@{$options{searchpaths}}) if $options{paths};
+  push(@paths,@{$$classorself{searchpaths}}) if ref $classorself;
+
+  my $self = bless {name=>$name, %options, symbols=>{}, includes=>{}, searchpaths=>[@paths]}, $class;
+  $CACHE{$class}{$name} = $self;
+
+  $self->scan;
+
+  $self; }
+
+sub clone {
+  my($self)=@_;
+  bless {name=>$$self{name},
+	 declared_type=>$$self{declared_type},
+	 declared_as=>$$self{declared_as},
+	 symbols=>{ map(($_=>1), keys %{$$self{symbols}}) },
+	 includes=>{ map(($_=>1), keys %{$$self{includes}}) },
+	 searchpaths => [@{$$self{searchpaths}}]}, ref $self; }
 
 sub show {
   my($self)=@_;
-#  print "".("="x50)."\nStyle $$self{name}\n";
-  print "   ".($$self{cumulative} ? "Including":"Excluding")
-    ."symbols from : ".join(', ',sort keys %{$$self{uses}})."\n"
-    if keys %{$$self{uses}} && $::VERBOSITY;
   my @syms = sort keys %{$$self{symbols}};
-  my @envs = sort keys %{$$self{environments}};
-  print "   Macros : ".(@syms ? join(', ',@syms) : "None")."\n";
-  print "   Environments: ".(@envs ? join(', ',@envs) : "None")."\n";
-}
+  print "   Macros : ".(@syms ? join(', ',@syms) : "None")."\n"; }
 
-# remove any internal symbols (those containing '@')
-sub removeInternals {
+# A variant of show that prints a compact signature (file:cs,...)
+sub signature {
   my($self)=@_;
-  foreach my $cs (keys %{$$self{symbols}}){
-    delete $$self{symbols}{$cs} if $cs =~ /\@/; }
-  foreach my $cs (keys %{$$self{environments}}){
-    delete $$self{environments}{$cs} if $cs =~ /\@/; }
-}
+  my @syms = keys %{$$self{symbols}};
+  print $$self{name}.":".($$self{declared_as}||'').":".join(',', sort @syms)."\n"; }
 
-# Convert any \foo, \endfoo combinations into an (assumed) environment.
+# Convert any \foo, \endfoo combinations into {foo} an (assumed) environment.
 sub convertEnvironments {
   my($self)=@_;
   foreach my $cs (keys %{$$self{symbols}}){
-    if($cs =~ /^\\begin\{(.*)\}$/){
-      my $env = $1;
-      my $endenv = "\\end{$env}";
-      $$self{environments}{$env}=1;
-      delete $$self{symbols}{$cs};
-      delete $$self{symbols}{$endenv}; }
-    elsif($cs =~ /^\\(.*)$/){
+    if($cs =~ /^\\(.*)$/){
       my $env = $1;
       my $endcs = "\\end$env";
       if($$self{symbols}{$endcs}){
-	$$self{environments}{$env}=1;
+	$$self{symbols}{"{$env}"} = 1;
 	delete $$self{symbols}{$cs};
 	delete $$self{symbols}{$endcs}; }}
   }}
 
-sub afterscan {
-  my($self)=@_;
-  foreach my $use (keys %{$$self{uses}}){
-    delete $$self{uses}{$use} if ($use eq $$self{name}) || $use=~/\\/; }
-
-  $self->removeInternals unless $$self{internal};
-  $self->convertEnvironments;
-  delete $$self{symbols}{'\csname'};
-  delete $$self{environment}{'csname'};
-}
-
-# Add any symbols defined in $package into the $self.
+# Add any symbols defined in $package into the $self. Modifies $self!
 sub add {
   my($self,$package)=@_;
+  print "Adding $$package{name} symbols to $$self{name}\n"  if $::VERBOSITY >= 1;
   foreach my $cs (%{$$package{symbols}}){
     $$self{symbols}{$cs} =1; }
-  foreach my $env (%{$$package{environments}}){
-    $$self{environments}{$env}=1; }
   $self; }
 
-# Remove any symbols defined in $package from the $self.
+# Remove any symbols defined in $package from the $self.  Modifies $self!
 sub subtract {
   my($self,$package)=@_;
+  print "Removing  $$package{name} symbols from $$self{name}\n"  if $::VERBOSITY >= 1;
   foreach my $cs (%{$$package{symbols}}){
     delete $$self{symbols}{$cs}; }
-  foreach my $env (%{$$package{environments}}){
-    delete $$self{environments}{$env}; }
   $self; }
 
+
+# Remove the contributions of any included packages.  Modifies $self!
+sub removeInclusions {
+  my($self)=@_;
+  foreach my $remove ($self->getBase, keys %{$$self{includes}}){
+    if(my $pkg = $self->newInternal($remove)){
+      $self->subtract($pkg); }}}
+
+# Remove the contributions of any base packages.  Modifies $self!
+sub removeBase {
+  my($self)=@_;
+  foreach my $remove ($self->getBase){
+    if(my $pkg = $self->newInternal($remove)){
+      $self->subtract($pkg); }}}
+
+# Remove any "internal" symbols (those containing '@')
+sub removeInternal {
+  my($self)=@_;
+  foreach my $cs (keys %{$$self{symbols}}){
+    delete $$self{symbols}{$cs} if $cs =~ /\@/; }}
+
+# Return a list of packages that should be implicitly included.
+sub getBase {
+  my($self)=@_;
+  my @base = ();
+  push(@base,"article.cls") if $$self{name} =~/\.sty$/;
+  push(@base,"latex.ltx") if $$self{name} =~/\.(sty|cls)$/;
+  @base; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# StylePackage
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # A package scanned from a (La)TeX style/class file.
-# The patterns need to be worked on;
+# The patterns may need more work;
 # Some operations very sneakily end up defining symbols,
 # which we'll miss if we don't work at it.
-# Initially, we only notice the expressions that are explicitly defined.
-# So, we miss anything defined in used packages,
-# And, we also miss symbols that are simply redefined.
-# Thus, to get an accurate list, even for non-cumulative,
-#  we still need to scan any used packages and remove their definitions.
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# NOTE: we still need to sort out the "base" issue:
-# Should load latex.ltx and fonttext.ltx for class files
-# but also article.cls, size10.clo and  for style files.
-# these would then be added or subtracted as needed.
+# We also scan any included files and include thier contributions.
+# Of course, some definitions and inclusions are sufficiently
+# indirect, via parameters or computed macros, that you would only
+# know if you executed TeX.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 package StylePackage;
@@ -189,96 +250,214 @@ our $BRACEREGEXP;
 our $OPTREGEXP;
 
 BEGIN {
-  $CSREGEXP    = qr/(\\[\w\@]+)/;
-#  $ARGREGEXP   = qr/\{([^\}]+)\}/;
-  $ARGREGEXP   = qr/(?:\{([^\}\#]+)\}|(\\[\w\@]+))/;
+  $CSREGEXP    = qr/(\\(?:[\w\@]+|.))/;
+  $ARGREGEXP   = qr/(?:\{([^\}\#]+)\}|(\\(?:[\w\@]+|.)))/;
   $BRACEREGEXP = qr/\{([^\}\#]+)\}/;
   $OPTREGEXP   = qr/(\[[^\]]*\])?/; }
 
-sub new {
-  my($class,$name,%options)=@_;
-  my $self = $class->newRaw($name,%options);
-  return unless $self;
-  $self->afterscan;
+sub scan {
+  my($self)=@_;
 
-  if($$self{name} !~ /\.ltx$/){
-    my @used = keys %{$$self{uses}};
-    push(@used,"latex.ltx","fonttext.ltx");
-    push(@used,"article.cls","size10.clo") unless $$self{name} eq "article.cls";
-    if($$self{cumulative}){
-      print "Adding symbols from used packages\n"  if $::VERBOSITY;
-      foreach my $used (@used){
-	my $pkg = $class->newRaw($used,cumulative=>1);
-	$self->add($pkg) if $pkg; }}
-    else {
-      print "Removing symbols from used packages\n"  if $::VERBOSITY;
-      foreach my $used (@used){
-	my $pkg = $class->newRaw($used,cumulative=>1);
-	$self->subtract($pkg) if $pkg; }}}
-  $self; }
-
-sub newRaw {
-  my($class,$name,%options)=@_;
-  $name = "latex.ltx" if $name eq "LaTeX.pool";
+  my $name = $$self{name};
   my $file = `kpsewhich $name`; chomp($file);
   if(!$file){
-    $file = pathname_find($name,paths=>$options{searchpaths}); }
+    $file = pathname_find($name,searchpaths=>$$self{searchpaths}); }
   if(!$file){
-    print "WARN: No stylefile found for $name\n"; return undef; }
-  print "Scanning style of $name\n  [$file]\n" if $::VERBOSITY;
+    print STDERR "WARN: No stylefile found for $name\n";
+    return $self; }
 
-  my $self = $class->SUPER::new($name,%options);
   # Scan the stylefile for apparently defined symbols
-
+  print "Scanning style of $name from $file\n" if $::VERBOSITY >= 1;
   open(STYLE,$file) or die "Couldn't open stylefile $file: $!";
   while(<STYLE>){
     s/%(.*)$//;
+    # Note that more than 1 "defn" can appear per line! so no "elsif"
     # Various standard definitions
-    if(/\\(?:def|xdef|gdef|edef)$CSREGEXP/o){
+    if(/\\(?:def|xdef|gdef|edef)\s*$CSREGEXP/o){
       $$self{symbols}{$1} = 1; }
-    elsif(/\\new(?:count|dimen|skip|muskip|box|help|toks|read|write|fam|language|insert)$CSREGEXP/o){
+    if(/\\new(?:count|dimen|skip|muskip|box|help|toks|read|write|fam|language|insert)\s*$CSREGEXP/o){
       $$self{symbols}{$1} = 1; }
-    elsif(/\\newif\\if([\w\@]+)/){
+    if(/\\newif\s*\\if([\w\@]+)/){
       $$self{symbols}{"\\if$1"} = 1;
       $$self{symbols}{"\\${1}true"} = 1;
       $$self{symbols}{"\\${1}false"} = 1; }
-    elsif(/\\(?:renew|new|provide)command\*?$ARGREGEXP/o){
+    if(/\\(?:renew|new|provide)command\s*\*?\s*$ARGREGEXP/o){
       $$self{symbols}{$1||$2} = 1; }
-    elsif(/\\(?:Declare|Provide)(?:Text|Robust)Command(?:Default)?\*?$ARGREGEXP/o){
+    if(/\\(?:Declare|Provide)(?:TextFont|Text|Robust)Command(?:Default)?\s*\*?\s*$ARGREGEXP/o){
       $$self{symbols}{$1||$2} = 1; }
-    elsif(/\\let$CSREGEXP\s*=?$CSREGEXP/o){
+    if(/\\let$CSREGEXP\s*=?\s*$CSREGEXP/o){
       $$self{symbols}{$1} = 1; }
     # Defining math/text symbols
-    elsif(/\\DeclareMath(?:Symbol|Accent|Delimiter)$ARGREGEXP/o){
-      $$self{symbols}{$1||$2} = 1; }
-    elsif(/\\re\@DeclareMath(?:Symbol|Accent|Delimiter)$ARGREGEXP/o){ # txfonts
-      $$self{symbols}{$1||$2} = 1; }
+    if(/\\DeclareMath(?:Symbol|Accent|Delimiter)\s*$ARGREGEXP/o){
+      $$self{symbols}{ ( defined $1 ? $1 : $2) } = 1; }
+    if(/\\re\@DeclareMath(?:Symbol|Accent|Delimiter)\s*$ARGREGEXP/o){ # txfonts
+      $$self{symbols}{ ( defined $1 ? $1 : $2) } = 1; }
     # Other packages used.
-    elsif(/\\usepackage$OPTREGEXP$BRACEREGEXP/o){
-      map($$self{uses}{"$_.sty"}=1, split(/,/,$2)); }
-    elsif(/\\RequirePackage$OPTREGEXP$BRACEREGEXP/o){
-      map($$self{uses}{"$_.sty"}=1, split(/,/,$2)); }
-    # Environments?
-    elsif(/\\(re)?newenvironment\*?$BRACEREGEXP/o){
-      $$self{environments}{$2}=1; }
+    if(/\\(?:usepackage|RequirePackage)\s*$OPTREGEXP\s*$BRACEREGEXP/o){
+      map($self->noteInclusion($_,'sty'), split(/,/,$2)); }
+    if(/\\(?:LoadClassWithOptions|LoadClass)\s*$OPTREGEXP\s*$BRACEREGEXP/o){
+      $self->noteInclusion($2,'cls'); }
+    if(/\\(?:input|InputIfFileExists)\s*$BRACEREGEXP/o){
+      $self->noteInclusion($1||$2); }
+    elsif(/\\(?:input)\s+(.*?)(?:\s|\\relax|}|$)/o){
+      $self->noteInclusion($1); }
+    # Environments
+    if(/\\(re)?newenvironment\s*\*?\s*$BRACEREGEXP/o){
+      $$self{symbols}{"\\".$2}=1;
+      $$self{symbols}{"\\end".$2}=1; }
+    # Other signifcant declarations
+    if(/\\Provides(Class|Package)\s*$BRACEREGEXP/o){
+      $$self{declared_type}=$1;
+      $$self{declared_as}=$2; }
   }
+  close(STYLE);
+
+  # Many important inclusions are invoked with macros for arguments (eg art1\@ptsize.sty !)
+  # We'll make a grudging attempt to rescan for possible assignments to these macros (within the same stylefile!)
+  # see ->noteInclusion for how rescanfor got set up.
+  # NOTE Also, that some latex209 `classes' REQUIRE that certain options (which will load files) are used
+  # and that these classes are incomplete without them!!!
+  if($$self{rescanfor}){
+    my $rescan = '('.join('|',map($_,keys %{$$self{rescanfor}})).')';
+    open(STYLE,$file) or die "Couldn't open stylefile $file: $!";
+    while(<STYLE>){
+      s/%(.*)$//;
+      # Line defines one of the indirection macros, so reconstruct the likely file to be input.
+      if(/\\(?:def|xdef|gdef|edef|newcommand|renewcommand)\s*\\$rescan\s*\{(\w+)\}/){
+	my ($pre,$post) = @{$$self{rescanfor}{$1}};
+	my $inclusion = $pre.$2.$post;
+	$self->noteInclusion($inclusion); }}
+    close(STYLE); }
+
+  # Remove trivial things that probably are just font declarations
+  foreach my $sym (keys %{$$self{symbols}}){
+    delete $$self{symbols}{$sym} if length($sym) == 1; }
+
+  # Need to explicitly add contributes from included packages.
+  foreach my $add (keys %{$$self{includes}}){
+    if(my $pkg = $self->newInternal($add)){
+      $self->add($pkg);
+      if(($add =~ /\.cls$/) && ($name =~ /\.cls$/) && !$$self{declared_as}){
+	$$self{declared_as}   = $$pkg{declared_as};
+	$$self{declared_type} = $$pkg{declared_type}; }}}
+
+  if($name =~ /\.cls$/){
+    my $c = $$self{declared_as};
+    my $t = $$self{declared_type};
+    if(!$c) {
+      print STDERR "WARN: $name not declared with \\ProvidesClass\n"; }
+    elsif(("$c.cls" ne $name) || ($t ne 'Class')){
+      print STDERR "NOTE: $name declared as $t $c\n"; }}
+
   $self; }
 
+sub noteInclusion {
+  my($self,$file,$defaulttype)=@_;
+  my($dir,$name,$type)=pathname_split($file);
+  $type = $defaulttype unless $type;
+  $name .= '.'.$type if $type;
+  return if $name eq $$self{name};
+  $name =~ s/1?\\\@ptsize/10/;
+  if($name =~ /^([^\\]*)\\([a-zA-Z\@]+)([^\\]*)$/){		# Ugh...
+    $$self{rescanfor}{$2} = [$1,$3]; }
+  elsif($name =~ /(?:\\|#)/){}	# just skip it if too hard or unknowable
+  else {
+    $$self{includes}{$name}=1; }}
 
+# Generate a stub implementation for a given package.
+
+# NOTE: Rearrange this so that the base packages are ALWAYS loaded (?)
+# and inclusions only if they actually contribute something?
+sub generateStub {
+  my($self,$base)=@_;
+  my $dest = $$self{name}.".ltxml";
+  # Copy any existing file to *.bak --- but ONLY if there isn't already a bak!
+  if((-f $dest) && !(-f "$dest.bak")){
+    rename $dest,"$dest.bak" or die "Couldn't rename $dest to $dest.bak: $!";
+    print "Saved previous $dest to $dest.bak\n"; }
+  open OUT,">$dest" or die "Couldn't open $dest for writing: $!";
+
+  my %inc = %{$$self{includes}};
+  my %base = map(($_=>1),split(/,/, $base));
+  map($inc{$_}=1,keys %base);
+  my @classes = grep(/\.cls$/, keys %inc);
+  my @packages = grep(/\.sty$/, keys %inc);
+
+  die "Too many classes for $$self{name}: ".join(', ',@classes)   if(@classes > 1);
+
+  $self->removeBase;
+  $self->removeInternal if $internal;
+
+  printStubComments(*OUT,
+		    '=',
+		    $$self{name}." for LaTeXML",
+		    "Generated by texscan --stub".($base ? " --base=$base": '').' '.$$self{name},
+		    '=',
+		    "Released to public domain.",
+		    "Bruce Miller <bruce.miller\@nist.gov>",
+		    "http://dlmf.nist.gov/LaTeXML/",
+		    '=');
+  print OUT "use strict;\nuse LaTeXML::Package;\n\n";
+  if(@classes){
+    print OUT "LoadClass('$classes[0]',withoptions=>1);\n";
+    $self->subtract($self->new($classes[0])); }
+
+  foreach my $pkg (@packages){
+    my $nbefore = scalar(keys %{$$self{symbols}});
+    my $package = $self->new($pkg);
+    $package->removeBase; #?
+    $self->subtract($package);
+    my $nafter = scalar(keys %{$$self{symbols}});
+    if($nbefore > $nafter){
+      if($base{$pkg}){
+	print OUT "RequirePackage('$pkg',withoptions=>1);\n"; }
+      else {
+	print OUT "RequirePackage('$pkg');\n"; }}}
+
+  $self->convertEnvironments;
+  my @syms = sort keys %{$$self{symbols}};
+  if(@syms){
+    printStubComments(*OUT,"-","INCOMPLETE IMPLEMENTATION","remove this comment, when done.","-");
+    foreach my $sym (@syms){
+      if($sym =~ /^\{.*\}$/){
+	print OUT "# DefEnvironment('$sym','#body');\n"; }
+      else {
+	print OUT "# DefMacro('$sym',Tokens());\n"; }}}
+
+  print OUT "\n1;\n";
+  close OUT;
+
+  print "Wrote binding of $$self{name} to $dest\n";
+  print "NOTE: Please edit to complete ".scalar(@syms)." definitions.\n" if @syms;
+}
+
+sub printStubComments {
+  my($out,@lines)=@_;
+  my $LENGTH = 70;
+  my $N = scalar(@lines);
+  for(my $i=0; $i<$N; $i++){
+    my $line = $lines[$i];
+    if($line =~ /^[-_=%\*#]$/){
+      print $out "# "
+	.($i==0 ? " /":($i==$N-1 ? " \\":" >"))
+	  .($line x ($LENGTH-2))
+	    .($i==0 ? "\\":($i==$N-1 ? "/":"<"))."\n"; }
+    else {
+      my $n = $LENGTH - length($line)-1;
+      print $out "# | ".$line.(' 'x$n)."|\n"; }}
+}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# ImplementationPackage
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # A package scanned from a LaTeXML implementation.
 # This gets its list of symbols by loading the package into LaTeXML,
 # and then extracting all defined symbols from the STATE table.
 # In order to be able to load the package, TeX.pool and LaTeX.pool
 # must be loadd, and by executing the laod, any included packages
-# are automatically included (ie. it is initially cumulative)
+# are automatically included (ie. it is automatically cumulative)
 # To compute the non-cumulative list takes more work:
 # We must find all included packages, load them, and subtract them.
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# NOTE: we still need to sort out the "base" issue:
-# Should load TeX,LaTeX, for class files
-# but also article for style files.
-# these would then be subtracted for non-cumulative.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 package ImplementationPackage;
@@ -287,14 +466,11 @@ use base qw(Package);
 use LaTeXML;
 use LaTeXML::Util::Pathname;
 
-sub new {
-  my($class,$name,%options)=@_;
-  my $self = $class->SUPER::new($name,%options);
-
-  print "Loading $name into LaTeXML\n"  if $::VERBOSITY;
-  my $latexml = LaTeXML->new(searchpaths=>($options{searchpaths} || []));
-  my @load = ("TeX.pool", "LaTeX.pool", $name);
-
+sub scan {
+  my($self)=@_;
+  my $name = $$self{name};
+  print "Loading $name into LaTeXML\n"  if $::VERBOSITY >= 1;
+  my $latexml = LaTeXML->new(searchpaths=>($$self{searchpaths} || []), verbosity=>$::VERBOSITY);
   local $LaTeXML::STATE    = $$latexml{state};
   my $stomach  = $LaTeXML::STATE->getStomach; # The current Stomach;
   my $gullet   = $stomach->getGullet;
@@ -302,34 +478,28 @@ sub new {
   my $paths = $LaTeXML::STATE->lookupValue('SEARCHPATHS');
 
   my @pkgs = ("TeX.pool","LaTeX.pool");
+  push(@pkgs, "article.cls") unless $name =~ /\.(cls|ltx)$/;
   push(@pkgs,$name) unless $name eq 'latex.ltx';
   foreach my $pkg (@pkgs){
     my $loadpath = pathname_find("$pkg.ltxml",paths=>$paths,installation_subdir=>'Package');
     if(!$loadpath){
-      print "WARN: Couldn't find LaTeXML implementation for $pkg\n"; return undef; }
+      print STDERR "WARN: Couldn't find LaTeXML implementation for $pkg\n"; return undef; }
     if($pkg =~ /(.*)\.sty$/)   {  LaTeXML::Package::RequirePackage($1); }
     elsif($pkg =~ /(.*)\.cls$/){  LaTeXML::Package::LoadClass($1); }
     else                       {  $gullet->input($loadpath); }}
 
-  print "Scanning defined symbols\n"  if $::VERBOSITY;
+  print "Scanning defined symbols\n"  if $::VERBOSITY >= 1;
   my $table = $LaTeXML::STATE->{table}{meaning};
   foreach my $entry (keys %{$table}){
-    if($entry =~ /^(\\.*)$/){
+    if($entry =~ /^\\begin\{(.*?)\}$/){
+      $$self{symbols}{"\\".$1} = 1; }
+    elsif($entry =~ /^\\end\{(.*?)\}$/){
+      $$self{symbols}{"\\end".$1} = 1; }
+    elsif($entry =~ /^(\\.*)$/){
       $$self{symbols}{$1} = 1; }
     elsif($entry =~ /^(.*)\.ltxml_loaded$/){
-      $$self{used}{$1} = 1; }}
-
-  $self->afterscan;
-
-  if($name ne 'latex.ltx'){
-    my @used = keys %{$$self{uses}};
-    push(@used,"latex.ltx");
-    if($$self{cumulative}){}	# Nothing to do.
-    else {
-      print "Removing symbols from used packages\n"  if $::VERBOSITY;
-      foreach my $used (@used){
-	my $pkg = $class->new($used,cumulative=>1);
-	$self->subtract($pkg) if $pkg; }}}
+      my $inc = $1;
+      $$self{includes}{$inc}=1 unless ($inc eq $name) || $inc=~/\\/; }}
   $self; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -342,34 +512,99 @@ C<texscan> I<options> I<stylefile> ...
 
 =head1 SYNOPSIS
 
-makesite [options] styles
+texscan [options] styles
+
+texscan scans (La)TeX class or style files or LaTeXML implementation files
+for control sequences that are defined defined. The options
+C<--tex>, C<--latexml>, C<--diff>, C<--signature>, C<--stub>
+specify what to do with the symbol lists.
 
 Options:
+
   --tex         Show the symbols defined in a (La)TeX package or class.
   --latexml     Show the symbols defined in a LaTeXML implementation.
-  --diff        Show the symbols defined in a (La)TeX package or class,
-                but not yet defined in the corresponding LaTeXML implementation.
-  --internal    Include internal symbols (including '@'), default no.
-  --cumulative  Include the cumulative definitions,
-                Ie. all symbols defined in the package and all packages
-                it uses, including LaTeX, itself.
-                Default is not cumulative, which also excludes any symbols
-                that are redefinitions of symbols from latex or included packages
+  --diff        Show the symbols missing from a LaTeXML implementation.
+  --signature   Generate a signature of a (La)TeX package. (see C<cluster>)
+  --stub        Generate a stub implementation of a (La)TeX package.
   --all         Scan all implementation files.
+
+  --internal    Include internal symbols (including '@'), default no.
+  --nointernal  Don't include internal symbols
+  --cumulative  Include the definitions from included files.
+  --nocumulative Don't include symbols defined in included files.
+  --path=dir    Add dir to the list of paths to search for files.
+  --base=names  comma separated list of base packages for --stub
+                these are included in the code whether or not they
+                were loaded from the style file.
   --help        Shows this help message.
   --quiet       Runs more quietly
   --verbose     Runs more noisily
 
+=head1 Scanning
 
-A tool to scan for control sequences defined in LaTeX classes or
-style files, and then check whether they're defined in a
-LaTeXML implementation file.
+Scanning of TeX files uses a variety of regular expressions to
+recognize all control sequences that are (or might be) defined.
+Any included files (\usepackage, \LoadClass, etc) are also scanned
+and added. 
 
-=head1 Limitations
+Scanning of LaTeXML files is done by loading the the implementation
+file into a C<LaTeXML> object and scanning for any symbols that
+are bound in the C<State> object. 
 
-This tool needs to be smarter, or have a more complete set of patterns,
-to recognize the range of forms that effectively define symbols
-in LaTeX class and style files.
+The base LaTeX file C<latex.ltx> (and its inclusions)
+is considered to be implicitly included by all style (C<*.sty>)
+and class files (C<*.cls>),
+whereas C<article.cls> (and its inclusions) are considered to
+be included by all style files (C<*.sty>).
+
+
+Inclusions are removed unless cumulative is requested.
+The default is non-cumulative, except for C<--signature>,
+which removes only the base inclusions (C<latex.ltx> and C<article.cls>).
+
+Internal symbols (containing a C<@>) are removed unless
+internal is requested. The default excludes internal symbols.
+
+=head1 Stub implementations
+
+texscan with option C<--tex> lists what control sequences are
+defined in a given style file. With option C<--diff>, it lists
+which control sequences are defined in the TeX style file, but
+missing from the LaTeXML implementation.  As a convenience,
+using the option C<--stub> can be used to generate an initial
+implementation for the package. In most cases, this will still
+need to be editted to be complete and useful, however.
+
+A command such as
+
+   texscan --stub --base=article.cls,graphicx.sty foo.sty bar.sty baz.sty
+
+will create stub LaTeXML implementations for C<foo.sty.ltxml>,...,
+consisting of commands to load the classes or styles in C<--base>.
+Then commands are generated for any remaining inclusions
+in the source file, provided they contribute anything
+(after having removed the affect of previously loaded packages).
+Finally, commented-out definitions are generated for any remaining
+control sequences defined by in C<foo.sty>.
+
+=head1 Bugs
+
+The set of regular expressions used to scan TeX files is
+undoubtedly incomplete. Since both definitions and inclusions
+can also be effected at run time (eg. by passing or constructing
+the symbol to define), such symbols are also missed.
+
+The symbols scanned from a TeX file include any symbol that
+may end up defined only within certain contexts, whereas
+the LaTeXML scan includes only symbols that are defined globally.
+
+For all these reasons, both lists and comparisons of defined symbols
+can have differences that are not significant.  The results
+of texscan thus require supervision with at least minimal
+understanding of the style files involved.
+
+Additionally, in its current form, C<texscan> knows nothing
+about the intended parameters for any control sequences.
 
 =cut
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
