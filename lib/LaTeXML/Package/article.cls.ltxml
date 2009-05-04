@@ -45,12 +45,14 @@ EOTeX
 # The core sectioning commands are defined in LaTeX.pm
 # but the counter setup, etc, depends on article
 #Let('\thedocument@ID','\@empty');
+NewCounter('part',         'document',     idprefix=>'Pt', nested=>['section']);
 NewCounter('section',      'document',     idprefix=>'S',  nested=>['subsection']);
 NewCounter('subsection',   'section',      idprefix=>'SS', nested=>['subsubsection']);
 NewCounter('subsubsection','subsection',   idprefix=>'SSS',nested=>['paragraph']);
 NewCounter('paragraph',    'subsubsection',idprefix=>'P',  nested=>['subparagraph']);
 NewCounter('subparagraph', 'paragraph',    idprefix=>'SP', nested=>['equation','figure','table']);
 
+DefMacro('\thepart',         '\Roman{part}');
 DefMacro('\thesection',      '\arabic{section}');
 DefMacro('\thesubsection',   '\thesection.\arabic{subsection}');
 DefMacro('\thesubsubsection','\thesubsection.\arabic{subsubsection}');
