@@ -39,7 +39,7 @@ DefMacro('\altaddress','\altaffiliation');
 DefMacro('\altaffiliation','\affiliation');
 DefMacro('\andname','and');
 DefMacro('\collaboration',''); # Should have a look at this too
-# \noaffiliation
+DefMacro('\noaffiliation', Tokens());
 
 DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\email [] Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@email{#2}}');
@@ -186,7 +186,15 @@ DefConstructor('\endreferences',
 
 # Used to put double rules before & after a tabular.
 DefEnvironment('{ruledtabular}','#body');
-# !!! DefEnvironment('{quasitable}',''); #??
+
+# No idea what this is really for, but this seems to be the jist of it.
+DefEnvironment('{quasitable}','#body',
+	       beforeDigest=>sub {
+		 Let(T_CS("\\begin{tabular}"),T_CS("\\begin{longtable}"));
+		 Let(T_CS("\\end{tabular}"),  T_CS("\\end{longtable}"));
+		 Let(T_CS("\\tabular"),       T_CS("\\longtable"));
+		 Let(T_CS("\\endtabular"),    T_CS("\\endlongtable")); });
+
 DefMacro('\squeezetable',''); #presentational
 
 # Extra stuff
