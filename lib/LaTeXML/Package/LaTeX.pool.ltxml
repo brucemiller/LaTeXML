@@ -213,6 +213,10 @@ DefPrimitive('\linespread{}', undef);
 
 NewCounter('footnote');
 DefMacroI('\thefootnote',undef,'\arabic{footnote}');
+NewCounter('mpfootnote');
+DefMacroI('\thempfn',undef,'\thefootnote');
+DefMacroI('\thempfootnote',undef,'\arabic{mpfootnote}');
+
 
 DefConstructor('\footnote[]{}',
 	       "<ltx:note class='footnote' mark='#refnum'>#2</ltx:note>",
@@ -270,6 +274,8 @@ DefMacroI('\paragraph',     undef, '\@startsection{paragraph}{}{}{}{}{}', locked
 DefMacroI('\subparagraph',  undef, '\@startsection{subparagraph}{}{}{}{}{}', locked=>1);
 map(Tag("ltx:$_", autoClose=>1),
     qw(part chapter section subsection subsubsection paragraph subparagraph));
+
+DefMacro('\secdef {}{} OptionalMatch:*', sub { ($_[3] ? ($_[2]):($_[1])); });
 
 DefMacroI('\@startsection@hook', undef, Tokens());
 
@@ -674,6 +680,8 @@ DefConstructor('\item[]',
 	       "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
 DefConstructor('\subitem[]',
 	       "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
+DefConstructor('\subsubitem[]',
+	       "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
 
 AssignValue(itemlevel=>0,'global');
 
@@ -829,6 +837,15 @@ DefConstructor('\@verb{}{}', "<ltx:verbatim font='#font'>#2</ltx:verbatim>",
 
 # This is defined by the alltt package.
 # Environment('alltt', ?);
+
+# Actually, latex sets catcode to 13 ... is this close enough?
+DefPrimitiveI('\obeycr',undef,sub {AssignValue('PRESERVE_NEWLINES'=>1);});
+DefPrimitiveI('\restorecr',undef,sub {AssignValue('PRESERVE_NEWLINES'=>0);});
+
+DefPrimitiveI('\dospecials',undef,sub {
+  map($LaTeXML::STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%',"'",' ');
+  return; });
+DefMacroI('\normalsfcodes',undef,Tokens());
 
 #**********************************************************************
 # C.7 Mathematical Formulas
@@ -1366,6 +1383,10 @@ DefConstructor('\mathcal{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'c
 DefConstructor('\mathscr{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'script'});
 DefConstructor('\mathnormal{}', '#1', bounded=>1, requireMath=>1,
 	       font=>{family=>'math',shape=>'italic'});
+DefMacroI('\fontsubfuzz',undef,'.4pt');
+DefMacroI('\oldstylenums',undef,Tokens());
+
+
 #**********************************************************************
 # C.8 Definitions, Numbering and Programming
 #**********************************************************************
@@ -1479,8 +1500,6 @@ DefPrimitive('\SetSymbolFont{}{}{}{}{}{}',undef);
 DefPrimitive('\SetMathAlphabet{}{}{}{}{}{}',undef);
 DefPrimitive('\addtoversion{}{}',undef);
 DefPrimitive('\TextSymbolUnavailable{}',undef);
-
-DefPrimitive('\fontencoding{}',undef);
 
 #======================================================================
 # C.8.2 Defining Environments
@@ -1824,6 +1843,10 @@ sub tabbingBindings {
 
   return; }
 
+DefMacroI('\pushtabs',undef,Tokens());
+DefMacroI('\poptabs',undef,Tokens());
+DefMacroI('\kill',undef,Tokens());
+
 DefPrimitiveI('\@tabbing@bindings',undef, sub {
   tabbingBindings(); });
 
@@ -1900,6 +1923,7 @@ DefRegister('\arrayrulewidth',Dimension(0));
 DefRegister('\doublerulesep', Dimension(0));
 DefMacro('\extracolsep{}',Tokens());
 DefMacroI('\arraystretch',undef, "1");
+DefMacroI('\tabularnewline',undef,Tokens());
 
 #======================================================================
 # Array and similar environments
@@ -2136,8 +2160,6 @@ DefMacro('\cite[] Semiverbatim', sub {
 
 # NOTE: Eventually needs to be recognized by MakeBibliography
 DefConstructor('\nocite Semiverbatim', '');
-
-DefMacro('\citation{}',Tokens());
 
 #======================================================================
 # C.11.4 Splitting the input
@@ -2390,7 +2412,7 @@ DefPrimitive('\typeout{}',sub {
   print STDERR ToString(Expand($stuff));
   return; });
 
-#DefPrimitive('\typein[]{}',sub {
+DefPrimitive('\typein[]{}',undef);
 #  print STDERR ToString($_[2]); 
 #  # Then setValue $_[1] to read ???
 #	       });
@@ -2414,6 +2436,7 @@ DefPrimitiveI('\fussy', undef, undef);
 DefEnvironment('{sloppypar}','#body');
 DefMacroI('\nobreakdashes',undef, T_OTHER('-'));
 
+DefMacro('\showhyphens{}','#1'); # ?
 #======================================================================
 # C.12.2 Page Breaking
 #======================================================================
@@ -2441,8 +2464,8 @@ DefPrimitiveI('\samepage',       undef, undef);
 # C.13.1 Length
 #======================================================================
 # \fill
-# \stretch
-# \newlength{cmd}
+DefMacro('\stretch{}','0pt plus #1fill\relax');
+
 DefPrimitive('\@check@length DefToken',sub {
   my($stomach,$cs)=@_;
   my $defn = LookupDefinition($cs);
@@ -2630,7 +2653,8 @@ DefPrimitive('\circle OptionalMatch:* {Float}',
 	     sub { Error(":unexpected:\circle cannot appear outside of picture environment"); });
 DefPrimitive('\oval [Float] Pair []',
 	     sub { Error(":unexpected:\\oval cannot appear outside of picture environment"); });
-DefPrimitive('\qbezier [Number] Pair Pair Pair',
+DefMacro('\qbezier[0]','\bezier{#1}');
+DefPrimitive('\bezier {Number} Pair Pair Pair',
 	     sub { Error(":unexpected:\\qbezier cannot appear outside of picture environment"); });
 DefPrimitive('\dashbox {Float} Pair [] {}',
 	     sub { Error(":unexpected:\\dashbox cannot appear outside of picture environment"); });
@@ -2799,6 +2823,42 @@ DefConstructorI('\normalfont',    undef, '', font=>{family=>'serif', series=>'me
 DefConstructorI('\verbatim@font', undef, '', font=>{family=>'typewriter', series=>'medium', shape=>'upright'});
 Let(T_CS('\reset@font'),T_CS('\normalfont'));
 
+DefMacroI('\rmdefault',undef,'cmr');
+DefMacroI('\sfdefault',undef,'cmss');
+DefMacroI('\ttdefault',undef,'cmtt');
+DefMacroI('\bfdefault',undef,'bx');
+DefMacroI('\mddefault',undef,'m');
+DefMacroI('\itdefault',undef,'it');
+DefMacroI('\sldefault',undef,'sl');
+DefMacroI('\scdefault',undef,'sc');
+DefMacroI('\updefault',undef,'n');
+DefMacroI('\encodingdefault',undef,'OT1');
+DefMacroI('\familydefault',undef,'\rmdefault');
+DefMacroI('\seriesdefault',undef,'\mddefault');
+DefMacroI('\shapedefault',undef,'\updefault');
+
+DefPrimitive('\fontencoding{}',undef);
+# These should be looking up from the TeX tables!
+DefConstructor('\fontfamily{}','',
+	       beforeDigest=>sub { 
+		 my $family = ToString($_[1]->getArg(1));
+		 if(my $fam = lookupFontFamily($family)){ MergeFont(family=>$fam); }
+		else { Info(":unexpected:$family Unrecognized font family."); }});
+DefConstructor('\fontseries{}','',
+	       beforeDigest=>sub { 
+		 my $series = ToString($_[1]->getArg(1));
+		 if(my $ser = lookupFontSeries($series)){ MergeFont(series=>$ser); }
+		else { Info(":unexpected:$series Unrecognized font series."); }});
+DefConstructor('\fontshape{}','',
+	       beforeDigest=>sub { 
+		 my $shape = ToString($_[1]->getArg(1));
+		 if(my $sh = lookupFontShape($shape)){ MergeFont(shape=>$sh); }
+		else { Info(":unexpected:$shape Unrecognized font shape."); }});
+
+DefMacroI('\selectfont',    undef, Tokens());
+DefMacro('\usefont{}{}{}{}{}',
+	 '\fontencoding{#1}\fontfamily{#2}\fontseries{#3}\fontshape{#4}\selectfont');
+ 
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
 DefConstructor('\textmd{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{series=>'medium'});
@@ -2888,6 +2948,42 @@ DefMacroI('\SS',undef, 'SS');			       # ?
 DefConstructor('\sqrtsign Digested',
 	       "<ltx:XMApp><ltx:XMTok meaning='square-root'/><ltx:XMArg>#1</ltx:XMArg></ltx:XMApp>");
 
+
+DefConstructorI('\mathparagraph',undef,UTF(0xB6));
+DefConstructorI('\mathsection',undef,UTF(0xA7));
+DefConstructorI('\mathdollar',undef,'$');
+DefConstructorI('\mathsterling',undef,UTF(0xA3));
+DefConstructorI('\mathunderscore',undef,'_');
+DefConstructorI('\mathellipsis',undef,"\x{2026}");
+
+# Are these glyph "pieces" or use alone?
+DefMathI('\arrowvert', undef, "|",       role=>'VERTBAR');
+DefMathI('\Arrowvert', undef, "\x{2225}",role=>'VERTBAR');
+
+# The following are glyph "pieces"...
+DefConstructorI('\braceld',undef,"\x{239D}");#   left brace down part
+DefConstructorI('\bracelu',undef,"\x{239B}");#   left brace up part
+DefConstructorI('\bracerd',undef,"\x{23A0}");#   right brace down part
+DefConstructorI('\braceru',undef,"\x{239E}");#   right brace up part
+
+DefMathI('\cdotp',      undef,"\x{22C5}", role=>'MULOP');
+DefMathI('\ldotp',      undef,".",        role=>'MULOP');
+DefMathI('\intop',      undef,"\x{222B}", role=>'INTOP', scriptpos=>\&doScriptpos, meaning=>'integral');
+DefMathI('\ointop',     undef,"\x{222E}", role=>'INTOP', scriptpos=>\&doScriptpos, meaning=>'contour-integral');
+
+# WHat are these? They look like superscripted parentheses, or combining accents!
+# \lhook
+# \rhook
+Let(T_CS('\gets'),T_CS('\leftarrow'));
+
+DefConstructorI('\lmoustache',undef,"\x{23B0}");
+DefConstructorI('\rmoustache',undef,"\x{23B1}");
+DefMathI('\mapstochar',  undef,"\x{21A6}", role=>'ARROW', meaning=>'maps-to');
+DefMathI('\owns',        undef,"\x{220B}", role=>'RELOP', meaning=>'contains');
+
+# \skew{}{}{} ????
+
+# \symbol lookup symbol in font by index?
 #**********************************************************************
 # Other stuff
 #**********************************************************************
@@ -2993,6 +3089,7 @@ Let(T_CS('\@warning'),  T_CS('\@latex@warning'));
 Let(T_CS('\@@warning'), T_CS('\@latex@warning@no@line'));
 
 #======================================================================
+
 RawTeX(<<'EOTeX');
 \newif\if@insert
 \newif\if@colmade
@@ -3021,6 +3118,7 @@ RawTeX(<<'EOTeX');
 \newskip\@tempskipb
 \newtoks\@temptokena
 \newskip\@flushglue \@flushglue = 0pt plus 1fil
+\newbox\rootbox
 
 \newcount\@eqcnt
 \newcount\@eqpen
@@ -3046,11 +3144,11 @@ RawTeX(<<'EOTeX');
 EOTeX
 
 #======================================================================
+
 DefMacroI('\check@mathfonts',undef, Tokens());
 DefMacro('\fontsize{}{}',Tokens());
 DefMacroI('\math@fontsfalse',undef, Tokens());
 DefMacroI('\math@fontstrue',undef, Tokens());
-DefMacroI('\selectfont',    undef, Tokens());
 
 DefMacroI('\defaultscriptratio',      undef, '.7');
 DefMacroI('\defaultscriptscriptratio',undef, '.5');
@@ -3132,6 +3230,21 @@ DefMacroI('\labelitemiii',undef,'\textasteriskcentered');
 DefMacroI('\labelitemiv',undef,'\textperiodcentered');
 DefMacroI('\partname',undef,'Part');
 DefMacroI('\chaptername',undef,'Chapter');
+
+#**********************************************************************
+# Stuff that would appear in the aux file... maybe somebody uses it?
+DefMacro('\bibdata{}',Tokens());
+DefMacro('\bibcite{}{}',Tokens());
+DefMacro('\citation{}',Tokens());
+DefMacro('\contentsline{}{}{}',Tokens());
+DefMacro('\newlabel{}{}',Tokens());
+
+DefMacroI('\stop',undef,sub { $_[0]->closeMouth(1); return; });
+DefMacroI('\ignorespacesafterend',undef, Tokens());
+DefMacroI('\mathgroup',undef,Tokens());
+DefMacroI('\mathalpha',undef,Tokens());
+
+#\def\mathhexbox#1#2#3{\mbox{$\m@th \mathchar"#1#2#3$}}
 
 #**********************************************************************
 1;
