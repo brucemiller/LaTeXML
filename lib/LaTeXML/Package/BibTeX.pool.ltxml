@@ -647,6 +647,10 @@ DefMacro('\bib@field@default@language',
 DefConstructor('\bib@field@default@url Semiverbatim',
 	       "<ltx:bib-url href='#1'>Link</ltx:bib-url>");
 
+# enote : miscellaneous annotation
+DefMacro('\bib@field@default@enote',
+	 '\bib@@field{ltx:bib-note}[role=electronic-annotation]');
+
 #======================================================================
 # Interesting Identifiers
 # doi : Document Object Identifier
