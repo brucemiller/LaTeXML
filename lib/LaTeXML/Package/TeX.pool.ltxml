@@ -556,6 +556,8 @@ foreach my $p (keys %mparms){
 # Token registers; TeXBook p.275
 our @tparms= qw(output everypar everymath everydisplay everyhbox everyvbox
 		everyjob everycr everyhelp);
+foreach my $p (@tparms){
+  DefRegister("\\$p",Tokens()); }
 
 #======================================================================
 # Assignment, TeXBook Ch.24, p.275
@@ -740,6 +742,10 @@ sub abstract_font_size {
     'Huge'; }
   else {
     'normal'; }}
+
+sub lookupFontFamily { $font_family{ToString($_[0])}; }
+sub lookupFontSeries { $font_series{ToString($_[0])}; }
+sub lookupFontShape  { $font_shape{ToString($_[0])}; }
 
 # Need to handle "at" too!!!
 DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
