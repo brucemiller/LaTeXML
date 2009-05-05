@@ -16,6 +16,9 @@ use LaTeXML::Package;
 
 # Core is defined in LaTeX.ltxml
 
+Let(T_CS('\nonslanted'),T_CS('\upshape'));
+DefMacroI('\nopunct',undef,Tokens());
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Theorem Styles.
 
@@ -63,14 +66,31 @@ DefPrimitive('\newtheoremstyle{}{}{}{}{}{}{}{}{}', sub {
 	     return; });
 });
 
+DefMacro('\thmname{}',Tokens());
+DefMacro('\thmnumber{}',Tokens());
+DefMacro('\thmnote{}',Tokens());
+
+DefMacro('\thmhead{}{}{}',Tokens());
+DefMacro('\swappedhead{}{}{}',Tokens());
+
+DefMacroI('\thmheadnl',undef,Tokens());
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Proofs
 
 AssignValue('QED@stack',[]);
+DefMacro('\pushQED{}', sub { PushValue('QED@stack',$_[1]); });
+DefMacro('\popQED{}', sub { (PopValue('QED@stack')); });
+
 # Should mark this as somehow ignorable for math,
 # but we DO want to keep it in the formula...
 DefConstructor('\qed',
 	       "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+Let(T_CS('\mathqed'),   T_CS('\qed'));
+Let(T_CS('\textsquare'),T_CS('\qed'));
+Let(T_CS('\qedsymbol'), T_CS('\qed'));
+Let(T_CS('\openbox'),   T_CS('\qed'));
+
 DefMacro('\qedhere', sub {
   my $t = PopValue('QED@stack');
   PushValue('QED@stack',Tokens());
