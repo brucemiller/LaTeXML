@@ -35,6 +35,9 @@ RequirePackage('amsopn');
 #   amscd
 #   amsxtra
 
+DefMacroI('\AmSfont',undef,Tokens());
+DefMacroI('\AmS',undef,"AmS");
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 3:  Displayed equations
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -284,6 +287,23 @@ DefMacro('\csname alignat*\endcsname{}',
 DefMacro('\csname endalignat*\endcsname',
 	 '\@finish@alignment\end@amsalign');
 
+DefMacro('\xalignat{}',
+	 '\ifmmode\let\endalignat\endalignedat\alignedat{#1}\else'
+	 .'\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
+DefMacro('\endxalignat',
+	 '\@finish@alignment\end@amsalign');
+DefMacro('\csname xalignat*\endcsname{}',
+	 '\ifmmode\expandafter\let\csname endalignat*\endcsname\endalignedat\alignedat{#1}\else'
+	 .'\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
+DefMacro('\csname endxalignat*\endcsname',
+	 '\@finish@alignment\end@amsalign');
+
+DefMacro('\xxalignat{}',
+	 '\ifmmode\let\endalignat\endalignedat\alignedat{#1}\else'
+	 .'\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
+DefMacro('\endxxalignat',
+	 '\@finish@alignment\end@amsalign');
+
 #======================================================================
 # Section 3.7. Alignmnet building blocks
 #    gathered, aligned alignedat
@@ -486,15 +506,23 @@ DefConstructor('\negmedspace',"?#isMath(<ltx:XMHint name='negmedspace'/>)()");
 DefConstructor('\negthickspace',"?#isMath(<ltx:XMHint name='negthickspace'/>)()");
 
 DefConstructor('\mspace{MuDimension}',"<ltx:XMHint name='#1'/>");
+
 #======================================================================
 # Section 4.3 Dots
 # Nice idea, but not sure what I really should do about it.
 # In principle, a processor has access to the context....
-DefMacro('\dotsc','\ldots');	# Dots with commas
-DefMacro('\dotsb','\cdots');	# Dots with binary operators/relations
-DefMacro('\dotsm','\cdots');	# multiplication dots
-DefMacro('\dotsi','\cdots');	# Dots with integrals
-DefMacro('\dotso','\ldots');	# other dots (??)
+DefMacroI('\dotsc',undef,'\ldots');	# Dots with commas
+DefMacroI('\dotsb',undef,'\cdots');	# Dots with binary operators/relations
+DefMacroI('\dotsm',undef,'\cdots');	# multiplication dots
+DefMacroI('\dotsi',undef,'\cdots');	# Dots with integrals
+DefMacroI('\dotso',undef,'\ldots');	# other dots (??)
+
+# Not really clear when these get set to something other than \relax, in amsfonts.sty
+DefMacroI('\DOTSB',undef,Tokens());
+DefMacroI('\DOTSI',undef,Tokens());
+DefMacroI('\DOTSX',undef,Tokens());
+Let(T_CS('\hdots'),T_CS('\ldots'));
+# \hdotsfor ???
 
 #======================================================================
 # Section 4.4 Nonbreaking dashes
@@ -762,6 +790,11 @@ DefMath('\iiint',"\x{222D}", meaning=>'triple-integral', role=>'INTOP'); # TRIPL
 DefMath('\iiiint',"\x{2A0C}", meaning=>'quadruple-integral', role=>'INTOP');
 DefMath('\idotsint',"\x{222B}\x{22EF}\x{222B}", meaning=>'multiple-integral', role=>'INTOP');
 
+DefMacro('\MultiIntegral{}',sub {
+  my($gullet,$n)=@_;
+  $n = ToString($n);
+  (($n==0 ? T_CS('\idotsint'):($n==1?T_CS('\int'):($n==2?T_CS('\iint'):($n==3?T_CS('\iiint'):T_CS('\iiiint'))))));});
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 8 Commutative diagrams
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -815,6 +848,17 @@ Let('\Vec', '\vec');
 
 # And where does this go?
 DefPrimitive('\allowdisplaybreaks', undef);
+#======================================================================
+DefMacroI('\mintagsep',undef,Tokens());
+DefMacroI('\minalignsep',undef,"10pt");
+DefRegister('\multlinegap'=>Glue('10pt'));
+DefRegister('\multlinetaggap'=>Glue('10pt'));
+DefMacro('\primfrac{}',Tokens());
+
+# \shoveleft, \shoveright should do something about eqn number placement?
+DefMacro('\shoveleft{}','#1');
+DefMacro('\shoveright{}','#1');
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
 
