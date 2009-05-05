@@ -455,7 +455,7 @@ Let(T_CS('\AtEndOfClass'),T_CS('\AtEndOfPackage'));
 
 DefMacro('\AtBeginDocument{}',sub { PushValue('@at@begin@document', $_[1]->unlist); });
 DefMacro('\AtEndDocument{}',  sub { PushValue('@at@end@document', $_[1]->unlist); });
-
+DefMacro('\AtBeginDvi {}', Tokens());
 
 #======================================================================
 # C.5.3 Page Styles
@@ -2837,6 +2837,9 @@ DefMacroI('\familydefault',undef,'\rmdefault');
 DefMacroI('\seriesdefault',undef,'\mddefault');
 DefMacroI('\shapedefault',undef,'\updefault');
 
+Let(T_CS('\mediumseries'),T_CS('\mdseries'));
+Let(T_CS('\normalshape'),T_CS('\upshape'));
+
 DefPrimitive('\fontencoding{}',undef);
 # These should be looking up from the TeX tables!
 DefConstructor('\fontfamily{}','',
@@ -2881,6 +2884,11 @@ DefConstructor('\textsc{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(
 	       bounded=>1, font=>{shape=>'smallcaps'});
 DefConstructor('\textnormal{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
 	       bounded=>1, font=>{family=>'serif',series=>'medium',shape=>'upright'});
+
+DefPrimitive('\DeclareTextFontCommand{}{}', sub {
+  my($stomach,$cmd,$font)=@_;
+  DefConstructor(ToString($cmd)."{}","?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
+	       bounded=>1, beforeDigest=>sub { Digest($font); }); });
 
 DefPrimitive('\mathversion{}',sub {
   my($stomach,$version)=@_;
@@ -3228,8 +3236,18 @@ DefMacroI('\labelitemi',undef,'\textbullet');
 DefMacroI('\labelitemii',undef,'\normalfont\bfseries \textendash');
 DefMacroI('\labelitemiii',undef,'\textasteriskcentered');
 DefMacroI('\labelitemiv',undef,'\textperiodcentered');
-DefMacroI('\partname',undef,'Part');
+
+
+# Ultimately these may be overridden by babel,
+# various of these are defined in various places by different classes.
+# And, at any rate, they're currently unused.
 DefMacroI('\chaptername',undef,'Chapter');
+DefMacroI('\partname',undef,'Part');
+DefMacroI('\sectionname',undef,Tokens());
+DefMacroI('\subsectionname',undef,Tokens());
+DefMacroI('\subsubsectionname',undef,Tokens());
+DefMacroI('\paragraphname',undef,Tokens());
+DefMacroI('\subparagraphname',undef,Tokens());
 
 #**********************************************************************
 # Stuff that would appear in the aux file... maybe somebody uses it?
@@ -3245,6 +3263,7 @@ DefMacroI('\mathgroup',undef,Tokens());
 DefMacroI('\mathalpha',undef,Tokens());
 
 #\def\mathhexbox#1#2#3{\mbox{$\m@th \mathchar"#1#2#3$}}
+DefMacroI('\nocorrlist',undef,',.');
 
 #**********************************************************************
 1;
