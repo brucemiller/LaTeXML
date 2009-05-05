@@ -69,6 +69,19 @@ DefParameterType('UntilBrace', sub{
   $gullet->unread(T_BEGIN);
   $value; });
 
+DefParameterType('XUntil', sub {
+  my($gullet,$until)=@_;
+  ($until) = $until->unlist;	# Make sure it's a single token!!!
+  my ($token,@tokens)=();
+  while($token = $gullet->readXToken()){
+    if($token->equals($until)){
+      last; }
+    elsif($token->getCatcode == CC_BEGIN){
+      push(@tokens,$gullet->readBalanced->unlist,T_END); }
+    else {
+      push(@tokens,$token); }}
+  Tokens(@tokens); });
+
 # Read a matching keyword, eg. Match:=
 DefParameterType('Match',      sub{shift->readMatch(@_); });
 
