@@ -77,6 +77,10 @@ DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
 # Formatting the header and running title
 DefMacro('\titlerunning{}','');	# Ignorable
 DefMacro('\authorrunning{}','');
+#DefRegister('\authrun'=>Box());
+#DefRegister('\titrun'=>Box());
+DefMacro('\authrun','');
+DefMacro('\titrun','');
 
 # undocumented ?
 DefMacro('\offprints{}','\@add@frontmatter{ltx:note}[role=offprints]{#1}');
@@ -109,6 +113,7 @@ DefConstructor('\acknowledgement',"<ltx:acknowledgements>");
 DefConstructor('\endacknowledgement',"</ltx:acknowledgements>");
 Tag("ltx:acknowledgements", autoClose=>1);
 DefMacro('\acknowledgmentsname','Acknowledgements');
+DefMacro('\ackname','Acknowledgements');
 
 RawTeX(<<'EoTeX');
 \newtheorem*{proof}{Proof}{\it}{\rm}
@@ -273,6 +278,7 @@ DefConstructor('\bbbz',  "\x{2124}");
 DefConstructor('\object Semiverbatim',
 	       "<ltx:text class='objectname'>#1</ltx:text>");
 DefMacro('\listofobjects','');
+DefMacro('\listobjectname','List of Objects');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Extra stuff
@@ -293,11 +299,11 @@ DefRegister('\betweenumberspace'=>Dimension('3.33pt'));
 DefRegister('\figcapgap'=>Dimension('5pt'));
 DefRegister('\tabcapgap'=>Dimension('10pt'));
 DefRegister('\figgap'=>Dimension('1cc'));
-#DefMacro('\headerboxheight','');
-#DefMacro('\headlineindent','');
-#DefMacro('\instindent','');
-#DefMacro('\leftlegendglue','');
-#DefMacro('\logodepth','');
+DefRegister('\headerboxheight'=>Dimension('143pt'));
+DefRegister('\headlineindent'=>Dimension('1.166cm'));
+DefRegister('\instindent'=>Dimension(0));
+DefMacro('\leftlegendglue','');
+DefRegister('\logodepth'=>Dimension('1.3cm'));
 
 DefMacro('\capstrut','');
 DefMacro('\captionstyle','');
@@ -309,7 +315,7 @@ DefMacro('\floatlegendstyle','\bf');
 DefMacro('\thisbottomragged','');
 DefMacro('\ts','\thinspace');
 DefMacro('\fnmsep','\unskip$^,$'); # ?
-#DefMacro('\makeheadbox','');
+DefMacro('\makeheadbox','');
 #DefMacro('\stripauthor','');
 #DefMacro('\theapsection','Appendix \@Alph\c@section:');
 #DefMacro('\theapsubsection','\@Alph\c@section.\@arabic\c@subsection.');
@@ -358,7 +364,7 @@ DefMacro('\ssr',    'Space~Sci.~Rev.');
 DefMacro('\zap',    'ZAp');
 DefMacro('\nat',    'Nature');
 DefMacro('\iaucirc','IAU~Circ.');
-DefMacro('\apjlett','\apjl');
+DefMacro('\aplett', 'Astrophys.~Lett.');
 DefMacro('\apspr',  'Astrophys.~Space~Phys.~Res.');
 DefMacro('\bain',   'Bull.~Astron.~Inst.~Netherlands');
 DefMacro('\fcp',    'Fund.~Cosmic~Phys.');
@@ -377,5 +383,10 @@ Let('\astap','\aap');
 Let('\apjlett','\ajpl');
 Let('\apjsupp','\ajps');
 Let('\applopt','\ao');
+
+
+DefMacro('\errorref','');
+DefEnvironment('{stopref}','#1');
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
