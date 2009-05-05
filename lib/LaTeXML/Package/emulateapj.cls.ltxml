@@ -20,5 +20,43 @@ use LaTeXML::Package;
 # Seems to be equivalent.
 LoadClass('aastex', withoptions=>1);
 
+# ... Well, almost...
+DefMacroI('\LongTables',undef,'');
+Let(T_CS('\begin{deluxetable*}'),T_CS('\begin{deluxetable}'));
+Let(T_CS('\end{deluxetable*}'),T_CS('\end{deluxetable}'));
+
+Let(T_CS('\BeginEnvironment'),T_CS('\begin'));
+Let(T_CS('\EndEnvironment'),T_CS('\end'));
+
+# Hopefully, nobody is using these for real...
+DefMacro('\BeforeBegin{}{}','');
+DefMacro('\BeforeEnd{}{}','');
+DefMacro('\AfterBegin{}{}','');
+DefMacro('\AfterEnd{}{}','');
+
+DefMacro('\ApjSectionMarkInTitle{}','{#1.\ }');
+DefMacro('\ApjSectionpenalty','0');
+DefMacro('\AppendixApjSectionMarkInTitle{}','{#1.\ }');
+
+DefMacro('\NullCom{}','');
+DefMacroI('\apjsecfont',undef,'\small');
+DefMacroI('\lastfootnote',undef,'\small');
+DefMacroI('\lastpagefootnote',undef,'\small');
+DefMacroI('\lastpagefootnotes',undef,'\small');
+DefMacro('\tableheadfrac{}','');
+DefMacro('\tabletypesize{}','');
+Let(T_CS('\tablefontsize'),T_CS('\tabletypesize'));
+
+DefMacro('\subtitle', '');
+
+DefMacro('\submitted{}',   '\@add@frontmatter{ltx:date}[role=submitted]{#1}');
+DefMacro('\journalinfo{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+
+# Vertical analogs of llap, rlap
+DefMacro('\ulap{}', '\hbox{#1}');
+DefMacro('\dlap{}', '\hbox{#1}');
+
+Let(T_CS('\tabcaption'),T_CS('\caption'));
+
 # #======================================================================
 1;
