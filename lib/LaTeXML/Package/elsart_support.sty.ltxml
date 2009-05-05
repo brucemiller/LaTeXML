@@ -1,0 +1,294 @@
+#  /====================================================================\
+# | elsart_support.sty for LaTeXML                                       |
+# | Adapted from texscan --stub --base=article.cls elsart.cls            |
+#  >====================================================================<
+# | Released to public domain.                                           |
+# | Bruce Miller <bruce.miller@nist.gov>                                 |
+# | http://dlmf.nist.gov/LaTeXML/                                        |
+#  \====================================================================/
+use strict;
+use LaTeXML::Package;
+
+if(LookupValue('@amsthm')){
+  RequirePackage('amsthm'); }
+else {
+  DefMacro('\theoremstyle{}',''); 
+  DefConstructor('\qed',
+		 "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})"); }
+
+#======================================================================
+# 4. Frontmatter
+
+DefEnvironment('{frontmatter}','#body');
+
+# \title{}
+# single author!
+# \author{}
+
+DefMacro('\address{}','\@add@to@frontmatter{ltx:creator}{\@address{#1}}');
+DefConstructor('\@address{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
+
+
+# Redefine to account for the label, which we ignore for now!
+DefConstructor('\thanks[]{}', "<ltx:note class='thanks'>#2</ltx:note>");
+DefConstructor('\person@thanks[]{}', "^ <ltx:contact role='thanks'>#2</ltx:contact>",
+	       alias=>'\thanks', mode=>'text');
+DefMacro('\thanksref{}',Tokens());
+
+DefConstructor('\corauth[]{}', "^ <ltx:contact role='corresondent'>#2</ltx:contact>",
+	       mode=>'text');
+DefMacro('\corauthref{}',Tokens());
+
+# Is this significantly different?
+DefMacro('\collab OptionalMatch:* {}','\author{#1}');
+Let(T_CS('\collaboration'),T_CS('\collab'));
+
+DefMacro('\runauthor{}',Tokens());
+DefMacro('\runtitle{}',Tokens());
+
+DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
+
+DefMacro('\ead Semiverbatim','\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
+DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
+
+DefMacro('\sep',', ');
+
+DefMacro('\received{}',    '\@add@frontmatter{ltx:date}[role=received]{#1}');
+DefMacro('\revised{}',     '\@add@frontmatter{ltx:date}[role=revised]{#1}');
+DefMacro('\accepted{}',    '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
+DefMacro('\communicated{}','\@add@frontmatter{ltx:date}[role=communicated]{#1}');
+DefMacro('\dedicated{}',   '\@add@frontmatter{ltx:note}[role=dedicated]{#1}');
+DefMacro('\presented{}',   '\@add@frontmatter{ltx:date}[role=presented]{#1}');
+DefMacro('\articletype{}', '\@add@frontmatter{ltx:note}[role=articletype]{#1}');
+DefMacro('\issue{}',       '\@add@frontmatter{ltx:note}[role=issue]{#1}');
+DefMacro('\journal{}',     '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\volume',        '\@add@frontmatter{ltx:note}[role=volume]{#1}');
+DefMacro('\pubyear',       '\@add@frontmatter{ltx:date}[role=publication]{#1}');
+
+
+DefMacro('\FullCopyrightText',Tokens());
+DefMacro('\copyear{}','\@add@frontmatter{ltx:date}[role=copyright]{#1}');
+DefMacro('\copyrightholder{}','\@add@frontmatter{ltx:note}[role=copyrightholder]{#1}');
+Let(T_CS('\copyrightyear'),T_CS('\copyear'));
+
+DefMacro('\RUNART',Tokens());
+DefMacro('\RUNDATE',Tokens());
+DefMacro('\RUNJNL',Tokens());
+DefMacro('\company{}',Tokens());
+
+# Apparently some sort of identifier?
+DefMacro('\aid{}',Tokens());
+DefMacro('\ssdi{}{}',Tokens());
+
+# Parses version control of the class file
+DefMacro('\readRCS Until:$ Until:$',Tokens());
+DefMacro('\RCSdate',Tokens());
+DefMacro('\RCSfile',Tokens());
+DefMacro('\RCSversion',Tokens());
+
+DefMacro('\firstpage{}',Tokens());
+DefMacro('\lastpage{}',Tokens());
+
+DefMacro('\preface',Tokens());
+
+DefMacro('\theHaddress',Tokens());
+DefMacro('\theaddress',Tokens());
+
+Let(T_CS('\ESpagenumber'),T_CS('\arabic'));
+
+#======================================================================
+# 5. Abstract
+#  as an environment!
+
+# Normally, we'd define the acknowledgements environment simply as:
+# DefEnvironment('{ack}',
+# 	       "<ltx:acknowledgements>#body</ltx:acknowledgements>");
+# However, people seem to insist on "misusing" it, by just saying
+# \ack... which actually "works".
+# So, we just open it, and let it autoclose.
+
+DefConstructor('\ack',"<ltx:acknowledgements>");
+DefConstructor('\endack',"</ltx:acknowledgements>");
+Tag("ltx:acknowledgements", autoClose=>1);
+
+#======================================================================
+# 6 Keywords
+
+
+# \PACS & \MSC should appear inside a keyword environment;
+# apparently, they implicitly get whatever there is until next thing or end of environment.
+# elsart.sty apparently defines \JEL and \UK as well.
+# DefEnvironment('{keyword}','#body');
+DefMacro('\keyword',   '\@keyword');
+DefMacro('\endkeyword','\@keyword@cut');
+DefMacro('\PACS',      '\@keyword@cut\@PACS');
+DefMacro('\MSC',       '\@keyword@cut\@MSC');
+DefMacro('\JEL',      '\@keyword@cut\@JEL');
+DefMacro('\UK',       '\@keyword@cut\@UK');
+
+DefMacro('\@keyword XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[role=keywords]{#1}');
+DefMacro('\@PACS    XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[role=PACS]{#1}');
+DefMacro('\@MSC     XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[role=MSC]{#1}');
+DefMacro('\@JEL     XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[role=JEL]{#1}');
+DefMacro('\@UK      XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[role=UK]{#1}');
+DefConstructor('\@keyword@cut','');
+
+#======================================================================
+# Document Structure
+
+DefMacro('\theparagraph',    '\thesubsubsection.\arabic{paragraph}');
+DefMacro('\thesubparagraph', '\theparagraph.\arabic{subparagraph}');
+
+if(LookupValue('@seceqn')){
+  RawTeX('\@addtoreset{equation}{section}');
+  DefMacro('\theequation', '\thesection.\arabic{equation}'); }
+
+#======================================================================
+# Math
+DefMath('\Cset',  "\x{2102}", role=>'ID', meaning=>'complexes'); # DOUBLE-STRUCK CAPITAL C
+DefMath('\Hset',  "\x{210D}", role=>'ID', meaning=>'upper-complexes'); # DOUBLE-STRUCK CAPITAL H
+DefMath('\Nset',  "\x{2115}", role=>'ID', meaning=>'numbers'); # DOUBLE-STRUCK CAPITAL N
+DefMath('\Qset',  "\x{211A}", role=>'ID', meaning=>'rationals'); # DOUBLE-STRUCK CAPITAL Q
+DefMath('\Rset',  "\x{211D}", role=>'ID', meaning=>'reals'); # DOUBLE-STRUCK CAPITAL R
+DefMath('\Zset',  "\x{2124}", role=>'ID', meaning=>'integers'); # DOUBLE-STRUCK CAPITAL Z
+
+DefMacro('\half',     '{\textstyle\frac{1}{2}}');
+DefMacro('\threehalf','{\textstyle\frac{3}{2}}');
+DefMacro('\quart',    '{\textstyle\frac{1}{4}}');
+
+DefMath('\d',     "\x{2146}", role=>'DIFFOP', meaning=>'differential-d');
+DefMath('\e',     "\x{2147}", role=>'ID', meaning=>'exponential-e');
+
+DefConstructor('\operatorname OptionalMatch:* {}',
+	       "<ltx:XMWrap role='OPERATOR' scriptpos='?#1(mid)(post)'>#2</ltx:XMWrap>",
+	       bounded=>1, requireMath=>1, font=>{family=>'serif'});
+
+DefMacro('\astsymbol{}', sub { (T_OTHER("\x{2217}" x ToString($_[1]))); });
+DefMacro('\fnstar{}',    sub { (T_OTHER("\x{22C6}" x ToString($_[1]))); });
+
+DefMath('\pol Digested', "\x{2192}", operator_role=>'OVERACCENT'); # RIGHTWARDS ARROW
+
+# Nuclear isotopes; More semantics would be nice here!
+DefMacro('\itnuc{}{}', '\ensuremath{\@@nuc{\textit{#1}}{#2}}');
+DefMacro('\nuc{}{}',   '\ensuremath{\@@nuc{#1}{#2}}');
+DefConstructor('\@@nuc{}{}',
+	       "<ltx:XMArg><ltx:XMApp><ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#pos'/>#1#2<ltx:XMApp></ltx:XMArg>",
+	       properties=>sub { (pos=>'pre'.$_[0]->getBoxingLevel); });
+
+#======================================================================
+# Tables, Figures & Theorems
+
+if(LookupValue('@seceqn')){
+  RawTeX('\newtheorem{thm}{Theorem}[section] \@addtoreset{thm}{section}'); }
+else {
+  RawTeX('\newtheorem{thm}{Theorem}'); }
+
+RawTeX(<<'EoTeX');
+\theoremstyle{plain}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{claim}[thm]{Claim}
+\newtheorem{axiom}[thm]{Axiom}
+\newtheorem{conj}[thm]{Conjecture}
+\newtheorem{fact}[thm]{Fact}
+\newtheorem{hypo}[thm]{Hypothesis}
+\newtheorem{assum}[thm]{Assumption}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{crit}[thm]{Criterion}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{exmp}[thm]{Example}
+\newtheorem{rem}[thm]{Remark}
+\newtheorem{prob}[thm]{Problem}
+\newtheorem{prin}[thm]{Principle}
+\newtheorem{alg}{Algorithm}
+\newtheorem{note}{Note}
+\newtheorem{summ}{Summary}
+\newtheorem{case}{Case}
+EoTeX
+NewCounter('algorithm');
+DefMacro('\thealgorithm','\arabic{algorithm}');
+DefEnvironment('{algorithm}',
+	       "<ltx:figure xml:id='#id' refnum='#refnum'>"
+	       . "#body"
+	       ."</ltx:figure>",
+	       properties=> sub { RefStepCounter('algorithm') });
+
+RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}');
+
+
+# These make captions for continuations of figures & tables....
+# this isn't really quite right, but...
+DefMacro('\contcaption',      '\caption{continued}');
+DefMacro('\contfigurecaption','\caption{continued}');
+DefMacro('\conttablecaption', '\caption{continued}');
+
+#======================================================================
+# Bibliography.
+# recommends natbib, harvard style.
+
+# What is this???
+DefEnvironment('{subbibitems}','#body');
+
+DefMacro('\cv',Tokens());
+DefEnvironment('{cv*}',"<ltx:section class='cv'><ltx:title>Curriculum Vitae</ltx:title>#body</ltx:section>");
+
+#======================================================================
+# shorthands.
+DefMacro('\AND','\&');
+DefMacro('\etal','et al.');
+DefMacro('\Elproofname',"Proof.");
+DefMacro('\proofname',"Proof.");
+
+#======================================================================
+# Random spaces, dimensions
+
+DefRegister('\eqnarraycolsep'=>Dimension('1pt'));
+DefRegister('\eqnbaselineskip'=>Glue('14pt'));
+DefRegister('\eqnlineskip'=>Glue('2pt'));
+DefRegister('\eqntopsep'=>Glue('12pt'));
+
+DefMacro('\cropwidth', '297mm');
+DefMacro('\cropheight','210mm');
+DefMacro('\cropleft',  '0mm');
+DefMacro('\croptop',   '0mm');
+
+DefRegister('\rulepreskip'=>Dimension('4pt'));
+
+DefMacro('\setleftmargin{}{}',Tokens());
+
+#======================================================================
+# random stuff
+Let(T_CS('\realpageref'),T_CS('\pageref'));
+DefMacro('\snm',Tokens());
+
+DefMacro('\xalph{}', sub {
+  my $n = CounterValue($_[1])->valueOf;
+  ($n < 0 ? (Token(T_OTHER('*'))) : Invocation(T_CS('\alph'),$_[1])); });
+
+DefMacro('\xarabic{}',  sub {
+  my $n = CounterValue($_[1])->valueOf;
+  ($n < 0 ? (Token(T_OTHER('*'))) : Invocation(T_CS('\xarabic'),$_[1])); });
+
+DefMacro('\xfnsymbol{}',  sub {
+  my $n = CounterValue($_[1])->valueOf;
+  ($n < 0 ? (Token(T_OTHER('*'))) : Invocation(T_CS('\fnsymbol'),$_[1])); });
+
+DefEnvironment('{NoHyper}','#body');
+
+DefMacro('\mpfootnotemark',Tokens());
+
+DefMacro('\FMSlash','\protect\pFMSlash');
+DefMacro('\FMslash','\protect\pFMslash');
+# puts a Large or small slash / through the contents.
+# This should overstrike... Unicode combining char? Or....
+DefMacro('\pFMSlash{}','#1\Slashbox');
+DefMacro('\pFMslash{}','#1\slashbox');
+
+DefMacro('\Slashbox','/');
+DefMacro('\slashbox','/');
+
+DefMacro('\note{}',"<ltx:note>#1</ltx:note>"); # ?
+DefMacro('\query{}',Tokens());
+
+1;
