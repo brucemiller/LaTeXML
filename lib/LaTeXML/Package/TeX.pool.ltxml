@@ -2235,6 +2235,20 @@ sub IsZero {
   my($dim)=@_;
   (!defined $dim) || ($dim->valueOf == 0); }
 
+DefConstructor('\above Dimension',
+	       "<ltx:XMApp>"
+	       . "<ltx:XMTok ?&IsZero(#1)(role='STACKED')(role='MULOP' meaning='divide')"
+	       .           " style='#style' thickness='#1'/>"
+	       . "<ltx:XMArg>#top</ltx:XMArg>"
+	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       afterDigest=>\&chooseArgHandler,
+	       reversion=> sub {
+		 my($whatsit,@args)=@_;
+		 ($whatsit->getProperty('top')->revert,
+		  $whatsit->getDefinition->invocation(@args),
+		  $whatsit->getProperty('bottom')->revert); });
+
 DefConstructor('\abovewithdelims Token Token Dimension',
 	       "<ltx:XMApp open='#1' close='#2'>"
 	       . "<ltx:XMTok ?&IsZero(#3)(role='STACKED')(role='MULOP' meaning='divide')"
