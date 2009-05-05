@@ -34,6 +34,7 @@ DefMacro('\accepted{}', '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
 DefMacro('\journalid{}{}','');
 DefMacro('\articleid{}{}','');
 DefMacro('\paperid{}','');
+DefMacro('\msid{}','');		# Manuscript id.
 
 #\ccc{code}
 DefMacro('\ccc{}','');		# Ignorable?
@@ -110,6 +111,8 @@ Let(T_CS('\subjectheadings'),T_CS('\keywords'));
 # DefConstructor('\notetoeditor{}',"<ltx:note class='toeditor'>#1</ltx:note>");
 DefMacro('\notetoeditor{}','');
 
+NewCounter('editornote');
+DefMacroI('\theeditornote',undef,'E\arabic{editornote}');
 #======================================================================
 # 2.7 Sections
 # normal LaTeX
@@ -356,6 +359,7 @@ DefMacro('\enddeluxetable','\end{table}');
 
 DefMacro('\tabletypesize{}','');	# Ignorable
 DefMacro('\rotate','');			# Ignorable ?
+DefMacro('\tabletail{}','');
 DefMacro('\tablewidth{Dimension}','');	# Ignorable?
 DefMacro('\platewidth{Dimension}','');	# Ignorable?
 DefMacro('\tablenum{}','\def\thetable{#1}');
@@ -574,12 +578,15 @@ DefMacro('\eqsecnum',
 
 #======================================================================
 # Random extra bits
-DefMacro('\singlespace','');
-DefMacro('\doublespace','');
-DefMacro('\tighten','');
-DefMacro('\tightenlines','');
-DefMacro('\nohyphenation','');
-DefMacro('\offhyphenation','');
-
+DefMacroI('\singlespace',undef,'');
+DefMacroI('\doublespace',undef,'');
+DefMacroI('\tighten',    undef,'');
+DefMacroI('\tightenlines',undef,'');
+DefMacroI('\nohyphenation',undef,'');
+DefMacroI('\offhyphenation',undef,'');
+DefMacroI('\ptlandscape',undef,'');
+DefMacroI('\refpar',undef,'');
+DefMacroI('\traceoutput',undef,'');
+DefMacroI('\tracingplain',undef,'');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
