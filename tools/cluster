@@ -1,0 +1,502 @@
+#!/usr/bin/perl -w
+use strict;
+use Getopt::Long qw(:config no_ignore_case);
+use Pod::Usage;
+use FindBin;
+# Assume we're in the tools directory of a development version of latexml (next to lib, blib..)
+use lib "$FindBin::RealBin/../blib/lib";
+use LaTeXML::Util::Pathname;
+
+#======================================================================
+# Tool to group similar style/class files (eg. in arXiv)
+#
+# Use something like the following commands to precompute the file signatures
+#    texscan --signature --quiet *.cls > class.signatures
+#    texscan --signature --quiet *.sty > style.signatures
+
+my $identity = 'cluster';
+my($help)=(0);
+local $::MAXDIFF = 20;
+local $::VERBOSITY = 0;
+our $MAXSIMILAR = 3;
+my $CLUSTERTOOSMALL=5;
+my $sigfile = 'signatures';
+my($workplan,$dosimilar) = (undef,1);
+GetOptions("signaturefile=s" => \$sigfile,
+	   "help"        => \$help,
+	   "verbose"     => sub { $::VERBOSITY++; },
+	   "quiet"       => sub { $::VERBOSITY--; },
+	   "maxdifference=i" => \$::MAXDIFF,
+	   "similar!"    => \$dosimilar,
+	   "workplan!"   => \$workplan,
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>0, -output=>\*STDOUT) unless $sigfile;
+#======================================================================
+local $::LTXMLDIR = "$FindBin::RealBin/../blib/lib/LaTeXML";
+local $::ARXMLIVDIR = ".";
+
+my %files = ();
+my %clusters = ();
+
+$| = 1; 			# Flush!
+
+if($workplan){
+  print ''.('%' x 60)."\n Workplan for LaTeXML implementation\n".('%' x 60)."\n"; }
+
+#======================================================================
+# Read Usage statistics
+#======================================================================
+my $usagefile = 'usage.counts';
+print STDERR "Loading usage statistics from $usagefile...\n"; 
+my %usage=();
+open(SIG,$usagefile) or die "Couldn't read usage statistics from $usagefile! $!";
+while(<SIG>){
+  next if /^\s*#/;
+  /^(.*?)=(\d+)$/;
+  my($name,$n)=($1,$2);
+  $usage{$name} = $n; }
+
+#======================================================================
+# Read signatures
+#======================================================================
+print STDERR "Loading signatures from $sigfile...\n"; 
+open(SIG,$sigfile) or die "Couldn't read signatures from $sigfile! $!";
+my $neverused=0;
+while(<SIG>){
+  next if /^\s*#/;
+  /^(.*?):(.*?):(.*)$/;
+  my($path,$declname,$sig)=($1,$2,$3);
+  next if @ARGV && !grep($path eq $_, @ARGV);
+  my($dir,$name,$type)=pathname_split($path);
+  my $usage = $usage{$name};
+  if(!$usage){
+    $neverused++; next; }
+  my $file = File->new($path,$declname,$sig,$usage);
+  $files{$file->name} = $file; }
+
+print STDERR "Read ".scalar(keys %files)." style/class signatures"
+  ."  (after ignoring $neverused files never used(?))\n";
+
+#======================================================================
+# Check for broken class files
+#======================================================================
+my @broken=();
+foreach my $name (keys %files){
+  my $file = $files{$name};
+  if(($name =~ /\.cls$/) && !$$file{declaredname}
+     && grep(! $$file{signature}{$_}, qw(\section \theequation))){
+    push(@broken,$file);
+    delete $files{$name}; }}
+print STDERR "The following ".scalar(@broken)." files appear not to be valid classes:\n"
+  .'   '.join(', ',map($_->show,@broken))."\n";
+
+print STDERR "Summary: ".File::showUsage(values %files)."\n";
+
+#======================================================================
+# Group into Identical clusters
+#======================================================================
+my @toscan = (@ARGV ? grep($_,map($files{$_}, @ARGV)) : values %files);
+print "Grouping ".scalar(@toscan)." files into identical clusters ...\n";
+while(@toscan){
+  my $file1 = shift(@toscan);
+  my @same = ($file1);
+  my @scanning = @toscan;
+  foreach my $file2 (@scanning){
+    my($nextra1,$nextra2) =$file1->difference($file2);
+    if($nextra1+$nextra2  == 0) {			# files are identical
+      push(@same,$file2);
+      @toscan = grep($_ ne $file2,@toscan); } # Don't need to compare this one anymore
+    else {
+      $file1->noteSimilar($file2,$nextra2,$nextra1);
+      $file2->noteSimilar($file1,$nextra1,$nextra2); }}
+  my $cluster = Cluster->new(@same);
+  $clusters{$cluster->name} = $cluster; }
+
+print "Comparison yeilded ".scalar(keys %clusters)." identical clusters.\n";
+
+#======================================================================
+# Further group clusters that are simple subsets of others and combine.
+#======================================================================
+if($dosimilar){
+print "Looking for simple subsets...\n";
+my $nsub=0;
+foreach my $cluster (values %clusters){
+  if(!$cluster->isDistribution){ # Don't merge distribution files into superclasses!
+    # Look for the closest superset to this cluster; if found, merge into it.
+    my $supersets = $cluster->mergeSimilarities('superset');
+    my($superdiff,$super)= $supersets->closest;
+    if($super){
+      delete $clusters{$$cluster{name}};
+      $super = $$super{parent} if $$super{parent}; # in case superset has, itself, already been absorbed!
+      $$cluster{parent} = $super;
+      $nsub++;
+      #      absorb the files of that cluster into the superset
+      # NOTE: Would be nice to record the fact that the file is a subset!!
+      foreach my $f (@{$$cluster{files}}){
+	$super->adoptFile($f,$superdiff); }
+    }}}
+print "Combined $nsub subsets, resulting in ".scalar(keys %clusters)." similar clusters\n";
+}
+#======================================================================
+# Report on clusters.
+#======================================================================
+#my @core = map($clusters{$_},qw(article.cls report.cls book.cls));
+my @core = grep($_->isDistribution,values %clusters);
+my $nsmall = scalar(grep($$_{usage} <= $CLUSTERTOOSMALL, values %clusters));
+
+print "There are $nsmall clusters smaller than $CLUSTERTOOSMALL.\n";
+foreach my $cluster (sort {$$b{usage} <=> $$a{usage}} values %clusters){
+#  next if $$cluster{usage} <= $CLUSTERTOOSMALL;
+  $cluster->classify(@core) unless $cluster->isDistribution;
+  print "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
+  $cluster->describe; 
+
+#  $cluster->mergeSimilarities('subset')->describe('  Subsets'); #  if ? ...
+#  $cluster->mergeSimilarities('superset')->describe('  Supersets');
+  $cluster->mergeSimilarities('similar')->describe('  Similar Clusters',$MAXSIMILAR);
+
+  $cluster->workplan if $workplan;
+}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# File object
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+package File;
+use LaTeXML::Util::Pathname;
+
+sub new {
+  my($class,$name,$declname,$signature,$usage)=@_;
+  my $distribution = pathname_find("$name.ltxml",paths=>[$::LTXMLDIR],installation_subdir=>'Package');
+  my $self = bless { name=>$name,
+		     declaredname=>$declname,
+		     signature=> { map( ($_=>1), split(/,\s*/, $signature)) },
+		     usage=>$usage||0,
+		     distribution=>$distribution,
+		     implemented=>$distribution ||pathname_find("$name.ltxml",paths=>[$::ARXMLIVDIR]),
+		     cluster=>undef, clusterdiff=>0}, $class;
+  $$self{subset}  =Similarity->new($self);
+  $$self{superset}=Similarity->new($self);
+  $$self{similar} =Similarity->new($self);
+  $self; }
+
+sub name { $_[0]->{name}; }
+
+sub isDistribution { $_[0]->{distribution}; }
+sub isImplemented  { $_[0]->{implemented}; }
+
+sub status {
+  my($self)=@_;
+  ($$self{distribution} ? "D" : ($$self{implemented} ? "I" : 'U')); }
+
+sub show {
+  my($self)=@_;
+#  $$self{name}.'['.$$self{declaredname}.'/'.$$self{usage}.'/'.$self->status.']'; }
+  $$self{name}.'['.$$self{usage}.'/'.$self->status.'/'.$$self{clusterdiff}.']'; }
+
+# not a method!
+sub showUsage {
+  my(@files)=@_;
+  my($ndist,$udist, $nimpl,$uimpl, $nun,$uun)=(0,0, 0,0, 0,0);
+  foreach my $file (@files){
+    if($$file{distribution}){
+      $ndist++; $udist +=$$file{usage}; }
+    elsif($$file{implemented}){
+      $nimpl++; $uimpl +=$$file{usage}; }
+    else {
+      $nun++; $uun +=$$file{usage}; }}
+  my $ntot = $ndist+$nimpl+$nun;
+  my $utot = $udist+$uimpl+$uun;
+  "$ntot files (usage $utot),"
+    ." $ndist in dist. ($udist),"
+      ." $nimpl `implemented' ($uimpl),"
+	." $nun not-done ($uun)"; }
+
+#======================================================================
+# Question: How good should the match be?
+# Now we  should compare the clusters;
+# We'll find that some clusters only differ in that some styles define a "few" extra commands.
+# Those `superset' styles would probably be acceptable representatives of both clusters!
+# What does that mean, exactly?
+#   A & B have significant overlap
+#   A has a "few" undefined in B,
+#   B does not have any undefined in A
+# Watch out for supersets of supersets too, though (affects pruning?)
+#======================================================================
+
+sub difference {
+  my($self,$file2)=@_;
+  my %sig1 = %{$$self{signature}};
+  my %sig2 = %{$$file2{signature}};
+  my $same = 0;
+  foreach my $cs (keys %sig1){
+    if($sig2{$cs}){
+      delete $sig1{$cs};
+      delete $sig2{$cs};
+      $same++; }}
+  (scalar(keys %sig1),scalar(keys %sig2)); }
+
+sub differenceSignature {
+  my($self,$file2)=@_;
+  my %sig1 = %{$$self{signature}};
+  my %sig2 = %{$$file2{signature}};
+  my $same = 0;
+  foreach my $cs (keys %sig1){
+    if($sig2{$cs}){
+      delete $sig1{$cs};
+      delete $sig2{$cs};
+      $same++; }}
+  (join(',',sort keys %sig1),join(',',sort keys %sig2)); }
+
+sub noteSimilar {
+  my($self,$other,$nadded,$nmissing)=@_;
+  if($nadded == 0){
+    $$self{subset}->add($other,$nmissing); }
+  elsif($nmissing == 0){
+    $$self{superset}->add($other,$nadded); }
+  $$self{similar}->add($other,$nadded+$nmissing); }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Cluster object
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+package Cluster;
+
+sub new {
+  my($class,@files)=@_;
+  my @f;
+  # Choose a Representative file from the set
+  # Prefer Distribution over Implemented over unimplemented, then choose the shortest.
+  if((@f)=grep($_->isDistribution,@files)){}
+  elsif((@f)= grep($_->isImplemented,@files)){}
+  else{ @f = @files; }
+  @f = sort {($$b{usage} <=> $$a{usage}) || (length($$a{name}) <=> length($$b{name})); } @f;
+  my $representative=$f[0];
+  my $self = bless { name=>$representative->name, representative=>$representative, files=>[]}, $class;
+
+  foreach my $file (@files){
+    $self->adoptFile($file,0); }
+  $self; }
+
+sub name { $_[0]->{name}; }
+
+sub adoptFile {
+  my($self,$file,$d)=@_;
+  push(@{$$self{files}}, $file);
+  $$file{cluster} = $self;
+  $$file{clusterdiff} += $d || 0;
+  $$self{usage} += $$file{usage};
+  $$self{declarednames}{$$file{declaredname}}=1; 
+  $file; }
+
+sub show {
+  my($self)=@_;
+  $$self{name}.'['.$$self{usage}.'/'.$$self{representative}->status.']'; }
+
+sub isDistribution { $_[0]->{representative}->{distribution}; }
+sub isImplemented  { $_[0]->{representative}->{implemented}; }
+
+sub difference {
+  my($self,$cluster2)=@_;
+  $$self{representative}->difference($$cluster2{representative}); }
+
+sub differenceSignature {
+  my($self,$cluster2)=@_;
+  $$self{representative}->differenceSignature($$cluster2{representative}); }
+
+sub describe {
+  my($self)=@_;
+  print "Cluster ".$self->show."\n";
+#  print "  Declared as: ".join(', ',sort keys %{$$self{declarednames}})."\n";
+  print "  Summary: ".File::showUsage(@{$$self{files}})."\n";
+  print "  Files: ".join(', ', map($_->show,
+				   sort {($$b{usage} <=> $$a{usage}) || (length($$a{name}) <=> length($$b{name})); }
+				   @{$$self{files}}))."\n";
+  print "  Closest Core file: ".$$self{core}->show." with $$self{core_diff} differences\n" if $$self{core};
+}
+
+# Generate a "Work Plan" for producing the implementation files for this cluster.
+sub workplan {
+  my($self)=@_;
+  my $name = $$self{name};
+  print ''.('=' x 40)."\n  Work Plan:\n".('=' x 40)."\n";
+
+  # Typical commands to implement, test & commit the implementation of the representative for the cluster.
+  if(! ($self->isDistribution || $self->isImplemented)){
+    print "# Generate base file\n"
+      ."texscan --stub $name\n"
+      ."# Edit if needed to complete the implementation\n"
+      ."# Verify base file $$self{name}\n"
+      ."texscan $$self{name}\n"
+      ."# Add to svn or distribution and commit, as needed.\n"
+      ."svn add $name.ltxml\n"
+      ."svn commit -m 'Initial implementation of $name by texscan' $name.ltxml\n"; }
+  else {
+    print "Verify base file $$self{name} and edit as needed\n"
+      . "texscan $$self{name}\n"
+      ."# Commit to svn, as needed.\n"
+      ."svn commit -m 'Corrected implementation of $name\n"; }
+
+  # Typical commands to implement & commit the variant files within the cluster.
+  my @variants = grep($_ ne $name,grep(!$_->isDistribution,map($$_{name},@{$$self{files}})));
+  if(@variants){
+    print "# Generate variant files\n"
+      . "texscan --stub --base=$name ".join(' ',@variants)."\n";
+    my @derived = map("$_.ltxml",@variants);
+    print "# Add to svn if needed\n"
+      ."svn add ".join(' ',@derived)."\n"
+      ."svn commit -m 'Derived implementation from $name by texscan' ".join(' ',@derived)."\n";
+  }
+}
+
+sub classify {
+  my($self,@core)=@_;
+  my($best,$bestd) = (undef,999999999);
+  foreach my $core (@core){
+    my($d12,$d21) = $self->difference($core);
+    my $d = $d12+$d21;
+    if($d < $bestd){
+      $best=$core; $bestd=$d; }}
+  if($best){
+    $$self{core} = $best;
+    $$self{core_diff} = $bestd; }}
+
+# Merge the similarity data from the cluster's files
+# $setname is one of 'superset', 'subset', 'similar'
+sub mergeSimilarities {
+  my($self,$setname)=@_;
+  my $sim = Similarity->new($self);
+  foreach my $file (@{$$self{files}}){
+    next if $$file{clusterdiff}; # if non-zero, this file was added as a `subset', so its diffs aren't correct
+    my $fileset = $$file{$setname}{diffs}; # get the diff table from the Similarity
+    foreach my $d (keys %{$fileset}){
+      foreach my $f (values %{$$fileset{$d}}){
+	next if $$f{clusterdiff};
+	$sim->add($$f{cluster},$d); }}}
+  $sim; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Similarity object
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This is basically a 2 level hash recording a set of objects
+# that differ from an object by certain amounts.
+package Similarity;
+
+sub new {
+  my($class,$object)=@_;
+  bless {object=>$object, diffs=>{}},$class; }
+
+sub add {
+  my($self,$object,$ndiffs)=@_;
+  $$self{diffs}{$ndiffs}{$$object{name}} = $object; }
+
+sub describe {
+  my($self,$label,$nmax)=@_;
+  my $object = $$self{object};
+  my $nsim = 0;
+  my $labelled=0;
+  $label =~ /^(\s*)/;
+  my $indent= $1.$1;
+  foreach my $d (sort keys %{$$self{diffs}}){
+    last if ($d > $::MAXDIFF) || (($d > 1) && $nmax && ($nsim > $nmax));
+    foreach my $ob (sort {$$b{usage} <=> $$a{usage}} values %{$$self{diffs}{$d}}){
+      my($extra,$missing) = $ob->differenceSignature($object);
+      if(!$labelled){
+	print $label."\n"; $labelled=1; }
+      print $indent.$ob->show." with $d differences\n"
+	.   ($extra   ? $indent."   adds : $extra\n" : '')
+	  . ($missing ? $indent."  misses: $missing\n" : '');
+      $nsim++; }}
+}
+
+sub closest {
+  my($self)=@_;
+  my (@d)=sort keys %{$$self{diffs}};
+    if(@d && ($d[0] < $::MAXDIFF)){
+      my (@s)=keys %{$$self{diffs}{$d[0]}};
+      if(scalar(@s) == 1){
+	($d[0], $$self{diffs}{$d[0]}{$s[0]}); }}}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+__END__
+
+=head1 NAME
+
+C<cluster> I<options> [I<files>]
+
+=head1 SYNOPSIS
+
+cluster [options] [files]
+
+cluster attempts to characterize a collection of (La)TeX class and style
+files to assist in creating implementations. It uses a set of
+I<signatures> generated by C<texscan> to cluster the files into
+sets that seem to be defining the same set of macros.
+
+Options:
+
+  [files]              Specifies the files to compare. If not provided,
+                       compares all files in the signature file.
+  --signaturefile=file Specifies the file of signatures to use.
+  --maxdifference=#    Specifies the maximum difference
+  --similar            Tries to group clusters with small differences.
+                       (default)
+  --nosimilar          Doesn't try to group similar clusters
+  --workplan           Generates a "Work Plan" for implementation
+
+  --help               Shows this help message.
+  --quiet              Runs more quietly
+  --verbose            Runs more noisily
+
+=head1 Preparation
+
+Use something like the following commands to precompute the file signatures
+
+    texscan --signature --quiet *.cls > class.signatures
+    texscan --signature --quiet *.sty > style.signatures
+
+You also need a file of usage statistics, C<usage.counts>, consisting
+of lines of the form: I<file>C<=>I<count>.  Currently, this
+was obtained by scraping pages from arXMLiv, and I<unfortunately>
+omits the file extension; thus we cannot distinguish the usage
+of a class file from the same named style file!
+
+=head1 Hints
+
+It is probably most useful to treat style files (C<.sty>) and
+class files (C<.cls>) separately.
+
+To compare two files, use
+
+  cluster --sig=sigfile --max=inf file1 file2
+
+=head1 Internal
+
+Do a test using internal symbols; I expect it adds too much
+irrelevant noise. OTOH, it really clusters very closely related files.
+
+Another strategy could be to add internal to the signature,
+but provide an option here to remove them....
+Or, weight them less?
+
+=head1 Bugs
+
+cluster needs supervision.
+
+texscan and cluster do not detect the parameter patterns of
+control sequences; it's impractical, really.  Thus, identical
+control sequences defined in two different files may not, in
+fact, be even remotely related.  However, the heuristic used
+here is that if two files define the same I<set> of control
+sequences, they are likely to be related or implementing the
+same API.  The larger the overlap, the more likely this can
+be expected to be true.
+
+Another assumption made is that if a file redefines a macro
+from a core file, that the redefinition has no visible effect
+on the xml document. Often this is not the case, such as
+redefining eg. C<\theequation>.  cluster makes it easy
+to overlook such definitions.
+
+=cut
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
