@@ -55,7 +55,8 @@ foreach my $file (@files){
     print "".("="x50)."\n";
     print "Showing symbols in LaTeX package $file\n";
     if(my $pkg = StylePackage->new($file,searchpaths=>[@paths])){
-      $pkg->removeInclusions unless $cumulative; # default NOT cumulative
+      if($cumulative){ $pkg->removeBase; }
+      else           { $pkg->removeInclusions; }
       $pkg->removeInternal unless $internal;	 # default NOT internal
       $pkg->convertEnvironments;
       $pkg->show; }}
@@ -63,7 +64,8 @@ foreach my $file (@files){
     print "".("="x50)."\n";
     print "Showing symbols in LaTeXML implementation $file\n";
     if(my $pkg = ImplementationPackage->new($file,searchpaths=>[@paths])){
-      $pkg->removeInclusions unless $cumulative; # default NOT cumulative
+      if($cumulative){ $pkg->removeBase; }
+      else           { $pkg->removeInclusions; }
       $pkg->removeInternal unless $internal;	 # default NOT internal
       $pkg->convertEnvironments;
       $pkg->show; }}
@@ -73,7 +75,8 @@ foreach my $file (@files){
     if(my $pkg = StylePackage->new($file,searchpaths=>[@paths])){
       if(my $ipkg = ImplementationPackage->new($file,searchpaths=>[@paths])){
 	$pkg->subtract($ipkg);
-	$pkg->removeInclusions unless $cumulative; # default NOT cumulative
+	if($cumulative){ $pkg->removeBase; }
+	else           { $pkg->removeInclusions; }
 	$pkg->removeInternal unless $internal;	    # default NOT internal
 	$pkg->convertEnvironments;
 	$pkg->show; }}}
@@ -261,7 +264,7 @@ sub scan {
   my $name = $$self{name};
   my $file = `kpsewhich $name`; chomp($file);
   if(!$file){
-    $file = pathname_find($name,searchpaths=>$$self{searchpaths}); }
+    $file = pathname_find($name,paths=>$$self{searchpaths}); }
   if(!$file){
     print STDERR "WARN: No stylefile found for $name\n";
     return $self; }
@@ -399,7 +402,8 @@ sub generateStub {
 		    '=');
   print OUT "use strict;\nuse LaTeXML::Package;\n\n";
   if(@classes){
-    print OUT "LoadClass('$classes[0]',withoptions=>1);\n";
+    my $c = $classes[0]; $c=~ s/\.cls$//;
+    print OUT "LoadClass('$c',withoptions=>1);\n";
     $self->subtract($self->new($classes[0])); }
 
   foreach my $pkg (@packages){
@@ -407,12 +411,15 @@ sub generateStub {
     my $package = $self->new($pkg);
     $package->removeBase; #?
     $self->subtract($package);
+    my $p = $pkg; $p=~ s/\.sty$//;
     my $nafter = scalar(keys %{$$self{symbols}});
     if($nbefore > $nafter){
       if($base{$pkg}){
-	print OUT "RequirePackage('$pkg',withoptions=>1);\n"; }
+	print OUT "RequirePackage('$p',withoptions=>1);\n"; }
       else {
-	print OUT "RequirePackage('$pkg');\n"; }}}
+	print OUT "RequirePackage('$p');\n"; }}
+    else {
+      print OUT "# No effect from $pkg\n"; }}
 
   $self->convertEnvironments;
   my @syms = sort keys %{$$self{symbols}};
@@ -470,7 +477,7 @@ sub scan {
   my($self)=@_;
   my $name = $$self{name};
   print "Loading $name into LaTeXML\n"  if $::VERBOSITY >= 1;
-  my $latexml = LaTeXML->new(searchpaths=>($$self{searchpaths} || []), verbosity=>$::VERBOSITY);
+  my $latexml = LaTeXML->new(searchpaths=>($$self{searchpaths} || []), verbosity=>$::VERBOSITY-1);
   local $LaTeXML::STATE    = $$latexml{state};
   my $stomach  = $LaTeXML::STATE->getStomach; # The current Stomach;
   my $gullet   = $stomach->getGullet;
@@ -556,7 +563,7 @@ is considered to be implicitly included by all style (C<*.sty>)
 and class files (C<*.cls>),
 whereas C<article.cls> (and its inclusions) are considered to
 be included by all style files (C<*.sty>).
-
+However, these are removed before display, even when cumulative.
 
 Inclusions are removed unless cumulative is requested.
 The default is non-cumulative, except for C<--signature>,
