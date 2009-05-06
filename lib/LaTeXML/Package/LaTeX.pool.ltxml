@@ -1426,7 +1426,7 @@ DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [][]{}', sub {
 # and we really want to create unicode, we just ignore this stuff (but warn).
 sub ignoredDefinition {
   my($stomach,$command,$cs)=@_;
-  Warn(":unexpected:".ToString($cs)." ignoring $command definition of ".ToString($cs)); }
+  Warn(":unexpected:".ToString($cs)." ignoring ".ToString($command)." definition of ".ToString($cs)); }
 
 DefPrimitive('\DeclareTextAccent{}{}{}',
 	     sub { ignoredDefinition('DeclareTextAccent',$_[1]);});
