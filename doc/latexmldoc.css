@@ -66,7 +66,11 @@ body { margin:0; background:#cfd2e6; color:#000000; }
    margin: 5px 10px 5px 5px;
    padding:5px;
 }
-.para {
+.document > .para,
+.chapter > .para,
+.section > .para,
+.subsection > .para,
+.paragraph > .para {
    background:#f2f4ff;
    margin:5px; padding:5px 10px;
    border: 1px solid #B0B0B0;
