@@ -14,7 +14,7 @@ use LaTeXML::Util::Pathname;
 my $identity = 'texscan';
 my($help)=(0);
 local $::VERBOSITY = 0;
-my ($show,$internal,$cumulative,$base) = ('diff',0,0,undef);
+my ($show,$internal,$cumulative,$base) = ('diff',undef,undef,undef);
 my $do_all=0;
 my @paths = ();
 GetOptions("tex"         => sub { $show='tex'; },
@@ -381,12 +381,17 @@ sub generateStub {
   open OUT,">$dest" or die "Couldn't open $dest for writing: $!";
 
   my %inc = %{$$self{includes}};
-  my %base = map(($_=>1),split(/,/, $base));
+  my %base = ($base ? map(($_=>1),split(/,/, $base)) : ());
   map($inc{$_}=1,keys %base);
   my @classes = grep(/\.cls$/, keys %inc);
   my @packages = grep(/\.sty$/, keys %inc);
 
-  die "Too many classes for $$self{name}: ".join(', ',@classes)   if(@classes > 1);
+  if(($$self{name}=~/\.sty$/) && @classes){
+    print STDERR "WARN: Ignoring class file used in style file $$self{name}: ".join(', ',@classes)."\n";
+    @classes=(); }
+  elsif(@classes > 1){
+    print STDERR "WARN: Ignoring excess classes for $$self{name}: ".join(', ',@classes[1..$#classes])."\n";
+    @classes=($classes[0]); }
 
   $self->removeBase;
   $self->removeInternal if $internal;

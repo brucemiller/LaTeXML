@@ -88,8 +88,9 @@ foreach my $name (keys %files){
      && grep(! $$file{signature}{$_}, qw(\section \theequation))){
     push(@broken,$file);
     delete $files{$name}; }}
-print STDERR "The following ".scalar(@broken)." files appear not to be valid classes:\n"
-  .'   '.join(', ',map($_->show,@broken))."\n";
+if(@broken){
+  print STDERR "The following ".scalar(@broken)." files appear not to be valid classes:\n"
+    .'   '.join(', ',map($_->show,@broken))."\n"; }
 
 print STDERR "Summary: ".File::showUsage(values %files)."\n";
 
@@ -123,6 +124,8 @@ print "Looking for simple subsets...\n";
 my $nsub=0;
 foreach my $cluster (values %clusters){
   if(!$cluster->isDistribution){ # Don't merge distribution files into superclasses!
+    local $::MAXDIFF = $::MAXDIFF;
+    $::MAXDIFF = $$cluster{nsymbols} if $::MAXDIFF > $$cluster{nsymbols};
     # Look for the closest superset to this cluster; if found, merge into it.
     my $supersets = $cluster->mergeSimilarities('superset');
     my($superdiff,$super)= $supersets->closest;
@@ -145,9 +148,12 @@ print "Combined $nsub subsets, resulting in ".scalar(keys %clusters)." similar c
 my @core = grep($_->isDistribution,values %clusters);
 my $nsmall = scalar(grep($$_{usage} <= $CLUSTERTOOSMALL, values %clusters));
 
-print "There are $nsmall clusters smaller than $CLUSTERTOOSMALL.\n";
+print "There are $nsmall clusters with usage less than $CLUSTERTOOSMALL.\n" if $nsmall;
 foreach my $cluster (sort {$$b{usage} <=> $$a{usage}} values %clusters){
 #  next if $$cluster{usage} <= $CLUSTERTOOSMALL;
+  local $::MAXDIFF = $::MAXDIFF;
+  $::MAXDIFF = $$cluster{nsymbols} if $::MAXDIFF > $$cluster{nsymbols};
+
   $cluster->classify(@core) unless $cluster->isDistribution;
   print "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
   $cluster->describe; 
@@ -175,6 +181,7 @@ sub new {
 		     distribution=>$distribution,
 		     implemented=>$distribution ||pathname_find("$name.ltxml",paths=>[$::ARXMLIVDIR]),
 		     cluster=>undef, clusterdiff=>0}, $class;
+  $$self{nsymbols} = scalar(keys %{$$self{signature}});
   $$self{subset}  =Similarity->new($self);
   $$self{superset}=Similarity->new($self);
   $$self{similar} =Similarity->new($self);
@@ -191,8 +198,7 @@ sub status {
 
 sub show {
   my($self)=@_;
-#  $$self{name}.'['.$$self{declaredname}.'/'.$$self{usage}.'/'.$self->status.']'; }
-  $$self{name}.'['.$$self{usage}.'/'.$self->status.'/'.$$self{clusterdiff}.']'; }
+  $$self{name}.'['.$self->status.',u='.$$self{usage}.',n='.$$self{nsymbols}.',d='.$$self{clusterdiff}.']'; }
 
 # not a method!
 sub showUsage {
@@ -207,10 +213,12 @@ sub showUsage {
       $nun++; $uun +=$$file{usage}; }}
   my $ntot = $ndist+$nimpl+$nun;
   my $utot = $udist+$uimpl+$uun;
-  "$ntot files (usage $utot),"
-    ." $ndist in dist. ($udist),"
-      ." $nimpl `implemented' ($uimpl),"
-	." $nun not-done ($uun)"; }
+  join(', ',
+       grep($_,
+	    ($ntot  ? "$ntot files (u=$utot)" :''),
+	    ($ndist ? "$ndist in dist. (u=$udist)" :''),
+	    ($nimpl ? "$nimpl `implemented' (u=$uimpl)" :''),
+	    ($nun   ? "$nun not-done (u=$uun)" :''))); }
 
 #======================================================================
 # Question: How good should the match be?
@@ -271,7 +279,7 @@ sub new {
   else{ @f = @files; }
   @f = sort {($$b{usage} <=> $$a{usage}) || (length($$a{name}) <=> length($$b{name})); } @f;
   my $representative=$f[0];
-  my $self = bless { name=>$representative->name, representative=>$representative, files=>[]}, $class;
+  my $self = bless { name=>$representative->name, representative=>$representative, files=>[], nsymbols=>0}, $class;
 
   foreach my $file (@files){
     $self->adoptFile($file,0); }
@@ -286,11 +294,12 @@ sub adoptFile {
   $$file{clusterdiff} += $d || 0;
   $$self{usage} += $$file{usage};
   $$self{declarednames}{$$file{declaredname}}=1; 
+  $$self{nsymbols} = $$file{nsymbols}  if $$self{nsymbols} < $$file{nsymbols};
   $file; }
 
 sub show {
   my($self)=@_;
-  $$self{name}.'['.$$self{usage}.'/'.$$self{representative}->status.']'; }
+  $$self{name}.'['.$$self{representative}->status.',u='.$$self{usage}.',n='.$$self{nsymbols}.']'; }
 
 sub isDistribution { $_[0]->{representative}->{distribution}; }
 sub isImplemented  { $_[0]->{representative}->{implemented}; }
@@ -318,34 +327,48 @@ sub describe {
 sub workplan {
   my($self)=@_;
   my $name = $$self{name};
-  print ''.('=' x 40)."\n  Work Plan:\n".('=' x 40)."\n";
+  print '#'.('=' x 40)."\n#  Work Plan:\n";
 
+  my $base = ($$self{nsymbols} ? "--base=$name " : '');
   # Typical commands to implement, test & commit the implementation of the representative for the cluster.
   if(! ($self->isDistribution || $self->isImplemented)){
-    print "# Generate base file\n"
-      ."texscan --stub $name\n"
+    print "#======\n# Generate base file\n"
+      ."  texscan --stub $name\n"
       ."# Edit if needed to complete the implementation\n"
       ."# Verify base file $$self{name}\n"
-      ."texscan $$self{name}\n"
+      ."  texscan $$self{name}\n"
       ."# Add to svn or distribution and commit, as needed.\n"
-      ."svn add $name.ltxml\n"
-      ."svn commit -m 'Initial implementation of $name by texscan' $name.ltxml\n"; }
+      ."  svn add $name.ltxml\n"
+      ."  svn commit -m 'Initial implementation of $name by texscan' $name.ltxml\n"; }
   else {
-    print "Verify base file $$self{name} and edit as needed\n"
-      . "texscan $$self{name}\n"
+    print "#======\n# Verify base file $$self{name} and edit as needed\n"
+      . "  texscan $name\n"
       ."# Commit to svn, as needed.\n"
-      ."svn commit -m 'Corrected implementation of $name\n"; }
+      ."  svn commit -m 'Corrected implementation of $name' $name\n"; }
 
-  # Typical commands to implement & commit the variant files within the cluster.
-  my @variants = grep($_ ne $name,grep(!$_->isDistribution,map($$_{name},@{$$self{files}})));
-  if(@variants){
-    print "# Generate variant files\n"
-      . "texscan --stub --base=$name ".join(' ',@variants)."\n";
-    my @derived = map("$_.ltxml",@variants);
+  my @variants = sort {($$b{usage} <=> $$a{usage}) || (length($$a{name}) <=> length($$b{name})); }
+                      grep($$_{name} ne $name,@{$$self{files}});
+  my @implvar  =grep( $_->isDistribution ||  $_->isImplemented, @variants);
+  my @unimvar  =grep(!$_->isDistribution && !$_->isImplemented, @variants);
+  if(@implvar){
+    my $files   = join(' ',map($$_{name},@implvar));
+    my $derived = join(' ',map($$_{name}.".ltxml",@implvar));
+    print "#======\n# Verify Implemented variant files".File::showUsage(@implvar)."\n"
+      . "  texscan $files\n"
+      . "# OR regenerate them\n"
+      . "  texscan --stub $base $files\n";
+    print "# Commit to svn if needed\n"
+      ."  svn commit -m 'Derived implementation by texscan' $derived\n"; }
+  if(@unimvar){
+    my $files   = join(' ',map($$_{name},@unimvar));
+    my $derived = join(' ',map($$_{name}.".ltxml",@unimvar));
+    print "#======\n# Generate UN-Implemented variant files".File::showUsage(@unimvar)."\n"
+      . "  texscan --stub $base $files\n";
     print "# Add to svn if needed\n"
-      ."svn add ".join(' ',@derived)."\n"
-      ."svn commit -m 'Derived implementation from $name by texscan' ".join(' ',@derived)."\n";
+      ."  svn add $derived\n"
+      ."  svn commit -m 'Derived implementation by texscan' $derived\n";
   }
+  print ''.('=' x 40)."\n";
 }
 
 sub classify {
