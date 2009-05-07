@@ -29,6 +29,7 @@ checksums md5 f73cccf764ab596fe905a9f0d459f67a
 depends_lib port:p5-parse-recdescent \
   	    port:p5-xml-libxml \
   	    port:p5-xml-libxslt \
+  	    port:p5-perlmagick \
 	    bin:texhash:texlive
 # That last seems to be the way to depend on TeX
 # being installed, without necessarily requiring
@@ -43,15 +44,6 @@ configure.cmd perl Makefile.PL
 # Note that installation does
 #   make install DESTDIR=${destroot}
 # which stages the installation to $destroot, NOT the eventual final installation.
-
-# We also need Image::Magick, but macports doesn't (yet?)
-# support dependencies on variants; we need +perl
-post-configure {
-   if { [catch {system "perl -MImage::Magick -e ''"} ] != 0 } then {
-       ui_msg "Image::Magick is missing; Please install using"
-       ui_msg "   port install ImageMagick +perl"
-    }
-}
 
 #============================================================
 # Do this to enable testing
