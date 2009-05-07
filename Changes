@@ -1,4 +1,14 @@
-0.7.0  2009-03-15 (rev. 824)
+0.6.x  2009-05-07 (rev 899)
+     - added various macros to existing packages.
+     - new packages/classes: elsart, iopart, iopams, mn, mn2e
+     - added less obnoxious Info message for things not as severe as Warning.
+     - changes to centering, flush commands; get rid of centering element,
+       try to use class and css for same effect.
+     - fix typos in latexmlpost (Thanks Jason Blevins)
+     - reduced load time, primarily for latexmlmath
+    
+   
+0.6.x  2009-03-15 (rev. 824)
      - efficiency improvements
      - documentation and error message improvements
      - various minor fixes, extra macros, 
@@ -11,7 +21,7 @@
        Preparation for release 0.7.0
      - New packages:
        revtex and revtex4 classes and styles
-       (Thanks Deyan Ginve <d.ginev@jacobs-university.de>
+       (Thanks Deyan Ginev <d.ginev@jacobs-university.de>
        and Catalin David <c.david@jacobs-university.de>)
        aas styles, amscd, lscape
      - latexml now processes BibTeX files
