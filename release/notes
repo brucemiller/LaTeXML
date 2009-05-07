@@ -1,20 +1,47 @@
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Steps for making a new release
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+#======================================================================
+# Last changes:
  * Adjust $LaTeXML::VERSION in LaTeXML.pm
  * add an entry to Changes
  * make
  * doc/makemanual (pdf)
+ * svn commit -m "New release ..."
+
+#======================================================================
+# Make the tarball
  * make distclean
  * perl Makefile.PL
  * make dist
- * make rpm
- * mv the tarball, cp the rpm, to /local/www/site/htdocs/LaTeXML/releases
+
+We now have LaTeXML-x.x.x.tar.gz
+
+#======================================================================
+# Make RPM's
+ [ To make initial LaTeXML.spec:
+       cpanspec --noprefix --packager=Me LaTeXML-x.x.x..tar.gz ]
+ * Edit LaTeXML.spec for current version
+ * cp LaTeXML-x.x.x.tar.gz ~/rpm/SOURCES/
+ * rpmbuild -bs LaTeXML.spec
+ * rpmbuild --rebuild LaTeXML-x.x.x.src.rpm
+
+Now the rpm is in:
+  ~/rpm/RPMS/noarch/LaTeXML-x.x.x.noarch.rpm
+
  * doc/makesite
 
+#======================================================================
+# Make MacPorts Portfile for MacOS
 
+ * Change version number
+ * recompute checksums
+
+#======================================================================
 # Attempts to make a ppm/ppd:
-
+# this hasn't realy worked yet....
 need module: PPM::Make
 apparently have to run as root, since it wants to write to /root/.cpan !?!?!?
 
@@ -22,39 +49,3 @@ make_ppm --skip --ppd=/home/bruce/tmp/ppm/ --ar=/home/bruce/tmp/ppm/ /home/bruce
 
 
 #======================================================================
-Under fedora 9, cpan2rpm creates an rpm that puts everything
-in /usr/local/...
-rpmlint complains!
-
-fedora docs suggest using cpanspec
-
-cpanspec --noprefix --packager=Me LaTeXML-0.6.1.tar.gz
-
-That generates a spec...
-which suggests that 
-  perl Makefile.PL INSTALLDIRS=vendor
-might solve the above problem
-
-
-rpmbuild -ba LaTeXML.spec
-
-What does THIS mean????  "unpackaged" ???
-
-RPM build errors:
-    Installed (but unpackaged) file(s) found:
-   /usr/bin/latexml
-   /usr/bin/latexmlbib
-   /usr/bin/latexmlfind
-   /usr/bin/latexmlpost
-   /usr/share/man/man1/latexml.1.gz
-   /usr/share/man/man1/latexmlbib.1.gz
-   /usr/share/man/man1/latexmlfind.1.gz
-   /usr/share/man/man1/latexmlpost.1.gz
-
-####
-where does that leave me w.r.t. installing in texmf?
-
-There are some docs about TeX installations on fedora
-as well....
-we need an appropriate, but agnostic, dependency on tex
-use mklssomething instead of texhash
