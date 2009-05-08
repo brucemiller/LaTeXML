@@ -847,7 +847,7 @@ Let('\Bar', '\bar');
 Let('\Vec', '\vec');
 
 # And where does this go?
-DefPrimitive('\allowdisplaybreaks', undef);
+DefPrimitive('\allowdisplaybreaks[]', undef);
 #======================================================================
 DefMacroI('\mintagsep',undef,Tokens());
 DefMacroI('\minalignsep',undef,"10pt");
