@@ -78,6 +78,8 @@ DefParameterType('XUntil', sub {
       last; }
     elsif($token->getCatcode == CC_BEGIN){
       push(@tokens,$gullet->readBalanced->unlist,T_END); }
+    elsif(my $defn = LookupDefinition($token)){
+      push(@tokens,Invocation($token,$defn->readArguments($gullet))); }
     else {
       push(@tokens,$token); }}
   Tokens(@tokens); });
@@ -188,6 +190,18 @@ DefParameterType('Digested', sub {
   else {
     @list = $STATE->getStomach->invokeToken($token); }
   # In most (all?) cases, we're really looking for a single Whatsit here...
+  @list = grep(ref $_ ne 'LaTeXML::Comment', @list);
+  (scalar(@list) == 1 ? $list[0] 
+   : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); },
+		 undigested=>1,		# since _already_ digested.
+		 reversion=>sub { (T_BEGIN,$_[0]->revert,T_END); });
+
+# A variation: Digest until we encounter a given token!
+DefParameterType('DigestUntil', sub {
+  my($gullet,$until)=@_;
+  $gullet->skipSpaces;
+  my $ismath     = $STATE->lookupValue('IN_MATH');
+  my @list = $STATE->getStomach->digestNextBody($until); 
   @list = grep(ref $_ ne 'LaTeXML::Comment', @list);
   (scalar(@list) == 1 ? $list[0] 
    : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); },
@@ -3372,12 +3386,14 @@ DefMacro('\right Token','\@hidden@egroup\@right #1');
 DefConstructor('\@left Token',
 	       "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)(<ltx:XMHint/>)",
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
-				  my $delim = ToString($whatsit->getArg(1));
+				  my $arg   = $whatsit->getArg(1);
+				  my $delim = ToString($arg);
 				  if($delim eq '.'){}
 				  elsif(my $entry = $DELIMITER_MAP{$delim}){
 				    $whatsit->setProperties(role=>$$entry{lrole},
 							    char=>$$entry{char},
 							    name=>$$entry{name});}
+				  elsif(($arg->getProperty('role')||'') eq 'OPEN'){}
 				  else {
 				    Warn(":expected:. Missing delimiter $delim (. inserted)"); }
 				  return; },
@@ -3385,12 +3401,14 @@ DefConstructor('\@left Token',
 DefConstructor('\@right Token',
 	       "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)(<ltx:XMHint/>)",
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
-				  my $delim = ToString($whatsit->getArg(1));
+				  my $arg   = $whatsit->getArg(1);
+				  my $delim = ToString($arg);
 				  if($delim eq '.'){}
 				  elsif(my $entry = $DELIMITER_MAP{$delim}){
 				    $whatsit->setProperties(role=>$$entry{rrole},
 							    char=>$$entry{char},
 							    name=>$$entry{name}); }
+				  elsif(($arg->getProperty('role')||'') eq 'CLOSE'){}
 				  else {
 				    Warn(":expected:. Missing delimiter $delim (. inserted)"); }
 				  return; },
