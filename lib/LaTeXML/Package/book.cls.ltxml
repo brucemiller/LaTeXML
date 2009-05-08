@@ -93,8 +93,9 @@ AssignValue(counter_for_appendix=>'chapter');
 DefMacro('\appendix@chapter', '\@startsection{appendix}{}{}{}{}{}');
 DefPrimitive('\appendix',sub{
   NewCounter('chapter', 'document', idprefix=>'A',nested=>['section']);
-  DefMacro('\thechapter', '\Alph{chapter}');
-  Let('\chapter','\appendix@chapter');
+  DefMacro('\thechapter', '\Alph{chapter}',scope=>'global');
+  Let(T_CS('\chapter'),T_CS('\appendix@chapter'),'global');
+  Let(T_CS('\appendix'),T_CS('\relax'),'global');
  });
 
 # General document structure:
