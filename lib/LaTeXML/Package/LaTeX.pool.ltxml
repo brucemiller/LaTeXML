@@ -2851,17 +2851,17 @@ Let(T_CS('\normalshape'),T_CS('\upshape'));
 DefPrimitive('\fontencoding{}',undef);
 # These should be looking up from the TeX tables!
 DefConstructor('\fontfamily{}','',
-	       beforeDigest=>sub { 
+	       afterDigest=>sub { 
 		 my $family = ToString($_[1]->getArg(1));
 		 if(my $fam = lookupFontFamily($family)){ MergeFont(family=>$fam); }
 		else { Info(":unexpected:$family Unrecognized font family."); }});
 DefConstructor('\fontseries{}','',
-	       beforeDigest=>sub { 
+	       afterDigest=>sub { 
 		 my $series = ToString($_[1]->getArg(1));
 		 if(my $ser = lookupFontSeries($series)){ MergeFont(series=>$ser); }
 		else { Info(":unexpected:$series Unrecognized font series."); }});
 DefConstructor('\fontshape{}','',
-	       beforeDigest=>sub { 
+	       afterDigest=>sub { 
 		 my $shape = ToString($_[1]->getArg(1));
 		 if(my $sh = lookupFontShape($shape)){ MergeFont(shape=>$sh); }
 		else { Info(":unexpected:$shape Unrecognized font shape."); }});
