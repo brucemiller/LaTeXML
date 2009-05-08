@@ -158,8 +158,16 @@ DefConstructor("\\\\ OptionalMatch:* [Glue]",
 
 AssignValue('@at@begin@document',[]);
 AssignValue('@at@end@document',[]);
-DefEnvironment('{document}',
-	       "<ltx:document xml:id='#id'>#body</ltx:document>",
+DefEnvironment('{document}', sub {
+#	       "<ltx:document xml:id='#id'>#body</ltx:document>",
+  my($document,%props)=@_;
+  my $id = ToString($props{id});
+  my $body = $props{body};
+  if(my $docel = $document->findnode('/ltx:document')){ # Already (auto) created?
+    $docel->setAttribute('xml:id'=>$id) if $id;
+    $document->absorb($body); }
+  else {
+    $document->insertElement('ltx:document',$body,id=>$id); }},
 	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
 	       afterDigestBegin=>sub {
 		 $_[1]->setProperty(id=>Expand(T_CS('\thedocument@ID')));
