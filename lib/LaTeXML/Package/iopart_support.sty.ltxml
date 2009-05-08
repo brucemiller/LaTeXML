@@ -193,7 +193,7 @@ DefMacro('\Tref{}','Table~\ref{#1}');
 # This is liable to cause numbering clashes ???
 DefMacroI('\noappendix', undef, 
 	  '\setcounter{figure}{0}\setcounter{table}{0}'
-	  .'\def\thetable{\arabic{table}\def\thefigure{\arabic{figure}');
+	  .'\def\thetable{\arabic{table}}\def\thefigure{\arabic{figure}}');
 DefMacroI('\Tables',undef,'\section*{Tables and table captions}\noappendix');
 DefMacroI('\Figures',undef,'\section*{Figure captions}\noappendix');
 
