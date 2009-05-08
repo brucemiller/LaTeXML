@@ -174,7 +174,7 @@ DefMath('\pol Digested', "\x{2192}", operator_role=>'OVERACCENT'); # RIGHTWARDS 
 DefMacro('\itnuc{}{}', '\ensuremath{\@@nuc{\textit{#1}}{#2}}');
 DefMacro('\nuc{}{}',   '\ensuremath{\@@nuc{#1}{#2}}');
 DefConstructor('\@@nuc{}{}',
-	       "<ltx:XMArg><ltx:XMApp><ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#pos'/>#1#2<ltx:XMApp></ltx:XMArg>",
+	       "<ltx:XMArg><ltx:XMApp><ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#pos'/>#1#2</ltx:XMApp></ltx:XMArg>",
 	       properties=>sub { (pos=>'pre'.$_[0]->getBoxingLevel); });
 
 #======================================================================
