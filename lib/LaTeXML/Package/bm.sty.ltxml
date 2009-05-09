@@ -19,6 +19,13 @@ use LaTeXML::Package;
 
 DefConstructor('\bm{}', '#1', bounded=>1, requireMath=>1, font=>{forcebold=>1});
 DefMacro('\bmdefine{}{}','\newcommand{#1}{\bm{#2}}');
+Let(T_CS('\boldsymbol'),T_CS('\bm'));
+
+# Should we make a distinction between bold & heavy?
+Let(T_CS('\hm'),T_CS('\bm'));
+Let(T_CS('\heavysymbol'),T_CS('\boldsymbol'));
+Let(T_CS('\hmdefine'),T_CS('\bmdefine'));
+Let(T_CS('\heavymath'),T_CS('\boldmath'));
 
 #**********************************************************************
 1;
