@@ -37,6 +37,11 @@ DefConstructor('\definecolor{}{}{}', "",
 		afterDigest=>sub {
 		  my($name,$model,$color)=map(ToString($_),$_[1]->getArgs(1,2,3));
 		  AssignValue('color_'.$name,ConvertColor($model,$color)); });
+# I don't think this is quite right, but...
+DefConstructor('\DefineNamedColor{}{}{}{}', "",
+		afterDigest=>sub {
+		  my($dmodel,$name,$model,$color)=map(ToString($_),$_[1]->getArgs(1,2,3,4));
+		  AssignValue('color_'.$name,ConvertColor($model,$color)); });
 
 sub getColor {
   my($model,$spec) = @_;
