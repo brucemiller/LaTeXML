@@ -23,6 +23,9 @@ RequirePackage('revtex4_support');
 #======================================================================
 # The following are additional or different definitions from revtex4_support
 
+RawTeX('\newif\ifpreprintsty\newif\ifsecnumbers\newif\ifsegabssty');
+# \overlay seems to be yet another of these stacked things...
+# \vereq also
 DefMacro('\eqsecnum',''); 	# ?
 DefMacro('\tightenlines','');
 DefMacro('\wideabs','');	# wide abstract? takes an arg, but avoid reading it
