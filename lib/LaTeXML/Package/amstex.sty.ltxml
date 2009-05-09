@@ -16,6 +16,9 @@ use strict;
 use LaTeXML::Package;
 
 # amstex.sty is obsolete; It is  recommended to try to use amsmath instead.
+# There should perhaps be some option handling, instead of loading all...
 RequirePackage('amsmath');
+RequirePackage('amsfonts');
+RequirePackage('amsxtra');
 
 1;
