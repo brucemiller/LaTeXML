@@ -1008,20 +1008,24 @@ sub AddToMacro {
   my($cs,$tokens)=@_;
   # Needs error checking!
   my $defn = LookupDefinition($cs);
-##  DefMacroI($cs,undef,Tokens($$defn{expansion}->unlist,$tokens->unlist)); }
   DefMacroI($cs,undef,Tokens($defn->getExpansion->unlist,$tokens->unlist)); }
 
-our $require_options = {options=>1, withoptions=>1, type=>1, raw=>1, after=>1};
+our $require_options = {options=>1, withoptions=>1, type=>1, as_class=>1, raw=>1, after=>1};
 sub RequirePackage {
   my($package,%options)=@_;
   $package = ToString($package) if ref $package;
   $package =~ s/^\s*//;  $package =~ s/\s*$//;
   CheckOptions("RequirePackage ($package)",$require_options,%options);
-  $options{type} = 'sty' unless $options{type};
-  my $type = $options{type};
-  # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
   my $prevname = LookupDefinition(T_CS('\@currname')) && ToString(Digest(T_CS('\@currname')));
   my $prevext  = LookupDefinition(T_CS('\@currext')) && ToString(Digest(T_CS('\@currext')));
+
+  $options{type} = 'sty' unless $options{type};
+  # This package will be treated somewhat as if it were a class if as_class is true
+  # OR if it is loaded by such a class, and has withoptions true!!!
+  $options{as_class} = 1 if  $options{withoptions} && grep($prevname eq $_, @{LookupValue('@masquerading@as@class')});
+  my $filetype = $options{type};
+  my $type = ($options{as_class} ? 'cls' : $options{type});
+  # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
   if($options{withoptions} && $prevname){
     PassOptions($package,$type,@{LookupValue('opt@'.$prevname.".".$prevext)}); }
   DefMacroI('\@currname',undef,Tokens(Explode($package)));
@@ -1029,10 +1033,11 @@ sub RequirePackage {
   # reset options
   resetOptions();
   PassOptions($package,$type,@{$options{options} || []});
-  if(my $file = FindFile($package, type=>$type, raw=>$options{raw})){
+  if(my $file = FindFile($package, type=>$filetype, raw=>$options{raw})){
+    # Note which packages are pretending to be classes.
+    PushValue('@masquerading@as@class',$package) if $options{as_class};
     DefMacroI(T_CS("\\$package.$type-hook"),undef,$options{after} || '');
     my $gullet = $STATE->getStomach->getGullet;
-##    $gullet->openMouth(Tokens(T_CS("\\$package.$type-hook")));
     $gullet->input($file,undef,%options); 
     Digest(T_CS("\\$package.$type-hook"));
     DefMacroI('\@currname',undef,Tokens(Explode($prevname))) if $prevname;
@@ -1064,7 +1069,7 @@ sub LoadClass {
   # What about "global options" ??????
   resetOptions();
   my $classfile = FindFile($class, type=>$type, raw=>$options{raw});
-  if(!$classfile || ($classfile =~ /\.cls$/)){
+  if(!$classfile || ($classfile =~ /\.\Q$type\E$/)){
     Warn(":missing_file:$class.cls.ltxml No LaTeXML implementation of class $class found, using article");
     if(!($classfile = FindFile("article.cls"))){
       Fatal(":missing_file:article.cls.ltxml Installation error: Cannot find article implementation!"); }}
