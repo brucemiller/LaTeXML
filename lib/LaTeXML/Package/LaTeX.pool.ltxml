@@ -58,13 +58,23 @@ DefPrimitiveI('\warn@unusedclassoptions',undef,sub {
 DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1') oldstyle='true'?>",
   beforeDigest=>sub {
+    Info(":unexpected:\\documentstyle LaTeX 2.09 Compatibility mode");
     AssignValue('2.09_COMPATIBILITY'=>1,'global'); },
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
+    my $class   = ToString($whatsit->getArg(2));
     my $options = $whatsit->getArg(1);
-    LoadClass(ToString($whatsit->getArg(2)),
-	      options=>[ ($options ? split(/,\s*/, ToString($options)) : ()) ],
-	      after=>Tokens(T_CS('\compat@loadpackages')));
+    $options = [ ($options ? split(/,\s*/, ToString($options)) : ()) ];
+    # Watch out; compatibility mode in principle wants a .sty, not a .cls!!! But, we'll try .cls first, anyway
+    if(my $classfile = FindFile($class, type=>'cls')){
+      LoadClass($class, options=>$options, after=>Tokens(T_CS('\compat@loadpackages'))); }
+    elsif(my $stylefile = FindFile($class, type=>'sty')){
+      LoadClass('article'); # Just to be safe, but w/o options ?
+      # Load the package, but note that we're pretending it's a class (to some extent!)
+      RequirePackage($class, options=>$options, as_class=>1, after=>Tokens(T_CS('\compat@loadpackages'))); }
+    else {
+      Warn(":missing_file:$class.cls.ltxml No LaTeXML implementation of class $class found, using article");
+      LoadClass('article', options=>$options, after=>Tokens(T_CS('\compat@loadpackages'))); }
     return;});
 
 DefPrimitiveI('\compat@loadpackages',undef,sub {
