@@ -241,9 +241,11 @@ moreFactors :
 	# Given an explicit COMPOSEOP, we'll assume the preceding is
 	# an implicit lambda of some sort(?)
 	| COMPOSEOP makeComposition[$arg[0],$item[1]]
+#        | { ($forbidEvalAt ? undef : 1); }
+#	  evalAtOp POSTSUBSCRIPT
+#	  	   moreFactors[Apply(New('evaluated-at'),$arg[0],Arg($item[3],0))]
         | { ($forbidEvalAt ? undef : 1); }
-	  evalAtOp POSTSUBSCRIPT
-	  	   moreFactors[Apply(New('evaluated-at'),$arg[0],Arg($item[3],0))]
+	  evalAtOp maybeEvalAt[$arg[0],$item[2]]
  	| Factor moreFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
 	| { $arg[0]; }
 
@@ -323,6 +325,18 @@ moreTrigBareargs :
  	| aTrigBarearg 
 	  moreTrigBareargs[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
 	| { $arg[0]; }
+
+# maybeEvalAt[$thing,$at_op]
+maybeEvalAt :
+	  POSTSUBSCRIPT moreEvalAt[$arg[0],$arg[1],Arg($item[1],0)]
+	| POSTSUPERSCRIPT POSTSUBSCRIPT
+	  	   moreFactors[Apply(New('evaluated-at'),$arg[0],Arg($item[2],0),Arg($item[1],0))]
+
+# maybeEvalAt[$thing,$atop,$sub]
+moreEvalAt :
+	  POSTSUPERSCRIPT
+	  	   moreFactors[Apply(New('evaluated-at'),$arg[0],$arg[2],Arg($item[1],0))]
+         | moreFactors[Apply(New('evaluated-at'),$arg[0],$arg[2])]
 
 #======================================================================
 # After < a | we might be done, or get <a|b> or <a|H|b>
