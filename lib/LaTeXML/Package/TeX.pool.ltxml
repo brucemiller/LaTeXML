@@ -3033,8 +3033,8 @@ sub doScriptpos { (LookupValue('mathstyle') eq 'display' ? 'mid' : 'post'); }
 DefMathI('\sum',      undef,"\x{2211}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'sum');
 DefMathI('\prod',     undef,"\x{220F}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'product');
 DefMathI('\coprod',   undef,"\x{2210}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'coproduct');
-DefMathI('\int',      undef,"\x{222B}", role=>'INTOP',	scriptpos=>\&doScriptpos, meaning=>'integral');
-DefMathI('\oint',     undef,"\x{222E}", role=>'INTOP',	scriptpos=>\&doScriptpos, meaning=>'contour-integral');
+DefMathI('\int',      undef,"\x{222B}", role=>'INTOP',	                          meaning=>'integral');
+DefMathI('\oint',     undef,"\x{222E}", role=>'INTOP',	                          meaning=>'contour-integral');
 DefMathI('\bigcap',   undef,"\x{22C2}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'intersection');
 DefMathI('\bigcup',   undef,"\x{22C3}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'union');
 DefMathI('\bigsqcup', undef,"\x{2294}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'square-union');
