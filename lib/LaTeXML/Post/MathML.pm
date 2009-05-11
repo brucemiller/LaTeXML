@@ -829,8 +829,20 @@ DefMathML('Apply:?:annotated', sub {
 
 # NOTE: Markup probably isn't right here....
 DefMathML('Apply:?:evaluated-at', sub {
-  my($op,$expr,$value)=@_;
-  pmml_row(pmml($expr),['m:msub',{},pmml_mo('|'),pmml_smaller($value)]); });
+  my($op,$expr,$value1,$value2)=@_;
+#   if($value2){
+#     pmml_row(pmml($expr),['m:msubsup',{},pmml_mo('|'),pmml_smaller($value1),pmml_smaller($value2)]); }
+#   else {
+#     pmml_row(pmml($expr),['m:msub',{},pmml_mo('|'),pmml_smaller($value1)]); }});
+  # Try with mfenced
+  if($value2){
+    ['m:msubsup',{},
+     ['m:mfenced',{open=>'',close=>'|'},pmml($expr)],
+     pmml_smaller($value1),pmml_smaller($value2)]; }
+  else {
+    ['m:msub',{},
+     ['m:mfenced',{open=>'',close=>'|'},pmml($expr)],
+     pmml_smaller($value1)]; }});
 
 DefMathML("Token:?:sum",          undef, sub{['m:sum'];});
 DefMathML("Token:?:prod",         undef, sub{['m:prod'];});
