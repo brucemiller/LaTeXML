@@ -1022,7 +1022,8 @@ sub RequirePackage {
   $options{type} = 'sty' unless $options{type};
   # This package will be treated somewhat as if it were a class if as_class is true
   # OR if it is loaded by such a class, and has withoptions true!!!
-  $options{as_class} = 1 if  $options{withoptions} && grep($prevname eq $_, @{LookupValue('@masquerading@as@class')});
+  $options{as_class} = 1 if  $options{withoptions}
+    && grep($prevname eq $_, @{LookupValue('@masquerading@as@class')||[]});
   my $filetype = $options{type};
   my $type = ($options{as_class} ? 'cls' : $options{type});
   # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
