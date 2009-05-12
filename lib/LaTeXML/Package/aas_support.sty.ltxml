@@ -166,7 +166,7 @@ DefPrimitive('\appendix',sub{
   NewCounter('equation', 'section', idprefix=>'E');
   DefMacro('\thesection', '\Alph{section}');
   DefMacro('\theequation','\thesection\arabic{equation}');
-  DefMacro('\section', '\@startsection{appendix}{}{}{}{}{}');
+  Let(T_CS('\section'),T_CS('\appendix@section'),'global');
  });
 
 #======================================================================
@@ -463,9 +463,6 @@ Let(T_CS('\slantfrac'),T_CS('\case'));
 # See aassymbols document.
 # Table 1: Additional AASTeX symbols
 
-# \lesssim,\gtrsim in amssymb
-Let(T_CS('\la'),T_CS('\lesssim'));
-Let(T_CS('\ga'),T_CS('\gtrsim'));
 DefConstructor('\micron',UTF(0xB5)."m");
 DefMacro('\Sun','\sun');
 DefMacro('\Sol','\sun');
@@ -544,6 +541,10 @@ DefConstructor('\ur',"U\x{2000}R",bounded=>1, font=>{shape=>'italic'});
 # Remaining tables standard LaTeX or amssymb
 RequirePackage('latexsym');
 RequirePackage('amssymb');
+
+# \lesssim,\gtrsim in amssymb
+Let(T_CS('\la'),T_CS('\lesssim'));
+Let(T_CS('\ga'),T_CS('\gtrsim'));
 
 #======================================================================
 # 2.17.5 Hypertext Constructs
