@@ -25,9 +25,10 @@ DefEnvironment('{frontmatter}','#body');
 
 # \title{}
 # single author!
-# \author{}
+DefMacro('\author[]{}',
+	 '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#2}}');
 
-DefMacro('\address{}','\@add@to@frontmatter{ltx:creator}{\@address{#1}}');
+DefMacro('\address[]{}','\@add@to@frontmatter{ltx:creator}{\@address{#2}}');
 DefConstructor('\@address{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
 
 
@@ -120,7 +121,6 @@ Tag("ltx:acknowledgements", autoClose=>1);
 # \PACS & \MSC should appear inside a keyword environment;
 # apparently, they implicitly get whatever there is until next thing or end of environment.
 # elsart.sty apparently defines \JEL and \UK as well.
-# DefEnvironment('{keyword}','#body');
 DefMacro('\keyword',   '\@keyword');
 DefMacro('\endkeyword','\@keyword@cut');
 DefMacro('\PACS',      '\@keyword@cut\@PACS');
