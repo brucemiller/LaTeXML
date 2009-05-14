@@ -77,7 +77,7 @@ DefParameterType('XUntil', sub {
     if($token->equals($until)){
       last; }
     elsif($token->getCatcode == CC_BEGIN){
-      push(@tokens,$gullet->readBalanced->unlist,T_END); }
+      push(@tokens,$token,$gullet->readBalanced->unlist,T_END); }
     elsif(my $defn = LookupDefinition($token)){
       push(@tokens,Invocation($token,$defn->readArguments($gullet))); }
     else {
