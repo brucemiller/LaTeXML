@@ -121,7 +121,15 @@ Tag("ltx:acknowledgements", autoClose=>1);
 # \PACS & \MSC should appear inside a keyword environment;
 # apparently, they implicitly get whatever there is until next thing or end of environment.
 # elsart.sty apparently defines \JEL and \UK as well.
-DefMacro('\keyword',   '\@keyword');
+# But of course, Somebody has to use the non-environment form!
+# Worse, apparently if you do that, you've got to end with an unbalanced }
+#DefMacro('\keyword',   '\@keyword');
+DefMacroI('\begin{keyword}', undef,'\begingroup\@keyword');
+DefMacroI('\end{keyword}', undef,'\@keyword@cut\endgroup');
+DefMacro('\keyword',   sub {
+  my($gullet)=@_;
+  my $arg = $gullet->readBalanced;
+  (T_CS('\@keyword'),$arg->unlist,T_CS('\@keyword@cut')); });
 DefMacro('\endkeyword','\@keyword@cut');
 DefMacro('\PACS',      '\@keyword@cut\@PACS');
 DefMacro('\MSC',       '\@keyword@cut\@MSC');
