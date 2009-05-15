@@ -549,7 +549,8 @@ sub isOpenable {
   my $node = $$self{node};
   while($node){
     return 1 if $model->canContainSomehow($node,$qname);
-    return 0 unless $model->canAutoClose($model->getNodeQName($node)) && !$node->getAttribute('_noautoclose');
+    return 0 unless $model->canAutoClose($model->getNodeQName($node))
+      && (($node->nodeType != XML_ELEMENT_NODE) || !$node->getAttribute('_noautoclose'));
     $node = $node->parentNode; }
   return 0; }
 #  $$self{model}->canContainSomehow($$self{node},$qname); }
