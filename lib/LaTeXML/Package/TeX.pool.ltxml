@@ -1936,10 +1936,12 @@ sub replace_node {
 
 Let(T_CS('\vcenter'), T_CS('\vbox'));
 
-# Really should just be defined as:
-#   DefMacro('\eqno Until:$', '\@@eqno{#1}$');
-# but this messes up use in latex (since \endequation expands into $...)
-# How can I know
+# \eqno & \leqno are really bizzare.
+# They should seemingly digest until $ (or while still in math mode),
+# and use that stuff as the reference number.
+# However, since people abuse this, and we're really not quite TeX,
+# we really can't do it Right.
+# Even a \begin{array} ends up expanding into a $ !!!
 DefMacroI('\eqno',undef,sub {
   my($gullet)=@_;
   my @stuff=();
@@ -1948,8 +1950,10 @@ DefMacroI('\eqno',undef,sub {
     if(! defined $t){
       Fatal(":unexpected:\eqno fell of the end!"); }
     # What do I need to explicitly list here!?!?!? UGGH!
-    elsif(Equals($t,T_MATH)
-       || Equals($t,T_CS('\end{equation}'))|| Equals($t,T_CS('\end{equation*}'))){
+    elsif(Equals($t,T_MATH) || Equals($t,T_CS('\]'))
+	  || Equals($t,T_CS('\begingroup')) # Totally wrong, but to catch expanded environments
+	  || ( ToString($t)=~ /^\\(?:begin|end)\{/)){ # any sort of environ begin or end???
+#       || Equals($t,T_CS('\end{equation}'))|| Equals($t,T_CS('\end{equation*}'))){
       return (Invocation(T_CS('\@@eqno'),Tokens(@stuff)), $t); }
     else {
       push(@stuff,$t); }}});
@@ -2693,7 +2697,19 @@ DefMacroI('\bigbreak',  undef,'\par');
 DefMacroI('\line',undef,'\hbox to \hsize');
 DefMacro('\leftline{}','\line{#1\hss}');
 DefMacro('\rightline{}','\line{\hss#1}');
-DefConstructor('\centerline{}',"<ltx:p class='centering'>#1</ltx:p>", bounded=>1);
+DefConstructor('\centerline{}',sub {
+#		 "<ltx:p class='centering'>#1</ltx:p>"
+  my($document,$line)=@_;
+  if($document->isOpenable('ltx:p')){
+    $document->insertElement('ltx:p',$line,class=>'centering'); }
+  elsif($document->isOpenable('ltx:text')){
+    $document->insertElement('ltx:text',$line,class=>'centering');
+    $document->insertElement('ltx:break');  }
+  else {
+    $document->absorb($line); }},
+	       bounded=>1);
+  
+
 DefMacro('\llap{}','\hbox{#1}');
 DefMacro('\rlap{}','\hbox{#1}');
 DefMacroI('\m@th',undef,'\mathsurround=0pt ');
