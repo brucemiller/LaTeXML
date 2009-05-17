@@ -400,7 +400,7 @@ DefMacro('\lput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
 DefConstructor('\lput@start OptionalMatch:* [] BracketedPSAngle RoundParenFloat',
 	       "<ltx:g transform='&ptValue(#transform)' pos='#2'"
 	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
-	       afterDigest=>sub { finishLabelPut($_[0], $_[3], computeLabelPos($_[4])); },
+	       afterDigest=>sub { finishLabelPut($_[1], $_[1]->getArg(3), computeLabelPos($_[1]->getArg(4))); },
 	       alias=>'\lput');
 
 DefMacro('\aput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
@@ -416,7 +416,7 @@ DefConstructor('\aput@start OptionalMatch:* [PSDimension] BracketedPSAngle Round
 	       "<ltx:g transform='&ptValue(#transform)'"
 	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub {
-		 my ($whatsit, $labelsep, $angle, $pos) = ($_[0], $_[2], $_[3], $_[4]);
+		 my ($whatsit, $labelsep, $angle, $pos) = ($_[1],map($_[1]->getArg($_),2,3,4));
 		 my $p = computeLabelPos($pos);
 		 $labelsep = $labelsep || LookupValue('\pslabelsep');
 		 $p = Pair($p->getX->add($labelsep), $p->getY->add($labelsep));
@@ -436,7 +436,7 @@ DefConstructor('\bput@start OptionalMatch:* [PSDimension] BracketedPSAngle Round
 	       "<ltx:g transform='&ptValue(#transform)'"
 	       . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
 	       afterDigest=>sub {
-		 my ($whatsit, $labelsep, $angle, $pos) = ($_[0], $_[2], $_[3], $_[4]);
+		 my ($whatsit, $labelsep, $angle, $pos) = ($_[1],map($_[1]->getArg($_),2,3,4));
 		 my $p = computeLabelPos($pos);
 		 $labelsep = $labelsep || LookupValue('\pslabelsep');
 		 $p = Pair($p->getX->substract($labelsep), $p->getY->substract($labelsep));
