@@ -3208,6 +3208,46 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 DefMathI('\relbar',undef, "-", role=>'RELOP'); # ???
 DefMathI('\Relbar',undef, "=", role=>'RELOP'); # ???
 
+# \joinrel is \mathrel{\mkern-3\mu}
+# Ah, but the Effect is to join 2 "relations" into one!
+DefPrimitiveI('\joinrel',undef,sub {
+  my($stomach,$op)=@_;
+  my $gullet = $stomach->getGullet;
+  $gullet->skipSpaces;
+  my $left = $LaTeXML::LIST[$#LaTeXML::LIST];
+  if(!$left){			# Nothing there?...
+    return (); }		# I guess this becomes a no-op???
+  else {
+    pop(@LaTeXML::LIST);
+    my @stuff=();
+    while(my $tok = $gullet->readXToken){
+      @stuff = $stomach->invokeToken($tok);
+      last if @stuff; }
+    return () unless @stuff;	# no-op ????
+    my $right = shift(@stuff);
+    (@stuff,
+     LaTeXML::Whatsit->new(LookupDefinition(T_CS('\@@joinrel')),[$left,$right],
+			   locator=>$gullet->getLocator,
+			   font=>$right->getFont,isMath=>1)); }});
+
+DefConstructor('\@@joinrel{}{}', sub {
+  my($document,$left,$right)=@_;
+  $document->absorb($left);
+  $document->absorb($right);
+  # Now if last 2 items are XMTok, replace by a single token with joined content (& attr?)
+  my $node= $document->getNode;
+  my @nodes = $document->getChildElements($node);
+  if(scalar(@nodes) >= 2){
+    my @rels= ($nodes[$#nodes-1],$nodes[$#nodes]);
+    if(grep($document->getNodeQName($_) eq 'ltx:XMTok',@rels )){
+      my %roles=();
+      map($roles{$_->getAttribute('role')}=1, @rels);
+      my $role = (scalar(keys %roles)==1 ? [keys %roles]->[0] : ($roles{ARROW} ? 'ARROW' : 'RELOP'));
+      map($node->removeChild($_), @rels);
+      $document->insertElement('ltx:XMTok',[map($_->textContent,@rels)], role=>$role);
+    }}},
+	      reversion=>'#1\joinrel #2');
+
 #----------------------------------------------------------------------
 # LaTeX; Table 3.6. Arrow Symbols, p.43
 #----------------------------------------------------------------------
@@ -3248,6 +3288,13 @@ DefMathI('\nearrow',           undef,"\x{2197}", role=>'ARROW'); # NORTH EAST AR
 DefMathI('\searrow',           undef,"\x{2198}", role=>'ARROW'); # SOUTH EAST ARROW
 DefMathI('\swarrow',           undef,"\x{2199}", role=>'ARROW'); # SOUTH WEST ARROW
 DefMathI('\nwarrow',           undef,"\x{2196}", role=>'ARROW'); # NORTH WEST ARROW
+
+# \mapstochar (3237), \lhook(312C), \rhook(312D)
+# These are really wrong; I can't find the right Unicode Glyphs.
+# These are only fragments intended to be assembled into meaningful(?) symbols.
+DefMathI('\mapstochar',        undef,"\x{2E20}"); # TeX 3237
+DefMathI('\lhook',             undef,"\x{2E26}"); # TeX 312C
+DefMathI('\rhook',             undef,"\x{2E27}"); # TeX 312D
 
 #======================================================================
 # TeX Book, Appendix B. p. 359
