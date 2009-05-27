@@ -3791,7 +3791,9 @@ DefMathI('\*',undef,"\x{2062}", role=>'MULOP', name=>'', meaning=>'times'); # IN
 # We need a finer granularity than TeX does: an ORD could be several things,
 # a BIN could be a MULOP or ADDOP.
 DefConstructor('\mathord{}',"<ltx:XMWrap role='ID'>#1</ltx:XMWrap>", bounded=>1);
-DefConstructor('\mathop{}', "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", bounded=>1);
+# This is probably wrong..
+#DefConstructor('\mathop{}', "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", bounded=>1);
+DefConstructor('\mathop{}', "<ltx:XMWrap role='BIGOP'>#1</ltx:XMWrap>", bounded=>1);
 DefConstructor('\mathbin{}', "<ltx:XMWrap role='ADDOP'>#1</ltx:XMWrap>", bounded=>1);
 DefConstructor('\mathrel{}',"<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>", bounded=>1);
 DefConstructor('\mathopen{}', "<ltx:XMWrap role='OPEN'>#1</ltx:XMWrap>", bounded=>1);
