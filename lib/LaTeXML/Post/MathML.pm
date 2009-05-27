@@ -488,16 +488,21 @@ sub pmml_script_handler {
     elsif($y eq 'SUPER'){
       push(@posts,[undef,$script]); $postlevel=$l; }}
 
+  # Examine $base to see if there are nested scripts.
+  # We'll fold them together they seem to be on the appropriate levels
   # Keep from having multiple scripts when $loc is stack!!!
   while(1){
     last unless getQName($base) eq 'ltx:XMApp';
+    last if $base->getAttribute('open') || $base->getAttribute('close');
     my($xop,$xbase,$xscript) = element_nodes($base);
     last unless (getQName($xop) eq 'ltx:XMTok');
     my ($ny) = ($xop->getAttribute('role')||'') =~ /^(SUPER|SUB)SCRIPTOP$/;
     last unless $ny;
     my ($nx,$nl)= ($xop->getAttribute('scriptpos')||'post0')
       =~ /^(pre|mid|post)?(\d+)?$/;
-    last unless ($x ne 'mid') || ($nx eq 'mid');
+#    last unless ($x ne 'mid') || ($nx eq 'mid');
+    # what did that mean? Doesn't it mean this???
+    last if ($x eq 'mid') || ($nx eq 'mid');
 
     my $spos = ($ny eq 'SUB' ? 0 : 1);
     if($nx eq 'pre'){
