@@ -3455,7 +3455,8 @@ DefConstructor('\@left Token',
 				  elsif(my $entry = $DELIMITER_MAP{$delim}){
 				    $whatsit->setProperties(role=>$$entry{lrole},
 							    char=>$$entry{char},
-							    name=>$$entry{name});}
+							    name=>$$entry{name});
+				    $whatsit->setFont($arg->getFont()); }
 				  elsif(($arg->getProperty('role')||'') eq 'OPEN'){}
 				  else {
 				    Warn(":expected:. Missing delimiter $delim (. inserted)"); }
@@ -3470,7 +3471,8 @@ DefConstructor('\@right Token',
 				  elsif(my $entry = $DELIMITER_MAP{$delim}){
 				    $whatsit->setProperties(role=>$$entry{rrole},
 							    char=>$$entry{char},
-							    name=>$$entry{name}); }
+							    name=>$$entry{name});
+				    $whatsit->setFont($arg->getFont()); }
 				  elsif(($arg->getProperty('role')||'') eq 'CLOSE'){}
 				  else {
 				    Warn(":expected:. Missing delimiter $delim (. inserted)"); }
