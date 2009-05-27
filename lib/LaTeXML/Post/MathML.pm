@@ -389,6 +389,21 @@ sub pmml_mi {
 	   ($color   ? (mathcolor=>$color):())},
    $text]; }
 
+# Really, the same issues as with mi.
+sub pmml_mn {
+  my($item,%attr)=@_;
+  my $font  = (ref $item ? $item->getAttribute('font') : $attr{font}) ||  $LaTeXML::MathML::FONT;
+  my $size  = (ref $item ? $item->getAttribute('size') : $attr{size}) || $LaTeXML::MathML::SIZE;
+  my $color = (ref $item ? $item->getAttribute('color') : $attr{color}) || $LaTeXML::MathML::COLOR;
+  my $text  = (ref $item ?  $item->textContent : $item);
+  my $variant = ($font ? $mathvariants{$font} : '');
+  if($font && !$variant){
+    warn "Unrecognized font variant \"$font\""; $variant=''; }
+  ['m:mn',{($variant ? (mathvariant=>$variant):()),
+	   ($size    ? (mathsize=>$sizes{$size}):()),
+	   ($color   ? (mathcolor=>$color):())},
+   $text]; }
+
 sub pmml_mo {
   my($item,%attr)=@_;
   my $font  = (ref $item ? $item->getAttribute('font') : $attr{font});
@@ -621,9 +636,7 @@ DefMathML("Token:ARROW:?",       \&pmml_mo, undef);
 DefMathML("Token:OVERACCENT:?",  \&pmml_mo, undef);
 DefMathML("Token:UNDERACCENT:?", \&pmml_mo, undef);
 
-DefMathML("Token:NUMBER:?",
-	  sub { ['m:mn',{},$_[0]->textContent]; },
-	  sub { ['m:cn',{},$_[0]->textContent]; });
+DefMathML("Token:NUMBER:?",      \&pmml_mn, sub { ['m:cn',{},$_[0]->textContent]; });
 DefMathML("Token:?:absent", sub { ['m:none']} );
 DefMathML('Hint:?:?', sub { undef; }, sub { undef; }); # Should Disappear!
 
