@@ -17,42 +17,19 @@ use strict;
 use LaTeXML::Package;
 use LaTeXML::Util::KeyVal;
 
-#**********************************************************************
-our $default_keys=
-  'float=tbp,floatplacement=tbp,aboveskip=\medskipamount,belowskip=\medskipamount,'
-  .  'lineskip=0pt,boxpos=c,'
-  .'print=true,firstline=1,lastline=9999999,showlines=false,emptylines=9999999,gobble=0,'
-  .'style={},language={},printpod=false,usekeywordsintag=true,tagstyle={},'
-  .  'markfirstintag=false,makemacrouse=true'
-  .'basicstyle={},identifierstyle={},commentstyle=\itshape,stringstyle={},'
-  .  'keywordstyle=\bfseries,classoffset=0,'
-  .  'emph={},delim={},'
-  .'extendedchars=false,inputencoding={},upquote=false,tabsize=8,showtabs=false,'
-  .  'tabs={},showspaces=false,showstringspaces=true,formfeed=\bigbreak,'
-  .'numbers=none,stepnumber=1,numberfirstline=false,numberstyle={},numbersep=10pt,'
-  .  'numberblanklines=true,firstnumber=auto,name={},'
-  .'title={},caption={},label={},nolol=false,'
-  .  'captionpos=t,abovecaptionskip=\smallskipamount,belowcaptionskip=\smallskipamount,'
-  .'linewidth=\linewidth,xleftmargin=0pt,xrightmargin=0pt,resetmargins=false,breaklines=false,'
-  .  'prebreak={},postbreak={},breakindent=20pt,breakautoindent=true,'
-  .'frame=none,frameround=ffff,framesep=3pt,rulesep=2pt,framerule=0.4pt,'
-  .  'framexleftmargin=0pt,framexrightmargin=0pt,framextopmargin=0pt,framexbottommargin=0pt,'
-  .  'backgroundcolor={},rulecolor={},fillcolor={},rulesepcolor={},'
-  .  'frameshape={},'
-  .'index={},indexstyle=\lstindexmacro,'
-  .'columns=[c]fixed,flexiblecolumns=false,keepspaces=false,basewidth={0.6em,0.45em},'
-  .  'fontadjust=false,texcl=false,mathescape=false,escapechar={},escapeinside={},'
-  .  'escapebegin={},escapeend={},'
-  .'fancyvrb=false,fvcmdparams=\overlay1,morefvcmdparams={}';
+#======================================================================
+# To the extent I ever succeed in doing all the pretty-printing...
+# It rather seems that preserving a raw, unformatted, copy of the code
+# would be a Useful thing, and in keeping with XML.
+# Wouldn't you want to see the pretty print, but cut&paste the plain code?
+# This may eventually need some schema support...
 
-# ndkeywordstyle=keywordstyle,texcsstyle=keywordstyle,directivestyle=keywordstyle
-DefMacro('\lstindexmacro{}','\index{{\ttfamily #1}}');
-
+#======================================================================
 # 4.2 Typesetting listings
-DefPrimitive('\lstset RequiredKeyVals:LST', sub {
-  my($stomach,$keyvals)=@_;
-  my $prev = LookupValue('LISTING_KEYVALS');
-  AssignValue(LISTING_KEYVALS=>($prev ? mergeListingKeyvals($keyvals,$prev) : $keyvals) ); });
+#======================================================================
+
+# Set various Listings keys
+DefPrimitive('\lstset RequiredKeyVals:LST', sub { lstActivate($_[1]); return; });
 
 our $EMPTY_CATTABLE=LaTeXML::State->new(catcodes=>'none');
 
@@ -63,64 +40,137 @@ DefMacro('\lstinline OptionalKeyVals:LST', sub {
   { local $STATE = $EMPTY_CATTABLE;
     $init = $mouth->readToken;
     $body = $mouth->readTokens($init); }
-  Invocation(T_CS('\@lstinline'),$keyvals, Tokens($init),$body)->unlist; });
+  $STATE->getStomach->bgroup; 
+  lstActivate($keyvals);
+  my @expansion = lstProcessInline(ToString($body));
+  $STATE->getStomach->egroup;
+  @expansion; });
 
-DefConstructor('\@lstinline OptionalKeyVals:LST {}{}',
-	       "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
-	       beforeDigest=>[sub { $_[0]->bgroup; MergeFont(family=>'typewriter'); }],
-	       afterDigest=>sub { $_[0]->egroup; },
-	       reversion=>'\lstinline#1#2#3#2');
+sub lstProcessInline { 
+  Invocation(T_CS('\@listings@inline'), lstProcess(@_)); }
 
-DefConstructorI(T_CS('\begin{lstlisting}'),LaTeXML::Package::parseParameters('OptionalKeyVals:LST',
-									     '\begin{lstlisting}'),
-		"<ltx:verbatim font='#font'>#body</ltx:verbatim>",
-		beforeDigest=>[sub { $_[0]->bgroup; 
-				     AssignValue(current_environment=>'lstlisting');
-				     MergeFont(family=>'typewriter');
-				     Digest(T_CS('\par')); }],
-		afterDigest=>[sub {
-				my($stomach,$whatsit)=@_;
-				$stomach->egroup;
-				my $font = $whatsit->getFont;
-				my $loc  = $whatsit->getLocator;
-				my @lines = $stomach->getGullet
-				  ->getMouth->readRawLines("\\end{lstlisting}");
-				# Note last line ends up as Whatsit's "trailer"
-				$whatsit->setBody(map(LaTeXML::Box->new($_,$font,$loc,T_OTHER($_)),
-						      @lines, "\end{lstlisting}"));
-				return; }]);
+DefConstructor('\@listings@inline {}',
+	       "<ltx:text class='listing'>#1</ltx:text>",
+	       reversion=>'\lstinline#1#2#3#2'); # ??????
 
-#DefConstructor('\lstinputlisting RequiredKeyVals:LST Semiverbatim',);
+# Not a regular environment, since we're going to read the body verbatim!
+DefMacroI(T_CS('\begin{lstlisting}'),
+	  LaTeXML::Package::parseParameters('OptionalKeyVals:LST','\begin{lstlisting}'),
+	  sub {
+	    my($gullet,$keyvals)=@_;
+	    $STATE->getStomach->bgroup; 
+	    AssignValue(current_environment=>'lstlisting');
+	    my @lines = $gullet->getMouth->readRawLines("\\end{lstlisting}");
+	    shift(@lines) if $lines[0]=~/^\s*/s;
+	    lstActivate($keyvals);
+	    my @expansion = lstProcessBlock(lstGetTokens('name'),@lines);
+	    $STATE->getStomach->egroup; 
+	    @expansion; });
 
+DefMacro('\lstinputlisting OptionalKeyVals:LST Semiverbatim', sub {
+  my($gullet,$keyvals,$file)=@_;
+  my $path = FindFile($file);
+  my @lines = ();
+  if( $path && open(LST, $path)){
+    @lines = <LST>;
+    close(LST); }
+  else {
+    Error("unexpected:$file Couldn't read listings file $file: $!"); }
+  $STATE->getStomach->bgroup; 
+  lstActivate($keyvals);
+  my @expansion = lstProcessBlock($file,@lines);
+  $STATE->getStomach->egroup; 
+  @expansion; });
+
+NewCounter('lstlisting','document',idprefix=>'LST');
+
+sub lstProcessBlock {
+  my($name,@lines)=@_;
+  # Hmm.. should locally define \lstname to be either name or the file...
+  my @body = (Invocation(T_CS('\@listings@block'),lstProcess(@lines)));
+  my($numbered,$caption);
+  if(my $c = lstGetNonEmptyTokens('caption')){
+    my @t = $c->unlist;
+    $c = Tokens(T_BEGIN,@t,T_END) unless Equals($t[0],T_OTHER('['));
+    ($numbered,$caption) = (1,$c); }
+  elsif(my $t = lstGetNonEmptyTokens('title')){
+    ($numbered,$caption) = (0,Tokens(T_BEGIN,$t,T_END)); }
+
+  if($caption){
+    if(lstGetLiteral('captionpos') eq 't'){
+      unshift(@body,T_CS('\caption'),$caption->unlist); }
+    else {
+      push(@body,T_CS('\caption'),$caption->unlist); }}
+
+  if(my $label = lstGetNonEmptyTokens('label')){
+    unshift(@body,Invocation(T_CS('\label'),$label)); }
+
+  (T_CS('\par'),
+   T_BEGIN, 
+   ($name ? (T_CS('\def'),T_CS('\lstname'),T_BEGIN,$name->unlist,T_END) : ()),
+   Invocation(($numbered ? T_CS('\@listings') : T_CS('\@@listings')), Tokens(@body)),
+   T_END); }
+
+DefConstructor('\@listings@block {}', "<ltx:block class='listing'>#1</ltx:block>");
+# Or new listing element?
+DefConstructor('\@listings {}',
+	       "<ltx:figure xml:id='#id' refnum='#refnum' class='listing'>"
+	       ."#1"
+	       ."</ltx:figure>",
+	       properties=>sub { RefStepCounter('lstlisting'); });
+DefConstructor('\@@listings {}',
+	       "<ltx:figure xml:id='#id' class='listing'>"
+	       ."#1"
+	       ."</ltx:figure>",
+	       properties=>sub { RefStepID('lstlisting'); });
+
+#======================================================================
 # 4.3 Space and placement
-DefKeyVal('LST','float',''); # [*] t,b,p,h  [or defaults?]
+#======================================================================
+# Ignorable
+DefKeyVal('LST','float',''); # [*] t,b,p,h  [or defaults?] 
 DefKeyVal('LST','floatplacement','');  # t,b,p
 DefKeyVal('LST','aboveskip','Dimension');
 DefKeyVal('LST','belowskip','Dimension');
 DefKeyVal('LST','lineskip','Dimension');
 DefKeyVal('LST','boxpos',''); # b,c,t
 
+#======================================================================
 # 4.4 Printed range
+#======================================================================
+# Seemingly handled....
 DefKeyVal('LST','print','', 'true');
 DefKeyVal('LST','firstline','Number');
 DefKeyVal('LST','lastline','Number');
 DefKeyVal('LST','showlines','','true');
-DefKeyVal('LST','emptylines','');
+DefKeyVal('LST','emptylines',''); # NOT YET HANDLED.
 DefKeyVal('LST','gobble','Number');
 
+#======================================================================
 # 4.5 Language and styles
+#======================================================================
+# Define a Style being a shorthand for a set of Listings keyvals
+# \lstdefinestyle{stylename}{keys}
+DefPrimitive('\lstdefinestyle{} RequiredKeyVals:LST',sub {
+  my($stomach,$style,$keyvals)=@_;
+  AssignValue(lstStyleName($style)=>$keyvals); });
+
 DefKeyVal('LST','style','');
 DefKeyVal('LST','language','');
 DefKeyVal('LST','alsolanguage','');
 DefKeyVal('LST','defaultdialect','');
-DefKeyVal('LST','printpod','');
-DefKeyVal('LST','usekeywordsintag','');
-DefKeyVal('LST','tagstyle','');
-DefKeyVal('LST','markfirstintag','');
-DefKeyVal('LST','makemacrouse','');
+DefKeyVal('LST','printpod','','true');	       # NOT YET HANDLED
+DefKeyVal('LST','usekeywordsintag','','true'); # NOT YET HANDLED
+DefKeyVal('LST','tagstyle','');		       # NOT YET HANDLED
+DefKeyVal('LST','markfirstintag','');	       # NOT YET HANDLED
+DefKeyVal('LST','makemacrouse','','true');     # NOT YET HANDLED
 
+#======================================================================
 # 4.6 Appearance
+#======================================================================
 DefKeyVal('LST','basicstyle','');
+
+# rest are NOT YET HANDLED
 DefKeyVal('LST','identifierstyle','');
 DefKeyVal('LST','stringstyle','');
 DefKeyVal('LST','keywordstyle','');
@@ -135,57 +185,72 @@ DefKeyVal('LST','emphstyle','');
 DefKeyVal('LST','delim','');
 DefKeyVal('LST','moredelim','');
 
+#======================================================================
 # 4.7 Getting characters right.
+#======================================================================
+# NOT YET HANDLED
 DefKeyVal('LST','extendedchars','','true');
 DefKeyVal('LST','inputencoding','');
-DefKeyVal('LST','upquote','');
+DefKeyVal('LST','upquote','','true');
 DefKeyVal('LST','tabsize','Number');
-DefKeyVal('LST','showtabs','');
+DefKeyVal('LST','showtabs','','true');
 DefKeyVal('LST','tab','');
-DefKeyVal('LST','showspaces','');
-DefKeyVal('LST','showstringspaces','');
+DefKeyVal('LST','showspaces','','true');
+DefKeyVal('LST','showstringspaces','','true');
 DefKeyVal('LST','formfeed','');
 
+#======================================================================
 # 4.8 Line numbers
+#======================================================================
+# Done...
 DefKeyVal('LST','numbers',''); # none | left | right
 DefKeyVal('LST','stepnumber','Number');
-DefKeyVal('LST','numberfirstline','');
+DefKeyVal('LST','numberfirstline','','true');
 DefKeyVal('LST','numberstyle','');
 DefKeyVal('LST','numbersep','Dimension');
-DefKeyVal('LST','numberblanklines','');
-DefKeyVal('LST','firstnumber','Number');
+DefKeyVal('LST','numberblanklines','','true');
+DefKeyVal('LST','firstnumber','');
 DefKeyVal('LST','name','');
+NewCounter('lstnumber');
 DefMacro('\thelstnumber','\arabic{lstnumber}');
 
+#======================================================================
 # 4.9 Captions
+#======================================================================
+# Done.
 DefKeyVal('LST','title','');
 DefKeyVal('LST','caption','');
 DefKeyVal('LST','label','Semiverbatim');
-DefKeyVal('LST','label','');
-DefKeyVal('LST','nolol','','true');
+DefKeyVal('LST','nolol','','true'); # Ignorable
 
 DefPrimitive('\lstlistoflistings',undef);
 DefMacro('\lstlistlistingname','Listings');
 DefMacro('\lstlistingname','Listing');
 DefMacro('\thelstlisting','\arabic{lstlisting}');
-DefMacro('\thename','<current listing name>');
+DefMacro('\thename','');
 
-DefKeyVal('LST','captionpos',''); #  t,b
-DefKeyVal('LST','abovecaptionskip','Dimension');
-DefKeyVal('LST','belowcaptionskip','Dimension');
+DefKeyVal('LST','captionpos',''); #  t,b  # done
+DefKeyVal('LST','abovecaptionskip','Dimension'); # Ignorable
+DefKeyVal('LST','belowcaptionskip','Dimension'); # Ignorable
 
+#======================================================================
 # 4.10 Margins and line shape
+#======================================================================
+# Ignorable
 DefKeyVal('LST','linewidth','Dimension');
 DefKeyVal('LST','xleftmargin','Dimension');
 DefKeyVal('LST','xrightmargin','Dimension');
 DefKeyVal('LST','resetmargins','');
-DefKeyVal('LST','breaklines','');
+DefKeyVal('LST','breaklines','','true');
 DefKeyVal('LST','prebreak','');
 DefKeyVal('LST','postbreak','');
 DefKeyVal('LST','breakindent','Dimension');
 DefKeyVal('LST','breakautoindent','','true');
 
+#======================================================================
 # 4.11 Frames
+#======================================================================
+# NOT YET HANDLED; most are ignorable, but some could be used
 DefKeyVal('LST','frame',''); # none | leftline | topline | bottomline | lines | single | shadowbox
 DefKeyVal('LST','framearound',''); # t|f * 4
 DefKeyVal('LST','framesep','Dimension');
@@ -200,54 +265,96 @@ DefKeyVal('LST','rulecolor','');
 DefKeyVal('LST','fillcolor','');
 DefKeyVal('LST','rulesepcolor','');
 
+#======================================================================
 # 4.12 Indexing
+#======================================================================
+# NOT YET HANDLED
 DefKeyVal('LST','index','');
 DefKeyVal('LST','moreindex','');
 DefKeyVal('LST','deleteindex','');
 DefKeyVal('LST','indexstyle','');
 
+DefMacro('\lstindexmacro{}','\index{{\ttfamily #1}}');
+
+#======================================================================
 # 4.13 Column alignment
+#======================================================================
+# Ignorable (?)
 DefKeyVal('LST','columns','');
 DefKeyVal('LST','flexiblecolumns','','true');
-DefKeyVal('LST','keepspaces','');
-DefKeyVal('LST','basewidth','Dimension'); #  or 2 Dimensions!!!!
+DefKeyVal('LST','keepspaces','','true');
+#DefKeyVal('LST','basewidth','Dimension'); #  or 2 Dimensions!!!!
+DefKeyVal('LST','basewidth',''); #  or 2 Dimensions!!!!
 DefKeyVal('LST','fontadjust','','true');
 
+#======================================================================
 # 4.14 Escaping to LaTeX
+#======================================================================
+# NOT YET HANDLED
 DefKeyVal('LST','texcl','','true');
-DefKeyVal('LST','mathescape','');
+DefKeyVal('LST','mathescape','','true');
 DefKeyVal('LST','escapechar','');
 DefKeyVal('LST','escapeinside','');
 DefKeyVal('LST','escapebegin','');
 DefKeyVal('LST','escapeend','');
 
+#======================================================================
 # 4.15 Interface to fancyvrb
-DefKeyVal('LST','fancyvrb','');
+#======================================================================
+# NOT YET HANDLED, probably won't be
+DefKeyVal('LST','fancyvrb','','true');
 DefKeyVal('LST','fvcmdparams','');
 DefKeyVal('LST','morefvcmdparams','');
 
+#======================================================================
 # 4.16 Environments
+#======================================================================
+# NOT YET HANDLED
 DefPrimitive('\lstnewenvironment {}[Number][]{}{}',undef);
 
+#======================================================================
 # 4.17 Language definitions
-DefPrimitive('\lstdefinelangage []{}[]{}{}[]',undef);
-DefPrimitive('\lstalias[]{}[]{}',undef);
+#======================================================================
+#======================================================================
 
+# \lstdefinelanguage[dialect]{language}[base_dialect]{base_language_if_base_dialect}{keys}[required_aspects]
+DefMacro('\lstdefinelanguage []{}',
+	 '\@ifnextchar[{\@lstdefinelanguage[#1]{#2}}{\@lstdefinelanguage[#1]{#2}[]{}}'); 
+Let(T_CS('\lst@definelanguage'),T_CS('\lstdefinelanguage'));
+
+DefPrimitive('\@lstdefinelanguage []{}[]{} SkipSpaces RequiredKeyVals:LST []',sub {
+  my($stomach,$dialect,$language,$base_dialect,$base_language,$keyvals,$aspects)=@_;
+# NOTE: $dialact should NOT default to the default dialect!
+  $language = '['.ToString($dialect).']'.ToString($language) if $dialect;
+  $base_language = '['.ToString($base_dialect).']'.ToString($base_language) if $base_dialect;
+  # Apparently, the base language values aren't added in now, but at invocation time.
+  my $name = lstLanguageName($language);
+  AssignValue($name
+	      => LaTeXML::KeyVals->new('LST','[',']',language=>$base_language, $keyvals->getPairs)); });
+
+# Seems to use <language>$<dialect> as the naming scheme.
+DefPrimitive('\lstalias []{} []{}',sub {
+  my($stomach,$aliasdialect, $alias,$language,$dialect)=@_;
+# NOTE! Figure out how aliasing is supposed to work...?
+return; });
+
+# Uh... Why LSTDEF ?
+# None of these are handled yet.
 # keywords
 DefKeyVal('LSTDEF','keywordprefix','');
-DefKeyVal('LSTDEF','keywords','');
-DefKeyVal('LSTDEF','morekeywords','');
-DefKeyVal('LSTDEF','deletekeywords','');
-DefKeyVal('LSTDEF','ndkeywords','');
-DefKeyVal('LSTDEF','morendkeywords','');
-DefKeyVal('LSTDEF','deletendkeywords','');
+DefKeyVal('LSTDEF','keywords', 'Semiverbatim');
+DefKeyVal('LSTDEF','morekeywords','Semiverbatim');
+DefKeyVal('LSTDEF','deletekeywords','Semiverbatim');
+DefKeyVal('LSTDEF','ndkeywords','Semiverbatim');
+DefKeyVal('LSTDEF','morendkeywords','Semiverbatim');
+DefKeyVal('LSTDEF','deletendkeywords','Semiverbatim');
 DefKeyVal('LSTDEF','texcs','');
 DefKeyVal('LSTDEF','moretexcs','');
 DefKeyVal('LSTDEF','deletetexcs','');
-DefKeyVal('LSTDEF','directives','');
-DefKeyVal('LSTDEF','moredirectives','');
-DefKeyVal('LSTDEF','deletedirectives','');
-DefKeyVal('LSTDEF','sensitive','');
+DefKeyVal('LSTDEF','directives','Semiverbatim');
+DefKeyVal('LSTDEF','moredirectives','Semiverbatim');
+DefKeyVal('LSTDEF','deletedirectives','Semiverbatim');
+DefKeyVal('LSTDEF','sensitive','','true');
 DefKeyVal('LSTDEF','alsoletter','');
 DefKeyVal('LSTDEF','alsodigit','');
 DefKeyVal('LSTDEF','alsoother','');
@@ -266,12 +373,335 @@ DefKeyVal('LSTDEF','keywordcomment','');
 DefKeyVal('LSTDEF','morekeywordcomment','');
 DefKeyVal('LSTDEF','deletekeywordcomment','');
 DefKeyVal('LSTDEF','keywordcommentsemicolon','');
-DefKeyVal('LSTDEF','podcomment','');
-DefPrimitive('\lstdefinestyle {} RequiredKeyVals:LST',
-);
+DefKeyVal('LSTDEF','podcomment','','true');
+
+# ????
+# ndkeywordstyle=keywordstyle,texcsstyle=keywordstyle,directivestyle=keywordstyle
 
 DefPrimitive('\lstloadlanguages Semiverbatim', undef);
 
+#======================================================================
+# Process the listing
+#   The listing is supplied as a list of strings
+#   The result is a Tokens containing the formatted results
+#======================================================================
+# the text suggests that the order things are defined matters
+# ("define the shortest first" for declarations that start the same).
+# This suggests that the way to match is for each char,
+# scan the sequence of patterns and the 1st one makes transition.
+# (finite state machine?).
+
+sub lstProcess {
+  my(@lines)=@_;
+
+  # === Return nothing if print is false
+  return Tokens() unless lstGetBoolean('print');
+
+  # === Possibly strip trailing blank lines.
+  # Not sure if this is supposed to trim from the whole listing, or the requested subset(s) of lines!
+  if(!lstGetBoolean('showlines')){ # trim empty lines from end.
+    while( @lines &&  ($lines[$#lines] =~ /^\s*$/)){
+      pop(@lines); }}
+
+  # === Establish line numbering parameters
+  my $name = lstGetLiteral('name');
+  my $firstnumber = lstGetLiteral('firstnumber');
+  my $line0 = (($firstnumber eq 'last')
+	       ? (LookupValue('LISTINGS_LAST_NUMBER') || 0)
+	       : ($firstnumber eq 'auto' 
+		  ? (($name && LookupValue('LISTINGS_LAST_NUMBER_'.$name)) || 0)
+		  : $firstnumber-1));
+  my $linen = $line0 + scalar(@lines);
+  my $ndigits = int(log($linen)/log(10)+0.9999);
+  my $numberpos =  ((lstGetNumber('stepnumber') == 0) ? 'none' : lstGetLiteral('numbers'));
+  AssignValue('LISTINGS_NEEDS_NUMBER'=>(($numberpos ne 'none') && lstGetBoolean('numberfirstline')));
+  AssignValue('\c@lstnumber' => Number($line0),'global');
+
+  # === Create a line test based on linerange, or firstline & lastline
+  my $linetest = sub { 1; };
+  my($l1,$l2);
+  if(my $lr = lstGetLiteral('linerange')){
+    my @lr = map([split(/-/,$_)], split(/,/,$lr));
+    $linetest = sub { grep( ($$_[0] <= $_[0]) && ($_[0] <= $$_[1]), @lr); }; }
+  elsif(($l1 = lstGetNumber('firstline'))
+	&& ($l2 = lstGetNumber('lastline'))
+	&& (($l1 > $line0) || ($l2 < $linen))){
+    $linetest = sub { ($l1 <= $_[0]) && ($_[0] <= $l2); }; }
+
+  # === Set up some data for delimiters (non-nesting)
+  my %delimiters = ();
+  if(my $domath = lstGetBoolean('mathescape')){
+     $delimiters{'$'} = {close=>'$',begin=>'$',end=>'$', eval=>1}; }
+  if(my $escape = lstGetDelimiter('escapechar')){
+     $delimiters{$escape} = {close=>$escape, eval=>1}; }
+  my($escape0,$escape1) = lstGetDelimiterPair('escapeinside');
+  if($escape0){
+     $delimiters{$escape0} = {close=>$escape1, eval=>1}; }
+#  my $delimregexp = join('|',map("\\Q$_\\E",keys %delimiters));
+
+  my $delimregexp = join('|',map("\\$_",keys %delimiters));
+
+  # === Start processing
+  my $gobble = lstGetNumber('gobble');
+
+  local @LaTeXML::LST_LINES = @lines;
+  local $LaTeXML::LST_LINE = $line0;
+  local $LaTeXML::LST_COL = 0;
+  local @LaTeXML::LST_TOKENS = ();
+  lstPush(lstGetTokens('basicstyle')->unlist);
+  my $tmp;
+  while(@LaTeXML::LST_LINES){
+    my $line = lstNextLine();
+    # === Possibly remove $gobble chars from line
+    map( $line =~ s/^.//, 1..$gobble) if $gobble;
+
+    next unless &$linetest($LaTeXML::LST_LINE);
+    my $isempty = $line =~ /^\s*$/;
+    lstPush(listingsDoNumber($ndigits,$isempty)) if $numberpos eq 'left';
+
+    # do something about $emptylines and/or $showlines ???
+
+    while($line){
+      # First we'll need to deal with various escapes & delimiters.
+      # Probably can do something more general leftdelim=>(rightdelim, before,after)
+      if($delimregexp && $line=~ s/^($delimregexp)//){
+	my $entry = $delimiters{$1};
+	($line,$tmp) = lstUntilMatch($line,$$entry{close});
+	lstPush(Tokenize(($$entry{begin}||'').$tmp.($$entry{end}||''))); }
+      elsif($line =~ s/^\t//s){	   # Tab expansion
+	lstPush(T_CS("~"));  # Actually, some number of them
+	$LaTeXML::LST_COL++; }
+      elsif($line =~ s/^\n//s){	   # Newline
+	lstPush(T_CS("\\\\")); }
+      elsif($line =~ s/^\s//s){	# Space (nonbreak)
+	lstPush(T_CS("~"));
+	$LaTeXML::LST_COL++; }
+      elsif($line =~ s/^(.)//s){ # Anything else, just pass through.
+	lstPush(T_OTHER($1));
+	$LaTeXML::LST_COL++; }
+      else { last; }}
+
+    lstPush(listingsDoNumber($ndigits,$isempty)) if $numberpos eq 'right';
+  }
+
+  # === Save line number for possible later use.
+  AssignValue('LISTINGS_LAST_NUMBER' => CounterValue('lstnumber')->valueOf, 'global');
+  AssignValue('LISTINGS_LAST_NUMBER_'.$name => CounterValue('lstnumber')->valueOf, 'global') if $name;
+
+  # === And finally, return the tokens we've constructed.
+  Tokens(@LaTeXML::LST_TOKENS); }
+
+sub lstPush {
+  push(@LaTeXML::LST_TOKENS, @_); }
+
+sub lstNextLine {
+    lstPush(Invocation(T_CS('\stepcounter'),T_OTHER('lstnumber')));
+    $LaTeXML::LST_LINE++;	# Increment line number
+    $LaTeXML::LST_COL = 0; # Reset column number
+    shift(@LaTeXML::LST_LINES); } # And return next line.
+
+sub lstUntilMatch {
+  my($line,$char)=@_;
+  my $acc = '';
+  while(defined $line){
+    if($line =~ s/^([^\Q$char\E]*)\Q$char\E//){
+      $acc .= $1;
+      $LaTeXML::LST_COL += length($1)+1;
+      last; }
+    else {
+      $acc .= $line;
+      $line = lstNextLine(); }}
+  ($line,$acc); }		# shouldn't end up here...
+
+# NOTE: Need to do something to wrap these numbers (or spaces) so that they all take the same width!
+sub listingsDoNumber {
+  my($ndigits,$isempty)=@_;
+  if( (LookupValue('LISTINGS_NEEDS_NUMBER')
+       || (($LaTeXML::LST_LINE % lstGetNumber('stepnumber')) == 0))
+      && (lstGetBoolean('numberblanklines') || !$isempty) ){
+    AssignValue('LISTINGS_NEEDS_NUMBER'=>0);
+    (T_BEGIN,lstGetTokens('numberstyle')->unlist,T_CS('\thelstnumber'),T_END,T_CS("~")); }
+  else {
+    (T_BEGIN,lstGetTokens('numberstyle')->unlist,map(T_CS("~"), 1..$ndigits),T_END,T_CS("~")); }}
+
+#======================================================================
+# Managing the sets of keyvals that compose a Listings Style or Language.
+#======================================================================
+# Assign (locally) all values from a Listings keyvals
+# This really needs to be macro driven: many keys have values with specific patterns
+# and specific effects.
+# Note that we operate on the Pairs form of keyvals to preserve
+# both the order and repetition of keys
+sub lstActivate {
+  my($kv)=@_;
+  if($kv){
+    my @pairs = $kv->getPairs();
+    while(@pairs){
+      my($key,$val)=(shift(@pairs),shift(@pairs));
+      if($key eq 'defaultdialect'){ 
+	$val = uc(ToString($val));
+	$val =~ s/\s+//g;
+	$val = $1 if $val =~ /^\{(.*?)\}$/;
+	if($val =~ /^\[([^\]]*)\](.*)$/){
+	  AssignValue('LSTDD@'.$2 => $1); }}
+      elsif($key eq 'language'){
+	lstActivateLanguage($val); }
+      elsif($key eq 'alsolanguage'){
+	lstActivateLanguage($val); }
+      elsif($key eq 'style'){
+	lstActivateStyle($val); }
+      else {
+	AssignValue('LST@'.$key=>$val); }}}}
+
+sub lstActivateStyle {
+  my($style)=@_;
+  $style = ToString($style);
+  if(my $name = lstStyleName($style)){
+    if(my $values = LookupValue($name)){
+#      print STDERR "Activating listings style $name\n";
+      lstActivate($values); }
+    else {
+      Warn("expected:$name No listings style $style found"); }}}
+
+sub lstActivateLanguage {
+  my($language)=@_;
+  $language = ToString($language);
+  # Probably something here about loading language files till we find one?
+  if(my $name = lstLanguageName($language)){
+    if(my $values = LookupValue($name)){
+#      print STDERR "Activating listings language $name\n";
+      lstActivate($values); }
+    else {
+      Warn("expected:$name No listings language $language found"); }}}
+
+sub lstStyleName {
+  my($style)=@_;
+  $style = uc(ToString($style));
+  $style = $1 if $style =~ /^\{(.*?)\}$/;
+  $style =~ s/\s+//g;
+  ($style ? 'LST@STYLE@'.$style : undef); }
+
+sub lstLanguageName {
+  my($language)=@_;
+  my $dialect='';
+  $language = uc(ToString($language));
+  $language = $1 if $language =~ /^\{(.*?)\}$/;
+  $language =~ s/\s+//g;
+  if($language =~ /^\[([^\]]*)\](.*)$/){
+    ($dialect,$language)=($1,$2); }
+  $dialect = LookupValue('LSTDD@'.$language) || '' unless $dialect;
+  ($language ? 'LST@LANGUAGE@'.$language.'$'.$dialect : undef); }
+
+# A rather bizarro set of keyword value parsing bits.
+# Perhaps should be handled by the keyval types themselves?
+sub lstGetLiteral { 
+  my $v = ToString(LookupValue('LST@'.$_[0]));
+  $v = $1 if $v =~ /^\{(.*?)\}$/;
+  $v; }
+sub lstGetBoolean { lstGetLiteral($_[0]) eq 'true'; }
+sub lstGetNumber  { my $n =LookupValue('LST@'.$_[0]); ($n ? $n->valueOf : 0); }
+
+sub lstGetTokens { 
+  if(my $v = LookupValue('LST@'.$_[0])){
+    my @t = $v->unlist;
+    if(@t && Equals($t[0],T_BEGIN) && Equals($t[$#t],T_END)){
+      Tokens(@t[1..$#t-1]); }
+    else {
+      Tokens(@t); }}
+  else {
+    Tokens(); }}
+
+sub lstGetNonEmptyTokens { 
+  if(my $v = LookupValue('LST@'.$_[0])){
+    my @t = $v->unlist;
+    if(@t && Equals($t[0],T_BEGIN) && Equals($t[$#t],T_END)){
+      (scalar(@t) > 2 ? Tokens(@t[1..$#t-1]) : undef); }
+    else {
+      (@t ? Tokens(@t) : undef); }}
+  else {
+    undef; }}
+
+sub lstGetDelimiter {
+  if(my $c = lstGetNonEmptyTokens($_[0])){
+    $c = ToString($c);
+    $c =~ s/^\\//;
+    $c; }}
+
+sub lstGetDelimiterPair {
+  if(my $p = lstGetNonEmptyTokens($_[0])){
+    my($a,$b)=map(ToString($_),$p->unlist);
+    $a =~ s/^\\//;
+    $b =~ s/^\\//;
+    ($a,$b); }}
+
+#======================================================================
+# Initialize the various parameters...
+
+RawTeX(<<'EoTeX');
+\lstset{
+ float=tbp,floatplacement=tbp,aboveskip=\medskipamount,belowskip=\medskipamount,
+ lineskip=0pt,boxpos=c,
+ print=true,firstline=1,lastline=9999999,showlines=false,emptylines=9999999,gobble=0,
+ style={},language={},printpod=false,usekeywordsintag=true,tagstyle={},
+ markfirstintag=false,makemacrouse=true,
+ basicstyle={},identifierstyle={},commentstyle=\itshape,stringstyle={},
+ keywordstyle=\bfseries,classoffset=0,
+ emph={},delim={},
+ extendedchars=false,inputencoding={},upquote=false,tabsize=8,showtabs=false,
+ tabs={},showspaces=false,showstringspaces=true,formfeed=\bigbreak,
+ numbers=none,stepnumber=1,numberfirstline=false,numberstyle={},numbersep=10pt,
+ numberblanklines=true,firstnumber=auto,name={},
+ title={},caption={},label={},nolol=false,
+ captionpos=t,abovecaptionskip=\smallskipamount,belowcaptionskip=\smallskipamount,
+ linewidth=\linewidth,xleftmargin=0pt,xrightmargin=0pt,resetmargins=false,breaklines=false,
+ prebreak={},postbreak={},breakindent=20pt,breakautoindent=true,
+ frame=none,frameround=ffff,framesep=3pt,rulesep=2pt,framerule=0.4pt,
+ framexleftmargin=0pt,framexrightmargin=0pt,framextopmargin=0pt,framexbottommargin=0pt,
+ backgroundcolor={},rulecolor={},fillcolor={},rulesepcolor={},
+ frameshape={},
+ index={},indexstyle=\lstindexmacro,
+ columns=[c]fixed,flexiblecolumns=false,keepspaces=false,basewidth={0.6em,0.45em},
+ fontadjust=false,texcl=false,mathescape=false,escapechar={},escapeinside={},
+ escapebegin={},escapeend={},
+ fancyvrb=false,fvcmdparams=\overlay1,morefvcmdparams={}
+}
+EoTeX
+
+#======================================================================
+# Something like this ought to be built in?
+sub readRawConfigFile {
+  my($file)=@_;
+  my $path = FindFile($file);
+  $path = `kpsewhich $file` unless $path;
+  chomp($path);
+  if($path){
+    my $stomach = $STATE->getStomach;
+    my $gullet = $stomach->getGullet;
+    my $cmts = LookupValue('INCLUDE_COMMENTS');
+    AssignValue('INCLUDE_COMMENTS'=>0);
+    $gullet->openMouth(LaTeXML::StyleMouth->new($path),1);
+    my $mouth = $gullet->getMouth;
+    my $token;
+    while($token = $gullet->readXToken(0)){
+      next if $token->equals(T_SPACE);
+      $stomach->invokeToken($token); }
+    $gullet->closeMouth if $mouth eq $gullet->getMouth; # may already close from \endinput!
+    AssignValue('INCLUDE_COMMENTS'=>$cmts); }
+  else {
+    Info("expected:$file Couldn't find config file $file"); }}
+
+# Finally, we want to load the definitions from the configurations...
+# Actually, we should just load .cfg
+# and the extra files should be loaded as needed, but...
+sub lstLoadConfiguration {
+  readRawConfigFile("listings.cfg");
+  # And NOW read in the language definitions.
+  if(my $langfiles = ToString(Digest(T_CS('\lstlanguagefiles')))){
+    foreach my $file (split(/,/,$langfiles)){
+      readRawConfigFile($file); }}
+}
+
+lstLoadConfiguration();
 
 #**********************************************************************
 1;
