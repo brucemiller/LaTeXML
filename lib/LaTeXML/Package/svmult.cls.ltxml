@@ -11,11 +11,12 @@ use strict;
 use LaTeXML::Package;
 
 #======================================================================
-foreach my $option (qw(a4paper 10pt twoside draft final fleqn twocolumn
-		       onecollarge openbib runningheads smartrunhead nosmartrunhead
-		       referee instindent smartand nospthms deutsch francais),
+foreach my $option (qw(nospthms vecphys vecarrow norunningheads referee openbib oribibl chaprefs
+		       footinfo openany 10pt 11pt 12pt twoside fleqn sechang
+		       deutsch francais),
 		    # These could affect numbering...
-		    qw(numbook envcountreset envcountsame envcountsect),
+		    qw(numart book envcountresetchap envcountresetsect envcountsame envcountchap
+		     envcountresetsect envcountresetchap),
 		    qw(natbib)){
   DeclareOption($option, undef); }
 
@@ -24,6 +25,10 @@ foreach my $option (qw(a4paper 10pt twoside draft final fleqn twocolumn
 ProcessOptions();
 LoadClass('book');
 RequirePackage('sv_support');
+
+# Oddly, they allow * on \title to affect numbering (* => numart, none => book)
+DefMacro('\title OptionalMatch:* {}', '\@add@frontmatter{ltx:title}{#1}');
+
 #======================================================================
 # And some additional stuff
 DefMath('\ualpha',     "\x{03B1}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER ALPHA
