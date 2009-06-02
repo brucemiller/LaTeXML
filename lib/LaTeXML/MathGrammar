@@ -464,7 +464,7 @@ doubtArgs :
 # forbidArgs[$unknown,$open]; Got a suspicious pattern: an unknown and open. 
 #    If the following seems to be an argument list, warn.
 forbidArgs :
-	  Expression (PUNCT Expression)(s) balancedClose[$arg[1]]
+	  Expression (argPunct Expression)(s) balancedClose[$arg[1]]
 	     		       		        { MaybeFunction($arg[0]); undef; }
 	| Term balancedClose[$arg[1]]		{ MaybeFunction($arg[0]); undef; }
 
@@ -557,7 +557,8 @@ moreOpArgFactors :
 
 # Punctuation separating function arguments; things marked MIDDLE could
 # also separate arguments
-argPunct : PUNCT | MIDDLE
+# With great trepidation, I'm adding VERBAR here
+argPunct : PUNCT | MIDDLE | VERTBAR
 
 # ================================================================================
 # Operator args, etc.
