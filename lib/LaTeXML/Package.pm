@@ -904,7 +904,7 @@ sub FindFile {
   $file .= ".$options{type}" if $options{type};
   if($options{raw}){
     pathname_find("$file",paths=>$paths); }
-  elsif($options{type} || ($file =~ /\.(tex|pool|sty|cls|clo|cnf)$/)){ # explicit or known extensions
+  elsif($options{type} || ($file =~ /\.(tex|pool|sty|cls|clo|cnf|cfg)$/)){ # explicit or known extensions
     pathname_find("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
       || pathname_find("$file",paths=>$paths); }
   else {
