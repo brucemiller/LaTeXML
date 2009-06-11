@@ -3303,7 +3303,7 @@ DefMathI('\rhook',             undef,"\x{2E27}"); # TeX 312D
 # Ah, since \ldots can appear in text....
 DefConstructorI('\ldots',undef,
 	       "?#isMath(<ltx:XMTok name='ldots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
-	       properties=>{font=>sub{ LookupValue('font')->merge(family=>'serif');}} ); # Since not DefMath!
+	       properties=>{font=>sub{ LookupValue('font')->specialize("\x{2026}");}}); # Since not DefMath!
 DefMathI('\cdots',undef,"\x{22EF}", role=>'ID'); # MIDLINE HORIZONTAL ELLIPSIS
 DefMathI('\vdots',undef,"\x{22EE}", role=>'ID'); # VERTICAL ELLIPSIS
 DefMathI('\ddots',undef,"\x{22F1}", role=>'ID'); # DOWN RIGHT DIAGONAL ELLIPSIS
@@ -3811,6 +3811,8 @@ DefLigature("/--/\x{2013}/",   fontTest=>sub { $_[0]->getFamily ne 'typewriter';
 DefLigature("/---/\x{2014}/",  fontTest=>sub { $_[0]->getFamily ne 'typewriter'; }); # EM DASH
 DefLigature("/\`\`/\x{201C}/", fontTest=>sub { $_[0]->getFamily ne 'typewriter'; });
 DefLigature("/\'\'/\x{201D}/", fontTest=>sub { $_[0]->getFamily ne 'typewriter'; });
+# This sorta seems like the normal effect, but not if fontenc is T1... ???
+DefLigature("/\"/\x{201D}/",   fontTest=>sub { $_[0]->getFamily ne 'typewriter'; }); # Yes, this one too!
 
 DefConstructorI('\TeX', undef,'TeX');
 DefConstructorI('\i',   undef,"\x{0131}");	# LATIN SMALL LETTER DOTLESS I
