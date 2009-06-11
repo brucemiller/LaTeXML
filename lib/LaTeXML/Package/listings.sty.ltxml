@@ -18,7 +18,7 @@ use LaTeXML::Package;
 use LaTeXML::Util::KeyVal;
 
 #======================================================================
-# To the extent I ever succeed in doing all the pretty-printing...
+# To the extent we succeed in doing all the pretty-printing...
 # It rather seems that preserving a raw, unformatted, copy of the code
 # would be a Useful thing, and in keeping with XML.
 # Wouldn't you want to see the pretty print, but cut&paste the plain code?
@@ -60,69 +60,287 @@ DefMacroI(T_CS('\begin{lstlisting}'),
 	    my($gullet,$keyvals)=@_;
 	    $STATE->getStomach->bgroup; 
 	    AssignValue(current_environment=>'lstlisting');
-	    my @lines = $gullet->getMouth->readRawLines("\\end{lstlisting}");
-	    shift(@lines) if $lines[0]=~/^\s*/s;
+	    my $text = join('',$gullet->getMouth->readRawLines("\\end{lstlisting}"));
+	    $text =~ s/^\s*?\n//s;
 	    lstActivate($keyvals);
-	    my @expansion = lstProcessBlock(lstGetTokens('name'),@lines);
+	    my @expansion = lstProcessBlock(lstGetTokens('name'),$text);
 	    $STATE->getStomach->egroup; 
 	    @expansion; });
 
 DefMacro('\lstinputlisting OptionalKeyVals:LST Semiverbatim', sub {
   my($gullet,$keyvals,$file)=@_;
   my $path = FindFile($file);
-  my @lines = ();
+  my $text;
   if( $path && open(LST, $path)){
-    @lines = <LST>;
-    close(LST); }
+    { local $/ = undef;
+      $text = <LST>;
+      close(LST); }}
   else {
     Error("unexpected:$file Couldn't read listings file $file: $!"); }
   $STATE->getStomach->bgroup; 
   lstActivate($keyvals);
-  my @expansion = lstProcessBlock($file,@lines);
+  my @expansion = lstProcessBlock($file,$text);
   $STATE->getStomach->egroup; 
   @expansion; });
 
 NewCounter('lstlisting','document',idprefix=>'LST');
 
 sub lstProcessBlock {
-  my($name,@lines)=@_;
+  my($name,$text)=@_;
   # Hmm.. should locally define \lstname to be either name or the file...
-  my @body = (Invocation(T_CS('\@listings@block'),lstProcess(@lines)));
-  my($numbered,$caption);
-  if(my $c = lstGetNonEmptyTokens('caption')){
-    my @t = $c->unlist;
-    $c = Tokens(T_BEGIN,@t,T_END) unless Equals($t[0],T_OTHER('['));
-    ($numbered,$caption) = (1,$c); }
-  elsif(my $t = lstGetNonEmptyTokens('title')){
-    ($numbered,$caption) = (0,Tokens(T_BEGIN,$t,T_END)); }
-
+  my @body = (Invocation(T_CS('\@listings@block'),lstProcess($text)));
+  my($numbered,$caption,$x);
+  if(($x = lstGetTokens('caption')) && scalar($x->unlist)){
+    my @t = $x->unlist;
+    my @tc=();
+    if(Equals($t[0],T_OTHER('['))){
+      while(!Equals($t[0],T_OTHER(']'))){ push(@tc,shift(@t)); }}
+    $numbered=1;
+    $caption=Invocation(T_CS('\caption'),(@tc ? Tokens(@tc):undef),Tokens(@t)); }
+  elsif(($x = lstGetTokens('title')) && scalar($x->unlist)){
+    $caption =Invocation(T_CS('\caption'),undef,$x); }
+  if(($x = lstGetTokens('label')) && scalar($x->unlist)){
+    unshift(@body,Invocation(T_CS('\label'),$x)); }
   if($caption){
     if(lstGetLiteral('captionpos') eq 't'){
-      unshift(@body,T_CS('\caption'),$caption->unlist); }
+      unshift(@body,$caption); }
     else {
-      push(@body,T_CS('\caption'),$caption->unlist); }}
-
-  if(my $label = lstGetNonEmptyTokens('label')){
-    unshift(@body,Invocation(T_CS('\label'),$label)); }
+      push(@body,$caption); }}
 
   (T_CS('\par'),
    T_BEGIN, 
    ($name ? (T_CS('\def'),T_CS('\lstname'),T_BEGIN,$name->unlist,T_END) : ()),
-   Invocation(($numbered ? T_CS('\@listings') : T_CS('\@@listings')), Tokens(@body)),
+   Invocation(($numbered ? T_CS('\@listings') : T_CS('\@@listings')),Tokens(@body)),
    T_END); }
 
-DefConstructor('\@listings@block {}', "<ltx:block class='listing'>#1</ltx:block>");
+DefConstructor('\@listings@block {}', "<ltx:tabular>#1</ltx:tabular>");
 # Or new listing element?
 DefConstructor('\@listings {}',
-	       "<ltx:figure xml:id='#id' refnum='#refnum' class='listing'>"
-	       ."#1"
-	       ."</ltx:figure>",
+	       "<ltx:listing xml:id='#id' refnum='#refnum'>#1</ltx:listing>",
 	       properties=>sub { RefStepCounter('lstlisting'); });
 DefConstructor('\@@listings {}',
-	       "<ltx:figure xml:id='#id' class='listing'>"
-	       ."#1"
-	       ."</ltx:figure>",
+	       "<ltx:listing xml:id='#id'>#1</ltx:listing>",
 	       properties=>sub { RefStepID('lstlisting'); });
+
+#======================================================================
+# Managing the sets of keyvals that compose a Listings Style or Language.
+#======================================================================
+# Assign (locally) all values or effects from a Listings keyvals
+# Note that we operate on the Pairs form of keyvals to preserve order, repetition
+#
+# LST_CHARACTERS hash (letter|digit|other) => hash : charre=>1
+# LST_CLASSES hash classname => hash : begin, end => Tokens
+#    and some extra: index=>indexclassname, escape=>0|1, eval=>0|1, ...
+# LST_WORDS hash word => hash : class=>classname, index=>indexclassname
+# LST_DELIMTERS hash open => hash: regexp=>re, close => re, classname?
+
+foreach my $table (qw(LST_CHARACTERS LST_CLASSES LST_WORDS LST_DELIMITERS)){
+  AssignValue($table=>{}); }
+
+sub lstActivate {
+  my($kv)=@_;
+  if($kv){
+    # We will construct distillations of the various keyword, delimiter, etc data
+    # These tables will sit in the current binding, but we need to copy the data from previous bindings
+    # to get the effect of grouping
+    # Each table is a hash of hashes.
+    foreach my $table (qw(LST_CHARACTERS LST_CLASSES LST_WORDS LST_DELIMITERS)){
+      my %data = ();
+      if(my $prev = LookupValue($table)){
+	map( $data{$_} = {%{$$prev{$_}}}, keys %$prev); }
+      AssignValue($table => {%data}); }
+    # Now start scanning the keywords, in order, and activate their effects.
+    my @pairs = $kv->getPairs();
+    while(@pairs){
+      my($key,$val)=(shift(@pairs),shift(@pairs));
+      $val = lstUnGroup($val);
+      my $cs = T_CS('\lst@@'.$key);
+      if(LookupDefinition($cs)){
+	$val = LookupValue('KEYVAL@LST@'.$key.'@default') unless $val;
+	# Done for effect.
+	Digest(Tokens($cs,($val ? $val->unlist : Tokens()) ,T_CS('\end'))); }
+      else {
+	AssignValue('LST@'.$key=>$val); }}}}
+
+#----------------------------------------------------------------------
+# Various helpers for dealing with the arguments to options.
+sub lstUnGroup {		# Strip outer {}, if any
+  my($tokens)=@_;
+  if($tokens){
+    my @t = $tokens->unlist;
+    if(Equals($t[0],T_BEGIN) && Equals($t[$#t],T_END)){
+      $tokens = Tokens(@t[1..$#t-1]); }}
+  $tokens; }
+
+sub lstSplit {
+  my($stuff)=@_;
+  my $string = ToString(lstUnGroup($stuff));
+  $string =~ s/%.*?\n\s*//sg;
+  $string =~ s/\s+//sg;
+  split(/,/,$string); }
+
+# Strip of TeX's quoting.
+sub lstDeslash {
+  if(my $string = $_[0]){
+    $string = ToString($string);
+    $string =~ s/^\\(.)/$1/g;	# Strip off TeX's "quoting"
+    $string; }}
+
+# Convert a string of TeX chars to a regexp to match it.
+sub lstRegexp {
+  my($chars)=@_;
+  if(my $string = lstDeslash($_[0])){
+    $string =~ s/([\!\@\#\$\%\^\&\*\(\)\_\-\+\{\}\[\]\\\<\>\?\/])/\\$1/g;  # Put back for Perl.
+    $string; }}
+
+#----------------------------------------------------------------------
+# A rather bizarro set of keyword value parsing bits.
+# Perhaps should be handled by the keyval types themselves?
+sub lstGetLiteral { 
+  my $v = ToString(LookupValue('LST@'.$_[0]));
+  $v = $1 if $v =~ /^\{(.*?)\}$/;
+  $v; }
+sub lstGetBoolean { lstGetLiteral($_[0]) eq 'true'; }
+sub lstGetNumber  { my $n =LookupValue('LST@'.$_[0]); ($n ? $n->valueOf : 0); }
+
+sub lstGetTokens { 
+  if(my $v = LookupValue('LST@'.$_[0])){
+    lstUnGroup($v); }
+  else {
+    Tokens(); }}
+
+#======================================================================
+# Support for managing classes, delimiters and such.
+
+sub lstClassName {
+  my($class,$n)=@_;
+  $n = 1 unless $n;
+  $n = $n->valueOf if ref $n;
+  $n += lstGetNumber('classoffset');
+  $class . ($n <= 1 ? '' : $n); }
+
+# Define properties of a Class (comments, strings, etc)
+sub lstSetClassStyle {
+  my($class,$style,%props)=@_;
+  my $classes =  LookupValue('LST_CLASSES');
+  if($style){
+    my $stylestring = ToString($style);
+    if($stylestring =~ s/style(\d*)$/s$1/){ # If names a style, convert it into the class name
+      delete $$classes{$class}{begin}; # remove explicit styling
+      $props{class}=$stylestring; }    # add indirect to class.
+    else {
+      delete $$classes{$class}{class};
+      $props{begin}=$style; }}	# Otherwise, presumably TeX
+  map($$classes{$class}{$_}=$props{$_}, keys %props); 
+  return; }
+
+# Specify a set of words belonging to a class
+sub lstSetClassWords {
+  my($class,$words,$prefix)=@_;
+  # First delete existing words
+  my $wordslist =  LookupValue('LST_WORDS');
+  foreach my $word (keys %$wordslist){
+    delete $$wordslist{$word}{class} if $$wordslist{$word}{class} eq $class; }
+  lstAddClassWords($class,$words,$prefix); }
+
+sub lstAddClassWords {
+  my($class,$words,$prefix)=@_;
+  my $wordslist =  LookupValue('LST_WORDS');
+  foreach my $word (lstSplit($words)){
+    $word = $prefix.$word if $prefix;
+    $$wordslist{$word}{class} = $class unless $$wordslist{$word}{class}; }
+  return; }
+
+sub lstDeleteClassWords {
+  my($class,$words,$prefix)=@_;
+  my $wordslist =  LookupValue('LST_WORDS');
+  foreach my $word (lstSplit($words)){
+    $word = $prefix.$word if $prefix;
+    delete $$wordslist{$word}{class} if $$wordslist{$word}{class} eq $class; }
+  return; }
+
+# This probably needs a different way of decoding $type.
+#   General: b,d,l,s,n  (+ i)
+#   String: b,d,m,bd  (backslash, doubled, matlab-like(?) or backslash or doubled)
+# Need to pull out the $delims decoding, to allow deleting delimiters.
+# Recognized keys:
+#   recursive   : allows keywords, comments & strings inside
+#   cummulative : the effects are cummulative (?)
+#   nested      : allows comments to be nested
+sub lstAddDelimiter {
+  my($kind,$type,$style,$delims,%keys)=@_;
+  my $delimlist =  LookupValue('LST_DELIMITERS');
+  $type = ToString($type);
+  my $invisible = ($type =~ s/i//);
+  my $quoted;
+  my($open,$close);
+  if(($type eq 's')||($type eq 'n')){
+    # Here's the goofy thing: there may or may be {} in delimiters;
+    # And, when there's 2 delimiters, it could even be is: open}{close
+    # we'll hope there're no extra braces!
+    # If type eq 'n', comments are allowed to nest!!!
+    my @t = grep(!Equals($_,T_BEGIN),$delims->unlist); # Remove any T_BEGIN
+    my @t1=();
+    if(scalar(@t)==2){
+      @t1=($t[0]); @t=($t[1]); }
+    else {
+      while(@t && !Equals($t[0],T_END)){ push(@t1,shift(@t)); }
+      @t = grep(!Equals($_,T_END),@t);} # Remove any remaining T_END 
+    $open = Tokens(@t1);
+    $close = Tokens(@t); }
+  else {
+    $open = $delims;
+    $close = $open; }
+
+  my $openre = lstRegexp($open);
+  my $closere = lstRegexp($close);
+  if($type eq 'b'){		# Balanced; same delim open & close; but not when slashed
+    $closere = "(?<!\\\\)$openre";
+    $quoted = "\\$openre"; }
+  elsif($type eq 'd'){		# Doubled: same delim open & close; but not when doubled.
+    $closere = "(?<!$openre)$openre(?!$openre)"; 
+    $quoted = $openre.$openre; }
+  elsif($type eq 'bd'){		# Doubled: same delim open & close; not when doubled OR slashed
+    $closere = "(?<!\\\\|$openre)$openre(?!$openre)"; 
+    $quoted  = "\\$openre|$openre$openre"; }
+  elsif($type eq 'l'){		# Line: close is till end of line
+    $close = undef;
+    $closere = "(?=\n)"; }
+  elsif($type eq 's'){}		# String: different open & close
+  elsif($type eq 'n'){ $keys{nested}=1; } # like String, but allows nesting!!!
+
+  if(my $openstring = lstDeslash($open)){
+    # print STDERR "DELIMITER: \"".ToString($delims)."\" => ".ToString($open)." ; open=$openre  close=>$closere\n";
+    # The styling can be a class name, or markup
+    my $class;
+    my $stylestring = ToString($style);
+    if($stylestring =~ s/style(\d*)$/s$1/){ # Names the style associated with a class.
+      $class = $stylestring; }
+    else {			# Otherwise, assume it is markup.
+      $class = $kind.ToString($open).ToString($close);	# Create an artificial class for this delimiter.
+      lstSetClassStyle($class,undef,begin=>$style); }
+    if(!$invisible){
+      my $oldclass=$class;
+      $class = $class.ToString($open).ToString($close);	# Create an artificial class for this delimiter.
+      lstSetClassStyle($class,undef,begin=>$open,end=>$close, class=>$oldclass); }
+    # NOT DONE:
+    #   invisibility of the whole delimited expression
+    #   nestability.
+    $$delimlist{$openstring}={open=>$openre, close=>$closere, class=>$class, quoted=>$quoted, %keys};
+  }
+  return; }
+
+# Set character classes
+sub lstSetCharacterClass {
+  my($class,$chars)=@_;
+  my $charslist =  LookupValue('LST_CHARACTERS');
+  foreach my $char ($chars->unlist){
+    $char = lstRegexp($char);
+    delete $$charslist{letter}{$char};
+    delete $$charslist{digit}{$char};
+    delete $$charslist{other}{$char};
+    $$charslist{$class}{$char}=1; }
+  return; }
 
 #======================================================================
 # 4.3 Space and placement
@@ -143,7 +361,7 @@ DefKeyVal('LST','print','', 'true');
 DefKeyVal('LST','firstline','Number');
 DefKeyVal('LST','lastline','Number');
 DefKeyVal('LST','showlines','','true');
-DefKeyVal('LST','emptylines',''); # NOT YET HANDLED.
+DefKeyVal('LST','emptylines',''); # NOTE: NOT YET HANDLED.
 DefKeyVal('LST','gobble','Number');
 
 #======================================================================
@@ -153,48 +371,139 @@ DefKeyVal('LST','gobble','Number');
 # \lstdefinestyle{stylename}{keys}
 DefPrimitive('\lstdefinestyle{} RequiredKeyVals:LST',sub {
   my($stomach,$style,$keyvals)=@_;
-  AssignValue(lstStyleName($style)=>$keyvals); });
+  $style = uc(ToString(lstUnGroup($style)));
+  $style =~ s/\s+//g;
+  AssignValue('LST@STYLE@'.$style=>$keyvals); });
 
 DefKeyVal('LST','style','');
+DefMacro('\lst@@style Until:\end', sub { 
+  my($gullet,$style)=@_;
+  if($style = uc(ToString(lstUnGroup($style)))){
+    $style =~ s/\s+//g;
+    if(my $values = LookupValue('LST@STYLE@'.$style)){
+      lstActivate($values); }
+    else {
+      Warn("expected:$style No listings style $style found"); }}
+  return; });
+
+sub lstActivateLanguage {
+  my($language,$dialect)=@_;
+  $language = uc(ToString($language)); $language =~ s/\s+//g;
+  if($language){
+    $dialect = LookupValue('LSTDD@'.$language) unless $dialect && $dialect->unlist;
+    my $name = 'LST@LANGUAGE@'.$language;
+    if($dialect && $dialect->unlist){
+      $dialect  = uc(ToString($dialect)); $dialect =~ s/\s+//g;
+      $name .= '$'.$dialect; }
+    if(my $values = LookupValue($name)){
+      lstActivate($values); }
+    else {
+      Warn("expected:$name No listings language $language found"); }}}
+
 DefKeyVal('LST','language','');
+DefMacro('\lst@@language [] Until:\end', sub {
+  lstActivateLanguage($_[2],$_[1]); return; });
 DefKeyVal('LST','alsolanguage','');
+DefMacro('\lst@@alsolanguage [] Until:\end', sub {
+  lstActivateLanguage($_[2],$_[1]); return; });
+
 DefKeyVal('LST','defaultdialect','');
-DefKeyVal('LST','printpod','','true');	       # NOT YET HANDLED
-DefKeyVal('LST','usekeywordsintag','','true'); # NOT YET HANDLED
-DefKeyVal('LST','tagstyle','');		       # NOT YET HANDLED
-DefKeyVal('LST','markfirstintag','');	       # NOT YET HANDLED
-DefKeyVal('LST','makemacrouse','','true');     # NOT YET HANDLED
+DefMacro('\lst@@defaultdialect[] Until:\end', sub {
+  my($gullet,$dialect,$language)=@_;
+  $language = uc(ToString($language)); $language =~ s/\s+//g;
+  AssignValue('LSTDD@'.$language => $dialect); });
+
+DefKeyVal('LST','printpod','','true');	       # NOTE: NOT YET HANDLED
+
+DefKeyVal('LST','usekeywordsintag','','true'); # NOTE: NOT YET HANDLED; I don't even understand it
+DefKeyVal('LST','tagstyle','');
+DefMacro('\lst@@tagstyle Until:\end', sub {
+  lstSetClassStyle('tags',$_[1]); });
+DefKeyVal('LST','markfirstintag','');	       # NOTE: NOT YET HANDLED; I don't even understand it
+
+DefKeyVal('LST','makemacrouse','','true');     # NOTE: NOT YET HANDLED
 
 #======================================================================
 # 4.6 Appearance
 #======================================================================
 DefKeyVal('LST','basicstyle','');
 
-# rest are NOT YET HANDLED
 DefKeyVal('LST','identifierstyle','');
+DefMacro('\lst@@identifierstyle Until:\end', sub {
+  lstSetClassStyle('identifiers',$_[1]); });
+
+DefKeyVal('LST','commentstyle','');
+DefMacro('\lst@@commentstyle Until:\end', sub {
+  lstSetClassStyle('comments',$_[1]); });
+
 DefKeyVal('LST','stringstyle','');
+DefMacro('\lst@@stringstyle Until:\end', sub {
+  lstSetClassStyle('strings',$_[1]); });
+
 DefKeyVal('LST','keywordstyle','');
+DefMacro('\lst@@keywordstyle [Number] OptionalMatch:* Until:\end', sub {
+  lstSetClassStyle(lstClassName('keywords',$_[1]),$_[3], uppercase=>$_[2]); });
 DefKeyVal('LST','ndkeywordstyle','');
-DefKeyVal('LST','classoffset','');
+DefMacro('\lst@@ndkeywordstyle Until:\end', sub {
+  lstSetClassStyle('keywords2',$_[1]); });
+
+DefKeyVal('LST','classoffset','Number');
+
 DefKeyVal('LST','texcsstyle','');
+DefMacro('\lst@@texcsstyle  OptionalMatch:* [Number] Until:\end', sub {
+  lstSetClassStyle(lstClassName('texcss',$_[2]),$_[3], slash=>$_[1]); });
 DefKeyVal('LST','directivestyle','');
+DefMacro('\lst@@directivestyle Until:\end', sub {
+  lstSetClassStyle('directives',$_[1]); });
+
 DefKeyVal('LST','emph','');
+DefMacro('\lst@@emph [Number] Until:\end', sub {
+  lstSetClassWords(lstClassName('emph',$_[1]),$_[2]); });
 DefKeyVal('LST','moreemph','');
+DefMacro('\lst@@moreemph [Number] Until:\end', sub {
+  lstAddClassWords(lstClassName('emph',$_[1]),$_[2]); });
 DefKeyVal('LST','deleteemph','');
+DefMacro('\lst@@deleteemph [Number] Until:\end', sub {
+  lstDeleteClassWords(lstClassName('emph',$_[1]),$_[2]); });
 DefKeyVal('LST','emphstyle','');
+DefMacro('\lst@@emphstyle [Number] Until:\end', sub {
+  lstSetClassStyle(lstClassName('emph',$_[1]),$_[2]); });
+
+
 DefKeyVal('LST','delim','');
+# \lst@delim=**[type][style]{delim}{delim2_if_needed}
+# *  allow keywords, comments & strings inside
+# * effects are cummulative
+DefMacro('\lst@@delim OptionalMatch:* OptionalMatch:* [] [] Until:\end', sub {
+	   # clear delimiters, first ???
+  lstAddDelimiter('delimiter',$_[3],$_[4],$_[5],
+		  ($_[1] ? (recurse=>1):()),
+		  ($_[2] ? (cummulative=>1):())); });
 DefKeyVal('LST','moredelim','');
+DefMacro('\lst@@moredelim OptionalMatch:* OptionalMatch:* [] [] Until:\end', sub {
+  lstAddDelimiter('delimiter',$_[3],$_[4],$_[5],
+		  ($_[1] ? (recurse=>1):()),
+		  ($_[2] ? (cummulative=>1):())); });
 
 #======================================================================
 # 4.7 Getting characters right.
 #======================================================================
-# NOT YET HANDLED
 DefKeyVal('LST','extendedchars','','true');
-DefKeyVal('LST','inputencoding','');
-DefKeyVal('LST','upquote','','true');
+DefMacro('\lst@@extendedchars Until:\end',sub {
+  my @chars = map(UTF($_), 128..255);
+  my $charslist =  LookupValue('LST_CHARACTERS');
+  if(ToString($_[1]) eq 'true'){
+    foreach my $char (@chars){
+      $$charslist{letter}{$char}=1; }}
+  else {
+    foreach my $char (@chars){
+      delete $$charslist{letter}{$char}; }}
+  return; });
+DefKeyVal('LST','inputencoding','');	    # Ignorable?
+DefKeyVal('LST','upquote','','true');	    # Ignorable?
 DefKeyVal('LST','tabsize','Number');
-DefKeyVal('LST','showtabs','','true');
-DefKeyVal('LST','tab','');
+DefKeyVal('LST','showtabs','','true'); # NOTE: Not yet handled
+DefKeyVal('LST','tab','');	       # NOTE: Not yet handled
 DefKeyVal('LST','showspaces','','true');
 DefKeyVal('LST','showstringspaces','','true');
 DefKeyVal('LST','formfeed','');
@@ -250,7 +559,7 @@ DefKeyVal('LST','breakautoindent','','true');
 #======================================================================
 # 4.11 Frames
 #======================================================================
-# NOT YET HANDLED; most are ignorable, but some could be used
+# Mosly ignorable, but some could be used
 DefKeyVal('LST','frame',''); # none | leftline | topline | bottomline | lines | single | shadowbox
 DefKeyVal('LST','framearound',''); # t|f * 4
 DefKeyVal('LST','framesep','Dimension');
@@ -268,11 +577,55 @@ DefKeyVal('LST','rulesepcolor','');
 #======================================================================
 # 4.12 Indexing
 #======================================================================
-# NOT YET HANDLED
 DefKeyVal('LST','index','');
+# HACK: The 2nd optional arg is a list of other classes that should also be indexed!!
+DefMacro('\lst@@index [Number] [] Until:\end', sub {
+  my($gullet,$n,$c,$words)=@_;
+  my $indexname = lstClassName('index',$n);
+  if($c){
+    my $classes =  LookupValue('LST_CLASSES');
+    my @classes = lstSplit($c);
+    map($$classes{$_}{index}=$indexname, @classes); }
+  my $wordslist =  LookupValue('LST_WORDS');
+  foreach my $word (keys %$wordslist){
+    delete $$wordslist{$word}{index} if ($$wordslist{$word}{index}||'') eq $indexname; }
+
+  my @words = lstSplit($words);
+  foreach my $word (@words){
+    $$wordslist{$word}{index} = $indexname; }
+  return; });
+
 DefKeyVal('LST','moreindex','');
+DefMacro('\lst@@moreindex [Number] [] Until:\end', sub {
+  my($gullet,$n,$c,$words)=@_;
+  my $indexname = lstClassName('index',$n);
+  if($c){
+    my $classes =  LookupValue('LST_CLASSES');
+    my @classes = lstSplit($c);
+    map($$classes{$_}{index}=$indexname, @classes); }
+  my $wordslist =  LookupValue('LST_WORDS');
+  my @words = lstSplit($words);
+  foreach my $word (@words){
+    $$wordslist{$word}{index} = $indexname; }
+  return; });
+
 DefKeyVal('LST','deleteindex','');
+DefMacro('\lst@@deleteindex [Number] [] Until:\end', sub {
+  my($gullet,$n,$c,$words)=@_;
+  my $indexname = lstClassName('index',$n);
+  if($c){
+    my $classes =  LookupValue('LST_CLASSES');
+    my @classes = lstSplit($c);
+    foreach my $cl (@classes){
+      delete $$classes{$cl}{index} if ($$classes{$cl}{index}||'') eq $indexname; }}
+  my $wordslist =  LookupValue('LST_WORDS');
+  foreach my $word (keys %$wordslist){
+    delete $$wordslist{$word}{index} if ($$wordslist{$word}{index}||'') eq $indexname; }
+  return; });
+
 DefKeyVal('LST','indexstyle','');
+DefMacro('\lst@@indexstyle [Number] Until:\end', sub {
+  lstSetClassStyle(lstClassName('index',$_[1]),$_[2]); });
 
 DefMacro('\lstindexmacro{}','\index{{\ttfamily #1}}');
 
@@ -290,18 +643,59 @@ DefKeyVal('LST','fontadjust','','true');
 #======================================================================
 # 4.14 Escaping to LaTeX
 #======================================================================
-# NOT YET HANDLED
+
 DefKeyVal('LST','texcl','','true');
+DefMacro('\lst@@texcl Until:\end',sub {
+  my($gullet,$boole)=@_;
+  my $classes = LookupValue('LST_CLASSES');
+  # This only gets comments classes already defined!! Is that correct?
+  my @commentclasses = grep(/^comment/, keys %$classes);
+  if(ToString($boole) eq 'true'){
+    map( $$classes{$_}{eval}=1, @commentclasses); }
+  else {
+    map( delete $$classes{$_}{eval}, @commentclasses); }
+  return; });
+
 DefKeyVal('LST','mathescape','','true');
+DefMacro('\lst@@mathescape Until:\end',sub {
+  my($gullet,$boole)=@_;
+  if(ToString($boole) eq 'true'){
+    LookupValue('LST_DELIMITERS')->{'$'} = { open=>'\$', close=>'\$', class=>'mathescape', escape=>1};
+    LookupValue('LST_CLASSES')->{mathescape} = { begin=>T_MATH, end=>T_MATH, eval=>1}; }
+  else {
+    delete(LookupValue('LST_DELIMITERS')->{'$'}); }
+  return; });
 DefKeyVal('LST','escapechar','');
+DefMacro('\lst@@escapechar Until:\end',sub {
+  my($gullet,$escape)=@_;
+  $escape = lstDeslash($escape);
+  if($escape){
+    my $escapere = lstRegexp($escape);
+    LookupValue('LST_DELIMITERS')->{$escape} = {open=>$escapere,close=>$escapere,class=>'evaluate',escape=>1};
+    LookupValue('LST_CLASSES')->{evaluate}{eval}=1; }
+  return; });
 DefKeyVal('LST','escapeinside','');
+DefMacro('\lst@@escapeinside Until:\end',sub {
+  my($gullet,$escape)=@_;
+  my($escape1,$escape2)=map(lstDeslash($_), $escape->unlist);
+  if($escape1 && $escape2){
+    LookupValue('LST_DELIMITERS')->{$escape1} = { open=>lstRegexp($escape1),close=>lstRegexp($escape2),
+						  class=>'evaluate', escape=>1};
+    LookupValue('LST_CLASSES')->{evaluate}{eval}=1; }
+  return; });
 DefKeyVal('LST','escapebegin','');
+DefMacro('\lst@@escapebegin Until:\end',sub {
+  LookupValue('LST_CLASSES')->{evaluate}{begin}=$_[1];
+  return; });
 DefKeyVal('LST','escapeend','');
+DefMacro('\lst@@escapeend Until:\end',sub {
+  LookupValue('LST_CLASSES')->{evaluate}{end}=$_[1];
+  return; });
 
 #======================================================================
 # 4.15 Interface to fancyvrb
 #======================================================================
-# NOT YET HANDLED, probably won't be
+# NOTE: fancyvrb Not yet handled, probably won't be
 DefKeyVal('LST','fancyvrb','','true');
 DefKeyVal('LST','fvcmdparams','');
 DefKeyVal('LST','morefvcmdparams','');
@@ -309,12 +703,24 @@ DefKeyVal('LST','morefvcmdparams','');
 #======================================================================
 # 4.16 Environments
 #======================================================================
-# NOT YET HANDLED
-DefPrimitive('\lstnewenvironment {}[Number][]{}{}',undef);
+DefPrimitive('\lstnewenvironment {}[Number][]{}{}',sub {
+  my($stomach,$name, $n, $opt,$start,$end)=@_;
+  $name = ToString($name);
+  DefMacroI(T_CS("\\begin{$name}"),LaTeXML::Package::convertLaTeXArgs($n,$opt),
+	  sub {
+	    my($gullet,@args)=@_;
+	    $STATE->getStomach->bgroup; 
+	    Digest(Tokens(LaTeXML::Expandable::substituteTokens($start,@args)));
+	    my $text = join('',$gullet->getMouth->readRawLines("\\end{$name}"));
+	    $text =~ s/^\s*?\n//s;
+	    my @expansion = lstProcessBlock(lstGetTokens('name'),$text);
+	    push(@expansion,LaTeXML::Expandable::substituteTokens($end,@args));
+	    $STATE->getStomach->egroup;
+	    @expansion; });
+ });
 
 #======================================================================
 # 4.17 Language definitions
-#======================================================================
 #======================================================================
 
 # \lstdefinelanguage[dialect]{language}[base_dialect]{base_language_if_base_dialect}{keys}[required_aspects]
@@ -324,13 +730,17 @@ Let(T_CS('\lst@definelanguage'),T_CS('\lstdefinelanguage'));
 
 DefPrimitive('\@lstdefinelanguage []{}[]{} SkipSpaces RequiredKeyVals:LST []',sub {
   my($stomach,$dialect,$language,$base_dialect,$base_language,$keyvals,$aspects)=@_;
-# NOTE: $dialact should NOT default to the default dialect!
-  $language = '['.ToString($dialect).']'.ToString($language) if $dialect;
-  $base_language = '['.ToString($base_dialect).']'.ToString($base_language) if $base_dialect;
-  # Apparently, the base language values aren't added in now, but at invocation time.
-  my $name = lstLanguageName($language);
+  my @base=();
+  if($base_language->unlist){
+    push(@base,T_OTHER('['),$base_dialect->unlist,T_OTHER(']')) if $base_dialect;
+    push(@base,$base_language->unlist); }
+  $language = uc(ToString($language)); $language =~ s/\s+//g;
+  my $name = 'LST@LANGUAGE@'.$language;
+  if($dialect && $dialect->unlist){
+    $dialect  = uc(ToString($dialect)); $dialect =~ s/\s+//g;
+    $name .= '$'.$dialect; }
   AssignValue($name
-	      => LaTeXML::KeyVals->new('LST','[',']',language=>$base_language, $keyvals->getPairs)); });
+	      => LaTeXML::KeyVals->new('LST','[',']',(@base ? (language=>Tokens(@base)):()), $keyvals->getPairs)); });
 
 # Seems to use <language>$<dialect> as the naming scheme.
 DefPrimitive('\lstalias []{} []{}',sub {
@@ -338,45 +748,94 @@ DefPrimitive('\lstalias []{} []{}',sub {
 # NOTE! Figure out how aliasing is supposed to work...?
 return; });
 
-# Uh... Why LSTDEF ?
-# None of these are handled yet.
-# keywords
-DefKeyVal('LSTDEF','keywordprefix','');
-DefKeyVal('LSTDEF','keywords', 'Semiverbatim');
-DefKeyVal('LSTDEF','morekeywords','Semiverbatim');
-DefKeyVal('LSTDEF','deletekeywords','Semiverbatim');
-DefKeyVal('LSTDEF','ndkeywords','Semiverbatim');
-DefKeyVal('LSTDEF','morendkeywords','Semiverbatim');
-DefKeyVal('LSTDEF','deletendkeywords','Semiverbatim');
-DefKeyVal('LSTDEF','texcs','');
-DefKeyVal('LSTDEF','moretexcs','');
-DefKeyVal('LSTDEF','deletetexcs','');
-DefKeyVal('LSTDEF','directives','Semiverbatim');
-DefKeyVal('LSTDEF','moredirectives','Semiverbatim');
-DefKeyVal('LSTDEF','deletedirectives','Semiverbatim');
-DefKeyVal('LSTDEF','sensitive','','true');
-DefKeyVal('LSTDEF','alsoletter','');
-DefKeyVal('LSTDEF','alsodigit','');
-DefKeyVal('LSTDEF','alsoother','');
-DefKeyVal('LSTDEF','otherkeywords','');
+# keywords (keywordstyle in section 4.6)
+DefKeyVal('LST','keywordprefix',''); #  ???
+DefKeyVal('LST','keywords', 'Semiverbatim');
+DefMacro('\lst@@keywords [Number] Until:\end', sub {
+  lstSetClassWords(lstClassName('keywords',$_[1]),$_[2]); });
+DefKeyVal('LST','morekeywords','Semiverbatim');
+DefMacro('\lst@@morekeywords [Number] Until:\end', sub {
+  lstAddClassWords(lstClassName('keywords',$_[1]),$_[2]); });
+DefKeyVal('LST','deletekeywords','Semiverbatim');
+DefMacro('\lst@@deletekeywords [Number] Until:\end', sub {
+  lstDeleteClassWords(lstClassName('keywords',$_[1]),$_[2]); });
+
+DefKeyVal('LST','ndkeywords','Semiverbatim');
+DefMacro('\lst@@ndkeywords Until:\end', sub {
+  lstSetClassWords('keywords2',$_[1]); });
+DefKeyVal('LST','morendkeywords','Semiverbatim');
+DefMacro('\lst@@morendkeywords Until:\end', sub {
+  lstAddClassWords('keywords2',$_[1]); });
+DefKeyVal('LST','deletendkeywords','Semiverbatim');
+DefMacro('\lst@@deletendkeywords Until:\end', sub {
+  lstDeleteClassWords('keywords2',$_[1]); });
+
+DefKeyVal('LST','texcs','');
+DefMacro('\lst@@texcs [Number] Until:\end', sub {
+  AssignValue('LST@TEXCS'=>1);
+  lstSetClassWords(lstClassName('texcss',$_[1]),$_[2],"\\"); });
+DefKeyVal('LST','moretexcs','');
+DefMacro('\lst@@moretexcs [Number] Until:\end', sub {
+  AssignValue('LST@TEXCS'=>1);
+  lstAddClassWords(lstClassName('texcss',$_[1]),$_[2],"\\"); });
+DefKeyVal('LST','deletetexcs','');
+DefMacro('\lst@@deletetexcs [Number] Until:\end', sub {
+  lstDeleteClassWords(lstClassName('texcss',$_[1]),$_[2],"\\"); });
+
+# directives (directivestyle in section 4.6)
+DefKeyVal('LST','directives','Semiverbatim');
+DefMacro('\lst@@directives Until:\end', sub {
+  lstSetClassWords('directives',$_[1]); });
+DefKeyVal('LST','moredirectives','Semiverbatim');
+DefMacro('\lst@@moredirectives Until:\end', sub {
+  lstAddClassWords('directives',$_[1]); });
+DefKeyVal('LST','deletedirectives','Semiverbatim');
+DefMacro('\lst@@deletedirectives Until:\end', sub {
+  lstDeleteClassWords('directives',$_[1]); });
+
+DefKeyVal('LST','sensitive','','true');
+DefKeyVal('LST','alsoletter','');
+DefMacro('\lst@@alsoletter Until:\end', sub {
+  lstSetCharacterClass('letter',$_[1]); });
+DefKeyVal('LST','alsodigit','');
+DefMacro('\lst@@alsodigit Until:\end', sub {
+  lstSetCharacterClass('digit',$_[1]); });
+DefKeyVal('LST','alsoother','');
+DefMacro('\lst@@alsoother Until:\end', sub {
+  lstSetCharacterClass('other',$_[1]); });
+DefKeyVal('LST','otherkeywords',''); # NOTE: Not yet handled
+
+DefKeyVal('LST','tag','');
+DefMacro('\lst@@tag OptionalMatch:* OptionalMatch:* [] Until:\end', sub {
+  lstAddDelimiter('delimiter',$_[3],'tagstyle',$_[4],
+		  ($_[1] ? (recurse=>1):()),
+		  ($_[2] ? (cummulative=>1):())); });
 
 # Strings
-DefKeyVal('LSTDEF','string','');
-DefKeyVal('LSTDEF','morestring','');
-DefKeyVal('LSTDEF','deletestring','');
+DefKeyVal('LST','string','');
+DefMacro('\lst@@string [] Until:\end', sub {
+  lstAddDelimiter('string',$_[1],'stringstyle',$_[2]); });
+DefKeyVal('LST','morestring','');
+DefMacro('\lst@@morestring [] Until:\end', sub {
+  lstAddDelimiter('string',$_[1],'stringstyle',$_[2]); });
+DefKeyVal('LST','deletestring','');
+# How to handle???
 
 # Comments
-DefKeyVal('LSTDEF','comment','');
-DefKeyVal('LSTDEF','morecomment','');
-DefKeyVal('LSTDEF','deletecomment','');
-DefKeyVal('LSTDEF','keywordcomment','');
-DefKeyVal('LSTDEF','morekeywordcomment','');
-DefKeyVal('LSTDEF','deletekeywordcomment','');
-DefKeyVal('LSTDEF','keywordcommentsemicolon','');
-DefKeyVal('LSTDEF','podcomment','','true');
+DefKeyVal('LST','comment','');
+DefMacro('\lst@@comment [] [] Until:\end', sub {
+  lstAddDelimiter('comment',$_[1],'commentstyle',$_[3]); });
+DefKeyVal('LST','morecomment','');
+DefMacro('\lst@@morecomment [] [] Until:\end', sub {
+  lstAddDelimiter('comment',$_[1],'commentstyle',$_[3]); });
+DefKeyVal('LST','deletecomment','');
+# How to handle???
 
-# ????
-# ndkeywordstyle=keywordstyle,texcsstyle=keywordstyle,directivestyle=keywordstyle
+DefKeyVal('LST','keywordcomment','');
+DefKeyVal('LST','morekeywordcomment','');
+DefKeyVal('LST','deletekeywordcomment','');
+DefKeyVal('LST','keywordcommentsemicolon','');
+DefKeyVal('LST','podcomment','','true');
 
 DefPrimitive('\lstloadlanguages Semiverbatim', undef);
 
@@ -384,261 +843,230 @@ DefPrimitive('\lstloadlanguages Semiverbatim', undef);
 # Process the listing
 #   The listing is supplied as a list of strings
 #   The result is a Tokens containing the formatted results
-#======================================================================
-# the text suggests that the order things are defined matters
-# ("define the shortest first" for declarations that start the same).
-# This suggests that the way to match is for each char,
-# scan the sequence of patterns and the 1st one makes transition.
-# (finite state machine?).
-
 sub lstProcess {
-  my(@lines)=@_;
+  my($text)=@_;
 
   # === Return nothing if print is false
   return Tokens() unless lstGetBoolean('print');
 
   # === Possibly strip trailing blank lines.
-  # Not sure if this is supposed to trim from the whole listing, or the requested subset(s) of lines!
+  # NOTE: Not sure if this is supposed to trim from the whole listing, or the requested subset(s) of lines!
   if(!lstGetBoolean('showlines')){ # trim empty lines from end.
-    while( @lines &&  ($lines[$#lines] =~ /^\s*$/)){
-      pop(@lines); }}
+    $text =~ s/\s*$//s; }
 
   # === Establish line numbering parameters
   my $name = lstGetLiteral('name');
   my $firstnumber = lstGetLiteral('firstnumber');
   my $line0 = (($firstnumber eq 'last')
-	       ? (LookupValue('LISTINGS_LAST_NUMBER') || 0)
+	       ? (LookupValue('LISTINGS_LAST_NUMBER') || 1)
 	       : ($firstnumber eq 'auto' 
-		  ? (($name && LookupValue('LISTINGS_LAST_NUMBER_'.$name)) || 0)
-		  : $firstnumber-1));
-  my $linen = $line0 + scalar(@lines);
-  my $ndigits = int(log($linen)/log(10)+0.9999);
-  my $numberpos =  ((lstGetNumber('stepnumber') == 0) ? 'none' : lstGetLiteral('numbers'));
-  AssignValue('LISTINGS_NEEDS_NUMBER'=>(($numberpos ne 'none') && lstGetBoolean('numberfirstline')));
-  AssignValue('\c@lstnumber' => Number($line0),'global');
+		  ? (($name && LookupValue('LISTINGS_LAST_NUMBER_'.$name)) || 1)
+		  : $firstnumber));
+  my $numpos =  ((lstGetNumber('stepnumber') == 0) ? 'none' : lstGetLiteral('numbers'));
+  AssignValue('LISTINGS_NEEDS_NUMBER'=>(($numpos ne 'none') && lstGetBoolean('numberfirstline')));
 
   # === Create a line test based on linerange, or firstline & lastline
   my $linetest = sub { 1; };
   my($l1,$l2);
   if(my $lr = lstGetLiteral('linerange')){
-    my @lr = map([split(/-/,$_)], split(/,/,$lr));
+    my @lr = map([split(/-/,$_)], lstSplit($lr));
     $linetest = sub { grep( ($$_[0] <= $_[0]) && ($_[0] <= $$_[1]), @lr); }; }
   elsif(($l1 = lstGetNumber('firstline'))
-	&& ($l2 = lstGetNumber('lastline'))
-	&& (($l1 > $line0) || ($l2 < $linen))){
+	&& ($l2 = lstGetNumber('lastline'))){
     $linetest = sub { ($l1 <= $_[0]) && ($_[0] <= $l2); }; }
 
-  # === Set up some data for delimiters (non-nesting)
-  my %delimiters = ();
-  if(my $domath = lstGetBoolean('mathescape')){
-     $delimiters{'$'} = {close=>'$',begin=>'$',end=>'$', eval=>1}; }
-  if(my $escape = lstGetDelimiter('escapechar')){
-     $delimiters{$escape} = {close=>$escape, eval=>1}; }
-  my($escape0,$escape1) = lstGetDelimiterPair('escapeinside');
-  if($escape0){
-     $delimiters{$escape0} = {close=>$escape1, eval=>1}; }
-#  my $delimregexp = join('|',map("\\Q$_\\E",keys %delimiters));
+  local $LaTeXML::linetest = $linetest;
+  # === These hashes have been set up by "activating" the various keywords.
+  my $words      = LookupValue('LST_WORDS');
+  my $delimiters = LookupValue('LST_DELIMITERS');
+  my $classes    = LookupValue('LST_CLASSES');
+  my $characters = LookupValue('LST_CHARACTERS');
+  # === Extract some regexps to match various important things
+  my $letter_re = join('', sort keys %{$$characters{letter}});
+  my $digit_re  = join('', sort keys %{$$characters{digit}});
+  local $LaTeXML::ID_RE     = (LookupValue('LST@TEXCS') ? "\\\\?" : '')."[$letter_re][$letter_re$digit_re]*";
 
-  my $delimregexp = join('|',map("\\$_",keys %delimiters));
+  local $LaTeXML::DELIM_RE  = join('|',map($$delimiters{$_}{open}, sort keys %$delimiters));
+  local $LaTeXML::ESCAPE_RE  = join('|',map($$delimiters{$_}{open},
+					    grep($$delimiters{$_}{escape}, sort keys %$delimiters)));
+  local $LaTeXML::QUOTED_RE  = undef;
+  local $LaTeXML::SPACE = (lstGetBoolean('showspaces') ? T_CS('\@lst@visible@space') : T_CS("~"));
+  local $LaTeXML::CASE_SENSITIVE = lstGetBoolean('sensitive');
+  if(!$LaTeXML::CASE_SENSITIVE){ # Clunky, but until know, we don't know
+    foreach my $word (keys %$words){
+      $$words{uc($word)} = $$words{$word}; }}
 
+#  print STDERR "ID_RE : $LaTeXML::ID_RE\n";
+#  print STDERR "ESCAPE_RE : $LaTeXML::ESCAPE_RE\n";
+#  print STDERR "DELIM_RE : $LaTeXML::DELIM_RE\n";
+#  print STDERR "WORDS: ".join(',',map("$_=".join('+',keys %{$$words{$_}}), keys %$words))."\n";
+#  foreach my $cl (keys %$classes){
+#    print STDERR "CLASS: $cl ".join(',',map("$_=".ToString($$classes{$cl}{$_}), keys %{$$classes{$cl}}))."\n"; }
   # === Start processing
-  my $gobble = lstGetNumber('gobble');
+  # This whole set of vars probably needs to be adjusted,
+  # since we'll need to recognize constructs inside strings that we've already pulled out (strings,comments)
+  # Better would be to treat the whole string.
+  # then gobble lines etc, can probably work...
+  local $LaTeXML::linenum = $line0;
+  local $LaTeXML::colnum = 0;
+  local $LaTeXML::listing = $text;
+  my @tokens = ();
+  push(@tokens,lstGetTokens('basicstyle')->unlist);
 
-  local @LaTeXML::LST_LINES = @lines;
-  local $LaTeXML::LST_LINE = $line0;
-  local $LaTeXML::LST_COL = 0;
-  local @LaTeXML::LST_TOKENS = ();
-  lstPush(lstGetTokens('basicstyle')->unlist);
-  my $tmp;
-  while(@LaTeXML::LST_LINES){
-    my $line = lstNextLine();
-    # === Possibly remove $gobble chars from line
-    map( $line =~ s/^.//, 1..$gobble) if $gobble;
-
-    next unless &$linetest($LaTeXML::LST_LINE);
-    my $isempty = $line =~ /^\s*$/;
-    lstPush(listingsDoNumber($ndigits,$isempty)) if $numberpos eq 'left';
-
-    # do something about $emptylines and/or $showlines ???
-
-    while($line){
-      # First we'll need to deal with various escapes & delimiters.
-      # Probably can do something more general leftdelim=>(rightdelim, before,after)
-      if($delimregexp && $line=~ s/^($delimregexp)//){
-	my $entry = $delimiters{$1};
-	($line,$tmp) = lstUntilMatch($line,$$entry{close});
-	lstPush(Tokenize(($$entry{begin}||'').$tmp.($$entry{end}||''))); }
-      elsif($line =~ s/^\t//s){	   # Tab expansion
-	lstPush(T_CS("~"));  # Actually, some number of them
-	$LaTeXML::LST_COL++; }
-      elsif($line =~ s/^\n//s){	   # Newline
-	lstPush(T_CS("\\\\")); }
-      elsif($line =~ s/^\s//s){	# Space (nonbreak)
-	lstPush(T_CS("~"));
-	$LaTeXML::LST_COL++; }
-      elsif($line =~ s/^(.)//s){ # Anything else, just pass through.
-	lstPush(T_OTHER($1));
-	$LaTeXML::LST_COL++; }
-      else { last; }}
-
-    lstPush(listingsDoNumber($ndigits,$isempty)) if $numberpos eq 'right';
-  }
+  while($LaTeXML::listing && ! &$linetest($LaTeXML::linenum)){	# Ignore initial lines?
+    $LaTeXML::listing =~ s/^.*?\n//s;
+    $LaTeXML::linenum++; }
+  push(@tokens,Invocation(T_CS('\setcounter'),T_OTHER('lstnumber'), Number($LaTeXML::linenum)));
+  push(@tokens,Invocation(T_CS('\@lst@startline'),($numpos eq 'left')&& lstDoNumber($LaTeXML::listing=~/^\s*?\n/s)));
+  push(@tokens,lstProcess_internal());
+  push(@tokens,Invocation(T_CS('\@lst@endline'),($numpos eq 'right')&& lstDoNumber()));
 
   # === Save line number for possible later use.
   AssignValue('LISTINGS_LAST_NUMBER' => CounterValue('lstnumber')->valueOf, 'global');
   AssignValue('LISTINGS_LAST_NUMBER_'.$name => CounterValue('lstnumber')->valueOf, 'global') if $name;
 
   # === And finally, return the tokens we've constructed.
-  Tokens(@LaTeXML::LST_TOKENS); }
+#  print STDERR "LISTING=>".ToString(Tokens(@tokens))."\n";
+  Tokens(@tokens); }
 
-sub lstPush {
-  push(@LaTeXML::LST_TOKENS, @_); }
-
-sub lstNextLine {
-    lstPush(Invocation(T_CS('\stepcounter'),T_OTHER('lstnumber')));
-    $LaTeXML::LST_LINE++;	# Increment line number
-    $LaTeXML::LST_COL = 0; # Reset column number
-    shift(@LaTeXML::LST_LINES); } # And return next line.
-
-sub lstUntilMatch {
-  my($line,$char)=@_;
-  my $acc = '';
-  while(defined $line){
-    if($line =~ s/^([^\Q$char\E]*)\Q$char\E//){
-      $acc .= $1;
-      $LaTeXML::LST_COL += length($1)+1;
+sub lstProcess_internal {
+  my($end_re)=@_;
+  my $numpos =  ((lstGetNumber('stepnumber') == 0) ? 'none' : lstGetLiteral('numbers'));
+  my $words      = LookupValue('LST_WORDS');
+  my $delimiters = LookupValue('LST_DELIMITERS');
+  my $classes    = LookupValue('LST_CLASSES');
+  my @tokens=();
+  while ($LaTeXML::listing) {
+    # Matched the ending regular expression? (typically a close delimiter)
+    if($end_re && $LaTeXML::listing =~ s/^($end_re)//s){
+      $LaTeXML::colnum += length($1);
       last; }
-    else {
-      $acc .= $line;
-      $line = lstNextLine(); }}
-  ($line,$acc); }		# shouldn't end up here...
+    # Various kinds of delimited expressions: escapes, strings, comments, general delimiters.
+    elsif ($LaTeXML::DELIM_RE && $LaTeXML::listing=~ s/^($LaTeXML::DELIM_RE)//s) {
+      my $open = $1;
+      $LaTeXML::colnum += length($1);
+      my $delim = $$delimiters{$1};
+      my $classname = $$delim{class};
+      push(@tokens,lstClassBegin($classname));
+      # With escapes or texcl, some might be evaluated as TeX; those we match the close delim and simply tokenize.
+      if(lstClassProperty($classname,'eval')){ # If this is a comment with texcl applied, just match & expand
+	$LaTeXML::listing =~ s/^(.*?)($$delim{close})//s; # Simply match until closing regexp
+	my($string,$close)=($1,$2);
+	my @l = split("\n",$string.$close); # This is the only(?) potentially multiline block
+	$LaTeXML::linenum += scalar(@l)-1 if @l > 2; # So adjust line & column
+	push(@tokens,Tokenize($string)); }
+      # Others become tricky because the contents of the string, comment etc may need to be processed
+      # including matching _some_ delimited expressions!
+      #   escaped constructs are always matched.
+      #   nested : allows comments to be nested (ie the SAME delimiter pair)
+      #   recursive: allows any(?) "comments, strings & keywords" to be matched inside.
+      else {
+	local $LaTeXML::DELIM_RE = ($$delim{recursive}
+				    ? $LaTeXML::DELIM_RE
+				    : join('|',grep($_,$LaTeXML::ESCAPE_RE,$$delim{nested} && $$delim{open})));
+	local $LaTeXML::ID_RE    = ($$delim{recursive} ? $LaTeXML::ID_RE : undef);
+	local $LaTeXML::QUOTED_RE  = join('|',grep($_,$LaTeXML::QUOTED_RE,$$delim{quoted}));
+	local $LaTeXML::SPACE = ($classname && ($classname=~/^string/) && lstGetBoolean('showstringspaces')
+				 ? T_CS('\@lst@visible@space') :  $LaTeXML::SPACE);
+	# Recurse [note that eval should make the individual tokens tokenize as usual!]
+	push(@tokens,lstProcess_internal($$delim{close})); }
+      push(@tokens,lstClassEnd($classname)); }
+    # Identifiers (possibly keywords, or other classes)
+    elsif ($LaTeXML::ID_RE && $LaTeXML::listing =~ s/^($LaTeXML::ID_RE)//) {
+      my $word = $1;
+      my $lookup = ($LaTeXML::CASE_SENSITIVE ? $word : uc($word));
+      my $classname = $$words{$lookup}{class};
+      my @w = Explode($word);
+      if(my $indexname = $$words{$lookup}{index} || lstClassProperty($classname,'index')){ # Should be indexed?
+	if(my $index = $indexname && $$classes{$indexname}){
+	  push(@tokens,$$index{begin}->unlist,T_BEGIN,@w,T_END); }}
+      push(@tokens,lstClassBegin($classname),@w,lstClassEnd($classname)); }
+    # NOTE: keywordprefix & otherkeywords probably need a specific regexp
+    # Perhaps a special keywords_re : otherkeywords | keywordprefix$LaTeXML::ID_RE => keyword
 
-# NOTE: Need to do something to wrap these numbers (or spaces) so that they all take the same width!
-sub listingsDoNumber {
-  my($ndigits,$isempty)=@_;
+    # Various kinds of whitespace, newlines, etc.
+    elsif ($LaTeXML::listing =~ s/^\s*?\n//s) { # Newline
+      push(@tokens,Invocation(T_CS('\@lst@endline'),($numpos eq 'right')&& lstDoNumber($LaTeXML::colnum==1)));
+      push(@tokens,Invocation(T_CS('\stepcounter'),T_OTHER('lstnumber')));
+      $LaTeXML::linenum++;	# Increment line number
+      $LaTeXML::colnum = 0; # Reset column number
+      # NOTE: should ignore blank lines at end of listing, even if they aren't the last line of the code!
+      # NOTE: should handle showlines, emptylines keywords
+      while($LaTeXML::listing && ! &$LaTeXML::linetest($LaTeXML::linenum)){	# Ignore next line?
+	$LaTeXML::listing =~ s/^.*?(\n|$)//s;
+	push(@tokens,Invocation(T_CS('\stepcounter'),T_OTHER('lstnumber')));
+	$LaTeXML::linenum++; }
+      push(@tokens,Invocation(T_CS('\@lst@startline'),($numpos eq 'left')&& lstDoNumber($LaTeXML::listing=~/^\s*?\n/s)));
+      # === Possibly remove $gobble chars from line
+      my $gobble = lstGetNumber('gobble');
+      map( $LaTeXML::listing =~ s/^.//, 1..$gobble) if $gobble;
+    }
+    elsif ($LaTeXML::listing =~ s/^\t//s) { # Tab expansion
+      my $tabsize = lstGetNumber('tabsize') || 1;
+      my $n = ($tabsize-($LaTeXML::colnum % $tabsize));
+      push(@tokens,map($LaTeXML::SPACE,1..$n));
+      $LaTeXML::colnum+=$n; }
+    elsif ($LaTeXML::listing =~ s/^\f//s) { # Formfeed
+      push(@tokens,lstGetTokens('formfeed')->unlist);
+      $LaTeXML::colnum++; }
+    elsif ($LaTeXML::listing =~ s/^\s//s) { # Space (nonbreak)
+      push(@tokens,$LaTeXML::SPACE);
+      $LaTeXML::colnum++; }
+    # Quoted are typically quoted delimiters.
+    elsif($LaTeXML::QUOTED_RE && $LaTeXML::listing =~ s/^($LaTeXML::QUOTED_RE)//){  # Something quoted.
+      push(@tokens,T_OTHER($1));
+      $LaTeXML::colnum += length($1); }
+    else {
+      $LaTeXML::listing =~ s/^(.)//s; # Anything else, just pass through.
+	push(@tokens,T_OTHER($1));
+      $LaTeXML::colnum++; }
+  }
+  @tokens; }
+
+sub lstClassBegin {
+  my($classname)=@_;
+  my $class = $classname && LookupValue('LST_CLASSES')->{$classname};
+  ($class
+   ? ( T_BEGIN, ($$class{begin} ? $$class{begin}->unlist : ()), lstClassBegin($$class{class}))
+   : ()); }
+
+sub lstClassEnd {
+  my($classname)=@_;
+  my $class = $classname && LookupValue('LST_CLASSES')->{$classname};
+  ($class
+   ? ( lstClassEnd($$class{class}), ($$class{end} ? $$class{end}->unlist : ()), T_END)
+   : ()); }
+
+sub lstClassProperty {
+  my($classname,$property)=@_;
+  my $class = $classname && LookupValue('LST_CLASSES')->{$classname};
+  ($class && ($$class{$property} ? $$class{$property} : lstClassProperty($$class{class},$property))); }
+
+DefConstructor('\@lst@startline[]',
+	       "<ltx:tr>?#1(<ltx:td class='linenumber'>#1</ltx:td>)<ltx:td>");
+DefConstructor('\@lst@endline[]',
+	       "</ltx:td>?#1(<ltx:td class='linenumber'>#1</ltx:td>)</ltx:tr>");
+DefConstructor('\@lst@visible@space', "\x{2423}");
+
+sub lstDoNumber {
+  my($isempty)=@_;
   if( (LookupValue('LISTINGS_NEEDS_NUMBER')
-       || (($LaTeXML::LST_LINE % lstGetNumber('stepnumber')) == 0))
+       || (($LaTeXML::linenum % lstGetNumber('stepnumber')) == 0))
       && (lstGetBoolean('numberblanklines') || !$isempty) ){
     AssignValue('LISTINGS_NEEDS_NUMBER'=>0);
-    (T_BEGIN,lstGetTokens('numberstyle')->unlist,T_CS('\thelstnumber'),T_END,T_CS("~")); }
-  else {
-    (T_BEGIN,lstGetTokens('numberstyle')->unlist,map(T_CS("~"), 1..$ndigits),T_END,T_CS("~")); }}
-
-#======================================================================
-# Managing the sets of keyvals that compose a Listings Style or Language.
-#======================================================================
-# Assign (locally) all values from a Listings keyvals
-# This really needs to be macro driven: many keys have values with specific patterns
-# and specific effects.
-# Note that we operate on the Pairs form of keyvals to preserve
-# both the order and repetition of keys
-sub lstActivate {
-  my($kv)=@_;
-  if($kv){
-    my @pairs = $kv->getPairs();
-    while(@pairs){
-      my($key,$val)=(shift(@pairs),shift(@pairs));
-      if($key eq 'defaultdialect'){ 
-	$val = uc(ToString($val));
-	$val =~ s/\s+//g;
-	$val = $1 if $val =~ /^\{(.*?)\}$/;
-	if($val =~ /^\[([^\]]*)\](.*)$/){
-	  AssignValue('LSTDD@'.$2 => $1); }}
-      elsif($key eq 'language'){
-	lstActivateLanguage($val); }
-      elsif($key eq 'alsolanguage'){
-	lstActivateLanguage($val); }
-      elsif($key eq 'style'){
-	lstActivateStyle($val); }
-      else {
-	AssignValue('LST@'.$key=>$val); }}}}
-
-sub lstActivateStyle {
-  my($style)=@_;
-  $style = ToString($style);
-  if(my $name = lstStyleName($style)){
-    if(my $values = LookupValue($name)){
-#      print STDERR "Activating listings style $name\n";
-      lstActivate($values); }
-    else {
-      Warn("expected:$name No listings style $style found"); }}}
-
-sub lstActivateLanguage {
-  my($language)=@_;
-  $language = ToString($language);
-  # Probably something here about loading language files till we find one?
-  if(my $name = lstLanguageName($language)){
-    if(my $values = LookupValue($name)){
-#      print STDERR "Activating listings language $name\n";
-      lstActivate($values); }
-    else {
-      Warn("expected:$name No listings language $language found"); }}}
-
-sub lstStyleName {
-  my($style)=@_;
-  $style = uc(ToString($style));
-  $style = $1 if $style =~ /^\{(.*?)\}$/;
-  $style =~ s/\s+//g;
-  ($style ? 'LST@STYLE@'.$style : undef); }
-
-sub lstLanguageName {
-  my($language)=@_;
-  my $dialect='';
-  $language = uc(ToString($language));
-  $language = $1 if $language =~ /^\{(.*?)\}$/;
-  $language =~ s/\s+//g;
-  if($language =~ /^\[([^\]]*)\](.*)$/){
-    ($dialect,$language)=($1,$2); }
-  $dialect = LookupValue('LSTDD@'.$language) || '' unless $dialect;
-  ($language ? 'LST@LANGUAGE@'.$language.'$'.$dialect : undef); }
-
-# A rather bizarro set of keyword value parsing bits.
-# Perhaps should be handled by the keyval types themselves?
-sub lstGetLiteral { 
-  my $v = ToString(LookupValue('LST@'.$_[0]));
-  $v = $1 if $v =~ /^\{(.*?)\}$/;
-  $v; }
-sub lstGetBoolean { lstGetLiteral($_[0]) eq 'true'; }
-sub lstGetNumber  { my $n =LookupValue('LST@'.$_[0]); ($n ? $n->valueOf : 0); }
-
-sub lstGetTokens { 
-  if(my $v = LookupValue('LST@'.$_[0])){
-    my @t = $v->unlist;
-    if(@t && Equals($t[0],T_BEGIN) && Equals($t[$#t],T_END)){
-      Tokens(@t[1..$#t-1]); }
-    else {
-      Tokens(@t); }}
-  else {
-    Tokens(); }}
-
-sub lstGetNonEmptyTokens { 
-  if(my $v = LookupValue('LST@'.$_[0])){
-    my @t = $v->unlist;
-    if(@t && Equals($t[0],T_BEGIN) && Equals($t[$#t],T_END)){
-      (scalar(@t) > 2 ? Tokens(@t[1..$#t-1]) : undef); }
-    else {
-      (@t ? Tokens(@t) : undef); }}
-  else {
-    undef; }}
-
-sub lstGetDelimiter {
-  if(my $c = lstGetNonEmptyTokens($_[0])){
-    $c = ToString($c);
-    $c =~ s/^\\//;
-    $c; }}
-
-sub lstGetDelimiterPair {
-  if(my $p = lstGetNonEmptyTokens($_[0])){
-    my($a,$b)=map(ToString($_),$p->unlist);
-    $a =~ s/^\\//;
-    $b =~ s/^\\//;
-    ($a,$b); }}
+    Tokens(T_BEGIN,lstGetTokens('numberstyle')->unlist,T_CS('\thelstnumber'),T_END); }
+ else {
+   T_SPACE; }}
+#    (T_BEGIN,lstGetTokens('numberstyle')->unlist,T_CS("~"),T_END,T_CS("~")); }}
 
 #======================================================================
 # Initialize the various parameters...
 
 RawTeX(<<'EoTeX');
 \lstset{
+ alsoletter={abcdefghiklmnopqrstuvwxyzABCDEFGHIKLMNOPQRSTUVWXYZ@$\_},
+ alsodigit={0123456789},
+ alsoother={!"#\%&'()*+,-./:;<=>?[\\]^\{|\}~},
  float=tbp,floatplacement=tbp,aboveskip=\medskipamount,belowskip=\medskipamount,
  lineskip=0pt,boxpos=c,
  print=true,firstline=1,lastline=9999999,showlines=false,emptylines=9999999,gobble=0,
@@ -663,7 +1091,8 @@ RawTeX(<<'EoTeX');
  columns=[c]fixed,flexiblecolumns=false,keepspaces=false,basewidth={0.6em,0.45em},
  fontadjust=false,texcl=false,mathescape=false,escapechar={},escapeinside={},
  escapebegin={},escapeend={},
- fancyvrb=false,fvcmdparams=\overlay1,morefvcmdparams={}
+ fancyvrb=false,fvcmdparams=\overlay1,morefvcmdparams={},
+ ndkeywordstyle=keywordstyle,texcsstyle=keywordstyle,directivestyle=keywordstyle
 }
 EoTeX
 
@@ -696,10 +1125,8 @@ sub readRawConfigFile {
 sub lstLoadConfiguration {
   readRawConfigFile("listings.cfg");
   # And NOW read in the language definitions.
-  if(my $langfiles = ToString(Digest(T_CS('\lstlanguagefiles')))){
-    foreach my $file (split(/,/,$langfiles)){
-      readRawConfigFile($file); }}
-}
+  foreach my $file (lstSplit(Digest(T_CS('\lstlanguagefiles')))){
+    readRawConfigFile($file); }}
 
 lstLoadConfiguration();
 
