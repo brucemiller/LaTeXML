@@ -47,7 +47,7 @@
      Figures & Tables
      ====================================================================== -->
 
-<xsl:template match="ltx:figure | ltx:table" xml:space="preserve">
+<xsl:template match="ltx:figure | ltx:table | ltx:listing" xml:space="preserve">
   <div class='{f:classes(.)}'><xsl:call-template name="add_id"/><xsl:apply-templates/></div>
 </xsl:template>
 
@@ -67,6 +67,20 @@
     </xsl:if>
     <xsl:apply-templates/>
   </div>
+</xsl:template>
+
+<xsl:template match="ltx:listing/ltx:caption" xml:space="preserve">
+  <div class='{f:classes(.)}'>
+    <xsl:if test="../@refnum">
+      Listing <xsl:apply-templates select="../@refnum"/><xsl:text>. </xsl:text>
+    </xsl:if>
+    <xsl:apply-templates/>
+  </div>
+</xsl:template>
+<xsl:template match="ltx:listing/ltx:tabular" xml:space="preserve">
+  <table class="{f:classes(.)}">
+    <xsl:apply-templates/>
+  </table>
 </xsl:template>
 
 <xsl:template match="ltx:toccaption"/>

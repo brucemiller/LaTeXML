@@ -25,6 +25,7 @@ our %TYPEPREFIX =
    'ltx:equationgroup'=>'Eq.',
    'ltx:figure'       =>'Fig.',
    'ltx:table'        =>'Tab.',
+   'ltx:listing'      =>'Listing ',
    'ltx:chapter'      =>'Ch.',
    'ltx:part'         =>'Pt.',
    'ltx:section'      =>$SECTION,

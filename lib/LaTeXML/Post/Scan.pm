@@ -37,6 +37,7 @@ sub new {
 
   $self->registerHandler('ltx:table'         => \&captioned_handler);
   $self->registerHandler('ltx:figure'        => \&captioned_handler);
+  $self->registerHandler('ltx:listing'       => \&captioned_handler);
 
   $self->registerHandler('ltx:equation'      => \&labelled_handler);
   $self->registerHandler('ltx:equationmix'   => \&labelled_handler);

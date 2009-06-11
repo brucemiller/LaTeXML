@@ -16,7 +16,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 Para.class |=
      para
    | theorem | proof
-   | figure | table
+   | figure | table | listing
 
 para =
 ## A Logical paragraph. It has an \attr{id}, but not a \attr{label}.
@@ -64,6 +64,17 @@ element figure {
 table =
 ## A  Table, possibly captioned. This is not necessarily a \elementref{tabular}.
 element table {
+  Common.attributes,
+  Labelled.attributes,
+
+  ## the floating placement parameter that determines where the object is displayed.
+  attribute placement { text }?,
+
+  (Block.model | Caption.class)*  }
+
+listing =
+## A Listing, possibly captioned.
+element listing {
   Common.attributes,
   Labelled.attributes,
 

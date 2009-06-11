@@ -76,7 +76,7 @@ dl.description dl.description dd { margin-left:3em; }
 
 .indexlist li { list-style-type:none;  }
 .indexlist { margin-left:1em; padding-left:1em;}
-
+.listing td.linenumber { width:3em; text-align:right;}
 /*======================================================================
  Borders and such */
 .framed  { border:1px solid black;}
@@ -113,6 +113,7 @@ td[align="center"], th[align="center"] { white-space:nowrap; }
 .sansserif  { font-family: sans-serif; }
 .typewriter { font-family: monospace; }
 .bold       { font-weight: bold; }
+.medium     { font-weight: normal; }
 .italic     { font-style: italic; }
 .upright    { font-style: normal; }
 .slanted    { font-style: oblique; }

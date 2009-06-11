@@ -21,6 +21,7 @@
       <ref name="proof"/>
       <ref name="figure"/>
       <ref name="table"/>
+      <ref name="listing"/>
     </choice>
   </define>
   <define name="para">
@@ -86,6 +87,24 @@ Or, should caption be used for theorem and proof?</a:documentation>
   <define name="table">
     <element name="table">
       <a:documentation>A  Table, possibly captioned. This is not necessarily a \elementref{tabular}.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <optional>
+        <attribute name="placement">
+          <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
+        </attribute>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="Block.model"/>
+          <ref name="Caption.class"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="listing">
+    <element name="listing">
+      <a:documentation>A Listing, possibly captioned.</a:documentation>
       <ref name="Common.attributes"/>
       <ref name="Labelled.attributes"/>
       <optional>
