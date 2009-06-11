@@ -397,7 +397,8 @@ sub translate_constructor {
 	$code .= "\$document->absorb('".slashify($key)."=');\n"; }}
     # Else random text
     elsif(s/^$TEXT_RE//so){	# Else, just some text.
-      $code .= "\$document->absorb('".slashify($1)."');\n"; }
+      # Careful; need to respect the Whatsit's font, too!
+      $code .= "\$document->absorbText('".slashify($1)."',\$prop{'font'});\n"; }
   }
   $code; }
 

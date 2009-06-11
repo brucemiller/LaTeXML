@@ -235,6 +235,20 @@ sub absorb {
     # Odd case: constructors that work in math & text can insert raw strings in Math mode.
     $self->insertMathToken($box,font=>$LaTeXML::BOX->getFont); }}
 
+sub absorbText {
+  my($self,$string,$font)=@_;
+  if(!$LaTeXML::BOX->isMath){
+    $self->openText($string,$font); }
+  # Note that in math mode text nodes appear ONLY in <XMTok> or <text>!!!
+  # DO we have to worry about matching the font???
+  elsif($$self{model}->getNodeQName($$self{node}) eq $MATH_TOKEN_NAME){ # Already in a XMTok, just insert the text
+    print STDERR "Appending text \"$string\" to $MATH_TOKEN_NAME ".Stringify($$self{node})."\n"
+      if $LaTeXML::Document::DEBUG;
+    $self->openMathText_internal($string); }
+  else {			# Shouldn't happen?  Should I distinguish space from `real' stuff?
+    # Odd case: constructors that work in math & text can insert raw strings in Math mode.
+    $self->insertMathToken($string,font=>$font); }}
+
 #**********************************************************************
 # Low level internal interface
 sub openText_internal {
