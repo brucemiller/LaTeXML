@@ -2939,6 +2939,7 @@ DefConstructorI('\textexclamdown',   undef, UTF(0xA1)); # INVERTED EXCLAMATION M
 DefConstructorI('\textquestiondown', undef, UTF(0xBF));	# INVERTED QUESTION MARK
 DefConstructorI('\textquotedblleft', undef, "\x{201C}"); # LEFT DOUBLE QUOTATION MARK
 DefConstructorI('\textquotedblright',undef, "\x{201D}"); # RIGHT DOUBLE QUOTATION MARK
+DefConstructorI('\textquotedbl',     undef, "\"");       # plain ascii DOUBLE QUOTATION
 DefConstructorI('\textquoteleft',    undef, "\x{2018}");     # LEFT SINGLE QUOTATION MARK
 DefConstructorI('\textquoteright',   undef, "\x{2019}");    # RIGHT SINGLE QUOTATION MARK
 DefConstructorI('\textsterling',     undef, UTF(0xA3));	 # POUND SIGN
