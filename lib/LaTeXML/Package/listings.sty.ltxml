@@ -47,7 +47,7 @@ DefMacro('\lstinline OptionalKeyVals:LST', sub {
   @expansion; });
 
 sub lstProcessInline { 
-  Invocation(T_CS('\@listings@inline'), lstProcess(@_)); }
+  Invocation(T_CS('\@listings@inline'), lstProcess('inline',@_)); }
 
 DefConstructor('\@listings@inline {}',
 	       "<ltx:text class='listing'>#1</ltx:text>",
@@ -88,8 +88,8 @@ NewCounter('lstlisting','document',idprefix=>'LST');
 sub lstProcessBlock {
   my($name,$text)=@_;
   # Hmm.. should locally define \lstname to be either name or the file...
-  my @body = (Invocation(T_CS('\@listings@block'),lstProcess($text)));
-  my($numbered,$caption,$x);
+  my @body = (Invocation(T_CS('\@listings@inner'),lstProcess('block',$text)));
+  my($numbered,$labelled,$caption,$x);
   if(($x = lstGetTokens('caption')) && scalar($x->unlist)){
     my @t = $x->unlist;
     my @tc=();
@@ -100,6 +100,7 @@ sub lstProcessBlock {
   elsif(($x = lstGetTokens('title')) && scalar($x->unlist)){
     $caption =Invocation(T_CS('\caption'),undef,$x); }
   if(($x = lstGetTokens('label')) && scalar($x->unlist)){
+    $labelled=1;
     unshift(@body,Invocation(T_CS('\label'),$x)); }
   if($caption){
     if(lstGetLiteral('captionpos') eq 't'){
@@ -107,19 +108,28 @@ sub lstProcessBlock {
     else {
       push(@body,$caption); }}
 
-  (T_CS('\par'),
+  # We go a bit (a bit too far?) to try to treat this as a separate Para level object
+  # (if with captions or labelled),
+  # or as an in-block item (within a logical paragraph)
+  (
+   ($numbered || $caption || $labelled ? (T_CS('\par')):()),
    T_BEGIN, 
    ($name ? (T_CS('\def'),T_CS('\lstname'),T_BEGIN,$name->unlist,T_END) : ()),
-   Invocation(($numbered ? T_CS('\@listings') : T_CS('\@@listings')),Tokens(@body)),
+   Invocation(($numbered ? T_CS('\@listings')
+	       : ($caption || $labelled ? T_CS('\@@listings')
+		 : T_CS('\@@listings@inblock'))),    Tokens(@body)),
    T_END); }
 
-DefConstructor('\@listings@block {}', "<ltx:tabular>#1</ltx:tabular>");
+DefConstructor('\@listings@inner {}', "<ltx:tabular>#1</ltx:tabular>");
 # Or new listing element?
 DefConstructor('\@listings {}',
 	       "<ltx:listing xml:id='#id' refnum='#refnum'>#1</ltx:listing>",
 	       properties=>sub { RefStepCounter('lstlisting'); });
 DefConstructor('\@@listings {}',
 	       "<ltx:listing xml:id='#id'>#1</ltx:listing>",
+	       properties=>sub { RefStepID('lstlisting'); });
+DefConstructor('\@@listings@inblock {}',
+	       "<ltx:listingblock xml:id='#id'>#1</ltx:listingblock>",
 	       properties=>sub { RefStepID('lstlisting'); });
 
 #======================================================================
@@ -844,7 +854,7 @@ DefPrimitive('\lstloadlanguages Semiverbatim', undef);
 #   The listing is supplied as a list of strings
 #   The result is a Tokens containing the formatted results
 sub lstProcess {
-  my($text)=@_;
+  my($mode,$text)=@_;
 
   # === Return nothing if print is false
   return Tokens() unless lstGetBoolean('print');
@@ -910,21 +920,24 @@ sub lstProcess {
   local $LaTeXML::linenum = $line0;
   local $LaTeXML::colnum = 0;
   local $LaTeXML::listing = $text;
-  my @tokens = ();
+  local $LaTeXML::mode    = $mode;
+  my @tokens = (T_BEGIN);
   push(@tokens,lstGetTokens('basicstyle')->unlist);
 
   while($LaTeXML::listing && ! &$linetest($LaTeXML::linenum)){	# Ignore initial lines?
     $LaTeXML::listing =~ s/^.*?\n//s;
     $LaTeXML::linenum++; }
-  push(@tokens,Invocation(T_CS('\setcounter'),T_OTHER('lstnumber'), Number($LaTeXML::linenum)));
-  push(@tokens,Invocation(T_CS('\@lst@startline'),($numpos eq 'left')&& lstDoNumber($LaTeXML::listing=~/^\s*?\n/s)));
+  if($mode ne 'inline'){
+    push(@tokens,Invocation(T_CS('\setcounter'),T_OTHER('lstnumber'), Number($LaTeXML::linenum)));
+    push(@tokens,Invocation(T_CS('\@lst@startline'),($numpos eq 'left')&& lstDoNumber($LaTeXML::listing=~/^\s*?\n/s)));}
   push(@tokens,lstProcess_internal());
-  push(@tokens,Invocation(T_CS('\@lst@endline'),($numpos eq 'right')&& lstDoNumber()));
+  if($mode ne 'inline'){
+    push(@tokens,Invocation(T_CS('\@lst@endline'),($numpos eq 'right')&& lstDoNumber())); }
 
   # === Save line number for possible later use.
   AssignValue('LISTINGS_LAST_NUMBER' => CounterValue('lstnumber')->valueOf, 'global');
   AssignValue('LISTINGS_LAST_NUMBER_'.$name => CounterValue('lstnumber')->valueOf, 'global') if $name;
-
+  push(@tokens,T_END);
   # === And finally, return the tokens we've constructed.
 #  print STDERR "LISTING=>".ToString(Tokens(@tokens))."\n";
   Tokens(@tokens); }
@@ -986,17 +999,19 @@ sub lstProcess_internal {
 
     # Various kinds of whitespace, newlines, etc.
     elsif ($LaTeXML::listing =~ s/^\s*?\n//s) { # Newline
-      push(@tokens,Invocation(T_CS('\@lst@endline'),($numpos eq 'right')&& lstDoNumber($LaTeXML::colnum==1)));
-      push(@tokens,Invocation(T_CS('\stepcounter'),T_OTHER('lstnumber')));
-      $LaTeXML::linenum++;	# Increment line number
-      $LaTeXML::colnum = 0; # Reset column number
-      # NOTE: should ignore blank lines at end of listing, even if they aren't the last line of the code!
-      # NOTE: should handle showlines, emptylines keywords
-      while($LaTeXML::listing && ! &$LaTeXML::linetest($LaTeXML::linenum)){	# Ignore next line?
-	$LaTeXML::listing =~ s/^.*?(\n|$)//s;
+      if($LaTeXML::mode ne 'inline'){
+	push(@tokens,Invocation(T_CS('\@lst@endline'),($numpos eq 'right')&& lstDoNumber($LaTeXML::colnum==1)));
 	push(@tokens,Invocation(T_CS('\stepcounter'),T_OTHER('lstnumber')));
-	$LaTeXML::linenum++; }
-      push(@tokens,Invocation(T_CS('\@lst@startline'),($numpos eq 'left')&& lstDoNumber($LaTeXML::listing=~/^\s*?\n/s)));
+	$LaTeXML::linenum++;	# Increment line number
+	$LaTeXML::colnum = 0; # Reset column number
+	# NOTE: should ignore blank lines at end of listing, even if they aren't the last line of the code!
+	# NOTE: should handle showlines, emptylines keywords
+	while($LaTeXML::listing && ! &$LaTeXML::linetest($LaTeXML::linenum)){	# Ignore next line?
+	  $LaTeXML::listing =~ s/^.*?(\n|$)//s;
+	  push(@tokens,Invocation(T_CS('\stepcounter'),T_OTHER('lstnumber')));
+	  $LaTeXML::linenum++; }
+	push(@tokens,Invocation(T_CS('\@lst@startline'),
+				($numpos eq 'left')&& lstDoNumber($LaTeXML::listing=~/^\s*?\n/s))); }
       # === Possibly remove $gobble chars from line
       my $gobble = lstGetNumber('gobble');
       map( $LaTeXML::listing =~ s/^.//, 1..$gobble) if $gobble;
@@ -1043,9 +1058,9 @@ sub lstClassProperty {
   ($class && ($$class{$property} ? $$class{$property} : lstClassProperty($$class{class},$property))); }
 
 DefConstructor('\@lst@startline[]',
-	       "<ltx:tr>?#1(<ltx:td class='linenumber'>#1</ltx:td>)<ltx:td>");
+	       "<ltx:tr>?#1(<ltx:td class='linenumber'>#1</ltx:td>)<ltx:td><ltx:text>");
 DefConstructor('\@lst@endline[]',
-	       "</ltx:td>?#1(<ltx:td class='linenumber'>#1</ltx:td>)</ltx:tr>");
+	       "</ltx:text></ltx:td>?#1(<ltx:td class='linenumber'>#1</ltx:td>)</ltx:tr>");
 DefConstructor('\@lst@visible@space', "\x{2423}");
 
 sub lstDoNumber {
