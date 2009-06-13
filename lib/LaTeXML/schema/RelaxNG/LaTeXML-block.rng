@@ -21,6 +21,7 @@
       <ref name="equationgroup"/>
       <ref name="quote"/>
       <ref name="block"/>
+      <ref name="listingblock"/>
       <ref name="itemize"/>
       <ref name="enumerate"/>
       <ref name="description"/>
@@ -139,6 +140,16 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
       <ref name="Common.attributes"/>
       <ref name="Positionable.attributes"/>
       <ref name="Inline.model"/>
+    </element>
+  </define>
+  <define name="listingblock">
+    <element name="listingblock">
+      <a:documentation>An in-block Listing, without caption</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Labelled.attributes"/>
+      <zeroOrMore>
+        <ref name="Block.model"/>
+      </zeroOrMore>
     </element>
   </define>
   <define name="break">

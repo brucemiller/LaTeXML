@@ -14,7 +14,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## The block module defines the following `physical' block elements.
 Block.class |= 
-   p | equation | equationgroup | quote | block
+   p | equation | equationgroup | quote | block | listingblock
  | itemize | enumerate | description
 
 
@@ -92,6 +92,14 @@ element block {
   Positionable.attributes,
 
   Inline.model  }
+
+listingblock =
+## An in-block Listing, without caption
+element listingblock {
+  Common.attributes,
+  Labelled.attributes,
+
+  Block.model*  }
 
 break =
 ## A forced line break.

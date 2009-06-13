@@ -41,6 +41,16 @@
     <div class="{f:classes(.)}"><xsl:apply-templates/></div>
   </xsl:template>
 
+  <xsl:template match="ltx:listingblock" xml:space="preserve">
+    <div class="{concat('listing ',f:classes(.))}"><xsl:apply-templates/></div>
+  </xsl:template>
+
+  <xsl:template match="ltx:listingblock/ltx:tabular" xml:space="preserve">
+    <table class="{f:classes(.)}">
+      <xsl:apply-templates/>
+    </table>
+  </xsl:template>
+
   <xsl:template match="ltx:break">
     <br class="{f:classes(.)}"/>
   </xsl:template>
