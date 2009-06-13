@@ -360,7 +360,9 @@ DefMacro('\shortcites Semiverbatim','');
 #   \bibitem[\protect\citename{Jones et al., }1990]{key}...
 #   \harvarditem[Jones et al.]{Jones, Baker, and Williams}{1990}{key}...
 
-DefMacro('\bibitem','\refstepcounter{enumiv}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}');
+##DefMacro('\bibitem','\refstepcounter{enumiv}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}');
+DefMacro('\bibitem','\refstepcounter{@bibitem}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}');
+
 RawTeX(<<'EOTeX');
 %%%
 \def\citeauthoryear#1#2#3(@)(@)\@nil#4{%
@@ -413,16 +415,12 @@ DefConstructor('\NAT@@wrout{}{}{}{}{} Semiverbatim',
 	       bounded=>1, beforeDigest=>sub{ Let(T_ALIGN,T_CS('\&')); }
 	      );
 
+# Similar to the one defined in LaTeX.pool, but the bibtag's have been setup above.
 DefConstructor('\@@lbibitem Semiverbatim',
 	       "<ltx:bibitem key='#key' xml:id='#id'>",
 	       afterDigest=>sub {
 		 my $key = CleanBibKey($_[1]->getArg(1));
-		 my $id = undef;
-		 # Sometimes people put {} !?! Perhaps no id is safe here?
-		 if($key){
-		   $id = ToString(Expand(T_CS('\thebibliography@ID'))).".".$key;
-		   # colon isn't quite allowed (must look like namespace prefix!)
-		   $id =~ s/:/../g; } # Hopefully this is unique enough
+		 my $id = ToString(Expand(T_CS('\the@bibitem@ID')));
 		 $_[1]->setProperties(key=>$key, id=>$id); });
 
 #======================================================================

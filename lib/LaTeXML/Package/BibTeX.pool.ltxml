@@ -189,10 +189,7 @@ DefEnvironment('{bib@entry} Semiverbatim Semiverbatim',
  	       afterDigestBegin=>sub {
 		 my $key = CleanBibKey($_[1]->getArg(2));
  		 AssignValue('CURRENT@BIBKEY'=>$key);
-		 my $id = ToString(Expand(T_CS('\thebibliography@ID'))).".".$key;
-		 # colon isn't quite allowed (must look like namespace prefix!)
-		 $id =~ s/:/../g;  # Hopefully this is unique enough
-		 $_[1]->setProperties(key=>$key, id=>$id); });
+		 $_[1]->setProperties(key=>$key,RefStepCounter('@bibitem')); });
 
 sub currentBibKey   { LookupValue('CURRENT@BIBKEY'); }
 sub currentBibEntry { LookupValue('BIBENTRY@'.currentBibKey()); }

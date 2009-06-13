@@ -2092,23 +2092,17 @@ DefMacroI('\item@in@bibliography', undef, '\save@bibitem{}');
 DefMacro('\restoring@bibitem',
 	 '\let\bibitem\save@bibitem\let\par\save@par\bibitem');
 
-
-DefMacroI('\the@bibitem',undef, '\arabic{enumiv}');
+NewCounter('@bibitem','bibliography',idprefix=>'bib');
+DefMacroI('\the@bibitem',undef, '\arabic{@bibitem}');
 DefConstructor('\bibitem[] Semiverbatim',
-	       "<ltx:bibitem key='#key' xml:id='#id'><ltx:bibtag role='refnum' open='[' close=']'>#tag</ltx:bibtag><ltx:bibblock>",
+	       "<ltx:bibitem key='#key' xml:id='#id'>"
+	       .  "<ltx:bibtag role='refnum'>#refnum</ltx:bibtag>"
+	       .  "<ltx:bibblock>",
 	       afterDigest=>sub {
 		 my $tag = $_[1]->getArg(1);
 		 my $key = CleanBibKey($_[1]->getArg(2));
-		 if(!$tag){
-		   RefStepCounter('enumiv');
-		   $tag = Digest(Expand(T_CS('\the@bibitem'))); }
-		 my $id = undef;
-		 # Sometimes people put {} !?! Perhaps no id is safe here?
-		 if($key){
-		   $id = ToString(Expand(T_CS('\thebibliography@ID'))).".".$key;
-		   # colon isn't quite allowed (must look like namespace prefix!)
-		   $id =~ s/:/../g; } # Hopefully this is unique enough
-		 $_[1]->setProperties(tag=>$tag, key=>$key, id=>$id); });
+		 $_[1]->setProperties(key=>$key,
+				      ($tag ? (RefStepID('@bibitem'),refnum=>$tag) : RefStepCounter('@bibitem'))); });
 DefConstructorI('\newblock',undef, "<ltx:bibblock>");
 Tag('ltx:bibitem', autoClose=>1);
 Tag('ltx:bibblock', autoClose=>1);
