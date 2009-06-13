@@ -1750,7 +1750,9 @@ sub trimNodeLeftWhitespace {
     my $type = $child->nodeType;
     if($type == XML_TEXT_NODE){
       my $string = $child->data;
-      if($string =~ s/^\s+//){
+#      if($string =~ s/^\s+//){
+#      with some trepidation, I don't think we want to trim nbsp!
+      if($string =~ s/^ +//){
 	$child->setData($string); }}
     elsif($type == XML_ELEMENT_NODE){
       trimNodeLeftWhitespace($document,$child); }}}
