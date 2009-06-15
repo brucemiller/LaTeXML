@@ -113,6 +113,7 @@ foreach my $file (@files){
 # large collection of packages can be processed in batch.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package Package;
+use strict;
 use LaTeXML::Util::Pathname;
 
 our %CACHE;
@@ -381,20 +382,11 @@ sub generateStub {
   open OUT,">$dest" or die "Couldn't open $dest for writing: $!";
 
   my %inc = %{$$self{includes}};
-  my %base = ($base ? map(($_=>1),split(/,/, $base)) : ());
-  map($inc{$_}=1,keys %base);
-  my @classes = grep(/\.cls$/, keys %inc);
-  my @packages = grep(/\.sty$/, keys %inc);
-
-  if(($$self{name}=~/\.sty$/) && @classes){
-    print STDERR "WARN: Ignoring class file used in style file $$self{name}: ".join(', ',@classes)."\n";
-    @classes=(); }
-  elsif(@classes > 1){
-    print STDERR "WARN: Ignoring excess classes for $$self{name}: ".join(', ',@classes[1..$#classes])."\n";
-    @classes=($classes[0]); }
+  my @base = split(/,/, $base);
+  my %base = ($base ? map(($_=>1),@base) : ());
 
   $self->removeBase;
-  $self->removeInternal if $internal;
+  $self->removeInternal unless $internal;
 
   printStubComments(*OUT,
 		    '=',
@@ -406,12 +398,23 @@ sub generateStub {
 		    "http://dlmf.nist.gov/LaTeXML/",
 		    '=');
   print OUT "use strict;\nuse LaTeXML::Package;\n\n";
+
+  # get unique classes, starting with those in $base
+  my @classes = (grep(/\.cls$/, keys %base), grep(/\.cls$/ && !$base{$_}, keys %inc));
+  if(($$self{name}=~/\.sty$/) && @classes){
+    print STDERR "WARN: Ignoring class file used in style file $$self{name}: ".join(', ',@classes)."\n";
+    @classes=(); }
+  elsif(@classes > 1){
+    print STDERR "WARN: Ignoring excess classes for $$self{name}: ".join(', ',@classes[1..$#classes])."\n";
+    @classes=($classes[0]); }
   if(@classes){
     my $c = $classes[0]; $c=~ s/\.cls$//;
     print OUT "LoadClass('$c',withoptions=>1);\n";
     $self->subtract($self->new($classes[0])); }
 
-  foreach my $pkg (@packages){
+  # The process inclusions starting with $base, then the actual package's inclusions
+  # But only include the ones that have an "effect".
+  foreach my $pkg (@base, grep(/\.sty$/, keys %inc)){
     my $nbefore = scalar(keys %{$$self{symbols}});
     my $package = $self->new($pkg);
     $package->removeBase; #?
