@@ -42,19 +42,23 @@ our $mmlURI = "http://www.w3.org/1998/Math/MathML";
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub process {
   my($self,$doc)=@_;
-  local $LaTeXML::Post::MathML::DOCUMENT = $doc;
   if(my @maths = $self->find_math_nodes($doc)){
     $self->Progress($doc,"Converting ".scalar(@maths)." formulae");
-    $doc->addNamespace($mmlURI,'m');
+#    $doc->addNamespace($mmlURI,'m');
     foreach my $math (@maths){
       $self->processNode($doc,$math); }
     $doc->adjust_latexml_doctype('MathML'); } # Add MathML if LaTeXML dtd.
   $doc; }
 
+sub setParallel {
+  my($self,@moreprocessors)=@_;
+  $$self{parallel}=1;
+  $$self{math_processors} = [@moreprocessors]; }
+
 sub find_math_nodes {  $_[1]->findnodes('//ltx:Math'); }
 
 sub getQName {
-  $LaTeXML::Post::MathML::DOCUMENT->getQName(@_); }
+  $LaTeXML::Post::DOCUMENT->getQName(@_); }
 
 # $self->processNode($doc,$mathnode) is the top-level conversion
 # It converts the XMath within $mathnode, and adds it to the $mathnode,
@@ -63,7 +67,10 @@ sub processNode {
   my $mode = $math->getAttribute('mode')||'inline';
   my $xmath = $doc->findnode('ltx:XMath',$math);
   my $style = ($mode eq 'display' ? 'display' : 'text');
-  $doc->addNodes($math,$self->translateNode($doc,$xmath,$style,'ltx:Math')); }
+  if($$self{parallel}){
+    $doc->addNodes($math,$self->translateParallel($doc,$xmath,$style,'ltx:Math')); }
+  else {
+    $doc->addNodes($math,$self->translateNode($doc,$xmath,$style,'ltx:Math')); }}
 
 # $self->translateNode($doc,$XMath,$style,$embedding)
 # returns the translation of the XMath node (but doesn't insert it)
@@ -74,6 +81,7 @@ sub processNode {
 
 # See END for presentation, content and parallel versions.
 
+# Hook for subclasses to annotate the transformation.
 sub augmentNode {
   my($self,$node,$mathml)=@_;
   $mathml; }
@@ -82,15 +90,9 @@ sub augmentNode {
 # General translation utilities.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-sub getTokenMeaning {
-  my($node)=@_;
-  my $m = $node->getAttribute('meaning') || $node->getAttribute('name')
-    || $node->textContent;
-  (defined $m ? $m : '?'); }
-
 sub realize {
   my($node)=@_;
-  $LaTeXML::Post::MathML::DOCUMENT->realizeXMNode($node); }
+  $LaTeXML::Post::DOCUMENT->realizeXMNode($node); }
 
 # For a node that is a (possibly embellished) operator,
 # find the underlying role.
@@ -112,7 +114,7 @@ sub getOperatorRole {
 # Table of Translators for presentation|content
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # All translators take XMath XML::LibXML nodes as arguments,
-# and return an intermediate form of MathML to be added.
+# and return an intermediate form (ie. array form) of MathML to be added.
 
 our $MMLTable_P={};
 our $MMLTable_C={};
@@ -219,14 +221,14 @@ sub pmml_internal {
       my $styleattr = $style && $stylemap{$LaTeXML::MathML::STYLE}{$style};
       local $LaTeXML::MathML::STYLE 
 	= ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
-      my $result = &{ lookupPresenter('Apply',getOperatorRole($rop),getTokenMeaning($rop))
+      my $result = &{ lookupPresenter('Apply',getOperatorRole($rop),$rop->getAttribute('meaning'))
 		    }($op,@args);
       $result = ['m:mstyle',{@$styleattr},$result] if $styleattr;
       $result; }}
   elsif($tag eq 'ltx:XMTok'){
-    &{ lookupPresenter('Token',$role,getTokenMeaning($node)) }($node); }
+    &{ lookupPresenter('Token',$role,$node->getAttribute('meaning')) }($node); }
   elsif($tag eq 'ltx:XMHint'){
-    &{ lookupPresenter('Hint',$role,getTokenMeaning($node)) }($node); }
+    &{ lookupPresenter('Hint',$role,$node->getAttribute('meaning')) }($node); }
   elsif($tag eq 'ltx:XMArray'){
     my $style = $node->getAttribute('style');
     my $styleattr = $style && $stylemap{$LaTeXML::MathML::STYLE}{$style};
@@ -597,11 +599,11 @@ sub cmml {
 	['m:merror',{},['m:mtext',{},"Missing Operator"]]; }
       else {
 	my $rop = realize($op);		# NOTE: Could loose open/close on XMRef ???
-	&{ lookupContent('Apply',$rop->getAttribute('role'),getTokenMeaning($rop)) }($op,@args); }}}
+	&{ lookupContent('Apply',$rop->getAttribute('role'),$rop->getAttribute('meaning')) }($op,@args); }}}
   elsif($tag eq 'ltx:XMTok'){
-    &{ lookupContent('Token',$node->getAttribute('role'),getTokenMeaning($node)) }($node); }
+    &{ lookupContent('Token',$node->getAttribute('role'),$node->getAttribute('meaning')) }($node); }
   elsif($tag eq 'ltx:XMHint'){	# ????
-    &{ lookupContent('Hint',$node->getAttribute('role'),getTokenMeaning($node)) }($node); }
+    &{ lookupContent('Hint',$node->getAttribute('role'),$node->getAttribute('meaning')) }($node); }
   else {
     ['m:mtext',{},$node->textContent]; }}
 
@@ -660,7 +662,7 @@ DefMathML('Apply:UNDERACCENT:?', sub {
 #   apply, interval, inverse, sep, condition, declare, lambda, compose, ident,
 #   domain, codomain, image, domainofapplication, piecewise, piece, otherwise
 
-DefMathML("Token:?:\x{2061}", \&pmml_mo, undef); # FUNCTION APPLICATION
+DefMathML("Token:APPLYOP:?",  \&pmml_mo, undef); # APPLYOP is (only) \x{2061}; FUNCTION APPLICATION
 DefMathML("Token:OPERATOR:?", \&pmml_mo, undef);
 
 DefMathML('Apply:?:?', sub {
@@ -719,9 +721,11 @@ DefMathML('Apply:?:divide', sub {
     ['m:mfrac',{($thickness ? (linethickness=>$thickness):())},
      pmml_smaller($num),pmml_smaller($den)]; }});
 
-DefMathML("Token:SUPOP:?",        \&pmml_mo,   undef);
-DefMathML('Apply:SUPERSCRIPTOP:?',\&pmml_script_handler, undef);
-DefMathML('Apply:SUBSCRIPTOP:?',  \&pmml_script_handler, undef);
+DefMathML("Token:SUPOP:?",         \&pmml_mo,   undef);
+DefMathML('Apply:SUPERSCRIPTOP:?', \&pmml_script_handler, undef);
+DefMathML('Apply:SUBSCRIPTOP:?',   \&pmml_script_handler, undef);
+DefMathML('Token:SUPERSCRIPTOP:?', undef, sub{['m:csymbol',{cd=>'ambiguous'},'superscript'];});
+DefMathML('Token:SUBSCRIPTOP:?',   undef, sub{['m:csymbol',{cd=>'ambiguous'},'subscript'];});
 
 DefMathML('Apply:POSTFIX:?', sub {
   ['m:mrow',{},pmml($_[1]),pmml($_[0])]; });
@@ -996,19 +1000,19 @@ sub do_cfrac {
 		  ['m:mrow',{},
 		   (@denomargs > 1 ? pmml_infix($denomop,@denomargs) : pmml($denomargs[0])),
 		   pmml_smaller($denomop)]];
-      if(getTokenMeaning($last) eq 'cdots'){ # Denom ends w/ \cdots
+      if(($last->textContent ||'') eq "\x{22EF}"){ # Denom ends w/ \cdots
 	return ($curr,pmml($last));}		   # bring dots up to toplevel
       elsif(getQName($last) eq 'ltx:XMApp'){	   # Denom ends w/ application --- what kind?
 	my($lastop,@lastargs)=element_nodes($last);
-	if(getTokenMeaning($lastop) eq 'cfrac'){ # Denom ends w/ cfrac, pull it to toplevel
+	if(($lastop->getAttribute('meaning')||'') eq 'continued-fraction'){ # Denom ends w/ cfrac, pull it to toplevel
 	  return ($curr,do_cfrac(@lastargs)); }
 #	  return ($curr,pmml($last)); }
-	elsif((getTokenMeaning($lastop) eq "\x{2062}")  # Denom ends w/ * (invisible)
-	      && (scalar(@lastargs)==2) && (getTokenMeaning($lastargs[0]) eq 'cdots')){
+	elsif((($lastop->textContent||'') eq "\x{2062}")  # Denom ends w/ * (invisible)
+	      && (scalar(@lastargs)==2) && (($lastargs[0]->textContent||'') eq "\x{22EF}")){
 	  return ($curr,pmml($lastargs[0]),pmml($lastargs[1])); }}}}
   (['m:mfrac',{},pmml_smaller($numer),pmml_smaller($denom)]); }
 
-DefMathML('Apply:?:cfrac', sub {
+DefMathML('Apply:?:continued-fraction', sub {
   my($op,$numer,$denom)=@_;
   my $style = $op->getAttribute('style')||'display';
   if($style eq 'inline'){
@@ -1021,6 +1025,19 @@ DefMathML('Apply:?:cfrac', sub {
 # Specific converters for Presentation, Content, or Parallel.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+# This works for either pmml or cmml.
+sub translateParallel {
+  my($self,$doc,$xmath,$style,$embedding)=@_;
+  $doc->addNamespace($mmlURI,'m');
+  my @trans = ['m:semantics',{},
+	       $self->translateNode($doc,$xmath,$style,'m:semantics'),
+	       map( ['m:annotation-xml',{encoding=>$_->getEncodingName},
+		     $_->translateNode($doc,$xmath,$style,'m:annotation-xml')],
+		    @{$$self{math_processors}}) ];
+  # Wrap unless already embedding within MathML.
+  ($embedding =~ /^m:/ ? @trans 
+   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},@trans]); }
+
 #================================================================================
 # Presentation MathML
 package LaTeXML::Post::MathML::Presentation;
@@ -1029,6 +1046,7 @@ use base qw(LaTeXML::Post::MathML);
 
 sub translateNode {
   my($self,$doc,$xmath,$style,$embedding)=@_;
+  $doc->addNamespace($mmlURI,'m');
   my @trans = $self->pmml_top($xmath,$style);
   my $m = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
   # Wrap unless already embedding within MathML.
@@ -1095,6 +1113,7 @@ use base qw(LaTeXML::Post::MathML);
 
 sub translateNode {
   my($self,$doc,$xmath,$style,$embedding)=@_;
+  $doc->addNamespace($mmlURI,'m');
   my @trans = $self->cmml_top($xmath);
   # Wrap unless already embedding within MathML.
   ($embedding =~ /^m:/ ? @trans 
@@ -1111,6 +1130,7 @@ use base qw(LaTeXML::Post::MathML);
 sub translateNode {
   my($self,$doc,$xmath,$style,$embedding)=@_;
   my($main_proc,@annotation_procs)=@{$$self{math_processors}};
+  $doc->addNamespace($mmlURI,'m');
   my @trans = ['m:semantics',{},
 	       $main_proc->translateNode($doc,$xmath,$style,'m:semantics'),
 	       map( ['m:annotation-xml',{encoding=>$_->getEncodingName},
