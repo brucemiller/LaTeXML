@@ -154,9 +154,9 @@ foreach my $cluster (sort {$$b{usage} <=> $$a{usage}} values %clusters){
   local $::MAXDIFF = $::MAXDIFF;
   $::MAXDIFF = $$cluster{nsymbols} if $::MAXDIFF > $$cluster{nsymbols};
 
-  $cluster->classify(@core) unless $cluster->isDistribution;
   print "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
   $cluster->describe; 
+  $cluster->classify(@core) unless $cluster->isDistribution;
 
 #  $cluster->mergeSimilarities('subset')->describe('  Subsets'); #  if ? ...
 #  $cluster->mergeSimilarities('superset')->describe('  Supersets');
@@ -320,7 +320,6 @@ sub describe {
   print "  Files: ".join(', ', map($_->show,
 				   sort {($$b{usage} <=> $$a{usage}) || (length($$a{name}) <=> length($$b{name})); }
 				   @{$$self{files}}))."\n";
-  print "  Closest Core file: ".$$self{core}->show." with $$self{core_diff} differences\n" if $$self{core};
 }
 
 # Generate a "Work Plan" for producing the implementation files for this cluster.
@@ -373,15 +372,18 @@ sub workplan {
 
 sub classify {
   my($self,@core)=@_;
-  my($best,$bestd) = (undef,999999999);
+  my($best,$nmissing,$nextra)=(undef,999999999,999999999);
   foreach my $core (@core){
-    my($d12,$d21) = $self->difference($core);
-    my $d = $d12+$d21;
-    if($d < $bestd){
-      $best=$core; $bestd=$d; }}
+    my($missing,$extra) = $self->difference($core);
+    if(($missing < $nmissing) || (($missing == $nmissing) && ($extra < $nextra))){
+      $nmissing = $missing;
+      $nextra   = $extra;
+      $best     = $core; }}
   if($best){
-    $$self{core} = $best;
-    $$self{core_diff} = $bestd; }}
+    print "Closest Core file: ".$best->show
+      . join(';',grep($_, ($nmissing ? " missing $nmissing":''),
+		      ($nextra   ? " extra $nextra":''))). "\n";
+  }}
 
 # Merge the similarity data from the cluster's files
 # $setname is one of 'superset', 'subset', 'similar'
