@@ -663,7 +663,7 @@ DefConstructor('\genfrac{}{}{Dimension}{}{}{}',
 # I've left it to a special case in conversion to pmml.
 DefConstructor('\cfrac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok name='cfrac' style='#style'/>"
+	       . "<ltx:XMTok name='cfrac' style='#style' meaning='continued-fraction'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg>"
 	       . "<ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
