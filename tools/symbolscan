@@ -31,6 +31,7 @@ GetOptions("help"        => \$help,
 	   "all"         => \$DO_ALL,
 	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) unless $DO_ALL || @ARGV;
 
 ######################################################################
 # Find the packages, classes implementations that we should look at.
