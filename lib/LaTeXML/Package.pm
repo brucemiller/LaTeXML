@@ -202,7 +202,8 @@ sub CleanIndexKey {
   my($key)=@_;
   $key = ToString($key);
   $key =~ s/[^a-zA-Z0-9]//g;
-  $key =~ tr|A-Z|a-z|;
+## Shouldn't be case insensitive?
+##  $key =~ tr|A-Z|a-z|;
   $key; }
 
 # used as id.

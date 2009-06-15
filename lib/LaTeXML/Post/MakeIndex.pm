@@ -137,10 +137,15 @@ sub cyclic_permute {
 
 # ================================================================================
 # Formatting the resulting index tree.
+
+# Sorting comparison that puts different cases together
+sub alphacmp {
+  (lc($a) cmp lc($b)) || ($a cmp $b); }
+
 sub makeIndexList {
   my($doc,$allkeys,$tree)=@_;
   my $subtrees =$$tree{subtrees};
-  if(my @keys = sort keys %$subtrees){
+  if(my @keys = sort alphacmp keys %$subtrees){
     ['ltx:indexlist',{}, map(makeIndexEntry($doc,$allkeys,$$subtrees{$_}), @keys)]; }
   else {
     (); }}
@@ -152,14 +157,14 @@ sub makeIndexEntry {
   my @links = ();
    # Note sort of keys here is questionable!
   if(keys %$refs){
-    push(@links,conjoin(map(makeIndexRefs($doc,$_,sort keys %{$$refs{$_}}),
-				 sort keys %$refs))); }
+    push(@links,conjoin(map(makeIndexRefs($doc,$_,sort alphacmp keys %{$$refs{$_}}),
+				 sort alphacmp keys %$refs))); }
   if($seealso){
     push(@links,
 	 (@links ? (', '):()),
 	 ['ltx:text',{font=>'italic'},(keys %$refs ? "see also " : "see ")],
 	 conjoin(map(['ltx:ref',{idref=>$_->{id}},@{$_->{phrases}}],
-		     grep($_, map($$allkeys{$_},sort keys %$seealso))))); }
+		     grep($_, map($$allkeys{$_},sort alphacmp keys %$seealso))))); }
 
   ['ltx:indexentry',{'xml:id'=>$$tree{id}},
    ['ltx:indexphrase',{},$doc->trimChildNodes($$tree{phrase})],

@@ -2339,7 +2339,8 @@ sub indexify {
     my $string = $node->textContent; 
     $string =~ s/\W//g;		# to be safe (if perhaps non-unique?)
     $string =~ s/\s//g;		# Or remove entirely? Eventually worry about many=>1 mapping???
-    lc($string); }		# Worry..
+#    lc($string); }		# Worry..
+    $string;}
   elsif($type == XML_ELEMENT_NODE){
     if($document->getModel->getNodeQName($node) eq 'ltx:Math'){
       indexify_tex($node->getAttribute('tex'));}
@@ -2360,7 +2361,8 @@ sub indexify_tex {
   $string =~ s/(\\|\{|\})//g;
   $string =~ s/\W//g;		# to be safe (if perhaps non-unique?)
   $string =~ s/\s//g;		# Or remove entirely? Eventually worry about many=>1 mapping???
-  lc($string); }		# Worry..
+#  lc($string); }		# Worry..
+  $string; }
 
 # ---- Creating the index itself
 
