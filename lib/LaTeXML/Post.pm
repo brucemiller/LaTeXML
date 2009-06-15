@@ -36,8 +36,13 @@ sub ProcessChain {
   my($doc,@postprocessors)=@_;
   my @docs = ($doc);
   foreach my $processor (@postprocessors){
+    local $LaTeXML::Post::PROCESSOR = $processor;
     my $t0 = [Time::HiRes::gettimeofday];
-    @docs = map($processor->process($_),@docs);
+    my @newdocs = ();
+    foreach my $doc (@docs){
+      local $LaTeXML::Post::DOCUMENT = $doc;
+      push(@newdocs, $processor->process($doc)); }
+    @docs = @newdocs;
     my $elapsed = Time::HiRes::tv_interval($t0,[Time::HiRes::gettimeofday]);
     my $mem =  `ps -p $$ -o size=`; chomp($mem);
     $processor->Progress($doc,sprintf(" %.2f sec; $mem KB",$elapsed));
@@ -265,10 +270,11 @@ sub findnode {
 
 sub addNamespace{
   my($self,$nsuri,$prefix)=@_;
-  $$self{namespaces}{$prefix}=$nsuri;
-  $$self{namespaceURIs}{$nsuri}=$prefix;
-  $XPATH->registerNS($prefix=>$nsuri);
-  $self->getDocumentElement->setNamespace($nsuri,$prefix,0); }
+  if(!$$self{namespaces}{$prefix} || ($$self{namespaces}{$prefix} ne $nsuri)){
+    $$self{namespaces}{$prefix}=$nsuri;
+    $$self{namespaceURIs}{$nsuri}=$prefix;
+    $XPATH->registerNS($prefix=>$nsuri);
+    $self->getDocumentElement->setNamespace($nsuri,$prefix,0); }}
 
 sub getQName {
   my($self,$node)=@_;
