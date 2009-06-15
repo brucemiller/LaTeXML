@@ -1,0 +1,24 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  tocbibind                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use strict;
+use LaTeXML::Package;
+
+#**********************************************************************
+# I'm inclined to think there's nothing to do here!
+#**********************************************************************
+foreach my $option (qw(notbib notindex nottoc notlof notlot)){
+  DeclareOption($option, undef); }
+
+ProcessOptions();
+
+1;
