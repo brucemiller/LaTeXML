@@ -270,7 +270,8 @@ sub findnode {
 
 sub addNamespace{
   my($self,$nsuri,$prefix)=@_;
-  if(!$$self{namespaces}{$prefix} || ($$self{namespaces}{$prefix} ne $nsuri)){
+  if(!$$self{namespaces}{$prefix} || ($$self{namespaces}{$prefix} ne $nsuri)
+    || (($self->getDocumentElement->lookupNamespacePrefix($nsuri)||'') ne $prefix)){
     $$self{namespaces}{$prefix}=$nsuri;
     $$self{namespaceURIs}{$nsuri}=$prefix;
     $XPATH->registerNS($prefix=>$nsuri);
