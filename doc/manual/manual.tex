@@ -1,6 +1,39 @@
 \documentclass{book}
 \usepackage{../sty/latexmldoc}
+\usepackage{times}
 \usepackage{makeidx}
+\usepackage{listings}
+\usepackage{tocbibind}
+% Should the additional keywords be indexed?
+\lstdefinestyle{shell}{language=bash,escapechar=@,basicstyle=\ttfamily\small,%
+   morekeywords={latexml,latexmlpost,latexmlmath},
+   moredelim=[is][\itshape]{\{}{\}}}
+% Can (should?) I make $ prefix give \itshape ?
+\lstdefinestyle{latexml}{basicstyle=\small\ttfamily,language=Perl,%
+   morekeywords={CC_ESCAPE,CC_BEGIN,CC_END,CC_MATH,CC_ALIGN,CC_EOL,CC_PARAM,CC_SUPER,%
+     CC_SUB,CC_IGNORE,CC_SPACE,CC_LETTER,CC_OTHER,CC_ACTIVE,CC_COMMENT,CC_INVALID,CC_CS,CC_NOTEXPANDED,%
+     T_BEGIN,T_END,T_MATH,T_ALIGN,T_PARAM,T_SUB,T_SUPER,T_SPACE,T_LETTER,T_OTHER,T_ACTIVE,T_COMMENT,T_CS,T_CR,%
+     Token,Tokens,Tokenize,TokenizeInternal,Explode,UnTeX,StartSemiverbatim,EndSemiverbatim,%
+     Number,Float,Dimension,MuDimension,Glue,MuGlue,Pair,PairList,%
+     NoteProgress,NoteBegin,NoteEnd,Fatal,Error,Warn,Info,%
+     Stringify,ToString,Equals,%
+     DefExpandable,DefMacro,DefMacroI,DefPrimitive,DefPrimitiveI,DefRegister,DefRegisterI,%
+     DefConstructor,DefConstructorI,dualize_arglist,
+     DefMath,DefMathI,DefEnvironment,DefEnvironmentI,convertLaTeXArgs,%
+     RequirePackage,LoadClass,FindFile,DeclareOption,PassOptions,ProcessOptions,ExecuteOptions,AddToMacro,%
+     NewCounter,CounterValue,StepCounter,RefStepCounter,RefStepID,ResetCounter,GenerateID,%
+     Tag,DocType,RelaxNGSchema,RegisterNamespace,%
+     DefRewrite,DefMathRewrite,DefLigature,DefMathLigature,%
+     Expand,Invocation,Digest,RawTeX,Let,%
+     ReadParameters,DefParameterType,DefColumnType,%
+     LookupValue,AssignValue,PushValue,PopValue,UnshiftValue,ShiftValue,LookupCatcode,AssignCatcode,%
+     LookupMeaning,LookupDefinition,InstallDefinition,%
+     CleanLabel,CleanIndexKey,CleanBibKey,CleanURL,UTF,roman,Roman,%
+     MergeFont,%
+     CheckOptions},
+}
+\newcommand{\shellcode}{\lstinline[style=shell]}
+\newcommand{\ltxcode}{\lstinline[style=latexml]}
 \input{release.tex}
 \makeindex
 
@@ -28,7 +61,7 @@ The choice of \LaTeX\ for authoring, and \XML\ for delivery were natural and unc
 choices for the \URL[Digital Library of Mathematical Functions]{http://dlmf.nist.gov}.
 Faced with the need to perform this conversion and the lack of suitable tools to perform it, 
 the DLMF project proceeded to develop thier own tool, \LaTeXML, for this purpose.
-This document describes a \emph{preview} release of \LaTeXML.
+%This document describes a \emph{preview} release of \LaTeXML.
 
 \paragraph{Design Goals} The idealistic goals of \LaTeXML\ are:
 \begin{itemize}
@@ -66,8 +99,8 @@ An overview of outstanding issues and planned future improvements
 are given in Chapter \ref{todo}.
 
 Finally, the Appendices give detailed documentation the system components:
-Appendix \ref{commands} describes the programs provided by the system;
-Appendices \ref{coremodules} and \ref{utilitymodules} describes the core and utility modules 
+Appendix \ref{commands} describes the command-line programs provided by the system;
+Appendices \ref{coremodules} and \ref{utilitymodules} describes the core and utility Perl modules 
 comprising the system, while Appendix \ref{postmodules} describes the postprocessing modules;
 Appendix \ref{schema} describes the \XML\ schema used by \LaTeXML;
 finally, Appendix \ref{errorcodes} gives an overview of the warning and
@@ -84,158 +117,162 @@ The main commands provided by the \LaTeXML\ system are
 conversion to \HTML, processing images, conversion to \MathML\ and so on.
 \end{description}
 \noindent The usage of these commands can be as simple as
-{\small\begin{quote}
- \cmd{latexml doc.tex | latexmpost --dest=doc.xhtml}
-\end{quote}}%
+\begin{lstlisting}[style=shell]
+latexml doc.tex | latexmpost --dest=doc.xhtml
+\end{lstlisting}
 \noindent to convert a single document into \HTML,  or as complicated as
-{\small\begin{quote}\raggedright
- \cmd{latexml --dest=1.xml ch1}\\
- \cmd{latexml --dest=2.xml ch2}\\
-  \hbox{}\hspace{1in}\ldots\\
- \cmd{latexml --dest=b.xml b}\\
- \cmd{latexml --dest=B.xml B.bib}\\
- \cmd{latexmlpost --prescan --db=my.db --bib=B.xml --dest=1.xhtml 1}\\
- \cmd{latexmlpost --prescan --db=my.db --bib=B.xml --dest=2.xhtml 2}\\
-  \hbox{}\hspace{1in}\ldots\\
- \cmd{latexmlpost --prescan --db=my.db --bib=B.xml --dest=b.xhtml b}\\
- \cmd{latexmlpost --noscan --db=my.db --bib=B.xml --dest=1.xhtml 1}\\
- \cmd{latexmlpost --noscan --db=my.db --bib=B.xml --dest=2.xhtml 2}\\
-  \hbox{}\hspace{1in}\ldots\\
- \cmd{latexmlpost --noscan --db=my.db --bib=B.xml --dest=b.xhtml b}\\
-\end{quote}}%
-\noindent to convert a whole set of documents, including a bibliography, into a complete site.
+\begin{lstlisting}[style=shell]
+latexml --dest=1.xml ch1
+latexml --dest=2.xml ch2
+@ \hbox{}\hspace{1in}\ldots @
+latexml --dest=b.xml b
+latexml --dest=B.xml B.bib
+latexmlpost --prescan --db=my.db --bib=B.xml --dest=1.xhtml 1
+latexmlpost --prescan --db=my.db --bib=B.xml --dest=2.xhtml 2
+@ \hbox{}\hspace{1in}\ldots @
+latexmlpost --prescan --db=my.db --bib=B.xml --dest=b.xhtml b
+latexmlpost --noscan --db=my.db --bib=B.xml --dest=1.xhtml 1
+latexmlpost --noscan --db=my.db --bib=B.xml --dest=2.xhtml 2
+@ \hbox{}\hspace{1in}\ldots @
+latexmlpost --noscan --db=my.db --bib=B.xml --dest=b.xhtml b
+\end{lstlisting}
+\noindent to convert a whole set of documents, including a bibliography,
+into a complete interconnected site.
 
 How best to use the commands depends, of course, on what you
 are trying to achieve.  In the next section, we'll describe
-the use of \ltxcmd{latexml}, which will be sufficient
-if the \XML\ representation is what you want, or if you
-intend to carry out any further processing with your own
-\XML-tools.  The following sections consider a sequence of
+the use of \ltxcmd{latexml}, which performs the conversion to \XML\.
+The following sections consider a sequence of
 successively more complicated postprocessing situations,
 using \ltxcmd{latexmlpost},
-in which one or more \TeX\ sources can be converted into
+by which one or more \TeX\ sources can be converted into
 one or more web documents or a complete site.
 
 Additionally, there is a convenience command \ltxcmd{latexmlmath}
 for converting individual formula into various formats.
 
 %%%----------------------------------------------------------------------
-\section[Conversion]{Basic \XML\ Conversion}\label{usage.conversion}\index{latexml!usage}
+\section[Conversion]{Basic \XML\ Conversion}\label{usage.conversion}\index{latexml!basic usage}
 The command
-\begin{quote}
- \cmd{latexml \textit{options} --destination=\varfile[xml]{doc} \varfile{doc}}
-\end{quote}
-loads any required definition modules (see below),
-reads, tokenizes, expands and digests the \TeX\ document \texttt{doc.tex}
-(or from standard input, if \texttt{-} is given for the filename),
-converts it to \XML,
-performs some document rewriting, parses the mathematical content
-and writes the result in \texttt{doc.xml}.
-If \textit{doc} has an explicit extension of \texttt{.bib}, or if
-the \cmd{--bibtex} extension is used, the file will be processed
-as a \BibTeX\ bibliography (see below).
+\begin{lstlisting}[style=shell]
+latexml {options} --destination={doc}.xml {doc}
+\end{lstlisting}
+converts the \TeX\ document \texttt{doc.tex},
+or standard input if \texttt{-} is used in place of the filename, to \XML.
+It loads any required definition bindings (see below),
+reads, tokenizes, expands and digests the document creating an \XML\ structure.
+It then performs some document rewriting, parses the mathematical content
+and writes the result, in this case, to \texttt{doc.xml};
+if no \shellcode|--destination| is suppplied, it writes the result to standard output.
 For details on the processing, see Chapter \ref{architecture},
 and Chapter \ref{math} for more information about math parsing.
-
-\paragraph{Module Loading}\label{usage.conversion.loading}
-A first consideration is what definitions for control sequences and
-environments are active and used for the processing.
-Definitions and customization modules, if present, are loaded in the following
-order:
-\begin{description}
-  \item[\texttt{TeX.pool.ltxml}] the core module is always loaded.
-  \item[\cmd{--preload=\varfile{module}}] causes loading of \varfile[ltxml]{module}.
-    For example, if \LaTeXML\ fails to recognize a \LaTeX\ document 
-    \cmd{--preload=LaTeX.pool} can be useful to force \LaTeX-mode.
-    Or if you want
-    This option can be repeated, and the modules will be loaded in the
-    given order.
-    [You do \emph{not} need to preload modules that are already invoked from
-    the document source, as described below.]
-  \item[\varfile{doc}\texttt{.latexml}] a document-specific customization module
-    is loaded if present.
-\end{description}
-As processing proceeds, additional modules may be loaded as follows.
-\begin{description}
-  \item[\texttt{LaTeX.pool.ltxml}] the core latex module, is loaded
-    upon encountering certain recognizably \LaTeX-specific commands, such as
-    \verb|\documentclass|.
-  \item[\cs{documentclass}\{\varfile{class}\textnormal\}]
-     loads \varfile[cls.ltxml]{class}.
-     (legacy \verb|\documentstyle| behaves similarly, and attempts to load packages for
-      unrecognized options).
-  \item[\cs{usepackage}\{\textit{package}\}] (or related) loads
-    \varfile[sty.ltxml]{package}.  \LaTeXML\ will not
-    attempt to read the \varfile[sty]{package} file, as these
-    often involve \LaTeX\ internals meaningless to the generation of \XML,
-    unless forced to with the option
-    \begin{quote}
-      \cmd{--includestyles}
-    \end{quote}
-    A selective, per-file, option may be developed in the future --- please
-    provide use cases.
-  \item[\cs{input}\{\varfile{file}\}] loads an appropriate version
-     of \varfile{file}, specifically the first found of:
-    \varfile[sty.ltxml]{file} (if in \LaTeX-mode)
-    \varfile[tex.ltxml]{file}, \varfile[tex]{file}, 
-    \varfile[ltxml]{file} or \varfile{file}.
-\end{description}
-Some of these modules (esp.~\code{TeX} and \code{LaTeX}), are parts of
-the \LaTeXML\ distribution; others are supplied by the user, or can be
-overridden by the user.
-See Chapter \ref{customization} for details about what can go in these modules.
-
-Directories to search (in addition to the working directory)
-for modules and other files can be specified using
-\begin{quote}
-  \cmd{--path=\varfile{directory}}
-\end{quote}
-This option can be repeated.
 
 \paragraph{\BibTeX\ processing}
 If the source file has an explicit extension of \texttt{.bib},
 or if the \cmd{--bibtex} option is used, the source will be
 treated as a \BibTeX\ database.
 
-Note that the timing is slightly different than the usual
-case with \BibTeX\ and \LaTeX.  Normally, \BibTeX\ simply
-selects and formats a subset of the bibliographic entries; the
-actual \TeX\ expansion is carried out when the result is included
-in a \LaTeX\ document.  In contrast, \cmd{latexml} processes and expands
-the entire bibliography; the selection of entries is done
-during postprocessing.  This also means that any packages
-that define macros used in the bibliography must be
+Note that the timing is different than with \BibTeX\ and \LaTeX.
+Normally, \BibTeX\ simply selects and formats a subset of the
+bibliographic entries according to the \texttt{.aux} file;
+all \TeX\ expansion and processing is carried out only when
+the result is included in the main \LaTeX\ document.
+In contrast, \cmd{latexml} processes and expands
+the entire bibliography when it is converted to XML;
+the selection of entries is done during postprocessing.
+One implication is that latexml does not know about packages
+included in the main document; if the bibliography uses
+macros defined in such packages, the packages must be explicitly
 specified using the \cmd{--preload} option.
 
-\paragraph{Other Options}
+\paragraph{Useful Options}
 The number and detail of progress and debugging messages printed
 during processing can be controlled using
-\begin{quote}
-  \cmd{--verbose} and \cmd{--quiet}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--verbose {or} --quiet
+\end{lstlisting}
 They can  be repeated to get even more or fewer details.
 
-An option most useful in constructing complicated sites is
-\begin{quote}
-  \cmd{--documentid=\textit{id}}
-\end{quote}
-which provides an ID for the document root element which is inheritted
-as a prefix for id's of the child-elements in the document.
-Using this option can assure unique identifiers across a set
-of source documents.
+Directories to search (in addition to the working directory)
+for various files can be specified using
+\begin{lstlisting}[style=shell]
+--path={directory}
+\end{lstlisting}
+This option can be repeated.
+
+Whenever multiple sources are being used (including multiple bibliographies),
+the option
+\begin{lstlisting}[style=shell]
+--documentid={id}
+\end{lstlisting}
+should be used to provide a unique ID for the document root element.
+This ID is used as the base for id's of the child-elements within the document,
+so that they are unique, as well.
 
 See the documentation for the command \ltxcmd{latexml} for
 less common options.
 
+\paragraph{Loading Bindings}\label{usage.conversion.loading}
+Although \LaTeXML\ is reasonably adept at processing \TeX\ macros,
+it generally benefits from having its own implementation of
+the macros, primitives, environments and other control sequences
+appearing in a document because these are what define the mapping into \XML.
+The \LaTeXML-analogue of a style or class file we call a
+\LaTeXML-binding file, or \emph{binding} for short;
+these files have an additional extension \texttt{.ltxml}.
+
+In fact, since style files often bypass structurally or semantically
+meaningful macros by directly invoking macros internal to \LaTeX,
+\LaTeXML\ actually avoids processing style files when a binding is unavailable.
+The option
+\begin{lstlisting}[style=shell]
+--includestyles
+\end{lstlisting}
+can be used to override this behaviour and allow \LaTeXML\ to
+(attempt to) process raw style files.
+[A more selective, per-file, option may be developed in the future,
+if there is sufficient demand --- please provide use cases.]
+
+\LaTeXML\ always starts with the \texttt{TeX.pool} binding loaded,
+and if \LaTeX-specific commands are recognized, \texttt{LaTeX.pool} as well.
+Any input directives within the source loads the appropriate binding:
+\verb|\documentclass{article}| or \verb|\usepackage{graphicx}|
+will load the bindings \texttt{article.cls.ltxml} or \texttt{graphicx.sty.ltxml},
+respectively; the obsolete \verb|\documentstyle{article}|
+directive is also recognized.
+An \verb|\input| directive will search for
+files with both \texttt{.tex} and \texttt{.sty} extensions;
+it will prefer a binding file if one is found,
+but will load and digest a \texttt{.tex} if no binding is found.
+An \verb|\include| directive (and related ones) search only for
+a \texttt{.tex} file, which is processed and digested as usual.
+
+There are two mechanisms for customization:
+a document-specific binding file \shellcode|{doc}.latexml| will
+be loaded, if present;
+the option
+\begin{lstlisting}[style=shell]
+--preload={binding}
+\end{lstlisting}
+will load the binding file \shellcode|{binding}.ltxml|.
+The \shellcode|--preload| option can be repeated;
+both kinds of preload are loaded before document processing,
+and are processed in order.
+
+See Chapter \ref{customization} for details about what can go in these bindings;
+and Appendix \ref{included.bindings} for a list of bindings currently
+included in the distribution.
+
+
 %%%----------------------------------------------------------------------
-\section[Postprocessing]{Basic Postprocessing}\label{usage.single}\index{latexmlpost!usage}
+\section[Postprocessing]{Basic Postprocessing}\label{usage.single}\index{latexmlpost!basic usage}
 In the simplest situation, you have a single \TeX\ source document
 from which you want to generate a single output document.
 The command
-\begin{quote}
- \cmd{latexmlpost \textit{options} --destination=doc.xhtml doc}
-\end{quote}
-or similarly with \code{--destination=doc.html},
+\begin{lstlisting}[style=shell]
+latexmlpost {options} --destination={doc}.xhtml {doc}
+\end{lstlisting}
+or similarly with \shellcode|--destination={doc}.html|,
 will carry out a set of appropriate transformations in sequence:
 \begin{itemize}
   \item scanning of labels and ids;
@@ -247,9 +284,9 @@ will carry out a set of appropriate transformations in sequence:
 \end{itemize}
 The output format affects the defaults for each step and is determined
 by the file extension of \code{--destination}, or by the option
-\begin{quote}
- \cmd{--format=(xhtml|html|xml)}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--format=(xhtml|html|xml)
+\end{lstlisting}
 \begin{description}
  \item[html] both math and graphics are converted to png images;
     the stylesheet \code{LaTeXML-html.xslt} is used.
@@ -271,24 +308,26 @@ in the following postprocessing stages.
 An index is built from \verb|\index| markup, if
 \code{makeidx}'s \verb|\printindex| command has been used,
 but this can be disabled by
-\begin{quote}
-  \cmd{--noindex}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--noindex
+\end{lstlisting}
 The index entries can be permuted with the option
-\begin{quote}
-  \cmd{--permutedindex}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--permutedindex
+\end{lstlisting}
 Thus \verb|\index{term a!term b}| also shows up as \verb|\index{term b!term a}|.
 This leads to a more complete, but possibly rather silly, index,
 depending on how the terms have been written.
 
 \paragraph{Bibliography}
 Bibilographic data from BibTeX can be provided with the option
-\begin{quote}
-  \cmd{--bibliography=\varfile[xml]{bibfile}}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--bibliography={bibfile}.xml
+\end{lstlisting}
 The bibliography would have typically been produced by running
-\cmd{latexml --dest=bibfile.xml bibfile.bib}.
+\begin{lstlisting}[style=shell]
+latexml --dest=bibfile.xml bibfile.bib
+\end{lstlisting}
 Note that the \XML\ file, bibfile, is not used to directly produce
 an \HTML-formatted bibliography, rather it is used to fill in
 the \verb|\bibliography{..}| within a \TeX\ document.
@@ -297,9 +336,9 @@ the \verb|\bibliography{..}| within a \TeX\ document.
 In this stage, the scanned information is used to fill in the
 text and links of cross-references within the document.
 The option
-\begin{quote}
-  \cmd{--urlstyle=(server|negotiated|file)}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--urlstyle=(server|negotiated|file)
+\end{lstlisting}
 can control the format of urls with the document.
 \begin{description}
   \item[server] formats urls appropriate for use from a web server.
@@ -315,12 +354,12 @@ can control the format of urls with the document.
 \paragraph{Math Conversion}
 Specific conversions of the mathematics can be requested
 using the options
-\begin{quote}
- \code{--mathimages}   converts math to png images,\\
- \code{--presentationmathml} (or \code{--pmml}) creates Presentation \MathML\\
- \code{--contentmathml} (or \code{--cmml}) creates Content \MathML\\
- \code{--openmath} (or \code{--om}) creates \OpenMath
-\end{quote}
+\begin{lstlisting}[style=shell]
+--mathimages                     # converts math to png images,
+--presentationmathml {or} --pmml # creates Presentation \MathML
+--contentmathml {or} --cmml      # creates Content \MathML
+--openmath {or} --om             # creates \OpenMath
+\end{lstlisting}
 (Each of these options can also be negated if needed, eg.~\code{--nomathimages})
 It must be pointed out that the Content \MathML\ and \OpenMath\
 conversions are currently rather experimental.
@@ -328,9 +367,9 @@ conversions are currently rather experimental.
 More than one of these conversions can be requested, and
 each will be included in the output document.
 However, the option
-\begin{quote}
- \code{--parallelmath}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--parallelmath
+\end{lstlisting}
 can be used to generate parallel \MathML\ markup, provided the first
 conversion is either \code{--pmml} or \code{--cmml}.
 
@@ -338,26 +377,26 @@ conversion is either \code{--pmml} or \code{--cmml}.
 Conversion of graphics (eg.~from the \code{graphic(s|x)} packages' 
 \verb|\includegraphics|) can be enabled or disabled
 using
-\begin{quote}
- \code{--graphicsimages} or \code{--nographicsimages}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--graphicsimages {or} --nographicsimages
+\end{lstlisting}
 Similarly, the conversion of \code{picture} environments can be controlled with
-\begin{quote}
- \code{--pictureimages} or \code{--nopictureimages}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--pictureimages {or} --nopictureimages
+\end{lstlisting}
 An experimental capability for converting the latter to \textsc{SVG} can be
 controlled by
-\begin{quote}
- \code{--svg} or \code{--nosvg}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--svg {or} --nosvg
+\end{lstlisting}
 
 \paragraph{Stylesheet}
 If you wish to provide your own \XSLT\  or
 \CSS\ stylesheets, the options 
-\begin{quote}
-\code{--stylesheet=\varfile[xsl]{stylesheet}}\\
-\code{--css=\varfile[css]{stylesheet}}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--stylesheet={stylesheet}.xsl
+--css={stylesheet}.css
+\end{lstlisting}
  can be used.  The \code{--css} option can be repeated to include multiple stylesheets;
 for example, the distribution provides several in addition to the \code{core.css} stylesheet
 which is included by default.
@@ -372,13 +411,13 @@ To develop such stylesheets, a knowledge
 of the \LaTeXML\ document type is necessary; See Appendix \ref{schema}.
 
 %%%----------------------------------------------------------------------
-\section[Splitting]{Splitting the Output}\label{usage.multiple}\index{latexmlpost!usage!split pages}
+\section[Splitting]{Splitting the Output}\label{usage.multiple}\index{latexmlpost!basic usage!split pages}
 For larger documents, it is often desirable to break the 
 result into several interlinked pages. This split,
 carried out before scanning, is requested by 
-\begin{quote}
- \cmd{--splitat=\textit{level}}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--splitat={level}
+\end{lstlisting}
 where \textit{level} is one of \texttt{chapter},
 \texttt{section}, \texttt{subsection}, or \texttt{subsubsection}.
 For example, \texttt{section} would split the document into
@@ -389,21 +428,21 @@ The removed document nodes are replaced by a Table of Contents.
 
 The extra files are named using either the id or label
 of the root node of each new page document according to
-\begin{quote}
-  \cmd{--splitnaming=(id|idrelative|label|labelrelative)}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--splitnaming=(id|idrelative|label|labelrelative)
+\end{lstlisting}
 The relative foms create shorter names in subdirectories for each
 level of splitting.
 (See also \code{--urlstyle} and  \code{--documentid} in \ltxcmd{latexml}.)
 
 Additionally, the index and bibliography can be split
 into separate pages according to the initial letter of entries by using the options
-\begin{quote}
-  \cmd{--splitindex} and \cmd{--splitbibliography}
-\end{quote}
+\begin{lstlisting}[style=shell]
+--splitindex  {and} --splitbibliography
+\end{lstlisting}
 
 %%%----------------------------------------------------------------------
-\section[Sites]{Site processing}\label{usage.site}\index{latexmlpost!usage!site}
+\section[Sites]{Site processing}\label{usage.site}\index{latexmlpost!basic usage!site building}
 A more complicated situation combines several \TeX\ sources
 into a single interlinked site consisting of multiple pages
 and a composite index and bibliography.
@@ -417,28 +456,28 @@ and a composite index and bibliography.
 
  \item[Scanning] Secondly, all \XML\ files must be split and scanned using
   the command
-  \begin{quote}
-   \cmd{latexmlpost --prescan --dbfile=\varfile{DB} --dest=\varfile[xhtml]{i} \varfile{i}}
-  \end{quote}
+  \begin{lstlisting}[style=shell]
+   latexmlpost --prescan --dbfile={DB} --dest={i}.xhtml {i}
+  \end{lstlisting}
   where \varfile{DB} names a file in which to store the scanned data.
   Other conversions, including writing the output file, are skipped in this prescanning step.
  
  \item[Pagination] Finally, all \XML\ files are cross-referenced and converted into
    the final format using the command
-   \begin{quote}
-     \cmd{latexmlpost --noscan --dbfile=\varfile{DB} --dest=\varfile[xhtml]{i} \varfile{i}}
-   \end{quote}
+   \begin{lstlisting}[style=shell]
+     latexmlpost --noscan --dbfile={DB} --dest={i}.xhtml {i}
+   \end{lstlisting}
    which skips the unnecessary scanning step.
 \end{description}
 
 %%%----------------------------------------------------------------------
-\section{Individual Formula}\label{usage.latexmlmath}
+\section{Individual Formula}\label{usage.latexmlmath}\index{latexmlmath!basic usage}
 For cases where you'd just like to convert a single formula to, say, \MathML,
 and don't mind the overhead, we've combined the pre- and post-processing into
 a single, handy, command \ltxcmd{latexmlmath}.  For example,
-\begin{verbatim}
-  latexmlmath --pmml=- \\frac{b\\pm\\sqrt{b^2-4ac}}{2a}
-\end{verbatim}
+\begin{lstlisting}[style=shell]
+  latexmlmath --pmml=- \frac\{b\pm\sqrt\{b^2-4ac\}\}\{2a\}
+\end{lstlisting}
 will print the \MathML\ to standard output.  
 To convert the formula to a \texttt{png} image, say \texttt{quad.png},
 use the option \code{--mathimage=quad.png}.
@@ -466,6 +505,7 @@ by applying third party programs before postprocessing.
 
 %%%----------------------------------------------------------------------
 \section{latexml architecture}\label{latexmlarchitecture}
+\index{LaTeXML!architecture}%
 Like \TeX, \ltxcmd{latexml} is data-driven: the text and executable control
 sequences (ie.~macros and primitives)
 in the source file (and any packages loaded) direct the processing.
@@ -477,7 +517,7 @@ and by defining rewrite rules to be applied to the constructed document tree.
 The top-level class, \pod{LaTeXML}, manages the processing, providing several methods
 for converting a \TeX\ document or string into an \XML\ document, with varying degrees
 of postprocessing and writing the document to file.
-It binds a \ltxpod{State} object (to \verb|$STATE|) to maintain the current state
+It binds a \ltxpod{State} object (to \ltxcode|$STATE|) to maintain the current state
 of bindings for control sequence definitions and emulates \TeX's scoping rules.
 The processing is broken into the following stages
 \begin{description}
@@ -490,6 +530,18 @@ The processing is broken into the following stages
 
 %%%----------------------------------------------------------------------
 \subsection{Digestion}\label{architecture.digestion}
+\index{Mouth (LaTeXML::)!architecture}%
+\index{Gullet (LaTeXML::)!architecture}%
+\index{Stomach (LaTeXML::)!architecture}%
+\index{Token (LaTeXML::)!architecture}%
+\index{Tokens (LaTeXML::)!architecture}%
+\index{Definition (LaTeXML::)!architecture}%
+\index{Expandable (LaTeXML::)!architecture}%
+\index{Primitive (LaTeXML::)!architecture}%
+\index{Box (LaTeXML::)!architecture}%
+\index{List (LaTeXML::)!architecture}%
+\index{Whatsit (LaTeXML::)!architecture}%
+
 Digestion is carried out primarily in a \emph{pull} mode: The \ltxpod{Stomach}
 pulls expanded \ltxpod{Token}s from the \ltxpod{Gullet}, which itself pulls \ltxpod{Token}s from 
 the \ltxpod{Mouth}.  The \ltxpod{Mouth} converts characters from the plain text input
@@ -521,7 +573,9 @@ and affect digestion.
 
 %%%----------------------------------------------------------------------
 \subsection{Construction}\label{architecture.construction}
-
+\index{Constructor (LaTeXML::)!architecture}%
+\index{Document (LaTeXML::)!architecture}%
+\index{Model (LaTeXML::)!architecture}%
 Given the \ltxpod{List} of \ltxpod{Box}es and \ltxpod{Whatsit}s,
 we proceed to constructing an \XML\ document.
 This consists of creating an \ltxpod{Document} object, containing
@@ -548,6 +602,7 @@ See \ref{customization.latexml.schema} for how to affect the schema.
 
 %%%----------------------------------------------------------------------
 \subsection{Rewriting}\label{architecture.rewriting}
+\index{Rewrite (LaTeXML::)!architecture}%
 Once the basic document is constructed, \ltxpod{Rewrite} rules are applied which can
 perform various functions. Ligatures and combining mathematics digits and letters (in certain fonts)
 into composite math tokens are handled this way.  Additionally, declarations
@@ -556,6 +611,7 @@ See \ref{customization.latexml.rewriting} for how to define rewrite rules.
 
 %%%----------------------------------------------------------------------
 \subsection{MathParsing}\label{architecture.mathparsing}
+\index{MathParser (LaTeXML::)!architecture}%
 After rewriting, a grammar based parser is applied to the mathematical
 nodes in order to infer, at least, the structure of the expressions,
 if not the meaning.
@@ -567,6 +623,7 @@ Here, we simple convert the DOM into string form, and output it.
 
 %%%----------------------------------------------------------------------
 \section{latexmlpost architecture}\label{latexmlpostarchitecture}
+\index{Post (LaTeXML::)!architecture}%
 \LaTeXML's postprocessor is primarily for format conversion.
 It operates by applying a sequence of filters responsible for
 transforming or splitting documents, or their parts, from one format to another.
@@ -624,7 +681,7 @@ as discussed in \ref{customization.latexmlpost.xslt}.
 \section{latexml Customization}\label{customization.latexml}
 This layer of customization deals with modifying the way a \LaTeX\ document
 is transformed into \LaTeXML's \XML.
-In \ref{usage.conversion.loading} the loading of various modules was
+In \ref{usage.conversion.loading} the loading of various bindings was
 described.  The facilities described in the following subsections
 apply in all such cases, whether used to customize the processing
 of a particular document or to implement a new \LaTeX\ package.
@@ -634,25 +691,33 @@ as well as the binding files included with the system
 for more guidance.
 
 A \LaTeXML\ binding is actually a Perl module, and as such, 
-a familiarity with Perh is helpful.
-They must begin something like:
-\begin{verbatim}
+a familiarity with Perl is helpful.
+A binding file will look something like:
+\begin{lstlisting}[style=latexml]
 use LaTeXML::Package;
 use strict;
-\end{verbatim}
-and end with a line
-\begin{verbatim}
+
+# Your code here!
+
    1;
-\end{verbatim}
-which tells Perl that the module has loaded successfully.
+\end{lstlisting}
+The final `1' is required; it tells Perl that the module has loaded successfully.
 In between, comes any Perl code you wish, along with the definitions
 and declarations as described here.
 
+Actually, familiarity with Perl is more than merely helpful, as is familiarity
+with \TeX\ and \XML! When writing a binding, you will be programming with all
+three languages.  Of course, you need to know the \TeX\ corresponding to
+the macros that you intend to implement, but sometimes it is most convenient
+to implement them completely, or in part, in \TeX, itself (eg. using \ltxcode|DefMacro|),
+rather then in Perl. At the other end, constructors (eg. using \ltxcode|DefConstructor|)
+are usually defined by patterns of \XML.
+
 \subsection[Expansion]{Expansion \& Macros}\label{customization.latexml.expansion}
 Macros are defined using \texttt{DefMacro}, such as the pointless:
-\begin{verbatim}
+\begin{lstlisting}[style=latexml]
   DefMacro('\mybold{}','\textbf{#1}');
-\end{verbatim}
+\end{lstlisting}
 The two arguments to \texttt{DefMacro} we call
 the \emph{prototype} and the \emph{replacement}.
 In the prototype, the \verb|{}| specifies a single normal \TeX\ parameter.
@@ -679,48 +744,51 @@ followed by the macro's arguments as its arguments.  It must
 return a list of \ltxpod{Token}'s which will be used as the
 expansion of the macro.  The following two examples show
 alternative ways of writing the above macro:
-\begin{verbatim}
+\begin{lstlisting}[style=latexml]
   DefMacro('\mybold{}', sub {
     my($gullet,$arg)=@_;
     (T_CS('\textbf'),T_BEGIN,$arg,T_END); });
-\end{verbatim}
+\end{lstlisting}
 or alternatively
-\begin{verbatim}
+\begin{lstlisting}[style=latexml]
   DefMacro('\mybold{}', sub {
     Invocation(T_CS('\textbf'),$_[1]); });
-\end{verbatim}
+\end{lstlisting}
 
 Functions that are useful for dealing with \ltxpod{Token}s and writing macros
 include the following:
 \begin{itemize}
-\item \raggedright \verb|CC_ESCAPE|, \verb|CC_BEGIN|, \verb|CC_END|, \verb|CC_MATH|,
-      \verb|CC_ALIGN|, \verb|CC_EOL|, \verb|CC_PARAM|, \verb|CC_SUPER|,
-      \verb|CC_SUB|,   \verb|CC_IGNORE|, \verb|CC_SPACE|, \verb|CC_LETTER|,
-      \verb|CC_OTHER|, \verb|CC_ACTIVE|, \verb|CC_COMMENT|, \verb|CC_INVALID|
-    represent constants for the corresponding \TeX\ catcodes.
-%       \verb|CC_CS|, \verb|CC_NOTEXPANDED|
-\item  \raggedright \verb|T_BEGIN|, \verb|T_END|, \verb|T_MATH|, \verb|T_ALIGN|,
-      \verb|T_PARAM|, \verb|T_SUB|, \verb|T_SUPER|, \verb|T_SPACE|,
-      \verb|T_CR|
-  represent constants for tokens with the appropriate content and catcode.
-\item \verb|T_LETTER($char)|, \verb|T_OTHER($char)|, \verb|T_ACTIVE($char)|,
+\item Constants for the corresponding \TeX\ catcodes:
+\begin{lstlisting}[style=latexml]
+   CC_ESCAPE, CC_BEGIN,  CC_END,     CC_MATH,
+   CC_ALIGN,  CC_EOL,    CC_PARAM,   CC_SUPER,
+   CC_SUB,    CC_IGNORE, CC_SPACE,   CC_LETTER,
+   CC_OTHER,  CC_ACTIVE, CC_COMMENT, CC_INVALID
+\end{lstlisting}
+%       \ltxcode|CC_CS|, \ltxcode|CC_NOTEXPANDED|
+\item Constants for tokens with the appropriate content and catcode:
+\begin{lstlisting}[style=latexml]
+  T_BEGIN, T_END,   T_MATH,  T_ALIGN, T_PARAM,
+  T_SUB,   T_SUPER, T_SPACE, T_CR
+\end{lstlisting}
+\item \ltxcode|T_LETTER($char)|, \ltxcode|T_OTHER($char)|, \ltxcode|T_ACTIVE($char)|,
   create tokens of the appropriate catcode with the given text content.
-%     \verb|T_COMMENT($string)|,
-\item \verb|T_CS($cs)| creates a control sequence token; 
-  the string \verb|$cs| should typically begin with the slash.
-\item \verb|Token($string,$catcode)| creates a token with the given content and catcode.
-\item \verb|Tokens($token,...)| creates a \ltxpod{Tokens} object which
+%     \ltxcode|T_COMMENT($string)|,
+\item \ltxcode|T_CS($cs)| creates a control sequence token; 
+  the string \ltxcode|$cs| should typically begin with the slash.
+\item \ltxcode|Token($string,$catcode)| creates a token with the given content and catcode.
+\item \ltxcode|Tokens($token,...)| creates a \ltxpod{Tokens} object which
    represents a list of \ltxpod{Token}s.
-\item \verb|Tokenize($string)| converts the string to a \ltxpod{Tokens},
+\item \ltxcode|Tokenize($string)| converts the string to a \ltxpod{Tokens},
    using \TeX's standard catcode assignments.
-\item \verb|TokenizeInternal($string)| like \texttt{Tokenize}, but
-   treating \verb|@| as a letter.
-\item \verb|Explode($string)| converts the string to a \ltxpod{Tokens} where
-   letter character are given catcode \verb|CC_OTHER|.
-\item \verb|Expand($tokens| expands \verb|$tokens| (a \ltxpod{Tokens}), returning
+\item \ltxcode|TokenizeInternal($string)| like \texttt{Tokenize}, but
+   treating \ltxcode|@| as a letter.
+\item \ltxcode|Explode($string)| converts the string to a \ltxpod{Tokens} where
+   letter character are given catcode \ltxcode|CC_OTHER|.
+\item \ltxcode|Expand($tokens| expands \ltxcode|$tokens| (a \ltxpod{Tokens}), returning
   a \ltxpod{Tokens}; there should be no expandable tokens in the result.
-\item \verb|Invocation($cstoken,$arg,...)| Returns a \ltxpod{Tokens} representing
-  the sequence needed to invoke \verb|$cstoken| on the given arguments (each are
+\item \ltxcode|Invocation($cstoken,$arg,...)| Returns a \ltxpod{Tokens} representing
+  the sequence needed to invoke \ltxcode|$cstoken| on the given arguments (each are
   \ltxpod{Tokens}, or undef for an unsupplied optional argument).
 \end{itemize}
 
@@ -739,8 +807,8 @@ The replacement (which can only be code) gets
 the \ltxpod{Stomach} and the control sequence arguments
 as arguments; like macros, these arguments are not expanded or digested
 by default, they must be explicitly digested if necessary.
-The replacement code must either return nothing (eg. ending with \verb|return;|) or
-should return a list (ie. a Perl list \verb|(...)|)
+The replacement code must either return nothing (eg. ending with \ltxcode|return;|) or
+should return a list (ie. a Perl list \ltxcode|(...)|)
 of digested \ltxpod{Box}es or \ltxpod{Whatsit}s.
 
 % DefRegister ?
@@ -748,9 +816,9 @@ of digested \ltxpod{Box}es or \ltxpod{Whatsit}s.
 Nevertheless, functions dealing with digestion and state are important for
 writing before \& after daemons in constructors, so we give an overview here.
 \begin{itemize}
-\item \verb|Digest($tokens)|
-digests \verb|$tokens| (a \ltxpod{Tokens}), returning a list of \ltxpod{Box}es and \ltxpod{Whatsit}s.
-\item \verb|Let($token1,$token2)| gives \verb|$token1| the same meaning as \verb|$token2|,
+\item \ltxcode|Digest($tokens)|
+digests \ltxcode|$tokens| (a \ltxpod{Tokens}), returning a list of \ltxpod{Box}es and \ltxpod{Whatsit}s.
+\item \ltxcode|Let($token1,$token2)| gives \ltxcode|$token1| the same meaning as \ltxcode|$token2|,
  like \verb|\let|.
 \end{itemize}
 
@@ -760,27 +828,27 @@ that mimics \TeX's approach to binding; braces \verb|{| and \verb|}| open
 and close stack frames.  (The \ltxpod{Stomach} methods \texttt{bgroup} and \texttt{egroup}
 can be used when explicitly needed.)
 \begin{itemize}
-\item \verb|LookupValue($symbol)|, \verb|AssignValue($string,$value,$scope)|
+\item \ltxcode|LookupValue($symbol)|, \ltxcode|AssignValue($string,$value,$scope)|
  maintain arbitrary values in the current \ltxpod{State}, looking up or assigning
- the current value  bound to \verb|$symbol| (a string).
- For assignments,  the \verb|$scope| can be \texttt{'local'}
-  (the default, if \verb|$scope| is omitted),
+ the current value  bound to \ltxcode|$symbol| (a string).
+ For assignments,  the \ltxcode|$scope| can be \texttt{'local'}
+  (the default, if \ltxcode|$scope| is omitted),
   which changes the binding in the current stack frame.
-  If \verb|$scope| is \texttt{'global'}, it assigns the value globally
+  If \ltxcode|$scope| is \texttt{'global'}, it assigns the value globally
   by undoing all bindings.
-  The \verb|$scope| can also be another string, which indicates a named scope
+  The \ltxcode|$scope| can also be another string, which indicates a named scope
    --- but that is a more advanced topic.
-\item \raggedright \verb|PushValue($symbol,$value,...)|, \verb|PopValue($symbol)|,
-      \verb|UnshiftValue($symbol,$value,...|, \verb|ShiftValue($symbol)|
-  These maintain the value of \verb|$symbol| as a list, with the operatations
+\item \ltxcode|PushValue($symbol,$value,...)|, \ltxcode|PopValue($symbol)|,
+      \ltxcode|UnshiftValue($symbol,$value,...)|, \ltxcode|ShiftValue($symbol)|
+  These maintain the value of \ltxcode|$symbol| as a list, with the operatations
   having the same sense as in Perl; modifications are always global.
-\item \verb|LookupCatcode($char)|, \verb|AssignCatcode($char,$catcode,$scope)|
+\item \ltxcode|LookupCatcode($char)|, \ltxcode|AssignCatcode($char,$catcode,$scope)|
   maintain the catcodes associated with characters.
-\item \verb|LookupMeaning($token)|, \verb|LookupDefinition($token)|
+\item \ltxcode|LookupMeaning($token)|, \ltxcode|LookupDefinition($token)|
  looks up the current meaning of the token,  being any executable definition bound for it.
  If there is no such defniition \texttt{LookupMeaning} returns the token itself, 
  \texttt{LookupDefinition} returns \texttt{undef}.
-%  \verb|InstallDefinition()|
+%  \ltxcode|InstallDefinition()|
 \end{itemize}
 
 \paragraph{Counters}
@@ -790,29 +858,29 @@ also associate an \texttt{ID} with them.  A counter's print form
 (ie. \verb|\theequation| for equations) often ends up on the \attr{refnum} attribute
 of elements; the associated \texttt{ID} is used for the \attr{xml:id} attribute.
 \begin{itemize}
-\item \verb|NewCounter($name,$within,%options)|,
-  creates a \LaTeX-style counters.  When \verb|$within| is used, 
-  the given counter will be reset whenever the counter \verb|$within| is incremented.
-  This also causes the associated \texttt{ID} to be prefixed with \verb|$within|'s \texttt{ID}.
-  The option \verb|idprefix=>$string| causes the \texttt{ID} to be prefixed with that string.
+\item \ltxcode|NewCounter($name,$within,%options)|,
+  creates a \LaTeX-style counters.  When \ltxcode|$within| is used, 
+  the given counter will be reset whenever the counter \ltxcode|$within| is incremented.
+  This also causes the associated \texttt{ID} to be prefixed with \ltxcode|$within|'s \texttt{ID}.
+  The option \ltxcode|idprefix=>$string| causes the \texttt{ID} to be prefixed with that string.
   For example,
-\begin{verbatim}
+\begin{lstlisting}[style=latexml]
   NewCounter('section', 'document', idprefix=>'S');
   NewCounter('equation','document', idprefix=>'E',
              idwithin=>'section');
-\end{verbatim}
+\end{lstlisting}
 would cause the third equation in the second section to have \verb|ID='S2.E3'|.
-\item  \verb|CounterValue($name)| returns the \ltxpod{Number} representing the current value.
-\item  \verb|ResetCounter($name)| resets the counter to 0.
-\item \verb|StepCounter($name)| steps the counter (and resets any others `within' it),
+\item  \ltxcode|CounterValue($name)| returns the \ltxpod{Number} representing the current value.
+\item  \ltxcode|ResetCounter($name)| resets the counter to 0.
+\item \ltxcode|StepCounter($name)| steps the counter (and resets any others `within' it),
   and returns the expansion of \verb|\the$name|.
-\item \verb|RefStepCounter($name)| steps the counter and any ID's associated with it.
+\item \ltxcode|RefStepCounter($name)| steps the counter and any ID's associated with it.
   It returns a hash containing \texttt{refnum} (expansion of \verb|\the$name|)
   and \texttt{id} (expansion of \verb|\the$name@ID|)
-\item \verb|RefStepID($name)| steps the ID associated with the counter, without
+\item \ltxcode|RefStepID($name)| steps the ID associated with the counter, without
   actually stepping the counter; this is useful for unnumbered units that normally
   would have both a refnum and ID.
-%\verb|GenerateID()|
+%\ltxcode|GenerateID()|
 \end{itemize}
 
 \subsection[Construction]{Construction \& Constructors}\label{customization.latexml.construction}
@@ -823,7 +891,7 @@ environments. Mathematics generally comes down to constructors, as well,
 but is covered in Chapter \ref{math}.
 
 Here are a couple of trivial examples of constructors:
-\begin{verbatim}
+\begin{lstlisting}[style=latexml]
 DefConstructor('\emph{}',
                "<ltx:emph>#1</ltx:emph>", mode=>'text');
 DefConstructor('\item[]',
@@ -836,69 +904,69 @@ DefConstructor('\footnote[]{}',
 	       mode=>'text',
 	       properties=> sub { 
 		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
-\end{verbatim}
+\end{lstlisting}
 
-\par\noindent\verb|DefConstructor($prototype,$replacement,%options)|
+\par\noindent\ltxcode|DefConstructor($prototype,$replacement,%options)|
 \par
-The  \verb|$replacement| for a constructor describes the \XML\ to
+The  \ltxcode|$replacement| for a constructor describes the \XML\ to
 be generated during the construction phase. It can either be a string
 representing the \XML\ as a pattern (described below), or a
-subroutine \verb|CODE($document,$arg1,...%props)|
+subroutine \ltxcode|CODE($document,$arg1,...%props)|
 receiving the arguments and properties from the \ltxpod{Whatsit};
 it would invoke the methods of \ltxpod{Document} to construct the desired \XML.
 The pattern as illustrated above, simply represents a serialization of the
 desired \XML.  In addition to literal replacement, the following may appear:
 \begin{itemize}
-\item \verb|#1,#2,...#name| inserts the construction of the argument
+\item \ltxcode|#1,#2,...#name| inserts the construction of the argument
 or property in the \XML;
-\item \verb|&function($a,$b,...)| invokes the named function on the
+\item \ltxcode|&function($a,$b,...)| invokes the named function on the
 given arguments and inserts its value in place;
-\item \verb|?COND(pattern)| or \verb|?COND(ifpattern)(elsepattern)|
+\item \ltxcode|?COND(pattern)| or \ltxcode|?COND(ifpattern)(elsepattern)|
 conditionally inserts the patterns depending on the result of the conditional.
-\texttt{COND} would typically be testing the presence of an argument, \verb|#1|,
-or property \verb|#name| or invoking a function;
-\item \verb|^| if this appears at the beginning of the pattern,
+\texttt{COND} would typically be testing the presence of an argument, \ltxcode|#1|,
+or property \ltxcode|#name| or invoking a function;
+\item \ltxcode|^| if this appears at the beginning of the pattern,
 the replacement is allowed to \emph{float} up the current tree to whereever
 it might be allowed.
 \end{itemize}
 
 Options:
 \begin{itemize}
-\item \verb.mode=>('math'|'text'). switches to math or text mode, if needed;
-\item \verb|requireMath=>1|, \verb|forbidMath=>1| requires, or forbids,
+\item \ltxcode.mode=>('math'|'text'). switches to math or text mode, if needed;
+\item \ltxcode|requireMath=>1|, \ltxcode|forbidMath=>1| requires, or forbids,
   this constructor to appear in math mode;
-\item \verb|bounded=>1| specifies that all digestion (of arguments and daemons)
+\item \ltxcode|bounded=>1| specifies that all digestion (of arguments and daemons)
   will take place within an implicit \TeX\ group, so that any side-effects
   are localized, rather than affecting the global state;
-\item \verb|font=>{%hash}|
+\item \ltxcode|font=>{%hash}|
   switches the font used for any created text;
   recognized font keys are \texttt{family}, \texttt{series}, \texttt{shape}, \texttt{size},
   \texttt{color};
-\item \verb.properties=> {%hash} | CODE($stomach,$arg1,...).
+\item \ltxcode.properties=> {%hash} | CODE($stomach,$arg1,...).
   provides a set of properties to store in the \ltxpod{Whatsit} for eventual use
-  in the constructor \verb|$replacement|.  If a subroutine is used,
+  in the constructor \ltxcode|$replacement|.  If a subroutine is used,
   it also should return a hash of properties;
-\item \verb|beforeDigest=>CODE($stomach)|,\\
-      \verb|afterDigest=>CODE($stomach,$whatsit)|
+\item \ltxcode|beforeDigest=>CODE($stomach)|,\\
+      \ltxcode|afterDigest=>CODE($stomach,$whatsit)|
   provides code to be digested before and after digesting the arguments of
   the constructor, typically to alter the context of the digestion (before),
   or to augment the properties of the \ltxpod{Whatsit} (after);
-\item  \verb|beforeConstruct=>CODE($document,$whatsit)|,\\
-      \verb|afterConstruct=>CODE($document,$whatit)|
-  provides code to be run before and after the main \verb|$replacement|
+\item  \ltxcode|beforeConstruct=>CODE($document,$whatsit)|,\\
+      \ltxcode|afterConstruct=>CODE($document,$whatit)|
+  provides code to be run before and after the main \ltxcode|$replacement|
   is effected; occassionaly it is convenient to use the pattern
-  form for the main \verb|$replacement|, but one still wants to execute
+  form for the main \ltxcode|$replacement|, but one still wants to execute
   a bit of Perl code, as well;
-%\item \verb|nargs|  HUH?
-\item \verb.captureBody=>(1 | $token).
+%\item \ltxcode|nargs|  HUH?
+\item \ltxcode.captureBody=>(1 | $token).
   specifies that an additional argument (like an environment body) wiil
-  be read until the current \TeX\ grouping ends, or until the specified \verb|$token|
-  is encountered. This argument is available to \verb|$replacement| as \verb|$body|;
-\item \verb.scope=>('global'|'local'|$name). specifies whether this
+  be read until the current \TeX\ grouping ends, or until the specified \ltxcode|$token|
+  is encountered. This argument is available to \ltxcode|$replacement| as \ltxcode|$body|;
+\item \ltxcode.scope=>('global'|'local'|$name). specifies whether this
   definition is made globally, or in the current stack frame (default),
   (or in a named scope);
-\item \verb&reversion=>$string|CODE(...)&,
-   \verb|alias=>$cs|
+\item \ltxcode&reversion=>$string|CODE(...)&,
+   \ltxcode|alias=>$cs|
   can be used when the \ltxpod{Whatsit} needs to be reverted into \TeX\ code,
   and the default of simply reassembling based on the prototype is not desired.
   See the code for examples.
@@ -906,20 +974,20 @@ Options:
 
 Some additional functions useful when writing constructors:
 \begin{itemize}
-\item \verb|ToString($stuff)| converts \verb|$stuff| to a string.
-\item \raggedright \verb|CleanLabel($arg)|,
-   \verb|CleanIndexKey($arg)|,
-   \verb|CleanBibKey($arg)|,
-   \verb|CleanURL($arg)|
+\item \ltxcode|ToString($stuff)| converts \ltxcode|$stuff| to a string.
+\item \ltxcode|CleanLabel($arg)|,
+   \ltxcode|CleanIndexKey($arg)|,
+   \ltxcode|CleanBibKey($arg)|,
+   \ltxcode|CleanURL($arg)|
   cleans up arguments (converting to string, handling invalid characters, etc)
   to make the argument appropriate for use as an attribute representing
   a label, index ID, etc.
-\item \verb|UTF($hex)| returns the Unicode character for the given
+\item \ltxcode|UTF($hex)| returns the Unicode character for the given
 codepoint; this is useful for characters below \texttt{0x100} where
 Perl becomes confused about the encoding.
 \end{itemize}
 
-\par\noindent \verb|DefEnvironment($prototypte,$replacement,%options)|
+\par\noindent \ltxcode|DefEnvironment($prototypte,$replacement,%options)|
 \par Environments are largely a special case of constructors,
 but the prototype starts with \verb|{envname}|, rather than \verb|\cmd|,
 the replacement will also typically involve \verb|#body| representing
@@ -928,9 +996,9 @@ the contents of the environment.
 \texttt{DefEnvironment} takes the same options as  \texttt{DefConstructor},
 with the addition of
 \begin{itemize}
-\item \verb|afterDigestBegin=>CODE($stomach,$whatsit)|
+\item \ltxcode|afterDigestBegin=>CODE($stomach,$whatsit)|
 provides code to digest after the \verb|\begin{env}| is digested;
-\item \verb|beforeDigestEnd=>CODE($stomach)|
+\item \ltxcode|beforeDigestEnd=>CODE($stomach)|
 provides code to digest before the \verb|\end{env}| is digested.
 \end{itemize}
 
@@ -943,23 +1011,23 @@ as you like.
 The following declarations are typically only needed when customizing
 the schema used by \LaTeXML.
 \begin{itemize}
-\item \verb|RelaxNGSchema($schema,%namespaces)| declares the created
- \XML\ document should be fit to the RelaxNG schema in \verb|$schema|;
- A file \verb|$schema.rng| should be findable in the current search paths.
+\item \ltxcode|RelaxNGSchema($schema,%namespaces)| declares the created
+ \XML\ document should be fit to the RelaxNG schema in \ltxcode|$schema|;
+ A file \ltxcode|$schema.rng| should be findable in the current search paths.
 (Note that currently, \LaTeXML\ is unable to directly parse compact notation).
-\item \verb|RegisterNamespace($prefix,$url)| associates the
- prefix with the given namespace url.  This allows you to use \verb|$prefix|
+\item \ltxcode|RegisterNamespace($prefix,$url)| associates the
+ prefix with the given namespace url.  This allows you to use \ltxcode|$prefix|
  as a namespace prefix when writing \ltxpod{Constructor} patterns or XPath expressions.
-\item \verb|Tag($tag,%properties)| specifies properties for the given \XML\ \verb|$tag|.
+\item \ltxcode|Tag($tag,%properties)| specifies properties for the given \XML\ \ltxcode|$tag|.
 Recognized properties include:
-\verb|autoOpen=>1| indicates that the tag
+\ltxcode|autoOpen=>1| indicates that the tag
 can automatically be opened if needed to create a valid document;
-\verb|autoClose=>1| indicates that the tag can automatically be closed if needed to create
+\ltxcode|autoClose=>1| indicates that the tag can automatically be closed if needed to create
 a valid document;
-\verb|afterOpen=>$code| specifies code to be executed before opening the tag;
+\ltxcode|afterOpen=>$code| specifies code to be executed before opening the tag;
 the code is passed the \ltxpod{Document} being constructed as well as the
 \ltxpod{Box} (or \ltxpod{Whatsit}) responsible for its creation;
-\verb|afterClose=>code| similar to \texttt{afterOpen}, but executed after closing
+\ltxcode|afterClose=>code| similar to \texttt{afterOpen}, but executed after closing
 the element.
 % DocType
 \end{itemize}
@@ -968,33 +1036,33 @@ the element.
 The following functions are a bit tricky to use (and describe),
 but can be quite useful in some circumstances.
 \begin{itemize}
-\item \verb|DefLigature($regexp,%options)| applies a regular expression
-to substitute textnodes after they are closed; the only option is \verb|fontTest=>$code|
-which restricts the ligature to text nodes where the current font passes \verb|&$code($font)|.
-\item \verb|DefMathLigature($code)| allows replacement of sequences of math nodes.
-It applies \verb|$code| to the current \ltxpod{Document}
+\item \ltxcode|DefLigature($regexp,%options)| applies a regular expression
+to substitute textnodes after they are closed; the only option is \ltxcode|fontTest=>$code|
+which restricts the ligature to text nodes where the current font passes \ltxcode|&$code($font)|.
+\item \ltxcode|DefMathLigature($code)| allows replacement of sequences of math nodes.
+It applies \ltxcode|$code| to the current \ltxpod{Document}
 and each sequence of math nodes encountered in the document; if a replacement should
-occur, \verb|$code| should return a list of the form \verb|($n,$string,%attributes)|
-in which case, the text content of the first node is replaced by \verb|$string|,
-the given attributes are added, and the following \verb|$n-1| nodes are removed.
-\item \verb|DefRewrite(%spec)|, \verb|DefMathRewrite(%spec)| defines document
+occur, \ltxcode|$code| should return a list of the form \ltxcode|($n,$string,%attributes)|
+in which case, the text content of the first node is replaced by \ltxcode|$string|,
+the given attributes are added, and the following \ltxcode|$n-1| nodes are removed.
+\item \ltxcode|DefRewrite(%spec)|, \ltxcode|DefMathRewrite(%spec)| defines document
 rewrite rules. These specifications describe what document nodes match:
 \begin{itemize}
-\item \verb|label=>$label| restricts to nodes contained within an element whose
-  \attr{labels} includes \verb|$label|;
-\item \verb|scope=>$scope| generalizes \texttt{label}; the most useful form
+\item \ltxcode|label=>$label| restricts to nodes contained within an element whose
+  \attr{labels} includes \ltxcode|$label|;
+\item \ltxcode|scope=>$scope| generalizes \texttt{label}; the most useful form
  a string like \texttt{'section:1.3.2'} where it matches the \elementref{section}
   element whose \attr{refnum} is \texttt{1.3.2};
-\item \verb|xpath=>$xpath| selects nodes matching the given XPath;
-\item \verb|match=>$tex| selects nodes that look like what processing
- the \TeX\ string \verb|$tex| would produce;
-\item \verb|regexp=>$regexp| selects text nodes that match the given regular expression.
+\item \ltxcode|xpath=>$xpath| selects nodes matching the given XPath;
+\item \ltxcode|match=>$tex| selects nodes that look like what processing
+ the \TeX\ string \ltxcode|$tex| would produce;
+\item \ltxcode|regexp=>$regexp| selects text nodes that match the given regular expression.
 \end{itemize}
 The following specifications describe what to do with the matched nodes:
 \begin{itemize}
-\item \verb|attributes=>{%attr}| adds the given attributes to the matching nodes;
-\item \verb|replace=>$tex| replaces the matching nodes with the result
-of processing the \TeX\ string \verb|$tex|.
+\item \ltxcode|attributes=>{%attr}| adds the given attributes to the matching nodes;
+\item \ltxcode|replace=>$tex| replaces the matching nodes with the result
+of processing the \TeX\ string \ltxcode|$tex|.
 \end{itemize}
 \end{itemize}
 
@@ -1005,51 +1073,53 @@ As when defining \LaTeX\ packages, the following, if needed at all,
 need to appear in the order shown.
 \begin{itemize}
 %===== Declarations of options
-\item \verb|DeclareOption($option,$handler)| specifies the handler
-for \verb|$option| when it is passed to the current package or class.
-If \verb|$option| is \texttt{undef}, it defines the default handler,
+\item \ltxcode|DeclareOption($option,$handler)| specifies the handler
+for \ltxcode|$option| when it is passed to the current package or class.
+If \ltxcode|$option| is \texttt{undef}, it defines the default handler,
 for options that are otherwise unrecognized.
-\verb|$handler| can be either a string to be expanded, or a sub which
+\ltxcode|$handler| can be either a string to be expanded, or a sub which
 is executed like a primitive.
-\item \verb|PassOptions($name,$type,@options)|  specifies that the
-given options should be passed to the package (if \verb|$type| is \texttt{sty})
-or class (if \verb|$type| is \texttt{cls}) \verb|$name|, if it is ever loaded.
+\item \ltxcode|PassOptions($name,$type,@options)|  specifies that the
+given options should be passed to the package (if \ltxcode|$type| is \texttt{sty})
+or class (if \ltxcode|$type| is \texttt{cls}) \ltxcode|$name|, if it is ever loaded.
 %===== Execution of options
-\item \verb|ProcessOptions(%keys)| processes any options that have
-been passed to the current package or class.  If \verb|inorder=>1| is
+\item \ltxcode|ProcessOptions(%keys)| processes any options that have
+been passed to the current package or class.  If \ltxcode|inorder=>1| is
 specified, the options will be processed in the order passed to the
 package (\verb|\ProcessOptions*|); otherwise they will be processed
 in the declared order (\verb|\ProcessOptions|).
-\item \verb|ExecuteOptions(@options)|
-executes the handlers for the specific set of options \verb|@options|.
+\item \ltxcode|ExecuteOptions(@options)|
+executes the handlers for the specific set of options \ltxcode|@options|.
 %===== Package loading
-\item \verb|RequirePackage($pkgname,%keys)| loads the specified package.
-The keyword options have the following effect: \verb|options=>$options|
+\item \ltxcode|RequirePackage($pkgname,%keys)| loads the specified package.
+The keyword options have the following effect: \ltxcode|options=>$options|
 can provide an explicit array of string specifying the options to pass to the package;
-\verb|withoptions=>1| means that the options passed to the currently loading
+\ltxcode|withoptions=>1| means that the options passed to the currently loading
 class or package should be passed to the requested package;
-\verb|type=>$ext| specifies the type of the package file (default is \texttt{sty});
-\verb|raw=>1| specifies that reading the raw style file (eg. \texttt{pkg.sty})
+\ltxcode|type=>$ext| specifies the type of the package file (default is \texttt{sty});
+\ltxcode|raw=>1| specifies that reading the raw style file (eg. \texttt{pkg.sty})
 is permissible if there is no specific \LaTeXML\ binding (eg. \texttt{pkg.sty.ltxml})
-\verb|after=>$after| specifies a string or \ltxpod{Tokens} to be expanded
+\ltxcode|after=>$after| specifies a string or \ltxpod{Tokens} to be expanded
 after the package has finished loading.
-\item \verb|LoadClass($classname,%keys)|
-Similar to \texttt{RequirePackage}, but loads a class file (\verb|type=>'cls'|).
+\item \ltxcode|LoadClass($classname,%keys)|
+Similar to \texttt{RequirePackage}, but loads a class file (\ltxcode|type=>'cls'|).
 %==== Special commands
-\item \verb|AddToMacro($cstoken,$tokens)| a little used utilty to add
-material to the expansion of \verb|$cstoken|, like an \verb|\edef|;
+\item \ltxcode|AddToMacro($cstoken,$tokens)| a little used utilty to add
+material to the expansion of \ltxcode|$cstoken|, like an \verb|\edef|;
 typically used to add code to a class or package hook.
 \end{itemize}
 
 \subsection{Miscellaneous}\label{customization.latexml.misc}
 Other useful stuff:
 \begin{itemize}
-\item \verb|RawTeX($texstring)| expands and processes the \verb|$texstring|;
+\item \ltxcode|RawTeX($texstring)| expands and processes the \ltxcode|$texstring|;
 This is typically useful to include definitions copied from a \TeX\ stylefile,
 when they are approriate for \LaTeXML, as is.
+Single-quoting the \ltxcode|$texstring| is useful, since it isn't interpolated
+by Perl, and avoids having to double all the slashes!
 \end{itemize}
 
-%\verb|MergeFont()|
+%\ltxcode|MergeFont()|
 
 %%%----------------------------------------------------------------------
 \section{latexmlpost Customization}\label{customization.latexmlpost}
@@ -1110,13 +1180,13 @@ To best take advantage of this capability so as to design
   others are transformed to something more generic, such as \elementref{note}.
   In the latter case, a class attribute is often used to distinguish.
   For example, a \verb|\footnote| generates
-\begin{verbatim}
+\begin{lstlisting}[language=xml]
   <note class='footnote'>...
-\end{verbatim}
+\end{lstlisting}
   whereas an \verb|\endnote| generates
-\begin{verbatim}
+\begin{lstlisting}[language=xml]
   <note class='endnote'>...
-\end{verbatim}
+\end{lstlisting}
 \item The provided \XSLT\ stylesheets transform \LaTeXML's schema to \XHTML,
   generating a combined class attribute consisting of any class attributes
   already present as well as the \LaTeXML\ tag name.
@@ -1131,7 +1201,7 @@ To best take advantage of this capability so as to design
 %%%======================================================================
 \chapter{Mathematics}\label{math}
 
-%\verb|DefMath($prototype,$replacement,%options)|
+%\ltxcode|DefMath($prototype,$replacement,%options)|
 
 There are several issues that have to be dealt with in treating the mathematics.
 On the one hand, the \TeX\ markup gives a pretty good indication of what the
@@ -1344,11 +1414,8 @@ Lots\ldots!
 \item Low-level \TeX\ capabilities, such as text modes (eg. vertical, horizonatal),
  box details like width and depth, as well as fonts,  aren't mimicked faithfully,
   although it isn't clear how much can be done at the `semantic' level.
-\item When dealing with archival material, it may be useful to lock some definitions.
-  For example, some people redefine eqnarray in terms of lower level primitives
-  to get better spacing. Unfortunately, this keeps \LaTeXML\ from recognizing it
-  as an eqnarray!
-\item a richer math grammar, better inferencing of math structure,
+\item a richer math grammar, or more flexible parsing engine,
+  better inferencing of math structure,
   better inferencing of math \emph{meaning}\ldots and thus better
   Content MathML and OpenMath support!
 \item Could be faster.
@@ -1374,6 +1441,14 @@ and Catalin David for testing help and for implementing additional packages.
 \input{pods/latexml}
 \include{pods/latexmlpost}
 \include{pods/latexmlmath}
+
+%%%======================================================================
+\chapter[Bindings]{Implemented Bindings}\label{included.bindings}
+Bindings for the following classes and packages are supplied with the distribution:
+\begin{description}
+\item[classes:] \CurrentClasses
+\item[packages:] \CurrentPackages
+\end{description}
 
 %%%======================================================================
 \chapter[Modules]{Core Module Documentation}\label{coremodules}

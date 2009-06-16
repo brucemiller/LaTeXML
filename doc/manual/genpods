@@ -125,6 +125,19 @@ sub interior_sequence {
   else {
     $self->SUPER::interior_sequence($seq_command,$seq_argument,$pod_seq); }}
 
+# Redefine to better sort indices.
+# ALL packages start with LaTeXML:: !!!
+sub _create_index {
+  my $string = $_[0]->SUPER::_create_index($_[1]);
+  my $reftype = "Command Reference";
+  my @phrases = split('!',$string);
+  if($phrases[0] =~ /^LaTeXML/){
+    $reftype = "Module Reference";
+    my @comp = split('::',$phrases[0]);
+    $phrases[0] = $comp[$#comp]
+      .(@comp > 1 ? ' ('.join('::',@comp[0..$#comp-1]).'::)' :''); }
+  join('!',$phrases[0],$reftype,@phrases[1..$#phrases]); }
+
 # Redefined to avoid unnecessary math.
 sub _replace_special_chars_late {
   my($self,$paragraph)=@_;
