@@ -5,7 +5,7 @@
 #======================================================================
 PortSystem 1.0
 name LaTeXML
-version 0.6.1
+version 0.7.0
 categories tex
 maintainers bruce.miller@nist.gov
 description LaTeXML converts TeX to XML
@@ -15,15 +15,14 @@ long_description \
 
 homepage http://dlmf.nist.gov/LaTeXML/
 platforms darwin
-# master_sites http://dlmf.nist.gov/LaTeXML/releases/
-master_sites file:///Users/miller/tmp/
-checksums md5 f73cccf764ab596fe905a9f0d459f67a
-##         sha1 e6bb15d2b7b4eb063191cc465a63d4b7a2070520 \
-##         rmd160 44a0d5c0113cec7403ad1615c7652054cc7c950c
+master_sites http://dlmf.nist.gov/LaTeXML/releases/
+checksums md5 61fc79ed5391728c8b00465ab48c6697 \
+         sha1 3cbc416ea71ff1c21b5ac1493a1b925297eb674d \
+         rmd160 0230ffc3a1604b891c65276a4e9f745018b3e78a
 # Use:
-# md5 LaTeXML-0.6.1.tar.gz
-# openssl sha1 LaTeXML-0.6.1.tar.gz
-# openssl rmd160 LaTeXML-0.6.1.tar.gz
+# md5sum LaTeXML-0.7.0.tar.gz
+# openssl sha1 LaTeXML-0.7.0.tar.gz
+# openssl rmd160 LaTeXML-0.7.0.tar.gz
 #============================================================
 # Dependencies
 depends_lib port:p5-parse-recdescent \
