@@ -11,7 +11,7 @@
 \maketitle
 
 %============================================================
-The \emph{Current release} is \htmlref{\CurrentVersion}{download}.
+The \emph{Current release} is \htmlref{\CurrentVersion}{get}.
 
 In the process of developing the
 \href{http://dlmf.nist.gov/}{Digital Library of Mathematical Functions},
@@ -34,8 +34,9 @@ A postprocessor, \texttt{latexmlpost} converts this
 XML into other formats such as HTML or XHTML, with options
 to convert the math into MathML (currently only presentation) or images.
 
-\emph{Caveats} This is still a \emph{preview release} of LaTeXML.
-It isn't finished, there are large gaps in the coverage,
+\emph{Caveats}
+% This is still a \emph{preview release} of LaTeXML.
+It isn't finished, there are gaps in the coverage,
 particularly in missing implementations of the many useful \LaTeX\ packages.
 But is beginning to stabilize and interested parties
 are invited to try it out, give feedback and even to help out.
@@ -64,74 +65,54 @@ math conversion and other features possible.
 \item[These pages] were produced using \LaTeXML, as well.
 \end{description}
 
-\section{Download}\label{download}
-See \ref{install} for installation instructions, including OS-specific notes.
-
-\paragraph{Current Release:}\label{download.current}
-\CurrentRelease.
-See also the \href{Changes}{Change Log}.
-
-\paragraph{SVN Repository}\label{download.svn}
-Browsable at \url{https://svn.mathweb.org/repos/LaTeXML}.
-Anonymous checkout is available using the command:
-\begin{alltt}
-  svn co https://svn.mathweb.org/repos/LaTeXML
-\end{alltt}
-
-\paragraph{Licence}\label{license}
-As this software was developed as part of work done by the
-United States Government, it is not subject to copyright,
-and is in the public domain.
-Note that according to
-\href{http://www.gnu.org/licences/license-list.html#PublicDomain}{Gnu.org}
-public domain is compatible with GPL.
-
-\paragraph{Archived Releases:}\label{archive}
-\AllReleases.
 
 %============================================================
-\section{Installation}\label{install}
-\LaTeXML\ itself is written in `pure' Perl, but requires several
-perl modules.  A recent \href{http://www.perl.org/}{Perl}
-with sufficient Unicode support is required: version 5.8 or later.
-An installation of \TeX\ is also needed.
+\section{Get \LaTeXML}\label{get}
+\paragraph{Current Release:}\label{download.current}
+The current release is \textbf{\CurrentVersion}.
+See also the \href{Changes}{Change Log}.
 
 
-There are several options for installation.
-You may install \LaTeXML\ \ref{install.source}
-(whether using the tarball or checkout from \ref{download.svn})
-or, for some operating systems, there may be prepared binaries.
-Likewise, you may install the prerequisies from their sources,
-CPAN or use the facilities of your operating system.
-Check \ref{install.osnotes} for your operating system
-for notes that may simplify the installation.
+\LaTeXML\ itself is written in `pure' Perl, but requires \TeX,
+and several perl modules, some of which depend on C libraries.
+It should always be possible to install \LaTeXML\ on any platform
+with a sufficiently recent \href{http://www.perl.org/}{Perl},
+\ref{install.source}, using CPAN to install the prerequisites.
 
-\subsection{Prerequisites from CPAN}
+In most cases, however, it will be preferable to install
+a platform-specific, pre-compiled, release, as this often
+takes care of installing dependencies and updates,
+and allows cleaner uninstall.  See  \ref{install.osnotes} for
+platform-specific releases and instructions.
 
-The following additional Perl modules are required:
+\subsection{Prerequisites}
+
+The following additional Perl modules are required, but often will
+be automatically installed by OS-specific procedures:
 % %3A%3A for :: ???
 \begin{description}
 \item[\href{http://search.cpan.org/search?query=Parse::RecDescent&mode=module}{Parse::RecDescent}]
-    A useful grammar based parser module.
+    a useful grammar based parser module.
 \item[\href{http://search.cpan.org/search?query=Image::Magick&mode=module}{Image::Magick}]
-    This module provides bindings to the \href{http://www.imagemagick.org/}{ImageMagick} library.
+    provides bindings to the \href{http://www.imagemagick.org/}{ImageMagick} library.
 \item[\href{http://search.cpan.org/search?query=XML::LibXML&mode=module}{XML::LibXML}]
-    This module provides bindings to the C library libxml2
+    provides bindings to the C library libxml2
     (available from \href{http://www.xmlsoft.org}{xmlsoft}).
-    At least version 1.61 is required, unless the separate \texttt{XML::LibXML::XPathContext}
-    package is installed (but it is not standard in many distributions).
+    Versions before 1.61 will require the additional \texttt{XML::LibXML::XPathContext} module.
 \item[\href{http://search.cpan.org/search?query=XML::LibXSLT&mode=module}{XML::LibXSLT}]
-    This module provides bindings to the C library libxslt
+    provides bindings to the C library libxslt
     (from \href{http://www.xmlsoft.org}{xmlsoft},
 %  <li><tt><a href="http://search.cpan.org/search?query=XML::LibXML::XPathContext&mode=module">XML::LibXML::XPathContext</a></tt>
 %      Depends on the XML::LibXML module.
 \item[\href{http://search.cpan.org/search?query=DB_File&mode=module}{DB\_File}]
-    This module is usually part of a standard Perl installation, provided
+    usually part of a standard Perl installation, provided
     \href{http://www.sleepycat.com}{BerkeleyDB} is installed.
 \item[\href{http://search.cpan.org/search?query=Test::Simple&mode=module}{Test::Simple}]
-    This module is usually(?) part of a standard Perl installation.
+    usually part of a standard Perl installation.
 \end{description}
 
+\subsection{From Source}\label{install.source}
+\paragraph{Install Prerequisites}
 Assuming that all the required C packages (for libxml2 and libxslt) are already installed on your system,
   use CPAN to install the required perl modules (typically as root):
 \begin{alltt}
@@ -142,10 +123,10 @@ Assuming that all the required C packages (for libxml2 and libxslt) are already 
 The \texttt{Image::Magick} module often installs best by enabling the
 perl bindings as part of compiling and installing the main ImageMagick package.
 
-\subsection{From Source}\label{install.source}
-Installation proceeds via the usual Perl module incantations:
+\paragraph{Download} \CurrentTarball
+\paragraph{Install} proceeds via the usual Perl module incantations:
 \begin{alltt}
-   tar zxvf  \CurrentTarball\\
+   tar zxvf LaTeXML-\CurrentVersion.tar.gz\\
    cd LaTeXML-\CurrentVersion\\
    perl Makefile.PL
    make
@@ -161,29 +142,48 @@ and then, as root:
 \subsection[OS-Specific Notes]{Operating System Specific Notes}\label{install.osnotes}
 
 \subsubsection[Fedora-based systems]{Fedora-based systems}\label{install.fedora}
-For Fedora (and perhaps other similar) distributions, 
-after you've dowloaded the LaTeXML RPM, the following
-command should install LaTeXML along with any missing prerequisites:
+For Fedora (and perhaps other similar) distributions, \texttt{yum} will automatically install
+the needed prerequisites.
+\paragraph{Download} \CurrentFedora
+\paragraph{Install} using the command:
 \begin{alltt}
-   yum --nogpgcheck localinstall \CurrentRPM
+   yum --nogpgcheck localinstall LaTeXML-\CurrentVersion-*.ltxml.noarch.rpm
+\end{alltt}
+If you had previously installed \LaTeXML\ rpm, you may want to explicitly
+uninstall it \emph{first}, since the name has changed:
+\begin{alltt}
+   yum remove perl-LaTeXML
 \end{alltt}
 
 \subsubsection[Enterprise systems]{Enterprise-style RPM-based systems (RedHat, Centos)}\label{install.enterprise}
-Unfortunately, more conservative distributions
-(such as RedHat Enterprise and CentOS)
-do not have recent enough releases of the prerequisites available.
-I am working on a workaround for this problem.
-% \begin{alltt}
-%    yum --nogpgcheck install perl-Parse-RecDescent  \textbackslash\\
-%      ImageMagick ImageMagick-perl  \textbackslash\\
-%      libxml2 perl-XML-LibXML libxslt perl-XML-LibXSLT \textbackslash\\
-%      perl-Test-Simple
-% \end{alltt}
-
+Although, \texttt{yum} will also install needed prerequisites, two of them are not available
+on the more stable (\& conservative) distributions (such as RedHat Enterprise and CentOS).
+\paragraph{Download Prerequisites} choose from the following according to your architecture:
+\begin{description}
+\item[32bit]
+   \href{releases/perl-XML-LibXML-XPathContext-0.07-1.c5.ltxml.i386.rpm}{perl-XML-LibXML-XPathContext},
+   \href{releases/perl-XML-LibXSLT-1.58-1.c5.ltxml.i386.rpm}{perl-XML-LibXSLT}
+\item[64bit]
+   \href{releases/perl-XML-LibXML-XPathContext-0.07-1.c5.ltxml.x86_64.rpm}{perl-XML-LibXML-XPathContext},
+   \href{releases/perl-XML-LibXSLT-1.58-1.c5.ltxml.x86_64.rpm}{perl-XML-LibXSLT}
+\item[Source RPM]
+    \href{releases/perl-XML-LibXML-XPathContext-0.07-1.c5.ltxml.src.rpm}{perl-XML-LibXML-XPathContext},
+    \href{releases/perl-XML-LibXSLT-1.58-1.c5.ltxml.src.rpm}{perl-XML-LibXSLT}
+\end{description}
+\paragraph{Download} \CurrentCentos
+\paragraph{Install} using the command:
+\begin{alltt}
+   yum --nogpgcheck localinstall LaTeXML-\CurrentVersion-*.ltxml.noarch.rpm \textbackslash\\
+       perl-XML-LibXML-XPathContext-0.07-1.*   \textbackslash\\
+       perl-XML-LibXSLT-1.58-1.*
+\end{alltt}
 
 \subsubsection{Debian-based systems}\label{install.debian}
-For Debian based distributions, presumably including Ubuntu, the following
-command  should install the prerequisites:
+For Debian based distributions, presumably including Ubuntu,
+all prerequisites are available from the standard repositories.
+I do not currently have access to a Debian/Ubuntu system, so
+have not created an appropriate \texttt{.deb} for \LaTeXML.
+\paragraph{Install Prerequisites} using the command:
 \begin{alltt}
    sudo apt-get install   \textbackslash\\
       libparse-recdescent-perl \textbackslash\\
@@ -191,22 +191,31 @@ command  should install the prerequisites:
       libxslt1.1 libxml-libxslt-perl  \textbackslash\\
       imagemagick perlmagick
 \end{alltt}
-You can then continue by installing LaTeXML from source, as above.
+\paragraph{Install}
+You can then continue by downloading and installing LaTeXML \ref{install.source}.
 
 Some \href{http://rhaptos.org/devblog/reedstrm/latexml}{notes} on installation on Debian
 based systems are also available.
 
 \subsubsection{MacOS}\label{install.macos}
 Many of the prerequisite packages are available via
-\href{MacPorts}{http://www.macports.org}.
-To install them, use
+\href{http://www.macports.org}{MacPorts}.
+\paragraph{For the Adventurous}  As an easy alternative --- if it works ---
+download \CurrentMacOS, save in it's own directory as \texttt{Portfile}
+(without the version number) and, within that directory, run
+\begin{alltt}
+  sudo port install
+\end{alltt}
+This should install \LaTeXML\ and it's all dependencies;
+Otherwise, continue as below.
+\paragraph{Install Prerequisites} using the command:
 \begin{alltt}
   sudo port install    \textbackslash\\
       p5-xml-libxml p5-xml-libxslt  \textbackslash\\
       p5-parse-recdescent p5-perlmagick
 \end{alltt}
-
-You can then continue by installing LaTeXML from source, as above.
+\paragraph{Install}
+You can then continue by downloading and installing LaTeXML \ref{install.source}.
 
 \emph{Note} there have been issues reported regarding \verb|DB_File|
 not being installed;  Apparently you must install the 
@@ -215,9 +224,30 @@ the db `variant' of perl, rather than the gdbm variant
 
 \subsubsection{Windows}\label{install.windows}
 Many of the prerequisite packages are available in
-ppm form (for \href{ActivePerl}{http://activestate.com/} (I think).
+ppm form (for \href{http://activestate.com/}{ActivePerl} (I think).
 I will attempt to generate a ppm for LaTeXML in the near
 future, depending on user interest --- and assistance!
+
+\subsection{SVN Repository}\label{download.svn}
+The most current code can be obtained from the svn repostory.
+It is browsable at \url{https://svn.mathweb.org/repos/LaTeXML}.
+Anonymous checkout is available using the command:
+\begin{alltt}
+  svn co https://svn.mathweb.org/repos/LaTeXML
+\end{alltt}
+After checkout, you can continue the installation
+as described in \ref{install.source}.
+
+\subsection{Licence}\label{license}
+As this software was developed as part of work done by the
+United States Government, it is not subject to copyright,
+and is in the public domain.
+Note that according to
+\href{http://www.gnu.org/licences/license-list.html#PublicDomain}{Gnu.org}
+public domain is compatible with GPL.
+
+\subsection{Archived Releases:}\label{archive}
+\AllReleases.
 
 %============================================================
 \section{Documentation}\label{docs}

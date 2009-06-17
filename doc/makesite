@@ -83,33 +83,55 @@ sub getReleases {
   my @files = readdir(REL);
   closedir(REL);
   my %links=();
-  my($newesttarball,$newestrpm)=("0","0");
+  # $links{$version}{$os}{$osver}{$prop}=>$string
+  #  $version is LaTeXML version
+  #  $os is one of Tarball, Fedora, CentOS; eventually MacOS, Debian, Ubuntu, Windows...
+  #  $osver is version number of the os (0 for tarball)
+  #  $prop is file | link
+  #  $string is either the filename or formatted \href
   foreach my $file (@files){
     if($file =~ /^LaTeXML-(.*?)\.tar\.gz$/){
-      my $num=$1;
-      $newesttarball = $num if $num gt $newesttarball;
-      $links{$num}{tarball}{file} = "\\href{releases/$file}{$file}";
-      $links{$num}{tarball}{link} = "\\href{releases/$file}{$num\\nobreakspace(tar.gz)}"; }
+      my $v=$1;
+      $links{$v}{Tarball}{0}{file} = "\\href{releases/$file}{$file}";
+      $links{$v}{Tarball}{0}{link} = "\\href{releases/$file}{$v\\nobreakspace(tar.gz)}"; }
+    # New naming scheme!
+    # BUT now we'll have fedora, centos!
+    # Moreover, we soon will have f10, f11, ... which also needs managing!
+    elsif($file =~ /^LaTeXML-(.*?)-\d+\.f(\d+)\.ltxml\.noarch\.rpm$/){
+      my($v,$os,$osv)= ($1,"Fedora",$2);
+      $links{$v}{$os}{$osv}{file} = "\\href{releases/$file}{$file}";
+      $links{$v}{$os}{$osv}{link} = "\\href{releases/$file}{$v\\nobreakspace($os $osv)}"; }
+    elsif($file =~ /^LaTeXML-(.*?)-\d+\.c(\d+)\.ltxml\.noarch\.rpm$/){
+      my($v,$os,$osv)= ($1,"Centos",$2);
+      $links{$v}{$os}{$osv}{file} = "\\href{releases/$file}{$file}";
+      $links{$v}{$os}{$osv}{link} = "\\href{releases/$file}{$v\\nobreakspace($os $osv)}"; }
+    # OBSOLETE naming scheme for RPM's (there's only 1 anyway...)
     elsif($file =~ /^perl-LaTeXML-(.*?)-\d+\.noarch\.rpm$/){
-      my $num= $1;
-      $newestrpm = $num if $num gt $newestrpm;
-      $links{$num}{rpm}{file} = "\\href{releases/$file}{$file}";
-      $links{$num}{rpm}{link} = "\\href{releases/$file}{$num\\nobreakspace(RPM)}"; }
+      my ($v,$os,$osv)= ($1,"Fedora","9");
+      $links{$v}{$os}{$osv}{file} = "\\href{releases/$file}{$file}";
+      $links{$v}{$os}{$osv}{link} = "\\href{releases/$file}{$v\\nobreakspace($os $osv)}"; }
+    elsif($file =~ /^Portfile-(.*?)$/){
+      my($v,$os,$osv)= ($1,"MacOS","");
+      $links{$v}{$os}{$osv}{file} = "\\href{releases/$file}{$file}";
+      $links{$v}{$os}{$osv}{link} = "\\href{releases/$file}{$v\\nobreakspace($os $osv)}"; }
     # handle other formats here. (ppm, deb)
   }
   my @versions = reverse sort keys %links;
   my @releases = ();
+  my %osrel=();
   foreach my $release (@versions){
-    my $formats = $links{$release};
-    push(@releases,join(",\n",map($$formats{$_}{link}, sort keys %$formats))); }
+    foreach my $os (sort keys %{$links{$release}}){
+      foreach my $osver (reverse sort keys %{$links{$release}{$os}}){
+	$osrel{$os} = $release if !$osrel{$os} || (($release cmp $osrel{$os}) > 0);
+	push(@releases,$links{$release}{$os}{$osver}{link}); }}}
 
-  saveData($RELEASEDOC,
-	   "\\def\\CurrentVersion{$versions[0]}\n"
-	   ."\\def\\CurrentTarball{".$links{$newesttarball}{tarball}{file}."}\n"
-	   ."\\def\\CurrentRPM{".$links{$newestrpm}{rpm}{file}."}\n"
-	   ."\\def\\CurrentRelease{".$releases[0]."}\n"
-	   ."\\def\\AllReleases{".join(";\n", @releases)."}\n");
-}
+  my $macros 
+    = "\\def\\CurrentVersion{$versions[0]}\n"
+      ."\\def\\AllReleases{".join(";\n", @releases)."}\n";
+  foreach my $os (keys %osrel){
+    my $osvers = $links{$osrel{$os}}{$os};
+    $macros .= "\\def\\Current".$os."{".join(",\n",map($$osvers{$_}{link}, reverse sort keys %$osvers))."}\n"; }
+  saveData($RELEASEDOC,$macros); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 __END__
