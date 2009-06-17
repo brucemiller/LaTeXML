@@ -18,7 +18,7 @@ Steps for making a new release
  * make dist
 
 We now have LaTeXML-x.x.x.tar.gz
-
+Copy to <site>/releases
 #======================================================================
 # Make RPM's
  [ To make initial LaTeXML.spec:
@@ -26,18 +26,30 @@ We now have LaTeXML-x.x.x.tar.gz
  * Edit LaTeXML.spec for current version
  * cp LaTeXML-x.x.x.tar.gz ~/rpm/SOURCES/
  * rpmbuild -bs LaTeXML.spec
- * rpmbuild --rebuild LaTeXML-x.x.x.src.rpm
 
-Now the rpm is in:
-  ~/rpm/RPMS/noarch/LaTeXML-x.x.x.noarch.rpm
+##### * rpmbuild --rebuild LaTeXML-x.x.x.src.rpm
+##### Now the rpm is in:
+#####  ~/rpm/RPMS/noarch/LaTeXML-x.x.x.noarch.rpm
 
- * doc/makesite
+Use mock to create various rpms
+  (see ~/mock/ for instructions)
+Copy them all to <site>/releases
+
 
 #======================================================================
 # Make MacPorts Portfile for MacOS
 
  * Change version number
  * recompute checksums
+ * copy resulting Portfile as <site>/releases/Portfile-<version>
+
+#======================================================================
+Run doc/makesite
+to regenerate site w/current versions
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Other attempts...
 
 #======================================================================
 # Attempts to make a ppm/ppd:
@@ -47,5 +59,32 @@ apparently have to run as root, since it wants to write to /root/.cpan !?!?!?
 
 make_ppm --skip --ppd=/home/bruce/tmp/ppm/ --ar=/home/bruce/tmp/ppm/ /home/bruce/latexml/LaTeXML-0.6.0.tar.gz
 
+# **************
+# Try again....
+cpan PPM::Make
+..
 
+go to a tmp dir
+tar zxvf /wherever/LaTeXML-x.x.x.tar.gz
+cd LaTeXML-x.x.x
+make_ppm
+
+why is it trying to go to CPAN ?
+Ends up with:
+Use of uninitialized value $mod:: in string at /usr/local/lib/perl5/site_perl/5.10.0/PPM/Make/Search.pm line 187, <STDIN> line 24.
+Not all query terms returned a result at /usr/local/lib/perl5/site_perl/5.10.0/PPM/Make/Search.pm line 568, <STDIN> line 24.
+Cannot obtain the modules that 'LaTeXML' provides at /usr/local/lib/perl5/site_perl/5.10.0/PPM/Make.pm line 564, <STDIN> line 24.
+
+
+* Some other clues:
+  The LaTeXML.ppm includes mention of OS and ARCHITECTURE
+  Linux, of course, but I want windows.... or none, since this is pure perl?
+
+  Maybe the command line options 
+     --os='' --arch=''
+  would make it more portable?
+
+Hmm... it isn't clear that it actually failed, in spite of the warnings.
+
+make_ppm -vs --os='' --arch=''
 #======================================================================
