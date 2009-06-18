@@ -7,6 +7,7 @@
 # | http://dlmf.nist.gov/LaTeXML/                                        |
 #  \====================================================================/
 
+package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
@@ -43,7 +44,7 @@ DefMacro('\CRclass{}',   '\@add@frontmatter{ltx:classification}[scheme=CR]{#1}')
 DefMacro('\ESM{}',       '\@add@frontmatter{ltx:note}[role=supplemental]{#1}');
 DefMacro('\PACS{}',      '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
 DefMacro('\headnote{}',  '\@add@frontmatter{ltx:note}{#1}');
-DefMacro('\dedication{}','\@add@frontmatter{ltx:contact}[role=dedicatory]{#1}');
+DefMacro('\dedication{}','\@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
 DefMacro('\offprints{}', '\@add@frontmatter{ltx:note}[role=offprints]{#1}');
 DefMacro('\journalname{}','\@add@frontmatter{ltx:note}[role=journal]{#1}');
 DefMacro('\papertype{}',  '\@add@frontmatter{ltx:classification}[scheme=papertype]{#1}');
@@ -210,7 +211,7 @@ DefMacro('\questionname','Question');
 DefMacro('\remarkname','Remark');
 DefMacro('\seename','see');
 DefMacro('\solutionname','Solution');
-DefMacro('\subclassname','\textbf{Mathematics Subject Classification (2000)');
+DefMacro('\subclassname','\textbf{Mathematics Subject Classification (2000)}');
 DefMacro('\theoremname','Theorem');
 DefMacro('\etal','et al.');
 DefMacro('\notused','~');
@@ -247,5 +248,12 @@ DefRegister('\rubricwidth'=>Dimension('0pt'));
 DefMacro('\strich',Tokens());
 DefRegister('\logodepth'=>Dimension('1.2cm'));
 DefMacro('\lastevenhead',Tokens());
+#======================================================================
+# Odd; they add an optional arg!
+DefEnvironment('{description}[]',
+	       "<ltx:description  xml:id='#id'>#body</ltx:description>",
+	       properties=>sub { beginItemize('description'); },
+	       locked=>1);
+
 #======================================================================
 1;
