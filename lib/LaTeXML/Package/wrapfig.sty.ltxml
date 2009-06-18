@@ -1,0 +1,43 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  wrapfig                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#**********************************************************************
+# New environment from package wrapfigure:
+DefEnvironment('{wrapfigure} {} {Dimension}',
+	       "<ltx:figure xml:id='#id' refnum='#refnum' class='#float'>#body</ltx:figure>",
+	       afterDigestBegin=>sub {
+		 my $dir = ToString($_[1]->getArg(1));
+		 $_[1]->setProperty(float=>($dir eq 'r' ? 'floatright'
+					    : ($dir eq 'l' ? 'floatleft'
+					       : undef))); },
+	       properties=> sub { RefStepCounter('figure') });
+
+DefEnvironment('{wraptable} {} {Dimension}',
+	       "<ltx:table xml:id='#id' refnum='#refnum' class='#float'>#body</ltx:table>",
+	       afterDigestBegin=>sub {
+		 my $dir = ToString($_[1]->getArg(1));
+		 $_[1]->setProperty(float=>($dir eq 'r' ? 'floatright'
+					    : ($dir eq 'l' ? 'floatleft'
+					       : undef))); },
+	       properties=> sub { RefStepCounter('table') });
+
+DefMacro('\WFclear','\par');
+DefRegister('\wrapoverhang'=>Dimension(0));
+
+#**********************************************************************
+
+
+1;
