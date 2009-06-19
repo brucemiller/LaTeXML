@@ -1,0 +1,23 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  paralist                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+# Redefines LaTeX's enumerate to take an additional style argument
+DefEnvironment('{enumerate} OptionalUndigested',
+	       "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
+	       properties=>sub { beginItemize('enumerate'); },
+	       afterDigestBegin=>sub { setEnumerationStyle($_[1]->getArg(1)); });
+
+1;
