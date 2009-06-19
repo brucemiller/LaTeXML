@@ -2570,7 +2570,7 @@ DefConstructor('\parbox[][][]{Dimension}{}',
 		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
 
 DefEnvironment('{minipage}[][][]{Dimension}',
-	       "<ltx:inline-block ?#4(width='#4') vattach='#vattach' align='justified'>#body</ltx:inline-block>",
+	       "<ltx:inline-para ?#4(width='#4') vattach='#vattach' align='justified'>#body</ltx:inline-para>",
 	       mode=>'text',
 	       properties=>sub { (vattach=>translateAttachment($_[1])); },
 	       beforeDigest=>sub {
