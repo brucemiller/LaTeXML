@@ -246,8 +246,8 @@ DefConstructor('\mathsc{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'sm
 
 DefConstructor('\squareforqed',
 	       "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
-Let('\sq','\squareforeqd');
-Let('\qed','\squareforeqd');
+Let('\sq','\squareforqed');
+Let('\qed','\squareforqed');
 
 DefConstructor('\bbbc',  "\x{2102}");#not sure if ok for the ones NOT of type I$
 DefConstructor('\bbbf',  "\x{1D53D}");
