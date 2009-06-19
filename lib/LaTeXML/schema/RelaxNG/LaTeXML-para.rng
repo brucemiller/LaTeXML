@@ -14,7 +14,7 @@
 -->
 <grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
   <define name="Para.class" combine="choice">
-    <a:documentation>This module `logical' block elements.</a:documentation>
+    <a:documentation>This module defines the following `logical' block elements.</a:documentation>
     <choice>
       <ref name="para"/>
       <ref name="theorem"/>
@@ -24,12 +24,26 @@
       <ref name="listing"/>
     </choice>
   </define>
+  <define name="Misc.class" combine="choice">
+    <a:documentation>Additionally, it defines these miscellaneous elements that can appear
+in both inline and block contexts.</a:documentation>
+    <ref name="inline-para"/>
+  </define>
   <define name="para">
     <element name="para">
       <a:documentation>A Logical paragraph. It has an \attr{id}, but not a \attr{label}.</a:documentation>
       <ref name="Common.attributes"/>
       <ref name="ID.attributes"/>
       <ref name="Block.model"/>
+    </element>
+  </define>
+  <define name="inline-para">
+    <element name="inline-para">
+      <a:documentation>An inline para. Actually, can appear in inline or block mode, but
+typesets its contents as para.</a:documentation>
+      <ref name="Common.attributes"/>
+      <ref name="Positionable.attributes"/>
+      <ref name="Para.model"/>
     </element>
   </define>
   <define name="theorem">

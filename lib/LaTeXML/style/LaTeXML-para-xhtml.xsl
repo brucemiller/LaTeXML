@@ -29,6 +29,11 @@
   <div class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></div>
 </xsl:template>
 
+  <!-- Need to handle attributes! -->
+  <xsl:template match="ltx:inline-para" xml:space="preserve">
+    <span class="{f:classes(.)}"><xsl:apply-templates/></span>
+  </xsl:template>
+
 <!-- ======================================================================
      Theorems
      ====================================================================== -->

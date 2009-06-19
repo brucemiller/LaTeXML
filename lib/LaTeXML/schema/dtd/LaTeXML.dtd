@@ -1,8 +1,8 @@
 <?xml encoding="UTF-8"?>
 
 <!ELEMENT text (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                |Math|inline-block|verbatim|break|graphics|tabular
-                |picture|note|indexmark|ERROR)*>
+                |Math|inline-block|verbatim|break|graphics|inline-para
+                |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST text
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -21,15 +21,15 @@
   framed CDATA #IMPLIED>
 
 <!ELEMENT emph (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                |Math|inline-block|verbatim|break|graphics|tabular
-                |picture|note|indexmark|ERROR)*>
+                |Math|inline-block|verbatim|break|graphics|inline-para
+                |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST emph
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT acronym (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                   |Math|inline-block|verbatim|break|graphics|tabular
-                   |picture|note|indexmark|ERROR)*>
+                   |Math|inline-block|verbatim|break|graphics
+                   |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST acronym
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -50,8 +50,8 @@
   vattach (top|middle|bottom) #IMPLIED>
 
 <!ELEMENT ref (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-               |Math|inline-block|verbatim|break|graphics|tabular
-               |picture|note|indexmark|ERROR)*>
+               |Math|inline-block|verbatim|break|graphics|inline-para
+               |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST ref
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -62,23 +62,23 @@
   title CDATA #IMPLIED>
 
 <!ELEMENT anchor (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                  |Math|inline-block|verbatim|break|graphics|tabular
-                  |picture|note|indexmark|ERROR)*>
+                  |Math|inline-block|verbatim|break|graphics|inline-para
+                  |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST anchor
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
   xml:id ID #IMPLIED>
 
 <!ELEMENT cite (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                |Math|inline-block|verbatim|break|graphics|tabular
-                |picture|note|indexmark|ERROR)*>
+                |Math|inline-block|verbatim|break|graphics|inline-para
+                |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST cite
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT bibref (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                  |Math|inline-block|verbatim|break|graphics|tabular
-                  |picture|note|indexmark|ERROR)*>
+                  |Math|inline-block|verbatim|break|graphics|inline-para
+                  |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bibref
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -91,7 +91,8 @@
 <!ELEMENT note (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
                 |Math|p|equation|equationgroup|quote|block|listingblock
                 |itemize|enumerate|description|inline-block|verbatim
-                |break|graphics|tabular|picture|note|indexmark|ERROR)*>
+                |break|graphics|inline-para|tabular|picture|note
+                |indexmark|ERROR)*>
 <!ATTLIST note
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -111,22 +112,24 @@
 
 <!ELEMENT indexphrase (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                        |bibref|Math|inline-block|verbatim|break|graphics
-                       |tabular|picture|note|indexmark|ERROR)*>
+                       |inline-para|tabular|picture|note|indexmark
+                       |ERROR)*>
 <!ATTLIST indexphrase
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
   key CDATA #IMPLIED>
 
 <!ELEMENT p (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref|Math
-             |inline-block|verbatim|break|graphics|tabular|picture|note
-             |indexmark|ERROR)*>
+             |inline-block|verbatim|break|graphics|inline-para|tabular
+             |picture|note|indexmark|ERROR)*>
 <!ATTLIST p
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT constraint (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                       |bibref|Math|inline-block|verbatim|break|graphics
-                      |tabular|picture|note|indexmark|ERROR)*>
+                      |inline-para|tabular|picture|note|indexmark
+                      |ERROR)*>
 <!ATTLIST constraint
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   hidden CDATA #IMPLIED>
@@ -161,15 +164,15 @@
   format CDATA #IMPLIED>
 
 <!ELEMENT quote (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                 |Math|inline-block|verbatim|break|graphics|tabular
-                 |picture|note|indexmark|ERROR)*>
+                 |Math|inline-block|verbatim|break|graphics|inline-para
+                 |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST quote
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT block (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                 |Math|inline-block|verbatim|break|graphics|tabular
-                 |picture|note|indexmark|ERROR)*>
+                 |Math|inline-block|verbatim|break|graphics|inline-para
+                 |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST block
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -183,7 +186,7 @@
   align (left|center|right|justified) #IMPLIED
   vattach (top|middle|bottom) #IMPLIED>
 
-<!ELEMENT listingblock ((p|equation|equationgroup|quote|block|listingblock|itemize|enumerate|description|inline-block|verbatim|break|graphics|tabular|picture|note|indexmark|ERROR)*)*>
+<!ELEMENT listingblock ((p|equation|equationgroup|quote|block|listingblock|itemize|enumerate|description|inline-block|verbatim|break|graphics|inline-para|tabular|picture|note|indexmark|ERROR)*)*>
 <!ATTLIST listingblock
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -198,8 +201,9 @@
 
 <!ELEMENT inline-block (p|equation|equationgroup|quote|block
                         |listingblock|itemize|enumerate|description
-                        |inline-block|verbatim|break|graphics|tabular
-                        |picture|note|indexmark|ERROR)*>
+                        |inline-block|verbatim|break|graphics
+                        |inline-para|tabular|picture|note|indexmark
+                        |ERROR)*>
 <!ATTLIST inline-block
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -215,7 +219,7 @@
 
 <!ELEMENT verbatim (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
+                    |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST verbatim
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -250,8 +254,8 @@
   refnum CDATA #IMPLIED>
 
 <!ELEMENT tag (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-               |Math|inline-block|verbatim|break|graphics|tabular
-               |picture|note|indexmark|ERROR)*>
+               |Math|inline-block|verbatim|break|graphics|inline-para
+               |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST tag
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -271,11 +275,27 @@
 
 <!ELEMENT para (p|equation|equationgroup|quote|block|listingblock
                 |itemize|enumerate|description|inline-block|verbatim
-                |break|graphics|tabular|picture|note|indexmark|ERROR)*>
+                |break|graphics|inline-para|tabular|picture|note
+                |indexmark|ERROR)*>
 <!ATTLIST para
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
   xml:id ID #IMPLIED>
+
+<!ELEMENT inline-para (para|theorem|proof|figure|table|listing|note
+                       |indexmark|ERROR)*>
+<!ATTLIST inline-para
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  width CDATA #IMPLIED
+  height CDATA #IMPLIED
+  depth CDATA #IMPLIED
+  pad-width CDATA #IMPLIED
+  pad-height CDATA #IMPLIED
+  xoffset CDATA #IMPLIED
+  yoffset CDATA #IMPLIED
+  align (left|center|right|justified) #IMPLIED
+  vattach (top|middle|bottom) #IMPLIED>
 
 <!ELEMENT theorem (title?,
                    (para|theorem|proof|figure|table|listing|note
@@ -299,8 +319,8 @@
 
 <!ELEMENT figure ((p|equation|equationgroup|quote|block|listingblock
                    |itemize|enumerate|description|inline-block|verbatim
-                   |break|graphics|tabular|picture|note|indexmark
-                   |ERROR)*
+                   |break|graphics|inline-para|tabular|picture|note
+                   |indexmark|ERROR)*
                   |caption|toccaption)*>
 <!ATTLIST figure
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -312,7 +332,8 @@
 
 <!ELEMENT table ((p|equation|equationgroup|quote|block|listingblock
                   |itemize|enumerate|description|inline-block|verbatim
-                  |break|graphics|tabular|picture|note|indexmark|ERROR)*
+                  |break|graphics|inline-para|tabular|picture|note
+                  |indexmark|ERROR)*
                  |caption|toccaption)*>
 <!ATTLIST table
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -324,8 +345,8 @@
 
 <!ELEMENT listing ((p|equation|equationgroup|quote|block|listingblock
                     |itemize|enumerate|description|inline-block|verbatim
-                    |break|graphics|tabular|picture|note|indexmark
-                    |ERROR)*
+                    |break|graphics|inline-para|tabular|picture|note
+                    |indexmark|ERROR)*
                    |caption|toccaption)*>
 <!ATTLIST listing
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -336,15 +357,16 @@
   placement CDATA #IMPLIED>
 
 <!ELEMENT caption (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                   |Math|inline-block|verbatim|break|graphics|tabular
-                   |picture|note|indexmark|ERROR)*>
+                   |Math|inline-block|verbatim|break|graphics
+                   |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST caption
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT toccaption (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                       |bibref|Math|inline-block|verbatim|break|graphics
-                      |tabular|picture|note|indexmark|ERROR)*>
+                      |inline-para|tabular|picture|note|indexmark
+                      |ERROR)*>
 <!ATTLIST toccaption
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
@@ -445,8 +467,8 @@
   style CDATA #IMPLIED>
 
 <!ELEMENT XMText (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                  |Math|inline-block|verbatim|break|graphics|tabular
-                  |picture)*>
+                  |Math|inline-block|verbatim|break|graphics|inline-para
+                  |tabular|picture)*>
 <!ATTLIST XMText
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -575,7 +597,8 @@
 <!ELEMENT td (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref|Math
               |p|equation|equationgroup|quote|block|listingblock|itemize
               |enumerate|description|inline-block|verbatim|break
-              |graphics|tabular|picture|note|indexmark|ERROR)*>
+              |graphics|inline-para|tabular|picture|note|indexmark
+              |ERROR)*>
 <!ATTLIST td
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -589,8 +612,8 @@
 <!ELEMENT picture (g|rect|line|circle|path|arc|wedge|ellipse|polygon
                    |bezier|parabola|curve|dots|grid|clip|text|emph
                    |acronym|rule|anchor|ref|cite|bibref|Math
-                   |inline-block|verbatim|break|graphics|tabular|picture
-                   |note|indexmark|ERROR)*>
+                   |inline-block|verbatim|break|graphics|inline-para
+                   |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST picture
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -632,7 +655,8 @@
 <!ELEMENT g (g|rect|line|circle|path|arc|wedge|ellipse|polygon|bezier
              |parabola|curve|dots|grid|clip|text|emph|acronym|rule
              |anchor|ref|cite|bibref|Math|inline-block|verbatim|break
-             |graphics|tabular|picture|note|indexmark|ERROR)*>
+             |graphics|inline-para|tabular|picture|note|indexmark
+             |ERROR)*>
 <!ATTLIST g
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1062,8 +1086,8 @@
 <!ELEMENT clippath (g|rect|line|circle|path|arc|wedge|ellipse|polygon
                     |bezier|parabola|curve|dots|grid|clip|text|emph
                     |acronym|rule|anchor|ref|cite|bibref|Math
-                    |inline-block|verbatim|break|graphics|tabular
-                    |picture|note|indexmark|ERROR)*>
+                    |inline-block|verbatim|break|graphics|inline-para
+                    |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST clippath
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1250,57 +1274,59 @@
 
 <!ELEMENT indexrefs (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                      |bibref|Math|inline-block|verbatim|break|graphics
-                     |tabular|picture|note|indexmark|ERROR)*>
+                     |inline-para|tabular|picture|note|indexmark
+                     |ERROR)*>
 <!ATTLIST indexrefs
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT title (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                 |Math|inline-block|verbatim|break|graphics|tabular
-                 |picture|note|indexmark|ERROR)*>
+                 |Math|inline-block|verbatim|break|graphics|inline-para
+                 |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST title
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT toctitle (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
+                    |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST toctitle
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT subtitle (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
+                    |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST subtitle
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT personname (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                       |bibref|Math|inline-block|verbatim|break|graphics
-                      |tabular|picture|note|indexmark|ERROR)*>
+                      |inline-para|tabular|picture|note|indexmark
+                      |ERROR)*>
 <!ATTLIST personname
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT creator (personname|contact|inline-block|verbatim|break
-                   |graphics|tabular|picture)*>
+                   |graphics|inline-para|tabular|picture)*>
 <!ATTLIST creator
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT contact (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                   |Math|inline-block|verbatim|break|graphics|tabular
-                   |picture|note|indexmark|ERROR)*>
+                   |Math|inline-block|verbatim|break|graphics
+                   |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST contact
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT date (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                |Math|inline-block|verbatim|break|graphics|tabular
-                |picture|note|indexmark|ERROR)*>
+                |Math|inline-block|verbatim|break|graphics|inline-para
+                |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST date
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1308,31 +1334,31 @@
 
 <!ELEMENT abstract (p|equation|equationgroup|quote|block|listingblock
                     |itemize|enumerate|description|inline-block|verbatim
-                    |break|graphics|tabular|picture|note|indexmark
-                    |ERROR)*>
+                    |break|graphics|inline-para|tabular|picture|note
+                    |indexmark|ERROR)*>
 <!ATTLIST abstract
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT acknowledgements (#PCDATA|text|emph|acronym|rule|anchor|ref
                             |cite|bibref|Math|inline-block|verbatim
-                            |break|graphics|tabular|picture|note
-                            |indexmark|ERROR)*>
+                            |break|graphics|inline-para|tabular|picture
+                            |note|indexmark|ERROR)*>
 <!ATTLIST acknowledgements
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT keywords (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
+                    |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST keywords
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT classification (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                           |bibref|Math|inline-block|verbatim|break
-                          |graphics|tabular|picture|note|indexmark
-                          |ERROR)*>
+                          |graphics|inline-para|tabular|picture|note
+                          |indexmark|ERROR)*>
 <!ATTLIST classification
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1362,8 +1388,8 @@
   key CDATA #IMPLIED>
 
 <!ELEMENT bibtag (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                  |Math|inline-block|verbatim|break|graphics|tabular
-                  |picture|note|indexmark|ERROR)*>
+                  |Math|inline-block|verbatim|break|graphics|inline-para
+                  |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bibtag
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   role CDATA #IMPLIED
@@ -1372,7 +1398,7 @@
 
 <!ELEMENT bibblock (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
+                    |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bibblock
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
 
@@ -1395,55 +1421,57 @@
   role CDATA #IMPLIED>
 
 <!ELEMENT surname (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                   |Math|inline-block|verbatim|break|graphics|tabular
-                   |picture|note|indexmark|ERROR)*>
+                   |Math|inline-block|verbatim|break|graphics
+                   |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST surname
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
 
 <!ELEMENT givenname (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                      |bibref|Math|inline-block|verbatim|break|graphics
-                     |tabular|picture|note|indexmark|ERROR)*>
+                     |inline-para|tabular|picture|note|indexmark
+                     |ERROR)*>
 <!ATTLIST givenname
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
 
 <!ELEMENT lineage (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                   |Math|inline-block|verbatim|break|graphics|tabular
-                   |picture|note|indexmark|ERROR)*>
+                   |Math|inline-block|verbatim|break|graphics
+                   |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST lineage
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
 
 <!ELEMENT bib-title (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                      |bibref|Math|inline-block|verbatim|break|graphics
-                     |tabular|picture|note|indexmark|ERROR)*>
+                     |inline-para|tabular|picture|note|indexmark
+                     |ERROR)*>
 <!ATTLIST bib-title
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT bib-subtitle (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                         |bibref|Math|inline-block|verbatim|break
-                        |graphics|tabular|picture|note|indexmark
-                        |ERROR)*>
+                        |graphics|inline-para|tabular|picture|note
+                        |indexmark|ERROR)*>
 <!ATTLIST bib-subtitle
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT bib-key (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                   |Math|inline-block|verbatim|break|graphics|tabular
-                   |picture|note|indexmark|ERROR)*>
+                   |Math|inline-block|verbatim|break|graphics
+                   |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bib-key
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT bib-type (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
+                    |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bib-type
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT bib-date (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
+                    |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bib-date
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1451,23 +1479,24 @@
 
 <!ELEMENT bib-publisher (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                          |bibref|Math|inline-block|verbatim|break
-                         |graphics|tabular|picture|note|indexmark
-                         |ERROR)*>
+                         |graphics|inline-para|tabular|picture|note
+                         |indexmark|ERROR)*>
 <!ATTLIST bib-publisher
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT bib-organization (#PCDATA|text|emph|acronym|rule|anchor|ref
                             |cite|bibref|Math|inline-block|verbatim
-                            |break|graphics|tabular|picture|note
-                            |indexmark|ERROR)*>
+                            |break|graphics|inline-para|tabular|picture
+                            |note|indexmark|ERROR)*>
 <!ATTLIST bib-organization
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT bib-place (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                      |bibref|Math|inline-block|verbatim|break|graphics
-                     |tabular|picture|note|indexmark|ERROR)*>
+                     |inline-para|tabular|picture|note|indexmark
+                     |ERROR)*>
 <!ATTLIST bib-place
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
@@ -1487,7 +1516,7 @@
 
 <!ELEMENT bib-part (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
+                    |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bib-part
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1495,22 +1524,24 @@
 
 <!ELEMENT bib-edition (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                        |bibref|Math|inline-block|verbatim|break|graphics
-                       |tabular|picture|note|indexmark|ERROR)*>
+                       |inline-para|tabular|picture|note|indexmark
+                       |ERROR)*>
 <!ATTLIST bib-edition
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT bib-status (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                       |bibref|Math|inline-block|verbatim|break|graphics
-                      |tabular|picture|note|indexmark|ERROR)*>
+                      |inline-para|tabular|picture|note|indexmark
+                      |ERROR)*>
 <!ATTLIST bib-status
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT bib-identifier (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                           |bibref|Math|inline-block|verbatim|break
-                          |graphics|tabular|picture|note|indexmark
-                          |ERROR)*>
+                          |graphics|inline-para|tabular|picture|note
+                          |indexmark|ERROR)*>
 <!ATTLIST bib-identifier
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1520,7 +1551,8 @@
 
 <!ELEMENT bib-review (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                       |bibref|Math|inline-block|verbatim|break|graphics
-                      |tabular|picture|note|indexmark|ERROR)*>
+                      |inline-para|tabular|picture|note|indexmark
+                      |ERROR)*>
 <!ATTLIST bib-review
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1530,22 +1562,23 @@
 
 <!ELEMENT bib-links (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                      |bibref|Math|inline-block|verbatim|break|graphics
-                     |tabular|picture|note|indexmark|ERROR)*>
+                     |inline-para|tabular|picture|note|indexmark
+                     |ERROR)*>
 <!ATTLIST bib-links
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT bib-language (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                         |bibref|Math|inline-block|verbatim|break
-                        |graphics|tabular|picture|note|indexmark
-                        |ERROR)*>
+                        |graphics|inline-para|tabular|picture|note
+                        |indexmark|ERROR)*>
 <!ATTLIST bib-language
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
 <!ELEMENT bib-url (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                   |Math|inline-block|verbatim|break|graphics|tabular
-                   |picture|note|indexmark|ERROR)*>
+                   |Math|inline-block|verbatim|break|graphics
+                   |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bib-url
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1553,7 +1586,8 @@
 
 <!ELEMENT bib-extract (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                        |bibref|Math|inline-block|verbatim|break|graphics
-                       |tabular|picture|note|indexmark|ERROR)*>
+                       |inline-para|tabular|picture|note|indexmark
+                       |ERROR)*>
 <!ATTLIST bib-extract
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1561,7 +1595,7 @@
 
 <!ELEMENT bib-note (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                     |bibref|Math|inline-block|verbatim|break|graphics
-                    |tabular|picture|note|indexmark|ERROR)*>
+                    |inline-para|tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bib-note
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
