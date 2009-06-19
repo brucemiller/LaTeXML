@@ -41,6 +41,8 @@ ProcessOptions();
 #   aspara : same as normal, but each item is formatted as a paragraph
 #            (ie. leftmargin is normal)
 # These last two can be treated as normally (although some css could be used)
+#
+# setEnumerationStyle & setItemizationStyle are defined in LaTeX.pool
 #======================================================================
 DefRegister('\pltopsep'   =>Dimension(0));
 DefRegister('\plpartopsep'=>Dimension(0));
@@ -51,43 +53,12 @@ DefMacro('\setdefaultleftmargin{}{}{}{}{}{}',''); # Ignore?
 #======================================================================
 # Enumerations
 
-sub setParalistEnum {
-  my($stuff,$level)=@_;
-  if(defined $stuff){
-    $level = LookupValue('itemlevel') unless defined $level;
-    $level = ToString(Tokens(roman(LookupValue('itemlevel'))));
-    my @in = $stuff->unlist;
-    my @out = ();
-    my $ctr = T_OTHER('enum'.$level);
-    while(my $t = shift(@in)){
-      if(Equals($t,T_BEGIN)){
-	push(@out,$t);
-	my $level=1;
-	while($level && ($t=shift(@in))){
-	  if(Equals($t,T_BEGIN)){ $level++; }
-	  elsif(Equals($t,T_END)){ $level--; }
-	  push(@out,$t); }}
-      elsif(Equals($t,T_LETTER('A'))){
-	push(@out,Invocation(T_CS('\Alph'),$ctr)); }
-      elsif(Equals($t,T_LETTER('a'))){
-	push(@out,Invocation(T_CS('\alph'),$ctr)); }
-      elsif(Equals($t,T_LETTER('I'))){
-	push(@out,Invocation(T_CS('\Roman'),$ctr)); }
-      elsif(Equals($t,T_LETTER('i'))){
-	push(@out,Invocation(T_CS('\roman'),$ctr)); }
-      elsif(Equals($t,T_LETTER('1'))){
-	push(@out,Invocation(T_CS('\arabic'),$ctr)); }
-      else {
-	push(@out,$t); }}
-    DefMacroI('\theenum'.$level,undef,Tokens(@out)); }
-  return; }
-
 DefMacro('\setdefaultenum{}{}{}{}',sub {
   my($gullet,$tag1,$tag2,$tag3,$tag4)=@_;
-  setParalistEnum($tag1,1);
-  setParalistEnum($tag2,2);
-  setParalistEnum($tag3,3);
-  setParalistEnum($tag4,4); });
+  setEnumerationStyle($tag1,1);
+  setEnumerationStyle($tag2,2);
+  setEnumerationStyle($tag3,3);
+  setEnumerationStyle($tag4,4); });
 
 DefConstructor('\inparaenum@item[]',
 	       "<ltx:anchor xml:id='#id'>#refnum</ltx:anchor> ",
@@ -95,7 +66,7 @@ DefConstructor('\inparaenum@item[]',
 DefEnvironment('{inparaenum} OptionalUndigested',
 	       "<ltx:text xml:id='#id'>#body</ltx:text>",
 	       properties=>sub { beginItemize('inparaenum'); },
-	       afterDigestBegin=>sub { setParalistEnum($_[1]->getArg(1)); });
+	       afterDigestBegin=>sub { setEnumerationStyle($_[1]->getArg(1)); });
 
 DefConstructor('\paralistenum@item[]',
 	       "<ltx:item xml:id='#id' refnum='#refnum'>?#refnum(<ltx:tag>#refnum</ltx:tag>)",
@@ -103,33 +74,21 @@ DefConstructor('\paralistenum@item[]',
 DefEnvironment('{compactenum} OptionalUndigested',
 	       "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
 	       properties=>sub { beginItemize('paralistenum'); },
-	       afterDigestBegin=>sub { setParalistEnum($_[1]->getArg(1)); });
+	       afterDigestBegin=>sub { setEnumerationStyle($_[1]->getArg(1)); });
 DefEnvironment('{asparaenum} OptionalUndigested',
 	       "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
 	       properties=>sub { beginItemize('paralistenum'); },
-	       afterDigestBegin=>sub { setParalistEnum($_[1]->getArg(1)); });
+	       afterDigestBegin=>sub { setEnumerationStyle($_[1]->getArg(1)); });
 
 #======================================================================
 # Itemizations
 
-# This isn't really satisfactory.
-# We should record the marker used for the item,
-# but it really should NOT be #refnum (which should be quasi unique)
-# and is not \theenumi.. (which should be a counter value)
-sub setParalistItem {
-  my($stuff,$level)=@_;
-  if(defined $stuff){
-    $level = LookupValue('itemlevel') unless defined $level;
-    $level = ToString(Tokens(roman(LookupValue('itemlevel'))));
-    DefMacroI('\theenum'.$level,undef,$stuff); }
-  return; }
-
 DefMacro('\setdefaultitem{}{}{}{}',sub {
   my($gullet,$tag1,$tag2,$tag3,$tag4)=@_;
-  setParalistItem($tag1,1);
-  setParalistItem($tag2,2);
-  setParalistItem($tag3,3);
-  setParalistItem($tag4,4); });
+  setItemizationStyle($tag1,1);
+  setItemizationStyle($tag2,2);
+  setItemizationStyle($tag3,3);
+  setItemizationStyle($tag4,4); });
 
 DefConstructor('\inparaitem@item []',
 	       "<ltx:anchor xml:id='#id'>#refnum</ltx:anchor> ",
@@ -137,7 +96,7 @@ DefConstructor('\inparaitem@item []',
 DefEnvironment('{inparaitem} OptionalUndigested',
 	       "<ltx:text xml:id='#id'>#body</ltx:text>",
 	       properties=>sub { beginItemize('inparaitem'); },
-	       afterDigestBegin=>sub { setParalistItem($_[1]->getArg(1)); });
+	       afterDigestBegin=>sub { setItemizationStyle($_[1]->getArg(1)); });
 
 DefConstructor('\paralistitem@item OptionalUndigested',
 	       "<ltx:item xml:id='#id'>?#refnum(<ltx:tag>#refnum</ltx:tag>)",
@@ -145,11 +104,11 @@ DefConstructor('\paralistitem@item OptionalUndigested',
 DefEnvironment('{compactitem} OptionalUndigested',
 	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
 	       properties=>sub { beginItemize('paralistitem'); },
-	       afterDigestBegin=>sub { setParalistItem($_[1]->getArg(1)); });
+	       afterDigestBegin=>sub { setItemizationStyle($_[1]->getArg(1)); });
 DefEnvironment('{asparaitem} OptionalUndigested',
 	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
 	       properties=>sub { beginItemize('paralistitem'); },
-	       afterDigestBegin=>sub { setParalistItem($_[1]->getArg(1)); });
+	       afterDigestBegin=>sub { setItemizationStyle($_[1]->getArg(1)); });
 
 #======================================================================
 # Descriptions
