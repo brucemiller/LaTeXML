@@ -273,11 +273,13 @@ sub find_insertion_point {
   my($self,$qname)=@_;
   $self->closeText_internal;	# Close any current text node.
   my $cur_qname = $$self{model}->getNodeQName($$self{node});
+  my $inter;
   # If $qname is allowed at the current point, we're done.
   if($$self{model}->canContain($cur_qname,$qname)){
     $$self{node}; }
   # Else, if we can create an intermediate node that accepts $qname, we'll do that.
-  elsif(my $inter = $$self{model}->canContainIndirect($cur_qname,$qname)){
+  elsif(($inter = $$self{model}->canContainIndirect($cur_qname,$qname))
+	&& ($inter ne $qname) && ($inter ne $cur_qname)){
     $self->openElement($inter, font=>$self->getNodeFont($$self{node}));
     $self->find_insertion_point($qname); } # And retry insertion (should work now).
   else {			# Now we're getting more desparate...
