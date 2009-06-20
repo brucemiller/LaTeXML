@@ -2735,7 +2735,12 @@ sub before_picture {
 
 sub after_picture {}
 
-# NOTE: Untex should prefix a setting of unitlength!!!
+# Ugh... Is this safe?  Apparently, picture stuff is allowed w/o a {picture} environment???
+### Tag('ltx:picture', autoOpen=>1, autoClose=>1);
+### Actually, NO! It triggers a deep recursion
+### NOTE: This needs to be researched!!!
+
+# Note: Untex should prefix a setting of unitlength!!!
 DefEnvironment('{picture} Pair OptionalPair',
 	       "<ltx:picture %&SimplePairAttr(#size,width,height)"
 	       ." fill='black' stroke='black' unitlength='#unitlength'>"
