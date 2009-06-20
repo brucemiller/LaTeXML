@@ -81,16 +81,21 @@
 <!-- normally hidden -->
 <xsl:template match="ltx:note">
   <span class="{f:classes(.)}">
-    <sup class="mark">
-      <xsl:choose>
-	<xsl:when test="@mark"><xsl:value-of select="@mark"/></xsl:when>
-	<xsl:otherwise>&#x2020;</xsl:otherwise>
-      </xsl:choose>
-    </sup>
+    <xsl:call-template name="note-mark"/>
     <div class="{concat(local-name(.),'_content')}">
+      <xsl:call-template name="note-mark"/>
       <xsl:apply-templates/>
     </div>
   </span>
+</xsl:template>
+
+<xsl:template name="note-mark">
+  <sup class="mark">
+    <xsl:choose>
+      <xsl:when test="@mark"><xsl:value-of select="@mark"/></xsl:when>
+      <xsl:otherwise>&#x2020;</xsl:otherwise>
+    </xsl:choose>
+  </sup>
 </xsl:template>
 
 <xsl:template match="ltx:ERROR">
