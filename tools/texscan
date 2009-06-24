@@ -14,6 +14,7 @@ use LaTeXML::Util::Pathname;
 my $identity = 'texscan';
 my($help)=(0);
 local $::VERBOSITY = 0;
+local $::AMSTEX = 0;
 my ($show,$internal,$cumulative,$base) = ('diff',undef,undef,undef);
 my $do_all=0;
 my @paths = ();
@@ -24,6 +25,7 @@ GetOptions("tex"         => sub { $show='tex'; },
 	   "stub"        => sub { $show='stub'; },
 	   "internal!"   => \$internal,
 	   "cumulative!" => \$cumulative,
+	   "amstex!"     => \$::AMSTEX,
 	   "help"        => \$help,
 	   "verbose"     => sub { $::VERBOSITY++; },
 	   "quiet"       => sub { $::VERBOSITY--; },
@@ -226,8 +228,13 @@ sub removeInternal {
 sub getBase {
   my($self)=@_;
   my @base = ();
-  push(@base,"article.cls") if $$self{name} =~/\.sty$/;
-  push(@base,"latex.ltx") if $$self{name} =~/\.(sty|cls)$/;
+  if($::AMSTEX){
+    push(@base,"amstex.tex") if $$self{name} =~/\.sty$/;
+  }
+  else {
+    push(@base,"article.cls") if $$self{name} =~/\.sty$/;
+    push(@base,"latex.ltx") if $$self{name} =~/\.(sty|cls)$/;
+  }
   @base; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -277,7 +284,7 @@ sub scan {
     s/%(.*)$//;
     # Note that more than 1 "defn" can appear per line! so no "elsif"
     # Various standard definitions
-    if(/\\(?:def|xdef|gdef|edef)\s*$CSREGEXP/o){
+    if(/\\(?:define|def|xdef|gdef|edef)\s*$CSREGEXP/o){
       $$self{symbols}{$1} = 1; }
     if(/\\new(?:count|dimen|skip|muskip|box|help|toks|read|write|fam|language|insert)\s*$CSREGEXP/o){
       $$self{symbols}{$1} = 1; }
@@ -492,8 +499,14 @@ sub scan {
   $stomach->initialize;
   my $paths = $LaTeXML::STATE->lookupValue('SEARCHPATHS');
 
-  my @pkgs = ("TeX.pool","LaTeX.pool");
-  push(@pkgs, "article.cls") unless $name =~ /\.(cls|ltx)$/;
+  my @pkgs = ("TeX.pool");
+  if($::AMSTEX){
+    push(@pkgs,"amstex.tex") if $$self{name} =~/\.sty$/;
+  }
+  else {
+    push(@pkgs,"LaTeX.pool");
+    push(@pkgs, "article.cls") unless $name =~ /\.(cls|ltx)$/;
+  }
   push(@pkgs,$name) unless $name eq 'latex.ltx';
   foreach my $pkg (@pkgs){
     my $loadpath = pathname_find("$pkg.ltxml",paths=>$paths,installation_subdir=>'Package');
@@ -547,6 +560,7 @@ Options:
   --nointernal  Don't include internal symbols
   --cumulative  Include the definitions from included files.
   --nocumulative Don't include symbols defined in included files.
+  --amstex      process in amstex mode (no LaTeX or article assumed)
   --path=dir    Add dir to the list of paths to search for files.
   --base=names  comma separated list of base packages for --stub
                 these are included in the code whether or not they
