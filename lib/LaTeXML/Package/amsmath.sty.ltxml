@@ -522,7 +522,9 @@ DefMacroI('\DOTSB',undef,Tokens());
 DefMacroI('\DOTSI',undef,Tokens());
 DefMacroI('\DOTSX',undef,Tokens());
 Let(T_CS('\hdots'),T_CS('\ldots'));
-# \hdotsfor ???
+
+DefMacro('\hdotsfor Number', sub {
+  (map('\hdots',1..$_[1]->valueOf)); });
 
 #======================================================================
 # Section 4.4 Nonbreaking dashes
