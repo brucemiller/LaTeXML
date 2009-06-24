@@ -25,7 +25,7 @@ DefMacro('\spdddot','^{\dot\dot\dot}');
 DefMacro('\spbreve','^{\smile}'); # close enough?
 
 # Oh what the heck...
-DefMacro('\fracwithdelims[]{}{}{}{}','#2\frac{#4}{#5}#3');
+DefMacro('\fracwithdelims[]{}{}{}{}','\left#2\frac{#4}{#5}\right#3');
 # I can't quite figure out what the point of this one is,
 # and can't find documentation.
 DefMacro('\accentedsymbol{}{}','\def\#1{$#2}');
