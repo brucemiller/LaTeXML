@@ -1,0 +1,364 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  amstex.tex                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# / Thanks to the arXMLiv group for 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#  This is the `pool' for AMSTeX (_not_ AMS LaTeX)
+# It should be loaded by an \input amstex
+# (from TeX mode, ie. before and without LaTeX.pool being loaded)
+# This should put LaTeXML into "amstex mode"
+#
+# Since amstex uses \documentstyle, we _must_ define it here to
+# keep TeX.pool from anticipating LaTeX mode and loading LaTeX.pool!
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DefConstructorI('\AmSTeX',  undef,'AMSTeX');
+DefMacro('\fmtname','AmS-TeX');
+DefMacro('\fmtversion','2.1');
+Let(T_CS('\plainfmtversion'),T_CS('\fmtversion'));
+
+DefPrimitive('\define SkipSpaces Token UntilBrace {}', sub { 
+  my($stomach,$cs,$params,$body)=@_;
+  $params = parseDefParameters($cs,$params); # in TeX.pool
+  my $key = "defined:".Stringify($cs);
+  Error(":unexpected:\\define ".Stringify($cs)." is already defined") if LookupValue($key);
+  AssignValue($key=>1);		# only if defined by \define (or \newcommand!)??? Or ANY \def ???
+  DefMacroI($cs,$params,$body);
+  return; });
+
+DefPrimitive('\redefine SkipSpaces Token UntilBrace {}', sub { 
+  my($stomach,$cs,$params,$body)=@_;
+  $params = parseDefParameters($cs,$params); # in TeX.pool
+  my $key = "defined:".Stringify($cs);
+  AssignValue($key=>1);		# only if defined by \define (or \newcommand!), not \def!
+  DefMacroI($cs,$params,$body);
+  return; });
+
+DefPrimitive('\predefine Token Token', sub {
+  Let($_[1],$_[2]); });
+
+DefPrimitive('\undefine Token', sub { 
+  my($stomach,$cs)=@_;
+  my $key = "defined:".Stringify($cs);
+  AssignValue($key=>0);
+  Let($_[1],T_CS('\undefined')); });
+
+#======================================================================
+# Style choices
+
+DefConstructor('\documentstyle  Semiverbatim',
+	       "<?latexml class='#1' amstex='true'?>",
+  afterDigest=>sub {
+    my($stomach,$whatsit)=@_;
+    my $style   = ToString($whatsit->getArg(1));
+    my $stylefile = FindFile($style, type=>'sty');
+    if($stylefile && $stylefile =~/\.sty\.ltxml$/){
+      # Load the package, but note that we're pretending it's a class (to some extent!)
+      RequirePackage($style, as_class=>1); }
+    else {
+      Warn(":missing_file:$style.sty.ltxml No LaTeXML implementation of ams class $style found, using amsppt");
+      RequirePackage('amsppt'); }
+    return;});
+
+DefMacro('\NoPageNumbers','');
+
+DefMacro('\BlackBoxes','');	# These control whether overfull boxes show black; Ignorable
+DefMacro('\NoBlackBoxes','');
+
+DefMacro('\TagsAsMath','');
+DefMacro('\TagsAsText','');
+
+DefMacro('\TagsOnLeft','');
+DefMacro('\TagsOnRight','');
+
+DefMacro('\CenteredTagsOnSplits','');
+DefMacro('\TopOrBottomTagsOnSplits','');
+
+DefMacro('\LimitsOnInts','');
+DefMacro('\NoLimitsOnInts','');
+DefMacro('\LimitsOnNames','');
+DefMacro('\NoLimitsOnNames','');
+DefMacro('\LimitsOnSums','');
+DefMacro('\NoLimitsOnSums','');
+
+# These presumably load fonts (or commands?)
+DefMacro('\UseAMSsymbols','');
+DefMacro('\loadbold','');
+DefMacro('\loadeufb','');
+DefMacro('\loadeufm','');
+DefMacro('\loadeurb','');
+DefMacro('\loadeurm','');
+DefMacro('\loadeusb','');
+DefMacro('\loadeusm','');
+DefMacro('\loadmathfont','');
+DefMacro('\loadmsam','');
+DefMacro('\loadmsbm','');
+
+DefMacro('\boldnotloaded{}','');
+
+DefMacro('\galleys','');
+DefMacro('\flushpar','\par\noindent');
+
+DefMacro('\pagewidth Dimension','');
+DefMacro('\pageheight Dimension','');
+DefMacro('\hcorrection Dimension','');
+DefMacro('\vcorrection Dimension','');
+
+#======================================================================
+# The Document
+DefConstructor('\document',"<ltx:document>");
+DefConstructor('\enddocument',"</ltx:document>");
+
+#======================================================================
+# Front Matter
+
+DefMacro('\topmatter','');
+DefMacro('\endtopmatter','');
+DefMacro('\title Until:\endtitle',  '\@add@frontmatter{ltx:title}{#1}');
+DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
+	       bounded=>1, mode=>'text');
+DefMacro('\author Until:\endauthor','\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
+DefConstructor('\@institute{}',"<ltx:contact role='institute'>#1</ltx:contact>", bounded=>1);
+DefMacro('\thanks Until:\endthanks','\@add@to@frontmatter{ltx:creator}{\@institute{#1}}');
+DefMacro('\abstract Until:\endabstract','\@add@frontmatter{ltx:abstract}{#1}');
+
+#======================================================================
+# Document structure
+# See amsppt.sty or ...
+DefMacro('\nofrills','');
+
+DefPrimitive('\comment', sub {
+  $_[0]->getGullet->getMouth->readRawLines('\endcomment'); # read & ignore the contents
+  return; });
+
+Let(T_CS('\plainproclaim'),T_CS('\proclaim'));
+Let(T_CS('\plainfootnote'),T_CS('\footnote'));
+#======================================================================
+# Text level stuff
+
+DefMacro('\newline',"\n");
+
+DefConstructorI('\textfonti',  undef, '', font=>{family=>'serif', series=>'medium', shape=>'upright'});
+DefConstructorI('\textfontii', undef, '', font=>{family=>'serif', series=>'medium', shape=>'upright', size=>'small'});
+
+DefConstructor('\spreadlines Dimension','');
+
+DefPrimitive('\pagebreak',undef);
+DefPrimitive('\nopagebreak',undef);
+DefPrimitive('\smallpagebreak',undef);
+DefPrimitive('\medpagebreak',undef);
+DefPrimitive('\bigpagebreak',undef);
+
+DefPrimitive('\allowlinebreak',undef);
+DefPrimitive('\allowmathbreak',undef);
+DefPrimitive('\linebreak',undef);
+DefPrimitive('\nolinebreak',undef);
+DefPrimitive('\mathbreak',undef);
+DefPrimitive('\nomathbreak',undef);
+
+DefMacro('\tie','\unskip\nobreak\ ');
+Let(T_CS('\graveaccent'),T_CS("\\`"));
+Let(T_CS('\acuteaccent'),T_CS("\\'"));
+Let(T_CS('\tildeaccent'),T_CS("\\~"));
+Let(T_CS('\hataccent'),T_CS("\\^"));
+Let(T_CS('\underscore'),T_CS("\\_"));
+Let(T_CS('\B'),T_CS("\\="));
+Let(T_CS('\D'),T_CS("\\."));
+
+#======================================================================
+# Math stuff.
+
+# We'd like to be able to leverage the ams (LaTeX) packages we've already written.
+# However, they were written in the context of LaTeX, and assume LaTeX.pool was loaded.
+# We either need to duplicate them, or alter them to be aware of LaTeX vs AMSTeX mode!
+# Especially, DefEnvironment is to be avoided! (or usurped!!)
+
+# We need stuff from amsmath, BUT it shouldn't define "environments",
+# rather \foo ... \endfoo....
+# But, of course, DefEnvironment, DOES do that!
+# Will this work????
+# The question is whether AMSTeX's \foo..\endfoo incorporates \begingroup/\endgroup pairs?
+# MOST Likely, all of amsmath will need to be redone here, since the argument patterns are
+# so different!  The rest are probably OK.
+RequirePackage('amsmath');
+RequirePackage('amssymb');
+RequirePackage('amsfonts');
+RequirePackage('amsopn');
+RequirePackage('amsxtra');
+RequirePackage('amscd');
+
+Let(T_CS('\dsize'),T_CS('\displaystyle'));
+Let(T_CS('\tsize'),T_CS('\textstyle'));
+Let(T_CS('\ssize'),T_CS('\scriptstyle'));
+Let(T_CS('\sssize'),T_CS('\scriptscriptstyle'));
+
+DefMath('\and', '\&', role=>'ADDOP', meaning=>'and');
+DefConstructor("\\\\",
+	       "?#isMath(<ltx:XMHint name='\\'/>)(<ltx:break/>)",
+	       reversion=>Tokens(T_CS("\\\\"),T_CR));
+
+# This is an analog to \align's template, but hopefully we can just ignore it???
+DefMacro("\\format Until:\\\\",'');
+
+DefConstructor('\text {}',
+	       "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text');
+
+DefConstructor('\overset Until:\to {}',
+	       "<ltx:XMApp>"
+	       . "<ltx:XMWrap role='OVERACCENT'>#1</ltx:XMWrap>"
+	       . "<ltx:XMArg>#2</ltx:XMArg>"
+	       ."</ltx:XMApp>");
+DefConstructor('\underset Until:\to {}',
+	       "<ltx:XMApp>"
+	       . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+	       . "<ltx:XMArg>#2</ltx:XMArg>"
+	       ."</ltx:XMApp>");
+
+DefMacro('\oversetbrace Until:\to {}', '\overbrace{#2}^{#1}');
+DefMacro('\undersetbrace Until:\to {}', '\underbrace{#2}^{#1}');
+
+Let(T_CS('\overarrow'),T_CS('\overrightarrow'));
+Let(T_CS('\underarrow'),T_CS('\underrightarrow'));
+
+DefConstructor('\frac{}{}',
+	       "<ltx:XMApp>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' style='#style'/>"
+	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+#	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
+);
+
+DefConstructor('\Cal{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'caligraphic'});
+
+
+# \bold in amsfonts
+DefConstructor('\roman{}', '#1',  bounded=>1, requireMath=>1, font=>{family=>'serif'});
+DefConstructor('\italic{}',  '#1', bounded=>1, requireMath=>1, font=>{shape=>'italic'});
+DefConstructor('\slanted{}',  '#1', bounded=>1, requireMath=>1, font=>{shape=>'slanted'});
+DefConstructor('\boldkey{}',  '#1', bounded=>1, requireMath=>1, font=>{series=>'bold', family=>'typewriter'});
+
+# holy cow...
+DefMacro('\thickfrac',sub { 
+  ($_[0]->ifNext('\thickness') ? T_CS('\@thickfrac'):T_CS('\frac')); });
+DefMacro('\@thickfrac Token Number {}{}','\genfrac{}{}{#2}{}{#3}{#4}');
+
+DefMacro('\thickfracwithdelims{}{}',sub { 
+ ( ($_[0]->ifNext('\thickness') ? T_CS('\@thickfracwithdelims'):T_CS('\fracwithdelims')), $_[1], $_[2]); });
+DefMacro('\@thickfracwithdelims {}{} Token Number {}{}','\genfrac{#1}{#2}{#4}{}{#5}{#6}');
+
+
+DefMacro('\spcheck','^{\vee}');
+DefMacro('\sptilde','^{\sim}');
+DefMacro('\spacute',"^{'}");
+DefMacro('\spgrave',"^{`}");
+DefMacro('\spdot',"^{.}");
+DefMacro('\spddot',"^{..}");
+DefMacro('\spdddot',"^{...}");
+DefMacro('\spddddot',"^{....}");
+DefMacro('\spbreve',"^{\\hbox{\\u{}}}");
+DefMacro('\spbar',"^{-}");
+DefMacro('\spvec',"^{\\rightarrow}");
+
+# Ignore these?
+DefRegister('\buffer'=>Dimension(0));
+DefMacro('\ChangeBuffer Dimension','\buffer#2\relax');
+DefMacro('\ResetBuffer','');
+DefMacro('\shave{}','#1');
+DefMacro('\botshave{}','#1');
+DefMacro('\topshave{}','#1');
+
+DefMacro('\minCDarrowwidth Dimension','');
+DefMacro('\pretend Until:\haswidth {}','#1');
+
+DefMacro('\snug','');
+DefConstructor('\topsmash{}',"#1");
+DefConstructor('\botsmash{}',"#1");
+
+DefConstructor('\spreadmatrixlines Dimension','');
+
+DefMacro('\MultlineGap Dimension','');
+DefMacro('\multlinegap Dimension','');
+DefMacro('\nomultlinegap','');
+
+DefMacro('\innerhdotsfor Number Match:\after {}', sub {
+  (map('\hdots',1..$_[1]->valueOf)); });
+DefMacro('\spacehdots Number Match:\for Number', sub {
+  (map('\hdots',1..$_[1]->valueOf)); });
+DefMacro('\spaceinnerhdots Number Match:\for Number Match:\after {}', sub {
+  (map('\hdots',1..$_[1]->valueOf)); });
+
+DefMacro('\foldedtext',sub { 
+  my($gullet)=@_;
+  if($gullet->ifNext('\foldedwidth')){
+    $gullet->readToken; $gullet->readDimension; } # ignore?
+  T_CS('\text'); });
+
+Let(T_CS('\topfoldedtext'),T_CS('\foldedtext'));
+Let(T_CS('\botfoldedtext'),T_CS('\foldedtext'));
+
+# Maybe?
+DefMacro('\Sb Until:\endSb','_{\substack{#1}}');
+DefMacro('\Sp Until:\endSp','^{\substack{#1}}');
+Let(T_CS('\endSb'),T_CS('\relax'));
+Let(T_CS('\endSp'),T_CS('\relax'));
+
+DefMacro('\thetag', sub { T_OTHER(LookupValue('EQUATIONROW_NUMBER')); }); # ?
+
+DefMacro('\topaligned','\aligned[t]');
+Let(T_CS('\endtopaligned'),T_CS('\endaligned'));
+DefMacro('\botaligned','\aligned[b]');
+Let(T_CS('\endbotaligned'),T_CS('\endaligned'));
+
+
+# Tricky:
+#  \cfrac, \lcfrac, \endcfrac
+DefRegister('\cfraccount@'=>Number(0));
+DefPrimitive('\@cfracstyle{}',sub { AssignValue(CFRACSTYLE=>ToString($_[1])); });
+DefMacro('\cfrac',  '\bgroup\@cfracstyle{c}\advance\cfraccount@ 1\let\\\@cfrac');
+DefMacro('\lcfrac', '\bgroup\@cfracstyle{l}\advance\cfraccount@ 1\let\\\@cfrac');
+DefMacro('\rcfrac', '\bgroup\@cfracstyle{r}\advance\cfraccount@ 1\let\\\@cfrac');
+
+DefConstructorI('\@cfrac',undef,
+	       "<ltx:XMApp>"
+	       . "<ltx:XMTok meaning='continued-fraction' style='#style' role='MULOP'/>"
+	       . "<ltx:XMArg>#top</ltx:XMArg>"
+	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+		afterDigest=>\&chooseArgHandler,
+		properties=>sub{ (style=>LookupValue('CFRACSTYLE')); },
+	       reversion=>sub {
+		 my($whatsit)=@_;
+		 (T_CS('cfrac'),
+		  $whatsit->getProperty('top')->revert,
+		  T_CS("\\\\"),
+		  $whatsit->getProperty('bottom')->revert); });
+
+DefMacro('\endcfrac',sub {
+  (map(T_CS('\egroup'),1..LookupValue('\cfraccount@')->valueOf), T_CS('\@endcfrac')); });
+DefConstructor('\@endcfrac','',reversion=>'\endcfrac');
+
+#======================================================================
+# Bibliography
+# See amsppt.sty
+
+#======================================================================
+# Dubious
+
+DefMacro('\printoptions','');
+DefMacro('\showallocations','');
+DefMacro('\syntax','');
+1;

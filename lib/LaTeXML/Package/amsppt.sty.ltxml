@@ -1,0 +1,395 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  amsppt.sty                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# / Thanks to the arXMLiv group for 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use strict;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#  This is a style file to go with AMSTeX (_NOT_ AMS LaTeX)
+# it is roughly analogous to a LaTeX class file.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+DefMacro('\filename','amsppt.sty');
+DefMacro('\fileversion','2.1h');
+DefMacro('\filedate','1997/02/02');
+DefMacro('\fileversiontest','\fileversion\space(\filedate)');
+DefMacro('\styname','AMSPPT');
+DefMacro('\styversion','\fileversion');
+DefMacro('\plainend','\end');
+
+#======================================================================
+DefMacro('\makeheadline','');
+DefMacro('\makefootline','');
+DefMacro('\leftheadline','');
+DefMacro('\rightheadline','');
+DefMacro('\leftheadtext{}','');
+DefMacro('\rightheadtext{}','');
+DefRegister('\leftheadtoks'=>Tokens());
+DefRegister('\rightheadtoks'=>Tokens());
+Let(T_CS('\flheadline'),T_CS('\hfil'));
+Let(T_CS('\frheadline'),T_CS('\hfil'));
+DefMacro('\headmark{}','');
+DefMacro('\nologo','');
+DefMacro('\pagecontents','');
+
+DefMacro('\cvolyear{}','');	# ?
+#======================================================================
+# Specific front matter commands
+
+DefMacro('\title Until:\endtitle',  '\@add@frontmatter{ltx:title}{#1}');
+
+DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
+	       bounded=>1, mode=>'text');
+DefMacro('\author Until:\endauthor','\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
+DefConstructor('\@affil{}',    "<ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\affil Until:\endaffil', '\@add@to@frontmatter{ltx:creator}{\@affil{#1}}');
+DefConstructor('\@address{}',  "<ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\address Until:\endaddress', '\@add@to@frontmatter{ltx:creator}{\@address{#1}}');
+DefConstructor('\@curraddr{}', "<ltx:contact role='current-address'>#1</ltx:contact>");
+DefMacro('\curraddr Until:\endcurraddr', '\@add@to@frontmatter{ltx:creator}{\@curraddr{#1}}');
+DefConstructor('\@email{}',    "<ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\email Until:\endemail', '\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
+DefConstructor('\@urladdr{}',  "<ltx:contact role='url'>#1</ltx:contact>");
+DefMacro('\urladdr Until:\endurladdr', '\@add@to@frontmatter{ltx:creator}{\@urladdr{#1}}');
+
+DefMacro('\thanks Until:\endthanks',         '\@add@frontmatter{ltx:note}[role=support]{#1}');
+DefMacro('\date Until:\date',                '\@add@frontmatter{ltx:date}[role=creation]{#1}');
+DefMacro('\dedicatory Until:\enddedicatory', '\@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
+DefMacro('\translator Until:\endtranslator', '\@add@frontmatter{ltx:creator}[role=translator]{\@personname{#1}}');
+DefMacro('\keywords Until:\endkeywords',     '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacro('\subjclass Until:\endsubjclass',   '\@add@frontmatter{ltx:classification}{#1}');
+DefMacro('\abstract Until:\endabstract',     '\@add@frontmatter{ltx:abstract}{#1}');
+Let(T_CS('\endabstract'),T_CS('\relax'));
+
+DefMacro('\issueinfo{}{}{}{}','');
+
+DefMacro('\NoRunningHeads','');
+DefMacro('\Monograph','');
+
+
+# Hmm is the refnum until space ?
+DefConstructor('\specialhead Until:\endspecialhead',
+	       "<ltx:section><ltx:title>#1</ltx:title>");
+
+Let(T_CS('\pretitle'),T_CS('\relax'));
+Let(T_CS('\preauthor'),T_CS('\relax'));
+Let(T_CS('\preaffil'),T_CS('\relax'));
+Let(T_CS('\predate'),T_CS('\relax'));
+Let(T_CS('\preabstract'),T_CS('\relax'));
+Let(T_CS('\prepaper'),T_CS('\relax'));
+#======================================================================
+# Document Structure
+
+# We go ahead and define counters;
+#  they're never (?) used for displayed reference numbers
+# but are used for id generation.
+NewCounter('chapter',      'document',     idprefix=>'C',  nested=>['section']);
+NewCounter('section',      'chapter',      idprefix=>'S',  nested=>['subsection']);
+NewCounter('subsection',   'section',      idprefix=>'SS', nested=>['subsubsection']);
+NewCounter('subsubsection','subsection',   idprefix=>'SSS',nested=>['paragraph']);
+
+map(Tag("ltx:$_", autoClose=>1),
+    qw(chapter section subsection subsubsection));
+
+# Should also add any missing: \endroster, \enddefinition, \enddemo, \endexample,\endproclaim !!
+DefConstructor('\specialhead Until:\endspecialhead',
+	       "<ltx:chapter refnum='#refnum' xml:id='#id'><ltx:title>#1</ltx:title>",
+	       bounded=>1,
+	       properties=> sub { RefStepID('chapter') });
+Let(T_CS('\endspecialhead'),T_CS('\relax'));
+DefConstructor('\head Until:\endhead',
+	       "<ltx:subsection refnum='#refnum' xml:id='#id'><ltx:title>#1</ltx:title>",
+	       bounded=>1,
+	       properties=> sub { RefStepID('section') });
+DefMacro('\heading Until:\endheading','\head#1\endhead');
+DefConstructor('\subhead Until:\endsubhead',
+	       "<ltx:section refnum='#refnum' xml:id='#id'><ltx:title>#1</ltx:title>",
+	       bounded=>1,
+	       properties=> sub { RefStepID('subsection') });
+DefMacro('\subheading Until:\endsubheading','\subhead#1\endsubhead');
+DefConstructor('\subsubhead Until:\endsubsubhead',
+	       "<ltx:subsubsection refnum='#refnum' xml:id='#id'><ltx:title>#1</ltx:title>",
+	       bounded=>1,
+	       properties=> sub { RefStepID('subsubsection') });
+
+DefMacro('\widestnumber Token {}',''); # Eat the next thing (w/its args!) and ignore it!!
+DefRegister('\aboveheadskip'=>Glue(0));
+DefRegister('\belowheadskip'=>Dimension(0));
+DefRegister('\abovespecialheadskip'=>Glue(0));
+DefRegister('\subheadskip'=>Glue(0));
+DefRegister('\subsubheadskip'=>Glue(0));
+DefRegister('\headlineheight'=>Dimension(0));
+DefRegister('\headlinespace'=>Dimension(0));
+DefRegister('\dropfoliodepth'=>Dimension(0));
+DefMacro('\nofrillscheck{}','');
+
+# I'm guessing toc can be ignored, since hopefully the above will be enough to create a better one.
+DefMacro('\toc Until:\endtoc','');
+Let(T_CS('\endtoc'),T_CS('\relax'));
+
+NewCounter('theorem', 'document', idprefix => "Thm");
+
+DefConstructor('\proclaim{} Until:\endproclaim',
+	       "<ltx:theorem class='proclaim' xml:id='#id' refnum='#refnum'>"
+	       . "<ltx:title>#1</ltx:title>"
+	       .  "#2"
+	       ."</ltx:theorem>",
+	       properties=> sub { RefStepID('theorem') });
+Let(T_CS('\endproclaim'),T_CS('\relax'));
+DefRegister('\preproclaimskip'=>Glue(0));
+DefRegister('\postproclaimskip'=>Glue(0));
+DefMacro('\proclaimfont','\it');
+
+# \remark ... \endremark
+DefRegister('\remarkskip'=>Glue(0));
+DefRegister('\postdemoskip'=>Glue(0));
+
+# \definition ..\enddefinition
+DefRegister('\predefinitionskip'=>Glue(0));
+DefRegister('\postdefinitionskip'=>Glue(0));
+DefMacro('\definitionfont','\rm');
+DefConstructor('\definition{} Until:\enddefinition',
+	       "<ltx:theorem class='definition' xml:id='#id' refnum='#refnum'>"
+	       . "<ltx:title>#1</ltx:title>"
+	       .  "#2"
+	       ."</ltx:theorem>",
+	       properties=> sub { RefStepID('theorem') });
+Let(T_CS('\enddefinition'),T_CS('\relax'));
+
+# \remark..\endremark
+DefMacro('\remarkfont','\rm');
+DefConstructor('\remark{} Until:\endremark',
+	       "<ltx:theorem class='remark' xml:id='#id' refnum='#refnum'>"
+	       . "<ltx:title>#1</ltx:title>"
+	       .  "#2"
+	       ."</ltx:theorem>",
+	       properties=> sub { RefStepID('theorem') });
+Let(T_CS('\endremark'),T_CS('\relax'));
+
+DefConstructor('\example{} Until:\endexample',
+	       "<ltx:theorem class='example' xml:id='#id' refnum='#refnum'>"
+	       . "<ltx:title>#1</ltx:title>"
+	       .  "#2"
+	       ."</ltx:theorem>",
+	       properties=> sub { RefStepID('theorem') });
+Let(T_CS('\endexample'),T_CS('\relax'));
+
+DefConstructor('\demo{} Until:\enddemo',
+	       "<ltx:theorem class='demonstration' xml:id='#id' refnum='#refnum'>"
+	       . "<ltx:title>#1</ltx:title>"
+	       .  "#2"
+	       ."</ltx:theorem>",
+	       properties=> sub { RefStepID('theorem') });
+Let(T_CS('\enddemo'),T_CS('\relax'));
+
+# \roster ..\endroster (an itemization)
+DefRegister('\rosteritemwd'=>Dimension(0));
+# \Runinitem ?
+NewCounter('roster','document',idprefix=>'I');
+NewCounter('rosteritem','roster',idprefix=>'i');
+DefMacro('\therosteritem{}','\rom{(#1)}');
+DefConstructor('\roster Until:\endroster',
+	       "<ltx:enumerate>#body</ltx:enumerate>",
+	       bounded=>1,
+	       properties=> sub { RefStepID('roster') },
+	       beforeDigest=>sub { Let(T_CS('\item'),T_CS('\roster@item')); });
+DefConstructor('\roster@item',
+	       "<ltx:item xml:id='#id' refnum='#refnum'>?#1(<ltx:tag>#1</ltx:tag>)",
+	       properties=> sub { RefStepID('rosteritem') });
+Let(T_CS('\endroster'),T_CS('\relax'));
+
+DefConstructor('\block Until:\endblock',
+	       "<ltx:quote>#1</ltx:quote>");
+Let(T_CS('\endblock'),T_CS('\relax'));
+
+DefRegister('\pagenumwd'=>Dimension(0));
+DefRegister('\indenti'=>Dimension(0));
+DefRegister('\indentii'=>Dimension(0));
+DefMacro('\linespacing Number','');
+
+DefMacro('\endquotes','');	# ?
+
+NewCounter('footnote');
+DefMacroI('\thefootnote',undef,'\arabic{footnote}');
+DefConstructor('\footnote[]{}',
+	       "<ltx:note class='footnote' mark='#refnum'>#2</ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
+# NOTE: DOM should reattach the footnotetext to the footnotemark ?
+#  Hmm, in general the mark & text _could_ come in either order...
+# These can be followed by "*" to use * as footnote mark
+#  or [*] to use * as footnote mark, but formatted w/ \footmarkform@ (default superscript)
+# else use counter footmarkcount@
+DefConstructor('\footnotemark[]',""); # ????
+DefConstructor('\footnotetext[]{}',
+	       "<ltx:note class='footnote' ?#1(mark='#1')>#2</ltx:note>",
+	       mode=>'text');
+
+#======================================================================
+DefMacro('\rom{}','{rm #1}');
+
+DefMacro('\PSAMSFonts','');
+RawTeX('\newif\ifPSAMSFonts\PSAMSFontstrue');
+DefConstructor('\qed',"?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+
+DefConstructor('\tildechar',"~",font=>{family=>'typewriter'});
+DefMacro('\breakcheck','');
+DefRegister('\normalparindent'=>Dimension(0));
+DefMacro('\usualspace',' ');
+#======================================================================
+# Bibliography
+DefMacro('\Refsname','References');
+
+DefConstructor('\cite Semiverbatim',"<ltx:cite>[<ltx:bibref show='refnum' bibrefs='#1'/>]</ltx:cite>");
+
+# arg or no arg?
+DefMacro('\thebibliography@ID','\ifx#\thedocument@id#\thedocument@id.bib\else bib\fi');
+DefConstructor('\Refs',
+	       "<ltx:bibliography xml:id='#id'>"
+	       . "<ltx:title>References</ltx:title>"
+	       . "<ltx:biblist>",
+	       afterDigest=>sub { 
+		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID')))); });
+DefConstructor('\endRefs',"</ltx:bibliography>");
+NewCounter('@bibitem','bibliography',idprefix=>'bib');
+DefMacro('\the@bibitem','\number\c@@bibitem');
+
+# Since \Refs is apparently optional, we need to automatically open/close
+Tag('ltx:bibliography',autoOpen=>1,autoClose=>1);
+Tag('ltx:biblist',autoOpen=>1,autoClose=>1);
+
+DefRegister('\refindentwd'=>Dimension(0));
+DefMacro('\refstyle{}','');
+DefMacro('\keyformat{}','#1');
+DefMacro('\refbreaks','');
+DefMacro('\defaultreftexts','');
+
+DefMacro('\ref','\begingroup\@bibitem\@bibfield{?}');
+DefMacro('\endref','\@end@bibfield\@fill@bibitem\@end@bibitem\endgroup');
+DefConstructor('\@bibitem',    "<ltx:bibitem xml:id='#id'>",
+	      properties=>sub { RefStepID('@bibitem'); });
+DefConstructor('\@end@bibitem', "</ltx:bibitem>"); 
+
+DefMacro('\@fill@bibitem', sub {
+  my @body=();
+  push(@body,Invocation(T_CS('\@bibitem@tag'),
+			LookupValue('amsbibitem@key') || LookupValue('amsbibitem@refnum') || T_CS('\the@bibitem')));
+  my $ed;
+  if(!LookupValue('amsbibitem@authors') && ($ed=LookupValue('amsbibitem@editors'))){
+    AssignValue('amsbibitem@authors'=>Tokens($ed->unlist,Tokenize('\space(\edtext)'))); }
+#  push(@body,commaunbox('moreref'));
+  push(@body,ppunbox(undef,undef,'authors'));
+  if(LookupValue('amsbibitem@book')){ # Case 1: Book, etc
+    push(@body,commaunbox('book'),commaunbox('bookinfo'),
+	 ppunbox(undef,'\space(','proceedingsinfo',')'),
+	 ppunbox(',','\space vol.~','volume'),
+	 ppunbox(undef,'\space(','editors',', \edtext)'),
+	 commaunbox('publisher'),commaunbox('publisheraddr'),commaunbox('year'),
+	 ppunbox(',','\space\pagestext~','pages')); }
+  else {			# Case 2, paper in book
+    push(@body, commaunbox('paper'),commaunbox('paperinfo'));
+    if(LookupValue('amsbibitem@inbook')){
+      push(@body,commaunbox('book'),
+	   ppunbox(undef,'\space(','proceedingsinfo',')'),
+	   ppunbox(undef,'\space(','editors',', \edtext)'),
+	   commaunbox('bookinfo'),
+	   ppunbox(',','\space\voltext~','volume'),
+	   commaunbox('publisher'), commaunbox('publisheraddr'),
+	   commaunbox('year'),
+	   ppunbox(',','\space\pagestext~', 'pages')); }
+    else {			# Case 3, paper in journal
+      push(@body,commaunbox('journal'),
+	   ppunbox(undef,'\space','volume'),
+	   ppunbox(undef,'\space(','year',')'),
+	   ppunbox(',','\space\issuetext~','issue'),
+	   commaunbox('publisher'),commaunbox('publisheraddr'),
+	   commaunbox('pages'));  }}
+    push(@body,commaunbox('finalinfo'),
+	 ppunbox(undef,'\space(','note',')'),
+	 T_OTHER('.'),
+	 ppunbox(undef,'\space(','language',')'),
+	 commaunbox('mathreview'));
+  @body});
+
+sub ppunbox {
+  my($punct,$pre,$field,$post)=@_;
+  my $value = LookupValue('amsbibitem@'.$field);
+  if($value && $value->unlist){
+    ((defined $punct ? Tokenize($punct)->unlist : ()),
+     (defined $pre ? Tokenize($pre)->unlist : (T_SPACE)),
+     # Wrap this in text with field as a class or something?
+     Invocation(T_CS('\@bibitem@field'),T_OTHER($field),$value),
+     (defined $post ? Tokenize($post)->unlist : ())); }
+  else {
+    ();}}
+sub commaunbox {
+  ppunbox(',','\space',$_[0],undef); }
+
+DefConstructor('\@bibitem@field{}{}', "<ltx:text class='#1' _noautoclose='1'>#2</ltx:text>");
+DefConstructor('\@bibitem@tag{}', "<ltx:bibtag role='refnum'>#1</ltx:bibtag>");
+
+DefMacro('\@bibfield{} XUntil:\@end@bibfield', sub {
+  my($gullet,$field,$text)=@_;
+  my @tokens = $text->unlist;
+  while(@tokens && Equals($tokens[0],T_SPACE)){ shift(@tokens); }
+  while(@tokens && Equals($tokens[-1],T_SPACE)){ pop(@tokens); }
+  if(@tokens){
+    AssignValue('amsbibitem@'.ToString($field)=>Tokens(@tokens)); }
+  return; });
+
+# open bibblock until we sort out these macros.
+Tag('ltx:bibblock',autoOpen=>1,autoClose=>1);
+DefRegister('\holdoverbox'=>Tokens());
+DefMacro('\holdover{}','');
+
+DefMacro('\key',       '\@end@bibfield\@bibfield{key}');
+DefMacro('\no',        '\@end@bibfield\@bibfield{refnum}');
+
+DefMacro('\by',        '\@end@bibfield\@bibfield{authors}');
+DefMacro('\bysame',    '\by  ---');
+Let(T_CS('\manyby'),T_CS('\by'));
+DefMacro('\ed',        '\@end@bibfield\@bibfield{editors}');
+DefMacro('\eds',       '\@end@bibfield\@bibfield{editors}');
+DefMacro('\edtext',   'ed.');
+DefMacro('\paper',     '\@end@bibfield\@bibfield{paper}\it');
+DefMacro('\paperinfo', '\@end@bibfield\@bibfield{paperinfo}');
+DefMacro('\inbook',    '\@end@bibfield\@bibfield{inbook}');
+DefMacro('\book',      '\@end@bibfield\@bibfield{book}\it');
+DefMacro('\bookinfo',  '\@end@bibfield\@bibfield{bookinfo}');
+DefMacro('\procinfo',  '\@end@bibfield\@bibfield{proceedingsinfo}');
+DefMacro('\finalinfo', '\@end@bibfield\@bibfield{finalinfo}');
+DefMacro('\jour',      '\@end@bibfield\@bibfield{journal}');
+DefMacro('\vol',       '\@end@bibfield\@bibfield{volume}\bf');
+DefMacro('\voltext',   'vol.');
+DefMacro('\issue',     '\@end@bibfield\@bibfield{issue}');
+DefMacro('\issuetext',   'no.');
+DefMacro('\yr',        '\@end@bibfield\@bibfield{year}');
+DefMacro('\page',      '\@end@bibfield\@bibfield{pages}');
+DefMacro('\pages',     '\@end@bibfield\@bibfield{pages}');
+DefMacro('\pagestext',   'pp.');
+DefMacro('\lang',      '\@end@bibfield\@bibfield{language}');
+DefMacro('\publ',      '\@end@bibfield\@bibfield{publisher}');
+DefMacro('\publaddr',  '\@end@bibfield\@bibfield{publisheraddress}');
+DefMacro('\miscnote',  '\@end@bibfield\@bibfield{note}');
+DefMacro('\toappear',  '\miscnote to appear');
+
+DefMacro('\MR',        '\@end@bibfield\@bibfield{mathreview}MR ');
+DefMacro('\AMSPPS',    '\@end@bibfield\@bibfield{ams-preprint}AMS-PPS ');
+DefMacro('\CMP',       '\@end@bibfield\@bibfield{CMP}CMP ');
+
+# \moreref, \transl ????
+#======================================================================
+1;
