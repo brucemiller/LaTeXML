@@ -1470,6 +1470,8 @@ DefPrimitive('\CheckCommand OptionalMatch:* DefToken [][]{}', undef);
 
 DefPrimitive('\renewcommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
+  my $key = "defined:".Stringify($cs);
+  AssignValue($key=>1);
   DefMacroI($cs,convertLaTeXArgs($nargs,$opt),$body); });
 
 DefPrimitive('\providecommand OptionalMatch:* DefToken [][]{}', sub {
