@@ -3811,10 +3811,18 @@ DefMathI('\to',undef,"\x{2192}", role=>'ARROW'); # RIGHTWARDS ARROW??? a bit mor
 
 
 # TeX's ligatures handled by rewrite regexps.
+# Note: applied in reverse order of definition (latest defined applied first!)
 DefLigature("/--/\x{2013}/",   fontTest=>sub { $_[0]->getFamily ne 'typewriter'; }); # EN DASH (NOTE: With digits before & aft => \N{FIGURE DASH})
 DefLigature("/---/\x{2014}/",  fontTest=>sub { $_[0]->getFamily ne 'typewriter'; }); # EM DASH
+
+# propbably should convert remaining single quotes
+DefLigature("/\`/\x{2018}/", fontTest=>sub { $_[0]->getFamily ne 'typewriter'; });
+DefLigature("/\'/\x{2019}/", fontTest=>sub { $_[0]->getFamily ne 'typewriter'; });
+# and certainly doubles;
 DefLigature("/\`\`/\x{201C}/", fontTest=>sub { $_[0]->getFamily ne 'typewriter'; });
 DefLigature("/\'\'/\x{201D}/", fontTest=>sub { $_[0]->getFamily ne 'typewriter'; });
+# but note that these are Dumb substitutions. (eg a single quoted sentence ending with a possesive?)
+
 # This sorta seems like the normal effect, but not if fontenc is T1... ???
 DefLigature("/\"/\x{201D}/",   fontTest=>sub { $_[0]->getFamily ne 'typewriter'; }); # Yes, this one too!
 
