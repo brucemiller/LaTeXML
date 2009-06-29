@@ -3395,12 +3395,13 @@ Let(T_CS('\lbrace'),T_CS('\{'));
 Let(T_CS('\lbrack'),T_CS('['));
 Let(T_CS('\rbrace'),T_CS('\}'));
 Let(T_CS('\rbrack'),T_CS(']'));
-DefMathI('\lfloor',   undef,"\x{230A}", role=>'OPEN'); # LEFT FLOOR
-DefMathI('\lceil',    undef,"\x{2308}", role=>'OPEN'); # LEFT CEILING
-DefMathI('\langle',   undef,"\x{2329}", role=>'OPEN');   # LEFT-POINTING ANGLE BRACKET
-DefMathI('\rfloor',   undef,"\x{230B}", role=>'CLOSE'); # RIGHT FLOOR
+DefMathI('\lceil',    undef,"\x{2308}", role=>'OPEN');	# LEFT CEILING
 DefMathI('\rceil',    undef,"\x{2309}", role=>'CLOSE'); # RIGHT CEILING
-DefMathI('\rangle',   undef,"\x{232A}", role=>'CLOSE');	# RIGHT-POINTING ANGLE BRACKET
+DefMathI('\lfloor',   undef,"\x{230A}", role=>'OPEN');	# LEFT FLOOR
+DefMathI('\rfloor',   undef,"\x{230B}", role=>'CLOSE'); # RIGHT FLOOR
+# Note: We should be using 27E8,27E9, which are "mathematical", not 2329,232A
+DefMathI('\langle',   undef,"\x{27E8}", role=>'OPEN'); # LEFT-POINTING ANGLE BRACKET
+DefMathI('\rangle',   undef,"\x{27E9}", role=>'CLOSE');	# RIGHT-POINTING ANGLE BRACKET
 
 # Not sure these should be defined here, or latex, or even latex compat mode.
 DefMathI('\lgroup',  undef,"(", font=>{series=>'bold'}, role=>'OPEN');
@@ -3427,10 +3428,10 @@ our %DELIMITER_MAP =
    '\rfloor'     =>{char=>"\x{230B}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'rfloor'},
    '\lceil'      =>{char=>"\x{2308}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'lceil'},
    '\rceil'      =>{char=>"\x{2309}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'rceil'},
-   '\langle'     =>{char=>"\x{2329}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'langle'},
-   '\rangle'     =>{char=>"\x{232A}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'rangle'},
-   '<'           =>{char=>"\x{2329}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'langle'},
-   '>'           =>{char=>"\x{232A}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'rangle'},
+   '\langle'     =>{char=>"\x{27E8}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'langle'},
+   '\rangle'     =>{char=>"\x{27E9}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'rangle'},
+   '<'           =>{char=>"\x{27E8}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'langle'},
+   '>'           =>{char=>"\x{27E9}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'rangle'},
    '/'           =>{char=>"/",        lrole=>'MULOP',   rrole=>'MULOP'},
    '\backslash'  =>{char=>UTF(0x5C), lrole=>'MULOP',   rrole=>'MULOP', name=>'backslash'},
    '|'           =>{char=>"|",        lrole=>'VERTBAR', rrole=>'VERTBAR'},
@@ -3634,7 +3635,7 @@ DefMathI('\tanh',   undef,"tanh", role=>'TRIGFUNCTION', meaning=>'hyperbolic-tan
 #----------------------------------------------------------------------
 # Modulo
 
-DefMath('\pmod{}', '\;\;(\textrm{mod} #1)', role=>'MODIFIER'); #  , meaning=>'modulo');
+DefMath('\pmod{}', '\;\;(\mathop{\mathrm{mod}} #1)', role=>'MODIFIER'); #  , meaning=>'modulo');
 DefMath('\bmod',   'mod', role=>'MODIFIEROP', meaning=>'modulo');
 
 #======================================================================

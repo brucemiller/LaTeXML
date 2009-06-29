@@ -698,7 +698,9 @@ our %balanced = ( '(' => ')', '['=>']', '{'=>'}',
 		  '|'=>'|', '||'=>'||',
 		  "\x{230A}"=>"\x{230B}", # lfloor, rfloor
 		  "\x{2308}"=>"\x{2309}", # lceil, rceil
-		  "\x{2329}"=>"\x{232A}");
+		  "\x{2329}"=>"\x{232A}", # angle brackets; NOT mathematical, but balance in case they show up.
+		  "\x{27E8}"=>"\x{27E9}", # angle brackets (prefered)
+		);
 # For enclosing a single object
 # Note that the default here is just to put open/closed attributes on the single object
 our %enclose1 = ('{@}'=>'set',	# alternatively, just variant parentheses

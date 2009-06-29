@@ -372,7 +372,9 @@ our %sizes=(tiny=>'small',script=>'small',footnote=>'small',small=>'small',
 
 # These are the strings that should be known as fences in a normal operator dictionary.
 our %fences=('('=>1,')'=>1, '['=>1, ']'=>1, '{'=>1, '}'=>1, "\x{201C}"=>1,"\x{201D}"=>1,
-	     "\`"=>1, "'"=>1, "<"=>1,">"=>1, "\x{2329}"=>1,"\x{232A}"=>1,
+	     "\`"=>1, "'"=>1, "<"=>1,">"=>1,
+	     "\x{2329}"=>1,"\x{232A}"=>1, # angle brackets; NOT mathematical, but balance in case they show up.
+	     "\x{27E8}"=>1,"\x{27E9}"=>1, # angle brackets (prefered)
 	     "\x{230A}"=>1, "\x{230B}"=>1, "\x{2308}"=>1,"\x{2309}"=>1);
 
 sub pmml_mi {
@@ -418,12 +420,16 @@ sub pmml_mo {
   my $style = (ref $item ? $item->getAttribute('style') : $attr{style});
   my $isstretchy = $style && ($style =~ /\bstretchy\b/);
   my $isfence = $role && ($role =~/^(OPEN|CLOSE)$/);
+  my $lspace  = $role && ($role eq 'MODIFIEROP') && 'mediummathspace';
+  my $rspace  = $role && ($role eq 'MODIFIEROP') && 'mediummathspace';
   my $pos   = (ref $item && $item->getAttribute('scriptpos')) || 'post';
   ['m:mo',{($variant ? (mathvariant=>$variant):()),
 	   ($size    ? (mathsize=>$sizes{$size}):()),
 	   ($color   ? (mathcolor=>$color):()),
+	   ($isfence     ? (fence=>'true'):()),
 	   ($isfence    && !$fences{$text} ? (fence=>'true'):()),
-	   ($isstretchy ? (stretchy=>'true') : ()),
+	   ($lspace  ? (lspace=>$lspace):()),
+	   ($rspace  ? (rspace=>$rspace):()),
 	   # If an operator has specifically located it's scripts,
 	   # don't let mathml move them.
 	   (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
@@ -722,6 +728,9 @@ DefMathML('Apply:?:divide', sub {
     ['m:mfrac',{($thickness ? (linethickness=>$thickness):())},
      pmml_smaller($num),pmml_smaller($den)]; }});
 
+DefMathML('Apply:MODIFIEROP:?',       \&pmml_infix, undef);
+DefMathML("Token:MODIFIEROP:?",         \&pmml_mo,   undef);
+
 DefMathML("Token:SUPOP:?",         \&pmml_mo,   undef);
 DefMathML('Apply:SUPERSCRIPTOP:?', \&pmml_script_handler, undef);
 DefMathML('Apply:SUBSCRIPTOP:?',   \&pmml_script_handler, undef);
@@ -848,7 +857,7 @@ DefMathML('Apply:?:limit-from', sub {
 
 DefMathML('Apply:?:annotated', sub {
   my($op,$var,$annotation)=@_;
-  ['m:mrow',{},pmml($var),pmml($annotation)];});
+  ['m:mrow',{},pmml($var),['m:mspace',{width=>'veryverythickmathspace'}],pmml($annotation)];});
 
 # NOTE: Markup probably isn't right here....
 DefMathML('Apply:?:evaluated-at', sub {
