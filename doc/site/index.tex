@@ -34,9 +34,7 @@ A postprocessor, \texttt{latexmlpost} converts this
 XML into other formats such as HTML or XHTML, with options
 to convert the math into MathML (currently only presentation) or images.
 
-\emph{Caveats}
-% This is still a \emph{preview release} of LaTeXML.
-It isn't finished, there are gaps in the coverage,
+\emph{Caveats}: It isn't finished, there are gaps in the coverage,
 particularly in missing implementations of the many useful \LaTeX\ packages.
 But is beginning to stabilize and interested parties
 are invited to try it out, give feedback and even to help out.
@@ -54,7 +52,7 @@ math conversion and other features possible.
 
 \begin{description}
 \item[\href{http://dlmf.nist.gov/contents/}{DLMF}]
-   The Digitial Library of Mathematical Functions was the
+   The Digital Library of Mathematical Functions was the
    primary instigator for this project.
 \item[\href{manual/}{LaTeXML Manual}]
    The \LaTeXML\ User's manual (\href{manual.pdf}{\PDFIcon}).
@@ -140,6 +138,7 @@ and then, as root:
 
 
 \subsection[OS-Specific Notes]{Operating System Specific Notes}\label{install.osnotes}
+With \emph{no} implied endorsement of any of these systems.
 
 \subsubsection[Fedora-based systems]{Fedora-based systems}\label{install.fedora}
 For Fedora (and perhaps other similar) distributions, \texttt{yum} will automatically install
@@ -156,8 +155,8 @@ uninstall it \emph{first}, since the name has changed:
 \end{alltt}
 
 \subsubsection[Enterprise systems]{Enterprise-style RPM-based systems (RedHat, Centos)}\label{install.enterprise}
-Although, \texttt{yum} will also install needed prerequisites, two of them are not available
-on the more stable (\& conservative) distributions (such as RedHat Enterprise and CentOS).
+On Red Hat Enterprise Linux and derivatives (Centos, Scientific Linux), \texttt{yum} will also
+install prerequisites, but two of them are not available in the current release, 5.
 \paragraph{Download Prerequisites} choose from the following according to your architecture:
 \begin{description}
 \item[32bit]
@@ -229,7 +228,7 @@ I will attempt to generate a ppm for LaTeXML in the near
 future, depending on user interest --- and assistance!
 
 \subsection{SVN Repository}\label{download.svn}
-The most current code can be obtained from the svn repostory.
+The most current code can be obtained from the svn repository.
 It is browsable at \url{https://svn.mathweb.org/repos/LaTeXML}.
 Anonymous checkout is available using the command:
 \begin{alltt}
@@ -238,7 +237,7 @@ Anonymous checkout is available using the command:
 After checkout, you can continue the installation
 as described in \ref{install.source}.
 
-\subsection{Licence}\label{license}
+\subsection{License}\label{license}
 As this software was developed as part of work done by the
 United States Government, it is not subject to copyright,
 and is in the public domain.
