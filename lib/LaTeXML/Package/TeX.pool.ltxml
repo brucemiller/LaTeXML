@@ -692,11 +692,6 @@ DefMacro('\read Number SkipKeyword:to Token',sub {
   my($gullet,$fh,$token)=@_;
   DefMacroI($token,undef,Tokens()); });
 
-
-##our %font_family=(r=>'serif',''=>'serif',ss=>'sansserif',tt=>'typewriter',
-##		  vtt=>'typewriter',fib=>'fibonacci',fr=>'funnyroman',
-##		  dh=>'dunhill',m=>'math',sy=>'symbol');
-
 # Given a font, we'd like to map it to the "logical" names derived from LaTeX,
 # (w/ loss of fine grained control).
 # I'd like to use Karl Berry's font naming scheme
@@ -743,10 +738,15 @@ our %font_family=(cmr=>{family=>'serif'},      cmss=>{family=>'sansserif'},
 		  bbmss=>{family=>'blackboard'},
 		  );
 
-our %font_series=(''=>'medium',m=>'medium', mc=>'medium', 
-		  b=>'bold',bc=>'bold', bx=>'bold', sb=>'bold', sbc=>'bold', bm=>'bold');
-our %font_shape =(''=>'upright',n=>'upright', i=>'italic',it=>'italic',
-		  sl=>'slanted', sc=>'smallcaps', csc=>'smallcaps');
+our %font_series=(''=>{series=>'medium'},m=>{series=>'medium'}, mc=>{series=>'medium'}, 
+		  b=>{series=>'bold'},bc=>{series=>'bold'}, bx=>{series=>'bold'},
+		  sb=>{series=>'bold'}, sbc=>{series=>'bold'}, bm=>{series=>'bold'});
+our %font_shape =(''=>{shape=>'upright'},n=>{shape=>'upright'}, i=>{shape=>'italic'},it=>{shape=>'italic'},
+		  sl=>{shape=>'slanted'}, sc=>{shape=>'smallcaps'}, csc=>{shape=>'smallcaps'});
+
+sub lookupFontFamily { $font_family{ToString($_[0])}; }
+sub lookupFontSeries { $font_series{ToString($_[0])}; }
+sub lookupFontShape  { $font_shape{ToString($_[0])}; }
 
 our $FONTREGEXP
   = '('.join('|',sort { -($a cmp $b) } keys %font_family).')'
@@ -770,9 +770,6 @@ sub abstract_font_size {
   else {
     'normal'; }}
 
-sub lookupFontFamily { $font_family{ToString($_[0])}; }
-sub lookupFontSeries { $font_series{ToString($_[0])}; }
-sub lookupFontShape  { $font_shape{ToString($_[0])}; }
 
 # Need to handle "at" too!!!
 DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
@@ -784,9 +781,9 @@ DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
   if($name =~ /^$FONTREGEXP$/o){
     my($fm,$sr,$sh)=($1,$2,$3);
     $size = $4;
-    %props = %{$font_family{$fm}||{}};
-    $props{series}= $font_series{$sr} unless $props{series};
-    $props{shape} = $font_shape{$sh}  unless $props{shape}; }
+    if(my $ffam = lookupFontFamily($fm)){ map($props{$_} = $$ffam{$_}, keys %$ffam); }
+    if(my $fser = lookupFontSeries($sr)){ map($props{$_} = $$fser{$_}, keys %$fser); }
+    if(my $fsh  = lookupFontShape($sh)) { map($props{$_} = $$fsh{$_},  keys %$fsh); }}
   else {
     Info(":unexpected:$name Unrecognized font \"$name\"; ".ToString($cs)." will have no effect"); }
 

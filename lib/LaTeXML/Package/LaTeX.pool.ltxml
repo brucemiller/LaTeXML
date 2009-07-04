@@ -1544,9 +1544,13 @@ DefPrimitive('\DeclareSymbolFontAlphabet{}{}', sub {
 DefPrimitive('\DeclareMathSizes{}{}{}{}',undef);
 DefPrimitive('\DeclareMathAlphabet{}{}{}{}{}', sub {
   my ($stomach, $cs, $enc, $family, $series, $shape) = @_;
-  DefConstructorI(T_CS(ToString($cs)),undef, '', font=>{family=>ToString($family),
-							series=>ToString($series),
-							shape =>ToString($shape)}); });
+  my %font = ();
+  if(my $ffam = lookupFontFamily($family)){ map($font{$_} = $$ffam{$_}, keys %$ffam); }
+  if(my $fser = lookupFontSeries($series)){ map($font{$_} = $$fser{$_}, keys %$fser); }
+  if(my $fsh  = lookupFontShape($shape))  { map($font{$_} = $$fsh{$_}, keys %$fsh); }
+  DefConstructorI(T_CS(ToString($cs)),undef, '', font=>{%font}); });
+
+
 DefMacro('\newmathalphabet{}{}{}',Tokens()); # or expand int DeclareMathAlphabet?
 DefPrimitive('\DeclareFontShape{}{}{}{}{}{}', undef);
 DefPrimitive('\DeclareFontFamily{}{}{}', undef);
@@ -2912,18 +2916,18 @@ DefPrimitive('\fontencoding{}',undef);
 DefConstructor('\fontfamily{}','',
 	       afterDigest=>sub { 
 		 my $family = ToString($_[1]->getArg(1));
-		 if(my $fam = lookupFontFamily($family)){ MergeFont(family=>$fam); }
-		else { Info(":unexpected:$family Unrecognized font family."); }});
+		 if(my $fam = lookupFontFamily($family)){ MergeFont(%$fam); }
+		 else { Info(":unexpected:$family Unrecognized font family."); }});
 DefConstructor('\fontseries{}','',
 	       afterDigest=>sub { 
 		 my $series = ToString($_[1]->getArg(1));
-		 if(my $ser = lookupFontSeries($series)){ MergeFont(series=>$ser); }
-		else { Info(":unexpected:$series Unrecognized font series."); }});
+		 if(my $ser = lookupFontSeries($series)){ MergeFont(%$ser); }
+		 else { Info(":unexpected:$series Unrecognized font series."); }});
 DefConstructor('\fontshape{}','',
 	       afterDigest=>sub { 
 		 my $shape = ToString($_[1]->getArg(1));
-		 if(my $sh = lookupFontShape($shape)){ MergeFont(shape=>$sh); }
-		else { Info(":unexpected:$shape Unrecognized font shape."); }});
+		 if(my $sh = lookupFontShape($shape)){ MergeFont(%$sh); }
+		 else { Info(":unexpected:$shape Unrecognized font shape."); }});
 
 DefMacroI('\selectfont',    undef, Tokens());
 DefMacro('\usefont{}{}{}{}{}',
