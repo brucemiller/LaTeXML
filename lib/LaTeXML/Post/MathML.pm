@@ -337,18 +337,23 @@ our %mathvariants = ('upright'          =>'normal',
 		     'bold upright'     =>'bold',
 		     'italic'           =>'italic',
 		     'serif italic'     =>'italic',
+		     'serif slanted'    =>'italic',
 		     'medium italic'    =>'italic',
+		     'medium slanted'   =>'italic',
 		     'bold italic'      =>'bold-italic',
+		     'bold slanted'     =>'bold-italic',
 		     'doublestruck'     =>'double-struck',
 		     'doublestruck upright'=>'double-struck',
 		     'blackboard'       =>'double-struck',
 		     'blackboard upright'=>'double-struck',
 		     'fraktur'          => 'fraktur',
 		     'fraktur italic'   => 'fraktur', # ?
+		     'fraktur slanted'  => 'fraktur', # ?
 		     'fraktur upright'  => 'fraktur',
 		     'fraktur bold'     => 'bold-fraktur',
 		     'script'           => 'script',
 		     'script italic'    => 'script',
+		     'script slanted'   => 'script',
 		     'script upright'   => 'script',
 		     'script bold'      => 'bold-script',
 		     'caligraphic'      => 'script',
@@ -358,17 +363,78 @@ our %mathvariants = ('upright'          =>'normal',
 		     'sansserif upright'=> 'sans-serif',
 		     'sansserif bold'   => 'bold-sans-serif',
 		     'sansserif italic' => 'sans-serif-italic',
-		     'sansserif bold italic'   => 'sans-serif-bold-italic',
+		     'sansserif slanted'=> 'sans-serif-italic',
+		     'sansserif bold italic'  => 'sans-serif-bold-italic',
+		     'sansserif bold slanted' => 'sans-serif-bold-italic',
 		     'typewriter'       => 'monospace');
 
 # The font differences (from the containing context) have been deciphered
 # into font, size and color attributes.  The font should match
 # one of the above... (?)
-
 our %sizes=(tiny=>'small',script=>'small',footnote=>'small',small=>'small',
 	    normal=>'normal',
 	    large=>'big',Large=>'big',LARGE=>'big',huge=>'big',Huge=>'big',
 	    big=>'1.1em', Big=>'1.5em', bigg=>'2.0em', Bigg=>'2.5em');
+sub UTF {
+  my($code)=@_;
+  pack('U',$code); }
+
+sub makePlane1Map {
+  my($latin,$GREEK,$greek,$digits)=@_; 
+  ( map( (UTF(ord('A')+ $_)=>UTF($latin + $_)), 0..25),
+    map( (UTF(ord('a')+ $_)=>UTF($latin + 26 + $_)), 0..25),
+    ($GREEK ? map( (UTF(0x0391+ $_)=>UTF($GREEK + $_)), 0..24) : ()),
+    ($greek ? map( (UTF(0x03B1+ $_)=>UTF($greek + $_)), 0..24) : ()),
+    ($digits ? map( (UTF(ord('0')+ $_)=>UTF($digits + $_)), 0..9) : ())); }
+
+our %plane1map =
+     ('bold'                  =>{makePlane1Map(0x1D400,0x1D6A8,0x1D6C2,0x1D7CE)},
+      'italic'                =>{makePlane1Map(0x1D434,0x1D6E2,0x1D6FC, undef),
+				h=>"\x{210E}"},
+      'bold-italic'           =>{makePlane1Map(0x1D468,0x1D71C,0x1D736, undef)},
+      'sans-serif'            =>{makePlane1Map(0x1D5A0, undef,  undef, 0x1D7E2)},
+      'bold-sans-serif'       =>{makePlane1Map(0x1D5D4,0x1D756,0x1D770,0x1D7EC)},
+      'sans-serif-italic'     =>{makePlane1Map(0x1D608, undef,  undef,  undef)},
+      'sans-serif-bold-italic'=>{makePlane1Map(0x1D63C,0x1D790,0x1D7AA, undef)},
+      'monospace'             =>{makePlane1Map(0x1D670, undef,  undef, 0x1D7F6)},
+      'script'                =>{makePlane1Map(0x1D49C, undef,  undef,  undef),
+				 B=>"\x{212C}",E=>"\x{2130}",F=>"\x{2131}",H=>"\x{210B}",I=>"\x{2110}",
+				 L=>"\x{2112}",M=>"\x{2133}",R=>"\x{211B}",
+				 e=>"\x{212F}",g=>"\x{210A}",o=>"\x{2134}"},
+      'bold-script'           =>{makePlane1Map(0x1D4D0, undef,  undef,  undef)},
+      'fraktur'               =>{makePlane1Map(0x1D504, undef,  undef,  undef),
+				 C=>"\x{212D}",H=>"\x{210C}",I=>"\x{2111}",R=>"\x{211C}", Z=>"\x{2128}"},
+      'bold-fraktur'          =>{makePlane1Map(0x1D56C, undef,  undef,  undef)},
+      'double-struck'         =>{makePlane1Map(0x1D538, undef,  undef, 0x1D7D8),
+				 C=>"\x{2102}",H=>"\x{210D}",N=>"\x{2115}",P=>"\x{2119}",Q=>"\x{211A}",
+				 R=>"\x{211D}",Z=>"\x{2124}"}
+    );
+
+sub stylizeContent {
+  my($item,$mihack,%attr)=@_;
+  my $font  = (ref $item ? $item->getAttribute('font') : $attr{font}) || $LaTeXML::MathML::FONT;
+  my $size  = (ref $item ? $item->getAttribute('size') : $attr{size}) || $LaTeXML::MathML::SIZE;
+  my $color = (ref $item ? $item->getAttribute('color') : $attr{color}) || $LaTeXML::MathML::COLOR;
+  my $text  = (ref $item ?  $item->textContent : $item);
+  my $variant = ($font ? $mathvariants{$font} : '');
+  if($font && !$variant){
+    warn "Unrecognized font variant \"$font\""; $variant=''; }
+  # Special case for single char identifiers?
+  if($mihack && ($text =~ /^.$/)){	# Single char in mi?
+    if($variant eq 'italic'){ $variant = undef; } # Defaults to italic
+    elsif(!$variant){ $variant = 'normal'; }}  # must say so explicitly.
+
+  # Should we map to Unicode's Plane 1 blocks for Mathematical Alphanumeric Symbols?
+  # Only upper & lower case latin & greek, and also numerals can be mapped.
+  # For each mathvariant, and for each of those 5 groups, there is a linear mapping,
+  # EXCEPT for chars defined before Plain 1, which already exist in lower blocks.
+  my $mapping;
+  if($variant && $LaTeXML::MathML::PLANE1 && ($mapping = $plane1map{$variant})){
+    my @c = map($$mapping{$_}, split(//,$text));
+    if(! grep(! defined $_, @c)){ # Only if ALL chars in the token could be mapped... ?????
+      $text = join('',@c);
+      $variant = undef;  }}
+  ($text,$variant,$size && $sizes{$size},$color); }
 
 # These are the strings that should be known as fences in a normal operator dictionary.
 our %fences=('('=>1,')'=>1, '['=>1, ']'=>1, '{'=>1, '}'=>1, "\x{201C}"=>1,"\x{201D}"=>1,
@@ -378,6 +444,45 @@ our %fences=('('=>1,')'=>1, '['=>1, ']'=>1, '{'=>1, '}'=>1, "\x{201C}"=>1,"\x{20
 	     "\x{230A}"=>1, "\x{230B}"=>1, "\x{2308}"=>1,"\x{2309}"=>1);
 
 sub pmml_mi {
+  my($item,%attr)=@_;
+  my($text,$variant,$size,$color)=stylizeContent($item,1,%attr);
+  ['m:mi',{($variant ? (mathvariant=>$variant):()),
+	   ($size    ? (mathsize=>$size)  :()),
+	   ($color   ? (mathcolor=>$color):())},
+   $text]; }
+
+# Really, the same issues as with mi.
+sub pmml_mn {
+  my($item,%attr)=@_;
+  my($text,$variant,$size,$color)=stylizeContent($item,0,%attr);
+  ['m:mn',{($variant ? (mathvariant=>$variant):()),
+	   ($size    ? (mathsize=>$size):()),
+	   ($color   ? (mathcolor=>$color):())},
+   $text]; }
+
+sub pmml_mo {
+  my($item,%attr)=@_;
+  my($text,$variant,$size,$color)=stylizeContent($item,0,%attr);
+  my $role  = (ref $item ? $item->getAttribute('role') : $attr{role});
+  my $style = (ref $item ? $item->getAttribute('style') : $attr{style});
+  my $isstretchy = $style && ($style =~ /\bstretchy\b/);
+  my $isfence = $role && ($role =~/^(OPEN|CLOSE)$/);
+  my $lspace  = $role && ($role eq 'MODIFIEROP') && 'mediummathspace';
+  my $rspace  = $role && ($role eq 'MODIFIEROP') && 'mediummathspace';
+  my $pos   = (ref $item && $item->getAttribute('scriptpos')) || 'post';
+  ['m:mo',{($variant ? (mathvariant=>$variant):()),
+	   ($size    ? (mathsize=>$size):()),
+	   ($color   ? (mathcolor=>$color):()),
+	   ($isfence && !$fences{$text} ? (fence=>'true'):()),
+	   ($lspace  ? (lspace=>$lspace):()),
+	   ($rspace  ? (rspace=>$rspace):()),
+	   # If an operator has specifically located it's scripts,
+	   # don't let mathml move them.
+	   (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
+	    ? (movablelimits=>'false'):())},
+   $text]; }
+
+sub XXpmml_mi {
   my($item,%attr)=@_;
   my $font  = (ref $item ? $item->getAttribute('font') : $attr{font}) ||  $LaTeXML::MathML::FONT;
   my $size  = (ref $item ? $item->getAttribute('size') : $attr{size}) || $LaTeXML::MathML::SIZE;
@@ -395,7 +500,7 @@ sub pmml_mi {
    $text]; }
 
 # Really, the same issues as with mi.
-sub pmml_mn {
+sub XXpmml_mn {
   my($item,%attr)=@_;
   my $font  = (ref $item ? $item->getAttribute('font') : $attr{font}) ||  $LaTeXML::MathML::FONT;
   my $size  = (ref $item ? $item->getAttribute('size') : $attr{size}) || $LaTeXML::MathML::SIZE;
@@ -409,7 +514,7 @@ sub pmml_mn {
 	   ($color   ? (mathcolor=>$color):())},
    $text]; }
 
-sub pmml_mo {
+sub XXpmml_mo {
   my($item,%attr)=@_;
   my $font  = (ref $item ? $item->getAttribute('font') : $attr{font});
   my $size  = (ref $item ? $item->getAttribute('size') : $attr{size});
@@ -426,8 +531,7 @@ sub pmml_mo {
   ['m:mo',{($variant ? (mathvariant=>$variant):()),
 	   ($size    ? (mathsize=>$sizes{$size}):()),
 	   ($color   ? (mathcolor=>$color):()),
-	   ($isfence     ? (fence=>'true'):()),
-	   ($isfence    && !$fences{$text} ? (fence=>'true'):()),
+	   ($isfence && !$fences{$text} ? (fence=>'true'):()),
 	   ($lspace  ? (lspace=>$lspace):()),
 	   ($rspace  ? (rspace=>$rspace):()),
 	   # If an operator has specifically located it's scripts,
@@ -1057,6 +1161,7 @@ use base qw(LaTeXML::Post::MathML);
 sub translateNode {
   my($self,$doc,$xmath,$style,$embedding)=@_;
   $doc->addNamespace($mmlURI,'m');
+  local $LaTeXML::MathML::PLANE1= $$self{plane1};
   my @trans = $self->pmml_top($xmath,$style);
   my $m = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
   # Wrap unless already embedding within MathML.
@@ -1108,6 +1213,7 @@ sub processNode {
 sub translateNodeLinebreaks {
   my($self,$doc,$xmath,$style)=@_;
   $doc->addNamespace($mmlURI,'m');
+  local $LaTeXML::MathML::PLANE1= $$self{plane1};
   my @trans = $self->pmml_top($xmath,$style);
   my $mml = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
   my $linelength = $$self{linelength} || 80;

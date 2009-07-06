@@ -24,7 +24,7 @@ my($format,$urlstyle) = (undef,'server');
 my($numbersections)=(1);
 my($stylesheet,$defaultcss,@css)=(undef,1);
 my($parallelmath,$mathimages,$mathimagemag)=(undef,undef,1.75);
-my($linelength,$keepXMath)=(undef,undef);
+my($linelength,$keepXMath,$plane1)=(undef,undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
 my($split,$splitat,$splitpath,$splitnaming)=(undef,'section',undef,'id');
 my($prescan,$dbfile,$scan,$crossref,$sitedir)=(undef,undef,1,1,undef);
@@ -89,7 +89,8 @@ GetOptions("verbose+"              =>\$verbosity,
 #	   "mathml|mml!"  =>\$mathml,
 	   "mathimages!"                 => \$mathimages,
 	   "mathimagemagnification=f"    => \$mathimagemag,
-	   "linelength=i"                =>\$linelength,
+	   "linelength=i"                => \$linelength,
+	   "plane1!"                     => \$plane1,
 	   "presentationmathml|pmml"     => sub { addMathFormat('pmml'); },
 	   "contentmathml|cmml"          => sub { addMathFormat('cmml'); },
 	   "openmath|om"                 => sub { addMathFormat('om'); },
@@ -254,6 +255,7 @@ if(!$prescan){
 	require 'LaTeXML/Post/MathML.pm';
 	push(@mprocs,LaTeXML::Post::MathML::Presentation->new(
 		    (defined $linelength ? (linelength=>$linelength):()),
+                    ($plane1 ? (plane1=>1):()),
                     %OPTIONS)); }
       elsif($fmt eq 'cmml'){
 	require 'LaTeXML/Post/MathML.pm';
@@ -673,6 +675,12 @@ Conversion is the default for xhtml format.
 
 (Experimental) Line-breaks the generated Presentation
 MathML so that it is no longer than I<number> `characters'.
+
+=item C<--plane1>
+
+Converts the content of Presentation MathML token elements to
+the appropriate Unicode Plane-1 codepoints according to the selected font,
+when applicable.
 
 =item C<--contentmathml>, C<--nocontentmathml>
 
