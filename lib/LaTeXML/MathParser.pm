@@ -567,9 +567,13 @@ sub p_getValue {
     (($x=$node->textContent) ne '' ? $x # get content, or fall back to name
      : (defined ($x=$node->getAttribute('name')) ? $x
 	: undef)); }
-  else {
-    # should do same here? [for array rep]
-    # something like join('',map(p_getValue($_),@args)) || $$node[1]{name}
+  elsif(ref $node eq 'ARRAY'){
+    my($op,$attr,@args)=@$node;
+    if(@args){
+      join('',map(p_getValue($_),@args)); }
+    else {
+      $$node[1]{name}; }}
+  else {			# ????
     $node; }}
 
 sub p_getTokenMeaning {
