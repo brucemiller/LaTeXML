@@ -550,6 +550,7 @@ sub simpleSize {
 sub layout_mi     { simpleSize(@_); }
 sub layout_mo     { simpleSize(@_); }
 sub layout_mn     { simpleSize(@_); }
+sub layout_mspace { simpleSize(@_); }
 sub layout_mtext  { simpleSize(@_); }
 sub layout_merror { simpleSize(@_); }
 
