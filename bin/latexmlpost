@@ -165,12 +165,16 @@ elsif($format eq 'html'){
 elsif($format eq 'xhtml'){
   Error("Default xhtml stylesheet does not support --mathimages")
     if (!defined $stylesheet) && $mathimages;
+  # Add pMML FIRST, unless already there, or was disabled.
+  unshift(@math_formats,'pmml') 
+    unless grep($_ eq 'pmml',@math_formats) || $removed_math_formats{pmml};
+  # Add cMML NEXT if parallel was requested and pMML is present, but no secondary format was requested.
+  push(@math_formats,'cmml') 
+    if $parallelmath &&  grep($_ eq 'pmml',@math_formats) && scalar(@math_formats)==1;
+  # use parallel markup if there are multiple formats requested.
   $parallelmath = 1 if (!defined $parallelmath) && (scalar(@math_formats)>1);
-  Error("Default xhtml stylesheet only supports OpenMath in parallel with MathMl")
+  Error("Default xhtml stylesheet only supports OpenMath in parallel with MathML")
     if (!defined $stylesheet) && !$parallelmath && grep($_ eq 'om',@math_formats);
-  if(!@math_formats){		# No math format specified?
-    addMathFormat('pmml');
-    addMathFormat('cmml') if $parallelmath || !@math_formats; }
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
   if(!defined $stylesheet){
