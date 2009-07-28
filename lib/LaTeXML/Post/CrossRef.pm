@@ -243,15 +243,16 @@ sub make_bibcite {
       elsif($show =~ s/^phrase(\d)//i){
 	push(@stuff,$phrases[$1-1]->childNodes) if $phrases[$1-1]; }
       elsif($show =~ s/^year//i){
-	push(@stuff,['ltx:ref',$$datum{attr},@{$$datum{year}}]);
-	$didref=1; 
-	while($checkdups && @data && ($$datum{authortext} eq $data[0]{authortext})){
-	  my $next = shift(@data);
-	  push(@stuff, $yysep,' ');
-	  if((($$datum{rawyear}||'no_year_1') eq ($$next{rawyear}||'no_year_2')) && $$next{suffix}){
-	    push(@stuff,['ltx:ref',$$next{attr},$$next{suffix}]);  }
-	  else {
-	    push(@stuff,['ltx:ref',$$next{attr},@{$$next{year}}]);  }}}
+	if(@{$$datum{year}}){
+	  push(@stuff,['ltx:ref',$$datum{attr},@{$$datum{year}}]);
+	  $didref=1; 
+	  while($checkdups && @data && ($$datum{authortext} eq $data[0]{authortext})){
+	    my $next = shift(@data);
+	    push(@stuff, $yysep,' ');
+	    if((($$datum{rawyear}||'no_year_1') eq ($$next{rawyear}||'no_year_2')) && $$next{suffix}){
+	      push(@stuff,['ltx:ref',$$next{attr},$$next{suffix}]);  }
+	    else {
+	      push(@stuff,['ltx:ref',$$next{attr},@{$$next{year}}]);  }}}}
       elsif($show =~ s/^number//i){
 	push(@stuff,['ltx:ref',$$datum{attr},@{$$datum{number}}]);
 	$didref=1;

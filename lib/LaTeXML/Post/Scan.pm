@@ -226,7 +226,7 @@ sub bibitem_handler {
 			 refnum      =>$doc->findnode('ltx:bibtag[@role="refnum"]',$node),
 			 title       =>$doc->findnode('ltx:bibtag[@role="title"]',$node),
 			 keytag      =>$doc->findnode('ltx:bibtag[@role="key"]',$node),
-			 typetag     =>$doc->findnode('ltx:bibtag[@role="type"]',$node)); }
+			 typetag     =>$doc->findnode('ltx:bibtag[@role="bibtype"]',$node)); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 # For a bibentry, we'll only store the citation key, so we know it's there.
