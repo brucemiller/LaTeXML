@@ -340,9 +340,12 @@ sub compileConstructor {
   $name = "constructor_".$name.'_'.$GEN++;
   my $floats = ($constructor =~ s/^\^\s*//);	# Grab float marker.
   my $body = translate_constructor($constructor,$floats);
+  # Compile the constructor pattern into an anonymous sub that will construct the requested XML.
   my $code =
     " sub $name {\n"
     ."my(".join(', ','$document', map("\$arg$_",1..$nargs),'%prop').")=\@_;\n"
+      # Put the body in the Pool package, so that functions defined there can be used with &foo(..)
+      ."package LaTeXML::Package::Pool;\n"
       .($floats ? "my \$savenode;\n" :'')
 	. $body
 	  . ($floats ? "\$document->setNode(\$savenode) if defined \$savenode;\n" : '')
@@ -430,8 +433,6 @@ sub translate_value {
   my $value;
   if(s/^\&([\w\:]*)\(//){	# Recognize a function call, w/args
     my $fcn = $1;
-    # Hack: If no explict package, assume name it must be accessible via Pool
-    $fcn = "LaTeXML::Package::Pool::$fcn" unless $fcn =~/:/;
     my @args = ();
     while(! /^\s*\)/){
       if(/^\s*([\'\"])/){ push(@args,translate_string()); }
