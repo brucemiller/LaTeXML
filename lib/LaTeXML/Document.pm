@@ -618,7 +618,17 @@ sub setAttribute {
   if((defined $value) && ($value ne '')){ # Skip if `empty'; but 0 is OK!
     $value = $self->recordID($value,$node) if $key eq 'xml:id'; # If this is an ID attribute
     my($ns,$name)=$$self{model}->decodeQName($key);
-    ($ns ? $node->setAttributeNS($ns,$name=>$value) : $node->setAttribute($name=>$value)); }}
+# Odd; the $name must be a $QName!!! ???
+#    ($ns ? $node->setAttributeNS($ns,$name=>$value) : $node->setAttribute($name=>$value)); }}
+
+    if($ns){
+      my $prefix = $$self{model}->getDocumentNamespacePrefix($ns);
+      if(! defined $node->lookupNamespacePrefix($ns)){	# namespace not already declared?
+	$self->getDocument->documentElement->setNamespace($ns,$prefix,0); }
+      my $qname = ($prefix && $prefix ne '#default' ? "$prefix:$name" : $name);
+      $node->setAttributeNS($ns,$qname=>$value); }
+    else {
+      $node->setAttribute($name=>$value); }}}
 
 # Insert a new comment, or append to previous comment.
 # Does NOT move the current insertion point to the Comment,
