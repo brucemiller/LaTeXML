@@ -136,11 +136,11 @@ DefMacro('\MSC',       '\@keyword@cut\@MSC');
 DefMacro('\JEL',      '\@keyword@cut\@JEL');
 DefMacro('\UK',       '\@keyword@cut\@UK');
 
-DefMacro('\@keyword XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[role=keywords]{#1}');
-DefMacro('\@PACS    XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[role=PACS]{#1}');
-DefMacro('\@MSC     XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[role=MSC]{#1}');
-DefMacro('\@JEL     XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[role=JEL]{#1}');
-DefMacro('\@UK      XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[role=UK]{#1}');
+DefMacro('\@keyword XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=keywords]{#1}');
+DefMacro('\@PACS    XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=PACS]{#1}');
+DefMacro('\@MSC     XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=MSC]{#1}');
+DefMacro('\@JEL     XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=JEL]{#1}');
+DefMacro('\@UK      XUntil:\@keyword@cut', '\@add@frontmatter{ltx:classification}[scheme=UK]{#1}');
 DefConstructor('\@keyword@cut','');
 
 #======================================================================

@@ -94,7 +94,7 @@ DefMacro('\dedication{}','\@add@frontmatter{ltx:contact}[role=dedicatory]{#1}');
 DefConstructor('\@mail{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\mail Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@mail{#1}}');
 DefMacro('\mailname','\it Correspondence to \/');
-DefMacro('\doi{}','\@add@frontmatter{ltx:classification}[role=doi]{#1}');
+DefMacro('\doi{}','\@add@frontmatter{ltx:classification}[scheme=doi]{#1}');
 
 DefMacro('\idline{}{}','');	# ?
 DefMacro('\msnr{}','');		# ??

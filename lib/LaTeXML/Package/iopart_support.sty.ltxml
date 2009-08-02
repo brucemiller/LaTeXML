@@ -30,7 +30,7 @@ Let('\paper', '\title');
 DefMacro('\@articletype', '');
 DefMacro('\article[]{}{}', 
 	 '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
-	 .'\ifx.#2.\else\@add@frontmatter{ltx:classification}[role=type]{#2}\fi'
+	 .'\ifx.#2.\else\@add@frontmatter{ltx:classification}[scheme=type]{#2}\fi'
 	 .'\@add@frontmatter{ltx:title}{#3}');
 
 DefMacro('\letter{}',   '\article[Letter to the Editor]{Letter to the Editor}{#1}\lettertrue');
@@ -51,9 +51,9 @@ Let(T_CS('\mailto'),T_CS('\ead'));
 #DefMacro('\eads DigestedBody','#1');
 DefMacro('\eads {}','#1');
 
-DefMacro('\pacno{}', '\@add@frontmatter{ltx:classification}[role=pacs]{#1}');
-DefMacro('\pacs{}', '\@add@frontmatter{ltx:classification}[role=pacs]{#1}');
-DefMacro('\ams{}', '\@add@frontmatter{ltx:classification}[role=ams]{#1}');
+DefMacro('\pacno{}', '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
+DefMacro('\pacs{}', '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
+DefMacro('\ams{}', '\@add@frontmatter{ltx:classification}[scheme=ams]{#1}');
 
 our @journals=('Institute of Physics Publishing',
 	       'J. Phys.\ A: Math.\ Gen.\ ',
