@@ -266,7 +266,15 @@ sub generateThesaurusKeywords{
     #	if($name ne lc($name)){
     #	  $keywords{'big'.lc($name)}=1; }
     if(my $n_alia = $name_map{$name}){
-      map($keywords{$_}=1, split(/\s/,$n_alia)); }}
+      map($keywords{$_}=1, split(/\s/,$n_alia)); }
+    # Strip non-significant pre/postfixes from some command names.
+#    if($name =~ /^(?:up|varup|var)(..+)$/){ $keywords{$1}=1; }
+    if($name =~ /^(?:varup|var)(..+)$/){ $keywords{$1}=1; }
+#    if($name =~ /^(..+?)(?:up)$/){ $keywords{$1}=1; }
+    if($name =~ /^n([^ew].+?)$/){
+      my $n = $1;
+      if($n =~/arrow/){ $keywords{not}=1; $keywords{$n}=1; }}
+  }
   if($meaning){
     $keywords{$meaning}=1;
     my @splits = split(/-/,$meaning);
@@ -275,7 +283,30 @@ sub generateThesaurusKeywords{
 
   foreach my $k (keys %keywords){
     if(my $alia = $alias_map{$k}){
-      map($keywords{$_}=1, split(/\s/,$alia)); }}
+      map($keywords{$_}=1, split(/\s/,$alia)); }
+  }
+  # Special cases for arrows, since they typically have no meaning assigned, but need aliases!
+  if($name =~ /arrow/){
+    $keywords{arrow}=1;
+    my $n;
+    do {			# Repeat as long as we're adding variations
+      $n = scalar(keys %keywords);
+      foreach my $k (keys %keywords){
+	if($k =~ /^(..+?)arrows$/) { $keywords{$1.'arrow'}=1; }
+	if($k =~ /^[A-Z]/){ $keywords{double}=1; $keywords{lc($k)}=1; } # Starts uppercase? assume "double"
+	if($k =~ /^(?:dash|long|twohead|circle|curve|over|under|hook|loop)(..+)$/){ $keywords{$1}=1; }
+	if($k =~ /^(..+?)(?:tail)$/){ $keywords{$1}=1; }
+	if($k =~ /^(.*?)squig(.*)$/){ $keywords{$1.$2}=1; $keywords{squigarrow}=1; }
+	if($k =~ /^(.*?)rightright(.*)$/){ $keywords{$1.'right'.$2}=1; }
+	if($k =~ /^(.*?)leftright(.*)$/){ $keywords{$1.'rightleft'.$2}=1; }
+	if($k =~ /^(.*?)leftleft(.*)$/){ $keywords{$1.'left'.$2}=1; }
+	if($k =~ /^(.*?)upup(.*)$/){ $keywords{$1.'up'.$2}=1; }
+	if($k =~ /^(.*?)updown(.*)$/){ $keywords{$1.'downup'.$2}=1; }
+	if($k =~ /^(.*?)downdown(.*)$/){ $keywords{$1.'down'.$2}=1; }
+	if($k =~ /^(.*?)arrowleft(.*)$/){ $keywords{$1.'leftarrow'.$2}=1; }
+	if($k =~ /^(.*?)arrowright(.*)$/){ $keywords{$1.'rightarrow'.$2}=1; }
+      }} while (scalar(keys %keywords) > $n);
+  }
   foreach my $k (keys %keywords){
     my $lc= lc($k);
     if(($k ne $lc) && (length($k)<=2)){
@@ -336,58 +367,67 @@ sub computeAliases {
   [sort keys %aliases]; }
 
 BEGIN {
+  # Maps unicode characters to thesaurus words
   %unicode_map =
-    ("\x{03B1}"=>'alpha',
-     "\x{03B2}"=>'beta',
-     "\x{03B3}"=>'gamma',
-     "\x{03B4}"=>'delta',
-     "\x{03F5}"=>'epsilon',
-     "\x{03B5}"=>'varepsilon epsilon',
-     "\x{03B6}"=>'zeta',
-     "\x{03B7}"=>'eta',
-     "\x{03B8}"=>'theta',
-     "\x{03D1}"=>'vartheta theta',
-     "\x{03B9}"=>'iota',
-     "\x{03BA}"=>'kappa',
-     "\x{03BB}"=>'lambda',
-     "\x{03BC}"=>'mu',
-     "\x{03BD}"=>'nu',
-     "\x{03BE}"=>'xi',
-     "\x{03C0}"=>'pi',
-     "\x{03D6}"=>'varpi pi',
-     "\x{03C1}"=>'rho',
-     "\x{03F1}"=>'varrho rho',
-     "\x{03C3}"=>'sigma',
-     "\x{03C2}"=>'varsigma sigma',
-     "\x{03C4}"=>'tau',
-     "\x{03C5}"=>'upsilon',
-     "\x{03D5}"=>'phi',
-     "\x{03C6}"=>'varphi phi',
-     "\x{03C7}"=>'chi',
-     "\x{03C8}"=>'psi',
-     "\x{03C9}"=>'omega',
-     "\x{0393}"=>'Gamma',
-     "\x{0394}"=>'Delta',
-     "\x{0398}"=>'Theta',
-     "\x{039B}"=>'Lambda',
-     "\x{039E}"=>'Xi',
-     "\x{03A0}"=>'Pi',
-     "\x{03A3}"=>'Sigma',
-     "\x{03A5}"=>'Upsilon',
-     "\x{03A6}"=>'Phi',
-     "\x{03A8}"=>'Psi',
-     "\x{03A9}"=>'Omega',
+    (
+# Greek entries no longer needed; they come from command names.
+#      "\x{03B1}"=>'alpha',
+#      "\x{03B2}"=>'beta',
+#      "\x{03B3}"=>'gamma',
+#      "\x{03B4}"=>'delta',
+#      "\x{03F5}"=>'epsilon',
+#      "\x{03B5}"=>'varepsilon epsilon',
+#      "\x{03B6}"=>'zeta',
+#      "\x{03B7}"=>'eta',
+#      "\x{03B8}"=>'theta',
+#      "\x{03D1}"=>'vartheta theta',
+#      "\x{03B9}"=>'iota',
+#      "\x{03BA}"=>'kappa',
+#      "\x{03BB}"=>'lambda',
+#      "\x{03BC}"=>'mu',
+#      "\x{03BD}"=>'nu',
+#      "\x{03BE}"=>'xi',
+#      "\x{03C0}"=>'pi',
+#      "\x{03D6}"=>'varpi pi',
+#      "\x{03C1}"=>'rho',
+#      "\x{03F1}"=>'varrho rho',
+#      "\x{03C3}"=>'sigma',
+#      "\x{03C2}"=>'varsigma sigma',
+#      "\x{03C4}"=>'tau',
+#      "\x{03C5}"=>'upsilon',
+#      "\x{03D5}"=>'phi',
+#      "\x{03C6}"=>'varphi phi',
+#      "\x{03C7}"=>'chi',
+#      "\x{03C8}"=>'psi',
+#      "\x{03C9}"=>'omega',
+#      "\x{0393}"=>'Gamma',
+#      "\x{0394}"=>'Delta',
+#      "\x{0398}"=>'Theta',
+#      "\x{039B}"=>'Lambda',
+#      "\x{039E}"=>'Xi',
+#      "\x{03A0}"=>'Pi',
+#      "\x{03A3}"=>'Sigma',
+#      "\x{03A5}"=>'Upsilon',
+#      "\x{03A6}"=>'Phi',
+#      "\x{03A8}"=>'Psi',
+#      "\x{03A9}"=>'Omega',
 
 #     "\x{211C}"=>'re bigre',
 #     "\x{2111}"=>'im bigim',
 
-     "\x{2190}"=>'arrow leftarrow',
-     "\x{2192}"=>'arrow rightarrow',
-     "\x{21D0}"=>'arrow leftarrow double leftdoublearrow',
-     "\x{21D2}"=>'arrow rightarrow double rightdoublearrow',
+#     "\x{2190}"=>'arrow leftarrow',
+#     "\x{2192}"=>'arrow rightarrow',
+#     "\x{21D0}"=>'arrow leftarrow double leftdoublearrow',
+#     "\x{21D2}"=>'arrow rightarrow double rightdoublearrow',
 
      );
-# %name_map;
+  # Maps latex command names to thesaurus words
+  %name_map =
+    (diffd=>'diff',
+     loarrow=>'leftarrow', roarrow=>'rightarrow'
+    );
+
+  # Maps thesaurus words to more thesaurus words
   %alias_map =
     (Alpha=>'alpha bigalpha', Beta=>'beta bigbeta b bigb', Gamma=>'gamma biggamma', Delta=>'delta bigdelta',
      Epsilon=>'epsilon bigepsilon e bige', Zeta=>'zeta bigzeta z bigz', Eta=>'eta bigeta h bigh',
