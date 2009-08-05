@@ -1281,9 +1281,13 @@ sub readNewlineArgs {
   $gullet->unread($next) if $next; 
   ($star,$optional); }
 
-DefMacroI('\@alignment@newline', undef,sub {
+# HOWEVER!! Is it supposed to skip or NOT????
+# Seems that LaTeX's tabular, eqnarray DO
+# Does TeX's halign?
+##DefMacroI('\@alignment@newline', undef,sub {
+DefMacro('\@alignment@newline OptionalMatch:* [Dimension]', sub {
   my($gullet)=@_;
-  readNewlineArgs($gullet);
+##  readNewlineArgs($gullet);
   (T_CS('\@close@inner@column'), T_CS('\@close@column'), T_CS('\@close@row'),
    T_CS('\@alignment@newline@marker'),
    T_CS('\@open@row'), T_CS('\@open@column'), T_CS('\@open@inner@column')); });
