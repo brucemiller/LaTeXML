@@ -167,9 +167,12 @@ sub constructAlignment {
   my %attr = ($props{attributes} ? %{$props{attributes}} : ());
   my $node = $alignment->beAbsorbed($document,%attr);
   # If requested to guess headers (unless cells are already marked)
-  if($props{guess_headers}
-     && !$document->findnodes('descendant::ltx:td[contains(@class,"thead")]',$node)){
-    guess_alignment_headers($document,$node,$alignment); }
+  if($props{guess_headers} && !$document->findnodes("ancestor::ltx:tabular",$node)){
+    if(!$document->findnodes('descendant::ltx:td[contains(@class,"thead")]',$node)){
+      guess_alignment_headers($document,$node,$alignment); }
+    if(!$body->isMath){
+      alignment_regroup_rows($document,$node); }}
+
   $node; }
 
 sub beAbsorbed {
@@ -435,8 +438,8 @@ sub guess_alignment_headers {
 	$$c{cell_type}='d'; 
 	$$c{cell}->removeAttribute('thead') if $$c{cell}; }}}
   # Regroup the rows into thead & tbody elements.
-  alignment_regroup($document,$table,@rows)
-    unless $ismath;
+#  alignment_regroup($document,$table,@rows)
+#    unless $ismath;
   # Debugging report!
   summarize_alignment([@rows],[@cols]) if $LaTeXML::Alignment::DEBUG;
 }
@@ -453,6 +456,22 @@ sub alignment_regroup {
       $table->insertBefore($group,$xrow); }
     $group->appendChild($xrow); }
   }
+
+# this version works w/o the row data
+sub alignment_regroup_rows {
+  my($document,$table)=@_;
+  my ($group,$grouptype)=(undef,0);
+  foreach my $xrow ($document->findnodes("ltx:tr",$table)){
+    # if any non thead cells, we'll consider it tbody...
+    my $rowtype = (grep( (!$_->getAttribute('thead')) && (($_->getAttribute('class')||'') !~/\bthead\b/),
+			 $document->findnodes('ltx:td',$xrow) )
+		   ? 'tbody' : 'thead');
+    if($grouptype ne $rowtype){
+      $group = $table->addNewChild($xrow->getNamespaceURI, $grouptype = $rowtype);
+      $table->insertBefore($group,$xrow); }
+    $group->appendChild($xrow); }
+  }
+
 #======================================================================
 # Build a View of the alignment, with characterized cells, for analysis.
 
