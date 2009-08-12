@@ -410,6 +410,10 @@ our %plane1map =
 				 R=>"\x{211D}",Z=>"\x{2124}"}
     );
 
+our %plane1hack = (script=>$plane1map{script},  'bold-script'=>$plane1map{script},
+		   fraktur=>$plane1map{fraktur},'bold-fraktur'=>$plane1map{fraktur},
+		   'double-struck'=>$plane1map{'double-struck'});
+
 sub stylizeContent {
   my($item,$mihack,%attr)=@_;
   my $font  = (ref $item ? $item->getAttribute('font') : $attr{font}) || $LaTeXML::MathML::FONT;
@@ -429,11 +433,13 @@ sub stylizeContent {
   # For each mathvariant, and for each of those 5 groups, there is a linear mapping,
   # EXCEPT for chars defined before Plain 1, which already exist in lower blocks.
   my $mapping;
-  if($variant && $LaTeXML::MathML::PLANE1 && ($mapping = $plane1map{$variant})){
+  if($variant
+     && ($LaTeXML::MathML::PLANE1 || $LaTeXML::MathML::PLANE1HACK)
+     && ($mapping = ($LaTeXML::MathML::PLANE1HACK ? $plane1hack{$variant} : $plane1map{$variant}))){
     my @c = map($$mapping{$_}, split(//,$text));
     if(! grep(! defined $_, @c)){ # Only if ALL chars in the token could be mapped... ?????
       $text = join('',@c);
-      $variant = undef;  }}
+      $variant = ($LaTeXML::MathML::PLANE1HACK && ($variant =~ /^bold/) ? 'bold' : undef);  }}
   ($text,$variant,$size && $sizes{$size},$color); }
 
 # These are the strings that should be known as fences in a normal operator dictionary.
@@ -1162,6 +1168,7 @@ sub translateNode {
   my($self,$doc,$xmath,$style,$embedding)=@_;
   $doc->addNamespace($mmlURI,'m');
   local $LaTeXML::MathML::PLANE1= $$self{plane1};
+  local $LaTeXML::MathML::PLANE1HACK= $$self{hackplane1};
   my @trans = $self->pmml_top($xmath,$style);
   my $m = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
   # Wrap unless already embedding within MathML.
@@ -1214,6 +1221,7 @@ sub translateNodeLinebreaks {
   my($self,$doc,$xmath,$style)=@_;
   $doc->addNamespace($mmlURI,'m');
   local $LaTeXML::MathML::PLANE1= $$self{plane1};
+  local $LaTeXML::MathML::PLANE1HACK= $$self{hackplane1};
   my @trans = $self->pmml_top($xmath,$style);
   my $mml = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
   my $linelength = $$self{linelength} || 80;
