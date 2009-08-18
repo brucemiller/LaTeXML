@@ -114,7 +114,7 @@ C<latexml> - transforms a TeX/LaTeX file into XML.
 
 =head1 SYNOPSIS
 
-latexml [options] texfile
+latexml [options] I<texfile>
 
  Options:
  --destination=file specifies destination file (default stdout).
@@ -142,8 +142,8 @@ latexml [options] texfile
                     package
  --help             shows this help message.
 
-If texfile is '-', latexml reads the TeX source from standard input.
-If texfile has an explicit extention of C<.bib>, it is processed
+If I<texfile> is '-', latexml reads the TeX source from standard input.
+If I<texfile> has an explicit extention of C<.bib>, it is processed
 as a BibTeX bibliography.
 
 =head1 OPTIONS AND ARGUMENTS

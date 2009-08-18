@@ -359,7 +359,7 @@ graphics inclusions for the web.
 
 =head1 SYNOPSIS
 
-latexmlpost [options] xmlfile
+latexmlpost [options] I<xmlfile>
 
  Options:
  --verbose               shows progress during processing.
@@ -440,7 +440,7 @@ latexmlpost [options] xmlfile
  --svg                   converts picture environments to SVG
  --nosvg                 disables the above (default)
 
-If xmlfile is '-', latexmlpost reads the XML from standard input.
+If I<xmlfile> is '-', latexmlpost reads the XML from standard input.
 
 =head1 OPTIONS AND ARGUMENTS
 
