@@ -880,7 +880,12 @@ sub RelaxNGSchema {
   
 sub RegisterNamespace {
   my($prefix,$namespace)=@_;
-  $STATE->getModel->registerNamespace($prefix,$namespace);
+  $STATE->getModel->registerNamespace($prefix=>$namespace);
+  return; }
+
+sub RegisterDocumentNamespace {
+  my($prefix,$namespace)=@_;
+  $STATE->getModel->registerDocumentNamespace($prefix=>$namespace);
   return; }
 
 #======================================================================
@@ -1815,7 +1820,16 @@ Declares the C<$prefix> to be associated with the given C<$URL>.
 These prefixes may be used in ltxml files, particularly for
 constructors, xpath expressions, etc.  They are not necessarily
 the same as the prefixes that will be used in the generated document
-(See DocType).
+(See DocType or RelaxNGSchema).
+
+=item C<< RegisterDocumentNamespace($prefix,$URL); >>
+
+Declares the C<$prefix> to be associated with the given C<$URL>
+used within the generated XML. They are not necessarily
+the same as the prefixes used in code (RegisterNamespace).
+This function is less rarely needed, as the namespace declarations
+are generally obtained from the DTD or Schema themselves
+(See DocType or RelaxNGSchema).
 
 =item C<< DocType($rootelement,$publicid,$systemid,%namespaces); >>
 
