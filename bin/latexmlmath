@@ -69,16 +69,30 @@ if($tex eq '-'){
   my $content;
   { local $/ = undef; $tex = <>; }}
 
-# my $texdoc = <<EODoc;
-# \\documentclass{article}
-# \\begin{document}
-# \\[ $tex \\]
-# \\end{document}
-# EODoc
+# We need to determine whether the TeX we're given needs to be wrapped in \[...\]
+# Does it have $'s around it? Does it have a display math environment?
+# The most elegant way would be to notice as soon as we start adding to the doc
+# and switch to math mode if necessary, but that's tricky.
+# Let's just try a manual hack, looking for known switches...
+$tex =~ s/^\s+//;
+$tex =~ s/\s+$//;
+
+our $MATHENVS = 'math|displaymath|equation*?|eqnarray*?'
+  .'|multline*?|align*?|falign*?|alignat*?|xalignat*?|xxalignat*?|gather*?';
+if(($tex =~ /^\$/) && ($tex =~ /\$$/)){} # Wrapped in $'s
+elsif(($tex =~ /^\\\(/) && ($tex =~ /\\\)$/)){} # Wrapped in \(...\)
+elsif(($tex =~ /^\\\[/) && ($tex =~ /\\\]$/)){} # Wrapped in \[...\]
+elsif(($tex =~ /^\\begin\{($MATHENVS)\}/) && ($tex =~ /\\end\{$1\}$/)){}
+else {
+  $tex = '\[ '.$tex.' \]'; }
+
 my $texdoc = <<EODoc;
+\\documentclass{article}
+\\begin{document}
 \\newcounter{equation}
 \\newcounter{Unequation}
-\\[ $tex \\]
+$tex
+\\end{document}
 EODoc
 
 # NOTE:
@@ -132,6 +146,8 @@ if($pmml){
       LaTeXML::Post::MathML::Presentation->new(
           (defined $linelength ? (linelength=>$linelength):()),
 	   %OPTIONS));
+
+# outputXML($post->findnode('//ltx:document'),'-');
   outputXML($post->findnode('//m:math'), $pmml); }
 
 if($cmml){
@@ -196,7 +212,7 @@ C<latexmlmath> - transforms a TeX/LaTeX math expression into various formats.
 
 =head1 SYNOPSIS
 
-latexml [options] texmath
+latexml [options] I<texmath>
 
  Options:
  --mathimage=file           converts to image in file
@@ -223,9 +239,24 @@ latexml [options] texmath
                             named package
  --VERSION                  show version number and exit.
  --help                     shows this help message.
+ --                         ends options
 
-If texmath is '-', latexml reads the TeX from standard input.
+If I<texmath> is '-', C<latexmlmath> reads the TeX from standard input.
 If any of the output files are '-', the result is printed on standard output.
+
+=head2 Input notes
+
+Note that, unless you are reading I<texmath> from standard input,
+the I<texmath> string will be processed by whatever shell you are using
+before C<latexmlmath> even sees it.  This means that many so-called
+meta characters, such as backslash and star,  may confuse the
+shell or be changed.  Consequently, you will need to quote and/or
+slashify the input appropriately.
+
+Using C<--> to explicitly end the option list is useful for
+cases when the math starts with a minus (and would otherwise be interpreted
+as an option, probably an unrecognized one). Alternatively,
+wrapping the I<texmath> with {} will hide the minus.
 
 =head1 OPTIONS AND ARGUMENTS
 
