@@ -251,7 +251,9 @@ the I<texmath> string will be processed by whatever shell you are using
 before C<latexmlmath> even sees it.  This means that many so-called
 meta characters, such as backslash and star,  may confuse the
 shell or be changed.  Consequently, you will need to quote and/or
-slashify the input appropriately.
+slashify the input appropriately.  Most particularly, C<\> will
+need to be doubled to C<\\> for C<latexmlmath> to see it as a
+control sequence.
 
 Using C<--> to explicitly end the option list is useful for
 cases when the math starts with a minus (and would otherwise be interpreted
