@@ -37,7 +37,7 @@ our @EXPORT = (qw(&DefExpandable
 		  &GenerateID),
 
 	       # Document Model
-	       qw(&Tag &DocType &RelaxNGSchema &RegisterNamespace),
+	       qw(&Tag &DocType &RelaxNGSchema &RegisterNamespace &RegisterDocumentNamespace),
 
 	       # Document Rewriting
 	       qw(&DefRewrite &DefMathRewrite
