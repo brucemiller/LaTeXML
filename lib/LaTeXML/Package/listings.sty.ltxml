@@ -38,7 +38,8 @@ DefMacro('\lstinline OptionalKeyVals:LST', sub {
   my $mouth = $gullet->getMouth;
   my ($init,$body);
   { local $STATE = $EMPTY_CATTABLE;
-    $init = $mouth->readToken;
+    $init = $gullet->readToken;	# from gullet, in case it was peeked for the optional args!
+    $init = T_END if Equals($init,T_BEGIN);
     $body = $mouth->readTokens($init); }
   $STATE->getStomach->bgroup; 
   lstActivate($keyvals);
