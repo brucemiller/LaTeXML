@@ -1240,16 +1240,18 @@ sub eqnarrayJoinRows {
   my $equation = addNewChildLate($document,$equationgroup,'ltx:equation');
   $equationgroup->insertBefore($equation,$equations[0]); # Move to correct position.
   # move labels, id, refnum to new equation
-  my($labels,$id,$refnum);
+  my($labels,$id,$refnum,$idctr);
   foreach my $eq (@equations){
     if(my $l = $eq->getAttribute('labels')){
       $labels = ($labels ? "$labels $l" : $l); }
     $id     = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
     $refnum = $eq->getAttribute('refnum') if $eq->hasAttribute('refnum');
+    $idctr  = $eq->getAttribute('_ID_counter_m') if $eq->hasAttribute('_ID_counter_m');
   }
   $equation->setAttribute(labels=>$labels) if $labels;
   $equation->setAttribute('xml:id'=>$id) if $id;
   $equation->setAttribute(refnum=>$refnum) if $refnum;
+  $equation->setAttribute('_ID_counter_m'=>$idctr) if $idctr;
 
   # Scan equations to see which ones likely are continuations of previous
   my($main,$branch)=addMathFork($document,$equation);
@@ -1306,6 +1308,7 @@ sub addMathFork {
   my($document,$equation)=@_;
   my $fork  = addNewChildLate($document,$equation,'ltx:MathFork');
   my $main  = addNewChildLate($document,$fork,'ltx:Math');
+  GenerateID($document,$main,undef,'m');
   my $xmath = addNewChildLate($document,$main,'ltx:XMath');
   my $branch= addNewChildLate($document,$fork,'ltx:MathBranch');
   ($main,$branch); }
@@ -2740,6 +2743,10 @@ sub before_picture {
 }
 
 sub after_picture {}
+
+# Since these ultimately generate external resources, it can be useful to have a handle on them.
+Tag('ltx:graphics',afterOpen=>sub { GenerateID(@_,'g'); });
+Tag('ltx:picture',afterOpen=>sub { GenerateID(@_,'pic'); });
 
 # Ugh... Is this safe?  Apparently, picture stuff is allowed w/o a {picture} environment???
 ### Tag('ltx:picture', autoOpen=>1, autoClose=>1);
