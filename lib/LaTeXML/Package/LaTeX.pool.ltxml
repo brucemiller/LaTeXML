@@ -2073,11 +2073,14 @@ DefMacroI('\thebibliography@ID',undef, Tokens());
 # NOTE: Not really complete, since I haven't dealt with bibliographies!
 DefMacro('\bibliography Semiverbatim', '\ifx.#1.\else\@bibliography{#1}\fi');
 DefConstructor('\@bibliography Semiverbatim',
-	       "<ltx:bibliography files='#1' xml:id='#id'/>",
+	       "<ltx:bibliography files='#1' xml:id='#id'>"
+	       . "<ltx:title>#refname</ltx:title>"
+	       ."</ltx:bibliography>",
 	       afterDigest=>sub { 
 		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
 		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
-		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID')))); });
+		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
+		 $_[1]->setProperty(refname=>Digest(T_CS('\refname'))); });
 DefMacroI('\refname',undef, 'References');
 DefPrimitive('\bibstyle{}', undef);
 DefMacro('\bibliographystyle{}', '\bibstyle{#1}');
