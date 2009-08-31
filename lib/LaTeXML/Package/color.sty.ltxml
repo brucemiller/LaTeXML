@@ -51,11 +51,19 @@ sub getColor {
 # NOTE: Why are these defined as macros, rather than primitives?
 
 # \color{name}
-DefMacro('\color[]{}', sub {
-	   my $color = getColor($_[1], $_[2]);
-	   AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
-	   MergeFont(color=>$color);
-	   return; });
+# DefMacro('\color[]{}', sub {
+# 	   my $color = getColor($_[1], $_[2]);
+# 	   AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
+# 	   MergeFont(color=>$color);
+# 	   return; });
+
+DefConstructor('\color[]{}', "",
+	       afterDigest=>sub {
+		 my($model,$spec)=$_[1]->getArgs;
+		 my $color = getColor($model, $spec);
+		 AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
+		 MergeFont(color=>$color);
+		 return; });
 
 DefMacro('\normalcolor', sub {
 	   my $color = (LookupValue('preambleTextcolor') || 'black');
