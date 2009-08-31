@@ -42,7 +42,7 @@
     </title>
     <xsl:text>
     </xsl:text>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <xsl:call-template name="metatype"/>
     <xsl:if test="/*/ltx:navigation/ltx:ref[@class='start']"><xsl:text>
     </xsl:text>
       <link rel="start" href="{/*/ltx:navigation/ltx:ref[@class='start']/@href}"
