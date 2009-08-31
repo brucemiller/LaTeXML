@@ -22,10 +22,14 @@
       method = "html"
       omit-xml-declaration = 'yes'
       doctype-public = "-//W3C//DTD HTML 4.01//EN"
-      doctype-system = "http://www.w3c.org/TR/html4/strict.dtd"
+      doctype-system = "http://www.w3.org/TR/html4/strict.dtd"
       media-type     = 'text/html'
       encoding       = 'utf-8'
       indent         = 'yes'/>
+
+  <xsl:template name="metatype">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  </xsl:template>
 
   <xsl:template name="add_id">
     <!-- Is this safe now?
