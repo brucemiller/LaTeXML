@@ -26,7 +26,7 @@
      ====================================================================== -->
 
 <xsl:template match="ltx:tabular" xml:space="preserve">
-  <table align='center' class="{f:classes(.)}">
+  <table class="{f:classes(.)}">
     <xsl:apply-templates/>
   </table>
 </xsl:template>
