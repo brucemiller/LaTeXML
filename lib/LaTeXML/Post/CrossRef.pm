@@ -163,14 +163,12 @@ sub fill_in_bibrefs {
   $self->ProgressDetailed($doc,"Filling in bibrefs");
   my $db = $$self{db};
   foreach my $bibref ($doc->findnodes('descendant::ltx:bibref')){
-    my $show   = $bibref->getAttribute('show');
     # Messy, since we're REPLACING the bibref with it's expansion.
     my @save = ();
     my ($p,$s) = ($bibref->parentNode, undef);
     while(($s = $p->lastChild) && ($$s != $$bibref)){ # Remove & Save following siblings.
       unshift(@save,$p->removeChild($s)); }
     $doc->removeNodes($bibref);
-#    $doc->addNodes($p,$self->make_bibcite($doc,$show,split(/,/,$bibref->getAttribute('bibrefs'))));
     $doc->addNodes($p,$self->make_bibcite($doc,$bibref));
     map($p->appendChild($_),@save); # Put these back.
  }}
@@ -183,6 +181,9 @@ sub make_bibcite {
 
   my @keys = split(/,/,$bibref->getAttribute('bibrefs'));
   my $show = $bibref->getAttribute('show');
+  my @preformatted = $bibref->childNodes();
+  if($show && ($show eq 'none') && !@preformatted){
+    $show = 'refnum'; }
   if(!$show){
     $self->Warn($doc,"No show in bibref ".join(', ',@keys)); 
     $show = 'refnum'; }
@@ -207,7 +208,7 @@ sub make_bibcite {
 	  my($rawyear,$suffix);
 	  if($year && ($year->textContent) =~ /^(\d\d\d\d)(\w)$/){
 	    ($rawyear,$suffix)=($1,$2); }
-	  $show = 'refnum' unless $authors || $fauthors || $keytag; # Disable author-year format!
+	  $show = 'refnum' unless ($show eq 'none') || $authors || $fauthors || $keytag; # Disable author-year format!
 	  # fullnames ?
 	  push(@data,{authors     =>[$doc->trimChildNodes($authors || $fauthors || $keytag)],
 		      fullauthors =>[$doc->trimChildNodes($fauthors || $authors || $keytag)],
@@ -231,6 +232,8 @@ sub make_bibcite {
     my $didref = 0;
     my @stuff=();
     $show=$saveshow;
+    if(($show eq 'none') && @preformatted){
+      @stuff = @preformatted; $show=''; }
     while($show){
       if($show =~ s/^authors?//i){
 	push(@stuff,@{$$datum{authors}}); }
