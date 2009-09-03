@@ -199,6 +199,7 @@ DefParameterType('Digested', sub {
 # A variation: Digest until we encounter a given token!
 DefParameterType('DigestUntil', sub {
   my($gullet,$until)=@_;
+  ($until) = $until->unlist;	# Make sure it's a single token!!!
   $gullet->skipSpaces;
   my $ismath     = $STATE->lookupValue('IN_MATH');
   my @list = $STATE->getStomach->digestNextBody($until); 
@@ -1281,13 +1282,21 @@ sub readNewlineArgs {
   $gullet->unread($next) if $next; 
   ($star,$optional); }
 
-# HOWEVER!! Is it supposed to skip or NOT????
-# Seems that LaTeX's tabular, eqnarray DO
-# Does TeX's halign?
-##DefMacroI('\@alignment@newline', undef,sub {
+# The next two macros are for binding to \\
+# one version does NOT skip spaces (esp. newline!) before * and []; the other DOES
+# We need to be careful which one is used in which place.
+# [LaTeX's tabular, eqnarray DO skip;
+# some (all?) ams environments do NOT skip]
+# What about halign? What should be the default?
+DefMacroI('\@alignment@newline@noskip', undef, sub {
+  my($gullet)=@_;
+  readNewlineArgs($gullet);
+  (T_CS('\@close@inner@column'), T_CS('\@close@column'), T_CS('\@close@row'),
+   T_CS('\@alignment@newline@marker'),
+   T_CS('\@open@row'), T_CS('\@open@column'), T_CS('\@open@inner@column')); });
+
 DefMacro('\@alignment@newline OptionalMatch:* [Dimension]', sub {
   my($gullet)=@_;
-##  readNewlineArgs($gullet);
   (T_CS('\@close@inner@column'), T_CS('\@close@column'), T_CS('\@close@row'),
    T_CS('\@alignment@newline@marker'),
    T_CS('\@open@row'), T_CS('\@open@column'), T_CS('\@open@inner@column')); });
@@ -3636,7 +3645,7 @@ DefMathI('\tanh',   undef,"tanh", role=>'TRIGFUNCTION', meaning=>'hyperbolic-tan
 #----------------------------------------------------------------------
 # Modulo
 
-DefMath('\pmod{}', '\;\;(\mathop{\mathrm{mod}} #1)', role=>'MODIFIER'); #  , meaning=>'modulo');
+DefMath('\pmod{}', '\;\;(\mathop{{\rm mod}} #1)', role=>'MODIFIER'); #  , meaning=>'modulo');
 DefMath('\bmod',   'mod', role=>'MODIFIEROP', meaning=>'modulo');
 
 #======================================================================
@@ -3850,22 +3859,30 @@ Tag('ltx:document', autoClose=>1, autoOpen=>1);
 
 # No, \documentclass isn't really a primitive -- It's not even TeX!
 # But we define a number of stubs here that will automatically load
-# the LaTeX pool (which will presumably redefine them), and then
+# the LaTeX pool (or AmSTeX.pool) (which will presumably redefine them), and then
 # stuff the token back to be reexecuted.
-sub LaTeXTrigger {
-  my($gullet,$cs)=@_;
-  if(my $poolfile = FindFile("LaTeX.pool")){
-    $gullet->input($poolfile); }
-  else {
-    Fatal(":missing_file:LaTeX.pool.ltxml Installation error: Cannot find LaTeX pool module!"); }
-  $gullet->unread(T_CS("\\".$cs));
-  (); }
-
-foreach my $trigger (qw(documentclass documentstyle
+foreach my $ltxtrigger (qw(documentclass
 			newcommand renewcommand newenvironment renewenvironment
 			NeedsTeXFormat ProvidesPackage RequirePackage
 			makeatletter makeatother)){
-  DefMacroI("\\".$trigger, undef, sub { LaTeXTrigger($_[0],$trigger); }); }
+  DefMacroI("\\".$ltxtrigger, undef, sub { LoadPool("LaTeX"); (T_CS("\\$ltxtrigger")); }); }
+
+# Seemingly good candidates to trigger AmSTeX ??
+foreach my $amstrigger (qw(BlackBoxes NoBlackBoxes
+			   TagsAsMath TagsAsText TagsOnLeft TagsOnRight CenteredTagsOnSplits TopOrBottomTagsOnSplits
+			   LimitsOnInts NoLimitsOnInts LimitsOnNames NoLimitsOnNames LimitsOnSums NoLimitsOnSums
+			   loadbold loadeufb loadeufm loadeurb loadeurm loadeusb
+			   loadeusm loadmathfont loadmsam loadmsbm)){
+  DefMacroI("\\".$amstrigger, undef, sub { LoadPool("AmSTeX"); (T_CS("\\$amstrigger")); }); }
+
+# Darn; we need to be even more clever, since we need to simulate an amstex command, as well.
+# For example \documentstyle[...]{amsppt} must switch to AMSTeX mode, _NOT_ LaTeX mode!!!!
+DefMacro('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim', sub {
+  my($gullet, $options, $class)=@_;
+  LoadPool((ToString($class) =~ /^amsppt$/ ? "AmSTeX" : "LaTeX"));
+  (T_CS('\\documentstyle'),
+   ($options ? (T_OTHER('['),$options->unlist,T_OTHER(']')):()),
+   T_BEGIN,$class->unlist,T_END); });
 
 #**********************************************************************
 # LaTeXML Specific.
