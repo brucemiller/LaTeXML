@@ -20,6 +20,7 @@ use LaTeXML::Package;
 # it is roughly analogous to a LaTeX class file.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+LoadPool("AmSTeX");		# Just in case...
 
 DefMacro('\filename','amsppt.sty');
 DefMacro('\fileversion','2.1h');
@@ -160,7 +161,8 @@ DefRegister('\postdemoskip'=>Glue(0));
 DefRegister('\predefinitionskip'=>Glue(0));
 DefRegister('\postdefinitionskip'=>Glue(0));
 DefMacro('\definitionfont','\rm');
-DefConstructor('\definition{} Until:\enddefinition',
+#DefConstructor('\definition{} Until:\enddefinition',
+DefConstructor('\definition{} DigestUntil:\enddefinition',
 	       "<ltx:theorem class='definition' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title>#1</ltx:title>"
 	       .  "#2"
@@ -170,7 +172,8 @@ Let(T_CS('\enddefinition'),T_CS('\relax'));
 
 # \remark..\endremark
 DefMacro('\remarkfont','\rm');
-DefConstructor('\remark{} Until:\endremark',
+#DefConstructor('\remark{} Until:\endremark',
+DefConstructor('\remark{} DigestUntil:\endremark',
 	       "<ltx:theorem class='remark' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title>#1</ltx:title>"
 	       .  "#2"
@@ -178,7 +181,8 @@ DefConstructor('\remark{} Until:\endremark',
 	       properties=> sub { RefStepID('theorem') });
 Let(T_CS('\endremark'),T_CS('\relax'));
 
-DefConstructor('\example{} Until:\endexample',
+#DefConstructor('\example{} Until:\endexample',
+DefConstructor('\example{} DigestUntil:\endexample',
 	       "<ltx:theorem class='example' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title>#1</ltx:title>"
 	       .  "#2"
@@ -186,7 +190,8 @@ DefConstructor('\example{} Until:\endexample',
 	       properties=> sub { RefStepID('theorem') });
 Let(T_CS('\endexample'),T_CS('\relax'));
 
-DefConstructor('\demo{} Until:\enddemo',
+#DefConstructor('\demo{} Until:\enddemo',
+DefConstructor('\demo{} DigestUntil:\enddemo',
 	       "<ltx:theorem class='demonstration' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title>#1</ltx:title>"
 	       .  "#2"
@@ -200,7 +205,8 @@ DefRegister('\rosteritemwd'=>Dimension(0));
 NewCounter('roster','document',idprefix=>'I');
 NewCounter('rosteritem','roster',idprefix=>'i');
 DefMacro('\therosteritem{}','\rom{(#1)}');
-DefConstructor('\roster Until:\endroster',
+#DefConstructor('\roster Until:\endroster',
+DefConstructor('\roster DigestUntil:\endroster',
 	       "<ltx:enumerate>#body</ltx:enumerate>",
 	       bounded=>1,
 	       properties=> sub { RefStepID('roster') },
@@ -210,7 +216,8 @@ DefConstructor('\roster@item',
 	       properties=> sub { RefStepID('rosteritem') });
 Let(T_CS('\endroster'),T_CS('\relax'));
 
-DefConstructor('\block Until:\endblock',
+#DefConstructor('\block Until:\endblock',
+DefConstructor('\block DigestUntil:\endblock',
 	       "<ltx:quote>#1</ltx:quote>");
 Let(T_CS('\endblock'),T_CS('\relax'));
 
