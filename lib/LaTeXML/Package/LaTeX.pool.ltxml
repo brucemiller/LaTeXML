@@ -936,7 +936,9 @@ DefEnvironment('{math}',
 	       . "</ltx:XMath>"
 	       ."</ltx:Math>",
 	       mode=>'inline_math',
-	       locked=>1);
+	       );
+# My first inclination is to Lock {math}, but it is surprisingly common to redefine it in silly ways... So...?
+#	       locked=>1);
 DefEnvironment('{equation}',
 	       "<ltx:equation xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:Math mode='display'>"
