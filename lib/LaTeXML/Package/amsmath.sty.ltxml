@@ -65,7 +65,9 @@ Let('\notag','\nonumber');
 #DefPrimitive('\tag OptionalMatch:* {}', sub {
 #	       AssignValue(EQUATIONROW_NUMBER=>ToString(Digest($_[2])), 'global'); });
 
-DefConstructor('\tag OptionalMatch:* {}', '',
+## Seemingly wants digested arg? (ie. expanded before seeing arg)
+### DefConstructor('\tag OptionalMatch:* {}', '',
+DefConstructor('\tag OptionalMatch:* Digested', '',
 	       afterDigest=>sub {
 #		 AssignValue(EQUATIONROW_NUMBER=>ToString(Digest($_[2])), 'global'); },
 		 AssignValue(EQUATIONROW_NUMBER=>ToString($_[2]), 'global'); },
@@ -92,7 +94,8 @@ sub amsalignBindings {
   AssignValue(Alignment=>$alignment);
   $alignment->setTemplate($template);
   Let(T_ALIGN,        T_CS('\@alignment@align'));
-  Let(T_CS("\\\\"),   T_CS('\@alignment@newline'));
+##  Let(T_CS("\\\\"),   T_CS('\@alignment@newline'));
+  Let(T_CS("\\\\"),   T_CS('\@alignment@newline@noskip'));
   Let(T_CS('\cr'),    T_CS('\@alignment@cr'));
 #  Let('\span',        T_CS('\@alignment@span'));
   Let(T_CS('\@open@row'),T_CS('\@equationgroup@open@row'));
@@ -354,7 +357,9 @@ DefConstructor('\@@amsaligned DigestedBody',
 					       after=>Tokens(T_CS('\hfil'))};
 				   my $template
 				     = LaTeXML::AlignmentTemplate->new(repeated=>[$col1,$col2]);
-				   alignmentBindings($template); },
+				   alignmentBindings($template);
+				   Let(T_CS("\\\\"),   T_CS('\@alignment@newline@noskip'));
+				 },
 	       reversion=>'\begin{aligned}#1\end{aligned}');
 
 
@@ -364,7 +369,10 @@ DefPrimitive('\@end@cases',sub{ $_[0]->egroup; });
 DefConstructor('\@@cases DigestedBody',
 	       sub { my($document,$body,%props)=@_;
 		     constructAlignment($document,$body,attributes=>{meaning=>'cases',open=>'{'}); },
-	       beforeDigest=>sub { $_[0]->bgroup; alignmentBindings('ll'); },
+	       beforeDigest=>sub {
+		 $_[0]->bgroup;
+		 alignmentBindings('ll');
+		 Let(T_CS("\\\\"),   T_CS('\@alignment@newline@noskip')); },
 	       reversion=>'\begin{cases}#1\end{cases}');
 
 #======================================================================
@@ -524,7 +532,7 @@ DefMacroI('\DOTSX',undef,Tokens());
 Let(T_CS('\hdots'),T_CS('\ldots'));
 
 DefMacro('\hdotsfor Number', sub {
-  (map('\hdots',1..$_[1]->valueOf)); });
+  (map(T_CS('\hdots'),1..$_[1]->valueOf)); });
 
 #======================================================================
 # Section 4.4 Nonbreaking dashes
