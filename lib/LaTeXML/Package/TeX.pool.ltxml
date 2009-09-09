@@ -3398,9 +3398,11 @@ DefMacro('\overleftarrow{}',  '\protect\ifmmode\math@overleftarrow{#1}\else$\mat
 # This meaning is handled in MathParser (for now)
 
 DefConstructorI('\{',undef,
-	       "?#isMath(<ltx:XMTok font='#font' role='OPEN'>{</ltx:XMTok>)({)");
+	       "?#isMath(<ltx:XMTok font='#font' role='OPEN'>{</ltx:XMTok>)({)",
+	       properties=>{font=>sub{ LookupValue('font')->specialize("{");}}); # Since not DefMath!
 DefConstructorI('\}',undef,
-	       "?#isMath(<ltx:XMTok font='#font' role='CLOSE'>}</ltx:XMTok>)(})");
+	       "?#isMath(<ltx:XMTok font='#font' role='CLOSE'>}</ltx:XMTok>)(})",
+	       properties=>{font=>sub{ LookupValue('font')->specialize("}");}}); # Since not DefMath!
 Let(T_CS('\lbrace'),T_CS('\{'));
 Let(T_CS('\lbrack'),T_CS('['));
 Let(T_CS('\rbrace'),T_CS('\}'));
