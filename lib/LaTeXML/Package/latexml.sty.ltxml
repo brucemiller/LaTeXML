@@ -19,6 +19,10 @@ use LaTeXML::Package;
 use LaTeXML::Util::KeyVal;
 no warnings 'redefine';
 
+DefMacro('\iflatexml', 
+	      sub { ifHandler($_[0],1); },
+	      isConditional=>1);
+
 DefMacro('\lxDocumentID{}','\def\thedocument@ID{#1}');
 
 # From latexml.sty

@@ -10,24 +10,11 @@
 % | http://dlmf.nist.gov/LaTeXML/                              (o o)    | %
 % \=========================================================ooo==U==ooo=/ %
 
-% NOTE: Figure out where this should go.
-%  At least should define various `semantic enhancement' macros that
-% authors using latexml might want.
-% But, be careful not to step on the toes of other packages (naming scheme),
-% Nor, to assume to much about what semantics authors might want.
+
+% You can conditionalize code for latexml or normal latex using this.
+\newif\iflatexml\latexmlfalse
 
 \providecommand{\lxDocumentID}[1]{}%
-
-% NOTE: Am I stepping on toes by including these here?
-% Common markup junk for LaTeXML docs.
-\providecommand{\XML}{\textsc{xml}}%
-\providecommand{\SGML}{\textsc{sgml}}%
-\providecommand{\HTML}{\textsc{html}}%
-\providecommand{\XHTML}{\textsc{xhtml}}%
-\providecommand{\XSLT}{\textsc{xslt}}%
-\providecommand{\CSS}{\textsc{css}}%
-\providecommand{\MathML}{MathML}%
-\providecommand{\OpenMath}{OpenMath}%
 
 \RequirePackage{url}
 % Shorthand to present a URL the actual text (also linked in HTML)
@@ -106,3 +93,19 @@
 \providecommand{\lxID}[1]{#1}
 \providecommand{\lxPunct}[1]{#1}
 
+%======================================================================
+% NOTE: Figure out where this should go.
+%  At least should define various `semantic enhancement' macros that
+% authors using latexml might want.
+% But, be careful not to step on the toes of other packages (naming scheme),
+% Nor, to assume to much about what semantics authors might want.
+% NOTE: Am I stepping on toes by including these here?
+% Common markup junk for LaTeXML docs.
+\providecommand{\XML}{\textsc{xml}}%
+\providecommand{\SGML}{\textsc{sgml}}%
+\providecommand{\HTML}{\textsc{html}}%
+\providecommand{\XHTML}{\textsc{xhtml}}%
+\providecommand{\XSLT}{\textsc{xslt}}%
+\providecommand{\CSS}{\textsc{css}}%
+\providecommand{\MathML}{MathML}%
+\providecommand{\OpenMath}{OpenMath}%
