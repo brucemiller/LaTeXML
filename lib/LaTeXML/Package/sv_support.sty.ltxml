@@ -117,7 +117,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
       if $reset; }
 
   DefEnvironment("{$thmset} OptionalUndigested",
-		 "<ltx:theorem xml:id='#id' refnum='#refnum'>"
+		 "<ltx:theorem xml:id='#id' refnum='#refnum' class='$thmset'>"
 		 . "<ltx:title>#title</ltx:title>"
 		 .  "#body"
 		 ."</ltx:theorem>",

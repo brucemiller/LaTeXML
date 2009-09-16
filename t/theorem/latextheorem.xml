@@ -6,7 +6,7 @@
   <date role="creation">none</date>
   <section refnum="1" xml:id="S1">
     <title>Test of standard theorem styles</title>
-    <theorem refnum="1.1" xml:id="S1.Thmthm1">
+    <theorem class="lem" refnum="1.1" xml:id="S1.Thmthm1">
       <title>
         <text font="bold">Lemma 1.1 (negatively curved families).</text>
       </title>
@@ -21,7 +21,7 @@ Then <Math mode="inline" tex="\omega^{i}\leq\omega _{r}" xml:id="S1.Thmthm1.p1.m
     <para xml:id="S1.p1">
       <p>Then our main theorem:</p>
     </para>
-    <theorem refnum="1.2" xml:id="S1.Thmthm2" labels="LABEL:pigspan">
+    <theorem class="thm" refnum="1.2" xml:id="S1.Thmthm2" labels="LABEL:pigspan">
       <title>
         <text font="bold">Theorem 1.2.</text>
       </title>
@@ -68,7 +68,7 @@ Then <Math mode="inline" tex="P" xml:id="S1.Thmthm2.p1.m6" text="P"><XMath><XMTo
         </equation>
       </para>
     </theorem>
-    <theorem refnum="1.3" xml:id="S1.Thmthm3">
+    <theorem class="cor" refnum="1.3" xml:id="S1.Thmthm3">
       <title>
         <text font="bold">Corollary 1.3.</text>
       </title>

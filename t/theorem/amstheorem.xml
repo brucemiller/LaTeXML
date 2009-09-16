@@ -14,7 +14,7 @@
       <p>Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
 on the Kobayashi metric.</p>
     </para>
-    <theorem xml:id="ThmAhlforsx1">
+    <theorem class="Ahlfors" xml:id="ThmAhlforsx1">
       <title>
         <text font="bold">Ahlfors’ Lemma.</text>
       </title>
@@ -28,7 +28,7 @@ then <Math mode="inline" tex="\omega\leq\omega _{r}" xml:id="ThmAhlforsx1.p1.m8"
         </p>
       </para>
     </theorem>
-    <theorem refnum="1.1" xml:id="S1.Thmthm1">
+    <theorem class="lem" refnum="1.1" xml:id="S1.Thmthm1">
       <title>
         <text font="bold">Lemma 1.1 (negatively curved families).</text>
       </title>
@@ -43,7 +43,7 @@ Then <Math mode="inline" tex="\omega^{i}\leq\omega _{r}" xml:id="S1.Thmthm1.p1.m
     <para xml:id="S1.p2">
       <p>Then our main theorem:</p>
     </para>
-    <theorem refnum="1.2" xml:id="S1.Thmthm2" labels="LABEL:pigspan">
+    <theorem class="thm" refnum="1.2" xml:id="S1.Thmthm2" labels="LABEL:pigspan">
       <title>
         <text font="bold">Theorem 1.2.</text>
       </title>
@@ -90,7 +90,7 @@ Then <Math mode="inline" tex="P" xml:id="S1.Thmthm2.p1.m6" text="P"><XMath><XMTo
         </equation>
       </para>
     </theorem>
-    <theorem refnum="1.3" xml:id="S1.Thmthm3">
+    <theorem class="cor" refnum="1.3" xml:id="S1.Thmthm3">
       <title>
         <text font="bold">Corollary 1.3.</text>
       </title>
@@ -101,7 +101,7 @@ standing on the corners of a triangle <Math mode="inline" tex="T" xml:id="S1.Thm
         </p>
       </para>
     </theorem>
-    <theorem xml:id="Thmrmkx1">
+    <theorem class="rmk" xml:id="Thmrmkx1">
       <title>
         <text font="italic">Remark.</text>
       </title>
@@ -113,7 +113,7 @@ standing on the corners of a triangle <Math mode="inline" tex="T" xml:id="S1.Thm
   </section>
   <section refnum="2" xml:id="S2">
     <title>Custom theorem styles</title>
-    <theorem refnum="1" xml:id="Thmexer1">
+    <theorem class="exer" refnum="1" xml:id="Thmexer1">
       <title>
         <text font="bold">Exercise 1.</text>
       </title>
@@ -123,7 +123,7 @@ standing on the corners of a triangle <Math mode="inline" tex="T" xml:id="S1.Thm
         </p>
       </para>
     </theorem>
-    <theorem refnum="1" xml:id="Thmnote1">
+    <theorem class="note" refnum="1" xml:id="Thmnote1">
       <title>
         <text font="italic">Note 1:</text>
       </title>
@@ -132,7 +132,7 @@ standing on the corners of a triangle <Math mode="inline" tex="T" xml:id="S1.Thm
 variant fonts and other differences.</p>
       </para>
     </theorem>
-    <theorem refnum="1" xml:id="Thmbthm1">
+    <theorem class="bthm" refnum="1" xml:id="Thmbthm1">
       <title>
         <text font="bold">B-Theorem 1.</text>
       </title>
@@ -145,7 +145,7 @@ variant fonts and other differences.</p>
     <para xml:id="S2.p1">
       <p>This is a test of a citing theorem to cite a theorem from some other source.</p>
     </para>
-    <theorem xml:id="Thmvarthmx1">
+    <theorem class="varthm" xml:id="Thmvarthmx1">
       <title>
         <text font="bold">Theorem 3.6 in <cite>[<bibref bibrefs="thatone" separator="," show="Number" yyseparator=","/>]</cite>.</text>
       </title>
@@ -216,7 +216,7 @@ swapped to the left.</p>
       <p>Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
 on the Kobayashi metric.</p>
     </para>
-    <theorem xml:id="ThmAhlforsx2">
+    <theorem class="Ahlfors" xml:id="ThmAhlforsx2">
       <title>
         <text font="bold">Ahlfors’ Lemma.</text>
       </title>
@@ -230,7 +230,7 @@ then <Math mode="inline" tex="\omega\leq\omega _{r}" xml:id="ThmAhlforsx2.p1.m8"
         </p>
       </para>
     </theorem>
-    <theorem refnum="4.1" xml:id="S4.Thmthmsw1">
+    <theorem class="lemsw" refnum="4.1" xml:id="S4.Thmthmsw1">
       <title>
         <text font="bold">4.1 Lemma (negatively curved families).</text>
       </title>
@@ -245,7 +245,7 @@ Then <Math mode="inline" tex="\omega^{i}\leq\omega _{r}" xml:id="S4.Thmthmsw1.p1
     <para xml:id="S4.p3">
       <p>Then our main theorem:</p>
     </para>
-    <theorem refnum="4.2" xml:id="S4.Thmthmsw2">
+    <theorem class="thmsw" refnum="4.2" xml:id="S4.Thmthmsw2">
       <title>
         <text font="bold">4.2 Theorem.</text>
       </title>
@@ -292,7 +292,7 @@ Then <Math mode="inline" tex="P" xml:id="S4.Thmthmsw2.p1.m6" text="P"><XMath><XM
         </equation>
       </para>
     </theorem>
-    <theorem refnum="4.3" xml:id="S4.Thmthmsw3">
+    <theorem class="corsw" refnum="4.3" xml:id="S4.Thmthmsw3">
       <title>
         <text font="bold">4.3 Corollary.</text>
       </title>
