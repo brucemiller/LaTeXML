@@ -170,9 +170,8 @@ sub constructAlignment {
   if($props{guess_headers} && !$document->findnodes("ancestor::ltx:tabular",$node)){
     if(!$document->findnodes('descendant::ltx:td[contains(@class,"thead")]',$node)){
       guess_alignment_headers($document,$node,$alignment); }
-    if(!$body->isMath){
+    elsif(!$body->isMath){	# in case already marked w/thead|tbody
       alignment_regroup_rows($document,$node); }}
-
   $node; }
 
 sub beAbsorbed {
@@ -415,7 +414,7 @@ sub guess_alignment_headers {
   my $ismath = $tag eq 'ltx:XMArray';
   local $LaTeXML::TR = ($ismath ? 'ltx:XMRow' : 'ltx:tr');
   local $LaTeXML::TD = ($ismath ? 'ltx:XMCell' : 'ltx:td');
-
+  my $reversed=0;
   # Build a view of the table by extracting the rows, collecting & characterizing each cell.
   my @rows = collect_alignment_rows($document,$table,$alignment);
   # Flip the rows around to produce a column view.
@@ -423,9 +422,13 @@ sub guess_alignment_headers {
   return unless @rows;
   for(my $c = 0; $c < scalar(@{$rows[0]}); $c++){
     push(@cols, [map($$_[$c], @rows)]); }
+
   # Attempt to recognize header lines.
-  alignment_characterize_lines(0,@rows);
-  alignment_characterize_lines(1,@cols);
+  if(alignment_characterize_lines(0,0,@rows)){}
+  else { 
+    print "Retry characterizing lines in reverse\n" if $LaTeXML::Alignment::DEBUG;
+    $reversed=alignment_characterize_lines(0,1,reverse(@rows)); }
+  alignment_characterize_lines(1,0,@cols);
   # Did we go overboard?
   my %n=(h=>0,d=>0);
   foreach my $r (@rows){
@@ -438,8 +441,9 @@ sub guess_alignment_headers {
 	$$c{cell_type}='d'; 
 	$$c{cell}->removeAttribute('thead') if $$c{cell}; }}}
   # Regroup the rows into thead & tbody elements.
-#  alignment_regroup($document,$table,@rows)
-#    unless $ismath;
+  # But not if it's a math array, or if reversed (since browsers get confused?)
+  if(!$ismath && !$reversed){
+    alignment_regroup_rows($document,$table); }
   # Debugging report!
   summarize_alignment([@rows],[@cols]) if $LaTeXML::Alignment::DEBUG;
 }
@@ -474,25 +478,98 @@ sub alignment_regroup_rows {
 
 #======================================================================
 # Build a View of the alignment, with characterized cells, for analysis.
+our %ALIGNMENT_CODE = (right=>'r', left=>'l', center=>'c', justify=>'p');
 
 sub collect_alignment_rows {
   my($document,$table,$alignment)=@_;
-
+  my @arows = @{$$alignment{rows}};
+  my $nrows = scalar(@arows);
+  my $ncols = 0;
+  foreach my $arow (@arows){
+    my $n = scalar(@{$$arow{columns}});
+    $ncols = $n if $n > $ncols; }
   my @rows = ();
-  foreach my $arow (@{$$alignment{rows}}){
+  my ($h,$v)=(0,0);
+  foreach my $arow (@arows){
     push(@rows, [ ] );
-    my $c=0;
-    foreach my $col (@{$$arow{columns}}){
+    my @cols = @{$$arow{columns}};
+    foreach my $col (@cols){
       push(@{$rows[$#rows]}, $col);
       $$col{cell_type} = 'd';
       $$col{content_class} = ($$col{cell} ? classify_alignment_cell($document,$$col{cell}) : '?');
-      $$col{content_length} =($$col{cell} ? length($$col{cell}->textContent) : 0);
+      $$col{content_length} = ($$col{content_class} eq 'g' ? 1000
+			       : ($$col{cell} ? length($$col{cell}->textContent) : 0));
       my %border = (t=>0, r=>0, b=>0, l=>0); # Decode border
       map($border{$_}++, split(/ */,$$col{border}||''));
-      $border{t}=$rows[$#rows-1][$c]{b} if $#rows > 0;	   # Copy prev bottom border to top.
-      $border{l}=$rows[$#rows][$c-1]{r} if $c > 0;	   # Copy prev right border to left.
-      map($$col{$_} = $border{$_}, keys %border);
-      $c++; }}
+      $h = 1 if $border{t} || $border{b};
+      $v = 1 if $border{r} || $border{l};
+      map($$col{$_} = $border{$_}, keys %border); }
+    # pad the columns out.
+    for(my $c=scalar(@cols); $c < $ncols; $c++){
+      my $col = {};
+      push(@{$rows[$#rows]}, $col);
+      $$col{align} = 'c';
+      $$col{cell_type} = 'd';
+      $$col{content_class} = '_';
+      $$col{content_length} =0;
+      map($$col{$_} = 0, qw(t r b l)); }
+  }
+  # copy the characterizations to spanned cells
+  for(my $r=0; $r<$nrows; $r++){
+    for(my $c=0; $c<$ncols; $c++){
+      my $rs = $rows[$r][$c]{rowspan}||1;
+      my $cs = $rows[$r][$c]{span}||1; # NOT colspan!!!!!!
+      my $ca = $rows[$r][$c]{align};
+      my $cc = $rows[$r][$c]{content_class};
+      my $cl = $rows[$r][$c]{content_length};
+      my $rb = $rows[$r][$c]{r};  $rows[$r][$c]{r} = 0;
+      my $bb = $rows[$r][$c]{b};  $rows[$r][$c]{b} = 0;
+      for(my $sc = 1; $sc < $cs; $sc++){
+	$rows[$r][$c+$sc]{align} = $ca;
+	$rows[$r][$c+$sc]{content_class} = $cc;
+	$rows[$r][$c+$sc]{content_length} = $cl; }
+      for(my $sr = 1; $sr < $rs; $sr++){
+	for(my $sc = 0; $sc < $cs; $sc++){
+	  $rows[$r+$sr][$c+$sc]{align} = $ca;
+	  $rows[$r+$sr][$c+$sc]{content_class} = $cc;
+	  $rows[$r+$sr][$c+$sc]{content_length} = $cl; }}
+      # move the outer borders
+      for(my $sr = 0; $sr < $rs; $sr++){
+	$rows[$r+$sr][$c+$cs-1]{r} = $rb; }
+      for(my $sc = 0; $sc < $cs; $sc++){
+	$rows[$r+$rs-1][$c+$sc]{b} = $bb; }
+      }}
+
+  # Now, do some border massaging...
+  for(my $r=0; $r<$nrows; $r++){
+    $rows[$r][0]{l}=$v;
+    $rows[$r][0]{r}=$rows[$r][1]{l} if ($ncols>1) && $rows[$r][1]{l}; 
+    $rows[$r][$ncols-1]{l}=$rows[$r][$ncols-2]{r} if ($ncols>1) && $rows[$r][$ncols-2]{r};
+    $rows[$r][$ncols-1]{r}=$v; }
+  for(my $c=0; $c<$ncols; $c++){
+    $rows[0][$c]{t}=$h;
+    $rows[0][$c]{b}=$rows[1][$c]{t} if ($nrows>1) && $rows[1][$c]{t};
+    $rows[$nrows-1][$c]{t}=$rows[$nrows-2][$c]{b} if ($nrows>1) && $rows[$nrows-2][$c]{b};
+    $rows[$nrows-1][$c]{b}=$h; }
+  for(my $r=1; $r<$nrows-1; $r++){
+    for(my $c=1; $c<$ncols-1; $c++){
+      $rows[$r][$c]{t}=$rows[$r-1][$c]{b} if $rows[$r-1][$c]{b};
+      $rows[$r][$c]{b}=$rows[$r+1][$c]{t} if $rows[$r+1][$c]{t};
+      $rows[$r][$c]{l}=$rows[$r][$c-1]{r} if $rows[$r][$c-1]{r};
+      $rows[$r][$c]{r}=$rows[$r][$c+1]{l} if $rows[$r][$c+1]{l}; }}
+  if($LaTeXML::Alignment::DEBUG){
+    print STDERR "\nCell characterizations:\n";
+    for(my $r=0; $r<$nrows; $r++){
+      for(my $c=0; $c<$ncols; $c++){
+	my $col = $rows[$r][$c];
+	print STDERR "[$r,$c]=>".($$col{cell_type}||'?')
+	  .($$col{align} ? $ALIGNMENT_CODE{$$col{align}} : ' ')
+	    .($$col{content_class}||'?')
+	      .' '.$$col{content_length}
+		.' '.$$col{border}."=>".join('',grep($$col{$_},qw(t r b l)))
+		  .(($$col{rowspan}||1)>1 ? " rowspan=".$$col{rowspan} :'')
+		    .(($$col{span}||1)>1 ? " colspan=".$$col{span} :'')
+		      ."\n";}}}
   @rows; }
 
 # Return one of: i(nteger), t(ext), m(ath), ? (unknown) or '_' (empty) (or some combination)
@@ -501,7 +578,8 @@ sub classify_alignment_cell {
   my($document,$xcell)=@_;
   my $content = $xcell->textContent;
   my $class='';
-  if($content =~ /^\s*\d+\s*$/){
+#  if($content =~ /^\s*\d+\s*$/){
+  if($content =~ /^[\s\d]+$/){
     $class = 'i'; }
   else {
     my @nodes = $xcell->childNodes;
@@ -516,6 +594,8 @@ sub classify_alignment_cell {
 	my $chtag = $document->getModel->getNodeQName($ch);
 	if($chtag eq 'ltx:text'){ # Font would be useful, but haven't "resolved" it, yet!
 	  $class .= 't' unless $class eq 't'; }
+	elsif($chtag eq 'ltx:graphics'){
+	  $class .= 'g' unless $class eq 'g'; }
 	elsif($chtag eq 'ltx:Math'){
 	  $class .= 'm' unless $class eq 'm'; }
 	elsif($chtag eq 'ltx:XMText'){
@@ -544,31 +624,36 @@ our $MAX_ALIGNMENT_HEADER_LINES=4;
 # Check that header lines are `similar' to each other.  So, the strategy is to look
 # for a `hump' in the line differences and consider blocks containing these lines to be potential headers.
 sub alignment_characterize_lines {
-  my($axis,@lines)=@_;
+  my($axis,$reversed,@lines)=@_;
   my $n = scalar(@lines);
   return unless $n > 1;
   local @::TABLINES = @lines;
   print STDERR "\nCharacterizing $n ".($axis ? "columns" : "rows")."\n   " if $LaTeXML::Alignment::DEBUG;
 
   # Establish a scale of differences for the table.
-  my($diffhi,$difflo)=(0,99999999);
+  my($diffhi,$difflo,$diffavg)=(0,99999999,0);
   for(my $l = 0; $l < $n-1; $l++){
-    my $d = alignment_compare($axis,1,$l,$l+1);
+    my $d = alignment_compare($axis,1,$reversed,$l,$l+1);
+    $diffavg += $d;
     $diffhi = $d if $d > $diffhi;
     $difflo = $d if $d < $difflo; }
+  $diffavg = $diffavg/($n-1);
   print STDERR "Lines are almost identical => Fail\n" if $diffhi < 0.05 && $LaTeXML::Alignment::DEBUG;
   return if $diffhi < 0.05;	# virtually no differences.
 #  local $::TAB_THRESHOLD = $difflo + 0.4*($diffhi-$difflo);
-  local $::TAB_THRESHOLD = $difflo + 0.2*($diffhi-$difflo);
+  local $::TAB_THRESHOLD = $difflo + 0.3*($diffhi-$difflo);
+#  local $::TAB_THRESHOLD = $difflo + 0.2*($diffhi-$difflo);
+#  local $::TAB_THRESHOLD = $diffavg;
   local $::TAB_AXIS = $axis;
   print STDERR "\nDifferences $difflo -- $diffhi => threshold = $::TAB_THRESHOLD\n" if $LaTeXML::Alignment::DEBUG;
   # Find the first hump in differences. These are candidates for header lines.
   print STDERR "Scanning for headers\n   " if $LaTeXML::Alignment::DEBUG;
   my $diff;
   my($minh,$maxh)=(1,1);
-  while( ($diff=alignment_compare($axis,1,$maxh-1,$maxh)) < $::TAB_THRESHOLD){
+  while( ($diff=alignment_compare($axis,1,$reversed,$maxh-1,$maxh)) < $::TAB_THRESHOLD){
     $maxh++; }
-  while( alignment_compare($axis,1,$maxh,$maxh+1) > $difflo + ($diff-$difflo)/6){
+#  while( alignment_compare($axis,1,$reversed,$maxh,$maxh+1) > $difflo + ($diff-$difflo)/6){
+  while( alignment_compare($axis,1,$reversed,$maxh,$maxh+1) > $::TAB_THRESHOLD){
     $maxh++; }
   $maxh = $MAX_ALIGNMENT_HEADER_LINES if $maxh > $MAX_ALIGNMENT_HEADER_LINES;
  print STDERR "\nFound from $minh--$maxh potential headers\n" if $LaTeXML::Alignment::DEBUG;
@@ -591,8 +676,8 @@ sub alignment_characterize_lines {
 	    else {
 	      $$cell{cell}->setAttribute(thead=>'true');}}
 	  $i++; }}
-      last; }}
-  1; }
+      return 1; }}
+  undef; }
 
 # Test whether $nhead lines makes a good fit for the headers
 sub alignment_test_headers {
@@ -647,8 +732,8 @@ sub alignment_test_headers {
   # Header content seems too large relative to data?
   print STDERR "header content = $headlength; data content = $datalength\n"
       if $LaTeXML::Alignment::DEBUG;
-  if(($headlength > 10) && ($headlength > 0.9*$datalength)){
-    print STDERR "header content longer than data content\n" if $LaTeXML::Alignment::DEBUG;
+  if(($headlength > 10) && (0.3*$headlength > $datalength)){
+    print STDERR "header content too much longer than data content\n" if $LaTeXML::Alignment::DEBUG;
     return; }
 
    print STDERR "Succeeded with $nhead headers\n" if $LaTeXML::Alignment::DEBUG;
@@ -675,7 +760,7 @@ sub alignment_match_lines {
   my($p1,$p2,$n)=@_;
   for(my $i = 0; $i < $n; $i++){
     return $i if ($p1+$i >= scalar(@::TABLINES)) || ($p2+$i >= scalar(@::TABLINES))
-      || alignment_compare($::TAB_AXIS,0, $p1+$i, $p2+$i) >= $::TAB_THRESHOLD; }
+      || alignment_compare($::TAB_AXIS,0,0, $p1+$i, $p2+$i) >= $::TAB_THRESHOLD; }
   return $n; }
 
 # Skip through a block of lines starting at $i that appear to be data, returning the number of lines.
@@ -687,14 +772,14 @@ sub alignment_skip_data {
   print STDERR "Scanning for data\n   " if $LaTeXML::Alignment::DEBUG;
   my $n = 1;
   while($i+$n < scalar(@::TABLINES)){
-    last unless (alignment_compare($::TAB_AXIS,1, $i+$n-1, $i+$n) < $::TAB_THRESHOLD)
+    last unless (alignment_compare($::TAB_AXIS,1,0, $i+$n-1, $i+$n) < $::TAB_THRESHOLD)
       # Accept an outlying `continuation line' as data, if mostly empty
       || (($n > 1) && (scalar(grep($$_{content_class} eq '_', @{$::TABLINES[$i+$n]})) > 0.4*scalar($::TABLINES[0])));
     $n++; }
   print STDERR "\nFound $n data lines at $i\n" if $LaTeXML::Alignment::DEBUG;
   ($n >= $MIN_ALIGNMENT_DATA_LINES ? $n : 0); }
 
-sub alignment_max_content_length {
+sub XXXalignment_max_content_length {
   my($length,$from,$to)=@_;
   foreach my $j ( ($from..$to) ){
     foreach my $cell (@{$::TABLINES[$j]}){
@@ -702,33 +787,54 @@ sub alignment_max_content_length {
 	if $$cell{content_length} && ($$cell{content_length} > $length); }}
   $length; }
 
+# Return the maximum "content length" for lines from $from to $to.
+sub alignment_max_content_length {
+  my($length,$from,$to)=@_;
+  foreach my $j ( ($from..$to) ){
+    my $l=0;
+    foreach my $cell (@{$::TABLINES[$j]}){
+      $l += $$cell{content_length}; }
+    $length = $l if $l > $length; }
+  $length; }
+
 #======================================================================
 # The comparator.
+# our %cell_class_diff =
+#   ('_'=>{'_'=>0.0, m=>0.1, i=>0.1, t=>0.1, '?'=>0.1, mx=>0.1},
+#    m  =>{'_'=>0.1, m=>0.0, i=>0.1, mx=>0.2},
+#    i  =>{'_'=>0.1, m=>0.1, i=>0.0, mx=>0.2},
+#    t  =>{'_'=>0.1, t=>0.0, mx=>0.2},
+#    '?'=>{'_'=>0.1, '?'=>0.0, mx=>0.2},
+#    mx=>{'_'=>0.1, m=>0.2, i=>0.2, t=>0.2, '?'=>0.2, mx=>0.0});
+
 our %cell_class_diff =
-  ('_'=>{'_'=>0.0, m=>0.1, i=>0.1, t=>0.1, '?'=>0.1, mx=>0.1},
-   m  =>{'_'=>0.1, m=>0.0, i=>0.1, mx=>0.2},
-   i  =>{'_'=>0.1, m=>0.1, i=>0.0, mx=>0.2},
-   t  =>{'_'=>0.1, t=>0.0, mx=>0.2},
-   '?'=>{'_'=>0.1, '?'=>0.0, mx=>0.2},
-   mx=>{'_'=>0.1, m=>0.2, i=>0.2, t=>0.2, '?'=>0.2, mx=>0.0});
+  ('_'=>{'_'=>0.0, m=>0.05, i=>0.05, t=>0.05, '?'=>0.05, mx=>0.05},
+   m  =>{'_'=>0.05, m=>0.0, i=>0.1, mx=>0.2},
+   i  =>{'_'=>0.05, m=>0.1, i=>0.0, mx=>0.2},
+   t  =>{'_'=>0.05, t=>0.0, mx=>0.2},
+   '?'=>{'_'=>0.05, '?'=>0.0, mx=>0.2},
+   mx=>{'_'=>0.05, m=>0.2, i=>0.2, t=>0.2, '?'=>0.2, mx=>0.0});
 
 # Compare two lines along $axis (0=row,1=column), returning a measure of the difference.
 # The borders are compared differently if
 #  $foradjacency: we adjacent lines that might belong to the same block,
 #  otherwise    : comparing two lines that ought to have identical patterns (eg. in a repeated block)
 sub alignment_compare {
-  my($axis, $foradjacency, $p1,$p2)=@_;
+  my($axis, $foradjacency,$reversed, $p1,$p2)=@_;
   my $line1 = $::TABLINES[$p1];
   my $line2 = $::TABLINES[$p2];
   return 0 if !($line1 && $line2);
   return 999999 if $line1 xor $line2;
   my @cells1 = @$line1;
   my @cells2 = @$line2;
+  my $ncells = scalar(@cells1);
   my $diff=0.0;
   while(@cells1 && @cells2){
     my $cell1 = shift(@cells1);
     my $cell2 = shift(@cells2);
-    $diff += 0.5 if (($$cell1{align}||'') ne ($$cell2{align}||''));
+#    $diff += 0.5 if (($$cell1{align}||'') ne ($$cell2{align}||''))
+    $diff += 0.75 if (($$cell1{align}||'') ne ($$cell2{align}||''))
+      && ($$cell1{content_class} ne '_') && ($$cell2{content_class} ne '_');
     if(my $d = $cell_class_diff{$$cell1{content_class}}{$$cell2{content_class}}){
       $diff += $d; }
     elsif($$cell1{content_class} ne $$cell2{content_class}){
@@ -736,16 +842,18 @@ sub alignment_compare {
     # compare certain edges
     if($foradjacency){		# Compare edges for adjacent rows of potentially different purpose
       $diff += 0.3*scalar(grep($$cell1{$_} != $$cell2{$_}, ($axis == 0 ? qw(r l) : qw(t b))));
-      my $pedge  = ($axis == 0 ? 'b' : 'r');
-      my $pother = ($axis == 0 ? 't' : 'l');
       # Penalty for apparent divider between.
-      $diff += 2.0*$$cell1{$pedge}
-	unless ($$cell1{$pedge} == $$cell1{$pother}) && ($$cell1{$pedge} == $$cell2{$pedge});
+      my $pedge  = ($axis == 0 ? ($reversed ? 't' : 'b') : ($reversed ? 'l' : 'r'));
+      if($$cell1{$pedge} && ($$cell1{$pedge} != $$cell2{$pedge})){
+#	print STDERR "Penalty on axis $axis for $p1 ($$cell1{$pedge}) & $p2 ($$cell2{$pedge})\n";
+#	$diff += 2; }
+#	$diff += abs($$cell1{$pedge}-$$cell2{$pedge}) * 2.0/ $ncells; }
+	$diff += abs($$cell1{$pedge}-$$cell2{$pedge}) * 1.0; }
     }
     else {			# Compare edges for rows from diff places for potential similarity
       $diff += 0.3*scalar(grep($$cell1{$_} != $$cell2{$_}, qw(r l t b))); }
   }
-  $diff /= scalar(@$line1);
+  $diff /= $ncells;
   print STDERR "$p1-$p2 => $diff; " if $LaTeXML::Alignment::DEBUG;
   return $diff; }
 
@@ -754,7 +862,6 @@ sub alignment_compare {
 sub summarize_alignment {
   my($rows,$cols)=@_;
   my $r=0;
-  my %acode = (right=>'r', left=>'l', center=>'c', justify=>'p');
   my ($nrows,$ncols) = (scalar(@$rows),scalar(@{$$rows[0]}));
   print STDERR "\n";
   foreach my $cell (@{$$rows[0]}){
@@ -766,7 +873,7 @@ sub summarize_alignment {
     foreach my $cell (@$row){
       print STDERR sprintf(" %4s ",
 			   ($$cell{cell_type}||'?')
-			   .($$cell{align} ? $acode{$$cell{align}} : ' ')
+			   .($$cell{align} ? $ALIGNMENT_CODE{$$cell{align}} : ' ')
 			   .($$cell{content_class}||'?')
 			   .($$cell{r} ? ('|' x $$cell{r}) : ' '));
       $maxb = $$cell{b} if $$cell{b} > $maxb; }
