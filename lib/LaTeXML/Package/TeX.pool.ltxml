@@ -1071,24 +1071,40 @@ DefConstructor('\vtop BoxSpecification BoxContents',
 # 					    'pad-height'=>$spec && $$spec{spread}); }},
 	       mode=>'text');
 
-sub read_rule_spec {
-  my($stomach,$whatsit)=@_;
-  my $gullet = $stomach->getGullet;
-  while(my $key = $gullet->readKeyword('height','depth','width')){
-    $whatsit->setProperty($key=>$gullet->readDimension); }
-  return; }
+# sub read_rule_spec {
+#   my($stomach,$whatsit)=@_;
+#   my $gullet = $stomach->getGullet;
+#   while(my $key = $gullet->readKeyword('height','depth','width')){
+#     $whatsit->setProperty($key=>$gullet->readDimension); }
+#   return; }
 
-DefConstructorI('\vrule', undef,"<ltx:rule height='#height' depth='#depth' width='#width'/>",
-	       afterDigest=>sub { read_rule_spec(@_); },
-	       properties=>{isVerticalRule=>1},
-	       reversion=>sub { (T_CS('\vbox'),revert_spec($_[0],'height'),
-				 revert_spec($_[0],'depth'),revert_spec($_[0],'width'));});
+# DefConstructorI('\vrule', undef,"<ltx:rule height='#height' depth='#depth' width='#width'/>",
+# 	       afterDigest=>sub { read_rule_spec(@_); },
+# 	       properties=>{isVerticalRule=>1},
+# 	       reversion=>sub { (T_CS('\vbox'),revert_spec($_[0],'height'),
+# 				 revert_spec($_[0],'depth'),revert_spec($_[0],'width'));});
 
-DefConstructorI('\hrule', undef,"<ltx:rule height='#height' depth='#depth' width='#width'/>",
-	       afterDigest=>sub { read_rule_spec(@_); },
-	       properties=>{isHorizontalRule=>1},
-	       reversion=>sub { (T_CS('\hbox'),revert_spec($_[0],'height'),
-                                revert_spec($_[0],'depth'),revert_spec($_[0],'width'));});
+# DefConstructorI('\hrule', undef,"<ltx:rule height='#height' depth='#depth' width='#width'/>",
+# 	       afterDigest=>sub { read_rule_spec(@_); },
+# 	       properties=>{isHorizontalRule=>1},
+# 	       reversion=>sub { (T_CS('\hbox'),revert_spec($_[0],'height'),
+#                                 revert_spec($_[0],'depth'),revert_spec($_[0],'width'));});
+
+DefParameterType('RuleSpecification',sub {
+  my($gullet)=@_;
+  my %spec = ();
+  while(my $key = $gullet->readKeyword('width','height','depth')){
+    $spec{$key} = $gullet->readDimension; }
+  LaTeXML::BoxDimensions->new(%spec); },
+		 optional=>1, undigested=>1);
+
+DefConstructor('\vrule RuleSpecification',
+	       "<ltx:rule height='&REF(#1,height)' depth='&REF(#1,depth)' width='&REF(#1,width)'/>",
+	       properties=>{isVerticalRule=>1});
+
+DefConstructor('\hrule RuleSpecification',
+	       "<ltx:rule height='&REF(#1,height)' depth='&REF(#1,depth)' width='&REF(#1,width)'/>",
+	       properties=>{isHorizontalRule=>1});
 
 #======================================================================
 # Remaining Mode independent primitives in Ch.24, pp.279-280
@@ -1307,11 +1323,11 @@ DefConstructorI('\@alignment@hline',undef,'',
 	       afterDigest=>sub { LookupValue('Alignment')->addLine('t'); },
 	       properties=>{isHorizontalRule=>1},
 	       alias=>'\hline');
-DefConstructorI('\@alignment@hrule',undef,'',
+DefConstructor('\@alignment@hrule RuleSpecification','',
 	       afterDigest=>sub { LookupValue('Alignment')->addLine('t'); },
 	       properties=>{isHorizontalRule=>1},
 	       alias=>'\hrule');
-DefConstructorI('\@alignment@vrule',undef,'',
+DefConstructor('\@alignment@vrule RuleSpecification','',
 	       properties=>{isVerticalRule=>1},
 	       alias=>'\vrule');
 
