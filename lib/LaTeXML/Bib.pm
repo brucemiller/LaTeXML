@@ -142,7 +142,7 @@ sub parseMacro {
   $self->skipWhite;
   ($$self{line}=~ s/^([\(\{])//) or Fatal(":expected:({ Expected ( or {");
   my $open = $1;
-  foreach my $macro ($self->parseFields($open)){
+  foreach my $macro ($self->parseFields('@string',$open)){
     $$self{macros}{$$macro[0]} = $$macro[1]; }}
 
 # @comment string
@@ -163,15 +163,15 @@ sub parseEntry{
   $self->skipWhite;
   $$self{line} =~ s/^,//;
   # NOTE: actually, the entry should be ignored if there already is one for $key!
-  push(@{$$self{entries}},LaTeXML::Bib::BibEntry->new($type,$key,$self->parseFields($open))); }
+  push(@{$$self{entries}},LaTeXML::Bib::BibEntry->new($type,$key,$self->parseFields("$type $key",$open))); }
 
 sub parseFields {
-  my($self,$open)=@_;
+  my($self,$for,$open)=@_;
   my @fields=();
   my $closed;
   do {
     my $name = $self->parseName;
-    Warn(":unexpected:$name BibTeX field name \"$name\" has awkward characters") unless $name =~ /^[a-z_].*$/;
+    Warn(":unexpected:$name BibTeX field name \"$name\" has in $for awkward characters") unless $name =~ /^[a-z_].*$/;
     $self->skipWhite;
     ($$self{line}=~ s/^=//) or Fatal(":expected:= Expected an =");
     push(@fields,[$name,$self->parseValue]);
@@ -180,7 +180,7 @@ sub parseFields {
     && ! ($closed=($$self{line} =~ s/^(\Q$CLOSE{$open}\E)//));
   if(!$closed){
     $self->skipWhite;
-    ($$self{line}=~ s/^(\Q$CLOSE{$open}\E)//) or Fatal(":expected:$CLOSE{$open}"); }
+    ($$self{line}=~ s/^(\Q$CLOSE{$open}\E)//) or Fatal(":expected:$CLOSE{$open} Expected $CLOSE{$open} in $for"); }
   @fields; }
 
 #==============================
