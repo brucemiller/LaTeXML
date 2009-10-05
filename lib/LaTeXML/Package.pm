@@ -615,7 +615,7 @@ sub dualize_arglist {
   my(@args)=@_;
   my(@cargs,@pargs);
   foreach my $arg (@args){
-    if(defined $arg){
+    if((defined $arg) && $arg->unlist){ # defined and non-empty args get an ID.
 #      my $id = next_id();
 #      push(@cargs, Invocation(T_CS('\@XMArg'),T_OTHER($id),$arg));
 #      push(@pargs, Invocation(T_CS('\@XMRef'),T_OTHER($id))); }
@@ -627,8 +627,8 @@ sub dualize_arglist {
       push(@cargs, Invocation(T_CS('\@XMArg'),$id,$arg));
       push(@pargs, Invocation(T_CS('\@XMRef'),$id)); }
     else {
-      push(@cargs,undef);
-      push(@pargs,undef); }}
+      push(@cargs,$arg);
+      push(@pargs,$arg); }}
   ( [@cargs],[@pargs] ); }
 # Quick reversal!
 #  ( [@pargs],[@cargs] ); }
