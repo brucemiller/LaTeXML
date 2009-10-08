@@ -29,10 +29,8 @@ sub findTeXNodes { $_[1]->findnodes('//ltx:Math'); }
 sub extractTeX {
   my($self,$doc,$node)=@_;
   my $mode = uc($node->getAttribute('mode')||'INLINE');
-  my $tex = $node->getAttribute('tex');
+  my $tex = $self->cleanTeX($node->getAttribute('tex'));
   return undef unless defined $tex;
-  $tex =~ s/\%[^\n]*\n//gs;	# Strip comments
-#  $tex =~ s/\n//g;		# and stray CR's
   $mode = 'DISPLAY' if $tex=~/^\s*\\displaystyle/;
   ($tex =~ /^\s*$/ ? undef : "\\begin$mode $tex\\end$mode"); }
 

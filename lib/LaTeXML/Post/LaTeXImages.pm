@@ -71,6 +71,22 @@ sub setTeXImage {
   $node->setAttribute('imagewidth',$width);
   $node->setAttribute('imageheight',$height); }
 
+#======================================================================
+# Methods that could be wrapped, overridden.
+
+# Should be called by extractTeX
+sub cleanTeX {
+  my($self,$tex)=@_;
+  return unless $tex;
+print STDERR "Cleaning \"$tex\"\n";
+  $tex =~ s/^\s*(\\displaystyle|\\textstyle|\\scriptstyle|\\scriptscriptstyle)\s*//; # Save any leading style
+  my $style=$1 || '';
+  $tex =~ s/^(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*//; # Trim leading spacing (especially negative!)
+  $tex =~ s/(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*$//; # and trailing spacing
+  $tex =~ s/\%[^\n]*\n//gs;	# Strip comments
+print STDERR "Got style=\"$style\" and \"$tex\"\n";
+  $style.' '.$tex; }
+
 #**********************************************************************
 # Generating & Processing the LaTeX source.
 #**********************************************************************

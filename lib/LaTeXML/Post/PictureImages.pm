@@ -28,9 +28,8 @@ sub findTeXNodes { $_[1]->findnodes('//ltx:picture'); }
 # Return the TeX string to format the image for this node.
 sub extractTeX {
   my($self,$doc,$node)=@_;
-  my $tex = $node->getAttribute('tex') || '';
-  $tex =~ s/\%[^\n]*\n//gs;	# Strip comments
-  $tex =~ s/\n//gs;		# and stray CR's
+  my $tex = $self->cleanTeX($node->getAttribute('tex') || '');
+  $tex =~ s/\n//gs;		# trim stray CR's
   if(my $u = $node->getAttribute('unitlength')){
     $tex = "\\setlength{\\unitlength}{$u}".$tex; }
   # xunitlength, yunitlength for pstricks???
