@@ -125,7 +125,7 @@ DefMacro('\citep OptionalMatch:* [][] Semiverbatim', sub {
 		       Invocation(T_CS('\@@bibref'),
 				  T_OTHER("${author}Phrase1Year"),
 				  $keys,
-				  Invocation(T_CS('\@@citephrase'),$ay),
+				  Invocation(T_CS('\@@citephrase'),Tokens($ay->unlist,T_SPACE)),
 				  undef),
 		       ($post ? ($ns,T_SPACE,$post):()),$close)); }
   });
