@@ -1177,7 +1177,15 @@ DefPrimitive('\kern Dimension',undef);
 DefPrimitive('\mkern MuGlue',undef);
 DefPrimitiveI('\unpenalty',undef,undef);
 DefPrimitiveI('\unkern',   undef,undef);
-DefPrimitiveI('\unskip',   undef,undef);
+###DefPrimitiveI('\unskip',   undef,undef);
+## Worrisome, but...
+DefPrimitiveI('\unskip',   undef, sub {
+  my($stomach)=@_;
+  my $box;
+  while(($box = $LaTeXML::LIST[$#LaTeXML::LIST]) && isEmpty($box)){
+    pop(@LaTeXML::LIST); }
+  return; });
+
 DefPrimitive('\mark{}',undef);
 # \insert<8bit><filler>{<vertical mode material>}
 DefPrimitive('\insert Number',undef); # Just let the insertion get processed(?)
@@ -3520,6 +3528,11 @@ sub addDelimiterRole {
   my $delim        = $node && $document->getFirstChildElement($node);
   my $delim_role   = (($delim && $delim->getAttribute('role')) || '');
   my $wrapper_role = ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR)$/ ? $role : $delim_role);
+## Maybe we shouldn't switch VERTBAR ?
+## The catch is that occasionally people use a single \Bigl (or whatever)
+## where they should have used a \Big
+##  my $wrapper_role = ($delim_role =~ /^(OPEN|MIDDLE|CLOSE)$/ ? $role : $delim_role);
+## Hmm... do some more research first.
   $document->setAttribute($node,role=>$wrapper_role) if $node && $wrapper_role; }
 
 # Defined in e-Tex and other places.
