@@ -54,7 +54,7 @@ DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
 DefMacro('\ead Semiverbatim','\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
 DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
 
-DefMacro('\sep',', ');
+DefMacro('\sep','\unskip,\space');
 
 DefMacro('\received{}',    '\@add@frontmatter{ltx:date}[role=received]{#1}');
 DefMacro('\revised{}',     '\@add@frontmatter{ltx:date}[role=revised]{#1}');
