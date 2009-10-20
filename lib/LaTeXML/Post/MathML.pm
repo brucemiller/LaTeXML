@@ -421,6 +421,12 @@ sub stylizeContent {
   my $color = (ref $item ? $item->getAttribute('color') : $attr{color}) || $LaTeXML::MathML::COLOR;
   my $text  = (ref $item ?  $item->textContent : $item);
   my $variant = ($font ? $mathvariants{$font} : '');
+
+  # Failsafe for empty tokens?
+  if((! defined $text) || ($text eq '')){
+    $text = (ref $item ? $item->getAttribute('name') || $item->getAttribute('meaning') || $item->getAttribute('role') : '?');
+    $color = 'red'; }
+
   if($font && !$variant){
     warn "Unrecognized font variant \"$font\""; $variant=''; }
   # Special case for single char identifiers?
@@ -773,6 +779,10 @@ DefMathML('Apply:OVERACCENT:?', sub {
 DefMathML('Apply:UNDERACCENT:?', sub {
   my($accent,$base)=@_;
   ['m:munder',{accent=>'true'}, pmml($base),pmml_smaller($accent)]; });
+
+DefMathML('Apply:FRAME:?', sub {
+  my($frame,$body)=@_;
+  ['m:menclose',{notation=>$frame->getAttribute('style')}, pmml($body)]; });
 
 #======================================================================
 # Basic Content elements:
