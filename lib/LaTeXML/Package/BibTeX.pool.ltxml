@@ -808,6 +808,7 @@ sub processBibNameList {
 # Split into space separated words, but ignore spaces within {}
 sub splitWords {
   my($string)=@_;
+  $string =~ s/\\~/####/g;	# Protect \~ so we can split on hard spaces (~) as well as regular ones.
   my @words = ();
   $string =~ s/^[\s~]+//;
   my $word = '';
@@ -816,6 +817,7 @@ sub splitWords {
       push(@words,$word) if $word;
       push(@words,$1) if $1;
       $word = ''; }
+#    elsif($string =~ s/^([^\{\s,~]+)//){
     elsif($string =~ s/^([^\{\s,~]+)//){
       $word .= $1; }
     elsif($string =~ /^\{/){
@@ -823,6 +825,7 @@ sub splitWords {
     elsif($string =~ s/^(.)//){
       $word .= $1; }}
   push(@words,$word) if $word;
+  @words = map( ((s/####/\\~/g || 1) && $_), @words); # Put any \~ back
   @words; }
 
 DefConstructor('\bib@surname{}',  "<ltx:surname>#1</ltx:surname>");
