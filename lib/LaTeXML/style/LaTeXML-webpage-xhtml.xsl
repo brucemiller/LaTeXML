@@ -35,11 +35,13 @@
   </xsl:text>
   <head><xsl:text>
     </xsl:text>
-    <title>
-      <xsl:value-of select="normalize-space(*/ltx:title)"/>
-      <xsl:for-each select="//ltx:navigation/ltx:ref[@class='up']"
-		    > in <xsl:value-of select="@title"/></xsl:for-each>
-    </title>
+    <xsl:if test="*/ltx:title">
+      <title>
+	<xsl:value-of select="normalize-space(*/ltx:title)"/>
+	<xsl:for-each select="//ltx:navigation/ltx:ref[@class='up']"
+		      > in <xsl:value-of select="@title"/></xsl:for-each>
+      </title>
+    </xsl:if>
     <xsl:text>
     </xsl:text>
     <xsl:call-template name="metatype"/>
