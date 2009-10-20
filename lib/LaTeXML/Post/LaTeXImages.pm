@@ -78,13 +78,11 @@ sub setTeXImage {
 sub cleanTeX {
   my($self,$tex)=@_;
   return unless $tex;
-print STDERR "Cleaning \"$tex\"\n";
   $tex =~ s/^\s*(\\displaystyle|\\textstyle|\\scriptstyle|\\scriptscriptstyle)\s*//; # Save any leading style
   my $style=$1 || '';
   $tex =~ s/^(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*//; # Trim leading spacing (especially negative!)
   $tex =~ s/(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*$//; # and trailing spacing
   $tex =~ s/\%[^\n]*\n//gs;	# Strip comments
-print STDERR "Got style=\"$style\" and \"$tex\"\n";
   $style.' '.$tex; }
 
 #**********************************************************************
@@ -241,7 +239,8 @@ sub pre_preamble {
     my($package,$options)=@$pkgdata;
     $options = "[$options]" if $options && ($options !~ /^\[.*\]$/);
     $packages .= "\\usepackage$options\{$package\}\n"; }
-  my $w = int(($$self{maxwidth}/$$self{dpi})*72/$$self{magnification});	# Page Width in points.
+#  my $w = int(($$self{maxwidth}/$$self{dpi})*72/$$self{magnification});	# Page Width in points.
+  my $w = int(($$self{maxwidth}/$$self{dpi})*72);	# Page Width in points.
 
 return <<EOPreamble;
 \\batchmode
