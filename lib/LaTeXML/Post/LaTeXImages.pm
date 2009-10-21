@@ -239,8 +239,7 @@ sub pre_preamble {
     my($package,$options)=@$pkgdata;
     $options = "[$options]" if $options && ($options !~ /^\[.*\]$/);
     $packages .= "\\usepackage$options\{$package\}\n"; }
-#  my $w = int(($$self{maxwidth}/$$self{dpi})*72/$$self{magnification});	# Page Width in points.
-  my $w = int(($$self{maxwidth}/$$self{dpi})*72);	# Page Width in points.
+  my $w = int(($$self{maxwidth}/$$self{dpi})*72/$$self{magnification});	# Page Width in points.
 
 return <<EOPreamble;
 \\batchmode
