@@ -37,7 +37,7 @@
     </xsl:text>
     <xsl:if test="*/ltx:title">
       <title>
-	<xsl:value-of select="normalize-space(*/ltx:title)"/>
+        <xsl:value-of select="normalize-space(*/ltx:title/*[name() != 'indexmark']/text())"/>
 	<xsl:for-each select="//ltx:navigation/ltx:ref[@class='up']"
 		      > in <xsl:value-of select="@title"/></xsl:for-each>
       </title>
@@ -83,6 +83,8 @@
   </xsl:text>
   </head>
 </xsl:template>
+
+<xsl:template match="ltx:indexphrase" mode="visible-text"/>
 
 <xsl:template name="body">
   <xsl:text>
