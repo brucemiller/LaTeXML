@@ -26,7 +26,6 @@ my($pmml,$linelength)=(undef,undef);
 my $xmath=undef;
 my $cmml=undef;
 my $om=undef;
-
 my @paths = ('.');
 my (@preload,@debugs);
 GetOptions(
@@ -126,6 +125,9 @@ my $doc = LaTeXML::Post::Document->new($latexml->convertString($texdoc),
 # Since we can't easily find & extract all the various formats at once,
 # let's just process each one separately.
 
+# Default to pmml to stdout, if nothing else specified.
+$pmml = '-' unless (defined $mathimage || defined $pmml || defined $cmml || defined $om || defined $xmath);
+
 our %OPTIONS = (verbosity=>$verbosity||0);
 
 if($mathimage){
@@ -166,6 +168,8 @@ if($xmath){
   # extract the xmath
   my($post) = LaTeXML::Post::ProcessChain($doc);
   outputXML($post->findnode('//ltx:XMath'), $xmath); }
+
+print STDERR "\nConversion complete\n" unless $verbosity < 0;
 
 #======================================================================
 # Helpers
@@ -212,7 +216,7 @@ C<latexmlmath> - transforms a TeX/LaTeX math expression into various formats.
 
 =head1 SYNOPSIS
 
-latexml [options] I<texmath>
+latexmlmath [options] I<texmath>
 
  Options:
  --mathimage=file           converts to image in file
@@ -260,6 +264,10 @@ cases when the math starts with a minus (and would otherwise be interpreted
 as an option, probably an unrecognized one). Alternatively,
 wrapping the I<texmath> with {} will hide the minus.
 
+Simple examples:
+  latexmlmath \\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}
+  echo "\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}" | latexmlmath --pmml=quad.mml -
+
 =head1 OPTIONS AND ARGUMENTS
 
 =head2 Conversion Options
@@ -268,6 +276,9 @@ These options specify what formats the math should be converted to.
 In each case, the destination file is given.  Except for
 mathimage, the file can be given as '-', in which case the
 result is printed to standard output.
+
+If no conversion option is specified, the default is to output
+presentation MathML to standard output.
 
 =over 4
 
