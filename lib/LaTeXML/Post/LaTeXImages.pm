@@ -78,8 +78,9 @@ sub setTeXImage {
 sub cleanTeX {
   my($self,$tex)=@_;
   return unless $tex;
-  $tex =~ s/^\s*(\\displaystyle|\\textstyle|\\scriptstyle|\\scriptscriptstyle)\s*//; # Save any leading style
-  my $style=$1 || '';
+  my $style = '';
+  $style = $1 if
+    $tex =~ s/^\s*(\\displaystyle|\\textstyle|\\scriptstyle|\\scriptscriptstyle)\s*//; # Save any leading style
   $tex =~ s/^(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*//; # Trim leading spacing (especially negative!)
   $tex =~ s/(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*$//; # and trailing spacing
   $tex =~ s/\%[^\n]*\n//gs;	# Strip comments
@@ -165,6 +166,8 @@ sub process {
     if(! -f "$workdir/$jobname.dvi"){
       $preserve_tmpdir = 1;
       return $self->Error($doc,"LaTeX ($command) somehow failed: See $workdir/$jobname.log"); }
+
+    $preserve_tmpdir=1 if $$self{verbosity} > 2;
 
     # === Run dvips to extract individual postscript files.
     my $mag = int($$self{magnification}*1000);
