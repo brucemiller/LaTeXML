@@ -251,7 +251,7 @@ sub formatBibEntry {
       @rfnames = do_editorsA(@editors); }
     else {
       @rfnames = $keytag->childNodes; }
-    my @rfyear  = (@year  ? @year  : ($typetag ? $typetag->childNodes : ()));
+    my @rfyear  = (@year  ? (@year,($$entry{suffix} ||''))  : ($typetag ? $typetag->childNodes : ()));
 
     push(@tags,['ltx:bibtag',{role=>'refnum'},@rfnames,' (',@rfyear,')']); }
 
