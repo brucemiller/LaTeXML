@@ -46,7 +46,7 @@ sub new {
   $$self{trivial_scaling}    = $options{trivial_scaling}  || 1;
   $$self{graphicsSourceTypes}= $options{graphicsSourceTypes}
     || [qw(png gif jpg jpeg 
-	   eps ps ai)];
+	   eps ps ai pdf)];
   $$self{typeProperties}           = $options{typeProperties}
     || {
 	ai  =>{destination_type=>'png',
