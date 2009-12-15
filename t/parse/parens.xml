@@ -91,40 +91,34 @@
     <title>Cases</title>
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex7">
-        <Math mode="display" tex="\left.\begin{array}[]{l}a\\&#10;b\end{array}\right\}=\left\{\begin{array}[]{l}c\\&#10;d\end{array}\right." xml:id="S3.Ex7.m1" text="cases@(Array[[a], [b]]) = cases@(Array[[c], [d]])">
+        <Math mode="display" tex="\left.\begin{array}[]{l}a\\&#10;b\end{array}\right\}=\left\{\begin{array}[]{l}c\\&#10;d\end{array}\right." xml:id="S3.Ex7.m1" text="cases[[a], [b]] = cases[[c], [d]]">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMApp close="}">
-                <XMTok meaning="cases"/>
-                <XMArray role="ARRAY">
-                  <XMRow>
-                    <XMCell align="left">
-                      <XMTok role="ID" font="italic">a</XMTok>
-                    </XMCell>
-                  </XMRow>
-                  <XMRow>
-                    <XMCell align="left">
-                      <XMTok role="ID" font="italic">b</XMTok>
-                    </XMCell>
-                  </XMRow>
-                </XMArray>
-              </XMApp>
-              <XMApp open="{">
-                <XMTok meaning="cases"/>
-                <XMArray role="ARRAY">
-                  <XMRow>
-                    <XMCell align="left">
-                      <XMTok role="ID" font="italic">c</XMTok>
-                    </XMCell>
-                  </XMRow>
-                  <XMRow>
-                    <XMCell align="left">
-                      <XMTok role="ID" font="italic">d</XMTok>
-                    </XMCell>
-                  </XMRow>
-                </XMArray>
-              </XMApp>
+              <XMArray meaning="cases" role="ARRAY" close="}">
+                <XMRow>
+                  <XMCell align="left">
+                    <XMTok role="ID" font="italic">a</XMTok>
+                  </XMCell>
+                </XMRow>
+                <XMRow>
+                  <XMCell align="left">
+                    <XMTok role="ID" font="italic">b</XMTok>
+                  </XMCell>
+                </XMRow>
+              </XMArray>
+              <XMArray meaning="cases" role="ARRAY" open="{">
+                <XMRow>
+                  <XMCell align="left">
+                    <XMTok role="ID" font="italic">c</XMTok>
+                  </XMCell>
+                </XMRow>
+                <XMRow>
+                  <XMCell align="left">
+                    <XMTok role="ID" font="italic">d</XMTok>
+                  </XMCell>
+                </XMRow>
+              </XMArray>
             </XMApp>
           </XMath>
         </Math>

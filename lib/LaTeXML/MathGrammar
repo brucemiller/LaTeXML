@@ -259,8 +259,11 @@ Factor	:
 	# These 2nd two are Iffy; hopefully the 1st rule will protect from backtrack?
 	  OPEN ARRAY CLOSE  addScripts[Fence($item[1],$item[2],$item[3])]
 	  # perhaps only when OPEN or CLOSED is { or } ??
-	| OPEN ARRAY  { Annotate(Apply(New('cases'),$item[2]),open=>$item[1]); }
-	| ARRAY CLOSE { Annotate(Apply(New('cases'),$item[1]),close=>$item[2]); }
+#	| OPEN ARRAY  { Annotate(Apply(New('cases'),$item[2]),open=>$item[1]); }
+#	| ARRAY CLOSE { Annotate(Apply(New('cases'),$item[1]),close=>$item[2]); }
+	# should be explicitly {, and moreover the array should be only 1 or 2 columns!
+	| LBRACE ARRAY { Annotate($item[2], meaning=>'cases',open=>$item[1]); }
+	| ARRAY RBRACE { Annotate($item[1], meaning=>'cases',close=>$item[2]); }
 	| preScripted['FUNCTION'] addArgs[$item[1]]
 	| preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
 	| preScripted['TRIGFUNCTION'] addTrigFunArgs[$item[1]]
@@ -651,6 +654,8 @@ LANGLE          : /RELOP:less-than:\d+/		{ Lookup($item[1]); }
 		| /OPEN:langle:\d+/		{ Lookup($item[1]); }
 RANGLE          : /RELOP:greater-than:\d+/	{ Lookup($item[1]); }
 		| /CLOSE:rangle:\d+/		{ Lookup($item[1]); }
+LBRACE          : /OPEN:\{:\d+/                 { Lookup($item[1]); }
+RBRACE          : /CLOSE:\}:\d+/                { Lookup($item[1]); }
 METARELOP	: /METARELOP:\S*:\d+/		{ Lookup($item[1]); }
 MODIFIEROP      : /MODIFIEROP:\S*:\d+/		{ Lookup($item[1]); }
 MODIFIER        : /MODIFIER:\S*:\d+/		{ Lookup($item[1]); }
