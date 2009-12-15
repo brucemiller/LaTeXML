@@ -44,8 +44,10 @@ sub ProcessChain {
       push(@newdocs, $processor->process($doc)); }
     @docs = @newdocs;
     my $elapsed = Time::HiRes::tv_interval($t0,[Time::HiRes::gettimeofday]);
-    my $mem =  `ps -p $$ -o size=`; chomp($mem);
-    $processor->Progress($doc,sprintf(" %.2f sec; $mem KB",$elapsed));
+## not portable enough...
+##    my $mem =  `ps -p $$ -o size=`; chomp($mem);
+##    $processor->Progress($doc,sprintf(" %.2f sec; $mem KB",$elapsed));
+    $processor->Progress($doc,sprintf(" %.2f sec",$elapsed));
   }
   @docs; }
 
