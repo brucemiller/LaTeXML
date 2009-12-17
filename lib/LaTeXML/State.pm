@@ -173,7 +173,7 @@ sub installDefinition {
   my $cs= $definition->getCS->getCSName;
   if($self->lookupValue("$cs:locked") && !$LaTeXML::State::UNLOCKED){
     if(my $s = $self->getStomach->getGullet->getSource){
-      if($s =~ /\.tex$/){
+      if(($s eq "Anonmymous String") || ($s =~ /\.(tex|bib)$/)){
 	Info(":override:$cs Ignoring redefinition of $cs in $s\n");
 	return; }}}
   assign_internal($self,'meaning',$cs => $definition, $scope); }
