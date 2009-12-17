@@ -188,8 +188,9 @@ sub bibref_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $keys = $node->getAttribute('bibrefs');
   foreach my $bibkey (split(',',$keys)){
-    my $entry = $$self{db}->register("BIBLABEL:$bibkey");
-    $entry->noteAssociation(referrers=>$parent_id); }}
+    if($bibkey){
+      my $entry = $$self{db}->register("BIBLABEL:$bibkey");
+      $entry->noteAssociation(referrers=>$parent_id); }}}
 
 # Note that index entries get stored in simple form; just the terms & location.
 # They will be turned into a tree, sorted, possibly permuted, whatever, by MakeIndex.

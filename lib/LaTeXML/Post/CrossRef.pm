@@ -179,7 +179,7 @@ sub fill_in_bibrefs {
 sub make_bibcite {
   my($self,$doc,$bibref)=@_;
 
-  my @keys = split(/,/,$bibref->getAttribute('bibrefs'));
+  my @keys = grep($_,split(/,/,$bibref->getAttribute('bibrefs')));
   my $show = $bibref->getAttribute('show');
   my @preformatted = $bibref->childNodes();
   if($show && ($show eq 'none') && !@preformatted){
