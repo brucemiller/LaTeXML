@@ -87,8 +87,8 @@ sub getBibEntries {
       my $bibid  = $bibentry->getAttribute('xml:id');
       $entries{$bibkey}{bibkey}   = $bibkey; 
       $entries{$bibkey}{bibentry} = $bibentry;
-      $entries{$bibkey}{citations}= [map(split(',',$_->value),
-					 $bibdoc->findnodes('.//@bibrefs',$bibentry))];
+      $entries{$bibkey}{citations}= [grep($_,map(split(',',$_->value),
+						 $bibdoc->findnodes('.//@bibrefs',$bibentry)))];
       # Also, register the key with the DB, if the bibliography hasn't already been scanned.
       $$self{db}->register("BIBLABEL:$bibkey",id=>$bibid);
     }}
@@ -121,16 +121,17 @@ sub getBibEntries {
       my $entry = $entries{$bibkey};
       # Extract names, year and title from bibentry.
       my $names='';
+      my $sortnames='';
       if(my $n = $doc->findnode('ltx:bib-key',$bibentry)){
-	$names = $n->textContent; }
-      elsif(my @ns = $doc->findnodes('ltx:bib-name[@role="author"]/ltx:surname'
-				     .' | ltx:bib-name[@role="editor"]/ltx:surname',
-				     $bibentry)){
-	if(@ns > 2){    $names = $ns[0]->textContent .' et al'; }
-	elsif(@ns > 1){ $names = $ns[0]->textContent .' and '. $ns[1]->textContent; }
-	else          { $names = $ns[0]->textContent; }}
+	$sortnames = $names = $n->textContent; }
+      elsif(my @names = $doc->findnodes('ltx:bib-name[@role="author"] | ltx:bib-name[@role="editor"]',$bibentry)){
+	$sortnames = join(' ',map(getNameText($doc,$_),@names));
+	my @ns = map($_ && $_->textContent, map($doc->findnodes('ltx:surname',$_), @names));
+	if(@ns > 2){    $names = $ns[0] .' et al'; }
+	elsif(@ns > 1){ $names = $ns[0] .' and '. $ns[1]; }
+	else          { $names = $ns[0]; }}
       elsif(my $t = $doc->findnode('ltx:bib-title',$bibentry)){
-	$names = $t->textContent; }
+	$sortnames = $names = $t->textContent; }
       my $date = $doc->findnode('ltx:bib-date[@role="publication"] | ltx:bib-type',$bibentry);
       my $title =$doc->findnode('ltx:bib-title',$bibentry);
       $date  = ($date  ? $date->textContent  : '');
@@ -138,7 +139,7 @@ sub getBibEntries {
       $$entry{ay}      = "$names.$date";
       $$entry{initial} = $doc->initial($names,1);
       # Include this entry keyed using a sortkey.
-      $$included{lc(join('.',$names,$date,$title,$bibkey))} = $entry;
+      $$included{lc(join('.',$sortnames,$date,$title,$bibkey))} = $entry;
       # And, since we're including this entry, we'll need to include any that it cites!
       push(@queue,@{$$entry{citations}}) if $$entry{citations}; }
     else {
@@ -154,14 +155,35 @@ sub getBibEntries {
 
   # Finally, sort the bibentries according to author+year+title+bibkey
   # If any neighboring entries have same author+year, set a suffix: a,b,...
+  # Actually, it isn't so much if they are adjacent; if author+year isn't unique, need a suffix
   my @sortkeys = sort keys %$included;
+  my %suffixes=();
   while(my $sortkey = shift(@sortkeys)){
-    my $i=0;
-    while(@sortkeys && ($$included{$sortkey}{ay} eq $$included{$sortkeys[0]}{ay})){
-      $$included{$sortkey}{suffix}='a';
-      $$included{$sortkeys[0]}{suffix} = chr(ord('a')+(++$i));
-      shift(@sortkeys); }}
+#    my $i=0;
+#    while(@sortkeys && ($$included{$sortkey}{ay} eq $$included{$sortkeys[0]}{ay})){
+#      $$included{$sortkey}{suffix}='a';
+#      $$included{$sortkeys[0]}{suffix} = chr(ord('a')+(++$i));
+#      shift(@sortkeys); }
+    my $entry = $$included{$sortkey};
+    my $ay = $$entry{ay};
+    if(defined $suffixes{$ay}){
+      my $prev = $suffixes{$ay};
+      if(!$$prev{suffix}){
+	$$prev{suffix} = 'a'; }
+      $$entry{suffix} = chr(ord($$prev{suffix})+1); }
+      $suffixes{$ay}=$entry;
+  # HACKERY: AFTER all the sorting have been done, remove <ERROR role="sort"> nodes.
+  # These may have been inserted to alter sorting, eg \NOOP{a}...
+    foreach my $sortnode ($doc->findnodes('//ltx:ERROR[@class="sort"]',$$entry{bibentry})){
+      $sortnode->parentNode->removeChild($sortnode); }
+  }
   $included; }
+
+sub getNameText {
+  my($doc,$namenode)=@_;
+  my $surname = $doc->findnodes('ltx:surname',$namenode);
+  my $givenname = $doc->findnodes('ltx:givenname',$namenode);
+  ($surname && $givenname ? $surname.' '.$givenname : $surname || $givenname); }
 
 # ================================================================================
 # Convert hash of bibentry(s) into biblist of bibitem(s)
@@ -337,7 +359,7 @@ sub do_title { (['ltx:text',{font=>'italic'},@_]); }
 sub do_bold  { (['ltx:text',{font=>'bold'},@_]); }
 sub do_edition { (@_," edition"); } # If a number, should convert to cardinal!
 sub do_thesis_type { @_; }
-sub do_pages { (" pp.\N{NO-BREAK SPACE}",@_); } # Non breaking space
+sub do_pages { (" pp.".pack('U',0xA0),@_); } # Non breaking space
 
 sub do_crossref {
   (['ltx:cite',{},['ltx:bibref',{bibrefs=>$_[0]->getAttribute('bibrefs'), show=>'refnum'}]]); }
