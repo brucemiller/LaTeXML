@@ -321,7 +321,8 @@ sub getNextLine {
   my $line = (shift(@{$$self{buffer}})||''). "\n"; # put line ending back!
   if($line){
     if(my $encoding = $STATE->lookupValue('INPUT_ENCODING')){
-      $line = decode($encoding,$line); }}
+      $line = decode($encoding,$line); }
+    $line = encode('UTF-8',$line); }
   if(!($$self{lineno} % 25)){
     NoteProgress("[#$$self{lineno}]"); }
   $line; }
