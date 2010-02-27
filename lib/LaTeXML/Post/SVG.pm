@@ -115,8 +115,9 @@ our %converters = ('ltx:picture'=>\&convertPicture, 'ltx:path'  =>\&convertPath,
 sub convertNode {
   my ($parent,$node) = @_;
   my $tag = getQName($node);
-  my $converter = $converters{$tag};
-  if($converter){
+  if(!$tag){
+    $parent->appendChild($node); }
+  elsif(my $converter = $converters{$tag}){
     &$converter($parent,$node); }
   else {
     my $new = $parent->addNewChild($svgURI,'foreignObject');
