@@ -282,7 +282,12 @@ sub addNamespace{
 sub getQName {
   my($self,$node)=@_;
   my $nsuri = $node->namespaceURI;
-  if(my $prefix = $$self{namespaceURIs}{$nsuri}){
+  if(!$nsuri){			# No namespace at all???
+    if($node->nodeType == XML_ELEMENT_NODE){
+      $node->localname; }
+    else {
+      undef; }}
+  elsif(my $prefix = $$self{namespaceURIs}{$nsuri}){
     $prefix.":".$node->localname; }
   else {
     warn "Missing namespace prefix for $nsuri";
