@@ -1056,7 +1056,13 @@ DefConstructor('\@equationgroup@open@row SkipSpaces DigestedBody',
 				   return; },
 	       afterDigest=>sub {
  		 my($stomach,$whatsit)=@_;
- 		 if($whatsit->getArg(1)->unlist){ # If non-empty row, possibly we'll number
+# 		 if($whatsit->getArg(1)->unlist){ # If non-empty row, possibly we'll number
+		 # The idea is to avoid numbering an empty rows.... or should we be avoiding the empty rows!?!?!
+		 # Some confusion here; some cases latex DOES give you empty, numbered rows (end of ams' align),
+		 # Others, it ignores the empty line (\\ optional/ignorable before ams' \intertext)
+		 # So, I suspect we should unconditionally do this branch, but work harder at avoiding
+		 # empty rows in the first place.
+		 if(1){
 		   my $num = LookupValue('EQUATIONROW_NUMBER');
 		   my %props=();
 		   if(!$num){               %props = RefStepID('equation'); }
