@@ -73,10 +73,24 @@ DefConstructor('\tag OptionalMatch:* Digested', '',
 		 AssignValue(EQUATIONROW_NUMBER=>ToString($_[2]), 'global'); },
 	       mode=>'text');
 
+# Note that \intertext may or may not be preceded by an explicit \\, with no apparent difference in TeX.
+# latexml, however, can end up with 2, which end up incrementing coutners twice!
+# Of course, that means we're doing something quite wrong, but we've at least got to recover the effect!!!
 DefMacro('\@ams@intertext{}',
-	 '\@alignment@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@alignment@newline');
+#	 '\@alignment@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@alignment@newline');
+	 '\@ams@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@ams@newline');
 DefConstructor('\@@ams@intertext{}',
-	       "<ltx:block class='intertext'>#1</ltx:block>", mode=>'text');
+	       "<ltx:block class='intertext'>#1</ltx:block>", mode=>'text',properties=>{isIntertext=>1});
+
+DefMacroI('\@ams@newline', undef, sub {
+  my($gullet)=@_;
+  readNewlineArgs($gullet);
+  $gullet->skipSpaces();
+  my $next = $gullet->readToken();
+  if($next && $next->equals(T_CS('\intertext'))){
+  ($next);}
+  else {
+    (T_CS('\@alignment@newline@noskip'),$next); }});
 
 sub amsalignBindings {
   my($template)=@_;
@@ -95,7 +109,8 @@ sub amsalignBindings {
   $alignment->setTemplate($template);
   Let(T_ALIGN,        T_CS('\@alignment@align'));
 ##  Let(T_CS("\\\\"),   T_CS('\@alignment@newline'));
-  Let(T_CS("\\\\"),   T_CS('\@alignment@newline@noskip'));
+#  Let(T_CS("\\\\"),   T_CS('\@alignment@newline@noskip'));
+  Let(T_CS("\\\\"),   T_CS('\@ams@newline'));
   Let(T_CS('\cr'),    T_CS('\@alignment@cr'));
 #  Let('\span',        T_CS('\@alignment@span'));
   Let(T_CS('\@open@row'),T_CS('\@equationgroup@open@row'));
@@ -249,6 +264,7 @@ sub processAMSAlignRows {
       $equationgroup->removeChild($equation); }
     else {
       equationgroupJoinCols($document,2,$equation); }}}
+#[Or should empty rows be removed? Numbered ones still show in print out!!!]
 
 # Note that some people use align or gather inside equation, which seems to "work"
 # So, we'll treat align as aligned in such cases.
