@@ -512,7 +512,15 @@ sub openElement {
     $node = $$self{document}->createElement($tag);
     $$self{document}->setDocumentElement($node); 
     if($ns){
-      $node->setNamespace($ns,$$self{model}->getDocumentNamespacePrefix($ns), 1); }}
+      # Here, we're creating the initial, document elemnt, which will hold ALL of the namespace declarations.
+      # If there is a default namespace (no prefix), that will also be declared, and applied here.
+      # However, if there is ALSO a prefix associated with that namespace, we have to declare it FIRST
+      # due to the (apparently) buggy way that XML::LibXML works with namespaces in setAttributeNS.
+      my $prefix = $$self{model}->getDocumentNamespacePrefix($ns);
+      my $attprefix = $$self{model}->getDocumentNamespacePrefix($ns,1,1);
+      if(!$prefix && $attprefix){
+	$node->setNamespace($ns,$attprefix, 0); }
+      $node->setNamespace($ns,$prefix, 1); }}
   else {
     if($ns){
       if(! defined $point->lookupNamespacePrefix($ns)){	# namespace not already declared?
@@ -622,8 +630,8 @@ sub setAttribute {
 #    ($ns ? $node->setAttributeNS($ns,$name=>$value) : $node->setAttribute($name=>$value)); }}
 
     if($ns){
-      my $prefix = $$self{model}->getDocumentNamespacePrefix($ns);
-      if(! defined $node->lookupNamespacePrefix($ns)){	# namespace not already declared?
+      my $prefix = $$self{model}->getDocumentNamespacePrefix($ns,1);
+      if(! $node->lookupNamespacePrefix($ns)){	# namespace not already declared? (but must have SOME prefix!!!)
 	$self->getDocument->documentElement->setNamespace($ns,$prefix,0); }
       my $qname = ($prefix && $prefix ne '#default' ? "$prefix:$name" : $name);
       $node->setAttributeNS($ns,$qname=>$value); }
