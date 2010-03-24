@@ -117,10 +117,11 @@ sub loadCompiledSchema {
 # Coding: this namespace mapping associates prefixes to namespace URIs for
 #   use in the latexml code, constructors and such.
 #   This must be a one to one mapping and there are no default namespaces.
-# DocType: this namespace mapping associates prefixes to namespace URIs
-#   as used in the Document Type description (DTD), and will be the
+# Document: this namespace mapping associates prefixes to namespace URIs
+#   as used in the generated document, and will be the
 #   set of prefixes used in the generated output.
-
+#   This mapping may also use a prefix of "#default" which is for
+#   the unprefixed form of elements (not used for attributes!)
 sub registerNamespace {
   my($self,$codeprefix,$namespace)=@_;
   if($namespace){
@@ -134,21 +135,24 @@ sub registerNamespace {
 
 our $NAMESPACE_ERROR=0;
 
+# In the following:
+#    $forattribute is 1 if the namespace is for an attribute (in which case, there must be a non-empty prefix)
+#    $probe, if non 0, just test for namespace, without creating an entry if missing.
 # Get the (code) prefix associated with $namespace,
 # creating a dummy prefix and signalling an error if none has been registered.
 sub getNamespacePrefix {
-  my($self,$namespace)=@_;
+  my($self,$namespace,$forattribute,$probe)=@_;
   if($namespace){
     my $codeprefix = $$self{code_namespace_prefixes}{$namespace};
-    if(! defined $codeprefix){
+    if((! defined $codeprefix) && !$probe){
       $self->registerNamespace($codeprefix = "namespace".(++$NAMESPACE_ERROR), $namespace);
       Warn(":model No prefix registered for namespace $namespace (using $codeprefix)"); }
     $codeprefix; }}
 
 sub getNamespace {
-  my($self,$codeprefix)=@_;
+  my($self,$codeprefix,$probe)=@_;
   my $ns = $$self{code_namespaces}{$codeprefix};
-  if(! defined $ns){
+  if((! defined $ns) && !$probe){
     $self->registerNamespace($codeprefix,
 			     $ns = "http://example.com/namespace".(++$NAMESPACE_ERROR));
     Error(":model No namespace registered for prefix $codeprefix (using $ns)"); }
@@ -158,7 +162,10 @@ sub registerDocumentNamespace {
   my($self,$docprefix,$namespace)=@_;
   $docprefix = '#default' unless defined $docprefix;
   if($namespace){
-    $$self{document_namespace_prefixes}{$namespace}=$docprefix;
+    # Since the default namespace url can still ALSO have a prefix associated,
+    # we prepend "DEFAULT#url" when using as a hash key in the prefixes table.
+    my $regnamespace = ($docprefix eq '#default' ? "DEFAULT#".$namespace : $namespace);
+    $$self{document_namespace_prefixes}{$regnamespace}=$docprefix;
     $$self{document_namespaces}{$docprefix}=$namespace; }
   else {
     my $prev = $$self{document_namespaces}{$docprefix};
@@ -166,19 +173,23 @@ sub registerDocumentNamespace {
     delete $$self{document_namespaces}{$docprefix}; }}
 
 sub getDocumentNamespacePrefix {
-  my($self,$namespace)=@_;
+  my($self,$namespace,$forattribute,$probe)=@_;
   if($namespace){
-    my $docprefix = $$self{document_namespace_prefixes}{$namespace};
-    if(! defined $docprefix){
+    # Get the prefix associated with the namespace url, noting that for elements, it might by "#default",
+    # but for attributes would never be.
+    my $docprefix = (!$forattribute && $$self{document_namespace_prefixes}{"DEFAULT#".$namespace})
+      || $$self{document_namespace_prefixes}{$namespace};
+    if((! defined $docprefix) && !$probe){
       $self->registerDocumentNamespace($docprefix = "namespace".(++$NAMESPACE_ERROR), $namespace);
       Warn(":model No document prefix registered for namespace $namespace (using $docprefix)"); }
-    ($docprefix eq '#default' ? '' : $docprefix); }}
+    (($docprefix||'#default') eq '#default' ? '' : $docprefix); }}
 
 sub getDocumentNamespace {
-  my($self,$docprefix)=@_;
+  my($self,$docprefix,$probe)=@_;
   $docprefix = '#default' unless defined $docprefix;
   my $ns = $$self{document_namespaces}{$docprefix};
-  if(($docprefix ne '#default') && (! defined $ns)){
+  $ns =~ s/^DEFAULT#// if $ns;		# Remove the default hack, if present!
+  if(($docprefix ne '#default') && (! defined $ns) && !$probe){
     $self->registerDocumentNamespace($docprefix,
 				     $ns = "http://example.com/namespace".(++$NAMESPACE_ERROR));
     Error(":model No namespace registered for document prefix $docprefix (using $ns)"); }
@@ -496,11 +507,13 @@ Register C<$prefix> to stand for the namespace C<$namespace_url>.
 This prefix can then be used to create nodes in constructors and Document methods.
 It will also be recognized in XPath expressions.
 
-=item C<< $model->getNamespacePrefix($namespace); >>
+=item C<< $model->getNamespacePrefix($namespace,$forattribute,$probe); >>
 
 Return the prefix to use for the given C<$namespace>.
+If C<$forattribute> is nonzero, then it looks up the prefix as appropriate for attributes.
+If C<$probe> is nonzero, it only probes for the prefix, without creating a missing entry.
 
-=item C<< $model->getNamespace($prefix); >>
+=item C<< $model->getNamespace($prefix,$probe); >>
 
 Return the namespace url for the given C<$prefix>.
 
