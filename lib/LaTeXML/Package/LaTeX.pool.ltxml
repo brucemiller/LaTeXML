@@ -184,7 +184,8 @@ DefEnvironment('{document}', sub {
 		 Digest(Tokens(@{LookupValue('@at@begin@document')}));  },
 	       afterDigest=> sub {
 		 $_[0]->getGullet->flush; 
-		 Digest(Tokens(@{LookupValue('@at@end@document')}));  });
+		 Digest(Tokens(@{LookupValue('@at@end@document')}));  },
+	       mode=>'text');
 
 #**********************************************************************
 # C.3. Sentences and Paragraphs
@@ -578,7 +579,7 @@ DefEnvironment('{abstract}','',
  		      ['ltx:abstract',undef,@LaTeXML::LIST]);
 		 DefMacroI('\maybe@end@abstract',undef,Tokens());
  		 return; },
-	       locked=>1);
+	       locked=>1, mode=>'text');
 DefMacroI('\maybe@end@abstract',undef, '\endabstract');
 
 DefMacroI('\abstractname',undef, 'Abstract'); # never used?
@@ -612,7 +613,7 @@ DefEnvironment('{titlepage}','<ltx:titlepage>#body',
 				  Info(":unexpected:titlepage Frontmatter will not be well-structured");
 				return; },
 	       beforeDigestEnd=>sub { Digest(T_CS('\maybe@end@title')); },
-	       locked=>1);
+	       locked=>1, mode=>'text');
 #DefConstructor('\title@cr[]',"<ltx:subtitle>",
 #	       beforeDigest=>sub {  Digest(T_CS('\maybe@end@title')); });
 
@@ -681,14 +682,17 @@ DefConstructorI('\@block@cr',undef,  "<ltx:break/>",
 	       reversion=>Tokens(T_CS("\\\\"),T_CR));
 DefEnvironment('{quote}',   
 	       '<ltx:quote>#body</ltx:quote>',
-	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr'));});
+	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr'));},
+	       mode=>'text');
 DefEnvironment('{quotation}',
 	       '<ltx:quote>#body</ltx:quote>',
-	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); });
+	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); },
+	       mode=>'text');
 # NOTE: Handling of \\ within these environments?
 DefEnvironment('{verse}',
 	       '<ltx:quote class="verse">#body</ltx:quote>',
-	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr'));});
+	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr'));},
+	       mode=>'text');
 
 #======================================================================
 # C.6.2 List-Making environments
@@ -774,15 +778,15 @@ DefConstructor('\description@item[]',
 DefEnvironment('{itemize}',
 	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
 	       properties=>sub { beginItemize('itemize'); },
-	       locked=>1);
+	       locked=>1, mode=>'text');
 DefEnvironment('{enumerate}',
 	       "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
 	       properties=>sub { beginItemize('enumerate'); },
-	       locked=>1);
+	       locked=>1, mode=>'text');
 DefEnvironment('{description}',
 	       "<ltx:description  xml:id='#id'>#body</ltx:description>",
 	       properties=>sub { beginItemize('description'); },
-	       locked=>1);
+	       locked=>1, mode=>'text');
 DefMacro('\descriptionlabel{}','#1');
 
 # NOTE: Do I need to do anything with
