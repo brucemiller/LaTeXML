@@ -187,6 +187,7 @@ sub pushStackFrame {
   $STATE->pushFrame;
   $STATE->assignValue(beforeAfterGroup=>[],'local'); # ALWAYS bind this!
   $STATE->assignValue(afterGroup=>[],'local'); # ALWAYS bind this!
+  $STATE->assignValue(groupNonBoxing=>$nobox,'local'); # ALWAYS bind this!
   push(@{$$self{boxing}},$LaTeXML::CURRENT_TOKEN) unless $nobox; # For begingroup/endgroup
 }
 
@@ -212,8 +213,9 @@ sub bgroup {
 
 sub egroup {
   my($self)=@_;
-  if($STATE->isValueBound('MODE',0)){ # Last stack frame was a mode switch!?!?!
-    Fatal(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} while ending group"); }
+  if($STATE->isValueBound('MODE',0)#){ # Last stack frame was a mode switch!?!?!
+     || $STATE->lookupValue('groupNonBoxing')){ # group was opened with \begingroup
+    Fatal(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} or forgotten \\endgroup while ending group"); }
   popStackFrame($self,0);
   return; }
 
@@ -224,8 +226,9 @@ sub begingroup {
 
 sub endgroup {
   my($self)=@_;
-  if($STATE->isValueBound('MODE',0)){ # Last stack frame was a mode switch!?!?!
-    Fatal(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} while ending group"); }
+  if($STATE->isValueBound('MODE',0) #){ # Last stack frame was a mode switch!?!?!
+     || ! $STATE->lookupValue('groupNonBoxing')){ # group was opened with \bgroup
+    Fatal(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} or forgotten \\egroup while ending group"); }
   popStackFrame($self,1);
   return; }
 
