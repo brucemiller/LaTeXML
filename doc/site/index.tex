@@ -136,6 +136,13 @@ and then, as root:
 \end{alltt}
 (See \texttt{perl perlmodinstall} for more details, if needed.)
 
+You can specify nonstandard place to install files (and avoid the need to install as root)
+by modifying the Makefile creating command, as
+\begin{alltt}
+   perl Makefile.PL PREFIX=\emph{perldir} TEXMF=\emph{texdir}
+\end{alltt}
+where \emph{perldir} is where you want the perl related files to go and
+\emph{texdir} is where you want the \TeX\ style files to go.
 
 \subsection[OS-Specific Notes]{Operating System Specific Notes}\label{install.osnotes}
 With \emph{no} implied endorsement of any of these systems.
