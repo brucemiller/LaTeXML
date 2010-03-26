@@ -124,7 +124,8 @@
              |picture|note|indexmark|ERROR)*>
 <!ATTLIST p
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  xml:id ID #IMPLIED>
 
 <!ELEMENT constraint (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                       |bibref|Math|inline-block|verbatim|break|graphics
@@ -168,7 +169,8 @@
                  |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST quote
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  xml:id ID #IMPLIED>
 
 <!ELEMENT block (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
                  |Math|inline-block|verbatim|break|graphics|inline-para
@@ -176,6 +178,7 @@
 <!ATTLIST block
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  xml:id ID #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
   depth CDATA #IMPLIED
@@ -207,6 +210,7 @@
 <!ATTLIST inline-block
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  xml:id ID #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
   depth CDATA #IMPLIED
@@ -223,6 +227,7 @@
 <!ATTLIST verbatim
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  xml:id ID #IMPLIED
   font CDATA #IMPLIED>
 
 <!ELEMENT itemize (item)*>
@@ -266,6 +271,7 @@
 <!ATTLIST graphics
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  xml:id ID #IMPLIED
   imagesrc CDATA #IMPLIED
   imagewidth CDATA #IMPLIED
   imageheight CDATA #IMPLIED

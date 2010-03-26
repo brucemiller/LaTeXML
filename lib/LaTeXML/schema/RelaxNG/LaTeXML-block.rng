@@ -45,6 +45,7 @@ in both inline and block contexts.</a:documentation>
     <element name="p">
       <a:documentation>A physical paragraph.</a:documentation>
       <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
       <ref name="Inline.model"/>
     </element>
   </define>
@@ -131,6 +132,7 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
     <element name="quote">
       <a:documentation>A quotation.</a:documentation>
       <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
       <ref name="Inline.model"/>
     </element>
   </define>
@@ -138,6 +140,7 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
     <element name="block">
       <a:documentation>A generic block (fallback).</a:documentation>
       <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
       <ref name="Positionable.attributes"/>
       <ref name="Inline.model"/>
     </element>
@@ -164,6 +167,7 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
       <a:documentation>An inline block. Actually, can appear in inline or block mode, but
 typesets its contents as a block.</a:documentation>
       <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
       <ref name="Positionable.attributes"/>
       <ref name="Block.model"/>
     </element>
@@ -172,6 +176,7 @@ typesets its contents as a block.</a:documentation>
     <element name="verbatim">
       <a:documentation>Verbatim content</a:documentation>
       <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
       <optional>
         <attribute name="font">
           <a:documentation>the font to use; generally typewriter.</a:documentation>
@@ -243,6 +248,7 @@ which represents the term being described in each \elementref{item}.</a:document
     <element name="graphics">
       <a:documentation>A graphical insertion of an external file.</a:documentation>
       <ref name="Common.attributes"/>
+      <ref name="ID.attributes"/>
       <ref name="Imageable.attributes"/>
       <attribute name="graphic">
         <a:documentation>the path to the graphics file</a:documentation>

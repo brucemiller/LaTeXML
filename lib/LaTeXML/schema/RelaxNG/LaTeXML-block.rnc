@@ -29,6 +29,7 @@ p =
 ## A physical paragraph.
 element p {
   Common.attributes,
+  ID.attributes,
 
   Inline.model  }
 
@@ -82,6 +83,7 @@ quote =
 ## A quotation.
 element quote {
   Common.attributes,
+  ID.attributes,
 
   Inline.model  }
 
@@ -89,6 +91,7 @@ block =
 ## A generic block (fallback).
 element block {
   Common.attributes,
+  ID.attributes,
   Positionable.attributes,
 
   Inline.model  }
@@ -113,6 +116,7 @@ inline-block =
 ## typesets its contents as a block.
 element inline-block {
   Common.attributes,
+  ID.attributes,
   Positionable.attributes,
 
   Block.model }
@@ -121,6 +125,7 @@ verbatim =
 ## Verbatim content
 element verbatim {
   Common.attributes,
+  ID.attributes,
 
   ## the font to use; generally typewriter.
   attribute font { text }?,
@@ -177,6 +182,7 @@ graphics =
 ## A graphical insertion of an external file.
 element graphics {
   Common.attributes,
+  ID.attributes,
   Imageable.attributes,
 
   ## the path to the graphics file
