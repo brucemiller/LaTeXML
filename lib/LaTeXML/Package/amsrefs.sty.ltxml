@@ -61,13 +61,7 @@ DefEnvironment('{bibdiv}',
 	       . "<ltx:title>#refname</ltx:title>"
 	       . "#body"
 	       ."</ltx:bibliography>",
-	       afterDigestBegin=>sub { 
-		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
-		 ResetCounter('enumiv');
-		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
-		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
-		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  
-	       });
+	       afterDigestBegin=>sub { beginBibliography($_[1]); });
 
 DefEnvironment('{biblist}',"<ltx:biblist>#body</ltx:biblist>");
 

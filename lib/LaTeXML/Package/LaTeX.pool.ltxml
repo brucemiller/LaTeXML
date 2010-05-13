@@ -2082,17 +2082,41 @@ DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#lab
 DefMacroI('\bibname',undef, 'Bibliography');
 
 DefMacroI('\thebibliography@ID',undef, Tokens());
+
+# This sub does things that would commonly be needed when starting a bibliography
+# setting the ID, etc...
+sub beginBibliography {
+  my($whatsit)=@_;
+  # Try to compute a reasonable, but unique ID;
+  # relative to the document's ID, if any.
+  # But also, if there are multiple bibliographies, 
+  my $bibid = LookupValue('bibliography_ID'); # previous bibliographic ID?
+  if($bibid){
+    if($bibid =~ /(.*?bib)(\w)$/){ $bibid = $1.chr(ord($2)+1); }
+    else { $bibid .= 'a'; }}
+  elsif(my $docid = ToString(Expand(T_CS('\thedocument@ID')))){
+    $bibid = $docid.".bib"; }
+  else {
+    $bibid = 'bib'; }
+  AssignValue('bibliography_ID'=>$bibid, 'global');
+  DefMacroI(T_CS('\thebibliography@ID'),undef,$bibid);
+#  $whatsit->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
+  $whatsit->setProperty(id=>$bibid);
+  $whatsit->setProperty(refname=>Digest(T_CS('\refname')));
+  # And prepare for the likely nonsense that appears within bibliographies
+  ResetCounter('enumiv');
+  # Fix for missing \bibitems!
+  setupPseudoBibitem(); }
+
 # NOTE: Not really complete, since I haven't dealt with bibliographies!
 DefMacro('\bibliography Semiverbatim', '\ifx.#1.\else\@bibliography{#1}\fi');
 DefConstructor('\@bibliography Semiverbatim',
 	       "<ltx:bibliography files='#1' xml:id='#id'>"
 	       . "<ltx:title>#refname</ltx:title>"
 	       ."</ltx:bibliography>",
-	       afterDigest=>sub { 
-		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
-		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
-		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
-		 $_[1]->setProperty(refname=>Digest(T_CS('\refname'))); });
+	       afterDigest=>sub { $_[0]->begingroup; # wrapped so redefns don't take effect!
+				  beginBibliography($_[1]); 
+				  $_[0]->endgroup; });
 DefMacroI('\refname',undef, 'References');
 DefPrimitive('\bibstyle{}', undef);
 DefMacro('\bibliographystyle{}', '\bibstyle{#1}');
@@ -2111,14 +2135,8 @@ DefConstructorI('\thebibliography',undef,
 		 my $gullet = $stomach->getGullet;
 		 $gullet->skipSpaces;
 		 $gullet->readArg if $gullet->ifNext(T_BEGIN);
-#		 $gullet->skipSpaces; # And AFTER to avoid prematurely triggering \par!!!
-		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
-		 ResetCounter('enumiv');
-		 DefMacroI(T_CS('\thebibliography@ID'),undef,($docid ? "$docid.bib" : 'bib'));
-		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
-		 $_[1]->setProperty(refname=>Digest(T_CS('\refname')));  
-		 # Fix for missing \bibitems!
-		 setupPseudoBibitem(); },
+
+		 beginBibliography($_[1]); },
 	      locked=>1);
 
 # Close the bibliography
