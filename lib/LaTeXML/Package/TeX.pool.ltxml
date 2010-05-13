@@ -30,6 +30,8 @@ else {
   Let(T_CS('\thedocument@ID'),T_CS('\@empty')); }
 NewCounter('@XMARG','document',idprefix=>'XM');
 
+DefRegister('\pdfoutput',Number(0));
+
 #**********************************************************************
 # CORE TeX; Built-in commands.
 #**********************************************************************
