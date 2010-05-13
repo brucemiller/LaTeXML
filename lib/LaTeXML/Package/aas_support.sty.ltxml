@@ -161,12 +161,14 @@ DefConstructor('\facility{}',"<ltx:text class='facility'>#1</ltx:text>");
 #======================================================================
 # 2.11 Appendices
 # almost normal LaTeX
-DefPrimitive('\appendix',sub{
+DefMacro('\appendix','\@appendix');
+DefPrimitive('\@appendix',sub{
   NewCounter('section', 'document', idprefix=>'A',nested=>['subsection']);
   NewCounter('equation', 'section', idprefix=>'E');
   DefMacro('\thesection', '\Alph{section}');
   DefMacro('\theequation','\thesection\arabic{equation}');
   Let(T_CS('\section'),T_CS('\appendix@section'),'global');
+  Let(T_CS('\@appendix'),T_CS('\relax'),'global');
  });
 
 #======================================================================
