@@ -1404,8 +1404,10 @@
   close CDATA #IMPLIED>
 
 <!ELEMENT bibblock (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
-                    |bibref|Math|inline-block|verbatim|break|graphics
-                    |inline-para|tabular|picture|note|indexmark|ERROR)*>
+                    |bibref|Math|p|equation|equationgroup|quote|block
+                    |listingblock|itemize|enumerate|description
+                    |inline-block|verbatim|break|graphics|inline-para
+                    |tabular|picture|note|indexmark|ERROR)*>
 <!ATTLIST bibblock
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
 

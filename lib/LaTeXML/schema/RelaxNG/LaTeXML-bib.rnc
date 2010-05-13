@@ -60,7 +60,10 @@ element bibtag {
 bibblock =
 ## A block of data appearing within a \elementref{bibitem}.
 element bibblock {
-  Inline.model }
+  Flow.model }
+
+# bibblock's model was this:
+#  Inline.model }
 
 # ======================================================================
 # bibentry is the (more) semantic form, typically extracted from bibtex.

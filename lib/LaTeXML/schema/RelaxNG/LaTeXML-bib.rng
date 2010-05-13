@@ -97,9 +97,13 @@ info to be used for filling in citations (\elementref{bibref}).</a:documentation
   <define name="bibblock">
     <element name="bibblock">
       <a:documentation>A block of data appearing within a \elementref{bibitem}.</a:documentation>
-      <ref name="Inline.model"/>
+      <ref name="Flow.model"/>
     </element>
   </define>
+  <!--
+    bibblock's model was this:
+     Inline.model }
+  -->
   <!--
     ======================================================================
     bibentry is the (more) semantic form, typically extracted from bibtex.
