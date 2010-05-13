@@ -1125,9 +1125,10 @@
 <!ELEMENT document ((subtitle|date|abstract|acknowledgements|keywords
                      |classification|title|toctitle|creator|note
                      |indexmark|ERROR|titlepage)*,
-                    ((((((para|theorem|proof|figure|table|listing|note
-                          |indexmark|ERROR)*
-                         |paragraph)
+                    (((((((para|theorem|proof|figure|table|listing|note
+                           |indexmark|ERROR)*
+                          |paragraph)
+                         |subsubsection)
                         |subsection)
                        |section)
                       |chapter)
