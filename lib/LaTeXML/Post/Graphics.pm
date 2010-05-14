@@ -173,7 +173,7 @@ sub transformGraphic {
     if((!defined $reldest) || ($cached eq $reldest)){
       my $dest =  pathname_make(dir=>$doc->getDestinationDirectory,name=>$cached);
 #      if(-f $dest && (-M $source >= -M $dest)){
-      if(pathname_timestamp($source) < pathname_timestamp($dest)){
+      if(pathname_timestamp($source) <= pathname_timestamp($dest)){
 	$self->ProgressDetailed($doc,">> Reuse $cached @ $width x $height");
 	return ($cached,$width,$height); }}}
   $reldest = $self->generateResourcePathname($doc,$node,$source,$type) unless $reldest;
