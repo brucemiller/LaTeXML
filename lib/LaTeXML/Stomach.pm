@@ -215,7 +215,7 @@ sub egroup {
   my($self)=@_;
   if($STATE->isValueBound('MODE',0)#){ # Last stack frame was a mode switch!?!?!
      || $STATE->lookupValue('groupNonBoxing')){ # group was opened with \begingroup
-    Fatal(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} or forgotten \\endgroup while ending group"); }
+    Error(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} or forgotten \\endgroup while ending group"); }
   popStackFrame($self,0);
   return; }
 
@@ -228,7 +228,7 @@ sub endgroup {
   my($self)=@_;
   if($STATE->isValueBound('MODE',0) #){ # Last stack frame was a mode switch!?!?!
      || ! $STATE->lookupValue('groupNonBoxing')){ # group was opened with \bgroup
-    Fatal(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} or forgotten \\egroup while ending group"); }
+    Error(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} or forgotten \\egroup while ending group"); }
   popStackFrame($self,1);
   return; }
 
@@ -258,9 +258,9 @@ sub beginMode {
 sub endMode {
   my($self,$mode)=@_;
   if(! $STATE->isValueBound('MODE',0)){ # Last stack frame was NOT a mode switch!?!?!
-    Fatal(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} while ending mode $mode"); }
+    Error(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} while ending mode $mode"); }
   elsif($STATE->lookupValue('MODE') ne $mode){
-    Fatal(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Can't end mode $mode: Was in mode ".$STATE->lookupValue('MODE')."!!"); }
+    Error(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Can't end mode $mode: Was in mode ".$STATE->lookupValue('MODE')."!!"); }
   $self->popStackFrame;		# Effectively egroup.
  return; }
 
