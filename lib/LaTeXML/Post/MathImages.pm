@@ -57,7 +57,7 @@ return <<EOPreamble;
 \\def\\beginINLINE{\\lxBeginImage\\(}
 \\def\\endINLINE{\\)\\lxEndImage\\AdjustInline\\lxShowImage}
 % For Display, same as inline, but set displaystyle.
-\\def\\beginDISPLAY{\\lxBeginImage\\(\\displaystyle}
+\\def\\beginDISPLAY{\\lxBeginImage\\(\\displaystyle\\the\\everydisplay}
 \\def\\endDISPLAY{\\)\\lxEndImage\\AdjustInline\\lxShowImage}
 EOPreamble
 }
