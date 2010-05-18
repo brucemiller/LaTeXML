@@ -48,10 +48,12 @@ DefMacro('\lstinline OptionalKeyVals:LST', sub {
   @expansion; });
 
 sub lstProcessInline { 
-  Invocation(T_CS('\@listings@inline'), lstProcess('inline',@_)); }
+  Invocation(T_CS('\@listings@inline'), 
+	     listingsSemantics(),
+	     lstProcess('inline',@_)); }
 
-DefConstructor('\@listings@inline {}',
-	       "<ltx:text class='listing'>#1</ltx:text>",
+DefConstructor('\@listings@inline {} {}',
+	       "<ltx:text class='listing #1'>#2</ltx:text>",
 	       reversion=>'\lstinline#1#2#3#2'); # ??????
 
 # Not a regular environment, since we're going to read the body verbatim!
@@ -118,20 +120,36 @@ sub lstProcessBlock {
    ($name ? (T_CS('\def'),T_CS('\lstname'),T_BEGIN,$name->unlist,T_END) : ()),
    Invocation(($numbered ? T_CS('\@listings')
 	       : ($caption || $labelled ? T_CS('\@@listings')
-		 : T_CS('\@@listings@inblock'))),    Tokens(@body)),
+		 : T_CS('\@@listings@inblock'))),
+	      listingsSemantics(),
+	      Tokens(@body)),
    T_END); }
 
 DefConstructor('\@listings@inner {}', "<ltx:tabular>#1</ltx:tabular>");
 # Or new listing element?
-DefConstructor('\@listings {}',
-	       "<ltx:listing xml:id='#id' refnum='#refnum'>#1</ltx:listing>",
+DefConstructor('\@listings {} {}',
+	       "<ltx:listing xml:id='#id' refnum='#refnum' class='#1'>#2</ltx:listing>",
 	       properties=>sub { RefStepCounter('lstlisting'); });
-DefConstructor('\@@listings {}',
-	       "<ltx:listing xml:id='#id'>#1</ltx:listing>",
+DefConstructor('\@@listings {} {}',
+	       "<ltx:listing xml:id='#id' class='#1'>#2</ltx:listing>",
 	       properties=>sub { RefStepID('lstlisting'); });
-DefConstructor('\@@listings@inblock {}',
-	       "<ltx:listingblock xml:id='#id'>#1</ltx:listingblock>",
+DefConstructor('\@@listings@inblock {} {}',
+	       "<ltx:listingblock xml:id='#id' class='#1'>#2</ltx:listingblock>",
 	       properties=>sub { RefStepID('lstlisting'); });
+
+#======================================================================
+# extract some minimal bit of "semantics" from the keywords or other bound formatting
+# To end up as the class attribute of the (various) listings element.
+# This is not nearly extensible enough (in any sensible way).
+# Because of the peculiar timing of the evaluation of keywords and body,
+# this is a bit hard to get at.
+sub listingsSemantics {
+  my @items = ();
+  if(my $lang = ToString(LookupValue('LST@language'))){
+    $lang = "$2_$1" if $lang =~ /^\[([^\]]*)\](.*)$/;
+    push(@items, "language_$lang"); }
+
+  Tokens( Explode(join(' ',@items))); }
 
 #======================================================================
 # Managing the sets of keyvals that compose a Listings Style or Language.
@@ -170,8 +188,10 @@ sub lstActivate {
 	$val = LookupValue('KEYVAL@LST@'.$key.'@default') unless $val;
 	# Done for effect.
 	Digest(Tokens($cs,($val ? $val->unlist : Tokens()) ,T_CS('\end'))); }
-      else {
-	AssignValue('LST@'.$key=>$val); }}}}
+#      else {
+	AssignValue('LST@'.$key=>$val); 
+#}
+}}}
 
 #----------------------------------------------------------------------
 # Various helpers for dealing with the arguments to options.
@@ -961,7 +981,10 @@ sub lstProcess_internal {
       $LaTeXML::colnum += length($1);
       my $delim = $$delimiters{$1};
       my $classname = $$delim{class};
-      push(@tokens,lstClassBegin($classname));
+      push(@tokens,
+	   lstClassBegin($classname),
+	   ###  ($classname ? (T_CS('\@listingKeyword'),T_OTHER($classname),T_BEGIN):())
+	  );
       # With escapes or texcl, some might be evaluated as TeX; those we match the close delim and simply tokenize.
       if(lstClassProperty($classname,'eval')){ # If this is a comment with texcl applied, just match & expand
 	$LaTeXML::listing =~ s/^(.*?)($$delim{close})//s; # Simply match until closing regexp
@@ -984,7 +1007,9 @@ sub lstProcess_internal {
 				 ? T_CS('\@lst@visible@space') :  $LaTeXML::SPACE);
 	# Recurse [note that eval should make the individual tokens tokenize as usual!]
 	push(@tokens,lstProcess_internal($$delim{close})); }
-      push(@tokens,lstClassEnd($classname)); }
+      push(@tokens,
+	   ### ($classname? (T_END):()),
+	   lstClassEnd($classname)); }
     # Identifiers (possibly keywords, or other classes)
     elsif ($LaTeXML::ID_RE && $LaTeXML::listing =~ s/^($LaTeXML::ID_RE)//) {
       my $word = $1;
@@ -994,7 +1019,13 @@ sub lstProcess_internal {
       if(my $indexname = $$words{$lookup}{index} || lstClassProperty($classname,'index')){ # Should be indexed?
 	if(my $index = $indexname && $$classes{$indexname}){
 	  push(@tokens,$$index{begin}->unlist,T_BEGIN,@w,T_END); }}
-      push(@tokens,lstClassBegin($classname),@w,lstClassEnd($classname)); }
+      push(@tokens,
+	   lstClassBegin($classname),
+	   Invocation(T_CS('\@listingKeyword'),
+		      T_OTHER($classname),
+		      Tokens(@w)),
+	   lstClassEnd($classname)); }
+
     # NOTE: keywordprefix & otherkeywords probably need a specific regexp
     # Perhaps a special keywords_re : otherkeywords | keywordprefix$LaTeXML::ID_RE => keyword
 
@@ -1017,17 +1048,25 @@ sub lstProcess_internal {
       my $gobble = lstGetNumber('gobble');
       map( $LaTeXML::listing =~ s/^.//, 1..$gobble) if $gobble;
     }
-    elsif ($LaTeXML::listing =~ s/^\t//s) { # Tab expansion
-      my $tabsize = lstGetNumber('tabsize') || 1;
-      my $n = ($tabsize-($LaTeXML::colnum % $tabsize));
-      push(@tokens,map($LaTeXML::SPACE,1..$n));
-      $LaTeXML::colnum+=$n; }
     elsif ($LaTeXML::listing =~ s/^\f//s) { # Formfeed
       push(@tokens,lstGetTokens('formfeed')->unlist);
       $LaTeXML::colnum++; }
-    elsif ($LaTeXML::listing =~ s/^\s//s) { # Space (nonbreak)
-      push(@tokens,$LaTeXML::SPACE);
-      $LaTeXML::colnum++; }
+    elsif ($LaTeXML::listing =~ s/^([\t\s]+)//s) { # Tab expansion
+      my $s=$1;
+      my $n=0;
+      my $tabsize = lstGetNumber('tabsize') || 1;
+      foreach my $c (split(//,$s)){
+	$n += ($c eq ' ' ? 1 : ($tabsize-(($LaTeXML::colnum +$n) % $tabsize))); }
+      push(@tokens,Invocation(T_CS('\@listingKeyword'),T_OTHER('space'),Tokens(map($LaTeXML::SPACE,1..$n)))->unlist);
+      $LaTeXML::colnum+=$n; }
+   # elsif ($LaTeXML::listing =~ s/^\t//s) { # Tab expansion
+   #    my $tabsize = lstGetNumber('tabsize') || 1;
+   #    my $n = ($tabsize-($LaTeXML::colnum % $tabsize));
+   #    push(@tokens,map($LaTeXML::SPACE,1..$n));
+   #    $LaTeXML::colnum+=$n; }
+   #  elsif ($LaTeXML::listing =~ s/^\s//s) { # Space (nonbreak)
+   #    push(@tokens,$LaTeXML::SPACE);
+   #    $LaTeXML::colnum++; }
     # Quoted are typically quoted delimiters.
     elsif($LaTeXML::QUOTED_RE && $LaTeXML::listing =~ s/^($LaTeXML::QUOTED_RE)//){  # Something quoted.
       push(@tokens,T_OTHER($1));
@@ -1038,6 +1077,9 @@ sub lstProcess_internal {
       $LaTeXML::colnum++; }
   }
   @tokens; }
+
+DefConstructor('\@listingKeyword {}{}', 
+	       "?#1(<ltx:text class='lst#1'>#2</ltx:text>)(#2)");
 
 sub lstClassBegin {
   my($classname)=@_;
@@ -1059,7 +1101,7 @@ sub lstClassProperty {
   ($class && ($$class{$property} ? $$class{$property} : lstClassProperty($$class{class},$property))); }
 
 DefConstructor('\@lst@startline[]',
-	       "<ltx:tr>?#1(<ltx:td class='linenumber'>#1</ltx:td>)<ltx:td><ltx:text>");
+	       "<ltx:tr>?#1(<ltx:td class='linenumber'>#1</ltx:td>)<ltx:td><ltx:text class='lstline'>");
 DefConstructor('\@lst@endline[]',
 	       "</ltx:text></ltx:td>?#1(<ltx:td class='linenumber'>#1</ltx:td>)</ltx:tr>");
 DefConstructor('\@lst@visible@space', "\x{2423}");
