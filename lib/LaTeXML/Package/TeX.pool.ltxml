@@ -2679,7 +2679,13 @@ DefPrimitiveI('\endline', undef,undef);
 # TeX Book, Appendix B, p. 352
 
 DefPrimitiveI('\obeyspaces', undef,undef);
-DefPrimitiveI('\obeylines',  undef,undef);
+DefPrimitiveI('\obeylines',  undef, sub {
+  AssignCatcode("\n"=>13);
+  # Which should this be??
+#  Let(T_ACTIVE("\n"), T_CS('\par'));
+  Let(T_ACTIVE("\n"), T_CS('\@break'));
+  return});
+DefConstructor('\@break', "<ltx:break/>");
 
 RawTeX(' \def\loop#1\repeat{\def\body{#1}\iterate}
          \def\iterate{\body \let\next=\iterate \else\let\next=\relax\fi \next}
