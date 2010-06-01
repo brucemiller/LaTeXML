@@ -16,6 +16,10 @@ use LaTeXML::Package;
 
 RequirePackage('url');
 
+# \hypersetup{keyvals} configures various parameters,
+# I think none matter much to latexml, but we do need to at least ignore it.
+DefMacro('\hypersetup{}','');
+
 # Need some work here!?!?
 DefMacro('\pdfcatalog{}','');
 DefRegister('\pdfcompresslevel',Number(0));
