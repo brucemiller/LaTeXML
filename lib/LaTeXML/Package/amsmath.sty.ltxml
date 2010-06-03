@@ -689,11 +689,13 @@ DefConstructor('\genfrac{}{}{Dimension}{}{}{}',
 # I've left it to a special case in conversion to pmml.
 DefConstructor('\cfrac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok name='cfrac' style='#style' meaning='continued-fraction'/>"
+	       . "<ltx:XMTok name='cfrac' style='#cstyle' meaning='continued-fraction'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg>"
 	       . "<ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	      properties=>sub{ (style=>LookupValue('CFRACSTYLE')); });
+	       properties=>sub{ (cstyle=>LookupValue('CFRACSTYLE')); },
+	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
+
 AssignValue(CFRACSTYLE=>'display');
 # This should get incorporated into any \cfrac's that are constructed in scope.
 DefConstructor('\cfracstyle{}','',
