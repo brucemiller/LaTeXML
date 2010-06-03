@@ -1387,7 +1387,9 @@ sub addToMathFork {
 	$main->setAttribute(tex=>'\displaystyle '.$tex);
 	$main->setAttribute('content-tex'=>$ctex) unless $ctex eq $tex; }
       # and the modified copy to the alternative branch.
-      $branch->appendChild($copy->firstChild); }
+      # $branch->appendChild($copy->firstChild);
+      append_nodes_clone($branch,$copy->firstChild);
+    }
   }}
 
 # Style Parameters

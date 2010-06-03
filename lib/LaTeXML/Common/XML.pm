@@ -66,7 +66,7 @@ our @EXPORT = (
   		   decodeFromUTF8),
 	       @XML::LibXML::EXPORT,
 	       # Possibly (later) export these utility functions
-	       qw(&element_nodes &text_in_node &new_node &append_nodes &clear_node &maybe_clone 
+	       qw(&element_nodes &text_in_node &new_node &append_nodes &append_nodes_clone &clear_node &maybe_clone 
 		  &valid_attributes &copy_attributes &rename_attribute &remove_attr
 		  &get_attr &isTextNode &isElementNode
 		  &CA_KEEP &CA_OVERWRITE &CA_MERGE &CA_EXCEPT)
@@ -128,6 +128,35 @@ sub append_nodes {
       $node->appendChild(maybe_clone($child));   }
     elsif(defined $child){ 
       $node->appendText($child); }}
+  $node; }
+
+# In this case, @children are already XML::LibXML nodes,
+# we want to append them to $node, but using the namespace structure already existing.
+# [This didn't seem necessary but apparently a change in XML::LibXML 1.70 caused
+# extra namespaces with prefix "default" showing up (_again_!!!)]
+sub append_nodes_clone {
+  my($node,@children)=@_;
+  foreach my $child (@children){
+    my $type = $child->nodeType;
+    if($type == XML_ELEMENT_NODE){
+      my $new = $node->addNewChild($child->namespaceURI,$child->localname);
+      foreach my $attr ($child->attributes){
+	my $atype = $attr->nodeType;
+	if($atype == XML_ATTRIBUTE_NODE){
+	  my $key = $attr->nodeName;
+	  if($key eq 'xml:id'){
+	    my $value = $attr->getValue;
+	    $new->setAttribute($key, $value); }
+	  elsif(my $ns = $attr->namespaceURI){
+	    $new->setAttributeNS($ns,$attr->localname,$attr->getValue); }
+	  else {
+	    $new->setAttribute( $attr->localname,$attr->getValue); }}
+      }
+      append_nodes_clone($new, $child->childNodes); }
+    elsif($type == XML_DOCUMENT_FRAG_NODE){
+      append_nodes_clone($node,$child->childNodes); }
+    elsif($type == XML_TEXT_NODE){
+      $node->appendTextNode($child->textContent); }}
   $node; }
 
 sub clear_node {
