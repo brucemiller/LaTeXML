@@ -133,9 +133,13 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
       <a:documentation>A quotation.</a:documentation>
       <ref name="Common.attributes"/>
       <ref name="ID.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="Block.model"/>
     </element>
   </define>
+  <!--
+    This was Inline.model, but since quotes can be arbitrarily complex
+    including equations, etc, not just verse, should be Block.model, perhaps even Para.model?
+  -->
   <define name="block">
     <element name="block">
       <a:documentation>A generic block (fallback).</a:documentation>

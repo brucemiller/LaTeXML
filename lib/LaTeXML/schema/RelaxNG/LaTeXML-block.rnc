@@ -85,7 +85,9 @@ element quote {
   Common.attributes,
   ID.attributes,
 
-  Inline.model  }
+  Block.model  }
+# This was Inline.model, but since quotes can be arbitrarily complex
+# including equations, etc, not just verse, should be Block.model, perhaps even Para.model?
 
 block =
 ## A generic block (fallback).

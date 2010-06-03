@@ -164,9 +164,10 @@
   class NMTOKENS #IMPLIED
   format CDATA #IMPLIED>
 
-<!ELEMENT quote (#PCDATA|text|emph|acronym|rule|anchor|ref|cite|bibref
-                 |Math|inline-block|verbatim|break|graphics|inline-para
-                 |tabular|picture|note|indexmark|ERROR)*>
+<!ELEMENT quote (p|equation|equationgroup|quote|block|listingblock
+                 |itemize|enumerate|description|inline-block|verbatim
+                 |break|graphics|inline-para|tabular|picture|note
+                 |indexmark|ERROR)*>
 <!ATTLIST quote
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
