@@ -609,7 +609,7 @@ supops   : SUPOP(s)				{ New(undef,
 # And some special cases...
 
 # Match a CLOSE that `corresponds' to the OPEN
-balancedClose : CLOSE { isMatchingClose($arg[0],$item[1]) && $item[1]; }
+balancedClose : CLOSE { (isMatchingClose($arg[0],$item[1]) ? 1 : undef) } { $item[1]; }
 
 # The "evaluated at" operator, typically a vertical bar followed by a subscript
 # equation. But it is ofen used in \left. \right| pairs!

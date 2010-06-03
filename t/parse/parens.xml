@@ -378,7 +378,7 @@
       <equation xml:id="S5.Ex25">
         <Math mode="display" tex="\left\uparrow{a\over b}\right\downarrow" xml:id="S5.Ex25.m1" text="a / b">
           <XMath>
-            <XMApp open="↑">
+            <XMApp open="↑" close="↓">
               <XMTok meaning="divide" role="MULOP" style="display"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
@@ -389,7 +389,7 @@
       <equation xml:id="S5.Ex26">
         <Math mode="display" tex="\left\Uparrow{a\over b}\right\Downarrow" xml:id="S5.Ex26.m1" text="a / b">
           <XMath>
-            <XMApp open="⇑">
+            <XMApp open="⇑" close="⇓">
               <XMTok meaning="divide" role="MULOP" style="display"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
@@ -400,7 +400,7 @@
       <equation xml:id="S5.Ex27">
         <Math mode="display" tex="\left\updownarrow{a\over b}\right\Updownarrow" xml:id="S5.Ex27.m1" text="a / b">
           <XMath>
-            <XMApp open="↕">
+            <XMApp open="↕" close="⇕">
               <XMTok meaning="divide" role="MULOP" style="display"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
