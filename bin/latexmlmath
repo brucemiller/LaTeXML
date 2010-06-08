@@ -115,9 +115,19 @@ my $latexml= LaTeXML->new(preload=>['LaTeX.pool',@preload], searchpaths=>[@paths
 			  documentid=>$documentid,
 			  nomathparse=>$noparse);
 
-# Digest and convert to LaTeXML's XML
-my $doc = LaTeXML::Post::Document->new($latexml->convertString($texdoc),
-				      nocache=>1);
+my $digested = $latexml->digestString($texdoc);
+
+# NASTY Hack: to disable cleanup_Math
+# cleanup_Math is useful within "real" documents, to recognize & simplify non-math
+# that gets marked up within $..$ (a common TeX idiom).
+# However, that simplification isn't appropriate for isolated "math" expressions
+# especially within automation, where latexmlmath might be used.
+my $model = $$latexml{state}->getModel;
+$$model{tagprop}{'ltx:Math'}{afterClose}
+  = [grep($_ ne \&LaTeXML::Package::Pool::cleanup_Math, @{$$model{tagprop}{'ltx:Math'}{afterClose}})];
+
+my $converted= $digested && $latexml->convertDocument($digested);
+my $doc = $digested && LaTeXML::Post::Document->new($converted,nocache=>1);
 
 #======================================================================
 # Postprocess to convert the math to whatever desired forms.
