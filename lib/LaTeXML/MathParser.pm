@@ -714,14 +714,15 @@ our %enclose1 = ('{@}'=>'set',	# alternatively, just variant parentheses
 		 "\x{2308}@\x{2309}"=>'ceiling',
 		 '<@>'=>'expectation', # or just average?
 		 '<@|'=>'bra', '|@>'=>'ket');
-# For enclosing two objects
-our %enclose2 = ( '(@)'=>'open-interval', # alternatively, just a list
-		  '[@]'=>'closed-interval',
-		  '(@]'=>'open-closed-interval', '[@)'=>'closed-open-interval',
-		  '{@}'=>'set',	# alternatively, just a list ?
+# For enclosing more than 2 objects; the punctuation is significant too
+our %enclose2 = ( '(@,@)'=>'open-interval', # alternatively, just a list
+		  '[@,@]'=>'closed-interval',
+		  '(@,@]'=>'open-closed-interval', '[@,@)'=>'closed-open-interval',
+		  '{@,@}'=>'set',	# alternatively, just a list ?
 		);
 # For enclosing more than 2 objects.
-our %encloseN = ( '(@)'=>'vector','{@}'=>'set',);
+# assume 1st punct? or should we check all are same?
+our %encloseN = ( '(@,@)'=>'vector','{@,@}'=>'set',);
 
 sub isMatchingClose {
   my($open,$close)=@_;
@@ -740,13 +741,15 @@ sub Fence {
   my ($open,$close) = ($stuff[0],$stuff[$#stuff]);
   my $o  = p_getValue($open);
   my $c = p_getValue($close);
-  my $key = $o.'@'.$c;
-  my $n = int(scalar(@stuff)-2+1)/2;
+  my $n = int((scalar(@stuff)-2+1)/2);
+  my @p= map(p_getValue(@stuff[2*$_]), 1..$n-1);
   my $op = ($n==1
-	    ?  $enclose1{$key}
+	    ?  $enclose1{$o.'@'.$c}
 	    : ($n==2 
-	      ? ($enclose2{$key} || 'list')
-	       : ($encloseN{$key} || 'list')));
+	      ? ($enclose2{$o.'@'.$p[0].'@'.$c} || 'list')
+	       : ($encloseN{$o.'@'.$p[0].'@'.$c} || 'list')));
+  # When we're parsing XMWrap, we shouldn't try so hard to infer a meaning (it'll usually be wrong)
+  $op = undef unless $LaTeXML::MathParser::STRICT;
   if(($n==1) && (!defined $op)){ # Simple case.
     Annotate($stuff[1],open=>($open ? $open : undef), close=>($close ? $close : undef)); }
   else {
