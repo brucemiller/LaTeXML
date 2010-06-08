@@ -211,9 +211,11 @@ addExpressionModifier :
         | PUNCT(?) OPEN relop Expression balancedClose[$item[2]]
 	    { Apply(New('annotated'),$arg[0],
  		    Fence($item[2], Apply($item[3],Absent(),$item[4]),$item[5])); }
-        | PUNCT(?) OPEN Expression relop Expression
-	  	    moreRHS[$item[3],$item[4],$item[5]] balancedClose[$item[2]]
-            { Apply(New('annotated'),$arg[0],Fence($item[2],$item[6],$item[7])); }
+        # An alternative form would have OPEN Expression relop...
+	# but that seems less like a "modifier" and more like a relation as argument!
+###        | PUNCT(?) OPEN Expression relop Expression
+###	  	    moreRHS[$item[3],$item[4],$item[5]] balancedClose[$item[2]]
+###            { Apply(New('annotated'),$arg[0],Fence($item[2],$item[6],$item[7])); }
 	| PUNCT(?) OPEN MODIFIEROP Expression balancedClose[$item[2]]
             { Apply($item[3],$arg[0],$item[4]); }
         | MODIFIER
@@ -448,7 +450,7 @@ suchThatOp : MIDDLE | VERTBAR
 # ================================================================================
 # Function args, etc.
 
-# maybeArgs[$function] ; Add arguments to an identifier, if made explict.
+# maybeArgs[$function] ; Add arguments to an identifier, but only if made explict.
 maybeArgs : 
 	  /^\Z/ { $arg[0];}   # short circuit!
         | APPLYOP requireArgs[$arg[0]]
@@ -467,14 +469,16 @@ doubtArgs :
 # forbidArgs[$unknown,$open]; Got a suspicious pattern: an unknown and open. 
 #    If the following seems to be an argument list, warn.
 forbidArgs :
-	  Expression (argPunct Expression)(s) balancedClose[$arg[1]]
+	  Argument (argPunct Argument)(s) balancedClose[$arg[1]]
 	     		       		        { MaybeFunction($arg[0]); undef; }
+	# Term really could be Argument, but that gives a "possible function" warning
+	# even for a(b+c) which has a good reason for the parentheses; These patterns FAIL anyway!!
 	| Term balancedClose[$arg[1]]		{ MaybeFunction($arg[0]); undef; }
 
-# requireArgs[$function]; Add arguments following a function, failing if it
+# requireArgs[$function]; Add arguments following a known function, failing if it
 #   isn't there! Typically this follows an explicit applyop
 requireArgs :
-	  OPEN Expression (argPunct Expression {[$item[1],$item[2]];})(s?)
+	  OPEN Argument (argPunct Argument {[$item[1],$item[2]];})(s?)
 	       balancedClose[$item[1]]
                   { ApplyDelimited($arg[0],$item[1],$item[2],
 				   map(@$_,@{$item[3]}),$item[4]); }
@@ -513,21 +517,21 @@ addTrigFunArgs :
 # addEasyArgs[$function]; gets unambiguous compositions or parenthesized arguments
 #  These are the "easy" cases for addArgs and addOpFunArgs.
 addEasyArgs :
-##	  COMPOSEOP preScripted['FUNCTION']
-##	  	    addArgs[Apply($item[1],$arg[0],$item[2])]
-##		   { $item[3]; }
-##        | COMPOSEOP preScripted['OPFUNCTION']
-##	  	    addOpFunArgs[Apply($item[1],$arg[0],$item[2])]
-##		   { $item[3]; }
-##        | COMPOSEOP preScripted['TRIGFUNCTION']
-##	  	    addTrigFunArgs[Apply($item[1],$arg[0],$item[2])]
-##		   { $item[3]; }
 	  COMPOSEOP makeComposition[$arg[0],$item[1]]
-        |  APPLYOP(?) OPEN Expression
-	   	      (argPunct Expression {[$item[1],$item[2]];})(s?)
+        |  APPLYOP(?) OPEN Argument
+	   	      (argPunct Argument {[$item[1],$item[2]];})(s?)
                    balancedClose[$item[2]]
  	  	  { ApplyDelimited($arg[0],$item[2],$item[3],
 				   map(@$_,@{$item[4]}),$item[5]); }
+
+# A function (or other) argument would normally be a simple expression,
+# but often relations or arrows appear, so allow those as well.
+Argument : Expression extendArgument[$item[1]]
+
+extendArgument :
+	  /^\Z/ { $arg[0]; } # short circuit
+	| relop Expression { NewFormula($arg[0],$item[1],$item[2]); }
+	| { $arg[0]; }
 
 # makeComposition[$thing,$comp]; Given something that presumably is a function,
 #  and a composition operator, read another function and possibly args
