@@ -10,8 +10,8 @@ Expect inline math: xx<Math mode="inline" tex="a+b" xml:id="S1.p1.m1" text="a + 
     </para>
     <para xml:id="S1.p2">
       <p>Expect display math: xx</p>
-      <equation>
-        <Math mode="display" tex="a+b" xml:id="S1.p2.m1" text="a + b">
+      <equation xml:id="S1.Ex1">
+        <Math mode="display" tex="a+b" xml:id="S1.Ex1.m1" text="a + b">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>

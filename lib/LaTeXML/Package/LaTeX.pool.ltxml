@@ -922,6 +922,20 @@ DefMacroI('\normalsfcodes',undef,Tokens());
 #======================================================================
 # C.7.1 Math Mode Environments
 #======================================================================
+# Redefined from TeX.pool, since with LaTeX we presumably have a more complete numbering system
+DefConstructorI('\@@BEGINDISPLAYMATH',undef,
+	       "<ltx:equation xml:id='#id'>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>"
+	       .   "#body"
+	       .  "</ltx:XMath>"
+	       . "</ltx:Math>"
+	       ."</ltx:equation>",
+	       alias=>'$$',
+	       beforeDigest=> sub{ $_[0]->beginMode('display_math'); },
+	       properties=> sub { RefStepID('equation') },
+	       captureBody=>1);
+
 DefEnvironment('{displaymath}', 
 	       "<ltx:equation xml:id='#id'>"
 	       . "<ltx:Math mode='display'>"
