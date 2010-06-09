@@ -851,6 +851,8 @@ DefMathML('Apply:?:divide', sub {
 DefMathML('Apply:MODIFIEROP:?',       \&pmml_infix, undef);
 DefMathML("Token:MODIFIEROP:?",         \&pmml_mo,   undef);
 
+DefMathML('Apply:MIDDLE:?',       \&pmml_infix, undef);
+
 DefMathML("Token:SUPOP:?",         \&pmml_mo,   undef);
 DefMathML('Apply:SUPERSCRIPTOP:?', \&pmml_script_handler, undef);
 DefMathML('Apply:SUBSCRIPTOP:?',   \&pmml_script_handler, undef);

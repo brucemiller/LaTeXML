@@ -353,11 +353,11 @@ maybeBra :
 # <$expr1|$expr2   maybeBraket[$expr1,$expr2]
 maybeBraket :
           RANGLE { SawNotation('QM'); }
-	      addScripts[Apply(New('inner-product'),
+	      addScripts[Apply(New('inner-product', "\x{2061}",role=>'MIDDLE'),
 		               Fence('<',$arg[0],'|'),
 	                       Fence('|',$arg[1],'>'))]
         | VERTBAR ketExpression RANGLE { SawNotation('QM'); }
-	      addScripts[Apply(New('inner-product'), # Is this a good representation?
+	      addScripts[Apply(New('inner-product', "\x{2061}",role=>'MIDDLE'), # Is this a good representation?
 		               Fence('<',$arg[0],'|'),
 			       Apply($arg[1],Fence('|',$item[2],'>')))]
 
