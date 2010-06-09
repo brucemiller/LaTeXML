@@ -22,7 +22,7 @@ use base qw(LaTeXML::Object);
 
 sub new {
   my($class,$string)=@_;
-  my $self = {string=>$string,source=>"Anonmymous String"};
+  my $self = {string=>$string,source=>"Anonymous String"};
 #  $$self{buffer}=[split("\n",$string)];
   bless $self,$class;
   $$self{buffer}=[(defined $string ? $self->splitString($string) : ())];
