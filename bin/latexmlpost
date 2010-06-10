@@ -191,8 +191,8 @@ Error("Parallel math markup needs at least two formats")
 #  if $parallelmath && ($math_formats[0] !~ /^(cmml|pmml)$/);
 
 if((!defined $destination) && ($mathimages || $dographics || $picimages)){
-  Error("Must supply --destination unless image generation is disabled"
-	."(--nomathimages --nographics --nopictureimages)"); }
+  Error("Must supply --destination unless all auxilliary file writing is disabled"
+	."(--nomathimages --nographicimages --nopictureimages --nodefaultcss)"); }
 
 #======================================================================
 # Do the processing.
