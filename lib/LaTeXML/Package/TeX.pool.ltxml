@@ -184,7 +184,9 @@ DefParameterType('Digested', sub {
   my($gullet)=@_;
   $gullet->skipSpaces;
   my $ismath     = $STATE->lookupValue('IN_MATH');
-  my $token = $gullet->readXToken;
+  my $token;
+  do { $token=$gullet->readXToken(); 
+      } while(defined $token && $token->getCatcode == CC_SPACE);
   my @list=();
   if($token->equals(T_BEGIN)){
     Digest($token);
@@ -193,6 +195,8 @@ DefParameterType('Digested', sub {
     @list = $STATE->getStomach->invokeToken($token); }
   # In most (all?) cases, we're really looking for a single Whatsit here...
   @list = grep(ref $_ ne 'LaTeXML::Comment', @list);
+#  while(scalar(@list) && isEmpty($list[0])){
+#    shift(@list); }
   (scalar(@list) == 1 ? $list[0] 
    : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); },
 		 undigested=>1,		# since _already_ digested.
