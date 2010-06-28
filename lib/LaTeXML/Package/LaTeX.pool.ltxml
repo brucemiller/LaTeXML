@@ -665,9 +665,9 @@ DefEnvironment('{flushright}',sub { aligningEnvironment('flushright',@_); });
 
 # These add an operation to be carried out when the current group ends.
 # These operators will add alignment (class) attributes to each "line" in the current block.
-DefPrimitiveI('\centering',   undef, sub { UnshiftValue(afterGroup=>T_CS('\@add@centering')); });
-DefPrimitiveI('\raggedright', undef, sub { UnshiftValue(afterGroup=>T_CS('\@add@flushright')); });
-DefPrimitiveI('\raggedleft',  undef, sub { UnshiftValue(afterGroup=>T_CS('\@add@flushleft')); });
+DefPrimitiveI('\centering',   undef, sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@centering')); });
+DefPrimitiveI('\raggedright', undef, sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@flushright')); });
+DefPrimitiveI('\raggedleft',  undef, sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@flushleft')); });
 DefConstructorI('\@add@centering',  undef,
 		sub { map(addClass($_,'centering'),  $_[0]->getChildElements($_[0]->getNode)); });
 DefConstructorI('\@add@flushright', undef,
