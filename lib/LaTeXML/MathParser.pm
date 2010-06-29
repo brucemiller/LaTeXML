@@ -202,6 +202,7 @@ sub parse_rec {
       $result = XML_replaceNode($result,$node); }
     $result; }
   else {
+    $self->parse_kludgeScripts($node);
     if($tag eq 'ltx:XMath'){
       NoteProgress('[F'.++$$self{n_parsed}.']'); }
     elsif($tag eq 'ltx:XMArg'){
@@ -300,6 +301,38 @@ sub XML_addNodes {
       warn "Dont know how to add $child to $node; ignoring"; }
     elsif(defined $child){
       $node->appendTextNode($child); }}}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Low-Level hack when parsing fails;
+# attach sub/superscripts to something plausible.
+# For a node whose content could not be parsed, we at least try
+# to attach stray sub/superscripts to reasonable neighbors.
+# NOTE: we should be able to optionally switch this off.
+# Especially, when we want to try alternative parse strategies.
+sub parse_kludgeScripts {
+  my($self,$mathnode)=@_;
+  my @nodes = map( [$_,$self->getGrammaticalRole($_)],
+		   grep( getQName($_) ne 'ltx:XMHint', # Strip out Hints
+			 element_nodes($mathnode)));
+  if(grep( $$_[1]=~/^(FLOAT|POST)(SUB|SUPER)SCRIPT$/, @nodes)){
+    my @kludged = $self->parse_kludgeScripts_rec(@nodes);
+    # Now remove & replace the previous nodes
+    map($mathnode->removeChild($$_[0]),@nodes);
+    XML_addNodes($mathnode,@kludged); }}
+
+sub parse_kludgeScripts_rec {
+  my($self,$a,$b,@more)=@_;
+  if(!defined $b){
+    ($$a[0]); }
+  elsif($$a[1] =~ /^FLOAT(SUB|SUPER)SCRIPT$/){
+    # A floating script is applied to the following thing as a pre-script.
+    my($base,@rest) = $self->parse_kludgeScripts_rec($b,@more);
+    (NewScript($base,$$a[0]),@rest); }
+  elsif($$b[1] =~ /^POST(SUB|SUPER)SCRIPT$/){
+    # or a postscript is applied to the preceding thing.
+    $self->parse_kludgeScripts_rec([NewScript($$a[0],$$b[0]),''],@more); }
+  else {
+    ($$a[0],$self->parse_kludgeScripts_rec($b,@more)); }}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Low-level Parser: parse a single expression
