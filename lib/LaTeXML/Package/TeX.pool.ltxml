@@ -2072,6 +2072,9 @@ sub scriptHandler {
     my $cs = '\@@POST'.$op;
     # Check if preceding box, if any, is empty {}
     my $prev = $LaTeXML::LIST[$#LaTeXML::LIST];
+    while($prev && (ref $prev eq 'LaTeXML::Whatsit') && $prev->getProperty('isSpace')){
+      pop(@LaTeXML::LIST);
+      $prev = $LaTeXML::LIST[$#LaTeXML::LIST]; }
     if(! $prev){		# No box at all?
       $cs = '\@@FLOATING'.$op; }
     elsif(isEmpty($prev)){	# Or empty (remove it)
