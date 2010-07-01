@@ -42,6 +42,8 @@ DefRegister('\pdfoutput',Number(0));
 # Skip any spaces, but don't contribute an argument.
 DefParameterType('SkipSpaces', sub{$_[0]->skipSpaces; }, novalue=>1);
 
+DefParameterType('Skip1Space', sub{$_[0]->skip1Space; }, novalue=>1);
+
 # Read the next token
 DefParameterType('Token',      sub{$_[0]->readToken; });
 
@@ -847,15 +849,8 @@ DefPrimitive('\divide Variable SkipKeyword:by Number',sub {
 
 # <let assignment> = \futurelet <control sequence><token><token> 
 #   | \let<control sequence><equals><one optional space><token>
-DefPrimitive('\let Token SkipMatch:= Token', sub {
+DefPrimitive('\let Token SkipMatch:= Skip1Space Token', sub {
   my($stomach,$token1,$token2)=@_;
-  # Note this is ONE optional space.
-  # AND, apparently it is the case that if there is NO token after the single space
-  # (think if \def\foo{\let\x= } )
-  # then the space IS the <token>, not the optional space!!!!
-  my $next;
-  if($token2->equals(T_SPACE) && ($next=$stomach->getGullet->readToken)){
-    $token2=$next; }
   Let($token1, $token2);
   return;  });
 
