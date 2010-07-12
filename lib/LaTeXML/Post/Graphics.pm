@@ -115,7 +115,8 @@ sub findGraphicFile {
   my($self,$doc,$node)=@_;
   if(my $name = $node->getAttribute('graphic')){
     pathname_find($name,paths=>$LaTeXML::Post::Graphics::SEARCHPATHS,
-		  types=>[$self->getGraphicsSourceTypes]); }
+		  # accept empty type, incase bad type name, but actual file's content is known type.
+		  types=>['',$self->getGraphicsSourceTypes]); }
   else {
     undef; }}
 
@@ -130,8 +131,15 @@ sub getTransform {
 # Get a hash of the image processing properties to be applied to this image.
 sub getTypeProperties {
   my($self,$source,$options)=@_;
-  my($dir,$name,$type)=pathname_split($source);
-  %{$$self{typeProperties}{$type}}; }
+  my($dir,$name,$ext)=pathname_split($source);
+  my $props = $$self{typeProperties}{$ext};
+  if(!$props){
+    # If we don't have a known file type, load the image and see if we can extract it there.
+    # This is probably grossly inefficient, maybe there's a better way to get image types...
+    my($image,$type);
+    if(($image = $self->ImageRead(undef,$source)) && (($type) = $image->Get('magick'))){
+      $props = $$self{typeProperties}{lc($type)}; }}
+  ($props ? %$props : ()); }
 
 # Set the attributes of the graphics node to record the image file name,
 # width and height.
