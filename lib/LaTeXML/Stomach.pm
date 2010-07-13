@@ -247,8 +247,10 @@ sub beginMode {
   elsif($ismath){
     # When entering math mode, we set the font to the default math font,
     # and save the text font for any embedded text.
-    $STATE->assignValue(savedfont=>$STATE->lookupValue('font'),'local');
-    $STATE->assignValue(font     =>$STATE->lookupValue('mathfont'),'local');
+    my $curfont = $STATE->lookupValue('font');
+    $STATE->assignValue(savedfont=>$curfont,'local');
+###    $STATE->assignValue(font     =>$STATE->lookupValue('mathfont'),'local');
+    $STATE->assignValue(font     =>$STATE->lookupValue('mathfont')->merge(color=>$curfont->getColor),'local');
     $STATE->assignValue(mathstyle=>($mode =~ /^display/ ? 'display' : 'text'),'local'); }
   else {
     # When entering text mode, we should set the font to the text font in use before the math.
