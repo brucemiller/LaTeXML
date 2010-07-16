@@ -157,6 +157,8 @@ sub find_inherited_attribute {
 
 our %stylestep=(display=>'text', text=>'script',
 	       script=>'scriptscript', scriptscript=>'scriptscript');
+our %style_script_step=(display=>'script', text=>'script',
+	       script=>'scriptscript', scriptscript=>'scriptscript');
 our %stylemap
   = (display     =>{text        =>[displaystyle=>'false'],
 		    script      =>[displaystyle=>'false',scriptlevel=>'+1'],
@@ -175,6 +177,11 @@ sub pmml_smaller {
   my($node)=@_;
   local $LaTeXML::MathML::STYLE = $stylestep{$LaTeXML::MathML::STYLE};
   pmml($node); }
+
+sub pmml_script {
+  my($script)=@_;
+  local $LaTeXML::MathML::STYLE = $style_script_step{$LaTeXML::MathML::STYLE};
+  ($script ? pmml($script) : ['m:none']); }
 
 sub pmml {
   my($node)=@_;
@@ -416,15 +423,19 @@ our %plane1hack = (script=>$plane1map{script},  'bold-script'=>$plane1map{script
 
 sub stylizeContent {
   my($item,$mihack,%attr)=@_;
-  my $font  = (ref $item ? $item->getAttribute('font') : $attr{font}) || $LaTeXML::MathML::FONT;
-  my $size  = (ref $item ? $item->getAttribute('size') : $attr{size}) || $LaTeXML::MathML::SIZE;
-  my $color = (ref $item ? $item->getAttribute('color') : $attr{color}) || $LaTeXML::MathML::COLOR;
-  my $text  = (ref $item ?  $item->textContent : $item);
+  my $iselement = (ref $item) eq 'XML::LibXML::Element';
+  my $font  = ($iselement ? $item->getAttribute('font') : $attr{font}) || $LaTeXML::MathML::FONT;
+  my $size  = ($iselement ? $item->getAttribute('size') : $attr{size}) || $LaTeXML::MathML::SIZE;
+  my $color = ($iselement ? $item->getAttribute('color') : $attr{color}) || $LaTeXML::MathML::COLOR;
+  my $text  = (ref $item  ?  $item->textContent : $item);
   my $variant = ($font ? $mathvariants{$font} : '');
+
+  # Hack to neutralize unnecessary sizing
+  $size = undef if $size && ($size eq $LaTeXML::MathML::STYLE);
 
   # Failsafe for empty tokens?
   if((! defined $text) || ($text eq '')){
-    $text = (ref $item ? $item->getAttribute('name') || $item->getAttribute('meaning') || $item->getAttribute('role') : '?');
+    $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $item->getAttribute('role') : '?');
     $color = 'red'; }
 
   if($font && !$variant){
@@ -559,11 +570,7 @@ sub XXpmml_mo {
 sub pmml_unparsed_script {
   my($x,$y,$script)=@_;
   [ ($y eq 'SUB' ? 'm:msub' : 'm:msup' ), {}, ['m:mi'],
-    pmml_smaller($script)]; }
-
-sub pmml_script {
-  my($script)=@_;
-  ($script ? pmml_smaller($script) : ['m:none']); }
+    pmml_script($script)]; }
 
 # Since we're keeping track of display style, under/over vs. sub/super
 # We've got to override MathML's desire to do it for us.
@@ -580,7 +587,7 @@ sub do_overunder {
   { local $LaTeXML::MathML::NOMOVABLELIMITS=1;
     local $LaTeXML::MathML::OVERUNDERHACKS=1;
     $base = pmml($base); }
-  my $form = [$tag,{},$base,map(pmml_smaller($_),@scripts)];
+  my $form = [$tag,{},$base,map(pmml_script($_),@scripts)];
 #  if($LaTeXML::MathML::STYLE ne 'display'){ # Workaround Mozilla bug (?)
 #    ['m:mstyle',{displaystyle=>'false'},$form]; }
 #  else {
@@ -590,7 +597,7 @@ sub do_overunder {
 sub do_subsup {
   my($tag,$base,@scripts)=@_;
   $base = pmml($base);
-  @scripts = map(pmml_smaller($_),@scripts);
+  @scripts = map(pmml_script($_),@scripts);
   if($LaTeXML::MathML::OVERUNDERHACKS){
     @scripts = map(['m:mpadded',{width=>'0'},$_],@scripts); }
   [$tag,{},$base,@scripts]; }
@@ -666,22 +673,29 @@ sub pmml_script_handler {
 # but LaTeXML creates that, if the document is structured that way.
 # Here we try to flatten the contents to strings, but keep the math as math
 sub pmml_text {
-  my($node)=@_;
+  my($node,%attr)=@_;
   return () unless $node;
   my $type = $node->nodeType;
   if($type == XML_TEXT_NODE){
-    my $string = $node->textContent;
+    my($string,$variant,$size,$color)=stylizeContent($node,0,%attr);
     $string =~ s/^\s/$NBSP/;     $string =~ s/\s$/$NBSP/;
-    (['m:mtext',{},$string]); }
+    ['m:mtext',{($variant ? (mathvariant=>$variant):()),
+		($size    ? (mathsize=>$size)  :()),
+		($color   ? (mathcolor=>$color):())},
+     $string]; }
   elsif($type == XML_DOCUMENT_FRAG_NODE){
-    map(pmml_text($_), $node->childNodes); }
+    map(pmml_text($_,%attr), $node->childNodes); }
   elsif($type == XML_ELEMENT_NODE){
+    if(my $font  = $node->getAttribute('font')){  $attr{font} = $font; }
+    if(my $size  = $node->getAttribute('size')){  $attr{size} = $size; }
+    if(my $color = $node->getAttribute('color')){ $attr{color} = $color; }
     my $tag = getQName($node);
     if($tag eq 'ltx:Math'){
       my $xmath = $LaTeXML::Post::DOCUMENT->findnode('ltx:XMath',$node);
+      # NOTE BUG!!! we're not passing through the context... (but maybe pick it up anyway)
       ($xmath ? pmml($xmath) : ()); }
     else {			# Just recurse on raw content????
-      map(pmml_text($_), $node->childNodes); }}
+      map(pmml_text($_,%attr), $node->childNodes); }}
   else {
     (); }}
 
@@ -774,11 +788,11 @@ DefMathML('Hint:?:?', sub { undef; }, sub { undef; }); # Should Disappear!
 # args are (accent,base)
 DefMathML('Apply:OVERACCENT:?', sub {
   my($accent,$base)=@_;
-  ['m:mover',{accent=>'true'}, pmml($base),pmml_smaller($accent)]; });
+  ['m:mover',{accent=>'true'}, pmml($base),pmml_script($accent)]; });
 
 DefMathML('Apply:UNDERACCENT:?', sub {
   my($accent,$base)=@_;
-  ['m:munder',{accent=>'true'}, pmml($base),pmml_smaller($accent)]; });
+  ['m:munder',{accent=>'true'}, pmml($base),pmml_script($accent)]; });
 
 DefMathML('Apply:FRAME:?', sub {
   my($frame,$body)=@_;
@@ -985,18 +999,18 @@ DefMathML('Apply:?:annotated', sub {
 DefMathML('Apply:?:evaluated-at', sub {
   my($op,$expr,$value1,$value2)=@_;
 #   if($value2){
-#     pmml_row(pmml($expr),['m:msubsup',{},pmml_mo('|'),pmml_smaller($value1),pmml_smaller($value2)]); }
+#     pmml_row(pmml($expr),['m:msubsup',{},pmml_mo('|'),pmml_script($value1),pmml_script($value2)]); }
 #   else {
-#     pmml_row(pmml($expr),['m:msub',{},pmml_mo('|'),pmml_smaller($value1)]); }});
+#     pmml_row(pmml($expr),['m:msub',{},pmml_mo('|'),pmml_script($value1)]); }});
   # Try with mfenced
   if($value2){
     ['m:msubsup',{},
      ['m:mfenced',{open=>'',close=>'|'},pmml($expr)],
-     pmml_smaller($value1),pmml_smaller($value2)]; }
+     pmml_script($value1),pmml_script($value2)]; }
   else {
     ['m:msub',{},
      ['m:mfenced',{open=>'',close=>'|'},pmml($expr)],
-     pmml_smaller($value1)]; }});
+     pmml_script($value1)]; }});
 
 DefMathML("Token:?:sum",          undef, sub{['m:sum'];});
 DefMathML("Token:?:prod",         undef, sub{['m:prod'];});
