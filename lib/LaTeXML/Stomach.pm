@@ -243,18 +243,17 @@ sub beginMode {
   my $ismath = $mode=~/math$/;
   $STATE->assignValue(MODE=>$mode,'local');
   $STATE->assignValue(IN_MATH=>$ismath,'local');
+  my $curfont = $STATE->lookupValue('font');
   if($mode eq $prevmode){}
   elsif($ismath){
     # When entering math mode, we set the font to the default math font,
     # and save the text font for any embedded text.
-    my $curfont = $STATE->lookupValue('font');
     $STATE->assignValue(savedfont=>$curfont,'local');
-###    $STATE->assignValue(font     =>$STATE->lookupValue('mathfont'),'local');
     $STATE->assignValue(font     =>$STATE->lookupValue('mathfont')->merge(color=>$curfont->getColor),'local');
     $STATE->assignValue(mathstyle=>($mode =~ /^display/ ? 'display' : 'text'),'local'); }
   else {
-    # When entering text mode, we should set the font to the text font in use before the math.
-    $STATE->assignValue(font=>$STATE->lookupValue('savedfont'),'local'); }
+    # When entering text mode, we should set the font to the text font in use before the math (but inherit color!).
+    $STATE->assignValue(font=>$STATE->lookupValue('savedfont')->merge(color=>$curfont->getColor),'local'); }
   return; }
 
 sub endMode {

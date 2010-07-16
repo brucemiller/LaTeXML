@@ -5,18 +5,21 @@
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <para xml:id="p1">
-    <p><Math mode="inline" tex="b" xml:id="p1.m1" text="b"><XMath><XMTok role="UNKNOWN" font="italic">b</XMTok></XMath></Math> b</p>
+    <p><Math mode="inline" tex="b" xml:id="p1.m1" text="b"><XMath><XMTok role="UNKNOWN" font="italic">b</XMTok></XMath></Math> B</p>
   </para>
   <para xml:id="p2">
-    <p><Math mode="inline" tex="r" xml:id="p2.m1" text="r"><XMath><XMTok role="UNKNOWN" color="red" font="italic">r</XMTok></XMath></Math><text color="red"> r</text> b</p>
+    <p><Math mode="inline" tex="r{\color{green}g\color{yellow}y}" xml:id="p2.m1" text="r * g * y"><XMath><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" color="red" font="italic">r</XMTok><XMTok role="UNKNOWN" color="green" font="italic">g</XMTok><XMTok role="UNKNOWN" color="yellow" font="italic">y</XMTok></XMApp></XMath></Math><text color="red"> R</text> B</p>
   </para>
   <para xml:id="p3">
-    <p><Math mode="inline" tex="\color{red}r" xml:id="p3.m1" text="r"><XMath><XMTok role="UNKNOWN" color="red" font="italic">r</XMTok></XMath></Math> b b</p>
+    <p><text color="red">R <Math mode="inline" tex="r\mbox{R}{\color{green}g\mbox{G}\color{yellow}y\mbox{Y}}r\mbox{R}" xml:id="p3.m1" text="r * [R] * g * [G] * y * [Y] * r * [R]"><XMath><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">r</XMTok><XMText><text>R</text></XMText><XMTok role="UNKNOWN" color="green" font="italic">g</XMTok><XMText><text color="green">G</text></XMText><XMTok role="UNKNOWN" color="yellow" font="italic">y</XMTok><XMText><text color="yellow">Y</text></XMText><XMTok role="UNKNOWN" font="italic">r</XMTok><XMText><text>R</text></XMText></XMApp></XMath></Math> R</text> B</p>
   </para>
   <para xml:id="p4">
-    <p><text color="red">r</text><text color="red">r</text> b</p>
+    <p><Math mode="inline" tex="\color{red}r" xml:id="p4.m1" text="r"><XMath><XMTok role="UNKNOWN" color="red" font="italic">r</XMTok></XMath></Math> B B</p>
   </para>
   <para xml:id="p5">
+    <p><text color="red">R</text><text color="red">R</text> B</p>
+  </para>
+  <para xml:id="p6">
     <equation xml:id="S0.Ex1">
       <Math mode="display" tex="r" xml:id="S0.Ex1.m1" text="r">
         <XMath>
@@ -25,7 +28,7 @@
       </Math>
     </equation>
   </para>
-  <para xml:id="p6">
-    <p><Math mode="inline" tex="b" xml:id="p6.m1" text="b"><XMath><XMTok role="UNKNOWN" font="italic">b</XMTok></XMath></Math> b</p>
+  <para xml:id="p7">
+    <p><Math mode="inline" tex="b" xml:id="p7.m1" text="b"><XMath><XMTok role="UNKNOWN" font="italic">b</XMTok></XMath></Math> B</p>
   </para>
 </document>
