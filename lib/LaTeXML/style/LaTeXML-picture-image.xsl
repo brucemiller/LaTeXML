@@ -20,7 +20,7 @@
 
   <xsl:template match="ltx:picture"/>
   <xsl:template match="ltx:picture[@imagesrc]">
-    <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}" alt="{@tex}" class='math'/>
+    <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}" alt="{@tex}"  class="{f:classes(.)}"/>
   </xsl:template>
 
 </xsl:stylesheet>

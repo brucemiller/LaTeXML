@@ -120,7 +120,10 @@ td[align="center"], th[align="center"] { white-space:nowrap; }
 .upright    { font-style: normal; }
 .slanted    { font-style: oblique; }
 .red        { color:red; }
-.centering  { text-align:center; }
+.centering  { text-align:center; 
+	      margin:auto; }
+img.centering  { display:block;
+	      margin:auto; }
 .flushleft  { text-align:left; }
 .flushright { text-align:right; }
 .ERROR      { color:red; }

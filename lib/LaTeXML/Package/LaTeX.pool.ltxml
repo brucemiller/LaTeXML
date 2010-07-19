@@ -642,6 +642,7 @@ DefMacroI('\@evenfoot',undef,   Tokens());
 #**********************************************************************
 sub aligningEnvironment {
   my($class,$document,%props)=@_;
+  $document->maybeCloseElement('ltx:p'); # 
   my $prev = $document->getNode->lastChild;
   $document->absorb($props{body});
   $document->maybeCloseElement('ltx:p');
