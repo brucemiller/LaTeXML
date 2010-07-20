@@ -1248,7 +1248,7 @@ The modifier can be either C<Optional> or C<Skip>, allowing the argument to
 be optional. For C<Skip>, no argument is contributed to the argument list.
 
 The shorthands {} and [] default the type to C<Plain> and reads a normal
-TeX argument or LaTeX default argument.
+TeX argument or LaTeX default argument with no special parsing.
 
 The predefined argument types are as follows.
 
@@ -1270,10 +1270,11 @@ it is repeatedly expanded until an unexpandable token remains, which is returned
 Read an Object corresponding to Number, Dimension, Glue or MuGlue,
 using TeX's rules for parsing these objects.
 
-=item C<Until:>I<match>
+=item C<Until:>I<match>, C<XUntil:>I<match>
 
 Reads tokens until a match to the tokens I<match> is found, returning
-the tokens preceding the match.  This corresponds to TeX delimited arguments.
+the tokens preceding the match. This corresponds to TeX delimited arguments.
+For C<XUntil>, tokens are expanded as they are matched and accumulated.
 
 =item C<UntilBrace>
 
@@ -1291,15 +1292,27 @@ Additionally, any leading spaces are skipped.
 
 Read tokens until a closing }, but respecting nested {} pairs.
 
+=item C<BalancedParen>
+
+Read a parenthesis delimited tokens, but does I<not> balance any nested parentheses.
+
+=item C<Undigested>, C<Digested>, C<DigestUntil:>I<match>
+
+These types alter the usual sequence of tokenization and digestion in separate stages (like TeX).
+A C<Undigested> parameter inhibits digestion completely and remains in token form.
+A C<Digested> parameter gets digested until the (required) opening { is balanced; this is
+useful when the content would usually need to have been protected in order to correctly deal
+with catcodes.  C<DigestUntil> digests tokens until a token matching I<match> is found.
+
 =item C<Variable>
 
 Reads a token, expanding if necessary, and expects a control sequence naming
 a writable register.  If such is found, it returns an array of the corresponding
 definition object, and any arguments required by that definition.
 
-=item C<SkipSpaces>
+=item C<Skip1Space>, C<SkipSpaces>
 
-Skips any space tokens, but contributes nothing to the argument list.
+Skips one, or any number of, space tokens, if present, but contributes nothing to the argument list.
 
 =back
 
