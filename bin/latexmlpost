@@ -26,6 +26,7 @@ my($stylesheet,$defaultcss,@css)=(undef,1);
 my($parallelmath,$mathimages,$mathimagemag)=(undef,undef,1.75);
 my($linelength,$keepXMath,$plane1,$hackplane1)=(undef,undef,undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
+my @graphicsmaps=();
 my($split,$splitat,$splitpath,$splitnaming)=(undef,'section',undef,'id');
 my($prescan,$dbfile,$scan,$crossref,$sitedir)=(undef,undef,1,1,undef);
 my($index,$permutedindex,$splitindex)=(1,undef,undef);
@@ -104,6 +105,7 @@ GetOptions("verbose+"              =>\$verbosity,
 	   # includegraphics images (eg. ps) can be converted to webimages (eg.png)
 	   # picture/pstricks images can be converted to png or possibly svg.
 	   "graphicimages!"=>\$dographics,
+	   "graphicsmap=s" =>\@graphicsmaps,
 	   "svg!"          =>\$svg,
 	   "pictureimages!"=>\$picimages,
 
@@ -248,7 +250,12 @@ if(!$prescan){
     push(@procs,LaTeXML::Post::PictureImages->new(%OPTIONS)); }
   if($dographics){
     require 'LaTeXML/Post/Graphics.pm';
-    push(@procs,LaTeXML::Post::Graphics->new(%OPTIONS)); }
+    my @g_options=();
+    if(@graphicsmaps){
+      my @maps = map([split(/\./,$_)], @graphicsmaps);
+      push(@g_options, (graphicsSourceTypes=>[map($$_[0],@maps)],
+			typeProperties=>{map( ($$_[0]=>{destination_type=>($$_[1] || $$_[0])}), @maps)})); }
+    push(@procs,LaTeXML::Post::Graphics->new(@g_options,%OPTIONS)); }
   if($svg){
     require 'LaTeXML/Post/SVG.pm';
     push(@procs,LaTeXML::Post::SVG->new(%OPTIONS)); }
@@ -432,8 +439,9 @@ latexmlpost [options] I<xmlfile>
  --noparallelmath        disables the above
  --keepXMath             preserves the intermediate XMath
                          representation (default is to remove)
- --graphicimages        converts graphics to images (default)
- --nographicimages      disables the above
+ --graphicimages         converts graphics to images (default)
+ --nographicimages       disables the above
+ --graphicsmap=type.type specifies a graphics file mapping
  --pictureimages         converts picture environments to
                          images (default)
  --nopictureimages       disables the above
@@ -738,6 +746,22 @@ this option preserves it.
 
 Enables (default) or disables the conversion of graphics
 to web-appropriate format (png).
+
+=item C<--graphicsmap=>I<sourcetype.desttype>
+
+Specifies a mapping of graphics file types. Typically, graphics elements
+specify a graphics file that will be converted to a more appropriate file
+target format; for example, postscript files used for graphics with LaTeX
+will be converted to png format for use on the web.  As with LaTeX,
+when a graphics file is specified without a file type, the system will search
+for the most appropriate target type file. The default settings of the
+Graphics module search for pdf, gif, jpg or jpeg files, which it copies unchanged,
+or ps, eps and pdf files, which are converted to png.
+
+When this option is used, it overrides the defaults and provides
+a mapping of I<sourcetype> to I<desttype>.  The option can be
+repeated to provide several mappings, with the earlier formats preferred.
+If the I<desttype> is omitted, it specifies copying files of type I<sourcetype>, unchanged.
 
 =item C<--pictureimages>, C<--nopictureimages>
 
