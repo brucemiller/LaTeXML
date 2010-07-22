@@ -214,7 +214,7 @@ sub trivial_scaling {
   foreach my $trans (@$transform){
     my($op,$a1,$a2,$a3,$a4)=@$trans;
     if($op eq 'scale'){		# $a1 => scale
-      ($w,$h)=(ceil($w*$a1),ceil($h*$a1)); }
+      ($w,$h)=(ceil($w*$a1),ceil($h*($a2||$a1))); }
     elsif($op eq 'scale-to'){	# $a1 => width, $a2 => height, $a3 => preserve aspect ratio.
       if($a3){ # If keeping aspect ratio, ignore the most extreme request
 	if($a1/$w < $a2/$h) { $a2 = $h*$a1/$w; }
@@ -235,7 +235,7 @@ sub complex_transform {
   # If native unit is points, we at least need to scale by dots/point.
   # [tho' other scalings may override this]
   if(($properties{unit}||'pixel') eq 'point'){
-    push(@transform, ['scale',$$self{dppt}]); }
+    push(@transform, ['scale',$$self{dppt},$$self{dppt}]); }
 
   # For prescaling, compute the desired size and re-read the image into that size,
   # with an appropriate density set.  This will give much better anti-aliasing.
@@ -245,7 +245,7 @@ sub complex_transform {
     while(@transform && ($transform[0]->[0] =~ /^scale/)){
       my($op,$a1,$a2,$a3,$a4)=@{shift(@transform)};
       if($op eq 'scale'){	# $a1 => scale
-	($w,$h)=(ceil($w*$a1),ceil($h*$a1)); }
+	($w,$h)=(ceil($w*$a1),ceil($h*($a2||$a1))); }
       elsif($op eq 'scale-to'){ 
 	# $a1 => width (pts), $a2 => height (pts), $a3 => preserve aspect ratio.
 	if($a3){ # If keeping aspect ratio, ignore the most extreme request
@@ -266,7 +266,7 @@ sub complex_transform {
   foreach my $trans (@transform){
     my($op,$a1,$a2,$a3,$a4)=@$trans;
     if($op eq 'scale'){		# $a1 => scale
-      ($w,$h)=(ceil($w*$a1),ceil($h*$a1));
+      ($w,$h)=(ceil($w*$a1),ceil($h*($a2||$a1)));
       $notes .= " scale to $w x $h";
       $self->ImageOp($doc,$image,'Scale',width=>$w,height=>$h) or return; }
     elsif($op eq 'scale-to'){ 
@@ -282,6 +282,9 @@ sub complex_transform {
       ($w,$h) = $self->ImageGet($doc,$image,'width','height'); 
       return unless $w && $h;
       $notes .= " rotate $a1 to $w x $h"; }
+    elsif($op eq 'reflect'){
+      $self->ImageOp($doc,$image,'Flop') or return;
+      $notes .= " reflected"; }
     # In the following two, note that TeX's coordinates are relative to lower left corner,
     # but ImageMagick's coordinates are relative to upper left.
     elsif(($op eq 'trim') || ($op eq 'clip')){
@@ -390,8 +393,8 @@ sub parseOptions {
   local $_;
   # --------------------------------------------------
   # Parse options
-  my ($v,$clip,$trim,$width,$height,$scale,$aspect,$a,$rotfirst,$mag,@bb,@vp,)
-    =('',  '',   '',    0,     0,      0,     '',   0,   '',     1,  0);
+  my ($v,$clip,$trim,$width,$height,$xscale,$yscale,$aspect,$a,$rotfirst,$mag,@bb,@vp,)
+    =('',  '',   '',    0,     0,      0,      0,      '',   0,   '',     1,  0);
   my @unknown=();
   foreach (split(',',$options||'')){
     /^\s*(\w+)(=\s*(.*))?\s*$/;  $_=$1; $v=$3||'';
@@ -406,8 +409,10 @@ sub parseOptions {
     elsif(/^keepaspectratio$/)  { $aspect = !($v eq 'false'); }
     elsif(/^width$/)            { $width = to_bp($v); }
     elsif(/^(total)?height$/)   { $height = to_bp($v); }
-    elsif(/^scale$/)            { $scale = $v; }
-    elsif(/^angle$/)            { $a = $v; $rotfirst = !($width||$height||$scale); }
+    elsif(/^scale$/)            { $xscale = $yscale = $v; }
+    elsif(/^xscale$/)           { $xscale = $v; }
+    elsif(/^yscale$/)           { $yscale = $v; }
+    elsif(/^angle$/)            { $a = $v; $rotfirst = !($width||$height||$xscale||$yscale); }
     elsif(/^origin$/)           { } # ??
     # Non-standard option
     elsif(/^magnification$/)    { $mag = $v; }
@@ -425,8 +430,10 @@ sub parseOptions {
   if($width && $height){ push(@transform,['scale-to',$mag*$width,$mag*$height,$aspect]); }
   elsif($width)        { push(@transform,['scale-to',$mag*$width,999999,1]); }
   elsif($height)       { push(@transform,['scale-to',999999,$mag*$height,1]); }
-  elsif($scale)        { push(@transform,['scale',$mag*$scale]); }
-  elsif($mag!=1)       { push(@transform,['scale',$mag]); }
+  elsif($xscale&&$yscale){ push(@transform,['scale',$mag*$xscale,$mag*$yscale]); }
+  elsif($xscale)       { push(@transform,['scale',$mag*$xscale,$mag]); }
+  elsif($yscale)       { push(@transform,['scale',$mag,$mag*$yscale]); }
+  elsif($mag!=1)       { push(@transform,['scale',$mag,$mag]); }
   push(@transform,['rotate',$a]) if(!$rotfirst && $a);  # Rotate after scaling?
   #  ----------------------
   [@transform,@unknown]; }

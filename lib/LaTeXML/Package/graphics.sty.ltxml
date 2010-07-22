@@ -21,21 +21,62 @@ use LaTeXML::Package;
 DefParameterType('GraphixDimension',  sub{
   my($gullet)=@_;
   if($gullet->ifNext(T_OTHER('!'))){
-    $gullet->readToken();
-    Dimension(0); }		# !!!
+    $gullet->readToken(); 
+    Dimension(0); }
   else {
     $gullet->readDimension; }});
 
 # Unimplemented, for now: What should be the result?
 # Would seem to require different treatment if the content was ONLY \includegraphic,
 # or more general text.
-DefConstructor('\scalebox{}[]{}','#3',
+DefConstructor('\scalebox{}[]{}', sub {
+  my($document,$xscale,$yscale,$box)=@_;
+  my @new = insertBlock($document,$box);
+  my $scale;
+  if(!$yscale){ $scale = $xscale; $xscale = undef; }
+  foreach my $node (@new){
+    # is there anything we might do to other kinds of nodes?
+    if($document->getModel->getNodeQName($node) eq 'ltx:graphics'){
+      my $options = join(',',grep($_,$node->getAttribute('options'),
+				  ($scale ? ("scale=".ToString($scale)) : undef),
+				  ($xscale ? ("xscale=".ToString($xscale)) : undef),
+				  ($yscale ? ("yscale=".ToString($yscale)) : undef)));
+      $node->setAttribute(options=>$options); }}},
 	       mode=>'text');
-DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension}{}','#4',
+
+DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension}{}', sub {
+  my($document,$star,$width,$height,$box)=@_;
+  $width  = undef unless $width->valueOf;
+  $height = undef unless $height->valueOf;
+  my @new = insertBlock($document,$box);
+  foreach my $node (@new){
+    # is there anything we might do to other kinds of nodes?
+    if($document->getModel->getNodeQName($node) eq 'ltx:graphics'){
+      my $options = join(',',grep($_,$node->getAttribute('options'),
+				  ($width ? ("width=".ToString($width)) : undef),
+				  ($height ? ("height=".ToString($height)) : undef),
+				  ($width && $height ? undef : "keepaspectratio")));
+      $node->setAttribute(options=>$options); }}},
 	       mode=>'text');
-DefConstructor('\rotatebox{Number}{}','#2',
+
+DefConstructor('\rotatebox{Number}{}', sub {
+  my($document,$angle,$box)=@_;
+  my @new = insertBlock($document,$box);
+  foreach my $node (@new){
+    # is there anything we might do to other kinds of nodes?
+    if($document->getModel->getNodeQName($node) eq 'ltx:graphics'){
+      my $options = join(',',grep($_,$node->getAttribute('options'),"angle=".ToString($angle)));
+      $node->setAttribute(options=>$options); }}},
 	       mode=>'text');
-DefConstructor('\reflectbox{}','#1',
+
+DefConstructor('\reflectbox{}', sub {
+  my($document,$box)=@_;
+  my @new = insertBlock($document,$box);
+  foreach my $node (@new){
+    # is there anything we might do to other kinds of nodes?
+    if($document->getModel->getNodeQName($node) eq 'ltx:graphics'){
+      my $options = join(',',grep($_,$node->getAttribute('options'),"reflect"));
+      $node->setAttribute(options=>$options); }}},
 	       mode=>'text');
 
 DefConstructor('\graphicspath Semiverbatim',"<?latexml graphicspath='#1'?>");
