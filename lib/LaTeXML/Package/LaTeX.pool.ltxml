@@ -640,17 +640,32 @@ DefMacroI('\@evenfoot',undef,   Tokens());
 #**********************************************************************
 # C.6 Displayed Paragraphs
 #**********************************************************************
+# This is a somewhat strange situation; There are commands and environments
+# that do some interesting thing to their contents. This include things like
+# center, flushleft, or rotate, or ...
+# Naively one is tempted to create a containing block with appropriate type & attributes.
+# However, since these things can be allowed in so many places by LaTeX, that
+# one has a difficult time creating a sensible document model.
+# The purpose of transformingBlock is to set the contents (possibly creating a
+# consistent <p> around them, if called for), and returning the list of newly
+# created nodes. These nodes can then have appropriate attributes added as needed
+# for each specific case.
+
+sub insertBlock {
+  my($document,$body)=@_;
+  $document->maybeCloseElement('ltx:p'); # start a new block of some sort (perhaps should be more than just p?)
+  my $prev = $document->getNode->lastChild; # remember the last node before insertion.
+  $document->absorb($body);	    # Now insert.
+  $document->maybeCloseElement('ltx:p');    # and close this block, if any.
+  my @new = $document->getChildElements($document->getNode); # get all children of this node
+  if($prev && grep($$prev == $$_, @new)){ # IF $prev is sibling of added nodes
+    while( ${$new[0]} != $$prev){ shift(@new); } # then strip away $prev, and preceding, from list
+    shift(@new); }
+  @new; }			# Return the newly inserted nodes.
+
 sub aligningEnvironment {
   my($class,$document,%props)=@_;
-  $document->maybeCloseElement('ltx:p'); # 
-  my $prev = $document->getNode->lastChild;
-  $document->absorb($props{body});
-  $document->maybeCloseElement('ltx:p');
-  my @new = $document->getChildElements($document->getNode);
-  if($prev && grep($$prev == $$_, @new)){ # $prev is sibling of added nodes
-    while( ${$new[0]} != $$prev){ shift(@new); }
-    shift(@new); }
-  map(addClass($_,$class), @new);		  # Add class attribute to any remaining nodes.
+  map(addClass($_,$class), insertBlock($document,$props{body}));	  # Add class attribute to new nodes.
 }
 
 sub addClass {
@@ -2711,14 +2726,34 @@ DefConstructor('\parbox[][][]{Dimension}{}',
 	       mode=>'text', bounded=>1,
 	       properties=>sub { (vattach=>translateAttachment($_[1])); },
 	       beforeDigest=>sub {
+#		 DefRegisterI('\hsize',undef,$_[4]);
+		 AssignValue('\hsize'=>$_[4]);
 		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
 
-DefEnvironment('{minipage}[][][]{Dimension}',
-	       "<ltx:inline-para ?#4(width='#4') vattach='#vattach' align='justified'>#body</ltx:inline-para>",
+# DefEnvironment('{minipage}[][][]{Dimension}',
+# 	       "<ltx:inline-para ?#4(width='#4') vattach='#vattach' align='justified'>#body</ltx:inline-para>",
+# 	       mode=>'text',
+# 	       properties=>sub { (vattach=>translateAttachment($_[1])); },
+# 	       beforeDigest=>sub {
+# 		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
+
+DefEnvironment('{minipage}[][][]{Dimension}', sub {
+  my($document,$attachment,$b,$c,$width,%props)=@_;
+  my $vattach=translateAttachment($attachment);
+
+  my @new = insertBlock($document,$props{body});
+  my $model = $document->getModel;
+  foreach my $node (@new){
+    my $qname = $model->getNodeQName($node);
+    $node->setAttribute(width=>$width)     if $width   && $model->canHaveAttribute($qname,'width');
+    $node->setAttribute(vattach=>$vattach) if $vattach && $model->canHaveAttribute($qname,'vattach'); }
+  },
 	       mode=>'text',
-	       properties=>sub { (vattach=>translateAttachment($_[1])); },
 	       beforeDigest=>sub {
+#		 DefRegisterI('\hsize',undef,$_[4]);
+		 AssignValue('\hsize'=>$_[4]);
 		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
+  
 DefConstructor('\rule[Dimension]{Dimension}{Dimension}', 
 	       "<ltx:rule ?#1(yoffset='#1') width='#2' height='#3'/>");
 DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
