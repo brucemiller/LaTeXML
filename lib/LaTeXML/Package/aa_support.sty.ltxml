@@ -45,9 +45,29 @@ ProcessOptions();
 DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
 
 # Authors and addresses
-DefConstructor('\@institute{}',"<ltx:contact role='institute'>#1</ltx:contact>", bounded=>1);
-DefMacro('\institute{}','\@add@to@frontmatter{ltx:creator}{\@institute{#1}}');
-DefMacro('\inst{}','\@add@to@frontmatter{ltx:creator}{\@institute{#1}}');
+DefConstructor('\@institutemark{}',"<ltx:contact role='institutemark' mark='#1'/>");
+# \inst typically appears INSIDE \author, so @add@to@frontmatter doesn't sync them
+DefConstructor('\inst{}',"^<ltx:contact role='institutemark' mark='#1'/>");
+NewCounter('inst','document');
+DefMacro('\institute{}','\bgroup\setcounter{inst}{1}\let\and\institute@and\@new@institute#1\@end@institute\egroup');
+DefMacro('\institute@and','\@end@institute\stepcounter{inst}\@new@institute');
+DefMacro('\@new@institute XUntil:\@end@institute','\if.#1.\else\@add@institute{#1}\fi');
+DefConstructor('\@add@institute {}',
+	       "<ltx:note role='institutetext' mark='#mark'>#1</ltx:note>",
+	       properties=>sub { (mark=>ToString(Expand(T_CS('\theinst')))); });
+
+# Handling similar to reconnecting footnotemark & text.
+Tag('ltx:note',afterClose=>\&relocateInstitute);
+sub relocateInstitute {
+  my($document,$node)=@_;
+  if(($node->getAttribute('role')||'') eq 'institutetext'){
+    if(my $mark = $node->getAttribute('mark')){
+      if(my @authors = $document->findnodes(".//ltx:contact[\@role='institutemark'][\@mark='$mark']")){
+	foreach my $author (@authors){
+	  append_nodes_clone($author,$node->childNodes);
+	  $author->setAttribute(role=>'institute');
+	  $author->removeAttribute('mark'); }
+	$node->parentNode->removeChild($node); }}}}
 
 # "Structured" abstract
 # Note that they suggest either a 5 or 1 argument version!
