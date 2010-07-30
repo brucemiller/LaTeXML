@@ -77,7 +77,7 @@ sub setTeXImage {
 # Should be called by extractTeX
 sub cleanTeX {
   my($self,$tex)=@_;
-  return unless $tex;
+  return unless defined $tex;
   my $style = '';
   $style = $1 if
     $tex =~ s/^\s*(\\displaystyle|\\textstyle|\\scriptstyle|\\scriptscriptstyle)\s*//; # Save any leading style
