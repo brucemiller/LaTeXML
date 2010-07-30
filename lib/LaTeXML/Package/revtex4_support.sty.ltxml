@@ -109,15 +109,22 @@ DefConstructor('\rotatebox{Number}{}','#2'); # dummy defn, unless graphics loade
 DefMacro('\pagesofar','');
 
 
+# endnotes handled like footnotes 
 DefConstructor('\endnote[]{}',
 	       "<ltx:note role='endnote' mark='#refnum'>#2</ltx:note>",
 	       mode=>'text',
 	       properties=> sub { 
 		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
-## DefConstructor('\endnotemark[]',"");
+DefConstructor('\endnotemark[]',
+	       "<ltx:note role='endnotemark' mark='#refnum'></ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
 DefConstructor('\endnotetext[]{}',
-	       "<ltx:note role='endnote' ?#1(mark='#1')>#2</ltx:note>",
-	       mode=>'text');
+	       "<ltx:note role='endnotetext' mark='#refnum'>#2</ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : (refnum=>Expand(T_CS("\\thefootnote")))); });
 
 #======================================================================
 # 6. Math and Equations
