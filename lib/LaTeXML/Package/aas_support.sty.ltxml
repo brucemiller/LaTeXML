@@ -40,7 +40,7 @@ DefMacro('\msid{}','');		# Manuscript id.
 DefMacro('\ccc{}','');		# Ignorable?
 #\cpright{type}{year}   Should be recorded somehow?
 # type is AAS, ASP, PD, none
-DefMacro('\cpright{}{}', '\@add@frontmatter{ltx:note}[class=copyright]{\copyright #2: #1}');
+DefMacro('\cpright{}{}', '\@add@frontmatter{ltx:note}[role=copyright]{\copyright #2: #1}');
 
 # Editorial additions?
 DefMacro('\journal{}','');
@@ -55,7 +55,7 @@ DefMacro('\SGML{}','');
 #======================================================================
 # 2.1.4 Short Comment
 
-DefMacro('\slugcomment{}','\@add@frontmatter{ltx:note}[class=slugcomment]{#1}');
+DefMacro('\slugcomment{}','\@add@frontmatter{ltx:note}[role=slugcomment]{#1}');
 
 #======================================================================
 # 2.1.5 Running Heads
@@ -108,7 +108,7 @@ Let(T_CS('\subjectheadings'),T_CS('\keywords'));
 # 2.6 Comments to Editors
 
 # Perhaps this should actually disappear?
-# DefConstructor('\notetoeditor{}',"<ltx:note class='toeditor'>#1</ltx:note>");
+# DefConstructor('\notetoeditor{}',"<ltx:note role='toeditor'>#1</ltx:note>");
 DefMacro('\notetoeditor{}','');
 
 NewCounter('editornote');
@@ -400,15 +400,11 @@ DefMacro('\sidehead{}','\hline\multicolumn{\@alignment@ncolumns}{l}{#1}\\\\\hlin
 
 DefMacro('\tableline','\hline');
 
-# NOTE: DOM should reattach the footnotetext to the footnotemark ?
-# Same problem in LaTeX.pool...
-# In general the mark & text _could_ come in either order...
-# so, it really has to be at end of processing (rewrite?)
-DefMacro('\tablenotemark{}','');
-#DefConstructor('\tablenotemark{}',""); # ????
-DefMacro('\tablenotetext{}{}','\@tablenotetext{$\mathrm{#1}$}{#2}');
-DefConstructor('\@tablenotetext{}{}',
-	       "<ltx:note class='footnote' ?#1(mark='#1')>#2</ltx:note>",
+DefConstructor('\tablenotemark{}',
+	       "<ltx:note role='footnotemark' mark='#1'></ltx:note>",
+	       mode=>'text');
+DefConstructor('\tablenotetext{}{}',
+	       "<ltx:note role='footnotetext' mark='#1'>#2</ltx:note>",
 	       mode=>'text');
 
 DefMacro('\tablerefs{}',    'References. -- #1');
