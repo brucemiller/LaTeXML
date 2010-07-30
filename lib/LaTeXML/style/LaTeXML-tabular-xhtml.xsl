@@ -74,6 +74,11 @@
         <xsl:attribute name='class'><xsl:value-of select="f:classes(.)"/></xsl:attribute>
       </xsl:otherwise>
     </xsl:choose>
+    <xsl:choose>
+      <xsl:when test="@width">
+	<xsl:attribute name='width'><xsl:value-of select="@width"/></xsl:attribute>
+      </xsl:when>
+    </xsl:choose>
     <xsl:apply-templates/>
   </xsl:element>
 </xsl:template>
