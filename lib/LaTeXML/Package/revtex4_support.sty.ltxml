@@ -110,13 +110,13 @@ DefMacro('\pagesofar','');
 
 
 DefConstructor('\endnote[]{}',
-	       "<ltx:note class='endnote' mark='#refnum'>#2</ltx:note>",
+	       "<ltx:note role='endnote' mark='#refnum'>#2</ltx:note>",
 	       mode=>'text',
 	       properties=> sub { 
 		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
 ## DefConstructor('\endnotemark[]',"");
 DefConstructor('\endnotetext[]{}',
-	       "<ltx:note class='endnote' ?#1(mark='#1')>#2</ltx:note>",
+	       "<ltx:note role='endnote' ?#1(mark='#1')>#2</ltx:note>",
 	       mode=>'text');
 
 #======================================================================

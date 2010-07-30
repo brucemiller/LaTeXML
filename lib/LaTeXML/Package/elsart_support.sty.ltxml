@@ -33,7 +33,7 @@ DefConstructor('\@address{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
 
 
 # Redefine to account for the label, which we ignore for now!
-DefConstructor('\thanks[]{}', "<ltx:note class='thanks'>#2</ltx:note>");
+DefConstructor('\thanks[]{}', "<ltx:note role='thanks'>#2</ltx:note>");
 DefConstructor('\person@thanks[]{}', "^ <ltx:contact role='thanks'>#2</ltx:contact>",
 	       alias=>'\thanks', mode=>'text');
 DefMacro('\thanksref{}',Tokens());

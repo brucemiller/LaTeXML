@@ -131,7 +131,7 @@ DefMacro('\subjclass[Default:1991]{}',
 	 '\@add@frontmatter{ltx:classification}[scheme={#1 Mathematics Subject Classification}]{#2}');
 
 DefMacro('\copyrightinfo{}{}',
-	 '\@add@frontmatter{ltx:note}[class=copyright]{\copyright #1: #2}');
+	 '\@add@frontmatter{ltx:note}[role=copyright]{\copyright #1: #2}');
 
 DefMacro('\pagespan{}{}','');	# ?
 DefMacro('\PII{}',
@@ -147,7 +147,7 @@ DefMacroI('\volinfo',undef,Tokens());
 DefMacro('\issueinfo{}{}{}{}',
 	 '\def\currentvolume{#1}\def\currentissue{#2}\def\currentmonth{#3}\def\currentyear{#4}'
 	 .'\def\volinfo{Volume \currentvolume, Number \number0\currentissue, \currentmonth\ \currentyear}'
-	 .'\@add@frontmatter{ltx:note}[class=volume-info]{\volinfo}');
+	 .'\@add@frontmatter{ltx:note}[role=volume-info]{\volinfo}');
 
 DefMacroI('\abstractname',undef,'Abstract');
 DefMacroI('\keywordsname',undef,'Key words and phrases');

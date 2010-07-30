@@ -230,20 +230,33 @@ DefMacro('\endquotes','');	# ?
 
 NewCounter('footnote');
 DefMacroI('\thefootnote',undef,'\arabic{footnote}');
+
+# same as LaTeX
 DefConstructor('\footnote[]{}',
-	       "<ltx:note class='footnote' mark='#refnum'>#2</ltx:note>",
+	       "<ltx:note role='footnote' mark='#refnum'>#2</ltx:note>",
 	       mode=>'text',
 	       properties=> sub { 
 		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
-# NOTE: DOM should reattach the footnotetext to the footnotemark ?
-#  Hmm, in general the mark & text _could_ come in either order...
-# These can be followed by "*" to use * as footnote mark
-#  or [*] to use * as footnote mark, but formatted w/ \footmarkform@ (default superscript)
-# else use counter footmarkcount@
-DefConstructor('\footnotemark[]',""); # ????
+DefConstructor('\footnotemark[]',
+	       "<ltx:note role='footnotemark' mark='#refnum'></ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
 DefConstructor('\footnotetext[]{}',
-	       "<ltx:note class='footnote' ?#1(mark='#1')>#2</ltx:note>",
-	       mode=>'text');
+	       "<ltx:note role='footnotetext' mark='#refnum'>#2</ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : (refnum=>Expand(T_CS("\\thefootnote")))); });
+
+Tag('ltx:note',afterClose=>\&relocateFootnote);
+sub relocateFootnote {
+  my($document,$node)=@_;
+  if(($node->getAttribute('role')||'') eq 'footnotetext'){
+    if(my $mark = $node->getAttribute('mark')){
+      if(my $note = $document->findnode(".//ltx:note[\@role='footnotemark'][\@mark='$mark']")){
+	$node->parentNode->removeChild($node); 
+	append_nodes($note,$node->childNodes);
+	$note->setAttribute(role=>'footnote'); }}}}
 
 #======================================================================
 DefMacro('\rom{}','{rm #1}');

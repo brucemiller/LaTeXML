@@ -35,11 +35,11 @@ DefMacro('\microfiche{}', '\@add@frontmatter{ltx:note}[role=microfiche]{#1}');
 DefMacro('\pagerange{}',  '\@add@frontmatter{ltx:note}[role=pagerange]{#1}');
 
 # Editorial comments (?)  
-DefConstructor('\BSLquery{}',"<ltx:note class='query'>#1</ltx:note>");
-DefConstructor('\aquery{}',  "<ltx:note class='query'>#1</ltx:note>");
-DefConstructor('\tquery{}',  "<ltx:note class='query'>#1</ltx:note>");
-DefEnvironment('{query}',    "<ltx:note class='query'>#body</ltx:note>");
-DefConstructor('\authorquery{}{}',  "<ltx:note class='query'>#1: #2</ltx:note>");
+DefConstructor('\BSLquery{}',"<ltx:note role='query'>#1</ltx:note>");
+DefConstructor('\aquery{}',  "<ltx:note role='query'>#1</ltx:note>");
+DefConstructor('\tquery{}',  "<ltx:note role='query'>#1</ltx:note>");
+DefEnvironment('{query}',    "<ltx:note role='query'>#body</ltx:note>");
+DefConstructor('\authorquery{}{}',  "<ltx:note role='query'>#1: #2</ltx:note>");
 
 DefEnvironment('{keywords}','',
  	       afterDigest=> sub {

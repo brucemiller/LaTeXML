@@ -173,6 +173,9 @@ element note {
   ## indicates the desired visible marker to be linked to the note.
   attribute mark { text }?,
 
+  ## indicates the kind of note
+  attribute role { "footnote" | text }?,
+
   Flow.model }
 
 # should mark be more like label/refnum ?

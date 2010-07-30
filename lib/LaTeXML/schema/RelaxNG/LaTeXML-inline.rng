@@ -227,6 +227,15 @@ It's content allows both inline and block-level content.</a:documentation>
           <a:documentation>indicates the desired visible marker to be linked to the note.</a:documentation>
         </attribute>
       </optional>
+      <optional>
+        <attribute name="role">
+          <a:documentation>indicates the kind of note</a:documentation>
+          <choice>
+            <value>footnote</value>
+            <text/>
+          </choice>
+        </attribute>
+      </optional>
       <ref name="Flow.model"/>
     </element>
   </define>
