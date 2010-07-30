@@ -231,7 +231,7 @@ DefMacro('\endquotes','');	# ?
 NewCounter('footnote');
 DefMacroI('\thefootnote',undef,'\arabic{footnote}');
 
-# same as LaTeX
+# same as LaTeX (but LaTeX.pool NOT included for amsppt!!!)
 DefConstructor('\footnote[]{}',
 	       "<ltx:note role='footnote' mark='#refnum'>#2</ltx:note>",
 	       mode=>'text',
@@ -251,12 +251,13 @@ DefConstructor('\footnotetext[]{}',
 Tag('ltx:note',afterClose=>\&relocateFootnote);
 sub relocateFootnote {
   my($document,$node)=@_;
-  if(($node->getAttribute('role')||'') eq 'footnotetext'){
+  if(($node->getAttribute('role')||'') =~ /^(\w+?)text$/){
+    my $notetype=$1;					   # Eg "footnote", "endnote",...
     if(my $mark = $node->getAttribute('mark')){
-      if(my $note = $document->findnode(".//ltx:note[\@role='footnotemark'][\@mark='$mark']")){
+      if(my $note = $document->findnode(".//ltx:note[\@role='${notetype}mark'][\@mark='$mark']")){
 	$node->parentNode->removeChild($node); 
 	append_nodes($note,$node->childNodes);
-	$note->setAttribute(role=>'footnote'); }}}}
+	$note->setAttribute(role=>$notetype); }}}}
 
 #======================================================================
 DefMacro('\rom{}','{rm #1}');
