@@ -238,16 +238,31 @@ DefMacroI('\thempfootnote',undef,'\arabic{mpfootnote}');
 
 
 DefConstructor('\footnote[]{}',
-	       "<ltx:note class='footnote' mark='#refnum'>#2</ltx:note>",
+	       "<ltx:note role='footnote' mark='#refnum'>#2</ltx:note>",
 	       mode=>'text',
 	       properties=> sub { 
 		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
-# NOTE: DOM should reattach the footnotetext to the footnotemark ?
-#  Hmm, in general the mark & text _could_ come in either order...
-DefConstructor('\footnotemark[]',""); # ????
+DefConstructor('\footnotemark[]',
+	       "<ltx:note role='footnotemark' mark='#refnum'></ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
 DefConstructor('\footnotetext[]{}',
-	       "<ltx:note class='footnote' ?#1(mark='#1')>#2</ltx:note>",
-	       mode=>'text');
+	       "<ltx:note role='footnotetext' mark='#refnum'>#2</ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : (refnum=>Expand(T_CS("\\thefootnote")))); });
+
+Tag('ltx:note',afterClose=>\&relocateFootnote);
+sub relocateFootnote {
+  my($document,$node)=@_;
+  if(($node->getAttribute('role')||'') =~ /^(\w+?)text$/){
+    my $notetype=$1;					   # Eg "footnote", "endnote",...
+    if(my $mark = $node->getAttribute('mark')){
+      if(my $note = $document->findnode(".//ltx:note[\@role='${notetype}mark'][\@mark='$mark']")){
+	$node->parentNode->removeChild($node); 
+	append_nodes($note,$node->childNodes);
+	$note->setAttribute(role=>$notetype); }}}}
 
 # Style parameters
 DefRegister('\footnotesep' => Dimension(0));
@@ -557,7 +572,7 @@ DefMacroI('\maketitle',undef,
 	 .'\global\let\date\relax'
 	 .'\global\let\and\relax');
 
-DefConstructor('\thanks{}', "<ltx:note class='thanks'>#1</ltx:note>");
+DefConstructor('\thanks{}', "<ltx:note role='thanks'>#1</ltx:note>");
 
 # DefEnvironment('{abstract}','<ltx:abstract>#body</ltx:abstract>');
 # Annoying special case; 2 problems.
@@ -651,21 +666,68 @@ DefMacroI('\@evenfoot',undef,   Tokens());
 # created nodes. These nodes can then have appropriate attributes added as needed
 # for each specific case.
 
+# HACKERY!!!  This seems to require too much knowledge about inline vs block and such.
+# Perhaps this really should be done as a daemon that runs when the current node is closed?
+# Or perhaps even better, it should temporarily modify the Model such that the current node
+# only accepts block level markup; that would automagically elevate stuff to <p> when needed!(?)
+our $INLINE_TAGS = "ltx:text|ltx:emph|ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|ltx:cite|ltx:bibref|ltx:Math";
 sub insertBlock {
   my($document,$body)=@_;
-  $document->maybeCloseElement('ltx:p'); # start a new block of some sort (perhaps should be more than just p?)
-  my $prev = $document->getNode->lastChild; # remember the last node before insertion.
+  # Make sure we're starting the current insertion at block level, bu closing any open p (is ltx:p enough?)
+###  $document->maybeCloseElement('ltx:p');
+  my $prev = $document->getNode->lastChild; # and remember the last node before insertion.
   $document->absorb($body);	    # Now insert.
-  $document->maybeCloseElement('ltx:p');    # and close this block, if any.
-  my @new = $document->getChildElements($document->getNode); # get all children of this node
-  if($prev && grep($$prev == $$_, @new)){ # IF $prev is sibling of added nodes
-    while( ${$new[0]} != $$prev){ shift(@new); } # then strip away $prev, and preceding, from list
-    shift(@new); }
-  @new; }			# Return the newly inserted nodes.
+
+#  my $parent = $document->getNode->parentNode;
+  my $model = $document->getModel;
+  my $parent = $document->getElement;
+  return () unless $parent;
+  my @nodes = $parent->childNodes;
+  # Get only those following $prev (if it matches)
+  if($prev && grep($$prev == $$_, @nodes)){ # IF $prev is sibling of added nodes
+    while( ${$nodes[0]} != $$prev){ shift(@nodes); } # then strip away $prev, and preceding, from list
+    shift(@nodes); }
+
+  # Convert any text nodes to p, but delete any pure whitespace text nodes
+  my @new = ();
+  while(@nodes){
+    my @x=();			# Collect up the next group of "inline" nodes
+    while(@nodes && (($nodes[0]->nodeType == XML_TEXT_NODE)
+		     || (($nodes[0]->nodeType == XML_ELEMENT_NODE) && ($model->getNodeQName($nodes[0]) =~ /^($INLINE_TAGS)$/)))){
+      push(@x,shift(@nodes)); }
+    if(@x && !grep(($_->nodeType != XML_TEXT_NODE) || ($_->textContent =~ /\S/), @x)){ # Only whitespace text nodes?
+      map($parent->removeChild($_),@x); } # just remove them
+    elsif(@x){			# Some worthwhile inline nodes to wrap in a <ltx:p>
+      my $para = addNewChildLate($document,$parent,'ltx:p');
+      $parent->removeChild($para);
+      $parent->replaceChild($para,$x[0]); # replace 1st child by the <ltx:p>
+      foreach my $c (@x){
+	if($c->nodeType == XML_TEXT_NODE){
+	  my $t = $c->textContent;
+	  $para->appendTextNode($t) if $t =~ /\S/; } # append if more than just whitespace.
+	else {
+	  $para->appendChild($c); }
+	$parent->removeChild($c); }
+      push(@new,$para); }
+    elsif($nodes[0]->nodeType == XML_ELEMENT_NODE){ # other element (block or similar), just move to new list
+      if($model->getNodeQName($nodes[0]) eq 'ltx:break'){ # except for <break>!
+	$parent->removeChild(shift(@nodes)); }
+      else {
+	push(@new,shift(@nodes)); }}
+    else {
+      shift(@nodes); }}
+
+  @new = ($parent) unless @new;
+#  $document->setNode( $parent);
+  $document->setNode($new[-1]->parentNode);
+
+  # NOW, what we probably REALLY should do is return the parent of these
+  # IFF there are no further insertions into that node... ????
+  @new; }
 
 sub aligningEnvironment {
-  my($class,$document,%props)=@_;
-  map(addClass($_,$class), insertBlock($document,$props{body}));	  # Add class attribute to new nodes.
+  my($align,$class,$document,%props)=@_;
+  map(setAlignOrClass($document,$_,$align,$class), insertBlock($document,$props{body}));	  # Add class attribute to new nodes.
 }
 
 sub addClass {
@@ -675,21 +737,43 @@ sub addClass {
   else {
     $node->setAttribute(class=>$class); }}
 
-DefEnvironment('{center}',sub { aligningEnvironment('centering',@_); });
-DefEnvironment('{flushleft}',sub { aligningEnvironment('flushleft',@_); });
-DefEnvironment('{flushright}',sub { aligningEnvironment('flushright',@_); });
+sub setAlignOrClass {
+  my($document,$node,$align,$class)=@_;
+  my $model = $document->getModel;
+  if($model->canHaveAttribute($model->getNodeQName($node),'align')){
+    $node->setAttribute(align=>$align); }
+  else {
+    addClass($node,$class); }}
 
-# These add an operation to be carried out when the current group ends.
+DefEnvironment('{center}',sub { aligningEnvironment('center','centering',@_); },
+	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))});
+DefEnvironment('{flushleft}',sub { aligningEnvironment('left','flushleft',@_); },
+	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))});
+DefEnvironment('{flushright}',sub { aligningEnvironment('right','flushright',@_); },
+	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))});
+
+# These add an operation to be carried out on the current node & following siblings, when the current group ends.
 # These operators will add alignment (class) attributes to each "line" in the current block.
-DefPrimitiveI('\centering',   undef, sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@centering')); });
-DefPrimitiveI('\raggedright', undef, sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@flushright')); });
-DefPrimitiveI('\raggedleft',  undef, sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@flushleft')); });
+#DefPrimitiveI('\centering',   undef, sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@centering')); });
+DefConstructorI('\centering',undef,
+		sub { AssignValue(ALIGNING_NODE=>$_[0]->getElement); return;},
+		beforeDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@centering')); });
+DefConstructorI('\raggedright', undef,
+		sub { AssignValue(ALIGNING_NODE=>$_[0]->getElement); return;},
+		beforeDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@flushright')); });
+DefConstructorI('\raggedleft',  undef,
+		sub { AssignValue(ALIGNING_NODE=>$_[0]->getElement); return;},
+		beforeDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@flushleft')); });
+
 DefConstructorI('\@add@centering',  undef,
-		sub { map(addClass($_,'centering'),  $_[0]->getChildElements($_[0]->getNode)); });
+		sub { map(setAlignOrClass($_[0],$_,'center','centering'),
+			  $_[0]->getChildElements(LookupValue('ALIGNING_NODE'))); });
 DefConstructorI('\@add@flushright', undef,
-		sub { map(addClass($_,'flushright'), $_[0]->getChildElements($_[0]->getNode)); });
+		sub { map(setAlignOrClass($_[0],$_,'right','flushright'),
+			  $_[0]->getChildElements(LookupValue('ALIGNING_NODE'))); });
 DefConstructorI('\@add@flushleft',  undef,
-		sub { map(addClass($_,'flushleft'),  $_[0]->getChildElements($_[0]->getNode)); });
+		sub { map(setAlignOrClass($_[0],$_,'left','flushleft'),
+			  $_[0]->getChildElements(LookupValue('ALIGNING_NODE'))); });
 
 #======================================================================-
 # C.6.1 Quotations and Verse
@@ -698,16 +782,16 @@ DefConstructorI('\@block@cr',undef,  "<ltx:break/>",
 	       reversion=>Tokens(T_CS("\\\\"),T_CR));
 DefEnvironment('{quote}',   
 	       '<ltx:quote>#body</ltx:quote>',
-	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr'));},
+	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))},
 	       mode=>'text');
 DefEnvironment('{quotation}',
 	       '<ltx:quote>#body</ltx:quote>',
-	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); },
+	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))},
 	       mode=>'text');
 # NOTE: Handling of \\ within these environments?
 DefEnvironment('{verse}',
 	       '<ltx:quote class="verse">#body</ltx:quote>',
-	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr'));},
+	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))},
 	       mode=>'text');
 
 #======================================================================
@@ -1859,7 +1943,7 @@ DefMacroI('\tablesname', undef, 'Tables');
 # C.9.2 Marginal Notes
 #======================================================================
 
-DefConstructor('\marginpar[]{}', "<ltx:note class='margin'>#2</ltx:note>");
+DefConstructor('\marginpar[]{}', "<ltx:note role='margin'>#2</ltx:note>");
 DefPrimitiveI('\reversemarginpar',undef, undef);
 DefPrimitiveI('\normalmarginpar', undef, undef);
 DefRegister('\marginparpush',Dimension(0));
@@ -2721,12 +2805,26 @@ DefPrimitive('\usebox DefToken', sub {
 
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring them, for now, though.
-DefConstructor('\parbox[][][]{Dimension}{}',
-	       "<ltx:inline-block ?#4(width='#4') vattach='#vattach' align='justified'>#5</ltx:inline-block>",
+# DefConstructor('\parbox[][][]{Dimension}{}',
+# 	       "<ltx:inline-block ?#4(width='#4') vattach='#vattach' align='justified'>#5</ltx:inline-block>",
+# 	       mode=>'text', bounded=>1,
+# 	       properties=>sub { (vattach=>translateAttachment($_[1])); },
+# 	       beforeDigest=>sub {
+# 		 AssignValue('\hsize'=>$_[4]);
+# 		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
+
+DefConstructor('\parbox[][][]{Dimension}{}', sub {
+  my($document,$attachment,$b,$c, $width,$body,%props)=@_;
+  my $vattach=translateAttachment($attachment);
+  my @new = insertBlock($document,$body);
+  my $model = $document->getModel;
+  foreach my $node (@new){
+    my $qname = $model->getNodeQName($node);
+    $node->setAttribute(width=>ToString($width)) if $width   && $model->canHaveAttribute($qname,'width');
+    $node->setAttribute(vattach=>$vattach)       if $vattach && $model->canHaveAttribute($qname,'vattach'); }
+  },
 	       mode=>'text', bounded=>1,
-	       properties=>sub { (vattach=>translateAttachment($_[1])); },
 	       beforeDigest=>sub {
-#		 DefRegisterI('\hsize',undef,$_[4]);
 		 AssignValue('\hsize'=>$_[4]);
 		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
 
@@ -2745,12 +2843,11 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
   my $model = $document->getModel;
   foreach my $node (@new){
     my $qname = $model->getNodeQName($node);
-    $node->setAttribute(width=>$width)     if $width   && $model->canHaveAttribute($qname,'width');
-    $node->setAttribute(vattach=>$vattach) if $vattach && $model->canHaveAttribute($qname,'vattach'); }
+    $node->setAttribute(width=>ToString($width)) if $width   && $model->canHaveAttribute($qname,'width');
+    $node->setAttribute(vattach=>$vattach)       if $vattach && $model->canHaveAttribute($qname,'vattach'); }
   },
 	       mode=>'text',
 	       beforeDigest=>sub {
-#		 DefRegisterI('\hsize',undef,$_[4]);
 		 AssignValue('\hsize'=>$_[4]);
 		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
   
