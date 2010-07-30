@@ -96,7 +96,8 @@
 <!ATTLIST note
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
-  mark CDATA #IMPLIED>
+  mark CDATA #IMPLIED
+  role CDATA #IMPLIED>
 
 <!ELEMENT ERROR (#PCDATA)*>
 <!ATTLIST ERROR
@@ -125,7 +126,16 @@
 <!ATTLIST p
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
-  xml:id ID #IMPLIED>
+  xml:id ID #IMPLIED
+  width CDATA #IMPLIED
+  height CDATA #IMPLIED
+  depth CDATA #IMPLIED
+  pad-width CDATA #IMPLIED
+  pad-height CDATA #IMPLIED
+  xoffset CDATA #IMPLIED
+  yoffset CDATA #IMPLIED
+  align (left|center|right|justified) #IMPLIED
+  vattach (top|middle|bottom) #IMPLIED>
 
 <!ELEMENT constraint (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
                       |bibref|Math|inline-block|verbatim|break|graphics
