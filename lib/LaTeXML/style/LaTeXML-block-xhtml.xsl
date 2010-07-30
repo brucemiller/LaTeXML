@@ -28,7 +28,7 @@
 
   <!-- no class here, since ltx:p it is generated behind the scenes (?)-->
   <xsl:template match="ltx:p" xml:space="preserve">
-    <p class="{f:classes(.)}"><xsl:apply-templates/></p>
+    <p style="{f:positioning(.)}" class="{f:classes(.)}"><xsl:apply-templates/></p>
   </xsl:template>
 
   <xsl:template match="ltx:quote" xml:space="preserve">
