@@ -328,8 +328,8 @@ sub RefStepCounter {
   DefMacroI(T_CS("\\\@$ctr\@ID"),undef, Tokens(Explode(LookupValue('\c@'.$ctr)->valueOf)),
 	    scope=>'global');
   my $id = Expand(T_CS("\\the$ctr\@ID"));
-  DefMacroI(T_CS('\@currentlabel'),undef,$v);
-  DefMacroI(T_CS('\@currentID'),undef,$id);
+  DefMacroI(T_CS('\@currentlabel'),undef,$v,scope=>'global');
+  DefMacroI(T_CS('\@currentID'),undef,$id,scope=>'global');
 
   # Any scopes activated for previous value of this counter (& any nested counters) must be removed.
   # This may also include scopes activated for \label
