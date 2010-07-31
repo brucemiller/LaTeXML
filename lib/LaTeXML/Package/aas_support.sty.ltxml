@@ -62,8 +62,11 @@ DefMacro('\slugcomment{}','\@add@frontmatter{ltx:note}[role=slugcomment]{#1}');
 
 DefMacro('\shorttitle{}', '\@add@frontmatter{ltx:toctitle}{#1}');
 DefMacro('\shortauthors{}','');	# not useful?
-DefMacro('\lefthead', '\shorttitle'); # Obsolete form
-DefMacro('\righthead','\shortauthors'); # Obsolete form
+# I had thought that \lefthead,\righthead were obsolete forms of \shorttitle,\shortauthors,
+# but who knows which goes on which side.... anyway, they get misused too.
+# better have them just disappear.
+DefMacro('\lefthead{}', ''); # Obsolete form
+DefMacro('\righthead{}',''); # Obsolete form
 
 #======================================================================
 # 2.2 Starting the Main Body
