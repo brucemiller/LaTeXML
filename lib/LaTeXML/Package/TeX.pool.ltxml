@@ -1047,7 +1047,7 @@ DefConstructor('\hbox BoxSpecification BoxContents',
  	       mode=>'text',
  	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
  	       # And also things like \centerline that will end up bumping up to block level!
- 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@text@alignment$'));
+ 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@dollar@in@textmode'));
  				   Let(T_CS('\centerline'),T_CS('\relax')); });
 
 
@@ -1353,7 +1353,7 @@ DefConstructor('\@alignment@vrule RuleSpecification','',
 
 # This is the "normal" case: $ appearing with an alignment that is in text mode.
 # It's just like regular $, except it doesn't look for $$ (no display math).
-DefPrimitiveI('\@text@alignment$', undef, sub {
+DefPrimitiveI('\@dollar@in@textmode', undef, sub {
   $_[0]->invokeToken(T_CS((LookupValue('IN_MATH') ?'\@@ENDINLINEMATH':'\@@BEGININLINEMATH'))); });
 
 # This one is for $ appearing within an alignment that's already math.
@@ -1368,7 +1368,7 @@ DefPrimitiveI('\@text@alignment$', undef, sub {
 # alignments in text mode only (like TeX), sneaking $'s in where needed,
 # but then afterwards, morph them into math arrays?
 # This would be complicated by the need to hide these $ from untex.
-DefPrimitiveI('\@math@alignment$', undef, sub {
+DefPrimitiveI('\@dollar@in@mathmode', undef, sub {
   my($stomach)=@_;
   my $level = $stomach->getBoxingLevel;
   if((LookupValue('MATH_ALIGN_$_BEGUN')||0) == $level){ # If we're begun making _something_ with $.
@@ -1450,7 +1450,7 @@ sub alignmentBindings {
   Let(T_CS('\hline'), T_CS('\@alignment@hline'));
   Let(T_CS('\hrule'), T_CS('\@alignment@hrule'));
   Let(T_CS('\vrule'), T_CS('\@alignment@vrule'));
-  Let(T_MATH,  ($ismath ? T_CS('\@math@alignment$') : T_CS('\@text@alignment$')));
+  Let(T_MATH,  ($ismath ? T_CS('\@dollar@in@mathmode') : T_CS('\@dollar@in@textmode')));
   Let(T_CS('\@open@row'),T_CS('\default@open@row'));
   Let(T_CS('\@close@row'),T_CS('\default@close@row'));
 
