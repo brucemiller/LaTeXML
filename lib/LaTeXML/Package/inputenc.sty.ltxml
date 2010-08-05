@@ -1,0 +1,54 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  inputenc                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | # 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+use Encode;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Input Encoding
+
+# If we wanted to find the actual encoding file ($encoding.def somewhere in TEXMF tree),
+# we could conceivably read it, and build a decoding table.
+DefPrimitive('\DeclareInputMath{}{}',undef);
+DefPrimitive('\DeclareInputText{}{}',undef);
+DefPrimitive('\IeC{}',undef);
+DefPrimitive('\inputencoding{}', sub { setEncoding($_[1]); });
+
+DeclareOption(undef,sub { setEncoding(Digest(T_CS('\CurrentOption'))); });
+ProcessOptions();
+
+our %translate_encoding = (
+			  decmulti=>'iso-8859-1', # is it close ENOUGH ?
+			   cp437de=>'cp437', # same as cp437 EXCEPT that 225 => Esset, rather than \beta!!!
+			   applemac=>'MacRoman',
+			   macce=>'MacCentralEurRoman',
+			   next=>'nextstep',
+			   ansinew=>'cp1252'
+			  );
+
+sub setEncoding {
+  my($encoding)=@_;
+  $encoding = ToString($encoding);
+  my $remapped = $translate_encoding{$encoding} || $encoding;
+  # Check that it's a valid perl encoding?
+  if(Encode::resolve_alias($remapped)){
+    AssignValue(INPUT_ENCODING=>$remapped); }
+  else {
+    Error(":unexpected encoding $remapped is unknown"); }}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

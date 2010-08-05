@@ -1,0 +1,50 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  float                                                              | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | # 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Choose the current float style (plain, plaintop, boxed, ruled) Ignorable
+DefMacro('\floatstyle{}','');
+# \restylefloat{style}  Ignorable
+DefMacro('\restylefloat OptionalMatch:* {}',undef);
+# \floatplacement{style}{placement}  Ignorable
+DefMacro('\floatplacement{}{}',undef);
+
+# \listof{type}{title}   Ignorable
+DefMacro('\listof{}{}',undef);
+
+# \floatname{type}{name}  Ignorable, but tempting
+DefMacro('\floatname{}{}',undef);
+
+# I really shouldn't be using ltx:figure here, but some sort of generic float.
+# do I want to extend the schema for that, now?
+DefPrimitive('\newfloat{}{}{}[]',sub {
+  my($gullet,$type,$placement,$auxext,$within)=@_;
+  NewCounter($type,$within);
+  DefEnvironment('{$type}[]',
+		 "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1') class='$type'>"
+		 . "#body"
+		 ."</ltx:figure>",
+		 properties=> sub { RefStepCounter($type) });
+});
+
+## ??? DefMacro('\plain','');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
