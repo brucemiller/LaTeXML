@@ -46,6 +46,48 @@ DefEnvironment('{mathletters}',
 	       afterDigest =>sub{ 
 		 AssignValue('\c@equation',LookupValue('SAVED_EQUATION_NUMBER'),'global'); });
 
+#======================================================================
+# Apparently, you can use single $ within equations to switch back to text
+
+DefMacro('\@dollar@in@oldrevtex', '\bgroup\hbox\bgroup\let$\@eegroup');
+DefMacro('\@eegroup','\egroup\egroup');
+DefEnvironment('{equation}',
+	       "<ltx:equation xml:id='#id' refnum='#refnum'>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>"
+	       .   "#body"
+	       .  "</ltx:XMath>"
+	       . "</ltx:Math>"
+	       ."</ltx:equation>",
+	       mode=>'display_math',
+	       beforeDigest=>sub { Let(T_MATH,  T_CS('\@dollar@in@oldrevtex')); },
+	       properties=> sub { RefStepCounter('equation') },
+	       locked=>1);
+DefEnvironment('{equation*}',
+	       "<ltx:equation xml:id='#id'>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>"
+	       .   "#body"
+	       .  "</ltx:XMath>"
+	       . "</ltx:Math>"
+	       ."</ltx:equation>",
+	       mode=>'display_math',
+	       beforeDigest=>sub { Let(T_MATH,  T_CS('\@dollar@in@oldrevtex')); },
+	       properties=> sub { RefStepID('equation') },
+	       locked=>1);
+DefConstructorI('\[',undef, 
+	       "<ltx:equation xml:id='#id'>"
+	       . "<ltx:Math mode='display'>"
+	       .  "<ltx:XMath>"
+	       .   "#body"
+	       .  "</ltx:XMath>"
+	       . "</ltx:Math>"
+	       ."</ltx:equation>",
+		beforeDigest=> sub{ $_[0]->beginMode('display_math');
+				    Let(T_MATH,  T_CS('\@dollar@in@oldrevtex')); },
+		captureBody=>1,
+		properties=> sub { RefStepID('equation') });
+
 #**********************************************************************
 
 1;
