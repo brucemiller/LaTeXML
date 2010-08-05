@@ -674,33 +674,41 @@ our $INLINE_TAGS = "ltx:text|ltx:emph|ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|lt
 sub insertBlock {
   my($document,$body)=@_;
   # Make sure we're starting the current insertion at block level, bu closing any open p (is ltx:p enough?)
-###  $document->maybeCloseElement('ltx:p');
+  $document->maybeCloseElement('ltx:p');
+
   my $prev = $document->getNode->lastChild; # and remember the last node before insertion.
   $document->absorb($body);	    # Now insert.
+  $document->maybeCloseElement('ltx:p');
 
-#  my $parent = $document->getNode->parentNode;
-  my $model = $document->getModel;
-  my $parent = $document->getElement;
+  my $current = $document->getNode; # Watch that Current node makes sense after surgery.
+  my $model   = $document->getModel;
+  my $parent  = $document->getElement;
   return () unless $parent;
+  # These nodes were inserted
   my @nodes = $parent->childNodes;
-  # Get only those following $prev (if it matches)
+  # but remove any that precede $prev
   if($prev && grep($$prev == $$_, @nodes)){ # IF $prev is sibling of added nodes
     while( ${$nodes[0]} != $$prev){ shift(@nodes); } # then strip away $prev, and preceding, from list
     shift(@nodes); }
 
-  # Convert any text nodes to p, but delete any pure whitespace text nodes
+  # Wrap any "inline" nodes in a ltx:p, but delete any pure whitespace text nodes
   my @new = ();
   while(@nodes){
     my @x=();			# Collect up the next group of "inline" nodes
+    my $moved_current = 0;	# whether we have affected the document's current node.
     while(@nodes && (($nodes[0]->nodeType == XML_TEXT_NODE)
 		     || (($nodes[0]->nodeType == XML_ELEMENT_NODE) && ($model->getNodeQName($nodes[0]) =~ /^($INLINE_TAGS)$/)))){
+      $moved_current = 1 if ${$nodes[0]} == $$current;
       push(@x,shift(@nodes)); }
+
     if(@x && !grep(($_->nodeType != XML_TEXT_NODE) || ($_->textContent =~ /\S/), @x)){ # Only whitespace text nodes?
-      map($parent->removeChild($_),@x); } # just remove them
+      map($parent->removeChild($_),@x);  # just remove them
+      $document->setNode($new[-1]) if $moved_current; } # Watch out if we've deleted the current node!
     elsif(@x){			# Some worthwhile inline nodes to wrap in a <ltx:p>
       my $para = addNewChildLate($document,$parent,'ltx:p');
       $parent->removeChild($para);
       $parent->replaceChild($para,$x[0]); # replace 1st child by the <ltx:p>
+      $document->setNode($para) if $moved_current; # This new <ltx:p> will be current if we've wrapped current.
       foreach my $c (@x){
 	if($c->nodeType == XML_TEXT_NODE){
 	  my $t = $c->textContent;
@@ -711,15 +719,14 @@ sub insertBlock {
       push(@new,$para); }
     elsif($nodes[0]->nodeType == XML_ELEMENT_NODE){ # other element (block or similar), just move to new list
       if($model->getNodeQName($nodes[0]) eq 'ltx:break'){ # except for <break>!
-	$parent->removeChild(shift(@nodes)); }
+	$parent->removeChild(shift(@nodes));
+	$document->setNode($new[-1]) if $moved_current; } # Watch out if we've deleted the current node!
       else {
 	push(@new,shift(@nodes)); }}
     else {
       shift(@nodes); }}
 
-  @new = ($parent) unless @new;
-#  $document->setNode( $parent);
-  $document->setNode($new[-1]->parentNode);
+  @new = ($parent) unless @new;	#  ???
 
   # NOW, what we probably REALLY should do is return the parent of these
   # IFF there are no further insertions into that node... ????
@@ -2731,10 +2738,14 @@ DefMacroI('\depth',      undef, '0pt');
 DefMacroI('\width',      undef, '0pt');
 
 DefConstructor('\mbox {}',
-	       "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text');
+	       "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text', bounded=>1,
+ 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@dollar@in@textmode'));
+ 				   Let(T_CS('\centerline'),T_CS('\relax')); });
+
 DefConstructor('\makebox[Dimension][]{}',
 	       "<ltx:text ?#1(width='#1') ?#2(pos='#2') _noautoclose='1'>#3</ltx:text>",
-	       mode=>'text');
+	       mode=>'text',
+ 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@dollar@in@textmode'));} );
 DefRegister('\fboxrule', Dimension(0));
 DefRegister('\fboxsep',  Dimension(0));
 
@@ -2855,7 +2866,8 @@ DefConstructor('\rule[Dimension]{Dimension}{Dimension}',
 	       "<ltx:rule ?#1(yoffset='#1') width='#2' height='#3'/>");
 DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
 	       "<ltx:text yoffset='#1' _noautoclose='1'>#4</ltx:text>",
-	       mode=>'text');
+	       mode=>'text', bounded=>1,
+ 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@dollar@in@textmode')); });
 
 #**********************************************************************
 # C.14 Pictures and Color
@@ -3067,7 +3079,7 @@ DefConstructor('\shortstack[]{}',
 	       beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
 						 "</ltx:text><ltx:text _noautoclose='1'>",
 						 reversion=>Tokens(T_CS("\\\\"),T_CR)); 
-				  Let(T_MATH, T_CS('\@text@alignment$')); },
+				  Let(T_MATH, T_CS('\@dollar@in@textmode')); },
 	       properties=>{ align=>sub { ($_[1] ? $alignments{ToString($_[0])} : undef); }},
 	       mode=>'text');
 
