@@ -79,11 +79,19 @@ sub getNextChar {
     my $cc = $$STATE{table}{catcode}{$ch}[0]; # $STATE->lookupCatcode($ch); OPEN CODED!
     if((defined $cc) && ($cc == CC_SUPER)	# Possible convert ^^x
        && ($$self{colno}+1 < $$self{nchars}) && ($ch eq $$self{chars}->[$$self{colno}])){
-      my $c=ord($$self{chars}->[$$self{colno}+1]);
-      $ch = chr($c + ($c > 64 ? -64 : 64));
-      splice(@{$$self{chars}},$$self{colno}-1,3,$ch);
-      $$self{nchars} -= 2;
-       $cc = $STATE->lookupCatcode($ch); }
+      my($c1,$c2);
+      if(($$self{colno}+2 < $$self{nchars}) # ^^ followed by TWO LOWERCASE Hex digits???
+	 && (($c1=$$self{chars}->[$$self{colno}+1]) =~/^[0-9a-f]$/)
+	 && (($c2=$$self{chars}->[$$self{colno}+2]) =~/^[0-9a-f]$/)){
+	$ch = chr(hex($c1.$c2));
+	splice(@{$$self{chars}},$$self{colno}-1,4,$ch);
+	$$self{nchars} -= 3; }
+      else {			# OR ^^ followed by a SINGLE Control char type code???
+	my $c=ord($$self{chars}->[$$self{colno}+1]);
+	$ch = chr($c + ($c > 64 ? -64 : 64));
+	splice(@{$$self{chars}},$$self{colno}-1,3,$ch);
+	$$self{nchars} -= 2; }
+      $cc = $STATE->lookupCatcode($ch); }
     $cc=CC_OTHER unless defined $cc;
     ($ch,$cc); }
   else {
@@ -297,14 +305,23 @@ our $WARNED_8BIT=0;
 
 sub XXXgetNextLine {
   my($self)=@_;
-  return undef unless $$self{IN};
-  my $fh = \*{$$self{IN}};
-  my $line = <$fh>;
-  if(! defined $line){
-    close($fh); $$self{IN}=undef; }
+  if(! scalar(@{$$self{buffer}})){
+    return undef unless $$self{IN};
+    my $fh = \*{$$self{IN}};
+    my $line = <$fh>;
+    if(! defined $line){
+      close($fh); $$self{IN}=undef; }
+    else {
+      push(@{$$self{buffer}}, $self->splitString($line)); }}
+
+  my $line = (shift(@{$$self{buffer}})||''). "\n"; # put line ending back!
   if($line){
     if(my $encoding = $STATE->lookupValue('INPUT_ENCODING')){
-      $line = decode($encoding,$line); }}
+      $line = decode($encoding,$line); }
+    $line = encode('UTF-8',$line); }
+
+  if(!($$self{lineno} % 25)){
+    NoteProgress("[#$$self{lineno}]"); }
   $line; }
 
 sub getNextLine {
@@ -320,9 +337,13 @@ sub getNextLine {
 
   my $line = (shift(@{$$self{buffer}})||''). "\n"; # put line ending back!
   if($line){
-    if(my $encoding = $STATE->lookupValue('INPUT_ENCODING')){
-      $line = decode($encoding,$line); }
-    $line = encode('UTF-8',$line); }
+    my $encoding = $STATE->lookupValue('INPUT_ENCODING') || 'UTF-8';
+    # Note that if chars in the input cannot be decoded, they are replaced by \x{FFFD}
+    # I _think_ that for TeX's behaviour we actually should turn such un-decodeable chars in to space(?).
+    $line = decode($encoding, $line, Encode::FB_DEFAULT);
+    if($line =~ s/\x{FFFD}/ /g){	# Just remove the replacement chars, and warn (or Info?)
+      Info(":unexpected input isn't valid under encoding $encoding"); }}
+
   if(!($$self{lineno} % 25)){
     NoteProgress("[#$$self{lineno}]"); }
   $line; }
