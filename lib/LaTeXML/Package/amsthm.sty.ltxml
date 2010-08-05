@@ -121,8 +121,9 @@ DefEnvironment('{@proof} []',
 	      );
 
 ## ??  if(! LookupValue('2.09_COMPATIBILITY')){
-  RawTeX('\newenvironment{proof}{\begin{@proof}}{\end{@proof}');
-
+##  RawTeX('\newenvironment{proof}{\begin{@proof}}{\end{@proof}');
+Let(T_CS('\begin{proof}'),T_CS('\begin{@proof}'));
+Let(T_CS('\end{proof}'),T_CS('\end{@proof}'));
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # from older versions of amsthm.sty
 DefPrimitive('\theorembodyfont{}', sub { AssignValue('\thm@bodyfont' => $_[1]); });
