@@ -86,7 +86,7 @@ DefMacro('\addtocmark[]{}{}{}',Tokens());
 DefMacro('\mainmatter',Tokens());
 
 NewCounter('chapter', 'document',idprefix=>'Pt', nested=>['section']);
-DefMacro('\thesection','\arabic{chapter}');
+DefMacro('\thechapter','\arabic{chapter}');
 DefMacro('\chaptermark{}',Tokens());
 
 # \spnewtheorem*{env}[numberedlike]{caption}[within]{capfont}{bodyfont}
