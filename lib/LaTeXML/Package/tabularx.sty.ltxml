@@ -25,7 +25,7 @@ DefConstructor('\@@tabularx[]{Dimension} Undigested DigestedBody',
 	       sub { my($document,$pos,$width,$pat,$body,%props)=@_;
 		     constructAlignment($document,$body,
 					attributes=>{vattach=>translateAttachment($pos),
-						     width=>$width->valueOf},
+						     width=>ToString($width)},
 					guess_headers=>1); },
 	       reversion=>'\begin{tabularx}[#1]{#2}{#3}#4\end{tabularx}',
 	       beforeDigest=>sub { $_[0]->bgroup; },
