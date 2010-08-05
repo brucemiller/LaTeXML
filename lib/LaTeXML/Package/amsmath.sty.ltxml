@@ -142,7 +142,7 @@ DefEnvironment('{multline}',
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
-	       beforeDigest=>sub {   Let(T_MATH,T_CS('\@math@alignment$')); },
+	       beforeDigest=>sub {   Let(T_MATH,T_CS('\@dollar@in@mathmode')); },
 	       properties=> sub { RefStepCounter('equation') });
 DefEnvironment('{multline*}',
 	       "<ltx:equation>"
@@ -150,7 +150,7 @@ DefEnvironment('{multline*}',
 	       .  "<ltx:XMath>#body</ltx:XMath>"
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
-	       beforeDigest=>sub {   Let(T_MATH,T_CS('\@math@alignment$')); },
+	       beforeDigest=>sub {   Let(T_MATH,T_CS('\@dollar@in@mathmode')); },
 	       mode=>'display_math');
 
 #======================================================================
@@ -570,9 +570,18 @@ DefMacro('\uproot{}','');
 
 #======================================================================
 # Section 4.7 Boxed formulas
-
-DefConstructor('\boxed{}',
+DefMacro('\boxed','\ifmmode\boxed@math\else\boxed@text\fi');
+DefConstructor('\boxed@math{}',
 	       "<ltx:XMWrap style='boxed'><ltx:XMArg>#1</ltx:XMArg></ltx:XMWrap>");
+DefConstructor('\boxed@text{}',sub {
+  my($document,$body,%props)=@_;
+  my @new = insertBlock($document,$body);
+  foreach my $node (@new){
+    addClass($node,'framed'); }},
+	       bounded=>1,
+	       beforeDigest=>sub {
+		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
+
 DefMath('\implies',  "\x{27F9}", role=>'ARROW', meaning=>'implies');
 DefMath('\impliedby',"\x{27F8}", role=>'ARROW', meaning=>'implied-by');
 #======================================================================
