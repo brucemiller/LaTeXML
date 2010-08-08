@@ -765,14 +765,14 @@ sub processBibNameList {
   my @words = splitWords($string);
   my $etal =0;
   # NOTE: Should formally represent the etal???
-  if(($words[$#words-1] eq 'and') && ($words[$#words] =~ /^(others|et\s*al\.?)$/)){
+  if(($words[$#words-1] =~ /^and$/i) && ($words[$#words] =~ /^(others|et\s*al\.?)$/i)){
     pop(@words); pop(@words); $etal=1; }
   while(@words){
     my @phrases=();
     my @phrase=();
     while(@words){
       my $word = shift(@words);
-      last if $word eq 'and';
+      last if $word =~ /^and$/i;
       if ($word eq ','){
 	push(@phrases,[@phrase]); @phrase=(); }
       else {
