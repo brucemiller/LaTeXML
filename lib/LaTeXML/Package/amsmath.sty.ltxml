@@ -570,7 +570,7 @@ DefMacro('\uproot{}','');
 
 #======================================================================
 # Section 4.7 Boxed formulas
-DefMacro('\boxed','\ifmmode\boxed@math\else\boxed@text\fi');
+DefMacro('\boxed{}','\ifmmode\boxed@math{#1}\else\boxed@text{#1}\fi');
 DefConstructor('\boxed@math{}',
 	       "<ltx:XMWrap style='boxed'><ltx:XMArg>#1</ltx:XMArg></ltx:XMWrap>");
 DefConstructor('\boxed@text{}',sub {
