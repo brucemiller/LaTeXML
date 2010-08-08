@@ -693,38 +693,49 @@ sub insertBlock {
 
   # Wrap any "inline" nodes in a ltx:p, but delete any pure whitespace text nodes
   my @new = ();
-  while(@nodes){
-    my @x=();			# Collect up the next group of "inline" nodes
-    my $moved_current = 0;	# whether we have affected the document's current node.
-    while(@nodes && (($nodes[0]->nodeType == XML_TEXT_NODE)
-		     || (($nodes[0]->nodeType == XML_ELEMENT_NODE) && ($model->getNodeQName($nodes[0]) =~ /^($INLINE_TAGS)$/)))){
-      $moved_current = 1 if ${$nodes[0]} == $$current;
-      push(@x,shift(@nodes)); }
+  if ($model->canContain($parent,'ltx:p')) {
+    while (@nodes) {
+      my @x=();		 # Collect up the next group of "inline" nodes
+      my $moved_current = 0; # whether we have affected the document's current node.
+      while (@nodes && (($nodes[0]->nodeType == XML_TEXT_NODE)
+			|| (($nodes[0]->nodeType == XML_ELEMENT_NODE) && ($model->getNodeQName($nodes[0]) =~ /^($INLINE_TAGS)$/)))) {
+	$moved_current = 1 if ${$nodes[0]} == $$current;
+	push(@x,shift(@nodes));
+      }
 
-    if(@x && !grep(($_->nodeType != XML_TEXT_NODE) || ($_->textContent =~ /\S/), @x)){ # Only whitespace text nodes?
-      map($parent->removeChild($_),@x);  # just remove them
-      $document->setNode($new[-1]) if $moved_current; } # Watch out if we've deleted the current node!
-    elsif(@x){			# Some worthwhile inline nodes to wrap in a <ltx:p>
-      my $para = addNewChildLate($document,$parent,'ltx:p');
-      $parent->removeChild($para);
-      $parent->replaceChild($para,$x[0]); # replace 1st child by the <ltx:p>
-      $document->setNode($para) if $moved_current; # This new <ltx:p> will be current if we've wrapped current.
-      foreach my $c (@x){
-	if($c->nodeType == XML_TEXT_NODE){
-	  my $t = $c->textContent;
-	  $para->appendTextNode($t) if $t =~ /\S/; } # append if more than just whitespace.
+      if (@x && !grep(($_->nodeType != XML_TEXT_NODE) || ($_->textContent =~ /\S/), @x)) { # Only whitespace text nodes?
+	map($parent->removeChild($_),@x); # just remove them
+	$document->setNode($new[-1]) if $moved_current;
+      }		   # Watch out if we've deleted the current node!
+      elsif (@x) { # Some worthwhile inline nodes to wrap in a <ltx:p>
+	my $para = addNewChildLate($document,$parent,'ltx:p');
+	$parent->removeChild($para);
+	$parent->replaceChild($para,$x[0]); # replace 1st child by the <ltx:p>
+	$document->setNode($para) if $moved_current; # This new <ltx:p> will be current if we've wrapped current.
+	foreach my $c (@x) {
+	  if ($c->nodeType == XML_TEXT_NODE) {
+	    my $t = $c->textContent;
+	    $para->appendTextNode($t) if $t =~ /\S/;
+	  }			# append if more than just whitespace.
+	  else {
+	    $para->appendChild($c);
+	  }
+	  $parent->removeChild($c);
+	}
+	push(@new,$para);
+      } elsif ($nodes[0]->nodeType == XML_ELEMENT_NODE) { # other element (block or similar), just move to new list
+	if ($model->getNodeQName($nodes[0]) eq 'ltx:break') { # except for <break>!
+	  $parent->removeChild(shift(@nodes));
+	  $document->setNode($new[-1]) if $moved_current;
+	}		# Watch out if we've deleted the current node!
 	else {
-	  $para->appendChild($c); }
-	$parent->removeChild($c); }
-      push(@new,$para); }
-    elsif($nodes[0]->nodeType == XML_ELEMENT_NODE){ # other element (block or similar), just move to new list
-      if($model->getNodeQName($nodes[0]) eq 'ltx:break'){ # except for <break>!
-	$parent->removeChild(shift(@nodes));
-	$document->setNode($new[-1]) if $moved_current; } # Watch out if we've deleted the current node!
-      else {
-	push(@new,shift(@nodes)); }}
-    else {
-      shift(@nodes); }}
+	  push(@new,shift(@nodes));
+	}
+      } else {
+	shift(@nodes);
+      }
+    }
+  }
 
   @new = ($parent) unless @new;	#  ???
 
