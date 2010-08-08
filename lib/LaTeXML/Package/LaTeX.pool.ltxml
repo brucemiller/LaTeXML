@@ -424,9 +424,22 @@ DefConstructor('\LoadClass[] Semiverbatim []',
 # Related internal macros for package definition
 # Internals used in Packages
 DefMacro('\NeedsTeXFormat{}[]', Tokens());
-DefMacro('\ProvidesClass{}[]',  Tokens());
-DefMacro('\ProvidesPackage{}[]',Tokens());
-DefMacro('\ProvidesFile{}[]',   Tokens());
+
+DefPrimitive('\ProvidesClass{}[]', sub {
+  my($stomach,$class,$version)=@_;
+  DefMacroI("\\ver@".ToString($class).".cls",undef,$version || Tokens(), scope=>'global');
+  return; });
+
+# Note that these, like LaTeX, define macros like \var@mypkg.sty to give the version info.
+DefMacro('\ProvidesPackage{}[]',sub {
+  my($stomach,$package,$version)=@_;
+  DefMacroI("\\ver@".ToString($package).".sty",undef,$version  || Tokens(), scope=>'global');
+  return; });
+
+DefMacro('\ProvidesFile{}[]',   sub {
+  my($stomach,$file,$version)=@_;
+  DefMacroI("\\ver@".ToString($file),undef,$version  || Tokens(), scope=>'global');
+  return; });
 
 DefPrimitive('\DeclareOption{}{}', sub {
   my($stomach,$option,$code)=@_;
@@ -1782,8 +1795,12 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 		 . "<ltx:title>#title</ltx:title>"
 		 .  "#body"
 		 ."</ltx:theorem>",
-
-		 beforeDigest=>sub { Digest(Tokens(T_CS('\th@'.$style))); },
+		 beforeDigest=>sub {
+		   my $stylecmd = T_CS('\th@'.$style);
+		   if(!LookupDefinition($stylecmd)){
+		     Warn(":unexpected:".ToString($stylecmd)." Unknown theoremstyle '$style'");
+		     $stylecmd = T_CS('\th@plain'); }
+		   Digest(Tokens($stylecmd)); },
 		 afterDigestBegin=> sub {
 		   my($stomach,$whatsit)=@_;
 		   my $note = $whatsit->getArg(1);
