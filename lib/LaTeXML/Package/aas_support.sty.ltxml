@@ -337,8 +337,8 @@ DefMacro('\deluxetable{}','\set@deluxetable@template{#1}\def\@deluxetable@header
 DefMacro('\set@deluxetable@template AlignmentTemplate',sub {
    AssignValue('@deluxetable@template',$_[1]); });
 
-DefMacro('\startdata',  '\@deluxetable@bindings\@@deluxetabular\@start@alignment\hline\hline\@deluxetable@header');
-DefMacro('\enddata',    '\hline\@finish@alignment\@end@deluxetabular');
+DefMacro('\startdata',  '\bgroup\@deluxetable@bindings\@@deluxetabular\@start@alignment\hline\hline\@deluxetable@header');
+DefMacro('\enddata',    '\hline\@finish@alignment\@end@deluxetabular\egroup');
 
 DefPrimitive('\@deluxetable@bindings',sub {
   alignmentBindings(LookupValue('@deluxetable@template'),'text'); });
