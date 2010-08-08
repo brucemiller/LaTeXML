@@ -2993,6 +2993,8 @@ DefConstructorI('\:',undef,"?#isMath(<ltx:XMHint name='medspace'/>)(\x{2005})",
 	      properties=>{isSpace=>1});  # FOUR-PER-EM SPACE
 DefConstructorI('\ ',undef,"?#isMath(<ltx:XMHint name='medspace'/>)(".UTF(0xA0).")",
 	      properties=>{isSpace=>1}); # EN SPACE
+DefConstructorI('\	',undef,"?#isMath(<ltx:XMHint name='medspace'/>)(".UTF(0xA0).")", # TAB!!!
+	      properties=>{isSpace=>1}); # EN SPACE
 DefConstructorI('\/',undef,"?#isMath(<ltx:XMHint name='italiccorr'/>)()",
 	      properties=>{isSpace=>1});
 
