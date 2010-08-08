@@ -21,5 +21,46 @@ use LaTeXML::Package;
 # Font Encoding
 # I don't think there's actually anything to do here, unless we
 # tried to (reverse) map the font tables to Unicode codepoints.
+
+# Some encodings require us to define Cyrillic macros
+foreach my $option (qw(T2A T2B T2C X2 LCY OT2)){
+  DeclareOption($option, sub { setupCyrillic(); return; }); }
+
+# Anything else doesn't really matter....
+DeclareOption(undef,undef);
+# WELL... Actually, some "encodings" map the normal 7bit (or 8)
+# apparently ASCII input characters to a completely different font.
+# EG. OT2 maps to cyrillic.
+
+our %cyrillic_map = 
+  (cyra=>"\x{0430}",     cyrb=>"\x{0431}",     cyrv=>"\x{0432}",     cyrg=>"\x{0433}",
+   cyrd=>"\x{0434}",     cyre=>"\x{0435}",     cyrzh=>"\x{0436}",    cyrz=>"\x{0437}",
+   cyri=>"\x{0438}",     cyrishrt=>"\x{0439}", cyrk=>"\x{043A}",     cyrl=>"\x{043B}",
+   cyrm=>"\x{043C}",     cyrn=>"\x{043D}",     cyro=>"\x{043E}",     cyrp=>"\x{043F}",
+
+   cyrr=>"\x{0440}",     cyrs=>"\x{0441}",     cyrt=>"\x{0442}",     cyru=>"\x{0443}",
+   cyrf=>"\x{0444}",     cyrh=>"\x{0445}",     cyrc=>"\x{0446}",     cyrch=>"\x{0447}",
+   cyrsh=>"\x{0448}",    cyrshch=>"\x{0449}",  cyrhrdsn=>"\x{044A}", cyrery=>"\x{044B}",
+   cyrsftsn=>"\x{044C}", cyrerev=>"\x{044D}",  cyryu=>"\x{044E}",    cyrya=>"\x{044F}",
+   cyryo=>"\x{0451}",
+
+   CYRA=>"\x{0410}",     CYRB=>"\x{0411}",     CYRV=>"\x{0412}",     CYRG=>"\x{0413}",
+   CYRD=>"\x{0414}",     CYRE=>"\x{0415}",     CYRZH=>"\x{0416}",    CYRZ=>"\x{0417}",
+   CYRI=>"\x{0418}",     CYRISHRT=>"\x{0419}", CYRK=>"\x{041A}",     CYRL=>"\x{041B}",
+   CYRM=>"\x{041C}",     CYRN=>"\x{041D}",     CYRO=>"\x{041E}",     CYRP=>"\x{041F}",
+
+   CYRR=>"\x{0420}",     CYRS=>"\x{0421}",     CYRT=>"\x{0422}",     CYRU=>"\x{0423}",
+   CYRF=>"\x{0424}",     CYRH=>"\x{0425}",     CYRC=>"\x{0426}",     CYRCH=>"\x{0427}",
+   CYRSH=>"\x{0428}",    CYRSHCH=>"\x{0429}",  CYRHRDSN=>"\x{042A}", CYRERY=>"\x{042B}",
+   CYRSFTSN=>"\x{042C}", CYREREV=>"\x{042D}",  CYRYU=>"\x{042E}",    CYRYA=>"\x{042F}",
+   CYRYO=>"\x{0401}");
+
+
+sub setupCyrillic {
+  foreach my $cmd (keys %cyrillic_map){
+    DefMacroI('\\'.$cmd, undef, $cyrillic_map{$cmd}); }}
+
+ProcessOptions();
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 1;
