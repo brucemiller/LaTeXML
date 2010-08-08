@@ -22,7 +22,7 @@ my($verbosity,$strict,$noparse,$includestyles)=(-1,0,0,0);
 my ($destination,$help,$showversion)=('','');
 my ($documentid);
 my($mathimage,$mag)=(undef,1.75);
-my($pmml,$linelength)=(undef,undef);
+my($pmml,$linelength,$plane1,$hackplane1)=(undef,undef,undef,undef);
 my $xmath=undef;
 my $cmml=undef;
 my $om=undef;
@@ -34,6 +34,8 @@ GetOptions(
 	   "magnification=f"           => \$mag,
 	   "presentationmathml|pmml=s" => \$pmml,
 	   "linelength=i"              => \$linelength,
+	   "plane1!"                   => \$plane1,
+	   "hackplane1!"               => \$hackplane1,
 	   "contentmathml|cmml=s"      => \$cmml,
 	   "openmath|om=s"             => \$om,
 	   "XMath=s"                   => \$xmath,
@@ -156,8 +158,10 @@ if($pmml){
   require 'LaTeXML/Post/MathML.pm';
   my($post) = LaTeXML::Post::ProcessChain($doc,
       LaTeXML::Post::MathML::Presentation->new(
-          (defined $linelength ? (linelength=>$linelength):()),
-	   %OPTIONS));
+                    (defined $linelength ? (linelength=>$linelength):()),
+                    ($plane1 ? (plane1=>1):()),
+                    ($hackplane1 ? (hackplane1=>1):()),
+		    %OPTIONS));
 
 # outputXML($post->findnode('//ltx:document'),'-');
   outputXML($post->findnode('//m:math'), $pmml); }
@@ -308,6 +312,20 @@ Requests conversion to Presentation MathML.
 
 (Experimental) Line-breaks the generated Presentation
 MathML so that it is no longer than I<number> `characters'.
+
+=item C<--plane1>
+
+Converts the content of Presentation MathML token elements to
+the appropriate Unicode Plane-1 codepoints according to the selected font,
+when applicable.
+
+=item C<--hackplane1>
+
+Converts the content of Presentation MathML token elements to
+the appropriate Unicode Plane-1 codepoints according to the selected font,
+but only for the mathvariants double-struck, fraktur and script.
+This gives support for current (as of August 2009) versions of
+Firefox and MathPlayer, provided a sufficient set of fonts is available (eg. STIX).
 
 =item C<--contentmathml>=I<file>
 
