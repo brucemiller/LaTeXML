@@ -190,7 +190,8 @@ DefParameterType('Digested', sub {
   do { $token=$gullet->readXToken(); 
       } while(defined $token && $token->getCatcode == CC_SPACE);
   my @list=();
-  if($token->equals(T_BEGIN)){
+  if(!defined $token){}
+  elsif($token->equals(T_BEGIN)){
     Digest($token);
     @list = $STATE->getStomach->digestNextBody(); pop(@list); }
   else {
