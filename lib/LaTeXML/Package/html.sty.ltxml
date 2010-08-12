@@ -16,6 +16,17 @@ use LaTeXML::Package;
 
 RequirePackage('hyperref');
 #**********************************************************************
+# A quite perverse redefinition allows an optional arg after the \begin
+# which presumably supplies some sort of style info.... 
+# we'll ignore it, but we do at least have to parse
+DefMacro('\begin[]{}',sub { 
+  my($gullet,$style,$env)=@_;
+  my $name = $env && ToString($env);
+  if(LookupDefinition(T_CS("\\begin{$name}"))){
+    T_CS("\\begin{$name}"); } # Magic cs!
+  else {			# If not defined, let stomach handle it.
+    (T_CS('\begingroup'),T_CS("\\$name")); }});
+#======================================================================
 DefMacro('\latextohtml','\LaTeX2\texttt{HTML}');
 DefMacro('\htmladdnormallinkfoot{}{}','\href{#2}{#1}');
 DefMacro('\htmladdnormallink{}{}','\href{#2}{#1}');
