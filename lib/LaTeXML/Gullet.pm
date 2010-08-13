@@ -194,6 +194,7 @@ sub unread {
 # if one is available, and will also pass comments.
 sub readXToken {
   my($self,$toplevel)=@_;
+  $toplevel = 1 unless defined $toplevel;
   return shift(@{$$self{pending_comments}}) if $toplevel && @{$$self{pending_comments}};
   my($token,$cc,$defn);
   while(1){
