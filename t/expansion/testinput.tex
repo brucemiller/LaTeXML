@@ -1,0 +1,46 @@
+\documentclass{article}
+\begin{document}
+\section{Test input section}
+Part of main document. Input \TeX\ style.
+\input fragment1.tex
+Back to main document
+
+Part of main document. Input \LaTeX\ style.
+\input{fragment1}
+Back to main document
+
+Part of main document. Input a jobname style.
+\input \jobname.foo
+Back to main document
+
+\def\testa{Test A.}
+\def\testb{Test B.}
+\def\testatestb{Test A and B.}
+Part of main document. 
+\input fragment2.tex testb
+Back to main document
+
+
+\end{document}
+
+%% TeXbook says input is expandable, expands to null and prepares to read from the file.
+%% But, what does it do when expanded in `isolation' ?
+%% => ``Missing number, treated as zero.''
+%% Strange!
+%% At any rate, that implies finding \input inside expand_tokens is allowed to fail!
+%\edef\testx{\input fragment1.tex}
+%Part of main document.
+%\testx
+%Back to main document
+
+% This should also fail: couldn't find 2nd arg while scanning.
+\def\testc#1#2{Test C (#1)(#2).}
+Part of main document.
+\input fragment3.tex {Y}
+Back to main document
+
+Testing inclusion inside a math environment.
+\[  a + \input mathinc.tex
+    z 
+\]
+\end{document}

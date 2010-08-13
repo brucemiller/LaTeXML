@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section refnum="1" xml:id="S1">
+    <title>Test input section</title>
+    <para xml:id="S1.p1">
+      <p>Part of main document. Input TeX style.
+Inside fragment 1.
+Back to main document</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>Part of main document. Input LaTeX style.
+Inside fragment 1.
+
+Back to main document</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>Part of main document. Input a jobname style.
+Inside jobname.foo!
+Back to main document</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>Part of main document.
+Test A.testb
+Back to main document</p>
+    </para>
+  </section>
+</document>
