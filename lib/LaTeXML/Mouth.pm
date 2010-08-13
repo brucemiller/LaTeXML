@@ -331,7 +331,8 @@ sub getNextLine {
     my $fh = \*{$$self{IN}};
     my $line = <$fh>;
     if(! defined $line){
-      close($fh); $$self{IN}=undef; }
+      close($fh); $$self{IN}=undef;
+      return; }
     else {
       push(@{$$self{buffer}}, $self->splitString($line)); }}
 
