@@ -22,7 +22,7 @@ my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
 my($sourcedir,$destination)=(undef,undef);
 my($format,$urlstyle) = (undef,'server');
 my($numbersections)=(1);
-my($stylesheet,$defaultcss,@css)=(undef,1);
+my($stylesheet,$defaultcss,$icon,@css)=(undef,1);
 my($parallelmath,$mathimages,$mathimagemag)=(undef,undef,1.75);
 my($linelength,$keepXMath,$plane1,$hackplane1)=(undef,undef,undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
@@ -61,6 +61,7 @@ GetOptions("verbose+"              =>\$verbosity,
 	   "stylesheet=s"          =>\$stylesheet,
 	   "css=s"                 =>\@css,
 	   "defaultcss!"           =>\$defaultcss,
+	   "icon=s"                 =>\$icon,
 	   # Options for broader document set processing
 	   "split!"                =>\$split,
 	   "splitat=s"             =>sub { $splitat=$_[1]; $split=1 unless defined $split;},
@@ -307,10 +308,15 @@ if(!$prescan){
 	my $csssource = shift(@csssources);
 	pathname_copy($csssource,$csspath)  if $csssource && -f $csssource;
 	push(@csspaths,$csspath); }}
+    my $icondest;
+    if($icon){
+      if(my $iconsrc = pathname_find($icon,($sourcedir ? (paths=>[$sourcedir]):()))){
+	$icondest = pathname_absolute($icon,pathname_directory($destination));
+	pathname_copy($iconsrc,$icondest); }}
     push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,
 					 css=>[@csspaths],
-					 parameters=>{number_sections
-						      =>($numbersections ?"true()":"false()")
+					 parameters=>{number_sections=>($numbersections ?"true()":"false()"),
+						      ($icon ? (ICON=>"'$icon'"):()),
 						     },
 					 %OPTIONS)); }
 
@@ -540,6 +546,11 @@ order given, following the default C<core.css>
 =item C<--nodefaultcss>
 
 Disables the inclusion of the default C<core.css> stylesheet.
+
+=item C<--icon>=I<iconfile>
+
+Copies I<iconfile> to the destination directory and sets up the linkage in
+the transformed html/xhtml to use that as the "favicon".
 
 =back
 

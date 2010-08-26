@@ -23,6 +23,7 @@
     extension-element-prefixes="string f">
 
 <xsl:param name="CSS"></xsl:param>
+<xsl:param name="ICON"></xsl:param>
 
 <!--  ======================================================================
       The Page
@@ -59,6 +60,9 @@
     </xsl:text>
       <link rel="next" href="{/*/ltx:navigation/ltx:ref[@class='next']/@href}"
 	    title="{normalize-space(.//ltx:navigation/ltx:ref[@class='next']/@title)}"/>
+    </xsl:if>
+    <xsl:if test='$ICON'>
+      <link rel="shortcut icon" href="{$ICON}" type="image/x-icon"/>
     </xsl:if>
     <xsl:if test='$CSS'>
       <xsl:for-each select="string:split($CSS,'|')"><xsl:text>
