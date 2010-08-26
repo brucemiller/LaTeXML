@@ -73,7 +73,7 @@ sub process {
       if(my $dest = $doc->getDestination){
 	my $loc = $self->siteRelativePathname($dest);
 	my $prevloc = $preventry->getValue('location');
-	if($loc ne $prevloc){
+	if((defined $prevloc) && ($loc ne $prevloc)){
 	  $self->Warn($doc,"Using default ID=\"$id\", "
 		      ."but there's an apparent conflict with location $loc and previous $prevloc");}}}
     $root->setAttribute('xml:id'=>$id); }
