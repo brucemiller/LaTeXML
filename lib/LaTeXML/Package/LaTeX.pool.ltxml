@@ -2425,7 +2425,7 @@ DefPrimitive('\input', sub {
     $path=Expand($gullet->readArg); }
   else {			# Read TeX style.
     my ($token,@tokens)=();
-    while(($token = $gullet->readXToken) && ($token->getCatcode != CC_SPACE)){
+    while(($token = $gullet->readXToken(0)) && ($token->getCatcode != CC_SPACE)){
       push(@tokens,$token); }
     $path = Tokens(@tokens); }
   $path = ToString($path);

@@ -77,7 +77,7 @@ DefParameterType('XUntil', sub {
   my($gullet,$until)=@_;
   ($until) = $until->unlist;	# Make sure it's a single token!!!
   my ($token,@tokens)=();
-  while($token = $gullet->readXToken()){
+  while($token = $gullet->readXToken(0)){
     if($token->equals($until)){
       last; }
     elsif($token->getCatcode == CC_BEGIN){
@@ -132,7 +132,7 @@ DefParameterType('DefToken', sub {
 # Read a variable, ie. a token (after expansion) that is a writable register.
 DefParameterType('Variable', sub {
   my($gullet)=@_;
-  my $token = $gullet->readXToken;
+  my $token = $gullet->readXToken(1);
   my $defn = $token && LookupDefinition($token);
   if((defined $defn) && $defn->isRegister && !$defn->isReadonly){
     [$defn,$defn->readArguments($gullet)]; }
@@ -143,7 +143,7 @@ DefParameterType('Variable', sub {
 DefParameterType('TeXFileName', sub {
   my($gullet)=@_;
   my($token,$cc,@tokens)=();
-  while(($token = $gullet->readXToken())
+  while(($token = $gullet->readXToken(0))
 	&& (($cc=$token->getCatcode) != CC_SPACE) &&($cc!=CC_EOL)&&($cc!=CC_COMMENT)&&($cc!=CC_CS)){
     push(@tokens,$token); }
   $gullet->unread($token);
@@ -155,7 +155,7 @@ DefParameterType('TeXFileName', sub {
 DefParameterType('MoveableBox', sub{
   my($gullet)=@_;
   $gullet->skipSpaces;
-  my ($box,@stuff) = $STATE->getStomach->invokeToken($gullet->readXToken);
+  my ($box,@stuff) = $STATE->getStomach->invokeToken($gullet->readXToken(1));
   Error(":expected:<box>  A <box> was supposed to be here, got ".Stringify($box))
     unless $box && $box->isa('LaTeXML::Whatsit')
       && ($box->getDefinition->getCSName =~ /^(\\hbox|\\vbox||\\vtop)$/);
@@ -165,7 +165,7 @@ DefParameterType('MoveableBox', sub{
 # Note that this does NOT balance () within the argument.
 DefParameterType('BalancedParen', sub {
   my ($gullet) = @_;
-  my $tok = $gullet->readXToken;
+  my $tok = $gullet->readXToken(1);
   if (ref $tok && ToString($tok) eq '(') {
     $gullet->readUntil(T_OTHER(')'));
   } else {
@@ -187,7 +187,7 @@ DefParameterType('Digested', sub {
   $gullet->skipSpaces;
   my $ismath     = $STATE->lookupValue('IN_MATH');
   my $token;
-  do { $token=$gullet->readXToken(); 
+  do { $token=$gullet->readXToken(0); 
       } while(defined $token && $token->getCatcode == CC_SPACE);
   my @list=();
   if(!defined $token){}
@@ -418,7 +418,7 @@ DefMacro('\meaning Token',sub {
 DefMacroI('\csname',undef,sub {
   my($gullet)=@_;
   my($token,@toks)=();
-  while(($token = $gullet->readXToken()) && ($token->getString ne '\endcsname')){
+  while(($token = $gullet->readXToken(0)) && ($token->getString ne '\endcsname')){
     push(@toks,$token); }
   $token = T_CS("\\".ToString(Tokens(@toks)));
   Let($token, T_CS('\relax')) unless defined LookupMeaning($token);
@@ -1008,13 +1008,13 @@ DefPrimitive('\char Number', sub { $_[0]->invokeToken(T_OTHER(chr($_[1]->valueOf
 
 DefPrimitive('\setbox Number SkipMatch:=', sub { 
   my($stomach)=@_;
-  my @stuff = $stomach->invokeToken($stomach->getGullet->readXToken);
+  my @stuff = $stomach->invokeToken($stomach->getGullet->readXToken(1));
   AssignValue('box'.$_[1]->valueOf => shift(@stuff));
   @stuff;});
 # Is this the same ??
 DefPrimitive('\sbox Number SkipMatch:= {}', sub { 
   my($stomach)=@_;
-  my @stuff = $stomach->invokeToken($stomach->getGullet->readXToken);
+  my @stuff = $stomach->invokeToken($stomach->getGullet->readXToken(1));
   AssignValue('box'.$_[1]->valueOf => shift(@stuff));
   @stuff;});
 
@@ -1584,7 +1584,7 @@ DefPrimitiveI('\@open@inner@column',   undef,sub {
   my @savedtokens=();
   $$colspec{empty}=0;		# Assume the column isn't empty
   # Scan for leading \omit, skipping over (& saving) \hline.
-  while(my $tok=$gullet->readXToken){
+  while(my $tok=$gullet->readXToken(0)){
     if($tok->equals(T_SPACE)){ } # Skip leading space
     elsif(grep($tok->equals($_),@line_tokens)){ # Save line commands
       push(@lines,$stomach->invokeToken($tok)); }
@@ -1671,13 +1671,13 @@ DefPrimitive('\halign BoxSpecification', sub {
   Let(T_CS("\\\\"), T_CS('\default@cr'));
   # Read the template up till something equivalent to \cr
   my @template = ();
-  while(($t=$gullet->readXToken) && !Equals($t,T_CS('\cr'))){
+  while(($t=$gullet->readXToken(0)) && !Equals($t,T_CS('\cr'))){
     push(@template,$t); }
 
   # Read the rest until balanced }
   my @tokens = ();
   my $level=1;
-  while($level && ($t=$gullet->readXToken)){
+  while($level && ($t=$gullet->readXToken(0))){
     if(Equals($t,T_BEGIN)){ $level++; }
     elsif(Equals($t,T_END)){ $level--; }
     push(@tokens,$t) if $level; }
@@ -1991,7 +1991,7 @@ DefMacroI('\eqno',undef,sub {
   my($gullet)=@_;
   my @stuff=();
   # This is risky!!!
-  while(my $t = $gullet->readXToken){
+  while(my $t = $gullet->readXToken(0)){
     if(! defined $t){
       Fatal(":unexpected:\eqno fell of the end!"); }
     # What do I need to explicitly list here!?!?!? UGGH!
@@ -2093,7 +2093,7 @@ sub scriptHandler {
     # Now, get following boxes
 #    my @stuff = $stomach->invokeToken($gullet->readXToken);
     my @stuff=();
-    while(my $tok = $gullet->readXToken){
+    while(my $tok = $gullet->readXToken(0)){
       @stuff = $stomach->invokeToken($tok);
       last if @stuff; }
     Fatal(":expected:{ Missing { in sub/super-script argument") unless @stuff;
@@ -3278,7 +3278,7 @@ DefPrimitiveI('\joinrel',undef,sub {
   else {
     pop(@LaTeXML::LIST);
     my @stuff=();
-    while(my $tok = $gullet->readXToken){
+    while(my $tok = $gullet->readXToken(0)){
       @stuff = $stomach->invokeToken($tok);
       last if @stuff; }
     return () unless @stuff;	# no-op ????
