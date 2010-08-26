@@ -1427,7 +1427,7 @@
                     |bib-date|bib-publisher|bib-organization|bib-place
                     |bib-part|bib-related|bib-edition|bib-status
                     |bib-language|bib-url|bib-note|bib-extract
-                    |bib-identifier|bib-review|bib-links)*>
+                    |bib-identifier|bib-review|bib-links|bib-data)*>
 <!ATTLIST bibentry
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1526,8 +1526,8 @@
                        |bib-date|bib-publisher|bib-organization
                        |bib-place|bib-part|bib-related|bib-edition
                        |bib-status|bib-language|bib-url|bib-note
-                       |bib-extract|bib-identifier|bib-review
-                       |bib-links)*>
+                       |bib-extract|bib-identifier|bib-review|bib-links
+                       |bib-data)*>
 <!ATTLIST bib-related
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1621,3 +1621,12 @@
   xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
   role CDATA #IMPLIED>
+
+<!ELEMENT bib-data (#PCDATA|text|emph|acronym|rule|anchor|ref|cite
+                    |bibref|Math|inline-block|verbatim|break|graphics
+                    |inline-para|tabular|picture|note|indexmark|ERROR)*>
+<!ATTLIST bib-data
+  xmlns CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  role CDATA #IMPLIED
+  type CDATA #IMPLIED>

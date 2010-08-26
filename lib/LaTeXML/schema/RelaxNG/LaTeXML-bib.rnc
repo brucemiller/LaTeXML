@@ -275,6 +275,17 @@ element bib-note {
   attribute role { ("annotation" | "publication" | text) }?,
   Inline.model }
 
+bib-data =
+## Random data, not necessarily even text.
+## (future questions: should model be text or ANY? maybe should have encoding attribute?).
+element bib-data {
+  Common.attributes,
+  ## Classify the relationship of the data to the entry.
+  attribute role { text }?,
+  ## Classify the type of the data.
+  attribute type { text }?,
+  Inline.model }
+
 Bibentry.class =
   bib-name
   | bib-title
@@ -295,3 +306,4 @@ Bibentry.class =
   | bib-identifier
   | bib-review
   | bib-links
+  | bib-data

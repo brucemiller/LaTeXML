@@ -473,6 +473,24 @@ object, in particular page, part, volume numbers and similar.</a:documentation>
       <ref name="Inline.model"/>
     </element>
   </define>
+  <define name="bib-data">
+    <element name="bib-data">
+      <a:documentation>Random data, not necessarily even text.
+(future questions: should model be text or ANY? maybe should have encoding attribute?).</a:documentation>
+      <ref name="Common.attributes"/>
+      <optional>
+        <attribute name="role">
+          <a:documentation>Classify the relationship of the data to the entry.</a:documentation>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="type">
+          <a:documentation>Classify the type of the data.</a:documentation>
+        </attribute>
+      </optional>
+      <ref name="Inline.model"/>
+    </element>
+  </define>
   <define name="Bibentry.class">
     <choice>
       <ref name="bib-name"/>
@@ -495,6 +513,7 @@ object, in particular page, part, volume numbers and similar.</a:documentation>
       <ref name="bib-identifier"/>
       <ref name="bib-review"/>
       <ref name="bib-links"/>
+      <ref name="bib-data"/>
     </choice>
   </define>
 </grammar>
