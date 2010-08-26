@@ -81,7 +81,7 @@ sub digest {
   my $initdepth  = scalar(@{$$self{boxing}});
   my $depth=$initdepth;
   local @LaTeXML::LIST=();
-  while(defined(my $token=$$self{gullet}->readXToken())){ # Done if we run out of tokens
+  while(defined(my $token=$$self{gullet}->readXToken(1))){ # Done if we run out of tokens
     push(@LaTeXML::LIST, $self->invokeToken($token));
     my $depth  = scalar(@{$$self{boxing}});
     last if $initdepth > $depth; } # if we've closed the initial mode.

@@ -68,16 +68,20 @@ sub input {
     my $name = $file;
     $name =~ s/\.tex//;
     local $LaTeXML::INHIBIT_LOAD=0;
-    if(my $conf = pathname_find("$name.latexml",
-				paths=>$STATE->lookupValue('SEARCHPATHS'))){
-      $self->openMouth(LaTeXML::PerlMouth->new($conf),0);
-      my $pmouth = $$self{mouth};
-      do $conf; 
-      Fatal(":perl:die Configuration file $conf had an error:\n  $@") if $@; 
-      $self->closeMouth if $pmouth eq $$self{mouth}; # Close immediately, unless rec. input
-    }
+    $self->inputConfigfile($name); #  Load configuration for this source, if any.
     # NOW load the input --- UNLESS INHIBITTED!!!
     $self->openMouth(LaTeXML::FileMouth->new($file) ,0) unless $LaTeXML::INHIBIT_LOAD;
+  }}
+
+sub inputConfigfile {
+  my($self,$name)=@_;
+  if(my $conf = pathname_find("$name.latexml",
+			      paths=>$STATE->lookupValue('SEARCHPATHS'))){
+    $self->openMouth(LaTeXML::PerlMouth->new($conf),0);
+    my $pmouth = $$self{mouth};
+    do $conf; 
+    Fatal(":perl:die Configuration file $conf had an error:\n  $@") if $@; 
+    $self->closeMouth if $pmouth eq $$self{mouth}; # Close immediately, unless rec. input
   }}
 
 #**********************************************************************
@@ -150,7 +154,7 @@ sub expandTokens {
   my($self,$tokens)=@_;
   $self->openMouth((ref $tokens eq 'LaTeXML::Token' ? Tokens($tokens) : $tokens->clone),1);
   my @expanded=();
-  while(defined(my $t=$self->readXToken)){
+  while(defined(my $t=$self->readXToken(0))){
     push(@expanded,$t);}
   $self->closeMouth;
   Tokens(@expanded); }
@@ -359,7 +363,7 @@ sub readValue {
 
 sub readRegisterValue {
   my($self,$type)=@_;
-  my $token = $self->readXToken;
+  my $token = $self->readXToken(0);
   return unless defined $token;
   my $defn = $STATE->lookupDefinition($token);
   if((defined $defn) && ($defn->isRegister eq $type)){
@@ -393,7 +397,7 @@ sub readTokensValue {
 sub readOptionalSigns {
   my($self)=@_;
   my ($sign,$t)=("+1",'');
-  while(defined($t=$self->readXToken)
+  while(defined($t=$self->readXToken(0))
 	&& (($t->getString eq '+') || ($t->getString eq '-') || ($t->equals(T_SPACE)))){
     $sign = -$sign if ($t->getString eq '-'); }
   $self->unread($t) if $t;
@@ -403,7 +407,7 @@ sub readDigits {
   my($self,$range,$skip)=@_;
   my $string='';
   my($t,$d);
-  while(($t=$self->readXToken()) && (($d=$t->getString) =~ /^[$range]$/)){
+  while(($t=$self->readXToken(0)) && (($d=$t->getString) =~ /^[$range]$/)){
       $string .= $d; }
   $self->unread($t) if $t && !($skip && $t->getCatcode == CC_SPACE);
   $string; }
@@ -414,10 +418,10 @@ sub readDigits {
 sub readFactor {
   my($self)=@_;
   my $string = $self->readDigits('0-9');
-  my $token = $self->readXToken;
+  my $token = $self->readXToken(0);
   if($token && $token->getString =~ /^[\.\,]$/){
     $string .= '.'.$self->readDigits('0-9'); 
-    $token = $self->readXToken; }
+    $token = $self->readXToken(0); }
   if(length($string)>0){
     $self->unread($token) if $token && $token->getCatcode!=CC_SPACE;
     $string; }
@@ -449,7 +453,7 @@ sub readNumber {
 # Return a Number or undef
 sub readNormalInteger {
   my($self)=@_;
-  my $t=$self->readXToken;
+  my $t=$self->readXToken(0);
   if(!defined $t){}
   elsif(($t->getCatcode == CC_OTHER) && ($t->getString =~ /^[0-9]$/)){ # Read decimal literal
     Number(int($t->getString . $self->readDigits('0-9',1))); }
@@ -475,10 +479,10 @@ sub readFloat {
   my($self)=@_;
   my $s = $self->readOptionalSigns;
   my $string = $self->readDigits('0-9');
-  my $token = $self->readXToken;
+  my $token = $self->readXToken(0);
   if($token && $token->getString =~ /^[\.]$/){
     $string .= '.'.$self->readDigits('0-9'); 
-    $token = $self->readXToken; }
+    $token = $self->readXToken(0); }
   my $n;
   if(length($string)>0){
     $self->unread($token) if $token && $token->getCatcode!=CC_SPACE;
