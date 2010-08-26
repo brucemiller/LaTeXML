@@ -71,8 +71,12 @@ dl.description dl.description dd { margin-left:3em; }
 .bibliography dt { margin-right:0.5em; float:left; }
 .bibliography dd { margin-left:3em; }
 .biblist { list-style-type:none; }
-.bibitem-tag { font-weight:bold; margin-left:-2em; width:3em; }
+.bibtag { font-weight:bold; margin-left:-2em; width:3em; }
 /*.bibitem-tag + div { display:inline; }*/
+.bib-title { font-style:italic; }
+.bib-article .bib-title { font-style:normal !important; }
+.bib-journal  { font-style:italic; }
+.bib-volume { font-weight:bold; }
 
 .indexlist li { list-style-type:none;  }
 .indexlist { margin-left:1em; padding-left:1em;}

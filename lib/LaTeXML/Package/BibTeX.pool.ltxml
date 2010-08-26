@@ -14,7 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 use LaTeXML::Util::KeyVal;
-use Text::Balanced qw(extract_bracketed);
+use Text::Balanced qw(extract_bracketed extract_delimited);
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Design Notes
@@ -190,13 +190,14 @@ DefEnvironment('{bib@entry} Semiverbatim Semiverbatim',
 sub currentBibKey   { LookupValue('CURRENT@BIBKEY'); }
 sub currentBibEntry { LookupValue('BIBENTRY@'.currentBibKey()); }
 sub currentBibEntryField { currentBibEntry()->getField($_[0]); }
+sub currentBibEntryRawField { currentBibEntry()->getRawField($_[0]); }
 
 #======================================================================
 DefMacro('\bib@entry@default@prepare', sub {
 	   copyCrossrefFields(qw(date year month day)); });
 
 DefMacro('\bib@entry@default@complete',
-	 '\bib@synthesize@mr\bib@synthesize@zbl');
+	 '\bib@synthesize@mr\bib@synthesize@zbl\bib@@origbibentry');
 
 sub copyCrossrefFields {
   my(@fields)=@_;
@@ -206,7 +207,11 @@ sub copyCrossrefFields {
       foreach my $field (@fields){
 	if(! defined $entry->getField($field)){
 	  if(my $value = $xentry->getField($field)){
-	    $entry->addField($field,$value); }}}}}
+	    $entry->addField($field,$value); }}
+	if(! defined $entry->getRawField($field)){
+	  if(my $value = $xentry->getRawField($field)){
+	    $entry->addRawField($field,$value); }}
+      }}}
   return; }
 #======================================================================
 # Supporters
@@ -253,17 +258,66 @@ DefMacro('\bib@@names{}{}', sub {
    map(Invocation(T_CS('\bib@@@name'),$field,$_),
        processBibNameList(currentBibEntryField(ToString($field)))); });
 
+# Now, we define 
+# \bib@@title
+# which will do appropriate case conversion... but what's appropriate?
+# Setting BibTeX_title_case to one of the following chooses.
+# (the default, like most BibTeX styles, is capitalize1)
+# Cases:
+# * asis        : leave title as is
+# * capitalize1 : downcase all, then Capitalize 1st word only
+# * capitalize  : downcase, then capitalize ALL words (?)
+#    (but really would ignore articles, prepositions...?)
+# * uppercase   : convert to uppercase.
+# * lowercase   : convert to lowercase.
+
+DefMacro('\bib@@title{}{}{}', sub {
+  my($gullet,$field,$tag,$ignoretitle)=@_;
+  my $title = currentBibEntryField(ToString($field)); # Get it in raw string form.
+  my $mode = LookupValue('BibTeX_title_case') || 'capitalize1';
+  my $recap='';
+  my ($wb,$wc)=(1,0);
+  while($title ne ""){
+    if($title =~ s/^(\s+)//){
+      $recap .= $1; $wb=1;}
+    elsif($title =~ s/^([\w\\]+)//){
+      if($mode eq 'asis'){
+	$recap .= $1; }
+      elsif($mode eq 'uppercase'){
+	$recap .= uc($1); }
+      elsif(($wb == 0)
+	    || (($mode eq 'capitalize1') && ($wc > 0))
+	    || ($mode eq 'lowercase')){
+	$recap .= lc($1); }
+      elsif(($mode eq 'capitalize')
+	    || (($mode eq 'capitalize1') && ($wc == 0))){
+	$recap .= ucfirst($1); }
+      $wc++ if $wb;
+      $wb=0;  }
+    elsif($title =~ /^\{/){
+      $recap .= extract_bracketed($title,'{}'); $wb=0; }
+    elsif($title =~ /^\$/){
+      $recap .= extract_delimited($title,'$'); $wb=0; }
+    elsif($title =~ s/^(.)//){
+      $recap .= $1; $wb=1; }}
+  Invocation(T_CS('\bib@@field'),$tag,undef,Tokenize($recap)); });
+
 #======================================================================
 # Default field handlers
 
 # This ignores the field.
 DefMacro('\bib@field@@ignore Semiverbatim Semiverbatim','');
 
-# By default, we handle all unknown fields by ignoring them.
-Let(T_CS('\bib@field@default@default'),T_CS('\bib@field@@ignore'));
+# By default, we'll copy unrecognized fields to bib-data, 
+DefMacro('\bib@field@default@default {}{}', '\bib@field@unknownasdata{#1}'); # IGNORE the tokenized data.
+DefConstructor('\bib@field@unknownasdata Semiverbatim',
+	       "<ltx:bib-data role='#1'>#rawdata</ltx:bib-data>",
+	      afterDigest=>sub {
+		my $field = ToString($_[1]->getArg(1));
+		$_[1]->setProperty(rawdata=>currentBibEntryField($field)); });
 
-DefConstructor('\bib@field@@random Semiverbatim Digested',
-	       "<ltx:bib-random field='#1'>#2</ltx:bib-random>");
+# OTOH, if you'd like to simply ignore them, do this:
+# Let(T_CS('\bib@field@default@default'),T_CS('\bib@field@@ignore'));
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # The Standard BibTeX Entries
@@ -309,7 +363,8 @@ DefMacro('\bib@entry@conference@alias','inproceedings');
 DefMacro('\bib@entry@inbook@prepare', sub {
 	   copyCrossrefFields(qw(author editor title chapter pages publisher)); });
 DefMacro('\bib@field@inbook@booktitle',
-	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-title}');
+###	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-title}');
+	 '\bib@addto@related{book}{host}\bib@@title{booktitle}{ltx:bib-title}');
 DefMacro('\bib@field@inbook@editor',
 	 '\bib@addto@related{book}{host}\bib@@names{editor}');
 DefMacro('\bib@field@inbook@publisher',
@@ -336,7 +391,8 @@ DefMacro('\bib@entry@incollection@prepare', sub {
 	   copyCrossrefFields(qw(author title booktitle publisher)); });
 
 DefMacro('\bib@field@incollection@booktitle',
-	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-title}');
+##	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-title}');
+	 '\bib@addto@related{book}{host}\bib@@title{booktitle}{ltx:bib-title}');
 DefMacro('\bib@field@incollection@editor',
 	 '\bib@addto@related{book}{host}\bib@@names{editor}');
 DefMacro('\bib@field@incollection@publisher',
@@ -363,7 +419,8 @@ DefMacro('\bib@entry@inproceedings@prepare', sub {
 	   copyCrossrefFields(qw(author title booktitle publisher)); });
 
 DefMacro('\bib@field@inproceedings@booktitle',
-	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-title}');
+##	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-title}');
+	 '\bib@addto@related{proceedings}{host}\bib@@title{booktitle}{ltx:bib-title}');
 DefMacro('\bib@field@inproceedings@editor',
 	 '\bib@addto@related{proceedings}{host}\bib@@names{editor}');
 DefMacro('\bib@field@inproceedings@number',
@@ -480,7 +537,8 @@ DefMacro('\bib@field@default@translator',
 
 # title : the title of the work.
 DefMacro('\bib@field@default@title',
-	 '\bib@@field{ltx:bib-title}');
+##	 '\bib@@field{ltx:bib-title}');
+	 '\bib@@title{title}{ltx:bib-title}');
 
 DefMacro('\bib@field@default@subtitle',
 	 '\bib@@field{ltx:bib-subtitle}');
@@ -521,14 +579,27 @@ DefMacro('\bib@field@default@status',
 	 '\bib@@field{ltx:bib-status}');
 
 # year : the year of publication.
+# Try to synthesize an ISO date, if at all possible.
+# Note that the raw month may be a standard abbreviation which is most safely translated to the number,
+# otherwise the field may end up
 # Note that month and day do not directly contribute entries;
 # year incorporates them if found.
+our %months =( # Standard abbreviations (usually would appear in raw form of month field).
+	      jan=>"1", feb=>"2", mar=>"3", apr=>"4",  may=>"5",  jun=>"6",
+	      jul=>"7", aug=>"8", sep=>"9", oct=>"10", nov=>"11", dec=>"12",
+	      # English month names, perhaps in expanded form of month field
+	      january=>"1", February=>"2", march=>"3", april=>"4",  may=>"5",  june=>"6",
+	      july=>"7",    august=>"8",   september=>"9", october=>"10", november=>"11", december=>"12");
+
 DefMacro('\bib@field@default@year {}', sub {
   if(currentBibEntryField('date')){
     (); }			# Ignore this, if we've already been given a date field.
   else {
     my $date  = currentBibEntryField('year');
-    my $month = currentBibEntryField('month');
+    my $x;
+    my $month;
+    if(($x = currentBibEntryRawField('month')) && ($x = $months{lc($x)})){ $month = $x; }
+    elsif($x = currentBibEntryField('month')){ $month = $months{lc($x)} || $x; }
     my $day   = currentBibEntryField('day');
     # What if month or day is given, but not year ???
     if(defined $month){
@@ -748,6 +819,14 @@ DefConstructor('\bib@@zbl {}{}',
 DefConstructor('\bib@field@default@links Digested',
 	       "<ltx:bib-links>#1</ltx:bib-links>");
 
+# This puts a copy of the BibTeX entry into the XML
+# It is expanded for BibTeX data, but not TeX expanded.
+# It seems that using bib-identifier is only slightly perverse.
+DefConstructor('\bib@@origbibentry',
+	       "<ltx:bib-data role='self' type='BibTeX'>#bibentry</ltx:bib-data>",
+	       afterDigest=>sub {
+		 $_[1]->setProperty(bibentry=>currentBibEntry()->prettyPrint); 
+		 return; });
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Processing BibTeX Name formats
 # Multiple names are separated by " and " and be ended by " and others".

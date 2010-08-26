@@ -17,6 +17,7 @@ use charnames qw(:full);
 use base qw(LaTeXML::Post::Collector);
 
 our %FMT_SPEC;
+our @META_BLOCK;
 
 # Options:
 #   bibliographies : list of xml file names containing bibliographies (from bibtex)
@@ -55,10 +56,10 @@ sub process {
 	$$split{$$entry{initial}}{$sortkey} = $entry; }
       map($self->rescan($_),
 	  $self->makeSubCollectionDocuments($doc,$bib,
-					    map( ($_=>$self->makeBibliographyList($doc,$$split{$_})),
+					    map( ($_=>$self->makeBibliographyList($doc,$_,$$split{$_})),
 						 keys %$split))); }
     else {
-      $doc->addNodes($bib,$self->makeBibliographyList($doc,$entries));
+      $doc->addNodes($bib,$self->makeBibliographyList($doc,undef,$entries));
       $self->rescan($doc); }}
   else {
     $doc; }}
@@ -189,9 +190,12 @@ sub getNameText {
 # Convert hash of bibentry(s) into biblist of bibitem(s)
 
 sub makeBibliographyList {
-  my($self,$doc,$entries)=@_;
+  my($self,$doc,$initial,$entries)=@_;
   local $LaTeXML::Post::MakeBibliography::DOCUMENT = $doc;
-  ['ltx:biblist',{},
+  my $id = $doc->getDocumentElement->getAttribute('xml:id') || 'bib';
+  $id .= ".L1";
+  $id .= ".$initial" if $initial;
+  ['ltx:biblist',{'xml:id'=>$id},
    map($self->formatBibEntry($doc,$$entries{$_}), sort keys %$entries)]; }
 
 sub getQName {
@@ -218,28 +222,28 @@ sub formatBibEntry {
   #------------------------------
   # Format the bibtag's
   my @tags=();
-  push(@tags,['ltx:bibtag',{role=>'number'},$number]); # number tag
+  push(@tags,['ltx:bibtag',{role=>'number', class=>'bib-number'},$number]); # number tag
 
   # Set up authors and fullauthors tags
   my @names = $doc->findnodes('ltx:bib-name[@role="author"]/ltx:surname',$bibentry);
   @names = $doc->findnodes('ltx:bib-name[@role="editor"]/ltx:surname',$bibentry) unless @names;
   if(@names > 2){
-    push(@tags,['ltx:bibtag',{role=>'authors'},
+    push(@tags,['ltx:bibtag',{role=>'authors', class=>'bib-author'},
 		$names[0]->childNodes,['ltx:emph',{},' et al.']]);
     my @fnames=();
     foreach my $n (@names[0..$#names-1]){
       push(@fnames,$n->childNodes,', '); }
-    push(@tags,['ltx:bibtag',{role=>'fullauthors'},@fnames,'and ',$names[-1]->childNodes]); }
+    push(@tags,['ltx:bibtag',{role=>'fullauthors',class=>'bib-author'},@fnames,'and ',$names[-1]->childNodes]); }
   elsif(@names > 1){
-    push(@tags,['ltx:bibtag',{role=>'authors'},
+    push(@tags,['ltx:bibtag',{role=>'authors',class=>'bib-author'},
 		$names[0]->childNodes,' and ',$names[1]->childNodes]); }
   elsif(@names){
-    push(@tags,['ltx:bibtag',{role=>'authors'},$names[0]->childNodes]); }
+    push(@tags,['ltx:bibtag',{role=>'authors',class=>'bib-author'},$names[0]->childNodes]); }
 
   # Put a key tag, to use in place of authors if needed (esp for software, websites, etc)
   my $keytag;
   if($keytag = $doc->findnode('ltx:bib-key',$bibentry)){
-    push(@tags,['ltx:bibtag',{role=>'key'},$keytag->childNodes]); }
+    push(@tags,['ltx:bibtag',{role=>'key',class=>'bib-key'},$keytag->childNodes]); }
 
   my @year=();
   if(my $date = $doc->findnode('ltx:bib-date[@role="publication"]',$bibentry)){
@@ -247,23 +251,23 @@ sub formatBibEntry {
     if(my $datetext = $date->textContent){
       if($datetext=~/^(\d\d\d\d)/){ # Extract 4 digit year, if any
 	@year = ($1); }}
-    push(@tags,['ltx:bibtag',{role=>'year'},@year,($$entry{suffix} ||'')]); }
+    push(@tags,['ltx:bibtag',{role=>'year',class=>'bib-year'},@year,($$entry{suffix} ||'')]); }
 
   # Store a type tag, to use in place of year, if needed (esp for software, ...)
   my $typetag;
   if($typetag = $doc->findnode('ltx:bib-type',$bibentry)){
-    push(@tags,['ltx:bibtag',{role=>'bibtype'},$typetag->childNodes]); }
+    push(@tags,['ltx:bibtag',{role=>'bibtype',class=>'bib-type'},$typetag->childNodes]); }
 
   # put in the title
   if(my $title = $doc->findnode('ltx:bib-title',$bibentry)){
-    push(@tags,['ltx:bibtag',{role=>'title'},$title->childNodes]); }
+    push(@tags,['ltx:bibtag',{role=>'title',class=>'bib-title'},$title->childNodes]); }
 
   # And finally, the refnum; we need to know the desired citation style!
   # This is screwy!!!
   my $style = 'authoryear';	# else 'number'
   $style = 'number' unless (@names || $keytag) && (@year || $typetag);
   if($style eq 'number'){
-    push(@tags,['ltx:bibtag',{role=>'refnum'},$number]); }
+    push(@tags,['ltx:bibtag',{role=>'refnum',class=>'bib-key'},$number]); }
   else {
     shift(@blockspecs);		# Skip redundant 1st block!!
     my @rfnames;
@@ -275,7 +279,7 @@ sub formatBibEntry {
       @rfnames = $keytag->childNodes; }
     my @rfyear  = (@year  ? (@year,($$entry{suffix} ||''))  : ($typetag ? $typetag->childNodes : ()));
 
-    push(@tags,['ltx:bibtag',{role=>'refnum'},@rfnames,' (',@rfyear,')']); }
+    push(@tags,['ltx:bibtag',{role=>'refnum',class=>'bib-author-year'},@rfnames,' (',@rfyear,')']); }
 
   #------------------------------
   # Format the data in blocks, with the first being bib-label, rest bibblock.
@@ -283,24 +287,25 @@ sub formatBibEntry {
   foreach my $blockspec (@blockspecs){
     my @x =();
     foreach my $row (@$blockspec){
-      my($xpath,$punct,$pre,$op,$post)=@$row;
+      my($xpath,$punct,$pre,$class,$op,$post)=@$row;
       my $negated = $xpath =~ s/^!\s*//;
       my @nodes = ($xpath eq 'true' ? () : $doc->findnodes($xpath,$bibentry));
       next unless ($xpath eq 'true') || ($negated ? !@nodes : @nodes);
       push(@x,$punct) if $punct && @x;
       push(@x,$pre) if $pre;
-      push(@x,&$op(map($_->cloneNode(1),@nodes))) if $op;
+####      push(@x,&$op(map($_->cloneNode(1),@nodes))) if $op;
+      push(@x,['ltx:text',{class=>$class}, &$op(map($_->cloneNode(1),@nodes))]) if $op;
       push(@x,$post) if $post; }
-    push(@blocks,['ltx:bibblock',{},@x]) if @x;
+    push(@blocks,['ltx:bibblock',{'xml:space'=>'preserve'},@x]) if @x;
   }
   # Add a Cited by block.
   my @citedby=map(['ltx:ref',{idref=>$_}], sort keys %{$$entry{referrers}});
   push(@citedby,['ltx:bibref',{bibrefs=>join(',',sort keys %{$$entry{bibreferrers}}),
 			       show=>'refnum'}])
     if $$entry{bibreferrers};
-  push(@blocks,['ltx:bibblock',{},"Cited by: ",$doc->conjoin(', ',@citedby)]) if @citedby;
+  push(@blocks,['ltx:bibblock',{class=>'bib-cited'},"Cited by: ",$doc->conjoin(', ',@citedby),'.']) if @citedby;
 
-  ['ltx:bibitem',{'xml:id'=>$id, key=>$key, type=>$type},
+  ['ltx:bibitem',{'xml:id'=>$id, key=>$key, type=>$type,class=>"bib-$type"},
    @tags,
    @blocks]; }
 
@@ -355,8 +360,9 @@ sub do_year { ('(',@_,@LaTeXML::Post::MakeBibliography::SUFFIX,')'); }
 sub do_type { ('(',@_,')'); }
 
 # Other fields.
-sub do_title { (['ltx:text',{font=>'italic'},@_]); }
-sub do_bold  { (['ltx:text',{font=>'bold'},@_]); }
+#### sub do_title { (['ltx:text',{font=>'italic'},@_]); }
+sub do_title { (@_); }
+###sub do_bold  { (['ltx:text',{font=>'bold'},@_]); }
 sub do_edition { (@_," edition"); } # If a number, should convert to cardinal!
 sub do_thesis_type { @_; }
 sub do_pages { (" pp.".pack('U',0xA0),@_); } # Non breaking space
@@ -406,110 +412,114 @@ sub do_links {
 # NOTE That the first block is only shown for numeric style,
 # since otherwise athors will already be shown in the bibtag@refnum!!!
 # Ugh...
+@META_BLOCK =
+  ([['ltx:bib-note'                     , ''  , "Note: ", 'bib-note'      , \&do_any      , ''   ]],
+   [[$LINKS                             , ''  , 'External Links: ', 'bib-links', \&do_links,'.'  ]]);
 
 %FMT_SPEC=
-  (article=> [[['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
-	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      [['ltx:bib-part[@role="part"]'     , ''  , '', \&do_any,''],
-	       ['ltx:bib-related/ltx:bib-title'  , ', ', '', \&do_any,''],
-	       ['ltx:bib-part[@role="volume"]'   , ' ' , '', \&do_bold,''],
-	       ['ltx:bib-part[@role="number"]'   , ' ' , '(', \&do_any,')'],
-	       ['ltx:bib-status'   , ', ', '(', \&do_any,')'],
-	       ['ltx:bib-part[@role="pages"]'    , ', ', '', \&do_pages,''],
-	       ['ltx:bib-language' , ' ' , '(', \&do_any,')'],
-	       ['true'             , '.']],
-	      [['ltx:bib-note'     ,'', "Note: ",\&do_any,'']],
-	      [[$LINKS             ,'', 'External Links: ',\&do_links,'']]],
-   book=>   [ [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&do_editorsA,''],
-	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
-	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      [['ltx:bib-type'     , ''  , '', \&do_any,''],
-	       ['ltx:bib-edition'  , ', ', '', \&do_edition,''],
-	       ['ltx:bib-part[@role="series"]'   , ', ', '', \&do_any,''],
-	       ['ltx:bib-part[@role="volume"]'   , ', ', 'Vol. ', \&do_any,''],
-	       ['ltx:bib-part[@role="part"]'     , ', ', 'Part ', \&do_any,''],
-	       ['ltx:bib-publisher', ', ', ' ', \&do_any,''],
-	       ['ltx:bib-organization',', ',' ', \&do_any,''],
-	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
-	       ['ltx:bib-status'   , ' ' , '(',\&do_any,')'],
-	       ['ltx:bib-language' , ' ' , '(',\&do_any,')'],
-	       ['true','.']],
-	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
-	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
-   'incollection'=>[
-	      [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-date[@role="publication"]', ''  , '', \&do_year,'']],
-	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      [['ltx:bib-type'     , ''  , '', \&do_any,''],
-	       ['ltx:bib-related[@bibrefs]', ' ','in ',\&do_crossref,','],
-	       ['ltx:bib-related[@type="book"]/ltx:bib-title', ' ' , 'in ', \&do_title,',']],
-	      [['ltx:bib-edition'  , ''  , '', \&do_edition,''],
-	       ['ltx:bib-name[@role="editor"]'   , ', ', '', \&do_editorsB,''],
-	       ['ltx:bib-related/ltx:bib-part[@role="series"]', ', ', '', \&do_any,''],
-	       ['ltx:bib-related/ltx:bib-part[@role="volume"]', ', ', 'Vol. ',\&do_any,''],
-	       ['ltx:bib-related/ltx:bib-part[@role="part"]', ', ', 'Part ',\&do_any,''],
-	       ['ltx:bib-publisher', ', ', ' ', \&do_any,''],
-	       ['ltx:bib-organization',', ','', \&do_any,''],
-	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
-	       ['ltx:bib-part[@role="pages"]'    , ', ', '', \&do_pages,''],
-	       ['ltx:bib-status'   , ' ' , '(',\&do_any,')'],
-	       ['ltx:bib-language' , ' ' , '(', \&do_any,')'],
-	       ['true','.']],
-	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
-	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
-   report=>[  [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&do_editorsA,''],
-	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
-	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      [['ltx:bib-type'     , ''  , '', \&do_any,'']],
-	      [['ltx:bib-part[@role="number"]'   , ''  , 'Technical Report ',\&do_any,''],
-	       ['ltx:bib-part[@role="series"]'   , ', ', '',\&do_any,''],
-	       ['ltx:bib-part[@role="volume"]'   , ', ', 'Vol. ',\&do_any,''],
-	       ['ltx:bib-part[@role="part"]'     , ', ', 'Part ',\&do_any,''],
-	       ['ltx:bib-publisher', ', ', ' ',\&do_any,''],
-	       ['ltx:bib-organization',', ', ' ',\&do_any,''],
-	       ['ltx:bib-place'    , ', ', ' ',\&do_any,''],
-	       ['ltx:bib-status'   , ', ', '(',\&do_any,')'],
-	       ['ltx:bib-language' , ' ' , '(',\&do_any,')'],
-	       ['true','.']],
-	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
-	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
-   thesis=>[  [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&do_editorsA,''],
-	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,'']],
-	      [['ltx:bib-title'    , ''  , '', \&do_title,',']],
-	      [['ltx:bib-type'     , ' ' , '',\&do_thesis_type,''],
-	       ['ltx:bib-part[@role="part"]'     , ', ', 'Part ',\&do_any,''],
-	       ['ltx:bib-publisher',', ','',\&do_any,''],
-	       ['ltx:bib-organization',', ','',\&do_any,''],
-	       ['ltx:bib-place'    , ', ', '',\&do_any,''],
-	       ['ltx:bib-status'   , ', ', '(',\&do_any,')'],
-	       ['ltx:bib-language' , ', ', '(',\&do_any,')'],
-	       ['true','.']],
-	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
-	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
-   website=>[ [['ltx:bib-name[@role="author"]'   , ''  , '', \&do_authors,''],
-	       ['ltx:bib-name[@role="editor"]'   , ''  , '', \&do_editorsA,''],
-	       ['ltx:bib-date[@role="publication"]'         , ''  , '', \&do_year,''],
-	       ['ltx:title'        , ''  , '', \&do_any,''],
-	       ['ltx:bib-type'     , ''  , '', \&do_any,''],
-	       ['! ltx:bib-type'   , ''  , '', sub { ('(Website)'); }]],
-##	      [['ltx:bib-url',     '', '', sub { (['a',{href=>$_[0]->textContent},'Website']); },'']],
-	      [['ltx:bib-organization',', ',' ', \&do_any,''],
-	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
-	       ['true','.']],
-	      [['ltx:bib-note'     , ''  , "Note: ",\&do_any,'']],
-	      [[$LINKS             , ''  , 'External Links: ',\&do_links,'']]],
-   software=>[[['ltx:bib-key'       , ''  , '', \&do_any,''],
-	       ['ltx:bib-type'      , ''  , '', \&do_type,'']],
-	      [['ltx:bib-title'     ,  ''  , '', \&do_any, '']],
-	      [['ltx:bib-organization',', ',' ', \&do_any,''],
-	       ['ltx:bib-place'    , ', ', '', \&do_any,''],
-	       ['true','.']],
-	      [['ltx:bib-note'  ,'', "Note: ",\&do_any,'']],
-	      [[$LINKS          ,'','External Links: ',\&do_links,'']]],
+#    [xpath                                          punct pre                  class            formatter      post ]
+  (article=> 
+   [[['ltx:bib-name[@role="author"]'                , ''  , ''                , 'bib-author'   , \&do_authors  , '' ],
+     ['ltx:bib-date[@role="publication"]'           , ''  , ''                , 'bib-year'     , \&do_year     , '' ]],
+    [['ltx:bib-title'                               , ''  , ''                , 'bib-title'    , \&do_title    , ',']],
+    [['ltx:bib-part[@role="part"]'                  , ''  , ''                , 'bib-part'     , \&do_any      , '' ],
+     ['ltx:bib-related/ltx:bib-title'               , ', ', ''                , 'bib-journal'  , \&do_any      , '' ],
+###  ['ltx:bib-part[@role="volume"]'                , ' ' , ''                , 'bib-volume'   , \&do_bold     , '' ],
+###     ['ltx:bib-part[@role="volume"]'                , UTF(0xA0), ''           , 'bib-volume'   , \&do_any      , '' ],
+     ['ltx:bib-part[@role="volume"]'                , ' ', ''                 , 'bib-volume'   , \&do_any      , '' ],
+     ['ltx:bib-part[@role="number"]'                , ' ' , '('               , 'bib-number'   , \&do_any      , ')'],
+     ['ltx:bib-status'                              , ', ', '('               , 'bib-status'   , \&do_any      , ')'],
+     ['ltx:bib-part[@role="pages"]'                 , ', ', ''                , 'bib-pages'    , \&do_pages    , '' ],
+     ['ltx:bib-language'                            , ' ' , '('               , 'bib-language' , \&do_any      , ')'],
+     ['true'                                        , '.'                                                           ]],
+    @META_BLOCK],
+   book=>
+   [[['ltx:bib-name[@role="author"]'                , ''  , ''                , 'bib-author'   , \&do_authors  , '' ],
+     ['ltx:bib-name[@role="editor"]'                , ''  , ''                , 'bib-editor'   , \&do_editorsA , '' ],
+     ['ltx:bib-date[@role="publication"]'           , ''  , ''                , 'bib-year'     , \&do_year     , '' ]],
+    [['ltx:bib-title'                               , ''  , ''                , 'bib-title'    , \&do_title    , ',']],
+    [['ltx:bib-type'                                , ''  , ''                , 'bib-type'     , \&do_any      , '' ],
+     ['ltx:bib-edition'                             , ', ', ''                , 'bib-edition'  , \&do_edition  , '' ],
+     ['ltx:bib-part[@role="series"]'                , ', ', ''                , 'bib-series'   , \&do_any      , '' ],
+     ['ltx:bib-part[@role="volume"]'                , ', ', 'Vol. '           , 'bib-volume'   , \&do_any      , '' ],
+     ['ltx:bib-part[@role="part"]'                  , ', ', 'Part '           , 'bib-part'     , \&do_any      , '' ],
+     ['ltx:bib-publisher'                           , ', ', ' '               , 'bib-publisher', \&do_any      , '' ],
+     ['ltx:bib-organization'                        ,', ' , ' '               , 'bib-publisher', \&do_any      , '' ],
+     ['ltx:bib-place'                               , ', ', ''                , 'bib-place'    , \&do_any      , '' ],
+     ['ltx:bib-status'                              , ' ' , '('               , 'bib-status'   , \&do_any      , ')'],
+     ['ltx:bib-language'                            , ' ' , '('               , 'bib-language' , \&do_any      , ')'],
+     ['true'                                        , '.'                                                           ]],
+    @META_BLOCK],
+   'incollection'=>
+   [[['ltx:bib-name[@role="author"]'                , ''  , ''                , 'bib-author'   , \&do_authors  , '' ],
+     ['ltx:bib-date[@role="publication"]'           , ''  , ''                , 'bib-year'     , \&do_year     , '' ]],
+    [['ltx:bib-title'                               , ''  , ''                , 'bib-title'    , \&do_title    , ',']],
+    [['ltx:bib-type'                                , ''  , ''                , 'bib-type'     , \&do_any      , '' ],
+     ['ltx:bib-related[@bibrefs]'                   , ' ' , 'in '             , 'bib-crossref' , \&do_crossref , ','],
+     ['ltx:bib-related[@type="book"]/ltx:bib-title' , ' ' , 'in '             , 'bib-inbook'   , \&do_title    , ',']],
+    [['ltx:bib-edition',                            , ''  , ''                , 'bib-edition'  , \&do_edition  , '' ],
+     ['ltx:bib-name[@role="editor"]',               , ', ', ''                , 'bib-editor'   , \&do_editorsB , '' ],
+     ['ltx:bib-related/ltx:bib-part[@role="series"]', ', ', ''                , 'bib-series'   , \&do_any      , '' ],
+     ['ltx:bib-related/ltx:bib-part[@role="volume"]', ', ', 'Vol. '           , 'bib-volume'   , \&do_any      , '' ],
+     ['ltx:bib-related/ltx:bib-part[@role="part"]'  , ', ', 'Part '           , 'bib-part'     , \&do_any      , '' ],
+     ['ltx:bib-publisher'                           , ', ', ' '               , 'bib-publisher', \&do_any      , '' ],
+     ['ltx:bib-organization'                        , ', ', ''                , 'bib-publisher', \&do_any      , '' ],
+     ['ltx:bib-place'                               , ', ', ''                , 'bib-place'    , \&do_any      , '' ],
+     ['ltx:bib-part[@role="pages"]'                 , ', ', ''                , 'bib-pages'    , \&do_pages    , '' ],
+     ['ltx:bib-status'                              , ' ' , '('               , 'bib-status'   , \&do_any      , ')'],
+     ['ltx:bib-language'                            , ' ' , '('               , 'bib-language' , \&do_any      , ')'],
+     ['true'                                        , '.'                                                           ]],
+    @META_BLOCK],
+   report=>
+   [[['ltx:bib-name[@role="author"]'                , ''  , ''                , 'bib-author'   , \&do_authors  , '' ],
+     ['ltx:bib-name[@role="editor"]'                , ''  , ''                , 'bib-editor'   , \&do_editorsA , '' ],
+     ['ltx:bib-date[@role="publication"]'           , ''  , ''                , 'bib-year'     , \&do_year     , '' ]],
+    [['ltx:bib-title'                               , ''  , ''                , 'bib-title'    , \&do_title    , ',']],
+    [['ltx:bib-type'                                , ''  , ''                , 'bib-type'     , \&do_any      , '' ]],
+    [['ltx:bib-part[@role="number"]'                , ''  ,'Technical Report ', 'bib-number'   , \&do_any      , '' ],
+     ['ltx:bib-part[@role="series"]'                , ', ', ''                , 'bib-series'   , \&do_any      , '' ],
+     ['ltx:bib-part[@role="volume"]'                , ', ', 'Vol. '           , 'bib-volume'   , \&do_any      , '' ],
+     ['ltx:bib-part[@role="part"]'                  , ', ', 'Part '           , 'bib-part'     , \&do_any      , '' ],
+     ['ltx:bib-publisher'                           , ', ', ' '               , 'bib-publisher', \&do_any      , '' ],
+     ['ltx:bib-organization'                        , ', ', ' '               , 'bib-publisher', \&do_any      , '' ],
+     ['ltx:bib-place'                               , ', ', ' '               , 'bib-place'    , \&do_any      , '' ],
+     ['ltx:bib-status'                              , ', ', '('               , 'bib-status'   , \&do_any      , ')'],
+     ['ltx:bib-language'                            , ' ' , '('               , 'bib-language' , \&do_any      , ')'],
+     ['true'                                        , '.'                                                           ]],
+    @META_BLOCK],
+   thesis=>
+   [[['ltx:bib-name[@role="author"]'                , ''  , ''                , 'bib-author'   , \&do_authors  , '' ],
+     ['ltx:bib-name[@role="editor"]'                , ''  , ''                , 'bib-editor'   , \&do_editorsA , '' ],
+     ['ltx:bib-date[@role="publication"]'           , ''  , ''                , 'bib-year'     , \&do_year     , '' ]],
+    [['ltx:bib-title'                               , ''  , ''                , 'bib-title'    , \&do_title    , ',']],
+    [['ltx:bib-type'                                , ' ' , ''                , 'bib-type'     , \&do_thesis_type,''],
+     ['ltx:bib-part[@role="part"]'                  , ', ', 'Part '           , 'bib-part'     , \&do_any      , '' ],
+     ['ltx:bib-publisher'                           , ', ', ''                , 'bib-publisher', \&do_any      , '' ],
+     ['ltx:bib-organization'                        , ', ', ''                , 'bib-publisher', \&do_any      , '' ],
+     ['ltx:bib-place'                               , ', ', ''                , 'bib-place'    , \&do_any      , '' ],
+     ['ltx:bib-status'                              , ', ', '('               , 'bib-status'   , \&do_any      , ')'],
+     ['ltx:bib-language'                            , ', ', '('               , 'bib-language' , \&do_any      , ')'],
+     ['true'                                        , '.'                                                           ]],
+    @META_BLOCK],
+   website=>
+   [[['ltx:bib-name[@role="author"]'                , ''  , ''                , 'bib-author'   , \&do_authors  , '' ],
+     ['ltx:bib-name[@role="editor"]'                , ''  , ''                , 'bib-editor'   , \&do_editorsA , '' ],
+     ['ltx:bib-date[@role="publication"]'           , ''  , ''                , 'bib-year'     , \&do_year     , '' ],
+     ['ltx:title'                                   , ''  , ''                , 'bib-title'    , \&do_any      , '' ],
+     ['ltx:bib-type'                                , ''  , ''                , 'bib-type'     , \&do_any      , '' ],
+     ['! ltx:bib-type'                              , ''  , ''                , 'bib-type', sub { ('(Website)'); },'']],
+    [['ltx:bib-organization'                        , ', ', ' '               , 'bib-publisher', \&do_any      , '' ],
+    ['ltx:bib-place'                                , ', ', ''                , 'bib-place'    , \&do_any      , '' ],
+     ['true'                                        , '.'                                                           ]],
+    @META_BLOCK],
+   software=>
+   [[['ltx:bib-key'                                 , ''  , ''                , 'bib-key'      , \&do_any      , '' ],
+     ['ltx:bib-type'                                , ''  , ''                , 'bib-type'     , \&do_type     , '' ]],
+    [['ltx:bib-title'                               , ''  , ''                , 'bib-title'    , \&do_any      , '' ]],
+    [['ltx:bib-organization'                        , ', ',' '                , 'bib-publisher', \&do_any      , '' ],
+     ['ltx:bib-place'                               , ', ', ''                , 'bib-place'    , \&do_any      , '' ],
+     ['true'                                        , '.'                                                           ]],
+    @META_BLOCK],
 
 );
 

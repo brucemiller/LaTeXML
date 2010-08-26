@@ -40,7 +40,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:bibitem/ltx:bibtag[@role='refnum']">
-    <span class="{concat(f:classes(.),' bibitem-tag')}"><xsl:value-of select="@open"/><xsl:apply-templates/><xsl:value-of select="@close"/></span>
+    <span class="{f:classes(.)}"><xsl:value-of select="@open"/><xsl:apply-templates/><xsl:value-of select="@close"/></span>
   </xsl:template>
 
   <xsl:template match="ltx:bibtag"/>
