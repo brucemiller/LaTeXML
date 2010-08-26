@@ -132,6 +132,10 @@ sub digestBibTeXFile {
      $state->pushValue(SEARCHPATHS=>$dir);
      $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,
 							Tokens(Explode($name))));
+     # This is handled by the gullet for TeX files, but we're doing a batch of string processing first.
+     # Nevertheless, we'd like access to state & variables during that string processing.
+     $state->getStomach->getGullet->inputConfigfile($name); #  Load configuration for this source, if any.
+
      my $tex = $bib->toTeX;
      $state->getStomach->getGullet->openMouth(LaTeXML::Mouth->new($tex),0);
      my $line = $self->finishDigestion;
