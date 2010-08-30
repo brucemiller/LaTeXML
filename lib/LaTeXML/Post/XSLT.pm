@@ -19,11 +19,13 @@ use base qw(LaTeXML::Post);
 
 # Useful Options:
 #    stylesheet : path to XSLT stylesheet.
-#    css        : array of paths to CSS stylesheets.
+#    parameters : hash of parameters to pass to stylesheet.
+#         Among which:
+#         CSS   is a '|' separated list of paths
+#         ICON  a favicon
 sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
-  $$self{css} = $options{css};
   my $stylesheet = $options{stylesheet};
   $self->Error(undef,"No stylesheet specified!") unless $stylesheet;
   if(!ref $stylesheet){
@@ -43,13 +45,15 @@ sub new {
 
 sub process {
   my($self,$doc)=@_;
-  my $css = $$self{css};
+  # Set up the Stylesheet parameters; making pathname parameters relative to document
+  my %params = %{$$self{parameters}};
   my $dir = $doc->getDestinationDirectory;
-  my $cssparam = ($css ? join('|',map(pathname_relative($_,$dir),@$css)) : undef);
-  # Copy the CSS file to the destination. if found & needed.
-  $doc->new($$self{stylesheet}->transform($doc->getDocument,
-					  ($cssparam ? (CSS=>"'$cssparam'") :()),
-					  %{$$self{parameters}})); }
+  if(my $css = $params{CSS}){
+    $params{CSS} = '"'.join('|',map(pathname_relative($_,$dir),@$css)) .'"'; }
+  if(my $icon = $params{ICON}){
+    $params{ICON} = '"'. pathname_relative($icon,$dir) . '"'; }
+
+  $doc->new($$self{stylesheet}->transform($doc->getDocument,  %params)); }
 
 # ================================================================================
 1;

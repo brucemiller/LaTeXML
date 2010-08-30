@@ -310,13 +310,13 @@ if(!$prescan){
 	push(@csspaths,$csspath); }}
     my $icondest;
     if($icon){
+      $icondest = pathname_absolute($icon,pathname_directory($destination));
       if(my $iconsrc = pathname_find($icon,($sourcedir ? (paths=>[$sourcedir]):()))){
-	$icondest = pathname_absolute($icon,pathname_directory($destination));
 	pathname_copy($iconsrc,$icondest); }}
     push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,
-					 css=>[@csspaths],
 					 parameters=>{number_sections=>($numbersections ?"true()":"false()"),
-						      ($icon ? (ICON=>"'$icon'"):()),
+						      (@csspaths ? (CSS=>[@csspaths]):()),
+						      ($icondest ? (ICON=>$icondest):()),
 						     },
 					 %OPTIONS)); }
 
