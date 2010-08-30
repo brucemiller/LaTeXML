@@ -38,6 +38,7 @@ heading("Generating site pages");
 # copy images referenced from the CSS.
 copy("$DOCDIR/graphics/latexml.png","$WEBDIR/images/latexml.png");
 copy("$DOCDIR/graphics/mascot.png","$WEBDIR/images/mascot.png");
+###copy("$DOCDIR/graphics/favicon.ico","$WEBDIR/images/favicon.ico");
 
 getReleases();
 
@@ -46,7 +47,8 @@ latexml("$DOCDIR/site/index.tex","$WEBDIR/index.html",
 	postoptions=>["--split",
 		      "--css=latexmldoc.css",
 		      "--nonumbersections",
-		      "--splitnaming=label"],
+		      "--splitnaming=label",
+		      "--icon=favicon.ico"],
 	force=>$force);
 
 # Generate the examples.

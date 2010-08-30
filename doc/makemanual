@@ -84,7 +84,8 @@ if($doxhtml){
 			 "$MANDIR/schema.tex","$MANDIR/pods"],
 	  postoptions=>["--split","--splitnaming=labelrelative",
 			"--urlstyle=server","--css=../latexmldoc.css",
-		       ($validate ?():("--novalidate"))],
+			($validate ?():("--novalidate")),
+			"--icon=../favicon.ico"],
 	  force=>$force);
 }
 #======================================================================
