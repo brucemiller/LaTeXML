@@ -172,7 +172,7 @@ sub parseFields {
     push(@fields,[$name,$value]);
     push(@rawfields,[$name,$rawvalue]);
     $self->skipWhite;
-  } while( ($$self{line}=~ s/^,//) # like parseMatch, but NOT fatal if missing
+  } while( ($$self{line}=~ s/^,//) # like parseMatch, but we just end parsing fields if missing
 	   && $self->skipWhite && ($$self{line} !~ /^\Q$CLOSE{$open}\E/));
   $self->parseMatch($CLOSE{$open});
   ([@fields],[@rawfields]); }
@@ -192,8 +192,11 @@ sub parseName {
 sub parseMatch {
   my($self,$delims)=@_;
   $self->skipWhite;
-  ($$self{line}=~ s/^([\Q$delims\E])//) or Fatal(":expected:$delims Expected one of ".join(' ',split(//,$delims)));
-  $1; }
+  if($$self{line}=~ s/^([\Q$delims\E])//){
+    $1; }
+  else {
+    Error(":expected:$delims Expected one of ".join(' ',split(//,$delims)));
+    undef; }}
 
 # A string is delimited with balanced {}, or ""
 sub parseString {
@@ -201,28 +204,32 @@ sub parseString {
   $self->skipWhite;
   my $string;
   if   ($$self{line} =~ /^\"/){
-    while($$self{line} !~ /\".*\"/){ # minor optimization: make sure there's at least two ""
-      $self->extendLine; }
+    while(($$self{line} !~ /\".*\"/) && $self->extendLine) {} # minor optimization: make sure there's at least two ""
     # Hmmm.. apparently " is effectively quoted within the string as {"} ?
-    while(! defined($string = extract_delimited($$self{line},'\"'))){
-      $self->extendLine; }}	# Fetch another line if we haven't balanced, yet.
+    while((! defined($string = extract_delimited($$self{line},'\"'))) && $self->extendLine){} # extend till balanced.
+  }
   elsif($$self{line} =~ /^\{/){
-    while($$self{line} !~ /\}/){ # minor optimization: make sure there's at least a closing }
-      $self->extendLine; }
-    while(! defined($string = extract_bracketed($$self{line},'{}'))){
-      $self->extendLine; }}	# Fetch another line if we haven't balanced, yet.
+    while(($$self{line} !~ /\}/) && $self->extendLine){} # minor optimization: make sure there's at least a closing }
+    while((! defined($string = extract_bracketed($$self{line},'{}'))) && $self->extendLine){} # extend till balanced
+  }
   else {
-    Fatal(":expected:string Expected a string delimited by \"..\", (..) or {..}"); }
+    Error(":expected:string Expected a string delimited by \"..\", (..) or {..}"); }
   $string =~ s/^.//;		# Remove the delimiters.
   $string =~ s/.$//;
+  $string =~ s/^\s+//;		# and trim
+  $string =~ s/\s+$//;
   $string; }
 
 sub extendLine {
   my($self)=@_;
   my $nextline = shift(@{$$self{lines}});
-  Fatal(":unexpected:EOF Input ended while parsing string") unless defined $nextline;
-  $$self{line} .= $nextline;
-  $$self{lineno} ++; }
+  if(defined $nextline){
+    $$self{line} .= $nextline;
+    $$self{lineno} ++; 
+    1; }
+  else {
+    Error(":unexpected:EOF Input ended while parsing string");
+    undef; }}
 
 # value : simple_value ( HASH simple_value)*
 # simple_value : string | NAME
@@ -237,9 +244,9 @@ sub parseValue {
       my $macro = ($name =~ /^\d+$/ ? $name : $$self{macros}{$name});
       if(!defined $macro){
 	Error(":unexpected:$name The macro $name is not defined");
-	$macro=''; }
+	$macro=$name; }		# Default error handling is leave the text in?
       $value .= $macro; }
-    else { 
+    else {
       Error(":expected:value a value"); }
     $self->skipWhite;
   } while ($$self{line} =~ s/^#//);

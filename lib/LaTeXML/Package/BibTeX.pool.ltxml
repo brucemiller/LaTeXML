@@ -280,7 +280,8 @@ DefMacro('\bib@@title{}{}{}', sub {
   while($title ne ""){
     if($title =~ s/^(\s+)//){
       $recap .= $1; $wb=1;}
-    elsif($title =~ s/^([\w\\]+)//){
+#    elsif($title =~ s/^([\w\\]+)//){
+    elsif($title =~ s/^((?:\w|\\(?:\w+|.))+)//){
       if($mode eq 'asis'){
 	$recap .= $1; }
       elsif($mode eq 'uppercase'){
@@ -856,6 +857,9 @@ sub processBibNameList {
 	push(@phrases,[@phrase]); @phrase=(); }
       else {
 	push(@phrase,$word); }}
+    if(!scalar(@phrase)){
+      Warn("Empty name in bibliographic name list for ".currentBibKey());
+      next; }
     push(@phrases,[@phrase]) if @phrase;
 
     my($given,$surname,$jr);
