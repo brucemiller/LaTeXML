@@ -49,5 +49,9 @@ DefConstructor('\operatornamewithlimits {}',
 	       "<ltx:XMWrap role='OPERATOR' scriptpos='mid'>#1</ltx:XMWrap>",
 	       bounded=>1, requireMath=>1, font=>{family=>'serif'});
 
+DefMacro('\nolimits@','\nolimits');
+DefMacro('\nmlimits@','\displaylimits');
+DefMacro('\qopname{}{}{}','\mathop{#3}\csname n#2limits@\endcsname');
+
 #**********************************************************************
 1;
