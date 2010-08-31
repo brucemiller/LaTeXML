@@ -16,9 +16,25 @@ use strict;
 use LaTeXML::Package;
 
 # amstex.sty is obsolete; It is  recommended to try to use amsmath instead.
+# ORRR should it be reading AmSTeX, no that's non LaTeX.... ?
 # There should perhaps be some option handling, instead of loading all...
 RequirePackage('amsmath');
 RequirePackage('amsfonts');
 RequirePackage('amsxtra');
+
+DefMacro('\nolimits@','\nolimits');
+DefMacro('\nlimits@','\displaylimits');
+# Oddly, different defn than amsopn
+DefMacro('\qopname{}{}{}','\mathop{#3}\csname #2limits@\endcsname');
+
+#DefMacro('\Sb XUntil:\endSb','_{\substack{#1}}');
+#DefMacro('\Sp XUntil:\endSp','^{\substack{#1}}');
+#Let(T_CS('\endSb'),T_CS('\relax'));
+#Let(T_CS('\endSp'),T_CS('\relax'));
+
+DefMacro('\Sb','_\bgroup\substack\bgroup#1}}');
+DefMacro('\endSb','\cr\egroup\egroup');
+DefMacro('\Sp','^\bgroup\substack\bgroup#1}}');
+DefMacro('\endSp','\cr\egroup\egroup');
 
 1;
