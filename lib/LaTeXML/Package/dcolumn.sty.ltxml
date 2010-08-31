@@ -20,8 +20,10 @@ sub absorbedString {
   my $capdocument = LaTeXML::Document->new($STATE->getModel);
   my $capture = $capdocument->openElement('_Capture_', font=>LaTeXML::Font->new());
   $capdocument->absorb(Digest($tokens));
-  my @nodes= $capdocument->findnodes("//ltx:XMath/*",$capture);
-  $nodes[0]->textContent; }
+  if(my @nodes= $capdocument->findnodes("//ltx:XMath/*",$capture)){
+    $nodes[0]->textContent; }
+  else {
+    $capture->textContent; }}	# ???
 
 DefMacro('\DC@{}{}{}',sub {
   my($gullet,$delim,$todelim,$ndec)=@_;
