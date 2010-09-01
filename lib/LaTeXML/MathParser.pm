@@ -430,7 +430,7 @@ sub getGrammaticalRole {
     if($tag eq 'ltx:XMTok'){
       $role = 'UNKNOWN'; }
     elsif($tag eq 'ltx:XMDual'){
-      $role = $node->firstChild->getAttribute('role'); }
+      $role = $LaTeXML::MathParser::DOCUMENT->getFirstChildElement($node)->getAttribute('role'); }
     $role = 'ATOM' unless defined $role; }
   $self->note_unknown($rnode) if ($role eq 'UNKNOWN') && $LaTeXML::MathParser::STRICT;
   $role; }
