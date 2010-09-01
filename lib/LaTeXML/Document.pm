@@ -81,7 +81,7 @@ sub getFirstChildElement {
   if($node->hasChildNodes){
     my $n = $node->firstChild;
     while($n && $n->nodeType != XML_ELEMENT_NODE){
-      $n = $node->nextSibling; }
+      $n = $n->nextSibling; }
     return $n; }}
 
 # And some utilities
