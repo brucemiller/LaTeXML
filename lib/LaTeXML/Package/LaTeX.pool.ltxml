@@ -797,14 +797,14 @@ DefConstructorI('\raggedleft',  undef,
 		beforeDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@flushleft')); });
 
 DefConstructorI('\@add@centering',  undef,
-		sub { map(setAlignOrClass($_[0],$_,'center','centering'),
-			  $_[0]->getChildElements(LookupValue('ALIGNING_NODE'))); });
+		sub { if(my $node = LookupValue('ALIGNING_NODE')){
+		  map(setAlignOrClass($_[0],$_,'center','centering'),$_[0]->getChildElements($node)); }});
 DefConstructorI('\@add@flushright', undef,
-		sub { map(setAlignOrClass($_[0],$_,'right','flushright'),
-			  $_[0]->getChildElements(LookupValue('ALIGNING_NODE'))); });
+		sub { if(my $node = LookupValue('ALIGNING_NODE')){
+		  map(setAlignOrClass($_[0],$_,'right','flushright'),$_[0]->getChildElements($node)); }});
 DefConstructorI('\@add@flushleft',  undef,
-		sub { map(setAlignOrClass($_[0],$_,'left','flushleft'),
-			  $_[0]->getChildElements(LookupValue('ALIGNING_NODE'))); });
+		sub { if(my $node = LookupValue('ALIGNING_NODE')){
+		  map(setAlignOrClass($_[0],$_,'left','flushleft'),$_[0]->getChildElements($node)); }});
 
 #======================================================================-
 # C.6.1 Quotations and Verse
@@ -1235,7 +1235,9 @@ DefMacroI('\if@in@firstcolumn',undef, sub {
 # A bit more defensiveness, since people abuse eqnarray so badly.
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
-	 '\if@in@firstcolumn\multicolumn{3}{l}{$\displaystyle #1$\mbox{}}\else\rlap{$\displaystyle #1$}\fi');
+###	 '\if@in@firstcolumn\multicolumn{3}{l}{$\displaystyle #1$\mbox{}}\else\rlap{$\displaystyle #1$}\fi');
+	 '\if@in@firstcolumn\multicolumn{3}{l}{\@@BEGININLINEMATH \displaystyle #1\@@ENDINLINEMATH\mbox{}}'
+	 .'\else\rlap{\@@BEGININLINEMATH\displaystyle #1\@@ENDINLINEMATH}\fi');
 # \intertext (in amsmath)
 
 # ========================================
@@ -1326,7 +1328,7 @@ sub eqnarrayRegroupEquations {
   # [Another heuristic might be the presence of \left. or \right.?]
   my $t;
   if($nL && !$nM && !$nR){	# All LHS!
-    if(grep( ($t=$$_{cols}[0])&&($t=$t->firstChild)&& (($t->getAttribute('role') || '') eq 'RELOP'),
+    if(grep( ($t=$$_{cols}[0])&&($t=$document->getFirstChildElement($t))&& (($t->getAttribute('role') || '') eq 'RELOP'),
 	     @rows)){
       eqnarrayJoinRows($document,$equationgroup,map($$_{node},@rows)); }
     else {
@@ -1334,7 +1336,7 @@ sub eqnarrayRegroupEquations {
 	equationgroupJoinCols($document,3,$$row{node}); }}
     return; }
   if($nR && !$nM && !$nL){	# All RHS!
-    if(grep( ($t=$$_{cols}[2])&&($t=$t->firstChild)&&(($t->getAttribute('role') || '') eq 'RELOP'),
+    if(grep( ($t=$$_{cols}[2])&&($t=$document->getFirstChildElement($t))&&(($t->getAttribute('role') || '') eq 'RELOP'),
 	     @rows)){
       eqnarrayJoinRows($document,$equationgroup,map($$_{node},@rows)); }
     else {
@@ -1513,12 +1515,12 @@ sub cloneMath {
 sub addToMathFork {
   my($document,$main,$branch,$cell)=@_;
   $cell->unbindNode;
-  if(my $math  = $cell->firstChild){
-    if(my $xmath = $math->firstChild){
+  if(my $math  = $document->getFirstChildElement($cell)){
+    if(my $xmath = $document->getFirstChildElement($math)){
       my $copy = cloneMath($document,$cell);
       # Now, we can add the contents of the cell to the main branch
       foreach my $item ($document->getChildElements($xmath)){
-	$main->firstChild->appendChild($item); }
+	$document->getFirstChildElement($main)->appendChild($item); }
       # And we need to add the tex!!
       # Since each cell was captured in its own Math, it has a valid chunk of tex.
       # We just need to paste them together appropriately.
@@ -1533,7 +1535,7 @@ sub addToMathFork {
 	$main->setAttribute('content-tex'=>$ctex) unless $ctex eq $tex; }
       # and the modified copy to the alternative branch.
       # $branch->appendChild($copy->firstChild);
-      append_nodes_clone($branch,$copy->firstChild);
+      append_nodes_clone($branch,$document->getFirstChildElement($copy));
     }
   }}
 
