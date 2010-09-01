@@ -3120,10 +3120,10 @@ DefMathI('\bigoplus', undef,"\x{2295}", role=>'SUMOP',	scriptpos=>\&doScriptpos,
 DefMathI('\biguplus', undef,"\x{2296}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'symmetric-difference');
 
 DefConstructorI('\limits', undef,sub {
-   my $node = $_[0]->getNode;
+   my $node = $_[0]->getElement;
    $_[0]->setAttribute($_[0]->getLastChildElement($node)||$node,scriptpos=>'mid'); });
 DefConstructorI('\nolimits',undef,sub {
-   my $node = $_[0]->getNode;
+   my $node = $_[0]->getElement;
    $_[0]->setAttribute($_[0]->getLastChildElement($node)||$node,scriptpos=>'post'); });
 
 #----------------------------------------------------------------------
