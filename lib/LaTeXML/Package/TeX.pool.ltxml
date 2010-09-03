@@ -1148,7 +1148,7 @@ DefPrimitive('\showthe Token',undef);
 # DefPrimitive('\shipout ??
 DefPrimitive('\ignorespaces SkipSpaces',undef);
 
-# \afterassignment<token>   ??
+DefPrimitive('\afterassignment Token', sub { AssignValue(afterAssignment=>$_[1]); });
 DefPrimitive('\aftergroup Token', sub { UnshiftValue(afterGroup=>$_[1]); });
 
 # \uppercase<general text>, \lowercase<general text>

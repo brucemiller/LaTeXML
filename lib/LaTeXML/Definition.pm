@@ -194,6 +194,7 @@ sub setValue {
   return; }
 
 # No before/after daemons ???
+# (other than afterassign)
 sub invoke {
   my($self,$stomach)=@_;
   my $gullet=$stomach->getGullet;
@@ -201,6 +202,10 @@ sub invoke {
   $gullet->readKeyword('=');	# Ignore 
   my $value = $gullet->readValue($self->isRegister);
   $self->setValue($value,@args);
+
+  if(my $after = $STATE->lookupValue('afterAssignment')){
+    $STATE->assignValue(afterAssignment=>undef);
+    $gullet->unread($after); }	# primitive returns boxes, so these need to be digested!
   return; }
 
 #**********************************************************************

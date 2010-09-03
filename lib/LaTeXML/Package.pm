@@ -33,7 +33,7 @@ our @EXPORT = (qw(&DefExpandable
 		  &AddToMacro),
 
 	       # Counter support
-	       qw(&NewCounter &CounterValue &StepCounter &RefStepCounter &RefStepID &ResetCounter
+	       qw(&NewCounter &CounterValue &SetCounter &AddToCounter &StepCounter &RefStepCounter &RefStepID &ResetCounter
 		  &GenerateID),
 
 	       # Document Model
@@ -270,6 +270,7 @@ sub NewCounter {
   my $unctr = "UN$ctr";		# UNctr is counter for generating ID's for UN-numbered items.
   DefRegisterI(T_CS("\\c\@$ctr"),undef,Number(0));
   AssignValue("\\c\@$ctr"=>Number(0),'global');
+  AfterAssignment();
   AssignValue("\\cl\@$ctr"=>Tokens(),'global') unless LookupValue("\\cl\@$ctr");
   DefRegisterI(T_CS("\\c\@$unctr"),undef,Number(0));
   AssignValue("\\c\@$unctr"=>Number(0),'global');
@@ -309,10 +310,32 @@ sub CounterValue {
     $value = Number(0); }
   $value; }
 
+sub AfterAssignment {
+  if(my $after = $STATE->lookupValue('afterAssignment')){
+    $STATE->assignValue(afterAssignment=>undef);
+    $STATE->getStomach->getGullet->unread($after); }	# primitive returns boxes, so these need to be digested!
+}
+
+sub SetCounter {
+  my($ctr,$value)=@_;
+  $ctr = ToString($ctr) if ref $ctr;
+  AssignValue('\c@'.$ctr=>$value,'global');
+  AfterAssignment();
+  DefMacroI(T_CS("\\\@$ctr\@ID"),undef, Tokens(Explode($value->valueOf)),scope=>'global'); }
+
+sub AddToCounter {
+  my($ctr,$value)=@_;
+  $ctr = ToString($ctr) if ref $ctr;
+  my $v = CounterValue($ctr)->add($value);
+  AssignValue('\c@'.$ctr=>$v,'global'); 
+  AfterAssignment();
+  DefMacroI(T_CS("\\\@$ctr\@ID"),undef, Tokens(Explode($v->valueOf)),scope=>'global'); }
+
 sub StepCounter {
   my($ctr)=@_;
   my $value = CounterValue($ctr);
   AssignValue("\\c\@$ctr"=>$value->add(Number(1)),'global');
+  AfterAssignment();
   DefMacroI(T_CS("\\\@$ctr\@ID"),undef, Tokens(Explode(LookupValue('\c@'.$ctr)->valueOf)),
 	    scope=>'global');
   # and reset any within counters!

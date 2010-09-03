@@ -1837,25 +1837,11 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 # explicitly during digestion (via a whatsit), we can't use the usual LaTeX counter mechanism.
 Tag('ltx:para',afterOpen=>sub { GenerateID(@_,'p'); });
  
-DefPrimitive('\newcounter{}[]',sub { shift; NewCounter(map($_ && ToString($_),@_)); return;});
-
-DefPrimitive('\setcounter{}{Number}',sub {
-  my($stomach,$ctr,$value)=@_;
-  $ctr = ToString($ctr);
-  AssignValue('\c@'.$ctr=>$value,'global');
-  DefMacroI(T_CS("\\\@$ctr\@ID"),undef, Tokens(Explode($value->valueOf)),scope=>'global');
-  return});
-
-DefPrimitive('\addtocounter{}{Number}',sub {
-  my($stomach,$ctr,$value)=@_;
-  $ctr = ToString($ctr);
-  my $v = CounterValue($ctr)->add($value);
-  AssignValue('\c@'.$ctr=>$v,'global'); 
-  DefMacroI(T_CS("\\\@$ctr\@ID"),undef, Tokens(Explode($v->valueOf)),scope=>'global');
-  return; });
-
-DefPrimitive('\stepcounter{}',   sub { StepCounter(ToString($_[1])); return; });
-DefPrimitive('\refstepcounter{}',sub { RefStepCounter(ToString($_[1])); return; });
+DefPrimitive('\newcounter{}[]',        sub { shift; NewCounter(map($_ && ToString($_),@_)); return;});
+DefPrimitive('\setcounter{}{Number}',  sub { SetCounter(ToString($_[1]),$_[2]); });
+DefPrimitive('\addtocounter{}{Number}',sub { AddToCounter(ToString($_[1]),$_[2]); });
+DefPrimitive('\stepcounter{}',         sub { StepCounter(ToString($_[1])); return; });
+DefPrimitive('\refstepcounter{}',      sub { RefStepCounter(ToString($_[1])); return; });
 
 DefPrimitive('\@addtoreset{}{}',sub {
   my($stomach,$ctr,$within)=@_;
