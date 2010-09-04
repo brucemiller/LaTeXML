@@ -180,7 +180,7 @@ DefPrimitive('\@appendix',sub{
 
 # Basically, {mathletters} is a copy of AMSMath's {subequations}... Isn't it?
 DefEnvironment('{mathletters}',
-	       "<ltx:equationgroup>#body</ltx:equationgroup>",
+	       "<ltx:equationgroup xml:id='#id'>#body</ltx:equationgroup>",
 	       afterDigestBegin=>sub {
 		 my($stomach,$whatsit)=@_;
 		 my %eqn = RefStepCounter('equation');
@@ -189,6 +189,7 @@ DefEnvironment('{mathletters}',
 		 DefMacro('\theequation',UnTeX($eqn{refnum}).'\alph{equation}');
 		 DefMacro('\theequation@ID',UnTeX($eqn{id}).'.\@equation@ID');
 	       },
+	       properties=>sub{ RefStepID('@equationgroup'); },
 	       afterDigest =>sub{ 
 		 AssignValue('\c@equation',LookupValue('SAVED_EQUATION_NUMBER'),'global'); });
 

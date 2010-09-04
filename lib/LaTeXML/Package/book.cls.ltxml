@@ -62,6 +62,7 @@ DefMacro('\theparagraph',    '');
 DefMacro('\thesubparagraph', '');
 
 NewCounter('equation', 'chapter', idprefix=>'E');
+NewCounter('@equationgroup', 'document', idprefix=>'EG', idwithin=>'section');
 NewCounter('figure',   'chapter', idprefix=>'F');
 NewCounter('table',    'chapter', idprefix=>'T');
 DefMacro('\theequation', '\thechapter.\arabic{equation}');

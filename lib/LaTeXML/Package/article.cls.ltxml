@@ -60,6 +60,7 @@ DefMacro('\theparagraph',    '');
 DefMacro('\thesubparagraph', '');
 
 NewCounter('equation', 'document', idprefix=>'E', idwithin=>'section');
+NewCounter('@equationgroup', 'document', idprefix=>'EG', idwithin=>'section');
 NewCounter('figure',   'document', idprefix=>'F', idwithin=>'section');
 NewCounter('table',    'document', idprefix=>'T', idwithin=>'section');
 

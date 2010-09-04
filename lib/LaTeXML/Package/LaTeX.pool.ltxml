@@ -1187,6 +1187,8 @@ Tag('ltx:Math',afterOpen=>sub { GenerateID(@_,'m'); });
 
 # ========================================
 # The following set deal with numbering the equations (rows) that make up an equationgroup.
+# Note EQUATIONGROUP_NUMBER controls the numbering of the equations contained within the equationgroup,
+# not the numbering of the equationgroup itself.
 DefPrimitiveI('\@equationgroup@number',   undef, sub { AssignValue(EQUATIONGROUP_NUMBER=>'_AUTO_'); });
 DefPrimitiveI('\@equationgroup@nonumber', undef, sub { AssignValue(EQUATIONGROUP_NUMBER=>0); });
 DefPrimitiveI('\nonumber',                undef, sub { AssignValue(EQUATIONROW_NUMBER=>0, 'global'); } );
@@ -1268,7 +1270,7 @@ sub eqnarrayBindings {
 	      after=>Tokens(T_CS('\@hidden@egroup'),T_MATH,T_CS('\hfil'))};
   my $template = LaTeXML::AlignmentTemplate->new(columns=>[$col1,$col2,$col3]);
   my $alignment = LaTeXML::Util::Alignment
-    ->new(openContainer =>sub{ $_[0]->openElement('ltx:equationgroup',@_[1..$#_]); },
+    ->new(openContainer =>sub{ $_[0]->openElement('ltx:equationgroup',RefStepID('@equationgroup'),@_[1..$#_]); },
 	  closeContainer=>sub{ $_[0]->closeElement('ltx:equationgroup'); },
 	  openRow       =>sub{ $_[0]->openElement('ltx:equation',@_[1..$#_]); },
 	  closeRow      =>sub{ $_[0]->closeElement('ltx:equation'); },

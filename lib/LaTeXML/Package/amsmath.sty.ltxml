@@ -98,7 +98,7 @@ sub amsalignBindings {
 #						rowElement=>'ltx:equation',
 #						colElement=>'_Capture_');
   my $alignment = LaTeXML::Util::Alignment
-    ->new(openContainer =>sub{ $_[0]->openElement('ltx:equationgroup',@_[1..$#_]); },
+    ->new(openContainer =>sub{ $_[0]->openElement('ltx:equationgroup',RefStepID('@equationgroup'),@_[1..$#_]); },
 	  closeContainer=>sub{ $_[0]->closeElement('ltx:equationgroup'); },
 	  openRow       =>sub{ $_[0]->openElement('ltx:equation',@_[1..$#_]); },
 	  closeRow      =>sub{ $_[0]->closeElement('ltx:equation'); },
