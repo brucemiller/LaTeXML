@@ -277,7 +277,8 @@ sub ReadAlignmentTemplate {
     elsif($op->equals(T_BEGIN)){ # Wrong, but a safety valve
       $gullet->unread($gullet->readBalanced->unlist); }
     else {
-      Warn(":unexpected:".Stringify($op)." Unrecognized tabular template \"".Stringify($op)."\""); }}
+      Warn(":unexpected:".Stringify($op)." Unrecognized tabular template \"".Stringify($op)."\""); }
+    last unless $nopens; }
   push(@tokens,T_END);
   $LaTeXML::BUILD_TEMPLATE->setReversion(@tokens);
   return $LaTeXML::BUILD_TEMPLATE; }
