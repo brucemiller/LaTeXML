@@ -708,7 +708,7 @@ DefMacro('\lst@@escapechar Until:\end',sub {
 DefKeyVal('LST','escapeinside','');
 DefMacro('\lst@@escapeinside Until:\end',sub {
   my($gullet,$escape)=@_;
-  my($escape1,$escape2)=map(lstDeslash($_), $escape->unlist);
+  my($escape1,$escape2)=map(lstDeslash($_), ($escape ? $escape->unlist : ()));
   if($escape1 && $escape2){
     LookupValue('LST_DELIMITERS')->{$escape1} = { open=>lstRegexp($escape1),close=>lstRegexp($escape2),
 						  class=>'evaluate', escape=>1};
