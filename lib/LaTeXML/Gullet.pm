@@ -40,8 +40,10 @@ sub input {
   $name = $name->toString if ref $name;
   # Try to find a Package implementing $name.
   $name = $1 if $name =~ /^\{(.*)\}$/; # just in case
-  my $file = pathname_find($name,paths=>$STATE->lookupValue('SEARCHPATHS'),
-			   types=>$types, installation_subdir=>'Package');
+  my $filecontents = $STATE->lookupValue($name.'_contents');
+  my $file = ($filecontents ? $name
+	      : pathname_find($name,paths=>$STATE->lookupValue('SEARCHPATHS'),
+			      types=>$types, installation_subdir=>'Package'));
   if(! $file) {
     $STATE->noteStatus(missing=>$name);
     Error(":missing_file:$name Cannot find file $name of type ".join(', ',@{$types||[]})
@@ -62,7 +64,10 @@ sub input {
       Warn(":unexpected:$file Ignoring style file $file");
       return; }
     $STATE->assignValue($file.'_loaded'=>1,'global');
-    $self->openMouth(LaTeXML::StyleMouth->new($file), 0);  }
+    if($filecontents){
+      $self->openMouth(LaTeXML::StyleStringMouth->new($file,$filecontents), 0);  }
+    else {
+      $self->openMouth(LaTeXML::StyleMouth->new($file), 0);  }}
   else {			# Else read as an included file.
     # If there is a file-specific declaration file (name.latexml), load it first!
     my $name = $file;
@@ -70,7 +75,11 @@ sub input {
     local $LaTeXML::INHIBIT_LOAD=0;
     $self->inputConfigfile($name); #  Load configuration for this source, if any.
     # NOW load the input --- UNLESS INHIBITTED!!!
-    $self->openMouth(LaTeXML::FileMouth->new($file) ,0) unless $LaTeXML::INHIBIT_LOAD;
+    if(!$LaTeXML::INHIBIT_LOAD){
+      if($filecontents){
+	$self->openMouth(LaTeXML::Mouth->new($filecontents) ,0); }
+      else {
+	$self->openMouth(LaTeXML::FileMouth->new($file) ,0); }}
   }}
 
 sub inputConfigfile {
