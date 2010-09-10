@@ -22,12 +22,16 @@ use base qw(LaTeXML::Object);
 
 sub new {
   my($class,$string)=@_;
-  my $self = {string=>$string,source=>"Anonymous String"};
-#  $$self{buffer}=[split("\n",$string)];
-  bless $self,$class;
-  $$self{buffer}=[(defined $string ? $self->splitString($string) : ())];
+  my $self =  bless {source=>"Anonymous String"}, $class;
+  $self->openString($string);
   $self->initialize;
   $self; }
+
+sub openString {
+  my($self,$string)=@_;
+  $$self{string} = $string;
+  $$self{buffer} = [(defined $string ? $self->splitString($string) : ())];
+}
 
 sub initialize {
   my($self)=@_;
@@ -279,16 +283,21 @@ use base qw(LaTeXML::Mouth);
 use Encode;
 sub new {
   my($class,$pathname)=@_;
+  my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+  $self->openFile($pathname);
+  $self->initialize;
+  NoteBegin("Processing $$self{source}");
+  $self;  }
+
+sub openFile {
+  my($self,$pathname)=@_;
   local *IN;
   if(! -r $pathname){ Fatal(":missing_file:$pathname Input file is not readable."); }
   elsif((!-z $pathname) && (-B $pathname)){Fatal(":missing_file:$pathname Input file appears to be binary."); }
   open(IN,$pathname) || Fatal(":missing_file:$pathname Can't read: ",$!);
-  my $shortpath=pathname_relative($pathname,pathname_cwd);
-  my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN, buffer=>[]};
-  bless $self,$class;
-  $self->initialize;
-  NoteBegin("Processing $$self{source}");
-  $self;  }
+  $$self{IN} = *IN;
+  $$self{buffer}=[];
+}
 
 sub finish {
   my($self)=@_;
@@ -351,7 +360,33 @@ sub getNextLine {
 
 sub stringify {
   my($self)=@_;
-  "FileMouth[$$self{pathname}\@$$self{lineno}x$$self{colno}]"; }
+  "FileMouth[$$self{source}\@$$self{lineno}x$$self{colno}]"; }
+
+#**********************************************************************
+# LaTeXML::StyleMixin
+#    Mixin for Mouth's that serve as source for style/package/class/whatever
+#**********************************************************************
+package LaTeXML::StyleMixin;
+use strict;
+use LaTeXML::Global;
+
+sub postInitialize {
+  my($self)=@_;
+  NoteBegin("Style $$self{source}");
+  $$self{saved_at_cc} = $STATE->lookupCatcode('@');
+  $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
+  $$self{SAVED_INSIDE_STYLE} = $STATE->lookupValue('INSIDE_STYLE');
+  $STATE->assignCatcode('@'=>CC_LETTER);
+  $STATE->assignValue(INCLUDE_COMMENTS=>0);
+  $STATE->assignValue(INSIDE_STYLE=>1);
+  $self;  }
+
+sub preFinish {
+  my($self)=@_;
+  $STATE->assignCatcode('@'=> $$self{saved_at_cc});
+  $STATE->assignValue(INCLUDE_COMMENTS=>$$self{SAVED_INCLUDE_COMMENTS});
+  $STATE->assignValue(INSIDE_STYLE=>$$self{SAVED_INSIDE_STYLE});
+  NoteEnd("Style $$self{source}"); }
 
 #**********************************************************************
 # LaTeXML::StyleMouth
@@ -362,29 +397,40 @@ package LaTeXML::StyleMouth;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::Util::Pathname;
-use base qw(LaTeXML::FileMouth);
+use base qw(LaTeXML::FileMouth LaTeXML::StyleMixin);
 
 sub new {
   my($class,$pathname)=@_;
-  local *IN;
-  open(IN,$pathname) || Fatal(":missing_file:$pathname Can't read: ",$!);
-  my $shortpath=pathname_relative($pathname,pathname_cwd);
-  my $self = {pathname=>$pathname, source=>$shortpath, IN => *IN, buffer=>[]};
-  bless $self,$class;
+  my $self = bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+  $self->openFile($pathname);
   $self->initialize;
-  NoteBegin("Style $$self{source}");
-  $$self{saved_at_cc} = $STATE->lookupCatcode('@');
-  $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
-  $STATE->assignCatcode('@'=>CC_LETTER);
-  $STATE->assignValue(INCLUDE_COMMENTS=>0);
+  $self->postInitialize;
   $self;  }
 
 sub finish {
   my($self)=@_;
-  $STATE->assignCatcode('@'=> $$self{saved_at_cc});
-  $STATE->assignValue(INCLUDE_COMMENTS=>$$self{SAVED_INCLUDE_COMMENTS});
-  NoteEnd("Style $$self{source}");
-  $self->SUPER::finish; }
+  $self->preFinish; $self->SUPER::finish; }
+#**********************************************************************
+# LaTeXML::StyleMouth
+#    Read TeX Tokens from a style file.
+#**********************************************************************
+
+package LaTeXML::StyleStringMouth;
+use strict;
+use LaTeXML::Global;
+use base qw(LaTeXML::Mouth LaTeXML::StyleMixin);
+
+sub new {
+  my($class,$pathname,$string)=@_;
+  my $self = bless {source=>$pathname}, $class;
+  $self->openString($string);
+  $self->initialize;
+  $self->postInitialize;
+  $self;  }
+
+sub finish {
+  my($self)=@_;
+  $self->preFinish; $self->SUPER::finish; }
 
 #**********************************************************************
 # A fake mouth provides a hook for getting the Locator of anything
@@ -397,7 +443,7 @@ use LaTeXML::Util::Pathname;
 sub new {
   my($class,$pathname)=@_;
   my $shortpath=pathname_relative($pathname,pathname_cwd);
-  my $self = bless {pathname=>$pathname, source=>$shortpath},$class;
+  my $self = bless {source=>(length($pathname) < length($shortpath) ? $pathname : $shortpath)},$class;
   NoteBegin("Loading $$self{source}");
   $self; }
 
@@ -408,7 +454,7 @@ sub finish {
 # Evolve to figure out if this gets dynamic location!
 sub getLocator {
   my($self)=@_;
-  my $path = $$self{pathname};
+  my $path = $$self{source};
   my $frame=2;
   my($pkg,$file,$line);
   while(($pkg,$file,$line) = caller($frame++)){
