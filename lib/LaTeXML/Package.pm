@@ -932,15 +932,21 @@ sub FindFile {
   $file = ToString($file);
   $file .= ".$options{type}" if $options{type};
   if($options{raw}){
-    pathname_find("$file",paths=>$paths); }
+    pathname_find_x("$file",paths=>$paths); }
   elsif($options{type} || ($file =~ /\.(tex|pool|sty|cls|clo|cnf|cfg)$/)){ # explicit or known extensions
-    pathname_find("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
-      || pathname_find("$file",paths=>$paths); }
+    pathname_find_x("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
+      || pathname_find_x("$file",paths=>$paths); }
   else {
-    pathname_find("$file.tex.ltxml",paths=>$paths,installation_subdir=>'Package')
-      || pathname_find("$file.tex",paths=>$paths)
-	|| pathname_find("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
-	  || pathname_find("$file",paths=>$paths); }}
+    pathname_find_x("$file.tex.ltxml",paths=>$paths,installation_subdir=>'Package')
+      || pathname_find_x("$file.tex",paths=>$paths)
+	|| pathname_find_x("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
+	  || pathname_find_x("$file",paths=>$paths); }}
+
+sub pathname_find_x {
+  my($path,%options)=@_;
+  if(LookupValue($path.'_contents')){
+    return $path; }
+  pathname_find($path,%options); }
 
 # Declare an option for the current package or class
 # If $option is undef, it is the default.
