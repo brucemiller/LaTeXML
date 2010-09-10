@@ -2961,7 +2961,7 @@ sub DefAccent {
   my ($accent, $combiningchar, $standalonechar) = @_;
   DefConstructor($accent."{}", sub {
     my($document,$letter,%props)=@_;
-    if(my @letters = map(($_ eq '\i' ? 'i':$_),map(ToString($_),$letter->unlist))){
+    if(my @letters = map(($_ eq '\i' ? 'i':$_),map(ToString($_),($letter ? $letter->unlist : ())))){
       # Put the accent AFTER the first char(?)
       $document->openText(NFC($letters[0].$combiningchar.join('',@letters[1..$#letters])),
 			  $letter->getFont);}
@@ -3915,7 +3915,8 @@ Tag('ltx:document', autoClose=>1, autoOpen=>1);
 foreach my $ltxtrigger (qw(documentclass
 			newcommand renewcommand newenvironment renewenvironment
 			NeedsTeXFormat ProvidesPackage RequirePackage
-			makeatletter makeatother)){
+			makeatletter makeatother
+			typeout begin)){
   DefMacroI("\\".$ltxtrigger, undef, sub { LoadPool("LaTeX"); (T_CS("\\$ltxtrigger")); }); }
 
 # Seemingly good candidates to trigger AmSTeX ??
