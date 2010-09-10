@@ -1795,7 +1795,7 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
       if $reset; }
 
   DefEnvironment("{$thmset} OptionalUndigested",
-		 "<ltx:theorem xml:id='#id' refnum='#refnum' class='$thmset'>"
+		 "<ltx:theorem xml:id='#id' refnum='#refnum' class='#class'>"
 		 . "<ltx:title>#title</ltx:title>"
 		 .  "#body"
 		 ."</ltx:theorem>",
@@ -1820,7 +1820,8 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 		     push(@toks,$note->unlist);
 		     push(@toks,T_OTHER(')')) if $text; }
 		   push(@toks,T_CS('\the'),T_CS('\thm@headpunct'),T_END);
-		   $whatsit->setProperties(title=>Digest(Tokens(@toks)));
+		   $whatsit->setProperties(title=>Digest(Tokens(@toks)),
+					   class=>CleanIndexKey($thmset)); # is this appropriate cleaner?
 
 		   Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
 		 ($counter 
@@ -2460,8 +2461,26 @@ DefPrimitive('\includeonly{}',sub {
   map( $$table{$_}=1, split(/,\s*/,$paths));
   return; });
 
-#Environment('filecontents','{}',?
-#Environment('filecontents*','{}',?
+# NOTE: In the long run, we want to SAVE the contents and associate them with the given file name
+#  AND, arrange so that when a file is read, we'll use the contents!
+DefConstructorI(T_CS("\\begin{filecontents}"),
+		LaTeXML::Package::parseParameters("Semiverbatim","\\begin{filecontents}"),'',
+		reversion=>'',
+		afterDigest=>[sub {
+				my($stomach,$whatsit)=@_;
+				my $filename = ToString($whatsit->getArg(1));
+				my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{filecontents}\n",1);
+				AssignValue($filename.'_contents'=>join("\n",@lines), 'global');
+				NoteProgress("[Cached filecontents for $filename (".scalar(@lines)." lines)]"); }]);
+DefConstructorI(T_CS("\\begin{filecontents*}"),
+		LaTeXML::Package::parseParameters("Semiverbatim","\\begin{filecontents}"),'',
+		reversion=>'',
+		afterDigest=>[sub {
+				my($stomach,$whatsit)=@_;
+				my $filename = ToString($whatsit->getArg(1));
+				my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{filecontents*}\n",1);
+				AssignValue($filename.'_contents'=>join("\n",@lines), 'global');
+				NoteProgress("[Cached filecontents* for $filename (".scalar(@lines)." lines)]"); }]);
 
 DefPrimitive('\listfiles',undef);
 
