@@ -1254,8 +1254,16 @@ DefColumnType('c',sub {
 DefColumnType('r',sub {
   $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\hfil'))); return; });
 
+DefConstructor('\pseudo@hbox BoxContents',
+	       "#1",
+ 	       mode=>'text',
+ 	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
+ 	       # And also things like \centerline that will end up bumping up to block level!
+ 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@dollar@in@textmode'));
+ 				   Let(T_CS('\centerline'),T_CS('\relax')); });
+
 DefColumnType('p{Dimension}',sub {
-  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\hbox'),T_BEGIN),#Tokens(T_BEGIN),
+  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\pseudo@hbox'),T_BEGIN),#Tokens(T_BEGIN),
 				      after=>Tokens(T_END),
 				      align=>'justify', width=>$_[1]); return; });
 DefColumnType('*{Number}{}', sub {
