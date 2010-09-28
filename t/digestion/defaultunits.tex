@@ -1,0 +1,14 @@
+\documentclass{article}
+% Example of \afterassignment from
+% http://texhacks.blogspot.com/2010/04/default-units.html
+\newdimen\foo
+\makeatletter
+\def\@defaultunits{\afterassignment\remove@to@nil}%
+\def\remove@to@nil#1\@nnil{}%
+\newcommand*\set[1]{\@defaultunits\foo#1pt\relax\@nnil}
+\makeatother
+\begin{document}
+Set with no units\set{10}; Now foo is \the\foo.
+
+Set with units\set{10ex}; Now foo is \the\foo.
+\end{document}
