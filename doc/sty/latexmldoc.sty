@@ -2,6 +2,7 @@
 % Collected separately so I can override for LaTeXML
 %======================================================================
 \usepackage{latexml}
+\usepackage{color}
 %======================================================================
 \def\toctitle#1{}
 
@@ -12,7 +13,8 @@
 \def\BibTeX{{\rm B}{\sc ib}\TeX}
 \def\URL{\@ifnextchar[{\@URL}{\@@URL}}%]
 \def\@@URL{\begingroup\Url}
-\def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\texttt{##1}}}\Url}
+%%\def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\texttt{##1}}}\Url}
+\def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\Url{##1}}}\Url}
 
 \let\@title\@empty
 \def\subtitle#1{\gdef\@subtitle{#1}}
@@ -142,7 +144,8 @@
 \newcommand{\elementref}[1]{\hyperlink{schema.element.#1}{\texttt{#1}}}
 
 %======================================================================
-\usepackage[colorlinks=true, linkcolor=cyan, citecolor=cyan, urlcolor=blue,
+\definecolor{linkblue}{cmyk}{1.0,0.2,0.0,0.50}%
+\usepackage[colorlinks=true, linkcolor=linkblue, citecolor=linkblue, urlcolor=blue,
             plainpages=false, pdfpagelabels]{hyperref}
 
 %======================================================================
