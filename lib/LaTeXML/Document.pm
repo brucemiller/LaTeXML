@@ -491,7 +491,11 @@ sub openMathText_internal {
 ##    if(scalar(@boxes) > 1){
 ##	$self->setNodeBox($node,LaTeXML::MathList->new(@boxes)); }
       foreach my $key (keys %attr){
-	$node->setAttribute($key=>$attr{$key}); }
+	my $value = $attr{$key};
+	if(defined $value){
+	  $node->setAttribute($key=>$value); }
+	else {
+	  $node->removeAttribute($key); }}
       last; }}			# Hmm.. last? Or restart matches?
   $node;}
 
