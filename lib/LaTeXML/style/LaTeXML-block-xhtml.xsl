@@ -284,39 +284,37 @@ Currently we assume the content will be placed in a single tr/td. -->
     <xsl:param name="side"/>				       <!-- left or right -->
     <xsl:choose>
       <xsl:when test="$eqnopos != $side"/>                       <!-- Wrong side: Nothing -->
-      <xsl:when test="ancestor-or-self::ltx:equationgroup[@refnum]"> <!-- eqn.group is numbered! -->
+      <xsl:when test="ancestor-or-self::ltx:equationgroup[position()=1][@refnum]"> <!-- eqn.group is numbered! -->
 	<!-- place number only for 1st row -->
 	<xsl:if test="(ancestor-or-self::ltx:tr and not(preceding-sibling::ltx:tr))
 		      or (not(ancestor-or-self::ltx:tr) and not(preceding-sibling::ltx:equation))">
 	  <xsl:variable name="nrows"
 			select="count(
-ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation/ltx:MathFork/ltx:MathBranch[1]/ltx:tr
-| ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation[ltx:MathFork/ltx:MathBranch[1]/ltx:td]
-| ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
-| ancestor-or-self::ltx:equationgroup[@refnum][ltx:constraint or ltx:metadata]
-| ancestor-or-self::ltx:equationgroup[@refnum]/descendant::ltx:equation[ltx:constraint]
+ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equation/ltx:MathFork/ltx:MathBranch[1]/ltx:tr
+| ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equation[ltx:MathFork/ltx:MathBranch[1]/ltx:td]
+| ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equation[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
 				)"/>
 	  <td rowspan="{$nrows}" nowrap="yes" valign='middle' align="{$side}">
-	    <xsl:apply-templates select="ancestor-or-self::ltx:equationgroup/@refnum"/>
+	    <xsl:apply-templates select="ancestor-or-self::ltx:equationgroup[position()=1]/@refnum"/>
 	  </td>
 	</xsl:if>						       <!--Else NOTHING (rowspan'd!) -->
       </xsl:when>
-      <xsl:when test="ancestor-or-self::ltx:equation[@refnum]">        <!-- equation is numbered! -->
+      <xsl:when test="ancestor-or-self::ltx:equation[position()=1][@refnum]">        <!-- equation is numbered! -->
 	<!-- place number only for 1st row -->
 	<xsl:if test="(ancestor-or-self::ltx:tr and not(preceding-sibling::ltx:tr))
 		      or not(ancestor-or-self::ltx:tr)">
 	  <xsl:variable name="nrows"
 			select="count(
-				ancestor-or-self::ltx:equation[@refnum]
+				ancestor-or-self::ltx:equation[position()=1][@refnum]
 				/ltx:MathFork/ltx:MathBranch[1]/ltx:tr
-				| ancestor-or-self::ltx:equation[@refnum]
+				| ancestor-or-self::ltx:equation[position()=1][@refnum]
 				[ltx:MathFork/ltx:MathBranch[1]/ltx:td]
-				| ancestor-or-self::ltx:equation[@refnum]
+				| ancestor-or-self::ltx:equation[position()=1][@refnum]
 				[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
-				| ancestor-or-self::ltx:equation[@refnum][ltx:constraint or ltx:metadata]
+				| ancestor-or-self::ltx:equation[position()=1][@refnum][ltx:constraint or ltx:metadata]
 				)"/>
 	  <td rowspan="{$nrows}" nowrap="yes" valign='middle' align="{$side}">
-	    <xsl:apply-templates select="ancestor-or-self::ltx:equation/@refnum"/>
+	    <xsl:apply-templates select="ancestor-or-self::ltx:equation[position()=1]/@refnum"/>
 	  </td>
 	</xsl:if>						       <!--Else NOTHING (rowspan'd!) -->
       </xsl:when>
