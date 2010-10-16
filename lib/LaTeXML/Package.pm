@@ -781,7 +781,7 @@ sub DefMathI {
 our $environment_options = {mode=>1, requireMath=>1, forbidMath=>1,
 			    properties=>1, nargs=>1, font=>1,
 			    beforeDigest=>1, afterDigest=>1, beforeConstruct=>1, afterConstruct=>1,
-			    afterDigestBegin=>1, beforeDigestEnd=>1,
+			    afterDigestBegin=>1, beforeDigestEnd=>1, reversion=>1,
 			    scope=>1, locked=>1};
 sub DefEnvironment {
   my($proto,$replacement,%options)=@_;
@@ -816,6 +816,8 @@ sub DefEnvironmentI {
 				   nargs=>$options{nargs},
 				   captureBody=>1, 
 				   properties=>$options{properties}||{},
+				   (defined $options{reversion} ? (reversion=>$options{reversion}) : ()),
+
 				  ), $options{scope});
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\end{$name}"),"","",
@@ -843,8 +845,9 @@ sub DefEnvironmentI {
 				   afterConstruct => flatten($options{afterConstruct},sub{$STATE->popFrame;}),
 				   nargs=>$options{nargs},
 				   captureBody=>T_CS("\\end$name"), # Required to capture!!
-				   properties=>$options{properties}||{}),
-			     $options{scope});
+				   properties=>$options{properties}||{},
+				   (defined $options{reversion} ? (reversion=>$options{reversion}) : ()),
+				  ), $options{scope});
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\end$name"),"","",
 				   beforeDigest =>flatten($options{beforeDigestEnd}),
