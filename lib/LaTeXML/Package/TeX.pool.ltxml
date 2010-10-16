@@ -2469,7 +2469,7 @@ DefMathI('\@@<',undef, '<', role=>'RELOP', meaning=>'less-than',    name=>'', re
 
 #======================================================================
 # Combine letters, when the fonts are right. (sorta related to mathcode)
-
+# well, maybe a letter followed by letters & digits?
 DefMathLigature(sub { my($document,@nodes)=@_;
 		      my @chars = ();
 		      my $font = $document->getNodeFont($nodes[$#nodes]);
@@ -2482,10 +2482,11 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 			      && ($document->getModel->getNodeQName($node) eq 'ltx:XMTok')
 			      && ($document->getNodeFont($node)->equals($font))
 			      && (!$node->hasAttribute('name'))
-			      && (($node->getAttribute('role')||'UNKNOWN') eq 'UNKNOWN')
-			      && (($s=$node->textContent.$s) =~ /^[a-zA-Z]+$/)){
+			      && ((($node->getAttribute('role')||'UNKNOWN') eq 'UNKNOWN')
+				  || (($node->getAttribute('role')||'UNKNOWN') eq 'NUMBER'))
+			      && (($s=$node->textContent.$s) =~ /^[0-9a-zA-Z]+$/)){
 			  $n++; $string = $s; }
-			($n > 1 ? ($n, $string, role=>'UNKNOWN') : undef); }});
+			(($string =~ /^[a-zA-Z]/) && ($n > 1) ? ($n, $string, role=>'UNKNOWN', meaning=>undef) : undef); }});
 
 #======================================================================
 # Combine digits in math.
