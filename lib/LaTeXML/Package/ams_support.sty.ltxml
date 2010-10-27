@@ -59,6 +59,7 @@ Let(T_CS('\upn'),T_CS('\textup'));
 # amsfonts (unless noamsfonts)
 
 RequirePackage('amsmath');
+RequirePackage('amstex') if LookupValue('2.09_COMPATIBILITY');
 RequirePackage('amsthm');
 RequirePackage('amsfonts');
 RequirePackage('makeidx');
