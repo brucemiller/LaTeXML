@@ -157,7 +157,11 @@ DefMacro('\thesaurus{}','');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Figures
 # the usual...
-Let('\sidecaption','\caption');
+### Let('\sidecaption','\caption');  NO!!!
+# Should be something like this
+# DefMacro('\sidecaption Until:\caption', ... );
+# but let's just ignore it for now.
+DefMacro('\sidecaption','');
 
 # NOTE: Sort this out!!
 # I'm a little unclear how this is supposed to be used -- it isn't documented.
@@ -184,7 +188,7 @@ DefMacro('\longtab{}','');	# just let it do the table contents as usual.
 # Typography
 
 DefMacro('\vec{}','\ensuremath{\@vec{#1}}');
-DefMath('\@vec{}','\boldsymbol{#1}', role=>'ID');
+DefMath('\@vec{}','#1', role=>'ID',font=>{forcebold=>1});
 DefMacro('\tens{}','\ensuremath{\@tens{#1}}');
 DefMath('\@tens{}','\mathsf{#1}', role=>'ID'); # semantics?
 
