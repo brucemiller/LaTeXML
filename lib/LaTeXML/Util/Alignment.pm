@@ -161,7 +161,9 @@ sub getColumn {
 
 sub constructAlignment {
   my($document,$body,%props)=@_;
-  my $alignment = $body->getProperty('alignment');
+  my $alignment;
+  while(! ($alignment=$body->getProperty('alignment'))){
+    ($body)=grep($_->getProperty('alignment'),$body->unlist); }
   $alignment->setMath if $body->isMath;
 
   my %attr = ($props{attributes} ? %{$props{attributes}} : ());
