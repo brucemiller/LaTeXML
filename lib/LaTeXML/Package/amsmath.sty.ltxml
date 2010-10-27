@@ -421,7 +421,7 @@ DefPrimitive('\numberwithin[]{}{}',sub {
 # Section 3.11.2 Cross references to equation numbers
 DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label'/>)",
 	       properties=>sub { (label=>CleanLabel($_[1])); });
-
+DefMacro('\thetag{}','{\rm #1}');
 
 # Section 3.11.3 Subordinate numbering sequences.
 DefEnvironment('{subequations}',"<ltx:equationgroup refnum='#refnum' xml:id='#id'>#body</ltx:equationgroup>",
@@ -764,7 +764,8 @@ DefConstructor('\substack{}',
 	       ."</ltx:XMApp>",
 	       bounded=>1, beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
 							     "</ltx:XMArg><ltx:XMArg>",
-							     reversion=>Tokens(T_CS("\\\\"),T_CR)); });
+							     reversion=>Tokens(T_CS("\\\\"),T_CR));
+					      Let(T_CS('\cr'),T_CS("\\\\")); });
 DefEnvironment('{subarray}[]',
 	       "<ltx:XMApp>"
 	       . "<ltx:XMTok name='list' alignment='#1'/>"
@@ -772,7 +773,8 @@ DefEnvironment('{subarray}[]',
 	       ."</ltx:XMApp>",
 	       beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
 						 "</ltx:XMArg><ltx:XMArg>",
-						 reversion=>Tokens(T_CS("\\\\"),T_CR)); });
+						 reversion=>Tokens(T_CS("\\\\"),T_CR));
+				  Let(T_CS('\cr'),T_CS("\\\\")); });
 
 #======================================================================
 # Section 7.2 the \sideset command
