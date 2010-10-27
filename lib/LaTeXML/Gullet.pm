@@ -189,7 +189,10 @@ sub neutralizeTokens {
 # So, be Fast & Clean!  This method only reads from the current input stream (Mouth).
 sub readToken {
   my($self)=@_;
-  my $token = shift(@{$$self{pushback}});
+#  my $token = shift(@{$$self{pushback}});
+  my $token;
+  while(defined($token = shift(@{$$self{pushback}})) && ($$token[1] == CC_COMMENT)){ # NOTE: Inlined ->getCatcode
+    push(@{$$self{pending_comments}},$token); }
   return $token if defined $token;
   while(defined($token = $$self{mouth}->readToken()) && ($$token[1] == CC_COMMENT)){ # NOTE: Inlined ->getCatcode
     push(@{$$self{pending_comments}},$token); } # What to do with comments???
