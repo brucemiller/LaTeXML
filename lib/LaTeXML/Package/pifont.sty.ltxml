@@ -51,19 +51,17 @@ DefConstructor('\piautolist@item[]',
   
 DefEnvironment('{Pilist}{}{Number}',
 	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-	       beforeDigest=>sub { beginItemize('pilist'); },
 	       afterDigestBegin=>sub {
 		 AssignValue(pilist_pifont=>ToString($_[1]->getArg(1))); 
 		 AssignValue(pilist_base  =>$_[1]->getArg(2)->valueOf); },
-	       properties=>sub { RefStepCounter('@itemize'); });
+	       properties=>sub { beginItemize('pilist'); });
 
 DefEnvironment('{Piautolist}{}{Number}',
 	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-	       beforeDigest=>sub { beginItemize('piautolist'); },
 	       afterDigestBegin=>sub {
 		 AssignValue(pilist_pifont=>ToString($_[1]->getArg(1)));
 		 AssignValue(pilist_base  =>$_[1]->getArg(2)->valueOf); },
-	       properties=>sub { RefStepCounter('@itemize'); });
+	       properties=>sub { beginItemize('piautolist'); });
 
 # Don't know what to do with these.
 DefPrimitive('\Piline{}{Number}',undef);
@@ -73,19 +71,17 @@ DefMacro('\ding{}','\Pisymbol{pzd}{#1}');
 
 DefEnvironment('{dinglist}{Number}',
 	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-	       beforeDigest=>sub { beginItemize('pilist'); },
 	       afterDigestBegin=>sub {
 		 AssignValue(pilist_pifont=>'pzd'); 
 		 AssignValue(pilist_base  =>$_[1]->getArg(1)->valueOf); },
-	       properties=>sub { RefStepCounter('@itemize'); });
+	       properties=>sub { beginItemize('pilist'); });
 
 DefEnvironment('{dingautolist}{Number}',
 	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-	       beforeDigest=>sub { beginItemize('piautolist'); },
 	       afterDigestBegin=>sub {
 		 AssignValue(pilist_pifont=>'pzd'); 
 		 AssignValue(pilist_base  =>$_[1]->getArg(1)->valueOf); },
-	       properties=>sub { RefStepCounter('@itemize'); });
+	       properties=>sub { beginItemize('piautolist'); });
 
 # Don't know what to do with these.
 DefPrimitive('\dingline{Number}',undef);
