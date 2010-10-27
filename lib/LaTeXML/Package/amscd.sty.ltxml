@@ -107,6 +107,8 @@ DefMath('\rightarrowfill@', "\x{2192}", role=>'ARROW', style=>'stretchy'); # , s
 DefMath('\wideequals@',     "=",        role=>'ARROW', style=>'stretchy'); # , size=>'Bigg');
 
 
+DefRegister('\minCDarrowwidth'=>Dimension('2.5pc'));
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 1;
