@@ -413,4 +413,7 @@ DefMacro('\CMP',       '\@end@bibfield\@bibfield{CMP}CMP ');
 
 # \moreref, \transl ????
 #======================================================================
+DefConstructorI('\smc', undef,'',  font=>{shape=>'smallcaps'});
+
+#======================================================================
 1;
