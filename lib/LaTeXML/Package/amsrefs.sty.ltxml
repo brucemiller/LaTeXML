@@ -46,7 +46,7 @@ DefMacro('\bib{}{} RequiredKeyVals:amsrefs', sub{
   my @fields;
   while(@rawpairs){
     push(@fields, [lc(shift(@rawpairs)),ToString(shift(@rawpairs))]); }
-  AssignValue('BIBENTRY@'.$key=>LaTeXML::Bib::BibEntry->new(ToString($type),$key,@fields));
+  AssignValue('BIBENTRY@'.$key=>LaTeXML::Bib::BibEntry->new(ToString($type),$key,[@fields],[@fields]));
   Invocation(T_CS('\ProcessBibTeXEntry'),T_OTHER($key)); });
 
 #======================================================================
