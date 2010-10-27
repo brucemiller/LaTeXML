@@ -32,9 +32,9 @@ DefMacro('\qopname{}{}{}','\mathop{#3}\csname #2limits@\endcsname');
 #Let(T_CS('\endSb'),T_CS('\relax'));
 #Let(T_CS('\endSp'),T_CS('\relax'));
 
-DefMacro('\Sb','_\bgroup\substack\bgroup#1}}');
+DefMacro('\Sb','_\bgroup\substack\bgroup');
 DefMacro('\endSb','\cr\egroup\egroup');
-DefMacro('\Sp','^\bgroup\substack\bgroup#1}}');
+DefMacro('\Sp','^\bgroup\substack\bgroup');
 DefMacro('\endSp','\cr\egroup\egroup');
 
 1;
