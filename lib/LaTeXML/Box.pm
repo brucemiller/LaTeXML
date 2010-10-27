@@ -83,8 +83,15 @@ use base qw(LaTeXML::Box);
 
 sub new {
   my($class,@boxes)=@_;
-  my $box0 = $boxes[0];
-  bless [[@boxes], ($box0 ? $box0->getFont : undef), ($box0 ? $box0->getLocator : '')],$class; }
+#  my $box0 = $boxes[0];
+#  bless [[@boxes], ($box0 ? $box0->getFont : undef), ($box0 ? $box0->getLocator : '')],$class; }
+  my($b,$font,$locator);
+  my @b=@boxes;
+  while(defined ($b=shift(@b)) && (!defined $font) && (!defined $locator)){
+    $font = $b->getFont unless defined $font;
+    $locator = $b->getLocator unless defined $locator; }
+  bless [[@boxes],$font,$locator||''],$class; }
+
 
 sub isMath     { 0; }			# List's are text mode
 
