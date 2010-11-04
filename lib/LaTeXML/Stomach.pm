@@ -151,19 +151,13 @@ sub invokeToken_internal {
       if(($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble') )){ 
 	(); }
       else {
-	LaTeXML::Box->new($meaning->getString, $STATE->lookupValue('font'),
-			  $$self{gullet}->getLocator,$meaning); }}
+	Box($meaning->getString, $STATE->lookupValue('font'),$$self{gullet}->getLocator,$meaning); }}
     elsif($cc == CC_COMMENT){
       LaTeXML::Comment->new($meaning->getString); }
     elsif($forbidden_cc[$cc]){
       Fatal(":misdefined:<unknown> The token ".Stringify($token)." should never reach Stomach!"); }
-    elsif($STATE->lookupValue('IN_MATH')){
-      my $string = $meaning->getString;
-      LaTeXML::MathBox->new($string,$STATE->lookupValue('font')->specialize($string),
-			    $$self{gullet}->getLocator,$meaning); }
     else {
-      LaTeXML::Box->new($meaning->getString, $STATE->lookupValue('font'),
-			$$self{gullet}->getLocator,$meaning); }}
+      Box($meaning->getString,undef,undef,$meaning); }}
   else {
     Fatal(":misdefined:<unknown> ".Stringify($meaning)." should never reach Stomach!"); }}
 
