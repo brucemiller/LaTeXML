@@ -15,8 +15,8 @@ use LaTeXML::Global;
 use base qw(LaTeXML::Object);
 
 sub new {
-  my($class,$string,$font,$locator,$token)=@_;
-  bless [$string,$font,$locator,$token],$class; }
+  my($class,$string,$font,$locator,$tokens)=@_;
+  bless [$string,$font,$locator,$tokens],$class; }
 
 # Accessors
 sub isaBox     { 1; }
@@ -28,7 +28,7 @@ sub getSource  { $_[0][2]; }
 
 # So a Box can stand in for a List
 sub unlist     { ($_[0]); }	# Return list of the boxes
-sub revert     { $_[0][3]; }
+sub revert     { ($_[0][3] ? $_[0][3]->unlist : ()); }
 sub toString   { $_[0][0]; }
 
 # Methods for overloaded operators
@@ -36,16 +36,25 @@ sub stringify {
   my($self)=@_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
-  $type.'['.$$self[0].']'; }
+  $type.'['.(defined $$self[0] ? $$self[0] : '').']'; }
 
 # Should this compare fonts too?
 sub equals {
   my($a,$b)=@_;
   (defined $b) && ((ref $a) eq (ref $b)) && ($$a[0] eq $$b[0]) && ($$a[1]->equals($$b[1])); }
 
-sub beAbsorbed { $_[1]->openText($_[0][0],$_[0][1]); }
+sub beAbsorbed {
+  my $string = $_[0][0];
+  ((defined $string) && ($string ne '') ? $_[1]->openText($_[0][0],$_[0][1]) : undef); }
 
-sub getProperty { undef; }
+sub getProperty { 
+  my($self,$property)=@_;
+  if($property eq 'isSpace'){
+    my $tex = UnTeX($$self[3]);
+    return (defined $tex) && ($tex =~ /^\s*$/); } # Check the TeX code, not (just) the string!
+  else {
+    undef; }}
+
 #**********************************************************************
 # LaTeXML::MathBox
 #**********************************************************************
@@ -56,7 +65,9 @@ use base qw(LaTeXML::Box);
 
 sub isMath { 1; }		# MathBoxes are math mode.
 
-sub beAbsorbed { $_[1]->insertMathToken($_[0][0],font=>$_[0][1]); }
+sub beAbsorbed {
+  my $string = $_[0][0];
+  ((defined $string) && ($string ne '') ? $_[1]->insertMathToken($_[0][0],font=>$_[0][1]) : undef); }
 
 #**********************************************************************
 # LaTeXML::Comment
@@ -99,18 +110,17 @@ sub unlist { @{$_[0][0]}; }
 
 sub revert {
   my($self)=@_;
-   map($_->revert,$self->unlist); }
+   map(Revert($_),$self->unlist); }
 
 sub toString {
   my($self)=@_;
-  join('',map($_->toString,$self->unlist)); }
+  join('',grep(defined $_,map($_->toString,$self->unlist))); }
 
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
-#  $type.'['.join(',',map($_->toString,$self->unlist)).']'; } # Not ideal, but....
   $type.'['.join(',',map(Stringify($_),$self->unlist)).']'; } # Not ideal, but....
 sub equals {
   my($a,$b)=@_;
@@ -205,9 +215,7 @@ sub revert {
   else {
     my @tokens = ();
     if(defined $spec){
-      @tokens=LaTeXML::Expandable::substituteTokens($spec,
-						    map(($_ ? Tokens($_->revert) : $_),
-							$self->getArgs))
+      @tokens=LaTeXML::Expandable::substituteTokens($spec,map(Tokens(Revert($_)),$self->getArgs))
 	if $spec ne '';
     }
     else {
@@ -219,22 +227,19 @@ sub revert {
       if(my $parameters = $defn->getParameters){
 	push(@tokens,$parameters->revertArguments($self->getArgs)); }}
     if(defined (my $body = $self->getBody)){
-      push(@tokens, $body->revert);
+      push(@tokens, Revert($body));
       if(defined (my $trailer = $self->getTrailer)){
-	push(@tokens, $trailer->revert); }}
+	push(@tokens, Revert($trailer)); }}
     @tokens; }}
 
-sub toString { ToString(Tokens($_[0]->revert)); }
+sub toString { ToString(Tokens($_[0]->revert)); } # What else??
 
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
   my $string = "Whatsit[".join(',',$self->getDefinition->getCS->getCSName,
-#			       map(ToString($_),$self->getArgs));
 			       map(Stringify($_),$self->getArgs));
   if(defined $$self{properties}{body}){
-#    $string .= $$self{properties}{body}->toString;
-#    $string .= $$self{properties}{trailer}->toString; }
     $string .= Stringify($$self{properties}{body});
     $string .= Stringify($$self{properties}{trailer}); }
   $string."]"; }
