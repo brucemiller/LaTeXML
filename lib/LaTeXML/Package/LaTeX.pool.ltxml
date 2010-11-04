@@ -513,8 +513,8 @@ DefPrimitive('\pagestyle{}',    undef);
 DefPrimitive('\thispagestyle{}',undef);
 DefPrimitive('\markright{}',    undef);
 DefPrimitive('\markboth{}{}',   undef);
-DefConstructorI('\leftmark',    undef,  '');
-DefConstructorI('\rightmark',   undef,  '');
+DefPrimitiveI('\leftmark',      undef,undef);
+DefPrimitiveI('\rightmark',     undef,undef);
 DefPrimitive('\pagenumbering{}',undef);
 DefPrimitive('\twocolumn[]',    undef);
 DefPrimitiveI('\onecolumn',      undef, undef);
@@ -885,7 +885,7 @@ DefConstructorI(T_CS('\begin{verbatim}'),undef,
 				my $end = "\\end{verbatim}";
 				my @lines = $stomach->getGullet->getMouth->readRawLines($end);
 				# Note last line ends up as Whatsit's "trailer"
-				$whatsit->setBody(map(LaTeXML::Box->new($_,$font,$loc,T_OTHER($_)),
+				$whatsit->setBody(map(Box($_,$font,$loc,T_OTHER($_)),
 						      @lines, $end));
 				return; }],
 		beforeConstruct=>sub { $_[0]->maybeCloseElement('ltx:p'); });
@@ -1587,7 +1587,7 @@ DefPrimitive('\DeclareSymbolFont{}{}{}{}{}', sub {
 DefPrimitive('\DeclareSymbolFontAlphabet{}{}', sub {
   my ($stomach, $cs, $name) = @_;
   my $font = LookupValue('fontdeclarations@'.ToString($name)) || {};
-  DefConstructorI(T_CS(ToString($cs)),undef,'', font=>$font); });
+  DefPrimitiveI(T_CS(ToString($cs)),undef,undef, font=>$font); });
 
 DefPrimitive('\DeclareMathSizes{}{}{}{}',undef);
 DefPrimitive('\DeclareMathAlphabet{}{}{}{}{}', sub {
@@ -1596,7 +1596,7 @@ DefPrimitive('\DeclareMathAlphabet{}{}{}{}{}', sub {
   if(my $ffam = lookupFontFamily($family)){ map($font{$_} = $$ffam{$_}, keys %$ffam); }
   if(my $fser = lookupFontSeries($series)){ map($font{$_} = $$fser{$_}, keys %$fser); }
   if(my $fsh  = lookupFontShape($shape))  { map($font{$_} = $$fsh{$_}, keys %$fsh); }
-  DefConstructorI(T_CS(ToString($cs)),undef, '', font=>{%font}); });
+  DefPrimitiveI(T_CS(ToString($cs)),undef, undef, font=>{%font}); });
 
 
 DefMacro('\newmathalphabet{}{}{}',Tokens()); # or expand int DeclareMathAlphabet?
@@ -2571,7 +2571,7 @@ DefPrimitive('\typein[]{}',undef);
 DefPrimitive('\linebreak[]',undef);
 DefPrimitive('\nolinebreak[]',undef);
 # \\ already defined
-DefConstructorI('\newline',undef, "\n");
+DefPrimitiveI('\newline',undef, "\n");
 DefPrimitiveI('\-',undef, undef);	# We don't do hyphenation.
 # \hyphenation in TeX.pool
 
@@ -2731,7 +2731,7 @@ DefPrimitive('\@begin@lrbox Token', sub {
   AssignValue('box'.ToString($token), $box); });
 
 DefPrimitive('\usebox DefToken', sub { 
-  LookupValue('box'.ToString($_[1])) || LaTeXML::Box->new();});
+  LookupValue('box'.ToString($_[1])) || Box();});
 
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring them, for now, though.
@@ -3037,20 +3037,20 @@ Tag('ltx:g', afterClose=> sub {
 
 # What about \f@family, etc....?
 # These are not allowed in math.
-DefConstructorI('\mdseries', undef, '',  forbidMath=>1, font=>{series=>'medium'});
-DefConstructorI('\bfseries', undef, '',  forbidMath=>1, font=>{series=>'bold'});
+DefPrimitiveI('\mdseries', undef, undef,  forbidMath=>1, font=>{series=>'medium'});
+DefPrimitiveI('\bfseries', undef, undef,  forbidMath=>1, font=>{series=>'bold'});
 
-DefConstructorI('\rmfamily', undef, '',  forbidMath=>1, font=>{family=>'serif'});
-DefConstructorI('\sffamily', undef, '',  forbidMath=>1, font=>{family=>'sansserif'});
-DefConstructorI('\ttfamily', undef, '',  forbidMath=>1, font=>{family=>'typewriter'});
+DefPrimitiveI('\rmfamily', undef, undef,  forbidMath=>1, font=>{family=>'serif'});
+DefPrimitiveI('\sffamily', undef, undef,  forbidMath=>1, font=>{family=>'sansserif'});
+DefPrimitiveI('\ttfamily', undef, undef,  forbidMath=>1, font=>{family=>'typewriter'});
 
-DefConstructorI('\upshape',  undef, '', forbidMath=>1, font=>{shape=>'upright'});
-DefConstructorI('\itshape',  undef, '', forbidMath=>1, font=>{shape=>'italic'});
-DefConstructorI('\slshape',  undef, '', forbidMath=>1, font=>{shape=>'slanted'});
-DefConstructorI('\scshape',  undef, '', forbidMath=>1, font=>{shape=>'smallcaps'});
+DefPrimitiveI('\upshape',  undef, undef, forbidMath=>1, font=>{shape=>'upright'});
+DefPrimitiveI('\itshape',  undef, undef, forbidMath=>1, font=>{shape=>'italic'});
+DefPrimitiveI('\slshape',  undef, undef, forbidMath=>1, font=>{shape=>'slanted'});
+DefPrimitiveI('\scshape',  undef, undef, forbidMath=>1, font=>{shape=>'smallcaps'});
 
-DefConstructorI('\normalfont',    undef, '', font=>{family=>'serif', series=>'medium', shape=>'upright'});
-DefConstructorI('\verbatim@font', undef, '', font=>{family=>'typewriter', series=>'medium', shape=>'upright'});
+DefPrimitiveI('\normalfont',    undef, undef, font=>{family=>'serif', series=>'medium', shape=>'upright'});
+DefPrimitiveI('\verbatim@font', undef, undef, font=>{family=>'typewriter', series=>'medium', shape=>'upright'});
 Let(T_CS('\reset@font'),T_CS('\normalfont'));
 
 DefMacroI('\rmdefault',undef,'cmr');
@@ -3144,43 +3144,43 @@ Let(T_CS('\normalcolor'),T_CS('\relax'));
 # \symbol{num} ????
 
 # These in LaTeX, but not in the book...
-DefConstructorI('\textdollar',       undef, "\$");
-DefConstructorI('\textemdash',       undef, "\x{2014}"); # EM DASH
-DefConstructorI('\textendash',       undef, "\x{2013}"); # EN DASH
-DefConstructorI('\textexclamdown',   undef, UTF(0xA1)); # INVERTED EXCLAMATION MARK
-DefConstructorI('\textquestiondown', undef, UTF(0xBF));	# INVERTED QUESTION MARK
-DefConstructorI('\textquotedblleft', undef, "\x{201C}"); # LEFT DOUBLE QUOTATION MARK
-DefConstructorI('\textquotedblright',undef, "\x{201D}"); # RIGHT DOUBLE QUOTATION MARK
-DefConstructorI('\textquotedbl',     undef, "\"");       # plain ascii DOUBLE QUOTATION
-DefConstructorI('\textquoteleft',    undef, "\x{2018}");     # LEFT SINGLE QUOTATION MARK
-DefConstructorI('\textquoteright',   undef, "\x{2019}");    # RIGHT SINGLE QUOTATION MARK
-DefConstructorI('\textsterling',     undef, UTF(0xA3));	 # POUND SIGN
-DefConstructorI('\textasteriskcentered',undef, "*");
-DefConstructorI('\textbackslash',    undef, UTF(0x5C)); # REVERSE SOLIDUS
-DefConstructorI('\textbar',          undef, "|");
-DefConstructorI('\textbraceleft',    undef, "{");
-DefConstructorI('\textbraceright',   undef, "}");
-DefConstructorI('\textbullet',       undef, "\x{2022}");    # BULLET
-DefConstructorI('\textdaggerdbl',    undef, "\x{2020}"); # DOUBLE DAGGER
-DefConstructorI('\textdagger',       undef, "\x{2021}");    # DAGGER
-DefConstructorI('\textparagraph',    undef, UTF(0xB6)); # PILCROW SIGN
-DefConstructorI('\textperiodcentered',undef, "\x{22C5}"); # DOT OPERATOR
-DefConstructorI('\textsection',      undef, UTF(0xA7));	      # SECTION SIGN
+DefPrimitiveI('\textdollar',       undef, "\$");
+DefPrimitiveI('\textemdash',       undef, "\x{2014}"); # EM DASH
+DefPrimitiveI('\textendash',       undef, "\x{2013}"); # EN DASH
+DefPrimitiveI('\textexclamdown',   undef, UTF(0xA1)); # INVERTED EXCLAMATION MARK
+DefPrimitiveI('\textquestiondown', undef, UTF(0xBF));	# INVERTED QUESTION MARK
+DefPrimitiveI('\textquotedblleft', undef, "\x{201C}"); # LEFT DOUBLE QUOTATION MARK
+DefPrimitiveI('\textquotedblright',undef, "\x{201D}"); # RIGHT DOUBLE QUOTATION MARK
+DefPrimitiveI('\textquotedbl',     undef, "\"");       # plain ascii DOUBLE QUOTATION
+DefPrimitiveI('\textquoteleft',    undef, "\x{2018}");     # LEFT SINGLE QUOTATION MARK
+DefPrimitiveI('\textquoteright',   undef, "\x{2019}");    # RIGHT SINGLE QUOTATION MARK
+DefPrimitiveI('\textsterling',     undef, UTF(0xA3));	 # POUND SIGN
+DefPrimitiveI('\textasteriskcentered',undef, "*");
+DefPrimitiveI('\textbackslash',    undef, UTF(0x5C)); # REVERSE SOLIDUS
+DefPrimitiveI('\textbar',          undef, "|");
+DefPrimitiveI('\textbraceleft',    undef, "{");
+DefPrimitiveI('\textbraceright',   undef, "}");
+DefPrimitiveI('\textbullet',       undef, "\x{2022}");    # BULLET
+DefPrimitiveI('\textdaggerdbl',    undef, "\x{2021}"); # DOUBLE DAGGER
+DefPrimitiveI('\textdagger',       undef, "\x{2020}");    # DAGGER
+DefPrimitiveI('\textparagraph',    undef, UTF(0xB6)); # PILCROW SIGN
+DefPrimitiveI('\textperiodcentered',undef, "\x{22C5}"); # DOT OPERATOR
+DefPrimitiveI('\textsection',      undef, UTF(0xA7));	      # SECTION SIGN
 DefAccent('\textcircled',UTF(0x20DD),UTF(0x25EF)); # Defined in TeX.pool
-DefConstructorI('\textless',         undef, "<");
-DefConstructorI('\textgreater',      undef, ">");
-DefConstructorI('\textcopyright',    undef, UTF(0xA9)); # COPYRIGHT SIGN
-DefConstructorI('\textasciicircum',  undef, "^");
-DefConstructorI('\textasciitilde',   undef, "~");
-DefConstructorI('\textcompwordmark', undef, ""); # ???
-DefConstructorI('\textunderscore',   undef, "_");
-DefConstructorI('\textvisiblespace', undef, "\x{2420}"); # SYMBOL FOR SPACE;  Not really the right symbol!
-DefConstructorI('\textellipsis',     undef, "\x{2026}"); # HORIZONTAL ELLIPSIS
-DefConstructorI('\textregistered',   undef, UTF(0xAE)); # REGISTERED SIGN
-DefConstructorI('\texttrademark',    undef, "\x{2122}");  # TRADE MARK SIGN
+DefPrimitiveI('\textless',         undef, "<");
+DefPrimitiveI('\textgreater',      undef, ">");
+DefPrimitiveI('\textcopyright',    undef, UTF(0xA9)); # COPYRIGHT SIGN
+DefPrimitiveI('\textasciicircum',  undef, "^");
+DefPrimitiveI('\textasciitilde',   undef, "~");
+DefPrimitiveI('\textcompwordmark', undef, ""); # ???
+DefPrimitiveI('\textunderscore',   undef, "_");
+DefPrimitiveI('\textvisiblespace', undef, "\x{2420}"); # SYMBOL FOR SPACE;  Not really the right symbol!
+DefPrimitiveI('\textellipsis',     undef, "\x{2026}"); # HORIZONTAL ELLIPSIS
+DefPrimitiveI('\textregistered',   undef, UTF(0xAE)); # REGISTERED SIGN
+DefPrimitiveI('\texttrademark',    undef, "\x{2122}");  # TRADE MARK SIGN
 DefConstructor('\textsuperscript{}', "<ltx:text yoffset='0.5em' _noautoclose='1'>#1</ltx:text>");
-DefConstructorI('\textordfeminine',  undef, UTF(0xAA)); # FEMININE ORDINAL INDICATOR
-DefConstructorI('\textordmasculine', undef, UTF(0xBA)); # MASCULINE ORDINAL INDICATOR
+DefPrimitiveI('\textordfeminine',  undef, UTF(0xAA)); # FEMININE ORDINAL INDICATOR
+DefPrimitiveI('\textordmasculine', undef, UTF(0xBA)); # MASCULINE ORDINAL INDICATOR
 DefMacroI('\SS',undef, 'SS');			       # ?
 
 
@@ -3188,22 +3188,22 @@ DefConstructor('\sqrtsign Digested',
 	       "<ltx:XMApp><ltx:XMTok meaning='square-root'/><ltx:XMArg>#1</ltx:XMArg></ltx:XMApp>");
 
 
-DefConstructorI('\mathparagraph',undef,UTF(0xB6));
-DefConstructorI('\mathsection',undef,UTF(0xA7));
-DefConstructorI('\mathdollar',undef,'$');
-DefConstructorI('\mathsterling',undef,UTF(0xA3));
-DefConstructorI('\mathunderscore',undef,'_');
-DefConstructorI('\mathellipsis',undef,"\x{2026}");
+DefPrimitiveI('\mathparagraph',undef,UTF(0xB6));
+DefPrimitiveI('\mathsection',  undef,UTF(0xA7));
+DefPrimitiveI('\mathdollar',   undef,'$');
+DefPrimitiveI('\mathsterling', undef,UTF(0xA3));
+DefPrimitiveI('\mathunderscore',undef,'_');
+DefPrimitiveI('\mathellipsis', undef,"\x{2026}");
 
 # Are these glyph "pieces" or use alone?
 DefMathI('\arrowvert', undef, "|",       role=>'VERTBAR');
 DefMathI('\Arrowvert', undef, "\x{2225}",role=>'VERTBAR');
 
 # The following are glyph "pieces"...
-DefConstructorI('\braceld',undef,"\x{239D}");#   left brace down part
-DefConstructorI('\bracelu',undef,"\x{239B}");#   left brace up part
-DefConstructorI('\bracerd',undef,"\x{23A0}");#   right brace down part
-DefConstructorI('\braceru',undef,"\x{239E}");#   right brace up part
+DefPrimitiveI('\braceld',undef,"\x{239D}");#   left brace down part
+DefPrimitiveI('\bracelu',undef,"\x{239B}");#   left brace up part
+DefPrimitiveI('\bracerd',undef,"\x{23A0}");#   right brace down part
+DefPrimitiveI('\braceru',undef,"\x{239E}");#   right brace up part
 
 DefMathI('\cdotp',      undef,"\x{22C5}", role=>'MULOP');
 DefMathI('\ldotp',      undef,".",        role=>'MULOP');
@@ -3215,8 +3215,8 @@ DefMathI('\ointop',     undef,"\x{222E}", role=>'INTOP', scriptpos=>\&doScriptpo
 # \rhook
 Let(T_CS('\gets'),T_CS('\leftarrow'));
 
-DefConstructorI('\lmoustache',undef,"\x{23B0}");
-DefConstructorI('\rmoustache',undef,"\x{23B1}");
+DefPrimitiveI('\lmoustache',undef,"\x{23B0}");
+DefPrimitiveI('\rmoustache',undef,"\x{23B1}");
 DefMathI('\mapstochar',  undef,"\x{21A6}", role=>'ARROW', meaning=>'maps-to');
 DefMathI('\owns',        undef,"\x{220B}", role=>'RELOP', meaning=>'contains');
 
@@ -3448,7 +3448,7 @@ DefPrimitiveI('\makeatother', undef, sub { AssignCatcode('@'=>CC_OTHER, 'local')
 #**********************************************************************
 #**********************************************************************
 # Sundry (is this ams ?)
-DefConstructor('\textprime',UTF(0xB4)); # ACUTE ACCENT
+DefPrimitiveI('\textprime',undef,UTF(0xB4)); # ACUTE ACCENT
 
 Let(T_CS('\endgraf'),T_CS('\par'));
 Let(T_CS('\endline'),T_CS('\cr'));
