@@ -37,7 +37,7 @@ sub new {
 # is probably only important for latexml implementations?
 sub input {
   my($self,$name,$types,%options)=@_;
-  $name = $name->toString if ref $name;
+  $name = ToString($name) if ref $name;
   # Try to find a Package implementing $name.
   $name = $1 if $name =~ /^\{(.*)\}$/; # just in case
   my $filecontents = $STATE->lookupValue($name.'_contents');
@@ -308,7 +308,7 @@ sub readKeyword {
   my($self,@keywords)=@_;
   $self->skipSpaces;
   foreach my $keyword (@keywords){
-    $keyword = $keyword->toString if ref $keyword;
+    $keyword = ToString($keyword) if ref $keyword;
     my @tomatch=split('',uc($keyword));
     my @matched=();
     my $tok;
