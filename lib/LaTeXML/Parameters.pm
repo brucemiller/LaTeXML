@@ -45,9 +45,8 @@ sub new {
 		  ($value) = $inner->reparseArgument($gullet,$value); }
 		$value; },
 	      reversion=>sub{ my($arg,$inner)=@_;
-			      (T_BEGIN, ($inner
-					 ? $inner->revertArguments($arg)
-					 : (defined $arg ? $arg->revert :())),
+			      (T_BEGIN,
+			       ($inner ? $inner->revertArguments($arg) : Revert($arg)),
 			       T_END); }},
       Optional=>{reader=>sub {
 		   my($gullet,$default,$inner)=@_;
@@ -60,14 +59,14 @@ sub new {
 		 optional=>1,
 		 reversion=>sub{ my($arg,$default,$inner)=@_;
 				 if ($arg) {
-				   (T_OTHER('['), ($inner
-						   ? $inner->revertArguments($arg)
-						   : $arg->revert), T_OTHER(']')); }
+				   (T_OTHER('['),
+				    ($inner ? $inner->revertArguments($arg) : Revert($arg)),
+				    T_OTHER(']')); }
 			    else { (); }}},
       Until     => { reader => sub { my($gullet,$until)=@_;
 				     $gullet->readUntil($until); },
 		     reversion=>sub{ my($arg,$until)=@_;
-				     ($arg->revert, $until->revert); }},
+				     (Revert($arg), Revert($until)); }},
     );
 
 # Parsing a parameter list spec.
@@ -163,7 +162,7 @@ sub revertArguments {
     if(my $retoker = $$parameter{reversion}){
       push(@tokens,&$retoker($arg,@{$$parameter{extra}||[]})); }
     else {
-      push(@tokens,$arg->revert) if ref $arg; }}
+      push(@tokens,Revert($arg)) if ref $arg; }}
   @tokens; }
 
 sub readArguments {
@@ -174,7 +173,7 @@ sub readArguments {
     my $value = $parameter->read($gullet);
     if((!defined $value) && !$$parameter{optional}){
       my $tok = $gullet->readToken;
-      Error(":expected:".ToString($parameter)." Missing argument ".ToString($parameter)." for ".ToString($fordefn)
+      Error(":expected:".Stringify($parameter)." Missing argument ".Stringify($parameter)." for ".Stringify($fordefn)
 	    .($tok ? "; next is ".Stringify($tok) : " input is empty"));
       $gullet->unread($tok) if $tok; }
     push(@args,$value) unless $$parameter{novalue}; }
@@ -189,7 +188,7 @@ sub readArgumentsAndDigest {
     my $value = $parameter->read($gullet);
     if((!defined $value) && !$$parameter{optional}){
       my $tok = $gullet->readToken;
-      Error(":expected:".ToString($parameter)." Missing argument ".ToString($parameter)." for ".ToString($fordefn)
+      Error(":expected:".Stringify($parameter)." Missing argument ".Stringify($parameter)." for ".Stringify($fordefn)
 	    .($tok ? "; next is ".Stringify($tok) : " input is empty"));
       $gullet->unread($tok) if $tok; }
     if(!$$parameter{novalue}){
