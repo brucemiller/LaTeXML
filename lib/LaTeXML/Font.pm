@@ -241,6 +241,7 @@ sub merge {
 # Use Unicode properties to determine font merging.
 sub specialize {
   my($self,$string)=@_;
+  return $self unless defined $string;
   my($family,$series,$shape,$size,$color,$forcebold,$forceshape)=@$self;
 print STDERR "Specialized font ".ToString($self)." for $string " if $LaTeXML::Font::DEBUG;
 
