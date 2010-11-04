@@ -39,8 +39,6 @@ our %textcomp_accents
       newtie           =>'\t');
 map(Let(T_CS('\\'.$_)=>T_CS($textcomp_accents{$_})),keys %textcomp_accents);
 
-#DefConstructor('\textcircled{}', "<ltx:text framed='circle'>#1</ltx:text>"); # ?
-
 ## \t
 
 #======================================================================
@@ -52,7 +50,7 @@ our %textcomp_numerals
     textonequarter     =>UTF(0xBC),
     textonehalf        =>UTF(0xBD),
     textthreequarters  =>UTF(0xBE));
-map(DefConstructor('\\'.$_,$textcomp_numerals{$_}),keys %textcomp_numerals);
+map(DefPrimitiveI('\\'.$_,undef,$textcomp_numerals{$_}),keys %textcomp_numerals);
 
 # Hmm, perhaps should be a font variant?
 our %textcomp_oldstyle
@@ -83,7 +81,7 @@ our %textcomp_pairs
     textlquill         =>"\x{2045}",
     textrquill         =>"\x{2046}",
 );
-map(DefConstructor('\\'.$_,$textcomp_pairs{$_}),keys %textcomp_pairs);
+map(DefPrimitiveI('\\'.$_,undef,$textcomp_pairs{$_}),keys %textcomp_pairs);
 
 #======================================================================
 # Monetary and Commercial symbols
@@ -117,7 +115,7 @@ our %textcomp_money
     textregistered     =>UTF(0xAE),
     textservicemark    =>"\x{2120}",
     texttrademark      =>"\x{2122}");
-map(DefConstructor('\\'.$_,$textcomp_money{$_}),keys %textcomp_money);
+map(DefPrimitiveI('\\'.$_,undef,$textcomp_money{$_}),keys %textcomp_money);
 
 #======================================================================
 # Footnote symbols
@@ -134,7 +132,7 @@ our %textcomp_footnote
     textperiodcentered =>UTF(0xB7),
     textpilcrow        =>UTF(0xB6),
     textsection        =>UTF(0xA7));
-map(DefConstructor('\\'.$_,$textcomp_footnote{$_}),keys %textcomp_footnote);
+map(DefPrimitiveI('\\'.$_,undef,$textcomp_footnote{$_}),keys %textcomp_footnote);
 
 #======================================================================
 # Scientific symbols
@@ -153,7 +151,7 @@ our %textcomp_scientific
     textpm             =>UTF(0xB1),
     textsurd           =>"\x{212A}",
     texttimes          =>UTF(0xD7));
-map(DefConstructor('\\'.$_,$textcomp_scientific{$_}),keys %textcomp_scientific);
+map(DefPrimitiveI('\\'.$_,undef,$textcomp_scientific{$_}),keys %textcomp_scientific);
 
 #======================================================================
 # Various
@@ -188,7 +186,7 @@ our %textcomp_various
     textthreequartersemdash =>"\x{2014}", # whole em dash, actually
     texttildelow            =>"~", # ??
     texttwelveudash         =>"\x{2014}"); # whole em dash, actually.
-map(DefConstructor('\\'.$_,$textcomp_various{$_}),keys %textcomp_various);
+map(DefPrimitiveI('\\'.$_,undef,$textcomp_various{$_}),keys %textcomp_various);
 
 
 #======================================================================

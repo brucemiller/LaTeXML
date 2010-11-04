@@ -294,7 +294,7 @@ DefMacro('\endpage', '\pageref{LastPage}{#1}');
 DefMacro('\flushing','');
 DefMacro('\triggerpar','\par');
 DefMacro('\fullinterlineskip','');
-DefRegister('\footbox'=>LaTeXML::Box->new());
+DefRegister('\footbox'=>Box());
 DefRegister('\intertabularlinepenalty'=>Number('100'));
 
 # These are called obsolete, but I can't even find them in earlier RevTeX's!

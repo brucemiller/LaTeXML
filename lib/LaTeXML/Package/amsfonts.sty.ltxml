@@ -24,10 +24,10 @@ DefConstructor('\mathfrak{}','#1', bounded=>1, requireMath=>1, font=>{family=>'f
 DefMacro('\frak{}','\mathfrak{#1}');
 
 # Not necessarily math
-DefConstructor('\checkmark',"\x{2713}"); # CHECK MARK
-DefConstructor('\circledR',UTF(0xAE)); # REGISTERED SIGN
-DefConstructor('\maltese',"\x{2720}"); # MALTESE CROSs
-DefConstructor('\yen',UTF(0xA5)); # YEN SIGN
+DefPrimitiveI('\checkmark', undef,"\x{2713}"); # CHECK MARK
+DefPrimitiveI('\circledR',  undef,UTF(0xAE)); # REGISTERED SIGN
+DefPrimitiveI('\maltese',   undef,"\x{2720}"); # MALTESE CROSs
+DefPrimitiveI('\yen',       undef,UTF(0xA5)); # YEN SIGN
 
 # Math
 

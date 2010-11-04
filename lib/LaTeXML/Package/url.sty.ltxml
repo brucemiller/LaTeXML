@@ -58,11 +58,11 @@ DefMacro('\@Url Token', sub {
       $open = T_OTHER('{'); $close = T_OTHER('}');
       $url = $gullet->readBalanced; }
     else {
-      $close = $open = T_OTHER($open->toString);
+      $close = $open = T_OTHER($open->getString);
       $url = $mouth->readTokens($close); }}
-  my @toks = map(T_OTHER($_->toString),$url->unlist);
+  my @toks = map(T_OTHER(ToString($_)),$url->unlist);
   (Invocation(T_CS('\@@Url'),
-	      T_OTHER($cmd->toString),Tokens($open),Tokens($close),
+	      T_OTHER(ToString($cmd)),Tokens($open),Tokens($close),
 	      Tokens(@toks),
 	      Tokens(T_CS('\UrlFont'),T_CS('\UrlLeft'),@toks,T_CS('\UrlRight')))->unlist,
    T_CS('\endgroup')); });

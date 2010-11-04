@@ -153,8 +153,8 @@ Let(T_CS('\plainfootnote'),T_CS('\footnote'));
 
 DefMacro('\newline',"\n");
 
-DefConstructorI('\textfonti',  undef, '', font=>{family=>'serif', series=>'medium', shape=>'upright'});
-DefConstructorI('\textfontii', undef, '', font=>{family=>'serif', series=>'medium', shape=>'upright', size=>'small'});
+DefPrimitiveI('\textfonti',  undef, '', font=>{family=>'serif', series=>'medium', shape=>'upright'});
+DefPrimitiveI('\textfontii', undef, '', font=>{family=>'serif', series=>'medium', shape=>'upright', size=>'small'});
 
 DefConstructor('\spreadlines Dimension','');
 
@@ -345,10 +345,10 @@ DefConstructorI('\@cfrac',undef,
 		properties=>sub{ (style=>LookupValue('CFRACSTYLE')); },
 	       reversion=>sub {
 		 my($whatsit)=@_;
-		 (T_CS('cfrac'),
-		  $whatsit->getProperty('top')->revert,
+		 (T_CS('\cfrac'),
+		  Revert($whatsit->getProperty('top')),
 		  T_CS("\\\\"),
-		  $whatsit->getProperty('bottom')->revert); });
+		  Revert($whatsit->getProperty('bottom'))); });
 
 DefMacro('\endcfrac',sub {
   (map(T_CS('\egroup'),1..LookupValue('\cfraccount@')->valueOf), T_CS('\@endcfrac')); });

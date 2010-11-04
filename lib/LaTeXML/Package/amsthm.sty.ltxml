@@ -108,7 +108,7 @@ DefEnvironment('{@proof} []',
 		   my($stomach,$whatsit)=@_;
 		   my $name = $whatsit->getArg(1);
 		   my @toks=(T_BEGIN,T_CS('\itshape'),
-			    ($name ? $name->revert : (T_CS('\proofname'))),
+			    ($name ? Revert($name) : (T_CS('\proofname'))),
 			     T_OTHER('.'),
 			     T_END);
 		   $whatsit->setProperties(title=>Digest(Tokens(@toks)));

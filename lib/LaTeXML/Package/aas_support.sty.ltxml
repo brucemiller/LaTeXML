@@ -436,9 +436,9 @@ DefConstructor('\dataset OptionalSemiverbatim Semiverbatim',
 DefMacro('\ion{}{}','{#1 \uppercase{\romannumeral #2}}');
 
 # NOTE: These are almost totally wrong...
-DefConstructor('\sbond',"\x{2212}");
-DefConstructor('\dbond',"=");
-DefConstructor('\tbond',"\x{2261}");
+DefPrimitiveI('\sbond',undef,"\x{2212}");
+DefPrimitiveI('\dbond',undef,"=");
+DefPrimitiveI('\tbond',undef,"\x{2261}");
 
 #======================================================================
 # 2.17.3 Fractions
@@ -458,45 +458,45 @@ Let(T_CS('\slantfrac'),T_CS('\case'));
 # See aassymbols document.
 # Table 1: Additional AASTeX symbols
 
-DefConstructor('\micron',UTF(0xB5)."m");
+DefPrimitiveI('\micron',undef,UTF(0xB5)."m");
 DefMacro('\Sun','\sun');
 DefMacro('\Sol','\sun');
-DefConstructor('\sun',     "\x{2609}");
-DefConstructor('\Mercury', "\x{263F}");
-DefConstructor('\Venus',   "\x{2640}");
+DefPrimitiveI('\sun',     undef,"\x{2609}");
+DefPrimitiveI('\Mercury', undef,"\x{263F}");
+DefPrimitiveI('\Venus',   undef,"\x{2640}");
 DefMacro('\Earth','\earth');
 DefMacro('\Terra','\earth');
-DefConstructor('\earth',   "\x{2295}");
-DefConstructor('\Mars',    "\x{2642}");
-DefConstructor('\Jupiter', "\x{2643}");
-DefConstructor('\Saturn',  "\x{2644}");
-DefConstructor('\Uranus',  "\x{2645}");
-DefConstructor('\Neptune', "\x{2646}");
-DefConstructor('\Pluto',   "\x{2647}");
-DefConstructor('\Moon',     "\x{263D}"); # Not sure if this is the right Moon?
+DefPrimitiveI('\earth',   undef,"\x{2295}");
+DefPrimitiveI('\Mars',    undef,"\x{2642}");
+DefPrimitiveI('\Jupiter', undef,"\x{2643}");
+DefPrimitiveI('\Saturn',  undef,"\x{2644}");
+DefPrimitiveI('\Uranus',  undef,"\x{2645}");
+DefPrimitiveI('\Neptune', undef,"\x{2646}");
+DefPrimitiveI('\Pluto',   undef,"\x{2647}");
+DefPrimitiveI('\Moon',    undef,"\x{263D}"); # Not sure if this is the right Moon?
 DefMacro('\Luna','\Moon');
-DefConstructor('\Aries',       "\x{2648}");
+DefPrimitiveI('\Aries',   undef,"\x{2648}");
 DefMacro('\VEq','\Aries');	# Vernal Equinox
-DefConstructor('\Taurus',      "\x{2649}");
-DefConstructor('\Gemini',      "\x{264A}");
-DefConstructor('\Cancer',      "\x{264B}");
-DefConstructor('\Leo',         "\x{264C}");
-DefConstructor('\Virgo',       "\x{264D}");
-DefConstructor('\Libra',       "\x{264E}");
+DefPrimitiveI('\Taurus',  undef,"\x{2649}");
+DefPrimitiveI('\Gemini',  undef,"\x{264A}");
+DefPrimitiveI('\Cancer',  undef,"\x{264B}");
+DefPrimitiveI('\Leo',     undef,"\x{264C}");
+DefPrimitiveI('\Virgo',   undef,"\x{264D}");
+DefPrimitiveI('\Libra',   undef,"\x{264E}");
 DefMacro('\AEq','\Libra');	# Autumnal Equinox
-DefConstructor('\Scorpius',    "\x{264F}");
-DefConstructor('\Sagittarius', "\x{2650}");
-DefConstructor('\Capricornus', "\x{2651}");
-DefConstructor('\Aquarius',    "\x{2652}");
-DefConstructor('\Pisces',      "\x{2653}");
+DefPrimitiveI('\Scorpius',undef,"\x{264F}");
+DefPrimitiveI('\Sagittarius', undef,"\x{2650}");
+DefPrimitiveI('\Capricornus', undef,"\x{2651}");
+DefPrimitiveI('\Aquarius',undef,"\x{2652}");
+DefPrimitiveI('\Pisces',  undef,"\x{2653}");
 
-DefConstructor('\diameter',"\x{2300}");
-DefConstructor('\sq',"\x{25A1}");
+DefPrimitiveI('\diameter',undef,"\x{2300}");
+DefPrimitiveI('\sq',      undef,"\x{25A1}");
 
-DefConstructor('\arcdeg',UTF(0xB0));
+DefPrimitiveI('\arcdeg',UTF(0xB0));
 Let(T_CS('\degr'),T_CS('\arcdeg'));
-DefConstructor('\arcmin',"\x{2032}");
-DefConstructor('\arcsec',"\x{2033}");
+DefPrimitiveI('\arcmin',  undef,"\x{2032}");
+DefPrimitiveI('\arcsec',  undef,"\x{2033}");
 
 # Hmm, will this work?
 DefConstructor('\aas@@fstack{}',
@@ -518,20 +518,20 @@ DefMacro('\farcs','\aas@fstack{\prime\prime}');
 DefMacro('\fp','\aas@fstack{p}');
 
 DefMacro('\onehalf','\ifmmode\case{1}{2}\else\text@onehalf\fi');
-DefConstructor('\text@onehalf',UTF(0xBD));
+DefPrimitiveI('\text@onehalf',  undef,UTF(0xBD));
 DefMacro('\onethird','\ifmmode\case{1}{3}\else\text@onethird\fi');
-DefConstructor('\text@onethird',"\x{2153}");
+DefPrimitiveI('\text@onethird', undef,"\x{2153}");
 DefMacro('\twothirds','\ifmmode\case{2}{3}\else\text@twothirds\fi');
-DefConstructor('\text@twothirds',"\x{2154}");
+DefPrimitiveI('\text@twothirds',undef,"\x{2154}");
 DefMacro('\onequarter','\ifmmode\case{1}{4}\else\text@onequarter\fi');
-DefConstructor('\text@onequarter',UTF(0xBC));
+DefPrimitiveI('\text@onequarter',undef, UTF(0xBC));
 DefMacro('\threequarters','\ifmmode\case{3}{4}\else\text@threequarters\fi');
-DefConstructor('\text@threequarters',UTF(0xBE));
-DefConstructor('\ubvr',"UBVR",    bounded=>1, font=>{shape=>'italic'});
-DefConstructor('\ub',"U\x{2000}B",bounded=>1, font=>{shape=>'italic'});
-DefConstructor('\bv',"B\x{2000}V",bounded=>1, font=>{shape=>'italic'});
-DefConstructor('\vr',"V\x{2000}R",bounded=>1, font=>{shape=>'italic'});
-DefConstructor('\ur',"U\x{2000}R",bounded=>1, font=>{shape=>'italic'});
+DefPrimitiveI('\text@threequarters',undef, UTF(0xBE));
+DefPrimitiveI('\ubvr',undef, "UBVR",    bounded=>1, font=>{shape=>'italic'});
+DefPrimitiveI('\ub',  undef,"U\x{2000}B",bounded=>1, font=>{shape=>'italic'});
+DefPrimitiveI('\bv',  undef,"B\x{2000}V",bounded=>1, font=>{shape=>'italic'});
+DefPrimitiveI('\vr',  undef,"V\x{2000}R",bounded=>1, font=>{shape=>'italic'});
+DefPrimitiveI('\ur',  undef,"U\x{2000}R",bounded=>1, font=>{shape=>'italic'});
 
 # Remaining tables standard LaTeX or amssymb
 RequirePackage('latexsym');

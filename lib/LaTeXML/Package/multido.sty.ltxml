@@ -38,7 +38,7 @@ DefMacro('\multido{}{Number}{}',sub {
     elsif($type eq 'n'){ $step = $gullet->readNumber; }
     elsif($type eq 'i'){ $step = $gullet->readNumber; }
     elsif($type eq 'r'){ $step = $gullet->readFloat; }
-    push(@expansion,T_CS('\def'),$var,T_BEGIN,$init->revert,T_END);
+    push(@expansion,T_CS('\def'),$var,T_BEGIN,Revert($init),T_END);
     push(@vars,[$var,$init,$step]);
     last unless $gullet->readKeyword(",");
   }
@@ -50,7 +50,7 @@ DefMacro('\multido{}{Number}{}',sub {
     push(@expansion, $actions->unlist);
     foreach my $entry (@vars){
       $$entry[1] = $$entry[1]->add($$entry[2]);
-      push(@expansion,T_CS('\def'),$$entry[0],T_BEGIN,$$entry[1]->revert,T_END); }}
+      push(@expansion,T_CS('\def'),$$entry[0],T_BEGIN,Revert($$entry[1]),T_END); }}
   @expansion; });
 
 1;

@@ -161,7 +161,6 @@ DefRegister('\postdemoskip'=>Glue(0));
 DefRegister('\predefinitionskip'=>Glue(0));
 DefRegister('\postdefinitionskip'=>Glue(0));
 DefMacro('\definitionfont','\rm');
-#DefConstructor('\definition{} Until:\enddefinition',
 DefConstructor('\definition{} DigestUntil:\enddefinition',
 	       "<ltx:theorem class='definition' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title>#1</ltx:title>"
@@ -172,7 +171,6 @@ Let(T_CS('\enddefinition'),T_CS('\relax'));
 
 # \remark..\endremark
 DefMacro('\remarkfont','\rm');
-#DefConstructor('\remark{} Until:\endremark',
 DefConstructor('\remark{} DigestUntil:\endremark',
 	       "<ltx:theorem class='remark' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title>#1</ltx:title>"
@@ -181,7 +179,6 @@ DefConstructor('\remark{} DigestUntil:\endremark',
 	       properties=> sub { RefStepID('theorem') });
 Let(T_CS('\endremark'),T_CS('\relax'));
 
-#DefConstructor('\example{} Until:\endexample',
 DefConstructor('\example{} DigestUntil:\endexample',
 	       "<ltx:theorem class='example' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title>#1</ltx:title>"
@@ -190,7 +187,6 @@ DefConstructor('\example{} DigestUntil:\endexample',
 	       properties=> sub { RefStepID('theorem') });
 Let(T_CS('\endexample'),T_CS('\relax'));
 
-#DefConstructor('\demo{} Until:\enddemo',
 DefConstructor('\demo{} DigestUntil:\enddemo',
 	       "<ltx:theorem class='demonstration' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title>#1</ltx:title>"
@@ -205,7 +201,6 @@ DefRegister('\rosteritemwd'=>Dimension(0));
 NewCounter('roster','document',idprefix=>'I');
 NewCounter('rosteritem','roster',idprefix=>'i');
 DefMacro('\therosteritem{}','\rom{(#1)}');
-#DefConstructor('\roster Until:\endroster',
 DefConstructor('\roster DigestUntil:\endroster',
 	       "<ltx:enumerate>#body</ltx:enumerate>",
 	       bounded=>1,
@@ -216,7 +211,6 @@ DefConstructor('\roster@item',
 	       properties=> sub { RefStepID('rosteritem') });
 Let(T_CS('\endroster'),T_CS('\relax'));
 
-#DefConstructor('\block Until:\endblock',
 DefConstructor('\block DigestUntil:\endblock',
 	       "<ltx:quote>#1</ltx:quote>");
 Let(T_CS('\endblock'),T_CS('\relax'));
@@ -266,7 +260,7 @@ DefMacro('\PSAMSFonts','');
 RawTeX('\newif\ifPSAMSFonts\PSAMSFontstrue');
 DefConstructor('\qed',"?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
 
-DefConstructor('\tildechar',"~",font=>{family=>'typewriter'});
+DefPrimitiveI('\tildechar',undef,"~",font=>{family=>'typewriter'});
 DefMacro('\breakcheck','');
 DefRegister('\normalparindent'=>Dimension(0));
 DefMacro('\usualspace',' ');
@@ -413,7 +407,7 @@ DefMacro('\CMP',       '\@end@bibfield\@bibfield{CMP}CMP ');
 
 # \moreref, \transl ????
 #======================================================================
-DefConstructorI('\smc', undef,'',  font=>{shape=>'smallcaps'});
+DefPrimitiveI('\smc', undef,undef,  font=>{shape=>'smallcaps'});
 
 #======================================================================
 1;

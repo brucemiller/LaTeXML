@@ -46,7 +46,7 @@ sub ReadPSDimension {
 							     { $scale->multiply($s * $d->valueOf); }}
   else{ Warn(":expected:<number> Missing number, treated as zero.");          Dimension(0); }}
 
-sub b_reversion { $_[0] ? (T_BEGIN, $_[0]->revert, T_END) :(); }
+sub b_reversion { $_[0] ? (T_BEGIN, Revert($_[0]), T_END) :(); }
 
 # reads {PSDimension} and does not complain if argument is missing
 sub ReadBracketedPSDimension {
@@ -96,8 +96,8 @@ sub ReadPSOrigin {
   else { return; }}
 
 DefParameterType('PSOrigin',\&ReadPSOrigin,
-		 reversion=>sub { ($_[0] ? (T_BEGIN, $_[0]->getX->negate->revert,T_OTHER(','),
-					    $_[0]->getY->negate->revert,T_END) :()); });
+		 reversion=>sub { ($_[0] ? (T_BEGIN, Revert($_[0]->getX->negate),T_OTHER(','),
+					    Revert($_[0]->getY->negate),T_END) :()); });
 
 sub ReadPSCoord { 
   ReadPair($_[0],'PSDimension',LookupValue('\psxunit'), LookupValue('\psyunit')); }
@@ -163,7 +163,7 @@ DefParameterType('Arrows',\&ReadArrows,
   sub valueOf    { $_[0][0]->valueOf;  }
   sub ptValue    { $_[0][0]->ptValue;  }
 
-  sub revert     { (Explode($_[0][2]), (ref $_[0][1] ? $_[0][1]->revert() : Explode($_[0][1]))); }
+  sub revert     { (Explode($_[0][2]), Revert($_[0][1])); }
 
   1; 
 }
@@ -196,7 +196,7 @@ sub ReadPSDimFloat {
   $gullet->skipSpaces; my $f = ReadFloat($gullet);
   $gullet->skipSpaces; ($dim && $f) ? Pair($dim, $f) : undef; }
 DefParameterType('PSDimFloat',\&ReadPSDimFloat,
-		 reversion=>sub { ($_[0] ? ($_[0]->getX->revert, T_SPACE, $_[0]->getY->revert) :()); });
+		 reversion=>sub { ($_[0] ? (Revert($_[0]->getX), T_SPACE, Revert($_[0]->getY)) :()); });
 
 # read a pair of a dimensions, separated by space; if only one dimension is found,
 # returns a pair where both members are the same
@@ -206,7 +206,7 @@ sub ReadPSDimDim {
   $gullet->skipSpaces; my $dim2 = ReadPSDimension($gullet);
   $gullet->skipSpaces; $dim1 ? Pair($dim1, $dim2 || $dim1) : undef; }
 DefParameterType('PSDimDim',\&ReadPSDimDim,
-		 reversion=>sub { ($_[0] ? ($_[0]->getX->revert, T_SPACE, $_[0]->getY->revert) :()); });
+		 reversion=>sub { ($_[0] ? (Revert($_[0]->getX), T_SPACE, Revert($_[0]->getY)) :()); });
 
 
 ##############################################################################

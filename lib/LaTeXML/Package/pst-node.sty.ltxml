@@ -32,7 +32,7 @@ sub ReadRoundParenFloat {
   else { return; }}
 
 DefParameterType('RoundParenFloat',\&ReadRoundParenFloat,
-		 reversion=>sub { ($_[0] ? (T_OTHER('('),$_[0]->revert,T_OTHER(')')) :()); },
+		 reversion=>sub { ($_[0] ? (T_OTHER('('),Revert($_[0]),T_OTHER(')')) :()); },
 		 optional=>1);
 
 ###########################################################################

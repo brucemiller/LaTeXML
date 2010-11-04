@@ -17,18 +17,18 @@ use LaTeXML::Package;
 # Not much to do for LaTeXML.
 
 
-DefConstructor('\frakfamily', '', font=>{family=>'fraktur'});
+DefPrimitiveI('\frakfamily', undef,undef, font=>{family=>'fraktur'});
 # These font families are otherwise unrecognized...
-DefConstructor('\swabfamily', '', font=>{family=>'schwabacher'});
-DefConstructor('\gothfamily', '', font=>{family=>'gothic'});
+DefPrimitiveI('\swabfamily', undef,undef, font=>{family=>'schwabacher'});
+DefPrimitiveI('\gothfamily', undef,undef, font=>{family=>'gothic'});
 
 # SHOULD set up fancy initials...
 DefMacro('\initfamily','');
-DefPrimitive('\fraklines',undef);
+DefPrimitiveI('\fraklines',undef,undef);
 
-DefConstructor('\yinipar{}','\par\noindent\yinitpar{#1}');
+DefMacro('\yinipar{}','\par\noindent\yinitpar{#1}');
 # SHOULD set the initial in fancy font.
-DefConstructor('\yinitpar{}','#1');
+DefMacro('\yinitpar{}','#1');
 
 # Nothing likely to every be used, but for completeness...
 DefMacro('\gothdefault','ygoth');

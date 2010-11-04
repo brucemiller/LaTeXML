@@ -41,15 +41,15 @@ our %fontup=('tiny'=>'script','script'=>'footnote','footnote'=>'small','small'=>
 our %fontdn=('tiny'=>'tiny','script'=>'tiny','footnote'=>'script','small'=>'footnote','normal'=>'small',
 	     'large'=>'normal','Large'=>'large','LARGE'=>'Large','huge'=>'LARGE','Huge'=>'huge','Huge'=>'Huge');
 
-DefConstructorI('\larger',undef,'', font=>{ size=>$fontup{LookupValue('font')->getSize} });
-DefConstructorI('\smaller',undef,'',font=>{ size=>$fontdn{LookupValue('font')->getSize} });
+DefPrimitiveI('\larger',undef,'', font=>{ size=>$fontup{LookupValue('font')->getSize} });
+DefPrimitiveI('\smaller',undef,'',font=>{ size=>$fontdn{LookupValue('font')->getSize} });
 
 # \@xsetfontize
-DefConstructor('\TINY',          '', font=>{size=>'TINY'});
-DefConstructor('\Tiny',          '', font=>{size=>'Tiny'});
+DefPrimitiveI('\TINY', undef, font=>{size=>'TINY'});
+DefPrimitiveI('\Tiny', undef, font=>{size=>'Tiny'});
 Let(T_CS('\SMALL'),T_CS('\scriptsize'));
 Let(T_CS('\Small'),T_CS('\footnotesize'));
-DefConstructor('\HUGE',          '', font=>{size=>'HUGE'});
+DefPrimitiveI('\HUGE', undef, font=>{size=>'HUGE'});
 Let(T_CS('\upn'),T_CS('\textup'));
 
 # #======================================================================
@@ -208,7 +208,6 @@ DefMacroI('\bibsetup',undef,Tokens());
 # commands for bibliography, indices
 # \end{document}
 
-
 # TOC's should be built by latexml... ?
 DefMacro('\tocpart{}{}{}',Tokens());
 DefMacro('\tocchapter{}{}{}',Tokens());
@@ -226,7 +225,7 @@ DefRegister('\normalparindent'=>Dimension('12pt'));
 DefRegister('\abovecaptionskip'=>Glue('12pt'));
 DefRegister('\belowcaptionskip'=>Glue('12pt'));
 DefRegister('\captionindent'=>Glue('3pc'));
-DefConstructorI('\nonbreakingspace',undef,UTF(0xA0));
+DefPrimitiveI('\nonbreakingspace',undef,UTF(0xA0));
 DefMacroI('\fullwidthdisplay',undef,Tokens());
 DefRegister('\listisep'=>Glue(0));
 
