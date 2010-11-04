@@ -100,21 +100,21 @@ DefParameterType('Balanced',   sub{$_[0]->readBalanced; });
 
 # Read a Semiverbatim argument; ie w/ most catcodes neutralized.
 DefParameterType('Semiverbatim',sub{ $_[0]->readArg; }, semiverbatim=>1,
-		 reversion=>sub { (T_BEGIN,$_[0]->revert,T_END); });
+		 reversion=>sub { (T_BEGIN,Revert($_[0]),T_END); });
 
 # Read a LaTeX-style optional argument (ie. in []), but the contents read as Semiverbatim.
 DefParameterType('OptionalSemiverbatim',sub{ $_[0]->readOptional; },
 		 semiverbatim=>1, optional=>1,
-		 reversion=>sub { ($_[0] ? (T_OTHER('['),$_[0]->revert,T_OTHER(']')) : ()); });
+		 reversion=>sub { ($_[0] ? (T_OTHER('['),Revert($_[0]),T_OTHER(']')) : ()); });
 
 # Read an argument that will not be digested.
 DefParameterType('Undigested',  sub { $_[0]->readArg; }, undigested=>1,
-		reversion=>sub {  (T_BEGIN,$_[0]->revert,T_END); });
+		reversion=>sub {  (T_BEGIN,Revert($_[0]),T_END); });
 
 # Read a LaTeX-style optional argument (ie. in []), but it will not be digested.
 DefParameterType('OptionalUndigested',  sub { $_[0]->readOptional; }, 
 		 undigested=>1, optional=>1,
-		reversion=>sub {  ($_[0] ? (T_OTHER('['),$_[0]->revert,T_OTHER(']')):()); });
+		reversion=>sub {  ($_[0] ? (T_OTHER('['),Revert($_[0]),T_OTHER(']')):()); });
 
 # Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey',  sub { $_[0]->readArg; }, undigested=>1);
@@ -172,7 +172,7 @@ DefParameterType('BalancedParen', sub {
     $gullet->unread($tok) if ref $tok;
     undef; }},
    reversion=> sub {
-     (T_OTHER('('), $_[0]->revert, T_OTHER(')')); });
+     (T_OTHER('('), Revert($_[0]), T_OTHER(')')); });
 
 
 # Read a digested argument.
@@ -203,7 +203,7 @@ DefParameterType('Digested', sub {
   (scalar(@list) == 1 ? $list[0] 
    : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); },
 		 undigested=>1,		# since _already_ digested.
-		 reversion=>sub { (T_BEGIN,$_[0]->revert,T_END); });
+		 reversion=>sub { (T_BEGIN,Revert($_[0]),T_END); });
 
 # A variation: Digest until we encounter a given token!
 DefParameterType('DigestUntil', sub {
@@ -216,7 +216,7 @@ DefParameterType('DigestUntil', sub {
   (scalar(@list) == 1 ? $list[0] 
    : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); },
 		 undigested=>1,		# since _already_ digested.
-		 reversion=>sub { (T_BEGIN,$_[0]->revert,T_END); });
+		 reversion=>sub { (T_BEGIN,Revert($_[0]),T_END); });
 
 # Reads until the current group has ended.
 # This is useful for environment-like constructs,
@@ -807,7 +807,7 @@ DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
   $props{size}  = abstract_font_size($size);
   $gullet->skipSpaces;
 ##  print STDERR "Font $name == ".join(', ',map("$_=>$props{$_}",sort keys %props))."\n";
-  DefConstructorI($cs,undef,'',font=>{%props});
+  DefPrimitiveI($cs,undef,undef,font=>{%props});
 
 });
 
@@ -1026,7 +1026,7 @@ DefPrimitive('\box Number', sub { LookupValue('box'.$_[1]->valueOf) || (); });
 sub revert_spec {
   my($whatsit,$keyword)=@_;
   my $value = $whatsit->getProperty($keyword);
-  ($value ? (Explode($keyword),$value->revert): ()); }
+  ($value ? (Explode($keyword),Revert($value)): ()); }
 
 DefParameterType('BoxSpecification',sub {
   my($gullet)=@_;
@@ -1059,48 +1059,11 @@ DefConstructor('\hbox BoxSpecification BoxContents',
 # but that doesn't really quite capture the logic....
 DefConstructor('\vbox BoxSpecification BoxContents', 
  "<ltx:inline-block vattach='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
-# sub {		 my($document,$spec,$content)=@_;
-# 		 if($document->isOpenable('ltx:block')){ # If already at block level
-# 		   $document->absorb($content); }
-# 		 else {
-# 		   $document->insertElement('ltx:inline-block',
-# 					    $content,
-# 					    vattach=>'bottom',
-# 					    height=>$spec && $$spec{height},
-# 					    'pad-height'=>$spec && $$spec{spread}); }},
  	       mode=>'text');
 
 DefConstructor('\vtop BoxSpecification BoxContents', 
  "<ltx:inline-block vattach='top' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
-# sub {		 my($document,$spec,$content)=@_;
-# 		 if($document->isOpenable('ltx:block')){ # If already at block level
-# 		   $document->absorb($content); }
-# 		 else {
-# 		   $document->insertElement('ltx:inline-block',
-# 					    $content,
-# 					    vattach=>'top',
-# 					    height=>$spec && $$spec{height},
-# 					    'pad-height'=>$spec && $$spec{spread}); }},
 	       mode=>'text');
-
-# sub read_rule_spec {
-#   my($stomach,$whatsit)=@_;
-#   my $gullet = $stomach->getGullet;
-#   while(my $key = $gullet->readKeyword('height','depth','width')){
-#     $whatsit->setProperty($key=>$gullet->readDimension); }
-#   return; }
-
-# DefConstructorI('\vrule', undef,"<ltx:rule height='#height' depth='#depth' width='#width'/>",
-# 	       afterDigest=>sub { read_rule_spec(@_); },
-# 	       properties=>{isVerticalRule=>1},
-# 	       reversion=>sub { (T_CS('\vbox'),revert_spec($_[0],'height'),
-# 				 revert_spec($_[0],'depth'),revert_spec($_[0],'width'));});
-
-# DefConstructorI('\hrule', undef,"<ltx:rule height='#height' depth='#depth' width='#width'/>",
-# 	       afterDigest=>sub { read_rule_spec(@_); },
-# 	       properties=>{isHorizontalRule=>1},
-# 	       reversion=>sub { (T_CS('\hbox'),revert_spec($_[0],'height'),
-#                                 revert_spec($_[0],'depth'),revert_spec($_[0],'width'));});
 
 DefParameterType('RuleSpecification',sub {
   my($gullet)=@_;
@@ -1128,14 +1091,26 @@ DefConstructor('\hrule RuleSpecification',
 
 # These are actually TeX primitives, but we treat them as a Whatsit so they
 # remain in the constructed tree.
-DefConstructor('{','#body', beforeDigest=>sub{$_[0]->bgroup;}, captureBody=>1);
-DefConstructor('}',  '',    beforeDigest=>sub{$_[0]->egroup;});
+#DefConstructor('{','#body', beforeDigest=>sub{$_[0]->bgroup;}, captureBody=>1);
+DefPrimitive('{',sub {
+  my($stomach)=@_;
+  $stomach->bgroup;
+  my $open = Box(undef,undef,undef,T_BEGIN);
+  my $ismath = $STATE->lookupValue('IN_MATH');
+  my @body = $stomach->digestNextBody();
+  if($ismath){
+    LaTeXML::MathList->new($open,@body); }
+  else {
+    LaTeXML::List->new($open,@body); }});
+  
+#DefConstructor('}',  '',    beforeDigest=>sub{$_[0]->egroup;});
+DefPrimitive('}',sub { $_[0]->egroup; Box(undef,undef,undef,T_END); });
 
 # These are for those screwy cases where you need to create a group like box,
 # more than just bgroup, egroup,
 # BUT you DON'T want extra {, } showing up in any untex-ing.
 DefConstructor('\@hidden@bgroup','#body', beforeDigest=>sub{$_[0]->bgroup;}, captureBody=>1,
-	       reversion=>sub { $_[0]->getProperty('body')->revert; });
+	       reversion=>sub { Revert($_[0]->getProperty('body')); });
 DefConstructor('\@hidden@egroup','',afterDigest=>sub { $_[0]->egroup; },
 	      reversion=>'');
 
@@ -1533,9 +1508,10 @@ DefPrimitive('\@open@column SkipSpaces DigestedBody', sub {
       push(@saveleft,shift(@boxes)); }
     elsif(ref $boxes[0] eq 'LaTeXML::Comment'){
       push(@saveleft,shift(@boxes)); }
-#    elsif($boxes[0]->getProperty('isSpace')){
+    elsif($boxes[0]->getProperty('isSpace')){
+      shift(@boxes); }
     elsif(isEmpty($boxes[0])){
-      shift(@boxes);}
+      push(@saveleft,shift(@boxes)); }
     else {
       last; }}
   while(@boxes){
@@ -1549,10 +1525,11 @@ DefPrimitive('\@open@column SkipSpaces DigestedBody', sub {
     elsif($boxes[$#boxes]->getProperty('alignmentSkippable')){
       unshift(@saveright,pop(@boxes)); }
     elsif(ref $boxes[$#boxes] eq 'LaTeXML::Comment'){
-      unshift(@saveleft,pop(@boxes)); }
-#    elsif($boxes[$#boxes]->getProperty('isSpace')){
-    elsif(isEmpty($boxes[$#boxes])){
+      unshift(@saveright,pop(@boxes)); }
+    elsif($boxes[$#boxes]->getProperty('isSpace')){
       pop(@boxes);}
+    elsif(isEmpty($boxes[$#boxes])){
+      unshift(@saveright,pop(@boxes));}
     else {
       last; }}
   delete $$colspec{width} unless $align eq 'justify';
@@ -1785,8 +1762,8 @@ DefConstructor('\@@ooalign{}',
 
 
 #----------------------------------------------------------------------
-DefConstructorI('\indent',   undef,"");
-DefConstructorI('\noindent', undef,"");
+DefPrimitiveI('\indent',   undef,undef);
+DefPrimitiveI('\noindent', undef,undef);
 
 # <ltx:para> represents a Logical Paragraph, whereas <ltx:p> is a `physical paragraph'.
 # A para can contain both p and displayed equations and such.
@@ -2062,8 +2039,11 @@ sub isEmpty {
   my $ref = ref $box;
   if(! $box ){ return 1; }
   elsif($ref eq 'LaTeXML::Comment'){ return 1; }
-  elsif($ref eq 'LaTeXML::Box'){ return $box->getString =~ /^\s*$/; }
-  elsif($ref eq 'LaTeXML::MathBox'){ return $box->getString =~ /^\s*$/; }
+  elsif(($ref eq 'LaTeXML::Box') || ($ref eq 'LaTeXML::MathBox')){
+    my $s = $box->getString;
+    return (!defined $s) || ($s =~ /^\s*$/); }
+  elsif(($ref eq 'LaTeXML::List') || ($ref eq 'LaTeXML::MathList')){
+    return ! grep(! isEmpty($_), $box->unlist); }
   elsif($ref eq 'LaTeXML::Whatsit'){
     return 1 if $box->getProperty('isSpace'); # A space-like Whatsit
     if(($box->getDefinition eq $STATE->lookupMeaning(T_BEGIN))
@@ -2122,15 +2102,14 @@ sub scriptHandler {
 				  locator=>$gullet->getLocator,
 				  font=>$script->getFont,isMath=>1,
 				  level=>$level))
-      if ToString($script) ne '{}';    # ONLY If Script is not empty!!!
+#      if ToString($script) ne '{}';    # ONLY If Script is not empty!!!
+      unless isEmpty($script);
     AssignValue(mathstyle=>$style); # revert
     @stuff; }
   else {			# Non math use of _ ??
     my $c = (($op eq 'SUPERSCRIPT') ? '^' : '_');
     Error(":unexpected:$c Script $c can only appear in math mode");
-    LaTeXML::Box->new($c,
-		      $STATE->lookupValue('font'),$gullet->getLocator,
-		      (($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
+    Box($c,undef,undef,(($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
   }}
 
 DefPrimitiveI(T_SUPER, undef,sub{ scriptHandler($_[0],'SUPERSCRIPT'); });
@@ -2170,9 +2149,8 @@ DefConstructor('\@SUPERSCRIPT{}{}',
 	       reversion=> sub {
 		 my($whatsit,$base,$sup)=@_;
 		 ($sup && $sup->unlist 
-		  ? (T_BEGIN,$base->revert,T_END,
-		     T_SUPER,T_BEGIN,$sup->revert,T_END)
-		  : $base->revert); },
+		  ? (T_BEGIN,Revert($base),T_END,T_SUPER,T_BEGIN,Revert($sup),T_END)
+		  : Revert($base)); },
 	       properties=>{scriptpos=>sub{ "post".$_[0]->getBoxingLevel; }});
 DefConstructor('\@SUBSCRIPT{}{}', 
 	       "?#2(<ltx:XMApp>"
@@ -2184,9 +2162,8 @@ DefConstructor('\@SUBSCRIPT{}{}',
 	       reversion=>sub {
 		 my($whatsit,$base,$sub)=@_;
 		 ($sub && $sub->unlist 
-		  ? (T_BEGIN,$base->revert,T_END,
-		     T_SUB,T_BEGIN,$sub->revert,T_END)
-		  : $base->revert); },
+		  ? (T_BEGIN,Revert($base),T_END,T_SUB,T_BEGIN,Revert($sub),T_END)
+		  : Revert($base)); },
 	       properties=>{scriptpos=>sub{ "post".$_[0]->getBoxingLevel; }});
 
 # This only becomes active in math mode.
@@ -2251,9 +2228,9 @@ DefConstructorI('\choose',undef,
 	       afterDigest=>\&chooseArgHandler,
 	       reversion=>sub {
 		 my($whatsit)=@_;
-		 ($whatsit->getProperty('top')->revert,
+		 (Revert($whatsit->getProperty('top')),
 		  T_CS('\choose'),
-		  $whatsit->getProperty('bottom')->revert); });
+		  Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\brace',undef,
 	       "<ltx:XMApp open='{' close='}'>"
 	       . "<ltx:XMTok role='STACKED' style='#style'/>" # what meaning?
@@ -2263,9 +2240,9 @@ DefConstructorI('\brace',undef,
 	       afterDigest=>\&chooseArgHandler,
 	       reversion=>sub {
 		 my($whatsit)=@_;
-		 ($whatsit->getProperty('top')->revert,
+		 (Revert($whatsit->getProperty('top')),
 		  T_CS('\choose'),
-		  $whatsit->getProperty('bottom')->revert); });
+		  Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\brack',undef,
 	       "<ltx:XMApp open='[' close=']'>"
 	       . "<ltx:XMTok role='STACKED' style='#style'/>" # what meaning?
@@ -2275,9 +2252,9 @@ DefConstructorI('\brack',undef,
 	       afterDigest=>\&chooseArgHandler,
 	       reversion=>sub {
 		 my($whatsit)=@_;
-		 ($whatsit->getProperty('top')->revert,
+		 (Revert($whatsit->getProperty('top')),
 		  T_CS('\choose'),
-		  $whatsit->getProperty('bottom')->revert); });
+		  Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\over',undef,
 	       "<ltx:XMApp>"
 	       . "<ltx:XMTok meaning='divide' style='#style' role='MULOP'/>"
@@ -2287,9 +2264,9 @@ DefConstructorI('\over',undef,
 	       afterDigest=>\&chooseArgHandler,
 	       reversion=>sub {
 		 my($whatsit)=@_;
-		 ($whatsit->getProperty('top')->revert,
+		 (Revert($whatsit->getProperty('top')),
 		  T_CS('\over'),
-		  $whatsit->getProperty('bottom')->revert); });
+		  Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\atop',undef,
 	       "<ltx:XMApp>"
 	       . "<ltx:XMTok role='STACKED' style='#style'/>"
@@ -2299,9 +2276,9 @@ DefConstructorI('\atop',undef,
 	       afterDigest=>\&chooseArgHandler,
 	       reversion=>sub {
 		 my($whatsit)=@_;
-		 ($whatsit->getProperty('top')->revert,
+		 (Revert($whatsit->getProperty('top')),
 		  T_CS('\atop'),
-		  $whatsit->getProperty('bottom')->revert); });
+		  Revert($whatsit->getProperty('bottom'))); });
 DefConstructor('\overwithdelims Token Token',
 	       "<ltx:XMApp open='#1' close='#2'>"
 	       . "<ltx:XMTok meaning='divide' style='#style' role='MULOP'/>"
@@ -2311,9 +2288,9 @@ DefConstructor('\overwithdelims Token Token',
 	       afterDigest=>\&chooseArgHandler,
 	       reversion=> sub {
 		 my($whatsit,@args)=@_;
-		 ($whatsit->getProperty('top')->revert,
+		 (Revert($whatsit->getProperty('top')),
 		  $whatsit->getDefinition->invocation(@args),
-		  $whatsit->getProperty('bottom')->revert); });
+		  Revert($whatsit->getProperty('bottom'))); });
 # But, wonder what the _meaning_ is!
 DefConstructor('\atopwithdelims Token Token',
 	       "<ltx:XMApp open='#1' close='#2'>"
@@ -2324,9 +2301,9 @@ DefConstructor('\atopwithdelims Token Token',
 	       afterDigest=>\&chooseArgHandler,
 	       reversion=>sub {
 		 my($whatsit,@args)=@_;
-		 ($whatsit->getProperty('top')->revert,
+		 (Revert($whatsit->getProperty('top')),
 		  $whatsit->getDefinition->invocation(@args),
-		  $whatsit->getProperty('bottom')->revert); });
+		  Revert($whatsit->getProperty('bottom'))); });
 
 sub IsZero {
   my($dim)=@_;
@@ -2342,9 +2319,9 @@ DefConstructor('\above Dimension',
 	       afterDigest=>\&chooseArgHandler,
 	       reversion=> sub {
 		 my($whatsit,@args)=@_;
-		 ($whatsit->getProperty('top')->revert,
+		 (Revert($whatsit->getProperty('top')),
 		  $whatsit->getDefinition->invocation(@args),
-		  $whatsit->getProperty('bottom')->revert); });
+		  Revert($whatsit->getProperty('bottom'))); });
 
 DefConstructor('\abovewithdelims Token Token Dimension',
 	       "<ltx:XMApp open='#1' close='#2'>"
@@ -2356,9 +2333,9 @@ DefConstructor('\abovewithdelims Token Token Dimension',
 	       afterDigest=>\&chooseArgHandler,
 	       reversion=> sub {
 		 my($whatsit,@args)=@_;
-		 ($whatsit->getProperty('top')->revert,
+		 (Revert($whatsit->getProperty('top')),
 		  $whatsit->getDefinition->invocation(@args),
-		  $whatsit->getProperty('bottom')->revert); });
+		  Revert($whatsit->getProperty('bottom'))); });
 
 #======================================================================
 DefConstructorI('\cal', undef,'', font=>{family=>'caligraphic'});
@@ -2374,7 +2351,7 @@ DefConstructorI('\cal', undef,'', font=>{family=>'caligraphic'});
 ## DefConstructor('\em',"<ltx:emph>", 
 ## 	       afterDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@end@emph')); });
 # So, we'll just toggle between shape = italic and normal, for now. Sigh.
-DefConstructorI('\em',undef, '',
+DefPrimitiveI('\em',undef, undef,
 	       beforeDigest=>sub {
 		 my $font = LookupValue('font');
 		 my $shape = $font->getShape;
@@ -2382,9 +2359,11 @@ DefConstructorI('\em',undef, '',
 			     'local'); });
 
 # Change math font while still in text!
-DefPrimitiveI('\boldmath',  undef,sub { AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>1), 'local'); },
+DefPrimitiveI('\boldmath',  undef,undef,
+	      beforeDigest=>sub { AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>1), 'local'); },
 	     forbidMath=>1);
-DefPrimitiveI('\unboldmath',undef,sub { AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>0), 'local'); },
+DefPrimitiveI('\unboldmath',undef,undef,
+	      beforeDigest=>sub { AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>0), 'local'); },
 	     forbidMath=>1);
 
 #======================================================================
@@ -2605,7 +2584,7 @@ DefMacro('\newif DefToken',sub {
   my($ignore,$cs)=@_;
   my $name = ToString($cs); $name =~ s/^\\if//;
   DefMacroI($cs,undef, sub { ifHandler($_[0],LookupValue('Boolean:'.$name)); }, isConditional=>1);
-  DefPrimitiveI(T_CS('\\'.$name.'true'),undef,, sub { AssignValue('Boolean:'.$name => 1); });
+  DefPrimitiveI(T_CS('\\'.$name.'true'),undef, sub { AssignValue('Boolean:'.$name => 1); });
   DefPrimitiveI(T_CS('\\'.$name.'false'),undef,sub { AssignValue('Boolean:'.$name => 0); });  });
 
 # See the section Registers & Parameters, above for setting default values.
@@ -2666,27 +2645,27 @@ RawTeX('
 Tag('ltx:text',autoOpen=>1,autoClose=>1);
 
 # Note that these, unlike \rmfamily, should set the other attributes to the defaults!
-DefConstructorI('\rm', undef,'',  font=>{family=>'serif', series=>'medium', shape=>'upright'});
-DefConstructorI('\sf', undef,'',  font=>{family=>'sansserif', series=>'medium', shape=>'upright'});
-DefConstructorI('\bf', undef, '', font=>{series=>'bold',  family=>'serif', shape=>'upright'});
-DefConstructorI('\it', undef, '', font=>{shape=>'italic', family=>'serif', series=>'medium'});
-DefConstructorI('\tt', undef, '', font=>{family=>'typewriter', series=>'medium', shape=>'upright'});
+DefPrimitiveI('\rm',undef, undef, font=>{family=>'serif', series=>'medium', shape=>'upright'});
+DefPrimitiveI('\sf',undef, undef, font=>{family=>'sansserif', series=>'medium', shape=>'upright'});
+DefPrimitiveI('\bf',undef, undef, font=>{series=>'bold',  family=>'serif', shape=>'upright'}); 
+DefPrimitiveI('\it',undef, undef, font=>{shape=>'italic', family=>'serif', series=>'medium'});
+DefPrimitiveI('\tt',undef, undef, font=>{family=>'typewriter', series=>'medium', shape=>'upright'});
 # No effect in math for the following 2 ?
-DefConstructorI('\sl', undef, '', font=>{shape=>'slanted',   family=>'serif', series=>'medium'});
-DefConstructorI('\sc', undef, '', font=>{shape=>'smallcaps', family=>'serif', series=>'medium'});
+DefPrimitiveI('\sl',undef, undef, font=>{shape=>'slanted',   family=>'serif', series=>'medium'});
+DefPrimitiveI('\sc',undef, undef, font=>{shape=>'smallcaps', family=>'serif', series=>'medium'});
 
-DefConstructorI('\tiny',          undef,'', font=>{size=>'tiny'});
-DefConstructorI('\scriptsize',    undef,'', font=>{size=>'script'});
-DefConstructorI('\footnotesize',  undef,'', font=>{size=>'footnote'});
-DefConstructorI('\small',         undef,'', font=>{size=>'small'});
-DefConstructorI('\normalsize',    undef,'', font=>{size=>'normal'});
-DefConstructorI('\large',         undef,'', font=>{size=>'large'});
-DefConstructorI('\Large',         undef,'', font=>{size=>'Large'});
-DefConstructorI('\LARGE',         undef,'', font=>{size=>'LARGE'});
-DefConstructorI('\huge',          undef,'', font=>{size=>'huge'});
-DefConstructorI('\Huge',          undef,'', font=>{size=>'Huge'});
+DefPrimitiveI('\tiny',        undef, undef, font=>{size=>'tiny'});
+DefPrimitiveI('\scriptsize',  undef, undef, font=>{size=>'script'});
+DefPrimitiveI('\footnotesize',undef, undef, font=>{size=>'footnote'});
+DefPrimitiveI('\small',       undef, undef, font=>{size=>'small'});
+DefPrimitiveI('\normalsize',  undef, undef, font=>{size=>'normal'});
+DefPrimitiveI('\large',       undef, undef, font=>{size=>'large'});
+DefPrimitiveI('\Large',       undef, undef, font=>{size=>'Large'});
+DefPrimitiveI('\LARGE',       undef, undef, font=>{size=>'LARGE'});
+DefPrimitiveI('\huge',        undef, undef, font=>{size=>'huge'});
+DefPrimitiveI('\Huge',        undef, undef, font=>{size=>'Huge'});
 
-DefConstructor('\mit',       '',   requireMath=>1, font=>{family=>'italic'});
+DefPrimitiveI('\mit',          undef, undef, requireMath=>1, font=>{family=>'italic'});
 
 DefPrimitiveI('\frenchspacing',   undef,undef);
 DefPrimitiveI('\nonfrenchspacing',undef,undef);
@@ -2743,9 +2722,9 @@ DefPrimitiveI('\topglue',         undef,undef);
 DefPrimitiveI('\nointerlineskip', undef,undef);
 DefPrimitiveI('\offinterlineskip',undef,undef);
 
-DefConstructorI('\smallskip', undef,"");
-DefConstructorI('\medskip',   undef,"");
-DefConstructorI('\bigskip',   undef,"");
+DefPrimitiveI('\smallskip', undef,undef);
+DefPrimitiveI('\medskip',   undef,undef);
+DefPrimitiveI('\bigskip',   undef,undef);
 
 #======================================================================
 # TeX Book, Appendix B, p. 353
@@ -2891,7 +2870,7 @@ sub insertFrontMatter {
   foreach my $key (@frontmatter_elements,grep(!$frontmatter_elements{$_},keys %$frontmatter)){
     if(my $list = $$frontmatter{$key}){
       # Dubious, but assures that frontmatter appears in text mode...
-      local $LaTeXML::BOX = LaTeXML::Box->new('', $STATE->lookupValue('font'),'',T_SPACE);
+      local $LaTeXML::BOX = Box('', $STATE->lookupValue('font'),'',T_SPACE);
       foreach my $item (@$list){
 	my($tag,$attr,@stuff)=@$item;
 	$document->openElement($tag,($attr ? %$attr : ()));
@@ -2922,25 +2901,25 @@ DefPrimitiveI('\leavevmode',    undef,undef);
 # Actually from LaTeX; Table 3.2. Non-English Symbols, p.39
 
 # The following shouldn't appear in math.
-DefConstructorI('\OE', undef,"\x{0152}");	# LATIN CAPITAL LIGATURE OE
-DefConstructorI('\oe', undef,"\x{0153}");	# LATIN SMALL LIGATURE OE
-DefConstructorI('\AE', undef,UTF(0xC6));	# LATIN CAPITAL LETTER AE
-DefConstructorI('\ae', undef,UTF(0xE6));	# LATIN SMALL LETTER AE
-DefConstructorI('\AA', undef,UTF(0xC5));	# LATIN CAPITAL LETTER A WITH RING ABOVE
-DefConstructorI('\aa', undef,UTF(0xE5));	# LATIN SMALL LETTER A WITH RING ABOVE
-DefConstructorI('\O',  undef,UTF(0xD8));	# LATIN CAPITAL LETTER O WITH STROKE
-DefConstructorI('\o',  undef,UTF(0xF8));	# LATIN SMALL LETTER O WITH STROKE
-DefConstructorI('\L',  undef,"\x{0141}");	# LATIN CAPITAL LETTER L WITH STROKE
-DefConstructorI('\l',  undef,"\x{0142}");	# LATIN SMALL LETTER L WITH STROKE
-DefConstructorI('\ss', undef,UTF(0xDF));	# LATIN SMALL LETTER SHARP S
+DefPrimitiveI('\OE', undef, "\x{0152}"); # LATIN CAPITAL LIGATURE OE
+DefPrimitiveI('\oe', undef, "\x{0153}"); # LATIN SMALL LIGATURE OE
+DefPrimitiveI('\AE', undef, UTF(0xC6));	 # LATIN CAPITAL LETTER AE
+DefPrimitiveI('\ae', undef, UTF(0xE6));	 # LATIN SMALL LETTER AE
+DefPrimitiveI('\AA', undef, UTF(0xC5));	 # LATIN CAPITAL LETTER A WITH RING ABOVE
+DefPrimitiveI('\aa', undef, UTF(0xE5));  # LATIN SMALL LETTER A WITH RING ABOVE
+DefPrimitiveI('\O',  undef, UTF(0xD8));	 # LATIN CAPITAL LETTER O WITH STROKE
+DefPrimitiveI('\o',  undef, UTF(0xF8));	 # LATIN SMALL LETTER O WITH STROKE
+DefPrimitiveI('\L',  undef, "\x{0141}"); # LATIN CAPITAL LETTER L WITH STROKE
+DefPrimitiveI('\l',  undef, "\x{0142}"); # LATIN SMALL LETTER L WITH STROKE
+DefPrimitiveI('\ss', undef, UTF(0xDF));	 # LATIN SMALL LETTER SHARP S
 
 # apparently the rest can appear in math.
-DefConstructorI('\dag',   undef,"\x{2020}");	# DAGGER
-DefConstructorI('\ddag',  undef,"\x{2021}");	# DOUBLE DAGGER
-DefConstructorI('\S',     undef,UTF(0xA7));	# SECTION SIGN
-DefConstructorI('\P',     undef,UTF(0xB6));	# PILCROW SIGN
-DefConstructorI('\copyright',undef,UTF(0xA9)); # COPYRIGHT SIGN
-DefConstructorI('\pounds',undef,UTF(0xA3));	# POUND SIGN
+DefPrimitiveI('\dag',       undef, "\x{2020}");	# DAGGER
+DefPrimitiveI('\ddat',      undef, "\x{2021}");	# DOUBLE DAGGER
+DefPrimitiveI('\S',         undef, UTF(0xa7));	# SECTION SIGN
+DefPrimitiveI('\P',         undef, UTF(0xB6));	# PILCROW SIGN
+DefPrimitiveI('\copyright', undef, UTF(0xA9));	# COPYRIGHT SIGN
+DefPrimitiveI('\pounds',    undef, UTF(0xA3));	# POUND SIGN
 
 #----------------------------------------------------------------------
 # Accents.  LaTeX Table 3.1, p.38
@@ -2980,7 +2959,7 @@ our %accents
 
 # Defines an accent command using a combining char that follows the
 # 1st char of the argument.  In cases where there is no argument, $standalonechar is used.
-sub DefAccent {
+sub DefAccentZZZ {
   my ($accent, $combiningchar, $standalonechar) = @_;
   DefConstructor($accent."{}", sub {
     my($document,$letter,%props)=@_;
@@ -2990,6 +2969,19 @@ sub DefAccent {
 			  $letter->getFont);}
     else {			# Empty argument???
        $document->openText($standalonechar,$props{font}); }} ); }
+
+sub DefAccent {
+  my ($accent, $combiningchar, $standalonechar) = @_;
+  DefPrimitive($accent."{}", sub {
+    my($stomach,$letter)=@_;
+    if(my @letters = map(($_ eq '\i' ? 'i':$_),map(ToString($_),($letter ? $letter->unlist : ())))){
+      # Put the accent AFTER the first char(?)
+      Box(NFC($letters[0].$combiningchar.join('',@letters[1..$#letters])),undef,undef,
+	  Invocation($accent,$letter)); }
+
+    else {			# Empty argument???
+      Box($standalonechar,undef,undef,Invocation($accent,$letter)); }} ); }
+
 
 foreach my $accent (keys %accents) {
   DefAccent($accent, @{$accents{$accent}}); }
@@ -3816,7 +3808,7 @@ DefConstructor('\footnote{}{}',
                my ($stomach, $whatsit) = @_;
                my $mark = $whatsit->getArg(1);
                my $change = 0;
-               foreach my $token($mark->revert) {
+               foreach my $token (Revert($mark)) {
                  unless ($token->getCatcode == CC_LETTER || $token->getCatcode == CC_SPACE ||
                          $token->getCatcode == CC_OTHER) {
                    $change = 1; last; }}
@@ -3856,19 +3848,19 @@ DefConstructor('\@','');
 
 
 # Math style.
-DefConstructorI('\displaystyle',     undef,'',afterDigest=>sub { AssignValue(mathstyle=>'display'); });
-DefConstructorI('\textstyle',        undef,'',afterDigest=>sub { AssignValue(mathstyle=>'text'); });
-DefConstructorI('\scriptstyle',      undef,'',afterDigest=>sub { AssignValue(mathstyle=>'script'); });
-DefConstructorI('\scriptscriptstyle',undef,'',afterDigest=>sub { AssignValue(mathstyle=>'scriptscript'); });
+DefPrimitiveI('\displaystyle',     undef,'',afterDigest=>sub { AssignValue(mathstyle=>'display'); });
+DefPrimitiveI('\textstyle',        undef,'',afterDigest=>sub { AssignValue(mathstyle=>'text'); });
+DefPrimitiveI('\scriptstyle',      undef,'',afterDigest=>sub { AssignValue(mathstyle=>'script'); });
+DefPrimitiveI('\scriptscriptstyle',undef,'',afterDigest=>sub { AssignValue(mathstyle=>'scriptscript'); });
 
 #======================================================================
 
 # Special Characters.
-DefConstructorI('\#',undef,   '#');
-DefConstructorI('\&', undef,  '&');
+DefPrimitiveI('\#',undef,   '#');
+DefPrimitiveI('\&', undef,  '&');
 DefMacroI('\%',undef,Tokens(T_OTHER('%')));
-DefConstructorI("\\\$", undef,"\$");
-DefConstructorI('\_',   undef,'_');
+DefPrimitiveI("\\\$", undef,"\$");
+DefPrimitiveI('\_',   undef,'_');
 
 # Discretionary times; just treat as invisible ?
 DefMathI('\*',undef,"\x{2062}", role=>'MULOP', name=>'', meaning=>'times'); # INVISIBLE TIMES (or MULTIPLICATION SIGN = 00D7)
@@ -3911,9 +3903,9 @@ DefLigature("/\'\'/\x{201D}/", fontTest=>sub { $_[0]->getFamily ne 'typewriter';
 # This sorta seems like the normal effect, but not if fontenc is T1... ???
 DefLigature("/\"/\x{201D}/",   fontTest=>sub { $_[0]->getFamily ne 'typewriter'; }); # Yes, this one too!
 
-DefConstructorI('\TeX', undef,'TeX');
-DefConstructorI('\i',   undef,"\x{0131}");	# LATIN SMALL LETTER DOTLESS I
-DefConstructorI('\j',   undef,"j");	# Apparently, no Unicode equivalent...
+DefPrimitiveI('\TeX', undef,'TeX');
+DefPrimitiveI('\i',   undef,"\x{0131}");	# LATIN SMALL LETTER DOTLESS I
+DefPrimitiveI('\j',   undef,"j");	# Apparently, no Unicode equivalent...
 
 DefConstructor('\buildrel Until:\over {}',
 	       "<ltx:XMApp role='RELOP'>"
@@ -3972,9 +3964,9 @@ DefConstructor('\DUAL[]{}{}',
 		   $whatsit->getDefinition->invocation($role,$content,
 						       $presentation); }
 		 elsif($LaTeXML::DUAL_BRANCH eq 'content'){
-		   $content->revert; }
+		   Revert($content); }
 		 elsif($LaTeXML::DUAL_BRANCH eq 'presentation'){
-		   $presentation->revert; }
+		   Revert($presentation); }
 		 else{
 		   Warn(":misdefined:$LaTeXML::DUAL_BRANCH Unknown DUAL_BRANCH: $LaTeXML::DUAL_BRANCH");
 		   $whatsit->getDefinition->invocation($role,$content,
@@ -4018,7 +4010,7 @@ DefConstructor('\@XMRef{}',"<ltx:XMRef idref='#1'/>",
 		 my($whatsit)=@_;
 		 my $id = $_[0]->getArg(1);
 		 if(my $reversion = LookupValue('xref:'.ToString($id))){
-		   $reversion->revert; }
+		   Revert($reversion); }
 		else {
 		   $whatsit->getDefinition->invocation($id); }});
 
