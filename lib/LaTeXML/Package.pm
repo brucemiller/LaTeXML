@@ -109,13 +109,6 @@ sub parsePrototype {
 # Convert a LaTeX-style argument spec to our Package form.
 # Ie. given $nargs and $optional, being the two optional arguments to
 # something like \newcommand, convert it to the form we use
-sub XXXXconvertLaTeXArgs {
-  my($nargs,$optional)=@_;
-  $nargs = (ref $nargs ? $nargs->toString : $nargs || 0);
-  my $default = ($optional ? $optional->toString : undef);
-  join('', ($optional ? ($default ? "[Default:$default]" : "[]") : ''),
-       map('{}',1..($optional ? $nargs-1 : $nargs))); }
-
 sub convertLaTeXArgs {
   my($nargs,$optional)=@_;
   $nargs = $nargs->toString if ref $nargs;
@@ -123,7 +116,7 @@ sub convertLaTeXArgs {
   my @params = ();
   if($optional){
     push(@params,LaTeXML::Parameters::newParameter('Optional',
-						  "[Default:".$optional->toString."]",
+						  "[Default:".UnTeX($optional)."]",
 						  extra=>[$optional,undef]));
     $nargs--; }
   push(@params,map(LaTeXML::Parameters::newParameter('Plain','{}'), 1..$nargs));
@@ -303,7 +296,7 @@ sub NewCounter {
 
 sub CounterValue {
   my($ctr)=@_;
-  $ctr = $ctr->toString if ref $ctr;
+  $ctr = ToString($ctr) if ref $ctr;
   my $value = LookupValue('\c@'.$ctr);
   if(!$value){
     Warn(":expected:<counter> Counter $ctr was not defined; assuming 0");
@@ -341,7 +334,7 @@ sub StepCounter {
   # and reset any within counters!
   if(my $nested = LookupValue("\\cl\@$ctr")){
     foreach my $c ($nested->unlist){
-      ResetCounter($c->toString); }}
+      ResetCounter(ToString($c)); }}
   Expand(T_CS("\\the$ctr")); }
 
 # HOW can we retract this?
@@ -389,7 +382,7 @@ sub ResetCounter {
   # and reset any within counters!
   if(my $nested = LookupValue("\\cl\@$ctr")){
     foreach my $c ($nested->unlist){
-      ResetCounter($c->toString); }}
+      ResetCounter(ToString($c)); }}
   return;}
 
 #**********************************************************************
@@ -496,8 +489,8 @@ sub RawTeX {
 #    isPrefix  : 1 for things like \global, \long, etc.
 #    registerType : for parameters (but needs to be worked into DefParameter, below).
 
-our $primitive_options = {isPrefix=>1,scope=>1, requireMath=>1,
-			  forbidMath=>1,beforeDigest=>1, locked=>1};
+our $primitive_options = {isPrefix=>1,scope=>1, mode=>1, font=>1, requireMath=>1,
+			  forbidMath=>1,beforeDigest=>1, afterDigest=>1, bounded=>1, locked=>1};
 sub DefPrimitive {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefPrimitive ($proto)",$primitive_options,%options);
@@ -505,13 +498,24 @@ sub DefPrimitive {
 
 sub DefPrimitiveI {
   my($cs,$paramlist,$replacement,%options)=@_;
-  $replacement = sub { (); } unless defined $replacement;
+#####  $replacement = sub { (); } unless defined $replacement;
+  my $string = $replacement;
+  $replacement = sub { Box($string,undef,undef,Invocation($cs,@_[1..$#_])); } unless ref $replacement;
   $cs = coerceCS($cs);
+  my $mode = $options{mode};
+  my $bounded = $options{bounded};
   $STATE->installDefinition(LaTeXML::Primitive
 			    ->new($cs,$paramlist,$replacement,
 				  beforeDigest=> flatten(($options{requireMath} ? (sub{requireMath($cs);}):()),
 							 ($options{forbidMath}  ? (sub{forbidMath($cs);}):()),
+							 ($mode ? (sub { $_[0]->beginMode($mode); })
+							  :($bounded ? (sub {$_[0]->bgroup;}) :()) ),
+							 ($options{font}? (sub { MergeFont(%{$options{font}});}):()),
 							 $options{beforeDigest}),
+				  afterDigest => flatten($options{afterDigest},
+							 ($mode ? (sub { $_[0]->endMode($mode) })
+							  : ($bounded ? (sub{$_[0]->egroup;}):()) )),
+
 				  isPrefix=>$options{isPrefix}),
 			    $options{scope});
   AssignValue(ToString($cs).":locked"=>1) if $options{locked};
@@ -533,17 +537,17 @@ sub DefRegisterI {
   my($cs,$paramlist,$value,%options)=@_;
   $cs = coerceCS($cs);
   my $type = $register_types{ref $value};
-  my $name = $cs->toString;
+  my $name = ToString($cs);
   my $getter = $options{getter} 
-    || sub { LookupValue(join('',$name,map($_->toString,@_))) || $value; };
+    || sub { LookupValue(join('',$name,map(ToString($_),@_))) || $value; };
   my $setter = $options{setter} 
     || ($options{readonly}
 	? sub { my($value,@args)=@_; 
 		Error(":unexpected:$name Cannot assign to register $name"); return; }
 	: sub { my($value,@args)=@_; 
-		AssignValue(join('',$name,map($_->toString,@args)) => $value); });
+		AssignValue(join('',$name,map(ToString($_),@args)) => $value); });
   # Not really right to set the value!
-  AssignValue($cs->toString =>$value) if defined $value;
+  AssignValue(ToString($cs) =>$value) if defined $value;
   $STATE->installDefinition(LaTeXML::Register->new($cs,$paramlist, $type,$getter,$setter,
 						   readonly=>$options{readonly}),
 			   'global');
@@ -798,7 +802,7 @@ sub DefEnvironment {
 sub DefEnvironmentI {
   my($name,$paramlist,$replacement,%options)=@_;
   my $mode = $options{mode};
-  $name = $name->toString if ref $name;
+  $name = ToString($name) if ref $name;
   # This is for the common case where the environment is opened by \begin{env}
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\begin{$name}"), $paramlist,$replacement,
@@ -1366,7 +1370,8 @@ and will be deactivated when the section ends.
 
 =item C<< DefMacro($prototype,$string | $tokens | $code,%options); >>
 
-Defines the macro expansion for C<$prototype>.  If a C<$string> is supplied, it will be
+Defines the macro expansion for C<$prototype>; a macro control sequence that is
+expanded during macro expansion time (in the  L<LaTeXML::Gullet>).  If a C<$string> is supplied, it will be
 tokenized at definition time, and any macro arguments will be substituted for parameter
 indicators (eg #1) at expansion time; the result is used as the expansion of
 the control sequence. 
@@ -1390,15 +1395,72 @@ C<$paramlist>).
 
 =over
 
-=item C<< DefPrimitive($prototype,CODE($stomach,@args),%options); >>
+=item C<< DefPrimitive($prototype,$replacement,%options); >>
 
-Define a primitive control sequence.
-These are usually done for side effect and
-so CODE should end with C<return;>, but can also
-return a list of digested items.
+Define a primitive control sequence; a primitive is processed during
+digestion (in the  L<LaTeXML::Stomach>), after macro expansion but before Construction time.
+Primitive control sequences generate Boxes or Lists, generally
+containing basic Unicode content, rather than structured XML.
+Primitive control sequences are also executed for side effect during digestion,
+effecting changes to the L<LaTeXML::State>.
 
-The only option is for the special case: C<< isPrefix=>1 >> is used for assignment
-prefixes (like \global).
+The C<$replacement> is either a string, used as the Boxes text content
+(the box gets the current font), or C<CODE($stomach,@args)>, which is
+invoked at digestion time, probably for side-effect, but returning Boxes or Lists.
+C<$replacement> may also be undef, which contributes nothing to the document,
+but does record the TeX code that created it.
+
+DefPrimitive options are
+
+=over
+
+=item  mode=>(text|display_math|inline_math)
+
+Changes to this mode during digestion.
+
+=item  bounded=>boolean
+
+If true, TeX grouping (ie. C<{}>) is enforced around this invocation.
+
+=item  requireMath=>boolean,
+
+=item  forbidMath=>boolean
+
+These specify whether the given constructor can only appear,
+or cannot appear, in math mode.
+
+=item  font=>{fontspec...}
+
+Specifies the font to be set by this invocation.
+See L</"MergeFont(%style);">
+If the font change is to only apply to material generated within this command,
+you would also use C<<bounded=>1>>; otherwise, the font will remain in effect afterwards
+as for a font switching command.
+
+=item  beforeDigest=>CODE($stomach)
+
+This option supplies a Daemon to be executed during digestion 
+just before the main part of the primitive is executed.
+The CODE should either return nothing (return;) or a list of digested items (Box's,List,Whatsit).
+It can thus change the State and/or add to the digested output.
+
+=item  afterDigest=>CODE($stomach)
+
+This option supplies a Daemon to be executed during digestion
+just after the main part of the primitive ie executed.
+it should either return nothing (return;) or digested items.
+It can thus change the State and/or add to the digested output.
+
+=item  scope=>$scope
+
+See L</"Control of Scoping">.
+
+=item C<< isPrefix=>1 >>
+
+Indicates whether this is a prefix type of command;
+This is only used for the special TeX assignment prefixes, like C<\global>.
+
+=back
 
 =item C<< DefPrimitiveI($cs,$paramlist,CODE($stomach,@args),%options); >>
 
@@ -1500,7 +1562,7 @@ Changes to this mode during digestion.
 
 If true, TeX grouping (ie. C<{}>) is enforced around this invocation.
 
-=item  requireMath=>boolean
+=item  requireMath=>boolean,
 
 =item  forbidMath=>boolean
 
@@ -1510,9 +1572,10 @@ or cannot appear, in math mode.
 =item  font=>{fontspec...}
 
 Specifies the font to be set by this invocation.
-See L</MergeFont>
-If the font change is to only apply to this construct,
-you would also use C<<bounded=>1>>.
+See L</"MergeFont(%style);">
+If the font change is to only apply to material generated within this command,
+you would also use C<<bounded=>1>>; otherwise, the font will remain in effect afterwards
+as for a font switching command.
 
 =item  reversion=>$texstring or CODE($whatsit,#1,#2,...)
 
@@ -1574,7 +1637,7 @@ from the C<$prototype> (eg. when more args are explictly read by Daemons).
 
 =item  scope=>$scope
 
-See L</scope>.
+See L</"Control of Scoping">.
 
 =back
 
@@ -1622,7 +1685,7 @@ This direly needs documentation!
 =item  font=>{fontspec}
 
 Specifies the font to be used for when creating this object.
-See L</MergeFont>.
+See L</"MergeFont(%style);">.
 
 =item scriptpos=>boolean
 
