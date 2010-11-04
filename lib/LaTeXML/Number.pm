@@ -71,7 +71,6 @@ sub new {
     $sp = $1 * $STATE->convertUnit($2); }
   bless [$sp||"0"],$class; }
 
-#sub toString    { ($_[0]->[0]/65536).'pt'; }
 sub toString { LaTeXML::Number::simplify($_[0]->[0]/65536).'pt'; }
 
 sub stringify { "Dimension[".$_[0]->[0]."]"; }
@@ -82,7 +81,6 @@ use base qw(LaTeXML::Dimension);
 
 # A mu is 1/18th of an em in the current math font.
 # Sigh.... I'll just take it as 2/3pt
-#sub toString    { ($_[0]->[0]/65536 * 0.66).'mu'; }
 sub toString { LaTeXML::Number::simplify($_[0]->[0]/65536 * 0.66).'mu'; }
 
 sub stringify { "MuDimension[".$_[0]->[0]."]"; }
@@ -175,13 +173,14 @@ sub toString {
 
 sub revert {
   my($self)=@_;
-  map( (Explode($_),T_SPACE,$$self{$_}->revert), keys %{$self}); }
+  map( (Explode($_),T_SPACE,Revert($$self{$_})), keys %{$self}); }
 
 #**********************************************************************
 
 package LaTeXML::Pair;
 use LaTeXML::Global;
 use base qw(LaTeXML::Object);
+
 sub new {
   my($class,$x,$y)=@_;
   bless [$x,$y],$class; }
@@ -204,11 +203,13 @@ sub stringify{ "Pair[".join(',',map($_->stringify, @{$_[0]}))."]"; }
 
 sub revert {
   my($self)=@_;
-  (T_OTHER('('),$$self[0]->revert,T_OTHER(','),$$self[1]->revert,T_OTHER(')')); }
+  (T_OTHER('('),Revert($$self[0]),T_OTHER(','),Revert($$self[1]),T_OTHER(')')); }
 
 #**********************************************************************
 package LaTeXML::PairList;
+use LaTeXML::Global;
 use base qw(LaTeXML::Object);
+
 sub new {
   my($class,@pairs)=@_;
   bless [@pairs],$class; }
@@ -222,7 +223,7 @@ sub ptValue   { join(' ', map($_->ptValue, @{$_[0]}));  }
 sub toString  { join(' ', map($_->toString, @{$_[0]})); }
 sub stringify { "PairList[".join(',', map($_->stringify, @{$_[0]}))."]"; }
 
-sub revert { my @rev=(); map(push(@rev, $_->revert), @{$_[0]}); @rev; }
+sub revert { my @rev=(); map(push(@rev, Revert($_)), @{$_[0]}); @rev; }
 
 1;
 
