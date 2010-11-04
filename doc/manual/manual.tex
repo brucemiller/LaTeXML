@@ -120,7 +120,7 @@ conversion to \HTML, processing images, conversion to \MathML\ and so on.
 \begin{lstlisting}[style=shell]
 latexml doc.tex | latexmpost --dest=doc.xhtml
 \end{lstlisting}
-\noindent to convert a single document into \HTML,  or as complicated as
+\noindent to convert a single document into \XHTML,  or as complicated as
 \begin{lstlisting}[style=shell]
 latexml --dest=1.xml ch1
 latexml --dest=2.xml ch2
@@ -555,8 +555,8 @@ See \ref{customization.latexml.expansion} for how to define macros
 and affect expansion.
 
 The \ltxpod{Stomach} then digests these tokens by executing \ltxpod{Primitive} control 
-sequences, generally for side effect, and converting the remainder
-to \ltxpod{List}s of \ltxpod{Box}es and \ltxpod{Whatsit}s
+sequences for side effect or converting material
+into \ltxpod{List}s of \ltxpod{Box}es and \ltxpod{Whatsit}s
 Normally, textual tokens are converted to \ltxpod{Box}es.
 The main (intentional) deviation of \LaTeXML's digestion from that of \TeX\ is
 the introduction of a new type of definition, a \ltxpod{Constructor},
@@ -796,6 +796,25 @@ include the following:
 % Probably I should at least mention that they are there...
 
 \subsection[Digestion]{Digestion \& Primitives}\label{customization.latexml.digestion}
+Primitives are processed during the digestion phase in the \ltxpod{Stomach},
+after macro expansion (in the \ltxpod{Gullet}),
+and before document construction (in the \ltxpod{Document}).
+Our primitives generalize \TeX's notion of primitive; they are used to implement
+\TeX's primitives, invoke other side effects and to convert Tokens into Boxes,
+in particular, Unicode strings in a particular font.
+
+Here are a few primitives from \texttt{TeX.pool}:
+\begin{lstlisting}[style=latexml]
+DefPrimitive('\begingroup',sub {
+    $_[0]->begingroup; });
+DefPrimitive('\endgroup',  sub {
+    $_[0]->endgroup; });
+DefPrimitiveI('\batchmode',     undef,undef);
+DefPrimitiveI('\OE', undef, "\x{0152}");
+DefPrimitiveI('\tiny',        undef, undef,
+              font=>{size=>'tiny'});
+\end{lstlisting}
+
 Other than for implementing \TeX's own primitives,
 \texttt{DefPrimitive} is needed less often than \texttt{DefMacro} or \texttt{DefConstructor}.
  The main thing to keep in mind
@@ -803,18 +822,43 @@ is that primitives are processed after macro expansion,
 by the \ltxpod{Stomach}.  They are most useful for
 side-effects, changing the \ltxpod{State}.
 
-The replacement (which can only be code) gets
-the \ltxpod{Stomach} and the control sequence arguments
-as arguments; like macros, these arguments are not expanded or digested
-by default, they must be explicitly digested if necessary.
+\par\noindent\ltxcode|DefPrimitive($prototype,$replacement,%options)|
+\par
+
+The replacement is either a string which will be used to create
+a Box in the current font, or can be code taking the \ltxpod{Stomach}
+and the control sequence arguments as argument; like macros, these arguments
+are not expanded or digested by default, they must be explicitly digested if necessary.
 The replacement code must either return nothing (eg. ending with \ltxcode|return;|) or
 should return a list (ie. a Perl list \ltxcode|(...)|)
 of digested \ltxpod{Box}es or \ltxpod{Whatsit}s.
 
+Options to DefPrimitive are:
+\begin{itemize}
+\item \ltxcode.mode=>('math'|'text'). switches to math or text mode, if needed;
+\item \ltxcode|requireMath=>1|, \ltxcode|forbidMath=>1| requires, or forbids,
+  this primitive to appear in math mode;
+\item \ltxcode|bounded=>1| specifies that all digestion (of arguments and daemons)
+  will take place within an implicit \TeX\ group, so that any side-effects
+  are localized, rather than affecting the global state;
+\item \ltxcode|font=>{%hash}|
+  switches the font used for any created text;
+  recognized font keys are \texttt{family}, \texttt{series}, \texttt{shape}, \texttt{size}, \texttt{color};
+  
+  Note that if the font change should only affect the material digested within this
+  command itself, then \ltxcode|bounded=>1| should be used; otherwise, the font
+  change will remain in effect after the command is processed.
+\item \ltxcode|beforeDigest=>CODE($stomach)|,\\
+      \ltxcode|afterDigest=>CODE($stomach)|
+  provides code to be digested before and after processing
+  the main part of the primitive.
+\end{itemize}
+
 % DefRegister ?
 
-Nevertheless, functions dealing with digestion and state are important for
-writing before \& after daemons in constructors, so we give an overview here.
+Other functions useful for dealing with digestion and state are important for
+writing before \& after daemons in constructors, as well as in Primitives;
+we give an overview here:
 \begin{itemize}
 \item \ltxcode|Digest($tokens)|
 digests \ltxcode|$tokens| (a \ltxpod{Tokens}), returning a list of \ltxpod{Box}es and \ltxpod{Whatsit}s.
@@ -974,7 +1018,17 @@ Options:
 
 Some additional functions useful when writing constructors:
 \begin{itemize}
-\item \ltxcode|ToString($stuff)| converts \ltxcode|$stuff| to a string.
+\item \ltxcode|ToString($stuff)| converts \ltxcode|$stuff| to a string,
+  hopefully without \TeX\ markup, suitable for use as document content
+  and attribute values.  Note that if \ltxcode|$stuff| contains Whatsits
+  generated by Constructors, it may not be possible to avoid \TeX\ code.
+  Constrast \ltxcode|ToString| to the following two functions.
+\item \ltxcode|UnTeX($stuff)| returns a string containing the \TeX\ code
+  that would generate \ltxcode|$stuff| (this might not be the original \TeX).
+  The function \ltxcode|Revert($stuff)| returns the same information as a Tokens list.
+\item \ltxcode|Stringify($stuff)| returns a string more intended
+  for debugging purposes; it reveals more of the structure and type information
+  of the object and its parts.
 \item \ltxcode|CleanLabel($arg)|,
    \ltxcode|CleanIndexKey($arg)|,
    \ltxcode|CleanBibKey($arg)|,
