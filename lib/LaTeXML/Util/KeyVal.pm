@@ -190,7 +190,7 @@ sub revert {
     push(@tokens,T_OTHER(','),T_SPACE) if @tokens;
     push(@tokens,Explode($key));
     push(@tokens,T_OTHER('='),
-	 ($keydef ? $keydef->revertArguments($value) : $value->revert)) if $value; }
+	 ($keydef ? $keydef->revertArguments($value) : Revert($value))) if $value; }
   unshift(@tokens,$$self{open} ) if $$self{open};
   push(   @tokens,$$self{close}) if $$self{close};
   @tokens; }
