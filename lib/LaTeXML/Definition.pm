@@ -43,7 +43,7 @@ sub stringify {
 
 sub toString {
   my($self)=@_;
-  $$self{cs}->toString.' '.ToString($$self{parameters} ||''); }
+  ToString($$self{cs}).' '.ToString($$self{parameters} ||''); }
 
 # Return the Tokens that would invoke the given definition with arguments.
 sub invocation {
@@ -95,7 +95,7 @@ sub doInvocation {
   my $expansion = $self->getExpansion;
   (ref $expansion eq 'CODE' 
    ? &$expansion($gullet,@args)
-   : substituteTokens($expansion,map($_ && Tokens($_->revert),@args))); }
+   : substituteTokens($expansion,map($_ && Tokens(Revert($_)),@args))); }
 
 sub substituteTokens {
   my($tokens,@args)=@_;
@@ -289,7 +289,7 @@ sub invoke {
     if(ref $value eq 'CODE'){
       $props{$key} = &$value($stomach,@args); }
     elsif($value && ($value =~/^\#(\d)$/)){
-      $props{$key} = $args[$1-1]->toString; }}
+      $props{$key} = $args[$1-1]->toString; }} # What????
   $props{font}    = $font   unless defined $props{font};
   $props{locator} = $stomach->getGullet->getMouth->getLocator unless defined $props{locator};
   $props{isMath}  = $ismath unless defined $props{isMath};
@@ -547,9 +547,10 @@ C<LaTeXML::Expandable> should be a list of C<LaTeXML::Token>s.
 
 =end latex
 
-represents primitive control sequences that are primarily carried out
-for side effect during digestion in the L<LaTeXML::Stomach> and for changing
-the L<LaTeXML::State>.  The results of invoking a C<LaTeXML::Primitive>, if any,
+represents primitive control sequences that are converted directly to
+Boxes or Lists containing basic Unicode content, rather than structured XML,
+or those executed for side effect during digestion in the L<LaTeXML::Stomach>,
+changing the L<LaTeXML::State>.  The results of invoking a C<LaTeXML::Primitive>, if any,
 should be a list of digested items (C<LaTeXML::Box>, C<LaTeXML::List>
 or C<LaTeXML::Whatsit>).
 
