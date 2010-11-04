@@ -105,7 +105,7 @@ sub token_prettyname {
     $name .= "{$desc}" if $desc; }
   else {
     $name = 'Unknown';
-    Warn(":parse  What is this: \"".$node->toString."\"?"); }
+    Warn(":parse  What is this: \"".Stringify($node)."\"?"); }
   $name; }
 
 sub note_unknown {
