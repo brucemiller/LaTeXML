@@ -81,8 +81,12 @@ useful for debugging.
 =item C<< $string = $object->toString; >>
 
 Returns the string content of C<$object>;
-most useful for extracting a usable string from tokens or boxes 
-that might representing a filename or such.
+most useful for extracting a clean, usable, Unicode string from
+tokens or boxes that might representing a filename or such.
+To the extent possible, this should provide a string
+that can be used as XML content, or attribute values,
+or for filenames or whatever. However, control sequences
+defined as Constructors may leave TeX code in the value.
 
 =item C<< $boole = $object->equals($other); >>
 
