@@ -112,14 +112,14 @@ sub lstProcessBlock {
       push(@body,$caption); }}
 
   # We go a bit (a bit too far?) to try to treat this as a separate Para level object
-  # (if with captions or labelled),
+  # (if with captions or titled),
   # or as an in-block item (within a logical paragraph)
   (
-   ($numbered || $caption || $labelled ? (T_CS('\par')):()),
+   ($numbered || $caption ? (T_CS('\par')):()),
    T_BEGIN, 
    ($name ? (T_CS('\def'),T_CS('\lstname'),T_BEGIN,$name->unlist,T_END) : ()),
    Invocation(($numbered ? T_CS('\@listings')
-	       : ($caption || $labelled ? T_CS('\@@listings')
+	       : ($caption  ? T_CS('\@@listings')
 		 : T_CS('\@@listings@inblock'))),
 	      listingsSemantics(),
 	      Tokens(@body)),
