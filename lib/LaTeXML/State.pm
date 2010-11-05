@@ -176,6 +176,17 @@ sub installDefinition {
       if(($s eq "Anonymous String") || ($s =~ /\.(tex|bib)$/)){
 	Info(":override:$cs Ignoring redefinition of $cs in $s\n");
 	return; }}}
+  # Or if we're inhibitting all redefinitons, quietly ignore the redefinition
+###  if($self->lookupValue('INHIBIT_REDEFINITIONS') && $$self{table}{meaning}{$cs}[0]){
+  my $defn;
+  # # NOTE that this really isn't quite the right level of inhibit.
+  # # Some cs are intended to be modified; others are probably permmissible too ....
+  # if($self->lookupValue('INSIDE_STYLE') && ($self->lookupValue('INCLUDE_STYLES') eq 'tentative')
+  #    && ($defn=$self->{table}{meaning}{$cs}[0]) && $defn->isaDefinition){
+  #   if(! $self->lookupValue('INHIBIT_REDEFINITIONS_WARNED')){
+  #     $self->assignValue(INHIBIT_REDEFINITIONS_WARNED=>1,'global');
+  #     Info(":override:all Ignoring redefinitions $cs ..."); }
+  #   return; }
   assign_internal($self,'meaning',$cs => $definition, $scope); }
 
 #======================================================================
@@ -228,6 +239,13 @@ sub deactivateScope {
 	else {
 	  Warn(":internal Unassigning $subtable:$key from $value, but stack is "
 	       .join(', ',@{$$table{$subtable}{$key}})); }}}}}
+
+sub getActiveScopes {
+  my($self)=@_;
+  my $table = $$self{table};
+  my $scopes = $$table{stash_active}||{};
+  [keys %$scopes];
+}
 
 #======================================================================
 # Units.
