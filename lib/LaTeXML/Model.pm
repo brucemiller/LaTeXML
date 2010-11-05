@@ -287,9 +287,9 @@ sub canContain {
   # Handle obvious cases explicitly.
   return 0 if $tag eq '#PCDATA';
   return 0 if $tag eq '#Comment';
-  return 1 if $tag eq '_Capture_';
+  return 1 if $tag =~ /(.*?:)?_Capture_$/; # with or without namespace prefix
   return 1 if $tag eq '_WildCard_';
-  return 1 if $childtag eq '_Capture_';
+  return 1 if $childtag =~ /(.*?:)?_Capture_$/;
   return 1 if $childtag eq '_WildCard_';
   return 1 if $childtag eq '#Comment';
   return 1 if $childtag eq '#ProcessingInstruction';
