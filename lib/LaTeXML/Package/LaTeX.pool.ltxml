@@ -1156,8 +1156,8 @@ sub eqnarrayBindings {
 	  closeContainer=>sub{ $_[0]->closeElement('ltx:equationgroup'); },
 	  openRow       =>sub{ $_[0]->openElement('ltx:equation',@_[1..$#_]); },
 	  closeRow      =>sub{ $_[0]->closeElement('ltx:equation'); },
-	  openColumn    =>sub{ $_[0]->openElement('_Capture_',@_[1..$#_]); },
-	  closeColumn   =>sub{ $_[0]->closeElement('_Capture_'); });
+	  openColumn    =>sub{ $_[0]->openElement('ltx:_Capture_',@_[1..$#_]); },
+	  closeColumn   =>sub{ $_[0]->closeElement('ltx:_Capture_'); });
 
   AssignValue(Alignment=>$alignment);
   $alignment->setTemplate($template);
@@ -1310,8 +1310,10 @@ sub eqnarrayJoinRows {
 sub addNewChildLate {
   my($document,$node,$tag)=@_;
   my ($nsuri,$localname) = (undef,$tag);
-  ($nsuri,$localname)= $document->getModel->decodeQName($tag) unless $tag eq '_Capture_';
-  my $newnode = $node->addNewChild($nsuri,$localname);
+  ($nsuri,$localname)= $document->getModel->decodeQName($tag);
+  my $newnode = 
+    ($nsuri ? $node->addNewChild($nsuri,$localname)
+     : $node->appendChild($document->createElement($localname)));
   # Copy essentials to new node.
   if(my $font = $node->getAttribute('_font')){
     $newnode->setAttribute(_font=>$font); }
@@ -1326,7 +1328,7 @@ sub equationgroupJoinCols {
   my($document,$ncols,$equation)=@_;
   my ($col,$main,$branch)=(0,undef,undef);
   foreach my $cell ($document->getChildElements($equation)){
-    next unless $document->getNodeQName($cell) eq '_Capture_';
+    next unless $document->getNodeQName($cell) =~ /(.*?:)?_Capture_$/;
     if(($col++ % $ncols) == 0){	# Create new MathFork every $ncols cells.
       ($main,$branch)=addMathFork($document,$equation); }
     addColumnToMathFork($document,$main,$branch,$cell); }}
@@ -3141,7 +3143,7 @@ Let(T_CS('\normalcolor'),T_CS('\relax'));
 #======================================================================
 # C.15.3 Special Symbol
 #======================================================================
-# \symbol{num} ????
+DefMacro('\symbol{}','\char#1\relax');
 
 # These in LaTeX, but not in the book...
 DefPrimitiveI('\textdollar',       undef, "\$");

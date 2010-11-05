@@ -94,16 +94,13 @@ DefMacroI('\@ams@newline', undef, sub {
 
 sub amsalignBindings {
   my($template)=@_;
-#  my $alignment = LaTeXML::Util::Alignment->new(containerElement=>'ltx:equationgroup',
-#						rowElement=>'ltx:equation',
-#						colElement=>'_Capture_');
   my $alignment = LaTeXML::Util::Alignment
     ->new(openContainer =>sub{ $_[0]->openElement('ltx:equationgroup',RefStepID('@equationgroup'),@_[1..$#_]); },
 	  closeContainer=>sub{ $_[0]->closeElement('ltx:equationgroup'); },
 	  openRow       =>sub{ $_[0]->openElement('ltx:equation',@_[1..$#_]); },
 	  closeRow      =>sub{ $_[0]->closeElement('ltx:equation'); },
-	  openColumn    =>sub{ $_[0]->openElement('_Capture_',@_[1..$#_]); },
-	  closeColumn   =>sub{ $_[0]->closeElement('_Capture_'); });
+	  openColumn    =>sub{ $_[0]->openElement('ltx:_Capture_',@_[1..$#_]); },
+	  closeColumn   =>sub{ $_[0]->closeElement('ltx:_Capture_'); });
 
   AssignValue(Alignment=>$alignment);
   $alignment->setTemplate($template);
