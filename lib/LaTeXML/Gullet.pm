@@ -149,7 +149,12 @@ sub getLocator {
 
 sub getSource {
   my($self)=@_;
-  defined $$self{mouth} && $$self{mouth}->getSource; }
+  my $source = defined $$self{mouth} && $$self{mouth}->getSource; 
+  if(!$source){
+    foreach my $frame ( @{$$self{mouthstack}} ){
+      $source = $$frame[0]->getSource;
+      last if $source; }}
+  $source; }
 
 sub show_pushback {
   my($pb)=@_;
