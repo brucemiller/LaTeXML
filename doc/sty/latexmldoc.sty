@@ -11,10 +11,6 @@
 \let\@@LaTeXML\LaTeXML
 \def\LaTeXML{\ifHy@pdfstring LaTeXML\else\@@LaTeXML\fi}
 \def\BibTeX{{\rm B}{\sc ib}\TeX}
-\def\URL{\@ifnextchar[{\@URL}{\@@URL}}%]
-\def\@@URL{\begingroup\Url}
-%%\def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\texttt{##1}}}\Url}
-\def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\Url{##1}}}\Url}
 
 \let\@title\@empty
 \def\subtitle#1{\gdef\@subtitle{#1}}
@@ -148,4 +144,15 @@
 \usepackage[colorlinks=true, linkcolor=linkblue, citecolor=linkblue, urlcolor=blue,
             plainpages=false, pdfpagelabels]{hyperref}
 
+\def\URL{\@ifnextchar[{\@URL}{\@@URL}}%]
+% \def\@@URL{\begingroup\Url}
+% %%\def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\texttt{##1}}}\Url}
+% \def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\Url{##1}}}\Url}
+
+%\DeclareUrlCommand{\@@URL}{}
+\def\@@URL{\begingroup\Url}
+\def\@URL[#1]{#1\@URL@foot}
+\let\orig@Url@FormatString\Url@FormatString%
+%\DeclareUrlCommand{\@URL@foot}{\def\Url@FormatString{\footnote{\orig@Url@FormatString}}}%
+\def\@URL@foot{\begingroup\def\Url@FormatString{\footnote{\orig@Url@FormatString}}\Url}%
 %======================================================================
