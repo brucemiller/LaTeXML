@@ -29,47 +29,84 @@
 in both inline and block contexts.</a:documentation>
     <ref name="inline-para"/>
   </define>
+  <!-- ====================================================================== -->
   <define name="para">
     <element name="para">
       <a:documentation>A Logical paragraph. It has an \attr{id}, but not a \attr{label}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <ref name="Block.model"/>
+      <ref name="para_attributes"/>
+      <ref name="para_model"/>
     </element>
   </define>
+  <define name="para_attributes">
+    <a:documentation>Attributes for \elementref{para}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+  </define>
+  <define name="para_model">
+    <a:documentation>Content model for \elementref{para}.</a:documentation>
+    <ref name="Block.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="inline-para">
     <element name="inline-para">
       <a:documentation>An inline para. Actually, can appear in inline or block mode, but
 typesets its contents as para.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Positionable.attributes"/>
-      <ref name="Para.model"/>
+      <ref name="inline-para_attributes"/>
+      <ref name="inline-para_model"/>
     </element>
   </define>
+  <define name="inline-para_attributes">
+    <a:documentation>Attributes for \elementref{inline-para}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Positionable.attributes"/>
+  </define>
+  <define name="inline-para_model">
+    <a:documentation>Content model for \elementref{inline-para}.</a:documentation>
+    <ref name="Para.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="theorem">
     <element name="theorem">
       <a:documentation>A theorem or similar object. The \attr{class} attribute can be used to distinguish
 different kinds of theorem.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
-      <optional>
-        <ref name="title"/>
-      </optional>
-      <ref name="Para.model"/>
+      <ref name="theorem_attributes"/>
+      <ref name="theorem_model"/>
     </element>
   </define>
+  <define name="theorem_attributes">
+    <a:documentation>Attributes for \elementref{theorem}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Labelled.attributes"/>
+  </define>
+  <define name="theorem_model">
+    <a:documentation>Content model for \elementref{theorem}.</a:documentation>
+    <optional>
+      <ref name="title"/>
+    </optional>
+    <ref name="Para.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="proof">
     <element name="proof">
       <a:documentation>A proof or similar object. The \attr{class} attribute can be used to distinguish
 different kinds of proof.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
-      <optional>
-        <ref name="title"/>
-      </optional>
-      <ref name="Para.model"/>
+      <ref name="proof_attributes"/>
+      <ref name="proof_model"/>
     </element>
   </define>
+  <define name="proof_attributes">
+    <a:documentation>Attributes for \elementref{proof}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Labelled.attributes"/>
+  </define>
+  <define name="proof_model">
+    <a:documentation>Content model for \elementref{proof}.</a:documentation>
+    <optional>
+      <ref name="title"/>
+    </optional>
+    <ref name="Para.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="Caption.class">
     <a:documentation>These are the additional elements representing figure and
 table captions.
@@ -80,73 +117,119 @@ Or, should caption be used for theorem and proof?</a:documentation>
       <ref name="toccaption"/>
     </choice>
   </define>
+  <!-- ====================================================================== -->
   <define name="figure">
     <element name="figure">
       <a:documentation>A  figure, possibly captioned.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
-      <optional>
-        <attribute name="placement">
-          <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <choice>
-          <ref name="Block.model"/>
-          <ref name="Caption.class"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="figure_attributes"/>
+      <ref name="figure_model"/>
     </element>
   </define>
+  <define name="figure_attributes">
+    <a:documentation>Attributes for \elementref{figure}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Labelled.attributes"/>
+    <optional>
+      <attribute name="placement">
+        <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="figure_model">
+    <a:documentation>Content model for \elementref{figure}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="Block.model"/>
+        <ref name="Caption.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="table">
     <element name="table">
       <a:documentation>A  Table, possibly captioned. This is not necessarily a \elementref{tabular}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
-      <optional>
-        <attribute name="placement">
-          <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <choice>
-          <ref name="Block.model"/>
-          <ref name="Caption.class"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="table_attributes"/>
+      <ref name="table_model"/>
     </element>
   </define>
+  <define name="table_attributes">
+    <a:documentation>Attributes for \elementref{table}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Labelled.attributes"/>
+    <optional>
+      <attribute name="placement">
+        <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="table_model">
+    <a:documentation>Content model for \elementref{table}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="Block.model"/>
+        <ref name="Caption.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="listing">
     <element name="listing">
       <a:documentation>A Listing, possibly captioned.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
-      <optional>
-        <attribute name="placement">
-          <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <choice>
-          <ref name="Block.model"/>
-          <ref name="Caption.class"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="listing_attributes"/>
+      <ref name="listing_model"/>
     </element>
   </define>
+  <define name="listing_attributes">
+    <a:documentation>Attributes for \elementref{listing}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Labelled.attributes"/>
+    <optional>
+      <attribute name="placement">
+        <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="listing_model">
+    <a:documentation>Content model for \elementref{listing}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="Block.model"/>
+        <ref name="Caption.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="caption">
     <element name="caption">
       <a:documentation>A caption for a \elementref{table} or \elementref{figure}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="caption_attributes"/>
+      <ref name="caption_model"/>
     </element>
   </define>
+  <define name="caption_attributes">
+    <a:documentation>Attributes for \elementref{caption}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="caption_model">
+    <a:documentation>Content model for \elementref{caption}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="toccaption">
     <element name="toccaption">
       <a:documentation>A short form of \elementref{table} or \elementref{figure} caption,
 used for lists of figures or similar.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="toccaption_attributes"/>
+      <ref name="toccaption_model"/>
     </element>
   </define>
+  <define name="toccaption_attributes">
+    <a:documentation>Attributes for \elementref{toccaption}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="toccaption_model">
+    <a:documentation>Content model for \elementref{toccaption}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
 </grammar>
+<!-- ====================================================================== -->

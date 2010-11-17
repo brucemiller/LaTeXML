@@ -25,20 +25,32 @@ Misc.class  |= inline-block | verbatim | break | graphics
 ## Additional Metadata that can be present in equations.
 EquationMeta.class = constraint
 
+#======================================================================
+
 p =
 ## A physical paragraph.
-element p {
-  Common.attributes,
-  ID.attributes,
-  Positionable.attributes,
+element p { p_attributes, p_model }
 
-  Inline.model  }
+## Attributes for \elementref{p}.
+p_attributes = Common.attributes, ID.attributes, Positionable.attributes
+
+## Content model for \elementref{p}.
+p_model = Inline.model
+
+#======================================================================
 
 constraint = 
 ## A constraint upon an equation.
-element constraint {
-  attribute hidden { xsd:boolean }?,
-  Inline.model }
+element constraint { constraint_attributes, constraint_model }
+
+## Attributes for \elementref{constraint}.
+constraint_attributes =
+  attribute hidden { xsd:boolean }?
+
+## Content model for \elementref{constraint}.
+constraint_model = Inline.model
+
+#======================================================================
 
 equation =
 ## An Equation.  The model is just Inline which includes \elementref{Math},
@@ -46,19 +58,27 @@ equation =
 ## However, other things can end up in display math, too, so we use Inline.
 ## Note that tabular is here only because it's a common, if misguided, idiom;
 ## the processor will lift such elements out of math, when possible
-element equation {
-  Common.attributes,
-  Labelled.attributes,
+element equation { equation_attributes, equation_model }
 
-  (Math | MathFork  | \text | tabular | Meta.class | EquationMeta.class)*  }
+## Attributes for \elementref{equation}.
+equation_attributes =  Common.attributes, Labelled.attributes
+
+## Content model for \elementref{equation}.
+equation_model = (Math | MathFork  | \text | tabular | Meta.class | EquationMeta.class)* 
+
+#======================================================================
 
 equationgroup =
 ## A group of equations, perhaps aligned (Though this is nowhere recorded).
-element equationgroup {
-  Common.attributes,
-  Labelled.attributes,
+element equationgroup { equationgroup_attributes, equationgroup_model }
 
-  (equationgroup | equation | block | Meta.class | EquationMeta.class)* }
+## Attributes for \elementref{equationgroup}.
+equationgroup_attributes = Common.attributes, Labelled.attributes
+
+## Content model for \elementref{equationgroup}.
+equationgroup_model = (equationgroup | equation | block | Meta.class | EquationMeta.class)*
+
+#======================================================================
 
 MathFork =
 ## A wrapper for Math that provides alternative,
@@ -67,123 +87,185 @@ MathFork =
 ## The first child is the meaningful form,
 ## the extra children provide formatted forms,
 ## for example being table rows or cells arising from an eqnarray.
-element MathFork {
-  Common.attributes,
+element MathFork { MathFork_attributes, MathFork_model }
 
-  Math, MathBranch*}
+## Attributes for \elementref{MathFork}.
+MathFork_attributes = Common.attributes
+
+## Content model for \elementref{MathFork}.
+MathFork_model = Math, MathBranch*
+
+#======================================================================
 
 MathBranch =
 ## A container for an alternatively formatted math representation.
-element MathBranch {
-  Common.attributes,
-  attribute format { text }?,
+element MathBranch { MathBranch_attributes, MathBranch_model }
 
-  (Math|tr|td)* }
+## Attributes for \elementref{MathBranch}.
+MathBranch_attributes =
+  Common.attributes,
+  attribute format { text }?
+
+## Content model for \elementref{MathBranch}.
+MathBranch_model =  (Math|tr|td)*
+
+#======================================================================
 
 quote =
 ## A quotation.
-element quote {
-  Common.attributes,
-  ID.attributes,
+element quote { quote_attributes, quote_model }
 
-  Block.model  }
+## Attributes for \elementref{quote}.
+quote_attributes = Common.attributes, ID.attributes
+
+## Content model for \elementref{quote}.
+quote_model = Block.model
 # This was Inline.model, but since quotes can be arbitrarily complex
 # including equations, etc, not just verse, should be Block.model, perhaps even Para.model?
 
+#======================================================================
+
 block =
 ## A generic block (fallback).
-element block {
-  Common.attributes,
-  ID.attributes,
-  Positionable.attributes,
+element block { block_attributes, block_model }
 
-  Inline.model  }
+## Attributes for \elementref{block}.
+block_attributes = Common.attributes, ID.attributes, Positionable.attributes
+
+## Content model for \elementref{block}.
+block_model = Inline.model
+
+#======================================================================
 
 listingblock =
 ## An in-block Listing, without caption
-element listingblock {
-  Common.attributes,
-  Labelled.attributes,
+element listingblock { listingblock_attributes, listingblock_model }
 
-  Block.model*  }
+## Attributes for \elementref{listingblock}.
+listingblock_attributes = Common.attributes, Labelled.attributes
+
+## Content model for \elementref{listingblock}.
+listingblock_model = Block.model*
+
+#======================================================================
 
 break =
 ## A forced line break.
-element break { 
-  Common.attributes,
+element break {  break_attributes, break_model }
 
-  empty }
+## Attributes for \elementref{break}.
+break_attributes = Common.attributes
+
+## Content model for \elementref{break}.
+break_model = empty
+
+#======================================================================
 
 inline-block =
 ## An inline block. Actually, can appear in inline or block mode, but
 ## typesets its contents as a block.
-element inline-block {
-  Common.attributes,
-  ID.attributes,
-  Positionable.attributes,
+element inline-block { inline-block_attributes, inline-block_model }
 
-  Block.model }
+## Attributes for \elementref{inline-block}.
+inline-block_attributes = Common.attributes, ID.attributes, Positionable.attributes
+
+## Content model for \elementref{inline-block}.
+inline-block_model = Block.model
+
+#======================================================================
 
 verbatim =
 ## Verbatim content
-element verbatim {
+element verbatim { verbatim_attributes, verbatim_model }
+
+## Attributes for \elementref{verbatim}.
+verbatim_attributes =
   Common.attributes,
   ID.attributes,
-
   ## the font to use; generally typewriter.
-  attribute font { text }?,
+  attribute font { text }?
 
-  Inline.model  }
+## Content model for \elementref{verbatim}.
+verbatim_model = Inline.model
+
+#======================================================================
 
 itemize =
 ## An itemized list.
-element itemize {
-  Common.attributes,
-  ID.attributes,
+element itemize { itemize_attributes, itemize_model }
 
-  item* }
+
+
+## Attributes for \elementref{itemize}.
+itemize_attributes = Common.attributes, ID.attributes
+
+## Content model for \elementref{itemize}.
+itemize_model = item*
+
+#======================================================================
 
 enumerate =
 ## An enumerated list.
-element enumerate {
-  Common.attributes,
-  ID.attributes,
+element enumerate { enumerate_attributes, enumerate_model }
 
-  item* }
+## Attributes for \elementref{enumerate}.
+enumerate_attributes = Common.attributes, ID.attributes
+
+## Content model for \elementref{enumerate}.
+enumerate_model = item*
+
+#======================================================================
 
 description =
 ## A description list. The \elementref{item}s within are expected to have a \elementref{tag}
 ## which represents the term being described in each \elementref{item}.
-element description {
-  Common.attributes,
-  ID.attributes,
+element description { description_attributes, description_model }
 
-  item* }
+## Attributes for \elementref{description}.
+description_attributes = Common.attributes, ID.attributes
+
+## Content model for \elementref{description}.
+description_model = item*
+
+#======================================================================
 
 item =
 ## An item within a list.
-element item {
-  Common.attributes,
-  Labelled.attributes,
+element item { item_attributes, item_model }
 
-  tag?, Para.model }
+## Attributes for \elementref{item}.
+item_attributes = Common.attributes, Labelled.attributes
+
+## Content model for \elementref{item}.
+item_model =   tag?, Para.model
+
+#======================================================================
 
 tag =
 ## A tag within an item indicating the term or bullet for a given item.
-element tag {
+element tag { tag_attributes, tag_model }
+
+## Attributes for \elementref{tag}.
+tag_attributes =
   Common.attributes,
 
   ## specifies an open delimiters used to display the tag.
   attribute open { text }?,
 
   ## specifies an close delimiters used to display the tag.
-  attribute close { text }?,
+  attribute close { text }?
 
-  Inline.model }
+## Content model for \elementref{tag}.
+tag_model = Inline.model
+
+#======================================================================
 
 graphics =
-## A graphical insertion of an external file.
-element graphics {
+## A graphical insertion of an external file. 
+element graphics { graphics_attributes, graphics_model }
+
+## Attributes for \elementref{graphics}.
+graphics_attributes =
   Common.attributes,
   ID.attributes,
   Imageable.attributes,
@@ -193,6 +275,9 @@ element graphics {
 
   ## an encoding of the scaling and positioning options
   ## to be used in processing the graphic.
-  attribute options { text }?,
+  attribute options { text }?
 
-  empty  }
+## Content model for \elementref{graphics}.
+graphics_model = empty
+
+#======================================================================

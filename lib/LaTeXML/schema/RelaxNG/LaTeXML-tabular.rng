@@ -18,117 +18,172 @@
 It is roughly parallel to the HTML model.</a:documentation>
     <ref name="tabular"/>
   </define>
+  <!-- ====================================================================== -->
   <define name="tabular">
     <element name="tabular">
       <a:documentation>An alignment structure corresponding to tabular  or various similar forms.
 The model is basically a copy of HTML4's table.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="vattach">
-          <a:documentation>which row's baseline aligns with the container's baseline.</a:documentation>
-          <choice>
-            <value>top</value>
-            <value>middle</value>
-            <value>bottom</value>
-          </choice>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="width">
-          <a:documentation>the desired width of the tabular.</a:documentation>
-          <ref name="Length.type"/>
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <choice>
-          <ref name="thead"/>
-          <ref name="tfoot"/>
-          <ref name="tbody"/>
-          <ref name="tr"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="tabular_attributes"/>
+      <ref name="tabular_model"/>
     </element>
   </define>
+  <define name="tabular_attributes">
+    <a:documentation>Attributes for \elementref{tabular}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="vattach">
+        <a:documentation>which row's baseline aligns with the container's baseline.</a:documentation>
+        <choice>
+          <value>top</value>
+          <value>middle</value>
+          <value>bottom</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="width">
+        <a:documentation>the desired width of the tabular.</a:documentation>
+        <ref name="Length.type"/>
+      </attribute>
+    </optional>
+  </define>
+  <define name="tabular_model">
+    <a:documentation>Content model for \elementref{tabular}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="thead"/>
+        <ref name="tfoot"/>
+        <ref name="tbody"/>
+        <ref name="tr"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="thead">
     <element name="thead">
       <a:documentation>A container for a set of rows that correspond to the header of the tabular.</a:documentation>
-      <ref name="Common.attributes"/>
-      <zeroOrMore>
-        <ref name="tr"/>
-      </zeroOrMore>
+      <ref name="thead_attributes"/>
+      <ref name="thead_model"/>
     </element>
   </define>
+  <define name="thead_attributes">
+    <a:documentation>Attributes for \elementref{thead}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="thead_model">
+    <a:documentation>Content model for \elementref{thead}.</a:documentation>
+    <zeroOrMore>
+      <ref name="tr"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="tfoot">
     <element name="tfoot">
       <a:documentation>A container for a set of rows that correspond to the footer of the tabular.</a:documentation>
-      <ref name="Common.attributes"/>
-      <zeroOrMore>
-        <ref name="tr"/>
-      </zeroOrMore>
+      <ref name="tfoot_attributes"/>
+      <ref name="tfoot_model"/>
     </element>
   </define>
+  <define name="tfoot_attributes">
+    <a:documentation>Attributes for \elementref{tfoot}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="tfoot_model">
+    <a:documentation>Content model for \elementref{tfoot}.</a:documentation>
+    <zeroOrMore>
+      <ref name="tr"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="tbody">
     <element name="tbody">
       <a:documentation>A container for a set of rows corresponding to the body of the tabular.</a:documentation>
-      <ref name="Common.attributes"/>
-      <zeroOrMore>
-        <ref name="tr"/>
-      </zeroOrMore>
+      <ref name="tbody_attributes"/>
+      <ref name="tbody_model"/>
     </element>
   </define>
+  <define name="tbody_attributes">
+    <a:documentation>Attributes for \elementref{tbody}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="tbody_model">
+    <a:documentation>Content model for \elementref{tbody}.</a:documentation>
+    <zeroOrMore>
+      <ref name="tr"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="tr">
     <element name="tr">
       <a:documentation>A row of a tabular.</a:documentation>
-      <ref name="Common.attributes"/>
-      <zeroOrMore>
-        <ref name="td"/>
-      </zeroOrMore>
+      <ref name="tr_attributes"/>
+      <ref name="tr_model"/>
     </element>
   </define>
+  <define name="tr_attributes">
+    <a:documentation>Attributes for \elementref{tr}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="tr_model">
+    <a:documentation>Content model for \elementref{tr}.</a:documentation>
+    <zeroOrMore>
+      <ref name="td"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="td">
     <element name="td">
       <a:documentation>A cell in a row of a tabular.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="colspan">
-          <a:documentation>indicates how many columns this cell spans or covers.</a:documentation>
-          <data type="nonNegativeInteger"/>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="rowspan">
-          <a:documentation>indicates how many rows this cell spans or covers.</a:documentation>
-          <data type="nonNegativeInteger"/>
-        </attribute>
-      </optional>
-      <optional>
-        <!--
-          This would have been clearer, but messes up conversion to dtd
-           attribute align { "left" | "right" | "center" | "justify" | text }?,
-        -->
-        <attribute name="align">
-          <a:documentation> specifies the alignment of the content.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="width">
-          <a:documentation>specifies the desired width for the column.</a:documentation>
-          <ref name="Length.type"/>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="border">
-          <a:documentation>records a sequence of t or tt, r or rr, b or bb and l or ll
-for borders or doubled borders on any side of the cell.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="thead">
-          <a:documentation>whether this cell corresponds to a table head or foot.</a:documentation>
-          <data type="boolean"/>
-        </attribute>
-      </optional>
-      <ref name="Flow.model"/>
+      <ref name="td_attributes"/>
+      <ref name="td_model"/>
     </element>
   </define>
+  <define name="td_attributes">
+    <a:documentation>Attributes for \elementref{td}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="colspan">
+        <a:documentation>indicates how many columns this cell spans or covers.</a:documentation>
+        <data type="nonNegativeInteger"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="rowspan">
+        <a:documentation>indicates how many rows this cell spans or covers.</a:documentation>
+        <data type="nonNegativeInteger"/>
+      </attribute>
+    </optional>
+    <optional>
+      <!--
+        This would have been clearer, but messes up conversion to dtd
+         attribute align { "left" | "right" | "center" | "justify" | text }?,
+      -->
+      <attribute name="align">
+        <a:documentation> specifies the alignment of the content.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="width">
+        <a:documentation>specifies the desired width for the column.</a:documentation>
+        <ref name="Length.type"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="border">
+        <a:documentation>records a sequence of t or tt, r or rr, b or bb and l or ll
+for borders or doubled borders on any side of the cell.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="thead">
+        <a:documentation>whether this cell corresponds to a table head or foot.</a:documentation>
+        <data type="boolean"/>
+      </attribute>
+    </optional>
+  </define>
+  <define name="td_model">
+    <a:documentation>Content model for \elementref{td}.</a:documentation>
+    <ref name="Flow.model"/>
+  </define>
 </grammar>
+<!-- ====================================================================== -->

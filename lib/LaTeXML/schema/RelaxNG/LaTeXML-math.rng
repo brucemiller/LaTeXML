@@ -40,42 +40,52 @@ the content of the \elementref{XMath} element.</a:documentation>
       <ref name="XMArray"/>
     </choice>
   </define>
+  <!-- ====================================================================== -->
   <define name="Math">
     <element name="Math">
       <a:documentation>Outer container for all math. This holds the internal 
 \elementref{XMath} representation, as well as image data and other representations.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Imageable.attributes"/>
-      <ref name="ID.attributes"/>
-      <optional>
-        <attribute name="mode">
-          <a:documentation>display or inline mode.</a:documentation>
-          <choice>
-            <value>display</value>
-            <value>inline</value>
-          </choice>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="tex">
-          <a:documentation>reconstruction of the \TeX\ that generated the math.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="content-tex">
-          <a:documentation>more semantic version of \attr{tex}.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="text">
-          <a:documentation>a textified representation of the math.</a:documentation>
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <ref name="Math.class"/>
-      </zeroOrMore>
+      <ref name="Math_attributes"/>
+      <ref name="Math_model"/>
     </element>
   </define>
+  <define name="Math_attributes">
+    <a:documentation>Attributes for \elementref{Math}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Imageable.attributes"/>
+    <ref name="ID.attributes"/>
+    <optional>
+      <attribute name="mode">
+        <a:documentation>display or inline mode.</a:documentation>
+        <choice>
+          <value>display</value>
+          <value>inline</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="tex">
+        <a:documentation>reconstruction of the \TeX\ that generated the math.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="content-tex">
+        <a:documentation>more semantic version of \attr{tex}.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="text">
+        <a:documentation>a textified representation of the math.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="Math_model">
+    <a:documentation>Content model for \elementref{Math}.</a:documentation>
+    <zeroOrMore>
+      <ref name="Math.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="XMath.attributes">
     <optional>
       <attribute name="role">
@@ -123,108 +133,136 @@ the last character is repeated if there aren't enough.</a:documentation>
       </attribute>
     </optional>
   </define>
+  <!-- ====================================================================== -->
   <define name="XMath">
     <element name="XMath">
       <a:documentation>Internal representation of mathematics.</a:documentation>
-      <ref name="Common.attributes"/>
-      <zeroOrMore>
-        <ref name="XMath.class"/>
-      </zeroOrMore>
+      <ref name="XMath_attributes"/>
+      <ref name="XMath_model"/>
     </element>
   </define>
+  <define name="XMath_attributes">
+    <a:documentation>Attributes for \elementref{XMath}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="XMath_model">
+    <a:documentation>Content model for \elementref{XMath}.</a:documentation>
+    <zeroOrMore>
+      <ref name="XMath.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="XMTok">
     <element name="XMTok">
       <a:documentation>General mathematical token.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="XMath.attributes"/>
-      <ref name="ID.attributes"/>
-      <optional>
-        <attribute name="name">
-          <a:documentation>The name of the token, typically the control sequence that created it.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="meaning">
-          <a:documentation>A more semantic name corresponding to the intended meaning,
+      <ref name="XMTok_attributes"/>
+      <ref name="XMTok_model"/>
+    </element>
+  </define>
+  <define name="XMTok_attributes">
+    <a:documentation>Attributes for \elementref{XMTok}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="XMath.attributes"/>
+    <ref name="ID.attributes"/>
+    <optional>
+      <attribute name="name">
+        <a:documentation>The name of the token, typically the control sequence that created it.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="meaning">
+        <a:documentation>A more semantic name corresponding to the intended meaning,
 such as the OpenMath name.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="omcd">
-          <a:documentation>The OpenMath CD for which \attr{meaning} is a symbol.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="style">
-          <a:documentation>Various random styling information. NOTE This needs to be made consistent.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="font">
-          <a:documentation>The font, size a used for the symbol.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="size">
-          <a:documentation>The size for the symbol, not presumed to be meaningful(?)</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="color">
-          <a:documentation>The color (CSS format) for the symbol, not presumed to be meaningful(?)</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="scriptpos">
-          <a:documentation>An encoding of the position of this token as a sub/superscript, used
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="omcd">
+        <a:documentation>The OpenMath CD for which \attr{meaning} is a symbol.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="style">
+        <a:documentation>Various random styling information. NOTE This needs to be made consistent.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="font">
+        <a:documentation>The font, size a used for the symbol.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="size">
+        <a:documentation>The size for the symbol, not presumed to be meaningful(?)</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="color">
+        <a:documentation>The color (CSS format) for the symbol, not presumed to be meaningful(?)</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="scriptpos">
+        <a:documentation>An encoding of the position of this token as a sub/superscript, used
 to handle aligned and nested scripts, both pre and post.
 It is a concatenation of (pre|mid|post), which indicates the horizontal
 positioning of the script with relation to it's base, and a counter
 indicating the level. These are used to position the scripts, 
 and to pair up aligned sub- and superscripts.
 NOTE: Clarify where this appears: token, base, script operator, apply?</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="thickness">
-          <a:documentation>NOTE: How is this used?</a:documentation>
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <text/>
-      </zeroOrMore>
-    </element>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="thickness">
+        <a:documentation>NOTE: How is this used?</a:documentation>
+      </attribute>
+    </optional>
   </define>
+  <define name="XMTok_model">
+    <a:documentation>Content model for \elementref{XMTok}.</a:documentation>
+    <zeroOrMore>
+      <text/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="XMApp">
     <element name="XMApp">
       <a:documentation>Generalized application of a function, operator, whatever (the first child)
 to arguments (the remaining children).
 The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="XMath.attributes"/>
-      <ref name="ID.attributes"/>
-      <optional>
-        <attribute name="name">
-          <a:documentation>The name of the token, typically the control sequence that created it.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="meaning">
-          <a:documentation>A more semantic name corresponding to the intended meaning,
-such as the OpenMath name.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="scriptpos">
-          <a:documentation>An encoding of the position of this token as a sub/superscript, used
-to handle aligned and nested scripts, both pre and post.</a:documentation>
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <ref name="XMath.class"/>
-      </zeroOrMore>
+      <ref name="XMApp_attributes"/>
+      <ref name="XMApp_model"/>
     </element>
   </define>
+  <define name="XMApp_attributes">
+    <a:documentation>Attributes for \elementref{XMApp}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="XMath.attributes"/>
+    <ref name="ID.attributes"/>
+    <optional>
+      <attribute name="name">
+        <a:documentation>The name of the token, typically the control sequence that created it.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="meaning">
+        <a:documentation>A more semantic name corresponding to the intended meaning,
+such as the OpenMath name.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="scriptpos">
+        <a:documentation>An encoding of the position of this token as a sub/superscript, used
+to handle aligned and nested scripts, both pre and post.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="XMApp_model">
+    <a:documentation>Content model for \elementref{XMApp}.</a:documentation>
+    <zeroOrMore>
+      <ref name="XMath.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="XMDual">
     <element name="XMDual">
       <a:documentation>Parallel markup of content (first child) and presentation (second child)
@@ -232,185 +270,266 @@ of a mathematical object.
 Typically, the arguments are shared between the two branches:
 they appear in the content branch, with \attr{id}'s,
 and \elementref{XMRef} is used in the presentation branch</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="XMath.attributes"/>
-      <ref name="ID.attributes"/>
-      <ref name="XMath.class"/>
-      <ref name="XMath.class"/>
+      <ref name="XMDual_attributes"/>
+      <ref name="XMDual_model"/>
     </element>
   </define>
+  <define name="XMDual_attributes">
+    <a:documentation>Attributes for \elementref{XMDual}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="XMath.attributes"/>
+    <ref name="ID.attributes"/>
+  </define>
+  <define name="XMDual_model">
+    <a:documentation>Content model for \elementref{XMDual}.</a:documentation>
+    <ref name="XMath.class"/>
+    <ref name="XMath.class"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="XMHint">
     <element name="XMHint">
       <a:documentation>Various spacing items, generally ignored in parsing.
 The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="XMath.attributes"/>
-      <ref name="ID.attributes"/>
-      <optional>
-        <attribute name="name"/>
-      </optional>
-      <optional>
-        <attribute name="meaning"/>
-      </optional>
-      <optional>
-        <attribute name="style"/>
-      </optional>
-      <empty/>
+      <ref name="XMHint_attributes"/>
+      <ref name="XMHint_model"/>
     </element>
   </define>
+  <define name="XMHint_attributes">
+    <a:documentation>Attributes for \elementref{XMHint}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="XMath.attributes"/>
+    <ref name="ID.attributes"/>
+    <optional>
+      <attribute name="name"/>
+    </optional>
+    <optional>
+      <attribute name="meaning"/>
+    </optional>
+    <optional>
+      <attribute name="style"/>
+    </optional>
+  </define>
+  <define name="XMHint_model">
+    <a:documentation>Content model for \elementref{XMHint}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="XMText">
     <element name="XMText">
       <a:documentation>Text appearing within math.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="XMath.attributes"/>
-      <ref name="ID.attributes"/>
-      <zeroOrMore>
-        <choice>
-          <text/>
-          <ref name="Inline.class"/>
-          <ref name="Misc.class"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="XMText_attributes"/>
+      <ref name="XMText_model"/>
     </element>
   </define>
+  <define name="XMText_attributes">
+    <a:documentation>Attributes for \elementref{XMText}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="XMath.attributes"/>
+    <ref name="ID.attributes"/>
+  </define>
+  <define name="XMText_model">
+    <a:documentation>Content model for \elementref{XMText}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <text/>
+        <ref name="Inline.class"/>
+        <ref name="Misc.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="XMWrap">
     <element name="XMWrap">
       <a:documentation>Wrapper for a sequence of tokens used to assert the role of the
 contents in its parent. This element generally disappears after parsing.
 The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="XMath.attributes"/>
-      <ref name="ID.attributes"/>
-      <optional>
-        <attribute name="name"/>
-      </optional>
-      <optional>
-        <attribute name="meaning">
-          <a:documentation>A more semantic name corresponding to the intended meaning,
-such as the OpenMath name.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="style"/>
-      </optional>
-      <zeroOrMore>
-        <ref name="XMath.class"/>
-      </zeroOrMore>
+      <ref name="XMWrap_attributes"/>
+      <ref name="XMWrap_model"/>
     </element>
   </define>
+  <define name="XMWrap_attributes">
+    <a:documentation>Attributes for \elementref{XMWrap}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="XMath.attributes"/>
+    <ref name="ID.attributes"/>
+    <optional>
+      <attribute name="name"/>
+    </optional>
+    <optional>
+      <attribute name="meaning">
+        <a:documentation>A more semantic name corresponding to the intended meaning,
+such as the OpenMath name.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="style"/>
+    </optional>
+  </define>
+  <define name="XMWrap_model">
+    <a:documentation>Content model for \elementref{XMWrap}.</a:documentation>
+    <zeroOrMore>
+      <ref name="XMath.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="XMArg">
     <element name="XMArg">
       <a:documentation>Wrapper for an argument to a structured macro.
 It implies that its content can be parsed independently of its parent,
 and thus generally disappears after parsing.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="XMath.attributes"/>
-      <ref name="ID.attributes"/>
-      <optional>
-        <attribute name="rule"/>
-      </optional>
-      <zeroOrMore>
-        <ref name="XMath.class"/>
-      </zeroOrMore>
+      <ref name="XMArg_attributes"/>
+      <ref name="XMArg_model"/>
     </element>
   </define>
+  <define name="XMArg_attributes">
+    <a:documentation>Attributes for \elementref{XMArg}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="XMath.attributes"/>
+    <ref name="ID.attributes"/>
+    <optional>
+      <attribute name="rule"/>
+    </optional>
+  </define>
+  <define name="XMArg_model">
+    <a:documentation>Content model for \elementref{XMArg}.</a:documentation>
+    <zeroOrMore>
+      <ref name="XMath.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="XMRef">
     <element name="XMRef">
       <a:documentation>Structure sharing element typically used in the presentation
 branch of an \elementref{XMDual} to refer to the arguments present in the content branch.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="XMath.attributes"/>
-      <ref name="ID.attributes"/>
-      <ref name="IDREF.attributes"/>
-      <empty/>
+      <ref name="XMRef_attributes"/>
+      <ref name="XMRef_model"/>
     </element>
   </define>
+  <define name="XMRef_attributes">
+    <a:documentation>Attributes for \elementref{XMRef}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="XMath.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="IDREF.attributes"/>
+  </define>
+  <define name="XMRef_model">
+    <a:documentation>Content model for \elementref{XMRef}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="XMArray">
     <!-- The attributes are a subset of those for \elementref{XMTok} or of \elementref{tabular}. -->
     <element name="XMArray">
       <a:documentation>Math Array/Alignment structure.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="XMath.attributes"/>
-      <ref name="ID.attributes"/>
-      <optional>
-        <attribute name="name"/>
-      </optional>
-      <optional>
-        <attribute name="meaning"/>
-      </optional>
-      <optional>
-        <attribute name="style"/>
-      </optional>
-      <optional>
-        <attribute name="vattach">
-          <choice>
-            <value>top</value>
-            <value>bottom</value>
-          </choice>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="width"/>
-      </optional>
-      <zeroOrMore>
-        <ref name="XMRow"/>
-      </zeroOrMore>
+      <ref name="XMArray_attributes"/>
+      <ref name="XMArray_model"/>
     </element>
   </define>
+  <define name="XMArray_attributes">
+    <a:documentation>Attributes for \elementref{XMArray}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="XMath.attributes"/>
+    <ref name="ID.attributes"/>
+    <optional>
+      <attribute name="name"/>
+    </optional>
+    <optional>
+      <attribute name="meaning"/>
+    </optional>
+    <optional>
+      <attribute name="style"/>
+    </optional>
+    <optional>
+      <attribute name="vattach">
+        <choice>
+          <value>top</value>
+          <value>bottom</value>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="width"/>
+    </optional>
+  </define>
+  <define name="XMArray_model">
+    <a:documentation>Content model for \elementref{XMArray}.</a:documentation>
+    <zeroOrMore>
+      <ref name="XMRow"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="XMRow">
     <element name="XMRow">
       <a:documentation>A row in a math alignment.</a:documentation>
-      <ref name="Common.attributes"/>
-      <zeroOrMore>
-        <ref name="XMCell"/>
-      </zeroOrMore>
+      <ref name="XMRow_attributes"/>
+      <ref name="XMRow_model"/>
     </element>
   </define>
+  <define name="XMRow_attributes">
+    <a:documentation>Attributes for \elementref{XMRow}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="XMRow_model">
+    <a:documentation>Content model for \elementref{XMRow}.</a:documentation>
+    <zeroOrMore>
+      <ref name="XMCell"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="XMCell">
     <element name="XMCell">
       <a:documentation>A cell in a row of a math alignment.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="colspan">
-          <a:documentation>indicates how many columns this cell spans or covers.</a:documentation>
-          <data type="nonNegativeInteger"/>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="rowpan">
-          <a:documentation>indicates how many rows this cell spans or covers.</a:documentation>
-          <data type="nonNegativeInteger"/>
-        </attribute>
-      </optional>
-      <optional>
-        <!--
-          This would have been clearer, but messes up conversion to dtd
-           attribute align { "left" | "right" | "center" | "justify" | text }?,
-        -->
-        <attribute name="align">
-          <a:documentation> specifies the alignment of the content.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="width">
-          <a:documentation>specifies the desired width for the column.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="border">
-          <a:documentation>records a sequence of t or tt, r or rr, b or bb and l or ll
-for borders or doubled borders on any side of the cell.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="thead">
-          <a:documentation>whether this cell corresponds to a table head or foot.</a:documentation>
-          <data type="boolean"/>
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <ref name="XMath.class"/>
-      </zeroOrMore>
+      <ref name="XMCell_attributes"/>
+      <ref name="XMCell_model"/>
     </element>
   </define>
+  <define name="XMCell_attributes">
+    <a:documentation>Attributes for \elementref{XMCell}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="colspan">
+        <a:documentation>indicates how many columns this cell spans or covers.</a:documentation>
+        <data type="nonNegativeInteger"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="rowpan">
+        <a:documentation>indicates how many rows this cell spans or covers.</a:documentation>
+        <data type="nonNegativeInteger"/>
+      </attribute>
+    </optional>
+    <optional>
+      <!--
+        This would have been clearer, but messes up conversion to dtd
+         attribute align { "left" | "right" | "center" | "justify" | text }?,
+      -->
+      <attribute name="align">
+        <a:documentation> specifies the alignment of the content.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="width">
+        <a:documentation>specifies the desired width for the column.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="border">
+        <a:documentation>records a sequence of t or tt, r or rr, b or bb and l or ll
+for borders or doubled borders on any side of the cell.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="thead">
+        <a:documentation>whether this cell corresponds to a table head or foot.</a:documentation>
+        <data type="boolean"/>
+      </attribute>
+    </optional>
+  </define>
+  <define name="XMCell_model">
+    <a:documentation>Content model for \elementref{XMCell}.</a:documentation>
+    <zeroOrMore>
+      <ref name="XMath.class"/>
+    </zeroOrMore>
+  </define>
 </grammar>
+<!-- ====================================================================== -->

@@ -17,21 +17,8 @@
   <define name="document">
     <element name="document">
       <a:documentation>The document root.</a:documentation>
-      <ref name="Sectional.attributes"/>
-      <zeroOrMore>
-        <choice>
-          <ref name="FrontMatter.class"/>
-          <ref name="SectionalFrontMatter.class"/>
-          <ref name="Meta.class"/>
-          <ref name="titlepage"/>
-        </choice>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="document.body.class"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="BackMatter.class"/>
-      </zeroOrMore>
+      <ref name="document_attributes"/>
+      <ref name="document_model"/>
     </element>
   </define>
   <define name="document.body.class">
@@ -46,17 +33,33 @@
       <ref name="part"/>
     </choice>
   </define>
-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <define name="document_attributes">
+    <a:documentation>Attributes for \elementref{document}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="document_model">
+    <a:documentation>Content model for \elementref{document}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="FrontMatter.class"/>
+        <ref name="SectionalFrontMatter.class"/>
+        <ref name="Meta.class"/>
+        <ref name="titlepage"/>
+      </choice>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="document.body.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="BackMatter.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="part">
     <element name="part">
       <a:documentation>A part within a document.</a:documentation>
-      <ref name="Sectional.attributes"/>
-      <zeroOrMore>
-        <ref name="SectionalFrontMatter.class"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="part.body.class"/>
-      </zeroOrMore>
+      <ref name="part_attributes"/>
+      <ref name="part_model"/>
     </element>
   </define>
   <define name="part.body.class">
@@ -66,17 +69,25 @@
       <ref name="chapter"/>
     </choice>
   </define>
+  <define name="part_attributes">
+    <a:documentation>Attributes for \elementref{part}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="part_model">
+    <a:documentation>Content model for \elementref{part}.</a:documentation>
+    <zeroOrMore>
+      <ref name="SectionalFrontMatter.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="part.body.class"/>
+    </zeroOrMore>
+  </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="chapter">
     <element name="chapter">
       <a:documentation>A Chapter within a document.</a:documentation>
-      <ref name="Sectional.attributes"/>
-      <zeroOrMore>
-        <ref name="SectionalFrontMatter.class"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="chapter.body.class"/>
-      </zeroOrMore>
+      <ref name="chapter_attributes"/>
+      <ref name="chapter_model"/>
     </element>
   </define>
   <define name="chapter.body.class">
@@ -90,17 +101,25 @@
       <ref name="section"/>
     </choice>
   </define>
+  <define name="chapter_attributes">
+    <a:documentation>Attributes for \elementref{chapter}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="chapter_model">
+    <a:documentation>Content model for \elementref{chapter}.</a:documentation>
+    <zeroOrMore>
+      <ref name="SectionalFrontMatter.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="chapter.body.class"/>
+    </zeroOrMore>
+  </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="section">
     <element name="section">
       <a:documentation>A Section within a document.</a:documentation>
-      <ref name="Sectional.attributes"/>
-      <zeroOrMore>
-        <ref name="SectionalFrontMatter.class"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="section.body.class"/>
-      </zeroOrMore>
+      <ref name="section_attributes"/>
+      <ref name="section_model"/>
     </element>
   </define>
   <define name="section.body.class">
@@ -113,17 +132,138 @@
       <ref name="subsection"/>
     </choice>
   </define>
+  <define name="section_attributes">
+    <a:documentation>Attributes for \elementref{section}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="section_model">
+    <a:documentation>Content model for \elementref{section}.</a:documentation>
+    <zeroOrMore>
+      <ref name="SectionalFrontMatter.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="section.body.class"/>
+    </zeroOrMore>
+  </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <define name="subsection">
+    <element name="subsection">
+      <a:documentation>A Subsection within a document.</a:documentation>
+      <ref name="subsection_attributes"/>
+      <ref name="subsection_model"/>
+    </element>
+  </define>
+  <define name="subsection.body.class">
+    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="subparagraph"/>
+      <ref name="paragraph"/>
+      <ref name="subsubsection"/>
+    </choice>
+  </define>
+  <define name="subsection_attributes">
+    <a:documentation>Attributes for \elementref{subsection}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="subsection_model">
+    <a:documentation>Content model for \elementref{subsection}.</a:documentation>
+    <zeroOrMore>
+      <ref name="SectionalFrontMatter.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="subsection.body.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <define name="subsubsection">
+    <element name="subsubsection">
+      <a:documentation>A Subsubsection within a document.</a:documentation>
+      <ref name="subsubsection_attributes"/>
+      <ref name="subsubsection_model"/>
+    </element>
+  </define>
+  <define name="subsubsection.body.class">
+    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="subparagraph"/>
+      <ref name="paragraph"/>
+    </choice>
+  </define>
+  <define name="subsubsection_attributes">
+    <a:documentation>Attributes for \elementref{subsubsection}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="subsubsection_model">
+    <a:documentation>Content model for \elementref{subsubsection}.</a:documentation>
+    <zeroOrMore>
+      <ref name="SectionalFrontMatter.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="subsubsection.body.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <define name="paragraph">
+    <element name="paragraph">
+      <a:documentation>A Paragraph within a document. This corresponds to a `formal' marked, possibly labelled
+LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:documentation>
+      <ref name="paragraph_attributes"/>
+      <ref name="paragraph_model"/>
+    </element>
+  </define>
+  <define name="paragraph.body.class">
+    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="subparagraph"/>
+    </choice>
+  </define>
+  <define name="paragraph_attributes">
+    <a:documentation>Attributes for \elementref{paragraph}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="paragraph_model">
+    <a:documentation>Content model for \elementref{paragraph}.</a:documentation>
+    <zeroOrMore>
+      <ref name="SectionalFrontMatter.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="paragraph.body.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <define name="subparagraph">
+    <element name="subparagraph">
+      <a:documentation>A Subparagraph within a document.</a:documentation>
+      <ref name="subparagraph_attributes"/>
+      <ref name="subparagraph_model"/>
+    </element>
+  </define>
+  <define name="subparagraph.body.class">
+    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <ref name="Para.model"/>
+  </define>
+  <define name="subparagraph_attributes">
+    <a:documentation>Attributes for \elementref{subparagraph}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="subparagraph_model">
+    <a:documentation>Content model for \elementref{subparagraph}.</a:documentation>
+    <zeroOrMore>
+      <ref name="SectionalFrontMatter.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="subparagraph.body.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="appendix">
     <element name="appendix">
       <a:documentation>An Appendix within a document.</a:documentation>
-      <ref name="Sectional.attributes"/>
-      <zeroOrMore>
-        <ref name="SectionalFrontMatter.class"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="appendix.body.class"/>
-      </zeroOrMore>
+      <ref name="appendix_attributes"/>
+      <ref name="appendix_model"/>
     </element>
   </define>
   <define name="appendix.body.class">
@@ -137,106 +277,25 @@
       <ref name="section"/>
     </choice>
   </define>
-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-  <define name="subsection">
-    <element name="subsection">
-      <a:documentation>A Subsection within a document.</a:documentation>
-      <ref name="Sectional.attributes"/>
-      <zeroOrMore>
-        <ref name="SectionalFrontMatter.class"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="subsection.body.class"/>
-      </zeroOrMore>
-    </element>
+  <define name="appendix_attributes">
+    <a:documentation>Attributes for \elementref{appendix}.</a:documentation>
+    <ref name="Sectional.attributes"/>
   </define>
-  <define name="subsection.body.class">
-    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
-    <choice>
-      <ref name="Para.model"/>
-      <ref name="subparagraph"/>
-      <ref name="paragraph"/>
-      <ref name="subsubsection"/>
-    </choice>
+  <define name="appendix_model">
+    <a:documentation>Content model for \elementref{appendix}.</a:documentation>
+    <zeroOrMore>
+      <ref name="SectionalFrontMatter.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="appendix.body.class"/>
+    </zeroOrMore>
   </define>
-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-  <define name="subsubsection">
-    <element name="subsubsection">
-      <a:documentation>A Subsubsection within a document.</a:documentation>
-      <ref name="Sectional.attributes"/>
-      <zeroOrMore>
-        <ref name="SectionalFrontMatter.class"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="subsubsection.body.class"/>
-      </zeroOrMore>
-    </element>
-  </define>
-  <define name="subsubsection.body.class">
-    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
-    <choice>
-      <ref name="Para.model"/>
-      <ref name="subparagraph"/>
-      <ref name="paragraph"/>
-    </choice>
-  </define>
-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-  <define name="paragraph">
-    <element name="paragraph">
-      <a:documentation>A Paragraph within a document. This corresponds to a `formal' marked, possibly labelled
-LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:documentation>
-      <ref name="Sectional.attributes"/>
-      <zeroOrMore>
-        <ref name="SectionalFrontMatter.class"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="paragraph.body.class"/>
-      </zeroOrMore>
-    </element>
-  </define>
-  <define name="paragraph.body.class">
-    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
-    <choice>
-      <ref name="Para.model"/>
-      <ref name="subparagraph"/>
-    </choice>
-  </define>
-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-  <define name="subparagraph">
-    <element name="subparagraph">
-      <a:documentation>A Subparagraph within a document.</a:documentation>
-      <ref name="Sectional.attributes"/>
-      <zeroOrMore>
-        <ref name="SectionalFrontMatter.class"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="subparagraph.body.class"/>
-      </zeroOrMore>
-    </element>
-  </define>
-  <define name="subparagraph.body.class">
-    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
-    <ref name="Para.model"/>
-  </define>
-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!-- ====================================================================== -->
   <define name="bibliography">
     <element name="bibliography">
       <a:documentation>A Bibliography within a document.</a:documentation>
-      <ref name="Sectional.attributes"/>
-      <optional>
-        <attribute name="files">
-          <a:documentation>the list of bib files used to create the bibliograph.</a:documentation>
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <ref name="FrontMatter.class"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="SectionalFrontMatter.class"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="bibliography.body.class"/>
-      </zeroOrMore>
+      <ref name="bibliography_attributes"/>
+      <ref name="bibliography_model"/>
     </element>
   </define>
   <define name="bibliography.body.class">
@@ -246,17 +305,33 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
       <ref name="biblist"/>
     </choice>
   </define>
-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <define name="bibliography_attributes">
+    <a:documentation>Attributes for \elementref{bibliography}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+    <optional>
+      <attribute name="files">
+        <a:documentation>the list of bib files used to create the bibliograph.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="bibliography_model">
+    <a:documentation>Content model for \elementref{bibliography}.</a:documentation>
+    <zeroOrMore>
+      <ref name="FrontMatter.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="SectionalFrontMatter.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="bibliography.body.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="index">
     <element name="index">
       <a:documentation>An Index within a document.</a:documentation>
-      <ref name="Sectional.attributes"/>
-      <zeroOrMore>
-        <ref name="SectionalFrontMatter.class"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="index.body.class"/>
-      </zeroOrMore>
+      <ref name="index_attributes"/>
+      <ref name="index_model"/>
     </element>
   </define>
   <define name="index.body.class">
@@ -266,97 +341,137 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
       <ref name="indexlist"/>
     </choice>
   </define>
+  <define name="index_attributes">
+    <a:documentation>Attributes for \elementref{index}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="index_model">
+    <a:documentation>Content model for \elementref{index}.</a:documentation>
+    <zeroOrMore>
+      <ref name="SectionalFrontMatter.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="index.body.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="indexlist">
     <element name="indexlist">
       <a:documentation>A heirarchical index generated. Typically generated during postprocessing
 from the collection of \elementref{indexmark} in the document
 (or document collection).</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <zeroOrMore>
-        <ref name="indexentry"/>
-      </zeroOrMore>
+      <ref name="indexlist_attributes"/>
+      <ref name="indexlist_model"/>
     </element>
   </define>
+  <define name="indexlist_attributes">
+    <a:documentation>Attributes for \elementref{indexlist}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+  </define>
+  <define name="indexlist_model">
+    <a:documentation>Content model for \elementref{indexlist}.</a:documentation>
+    <zeroOrMore>
+      <ref name="indexentry"/>
+    </zeroOrMore>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="indexentry">
     <element name="indexentry">
       <a:documentation>An entry in an \elementref{indexlist} consisting of a phrase, references to
 points in the document where the phrase was found, and possibly
 a nested \elementref{indexlist} represented index levels below this one.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <ref name="indexphrase"/>
-      <optional>
-        <ref name="indexrefs"/>
-      </optional>
-      <optional>
-        <ref name="indexlist"/>
-      </optional>
+      <ref name="indexentry_attributes"/>
+      <ref name="indexentry_model"/>
     </element>
   </define>
+  <define name="indexentry_attributes">
+    <a:documentation>Attributes for \elementref{indexentry}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+  </define>
+  <define name="indexentry_model">
+    <a:documentation>Content model for \elementref{indexentry}.</a:documentation>
+    <ref name="indexphrase"/>
+    <optional>
+      <ref name="indexrefs"/>
+    </optional>
+    <optional>
+      <ref name="indexlist"/>
+    </optional>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="indexrefs">
     <element name="indexrefs">
       <a:documentation>A container for the references (\elementref{ref}) to where an \elementref{indexphrase} was
 encountered in the document. The model is Inline to allow
 arbitrary text, in addition to the expected \elementref{ref}'s.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="indexrefs_attributes"/>
+      <ref name="indexrefs_model"/>
     </element>
+  </define>
+  <define name="indexrefs_attributes">
+    <a:documentation>Attributes for \elementref{indexrefs}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="indexrefs_model">
+    <a:documentation>Content model for \elementref{indexrefs}.</a:documentation>
+    <ref name="Inline.model"/>
   </define>
   <!-- ====================================================================== -->
   <define name="title">
     <element name="title">
       <a:documentation>The title of a document, section or similar document structure container.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="title_attributes"/>
+      <ref name="title_model"/>
     </element>
   </define>
+  <define name="title_attributes">
+    <a:documentation>Attributes for \elementref{title}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="title_model">
+    <a:documentation>Content model for \elementref{title}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="toctitle">
     <element name="toctitle">
       <a:documentation>The short form of a title, for use in tables of contents or similar.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="toctitle_attributes"/>
+      <ref name="toctitle_model"/>
     </element>
   </define>
+  <define name="toctitle_attributes">
+    <a:documentation>Attributes for \elementref{toctitle}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="toctitle_model">
+    <a:documentation>Content model for \elementref{toctitle}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="subtitle">
     <element name="subtitle">
       <a:documentation>A subtitle, or secondary title.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="subtitle_attributes"/>
+      <ref name="subtitle_model"/>
     </element>
   </define>
-  <!-- NOTE: This should be aligned with Bibname. -->
-  <define name="personname">
-    <element name="personname">
-      <a:documentation>A person's name.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
-    </element>
+  <define name="subtitle_attributes">
+    <a:documentation>Attributes for \elementref{subtitle}.</a:documentation>
+    <ref name="Common.attributes"/>
   </define>
+  <define name="subtitle_model">
+    <a:documentation>Content model for \elementref{subtitle}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="creator">
     <element name="creator">
       <a:documentation>Generalized document creator.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="role">
-          <a:documentation>indicates the role of the person in creating the docment.
-Commonly useful values are specified, but is open-ended to support extension.</a:documentation>
-          <choice>
-            <value>author</value>
-            <value>editor</value>
-            <value>translator</value>
-            <value>contributor</value>
-            <value>translator</value>
-            <text/>
-          </choice>
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <choice>
-          <ref name="Person.class"/>
-          <ref name="Misc.class"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="creator_attributes"/>
+      <ref name="creator_model"/>
     </element>
   </define>
   <define name="Person.class">
@@ -366,87 +481,187 @@ Commonly useful values are specified, but is open-ended to support extension.</a
       <ref name="contact"/>
     </choice>
   </define>
+  <define name="creator_attributes">
+    <a:documentation>Attributes for \elementref{creator}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>indicates the role of the person in creating the docment.
+Commonly useful values are specified, but is open-ended to support extension.</a:documentation>
+        <choice>
+          <value>author</value>
+          <value>editor</value>
+          <value>translator</value>
+          <value>contributor</value>
+          <value>translator</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="creator_model">
+    <a:documentation>Content model for \elementref{creator}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="Person.class"/>
+        <ref name="Misc.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <!--
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    NOTE: This should be aligned with Bibname.
+  -->
+  <define name="personname">
+    <element name="personname">
+      <a:documentation>A person's name.</a:documentation>
+      <ref name="personname_attributes"/>
+      <ref name="personname_model"/>
+    </element>
+  </define>
+  <define name="personname_attributes">
+    <a:documentation>Attributes for \elementref{personname}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="personname_model">
+    <a:documentation>Content model for \elementref{personname}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="contact">
     <element name="contact">
       <a:documentation>Generalized contact information for a document creator.
 Note that this element can be repeated to give different types 
 of contact information (using \attr{role}) for the same creator.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="role">
-          <a:documentation>indicates the type of contact information contained.
-Commonly useful values are specified, but is open-ended to support extension.</a:documentation>
-          <choice>
-            <value>affiliation</value>
-            <value>address</value>
-            <value>current_address</value>
-            <value>email</value>
-            <value>url</value>
-            <value>thanks</value>
-            <value>dedicatory</value>
-            <text/>
-          </choice>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="contact_attributes"/>
+      <ref name="contact_model"/>
     </element>
   </define>
+  <define name="contact_attributes">
+    <a:documentation>Attributes for \elementref{contact}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>indicates the type of contact information contained.
+Commonly useful values are specified, but is open-ended to support extension.</a:documentation>
+        <choice>
+          <value>affiliation</value>
+          <value>address</value>
+          <value>current_address</value>
+          <value>email</value>
+          <value>url</value>
+          <value>thanks</value>
+          <value>dedicatory</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="contact_model">
+    <a:documentation>Content model for \elementref{contact}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="date">
     <element name="date">
       <a:documentation>Generalized document date.
 Note that this element can be repeated to give the dates
 of different events (using \attr{role}) for the same document.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="role">
-          <a:documentation>indicates the relevance of the date to the document.
-Commonly useful values are specified, but is open-ended to support extension.</a:documentation>
-          <choice>
-            <value>creation</value>
-            <value>conversion</value>
-            <value>posted</value>
-            <value>received</value>
-            <value>revised</value>
-            <value>accepted</value>
-            <text/>
-          </choice>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="date_attributes"/>
+      <ref name="date_model"/>
     </element>
   </define>
+  <define name="date_attributes">
+    <a:documentation>Attributes for \elementref{date}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>indicates the relevance of the date to the document.
+Commonly useful values are specified, but is open-ended to support extension.</a:documentation>
+        <choice>
+          <value>creation</value>
+          <value>conversion</value>
+          <value>posted</value>
+          <value>received</value>
+          <value>revised</value>
+          <value>accepted</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="date_model">
+    <a:documentation>Content model for \elementref{date}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="abstract">
     <element name="abstract">
       <a:documentation>A document abstract.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Block.model"/>
+      <ref name="abstract_attributes"/>
+      <ref name="abstract_model"/>
     </element>
   </define>
+  <define name="abstract_attributes">
+    <a:documentation>Attributes for \elementref{abstract}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="abstract_model">
+    <a:documentation>Content model for \elementref{abstract}.</a:documentation>
+    <ref name="Block.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="acknowledgements">
     <element name="acknowledgements">
       <a:documentation>Acknowledgements for the document.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="acknowledgements_attributes"/>
+      <ref name="acknowledgements_model"/>
     </element>
   </define>
+  <define name="acknowledgements_attributes">
+    <a:documentation>Attributes for \elementref{acknowledgements}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="acknowledgements_model">
+    <a:documentation>Content model for \elementref{acknowledgements}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="keywords">
     <element name="keywords">
       <a:documentation>Keywords for the document. The content is freeform.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="keywords_attributes"/>
+      <ref name="keywords_model"/>
     </element>
   </define>
+  <define name="keywords_attributes">
+    <a:documentation>Attributes for \elementref{keywords}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="keywords_model">
+    <a:documentation>Content model for \elementref{keywords}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="classification">
     <element name="classification">
       <a:documentation>A classification of the document.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="scheme">
-          <a:documentation>indicates what classification scheme was used.</a:documentation>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="classification_attributes"/>
+      <ref name="classification_model"/>
     </element>
+  </define>
+  <define name="classification_attributes">
+    <a:documentation>Attributes for \elementref{classification}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="scheme">
+        <a:documentation>indicates what classification scheme was used.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="classification_model">
+    <a:documentation>Content model for \elementref{classification}.</a:documentation>
+    <ref name="Inline.model"/>
   </define>
   <!--
     ======================================================================
@@ -455,15 +670,23 @@ Commonly useful values are specified, but is open-ended to support extension.</a
   <define name="titlepage">
     <element name="titlepage">
       <a:documentation>block of random stuff marked as a titlepage</a:documentation>
-      <ref name="Sectional.attributes"/>
-      <zeroOrMore>
-        <choice>
-          <ref name="FrontMatter.class"/>
-          <ref name="SectionalFrontMatter.class"/>
-          <ref name="Block.class"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="titlepage_attributes"/>
+      <ref name="titlepage_model"/>
     </element>
+  </define>
+  <define name="titlepage_attributes">
+    <a:documentation>Attributes for \elementref{titlepage}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="titlepage_model">
+    <a:documentation>Content model for \elementref{titlepage}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="FrontMatter.class"/>
+        <ref name="SectionalFrontMatter.class"/>
+        <ref name="Block.class"/>
+      </choice>
+    </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
   <define name="Sectional.attributes">
@@ -506,3 +729,4 @@ to support articles with figures and similar data appearing `at end'.</a:documen
     </choice>
   </define>
 </grammar>
+<!-- ====================================================================== -->

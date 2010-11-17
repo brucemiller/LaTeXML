@@ -41,26 +41,45 @@ in both inline and block contexts.</a:documentation>
     <a:documentation>Additional Metadata that can be present in equations.</a:documentation>
     <ref name="constraint"/>
   </define>
+  <!-- ====================================================================== -->
   <define name="p">
     <element name="p">
       <a:documentation>A physical paragraph.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <ref name="Positionable.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="p_attributes"/>
+      <ref name="p_model"/>
     </element>
   </define>
+  <define name="p_attributes">
+    <a:documentation>Attributes for \elementref{p}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="Positionable.attributes"/>
+  </define>
+  <define name="p_model">
+    <a:documentation>Content model for \elementref{p}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="constraint">
     <element name="constraint">
       <a:documentation>A constraint upon an equation.</a:documentation>
-      <optional>
-        <attribute name="hidden">
-          <data type="boolean"/>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="constraint_attributes"/>
+      <ref name="constraint_model"/>
     </element>
   </define>
+  <define name="constraint_attributes">
+    <a:documentation>Attributes for \elementref{constraint}.</a:documentation>
+    <optional>
+      <attribute name="hidden">
+        <data type="boolean"/>
+      </attribute>
+    </optional>
+  </define>
+  <define name="constraint_model">
+    <a:documentation>Content model for \elementref{constraint}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="equation">
     <element name="equation">
       <a:documentation>An Equation.  The model is just Inline which includes \elementref{Math},
@@ -68,36 +87,54 @@ the main expected ingredient.
 However, other things can end up in display math, too, so we use Inline.
 Note that tabular is here only because it's a common, if misguided, idiom;
 the processor will lift such elements out of math, when possible</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
-      <zeroOrMore>
-        <choice>
-          <ref name="Math"/>
-          <ref name="MathFork"/>
-          <ref name="text"/>
-          <ref name="tabular"/>
-          <ref name="Meta.class"/>
-          <ref name="EquationMeta.class"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="equation_attributes"/>
+      <ref name="equation_model"/>
     </element>
   </define>
+  <define name="equation_attributes">
+    <a:documentation>Attributes for \elementref{equation}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Labelled.attributes"/>
+  </define>
+  <define name="equation_model">
+    <a:documentation>Content model for \elementref{equation}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="Math"/>
+        <ref name="MathFork"/>
+        <ref name="text"/>
+        <ref name="tabular"/>
+        <ref name="Meta.class"/>
+        <ref name="EquationMeta.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="equationgroup">
     <element name="equationgroup">
       <a:documentation>A group of equations, perhaps aligned (Though this is nowhere recorded).</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
-      <zeroOrMore>
-        <choice>
-          <ref name="equationgroup"/>
-          <ref name="equation"/>
-          <ref name="block"/>
-          <ref name="Meta.class"/>
-          <ref name="EquationMeta.class"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="equationgroup_attributes"/>
+      <ref name="equationgroup_model"/>
     </element>
   </define>
+  <define name="equationgroup_attributes">
+    <a:documentation>Attributes for \elementref{equationgroup}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Labelled.attributes"/>
+  </define>
+  <define name="equationgroup_model">
+    <a:documentation>Content model for \elementref{equationgroup}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="equationgroup"/>
+        <ref name="equation"/>
+        <ref name="block"/>
+        <ref name="Meta.class"/>
+        <ref name="EquationMeta.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="MathFork">
     <element name="MathFork">
       <a:documentation>A wrapper for Math that provides alternative,
@@ -106,165 +143,291 @@ formatted representations.
 The first child is the meaningful form,
 the extra children provide formatted forms,
 for example being table rows or cells arising from an eqnarray.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Math"/>
-      <zeroOrMore>
-        <ref name="MathBranch"/>
-      </zeroOrMore>
+      <ref name="MathFork_attributes"/>
+      <ref name="MathFork_model"/>
     </element>
   </define>
+  <define name="MathFork_attributes">
+    <a:documentation>Attributes for \elementref{MathFork}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="MathFork_model">
+    <a:documentation>Content model for \elementref{MathFork}.</a:documentation>
+    <ref name="Math"/>
+    <zeroOrMore>
+      <ref name="MathBranch"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="MathBranch">
     <element name="MathBranch">
       <a:documentation>A container for an alternatively formatted math representation.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="format"/>
-      </optional>
-      <zeroOrMore>
-        <choice>
-          <ref name="Math"/>
-          <ref name="tr"/>
-          <ref name="td"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="MathBranch_attributes"/>
+      <ref name="MathBranch_model"/>
     </element>
   </define>
+  <define name="MathBranch_attributes">
+    <a:documentation>Attributes for \elementref{MathBranch}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="format"/>
+    </optional>
+  </define>
+  <define name="MathBranch_model">
+    <a:documentation>Content model for \elementref{MathBranch}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="Math"/>
+        <ref name="tr"/>
+        <ref name="td"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="quote">
     <element name="quote">
       <a:documentation>A quotation.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <ref name="Block.model"/>
+      <ref name="quote_attributes"/>
+      <ref name="quote_model"/>
     </element>
+  </define>
+  <define name="quote_attributes">
+    <a:documentation>Attributes for \elementref{quote}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+  </define>
+  <define name="quote_model">
+    <a:documentation>Content model for \elementref{quote}.</a:documentation>
+    <ref name="Block.model"/>
   </define>
   <!--
     This was Inline.model, but since quotes can be arbitrarily complex
     including equations, etc, not just verse, should be Block.model, perhaps even Para.model?
   -->
+  <!-- ====================================================================== -->
   <define name="block">
     <element name="block">
       <a:documentation>A generic block (fallback).</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <ref name="Positionable.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="block_attributes"/>
+      <ref name="block_model"/>
     </element>
   </define>
+  <define name="block_attributes">
+    <a:documentation>Attributes for \elementref{block}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="Positionable.attributes"/>
+  </define>
+  <define name="block_model">
+    <a:documentation>Content model for \elementref{block}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="listingblock">
     <element name="listingblock">
       <a:documentation>An in-block Listing, without caption</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
-      <zeroOrMore>
-        <ref name="Block.model"/>
-      </zeroOrMore>
+      <ref name="listingblock_attributes"/>
+      <ref name="listingblock_model"/>
     </element>
   </define>
+  <define name="listingblock_attributes">
+    <a:documentation>Attributes for \elementref{listingblock}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Labelled.attributes"/>
+  </define>
+  <define name="listingblock_model">
+    <a:documentation>Content model for \elementref{listingblock}.</a:documentation>
+    <zeroOrMore>
+      <ref name="Block.model"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="break">
     <element name="break">
       <a:documentation>A forced line break.</a:documentation>
-      <ref name="Common.attributes"/>
-      <empty/>
+      <ref name="break_attributes"/>
+      <ref name="break_model"/>
     </element>
   </define>
+  <define name="break_attributes">
+    <a:documentation>Attributes for \elementref{break}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="break_model">
+    <a:documentation>Content model for \elementref{break}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="inline-block">
     <element name="inline-block">
       <a:documentation>An inline block. Actually, can appear in inline or block mode, but
 typesets its contents as a block.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <ref name="Positionable.attributes"/>
-      <ref name="Block.model"/>
+      <ref name="inline-block_attributes"/>
+      <ref name="inline-block_model"/>
     </element>
   </define>
+  <define name="inline-block_attributes">
+    <a:documentation>Attributes for \elementref{inline-block}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="Positionable.attributes"/>
+  </define>
+  <define name="inline-block_model">
+    <a:documentation>Content model for \elementref{inline-block}.</a:documentation>
+    <ref name="Block.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="verbatim">
     <element name="verbatim">
       <a:documentation>Verbatim content</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <optional>
-        <attribute name="font">
-          <a:documentation>the font to use; generally typewriter.</a:documentation>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="verbatim_attributes"/>
+      <ref name="verbatim_model"/>
     </element>
   </define>
+  <define name="verbatim_attributes">
+    <a:documentation>Attributes for \elementref{verbatim}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <optional>
+      <attribute name="font">
+        <a:documentation>the font to use; generally typewriter.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="verbatim_model">
+    <a:documentation>Content model for \elementref{verbatim}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="itemize">
     <element name="itemize">
       <a:documentation>An itemized list.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <zeroOrMore>
-        <ref name="item"/>
-      </zeroOrMore>
+      <ref name="itemize_attributes"/>
+      <ref name="itemize_model"/>
     </element>
   </define>
+  <define name="itemize_attributes">
+    <a:documentation>Attributes for \elementref{itemize}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+  </define>
+  <define name="itemize_model">
+    <a:documentation>Content model for \elementref{itemize}.</a:documentation>
+    <zeroOrMore>
+      <ref name="item"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="enumerate">
     <element name="enumerate">
       <a:documentation>An enumerated list.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <zeroOrMore>
-        <ref name="item"/>
-      </zeroOrMore>
+      <ref name="enumerate_attributes"/>
+      <ref name="enumerate_model"/>
     </element>
   </define>
+  <define name="enumerate_attributes">
+    <a:documentation>Attributes for \elementref{enumerate}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+  </define>
+  <define name="enumerate_model">
+    <a:documentation>Content model for \elementref{enumerate}.</a:documentation>
+    <zeroOrMore>
+      <ref name="item"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="description">
     <element name="description">
       <a:documentation>A description list. The \elementref{item}s within are expected to have a \elementref{tag}
 which represents the term being described in each \elementref{item}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <zeroOrMore>
-        <ref name="item"/>
-      </zeroOrMore>
+      <ref name="description_attributes"/>
+      <ref name="description_model"/>
     </element>
   </define>
+  <define name="description_attributes">
+    <a:documentation>Attributes for \elementref{description}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+  </define>
+  <define name="description_model">
+    <a:documentation>Content model for \elementref{description}.</a:documentation>
+    <zeroOrMore>
+      <ref name="item"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="item">
     <element name="item">
       <a:documentation>An item within a list.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Labelled.attributes"/>
-      <optional>
-        <ref name="tag"/>
-      </optional>
-      <ref name="Para.model"/>
+      <ref name="item_attributes"/>
+      <ref name="item_model"/>
     </element>
   </define>
+  <define name="item_attributes">
+    <a:documentation>Attributes for \elementref{item}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Labelled.attributes"/>
+  </define>
+  <define name="item_model">
+    <a:documentation>Content model for \elementref{item}.</a:documentation>
+    <optional>
+      <ref name="tag"/>
+    </optional>
+    <ref name="Para.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="tag">
     <element name="tag">
       <a:documentation>A tag within an item indicating the term or bullet for a given item.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="open">
-          <a:documentation>specifies an open delimiters used to display the tag.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="close">
-          <a:documentation>specifies an close delimiters used to display the tag.</a:documentation>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="tag_attributes"/>
+      <ref name="tag_model"/>
     </element>
   </define>
+  <define name="tag_attributes">
+    <a:documentation>Attributes for \elementref{tag}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="open">
+        <a:documentation>specifies an open delimiters used to display the tag.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="close">
+        <a:documentation>specifies an close delimiters used to display the tag.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="tag_model">
+    <a:documentation>Content model for \elementref{tag}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="graphics">
     <element name="graphics">
-      <a:documentation>A graphical insertion of an external file.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <ref name="Imageable.attributes"/>
-      <attribute name="graphic">
-        <a:documentation>the path to the graphics file</a:documentation>
-      </attribute>
-      <optional>
-        <attribute name="options">
-          <a:documentation>an encoding of the scaling and positioning options
-to be used in processing the graphic.</a:documentation>
-        </attribute>
-      </optional>
-      <empty/>
+      <a:documentation>A graphical insertion of an external file. </a:documentation>
+      <ref name="graphics_attributes"/>
+      <ref name="graphics_model"/>
     </element>
   </define>
+  <define name="graphics_attributes">
+    <a:documentation>Attributes for \elementref{graphics}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="Imageable.attributes"/>
+    <attribute name="graphic">
+      <a:documentation>the path to the graphics file</a:documentation>
+    </attribute>
+    <optional>
+      <attribute name="options">
+        <a:documentation>an encoding of the scaling and positioning options
+to be used in processing the graphic.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="graphics_model">
+    <a:documentation>Content model for \elementref{graphics}.</a:documentation>
+    <empty/>
+  </define>
 </grammar>
+<!-- ====================================================================== -->

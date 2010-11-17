@@ -22,40 +22,59 @@ Para.class |=
 ## in both inline and block contexts.
 Misc.class  |= inline-para
 
+#======================================================================
+
 para =
 ## A Logical paragraph. It has an \attr{id}, but not a \attr{label}.
-element para {
-  Common.attributes,
-  ID.attributes,
+element para { para_attributes, para_model }
 
-  Block.model }
+## Attributes for \elementref{para}.
+para_attributes = Common.attributes, ID.attributes
+
+
+## Content model for \elementref{para}.
+para_model = Block.model
+
+#======================================================================
 
 inline-para =
 ## An inline para. Actually, can appear in inline or block mode, but
 ## typesets its contents as para.
-element inline-para {
-  Common.attributes,
-  Positionable.attributes,
+element inline-para { inline-para_attributes, inline-para_model }
 
-  Para.model }
+## Attributes for \elementref{inline-para}.
+inline-para_attributes = Common.attributes, Positionable.attributes
+
+## Content model for \elementref{inline-para}.
+inline-para_model = Para.model
+
+#======================================================================
 
 theorem =
 ## A theorem or similar object. The \attr{class} attribute can be used to distinguish
 ## different kinds of theorem.
-element theorem {
-  Common.attributes,
-  Labelled.attributes,
+element theorem { theorem_attributes, theorem_model }
 
-  title?, Para.model  }
+## Attributes for \elementref{theorem}.
+theorem_attributes = Common.attributes, Labelled.attributes
+
+## Content model for \elementref{theorem}.
+theorem_model = title?, Para.model
+
+#======================================================================
 
 proof =
 ## A proof or similar object. The \attr{class} attribute can be used to distinguish
 ## different kinds of proof.
-element proof {
-  Common.attributes,
-  Labelled.attributes,
+element proof { proof_attributes, proof_model }
 
-  title?, Para.model }
+## Attributes for \elementref{proof}.
+proof_attributes = Common.attributes, Labelled.attributes
+
+## Content model for \elementref{proof}.
+proof_model = title?, Para.model
+
+#======================================================================
 
 ## These are the additional elements representing figure and
 ## table captions.
@@ -63,50 +82,80 @@ element proof {
 ## Or, should caption be used for theorem and proof?
 Caption.class = caption | toccaption
 
+#======================================================================
+
 figure =
 ## A  figure, possibly captioned.
-element figure {
+element figure { figure_attributes, figure_model }
+
+## Attributes for \elementref{figure}.
+figure_attributes = 
   Common.attributes,
   Labelled.attributes,
 
   ## the floating placement parameter that determines where the object is displayed.
-  attribute placement { text }?,
+  attribute placement { text }?
 
-  (Block.model | Caption.class)* }
+## Content model for \elementref{figure}.
+figure_model = (Block.model | Caption.class)*
+
+#======================================================================
 
 table =
 ## A  Table, possibly captioned. This is not necessarily a \elementref{tabular}.
-element table {
+element table { table_attributes, table_model }
+
+## Attributes for \elementref{table}.
+table_attributes = 
   Common.attributes,
   Labelled.attributes,
 
   ## the floating placement parameter that determines where the object is displayed.
-  attribute placement { text }?,
+  attribute placement { text }?
 
-  (Block.model | Caption.class)*  }
+## Content model for \elementref{table}.
+table_model = (Block.model | Caption.class)*
+
+#======================================================================
 
 listing =
 ## A Listing, possibly captioned.
-element listing {
+element listing { listing_attributes, listing_model }
+
+## Attributes for \elementref{listing}.
+listing_attributes = 
   Common.attributes,
   Labelled.attributes,
 
   ## the floating placement parameter that determines where the object is displayed.
-  attribute placement { text }?,
+  attribute placement { text }?
 
-  (Block.model | Caption.class)*  }
+## Content model for \elementref{listing}.
+listing_model = (Block.model | Caption.class)*
+
+#======================================================================
 
 caption =
 ## A caption for a \elementref{table} or \elementref{figure}.
-element caption {
-  Common.attributes,
+element caption { caption_attributes, caption_model }
 
-  Inline.model }
+## Attributes for \elementref{caption}.
+caption_attributes = Common.attributes
+
+## Content model for \elementref{caption}.
+caption_model = Inline.model
+
+#======================================================================
 
 toccaption =
 ## A short form of \elementref{table} or \elementref{figure} caption,
 ## used for lists of figures or similar.
-element toccaption {
-  Common.attributes,
+element toccaption { toccaption_attributes, toccaption_model }
 
-  Inline.model }
+## Attributes for \elementref{toccaption}.
+toccaption_attributes = Common.attributes
+
+## Content model for \elementref{toccaption}.
+toccaption_model = Inline.model
+
+#======================================================================

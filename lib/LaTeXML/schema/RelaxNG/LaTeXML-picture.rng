@@ -23,6 +23,7 @@
 NOTE: Consider whether it is sensible to drop this and incorporate SVG itself.</a:documentation>
     <ref name="picture"/>
   </define>
+  <!-- ====================================================================== -->
   <define name="Picture.class">
     <choice>
       <ref name="g"/>
@@ -152,190 +153,344 @@ NOTE: Consider whether it is sensible to drop this and incorporate SVG itself.</
       </attribute>
     </optional>
   </define>
+  <!-- ====================================================================== -->
   <define name="picture">
     <element name="picture">
       <a:documentation>A picture environment.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <ref name="Picture.attributes"/>
-      <ref name="Imageable.attributes"/>
-      <optional>
-        <attribute name="clip">
-          <data type="boolean"/>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="baseline"/>
-      </optional>
-      <optional>
-        <attribute name="unitlength"/>
-      </optional>
-      <optional>
-        <attribute name="xunitlength"/>
-      </optional>
-      <optional>
-        <attribute name="yunitlength"/>
-      </optional>
-      <optional>
-        <attribute name="tex"/>
-      </optional>
-      <optional>
-        <attribute name="content-tex"/>
-      </optional>
-      <zeroOrMore>
-        <choice>
-          <ref name="Picture.class"/>
-          <ref name="Inline.class"/>
-          <ref name="Misc.class"/>
-          <ref name="Meta.class"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="picture_attributes"/>
+      <ref name="picture_model"/>
     </element>
   </define>
+  <define name="picture_attributes">
+    <a:documentation>Attributes for \elementref{picture}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="Picture.attributes"/>
+    <ref name="Imageable.attributes"/>
+    <optional>
+      <attribute name="clip">
+        <data type="boolean"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="baseline"/>
+    </optional>
+    <optional>
+      <attribute name="unitlength"/>
+    </optional>
+    <optional>
+      <attribute name="xunitlength"/>
+    </optional>
+    <optional>
+      <attribute name="yunitlength"/>
+    </optional>
+    <optional>
+      <attribute name="tex"/>
+    </optional>
+    <optional>
+      <attribute name="content-tex"/>
+    </optional>
+  </define>
+  <define name="picture_model">
+    <a:documentation>Content model for \elementref{picture}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="Picture.class"/>
+        <ref name="Inline.class"/>
+        <ref name="Misc.class"/>
+        <ref name="Meta.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="g">
     <element name="g">
       <a:documentation>A graphical grouping; the content is inherits by the transformations, 
 positioning and other properties.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <ref name="PictureGroup.attributes"/>
-      <zeroOrMore>
-        <choice>
-          <ref name="Picture.class"/>
-          <ref name="Inline.class"/>
-          <ref name="Misc.class"/>
-          <ref name="Meta.class"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="g_attributes"/>
+      <ref name="g_model"/>
     </element>
   </define>
+  <define name="g_attributes">
+    <a:documentation>Attributes for \elementref{g}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+    <ref name="PictureGroup.attributes"/>
+  </define>
+  <define name="g_model">
+    <a:documentation>Content model for \elementref{g}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="Picture.class"/>
+        <ref name="Inline.class"/>
+        <ref name="Misc.class"/>
+        <ref name="Meta.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="rect">
     <element name="rect">
       <a:documentation>A rectangle within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="rect_attributes"/>
+      <ref name="rect_model"/>
     </element>
   </define>
+  <define name="rect_attributes">
+    <a:documentation>Attributes for \elementref{rect}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="rect_model">
+    <a:documentation>Content model for \elementref{rect}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="line">
     <element name="line">
       <a:documentation>A line within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="line_attributes"/>
+      <ref name="line_model"/>
     </element>
   </define>
+  <define name="line_attributes">
+    <a:documentation>Attributes for \elementref{line}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="line_model">
+    <a:documentation>Content model for \elementref{line}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="polygon">
     <element name="polygon">
       <a:documentation>A polygon within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="polygon_attributes"/>
+      <ref name="polygon_model"/>
     </element>
   </define>
+  <define name="polygon_attributes">
+    <a:documentation>Attributes for \elementref{polygon}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="polygon_model">
+    <a:documentation>Content model for \elementref{polygon}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="wedge">
     <element name="wedge">
       <a:documentation>A wedge within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="wedge_attributes"/>
+      <ref name="wedge_model"/>
     </element>
   </define>
+  <define name="wedge_attributes">
+    <a:documentation>Attributes for \elementref{wedge}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="wedge_model">
+    <a:documentation>Content model for \elementref{wedge}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="arc">
     <element name="arc">
       <a:documentation>An arc within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="arc_attributes"/>
+      <ref name="arc_model"/>
     </element>
   </define>
+  <define name="arc_attributes">
+    <a:documentation>Attributes for \elementref{arc}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="arc_model">
+    <a:documentation>Content model for \elementref{arc}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="circle">
     <element name="circle">
       <a:documentation>A circle within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="circle_attributes"/>
+      <ref name="circle_model"/>
     </element>
   </define>
+  <define name="circle_attributes">
+    <a:documentation>Attributes for \elementref{circle}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="circle_model">
+    <a:documentation>Content model for \elementref{circle}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="ellipse">
     <element name="ellipse">
       <a:documentation>An ellipse within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="ellipse_attributes"/>
+      <ref name="ellipse_model"/>
     </element>
   </define>
+  <define name="ellipse_attributes">
+    <a:documentation>Attributes for \elementref{ellipse}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="ellipse_model">
+    <a:documentation>Content model for \elementref{ellipse}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="path">
     <element name="path">
       <a:documentation>A path within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="path_attributes"/>
+      <ref name="path_model"/>
     </element>
   </define>
+  <define name="path_attributes">
+    <a:documentation>Attributes for \elementref{path}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="path_model">
+    <a:documentation>Content model for \elementref{path}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="bezier">
     <element name="bezier">
       <a:documentation>A bezier curve within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="bezier_attributes"/>
+      <ref name="bezier_model"/>
     </element>
   </define>
+  <define name="bezier_attributes">
+    <a:documentation>Attributes for \elementref{bezier}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="bezier_model">
+    <a:documentation>Content model for \elementref{bezier}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="curve">
     <element name="curve">
       <a:documentation>A curve within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="curve_attributes"/>
+      <ref name="curve_model"/>
     </element>
   </define>
+  <define name="curve_attributes">
+    <a:documentation>Attributes for \elementref{curve}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="curve_model">
+    <a:documentation>Content model for \elementref{curve}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="parabola">
     <element name="parabola">
       <a:documentation>A parabola curve within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="parabola_attributes"/>
+      <ref name="parabola_model"/>
     </element>
   </define>
+  <define name="parabola_attributes">
+    <a:documentation>Attributes for \elementref{parabola}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="parabola_model">
+    <a:documentation>Content model for \elementref{parabola}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="dots">
     <element name="dots">
       <a:documentation>A sequence of dots (?) within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="dots_attributes"/>
+      <ref name="dots_model"/>
     </element>
   </define>
+  <define name="dots_attributes">
+    <a:documentation>Attributes for \elementref{dots}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="dots_model">
+    <a:documentation>Content model for \elementref{dots}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="grid">
     <element name="grid">
       <a:documentation>A grid within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <empty/>
+      <ref name="grid_attributes"/>
+      <ref name="grid_model"/>
     </element>
   </define>
+  <define name="grid_attributes">
+    <a:documentation>Attributes for \elementref{grid}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="grid_model">
+    <a:documentation>Content model for \elementref{grid}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="clip">
     <element name="clip">
       <a:documentation>Establishes a clipping region within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <zeroOrMore>
-        <ref name="clippath"/>
-      </zeroOrMore>
+      <ref name="clip_attributes"/>
+      <ref name="clip_model"/>
     </element>
   </define>
+  <define name="clip_attributes">
+    <a:documentation>Attributes for \elementref{clip}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="clip_model">
+    <a:documentation>Content model for \elementref{clip}.</a:documentation>
+    <zeroOrMore>
+      <ref name="clippath"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
   <define name="clippath">
     <element name="clippath">
       <a:documentation>Establishes a clipping region within a \elementref{picture}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Picture.attributes"/>
-      <zeroOrMore>
-        <choice>
-          <ref name="Picture.class"/>
-          <ref name="Inline.class"/>
-          <ref name="Misc.class"/>
-          <ref name="Meta.class"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="clippath_attributes"/>
+      <ref name="clippath_model"/>
     </element>
   </define>
+  <define name="clippath_attributes">
+    <a:documentation>Attributes for \elementref{clippath}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Picture.attributes"/>
+  </define>
+  <define name="clippath_model">
+    <a:documentation>Content model for \elementref{clippath}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="Picture.class"/>
+        <ref name="Inline.class"/>
+        <ref name="Misc.class"/>
+        <ref name="Meta.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
 </grammar>
+<!-- ====================================================================== -->

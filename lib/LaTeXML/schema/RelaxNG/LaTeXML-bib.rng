@@ -24,14 +24,22 @@
   <define name="biblist">
     <element name="biblist">
       <a:documentation>A list of bibliographic \elementref{bibentry} or \elementref{bibitem}.</a:documentation>
-      <ref name="Common.attributes"/>
-      <zeroOrMore>
-        <choice>
-          <ref name="bibentry"/>
-          <ref name="bibitem"/>
-        </choice>
-      </zeroOrMore>
+      <ref name="biblist_attributes"/>
+      <ref name="biblist_model"/>
     </element>
+  </define>
+  <define name="biblist_attributes">
+    <a:documentation>Attributes for \elementref{biblist}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="biblist_model">
+    <a:documentation>Content model for \elementref{biblist}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="bibentry"/>
+        <ref name="bibitem"/>
+      </choice>
+    </zeroOrMore>
   </define>
   <!--
     ======================================================================
@@ -44,22 +52,31 @@
       <a:documentation>A formatted bibliographic item, typically as written explicit
 in a LaTeX article. This has generally lost most of the semantics
 present in the BibTeX data.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <optional>
-        <attribute name="key">
-          <a:documentation>The unique key for this object; this key is referenced by the
-\attr{bibrefs} attribute of \elementref{bibref}.</a:documentation>
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <ref name="bibtag"/>
-      </zeroOrMore>
-      <zeroOrMore>
-        <ref name="bibblock"/>
-      </zeroOrMore>
+      <ref name="bibitem_attributes"/>
+      <ref name="bibitem_model"/>
     </element>
   </define>
+  <define name="bibitem_attributes">
+    <a:documentation>Attributes for \elementref{bibitem}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <optional>
+      <attribute name="key">
+        <a:documentation>The unique key for this object; this key is referenced by the
+\attr{bibrefs} attribute of \elementref{bibref}.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="bibitem_model">
+    <a:documentation>Content model for \elementref{bibitem}.</a:documentation>
+    <zeroOrMore>
+      <ref name="bibtag"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="bibblock"/>
+    </zeroOrMore>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bibtag">
     <element name="bibtag">
       <a:documentation>Various formatted tags for bibliographic items.
@@ -67,38 +84,56 @@ Typically @role refnum is shown in the displayed bibliography,
 as the beginning of the item.  Other roles 
 (eg. number, authors, fullauthors, year, title) record formatted
 info to be used for filling in citations (\elementref{bibref}).</a:documentation>
-      <optional>
-        <attribute name="role">
-          <choice>
-            <value>number</value>
-            <value>authors</value>
-            <value>fullauthors</value>
-            <value>key</value>
-            <value>year</value>
-            <value>bibtype</value>
-            <value>title</value>
-            <text/>
-          </choice>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="open">
-          <a:documentation>A delimiter for formatting the refnum in the bibliography</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="close">
-          <a:documentation>A delimiter for formatting the refnum in the bibliography</a:documentation>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="bibtag_attributes"/>
+      <ref name="bibtag_model"/>
     </element>
   </define>
+  <define name="bibtag_attributes">
+    <a:documentation>Attributes for \elementref{bibtag}.</a:documentation>
+    <optional>
+      <attribute name="role">
+        <choice>
+          <value>number</value>
+          <value>authors</value>
+          <value>fullauthors</value>
+          <value>key</value>
+          <value>year</value>
+          <value>bibtype</value>
+          <value>title</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="open">
+        <a:documentation>A delimiter for formatting the refnum in the bibliography</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="close">
+        <a:documentation>A delimiter for formatting the refnum in the bibliography</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="bibtag_model">
+    <a:documentation>Content model for \elementref{bibtag}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bibblock">
     <element name="bibblock">
       <a:documentation>A block of data appearing within a \elementref{bibitem}.</a:documentation>
-      <ref name="Flow.model"/>
+      <ref name="bibblock_attributes"/>
+      <ref name="bibblock_model"/>
     </element>
+  </define>
+  <define name="bibblock_attributes">
+    <a:documentation>Attributes for \elementref{bibblock}.</a:documentation>
+    <empty/>
+  </define>
+  <define name="bibblock_model">
+    <a:documentation>Content model for \elementref{bibblock}.</a:documentation>
+    <ref name="Flow.model"/>
   </define>
   <!--
     bibblock's model was this:
@@ -113,20 +148,8 @@ info to be used for filling in citations (\elementref{bibref}).</a:documentation
     <element name="bibentry">
       <a:documentation>Semantic representation of a bibliography entry, 
 typically resulting from parsing BibTeX</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="ID.attributes"/>
-      <attribute name="key">
-        <a:documentation>The unique key for this object; this key is referenced by the
-\attr{bibrefs} attribute of \elementref{bibref}.</a:documentation>
-      </attribute>
-      <attribute name="type">
-        <a:documentation>The type of the referenced object. The values are a superset of
-those types recognized by BibTeX, but is also open-ended for extensibility.</a:documentation>
-        <ref name="bibentry.type"/>
-      </attribute>
-      <zeroOrMore>
-        <ref name="Bibentry.class"/>
-      </zeroOrMore>
+      <ref name="bibentry_attributes"/>
+      <ref name="bibentry_model"/>
     </element>
   </define>
   <define name="bibentry.type">
@@ -156,27 +179,53 @@ those types recognized by BibTeX, but is also open-ended for extensibility.</a:d
       <text/>
     </choice>
   </define>
-  <!--
-    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Name related information
-  -->
+  <define name="bibentry_attributes">
+    <a:documentation>Attributes for \elementref{bibentry}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <attribute name="key">
+      <a:documentation>The unique key for this object; this key is referenced by the
+\attr{bibrefs} attribute of \elementref{bibref}.</a:documentation>
+    </attribute>
+    <attribute name="type">
+      <a:documentation>The type of the referenced object. The values are a superset of
+those types recognized by BibTeX, but is also open-ended for extensibility.</a:documentation>
+      <ref name="bibentry.type"/>
+    </attribute>
+  </define>
+  <define name="bibentry_model">
+    <a:documentation>Content model for \elementref{bibentry}.</a:documentation>
+    <zeroOrMore>
+      <ref name="Bibentry.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
+  <!-- Name related information -->
   <define name="bib-name">
     <element name="bib-name">
       <a:documentation>Name of some participant in creating a bibliographic entry.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="role">
-          <a:documentation>The role that this participant played in creating the entry.</a:documentation>
-          <choice>
-            <value>author</value>
-            <value>editor</value>
-            <value>translator</value>
-            <text/>
-          </choice>
-        </attribute>
-      </optional>
-      <ref name="Bibname.model"/>
+      <ref name="bib-name_attributes"/>
+      <ref name="bib-name_model"/>
     </element>
+  </define>
+  <define name="bib-name_attributes">
+    <a:documentation>Attributes for \elementref{bib-name}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>The role that this participant played in creating the entry.</a:documentation>
+        <choice>
+          <value>author</value>
+          <value>editor</value>
+          <value>translator</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="bib-name_model">
+    <a:documentation>Content model for \elementref{bib-name}.</a:documentation>
+    <ref name="Bibname.model"/>
   </define>
   <define name="Bibname.model">
     <a:documentation>The content model of the bibliographic name fields (\elementref{bib-name})</a:documentation>
@@ -188,155 +237,270 @@ those types recognized by BibTeX, but is also open-ended for extensibility.</a:d
       <ref name="lineage"/>
     </optional>
   </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="surname">
     <element name="surname">
       <a:documentation>Surname of a participant (\elementref{bib-name}).</a:documentation>
-      <ref name="Inline.model"/>
+      <ref name="surname_attributes"/>
+      <ref name="surname_model"/>
     </element>
   </define>
+  <define name="surname_attributes">
+    <a:documentation>Attributes for \elementref{surname}.</a:documentation>
+    <empty/>
+  </define>
+  <define name="surname_model">
+    <a:documentation>Content model for \elementref{surname}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="givenname">
     <element name="givenname">
       <a:documentation>Given name of a participant (\elementref{bib-name}).</a:documentation>
-      <ref name="Inline.model"/>
+      <ref name="givenname_attributes"/>
+      <ref name="givenname_model"/>
     </element>
   </define>
+  <define name="givenname_attributes">
+    <a:documentation>Attributes for \elementref{givenname}.</a:documentation>
+    <empty/>
+  </define>
+  <define name="givenname_model">
+    <a:documentation>Content model for \elementref{givenname}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="lineage">
     <element name="lineage">
       <a:documentation>Lineage of a participant (\elementref{bib-name}), eg. Jr. or similar.</a:documentation>
-      <ref name="Inline.model"/>
+      <ref name="lineage_attributes"/>
+      <ref name="lineage_model"/>
     </element>
   </define>
-  <!--
-    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    Title related information
-  -->
+  <define name="lineage_attributes">
+    <a:documentation>Attributes for \elementref{lineage}.</a:documentation>
+    <empty/>
+  </define>
+  <define name="lineage_model">
+    <a:documentation>Content model for \elementref{lineage}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
+  <!-- Title related information -->
   <define name="bib-title">
     <element name="bib-title">
       <a:documentation>Title of a bibliographic entry.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="bib-title_attributes"/>
+      <ref name="bib-title_model"/>
     </element>
   </define>
+  <define name="bib-title_attributes">
+    <a:documentation>Attributes for \elementref{bib-title}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="bib-title_model">
+    <a:documentation>Content model for \elementref{bib-title}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-subtitle">
     <element name="bib-subtitle">
       <a:documentation>Subtitle of a bibliographic entry.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="bib-subtitle_attributes"/>
+      <ref name="bib-subtitle_model"/>
     </element>
   </define>
+  <define name="bib-subtitle_attributes">
+    <a:documentation>Attributes for \elementref{bib-subtitle}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="bib-subtitle_model">
+    <a:documentation>Content model for \elementref{bib-subtitle}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-key">
     <element name="bib-key">
       <a:documentation>Unique key of a bibliographic entry.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="bib-key_attributes"/>
+      <ref name="bib-key_model"/>
     </element>
   </define>
+  <define name="bib-key_attributes">
+    <a:documentation>Attributes for \elementref{bib-key}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="bib-key_model">
+    <a:documentation>Content model for \elementref{bib-key}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-type">
     <element name="bib-type">
       <a:documentation>Type of a bibliographic entry.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="bib-type_attributes"/>
+      <ref name="bib-type_model"/>
     </element>
   </define>
+  <define name="bib-type_attributes">
+    <a:documentation>Attributes for \elementref{bib-type}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="bib-type_model">
+    <a:documentation>Content model for \elementref{bib-type}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-date">
     <element name="bib-date">
       <a:documentation>Date of a bibliographic entry.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="role">
-          <a:documentation>characterizes what happened on the given date</a:documentation>
-          <choice>
-            <value>publication</value>
-            <value>copyright</value>
-            <text/>
-          </choice>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="bib-date_attributes"/>
+      <ref name="bib-date_model"/>
     </element>
   </define>
+  <define name="bib-date_attributes">
+    <a:documentation>Attributes for \elementref{bib-date}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>characterizes what happened on the given date</a:documentation>
+        <choice>
+          <value>publication</value>
+          <value>copyright</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="bib-date_model">
+    <a:documentation>Content model for \elementref{bib-date}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-publisher">
     <element name="bib-publisher">
       <a:documentation>Publisher of a bibliographic entry.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="bib-publisher_attributes"/>
+      <ref name="bib-publisher_model"/>
     </element>
   </define>
+  <define name="bib-publisher_attributes">
+    <a:documentation>Attributes for \elementref{bib-publisher}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="bib-publisher_model">
+    <a:documentation>Content model for \elementref{bib-publisher}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-organization">
     <element name="bib-organization">
       <a:documentation>Organization responsible for a bibliographic entry.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="bib-organization_attributes"/>
+      <ref name="bib-organization_model"/>
     </element>
   </define>
+  <define name="bib-organization_attributes">
+    <a:documentation>Attributes for \elementref{bib-organization}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="bib-organization_model">
+    <a:documentation>Content model for \elementref{bib-organization}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-place">
     <element name="bib-place">
       <a:documentation>Location of publisher or event</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="bib-place_attributes"/>
+      <ref name="bib-place_model"/>
     </element>
+  </define>
+  <define name="bib-place_attributes">
+    <a:documentation>Attributes for \elementref{bib-place}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="bib-place_model">
+    <a:documentation>Content model for \elementref{bib-place}.</a:documentation>
+    <ref name="Inline.model"/>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-related">
     <element name="bib-related">
       <a:documentation>A Related bibliographic object, such as the book or journal
 that the current item is related to.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="type">
-          <a:documentation>The type of this related entry.</a:documentation>
-          <ref name="bibentry.type"/>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="role">
-          <a:documentation>How this object relates to the containing object.
+      <ref name="bib-related_attributes"/>
+      <ref name="bib-related_model"/>
+    </element>
+  </define>
+  <define name="bib-related_attributes">
+    <a:documentation>Attributes for \elementref{bib-related}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="type">
+        <a:documentation>The type of this related entry.</a:documentation>
+        <ref name="bibentry.type"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="role">
+        <a:documentation>How this object relates to the containing object.
 Particularly important is \attrval{host} which indicates that
 the outer object is a part of this object.</a:documentation>
-          <choice>
-            <value>host</value>
-            <value>event</value>
-            <value>original</value>
-            <text/>
-          </choice>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="bibrefs">
-          <a:documentation>If the bibrefs attribute is given, it is the key of another object in the bibliography,
+        <choice>
+          <value>host</value>
+          <value>event</value>
+          <value>original</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="bibrefs">
+        <a:documentation>If the bibrefs attribute is given, it is the key of another object in the bibliography,
 and this element should be empty; otherwise the object should be described by
 the content of the element.</a:documentation>
-        </attribute>
-      </optional>
-      <zeroOrMore>
-        <ref name="Bibentry.class"/>
-      </zeroOrMore>
-    </element>
+      </attribute>
+    </optional>
+  </define>
+  <define name="bib-related_model">
+    <a:documentation>Content model for \elementref{bib-related}.</a:documentation>
+    <zeroOrMore>
+      <ref name="Bibentry.class"/>
+    </zeroOrMore>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-part">
     <element name="bib-part">
       <a:documentation>Describes how the current object is related to a related (\elementref{bib-related})
 object, in particular page, part, volume numbers and similar.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="role">
-          <a:documentation>indicates how the value partitions the containing object.</a:documentation>
-          <choice>
-            <value>pages</value>
-            <value>part</value>
-            <value>volume</value>
-            <value>issue</value>
-            <value>number</value>
-            <value>chapter</value>
-            <value>section</value>
-            <value>paragraph</value>
-            <text/>
-          </choice>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="bib-part_attributes"/>
+      <ref name="bib-part_model"/>
     </element>
+  </define>
+  <define name="bib-part_attributes">
+    <a:documentation>Attributes for \elementref{bib-part}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>indicates how the value partitions the containing object.</a:documentation>
+        <choice>
+          <value>pages</value>
+          <value>part</value>
+          <value>volume</value>
+          <value>issue</value>
+          <value>number</value>
+          <value>chapter</value>
+          <value>section</value>
+          <value>paragraph</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="bib-part_model">
+    <a:documentation>Content model for \elementref{bib-part}.</a:documentation>
+    <ref name="Inline.model"/>
   </define>
   <!--
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -345,152 +509,242 @@ object, in particular page, part, volume numbers and similar.</a:documentation>
   <define name="bib-edition">
     <element name="bib-edition">
       <a:documentation>Edition of a bibliographic entry.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="bib-edition_attributes"/>
+      <ref name="bib-edition_model"/>
     </element>
   </define>
+  <define name="bib-edition_attributes">
+    <a:documentation>Attributes for \elementref{bib-edition}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="bib-edition_model">
+    <a:documentation>Content model for \elementref{bib-edition}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-status">
     <element name="bib-status">
       <a:documentation>Status of a bibliographic entry.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="bib-status_attributes"/>
+      <ref name="bib-status_model"/>
     </element>
   </define>
+  <define name="bib-status_attributes">
+    <a:documentation>Attributes for \elementref{bib-status}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="bib-status_model">
+    <a:documentation>Content model for \elementref{bib-status}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-identifier">
     <element name="bib-identifier">
       <a:documentation>Some form of document identfier. The content is descriptive.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="scheme">
-          <a:documentation>indicates what sort of identifier it is; it is open-ended for extensibility.</a:documentation>
-          <choice>
-            <value>doi</value>
-            <value>issn</value>
-            <value>isbn</value>
-            <value>mr</value>
-            <text/>
-          </choice>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="id">
-          <a:documentation>the identifier.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="href">
-          <a:documentation>a url to the document, if available</a:documentation>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="bib-identifier_attributes"/>
+      <ref name="bib-identifier_model"/>
     </element>
   </define>
+  <define name="bib-identifier_attributes">
+    <a:documentation>Attributes for \elementref{bib-identifier}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="scheme">
+        <a:documentation>indicates what sort of identifier it is; it is open-ended for extensibility.</a:documentation>
+        <choice>
+          <value>doi</value>
+          <value>issn</value>
+          <value>isbn</value>
+          <value>mr</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="id">
+        <a:documentation>the identifier.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="href">
+        <a:documentation>a url to the document, if available</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="bib-identifier_model">
+    <a:documentation>Content model for \elementref{bib-identifier}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-review">
     <element name="bib-review">
       <a:documentation>Review of a bibliographic entry. The content is descriptive.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="scheme">
-          <a:documentation>indicates what sort of identifier it is; it is open-ended for extensibility.</a:documentation>
-          <choice>
-            <value>doi</value>
-            <value>issn</value>
-            <value>isbn</value>
-            <value>mr</value>
-            <text/>
-          </choice>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="id">
-          <a:documentation>the identifier.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="href">
-          <a:documentation>a url to the review, if available</a:documentation>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="bib-review_attributes"/>
+      <ref name="bib-review_model"/>
     </element>
   </define>
+  <define name="bib-review_attributes">
+    <a:documentation>Attributes for \elementref{bib-review}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="scheme">
+        <a:documentation>indicates what sort of identifier it is; it is open-ended for extensibility.</a:documentation>
+        <choice>
+          <value>doi</value>
+          <value>issn</value>
+          <value>isbn</value>
+          <value>mr</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="id">
+        <a:documentation>the identifier.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="href">
+        <a:documentation>a url to the review, if available</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="bib-review_model">
+    <a:documentation>Content model for \elementref{bib-review}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-links">
     <element name="bib-links">
       <a:documentation>Links to other things like preprints, source code, etc.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="bib-links_attributes"/>
+      <ref name="bib-links_model"/>
     </element>
   </define>
+  <define name="bib-links_attributes">
+    <a:documentation>Attributes for \elementref{bib-links}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="bib-links_model">
+    <a:documentation>Content model for \elementref{bib-links}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-language">
     <element name="bib-language">
       <a:documentation>Language of a bibliographic entry.</a:documentation>
-      <ref name="Common.attributes"/>
-      <ref name="Inline.model"/>
+      <ref name="bib-language_attributes"/>
+      <ref name="bib-language_model"/>
     </element>
   </define>
+  <define name="bib-language_attributes">
+    <a:documentation>Attributes for \elementref{bib-language}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="bib-language_model">
+    <a:documentation>Content model for \elementref{bib-language}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-url">
     <element name="bib-url">
       <a:documentation>A URL for a bibliographic entry. The content is descriptive</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="href"/>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="bib-url_attributes"/>
+      <ref name="bib-url_model"/>
     </element>
   </define>
+  <define name="bib-url_attributes">
+    <a:documentation>Attributes for \elementref{bib-url}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="href"/>
+    </optional>
+  </define>
+  <define name="bib-url_model">
+    <a:documentation>Content model for \elementref{bib-url}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-extract">
     <element name="bib-extract">
       <a:documentation>An extract from the referenced object.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="role">
-          <a:documentation>Classify what kind of extract</a:documentation>
-          <choice>
-            <value>keywords</value>
-            <value>abstract</value>
-            <value>contents</value>
-            <text/>
-          </choice>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="bib-extract_attributes"/>
+      <ref name="bib-extract_model"/>
     </element>
   </define>
+  <define name="bib-extract_attributes">
+    <a:documentation>Attributes for \elementref{bib-extract}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>Classify what kind of extract</a:documentation>
+        <choice>
+          <value>keywords</value>
+          <value>abstract</value>
+          <value>contents</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="bib-extract_model">
+    <a:documentation>Content model for \elementref{bib-extract}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-note">
     <element name="bib-note">
       <a:documentation>Notes about a bibliographic entry.</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="role">
-          <a:documentation>Classify the kind of note</a:documentation>
-          <choice>
-            <value>annotation</value>
-            <value>publication</value>
-            <text/>
-          </choice>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="bib-note_attributes"/>
+      <ref name="bib-note_model"/>
     </element>
   </define>
+  <define name="bib-note_attributes">
+    <a:documentation>Attributes for \elementref{bib-note}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>Classify the kind of note</a:documentation>
+        <choice>
+          <value>annotation</value>
+          <value>publication</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="bib-note_model">
+    <a:documentation>Content model for \elementref{bib-note}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bib-data">
     <element name="bib-data">
       <a:documentation>Random data, not necessarily even text.
 (future questions: should model be text or ANY? maybe should have encoding attribute?).</a:documentation>
-      <ref name="Common.attributes"/>
-      <optional>
-        <attribute name="role">
-          <a:documentation>Classify the relationship of the data to the entry.</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="type">
-          <a:documentation>Classify the type of the data.</a:documentation>
-        </attribute>
-      </optional>
-      <ref name="Inline.model"/>
+      <ref name="bib-data_attributes"/>
+      <ref name="bib-data_model"/>
     </element>
   </define>
+  <define name="bib-data_attributes">
+    <a:documentation>Attributes for \elementref{bib-data}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>Classify the relationship of the data to the entry.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="type">
+        <a:documentation>Classify the type of the data.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="bib-data_model">
+    <a:documentation>Content model for \elementref{bib-data}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="Bibentry.class">
     <choice>
       <ref name="bib-name"/>
@@ -517,3 +771,4 @@ object, in particular page, part, volume numbers and similar.</a:documentation>
     </choice>
   </define>
 </grammar>
+<!-- ====================================================================== -->

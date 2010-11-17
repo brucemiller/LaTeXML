@@ -16,51 +16,83 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 ## It is roughly parallel to the HTML model.
 Misc.class |= tabular
 
+#======================================================================
+
 tabular =
 ## An alignment structure corresponding to tabular  or various similar forms.
 ## The model is basically a copy of HTML4's table.
-element tabular {
+element tabular { tabular_attributes, tabular_model }
+
+## Attributes for \elementref{tabular}.
+tabular_attributes = 
   Common.attributes,
 
   ## which row's baseline aligns with the container's baseline.
   attribute vattach { "top" | "middle" | "bottom" }?,
 
   ## the desired width of the tabular.
-  attribute width { Length.type }?,
+  attribute width { Length.type }?
 
-  (thead | tfoot | tbody | tr)*  }
+## Content model for \elementref{tabular}.
+tabular_model = (thead | tfoot | tbody | tr)*
+
+#======================================================================
 
 thead =
 ## A container for a set of rows that correspond to the header of the tabular.
-element thead {
-  Common.attributes,
+element thead { thead_attributes, thead_model }
 
-  tr* }
+## Attributes for \elementref{thead}.
+thead_attributes = Common.attributes
+
+## Content model for \elementref{thead}.
+thead_model = tr*
+
+#======================================================================
 
 tfoot =
 ## A container for a set of rows that correspond to the footer of the tabular.
-element tfoot {
-  Common.attributes,
+element tfoot { tfoot_attributes, tfoot_model }
 
-  tr* }
+## Attributes for \elementref{tfoot}.
+tfoot_attributes = Common.attributes
+
+## Content model for \elementref{tfoot}.
+tfoot_model = tr*
+
+#======================================================================
 
 tbody =
 ## A container for a set of rows corresponding to the body of the tabular.
-element tbody {
-  Common.attributes,
+element tbody { tbody_attributes, tbody_model }
 
-  tr* }
+## Attributes for \elementref{tbody}.
+tbody_attributes = Common.attributes
+
+## Content model for \elementref{tbody}.
+tbody_model = tr*
+
+#======================================================================
 
 tr =
 ## A row of a tabular.
-element tr {
-  Common.attributes,
+element tr { tr_attributes, tr_model }
 
-  td* }
+## Attributes for \elementref{tr}.
+tr_attributes = Common.attributes
+
+## Content model for \elementref{tr}.
+tr_model = td*
+
+#======================================================================
 
 td =
 ## A cell in a row of a tabular.
-element td {
+element td { td_attributes, td_model }
+
+## Attributes for \elementref{td}.
+td_attributes = 
+
   Common.attributes,
 
   ## indicates how many columns this cell spans or covers.
@@ -82,7 +114,10 @@ element td {
   attribute border { text }?,
 
   ## whether this cell corresponds to a table head or foot.
-  attribute thead {xsd:boolean}?,
+  attribute thead {xsd:boolean}?
 
-  Flow.model }
+## Content model for \elementref{td}.
+td_model =  Flow.model
+
+#======================================================================
 
