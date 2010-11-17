@@ -544,13 +544,16 @@ sub toTeX {
 	$body .= '\item['.($combiner eq 'choice' ? '\textbar=' : '\&=').'] '.$content if $content;
 	"\\patternadd{$name}{$docs}{$body}\n";  }
       else {
+	$attr = '\item[\textit{Attributes:}] \textit{empty}' if !$attr && ($name =~ /\\_attributes/);
+	$content = '\textit{empty}' if !$content && ($name =~ /\\_model/);
 	my $body = $attr;
 	$body .= '\item[\textit{Content}:] '.$content if $content;
 	my($xattr,$xcontent) = $self->toTeXBody($$self{defs}{$qname});
 	$body .= '\item[\textit{Expansion}:] '.$xcontent
 	  if !$attr && !$xattr && $xcontent && ($xcontent ne $content);
-	if(my $uses = $self->getSymbolUses($qname)){
-	  $body .= '\item[\textit{Used by}:] '.$uses; }
+	if($name !~ /_(attributes|model)$/){ # Skip the "used by" if element-specific attributes or moel.
+	  if(my $uses = $self->getSymbolUses($qname)){
+	    $body .= '\item[\textit{Used by}:] '.$uses; }}
 	"\\patterndef{$name}{$docs}{$body}\n"; }}
     elsif($op eq 'element'){
       my $qname = $name;
@@ -559,6 +562,9 @@ sub toTeX {
       my($docs,@spec)=$self->toTeXExtractDocs(@data);
       my($attr,$content) = $self->toTeXBody(@spec);
       $content = "\\typename{empty}" unless $content;
+      # Shorten display for element-specific attributes & model, ASSUMING they immediately folllow!
+      $attr    = '' if $attr    eq '\item[\textit{Attributes}:] \patternref{'.$name.'\\_attributes}';
+      $content = '' if $content eq '\patternref{'.$name.'\\_model}';
       my $body = $attr;
       $body .= '\item[\textit{Content}:] '.$content if $content;
       if(my $ename = $$self{elementreversedefs}{$qname}){
@@ -632,13 +638,18 @@ sub toTeXBody {
       elsif(($op eq 'combination') && ($name eq 'optional')
 	    && (@args == 1) && eqOp($args[0],'attribute')){
 	unshift(@data,$args[0]); }
-      elsif(($op eq 'ref') && ($name =~ /\.attributes$/)){
+      # Note dubious assumption about naming convention!
+      elsif(($op eq 'ref') && ($name =~ /[^a-zA-Z]attributes$/)){
 	push(@patterns, $self->toTeX($item)); }
       else { 
 	push(@content, $self->toTeX($item)); }}
     else {
       push(@content, $self->toTeX($item)); }}
-  (join('',(@patterns? '\item[\textit{Includes}:] '.join(', ',@patterns) : ''),@attributes),
+  (join('',(@patterns
+	    ? '\item[\textit{'.(grep($_ !~ /[^a-zA-Z]attributes\}*?$/, @patterns) ? 'Includes' : 'Attributes').'}:] '
+	    .   join(', ',@patterns)
+	    : ''),
+	@attributes),
    join(', ',@content)); }
 
 #======================================================================
