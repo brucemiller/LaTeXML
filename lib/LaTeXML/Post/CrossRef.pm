@@ -275,7 +275,9 @@ sub generateURL {
   if(($object = $$self{db}->lookup("ID:".$id))
      && ($location = $object->getValue('location'))){
     my $doclocation = $self->siteRelativePathname($doc->getDestination);
-    my $url = pathname_relative('/'.$location,  '/'.pathname_directory($doclocation));
+    my $pathdir = pathname_directory($doclocation);
+    my $url = pathname_relative(($location =~ m|^/| ? $location : '/'.$location),
+				($pathdir  =~ m|^/| ? $pathdir  : '/'.$pathdir));
     my $format = $$self{format} || 'xml';
     my $urlstyle = $$self{urlstyle}||'file';
     if($urlstyle eq 'server'){
