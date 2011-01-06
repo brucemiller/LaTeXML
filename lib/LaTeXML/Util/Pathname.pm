@@ -55,10 +55,13 @@ our $SEP = '/';
 sub pathname_make {
   my(%pieces)=@_;
   my $pathname= '';
-  my $dir = $pieces{dir};
-  $dir = join($SEP,@$dir) if $dir && (ref $dir eq 'ARRAY');
-  $pathname .= $dir if $dir;
-  $pathname .= $SEP if $pathname && $pieces{name};
+  if(my $dir = $pieces{dir}){
+    my @dirs = (ref $dir eq 'ARRAY' ? @$dir : ($dir));
+    $pathname = shift(@dirs);
+    foreach my $d (@dirs ){
+      $pathname =~ s|\Q$SEP\E$||; $dir =~ s|^\Q$SEP\E||;
+      $pathname .= $SEP.$dir; }}
+  $pathname .= $SEP if $pathname && $pieces{name} && $pathname !~ m|\Q$SEP\E$|;
   $pathname .= $pieces{name} if $pieces{name};
   $pathname .= '.'.$pieces{type} if $pieces{type};
   pathname_canonical($pathname); }
@@ -71,7 +74,7 @@ sub pathname_split {
   my($vol,$dir,$name)=File::Spec->splitpath($pathname);
   # Hmm, for /, we get $dir = / but we want $vol='/'  ?????
   if($vol) { $dir = $vol.$dir; }
-  elsif(File::Spec->file_name_is_absolute($pathname)){ $dir = $SEP.$dir; }
+  elsif(File::Spec->file_name_is_absolute($pathname) && !File::Spec->file_name_is_absolute($dir)){ $dir = $SEP.$dir; }
   my $type = '';
   $type = $1 if $name =~ s/\.([^\.]+)$//;
   ($dir,$name,$type); }
@@ -82,7 +85,9 @@ sub pathname_canonical {
 confess "Undefined pathname!" unless defined $pathname;
 #  File::Spec->canonpath($pathname); }
   $pathname =~ s|^~|$ENV{HOME}|;
-  $pathname =~ s|//+|/|g;
+  if($pathname =~ m|//+/|){
+    Carp::cluck "Recursive pathname? : $pathname\n"; }
+##  $pathname =~ s|//+|/|g;
   $pathname =~ s|/\./|/|g;
   # Collapse any foo/.. patterns, but not ../..
   while($pathname =~ s|/(?!\.\./)[^/]+/\.\.(/\|$)|$1|){}
@@ -105,7 +110,8 @@ sub pathname_type {
 #======================================================================
 sub pathname_concat {
   my($dir,$file)=@_;
-  File::Spec->catpath('',$dir || '',$file); }
+  return $file unless $dir;
+  pathname_canonical(File::Spec->catpath('',$dir || '',$file)); }
 
 #======================================================================
 # Is $pathname an absolute pathname ?
@@ -182,7 +188,7 @@ sub pathname_copy {
 #  * If installation_subdir is given, look in that subdirectory of where LaTeXML
 #    was installed, by appending it to the paths.
 
-our @INSTALLDIRS = grep(-d $_, map("$_/LaTeXML", @INC));
+our @INSTALLDIRS = grep(-d $_, map(pathname_canonical("$_/LaTeXML"), @INC));
 
 sub pathname_find {
   my($pathname,%options)=@_;
