@@ -161,7 +161,7 @@ sub getPageName {
     $asdir=$recursive; }
   $name =~ s/:+/_/g;
   if($asdir){
-    pathname_make(dir=>pathname_directory($parentpath) . "/$name",
+    pathname_make(dir=>pathname_concat(pathname_directory($parentpath),$name),
 		  name=>'index',
 		  type=>$doc->getDestinationExtension); }
   else {
