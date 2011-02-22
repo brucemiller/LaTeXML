@@ -483,7 +483,7 @@ sub translate_string {
       elsif(s/^(.[^\#<\?\!$quote]*)//){ push(@values,"'".slashify($1)."'"); }}}
   if(!@values){ undef; }
   elsif(@values==1){ $values[0]; }
-  else { join('.',map( (/^\'/ ? $_ : "(ref $_? $_->toString:'')"),@values)); }}
+  else { join('.',map( (/^\'/ ? $_ : " ToString($_)"),@values)); }}
 
 # Parse a set of attribute value pairs from a constructor pattern, 
 # substituting argument and property values from the whatsit.
