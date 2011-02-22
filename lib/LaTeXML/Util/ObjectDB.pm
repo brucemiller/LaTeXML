@@ -67,7 +67,7 @@ sub new {
 
 sub status {
   my($self)=@_;
-  my $status = scalar(keys %{$$self{objects}})." objects";
+  my $status = scalar(keys %{$$self{objects}})."/".scalar(keys %{$$self{externaldb}})." objects";
 #  if($$self{dbfile}){ ...
   $status; }
     
