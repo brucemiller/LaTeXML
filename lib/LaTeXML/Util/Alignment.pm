@@ -211,7 +211,7 @@ sub beAbsorbed {
   foreach my $row (@{$$self{rows}}){
 #    $document->openElement($$self{rowElement},
 #			   'xml:id'=>$$row{id},refnum=>$$row{refnum});
-    &{$$self{openRow}}($document,'xml:id'=>$$row{id},refnum=>$$row{refnum});
+    &{$$self{openRow}}($document,'xml:id'=>$$row{id},refnum=>$$row{refnum},frefnum=>$$row{frefnum});
     foreach my $cell (@{$$row{columns}}){
       next if $$cell{skipped};
       # Normalize the border attribute
@@ -414,6 +414,11 @@ sub guess_alignment_headers {
   return if $document->findnodes("ancestor::ltx:tabular",$table);
 
   my $tag = $document->getModel->getNodeQName($table);
+  my $x;
+  print STDERR "\n".('='x50)."\nGuessing alignment headers for "
+    .(($x=$document->findnode('ancestor-or-self::*[@xml:id]',$table))? $x->getAttribute('xml:id') : $tag)."\n"
+      if $LaTeXML::Alignment::DEBUG;
+
   my $ismath = $tag eq 'ltx:XMArray';
   local $LaTeXML::TR = ($ismath ? 'ltx:XMRow' : 'ltx:tr');
   local $LaTeXML::TD = ($ismath ? 'ltx:XMCell' : 'ltx:td');
@@ -428,9 +433,10 @@ sub guess_alignment_headers {
 
   # Attempt to recognize header lines.
   if(alignment_characterize_lines(0,0,@rows)){}
-  else { 
-    print "Retry characterizing lines in reverse\n" if $LaTeXML::Alignment::DEBUG;
-    $reversed=alignment_characterize_lines(0,1,reverse(@rows)); }
+  # This usually does something unpleasant
+##  else { 
+##    print STDERR "Retry characterizing lines in reverse\n" if $LaTeXML::Alignment::DEBUG;
+##    $reversed=alignment_characterize_lines(0,1,reverse(@rows)); }
   alignment_characterize_lines(1,0,@cols);
   # Did we go overboard?
   my %n=(h=>0,d=>0);
@@ -499,7 +505,8 @@ sub collect_alignment_rows {
     foreach my $col (@cols){
       push(@{$rows[$#rows]}, $col);
       $$col{cell_type} = 'd';
-      $$col{content_class} = ($$col{cell} ? classify_alignment_cell($document,$$col{cell}) : '?');
+      $$col{content_class} = (($$col{align}||'') eq 'justify' ? 'mx' # Assume mixed content for any justified cell???
+			      : ($$col{cell} ? classify_alignment_cell($document,$$col{cell}) : '?'));
       $$col{content_length} = ($$col{content_class} eq 'g' ? 1000
 			       : ($$col{cell} ? length($$col{cell}->textContent) : 0));
       my %border = (t=>0, r=>0, b=>0, l=>0); # Decode border
@@ -641,8 +648,12 @@ sub alignment_characterize_lines {
     $diffhi = $d if $d > $diffhi;
     $difflo = $d if $d < $difflo; }
   $diffavg = $diffavg/($n-1);
-  print STDERR "Lines are almost identical => Fail\n" if $diffhi < 0.05 && $LaTeXML::Alignment::DEBUG;
-  return if $diffhi < 0.05;	# virtually no differences.
+  if($diffhi < 0.05){		# virtually no differences.
+    print STDERR "Lines are almost identical => Fail\n" if $LaTeXML::Alignment::DEBUG;
+    return; }
+  if(($n > 2) && (($diffhi-$difflo) < $diffhi*0.5)){ # differences too similar to establish pattern
+    print STDERR "Differences between lines are almost identical => Fail\n" if $LaTeXML::Alignment::DEBUG;
+    return; }
 #  local $::TAB_THRESHOLD = $difflo + 0.4*($diffhi-$difflo);
   local $::TAB_THRESHOLD = $difflo + 0.3*($diffhi-$difflo);
 #  local $::TAB_THRESHOLD = $difflo + 0.2*($diffhi-$difflo);
@@ -655,6 +666,7 @@ sub alignment_characterize_lines {
   my($minh,$maxh)=(1,1);
   while( ($diff=alignment_compare($axis,1,$reversed,$maxh-1,$maxh)) < $::TAB_THRESHOLD){
     $maxh++; }
+  return if $maxh > $MAX_ALIGNMENT_HEADER_LINES; # too many before even finding diffs? give up!
 #  while( alignment_compare($axis,1,$reversed,$maxh,$maxh+1) > $difflo + ($diff-$difflo)/6){
   while( alignment_compare($axis,1,$reversed,$maxh,$maxh+1) > $::TAB_THRESHOLD){
     $maxh++; }
@@ -735,7 +747,8 @@ sub alignment_test_headers {
   # Header content seems too large relative to data?
   print STDERR "header content = $headlength; data content = $datalength\n"
       if $LaTeXML::Alignment::DEBUG;
-  if(($headlength > 10) && (0.3*$headlength > $datalength)){
+##  if(($headlength > 10) && (0.3*$headlength > $datalength)){
+  if(($headlength > 10) && (0.25*$headlength > $datalength)){
     print STDERR "header content too much longer than data content\n" if $LaTeXML::Alignment::DEBUG;
     return; }
 
