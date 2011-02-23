@@ -12,86 +12,18 @@ RequirePackage('hyperref');
 DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
 DefMacro('\toctitle{}','\@add@frontmatter{ltx:toctitle}{#1}');
 DefMacro('\BibTeX','BibTeX');
-# Various other typographic bits
-DefMacro('\cmd {}','\texttt{#1}');
-DefMacro('\code {}','\texttt{#1}');
-DefMacro('\method {}','\texttt{->#1}');
-DefMacro('\attr {}','\texttt{#1}');
-DefMacro('\attrval {}','\texttt{#1}');
-DefMacro('\varfile[]{}','\texttt{\textit{#2}\ifx.#1.\else.#1\fi}');
-DefMacro('\cs{}','\texttt{\textbackslash #1}');
 
+DefMacro('\thesection','');
+DefMacro('\thesubsection','');
+DefMacro('\thesubsubsection','');
 
-DefConstructor('\ltxcmd{}',
-	       "<ltx:ref labelref='#label'>#1</ltx:ref>",
-	       properties=>sub { (label=>CleanLabel($_[1])); });
+RawTeX('\AtEndDocument{\@add@context@toc}');
+DefConstructor('\@add@context@toc',
+	       "<ltx:navigation>"
+	       .  "<ltx:TOC format='context'/>"
+	       ."</ltx:navigation>",
+	      beforeConstruct=>sub{ $_[0]->maybeCloseElement('ltx:section'); });
 
-DefConstructor('\pod{}', "<ltx:ref href='#href' labelref='#ref'>#1</ltx:ref>",
-	       afterDigest=>sub{
-		 my $name = $_[1]->getArg(1)->toString;
-		 if(($name =~ /^LaTeXML/) || ($name =~ /^latexml/)){
-		   $_[1]->setProperty(ref=>CleanLabel($name)); }
-		 else {
-		   $name =~ s/::/%3A%3A/g;
-		   my $url = "http://search.cpan.org/search?query=$name&mode=module";
-		   $_[1]->setProperty(href=>$url); }});
-
-DefConstructor('\ltxpod{}', "<ltx:ref labelref='#ref'>#1</ltx:ref>",
-	       afterDigest=>sub{
-		 my $name = $_[1]->getArg(1)->toString;
-		 $_[1]->setProperty(ref=>CleanLabel("LaTeXML::".$name)); });
-
-DefEnvironment('{moduledescription}',
-	       "<ltx:description  xml:id='#id' class='moduledescription'>#body</ltx:description>",
-	       properties=>sub { beginItemize('description'); });
-
-DefEnvironment('{elementdescription}',
-	       "<ltx:description  xml:id='#id' class='elementdescription'>#body</ltx:description>",
-	       properties=>sub { beginItemize('description'); });
-
-DefEnvironment('{patterndescription}',
-	       "<ltx:description  xml:id='#id' class='patterndescription'>#body</ltx:description>",
-	       properties=>sub { beginItemize('description'); });
-
-RawTeX(<<'EOTeX');
-% For generated documentation of Schema.
-\newcommand{\@defname}[1]{\textup{\textbf{\texttt{#1}}}}
-\newcommand{\typename}[1]{\textit{#1}}
-
-\newenvironment{schemamodule}[1]{%
-  \section*{Module \@defname{#1}}\label{schema.module.#1}
-%   \raggedright
-  \begin{moduledescription}}{\end{moduledescription}}
-
-% \elementdef{name}{doc}{body}
-\newcommand{\elementdef}[3]{
-  \item[\textit{Element }\hypertarget{schema.element.#1}{\@defname{#1}}] \hspace{1em} #2
-    \if.#3.\else\begin{elementdescription}#3\end{elementdescription}\fi
-}
-
-% \attrdef{name}{doc}{content}
-\newcommand{\attrdef}[3]{
-  \item[\textit{Attribute }\@defname{#1}] =\ #3\par\noindent #2
-}
-
-% \patterndef{name}{doc}{body}
-\newcommand{\patterndef}[3]{
-   \item[\textit{Pattern }\hypertarget{schema.pattern.#1}{\@defname{#1}}] \hspace{1em} #2
-    \if.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
-}
-
-% \patternadd{name}{doc}{body}
-\newcommand{\patternadd}[3]{
-  \item[\textit{Add to }\@defname{#1}] \hspace{1em} #2
-    \if.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
-}
-
-%\newcommand{\moduleref}[1]{\hyperlink{schema.module.#1}{\texttt{#1}}}
-\newcommand{\moduleref}[1]{\htmlref{\texttt{#1}}{schema.module.#1}}
-\newcommand{\patternref}[1]{\hyperlink{schema.pattern.#1}{\texttt{#1}}}
-\newcommand{\elementref}[1]{\hyperlink{schema.element.#1}{\texttt{#1}}}
-
-EOTeX
 
 #======================================================================
 1;
