@@ -17,33 +17,16 @@ use LaTeXML::Common::XML;
 use charnames qw(:full);
 use base qw(LaTeXML::Post);
 
-our $PILCROW = "\N{PILCROW SIGN}";
-our $SECTION = "\N{SECTION SIGN}";
-our %TYPEPREFIX = 
-  ('ltx:equation'     =>'Eq.',
-   'ltx:equationmix'  =>'Eq.',
-   'ltx:equationgroup'=>'Eq.',
-   'ltx:figure'       =>'Fig.',
-   'ltx:table'        =>'Tab.',
-   'ltx:listing'      =>'Listing ',
-   'ltx:chapter'      =>'Ch.',
-   'ltx:part'         =>'Pt.',
-   'ltx:section'      =>$SECTION,
-   'ltx:subsection'   =>$SECTION,
-   'ltx:subsubsection'=>$SECTION,
-   'ltx:paragraph'    =>$PILCROW,
-   'ltx:subparagraph' =>$PILCROW,
-   'ltx:para'         =>'p',
-#   'ltx:appendix'     =>'App.',
- );
-
 sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
   $$self{db}       = $options{db};
   $$self{urlstyle} = $options{urlstyle};
-  $$self{toc_show} = ($options{number_sections} ? "typerefnum title" : "title");
+##  $$self{toc_show} = ($options{number_sections} ? "typerefnum title" : "title");
+  $$self{toc_show} = 'toctitle';
   $$self{ref_show} = ($options{number_sections} ? "typerefnum" : "title");
+  $$self{min_ref_length} = (defined $options{min_ref_length} ? $options{min_ref_length} : 1);
+  $$self{ref_join} = (defined $options{ref_join} ? $options{ref_join} : " \x{2023} "); # or " in " or ... ?
   $self; }
 
 sub process {
@@ -51,7 +34,7 @@ sub process {
   $self->ProgressDetailed($doc,"Beginning cross-references");
   my $root = $doc->getDocumentElement;
   local %LaTeXML::Post::CrossRef::MISSING=();
-  $self->fill_in_navigation($doc);
+  $self->fill_in_tocs($doc);
   $self->fill_in_frags($doc);
   $self->fill_in_refs($doc);
   $self->fill_in_bibrefs($doc);
@@ -67,46 +50,77 @@ sub note_missing {
   my($self,$type,$key)=@_;
   $LaTeXML::Post::CrossRef::MISSING{$type}{$key}++; }
 
-sub fill_in_navigation {
-  my($self,$doc)=@_;
-  if(my $id = $doc->getDocumentElement->getAttribute('xml:id')){
-    if(my $entry = $$self{db}->lookup("ID:$id")){
-      # Add navigation in any case?
-      $doc->addNodes($doc->getDocumentElement, ['ltx:navigation',{}]);
-      if(my $nav = $doc->findnode('//ltx:navigation')){
-	my $startref =$doc->findnode('ltx:ref[@class="start"]',$nav);
-	my $start_id = $startref && $startref->getAttribute('idref');
-	my $h_id = $id;
-	# Generate Downward TOC
-	my $navtoc= $self->navtoc_aux($id, $entry->getValue('location')||'');
-	# And Upward Context
-	my $p_id;
-	while(($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))){
-	  $navtoc = ['ltx:toclist',{},
-		     map(['ltx:tocentry',
-			  {($_ eq $id ? (class=>'self'):())},
-			  ['ltx:ref',{class=>'toc',idref=>$_,show=>'fulltitle'}],
-			  (($_ eq $h_id) && $navtoc ? ($navtoc) : ())],
-			 @{ $entry->getValue('children')||[] })];
-	  $h_id = $p_id; }
-	$navtoc = ['ltx:toclist',{},
-		   ['ltx:tocentry',{},
-		    ['ltx:ref',{class=>'toc',show=>'fulltitle',idref=>$h_id}],
-		    $navtoc]] if $h_id && (!$start_id || ($start_id ne $h_id));
-	$doc->addNodes($nav,$navtoc); }
-    }}}
+our $normaltoctypes = {map( ($_=>1), qw(ltx:document ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
+				      ltx:paragraph ltx:subparagraph ltx:index ltx:bibliography ltx:appendix))};
 
-sub navtoc_aux {
-  my($self,$id, $relative_to)=@_;
+sub fill_in_tocs {
+  my($self,$doc)=@_;
+  foreach my $toc ($doc->findnodes('descendant::ltx:TOC[not(ltx:toclist)]')){
+    my $selector = $toc->getAttribute('select');
+    my $types = ($selector
+		 ? {map(($_=>1),split(/\s*\|\s*/,$selector))}
+		 : $normaltoctypes);
+    # global vs children of THIS or Document node?
+    my $id = $doc->getDocumentElement->getAttribute('xml:id');
+    my $format = $toc->getAttribute('format');
+
+    my @list = ();
+    if(!$format || ($format eq 'normal')){
+      @list = $self->gentoc($id,$types); }
+    elsif($format eq 'context'){
+      @list = $self->gentoc_context($id,$types); }
+    $doc->addNodes($toc,['ltx:toclist',{},@list]) if @list; }
+}
+
+# generate TOC for $id & its children,
+# providing that those objects are of appropriate type.
+# Returns a list of 0 or more ltx:tocentry's (possibly containing ltx:toclist's)
+# Note that parent/child relationships stored in ObjectDB can also reflect less
+# `interesting' objects like para or p style paragraphs, and such.
+#   $location: if defined (as a pathname), only include children that are on that page
+#   $depth   : only to the specific depth
+#
+sub gentoc {
+  my($self,$id, $types, $localto,$selfid)=@_;
   if(my $entry = $$self{db}->lookup("ID:$id")){
-    if(($entry->getValue('location')||'') eq $relative_to){
-      my $kids = $entry->getValue('children');
-      if($kids && @$kids){
-	return (['ltx:toclist',{},map(['ltx:tocentry',{},
-				       ['ltx:ref',{class=>'toc',show=>'fulltitle',idref=>$_}],
-				       $self->navtoc_aux($_,$relative_to)],
-				      @$kids)]); }}}
-  (); }
+    my @kids = ();
+    if((!defined $localto) || ( ($entry->getValue('location')||'') eq $localto) ){
+      @kids = map($self->gentoc($_,$types,$localto,$selfid), @{ $entry->getValue('children')||[]}); }
+    my $type = $entry->getValue('type');
+    if($$types{$type}){
+      (['ltx:tocentry',(defined $selfid && ($selfid eq $id) ? {class=>'self'} : {}),
+	['ltx:ref',{class=>'toc',show=>'toctitle',idref=>$id}],
+	(@kids ? (['ltx:toclist',{},@kids]) : ())]); }
+    else {
+      @kids; }}
+  else {
+    (); }}
+
+# Generate a "context" TOC, that shows what's on the current page,
+# but also shows the page in the context of it's siblings & ancestors.
+# This is useful for putting in a navigation bar.
+sub gentoc_context {
+  my($self,$id,$types)=@_;
+  if(my $entry = $$self{db}->lookup("ID:$id")){
+    # Generate Downward TOC covering items WITHIN the current page.
+    my @navtoc = $self->gentoc($id, $types, $entry->getValue('location')||'',$id);
+    # Then enclose it upwards along with siblings & ancestors
+    my $p_id;
+    while(($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))){
+      @navtoc = map(($_ eq $id
+		     ? @navtoc
+		     : ['ltx:tocentry',{},
+			['ltx:ref',{class=>'toc',idref=>$_,show=>'toctitle'}]]),
+		    grep($$normaltoctypes{$$self{db}->lookup("ID:$_")->getValue('type')},
+			 @{ $entry->getValue('children')||[] }) );
+      if($$types{$entry->getValue('type')}){
+	@navtoc = (['ltx:tocentry',{},
+		    ['ltx:ref',{class=>'toc',show=>'toctitle',idref=>$p_id}],
+		    (@navtoc ? (['ltx:toclist',{},@navtoc]) : ())]); }
+      $id = $p_id; }
+    @navtoc; }
+  else {
+    (); }}
 
 sub fill_in_frags {
   my($self,$doc)=@_;
@@ -129,7 +143,7 @@ sub fill_in_refs {
     my $id = $ref->getAttribute('idref');
     my $show = $ref->getAttribute('show');
     $show = $$self{ref_show} unless $show;
-    $show = $$self{toc_show} if $show eq 'fulltitle';
+    $show = $$self{toc_show} if ($show eq 'fulltitle') || ($show =~ /.+title|title.+/);
     if(!$id){
       if(my $label = $ref->getAttribute('labelref')){
 	my $entry;
@@ -147,7 +161,7 @@ sub fill_in_refs {
 	if(my $url = $self->generateURL($doc,$id)){
 	  $ref->setAttribute(href=>$url); }}
       if(!$ref->getAttribute('title')){
-	if(my $titlestring = $self->generateTitle($id)){
+	if(my $titlestring = $self->generateTitle($doc,$id)){
 	  $ref->setAttribute(title=>$titlestring); }}
       if(!$ref->textContent && !(($tag eq 'ltx:graphics') || ($tag eq 'ltx:picture'))){
 	$doc->addNodes($ref,$self->generateRef($doc,$id,$show)); }
@@ -161,17 +175,8 @@ sub fill_in_refs {
 sub fill_in_bibrefs {
   my($self,$doc)=@_;
   $self->ProgressDetailed($doc,"Filling in bibrefs");
-  my $db = $$self{db};
   foreach my $bibref ($doc->findnodes('descendant::ltx:bibref')){
-    # Messy, since we're REPLACING the bibref with it's expansion.
-    my @save = ();
-    my ($p,$s) = ($bibref->parentNode, undef);
-    while(($s = $p->lastChild) && ($$s != $$bibref)){ # Remove & Save following siblings.
-      unshift(@save,$p->removeChild($s)); }
-    $doc->removeNodes($bibref);
-    $doc->addNodes($p,$self->make_bibcite($doc,$bibref));
-    map($p->appendChild($_),@save); # Put these back.
- }}
+    $doc->replaceNode($bibref,$self->make_bibcite($doc,$bibref)); }}
 
 # Given a list of bibkeys, construct links to them.
 # Mostly tuned to author-year style.
@@ -297,22 +302,54 @@ sub generateURL {
   else {
     $self->note_missing('ID',$id); }}
 
+our $NBSP = pack('U',0xA0);
 # Generate the contents of a <ltx:ref> of the given id.
 # show is a string containing substrings 'type', 'refnum' and 'title'
 # (standing for the type prefix, refnum and title of the id'd object)
 # and any other random characters; the
-our $NBSP = pack('U',0xA0);
 sub generateRef {
-  my($self,$doc,$id,$show)=@_;
-  my $fallback_show = ($show !~ /title/ ? "title" : "refnum");
-  my @fallback=();
-  # Find entry associated with $id, or first ancestor, that can fill in the show pattern.
-  while(my $entry = $id && $$self{db}->lookup("ID:$id")){
-    my @stuff = $self->generateRef_aux($doc,$entry,$show);
-    return @stuff if @stuff;
-    @fallback = $self->generateRef_aux($doc,$entry,$fallback_show) unless @fallback;
-    $id = $entry->getValue('parent'); }
-  (@fallback ? @fallback : ("?")); }
+  my($self,$doc,$reqid,$reqshow)=@_;
+  my $pending='';
+  my @stuff;
+  # Try the requested show pattern, and if it fails, try a fallback of just the title or refnum
+  foreach my $show (($reqshow,  ($reqshow !~ /title/ ? "title" : "refnum"))){
+    my $id = $reqid;
+    # Start with requested ID, add some from parent(s), if needed/until to make "useful" link content
+    while(my $entry = $id && $$self{db}->lookup("ID:$id")){
+      if(my @s = $self->generateRef_aux($doc,$entry,$show)){
+	push(@stuff,$pending) if $pending;
+	push(@stuff,@s);
+	return @stuff if $self->checkRefContent(@stuff);
+	$pending = $$self{ref_join}; }	# inside/outside this brace determines if text can START with the join.
+      $id = $entry->getValue('parent'); }}
+  if(@stuff){
+    @stuff; }
+  else {
+    $self->Warn($doc,"failed to generate good ref text for $reqid");
+    ("?"); }}
+
+# Check if the proposed content of a <ltx:ref> is "Good Enough"
+# (long enough, unique enough to give reader feedback,...)
+sub checkRefContent {
+  my($self,@stuff)=@_;
+  # Length? having _some_ actual text ?
+  my $s = text_content(@stuff);
+  # Could compare a minum length
+  # But perhaps this is better: check that there's some "text", not just symbols!
+  $s =~ s/\bin\s+//g;
+  ($s =~ /\w/ ? 1 : 0); }
+
+sub text_content { join('',map(text_content_aux($_),@_)); }
+sub text_content_aux {
+  my($n)=@_;
+  my $r = ref $n;
+  if(!$r){ $n; }
+  elsif($r eq 'ARRAY'){
+    my($t,$a,@c)=@$n;
+    text_content(@c); }
+  elsif($r =~ /^XML::/){
+    $n->textContent; }
+  else { $n; }}
 
 # Interpret a "Show" pattern for a given DB entry.
 # The pattern can contain substrings to be substituted
@@ -322,64 +359,77 @@ sub generateRef {
 # and any other random characters which are preserved.
 sub generateRef_aux {
   my($self,$doc,$entry,$show)=@_;
-  my $OK=0;
   my @stuff=();
+  my $OK=0;
+  $show =~ s/typerefnum\s*title/title/; # Same thing NOW!!!
   while($show){
-    if($show =~ s/^typerefnum(\.?\s*)//){
-      my $r = $1;
-      $r =~ s/\s+/$NBSP/ if $r;
-      my @rest = ($1 ? ($1):());
-      if(my $refnum = $entry->getValue('refnum')){
-	my $type   = $entry->getValue('type');
+    if($show =~ s/^type(\.?\s*)refnum(\.?\s*)//){
+      my $frefnum  = $entry->getValue('frefnum') || $entry->getValue('refnum');
+      if($frefnum){
 	$OK = 1;
-	push(@stuff, ['ltx:span',{class=>'refnum'},
-		      ($type && $TYPEPREFIX{$type} ? ($TYPEPREFIX{$type}) :()),
-		      $doc->trimChildNodes($refnum),
-		      ($r ? ($r):())]); }}
-    elsif($show =~ s/^type(\.?\s*)//){
-      my $r = $1;
-      $r =~ s/\s+/$NBSP/ if $r;
-      my $type   = $entry->getValue('type');
-      if($type && $TYPEPREFIX{$type}){
-	$OK = 1;
-	push(@stuff, $TYPEPREFIX{$type},($r ? ($r):())); }}
+	push(@stuff, ['ltx:text',{class=>'tag'},$frefnum]); }}
     elsif($show =~ s/^refnum(\.?\s*)//){
-      my $r = $1;
-      $r =~ s/\s+/$NBSP/ if $r;
       if(my $refnum = $entry->getValue('refnum')){
 	$OK = 1;
-	push(@stuff, ['ltx:span',{class=>'refnum'},
-		      $doc->trimChildNodes($refnum),
-		      ($r ? ($r):())]); }}
-    elsif($show =~ s/^title//){
-      if(my $title = $entry->getValue('title')){
+	push(@stuff, ['ltx:text',{class=>'tag'},$refnum]); }}
+    elsif($show =~ s/^toctitle//){
+      my $title = $self->fillInTitle($doc,$entry->getValue('toctitle')||$entry->getValue('title'));
+      if($title){
 	$OK = 1;
-	push(@stuff, ['ltx:span',{class=>'title'},$doc->trimChildNodes($title)]); }}
+	push(@stuff, ['ltx:text',{class=>'title'},$doc->trimChildNodes($title)]); }}
+
+    elsif($show =~ s/^title//){
+      my $title= $self->fillInTitle($doc,$entry->getValue('title'));
+      if($title){
+	$OK = 1;
+	push(@stuff, ['ltx:text',{class=>'title'},$doc->trimChildNodes($title)]); }}
     elsif($show =~ s/^(.)//){
       push(@stuff, $1); }}
   ($OK ? @stuff : ()); }
 
+# Generate a title string for ltx:ref
 sub generateTitle {
-  my($self,$id)=@_;
+  my($self,$doc,$id)=@_;
   # Add author, if any ???
   my $string = "";
   while(my $entry = $id && $$self{db}->lookup("ID:$id")){
-    my $title  = $entry->getValue('title');
+    my $title  = $self->fillInTitle($doc,$entry->getValue('title'))
+      || $entry->getValue('frefnum') || $entry->getValue('refnum');
     $title = $title->textContent if $title && ref $title;
     $title =~ s/^\s+// if $title;
     $title =~ s/\s+$// if $title;
-    my $refnum = ($$self{number_sections} ? $entry->getValue('refnum') : '');
-    $refnum = $refnum->textContent if $refnum && ref $refnum;
-    $refnum =~ s/^\s+// if $refnum;
-    $refnum =~ s/\s+$// if $refnum;
-    if($title || $refnum){
-      $string .= ' in ' if $string;
-      my $type   = $entry->getValue('type');
-      $string .= $TYPEPREFIX{$type} if $TYPEPREFIX{$type};
-      $string .= $refnum if $refnum;
-      $string .= ($refnum ? '. ':'').$title if $title; }
+    if($title){
+      $string .= $$self{ref_join} if $string;
+      $string .= $title; }
     $id = $entry->getValue('parent'); }
   $string; }
+
+# Fill in any embedded ltx:ref's & ltx:cite's within a title
+sub fillInTitle {
+  my($self,$doc,$title)=@_;
+  return unless $title;
+  # Fill in any nested ref's!
+  foreach my $ref ($doc->findnodes('descendant::ltx:ref[@idref or @labelref]',$title)){
+    next if $ref->textContent;
+    my $show = $ref->getAttribute('show');
+    $show = $$self{ref_show} unless $show;
+    $show = $$self{toc_show} if $show eq 'fulltitle';
+    my $refentry;
+    if(my $id = $ref->getAttribute('idref')){
+      $refentry = $$self{db}->lookup("ID:$id"); }
+    elsif(my $label = $ref->getAttribute('labelref')){
+      $refentry = $$self{db}->lookup($label);
+      if($id = $refentry->getValue('id')){
+	$refentry = $$self{db}->lookup("ID:$id"); }
+      $show =~ s/^type//;  }	# Since author may have put explicit \S\ref... in! 
+    if($refentry){
+      $doc->replaceNode($ref,$self->generateRef_aux($doc,$refentry,$show)); }}
+  # Fill in (replace, actually) any embedded citations.
+  foreach my $bibref ($doc->findnodes('descendant::ltx:bibref',$title)){
+    $doc->replaceNode($bibref,$self->make_bibcite($doc,$bibref)); }
+  foreach my $break ($doc->findnodes('descendant::ltx:break',$title)){
+    $doc->replaceNode($break->parentNode,['ltx:text',{}," "]); }
+  $title; }
 
 # ================================================================================
 1;
