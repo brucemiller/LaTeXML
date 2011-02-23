@@ -35,14 +35,18 @@ sub process {
     $doc->addDate();
     my($allkeys,$tree)= $self->build_tree($doc,$index);
     if($tree){
+      my $props={};
+      if(my $seename = $index->getAttribute('seename')){
+	$$props{seename}=$seename; }
+      if(my $seealsoname = $index->getAttribute('seealsoname')){
+	$$props{seealsoname}=$seealsoname; }
       if($$self{split}){
 	map($self->rescan($_),
 	    $self->makeSubCollectionDocuments($doc,$index,
-					      map( ($_=>makeIndexList($doc,$allkeys,
-								      $$tree{subtrees}{$_})),
+					      map( ($_=>$self->makeIndexList($doc,$allkeys,$$tree{subtrees}{$_}, $props)),
 						   keys %{$$tree{subtrees}}))); }
       else {
-	$doc->addNodes($index,makeIndexList($doc,$allkeys,$tree));
+	$doc->addNodes($index,$self->makeIndexList($doc,$allkeys,$tree,$props));
 	$self->rescan($doc); }}
     else { $doc; }}
   else { $doc; }}
@@ -143,38 +147,40 @@ sub alphacmp {
   (lc($a) cmp lc($b)) || ($a cmp $b); }
 
 sub makeIndexList {
-  my($doc,$allkeys,$tree)=@_;
+  my($self,$doc,$allkeys,$tree,$props)=@_;
   my $subtrees =$$tree{subtrees};
   if(my @keys = sort alphacmp keys %$subtrees){
-    ['ltx:indexlist',{}, map(makeIndexEntry($doc,$allkeys,$$subtrees{$_}), @keys)]; }
+    ['ltx:indexlist',{}, map($self->makeIndexEntry($doc,$allkeys,$$subtrees{$_},$props), @keys)]; }
   else {
     (); }}
 
 sub makeIndexEntry {
-  my($doc,$allkeys,$tree)=@_;
+  my($self,$doc,$allkeys,$tree,$props)=@_;
   my $refs   = $$tree{referrers};
   my $seealso= $$tree{see_also};
   my @links = ();
    # Note sort of keys here is questionable!
   if(keys %$refs){
-    push(@links,conjoin(map(makeIndexRefs($doc,$_,sort alphacmp keys %{$$refs{$_}}),
+    push(@links,conjoin(map($self->makeIndexRefs($doc,$_,sort alphacmp keys %{$$refs{$_}}),
 				 sort alphacmp keys %$refs))); }
   if($seealso){
+    my @missing = sort grep(!$$allkeys{$_},keys %$seealso);
+    $self->Warn($doc,"Missing terms in index 'see also': ".join(', ',@missing)) if @missing;
     push(@links,
 	 (@links ? (', '):()),
-	 ['ltx:text',{font=>'italic'},(keys %$refs ? "see also " : "see ")],
+	 ['ltx:text',{font=>'italic'}, (keys %$refs ? ($$props{seealso}||"see also") : ($$props{seename}||"see"))." "],
 	 conjoin(map(['ltx:ref',{idref=>$_->{id}},@{$_->{phrases}}],
 		     grep($_, map($$allkeys{$_},sort alphacmp keys %$seealso))))); }
 
   ['ltx:indexentry',{'xml:id'=>$$tree{id}},
    ['ltx:indexphrase',{},$doc->trimChildNodes($$tree{phrase})],
    (@links ? (['ltx:indexrefs',{},@links]):()),
-   makeIndexList($doc,$allkeys,$tree)]; }
+   $self->makeIndexList($doc,$allkeys,$tree)]; }
 
 # Given that sorted styles gives bold, italic, normal,
 # let's just do the first.
 sub makeIndexRefs {
-  my($doc,$id,@styles)=@_;
+  my($self,$doc,$id,@styles)=@_;
   ((($styles[0]||'normal') ne 'normal')
    ? ['ltx:text',{font=>$styles[0]},['ltx:ref',{idref=>$id}]]
    : ['ltx:ref',{idref=>$id}]); }
