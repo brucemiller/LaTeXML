@@ -21,7 +21,6 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{db}=$options{db};
   $$self{handlers}={};
-  $self->registerHandler('ltx:mainpage'      => \&section_handler);
   $self->registerHandler('ltx:document'      => \&section_handler);
   $self->registerHandler('ltx:bibliography'  => \&section_handler);
   $self->registerHandler('ltx:index'         => \&section_handler);
@@ -33,17 +32,15 @@ sub new {
   $self->registerHandler('ltx:subsubsection' => \&section_handler);
   $self->registerHandler('ltx:paragraph'     => \&section_handler);
   $self->registerHandler('ltx:subparagraph'  => \&section_handler);
-  $self->registerHandler('ltx:sidebar'       => \&section_handler);
 
   $self->registerHandler('ltx:table'         => \&captioned_handler);
   $self->registerHandler('ltx:figure'        => \&captioned_handler);
   $self->registerHandler('ltx:listing'       => \&captioned_handler);
 
   $self->registerHandler('ltx:equation'      => \&labelled_handler);
-  $self->registerHandler('ltx:equationmix'   => \&labelled_handler);
   $self->registerHandler('ltx:equationgroup' => \&labelled_handler);
   $self->registerHandler('ltx:theorem'       => \&labelled_handler);
-  $self->registerHandler('ltx:anchor'        => \&labelled_handler);
+  $self->registerHandler('ltx:anchor'        => \&anchor_handler);
 
   $self->registerHandler('ltx:bibitem'       => \&bibitem_handler);
   $self->registerHandler('ltx:bibentry'      => \&bibentry_handler);
@@ -94,6 +91,16 @@ sub scanChildren {
     if($child->nodeType == XML_ELEMENT_NODE){
       $self->scan($doc,$child,$parent_id); }}}
 
+sub addAsChild {
+  my($self,$id,$parent_id)=@_;
+  # Find the ancestor that maintains a children list
+  while(my $parent = $parent_id && $$self{db}->lookup("ID:$parent_id")){
+    if(my $siblings = $parent->getValue('children')){
+      push(@$siblings,$id) unless grep($_ eq $id,@$siblings);
+      last; }
+    else {
+      $parent_id = $parent->getValue('parent'); }}}
+
 sub pageID {
   my($self,$doc)=@_;
   $doc->getDocumentElement->getAttribute('xml:id'); }
@@ -128,14 +135,19 @@ sub default_handler {
   if($id){
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, labels=>$self->noteLabels($node),
 			 location=>$self->siteRelativePathname($doc->getDestination),
-			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id)); }
+			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id));
+    $self->addAsChild($id,$parent_id);  }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub section_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if($id){
-    my ($title) = ($doc->findnodes('ltx:toctitle',$node),$doc->findnodes('ltx:title',$node));
+    my $toctitle = $doc->findnode('ltx:toctitle',$node);
+    if($toctitle){
+      $toctitle = $toctitle->cloneNode(1);
+      map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$toctitle)); }
+    my $title = $doc->findnode('ltx:title',$node);
     if($title){
       $title = $title->cloneNode(1);
       map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$title)); }
@@ -143,21 +155,25 @@ sub section_handler {
 			 location=>$self->siteRelativePathname($doc->getDestination),
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
-			 title=>$title, children=>[],
+			 frefnum=>$node->getAttribute('frefnum'),
+			 title=>$title, toctitle=>$toctitle, children=>[],
 			 stub=>$node->getAttribute('stub'));
-    if(my $p = $parent_id && $$self{db}->lookup("ID:$parent_id")){
-      if(my $sib = $p->getValue('children')){
-	if(! grep($_ eq $id,@$sib)){
-	  push(@$sib,$id); }}}
-  }
+    # if(my $p = $parent_id && $$self{db}->lookup("ID:$parent_id")){
+    #   if(my $sib = $p->getValue('children')){
+    # 	if(! grep($_ eq $id,@$sib)){
+    # 	  push(@$sib,$id); }}}
+    $self->addAsChild($id,$parent_id);  }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub captioned_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if($id){
-    my ($caption) = ($doc->findnodes('descendant::ltx:toccaption',$node),
-		     $doc->findnodes('descendant::ltx:caption',$node));
+    my $toccaption = $doc->findnode('descendant::ltx:toccaption',$node);
+    if($toccaption){
+      $toccaption = $toccaption->cloneNode(1);
+      map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$toccaption)); }
+    my $caption = $doc->findnode('descendant::ltx:caption',$node);
     if($caption){
       $caption = $caption->cloneNode(1);
       map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$caption)); }
@@ -165,7 +181,9 @@ sub captioned_handler {
 			 location=>$self->siteRelativePathname($doc->getDestination),
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
-			 caption=>$caption);  }
+			 frefnum=>$node->getAttribute('frefnum'),
+			 caption=>$caption, toccaption=>$toccaption);
+    $self->addAsChild($id,$parent_id);  }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub labelled_handler {
@@ -175,7 +193,22 @@ sub labelled_handler {
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
 			 location=>$self->siteRelativePathname($doc->getDestination),
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
-			 refnum=>$node->getAttribute('refnum')); }
+			 refnum=>$node->getAttribute('refnum'),
+			 frefnum=>$node->getAttribute('frefnum')); 
+    $self->addAsChild($id,$parent_id); }
+  $self->scanChildren($doc,$node,$id || $parent_id); }
+
+sub anchor_handler {
+  my($self,$doc,$node,$tag,$parent_id)=@_;
+  my $id = $node->getAttribute('xml:id');
+  if($id){
+    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
+			 location=>$self->siteRelativePathname($doc->getDestination),
+			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
+			 title=>$node->cloneNode(1)->childNodes, # document fragment?
+			 refnum=>$node->getAttribute('refnum'),
+			 frefnum=>$node->getAttribute('frefnum')); 
+    $self->addAsChild($id,$parent_id); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub ref_handler {
