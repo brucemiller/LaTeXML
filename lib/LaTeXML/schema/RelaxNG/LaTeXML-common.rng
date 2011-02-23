@@ -97,7 +97,8 @@ usually generated automatically by the latexml.</a:documentation>
     </optional>
   </define>
   <define name="Labelled.attributes">
-    <a:documentation>Attributes for elements that can be labelled from within LaTeX.</a:documentation>
+    <a:documentation>Attributes for elements that can be labelled from within LaTeX.
+These attributes deal with assigning a label and generating cross references.</a:documentation>
     <ref name="ID.attributes"/>
     <optional>
       <attribute name="labels">
@@ -112,6 +113,12 @@ Other mechanisms (like acro?) might use other prefixes (but \texttt{ID:} is rese
     <optional>
       <attribute name="refnum">
         <a:documentation>the reference number (ie. section number, equation number, etc) of the object.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="frefnum">
+        <a:documentation>the formatted reference number of the object, typically this is the refnum with
+the object type prepended, such as "Chapter 2"</a:documentation>
       </attribute>
     </optional>
   </define>

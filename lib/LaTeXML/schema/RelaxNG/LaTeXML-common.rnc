@@ -80,9 +80,9 @@ IDREF.attributes =
   attribute idref { xsd:IDREF }?
 
 ## Attributes for elements that can be labelled from within LaTeX.
+## These attributes deal with assigning a label and generating cross references.
 Labelled.attributes =
   ID.attributes,
-
 
   ## Records the various labels that LaTeX uses for crossreferencing.
   ## (note that \cs{label} can associate more than one label with an object!)
@@ -93,8 +93,11 @@ Labelled.attributes =
   attribute labels { text }?,
 
   ## the reference number (ie. section number, equation number, etc) of the object.
-  attribute refnum { text }?
+  attribute refnum { text }?,
 
+  ## the formatted reference number of the object, typically this is the refnum with
+  ## the object type prepended, such as "Chapter 2"
+  attribute frefnum { text }?
 
 ## Attributes shared by low-level, generic inline and block elements
 ## that can be sized or shifted.
