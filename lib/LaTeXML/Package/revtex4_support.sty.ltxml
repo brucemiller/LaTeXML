@@ -33,18 +33,18 @@ DefMacro('\title[]{}', '\@add@frontmatter{ltx:title}{#2}');
 DefMacro('\doauthor{}{}{}','#1 #2 #3'); # -- ??
 DefMacro('\address','\affiliation');
 # DefMacro('\affiliation','');
-DefConstructor('\@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affiliation{}','\@add@to@frontmatter{ltx:creator}{\@affiliation{#1}}');
+DefConstructor('\@@@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\affiliation{}','\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
 DefMacro('\altaddress','\altaffiliation');
 DefMacro('\altaffiliation','\affiliation');
 DefMacro('\andname','and');
 DefMacro('\collaboration',''); # Should have a look at this too
 DefMacro('\noaffiliation', Tokens());
 
-DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email [] Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@email{#2}}');
-DefConstructor('\@homepage{}',"^ <ltx:contact role='url'>#1</ltx:contact>");
-DefMacro('\homepage Semiverbatim','\@add@to@frontmatter{ltx:creator}{\@homepage{#1}}');
+DefConstructor('\@@@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\email [] Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#2}}');
+DefConstructor('\@@@homepage{}',"^ <ltx:contact role='url'>#1</ltx:contact>");
+DefMacro('\homepage Semiverbatim','\@add@to@frontmatter{ltx:creator}{\@@@homepage{#1}}');
 
 DefMacro('\firstname',''); # \let\firstname\@firstofone ??
 DefConstructor('\surname{}',"#1");
@@ -90,12 +90,13 @@ DefMacro('\endmediumtext','');
 # However, people seem to insist on "misusing" it, by just saying
 # \acknowledgements... which actually "works".
 # So, we just open it, and let it autoclose.
-DefConstructor('\acknowledgements',"<ltx:acknowledgements>");
-DefConstructor('\acknowledgments', "<ltx:acknowledgements>");
-DefConstructor('\endacknowledgements',"</ltx:acknowledgements>");
+DefConstructor('\acknowledgments',"<ltx:acknowledgements name='#name'>",
+	       properties=>sub{ (name=>Digest(T_CS('\acknowledgmentsname'))); });
 DefConstructor('\endacknowledgments', "</ltx:acknowledgements>");
-Tag("ltx:acknowledgements", autoClose=>1);
 DefMacro('\acknowledgmentsname','Acknowledgements');
+Let(T_CS('\acknowledgements'),T_CS('\acknowledgments'));
+Let(T_CS('\endacknowledgements'),T_CS('\endacknowledgments'));
+Tag("ltx:acknowledgements", autoClose=>1);
 
 # Extra stuff
 DefMacro('\thesection','\Roman{section}'); # Apparently the desired style.
@@ -168,7 +169,7 @@ Let('\textcite','\citet');
 # Should be a simple environment, but tends to be misused, so define separately
 DefConstructor('\references',
 	       "<ltx:bibliography xml:id='#id'>"
-	       . "<ltx:title>#refname</ltx:title>"
+	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       . "<ltx:biblist>",
 	       afterDigest=>sub { beginBibliography($_[1]); });
 

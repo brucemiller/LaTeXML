@@ -52,7 +52,7 @@ DefEnvironment('{mathletters}',
 DefMacro('\@dollar@in@oldrevtex', '\bgroup\hbox\bgroup\let$\@eegroup');
 DefMacro('\@eegroup','\egroup\egroup');
 DefEnvironment('{equation}',
-	       "<ltx:equation xml:id='#id' refnum='#refnum'>"
+	       "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>"
 	       .   "#body"
@@ -61,7 +61,7 @@ DefEnvironment('{equation}',
 	       ."</ltx:equation>",
 	       mode=>'display_math',
 	       beforeDigest=>sub { Let(T_MATH,  T_CS('\@dollar@in@oldrevtex')); },
-	       properties=> sub { RefStepCounter('equation') },
+	       properties=> sub { (RefStepCounter('equation'),frefnum=>Digest(T_CS('\@eqnnum'))); },
 	       locked=>1);
 DefEnvironment('{equation*}',
 	       "<ltx:equation xml:id='#id'>"

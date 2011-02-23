@@ -58,6 +58,7 @@ DefMacro('\thesubsection',   '\thesection.\arabic{subsection}');
 DefMacro('\thesubsubsection','\thesubsection.\arabic{subsubsection}');
 DefMacro('\theparagraph',    '');
 DefMacro('\thesubparagraph', '');
+SetCounter(tocdepth=>Number(3));
 
 NewCounter('equation', 'document', idprefix=>'E', idwithin=>'section');
 NewCounter('@equationgroup', 'document', idprefix=>'EG', idwithin=>'section');
@@ -88,6 +89,8 @@ DefMacro('\theenumii',          '\alph{enumii}');
 DefMacro('\theenumiii',         '\roman{enumiii}');
 DefMacro('\theenumiv',          '\Alph{enumiv}');
 
+DefMacro('\refname','References');
+
 Tag('ltx:appendix',autoClose=>1);
 # Actually we should be using section counter
 AssignValue(counter_for_appendix=>'section');
@@ -98,7 +101,12 @@ DefPrimitive('\@appendix',sub{
   DefMacro('\thesection', '\Alph{section}',scope=>'global');
   Let(T_CS('\section'),T_CS('\appendix@section'),'global');
   Let(T_CS('\@appendix'),T_CS('\relax'),'global');
- });
+
+  if(LookupDefinition(T_CS('\appendixname'))){
+    Let(T_CS('\sectionname'),T_CS('\appendixname')); }
+  if(LookupDefinition(T_CS('\appendix@abbr'))){
+    Let(T_CS('\section@abbr'),T_CS('\appendix@abbr')); }
+  return; });
 
 #**********************************************************************
 1;

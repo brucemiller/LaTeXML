@@ -166,8 +166,13 @@ DefConstructor("\\\\ OptionalMatch:* [Glue]",
 #    text
 #   \end{document}
 
-AssignValue('@at@begin@document',[]);
-AssignValue('@at@end@document',[]);
+DefMacro('\AtBeginDocument{}',sub {
+  AssignValue('@at@begin@document',[]) unless LookupValue('@at@begin@document');
+  PushValue('@at@begin@document', $_[1]->unlist); });
+DefMacro('\AtEndDocument{}',  sub {
+  AssignValue('@at@end@document',[]) unless LookupValue('@at@end@document');
+  PushValue('@at@end@document', $_[1]->unlist); });
+
 DefEnvironment('{document}', sub {
 #	       "<ltx:document xml:id='#id'>#body</ltx:document>",
   my($document,%props)=@_;
@@ -181,10 +186,17 @@ DefEnvironment('{document}', sub {
 	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
 	       afterDigestBegin=>sub {
 		 $_[1]->setProperty(id=>Expand(T_CS('\thedocument@ID')));
-		 Digest(Tokens(@{LookupValue('@at@begin@document')}));  },
-	       afterDigest=> sub {
+		 if(my $ops = LookupValue('@at@begin@document')){
+		   Digest(Tokens(@$ops));  }
+		 else {
+		   return; }},
+##	       afterDigest=> sub {
+	       beforeDigestEnd=> sub {
 		 $_[0]->getGullet->flush; 
-		 Digest(Tokens(@{LookupValue('@at@end@document')}));  },
+		 if(my $ops = LookupValue('@at@end@document')){
+		   Digest(Tokens(@$ops));  }
+		 else {
+		   return; }},
 	       mode=>'text');
 
 #**********************************************************************
@@ -239,7 +251,8 @@ DefMacroI('\thempfootnote',undef,'\arabic{mpfootnote}');
 
 DefConstructor('\footnote[]{}',
 	       "<ltx:note role='footnote' mark='#refnum'>#2</ltx:note>",
-	       mode=>'text',
+	       mode=>'text', bounded=>1,
+	       beforeDigest=>sub { reenterTextMode(); },
 	       properties=> sub { 
 		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
 DefConstructor('\footnotemark[]',
@@ -318,26 +331,61 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
   my $ctr = LookupValue('counter_for_'.ToString($type)) || ToString($type);
   if($flag){
     RefStepID($ctr);
-    (T_CS('\@startsection@hook'),
-     T_CS('\\@@section'),
-     T_BEGIN,$type->unlist,T_END,
-     T_OTHER('['),T_OTHER(']'),
-     T_OTHER('['),T_CS('\@currentID'),T_OTHER(']')); }
+    (T_CS('\@startsection@hook'),T_CS('\\@@unnumbered@section'),T_BEGIN,$type->unlist,T_END); }
   else {
     RefStepCounter($ctr);
-    (T_CS('\@startsection@hook'),
-     T_CS('\\@@section'),
-     T_BEGIN,$type->unlist,T_END,
-     T_OTHER('['),T_CS('\@currentlabel'),T_OTHER(']'),
-     T_OTHER('['),T_CS('\@currentID'),T_OTHER(']')); }});
+    (T_CS('\@startsection@hook'),T_CS('\\@@numbered@section'),T_BEGIN,$type->unlist,T_END); }});
 
-# \@@section{type}[refnum][id][toctitle]{title}
-DefConstructor('\\@@section{}[][][]{}',sub {
-  my($document,$type,$refnum,$id,$toctitle,$title)=@_;
-  $document->openElement("ltx:".ToString($type),refnum=>$refnum,'xml:id'=>$id);
+# Redefine these if you want to assemble the name (eg. \chaptername), refnum and titles differently
+# \@@numbered@section{type}[toctitle]{title}
+DefMacro('\@@numbered@section{}[]{}',
+	 '\@@section{#1}{\@currentID}{\@currentlabel}'
+	 .          '{\fnum@@{#1}}'
+	 .          '{\format@toctitle@{#1}{\ifx.#2.#3\else#2\fi}}'
+	 .          '{\format@title@{#1}{#3}}');
+# NOTE: Unclear here, whether the "formatted refnum" should be empty, or just the type abbreviation?
+DefMacro('\@@unnumbered@section{}[]{}',
+	 '\@@section{#1}{\@currentID}{}{}{#2}{#3}');
+
+#----------------------------------------------------------------------
+# The following macros provide a few layers of customization
+# in particular for supporting localization for different languages.
+#----------------------------------------------------------------------
+# \format@title@{type}{title}
+# Format a title (or caption) appropriately for type.
+# This is usually somewhat verbose, but establishes the context that this is a Chapter, or Figure, or whatever
+# invokes \format@title@type{title} if that macro is defined, else composes \fnum@@{type} title.
+# Define \format@title@type{title} if the default is not appropriate.
+DefMacro('\format@title@{}{}',
+	 '{\@ifundefined{format@title@#1}{\@@compose@title{\fnum@@{#1}}{#2}}{\csname format@title@#1\endcsname{#2}}}');
+
+# \format@toctitle@{type}{toctitle}
+# Format a toctitle (or toccaption) appropriately for type.
+# This is usually somewhat concise, and the context implies that this is a Chapter, Figure or whatever
+# invokes \format@toctitle@type{title} if that macro is defined, else composes \fnum@toc@@{type} title
+# Define \format@toctitle@type{title} if the default is not appropriate.
+DefMacro('\format@toctitle@{}{}',
+	 '{\@ifundefined{format@toctitle@#1}{\@@compose@title{\fnum@toc@@{#1}}{#2}}{\csname format@toctitle@#1\endcsname{#2}}}');
+
+DefMacro('\@@compose@title{}{}', sub {
+#	   '\ifx.#1.\else\@tag{#1 }\fi#2');
+  my @tag = Expand($_[1])->unlist;
+  ( (@tag ? (T_CS('\@tag'),T_BEGIN,@tag,T_SPACE,T_END) : ()), $_[2]->unlist); });
+
+## NOTE that a 3rd form seems desirable: an concise form that cannot rely on context for the type.
+## This would be useful for the titles in links; thus can be plain (unicode) text.
+## However, I hate setting up even more machinery & options and dragging yet another form around.... 
+
+DefConstructor('\@tag{}',"?#1(<ltx:tag>#1</ltx:tag>)()");
+
+# \@@section{type}{id}{refnum}{formattedrefnum}{toctitle}{title}
+DefConstructor('\\@@section{}{}{}{}{}{}',sub {
+  my($document,$type,$id,$refnum,$frefnum,$toctitle,$title,%props)=@_;
+  $frefnum = undef if $frefnum && $refnum && (ToString($frefnum) eq ToString($refnum));
+  $document->openElement("ltx:".ToString($type),'xml:id'=>$id,refnum=>$refnum,frefnum=>$frefnum);
   $document->insertElement('ltx:title',$title);
-  $document->insertElement('ltx:toctitle',$toctitle) if $toctitle; },
-  properties=>{refnum=>'#2',id=>'#3'},
+  $document->insertElement('ltx:toctitle',$toctitle)
+    if $toctitle && $toctitle->unlist && (ToString($toctitle) ne ToString($title)); },
   bounded=>1);
 
 # Not sure if this is best, but if no explicit \section'ing...
@@ -347,19 +395,34 @@ DefConstructor('\\@@section{}[][][]{}',sub {
 # C.4.2 The Appendix
 #======================================================================
 # Handled in article,report or book.
-DefMacroI('\appendixname',  undef,'Appendix'); # never used?
+DefMacroI('\appendixname',  undef,'Appendix');
 DefMacroI('\appendixesname',undef, 'Appendixes');
 
 #======================================================================
 # C.4.3 Table of Contents
 #======================================================================
-# Ignore these; leave it up to post processing.
-DefPrimitiveI('\tableofcontents', undef, undef);
+# Insert stubs that will be filled in during post processing.
 DefMacroI('\contentsname',  undef, 'Contents');
-DefPrimitiveI('\listoffigures',   undef, undef);
+DefConstructorI('\tableofcontents', undef,
+		"<ltx:TOC role='contents' select='#select' name='#name'/>",
+		properties=>sub {
+		  my $td = CounterValue('tocdepth')->valueOf + 2;
+		  my @s = (qw(ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
+			    ltx:paragraph ltx:subparagraph));
+		  @s = map($s[$_],0..$td);
+		  push(@s, (qw(ltx:appendix ltx:index ltx:bibliography))) if @s;
+		  ( select=>join(' | ',@s),
+		    name=>Digest(T_CS('\contentsname')));});
+
 DefMacroI('\listfigurename',undef, 'List of Figures');
-DefPrimitiveI('\listoftables',    undef, undef);
+DefConstructorI('\listoffigures',   undef, 
+		"<ltx:TOC role='figures' select='ltx:figure' name='#name'/>",
+		properties=>sub {( name=>Digest(T_CS('\listfigurename')));});
+
 DefMacroI('\listtablename',undef, 'List of Tables');
+DefConstructorI('\listoftables',    undef, 
+		"<ltx:TOC role='tables' select='ltx:table' name='#name'/>",
+		properties=>sub {( name=>Digest(T_CS('\listtablename')));});
 
 DefPrimitive('\addcontentsline{}{}{}', undef);
 DefPrimitive('\numberline{}{}', undef);
@@ -500,8 +563,6 @@ DefMacro('\AtEndOfPackage{}',sub {
 
 Let(T_CS('\AtEndOfClass'),T_CS('\AtEndOfPackage'));
 
-DefMacro('\AtBeginDocument{}',sub { PushValue('@at@begin@document', $_[1]->unlist); });
-DefMacro('\AtEndDocument{}',  sub { PushValue('@at@end@document', $_[1]->unlist); });
 DefMacro('\AtBeginDvi {}', Tokens());
 
 #======================================================================
@@ -543,7 +604,10 @@ DefRegister('\baselinestretch'   => Dimension(0));
 
 # See frontmatter support in TeX.ltxml
 DefMacro('\title{}', '\@add@frontmatter{ltx:title}{#1}');
-DefMacro('\date{}', '\@add@frontmatter{ltx:date}[role=creation]{#1}');
+
+DefMacro('\date{}',
+	 '\@add@frontmatter{ltx:date}[role=creation,'
+	 . 'name={\@ifundefined{datename}{}{\datename}}]{#1}');
 
 DefConstructor('\person@thanks{}', "^ <ltx:contact role='thanks'>#1</ltx:contact>",
 	       alias=>'\thanks', mode=>'text');
@@ -593,13 +657,14 @@ DefEnvironment('{abstract}','',
  	       afterDigest=> sub {
 		 my $frontmatter = LookupValue('frontmatter');
  		 push(@{$$frontmatter{'ltx:abstract'}},
- 		      ['ltx:abstract',undef,@LaTeXML::LIST]);
+ 		      ['ltx:abstract',{name=>Digest(T_CS('\abstractname'))},
+		       @LaTeXML::LIST]);
 		 DefMacroI('\maybe@end@abstract',undef,Tokens());
  		 return; },
 	       locked=>1, mode=>'text');
 DefMacroI('\maybe@end@abstract',undef, '\endabstract');
 
-DefMacroI('\abstractname',undef, 'Abstract'); # never used?
+DefMacroI('\abstractname',undef, 'Abstract');
 
 # Hmm, titlepage is likely to be hairy, low-level markup,
 # without even title, author, etc, specified as such!
@@ -935,6 +1000,9 @@ DefMacroI('\normalsfcodes',undef,Tokens());
 #======================================================================
 # C.7.1 Math Mode Environments
 #======================================================================
+DefMacroI('\@eqnnum',undef,'(\theequation)');
+DefMacro('\fnum@equation','\@eqnnum');
+
 # Redefined from TeX.pool, since with LaTeX we presumably have a more complete numbering system
 DefConstructorI('\@@BEGINDISPLAYMATH',undef,
 	       "<ltx:equation xml:id='#id'>"
@@ -971,7 +1039,7 @@ DefEnvironment('{math}',
 # My first inclination is to Lock {math}, but it is surprisingly common to redefine it in silly ways... So...?
 #	       locked=>1);
 DefEnvironment('{equation}',
-	       "<ltx:equation xml:id='#id' refnum='#refnum'>"
+	       "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>"
 	       .   "#body"
@@ -1106,7 +1174,8 @@ DefConstructor('\@equationgroup@open@row SkipSpaces DigestedBody',
 		   # [wouldn't it be nicer to be using Whatsits inside the alignment?]
 		   my $row = LookupValue('Alignment')->currentRow;
 		   $$row{id} = $props{id};
-		   $$row{refnum} = $props{refnum}; }
+		   $$row{refnum} = $props{refnum};
+		   $$row{frefnum}= $props{frefnum}; }
 		 return; });
 
 # ========================================
@@ -1152,7 +1221,9 @@ sub eqnarrayBindings {
 	      after=>Tokens(T_CS('\@hidden@egroup'),T_MATH,T_CS('\hfil'))};
   my $template = LaTeXML::AlignmentTemplate->new(columns=>[$col1,$col2,$col3]);
   my $alignment = LaTeXML::Util::Alignment
-    ->new(openContainer =>sub{ $_[0]->openElement('ltx:equationgroup',RefStepID('@equationgroup'),@_[1..$#_]); },
+    ->new(openContainer =>sub{ my %attr = RefStepID('@equationgroup');
+			       $attr{'xml:id'}=$attr{id}; delete $attr{id};
+			       $_[0]->openElement('ltx:equationgroup',%attr,@_[1..$#_]); },
 	  closeContainer=>sub{ $_[0]->closeElement('ltx:equationgroup'); },
 	  openRow       =>sub{ $_[0]->openElement('ltx:equation',@_[1..$#_]); },
 	  closeRow      =>sub{ $_[0]->closeElement('ltx:equation'); },
@@ -1283,17 +1354,19 @@ sub eqnarrayJoinRows {
   my $equation = addNewChildLate($document,$equationgroup,'ltx:equation');
   $equationgroup->insertBefore($equation,$equations[0]); # Move to correct position.
   # move labels, id, refnum to new equation
-  my($labels,$id,$refnum,$idctr);
+  my($labels,$id,$refnum,$frefnum,$idctr);
   foreach my $eq (@equations){
     if(my $l = $eq->getAttribute('labels')){
       $labels = ($labels ? "$labels $l" : $l); }
     $id     = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
     $refnum = $eq->getAttribute('refnum') if $eq->hasAttribute('refnum');
+    $frefnum = $eq->getAttribute('frefnum') if $eq->hasAttribute('frefnum');
     $idctr  = $eq->getAttribute('_ID_counter_m') if $eq->hasAttribute('_ID_counter_m');
   }
   $equation->setAttribute(labels=>$labels) if $labels;
   $equation->setAttribute('xml:id'=>$id) if $id;
   $equation->setAttribute(refnum=>$refnum) if $refnum;
+  $equation->setAttribute(frefnum=>$frefnum) if $frefnum;
   $equation->setAttribute('_ID_counter_m'=>$idctr) if $idctr;
 
   # Scan equations to see which ones likely are continuations of previous
@@ -1466,7 +1539,6 @@ DefConstructor('\stackrel{}{}',
 	       .  "<ltx:XMWrap>#2</ltx:XMWrap>"
 	       .  "<ltx:XMWrap>#1</ltx:XMWrap>"
 	       ."</ltx:XMApp>",
-#	       properties=>{scriptpos=>sub{ "mid".$_[1]->getProperty('level'); }}
 	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }}
 );
 #======================================================================-
@@ -1660,14 +1732,14 @@ DefPrimitive('\th@plain', sub {
 DefMacroI('\@thmcountersep',undef,'.');
 
 DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
-  my ($stomach, $flag, $thmset, $otherthmset, $text, $reset) = @_;
+  my ($stomach, $flag, $thmset, $otherthmset, $type, $reset) = @_;
   $thmset = ToString($thmset);
   $otherthmset = $otherthmset && ToString($otherthmset);
-  $text   = undef unless $text->unlist;
+  $type   = undef unless $type->unlist;
   $reset  = $reset ? ToString($reset) : undef;
 
   my $counter = $otherthmset || $thmset;
-  my $swap    = LookupValue('thm@swap') eq 'S';
+  my $swap = LookupValue('thm@swap') eq 'S';
   my $style   = LookupValue('thm@style');
 
   if(!$otherthmset){
@@ -1678,43 +1750,43 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 	      scope=>'global')
       if $reset; }
 
+  DefMacroI('\fnum@'.$counter,undef,''); # dummy up the defn
+  # Swap causes you to get the odd (to me) order "4.1 Lemma", which breaks our new localization methods!!!
   DefEnvironment("{$thmset} OptionalUndigested",
-		 "<ltx:theorem xml:id='#id' refnum='#refnum' class='#class'>"
-		 . "<ltx:title>#title</ltx:title>"
+		 "<ltx:theorem xml:id='#id' refnum='#refnum' frefnum='#frefnum' class='#class'>"
+		 . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 		 .  "#body"
 		 ."</ltx:theorem>",
 		 beforeDigest=>sub {
 		   my $stylecmd = T_CS('\th@'.$style);
-		   if(!LookupDefinition($stylecmd)){
+		   if (!LookupDefinition($stylecmd)) {
 		     Warn(":unexpected:".ToString($stylecmd)." Unknown theoremstyle '$style'");
 		     $stylecmd = T_CS('\th@plain'); }
 		   Digest(Tokens($stylecmd)); },
-		 afterDigestBegin=> sub {
-		   my($stomach,$whatsit)=@_;
-		   my $note = $whatsit->getArg(1);
-		   my $refnum = $whatsit->getProperty('refnum');
-		   my($a,$b) = ($swap ? ($refnum,$text) : ($text,$refnum));
-		   my @toks=(T_BEGIN,T_CS('\the'),T_CS('\thm@headfont'));
-		   push(@toks,
-			($a ? $a->unlist :()),
-			($a && $b ? (T_SPACE):()),
-			($b ? $b->unlist : ()));
-		   if($note){
-		     push(@toks,T_SPACE,T_OTHER('(')) if $text;
-		     push(@toks,$note->unlist);
-		     push(@toks,T_OTHER(')')) if $text; }
-		   push(@toks,T_CS('\the'),T_CS('\thm@headpunct'),T_END);
-		   $whatsit->setProperties(title=>Digest(Tokens(@toks)),
-					   class=>CleanIndexKey($thmset)); # is this appropriate cleaner?
-
-		   Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
-		 ($counter 
-		  ? (properties => sub {
-		       ($flag ? RefStepID($counter) : RefStepCounter($counter));})
-		  :()),
+		 afterDigestBegin=>sub { Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
+		 properties => sub {
+		   my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) :());
+		   my $frefnum = Expand(Tokens(($swap
+						? ( ($flag ? ():(T_CS('\the'.$counter))),
+						    (!$flag && $type ? (T_SPACE):()),
+						    ($type ? ($type->unlist):()) )
+						: ( ($type ? ($type->unlist):()),
+						    (!$flag && $type ? (T_SPACE):()),
+						    ($flag ? ():(T_CS('\the'.$counter))) ))));
+		   my $title = Digest(Tokens(T_BEGIN,T_CS('\the'),T_CS('\thm@headfont'),
+					     T_CS('\@tag'),T_BEGIN,$frefnum->unlist,T_END,
+					     ($type && $_[1] ? (T_SPACE,T_OTHER('(')):()),
+					     ($_[1] ? $_[1]->unlist : ()),
+					     ($type && $_[1] ? (T_OTHER(')')):()),
+					     T_CS('\the'),T_CS('\thm@headpunct'),
+					     T_END));
+		   (  %ctr,
+		      frefnum=>Digest($frefnum),
+		      title=>$title,
+		      titlefont=>$title->getFont,
+		      class=>CleanIndexKey($thmset)  ); },
 		 scope => 'global');
 });
-
 
 #======================================================================
 # C.8.4 Numbering
@@ -1791,28 +1863,47 @@ DefMacro('\fnsymbol{}',sub {
 # Note that, technically, the number is associated with the caption.
 # (to allow multiple figures per figure environment?).
 # We'll have to sort that out later....
-DefConstructor('\caption[]{}',
-	       "<ltx:caption>#2</ltx:caption>\n?#1(<ltx:toccaption>#1</ltx:toccaption>)");
+## I'd rather not define these, since the \fnum@@ defn is better....
+DefMacroI('\fnum@figure',undef,'\figurename\nobreakspace\thefigure'),
+DefMacroI('\fnum@table', undef,'\tablename\nobreakspace\thetable'),
+DefMacro('\format@title@figure{}','\@tag{\fnum@figure: }#1');
+DefMacro('\format@title@table{}','\@tag{\fnum@table: }#1');
+
+DefMacro('\caption',
+	 '\@ifundefined{@captype}{\latex@error{\noexpand\caption outside float}{}}{}\expandafter\@caption\expandafter{\@captype}');
+DefMacro('\@caption{}[]{}',
+	 '\@@toccaption{\format@toctitle@{#1}{\ifx.#2.#3\else#2\fi}}'
+	 .'\@@caption{\format@title@{#1}{#3}}');
+
+DefConstructor('\@@caption{}',"<ltx:caption>#1</ltx:caption>");
+DefConstructor('\@@toccaption{}',"<ltx:toccaption>#1</ltx:toccaption>");
+
+#DefConstructor('\caption[]{}',
+#	       "<ltx:caption>#2</ltx:caption>\n?#1(<ltx:toccaption>#1</ltx:toccaption>)");
 DefEnvironment('{figure}[]',
-	       "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       "<ltx:figure xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:figure>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
 	       properties=> sub { RefStepCounter('figure') });
 DefEnvironment('{figure*}[]',
-	       "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       "<ltx:figure xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:figure>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
 	       properties=> sub { RefStepCounter('figure') });
 DefEnvironment('{table}[]',
-	       "<ltx:table xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       "<ltx:table xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:table>",
-	       properties=> sub { RefStepCounter('table')} );
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
+	       properties=> sub { RefStepCounter('table') });
 DefEnvironment('{table*}[]',
-	       "<ltx:table xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       "<ltx:table xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:table>",
-	       properties=> sub { RefStepCounter('table')} );
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
+	       properties=> sub { RefStepCounter('table') });
 
 DefPrimitive('\flushbottom',undef);
 DefPrimitive('\suppressfloats[]', undef);
@@ -1844,9 +1935,9 @@ Let(T_CS('\topfigrule'),T_CS('\relax'));
 Let(T_CS('\botfigrule'),T_CS('\relax'));
 Let(T_CS('\dblfigrule'),T_CS('\relax'));
 
-DefMacroI('\figurename', undef, 'Figure'); # Never used?
+DefMacroI('\figurename', undef, 'Figure');
 DefMacroI('\figuresname',undef, 'Figures'); # Never used?
-DefMacroI('\tablename',  undef, 'Table'); # Never used?
+DefMacroI('\tablename',  undef, 'Table');
 DefMacroI('\tablesname', undef, 'Tables');
 
 #======================================================================
@@ -2071,19 +2162,16 @@ DefPrimitive('\nofiles',undef);
 # Or, better yet (more latex-like??) nearest that HAS a refnum!?!
 DefConstructor('\label Semiverbatim',  sub {
  		 my($document,$olabel,%props)=@_;
-# 		 $label = CleanLabel($label);
 		 my $label = $props{label};
-##		 my $savenode = $document->floatToAttribute('refnum');
  		 if(my $savenode = $document->floatToAttribute('labels')){
 		   my $node = $document->getNode;
-		   my $prev = $node->getAttribute('labels');
-		   $document->setAttribute($node,labels=>($prev ? $prev." ".$label : $label)); 
+		   my %labels = map( ($_=>1), $label,split(/\s+/,$node->getAttribute('labels')||'') );
+		   $document->setAttribute($node,labels=>join(' ',sort keys %labels));
 		   $document->setNode($savenode); }},
 ###	       "^ labels='#label'",
 	       reversion=>'',
 	       properties=>{alignmentSkippable=>1},
 	       afterDigest=>sub {
-#		 my $label = ToString($_[1]->getArg(1));
 		 my $label = CleanLabel(ToString($_[1]->getArg(1)));
 		 $_[1]->setProperty(label=>$label);
 		 my $scope = $label; $scope =~ s/^LABEL:/label:/;
@@ -2105,7 +2193,8 @@ DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#lab
 # C.11.3 Bibliography and Citation
 #======================================================================
 
-DefMacroI('\bibname',undef, 'Bibliography');
+# Note that it's called \refname in LaTeX's article, but \bibname in report & book.
+# And likewise, mixed up in various other classes!
 
 DefMacroI('\thebibliography@ID',undef, Tokens());
 
@@ -2128,7 +2217,9 @@ sub beginBibliography {
   DefMacroI(T_CS('\thebibliography@ID'),undef,$bibid);
 #  $whatsit->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
   $whatsit->setProperty(id=>$bibid);
-  $whatsit->setProperty(refname=>Digest(T_CS('\refname')));
+  my $title = DigestIf('\refname')||DigestIf('\bibname');
+  $whatsit->setProperty(title=>$title);
+  $whatsit->setProperty(titlefont=>$title->getFont);
   # And prepare for the likely nonsense that appears within bibliographies
   ResetCounter('enumiv');
   # Fix for missing \bibitems!
@@ -2138,19 +2229,19 @@ sub beginBibliography {
 DefMacro('\bibliography Semiverbatim', '\ifx.#1.\else\@bibliography{#1}\fi');
 DefConstructor('\@bibliography Semiverbatim',
 	       "<ltx:bibliography files='#1' xml:id='#id'>"
-	       . "<ltx:title>#refname</ltx:title>"
+	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       ."</ltx:bibliography>",
 	       afterDigest=>sub { $_[0]->begingroup; # wrapped so redefns don't take effect!
 				  beginBibliography($_[1]); 
 				  $_[0]->endgroup; });
-DefMacroI('\refname',undef, 'References');
+
 DefPrimitive('\bibstyle{}', undef);
 DefMacro('\bibliographystyle{}', '\bibstyle{#1}');
 
 # Should be an environment, but people seem to want to misuse it.
 DefConstructorI('\thebibliography',undef,
 	       "<ltx:bibliography xml:id='#id'>"
-	       . "<ltx:title>#refname</ltx:title>"
+	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       . "<ltx:biblist>",
 	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
 	       afterDigest=>sub { 
@@ -2384,6 +2475,7 @@ DefPrimitive('\listfiles',undef);
 #           We _could_ mark start & end, and then the postprocessor would
 #           need to fill in all likely links... ???
 #   \index{...|see{key}}  cross reference.
+#   \index{...|seealso{key}}  cross reference.
 #   \index{...|textbf}  (etc) causes the number to be printed in bold!
 #
 # I guess the formula is that
@@ -2420,8 +2512,8 @@ sub process_index_phrases {
       if($string eq '|'){
 	pop(@tokens);		# Remove the extra "!" stopbit.
 	my $extra = ToString(Tokens(@tokens));
-	if($extra =~ /^see/){
-	  push(@expansion,T_CS('\@indexsee'),@tokens[3..$#tokens]); }
+	if($extra =~ /^see\s*{/){ push(@expansion,T_CS('\@indexsee'),@tokens[3..$#tokens]); }
+	elsif($extra =~ /^seealso\s*{/){ push(@expansion,T_CS('\@indexseealso'),@tokens[7..$#tokens]); }
 	elsif($extra eq '('){}	# ?
 	elsif($extra eq ')'){}	# ?
 	else { $style = $index_style{$extra} || $extra; }
@@ -2444,6 +2536,9 @@ DefConstructor('\@indexphrase[]{}',
 	       "<ltx:indexphrase key='#key'>#2</ltx:indexphrase>",
 	       properties=>{key=>sub { CleanIndexKey($_[1]); }});
 DefConstructor('\@indexsee{}',
+	       "<ltx:indexphrase see_also_marker='1'>#1</ltx:indexphrase>");
+# Note that we don't actually distinguish between see and seealso.... My bad!
+DefConstructor('\@indexseealso{}',
 	       "<ltx:indexphrase see_also_marker='1'>#1</ltx:indexphrase>");
 
 Tag('ltx:indexphrase', afterClose=>\&addIndexKey);
@@ -2530,10 +2625,9 @@ DefConstructorI('\index@subsubitem',undef, sub { doIndexItem($_[0],3); });
 DefConstructorI('\index@done',      undef, sub { doIndexItem($_[0],0); });
 
 DefMacroI('\indexname',undef, 'Index');
-
 DefEnvironment('{theindex}', 
-	       "<ltx:index xml:id='#id'>"
-	       .  "<ltx:title>Index</ltx:title>"
+	       "<ltx:index xml:id='#id' seename='#seename' seealsoname='#seealsoname'>"
+	       .  "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#body"
 	       ."</ltx:index>",
 	       beforeDigest=>sub { Let(T_CS('\item'),      T_CS('\index@item'));
@@ -2543,7 +2637,12 @@ DefEnvironment('{theindex}',
 	       beforeDigestEnd=>sub { Digest(T_CS('\index@done'));},
 	       afterDigestBegin=>sub { 
 		 my $docid = ToString(Expand(T_CS('\thedocument@ID')));
-		 $_[1]->setProperty(id=>($docid ? "$docid.idx" : 'idx')); });
+		 my $title = DigestIf('\indexname');
+		 $_[1]->setProperties(id=>($docid ? "$docid.idx" : 'idx'),
+				      title       =>$title,
+				      titlefont   =>$title->getFont,
+				      seename     =>DigestIf('\seename'),
+				      seealsoname =>DigestIf('\alsoname') ); });
 
 DefPrimitiveI('\indexspace',   undef, undef);
 DefPrimitiveI('\makeindex',    undef, undef);
@@ -2660,13 +2759,12 @@ DefMacroI('\width',      undef, '0pt');
 
 DefConstructor('\mbox {}',
 	       "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text', bounded=>1,
- 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@dollar@in@textmode'));
- 				   Let(T_CS('\centerline'),T_CS('\relax')); });
+ 	       beforeDigest=>sub { reenterTextMode(); });
 
 DefConstructor('\makebox[Dimension][]{}',
 	       "<ltx:text ?#1(width='#1') ?#2(pos='#2') _noautoclose='1'>#3</ltx:text>",
-	       mode=>'text',
- 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@dollar@in@textmode'));} );
+	       mode=>'text', bounded=>1,
+ 	       beforeDigest=>sub { reenterTextMode(); });
 DefRegister('\fboxrule', Dimension(0));
 DefRegister('\fboxsep',  Dimension(0));
 
@@ -2788,7 +2886,7 @@ DefConstructor('\rule[Dimension]{Dimension}{Dimension}',
 DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
 	       "<ltx:text yoffset='#1' _noautoclose='1'>#4</ltx:text>",
 	       mode=>'text', bounded=>1,
- 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@dollar@in@textmode')); });
+ 	       beforeDigest=>sub { reenterTextMode(); });
 
 #**********************************************************************
 # C.14 Pictures and Color
@@ -2997,10 +3095,11 @@ our %alignments = (l=>'left',c=>'center',r=>'right');
 DefConstructor('\shortstack[]{}',
 	       "<ltx:inline-block align='#align'><ltx:text _noautoclose='1'>#2</ltx:text></ltx:inline-block>",
 	       bounded=>1,
-	       beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
+	       beforeDigest=>sub{ reenterTextMode();
+				  # then RE-RE-define this one!!!
+				  DefConstructor("\\\\ OptionalMatch:* [Dimension]",
 						 "</ltx:text><ltx:text _noautoclose='1'>",
-						 reversion=>Tokens(T_CS("\\\\"),T_CR)); 
-				  Let(T_MATH, T_CS('\@dollar@in@textmode')); },
+						 reversion=>Tokens(T_CS("\\\\"),T_CR)); },
 	       properties=>{ align=>sub { ($_[1] ? $alignments{ToString($_[0])} : undef); }},
 	       mode=>'text');
 
@@ -3095,27 +3194,60 @@ DefMacro('\usefont{}{}{}{}{}',
 	 '\fontencoding{#1}\fontfamily{#2}\fontseries{#3}\fontshape{#4}\selectfont');
  
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
-DefConstructor('\textmd{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-	       bounded=>1, font=>{series=>'medium'});
-DefConstructor('\textbf{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-	       bounded=>1, font=>{series=>'bold'});
-DefConstructor('\textrm{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-	       bounded=>1, font=>{family=>'serif'});
-DefConstructor('\textsf{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-	       bounded=>1, font=>{family=>'sansserif'});
-DefConstructor('\texttt{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-	       bounded=>1, font=>{family=>'typewriter'});
+# DefConstructor('\textmd{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
+# 	       bounded=>1, font=>{series=>'medium'});
+# DefConstructor('\textbf{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
+# 	       bounded=>1, font=>{series=>'bold'});
+# DefConstructor('\textrm{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
+# 	       bounded=>1, font=>{family=>'serif'});
+# DefConstructor('\textsf{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
+# 	       bounded=>1, font=>{family=>'sansserif'});
+# DefConstructor('\texttt{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
+# 	       bounded=>1, font=>{family=>'typewriter'});
 
-DefConstructor('\textup{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-	       bounded=>1, font=>{shape=>'upright'});
-DefConstructor('\textit{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-	       bounded=>1, font=>{shape=>'italic'});
-DefConstructor('\textsl{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-	       bounded=>1, font=>{shape=>'slanted'});
-DefConstructor('\textsc{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-	       bounded=>1, font=>{shape=>'smallcaps'});
-DefConstructor('\textnormal{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-	       bounded=>1, font=>{family=>'serif',series=>'medium',shape=>'upright'});
+# DefConstructor('\textup{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
+# 	       bounded=>1, font=>{shape=>'upright'});
+# DefConstructor('\textit{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
+# 	       bounded=>1, font=>{shape=>'italic'});
+# DefConstructor('\textsl{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
+# 	       bounded=>1, font=>{shape=>'slanted'});
+# DefConstructor('\textsc{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
+# 	       bounded=>1, font=>{shape=>'smallcaps'});
+# DefConstructor('\textnormal{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
+# 	       bounded=>1, font=>{family=>'serif',series=>'medium',shape=>'upright'});
+
+DefConstructor('\textmd@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
+	       bounded=>1, font=>{series=>'medium'},alias=>'\textmd');
+DefConstructor('\textbf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
+	       bounded=>1, font=>{series=>'bold'},alias=>'\textbf');
+DefConstructor('\textrm@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
+	       bounded=>1, font=>{family=>'serif'},alias=>'\textrm');
+DefConstructor('\textsf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
+	       bounded=>1, font=>{family=>'sansserif'},alias=>'\textsf');
+DefConstructor('\texttt@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
+	       bounded=>1, font=>{family=>'typewriter'},alias=>'\texttt');
+
+DefConstructor('\textup@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
+	       bounded=>1, font=>{shape=>'upright'},alias=>'\textup');
+DefConstructor('\textit@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
+	       bounded=>1, font=>{shape=>'italic'},alias=>'\textit');
+DefConstructor('\textsl@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
+	       bounded=>1, font=>{shape=>'slanted'},alias=>'\textsl');
+DefConstructor('\textsc@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
+	       bounded=>1, font=>{shape=>'smallcaps'},alias=>'\textsc');
+DefConstructor('\textnormal@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
+	       bounded=>1, font=>{family=>'serif',series=>'medium',shape=>'upright'},alias=>'\textnormal');
+
+DefMacro('\textmd{}',     '\ifmmode\textmd@math{#1}\else{\mdseries #1}\fi');
+DefMacro('\textbf{}',     '\ifmmode\textbf@math{#1}\else{\bfseries #1}\fi');
+DefMacro('\textrm{}',     '\ifmmode\textrm@math{#1}\else{\rmfamily #1}\fi');
+DefMacro('\textsf{}',     '\ifmmode\textsf@math{#1}\else{\sffamily #1}\fi');
+DefMacro('\texttt{}',     '\ifmmode\texttt@math{#1}\else{\ttfamily #1}\fi');
+DefMacro('\textup{}',     '\ifmmode\textup@math{#1}\else{\upshape #1}\fi');
+DefMacro('\textit{}',     '\ifmmode\textit@math{#1}\else{\itshape #1}\fi');
+DefMacro('\textsl{}',     '\ifmmode\textsl@math{#1}\else{\slshape #1}\fi');
+DefMacro('\textsc{}',     '\ifmmode\textsc@math{#1}\else{\scshape #1}\fi');
+DefMacro('\textnormal{}', '\ifmmode\textnormal@math{#1}\else{\normalfont #1}');
 
 DefPrimitive('\DeclareTextFontCommand{}{}', sub {
   my($stomach,$cmd,$font)=@_;
@@ -3429,7 +3561,7 @@ DefMacro('\@ifundefined{}{}{}',sub {
   my($gullet,$name,$if,$else)=@_;
   my $cs = T_CS('\\'.ToString($name));
   my $meaning = LookupMeaning($cs);
-  (!(defined $meaning) || ($meaning ne $cs) ? $if->unlist : $else->unlist); });
+  (!(defined $meaning) || ($meaning eq $cs) ? $if->unlist : $else->unlist); });
 
 DefMacro('\IfFileExists{}{}{}', sub{
   my($gullet,$file,$if,$else)=@_;
@@ -3476,11 +3608,12 @@ DefMacroI('\labelitemiv',undef,'\textperiodcentered');
 # And, at any rate, they're currently unused.
 DefMacroI('\chaptername',undef,'Chapter');
 DefMacroI('\partname',undef,'Part');
-DefMacroI('\sectionname',undef,Tokens());
-DefMacroI('\subsectionname',undef,Tokens());
-DefMacroI('\subsubsectionname',undef,Tokens());
-DefMacroI('\paragraphname',undef,Tokens());
-DefMacroI('\subparagraphname',undef,Tokens());
+# The rest of these are defined in some classes, but not most.
+# DefMacroI('\sectionname',undef,'');
+# DefMacroI('\subsectionname',undef,'');
+# DefMacroI('\subsubsectionname',undef,Tokens());
+# DefMacroI('\paragraphname',undef,Tokens());
+# DefMacroI('\subparagraphname',undef,Tokens());
 
 #**********************************************************************
 # Stuff that would appear in the aux file... maybe somebody uses it?

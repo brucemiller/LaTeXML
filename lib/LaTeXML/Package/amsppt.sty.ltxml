@@ -54,16 +54,16 @@ DefMacro('\title Until:\endtitle',  '\@add@frontmatter{ltx:title}{#1}');
 DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
 	       bounded=>1, mode=>'text');
 DefMacro('\author Until:\endauthor','\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
-DefConstructor('\@affil{}',    "<ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affil Until:\endaffil', '\@add@to@frontmatter{ltx:creator}{\@affil{#1}}');
-DefConstructor('\@address{}',  "<ltx:contact role='address'>#1</ltx:contact>");
-DefMacro('\address Until:\endaddress', '\@add@to@frontmatter{ltx:creator}{\@address{#1}}');
-DefConstructor('\@curraddr{}', "<ltx:contact role='current-address'>#1</ltx:contact>");
-DefMacro('\curraddr Until:\endcurraddr', '\@add@to@frontmatter{ltx:creator}{\@curraddr{#1}}');
-DefConstructor('\@email{}',    "<ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email Until:\endemail', '\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
-DefConstructor('\@urladdr{}',  "<ltx:contact role='url'>#1</ltx:contact>");
-DefMacro('\urladdr Until:\endurladdr', '\@add@to@frontmatter{ltx:creator}{\@urladdr{#1}}');
+DefConstructor('\@@@affil{}',    "<ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\affil Until:\endaffil', '\@add@to@frontmatter{ltx:creator}{\@@@affil{#1}}');
+DefConstructor('\@@@address{}',  "<ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\address Until:\endaddress', '\@add@to@frontmatter{ltx:creator}{\@@@address{#1}}');
+DefConstructor('\@@@curraddr{}', "<ltx:contact role='current-address'>#1</ltx:contact>");
+DefMacro('\curraddr Until:\endcurraddr', '\@add@to@frontmatter{ltx:creator}{\@@@curraddr{#1}}');
+DefConstructor('\@@@email{}',    "<ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\email Until:\endemail', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
+DefConstructor('\@@@urladdr{}',  "<ltx:contact role='url'>#1</ltx:contact>");
+DefMacro('\urladdr Until:\endurladdr', '\@add@to@frontmatter{ltx:creator}{\@@@urladdr{#1}}');
 
 DefMacro('\thanks Until:\endthanks',         '\@add@frontmatter{ltx:note}[role=support]{#1}');
 DefMacro('\date Until:\date',                '\@add@frontmatter{ltx:date}[role=creation]{#1}');
@@ -161,38 +161,55 @@ DefRegister('\postdemoskip'=>Glue(0));
 DefRegister('\predefinitionskip'=>Glue(0));
 DefRegister('\postdefinitionskip'=>Glue(0));
 DefMacro('\definitionfont','\rm');
+# Is there nothing about \definitionname (& \remarkname, \examplename, etc?)
+DefMacroI('\definitionname',undef,'Definition');
 DefConstructor('\definition{} DigestUntil:\enddefinition',
 	       "<ltx:theorem class='definition' xml:id='#id' refnum='#refnum'>"
-	       . "<ltx:title>#1</ltx:title>"
+	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#2"
 	       ."</ltx:theorem>",
-	       properties=> sub { RefStepID('theorem') });
+	       properties=> sub {
+		 my $title=Digest(Tokens(T_BEGIN,T_CS('\definitionname'),T_SPACE,$_[1],T_END));
+		 (RefStepID('theorem'),
+		  title=>$title, titlefont=>$title->getFont); });
 Let(T_CS('\enddefinition'),T_CS('\relax'));
 
 # \remark..\endremark
 DefMacro('\remarkfont','\rm');
+DefMacroI('\remarkname',undef,'Remark');
 DefConstructor('\remark{} DigestUntil:\endremark',
 	       "<ltx:theorem class='remark' xml:id='#id' refnum='#refnum'>"
-	       . "<ltx:title>#1</ltx:title>"
+	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#2"
 	       ."</ltx:theorem>",
-	       properties=> sub { RefStepID('theorem') });
+	       properties=> sub {
+		 my $title=Digest(Tokens(T_BEGIN,T_CS('\remarkname'),T_SPACE,$_[1],T_END));
+		 (RefStepID('theorem'),
+		  title=>$title, titlefont=>$title->getFont); });
 Let(T_CS('\endremark'),T_CS('\relax'));
 
 DefConstructor('\example{} DigestUntil:\endexample',
 	       "<ltx:theorem class='example' xml:id='#id' refnum='#refnum'>"
-	       . "<ltx:title>#1</ltx:title>"
+	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#2"
 	       ."</ltx:theorem>",
-	       properties=> sub { RefStepID('theorem') });
+	       properties=> sub {
+		 my $title=Digest(Tokens(T_BEGIN,T_CS('\examplename'),T_SPACE,$_[1],T_END));
+		 (RefStepID('theorem'),
+		  title=>$title, titlefont=>$title->getFont); });
+
 Let(T_CS('\endexample'),T_CS('\relax'));
 
+DefMacroI('\demonstrationname',undef,'Demonstration');
 DefConstructor('\demo{} DigestUntil:\enddemo',
 	       "<ltx:theorem class='demonstration' xml:id='#id' refnum='#refnum'>"
-	       . "<ltx:title>#1</ltx:title>"
+	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#2"
 	       ."</ltx:theorem>",
-	       properties=> sub { RefStepID('theorem') });
+	       properties=> sub {
+		 my $title=Digest(Tokens(T_BEGIN,T_CS('\demonstrationname'),T_SPACE,$_[1],T_END));
+		 (RefStepID('theorem'),
+		  title=>$title, titlefont=>$title->getFont); });
 Let(T_CS('\enddemo'),T_CS('\relax'));
 
 # \roster ..\endroster (an itemization)

@@ -173,7 +173,7 @@ DefMacro('\the@XMARG@ID','\thebibliography@ID.XM\arabic{@XMARG}');
 
 DefEnvironment('{bibtex@bibliography}',
 	       "<ltx:bibliography xml:id='#id'>"
-	       . "<ltx:title>#refname</ltx:title>"
+	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       . "<ltx:biblist>#body</ltx:biblist>"
 	       ."</ltx:bibliography>",
 	       beforeDigest=>sub {

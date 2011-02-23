@@ -1044,15 +1044,23 @@ DefParameterType('BoxContents',sub {
   $contents; },
 		 undigested=>1); # Cause it already is digested!
 
+# This re-binds a number of important control sequences to their default text binding.
+# This is useful within common boxing or footnote macros that can appear within
+# alignments or special environments that have redefined many of these.
+sub reenterTextMode {
+  Let(T_MATH,T_CS('\@dollar@in@textmode'));
+  Let(T_CS('\centerline'),T_CS('\relax'));
+  Let(T_CS("\\\\"), T_CS('\default@cr'));
+}
+
 sub REF { $_[0] && $_[0]->{$_[1]}; }
 
 DefConstructor('\hbox BoxSpecification BoxContents',
 	       "<ltx:text width='&REF(#1,to)' pad-width='&REF(#1,spread)' _noautoclose='1'>#2</ltx:text>",
- 	       mode=>'text',
+ 	       mode=>'text', bounded=>1,
  	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
  	       # And also things like \centerline that will end up bumping up to block level!
- 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@dollar@in@textmode'));
- 				   Let(T_CS('\centerline'),T_CS('\relax')); });
+ 	       beforeDigest=>sub { reenterTextMode(); });
 
 
 # SHOULD Be a little smarter: if we're already in a block level context, don't open inline-block
@@ -1104,7 +1112,7 @@ DefPrimitive('{',sub {
     LaTeXML::List->new($open,@body); }});
   
 #DefConstructor('}',  '',    beforeDigest=>sub{$_[0]->egroup;});
-DefPrimitive('}',sub { $_[0]->egroup; Box(undef,undef,undef,T_END); });
+DefPrimitive('}',sub { my $f = LookupValue('font'); $_[0]->egroup; Box(undef,$f,undef,T_END); });
 
 # These are for those screwy cases where you need to create a group like box,
 # more than just bgroup, egroup,
@@ -1234,11 +1242,14 @@ DefColumnType('r',sub {
 
 DefConstructor('\pseudo@hbox BoxContents',
 	       "#1",
- 	       mode=>'text',
+ 	       mode=>'text', bounded=>1,
  	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
  	       # And also things like \centerline that will end up bumping up to block level!
- 	       beforeDigest=>sub { Let(T_MATH,T_CS('\@dollar@in@textmode'));
- 				   Let(T_CS('\centerline'),T_CS('\relax')); });
+ 	       beforeDigest=>sub { 
+		 ## reenterTextMode();  # BUT NOT \\\\ !!!!!!
+		 Let(T_MATH,T_CS('\@dollar@in@textmode'));
+		 Let(T_CS('\centerline'),T_CS('\relax'));
+ });
 
 DefColumnType('p{Dimension}',sub {
   $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\pseudo@hbox'),T_BEGIN),#Tokens(T_BEGIN),
@@ -2734,8 +2745,10 @@ DefPrimitiveI('\nobreak',   undef,undef);
 DefPrimitiveI('\allowbreak',undef,undef);
 DefConstructorI("~",  undef,"?#isMath(<ltx:XMHint name='nobreakspace'/>)(".UTF(0xA0).")",
 	      properties=>{isSpace=>1}); # NO-BREAK SPACE
-DefConstructorI('\nobreakspace',undef,"?#isMath(<ltx:XMHint name='nobreakspace'/>)(".UTF(0xA0).")",
-	      properties=>{isSpace=>1}); # NO-BREAK SPACE
+DefMacroI('\nobreakspace',undef,'\ifmmode\math@nobreakspace\else\text@nobreakspace\fi');
+DefPrimitiveI('\text@nobreakspace',undef,UTF(0xA0));
+DefConstructorI('\math@nobreakspace',undef,"<ltx:XMHint name='nobreakspace'/>",
+		properties=>{isSpace=>1}); # NO-BREAK SPACE
 
 DefMacroI('\slash',undef,'/');
 DefPrimitiveI('\filbreak',undef,undef);
@@ -2873,7 +2886,9 @@ sub insertFrontMatter {
       local $LaTeXML::BOX = Box('', $STATE->lookupValue('font'),'',T_SPACE);
       foreach my $item (@$list){
 	my($tag,$attr,@stuff)=@$item;
-	$document->openElement($tag,($attr ? %$attr : ()));
+	$document->openElement($tag,($attr ? %$attr : ()),
+			       (scalar(@stuff) && $document->getModel->canHaveAttribute($tag,'font')
+				? (font=>$stuff[0]->getFont,  _force_font=>'yes') :()) );
 	map($document->absorb($_), @stuff);
 	$document->closeElement($tag); }}}
   return; }
@@ -2883,11 +2898,46 @@ Tag('ltx:document', afterOpen=>\&insertFrontMatter);
 DefConstructor('\beginsection Until:\par',
 	       "<ltx:section><ltx:title>#1</ltx:title>");
 
-
 # POSSIBLY #1 is a name or reference number and  #2 is the theoremm TITLE
 #  If so, how do know when the theorem ends?
 DefConstructorI('\proclaim', parseDefParameters('\proclaim',Tokenize('#1. #2\par')),
-	       "<ltx:theorem><ltx:title>#1</ltx:title>#2</ltx:theorem>");
+	       "<ltx:theorem>"
+		.  "<ltx:title font='#titlefont' _force_font='yes' >#title</ltx:title>"
+		.  "#2"
+		."</ltx:theorem>",
+		properties=>sub {
+		  my $title = $_[1];
+		  (title=>$title, titlefont=>$title->getFont); });
+
+#======================================================================
+# Another block of support for stuff that is LaTeX, rather than TeX,
+# but higher level packages based on plain tex may need.
+# This deals with constructing formated counter numbers.
+# This is typically a name prefix and number,
+# but actually providing hooks for localization
+
+# This generalizes standard LaTeX's \fnum@figure & \fnum@table
+# both for the counter type, and abbreviated forms.
+# \fnum@@{type} calls \fnum@<type>, if defined, else composes using \@@fnum@@{type}
+DefMacro('\fnum@@{}','\@ifundefined{fnum@#1}{\@@fnum@@{#1}}{\csname fnum@#1\endcsname}');
+# \fnum@toc@{type} calls \fnum@toc@<type>, if defined, else composes using \@@fnum@@{type}
+####DefMacro('\fnum@toc@@{}','\@ifundefined{fnum@toc@#1}{\@currentlabel}{\csname fnum@toc@#1\endcsname}');
+DefMacro('\fnum@toc@@{}','\@ifundefined{fnum@toc@#1}{\csname the#1\endcsname}{\csname fnum@toc@#1\endcsname}');
+
+# An abbreviated form seems potentially useful... (ie. \chapter@abbr
+
+# \@@fnum{type}
+# Print the type name (eg \chaptername) and \@currentlabel, separated by a space (if both present)
+DefMacro('\@@fnum@@ {}', sub {
+  my($gullet,$type)=@_;
+  my $cs = T_CS('\\'.ToString($type).'name');
+  my @name = (LookupDefinition($cs) ? Expand($cs)->unlist : ());
+##  my @num  = Expand(T_CS('\@currentlabel'));
+  my @num  = Expand(T_CS('\the'.ToString($type)));
+  (  @name,
+     (scalar(@name) && scalar(@num) && ($name[$#name]->getCatcode == CC_LETTER)
+      ? (T_CS('\text@nobreakspace')) : ()),
+     @num ); });
 
 #======================================================================
 # TeX Book, Appendix B. p. 356

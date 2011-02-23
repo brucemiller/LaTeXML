@@ -170,8 +170,12 @@ Let(T_CS('\upartial'),T_CS('\partial'));
 
 DefMacro('\contcaption',      '\caption{continued}');
 
+
+DefMacro('\proofname','Proof');
 DefEnvironment('{proof}',
-	       '<ltx:proof><ltx:title>Proof</ltx:title>#body</ltx:proof>');
+	       '<ltx:proof><ltx:title>#title</ltx:title>#body</ltx:proof>'
+	       properties => sub {
+		 (title=>Digest(T_CS('\proofname'))); });
 DefEnvironment('{lquote}','<ltx:quote>#body</ltx:quote>');
 #======================================================================
 # Random..

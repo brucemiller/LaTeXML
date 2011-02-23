@@ -69,7 +69,8 @@ DefEnvironment('{inparaenum} OptionalUndigested',
 	       afterDigestBegin=>sub { setEnumerationStyle($_[1]->getArg(1)); });
 
 DefConstructor('\paralistenum@item[]',
-	       "<ltx:item xml:id='#id' refnum='#refnum'>?#refnum(<ltx:tag>#refnum</ltx:tag>)",
+	       "<ltx:item xml:id='#id' refnum='#refnum'>"
+	       ."?#refnum(<ltx:tag>#refnum</ltx:tag>)",
 	       properties=>sub{ RefStepItemCounter(); });
 DefEnvironment('{compactenum} OptionalUndigested',
 	       "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",

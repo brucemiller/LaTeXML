@@ -17,15 +17,19 @@ DefMacro('\thesubtable', '\alph{subtable}');
 
 # I wonder what the best structure of this is...
 # should we actually create an ltx:figure & ltx:caption?  Seems not...
+DefMacroI('\subfigurename',undef,'\figurename');
+DefMacroI('\subtablename',undef,'\tablename');
 DefConstructor('\subfigure[]{}',
-	       "<ltx:inline-block class='subfigure' xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       "<ltx:inline-block class='subfigure' xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1')
+>"
 	       . "#2"
 	       . "?#1(<ltx:block class='caption'>#1</ltx:block>)"
 	       ."</ltx:inline-block>",
-	       properties=> sub { RefStepCounter('subfigure') });
+	       properties=> sub { RefStepCounter('subfigure'); });
 
 DefConstructor('\subtable[]{}',
-	       "<ltx:inline-block class='subtable' xml:id='#id' refnum='#refnum' ?#1(placement='#1')>"
+	       "<ltx:inline-block class='subtable' xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1') 
+>"
 	       . "#2"
 	       . "?#1(<ltx:block class='caption'>#1</ltx:block>)"
 	       ."</ltx:inline-block>",

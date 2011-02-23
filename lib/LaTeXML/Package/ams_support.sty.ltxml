@@ -45,11 +45,11 @@ DefPrimitiveI('\larger',undef,'', font=>{ size=>$fontup{LookupValue('font')->get
 DefPrimitiveI('\smaller',undef,'',font=>{ size=>$fontdn{LookupValue('font')->getSize} });
 
 # \@xsetfontize
-DefPrimitiveI('\TINY', undef, font=>{size=>'TINY'});
-DefPrimitiveI('\Tiny', undef, font=>{size=>'Tiny'});
+DefPrimitiveI('\TINY', undef, '',font=>{size=>'TINY'});
+DefPrimitiveI('\Tiny', undef, '',font=>{size=>'Tiny'});
 Let(T_CS('\SMALL'),T_CS('\scriptsize'));
 Let(T_CS('\Small'),T_CS('\footnotesize'));
-DefPrimitiveI('\HUGE', undef, font=>{size=>'HUGE'});
+DefPrimitiveI('\HUGE', undef, '',font=>{size=>'HUGE'});
 Let(T_CS('\upn'),T_CS('\textup'));
 
 # #======================================================================
@@ -91,45 +91,52 @@ DefMacro('\author[]{}',
 	 '\if.#1.\else\def\shortauthor{#1}\fi'
 	 .'\@add@frontmatter{ltx:creator}[role=author]{\@personname{#2}}');
 
+DefMacroI('\datename',undef,'\textit{Date}:');
+
 DefMacro('\contrib[]{}',
  '\@add@frontmatter{ltx:creator}[role=contributor]{\@personname{#2}}');
 
 DefMacro('\commby{}',
  '\@add@frontmatter{ltx:creator}[role=communicator]{\@personname{#1}}');
 
-DefConstructor('\@address{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
-DefMacro('\address[]{}','\@add@to@frontmatter{ltx:creator}{\@address{#2}}');
+DefConstructor('\@@@address{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\address[]{}','\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
 
 
-DefConstructor('\@curraddr{}',"^ <ltx:contact role='current_address'>#1</ltx:contact>");
-DefMacro('\curraddr{}','\@add@to@frontmatter{ltx:creator}{\@curraddr{#1}}');
+DefConstructor('\@@@curraddr{}',"^ <ltx:contact role='current_address'>#1</ltx:contact>");
+DefMacro('\curraddr{}','\@add@to@frontmatter{ltx:creator}{\@@@curraddr{#1}}');
 
 
-DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
+DefConstructor('\@@@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 
 
-DefConstructor('\@urladdr{}',"^ <ltx:contact role='url'>#1</ltx:contact>");
-DefMacro('\urladdr{}', '\@add@to@frontmatter{ltx:creator}{\@urladdr{#1}}');
+DefConstructor('\@@@urladdr{}',"^ <ltx:contact role='url'>#1</ltx:contact>");
+DefMacro('\urladdr{}', '\@add@to@frontmatter{ltx:creator}{\@@@urladdr{#1}}');
 
 
-DefConstructor('\@dedicatory{}',"^ <ltx:contact role='dedicatory'>#1</ltx:contact>");
-DefMacro('\dedicatory{}', '\@add@to@frontmatter{ltx:creator}{\@dedicatory{#1}}');
+DefConstructor('\@@@dedicatory{}',"^ <ltx:contact role='dedicatory'>#1</ltx:contact>");
+DefMacro('\dedicatory{}', '\@add@to@frontmatter{ltx:creator}{\@@@dedicatory{#1}}');
 
 # \date{}
 DefMacro('\dateposted{}', '\@add@frontmatter{ltx:date}[role=posted]{#1}');
 
 # \thanks{} ( == ack, not latex's \thanks, not in author)
 DefMacro('\thanks{}',
- '\@add@frontmatter{ltx:acknowledgements}{#1}');
+ '\@add@frontmatter{ltx:acknowledgements}[name={\@ifundefined{thanksname}{}{\thanksname}}]{#1}');
+
 
 DefMacro('\translator[]{}',
  '\@add@frontmatter{ltx:creator}[role=translator]{\@personname{#2}}');
 
-DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacroI('\keywordsname',undef,'Key words and phrases');
+DefMacro('\keywords{}',
+	 '\@add@frontmatter{ltx:keywords}[name={\keywordsname}]{#1}');
 
+DefMacroI('\subjclassname',undef,'\textup{1991} Mathematics Subject Classification');
 DefMacro('\subjclass[Default:1991]{}',
-	 '\@add@frontmatter{ltx:classification}[scheme={#1 Mathematics Subject Classification}]{#2}');
+	 '\@add@frontmatter{ltx:classification}[scheme={#1 Mathematics Subject Classification},'
+	 .                       'name={\subjclassname}]{#2}');
 
 DefMacro('\copyrightinfo{}{}',
 	 '\@add@frontmatter{ltx:note}[role=copyright]{\copyright #1: #2}');
@@ -150,10 +157,8 @@ DefMacro('\issueinfo{}{}{}{}',
 	 .'\def\volinfo{Volume \currentvolume, Number \number0\currentissue, \currentmonth\ \currentyear}'
 	 .'\@add@frontmatter{ltx:note}[role=volume-info]{\volinfo}');
 
-DefMacroI('\abstractname',undef,'Abstract');
-DefMacroI('\keywordsname',undef,'Key words and phrases');
-DefMacroI('\subjclassname',undef,'\textup{1991} Mathematics Subject Classification');
-DefMacroI('\datename',undef,'\textit{Date}:');
+# abstract otherwise defined in LaTeX.pool
+DefMacroI('\abstractname',undef,'\textsc{Abstract}');
 
 # #======================================================================
 # # Sec. 5. Document Body
@@ -176,7 +181,8 @@ DefMacroI('\datename',undef,'\textit{Date}:');
 if(LookupValue('2.09_COMPATIBILITY')){
   DefMacroI('\defaultfont',undef,'\normalfont');
   DefMacroI('\rom',undef,'\textup');
-  RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}');
+#  RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}');
+  RawTeX('\newenvironment{pf}{\begin{@proof}}{\end{@proof}');
   RawTeX('\newenvironment{pf*}[1]{\begin{@proof}[#1]}{\end{@proof}'); 
 }
 

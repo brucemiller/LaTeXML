@@ -42,11 +42,11 @@ DefMacro('\rapid[]{}',  '\article[#1]{Rapid Communication}{#2}');
 DefMacro('\note[]{}',   '\article[#1]{Note}{#2}');
 DefMacro('\prelim[]{}', '\article[#1]{Preliminary Communication}{#2}');
 
-DefConstructor('\@address{}',"^ <ltx:contact role='address'>#1</ltx:contact>", bounded=>1);
-DefMacro('\address{}','\@add@to@frontmatter{ltx:creator}{\@address{#1}}');
+DefConstructor('\@@@address{}',"^ <ltx:contact role='address'>#1</ltx:contact>", bounded=>1);
+DefMacro('\address{}','\@add@to@frontmatter{ltx:creator}{\@@@address{#1}}');
 
-DefMacro('\ead Semiverbatim','\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
-DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\ead Semiverbatim','\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
+DefConstructor('\@@@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
 Let(T_CS('\mailto'),T_CS('\ead'));
 
 #DefMacro('\eads DigestedBody','#1');
@@ -147,12 +147,15 @@ DefMacroI('\chain',           undef,'{\protect\mbox{--- $\cdot$ ---}}');
 DefMacroI('\dashddot',        undef,'{\protect\mbox{--- $\cdot$ $\cdot$ ---}}');
 DefMacroI('\full',            undef,'{\protect\mbox{------}}');
 
-DefEnvironment('{numparts}',"<ltx:equationgroup refnum='#refnum' xml:id='#id'>#body</ltx:equationgroup>",
+DefEnvironment('{numparts}',
+	       "<ltx:equationgroup refnum='#refnum' frefnum='#frefnum' xml:id='#id'>"
+	       ."#body"
+	       ."</ltx:equationgroup>",
 	       afterDigestBegin=>sub {
 		 my($stomach,$whatsit)=@_;
 		 my %eqn = RefStepCounter('equation');
 		 AssignValue(SAVED_EQUATION_NUMBER=>LookupValue('\c@equation'));
-		 $whatsit->setProperties(%eqn);
+		 $whatsit->setProperties(%eqn, frefnum=>Digest(T_CS('\@eqnnum')));
 		 ResetCounter('equation');
 		 DefMacro('\theequation',UnTeX($eqn{refnum}).'\alph{equation}');
 		 DefMacro('\theequation@ID',UnTeX($eqn{id}).'.\@equation@ID');
@@ -241,7 +244,7 @@ DefMacro('\endrefs',    '\end{thebibliography}');
 
 #======================================================================
 
-DefConstructor('\ack',"<ltx:acknowledgements>");
+DefConstructor('\ack',"<ltx:acknowledgements>"); # name?
 DefConstructor('\ackn',"<ltx:acknowledgements>");
 Tag("ltx:acknowledgements", autoClose=>1);
 

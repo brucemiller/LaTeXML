@@ -95,7 +95,9 @@ DefMacroI('\@ams@newline', undef, sub {
 sub amsalignBindings {
   my($template)=@_;
   my $alignment = LaTeXML::Util::Alignment
-    ->new(openContainer =>sub{ $_[0]->openElement('ltx:equationgroup',RefStepID('@equationgroup'),@_[1..$#_]); },
+    ->new(openContainer =>sub{ my %attr = RefStepID('@equationgroup');
+			       $attr{'xml:id'}=$attr{id}; delete $attr{id};
+			       $_[0]->openElement('ltx:equationgroup',%attr,@_[1..$#_]); },
 	  closeContainer=>sub{ $_[0]->closeElement('ltx:equationgroup'); },
 	  openRow       =>sub{ $_[0]->openElement('ltx:equation',@_[1..$#_]); },
 	  closeRow      =>sub{ $_[0]->closeElement('ltx:equation'); },
@@ -133,14 +135,14 @@ sub amsalignBindings {
 # particularly since there's no real alignment of columns that convey symmetry.
 # So... For now, we'll just turn into a single equation, ignoring the line breaks.
 DefEnvironment('{multline}',
-	       "<ltx:equation refnum='#refnum' xml:id='#id'>"
+	       "<ltx:equation refnum='#refnum' frefnum='#frefnum' xml:id='#id'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>#body</ltx:XMath>"
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
 	       beforeDigest=>sub {   Let(T_MATH,T_CS('\@dollar@in@mathmode')); },
-	       properties=> sub { RefStepCounter('equation') });
+	       properties=> sub { (RefStepCounter('equation'), frefnum=>Digest(T_CS('\@eqnnum'))) });
 DefEnvironment('{multline*}',
 	       "<ltx:equation>"
 	       . "<ltx:Math mode='display'>"
@@ -421,12 +423,15 @@ DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label'/>)",
 DefMacro('\thetag{}','{\rm #1}');
 
 # Section 3.11.3 Subordinate numbering sequences.
-DefEnvironment('{subequations}',"<ltx:equationgroup refnum='#refnum' xml:id='#id'>#body</ltx:equationgroup>",
+DefEnvironment('{subequations}',
+	       "<ltx:equationgroup refnum='#refnum' frefnum='#frefnum' xml:id='#id'>"
+	       ."#body"
+	       ."</ltx:equationgroup>",
 	       afterDigestBegin=>sub {
 		 my($stomach,$whatsit)=@_;
 		 my %eqn = RefStepCounter('equation');
 		 AssignValue(SAVED_EQUATION_NUMBER=>LookupValue('\c@equation'));
-		 $whatsit->setProperties(%eqn);
+		 $whatsit->setProperties(%eqn, frefnum=>Digest(T_CS('\@eqnnum')));
 		 ResetCounter('equation');
 		 DefMacro('\theequation',UnTeX($eqn{refnum}).'\alph{equation}');
 		 DefMacro('\theequation@ID',UnTeX($eqn{id}).'.\@equation@ID');

@@ -41,7 +41,8 @@ DefConstructor('\pilist@item[]',
 		  refnum=>pichar(LookupValue('pilist_pifont'),
 			      LookupValue('pilist_base'))); });
 DefConstructor('\piautolist@item[]',
-	       "<ltx:item xml:id='#id' refnum='#refnum'><ltx:tag>#refnum</ltx:tag>",
+	       "<ltx:item xml:id='#id' refnum='#refnum'>"
+	       ."<ltx:tag>#refnum</ltx:tag>",
 	       properties=>sub{
 		 my $lvl = ToString(Tokens(roman(LookupValue('itemlevel'))));
 		 (RefStepItemCounter(),

@@ -78,14 +78,14 @@ DefMacro('\righthead{}',''); # Obsolete form
 DefMacro('\author{}',
  '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
 
-DefConstructor('\@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affil{}','\@add@to@frontmatter{ltx:creator}{\@affiliation{#1}}');
+DefConstructor('\@@@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\affil{}','\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
 
-DefConstructor('\@authoraddr{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
-DefMacro('\authoraddr{}','\@add@to@frontmatter{ltx:creator}{\@authoraddr{#1}}');
+DefConstructor('\@@@authoraddr{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\authoraddr{}','\@add@to@frontmatter{ltx:creator}{\@@@authoraddr{#1}}');
 
-DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
+DefConstructor('\@@@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 # Redefine to straight email address after document begin.
 AddToMacro(T_CS('\@startsection@hook'),TokenizeInternal('\let\email\@@email'));
 
@@ -104,7 +104,7 @@ DefMacro('\authoremail','\email');  # Obsolete form
 #======================================================================
 # 2.5 Keywords
 
-DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}[name={\@ifundefined{keywordsname}{}{\keywordsname}}]{#1}');
 Let(T_CS('\subjectheadings'),T_CS('\keywords'));
 
 #======================================================================
@@ -135,16 +135,20 @@ DefMacro('\placefigure{}','');
 DefMacro('\placeplate{}','');
 
 NewCounter('plate');
+DefMacroI('\platename',undef,'Plate');
+
 DefEnvironment('{plate}[]',
 	       "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1') class='plate'>"
 	       . "#body"
 	       ."</ltx:figure>",
-	       properties=> sub { RefStepCounter('plate') });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'plage'); },
+	       properties=> sub { RefStepCounter('plate');  });
 DefEnvironment('{plate*}[]',
-	       "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1') class='plate'>"
+	       "<ltx:figure xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1') class='plate'>"
 	       . "#body"
 	       ."</ltx:figure>",
-	       properties=> sub { RefStepCounter('plate') });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'plage'); },
+	       properties=> sub { RefStepCounter('plate');  });
 
 #======================================================================
 # 2.9 Acknowledgements
@@ -222,7 +226,7 @@ RequirePackage('natbib');
 # Is the same true for RevTeX?
 DefConstructor('\references',
 	       "<ltx:bibliography xml:id='#id'>"
-	       . "<ltx:title>#refname</ltx:title>"
+	       . "<ltx:title>#title</ltx:title>"
 	       . "<ltx:biblist>",
 	       afterDigest=>sub { beginBibliography($_[1]); });
 DefConstructor('\endreferences',
@@ -493,7 +497,7 @@ DefPrimitiveI('\Pisces',  undef,"\x{2653}");
 DefPrimitiveI('\diameter',undef,"\x{2300}");
 DefPrimitiveI('\sq',      undef,"\x{25A1}");
 
-DefPrimitiveI('\arcdeg',UTF(0xB0));
+DefPrimitiveI('\arcdeg',undef,UTF(0xB0));
 Let(T_CS('\degr'),T_CS('\arcdeg'));
 DefPrimitiveI('\arcmin',  undef,"\x{2032}");
 DefPrimitiveI('\arcsec',  undef,"\x{2033}");
@@ -508,14 +512,14 @@ DefConstructor('\aas@@fstack{}',
 	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }},
 	       mode=>'math', bounded=>1);
 DefMacro('\aas@fstack{}','\ensuremath{\aas@@fstack{#1}}');
-DefMacro('\fd','\aas@fstack{d}');
-DefMacro('\fh','\aas@fstack{h}');
-DefMacro('\fm','\aas@fstack{m}');
-DefMacro('\fs','\aas@fstack{s}');
-DefMacro('\fdg','\aas@fstack{\circ}');
+DefMacro('\fd',   '\aas@fstack{d}');
+DefMacro('\fh',   '\aas@fstack{h}');
+DefMacro('\fm',   '\aas@fstack{m}');
+DefMacro('\fs',   '\aas@fstack{s}');
+DefMacro('\fdg',  '\aas@fstack{\circ}');
 DefMacro('\farcm','\aas@fstack{\prime}');
 DefMacro('\farcs','\aas@fstack{\prime\prime}');
-DefMacro('\fp','\aas@fstack{p}');
+DefMacro('\fp',   '\aas@fstack{p}');
 
 DefMacro('\onehalf','\ifmmode\case{1}{2}\else\text@onehalf\fi');
 DefPrimitiveI('\text@onehalf',  undef,UTF(0xBD));

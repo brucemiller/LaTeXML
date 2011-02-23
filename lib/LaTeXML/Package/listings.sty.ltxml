@@ -126,10 +126,14 @@ sub lstProcessBlock {
    T_END); }
 
 DefConstructor('\@listings@inner {}', "<ltx:tabular>#1</ltx:tabular>");
+
 # Or new listing element?
 DefConstructor('\@listings {} {}',
-	       "<ltx:listing xml:id='#id' refnum='#refnum' class='#1'>#2</ltx:listing>",
-	       properties=>sub { RefStepCounter('lstlisting'); });
+	       "<ltx:listing xml:id='#id' refnum='#refnum' class='#1'>"
+	       ."#2"
+	       ."</ltx:listing>",
+	       properties=>sub { RefStepCounter('lstlisting') });
+
 DefConstructor('\@@listings {} {}',
 	       "<ltx:listing xml:id='#id' class='#1'>#2</ltx:listing>",
 	       properties=>sub { RefStepID('lstlisting'); });
@@ -563,9 +567,12 @@ DefKeyVal('LST','caption','');
 DefKeyVal('LST','label','Semiverbatim');
 DefKeyVal('LST','nolol','','true'); # Ignorable
 
-DefPrimitive('\lstlistoflistings',undef);
-DefMacro('\lstlistlistingname','Listings');
-DefMacro('\lstlistingname','Listing');
+DefMacroI('\lstlistlistingname',undef,'Listings');
+DefConstructorI('\lstlistoflistings',undef,
+		"<ltx:TOC role='listing' name='#name'/>",
+		properties=>sub {( name=>DigestIf('\lstlistlistingname'));});
+
+DefMacroI('\lstlistingname',undef,'Listing');
 DefMacro('\thelstlisting','\arabic{lstlisting}');
 DefMacro('\thename','');
 

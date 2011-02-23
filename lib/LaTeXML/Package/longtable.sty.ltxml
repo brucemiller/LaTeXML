@@ -31,10 +31,12 @@ DefMacro('\csname endlongtable*\endcsname',
 	 '\@finish@alignment\@end@tabular');
 
 DefConstructor('\@@longtable [] Undigested DigestedBody', sub {
-  my($document,$pos,$pat,$body,%props)=@_;
+  my($document,$pos,$pat,$body,%xprops)=@_;
+  my $props = LookupValue('LONGTABLE_PROPERTIES') || {};
   $document->openElement('ltx:table',
-			 'xml:id'=>$props{id},
-			 refnum=>$props{refnum});
+			 'xml:id'=>$$props{id},
+			 refnum=>$$props{refnum},
+			 frefnum=>$$props{frefnum});
   my $alignment = $body->getProperty('alignment');
   # Insert caption and toccaption, if any were encountered.
   if(my $caption = LookupValue('LONGTABLE_CAPTION')){
@@ -51,7 +53,7 @@ DefConstructor('\@@longtable [] Undigested DigestedBody', sub {
   $document->closeElement('ltx:table'); },
 	       reversion=>'\begin{longtable}[#1]{#2}#3\end{longtable}',
 	       beforeDigest=>sub { $_[0]->bgroup; },
-	       properties=> sub { RefStepCounter('table')},
+###	       properties=> sub { RefStepCounter('table') },
 	       mode=>'text');
 
 DefPrimitive('\@longtable@bindings AlignmentTemplate',sub { longtableBindings($_[1]); });
@@ -68,6 +70,9 @@ sub longtableBindings {
   AssignValue(LONGTABLE_TOCCAPTION=>undef,'global');
   AssignValue(LONGTABLE_HEAD=>undef,'global');
   AssignValue(LONGTABLE_FOOT=>undef,'global');
+  ## properties happen too late!!!
+  AssignValue(LONGTABLE_PROPERTIES=>{RefStepCounter('table')},'global');
+
   return; }
 
 #======================================================================
@@ -116,13 +121,16 @@ DefConstructor('\@longtable@kill@marker','',reversion=>'\kill',
 #======================================================================
 # Caption gets redefined.  We'll need to grab it and make it part
 # of the table, rather than the tabular.
-DefPrimitive('\@longtable@caption OptionalMatch:* []{}', sub {
-  my($stomach,$star,$toccapton,$caption)=@_;
-  AssignValue(LONGTABLE_CAPTION=>$caption,'global');
-  AssignValue(LONGTABLE_TOCCAPTION=>$toccaption,'global'); 
+DefMacro('\@longtable@caption[]{}',
+	 '\@longtable@@toccaption{\format@toctitle@{table}{\ifx.#1.#2\else#1\fi}}'
+	 .'\@longtable@@caption{\format@title@{table}{#2}}');
+DefPrimitive('\@longtable@@caption{}',   sub {
+  AssignValue(LONGTABLE_CAPTION=>Digest($_[1]),'global');
+  return; });
+DefPrimitive('\@longtable@@toccaption{}',sub {
+  AssignValue(LONGTABLE_TOCCAPTION=>Digest($_[1]),'global');
   LookupValue('Alignment')->removeRow; # Remove the "row" this was in, too.
-  return;
-});
+  return; });
 
 #======================================================================
 # Not used, but must be defined.

@@ -1,3 +1,4 @@
+# -*- CPERL -*-
 #  /====================================================================\
 # | elsart_support.sty for LaTeXML                                       |
 # | Adapted from texscan --stub --base=article.cls elsart.cls            |
@@ -28,8 +29,8 @@ DefEnvironment('{frontmatter}','#body');
 DefMacro('\author[]{}',
 	 '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#2}}');
 
-DefMacro('\address[]{}','\@add@to@frontmatter{ltx:creator}{\@address{#2}}');
-DefConstructor('\@address{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\address[]{}','\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
+DefConstructor('\@@@address{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
 
 
 # Redefine to account for the label, which we ignore for now!
@@ -51,8 +52,8 @@ DefMacro('\runtitle{}',Tokens());
 
 DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
 
-DefMacro('\ead Semiverbatim','\@add@to@frontmatter{ltx:creator}{\@email{#1}}');
-DefConstructor('\@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\ead Semiverbatim','\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
+DefConstructor('\@@@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
 
 DefMacro('\sep','\unskip,\space');
 
@@ -218,11 +219,14 @@ RawTeX(<<'EoTeX');
 EoTeX
 NewCounter('algorithm');
 DefMacro('\thealgorithm','\arabic{algorithm}');
+DefMacro('\algorithmname','Algorithm');
+
 DefEnvironment('{algorithm}',
-	       "<ltx:figure xml:id='#id' refnum='#refnum'>"
+	       "<ltx:figure xml:id='#id' refnum='#refnum' frefnum='#frefnum'>"
 	       . "#body"
 	       ."</ltx:figure>",
-	       properties=> sub { RefStepCounter('algorithm') });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'algorithm'); },
+	       properties=> sub { RefStepCounter('algorithm'); });
 
 RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}');
 

@@ -49,7 +49,27 @@ sub relocateInstitute {
 	  $author->removeAttribute('mark'); }
 	$node->parentNode->removeChild($node); }}}}
 
-DefConstructor('\email Semiverbatim',"<ltx:ref href='mailto:#1'>#1</ltx:ref>");
+DefMacro('\emailname','E-mail');
+DefConstructor('\@@@email{}',"^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
+	       properties=>sub {(name=>Digest(T_CS('\emailname')));});
+DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
+
+DefMacro('\mailname','\textit{Correspondence to}:');
+DefConstructor('\@@@mail{}',"^ <ltx:contact role='address' name='#name'>#1</ltx:contact>",
+	       properties=>sub {(name=>Digest(T_CS('\mailname')));});
+DefMacro('\mail{}', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
+
+DefMacro('\keywordname','\textbf{Keywords}');
+DefMacro('\keywords{}',  '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
+
+DefMacro('\ackname','Acknowledgements');
+DefConstructor('\acknowledgements',"<ltx:acknowledgements name='#name'>",
+	       properties=>sub {(name=>Digest(T_CS('\ackname')));});
+DefMacro('\acknowledgement', '\acknowledgements');
+DefConstructor('\endacknowledgements',"</ltx:acknowledgements>");
+DefConstructor('\endacknowledgement', "</ltx:acknowledgements>");
+Tag("ltx:acknowledgements", autoClose=>1);
+
 DefConstructor('\url Semiverbatim',"<ltx:ref href='#1'>#1</ltx:ref>");
 
 # DefMacro('\institutename',  Tokens());
@@ -94,14 +114,15 @@ DefMacro('\chaptermark{}',Tokens());
 # NOTE: Can I use latex's \newtheoremstyle, or do I need to copy & adapt it?
 # Seems to be the same as \newtheoremstyle, but with additonal capfont & bodyfont
 DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
-  my ($stomach, $flag, $thmset, $otherthmset, $text, $reset, $capfont, $bodyfont) = @_;
+  my ($stomach, $flag, $thmset, $otherthmset, $type, $reset,$capfont,$bodyfont) = @_;
   $thmset = ToString($thmset);
   $otherthmset = $otherthmset && ToString($otherthmset);
-  $text   = undef unless $text->unlist;
+  $type   = undef unless $type->unlist;
   $reset  = $reset ? ToString($reset) : undef;
 
   my $counter = $otherthmset || $thmset;
-  my $swap    = LookupValue('thm@swap') eq 'S';
+  my $swap = LookupValue('thm@swap') eq 'S';
+  my $style   = LookupValue('thm@style');
 
   if(!$otherthmset){
     NewCounter($counter, $reset,
@@ -111,54 +132,76 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
 	      scope=>'global')
       if $reset; }
 
+  # Swap causes you to get the odd (to me) order "4.1 Lemma", which breaks our new localization methods!!!
   DefEnvironment("{$thmset} OptionalUndigested",
-		 "<ltx:theorem xml:id='#id' refnum='#refnum' class='$thmset'>"
-		 . "<ltx:title>#title</ltx:title>"
+		 "<ltx:theorem xml:id='#id' refnum='#refnum' class='#class'>"
+		 . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 		 .  "#body"
 		 ."</ltx:theorem>",
-
-		 afterDigestBegin=> sub {
-		   my($stomach,$whatsit)=@_;
-		   my $note = $whatsit->getArg(1);
-		   my $refnum = $whatsit->getProperty('refnum');
-		   my($a,$b) = ($swap ? ($refnum,$text) : ($text,$refnum));
-		   my @toks=(T_BEGIN,$capfont->unlist);
-		   push(@toks,
-			($a ? $a->unlist :()),
-			($a && $b ? (T_SPACE):()),
-			($b ? $b->unlist : ()));
-		   if($note){
-		     push(@toks,T_SPACE,T_OTHER('(')) if $text;
-		     push(@toks,$note->unlist);
-		     push(@toks,T_OTHER(')')) if $text; }
-		   push(@toks,T_CS('\the'),T_CS('\thm@headpunct'),T_END);
-		   $whatsit->setProperties(title=>Digest(Tokens(@toks)));
-
-		   Digest($bodyfont); },
-		 ($counter 
-		  ? (properties => sub {
-		       ($flag ? RefStepID($counter) : RefStepCounter($counter));})
-		  :()),
+		 beforeDigest=>sub {
+		   my $stylecmd = T_CS('\th@'.$style);
+		   if (!LookupDefinition($stylecmd)) {
+		     Warn(":unexpected:".ToString($stylecmd)." Unknown theoremstyle '$style'");
+		     $stylecmd = T_CS('\th@plain'); }
+		   Digest(Tokens($stylecmd)); },
+ 		 afterDigestBegin=>sub { Digest($bodyfont); },
+		 properties => sub {
+		   my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) :());
+		   my $title = Digest(Tokens(T_BEGIN,$capfont->unlist,
+					     T_CS('\@tag'),T_BEGIN,
+					     ($swap
+					      ? ( ($flag ? ():(T_CS('\the'.$counter))),
+						  (!$flag && $type ? (T_SPACE):()),
+						  ($type ? ($type->unlist):()) )
+					      : ( ($type ? ($type->unlist):()),
+						  (!$flag && $type ? (T_SPACE):()),
+						  ($flag ? ():(T_CS('\the'.$counter))) )),
+					     T_END,
+					     ($type && $_[1] ? (T_SPACE,T_OTHER('(')):()),
+					     ($_[1] ? $_[1]->unlist : ()),
+					     ($type && $_[1] ? (T_OTHER(')')):()),
+					     T_CS('\the'),T_CS('\thm@headpunct'),
+					     T_END));
+		   (  %ctr,
+		      title=>$title,
+		      titlefont=>$title->getFont,
+		      class=>CleanIndexKey($thmset)  ); },
 		 scope => 'global');
 });
 
 RawTeX(<<'EOTeX');
+\def\theoremname{Theorem}
 \spnewtheorem{theorem}{Theorem}[section]{\bfseries}{\itshape}
+\def\claimname{Claim}
 \spnewtheorem*{claim}{Claim}{\itshape}{\rmfamily}
+\def\proofname{Proof}
 \spnewtheorem*{proof}{Proof}{\itshape}{\rmfamily}
 \spnewtheorem{case}{Case}{\itshape}{\rmfamily}
+\def\conjecturename{Conjecture}
 \spnewtheorem{conjecture}{Conjecture}{\itshape}{\rmfamily}
+\def\corollaryname{Corollary}
 \spnewtheorem{corollary}{Corollary}{\bfseries}{\itshape}
+\def\definitionname{Definition}
 \spnewtheorem{definition}{Definition}{\bfseries}{\rmfamily}
+\def\examplename{Example}
 \spnewtheorem{example}{Example}{\itshape}{\rmfamily}
+\def\exercisename{Exercise}
 \spnewtheorem{exercise}{Exercise}{\bfseries}{\rmfamily}
+\def\lemmaname{Lemma}
 \spnewtheorem{lemma}{Lemma}{\bfseries}{\itshape}
+\def\notename{Note}
 \spnewtheorem{note}{Note}{\itshape}{\rmfamily}
+\def\problemname{Problem}
 \spnewtheorem{problem}{Problem}{\bfseries}{\rmfamily}
+\def\propertyname{Property}
 \spnewtheorem{property}{Property}{\itshape}{\rmfamily}
+\def\propositionname{Proposition}
 \spnewtheorem{proposition}{Proposition}{\bfseries}{\itshape}
+\def\questionname{Question};
 \spnewtheorem{question}{Question}{\itshape}{\rmfamily}
+\def\solutionname{Solution}
 \spnewtheorem{solution}{Solution}{\bfseries}{\rmfamily}
+\def\remarkname{Remark}
 \spnewtheorem{remark}{Remark}{\itshape}{\rmfamily}
 EOTeX
 
@@ -190,32 +233,14 @@ Let('\qed','\squareforqed');
 DefMacro('\backmatter',Tokens());
 
 #======================================================================
-DefMacro('\ackname',        'Acknowledgement.');
 DefMacro('\andname',        'and');
 DefMacro('\chaptername',    'Chapter');
-DefMacro('\claimname',      'Claim');
-DefMacro('\conjecturename', 'Conjecture');
 DefMacro('\contriblistname','List of Contributors');
-DefMacro('\corollaryname',  'Corollary');
-DefMacro('\definitionname', 'Definition');
-DefMacro('\examplename',    'Example');
-DefMacro('\exercisename',   'Exercise');
-DefMacro('\keywordname',    '\textbf{Key words:}');
 DefMacro('\lastandname',    ', and');
-DefMacro('\lemmaname',      'Lemma');
-DefMacro('\mailname',       '\textit{Correspondence to}:');
 DefMacro('\noteaddname',    'Note added in proof');
-DefMacro('\notename',       'Note');
-DefMacro('\problemname',    'Problem');
-DefMacro('\proofname',      'Proof');
-DefMacro('\propertyname',   'Property');
-DefMacro('\propositionname','Proposition');
-DefMacro('\questionname',   'Question');
-DefMacro('\remarkname',     'Remark');
 DefMacro('\seename',        'see');
-DefMacro('\solutionname',   'Solution');
 DefMacro('\subclassname',   '\textit{Subject Classification}:');
-DefMacro('\theoremname',    'Theorem');
+
 
 DefRegister('\fnindent'=>Dimension(0));
 DefMacro('\fnmsep','${}^{,}$');

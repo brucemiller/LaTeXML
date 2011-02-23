@@ -30,18 +30,25 @@ DefMacro('\floatplacement{}{}',undef);
 DefMacro('\listof{}{}',undef);
 
 # \floatname{type}{name}  Ignorable, but tempting
-DefMacro('\floatname{}{}',undef);
+DefMacro('\floatname{}{}','\@namedef{fname@#1}{#2}');
 
 # I really shouldn't be using ltx:figure here, but some sort of generic float.
 # do I want to extend the schema for that, now?
 DefPrimitive('\newfloat{}{}{}[]',sub {
   my($gullet,$type,$placement,$auxext,$within)=@_;
+  $type = ToString($type);
   NewCounter($type,$within);
+  if(!LookupDefinintion(T_CS('\fname@'.ToString($type)))){
+    DefMacro('\fname@'.$type,$type); }
   DefEnvironment('{$type}[]',
-		 "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1') class='$type'>"
+		 "<ltx:figure xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1') class='$type'>"
 		 . "#body"
 		 ."</ltx:figure>",
-		 properties=> sub { RefStepCounter($type) });
+		 properties=> sub { (RefStepCounter($type),
+				     frefnum=>(LookupDefinition(T_CS('\fname@'.$type))
+					       ? Digest(T_CS('\fname@'.$type),T_CS('\nobreakspace'),T_CS('\the'.$type))
+					       :())) });
+
 });
 
 ## ??? DefMacro('\plain','');
