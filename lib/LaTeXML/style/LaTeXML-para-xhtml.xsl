@@ -44,10 +44,6 @@
   </div>
 </xsl:template>
 
-<xsl:template match="ltx:theorem/ltx:title | ltx:proof/ltx:title" xml:space="preserve">
-  <h6 class='{f:classes(.)}'><xsl:apply-templates/></h6>
-</xsl:template>
-
 <!-- ======================================================================
      Figures & Tables
      ====================================================================== -->
@@ -56,36 +52,16 @@
   <div class='{f:classes(.)}'><xsl:call-template name="add_id"/><xsl:apply-templates/></div>
 </xsl:template>
 
-<xsl:template match="ltx:figure/ltx:caption" xml:space="preserve">
-  <div class='{f:classes(.)}'>
-    <xsl:if test="../@refnum">
-      Figure <xsl:apply-templates select="../@refnum"/><xsl:text>. </xsl:text>
-    </xsl:if>
-    <xsl:apply-templates/>
-  </div>
-</xsl:template>
-
-<xsl:template match="ltx:table/ltx:caption" xml:space="preserve">
-  <div class='{f:classes(.)}'>  
-    <xsl:if test="../@refnum">
-      Table <xsl:apply-templates select="../@refnum"/><xsl:text>. </xsl:text>
-    </xsl:if>
-    <xsl:apply-templates/>
-  </div>
-</xsl:template>
-
-<xsl:template match="ltx:listing/ltx:caption" xml:space="preserve">
-  <div class='{f:classes(.)}'>
-    <xsl:if test="../@refnum">
-      Listing <xsl:apply-templates select="../@refnum"/><xsl:text>. </xsl:text>
-    </xsl:if>
-    <xsl:apply-templates/>
-  </div>
-</xsl:template>
 <xsl:template match="ltx:listing/ltx:tabular" xml:space="preserve">
   <table class="{f:classes(.)}">
     <xsl:apply-templates/>
   </table>
+</xsl:template>
+
+<xsl:template match="ltx:caption" xml:space="preserve">
+  <div class='{f:classes(.)}'>
+    <xsl:apply-templates/>
+  </div>
 </xsl:template>
 
 <xsl:template match="ltx:toccaption"/>

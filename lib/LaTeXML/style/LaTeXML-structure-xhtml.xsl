@@ -21,7 +21,6 @@
     extension-element-prefixes="f"
     exclude-result-prefixes = "ltx f">
 
-  <xsl:param name="number_sections" select="true()"/>
   <!-- ======================================================================
        Document Structure
        ====================================================================== -->
@@ -60,20 +59,23 @@
 
   <xsl:template match="ltx:abstract" xml:space="preserve">
     <div class='{f:classes(.)}'>
-      <h6>Abstract. </h6>
+      <xsl:if test="@name"><h6><xsl:apply-templates select="@name"/><xsl:text>.</xsl:text></h6></xsl:if>
       <xsl:apply-templates/>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:acknowledgements">
     <div class='{f:classes(.)}'>
-      <h6>Acknowledgements. </h6>
+      <xsl:if test="@name"><h6><xsl:apply-templates select="@name"/><xsl:text>.</xsl:text></h6></xsl:if>
       <xsl:apply-templates/>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:keywords" xml:space="preserve">
-    <div class='{f:classes(.)}'><i>Keywords: </i><xsl:apply-templates/></div>
+    <div class='{f:classes(.)}'>
+      <xsl:if test="@name"><h6><xsl:apply-templates select="@name"/><xsl:text>:</xsl:text></h6></xsl:if>
+      <xsl:apply-templates/>
+    </div>
   </xsl:template>
 
   <xsl:template match="ltx:classification">
@@ -82,7 +84,7 @@
     <div class='{f:classes(.)}'>
       <i><xsl:choose>
 	<xsl:when test='@scheme'><xsl:value-of select='@scheme'/></xsl:when>
-	<xsl:otherwise>Classification</xsl:otherwise>
+	<xsl:when test='@name'><xsl:value-of select='@name'/></xsl:when>
       </xsl:choose>: </i>
     <xsl:apply-templates/></div>
   </xsl:template>
@@ -98,42 +100,10 @@
        Or should the DTD be more specific? -->
 
   <xsl:param name="title_level">6</xsl:param>
-  <xsl:param name="title_prefix"></xsl:param>
 
   <xsl:param name="document_level">
-    <xsl:value-of select="number(boolean(ltx:document))"/>
+    <xsl:value-of select="1"/>
   </xsl:param>
-
-  <xsl:param name="part_level">
-    <xsl:value-of select="$document_level+number(boolean(//ltx:part))"/>
-  </xsl:param>
-
-  <xsl:param name="chapter_level">
-    <xsl:value-of select="$part_level+number(boolean(//ltx:chapter))"/>
-  </xsl:param>
-
-  <xsl:param name="section_level">
-    <xsl:value-of select="$chapter_level+number(boolean(//ltx:section | //ltx:appendix | //ltx:index | //ltx:bibliography))"/>
-  </xsl:param>
-
-  <xsl:param name="subsection_level">
-    <xsl:value-of select="$section_level+number(boolean(//ltx:subsection))"/>
-  </xsl:param>
-
-  <xsl:param name="subsubsection_level">
-    <xsl:value-of select="$subsection_level+number(boolean(//ltx:subsubsection))"/>
-  </xsl:param>
-
-  <xsl:param name="paragraph_level">
-    <xsl:value-of select="$subsubsection_level+number(boolean(//ltx:paragraph))"/>
-  </xsl:param>
-
-  <xsl:param name="subparagraph_level">
-    <xsl:value-of select="$paragraph_level+number(boolean(//ltx:subparagraph))"/>
-  </xsl:param>
-
-  <!-- NOTE: Work out a cleaner way to do this (?)
-       AND propogate classes appropriately! -->
 
   <xsl:template match="ltx:document/ltx:title">
     <xsl:call-template name="maketitle">
@@ -141,76 +111,91 @@
     </xsl:call-template>
   </xsl:template>
 
+  <xsl:param name="part_level">
+    <xsl:value-of select="$document_level+number(boolean(ltx:document))"/>
+  </xsl:param>
+
   <xsl:template match="ltx:part/ltx:title">
     <xsl:call-template name="maketitle">
       <xsl:with-param name="title_level" select="$part_level"/>
     </xsl:call-template>
   </xsl:template>
 
+  <xsl:param name="chapter_level">
+    <xsl:value-of select="$part_level+number(boolean(//ltx:part))"/>
+  </xsl:param>
+
   <xsl:template match="ltx:chapter/ltx:title">
     <xsl:call-template name="maketitle">
       <xsl:with-param name="title_level" select="$chapter_level"/>
-      <xsl:with-param name="title_prefix">Chapter </xsl:with-param>
     </xsl:call-template>
   </xsl:template>
 
-  <xsl:template match="ltx:section/ltx:title">
-    <xsl:call-template name="maketitle">
-      <xsl:with-param name="title_level" select="$section_level"/>
-      <xsl:with-param name="title_prefix">&#xA7;</xsl:with-param>
-    </xsl:call-template>
-  </xsl:template>
+  <xsl:param name="section_level">
+    <xsl:value-of select="$chapter_level+number(boolean(//ltx:chapter))"/>
+  </xsl:param>
 
-  <xsl:template match="ltx:bibliography/ltx:title | ltx:index/ltx:title">
+  <xsl:template match="ltx:section/ltx:title | ltx:bibliography/ltx:title
+		       | ltx:index/ltx:title | ltx:appendix/ltx:title">
     <xsl:call-template name="maketitle">
       <xsl:with-param name="title_level" select="$section_level"/>
     </xsl:call-template>
   </xsl:template>
 
-  <xsl:template match="ltx:appendix/ltx:title">
-    <xsl:call-template name="maketitle">
-      <xsl:with-param name="title_level" select="$section_level"/>
-      <xsl:with-param name="title_prefix">Appendix</xsl:with-param>
-    </xsl:call-template>
-  </xsl:template>
+  <xsl:param name="subsection_level">
+    <xsl:value-of select="$section_level+number(boolean(//ltx:section | //ltx:appendix
+			                                | //ltx:index | //ltx:bibliography))"/>
+  </xsl:param>
 
   <xsl:template match="ltx:subsection/ltx:title">
     <xsl:call-template name="maketitle">
       <xsl:with-param name="title_level" select="$subsection_level"/>
-      <xsl:with-param name="title_prefix">&#xA7;</xsl:with-param>
     </xsl:call-template>
   </xsl:template>
+
+
+  <xsl:param name="subsubsection_level">
+    <xsl:value-of select="$subsection_level+number(boolean(//ltx:subsection))"/>
+  </xsl:param>
 
   <xsl:template match="ltx:subsubsection/ltx:title">
     <xsl:call-template name="maketitle">
       <xsl:with-param name="title_level" select="$subsubsection_level"/>
-      <xsl:with-param name="title_prefix">&#xA7;</xsl:with-param>
     </xsl:call-template>
   </xsl:template>
+
+  <xsl:param name="paragraph_level">
+    <xsl:value-of select="$subsubsection_level+number(boolean(//ltx:subsubsection))"/>
+  </xsl:param>
 
   <xsl:template match="ltx:paragraph/ltx:title">
     <xsl:call-template name="maketitle">
       <xsl:with-param name="title_level" select="$paragraph_level"/>
-      <xsl:with-param name="title_prefix">&#xB6;</xsl:with-param>
     </xsl:call-template>
   </xsl:template>
+
+  <xsl:param name="subparagraph_level">
+    <xsl:value-of select="$paragraph_level+number(boolean(//ltx:paragraph))"/>
+  </xsl:param>
 
   <xsl:template match="ltx:subparagraph/ltx:title">
     <xsl:call-template name="maketitle">
       <xsl:with-param name="title_level" select="$subparagraph_level"/>
-      <xsl:with-param name="title_level" select="$paragraph_level"/>
     </xsl:call-template>
   </xsl:template>
 
   <xsl:template match="ltx:title">
-    <xsl:call-template name="maketitle"/>
+    <xsl:call-template name="maketitle">
+      <xsl:with-param name="title_level" select="6"/>
+    </xsl:call-template>
   </xsl:template>
 
-  <!-- Convert a title to an <H#>, with appropriate classes and content
-       Should prefix come from an extra attribute? -->
+  <!-- Convert a title to an <h#>, with appropriate classes and content.
+       The parameter $title_level should specify the level 1-6,
+       determined by the container and its context in the document.
+       A title always appears as a child of a Labelled element. -->
   <xsl:template name="maketitle">
     <xsl:param name="title_level">6</xsl:param>
-    <xsl:param name="title_prefix"></xsl:param>
     <xsl:param name="use_level">
       <xsl:choose>
 	<xsl:when test="$title_level &gt; 6">6</xsl:when>
@@ -219,25 +204,17 @@
     </xsl:param>
     <xsl:element name="{concat('h',$use_level)}">
       <xsl:attribute name="class">
-	<xsl:value-of select="concat(f:classes(.),' ',concat(local-name(..),'-title'))"/>
+	<xsl:value-of select="concat(f:classes(.),
+			      ' ',concat(local-name(..),'-title'),
+			      f:if(@font,concat(' ',@font),'') )"/>
       </xsl:attribute>
-      <xsl:if test="$number_sections">
-	<xsl:if test="$title_prefix or ../@refnum">
-	  <span class="refnum">
-	    <xsl:if test="$title_prefix"><span class="reftype"><xsl:value-of select="$title_prefix"
-	    /><xsl:text> </xsl:text></span></xsl:if>
-	    <xsl:if test="../@refnum and not(../@refnum = '')">
-	      <xsl:apply-templates select="../@refnum"/>.<xsl:text> </xsl:text>
-	    </xsl:if>
-	  </span>
-	</xsl:if>
-      </xsl:if>
       <xsl:apply-templates/>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:toctitle"/>
 
+<!-- NOTE: Probably should support font, punct, etc, right? -->
   <xsl:template match="ltx:subtitle">
     <div class="{f:classes(.)}"><xsl:apply-templates/></div>
   </xsl:template>

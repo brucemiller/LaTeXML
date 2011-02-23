@@ -91,18 +91,10 @@
     <xsl:value-of select="//processing-instruction()[local-name()='latexml'][contains(.,'class')]"/>
   </xsl:param>
   <!-- Equation numbers on left, or default right? -->
-  <!--
-  <xsl:param name="eqnopos"
-	     select="f:if(contains(substring-after($classPI,'options'),'leqno'),'left','right')"/>
-  -->
   <xsl:param name="eqnopos"
 	     select="f:if(//processing-instruction('latexml')[contains(substring-after(.,'options'),'leqno')],'left','right')"/>
 
   <!-- Displayed equations centered, or indented on left? -->
-  <!--
-  <xsl:param name="eqpos"
-	     select="f:if(contains(substring-after($classPI,'options'),'fleqn'),'left','center')"/>
-  -->
   <xsl:param name="eqpos"
 	     select="f:if(//processing-instruction('latexml')[contains(substring-after(.,'options'),'fleqn')],'left','center')"/>
 
@@ -143,7 +135,6 @@
     <xsl:if test="@refnum and $eqnopos='left'"><xsl:apply-templates select="@refnum"/></xsl:if>
     <xsl:apply-templates select="ltx:equationgroup | ltx:equation | ltx:block"/>
     <xsl:if test="@refnum and $eqnopos='right'"><xsl:apply-templates select="@refnum"/></xsl:if>
-<!--    <xsl:call-template name="equation-meta-unaligned"/>-->
     <xsl:apply-templates select="ltx:constraint[not(@hidden='true')]"/>
     </div>
     <xsl:apply-templates select="ltx:metadata" mode="meta"/>
@@ -155,7 +146,6 @@
     <span class='equationcontent'
 	  ><xsl:apply-templates select="ltx:Math | ltx:MathFork | ltx:text"/></span>
     <xsl:if test="@refnum and $eqnopos='right'"><xsl:apply-templates select="@refnum"/></xsl:if>
-<!--    <xsl:call-template name="equation-meta-unaligned"/>-->
     <xsl:apply-templates select="ltx:constraint[not(@hidden='true')]"/>
     </div>
     <xsl:apply-templates select="ltx:metadata" mode="meta"/>
@@ -209,24 +199,6 @@
     <table class='{f:classes(.)}'><xsl:call-template name="add_id"/>
       <xsl:text>
       </xsl:text>
-      <!-- How to align and center?
-           One option is colgroup with spacing col's having width='1*'
-	   But this confuses IE.
-	   Alternative is css with width='50%'. (intended to mean "up to 50%")
-	   Of course, IE tries to really do 50%... sigh.
-	   So, we use css and (try to) hide those rules from IE.
-	   -->
-      <!--
-	  <colgroup>
-	  <xsl:if test="$eqnopos ='left'" ><col width='0*'/></xsl:if>
-	  <xsl:if test="$eqpos  !='left'" ><col width='2*'/></xsl:if>
-	  <colgroup span="{$ncolumns}"
-	            width="{f:if(($ncolumns > 3) and ($ncolumns mod 2 = 0), '1*', '0*')}"/>
-          <xsl:if test="$eqpos  !='right'"><col width="2*"/></xsl:if>
-	  <xsl:if test="$eqnopos ='right'"><col width="0*"/></xsl:if>
-	  </colgroup>-->
-      <xsl:text>
-      </xsl:text>
       <xsl:apply-templates select="." mode="aligned">
 	<xsl:with-param name="ncolumns" select="$ncolumns"/>
       </xsl:apply-templates>
@@ -242,27 +214,8 @@
 
 Currently we assume the content will be placed in a single tr/td. -->
   <xsl:template name="equation-aligned">
-<!--
-    <xsl:param name="columns" 
-	       select="  ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td
-		       | ltx:MathFork/ltx:MathBranch[1]/ltx:td
-		       | ltx:MathFork/ltx:MathBranch[1][not(ltx:tr or ltx:td)]
-		       | ltx:Math "/>
-    <xsl:param name="ncolumns" select="count($columns)"/>
--->
     <xsl:param name="ncolumns" select="f:countcolumns(.)"/>
     <table class='{f:classes(.)}'><xsl:call-template name="add_id"/>
-      <xsl:text>
-      </xsl:text>
-      <!-- 
-	   <colgroup>
-	   <xsl:if test="$eqnopos ='left'" ><col width='0*'/></xsl:if>
-	   <xsl:if test="$eqpos  !='left'" ><col width='2*'/></xsl:if>
-	   <col span="{$ncolumns}" width="0*"/>
-	   <xsl:if test="$eqpos  !='right'"><col width="2*"/></xsl:if>
-	   <xsl:if test="$eqnopos ='right'"><col width="0*"/></xsl:if>
-	   <xsl:if test="$eqnopos ='right'"><col width='100*'/></xsl:if>
-	   </colgroup>-->
       <xsl:text>
       </xsl:text>
       <xsl:apply-templates select="." mode="aligned">
@@ -293,6 +246,7 @@ Currently we assume the content will be placed in a single tr/td. -->
 ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equation/ltx:MathFork/ltx:MathBranch[1]/ltx:tr
 | ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equation[ltx:MathFork/ltx:MathBranch[1]/ltx:td]
 | ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equation[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
+| ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equation[ltx:constraint or ltx:metadata]
 				)"/>
 	  <td rowspan="{$nrows}" nowrap="yes" valign='middle' align="{$side}">
 	    <xsl:apply-templates select="ancestor-or-self::ltx:equationgroup[position()=1]/@refnum"/>
@@ -318,16 +272,6 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 	  </td>
 	</xsl:if>						       <!--Else NOTHING (rowspan'd!) -->
       </xsl:when>
-      <!-- else unnumbered?-->
-      <!--
-	  <xsl:otherwise>
-	  <td nowrap="yes" valign='middle' align="{$side}">
-	  <xsl:if test="not(preceding-sibling::ltx:tr)">
-	  <xsl:apply-templates select="ancestor-or-self::ltx:equation/@refnum"/>
-	  </xsl:if>
-	  </td>
-	  </xsl:otherwise>
-      -->
     </xsl:choose>
   </xsl:template>
 
@@ -375,9 +319,6 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
     <xsl:param name="ncolumns"/>
     <xsl:choose>
       <xsl:when test="ltx:MathFork/ltx:MathBranch[1]/ltx:tr" xml:space="preserve">
-	<!-- tbody seems Right, but apparently a td with rowspan can't span more than 1 tbody!! -->
-	<!--<tbody class='{f:classes(.)}'><xsl:call-template name="add_id"/>-->
-
 	<tr valign="baseline" class='{f:classes(.)}'><xsl:call-template name="add_id"/>
 	  <xsl:call-template name="eq-left"/>
 	  <xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td"
@@ -498,7 +439,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
   </xsl:template>
 
   <xsl:template match="ltx:tag">
-    <xsl:value-of select="@open"/><xsl:apply-templates/><xsl:value-of select="@close"/>	      
+    <span class="{f:classes(.)}"><xsl:value-of select="@open"/><xsl:apply-templates/><xsl:value-of select="@close"/></span>
   </xsl:template>
 
   <!-- ======================================================================

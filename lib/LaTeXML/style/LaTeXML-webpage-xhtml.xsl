@@ -38,9 +38,9 @@
     </xsl:text>
     <xsl:if test="*/ltx:title">
       <title>
-        <xsl:value-of select="normalize-space(*/ltx:title/*[name() != 'indexmark']/text())"/>
+	<xsl:apply-templates select="*/ltx:title" mode="visible-text"/>
 	<xsl:for-each select="//ltx:navigation/ltx:ref[@class='up']"
-		      > in <xsl:value-of select="@title"/></xsl:for-each>
+		      > &#x2023; <xsl:value-of select="@title"/></xsl:for-each>
       </title>
     </xsl:if>
     <xsl:text>
@@ -88,6 +88,8 @@
   </head>
 </xsl:template>
 
+<xsl:template match="text()" mode="visible-text"><xsl:value-of select="."/></xsl:template>
+<xsl:template match="*" mode="visible-text"><xsl:apply-templates mode="visible-text"/></xsl:template>
 <xsl:template match="ltx:indexphrase" mode="visible-text"/>
 
 <xsl:template name="body">
@@ -119,6 +121,7 @@
       Header & Footer
       ====================================================================== -->
 
+<!--
 <xsl:template name="navbar">
   <xsl:if test="//ltx:navigation/ltx:toclist">
     <xsl:text>
@@ -126,6 +129,19 @@
     <div class='navbar'>
       <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='start']"/>
       <xsl:apply-templates select="//ltx:navigation/ltx:toclist"/>
+      <xsl:text>
+      </xsl:text>
+    </div>
+  </xsl:if>
+</xsl:template>
+-->
+<xsl:template name="navbar">
+  <xsl:if test="//ltx:navigation/ltx:TOC">
+    <xsl:text>
+    </xsl:text>
+    <div class='navbar'>
+      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='start']"/>
+      <xsl:apply-templates select="//ltx:navigation/ltx:TOC"/>
       <xsl:text>
       </xsl:text>
     </div>
@@ -175,20 +191,12 @@
 </xsl:template>
 
 <xsl:template match="ltx:TOC">
-  <xsl:choose>
-    <xsl:when test="@class='appendixtoc'">	     
-      <xsl:text>
-      </xsl:text>
-      <h6>Appendices</h6>
-      <xsl:apply-templates/>
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:text>
-      </xsl:text>
-     <h6>Contents</h6>
+  <xsl:if test="ltx:toclist/descendant::ltx:tocentry">
+    <xsl:text>
+    </xsl:text>
+    <xsl:if test="@name"><h6><xsl:apply-templates select="@name"/><xsl:text>:</xsl:text></h6></xsl:if>
      <xsl:apply-templates/>
-    </xsl:otherwise>
-  </xsl:choose>
+  </xsl:if>
 </xsl:template>
 
 <xsl:template match="ltx:toclist" mode="short">
