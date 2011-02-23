@@ -303,6 +303,11 @@ sub getQName {
 # these should only happen from rearrangement and copying of document fragments
 # with embedded bits of math in them, which have those XMTok/XMRef pairs.
 # If those are the cases, we should end up finding the original id'd item, anyway, right?
+#
+# NOTE that only XML::LibXML's addNewChild deals cleanly with namespaces
+# and since there is only an "add" (ie. append) version (not prepend, insert after, etc)
+# we have to orient everything towards appending.
+# In particular, see the perversity in the following few methods.
 sub addNodes {
   my($self,$node,@data)=@_;
   foreach my $child (@data){
@@ -357,6 +362,7 @@ sub addNodes {
     elsif(defined $child){
       $node->appendTextNode($child); }}}
 
+# Remove @nodes from the document
 sub removeNodes {
   my($self,@nodes)=@_;
   foreach my $node (@nodes){
@@ -365,6 +371,28 @@ sub removeNodes {
       if(($$self{idcache}{$id}||'') eq $idd){
 	delete $$self{idcache}{$id}; }}
     $node->unlinkNode; }}
+
+# Replace $node by @replacements in the document
+sub replaceNode {
+  my($self,$node,@replacements)=@_;
+  my ($parent,$following) = ($node->parentNode, undef);
+  # Note that since we can only append new stuff, we've got to remove the following first.
+  my @save=();
+  while(($following = $parent->lastChild) && ($$following != $$node)){ # Remove & Save following siblings.
+    unshift(@save,$parent->removeChild($following)); }
+  $self->removeNodes($node);
+  $self->addNodes($parent,@replacements);
+  map($parent->appendChild($_),@save); } # Put these back.
+
+# Put @nodes at the beginning of $node.
+sub prependNodes {
+  my($self,$node,@nodes)=@_;
+  my @save=();
+  # Note that since we can only append new stuff, we've got to remove the following first.
+  while(my $last = $node->lastChild){ # Remove, but save, all children
+    unshift(@save,$node->removeChild($last)); }
+  $self->addNodes($node,@nodes);	 # Now, add the new nodes.
+  map($node->appendChild($_),@save); } # Put these back.
 
 our @MonthNames=(qw( January February March April May June
 		     July August September October November December));
