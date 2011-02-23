@@ -428,9 +428,6 @@ TOC_attributes =
    Common.attributes,
    FrontMatter.attributes,
 
-   ## Records the name of this contents list, eg. "Contents"
-   attribute name { text }?,
-
    ## indicates the kind of list
    attribute role { ("contents" | "figures" | "tables" | text) }?,
 
