@@ -98,23 +98,22 @@ DefMacro('\qedhere', sub {
   $t; });
 
 DefMacro('\proofname','Proof');
-DefEnvironment('{@proof} []',
+# Note that you get EITHER \proofname OR [#1] but NOT both!!!
+DefEnvironment('{@proof} OptionalUndigested',
 	       "<ltx:proof>"
-	       ."<ltx:title>#title</ltx:title>"
+	       ."<ltx:title font='#titlefont' _force_font='yes'>#title</ltx:title>"
 	       ."#body"
 	       ."</ltx:proof>",
-
-		 afterDigestBegin=> sub {
-		   my($stomach,$whatsit)=@_;
-		   my $name = $whatsit->getArg(1);
-		   my @toks=(T_BEGIN,T_CS('\itshape'),
-			    ($name ? Revert($name) : (T_CS('\proofname'))),
-			     T_OTHER('.'),
-			     T_END);
-		   $whatsit->setProperties(title=>Digest(Tokens(@toks)));
-
-		   PushValue('QED@stack',T_CS('\qed'));
-		   Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
+	       afterDigestBegin=> sub {
+		 my($stomach,$whatsit)=@_;
+		 PushValue('QED@stack',T_CS('\qed'));
+		 Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
+	       properties => sub {
+		 my $title = Digest(Tokens(T_BEGIN,T_CS('\itshape'),
+					   ($_[1] ? $_[1]->unlist : (T_CS('\proofname'))),
+					   T_OTHER('.'),T_END));
+		 my $titlefont = [$title->unlist]->[1]->getFont;
+		 (title=>$title,titlefont=>$titlefont); },
 	       beforeDigestEnd=>sub {
 		 my $qed = PopValue('QED@stack');
 		 ($qed ? Digest($qed) :()); }
