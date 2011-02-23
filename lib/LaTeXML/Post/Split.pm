@@ -37,7 +37,9 @@ sub process {
   @pages = grep($_->parentNode->parentNode,@pages); # Strip out the root node.
   if(@pages){
     $self->Progress($doc,"Splitting into ".scalar(@pages)." pages");
-    my $tree = {node=>$root,id=>$root->getAttribute('xml:id'),name=>$doc->getDestination,children=>[]};
+    my $tree = {node=>$root,document=>$doc,
+		id=>$root->getAttribute('xml:id'),name=>$doc->getDestination,
+		children=>[]};
     # Group the pages into a tree, in case they are nested.
     my $haschildren={};
     foreach my $page (@pages){
@@ -46,6 +48,8 @@ sub process {
     $self->prenamePages($doc,$tree,$haschildren);
     # Now, create remove and create documents for each page.
     push(@docs,$self->processPages($doc,@{$$tree{children}}));
+
+    $self->copyNavigation($tree);
     # Add navigation to the sequence.
     if(!$$self{no_navigation}){
       my $rootid = $doc->getDocumentElement->getAttribute('xml:id');
@@ -56,7 +60,8 @@ sub process {
   }
   @docs; }
 
-# Get the nodes in the document that will be separate "pages".
+# Get the nodes in the document that WILL BECOME separate "pages".
+# (they are not yet removed from the main document)
 # Subclass can override, if needed.
 sub getPages {
   my($self,$doc)=@_;
@@ -106,9 +111,7 @@ sub processPages {
       unshift(@removed,$sib);
       last if $$sib == ${$entries[0]->{node}}; }
     # Build toc from adjacent nodes that are being extracted.
-    my $hit_appendices=0;
     my @toc = ();
-    my @apptoc = ();
     # Process a sequence of adjacent pages; these will go into the same TOC.
     while(@entries && @removed && ${$entries[0]->{node}} == ${$removed[0]}){
       my $entry = shift(@entries);
@@ -117,25 +120,41 @@ sub processPages {
       my $id = $page->getAttribute('xml:id');
       my $tocentry =['ltx:tocentry',{},
 		     ['ltx:ref',{class=>'toc', idref=>$id, show=>'fulltitle'}]];
-      $hit_appendices |= $page->localname =~ /^appendix/;
-      if($hit_appendices){
-	push(@apptoc,$tocentry); }
-      else {
-	push(@toc,$tocentry); }
+      push(@toc,$tocentry); 
       # Due to the way document building works, we remove & process children pages
       # BEFORE processing this page.
       my @childdocs = $self->processPages($doc,@{$$entry{children}});
       my $subdoc = $doc->newDocument($page,destination=>$$entry{name},
 				     parentDocument=>$doc,parent_id=>$$entry{upid});
-      $subdoc->addNavigation(start=>$rootid) if $rootid;
-      $subdoc->addNavigation(up=>$$entry{upid});
+      $$entry{document}=$subdoc;
+##      $subdoc->addNavigation(start=>$rootid) if $rootid;
+##      $subdoc->addNavigation(up=>$$entry{upid});
       push(@docs,$subdoc,@childdocs); }
     # Finally, add the toc to reflect the consecutive, removed nodes, and add back the remainder
-    $doc->addNodes($parent,['ltx:TOC',{},['ltx:toclist',{},@toc]]) if @toc;
-    $doc->addNodes($parent,['ltx:TOC',{class=>'appendixtoc'},['ltx:toclist',{},@apptoc]])
-      if @apptoc; 
+    $doc->addNodes($parent,['ltx:TOC',{},['ltx:toclist',{},@toc]])
+      if @toc && !$doc->findnodes("descendant::ltx:TOC[\@role='contents']",$parent);
     map($parent->addChild($_),@removed); }
   @docs; }
+
+# Assuming there is one or more ltx:navigation nodes in the document,
+# we'll want to copy them to the appropriate pages after spliting
+sub copyNavigation {
+  my($self,$entry,$rootid)=@_;
+  my $doc = $$entry{document};
+  $rootid = $$entry{id} unless $rootid;
+  my $nav = $doc->findnode("descendant::ltx:navigation");
+  if(!$nav){
+    $doc->addNodes($doc->getDocumentElement,['ltx:navigation',{}]); # Create new node, if none
+    $nav = $doc->findnode("descendant::ltx:navigation"); }
+  foreach my $child (@{$$entry{children}}){
+    my $childdoc = $$child{document};
+    # Copy the navigation node from parent, if this child doesn't yet have one.
+    if(! $childdoc->findnode("descendant::ltx:navigation")){
+      $childdoc->addNodes($childdoc->getDocumentElement,$nav); } # cloning, as needed...
+    $self->copyNavigation($child,$rootid); # now, recurse
+    $childdoc->addNavigation(start=>$rootid) if $rootid;
+    $childdoc->addNavigation(up=>$$entry{id});
+ }}
 
 our $COUNTER=0;
 sub getPageName {
