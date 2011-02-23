@@ -61,7 +61,7 @@ sub latexml {
        || (! -f $xmlfile)
        || ($timestamp > pathname_timestamp($xmlfile))){
       subheading("Running latexml on $source");
-      system("latexml",
+      System("latexml",
 	     "--dest=$xmlfile",
 	     ($options{options} ? @{$options{options}} : ()),
 	     map("--verbose",1..$VERBOSITY),
@@ -72,7 +72,7 @@ sub latexml {
        || (! -f $destination)
        || (pathname_timestamp($xmlfile) > pathname_timestamp($destination))){
       subheading("Running latexmlpost to $destination");
-      system("latexmlpost",
+      System("latexmlpost",
 	     "--dest=$destination",
 	     ($options{postoptions} ? @{$options{postoptions}} : ()),
 	     map("--verbose",1..$VERBOSITY),
@@ -122,12 +122,12 @@ sub pdflatex {
       die "pdflatex had errors on $name" if $error;
       if($options{indexoptions}){
 	message("Running makeindex on $name");
-	system("makeindex",$name, @{$options{indexoptions}}) == 0
+	System("makeindex",$name, @{$options{indexoptions}}) == 0
 	  or die "Failed to run makeindex for $name"; 
 	$changed = 1 if $pass < 2; }
       if($options{bibtexoptions}){
 	message("Running bibtex on $name");
-	system("bibtex",$name, @{$options{bibtexoptions}}) == 0
+	System("bibtex",$name, @{$options{bibtexoptions}}) == 0
 	  or die "Failed to run bibtex for $name";
 	$changed = 1 if $pass < 2; }
       } while ($pass <= $MAXPASS) && $changed;
@@ -160,6 +160,11 @@ sub saveData {
     open(OUT,">$datafile") or die "Couldn't write datafile: $!";
     print OUT $data;
     close(OUT); }}
+
+sub System {
+  my($command,@args)=@_;
+  print "\$  ".join(' ',$command,@args)."\n" if $VERBOSITY;
+  system($command,@args); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
