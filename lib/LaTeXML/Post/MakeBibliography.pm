@@ -123,9 +123,12 @@ sub getBibEntries {
       # Extract names, year and title from bibentry.
       my $names='';
       my $sortnames='';
+      my @names =$doc->findnodes('ltx:bib-name[@role="author"]',$bibentry);
+      @names =$doc->findnodes('ltx:bib-name[@role="editor"]',$bibentry) unless @names;
       if(my $n = $doc->findnode('ltx:bib-key',$bibentry)){
 	$sortnames = $names = $n->textContent; }
-      elsif(my @names = $doc->findnodes('ltx:bib-name[@role="author"] | ltx:bib-name[@role="editor"]',$bibentry)){
+###      elsif(my @names = $doc->findnodes('ltx:bib-name[@role="author"] | ltx:bib-name[@role="editor"]',$bibentry)){
+      elsif(scalar(@names)){
 	$sortnames = join(' ',map(getNameText($doc,$_),@names));
 	my @ns = map($_ && $_->textContent, map($doc->findnodes('ltx:surname',$_), @names));
 	if(@ns > 2){    $names = $ns[0] .' et al'; }
