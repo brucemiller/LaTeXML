@@ -209,10 +209,22 @@ Or, should caption be used for theorem and proof?</a:documentation>
   <define name="caption_attributes">
     <a:documentation>Attributes for \elementref{caption}.</a:documentation>
     <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="font"/>
+    </optional>
   </define>
   <define name="caption_model">
-    <a:documentation>Content model for \elementref{caption}.</a:documentation>
-    <ref name="Inline.model"/>
+    <a:documentation>Content model for \elementref{caption},
+basically Inline.model with tag included (normally, but not necessarily, tag would come first).</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="tag"/>
+        <text/>
+        <ref name="Inline.class"/>
+        <ref name="Misc.class"/>
+        <ref name="Meta.class"/>
+      </choice>
+    </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
   <define name="toccaption">
@@ -229,7 +241,15 @@ used for lists of figures or similar.</a:documentation>
   </define>
   <define name="toccaption_model">
     <a:documentation>Content model for \elementref{toccaption}.</a:documentation>
-    <ref name="Inline.model"/>
+    <zeroOrMore>
+      <choice>
+        <text/>
+        <ref name="Inline.class"/>
+        <ref name="Misc.class"/>
+        <ref name="Meta.class"/>
+        <ref name="tag"/>
+      </choice>
+    </zeroOrMore>
   </define>
 </grammar>
 <!-- ====================================================================== -->
