@@ -30,7 +30,7 @@ our @EXPORT = (qw(&DefExpandable
 	       # Class, Package and File loading.
 	       qw(&RequirePackage &LoadClass &LoadPool &FindFile
 		  &DeclareOption &PassOptions &ProcessOptions &ExecuteOptions
-		  &AddToMacro),
+		  &AddToMacro &AtBeginDocument &AtEndDocument),
 
 	       # Counter support
 	       qw(&NewCounter &CounterValue &SetCounter &AddToCounter &StepCounter &RefStepCounter &RefStepID &ResetCounter
@@ -44,7 +44,7 @@ our @EXPORT = (qw(&DefExpandable
 		  &DefLigature &DefMathLigature),
 
 	       # Mid-level support for writing definitions.
-	       qw(&Expand &Invocation &Digest
+	       qw(&Expand &Invocation &Digest &DigestIf
 		  &RawTeX &Let),
 
 	       # Support for structured/argument readers
@@ -147,6 +147,14 @@ sub Let {
 
 sub Digest {
   $STATE->getStomach->digest(map((ref $_ ? $_ : Tokenize($_)),@_)); }
+
+sub DigestIf {
+  my($token)=@_;
+  $token = T_CS($token) unless ref $token;
+  if(my $defn = LookupDefinition($token)){
+    $STATE->getStomach->digest($token); }
+  else {
+    undef; }}
 
 sub ReadParameters {
   my($gullet,$spec)=@_;
@@ -340,21 +348,25 @@ sub StepCounter {
 # HOW can we retract this?
 sub RefStepCounter {
   my($ctr)=@_;
-  my $v = StepCounter($ctr);
+  my $refnumtokens = StepCounter($ctr);
   DefMacroI(T_CS("\\\@$ctr\@ID"),undef, Tokens(Explode(LookupValue('\c@'.$ctr)->valueOf)),
 	    scope=>'global');
-  my $id = Expand(T_CS("\\the$ctr\@ID"));
-  DefMacroI(T_CS('\@currentlabel'),undef,$v,scope=>'global');
-  DefMacroI(T_CS('\@currentID'),undef,$id,scope=>'global');
-
+  my $iddef = LookupDefinition(T_CS("\\the$ctr\@ID"));
+  my $has_id = $iddef && ((!defined $iddef->getParameters) || ($iddef->getParameters->getNumArgs == 0));
+  my $idtokens = $has_id && Expand(T_CS("\\the$ctr\@ID"));
+  DefMacroI(T_CS('\@currentlabel'),undef,$refnumtokens,scope=>'global');
+  DefMacroI(T_CS('\@currentID'),   undef,$idtokens,scope=>'global') if $has_id;
+  my $id      = $has_id && ToString(Digest($idtokens));
+  my $refnum  = ToString(Digest($refnumtokens));
+  my $frefnum = ToString(Digest(Invocation(T_CS('\fnum@@'),$ctr)));
   # Any scopes activated for previous value of this counter (& any nested counters) must be removed.
   # This may also include scopes activated for \label
   deactivateCounterScope($ctr);
   # And install the scope (if any) for this reference number.
   AssignValue(current_counter=>$ctr,'local');
-  AssignValue('scopes_for_counter:'.$ctr => [$ctr.':'.ToString($v)],'local');
-  $STATE->activateScope($ctr.':'.ToString($v));
-  (refnum=>$v, id=>$id); }
+  AssignValue('scopes_for_counter:'.$ctr => [$ctr.':'.$refnum],'local');
+  $STATE->activateScope($ctr.':'.$refnum);
+  (refnum=>$refnum, frefnum=>$frefnum, ($has_id ? (id=>$id):())); }
 
 sub deactivateCounterScope {
   my($ctr)=@_;
@@ -368,13 +380,13 @@ sub deactivateCounterScope {
 sub RefStepID {
   my($ctr)=@_;
   my $unctr = "UN$ctr";
-  my $v = StepCounter($unctr);
+  my $refnumtokens = StepCounter($unctr);
   DefMacroI(T_CS("\\\@$ctr\@ID"),undef,
 	    Tokens(T_OTHER('x'),Explode(LookupValue('\c@'.$unctr)->valueOf)),
 	    scope=>'global');
-  my $id = Expand(T_CS("\\the$ctr\@ID"));
-  DefMacroI(T_CS('\@currentID'),undef,$id);
-  (id=>$id); }
+  my $idtokens = Expand(T_CS("\\the$ctr\@ID"));
+  DefMacroI(T_CS('\@currentID'),undef,$idtokens);
+  (id=>ToString(Digest($idtokens))); }
 
 sub ResetCounter {
   my($ctr)=@_;
@@ -1135,6 +1147,34 @@ sub LoadPool {
   else {
     Fatal(":missing_file:$mode.pool.ltxml Installation error: Cannot find $mode pool module!"); }}
 
+sub AtBeginDocument {
+  my(@operations)=@_;
+  AssignValue('@at@begin@document',[]) unless LookupValue('@at@begin@document');
+  foreach my $op (@operations){
+    next unless $op;
+    my $t = ref $op;
+    if(!$t){			# Presumably String?
+      $op = TokenizeInternal($t); }
+    elsif($t eq 'CODE'){
+      my $tn = T_CS(ToString($op));
+      DefMacroI($tn,undef,$op); 
+      $op = $tn; }
+    PushValue('@at@begin@document',$op->unlist); }}
+
+sub AtEndDocument {
+  my(@operations)=@_;
+  AssignValue('@at@end@document',[]) unless LookupValue('@at@end@document');
+  foreach my $op (@operations){
+    next unless $op;
+    my $t = ref $op;
+    if(!$t){			# Presumably String?
+      $op = TokenizeInternal($t); }
+    elsif($t eq 'CODE'){
+      my $tn = T_CS(ToString($op));
+      DefMacroI($tn,undef,$op); 
+      $op = $tn; }
+    PushValue('@at@end@document',$op->unlist); }}
+
 #======================================================================
 # Defining Rewrite rules that act on the DOM
 
@@ -1292,33 +1332,39 @@ The predefined argument types are as follows.
 
 =item C<Plain>, C<Semiverbatim>
 
+X<Plain>X<Semiverbatim>
 Reads a standard TeX argument being either the next token, or if the
 next token is an {, the balanced token list.  In the case of C<Semiverbatim>,
 many catcodes are disabled, which is handy for URL's, labels and similar.
 
 =item C<Token>, C<XToken>
 
+X<Token>X<XToken>
 Read a single TeX Token.  For C<XToken>, if the next token is expandable,
 it is repeatedly expanded until an unexpandable token remains, which is returned.
 
 =item C<Number>, C<Dimension>, C<Glue> or C<MuGlue>
 
+X<Number>X<Dimension>X<Glue>X<MuGlue>
 Read an Object corresponding to Number, Dimension, Glue or MuGlue,
 using TeX's rules for parsing these objects.
 
 =item C<Until:>I<match>, C<XUntil:>I<match>
 
+X<Until>X<XUntil>
 Reads tokens until a match to the tokens I<match> is found, returning
 the tokens preceding the match. This corresponds to TeX delimited arguments.
 For C<XUntil>, tokens are expanded as they are matched and accumulated.
 
 =item C<UntilBrace>
 
+X<UntilBrace>
 Reads tokens until the next open brace C<{>.  
 This corresponds to the peculiar TeX construct C<\def\foo#{...>.
 
 =item C<Match:>I<match(|match)*>, C<Keyword:>I<match(|match)*>
 
+X<Match>X<Keyword>
 Reads tokens expecting a match to one of the token lists I<match>,
 returning the one that matches, or undef.
 For C<Keyword>, case and catcode of the I<matches> are ignored.
@@ -1326,14 +1372,17 @@ Additionally, any leading spaces are skipped.
 
 =item C<Balanced>
 
+X<Balanced>
 Read tokens until a closing }, but respecting nested {} pairs.
 
 =item C<BalancedParen>
 
+X<BalancedParen>
 Read a parenthesis delimited tokens, but does I<not> balance any nested parentheses.
 
 =item C<Undigested>, C<Digested>, C<DigestUntil:>I<match>
 
+X<Undigested>X<Digested>
 These types alter the usual sequence of tokenization and digestion in separate stages (like TeX).
 A C<Undigested> parameter inhibits digestion completely and remains in token form.
 A C<Digested> parameter gets digested until the (required) opening { is balanced; this is
@@ -1342,12 +1391,14 @@ with catcodes.  C<DigestUntil> digests tokens until a token matching I<match> is
 
 =item C<Variable>
 
+X<Variable>
 Reads a token, expanding if necessary, and expects a control sequence naming
 a writable register.  If such is found, it returns an array of the corresponding
 definition object, and any arguments required by that definition.
 
-=item C<Skip1Space>, C<SkipSpaces>
+=item C<SkipSpaces>,C<Skip1Space>
 
+X<SkipSpaces>X<Skip1Space>
 Skips one, or any number of, space tokens, if present, but contributes nothing to the argument list.
 
 =back
@@ -1370,6 +1421,7 @@ and will be deactivated when the section ends.
 
 =item C<< DefMacro($prototype,$string | $tokens | $code,%options); >>
 
+X<DefMacro>
 Defines the macro expansion for C<$prototype>; a macro control sequence that is
 expanded during macro expansion time (in the  L<LaTeXML::Gullet>).  If a C<$string> is supplied, it will be
 tokenized at definition time, and any macro arguments will be substituted for parameter
@@ -1384,6 +1436,7 @@ must return a list of L<LaTeXML::Token>'s.
 
 =item C<< DefMacroI($cs,$paramlist,$string | $tokens | $code,%options); >>
 
+X<DefMacroI>
 Internal form of C<DefMacro> where the control sequence and parameter list
 have already been parsed; useful for definitions from within code.
 Also, slightly more efficient for macros with no arguments (use C<undef> for
@@ -1397,6 +1450,7 @@ C<$paramlist>).
 
 =item C<< DefPrimitive($prototype,$replacement,%options); >>
 
+X<DefPrimitive>
 Define a primitive control sequence; a primitive is processed during
 digestion (in the  L<LaTeXML::Stomach>), after macro expansion but before Construction time.
 Primitive control sequences generate Boxes or Lists, generally
@@ -1464,11 +1518,13 @@ This is only used for the special TeX assignment prefixes, like C<\global>.
 
 =item C<< DefPrimitiveI($cs,$paramlist,CODE($stomach,@args),%options); >>
 
+X<DefPrimitiveI>
 Internal form of C<DefPrimitive> where the control sequence and parameter list
 have already been parsed; useful for definitions from within code.
 
 =item C<< DefRegister($prototype,$value,%options); >>
 
+X<DefRegister>
 Defines a register with the given initial value (a Number, Dimension, Glue, MuGlue or Tokens
 --- I haven't handled Box's yet).  Usually, the C<$prototype> is just the control sequence,
 but registers are also handled by prototypes like C<\count{Number}>. C<DefRegister> arranges
@@ -1494,6 +1550,7 @@ storing the value.
 
 =item C<< DefRegisterI($cs,$paramlist,$value,%options); >>
 
+X<DefRegisterI>
 Internal form of C<DefRegister> where the control sequence and parameter list
 have already been parsed; useful for definitions from within code.
 
@@ -1505,6 +1562,7 @@ have already been parsed; useful for definitions from within code.
 
 =item C<< DefConstructor($prototype,$xmlpattern | $code,%options); >>
 
+X<DefConstructor>
 The Constructor is where LaTeXML really starts getting interesting;
 invoking the control sequence will generate an arbitrary XML
 fragment in the document tree.  More specifically: during digestion, the arguments
@@ -1643,11 +1701,13 @@ See L</"Control of Scoping">.
 
 =item C<< DefConstructorI($cs,$paramlist,$xmlpattern | $code,%options); >>
 
+X<DefConstructorI>
 Internal form of C<DefConstructor> where the control sequence and parameter list
 have already been parsed; useful for definitions from within code.
 
 =item C<< DefMath($prototype,$tex,%options); >>
 
+X<DefMath>
 A common shorthand constructor; it defines a control sequence that creates a mathematical object,
 such as a symbol, function or operator application.  
 The options given can effectively create semantic macros that contribute to the eventual
@@ -1711,11 +1771,13 @@ so that changes to fonts, etc, are local.  Providing C<<noggroup=>1>> inhibits t
 
 =item C<< DefMathI($cs,$paramlist,$tex,%options); >>
 
+X<DefMathI>
 Internal form of C<DefMath> where the control sequence and parameter list
 have already been parsed; useful for definitions from within code.
 
 =item C<< DefEnvironment($prototype,$replacement,%options); >>
 
+X<DefEnvironment>
 Defines an Environment that generates a specific XML fragment.  The C<$replacement> is
 of the same form as that for DefConstructor, but will generally include reference to
 the C<#body> property. Upon encountering a C<\begin{env}>:  the mode is switched, if needed,
@@ -1740,6 +1802,7 @@ for the C<\begin{env}> control sequence.
 
 =item C<< DefEnvironmentI($name,$paramlist,$replacement,%options); >>
 
+X<DefEnvironmentI>
 Internal form of C<DefEnvironment> where the control sequence and parameter list
 have already been parsed; useful for definitions from within code.
 
@@ -1751,6 +1814,7 @@ have already been parsed; useful for definitions from within code.
 
 =item C<< RequirePackage($package,%options); >>
 
+X<RequirePackage>
 Finds and loads a package implementation (usually C<*.sty.ltxml>, unless C<raw> is specified)
 for the required C<$package>.
 The options are:
@@ -1778,6 +1842,7 @@ The only option is
 
 =item C<< FindFile($name,%options); >>
 
+X<FindFile>
 Find an appropriate file with the given C<$name> in the current directories
 in C<SEARCHPATHS>.
 If a file ending with C<.ltxml> is found, it will be preferred.
@@ -1793,6 +1858,7 @@ The options are:
 
 =item C<< DeclareOption($option,$code); >>
 
+X<DeclareOption>
 Declares an option for the current package or class.
 The C<$code> can be a string or Tokens (which will be macro expanded),
 or can be a code reference which is treated as a primitive.
@@ -1802,12 +1868,14 @@ with one or more C<DeclareOptions>, followed by C<ProcessOptions()>.
 
 =item C<< PassOptions($name,$ext,@options); >>
 
+X<PassOptions>
 Causes the given C<@options> (strings) to be passed to the
 package (if C<$ext> is C<sty>) or class (if C<$ext> is C<cls>)
 named by C<$name>.
 
 =item C<< ProcessOptions(); >>
 
+X<ProcessOptions>
 Processes the options that have been passed to the current package
 or class in a fashion similar to LaTeX.  If the keyword
 C<< inorder=>1 >> is given, the options are processed in the
@@ -1815,7 +1883,23 @@ order they were used, like C<ProcessOptions*>.
 
 =item C<< ExecuteOptions(@options); >>
 
+X<ExecuteOptions>
 Process the options given explicitly in C<@options>.
+
+=item C<< AtBeginDocument(@stuff); >>
+
+X<AtBeginDocument>
+Arranges for C<@stuff> to be carried out after the preamble, at the beginning of the document.
+C<@stuff> should typically be macro-level stuff, but carried out for side effect;
+it should be tokens, tokens lists, strings (which will be tokenized),
+or a sub (which presumably contains code as would be in a package file, such as C<DefMacro>
+or similar.
+
+This operation is useful for style files loaded with C<--preload> or document specific
+customization files (ie. ending with C<.latexml>); normally the contents would be executed
+before LaTeX and other style files are loaded and thus can be overridden by them.
+By deferring the evaluation to begin-document time, these contents can override those style files. 
+This is likely to only be meaningful for LaTeX documents.
 
 =back
 
@@ -1825,6 +1909,7 @@ Process the options given explicitly in C<@options>.
 
 =item C<< NewCounter($ctr,$within,%options); >>
 
+X<NewCounter>
 Defines a new counter, like LaTeX's \newcounter, but extended.
 It defines a counter that can be used to generate reference numbers,
 and defines \the$ctr, etc. It also defines an "uncounter" which
@@ -1840,15 +1925,18 @@ The options are
 
 =item C<< $num = CounterValue($ctr); >>
 
+X<CounterValue>
 Fetches the value associated with the counter C<$ctr>.
 
 =item C<< $tokens = StepCounter($ctr); >>
 
+X<StepCounter>
 Analog of C<\stepcounter>, steps the counter and returns the expansion of
 C<\the$ctr>.  Usually you should use C<RefStepCounter($ctr)> instead.
 
 =item C<< $keys = RefStepCounter($ctr); >>
 
+X<RefStepCounter>
 Analog of C<\refstepcounter>, steps the counter and returns a hash
 containing the keys C<refnum=>$refnum, id=>$id>.  This makes it
 suitable for use in a C<properties> option to constructors.
@@ -1857,16 +1945,19 @@ to assist debugging.
 
 =item C<< $keys = RefStepID($ctr); >>
 
+X<RefStepID>
 Like to C<RefStepCounter>, but only steps the "uncounter",
 and returns only the id;  This is useful for unnumbered cases
 of objects that normally get both a refnum and id.
 
 =item C<< ResetCounter($ctr); >>
 
+X<ResetCounter>
 Resets the counter C<$ctr> to zero.
 
 =item C<< GenerateID($document,$node,$whatsit,$prefix); >>
 
+X<GenerateID>
 Generates an ID for nodes during the construction phase, useful
 for cases where the counter based scheme is inappropriate.
 The calling pattern makes it appropriate for use in Tag, as in
@@ -1887,6 +1978,7 @@ Document Model is used to control exactly how those fragments are assembled.
 
 =item C<< Tag($tag,%properties); >>
 
+X<Tag>
 Declares properties of elements with the name C<$tag>.
 
 The recognized properties are:
@@ -1926,29 +2018,35 @@ and the initiating digested object as arguments.
 
 =item C<< RelaxNGSchema($schemaname); >>
 
+X<RelaxNGSchema>
 Specifies the schema to use for determining document model.
 You can leave off the extension; it will look for C<.rng>,
 and maybe eventually, C<.rnc> once that is implemented.
 
 =item C<< RegisterNamespace($prefix,$URL); >>
 
+X<RegisterNamespace>
 Declares the C<$prefix> to be associated with the given C<$URL>.
 These prefixes may be used in ltxml files, particularly for
 constructors, xpath expressions, etc.  They are not necessarily
 the same as the prefixes that will be used in the generated document
-(See DocType or RelaxNGSchema).
+Use the prefix C<#default> for the default, non-prefixed, namespace.
+(See RegisterDocumentNamespace, as well as DocType or RelaxNGSchema).
 
 =item C<< RegisterDocumentNamespace($prefix,$URL); >>
 
+X<RegisterDocumentNamespace>
 Declares the C<$prefix> to be associated with the given C<$URL>
 used within the generated XML. They are not necessarily
 the same as the prefixes used in code (RegisterNamespace).
 This function is less rarely needed, as the namespace declarations
 are generally obtained from the DTD or Schema themselves
+Use the prefix C<#default> for the default, non-prefixed, namespace.
 (See DocType or RelaxNGSchema).
 
 =item C<< DocType($rootelement,$publicid,$systemid,%namespaces); >>
 
+X<DocType>
 Declares the expected rootelement, the public and system ID's of the document type
 to be used in the final document.  The hash C<%namespaces> specifies
 the namespaces prefixes that are expected to be found in the DTD, along with
@@ -1970,6 +2068,7 @@ We'll call it I<applying ligatures>, for lack of a better name.
 
 =item C<< DefLigature($regexp,%options); >>
 
+X<DefLigature>
 Apply the regular expression (given as a string: "/fa/fa/" since it will
 be converted internally to a true regexp), to the text content.
 The only option is C<fontTest=CODE($font)>; if given, then the substitution
@@ -1980,6 +2079,7 @@ Unicode characters.
 
 =item C<< DefMathLigature(CODE($document,@nodes)); >>
 
+X<DefMathLigature>
 CODE is called on each sequence of math nodes at a given level.  If they should
 be replaced, return a list of C<($n,$string,%attributes)> to replace
 the text content of the first node with C<$string> content and add the given attributes.
@@ -2000,6 +2100,7 @@ document can take place.
 
 =item C<< DefMathRewrite(%specification); >>
 
+X<DefRewrite>X<DefMathRewrite>
 These two declarations define document rewrite rules that are applied to the
 document tree after it has been constructed, but before math parsing, or
 any other postprocessing, is done.  The C<%specification> consists of a 
@@ -2058,26 +2159,31 @@ replace the selected nodes.
 
 =item C<< $tokens = Expand($tokens); >>
 
+X<Expand>
 Expands the given C<$tokens> according to current definitions.
 
 =item C<< $boxes = Digest($tokens); >>
 
+X<Digest>
 Processes and digestes the C<$tokens>.  Any arguments needed by
 control sequences in C<$tokens> must be contained within the C<$tokens> itself.
 
 =item C<< @tokens = Invocation($cs,@args); >>
 
+X<Invocation>
 Constructs a sequence of tokens that would invoke the token C<$cs>
 on the arguments.
 
 =item C<< RawTeX('... tex code ...'); >>
 
+X<RawTeX>
 RawTeX is a convenience function for including chunks of raw TeX (or LaTeX) code
 in a Package implementation.  It is useful for copying portions of the normal
 implementation that can be handled simply using macros and primitives.
 
 =item C<< Let($token1,$token2); >>
 
+X<Let>
 Gives C<$token1> the same `meaning' (definition) as C<$token2>; like TeX's \let.
 
 =back
@@ -2088,11 +2194,13 @@ Gives C<$token1> the same `meaning' (definition) as C<$token2>; like TeX's \let.
 
 =item C<< ReadParameters($gullet,$spec); >>
 
+X<ReadParameters>
 Reads from C<$gullet> the tokens corresponding to C<$spec>
 (a Parameters object).
 
 =item C<< DefParameterType($type,CODE($gullet,@values),%options); >>
 
+X<DefParameterType>
 Defines a new Parameter type, C<$type>, with CODE for its reader.
 
 Options are:
@@ -2121,6 +2229,7 @@ whether the catcode table should be modified before reading tokens.
 
 =item C<< DefColumnType($proto,$expansion); >>
 
+X<DefColumnType>
 Defines a new column type for tabular and arrays.
 C<$proto> is the prototype for the pattern, analogous to the pattern
 used for other definitions, except that macro being defined is a single character.
@@ -2135,10 +2244,12 @@ typically more verbose column specification.
 
 =item C<< $value = LookupValue($name); >>
 
+X<LookupValue>
 Lookup the current value associated with the the string C<$name>.
 
 =item C<< AssignValue($name,$value,$scope); >>
 
+X<AssignValue>
 Assign $value to be associated with the the string C<$name>, according
 to the given scoping rule.
 
@@ -2160,6 +2271,7 @@ therefor also be scoped).  The recognized configuration parameters are:
 
 =item C<< PushValue($type,$name,@values); >>
 
+X<PushValue>
 This is like C<AssignValue>, but pushes values onto 
 the end of the value, which should be a LIST reference.
 Scoping is not handled here (yet?), it simply pushes the value
@@ -2167,15 +2279,18 @@ onto the last binding of C<$name>.
 
 =item C<< UnshiftValue($type,$name,@values); >>
 
+X<UnshiftValue>
 Similar to  C<PushValue>, but pushes a value onto 
 the front of the values, which should be a LIST reference.
 
 =item C<< $value = LookupCatcode($char); >>
 
+X<LookupCatcode>
 Lookup the current catcode associated with the the character C<$char>.
 
 =item C<< AssignCatcode($char,$catcode,$scope); >>
 
+X<AssignCatcode>
 Set C<$char> to have the given C<$catcode>, with the assignment made
 according to the given scoping rule.
 
@@ -2185,16 +2300,19 @@ and using a value of 1 to specify that it is active.
 
 =item C<< $meaning = LookupMeaning($token); >>
 
+X<LookupMeaning>
 Looks up the current meaning of the given C<$token> which may be a
 Definition, another token, or the token itself if it has not
 otherwise been defined.
 
 =item C<< $defn = LookupDefinition($token); >>
 
+X<LookupDefinition>
 Looks up the current definition, if any, of the C<$token>.
 
 =item C<< InstallDefinition($defn); >>
 
+X<InstallDefinition>
 Install the Definition C<$defn> into C<$STATE> under its
 control sequence.
 
@@ -2206,11 +2324,13 @@ control sequence.
 
 =item C<< CleanLabel($label,$prefix); >>
 
+X<CleanLabel>
 Cleans a C<$label> of disallowed characters,
 prepending C<$prefix> (or C<LABEL>, if none given).
 
 =item C<< CleanIndexKey($key); >>
 
+X<CleanIndexKey>
 Cleans an index key, so it can be used as an ID.
 
 =item C<< CleanBibKey($key); >>
@@ -2219,15 +2339,18 @@ Cleans a bibliographic citation key, so it can be used as an ID.
 
 =item C<< CleanURL($url); >>
 
+X<CleanURL>
 Cleans a url.
 
 =item C<< UTF($code); >>
 
+X<UTF>
 Generates a UTF character, handy for the the 8 bit characters.
 For example, C<UTF(0xA0)> generates the non-breaking space.
 
 =item C<< MergeFont(%style); >>
 
+X<MergeFont>
 Set the current font by merging the font style attributes with the current font.
 The attributes and likely values (the values aren't required to be in this set):
 
@@ -2244,10 +2367,12 @@ This function returns nothing so it can be easily used in beforeDigest, afterDig
 
 =item C<< @tokens = roman($number); >>
 
+X<roman>
 Formats the C<$number> in (lowercase) roman numerals, returning a list of the tokens.
 
 =item C<< @tokens = Roman($number); >>
 
+X<Roman>
 Formats the C<$number> in (uppercase) roman numerals, returning a list of the tokens.
 
 =back
