@@ -58,7 +58,7 @@ Let(T_CS('\cites'),T_CS('\cite'));
 #======================================================================
 DefEnvironment('{bibdiv}',
 	       "<ltx:bibliography xml:id='#id'>"
-	       . "<ltx:title>#refname</ltx:title>"
+	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       . "#body"
 	       ."</ltx:bibliography>",
 	       afterDigestBegin=>sub { beginBibliography($_[1]); });
