@@ -125,11 +125,11 @@ sub process {
   # === Check which objects still need processing.
   my $destdir = $doc->getDestinationDirectory;
   my @pending=();
-  foreach my $entry (values %table){
-    my $store = $doc->cacheLookup($$entry{key});
+  foreach my $key (sort keys %table){
+    my $store = $doc->cacheLookup($key);
     if($store && ($store =~ /^(.*);(\d+);(\d+)$/)){
       next if -f pathname_concat($destdir,$1); }
-    push(@pending,$entry); }
+    push(@pending,$table{$key}); }
 
   $self->Progress($doc,"Found $nuniq unique tex strings (of $ntotal); "
 		  .scalar(@pending)." to generate");
