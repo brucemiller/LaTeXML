@@ -183,7 +183,12 @@ element index { index_attributes, index_model }
 index.body.class = Para.model | indexlist
 
 ## Attributes for \elementref{index}.
-index_attributes = Sectional.attributes
+index_attributes =
+   Sectional.attributes,
+   ## the text to use for `see' entries
+   attribute seename { text }?,
+   ## the text to use for `see also' entries
+   attribute seealsoname { text }?
 
 ## Content model for \elementref{index}.
 index_model = SectionalFrontMatter.class*, index.body.class*
@@ -237,10 +242,15 @@ title =
 element title { title_attributes, title_model }
 
 ## Attributes for \elementref{title}.
-title_attributes = Common.attributes
+title_attributes =
+  Common.attributes,
 
-## Content model for \elementref{title}.
-title_model = Inline.model
+  ## The font prefered for the title.
+  attribute font { text }?
+
+## Content model for \elementref{title},
+## basically Inline.model with tag included (normally, but not necessarily, tag would come first).
+title_model = (tag | text | Inline.class | Misc.class | Meta.class)*
 
 #----------------------------------------------------------------------
 
@@ -252,7 +262,7 @@ element toctitle { toctitle_attributes, toctitle_model }
 toctitle_attributes = Common.attributes
 
 ## Content model for \elementref{toctitle}.
-toctitle_model = Inline.model
+toctitle_model = (text | Inline.class | Misc.class | Meta.class | tag)*
 
 #----------------------------------------------------------------------
 
@@ -329,7 +339,7 @@ element date { date_attributes, date_model }
 
 ## Attributes for \elementref{date}.
 date_attributes = 
-  Common.attributes,
+  Common.attributes, FrontMatter.attributes,
 
   ## indicates the relevance of the date to the document.
   ## Commonly useful values are specified, but is open-ended to support extension.
@@ -346,7 +356,7 @@ abstract =
 element abstract { abstract_attributes, abstract_model }
 
 ## Attributes for \elementref{abstract}.
-abstract_attributes = Common.attributes
+abstract_attributes = Common.attributes, FrontMatter.attributes
 
 ## Content model for \elementref{abstract}.
 abstract_model = Block.model
@@ -358,7 +368,7 @@ acknowledgements =
 element acknowledgements { acknowledgements_attributes, acknowledgements_model }
 
 ## Attributes for \elementref{acknowledgements}.
-acknowledgements_attributes = Common.attributes
+acknowledgements_attributes = Common.attributes, FrontMatter.attributes
 
 ## Content model for \elementref{acknowledgements}.
 acknowledgements_model = Inline.model
@@ -370,7 +380,7 @@ keywords =
 element keywords { keywords_attributes, keywords_model }
 
 ## Attributes for \elementref{keywords}.
-keywords_attributes = Common.attributes
+keywords_attributes = Common.attributes, FrontMatter.attributes
 
 ## Content model for \elementref{keywords}.
 keywords_model = Inline.model
@@ -382,8 +392,7 @@ classification =
 element classification { classification_attributes, classification_model }
 
 ## Attributes for \elementref{classification}.
-classification_attributes = 
-  Common.attributes,
+classification_attributes = Common.attributes, FrontMatter.attributes,
 
   ## indicates what classification scheme was used.
   attribute scheme { text }?
@@ -405,11 +414,87 @@ titlepage_attributes = Sectional.attributes
 titlepage_model = (FrontMatter.class | SectionalFrontMatter.class | Block.class)*
 
 #======================================================================
+# TOC & Navigation; generally added by postprocessing
+
+TOC =
+## (Generalized) Table Of Contents, represents table of contents
+## as well as list of figures, tables, and other such things.
+## This will generally be placed by a \cs{tableofcontents} command
+## and filled in by postprocessing.
+element TOC { TOC_attributes, TOC_model }
+
+## Attributes for \elementref{TOC}.
+TOC_attributes =
+   Common.attributes,
+   FrontMatter.attributes,
+
+   ## Records the name of this contents list, eg. "Contents"
+   attribute name { text }?,
+
+   ## indicates the kind of list
+   attribute role { ("contents" | "figures" | "tables" | text) }?,
+
+   ## indicates what kind of document elements to list, in the form of
+   ## one or more tags such as \texttt{ltx:chapter} separated by \texttt{|}
+   ## (suggestive of an xpath expression).
+   attribute select { text }?,
+
+   ## indicates how to format the listing
+   attribute format { ("normal" | "short" | "veryshort" | text) }?
+
+## Content model for \elementref{TOC}.
+TOC_model = toclist?
+
+toclist =
+## The actual table of contents list, filled in.
+element toclist {toclist_attributes, toclist_model }
+
+## Attributes for \elementref{toclist}.
+toclist_attributes = Common.attributes
+
+## Content model for \elementref{toclist}.
+toclist_model = tocentry*
+
+tocentry =
+## An entry in a \elementref{toclist}.
+element tocentry { tocentry_attributes, tocentry_model }
+
+## Attributes for \elementref{tocentry}.
+tocentry_attributes = Common.attributes
+
+## Content model for \elementref{tocentry}.
+tocentry_model = ( ref | toclist )*
+
+
+navigation =
+## Records navigation cross-referencing information, links from the
+## current page or document to related ones, up, down, previous, next,
+## and so forth; these relations are recorded in the \attr{class} attribute
+## of the \elementref{ref}.
+##
+## \emph{Really?}; overload the class attribute!?
+## This should be \attr{role}!
+## Could also use a navigation name text or something?
+element navigation { navigation_attributes, navigation_model }
+
+## Attributes for \elementref{navigation}.
+navigation_attributes = Common.attributes
+
+## Content model for \elementref{navigation}.
+navigation_model = ( ref | TOC )*
+
+#======================================================================
 
 ## Attributes shared by all sectional elements
 Sectional.attributes =
   Common.attributes,
   Labelled.attributes
+
+## Attributes for other elements that can be used in frontmatter.
+FrontMatter.attributes =
+  ## Records the name of the type of object this is to be used when composing the
+  ## presentation.  The value of this attribute is often set by language localization packages.
+  attribute name { text }?
 
 ## The content allowed for the front matter of each sectional unit,
 ## and the document.
@@ -426,5 +511,7 @@ FrontMatter.class =
 ## to support articles with figures and similar data appearing `at end'.
 BackMatter.class = bibliography | appendix | index | acknowledgements
 		 | Para.class | Meta.class
+
+Para.class |= TOC | navigation
 
 #======================================================================

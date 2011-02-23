@@ -344,6 +344,16 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
   <define name="index_attributes">
     <a:documentation>Attributes for \elementref{index}.</a:documentation>
     <ref name="Sectional.attributes"/>
+    <optional>
+      <attribute name="seename">
+        <a:documentation>the text to use for `see' entries</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="seealsoname">
+        <a:documentation>the text to use for `see also' entries</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="index_model">
     <a:documentation>Content model for \elementref{index}.</a:documentation>
@@ -429,10 +439,24 @@ arbitrary text, in addition to the expected \elementref{ref}'s.</a:documentation
   <define name="title_attributes">
     <a:documentation>Attributes for \elementref{title}.</a:documentation>
     <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="font">
+        <a:documentation>The font prefered for the title.</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="title_model">
-    <a:documentation>Content model for \elementref{title}.</a:documentation>
-    <ref name="Inline.model"/>
+    <a:documentation>Content model for \elementref{title},
+basically Inline.model with tag included (normally, but not necessarily, tag would come first).</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="tag"/>
+        <text/>
+        <ref name="Inline.class"/>
+        <ref name="Misc.class"/>
+        <ref name="Meta.class"/>
+      </choice>
+    </zeroOrMore>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="toctitle">
@@ -448,7 +472,15 @@ arbitrary text, in addition to the expected \elementref{ref}'s.</a:documentation
   </define>
   <define name="toctitle_model">
     <a:documentation>Content model for \elementref{toctitle}.</a:documentation>
-    <ref name="Inline.model"/>
+    <zeroOrMore>
+      <choice>
+        <text/>
+        <ref name="Inline.class"/>
+        <ref name="Misc.class"/>
+        <ref name="Meta.class"/>
+        <ref name="tag"/>
+      </choice>
+    </zeroOrMore>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="subtitle">
@@ -574,6 +606,7 @@ of different events (using \attr{role}) for the same document.</a:documentation>
   <define name="date_attributes">
     <a:documentation>Attributes for \elementref{date}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="FrontMatter.attributes"/>
     <optional>
       <attribute name="role">
         <a:documentation>indicates the relevance of the date to the document.
@@ -605,6 +638,7 @@ Commonly useful values are specified, but is open-ended to support extension.</a
   <define name="abstract_attributes">
     <a:documentation>Attributes for \elementref{abstract}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="FrontMatter.attributes"/>
   </define>
   <define name="abstract_model">
     <a:documentation>Content model for \elementref{abstract}.</a:documentation>
@@ -621,6 +655,7 @@ Commonly useful values are specified, but is open-ended to support extension.</a
   <define name="acknowledgements_attributes">
     <a:documentation>Attributes for \elementref{acknowledgements}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="FrontMatter.attributes"/>
   </define>
   <define name="acknowledgements_model">
     <a:documentation>Content model for \elementref{acknowledgements}.</a:documentation>
@@ -637,6 +672,7 @@ Commonly useful values are specified, but is open-ended to support extension.</a
   <define name="keywords_attributes">
     <a:documentation>Attributes for \elementref{keywords}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="FrontMatter.attributes"/>
   </define>
   <define name="keywords_model">
     <a:documentation>Content model for \elementref{keywords}.</a:documentation>
@@ -653,6 +689,7 @@ Commonly useful values are specified, but is open-ended to support extension.</a
   <define name="classification_attributes">
     <a:documentation>Attributes for \elementref{classification}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="FrontMatter.attributes"/>
     <optional>
       <attribute name="scheme">
         <a:documentation>indicates what classification scheme was used.</a:documentation>
@@ -688,11 +725,143 @@ Commonly useful values are specified, but is open-ended to support extension.</a
       </choice>
     </zeroOrMore>
   </define>
+  <!--
+    ======================================================================
+    TOC & Navigation; generally added by postprocessing
+  -->
+  <define name="TOC">
+    <element name="TOC">
+      <a:documentation>(Generalized) Table Of Contents, represents table of contents
+as well as list of figures, tables, and other such things.
+This will generally be placed by a \cs{tableofcontents} command
+and filled in by postprocessing.</a:documentation>
+      <ref name="TOC_attributes"/>
+      <ref name="TOC_model"/>
+    </element>
+  </define>
+  <define name="TOC_attributes">
+    <a:documentation>Attributes for \elementref{TOC}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="FrontMatter.attributes"/>
+    <optional>
+      <attribute name="name">
+        <a:documentation>Records the name of this contents list, eg. "Contents"</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="role">
+        <a:documentation>indicates the kind of list</a:documentation>
+        <choice>
+          <value>contents</value>
+          <value>figures</value>
+          <value>tables</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="select">
+        <a:documentation>indicates what kind of document elements to list, in the form of
+one or more tags such as \texttt{ltx:chapter} separated by \texttt{|}
+(suggestive of an xpath expression).</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="format">
+        <a:documentation>indicates how to format the listing</a:documentation>
+        <choice>
+          <value>normal</value>
+          <value>short</value>
+          <value>veryshort</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="TOC_model">
+    <a:documentation>Content model for \elementref{TOC}.</a:documentation>
+    <optional>
+      <ref name="toclist"/>
+    </optional>
+  </define>
+  <define name="toclist">
+    <element name="toclist">
+      <a:documentation>The actual table of contents list, filled in.</a:documentation>
+      <ref name="toclist_attributes"/>
+      <ref name="toclist_model"/>
+    </element>
+  </define>
+  <define name="toclist_attributes">
+    <a:documentation>Attributes for \elementref{toclist}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="toclist_model">
+    <a:documentation>Content model for \elementref{toclist}.</a:documentation>
+    <zeroOrMore>
+      <ref name="tocentry"/>
+    </zeroOrMore>
+  </define>
+  <define name="tocentry">
+    <element name="tocentry">
+      <a:documentation>An entry in a \elementref{toclist}.</a:documentation>
+      <ref name="tocentry_attributes"/>
+      <ref name="tocentry_model"/>
+    </element>
+  </define>
+  <define name="tocentry_attributes">
+    <a:documentation>Attributes for \elementref{tocentry}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="tocentry_model">
+    <a:documentation>Content model for \elementref{tocentry}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="ref"/>
+        <ref name="toclist"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <define name="navigation">
+    <element name="navigation">
+      <a:documentation>Records navigation cross-referencing information, links from the
+current page or document to related ones, up, down, previous, next,
+and so forth; these relations are recorded in the \attr{class} attribute
+of the \elementref{ref}.
+
+\emph{Really?}; overload the class attribute!?
+This should be \attr{role}!
+Could also use a navigation name text or something?</a:documentation>
+      <ref name="navigation_attributes"/>
+      <ref name="navigation_model"/>
+    </element>
+  </define>
+  <define name="navigation_attributes">
+    <a:documentation>Attributes for \elementref{navigation}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="navigation_model">
+    <a:documentation>Content model for \elementref{navigation}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="ref"/>
+        <ref name="TOC"/>
+      </choice>
+    </zeroOrMore>
+  </define>
   <!-- ====================================================================== -->
   <define name="Sectional.attributes">
     <a:documentation>Attributes shared by all sectional elements</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+  </define>
+  <define name="FrontMatter.attributes">
+    <a:documentation>Attributes for other elements that can be used in frontmatter.</a:documentation>
+    <optional>
+      <attribute name="name">
+        <a:documentation>Records the name of the type of object this is to be used when composing the
+presentation.  The value of this attribute is often set by language localization packages.</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="SectionalFrontMatter.class">
     <a:documentation>The content allowed for the front matter of each sectional unit,
@@ -726,6 +895,12 @@ to support articles with figures and similar data appearing `at end'.</a:documen
       <ref name="acknowledgements"/>
       <ref name="Para.class"/>
       <ref name="Meta.class"/>
+    </choice>
+  </define>
+  <define name="Para.class" combine="choice">
+    <choice>
+      <ref name="TOC"/>
+      <ref name="navigation"/>
     </choice>
   </define>
 </grammar>
