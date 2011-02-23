@@ -92,8 +92,8 @@ sub new {
   my($class,@args)=@_;
   my $self = $class->SUPER::new(@args);
   $self->Head1Level(1);
-#  $self->LevelNoNum(3);
-  $self->LevelNoNum(1);
+  $self->LevelNoNum(3);
+#  $self->LevelNoNum(1);
   $self->ReplaceNAMEwithSection(1);
   $self->AddPreamble(0);
   $self->AddPostamble(0);
@@ -122,6 +122,8 @@ sub interior_sequence {
   my ($self,$seq_command, $seq_argument, $pod_seq) = @_;
   if($seq_command eq 'L'){
     "\\pod{$seq_argument}"; }
+  elsif($seq_command eq 'X'){
+    "\\index{$seq_argument\@{\\ttfamily $seq_argument}}"; }
   else {
     $self->SUPER::interior_sequence($seq_command,$seq_argument,$pod_seq); }}
 
@@ -129,14 +131,14 @@ sub interior_sequence {
 # ALL packages start with LaTeXML:: !!!
 sub _create_index {
   my $string = $_[0]->SUPER::_create_index($_[1]);
-  my $reftype = "Command Reference";
-  my @phrases = split('!',$string);
-  if($phrases[0] =~ /^LaTeXML/){
-    $reftype = "Module Reference";
-    my @comp = split('::',$phrases[0]);
-    $phrases[0] = $comp[$#comp]
-      .(@comp > 1 ? ' ('.join('::',@comp[0..$#comp-1]).'::)' :''); }
-  join('!',$phrases[0],$reftype,@phrases[1..$#phrases]); }
+  my $reftype = "command";
+  my ($name,@rest) = split('!',$string);
+  if($name =~ /^LaTeXML/){
+    $reftype = "module";
+    my @comp = split('::',$name);
+    $name = $comp[$#comp]
+      .(@comp > 1 ? '('.join('::',@comp[0..$#comp-1]).'::)' :''); }
+  join('!',"$name\@{\\ttfamily $name}",$reftype,@rest); }
 
 # Redefined to avoid unnecessary math.
 sub _replace_special_chars_late {
