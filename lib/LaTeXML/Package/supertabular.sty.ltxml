@@ -126,7 +126,8 @@ DefMacro('\@supertabular@topcaption', sub {
     $toccap=LookupValue('SUPERTABULAR_TOPTOCCAPTION'); }
   elsif($top && ($cap = LookupValue('SUPERTABULAR_CAPTION'))){
     $toccap=LookupValue('SUPERTABULAR_TOCCAPTION'); }
-  ($cap ? Invocation(T_CS('\caption'),$toccap,$cap)->unlist : ()); });
+##  ($cap ? Invocation(T_CS('\caption'),$toccap,$cap)->unlist : ()); });
+  ($cap ? Invocation(T_CS('\@caption'),T_OTHER('table'),$toccap,$cap)->unlist : ()); });
 
 DefMacro('\@supertabular@bottomcaption', sub {
   my $top = LookupValue('Boolean:@topcaption');
@@ -135,7 +136,8 @@ DefMacro('\@supertabular@bottomcaption', sub {
     $toccap=LookupValue('SUPERTABULAR_BOTTOMTOCCAPTION'); }
   elsif(!$top && ($cap = LookupValue('SUPERTABULAR_CAPTION'))){
     $toccap=LookupValue('SUPERTABULAR_TOCCAPTION'); }
-  ($cap ? Invocation(T_CS('\caption'),$toccap,$cap)->unlist : ()); });
+#  ($cap ? Invocation(T_CS('\caption'),$toccap,$cap)->unlist : ()); });
+  ($cap ? Invocation(T_CS('\@caption'),T_OTHER('table'),$toccap,$cap)->unlist : ()); });
 
 #======================================================================
 
