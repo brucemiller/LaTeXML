@@ -140,10 +140,14 @@ caption =
 element caption { caption_attributes, caption_model }
 
 ## Attributes for \elementref{caption}.
-caption_attributes = Common.attributes
+caption_attributes = 
+  Common.attributes,
+  attribute font { text }?
 
-## Content model for \elementref{caption}.
-caption_model = Inline.model
+
+## Content model for \elementref{caption},
+## basically Inline.model with tag included (normally, but not necessarily, tag would come first).
+caption_model = (tag | text | Inline.class | Misc.class | Meta.class)*
 
 #======================================================================
 
@@ -156,6 +160,5 @@ element toccaption { toccaption_attributes, toccaption_model }
 toccaption_attributes = Common.attributes
 
 ## Content model for \elementref{toccaption}.
-toccaption_model = Inline.model
-
+toccaption_model = (text | Inline.class | Misc.class | Meta.class | tag)*
 #======================================================================
