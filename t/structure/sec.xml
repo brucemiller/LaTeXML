@@ -5,25 +5,26 @@
   <title>Testing Sections</title>
   <date role="creation">Today!</date>
   <section refnum="1" xml:id="S1" labels="LABEL:sec:one">
-    <title>One</title>
+    <title><tag>1 </tag>One</title>
     <para xml:id="S1.p1">
       <p>Section One. As we will see in §<ref labelref="LABEL:fig_three"/>.</p>
     </para>
   </section>
   <section refnum="2" xml:id="S2" labels="LABEL:sec:two">
-    <title>Two</title>
+    <title><tag>2 </tag>Two</title>
     <para xml:id="S2.p1">
       <p>As seen in §<ref labelref="LABEL:sec:one"/>; Section Two.</p>
     </para>
   </section>
   <section refnum="3" xml:id="S3" labels="LABEL:sec:three">
-    <title>Three</title>
+    <title><tag>3 </tag>Three</title>
     <para xml:id="S3.p1">
       <p>Previously, in §<ref labelref="LABEL:sec:two"/>.</p>
     </para>
-    <figure refnum="1" xml:id="S3.F1" labels="LABEL:fig_three">
+    <figure frefnum="Figure 1" refnum="1" xml:id="S3.F1" labels="LABEL:fig_three">
       <p>Hi!</p>
-      <caption>A Figure</caption>
+      <toccaption><tag>1 </tag>A Figure</toccaption>
+      <caption><tag>Figure 1: </tag>A Figure</caption>
       <p>.</p>
     </figure>
   </section>

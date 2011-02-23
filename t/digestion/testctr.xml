@@ -3,7 +3,7 @@
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <section refnum="1" xml:id="S1">
-    <title>Testing Counters</title>
+    <title><tag>1 </tag>Testing Counters</title>
     <para xml:id="S1.p1">
       <p>Counter Foo [0] = 0.</p>
     </para>
@@ -21,7 +21,7 @@
     </para>
   </section>
   <section refnum="2" xml:id="S2">
-    <title>Testing RefStep</title>
+    <title><tag>2 </tag>Testing RefStep</title>
     <para xml:id="S2.p1">
       <p>Define bar to be reset within foo.
 
@@ -37,7 +37,7 @@ Now (Foo,Bar)[25,0] is (25,0)</p>
     </para>
   </section>
   <section refnum="3" xml:id="S3">
-    <title>Number formatting</title>
+    <title><tag>3 </tag>Number formatting</title>
     <para xml:id="S3.p1">
       <p>arabic[6] = 6</p>
     </para>
@@ -64,9 +64,9 @@ Fubar is mmmmmmmmmcmxcix</p>
     </para>
   </section>
   <section refnum="4" xml:id="S4">
-    <title>TeX Counters</title>
+    <title><tag>4 </tag>TeX Counters</title>
     <subsection refnum="4.1" xml:id="S4.SS1">
-      <title>Integers</title>
+      <title><tag>4.1 </tag>Integers</title>
       <para xml:id="S4.SS1.p1">
         <p>7 = 7.</p>
       </para>
@@ -75,7 +75,7 @@ Fubar is mmmmmmmmmcmxcix</p>
       </para>
     </subsection>
     <subsection refnum="4.2" xml:id="S4.SS2">
-      <title>Dimensions</title>
+      <title><tag>4.2 </tag>Dimensions</title>
       <para xml:id="S4.SS2.p1">
         <p>HFuzz is 0.1pt.
 Now HFuzz is 2pt.</p>
@@ -122,7 +122,7 @@ Now HFuzz is 2pt.</p>
       </para>
     </subsection>
     <subsection refnum="4.3" xml:id="S4.SS3">
-      <title>Glue</title>
+      <title><tag>4.3 </tag>Glue</title>
       <para xml:id="S4.SS3.p1">
         <p>1pt plus 3pt = 1pt plus 3pt</p>
       </para>
@@ -140,7 +140,7 @@ Now HFuzz is 2pt.</p>
       </para>
     </subsection>
     <subsection refnum="4.4" xml:id="S4.SS4">
-      <title>Undefined?</title>
+      <title><tag>4.4 </tag>Undefined?</title>
       <para xml:id="S4.SS4.p1">
         <p>Unknown count: 0 = 0</p>
       </para>
@@ -152,7 +152,7 @@ Now HFuzz is 2pt.</p>
       </para>
     </subsection>
     <subsection refnum="4.5" xml:id="S4.SS5">
-      <title>The</title>
+      <title><tag>4.5 </tag>The</title>
       <para xml:id="S4.SS5.p1">
         <p>the count 0 : 0</p>
       </para>
@@ -170,20 +170,20 @@ Now HFuzz is 2pt.</p>
       </para>
     </subsection>
     <subsection refnum="4.6" xml:id="S4.SS6">
-      <title>New Count, etc</title>
+      <title><tag>4.6 </tag>New Count, etc</title>
       <para xml:id="S4.SS6.p1">
         <p>3 = 3</p>
       </para>
     </subsection>
     <subsection refnum="4.7" xml:id="S4.SS7">
-      <title>LaTeX style</title>
+      <title><tag>4.7 </tag>LaTeX style</title>
       <para xml:id="S4.SS7.p1">
         <p>1em = 10pt
 3em = 30pt</p>
       </para>
     </subsection>
     <subsection refnum="4.8" xml:id="S4.SS8">
-      <title>Macrology</title>
+      <title><tag>4.8 </tag>Macrology</title>
       <para xml:id="S4.SS8.p1">
         <p>1=1</p>
       </para>

@@ -9,15 +9,13 @@
   </creator>
   <date role="creation">none</date>
   <section refnum="1" xml:id="S1">
-    <title>Test of standard theorem styles</title>
+    <title><tag>1 </tag>Test of standard theorem styles</title>
     <para xml:id="S1.p1">
       <p>Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
 on the Kobayashi metric.</p>
     </para>
-    <theorem class="Ahlfors" xml:id="ThmAhlforsx1">
-      <title>
-        <text font="bold">Ahlfors’ Lemma.</text>
-      </title>
+    <theorem class="Ahlfors" frefnum="Ahlfors' Lemma" xml:id="ThmAhlforsx1">
+      <title font="bold"><tag>Ahlfors’ Lemma</tag>.</title>
       <para xml:id="ThmAhlforsx1.p1">
         <p>
           <text font="italic">Let <Math mode="inline" tex="ds^{2}=h(z)|dz|^{2}" xml:id="ThmAhlforsx1.p1.m1" text="d * s ^ 2 = h * z * | * d * z * | ^ 2"><XMath><XMApp><XMTok meaning="equals" role="RELOP" font="upright">=</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" possibleFunction="yes">h</XMTok><XMTok role="UNKNOWN" open="(" close=")">z</XMTok><XMTok role="UNKNOWN" font="upright">|</XMTok><XMTok role="UNKNOWN">d</XMTok><XMTok role="UNKNOWN">z</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="upright">|</XMTok><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math> be a Hermitian pseudo-metric on
@@ -28,10 +26,8 @@ then <Math mode="inline" tex="\omega\leq\omega _{r}" xml:id="ThmAhlforsx1.p1.m8"
         </p>
       </para>
     </theorem>
-    <theorem class="lem" refnum="1.1" xml:id="S1.Thmthm1">
-      <title>
-        <text font="bold">Lemma 1.1 (negatively curved families).</text>
-      </title>
+    <theorem class="lem" frefnum="Lemma 1.1" refnum="1.1" xml:id="S1.Thmthm1">
+      <title font="bold"><tag>Lemma 1.1</tag> (negatively curved families).</title>
       <para xml:id="S1.Thmthm1.p1">
         <p>
           <text font="italic">Let <Math mode="inline" tex="\{ ds_{1}^{2},\dots,ds_{k}^{2}\}" xml:id="S1.Thmthm1.p1.m1" text="set@(d * (s _ 1) ^ 2, dots, d * (s _ k) ^ 2)"><XMath><XMApp><XMTok meaning="set" role="FENCED" argclose="}" argopen="{" separators=",,"/><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok meaning="1" role="NUMBER" font="upright">1</XMTok></XMApp><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp><XMTok name="dots" role="ID" font="upright">…</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok role="UNKNOWN">k</XMTok></XMApp><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math> be a negatively curved family of metrics
@@ -43,10 +39,8 @@ Then <Math mode="inline" tex="\omega^{i}\leq\omega _{r}" xml:id="S1.Thmthm1.p1.m
     <para xml:id="S1.p2">
       <p>Then our main theorem:</p>
     </para>
-    <theorem class="thm" refnum="1.2" xml:id="S1.Thmthm2" labels="LABEL:pigspan">
-      <title>
-        <text font="bold">Theorem 1.2.</text>
-      </title>
+    <theorem class="thm" frefnum="Theorem 1.2" refnum="1.2" xml:id="S1.Thmthm2" labels="LABEL:pigspan">
+      <title font="bold"><tag>Theorem 1.2</tag>.</title>
       <para xml:id="S1.Thmthm2.p1">
         <p>
           <text font="italic">Let <Math mode="inline" tex="d_{{\max}}" xml:id="S1.Thmthm2.p1.m1" text="d _ maximum"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">d</XMTok><XMTok meaning="maximum" role="LIMITOP" scriptpos="post" font="upright">max</XMTok></XMApp></XMath></Math> and <Math mode="inline" tex="d_{{\min}}" xml:id="S1.Thmthm2.p1.m2" text="d _ minimum"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">d</XMTok><XMTok meaning="minimum" role="LIMITOP" scriptpos="post" font="upright">min</XMTok></XMApp></XMath></Math> be the maximum, resp. minimum distance
@@ -54,7 +48,7 @@ between any two adjacent vertices of a quadrilateral <Math mode="inline" tex="Q"
 be the diagonal pigspan of a pig <Math mode="inline" tex="P" xml:id="S1.Thmthm2.p1.m5" text="P"><XMath><XMTok role="UNKNOWN">P</XMTok></XMath></Math> with four legs.
 Then <Math mode="inline" tex="P" xml:id="S1.Thmthm2.p1.m6" text="P"><XMath><XMTok role="UNKNOWN">P</XMTok></XMath></Math> is capable of standing on the corners of <Math mode="inline" tex="Q" xml:id="S1.Thmthm2.p1.m7" text="Q"><XMath><XMTok role="UNKNOWN">Q</XMTok></XMath></Math> iff</text>
         </p>
-        <equation refnum="1" xml:id="S1.E1" labels="LABEL:sdq">
+        <equation frefnum="(1)" refnum="1" xml:id="S1.E1" labels="LABEL:sdq">
           <Math mode="display" tex="\sigma\geq\sqrt{d_{{\max}}^{2}+d_{{\min}}^{2}}." xml:id="S1.E1.m1" text="sigma &gt;= square-root@((d _ maximum) ^ 2 + (d _ minimum) ^ 2)">
             <XMath>
               <XMApp punctuation=".">
@@ -90,10 +84,8 @@ Then <Math mode="inline" tex="P" xml:id="S1.Thmthm2.p1.m6" text="P"><XMath><XMTo
         </equation>
       </para>
     </theorem>
-    <theorem class="cor" refnum="1.3" xml:id="S1.Thmthm3">
-      <title>
-        <text font="bold">Corollary 1.3.</text>
-      </title>
+    <theorem class="cor" frefnum="Corollary 1.3" refnum="1.3" xml:id="S1.Thmthm3">
+      <title font="bold"><tag>Corollary 1.3</tag>.</title>
       <para xml:id="S1.Thmthm3.p1">
         <p>
           <text font="italic">Admitting reflection and rotation, a three-legged pig <Math mode="inline" tex="P" xml:id="S1.Thmthm3.p1.m1" text="P"><XMath><XMTok role="UNKNOWN">P</XMTok></XMath></Math> is capable of
@@ -101,10 +93,8 @@ standing on the corners of a triangle <Math mode="inline" tex="T" xml:id="S1.Thm
         </p>
       </para>
     </theorem>
-    <theorem class="rmk" xml:id="Thmrmkx1">
-      <title>
-        <text font="italic">Remark.</text>
-      </title>
+    <theorem class="rmk" frefnum="Remark" xml:id="Thmrmkx1">
+      <title font="italic"><tag>Remark</tag>.</title>
       <para xml:id="Thmrmkx1.p1">
         <p>As two-legged pigs generally fall over, the case of a polygon of order
 <Math mode="inline" tex="2" xml:id="Thmrmkx1.p1.m1" text="2"><XMath><XMTok meaning="2" role="NUMBER">2</XMTok></XMath></Math> is uninteresting.</p>
@@ -112,30 +102,24 @@ standing on the corners of a triangle <Math mode="inline" tex="T" xml:id="S1.Thm
     </theorem>
   </section>
   <section refnum="2" xml:id="S2">
-    <title>Custom theorem styles</title>
-    <theorem class="exer" refnum="1" xml:id="Thmexer1">
-      <title>
-        <text font="bold">Exercise 1.</text>
-      </title>
+    <title><tag>2 </tag>Custom theorem styles</title>
+    <theorem class="exer" frefnum="Exercise 1" refnum="1" xml:id="Thmexer1">
+      <title font="bold"><tag>Exercise 1</tag>.</title>
       <para xml:id="Thmexer1.p1">
         <p>
           <text font="italic">Generalize Theorem <ref labelref="LABEL:pigspan"/> to three and four dimensions.</text>
         </p>
       </para>
     </theorem>
-    <theorem class="note" refnum="1" xml:id="Thmnote1">
-      <title>
-        <text font="italic">Note 1:</text>
-      </title>
+    <theorem class="note" frefnum="Note 1" refnum="1" xml:id="Thmnote1">
+      <title font="italic"><tag>Note 1</tag>:</title>
       <para xml:id="Thmnote1.p1">
         <p>This is a test of the custom theorem style ‘note’. It is supposed to have
 variant fonts and other differences.</p>
       </para>
     </theorem>
-    <theorem class="bthm" refnum="1" xml:id="Thmbthm1">
-      <title>
-        <text font="bold">B-Theorem 1.</text>
-      </title>
+    <theorem class="bthm" frefnum="B-Theorem 1" refnum="1" xml:id="Thmbthm1">
+      <title font="bold"><tag>B-Theorem 1</tag>.</title>
       <para xml:id="Thmbthm1.p1">
         <p>
           <text font="italic">Test of the ‘linebreak’ style of theorem heading.</text>
@@ -146,9 +130,7 @@ variant fonts and other differences.</p>
       <p>This is a test of a citing theorem to cite a theorem from some other source.</p>
     </para>
     <theorem class="varthm" xml:id="Thmvarthmx1">
-      <title>
-        <text font="bold">Theorem 3.6 in <cite>[<bibref bibrefs="thatone" separator="," show="Number" yyseparator=","/>]</cite>.</text>
-      </title>
+      <title font="bold">Theorem 3.6 in <cite>[<bibref bibrefs="thatone" separator="," show="Number" yyseparator=","/>]</cite>.</title>
       <para xml:id="Thmvarthmx1.p1">
         <p>
           <text font="italic">No hyperlinking available here yet … but that’s not a
@@ -158,34 +140,30 @@ bad idea for the future.</text>
     </theorem>
   </section>
   <section refnum="3" xml:id="S3">
-    <title>The proof environment</title>
+    <title><tag>3 </tag>The proof environment</title>
     <proof>
-      <title>
-        <text font="italic">Proof.</text>
-      </title>
+      <title font="italic">Proof.</title>
       <para xml:id="S3.p1">
         <p>Here is a test of the proof environment.
 ∎</p>
       </para>
     </proof>
     <proof>
-      <title>
-        <text font="italic">Proof of Theorem <ref labelref="LABEL:pigspan"/>.</text>
-      </title>
+      <title font="italic">Proof of Theorem <ref labelref="LABEL:pigspan"/>.</title>
       <para xml:id="S3.p2">
         <p>And another test.
 ∎</p>
       </para>
     </proof>
     <proof>
-      <title><text font="italic">Proof </text>(<text font="italic">necessity</text>)<text font="italic">.</text></title>
+      <title font="italic">Proof <text font="upright">(</text>necessity<text font="upright">)</text>.</title>
       <para xml:id="S3.p3">
         <p>And another.
 ∎</p>
       </para>
     </proof>
     <proof>
-      <title><text font="italic">Proof </text>(<text font="italic">sufficiency</text>)<text font="italic">.</text></title>
+      <title font="italic">Proof <text font="upright">(</text>sufficiency<text font="upright">)</text>.</title>
       <para xml:id="S3.p4">
         <p>And another, ending with a display:</p>
         <equation xml:id="S3.Ex1">
@@ -207,7 +185,7 @@ bad idea for the future.</text>
     </proof>
   </section>
   <section refnum="4" xml:id="S4">
-    <title>Test of number-swapping</title>
+    <title><tag>4 </tag>Test of number-swapping</title>
     <para xml:id="S4.p1">
       <p>This is a repeat of the first section but with numbers in theorem heads
 swapped to the left.</p>
@@ -216,10 +194,8 @@ swapped to the left.</p>
       <p>Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
 on the Kobayashi metric.</p>
     </para>
-    <theorem class="Ahlfors" xml:id="ThmAhlforsx2">
-      <title>
-        <text font="bold">Ahlfors’ Lemma.</text>
-      </title>
+    <theorem class="Ahlfors" frefnum="Ahlfors' Lemma" xml:id="ThmAhlforsx2">
+      <title font="bold"><tag>Ahlfors’ Lemma</tag>.</title>
       <para xml:id="ThmAhlforsx2.p1">
         <p>
           <text font="italic">Let <Math mode="inline" tex="ds^{2}=h(z)|dz|^{2}" xml:id="ThmAhlforsx2.p1.m1" text="d * s ^ 2 = h * z * | * d * z * | ^ 2"><XMath><XMApp><XMTok meaning="equals" role="RELOP" font="upright">=</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" possibleFunction="yes">h</XMTok><XMTok role="UNKNOWN" open="(" close=")">z</XMTok><XMTok role="UNKNOWN" font="upright">|</XMTok><XMTok role="UNKNOWN">d</XMTok><XMTok role="UNKNOWN">z</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="upright">|</XMTok><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math> be a Hermitian pseudo-metric on
@@ -230,10 +206,8 @@ then <Math mode="inline" tex="\omega\leq\omega _{r}" xml:id="ThmAhlforsx2.p1.m8"
         </p>
       </para>
     </theorem>
-    <theorem class="lemsw" refnum="4.1" xml:id="S4.Thmthmsw1">
-      <title>
-        <text font="bold">4.1 Lemma (negatively curved families).</text>
-      </title>
+    <theorem class="lemsw" frefnum="4.1 Lemma" refnum="4.1" xml:id="S4.Thmthmsw1">
+      <title font="bold"><tag>4.1 Lemma</tag> (negatively curved families).</title>
       <para xml:id="S4.Thmthmsw1.p1">
         <p>
           <text font="italic">Let <Math mode="inline" tex="\{ ds_{1}^{2},\dots,ds_{k}^{2}\}" xml:id="S4.Thmthmsw1.p1.m1" text="set@(d * (s _ 1) ^ 2, dots, d * (s _ k) ^ 2)"><XMath><XMApp><XMTok meaning="set" role="FENCED" argclose="}" argopen="{" separators=",,"/><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok meaning="1" role="NUMBER" font="upright">1</XMTok></XMApp><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp><XMTok name="dots" role="ID" font="upright">…</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok role="UNKNOWN">k</XMTok></XMApp><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math> be a negatively curved family of metrics
@@ -245,10 +219,8 @@ Then <Math mode="inline" tex="\omega^{i}\leq\omega _{r}" xml:id="S4.Thmthmsw1.p1
     <para xml:id="S4.p3">
       <p>Then our main theorem:</p>
     </para>
-    <theorem class="thmsw" refnum="4.2" xml:id="S4.Thmthmsw2">
-      <title>
-        <text font="bold">4.2 Theorem.</text>
-      </title>
+    <theorem class="thmsw" frefnum="4.2 Theorem" refnum="4.2" xml:id="S4.Thmthmsw2">
+      <title font="bold"><tag>4.2 Theorem</tag>.</title>
       <para xml:id="S4.Thmthmsw2.p1">
         <p>
           <text font="italic">Let <Math mode="inline" tex="d_{{\max}}" xml:id="S4.Thmthmsw2.p1.m1" text="d _ maximum"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">d</XMTok><XMTok meaning="maximum" role="LIMITOP" scriptpos="post" font="upright">max</XMTok></XMApp></XMath></Math> and <Math mode="inline" tex="d_{{\min}}" xml:id="S4.Thmthmsw2.p1.m2" text="d _ minimum"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">d</XMTok><XMTok meaning="minimum" role="LIMITOP" scriptpos="post" font="upright">min</XMTok></XMApp></XMath></Math> be the maximum, resp. minimum distance
@@ -256,7 +228,7 @@ between any two adjacent vertices of a quadrilateral <Math mode="inline" tex="Q"
 be the diagonal pigspan of a pig <Math mode="inline" tex="P" xml:id="S4.Thmthmsw2.p1.m5" text="P"><XMath><XMTok role="UNKNOWN">P</XMTok></XMath></Math> with four legs.
 Then <Math mode="inline" tex="P" xml:id="S4.Thmthmsw2.p1.m6" text="P"><XMath><XMTok role="UNKNOWN">P</XMTok></XMath></Math> is capable of standing on the corners of <Math mode="inline" tex="Q" xml:id="S4.Thmthmsw2.p1.m7" text="Q"><XMath><XMTok role="UNKNOWN">Q</XMTok></XMath></Math> iff</text>
         </p>
-        <equation refnum="2" xml:id="S4.E2" labels="LABEL:sdqsw">
+        <equation frefnum="(2)" refnum="2" xml:id="S4.E2" labels="LABEL:sdqsw">
           <Math mode="display" tex="\sigma\geq\sqrt{d_{{\max}}^{2}+d_{{\min}}^{2}}." xml:id="S4.E2.m1" text="sigma &gt;= square-root@((d _ maximum) ^ 2 + (d _ minimum) ^ 2)">
             <XMath>
               <XMApp punctuation=".">
@@ -292,10 +264,8 @@ Then <Math mode="inline" tex="P" xml:id="S4.Thmthmsw2.p1.m6" text="P"><XMath><XM
         </equation>
       </para>
     </theorem>
-    <theorem class="corsw" refnum="4.3" xml:id="S4.Thmthmsw3">
-      <title>
-        <text font="bold">4.3 Corollary.</text>
-      </title>
+    <theorem class="corsw" frefnum="4.3 Corollary" refnum="4.3" xml:id="S4.Thmthmsw3">
+      <title font="bold"><tag>4.3 Corollary</tag>.</title>
       <para xml:id="S4.Thmthmsw3.p1">
         <p>
           <text font="italic">Admitting reflection and rotation, a three-legged pig <Math mode="inline" tex="P" xml:id="S4.Thmthmsw3.p1.m1" text="P"><XMath><XMTok role="UNKNOWN">P</XMTok></XMath></Math> is capable of

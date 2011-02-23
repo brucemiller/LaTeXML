@@ -3,8 +3,8 @@
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <para xml:id="p1">
-    <equationgroup id="S0.EGx1">
-      <equation refnum="1" xml:id="S0.E1" labels="LABEL:e1">
+    <equationgroup xml:id="S0.EGx1">
+      <equation frefnum="(1)" refnum="1" xml:id="S0.E1" labels="LABEL:e1">
         <MathFork>
           <Math xml:id="S0.E1.m4" tex="\displaystyle x = 17y" text="x = 17 * y">
             <XMath>
@@ -48,7 +48,7 @@
           </MathBranch>
         </MathFork>
       </equation>
-      <equation labels="LABEL:e2" xml:id="S0.E2" refnum="2">
+      <equation labels="LABEL:e2" xml:id="S0.E2" refnum="2" frefnum="(2)">
         <MathFork>
           <Math xml:id="S0.E2.m4" tex="\displaystyle y &gt; a+b+c+d+e+f+g+h+i+j+ k+l+m+n+o+p" text="y &gt; a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p">
             <XMath>
@@ -142,8 +142,8 @@
     </equationgroup>
   </para>
   <para xml:id="p2">
-    <equationgroup id="S0.EGx2">
-      <equation refnum="4" xml:id="S0.E4" labels="LABEL:e3">
+    <equationgroup xml:id="S0.EGx2">
+      <equation frefnum="(4)" refnum="4" xml:id="S0.E4" labels="LABEL:e3">
         <MathFork>
           <Math xml:id="S0.E4.m4" tex="\displaystyle x = 17y" text="x = 17 * y">
             <XMath>
@@ -187,7 +187,7 @@
           </MathBranch>
         </MathFork>
       </equation>
-      <equation labels="LABEL:e4" xml:id="S0.E5" refnum="5">
+      <equation labels="LABEL:e4" xml:id="S0.E5" refnum="5" frefnum="(5)">
         <MathFork>
           <Math xml:id="S0.E5.m4" tex="\displaystyle y &gt; a+b+c+d+e+f+g+h+i+j+ k+l+m+n+o+p" text="y &gt; a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p">
             <XMath>
@@ -281,7 +281,7 @@
     </equationgroup>
   </para>
   <para xml:id="p3">
-    <equationgroup id="S0.EGx3">
+    <equationgroup xml:id="S0.EGx3">
       <equation xml:id="S0.Ex4">
         <MathFork>
           <Math xml:id="S0.Ex4.m4" tex="\displaystyle x \ll y+i+\cdots+y_{n} \leq z" text="x lessless y + i + cdots + y _ n less= z">
@@ -363,7 +363,7 @@
     </equationgroup>
   </para>
   <para xml:id="p4">
-    <equationgroup id="S0.EGx4">
+    <equationgroup xml:id="S0.EGx4">
       <equation xml:id="S0.Ex6">
         <MathFork>
           <Math xml:id="S0.Ex6.m4" tex="\displaystyle y &gt; a+b+c+d+e+f+g+h+i+j \mbox{}+k+l+m+n+o+p" text="y &gt; a + b + c + d + e + f + g + h + i + j * [] + k + l + m + n + o + p">
@@ -463,7 +463,7 @@
     </equationgroup>
   </para>
   <para xml:id="p5">
-    <equationgroup id="S0.EGx5">
+    <equationgroup xml:id="S0.EGx5">
       <equation xml:id="S0.Ex9">
         <MathFork>
           <Math xml:id="S0.Ex9.m4" tex="\displaystyle w+x+y+z= a+b+c+d+e+f+g+h+i+j+ k+l+m+n+o+p" text="w + x + y + z = a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p">

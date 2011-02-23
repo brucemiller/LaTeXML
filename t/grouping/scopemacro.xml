@@ -3,16 +3,16 @@
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <section refnum="1" xml:id="S1">
-    <title>One</title>
+    <title><tag>1 </tag>One</title>
     <para xml:id="S1.p1">
       <p>Expect Section 1:Section 1.</p>
     </para>
   </section>
   <section refnum="2" xml:id="S2">
-    <title>Two</title>
+    <title><tag>2 </tag>Two</title>
     <para xml:id="S2.p1">
       <p>Expect Unknown: Unknown.</p>
-      <equation refnum="1" xml:id="S2.E1">
+      <equation frefnum="(1)" refnum="1" xml:id="S2.E1">
         <Math mode="display" tex="\mbox{Equation 1}=\mbox{Equation 1}" xml:id="S2.E1.m1" text="[Equation 1] = [Equation 1]">
           <XMath>
             <XMApp>
@@ -30,44 +30,44 @@
       <p>Expect Unknown: Unknown.</p>
     </para>
     <subsection refnum="2.1" xml:id="S2.SS1">
-      <title>Two pt one</title>
+      <title><tag>2.1 </tag>Two pt one</title>
       <para xml:id="S2.SS1.p1">
         <p>Expect Subsection 2.1: Subsection 2.1</p>
       </para>
     </subsection>
     <subsection refnum="2.2" xml:id="S2.SS2">
-      <title>Two point two</title>
+      <title><tag>2.2 </tag>Two point two</title>
       <para xml:id="S2.SS2.p1">
         <p>Expect Unknown: Unknown.</p>
       </para>
     </subsection>
     <subsection refnum="2.3" xml:id="S2.SS3" labels="LABEL:labelled">
-      <title>Two point three</title>
+      <title><tag>2.3 </tag>Two point three</title>
       <para xml:id="S2.SS3.p1">
         <p>Expect Labelled subsection: Labelled subsection</p>
       </para>
     </subsection>
     <subsection refnum="2.4" xml:id="S2.SS4">
-      <title>Two point four</title>
+      <title><tag>2.4 </tag>Two point four</title>
       <para xml:id="S2.SS4.p1">
         <p>Expect Unknown: Unknown.</p>
       </para>
     </subsection>
   </section>
   <section refnum="3" xml:id="S3">
-    <title>Three</title>
+    <title><tag>3 </tag>Three</title>
     <para xml:id="S3.p1">
       <p>Expect Section 3:Section 3.</p>
     </para>
     <subsection refnum="3.1" xml:id="S3.SS1">
-      <title>Three point one</title>
+      <title><tag>3.1 </tag>Three point one</title>
       <para xml:id="S3.SS1.p1">
         <p>Expect Section 3: Section 3.</p>
       </para>
     </subsection>
   </section>
   <section refnum="4" xml:id="S4">
-    <title>Four</title>
+    <title><tag>4 </tag>Four</title>
     <para xml:id="S4.p1">
       <p>Expect Unknown: Unknown.</p>
     </para>
