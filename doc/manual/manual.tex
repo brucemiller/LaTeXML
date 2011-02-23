@@ -1,5 +1,5 @@
 \documentclass{book}
-\usepackage{../sty/latexmldoc}
+\usepackage{../sty/latexmlman}
 \usepackage{times}
 \usepackage{makeidx}
 \usepackage{listings}
@@ -44,6 +44,7 @@
 \frontmatter
 \maketitle
 \tableofcontents
+\listoffigures
 \mainmatter
 %%%======================================================================
 \chapter{Introduction}\label{intro}
@@ -106,7 +107,16 @@ Appendix \ref{schema} describes the \XML\ schema used by \LaTeXML;
 finally, Appendix \ref{errorcodes} gives an overview of the warning and
 error messages that \LaTeXML\ may generate.
 
-If all else fails, you can consult the source code, or the author.
+If all else fails, please consult the source code, or the author.
+
+\vskip 1cm\relax
+Using \LaTeXML, and programming for it, can be somewhat confusing as one is dealing with several
+languages not normally combined, often within the same file,
+--- Perl, \TeX\ and \XML\ (along with \XSLT, \HTML, \CSS), plus shell programmming.
+To help visually distinguish different contexts, if only slightly,
+we'll try to put `programming' oriented material (Perl, \TeX) in a typewriter font,
+\texttt{like this}; \XML\ material will be put in a sans-serif face
+\textsf{like this}.
 
 %%%======================================================================
 \chapter{Using \LaTeXML}\label{usage}
@@ -141,7 +151,7 @@ into a complete interconnected site.
 
 How best to use the commands depends, of course, on what you
 are trying to achieve.  In the next section, we'll describe
-the use of \ltxcmd{latexml}, which performs the conversion to \XML\.
+the use of \ltxcmd{latexml}, which performs the conversion to \XML.
 The following sections consider a sequence of
 successively more complicated postprocessing situations,
 using \ltxcmd{latexmlpost},
@@ -355,7 +365,7 @@ can control the format of urls with the document.
 Specific conversions of the mathematics can be requested
 using the options
 \begin{lstlisting}[style=shell]
---mathimages                     # converts math to png images,
+--mathimages                   # converts math to png images,
 --presentationmathml {or} --pmml # creates Presentation \MathML
 --contentmathml {or} --cmml      # creates Content \MathML
 --openmath {or} --om             # creates \OpenMath
@@ -530,17 +540,17 @@ The processing is broken into the following stages
 
 %%%----------------------------------------------------------------------
 \subsection{Digestion}\label{architecture.digestion}
-\index{Mouth (LaTeXML::)!architecture}%
-\index{Gullet (LaTeXML::)!architecture}%
-\index{Stomach (LaTeXML::)!architecture}%
-\index{Token (LaTeXML::)!architecture}%
-\index{Tokens (LaTeXML::)!architecture}%
-\index{Definition (LaTeXML::)!architecture}%
-\index{Expandable (LaTeXML::)!architecture}%
-\index{Primitive (LaTeXML::)!architecture}%
-\index{Box (LaTeXML::)!architecture}%
-\index{List (LaTeXML::)!architecture}%
-\index{Whatsit (LaTeXML::)!architecture}%
+\index{Mouth(LaTeXML::)@{\ttfamily  Mouth(LaTeXML::)}!architecture}%
+\index{Gullet(LaTeXML::)@{\ttfamily  Gullet(LaTeXML::)}!architecture}%
+\index{Stomach(LaTeXML::)@{\ttfamily  Stomach(LaTeXML::)}!architecture}%
+\index{Token(LaTeXML::)@{\ttfamily  Token(LaTeXML::)}!architecture}%
+\index{Tokens(LaTeXML::)@{\ttfamily  Tokens(LaTeXML::)}!architecture}%
+\index{Definition(LaTeXML::)@{\ttfamily  Definition(LaTeXML::)}!architecture}%
+\index{Expandable(LaTeXML::)@{\ttfamily  Expandable(LaTeXML::)}!architecture}%
+\index{Primitive(LaTeXML::)@{\ttfamily  Primitive(LaTeXML::)}!architecture}%
+\index{Box(LaTeXML::)@{\ttfamily  Box(LaTeXML::)}!architecture}%
+\index{List(LaTeXML::)@{\ttfamily  List(LaTeXML::)}!architecture}%
+\index{Whatsit(LaTeXML::)@{\ttfamily  Whatsit(LaTeXML::)}!architecture}%
 
 Digestion is carried out primarily in a \emph{pull} mode: The \ltxpod{Stomach}
 pulls expanded \ltxpod{Token}s from the \ltxpod{Gullet}, which itself pulls \ltxpod{Token}s from 
