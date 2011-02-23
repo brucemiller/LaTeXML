@@ -1,0 +1,135 @@
+# -*- CPERL -*-
+#======================================================================
+# Collected separately so I can override for LaTeXML
+#======================================================================
+package LaTeXML::Package::Pool;
+use LaTeXML::Package;
+
+RequirePackage('latexml');
+RequirePackage('graphicx');
+RequirePackage('hyperref');
+
+DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
+DefMacro('\toctitle{}','\@add@frontmatter{ltx:toctitle}{#1}');
+DefMacro('\BibTeX','BibTeX');
+
+RawTeX('\AtEndDocument{\@add@context@toc}');
+DefConstructor('\@add@context@toc',
+	       "<ltx:navigation>"
+	       .  "<ltx:TOC format='context'/>"
+	       ."</ltx:navigation>",
+	      beforeConstruct=>sub{ $_[0]->maybeCloseElement('ltx:section'); });
+
+DefMacro('\perlfont','\ttfamily');
+DefMacro('\shellfont','\ttfamily');
+DefMacro('\latexfont','\ttfamily');
+DefMacro('\schemafont','\sffamily');
+DefMacro('\patternfont','\sffamily\slshape');
+
+# Various other typographic bits
+DefMacro('\cmd {}',      '{\shellfont #1}');
+DefMacro('\code {}',     '{\perlfont #1}');
+DefMacro('\method {}',   '{\perlfont ->#1}');
+DefMacro('\attr {}',     '{\schemafont #1}');
+DefMacro('\attrval {}',  '{\perlfont #1}');
+DefMacro('\varfile[]{}', '{\shellfont \textit{#2}\ifx.#1.\else.#1\fi}');
+DefMacro('\cs{}',        '{\latexfont \textbackslash #1}');
+
+DefConstructor('\ltxcmd{}',
+	       "<ltx:ref labelref='#label'>#1</ltx:ref>",
+	       properties=>sub { (label=>CleanLabel($_[1])); });
+DefConstructor('\ltxpod{}', "<ltx:ref labelref='#ref'>#1</ltx:ref>",
+	       afterDigest=>sub{
+		 my $name = $_[1]->getArg(1)->toString;
+		 $_[1]->setProperty(ref=>CleanLabel("LaTeXML::".$name)); });
+
+
+DefConstructor('\pod{}', "<ltx:ref href='#href' labelref='#ref'>#1</ltx:ref>",
+	       afterDigest=>sub{
+		 my $name = $_[1]->getArg(1)->toString;
+		 if(($name =~ /^LaTeXML/) || ($name =~ /^latexml/)){
+		   $_[1]->setProperty(ref=>CleanLabel($name)); }
+		 else {
+		   $name =~ s/::/%3A%3A/g;
+		   my $url = "http://search.cpan.org/search?query=$name&mode=module";
+		   $_[1]->setProperty(href=>$url); }});
+
+
+DefEnvironment('{moduledescription}',
+	       "<ltx:description  xml:id='#id' class='moduledescription'>#body</ltx:description>",
+	       properties=>sub { beginItemize('description'); });
+
+DefEnvironment('{elementdescription}',
+	       "<ltx:description  xml:id='#id' class='elementdescription'>#body</ltx:description>",
+	       properties=>sub { beginItemize('description'); });
+
+DefEnvironment('{patterndescription}',
+	       "<ltx:description  xml:id='#id' class='patterndescription'>#body</ltx:description>",
+	       properties=>sub { beginItemize('description'); });
+
+RawTeX(<<'EOTeX');
+% For generated documentation of Schema.
+\newcommand{\@defname}[1]{\textup{\textbf{\texttt{#1}}}}
+\newcommand{\typename}[1]{\textit{#1}}
+
+\newenvironment{schemamodule}[1]{%
+  \section{Module {\perlfont #1}}\label{schema.module.#1}
+  \begin{moduledescription}}{\end{moduledescription}}
+
+% \elementdef{name}{doc}{body}
+\newcommand{\elementdef}[3]{
+  \item[\textit{Element }\hypertarget{schema.element.#1}{{\bfseries\schemafont #1}}\index{#1@{\schemafont #1}}] \hspace{1em} #2
+    \if.#3.\else\begin{elementdescription}#3\end{elementdescription}\fi
+}
+
+% \attrdef{name}{doc}{content}
+\newcommand{\attrdef}[3]{
+  \item[\textit{Attribute }{\bfseries\schemafont #1}] =\ #3\par\noindent #2
+}
+
+\newif\if@elpattern\@elpatternfalse
+\def\test@elpattern#1{%
+  \@elpatternfalse
+  \test@model@pattern#1\_model\end%
+  \test@attributes@pattern#1\_attributes\end}
+\def\test@model@pattern#1\_model#2\end{\if.#2.\else\@elpatterntrue\fi}
+\def\test@attributes@pattern#1\_attributes#2\end{\if.#2.\else\@elpatterntrue\fi}
+
+% \patterndef{name}{doc}{body}
+\newcommand{\patterndef}[3]{
+   \item[\textit{Pattern }\hypertarget{schema.pattern.#1}{{\bfseries\patternfont #1}}%
+    \test@elpattern{#1}\if@elpattern\else\index{#1@{\patternfont #1}}\fi] \hspace{1em} #2
+    \if.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
+}
+
+% \patternadd{name}{doc}{body}
+\newcommand{\patternadd}[3]{
+  \item[\textit{Add to }{\bfseries\patternfont #1}] \hspace{1em} #2
+    \if.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
+}
+
+%\newcommand{\moduleref}[1]{\hyperlink{schema.module.#1}{{\perlfont #1}}}
+\newcommand{\moduleref}[1]{\htmlref{{\perlfont #1}}{schema.module.#1}}
+\newcommand{\patternref}[1]{\hyperlink{schema.pattern.#1}{{\patternfont #1}}}
+\newcommand{\elementref}[1]{\hyperlink{schema.element.#1}{{\schemafont #1}}}
+
+EOTeX
+
+#======================================================================
+# Section heading styles...
+DefMacroI('\chaptername',undef,'Chapter');
+DefMacroI('\sectionname',undef,'\S');
+DefMacroI('\subsectionname',undef,'\S');
+DefMacroI('\subsubsectionname',undef,'\S');
+DefMacroI('\paragraphname',undef,'\P');
+DefMacroI('\subparagraphname',undef,'\P');
+DefMacroI('\appendixname',undef,'Appendix');
+
+DefMacroI('\appendix',undef,
+	  '\@appendix'
+	  .'\def\sectionname{}'
+	  .'\def\subsectionname{}'
+	  .'\def\subsubsectionname{}');
+
+#======================================================================
+1;

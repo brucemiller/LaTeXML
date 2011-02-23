@@ -1,0 +1,171 @@
+%======================================================================
+% Collected separately so I can override for LaTeXML
+%======================================================================
+\usepackage{latexml}
+\usepackage{color}
+%======================================================================
+\def\toctitle#1{}
+
+%======================================================================
+
+\let\@@LaTeXML\LaTeXML
+\def\LaTeXML{\ifHy@pdfstring LaTeXML\else\@@LaTeXML\fi}
+\def\BibTeX{{\rm B}{\sc ib}\TeX}
+
+\let\@title\@empty
+\def\subtitle#1{\gdef\@subtitle{#1}}
+\def\@maketitle{%
+  \newpage
+  \null
+  \vskip 2em%
+  \begin{center}%
+  \let \footnote \thanks
+    {\LARGE \@title \par}%
+    \ifx\@subtitle\@empty\else
+      \vskip 1.0em%
+      {\large \@subtitle \par}%
+    \fi
+    \vskip 1.5em%
+    {\large
+      \lineskip .5em%
+      \begin{tabular}[t]{c}%
+        \@author
+      \end{tabular}\par}%
+    \vskip 1em%
+    {\large \@date}%
+  \end{center}%
+  \par
+  \vskip 1.5em}
+\renewcommand\maketitle{\begin{titlepage}%
+  \let\footnotesize\small
+  \let\footnoterule\relax
+  \let \footnote \thanks
+  \null\vfil
+  \vskip 60\p@
+  \begin{center}%
+    {\LARGE \@title \par}%
+    \ifx\@subtitle\@empty\else
+      \vskip 1.0em%
+      {\large \@subtitle \par}%
+    \fi
+    \vskip 3em%
+    {\large
+     \lineskip .75em%
+      \begin{tabular}[t]{c}%
+        \@author
+      \end{tabular}\par}%
+      \vskip 1.5em%
+    {\large \@date \par}%       % Set date in \large size.
+  \end{center}\par
+  \@thanks
+  \vfil\null
+  \end{titlepage}%
+}
+\usepackage{graphicx}
+
+
+\def\perlfont{\ttfamily}
+\def\shellfont{\ttfamily}
+\def\latexfont{\ttfamily}
+\def\schemafont{\sffamily}
+\def\patternfont{\sffamily\slshape}
+
+\def\@@ltxprefix{LaTeXML}
+\def\@@pkgprefix#1::#2\end{#1}
+\def\@@latexmlcmd{latexml}
+\def\@@latexmlpostcmd{latexmlpost}
+\def\@@latexmlmathcmd{latexmlmath}
+\newcommand{\pod}[1]{%
+  {\edef\@prefix{\@@pkgprefix#1::\end}
+   \edef\@podcmd{#1}
+  \ifx\@@ltxprefix\@prefix
+     \htmlref{{\perlfont #1}}{#1}%
+  \else\ifx\@podcmd\@@latexmlcmd
+     \htmlref{{\perlfont #1}}{#1}%
+  \else\ifx\@podcmd\@@latexmlpostcmd
+     \htmlref{{\perlfont #1}}{#1}%
+  \else\ifx\@podcmd\@@latexmlmathcmd
+     \htmlref{{\perlfont #1}}{#1}%
+  \else
+     \href{http://search.cpan.org/search?query=#1&mode=module}{{\perlfont #1}}%
+  \fi\fi\fi\fi}}
+
+\newcommand{\ltxcmd}[1]{\htmlref{{\latexfont #1}}{#1}}
+\newcommand{\ltxpod}[1]{\htmlref{{\perlfont #1}}{LaTeXML::#1}}
+
+\newcommand{\cmd}[1]{{\shellfont #1}}
+\newcommand{\code}[1]{{\perlfont #1}}
+\newcommand{\method}[1]{{\perlfont ->#1}}
+\newcommand{\attr}[1]{{\schemafont #1}}
+\newcommand{\attrval}[1]{{\perlfont #1}}
+
+\newcommand{\varfile}[2][]{{\shellfont \textit{#2}\if.#1.\else.#1\fi}}
+\newcommand{\cs}[1]{{\latexfont $\backslash$#1}}
+%======================================================================
+% For generated documentation of Schema.
+
+\newenvironment{moduledescription}{\begin{description}}{\end{description}}%
+\newenvironment{elementdescription}{\begin{description}}{\end{description}}%
+\newenvironment{patterndescription}{\begin{description}}{\end{description}}%
+
+\newcommand{\typename}[1]{{\perlfont #1}}
+
+\newenvironment{schemamodule}[1]{%
+  \section{Module {\perlfont #1}}\label{schema.module.#1}
+   \raggedright
+  \begin{moduledescription}}{\end{moduledescription}}
+
+
+% \elementdef{name}{doc}{body}
+\newcommand{\elementdef}[3]{
+  \item[\textit{Element }\hypertarget{schema.element.#1}{{\bfseries\schemafont #1}}\index{#1@{\schemafont #1}}] \hspace{1em} #2
+    \ifx.#3.\else\begin{elementdescription}#3\end{elementdescription}\fi
+}
+
+% \attrdef{name}{doc}{content}
+\newcommand{\attrdef}[3]{
+  \item[\textit{Attribute }{\bfseries\schemafont #1}] =\ #3\par\noindent #2
+}
+
+\newif\if@elpattern\@elpatternfalse
+\def\test@elpattern#1{%
+  \@elpatternfalse
+  \test@model@pattern#1\_model\end%
+  \test@attributes@pattern#1\_attributes\end}
+\def\test@model@pattern#1\_model#2\end{\if.#2.\else\@elpatterntrue\fi}
+\def\test@attributes@pattern#1\_attributes#2\end{\if.#2.\else\@elpatterntrue\fi}
+
+% \patterndef{name}{doc}{body}
+\newcommand{\patterndef}[3]{
+   \item[\textit{Pattern }\hypertarget{schema.pattern.#1}{{\bfseries\patternfont #1}}%
+         \test@elpattern{#1}\if@elpattern\else\index{#1@{\patternfont #1}}\fi] \hspace{1em} #2
+    \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
+}
+
+% \patternadd{name}{doc}{body}
+\newcommand{\patternadd}[3]{
+  \item[\textit{Add to }{\bfseries\patternfont #1}] \hspace{1em} #2
+    \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
+}
+
+\newcommand{\moduleref}[1]{\htmlref{{\perlfont #1}}{schema.module.#1}}
+\newcommand{\patternref}[1]{\hyperlink{schema.pattern.#1}{{\patternfont #1}}}
+\newcommand{\elementref}[1]{\hyperlink{schema.element.#1}{{\schemafont #1}}}
+
+%======================================================================
+\definecolor{linkblue}{cmyk}{1.0,0.2,0.0,0.50}%
+\usepackage[colorlinks=true, linkcolor=linkblue, citecolor=linkblue, urlcolor=blue,
+            plainpages=false, pdfpagelabels]{hyperref}
+
+\def\URL{\@ifnextchar[{\@URL}{\@@URL}}%]
+% \def\@@URL{\begingroup\Url}
+% %%\def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\texttt{##1}}}\Url}
+% \def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\Url{##1}}}\Url}
+
+%\DeclareUrlCommand{\@@URL}{}
+\def\@@URL{\begingroup\Url}
+\def\@URL[#1]{#1\@URL@foot}
+\let\orig@Url@FormatString\Url@FormatString%
+%\DeclareUrlCommand{\@URL@foot}{\def\Url@FormatString{\footnote{\orig@Url@FormatString}}}%
+\def\@URL@foot{\begingroup\def\Url@FormatString{\footnote{\orig@Url@FormatString}}\Url}%
+%======================================================================
