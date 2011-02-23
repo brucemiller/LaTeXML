@@ -130,10 +130,12 @@ sub finalize_rec {
   my $qname = $model->getNodeQName($node);
   my $declared_font = $LaTeXML::FONT;
   if(my $font_attr = $node->getAttribute('_font')){
-    if($model->canHaveAttribute($qname,'font') && $node->hasChildNodes){
+    if($model->canHaveAttribute($qname,'font') 
+       && ($node->hasChildNodes || $node->getAttribute('_force_font'))){
       my $font = $$self{node_fonts}{$font_attr};
       if(my %fontdecl = $font->relativeTo($LaTeXML::FONT)){
-	map($node->setAttribute($_=>$fontdecl{$_}), keys %fontdecl);
+	foreach my $attr (keys %fontdecl){
+	  $node->setAttribute($attr=>$fontdecl{$attr}) if $model->canHaveAttribute($qname,$attr); }
 	$declared_font = $font; }}}
 
   local $LaTeXML::FONT = $declared_font;
@@ -330,7 +332,25 @@ sub closeNode_internal {
     last if $$node eq $$n;	# NOTE: This equality test is questionable
     $n = $n->parentNode; }
   print STDERR "Closing ".Stringify($node)." => ".Stringify($closeto)."\n" if $LaTeXML::Document::DEBUG;
-  $$self{node} = $closeto; }
+
+  $$self{node} = $closeto;
+
+  if(0){			# I _think_ this is desirable, but disable for the moment to reduce output changes
+  my @c;
+  # If we're closing a node that can take font switches and it contains a single FONT_ELEMENT_NAME node; pull it up.
+  my $np = $node->parentNode;
+  if(($$closeto eq $$np)	# node is Still in tree!
+     && (scalar(@c=$node->childNodes) == 1) # with single child
+     && ($$self{model}->getNodeQName($c[0]) eq $FONT_ELEMENT_NAME)
+     && $$self{model}->canHaveAttribute($node,'font')){
+    my $c = $c[0];
+    $self->setNodeFont($node,$self->getNodeFont($c));
+    $node->removeChild($c);
+    foreach my $gc ($c->childNodes){
+      $node->appendChild($gc); }}
+}
+
+  $$self{node}; }
 
 sub getInsertionCandidates {
   my($node)=@_;
