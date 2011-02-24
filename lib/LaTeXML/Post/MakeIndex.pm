@@ -35,18 +35,13 @@ sub process {
     $doc->addDate();
     my($allkeys,$tree)= $self->build_tree($doc,$index);
     if($tree){
-      my $props={};
-      if(my $seename = $index->getAttribute('seename')){
-	$$props{seename}=$seename; }
-      if(my $seealsoname = $index->getAttribute('seealsoname')){
-	$$props{seealsoname}=$seealsoname; }
       if($$self{split}){
 	map($self->rescan($_),
 	    $self->makeSubCollectionDocuments($doc,$index,
-					      map( ($_=>$self->makeIndexList($doc,$allkeys,$$tree{subtrees}{$_}, $props)),
+					      map( ($_=>$self->makeIndexList($doc,$allkeys,$$tree{subtrees}{$_})),
 						   keys %{$$tree{subtrees}}))); }
       else {
-	$doc->addNodes($index,$self->makeIndexList($doc,$allkeys,$tree,$props));
+	$doc->addNodes($index,$self->makeIndexList($doc,$allkeys,$tree));
 	$self->rescan($doc); }}
     else { $doc; }}
   else { $doc; }}
@@ -63,9 +58,16 @@ sub build_tree {
     my $tree = {subtrees=>{},referrers=>{}, id=>$id};
     foreach my $key (@keys){
       my $entry = $$self{db}->lookup($key);
+      # my $phrases = $entry->getValue('phrases');
+      # my $xml = $doc->getDocument->adoptNode($phrases);
+      # my @phrases = $doc->findnodes('ltx:indexphrase',$xml);
+      # if(!scalar(@phrases)){
+      # 	$self->Warn($doc,"Missing phrases in indexmark: $key");
+      # 	next; }
+
       my $phrases = $entry->getValue('phrases');
-      my $xml = $doc->getDocument->adoptNode($phrases);
-      my @phrases = $doc->findnodes('ltx:indexphrase',$xml);
+      my @phrases = @$phrases;
+      map($doc->getDocument->adoptNode($_), @phrases);
       if(!scalar(@phrases)){
 	$self->Warn($doc,"Missing phrases in indexmark: $key");
 	next; }
@@ -112,11 +114,11 @@ sub add_rec {
       $$allkeys{$fullkey}={id=>$id,
 			   phrases=>[($$tree{key} ? @{$$allkeys{$$tree{key}}{phrases}}:())," ",
 				     $doc->trimChildNodes($phrase->cloneNode(1))]};
-    }
+      }
     add_rec($doc,$allkeys,$subtree,$entry,@phrases); }
   else {
     if(my $seealso = $entry->getValue('see_also')){
-      map($$tree{see_also}{$_}=1,  keys %$seealso); }
+      $$tree{see_also} = $seealso; }
     if(my $refs = $entry->getValue('referrers')){
       map($$tree{referrers}{$_}=$$refs{$_}, keys %$refs); }}}
 
@@ -147,15 +149,15 @@ sub alphacmp {
   (lc($a) cmp lc($b)) || ($a cmp $b); }
 
 sub makeIndexList {
-  my($self,$doc,$allkeys,$tree,$props)=@_;
+  my($self,$doc,$allkeys,$tree)=@_;
   my $subtrees =$$tree{subtrees};
   if(my @keys = sort alphacmp keys %$subtrees){
-    ['ltx:indexlist',{}, map($self->makeIndexEntry($doc,$allkeys,$$subtrees{$_},$props), @keys)]; }
+    ['ltx:indexlist',{}, map($self->makeIndexEntry($doc,$allkeys,$$subtrees{$_}), @keys)]; }
   else {
     (); }}
 
 sub makeIndexEntry {
-  my($self,$doc,$allkeys,$tree,$props)=@_;
+  my($self,$doc,$allkeys,$tree)=@_;
   my $refs   = $$tree{referrers};
   my $seealso= $$tree{see_also};
   my @links = ();
@@ -164,13 +166,16 @@ sub makeIndexEntry {
     push(@links,conjoin(map($self->makeIndexRefs($doc,$_,sort alphacmp keys %{$$refs{$_}}),
 				 sort alphacmp keys %$refs))); }
   if($seealso){
-    my @missing = sort grep(!$$allkeys{$_},keys %$seealso);
-    $self->Warn($doc,"Missing terms in index 'see also': ".join(', ',@missing)) if @missing;
-    push(@links,
-	 (@links ? (', '):()),
-	 ['ltx:text',{font=>'italic'}, (keys %$refs ? ($$props{seealso}||"see also") : ($$props{seename}||"see"))." "],
-	 conjoin(map(['ltx:ref',{idref=>$_->{id}},@{$_->{phrases}}],
-		     grep($_, map($$allkeys{$_},sort alphacmp keys %$seealso))))); }
+    my @missing = sort grep(!$$allkeys{$_},map($_->getAttribute('key'),@$seealso));
+    $self->Warn($doc,"Missing index see-also terms (under $$tree{key}) : ".join(', ',@missing)) if @missing;
+    foreach my $see (@$seealso){
+      push(@links, ', ');# if @links;
+      if(my $name = $see->getAttribute('name')){
+	push(@links, ['ltx:text',{font=>'italic'},$name],' '); }
+      if(my $entry = $$allkeys{$see->getAttribute('key')}){
+	push(@links,['ltx:ref',{idref=>$$entry{id}},$see->childNodes]); }
+      else {
+	push(@links,['ltx:text',{}, $see->childNodes]); }}}
 
   ['ltx:indexentry',{'xml:id'=>$$tree{id}},
    ['ltx:indexphrase',{},$doc->trimChildNodes($$tree{phrase})],

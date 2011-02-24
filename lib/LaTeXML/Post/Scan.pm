@@ -229,11 +229,16 @@ sub bibref_handler {
 # They will be turned into a tree, sorted, possibly permuted, whatever, by MakeIndex.
 sub indexmark_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  my $key = join(':','INDEX',map($_->getAttribute('key'),$doc->findnodes('ltx:indexphrase',$node)));
-  my $entry = $$self{db}->register($key);
-  $entry->setValues(phrases=>$node) unless $entry->getValue('phrases'); # No dueling
-  if(my $seealso = $node->getAttribute('see_also')){
-    $entry->noteAssociation(see_also=>$seealso); }
+  # Get the actual phrases, and any see_also phrases (if any)
+  my @phrases = $doc->findnodes('ltx:indexphrase',$node);
+  my @seealso = $doc->findnodes('ltx:indexsee',$node);
+  my $key = join(':','INDEX',map($_->getAttribute('key'),@phrases));
+  my $entry = $$self{db}->lookup($key)
+    || $$self{db}->register($key,
+			    phrases=>[map($_->cloneNode(1),@phrases)],
+			    see_also=>[]); # Could put a hash to deal with sorting, duplicates... BUT ?
+  if(@seealso){
+    push(@{$entry->getValue('see_also')}, map($_->cloneNode(1), @seealso)); }
   else {
     $entry->noteAssociation(referrers=>$parent_id=>($node->getAttribute('style') || 'normal')); }}
 

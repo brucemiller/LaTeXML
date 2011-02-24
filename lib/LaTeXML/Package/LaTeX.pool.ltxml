@@ -2534,26 +2534,16 @@ DefConstructor('\@index[]{}',"^<ltx:indexmark style='#1'>#2</ltx:indexmark>",
 	       mode=>'text', reversion=>'');
 DefConstructor('\@indexphrase[]{}',
 	       "<ltx:indexphrase key='#key'>#2</ltx:indexphrase>",
-	       properties=>{key=>sub { CleanIndexKey($_[1]); }});
-DefConstructor('\@indexsee{}',
-	       "<ltx:indexphrase see_also_marker='1'>#1</ltx:indexphrase>");
-# Note that we don't actually distinguish between see and seealso.... My bad!
-DefConstructor('\@indexseealso{}',
-	       "<ltx:indexphrase see_also_marker='1'>#1</ltx:indexphrase>");
+	       properties=>{key=>sub { CleanIndexKey($_[1]) || CleanIndexKey($_[2]); }});
 
-Tag('ltx:indexphrase', afterClose=>\&addIndexKey);
-sub addIndexKey {
-  my($document,$node)=@_;
-  # Do something about See ????
-  # [Presumably compute key and add it to the index element and delete]
-  # Or introduce a special element?
-  if($node->getAttribute('see_also_marker')){
-    my $key = $node->getAttribute('key') || indexify($node,$document);
-    my $indexmark = $node->parentNode;
-    $document->setAttribute($indexmark,see_also=>$key);
-    $indexmark->removeChild($node); }
-  elsif(!$node->getAttribute('key')) {
-    $document->setAttribute($node,key=>indexify($node,$document)); }}
+DefConstructor('\@indexsee{}',
+	       "<ltx:indexsee key='#key' name='#name'>#1</ltx:indexsee>",
+	       properties=>{name=>sub { DigestIf('\seename') },
+			    key=>sub { CleanIndexKey($_[1]); }});
+DefConstructor('\@indexseealso{}',
+	       "<ltx:indexsee key='#key' name='#name'>#1</ltx:indexsee>",
+	       properties=>{name=>sub { DigestIf('\alsoname') },
+			    key=>sub { CleanIndexKey($_[1]); }});
 
 #======================================================================
 # This converts an indexphrase node into a sortable string.
@@ -2626,7 +2616,7 @@ DefConstructorI('\index@done',      undef, sub { doIndexItem($_[0],0); });
 
 DefMacroI('\indexname',undef, 'Index');
 DefEnvironment('{theindex}', 
-	       "<ltx:index xml:id='#id' seename='#seename' seealsoname='#seealsoname'>"
+	       "<ltx:index xml:id='#id'>"
 	       .  "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#body"
 	       ."</ltx:index>",
@@ -2640,9 +2630,7 @@ DefEnvironment('{theindex}',
 		 my $title = DigestIf('\indexname');
 		 $_[1]->setProperties(id=>($docid ? "$docid.idx" : 'idx'),
 				      title       =>$title,
-				      titlefont   =>$title->getFont,
-				      seename     =>DigestIf('\seename'),
-				      seealsoname =>DigestIf('\alsoname') ); });
+				      titlefont   =>$title->getFont); });
 
 DefPrimitiveI('\indexspace',   undef, undef);
 DefPrimitiveI('\makeindex',    undef, undef);
