@@ -369,6 +369,9 @@ used to crossreference.</a:documentation>
     <zeroOrMore>
       <ref name="indexphrase"/>
     </zeroOrMore>
+    <zeroOrMore>
+      <ref name="indexsee"/>
+    </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
   <define name="indexphrase">
@@ -389,6 +392,31 @@ used to crossreference.</a:documentation>
   </define>
   <define name="indexphrase_model">
     <a:documentation>Content model for \elementref{indexphrase}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <define name="indexsee">
+    <element name="indexsee">
+      <a:documentation>A see-also phrase within an \elementref{indexmark}</a:documentation>
+      <ref name="indexsee_attributes"/>
+      <ref name="indexsee_model"/>
+    </element>
+  </define>
+  <define name="indexsee_attributes">
+    <a:documentation>Attributes for \elementref{indexsee}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="key">
+        <a:documentation>a flattened form of the phrase for generating an \attr{ID}.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="name">
+        <a:documentation>a name for the see phrase, such as "see also".</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="indexsee_model">
+    <a:documentation>Content model for \elementref{indexsee}.</a:documentation>
     <ref name="Inline.model"/>
   </define>
 </grammar>

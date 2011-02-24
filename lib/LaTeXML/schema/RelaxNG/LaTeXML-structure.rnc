@@ -183,12 +183,7 @@ element index { index_attributes, index_model }
 index.body.class = Para.model | indexlist
 
 ## Attributes for \elementref{index}.
-index_attributes =
-   Sectional.attributes,
-   ## the text to use for `see' entries
-   attribute seename { text }?,
-   ## the text to use for `see also' entries
-   attribute seealsoname { text }?
+index_attributes = Sectional.attributes
 
 ## Content model for \elementref{index}.
 index_model = SectionalFrontMatter.class*, index.body.class*

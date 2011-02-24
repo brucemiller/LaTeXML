@@ -344,16 +344,6 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
   <define name="index_attributes">
     <a:documentation>Attributes for \elementref{index}.</a:documentation>
     <ref name="Sectional.attributes"/>
-    <optional>
-      <attribute name="seename">
-        <a:documentation>the text to use for `see' entries</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="seealsoname">
-        <a:documentation>the text to use for `see also' entries</a:documentation>
-      </attribute>
-    </optional>
   </define>
   <define name="index_model">
     <a:documentation>Content model for \elementref{index}.</a:documentation>

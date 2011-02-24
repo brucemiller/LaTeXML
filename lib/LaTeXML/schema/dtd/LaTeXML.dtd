@@ -121,7 +121,7 @@
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
-<!ELEMENT ns1:indexmark (ns1:indexphrase)*>
+<!ELEMENT ns1:indexmark (ns1:indexphrase*,ns1:indexsee*)>
 <!ATTLIST ns1:indexmark
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -138,6 +138,17 @@
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
   key CDATA #IMPLIED>
+
+<!ELEMENT ns1:indexsee (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
+                        |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
+                        |ns1:inline-block|ns1:verbatim|ns1:break
+                        |ns1:graphics|ns1:inline-para|ns1:tabular
+                        |ns1:picture|ns1:note|ns1:indexmark|ns1:ERROR)*>
+<!ATTLIST ns1:indexsee
+  xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  key CDATA #IMPLIED
+  name CDATA #IMPLIED>
 
 <!ELEMENT ns1:p (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                  |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
@@ -1387,9 +1398,7 @@
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
-  frefnum CDATA #IMPLIED
-  seename CDATA #IMPLIED
-  seealsoname CDATA #IMPLIED>
+  frefnum CDATA #IMPLIED>
 
 <!ELEMENT ns1:indexlist (ns1:indexentry)*>
 <!ATTLIST ns1:indexlist
