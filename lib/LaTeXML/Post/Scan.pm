@@ -234,11 +234,9 @@ sub indexmark_handler {
   my @seealso = $doc->findnodes('ltx:indexsee',$node);
   my $key = join(':','INDEX',map($_->getAttribute('key'),@phrases));
   my $entry = $$self{db}->lookup($key)
-    || $$self{db}->register($key,
-			    phrases=>[map($_->cloneNode(1),@phrases)],
-			    see_also=>[]); # Could put a hash to deal with sorting, duplicates... BUT ?
+    || $$self{db}->register($key,phrases=>[@phrases],see_also=>[]);
   if(@seealso){
-    push(@{$entry->getValue('see_also')}, map($_->cloneNode(1), @seealso)); }
+    $entry->pushValues('see_also', @seealso); }
   else {
     $entry->noteAssociation(referrers=>$parent_id=>($node->getAttribute('style') || 'normal')); }}
 
