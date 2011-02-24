@@ -214,23 +214,23 @@ sub key { $_[0]->{key}; }
 # Note that XML data is stored in it's serialized form, prefixed by "XML::".
 sub getValue {
   my($self,$attr)=@_;
-  my $value = $$self{$attr}; 
-  if($value && $value =~ /^XML::/){
-    $value = $XMLParser->parseChunk(substr($value,5)); }
-  $value; }
+  decodeValue($$self{$attr}); }
 
 sub setValues {
   my($self,%avpairs)=@_;
   foreach my $attr (keys %avpairs){
-    my $value = $avpairs{$attr};
-    if(((ref $value) || '') =~ /^XML::/){
-      # The node is cloned so as to copy any inherited namespace nodes.
-      $value = "XML::".$value->cloneNode(1)->toString; }
+    my $value = encodeValue($avpairs{$attr});
     if(! defined $value){
       if(defined $$self{$attr}){
 	delete $$self{$attr}; }}
     elsif((! defined $$self{$attr}) || ($$self{$attr} ne $value)){
       $$self{$attr}=$value; }}}
+
+sub pushValues {
+  my($self,$attr,@values)=@_;
+  my $list = $$self{$attr};
+  foreach my $value (@values){
+    push(@$list, encodeValue($value)) if defined $value; }}
 
 # Note an association with this entry
 # Roughly equivalent to $$entry{key1}{key2}{...}=1,
@@ -262,6 +262,30 @@ sub showvalue {
   elsif(ref $value eq 'ARRAY'){
   "[".join(', ',map(showvalue($_),@$value))."]"; }
   else { "$value"; }}
+
+#======================================================================
+# Internal methods to encode/decode values; primarily to serialize/deserialize XML.
+# Yikes, this ultimately needs to be recursive!
+sub encodeValue {
+  my($value)=@_;
+  my $ref = ref $value;
+  if(!defined $value){     $value; }
+  elsif(!$ref){            $value; }
+  # The node is cloned so as to copy any inherited namespace nodes.
+  elsif($ref =~ /^XML::/){ "XML::".$value->cloneNode(1)->toString; }
+  elsif($ref eq 'ARRAY'){  [map(encodeValue($_),@$value)]; }
+  elsif($ref eq 'HASH'){   my %h=map( ($_=>encodeValue($$value{$_})), keys %$value); \%h; }
+  else {		    $value; }}
+
+sub decodeValue {
+  my($value)=@_;
+  my $ref = ref $value;
+  if(!defined $value){       $value; }
+  elsif($value =~ /^XML::/){ $XMLParser->parseChunk(substr($value,5)); }
+  elsif(!$ref){              $value; }
+  elsif($ref eq 'ARRAY'){    [map(decodeValue($_),@$value)]; }
+  elsif($ref eq 'HASH'){     my %h =map( ($_=>decodeValue($$value{$_})), keys %$value); \%h; }
+  else {		     $value; }}
 
 #======================================================================
 1;
