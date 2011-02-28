@@ -105,6 +105,12 @@ print OUT $serialized if $serialized;
 if($destination){ 
   close(OUT); }
 
+# ========================================
+# Now, unbind stuff, so we can clear memory
+$latexml=undef;
+$digested=undef;
+$serialized=undef;
+
 #**********************************************************************
 __END__
 
