@@ -17,6 +17,7 @@ use LaTeXML::Global;
 use LaTeXML::Definition;
 use LaTeXML::Parameters;
 use LaTeXML::Util::Pathname;
+use Unicode::Normalize;
 use Text::Balanced;
 use base qw(Exporter);
 our @EXPORT = (qw(&DefExpandable
@@ -202,7 +203,10 @@ sub CleanLabel {
 sub CleanIndexKey {
   my($key)=@_;
   $key = ToString($key);
+  # We don't want accented chars (do we?) but we need to decompose the accents!
+  $key = NFD($key); 
   $key =~ s/[^a-zA-Z0-9]//g;
+  $key = NFC($key); 		# just to be safe(?)
 ## Shouldn't be case insensitive?
 ##  $key =~ tr|A-Z|a-z|;
   $key; }
