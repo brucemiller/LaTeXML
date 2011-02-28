@@ -236,7 +236,7 @@ sub indexmark_handler {
   my $entry = $$self{db}->lookup($key)
     || $$self{db}->register($key,phrases=>[@phrases],see_also=>[]);
   if(@seealso){
-    $entry->pushValues('see_also', @seealso); }
+    $entry->pushNew('see_also', @seealso); }
   else {
     $entry->noteAssociation(referrers=>$parent_id=>($node->getAttribute('style') || 'normal')); }}
 
