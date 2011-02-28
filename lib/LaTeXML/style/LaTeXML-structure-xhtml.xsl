@@ -231,7 +231,7 @@
 
   <xsl:template match="ltx:indexentry">
     <li class="{f:classes(.)}"><xsl:call-template name="add_id"/>
-    <xsl:apply-templates select="ltx:indexphrase"/><xsl:text> </xsl:text>
+    <xsl:apply-templates select="ltx:indexphrase"/>
     <xsl:apply-templates select="ltx:indexrefs"/>
     <xsl:apply-templates select="ltx:indexlist"/>
     </li>
