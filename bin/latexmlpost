@@ -314,8 +314,7 @@ if(!$prescan){
       if(my $iconsrc = pathname_find($icon,($sourcedir ? (paths=>[$sourcedir]):()))){
 	pathname_copy($iconsrc,$icondest); }}
     push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,
-					 parameters=>{number_sections=>($numbersections ?"true()":"false()"),
-						      (@csspaths ? (CSS=>[@csspaths]):()),
+					 parameters=>{(@csspaths ? (CSS=>[@csspaths]):()),
 						      ($icondest ? (ICON=>$icondest):()),
 						     },
 					 %OPTIONS)); }
