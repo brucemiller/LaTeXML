@@ -232,6 +232,13 @@ sub pushValues {
   foreach my $value (@values){
     push(@$list, encodeValue($value)) if defined $value; }}
 
+sub pushNew {
+  my($self,$attr,@values)=@_;
+  my $list = $$self{$attr};
+  foreach my $value (@values){
+    my $value = encodeValue($value);
+    push(@$list, $value) if (defined $value) && !grep($_ eq $value, @$list)  ; }}
+
 # Note an association with this entry
 # Roughly equivalent to $$entry{key1}{key2}{...}=1,
 # but keeps track of modification timestamps. --- not any more!
