@@ -33,15 +33,15 @@ sub process {
   my($index,$tree);
   if($index = $doc->findnode('//ltx:index')){
     $doc->addDate();
-    my($allkeys,$tree)= $self->build_tree($doc,$index);
+    my($allkeys,$allphrases,$tree)= $self->build_tree($doc,$index);
     if($tree){
       if($$self{split}){
 	map($self->rescan($_),
 	    $self->makeSubCollectionDocuments($doc,$index,
-					      map( ($_=>$self->makeIndexList($doc,$allkeys,$$tree{subtrees}{$_})),
+					      map( ($_=>$self->makeIndexList($doc,$allkeys,$allphrases,$$tree{subtrees}{$_})),
 						   keys %{$$tree{subtrees}}))); }
       else {
-	$doc->addNodes($index,$self->makeIndexList($doc,$allkeys,$tree));
+	$doc->addNodes($index,$self->makeIndexList($doc,$allkeys,$allphrases,$tree));
 	$self->rescan($doc); }}
     else { $doc; }}
   else { $doc; }}
@@ -54,8 +54,10 @@ sub build_tree {
     $self->Progress($doc,"processing ".scalar(@keys)." index entries");
 #    my $id = $doc->getDocumentElement->getAttribute('xml:id');
     my $id = $index->getAttribute('xml:id');
-    my $allkeys={''=>{id=>$id,phrases=>[]}};
-    my $tree = {subtrees=>{},referrers=>{}, id=>$id};
+    # The next 2 support finding see-also cross-references, and otherwise checking for defined-ness of terms.
+    my $allkeys={''=>{id=>$id,phrases=>[]}}; # Keep a hash of all phrase key's =>{data} encountered.
+    my $allphrases={};			     # Keep a hash of all phrase textContent=>key encountered
+    my $tree = {subtrees=>{},referrers=>{}, id=>$id, parent=>undef};
     foreach my $key (@keys){
       my $entry = $$self{db}->lookup($key);
       # my $phrases = $entry->getValue('phrases');
@@ -73,11 +75,11 @@ sub build_tree {
 	next; }
 
       if($$self{permuted}){
-	map( $self->add_entry($doc,$allkeys,$tree,$entry,@{$_}), cyclic_permute(@phrases)); }
+	map( $self->add_entry($doc,$allkeys,$allphrases,$tree,$entry,@{$_}), cyclic_permute(@phrases)); }
       else {
-	$self->add_entry($doc,$allkeys,$tree,$entry,@phrases); }}
-    ($allkeys,$tree); }
-  else { (undef,undef); }}
+	$self->add_entry($doc,$allkeys,$allphrases,$tree,$entry,@phrases); }}
+    ($allkeys,$allphrases,$tree); }
+  else { (undef,undef,undef); }}
 
 # NOTE: We're building ID's for each entry, of the form idx.key.key...
 # I'd like to insert the initial in the case of split index: idx.A.key.key...
@@ -86,7 +88,7 @@ sub build_tree {
 # OTOH, leaving it out risks that a single letter entry, say "A", will have the
 # same id as the A page! (or maybe not if the key is downcased....)
 sub add_entry {
-  my($self,$doc,$allkeys,$tree,$entry,@phrases)=@_;
+  my($self,$doc,$allkeys,$allphrases,$tree,$entry,@phrases)=@_;
   # NOTE: Still need option for splitting!
   # We'll just prefix a level for the initial...
   if($$self{split}){
@@ -94,28 +96,34 @@ sub add_entry {
     my $subtree = $$tree{subtrees}{$init};
     if(!$subtree){
       $subtree = $$tree{subtrees}{$init}
-	= {phrase=>$init,subtrees=>{},referrers=>{}, id=>$$tree{id}}; }
-    add_rec($doc,$allkeys,$subtree,$entry,@phrases); }
+	= {phrase=>$init,subtrees=>{},referrers=>{}, id=>$$tree{id}, parent=>$tree}; }
+    add_rec($doc,$allkeys,$allphrases,$subtree,$entry,@phrases); }
   else {
-    add_rec($doc,$allkeys,$tree,$entry,@phrases); }}
+    add_rec($doc,$allkeys,$allphrases,$tree,$entry,@phrases); }}
 
 sub add_rec {
-  my($doc,$allkeys,$tree,$entry,@phrases)=@_;
+  my($doc,$allkeys,$allphrases,$tree,$entry,@phrases)=@_;
   if(@phrases){
     my $phrase = shift(@phrases);
     my $key = $phrase->getAttribute('key');
-    my $id  = $$tree{id}.'.'.$key;
     my $subtree = $$tree{subtrees}{$key};
     if(!$subtree){		# clone the phrase ??
+      my $id  = $$tree{id}.'.'.$key;
       my $fullkey = ($$tree{key} ? "$$tree{key}.":'').$key;
+      my $phrasetext = $phrase->textContent; $phrasetext =~ s/^\s*//; $phrasetext =~ s/\.\s*$//;
+      $$allphrases{$phrasetext}{$key} = 1;
+      my $fullphrasetext = ($$tree{fullphrasetext} ? $$tree{fullphrasetext}.' ' : '').$phrasetext;
+      $$allphrases{$fullphrasetext}{$fullkey} = 1;
       $subtree = $$tree{subtrees}{$key} = {key=>$fullkey, id=>$id,
 					   phrase=>$phrase->cloneNode(1),
-					   subtrees=>{},referrers=>{}}; 
+					   phrasetext=>$phrasetext,
+					   fullphrasetext=>$fullphrasetext,
+					   subtrees=>{},referrers=>{}, parent=>$tree}; 
       $$allkeys{$fullkey}={id=>$id,
 			   phrases=>[($$tree{key} ? @{$$allkeys{$$tree{key}}{phrases}}:())," ",
 				     $doc->trimChildNodes($phrase->cloneNode(1))]};
       }
-    add_rec($doc,$allkeys,$subtree,$entry,@phrases); }
+    add_rec($doc,$allkeys,$allphrases,$subtree,$entry,@phrases); }
   else {
     if(my $seealso = $entry->getValue('see_also')){
       $$tree{see_also} = $seealso; }
@@ -149,38 +157,64 @@ sub alphacmp {
   (lc($a) cmp lc($b)) || ($a cmp $b); }
 
 sub makeIndexList {
-  my($self,$doc,$allkeys,$tree)=@_;
+  my($self,$doc,$allkeys,$allphrases,$tree)=@_;
   my $subtrees =$$tree{subtrees};
   if(my @keys = sort alphacmp keys %$subtrees){
-    ['ltx:indexlist',{}, map($self->makeIndexEntry($doc,$allkeys,$$subtrees{$_}), @keys)]; }
+    ['ltx:indexlist',{}, map($self->makeIndexEntry($doc,$allkeys,$allphrases,$$subtrees{$_}), @keys)]; }
   else {
     (); }}
 
 sub makeIndexEntry {
-  my($self,$doc,$allkeys,$tree)=@_;
+  my($self,$doc,$allkeys,$allphrases,$tree)=@_;
   my $refs   = $$tree{referrers};
   my $seealso= $$tree{see_also};
   my @links = ();
    # Note sort of keys here is questionable!
   if(keys %$refs){
-    push(@links,conjoin(map($self->makeIndexRefs($doc,$_,sort alphacmp keys %{$$refs{$_}}),
+    push(@links,['ltx:text',{},' '],
+	 conjoin(map($self->makeIndexRefs($doc,$_,sort alphacmp keys %{$$refs{$_}}),
 				 sort alphacmp keys %$refs))); }
   if($seealso){
-    my @missing = sort grep(!$$allkeys{$_},map($_->getAttribute('key'),@$seealso));
-    $self->Warn($doc,"Missing index see-also terms (under $$tree{key}) : ".join(', ',@missing)) if @missing;
+    my %saw=();
     foreach my $see (@$seealso){
       push(@links, ', ');# if @links;
       if(my $name = $see->getAttribute('name')){
-	push(@links, ['ltx:text',{font=>'italic'},$name],' '); }
-      if(my $entry = $$allkeys{$see->getAttribute('key')}){
-	push(@links,['ltx:ref',{idref=>$$entry{id}},$see->childNodes]); }
+	push(@links, ['ltx:text',{font=>'italic'},$name,' ']); }
+      # There seem to be different usage idioms for where a seealso should actually point,
+      # within a multi-level index.  We'll try to go up level by level till we hit "global"
+      # until we find an actual entry.
+      my $key = $see->getAttribute('key');
+      my $phr = $see->textContent; $phr =~ s/^\s*//; $phr =~ s/\.\s*$//;
+      my $t = $tree;
+      my $entry;
+      # See also terms can't use the sort_as@present_as formula, tho they sometimes need to.
+      # If we didn't find the see-as term, look to see if the text matches some other entry we've seen.
+      while($t && !$entry){
+	my $pre = $$t{key} ? $$t{key}."." : '';
+	foreach my $k ($key,keys %{$$allphrases{$phr}}){
+	  last if $entry = $$allkeys{ $pre.$k}; }
+	$t = $$t{parent}; }
+      if(!$entry && ($phr =~ s/(\w+)s\b/$1/g)){ # Try again after stripping "plurals" (!!!!)
+	$t=$tree;
+	while($t && !$entry){
+	  my $pre = $$t{key} ? $$t{key}."." : '';
+	  foreach my $k ($key,keys %{$$allphrases{$phr}}){
+	    last if $entry = $$allkeys{ $pre.$k}; }
+	  $t = $$t{parent}; }}
+      if($entry){
+	push(@links,['ltx:ref',{idref=>$$entry{id}},$see->childNodes]) unless $saw{$$entry{id}};
+	$saw{$$entry{id}} = 1; }
       else {
+	$self->Warn($doc,"Missing index see-also term $key (under $$tree{key})"
+		    ." Possible aliases for $phr: ".join(', ',sort keys %{$$allphrases{$phr}})
+)
+	  unless $doc->findnodes("descendant-or-self::ltx:ref",$see);
 	push(@links,['ltx:text',{}, $see->childNodes]); }}}
 
   ['ltx:indexentry',{'xml:id'=>$$tree{id}},
    ['ltx:indexphrase',{},$doc->trimChildNodes($$tree{phrase})],
    (@links ? (['ltx:indexrefs',{},@links]):()),
-   $self->makeIndexList($doc,$allkeys,$tree)]; }
+   $self->makeIndexList($doc,$allkeys,$allphrases,$tree)]; }
 
 # Given that sorted styles gives bold, italic, normal,
 # let's just do the first.
