@@ -55,6 +55,7 @@ our $normaltoctypes = {map( ($_=>1), qw(ltx:document ltx:part ltx:chapter ltx:se
 
 sub fill_in_tocs {
   my($self,$doc)=@_;
+  $self->ProgressDetailed($doc,"Filling in TOCs");
   foreach my $toc ($doc->findnodes('descendant::ltx:TOC[not(ltx:toclist)]')){
     my $selector = $toc->getAttribute('select');
     my $types = ($selector
@@ -124,6 +125,7 @@ sub gentoc_context {
 
 sub fill_in_frags {
   my($self,$doc)=@_;
+  $self->ProgressDetailed($doc,"Filling in fragment ids");
   my $db = $$self{db};
   # Any nodes with an ID will get a fragid;
   # This is the id/name that will be used within xhtml/html.
@@ -408,6 +410,7 @@ sub generateTitle {
 sub fillInTitle {
   my($self,$doc,$title)=@_;
   return unless $title;
+  $doc->getDocument->adoptNode($title);
   # Fill in any nested ref's!
   foreach my $ref ($doc->findnodes('descendant::ltx:ref[@idref or @labelref]',$title)){
     next if $ref->textContent;

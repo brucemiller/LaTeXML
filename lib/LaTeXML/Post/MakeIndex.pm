@@ -126,6 +126,7 @@ sub add_rec {
     add_rec($doc,$allkeys,$allphrases,$subtree,$entry,@phrases); }
   else {
     if(my $seealso = $entry->getValue('see_also')){
+      map($doc->getDocument->adoptNode($_), @$seealso) if $seealso;
       $$tree{see_also} = $seealso; }
     if(my $refs = $entry->getValue('referrers')){
       map($$tree{referrers}{$_}=$$refs{$_}, keys %$refs); }}}
