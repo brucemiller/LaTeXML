@@ -56,7 +56,9 @@ our $normaltoctypes = {map( ($_=>1), qw(ltx:document ltx:part ltx:chapter ltx:se
 sub fill_in_tocs {
   my($self,$doc)=@_;
   $self->ProgressDetailed($doc,"Filling in TOCs");
+  my $n=0;
   foreach my $toc ($doc->findnodes('descendant::ltx:TOC[not(ltx:toclist)]')){
+    $n++;
     my $selector = $toc->getAttribute('select');
     my $types = ($selector
 		 ? {map(($_=>1),split(/\s*\|\s*/,$selector))}
@@ -71,7 +73,7 @@ sub fill_in_tocs {
     elsif($format eq 'context'){
       @list = $self->gentoc_context($id,$types); }
     $doc->addNodes($toc,['ltx:toclist',{},@list]) if @list; }
-}
+  $self->ProgressDetailed($doc,"Filled in $n TOCs"); }
 
 # generate TOC for $id & its children,
 # providing that those objects are of appropriate type.
@@ -126,19 +128,23 @@ sub gentoc_context {
 sub fill_in_frags {
   my($self,$doc)=@_;
   $self->ProgressDetailed($doc,"Filling in fragment ids");
+  my $n=0;
   my $db = $$self{db};
   # Any nodes with an ID will get a fragid;
   # This is the id/name that will be used within xhtml/html.
   foreach my $node ($doc->findnodes('//@xml:id')){
     if(my $entry = $db->lookup("ID:".$node->value)){
       if(my $fragid = $entry->getValue('fragid')){
-	$node->parentNode->setAttribute(fragid=>$fragid); }}}}
+	$n++;
+	$node->parentNode->setAttribute(fragid=>$fragid); }}}
+  $self->ProgressDetailed($doc,"Filled in fragment $n ids"); }
 
 # Fill in content text for any <... @idref..>'s or @labelref
 sub fill_in_refs {
   my($self,$doc)=@_;
   my $db = $$self{db};
   $self->ProgressDetailed($doc,"Filling in refs");
+  my $n=0;
   foreach my $ref ($doc->findnodes('descendant::*[@idref or @labelref]')){
     my $tag = $doc->getQName($ref);
     next if $tag eq 'ltx:XMRef'; # Blech; list those TO fill-in, or list those to exclude?
@@ -159,6 +165,7 @@ sub fill_in_refs {
 	    $ref->setAttribute(broken=>1); }
 	}}}
     if($id){
+      $n++;
       if(!$ref->getAttribute('href')){
 	if(my $url = $self->generateURL($doc,$id)){
 	  $ref->setAttribute(href=>$url); }}
@@ -169,7 +176,8 @@ sub fill_in_refs {
 	$doc->addNodes($ref,$self->generateRef($doc,$id,$show)); }
       if(my $entry = $$self{db}->lookup("ID:$id")){
 	$ref->setAttribute(stub=>1) if $entry->getValue('stub'); }
-    }}}
+    }}
+  $self->ProgressDetailed($doc,"Filled in $n refs"); }
 
 
 # Needs to evolve into the combined stuff that we had in DLMF.
@@ -177,8 +185,11 @@ sub fill_in_refs {
 sub fill_in_bibrefs {
   my($self,$doc)=@_;
   $self->ProgressDetailed($doc,"Filling in bibrefs");
+  my $n=0;
   foreach my $bibref ($doc->findnodes('descendant::ltx:bibref')){
-    $doc->replaceNode($bibref,$self->make_bibcite($doc,$bibref)); }}
+    $n++;
+    $doc->replaceNode($bibref,$self->make_bibcite($doc,$bibref)); }
+  $self->ProgressDetailed($doc,"Filled in $n bibrefs"); }
 
 # Given a list of bibkeys, construct links to them.
 # Mostly tuned to author-year style.
