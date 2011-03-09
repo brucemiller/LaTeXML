@@ -20,35 +20,71 @@ use LaTeXML::Global;
 #                  With TeX Registers/Parameters, the name begins with "\"
 #    internal:<name> : Some internally interesting state.
 
-# The main task of State is to efficiently maintain the bindings in a TeX-like fashion.
-# There are two structures for this:
-# table maintains the bound values.
-# It is a nested hash such that
-#    $$self{table}{subtable}{key} => array
-# where the 0th element of the array is the current binding.
-# other elements are bindings that have been superceded.
-# There are subtables for catcode, value, stash,...
-#
-# Additionally, undo effectively records stack frames;
-# It is an array of nested hashes recording which bindings need to be undone
-# to pop the current stack frame, such that any defined entries
-#   $$self{undo}[0]{subtable}{key}
-# indicate that the given binding should be popped from table.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# The State efficiently maintain the bindings in a TeX-like fashion.
+# bindings associate data with keys (eg definitions with macro names)
+# and respect TeX grouping; that is, an assignment is only in effect
+# until the current group (opened by \bgroup) is closed (by \egroup).
+#----------------------------------------------------------------------
+# The objective is to make the following, most-common, operations FAST:
+#   begin & end a group (ie. push/pop a stack frame)
+#   lookup & assignment of values
+# With the more obvious approach, a "stack of frames", either lookup would involve
+# checking a sequence of frames until the current value is found;
+# or, starting a new frame would involve copying bindings for all values
+# I never quite studied how Knuth does it;
+# The following structures allow these to be constant operations (usually),
+# except for endgroup (which is linear in # of changed values in that frame).
 
-# $scope controls how the value is stored. It should be one of
-#    global : global assignment
-#    local  : in current stack frame
-#    undef  : global if preceded by \global, else local
-#    <other>: For any other named `stash', it will be stored in the stash list.
-#             If that stash is currently active, the value will also be stored in current frame.
+# There are 2 main structures used here.
+# For each $subtable (being "value", "meaning" or other space of names),
+# "table" maintains the bound values, and "undo" defines the stack frames:
+#    $$self{table}{$subtable}{$key} = [$current_value, $previous_value, ...]
+#    $$self{undo}[$frame]{$subtable}{$key} = (undef | $n)
+# such that the "current value" associated with $key is the 0th element of the table array;
+# the $previous_value's (if any) are values that had been assigned within previous groups.
+# The undo list indicates how many values have been assigned for $key in
+# the $frame'th frame (usually 0 is the one of interest).
+# [Would be simpler to store boolean in undo, but see deactivateScope]
+# [All keys fo $$self{undo}[$frame} are subtable names, EXCEPT "_FRAME_LOCK_"!!]
+#
+# So, in handwaving form, the algorithms are as follows:
+# push-frame == bgroup == begingroup:
+#    push an empty hash {} onto the undo stack;
+# pop-frame == egroup == endgroup:
+#   for the $n associated with every key in the topmost hash in the undo stack
+#     pop $n values from the table
+#   then remove the hash from the undo stack.
+# Lookup value:
+#   we simply fetch the 0th element from the table
+# Assign a value:
+#   local scope (the normal way):
+#     we push a new value into the table described above,
+#     and also increment the associated value in the undo stack
+#   global scope:
+#     remove any locally scoped values, and undo entries for the key
+#     then set the 0th (only remaining) value to the given one.
+#   named-scope $scope:
+#      push an entry [$subtable,$key,$value] globally to the 'stash' subtable's value.
+#      And assign locally, if the $scope is active (has non-zero value in stash_active subtable),
+#
+# There are subtables for 
+#  catcode: keys are char;
+#         Also, "math:$char" =1 when $char is active in math.
+#  value: keys are anything (typically a string, though) and value is the value associated with it
+#         some special cases? "Boolean:$cs",...
+#  meaning: The definition assocated with $key, usually a control-sequence.
+#  stash & stash_active: support named scopes
+#      (see also activateScope & deactivateScope)
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # options: 
 #     catcodes => (standard|style|none)
 #     stomach  => a Stomach object.
-#     model    => a Model object.
+#     model    => a Mod el object.
 sub new {
   my($class, %options)=@_;
-  my $self = bless {table=>{}, undo=>[{}], prefixes=>{}, status=>{},
+  my $self = bless {table=>{}, undo=>[{_FRAME_LOCK_=>1}], prefixes=>{}, status=>{},
 		    stomach=>$options{stomach}, model=>$options{model}}, $class; 
   $$self{table}{value}{VERBOSITY}=[0];
   if($options{catcodes} =~ /^(standard|style)/){
@@ -71,11 +107,25 @@ sub assign_internal {
   my $table = $$self{table};
   $scope = ($$self{prefixes}{global} ? 'global' : 'local') unless defined $scope;
   if($scope eq 'global'){
-    foreach my $undo (@{$$self{undo}}){ # remove ALL bindings of $key in $subtable's
-      delete $$undo{$subtable}{$key}; }
-    $$table{$subtable}{$key} = [$value]; } # And place single value in table.
+## This was was sufficient before having lockable frames
+##    foreach my $undo (@{$$self{undo}}){ # remove ALL bindings of $key in $subtable's
+##      delete $$undo{$subtable}{$key}; }
+##    $$table{$subtable}{$key} = [$value]; } # And place SINGLE value in table.
+    # Remove bindings made in all frames down-to & including the next lower locked frame
+###    foreach my $undo (@{$$self{undo}}){ # remove ALL bindings of $key in $subtable's
+    my $frame;
+    my @frames = @{$$self{undo}};
+    while(@frames){
+      $frame = shift(@frames);
+      if(my $n = $$frame{$subtable}{$key}){ # Undo the bindings, if $key was bound in this frame
+	map( shift(@{$$table{$subtable}{$key}}), 1..$n) if $n;
+	delete $$frame{$subtable}{$key}; }
+      last if $$frame{_FRAME_LOCK_}; }
+    # whatever is left -- if anything -- should be bindings below the locked frame.
+    $$frame{$subtable}{$key}++; # Note that this many values -- ie. one more -- must be undone
+    unshift(@{$$table{$subtable}{$key}},$value); }
   elsif($scope eq 'local'){
-    $$self{undo}[0]{$subtable}{$key}++; # Note that this value must be undone
+    $$self{undo}[0]{$subtable}{$key}++; # Note that this many values -- ie. one more -- must be undone
     unshift(@{$$table{$subtable}{$key}},$value); } # And push new binding.
   else {
     # print STDERR "Assigning $key in stash $stash\n";
@@ -198,12 +248,55 @@ sub pushFrame {
 sub popFrame {
   my($self)=@_;
   my $table = $$self{table};
-  my $undo = shift(@{$$self{undo}});
-  foreach my $subtable (keys %$undo){
-    my $undosubtable = $$undo{$subtable};
-    foreach my $name (keys %$undosubtable){
-      map( shift(@{$$table{$subtable}{$name}}), 1..$$undosubtable{$name}); }}
+  if($$self{undo}[0]{_FRAME_LOCK_}){
+    Fatal(":unexpected Attempt to pop last locked stack frame"); }
+  else {
+    my $undo = shift(@{$$self{undo}});
+    foreach my $subtable (keys %$undo){
+      my $undosubtable = $$undo{$subtable};
+      foreach my $name (keys %$undosubtable){
+	map( shift(@{$$table{$subtable}{$name}}), 1..$$undosubtable{$name}); }}}
 }
+
+#======================================================================
+
+sub pushDaemonFrame {
+  my($self)=@_;
+  unshift(@{$$self{undo}},{});
+  # Push copys of data for any data that is mutable;
+  # Only the value & stash subtables need to be to be checked.
+  foreach my $subtable (qw(value stash)){
+    if(my $hash=$$self{table}{$subtable}){
+      foreach my $key (keys %$hash){
+	my $value = $$hash{$key}[0];
+	my $type = ref $value;
+	if(($type eq 'HASH') || ($type eq 'ARRAY')){ # Only concerned with mutable perl data?
+	  # Local assignment
+	  $$self{undo}[0]{$subtable}{$key}++; # Note that this many values -- ie. one more -- must be undone
+	  unshift(@{$$hash{$key}},daemon_copy($value)); }}}} # And push new binding.
+  # Now mark the top frame as LOCKED!!!
+  $$self{undo}[0]{_FRAME_LOCK_} = 1; }
+
+sub daemon_copy {
+  my($ob)=@_;
+  if(ref $ob eq 'HASH'){
+###    { map( ($_ => daemon_copy($$ob{$_})), keys %$ob) }; }
+    my %hash = map( ($_ => daemon_copy($$ob{$_})), keys %$ob);
+    \%hash; }
+  elsif(ref $ob eq 'ARRAY'){
+    [ map( daemon_copy($_), @$ob) ]; }
+  else {
+    $ob; }}
+
+sub popDaemonFrame {
+  my($self)=@_;
+  while(! $$self{undo}[0]{_FRAME_LOCK_}){
+    $self->popFrame; }
+  if(scalar( @{$$self{undo}} > 1)){
+    delete $$self{undo}[0]{_FRAME_LOCK_};
+    $self->popFrame; }
+  else {
+    Fatal(":unexpected Daemon Attempt to pop last stack frame"); }}
 
 #======================================================================
 # Set one of the definition prefixes global, etc (only global matters!)
@@ -218,12 +311,16 @@ sub activateScope {
   if(! $$table{stash_active}{$scope}[0]){
     assign_internal($self,'stash_active',$scope, 1, 'local');
     if(defined (my $defns = $$table{stash}{$scope}[0])){
+      # Now make local assignments for all those in the stash.
       my $frame = $$self{undo}[0];
       foreach my $entry (@$defns){
 	my($subtable,$key,$value)=@$entry;
-	$$frame{$subtable}{$key}++; # Note that this value must be undone
+	$$frame{$subtable}{$key}++; # Note that this many values must be undone
 	unshift(@{$$table{$subtable}{$key}},$value); }}}} # And push new binding.
 
+# Probably, in most cases, the assignments made by activateScope
+# will be undone by egroup or popping frames.
+# But they can also be undone explicitly
 sub deactivateScope {
   my($self,$scope)=@_;
   my $table = $$self{table};
