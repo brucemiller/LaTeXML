@@ -50,10 +50,10 @@ sub relocateInstitute {
 
 DefMacro('\emailname','E-mail');
 DefConstructor('\@@@email{}',"^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
-	       properties=>{(name=>Digest(T_CS('\emailname')));});
+	       properties=>{(name=>Digest(T_CS('\emailname')))});
 DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 DefMacro('\mailname','\textit{Correspondence}');
-DefConstructor('\@@@mail{}',"^ <ltx:contact role='address' name="#name'>#1</ltx:contact>",
+DefConstructor('\@@@mail{}',"^ <ltx:contact role='address' name='#name'>#1</ltx:contact>",
 	       properties=>{(name=>Digest(T_CS('\mailname')));});
 DefMacro('\mail{}', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
 
@@ -85,7 +85,7 @@ DefMacro('\makereferee',Tokens());
 
 DefMacro('\ackname','Acknowledgements');
 DefConstructor('\acknowledgements',"<ltx:acknowledgements name='#name'>",
-	       properties=>{(name=>Digest(T_CS('\ackname')));});
+	       properties=>{(name=>Digest(T_CS('\ackname')))});
 DefMacro('\acknowledgement', '\acknowledgements');
 DefConstructor('\endacknowledgements',"</ltx:acknowledgements>");
 DefConstructor('\endacknowledgement', "</ltx:acknowledgements>");
@@ -93,8 +93,8 @@ Tag("ltx:acknowledgements", autoClose=>1);
 
 DefMacro('\noteaddname','Note added in proof');
 DefMacro('\notename','Note');
-DefEnvironment('{noteadd}','<ltx:note name='#name'>#body</ltx:note>',
-	       properties=>{(name=>Digest(T_CS('\noteaddname')));});
+DefEnvironment('{noteadd}',"<ltx:note name='#name'>#body</ltx:note>",
+	       properties=>{(name=>Digest(T_CS('\noteaddname')))});
 
 Let(T_CS('\orithanks'),T_CS('\thanks'));
 DefMacro('\runheadhook',Tokens());
