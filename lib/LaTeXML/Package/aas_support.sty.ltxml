@@ -172,10 +172,13 @@ DefMacro('\appendix','\@appendix');
 DefPrimitive('\@appendix',sub{
   NewCounter('section', 'document', idprefix=>'A',nested=>['subsection']);
   NewCounter('equation', 'section', idprefix=>'E');
-  DefMacro('\thesection', '\Alph{section}');
+  DefMacro('\thesection', '\Alph{section}', scope=>'global');
   DefMacro('\theequation','\thesection\arabic{equation}');
+  DefMacroI('\theappendix',undef,'\thesection');
   Let(T_CS('\section'),T_CS('\appendix@section'),'global');
   Let(T_CS('\@appendix'),T_CS('\relax'),'global');
+  if(LookupDefinition(T_CS('\appendixname'))){
+    Let(T_CS('\sectionname'),T_CS('\appendixname')); }
  });
 
 #======================================================================
