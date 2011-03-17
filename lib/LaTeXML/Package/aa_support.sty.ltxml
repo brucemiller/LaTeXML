@@ -104,7 +104,8 @@ DefMacro('\titrun','');
 
 # undocumented ?
 DefMacro('\offprints{}','\@add@frontmatter{ltx:note}[role=offprints]{#1}');
-DefMacro('\email Semiverbatim','e-mail: #1');
+DefConstructor('\@@@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 
 DefMacro('\journalname{}','');
 DefMacro('\rnotename','(Research Note)');
