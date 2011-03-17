@@ -1,3 +1,49 @@
+0.7.x 2011-03-16
+     - Bindings for floatfig, floatflt, JHEP,JHEP2,JHEP3
+     - improved model, attributes and conversion for floating objects
+     - Have \caption increment the appropriate counter, rather than figure, table, etc
+       This avoids many problems with subfigures, and so forth.
+
+0.7.x 2011-02-28
+     - Bindings for llncs.cls, rsfs.sty, multicol.sty, enumerate.sty, xspace.sty,
+       caption.sty, subfigure.sty, upgreek.sty
+     - Initial support for AmSTeX (AmSTeX.pool)
+     - Schema changes: new ltx:inline-para, fixed ltx:classification, positionable ltx:p,
+       ltx:bib-data holds original bibentry
+     - improved parallel markup
+     - support for Unicode Plane 1 as alternative to mathvariant
+     - various improved code, implenting \fracwithdelims, \DeclareMathAlphabet,
+       \obeylines, \hypersetup, \centering, \raggedright, \raggedleft, \let,
+       \rotatebox, \reflectbox, \scalebox, \qopname, \Sb, \Sp, \afterassignment,
+       \sidecaption, \@vec, \minCDarrowwidth, \beginsection, \proclaim,
+       \AtBeginDocument, \AtEndDocument,
+       numbering, 
+       rules within tables
+     - new Box() function
+     - \iflatexml in latexml.sty
+       namespaced attributes
+     - improved table header heuristics
+     - better handling, and distinguishing broup, begingroup
+     - better ID handling; many elements get ID's, equations always do.
+     - better MathML conversion, even when parsing fails.
+     - support for --icon provides a favicon
+     - more test cases (but not enough)
+     - More careful distinction between ToString vs Stringify vs UnTeX
+       Stringify is for debugging, ToString should return string form, NOT neccesarily for getting TeX
+       many changes to definitions and usage of these.
+     - Many constructors converted to Primitives to support turning accents or Unicode conversions
+       directly to boxes, not requiring constructors; this allows them to be unambiguosly converted
+       to Strings (using ToString) and thus can be put in attributes.
+     - avoid introducing doubled slashes in pathnames, so that (eventually) might
+       use the TeX standard interpretation that treats them as recursive wildcard.
+       (that is, expandable directories)
+     - Localization; remove assumed names & symbols from formatting titles, sections, etc.
+       Let style files determine prefixes or formatting of reference numbers.
+       Put these within the ltx:title (eg.) and wrapped in ltx:tag.
+     - more flexible TOC creation, support for list-of-figures and similar.
+     - Fuller support for seealso, heuristics to try to connect the terms to actual entries.
+     - Safer encode/decode of objects being stored in the ObjectDB.
+
 0.7.x 2009-06-19 (ref 983)
      - fixed typos in aa_support & sv
      - added wrapfig.sty, llncs.cls, rsfs.sty, multicol.sty, enumerate.sty,
