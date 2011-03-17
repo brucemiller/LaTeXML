@@ -21,6 +21,7 @@
       <ref name="proof"/>
       <ref name="figure"/>
       <ref name="table"/>
+      <ref name="float"/>
       <ref name="listing"/>
     </choice>
   </define>
@@ -129,9 +130,10 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <a:documentation>Attributes for \elementref{figure}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+    <ref name="Positionable.attributes"/>
     <optional>
       <attribute name="placement">
-        <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
+        <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -139,6 +141,7 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <a:documentation>Content model for \elementref{figure}.</a:documentation>
     <zeroOrMore>
       <choice>
+        <ref name="figure"/>
         <ref name="Block.model"/>
         <ref name="Caption.class"/>
       </choice>
@@ -156,9 +159,10 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <a:documentation>Attributes for \elementref{table}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+    <ref name="Positionable.attributes"/>
     <optional>
       <attribute name="placement">
-        <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
+        <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -166,6 +170,36 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <a:documentation>Content model for \elementref{table}.</a:documentation>
     <zeroOrMore>
       <choice>
+        <ref name="table"/>
+        <ref name="Block.model"/>
+        <ref name="Caption.class"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="float">
+    <element name="float">
+      <a:documentation>A generic float, possibly captioned, something other than a table, figure or listing</a:documentation>
+      <ref name="float_attributes"/>
+      <ref name="float_model"/>
+    </element>
+  </define>
+  <define name="float_attributes">
+    <a:documentation>Attributes for \elementref{float}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Labelled.attributes"/>
+    <ref name="Positionable.attributes"/>
+    <optional>
+      <attribute name="placement">
+        <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="float_model">
+    <a:documentation>Content model for \elementref{float}.</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="float"/>
         <ref name="Block.model"/>
         <ref name="Caption.class"/>
       </choice>
@@ -183,6 +217,7 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <a:documentation>Attributes for \elementref{listing}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+    <ref name="Positionable.attributes"/>
     <optional>
       <attribute name="placement">
         <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>

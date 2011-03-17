@@ -16,7 +16,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 Para.class |=
      para
    | theorem | proof
-   | figure | table | listing
+   | figure | table | float | listing
 
 ## Additionally, it defines these miscellaneous elements that can appear
 ## in both inline and block contexts.
@@ -92,12 +92,13 @@ element figure { figure_attributes, figure_model }
 figure_attributes = 
   Common.attributes,
   Labelled.attributes,
+  Positionable.attributes,
 
-  ## the floating placement parameter that determines where the object is displayed.
+  ## the vertical floating placement parameter that determines where the object is displayed.
   attribute placement { text }?
 
 ## Content model for \elementref{figure}.
-figure_model = (Block.model | Caption.class)*
+figure_model = (figure | Block.model | Caption.class)*
 
 #======================================================================
 
@@ -109,12 +110,31 @@ element table { table_attributes, table_model }
 table_attributes = 
   Common.attributes,
   Labelled.attributes,
+  Positionable.attributes,
 
-  ## the floating placement parameter that determines where the object is displayed.
+  ## the vertical floating placement parameter that determines where the object is displayed.
   attribute placement { text }?
 
 ## Content model for \elementref{table}.
-table_model = (Block.model | Caption.class)*
+table_model = (table | Block.model | Caption.class)*
+
+#======================================================================
+
+float =
+## A generic float, possibly captioned, something other than a table, figure or listing
+element float { float_attributes, float_model }
+
+## Attributes for \elementref{float}.
+float_attributes = 
+  Common.attributes,
+  Labelled.attributes,
+  Positionable.attributes,
+
+  ## the vertical floating placement parameter that determines where the object is displayed.
+  attribute placement { text }?
+
+## Content model for \elementref{float}.
+float_model = (float | Block.model | Caption.class)*
 
 #======================================================================
 
@@ -126,6 +146,7 @@ element listing { listing_attributes, listing_model }
 listing_attributes = 
   Common.attributes,
   Labelled.attributes,
+  Positionable.attributes,
 
   ## the floating placement parameter that determines where the object is displayed.
   attribute placement { text }?
