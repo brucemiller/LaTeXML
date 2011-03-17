@@ -48,8 +48,31 @@
      Figures & Tables
      ====================================================================== -->
 
+<!--
 <xsl:template match="ltx:figure | ltx:table | ltx:listing" xml:space="preserve">
   <div class='{f:classes(.)}'><xsl:call-template name="add_id"/><xsl:apply-templates/></div>
+</xsl:template>
+-->
+
+<xsl:template match="ltx:figure | ltx:table | ltx:float | ltx:listing">
+  <div class='{f:classes(.)}'  style="{f:positioning(.)}">
+    <xsl:call-template name="add_id"/>
+    <xsl:choose>
+      <xsl:when test="count(ltx:figure | ltx:table | ltx:float | ltx:listing | ltx:graphics) > 1">
+	<table style="width:100%;">
+	  <tr>
+	    <xsl:for-each select="ltx:figure | ltx:table | ltx:float | ltx:listing | ltx:graphics">
+	      <td><xsl:apply-templates select="."/></td>
+	    </xsl:for-each>
+	  </tr>
+	</table>
+	<xsl:apply-templates select="ltx:caption"/>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:apply-templates/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </div>
 </xsl:template>
 
 <xsl:template match="ltx:listing/ltx:tabular" xml:space="preserve">
