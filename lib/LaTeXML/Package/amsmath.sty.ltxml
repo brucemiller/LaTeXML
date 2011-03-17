@@ -80,7 +80,7 @@ DefMacro('\@ams@intertext{}',
 #	 '\@alignment@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@alignment@newline');
 	 '\@ams@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@ams@newline');
 DefConstructor('\@@ams@intertext{}',
-	       "<ltx:block class='intertext'>#1</ltx:block>", mode=>'text',properties=>{isIntertext=>1});
+	       "<ltx:p class='intertext'>#1</ltx:p>", mode=>'text',properties=>{isIntertext=>1});
 
 DefMacroI('\@ams@newline', undef, sub {
   my($gullet)=@_;
@@ -169,7 +169,7 @@ DefEnvironment('{split}',
 		 DefConstructor("\\\\","<ltx:XMHint name='newline'/>",
 				reversion=>Tokens(T_CS("\\\\"),T_CR)); 
 		 DefConstructor('\intertext{}',
-				"<ltx:block class='intertext'>#1</ltx:block>", mode=>'text'); });
+				"<ltx:p class='intertext'>#1</ltx:p>", mode=>'text'); });
 
 #======================================================================
 # Section 3.5 Equation groups without alignment
@@ -200,7 +200,7 @@ sub processAMSGatherRows {
     my @cell1cont = $document->getChildElements($cells[0]);
     # Check if this equation is really an intertext
     if((scalar(@cells)==1) && (scalar(@cell1cont)==1)
-       && ($document->getNodeQName($cell1cont[0]) eq 'ltx:block')){
+       && ($document->getNodeQName($cell1cont[0]) eq 'ltx:p')){
       $equation->replaceNode($cell1cont[0]); } # Replace equation with the block.
     elsif((scalar(@cells)==1) && (scalar(@cell1cont)==0)){ # Empty row? Remove it!
       $equationgroup->removeChild($equation); }
@@ -257,7 +257,7 @@ sub processAMSAlignRows {
     my @cell1cont = $document->getChildElements($cells[0]);
     # Check if this equation is really an intertext
     if((scalar(@cells)==1) && (scalar(@cell1cont)==1)
-       && ($document->getNodeQName($cell1cont[0]) eq 'ltx:block')){
+       && ($document->getNodeQName($cell1cont[0]) eq 'ltx:p')){
       $equation->replaceNode($cell1cont[0]); } # Replace equation with the block.
     elsif((scalar(@cells)==1) && (scalar(@cell1cont)==0)){ # Empty row? Remove it!
       $equationgroup->removeChild($equation); }
