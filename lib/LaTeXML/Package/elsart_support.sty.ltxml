@@ -222,11 +222,10 @@ DefMacro('\thealgorithm','\arabic{algorithm}');
 DefMacro('\algorithmname','Algorithm');
 
 DefEnvironment('{algorithm}',
-	       "<ltx:figure xml:id='#id' refnum='#refnum' frefnum='#frefnum'>"
+	       "<ltx:float  class='algorithm'>"
 	       . "#body"
-	       ."</ltx:figure>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'algorithm'); },
-	       properties=> sub { RefStepCounter('algorithm'); });
+	       ."</ltx:float>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'algorithm'); });
 
 RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}');
 
