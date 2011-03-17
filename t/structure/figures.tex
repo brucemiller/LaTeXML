@@ -1,0 +1,54 @@
+\documentclass{article}
+\usepackage{subfigure}
+\begin{document}
+\paragraph{Figures}
+Two figures, \ref{fig:A-one} and \ref{fig:A-two}.
+
+\begin{figure}[ht]
+\begin{center}
+ [Graphic One]\\
+\caption{This is a figure\label{fig:A-one}}
+\end{center}
+\end{figure}
+
+\begin{figure}[ht]
+\begin{center}
+[Graphic Two]\\
+\caption{This is another figure\label{fig:A-two}}
+\end{center}
+\end{figure}
+
+\paragraph{Sub-Figures with captions}
+Two figures, \ref{fig:B-one} and \ref{fig:B-two}.
+
+\begin{figure}[ht]
+\begin{center}
+\subfigure[This is a figure\label{fig:B-one}]{[Graphic One]}
+\subfigure[This is another figure\label{fig:B-two}]{[Graphic Two]}\\
+\end{center}
+\end{figure}
+
+\paragraph{Sub-Figures, collective caption}
+Two figures, \ref{fig:C}
+
+\begin{figure}[ht]
+\begin{center}
+\subfigure{[Graphic One]}
+\subfigure{[Graphic Two]}\\
+\end{center}
+\caption{Collectively two figures\label{fig:C}}
+\end{figure}
+
+\paragraph{Sub-Figures with all captions}
+Two figures, \ref{fig:D-one} and \ref{fig:D-two},
+and collectively as \ref{fig:D}.
+
+\begin{figure}[ht]
+\begin{center}
+\subfigure[This is a figure\label{fig:D-one}]{[Graphic One]}
+\subfigure[This is another figure\label{fig:D-two}]{[Graphic Two]}\\
+\caption{Collectively two figures\label{fig:D}}
+\end{center}
+\end{figure}
+
+\end{document}
