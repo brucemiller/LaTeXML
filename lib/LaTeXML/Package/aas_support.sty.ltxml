@@ -138,17 +138,15 @@ NewCounter('plate');
 DefMacroI('\platename',undef,'Plate');
 
 DefEnvironment('{plate}[]',
-	       "<ltx:figure xml:id='#id' refnum='#refnum' ?#1(placement='#1') class='plate'>"
+	       "<ltx:float ?#1(placement='#1') class='plate'>"
 	       . "#body"
-	       ."</ltx:figure>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'plage'); },
-	       properties=> sub { RefStepCounter('plate');  });
+	       ."</ltx:float>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'plate'); });
 DefEnvironment('{plate*}[]',
-	       "<ltx:figure xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1') class='plate'>"
+	       "<ltx:float ?#1(placement='#1') class='plate'>"
 	       . "#body"
-	       ."</ltx:figure>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'plage'); },
-	       properties=> sub { RefStepCounter('plate');  });
+	       ."</ltx:float>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'plate'); });
 
 #======================================================================
 # 2.9 Acknowledgements
