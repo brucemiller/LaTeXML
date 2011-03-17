@@ -169,6 +169,10 @@ sub recordID {
   $$self{idstore}{$id}=$object; 
   $id; }
 
+sub unRecordID {
+  my($self,$id)=@_;
+  delete $$self{idstore}{$id}; }
+
 # Get a new, related, but unique id
 sub modifyID {
   my($self,$id)=@_;
