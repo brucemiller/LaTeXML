@@ -87,7 +87,8 @@
   <xsl:param name="node"/>
   <func:result>
     <xsl:value-of
-	select="concat(f:if($node/@width,     concat('width:',$node/@width,'; '),''),
+	select="concat(f:if($node/@float,     concat('float:',$node/@float,'; '),''),
+		       f:if($node/@width,     concat('width:',$node/@width,'; '),''),
 		       f:if($node/@height,    concat('height:',$node/@height,'; '),''),
 		       f:if($node/@pad-width, concat('height:',$node/@pad-width,'; '),''),
 		       f:if($node/@pad-height,concat('height:',$node/@pad-height,'; '),''),
