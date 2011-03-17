@@ -133,7 +133,7 @@
   <xsl:template name="equationgroup-unaligned" xml:space="preserve">
     <div class='{f:classes(.)}'><xsl:call-template name="add_id"/>
     <xsl:if test="@refnum and $eqnopos='left'"><xsl:apply-templates select="@refnum"/></xsl:if>
-    <xsl:apply-templates select="ltx:equationgroup | ltx:equation | ltx:block"/>
+    <xsl:apply-templates select="ltx:equationgroup | ltx:equation | ltx:p"/>
     <xsl:if test="@refnum and $eqnopos='right'"><xsl:apply-templates select="@refnum"/></xsl:if>
     <xsl:apply-templates select="ltx:constraint[not(@hidden='true')]"/>
     </div>
@@ -294,7 +294,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
   -->
 
   <!-- for intertext type entries -->
-  <xsl:template match="ltx:block" mode="aligned" xml:space="preserve">
+  <xsl:template match="ltx:p" mode="aligned" xml:space="preserve">
     <xsl:param name="ncolumns"/>
     <tr valign="baseline">
       <td align="left"
@@ -307,7 +307,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
        Probably, assuming the previous counts of tr's and td's are done right.-->
   <xsl:template match="ltx:equationgroup" mode="aligned">
     <xsl:param name="ncolumns"/>
-    <xsl:apply-templates select="ltx:equationgroup | ltx:equation | ltx:block" mode="aligned">
+    <xsl:apply-templates select="ltx:equationgroup | ltx:equation | ltx:p" mode="aligned">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
     </xsl:apply-templates>
     <xsl:call-template name="equation-meta-aligned">

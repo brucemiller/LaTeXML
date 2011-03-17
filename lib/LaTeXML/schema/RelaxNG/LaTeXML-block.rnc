@@ -76,7 +76,7 @@ element equationgroup { equationgroup_attributes, equationgroup_model }
 equationgroup_attributes = Common.attributes, Labelled.attributes
 
 ## Content model for \elementref{equationgroup}.
-equationgroup_model = (equationgroup | equation | block | Meta.class | EquationMeta.class)*
+equationgroup_model = (equationgroup | equation | p | Meta.class | EquationMeta.class)*
 
 #======================================================================
 

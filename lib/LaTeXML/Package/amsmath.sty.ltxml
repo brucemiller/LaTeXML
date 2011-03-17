@@ -402,7 +402,7 @@ DefMacro('\displaybreak[]','');	# Ignorable
 # Section 3.10 Interrupting a display
 
 # default when not used inside an appropriate alignment.
-DefConstructor('\intertext{}', "<ltx:block class='intertext'>#1</ltx:block>", mode=>'text');
+DefConstructor('\intertext{}', "<ltx:p class='intertext'>#1</ltx:p>", mode=>'text');
 
 #======================================================================
 # Section 3.11 Equation numbering
