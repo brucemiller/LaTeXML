@@ -15,25 +15,23 @@ NewCounter('subtable',  'table',  idprefix=>'st', idwithin=>'table');
 DefMacro('\thesubfigure','\alph{subfigure}');
 DefMacro('\thesubtable', '\alph{subtable}');
 
-# I wonder what the best structure of this is...
-# should we actually create an ltx:figure & ltx:caption?  Seems not...
-DefMacroI('\subfigurename',undef,'\figurename');
-DefMacroI('\subtablename',undef,'\tablename');
-DefConstructor('\subfigure[]{}',
-	       "<ltx:inline-block class='subfigure' xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1')
->"
-	       . "#2"
-	       . "?#1(<ltx:block class='caption'>#1</ltx:block>)"
-	       ."</ltx:inline-block>",
-	       properties=> sub { RefStepCounter('subfigure'); });
+DefMacro('\fnum@subfigure','(\thesubfigure)');
+DefMacro('\subfigure[]{}',
+	 '\begin{@subfigure}#2\ifx.#1.\else\caption{#1}\fi\end{@subfigure}');
+DefEnvironment('{@subfigure}',
+	       "<ltx:figure>"
+	       . "#body"
+	       ."</ltx:figure>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'subfigure'); });
 
-DefConstructor('\subtable[]{}',
-	       "<ltx:inline-block class='subtable' xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1') 
->"
-	       . "#2"
-	       . "?#1(<ltx:block class='caption'>#1</ltx:block>)"
-	       ."</ltx:inline-block>",
-	       properties=> sub { RefStepCounter('subtable') });
+DefMacro('\fnum@subtable','(\thesubtable)');
+DefMacro('\subtable[]{}',
+	 '\begin{@subtable}#2\ifx.#1.\else\caption{#1}\fi\end{@subtable}');
+DefEnvironment('{@subtable}',
+	       "<ltx:table>"
+	       . "#body"
+	       ."</ltx:table>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'subtable'); });
 
 RawTeX(<<'EOTeX');
 \newif\ifsubcapcenter
