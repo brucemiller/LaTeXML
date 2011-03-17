@@ -1,0 +1,86 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  floatfig                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | # 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This is basically floatflt restricted to only the figure parts
+AssignValue(floatfltpos=>'v');
+DeclareOption('rflt',sub { AssignValue(floatfltpos=>'r'); });
+DeclareOption('lflt',sub { AssignValue(floatfltpos=>'l'); });
+DeclareOption('pflt',sub { AssignValue(floatfltpos=>'p'); });
+DeclareOption('vflt',sub { AssignValue(floatfltpos=>'v'); });
+
+DefEnvironment('{floatingfigure}[]{Dimension}',
+	       "<ltx:figure float='#float' width='#width'>"
+	       . "#body"
+	       ."</ltx:figure>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
+	       properties=> sub { 
+		 (float=>(ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left'),
+		  width=>toPercent($_[2]) ); });
+
+sub toPercent {
+  my($dimen)=@_;
+  int(100*$dimen->valueOf / LookupValue('\textwidth')->valueOf).'%'; }
+
+DefMacro('\fltitem[]{}','\item {#2}');
+DefMacro('\fltditem[]{}{}','\item[#2] {#3}');
+
+DefMacro('\initfloatingfigs',''); # ?????
+#======================================================================
+DefMacro('\dofigtest','');
+DefMacro('\tryfig','');
+DefMacro('\figinsert','');
+DefMacro('\dohang','');
+
+DefRegister('\figbox'=>Box());
+DefRegister('\pagebox'=>Box());
+
+DefRegister('\ffigcount'=>Number(0));
+DefRegister('\fftest'=>Number(0));
+DefRegister('\hangcount'=>Number(0));
+
+DefRegister('\nosuccesstryfig'=>Number(0));
+
+DefRegister('\figgutter'=>Dimension('1pc'));
+
+DefRegister('\htdone'=>Number(0));
+DefRegister('\pageht'=>Dimension('0pt'));
+DefRegister('\startpageht'=>Dimension('0pt'));
+
+DefRegister('\floatfltwidth'=>Dimension('0pt'));
+DefRegister('\fltitemwidth'=>Dimension('0pt'));
+DefRegister('\outputpretest'=>Tokens());
+
+RawTeX('
+\newif\iftryingfig     \tryingfigfalse
+\newif\ifdoingfig      \doingfigfalse
+\newif\iffigprocessing \figprocessingfalse
+\newif\ifpageafterfig  \pageafterfigfalse
+\newif\ifoddpages
+\newif\ifoutput
+');
+
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+
+__END__
+
+
