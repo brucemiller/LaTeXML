@@ -59,7 +59,7 @@ DefMacro('\pacs{}','\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
 DefMacro('\keywords{}','\@add@frontmatter{ltx:keywords}{#1}');
 
 # 4.7
-DefMacro('\preprint{}', undef);
+DefMacro('\preprint{}', '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
 
 # Extra stuff
 DefMacro('\blankaffiliation','');
