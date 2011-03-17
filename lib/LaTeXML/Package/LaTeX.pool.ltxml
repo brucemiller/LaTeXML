@@ -756,7 +756,7 @@ DefConstructorI('\@add@flushleft',  undef,
 #======================================================================-
 # C.6.1 Quotations and Verse
 #======================================================================-
-DefConstructorI('\@block@cr',undef,  "<ltx:break/>",
+DefConstructor('\@block@cr[Dimension]',  "<ltx:break/>\n",
 	       reversion=>Tokens(T_CS("\\\\"),T_CR));
 DefEnvironment('{quote}',   
 	       '<ltx:quote>#body</ltx:quote>',
@@ -1870,40 +1870,87 @@ DefMacro('\format@title@figure{}','\@tag{\fnum@figure: }#1');
 DefMacro('\format@title@table{}','\@tag{\fnum@table: }#1');
 
 DefMacro('\caption',
-	 '\@ifundefined{@captype}{\latex@error{\noexpand\caption outside float}{}}{}\expandafter\@caption\expandafter{\@captype}');
+	 '\@ifundefined{@captype}{\@latex@error{\noexpand\caption outside float}{}}{}\expandafter\@caption\expandafter{\@captype}');
 DefMacro('\@caption{}[]{}',
-	 '\@@toccaption{\format@toctitle@{#1}{\ifx.#2.#3\else#2\fi}}'
+	 '\@@add@caption@counters'
+	 .'\@@toccaption{\format@toctitle@{#1}{\ifx.#2.#3\else#2\fi}}'
 	 .'\@@caption{\format@title@{#1}{#3}}');
+
+# Note that the counters only get incremented by \caption, NOT by \table, \figure, etc.
+DefConstructor('\@@add@caption@counters',"",
+	       properties=>sub { RefStepCounter(ToString(Digest(T_CS('\@captype')))); },
+	       beforeConstruct=>sub {
+		 my($document,$whatsit)=@_;
+ 		 if(my $savenode = $document->floatToAttribute('refnum')){
+		   my $node = $document->getNode;
+		   $document->setAttribute($node,frefnum=>$whatsit->getProperty('frefnum'));
+		   $document->setAttribute($node,refnum=>$whatsit->getProperty('refnum'));
+		   $document->setAttribute($node,'xml:id'=>$whatsit->getProperty('id'));
+		   $document->setNode($savenode); }});
+
+# Note that even without \caption, we'd probably like to have xml:id.
+Tag('ltx:figure',afterClose=>sub { GenerateID(@_,'fig'); });
+Tag('ltx:table', afterClose=>sub { GenerateID(@_,'tab'); });
 
 DefConstructor('\@@caption{}',"<ltx:caption>#1</ltx:caption>");
 DefConstructor('\@@toccaption{}',"<ltx:toccaption>#1</ltx:toccaption>");
 
-#DefConstructor('\caption[]{}',
-#	       "<ltx:caption>#2</ltx:caption>\n?#1(<ltx:toccaption>#1</ltx:toccaption>)");
 DefEnvironment('{figure}[]',
-	       "<ltx:figure xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1')>"
+	       "<ltx:figure ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:figure>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
-	       properties=> sub { RefStepCounter('figure') });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); });
 DefEnvironment('{figure*}[]',
-	       "<ltx:figure xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1')>"
+	       "<ltx:figure ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:figure>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
-	       properties=> sub { RefStepCounter('figure') });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); });
 DefEnvironment('{table}[]',
-	       "<ltx:table xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1')>"
+	       "<ltx:table ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:table>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
-	       properties=> sub { RefStepCounter('table') });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); });
 DefEnvironment('{table*}[]',
-	       "<ltx:table xml:id='#id' refnum='#refnum' frefnum='#frefnum' ?#1(placement='#1')>"
+	       "<ltx:table ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:table>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
-	       properties=> sub { RefStepCounter('table') });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); });
+
+# There are some floating figure/table packages that define environments
+# to allow the figure to float left or right.  It APPEARS that they allow
+# authors to either wrap with {figure} or NOT, as they like!
+# The result apparently makes sense so long as they only use one \caption.
+# If we get a figure containing a single figure, we want to collaps it.
+sub collapseFloat {
+  my($document,$float)=@_;
+  my $qname = $document->getNodeQName($float);
+  my @inners = $document->findnodes($qname,$float);
+  if(scalar(@inners)==1){	# Only 1 inner float of same type
+    my $inner = $inners[0];
+    my $ocaption = $document->findnodes('ltx:caption',$float);
+    my $icaption = $document->findnodes('ltx:caption',$inner);
+    if(! ($ocaption && $icaption)){ # If they don't both have captions.
+      foreach my $attr (map($_->nodeName, $inner->attributes)){
+	next if $attr eq 'xml:id';
+	$float->setAttribute($attr=>$inner->getAttribute($attr)); }
+      if($icaption){
+	if(my $id = $inner->getAttribute('xml:id')){
+	  $document->unRecordID($id);
+	  $document->setAttribute($float,'xml:id'=>$id); }}
+
+      # Finally, replace $inner by it's children!
+      # Note that since we can only append new stuff, we've got to remove the following first.
+      my @save=();
+      my $following;
+      while(($following = $float->lastChild) && ($$following != $$inner)){ # Remove & Save following siblings.
+	unshift(@save,$float->removeChild($following)); }
+      unshift(@save,$inner->childNodes);
+      $float->removeChild($inner);
+      map($float->appendChild($_),@save); } # Put these back.
+  }}
+Tag('ltx:figure',afterClose=>\&collapseFloat);
+Tag('ltx:table',afterClose=>\&collapseFloat);
+Tag('ltx:float',afterClose=>\&collapseFloat);
 
 DefPrimitive('\flushbottom',undef);
 DefPrimitive('\suppressfloats[]', undef);
