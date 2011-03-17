@@ -456,7 +456,7 @@ DefRegister('\mathindent'   => Dimension(0));
 # Ignorable packages ??
 # pre-defined packages??
 
-DefConstructor('\usepackage[] Semiverbatim',
+DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim',
 	       "<?latexml package='#2' ?#1(options='#1')?>",
 	       beforeDigest=>\&onlyPreamble,
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
@@ -467,7 +467,7 @@ DefConstructor('\usepackage[] Semiverbatim',
 				  $options = [($options ? split(/,\s*/,(ToString($options))) :())];
 				  map(RequirePackage($_,options=>$options),@pkgs);
 				  return});
-DefConstructor('\RequirePackage[] Semiverbatim []',
+DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
 	       "<?latexml package='#2' ?#1(options='#1')?>",
 	       beforeDigest=>\&onlyPreamble,
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
@@ -475,7 +475,7 @@ DefConstructor('\RequirePackage[] Semiverbatim []',
 				  my $package=$whatsit->getArg(2);
 				  $options = [($options ? split(/,\s*/,(ToString($options))) :())];
 				  RequirePackage(ToString($package), options=>$options); });
-DefConstructor('\LoadClass[] Semiverbatim []',
+DefConstructor('\LoadClass OptionalSemiverbatim Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
 	       beforeDigest=>\&onlyPreamble,
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
@@ -733,6 +733,9 @@ DefEnvironment('{flushright}',sub { aligningEnvironment('right','flushright',@_)
 # These add an operation to be carried out on the current node & following siblings, when the current group ends.
 # These operators will add alignment (class) attributes to each "line" in the current block.
 #DefPrimitiveI('\centering',   undef, sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@centering')); });
+# NOTE: THere's a problem here.  The current method seems to work right for these operators
+# appearing within the typical environments.  HOWEVER, it doesn't work for a simple \bgroup or \begingroup!!!
+# (they don't create a node! or even a whatsit!)
 DefConstructorI('\centering',undef,
 		sub { AssignValue(ALIGNING_NODE=>$_[0]->getElement); return;},
 		beforeDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@centering')); });
