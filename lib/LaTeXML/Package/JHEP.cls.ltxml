@@ -82,17 +82,28 @@ DefMacro('\Proof','\emph{Proof.}\ ');
 
 #======================================================================
 # Are these close enough?
-DefMacro('\FIGURE[]{}','\begin{figure}[#1]#2\end{figure}');
-DefMacro('\TABLE[]{}','\begin{table}[#1]#2\end{table}');
-DefMacro('\EPSFIGURE[]{}{}','\begin{figure}[#1]\epsfig{file=#2}\caption{#3}\end{figure}');
-DefMacro('\TABULAR[]{}{}{}','\begin{table}[#1]\begin{tabular}{#2}#3\end{tabular}\caption{#4}\end{table}');
-# Alas, I've only defined figuregroup, etc. in DLMF
+DefMacro('\FIGURE[]{}','\begin{floatingfigure}[#1]#2\end{floatingfigure}');
+DefMacro('\TABLE[]{}','\begin{floatingtable}[#1]#2\end{floatingtable}');
+DefMacro('\EPSFIGURE[]{}{}','\begin{floatingfigure}[#1]\epsfig{file=#2}\caption{#3}\end{floatingfigure}');
+DefMacro('\TABULAR[]{}{}{}','\begin{floatingtable}[#1]\begin{tabular}{#2}#3\end{tabular}\caption{#4}\end{floatingtable}');
+
 DefMacro('\DOUBLEFIGURE[]{}{}{}{}',
-	 '\begin{figure}[#1]#2\caption{#4}\end{figure}'
-	 .'\begin{figure}[#1]#3\caption{#5}\end{figure}');
+	 '\begin{figure}[#1]'
+	 .  '\begin{@half@doublefigure}\epsfig{file=#2}\caption{#4}\end{@half@doublefigure}'
+	 .  '\begin{@half@doublefigure}\epsfig{file=#3}\caption{#5}\end{@half@doublefigure}'
+	 .'\end{figure}');
+DefEnvironment('{@half@doublefigure}',
+	       "<ltx:figure width='0.45%'>#body</ltx:figure>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); });
+
 DefMacro('\DOUBLETABLE[]{}{}{}{}',
-	 '\begin{table}[#1]#2\caption{#4}\end{table}'
-	 .'\begin{table}[#1]#3\caption{#5}\end{table}');
+	 '\begin{table}[#1]'
+	 .  '\begin{@half@doubletable}#2\caption{#4}\end{@half@doubletable}'
+	 .  '\begin{@half@doubletable}#3\caption{#5}\end{@half@doubletable}'
+	 .'\end{table}');
+DefEnvironment('{@half@doubletable}',
+	       "<ltx:table width='0.45%'>#body</ltx:table>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); });
 
 # Redefine since JHEP has no width argument
 # (what width should be used?)
