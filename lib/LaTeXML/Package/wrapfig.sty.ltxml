@@ -16,29 +16,28 @@ use LaTeXML::Package;
 
 #**********************************************************************
 # New environment from package wrapfigure:
+# \caption will handle refnums, etc.
 DefEnvironment('{wrapfigure} {} {Dimension}',
-	       "<ltx:figure xml:id='#id' refnum='#refnum' frefnum='#frefnum' class='#float'>"
+	       "<ltx:figure float='#float'>"
 	       ."#body"
 	       ."</ltx:figure>",
 	       afterDigestBegin=>sub {
 		 my $dir = ToString($_[1]->getArg(1));
-		 $_[1]->setProperty(float=>($dir eq 'r' ? 'floatright'
-					    : ($dir eq 'l' ? 'floatleft'
+		 $_[1]->setProperty(float=>($dir eq 'r' ? 'right'
+					    : ($dir eq 'l' ? 'left'
 					       : undef))); },
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
-	       properties=> sub { RefStepCounter('figure'); });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); });
 
 DefEnvironment('{wraptable} {} {Dimension}',
-	       "<ltx:table xml:id='#id' refnum='#refnum' frefnum='#frefnum' class='#float'>"
+	       "<ltx:table float='#float'>"
 	       ."#body"
 	       ."</ltx:table>",
 	       afterDigestBegin=>sub {
 		 my $dir = ToString($_[1]->getArg(1));
-		 $_[1]->setProperty(float=>($dir eq 'r' ? 'floatright'
-					    : ($dir eq 'l' ? 'floatleft'
+		 $_[1]->setProperty(float=>($dir eq 'r' ? 'right'
+					    : ($dir eq 'l' ? 'left'
 					       : undef))); },
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
-	       properties=> sub { RefStepCounter('table'); });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); });
 
 DefMacro('\WFclear','\par');
 DefRegister('\wrapoverhang'=>Dimension(0));
