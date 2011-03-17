@@ -2835,10 +2835,13 @@ DefPrimitive('\@add@frontmatter {} OptionalKeyVals {}', sub {
 
   my $frontmatter = LookupValue('frontmatter');
   my $inpreamble = LookupValue('inPreamble');
+  # Be careful since the contents may also want to add frontmatter
+  # (which should be inside or after this one!)
+  my $entry = [$tag,$attr,'to-be-filled-in'];
+  push(@{$$frontmatter{$tag}},$entry);
   AssignValue(inPreamble=>0);
-  my $datum = Digest(Tokens(T_BEGIN,$tokens,T_END));
+  $$entry[2] = Digest(Tokens(T_BEGIN,$tokens,T_END));
   AssignValue(inPreamble=>$inpreamble);
-  push(@{$$frontmatter{$tag}},[$tag,$attr,$datum]);
   return; });
 
 # Append a piece of data to an existing frontmatter item that is contained in <$tag>
@@ -2856,7 +2859,6 @@ DefPrimitive('\@add@to@frontmatter {} [] {}', sub {
   AssignValue(inPreamble=>0);
   my $datum = Digest(Tokens(T_BEGIN,$tokens,T_END));
   AssignValue(inPreamble=>$inpreamble);
-
   if($label){
     my $entry;
     foreach my $item (@{$$frontmatter{$tag} || []}){
