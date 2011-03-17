@@ -188,6 +188,16 @@ that can be sized or shifted.</a:documentation>
         </choice>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="float">
+        <a:documentation>the horizontal floating placement parameter that determines where the object is displayed.</a:documentation>
+        <choice>
+          <value>right</value>
+          <value>left</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
   </define>
   <define name="Imageable.attributes">
     <a:documentation>Attributes for elements that may be converted to image form
