@@ -163,7 +163,7 @@ DefRegister('\postdefinitionskip'=>Glue(0));
 DefMacro('\definitionfont','\rm');
 # Is there nothing about \definitionname (& \remarkname, \examplename, etc?)
 DefMacroI('\definitionname',undef,'Definition');
-DefConstructor('\definition{} DigestUntil:\enddefinition',
+DefConstructor('\definition Undigested DigestUntil:\enddefinition',
 	       "<ltx:theorem class='definition' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#2"
@@ -177,7 +177,7 @@ Let(T_CS('\enddefinition'),T_CS('\relax'));
 # \remark..\endremark
 DefMacro('\remarkfont','\rm');
 DefMacroI('\remarkname',undef,'Remark');
-DefConstructor('\remark{} DigestUntil:\endremark',
+DefConstructor('\remark Undigested DigestUntil:\endremark',
 	       "<ltx:theorem class='remark' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#2"
@@ -188,7 +188,7 @@ DefConstructor('\remark{} DigestUntil:\endremark',
 		  title=>$title, titlefont=>$title->getFont); });
 Let(T_CS('\endremark'),T_CS('\relax'));
 
-DefConstructor('\example{} DigestUntil:\endexample',
+DefConstructor('\example Undigested DigestUntil:\endexample',
 	       "<ltx:theorem class='example' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#2"
@@ -201,13 +201,13 @@ DefConstructor('\example{} DigestUntil:\endexample',
 Let(T_CS('\endexample'),T_CS('\relax'));
 
 DefMacroI('\demonstrationname',undef,'Demonstration');
-DefConstructor('\demo{} DigestUntil:\enddemo',
+DefConstructor('\demo Undigested DigestUntil:\enddemo',
 	       "<ltx:theorem class='demonstration' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#2"
 	       ."</ltx:theorem>",
 	       properties=> sub {
-		 my $title=Digest(Tokens(T_BEGIN,T_CS('\demonstrationname'),T_SPACE,$_[1],T_END));
+		 my $title=Digest(Tokens(T_BEGIN,T_CS('\demonstrationname'),T_SPACE,$_[1]->unlist,T_END));
 		 (RefStepID('theorem'),
 		  title=>$title, titlefont=>$title->getFont); });
 Let(T_CS('\enddemo'),T_CS('\relax'));
@@ -289,18 +289,26 @@ DefConstructor('\cite Semiverbatim',"<ltx:cite>[<ltx:bibref show='refnum' bibref
 
 # arg or no arg?
 DefMacro('\thebibliography@ID','\ifx#\thedocument@id#\thedocument@id.bib\else bib\fi');
-DefConstructor('\Refs',
+
+DefMacro('\@auto@Refs','\Refs');
+DefMacro('\Refs','\@Refs\def\@auto@Refs{}');
+DefConstructor('\@Refs',
 	       "<ltx:bibliography xml:id='#id'>"
 	       . "<ltx:title>References</ltx:title>"
 	       . "<ltx:biblist>",
 	       afterDigest=>sub { 
 		 $_[1]->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID')))); });
-DefConstructor('\endRefs',"</ltx:bibliography>");
+DefMacro('\endRefs','\def\@auto@Refs{\Refs}\end@Refs');
+DefConstructor('\end@Refs',"</ltx:bibliography>");
+
 NewCounter('@bibitem','bibliography',idprefix=>'bib');
 DefMacro('\the@bibitem','\number\c@@bibitem');
 
 # Since \Refs is apparently optional, we need to automatically open/close
-Tag('ltx:bibliography',autoOpen=>1,autoClose=>1);
+## No that gives too many elements that can be auto-opened!
+## try the \@auto@Refs bit ... ?
+##Tag('ltx:bibliography',autoOpen=>1,autoClose=>1);
+
 Tag('ltx:biblist',autoOpen=>1,autoClose=>1);
 
 DefRegister('\refindentwd'=>Dimension(0));
@@ -309,7 +317,7 @@ DefMacro('\keyformat{}','#1');
 DefMacro('\refbreaks','');
 DefMacro('\defaultreftexts','');
 
-DefMacro('\ref','\begingroup\@bibitem\@bibfield{?}');
+DefMacro('\ref','\@auto@Refs\begingroup\@bibitem\@bibfield{?}');
 DefMacro('\endref','\@end@bibfield\@fill@bibitem\@end@bibitem\endgroup');
 DefConstructor('\@bibitem',    "<ltx:bibitem xml:id='#id'>",
 	      properties=>sub { RefStepID('@bibitem'); });

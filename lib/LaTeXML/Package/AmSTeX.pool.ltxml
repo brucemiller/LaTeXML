@@ -121,8 +121,12 @@ DefMacro('\vcorrection Dimension','');
 
 #======================================================================
 # The Document
-DefConstructor('\document',"<ltx:document>");
-DefConstructor('\enddocument',"</ltx:document>");
+DefConstructor('\document',"<ltx:document>",
+	       afterDigest=>sub {  AssignValue(inPreamble=>0); });
+DefConstructor('\enddocument',"</ltx:document>",
+	       beforeDigest=> sub {
+		 $_[0]->getGullet->flush; 
+		 return; });
 
 #======================================================================
 # Front Matter
