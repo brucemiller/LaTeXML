@@ -299,6 +299,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
     <tr valign="baseline">
       <td align="left"
 	  colspan="{1+$ncolumns+f:if($eqpos!='left',1,0)+f:if($eqpos!='right',1,0)}"
+	  style="white-space:normal;"
 	  ><xsl:apply-templates/></td>
     </tr>
   </xsl:template>
