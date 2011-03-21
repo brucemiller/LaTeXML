@@ -8,12 +8,12 @@
     <para xml:id="S0.SS0.SSS0.P1.p1">
       <p>Two figures, <ref labelref="LABEL:fig:A-one"/> and <ref labelref="LABEL:fig:A-two"/>.</p>
     </para>
-    <figure placement="ht" frefnum="Figure 1" refnum="1" xml:id="S0.F1" labels="LABEL:fig:A-one">
+    <figure frefnum="Figure 1" placement="ht" refnum="1" xml:id="S0.F1" labels="LABEL:fig:A-one">
       <p align="center">[Graphic One]<break/></p>
       <toccaption class="centering"><tag>1 </tag>This is a figure</toccaption>
       <caption class="centering"><tag>Figure 1: </tag>This is a figure</caption>
     </figure>
-    <figure placement="ht" frefnum="Figure 2" refnum="2" xml:id="S0.F2" labels="LABEL:fig:A-two">
+    <figure frefnum="Figure 2" placement="ht" refnum="2" xml:id="S0.F2" labels="LABEL:fig:A-two">
       <p align="center">[Graphic Two]<break/></p>
       <toccaption class="centering"><tag>2 </tag>This is another figure</toccaption>
       <caption class="centering"><tag>Figure 2: </tag>This is another figure</caption>
@@ -42,11 +42,11 @@
     <para xml:id="S0.SS0.SSS0.P3.p1">
       <p>Two figures, <ref labelref="LABEL:fig:C"/></p>
     </para>
-    <figure placement="ht" frefnum="Figure 3" refnum="3" xml:id="S0.F3">
-      <figure xml:id="S0.SS0.SSS0.P3.fig1" align="center">
+    <figure frefnum="Figure 3" placement="ht" refnum="3" xml:id="S0.F3">
+      <figure xml:id="S0.F3.fig1" align="center">
         <p>[Graphic One]</p>
       </figure>
-      <figure xml:id="S0.SS0.SSS0.P3.fig2" align="center" labels="LABEL:fig:C">
+      <figure xml:id="S0.F3.fig2" align="center" labels="LABEL:fig:C">
         <p>[Graphic Two]</p>
       </figure>
       <toccaption><tag>3 </tag>Collectively two figures</toccaption>
@@ -59,7 +59,7 @@
       <p>Two figures, <ref labelref="LABEL:fig:D-one"/> and <ref labelref="LABEL:fig:D-two"/>,
 and collectively as <ref labelref="LABEL:fig:D"/>.</p>
     </para>
-    <figure placement="ht" frefnum="Figure 4" refnum="4" xml:id="S0.F4">
+    <figure frefnum="Figure 4" placement="ht" refnum="4" xml:id="S0.F4">
       <figure frefnum="(a)" refnum="a" xml:id="S0.F3.sf1" labels="LABEL:fig:D-one" align="center">
         <p>[Graphic One]</p>
         <toccaption><tag>a </tag>This is a figure</toccaption>
