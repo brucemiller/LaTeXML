@@ -39,10 +39,11 @@ DefPrimitive('\newfloat{}{}{}[]',sub {
   if(!LookupDefinintion(T_CS('\fname@'.ToString($type)))){
     DefMacro('\fname@'.$type,$type); }
   DefEnvironment('{$type}[]',
-		 "<ltx:float ?#1(placement='#1') class='$type'>"
+		 "<ltx:float refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1') class='$type'>"
 		 . "#body"
 		 ."</ltx:float>",
-		 beforeDigest=>sub{ DefMacroI('\@captype',undef,$type); });
+		 beforeDigest=>sub{ DefMacroI('\@captype',undef,$type); },
+		 afterDigest=>sub { RescueCaptionCounters($type,$_[1]); });
 
 ## ??? DefMacro('\plain','');
 

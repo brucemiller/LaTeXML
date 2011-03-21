@@ -93,8 +93,9 @@ DefMacro('\DOUBLEFIGURE[]{}{}{}{}',
 	 .  '\begin{@half@doublefigure}\epsfig{file=#3}\caption{#5}\end{@half@doublefigure}'
 	 .'\end{figure}');
 DefEnvironment('{@half@doublefigure}',
-	       "<ltx:figure width='0.45%'>#body</ltx:figure>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); });
+	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' xml:id='#id' width='0.45%'>#body</ltx:figure>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
+	       afterDigest=>sub { RescueCaptionCounters('figure',$_[1]); });
 
 DefMacro('\DOUBLETABLE[]{}{}{}{}',
 	 '\begin{table}[#1]'
@@ -102,24 +103,27 @@ DefMacro('\DOUBLETABLE[]{}{}{}{}',
 	 .  '\begin{@half@doubletable}#3\caption{#5}\end{@half@doubletable}'
 	 .'\end{table}');
 DefEnvironment('{@half@doubletable}',
-	       "<ltx:table width='0.45%'>#body</ltx:table>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); });
+	       "<ltx:table refnum='#refnum' frefnum='#frefnum' xml:id='#id' width='0.45%'>#body</ltx:table>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
+	       afterDigest=>sub { RescueCaptionCounters('table',$_[1]); });
 
 # Redefine since JHEP has no width argument
 # (what width should be used?)
 DefEnvironment('{floatingfigure}[]',
-	       "<ltx:figure float='#float' width='#width'>"
+	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' xml:id='#id' float='#float' width='#width'>"
 	       . "#body"
 	       ."</ltx:figure>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
+	       afterDigest=>sub { RescueCaptionCounters('figure',$_[1]); },
 	       properties=> sub { 
 		 (float=>(ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left') ); });
 
 DefEnvironment('{floatingtable}[]',
-	       "<ltx:table float='#float' width='#width'>"
+	       "<ltx:table refnum='#refnum' frefnum='#frefnum' xml:id='#id' float='#float' width='#width'>"
 	       . "#body"
 	       ."</ltx:table>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
+	       afterDigest=>sub { RescueCaptionCounters('table',$_[1]); },
 	       properties=> sub { 
 		 (float=>(ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left')); });
 

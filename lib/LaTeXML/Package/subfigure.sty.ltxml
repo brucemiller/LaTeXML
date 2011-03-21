@@ -6,9 +6,9 @@
 # | Bruce Miller <bruce.miller@nist.gov>                                 |
 # | http://dlmf.nist.gov/LaTeXML/                                        |
 #  \====================================================================/
+package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
-
 
 NewCounter('subfigure', 'figure', idprefix=>'sf', idwithin=>'figure');
 NewCounter('subtable',  'table',  idprefix=>'st', idwithin=>'table');
@@ -19,20 +19,20 @@ DefMacro('\fnum@subfigure','(\thesubfigure)');
 DefMacro('\subfigure[]{}',
 	 '\begin{@subfigure}#2\ifx.#1.\else\caption{#1}\fi\end{@subfigure}');
 DefEnvironment('{@subfigure}',
-	       "<ltx:figure>"
+	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' xml:id='#id'>"
 	       . "#body"
 	       ."</ltx:figure>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'subfigure'); });
-
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'subfigure'); },
+	       afterDigest=>sub { RescueCaptionCounters('subfigure',$_[1]); });
 DefMacro('\fnum@subtable','(\thesubtable)');
 DefMacro('\subtable[]{}',
 	 '\begin{@subtable}#2\ifx.#1.\else\caption{#1}\fi\end{@subtable}');
 DefEnvironment('{@subtable}',
-	       "<ltx:table>"
+	       "<ltx:table refnum='#refnum' frefnum='#frefnum' xml:id='#id'>"
 	       . "#body"
 	       ."</ltx:table>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'subtable'); });
-
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'subtable'); },
+	       afterDigest=>sub { RescueCaptionCounters('subtable',$_[1]); });
 RawTeX(<<'EOTeX');
 \newif\ifsubcapcenter
 \newif\ifsubcapcenterlast

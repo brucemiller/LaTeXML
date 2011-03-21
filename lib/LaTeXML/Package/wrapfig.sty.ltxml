@@ -18,7 +18,7 @@ use LaTeXML::Package;
 # New environment from package wrapfigure:
 # \caption will handle refnums, etc.
 DefEnvironment('{wrapfigure} {} {Dimension}',
-	       "<ltx:figure float='#float'>"
+	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' xml:id='#id' float='#float'>"
 	       ."#body"
 	       ."</ltx:figure>",
 	       afterDigestBegin=>sub {
@@ -26,10 +26,11 @@ DefEnvironment('{wrapfigure} {} {Dimension}',
 		 $_[1]->setProperty(float=>($dir eq 'r' ? 'right'
 					    : ($dir eq 'l' ? 'left'
 					       : undef))); },
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
+	       afterDigest=>sub { RescueCaptionCounters('figure',$_[1]); });
 
 DefEnvironment('{wraptable} {} {Dimension}',
-	       "<ltx:table float='#float'>"
+	       "<ltx:table refnum='#refnum' frefnum='#frefnum' xml:id='#id' float='#float'>"
 	       ."#body"
 	       ."</ltx:table>",
 	       afterDigestBegin=>sub {
@@ -37,7 +38,8 @@ DefEnvironment('{wraptable} {} {Dimension}',
 		 $_[1]->setProperty(float=>($dir eq 'r' ? 'right'
 					    : ($dir eq 'l' ? 'left'
 					       : undef))); },
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
+	       afterDigest=>sub { RescueCaptionCounters('table',$_[1]); });
 
 DefMacro('\WFclear','\par');
 DefRegister('\wrapoverhang'=>Dimension(0));

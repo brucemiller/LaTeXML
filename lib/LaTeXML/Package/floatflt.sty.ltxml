@@ -29,19 +29,21 @@ DeclareOption('pflt',sub { AssignValue(floatfltpos=>'p'); });
 DeclareOption('vflt',sub { AssignValue(floatfltpos=>'v'); });
 
 DefEnvironment('{floatingfigure}[]{Dimension}',
-	       "<ltx:figure float='#float' width='#width'>"
+	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' xml:id='#id' float='#float' width='#width'>"
 	       . "#body"
 	       ."</ltx:figure>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
+	       afterDigest=>sub { RescueCaptionCounters('figure',$_[1]); },
 	       properties=> sub { 
 		 (float=>(ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left'),
 		  width=>toPercent($_[2]) ); });
 
 DefEnvironment('{floatingtable}[]{Dimension}',
-	       "<ltx:table float='#float' width='#width'>"
+	       "<ltx:table refnum='#refnum' frefnum='#frefnum' xml:id='#id' float='#float' width='#width'>"
 	       . "#body"
 	       ."</ltx:table>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
+	       afterDigest=>sub { RescueCaptionCounters('table',$_[1]); },
 	       properties=> sub { 
 		 (float=>(ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left'),
 		  width=>toPercent($_[2])); });
