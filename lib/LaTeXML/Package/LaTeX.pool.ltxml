@@ -741,14 +741,22 @@ DefConstructorI('\centering',undef,
 		beforeDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@centering')); });
 DefConstructorI('\raggedright', undef,
 		sub { AssignValue(ALIGNING_NODE=>$_[0]->getElement); return;},
-		beforeDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@flushright')); });
+		beforeDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@raggedright')); });
 DefConstructorI('\raggedleft',  undef,
 		sub { AssignValue(ALIGNING_NODE=>$_[0]->getElement); return;},
-		beforeDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@flushleft')); });
+		beforeDigest=>sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@raggedleft')); });
 
 DefConstructorI('\@add@centering',  undef,
 		sub { if(my $node = LookupValue('ALIGNING_NODE')){
 		  map(setAlignOrClass($_[0],$_,'center','centering'),$_[0]->getChildElements($node)); }});
+# Note that \raggedright is different from flushright!
+DefConstructorI('\@add@raggedright', undef,
+		sub { if(my $node = LookupValue('ALIGNING_NODE')){
+		  map(setAlignOrClass($_[0],$_,undef,'raggedright'),$_[0]->getChildElements($node)); }});
+DefConstructorI('\@add@raggedleft',  undef,
+		sub { if(my $node = LookupValue('ALIGNING_NODE')){
+		  map(setAlignOrClass($_[0],$_,undef,'raggedleft'),$_[0]->getChildElements($node)); }});
+
 DefConstructorI('\@add@flushright', undef,
 		sub { if(my $node = LookupValue('ALIGNING_NODE')){
 		  map(setAlignOrClass($_[0],$_,'right','flushright'),$_[0]->getChildElements($node)); }});
@@ -1863,9 +1871,13 @@ DefMacro('\fnsymbol{}',sub {
 # C.9.1 Figures and Tables
 #======================================================================
 
-# Note that, technically, the number is associated with the caption.
+# Note that, the number is associated with the caption.
 # (to allow multiple figures per figure environment?).
-# We'll have to sort that out later....
+# Whatever reason, that causes complications: We can only increment
+# counters with the caption, but then have to arrange for the counters,
+# refnums, ids, get passed on to the figure, table when needed.
+# AND, as soon as possible, since other items may base their id's on the id of the table!
+
 ## I'd rather not define these, since the \fnum@@ defn is better....
 DefMacroI('\fnum@figure',undef,'\figurename\nobreakspace\thefigure'),
 DefMacroI('\fnum@table', undef,'\tablename\nobreakspace\thetable'),
@@ -1873,51 +1885,68 @@ DefMacro('\format@title@figure{}','\@tag{\fnum@figure: }#1');
 DefMacro('\format@title@table{}','\@tag{\fnum@table: }#1');
 
 DefMacro('\caption',
-	 '\@ifundefined{@captype}{\@latex@error{\noexpand\caption outside float}{}}{}\expandafter\@caption\expandafter{\@captype}');
+	 '\@ifundefined{@captype}{\@@generic@caption}{\expandafter\@caption\expandafter{\@captype}}');
 DefMacro('\@caption{}[]{}',
 	 '\@@add@caption@counters'
 	 .'\@@toccaption{\format@toctitle@{#1}{\ifx.#2.#3\else#2\fi}}'
 	 .'\@@caption{\format@title@{#1}{#3}}');
 
 # Note that the counters only get incremented by \caption, NOT by \table, \figure, etc.
-DefConstructor('\@@add@caption@counters',"",
-	       properties=>sub { RefStepCounter(ToString(Digest(T_CS('\@captype')))); },
-	       beforeConstruct=>sub {
-		 my($document,$whatsit)=@_;
- 		 if(my $savenode = $document->floatToAttribute('refnum')){
-		   my $node = $document->getNode;
-		   $document->setAttribute($node,frefnum=>$whatsit->getProperty('frefnum'));
-		   $document->setAttribute($node,refnum=>$whatsit->getProperty('refnum'));
-		   $document->setAttribute($node,'xml:id'=>$whatsit->getProperty('id'));
-		   $document->setNode($savenode); }});
+DefPrimitive('\@@add@caption@counters',sub {
+  my $captype = ToString(Digest(T_CS('\@captype')));
+  my %props= RefStepCounter($captype); 
+  AssignValue($captype."_refnum"=>$props{refnum}, 'global'); # global??
+  AssignValue($captype."_frefnum"=>$props{frefnum}, 'global');
+  AssignValue($captype."_id"=>$props{id}, 'global'); });
+
+sub RescueCaptionCounters {
+  my($captype,$whatsit)=@_;
+  if(my $refnum = LookupValue($captype."_refnum")){
+    AssignValue($captype."_refnum"=>undef,'global');
+    $whatsit->setProperty(refnum=>$refnum); }
+  if(my $frefnum = LookupValue($captype."_frefnum")){
+    AssignValue($captype."_frefnum"=>undef,'global');
+    $whatsit->setProperty(frefnum=>$frefnum); }
+  if(my $id = LookupValue($captype."_id")){
+    AssignValue($captype."_id"=>undef,'global');
+    $whatsit->setProperty(id=>$id); }
+  return; }
+
+DefConstructor('\@@generic@caption[]{}',"<ltx:text class='caption'>#2</ltx:text>",
+	       beforeDigest=>sub{ Error(':unexpected \caption outside any known float'); });
 
 # Note that even without \caption, we'd probably like to have xml:id.
 Tag('ltx:figure',afterClose=>sub { GenerateID(@_,'fig'); });
 Tag('ltx:table', afterClose=>sub { GenerateID(@_,'tab'); });
+Tag('ltx:float', afterClose=>sub { GenerateID(@_,'tab'); });
 
 DefConstructor('\@@caption{}',"<ltx:caption>#1</ltx:caption>");
 DefConstructor('\@@toccaption{}',"<ltx:toccaption>#1</ltx:toccaption>");
 
 DefEnvironment('{figure}[]',
-	       "<ltx:figure ?#1(placement='#1')>"
+	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:figure>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
+	       afterDigest=>sub { RescueCaptionCounters('figure',$_[1]); });
 DefEnvironment('{figure*}[]',
-	       "<ltx:figure ?#1(placement='#1')>"
+	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:figure>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
+	       afterDigest=>sub { RescueCaptionCounters('figure',$_[1]); });
 DefEnvironment('{table}[]',
-	       "<ltx:table ?#1(placement='#1')>"
+	       "<ltx:table refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:table>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
+	       afterDigest=>sub { RescueCaptionCounters('table',$_[1]); });
 DefEnvironment('{table*}[]',
-	       "<ltx:table ?#1(placement='#1')>"
+	       "<ltx:table refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:table>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
+	       afterDigest=>sub { RescueCaptionCounters('table',$_[1]); });
 
 # There are some floating figure/table packages that define environments
 # to allow the figure to float left or right.  It APPEARS that they allow
