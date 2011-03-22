@@ -54,7 +54,7 @@ DefConstructor('\@@@email{}',"^ <ltx:contact role='email' name='#name'>#1</ltx:c
 DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 DefMacro('\mailname','\textit{Correspondence}');
 DefConstructor('\@@@mail{}',"^ <ltx:contact role='address' name='#name'>#1</ltx:contact>",
-	       properties=>{(name=>Digest(T_CS('\mailname')));});
+	       properties=>{ (name=>Digest(T_CS('\mailname'))) });
 DefMacro('\mail{}', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
 
 # What's all this for?
