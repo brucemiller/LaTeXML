@@ -44,7 +44,7 @@ DefPrimitive('\newfloat{}{}{}[]',sub {
 		 ."</ltx:float>",
 		 beforeDigest=>sub{ DefMacroI('\@captype',undef,$type); },
 		 afterDigest=>sub { RescueCaptionCounters($type,$_[1]); });
-
+});
 ## ??? DefMacro('\plain','');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
