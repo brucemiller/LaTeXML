@@ -4107,6 +4107,22 @@ DefRewrite(xpath=>'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
 # Since this situation can occur in both LaTeX and AmSTeX type documents,
 # we'll put it in the TeX pool so it can be reused.
 
+# Tricky bit for creating nodes late in the game,
+# 
+sub addNewChildLate {
+  my($document,$node,$tag)=@_;
+  my ($nsuri,$localname) = (undef,$tag);
+  ($nsuri,$localname)= $document->getModel->decodeQName($tag);
+  my $newnode = 
+    ($nsuri ? $node->addNewChild($nsuri,$localname)
+     : $node->appendChild($document->createElement($localname)));
+  # Copy essentials to new node.
+  if(my $font = $node->getAttribute('_font')){
+    $newnode->setAttribute(_font=>$font); }
+  if(my $box = $node->getAttribute('_box')){
+    $newnode->setAttribute(_box=>$box); }
+  $newnode; }
+
 # HACKERY!!!  This seems to require too much knowledge about inline vs block and such.
 # Perhaps this really should be done as a daemon that runs when the current node is closed?
 # Or perhaps even better, it should temporarily modify the Model such that the current node
@@ -4146,7 +4162,7 @@ sub insertBlock {
 
       if (@x && !grep(($_->nodeType != XML_TEXT_NODE) || ($_->textContent =~ /\S/), @x)) { # Only whitespace text nodes?
 	map($parent->removeChild($_),@x); # just remove them
-	$document->setNode($new[-1]) if $moved_current;
+	$document->setNode( (@new ? $new[-1] : $parent) ) if $moved_current;
       }		   # Watch out if we've deleted the current node!
       elsif (@x) { # Some worthwhile inline nodes to wrap in a <ltx:p>
 	my $para = addNewChildLate($document,$parent,'ltx:p');
