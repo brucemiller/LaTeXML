@@ -496,27 +496,31 @@ sub textrec {
   $outer_name = '' unless defined $outer_name;
   if($tag eq 'ltx:XMApp') {
     my($op,@args) = element_nodes($node);
-    my $name = ((getQName($op) eq 'ltx:XMTok') && getTokenMeaning($op)) || 'unknown';
-    my $role  =  $op->getAttribute('role') || 'Unknown';
-    my ($bp,$string);
-    if($bp = $IS_INFIX{$role}){
-      # Format as infix.
-      $string = (scalar(@args) == 1 # unless a single arg; then prefix.
-		  ? textrec($op) .' '.textrec($args[0],$bp,$name)
-		  : join(' '. textrec($op) .' ',map(textrec($_,$bp,$name), @args))); }
-    elsif($role eq 'POSTFIX'){
-      $bp = 10000;
-      $string = textrec($args[0],$bp,$name).textrec($op); }
-    elsif($name eq 'multirelation'){
-      $bp = 2;
-      $string = join(' ',map(textrec($_,$bp,$name),@args)); }
-##    elsif($name eq 'fenced'){
-##      $bp = -1;			# to force parentheses
-##      $string = join(', ',map(textrec($_),@args)); }
+    my $app_role = $node->getAttribute('role');
+    if($app_role && $app_role =~/^FLOAT/){
+      ($app_role eq 'FLOATSUPERSCRIPT' ? '^' : '_').textrec($op); }
     else {
-      $bp = 500;
-      $string = textrec($op,10000,$name) .'@(' . join(', ',map(textrec($_),@args)). ')'; }
-    (($bp < $outer_bp)||(($bp==$outer_bp)&&($name ne $outer_name)) ? '('.$string.')' : $string); }
+      my $name = ((getQName($op) eq 'ltx:XMTok') && getTokenMeaning($op)) || 'unknown';
+      my $role  =  $op->getAttribute('role') || 'Unknown';
+      my ($bp,$string);
+      if($bp = $IS_INFIX{$role}){
+	# Format as infix.
+	$string = (scalar(@args) == 1 # unless a single arg; then prefix.
+		   ? textrec($op) .' '.textrec($args[0],$bp,$name)
+		   : join(' '. textrec($op) .' ',map(textrec($_,$bp,$name), @args))); }
+      elsif($role eq 'POSTFIX'){
+	$bp = 10000;
+	$string = textrec($args[0],$bp,$name).textrec($op); }
+      elsif($name eq 'multirelation'){
+	$bp = 2;
+	$string = join(' ',map(textrec($_,$bp,$name),@args)); }
+      ##    elsif($name eq 'fenced'){
+      ##      $bp = -1;			# to force parentheses
+      ##      $string = join(', ',map(textrec($_),@args)); }
+      else {
+	$bp = 500;
+	$string = textrec($op,10000,$name) .'@(' . join(', ',map(textrec($_),@args)). ')'; }
+      (($bp < $outer_bp)||(($bp==$outer_bp)&&($name ne $outer_name)) ? '('.$string.')' : $string); }}
   elsif($tag eq 'ltx:XMDual'){
     my($content,$presentation)=element_nodes($node);
     textrec($content,$outer_bp,$outer_name); } # Just send out the semantic form.
