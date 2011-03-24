@@ -202,9 +202,10 @@ sub setBody {
   $$self{properties}{body} = ($self->isMath ? LaTeXML::MathList->new(@body) : LaTeXML::List->new(@body));
   $$self{properties}{trailer} = $trailer;
   # And copy any otherwise undefined properties from the trailer
-  my %trailerhash = $trailer->getProperties;
-  foreach my $prop (keys %trailerhash){
-    $$self{properties}{$prop} = $trailer->getProperty($prop) unless defined $$self{properties}{$prop}; }
+  if($trailer){
+    my %trailerhash = $trailer->getProperties;
+    foreach my $prop (keys %trailerhash){
+      $$self{properties}{$prop} = $trailer->getProperty($prop) unless defined $$self{properties}{$prop}; }}
   return; }
 
 sub getTrailer  { $_[0]{properties}{trailer}; }
