@@ -173,6 +173,7 @@ XMApp_attributes =
 
   ## An encoding of the position of this token as a sub/superscript, used
   ## to handle aligned and nested scripts, both pre and post.
+  ## (See \elementref{XMTok} for details)
   attribute scriptpos { text }?
 
 ## Content model for \elementref{XMApp}.
@@ -226,7 +227,12 @@ element XMText { XMText_attributes, XMText_model }
 XMText_attributes = 
   Common.attributes,
   XMath.attributes,
-  ID.attributes
+  ID.attributes,
+  
+  ## An encoding of the position of this token as a sub/superscript, used
+  ## to handle aligned and nested scripts, both pre and post.
+  ## (See \elementref{XMTok} for details)
+  attribute scriptpos { text }?
 
 ## Content model for \elementref{XMText}.
 XMText_model = (text | Inline.class | Misc.class)*
@@ -251,7 +257,13 @@ XMWrap_attributes =
   ## such as the OpenMath name.
   attribute meaning { text }?,
 
-  attribute style { text }?
+  attribute style { text }?,
+
+  ## An encoding of the position of this token as a sub/superscript, used
+  ## to handle aligned and nested scripts, both pre and post.
+  ## (See \elementref{XMTok} for details)
+  attribute scriptpos { text }?
+
 
 ## Content model for \elementref{XMWrap}.
 XMWrap_model = XMath.class*
@@ -269,7 +281,12 @@ XMArg_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
-  attribute rule { text }?
+  attribute rule { text }?,
+
+  ## An encoding of the position of this token as a sub/superscript, used
+  ## to handle aligned and nested scripts, both pre and post.
+  ## (See \elementref{XMTok} for details)
+  attribute scriptpos { text }?
 
 ## Content model for \elementref{XMArg}.
 XMArg_model = XMath.class*

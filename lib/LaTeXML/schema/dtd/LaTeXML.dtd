@@ -641,7 +641,8 @@
   separators CDATA #IMPLIED
   punctuation CDATA #IMPLIED
   possibleFunction CDATA #IMPLIED
-  xml:id ID #IMPLIED>
+  xml:id ID #IMPLIED
+  scriptpos CDATA #IMPLIED>
 
 <!ELEMENT ns1:XMWrap (ns1:XMApp|ns1:XMTok|ns1:XMRef|ns1:XMHint|ns1:XMArg
                       |ns1:XMWrap|ns1:XMDual|ns1:XMText|ns1:XMArray)*>
@@ -659,7 +660,8 @@
   xml:id ID #IMPLIED
   name CDATA #IMPLIED
   meaning CDATA #IMPLIED
-  style CDATA #IMPLIED>
+  style CDATA #IMPLIED
+  scriptpos CDATA #IMPLIED>
 
 <!ELEMENT ns1:XMArg (ns1:XMApp|ns1:XMTok|ns1:XMRef|ns1:XMHint|ns1:XMArg
                      |ns1:XMWrap|ns1:XMDual|ns1:XMText|ns1:XMArray)*>
@@ -675,7 +677,8 @@
   punctuation CDATA #IMPLIED
   possibleFunction CDATA #IMPLIED
   xml:id ID #IMPLIED
-  rule CDATA #IMPLIED>
+  rule CDATA #IMPLIED
+  scriptpos CDATA #IMPLIED>
 
 <!ELEMENT ns1:XMRef EMPTY>
 <!ATTLIST ns1:XMRef

@@ -252,7 +252,8 @@ such as the OpenMath name.</a:documentation>
     <optional>
       <attribute name="scriptpos">
         <a:documentation>An encoding of the position of this token as a sub/superscript, used
-to handle aligned and nested scripts, both pre and post.</a:documentation>
+to handle aligned and nested scripts, both pre and post.
+(See \elementref{XMTok} for details)</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -326,6 +327,13 @@ The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="XMath.attributes"/>
     <ref name="ID.attributes"/>
+    <optional>
+      <attribute name="scriptpos">
+        <a:documentation>An encoding of the position of this token as a sub/superscript, used
+to handle aligned and nested scripts, both pre and post.
+(See \elementref{XMTok} for details)</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="XMText_model">
     <a:documentation>Content model for \elementref{XMText}.</a:documentation>
@@ -364,6 +372,13 @@ such as the OpenMath name.</a:documentation>
     <optional>
       <attribute name="style"/>
     </optional>
+    <optional>
+      <attribute name="scriptpos">
+        <a:documentation>An encoding of the position of this token as a sub/superscript, used
+to handle aligned and nested scripts, both pre and post.
+(See \elementref{XMTok} for details)</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="XMWrap_model">
     <a:documentation>Content model for \elementref{XMWrap}.</a:documentation>
@@ -388,6 +403,13 @@ and thus generally disappears after parsing.</a:documentation>
     <ref name="ID.attributes"/>
     <optional>
       <attribute name="rule"/>
+    </optional>
+    <optional>
+      <attribute name="scriptpos">
+        <a:documentation>An encoding of the position of this token as a sub/superscript, used
+to handle aligned and nested scripts, both pre and post.
+(See \elementref{XMTok} for details)</a:documentation>
+      </attribute>
     </optional>
   </define>
   <define name="XMArg_model">
