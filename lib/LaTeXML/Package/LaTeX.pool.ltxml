@@ -1389,22 +1389,6 @@ sub eqnarrayJoinRows {
       addColumnToMathFork($document,$main,$tr,$cell); }}
 }
 
-# Tricky bit for creating nodes late in the game,
-# 
-sub addNewChildLate {
-  my($document,$node,$tag)=@_;
-  my ($nsuri,$localname) = (undef,$tag);
-  ($nsuri,$localname)= $document->getModel->decodeQName($tag);
-  my $newnode = 
-    ($nsuri ? $node->addNewChild($nsuri,$localname)
-     : $node->appendChild($document->createElement($localname)));
-  # Copy essentials to new node.
-  if(my $font = $node->getAttribute('_font')){
-    $newnode->setAttribute(_font=>$font); }
-  if(my $box = $node->getAttribute('_box')){
-    $newnode->setAttribute(_box=>$box); }
-  $newnode; }
-
 # Given an equation generated in an equationgroup, 
 # collect each $ncols columns into a MathFork structure,
 # with the formatted portion being the columns.
@@ -2569,6 +2553,7 @@ sub process_index_phrases {
   my @expansion = ();
   # Split the text into phrases, separated by "!"
   my @tokens = $phrases->unlist;
+  return unless @tokens;
   push(@tokens,T_OTHER('!')) unless $tokens[$#tokens]->getString eq '!'; # Add terminal !
   my @phrase=();
   my @sortas=();
