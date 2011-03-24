@@ -36,9 +36,9 @@ DefPrimitive('\newfloat{}{}{}[]',sub {
   my($gullet,$type,$placement,$auxext,$within)=@_;
   $type = ToString($type);
   NewCounter($type,$within);
-  if(!LookupDefinintion(T_CS('\fname@'.ToString($type)))){
-    DefMacro('\fname@'.$type,$type); }
-  DefEnvironment('{$type}[]',
+  if(!LookupDefinition(T_CS('\fname@'.ToString($type)))){
+    DefMacroI('\fname@'.$type,undef,$type); }
+  DefEnvironment("{$type}[]",
 		 "<ltx:float refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1') class='$type'>"
 		 . "#body"
 		 ."</ltx:float>",
