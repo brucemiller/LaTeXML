@@ -45,9 +45,13 @@ ProcessOptions();
 DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
 
 # Authors and addresses
+# They seem to allow commas?
+DefMacro('\author{}', sub { SplitTokens(T_CS('\@author'),$_[1],T_CS('\and'),T_OTHER(',')); });
+
 DefConstructor('\@institutemark{}',"<ltx:contact role='institutemark' mark='#1'/>");
 # \inst typically appears INSIDE \author, so @add@to@frontmatter doesn't sync them
-DefConstructor('\inst{}',"^<ltx:contact role='institutemark' mark='#1'/>");
+DefConstructor('\@inst{}',"^<ltx:contact role='institutemark' mark='#1'/>");
+DefMacro('\inst{}',sub { SplitTokens(T_CS('\@inst'),$_[1],T_OTHER(',')); });
 NewCounter('inst','document');
 DefMacro('\institute{}','\bgroup\setcounter{inst}{1}\let\and\institute@and\@new@institute#1\@end@institute\egroup');
 DefMacro('\institute@and','\@end@institute\stepcounter{inst}\@new@institute');
