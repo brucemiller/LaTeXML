@@ -361,7 +361,7 @@ DefMacro('\shortcites Semiverbatim','');
 #   \harvarditem[Jones et al.]{Jones, Baker, and Williams}{1990}{key}...
 
 ##DefMacro('\bibitem','\refstepcounter{enumiv}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}');
-DefMacro('\bibitem','\refstepcounter{@bibitem}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}');
+DefMacro('\bibitem','\reset@natbib@cites\refstepcounter{@bibitem}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}');
 
 RawTeX(<<'EOTeX');
 %%%
@@ -388,6 +388,14 @@ RawTeX(<<'EOTeX');
   \if\relax#2\relax\NAT@wrout{#1}{}{}{}{#4}\else\NAT@wrout{\the@bibitem}{#2}{#1}{}{#4}\fi}
 %%%%
 EOTeX
+Let(T_CS('\natbib@citeauthoryear'),T_CS('\citeauthoryear'));
+Let(T_CS('\natbib@astroncite'),T_CS('\astroncite'));
+Let(T_CS('\natbib@citename'),T_CS('\citename'));
+# Sometimes, perversely, redefined, so re-redefine them now...
+DefPrimitiveI('\reset@natbib@cites',undef,sub {
+  Let(T_CS('\citeauthoryear'),T_CS,('\natbib@citeauthoryear'));
+  Let(T_CS('\astroncite'),T_CS('\natbib@astroncite'));
+  Let(T_CS('\citename'),T_CS('\natbib@citename')); });
 
 # By this time, \NAT@wrout should look like:
 # \NAT@wrout{number}{year}{authors}{fullauthors}{bibkey}
