@@ -369,10 +369,13 @@ RawTeX(<<'EOTeX');
   \if\relax#3\relax
     \NAT@wrout{\the@bibitem}{#2}{#1}{}{#4}\else
     \NAT@wrout{\the@bibitem}{#3}{#2}{#1}{#4}\fi}
+\let\natbib@citeauthoryear\citeauthoryear
 \def\astroncite#1#2(@)(@)\@nil#3{%
   \NAT@wrout{\the@bibitem}{#2}{#1}{}{#3}}
+\let\natbib@astroncite\astroncite
 \def\citename#1#2(@)(@)\@nil#3{%
   \expandafter\NAT@apalk#1#2, \@nil{#3}}
+\let\natbib@citename\citename
 \newcommand\harvarditem[4][]{%
   \if\relax#1\relax\bibitem[#2(#3)]{#4}\else\bibitem[#1(#3)#2]{#4}\fi }
 %%%%
@@ -388,12 +391,9 @@ RawTeX(<<'EOTeX');
   \if\relax#2\relax\NAT@wrout{#1}{}{}{}{#4}\else\NAT@wrout{\the@bibitem}{#2}{#1}{}{#4}\fi}
 %%%%
 EOTeX
-Let(T_CS('\natbib@citeauthoryear'),T_CS('\citeauthoryear'));
-Let(T_CS('\natbib@astroncite'),T_CS('\astroncite'));
-Let(T_CS('\natbib@citename'),T_CS('\citename'));
 # Sometimes, perversely, redefined, so re-redefine them now...
 DefPrimitiveI('\reset@natbib@cites',undef,sub {
-  Let(T_CS('\citeauthoryear'),T_CS,('\natbib@citeauthoryear'));
+  Let(T_CS('\citeauthoryear'),T_CS('\natbib@citeauthoryear'));
   Let(T_CS('\astroncite'),T_CS('\natbib@astroncite'));
   Let(T_CS('\citename'),T_CS('\natbib@citename')); });
 
