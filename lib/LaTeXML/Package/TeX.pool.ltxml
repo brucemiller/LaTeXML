@@ -266,6 +266,7 @@ sub skipConditionalBody {
   my($gullet,$nskips)=@_;
   my $level=1;
   my $n_ors = 0;
+  my $start = $gullet->getLocator;
   while(my $t= $gullet->readToken){
     if(defined(my $defn = LookupDefinition($t))){
       if($defn->isExpandable && $defn->isConditional){
@@ -278,7 +279,7 @@ sub skipConditionalBody {
 	return; }
       elsif(Equals($t,T_CS('\else')) && $nskips){
 	return; }}}
-  Fatal(":expected:\\fi Missing \\fi or \\else, conditional fell off end"); }
+  Fatal(":expected:\\fi Missing \\fi or \\else, conditional fell off end (starting at $start)"); }
 
 # NOTE: See Definition setting current_if_level before conditionals!
 
@@ -2548,6 +2549,7 @@ RawTeX('
   \countdef\count@=255
   \toksdef\toks@=0
   \skipdef\skip@=0
+  \dimendef\dimen@=0
   \dimendef\dimen@i=1
   \dimendef\dimen@ii=2');
 # Various \count's are set; should we?
@@ -3572,8 +3574,8 @@ sub lookup_delimiter {
 
 # This is a little messier than you'd think.
 # These effectively create a group between the \left,\right.
-DefMacro('\left Token','\@left #1\@hidden@bgroup');
-DefMacro('\right Token','\@hidden@egroup\@right #1');
+DefMacro('\left XToken','\@left #1\@hidden@bgroup');
+DefMacro('\right XToken','\@hidden@egroup\@right #1');
 DefConstructor('\@left Token',
 	       "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)(<ltx:XMHint/>)",
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
@@ -4223,17 +4225,31 @@ sub setAlignOrClass {
 #======================================================================
 # A random collection of utility functions.
 # [maybe need to do some reorganization?]
-sub andSplit {
-  my($cs,$tokens)=@_;
+sub SplitTokens {
+  my($cs,$tokens,@delims)=@_;
   my @items = ();
   my @toks=();
   if($tokens){
-    foreach my $t ($tokens->unlist){
-      if(Equals($t,T_CS('\and'))){
+    my @tokens = $tokens->unlist;
+    my $t;
+    while($t = shift(@tokens)){
+      if(grep(Equals($t,$_), @delims)){
 	push(@items,[@toks]); @toks=();}
+      elsif(Equals($t,T_BEGIN)){
+	push(@toks,$t);
+	my $level=1;
+	while($level && defined ($t=shift(@tokens))){
+	  my $cc = $t->getCatcode;
+	  $level++ if $cc == CC_BEGIN;
+	  $level-- if $cc == CC_END;
+	  push(@toks,$t); }}
       else {
 	push(@toks,$t); }}}
   map( ($cs,T_BEGIN,@$_,T_END), @items,[@toks]); }
+
+sub andSplit {
+  my($cs,$tokens)=@_;
+  SplitTokens($cs,$tokens,T_CS('\and')); }
 
 #**********************************************************************
 
