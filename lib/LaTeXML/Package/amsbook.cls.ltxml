@@ -16,7 +16,20 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-LoadClass('ams_core', withoptions=>1);
+foreach my $option (qw(a4paper letterpaper landscape portrait
+		       oneside twoside draft final  e-only
+		       titlepage notitlepage
+		       openright openany onecolumn twocolumn
+		       nomath noamsfonts psamsfonts
+		       leqno reqno centertags tbtags fleqn
+		       8pt 9pt 10pt 11pt 12pt
+		       makeidx)){
+  DeclareOption($option,undef); }
+ProcessOptions();
+
+# I think all options are (non)handled above, so don't need to pass any.
+LoadClass('book');
+RequirePackage('ams_support');
 
 # #======================================================================
 # # Sec 8 Monograph Formatting:
