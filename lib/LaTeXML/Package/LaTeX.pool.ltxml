@@ -2288,7 +2288,6 @@ sub beginBibliography {
   # Fix for missing \bibitems!
   setupPseudoBibitem(); }
 
-# NOTE: Not really complete, since I haven't dealt with bibliographies!
 DefMacro('\bibliography Semiverbatim', '\ifx.#1.\else\@bibliography{#1}\fi');
 DefConstructor('\@bibliography Semiverbatim',
 	       "<ltx:bibliography files='#1' xml:id='#id'>"
