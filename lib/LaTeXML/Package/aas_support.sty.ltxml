@@ -387,10 +387,10 @@ DefPrimitive('\@mark@tableheader',sub {
     map($$_{head}=1, $row->columns); }
   return; });
 
-DefMacro('\nl',         '\\\\'); # Obsolete form
-DefMacro('\nextline',   '\\\\'); # Obsolete form
-DefMacro('\tablevspace','\\\\'); # Obsolete form
-DefMacro('\tablebreak', '\\\\'); # Obsolete form
+DefMacro('\nl',         '\\\\[0pt]'); # Obsolete form
+DefMacro('\nextline',   '\\\\[0pt]'); # Obsolete form
+DefMacro('\tablevspace','\\\\[0pt]'); # Obsolete form
+DefMacro('\tablebreak', '\\\\[0pt]'); # Obsolete form
 
 #======================================================================
 # 2.15.3 Content of deluxetable
