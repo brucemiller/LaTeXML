@@ -18,7 +18,12 @@ foreach my $option (qw(a4paper 10pt twoside draft final fleqn twocolumn
 		       referee instindent smartand nospthms deutsch francais),
 		    # These could affect numbering...
 		    qw(numbook envcountreset envcountsame envcountsect),
-		    qw(natbib)){
+		    qw(natbib),
+		    # various journal styles
+		    qw(2epj epj glov2arxiv manmat-mod multphys aar epj-mine glov2 matann2 nummat
+		       ampa epjmod granma matann own arma epj_orig icps3 matbio probth
+		       ceremade epj-spec ifip matprg publmath cmp gc10 ijodl matzei tcfd
+		       cmt global invmat multph)){
   DeclareOption($option, undef); }
 
 # Other options could load sv<option>.clo !
@@ -26,4 +31,5 @@ foreach my $option (qw(a4paper 10pt twoside draft final fleqn twocolumn
 ProcessOptions();
 LoadClass('article');
 RequirePackage('sv_support');
+
 1;

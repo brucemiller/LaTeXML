@@ -81,6 +81,24 @@ DefMacro('\papertype{}',  '\@add@frontmatter{ltx:classification}[scheme=papertyp
 
 Let(T_CS('\journalopt'),T_CS('\@empty'));
 
+
+# svjour covers several specific journal styles.
+# And SOME (but not all!) of those journal styles call for \abstract{...}
+# instead of the abstract environment!
+# Moreover, those that do expect the abstract to appear in the Preamble,
+# so that it gets included in maketitle.
+
+# We'll try just redefining \abstract (and leave the abstract environment
+# for when people need and actually use \begin[abstract}...)
+
+Let(T_CS('\@orig@abstract'),T_CS('\abstract'));
+DefMacro('\abstract',sub {
+  if($_[0]->ifNext(T_BEGIN)){ T_CS('\@abstract@with@arg'); }
+  else { T_CS('\@orig@abstract'); }});
+
+DefMacro('\@abstract@with@arg{}', '\@add@frontmatter{ltx:abstract}[name={\abstractname}]{#1}');
+
+
 DefMacro('\makereferee',Tokens());
 
 DefMacro('\ackname','Acknowledgements');
