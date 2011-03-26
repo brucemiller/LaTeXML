@@ -75,6 +75,8 @@ sub pathname_split {
   # Hmm, for /, we get $dir = / but we want $vol='/'  ?????
   if($vol) { $dir = $vol.$dir; }
   elsif(File::Spec->file_name_is_absolute($pathname) && !File::Spec->file_name_is_absolute($dir)){ $dir = $SEP.$dir; }
+  # $dir shouldn't end with separator, unless it is root.
+  $dir =~ s/\Q$SEP\E$// unless $dir eq $SEP;
   my $type = '';
   $type = $1 if $name =~ s/\.([^\.]+)$//;
   ($dir,$name,$type); }
@@ -111,6 +113,7 @@ sub pathname_type {
 sub pathname_concat {
   my($dir,$file)=@_;
   return $file unless $dir;
+  return $dir if !defined $file || ($file eq '.');
   pathname_canonical(File::Spec->catpath('',$dir || '',$file)); }
 
 #======================================================================
@@ -135,7 +138,7 @@ sub pathname_absolute {
 sub pathname_timestamp {
   -f $_[0] ? (stat($_[0]))[9] : 0; }
 
-sub pathname_cwd { cwd(); }
+sub pathname_cwd { pathname_canonical(cwd()); }
 
 sub pathname_mkdir {
   my($directory)=@_;
@@ -208,16 +211,18 @@ sub pathname_findall {
 # and this simplifies overall.
 sub candidate_pathnames {
   my($pathname,%options)=@_;
-  my @dirs=('');
+  my @dirs=();
   $pathname = pathname_canonical($pathname);
-  if(!pathname_is_absolute($pathname)){
+  if(pathname_is_absolute($pathname)){
+    push(@dirs,''); }		# just a stand in
+  else {
     my $cwd = pathname_cwd();
-    # Complete the search paths by prepending current dir to relative paths,
-    # but have at least the current dir.
-    @dirs = ($options{paths}
-	     ? map( (pathname_is_absolute($_) ? pathname_canonical($_) : pathname_concat($cwd,$_)),
-		    @{$options{paths}})
-	     : ($cwd));
+    if($options{paths}){
+      foreach my $p (@{$options{paths}}){
+	# Complete the search paths by prepending current dir to relative paths,
+	my $pp = (pathname_is_absolute($p) ? pathname_canonical($p) : pathname_concat($cwd,$p));
+	push(@dirs,$pp) unless grep($pp eq $_, @dirs); }} # but only include each dir ONCE
+    push(@dirs,$cwd) unless @dirs; # At least have the current directory!
     # And, if installation dir specified, append it.
     if(my $subdir = $options{installation_subdir}){
       push(@dirs,map(pathname_concat($_,$subdir),@INSTALLDIRS)); }}
@@ -227,6 +232,8 @@ sub candidate_pathnames {
   if($options{types}){
     foreach my $ext (@{$options{types}}){
       if($ext eq ''){ push(@exts,''); }
+      elsif($ext eq '*'){
+	push(@exts,'.*',''); }
       elsif($pathname =~ /\.\Q$ext\E$/i){
 	push(@exts,''); }
       else {
@@ -241,7 +248,13 @@ sub candidate_pathnames {
   # Now, combine; precedence to leading directories.
   foreach my $dir (@dirs){
     foreach my $ext (@exts){
-      push(@paths,pathname_concat($dir,$pathname.$ext)); }}
+      if($ext eq '.*'){		# Unfortunately, we've got to test the file system NOW...
+	opendir(DIR,$dir) or next; # ???
+	push(@paths,map(pathname_concat($dir,$_), grep( /^\Q$pathname\E\.\w+$/, readdir(DIR))));
+	closedir(DIR); }
+      else {
+	push(@paths,pathname_concat($dir,$pathname.$ext)); }}}
+
   @paths; }
 
 #======================================================================
@@ -358,6 +371,7 @@ This allows files included with the distribution to be found.
 
 The C<types> option specifies a list of filetypes to search for.
 If not supplied, then the filename must match exactly.
+The type C<*> matches any extension.
 
 =item C<< @paths = pathname_findall($name,%options); >>
 
