@@ -4057,7 +4057,7 @@ DefMathI('\@INVISIBLECOMMA',undef, "\x{2063}", reversion=>'', name=>'', role=>'P
 # Would be nice to make the ID argument optional, but since these can appear in
 # optional arguments to other macros, we'll end up nesting [] !!
 DefConstructor('\@XMArg{}{}',"<ltx:XMArg ?#1(xml:id='#1')>#2</ltx:XMArg>", reversion=>'#2',
-	       properties=>{id=>'#1'},
+	       properties=>{(id=>$_[1])},
 	       bounded=>1, beforeDigest=>sub { AssignValue(mathstyle=>'text') });
 DefConstructor('\@XMRef{}',"<ltx:XMRef idref='#1'/>",
 	       reversion=>sub{ 
