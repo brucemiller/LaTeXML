@@ -104,7 +104,7 @@ sub findGraphicsPaths {
 # Return a list of ZML nodes which have graphics that need processing.
 sub selectGraphicsNodes {
   my($self,$doc)=@_;
-  $doc->findnodes('//ltx:graphics'); }
+  $doc->findnodes('//ltx:graphics[not(@imagesrc)]'); }
 
 sub getGraphicsSourceTypes {
   my($self)=@_;
