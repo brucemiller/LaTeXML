@@ -287,9 +287,7 @@ sub invoke {
   foreach my $key (keys %props){
     my $value = $props{$key};
     if(ref $value eq 'CODE'){
-      $props{$key} = &$value($stomach,@args); }
-    elsif($value && ($value =~/^\#(\d)$/)){
-      $props{$key} = $args[$1-1]->toString; }} # What????
+      $props{$key} = &$value($stomach,@args); }}
   $props{font}    = $font   unless defined $props{font};
   $props{locator} = $stomach->getGullet->getMouth->getLocator unless defined $props{locator};
   $props{isMath}  = $ismath unless defined $props{isMath};
