@@ -640,28 +640,42 @@ DefMacroI('\maketitle',undef,
 
 DefConstructor('\thanks{}', "<ltx:note role='thanks'>#1</ltx:note>");
 
-# DefEnvironment('{abstract}','<ltx:abstract>#body</ltx:abstract>');
-# Annoying special case; 2 problems.
-# (1) environment doesn't allow me to get the material to do add@frontmatter
-#   so we've got to do it a bit more manually.
-# (2) Apparently, LaTeX _perversely_ allows \abstract to work!
-#   [ie. no \begin{},\end{}, and not even \endabstract!]
-#   And of course, if it works, people do it.
-#   LaTeXML, however, MUST know when the abstract ends!
-#   So, we use the section hook, to say it must have ended by now (at least)
+# Abstract SHOULD have been so simple, but seems to be a magnet for abuse.
+# For one thing, we'd like to just write
+#   DefEnvironment('{abstract}','<ltx:abstract>#body</ltx:abstract>');
+# However, we don't want to place the <ltx:abstract> environment directly where
+# we found it, but we want to add it to frontmatter. This requires capturing the
+# recently digested list and storing it in the frontmatter structure.
+
+# The really messy stuff comes from the way authors -- and style designers -- misuse it.
+# Basic LaTeX wants it to be an environment WITHIN the document environment,
+# and AFTER the \maketitle.
+# However, since all it really does is typeset "Abstract" in bold, it allows:
+#   \abstract stuff...
+# without even an \endabstract!  We MUST know when the abstract ends, so we've got
+# to recognize when we've moved on to other stuff... \sections at the VERY LEAST.
+
+# Additional complications come from certain other classes and styles that
+# redefine abstract to take the text as an argument. And some treat it
+# like \title, \author, and such, that are expected to appear in the preamble!!
+# The treatment below allows an abstract environment in the preamble, 
+# (even though straight latex doesn't) but does not cover the 1-arg case in preamble!
+#
 # Probably there are other places (eg in titlepage?) that should force the close??
+
 DefEnvironment('{abstract}','',
- 	       afterDigestBegin=>sub {
- 		 AssignValue(inPreamble=>0);
+	       afterDigestBegin=>sub {
+		 AssignValue(inPreamble=>0);
 		 AddToMacro(T_CS('\@startsection@hook'),T_CS('\maybe@end@abstract')); },
- 	       afterDigest=> sub {
+	       afterDigest=> sub {
 		 my $frontmatter = LookupValue('frontmatter');
- 		 push(@{$$frontmatter{'ltx:abstract'}},
- 		      ['ltx:abstract',{name=>Digest(T_CS('\abstractname'))},
+		 push(@{$$frontmatter{'ltx:abstract'}},
+		      ['ltx:abstract',{name=>Digest(T_CS('\abstractname'))},
 		       @LaTeXML::LIST]);
 		 DefMacroI('\maybe@end@abstract',undef,Tokens());
- 		 return; },
+		 return; },
 	       locked=>1, mode=>'text');
+
 DefMacroI('\maybe@end@abstract',undef, '\endabstract');
 
 DefMacroI('\abstractname',undef, 'Abstract');
@@ -725,6 +739,10 @@ DefMacroI('\@evenfoot',undef,   Tokens());
 
 DefEnvironment('{center}',sub { aligningEnvironment('center','centering',@_); },
 	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))});
+# HOWEVER, define a plain \center to act like \centering (?)
+DefMacroI('\center',undef,'\centering');
+DefMacroI('\endcenter',undef,'');
+
 DefEnvironment('{flushleft}',sub { aligningEnvironment('left','flushleft',@_); },
 	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))});
 DefEnvironment('{flushright}',sub { aligningEnvironment('right','flushright',@_); },
