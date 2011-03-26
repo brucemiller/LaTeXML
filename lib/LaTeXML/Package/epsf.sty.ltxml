@@ -43,7 +43,8 @@ DefConstructor('\epsfbox[] Semiverbatim', sub {
   my($document,$bb,$graphic)=@_;
   my $clip = LookupValue('epsf_clip');
   my $options=($clip ? ($bb ? "viewport=$bb, clip" : "clip") : '');
-  $document->insertElement('ltx:graphics',undef,graphic=>$graphic,options=>$options); });
+  my $candidates = join(',',pathname_findall(ToString($graphic),type=>['*'],paths=>LookupValue('GRAPHICSPATHS')));
+  $document->insertElement('ltx:graphics',undef,graphic=>$graphic,candidates=>$candidates,options=>$options); });
 
 Let('\epsfgetlitbb','\epsfbox');
 Let('\epsfnormal','\epsfbox');

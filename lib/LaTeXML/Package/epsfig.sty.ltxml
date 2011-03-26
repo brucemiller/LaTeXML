@@ -30,14 +30,18 @@ DefKeyVal('epsGin','prolog','Semiverbatim');
 DefKeyVal('epsGin','silent','');
 
 DefConstructor('\psfig RequiredKeyVals:epsGin',
-	       "<ltx:graphics graphic='#file' options='#1'/>",
+	       "<ltx:graphics graphic='#file' candidates='#candidates' options='#1'/>",
 	      afterDigest=>sub {
 		my $kv = $_[1]->getArg(1);
 		my $file = $kv->getValue('file')|| $kv->getValue('figure');
 		$kv->setValue(file=>undef);
 		$kv->setValue(figure=>undef);
 		$kv->setValue(clip=>'true') if LookupValue('epsfclip');
-		$_[1]->setProperty(file=>$file); });
+		$_[1]->setProperty(file=>$file);
+		my $candidates = join(',',pathname_findall(ToString($file),types=>['*'],
+							   paths=>LookupValue('GRAPHICSPATHS')));
+		$_[1]->setProperty(candidates=>$candidates);
+	      });
 
 Let('\epsfig','\psfig');
 

@@ -33,9 +33,11 @@ DefMacro('\includegraphics OptionalMatch:* []',
 	 '\@ifnextchar[{\@includegraphics#1[#2]}{\@includegraphicx#1[#2]}');
 
 DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbatim',
-	       "<ltx:graphics graphic='#3' options='#2?#1(,clip=true)'/>",
-	      alias=>'\includegraphics');
-
+	       "<ltx:graphics graphic='#3' candidates='#candidates' options='#2?#1(,clip=true)'/>",
+	       alias=>'\includegraphics',
+	       properties=>sub { (candidates=>join(',',pathname_findall(ToString($_[3]),
+									types=>['*'],
+									paths=>LookupValue('GRAPHICSPATHS')))) });
 
 #**********************************************************************
 1;
