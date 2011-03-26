@@ -1650,10 +1650,8 @@ The CODE is called with the $whatsit and digested arguments.
 
 This option supplies additional properties to be set on the
 generated Whatsit.  In the first form, the values can
-be of any type, but (1) if it is a code references, it takes
-the same args ($stomach,#1,#2,...) and should return a value.
-and (2) if the value is a string, occurances of #1 (etc) are
-replaced by the corresponding argument.
+be of any type, but if a value is a code references, it takes
+the same args ($stomach,#1,#2,...) and should return the value.
 In the second form, the code should return a hash of properties.
 
 =item  beforeDigest=>CODE($stomach)
