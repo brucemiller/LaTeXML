@@ -49,7 +49,7 @@ my $source = $ARGV[0];
 print STDERR "$identity\n" unless $verbosity < 0;
 
 @paths = map(pathname_canonical($_),@paths);
-my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[@paths],
+my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[@paths], graphicspaths=>['.'],
 			  verbosity=>$verbosity, strict=>$strict,
 			  includeComments=>$comments,inputencoding=>$inputencoding,
 			  includeStyles=>$includestyles,
