@@ -282,7 +282,7 @@ Person.class = personname | contact
 
 ## Attributes for \elementref{creator}.
 creator_attributes = 
-  Common.attributes,
+  Common.attributes, FrontMatter.attributes,
 
   ## indicates the role of the person in creating the docment.
   ## Commonly useful values are specified, but is open-ended to support extension.
@@ -314,7 +314,7 @@ element contact { contact_attributes, contact_model }
 
 ## Attributes for \elementref{contact}.
 contact_attributes = 
-  Common.attributes,
+  Common.attributes, FrontMatter.attributes,
 
   ## indicates the type of contact information contained.
   ## Commonly useful values are specified, but is open-ended to support extension.

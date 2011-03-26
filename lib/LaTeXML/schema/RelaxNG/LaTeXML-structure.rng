@@ -506,6 +506,7 @@ basically Inline.model with tag included (normally, but not necessarily, tag wou
   <define name="creator_attributes">
     <a:documentation>Attributes for \elementref{creator}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="FrontMatter.attributes"/>
     <optional>
       <attribute name="role">
         <a:documentation>indicates the role of the person in creating the docment.
@@ -562,6 +563,7 @@ of contact information (using \attr{role}) for the same creator.</a:documentatio
   <define name="contact_attributes">
     <a:documentation>Attributes for \elementref{contact}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="FrontMatter.attributes"/>
     <optional>
       <attribute name="role">
         <a:documentation>indicates the type of contact information contained.
