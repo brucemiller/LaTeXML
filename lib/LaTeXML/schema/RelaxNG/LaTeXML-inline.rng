@@ -133,9 +133,11 @@ and can thus be effected by CSS.</a:documentation>
   <define name="acronym_attributes">
     <a:documentation>Attributes for \elementref{acronym}.</a:documentation>
     <ref name="Common.attributes"/>
-    <attribute name="name">
-      <a:documentation>should be used to indicate the expansion of the acronym.</a:documentation>
-    </attribute>
+    <optional>
+      <attribute name="name">
+        <a:documentation>should be used to indicate the expansion of the acronym.</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="acronym_model">
     <a:documentation>Content model for \elementref{acronym}.</a:documentation>

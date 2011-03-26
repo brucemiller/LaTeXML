@@ -40,7 +40,7 @@
 <!ATTLIST ns1:acronym
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
-  name CDATA #REQUIRED>
+  name CDATA #IMPLIED>
 
 <!ELEMENT ns1:rule EMPTY>
 <!ATTLIST ns1:rule
@@ -343,8 +343,8 @@
   imagewidth CDATA #IMPLIED
   imageheight CDATA #IMPLIED
   description CDATA #IMPLIED
-  graphic CDATA #REQUIRED
-  candidates CDATA #REQUIRED
+  graphic CDATA #IMPLIED
+  candidates CDATA #IMPLIED
   options CDATA #IMPLIED>
 
 <!ELEMENT ns1:para (ns1:p|ns1:equation|ns1:equationgroup|ns1:quote
@@ -1532,6 +1532,7 @@
 <!ATTLIST ns1:creator
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  name CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ns1:personname (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
@@ -1552,6 +1553,7 @@
 <!ATTLIST ns1:contact
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  name CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ns1:date (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule

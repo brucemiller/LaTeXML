@@ -273,12 +273,12 @@ graphics_attributes =
   ## the path to the graphics file. This is the (often minimally specified) path
   ## to a graphics file omitting the type extension.  Once resolved to a specific
   ## image file, the \attr{imagesrc} (from Imageable.attributes) is used.
-  attribute graphic { text },
+  attribute graphic { text }?,
 
   ## a comma separated list of candidate graphics files that could be used to
   ## for \attr{graphic}.  A post-processor or application may choose from these,
   ## or may make its own selection or synthesis to implement the graphic for a given target.
-  attribute candidates { text },
+  attribute candidates { text }?,
 
   ## an encoding of the scaling and positioning options
   ## to be used in processing the graphic.
