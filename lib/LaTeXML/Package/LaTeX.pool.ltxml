@@ -561,6 +561,8 @@ DefMacro('\AtEndOfPackage{}',sub {
   my $type = ToString(Digest(T_CS('\@currext')));
   AddToMacro(T_CS("\\$name.$type-hook"),$code); });
 
+DefMacro('\g@addto@macro Token {}',sub { AddToMacro($_[1],$_[2]); });
+
 Let(T_CS('\AtEndOfClass'),T_CS('\AtEndOfPackage'));
 
 DefMacro('\AtBeginDvi {}', Tokens());
@@ -1612,7 +1614,7 @@ DefPrimitive('\renewcommand OptionalMatch:* DefToken [][]{}', sub {
 DefPrimitive('\providecommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
   my $key = "defined:".Stringify($cs);
-  return if LookupValue($key);
+  return if LookupValue($key) || LookupDefinition($cs);
   DefMacroI($cs, convertLaTeXArgs($nargs,$opt),$body); });
 
 # Need to figure out exactly what `robust' means to LaTeXML...
