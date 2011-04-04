@@ -136,6 +136,8 @@ sub TokenizeInternal {
 
 sub StartSemiverbatim() {
   $LaTeXML::STATE->pushFrame;
+  $LaTeXML::STATE->assignValue(MODE=>'text'); # only text mode makes sense here... BUT is this shorthand safe???
+  $LaTeXML::STATE->assignValue(IN_MATH=>0);
   # include space!
   map($LaTeXML::STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%',"'",' ');
   $LaTeXML::STATE->assignCatcode('math:\''=>0,'local');
