@@ -135,26 +135,8 @@ sub lookupContent {
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Support functions for Presentation MathML
+# Various needed maps
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-sub pmml_top {
-  my($self,$node,$style)=@_;
-  local $LaTeXML::MathML::PROCESSOR = $self;
-  local $LaTeXML::MathML::STYLE = $style;
-  local $LaTeXML::MathML::FONT  = find_inherited_attribute($node,'font');
-  local $LaTeXML::MathML::SIZE  = find_inherited_attribute($node,'size');
-  local $LaTeXML::MathML::COLOR = find_inherited_attribute($node,'color');
-  pmml($node); }
-
-sub find_inherited_attribute {
-  my($node,$attribute)=@_;
-  while($node && isElementNode($node)){
-    if(my $value = $node->getAttribute($attribute)){
-      return $value; }
-    $node = $node->parentNode; }
-  return undef; }
-
 our %stylestep=(display=>'text', text=>'script',
 	       script=>'scriptscript', scriptscript=>'scriptscript');
 our %style_script_step=(display=>'script', text=>'script',
@@ -172,6 +154,77 @@ our %stylemap
      scriptscript=>{display     =>[displaystyle=>'true',scriptlevel=>'-2'],
 		    text        =>[scriptlevel=>'-2'],
 		    script      =>[scriptlevel=>'-1']});
+
+# Mappings between internal fonts & sizes.
+# Default math font is roman|medium|upright.
+our %mathvariants = ('upright'          =>'normal',
+		     'serif'            =>'normal',
+		     'medium'           =>'normal',
+		     'bold'             =>'bold',
+		     'bold upright'     =>'bold',
+		     'italic'           =>'italic',
+		     'serif italic'     =>'italic',
+		     'serif slanted'    =>'italic',
+		     'medium italic'    =>'italic',
+		     'medium slanted'   =>'italic',
+		     'bold italic'      =>'bold-italic',
+		     'bold slanted'     =>'bold-italic',
+		     'doublestruck'     =>'double-struck',
+		     'doublestruck upright'=>'double-struck',
+		     'blackboard'       =>'double-struck',
+		     'blackboard upright'=>'double-struck',
+		     'fraktur'          => 'fraktur',
+		     'fraktur italic'   => 'fraktur', # ?
+		     'fraktur slanted'  => 'fraktur', # ?
+		     'fraktur upright'  => 'fraktur',
+		     'fraktur bold'     => 'bold-fraktur',
+		     'script'           => 'script',
+		     'script italic'    => 'script',
+		     'script slanted'   => 'script',
+		     'script upright'   => 'script',
+		     'script bold'      => 'bold-script',
+		     'caligraphic'      => 'script',
+		     'caligraphic upright'=> 'script',
+		     'caligraphic bold' => 'bold-script',
+		     'sansserif'        => 'sans-serif',
+		     'sansserif upright'=> 'sans-serif',
+		     'sansserif bold'   => 'bold-sans-serif',
+		     'sansserif italic' => 'sans-serif-italic',
+		     'sansserif slanted'=> 'sans-serif-italic',
+		     'sansserif bold italic'  => 'sans-serif-bold-italic',
+		     'sansserif bold slanted' => 'sans-serif-bold-italic',
+		     'typewriter'       => 'monospace');
+
+# The font differences (from the containing context) have been deciphered
+# into font, size and color attributes.  The font should match
+# one of the above... (?)
+our %sizes=(tiny=>'small',script=>'small',footnote=>'small',small=>'small',
+	    normal=>'normal',
+	    large=>'big',Large=>'big',LARGE=>'big',huge=>'big',Huge=>'big',
+	    big=>'1.1em', Big=>'1.5em', bigg=>'2.0em', Bigg=>'2.5em');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Support functions for Presentation MathML
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+sub pmml_top {
+  my($self,$node,$style)=@_;
+  local $LaTeXML::MathML::PROCESSOR = $self;
+  local $LaTeXML::MathML::STYLE = $style;
+  local $LaTeXML::MathML::FONT  = find_inherited_attribute($node,'font');
+  $LaTeXML::MathML::FONT = undef if $LaTeXML::MathML::FONT && !$mathvariants{$LaTeXML::MathML::FONT}; # Make sure it's a sane font
+  local $LaTeXML::MathML::SIZE  = find_inherited_attribute($node,'size');
+  local $LaTeXML::MathML::COLOR = find_inherited_attribute($node,'color');
+  pmml($node); }
+
+sub find_inherited_attribute {
+  my($node,$attribute)=@_;
+  while($node && isElementNode($node)){
+    if(my $value = $node->getAttribute($attribute)){
+      return $value; }
+    $node = $node->parentNode; }
+  return undef; }
+
 
 sub pmml_smaller {
   my($node)=@_;
@@ -335,53 +388,6 @@ sub pmml_infix {
       push(@items,pmml(shift(@args))); }}
   pmml_row(@items); }
 
-# Mappings between internal fonts & sizes.
-# Default math font is roman|medium|upright.
-our %mathvariants = ('upright'          =>'normal',
-		     'serif'            =>'normal',
-		     'medium'           =>'normal',
-		     'bold'             =>'bold',
-		     'bold upright'     =>'bold',
-		     'italic'           =>'italic',
-		     'serif italic'     =>'italic',
-		     'serif slanted'    =>'italic',
-		     'medium italic'    =>'italic',
-		     'medium slanted'   =>'italic',
-		     'bold italic'      =>'bold-italic',
-		     'bold slanted'     =>'bold-italic',
-		     'doublestruck'     =>'double-struck',
-		     'doublestruck upright'=>'double-struck',
-		     'blackboard'       =>'double-struck',
-		     'blackboard upright'=>'double-struck',
-		     'fraktur'          => 'fraktur',
-		     'fraktur italic'   => 'fraktur', # ?
-		     'fraktur slanted'  => 'fraktur', # ?
-		     'fraktur upright'  => 'fraktur',
-		     'fraktur bold'     => 'bold-fraktur',
-		     'script'           => 'script',
-		     'script italic'    => 'script',
-		     'script slanted'   => 'script',
-		     'script upright'   => 'script',
-		     'script bold'      => 'bold-script',
-		     'caligraphic'      => 'script',
-		     'caligraphic upright'=> 'script',
-		     'caligraphic bold' => 'bold-script',
-		     'sansserif'        => 'sans-serif',
-		     'sansserif upright'=> 'sans-serif',
-		     'sansserif bold'   => 'bold-sans-serif',
-		     'sansserif italic' => 'sans-serif-italic',
-		     'sansserif slanted'=> 'sans-serif-italic',
-		     'sansserif bold italic'  => 'sans-serif-bold-italic',
-		     'sansserif bold slanted' => 'sans-serif-bold-italic',
-		     'typewriter'       => 'monospace');
-
-# The font differences (from the containing context) have been deciphered
-# into font, size and color attributes.  The font should match
-# one of the above... (?)
-our %sizes=(tiny=>'small',script=>'small',footnote=>'small',small=>'small',
-	    normal=>'normal',
-	    large=>'big',Large=>'big',LARGE=>'big',huge=>'big',Huge=>'big',
-	    big=>'1.1em', Big=>'1.5em', bigg=>'2.0em', Bigg=>'2.5em');
 sub UTF {
   my($code)=@_;
   pack('U',$code); }
@@ -708,6 +714,7 @@ sub cmml_top {
   local $LaTeXML::MathML::PROCESSOR = $self;
   local $LaTeXML::MathML::STYLE = 'text';
   local $LaTeXML::MathML::FONT  = find_inherited_attribute($node,'font');
+#  $LaTeXML::MathML::FONT = undef unless $mathvariants{$LaTeXML::MathML::FONT}; # Make sure it's a sane font
   local $LaTeXML::MathML::SIZE  = find_inherited_attribute($node,'size');
   local $LaTeXML::MathML::COLOR = find_inherited_attribute($node,'color');
   cmml($node); }
