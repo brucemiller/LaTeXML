@@ -1587,6 +1587,7 @@ DefConstructor('\mathnormal{}', '#1', bounded=>1, requireMath=>1,
 DefMacroI('\fontsubfuzz',undef,'.4pt');
 DefMacroI('\oldstylenums',undef,Tokens());
 
+DefPrimitiveI('\operator@font',undef, undef, font=>{family=>'serif'});
 
 #**********************************************************************
 # C.8 Definitions, Numbering and Programming
@@ -2813,7 +2814,12 @@ DefRegister('\fill',Glue(0,'1fill'));
 #======================================================================
 # C.13.2 Space
 #======================================================================
-DefPrimitive('\hspace OptionalMatch:* {}',undef);
+DefPrimitive('\hspace OptionalMatch:* {Dimension}',sub {
+  my($stomach,$star,$length)=@_;
+  if(LookupValue('IN_MATH')){ return; }
+  elsif($length->larger(Dimension('1em'))){ # ?
+    Box(UTF(0xA0)); }});		    # or just plain space? or some other
+
 DefPrimitive('\vspace OptionalMatch:* {}',undef);
 DefPrimitive('\addvspace {}',undef);
 DefPrimitive('\addpenalty {}',undef);
@@ -2832,10 +2838,12 @@ DefConstructor('\mbox {}',
 	       "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text', bounded=>1,
  	       beforeDigest=>sub { reenterTextMode(); });
 
+our %makebox_alignment=(l=>'left',r=>'right',s=>'justified');
 DefConstructor('\makebox[Dimension][]{}',
-	       "<ltx:text ?#1(width='#1') ?#2(pos='#2') _noautoclose='1'>#3</ltx:text>",
+	       "<ltx:text ?#1(width='#1') ?#align(align='#align') _noautoclose='1'>#3</ltx:text>",
 	       mode=>'text', bounded=>1,
- 	       beforeDigest=>sub { reenterTextMode(); });
+ 	       beforeDigest=>sub { reenterTextMode(); },
+	       properties=>sub{ ($_[2] ? (align=>$makebox_alignment{ToString($_[2])}) : ()); });
 DefRegister('\fboxrule', Dimension(0));
 DefRegister('\fboxsep',  Dimension(0));
 
@@ -2867,13 +2875,14 @@ DefConstructor('\fbox{}',
 
 DefConstructor('\framebox[Dimension][]{}',
 	       "?#mathframe(<ltx:XMApp><ltx:XMTok role='FRAME' style='box'/>#inner</ltx:XMApp>)"
-	       .  "(<ltx:text ?#1(width='#1') ?#2(pos='#2') framed='rectangle' _noautoclose='1'>#3</ltx:text>)",
+	       .  "(<ltx:text ?#1(width='#1') ?#align(align='#align') framed='rectangle' _noautoclose='1'>#3</ltx:text>)",
 #	       mode=>'text',
 	       beforeDigest=>sub {
 		 my($stomach)=@_;
 		 my $wasmath = LookupValue('IN_MATH');
 		 $stomach->beginMode('text');
 		 AssignValue(FRAME_IN_MATH=>$wasmath); },
+	       properties=>sub{ ($_[2] ? (align=>$makebox_alignment{ToString($_[2])}) : ()); },
 	       afterDigest=>sub {
 		 my($stomach,$whatsit)=@_;
 		 my $wasmath = LookupValue('FRAME_IN_MATH');
