@@ -164,7 +164,8 @@ sub recordID {
 	    ." was set on ".Stringify($prev)."\n using $id instead"
 	    ." AND we ran out of adjustments!!"); }
     else {
-      Error(":malformed ID attribute xml:id=$badid duplicated on ".Stringify($object)
+###      Error(":malformed ID attribute xml:id=$badid duplicated on ".Stringify($object)
+      Info(":malformed ID attribute xml:id=$badid duplicated on ".Stringify($object)
 	    ." was set on ".Stringify($prev)."\n using $id instead"); }}
   $$self{idstore}{$id}=$object; 
   $id; }
