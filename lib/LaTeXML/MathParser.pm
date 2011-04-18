@@ -22,7 +22,7 @@ use base (qw(Exporter));
 our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
 		     &Annotate &InvisibleTimes &InvisibleComma
 		     &NewFormulae &NewFormula &NewList
-		     &ApplyDelimited &NewScript
+		     &ApplyDelimited &NewScript &DecorateOperator
 		     &LeftRec
 		     &Arg &Problem &MaybeFunction
 		     &SawNotation &IsNotationAllowed
@@ -31,7 +31,7 @@ our %EXPORT_TAGS = (constructors
 		    => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
 			   &Annotate &InvisibleTimes &InvisibleComma
 			   &NewFormulae &NewFormula &NewList
-			   &ApplyDelimited &NewScript
+			   &ApplyDelimited &NewScript &DecorateOperator
 			   &LeftRec
 			   &Arg &Problem &MaybeFunction
 			   &SawNotation &IsNotationAllowed
@@ -877,6 +877,16 @@ sub NewScript {
 		  $base,Arg($script,0));
   $$app[1]{scriptpos}=$bx if $bx ne 'post';
   $app; }
+
+# Basically, like NewScript, but decorates an operator with sub/superscripts
+# (with vague unknown implications for meaning?)
+# but which will preserve the role (& meaning?)
+sub DecorateOperator {
+  my($op,$script)=@_;
+  my $decop = NewScript($op,$script);
+  my $role     = p_getAttribute($op,'role');
+  my $meaning  = p_getAttribute($op,'meaning');
+  Annotate($decop,role=>$role, meaning=>$meaning); }
 
 # ================================================================================
 # A "notation" is a language construct or set thereof.
