@@ -45,8 +45,10 @@ sub new {
 		      'global');
   $state->assignValue(DOCUMENTID=>(defined $options{documentid} ? $options{documentid} : ''),
 		      'global');
-  $state->assignValue(SEARCHPATHS=> [ @{$options{searchpaths} || []} ],'global');
-  $state->assignValue(GRAPHICSPATHS=> [ @{$options{graphicspaths} || []} ],'global');
+  $state->assignValue(SEARCHPATHS=> [ map(pathname_absolute(pathname_canonical($_)),
+					  @{$options{searchpaths} || []})], 'global');
+  $state->assignValue(GRAPHICSPATHS=> [ map(pathname_absolute(pathname_canonical($_)),
+					    @{$options{graphicspaths} || []}) ],'global');
   $state->assignValue(INCLUDE_STYLES=>$options{includeStyles}|| 0,'global');
   $state->assignValue(INPUT_ENCODING=>$options{inputencoding}) if $options{inputencoding};
   bless {state   => $state, 
@@ -95,8 +97,8 @@ sub digestFile {
      Fatal(":missing_file:$file Cannot find TeX file $file") unless $pathname;
      $state->assignValue(SOURCEFILE=>$pathname);
      my($dir,$name,$ext)=pathname_split($pathname);
-     $state->pushValue(SEARCHPATHS=>$dir);
-     $state->pushValue(GRAPHICSPATHS=>$dir);
+     $state->unshiftValue(SEARCHPATHS=>$dir) unless grep($_ eq $dir, @{$state->lookupValue('SEARCHPATHS')});
+     $state->unshiftValue(GRAPHICSPATHS=>$dir) unless grep($_ eq $dir, @{$state->lookupValue('GRAPHICSPATHS')});
 
      $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,
 							Tokens(Explode($name))));
@@ -132,8 +134,8 @@ sub digestBibTeXFile {
      Fatal(":missing_file:$file Cannot find TeX file $file") unless $pathname;
      my $bib = LaTeXML::Bib->newFromFile($file);
      my($dir,$name,$ext)=pathname_split($pathname);
-     $state->pushValue(SEARCHPATHS=>$dir);
-     $state->pushValue(GRAPHICSPATHS=>$dir);
+     $state->unshiftValue(SEARCHPATHS=>$dir) unless grep($_ eq $dir, @{$state->lookupValue('SEARCHPATHS')});
+     $state->unshiftValue(GRAPHICSPATHS=>$dir) unless grep($_ eq $dir, @{$state->lookupValue('GRAPHICSPATHS')});
 
      $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,
 							Tokens(Explode($name))));
