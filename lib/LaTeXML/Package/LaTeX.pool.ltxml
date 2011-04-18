@@ -1561,6 +1561,7 @@ DefConstructor('\stackrel{}{}',
 #======================================================================-
 # All this is already in TeX.pool
 
+DefMacro('\skew{}{}{}','');	# ? just some subtle spacing, right????
 #======================================================================-
 # C.7.7 Spacing
 #======================================================================-
@@ -1759,8 +1760,9 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
   my $style   = LookupValue('thm@style');
 
   if(!$otherthmset){
-    NewCounter($counter, $reset,
-	       idprefix => "Thm$counter");
+    my $idprefix = "Thm$counter";
+    $idprefix =~ s/\*/./g;
+    NewCounter($counter, $reset, idprefix => $idprefix);
     DefMacroI(T_CS("\\the$counter"),undef,
 	      "\\csname the$reset\\endcsname\\\@thmcountersep\\arabic{$counter}",
 	      scope=>'global')
