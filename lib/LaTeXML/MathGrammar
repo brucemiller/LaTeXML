@@ -72,7 +72,7 @@ AnythingAny :
         | MODIFIER
  	| MODIFIEROP Expression           { Apply($item[1],Absent(),$item[2]);}
 	| METARELOP Formula		  { Apply($item[1],Absent(),$item[2]); }
-	| anyop (PUNCT(?) anyop {[$item[1]->[0]||InvisibleComma(), $item[2]]})(s)
+	| AnyOp (PUNCT(?) AnyOp {[$item[1]->[0]||InvisibleComma(), $item[2]]})(s)
 	    			          { NewList($item[1],map(@$_,@{$item[2]})); }
         | FLOATSUPERSCRIPT FLOATSUBSCRIPT  { NewScript(NewScript(Absent(),$item[1]),$item[2]); }
         | FLOATSUBSCRIPT FLOATSUPERSCRIPT  { NewScript(NewScript(Absent(),$item[1]),$item[2]); }
@@ -92,14 +92,14 @@ Superscript :
 
 aSubscript :
           Formulae
- 	| anyop Expression               { Apply($item[1],Absent(),$item[2]);}
-	| anyop
+ 	| AnyOp Expression               { Apply($item[1],Absent(),$item[2]);}
+	| AnyOp
 
 aSuperscript :
           supops
 	| Formulae 
- 	| anyop Expression               { Apply($item[1],Absent(),$item[2]);}
-	| anyop
+ 	| AnyOp Expression               { Apply($item[1],Absent(),$item[2]);}
+	| AnyOp
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Formulae  (relations or grouping of expressions or relations)
@@ -196,7 +196,7 @@ Expression  : SignedTerm moreTerms[[],$item[1]] addExpressionModifier[$item[2]]
 # moreTerms[ [($term,$addop)*], $term];  Check for more addop & term's
 moreTerms :
           /^\Z/ { LeftRec(@{$arg[0]},$arg[1]); }   # short circuit!
-        | ADDOP moreTerms2[$arg[0],$arg[1],$item[1]]
+        | AddOp moreTerms2[$arg[0],$arg[1],$item[1]]
 	| { LeftRec(@{$arg[0]},$arg[1]); }
 
 # moreTerms2[ [($term,$addop)*], $term, $addop]; Check if addop is followed
@@ -230,7 +230,7 @@ addExpressionModifier :
 # Abstractly, things combined by operators binding tighter than addition
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-SignedTerm : ADDOP Term				{ Apply($item[1],$item[2]); }
+SignedTerm : AddOp Term				{ Apply($item[1],$item[2]); }
         | Term
 
 ### Term	: Factor (MULOP(?) Factor { [$item[1]->[0] || InvisibleTimes(), $item[2]]; })(s?)
@@ -239,7 +239,7 @@ SignedTerm : ADDOP Term				{ Apply($item[1],$item[2]); }
 Term    : Factor moreFactors[$item[1]]
 moreFactors :
           /^\Z/ { $arg[0];}   # short circuit!
-        | MULOP Factor moreFactors[ApplyNary($item[1],$arg[0],$item[2])]
+        | MulOp Factor moreFactors[ApplyNary($item[1],$arg[0],$item[2])]
 	# Given an explicit COMPOSEOP, we'll assume the preceding is
 	# an implicit lambda of some sort(?)
 	| COMPOSEOP makeComposition[$arg[0],$item[1]]
@@ -310,7 +310,7 @@ aBarearg :
 
 moreBareargs :
 	  /^\Z/ { $arg[0];}   # short circuit!
-	| MULOP aBarearg moreBareargs[ApplyNary($item[1],$arg[0],$item[2])]
+	| MulOp aBarearg moreBareargs[ApplyNary($item[1],$arg[0],$item[2])]
 	| aBarearg moreBareargs[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
 	| { $arg[0]; }
 
@@ -325,7 +325,7 @@ aTrigBarearg :
 	| VERTBAR Expression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
 moreTrigBareargs :
 	  /^\Z/ { $arg[0];}   # short circuit!
-        | MULOP aTrigBarearg
+        | MulOp aTrigBarearg
 	   	 moreTrigBareargs[ApplyNary($item[1],$arg[0],$item[2])]
  	| aTrigBarearg 
 	  moreTrigBareargs[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
@@ -370,7 +370,7 @@ maybeBraket :
 ketExpression : <rulevar: local $forbidVertBar = 1>
 ketExpression : <rulevar: local $forbidLRAngle = 1>
 ketExpression : Formulae
-	      | METARELOP | ARROW | ADDOP | MULOP | MODIFIEROP
+	      | METARELOP | ARROW | AddOp | MulOp | MODIFIEROP
 
 #======================================================================
 # absExpression; need to be careful about misinterpreting the next |
@@ -410,7 +410,7 @@ preScripted :
 # intervals, etc.
 # factorOpen[$open] : Dealing with various things that start with an open.
 factorOpen :
-	  ADDOP balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1],$item[2])] # For (-)
+	  AddOp balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1],$item[2])] # For (-)
         # Parenthesized Operator possibly w/scripts
         | preScripted['bigop'] balancedClose[$arg[0]] 
 	  	 addScripts[Fence($arg[0],$item[1],$item[2])] Factor
@@ -557,7 +557,7 @@ addOpArgs :
 #   the factors.
 moreOpArgFactors :
 	  /^\Z/ { $arg[0];}   # short circuit!
-        | MULOP Factor moreOpArgFactors[ApplyNary($item[1],$arg[0],$item[2])]
+        | MulOp Factor moreOpArgFactors[ApplyNary($item[1],$arg[0],$item[2])]
 	| Factor moreOpArgFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
 	| { $arg[0]; }
 
@@ -583,15 +583,38 @@ nestOperators :
 	| { recApply(@arg); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# (slightly) structured operators
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Same as anyop, at the moment.
+AnyOp   : relop | METARELOP | ARROW | AddOp | MulOp | MODIFIEROP
+	| preScripted['bigop']
+	| OPERATOR addScripts[$item[1]]
+
+# Sub or superscripts on operators;
+# we recognize the structure, not necessarily the meaning
+AddOp : ADDOP addOpDecoration[$item[1]]
+
+MulOp : MULOP addOpDecoration[$item[1]]
+
+# Same thing, but not allowing POSTFIX
+addOpDecoration :
+          /^\Z/ { $arg[0];}   # short circuit!
+        | POSTSUPERSCRIPT  addOpDecoration[DecorateOperator($arg[0],$item[1])]
+        | POSTSUBSCRIPT    addOpDecoration[DecorateOperator($arg[0],$item[1])]
+	| { $arg[0]; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Pseudo-Terminals. 
 #  Useful combinations or subsets of terminals.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-anyop   : relop | METARELOP | ARROW | ADDOP | MULOP | MODIFIEROP
-	| preScripted['bigop']
-	| OPERATOR addScripts[$item[1]]
+#anyop   : relop | METARELOP | ARROW | ADDOP | MULOP | MODIFIEROP
+#	| preScripted['bigop']
+#	| OPERATOR addScripts[$item[1]]
 
 #relop	: RELOP | ARROW
+
 
 # A generalized relational operator or arrow
 # Note we disallow < or > if we're parsing the contents of a bra or ket!
