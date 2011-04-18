@@ -1760,7 +1760,7 @@ DefMacro('\oalign{}',
 DefConstructor('\@@oalign{}',
 	       sub { my($document,$body,%props)=@_;
 		     constructAlignment($document,$body); },
-	       reversion=>'\oalign{#1}', bounded=>1,
+	       reversion=>'\oalign{#1}', bounded=>1, mode=>'text',
 	       beforeDigest=>sub { alignmentBindings('l'); });
 # This is actually different; the lines should lie ontop of each other.
 # How should this be represented?
@@ -1769,7 +1769,7 @@ DefMacro('\ooalign{}',
 DefConstructor('\@@ooalign{}',
 	       sub { my($document,$body,%props)=@_;
 		     constructAlignment($document,$body); },
-	       reversion=>'\ooalign{#1}', bounded=>1,
+	       reversion=>'\ooalign{#1}', bounded=>1, mode=>'text',
 	       beforeDigest=>sub { alignmentBindings('l'); });
 
 
@@ -4057,7 +4057,7 @@ DefMathI('\@INVISIBLECOMMA',undef, "\x{2063}", reversion=>'', name=>'', role=>'P
 # Would be nice to make the ID argument optional, but since these can appear in
 # optional arguments to other macros, we'll end up nesting [] !!
 DefConstructor('\@XMArg{}{}',"<ltx:XMArg ?#1(xml:id='#1')>#2</ltx:XMArg>", reversion=>'#2',
-	       properties=>sub{(id=>$_[1])},
+	       properties=>sub{ (id=>ToString($_[1])); },
 	       bounded=>1, beforeDigest=>sub { AssignValue(mathstyle=>'text') });
 DefConstructor('\@XMRef{}',"<ltx:XMRef idref='#1'/>",
 	       reversion=>sub{ 
