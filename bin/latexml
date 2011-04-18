@@ -16,7 +16,7 @@ my ($format,$destination,$help,$showversion)=('xml','');
 my ($documentid);
 my $inputencoding;
 my $mode = 'auto';
-my @paths = ('.');
+my @paths = ();
 my (@preload,@debugs);
 GetOptions("destination=s" => \$destination,
 	   "output=s"  => \$destination,
@@ -49,7 +49,10 @@ my $source = $ARGV[0];
 print STDERR "$identity\n" unless $verbosity < 0;
 
 @paths = map(pathname_canonical($_),@paths);
-my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[@paths], graphicspaths=>['.'],
+if(my @baddirs = grep(! -d $_, @paths)){
+  warn "$identity: these path directories do not exist: ".join(', ',@baddirs)."\n"; }
+
+my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[grep(-d $_,reverse(@paths))], graphicspaths=>['.'],
 			  verbosity=>$verbosity, strict=>$strict,
 			  includeComments=>$comments,inputencoding=>$inputencoding,
 			  includeStyles=>$includestyles,
@@ -61,8 +64,6 @@ if($destination){
   if(my $dir =pathname_directory($destination)){
     pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }}
 
-if(my @baddirs = grep(! -d $_, @paths)){
-  warn "$identity: these path directories do not exist: ".join(', ',@baddirs)."\n"; }
 binmode(STDERR,":utf8");
 
 $mode = 'bibtex' if ($mode eq 'auto') && ($source =~ /\.bib$/);
