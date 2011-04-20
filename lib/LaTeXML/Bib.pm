@@ -65,7 +65,7 @@ sub newFromFile {
   open(BIB,$file) or Fatal(":missing_file:$file Couldn't open: $!");
   $$self{file} = $bibname;
   $$self{lines} = [<BIB>];
-  $$self{line} = shift(@{$$self{lines}});
+  $$self{line} = shift(@{$$self{lines}}) || '';
   $$self{lineno} = 1;
   close(BIB);
   $self; }
