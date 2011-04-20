@@ -2304,8 +2304,8 @@ sub beginBibliography {
 #  $whatsit->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
   $whatsit->setProperty(id=>$bibid);
   my $title = DigestIf('\refname')||DigestIf('\bibname');
-  $whatsit->setProperty(title=>$title);
-  $whatsit->setProperty(titlefont=>$title->getFont);
+  $whatsit->setProperty(title=>$title) if $title;
+  $whatsit->setProperty(titlefont=>$title->getFont) if $title;
   # And prepare for the likely nonsense that appears within bibliographies
   ResetCounter('enumiv');
   # Fix for missing \bibitems!
