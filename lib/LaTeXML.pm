@@ -85,13 +85,17 @@ sub getStatusMessage {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Mid-level API.
 
+# options are currently being evolved to accomodate the Daemon:
+#    noinitialize : if defined, it does not initialize State.
+#    preamble = names a tex file (or standard_preamble.tex)
+#    postamble = names a tex file (or standard_postamble.tex)
 sub digestFile {
-  my($self,$file)=@_;
+  my($self,$file,%options)=@_;
   $file =~ s/\.tex$//;
   $self->withState(sub {
      my($state)=@_;
      NoteBegin("Digesting $file");
-     $self->initializeState('TeX.pool', @{$$self{preload} || []});
+     $self->initializeState('TeX.pool', @{$$self{preload} || []}) unless $options{noinitialize};
 
      my $pathname = pathname_find($file,types=>['tex','']);
      Fatal(":missing_file:$file Cannot find TeX file $file") unless $pathname;
@@ -102,34 +106,37 @@ sub digestFile {
 
      $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,
 							Tokens(Explode($name))));
+     $self->loadPreamble($options{preamble}) if $options{preamble};
      $state->getStomach->getGullet->input($pathname);
+     $self->loadPreamble($options{postamble}) if $options{postamble};
      my $list = $self->finishDigestion;
      NoteEnd("Digesting $file");
      $list; });
 }
 sub digestString {
-  my($self,$string)=@_;
+  my($self,$string, %options)=@_;
   $self->withState(sub {
      my($state)=@_;
      NoteBegin("Digesting string");
-     $self->initializeState('TeX.pool', @{$$self{preload} || []});
+     $self->initializeState('TeX.pool', @{$$self{preload} || []})  unless $options{noinitialize};
 
+     $self->loadPreamble($options{preamble}) if $options{preamble};
      $state->getStomach->getGullet->openMouth(LaTeXML::Mouth->new($string),0);
-###     $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,
-###						       Tokens(Explode("Unknown"))));
+     $self->loadPreamble($options{postamble}) if $options{postamble};
      my $line = $self->finishDigestion;
      NoteEnd("Digesting string");
      $line; });
 }
 
 sub digestBibTeXFile {
-  my($self,$file)=@_;
+  my($self,$file, %options)=@_;
   $file =~ s/\.bib$//;
   $self->withState(sub {
      my($state)=@_;
      NoteBegin("Digesting bibliography $file");
      # NOTE: This is set up to do BibTeX for LaTeX (not other flavors, if any)
-     $self->initializeState('TeX.pool','LaTeX.pool', 'BibTeX.pool', @{$$self{preload} || []});
+     $self->initializeState('TeX.pool','LaTeX.pool', 'BibTeX.pool', @{$$self{preload} || []})
+       unless $options{noinitialize};
      my $pathname = pathname_find($file,types=>['bib','']);
      Fatal(":missing_file:$file Cannot find TeX file $file") unless $pathname;
      my $bib = LaTeXML::Bib->newFromFile($file);
@@ -159,6 +166,32 @@ sub finishDigestion {
     Error(":expected:\\end{$env} Input ended while environment $env was open"); } 
   $stomach->getGullet->flush;
   $list; }
+
+sub loadPreamble {
+  my($self,$preamble)=@_;
+  my $state = $$self{state};
+  my $stomach  = $state->getStomach; # The current Stomach;
+  my @stuff = ();
+  if($preamble eq 'standard_preamble.tex'){
+     $stomach->getGullet->openMouth(LaTeXML::Mouth->new('\documentclass{article}\begin{document}'),0); }
+  else {
+     $stomach->getGullet->input($preamble); }
+  while($stomach->getGullet->getMouth->hasMoreInput){
+    push(@stuff,$stomach->digestNextBody); }
+  LaTeXML::List->new(@stuff); }
+
+sub loadPostamble {
+  my($self,$postamble)=@_;
+  my $state = $$self{state};
+  my $stomach  = $state->getStomach; # The current Stomach;
+  my @stuff = ();
+  if($postamble eq 'standard_postamble.tex'){
+     $stomach->getGullet->openMouth(LaTeXML::Mouth->new('\end{document}'),0); }
+  else {
+     $stomach->getGullet->input($postamble); }
+  while($stomach->getGullet->getMouth->hasMoreInput){
+    push(@stuff,$stomach->digestNextBody); }
+  LaTeXML::List->new(@stuff); }
 
 sub convertDocument {
   my($self,$digested)=@_;
