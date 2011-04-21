@@ -13,6 +13,7 @@ use LaTeXML::Util::Pathname;
 my $identity = "latexml (LaTeXML version $LaTeXML::VERSION)";
 my($verbosity,$strict,$comments,$noparse,$includestyles)=(0,0,1,0,0);
 my ($format,$destination,$help,$showversion)=('xml','');
+my ($preamble,$postamble)=(undef,undef);
 my ($documentid);
 my $inputencoding;
 my $mode = 'auto';
@@ -22,6 +23,8 @@ GetOptions("destination=s" => \$destination,
 	   "output=s"  => \$destination,
 	   "preload=s" => \@preload,
 	   "path=s"    => \@paths,
+	   "preamble=s" => \$preamble,
+	   "postamble=s"=> \$postamble,
 	   "quiet"     => sub { $verbosity--; },
 	   "verbose"   => sub { $verbosity++; },
 	   "strict"    => \$strict,
@@ -74,11 +77,11 @@ my $digested;
 if($source eq '-'){
   my $content;
   { local $/ = undef; $content = <>; }
-  $digested = $latexml->digestString($content); }
+  $digested = $latexml->digestString($content,preamble=>$preamble,postamble=>$postamble); }
 elsif($mode eq 'bibtex'){
   $digested = $latexml->digestBibTeXFile($source); }
 else {
-  $digested = $latexml->digestFile($source); }
+  $digested = $latexml->digestFile($source,preamble=>$preamble,postamble=>$postamble); }
 
 # ========================================
 # Now, convert to DOM and output, if desired.
@@ -128,6 +131,10 @@ latexml [options] I<texfile>
  --output=file      [obsolete synonym for --destination]
  --preload=module   requests loading of an optional module;
                     can be repeated
+ --preamble=file    specifies a preamble file which will
+                    effectively be prepended to the main file.
+ --postamble=file   specifies a postamble file which will
+                    effectively be appended to the main file.
  --includestyles    allows latexml to load raw *.sty file;
                     by default it avoids this.
  --path=dir         adds dir to the paths searched for files,
@@ -166,6 +173,13 @@ Specifies the destination file; by default the XML is written to stdout.
 Requests the loading of an optional module or package.  This may be useful if the TeX code
 does not specificly require the module (eg. through input or usepackage).
 For example, use C<--preload=LaTeX.pool> to force LaTeX mode.
+
+=item C<--preamble>=I<file>, C<--postamble>=I<file>
+
+Specifies a file whose contents will effectively be prepended or appended
+to the main document file's content. This can be useful when processing
+TeX fragments, in which case the preamble would contain documentclass and begindocument
+control sequences.  This option is not used when processing BibTeX files.
 
 =item C<--includestyles>
 
