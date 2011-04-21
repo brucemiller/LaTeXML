@@ -106,10 +106,17 @@ sub digestFile {
 
      $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,
 							Tokens(Explode($name))));
-     $self->loadPreamble($options{preamble}) if $options{preamble};
-     $state->getStomach->getGullet->input($pathname);
-     $self->loadPreamble($options{postamble}) if $options{postamble};
-     my $list = $self->finishDigestion;
+     my $stomach=$state->getStomach;
+     my @stuff=();
+     push(@stuff,$self->loadPreamble($options{preamble})) if $options{preamble};
+
+     $stomach->getGullet->input($pathname);
+     while($stomach->getGullet->getMouth->hasMoreInput){
+       push(@stuff,$stomach->digestNextBody); }
+
+     push(@stuff,$self->loadPreamble($options{postamble})) if $options{postamble};
+#     my $list = $self->finishDigestion;
+     my $list = LaTeXML::List->new(@stuff);
      NoteEnd("Digesting $file");
      $list; });
 }
@@ -120,13 +127,24 @@ sub digestString {
      NoteBegin("Digesting string");
      $self->initializeState('TeX.pool', @{$$self{preload} || []})  unless $options{noinitialize};
 
-     $self->loadPreamble($options{preamble}) if $options{preamble};
-     $state->getStomach->getGullet->openMouth(LaTeXML::Mouth->new($string),0);
-     $self->loadPreamble($options{postamble}) if $options{postamble};
-     my $line = $self->finishDigestion;
+     my $stomach=$state->getStomach;
+     my @stuff=();
+
+     push(@stuff,$self->loadPreamble($options{preamble})) if $options{preamble};
+
+     $stomach->getGullet->openMouth(LaTeXML::Mouth->new($string),0);
+     while($stomach->getGullet->getMouth->hasMoreInput){
+       push(@stuff,$stomach->digestNextBody); }
+
+     push(@stuff,$self->loadPreamble($options{postamble})) if $options{postamble};
+
+     # my $list = $self->finishDigestion;
+     my $list = LaTeXML::List->new(@stuff);
      NoteEnd("Digesting string");
-     $line; });
+     $list; });
 }
+
+# pre/postamble ????
 
 sub digestBibTeXFile {
   my($self,$file, %options)=@_;
