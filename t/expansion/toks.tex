@@ -1,0 +1,36 @@
+\documentclass{article}
+\newtoks\mytok
+\begin{document}
+\mytok{a b c}
+a b c = \the\mytok
+
+\def\foo{aa}
+\mytok{\foo}% NOT expanded YET
+\def\foo{bb}
+
+bb = \the\mytok
+
+\def\foo{{aa}}% Must have braces!!!
+\mytok=\foo % AND it IS expanded here!!!!
+\def\foo{{bb}}
+aa = \the\mytok
+
+\newcount\foo\foo=1
+\mytok{\global\advance\foo1\relax}
+
+1 = \the\foo;
+\the\mytok
+2 = \the\foo;
+\the\mytok
+\the\mytok
+4 = \the\foo;
+
+% don't do \the\mytok !!
+\mytok{&}
+
+\def\foo{aa}
+\mytok\expandafter{\foo\foo}
+\def\foo{zz}
+aazz = \the\mytok
+
+\end{document}

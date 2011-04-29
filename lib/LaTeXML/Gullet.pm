@@ -58,7 +58,7 @@ sub input {
     Fatal(":perl:die Package $name had an error:\n  $@") if $@; 
     $self->closeMouth if $pmouth eq $$self{mouth}; # Close immediately, unless recursive input
   }
-  elsif($file =~ /\.(pool|sty|cls|clo|cnf)$/){	# (attempt to) interpret a style file.
+  elsif($file =~ /\.(pool|sty|cls|clo|cnf|ldf)$/){	# (attempt to) interpret a style file.
     return if $STATE->lookupValue($file.'_loaded');
     if(! ($options{raw} || $STATE->lookupValue('INCLUDE_STYLES'))){
       Warn(":unexpected:$file Ignoring style file $file");
@@ -400,7 +400,8 @@ sub readTokensValue {
     if($defn->isRegister eq 'Tokens'){
       $defn->valueOf($defn->readArguments($self)); }
     elsif($defn->isExpandable){
-      Tokens($defn->invoke($self)); }
+      $self->unread($defn->invoke($self));
+      $self->readTokensValue; }
     else {
       $token; }}		# ?
   else {
