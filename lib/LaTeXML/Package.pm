@@ -1158,7 +1158,7 @@ sub AtBeginDocument {
     next unless $op;
     my $t = ref $op;
     if(!$t){			# Presumably String?
-      $op = TokenizeInternal($t); }
+      $op = TokenizeInternal($op); }
     elsif($t eq 'CODE'){
       my $tn = T_CS(ToString($op));
       DefMacroI($tn,undef,$op); 
@@ -1172,7 +1172,7 @@ sub AtEndDocument {
     next unless $op;
     my $t = ref $op;
     if(!$t){			# Presumably String?
-      $op = TokenizeInternal($t); }
+      $op = TokenizeInternal($op); }
     elsif($t eq 'CODE'){
       my $tn = T_CS(ToString($op));
       DefMacroI($tn,undef,$op); 
