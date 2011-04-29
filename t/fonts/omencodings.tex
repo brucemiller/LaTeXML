@@ -1,0 +1,57 @@
+\documentclass{article}
+
+\def\testencoding{OML}
+%
+\newcount\linenum\linenum=0\relax
+\newcount\colnum\colnum=0\relax
+\newcount\n
+\newtoks\tabtoks
+\def\addtabtoks#1{\tabtoks\expandafter{\the\tabtoks#1}}
+%
+% GACK! nested loops!?!?!
+\def\colloop#1\colrepeat{\def\coliterate{#1\relax\expandafter\coliterate\fi}%
+  \coliterate \let\coliterate\relax}
+\let\colrepeat\fi
+
+\def\rowloop#1\rowrepeat{\def\rowiterate{#1\relax\expandafter\rowiterate\fi}%
+  \rowiterate \let\rowiterate\relax}
+\let\rowrepeat\fi
+%
+\def\oct#1{\'{}#1}
+\def\col{
+  \fontencoding{\testencoding}\selectfont
+  \setbox0=\hbox{\char\n}\global\advance\n1\relax\box0}
+\def\dorow{
+  & \col & \col  & \col & \col & \col & \col  & \col & \col }
+
+\def\dotable#1{
+\global\n=0\relax
+\def\testencoding{#1}
+\begin{tabular}{r|cccccccc}
+  & \oct{0} & \oct{1}  & \oct{2} & \oct{3}  & \oct{4} & \oct{5}  & \oct{6} & \oct{7} \\ \hline
+\oct{0} \dorow \\
+\oct{1} \dorow \\
+\oct{2} \dorow \\
+\oct{3} \dorow \\
+\oct{4} \dorow \\
+\oct{5} \dorow \\
+\oct{6} \dorow \\
+\oct{7} \dorow \\
+\oct{10} \dorow \\
+\oct{11} \dorow \\
+\oct{12} \dorow \\
+\oct{13} \dorow \\
+\oct{14} \dorow \\
+\oct{15} \dorow \\
+\oct{16} \dorow \\
+\oct{17} \dorow \\
+\end{tabular}
+}
+\begin{document}
+\dotable{OML}
+
+\dotable{OMS}
+
+\dotable{OMX}
+
+\end{document}
