@@ -39,11 +39,12 @@ sub stringify {
   my($self)=@_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
-  $type.'['.($$self{alias}||$$self{cs}->getCSName).' '.Stringify($$self{parameters}||'').']'; }
+  my $name = ($$self{alias}||$$self{cs}->getCSName);
+  $type.'['.($$self{parameters} ? $name.' '.Stringify($$self{parameters}) : $name).']'; }
 
 sub toString {
   my($self)=@_;
-  ToString($$self{cs}).' '.ToString($$self{parameters} ||''); }
+  ($$self{parameters} ? ToString($$self{cs}).' '.ToString($$self{parameters}) : ToString($$self{cs})); }
 
 # Return the Tokens that would invoke the given definition with arguments.
 sub invocation {
