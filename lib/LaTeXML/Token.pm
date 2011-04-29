@@ -139,7 +139,16 @@ sub clone {
 # Return a string containing the TeX form of the Tokens
 sub revert { @{$_[0]}; }
 
-sub toString { join('',map($_->toString, @{$_[0]})); }
+sub toString {
+  my($self)=@_;
+  my $string='';
+  my $wascs=0;
+  foreach my $tok (@$self){
+    my $cc = $tok->getCatcode;
+    $string .= ' ' if $wascs && $cc == CC_LETTER;
+    $string .= $tok->toString;
+    $wascs = $cc == CC_CS; }
+  $string; }
 
 # Methods for overloaded ops.
 sub equals {
