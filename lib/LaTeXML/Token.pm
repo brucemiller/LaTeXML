@@ -146,8 +146,9 @@ sub toString {
   foreach my $tok (@$self){
     my $cc = $tok->getCatcode;
     $string .= ' ' if $wascs && $cc == CC_LETTER;
-    $string .= $tok->toString;
-    $wascs = $cc == CC_CS; }
+    my $s = $tok->toString;
+    $string .= $s;
+    $wascs = ($cc == CC_CS) && ($s=~/[a-zA-Z]$/); }
   $string; }
 
 # Methods for overloaded ops.
