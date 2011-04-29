@@ -140,6 +140,17 @@ DefParameterType('Variable', sub {
     Error(":expected:<variable> A <variable> was supposed to be here, got".Stringify($token));
     undef; }});
 
+# Same, but not necessarily writable
+DefParameterType('Register', sub {
+  my($gullet)=@_;
+  my $token = $gullet->readXToken(1);
+  my $defn = $token && LookupDefinition($token);
+  if((defined $defn) && $defn->isRegister){
+    [$defn,$defn->readArguments($gullet)]; }
+  else {
+    Error(":expected:<register> A <register> was supposed to be here, got".Stringify($token));
+    undef; }});
+
 DefParameterType('TeXFileName', sub {
   my($gullet)=@_;
   my($token,$cc,@tokens)=();
@@ -466,7 +477,7 @@ DefMacro('\input TeXFileName',sub {
 DefMacroI('\endinput',undef,sub { $_[0]->closeMouth(1); return; });
 
 # \the<internal quantity>
-DefMacro('\the Variable',sub {
+DefMacro('\the Register',sub {
   my($gullet,$variable)=@_;
   return () unless $variable;
   my($defn,@args) = @$variable;
@@ -872,10 +883,16 @@ DefMacro('\futurelet Token Token Token',sub{
 # Almost like a register, but different...
 DefPrimitive('\chardef Token SkipMatch:= Number', sub {
   my($stomach,$newcs,$value)=@_;
-  $STATE->installDefinition(LaTeXML::CharDef->new($newcs,$value));
+  my $encoding = ToString(Expand(T_CS('\f@encoding')));
+  my $glyph =   LaTeXML::Font::Encoding::lookupGlyph($encoding,$value->valueOf);
+  $STATE->installDefinition(LaTeXML::CharDef->new($newcs,$value, $glyph));
   return; });
 
-# \mathchardef ?
+DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
+  my($stomach,$newcs,$value)=@_;
+  my $glyph = decodeMathChar($value->valueOf);
+  $STATE->installDefinition(LaTeXML::CharDef->new($newcs,$value, $glyph));
+  return; });
 
 DefPrimitive('\countdef Token SkipMatch:= Number',sub {
   my($stomach,$cs,$num)=@_;
@@ -1001,7 +1018,32 @@ DefPrimitiveI('\batchmode',     undef,undef);
 # <intimate assignment> = <special integer><equals><number>
 #   | <special dimension><equals><dimen>
 
-DefPrimitive('\char Number', sub { $_[0]->invokeToken(T_OTHER(chr($_[1]->valueOf))); });
+#DefPrimitive('\char Number', sub { $_[0]->invokeToken(T_OTHER(chr($_[1]->valueOf))); });
+DefMacroI('\f@encoding',undef,'OT1');
+
+DefPrimitive('\char Number', sub {
+  my $code = $_[1]->valueOf;
+  my $encoding = ToString(Expand(T_CS('\f@encoding')));
+  my $glyph =   LaTeXML::Font::Encoding::lookupGlyph($encoding,$code);
+  if(defined $glyph){
+    Box($glyph,undef,undef,Invocation(T_CS('\char'),$_[1])); }
+  else {
+    return; }});
+
+sub decodeMathChar {
+  my($n)=@_;
+  my $class = int($n / (8*256)); $n = $n % (8*256);
+  my $fam   = int($n / 256);     $n = $n % 256;
+  # class almost, but not quite, implies a ROLE!
+  LaTeXML::Font::Encoding::lookupGlyph($fam,$n); }
+
+DefPrimitive('\mathchar Number',sub {
+  my($stomach,$num)=@_;
+  if(my $glyph = decodeMathChar($num->valueOf)){
+    $stomach->invokeToken(T_OTHER($glyph)); }
+  else {
+    return; }});
+
 # <box> = \box <8bit> | \copy <8bit> | \lastbox | \vsplit <8bit> to <dimen>
 #   | \hbox <box specification>{<horizontal mode material>}
 #   | \vbox <box specification>{<vertical mode material>}
@@ -3186,7 +3228,7 @@ DefMathI('\bigwedge', undef,"\x{22C0}", role=>'SUMOP',	scriptpos=>\&doScriptpos,
 DefMathI('\bigodot',  undef,"\x{22A1}", role=>'SUMOP',	scriptpos=>\&doScriptpos); #meaning=> ?
 DefMathI('\bigotimes',undef,"\x{2297}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'tensor-product');
 DefMathI('\bigoplus', undef,"\x{2295}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'direct-sum');
-DefMathI('\biguplus', undef,"\x{2296}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'symmetric-difference');
+DefMathI('\biguplus', undef,"\x{228C}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'symmetric-difference');
 
 DefConstructorI('\limits', undef,sub {
    my $node = $_[0]->getElement;
