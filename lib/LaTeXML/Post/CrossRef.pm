@@ -386,13 +386,14 @@ sub generateRef_aux {
 	$OK = 1;
 	push(@stuff, ['ltx:text',{class=>'tag'},$refnum]); }}
     elsif($show =~ s/^toctitle//){
-      my $title = $self->fillInTitle($doc,$entry->getValue('toctitle')||$entry->getValue('title'));
+      my $title = $self->fillInTitle($doc,$entry->getValue('toctitle')||$entry->getValue('title')
+				     || $entry->getValue('toccaption'));
       if($title){
 	$OK = 1;
 	push(@stuff, ['ltx:text',{class=>'title'},$doc->trimChildNodes($title)]); }}
 
     elsif($show =~ s/^title//){
-      my $title= $self->fillInTitle($doc,$entry->getValue('title'));
+      my $title= $self->fillInTitle($doc,$entry->getValue('title') || $entry->getValue('toccaption')); # !!!
       if($title){
 	$OK = 1;
 	push(@stuff, ['ltx:text',{class=>'title'},$doc->trimChildNodes($title)]); }}
@@ -406,7 +407,7 @@ sub generateTitle {
   # Add author, if any ???
   my $string = "";
   while(my $entry = $id && $$self{db}->lookup("ID:$id")){
-    my $title  = $self->fillInTitle($doc,$entry->getValue('title'))
+    my $title  = $self->fillInTitle($doc,$entry->getValue('title') || $entry->getValue('toccaption'))
       || $entry->getValue('frefnum') || $entry->getValue('refnum');
     $title = $title->textContent if $title && ref $title;
     $title =~ s/^\s+// if $title;
