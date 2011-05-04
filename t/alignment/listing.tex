@@ -1,0 +1,144 @@
+\documentclass{article}
+\usepackage{makeidx}
+\makeindex
+\usepackage{listings}
+\usepackage{color}
+\begin{document}
+\lstset{numbers=left}
+
+\section{A Pascal Listing}
+A listing portion:
+\begin{lstlisting}[language=Pascal,firstline=2,lastline=5,caption={}]
+for i:=maxint to 0 do
+begin
+  { do nothing }
+end;
+
+Write('case insensitive');
+Write('long '' string');
+WritE('Pascal keywords.');
+\end{lstlisting}
+
+A numbered listing:
+\begin{lstlisting}[language=Pascal,numbers=left, numberstyle=\tiny, stepnumber=2,stringstyle=\ttfamily,showspaces,tabsize=4]
+for i:=maxint to 0 do
+	begin
+		{ do nothing }
+	end;
+
+Write('case insensitive');
+Write('long '' string');
+WritE('Pascal keywords.');
+\end{lstlisting}
+
+A Titled listing:
+\begin{lstlisting}[language=Pascal,title={A bit of Pascal}]
+for i:=maxint to 0 do
+begin
+  { do nothing }
+end;
+Write('case insensitive');
+\end{lstlisting}
+
+
+A Captioned listing (known as Listing \ref{pascallisting}) :
+\begin{lstlisting}[language=Pascal,caption=A bit of Pascal, label=pascallisting,firstnumber=100,numbers=left]
+for i:=maxint to 0 do
+begin
+  { do nothing }
+end;
+\end{lstlisting}
+
+\section{An Environment}
+\begin{lstlisting}[language=Pascal]
+for i:=maxint to 0 do
+begin
+  { do nothing }
+end;
+\end{lstlisting}
+
+\lstnewenvironment{colored}[1]{\lstset{language=Pascal,numbers=left,numberstyle=\color{#1}}}{}
+\begin{colored}{red}
+for i:=maxint to 0 do
+begin
+  { do nothing }
+end;
+\end{colored}
+
+\begin{colored}{blue}
+for i:=maxint to 0 do
+begin
+  { do nothing }
+end;
+\end{colored}
+
+\section{Listing with Math}
+\begin{lstlisting}[language=c,texcl]
+// \upshape calculate $a_{ij}$
+a[i][j] = a[j][j]/a[i][j];
+\end{lstlisting}
+
+\begin{lstlisting}[texcl,language=c]
+// \upshape calculate $a_{ij}$
+a[i][j] = a[j][j]/a[i][j];
+\end{lstlisting}
+
+\begin{lstlisting}[language=c,mathescape,numbers=left]
+// calculate $a_{ij}$
+$a_{ij}
+ = a_{jj}/a{ij}$;
+// calculate $a_{ij} = 
+\sin x$
+a[i,j]=sin(x)
+foo="a word";
+foo="a $x^2$ math";
+\end{lstlisting}
+
+\begin{lstlisting}[language=c,escapechar=\%,escapebegin=<,escapeend=>,numbers=left]
+// calculate %$a_{ij}$%
+a_{ij}
+ = a_{jj}/a{ij};
+\end{lstlisting}
+
+\begin{lstlisting}[language=c,numbers=left,stringstyle=\ttfamily]
+// calculate $a_{ij}$
+$a_{ij}
+ = a_{jj}/a{ij}$;
+// calculate $a_{ij} = 
+\sin x$
+a[i,j]=sin(x)
+foo="a word";
+foo="a \"string";
+foo="a $x^2$ math";
+\end{lstlisting}
+
+\section{A Perl Listing}
+\lstinputlisting[language=perl]{any.sty.ltxml}
+
+\section{A Recursive \TeX\ listing}
+\lstinputlisting[language={[LaTeX]TeX}]{listing.tex}
+
+\section{Testing Tag}
+% AHA, tagstyle only is in effect with XML (?)
+\begin{lstlisting}[language=XML,tagstyle=\bf]
+<element attr='value'>content</element>
+\end{lstlisting}
+\begin{lstlisting}[language=XML,tagstyle=\bf,usekeywordsintag=false]
+<element attr='value'>content</element>
+\end{lstlisting}
+\begin{lstlisting}[language=XML,tagstyle=\bf,markfirstintag]
+<element attr='value'>content</element>
+\end{lstlisting}
+
+\section{Screwiness}
+\lstdefinelanguage{bingo}{morekeywords={foo,bar},morekeywords=[2]{bing,bar}}
+%,
+% AHA, words can only be in one class (1st one declared?)
+% BUT, index is separate, and classname is without the "style" !!
+\begin{lstlisting}[language=bingo,keywordstyle=\bfseries,keywordstyle={[2]\itshape},index={[1][keywords2]{bar,baz}}]
+foo bar baz bing booboo
+\end{lstlisting}
+{\bfseries\itshape bfit}
+{\itshape\bfseries itbf}
+\printindex
+\end{document}

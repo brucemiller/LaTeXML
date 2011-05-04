@@ -1,0 +1,9 @@
+# -*- CPERL -*-
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+DefConstructor('\container{}',"<ltx:special>#1</ltx:special>");
+DefConstructor('\foo',"<ltx:not-defined/>");
+
+1;

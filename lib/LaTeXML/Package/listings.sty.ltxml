@@ -79,7 +79,7 @@ DefMacro('\lstinputlisting OptionalKeyVals:LST Semiverbatim', sub {
       $text = <LST>;
       close(LST); }}
   else {
-    Error("unexpected:$file Couldn't read listings file $file: $!"); }
+    Error("unexpected:$file Couldn't read listings file ".ToString($file).": $!"); }
   $STATE->getStomach->bgroup; 
   lstActivate($keyvals);
   my @expansion = lstProcessBlock($file,$text);
@@ -92,6 +92,7 @@ sub lstProcessBlock {
   my($name,$text)=@_;
   # Hmm.. should locally define \lstname to be either name or the file...
   my @body = (Invocation(T_CS('\@listings@inner'),lstProcess('block',$text)));
+  my @caption=();
   my($numbered,$labelled,$caption,$x);
   if(($x = lstGetTokens('caption')) && scalar($x->unlist)){
     my @t = $x->unlist;
@@ -99,9 +100,9 @@ sub lstProcessBlock {
     if(Equals($t[0],T_OTHER('['))){
       while(!Equals($t[0],T_OTHER(']'))){ push(@tc,shift(@t)); }}
     $numbered=1;
-    $caption=Invocation(T_CS('\caption'),(@tc ? Tokens(@tc):undef),Tokens(@t)); }
+    $caption=Invocation(T_CS('\lstlisting@makecaption'),(@tc ? Tokens(@tc):undef),Tokens(@t)); }
   elsif(($x = lstGetTokens('title')) && scalar($x->unlist)){
-    $caption =Invocation(T_CS('\caption'),undef,$x); }
+    $caption =Invocation(T_CS('\lstlisting@maketitle'),$x); }
   if(($x = lstGetTokens('label')) && scalar($x->unlist)){
     $labelled=1;
     unshift(@body,Invocation(T_CS('\label'),$x)); }
@@ -125,21 +126,35 @@ sub lstProcessBlock {
 	      Tokens(@body)),
    T_END); }
 
+DefMacro('\lstlisting@makecaption[]{}',
+	 '\def\@captype{lstlisting}'
+	 .'\@@add@caption@counters'
+	 .'\@@toccaption{\format@toctitle@{lstlisting}{\ifx.#1.#2\else#1\fi}}'
+	 .'\@@caption{\format@title@{lstlisting}{#2}}');
+DefMacroI('\fnum@lstlisting',undef,'\lstlistingname\nobreakspace\thelstlisting');
+DefMacro('\format@title@lstlisting{}','\@tag{\fnum@lstlisting: }#1');
+
+DefMacro('\lstlisting@maketitle{}',
+	 '\@@toccaption{#1}'
+	 .'\@@caption{#1}');
+
 DefConstructor('\@listings@inner {}', "<ltx:tabular>#1</ltx:tabular>");
 
-# Or new listing element?
 DefConstructor('\@listings {} {}',
 	       "<ltx:listing xml:id='#id' refnum='#refnum' class='#1'>"
 	       ."#2"
 	       ."</ltx:listing>",
-	       properties=>sub { RefStepCounter('lstlisting') });
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'lstlisting'); },
+	       afterDigest=>sub { RescueCaptionCounters('lstlisting',$_[1]); });
 
 DefConstructor('\@@listings {} {}',
 	       "<ltx:listing xml:id='#id' class='#1'>#2</ltx:listing>",
-	       properties=>sub { RefStepID('lstlisting'); });
+	       properties=>sub { RefStepID('lstlisting'); },
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'lstlisting'); });
 DefConstructor('\@@listings@inblock {} {}',
 	       "<ltx:listingblock xml:id='#id' class='#1'>#2</ltx:listingblock>",
-	       properties=>sub { RefStepID('lstlisting'); });
+	       properties=>sub { RefStepID('lstlisting'); },
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'lstlisting'); });
 
 #======================================================================
 # extract some minimal bit of "semantics" from the keywords or other bound formatting
@@ -934,12 +949,6 @@ sub lstProcess {
     foreach my $word (keys %$words){
       $$words{uc($word)} = $$words{$word}; }}
 
-#  print STDERR "ID_RE : $LaTeXML::ID_RE\n";
-#  print STDERR "ESCAPE_RE : $LaTeXML::ESCAPE_RE\n";
-#  print STDERR "DELIM_RE : $LaTeXML::DELIM_RE\n";
-#  print STDERR "WORDS: ".join(',',map("$_=".join('+',keys %{$$words{$_}}), keys %$words))."\n";
-#  foreach my $cl (keys %$classes){
-#    print STDERR "CLASS: $cl ".join(',',map("$_=".ToString($$classes{$cl}{$_}), keys %{$$classes{$cl}}))."\n"; }
   # === Start processing
   # This whole set of vars probably needs to be adjusted,
   # since we'll need to recognize constructs inside strings that we've already pulled out (strings,comments)
@@ -949,26 +958,48 @@ sub lstProcess {
   local $LaTeXML::colnum = 0;
   local $LaTeXML::listing = $text;
   local $LaTeXML::mode    = $mode;
-  my @tokens = (T_BEGIN);
-  push(@tokens,lstGetTokens('basicstyle')->unlist);
+  local $LaTeXML::linestart=undef;
+  local $LaTeXML::emptyfrom=undef;
+  local @LaTeXML::lsttokens = (T_BEGIN);
+
+  lstProcessPush(lstGetTokens('basicstyle')->unlist);
 
   while($LaTeXML::listing && ! &$linetest($LaTeXML::linenum)){	# Ignore initial lines?
     $LaTeXML::listing =~ s/^.*?\n//s;
     $LaTeXML::linenum++; }
   if($mode ne 'inline'){
-    push(@tokens,Invocation(T_CS('\setcounter'),T_OTHER('lstnumber'), Number($LaTeXML::linenum)));
-    push(@tokens,Invocation(T_CS('\@lst@startline'),($numpos eq 'left')&& lstDoNumber($LaTeXML::listing=~/^\s*?\n/s)));}
-  push(@tokens,lstProcess_internal());
+    lstProcessPush(Invocation(T_CS('\setcounter'),T_OTHER('lstnumber'), Number($LaTeXML::linenum)));
+    lstProcessStartLine(); }
+  lstProcess_internal();
   if($mode ne 'inline'){
-    push(@tokens,Invocation(T_CS('\@lst@endline'),($numpos eq 'right')&& lstDoNumber())); }
+    lstProcessEndLine(); }
 
   # === Save line number for possible later use.
   AssignValue('LISTINGS_LAST_NUMBER' => CounterValue('lstnumber')->valueOf, 'global');
   AssignValue('LISTINGS_LAST_NUMBER_'.$name => CounterValue('lstnumber')->valueOf, 'global') if $name;
-  push(@tokens,T_END);
+  # Remove empty trailing lines, if any (GACK!)
+  @LaTeXML::lsttokens = @LaTeXML::lsttokens[0..$LaTeXML::emptyfrom-1] if $LaTeXML::emptyfrom;
   # === And finally, return the tokens we've constructed.
-#  print STDERR "LISTING=>".ToString(Tokens(@tokens))."\n";
-  Tokens(@tokens); }
+  Tokens(@LaTeXML::lsttokens,T_END); }
+
+sub lstProcessPush {
+  push(@LaTeXML::lsttokens, @_); }
+
+sub lstProcessStartLine {
+  my $numpos =  ((lstGetNumber('stepnumber') == 0) ? 'none' : lstGetLiteral('numbers'));
+  $LaTeXML::linestart = scalar(@LaTeXML::lsttokens); # Remember where line started, for potential truncation
+  lstProcessPush(Invocation(T_CS('\@lst@startline'),
+			    ($numpos eq 'left') && lstDoNumber($LaTeXML::listing=~/^\s*?\n/s))); 
+}
+
+sub lstProcessEndLine {
+  if($LaTeXML::colnum == 0){	# Line was empty; remember where emptyness started...
+    $LaTeXML::emptyfrom = $LaTeXML::linestart unless $LaTeXML::emptyfrom; }
+  else {
+    $LaTeXML::emptyfrom = undef; }
+  my $numpos =  ((lstGetNumber('stepnumber') == 0) ? 'none' : lstGetLiteral('numbers'));
+  lstProcessPush(Invocation(T_CS('\@lst@endline'),
+			    ($numpos eq 'right')&& lstDoNumber())); }
 
 sub lstProcess_internal {
   my($end_re)=@_;
@@ -976,7 +1007,6 @@ sub lstProcess_internal {
   my $words      = LookupValue('LST_WORDS');
   my $delimiters = LookupValue('LST_DELIMITERS');
   my $classes    = LookupValue('LST_CLASSES');
-  my @tokens=();
   while ($LaTeXML::listing) {
     # Matched the ending regular expression? (typically a close delimiter)
     if($end_re && $LaTeXML::listing =~ s/^($end_re)//s){
@@ -988,17 +1018,14 @@ sub lstProcess_internal {
       $LaTeXML::colnum += length($1);
       my $delim = $$delimiters{$1};
       my $classname = $$delim{class};
-      push(@tokens,
-	   lstClassBegin($classname),
-	   ###  ($classname ? (T_CS('\@listingKeyword'),T_OTHER($classname),T_BEGIN):())
-	  );
+      lstProcessPush(lstClassBegin($classname));
       # With escapes or texcl, some might be evaluated as TeX; those we match the close delim and simply tokenize.
       if(lstClassProperty($classname,'eval')){ # If this is a comment with texcl applied, just match & expand
 	$LaTeXML::listing =~ s/^(.*?)($$delim{close})//s; # Simply match until closing regexp
 	my($string,$close)=($1,$2);
 	my @l = split("\n",$string.$close); # This is the only(?) potentially multiline block
 	$LaTeXML::linenum += scalar(@l)-1 if @l > 2; # So adjust line & column
-	push(@tokens,Tokenize($string)); }
+	lstProcessPush(Tokenize($string)); }
       # Others become tricky because the contents of the string, comment etc may need to be processed
       # including matching _some_ delimited expressions!
       #   escaped constructs are always matched.
@@ -1013,10 +1040,8 @@ sub lstProcess_internal {
 	local $LaTeXML::SPACE = ($classname && ($classname=~/^string/) && lstGetBoolean('showstringspaces')
 				 ? T_CS('\@lst@visible@space') :  $LaTeXML::SPACE);
 	# Recurse [note that eval should make the individual tokens tokenize as usual!]
-	push(@tokens,lstProcess_internal($$delim{close})); }
-      push(@tokens,
-	   ### ($classname? (T_END):()),
-	   lstClassEnd($classname)); }
+	lstProcess_internal($$delim{close}); }
+      lstProcessPush(lstClassEnd($classname)); }
     # Identifiers (possibly keywords, or other classes)
     elsif ($LaTeXML::ID_RE && $LaTeXML::listing =~ s/^($LaTeXML::ID_RE)//) {
       my $word = $1;
@@ -1025,13 +1050,10 @@ sub lstProcess_internal {
       my @w = Explode($word);
       if(my $indexname = $$words{$lookup}{index} || lstClassProperty($classname,'index')){ # Should be indexed?
 	if(my $index = $indexname && $$classes{$indexname}){
-	  push(@tokens,$$index{begin}->unlist,T_BEGIN,@w,T_END); }}
-      push(@tokens,
-	   lstClassBegin($classname),
-	   Invocation(T_CS('\@listingKeyword'),
-		      T_OTHER($classname),
-		      Tokens(@w)),
-	   lstClassEnd($classname)); }
+	  lstProcessPush($$index{begin}->unlist,T_BEGIN,@w,T_END); }}
+      lstProcessPush(lstClassBegin($classname),
+		     Invocation(T_CS('\@listingKeyword'),T_OTHER($classname),Tokens(@w)),
+		     lstClassEnd($classname)); }
 
     # NOTE: keywordprefix & otherkeywords probably need a specific regexp
     # Perhaps a special keywords_re : otherkeywords | keywordprefix$LaTeXML::ID_RE => keyword
@@ -1039,24 +1061,23 @@ sub lstProcess_internal {
     # Various kinds of whitespace, newlines, etc.
     elsif ($LaTeXML::listing =~ s/^\s*?\n//s) { # Newline
       if($LaTeXML::mode ne 'inline'){
-	push(@tokens,Invocation(T_CS('\@lst@endline'),($numpos eq 'right')&& lstDoNumber($LaTeXML::colnum==1)));
-	push(@tokens,Invocation(T_CS('\stepcounter'),T_OTHER('lstnumber')));
+	lstProcessEndLine();
+	lstProcessPush(Invocation(T_CS('\stepcounter'),T_OTHER('lstnumber')));
 	$LaTeXML::linenum++;	# Increment line number
 	$LaTeXML::colnum = 0; # Reset column number
 	# NOTE: should ignore blank lines at end of listing, even if they aren't the last line of the code!
 	# NOTE: should handle showlines, emptylines keywords
 	while($LaTeXML::listing && ! &$LaTeXML::linetest($LaTeXML::linenum)){	# Ignore next line?
 	  $LaTeXML::listing =~ s/^.*?(\n|$)//s;
-	  push(@tokens,Invocation(T_CS('\stepcounter'),T_OTHER('lstnumber')));
+	  lstProcessPush(Invocation(T_CS('\stepcounter'),T_OTHER('lstnumber')));
 	  $LaTeXML::linenum++; }
-	push(@tokens,Invocation(T_CS('\@lst@startline'),
-				($numpos eq 'left')&& lstDoNumber($LaTeXML::listing=~/^\s*?\n/s))); }
+	lstProcessStartLine(); }
       # === Possibly remove $gobble chars from line
       my $gobble = lstGetNumber('gobble');
       map( $LaTeXML::listing =~ s/^.//, 1..$gobble) if $gobble;
     }
     elsif ($LaTeXML::listing =~ s/^\f//s) { # Formfeed
-      push(@tokens,lstGetTokens('formfeed')->unlist);
+      lstProcessPush(lstGetTokens('formfeed')->unlist);
       $LaTeXML::colnum++; }
     elsif ($LaTeXML::listing =~ s/^([\t\s]+)//s) { # Tab expansion
       my $s=$1;
@@ -1064,26 +1085,17 @@ sub lstProcess_internal {
       my $tabsize = lstGetNumber('tabsize') || 1;
       foreach my $c (split(//,$s)){
 	$n += ($c eq ' ' ? 1 : ($tabsize-(($LaTeXML::colnum +$n) % $tabsize))); }
-      push(@tokens,Invocation(T_CS('\@listingKeyword'),T_OTHER('space'),Tokens(map($LaTeXML::SPACE,1..$n)))->unlist);
+      lstProcessPush(Invocation(T_CS('\@listingKeyword'),T_OTHER('space'),Tokens(map($LaTeXML::SPACE,1..$n)))->unlist);
       $LaTeXML::colnum+=$n; }
-   # elsif ($LaTeXML::listing =~ s/^\t//s) { # Tab expansion
-   #    my $tabsize = lstGetNumber('tabsize') || 1;
-   #    my $n = ($tabsize-($LaTeXML::colnum % $tabsize));
-   #    push(@tokens,map($LaTeXML::SPACE,1..$n));
-   #    $LaTeXML::colnum+=$n; }
-   #  elsif ($LaTeXML::listing =~ s/^\s//s) { # Space (nonbreak)
-   #    push(@tokens,$LaTeXML::SPACE);
-   #    $LaTeXML::colnum++; }
     # Quoted are typically quoted delimiters.
     elsif($LaTeXML::QUOTED_RE && $LaTeXML::listing =~ s/^($LaTeXML::QUOTED_RE)//){  # Something quoted.
-      push(@tokens,T_OTHER($1));
+      lstProcessPush(T_OTHER($1));
       $LaTeXML::colnum += length($1); }
     else {
       $LaTeXML::listing =~ s/^(.)//s; # Anything else, just pass through.
-	push(@tokens,T_OTHER($1));
+	lstProcessPush(T_OTHER($1));
       $LaTeXML::colnum++; }
-  }
-  @tokens; }
+  }}
 
 DefConstructor('\@listingKeyword {}{}', 
 	       "?#1(<ltx:text class='lst#1'>#2</ltx:text>)(#2)");
@@ -1116,7 +1128,7 @@ DefConstructor('\@lst@visible@space', "\x{2423}");
 sub lstDoNumber {
   my($isempty)=@_;
   if( (LookupValue('LISTINGS_NEEDS_NUMBER')
-       || (($LaTeXML::linenum % lstGetNumber('stepnumber')) == 0))
+       || ((($LaTeXML::linenum-1) % lstGetNumber('stepnumber')) == 0))
       && (lstGetBoolean('numberblanklines') || !$isempty) ){
     AssignValue('LISTINGS_NEEDS_NUMBER'=>0);
     Tokens(T_BEGIN,lstGetTokens('numberstyle')->unlist,T_CS('\thelstnumber'),T_END); }
