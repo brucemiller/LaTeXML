@@ -82,6 +82,7 @@ DefMacro('\lstinputlisting OptionalKeyVals:LST Semiverbatim', sub {
     Error("unexpected:$file Couldn't read listings file ".ToString($file).": $!"); }
   $STATE->getStomach->bgroup; 
   lstActivate($keyvals);
+  AssignValue('LST@toctitle',$file); # so it shows up in list of..
   my @expansion = lstProcessBlock($file,$text);
   $STATE->getStomach->egroup; 
   @expansion; });
@@ -103,6 +104,8 @@ sub lstProcessBlock {
     $caption=Invocation(T_CS('\lstlisting@makecaption'),(@tc ? Tokens(@tc):undef),Tokens(@t)); }
   elsif(($x = lstGetTokens('title')) && scalar($x->unlist)){
     $caption =Invocation(T_CS('\lstlisting@maketitle'),$x); }
+  elsif(($x = lstGetTokens('toctitle')) && scalar($x->unlist)){
+    $caption =Invocation(T_CS('\lstlisting@maketoctitle'),$x); }
   if(($x = lstGetTokens('label')) && scalar($x->unlist)){
     $labelled=1;
     unshift(@body,Invocation(T_CS('\label'),$x)); }
@@ -137,6 +140,9 @@ DefMacro('\format@title@lstlisting{}','\@tag{\fnum@lstlisting: }#1');
 DefMacro('\lstlisting@maketitle{}',
 	 '\@@toccaption{#1}'
 	 .'\@@caption{#1}');
+
+DefMacro('\lstlisting@maketoctitle{}',
+	 '\@@toccaption{#1}');
 
 DefConstructor('\@listings@inner {}', "<ltx:tabular>#1</ltx:tabular>");
 
@@ -584,7 +590,7 @@ DefKeyVal('LST','nolol','','true'); # Ignorable
 
 DefMacroI('\lstlistlistingname',undef,'Listings');
 DefConstructorI('\lstlistoflistings',undef,
-		"<ltx:TOC role='listing' name='#name'/>",
+		"<ltx:TOC role='listings' select='ltx:listing' name='#name'/>",
 		properties=>sub {( name=>DigestIf('\lstlistlistingname'));});
 
 DefMacroI('\lstlistingname',undef,'Listing');
