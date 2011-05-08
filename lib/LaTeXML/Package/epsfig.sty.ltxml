@@ -34,11 +34,12 @@ DefConstructor('\psfig RequiredKeyVals:epsGin',
 	      afterDigest=>sub {
 		my $kv = $_[1]->getArg(1);
 		my $file = $kv->getValue('file')|| $kv->getValue('figure');
+		$file = ToString($file); $file =~ s/^\s+//; $file=~ s/\s+$//;
 		$kv->setValue(file=>undef);
 		$kv->setValue(figure=>undef);
 		$kv->setValue(clip=>'true') if LookupValue('epsfclip');
 		$_[1]->setProperty(file=>$file);
-		my $candidates = join(',',pathname_findall(ToString($file),types=>['*'],
+		my $candidates = join(',',pathname_findall($file,types=>['*'],
 							   paths=>LookupValue('GRAPHICSPATHS')));
 		$_[1]->setProperty(candidates=>$candidates);
 	      });

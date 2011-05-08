@@ -94,7 +94,8 @@ DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim', sub {
   my $bb = ($op2 ? ToString($op1)." ".ToString($op2) : ($op1 ? "0 0 ".ToString($op1) : ''));
   $bb=~ s/,/ /g;
   my $options=($starred ? ($bb ? "viewport=$bb, clip" : "clip") : '');
-  my $candidates = join(',',pathname_findall(ToString($graphic),type=>['*'],paths=>LookupValue('GRAPHICSPATHS')));
+  $graphic = ToString($graphic); $graphic =~ s/^\s+//; $graphic=~ s/\s+$//;
+  my $candidates = join(',',pathname_findall($graphic,type=>['*'],paths=>LookupValue('GRAPHICSPATHS')));
   $document->insertElement('ltx:graphics',undef,graphic=>$graphic,options=>$options,candidates=>$candidates); },
 	       alias=>'\includegraphics');
 
