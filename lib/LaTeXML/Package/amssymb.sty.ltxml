@@ -54,7 +54,7 @@ DefMath('\blacklozenge',       "\x{25C6}");
 DefMath('\bigstar',            "\x{2605}");
 DefMath('\sphericalangle',     "\x{2222}");
 DefMath('\complement',         "\x{2201}", meaning=>'complement');
-DefMath('\eth',                UTF(0xD0)); # LATIN CAPITAL LETTER ETH
+DefMath('\eth',                UTF(0xF0));
 DefMath('\diagup',             "\x{2571}");
 DefMath('\diagdown',           "\x{2572}");
 
@@ -83,7 +83,7 @@ DefMath('\curlyvee',           "\x{22CE}", role=>'ADDOP', meaning=>'or');
 DefMath('\circleddash',        "\x{229D}", role=>'ADDOP'); # CIRCLED DASH
 DefMath('\circledast',         "\x{229B}", role=>'MULOP'); # CIRCLED ASTERISK OPERATOR
 DefMath('\circledcirc',        "\x{229A}", role=>'MULOP'); # CIRCLED RING OPERATOR
-DefMath('\centerdot',          "\x{2299}", role=>'MULOP'); # CIRCLED DOT OPERATOR
+DefMath('\centerdot',          "\x{2219}", role=>'MULOP'); # CIRCLED DOT OPERATOR
 DefMath('\intercal',           "\x{22BA}", role=>'ADDOP'); # INTERCALATE
 
 #======================================================================
@@ -121,7 +121,7 @@ DefMath('\fallingdotseq',      "\x{2252}", role=>'RELOP',
 	meaning=>'approximately-equals-or-image-of');
 DefMath('\backsim',            "\x{223D}", role=>'RELOP'); # REVERSED TILDE
 DefMath('\backsimeq',          "\x{224C}", role=>'RELOP'); # ALL EQUAL TO; Note: this has double rather than single bar!!!
-DefMath('\subseteqq',          "\x{2286}", role=>'RELOP',
+DefMath('\subseteqq',          "\x{2AC5}", role=>'RELOP',
 	meaning=>'subset-of-or-equals');
 DefMath('\Subset',             "\x{22D0}", role=>'RELOP',
 	meaning=>'double-subset-of');
@@ -171,7 +171,7 @@ DefMath('\triangleq',          "\x{225C}", role=>'RELOP'); # DELTA EQUAL TO
 DefMath('\thicksim',           "\x{223C}", role=>'RELOP'); # TILDE OPERATOR; Not thick!!!
 DefMath('\thickapprox',        "\x{2248}", role=>'RELOP',
 	meaning=>'almost-equals');
-DefMath('\supseteqq',          "\x{2287}", role=>'RELOP',
+DefMath('\supseteqq',          "\x{2AC6}", role=>'RELOP',
 	meaning=>'superset-of-or-equals');
 DefMath('\Supset',             "\x{22D1}", role=>'RELOP',
 	meaning=>'double-superset');
@@ -255,7 +255,7 @@ DefMath('\ntrianglelefteq',    "\x{22EC}", role=>'RELOP',
 	meaning=>'not-subgroup-of-nor-equals');
 DefMath('\nsubseteq',          "\x{2288}", role=>'RELOP',
 	meaning=>'not-subset-of-nor-equals');
-DefMath('\nsubseteqq',         "\x{2286}\x{0338}", role=>'RELOP',
+DefMath('\nsubseteqq',         "\x{2AC5}\x{0338}", role=>'RELOP',
 	meaning=>'not-subset-of-nor-equals');
 DefMath('\subsetneq',          "\x{228A}", role=>'RELOP',
 	meaning=>'subset-of-and-not-equals');
@@ -316,7 +316,7 @@ DefMath('\ntrianglerighteq',   "\x{22ED}", role=>'RELOP',
 	meaning=>'not-contains-nor-equals');
 DefMath('\nsupseteq',          "\x{2289}", role=>'RELOP',
 	meaning=>'not-superset-of-nor-equals');
-DefMath('\nsupseteqq',         "\x{2287}\x{0338}", role=>'RELOP',
+DefMath('\nsupseteqq',         "\x{2AC6}\x{0338}", role=>'RELOP',
 	meaning=>'not-superset-of-nor-equals');
 
 #======================================================================
