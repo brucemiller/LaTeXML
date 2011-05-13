@@ -407,7 +407,7 @@ sub generateTitle {
   # Add author, if any ???
   my $string = "";
   while(my $entry = $id && $$self{db}->lookup("ID:$id")){
-    my $title  = $self->fillInTitle($doc,$entry->getValue('title') || $entry->getValue('toccaption'))
+    my $title  = $self->fillInTitle($doc,$entry->getValue('title')) #|| $entry->getValue('toccaption'))
       || $entry->getValue('frefnum') || $entry->getValue('refnum');
     $title = $title->textContent if $title && ref $title;
     $title =~ s/^\s+// if $title;
