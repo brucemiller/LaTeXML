@@ -278,7 +278,7 @@ sub Info {
   my($msg)=@_;
   $LaTeXML::Global::STATE->noteStatus('info');
   print STDERR LaTeXML::Error::generateMessage("Info",$msg,0)
-    unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -1; 
+    unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < 0;
   return; }
 
 #**********************************************************************
