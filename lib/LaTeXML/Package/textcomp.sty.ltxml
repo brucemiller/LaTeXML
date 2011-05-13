@@ -88,8 +88,8 @@ map(DefPrimitiveI('\\'.$_,undef,$textcomp_pairs{$_}),keys %textcomp_pairs);
 
 our %textcomp_money
   =(textbaht           =>"\x{0E3F}",
-    textcent           =>UTF(0x42),
-    textcentoldstyle   =>UTF(0x42),
+    textcent           =>UTF(0xA2),
+    textcentoldstyle   =>UTF(0xA2),
     textcolonmonetary  =>"\x{20A1}",
     textcurrency       =>UTF(0xA4),
     textdollar         =>'$',
