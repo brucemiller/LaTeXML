@@ -700,6 +700,64 @@ sub insertPI {
   $pi; }
 
 #**********************************************************************
+# Document surgery (?)
+# moving stuff around, duplicating, etc.
+# 
+
+# Inserting clones of nodes into the document.
+# Nodes that exist in some other part of the document (or some other document)
+# will need to be cloned so that they can be part of the new document;
+# otherwise, they would be removed from thier previous document.
+# Also, we want to have a clean namespace node structure
+# (otherwise, libxml2 has a tendency to introduce annoying "default" namespace prefix declarations)
+# And, finally, we need to modify any id's present in the old nodes,
+# since otherwise they may be duplicated.
+
+# [note: this incorporates XML::append_nodes_clone and LaTeX.pool's cloneMath
+# it's likely that both of those should become obsolete!]
+# Should have variants here for prepend, insert before, insert after.... ???
+sub appendClone {
+  my($self,$node,@newchildren)=@_;
+  # Expand any document fragments
+  @newchildren = map( ($_->nodeType == XML_DOCUMENT_FRAG_NODE ? $_->childNodes : $_), @newchildren);
+  # Now find all xml:id's in the newchildren and record replacement id's for them
+  local %LaTeXML::Document::IDMAP=();
+  # Find all id's defined in the copy and change the id.
+  foreach my $child (@newchildren){
+    foreach my $idnode ($self->findnodes('.//@xml:id',$child)){
+      my $id = $idnode->getValue;
+      $LaTeXML::Document::IDMAP{$id}=$self->modifyID($id); }}
+  # Now do the cloning (actually copying) and insertion.
+  $self->appendClone_aux($node,@newchildren);
+  $node; }
+
+sub appendClone_aux {
+  my($self,$node,@newchildren)=@_;
+  foreach my $child (@newchildren){
+    my $type = $child->nodeType;
+    if($type == XML_ELEMENT_NODE){
+      my $new = $node->addNewChild($child->namespaceURI,$child->localname);
+      foreach my $attr ($child->attributes){
+	if($attr->nodeType == XML_ATTRIBUTE_NODE){
+	  my $key = $attr->nodeName;
+	  if($key eq 'xml:id'){	# Use the replacement id
+	    my $newid = $LaTeXML::Document::IDMAP{$attr->getValue};
+	    $new->setAttribute($key, $newid);
+	    $self->recordID($newid,$new); }
+	  elsif($key eq 'idref'){ # Refer to the replacement id if it was replaced
+	    my $id = $attr->getValue;
+	    $new->setAttribute($key, $LaTeXML::Document::IDMAP{$id} || $id);}
+	  elsif(my $ns = $attr->namespaceURI){
+	    $new->setAttributeNS($ns,$attr->localname,$attr->getValue); }
+	  else {
+	    $new->setAttribute( $attr->localname,$attr->getValue); }}
+      }
+      $self->appendClone_aux($new, $child->childNodes); }
+    elsif($type == XML_TEXT_NODE){
+      $node->appendTextNode($child->textContent); }}
+  $node; }
+
+#**********************************************************************
 1;
 
 

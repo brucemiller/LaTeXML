@@ -38,15 +38,15 @@ DefConstructor('\@add@institute {}',
 # Handling similar to reconnecting footnotemark & text.
 Tag('ltx:note',afterClose=>\&relocateInstitute);
 sub relocateInstitute {
-  my($document,$node)=@_;
-  if(($node->getAttribute('role')||'') eq 'institutetext'){
-    if(my $mark = $node->getAttribute('mark')){
+  my($document,$instnode)=@_;
+  if(($instnode->getAttribute('role')||'') eq 'institutetext'){
+    if(my $mark = $instnode->getAttribute('mark')){
       if(my @authors = $document->findnodes(".//ltx:contact[\@role='institutemark'][\@mark='$mark']")){
 	foreach my $author (@authors){
-	  append_nodes_clone($author,$node->childNodes);
+	  $document->appendClone($author,$instnode->childNodes);
 	  $author->setAttribute(role=>'institute');
 	  $author->removeAttribute('mark'); }
-	$node->parentNode->removeChild($node); }}}}
+	$instnode->parentNode->removeChild($instnode); }}}}
 
 DefMacro('\emailname','E-mail');
 DefConstructor('\@@@email{}',"^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
