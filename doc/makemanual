@@ -20,13 +20,15 @@ my $MANDIR   = "$DOCDIR/manual";
 my $WEBDEST  = "/local/www/site/htdocs/LaTeXML";
 
 my $identity = "makemanual (part of LaTeXML)";
-my($force,$help,$validate)=(0,0,1);
+my($force,$help,$validate,$verbosity)=(0,0,1,0);
 my ($dopdf,$doxhtml)=(undef,undef);
 GetOptions("force!"  => \$force,
 	   "help"    => \$help,
 	   "pdf!"    => \$dopdf,
 	   "xhtml!"  => \$doxhtml,
 	   "validate!"=>\$validate,
+	   verbose   => sub { $verbosity++; },
+	   quiet     => sub { $verbosity--; },
 	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
 
@@ -42,6 +44,8 @@ elsif(!defined $doxhtml){
 #======================================================================
 # Generate Appendices from PODS, Schema, etc
 #======================================================================
+setVerbosity($verbosity);
+
 heading("Extracting Appendices");
 system("$MANDIR/genpods".($force ? " --force":""))==0
   or warn "Failed to generate pods?";
