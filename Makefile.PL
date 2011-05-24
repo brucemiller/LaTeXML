@@ -127,13 +127,13 @@ MakeXSLT
 # but for manual $(DESTDIR) is empty, so install.PL complains...
 sub install_TeXStyles {
   if(! $TEXMF){
-    my $kpsewhich = `which kpsewhich`; chomp($kpsewhich);
-    $TEXMF = $kpsewhich && `$kpsewhich --expand-var='\$TEXMFLOCAL'`;
-    chomp($TEXMF);
-    if(! $TEXMF){
-      warn "Warning: no TeX installation found.\n", 
-	"  TeX is NOT required, but LaTeXML will have limited functionality.\n";
-      return; }}
+    if(system("kpsewhich --expand-var='\$TEXMFLOCAL'")==0){ # can run kpsewhich?
+      $TEXMF = `kpsewhich --expand-var='\$TEXMFLOCAL'`; 
+      chomp($TEXMF); $TEXMF =~ s/^'//; $TEXMF=~ s/'$//; }} # Strip quotes (a windows things?)
+  if(! $TEXMF){
+    warn "Warning: no TeX installation found.\n", 
+      "  TeX is NOT required, but LaTeXML will have limited functionality.\n";
+    return; }
 
   $$MORE_MACROS{INST_TEXMFDIR}       = '$(INST_LIB)/LaTeXML/texmf';
   $$MORE_MACROS{INSTALLTEXMFDIR}     = "$TEXMF/tex/latex/latexml";
@@ -147,11 +147,11 @@ pure_install ::
 		read $(INSTALLTEXMFDIR)/.packlist \
 		write $(DESTINSTALLTEXMFDIR)/.packlist \
 		$(INST_TEXMFDIR) $(DESTINSTALLTEXMFDIR)
-	- test -w $(INSTALLTEXMFDIR) && mktexlsr
+	- perl -e "exit(1) unless -w '$(INSTALLTEXMFDIR)'" && mktexlsr
 
 uninstall ::
 	$(NOECHO) $(UNINSTALL) $(INSTALLTEXMFDIR)/.packlist
-	- test -w $(INSTALLTEXMFDIR) && mktexlsr
+	- perl -e "exit(1) unless -w '$(INSTALLTEXMFDIR)'" && mktexlsr
 
 InstallTeXStyles
 }
