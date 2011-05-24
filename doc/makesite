@@ -64,8 +64,13 @@ foreach my $example (@examples){
   copy("$DOCDIR/site/examples/$example/$example.pdf", "$destname.pdf"); }
 
 # Make the manual (if not already done)
-system("$DOCDIR/makemanual",($force ? ("--force"):()))==0
-  or die "Failed to make manual";
+system("$DOCDIR/makemanual",
+       ($force ? ("--force"):()),
+       ($verbosity == 0 ? ()
+	: ($verbosity > 0
+	   ? map( ("--verbose"), 1..$verbosity)
+	   : (map( ("--quiet"), 1..(-$verbosity)))))
+      )==0 or die "Failed to make manual";
 
 # How much of "Making a new Release" should be incorporated? Where?
 # To make a new release:
