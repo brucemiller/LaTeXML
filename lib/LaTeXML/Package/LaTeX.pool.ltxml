@@ -2344,7 +2344,9 @@ DefConstructorI('\thebibliography',undef,
 # Close the bibliography
 DefConstructorI('\endthebibliography',undef,
 	       "</ltx:biblist></ltx:bibliography>",
-	       afterDigest=>sub { Digest(T_CS('\@appendix')); },
+	       afterDigest=>sub { my $t=T_CS('\@appendix');
+				  Digest($t) if LookupDefinition($t);
+				  return; },
 	      locked=>1);
 # auto close the bibliography and contained biblist.
 Tag('ltx:biblist',autoClose=>1);
