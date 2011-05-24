@@ -185,11 +185,15 @@ install prerequisites, but two of them are not available in the current release,
 \end{alltt}
 
 \subsubsection{Debian-based systems}\label{install.debian}
-For Debian based distributions, presumably including Ubuntu,
-all prerequisites are available from the standard repositories.
-I do not currently have access to a Debian/Ubuntu system, so
-have not created an appropriate \texttt{.deb} for \LaTeXML.
-\paragraph{Install Prerequisites} using the command:
+LaTeXML has been included in the Debian repositories (thanks Atsuhito Kohda);
+it should be installable using
+\begin{alltt}
+  sudo apt-get install latexml
+\end{alltt}
+This should automatically include any needed dependencies.
+
+Should you wish to install \ref{install.source} or from \ref{download.svn}, the
+following command should install the dependencies, after which you may proceed to install LaTeXML.
 \begin{alltt}
    sudo apt-get install   \textbackslash\\
       libparse-recdescent-perl \textbackslash\\
@@ -197,42 +201,83 @@ have not created an appropriate \texttt{.deb} for \LaTeXML.
       libxslt1.1 libxml-libxslt-perl  \textbackslash\\
       imagemagick perlmagick
 \end{alltt}
-\paragraph{Install}
-You can then continue by downloading and installing LaTeXML \ref{install.source}.
 
-Some \href{http://rhaptos.org/devblog/reedstrm/latexml}{notes} on installation on Debian
-based systems are also available.
+%Some \href{http://rhaptos.org/devblog/reedstrm/latexml}{notes} on installation on Debian
+%based systems are also available.
 
 \subsubsection{MacOS}\label{install.macos}
-Many of the prerequisite packages are available via
-\href{http://www.macports.org}{MacPorts}.
-\paragraph{For the Adventurous}  As an easy alternative --- if it works ---
-download \CurrentMacOS, save in it's own directory as \texttt{Portfile}
-(without the version number) and, within that directory, run
+LaTeXML has been included in the \href{http://www.macports.org}{MacPorts} repository (thanks Andrew Fernandes);
+it should be installable using the command
 \begin{alltt}
-  sudo port install
+  sudo port install LaTeXML
 \end{alltt}
-This should install \LaTeXML\ and it's all dependencies;
-Otherwise, continue as below.
-\paragraph{Install Prerequisites} using the command:
+This should automatically include any needed dependencies.
+
+% \paragraph{For the Adventurous}  As an easy alternative --- if it works ---
+% download \CurrentMacOS, save in it's own directory as \texttt{Portfile}
+% (without the version number) and, within that directory, run
+% \begin{alltt}
+%   sudo port install
+% \end{alltt}
+% This should install \LaTeXML\ and it's all dependencies;
+% Otherwise, continue as below.
+
+Should you wish to install \ref{install.source} or from \ref{download.svn}, the
+following command should install the dependencies, after which you may proceed to install LaTeXML.
 \begin{alltt}
   sudo port install    \textbackslash\\
       p5-xml-libxml p5-xml-libxslt  \textbackslash\\
       p5-parse-recdescent p5-perlmagick
 \end{alltt}
-\paragraph{Install}
-You can then continue by downloading and installing LaTeXML \ref{install.source}.
 
 \emph{Note} there have been issues reported regarding \verb|DB_File|
 not being installed;  Apparently you must install the 
-the db `variant' of perl, rather than the gdbm variant
-(whatever that means).
+the db `variant' of perl, rather than the gdbm variant;
+that is, you must run \verb|sudo port install perl +db|
+(possibly after uninstalling perl first?).
 
 \subsubsection{Windows}\label{install.windows}
 Many of the prerequisite packages are available in
 ppm form (for \href{http://activestate.com/}{ActivePerl} (I think).
 I will attempt to generate a ppm for LaTeXML in the near
 future, depending on user interest --- and assistance!
+
+There  are reports that LaTeXML runs under
+\href{http://strawberryperl.com}{Strawberry Perl}.
+The installation runs as follows:
+
+\paragraph{Prerequisites}
+\begin{itemize}
+\item Install  Strawberry Perl\\
+  (This provides \texttt{perl} and \texttt{cpan} commands from the command prompt
+   and a handy \texttt{dmake} command to substitute for the Unix \texttt{make}.) 
+\item Install \texttt{Parse::RecDescent} by typing the following in the Command Prompt
+\begin{alltt}
+  cpan -i Parse::RecDescent
+\end{alltt}
+\item Install an  ImageMagick binary (or from source, if preferred)
+\item Install  Ghostscript (otherwise CPAN's Image::Magick won't install right)
+\item Try to install Image::Magick via (command prompt)
+\begin{alltt}
+  cpan -i Image::Magick
+\end{alltt}
+ If the install fails with a single error on the write.t test, don't worry,
+it is a well known error on Win32 systems that is irrelevant.
+In that case, proceed to force install via
+\begin{alltt}
+  C:\>cpan
+  cpan>force install Image::Magick
+\end{alltt}
+\end{itemize}
+\paragraph{LaTeXML install}
+Proceed with the typical install from source, after downloading and unpacking the archive, or checking out the SVN (use TortoiseSVN if in doubt how to access it):
+\begin{alltt}
+ cd LaTeXML-0.7.0
+ perl Makefile.PL
+ dmake
+ dmake test
+ dmake install
+\end{alltt}
 
 \subsection{SVN Repository}\label{download.svn}
 The most current code can be obtained from the svn repository.
