@@ -499,6 +499,17 @@ As has been said, \LaTeXML\ consists of two main programs:
 and \ltxcmd{latexmlpost} responsible for converting to target formats.
 See Figure \ref{fig:dataflow} for illustration.
 
+The casual user needs only a superficial understanding of the architecture.
+The programmer who wants to extend or customize \LaTeXML\ will, however,
+need a fairly good understanding of the process and the distinctions between
+text, Tokens, Boxes, Whatsits and \XML, on the one hand,
+and Macros, Primitives and Constructors, on the other.
+In a way, the implementer of a \LaTeXML\ binding for a \LaTeX\ package may
+need a \emph{better} understanding then when implementing for \LaTeX\
+since they have to under not only the \TeX, where only macros are available,
+and the intended effect of the package, but also \LaTeXML\ with more options
+and a different set of intended effects.
+
 \begin{figure}[tb]
 \begin{center}
 \includegraphics[width=\textwidth]{figures/digestion}
@@ -557,7 +568,7 @@ pulls expanded \ltxpod{Token}s from the \ltxpod{Gullet}, which itself pulls \ltx
 the \ltxpod{Mouth}.  The \ltxpod{Mouth} converts characters from the plain text input
 into \ltxpod{Token}s according to the current \emph{catcodes} (category codes) assigned to
 them (as bound in the \ltxpod{State}).  
-The \ltxpod{Gullet} is responsible for expanding macros,
+The \ltxpod{Gullet} is responsible for expanding Macros,
 that is, control sequences currently bound to \ltxpod{Expandable}s
 and for parsing sequences of tokens into common core datatypes
 (\ltxpod{Number}, \ltxpod{Dimension}, etc.).
@@ -565,9 +576,10 @@ See \ref{customization.latexml.expansion} for how to define macros
 and affect expansion.
 
 The \ltxpod{Stomach} then digests these tokens by executing \ltxpod{Primitive} control 
-sequences for side effect or converting material
+sequences, usually for side effect, but often for converting material
 into \ltxpod{List}s of \ltxpod{Box}es and \ltxpod{Whatsit}s
-Normally, textual tokens are converted to \ltxpod{Box}es.
+(A Macro should never digest).
+Normally, textual tokens are converted to \ltxpod{Box}es in the current font.
 The main (intentional) deviation of \LaTeXML's digestion from that of \TeX\ is
 the introduction of a new type of definition, a \ltxpod{Constructor},
 responsible for constructing \XML\ fragments.
@@ -669,6 +681,30 @@ different stages of processing and in different levels of complexity.
 Depending on what you are trying to achieve, some approaches may be easier
 than others: Recall Larry Wall's adage ``There's more than one way to do it.''
 
+The basic conversion from \TeX\ markup to \XML\ is done by
+\ltxcmd{latexml}, and obviously affected by the mapping between the \TeX\ markup
+and the \XML\ markup is controlled by macros, primitives and, of course,
+constructors.  That mapping is determined by the \LaTeXML-specific implementations
+of the \TeX\ packages involved, what we call `bindings'.
+Consequently, you can customize the conversion by modifying the
+bindings used by \ltxcmd{latexml}.
+
+Likewise, you extend \ltxcmd{latexml} by creating bindings for
+\TeX\ styles that hadn't been covered.
+
+Or by defining your own \TeX\ style file along with it's \LaTeXML\ binding.
+
+In all these cases, you'll need the same skills: understanding and using
+text, tokens, boxes and whatsits, as well as macros and macro expansion,
+primitives and digestion, and finally whatsits and constructors.
+Understanding \TeX\ helps; reading the \LaTeXML\ bindings in the distribution
+will give an idea of how we use it.
+%%%
+%% Understand TeX;
+%% to implement: Understand the style file!
+%% Realize that people will misuse/abuse/stretch,
+%% often getting below the level of the advertised interface.
+%%%
 To teach \LaTeXML\ about new macros, to implement bindings for a
 package not yet covered, or to modify the way \TeX\ control sequences
 are converted to \XML, you will want to look at \ref{customization.latexml}.
