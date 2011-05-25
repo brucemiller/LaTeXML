@@ -570,7 +570,8 @@ sub openCache {
     $$self{cache}={};
     my $dbfile = $self->checkDestination("LaTeXML.cache");
     tie %{$$self{cache}}, 'DB_File', $dbfile,  O_RDWR|O_CREAT
-      or return $self->Error("Couldn't create DB cache for ".$self->getDestination.": $!");
+      or return $self->Error("Couldn't create DB cache for ".$self->getDestination.": $!"
+      .(-f $dbfile ? "\n(possibly incompatible db format?)":''));
   }}
 
 sub closeCache {
