@@ -98,8 +98,11 @@ MakeGrammar
 # whereas XHTML must be in a specific namespace.
 sub compile_XSLTs {
   my $styledir = 'LaTeXML/style';
+  # The (.) is supposed to match an open single or double quote;
+  # unfortunately, quoting the quote and having it work in all shells, windows,.....
+  # Let's just hope that whatever's matched is a quote!
   $$MORE_MACROS{XSLTTOHTML}
-    = '$(PERLRUN) -p -e \'s@\s*xmlns\s*=\s*(\"|\'\\\'\')http://www.w3.org/1999/xhtml\1@@\' ';
+    = '$(PERLRUN) -p -e \'s@\s*xmlns\s*=\s*(.)http://www.w3.org/1999/xhtml\1@@\' ';
   opendir(DIR,"lib/$styledir");
   my @xhtmls = grep(/^LaTeXML-(.*)-xhtml.xsl$/,readdir(DIR));
   closedir(DIR);
