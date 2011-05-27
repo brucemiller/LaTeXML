@@ -142,18 +142,19 @@ sub install_TeXStyles {
   $$MORE_MACROS{INSTALLTEXMFDIR}     = "$TEXMF/tex/latex/latexml";
   $$MORE_MACROS{DESTINSTALLTEXMFDIR} = '$(DESTDIR)$(INSTALLTEXMFDIR)';
 
+# Add appropriate quotes so spaces (windows) will work (?)
   $MORE_MAKERULES .= <<'InstallTeXStyles';
 
 pure_install ::
 	$(NOECHO) $(MKPATH) $(DESTINSTALLTEXMFDIR)
 	$(NOECHO) $(MOD_INSTALL) \
-		read $(INSTALLTEXMFDIR)/.packlist \
-		write $(DESTINSTALLTEXMFDIR)/.packlist \
-		$(INST_TEXMFDIR) $(DESTINSTALLTEXMFDIR)
+		read '$(INSTALLTEXMFDIR)/.packlist' \
+		write '$(DESTINSTALLTEXMFDIR)/.packlist' \
+		'$(INST_TEXMFDIR)' '$(DESTINSTALLTEXMFDIR)'
 	- perl -e "exit(1) unless -w '$(INSTALLTEXMFDIR)'" && mktexlsr
 
 uninstall ::
-	$(NOECHO) $(UNINSTALL) $(INSTALLTEXMFDIR)/.packlist
+	$(NOECHO) $(UNINSTALL) '$(INSTALLTEXMFDIR)/.packlist'
 	- perl -e "exit(1) unless -w '$(INSTALLTEXMFDIR)'" && mktexlsr
 
 InstallTeXStyles
