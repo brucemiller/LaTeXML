@@ -95,8 +95,11 @@ DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim', sub {
   $bb=~ s/,/ /g;
   my $options=($starred ? ($bb ? "viewport=$bb, clip" : "clip") : '');
   $graphic = ToString($graphic); $graphic =~ s/^\s+//; $graphic=~ s/\s+$//;
-  my $candidates = join(',',pathname_findall($graphic,type=>['*'],paths=>LookupValue('GRAPHICSPATHS')));
-  $document->insertElement('ltx:graphics',undef,graphic=>$graphic,options=>$options,candidates=>$candidates); },
+  my @candidates = pathname_findall($graphic,type=>['*'],paths=>LookupValue('GRAPHICSPATHS'));
+  if(my $base = LookupValue('SOURCEDIRECTORY')){
+    @candidates=map(pathname_relative($_,$base),@candidates); }
+  $document->insertElement('ltx:graphics',undef,graphic=>$graphic,options=>$options,
+			   candidates=>join(',',@candidates)); },
 	       alias=>'\includegraphics');
 
 # Also unimplemented... probably nothing useful to pass thru anyway?

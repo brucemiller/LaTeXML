@@ -37,8 +37,11 @@ DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbat
 	       alias=>'\includegraphics',
 	       properties=>sub {
 		 my $path = ToString($_[3]); $path =~ s/^\s+//; $path=~ s/\s+$//;
+		 my @candidates = pathname_findall($path,type=>['*'],paths=>LookupValue('GRAPHICSPATHS'));
+		 if(my $base = LookupValue('SOURCEDIRECTORY')){
+		   @candidates=map(pathname_relative($_,$base),@candidates); }
 		 (path=>$path,
-		  candidates=>join(',',pathname_findall($path,types=>['*'],paths=>LookupValue('GRAPHICSPATHS')))) });
+		  candidates=>join(',',@candidates)) });
 
 #**********************************************************************
 1;
