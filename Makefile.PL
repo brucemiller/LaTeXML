@@ -132,7 +132,9 @@ sub install_TeXStyles {
   if(! $TEXMF){
     if(system("kpsewhich --expand-var='\$TEXMFLOCAL'")==0){ # can run kpsewhich?
       $TEXMF = `kpsewhich --expand-var='\$TEXMFLOCAL'`; 
-      chomp($TEXMF); $TEXMF =~ s/^'//; $TEXMF=~ s/'$//; }} # Strip quotes (a windows things?)
+      # Strip the quotes (windows? or spaces in pathnames?)
+      # The pathnames won't combine right, but we DO need to wrap quotes around all completed paths!!
+      chomp($TEXMF); $TEXMF =~ s/^'//; $TEXMF=~ s/'$//; }}
   if(! $TEXMF){
     warn "Warning: no TeX installation found.\n", 
       "  TeX is NOT required, but LaTeXML will have limited functionality.\n";
@@ -142,11 +144,13 @@ sub install_TeXStyles {
   $$MORE_MACROS{INSTALLTEXMFDIR}     = "$TEXMF/tex/latex/latexml";
   $$MORE_MACROS{DESTINSTALLTEXMFDIR} = '$(DESTDIR)$(INSTALLTEXMFDIR)';
 
-# Add appropriate quotes so spaces (windows) will work (?)
+  # The installation directory of TeX may well have spaces which screws up Make.
+  # we need to wrap any pathname that includes TEXMF with quotes in case of embedded spaces
+  # The quotes apparently don't hurt, when they completely enclose the path.
   $MORE_MAKERULES .= <<'InstallTeXStyles';
 
 pure_install ::
-	$(NOECHO) $(MKPATH) $(DESTINSTALLTEXMFDIR)
+	$(NOECHO) $(MKPATH) '$(DESTINSTALLTEXMFDIR)'
 	$(NOECHO) $(MOD_INSTALL) \
 		read '$(INSTALLTEXMFDIR)/.packlist' \
 		write '$(DESTINSTALLTEXMFDIR)/.packlist' \
