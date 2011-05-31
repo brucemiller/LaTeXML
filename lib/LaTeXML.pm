@@ -99,8 +99,9 @@ sub digestFile {
 
      my $pathname = pathname_find($file,types=>['tex','']);
      Fatal(":missing_file:$file Cannot find TeX file $file") unless $pathname;
-     $state->assignValue(SOURCEFILE=>$pathname);
      my($dir,$name,$ext)=pathname_split($pathname);
+     $state->assignValue(SOURCEFILE=>$pathname);
+     $state->assignValue(SOURCEDIRECTORY=>$dir);
      $state->unshiftValue(SEARCHPATHS=>$dir) unless grep($_ eq $dir, @{$state->lookupValue('SEARCHPATHS')});
      $state->unshiftValue(GRAPHICSPATHS=>$dir) unless grep($_ eq $dir, @{$state->lookupValue('GRAPHICSPATHS')});
 
