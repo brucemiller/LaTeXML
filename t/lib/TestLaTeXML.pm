@@ -20,7 +20,7 @@ sub latexml_tests {
     do_fail($directory,"Couldn't read directory $directory:$!"); }
   else {
     local $Test::Builder::Level =  $Test::Builder::Level+1;
-    my @tests = map("$directory/$_", grep(s/\.tex$//, readdir(DIR)));
+    my @tests = map("$directory/$_", grep(s/\.tex$//, sort readdir(DIR)));
     closedir(DIR);
     $Test->expected_tests(1+scalar(@tests)+$Test->expected_tests);
     eval { use_ok("LaTeXML"); }; # || skip_all("Couldn't load LaTeXML"); }
