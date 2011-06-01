@@ -213,16 +213,19 @@ sub candidate_pathnames {
   my($pathname,%options)=@_;
   my @dirs=();
   $pathname = pathname_canonical($pathname);
+  my($pathdir,$name,$type)=pathname_split($pathname);
+  $name .= '.'.$type if $type;
   if(pathname_is_absolute($pathname)){
-    push(@dirs,''); }		# just a stand in
+    push(@dirs,$pathdir); }
   else {
     my $cwd = pathname_cwd();
     if($options{paths}){
       foreach my $p (@{$options{paths}}){
 	# Complete the search paths by prepending current dir to relative paths,
-	my $pp = (pathname_is_absolute($p) ? pathname_canonical($p) : pathname_concat($cwd,$p));
+	my $pp = pathname_concat((pathname_is_absolute($p) ? pathname_canonical($p) : pathname_concat($cwd,$p)),
+				 $pathdir);
 	push(@dirs,$pp) unless grep($pp eq $_, @dirs); }} # but only include each dir ONCE
-    push(@dirs,$cwd) unless @dirs; # At least have the current directory!
+    push(@dirs,pathname_concat($cwd,$pathdir)) unless @dirs; # At least have the current directory!
     # And, if installation dir specified, append it.
     if(my $subdir = $options{installation_subdir}){
       push(@dirs,map(pathname_concat($_,$subdir),@INSTALLDIRS)); }}
@@ -250,11 +253,10 @@ sub candidate_pathnames {
     foreach my $ext (@exts){
       if($ext eq '.*'){		# Unfortunately, we've got to test the file system NOW...
 	opendir(DIR,$dir) or next; # ???
-	push(@paths,map(pathname_concat($dir,$_), grep( /^\Q$pathname\E\.\w+$/, readdir(DIR))));
+	push(@paths,map(pathname_concat($dir,$_), grep( /^\Q$name\E\.\w+$/, readdir(DIR))));
 	closedir(DIR); }
       else {
-	push(@paths,pathname_concat($dir,$pathname.$ext)); }}}
-
+	push(@paths,pathname_concat($dir,$name.$ext)); }}}
   @paths; }
 
 #======================================================================
