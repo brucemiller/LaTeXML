@@ -2,31 +2,58 @@
 <?latexml class="article"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <para xml:id="p1">
-    <p>10 = 10</p>
-  </para>
-  <para xml:id="p2">
-    <p>Lambda = Λ</p>
-  </para>
-  <para xml:id="p3">
-    <p>3=3</p>
-  </para>
-  <para xml:id="p4">
-    <p>3=3</p>
-  </para>
-  <para xml:id="p5">
-    <p>Sum = <Math mode="inline" tex="\mchara" xml:id="p5.m1" text="∑"><XMath><XMTok role="UNKNOWN">∑</XMTok></XMath></Math></p>
-  </para>
-  <para xml:id="p6">
-    <p>4944=4944</p>
-  </para>
-  <para xml:id="p7">
-    <p>4944=4944</p>
-  </para>
-  <para xml:id="p8">
-    <p>10000 = 10000</p>
-  </para>
-  <para xml:id="p9">
-    <p>10000 = 10000</p>
-  </para>
+  <section refnum="1" xml:id="S1">
+    <title><tag>1 </tag>chardef</title>
+    <para xml:id="S1.p1">
+      <p>10 = 10</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>Lambda = Λ</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>3=3</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>3=3</p>
+    </para>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag>2 </tag>mathchardef</title>
+    <para xml:id="S2.p1">
+      <p>Sum = <Math mode="inline" tex="\mchara" xml:id="S2.p1.m1" text="∑"><XMath><XMTok role="BIGOP">∑</XMTok></XMath></Math></p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>4944=4944</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>4944=4944</p>
+    </para>
+    <para xml:id="S2.p4">
+      <p>10000 = 10000</p>
+    </para>
+    <para xml:id="S2.p5">
+      <p>10000 = 10000</p>
+    </para>
+  </section>
+  <section refnum="3" xml:id="S3">
+    <title><tag>3 </tag>fontencoding</title>
+    <para xml:id="S3.p1">
+      <p>OML: Λ.</p>
+    </para>
+    <para xml:id="S3.p2">
+      <p>OMS: ∗.</p>
+    </para>
+    <para xml:id="S3.p3">
+      <p>OMX: ].</p>
+    </para>
+    <para xml:id="S3.p4">
+      <p>OML: <Math mode="inline" tex="\mchara" xml:id="S3.p4.m1" text="∑"><XMath><XMTok role="BIGOP">∑</XMTok></XMath></Math>.</p>
+    </para>
+    <para xml:id="S3.p5">
+      <p>OMS: <Math mode="inline" tex="\mchara" xml:id="S3.p5.m1" text="∑"><XMath><XMTok role="BIGOP">∑</XMTok></XMath></Math>.</p>
+    </para>
+    <para xml:id="S3.p6">
+      <p>OMX: <Math mode="inline" tex="\mchara" xml:id="S3.p6.m1" text="∑"><XMath><XMTok role="BIGOP">∑</XMTok></XMath></Math>.</p>
+    </para>
+  </section>
 </document>

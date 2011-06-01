@@ -3,6 +3,7 @@
 \chardef\chara='3\relax
 \mathchardef\mchara"1350        %= 4944
 \begin{document}
+\section{chardef}
 % Regular counter register.
 % use the CS alone means assignment
 \num=10\relax
@@ -20,6 +21,7 @@ Lambda = \chara
 \num=\chara
 3=\the\num
 
+\section{mathchardef}
 % What about mathchar ?
 Sum = $\mchara$
 
@@ -34,4 +36,22 @@ Sum = $\mchara$
 
 \num=\@M
 10000 = \the\num
+
+\section{fontencoding}
+% Note that chardef'd chars see the current font encoding
+
+OML: \fontencoding{OML}\selectfont\chara\fontencoding{OT1}\selectfont.
+
+OMS: \fontencoding{OMS}\selectfont\chara\fontencoding{OT1}\selectfont.
+
+OMX: \fontencoding{OMX}\selectfont\chara\fontencoding{OT1}\selectfont.
+
+% But mathchardef'd chars have it effectively built in (via font family)
+
+OML: $\fontencoding{OML}\selectfont\mchara\fontencoding{OT1}\selectfont$.
+
+OMS: $\fontencoding{OMS}\selectfont\mchara\fontencoding{OT1}\selectfont$.
+
+OMX: $\fontencoding{OMX}\selectfont\mchara\fontencoding{OT1}\selectfont$.
+
 \end{document}
