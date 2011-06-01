@@ -593,11 +593,15 @@ AnyOp   : relop | METARELOP | ARROW | AddOp | MulOp | MODIFIEROP
 
 # Sub or superscripts on operators;
 # we recognize the structure, not necessarily the meaning
-AddOp : ADDOP addOpDecoration[$item[1]]
+AddOp : BINOP addOpDecoration[$item[1]]
+      | ADDOP addOpDecoration[$item[1]]
 
-MulOp : MULOP addOpDecoration[$item[1]]
+MulOp : BINOP addOpDecoration[$item[1]]
+      | MULOP addOpDecoration[$item[1]]
+# (BINOP can never really be satisfactory; it comes from something marked
+#  as \mathbin; we don't know any more about it)
 
-# Same thing, but not allowing POSTFIX
+# Decorations for an operator; Same thing as addScripts, but not allowing POSTFIX
 addOpDecoration :
           /^\Z/ { $arg[0];}   # short circuit!
         | POSTSUPERSCRIPT  addOpDecoration[DecorateOperator($arg[0],$item[1])]
@@ -689,6 +693,7 @@ MODIFIER        : /MODIFIER:\S*:\d+/		{ Lookup($item[1]); }
 ARROW		: /ARROW:\S*:\d+/		{ Lookup($item[1]); }
 ADDOP		: /ADDOP:\S*:\d+/		{ Lookup($item[1]); }
 MULOP		: /MULOP:\S*:\d+/		{ Lookup($item[1]); }
+BINOP		: /BINOP:\S*:\d+/		{ Lookup($item[1]); }
 POSTFIX		: /POSTFIX:\S*:\d+/		{ Lookup($item[1]); }
 FUNCTION        : /FUNCTION:\S*:\d+/		{ Lookup($item[1]); }
 OPFUNCTION      : /OPFUNCTION:\S*:\d+/		{ Lookup($item[1]); }
