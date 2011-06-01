@@ -340,7 +340,6 @@ sub closeNode_internal {
 
   $$self{node} = $closeto;
 
-  if(0){			# I _think_ this is desirable, but disable for the moment to reduce output changes
   my @c;
   # If we're closing a node that can take font switches and it contains a single FONT_ELEMENT_NAME node; pull it up.
   my $np = $node->parentNode;
@@ -352,9 +351,25 @@ sub closeNode_internal {
     $self->setNodeFont($node,$self->getNodeFont($c));
     $node->removeChild($c);
     foreach my $gc ($c->childNodes){
-      $node->appendChild($gc); }}
-}
-
+      $node->appendChild($gc); }
+    foreach my $attr ($c->attributes()){
+      if($attr->nodeType == XML_ATTRIBUTE_NODE){
+	my $key = $attr->nodeName;
+	my $val = $attr->getValue;
+	if($key eq 'xml:id'){	# Use the replacement id
+	  if(!$node->hasAttribute($key)){
+	    $self->recordID($val,$node);
+	    $node->setAttribute($key, $val); }}
+	elsif($key eq 'class'){
+	  if(my $class = $node->getAttribute($key)){
+	    $node->setAttribute($key,$class.' '.$val); }
+	  else {
+	    $node->setAttribute($key,$class); }}
+	elsif(my $ns = $attr->namespaceURI){
+	  $node->setAttributeNS($ns,$attr->localname,$val); }
+	else {
+	  $node->setAttribute( $attr->localname,$val); }}}
+    }
   $$self{node}; }
 
 sub getInsertionCandidates {
