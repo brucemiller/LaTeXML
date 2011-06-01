@@ -48,6 +48,9 @@ our @EXPORT = (qw(&DefExpandable
 	       qw(&Expand &Invocation &Digest &DigestIf
 		  &RawTeX &Let),
 
+	       # Font encoding
+	       qw(&DeclareFontMap &FontDecode &LoadFontMap),
+
 	       # Support for structured/argument readers
 	       qw(&ReadParameters &DefParameterType  &DefColumnType),
 
@@ -939,7 +942,7 @@ sub RegisterDocumentNamespace {
 #======================================================================
 
 # Find a file:
-# If the raw option is given, 
+# If the rawonly option is given, 
 #   it searches for the file.
 # If $ext is given or $file ends with a known extension
 # (eg. .sty for packages, .cls for classes, etc):
@@ -947,23 +950,46 @@ sub RegisterDocumentNamespace {
 # Otherwise, the file is sought in a more TeX-like fashion:
 #    the file is sought as $file.tex.ltxml, $file.tex, $file.ltxml or $file.
 # [ie. if raw=>1, we do _not_ loo for .ltxml forms]
-our $findfile_options = {raw=>1, type=>1};
+# If raw, we also search in /usr/share/texmf/tex/latex/base
+# but this should be something more general; eg whatever
+#   kpsewhich --expand-var='$TEXINPUTS'
+# returns.... or?
+
+sub pathname_is_raw {
+  my($pathname)=@_;
+  ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/); }
+
+our $findfile_options = {rawonly=>1, raw=>1, type=>1};
 sub FindFile {
   my ($file,%options)=@_;
   CheckOptions("FindFile ($file)",$findfile_options,%options);
-  my $paths = LookupValue('SEARCHPATHS');
   $file = ToString($file);
   $file .= ".$options{type}" if $options{type};
-  if($options{raw}){
-    pathname_find_x("$file",paths=>$paths); }
-  elsif($options{type} || ($file =~ /\.(tex|pool|sty|cls|clo|cnf|cfg)$/)){ # explicit or known extensions
+  my $israw = pathname_is_raw($file); # pathname is a known (and raw) type.
+  my $paths    = LookupValue('SEARCHPATHS');
+#  my $rawpaths = ($israw ? [@$paths,'/usr/share/texmf/tex/latex/base'] : $paths);
+  my $rawpaths = $paths;
+  if($options{rawonly}){
+    pathname_find_x("$file",paths=>$rawpaths)
+      || pathname_kpathsearch($file); }
+  elsif($options{type} || $israw){ # explicit or known extensions
     pathname_find_x("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
-      || pathname_find_x("$file",paths=>$paths); }
-  else {
+      || pathname_find_x("$file",paths=>$rawpaths)
+	|| pathname_kpathsearch($file); }
+  else {			# Unknown extension, maybe .tex, maybe none?
     pathname_find_x("$file.tex.ltxml",paths=>$paths,installation_subdir=>'Package')
-      || pathname_find_x("$file.tex",paths=>$paths)
-	|| pathname_find_x("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
-	  || pathname_find_x("$file",paths=>$paths); }}
+      || pathname_find_x("$file.tex",paths=>$rawpaths)
+	|| pathname_kpathsearch("$file.tex")
+	  || pathname_find_x("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
+	    || pathname_find_x("$file",paths=>$rawpaths)
+	      || pathname_kpathsearch($file); }}
+
+sub pathname_kpathsearch {
+  my($path)=@_;
+  my $kpsewhich = $ENV{LATEXML_KPSEWHICH} || 'kpsewhich';
+  my $found = `$kpsewhich $path`; 
+  chomp($found); 
+  $found; }
 
 sub pathname_find_x {
   my($path,%options)=@_;
@@ -1063,12 +1089,19 @@ sub resetOptions {
 }
 
 sub AddToMacro {
-  my($cs,$tokens)=@_;
+  my($cs,@tokens)=@_;
   # Needs error checking!
   my $defn = LookupDefinition($cs);
-  DefMacroI($cs,undef,Tokens($defn->getExpansion->unlist,$tokens->unlist)); }
+  if(! defined $defn || ! $defn->isExpandable){
+    Error(":unexpected:".ToString($cs)." ".ToString($cs)." is not an expandable control sequence"); }
+  else {
+    DefMacroI($cs,undef,Tokens($defn->getExpansion->unlist,map($_->unlist,@tokens))); }}
 
-our $require_options = {options=>1, withoptions=>1, type=>1, as_class=>1, raw=>1, after=>1};
+our $require_options = {options=>1, withoptions=>1, type=>1, as_class=>1, raw=>1, rawonly=>1, after=>1};
+# This (& FindFile) needs to evolve a bit to support reading raw .sty (.def, etc) files from
+# the standard texmf directories.  Maybe even use kpsewhich itself (INSTEAD of pathname_find ???)
+# Another potentially useful option might be that if we are reading a raw file,
+# perhaps it should just get digested immediately, since it shouldn't contribute any boxes.
 sub RequirePackage {
   my($package,%options)=@_;
   $package = ToString($package) if ref $package;
@@ -1082,17 +1115,19 @@ sub RequirePackage {
   # OR if it is loaded by such a class, and has withoptions true!!!
   $options{as_class} = 1 if  $options{withoptions}
     && grep($prevname eq $_, @{LookupValue('@masquerading@as@class')||[]});
+  $options{raw} = 1 if $options{rawonly}; # so it will be read as raw by Gullet.
   my $filetype = $options{type};
   my $type = ($options{as_class} ? 'cls' : $options{type});
-  # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
-  if($options{withoptions} && $prevname){
-    PassOptions($package,$type,@{LookupValue('opt@'.$prevname.".".$prevext)}); }
-  DefMacroI('\@currname',undef,Tokens(Explode($package)));
-  DefMacroI('\@currext',undef,Tokens(Explode($type)));
-  # reset options
-  resetOptions();
-  PassOptions($package,$type,@{$options{options} || []});
-  if(my $file = FindFile($package, type=>$filetype, raw=>$options{raw})){
+  if(my $file = FindFile($package, type=>$filetype, rawonly=>$options{rawonly})){
+    # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
+    if($options{withoptions} && $prevname){
+      PassOptions($package,$type,@{LookupValue('opt@'.$prevname.".".$prevext)}); }
+    DefMacroI('\@currname',undef,Tokens(Explode($package)));
+    DefMacroI('\@currext',undef,Tokens(Explode($type)));
+    # reset options
+    resetOptions();
+    PassOptions($package,$type,@{$options{options} || []});
+
     # Note which packages are pretending to be classes.
     PushValue('@masquerading@as@class',$package) if $options{as_class};
     DefMacroI(T_CS("\\$package.$type-hook"),undef,$options{after} || '');
@@ -1178,6 +1213,60 @@ sub AtEndDocument {
       DefMacroI($tn,undef,$op); 
       $op = $tn; }
     PushValue('@at@end@document',$op->unlist); }}
+
+#======================================================================
+#
+our $fontmap_options = {family=>1};	# none yet
+sub DeclareFontMap {
+  my($name,$map,%options)=@_;
+  CheckOptions("DeclareFontMap",$fontmap_options,%options);
+  my $mapname = ToString($name)
+    .($options{family} ? '_'.$options{family} : '')
+      .'_fontmap';
+  AssignValue($mapname=>$map, 'global'); }
+
+# Decode a codepoint using the fontmap for a given font and/or fontencoding.
+# If $encoding not provided, then lookup according to the current font's
+# encoding; the font family may also be used to choose the fontmap (think tt fonts!).
+# When $implicit is false, we are "explicitly" asking for a decoding, such as
+# with \char, \mathchar, \symbol, DeclareTextSymbol and such cases.
+# In such cases, only codepoints specifically within the map are covered; the rest are undef.
+# If $implicit is true, we'll decode token content that has made it to the stomach:
+# We're going to assume that SOME sort of handling of input encoding is taking place,
+# so that if anything above 128 comes in, it must already be Unicode!.
+# The lower half plane still needs to go through decoding, though, to deal
+# with TeX's rearrangement of ASCII...
+sub FontDecode {
+  my($code,$encoding,$implicit)=@_;
+  my($map,$font);
+  return undef if !defined $code || ($code < 0);
+  if(! $encoding){
+    $font = LookupValue('font');
+    $encoding = $font->getEncoding; }
+  if($encoding && ($map = LoadFontMap($encoding))){ # OK got some map.
+    my($family,$fmap);
+    if($font && ($family=$font->getFamily) && ($fmap=LookupValue($encoding.'_'.$family.'_fontmap'))){
+      $map = $fmap; }}		# Use the family specific map, if any.
+  if($implicit){
+    if($map && ($code < 128)){
+      $$map[$code]; }
+    else {
+      pack('U',$code); }}
+  else {
+    if($map){ $$map[$code]; }
+    else { undef; }}}
+
+sub LoadFontMap {
+  my($encoding)=@_;
+  my $map = LookupValue($encoding.'_fontmap');
+  if(!$map && !LookupValue($encoding.'_fontmap_failed_to_load')){
+    AssignValue($encoding.'_fontmap_failed_to_load'=>1); # Stop recursion?
+    RequirePackage(lc($encoding),type=>'fontmap');
+    if($map = LookupValue($encoding.'_fontmap')){ # Got map?
+      AssignValue($encoding.'_fontmap_failed_to_load'=>0); }
+    else {
+      AssignValue($encoding.'_fontmap_failed_to_load'=>1,'global'); }}
+  $map; }
 
 #======================================================================
 # Defining Rewrite rules that act on the DOM
@@ -1829,6 +1918,9 @@ The options are:
 
 =item C<< raw=>1 >> specifies that it is allowable to try to read a raw TeX style file.
 
+=item C<< rawonly=>1 >> will restrict the search so that it will only look for raw TeX files
+(not perl bindings with the C<.ltxml> extension).
+
 =back
 
 =item C<< LoadClass($class,%options); >>
@@ -1854,7 +1946,12 @@ The options are:
 
 =item C<< type=>type >> specifies the file type (default C<sty>.
 
-=item C<< raw=>1 >> specifies that it is allowable to try to read a raw TeX style file.
+=item C<< raw=>1 >> specifies that it is allowable to try to read a raw TeX style file;
+This is typically just passed through from other commands, like C<RequirePackage>, it
+doesn't actually affect which files are found.
+
+=item C<< rawonly=>1 >> restricts search to exactly the file specified; it does not search
+for files with an additional C<.ltxml> extension.
 
 =back
 
@@ -2058,6 +2155,25 @@ each associated namespace URI.  Use the prefix C<#default> for the default names
 The prefixes defined for the DTD may be different from the prefixes used in
 implementation CODE (eg. in ltxml files; see RegisterNamespace).
 The generated document will use the namespaces and prefixes defined for the DTD.
+
+=back
+
+A related capability is adding commands to be executed at the beginning
+and end of the document
+
+=over
+
+=item C<< AtBeginDocument($tokens,...) >>
+
+adds the C<$tokens> to the list of tokens to be processed a just after C<\\begin{document}>.
+These tokens can be used for side effect, or any content they generate will appear as the
+first children of the document (but probably after titles and frontmatter).
+
+=item C<< AtEndDocument($tokens,...) >>
+
+adds the C<$tokens> to the list of tokens to be processed a just before C<\\end{document}>.
+These tokens can be used for side effect, or any content they generate will appear as the
+last children of the document.
 
 =back
 
@@ -2317,6 +2433,43 @@ Looks up the current definition, if any, of the C<$token>.
 X<InstallDefinition>
 Install the Definition C<$defn> into C<$STATE> under its
 control sequence.
+
+=back
+
+=head2 Font Encoding
+
+=over
+
+=item C<< DeclareFontMap($name,$map,%options); >>
+
+Declares a font map for the encoding C<$name>. The map C<$map>
+is an array of 128 or 256 entries, each element is either a unicode
+string for the representation of that codepoint, or undef if that
+codepoint is not supported  by this encoding.  The only option
+currently is C<family> used because some fonts (notably cmr!)
+have different glyphs in some font families, such as
+C<family=>'typewriter'>.
+
+=item C<< FontDecode($code,$encoding,$implicit); >>
+
+Returns the unicode string representing the given codepoint C<$code>
+(an integer) in the given font encoding C<$encoding>.
+If C<$encoding> is undefined, the usual case, the current font encoding
+and font family is used for the lookup.  Explicit decoding is
+used when C<\\char> or similar are invoked (C<$implicit> is false), and
+the codepoint must be represented in the fontmap, otherwise undef is returned.
+Implicit decoding (ie. C<$implicit> is true) occurs within the Stomach
+when a Token's content is being digested and converted to a Box; in that case
+only the lower 128 codepoints are converted; all codepoints above 128 are assumed to already be Unicode.
+
+The font map for C<$encoding> is automatically loaded if it has not already been loaded.
+
+=item C<< LoadFontMap($encoding); >>
+
+Finds and loads the font map for the encoding named C<$encoding>, if it hasn't been
+loaded before.  It looks for C<encoding.fontmap.ltxml>, which would typically define
+the font map using C<DeclareFontMap>, possibly including extra maps for families
+like C<typewriter>.
 
 =back
 
