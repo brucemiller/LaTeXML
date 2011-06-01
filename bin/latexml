@@ -85,7 +85,7 @@ else {
 
 # ========================================
 # Now, convert to DOM and output, if desired.
-#use Encode;
+
 my $serialized;
 if($digested){
     local $LaTeXML::Global::STATE = $$latexml{state};
@@ -260,8 +260,8 @@ Specify the input encoding, eg. C<--inputencoding=iso-8859-1>.
 The encoding must be one known to Perl's Encode package.
 Note that this only enables the translation of the input bytes to
 UTF-8 used internally by LaTeXML, but does not affect catcodes.
-In such cases, you should be using the inputenc package.
-Note also that this does not affect the output encoding, which is
+It is usually better to use LaTeX's inputenc package.
+Note that this does not affect the output encoding, which is
 always UTF-8.
 
 =item C<--VERSION>
