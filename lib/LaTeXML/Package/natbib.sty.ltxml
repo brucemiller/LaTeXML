@@ -66,13 +66,13 @@ DefMacro('\cite[] Semiverbatim', sub {
   if(LookupValue('CITE_STYLE') eq 'numbers'){
      Invocation(T_CS('\@@cite'),
 		Tokens($open,
-		       Invocation(T_CS('\@@bibref'),T_OTHER("Number"),$keys,undef,undef),
+		       Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys,undef,undef),
 		       ($post ? ($ns,T_SPACE,$post):()),
 		       $close)); }
   else {
      Invocation(T_CS('\@@cite'),
 		Invocation(T_CS('\@@bibref'),
-			   T_OTHER("Authors Phrase1YearPhrase2"),
+			   Tokens(Explode("Authors Phrase1YearPhrase2")),
 			   $keys,
 			   Invocation(T_CS('\@@citephrase'),$open),
 			   Invocation(T_CS('\@@citephrase'),
@@ -90,7 +90,7 @@ DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
      Invocation(T_CS('\@@cite'),
 		Tokens(($pre  ? ($pre,T_SPACE):()),
 		       Invocation(T_CS('\@@bibref'),
-				  T_OTHER("$author Phrase1NumberPhrase2"),
+				  Tokens(Explode("$author Phrase1NumberPhrase2")),
 				  $keys,
 				  Invocation(T_CS('\@@citephrase'),$open),
 				  Invocation(T_CS('\@@citephrase'),$close))->unlist,
@@ -98,7 +98,7 @@ DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
   else {
      Invocation(T_CS('\@@cite'),
 		Invocation(T_CS('\@@bibref'),
-			   T_OTHER("$author Phrase1YearPhrase2"),
+			   Tokens(Explode("$author Phrase1YearPhrase2")),
 			   $keys,
 			   Invocation(T_CS('\@@citephrase'),
 				      Tokens($open,($pre ? ($pre,T_SPACE):()))),
@@ -117,13 +117,13 @@ DefMacro('\citep OptionalMatch:* [][] Semiverbatim', sub {
   if(LookupValue('CITE_STYLE') eq 'numbers'){
      Invocation(T_CS('\@@cite'),
 		Tokens($open,($pre  ? ($pre,T_SPACE):()),
-		       Invocation(T_CS('\@@bibref'),T_OTHER("Number"),$keys, undef,undef),
+		       Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys, undef,undef),
 		       ($post ? ($ns,T_SPACE,$post):()),$close)); }
   else {
      Invocation(T_CS('\@@cite'),
 		Tokens($open->unlist,($pre  ? ($pre,T_SPACE):()),
 		       Invocation(T_CS('\@@bibref'),
-				  T_OTHER("${author}Phrase1Year"),
+				  Tokens(Explode("${author}Phrase1Year")),
 				  $keys,
 				  Invocation(T_CS('\@@citephrase'),Tokens($ay->unlist,T_SPACE)),
 				  undef),
@@ -152,7 +152,7 @@ DefMacro('\citealp OptionalMatch:* [][] Semiverbatim', sub {
 DefMacro('\citenum Semiverbatim', sub {
   my($gullet,$keys)=@_;
   Invocation(T_CS('\@@cite'),
-	     Invocation(T_CS('\@@bibref'),T_OTHER("Number"),$keys,undef,undef)); });
+	     Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys,undef,undef)); });
 
 # Sorta right, but would like to avoid the nested <ltx:cite>!
 # maybe can neutralize \@@cite?
@@ -162,24 +162,24 @@ DefMacro('\citeauthor OptionalMatch:* Semiverbatim', sub {
   my($gullet,$star,$keys)=@_;
   my $author = ($star ? "FullAuthors" : "Authors");
   Invocation(T_CS('\@@cite'),
-	     Invocation(T_CS('\@@bibref'),T_OTHER($author),$keys,undef,undef)); });
+	     Invocation(T_CS('\@@bibref'),Tokens(Explode($author)),$keys,undef,undef)); });
 
 DefMacro('\citefullauthor Semiverbatim', sub {
   my($gullet,$star,$keys)=@_;
   Invocation(T_CS('\@@cite'),
-	     Invocation(T_CS('\@@bibref'),T_OTHER("FullAuthors"),$keys,undef,undef)); });
+	     Invocation(T_CS('\@@bibref'),Tokens(Explode("FullAuthors")),$keys,undef,undef)); });
 
 DefMacro('\citeyear Semiverbatim', sub {
   my($gullet,$keys)=@_;
   Invocation(T_CS('\@@cite'),
-	     Invocation(T_CS('\@@bibref'),T_OTHER("Year"),$keys,undef,undef)); });
+	     Invocation(T_CS('\@@bibref'),Tokens(Explode("Year")),$keys,undef,undef)); });
 
 DefMacro('\citeyearpar Semiverbatim', sub {
   my($gullet,$keys)=@_;
   my($open,$close)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE));
   Invocation(T_CS('\@@cite'),
 	     Tokens($open,
-		    Invocation(T_CS('\@@bibref'),T_OTHER("Year"),$keys,undef,undef),
+		    Invocation(T_CS('\@@bibref'),Tokens(Explode("Year")),$keys,undef,undef),
 		    $close)); });
 
 #======================================================================
@@ -211,7 +211,7 @@ DefMacro('\citetalias Semiverbatim', sub {
   my($open,$close)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE));
   Invocation(T_CS('\@@cite'),
 	     Invocation(T_CS('\@@bibref'),
-			T_OTHER("Phrase1"),
+			Tokens(Explode("Phrase1")),
 			$key,
 			Invocation(T_CS('\@@citephrase'),T_CS('\al@'.ToString($key))))); });
 
@@ -221,7 +221,7 @@ DefMacro('\citepalias Semiverbatim', sub {
   Invocation(T_CS('\@@cite'),
 	     Tokens($open,
 		    Invocation(T_CS('\@@bibref'),
-			       T_OTHER("Phrase1"),
+			       Tokens(Explode("Phrase1")),
 			       $key,
 			       Invocation(T_CS('\@@citephrase'),T_CS('\al@'.ToString($key)))),
 		    $close)); });
