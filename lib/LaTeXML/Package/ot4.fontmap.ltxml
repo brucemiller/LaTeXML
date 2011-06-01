@@ -1,0 +1,54 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  ot4 font encoding                                                  | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+use strict;
+use LaTeXML::Package;
+
+DeclareFontMap('OT4',[
+    "\x{0393}", "\x{0394}", "\x{0398}", "\x{039B}",  "\x{039E}", "\x{03A0}", "\x{03A3}", "\x{03A5}",
+    "\x{03A6}", "\x{03A8}", "\x{03A9}", "\x{FB00}",  "\x{FB01}", "\x{FB02}", "\x{FB03}", "\x{FB04}",
+    "\x{0131}",  undef,      UTF(0x60),  UTF(0xB4),   "\x{}",     "\x{02D8}", UTF(0xAF),  "\x{02DA}",
+    UTF(0xB8),   UTF(0xDF),  UTF(0xE6), "\x{0153}",   UTF(0xF8),  UTF(0xC6), "\x{152}",   UTF(0xD8),
+    undef,      '!',        "\x{201D}", '#',          '$',        '%',       '&',        "\x{2018}",
+    '(',        ')',        '*',        '+',          ',',        '-',       '.',        '/',
+    '0',        '1',        '2',        '3',          '4',        '5',       '6',        '7',
+    '8',        '9',        ':',        ';',           UTF(0xA1), '=',        UTF(0xBF), '?',
+    '@',        'A',        'B',        'C',          'D',        'E',       'F',        'G',
+    'H',        'I',        'J',        'K',          'L',        'M',       'N',        'O',
+    'P',        'Q',        'R',        'S',          'T',        'U',       'V',        'W',
+    'X',        'Y',        'Z',        '[',          "\x{201C}", ']',        UTF(0x5F), "\x{02D9}",
+    "\x{2019}", 'a',        'b',        'c',          'd',        'e',       'f',        'g',
+    'h',        'i',        'j',        'k',          'l',        'm',       'n',        'o',
+    'p',        'q',        'r',        's',          't',        'u',       'v',        'w',
+    'x',        'y',        'z',        "\x{2013}",   "\x{2014}", "\x{02DD}", "\x{02DC}", UTF(0xA8),
+    undef,      "\x{0104}", "\x{0106}", undef,        undef,      undef,     "\x{0118}", undef,
+    undef,      undef,      "\x{0141}", "\x{0143}",   undef,      undef,     undef,      undef,
+    undef,      "\x{015A}", undef,      undef,        undef,      undef,     undef,      undef,
+    undef,      "\x{0179}", undef,      "\x{017B}",   undef,      undef,     undef,      undef,
+    undef,      "\x{0105}", "\x{0107}", undef,        undef,      undef,     "\x{0119}", undef,
+    undef,      undef,      "\x{0142}", "\x{0144}",   undef,      undef,     UTF(0xAB),  UTF(0xBB),
+    undef,      "\x{015B}", undef,      undef,        undef,      undef,     undef,      undef,
+    undef,      "\x{017A}", undef,      "\x{017C}",   undef,      undef,     undef,      undef,
+    undef,      undef,      undef,      undef,        undef,      undef,     undef,      undef,
+    undef,      undef,      undef,      undef,        undef,      undef,     undef,      undef,
+    undef,      undef,      undef,      UTF(0xD3),    undef,      undef,     undef,      undef,
+    undef,      undef,      undef,      undef,        undef,      undef,     undef,      undef,
+    undef,      undef,      undef,      undef,        undef,      undef,     undef,      undef,
+    undef,      undef,      undef,      undef,        undef,      undef,     undef,      undef,
+    undef,      undef,      undef,      UTF(0xF3),    undef,      undef,     undef,      undef,
+    undef,      undef,      undef,      undef,        undef,      undef,     undef,      "\x{201E}"
+]);
+
+1;
+
+

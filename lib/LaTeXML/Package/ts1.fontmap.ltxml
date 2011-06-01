@@ -1,0 +1,54 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  ts1 font encoding                                                  | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+use strict;
+use LaTeXML::Package;
+
+DeclareFontMap('TS1',[
+    "\x{2035}","\x{2032}",UTF(0x5E), "\x{02DC}",UTF(0xA8), "\x{02DD}","\x{02DA}","\x{02C7}",
+    "\x{02D8}",UTF(0xAF), "\x{02D9}",UTF(0xB8), "\x{02DB}","\x{201A}",undef,     undef,
+    undef,     undef,     "\"",      undef,     undef,     "\x{2013}","\x{2014}",undef,
+    "\x{2190}","\x{2192}",UTF(0xA0)."\x{0311}",UTF(0xA0)."\x{0311}",UTF(0xA0)."\x{0311}",UTF(0xA0)."\x{0311}",  undef,     undef,
+    "\x{2422}",undef,     undef,     undef,     "\$",      undef,     undef,   UTF(0x27),
+    undef,     undef,     "\x{204E}",undef,     ",",       "=",       ".",     "\x{2044}",
+    "0",       "1",       "2",       "3",       "4",       "5",       "6",       "7",
+    "8",       "9",       undef,     undef,     "\x{2329}","-",     "\x{232A}",undef,
+    undef,     undef,     undef,     undef,     undef,     undef,     undef,     undef,
+    undef,     undef,     undef,     undef,     undef,     "\x{2127}",undef,     "\x{25EF}",
+    undef,     undef,     undef,     undef,     undef,     undef,     undef,     "\x{2126}",
+    undef,     undef,     undef,     "\x{27E6}",undef,     "\x{27E7}","\x{2191}","\x{2193}",
+    UTF(0x60), undef,     "\x{22C6}","\x{26AE}","\x{271D}",undef,     undef,     undef,
+    undef,     undef,     undef,     undef,     undef,     "\x{26AD}","\x{266A}",undef,
+    undef,     undef,     undef,     undef,     undef,     undef,     undef,     undef,
+    undef,     undef,     undef,     undef,     undef,     undef,     "~",       "=",
+    "\x{02D8}","\x{02C7}","\x{02DD}",UTF(0xA0)."\x{030F}","\x{2020}","\x{2021}","\x{2016}","\x{2030}",
+    "\x{2022}","\x{2103}","\$",      UTF(0xA2), "\x{0192}","\x{20A1}","\x{20A9}","\x{20A6}",
+    "G\x{20D2}","\x{20B1}","\x{20A4}","\x{211E}","\x{203D}","\x{2E18}","\x{20AB}","\x{2122}",
+    "\x{2031}",UTF(0xB6), "\x{0E3F}","\x{2116}","\x{2052}","\x{212E}","\x{25E6}","\x{2120}",
+    "\x{2045}","\x{2046}",UTF(0xA2), UTF(0xA3), UTF(0xA4), UTF(0xA5), UTF(0xA6), UTF(0xA7),
+    UTF(0xA8), UTF(0xA9), UTF(0xAA), undef,     UTF(0xAC), "\x{2117}",UTF(0xAE), UTF(0xAF),
+    UTF(0xB0), UTF(0xB1), UTF(0xB2), UTF(0xB3), UTF(0xB4), UTF(0xB5), UTF(0xB6), UTF(0xB7),
+    "\x{203B}",UTF(0xB9), UTF(0xBA), "\x{221A}",UTF(0xBC), UTF(0xBD), UTF(0xBE), "\x{20AC}",
+    undef,     undef,     undef,     undef,     undef,     undef,     undef,     undef,
+    undef,     undef,     undef,     undef,     undef,     undef,     undef,     undef,
+    undef,     undef,     undef,     undef,     undef,     undef,     UTF(0xD7), undef,
+    undef,     undef,     undef,     undef,     undef,     undef,     undef,     undef,
+    undef,     undef,     undef,     undef,     undef,     undef,     undef,     undef,
+    undef,     undef,     undef,     undef,     undef,     undef,     undef,     undef,
+    undef,     undef,     undef,     undef,     undef,     undef,     UTF(0xF7), undef,
+    undef,     undef,     undef,     undef,     undef,     undef,     undef,     undef,
+]);
+
+1;
+
+

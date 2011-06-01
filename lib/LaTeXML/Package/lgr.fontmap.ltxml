@@ -1,0 +1,118 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  LGR font encoding                                                  | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+use strict;
+use LaTeXML::Package;
+
+# NOTE: that the real font apparently defines ligatures that create the various accented chars.
+# The babel greek.ldf does NOT define ', < etc as shorthands, but relies on the ligatures.
+# (I think).
+#
+# If so, we can define the expected ligatures here, but it is tedious...
+# (see http://milde.users.sourceforge.net/LGR/)
+my $LGRMAP=[
+    "\x{2013}", undef,      undef,      undef,       undef,      undef,      "\x{03DA}", "\x{03DB}",
+    "\x{1FBE}", "\x{1FBC}", "\x{1FCC}", "\x{1FFC}",  "\x{0391}", "\x{03D4}", "\x{03B1}", "\x{1FE7}",
+    undef,      undef,      "\x{03DE}", "\x{03D9}",  undef,      "\x{03DA}", undef,      "\x{03E0}",
+    "\x{20AC}", "\x{2030}","\x{018F}",  "\x{03E1}",  "\x{2018}", "\x{2019}", "\x{02D8}", UTF(0xAF),
+    "\x{1FC1}", "!",        "\x{1FBD}", "\x{1FEE}",  "\x{1FED}", "%",        ".",        "\x{1FFD}",
+    "(",        ")",        "*",        "+",         ",",        "-",        ".",        "/",
+    "0",        "1",        "2",        "3",         "4",        "5",        "6",        "7",
+    "8",        "9",        ":",        "\x{0387}",  "\x{201B}", "=",        "\x{2019}", ";",
+ 
+   "\x{1FDF}", "\x{0391}", "\x{0392}", "\x{1FDD}",  "\x{0394}", "\x{0395}", "\x{03A6}", "\x{0393}",
+    "\x{0397}", "\x{0399}", "\x{0398}", "\x{039A}",  "\x{039B}", "\x{039C}", "\x{039D}", "\x{039F}",
+    "\x{03A0}", "\x{03A7}", "\x{03A1}", "\x{03A3}",  "\x{03A4}", "\x{03D2}", "\x{1FDE}", "\x{03A9}",
+    "\x{039E}", "\x{03A8}", "\x{0396}", "[",         "\x{1FCF}", "]",        "\x{1FCE}", "\x{1FCD}",
+    "\x{1FEF}", "\x{03B1}", "\x{03B2}", "\x{03C2}",  "\x{03B4}", "\x{03B5}", "\x{03C6}", "\x{03B3}",
+    "\x{03B7}", "\x{03B9}", "\x{03D1}", "\x{03F0}",  "\x{03BB}", "\x{03BC}", "\x{03BD}", "\x{03BF}",
+    "\x{03C0}", "\x{03C7}", "\x{03C1}", "\x{03C2}",  "\x{03C4}", "\x{03C5}", undef,      "\x{03C9}",
+    "\x{03BE}", "\x{03C8}", "\x{03B6}", UTF(0xAB),   "\x{1FBE}", UTF(0xBB),  "\x{1FC0}", "\x{2014}",
+
+    "\x{1F70}", "\x{1F01}", "\x{1F00}", "\x{1F03}",  "\x{1FB2}", "\x{1F81}", "\x{1F80}", "\x{1F83}",
+    "\x{1F71}", "\x{1F05}", "\x{1F04}", "\x{1F02}",  "\x{1FB4}", "\x{1F85}", "\x{1F84}", "\x{1F82}",
+    "\x{1FB6}", "\x{1F07}", "\x{1F06}", "\x{03DD}",  "\x{1FB7}", "\x{1F87}", "\x{1F86}",  undef,
+    "\x{1F74}", "\x{1F21}", "\x{1F20}", undef,       "\x{1FC2}", "\x{1F91}", "\x{1F90}",  undef,
+    "\x{1F75}", "\x{1F25}", "\x{1F24}", "\x{1F23}",  "\x{1FC4}", "\x{1F95}", "\x{1F94}", "\x{1F93}",
+    "\x{1FC6}", "\x{1F27}", "\x{1F26}", "\x{1F22}",  "\x{1FC7}", "\x{1F97}", "\x{1F96}", "\x{1F92}",
+    "\x{1F7C}", "\x{1F61}", "\x{1F60}", "\x{1F63}",  "\x{1FF2}", "\x{1FA1}", "\x{1FA0}", "\x{1FA3}",
+    "\x{1F7C}", "\x{1F65}", "\x{1F64}", "\x{1F62}",  "\x{1FF4}", "\x{1FA5}", "\x{1FA4}", "\x{1FA2}",
+
+    "\x{1FF6}", "\x{1F67}", "\x{1F66}", "\x{03DC}",  "\x{1FF7}", "\x{1FA7}", "\x{1FA6}",  undef,
+    "\x{1F76}", "\x{1F31}", "\x{1F30}", "\x{1F33}",  "\x{1F7A}", "\x{1F51}", "\x{1F50}", "\x{1F53}",
+    "\x{1F77}", "\x{1F35}", "\x{1F34}", "\x{1F32}",  "\x{1F7B}", "\x{1F55}", "\x{1F54}", "\x{1F52}",
+    "\x{1FD6}", "\x{1F37}", "\x{1F36}", "\x{03AA}",  "\x{1FE6}", "\x{1F57}", "\x{1F56}", "\x{03D4}",
+    "\x{1F72}", "\x{1F11}", "\x{1F10}", "\x{1F13}",  "\x{1F78}", "\x{1F41}", "\x{1F40}", "\x{1F43}",
+    "\x{1F73}", "\x{1F15}", "\x{1F14}", "\x{1F12}",  "\x{1F79}", "\x{1F45}", "\x{1F44}", "\x{1F42}",
+    "\x{03CA}", "\x{1FD2}", "\x{1FD3}", "\x{1FD7}",  "\x{03CB}", "\x{1FE2}", "\x{1FE3}", "\x{1FE7}",
+    "\x{1FB3}", "\x{1FC3}", "\x{1FF3}", "\x{1FE5}",  "\x{1FE4}", undef,      "\x{0374}", "\x{0375}",
+];
+
+DeclareFontMap('LGR',$LGRMAP);
+
+# These are the "shorthands" that are mapped into the upper half of the font map.
+# They're handled by ligatures in the font, rather than babel shorthands.
+my @greek_accents
+  =(undef,  undef,  undef,  undef,  undef,  undef,  undef,  undef,
+    undef,  undef,  undef,  undef,  undef,  undef,  undef,  undef,
+    undef,  undef,  undef,  undef,  undef,  undef,  undef,  undef,
+    undef,  undef,  undef,  undef,  undef,  undef,  undef,  undef,
+    "\"~",  undef,  undef,  "\"'",  "\"`",  undef,  undef,  undef,
+    undef,  undef,  undef,  undef,  undef,  undef,  undef,  undef,
+    undef,  undef,  undef,  undef,  undef,  undef,  undef,  undef,
+    undef,  undef,  undef,  undef,  undef,  undef,  undef,  undef,
+    "<~",   undef,  undef,  "<`",   undef,  undef,  undef,  undef,
+    undef,  undef,  undef,  undef,  undef,  undef,  undef,  undef,
+    undef,  undef,  undef,  undef,  undef,  undef,  "<'",   undef,
+    undef,  undef,  undef,  undef,  ">~",   undef,  ">'",   ">`",
+    undef,  undef,  undef,  undef,  undef,  undef,  undef,  undef,
+    undef,  undef,  undef,  undef,  undef,  undef,  undef,  undef,
+    undef,  undef,  undef,  undef,  undef,  undef,  undef,  undef,
+    undef,  undef,  undef,  undef,  undef,  undef,  undef,  undef,
+    "`a",   "<a",   ">a",   "<`a",  "`a|",  "<a|",  ">a|",  "<`a|",
+    "'a",   "<'a",  ">'a",  ">`a",  "'a|",  "<'a|", ">'a|", ">`a|",
+    "~a",   "<~a",  ">~a",  undef,  "~a|",  "<~a|", ">~a|", undef,
+    "`h",   "<h",   ">h",   undef,  "`h|",  "<h|",  ">h|",  undef,
+    "'h",   "<'h",  ">'h",  "<`h",  "'h|",  "<'h|", ">'h|", "<`h|",
+    "~h",   "<~h",  ">~h",  ">`h",  "~h|",  "<~h|", ">~h|", ">`h|",
+    "`w",   "<w",   ">w",   "<`w",  "`w|",  "<w|",  ">w|",  "<`w|",
+    "'w",   "<'w",  ">'w",  ">`w",  "'w|",  "<'w|", ">'w|", ">`w|",
+    "~w",   "<~w",  ">~w",  undef,  "~w|",  "<~w|", ">~w|", undef,
+    "`i",   "<i",   ">i",   "<`i",  "`u|",  "<u|",  ">u|",  "<`u|",
+    "'i",   "<'i",  ">'i",  ">`i",  "'u|",  "<'u|", ">'u|", ">`u|",
+    "~i",   "<~i",  ">~i",  "\"I",  "~u|",  "<~u|", ">~u|", "\"U",
+    "`e",   "<e",   ">e",   "<`e",  "`o|",  "<o|",  ">o|",  "<`o|",
+    "'e",   "<'e",  ">'e",  ">`e",  "'o|",  "<'o|", ">'o|", ">`o|",
+    "\"i",  "`\"i", "'\"i", "~\"i", "\"u",  "`\"u", "'\"u", "~\"u",
+    "a|",   "h|",   "w|",   "<r",   ">r",   undef,  undef,  undef );
+
+# By the time we seem these to apply ligatures, they've already been mapped into the font.
+# Also, note that the prefix accents (up to 2) can appear in any order.
+my $p=0;
+my %x=();
+foreach my $acc (@greek_accents){
+  my $rhs = $$LGRMAP[$p++];
+  next unless $acc;
+  my $lhs = join('',map(($_ eq '~' ? '!' : $$LGRMAP[ord($_)]), split(//,$acc)));
+  $x{$lhs}=$rhs;
+  if($acc =~ /(.)(.)([a-zA-Z])(.*)/){
+    my $lhsx = join('',map(($_ eq '~' ? '!' : $$LGRMAP[ord($_)]),split(//,"$2$1$3$4")));
+    $x{$lhsx}=$rhs; }
+}
+
+foreach my $lhs (sort {(length($a) <=> length($b)) || ($a cmp $b)} keys %x){
+  DefLigature("/$lhs/$x{$lhs}/"); }
+
+1;
+
+
