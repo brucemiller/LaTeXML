@@ -39,7 +39,7 @@ DefConstructor('\psfig RequiredKeyVals:epsGin',
 		$kv->setValue(figure=>undef);
 		$kv->setValue(clip=>'true') if LookupValue('epsfclip');
 		$_[1]->setProperty(file=>$file);
-		my @candidates = pathname_findall($file,type=>['*'],paths=>LookupValue('GRAPHICSPATHS'));
+		my @candidates = pathname_findall($file,types=>['*'],paths=>LookupValue('GRAPHICSPATHS'));
 		if(my $base = LookupValue('SOURCEDIRECTORY')){
 		  @candidates=map(pathname_relative($_,$base),@candidates); }
 		$_[1]->setProperty(candidates=>join(',',@candidates));
