@@ -219,9 +219,9 @@ use LaTeXML::Global;
 use base qw(LaTeXML::Register);
 
 sub new {
-  my($class,$cs,$value,$char,%traits)=@_;
+  my($class,$cs,$value,$internalcs,%traits)=@_;
   bless {cs=>$cs, parameters=>undef,
-	 value=>$value, char=>$char,
+	 value=>$value, internalcs=>$internalcs,
 	 registerType=>'Number', readonly=>1,
 	 locator=>"defined ".$STATE->getStomach->getGullet->getMouth->getLocator, %traits}, $class; }
 
@@ -229,16 +229,9 @@ sub valueOf  { $_[0]->{value}; }
 sub setValue { Error(":unexpected:".$_[0]->getCSName." Cannot assign to chardef ".$_[0]->getCSName); return; }
 sub invoke   { 
   my($self,$stomach)=@_;
-  if(my $glyph = $$self{char}){
-    Box($glyph,undef,undef,$$self{cs}); }
-  # Should this warn, or is this situation ignorable?
-  # else {
-  #   my $cs = $$self{cs}->getCSName;
-  #   if(! LookupValue('CharDefWarned'.$cs)){
-  #     Warn(':unexpected:'.$cs.' no glyph found for '.$cs.' ('.$$self{value}.')'); 
-  #     AssignValue('CharDefWarned'.$cs=>1);}}
-  else { return(); }
-}
+  if(my $cs = $$self{internalcs}){
+    $stomach->invokeToken($cs); }}
+
 #**********************************************************************
 # Constructor control sequences.  
 # They are first converted to a Whatsit in the Stomach, and that Whatsit's
