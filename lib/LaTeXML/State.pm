@@ -98,6 +98,7 @@ sub new {
       $$self{table}{catcode}{chr($c)} = [CC_LETTER];
       $$self{table}{catcode}{chr($c+ord('a')-ord('A'))} = [CC_LETTER];  }
   }
+  $$self{table}{value}{SPECIALS}=[['^','_','@','~','&','$','#','%',"'"]];
   if($options{catcodes} eq 'style'){
     $$self{table}{catcode}{'@'} = [CC_LETTER]; }
   $self; }
