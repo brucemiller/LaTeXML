@@ -138,9 +138,9 @@ sub StartSemiverbatim() {
   $LaTeXML::STATE->pushFrame;
   $LaTeXML::STATE->assignValue(MODE=>'text'); # only text mode makes sense here... BUT is this shorthand safe???
   $LaTeXML::STATE->assignValue(IN_MATH=>0);
-  # include space!
-  map($LaTeXML::STATE->assignCatcode($_=>CC_OTHER,'local'),'^','_','@','~','&','$','#','%',"'",' ');
+  map($LaTeXML::STATE->assignCatcode($_=>CC_OTHER,'local'),@{$LaTeXML::STATE->lookupValue('SPECIALS')});
   $LaTeXML::STATE->assignCatcode('math:\''=>0,'local');
+  $LaTeXML::STATE->assignValue(font=>$LaTeXML::STATE->lookupValue('font')->merge(encoding=>'ASCII'), 'local'); # try to stay as ASCII as possible
   return; }
 
 sub EndSemiverbatim() {  $LaTeXML::STATE->popFrame; }
@@ -160,7 +160,7 @@ sub Tokens {
 # Explode a string into a list of tokens w/catcode OTHER (except space).
 sub Explode {
   my($string)=@_;
-  map(($_ eq ' ' ? T_SPACE() : T_OTHER($_)),split('',$string)); }
+  (defined $string ? map(($_ eq ' ' ? T_SPACE() : T_OTHER($_)),split('',$string)) : ()); }
 
 # Reverts an object into TeX code, as a Tokens list, that would create it.
 # Note that this is not necessarily the original TeX.
