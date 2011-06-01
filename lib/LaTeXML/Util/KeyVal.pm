@@ -176,7 +176,14 @@ sub beDigested {
     my($key,$value)=(shift(@kv),shift(@kv));
     my $keydef=LookupValue('KEYVAL@'.$keyset.'@'.$key);
     my $dodigest = (ref $value) && (!$keydef || !$$keydef[0]{undigested});
-    push(@dkv,$key, ($dodigest ? $value->beDigested($stomach) : $value)); }
+    # Yuck
+    my $type = ($keydef && (scalar(@$keydef)==1) && $keydef->[0]->{type}) || 'Plain';
+    my $typedef = $LaTeXML::Parameters::PARAMETER_TABLE{$type};
+    my $semiverb = $dodigest && $typedef && $$typedef{semiverbatim};
+    StartSemiverbatim if $semiverb;
+    push(@dkv,$key, ($dodigest ? $value->beDigested($stomach) : $value)); 
+    EndSemiverbatim if $semiverb; 
+  }
   (ref $self)->new($$self{keyset},$$self{open},$$self{close},@dkv); }
 
 sub revert {
