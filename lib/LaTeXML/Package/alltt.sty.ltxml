@@ -19,7 +19,11 @@ use LaTeXML::Package;
 DefEnvironment('{alltt}',"<ltx:verbatim font='#font'>#body</ltx:verbatim>",
 	      font=>{family=>'typewriter', series=>'medium', shape=>'upright'},
 	      beforeDigest=>sub{
-		map(AssignCatcode($_=>CC_OTHER), ' ', '$', '&', '#', '^', '_', '%', '~');
+		map(AssignCatcode($_=>CC_OTHER), '$', '&', '#', '^', '_', '%', '~');
+		AssignCatcode(" "=>13);
+		Let(T_ACTIVE(" "), T_CS('\space'));
+# ?		AssignCatcode("\n"=>13);
+#		Let(T_ACTIVE("\n"), T_CS('\@break'));
 		AssignValue(PRESERVE_NEWLINES=>1);
 		# \@noligs: This SHOULD inhibit ligature substitution! (eg quotes, dots, etc!!!)
 		# \frenchspacing\@vobeyspaces
