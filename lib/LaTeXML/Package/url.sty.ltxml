@@ -50,16 +50,15 @@ DefMacro('\@Url Token', sub {
   my $mouth = $gullet->getMouth;
   my($open,$close,$url);
   $open = $gullet->readToken;
-  {
-    local $STATE = $EMPTY_CATTABLE; 
-    if($open->equals(T_BEGIN)){
-      $STATE->assignCatcode('{'=>CC_BEGIN); # Put these back!
-      $STATE->assignCatcode('}'=>CC_END);
-      $open = T_OTHER('{'); $close = T_OTHER('}');
-      $url = $gullet->readBalanced; }
-    else {
-      $close = $open = T_OTHER($open->getString);
-      $url = $mouth->readTokens($close); }}
+  StartSemiverbatim();
+  if($open->equals(T_BEGIN)){
+    $open = T_OTHER('{'); $close = T_OTHER('}');
+    $url = $gullet->readBalanced; }
+  else {
+    $close = $open = T_OTHER($open->getString);
+    $url = $mouth->readTokens($close); }
+  EndSemiverbatim();
+
   my @toks = map(T_OTHER(ToString($_)),$url->unlist);
   (Invocation(T_CS('\@@Url'),
 	      T_OTHER(ToString($cmd)),Tokens($open),Tokens($close),
@@ -74,7 +73,7 @@ DefMacro('\Url', sub {
   (T_CS('\@Url')); });
 
 # \@@Url cmd {open}{close}{url}{formattedurl}
-DefConstructor('\@@Url Token {}{}{}{}',
+DefConstructor('\@@Url Undigested {}{} Semiverbatim {}',
 	       "<ltx:ref href='#href' class='#class'>#5</ltx:ref>",
 	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[4])),
 				  class=>sub { my $c=ToString($_[1]); $c =~ s/^\\//; $c; } ); },
@@ -92,9 +91,7 @@ DefPrimitive('\urldef{}',sub {
   my $gullet = $stomach->getGullet;
   my @expansion = $stomach->digestNextBody(T_CS('\endgroup'));
   my $expansion = LaTeXML::List->new(@expansion);
-###  $stomach->endgroup;
   DefPrimitiveI($cmd,undef,sub { @expansion; });
   (); });
-
 
 1;
