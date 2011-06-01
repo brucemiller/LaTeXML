@@ -7,48 +7,53 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Thanks to the arXMLiv group for initial implementation              | # 
-# |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
-use Encode;
+no warnings 'redefine';
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Input Encoding
+#**********************************************************************
+DefPrimitive('\DeclareInputMath {} {}', sub {
+  my($stomach,$code,$expansion)=@_;
+  $code = int(ToString($code));
+  my $char = pack('C',$code);
+  AssignCatcode($char,CC_ACTIVE);
+  DefMacroI($char,undef, $expansion); });
 
-# If we wanted to find the actual encoding file ($encoding.def somewhere in TEXMF tree),
-# we could conceivably read it, and build a decoding table.
-DefPrimitive('\DeclareInputMath{}{}',undef);
-DefPrimitive('\DeclareInputText{}{}',undef);
-DefPrimitive('\IeC{}',undef);
-DefPrimitive('\inputencoding{}', sub { setEncoding($_[1]); });
+DefPrimitive('\DeclareInputText {} {}', sub {
+  my($stomach,$code,$expansion)=@_;
+  $code = int(ToString($code));
+  my $char = pack('C',$code);
+  AssignCatcode($char,CC_ACTIVE);
+  DefMacroI($char,undef, $expansion); });
 
-DeclareOption(undef,sub { setEncoding(Digest(T_CS('\CurrentOption'))); });
+DefMacro('\IeC{}','#1');
+
+DefMacroI('\@inpenc@undefined',undef,sub {
+  Error("Keyboard character used is undefined in inputencoding ".LookupValue('INPUT_ENCODING')); });
+
+DefPrimitive('\inputencoding{}', sub { SetInputEncoding(ToString(Digest($_[1]))); });
+
+DeclareOption(undef, sub { SetInputEncoding(ToString(Digest(T_CS('\CurrentOption')))); });
+
 ProcessOptions();
 
-our %translate_encoding = (
-			  decmulti=>'iso-8859-1', # is it close ENOUGH ?
-			   cp437de=>'cp437', # same as cp437 EXCEPT that 225 => Esset, rather than \beta!!!
-			   applemac=>'MacRoman',
-			   macce=>'MacCentralEurRoman',
-			   next=>'nextstep',
-			   ansinew=>'cp1252'
-			  );
-
-sub setEncoding {
+#**********************************************************************
+sub SetInputEncoding {
   my($encoding)=@_;
-  $encoding = ToString($encoding);
-  my $remapped = $translate_encoding{$encoding} || $encoding;
-  # Check that it's a valid perl encoding?
-  if(Encode::resolve_alias($remapped)){
-    AssignValue(INPUT_ENCODING=>$remapped); }
-  else {
-    Error(":unexpected encoding $remapped is unknown"); }}
+  # Initially disable all odd & upper half-plane chars
+  foreach my $code ((0..8),0xB,(0xE..0x1E),(128..255)){
+    my $char = pack('C',$code);
+    AssignCatcode($char,CC_ACTIVE);
+    Let(T_CS($char),T_CS('\@inpenc@undefined')); }
+  # Then load TeX's input encoding definitions.
+  RequirePackage($encoding,type=>'def', raw=>1);
+  AssignValue(INPUT_ENCODING=>$encoding);
+  AssignValue(PERL_INPUT_ENCODING=>undef); # Disable the perl-level decoding, if any.
+  return; }
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#**********************************************************************
 1;
