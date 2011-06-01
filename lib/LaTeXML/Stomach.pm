@@ -157,7 +157,10 @@ sub invokeToken_internal {
     elsif($forbidden_cc[$cc]){
       Fatal(":misdefined:<unknown> The token ".Stringify($token)." should never reach Stomach!"); }
     else {
-      Box($meaning->getString,undef,undef,$meaning); }}
+      my $string = $meaning->getString;
+      if(defined $string){
+	$string = join('',grep(defined $_,map(LaTeXML::Package::FontDecode(ord($_),undef,1), split(//,$string)))); }
+      Box($string,undef,undef,$meaning); }}
   else {
     Fatal(":misdefined:<unknown> ".Stringify($meaning)." should never reach Stomach!"); }}
 
