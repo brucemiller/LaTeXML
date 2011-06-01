@@ -77,8 +77,13 @@ our @NEUTRALIZABLE=(0,0,0,1,
 		    1,0,0,0,
 		    0,1,1,0,
 		    0,0);
+
+# neutralize really should only retroactively imitate what Semiverbatim would have done.
+# So, it needs to neutralize those in SPECIALS
 sub neutralize {
-  ($NEUTRALIZABLE[$_[0]->[1]] ? T_OTHER($_[0]->[0]) : $_[0]); }
+  my($ch,$cc)=@{$_[0]};
+  ($NEUTRALIZABLE[$cc] && grep($ch, @{ $LaTeXML::STATE->lookupValue('SPECIALS')})
+   ? T_OTHER($ch) : $_[0]); }
 
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.
