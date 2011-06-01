@@ -25,6 +25,23 @@ use LaTeXML::Util::KeyVal;
 # This may eventually need some schema support...
 
 #======================================================================
+our %lst_charmapping=('#'=>T_CS('\#'),'$'=>T_CS('\textdollar'),'&'=>T_CS('\&'),
+		      "'"=>T_CS('\textquotesingle'),
+		      "'"=>Tokens(T_CS('\char'),T_OTHER('3'),T_OTHER('9')),
+		      '*'=>T_CS('\textasteriskcentered'),
+		      # ??		  '-'=>$-$ ??
+		      '<'=>T_CS('\textless'),'>'=>T_CS('\textgreater'),'\\'=>T_CS('\textbackslash'),
+		      '^'=>T_CS('\textasciicircum'),'_'=>T_CS('\textunderscore'),'`'=>T_CS('\textasciigrave'),
+		      '{'=>T_CS('\textbraceleft'),'}'=>T_CS('\textbraceright'),'%'=>T_CS('\%'),
+		      '|'=>T_CS('\textbar'),
+		      '~'=>T_CS('\textasciitilde'),
+		     );
+
+sub lstRescan {
+  my($tokens)=@_;
+  (defined $tokens ? Tokens(map($lst_charmapping{$_->getString} || $_, $tokens->unlist)) : undef); }
+
+#======================================================================
 # 4.2 Typesetting listings
 #======================================================================
 
@@ -146,18 +163,18 @@ DefMacro('\lstlisting@maketoctitle{}',
 
 DefConstructor('\@listings@inner {}', "<ltx:tabular>#1</ltx:tabular>");
 
-DefConstructor('\@listings {} {}',
+DefConstructor('\@listings Semiverbatim {}',
 	       "<ltx:listing xml:id='#id' refnum='#refnum' class='#1'>"
 	       ."#2"
 	       ."</ltx:listing>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'lstlisting'); },
 	       afterDigest=>sub { RescueCaptionCounters('lstlisting',$_[1]); });
 
-DefConstructor('\@@listings {} {}',
+DefConstructor('\@@listings Semiverbatim {}',
 	       "<ltx:listing xml:id='#id' class='#1'>#2</ltx:listing>",
 	       properties=>sub { RefStepID('lstlisting'); },
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'lstlisting'); });
-DefConstructor('\@@listings@inblock {} {}',
+DefConstructor('\@@listings@inblock Semiverbatim {}',
 	       "<ltx:listingblock xml:id='#id' class='#1'>#2</ltx:listingblock>",
 	       properties=>sub { RefStepID('lstlisting'); },
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'lstlisting'); });
@@ -174,7 +191,7 @@ sub listingsSemantics {
     $lang = "$2_$1" if $lang =~ /^\[([^\]]*)\](.*)$/;
     push(@items, "language_$lang"); }
 
-  Tokens( Explode(join(' ',@items))); }
+  Tokens( (@items ? Explode(join(' ',@items)) : ())); }
 
 #======================================================================
 # Managing the sets of keyvals that compose a Listings Style or Language.
@@ -352,13 +369,13 @@ sub lstAddDelimiter {
   my $closere = lstRegexp($close);
   if($type eq 'b'){		# Balanced; same delim open & close; but not when slashed
     $closere = "(?<!\\\\)$openre";
-    $quoted = "\\$openre"; }
+    $quoted = "\\\\\\$openre"; }
   elsif($type eq 'd'){		# Doubled: same delim open & close; but not when doubled.
     $closere = "(?<!$openre)$openre(?!$openre)"; 
     $quoted = $openre.$openre; }
   elsif($type eq 'bd'){		# Doubled: same delim open & close; not when doubled OR slashed
     $closere = "(?<!\\\\|$openre)$openre(?!$openre)"; 
-    $quoted  = "\\$openre|$openre$openre"; }
+    $quoted  = "\\\\\\$openre|$openre$openre"; }
   elsif($type eq 'l'){		# Line: close is till end of line
     $close = undef;
     $closere = "(?=\n)"; }
@@ -378,7 +395,7 @@ sub lstAddDelimiter {
     if(!$invisible){
       my $oldclass=$class;
       $class = $class.ToString($open).ToString($close);	# Create an artificial class for this delimiter.
-      lstSetClassStyle($class,undef,begin=>$open,end=>$close, class=>$oldclass); }
+      lstSetClassStyle($class,undef,begin=>lstRescan($open),end=>lstRescan($close), class=>$oldclass); }
     # NOT DONE:
     #   invisibility of the whole delimited expression
     #   nestability.
@@ -1053,12 +1070,12 @@ sub lstProcess_internal {
       my $word = $1;
       my $lookup = ($LaTeXML::CASE_SENSITIVE ? $word : uc($word));
       my $classname = $$words{$lookup}{class};
-      my @w = Explode($word);
+      my @w = map(lstRescan($_),Explode($word)); # rescan??
       if(my $indexname = $$words{$lookup}{index} || lstClassProperty($classname,'index')){ # Should be indexed?
 	if(my $index = $indexname && $$classes{$indexname}){
 	  lstProcessPush($$index{begin}->unlist,T_BEGIN,@w,T_END); }}
       lstProcessPush(lstClassBegin($classname),
-		     Invocation(T_CS('\@listingKeyword'),T_OTHER($classname),Tokens(@w)),
+		     Invocation(T_CS('\@listingKeyword'),Tokens($classname ? Explode($classname) : ()),Tokens(@w)),
 		     lstClassEnd($classname)); }
 
     # NOTE: keywordprefix & otherkeywords probably need a specific regexp
@@ -1099,7 +1116,7 @@ sub lstProcess_internal {
       $LaTeXML::colnum += length($1); }
     else {
       $LaTeXML::listing =~ s/^(.)//s; # Anything else, just pass through.
-	lstProcessPush(T_OTHER($1));
+	lstProcessPush($lst_charmapping{$1} || T_OTHER($1));
       $LaTeXML::colnum++; }
   }}
 
