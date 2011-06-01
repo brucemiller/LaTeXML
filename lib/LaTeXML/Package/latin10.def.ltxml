@@ -1,0 +1,27 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  latin10.def                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#**********************************************************************
+# Predefine, then load standard file.
+
+# "comma below" accent, defined in latin10.def as ugly ooalign
+DefAccent('\textcommabelow',"\x{0326}",",");
+AssignValue('latin10.def_loaded'=>undef,'global');
+RequirePackage('latin10',type=>'def',rawonly=>1);
+
+#**********************************************************************
+
+1;
