@@ -27,12 +27,17 @@ use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
 no warnings 'redefine';
 
+# Apparently LaTeX does NOT define \magnification,
+# and babel uses that to determine whether we're runing LaTeX!!!
+Let(T_CS('\magnification'),T_CS('\@undefined'));
 #**********************************************************************
 # Basic \documentclass & \documentstyle
 
 #AssignValue('2.09_COMPATIBILITY'=>0);
 DefMacroI('\if@compatibility',undef,sub { ifHandler($_[0],LookupValue('2.09_COMPATIBILITY')); },
 	 isConditional=>1);
+DefMacroI('\@compatibilitytrue','');
+DefMacroI('\@compatibilityfalse','');
 
 # Let's try just starting with this set (since we've loaded LaTeX)
 AssignValue(inPreamble=>1);	# \begin{document} will clear this.
@@ -187,10 +192,9 @@ DefEnvironment('{document}', sub {
 	       afterDigestBegin=>sub {
 		 $_[1]->setProperty(id=>Expand(T_CS('\thedocument@ID')));
 		 if(my $ops = LookupValue('@at@begin@document')){
-		   Digest(Tokens(@$ops));  }
+		   Digest(Tokens(@$ops)); }
 		 else {
 		   return; }},
-##	       afterDigest=> sub {
 	       beforeDigestEnd=> sub {
 		 $_[0]->getGullet->flush; 
 		 if(my $ops = LookupValue('@at@end@document')){
@@ -456,6 +460,9 @@ DefRegister('\mathindent'   => Dimension(0));
 # Ignorable packages ??
 # pre-defined packages??
 
+DefMacro('\@clsextension','cls');
+DefMacro('\@pkgextension','sty');
+
 DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim',
 	       "<?latexml package='#2' ?#1(options='#1')?>",
 	       beforeDigest=>\&onlyPreamble,
@@ -560,6 +567,28 @@ DefMacro('\AtEndOfPackage{}',sub {
   my $name = ToString(Digest(T_CS('\@currname')));
   my $type = ToString(Digest(T_CS('\@currext')));
   AddToMacro(T_CS("\\$name.$type-hook"),$code); });
+
+DefMacro('\@ifpackageloaded','\@ifl@aded\@pkgextension');
+DefMacro('\@ifclassloaded','\@ifl@aded\@clsextension');
+DefMacro('\@ifl@aded{}{}',sub {
+  my($gullet,$ext,$name)=@_;
+my $file = ToString(Expand($name)).'.'.ToString(Expand($ext));
+print STDERR "Is $file loaded?\n";
+  if(LookupValue(ToString(Expand($name)).'.'.ToString(Expand($ext)).'_loaded')){
+    T_CS('\@firstoftwo'); }
+  else {
+    T_CS('\@secondoftwo'); }});
+
+DefMacro('\@ifpackagewith','\@if@ptions\@pkgextension');
+DefMacro('\@ifclasswith',  '\@if@ptions\@clsextension');
+DefMacro('\@if@ptions{}{}{}',sub {
+  my($gullet,$ext,$name,$option)=@_;
+  $option = ToString(Expand($option));
+  my $values = LookupValue('opt@'.ToString(Expand($name)).'.'.ToString(Expand($ext)));
+  if(grep($option eq $_, @$values)){
+    T_CS('\@firstoftwo'); }
+  else {
+    T_CS('\@secondoftwo'); }});
 
 DefMacro('\g@addto@macro Token {}',sub { AddToMacro($_[1],$_[2]); });
 
@@ -941,12 +970,18 @@ DefRegister('\leftmarginiii' => Dimension(0));
 DefRegister('\leftmarginiv'  => Dimension(0));
 DefRegister('\leftmarginv'   => Dimension(0));
 DefRegister('\leftmarginvi'  => Dimension(0));
+DefRegister('\@listdepth'    => Number(0));
+DefRegister('\@itempenalty'  => Number(0));
+DefRegister('\@beginparpenalty'=> Number(0));
+DefRegister('\@endparpenalty'  => Number(0));
 DefRegister('\labelwidthi'   => Dimension(0));
 DefRegister('\labelwidthii'  => Dimension(0));
 DefRegister('\labelwidthiii' => Dimension(0));
 DefRegister('\labelwidthiv'  => Dimension(0));
 DefRegister('\labelwidthv'   => Dimension(0));
 DefRegister('\labelwidthvi'  => Dimension(0));
+
+DefRegister('\@itemdepth'=>Number(0));
 
 # NOTE: Eventually use \makelabel to construct the list ?
 #\makelabel{label}
@@ -995,7 +1030,7 @@ DefConstructorI(T_CS('\begin{verbatim}'),undef,
 # is used, if not wrapped in a <verb> something???
 our $EMPTY_CATTABLE=LaTeXML::State->new(catcodes=>'none');
 
-DefMacroI('\verb', undef, sub {
+DefMacroI('\XXXverb', undef, sub {
   my($gullet)=@_;
   my $mouth = $gullet->getMouth;
   my ($init,$body);
@@ -1004,6 +1039,21 @@ DefMacroI('\verb', undef, sub {
     $init = $mouth->readToken if ToString($init) eq '*'; # Should I bother handling \verb* ?
     $body = $mouth->readTokens($init); }
   Invocation(T_CS('\@verb'),Tokens($init),$body)->unlist; });
+
+DefMacroI('\verb', undef, sub {
+  my($gullet)=@_;
+  my $mouth = $gullet->getMouth;
+  my ($init,$body);
+  StartSemiverbatim();
+  AssignCatcode('\\',CC_OTHER);
+  AssignCatcode('{',CC_OTHER);
+  AssignCatcode('}',CC_OTHER);
+  $init = $mouth->readToken;
+  $init = $mouth->readToken if ToString($init) eq '*'; # Should I bother handling \verb* ?
+  $body = $mouth->readTokens($init);
+  EndSemiverbatim();
+  Invocation(T_CS('\@verb'),Tokens($init),$body)->unlist; });
+
 DefConstructor('\@verb{}{}', "<ltx:verbatim font='#font'>#2</ltx:verbatim>",
 	       beforeDigest=>[sub { $_[0]->bgroup; MergeFont(family=>'typewriter'); }],
 	       afterDigest=>sub { $_[0]->egroup; },
@@ -1598,6 +1648,8 @@ DefPrimitiveI('\operator@font',undef, undef, font=>{family=>'serif'});
 # C.8.1 Defining Commands
 #======================================================================
 
+DefMacro('\@tabacckludge {}','\csname\string#1\endcsname');
+
 DefPrimitive('\newcommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
   my $key = "defined:".Stringify($cs);
@@ -1631,31 +1683,83 @@ DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [][]{}', sub {
 # and we really want to create unicode, we just ignore this stuff (but warn).
 sub ignoredDefinition {
   my($stomach,$command,$cs)=@_;
-  Warn(":unexpected:".ToString($cs)." ignoring ".ToString($command)." definition of ".ToString($cs)); }
+#  Warn(":unexpected:".ToString($cs)." ignoring ".ToString($command)." definition of ".ToString($cs)); 
+  return; }
 
-DefPrimitive('\DeclareTextAccent{}{}{}',
-	     sub { ignoredDefinition('DeclareTextAccent',$_[1]);});
+#------------------------------------------------------------
+# The following commands define encoding-specific expansions
+# or glyphs.  The control-sequence is defined to use the expansion for
+# the current encoding, if any, or the default expansion (for encoding "?").
+# We don't want to redefine control-sequence if it already has a definition:
+# It may be that we've already defined it to expand into the above conditional.
+# But more importantly, we don't want to override a hand-written definition (if any).
+#------------------------------------------------------------
+DefPrimitive('\DeclareTextCommand DefToken {}[][]{}', sub {
+  my($gullet,$cs,$encoding,$nargs,$opt,$expansion)=@_;
+  my $css = ToString($cs);
+  $encoding = ToString(Expand($encoding));
+  if(! LookupDefinition($cs)){	# If not already defined...
+    DefMacroI($cs,undef,
+	      '\expandafter\ifx\csname\cf@encoding\string'.$css.'\endcsname\relax\csname?\string'.$css.'\endcsname'
+	      .'\else\csname\cf@encoding\string'.$css.'\endcsname\fi'); }
+  my $ecs = T_CS('\\'.$encoding.$css);
+  DefMacroI($ecs, convertLaTeXArgs($nargs,$opt), $expansion); });
+
+DefMacro('\DeclareTextCommandDefault DefToken','\DeclareTextCommand{#1}{?}');
+
+DefPrimitive('\ProvideTextCommand DefToken {}[][]{}', sub {
+  my($gullet,$cs,$encoding,$nargs,$opt,$expansion)=@_;
+  my $css = ToString($cs);
+  $encoding = ToString(Expand($encoding));
+  if(! LookupDefinition($cs)){	# If not already defined...
+    DefMacroI($cs,undef,
+	      '\expandafter\ifx\csname\cf@encoding\string'.$css.'\endcsname\relax\csname?\string'.$css.'\endcsname'
+	      .'\else\csname\cf@encoding\string'.$css.'\endcsname\fi'); }
+  my $ecs = T_CS('\\'.$encoding.$css);
+  if(! LookupDefinition($ecs)){	# If not already defined...
+    DefMacroI($ecs, convertLaTeXArgs($nargs,$opt), $expansion); }});
+
+DefMacro('\ProvideTextCommandDefault DefToken','\ProvideTextCommand{#1}{?}');
+
+#------------------------------------------------------------
+
+DefPrimitive('\DeclareTextSymbol DefToken {}{Number}',sub {
+  my($gullet,$cs,$encoding,$code)=@_;
+  $code = $code->valueOf;
+  my $css = ToString($cs);
+  $encoding = ToString(Expand($encoding));
+  if(! LookupDefinition($cs)){	# If not already defined...
+    DefMacroI($cs,undef,
+	      '\expandafter\ifx\csname\cf@encoding\string'.$css.'\endcsname\relax\csname?\string'.$css.'\endcsname'
+	      .'\else\csname\cf@encoding\string'.$css.'\endcsname\fi'); }
+  my $ecs = T_CS('\\'.$encoding.$css);
+  DefPrimitiveI($ecs,undef, FontDecode($code,$encoding)); });
+
+# hmmm... what needs doing here; basically it means use this encoding as the default for the symbol
+DefMacro('\DeclareTextSymbolDefault DefToken {}',''); # '\DeclareTextSymbol{#1}{?}');
+
+#------------------------------------------------------------
+DefPrimitive('\DeclareTextAccent DefToken {}{}', sub {
+  ignoredDefinition('DeclareTextAccent',$_[1]);});
 DefPrimitive('\DeclareTextAccentDefault{}{}',
 	     sub { ignoredDefinition('DeclareTextAccentDefault',$_[1]);});
-DefPrimitive('\DeclareTextCommand{}{}{}',
-	     sub { ignoredDefinition('DeclareTextCommand',$_[1]);});
-DefPrimitive('\DeclareTextCommandDefault{}[][]{}',
-	     sub { ignoredDefinition('DeclareTextCommandDefault',$_[1]);});
-DefPrimitive('\ProvideTextCommand{}{}{}',
-	     sub { ignoredDefinition('ProvideTextCommand',$_[1]);});
-DefPrimitive('\ProvideTextCommandDefault{}[][]{}',
-	     sub { ignoredDefinition('ProvideTextCommandDefault',$_[1]);});
+
+#------------------------------------------------------------
 DefPrimitive('\DeclareTextComposite{}{}{}{}',
 	     sub { ignoredDefinition('DeclareTextComposite',$_[1]);});
 DefPrimitive('\DeclareTextCompositeCommand{}{}{}{}',
 	     sub { ignoredDefinition('DeclareTextCompositeCommand',$_[1]);});
-DefPrimitive('\DeclareTextSymbol{}{}{}',
-	     sub { ignoredDefinition('DeclareTextSymbol',$_[1]);});
-DefPrimitive('\DeclareTextSymbolDefault{}{}',
-	     sub { ignoredDefinition('DeclareTextSymbolDefault',$_[1]);});
+
 DefPrimitive('\UndeclareTextCommand{}{}',undef);
 DefPrimitive('\UseTextSymbol{}{}',undef);
 DefPrimitive('\UseTextAccent{}{}',undef);
+
+# Re-Hack the fontinfo that TeX started with (\itfam,\slfam,\bffam,\ttfam ???)
+# AT least until we've sorted out DeclareSymbolFont....
+AssignValue('fontinfo_0_text'=>{encoding=>'OT1'});
+AssignValue('fontinfo_1_text'=>{encoding=>'OML'});
+AssignValue('fontinfo_2_text'=>{encoding=>'OMS',family=>'symbol'});
+AssignValue('fontinfo_3_text'=>{encoding=>'OMX',family=>'symbol',shape=>'upright'});
 
 DefPrimitive('\DeclareMathAccent{}{}{}{}',
 	     sub { ignoredDefinition('DeclareMathAccent',$_[1]);});
@@ -1700,7 +1804,17 @@ DefPrimitive('\DeclareMathSymbol{}{}{}{}',
 
 DefPrimitive('\DeclareFixedFont{}{}{}{}{}{}',undef);
 DefPrimitive('\DeclareErrorFont{}{}{}{}{}',undef);
-DefPrimitive('\DeclareFontEncoding{}{}{}',undef);
+
+DefMacroI('\cdp@list',undef,'\@empty');
+Let(T_CS('\cdp@elt'),T_CS('\relax'));
+DefPrimitive('\DeclareFontEncoding{}{}{}',sub {
+  AddToMacro(T_CS('\cdp@list'),T_CS('\cdp@elt'),
+	     T_BEGIN,$_[1]->unlist,T_END,
+	     T_BEGIN,T_CS('\default@family'),T_END,
+	     T_BEGIN,T_CS('\default@series'),T_END,
+	     T_BEGIN,T_CS('\default@shape'),T_END); 
+  DefMacroI('\LastDeclaredEncoding',undef,Expand($_[1])); });
+DefMacroI('\LastDeclaredEncoding',undef,'');
 DefPrimitive('\DeclareFontSubstitution{}{}{}{}',undef);
 DefPrimitive('\DeclareFontEncodingDefaults{}{}',undef);
 DefMacroI('\LastDeclaredEncoding',undef,Tokens());
@@ -1840,27 +1954,21 @@ DefPrimitive('\@addtoreset{}{}',sub {
     DefMacroI(T_CS("\\\@$ctr\@ID"),undef,"0",scope=>'global'); }
   return; });
 
-DefMacro('\value{}',   sub {  Explode(CounterValue($_[1])->valueOf);});
-DefMacro('\@arabic{}', sub {  Explode(ToString($_[1])); });
-DefMacro('\arabic{}',  sub {  Explode(CounterValue($_[1])->valueOf); });
-DefMacro('\@roman{}',  sub {  roman(ToString($_[1])); });
-DefMacro('\roman{}',   sub {  roman(CounterValue($_[1])->valueOf); });
-DefMacro('\@Roman{}',  sub {  Roman(ToString($_[1])); });
-DefMacro('\Roman{}',   sub {  Roman(CounterValue($_[1])->valueOf); });
-DefMacro('\@alph{}',  sub {
-  T_OTHER(chr(LookupValue(ToString($_[1]))->valueOf+ord('a')-1));});
-DefMacro('\alph{}',  sub {
-  T_OTHER(chr(CounterValue($_[1])->valueOf+ord('a')-1));});
-DefMacro('\@Alph{}',  sub {
-  T_OTHER(chr(LookupValue(ToString($_[1]))->valueOf+ord('A')-1));});
-DefMacro('\Alph{}',  sub {
-  T_OTHER(chr(CounterValue($_[1])->valueOf+ord('A')-1));});
+DefMacro('\value{}',         sub { Explode(CounterValue($_[1])->valueOf);});
+DefMacro('\@arabic{Number}', sub { Explode(ToString($_[1]->valueOf)); });
+DefMacro('\arabic{}',        sub { Explode(CounterValue($_[1])->valueOf); });
+DefMacro('\@roman{Number}',  sub { roman(ToString($_[1]->valueOf)); });
+DefMacro('\roman{}',         sub { roman(CounterValue($_[1])->valueOf); });
+DefMacro('\@Roman{Number}',  sub { Roman(ToString($_[1]->valueOf)); });
+DefMacro('\Roman{}',         sub { Roman(CounterValue($_[1])->valueOf); });
+DefMacro('\@alph{Number}',   sub { T_OTHER(chr($_[1]->valueOf+ord('a')-1));});
+DefMacro('\alph{}',          sub { T_OTHER(chr(CounterValue($_[1])->valueOf+ord('a')-1));});
+DefMacro('\@Alph{Number}',   sub { T_OTHER(chr($_[1]->valueOf+ord('A')-1));});
+DefMacro('\Alph{}',          sub { T_OTHER(chr(CounterValue($_[1])->valueOf+ord('A')-1));});
 our @fnsymbols=("*", "\x{2020}", "\x{2021}", UTF(0xA7), UTF(0xB6),
 		"\x{2225}", "**", "\x{2020}\x{2020}","\x{2021}\x{2021}");
-DefMacro('\@fnsymbol{}',sub { 
-		T_OTHER($fnsymbols[LookupValue(ToString($_[1]))->valueOf-1]);});
-DefMacro('\fnsymbol{}',sub { 
-		T_OTHER($fnsymbols[CounterValue($_[1])->valueOf-1]);});
+DefMacro('\@fnsymbol{Number}',sub { T_OTHER($fnsymbols[$_[1]->valueOf-1]);});
+DefMacro('\fnsymbol{}',       sub { T_OTHER($fnsymbols[CounterValue($_[1])->valueOf-1]);});
 
 #======================================================================
 # C.8.5 The ifthen Package.
@@ -1886,8 +1994,8 @@ DefMacro('\fnsymbol{}',sub {
 # AND, as soon as possible, since other items may base their id's on the id of the table!
 
 ## I'd rather not define these, since the \fnum@@ defn is better....
-DefMacroI('\fnum@figure',undef,'\figurename\nobreakspace\thefigure'),
-DefMacroI('\fnum@table', undef,'\tablename\nobreakspace\thetable'),
+DefMacroI('\fnum@figure',undef,'\figurename\nobreakspace\thefigure');
+DefMacroI('\fnum@table', undef,'\tablename\nobreakspace\thetable');
 DefMacro('\format@title@figure{}','\@tag{\fnum@figure: }#1');
 DefMacro('\format@title@table{}','\@tag{\fnum@table: }#1');
 
@@ -2344,9 +2452,9 @@ DefConstructorI('\thebibliography',undef,
 # Close the bibliography
 DefConstructorI('\endthebibliography',undef,
 	       "</ltx:biblist></ltx:bibliography>",
-	       afterDigest=>sub { my $t=T_CS('\@appendix');
-				  Digest($t) if LookupDefinition($t);
-				  return; },
+	       afterDigest=>sub {  my $t=T_CS('\@appendix');
+				   Digest($t) if LookupDefinition($t);
+				   return; },
 	      locked=>1);
 # auto close the bibliography and contained biblist.
 Tag('ltx:biblist',autoClose=>1);
@@ -2444,7 +2552,7 @@ AssignValue(CITE_NOTE_SEPARATOR=>T_OTHER(','));
 DefConstructor('\@@cite{}',"<ltx:cite>#1</ltx:cite>",
 	       mode=>'text');
 
-DefConstructor('\@@bibref{} Semiverbatim {}{}',
+DefConstructor('\@@bibref Semiverbatim Semiverbatim {}{}',
 	       "<ltx:bibref show='#1' bibrefs='#bibrefs'"
 	       .          " separator='#separator' yyseparator='#yyseparator'>#3#4</ltx:bibref>",
 	      properties=>sub { (bibrefs=>CleanBibKey($_[2]),
@@ -2459,7 +2567,7 @@ DefMacro('\cite[] Semiverbatim', sub {
   $post = undef unless $post && $post->unlist;
   Invocation(T_CS('\@@cite'),
 	     Tokens($open,
-		    Invocation(T_CS('\@@bibref'),T_OTHER("Number"),$keys, undef,undef),
+		    Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys, undef,undef),
 		    ($post ? ($ns,T_SPACE,$post):()),$close)); });
 
 # NOTE: Eventually needs to be recognized by MakeBibliography
@@ -2479,6 +2587,7 @@ DefPrimitive('\input', sub {
   else {			# Read TeX style.
     my ($token,@tokens)=();
     while(($token = $gullet->readXToken(0)) && ($token->getCatcode != CC_SPACE)){
+      last if $token->equals(T_CS('\relax'));
       push(@tokens,$token); }
     $path = Tokens(@tokens); }
   $path = ToString($path);
@@ -2730,7 +2839,7 @@ DefPrimitiveI('\makeglossary', undef, undef);
 
 DefPrimitive('\typeout{}',sub {
   my($stomach,$stuff)=@_;
-  print STDERR ToString(Expand($stuff));
+  print STDERR ToString(Expand($stuff))."\n";
   return; });
 
 DefPrimitive('\typein[]{}',undef);
@@ -2810,7 +2919,6 @@ DefPrimitive('\newcount DefToken', sub { DefRegisterI($_[1],undef,Number(0)); })
 DefPrimitive('\newdimen DefToken', sub { DefRegisterI($_[1],undef,Dimension(0)); });
 DefPrimitive('\newskip DefToken',  sub { DefRegisterI($_[1],undef,Glue(0)); });
 DefPrimitive('\newmuskip DefToken',sub { DefRegisterI($_[1],undef,MuGlue(0)); });
-#DefPrimitive('\newbox DefToken',  sub { DefRegisterI($_[1],undef,LaTeXML::Box->new()); });
 DefPrimitive('\newtoks DefToken',  sub { DefRegisterI($_[1],undef,Tokens()); });
 
 DefRegister('\fill',Glue(0,'1fill'));
@@ -2821,8 +2929,11 @@ DefRegister('\fill',Glue(0,'1fill'));
 DefPrimitive('\hspace OptionalMatch:* {Dimension}',sub {
   my($stomach,$star,$length)=@_;
   if(LookupValue('IN_MATH')){ return; }
-  elsif($length->larger(Dimension('1em'))){ # ?
-    Box(UTF(0xA0)); }});		    # or just plain space? or some other
+##  elsif($length->larger(Dimension('1em'))){ # ?
+##    Box(UTF(0xA0)); }});		    # or just plain space? or some other
+  # Is this wise?
+  else {
+    DimensionToSpaces($length); }});
 
 DefPrimitive('\vspace OptionalMatch:* {}',undef);
 DefPrimitive('\addvspace {}',undef);
@@ -3255,7 +3366,6 @@ DefMacroI('\shapedefault',undef,'\updefault');
 Let(T_CS('\mediumseries'),T_CS('\mdseries'));
 Let(T_CS('\normalshape'),T_CS('\upshape'));
 
-DefPrimitive('\fontencoding{}',undef);
 # These should be looking up from the TeX tables!
 DefConstructor('\fontfamily{}','',
 	       afterDigest=>sub { 
@@ -3392,7 +3502,7 @@ DefPrimitiveI('\textasciicircum',  undef, "^");
 DefPrimitiveI('\textasciitilde',   undef, "~");
 DefPrimitiveI('\textcompwordmark', undef, ""); # ???
 DefPrimitiveI('\textunderscore',   undef, "_");
-DefPrimitiveI('\textvisiblespace', undef, "\x{2420}"); # SYMBOL FOR SPACE;  Not really the right symbol!
+DefPrimitiveI('\textvisiblespace', undef, "\x{2423}"); # SYMBOL FOR SPACE;  Not really the right symbol!
 DefPrimitiveI('\textellipsis',     undef, "\x{2026}"); # HORIZONTAL ELLIPSIS
 DefPrimitiveI('\textregistered',   undef, UTF(0xAE)); # REGISTERED SIGN
 DefPrimitiveI('\texttrademark',    undef, "\x{2122}");  # TRADE MARK SIGN
@@ -3452,8 +3562,19 @@ DefMacro('\@nameuse{}','\csname #1\endcsname');
 DefMacroI('\@spaces',undef, '\space\space\space\space');
 Let(T_CS('\@sptoken'),T_SPACE);
 
-Let(T_CS('\MakeUppercase'),T_CS('\uppercase'));
-Let(T_CS('\MakeLowercase'),T_CS('\lowercase'));
+DefMacroI('\@uclclist',undef,'');
+
+DefMacro('\MakeUppercase{}',sub {
+  my @t = LookupDefinition(T_CS('\@uclclist'))->getExpansion->unlist;
+  my @x=();
+  while(@t){ push(@x,T_CS('\let'),shift(@t),shift(@t)); }
+  (T_BEGIN,@x,T_CS('\uppercase'),T_BEGIN,$_[1]->unlist,T_END,T_END); });
+
+DefMacro('\MakeLowercase{}',sub {
+  my @t = LookupDefinition(T_CS('\@uclclist'))->getExpansion->unlist;
+  my @x=();
+  while(@t){ my $y=shift(@t); push(@x,T_CS('\let'),shift(@t),$y); }
+  (T_BEGIN,@x,T_CS('\lowercase'),T_BEGIN,$_[1]->unlist,T_END,T_END); });
 
 #======================================================================
 
@@ -3575,6 +3696,7 @@ RawTeX(<<'EOTeX');
 \newskip\@tempskipb
 \newtoks\@temptokena
 \newskip\@flushglue \@flushglue = 0pt plus 1fil
+\newif\if@afterindent\@afterindenttrue
 \newbox\rootbox
 
 \newcount\@eqcnt
@@ -3599,6 +3721,11 @@ RawTeX(<<'EOTeX');
        \expandafter\@fornoop \else
       #4\relax\expandafter\@iforloop\fi#2\@@#3{#4}}
 EOTeX
+
+DefMacroI('\@height',undef,'height');
+DefMacroI('\@width',undef,'width');
+DefMacroI('\@depth',undef,'depth');
+DefMacroI('\hmode@bgroup',undef,'\leavevmode\bgroup');
 
 #======================================================================
 
@@ -3686,7 +3813,6 @@ DefMacroI('\labelitemii',undef,'\normalfont\bfseries \textendash');
 DefMacroI('\labelitemiii',undef,'\textasteriskcentered');
 DefMacroI('\labelitemiv',undef,'\textperiodcentered');
 
-
 # Ultimately these may be overridden by babel,
 # various of these are defined in various places by different classes.
 # And, at any rate, they're currently unused.
@@ -3715,5 +3841,8 @@ DefMacroI('\mathalpha',undef,Tokens());
 #\def\mathhexbox#1#2#3{\mbox{$\m@th \mathchar"#1#2#3$}}
 DefMacroI('\nocorrlist',undef,',.');
 Let(T_CS('\nocorr'),T_CS('\relax'));
+
+DefPrimitiveI('\@@end',undef,sub { $_[0]->getGullet->flush; return; });
+
 #**********************************************************************
 1;
