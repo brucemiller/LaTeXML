@@ -277,6 +277,7 @@ use LaTeXML::Global;
 use LaTeXML::Util::Pathname;
 use base qw(LaTeXML::Mouth);
 use Encode;
+
 sub new {
   my($class,$pathname)=@_;
   my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
@@ -308,27 +309,6 @@ sub hasMoreInput {
   ($$self{colno} < $$self{nchars}) || scalar(@{$$self{buffer}}) || $$self{IN}; }
 our $WARNED_8BIT=0;
 
-sub XXXgetNextLine {
-  my($self)=@_;
-  if(! scalar(@{$$self{buffer}})){
-    return undef unless $$self{IN};
-    my $fh = \*{$$self{IN}};
-    my $line = <$fh>;
-    if(! defined $line){
-      close($fh); $$self{IN}=undef; }
-    else {
-      push(@{$$self{buffer}}, $self->splitString($line)); }}
-
-  my $line = (shift(@{$$self{buffer}})||''). "\n"; # put line ending back!
-  if($line){
-    if(my $encoding = $STATE->lookupValue('INPUT_ENCODING')){
-      $line = decode($encoding,$line); }
-    $line = encode('UTF-8',$line); }
-
-  if(!($$self{lineno} % 25)){
-    NoteProgress("[#$$self{lineno}]"); }
-  $line; }
-
 sub getNextLine {
   my($self)=@_;
   if(! scalar(@{$$self{buffer}})){
@@ -341,14 +321,15 @@ sub getNextLine {
     else {
       push(@{$$self{buffer}}, $self->splitString($line)); }}
 
-  my $line = (shift(@{$$self{buffer}})||''). "\n"; # put line ending back!
+  my $line = (shift(@{$$self{buffer}})||'');
   if($line){
-    my $encoding = $STATE->lookupValue('INPUT_ENCODING') || 'UTF-8';
-    # Note that if chars in the input cannot be decoded, they are replaced by \x{FFFD}
-    # I _think_ that for TeX's behaviour we actually should turn such un-decodeable chars in to space(?).
-    $line = decode($encoding, $line, Encode::FB_DEFAULT);
-    if($line =~ s/\x{FFFD}/ /g){	# Just remove the replacement chars, and warn (or Info?)
-      Info(":unexpected input isn't valid under encoding $encoding"); }}
+    if(my $encoding = $STATE->lookupValue('PERL_INPUT_ENCODING')){
+      # Note that if chars in the input cannot be decoded, they are replaced by \x{FFFD}
+      # I _think_ that for TeX's behaviour we actually should turn such un-decodeable chars in to space(?).
+      $line = decode($encoding, $line, Encode::FB_DEFAULT);
+      if($line =~ s/\x{FFFD}/ /g){	# Just remove the replacement chars, and warn (or Info?)
+	Info(":unexpected input isn't valid under encoding $encoding"); }}}
+  $line .= "\n"; # put line ending back!
 
   if(!($$self{lineno} % 25)){
     NoteProgress("[#$$self{lineno}]"); }
