@@ -1751,8 +1751,8 @@ DefPrimitive('\DeclareTextCompositeCommand{}{}{}{}',
 	     sub { ignoredDefinition('DeclareTextCompositeCommand',$_[1]);});
 
 DefPrimitive('\UndeclareTextCommand{}{}',undef);
-DefPrimitive('\UseTextSymbol{}{}',undef);
-DefPrimitive('\UseTextAccent{}{}',undef);
+DefMacro('\UseTextSymbol{}{}','{\fontencoding{#1}#2}');
+DefMacro('\UseTextAccent{}{}','{\fontencoding{#1}#2{#3}}');
 
 # Re-Hack the fontinfo that TeX started with (\itfam,\slfam,\bffam,\ttfam ???)
 # AT least until we've sorted out DeclareSymbolFont....
@@ -1808,12 +1808,17 @@ DefPrimitive('\DeclareErrorFont{}{}{}{}{}',undef);
 DefMacroI('\cdp@list',undef,'\@empty');
 Let(T_CS('\cdp@elt'),T_CS('\relax'));
 DefPrimitive('\DeclareFontEncoding{}{}{}',sub {
+  my($stomach,$encoding,$x,$y)=@_;
   AddToMacro(T_CS('\cdp@list'),T_CS('\cdp@elt'),
 	     T_BEGIN,$_[1]->unlist,T_END,
 	     T_BEGIN,T_CS('\default@family'),T_END,
 	     T_BEGIN,T_CS('\default@series'),T_END,
 	     T_BEGIN,T_CS('\default@shape'),T_END); 
-  DefMacroI('\LastDeclaredEncoding',undef,Expand($_[1])); });
+  my $e = Expand($encoding);
+  DefMacroI('\LastDeclaredEncoding',undef,$e);
+  DefMacroI('\T@'.ToString($e),undef,$x);
+  DefMacroI('\M@'.ToString($e),undef,Tokens(T_CS('\default@M'),$y->unlist));
+ });
 DefMacroI('\LastDeclaredEncoding',undef,'');
 DefPrimitive('\DeclareFontSubstitution{}{}{}{}',undef);
 DefPrimitive('\DeclareFontEncodingDefaults{}{}',undef);
@@ -2839,7 +2844,7 @@ DefPrimitiveI('\makeglossary', undef, undef);
 
 DefPrimitive('\typeout{}',sub {
   my($stomach,$stuff)=@_;
-  print STDERR ToString(Expand($stuff))."\n";
+  print STDERR ToString(Expand($stuff))."\n" unless LookupValue('VERBOSITY') < 0;
   return; });
 
 DefPrimitive('\typein[]{}',undef);
@@ -3590,7 +3595,9 @@ DefPrimitive('\@onlypreamble{}',\&onlyPreamble); # Don't bother enforcing this.
 
 DefMacro('\GenericError{}{}{}{}', sub{ Fatal(make_message(@_)); });
 DefMacro('\GenericWarning{}{}',   sub{ Warn(make_message(@_)); });
-DefMacro('\GenericInfo{}{}{}{}',  sub{ print STDERR "Info: ".make_message(@_)."\n"; });
+DefMacro('\GenericInfo{}{}{}{}',  sub{
+  print STDERR "Info: ".make_message(@_)."\n" unless LookupValue('VERBOSITY') < 0;
+  return; });
 
 Let(T_CS('\MessageBreak'),T_CS('\relax'));
 DefMacro('\PackageError{}{}{}',
