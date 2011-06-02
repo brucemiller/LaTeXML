@@ -1,0 +1,122 @@
+#!/usr/bin/perl -w
+
+use strict;
+our $ENCODINGSDIR="/usr/share/texmf/tex/latex/base";
+
+our @static = (qw(a b c d e f g h i j k l m n o p q r s t u v w x y z
+		  A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+		  0 1 2 3 4 5 6 7 8 9));
+for my $encoding (@ARGV){
+  my $dest = "tests/$encoding.tex";
+
+  my $expression_sought = {};
+  my $map=[map(undef,0..255)];
+
+  foreach my $c (@static){
+    $$map[ord($c)]="\"$c\""; }
+
+  my $defs = `kpsewhich ${encoding}enc.def`; chomp($defs);
+  if(!$defs){
+    print STDERR "No $defs found...skipping\n"; next; }
+  open(ENC,$defs) or die "Cannot open encoding $ENCODINGSDIR/$encoding: $!";
+  while(<ENC>){
+    chomp;
+    s/\s*%.*//;
+    if(/\s*\\DeclareFontEncoding/){}
+    elsif(/\s*\\DeclareFontSubstitution/){}
+    elsif(/\s*\\DeclareTextAccent/){}
+    elsif(/\s*\\DeclareTextSymbol\{(.*?)\}\{.*?\}\{(.+)\}$/){
+      my($e,$p)=($1,$2);
+      if($p =~ /^\`\\(.)$/){  $p = ord($1); }
+      $$expression_sought{$e}=$p; }
+    elsif(/\s*\\DeclareTextComposite\{(.*?)\}\{.*?\}\{(.*?)\}\{(.*?)\}$/){
+      my($a,$c,$p)=($1,$2,$3);
+      if($p =~ /^\`\\(.)$/){  $p = ord($1); }
+      my $e = ($a=~ /[a-zA-Z]$/ ?  "$a $c" : "$a$c");
+      $$expression_sought{$e}=$p; }
+    elsif(/Declare/){ print STDERR "Misunderstood def line \"$_\"\n"; }}
+  close(ENC);
+
+  readUnicode('utf8',$expression_sought,$map);
+  readUnicode('t1',$expression_sought,$map);
+  readUnicode('ts1',$expression_sought,$map);
+  readAscii('t1',$expression_sought,$map);
+  readAscii('ts1',$expression_sought,$map);
+  readUnicode($encoding,$expression_sought,$map);
+
+  
+  print "Unhandled expressions ".join(', ',map("$_ ($$expression_sought{$_})",sort keys %$expression_sought))."\n";
+  map($$map[$$expression_sought{$_}] = "\"$_\"",  keys %$expression_sought);
+
+#  open(TAB,">$dest") or die "Couldn't open $dest for writing; $!";
+  print "$encoding = (\n";
+  for(my $r=0;$r<32;$r++){
+    my $line="    ";
+    for(my $c=0;$c<8;$c++){
+      my $p = $r*8+$c;
+      my $e = $$map[$p] || 'undef';
+      $line .= $e.",". (' ' x (10-length($e))); }
+    print "$line\n"; }
+  print   ")\n";
+#  close(TEX);
+
+}
+
+# Get the "handlers" as a unicode codepoint for those expressions covered by a particular encoding
+# This reads the DeclareUnicodeCharacter in the "*enc.dfu" file
+sub readUnicode {
+  my($encoding,$expression_sought,$map)=@_;
+  my $udefs = `kpsewhich ${encoding}enc.dfu`; chomp($udefs);
+  open(UENC,$udefs) or die "Cannot open encoding $ENCODINGSDIR/$encoding: $!";
+  print STDERR "Reading unicode for $encoding from $udefs\n";
+  while(<UENC>){
+    chomp;
+    s/\s*%.*//;
+    if(/\s*\\DeclareUnicodeCharacter\{(.+?)\}\{(.*?)\}$/){ 
+      my($u,$e)=($1,$2);
+      $e =~ s/\\\@tabacckludge/\\/;
+      if(my $p = $$expression_sought{$e}){
+	delete $$expression_sought{$e};
+	$$map[$p]= ($u =~ s/^00// ? "UTF(0x$u)" : "\"\\x{".$u."}\""); }}
+    elsif(/Declare/){ print STDERR "Misunderstood dfu line \"$_\"\n"; }}
+  close(UENC);
+
+  foreach my $e (keys %$expression_sought){
+    delete $$expression_sought{$e} if $$map[$$expression_sought{$e}]; }
+}
+
+# Get the "handlers" as ascii chars for those expressions covered by a particular encoding
+# This reads the DeclareTextSymbol in the "*enc.def" file
+sub readAscii {
+  my($encoding,$expression_sought,$map)=@_;
+  my $defs = `kpsewhich ${encoding}enc.def`; chomp($defs);
+  open(ENC,$defs) or die "Cannot open encoding $ENCODINGSDIR/$encoding: $!";
+  print STDERR "Reading ascii for $encoding from $defs\n";
+  while(<ENC>){
+    chomp;
+    s/\s*%.*//;
+    if(/\s*\\DeclareFontEncoding/){}
+    elsif(/\s*\\DeclareFontSubstitution/){}
+    elsif(/\s*\\DeclareTextAccent/){}
+    elsif(/\s*\\DeclareTextSymbol\{(.*?)\}\{.*?\}\{(.+)\}$/){
+      my($e,$m)=($1,$2);
+      if($m =~ /^\`\\(.)$/){
+	if(my $p = $$expression_sought{$e}){
+	  delete $$expression_sought{$e};
+	  $$map[$p]= "\"$1\""; }}}
+    elsif(/\s*\\DeclareTextCommand/){}
+    elsif(/\s*\\DeclareTextComposite\{(.*?)\}\{.*?\}\{(.*?)\}\{(.*?)\}$/){
+      my($a,$c,$m)=($1,$2,$3);
+      my $e = ($a=~ /[a-zA-Z]$/ ?  "$a $c" : "$a$c");
+      if($m =~ /^\`\\(.)$/){
+	if(my $p = $$expression_sought{$e}){
+	  delete $$expression_sought{$e};
+	  $$map[$p]= "\"$1\""; }}}
+    elsif(/\s*\\DeclareTextCompositeCommand\{(.*?)\}\{.*?\}\{(.*?)\}\{.*?\}$/){}
+    elsif(/Declare/){ print STDERR "Misunderstood def line \"$_\"\n"; }}
+  close(ENC);
+
+  foreach my $e (keys %$expression_sought){
+    delete $$expression_sought{$e} if $$map[$$expression_sought{$e}]; }
+
+}
