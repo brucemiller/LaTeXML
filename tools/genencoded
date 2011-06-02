@@ -1,0 +1,50 @@
+#!/usr/bin/perl -w
+
+use strict;
+use FindBin;
+our $ENCODINGSDIR="/usr/share/texmf/tex/latex/base";
+our $TESTDEST="$FindBin::RealBin/../t/encoding";
+
+my $encoding = $ARGV[0];
+for my $encoding (@ARGV){
+  my $defs = `kpsewhich $encoding.def`; chomp($defs);
+  my $dest = "$TESTDEST/$encoding.tex";
+  my @defn=();
+  open(ENC,$defs) or die "Cannot open encoding $ENCODINGSDIR/$encoding: $!";
+  while(<ENC>){
+    chomp;
+    s/\s*%.*//;
+    if(/\s*\\DeclareInputText\{(\d+)\}\{(.*)\}$/){    $defn[$1]=pack('C',$1); }
+    elsif(/\s*\\DeclareInputMath\{(\d+)\}\{(.*)\}$/){ $defn[$1]='$'.pack('C',$1).'$'; }
+    elsif(/Declare/){ print STDERR "Misunderstood line \"$_\"\n"; }}
+  close(ENC);
+
+  open(TEX,">$dest") or die "Couldn't open $dest for writing; $!";
+  binmode(TEX);
+  print TEX "\\documentclass{article}\n";
+  if($defs =~ /cyrill/){
+    print TEX "\\usepackage[T2A]{fontenc}\n"; }
+  else {
+    print TEX "\\usepackage[T1]{fontenc}\n"; }
+  print TEX "\\usepackage{textcomp}\n";
+  print TEX "\\usepackage[$encoding]{inputenc}\n";
+  print TEX "\\begin{document}\n";
+  print TEX "\\section{Input encoding $encoding}\n";
+  print TEX "\\begin{tabular}{l|cccccccccccccccc}\n";
+  for(my $c=0;$c<16;$c++){
+    print TEX " & ".uc(sprintf("%x",$c)); }
+  print TEX "\\\\ \\hline\n";
+  for(my $r=0;$r<16;$r++){
+    print TEX uc(sprintf("%x",$r))."x";
+    for(my $c=0;$c<16;$c++){
+      my $p = $r*16+$c;
+      my $e = $defn[$p];
+      print TEX " & ";
+      print TEX $e if defined $e; }
+    print TEX "\\\\\n"; }
+  print TEX  "\\end{tabular}\n";
+  print TEX "\\end{document}\n";
+  close(TEX);
+
+  print "Wrote $dest for encoding $encoding\n";
+}
