@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage[polutonikogreek,english]{babel}
+\begin{document}
+This is a test of typesetting ancient Greek with LaTeX:
+
+\selectlanguage{polutonikogreek}
+
+>En >arq~h| >~hn <o l'ogoc\dots
+
+\selectlanguage{english}
+Here's the correspondance between "greek" and "latin" encoding for TeX:\\
+\texttt{a b g d e z h j i k l m n x o p r s t u f q y w c} \\
+\selectlanguage{polutonikogreek}%
+a b g d e z h j i k l m n x o p r s t u f q y w c
+
+\selectlanguage{english}
+A simple example how to get accents and spirits: \\
+\texttt{'a `a ~a >a <a a| >~a| "i "'i} \\
+\selectlanguage{polutonikogreek}%
+'a `a ~a >a <a a| >~a| "i "'i 
+
+\begin{tabular}{cccccccc}
+   &     &     &     &     &      &      &     \\
+   &     &     &     &     & "U   &      & "u  \\
+   &     &     &     &     &      &      &     \\
+   &     &     &     &     &      &      &     \\
+"~ &     &     & "'  & "`  &      &      &     \\
+(  & )   & *   & +   & ,   & -    & .    & /   \\
+0  & 1   & 2   & 3   & 4   & 5    & 6    & 7   \\
+8  & 9   & :   & .   & <   & =    & >    & ;   \\
+<~ & A   & B   & <`  & D   & E    & F    & G   \\
+H  & I   & J   & K   & L   & M    & N    & O   \\
+P  & Q   & R   & S   & T   & U    &  <'  & W   \\
+X  & Y   & Z   & [   & >~  & ]    &  >'  & >`  \\
+`  & a   & b   & c   & d   & e    &  f   & g   \\
+h  & i   & j   & k   & l   & m    &  n   & o   \\
+p  & q   & r   & s   & t   & u    &      & w   \\
+x  & y   & z   &     & |   &      & ~    &     \\
+`a & <a  & >a  & <`a & `a| & <a|  & >a|  & <`a| \\
+'a & <'a & >'a & >`a & 'a| & <'a| & >'a| & >`a| \\
+~a & <~a & >~a &     & ~a| & <~a| & >~a| &      \\
+`h & <h  & >h  & <`h & `h| & <h|  & >h|  & <`h| \\
+'h & <'h & >'h & >`h & 'h| & <'h| & >'h| & >`h| \\
+~h & <~h & >~h &     & ~h| & <~h| & >~h| &      \\
+`w & <w  & >w  & <`w & `w| & <w|  & >w|  & <`w| \\
+'w & <'w & >'w & >`w & 'w| & <'w| & >'w| & >`w| \\
+~w & <~w & >~w &     & ~w| & <~w| & >~w| &      \\
+`i & <i  & >i  & <`i & `u| & <u|  & >u|  & <`u| \\
+'i & <'i & >'i & >`i & 'u| & <'u| & >'u| & >`u| \\
+~i & <~i & >~i & "I  & ~u| & <~u| & >~u| & "U   \\
+`e & <e  & >e  & <`e & `o| & <o|  & >o|  & <`o| \\
+'e & <'e & >'e & >`e & 'o| & <'o| & >'o| & >`o| \\
+"i & `"i & '"i & ~"i & "u  & `"u  & '"u  & ~"u \\
+a| & h|  & w| & <r & >r \\
+\end{tabular}
+\end{document}

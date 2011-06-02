@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml options="polutonikogreek,english" package="babel"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <para xml:id="p1">
+    <p>This is a test of typesetting ancient Greek with LaTeX:</p>
+  </para>
+  <para xml:id="p2">
+    <p>’Εν ἀρχῇ ἦν ‛ο λ´ογος…</p>
+  </para>
+  <para xml:id="p3">
+    <p>Here’s the correspondance between ”greek” and ”latin” encoding for TeX:<break/><text font="typewriter">a b g d e z h j i k l m n x o p r s t u f q y w c</text> <break/>α β γ δ ε ζ η ϑ ι ϰ λ μ ν ξ ο π ρ ς τ υ φ χ ψ ω ς</p>
+  </para>
+  <para xml:id="p4">
+    <p>A simple example how to get accents and spirits: <break/><text font="typewriter">'a `a  a &gt;a &lt;a a| &gt; a| "i "'i</text> <break/>ά ὰ ᾶ ἀ ἁ ᾳ ᾆ ϊ ΐ</p>
+  </para>
+  <para xml:id="p5">
+    <tabular>
+      <tbody>
+        <tr>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+        </tr>
+        <tr>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td align="center">ϔ</td>
+          <td/>
+          <td align="center">ϋ</td>
+        </tr>
+        <tr>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+        </tr>
+        <tr>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+          <td/>
+        </tr>
+        <tr>
+          <td align="center">῁</td>
+          <td/>
+          <td/>
+          <td align="center">΅</td>
+          <td align="center">῭</td>
+          <td/>
+          <td/>
+          <td/>
+        </tr>
+        <tr>
+          <td align="center">(</td>
+          <td align="center">)</td>
+          <td align="center">*</td>
+          <td align="center">+</td>
+          <td align="center">,</td>
+          <td align="center">-</td>
+          <td align="center">.</td>
+          <td align="center">/</td>
+        </tr>
+        <tr>
+          <td align="center">0</td>
+          <td align="center">1</td>
+          <td align="center">2</td>
+          <td align="center">3</td>
+          <td align="center">4</td>
+          <td align="center">5</td>
+          <td align="center">6</td>
+          <td align="center">7</td>
+        </tr>
+        <tr>
+          <td align="center">8</td>
+          <td align="center">9</td>
+          <td align="center">:</td>
+          <td align="center">.</td>
+          <td align="center">‛</td>
+          <td align="center">=</td>
+          <td align="center">’</td>
+          <td align="center">·</td>
+        </tr>
+        <tr>
+          <td align="center">῟</td>
+          <td align="center">Α</td>
+          <td align="center">Β</td>
+          <td align="center">῝</td>
+          <td align="center">Δ</td>
+          <td align="center">Ε</td>
+          <td align="center">Φ</td>
+          <td align="center">Γ</td>
+        </tr>
+        <tr>
+          <td align="center">Η</td>
+          <td align="center">Ι</td>
+          <td align="center">Θ</td>
+          <td align="center">Κ</td>
+          <td align="center">Λ</td>
+          <td align="center">Μ</td>
+          <td align="center">Ν</td>
+          <td align="center">Ο</td>
+        </tr>
+        <tr>
+          <td align="center">Π</td>
+          <td align="center">Χ</td>
+          <td align="center">Ρ</td>
+          <td align="center">Σ</td>
+          <td align="center">Τ</td>
+          <td align="center">ϒ</td>
+          <td align="center">῞</td>
+          <td align="center">Ω</td>
+        </tr>
+        <tr>
+          <td align="center">Ξ</td>
+          <td align="center">Ψ</td>
+          <td align="center">Ζ</td>
+          <td align="center">[</td>
+          <td align="center">῏</td>
+          <td align="center">]</td>
+          <td align="center">῎</td>
+          <td align="center">῍</td>
+        </tr>
+        <tr>
+          <td align="center">`</td>
+          <td align="center">α</td>
+          <td align="center">β</td>
+          <td align="center">ς</td>
+          <td align="center">δ</td>
+          <td align="center">ε</td>
+          <td align="center">φ</td>
+          <td align="center">γ</td>
+        </tr>
+        <tr>
+          <td align="center">η</td>
+          <td align="center">ι</td>
+          <td align="center">ϑ</td>
+          <td align="center">ϰ</td>
+          <td align="center">λ</td>
+          <td align="center">μ</td>
+          <td align="center">ν</td>
+          <td align="center">ο</td>
+        </tr>
+        <tr>
+          <td align="center">π</td>
+          <td align="center">χ</td>
+          <td align="center">ρ</td>
+          <td align="center">ς</td>
+          <td align="center">τ</td>
+          <td align="center">υ</td>
+          <td/>
+          <td align="center">ω</td>
+        </tr>
+        <tr>
+          <td align="center">ξ</td>
+          <td align="center">ψ</td>
+          <td align="center">ζ</td>
+          <td/>
+          <td align="center">ι</td>
+          <td/>
+          <td align="center">!</td>
+          <td/>
+        </tr>
+        <tr>
+          <td align="center">ὰ</td>
+          <td align="center">ἁ</td>
+          <td align="center">ἀ</td>
+          <td align="center">ἃ</td>
+          <td align="center">ᾲ</td>
+          <td align="center">ᾁ</td>
+          <td align="center">ᾀ</td>
+          <td align="center">ᾃ</td>
+        </tr>
+        <tr>
+          <td align="center">ά</td>
+          <td align="center">ἅ</td>
+          <td align="center">ἄ</td>
+          <td align="center">ἂ</td>
+          <td align="center">ᾴ</td>
+          <td align="center">ᾅ</td>
+          <td align="center">ᾄ</td>
+          <td align="center">ᾂ</td>
+        </tr>
+        <tr>
+          <td align="center">ᾶ</td>
+          <td align="center">ἇ</td>
+          <td align="center">ἆ</td>
+          <td/>
+          <td align="center">ᾷ</td>
+          <td align="center">ᾇ</td>
+          <td align="center">ᾆ</td>
+          <td/>
+        </tr>
+        <tr>
+          <td align="center">ὴ</td>
+          <td align="center">ἡ</td>
+          <td align="center">ἠ</td>
+          <td align="center">ἣ</td>
+          <td align="center">ῂ</td>
+          <td align="center">ᾑ</td>
+          <td align="center">ᾐ</td>
+          <td align="center">ᾓ</td>
+        </tr>
+        <tr>
+          <td align="center">ή</td>
+          <td align="center">ἥ</td>
+          <td align="center">ἤ</td>
+          <td align="center">ἢ</td>
+          <td align="center">ῄ</td>
+          <td align="center">ᾕ</td>
+          <td align="center">ᾔ</td>
+          <td align="center">ᾒ</td>
+        </tr>
+        <tr>
+          <td align="center">ῆ</td>
+          <td align="center">ἧ</td>
+          <td align="center">ἦ</td>
+          <td/>
+          <td align="center">ῇ</td>
+          <td align="center">ᾗ</td>
+          <td align="center">ᾖ</td>
+          <td/>
+        </tr>
+        <tr>
+          <td align="center">ὼ</td>
+          <td align="center">ὡ</td>
+          <td align="center">ὠ</td>
+          <td align="center">ὣ</td>
+          <td align="center">ῲ</td>
+          <td align="center">ᾡ</td>
+          <td align="center">ᾠ</td>
+          <td align="center">ᾣ</td>
+        </tr>
+        <tr>
+          <td align="center">ὼ</td>
+          <td align="center">ὥ</td>
+          <td align="center">ὤ</td>
+          <td align="center">ὢ</td>
+          <td align="center">ῴ</td>
+          <td align="center">ᾥ</td>
+          <td align="center">ᾤ</td>
+          <td align="center">ᾢ</td>
+        </tr>
+        <tr>
+          <td align="center">ῶ</td>
+          <td align="center">ὧ</td>
+          <td align="center">ὦ</td>
+          <td/>
+          <td align="center">ῷ</td>
+          <td align="center">ᾧ</td>
+          <td align="center">ᾦ</td>
+          <td/>
+        </tr>
+        <tr>
+          <td align="center">ὶ</td>
+          <td align="center">ἱ</td>
+          <td align="center">ἰ</td>
+          <td align="center">ἳ</td>
+          <td align="center">ὺ</td>
+          <td align="center">ὑ</td>
+          <td align="center">ὐ</td>
+          <td align="center">ὓ</td>
+        </tr>
+        <tr>
+          <td align="center">ί</td>
+          <td align="center">ἵ</td>
+          <td align="center">ἴ</td>
+          <td align="center">ἲ</td>
+          <td align="center">ύ</td>
+          <td align="center">ὕ</td>
+          <td align="center">ὔ</td>
+          <td align="center">ὒ</td>
+        </tr>
+        <tr>
+          <td align="center">ῖ</td>
+          <td align="center">ἷ</td>
+          <td align="center">ἶ</td>
+          <td align="center">Ϊ</td>
+          <td align="center">ῦ</td>
+          <td align="center">ὗ</td>
+          <td align="center">ὖ</td>
+          <td align="center">ϔ</td>
+        </tr>
+        <tr>
+          <td align="center">ὲ</td>
+          <td align="center">ἑ</td>
+          <td align="center">ἐ</td>
+          <td align="center">ἓ</td>
+          <td align="center">ὸ</td>
+          <td align="center">ὁ</td>
+          <td align="center">ὀ</td>
+          <td align="center">ὃ</td>
+        </tr>
+        <tr>
+          <td align="center">έ</td>
+          <td align="center">ἕ</td>
+          <td align="center">ἔ</td>
+          <td align="center">ἒ</td>
+          <td align="center">ό</td>
+          <td align="center">ὅ</td>
+          <td align="center">ὄ</td>
+          <td align="center">ὂ</td>
+        </tr>
+        <tr>
+          <td align="center">ϊ</td>
+          <td align="center">ῒ</td>
+          <td align="center">ΐ</td>
+          <td align="center">ῗ</td>
+          <td align="center">ϋ</td>
+          <td align="center">ῢ</td>
+          <td align="center">ΰ</td>
+          <td align="center">ῧ</td>
+        </tr>
+        <tr>
+          <td align="center">ᾳ</td>
+          <td align="center">ῃ</td>
+          <td align="center">ῳ</td>
+          <td align="center">ῥ</td>
+          <td align="center">ῤ</td>
+          <td/>
+          <td/>
+          <td/>
+        </tr>
+      </tbody>
+    </tabular>
+  </para>
+</document>

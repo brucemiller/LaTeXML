@@ -1,0 +1,18 @@
+\documentclass{article}
+\usepackage[german,french,english]{babel}
+\begin{document}
+\raggedright
+The expansion of fixed document element names
+depends on the language, e.g., in English
+we have ``\refname'' or ``\chaptername''.
+
+\selectlanguage{german} Auf Deutsch ergibt sich
+``\refname'' oder ``\chaptername''.
+
+\begin{otherlanguage}{french}  Voice en
+fran\c cais: ``\refname'' ou ``\chaptername''.
+
+\foreignlanguage{english}{But in short
+phrases  ``\refname'' does not change!}
+\end{otherlanguage}
+\end{document}

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="report"?>
+<?latexml options="T1" package="fontenc"?>
+<?latexml package="textcomp"?>
+<?latexml options="french" package="babel"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <title>Francais</title>
+  <creator role="author">
+    <personname>François Reno</personname>
+  </creator>
+  <date role="creation">1<text yoffset="0.5em">er</text> juin 2011</date>
+  <chapter frefnum="Chapitre 1" refnum="1" xml:id="Ch1">
+    <title><tag>Chapitre 1 </tag>Oui!</title>
+    <toctitle><tag>1 </tag>Oui!</toctitle>
+    <para xml:id="Ch1.p1">
+      <p>Different Spacing :;!?</p>
+    </para>
+    <para xml:id="Ch1.p2">
+      <p>N<text yoffset="0.5em">o</text>n<text yoffset="0.5em">o</text></p>
+    </para>
+    <para xml:id="Ch1.p3">
+      <p><text font="smallcaps">stuff</text></p>
+    </para>
+    <para xml:id="Ch1.p4">
+      <p>1<text yoffset="0.5em">o</text>, 2<text yoffset="0.5em">o</text>, 3<text yoffset="0.5em">o</text>, 4<text yoffset="0.5em">o</text>; 1<text yoffset="0.5em">o</text>), 2<text yoffset="0.5em">o</text>), 3<text yoffset="0.5em">o</text>), 4<text yoffset="0.5em">o</text>).</p>
+    </para>
+    <para xml:id="Ch1.p5">
+      <p><text yoffset="0.5em">e</text>, <text yoffset="0.5em">es</text>, <text yoffset="0.5em">er</text>, <text yoffset="0.5em">ers</text>, <text yoffset="0.5em">re</text>, <text yoffset="0.5em">res</text></p>
+    </para>
+    <para xml:id="Ch1.p6">
+      <p>3<text yoffset="0.5em">o</text>3<text yoffset="0.5em">o</text>)</p>
+    </para>
+    <para xml:id="Ch1.p7">
+      <p>−<Math mode="inline" tex="\pm" xml:id="Ch1.p7.m1" text="plus-or-minus"><XMath><XMTok meaning="plus-or-minus" name="pm" role="ADDOP">±</XMTok></XMath></Math><Math mode="inline" tex="\mp" xml:id="Ch1.p7.m2" text="minus-or-plus"><XMath><XMTok meaning="minus-or-plus" name="mp" role="ADDOP">∓</XMTok></XMath></Math>123456,789</p>
+    </para>
+    <para xml:id="Ch1.p8">
+      <p>ÆæŒœ@^~\o</p>
+    </para>
+    <section refnum="1.1" xml:id="Ch1.S1">
+      <title><tag>1.1 </tag>Markup</title>
+      <para xml:id="Ch1.S1.p1">
+        <p>« guillemets  »</p>
+      </para>
+      <para xml:id="Ch1.S1.p2">
+        <p>M<text yoffset="0.5em">me</text>, D<text yoffset="0.5em">r</text> Durand</p>
+      </para>
+      <para xml:id="Ch1.S1.p3">
+        <p>1<text yoffset="0.5em">er</text>, 1<text yoffset="0.5em">re</text>, 1<text yoffset="0.5em">res</text>; 2<text yoffset="0.5em">e</text>, 4<text yoffset="0.5em">es</text></p>
+      </para>
+      <para xml:id="Ch1.S1.p4">
+        <p>N<text yoffset="0.5em">o</text>1, n<text yoffset="0.5em">o</text>2</p>
+      </para>
+      <para xml:id="Ch1.S1.p5">
+        <p>20 <text>°</text>C, 45<text>°</text></p>
+      </para>
+      <para xml:id="Ch1.S1.p6">
+        <p>M. <text font="smallcaps">Durand</text></p>
+      </para>
+      <para xml:id="Ch1.S1.p7">
+        <p>1234,56789</p>
+      </para>
+    </section>
+  </chapter>
+</document>
