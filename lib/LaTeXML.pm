@@ -115,7 +115,7 @@ sub digestFile {
      while($stomach->getGullet->getMouth->hasMoreInput){
        push(@stuff,$stomach->digestNextBody); }
 
-     push(@stuff,$self->loadPreamble($options{postamble})) if $options{postamble};
+     push(@stuff,$self->loadPostamble($options{postamble})) if $options{postamble};
 #     my $list = $self->finishDigestion;
      my $list = LaTeXML::List->new(@stuff);
      NoteEnd("Digesting $file");
@@ -137,7 +137,7 @@ sub digestString {
      while($stomach->getGullet->getMouth->hasMoreInput){
        push(@stuff,$stomach->digestNextBody); }
 
-     push(@stuff,$self->loadPreamble($options{postamble})) if $options{postamble};
+     push(@stuff,$self->loadPostamble($options{postamble})) if $options{postamble};
 
      # my $list = $self->finishDigestion;
      my $list = LaTeXML::List->new(@stuff);
