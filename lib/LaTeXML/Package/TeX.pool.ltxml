@@ -1426,7 +1426,7 @@ DefMacro('\lowercase',sub {
 
 DefPrimitive('\message{}',sub {
   my($stomach,$stuff)=@_;
-  print STDERR ToString(Expand($stuff));
+  print STDERR ToString(Expand($stuff)) unless LookupValue('VERBOSITY') < 0;
   return; });
 
 DefRegister('\errhelp'=>Tokens());
