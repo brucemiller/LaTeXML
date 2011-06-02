@@ -1,0 +1,127 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  babel                                                              | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | # 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+use LaTeXML::Util::Pathname;
+
+# NOTE that in principle, babel can be loaded multiple times,
+# and the "processOptions" part SHOULD be re-executed!
+AssignValue('babel.sty_loaded'=>0,'global');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# babel.def only needs to be loaded ONCE.
+RequirePackage('babel',type=>'def');
+
+DeclareOption('acadian',    sub { loadBabelLDF('frenchb'); });
+DeclareOption('albanian',   sub { loadBabelLDF('albanian'); });
+DeclareOption('afrikaans',  sub { loadBabelLDF('dutch'); });
+DeclareOption('american',   sub { loadBabelLDF('english'); });
+DeclareOption('australian', sub { loadBabelLDF('english'); });
+DeclareOption('austrian',   sub { loadBabelLDF('germanb'); });
+DeclareOption('bahasa',     sub { loadBabelLDF('bahasai'); });
+DeclareOption('indonesian', sub { loadBabelLDF('bahasai'); });
+DeclareOption('indon',      sub { loadBabelLDF('bahasai'); });
+DeclareOption('bahasai',    sub { loadBabelLDF('bahasai'); });
+DeclareOption('malay',      sub { loadBabelLDF('bahasam'); });
+DeclareOption('meyalu',     sub { loadBabelLDF('bahasam'); });
+DeclareOption('bahasam',    sub { loadBabelLDF('bahasam'); });
+DeclareOption('basque',     sub { loadBabelLDF('basque'); });
+DeclareOption('brazil',     sub { loadBabelLDF('portuges'); });
+DeclareOption('brazilian',  sub { loadBabelLDF('portuges'); });
+DeclareOption('breton',     sub { loadBabelLDF('breton'); });
+DeclareOption('british',    sub { loadBabelLDF('english'); });
+DeclareOption('bulgarian',  sub { loadBabelLDF('bulgarian'); });
+DeclareOption('canadian',   sub { loadBabelLDF('english'); });
+DeclareOption('canadien',   sub { loadBabelLDF('frenchb'); });
+DeclareOption('catalan',    sub { loadBabelLDF('catalan'); });
+DeclareOption('croatian',   sub { loadBabelLDF('croatian'); });
+DeclareOption('czech',      sub { loadBabelLDF('czech'); });
+DeclareOption('danish',     sub { loadBabelLDF('danish'); });
+DeclareOption('dutch',      sub { loadBabelLDF('dutch'); });
+DeclareOption('english',    sub { loadBabelLDF('english'); });
+DeclareOption('esperanto',  sub { loadBabelLDF('esperanto'); });
+DeclareOption('estonian',   sub { loadBabelLDF('estonian'); });
+DeclareOption('finnish',    sub { loadBabelLDF('finnish'); });
+DeclareOption('francais',   sub { loadBabelLDF('frenchb'); });
+DeclareOption('frenchb',    sub { loadBabelLDF('frenchb'); });
+DeclareOption('french',     sub { loadBabelLDF('frenchb'); });
+DeclareOption('galician',   sub { loadBabelLDF('galician'); });
+DeclareOption('german',     sub { loadBabelLDF('germanb'); });
+DeclareOption('germanb',    sub { loadBabelLDF('germanb'); });
+DeclareOption('greek',      sub { loadBabelLDF('greek'); });
+DeclareOption('polutonikogreek', sub { loadBabelLDF('greek');
+				       RawTeX('\languageattribute{greek}{polutoniko}'); });
+DeclareOption('hebrew',     sub { #   \input{rlbabel.def}%
+			          loadBabelLDF('hebrew'); });
+DeclareOption('hungarian',  sub { loadBabelLDF('magyar'); });
+DeclareOption('icelandic',  sub { loadBabelLDF('icelandic'); });
+DeclareOption('interlingua',sub { loadBabelLDF('interlingua'); });
+DeclareOption('irish',      sub { loadBabelLDF('irish'); });
+DeclareOption('italian',    sub { loadBabelLDF('italian'); });
+DeclareOption('latin',      sub { loadBabelLDF('latin'); });
+DeclareOption('lowersorbian',sub { loadBabelLDF('lsorbian'); });
+DeclareOption('magyar',     sub { loadBabelLDF('magyar'); });
+DeclareOption('naustrian',  sub { loadBabelLDF('ngermanb'); });
+DeclareOption('newzealand', sub { loadBabelLDF('english'); });
+DeclareOption('ngerman',    sub { loadBabelLDF('ngermanb'); });
+DeclareOption('norsk',      sub { loadBabelLDF('norsk'); });
+DeclareOption('samin',      sub { loadBabelLDF('samin'); });
+DeclareOption('nynorsk',    sub { loadBabelLDF('norsk'); });
+DeclareOption('polish',     sub { loadBabelLDF('polish'); });
+DeclareOption('portuges',   sub { loadBabelLDF('portuges'); });
+DeclareOption('portuguese', sub { loadBabelLDF('portuges'); });
+DeclareOption('romanian',   sub { loadBabelLDF('romanian'); });
+DeclareOption('russian',    sub { loadBabelLDF('russianb'); });
+DeclareOption('scottish',   sub { loadBabelLDF('scottish'); });
+DeclareOption('serbian',    sub { loadBabelLDF('serbian'); });
+DeclareOption('slovak',     sub { loadBabelLDF('slovak'); });
+DeclareOption('slovene',    sub { loadBabelLDF('slovene'); });
+DeclareOption('spanish',    sub { loadBabelLDF('spanish'); });
+DeclareOption('swedish',    sub { loadBabelLDF('swedish'); });
+DeclareOption('turkish',    sub { loadBabelLDF('turkish'); });
+DeclareOption('ukrainian',  sub { loadBabelLDF('ukraineb'); });
+DeclareOption('uppersorbian',sub { loadBabelLDF('usorbian'); });
+DeclareOption('welsh',      sub { loadBabelLDF('welsh'); });
+DeclareOption('UKenglish',  sub { loadBabelLDF('english'); });
+DeclareOption('USenglish',  sub { loadBabelLDF('english'); });
+DeclareOption(undef,        sub {
+  my $language = ToString(Digest(T_CS('\CurrentOption')));
+  loadBabelLDF($language); });
+
+# \InputIfFileExists{bblopts.cfg}{%
+DeclareOption('activeacute', undef);
+DeclareOption('activegrave', undef);
+DeclareOption('KeepShorthandsActive', undef);
+
+ProcessOptions(inorder=>1);
+AtBeginDocument('\expandafter\selectlanguage\expandafter{\bbl@main@language}');
+# Now hopefully, \bbl@main@language is defined?
+
+# \def\substitutefontfamily#1#2#3{%
+# \@onlypreamble\substitutefontfamily
+
+# \AtBeginDocument{%
+#    if package ifthen was loaded, bable redefines \ifthenelse to account for different pageref(?)
+#    if package varioref was loaded, redefine \@@vpageref to account for ???
+#    if package hhline was loaded, redefine something...
+
+#\DeclareRobustCommand{\FOREIGNLANGUAGE}[1]{%
+#  \lowercase{\foreignlanguage{#1}}}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+

@@ -1,0 +1,436 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  babel.def                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | # 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+no warnings 'redefine';
+
+# \foreignlanguage{language}{phrase}
+
+# MORE USER COMMANDS!!!!
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# (what about language attribute, or dialect, or... )
+PushValue(SEARCHPATHS=>'/usr/share/texmf/tex/generic/babel');
+
+sub loadBabelLDF {
+  my($language)=@_;
+#  if(my $path = pathname_find("$language.ldf",
+#			      paths=>[@{LookupValue('SEARCHPATHS')},'/usr/share/texmf/tex/generic/babel'])){
+  if(my $path = FindFile($language,type=>'ldf',raw=>1)){
+    my $stomach = $STATE->getStomach;
+    my $gullet = $stomach->getGullet;
+    $gullet->input($path,[],raw=>1);
+    while($gullet->getMouth->hasMoreInput){
+      $stomach->digestNextBody; }
+  }
+  else {
+    Warn(":unexpected:$language Couldn't find babel language definition $language.ldf"); }
+  return; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Implementation
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Language Definitions
+
+#======================================================================
+# User level
+
+#======================================================================
+# Internal
+
+DefMacro('\user@group','user');
+DefMacro('\language@group','english');
+DefMacro('\system@group','system');
+
+# NOTE: even though we don't need hyphenation, we need (I think)
+# to have the various \l@english, \l@german, etc bound to numbers
+# (which would be used by TeX's \language register!)
+AssignValue('babel@languages'=>0);
+DefMacro('\l@english','0');
+
+# \ProvidesLanguage{language}[release information]
+DefPrimitive('\ProvidesLanguage{}[]', sub {
+ my($stomach,$lang,$version)=@_;
+# $lang = ToString(Expand($lang));
+# my $n = 1+LookupValue('babel@languages');
+# AssignValue('babel@languages'=>$n);
+# DefMacro('\l@'.$lang, "$n");
+ return; });
+
+# \LdfInit{language}{something odd about captions?}
+DefMacro('\LdfInit{}{}', 
+	 '\chardef\atcatcode=\catcode`\@'
+	 .'\catcode`\@=11\relax'
+	 .'\chardef\eqcatcode=\catcode`\='
+	 .'\catcode`\==12\relax');
+
+# do these 2 really need the catcode stuff?
+DefMacro('\ldf@finish{}',
+	 # \loadlocalcfg{#1}%
+	 '\expandafter\main@language\expandafter{#1}'
+	 .'\catcode`\@=\atcatcode \let\atcatcode\relax'
+	 .'\catcode`\==\eqcatcode \let\eqcatcode\relax');
+DefMacro('\ldf@quit{}',
+	 '\expandafter\main@language\expandafter{#1}'
+	 .'\catcode`\@=\atcatcode \let\atcatcode\relax'
+	 .'\catcode`\==\eqcatcode \let\eqcatcode\relax'
+	 .'\endinput');
+
+DefMacro('\loadlocalcfg{}','');
+
+#======================================================================
+# Various state saving stuff.
+
+Let(T_CS('\originalTeX'),T_CS('\@empty'));
+
+DefMacro('\addto Token {}',sub { 
+  my($gullet,$cs,$tokens)=@_;
+  # Needs error checking!
+  my $defn = LookupDefinition($cs);
+  $defn = undef if $defn && $defn eq LookupDefinition(T_CS('\relax')); # ?
+  DefMacroI($cs,undef,($defn ? Tokens($defn->getExpansion->unlist,$tokens->unlist) : $tokens)); });
+
+DefMacro('\babel@savevariable {}',sub {
+  my($gullet,$token)=@_;
+  AddToMacro(T_CS('\originalTeX'),$token,T_OTHER('='),Expand(Tokens(T_CS('\the'),$token))); });
+
+DefMacro('\babel@beginsave',sub{ AssignValue('babel@savecnt'=>0); });
+
+DefMacro('\babel@save DefToken',sub {
+  my($gullet,$token)=@_;
+  my $n = 1+LookupValue('babel@savecnt');
+  AssignValue('babel@savecnt' => $n);
+  my $v = T_CS('\babel@'.$n);
+  Let($v,$token);
+  AddToMacro(T_CS('\originalTeX'),T_CS('\let'),$token,$v); });
+
+#======================================================================
+# language setting stuff
+
+# \selectlanguage{language}
+DefMacro('\selectlanguage{}','\bbl@push@language\aftergroup\bbl@pop@language\bbl@set@language{#1}');
+
+DefMacro('\bbl@push@language',sub {
+  PushValue(bbl_language_stack=>ToString(Expand(T_CS('\languagename')))); });
+DefMacro('\bbl@pop@language', sub {
+  my $lang = PopValue('bbl_language_stack');
+  DefMacro('\languagename',$lang);
+  Invocation(T_CS('\bbl@set@language'),Tokens(Explode($lang))); });
+
+DefMacro('\bbl@set@language{}','\edef\languagename{#1}\select@language{\languagename}');
+DefMacro('\select@language{}',sub {
+  my($gullet,$language)=@_;
+  $language = ToString(Expand($language));
+
+#  print STDERR "SELECTING $language ".$gullet->getLocator." at ".$_[0]->getLocator."\n";
+#  print STDERR "ORIGINAL: ".ToString(LookupMeaning(T_CS('\originalTeX'))->getExpansion)."\n";
+#  print STDERR "CAPTIONS: ".ToString(LookupMeaning(T_CS('\captions'.$language))->getExpansion)."\n";
+#  print STDERR "DATE: ".ToString(LookupMeaning(T_CS('\date'.$language))->getExpansion)."\n";
+#  print STDERR "EXTRAS: ".ToString(LookupMeaning(T_CS('\extras'.$language))->getExpansion)."\n";
+
+  (T_CS('\originalTeX'),
+   T_CS('\def'),T_CS('\originalTeX'),
+   T_BEGIN,T_CS('\noextras'.$language),T_CS('\let'),T_CS('\originalTeX'),T_CS('\@empty'),T_END,
+
+   T_CS('\languageshorthands'),T_BEGIN,T_OTHER('none'),T_END,
+   T_CS('\babel@beginsave'),
+
+   T_CS('\captions'.$language),
+   T_CS('\date'.$language),
+   T_CS('\extras'.$language)); });
+
+
+DefMacro('\main@language{}',
+	 '\def\bbl@main@language{#1}'
+	 .'\let\languagename\bbl@main@language'
+	 .'\language=\csname l@\languagename\endcsname\relax');
+
+DefMacro('\foreignlanguage{}{}',
+	 '\begingroup\originalTeX\foreign@language{#1}#2\csname noextras#1\endcsname\endgroup');
+DefMacro('\foreign@language{}',
+	 '\def\languagename{#1}'
+	 .'\language=\csname l@#1\endcsname\relax'
+	 .'\languageshorthands{none}'
+	 .'\csname extras#1\endcsname'
+	 .'\expandafter\ifx\csname #1hyphenmins\endcsname\relax'
+	 .  '\set@hyphenmins\tw@\thr@@\relax'
+	 .'\else'
+	 .  '\expandafter\expandafter\expandafter\set@hyphenmins'
+	 .  '\csname #1hyphenmins\endcsname\relax'
+	 .'\fi');
+
+DefMacro('\otherlanguage{}','\selectlanguage{#1}'); # \ignorespaces ???
+DefMacro('\endotherlanguage','\originalTeX');
+
+DefMacro('\iflanguage{}',
+	 '\let\@tempa\@secondoftwo'
+	 .'\expandafter\ifnum\csname l@#1\endcsname=\language\let\@tempa\@firstoftwo\fi'
+	 .'\@tempa');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Shorthands
+
+#======================================================================
+# User-level
+
+# Shorthands
+#\useshorthands{char}
+DefMacro('\useshorthands{}','\def\user@group{user}\initiate@active@char{#1}');
+
+#\defineshorthand{charseq}{expansion}
+DefMacro('\defineshorthand','\declare@shorthand{user}');
+
+#\languageshorthands{language}
+DefMacro('\languageshorthands{}', '\def\language@group{#1}');
+
+#\aliasshorthand{char1}{char2}
+# ??? DefMacro('\aliasshorthand{}{}','\initiate@active@char{#2}
+
+#\shorthandon{chars}
+DefMacro('\shorthandon{}',sub {
+#print STDERR "SHORTHANDON :".ToString($_[1])." at ".$_[0]->getLocator."\n";
+	   map(AssignCatcode($_,CC_ACTIVE), map($_->getCSName, $_[1]->unlist)); });
+#\shorthandoff{chars}
+DefMacro('\shorthandoff{}',sub {
+#print STDERR "SHORTHANDOFF :".ToString($_[1])." at ".$_[0]->getLocator."\n";
+	   map(AssignCatcode($_,CC_OTHER), map($_->getCSName, $_[1]->unlist)); });
+
+#======================================================================
+# internal
+RawTeX('\newif\if@safe@actives\@safe@activesfalse');
+DefMacro('\bbl@restore@actives','\if@safe@actives\@safe@activesfalse\fi');
+
+DefPrimitive('\bbl@activate{}', sub {
+  my($stomach,$char)=@_;
+  $char = ToString($char);
+#  print STDERR "ACTIVATING $char"." at ".$_[0]->getGullet->getLocator."\n";
+  DefMacroI($char,undef,T_CS('\active@char'.$char)); });
+
+DefPrimitive('\bbl@deactivate{}', sub {
+  my($stomach,$char)=@_;
+  $char = ToString($char);
+#  print STDERR "DEACTIVATING $char"." at ".$_[0]->getGullet->getLocator."\n";
+  DefMacroI($char,undef,T_CS('\normal@char'.$char)); });
+
+# Not clear... Some chars stand alone, others are a prefix..!?!
+DefPrimitive('\initiate@active@char DefToken',sub {
+  my($stomach,$token)=@_;
+  my $char = ToString($token);
+  return if LookupDefinition(T_CS('\active@char'.$char));
+#  print STDERR "INITIATING $char"." at ".$_[0]->getGullet->getLocator."\n";
+  my $user = ToString(Expand(T_CS('\user@group')));
+###???
+#### AssignCatcode($char,CC_ACTIVE);
+  # Define the "normal" expansion of $token, noting that it may ALREADY be active!
+  if($token->getCatcode == CC_ACTIVE){ # Already active?
+    if(! LookupDefinition($token)){
+      Let(T_CS('\normal@char'.$char), $token);  # !!
+      DefMacroI($char,undef,T_CS('\normal@char'.$char)); }}
+  else {
+    if($char eq "'"){
+      Let(T_CS('\bbl@primes@@@'),T_CS('\''));
+      # This is probably not enough since ' is changed.... ?
+      DefMacroI('\normal@char'.$char,undef, '\textormath{\'}{\bbl@primes@@@}'); }
+    elsif($char eq '^'){
+      DefMacroI('\bbl@act@caret',undef,
+		'\ifmmode\csname normal@char\string^\endscname'
+		.'\else\bbl@afterfi{\if@safe@actives'
+		.  '\bbl@afterelse\csname normal@char\string'.$char.'\endcsname'
+		.'\else'
+		.  '\bbl@afterfi\csname user@active\string'.$char.'\endcsname'
+		.'\fi}\fi'); }
+    else {
+      AtBeginDocument(sub { AssignCatcode($char,CC_ACTIVE); });
+      PushValue('SPECIALS',$char);
+      DefMacroI('\normal@char'.$char,undef, T_OTHER($char)); }}
+  # Now define a chain of expansions for user, language and system.
+  if($char eq '^'){
+    DefMacroI('\active@char'.$char,undef,'\bbl@act@caret'); }
+  else {
+    DefMacroI('\active@char'.$char,undef,
+	      '\if@safe@actives'
+	      .  '\bbl@afterelse\csname normal@char\string'.$char.'\endcsname'
+	      .'\else'
+	      .  '\bbl@afterfi\csname user@active\string'.$char.'\endcsname'
+	      .'\fi'); }
+  DefMacroI('\user@active'.$char,undef,
+	    '\expandafter\ifx\csname \user@group @sh@\string'.$char.'@\endcsname\relax'
+	    .  '\bbl@afterelse\bbl@sh@select\user@group'.$char
+	    .      '{user@active@arg\string'.$char.'}{language@active\string'.$char.'}'
+	    .'\else'
+	    . '\bbl@afterfi\csname \user@group @sh@\string'.$char.'@\endcsname'
+	    .'\fi');
+  DefMacroI('\user@active@arg'.$char,LaTeXML::Parameters::parseParameters('Token',$char),
+	    '\expandafter\ifx\csname \user@group @sh@\string'.$char.'@\string#1@\endcsname\relax'
+	    .  '\bbl@afterelse\csname language@active\string'.$char.'\endcsname#1'
+	    .'\else'
+	    . '\bbl@afterfi\csname \user@group @sh@\string'.$char.'@\string#1@\endcsname'
+	    .'\fi');
+  DefMacroI('\\'.$user.'@sh@'.$char.'@@',undef,'\csname normal@char\string'.$char.'\endcsname');
+  DefMacroI('\language@active'.$char,undef,
+	    '\expandafter\ifx\csname \language@group @sh@\string'.$char.'@\endcsname\relax'
+	    .  '\bbl@afterelse\bbl@sh@select\language@group'.$char
+	    .      '{language@active@arg\string'.$char.'}{system@active\string'.$char.'}'
+	    .'\else'
+	    .  '\bbl@afterfi\csname \language@group @sh@\string'.$char.'@\endcsname'
+	    .'\fi');
+  DefMacroI('\language@active@arg'.$char,LaTeXML::Parameters::parseParameters('Token',$char),
+	    '\expandafter\ifx\csname \language@group @sh@\string'.$char.'@\string#1@\endcsname\relax'
+	    .  '\bbl@afterelse\csname system@active\string'.$char.'\endcsname#1'
+	    .'\else'
+	    .  '\bbl@afterfi\csname \language@group @sh@\string'.$char.'@\string#1@\endcsname'
+	    .'\fi');
+  DefMacroI('\system@active'.$char,undef,
+	    '\expandafter\ifx\csname \system@group @sh@\string'.$char.'@\endcsname\relax'
+	    .  '\bbl@afterelse\bbl@sh@select\system@group'.$char
+	    .      '{system@active@arg\string'.$char.'}{normal@char\string'.$char.'}'
+	    .'\else'
+	    .  '\bbl@afterfi\csname \system@group @sh@\string'.$char.'@\endcsname'
+	    .'\fi');
+  DefMacroI('\system@active@arg'.$char,LaTeXML::Parameters::parseParameters('Token',$char),
+	    '\expandafter\ifx\csname \system@group @sh@\string'.$char.'@\string#1@\endcsname\relax'
+	    .  '\bbl@afterelse\csname normal@char\string'.$char.'\endcsname'
+	    .'\else'
+	    .  '\bbl@afterfi\csname \system@group @sh@\string'.$char.'@\string#1@\endcsname'
+	    .'\fi');
+  DefMacroI('\user@sh@'.$char.'@\protect@',undef,
+	    '\csname user@active\string'.$char.'\endcsname');
+});
+
+RawTeX('\long\def\bbl@afterelse#1\else#2\fi{\fi#1}'
+       .'\long\def\bbl@afterfi#1\fi{\fi#1}');
+
+
+DefPrimitive('\declare@shorthand{}{}{}', sub {
+  my($stomach,$lang,$c,$expansion)=@_;
+  $lang  = ToString($lang);
+  $c = ToString($c);
+  # Recognize 1 or 2 char shorthands
+  if($c =~ /^(.)(.)$/){
+    my($c1,$c2)=($1,$2);
+    Let(T_CS('\\'.$lang.'@sh@'.$c1.'@sel'),T_CS('\bbl@firstcs'));
+    DefMacroI('\\'.$lang.'@sh@'.$c1.'@'.$c2.'@',undef, $expansion); }
+  else {
+    Let(T_CS('\\'.$lang.'@sh@'.$c.'@sel'),T_CS('\bbl@scndcs'));
+    DefMacroI('\\'.$lang.'@sh@'.$c.'@',undef, $expansion); }});
+DefMacro('\bbl@sh@select{}{}',
+	 '\expandafter\ifx\csname#1@sh@\string#2@sel\endcsname\relax'
+	 .  '\bbl@afterelse\bbl@scndcs'
+	 .'\else'
+	 .   '\bbl@afterfi\csname#1@sh@\string#2@sel\endcsname'
+	 .'\fi');
+DefMacro('\bbl@firstcs{}{}','\csname#1\endcsname');
+DefMacro('\bbl@scndcs{}{}','\csname#2\endcsname');
+
+DefMacro('\textormath{}{}','\ifmmode\bbl@afterelse#2\else\bbl@afterfi#1\fi');
+
+
+RawTeX('\declare@shorthand{system}{"}{\csname normal@char\string"\endcsname}'
+       .'\declare@shorthand{system}{\'}{\textormath{\csname normal@char\string\'\endcsname}{\sp\bgroup\prim@s}}'
+       .'\declare@shorthand{system}{`}{\csname normal@char\string`\endcsname}'
+       .'\initiate@active@char{~}'
+       .'\declare@shorthand{system}{~}{\leavevmode\nobreak\ }'
+       .'\bbl@activate{~}'
+      );
+
+
+DefMacro('\bbl@disc{}{}','#1');
+#======================================================================
+DefMacro('\umlautlow',''); 	# ?
+DefMacro('\umlauthigh','');
+#======================================================================
+# \bbl@declare@ttribute{lang}{attribute}{code}
+DefMacro('\bbl@declare@ttribute{}{}{}','\expandafter\def\csname#1@attr@#2\endcsname{#3}');
+
+# language attributes
+# \languageattribute{language}{langattrs}
+DefPrimitive('\languageattribute{}{}',sub {
+  my($gullet,$language,$attributes)=@_;
+  $language = ToString(Expand($language));
+  my @attributes = split(/\s*,\s*/,ToString(Expand($attributes)));
+#    print STDERR "ATTRIBUTES $language: ".join(', ',@attributes)."\n";
+
+  foreach my $t (map(T_CS('\\'.$language.'@attr@'.$_),@attributes)){
+    Digest($t); }
+  return; });
+#======================================================================
+# Hyphenation stuff --- ignroable for LaTeXML
+
+DefPrimitive('\@nopatterns{}', '');
+
+
+DefPrimitive('\allowhyphens', '');
+DefMacro('\providehyphenmins{}{}',
+	     '\expandafter\ifx\csname #1hyphenmins\endcsname\relax'
+	     .'\@namedef{#1hyphenmins}{#2}'
+	     .'\fi');
+DefMacro('\set@hyphenmins{}{}','\lefthyphenmin#1\righthyphenmin#2');
+
+DefPrimitive('\bbl@frenchspacing', '');
+DefPrimitive('\bbl@nonfrenchspacing', '');
+
+# \adddialect{dialect}{language}
+# notes that dialect's hyphenation is equivalent to language's (ignorable)
+DefMacro('\adddialect{}{}', '\global\chardef#1#2\relax');
+
+# \begin{hyphenrules}{language}
+#DefEnvironment('{hyphenrules}{}','#body');
+DefMacro('\hyphenrules{}','\language=\csname l@#1\endcsname\relax\languageshorthands{none}');
+
+#======================================================================
+DefMacro('\latintext','\fontencoding{\latinencoding}\selectfont\def\encodingdefault{\latinencoding}');
+RawTeX('\edef\latinencoding{\cf@encoding}');
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RawTeX('\main@language{english}');
+#AtBeginDocument('\expandafter\selectlanguage\expandafter{\bbl@main@language}');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+DefPrimitiveI('\dj',undef,"\x{0111}");
+DefPrimitiveI('\DJ',undef,"\x{0110}");
+DefPrimitiveI('\ij',undef,"ij");
+DefPrimitiveI('\IJ',undef,"IJ");
+
+DefPrimitiveI('\flq',undef,"\x{2039}");
+DefPrimitiveI('\frq',undef,"\x{203A}");
+DefPrimitiveI('\flqq',undef,UTF(0xAB));
+DefPrimitiveI('\frqq',undef,UTF(0xBB));
+
+DefPrimitiveI('\glq',undef,"\x{201A}");
+DefPrimitiveI('\grq',undef,"\x{2019}");
+#DefPrimitiveI('\glqq',undef,"\x{2018}\x{2018}");
+#DefPrimitiveI('\grqq',undef,"\x{2019}\x{2019}");
+DefPrimitiveI('\glqq',undef,"\x{201E}");
+DefPrimitiveI('\grqq',undef,"\x{201D}");
+
+DefPrimitiveI('\SS',undef,"SS");
+
+DefPrimitiveI('\guilsinglleft',undef,"\x{2039}");
+DefPrimitiveI('\guilsinglright',undef,"\x{203A}");
+DefPrimitiveI('\guillemotleft',undef,UTF(0xAB));
+DefPrimitiveI('\guillemotright',undef,UTF(0xBB));
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# It seems that we can successfully (?) read the ldf,
+# but there may be cases where we can't out-think the ldf writer.
+# Eg. in french, there're lots of \up{\lowercase{o}}\kern ...
+# But there's a U+00AA (but it's underlined; for Spanish?). Wouldn't that be better?
+
+# The point is, we might want to add some ltxml code to override what's in the ldf.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
