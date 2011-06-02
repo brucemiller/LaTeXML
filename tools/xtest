@@ -1,0 +1,76 @@
+#!/usr/bin/perl -w
+#======================================================================
+# xtest:
+#    convert all test cases to xhtml
+#    generate a page of links to ease visual comparison of dvi to xml.
+#======================================================================
+use strict;
+use FindBin;
+use Getopt::Long qw(:config no_ignore_case);
+use Pod::Usage;
+
+our $htmldest='/local/www/site/htdocs/latexmltest';
+our $testdir="$FindBin::RealBin/../t";
+our $bindir ="$FindBin::RealBin/../blib/script";
+
+
+#**********************************************************************
+# Parse command line
+
+my $identity = "xtest";
+my($verbosity,$force,$help)=(0,0,0);
+GetOptions("force"     => \$force,
+	   "quiet"     => sub { $verbosity--; },
+	   "verbose"   => sub { $verbosity++; },
+	   "help"      => \$help,
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+
+
+opendir(DIR,$testdir) or die "Couldn't read test directory $testdir: $!";
+my @testsets = grep(!/^\./ && -d "$testdir/$_", readdir(DIR));
+closedir(DIR);
+
+if(! -d $htmldest){
+  mkdir($htmldest) or die "Couldn't create destination directory $htmldest: $!"; }
+
+our $html = "<html>\n<head><title>LaTeXML Tests</title></head>\n<body>\n<h1>LaTeXML Tests</h1>\n";
+foreach my $dir (@testsets){
+print STDERR "Looking at directory $testdir/$dir\n" if $verbosity >= 0;
+  opendir(DIR,"$testdir/$dir") or die "Couldn't read test directory $testdir/$dir: $!";
+  my @tests =  sort grep(-f "$testdir/$dir/$_.xml", map(s/\.dvi$// && $_, grep(/\.dvi$/, readdir(DIR))));
+  closedir(DIR);
+
+  next unless @tests;
+
+  if(! -d "$htmldest/$dir"){
+    print STDERR "Creating $htmldest/$dir\n" if $verbosity >= 0;
+    mkdir("$htmldest/$dir") or die "Couldn't create destination directory $htmldest: $!"; }
+
+  $html .= "<h2>$dir</h2>\n<ul>\n";
+  foreach my $test (@tests){
+    my $srcxml = "$testdir/$dir/$test.xml";
+    my $srcdvi = "$testdir/$dir/$test.dvi";
+    my $dstxml = "$htmldest/$dir/$test.xhtml";
+    my $dstdvi = "$htmldest/$dir/$test.dvi";
+    if($force || (! -f $dstxml) || ((-M $srcxml) < (-M $dstxml))){
+      print STDERR "Converting test case $dir/$test\n" if $verbosity >= 0;
+      system("$bindir/latexmlpost",
+	     "--novalidate",
+	     "--dest=$dstxml",
+	     $srcxml)
+	== 0 or die "Couldn't transform test case $testdir/$dir/$test: $!"; }
+    if($force || (! -f $dstdvi) || ((-M $srcdvi) < (-M $dstdvi))){
+      print STDERR "Copying $dir/$test.dvi to dest\n" if $verbosity >= 0;
+      system('cp',$srcdvi,$dstdvi)
+	== 0 or die "Couldn't copy $testdir/$dir/$test.dvi to $htmldest/$dir: $!"; }
+    $html .= "<li>$test : <a href='$dir/$test.dvi'>dvi</a> <a href='$dir/$test.xhtml'>xhtml</a>.</li>\n";
+  }
+  $html .= "</ul>\n";
+}
+
+$html .= "</body>\n";
+
+open(DIR,">$htmldest/index.html") or die "Couldn't create $htmldest/index.html: $!";
+print DIR $html;
+close(DIR);
