@@ -69,7 +69,7 @@ sub lstProcessInline {
 	     listingsSemantics(),
 	     lstProcess('inline',@_)); }
 
-DefConstructor('\@listings@inline {} {}',
+DefConstructor('\@listings@inline Semiverbatim {}',
 	       "<ltx:text class='listing #1'>#2</ltx:text>",
 	       reversion=>'\lstinline#1#2#3#2'); # ??????
 
