@@ -296,9 +296,19 @@ DefMacro('\bib@@title{}{}{}', sub {
       $wc++ if $wb;
       $wb=0;  }
     elsif($title =~ /^\{/){
-      $recap .= extract_bracketed($title,'{}'); $wb=0; }
+      my $t = extract_bracketed($title,'{}');
+      if(!defined $t){
+	Error(":expected:} Expected balancing } in bibliographic title");
+	$title =~ s/^\{//; }
+      else {
+	$recap .= $t; $wb=0; }}
     elsif($title =~ /^\$/){
-      $recap .= extract_delimited($title,'$'); $wb=0; }
+      my $t = extract_delimited($title,'$');
+      if(!defined $t){
+	Error(":expected:\$ Expected balancing \$ in bibliographic title");
+	$title =~ s/^\$//; }
+      else {
+	$recap .= $t; $wb=0; }}
     elsif($title =~ s/^(.)//){
       $recap .= $1; $wb=1; }}
   Invocation(T_CS('\bib@@field'),$tag,undef,Tokenize($recap)); });
@@ -900,7 +910,12 @@ sub splitWords {
     elsif($string =~ s/^([^\{\s,~]+)//){
       $word .= $1; }
     elsif($string =~ /^\{/){
-      $word .= extract_bracketed($string,'{}'); }
+      my $t = extract_bracketed($string,'{}');
+      if(!defined $t){
+	Error(":expected:} Expected balancing } in bibliographic phrases");
+	$string =~ s/^\{//; }
+      else {
+	$word .= $t; }}
     elsif($string =~ s/^(.)//){
       $word .= $1; }}
   push(@words,$word) if $word;
