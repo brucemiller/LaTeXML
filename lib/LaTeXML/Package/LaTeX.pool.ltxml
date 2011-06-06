@@ -3593,10 +3593,10 @@ sub make_message {
 
 DefPrimitive('\@onlypreamble{}',\&onlyPreamble); # Don't bother enforcing this.
 
-DefMacro('\GenericError{}{}{}{}', sub{ Fatal(make_message(@_)); });
-DefMacro('\GenericWarning{}{}',   sub{ Warn(make_message(@_)); });
-DefMacro('\GenericInfo{}{}{}{}',  sub{
-  print STDERR "Info: ".make_message(@_)."\n" unless LookupValue('VERBOSITY') < 0;
+DefMacro('\GenericError{}{}{}{}', sub{ Fatal(make_message($_[2],$_[3],$_[4])); });
+DefMacro('\GenericWarning{}{}',   sub{ Warn(make_message($_[2])); });
+DefMacro('\GenericInfo{}{}',  sub{
+  print STDERR "Info: ".make_message($_[2])."\n" unless LookupValue('VERBOSITY') < 0;
   return; });
 
 Let(T_CS('\MessageBreak'),T_CS('\relax'));
