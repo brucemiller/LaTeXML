@@ -110,8 +110,7 @@ sub parseTopLevel {
   my($self)=@_;
   NoteBegin("Preparsing Bibliography $$self{source}");
   while($self->skipJunk){
-    my $type = $self->parseName;
-    Warn(":unexpected:$type BibTeX type \"\@$type\" is nasty!") unless $type =~ /^[a-z]+$/;
+    my $type = $self->parseEntryType;
     if   ($type eq 'preamble'){ $self->parsePreamble; }
     elsif($type eq 'string')  { $self->parseMacro; }
     elsif($type eq 'comment') { $self->parseComment; }
@@ -153,7 +152,7 @@ sub parseComment {
 sub parseEntry{
   my($self,$type)=@_;
   my $open = $self->parseMatch("({");
-  my $key = $self->parseName();
+  my $key = $self->parseEntryName();
   $self->parseMatch(',');
   # NOTE: actually, the entry should be ignored if there already is one for $key!
   my($fields,$rawfields)= $self->parseFields('@string',$open);
@@ -165,8 +164,7 @@ sub parseFields {
   my @rawfields=();
   my $closed;
   do {
-    my $name = $self->parseName;
-    Warn(":unexpected:$name BibTeX field name \"$name\" has awkward characters in $for at $$self{line}") unless $name =~ /^[a-z_].*$/;
+    my $name = $self->parseFieldName;
     $self->parseMatch('=');
     my($value,$rawvalue)= $self->parseValue;
     push(@fields,[$name,$value]);
@@ -180,13 +178,25 @@ sub parseFields {
 #==============================
 # Low level parsing
 
-# Actually, there are several kinds of names here:
-# type name, field name, macro name.
-# they perhaps have different constraints?
-sub parseName {
+# There are several kinds of names here, and they allow different stuff.
+# Most of the odd stuff eventually will cause problems processing by LaTeX,
+# but I guess we've got to accept them at this level.
+sub parseEntryType {
   my($self)=@_;
   $self->skipWhite;
-  $$self{line} =~ s/^([a-zA-Z0-9\_\!\$&\*\+\-\.\/\:\;\<\>\?\[\]\^\`\|]*)//;
+  $$self{line} =~ s/^([a-zA-Z0-9\*\+\-\.\/\:\;\<\>\?\@\[\\\]\^\_\`\|\!\$\~]*)//;
+  lc($1); }
+
+sub parseEntryName {
+  my($self)=@_;
+  $self->skipWhite;
+  $$self{line} =~ s/^([a-zA-Z0-9\!\"\#\$\%\&\'\(\)\*\+\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\~]*)//;
+  lc($1); }
+
+sub parseFieldName {
+  my($self)=@_;
+  $self->skipWhite;
+  $$self{line} =~ s/^([a-zA-Z0-9\!\$\&\*\+\-\.\/\:\;\<\>\?\@\[\\\]\^\_\`\|\~]*)//;
   lc($1); }
 
 sub parseMatch {
@@ -240,7 +250,7 @@ sub parseValue {
     $self->skipWhite;
     if($$self{line} =~ /^[\"\{]/){
       $value .= $self->parseString; }
-    elsif(my $name = $self->parseName){
+    elsif(my $name = $self->parseFieldName){
       my $macro = ($name =~ /^\d+$/ ? $name : $$self{macros}{$name});
       if(!defined $macro){
 	Error(":unexpected:$name The macro $name is not defined");
