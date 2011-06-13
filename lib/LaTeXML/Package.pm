@@ -152,6 +152,15 @@ sub Let {
 sub Digest {
   $STATE->getStomach->digest(map((ref $_ ? $_ : Tokenize($_)),@_)); }
 
+# probably need to export this, as well?
+sub DigestLiteral {
+  # Perhaps should do StartSemiverbatim, but is it safe to push a frame? (we might cover over valid changes of state!)
+  my $font = LookupValue('font');
+  AssignValue(font=>$font->merge(encoding=>'ASCII'), 'local'); # try to stay as ASCII as possible
+  my $value = $STATE->getStomach->digest(map((ref $_ ? $_ : Tokenize($_)),@_));
+  AssignValue(font=>$font);
+  $value; }
+
 sub DigestIf {
   my($token)=@_;
   $token = T_CS($token) unless ref $token;
@@ -363,7 +372,10 @@ sub RefStepCounter {
   my $idtokens = $has_id && Expand(T_CS("\\the$ctr\@ID"));
   DefMacroI(T_CS('\@currentlabel'),undef,$refnumtokens,scope=>'global');
   DefMacroI(T_CS('\@currentID'),   undef,$idtokens,scope=>'global') if $has_id;
-  my $id      = $has_id && ToString(Digest($idtokens));
+###  my $id      = $has_id && ToString(Digest($idtokens));
+
+  my $id      = $has_id && ToString(DigestLiteral($idtokens));
+
   my $refnum  = ToString(Digest($refnumtokens));
   my $frefnum = ToString(Digest(Invocation(T_CS('\fnum@@'),$ctr)));
   # Any scopes activated for previous value of this counter (& any nested counters) must be removed.
