@@ -25,7 +25,8 @@ DefMacroI("\\\@empty",undef,Tokens());
 
 # Base ID prefixes everything.
 if(my $docid = LookupValue('DOCUMENTID')){
-  DefMacroI('\thedocument@ID',undef,$docid); }
+  # Wrap in T_OTHER so funny chars don't screw up (no space!)
+  DefMacroI('\thedocument@ID',undef,T_OTHER($docid)); }
 else {
   Let(T_CS('\thedocument@ID'),T_CS('\@empty')); }
 NewCounter('@XMARG','document',idprefix=>'XM');
