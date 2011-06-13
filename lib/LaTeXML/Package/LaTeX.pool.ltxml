@@ -2413,7 +2413,7 @@ sub beginBibliography {
   else {
     $bibid = 'bib'; }
   AssignValue('bibliography_ID'=>$bibid, 'global');
-  DefMacroI(T_CS('\thebibliography@ID'),undef,$bibid);
+  DefMacroI(T_CS('\thebibliography@ID'),undef,T_OTHER($bibid));
 #  $whatsit->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
   $whatsit->setProperty(id=>$bibid);
   my $title = DigestIf('\refname')||DigestIf('\bibname');
