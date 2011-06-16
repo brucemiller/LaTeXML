@@ -3446,7 +3446,7 @@ DefMacro('\textup{}',     '\ifmmode\textup@math{#1}\else{\upshape #1}\fi');
 DefMacro('\textit{}',     '\ifmmode\textit@math{#1}\else{\itshape #1}\fi');
 DefMacro('\textsl{}',     '\ifmmode\textsl@math{#1}\else{\slshape #1}\fi');
 DefMacro('\textsc{}',     '\ifmmode\textsc@math{#1}\else{\scshape #1}\fi');
-DefMacro('\textnormal{}', '\ifmmode\textnormal@math{#1}\else{\normalfont #1}');
+DefMacro('\textnormal{}', '\ifmmode\textnormal@math{#1}\else{\normalfont #1}\fi');
 
 DefPrimitive('\DeclareTextFontCommand{}{}', sub {
   my($stomach,$cmd,$font)=@_;
