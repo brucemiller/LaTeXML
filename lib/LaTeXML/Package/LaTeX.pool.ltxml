@@ -3517,6 +3517,9 @@ DefPrimitiveI('\textordmasculine', undef, UTF(0xBA)); # MASCULINE ORDINAL INDICA
 DefMacroI('\SS',undef, 'SS');			       # ?
 
 
+DefMacroI('\dag',undef,'\ifmmode{\dagger}\else\textdagger\fi');
+DefMacroI('\ddag',undef,'\ifmmode{\ddagger}\else\textdaggerdbl\fi');
+
 DefConstructor('\sqrtsign Digested',
 	       "<ltx:XMApp><ltx:XMTok meaning='square-root'/><ltx:XMArg>#1</ltx:XMArg></ltx:XMApp>");
 
