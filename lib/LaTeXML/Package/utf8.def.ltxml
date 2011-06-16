@@ -1,0 +1,33 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  utf8.def                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#**********************************************************************
+# Override the LaTeX distribution's implementation.
+# (1) I don't know if we want(need) to get into reassembling bytes to decode utf8.
+# (2) why bother?
+#**********************************************************************
+# Undo disabling all the upper half plane (ascii) chars
+foreach my $code ((0..8),0xB,(0xE..0x1E),(128..255)){
+  my $char = pack('C',$code);
+  AssignCatcode($char,CC_OTHER); }
+AssignValue(INPUT_ENCODING=>undef);
+
+# And set the Mouth to simply pass-thru the utf8.
+AssignValue(PERL_INPUT_ENCODING=>'UTF8');
+
+#**********************************************************************
+
+1;
