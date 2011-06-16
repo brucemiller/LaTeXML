@@ -3551,10 +3551,6 @@ DefMathI('\amalg',     undef,"\x{2210}", role=>'MULOP', meaning=>'coproduct');
 #----------------------------------------------------------------------
 # LaTeX; Table 3.5. Relation Symbols, p.43
 #----------------------------------------------------------------------
-DefMathI('\le',        undef,"\x{2264}", role=>'RELOP', meaning=>'less-than-or-equals');
-DefMathI('\ge',        undef,"\x{2265}", role=>'RELOP', meaning=>'greater-than-or-equals');
-DefMathI('\ne',        undef,"\x{2260}", role=>'RELOP', meaning=>'not-equals');
- 
 DefMathI('\leq',       undef,"\x{2264}", role=>'RELOP', meaning=>'less-than-or-equals');
 DefMathI('\prec',      undef,"\x{227A}", role=>'RELOP', meaning=>'precedes');
 DefMathI('\preceq',    undef,"\x{2AAF}", role=>'RELOP', meaning=>'precedes-or-equals');
@@ -3598,6 +3594,13 @@ DefMathI('\frown',     undef,"\x{2322}", role=>'RELOP');   # FROWN
 DefMathI('\propto',    undef,"\x{221D}", role=>'RELOP', meaning=>'proportional-to');
 
 DefMathI('\not',undef,"not", role=>'PREFIX', meaning=>'not');
+
+# TeX defines these as alternate names...
+Let(T_CS('\le'),T_CS('\leq'));
+Let(T_CS('\ge'),T_CS('\geq'));
+Let(T_CS('\ne'),T_CS('\neq'));
+# And it defines some others as alternate names, but they seem to
+# potentially imply slightly different meanings???  Leave them out for now..
 
 #----------------------------------------------------------------------
 # Match negations of many operators
