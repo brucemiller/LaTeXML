@@ -140,9 +140,13 @@ sub finalize_rec {
 
   local $LaTeXML::FONT = $declared_font;
   foreach my $child ($node->childNodes){
-    $self->finalize_rec($child)
-      if $child->nodeType == XML_ELEMENT_NODE; }
-
+    if($child->nodeType == XML_ELEMENT_NODE){
+      $self->finalize_rec($child);
+      # Also check if child is  $FONT_ELEMENT_NAME, has no attributes
+      # If so, and providing $node can contain that child's content, we'll collapse it.
+      if(($model->getNodeQName($child) eq $FONT_ELEMENT_NAME) && !$child->hasAttributes){
+	$self->unwrapNodes($child); }
+    }}
   # Attributes that begin with (the semi-legal) "_" are for Bookkeeping.
   # Remove them now.
   foreach my $attr ($node->attributes){
@@ -714,10 +718,13 @@ sub insertPI {
     $$self{node}->appendChild($pi); }
   $pi; }
 
-#**********************************************************************
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Document surgery (?)
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # moving stuff around, duplicating, etc.
-# 
+
+#**********************************************************************
+# Appending clones of nodes
 
 # Inserting clones of nodes into the document.
 # Nodes that exist in some other part of the document (or some other document)
@@ -771,6 +778,52 @@ sub appendClone_aux {
     elsif($type == XML_TEXT_NODE){
       $node->appendTextNode($child->textContent); }}
   $node; }
+
+#**********************************************************************
+# Wrapping & Unwrapping nodes by another element.
+
+# Wrap @nodes with an element named $qname, making the new element replace the first $node,
+# and all @nodes becomes the child of the new node.
+# [this makes most sense if @nodes are a sequence of siblings]
+# Returns undef if $qname isn't allowed in the parent, or if @nodes aren't allowed in $qname,
+# otherwise, returns the newly created $qname.
+sub wrapNodes {
+  my($self,$qname, @nodes)=@_;
+  return unless @nodes;
+  my $model = $$self{model};
+  my $parent = $nodes[0]->parentNode;
+  return unless $model->canContain($model->getNodeQName($parent),$qname)
+    && ! grep( ! $model->canContain($qname,$model->getNodeQName($_)), @nodes);
+  my($ns,$tag) = $model->decodeQName($qname);
+  my $new;
+  if($ns){
+    if(! defined $parent->lookupNamespacePrefix($ns)){	# namespace not already declared?
+      $self->getDocument->documentElement
+	->setNamespace($ns,$model->getDocumentNamespacePrefix($ns),0); }
+    $new= $parent->addNewChild($ns,$tag); }
+  else {
+    $new = $parent->appendChild($$self{document}->createElement($tag)); }
+  $parent->replaceChild($new,$nodes[0]);
+  foreach my $node (@nodes){
+    $new->appendChild($node); }
+  $new; }
+
+# Unwrap the children of $node, by replacing $node by its children.
+# Returns undef if the children are not allowed in the parent,
+# else returns the REMOVED node.
+sub unwrapNodes {
+  my($self,$node)=@_;
+  my $model = $$self{model};
+  my $parent = $node->parentNode;
+  my $parentqname = $model->getNodeQName($parent);
+  my @children = $node->childNodes;
+  if( ! grep( ! $model->canContain($parentqname,$model->getNodeQName($_)), @children)){
+    my $c0;
+    while(my $c1 = shift(@children)){
+      if($c0){ $parent->insertAfter($c1,$c0); }
+      else   { $parent->replaceChild($c1,$node); }
+      $c0=$c1; }
+    $node; }}
 
 #**********************************************************************
 1;
