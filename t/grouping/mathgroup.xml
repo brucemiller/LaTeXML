@@ -6,19 +6,19 @@
     <p>Expect Original : Original</p>
   </para>
   <para xml:id="p2">
-    <p>Expect a + Original: <Math mode="inline" tex="a+\mbox{Original}" xml:id="p2.m1" text="a + [Original]"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMText><text>Original</text></XMText></XMApp></XMath></Math></p>
+    <p>Expect a + Original: <Math mode="inline" tex="a+\mbox{Original}" xml:id="p2.m1" text="a + [Original]"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMText>Original</XMText></XMApp></XMath></Math></p>
   </para>
   <para xml:id="p3">
     <p>Expect Original : Original</p>
   </para>
   <para xml:id="p4">
-    <p>Expect InBox + Original:  <text>InBox</text> + Original</p>
+    <p>Expect InBox + Original:  InBox + Original</p>
   </para>
   <para xml:id="p5">
     <p>Expect Original : Original</p>
   </para>
   <para xml:id="p6">
-    <p>Expect a + InlineMath: <Math mode="inline" tex="a+\hbox{InlineMath}" xml:id="p6.m1" text="a + [InlineMath]"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMText><text>InlineMath</text></XMText></XMApp></XMath></Math></p>
+    <p>Expect a + InlineMath: <Math mode="inline" tex="a+\hbox{InlineMath}" xml:id="p6.m1" text="a + [InlineMath]"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMText>InlineMath</XMText></XMApp></XMath></Math></p>
   </para>
   <para xml:id="p7">
     <p>Expect Original : Original</p>
@@ -31,9 +31,7 @@
           <XMApp>
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
-            <XMText>
-              <text>DisplayMath</text>
-            </XMText>
+            <XMText>DisplayMath</XMText>
           </XMApp>
         </XMath>
       </Math>
@@ -43,7 +41,7 @@
     <p>Expect Original : Original</p>
   </para>
   <para xml:id="p10">
-    <p>Expect a + InText + InlineMath: <Math mode="inline" tex="a+\hbox{InText}+\hbox{InlineMath}" xml:id="p10.m1" text="a + [InText] + [InlineMath]"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMText><text>InText</text></XMText><XMText><text>InlineMath</text></XMText></XMApp></XMath></Math></p>
+    <p>Expect a + InText + InlineMath: <Math mode="inline" tex="a+\hbox{InText}+\hbox{InlineMath}" xml:id="p10.m1" text="a + [InText] + [InlineMath]"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMText>InText</XMText><XMText>InlineMath</XMText></XMApp></XMath></Math></p>
   </para>
   <para xml:id="p11">
     <p>Expect Original : Original</p>

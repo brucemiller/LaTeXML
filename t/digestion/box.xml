@@ -13,7 +13,7 @@
   </para>
   <para xml:id="p4">
     <p>Using…
-<inline-block vattach="bottom"><p><text>Hello</text>,<text>Goodbye</text></p></inline-block></p>
+<inline-block vattach="bottom"><p>Hello</p><p>,</p><p>Goodbye</p></inline-block></p>
   </para>
   <para xml:id="p5">
     <p>Box 3 is horizontal</p>
@@ -28,9 +28,7 @@
           <XMApp>
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
-            <XMText>
-              <text>a</text>
-            </XMText>
+            <XMText>a</XMText>
           </XMApp>
         </XMath>
       </Math>
@@ -60,10 +58,8 @@
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMText>
               <inline-block vattach="bottom">
-                <p>
-                  <text>a</text>
-                  <text>a</text>
-                </p>
+                <p>a</p>
+                <p>a</p>
               </inline-block>
             </XMText>
           </XMApp>
@@ -78,10 +74,8 @@
             <XMTok role="UNKNOWN" font="italic">a</XMTok>
             <XMText>
               <inline-block vattach="top">
-                <p>
-                  <text>a</text>
-                  <text>a</text>
-                </p>
+                <p>a</p>
+                <p>a</p>
               </inline-block>
             </XMText>
           </XMApp>
