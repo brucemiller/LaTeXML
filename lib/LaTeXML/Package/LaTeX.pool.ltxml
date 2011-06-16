@@ -3292,13 +3292,14 @@ DefConstructor('\pic@frame{}',
 	       properties=>sub { picProperties(); });
 
 our %alignments = (l=>'left',c=>'center',r=>'right');
+# Not sure that ltx:p is the best to use here, but ... (see also \vbox, \vtop)
 DefConstructor('\shortstack[]{}',
-	       "<ltx:inline-block align='#align'><ltx:text _noautoclose='1'>#2</ltx:text></ltx:inline-block>",
+	       "<ltx:inline-block align='#align'><ltx:p>#2</ltx:p></ltx:inline-block>",
 	       bounded=>1,
 	       beforeDigest=>sub{ reenterTextMode();
 				  # then RE-RE-define this one!!!
 				  DefConstructor("\\\\ OptionalMatch:* [Dimension]",
-						 "</ltx:text><ltx:text _noautoclose='1'>",
+						 "</ltx:p><ltx:p>",
 						 reversion=>Tokens(T_CS("\\\\"),T_CR)); },
 	       properties=>{ align=>sub { ($_[1] ? $alignments{ToString($_[0])} : undef); }},
 	       mode=>'text');
