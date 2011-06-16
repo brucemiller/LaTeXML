@@ -49,10 +49,11 @@ sub SetInputEncoding {
     my $char = pack('C',$code);
     AssignCatcode($char,CC_ACTIVE);
     Let(T_CS($char),T_CS('\@inpenc@undefined')); }
+  AssignValue(PERL_INPUT_ENCODING=>undef); # Disable the perl-level decoding, if any.
+
   # Then load TeX's input encoding definitions.
   RequirePackage($encoding,type=>'def', raw=>1);
   AssignValue(INPUT_ENCODING=>$encoding);
-  AssignValue(PERL_INPUT_ENCODING=>undef); # Disable the perl-level decoding, if any.
   return; }
 
 #**********************************************************************
