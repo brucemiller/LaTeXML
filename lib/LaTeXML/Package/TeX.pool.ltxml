@@ -1302,12 +1302,37 @@ DefConstructor('\hbox BoxSpecification BoxContents',
 
 # SHOULD Be a little smarter: if we're already in a block level context, don't open inline-block
 # but that doesn't really quite capture the logic....
+# Also, the whole business of laying out SOME of the children as rows is completely fuzzy..
 DefConstructor('\vbox BoxSpecification BoxContents', 
- "<ltx:inline-block vattach='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
+#	       "<ltx:inline-block vattach='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
+	       sub {
+		 my($document,$spec,$contents,%props)=@_;
+		 my $model=$document->getModel;
+		 my $block = $document->openElement('ltx:inline-block',vattach=>'bottom', 
+						    height=>$spec && $$spec{to}, 'pad-height'=>$spec && $$spec{spread});
+		 # Ignore the leading and trailing { & } from the BoxContents.
+		 my @contents=$contents->unlist;
+		 foreach my $row (@contents[1..$#contents-1]){
+		   $document->absorb($row);
+		   if(my $prev = $document->getLastChildElement($block)){
+		     $document->maybeCloseElement($model->getNodeQName($prev)); }}
+		 $document->closeElement('ltx:inline-block'); },
  	       mode=>'text');
 
+
 DefConstructor('\vtop BoxSpecification BoxContents', 
- "<ltx:inline-block vattach='top' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
+# "<ltx:inline-block vattach='top' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
+	       sub {
+		 my($document,$spec,$contents,%props)=@_;
+		 my $model=$document->getModel;
+		 my $block = $document->openElement('ltx:inline-block',vattach=>'top', 
+						    height=>$spec && $$spec{to}, 'pad-height'=>$spec && $$spec{spread});
+		 my @contents=$contents->unlist;
+		 foreach my $row (@contents[1..$#contents-1]){
+		   $document->absorb($row);
+		   if(my $prev = $document->getLastChildElement($block)){
+		     $document->maybeCloseElement($model->getNodeQName($prev)); }}
+		 $document->closeElement('ltx:inline-block'); },
 	       mode=>'text');
 
 DefParameterType('RuleSpecification',sub {
