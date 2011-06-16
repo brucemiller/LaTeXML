@@ -85,7 +85,7 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex5">
-        <Math mode="display" tex="a=b&gt;c\le d=e" xml:id="S1.Ex5.m1" text="a = b &gt; c less= d = e">
+        <Math mode="display" tex="a=b&gt;c\leq d=e" xml:id="S1.Ex5.m1" text="a = b &gt; c less= d = e">
           <XMath>
             <XMApp>
               <XMTok meaning="multirelation"/>
@@ -94,7 +94,7 @@
               <XMTok role="ID" font="italic">b</XMTok>
               <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
               <XMTok role="ID" font="italic">c</XMTok>
-              <XMTok meaning="less-than-or-equals" name="le" role="RELOP">≤</XMTok>
+              <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
               <XMTok role="ID" font="italic">d</XMTok>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">e</XMTok>
@@ -159,7 +159,7 @@
     <title><tag>2 </tag>Arrows as meta-relation</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex8">
-        <Math mode="display" tex="a=b\rightarrow c\le d=e" xml:id="S2.Ex8.m1" text="a = b rightarrow c less= d = e">
+        <Math mode="display" tex="a=b\rightarrow c\leq d=e" xml:id="S2.Ex8.m1" text="a = b rightarrow c less= d = e">
           <XMath>
             <XMApp>
               <XMTok meaning="multirelation"/>
@@ -168,7 +168,7 @@
               <XMTok role="ID" font="italic">b</XMTok>
               <XMTok name="rightarrow" role="ARROW">→</XMTok>
               <XMTok role="ID" font="italic">c</XMTok>
-              <XMTok meaning="less-than-or-equals" name="le" role="RELOP">≤</XMTok>
+              <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
               <XMTok role="ID" font="italic">d</XMTok>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">e</XMTok>
@@ -199,7 +199,7 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex10">
-        <Math mode="display" tex="a=b\leftrightarrow c\le d=e" xml:id="S2.Ex10.m1" text="a = b leftrightarrow c less= d = e">
+        <Math mode="display" tex="a=b\leftrightarrow c\leq d=e" xml:id="S2.Ex10.m1" text="a = b leftrightarrow c less= d = e">
           <XMath>
             <XMApp>
               <XMTok name="leftrightarrow" role="METARELOP">↔</XMTok>
@@ -211,7 +211,7 @@
               <XMApp>
                 <XMTok meaning="multirelation"/>
                 <XMTok role="ID" font="italic">c</XMTok>
-                <XMTok meaning="less-than-or-equals" name="le" role="RELOP">≤</XMTok>
+                <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
                 <XMTok role="ID" font="italic">d</XMTok>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
                 <XMTok role="ID" font="italic">e</XMTok>
