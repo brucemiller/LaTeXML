@@ -147,6 +147,7 @@ sub Let {
   ($token1)=TokenizeInternal($token1)->unlist unless ref $token1;
   ($token2)=TokenizeInternal($token2)->unlist unless ref $token2;
   $STATE->assignMeaning($token1,$STATE->lookupMeaning($token2),$scope); 
+  AfterAssignment();
   return; }
 
 sub Digest {
