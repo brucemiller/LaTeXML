@@ -89,14 +89,15 @@ DefMacroI(T_CS('\begin{lstlisting}'),
 
 DefMacro('\lstinputlisting OptionalKeyVals:LST Semiverbatim', sub {
   my($gullet,$keyvals,$file)=@_;
-  my $path = FindFile(ToString(Expand($file)));
+  my $filename = ToString(Expand($file));
+  my $path = FindFile($filename);
   my $text;
   if( $path && open(LST, $path)){
     { local $/ = undef;
       $text = <LST>;
       close(LST); }}
   else {
-    Error("unexpected:$file Couldn't read listings file ".ToString($file).": $!"); }
+    Error("unexpected:$filename Couldn't read listings file $filename: $!"); }
   $STATE->getStomach->bgroup; 
   lstActivate($keyvals);
   AssignValue('LST@toctitle',$file); # so it shows up in list of..
