@@ -17,5 +17,9 @@ use LaTeXML::Util::KeyVal;
 
 # Should define some macros that connect to KeyVal ?
 
+# This doesn't really do anything useful; what keyval wants is to evaluate $code!!!
+DefPrimitive('\define@key{}{}[]{}',sub {
+  my($keyset,$key,$default,$code)=@_;
+  DefKeyVal(ToString($keyset),ToString($key),'',ToString($default)); });
 #======================================================================
 1;
