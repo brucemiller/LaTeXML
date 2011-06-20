@@ -29,7 +29,7 @@ our @EXPORT = (qw(&DefExpandable
 		  &convertLaTeXArgs),
 
 	       # Class, Package and File loading.
-	       qw(&RequirePackage &LoadClass &LoadPool &FindFile
+	       qw(&RequirePackage &LoadClass &LoadPool &FindFile &InputFile
 		  &DeclareOption &PassOptions &ProcessOptions &ExecuteOptions
 		  &AddToMacro &AtBeginDocument &AtEndDocument),
 
@@ -975,8 +975,8 @@ sub pathname_is_raw {
 our $findfile_options = {rawonly=>1, raw=>1, type=>1};
 sub FindFile {
   my ($file,%options)=@_;
-  CheckOptions("FindFile ($file)",$findfile_options,%options);
   $file = ToString($file);
+  CheckOptions("FindFile ($file)",$findfile_options,%options);
   $file .= ".$options{type}" if $options{type};
   my $israw = pathname_is_raw($file); # pathname is a known (and raw) type.
   my $paths    = LookupValue('SEARCHPATHS');
@@ -1009,6 +1009,37 @@ sub pathname_find_x {
   if(LookupValue($path.'_contents')){
     return $path; }
   pathname_find($path,%options); }
+
+# This needs to evolve into a useful interface.
+# Perhaps need to expose a lower level as well: OpenMouth ?
+# So far, we're expecting that the file likely contains content,
+# but if in latex, and in preamble it actually better be a style file
+# (and we'll even try to find a .sty instead of .tex?)
+# In TeX, if there's no file by that name, we may also try for a style file.
+# 
+our $inputfile_options={};
+sub InputFile {
+  my($request,%options)=@_;
+  $request = ToString($request);
+  CheckOptions("InputFile ($request)",$inputfile_options,%options);
+  # HEURISTIC! First check if equivalent style file, but only IFF we are in preamble
+  my ($dir,$name,$type) = pathname_split($request);
+  my $file = $name; $file .= '.'.$type if $type;
+  my $altpath;
+  # Firstly, check if we are going to OVERRIDE the requested file with a style file.
+  if((! $dir) && (!$type || ($type eq 'tex')) # No specific directory, but apparently to a raw tex file.
+     && (LookupValue('inPreamble') || !FindFile($file)) # AND, in preamble so it SHOULD be style file, OR also if we can't find the raw file.
+     && ($altpath=FindFile($name,type=>'sty'))){	# AND there IS such a style file
+    Info(":override Overriding input of $request with $altpath");
+    RequirePackage($name); }	# Then override, and just assume we'll find $name as a package style file!
+  elsif(my $path = FindFile($request)){			# Else if the requested file was found, we'll input it
+    # note that this may _STILL_ end up reading $path.ltxml if there is one.
+    $STATE->getStomach->getGullet->input($path); }
+  else {			# Otherwise, the file seems to be missing.
+    $STATE->noteStatus(missing=>$request);
+    Error(":missing_file:$request Cannot find file $request in paths "
+	  .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
+  return; }
 
 # Declare an option for the current package or class
 # If $option is undef, it is the default.
