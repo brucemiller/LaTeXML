@@ -90,11 +90,7 @@
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
 
-<!ELEMENT ns1:bibref (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
-                      |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
-                      |ns1:inline-block|ns1:verbatim|ns1:break
-                      |ns1:graphics|ns1:inline-para|ns1:tabular
-                      |ns1:picture|ns1:note|ns1:indexmark|ns1:ERROR)*>
+<!ELEMENT ns1:bibref (ns1:bibrefphrase)*>
 <!ATTLIST ns1:bibref
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -103,6 +99,16 @@
   show CDATA #IMPLIED
   separator CDATA #IMPLIED
   yyseparator CDATA #IMPLIED>
+
+<!ELEMENT ns1:bibrefphrase (#PCDATA|ns1:text|ns1:emph|ns1:acronym
+                            |ns1:rule|ns1:anchor|ns1:ref|ns1:cite
+                            |ns1:bibref|ns1:Math|ns1:inline-block
+                            |ns1:verbatim|ns1:break|ns1:graphics
+                            |ns1:inline-para|ns1:tabular|ns1:picture
+                            |ns1:note|ns1:indexmark|ns1:ERROR)*>
+<!ATTLIST ns1:bibrefphrase
+  xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED>
 
 <!ELEMENT ns1:note (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                     |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math

@@ -203,7 +203,20 @@ bibref_attributes =
   attribute yyseparator { text }?
 
 ## Content model for \elementref{bibref}.
-bibref_model = Inline.model
+bibref_model = bibrefphrase*
+
+#======================================================================
+
+bibrefphrase =
+## A preceding or following phrase used in composing a bibliographic reference,
+## such as listing pages or chapter.
+element bibrefphrase { bibrefphrase_attributes, bibrefphrase_model }
+
+## Attributes for \elementref{bibrefphrase}
+bibrefphrase_attributes = Common.attributes
+
+## Content model for \element{bibrefphrase}
+bibrefphrase_model = Inline.model
 
 #======================================================================
 

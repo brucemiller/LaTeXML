@@ -289,6 +289,25 @@ mixed with arbitrary characters.</a:documentation>
   </define>
   <define name="bibref_model">
     <a:documentation>Content model for \elementref{bibref}.</a:documentation>
+    <zeroOrMore>
+      <ref name="bibrefphrase"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="bibrefphrase">
+    <element name="bibrefphrase">
+      <a:documentation>A preceding or following phrase used in composing a bibliographic reference,
+such as listing pages or chapter.</a:documentation>
+      <ref name="bibrefphrase_attributes"/>
+      <ref name="bibrefphrase_model"/>
+    </element>
+  </define>
+  <define name="bibrefphrase_attributes">
+    <a:documentation>Attributes for \elementref{bibrefphrase}</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="bibrefphrase_model">
+    <a:documentation>Content model for \element{bibrefphrase}</a:documentation>
     <ref name="Inline.model"/>
   </define>
   <!-- ====================================================================== -->
