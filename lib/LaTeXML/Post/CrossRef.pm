@@ -208,7 +208,7 @@ sub make_bibcite {
 
   my $sep  = $bibref->getAttribute('separator') || ',';
   my $yysep= $bibref->getAttribute('yyseparator') || ',';
-  my @phrases = $bibref->getChildNodes();	  # get the ltx;note's in the bibref!
+  my @phrases = $bibref->getChildNodes();	  # get the ltx;bibrefphrase's in the bibref!
   # Collect all the data from the bibliography
   my @data = ();
   foreach my $key (@keys){
