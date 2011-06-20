@@ -469,7 +469,6 @@ DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim',
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
 				  my $packages=$whatsit->getArg(2);
-
 				  my @pkgs = grep($_,grep(!/^\s*%/,split(/,\s*/,ToString($packages))));
 				  $options = [($options ? split(/,\s*/,(ToString($options))) :())];
 				  map(RequirePackage($_,options=>$options),@pkgs);
@@ -479,9 +478,11 @@ DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
 	       beforeDigest=>\&onlyPreamble,
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
-				  my $package=$whatsit->getArg(2);
+				  my $packages=$whatsit->getArg(2);
+				  my @pkgs = grep($_,grep(!/^\s*%/,split(/,\s*/,ToString($packages))));
 				  $options = [($options ? split(/,\s*/,(ToString($options))) :())];
-				  RequirePackage(ToString($package), options=>$options); });
+				  map(RequirePackage($_,options=>$options),@pkgs);
+				  return});
 DefConstructor('\LoadClass OptionalSemiverbatim Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
 	       beforeDigest=>\&onlyPreamble,
