@@ -50,7 +50,7 @@ Let('\hyperrefnoref',  '\hyperrefdef');
 Let('\hyperrefhtml',   '\hyperrefdef');
 
 DefConstructor('\hypercite [] {}{} [] Semiverbatim',
-	       "<ltx:cite>#4 <ltx:bibref bibrefs='#5'>#2</ltx:bibref> #1</ltx:cite>");
+	       "<ltx:cite>#4 <ltx:bibref bibrefs='#5'>?#2(<ltx:bibrefphrase>#2</ltx:bibrefphrase>)</ltx:bibref> #1</ltx:cite>");
 DefMacro('\htmlcite{}{}','\hypercite{#1}{}{#2}');
 DefMacro('\htmlimage{}','');
 DefMacro('\htmlborder{}','');
