@@ -158,7 +158,7 @@ DefParameterType('TeXFileName', sub {
   while(($token = $gullet->readXToken(0))
 	&& (($cc=$token->getCatcode) != CC_SPACE) &&($cc!=CC_EOL)&&($cc!=CC_COMMENT)&&($cc!=CC_CS)){
     push(@tokens,$token); }
-  $gullet->unread($token);
+  $gullet->unread($token) unless ($cc == CC_SPACE) || ($cc ==CC_EOL) || ($cc == CC_COMMENT);
   Tokens(@tokens); });
 
 # This reads a Box as needed by \raise, \lower, \moveleft, \moveright.
@@ -363,19 +363,24 @@ DefMacro('\ifcat XToken XToken',
 	      isConditional=>1);
 
 # !! ????
-DefMacro('\ifx Token Token', sub {
-  my($gullet,$token1,$token2)=@_;
+# Probably should be promoted/exported somewhere...
+# [how many cases of $tok->equals($tok) should really be this xEquals?]
+sub xEquals {
+  my($token1,$token2)=@_;
   my $def1=LookupMeaning($token1);
   my $def2=LookupMeaning($token2);
-  my $bool=0;
-  if(defined $def1 != defined $def2){	       # Don't both have defs or not have defs
-    $bool=0; }
-  elsif(!defined $def1 && !defined $def2){	# Neither have defs
-    $bool = ($token1->getCatcode  == $token2->getCatcode)
-      &&    ($token1->getCharcode == $token2->getCharcode); }
-  elsif($def1->equals($def2)){	# Same defn (hopefully covers same primitives ???)
-    $bool = 1; }		# But what about same \chardefs, etc....
-  ifHandler($gullet,$bool); },
+  if(defined $def1 != defined $def2){	       # False, if they don't both have defs or both not have defs
+    return undef; }
+  elsif(!defined $def1 && !defined $def2){	# If neither have defs, then must have same catcode & chars
+    return ($token1->getCatcode  == $token2->getCatcode)
+      &&   ($token1->getCharcode == $token2->getCharcode); }
+  elsif($def1->equals($def2)){ # If both have defns, must be same defn!
+    return 1; }
+  return undef; }
+
+DefMacro('\ifx Token Token', sub {
+  my($gullet,$token1,$token2)=@_;
+  ifHandler($gullet, xEquals($token1,$token2)); },
 	      isConditional=>1);
 
 # Kinda rough: We don't really keep track of modes as carefully as TeX does.
@@ -456,24 +461,7 @@ DefMacroI('\botmark',        undef, Tokens());
 DefMacroI('\splitfirstmark', undef, Tokens());
 DefMacroI('\splitbotmark',   undef, Tokens());
 
-DefMacro('\input TeXFileName',sub {
-  my($gullet,$path)=@_;
-  $path = ToString($path);
-  $path = $1 if $path =~ /^\{(.*)\}$/; # just in case
-  my ($dir,$name,$type) = pathname_split($path);
-  my $newpath;
-  if(my $file = FindFile($path)){
-    $gullet->input($file); }
-  # Possibly we should be trying for a style file (& we may end up in latex mode)
-  elsif((! $dir) && (!$type || ($type eq 'tex')) # Attempt to load raw TeX
-     && ($newpath=FindFile($name,type=>'sty'))){	# and there IS such a style file
-    Info(":override Overriding input of $path with $newpath");
-    RequirePackage($name); }
-  else {
-    $STATE->noteStatus(missing=>$path);
-    Error(":missing_file:$path Cannot find $path in paths "
-	  .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
-  return; });
+DefMacro('\input TeXFileName',sub { InputFile($_[1]); });
 
 DefMacroI('\endinput',undef,sub { $_[0]->closeMouth(1); return; });
 
