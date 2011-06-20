@@ -2557,13 +2557,16 @@ AssignValue(CITE_NOTE_SEPARATOR=>T_OTHER(','));
 DefConstructor('\@@cite{}',"<ltx:cite>#1</ltx:cite>",
 	       mode=>'text');
 
+# \@@bibref{what to show}{bibkeys}{phrase1}{phrase2}
 DefConstructor('\@@bibref Semiverbatim Semiverbatim {}{}',
 	       "<ltx:bibref show='#1' bibrefs='#bibrefs'"
 	       .          " separator='#separator' yyseparator='#yyseparator'>#3#4</ltx:bibref>",
 	      properties=>sub { (bibrefs=>CleanBibKey($_[2]),
 				 separator=>ToString(Digest(LookupValue('CITE_SEPARATOR'))),
 				 yyseparator=>ToString(Digest(LookupValue('CITE_YY_SEPARATOR')))); });
-DefConstructor('\@@citephrase{}',"<ltx:text _noautoclose='1'>#1</ltx:text>",
+
+# Simple container for any phrases used in the bibref
+DefConstructor('\@@citephrase{}',"<ltx:bibrefphrase>#1</ltx:bibrefphrase>",
 	       mode=>'text');
 
 DefMacro('\cite[] Semiverbatim', sub {
@@ -2583,34 +2586,8 @@ DefConstructor('\nocite Semiverbatim', '');
 #======================================================================
 Let(T_CS('\@@input'),T_CS('\input'));	# Save TeX's version.
 # LaTeX's \input is a bit different...
-DefPrimitive('\input', sub {
-  my($stomach)=@_;
-  my $gullet=$stomach->getGullet;
-  my $path;
-  if($gullet->ifNext(T_BEGIN)){ # Read LaTeX style
-    $path=Expand($gullet->readArg); }
-  else {			# Read TeX style.
-    my ($token,@tokens)=();
-    while(($token = $gullet->readXToken(0)) && ($token->getCatcode != CC_SPACE)){
-      last if $token->equals(T_CS('\relax'));
-      push(@tokens,$token); }
-    $path = Tokens(@tokens); }
-  $path = ToString($path);
-  # HEURISTIC! First check if equivalent style file, but only IFF we are in preamble
-  my ($dir,$name,$type) = pathname_split($path);
-  my $newpath;
-  if((! $dir) && (!$type || ($type eq 'tex')) # Attempt to load raw TeX
-     && (LookupValue('inPreamble') || !FindFile($name)) # And should/could be style file
-     && ($newpath=FindFile($name,type=>'sty'))){	# and there IS such a style file
-    Info(":override Overriding input of $path with $newpath");
-    RequirePackage($name); }
-  elsif(my $file = FindFile($path)){
-    $gullet->input($file); }
-  else {
-    $STATE->noteStatus(missing=>$path);
-    Error(":missing_file:$path Cannot find file $path in paths "
-	  .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
-  return; });
+DefMacroI('\input',undef,'\@ifnextchar\bgroup\@iinput\@@input');
+DefPrimitive('\@iinput {}', sub { InputFile($_[1]); });
 
 # Note that even excluded files SHOULD have the effects of their inclusion
 # simulated by having read the corresponding aux file;
@@ -3766,7 +3743,7 @@ DefMacro('\@ifnextchar Token {}{}', sub {
   my($gullet,$token,$if,$else)=@_;
   my $next = $gullet->readNonSpace;
   # NOTE: Not actually substituting, but collapsing ## pairs!!!!
-  ( LaTeXML::Expandable::substituteTokens($token->equals($next) ? $if : $else),$next); });
+  ( LaTeXML::Expandable::substituteTokens(xEquals($token,$next) ? $if : $else),$next); });
 
 Let(T_CS('\@ifnext'), T_CS('\@ifnextchar')); # ????
 
