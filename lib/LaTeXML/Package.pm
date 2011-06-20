@@ -1078,7 +1078,7 @@ sub ProcessOptions {
   my $name = LookupDefinition(T_CS('\@currname')) && ToString(Digest(T_CS('\@currname')));
   my $ext  = LookupDefinition(T_CS('\@currext')) && ToString(Digest(T_CS('\@currext')));
   my @declaredoptions = @{LookupValue('@declaredoptions')};
-  my @curroptions     = @{ ( defined($name)&& defined($ext) ? LookupValue('opt@'.$name.'.'.$ext) : []) };
+  my @curroptions     = @{ (defined($name) && defined($ext) && LookupValue('opt@'.$name.'.'.$ext)) || [] };
 #  print STDERR "\nProcessing options for $name.$ext: ".join(', ',@curroptions)."\n";
 
   my $defaultcs = T_CS('\default@ds');
