@@ -25,11 +25,11 @@ for my $encoding (@ARGV){
     if(/\s*\\DeclareFontEncoding/){}
     elsif(/\s*\\DeclareFontSubstitution/){}
     elsif(/\s*\\DeclareTextAccent/){}
-    elsif(/\s*\\DeclareTextSymbol\{(.*?)\}\{.*?\}\{(.+)\}$/){
+    elsif(/\s*\\DeclareTextSymbol\s*\{(.*?)\}\s*\{.*?\}\s*\{(.+)\}\s*$/){
       my($e,$p)=($1,$2);
       if($p =~ /^\`\\(.)$/){  $p = ord($1); }
       $$expression_sought{$e}=$p; }
-    elsif(/\s*\\DeclareTextComposite\{(.*?)\}\{.*?\}\{(.*?)\}\{(.*?)\}$/){
+    elsif(/\s*\\DeclareTextComposite\s*\{(.*?)\}\s*\{.*?\}\s*\{(.*?)\}\s*\{(.*?)\}\s*$/){
       my($a,$c,$p)=($1,$2,$3);
       if($p =~ /^\`\\(.)$/){  $p = ord($1); }
       my $e = ($a=~ /[a-zA-Z]$/ ?  "$a $c" : "$a$c");
@@ -98,21 +98,21 @@ sub readAscii {
     if(/\s*\\DeclareFontEncoding/){}
     elsif(/\s*\\DeclareFontSubstitution/){}
     elsif(/\s*\\DeclareTextAccent/){}
-    elsif(/\s*\\DeclareTextSymbol\{(.*?)\}\{.*?\}\{(.+)\}$/){
+    elsif(/\s*\\DeclareTextSymbol\s*\{(.*?)\}\s*\{.*?\}\s*\{(.+)\}\s*$/){
       my($e,$m)=($1,$2);
       if($m =~ /^\`\\(.)$/){
 	if(my $p = $$expression_sought{$e}){
 	  delete $$expression_sought{$e};
 	  $$map[$p]= "\"$1\""; }}}
     elsif(/\s*\\DeclareTextCommand/){}
-    elsif(/\s*\\DeclareTextComposite\{(.*?)\}\{.*?\}\{(.*?)\}\{(.*?)\}$/){
+    elsif(/\s*\\DeclareTextComposite\s*\{(.*?)\}\s*\{.*?\}\s*\{(.*?)\}\s*\{(.*?)\}\s*$/){
       my($a,$c,$m)=($1,$2,$3);
       my $e = ($a=~ /[a-zA-Z]$/ ?  "$a $c" : "$a$c");
       if($m =~ /^\`\\(.)$/){
 	if(my $p = $$expression_sought{$e}){
 	  delete $$expression_sought{$e};
 	  $$map[$p]= "\"$1\""; }}}
-    elsif(/\s*\\DeclareTextCompositeCommand\{(.*?)\}\{.*?\}\{(.*?)\}\{.*?\}$/){}
+    elsif(/\s*\\DeclareTextCompositeCommand\s*\{(.*?)\}\s*\{.*?\}\s*\{(.*?)\}\s*\{.*?\}\s*$/){}
     elsif(/Declare/){ print STDERR "Misunderstood def line \"$_\"\n"; }}
   close(ENC);
 
