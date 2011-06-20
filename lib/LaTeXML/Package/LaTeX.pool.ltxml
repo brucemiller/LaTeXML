@@ -1675,7 +1675,7 @@ DefPrimitive('\providecommand OptionalMatch:* DefToken [][]{}', sub {
 # Need to figure out exactly what `robust' means to LaTeXML...
 DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
-  return if LookupDefinition($cs);
+###  return if LookupDefinition($cs);  # Why was this here? (shouldn't redefine?)
   DefMacroI($cs, convertLaTeXArgs($nargs,$opt),$body); });
 
 # There are a bunch of ways in LaTeX to assign a command to
@@ -3491,6 +3491,8 @@ DefPrimitiveI('\textellipsis',     undef, "\x{2026}"); # HORIZONTAL ELLIPSIS
 DefPrimitiveI('\textregistered',   undef, UTF(0xAE)); # REGISTERED SIGN
 DefPrimitiveI('\texttrademark',    undef, "\x{2122}");  # TRADE MARK SIGN
 DefConstructor('\textsuperscript{}', "<ltx:text yoffset='0.5em' _noautoclose='1'>#1</ltx:text>");
+# This is something coming from xetex/xelatex ?
+DefConstructor('\realsuperscript{}', "<ltx:text yoffset='0.5em' _noautoclose='1'>#1</ltx:text>");
 DefPrimitiveI('\textordfeminine',  undef, UTF(0xAA)); # FEMININE ORDINAL INDICATOR
 DefPrimitiveI('\textordmasculine', undef, UTF(0xBA)); # MASCULINE ORDINAL INDICATOR
 DefMacroI('\SS',undef, 'SS');			       # ?
