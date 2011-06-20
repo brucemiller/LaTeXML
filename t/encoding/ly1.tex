@@ -1,0 +1,62 @@
+\documentclass{article}
+%
+\usepackage[LY1]{fontenc}
+\newcount\linenum\linenum=0\relax
+\newcount\colnum\colnum=0\relax
+\newcount\n
+\newtoks\tabtoks
+\def\addtabtoks#1{\tabtoks\expandafter{\the\tabtoks#1}}
+%
+% GACK! nested loops!?!?!
+\def\colloop#1\colrepeat{\def\coliterate{#1\relax\expandafter\coliterate\fi}%
+  \coliterate \let\coliterate\relax}
+\let\colrepeat\fi
+
+\def\rowloop#1\rowrepeat{\def\rowiterate{#1\relax\expandafter\rowiterate\fi}%
+  \rowiterate \let\rowiterate\relax}
+\let\rowrepeat\fi
+%
+\def\oct#1{\'{}#1}
+\def\col{
+  \setbox0=\hbox{\fontencoding{LY1}\selectfont\char\n}\global\advance\n1\relax\box0}
+\def\dorow{
+  & \col & \col  & \col & \col & \col & \col  & \col & \col }
+
+\begin{document}
+\section{Font Encoding LY1}
+\begin{tabular}{r|cccccccc}
+  & \oct{0} & \oct{1}  & \oct{2} & \oct{3}  & \oct{4} & \oct{5}  & \oct{6} & \oct{7} \\ \hline
+\oct{0}x \dorow \\
+\oct{1}x \dorow \\
+\oct{2}x \dorow \\
+\oct{3}x \dorow \\
+\oct{4}x \dorow \\
+\oct{5}x \dorow \\
+\oct{6}x \dorow \\
+\oct{7}x \dorow \\
+\oct{10}x \dorow \\
+\oct{11}x \dorow \\
+\oct{12}x \dorow \\
+\oct{13}x \dorow \\
+\oct{14}x \dorow \\
+\oct{15}x \dorow \\
+\oct{16}x \dorow \\
+\oct{17}x \dorow \\
+\oct{20}x \dorow \\
+\oct{21}x \dorow \\
+\oct{22}x \dorow \\
+\oct{23}x \dorow \\
+\oct{24}x \dorow \\
+\oct{25}x \dorow \\
+\oct{26}x \dorow \\
+\oct{27}x \dorow \\
+\oct{30}x \dorow \\
+\oct{31}x \dorow \\
+\oct{32}x \dorow \\
+\oct{33}x \dorow \\
+\oct{34}x \dorow \\
+\oct{35}x \dorow \\
+\oct{36}x \dorow \\
+\oct{37}x \dorow \\
+\end{tabular}
+\end{document}
