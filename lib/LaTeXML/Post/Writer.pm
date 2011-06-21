@@ -22,6 +22,7 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{format} = ($options{format}||'xml');
   $$self{omit_doctype}=1 if $options{omit_doctype};
+  $$self{is_html}=1 if $options{is_html};
   $self; }
 
 sub process {
@@ -34,7 +35,7 @@ sub process {
   $root->removeAttribute('xml:id')
     if ($root->getAttribute('xml:id')||'') eq  'TEMPORARY_DOCUMENT_ID';
 
-  my $string = ($$self{format} eq 'html' ? $xmldoc->toStringHTML : $xmldoc->toString(1));
+  my $string = ($$self{is_html} ? $xmldoc->toStringHTML : $xmldoc->toString(1));
 
   if(my $destination = $doc->getDestination){
     $self->Progress($doc,"Writing $destination");
