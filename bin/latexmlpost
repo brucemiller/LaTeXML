@@ -20,7 +20,7 @@ my $identity = "latexmlpost (LaTeXML version $LaTeXML::VERSION)";
 # undef => unspecified; 0 = NO, 1 = YES
 my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
 my($sourcedir,$destination)=(undef,undef);
-my($format,$urlstyle) = (undef,'server');
+my($format,$is_html,$urlstyle) = (undef,undef,'server');
 my($numbersections)=(1);
 my($stylesheet,$defaultcss,$icon,@css)=(undef,1);
 my($parallelmath,$mathimages,$mathimagemag)=(undef,undef,1.75);
@@ -54,7 +54,8 @@ GetOptions("verbose+"              =>\$verbosity,
 	   "destination=s"=>sub { $destination = $_[1];
 				  if(!defined $format){
 				    $format='xhtml' if $destination=~/\.xhtml$/;
-				    $format='html'  if $destination=~/\.html$/; }},
+				    $format='html'  if $destination=~/\.html$/; 
+				    $format='html5' if $destination=~/\.html5$/; }},
 	   "omitdoctype!"          =>\$omit_doctype,
 	   "numbersections!"       =>\$numbersections,
 	   # Some general XSLT/CSS options.
@@ -163,8 +164,21 @@ elsif($format eq 'html'){
   $mathimages = 1 unless defined $mathimages;
   $dographics = 1 unless defined $dographics;
   $picimages  = 1 unless defined $picimages;
+  $is_html = 1;
   if(!defined $stylesheet){
     $stylesheet = "LaTeXML-html.xsl";
+    unshift(@css,"core.css") if $defaultcss; }}
+elsif($format eq 'html5'){
+  Error("Default html5 stylesheet does not support --mathimages or parallel math markup (yet)")
+    if (!defined $stylesheet) && ($mathimages || $parallelmath || (scalar(@math_formats) > 1));
+  # We'll ONLY do pMML ???
+  unshift(@math_formats,'pmml') 
+    unless grep($_ eq 'pmml',@math_formats) || $removed_math_formats{pmml};
+  $svg        = 1 unless defined $svg;
+  $dographics = 1 unless defined $dographics;
+  $is_html = 1;
+  if(!defined $stylesheet){
+    $stylesheet = "LaTeXML-html5.xsl";
     unshift(@css,"core.css") if $defaultcss; }}
 elsif($format eq 'xhtml'){
   Error("Default xhtml stylesheet does not support --mathimages")
@@ -181,6 +195,7 @@ elsif($format eq 'xhtml'){
     if (!defined $stylesheet) && !$parallelmath && grep($_ eq 'om',@math_formats);
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
+  $is_html = 0;
   if(!defined $stylesheet){
     $stylesheet = "LaTeXML-xhtml.xsl";
     unshift(@css,"core.css") if $defaultcss; }}
@@ -319,7 +334,7 @@ if(!$prescan){
 						     },
 					 %OPTIONS)); }
 
-  push(@procs,LaTeXML::Post::Writer->new(format=>$format,omit_doctype=>$omit_doctype,%OPTIONS));
+  push(@procs,LaTeXML::Post::Writer->new(format=>$format,omit_doctype=>$omit_doctype,is_html=>$is_html,%OPTIONS));
 }
 
 # Figure how to define a Reader processor (?)
@@ -381,7 +396,7 @@ latexmlpost [options] I<xmlfile>
                          source TeX file.
  --validate, --novalidate Enables (the default) or disables
                          validation of the source xml.
- --format=html|xhtml|xml requests the output format.
+ --format=html|html5|xhtml|xml requests the output format.
  --destination=file      specifies output file (and directory).
  --omitdoctype           omits the Doctype declaration,
  --noomitdoctype         disables the omission (the default)
@@ -390,7 +405,7 @@ latexmlpost [options] I<xmlfile>
  --nonumbersections      disables the above
  --stylesheet=xslfile    requests the XSL transform using the
                          given xslfile as stylesheet.
- --css=cssfile           adds a css stylesheet to html/xhtml
+ --css=cssfile           adds a css stylesheet to html/html5/xhtml
                          (can be repeated)
  --nodefaultcss          disables the default css stylesheet
  --split                 requests splitting each document
@@ -428,7 +443,7 @@ latexmlpost [options] I<xmlfile>
  --nomathimages          disables the above
  --mathimagemagnification=mag specifies magnification factor
  --presentationmathml    converts math to Presentation MathML
-                         (default for xhtml format)
+                         (default for xhtml & html5 formats)
  --pmml                  alias for --presentationmathml
  --nopresentationmathml  disables the above
  --linelength=n          formats presentation mathml to a
@@ -497,16 +512,17 @@ Enables (or disables) the validation of the source XML document (the default).
 
 =over 4
 
-=item C<--format>=C<(html|xhtml|xml)>
+=item C<--format>=C<(html|html5|xhtml|xml)>
 
 Specifies the output format for post processing. 
 C<html> format converts the material to html and the mathematics to png images.
 C<xhtml> format converts to xhtml and uses presentation MathML (after attempting
-to parse the mathematics) for representing the math.  In both cases, any
+to parse the mathematics) for representing the math.  C<html5> similarly converts
+math to presentation MathML. In these cases, any
 graphics will be converted to web-friendly formats and/or copied to the
 destination directory.  By default, C<xml>, the output is left in LaTeXML's xml,
 but the math is parsed and converted to presentation MathML.
-For html and xhtml, a default stylesheet is provided, but see
+For html, html5 and xhtml, a default stylesheet is provided, but see
 the C<--stylesheet> option.
 
 =item C<--destination=>I<destination>
@@ -528,11 +544,11 @@ numbers in the formatted document and crossreference links.
 
 Requests the XSL transformation of the document using the given xslfile as stylesheet.
 If the stylesheet is omitted, a `standard' one appropriate for the
-format (html or xhtml) will be used.
+format (html, html5 or xhtml) will be used.
 
 =item C<--css>=I<cssfile>
 
-Adds I<cssfile> as a css stylesheet to be used in the transformed html/xhtml.
+Adds I<cssfile> as a css stylesheet to be used in the transformed html/html5/xhtml.
 Multiple stylesheets can be used; they are included in the html in the
 order given, following the default C<core.css>
 (but see C<--nodefaultcss>). Some stylesheets included in the distribution are
@@ -549,7 +565,7 @@ Disables the inclusion of the default C<core.css> stylesheet.
 =item C<--icon>=I<iconfile>
 
 Copies I<iconfile> to the destination directory and sets up the linkage in
-the transformed html/xhtml to use that as the "favicon".
+the transformed html/html5/xhtml to use that as the "favicon".
 
 =back
 
@@ -693,7 +709,7 @@ Default is 1.75.
 =item C<--presentationmathml>, C<--nopresentationmathml>
 
 Requests or disables conversion of math to Presentation MathML.
-Conversion is the default for xhtml format.
+Conversion is the default for xhtml and html5 formats.
 
 =item C<--linelength>I<=number>
 
