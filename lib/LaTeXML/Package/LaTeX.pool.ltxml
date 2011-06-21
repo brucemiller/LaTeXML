@@ -2588,7 +2588,7 @@ DefConstructor('\nocite Semiverbatim', '');
 Let(T_CS('\@@input'),T_CS('\input'));	# Save TeX's version.
 # LaTeX's \input is a bit different...
 DefMacroI('\input',undef,'\@ifnextchar\bgroup\@iinput\@@input');
-DefPrimitive('\@iinput {}', sub { InputFile($_[1]); });
+DefPrimitive('\@iinput {}', sub { InputFile(Expand($_[1])); });
 
 # Note that even excluded files SHOULD have the effects of their inclusion
 # simulated by having read the corresponding aux file;
