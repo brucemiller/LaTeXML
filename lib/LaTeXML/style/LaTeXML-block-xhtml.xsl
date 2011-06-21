@@ -196,7 +196,8 @@
 -->
 <!--    <xsl:param name="ncolumns" select="f:countcolumns(ltx:equation[1])"/>-->
     <xsl:param name="ncolumns" select="f:maxcolumns(ltx:equation | ltx:equationgroup/ltx:equation)"/>
-    <table class='{f:classes(.)}'><xsl:call-template name="add_id"/>
+    <table class='{f:classes(.)}'>
+      <!--<xsl:call-template name="add_id"/>-->
       <xsl:text>
       </xsl:text>
       <xsl:apply-templates select="." mode="aligned">
@@ -215,7 +216,8 @@
 Currently we assume the content will be placed in a single tr/td. -->
   <xsl:template name="equation-aligned">
     <xsl:param name="ncolumns" select="f:countcolumns(.)"/>
-    <table class='{f:classes(.)}'><xsl:call-template name="add_id"/>
+    <table class='{f:classes(.)}'>
+      <!--<xsl:call-template name="add_id"/>-->
       <xsl:text>
       </xsl:text>
       <xsl:apply-templates select="." mode="aligned">
@@ -248,7 +250,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 | ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equation[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
 | ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equation[ltx:constraint or ltx:metadata]
 				)"/>
-	  <td rowspan="{$nrows}" nowrap="yes" valign='middle' align="{$side}">
+	  <td rowspan="{$nrows}" class="{concat('middle ',$side)}">
 	    <xsl:apply-templates select="ancestor-or-self::ltx:equationgroup[position()=1]/@refnum"/>
 	  </td>
 	</xsl:if>						       <!--Else NOTHING (rowspan'd!) -->
@@ -267,7 +269,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 				[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
 				| ancestor-or-self::ltx:equation[position()=1][@refnum][ltx:constraint or ltx:metadata]
 				)"/>
-	  <td rowspan="{$nrows}" nowrap="yes" valign='middle' align="{$side}">
+	  <td rowspan="{$nrows}" class="{concat('middle ',$side)}">
 	    <xsl:apply-templates select="ancestor-or-self::ltx:equation[position()=1]/@refnum"/>
 	  </td>
 	</xsl:if>						       <!--Else NOTHING (rowspan'd!) -->
@@ -296,8 +298,8 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
   <!-- for intertext type entries -->
   <xsl:template match="ltx:p" mode="aligned" xml:space="preserve">
     <xsl:param name="ncolumns"/>
-    <tr valign="baseline">
-      <td align="left"
+    <tr class="baseline">
+      <td class="left"
 	  colspan="{1+$ncolumns+f:if($eqpos!='left',1,0)+f:if($eqpos!='right',1,0)}"
 	  style="white-space:normal;"
 	  ><xsl:apply-templates/></td>
@@ -320,14 +322,14 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
     <xsl:param name="ncolumns"/>
     <xsl:choose>
       <xsl:when test="ltx:MathFork/ltx:MathBranch[1]/ltx:tr" xml:space="preserve">
-	<tr valign="baseline" class='{f:classes(.)}'><xsl:call-template name="add_id"/>
+	<tr class="{concat('baseline ',f:classes(.))}"><xsl:call-template name="add_id"/>
 	  <xsl:call-template name="eq-left"/>
 	  <xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td"
 			       mode="aligned"/>
 	  <xsl:call-template name="eq-right"/>
 	</tr>
 	<xsl:for-each select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[position() &gt; 1]">
-	  <tr valign="baseline">
+	  <tr class="baseline">
 	    <xsl:call-template name="eq-left"/>
 	    <xsl:apply-templates select="ltx:td" mode="aligned"/>
 	    <xsl:call-template name="eq-right"/>
@@ -336,7 +338,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 	<!--</tbody>-->
       </xsl:when>
       <xsl:when test="ltx:MathFork/ltx:MathBranch[1]"  xml:space="preserve">
-	<tr valign="baseline"  class='{f:classes(.)}'><xsl:call-template name="add_id"/>
+	<tr class="{concat('baseline ',f:classes(.))}"><xsl:call-template name="add_id"/>
 	<xsl:call-template name="eq-left"/>
 	<xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/*"
 			     mode="aligned"/>
@@ -344,9 +346,9 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 	</tr>
       </xsl:when>
       <xsl:otherwise xml:space="preserve">
-	<tr valign="baseline"  class='{f:classes(.)}'><xsl:call-template name="add_id"/>
+	<tr class="{concat('baseline ',f:classes(.))}"><xsl:call-template name="add_id"/>
 	<xsl:call-template name="eq-left"/>
-	<td  nowrap="yes" align="{$eqpos}" colspan="{$ncolumns}"><xsl:apply-templates select="ltx:Math | ltx:text"/></td>
+	<td  class="{$eqpos}" colspan="{$ncolumns}"><xsl:apply-templates select="ltx:Math | ltx:text"/></td>
 	<xsl:call-template name="eq-right"/>
 	</tr>
       </xsl:otherwise>
@@ -358,7 +360,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 
   <!-- NOTE: This is pretty wacky.  Maybe we should move the text inside the equation? -->
   <xsl:template match="ltx:td" mode="aligned">
-    <td class="{f:classes(.)}" align="{@align}" nowrap="yes" colspan="{f:if(@colspan,@colspan,1)}">
+    <td class="{concat(@align,' ',f:classes(.))}" colspan="{f:if(@colspan,@colspan,1)}">
       <xsl:apply-templates/><xsl:if test="(self::* = ../ltx:td[position()=last()])
       and (parent::* = ../../ltx:tr[position()=last()])
       and ancestor::ltx:MathFork/following-sibling::*[position()=1][self::ltx:text]"
@@ -369,7 +371,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
   </xsl:template>
 
   <xsl:template match="ltx:Math" mode="aligned">
-    <td class="{f:classes(.)}" align="center" nowrap="yes">
+    <td class="{concat('center ',f:classes(.))}">
       <xsl:apply-templates select="."/><xsl:if test="
       ancestor::ltx:MathFork/following-sibling::*[position()=1][self::ltx:text]"
       ><!-- if we're followed by a text, insert the text here! 
@@ -381,7 +383,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
     <xsl:param name="ncolumns"/>
     <xsl:if test="ltx:constraint[not(@hidden='true')] or ltx:metadata">
       <tr>
-	<td align='right' colspan="{1+$ncolumns
+	<td class='right' colspan="{1+$ncolumns
 				   +f:if($eqpos != 'left',1,0)+f:if($eqpos != 'right',1,0)}">
 	  <xsl:apply-templates select="ltx:constraint[not(@hidden='true')]"/>
 	  <xsl:apply-templates select="ltx:metadata" mode="meta"/>
