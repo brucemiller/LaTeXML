@@ -32,12 +32,9 @@
   </xsl:template>
 
   <xsl:template name="add_id">
-    <!-- Is this safe now?
     <xsl:if test="@fragid">
-      <a name="{@fragid}"></a>
+      <xsl:attribute name="id"><xsl:value-of select="@fragid"/></xsl:attribute>
     </xsl:if>
-    -->
-    <xsl:attribute name="id"><xsl:value-of select="@fragid"/></xsl:attribute>
   </xsl:template>
 
   <xsl:template match="/">
