@@ -23,11 +23,11 @@
 
   <xsl:output method="xml"
 	      doctype-public = "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN"
-	      doctype-system = "http://www.w3.org/TR/MathML2/dtd/xhtml-math11-f.dtd"
+	      doctype-system = "http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd"
 	      media-type     = 'application/xhtml+xml'
 	      encoding       = 'utf-8'
 	      indent         = "yes"/>
-  
+<!--	      doctype-system = "http://www.w3.org/TR/MathML2/dtd/xhtml-math11-f.dtd"  -->
   <xsl:template name="metatype">
     <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8"/>
   </xsl:template>
