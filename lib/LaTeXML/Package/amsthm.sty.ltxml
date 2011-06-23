@@ -119,10 +119,24 @@ DefEnvironment('{@proof} OptionalUndigested',
 		 ($qed ? Digest($qed) :()); }
 	      );
 
-## ??  if(! LookupValue('2.09_COMPATIBILITY')){
-##  RawTeX('\newenvironment{proof}{\begin{@proof}}{\end{@proof}');
-Let(T_CS('\begin{proof}'),T_CS('\begin{@proof}'));
-Let(T_CS('\end{proof}'),T_CS('\end{@proof}'));
+
+if(LookupValue('2.09_COMPATIBILITY')){
+#  \def\tiny{\Tiny}
+#  \def\defaultfont{\normalfont}
+#  \def\rom{\textup}
+
+  # Strangely, we need to undefine these... ?
+  Let(T_CS('\proof'),T_CS('\relax'));
+  Let(T_CS('\endproof'),T_CS('\relax'));
+  # {pf} & {pf&} env's are already defined in ams_support
+}
+else {
+  Let(T_CS('\proof'),T_CS('\@proof'));
+  Let(T_CS('\endproof'),T_CS('\end@proof'));
+  Let(T_CS('\begin{proof}'),T_CS('\begin{@proof}'));
+  Let(T_CS('\end{proof}'),T_CS('\end{@proof}')); }
+
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # from older versions of amsthm.sty
 DefPrimitive('\theorembodyfont{}', sub { AssignValue('\thm@bodyfont' => $_[1]); });
