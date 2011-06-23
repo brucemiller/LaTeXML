@@ -27,6 +27,23 @@ use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
 no warnings 'redefine';
 
+# LaTeX has a very particular notion of "Undefined",
+# so let's get that squared away at the outset
+# Naturally, it uses \csname to check, which ends up DEFINING the possibly undefined macro as \relax.
+# So, basically, undefined is whether something is \relax or not!
+# And it presumably has the side-effect of defining it as \relax as well!
+sub isUndefined {
+  my($name)=@_;
+  my $cs = T_CS('\\'.ToString($name));
+  my $meaning = LookupMeaning($cs);
+  !(defined $meaning) || ($meaning eq $cs) || ($meaning eq LookupMeaning(T_CS('\relax'))); }
+
+
+DefMacro('\@ifundefined{}{}{}',sub {
+  my($gullet,$name,$if,$else)=@_;
+  (isUndefined($name) ? $if->unlist : $else->unlist); });
+
+
 # Apparently LaTeX does NOT define \magnification,
 # and babel uses that to determine whether we're runing LaTeX!!!
 Let(T_CS('\magnification'),T_CS('\@undefined'));
@@ -125,7 +142,10 @@ DefMacro('\begin{}',sub {
   my $name = $env && ToString($env);
   if(LookupDefinition(T_CS("\\begin{$name}"))){
     T_CS("\\begin{$name}"); } # Magic cs!
-  else {			# If not defined, let stomach handle it.
+  elsif(isUndefined($name)){
+    Error(":unexpected:$name Environment $name is undefined");
+    (T_CS('\begingroup')); }
+  else {
     (T_CS('\begingroup'),T_CS("\\$name")); }});
 
 DefMacro('\end{}',  sub { 
@@ -573,8 +593,6 @@ DefMacro('\@ifpackageloaded','\@ifl@aded\@pkgextension');
 DefMacro('\@ifclassloaded','\@ifl@aded\@clsextension');
 DefMacro('\@ifl@aded{}{}',sub {
   my($gullet,$ext,$name)=@_;
-my $file = ToString(Expand($name)).'.'.ToString(Expand($ext));
-print STDERR "Is $file loaded?\n";
   if(LookupValue(ToString(Expand($name)).'.'.ToString(Expand($ext)).'_loaded')){
     T_CS('\@firstoftwo'); }
   else {
@@ -3758,12 +3776,6 @@ DefMacro('\@ifstar {}{}', sub {
     LaTeXML::Expandable::substituteTokens($if); }
   else {
     (LaTeXML::Expandable::substituteTokens($else),$next); }});
-
-DefMacro('\@ifundefined{}{}{}',sub {
-  my($gullet,$name,$if,$else)=@_;
-  my $cs = T_CS('\\'.ToString($name));
-  my $meaning = LookupMeaning($cs);
-  (!(defined $meaning) || ($meaning eq $cs) ? $if->unlist : $else->unlist); });
 
 DefMacro('\IfFileExists{}{}{}', sub{
   my($gullet,$file,$if,$else)=@_;
