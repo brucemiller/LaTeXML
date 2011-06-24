@@ -380,23 +380,23 @@ sub generateRef_aux {
       my $frefnum  = $entry->getValue('frefnum') || $entry->getValue('refnum');
       if($frefnum){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'tag'},$frefnum]); }}
+	push(@stuff, ['ltx:text',{class=>'reftag'},$frefnum]); }}
     elsif($show =~ s/^refnum(\.?\s*)//){
       if(my $refnum = $entry->getValue('refnum')){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'tag'},$refnum]); }}
+	push(@stuff, ['ltx:text',{class=>'reftag'},$refnum]); }}
     elsif($show =~ s/^toctitle//){
       my $title = $self->fillInTitle($doc,$entry->getValue('toctitle')||$entry->getValue('title')
 				     || $entry->getValue('toccaption'));
       if($title){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'title'},$doc->trimChildNodes($title)]); }}
+	push(@stuff, ['ltx:text',{class=>'reftitle'},$doc->trimChildNodes($title)]); }}
 
     elsif($show =~ s/^title//){
       my $title= $self->fillInTitle($doc,$entry->getValue('title') || $entry->getValue('toccaption')); # !!!
       if($title){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'title'},$doc->trimChildNodes($title)]); }}
+	push(@stuff, ['ltx:text',{class=>'reftitle'},$doc->trimChildNodes($title)]); }}
     elsif($show =~ s/^(.)//){
       push(@stuff, $1); }}
   ($OK ? @stuff : ()); }
