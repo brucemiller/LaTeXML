@@ -82,13 +82,13 @@
 <xsl:template match="ltx:note">
   <span class="{concat(f:classes(.),' ',@role)}">
     <xsl:call-template name="note-mark"/>
-    <div class="{concat(local-name(.),'_content')}">
+    <span class="{concat(local-name(.),'_content')}">
       <xsl:call-template name="note-mark"/>
       <xsl:if test="not(@role = 'footnote')">
 	<span class="note-type"><xsl:value-of select="@role"/>: </span>
       </xsl:if>
       <xsl:apply-templates/>
-    </div>
+    </span>
   </span>
 </xsl:template>
 
