@@ -377,14 +377,14 @@ sub generateRef_aux {
   $show =~ s/typerefnum\s*title/title/; # Same thing NOW!!!
   while($show){
     if($show =~ s/^type(\.?\s*)refnum(\.?\s*)//){
-      my $frefnum  = $entry->getValue('frefnum') || $entry->getValue('refnum');
-      if($frefnum){
+      my @frefnum  = $doc->trimChildNodes($entry->getValue('frefnum') || $entry->getValue('refnum'));
+      if(@frefnum){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'reftag'},$frefnum]); }}
+	push(@stuff, ['ltx:text',{class=>'reftag'},@frefnum]); }}
     elsif($show =~ s/^refnum(\.?\s*)//){
-      if(my $refnum = $entry->getValue('refnum')){
+      if(my @refnum = $doc->trimChildNodes($entry->getValue('refnum'))){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'reftag'},$refnum]); }}
+	push(@stuff, ['ltx:text',{class=>'reftag'},@refnum]); }}
     elsif($show =~ s/^toctitle//){
       my $title = $self->fillInTitle($doc,$entry->getValue('toctitle')||$entry->getValue('title')
 				     || $entry->getValue('toccaption'));
