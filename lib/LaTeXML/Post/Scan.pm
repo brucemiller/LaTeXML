@@ -214,16 +214,18 @@ sub anchor_handler {
 sub ref_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   if(my $label = $node->getAttribute('labelref')){ # Only record refs of labels
-    my $entry = $$self{db}->register($label);
-    $entry->noteAssociation(referrers=>$parent_id); }}
+    if( ($node->getAttribute('class')||'') !~ /\bcitedby\b/){ # and don't count citedby referencees either
+      my $entry = $$self{db}->register($label);
+      $entry->noteAssociation(referrers=>$parent_id); }}}
 
 sub bibref_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  my $keys = $node->getAttribute('bibrefs');
-  foreach my $bibkey (split(',',$keys)){
-    if($bibkey){
-      my $entry = $$self{db}->register("BIBLABEL:$bibkey");
-      $entry->noteAssociation(referrers=>$parent_id); }}}
+  if( ($node->getAttribute('class')||'') !~ /\bcitedby\b/){
+    my $keys = $node->getAttribute('bibrefs');
+    foreach my $bibkey (split(',',$keys)){
+      if($bibkey){
+	my $entry = $$self{db}->register("BIBLABEL:$bibkey");
+	$entry->noteAssociation(referrers=>$parent_id); }}}}
 
 # Note that index entries get stored in simple form; just the terms & location.
 # They will be turned into a tree, sorted, possibly permuted, whatever, by MakeIndex.
