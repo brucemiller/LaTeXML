@@ -104,9 +104,12 @@ sub getBibEntries {
       if(my $referrers = $$self{db}->lookup($dbkey)->getValue('referrers')){
 	my $e;
 	foreach my $refr (keys %$referrers){
-	  if(($e=$$self{db}->lookup("ID:$refr")) && (($e->getValue('type')||'') ne 'ltx:bibitem')){
+	  my($rid,$e,$t) = ($refr,undef,undef);
+	  while($rid && ($e=$$self{db}->lookup("ID:$rid")) && (($t=($e->getValue('type')||'')) ne 'ltx:bibitem')){
+	    $rid = $e->getValue('parent'); }
+	  if($t ne 'ltx:bibitem'){
 	    $entries{$bibkey}{referrers}{$refr} = 1; }}
-	push(@queue,$bibkey); }
+	push(@queue,$bibkey) if keys %{$entries{$bibkey}{referrers}}; }
       elsif($citestar){		# If \cite{*} include all of them.
 	push(@queue,$bibkey); }}}
 
@@ -302,9 +305,9 @@ sub formatBibEntry {
     push(@blocks,['ltx:bibblock',{'xml:space'=>'preserve'},@x]) if @x;
   }
   # Add a Cited by block.
-  my @citedby=map(['ltx:ref',{idref=>$_}], sort keys %{$$entry{referrers}});
+  my @citedby=map(['ltx:ref',{idref=>$_, class=>'citedby'}], sort keys %{$$entry{referrers}});
   push(@citedby,['ltx:bibref',{bibrefs=>join(',',sort keys %{$$entry{bibreferrers}}),
-			       show=>'refnum'}])
+			       show=>'refnum', class=>'citedby'}])
     if $$entry{bibreferrers};
   push(@blocks,['ltx:bibblock',{class=>'bib-cited'},"Cited by: ",$doc->conjoin(', ',@citedby),'.']) if @citedby;
 
