@@ -29,7 +29,7 @@ our @EXPORT = (qw(&DefExpandable
 		  &convertLaTeXArgs),
 
 	       # Class, Package and File loading.
-	       qw(&RequirePackage &LoadClass &LoadPool &FindFile &InputFile
+	       qw(&InputFile &InputDefinitions &RequirePackage &LoadClass &LoadPool &FindFile
 		  &DeclareOption &PassOptions &ProcessOptions &ExecuteOptions
 		  &AddToMacro &AtBeginDocument &AtEndDocument),
 
@@ -954,48 +954,30 @@ sub RegisterDocumentNamespace {
 # Package, Class and File Loading
 #======================================================================
 
-# Find a file:
-# If the rawonly option is given, 
-#   it searches for the file.
-# If $ext is given or $file ends with a known extension
-# (eg. .sty for packages, .cls for classes, etc):
-#    the file is sought first as $file.$ext.ltxml then as $file.$ext
-# Otherwise, the file is sought in a more TeX-like fashion:
-#    the file is sought as $file.tex.ltxml, $file.tex, $file.ltxml or $file.
-# [ie. if raw=>1, we do _not_ loo for .ltxml forms]
-# If raw, we also search in /usr/share/texmf/tex/latex/base
-# but this should be something more general; eg whatever
-#   kpsewhich --expand-var='$TEXINPUTS'
-# returns.... or?
-
+# Does this test even make sense (or can it?)
+# Shouldn't this more likely be dependent on the context?
+# Ah, but what about \InputFileIfExists type stuff...
+# should we assume a raw type can be processed if being read from within a raw type????
+# yeah, that sounds about right...
 sub pathname_is_raw {
   my($pathname)=@_;
   ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/); }
 
-our $findfile_options = {rawonly=>1, raw=>1, type=>1};
+our $findfile_options = {type=>1, notex=>1, noltxml=>1};
 sub FindFile {
   my ($file,%options)=@_;
   $file = ToString($file);
+  if($options{raw}){
+    delete $options{raw};
+    Warn(":obsolete:raw FindFile $file option raw is obsolete; it is not needed"); }
   CheckOptions("FindFile ($file)",$findfile_options,%options);
   $file .= ".$options{type}" if $options{type};
-  my $israw = pathname_is_raw($file); # pathname is a known (and raw) type.
   my $paths    = LookupValue('SEARCHPATHS');
-#  my $rawpaths = ($israw ? [@$paths,'/usr/share/texmf/tex/latex/base'] : $paths);
-  my $rawpaths = $paths;
-  if($options{rawonly}){
-    pathname_find_x("$file",paths=>$rawpaths)
-      || pathname_kpathsearch($file); }
-  elsif($options{type} || $israw){ # explicit or known extensions
-    pathname_find_x("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
-      || pathname_find_x("$file",paths=>$rawpaths)
-	|| pathname_kpathsearch($file); }
-  else {			# Unknown extension, maybe .tex, maybe none?
-    pathname_find_x("$file.tex.ltxml",paths=>$paths,installation_subdir=>'Package')
-      || pathname_find_x("$file.tex",paths=>$rawpaths)
-	|| pathname_kpathsearch("$file.tex")
-	  || pathname_find_x("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
-	    || pathname_find_x("$file",paths=>$rawpaths)
-	      || pathname_kpathsearch($file); }}
+  (        !$options{noltxml} && !$options{type} && pathname_find_x("$file.tex.ltxml",paths=>$paths,installation_subdir=>'Package'))
+    || (   !$options{notex}   && !$options{type} && (pathname_find_x("$file.tex",paths=>$paths) || pathname_kpathsearch("$file.tex")))
+      || ( !$options{noltxml}                    && pathname_find_x("$file.ltxml",paths=>$paths,installation_subdir=>'Package'))
+	||(!$options{notex}                      && (pathname_find_x("$file",paths=>$paths) || pathname_kpathsearch($file)));
+ }
 
 sub pathname_kpathsearch {
   my($path)=@_;
@@ -1040,6 +1022,96 @@ sub InputFile {
     Error(":missing_file:$request Cannot find file $request in paths "
 	  .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   return; }
+
+# InputFile should end up something like this...
+# sub InputFile {
+#   my($pathname)=@_;
+#   my($dir,$name,$type)=pathname_split($pathname);
+#   if($type eq 'ltxml'){
+#     loadLTXML($pathname); }		# Perl module.
+#    elsif(($type ne 'tex') && ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/)){ # (attempt to) interpret a style file.  
+#      loadTeXDefinitions($pathname); }
+#   else {
+#     loadTeXContent($pathname); }}
+
+# LOW-LEVEL input processing
+#  if($type eq 'ltxml'){		# Perl module.
+# Do we have the option of file_contents?
+sub loadLTXML {
+  my($pathname)=@_;
+  my($dir,$name,$type)=pathname_split($pathname);
+  return if LookupValue($name.'.'.$type.'_loaded');
+  AssignValue($name.'.'.$type.'_loaded'=>1,'global');
+  AssignValue($name.'_loaded'=>1,'global');
+  my $stomach = $STATE->getStomach;
+  my $gullet = $stomach->getGullet;
+
+  $gullet->openMouth(LaTeXML::PerlMouth->new($pathname),0);
+  # ARE we going to assume that anything loaded by the ltxml is going to be definitions?
+  # and so will be forced to read through, immediately?
+  # Do we have (or NEED?) a way to enforce this?
+  my $pmouth = $$gullet{mouth};
+  do $pathname; 
+  Fatal(":perl:die File $pathname had an error:\n  $@") if $@; 
+  $gullet->closeMouth if $pmouth eq $$gullet{mouth}; # Close immediately, unless recursive input
+}
+
+#   elsif(($type ne 'tex') && ($path =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/)){ # (attempt to) interpret a style file.
+# Note: the CALLER will decide if we're going to try to read raw tex.
+sub loadTeXDefinitions {
+  my($pathname)=@_;
+  my($dir,$name,$type)=pathname_split($pathname);
+  return if LookupValue($name.'.'.$type.'_loaded');
+  AssignValue($name.'.'.$type.'_loaded'=>1,'global');
+
+  my $stomach = $STATE->getStomach;
+  my $gullet = $stomach->getGullet;
+  if(my $filecontents = LookupValue($pathname.'_contents')){
+    $gullet->openMouth(LaTeXML::StyleStringMouth->new($pathname,$filecontents), 0);  }
+  else {
+    $gullet->openMouth(LaTeXML::StyleMouth->new($pathname), 0);  }
+  # And NOW process the input!!!!
+
+  # Here's one variant (from babel)
+#  while($gullet->getMouth->hasMoreInput){
+#    $stomach->digestNextBody; }
+
+  # Here's another (listings)
+  # Looks safer:
+  #  (1) It avoids comment clutter (we COULD check that no boxes are generated?)
+  #  (2) close the mouth (safely?) after we're done.
+###  my $cmts = LookupValue('INCLUDE_COMMENTS');
+###  AssignValue('INCLUDE_COMMENTS'=>0);
+
+  my $mouth = $gullet->getMouth;
+  my $token;
+  while($token = $gullet->readXToken(0)){
+    next if $token->equals(T_SPACE);
+    $stomach->invokeToken($token); }
+  $gullet->closeMouth if $mouth eq $gullet->getMouth; # may already close from \endinput!
+
+###  AssignValue('INCLUDE_COMMENTS'=>$cmts);
+
+}
+
+# This is a stand-in for code that needs to be evolved.
+sub loadTeXContent {
+  my($pathname)=@_;
+  # If there is a file-specific declaration file (name.latexml), load it first!
+  my $file = $pathname;
+  $file =~ s/\.tex//;
+  local $LaTeXML::INHIBIT_LOAD=0; # What's all this about?????
+###  $self->inputConfigfile($file); #  Load configuration for this source, if any.
+  # NOW load the input --- UNLESS INHIBITTED!!!
+  if(!$LaTeXML::INHIBIT_LOAD){
+    if(my $filecontents = LookupValue($pathname.'_contents')){
+      $STATE->getStomach->getGullet->openMouth(LaTeXML::Mouth->new($filecontents) ,0); }
+    else {
+      $STATE->getStomach->getGullet->openMouth(LaTeXML::FileMouth->new($pathname) ,0); }}
+}
+
+#======================================================================
+# Option Handling for Packages and Classes
 
 # Declare an option for the current package or class
 # If $option is undef, it is the default.
@@ -1089,22 +1161,18 @@ sub ProcessOptions {
       DefMacroI('\CurrentOption',undef,$option);
       my $cs = T_CS('\ds@'.$option);
       if(LookupDefinition($cs)){
-#	print STDERR "\nUsing option $option to $name.$ext\n";
 	Digest($cs); }
       elsif($defaultcs){
-#	print STDERR "\nUsing option $option to $name.$ext with default handler\n";
 	Digest($defaultcs); }}}
   else {			# Execute options in declared order (eg. \ProcessOptions)
     foreach my $option (@declaredoptions){
       if(grep($option eq $_,@curroptions)){
 	@curroptions = grep($option ne $_, @curroptions); # Remove it, since it's been handled.
-#	 print STDERR "\nUsing option $option  to $name.$ext\n";
 	DefMacroI('\CurrentOption',undef,$option);
 	Digest(T_CS('\ds@'.$option)); }}
     # Now handle any remaining options (eg. default options), in the given order.
     foreach my $option (@curroptions){
       DefMacroI('\CurrentOption',undef,$option);
-#      print STDERR "\nUsing option $option to $name.$ext with default handler\n";
       Digest($defaultcs); }}
   # Now, undefine the handlers?
   foreach my $option (@declaredoptions){
@@ -1141,7 +1209,70 @@ sub AddToMacro {
   else {
     DefMacroI($cs,undef,Tokens($defn->getExpansion->unlist,map($_->unlist,@tokens))); }}
 
-our $require_options = {options=>1, withoptions=>1, type=>1, as_class=>1, raw=>1, rawonly=>1, after=>1};
+#======================================================================
+our $inputdefinitions_options={options=>1, withoptions=>1, handleoptions=>1,
+			       type=>1, as_class=>1, noltxml=>1, notex=>1, after=>1};
+#   options=>[options...]
+#   withoptions=>boolean : pass options from calling class/package
+#   after=>code or tokens or string as $name.$type-hook macro. (executed after the package is loaded)
+# Returns the path that was loaded, or undef, if none found.
+
+# NOTE: there's NO warning message if it's not found!?!?!?!?!?
+# Maybe this is not the right level?
+# Maybe this should be RequirePackage (with all the handleoptions garbage)
+# and a simpler InputDefinitions should be used for the other types of \input ???
+sub InputDefinitions {
+  my($name,%options)=@_;
+  $name = ToString($name) if ref $name;
+  $name =~ s/^\s*//;  $name =~ s/\s*$//;
+  CheckOptions("InputDefinitions ($name)",$inputdefinitions_options,%options);
+
+  my $prevname = $options{handleoptions} && LookupDefinition(T_CS('\@currname')) && ToString(Digest(T_CS('\@currname')));
+  my $prevext  = $options{handleoptions} && LookupDefinition(T_CS('\@currext')) && ToString(Digest(T_CS('\@currext')));
+
+  # This file will be treated somewhat as if it were a class
+  # IF as_class is true
+  # OR if it is loaded by such a class, and has withoptions true!!! (yikes)
+  $options{as_class} = 1 if  $options{handleoptions} && $options{withoptions}
+    && grep($prevname eq $_, @{LookupValue('@masquerading@as@class')||[]});
+
+  $options{raw} = 1 if $options{noltxml}; # so it will be read as raw by Gullet.!L!
+  my $astype = ($options{as_class} ? 'cls' : $options{type});
+
+  if(my $file = FindFile($name, type=>$options{type}, notex=>$options{notex}, noltxml=>$options{noltxml})){
+    if($options{handleoptions}){
+      # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
+      if($options{withoptions} && $prevname){
+	PassOptions($name,$astype,@{LookupValue('opt@'.$prevname.".".$prevext)}); }
+      DefMacroI('\@currname',undef,Tokens(Explode($name)));
+      DefMacroI('\@currext',undef,Tokens(Explode($astype)));
+      # reset options (Note reset & pass were in opposite order in LoadClass ????)
+      resetOptions();
+      PassOptions($name,$astype,@{$options{options} || []}); # passed explicit options.
+      # Note which packages are pretending to be classes.
+      PushValue('@masquerading@as@class',$name) if $options{as_class};
+      DefMacroI(T_CS("\\$name.$astype-hook"),undef,$options{after} || '');
+    }
+
+###    $options{raw}=1;		# since we're taking the decision away from gullet!
+###    my $gullet = $STATE->getStomach->getGullet;
+###    $gullet->input($file,undef,%options); 
+
+
+    my($fdir,$fname,$ftype)=pathname_split($file);
+    if($ftype eq 'ltxml'){
+      loadLTXML($file); }		# Perl module.
+    else {
+      loadTeXDefinitions($file); }
+
+    if($options{handleoptions}){
+      Digest(T_CS("\\$name.$astype-hook"));
+      DefMacroI('\@currname',undef,Tokens(Explode($prevname))) if $prevname;
+      DefMacroI('\@currext',undef,Tokens(Explode($prevext))) if $prevext;
+      resetOptions(); }  # And reset options afterwards, too.
+    $file; }}
+
+our $require_options = {options=>1, withoptions=>1, type=>1, as_class=>1, noltxml=>1, notex=>1, raw=>1, after=>1};
 # This (& FindFile) needs to evolve a bit to support reading raw .sty (.def, etc) files from
 # the standard texmf directories.  Maybe even use kpsewhich itself (INSTEAD of pathname_find ???)
 # Another potentially useful option might be that if we are reading a raw file,
@@ -1149,86 +1280,43 @@ our $require_options = {options=>1, withoptions=>1, type=>1, as_class=>1, raw=>1
 sub RequirePackage {
   my($package,%options)=@_;
   $package = ToString($package) if ref $package;
-  $package =~ s/^\s*//;  $package =~ s/\s*$//;
+  if($options{raw}){
+    delete $options{raw}; $options{notex}=0;
+    Warn(":obsolete:raw RequirePackage $package option raw is obsolete; it is not needed"); }
   CheckOptions("RequirePackage ($package)",$require_options,%options);
-  my $prevname = LookupDefinition(T_CS('\@currname')) && ToString(Digest(T_CS('\@currname')));
-  my $prevext  = LookupDefinition(T_CS('\@currext')) && ToString(Digest(T_CS('\@currext')));
-
-  $options{type} = 'sty' unless $options{type};
-  # This package will be treated somewhat as if it were a class if as_class is true
-  # OR if it is loaded by such a class, and has withoptions true!!!
-  $options{as_class} = 1 if  $options{withoptions}
-    && grep($prevname eq $_, @{LookupValue('@masquerading@as@class')||[]});
-  $options{raw} = 1 if $options{rawonly}; # so it will be read as raw by Gullet.
-  my $filetype = $options{type};
-  my $type = ($options{as_class} ? 'cls' : $options{type});
-  if(my $file = FindFile($package, type=>$filetype, rawonly=>$options{rawonly})){
-    # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
-    if($options{withoptions} && $prevname){
-      PassOptions($package,$type,@{LookupValue('opt@'.$prevname.".".$prevext)}); }
-    DefMacroI('\@currname',undef,Tokens(Explode($package)));
-    DefMacroI('\@currext',undef,Tokens(Explode($type)));
-    # reset options
-    resetOptions();
-    PassOptions($package,$type,@{$options{options} || []});
-
-    # Note which packages are pretending to be classes.
-    PushValue('@masquerading@as@class',$package) if $options{as_class};
-    DefMacroI(T_CS("\\$package.$type-hook"),undef,$options{after} || '');
-    my $gullet = $STATE->getStomach->getGullet;
-    $gullet->input($file,undef,%options); 
-    Digest(T_CS("\\$package.$type-hook"));
-    DefMacroI('\@currname',undef,Tokens(Explode($prevname))) if $prevname;
-    DefMacroI('\@currext',undef,Tokens(Explode($prevext))) if $prevext;
-    resetOptions(); } # And reset options afterwards, too.
+  # We'll usually disallow raw TeX, unless the option explicitly given, or globally set. 
+  $options{notex} = 1 if !defined $options{notex}  && !LookupValue('INCLUDE_STYLES');
+  if(InputDefinitions($package,type=>$options{type} || 'sty', handleoptions=>1,%options) ){}
   else {
-    $STATE->noteStatus(missing=>$package);
+    $STATE->noteStatus(missing=>$package.'.'.($options{type} || 'sty'));
     Error(":missing_file:$package Cannot find package $package"
-	  .($type eq 'sty' ? '' : "(w/type=$type)")
-	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
+	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]"); }
   return; }
 
 our $loadclass_options = {options=>1, withoptions=>1, after=>1};
 sub LoadClass {
   my($class,%options)=@_;
   $class = ToString($class) if ref $class;
-  $class =~ s/^\s*//;  $class =~ s/\s*$//;
   CheckOptions("LoadClass ($class)",$loadclass_options,%options);
-  $options{type} = 'cls' unless $options{type};
-  my $type = $options{type};
-  my $prevname = LookupDefinition(T_CS('\@currname')) && ToString(Digest(T_CS('\@currname')));
-  my $prevext  = LookupDefinition(T_CS('\@currext')) && ToString(Digest(T_CS('\@currext')));
-  # For \LoadClassWithOptions, pass the options from the outer class to the inner one.
-  if($options{withoptions} && $prevname){
-    PassOptions($class,$type,@{LookupValue('opt@'.$prevname.".".$prevext)}); }
-  DefMacroI('\@currname',undef,Tokens(Explode($class)));
-  DefMacroI('\@currext',undef,Tokens(Explode($type)));
-  PassOptions($class,$type,@{$options{options} || []});
-  # What about "global options" ??????
-  resetOptions();
-  my $classfile = FindFile($class, type=>$type, raw=>$options{raw});
-  if(!$classfile || ($classfile =~ /\.\Q$type\E$/)){
-    Warn(":missing_file:$class.cls.ltxml No LaTeXML implementation of class $class found, using article");
-    if(!($classfile = FindFile("article.cls"))){
-      Fatal(":missing_file:article.cls.ltxml Installation error: Cannot find article implementation!"); }}
-  DefMacroI(T_CS("\\$class.$type-hook"),undef,$options{after} || '');
-  my $gullet = $STATE->getStomach->getGullet;
-##  $gullet->openMouth(Tokens(T_CS("\\$class.$type-hook")));
-  $gullet->input($classfile,undef,%options);
-  Digest(T_CS("\\$class.$type-hook"));
-  DefMacroI('\@currname',undef,Tokens(Explode($prevname))) if $prevname;
-  DefMacroI('\@currext',undef,Tokens(Explode($prevext))) if $prevext;
-  resetOptions();  # And reset options afterwards, too.
+  if(InputDefinitions($class,type=>'cls', notex=>1, handleoptions=>1, %options)){}
+  else {
+    $STATE->noteStatus(missing=>$class.'.cls');
+    Warn(":missing_file:$class.cls.ltxml  No LaTeXML implementation of $class.cls found, using article"
+	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]");
+    if(InputDefinitions('article',type=>'cls',%options)){}
+    else {
+      Fatal(":missing_file:article.cls.ltxml Installation error Cannot find either article.cls.ltxml!"
+	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]"); }}
   return; }
 
 sub LoadPool {
-  my($mode)=@_;
-  $mode = ToString($mode) if ref $mode;
-  $mode =~ s/^\s*//;  $mode =~ s/\s*$//;
-  if(my $poolfile = FindFile($mode.".pool")){
-    $STATE->getStomach->getGullet->input($poolfile); }
+  my($pool)=@_;
+  $pool = ToString($pool) if ref $pool;
+  if(InputDefinitions($pool,type=>'pool', notex=>1)){}
   else {
-    Fatal(":missing_file:$mode.pool.ltxml Installation error: Cannot find $mode pool module!"); }}
+    Fatal(":missing_file:$pool.pool.ltxml Installation error: Cannot find $pool.pool module!"
+	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]"); }
+  return; }
 
 sub AtBeginDocument {
   my(@operations)=@_;
@@ -1960,10 +2048,11 @@ The options are:
 
 =item C<< options=>[...] >> specifies a list of package options.
 
-=item C<< raw=>1 >> specifies that it is allowable to try to read a raw TeX style file.
+=item C<< noltxml=>1 >> inhibits searching for the LaTeXML binding for the file
+(ie. C<$name.$type.ltxml>
 
-=item C<< rawonly=>1 >> will restrict the search so that it will only look for raw TeX files
-(not perl bindings with the C<.ltxml> extension).
+=item C<< notex=>1 >> inhibits searching for raw tex version of the file.
+That is, it will I<only> search for the LaTeXML binding.
 
 =back
 
@@ -1988,14 +2077,14 @@ The options are:
 
 =over
 
-=item C<< type=>type >> specifies the file type (default C<sty>.
+=item C<< type=>type >> specifies the file type.  If not set, it will search for
+both C<$name.tex> and C<$name>.
 
-=item C<< raw=>1 >> specifies that it is allowable to try to read a raw TeX style file;
-This is typically just passed through from other commands, like C<RequirePackage>, it
-doesn't actually affect which files are found.
+=item C<< noltxml=>1 >> inhibits searching for the LaTeXML binding for the file
+(ie. C<$name.$type.ltxml>
 
-=item C<< rawonly=>1 >> restricts search to exactly the file specified; it does not search
-for files with an additional C<.ltxml> extension.
+=item C<< notex=>1 >> inhibits searching for raw tex version of the file.
+That is, it will I<only> search for the LaTeXML binding.
 
 =back
 
