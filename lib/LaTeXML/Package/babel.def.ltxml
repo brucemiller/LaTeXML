@@ -24,21 +24,12 @@ no warnings 'redefine';
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # (what about language attribute, or dialect, or... )
-PushValue(SEARCHPATHS=>'/usr/share/texmf/tex/generic/babel');
+#PushValue(SEARCHPATHS=>'/usr/share/texmf/tex/generic/babel');
 
 sub loadBabelLDF {
   my($language)=@_;
-#  if(my $path = pathname_find("$language.ldf",
-#			      paths=>[@{LookupValue('SEARCHPATHS')},'/usr/share/texmf/tex/generic/babel'])){
-  if(my $path = FindFile($language,type=>'ldf',raw=>1)){
-    my $stomach = $STATE->getStomach;
-    my $gullet = $stomach->getGullet;
-    $gullet->input($path,[],raw=>1);
-    while($gullet->getMouth->hasMoreInput){
-      $stomach->digestNextBody; }
-  }
-  else {
-    Warn(":unexpected:$language Couldn't find babel language definition $language.ldf"); }
+  InputDefinitions($language,type=>'ldf')
+    || Warn(":unexpected:$language Couldn't find babel language definition $language.ldf");
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

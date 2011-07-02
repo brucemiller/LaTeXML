@@ -20,7 +20,9 @@ use LaTeXML::Package;
 # Ogonek, defined in cp852.def as ugly 
 DefAccent('\k',"\x{0328}","\x{02DB}");
 AssignValue('cp852.def_loaded'=>undef,'global');
-RequirePackage('cp852',type=>'def',rawonly=>1);
+# Now read in the REAL cp852
+InputDefinitions('cp852',type=>'def',noltxml=>1)
+  || Warn(":missing:cp852.def Couldn't find cp852 input encoding definition cp852.def");
 
 #**********************************************************************
 

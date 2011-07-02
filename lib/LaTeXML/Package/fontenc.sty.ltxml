@@ -95,7 +95,10 @@ ProcessOptions();
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub loadFontEncoding {
   my $encoding = ToString(Digest(T_CS('\CurrentOption')));
-  RequirePackage(lc($encoding)."enc",type=>'def', raw=>1); # Read TeX's <encoding>enc.def file (raw!!!)
+  my $encfile = lc($encoding)."enc";
+  InputDefinitions($encfile,type=>'def')
+    || Warn(":missing:$encfile.def Couldn't find $encfile input encoding definition $encfile.def");
+
   if(LoadFontMap($encoding)){
     MergeFont(encoding=>$encoding); }
 }

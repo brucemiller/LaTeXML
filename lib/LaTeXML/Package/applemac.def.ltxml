@@ -20,7 +20,9 @@ use LaTeXML::Package;
 # Ogonek, defined in t1enc.def as ugly ooalign
 DefPrimitiveI('\textapplelogo',undef,"[applelogo]");
 AssignValue('applemac.def_loaded'=>undef,'global');
-RequirePackage('applemac',type=>'def',rawonly=>1);
+# Now read in the REAL applemac
+InputDefinitions('applemac',type=>'def',noltxml=>1)
+  || Warn(":missing:applemac.def Couldn't find applemac input encoding definition applemac.def");
 
 #**********************************************************************
 

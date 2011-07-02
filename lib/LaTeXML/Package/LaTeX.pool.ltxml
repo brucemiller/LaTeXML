@@ -2616,12 +2616,7 @@ DefPrimitive('\include{}',sub {
   $path = ToString($path);
   my $table = LookupValue('including@only');
   if(!$table || $$table{$path}){
-    if(my $file = FindFile($path)){
-      $stomach->getGullet->input($file); }
-    else {
-      $STATE->noteStatus(missing=>$path);
-      Error(":missing_file:$path Cannot find file $path in paths "
-	    .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }}
+    InputFile($path); }
   return; });
 
 # [note, this will load name.tex, if it exists, else name]
@@ -3784,7 +3779,7 @@ DefMacro('\IfFileExists{}{}{}', sub{
 DefMacro('\InputIfFileExists{}{}{}', sub{
   my($gullet,$file,$if,$else)=@_;
   if(FindFile($file)){
-    $gullet->input($file);
+    InputFile($file);
     $if->unlist; }
   else { $else->unlist; }});
 

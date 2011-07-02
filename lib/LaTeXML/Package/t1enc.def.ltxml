@@ -20,7 +20,9 @@ use LaTeXML::Package;
 # Ogonek, defined in t1enc.def as ugly ooalign
 DefAccent('\k',"\x{0328}","\x{02DB}");
 AssignValue('t1enc.def_loaded'=>undef,'global');
-RequirePackage('t1enc',type=>'def',rawonly=>1);
+# Now read in the REAL t1enc.
+InputDefinitions('t1enc',type=>'def',noltxml=>1)
+    || Warn(":missing:t1enc.def Couldn't find t1enc font encoding definition t1enc.def");
 
 #**********************************************************************
 

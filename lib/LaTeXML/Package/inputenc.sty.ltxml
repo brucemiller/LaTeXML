@@ -52,7 +52,8 @@ sub SetInputEncoding {
   AssignValue(PERL_INPUT_ENCODING=>undef); # Disable the perl-level decoding, if any.
 
   # Then load TeX's input encoding definitions.
-  RequirePackage($encoding,type=>'def', raw=>1);
+  InputDefinitions($encoding,type=>'def')
+    || Warn(":missing:$encoding.def Couldn't find $encoding input encoding definition $encoding.def");
   AssignValue(INPUT_ENCODING=>$encoding);
   return; }
 
