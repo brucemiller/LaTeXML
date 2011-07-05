@@ -4444,7 +4444,7 @@ sub addNewChildLate {
 # Perhaps this really should be done as a daemon that runs when the current node is closed?
 # Or perhaps even better, it should temporarily modify the Model such that the current node
 # only accepts block level markup; that would automagically elevate stuff to <p> when needed!(?)
-our $INLINE_TAGS = "ltx:text|ltx:emph|ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|ltx:cite|ltx:bibref|ltx:Math";
+our $INLINE_TAGS = "ltx:text|ltx:emph|ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|ltx:cite|ltx:bibref|ltx:Math|ltx:graphics";
 sub insertBlock {
   my($document,$body)=@_;
   # Make sure we're starting the current insertion at block level, bu closing any open p (is ltx:p enough?)
