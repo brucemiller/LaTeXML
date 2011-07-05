@@ -3585,15 +3585,16 @@ DefMacroI('\@ehc', undef, "I can't help");
 DefMacro('\@gobble{}',Tokens());
 
 sub make_message {
-  my($cs,@args)=@_;
-  ":latex ".join("\n",map(ToString(Expand($_)),@args)); }
+  my(@args)=@_;
+#  ":latex ".join("\n",map(ToString(Expand($_)),@args)); }
+  ":latex ".join("\n",map(ToString($_),@args)); }
 
 DefPrimitive('\@onlypreamble{}',\&onlyPreamble); # Don't bother enforcing this.
 
 DefMacro('\GenericError{}{}{}{}', sub{ Fatal(make_message($_[2],$_[3],$_[4])); });
-DefMacro('\GenericWarning{}{}',   sub{ Warn(make_message($_[2])); });
+DefMacro('\GenericWarning{}{}',   sub{ Warn(make_message($_[2],$_[3])); });
 DefMacro('\GenericInfo{}{}',  sub{
-  print STDERR "Info: ".make_message($_[2])."\n" unless LookupValue('VERBOSITY') < 0;
+  print STDERR "Info".make_message($_[1],$_[2])."\n" unless LookupValue('VERBOSITY') < 0;
   return; });
 
 Let(T_CS('\MessageBreak'),T_CS('\relax'));
