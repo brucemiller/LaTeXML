@@ -348,13 +348,18 @@ sub readXKeyword {
 # In list context, also returns the found delimiter.
 sub readUntil {
   my($self,@delims)=@_;
-  my ($found,@toks)=();
+  my ($n,$found,@toks)=(0);
   while(!defined ($found=$self->readMatch(@delims))){
     my $tok=$self->readToken(); # Copy next token to args
     return undef unless defined $tok;
     push(@toks,$tok);
+    $n++;
     if($tok->getCatcode == CC_BEGIN){ # And if it's a BEGIN, copy till balanced END
       push(@toks,$self->readBalanced->unlist,T_END); }}
+  # Notice that IFF the arg looks like {balanced}, the outer braces are stripped
+  # so that delimited arguments behave more similarly to simple, undelimited arguments.
+  if(($n==1) && ($toks[0]->getCatcode == CC_BEGIN)){
+      shift(@toks); pop(@toks); }
   (wantarray ? (Tokens(@toks),$found) : Tokens(@toks)); }
 
 #**********************************************************************
