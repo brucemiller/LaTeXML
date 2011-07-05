@@ -1155,7 +1155,8 @@ sub lstDoNumber {
        || ((($LaTeXML::linenum-1) % lstGetNumber('stepnumber')) == 0))
       && (lstGetBoolean('numberblanklines') || !$isempty) ){
     AssignValue('LISTINGS_NEEDS_NUMBER'=>0);
-    Tokens(T_BEGIN,lstGetTokens('numberstyle')->unlist,T_CS('\thelstnumber'),T_END); }
+    # extra braces since optional args get one set stripped.
+    Tokens(T_BEGIN,T_BEGIN,lstGetTokens('numberstyle')->unlist,T_CS('\thelstnumber'),T_END,T_END); }
  else {
    T_SPACE; }}
 #    (T_BEGIN,lstGetTokens('numberstyle')->unlist,T_CS("~"),T_END,T_CS("~")); }}
