@@ -3586,8 +3586,11 @@ DefMacro('\@gobble{}',Tokens());
 
 sub make_message {
   my(@args)=@_;
-#  ":latex ".join("\n",map(ToString(Expand($_)),@args)); }
-  ":latex ".join("\n",map(ToString($_),@args)); }
+  $STATE->getStomach->bgroup;
+  Let(T_CS('\protect'),T_CS('\string'));
+  my $message = ":latex ".join("\n",map(ToString(Expand($_)),@args));
+  $STATE->getStomach->egroup;
+  $message; }
 
 DefPrimitive('\@onlypreamble{}',\&onlyPreamble); # Don't bother enforcing this.
 
