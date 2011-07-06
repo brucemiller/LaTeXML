@@ -884,8 +884,12 @@ DefMathML('Token:SUBSCRIPTOP:?',   undef, sub{['m:csymbol',{cd=>'ambiguous'},'su
 DefMathML('Apply:POSTFIX:?', sub {
   ['m:mrow',{},pmml($_[1]),pmml($_[0])]; });
 
-DefMathML('Apply:?:square-root', sub { ['m:msqrt',{},pmml($_[1])]; });
-DefMathML('Apply:?:root', sub { ['m:mroot',{},pmml($_[2]),pmml_smaller($_[1])]; });
+DefMathML('Apply:?:square-root',
+	  sub { ['m:msqrt',{},pmml($_[1])]; },
+	  sub { ['m:apply',{},['m:root', {}],cmml($_[1])];});
+DefMathML('Apply:?:root', 
+	  sub { ['m:mroot',{},pmml($_[2]),pmml_smaller($_[1])]; },
+	  sub { ['m:apply',{},['m:root', {}],['m:degree',{},cmml($_[1])], cmml($_[2]) ]; } );
 
 # Note MML's distinction between quotient and divide: quotient yeilds an integer
 DefMathML("Token:?:quotient",  undef, sub{['m:quotient'];});
@@ -899,7 +903,6 @@ DefMathML("Token:?:plus",      undef, sub{['m:plus'];});
 DefMathML("Token:?:power",     undef, sub{['m:power'];});
 DefMathML("Token:?:remainder", undef, sub{['m:rem'];});
 DefMathML("Token:?:times",     undef, sub{['m:times'];});
-DefMathML("Token:?:root",      undef, sub{['m:root'];});
 DefMathML("Token:?:gcd",       undef, sub{['m:gcd'];});
 DefMathML("Token:?:and",       undef, sub{['m:and'];});
 DefMathML("Token:?:or",        undef, sub{['m:or'];});
