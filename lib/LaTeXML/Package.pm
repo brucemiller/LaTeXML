@@ -1014,6 +1014,10 @@ sub InputFile {
      && ($altpath=FindFile($name,type=>'sty'))){	# AND there IS such a style file
     Info(":override Overriding input of $request with $altpath");
     RequirePackage($name); }	# Then override, and just assume we'll find $name as a package style file!
+  elsif(LookupValue('INTERPRETING_DEFINITIONS')){
+    InputDefinitions($request)
+      || Error(":missing_file:$request Cannot find file $request in paths "
+	       .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   elsif(my $path = FindFile($request)){			# Else if the requested file was found, we'll input it
     # note that this may _STILL_ end up reading $path.ltxml if there is one.
     $STATE->getStomach->getGullet->input($path); }
@@ -1074,6 +1078,8 @@ sub loadTeXDefinitions {
   # And NOW process the input!!!!
 ###  my $cmts = LookupValue('INCLUDE_COMMENTS');
 ###  AssignValue('INCLUDE_COMMENTS'=>0);
+  my $interpreting = LookupValue('INTERPRETING_DEFINITIONS');
+  AssignValue('INTERPRETING_DEFINITIONS'=>1);
   my $token;
   while($gullet->mouthIsOpen($mouth)
 	&& ($token = $gullet->readXToken(0))){
@@ -1087,6 +1093,7 @@ sub loadTeXDefinitions {
       else {
 	  $gullet->closeMouth; }}
 ###  AssignValue('INCLUDE_COMMENTS'=>$cmts);
+  AssignValue('INTERPRETING_DEFINITIONS'=>$interpreting);
 }
 
 # This is a stand-in for code that needs to be evolved.
