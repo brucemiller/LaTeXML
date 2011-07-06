@@ -125,6 +125,12 @@ sub closeMouth {
     $$self{autoclose}=1; }}
 
 sub getMouth { $_[0]->{mouth}; }
+
+sub mouthIsOpen {
+  my($self,$mouth)=@_;
+  ($$self{mouth} eq $mouth)
+    || grep($_ && ($$_[0] eq $mouth), @{$$self{mouthstack}}); }
+
 # Obscure, but the only way I can think of to End!! (see \bye or \end{document})
 # Flush all sources (close all pending mouth's)
 sub flush {
@@ -169,6 +175,7 @@ sub show_pushback {
 # Return $tokens with all tokens expanded
 sub expandTokens {
   my($self,$tokens)=@_;
+  return () unless $tokens;
   $self->openMouth((ref $tokens eq 'LaTeXML::Token' ? Tokens($tokens) : $tokens->clone),1);
   my @expanded=();
   while(defined(my $t=$self->readXToken(0))){
