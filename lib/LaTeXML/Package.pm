@@ -1066,32 +1066,27 @@ sub loadTeXDefinitions {
 
   my $stomach = $STATE->getStomach;
   my $gullet = $stomach->getGullet;
-  if(my $filecontents = LookupValue($pathname.'_contents')){
-    $gullet->openMouth(LaTeXML::StyleStringMouth->new($pathname,$filecontents), 0);  }
-  else {
-    $gullet->openMouth(LaTeXML::StyleMouth->new($pathname), 0);  }
+  my $filecontents = LookupValue($pathname.'_contents');
+  my $mouth = ($filecontents
+	       ? LaTeXML::StyleStringMouth->new($pathname,$filecontents)
+	       : LaTeXML::StyleMouth->new($pathname));
+  $gullet->openMouth($mouth,1);
   # And NOW process the input!!!!
-
-  # Here's one variant (from babel)
-#  while($gullet->getMouth->hasMoreInput){
-#    $stomach->digestNextBody; }
-
-  # Here's another (listings)
-  # Looks safer:
-  #  (1) It avoids comment clutter (we COULD check that no boxes are generated?)
-  #  (2) close the mouth (safely?) after we're done.
 ###  my $cmts = LookupValue('INCLUDE_COMMENTS');
 ###  AssignValue('INCLUDE_COMMENTS'=>0);
-
-  my $mouth = $gullet->getMouth;
   my $token;
-  while($token = $gullet->readXToken(0)){
+  while($gullet->mouthIsOpen($mouth)
+	&& ($token = $gullet->readXToken(0))){
     next if $token->equals(T_SPACE);
     $stomach->invokeToken($token); }
-  $gullet->closeMouth if $mouth eq $gullet->getMouth; # may already close from \endinput!
-
+  # Note that Mouths like this will often have been closed by \endinput
+  if($gullet->mouthIsOpen($mouth)){
+      if($mouth ne $gullet->getMouth){
+	  Error(":unexpected:mouth We expected to be able to close ".Stringify($mouth)
+		." but ".Stringify($gullet->getMouth)." is still open."); }
+      else {
+	  $gullet->closeMouth; }}
 ###  AssignValue('INCLUDE_COMMENTS'=>$cmts);
-
 }
 
 # This is a stand-in for code that needs to be evolved.
