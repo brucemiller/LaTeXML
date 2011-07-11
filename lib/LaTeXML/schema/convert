@@ -38,7 +38,8 @@ for name in LaTeXML; do
       /tmp/$name.dtd  > ../dtd/$name.dtd
 
   echo "Precompiling $name.rng schema to $name.model"
-  perl -I ~/latexml/lib/ -MLaTeXML \
+#  perl -I ~/latexml/lib/ -MLaTeXML \
+  perl -I ../../.. -MLaTeXML \
        -e 'LaTeXML->new()->withState(sub{ $_[0]->getModel->compileSchema; });' \
        > ../$name.model
 
