@@ -20,7 +20,7 @@ Block.class |=
 
 ## Additionally, it defines these miscellaneous elements that can appear
 ## in both inline and block contexts.
-Misc.class  |= inline-block | verbatim | break | graphics
+Misc.class  |= inline-block | verbatim | break | graphics | svg
 
 ## Additional Metadata that can be present in equations.
 EquationMeta.class = constraint
@@ -288,4 +288,12 @@ graphics_attributes =
 ## Content model for \elementref{graphics}.
 graphics_model = empty
 
+#======================================================================
+
+svg =
+## An SVG (Scalable Vector Graphics) object
+## [eventually must adapt to put LaTeXML objects in foreignObject]
+grammar {
+  include "svg11.rnc"
+}
 #======================================================================
