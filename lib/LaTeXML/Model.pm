@@ -51,6 +51,8 @@ sub loadSchema {
     # article ??? or what ? undef gives problems!
     $self->setRelaxNGSchema("LaTeXML");
     $self->registerNamespace(ltx=>$LTX_NAMESPACE);
+    $self->registerNamespace(svg=>"http://www.w3.org/2000/svg");
+    $self->registerNamespace(xev=>"http://www.w3.org/2001/xml-events");
     $$self{permissive}=1; }	# Actually, they could have declared all sorts of Tags....
 
   my($type,@data)=@{$$self{schemadata}};
