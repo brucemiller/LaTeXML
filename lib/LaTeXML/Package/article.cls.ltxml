@@ -44,7 +44,6 @@ EOTeX
 #**********************************************************************
 # The core sectioning commands are defined in LaTeX.pm
 # but the counter setup, etc, depends on article
-#Let('\thedocument@ID','\@empty');
 NewCounter('part',         'document',     idprefix=>'Pt', nested=>['section']);
 NewCounter('section',      'document',     idprefix=>'S',  nested=>['subsection']);
 NewCounter('subsection',   'section',      idprefix=>'SS', nested=>['subsubsection']);
