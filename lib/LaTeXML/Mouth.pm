@@ -148,9 +148,8 @@ sub handle_escape {		# Read control sequence
 sub handle_EOL {
   my($self)=@_;
   ($$self{colno}==1
-#   ? ($STATE->lookupValue('inPreamble') ? T_SPACE : T_CS('\par'))
    ? T_CS('\par')
-   : ($STATE->lookupValue('PRESERVE_NEWLINES') ? Token("\n",CC_SPACE) : T_SPACE)); 
+   : ($STATE->lookupValue('PRESERVE_NEWLINES') ? Token("\n",CC_SPACE) : T_SPACE));
 }
 
 sub handle_comment {
@@ -159,7 +158,7 @@ sub handle_comment {
   $$self{colno} = $$self{nchars};
   my $comment = join('',@{$$self{chars}}[$n..$$self{nchars}-1]);
   $comment =~ s/^\s+//; $comment =~ s/\s+$//;
-  ($comment && $STATE->lookupValue('INCLUDE_COMMENTS') ? T_COMMENT($comment) : $self->readToken); }
+  ($comment && $STATE->lookupValue('INCLUDE_COMMENTS') ? T_COMMENT($comment) : undef); }
 
 # Some caches
 my %LETTER =();
@@ -176,8 +175,8 @@ my @DISPATCH
       T_PARAM,			# T_PARAM
       T_SUPER,			# T_SUPER
       T_SUB,			# T_SUB
-      sub { $_[0]->readToken; }, # T_IGNORE
-      T_SPACE,			 # T_SPACE
+      sub { undef; },		# T_IGNORE (we'll read next token)
+      T_SPACE,		        # T_SPACE
       sub { $LETTER{$_[1]} || ($LETTER{$_[1]}=T_LETTER($_[1])); }, # T_LETTER
       sub { $OTHER{$_[1]}  || ($OTHER{$_[1]} =T_OTHER($_[1])); }, # T_OTHER
       sub { $ACTIVE{$_[1]} || ($ACTIVE{$_[1]}=T_ACTIVE($_[1])); }, # T_ACTIVE
@@ -191,32 +190,33 @@ my @DISPATCH
 # LaTeXML::Gullet intercepts them and passes them on at appropriate times.
 sub readToken {
   my($self)=@_;
-  # ===== Get next line, if we need to.
-  if ($$self{colno} >= $$self{nchars}) {
-    $$self{lineno}++;
-    $$self{colno}=0;
-    my $line = $self->getNextLine; 
-    if (!defined $line) {	# Exhausted the input.
-      $$self{chars}=[];
-      $$self{nchars}=0;
-      return undef;  }
-    $line =~ s/\s*$/\n/s;
-    $$self{chars}=[split('',$line)];
-    $$self{nchars} = scalar(@{$$self{chars}});
-    while(($$self{colno} < $$self{nchars})
-	  && (($$STATE{table}{catcode}{$$self{chars}->[$$self{colno}]}[0]||CC_OTHER)==CC_SPACE)){
-      $$self{colno}++; }
+  while(1){			# Iterate till we find a token, or run out. (use return)
+    # ===== Get next line, if we need to.
+    if ($$self{colno} >= $$self{nchars}) {
+      $$self{lineno}++;
+      $$self{colno}=0;
+      my $line = $self->getNextLine; 
+      if (!defined $line) {	# Exhausted the input.
+	$$self{chars}=[];
+	$$self{nchars}=0;
+	return undef;  }
+      $line =~ s/\s*$/\n/s;
+      $$self{chars}=[split('',$line)];
+      $$self{nchars} = scalar(@{$$self{chars}});
+      while(($$self{colno} < $$self{nchars})
+	    && (($$STATE{table}{catcode}{$$self{chars}->[$$self{colno}]}[0]||CC_OTHER)==CC_SPACE)){
+	$$self{colno}++; }
 
-    # Sneak a comment out, every so often.
-    if(!($$self{lineno} % 25)){
-      return T_COMMENT("**** $$self{source} Line $$self{lineno} ****")
-	if $STATE->lookupValue('INCLUDE_COMMENTS'); }
-  }
-  # ==== Extract next token from line.
-  my($ch,$cc)=$self->getNextChar;
-  my $dispatch = $DISPATCH[$cc];
-  (ref $dispatch eq 'CODE' ? &$dispatch($self,$ch) : $dispatch);
-}
+      # Sneak a comment out, every so often.
+      if((($$self{lineno} % 25)==0) && $STATE->lookupValue('INCLUDE_COMMENTS')){
+	return T_COMMENT("**** $$self{source} Line $$self{lineno} ****"); }
+    }
+    # ==== Extract next token from line.
+    my($ch,$cc)=$self->getNextChar;
+    my $token = $DISPATCH[$cc];
+    $token = &$token($self,$ch) if ref $token eq 'CODE';
+    return $token if defined $token; # Else, repeat till we get something or run out.
+}}
 
 #**********************************************************************
 # Read all tokens until a token equal to $until (if given), or until exhausted.
