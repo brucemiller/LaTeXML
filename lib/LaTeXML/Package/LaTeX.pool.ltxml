@@ -207,7 +207,7 @@ DefEnvironment('{document}', sub {
     $docel->setAttribute('xml:id'=>$id) if $id;
     $document->absorb($body); }
   else {
-    $document->insertElement('ltx:document',$body,id=>$id); }},
+    $document->insertElement('ltx:document',$body,'xml:id'=>$id); }},
 	       beforeDigest=> sub { AssignValue(inPreamble=>0); },
 	       afterDigestBegin=>sub {
 		 $_[1]->setProperty(id=>Expand(T_CS('\thedocument@ID')));
@@ -433,6 +433,7 @@ DefConstructorI('\tableofcontents', undef,
 		  my $td = CounterValue('tocdepth')->valueOf + 2;
 		  my @s = (qw(ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
 			    ltx:paragraph ltx:subparagraph));
+		  $td = $#s if $#s < $td;
 		  @s = map($s[$_],0..$td);
 		  push(@s, (qw(ltx:appendix ltx:index ltx:bibliography))) if @s;
 		  ( select=>join(' | ',@s),
