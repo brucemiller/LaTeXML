@@ -240,7 +240,7 @@ DefPrimitive('\initiate@active@char DefToken',sub {
       DefMacroI('\normal@char'.$char,undef, '\textormath{\'}{\bbl@primes@@@}'); }
     elsif($char eq '^'){
       DefMacroI('\bbl@act@caret',undef,
-		'\ifmmode\csname normal@char\string^\endscname'
+		'\ifmmode\csname normal@char\string^\endcsname'
 		.'\else\bbl@afterfi{\if@safe@actives'
 		.  '\bbl@afterelse\csname normal@char\string'.$char.'\endcsname'
 		.'\else'
