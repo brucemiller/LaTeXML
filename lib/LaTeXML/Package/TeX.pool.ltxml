@@ -1508,7 +1508,7 @@ DefPrimitive('\vadjust {}',undef); # Ignorable?
 # <rule dimension> = width <dimen> | height <dimen> | depth <dimen>
 
 # Stuff to ignore for now...
-foreach my $op ('\vskip Glue', '\vfil', '\vfill', '\vss', '\vfilneg',
+foreach my $op ('\vfil', '\vfill', '\vss', '\vfilneg',
 		'\leaders', '\cleaders', '\xleaders'){
   DefPrimitive($op,undef); }
 
@@ -1530,6 +1530,19 @@ DefMacro('\unvbox Number',sub {
   $stuff; });
 DefMacro('\unvcopy Number',sub {
   LookupValue('box'.$_[1]->valueOf); });
+
+#======================================================================
+# If this is the right solution...
+# then we also should put the desired spacing on a style attribute?!?!?!
+DefConstructor('\vskip Glue',sub {
+  my($document,$length)=@_;
+  $length = $length->ptValue;
+  if($length > 10){		# Or what!?!?!?!
+    if($document->isCloseable('ltx:para')){
+      $document->closeElement('ltx:para'); }
+    elsif($document->isOpenable('ltx:break')){
+      $document->insertElement('ltx:break'); }}
+  return; });
 
 #======================================================================
 # Basic alignment support needed by most environments & commands.
@@ -2183,8 +2196,7 @@ DefPrimitive('\unhcopy Number',sub {
 # \vrule
 # \valign ???
 
-DefConstructor('\vspace{}',"");
-
+DefMacro('\vspace{}','\vskip#1\relax');
 # \indent, \noindent, \par; see above.
 
 # \accent Number ????
@@ -3063,9 +3075,9 @@ DefPrimitiveI('\topglue',         undef,undef);
 DefPrimitiveI('\nointerlineskip', undef,undef);
 DefPrimitiveI('\offinterlineskip',undef,undef);
 
-DefPrimitiveI('\smallskip', undef,undef);
-DefPrimitiveI('\medskip',   undef,undef);
-DefPrimitiveI('\bigskip',   undef,undef);
+DefMacroI('\smallskip', undef,'\vskip\smallskipamount');
+DefMacroI('\medskip', undef,  '\vskip\medskipamount');
+DefMacroI('\bigskip', undef,  '\vskip\bigskipamount');
 
 #======================================================================
 # TeX Book, Appendix B, p. 353
