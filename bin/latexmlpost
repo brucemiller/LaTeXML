@@ -28,6 +28,7 @@ my($linelength,$keepXMath,$plane1,$hackplane1)=(undef,undef,undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
 my @graphicsmaps=();
 my($split,$splitat,$splitpath,$splitnaming)=(undef,'section',undef,'id');
+my($contexttoc)=(undef);
 my($prescan,$dbfile,$scan,$crossref,$sitedir)=(undef,undef,1,1,undef);
 my($index,$permutedindex,$splitindex)=(1,undef,undef);
 my($splitbibliography,@bibliographies)=(undef);
@@ -71,6 +72,7 @@ GetOptions("verbose+"              =>\$verbosity,
 	   "scan!"                 =>\$scan,
 	   "crossref!"             =>\$crossref,
 	   "urlstyle=s"            =>\$urlstyle,
+	   "contexttoc!"           =>\$contexttoc,
 	   # Generating indices
 	   "index!"                =>\$index,
 	   "permutedindex!"        =>\$permutedindex,
@@ -256,6 +258,7 @@ if(!$prescan){
     require 'LaTeXML/Post/CrossRef.pm';
     push(@procs,LaTeXML::Post::CrossRef->new(db=>$DB,urlstyle=>$urlstyle,format=>$format,
 					     ($numbersections ? (number_sections=>1):()),
+					     ($contexttoc ? (context_toc=>1):()),
 					     %OPTIONS)); }
 
   if($mathimages){
