@@ -927,6 +927,14 @@ DefPrimitive('\toksdef Token SkipMatch:= Number',sub {
 DefRegister('\lastpenalty',Number(0), readonly=>1);
 
 # \parshape !?!??
+DefPrimitive('\parshape SkipMatch:= Number',sub {
+  my($stomach,$n)=@_;
+  $n = $n->valueOf;
+  my $gullet = $stomach->getGullet;
+  for(my $i=0; $i<$n; $i++){
+    $gullet->readDimension; $gullet->readDimension; }
+  # we _could_ conceivably store this somewhere for some attempt at stylistic purpose...
+  return; });
 
 #DefRegister('\inputlineno',Number(0),
 #            readonly=>1,
