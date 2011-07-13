@@ -3042,6 +3042,9 @@ DefPrimitiveI('\obeyspaces', undef,sub {
   AssignCatcode(" "=>13);
   Let(T_ACTIVE(" "), T_CS('\space'));
   return});
+# Curiously enough, " " (a space) is ALREADY defined to be the same as "\space"
+# EVEN before it is made active. (see p.380)
+Let(T_ACTIVE(" "), T_CS('\space'));
 
 DefPrimitiveI('\obeylines',  undef, sub {
   AssignCatcode("\n"=>13);
