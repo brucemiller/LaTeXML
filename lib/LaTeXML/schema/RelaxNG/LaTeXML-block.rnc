@@ -295,5 +295,6 @@ svg =
 ## [eventually must adapt to put LaTeXML objects in foreignObject]
 grammar {
   include "svg11.rnc"
+  { SVG.foreignObject.content = parent Inline.model }
 }
 #======================================================================
