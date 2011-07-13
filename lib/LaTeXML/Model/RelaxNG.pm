@@ -174,6 +174,11 @@ sub scanExternal {
     local @LaTeXML::Model::RelaxNG::PATHS
       = (pathname_directory($path),@LaTeXML::Model::RelaxNG::PATHS);
     my $node = $XMLPARSER->parseFile($path)->documentElement;
+    # Fetch any additional namespaces
+    foreach my $ns ($node->getNamespaces){
+	my($prefix,$uri)=($ns->getLocalName,$ns->getData);
+	next if $uri =~ m|^http://relaxng.org|; # Ignore RelaxNG namespaces(!!)
+	$$self{model}->registerDocumentNamespace($prefix,$uri); }
     (['module',$mod,$self->scanPattern($node,$inherit_ns)]); }
   else {
     Error(":missing_file:$name Couldn't find RelaxNG schema $name"); 
