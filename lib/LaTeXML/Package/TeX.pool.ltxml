@@ -20,7 +20,7 @@ use LaTeXML::Util::Pathname;
 no warnings 'redefine';
 
 RegisterNamespace(ltx=>"http://dlmf.nist.gov/LaTeXML");
-RegisterNamespace(svn=>"http://www.w3.org/2000/svg");
+RegisterNamespace(svg=>"http://www.w3.org/2000/svg");
 RegisterNamespace(xev=>"http://www.w3.org/2001/xml-events");
 RegisterNamespace(xlink=>"http://www.w3.org/1999/xlink");
 
