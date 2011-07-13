@@ -448,7 +448,7 @@ to be used in processing the graphic.</a:documentation>
 [eventually must adapt to put LaTeXML objects in foreignObject]</a:documentation>
       <include href="svg11.rng">
         <define name="SVG.foreignObject.content">
-          <parentRef name="Inline.model"/>
+          <parentRef name="Flow.model"/>
         </define>
       </include>
     </grammar>
