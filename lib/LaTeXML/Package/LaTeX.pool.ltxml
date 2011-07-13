@@ -164,6 +164,7 @@ DefMacro('\end{}',  sub {
 # [Course that means we're not _really_ TeX!]
 
 # \protect is already in TeX for obscure reasons...
+Let(T_CS('\@typeset@protect'),T_CS('\relax'));
 
 #======================================================================
 # C.1.4 Declarations
