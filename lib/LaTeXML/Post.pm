@@ -135,6 +135,13 @@ sub new {
   $data{namespaces}={ltx=>$NSURI} unless $data{namespaces};
   $data{namespaceURIs}={$NSURI=>'ltx'} unless $data{namespaceURIs};
 
+  # Fetch any additional namespaces
+  foreach my $ns ($xmldoc->documentElement->getNamespaces){
+      my($prefix,$uri)=($ns->getLocalName,$ns->getData);
+      if($prefix){
+	  $data{namespaces}{$prefix}=$uri unless $data{namespaces}{$prefix};
+	  $data{namespaceURIs}{$uri}=$prefix unless $data{namespaceURIs}{$uri}; }}
+
   # Extract data from latexml's ProcessingInstructions
   # I'd like to provide structured access to the PI's for those modules that need them,
   # but it isn't quite clear what that api should be.
