@@ -14,7 +14,22 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 use LaTeXML::Util::Color;
-#********************************************************************************
+#======================================================================
+# Ignorable options (mostly drivers)
+foreach my $option (qw(monochrome debugshow dvipdf dvipdfm dvipdfmx pdftex xetex
+		       dvipsone dviwindo emtex dviwin textures pctexps pctexwin
+		       pctexhp pctex32 truetex tcidvi vtex nodvipsnames
+		       usenames)){
+  DeclareOption($option,undef); }
+
+# options that want the dvipsnam definitions
+foreach my $option (qw(dvips xdvi oztex dvipsnames)){
+  DeclareOption($option,sub {
+		  InputDefinitions('dvipsnam',type=>'def')
+		    || Warn(":unexpected:missing:dvipsnam Couldn't find dvipsnam.def color definitions"); 
+		return; }); }
+
+#======================================================================
 # Most of this should use the color properties in fonts (See LaTeXML::Font)
 # but hasn't been done yet.
 # model=rgb, cmyk, gray or named
@@ -45,8 +60,16 @@ DefConstructor('\DefineNamedColor{}{}{}{}', "",
 
 sub getColor {
   my($model,$spec) = @_;
+  $model = ToString($model);
   $spec = ToString($spec);
-  $model ? ConvertColor(ToString($model), $spec) : (LookupValue('color_'.$spec) || $spec); }
+  if(!$model || ($model eq 'named')){
+    while(my $c = LookupValue('color_'.$spec)){
+      $spec = $c; }
+    $spec; }
+  elsif($model){
+    ConvertColor(ToString($model), $spec); }
+  else {
+    $spec; }}
 
 # NOTE: Why are these defined as macros, rather than primitives?
 
@@ -104,4 +127,5 @@ DefConstructor('\fcolorbox[]{}{}{}',
 	       mode=>'text');
 
 #********************************************************************************
+ProcessOptions();
 1;
