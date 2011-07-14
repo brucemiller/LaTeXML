@@ -37,7 +37,7 @@ sub process {
     $doc->adjust_latexml_doctype('SVG'); } # Add SVG if LaTeXML dtd.
   $doc; }
 
-sub find_svg_nodes { $_[1]->findnodes('//ltx:picture'); }
+sub find_svg_nodes { $_[1]->findnodes('//ltx:picture[not(svg:svg)]'); }
 
 sub getQName {
   $LaTeXML::Post::SVG::DOCUMENT->getQName(@_); }
