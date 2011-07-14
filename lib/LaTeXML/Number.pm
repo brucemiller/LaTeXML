@@ -69,7 +69,7 @@ use strict;
 sub new {
   my($class,$sp)=@_;
   $sp = "0" unless $sp;
-  if($sp =~ /^(\d*\.?\d*)([a-zA-Z][a-zA-Z])$/){ # Dimensions given.
+  if($sp =~ /^(-?\d*\.?\d*)([a-zA-Z][a-zA-Z])$/){ # Dimensions given.
     $sp = $1 * $STATE->convertUnit($2); }
   bless [$sp||"0"],$class; }
 
