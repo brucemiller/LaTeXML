@@ -4328,7 +4328,7 @@ Tag('ltx:document', autoClose=>1, autoOpen=>1);
 # stuff the token back to be reexecuted.
 foreach my $ltxtrigger (qw(documentclass
 			newcommand renewcommand newenvironment renewenvironment
-			NeedsTeXFormat ProvidesPackage RequirePackage
+			NeedsTeXFormat ProvidesPackage RequirePackage ProvidesFile
 			makeatletter makeatother
 			typeout begin)){
   DefMacroI("\\".$ltxtrigger, undef, sub { LoadPool("LaTeX"); (T_CS("\\$ltxtrigger")); }); }
