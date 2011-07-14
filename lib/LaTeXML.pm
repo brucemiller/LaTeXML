@@ -22,6 +22,7 @@ use LaTeXML::Object;
 use LaTeXML::MathParser;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Bib;
+use LaTeXML::Package;
 use Encode;
 our @ISA = (qw(LaTeXML::Object));
 
@@ -258,10 +259,19 @@ sub initializeState {
   $stomach->initialize;
   my $paths = $STATE->lookupValue('SEARCHPATHS');
   foreach my $preload (@files){
-    if(my $loadpath = pathname_find("$preload.ltxml",paths=>$paths,installation_subdir=>'Package')){
-      $gullet->input($loadpath); }
-    else {
-      Fatal(":missing_file:$preload Couldn't find $preload to preload"); }}
+    # if(my $loadpath = pathname_find("$preload.ltxml",paths=>$paths,installation_subdir=>'Package')){
+    #   $gullet->input($loadpath); }
+    # else {
+    #   Fatal(":missing_file:$preload Couldn't find $preload to preload"); }}
+    my $options;
+    if($preload =~ /^\[([^\]]*)\](.*)$/){
+      my($opt,$style)=($1,$2);
+      Warn(":unexpected:options Attempting to pass options [$opt] to a $2"
+	   ."which is not a style or class file") if $options && $style!~/\.(sty|cls)$/;
+      $options = [split(/,/,$opt)];
+      $preload = $style; }
+    LaTeXML::Package::InputDefinitions($preload,withoptions=>$options, options=>$options)
+      || Fatal(":missing_file:$preload Couldn't find $preload to preload"); }
 
   # NOTE: This is seemingly a result of a not-quite-right
   # processing model.  Opening a new mouth to tokenize & digest
