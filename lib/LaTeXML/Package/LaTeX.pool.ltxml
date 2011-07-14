@@ -3845,6 +3845,15 @@ DefMacroI('\mathalpha',undef,Tokens());
 #\def\mathhexbox#1#2#3{\mbox{$\m@th \mathchar"#1#2#3$}}
 DefMacroI('\nocorrlist',undef,',.');
 Let(T_CS('\nocorr'),T_CS('\relax'));
+Let(T_CS('\check@icl'),T_CS('\@empty'));
+Let(T_CS('\check@icr'),T_CS('\@empty'));
+DefMacro('\text@command{}','');	# ?
+DefMacro('\check@nocorr@ Until:\nocorr Until:\@nil','');
+DefMacroI('\maybe@ic',undef,'');
+DefMacroI('\maybe@ic@',undef,'');
+# \t@st@ic
+DefMacroI('\sw@slant',undef,'');
+DefMacroI('\fix@penalty',undef,'');
 
 DefPrimitiveI('\@@end',undef,sub { $_[0]->getGullet->flush; return; });
 
