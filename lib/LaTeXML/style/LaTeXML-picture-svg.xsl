@@ -19,6 +19,7 @@
     xmlns       = "http://www.w3.org/1999/xhtml"
     xmlns:m     = "http://www.w3.org/1998/Math/MathML"
     xmlns:svg   = "http://www.w3.org/2000/svg"
+    xmlns:xlink = "http://www.w3.org/1999/xlink"
     exclude-result-prefixes = "ltx">
   
   <!-- Copy SVG, as is ???? -->
