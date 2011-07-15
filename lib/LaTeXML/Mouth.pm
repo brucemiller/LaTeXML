@@ -89,8 +89,14 @@ sub getNextChar {
 	splice(@{$$self{chars}},$$self{colno}-1,4,$ch);
 	$$self{nchars} -= 3; }
       else {			# OR ^^ followed by a SINGLE Control char type code???
-	my $c=ord($$self{chars}->[$$self{colno}+1]);
-	$ch = chr($c + ($c > 64 ? -64 : 64));
+	my $c=$$self{chars}->[$$self{colno}+1];
+	# Knuth sets ^^M (CR) as the EOL char, but we're going to work
+	# with \n which is LF here.
+	if($c eq 'M'){
+	  $ch = "\n"; }
+	else {
+	  my $cn = ord($c);
+	  $ch = chr($cn + ($cn > 64 ? -64 : 64));  }
 	splice(@{$$self{chars}},$$self{colno}-1,3,$ch);
 	$$self{nchars} -= 2; }
       $cc = $STATE->lookupCatcode($ch); }
@@ -132,8 +138,9 @@ sub handle_escape {		# Read control sequence
   # NOTE: We're using control sequences WITH the \ prepended!!!
   my $cs = "\\";		# I need this standardized to be able to lookup tokens (A better way???)
   my($ch,$cc)=$self->getNextChar;
-  if($cc == CC_EOL){	# I _think_ this is what Knuth is sayin' !?!?
-    ($ch,$cc)=(' ',CC_SPACE); }
+###  if($cc == CC_EOL){	# I _think_ this is what Knuth is sayin' !?!?
+###    ($ch,$cc)=(' ',CC_SPACE); }
+### OR did he really??? That interferes with \catcode`\^^M=... for example!
   $cs .= $ch;
   if ($cc == CC_LETTER) {	# For letter, read more letters for csname.
     while ((($ch,$cc)=$self->getNextChar) && $ch && ($cc == CC_LETTER)){
