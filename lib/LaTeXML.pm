@@ -261,10 +261,9 @@ sub initializeState {
   $stomach->initialize;
   my $paths = $STATE->lookupValue('SEARCHPATHS');
   foreach my $preload (@files){
-    $preload =~ s/^\[([^\]]*)\]//;
-    my $options = $1;
-    $preload =~ s/\.(\w+)$//;
-    my $type = $1 || 'sty';
+    my($options,$type);
+    $options = $1 if $preload =~ s/^\[([^\]]*)\]//;
+    $type    = ($preload =~ s/\.(\w+)$// ? $1 : 'sty');
     my $handleoptions = ($type eq 'sty')||($type eq 'cls');
     if($options){
       if($handleoptions){
