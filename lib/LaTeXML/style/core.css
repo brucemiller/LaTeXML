@@ -139,12 +139,12 @@ img.centering  { display:block;
 cite        { font-style: normal; }
 
 /*======================================================================
- pop-up footnotes */
+ pop-up footnotes, endnote, margin */
 .note .note_content {display:none; }
+.note .note_content {
+     width: 70%; right:5%;  font-size:80%;
+     background:#E0E0E0; border:3px outset gray; }
 .note .mark { color:blue; }
 .note-type  { font-weight: bold; }
 .note:hover .note_content 
-   { display:block; position:absolute; z-index:10;
-     width: 70%; right:5%;
-     background:#E0E0E0;
-     border:3px outset gray; }
+   { display:block; position:absolute; z-index:10; }

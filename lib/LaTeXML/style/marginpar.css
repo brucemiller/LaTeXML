@@ -1,0 +1,11 @@
+/* A simple example of CSS for placing marginpar in margin.
+  (more sophisticated layout probably requires xslt) */
+.note.margin .mark      { display:none; }
+.note.margin .note-type { display:none; }
+.note.margin .note_content {
+    display:block;
+    position:fixed; left:83%; width:15%;
+    background-color: transparent; border:0pt; }
+
+/* Narrower, to make room for marginpar */
+.main { width:80%; }
