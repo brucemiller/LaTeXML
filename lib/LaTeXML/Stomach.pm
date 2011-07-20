@@ -115,9 +115,11 @@ sub invokeToken {
 
 sub makeError {
   my($document,$type,$content)=@_;
-  my $savenode = $document->floatToElement('ltx:ERROR');
+  my $savenode = undef;
+  $savenode = $document->floatToElement('ltx:ERROR')
+      unless $document->isOpenable('ltx:ERROR');
   $document->openElement('ltx:ERROR',class=>ToString($type));
-  $document->absorb(ToString($content));
+  $document->openText_internal(ToString($content));
   $document->closeElement('ltx:ERROR'); 
   $document->setNode($savenode) if $savenode; }
 
@@ -130,7 +132,7 @@ sub invokeToken_internal {
   if(! defined $meaning){		# Supposedly executable token, but no definition!
     my $cs = $token->getCSName;
     $STATE->noteStatus(undefined=>$cs);
-    Error(":undefined:$cs The token $cs is not defined.");
+    Error(":undefined:$cs The token $cs [".Stringify($token)."] is not defined.");
     $STATE->installDefinition(LaTeXML::Constructor->new($token,undef,
 							sub { makeError($_[0],'undefined',$cs);}));
     $self->invokeToken($token); }
