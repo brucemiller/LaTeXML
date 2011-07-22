@@ -138,9 +138,8 @@ sub handle_escape {		# Read control sequence
   # NOTE: We're using control sequences WITH the \ prepended!!!
   my $cs = "\\";		# I need this standardized to be able to lookup tokens (A better way???)
   my($ch,$cc)=$self->getNextChar;
-###  if($cc == CC_EOL){	# I _think_ this is what Knuth is sayin' !?!?
-###    ($ch,$cc)=(' ',CC_SPACE); }
-### OR did he really??? That interferes with \catcode`\^^M=... for example!
+  # Knuth, p.46 says that Newlines are converted to spaces,
+  # Bit I believe that he does NOT mean within control sequences
   $cs .= $ch;
   if ($cc == CC_LETTER) {	# For letter, read more letters for csname.
     while ((($ch,$cc)=$self->getNextChar) && $ch && ($cc == CC_LETTER)){
@@ -154,10 +153,13 @@ sub handle_escape {		# Read control sequence
 
 sub handle_EOL {
   my($self)=@_;
-  ($$self{colno}==1
-   ? T_CS('\par')
-   : ($STATE->lookupValue('PRESERVE_NEWLINES') ? Token("\n",CC_SPACE) : T_SPACE));
-}
+  # Note that newines should be converted to space (with " " for content)
+  # but it makes nicer XML with occasional \n. Hopefully, this is harmless?
+  my $token = ($$self{colno}==1
+	       ? T_CS('\par')
+	       : ($STATE->lookupValue('PRESERVE_NEWLINES') ? Token("\n",CC_SPACE) : T_SPACE));
+  $$self{colno} = $$self{nchars}; # Ignore any remaining characters after EOL
+  $token; }
 
 sub handle_comment {
   my($self)=@_;
@@ -207,7 +209,8 @@ sub readToken {
 	$$self{chars}=[];
 	$$self{nchars}=0;
 	return undef;  }
-      $line =~ s/\s*$/\n/s;
+      # Remove trailing space, but NOT a control space!
+      $line =~ s/((\\ )*)\s*$/$1\n/s;
       $$self{chars}=[split('',$line)];
       $$self{nchars} = scalar(@{$$self{chars}});
       while(($$self{colno} < $$self{nchars})
