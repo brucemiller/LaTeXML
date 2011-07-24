@@ -20,7 +20,10 @@ use LaTeXML::Util::Pathname;
 
 # NOTE that in principle, babel can be loaded multiple times,
 # and the "processOptions" part SHOULD be re-executed!
-AssignValue('babel.sty_loaded'=>0,'global');
+# HOWEVER!!!!
+# some packages test for whether babel is loaded????
+# AssignValue('babel.sty_loaded'=>0,'global');
+# So how do multiple loads work?
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # babel.def only needs to be loaded ONCE.
