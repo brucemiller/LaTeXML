@@ -90,11 +90,14 @@ DefMacro('\loadlocalcfg{}','');
 
 Let(T_CS('\originalTeX'),T_CS('\@empty'));
 
-DefMacro('\addto Token {}',sub { 
+DefMacro('\addto DefToken {}',sub { 
   my($gullet,$cs,$tokens)=@_;
   # Needs error checking!
   my $defn = LookupDefinition($cs);
   $defn = undef if $defn && $defn eq LookupDefinition(T_CS('\relax')); # ?
+  if($defn && !$defn->isExpandable){
+    Warn(":unexpected:".ToString($cs)." expected an expandable token, got ".ToString($cs));
+    $defn = undef; }
   DefMacroI($cs,undef,($defn ? Tokens($defn->getExpansion->unlist,$tokens->unlist) : $tokens)); });
 
 DefMacro('\babel@savevariable {}',sub {
