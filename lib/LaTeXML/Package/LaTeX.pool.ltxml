@@ -611,7 +611,7 @@ DefMacro('\@if@ptions{}{}{}',sub {
   else {
     T_CS('\@secondoftwo'); }});
 
-DefMacro('\g@addto@macro Token {}',sub { AddToMacro($_[1],$_[2]); });
+DefMacro('\g@addto@macro DefToken {}',sub { AddToMacro($_[1],$_[2]); });
 
 Let(T_CS('\AtEndOfClass'),T_CS('\AtEndOfPackage'));
 
