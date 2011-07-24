@@ -297,6 +297,8 @@ sub skipConditionalBody {
       elsif(Equals($t,T_CS('\or')) && (++$n_ors == $nskips)){
 	return; }
       elsif(Equals($t,T_CS('\else')) && $nskips){
+	my $curr=LookupValue('current_if_level');
+	AssignValue('if_level_'.$curr.'_elses'=>1,'global');
 	return; }}}
   Fatal(":expected:\\fi Missing \\fi or \\else, conditional fell off end (starting at $start)"); }
 
@@ -304,7 +306,9 @@ sub skipConditionalBody {
 
 sub ifHandler   { 
   my($gullet,$boolean)=@_;
-  AssignValue(if_level=>LookupValue('current_if_level'), 'global');
+  my ($curr,$level) = (LookupValue('current_if_level'),LookupValue('if_level'));
+  AssignValue(if_level=>$curr, 'global');
+  AssignValue('if_level_'.$curr.'_elses'=>0,'global');
   skipConditionalBody($gullet,-1) unless $boolean; return; }
 
 sub elseHandler { 
@@ -312,6 +316,9 @@ sub elseHandler {
   my ($curr,$level) = (LookupValue('current_if_level'),LookupValue('if_level'));
   if(!$curr){
     Error(":unexpected:\\else  Didn't expect an \\else since we seem not to be in an \\if");
+    return; }
+  elsif(LookupValue('if_level_'.$curr.'_elses'=>1,'global')){
+    Error(":unexpected:\\else Extra \\else or \\or");
     return; }
   elsif($curr > $level){
     (T_CS('\relax'),T_CS('\else')); }
@@ -444,6 +451,13 @@ DefMacroI('\csname',undef,sub {
   my($gullet)=@_;
   my($token,@toks)=();
   while(($token = $gullet->readXToken(0)) && ($token->getString ne '\endcsname')){
+    if($token->getCatcode == CC_CS){
+      if( defined $STATE->lookupDefinition($token)){
+	Error(":unexpected:".ToString($token)." The control sequence ".
+	      ToString($token)." should not appear between \csname and \endcsname");}
+      else{
+	Error(":unexpected:".ToString($token)." The token ".ToString($token)
+	      ." is not defined");}}
     push(@toks,$token); }
   $token = T_CS("\\".ToString(Tokens(@toks)));
   Let($token, T_CS('\relax')) unless defined LookupMeaning($token);
@@ -3034,6 +3048,9 @@ Let(T_CS('\endgraf'),T_CS('\par'));
 Let(T_CS('\endline'),T_CS('\cr'));
 
 DefPrimitiveI('\endline', undef,undef);
+
+DefMacroI("\\\n",undef,'\ ');	# \<cr> == \<space> Interesting (see latex.ltx)
+Let(T_CS("\\\t"),T_CS("\\\n")); # \<tab> == \<space>, also
 
 #======================================================================
 # TeX Book, Appendix B, p. 352
