@@ -2940,9 +2940,7 @@ DefRegister('\z@',Dimension(0));
 DefRegister('\z@skip',Glue(0,0,0));
 
 # First approximation. till I figure out \newbox
-#  \newbox\voidb@x
-DefMacroI('\voidb@x',undef,Tokens());
-
+RawTeX('\newbox\voidb@x');
 #======================================================================
 # TeX Book, Appendix B, p. 348
 
