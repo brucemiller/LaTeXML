@@ -434,6 +434,28 @@ arbitrary text, in addition to the expected \elementref{ref}'s.</a:documentation
         <a:documentation>The font prefered for the title.</a:documentation>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="size">
+        <a:documentation>Indicates the text size to use. (See \elementref{text})</a:documentation>
+        <choice>
+          <value>Huge</value>
+          <value>huge</value>
+          <value>LARGE</value>
+          <value>Large</value>
+          <value>large</value>
+          <value>normal</value>
+          <value>small</value>
+          <value>footnote</value>
+          <value>tiny</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="color">
+        <a:documentation>the color to use; any CSS compatible color specification.</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="title_model">
     <a:documentation>Content model for \elementref{title},

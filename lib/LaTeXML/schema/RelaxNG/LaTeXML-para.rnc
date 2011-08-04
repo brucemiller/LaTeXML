@@ -163,7 +163,14 @@ element caption { caption_attributes, caption_model }
 ## Attributes for \elementref{caption}.
 caption_attributes = 
   Common.attributes,
-  attribute font { text }?
+  attribute font { text }?,
+
+  ## Indicates the text size to use. (See \elementref{text})
+  attribute size { "Huge" | "huge" | "LARGE" | "Large" | "large" | "normal"
+                 | "small" | "footnote" | "tiny" | text }?,
+
+  ## the color to use; any CSS compatible color specification.
+  attribute color { text }?
 
 
 ## Content model for \elementref{caption},
