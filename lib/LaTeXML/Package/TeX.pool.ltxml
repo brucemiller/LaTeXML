@@ -1265,17 +1265,25 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
 
 DefPrimitive('\setbox Number SkipMatch:=', sub { 
   my($stomach)=@_;
-  my @stuff = $stomach->invokeToken($stomach->getGullet->readXToken(1));
-  AssignValue('box'.$_[1]->valueOf => shift(@stuff));
-  @stuff;});
-# Is this the same ??
-DefPrimitive('\sbox Number SkipMatch:= {}', sub { 
-  my($stomach)=@_;
-  my @stuff = $stomach->invokeToken($stomach->getGullet->readXToken(1));
-  AssignValue('box'.$_[1]->valueOf => shift(@stuff));
-  @stuff;});
+  my $box = 'box'.$_[1]->valueOf;
+  # If there is any afterAssignment tokens, move them over so BoxContents parameter will use them
+  if(my $token =  LookupValue('afterAssignment')) {
+    AssignValue('afterAssignment'=>undef,'global');
+    AssignValue('BeforeNextBox'=>$token); }
+  my ($stuff,@rest) = $stomach->invokeToken($stomach->getGullet->readXToken(1));
+  AssignValue('box'.$_[1]->valueOf => $stuff);
+  @rest;});
 
-DefPrimitive('\box Number', sub { LookupValue('box'.$_[1]->valueOf) || (); });
+DefPrimitive('\box Number', sub {
+  my $box = 'box'.$_[1]->valueOf;
+  my $stuff = LookupValue($box);
+  AssignValue($box,undef);
+  ( $stuff ? $stuff->unlist : () ); });
+
+DefPrimitive('\copy Number', sub {
+  my $box = 'box'.$_[1]->valueOf;
+  my $stuff = LookupValue($box);
+  ( $stuff ? $stuff->unlist : () ); });
 
 sub revert_spec {
   my($whatsit,$keyword)=@_;
@@ -1290,13 +1298,33 @@ DefParameterType('BoxSpecification',sub {
 
 # Risky: I think this needs to be digested as a body to work like TeX (?)
 # but parameter think's it's just parsing from gullet...
-DefParameterType('BoxContents',sub {
-  my($gullet)=@_;
+sub readBoxContents {
+  my($gullet,$everybox)=@_;
   my $t;
   while(($t=$gullet->readToken) && !Equals($t,T_BEGIN)){} # Skip till { or \bgroup
+  # Now, insert some extra tokens, if any, possibly from \afterassignment
+  if(my $token =  LookupValue('BeforeNextBox')) {
+    AssignValue(BeforeNextBox=>undef,'global');
+    $gullet->unread($token); }
+  # AND, insert any extra tokens passed in, due to everyhbox or everyvbox
+  $gullet->unread($everybox->unlist) if $everybox;
   my($contents,@stuff) = $STATE->getStomach->invokeToken(T_BEGIN);
-  $contents; },
+  $contents; }
+
+DefParameterType('HBoxContents',sub {
+   readBoxContents($_[0], LookupValue('\everyhbox')); },
 		 undigested=>1); # Cause it already is digested!
+DefParameterType('VBoxContents',sub {
+   readBoxContents($_[0], LookupValue('\everyvbox')); },
+		 undigested=>1); # Cause it already is digested!
+
+# DefParameterType('BoxContents',sub {
+#   my($gullet)=@_;
+#   my $t;
+#   while(($t=$gullet->readToken) && !Equals($t,T_BEGIN)){} # Skip till { or \bgroup
+#   my($contents,@stuff) = $STATE->getStomach->invokeToken(T_BEGIN);
+#   $contents; },
+# 		 undigested=>1); # Cause it already is digested!
 
 # This re-binds a number of important control sequences to their default text binding.
 # This is useful within common boxing or footnote macros that can appear within
@@ -1309,7 +1337,7 @@ sub reenterTextMode {
 
 sub REF { $_[0] && $_[0]->{$_[1]}; }
 
-DefConstructor('\hbox BoxSpecification BoxContents',
+DefConstructor('\hbox BoxSpecification HBoxContents',
 	       "<ltx:text width='&REF(#1,to)' pad-width='&REF(#1,spread)' _noautoclose='1'>#2</ltx:text>",
  	       mode=>'text', bounded=>1,
  	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
@@ -1320,7 +1348,7 @@ DefConstructor('\hbox BoxSpecification BoxContents',
 # SHOULD Be a little smarter: if we're already in a block level context, don't open inline-block
 # but that doesn't really quite capture the logic....
 # Also, the whole business of laying out SOME of the children as rows is completely fuzzy..
-DefConstructor('\vbox BoxSpecification BoxContents', 
+DefConstructor('\vbox BoxSpecification VBoxContents', 
 #	       "<ltx:inline-block vattach='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
 	       sub {
 		 my($document,$spec,$contents,%props)=@_;
@@ -1337,7 +1365,7 @@ DefConstructor('\vbox BoxSpecification BoxContents',
  	       mode=>'text');
 
 
-DefConstructor('\vtop BoxSpecification BoxContents', 
+DefConstructor('\vtop BoxSpecification VBoxContents', 
 # "<ltx:inline-block vattach='top' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
 	       sub {
 		 my($document,$spec,$contents,%props)=@_;
@@ -1433,8 +1461,10 @@ DefPrimitive('\showthe Token',undef);
 # DefPrimitive('\shipout ??
 DefPrimitive('\ignorespaces SkipSpaces',undef);
 
-DefPrimitive('\afterassignment Token', sub { AssignValue(afterAssignment=>$_[1]); });
-DefPrimitive('\aftergroup Token', sub { UnshiftValue(afterGroup=>$_[1]); });
+# \afterassignment saves ONE token (globally!) to execute after the next assignment
+DefPrimitive('\afterassignment Token', sub { AssignValue(afterAssignment=>$_[1], 'global'); });
+# \aftergroup saves ALL tokens (from repeated calls) to be executed IN ORDER after the next egroup or }
+DefPrimitive('\aftergroup Token', sub { PushValue(afterGroup=>$_[1]); });
 
 # upper & lower case, actually expand (?)
 # \uppercase<general text>, \lowercase<general text>
@@ -1579,7 +1609,7 @@ DefColumnType('c',sub {
 DefColumnType('r',sub {
   $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\hfil'))); return; });
 
-DefConstructor('\pseudo@hbox BoxContents',
+DefConstructor('\pseudo@hbox HBoxContents',
 	       "#1",
  	       mode=>'text', bounded=>1,
  	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
