@@ -96,7 +96,9 @@
 		       f:if($node/@yoffset,   concat('position:relative; bottom:',$node/@yoffset,'; '),''),
 		       f:if($node/@color,     concat('color:',$node/@color,'; '),''),
 		       f:if($node/@framed = 'rectangle','border:1px solid black; ',''),
-		       f:if($node/@framed = 'underline','text-decoration:underline; ','')
+		       f:if($node/@framed = 'underline','text-decoration:underline; ',''),
+		       f:if($node/@align,     concat('text-align:',$node/@align,';'),''),
+		       f:if($node/@vattach,   concat('vertical-align:',$node/@vattach,';'),'')
 		       )"/>
   </func:result>
 </func:function>
