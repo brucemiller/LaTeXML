@@ -330,7 +330,7 @@ sub CounterValue {
 
 sub AfterAssignment {
   if(my $after = $STATE->lookupValue('afterAssignment')){
-    $STATE->assignValue(afterAssignment=>undef);
+    $STATE->assignValue(afterAssignment=>undef,'global');
     $STATE->getStomach->getGullet->unread($after); }	# primitive returns boxes, so these need to be digested!
 }
 
