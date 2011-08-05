@@ -1,0 +1,82 @@
+\documentclass{article}
+\def\foo{ FOO }
+\def\bar{ BAR }
+\newbox\ABox
+\newcount\mycounter\mycounter=0
+\begin{document}
+\section{AfterAssignment}
+
+{{{\afterassignment\foo}}}
+\mycounter=1\relax\the\mycounter
+\mycounter=2\relax\the\mycounter
+
+
+{
+\afterassignment\foo
+\mycounter=3\relax\the\mycounter
+\mycounter=4\relax\the\mycounter
+}
+
+
+{
+\afterassignment\foo
+\afterassignment\bar
+\mycounter=5\relax\the\mycounter
+\mycounter=6\relax\the\mycounter
+}
+
+
+\afterassignment\foo
+\setbox\ABox=\hbox{inside}
+setbox Before \copy\ABox After
+
+\setbox\ABox=\hbox{inside}
+Again setbox Before \copy\ABox After
+
+
+
+\afterassignment\bar
+Before \hbox{inside} After\mycounter=99
+
+\section{AfterGroup}
+before { middle } after
+
+before { \aftergroup\foo middle } after
+
+not {\em emphasized} not
+
+\subsection{AfterGroup in Environments}
+\begin{quote}
+before \em  after
+\end{quote}
+
+\begin{quote}
+before \aftergroup\foo after
+\end{quote}
+
+\section{Every Box}
+
+\def\HBox{ HBOX }
+\def\VBox{ VBOX }
+
+\vbox{\hbox{An Hbox}\hbox{Another Hbox}}
+
+\everyhbox={\HBox}
+\everyvbox={\VBox}
+\vbox{\hbox{An Hbox}\hbox{Another Hbox}}
+
+\everyhbox={}
+\everyvbox={}
+
+
+% \everymath is NOT (yet) supported.
+% \section{EveryMath}
+% \everymath={.}
+% $a+b$
+
+% \everymath={}
+%  $a+b$
+
+% $ a + \everymath={} b$
+
+\end{document}

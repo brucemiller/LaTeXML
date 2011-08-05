@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section refnum="1" xml:id="S1">
+    <title><tag>1 </tag>AfterAssignment</title>
+    <para xml:id="S1.p1">
+      <p>FOO 12</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>FOO 34</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>BAR 56</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>setbox Before  FOO insideAfter</p>
+    </para>
+    <para xml:id="S1.p5">
+      <p>Again setbox Before insideAfter</p>
+    </para>
+    <para xml:id="S1.p6">
+      <p>Before inside After BAR</p>
+    </para>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag>2 </tag>AfterGroup</title>
+    <para xml:id="S2.p1">
+      <p>before  middle  after</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>before  middle  FOO  after</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>not <text font="italic">emphasized</text> not</p>
+    </para>
+    <subsection refnum="2.1" xml:id="S2.SS1">
+      <title><tag>2.1 </tag>AfterGroup in Environments</title>
+      <para xml:id="S2.SS1.p1">
+        <quote>
+          <p>before <text font="italic">after</text></p>
+        </quote>
+      </para>
+      <para xml:id="S2.SS1.p2">
+        <quote>
+          <p>before after</p>
+        </quote>
+        <p>FOO</p>
+      </para>
+    </subsection>
+  </section>
+  <section refnum="3" xml:id="S3">
+    <title><tag>3 </tag>Every Box</title>
+    <para xml:id="S3.p1">
+      <inline-block vattach="bottom">
+        <p>An Hbox</p>
+        <p>Another Hbox</p>
+      </inline-block>
+    </para>
+    <para xml:id="S3.p2">
+      <inline-block vattach="bottom">
+        <p>V</p>
+        <p>B</p>
+        <p>O</p>
+        <p>X</p>
+        <p>HBOX An Hbox</p>
+        <p>HBOX Another Hbox</p>
+      </inline-block>
+    </para>
+  </section>
+</document>
