@@ -229,7 +229,7 @@ sub convertDocument {
        $preload =~ s/^\[([^\]]*)\]//;
        my $options = $1;
        $preload =~ s/\.sty$//;
-       $document->insertPI('latexml',package=>$preload,options=>$options); }
+       $document->insertPI('latexml',package=>$preload,($options ? (options=>$options):())); }
      $document->absorb($digested);
      NoteEnd("Building");
 
