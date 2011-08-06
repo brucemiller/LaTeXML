@@ -193,6 +193,7 @@ sub formatSymbols {
   print "\\usepackage{amsmath}\n";
   print "\\usepackage{cmbright}\n";
   print "\\usepackage{txfonts}\n";
+  print "\\usepackage{upgreek}\n";
   ##
   print "\\advance\\oddsidemargin-2cm\\relax\n";
   print "\\begin{document}\n";
@@ -213,7 +214,7 @@ sub formatSymbols {
     $presentation =~ s/([^\000-\177])/'\\&\#'.sprintf('%04x',(ord($1))).';'/eg;
 
     my $package = $$entry{package};
-    print "\\verb#$cs # & \$$invocation\$ & $role & $meaning & $presentation & $package \\\\\n";
+    print "\\verb#$cs # & \$$invocation\$ & $role & $meaning & $presentation & \\verb#$package # \\\\\n";
   }
   print "\\end{supertabular}}\n";
   print "\\end{document}\n"; 
