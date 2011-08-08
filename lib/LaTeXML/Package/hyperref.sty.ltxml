@@ -37,14 +37,19 @@ DefPrimitive('\hyperbaseurl Semiverbatim',sub { AssignValue(BASE_URL=>ToString($
 
 # \hyperimage{url}
 # ?
+sub cleanID {
+  my($string)=@_;
+  $string =~ s/:/../g;
+  $string; }
+
 # \hyperdef{category}{name}{text}
 DefConstructor('\hyperdef Semiverbatim Semiverbatim Semiverbatim',
 	       "<ltx:anchor xml:id='#id'>#3</ltx:anchor>",
-	       properties=>sub { (id=>ToString($_[1]).'.'.ToString($_[2])); } );
+	       properties=>sub { (id=>cleanID(ToString($_[1]).'.'.ToString($_[2]))); } );
 DefConstructor('\hyperref Semiverbatim Semiverbatim Semiverbatim Semiverbatim',
 	       "<ltx:ref href='#href'>#4</ltx:ref>",
 	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[1])
-						 .'#'.ToString($_[2]).'.'.ToString($_[3]))); } );
+						 .'#'.cleanID(ToString($_[2]).'.'.ToString($_[3])))); } );
 
 DefConstructor('\htmlref Semiverbatim  Semiverbatim',
 	       "<ltx:ref labelref='#label'>#1</ltx:ref>",
@@ -55,7 +60,8 @@ DefConstructor('\htmlref Semiverbatim  Semiverbatim',
 DefConstructor('\hyperlink Semiverbatim {}',
 	       "<ltx:ref idref='#1'>#2</ltx:ref>");
 DefConstructor('\hypertarget Semiverbatim {}',
-	       "<ltx:anchor xml:id='#1'>#2</ltx:anchor>");
+	       "<ltx:anchor xml:id='#id'>#2</ltx:anchor>",
+	      properties=>sub { (id=>cleanID(ToString($_[1]))); });
 
 # Hmm...
 DefMacro('\autoref Semiverbatim','\ref{#1}');
