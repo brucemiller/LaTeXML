@@ -107,7 +107,10 @@
 
   <xsl:template match="ltx:title">
     <hgroup>
-      <h1 class="{f:classes(.)}"><xsl:apply-templates/></h1>
+      <h1 class="{concat(f:classes(.),
+		    f:if(@font,concat(' ',@font),''),
+		    f:if(@size,concat(' ',@size),''))}"
+	     style="{f:if(@color,concat('color:',@color),'')}"><xsl:apply-templates/></h1>
       <xsl:apply-templates select="../ltx:subtitle"/>
     </hgroup>
   </xsl:template>

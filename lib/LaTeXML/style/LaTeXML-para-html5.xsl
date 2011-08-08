@@ -81,7 +81,10 @@
 </xsl:template>
 
 <xsl:template match="ltx:caption" xml:space="preserve">
-  <figcaption class='{f:classes(.)}'>
+  <figcaption class="{concat(f:classes(.),
+		    f:if(@font,concat(' ',@font),''),
+		    f:if(@size,concat(' ',@size),''))}"
+	     style="{f:if(@color,concat('color:',@color),'')}">
     <xsl:apply-templates/>
   </figcaption>
 </xsl:template>
