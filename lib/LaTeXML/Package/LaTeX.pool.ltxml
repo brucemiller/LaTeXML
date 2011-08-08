@@ -3676,6 +3676,7 @@ DefPrimitive('\@setsize{}{}{}{}',undef);
 Let(T_CS('\@warning'),  T_CS('\@latex@warning'));
 Let(T_CS('\@@warning'), T_CS('\@latex@warning@no@line'));
 
+DefMacro('\G@refundefinedtrue','');
 #======================================================================
 
 RawTeX(<<'EOTeX');
@@ -3857,5 +3858,8 @@ DefMacroI('\fix@penalty',undef,'');
 
 DefPrimitiveI('\@@end',undef,sub { $_[0]->getGullet->flush; return; });
 
+#**********************************************************************
+# Since \write does nothing... ?
+DefMacro('\protected@write{}{}{}','');
 #**********************************************************************
 1;
