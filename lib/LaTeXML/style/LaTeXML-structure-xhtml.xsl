@@ -206,9 +206,14 @@
       <xsl:attribute name="class">
 	<xsl:value-of select="concat(f:classes(.),
 			      ' ',concat(local-name(..),'-title'),
-			      f:if(@font,concat(' ',@font),'') )"/>
+			      f:if(@font,concat(' ',@font),''),
+			      f:if(@size,concat(' ',@size),''))"/>
       </xsl:attribute>
-      <xsl:apply-templates/>
+      <xsl:if test="@color">
+	<xsl:attribute name="style">
+	  <xsl:value-of select="concat('color:',@color)"/>
+	</xsl:attribute>
+      </xsl:if>
     </xsl:element>
   </xsl:template>
 

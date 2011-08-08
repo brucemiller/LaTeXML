@@ -64,10 +64,16 @@
   <xsl:template match="ltx:verbatim">
     <xsl:choose>
       <xsl:when test="contains(text(),'&#xA;')">
-	<pre class="{f:classes(.)}"><xsl:apply-templates/></pre>
+	<pre class="{concat(f:classes(.),
+		    f:if(@font,concat(' ',@font),''),
+		    f:if(@size,concat(' ',@size),''))}"
+	     style="{f:if(@color,concat('color:',@color),'')}"><xsl:apply-templates/></pre>
       </xsl:when>
       <xsl:otherwise>
-	<code class="{f:classes(.)}"><xsl:apply-templates/></code>
+	<code class="{concat(f:classes(.),
+		    f:if(@font,concat(' ',@font),''),
+		    f:if(@size,concat(' ',@size),''))}"
+	     style="{f:if(@color,concat('color:',@color),'')}"><xsl:apply-templates/></code>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>

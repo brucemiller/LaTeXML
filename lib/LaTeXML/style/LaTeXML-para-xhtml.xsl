@@ -82,7 +82,10 @@
 </xsl:template>
 
 <xsl:template match="ltx:caption" xml:space="preserve">
-  <div class='{f:classes(.)}'>
+  <div class="{concat(f:classes(.),
+		    f:if(@font,concat(' ',@font),''),
+		    f:if(@size,concat(' ',@size),''))}"
+	     style="{f:if(@color,concat('color:',@color),'')}">
     <xsl:apply-templates/>
   </div>
 </xsl:template>
