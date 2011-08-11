@@ -27,7 +27,7 @@ sub new {
   $$self{ref_show} = ($options{number_sections} ? "typerefnum" : "title");
   $$self{min_ref_length} = (defined $options{min_ref_length} ? $options{min_ref_length} : 1);
   $$self{ref_join} = (defined $options{ref_join} ? $options{ref_join} : " \x{2023} "); # or " in " or ... ?
-  $$self{context_toc} = $options{context_toc};
+  $$self{navigation_toc} = $options{navigation_toc};
   $self; }
 
 sub process {
@@ -35,7 +35,12 @@ sub process {
   $self->ProgressDetailed($doc,"Beginning cross-references");
   my $root = $doc->getDocumentElement;
   local %LaTeXML::Post::CrossRef::MISSING=();
-  $self->add_context_TOC($doc) if $$self{context_toc};
+  if(my $navtoc = $$self{navigation_toc}){ # If a navigation toc requested, put a toc in nav; will get filled in
+    my $toc = ['ltx:TOC',{format=>$navtoc}];
+    if(my $nav = $doc->findnode('//ltx:navigation')){
+      $doc->addNodes($nav,$toc); }
+    else {
+      $doc->addNodes($doc->getDocumentElement,['ltx:navigation',{},$toc]); }}
   $self->fill_in_tocs($doc);
   $self->fill_in_frags($doc);
   $self->fill_in_refs($doc);
@@ -54,14 +59,6 @@ sub note_missing {
 
 our $normaltoctypes = {map( ($_=>1), qw(ltx:document ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
 				      ltx:paragraph ltx:subparagraph ltx:index ltx:bibliography ltx:appendix))};
-
-sub add_context_TOC {
-  my($self,$doc)=@_;
-  if(my $nav = $doc->findnode('//ltx:navigation')){
-    $doc->addNodes($nav,['ltx:TOC',{format=>'context'}]); }
-  else {
-    $doc->addNodes($doc->getDocumentElement,
-		   ['ltx:navigation',{},['ltx:TOC',{format=>'context'}]]); }}
 
 sub fill_in_tocs {
   my($self,$doc)=@_;
