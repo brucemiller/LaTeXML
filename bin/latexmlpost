@@ -334,7 +334,9 @@ if(!$prescan){
 	my $csspath = pathname_absolute($css,pathname_directory($destination));
 	while(@csssources && ($csssources[0] eq $csspath)){ shift(@csssources); }
 	my $csssource = shift(@csssources);
-	pathname_copy($csssource,$csspath)  if $csssource && -f $csssource;
+	if($csssource && -f $csssource){
+	  print STDERR "Using CSS=$csssource\n" if $verbosity > 0;
+	  pathname_copy($csssource,$csspath); }
 	push(@csspaths,$csspath); }}
     my $icondest;
     if($icon){
