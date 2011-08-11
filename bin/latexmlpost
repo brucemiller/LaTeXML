@@ -28,7 +28,8 @@ my($linelength,$keepXMath,$plane1,$hackplane1)=(undef,undef,undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
 my @graphicsmaps=();
 my($split,$splitat,$splitpath,$splitnaming)=(undef,'section',undef,'id');
-my($contexttoc)=(undef);
+my($navtoc)=(undef);
+my %navtocstyles=(context=>1,normal=>1,none=>1);
 my($prescan,$dbfile,$scan,$crossref,$sitedir)=(undef,undef,1,1,undef);
 my($index,$permutedindex,$splitindex)=(1,undef,undef);
 my($splitbibliography,@bibliographies)=(undef);
@@ -72,7 +73,8 @@ GetOptions("verbose+"              =>\$verbosity,
 	   "scan!"                 =>\$scan,
 	   "crossref!"             =>\$crossref,
 	   "urlstyle=s"            =>\$urlstyle,
-	   "contexttoc!"           =>\$contexttoc,
+	   "navigationtoc=s"       =>\$navtoc,
+	   "navtoc=s"              =>\$navtoc,
 	   # Generating indices
 	   "index!"                =>\$index,
 	   "permutedindex!"        =>\$permutedindex,
@@ -155,6 +157,14 @@ if(!$prescan && $index && ! ($scan || defined $crossref)){
   Error("Cannot generate index (--index) without --scan or --dbfile"); }
 if(!$prescan && @bibliographies && ! ($scan || defined $crossref)){
   Error("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
+
+$navtoc = lc($navtoc) if defined $navtoc;
+$navtoc=undef if $navtoc && $navtoc eq 'none';
+if($navtoc){
+  if(!$navtocstyles{$navtoc}){
+    Error("$navtoc is not a recognized style of navigation TOC (--navigationtoc)"); }
+  if(!$crossref){
+    Error("Cannot use --navigationtoc=$navtoc without --crossref"); }}
 
 # Check format and complete math and image options
 if(!defined $format){}
@@ -258,7 +268,7 @@ if(!$prescan){
     require 'LaTeXML/Post/CrossRef.pm';
     push(@procs,LaTeXML::Post::CrossRef->new(db=>$DB,urlstyle=>$urlstyle,format=>$format,
 					     ($numbersections ? (number_sections=>1):()),
-					     ($contexttoc ? (context_toc=>1):()),
+					     ($navtoc ? (navigation_toc=>$navtoc):()),
 					     %OPTIONS)); }
 
   if($mathimages){
@@ -425,6 +435,7 @@ latexmlpost [options] I<xmlfile>
  --nocrossref            disables the above
  --urlstyle=(server|negotiated|file) format to use for urls
                          (default server).
+ --navigationtoc=(context|none) generates a table of contents innavbar
  --index                 requests filling in the index (default)
  --noindex               disables the above
  --splitindex            Splits the index into pages per initial.
@@ -634,6 +645,13 @@ trailing C<index.html>.  With C<negotiated>, the trailing
 file extension (typically C<html> or C<xhtml>) are eliminated.
 The scheme C<file> preserves complete (but relative) urls
 so that the site can be browsed as files without any server.
+
+=item C<--navigationtoc>=C<(context|none)>
+
+Generates a table of contents in the navigation bar; default is C<none>.
+The `context' style of TOC, is somewhat verbose and reveals more detail near the current
+page; it is most suitable for navigation bars placed on the left or right.
+Other styles of TOC should be developed and added here, such as a short form.
 
 =item C<--index>, C<--noindex>
 
