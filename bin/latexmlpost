@@ -241,6 +241,15 @@ if(defined $dbfile && !-f $dbfile){
     pathname_mkdir($dbdir); }}
 my $DB = LaTeXML::Util::ObjectDB->new(dbfile=>$dbfile,%OPTIONS);
 
+# Create the Source Document
+my $DOCUMENT= ($xmlfile eq '-'
+	       ? LaTeXML::Post::Document->newFromSTDIN(validate=>$validate,
+						       sourceDirectory=>$sourcedir,
+						       destination=>$destination)
+	       : LaTeXML::Post::Document->newFromFile($xmlfile,
+						      validate=>$validate,
+						      sourceDirectory=>$sourcedir,
+						      destination=>$destination));
 # Create the processors:
 my @procs = ();
 if($split){
@@ -322,48 +331,36 @@ if(!$prescan){
 
   if($stylesheet){
     require 'LaTeXML/Post/XSLT.pm'; 
-    my @csspaths=();
-    if(@css){
-      foreach my $css (@css){
-	$css .= '.css' unless $css =~ /\.css$/;
-	# Dance, if dest is current dir, we'll find the old css before the new one!
-	my @csssources = map(pathname_canonical($_),
-			     pathname_findall($css,types=>['css'],
-					      ($sourcedir ? (paths=>[$sourcedir]):()),
-					      installation_subdir=>'style'));
-	my $csspath = pathname_absolute($css,pathname_directory($destination));
-	while(@csssources && ($csssources[0] eq $csspath)){ shift(@csssources); }
-	my $csssource = shift(@csssources);
-	if($csssource && -f $csssource){
-	  print STDERR "Using CSS=$csssource\n" if $verbosity > 0;
-	  pathname_copy($csssource,$csspath); }
-	push(@csspaths,$csspath); }}
-    my $icondest;
+    # Copy various kinds of resources, css, icon (eventually javascript...)
+    my $parameters={};
+    my @searchpaths = $DOCUMENT->getSearchPaths;
+    foreach my $css (@css){
+      if(my $csssource = pathname_find($css, types=>['css'],paths=>[@searchpaths],
+				       installation_subdir=>'style')){
+	print STDERR "Using CSS=$csssource\n" if $verbosity > 0;
+	my $cssdest = pathname_absolute($css,pathname_directory($destination));
+	$cssdest .= '.css' unless $cssdest =~ /\.css$/;
+	warn "CSS source $csssource is same as destination!" if $csssource eq $cssdest;
+	pathname_copy($csssource,$cssdest);
+	push(@{$$parameters{CSS}}, $cssdest); }
+      else {
+	warn "Couldn't find CSS $css in paths ".join(',',@searchpaths)."\n"; }}
     if($icon){
-      $icondest = pathname_absolute($icon,pathname_directory($destination));
-      if(my $iconsrc = pathname_find($icon,($sourcedir ? (paths=>[$sourcedir]):()))){
-	pathname_copy($iconsrc,$icondest); }}
-    push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,
-					 parameters=>{(@csspaths ? (CSS=>[@csspaths]):()),
-						      ($icondest ? (ICON=>$icondest):()),
-						     },
-					 %OPTIONS)); }
+      if(my $iconsrc = pathname_find($icon,paths=>[$DOCUMENT->getSearchPaths])){
+	print STDERR "Using icon=$iconsrc\n" if $verbosity > 0;
+	my $icondest = pathname_absolute($icon,pathname_directory($destination));
+	pathname_copy($iconsrc,$icondest);
+	$$parameters{ICON}=$icondest;  }
+      else {
+	warn "Couldn't find ICON $icon in paths ".join(',',@searchpaths)."\n"; }}
+    push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,parameters=>$parameters, %OPTIONS)); }
 
   push(@procs,LaTeXML::Post::Writer->new(format=>$format,omit_doctype=>$omit_doctype,is_html=>$is_html,%OPTIONS));
 }
 
 # Figure how to define a Reader processor (?)
 # that initialize the thing by reading several files (the rest of the command line).
-LaTeXML::Post::ProcessChain(
-	  ($xmlfile eq '-'
-	   ? LaTeXML::Post::Document->newFromSTDIN(validate=>$validate,
-						   sourceDirectory=>$sourcedir,
-						   destination=>$destination)
-	   : LaTeXML::Post::Document->newFromFile($xmlfile,
-						  validate=>$validate,
-						  sourceDirectory=>$sourcedir,
-						  destination=>$destination)),
-			    @procs);
+LaTeXML::Post::ProcessChain($DOCUMENT,@procs);
 $DB->finish;
 #======================================================================
 # helpers
