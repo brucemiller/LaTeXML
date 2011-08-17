@@ -844,7 +844,7 @@ sub ApplyNary {
   my @args = ();
   if(p_getQName($arg1) eq 'ltx:XMApp'){
     my($op1,@args1)=p_element_nodes($arg1);
-    if((p_getTokenMeaning($op1) eq $opname)
+    if(((p_getTokenMeaning($op1)||'__undef_name__') eq $opname)
        && (p_getValue($op1) eq $opcontent)
        && !grep($_ ,map((p_getAttribute($op,$_)||'<none>') ne (p_getAttribute($op1,$_)||'<none>'),
 			qw(style)))) { # Check ops are used in similar way
