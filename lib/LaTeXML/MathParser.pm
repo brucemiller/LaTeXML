@@ -839,13 +839,13 @@ sub LeftRec {
 # then combine as nary.
 sub ApplyNary {
   my($op,$arg1,$arg2)=@_;
-  my $opname = p_getTokenMeaning($op);
-  my $opcontent = p_getValue($op);
+  my $opname    = p_getTokenMeaning($op) ||'__undef_meaning__';
+  my $opcontent = p_getValue($op)  ||'__undef_content__';
   my @args = ();
   if(p_getQName($arg1) eq 'ltx:XMApp'){
     my($op1,@args1)=p_element_nodes($arg1);
-    if(((p_getTokenMeaning($op1)||'__undef_name__') eq $opname)
-       && (p_getValue($op1) eq $opcontent)
+    if(((p_getTokenMeaning($op1)||'__undef_meaning__') eq $opname)
+       && ((p_getValue($op1) || '__undef_content__') eq $opcontent)
        && !grep($_ ,map((p_getAttribute($op,$_)||'<none>') ne (p_getAttribute($op1,$_)||'<none>'),
 			qw(style)))) { # Check ops are used in similar way
       push(@args,@args1); }
