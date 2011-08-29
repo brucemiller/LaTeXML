@@ -41,7 +41,7 @@ sub lineParams {
 
 sub pointPointDist {
   my ($P1, $P2) = @_;
-  sqrt($P1->getX->substract($P2->getX)->valueOf()**2 + $P1->getY->substract($P2->getY)->valueOf()**2); }
+  sqrt($P1->getX->subtract($P2->getX)->valueOf()**2 + $P1->getY->subtract($P2->getY)->valueOf()**2); }
 
 sub linePointDist {
   my ($P, @l) = @_;
@@ -53,6 +53,6 @@ sub lineIntersect {
 
 sub lineAngle {
     my ($A, $B) = @_;
-    rad2deg(atan2($B->getY->substract($A->getY)->valueOf, $B->getX->substract($A->getX)->valueOf)); }
+    rad2deg(atan2($B->getY->subtract($A->getY)->valueOf, $B->getX->subtract($A->getX)->valueOf)); }
 
 1;

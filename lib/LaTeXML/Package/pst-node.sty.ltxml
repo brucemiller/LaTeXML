@@ -52,7 +52,7 @@ sub nConnShiftUp {
 
 sub nConnShiftDown {
   my ($p) = @_;
-  if (my $off = LookupValue('\psoffset')) { Pair($p->getX, $p->getY->substract($off)); }
+  if (my $off = LookupValue('\psoffset')) { Pair($p->getX, $p->getY->subtract($off)); }
   else { $p }; }
 
 # should also handle nodesep when boundary of text can be determined
@@ -383,8 +383,8 @@ sub computeLabelPos {
   if ($n == 1) { $p = $nc->getPair(0); }
   else { $s = $n-2 if $s+1 >= $n;
 	 my ($na, $nb) = ($nc->getPair($s), $nc->getPair($s+1));
-	 my $dx = $nb->getX->substract($na->getX)->multiply($f);
-	 my $dy = $nb->getY->substract($na->getY)->multiply($f);
+	 my $dx = $nb->getX->subtract($na->getX)->multiply($f);
+	 my $dy = $nb->getY->subtract($na->getY)->multiply($f);
 	 $p = Pair($na->getX->add($dx), $na->getY->add($dy)); }
   $p; }
 
@@ -439,7 +439,7 @@ DefConstructor('\bput@start OptionalMatch:* [PSDimension] BracketedPSAngle Round
 		 my ($whatsit, $labelsep, $angle, $pos) = ($_[1],map($_[1]->getArg($_),2,3,4));
 		 my $p = computeLabelPos($pos);
 		 $labelsep = $labelsep || LookupValue('\pslabelsep');
-		 $p = Pair($p->getX->substract($labelsep), $p->getY->substract($labelsep));
+		 $p = Pair($p->getX->subtract($labelsep), $p->getY->subtract($labelsep));
 		 finishLabelPut($whatsit, $angle, $p); },
 	       alias=>'\bput');
 
@@ -488,7 +488,7 @@ DefConstructor('\Bput@start OptionalMatch:* [PSDimension]',
 		 my ($stomach,$whatsit, $labelsep) = @_;
 		 my $p = computeLabelPos();
 		 $labelsep = $labelsep || LookupValue('\pslabelsep');
-		 $p = Pair($p->getX->substract($labelsep), $p->getY->substract($labelsep));
+		 $p = Pair($p->getX->subtract($labelsep), $p->getY->subtract($labelsep));
 		 finishLabelPut($whatsit, undef, $p); },
 	       alias=>'\Bput');
 

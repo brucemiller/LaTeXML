@@ -34,7 +34,7 @@ sub absolute { (ref $_[0])->new(abs( $_[0]->valueOf));}
 sub sign     { ($_[0]->valueOf<0)?-1:(($_[0]->valueOf>0)?1:0); }
 sub negate   { (ref $_[0])->new(- $_[0]->valueOf); }
 sub add      { (ref $_[0])->new($_[0]->valueOf + $_[1]->valueOf); }
-sub substract{ (ref $_[0])->new($_[0]->valueOf - $_[1]->valueOf); }
+sub subtract { (ref $_[0])->new($_[0]->valueOf - $_[1]->valueOf); }
 # arg 2 is a number
 sub multiply { (ref $_[0])->new(int($_[0]->valueOf * (ref $_[1] ? $_[1]->valueOf : $_[1]))); }
 
@@ -206,6 +206,8 @@ sub stringify{ "Pair[".join(',',map($_->stringify, @{$_[0]}))."]"; }
 sub revert {
   my($self)=@_;
   (T_OTHER('('),Revert($$self[0]),T_OTHER(','),Revert($$self[1]),T_OTHER(')')); }
+
+sub negate { $_[0]->multiply(-1); }
 
 #**********************************************************************
 package LaTeXML::PairList;

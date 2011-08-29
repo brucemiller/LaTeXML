@@ -28,6 +28,6 @@ DefConstructor('\Curve Pair {Float}',
 	       properties=>sub {
 		 picProperties(pt=>PairList(Pair(Dimension(0),Dimension(0)), picScale($_[1]),
 					    Pair($_[1]->getX->multiply(0.5)->add($_[1]->getY->multiply($_[2]->valueOf/10)),
-						 $_[1]->getY->multiply(0.5)->substract($_[1]->getX->multiply($_[2]->valueOf/10))))); });
+						 $_[1]->getY->multiply(0.5)->subtract($_[1]->getX->multiply($_[2]->valueOf/10))))); });
 
 1;
