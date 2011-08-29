@@ -3199,14 +3199,20 @@ Tag('ltx:picture',afterOpen=>sub { GenerateID(@_,'pic'); });
 ### NOTE: This needs to be researched!!!
 
 # Note: Untex should prefix a setting of unitlength!!!
+# First pair is (width,height)
+# Second pair is the coordinate of the lower-left corner.
+# [Note that for SVG the root viewport origin is at the TOP-left corner!
+#  but that is currently handled in the SVG postprocessing module]
 DefEnvironment('{picture} Pair OptionalPair',
 	       "<ltx:picture %&SimplePairAttr(#size,width,height)"
 	       ." fill='black' stroke='black' unitlength='#unitlength'>"
-	       . "#body"
+	       . "?#pos(<ltx:g transform='#pos'>#body</ltx:g>)(#body)"
 	       ."</ltx:picture>",
 	       mode=>'text',
 	       beforeDigest=>\&before_picture,
+
 	       properties=>sub { (unitlength=>LookupValue('\unitlength'),
+				  ($_[2] ? (pos=>'translate('.ptValue(picScale($_[2]->negate)).')'):()),
 				  picProperties(size=>picScale($_[1]))); },
 	       afterDigest=>\&after_picture);
 
