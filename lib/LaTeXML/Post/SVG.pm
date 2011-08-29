@@ -37,7 +37,11 @@ sub process {
     $doc->adjust_latexml_doctype('SVG'); } # Add SVG if LaTeXML dtd.
   $doc; }
 
-sub find_svg_nodes { $_[1]->findnodes('//ltx:picture[not(svg:svg)]'); }
+# We need to find potential nodes to convert,
+# but don't want those already containing SVG.
+# sub find_svg_nodes { $_[1]->findnodes('//ltx:picture[not(svg:svg)]'); }
+# However, we may not have svg as a registered namespace, so...
+sub find_svg_nodes { $_[1]->findnodes("//ltx:picture[not(local-name()='svg' and namespace-uri()='$svgURI')]"); }
 
 sub getQName {
   $LaTeXML::Post::SVG::DOCUMENT->getQName(@_); }
@@ -142,11 +146,13 @@ sub convertPicture {
   my ($parent,$node) = @_;
   # I'm sure I'm not understanding Ioan's computation methods, here, but...
 
-  my ($minx, $maxx, $miny, $maxy) = map($_ || 0, @{getSVGBounds($node)});
-  my $h = $maxy-$miny;
+#  my ($minx, $maxx, $miny, $maxy) = map($_ || 0, @{getSVGBounds($node)});
+#  my $h = $maxy-$miny;
 
+  my $h = $node->getAttribute('height') || '0'; $h=~ s/pt$//;
   my $mvNode = $parent->addNewChild($svgURI, 'g');
   $mvNode->setAttribute(transform=>"translate(0,$h)");
+
   my $scaleNode = $mvNode->addNewChild($svgURI, 'g');
   $scaleNode->setAttribute(transform=>'scale(1 -1)');
   map(convertNode($scaleNode,$_), element_nodes($node));
@@ -502,7 +508,8 @@ sub SVGObjectBoundary {
   my @xs=($boundary[0], $boundary[1]), my @ys = ($boundary[2], $boundary[3]);
 
   if ($tag eq 'ltx:circle') {
-    my ($cx, $cy, $r) = get_attr($node, qw (cx cy r));
+###    my ($cx, $cy, $r) = get_attr($node, qw (cx cy r));
+    my ($cx, $cy, $r) = get_attr($node, qw (x y r));
     $r = $r*sqrt(2); push(@xs, $cx-$r,$cx+$r); push(@ys, $cy-$r,$cy+$r);
   } elsif (($tag eq 'ltx:polygon') || ($tag eq 'ltx:line')) {
     my $points = $node->getAttribute('points');
