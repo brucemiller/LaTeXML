@@ -3576,7 +3576,7 @@ DefMathI('\bigcup',   undef,"\x{22C3}", role=>'SUMOP',	scriptpos=>\&doScriptpos,
 DefMathI('\bigsqcup', undef,"\x{2294}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'square-union');
 DefMathI('\bigvee',   undef,"\x{22C1}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'or');
 DefMathI('\bigwedge', undef,"\x{22C0}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'and');
-DefMathI('\bigodot',  undef,"\x{22A1}", role=>'SUMOP',	scriptpos=>\&doScriptpos); #meaning=> ?
+DefMathI('\bigodot',  undef,"\x{2299}", role=>'SUMOP',	scriptpos=>\&doScriptpos); #meaning=> ?
 DefMathI('\bigotimes',undef,"\x{2297}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'tensor-product');
 DefMathI('\bigoplus', undef,"\x{2295}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'direct-sum');
 DefMathI('\biguplus', undef,"\x{228C}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'symmetric-difference');
