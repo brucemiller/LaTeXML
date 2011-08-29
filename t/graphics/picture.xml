@@ -70,14 +70,16 @@ All should be the same.</p>
       <title>Vectors:</title>
       <para xml:id="S2.SS0.SSS0.P2.p1">
         <picture fill="black" height="100.0pt" stroke="black" unitlength="1.0pt" width="100.0pt" xml:id="S2.SS0.SSS0.P2.p1.pic1" tex="\begin{picture}(100.0,100.0)(-100.0,-100.0)\put(0.0,0.0){\vector(-1.0,0.0){100.0}}\put(0.0,0.0){\vector(-1.0,-1.0){100.0}}\put(0.0,0.0){\vector(0.0,-1.0){100.0}}\end{picture}">
-          <g transform="translate(0,0)">
-            <line points="0,0 -100,0" stroke-width="0.4" terminators="-&gt;"/>
-          </g>
-          <g transform="translate(0,0)">
-            <line points="0,0 -100,-100" stroke-width="0.4" terminators="-&gt;"/>
-          </g>
-          <g transform="translate(0,0)">
-            <line points="0,0 0,-100" stroke-width="0.4" terminators="-&gt;"/>
+          <g transform="translate(100,100)">
+            <g transform="translate(0,0)">
+              <line points="0,0 -100,0" stroke-width="0.4" terminators="-&gt;"/>
+            </g>
+            <g transform="translate(0,0)">
+              <line points="0,0 -100,-100" stroke-width="0.4" terminators="-&gt;"/>
+            </g>
+            <g transform="translate(0,0)">
+              <line points="0,0 0,-100" stroke-width="0.4" terminators="-&gt;"/>
+            </g>
           </g>
         </picture>
       </para>
