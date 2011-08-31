@@ -137,6 +137,8 @@ sub onlyPreamble {
 # it can be processed specially, if needed.  These are the magic
 # '\begin{env}', '\end{env}' control sequences created by DefEnvironment.
 
+AssignValue(current_environment=>'document','global');
+DefMacro('\@currenvir',sub { Explode(LookupValue('current_environment')); });
 DefMacro('\begin{}',sub { 
   my($gullet,$env)=@_;
   my $name = $env && ToString($env);
@@ -1016,7 +1018,7 @@ DefPrimitive('\usecounter{}', undef);
 # NOTE: how's the best way to get verbatim material through?
 DefEnvironment('{verbatim}', '<ltx:verbatim>#body</ltx:verbatim>');
 DefEnvironment('{verbatim*}','<ltx:verbatim>#body</ltx:verbatim>');
-
+Let(T_CS('\@verbatim'),T_CS('\verbatim')); # Close enough?
 # verbatim is a bit of special case;
 # It looks like an environment, but it only ends with an explicit "\end{verbatim}" on it's own line.
 # So, we'll end up doing things more manually.
@@ -1041,6 +1043,11 @@ DefConstructorI(T_CS('\begin{verbatim}'),undef,
 						      @lines, $end));
 				return; }],
 		beforeConstruct=>sub { $_[0]->maybeCloseElement('ltx:p'); });
+
+DefPrimitiveI('\@vobeyspaces', undef,sub {
+  AssignCatcode(" "=>13);
+  Let(T_ACTIVE(" "), T_CS('\nobreakspace'));
+  return});
 
 # WARNING: This code binds $STATE to a simple State object with known fixed catcodes.
 # The State normally contains ALL the bindings, etc and links to other important objects.
