@@ -52,19 +52,17 @@ sub finish {
 
 # This is (hopefully) a platform independent way of splitting a string
 # into "lines" ending with CRLF, CR or LF (DOS, Mac or Unix).
+# Note that TeX considers newlines to be \r, ie CR, ie ^^M
 sub splitString {
   my($self,$string)=@_;
-#  $string =~ s/(?:\015\012|\015|\012)$//; # Remove trailing lineend, if any
-#  $string =~ s/(?:\015\012|\015|\012)/\n/sg; #  Normalize remaining
-#  ($string ? split("\n",$string) : ("")); }		  # And split.
-  $string =~ s/(?:\015\012|\015|\012)/\n/sg; #  Normalize remaining
-  split("\n",$string); }		  # And split.
+  $string =~ s/(?:\015\012|\015|\012)/\r/sg; #  Normalize remaining
+  split("\r",$string); }		  # And split.
 
 sub getNextLine {
   my($self)=@_;
   return undef unless scalar(@{$$self{buffer}});
   my $line = shift(@{$$self{buffer}});
-  (scalar(@{$$self{buffer}}) ? $line . "\n" : $line); }	# No cr on last line!
+  (scalar(@{$$self{buffer}}) ? $line . "\r" : $line); }	# No CR on last line!
 
 sub hasMoreInput {
   my($self)=@_;
@@ -90,13 +88,8 @@ sub getNextChar {
 	$$self{nchars} -= 3; }
       else {			# OR ^^ followed by a SINGLE Control char type code???
 	my $c=$$self{chars}->[$$self{colno}+1];
-	# Knuth sets ^^M (CR) as the EOL char, but we're going to work
-	# with \n which is LF here.
-	if($c eq 'M'){
-	  $ch = "\n"; }
-	else {
-	  my $cn = ord($c);
-	  $ch = chr($cn + ($cn > 64 ? -64 : 64));  }
+	my $cn = ord($c);
+	$ch = chr($cn + ($cn > 64 ? -64 : 64));
 	splice(@{$$self{chars}},$$self{colno}-1,3,$ch);
 	$$self{nchars} -= 2; }
       $cc = $STATE->lookupCatcode($ch); }
@@ -209,8 +202,8 @@ sub readToken {
 	$$self{chars}=[];
 	$$self{nchars}=0;
 	return undef;  }
-      # Remove trailing space, but NOT a control space!
-      $line =~ s/((\\ )*)\s*$/$1\n/s;
+      # Remove trailing space, but NOT a control space!  End with CR (not \n) since this gets tokenized!
+      $line =~ s/((\\ )*)\s*$/$1\r/s;
       $$self{chars}=[split('',$line)];
       $$self{nchars} = scalar(@{$$self{chars}});
       while(($$self{colno} < $$self{nchars})
@@ -255,6 +248,8 @@ sub readRawLines {
     my $line;
     if($$self{colno} < $$self{nchars}){
       $line = join('',@{$$self{chars}}[$$self{colno}..$$self{nchars}-1]);
+      # End lines with \n, not CR, since the result will be treated as strings
+      $line =~ s/\r$/\n/;
       $$self{colno}=$$self{nchars}; }
     else {
       $line = $self->getNextLine; 
@@ -269,6 +264,8 @@ sub readRawLines {
     elsif(!$exact && ($line =~ /^(.*?)\Q$endline\E(.*)$/)){
       my($pre,$post)=($1,$2);
       push(@lines,$pre."\n") if $pre;
+      # Replace the \n with a \r in the line rest, since it will be tokenized
+      $line =~ s/\n$/\r/;
       $$self{chars}=[split('',$line)];
       $$self{nchars} = scalar(@{$$self{chars}});
       $$self{colno} = length($pre)+length($endline);
@@ -339,7 +336,7 @@ sub getNextLine {
       $line = decode($encoding, $line, Encode::FB_DEFAULT);
       if($line =~ s/\x{FFFD}/ /g){	# Just remove the replacement chars, and warn (or Info?)
 	Info(":unexpected input isn't valid under encoding $encoding"); }}}
-  $line .= "\n"; # put line ending back!
+  $line .= "\r"; # put line ending back!
 
   if(!($$self{lineno} % 25)){
     NoteProgress("[#$$self{lineno}]"); }
