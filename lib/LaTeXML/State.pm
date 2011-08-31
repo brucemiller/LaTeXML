@@ -90,7 +90,7 @@ sub new {
   if($options{catcodes} =~ /^(standard|style)/){
     # Setup default catcodes.
     my %std = ( "\\"=>   CC_ESCAPE, "{"=>    CC_BEGIN,  "}"=>    CC_END,   "\$"=>   CC_MATH,
-		"\&"=>   CC_ALIGN,  "\n"=>   CC_EOL,    "#"=>    CC_PARAM,  "^"=>   CC_SUPER,
+		"\&"=>   CC_ALIGN,  "\r"=>   CC_EOL,    "#"=>    CC_PARAM,  "^"=>   CC_SUPER,
 		"_"=>    CC_SUB,    " "=>    CC_SPACE,  "\t"=>   CC_SPACE,  "%"=>   CC_COMMENT,
 		"~"=>    CC_ACTIVE, chr(0)=> CC_IGNORE);
     map( $$self{table}{catcode}{$_} = [$std{$_}], keys %std);
