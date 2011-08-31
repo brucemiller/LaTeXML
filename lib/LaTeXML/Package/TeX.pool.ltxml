@@ -456,7 +456,7 @@ DefMacroI('\csname',undef,sub {
 	Error(":unexpected:".ToString($token)." The control sequence ".
 	      ToString($token)." should not appear between \csname and \endcsname");}
       else{
-	Error(":unexpected:".ToString($token)." The token ".ToString($token)
+	Error(":undefined:".Stringify($token)." The token ".Stringify($token)
 	      ." is not defined");}}
     push(@toks,$token); }
   $token = T_CS("\\".ToString(Tokens(@toks)));
@@ -3077,8 +3077,11 @@ Let(T_CS('\endline'),T_CS('\cr'));
 
 DefPrimitiveI('\endline', undef,undef);
 
-DefMacroI("\\\n",undef,'\ ');	# \<cr> == \<space> Interesting (see latex.ltx)
-Let(T_CS("\\\t"),T_CS("\\\n")); # \<tab> == \<space>, also
+# Use \r for the newline from TeX!!!
+DefMacroI("\\\r",undef,'\ ');	# \<cr> == \<space> Interesting (see latex.ltx)
+Let(T_ACTIVE("\r"),T_CS('\par'));	# (or is this just LaTeX?)
+
+Let(T_CS("\\\t"),T_CS("\\\r")); # \<tab> == \<space>, also
 
 #======================================================================
 # TeX Book, Appendix B, p. 352
@@ -3092,8 +3095,8 @@ DefPrimitiveI('\obeyspaces', undef,sub {
 Let(T_ACTIVE(" "), T_CS('\space'));
 
 DefPrimitiveI('\obeylines',  undef, sub {
-  AssignCatcode("\n"=>13);
-  Let(T_ACTIVE("\n"), T_CS('\@break')); # More appropriate than \par, I think?
+  AssignCatcode("\r"=>13);
+  Let(T_ACTIVE("\r"), T_CS('\@break')); # More appropriate than \par, I think?
   return});
 
 DefConstructor('\@break', "<ltx:break/>");
