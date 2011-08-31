@@ -132,7 +132,7 @@ sub invokeToken_internal {
   if(! defined $meaning){		# Supposedly executable token, but no definition!
     my $cs = $token->getCSName;
     $STATE->noteStatus(undefined=>$cs);
-    Error(":undefined:$cs The token $cs [".Stringify($token)."] is not defined.");
+    Error(":undefined:".Stringify($token)." The token ".Stringify($token)." is not defined.");
     $STATE->installDefinition(LaTeXML::Constructor->new($token,undef,
 							sub { makeError($_[0],'undefined',$cs);}));
     $self->invokeToken($token); }
