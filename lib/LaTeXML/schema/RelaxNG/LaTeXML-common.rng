@@ -201,7 +201,9 @@ that can be sized or shifted.</a:documentation>
   </define>
   <define name="Imageable.attributes">
     <a:documentation>Attributes for elements that may be converted to image form
-during postprocessing, such as math, graphics, pictures, etc.</a:documentation>
+during postprocessing, such as math, graphics, pictures, etc.
+Note that these attributes are generally not filled in until postprocessing,
+but that they could be init</a:documentation>
     <optional>
       <attribute name="imagesrc">
         <a:documentation>the file, possibly generated from other data.</a:documentation>
@@ -216,8 +218,18 @@ during postprocessing, such as math, graphics, pictures, etc.</a:documentation>
     </optional>
     <optional>
       <attribute name="imageheight">
-        <a:documentation>the height in pixels of \attr{imagesrc}.</a:documentation>
+        <a:documentation>the height in pixels of \attr{imagesrc}.
+Note that, unlike \TeX, this is the total height, including the depth (if any).</a:documentation>
         <data type="nonNegativeInteger"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="imagedepth">
+        <a:documentation>the depth in pixels of \attr{imagesrc}, being the location of the
+baseline of the content shown in the image.
+When displayed inilne, an image with a positive \attr{depth}
+should be shifted down relative to the baseline of neighboring material.</a:documentation>
+        <data type="integer"/>
       </attribute>
     </optional>
     <optional>

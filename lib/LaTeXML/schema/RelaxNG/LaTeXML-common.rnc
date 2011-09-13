@@ -135,6 +135,8 @@ Positionable.attributes =
 
 ## Attributes for elements that may be converted to image form
 ## during postprocessing, such as math, graphics, pictures, etc.
+## Note that these attributes are generally not filled in until postprocessing,
+## but that they could be init
 Imageable.attributes =
 
   ## the file, possibly generated from other data.
@@ -144,7 +146,14 @@ Imageable.attributes =
   attribute imagewidth { xsd:nonNegativeInteger}?,
 
   ## the height in pixels of \attr{imagesrc}.
+  ## Note that, unlike \TeX, this is the total height, including the depth (if any).
   attribute imageheight { xsd:nonNegativeInteger }?,
+
+  ## the depth in pixels of \attr{imagesrc}, being the location of the
+  ## baseline of the content shown in the image.
+  ## When displayed inilne, an image with a positive \attr{depth}
+  ## should be shifted down relative to the baseline of neighboring material.
+  attribute imagedepth { xsd:integer }?,
 
   ## a description of the image
   attribute description { text }?
