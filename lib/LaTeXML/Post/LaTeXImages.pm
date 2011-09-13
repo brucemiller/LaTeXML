@@ -13,7 +13,9 @@
 package LaTeXML::Post::LaTeXImages;
 use strict;
 use DB_File;
-use Image::Magick;
+#use Image::Magick;
+#use Graphics::Magick;
+use POSIX;
 use LaTeXML::Util::Pathname;
 use File::Temp qw(tempdir);
 use File::Path;
@@ -36,20 +38,51 @@ our $DVIPSCMD='dvips -q -S1 -i -E -j0';
 
 # Options:
 #   source         : (dir)
-#   magnification  : typically something like 1.5 or 1.75
+#   magnification  : typically something like 1.33333, but you may want bigger
 #   maxwidth       : maximum page width, in pixels (whenever line breaking is possible)
-#   dpi            : assumed DPI for the target medium (default 90)
+#   dpi            : assumed DPI for the target medium (default 96)
 #   background     : color of background (for anti-aliasing, since it is made transparent)
 #   imagetype      : typically 'png' or 'gif'.
 sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
-  $$self{magnification} = $options{magnification} || 1.75;
+  $$self{magnification} = $options{magnification} || 1.33333;
+  $$self{magnification} = 1.3333333;
   $$self{maxwidth}      = $options{maxwidth} || 800;
-  $$self{dpi}           = $options{dpi} || 90;
+  $$self{dpi}           = $options{dpi} || 96;
   $$self{background}    = $options{background} || "#FFFFFF";
   $$self{imagetype}     = $options{imagetype} || 'png';
+#    $$self{imagetype}     = 'gif';
+
+  # Parameters for separating the clipping box from the 
+  # desired padding between image edge and "ink"
+  $$self{padding}          = $options{padding} || 2; # pixels
+  # amount of extra space (+padding) to put between object & rules for clipping
+  $$self{clippingfudge}    = 3; # px
+  $$self{clippingrule}     = 0.90; # pixels (< 1 to avoid antialiasing..?)
   $self; }
+
+#**********************************************************************
+
+# NOTE that Image::Magick version 6.6.5.10 is erratic about making png's transparent!
+# version 5.6.1.2 seems to work....
+# Graphics::Magick seems to be working;
+our @MagickClasses = (qw(Foo::Bar  Image::Magick Graphics::Magick));
+# We could _prefer_ Graphics::Magick over Image::Magick, if available...
+#our @MagickClasses = (qw(Foo::Bar  Graphics::Magick Image::Magick));
+
+sub createMagickImage {
+  my($sel,%props)=@_;
+  foreach my $class (@MagickClasses){
+    my $object = createMagickObject($class,%props);
+#    print STDERR "Magick class $class ".($object ? "succeeded" : "failed")."\n";
+    return $object if $object; }}
+
+sub createMagickObject {
+  my($class,%props)=@_;
+  my $module = $class.".pm";
+  $module =~ s/::/\//g;
+  eval {require $module; $class->new(%props); }; }
 
 #**********************************************************************
 # Methods that must be defined;
@@ -66,10 +99,11 @@ sub format_tex { ""; }
 # $self->setTeXImage($doc,$node,$imagepath,$width,$height);
 # This is the default
 sub setTeXImage {
-  my($self,$doc,$node,$path,$width,$height)=@_;
+  my($self,$doc,$node,$path,$width,$height,$depth)=@_;
   $node->setAttribute('imagesrc',$path);
   $node->setAttribute('imagewidth',$width);
-  $node->setAttribute('imageheight',$height); }
+  $node->setAttribute('imageheight',$height);
+  $node->setAttribute('imagedepth',$depth) if defined $depth; }
 
 #======================================================================
 # Methods that could be wrapped, overridden.
@@ -85,6 +119,10 @@ sub cleanTeX {
   $tex =~ s/(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*$//; # and trailing spacing
   $tex =~ s/\%[^\n]*\n//gs;	# Strip comments
   $style.' '.$tex; }
+
+#**********************************************************************
+
+
 
 #**********************************************************************
 # Generating & Processing the LaTeX source.
@@ -127,7 +165,7 @@ sub process {
   my @pending=();
   foreach my $key (sort keys %table){
     my $store = $doc->cacheLookup($key);
-    if($store && ($store =~ /^(.*);(\d+);(\d+)$/)){
+    if($store && ($store =~ /^(.*);(\d+);(\d+);(\d+)$/)){
       next if -f pathname_concat($destdir,$1); }
     push(@pending,$table{$key}); }
 
@@ -169,10 +207,22 @@ sub process {
 
     $preserve_tmpdir=1 if $$self{verbosity} > 2;
 
+    # Extract dimensions (width x height+depth) from each image from log file.
+    my @dimensions=();
+    if(open(LOG,"$workdir/$jobname.log")){
+	while(<LOG>){
+	    if(/^\s*LXIMAGE\s*(\d+)\s*=\s*([\+\-\d\.]+)pt\s*x\s*([\+\-\d\.]+)pt\s*\+\s*([\+\-\d\.]+)pt\s*$/){
+		$dimensions[$1]=[$2,$3,$4]; }}
+	close(LOG); }
+    else {
+	$self->Warn($doc,"Couldn't read log file $workdir/$jobname.log to extract image dimensions: $!"); }
+
     # === Run dvips to extract individual postscript files.
     my $mag = int($$self{magnification}*1000);
     system("cd $workdir ; TEXINPUTS=$texinputs $DVIPSCMD -x$mag -o imgx $jobname.dvi") == 0 
       or return $self->Error($doc,"Couldn't execute dvips (see $workdir for clues): $!");
+
+    my $pixels_per_pt = $$self{magnification}*$$self{dpi}/72.27;
 
     # === Convert each image to appropriate type and put in place.
     my ($index,$ndigits)= (0,1+int(log( $doc->cacheLookup((ref $self).':_max_image_')||1)/log(10)));
@@ -183,24 +233,26 @@ sub process {
 	  ||  $self->generateResourcePathname($doc,$$entry{nodes}[0],undef,$$self{imagetype});
 	my $dest = $doc->checkDestination($reldest);
 	my($w,$h) = $self->convert_image($doc,$src,$dest);
-	$doc->cacheStore($$entry{key},"$reldest;$w;$h"); }
+	my($ww,$hh,$dd)= map($_*$pixels_per_pt, @{$dimensions[$index]});
+	my $d = int(0.5+$dd + $$self{padding});
+	if( (($w==1) && ($ww > 1)) || (($h==1) && ($hh > 1)) ){
+	  $self->Warn($doc,"Image for $$entry{tex} was cropped to nothing!"); }
+	# print STDERR "\nImage[$index] $$entry{tex} $ww x $hh + $dd ==> $w x $h \\ $d\n";
+	$doc->cacheStore($$entry{key},"$reldest;$w;$h;$d"); }
       else {
 	$self->Warn($doc,"Missing image $src; See $workdir/$jobname.log"); }}
     # Cleanup
-##    (system("rm -rf $workdir")==0) or 
-##      warn "Couldn't cleanup LaTeXImages workingdirectory $workdir: $!";
     rmtree($workdir) unless $preserve_tmpdir;
   }
 
   # Finally, modify the original document to record the associated images.
   foreach my $entry (values %table){
-    next unless $doc->cacheLookup($$entry{key}) =~ /^(.*);(\d+);(\d+)$/;
-    my($image,$width,$height)=($1,$2,$3);
+    next unless $doc->cacheLookup($$entry{key}) =~ /^(.*);(\d+);(\d+);(\d+)$/;
+    my($image,$width,$height,$depth)=($1,$2,$3,$4);
     foreach my $node (@{$$entry{nodes}}){
-      $self->setTeXImage($doc,$node,$image,$width,$height); }}
+      $self->setTeXImage($doc,$node,$image,$width,$height,$depth); }}
   $doc->closeCache;		# If opened.
   $doc;}
-
 
 # Get a list blah, blah...
 sub find_documentclass_and_packages {
@@ -238,12 +290,16 @@ sub pre_preamble {
   my $packages='';
   my $dest = $doc->getDestination;
   my $description = ($dest ? "% Destination $dest" : "");
+  my $pts_per_pixel = 72.27/$$self{dpi}/$$self{magnification};
   foreach my $pkgdata (@classdata){
     my($package,$options)=@$pkgdata;
     $options = "[$options]" if $options && ($options !~ /^\[.*\]$/);
     $packages .= "\\usepackage$options\{$package\}\n"; }
-  my $w = int(($$self{maxwidth}/$$self{dpi})*72/$$self{magnification});	# Page Width in points.
 
+  my $w   = ceil($$self{maxwidth} * $pts_per_pixel);	# Page Width in points.
+  my $gap = ($$self{padding}+$$self{clippingfudge})*$pts_per_pixel;
+  my $th  = $$self{clippingrule}*$pts_per_pixel;	# clipping box thickness in points.
+#  print STDERR "w=$w, gap=$gap, thickness=$th\n";
 return <<EOPreamble;
 \\batchmode
 \\def\\inlatexml{true}
@@ -258,48 +314,35 @@ $packages
 \\def\\FCN#1{#1}
 \\def\\DUAL{\\\@ifnextchar[{\\\@DUAL}{\\\@DUAL[]}}
 \\def\\\@DUAL[#1]#2#3{#3}% Use presentation form!!!
+\\newcount\\lxImageNumber\\lxImageNumber=0\\relax
 \\newbox\\lxImageBox
 \\newdimen\\lxImageBoxSep
-\\setlength\\lxImageBoxSep{3\\p\@}
+\\setlength\\lxImageBoxSep{${gap}\\p\@}
 \\newdimen\\lxImageBoxRule
-\\setlength\\lxImageBoxRule{0.4\\p\@}
-\\def\\XXXXXlxShowImage{%
-  \\\@tempdima\\lxImageBoxRule
-  \\advance\\\@tempdima\\lxImageBoxSep
-  \\advance\\\@tempdima\\dp\\lxImageBox
-  \\hbox{%
-    \\lower\\\@tempdima\\hbox{%
-      \\vbox{%
-        \\hrule\\\@height\\lxImageBoxRule
-        \\hbox{%
-          \\vrule\\\@width\\lxImageBoxRule
-          \\vbox{%
-            \\vskip\\lxImageBoxSep
-            \\box\\lxImageBox
-            \\vskip\\lxImageBoxSep}%
-          \\vrule\\\@width\\lxImageBoxRule}%
-        \\hrule\\\@height\\lxImageBoxRule}%
-         }%
-        }%
-}%
+\\setlength\\lxImageBoxRule{${th}\\p\@}
 \\def\\lxShowImage{%
+  \\global\\advance\\lxImageNumber1\\relax
+  \\\@tempdima\\wd\\lxImageBox
+  \\advance\\\@tempdima-\\lxImageBoxSep
+  \\advance\\\@tempdima-\\lxImageBoxSep
+  \\typeout{LXIMAGE \\the\\lxImageNumber\\space= \\the\\\@tempdima\\space x \\the\\ht\\lxImageBox\\space + \\the\\dp\\lxImageBox}%
   \\\@tempdima\\lxImageBoxRule
   \\advance\\\@tempdima\\lxImageBoxSep
   \\advance\\\@tempdima\\dp\\lxImageBox
   \\hbox{%
     \\lower\\\@tempdima\\hbox{%
       \\vbox{%
-        \\hrule\\\@height\\lxImageBoxRule%\\\@width\\lxImageBoxRule
+        \\hrule\\\@height\\lxImageBoxRule%
         \\hbox{%
-          \\vrule\\\@width\\lxImageBoxRule%\\\@height\\lxImageBoxRule
+          \\vrule\\\@width\\lxImageBoxRule%
           \\vbox{%
            \\vskip\\lxImageBoxSep
           \\box\\lxImageBox
            \\vskip\\lxImageBoxSep
            }%
-          \\vrule\\\@width\\lxImageBoxRule%\\\@height\\lxImageBoxRule
+          \\vrule\\\@width\\lxImageBoxRule%
           }%
-        \\hrule\\\@height\\lxImageBoxRule%\\\@width\\lxImageBoxRule
+        \\hrule\\\@height\\lxImageBoxRule%
          }%
          }%
         }%
@@ -311,29 +354,52 @@ EOPreamble
 }
 
 #======================================================================
-# Converting the postscript images to gif.
+# Converting the postscript images to gif/png/whatever
+# Note that properly trimming the clipping box (and keeping the right
+# padding and dimensions) is harder than it seems!
 #======================================================================
 
 sub convert_image {
   my($self,$doc,$src,$dest)=@_;
-  my $image = Image::Magick->new(antialias=>'True', background=>$$self{background}); 
-  my $ncolors=16;
-  my $err = $image->Read($src);
+  my($bg,$fg)=($$self{background},'black');
+
+  my $image = $self->createMagickImage(antialias=>'True',background=>$bg,density=>$$self{dpi});
+#				       verbose=>'True');
+  my $err = $image->Read("eps:$src");
   if($err){
     warn "Image conversion failed to read $src: $err"; return; }
-  $image->Transparent(color=>$$self{background});
 
-  $image->Trim;
-  $image->Shave(width=>3,height=>3);
-# Quantizing PNG's messes up transparency!
-# And it doesn't really seem to reduce the image size much anyway.
-#  $image->Quantize(colors=>$ncolors);	#  Don't really need much for straight BW text (even aa'd)
+  my ($ww,$hh) = $image->Get('width','height'); # Get final image size
 
-  my ($w,$h) = $image->Get('width','height');
-  $image->Transparent(color=>$$self{background});
+  # We can't quite rely on the -E option to dvips; there may or may not be white outside the clipbox;
+  # Moreover, rounding can leave (possibly gray) 'tabs' on the clipbox corners.
+  # To be sure, add known white border, and trim away all white AND gray
+  $image->Border(width=>1,height=>1,fill=>$bg);
+  $image->Trim(fuzz=>'75%');	# Fuzzy, to trim the gray tabs, as well!!
+  $image->Set(fuzz=>'0%');	# But, be SURE to RESET fuzz!! (It is NOT an "argument"!!!)
+  # [Also, be CAREFULL of ImageMagick's Floodfill variants, they sometimes go wild]
+
+  # Finally, shave off the rule & fudge padding.
+  my $fudge=int(0.5+$$self{clippingfudge}+$$self{clippingrule});
+  $image->Shave(width=>$fudge,height=>$fudge);
+
+  my ($w,$h) = $image->Get('width','height'); # Get final image size
+  # ImageMagick tries to manage a "virtual" image within the image data,
+  # (whatever that means)
+  # This resets it back to the origin which avoids confusion, all 'round!
+  $image->Set(page=>"${w}x${h}+0+0");
+
+  # Ideally, we'd make the alpha exactly opposite the ink, rather than merely 1 bit
+  # It would seem that this should do it, but currently just seems to turn off alpha completely!!!
+#  $image = $image->Fx(expression=>'(3.0-r+g+b)/3.0', channel=>'alpha');
+  $image->Transparent(color=>$bg);
 
   $self->ProgressDetailed($doc,"Converting $src => $dest ($w x $h)");
-  
+
+  # Workaround bad png detection(?) in ImageMagick 6.6.5 (???)
+  if($$self{imagetype} eq 'png'){
+    $dest = "png32:$dest"; }
+
   $image->Write(filename=>$dest);
   ($w,$h); }
 
