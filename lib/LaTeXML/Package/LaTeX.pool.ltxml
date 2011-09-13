@@ -3098,12 +3098,18 @@ DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
 #----------------------------------------------------------------------
 
 sub ResolveReader {
-  my ($itemtype) = @_;
-  if(ref $itemtype eq 'CODE'){ $itemtype; }
+  my ($type) = @_;
+  return $type if ref $type eq 'CODE'; # It's already a reader (hopefully).
+  $type = ToString($type);
+  if(my $descriptor = $LaTeXML::Parameters::PARAMETER_TABLE{$type}){
+    $$descriptor{reader}; }
+  # Otherwise, try to find a function named Read<Type>
   else {
-    $itemtype = ToString($itemtype);
-    LaTeXML::Parameters::checkReaderFunction('Read'.$itemtype); }}
+    LaTeXML::Parameters::checkReaderFunction('Read'.$type); }}
 
+# This defines a Pair parameter type,
+# that reads a parenthesized, comma separated pair of subtype.
+# By default, the subtype is Float, but you can write Pair:Number, or Pair:Dimension
 sub ReadPair {
   my($gullet,$itemtype, $xarg, $yarg)=@_;
   my $itemreader;
@@ -3228,12 +3234,12 @@ DefConstructor('\put Pair {}',
 	       properties=>sub { pos=>'translate('.ptValue(picScale($_[1])).')'; },
 	       mode=>'text');
 
-DefConstructor('\pic@line Pair {Float}',
+DefConstructor('\pic@line Pair:Number {Float}',
 	       "<ltx:line points='#points' stroke-width='#thick'/>",
 	       alias=>'\line',
 	       properties=>sub { picProperties(points=>'0,0 '.slopeToPicCoord($_[1],$_[2])->ptValue()); });
 
-DefConstructor('\pic@vector Pair {Float}',
+DefConstructor('\pic@vector Pair:Number {Float}',
 	       "<ltx:line points='#points' stroke-width='#thick' terminators='->'"
 	       . " arrowlength='#arrowlength'/>",
 	       alias=>'\vector',
