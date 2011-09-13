@@ -109,13 +109,14 @@ sub getLocator {
   my $msg =  "at $$self{source}; line $l col $c";
   if($long && (defined $l || defined $c)){
     my $chars=$$self{chars};
-    my $n = $$self{nchars}; 
-    $c=$n-1 if $c >=$n;
-    my $c0 = ($c > 50 ? $c-40 : 0);
-    my $cn = ($n-$c > 50 ? $c+40 : $n-1);
-    my $p1 = join('',@$chars[$c0..$c-1])||''; chomp($p1);
-    my $p2 = join('',@$chars[$c..$cn])||''; chomp($p2);
-    $msg .="\n  ".$p1."\n  ".(' ' x ($c-$c0)).'^'.' '.$p2; }
+    if(my $n = $$self{nchars}){
+      $c=$n-1 if $c >=$n;
+      my $c0 = ($c > 50 ? $c-40 : 0);
+      my $cm = ($c < 1 ? 0 : $c-1);
+      my $cn = ($n-$c > 50 ? $c+40 : $n-1);
+      my $p1 = ($c0 <= $cm ? join('',@$chars[$c0..$cm]) : ''); chomp($p1);
+      my $p2 = ($c  <= $cn ? join('',@$chars[$c..$cn])  : ''); chomp($p2);
+      $msg .="\n  ".$p1."\n  ".(' ' x ($c-$c0)).'^'.' '.$p2; }}
   $msg; }
 
 sub getSource {
