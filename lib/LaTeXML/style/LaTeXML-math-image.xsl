@@ -22,7 +22,14 @@
   <xsl:template match="ltx:Math"/>
 
   <xsl:template match="ltx:Math[@imagesrc]">
-    <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}" alt="{@tex}" class='math'/>
+    <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}"
+	 alt="{@tex}" class='math'>
+      <xsl:if test="@imagedepth">
+	<xsl:attribute name='style'>
+	  <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px;')"/>
+	</xsl:attribute>
+      </xsl:if>
+    </img>
   </xsl:template>
 
 </xsl:stylesheet>
