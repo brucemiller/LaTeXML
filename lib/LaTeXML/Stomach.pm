@@ -39,6 +39,7 @@ sub initialize {
   $STATE->assignValue(PRESERVE_NEWLINES=>1,'global');
   $STATE->assignValue(afterGroup=>[],'global');
   $STATE->assignValue(afterAssignment=>undef,'global');
+  $STATE->assignValue(groupInitiator=>'Initialization', 'global');
   # Setup default fonts.
   $STATE->assignValue(font=>LaTeXML::Font->default(),'global');
   $STATE->assignValue(mathfont=>LaTeXML::MathFont->default(),'global');
@@ -189,6 +190,7 @@ sub pushStackFrame {
   $STATE->assignValue(afterGroup=>[],'local'); # ALWAYS bind this!
   $STATE->assignValue(afterAssignment=>undef,'local'); # ALWAYS bind this!
   $STATE->assignValue(groupNonBoxing=>$nobox,'local'); # ALWAYS bind this!
+  $STATE->assignValue(groupInitiator=>$LaTeXML::CURRENT_TOKEN, 'local');
   push(@{$$self{boxing}},$LaTeXML::CURRENT_TOKEN) unless $nobox; # For begingroup/endgroup
 }
 
@@ -202,6 +204,15 @@ sub popStackFrame {
   $$self{gullet}->unread(@$after) if $after;
 }
 
+sub currentFrameMessage {
+  my($self)=@_;
+  "current frame is "
+    .($STATE->isValueBound('MODE',0) # SET mode in CURRENT frame ?
+      ? "mode-switch to ".$STATE->lookupValue('MODE')
+      : ($STATE->lookupValue('groupNonBoxing') # Current frame is a boxing group?
+	 ? "boxing" : "non-boxing")." group")
+      . " due to ".Stringify($STATE->lookupValue('groupInitiator')); }
+
 #======================================================================
 # Grouping pushes a new stack frame for binding definitions, etc.
 #======================================================================
@@ -214,9 +225,10 @@ sub bgroup {
 
 sub egroup {
   my($self)=@_;
-  if($STATE->isValueBound('MODE',0)#){ # Last stack frame was a mode switch!?!?!
-     || $STATE->lookupValue('groupNonBoxing')){ # group was opened with \begingroup
-    Error(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} or forgotten \\endgroup while ending group"); }
+  if($STATE->isValueBound('MODE',0) # Last stack frame was a mode switch!?!?!
+     || $STATE->lookupValue('groupNonBoxing')){ # or group was opened with \begingroup
+    Error(":unexpected:".Stringify($LaTeXML::CURRENT_TOKEN)." Attempt to close boxing group; "
+	  .$self->currentFrameMessage); }
   popStackFrame($self,0);
   return; }
 
@@ -227,9 +239,10 @@ sub begingroup {
 
 sub endgroup {
   my($self)=@_;
-  if($STATE->isValueBound('MODE',0) #){ # Last stack frame was a mode switch!?!?!
-     || ! $STATE->lookupValue('groupNonBoxing')){ # group was opened with \bgroup
-    Error(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} or forgotten \\egroup while ending group"); }
+  if($STATE->isValueBound('MODE',0)  # Last stack frame was a mode switch!?!?!
+     || ! $STATE->lookupValue('groupNonBoxing')){ # or group was opened with \bgroup
+    Error(":unexpected:".Stringify($LaTeXML::CURRENT_TOKEN)." Attenpt to close non-boxing group; "
+	  .$self->currentFrameMessage); }
   popStackFrame($self,1);
   return; }
 
@@ -259,10 +272,10 @@ sub beginMode {
 
 sub endMode {
   my($self,$mode)=@_;
-  if(! $STATE->isValueBound('MODE',0)){ # Last stack frame was NOT a mode switch!?!?!
-    Error(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Unbalanced \$ or \} while ending mode $mode"); }
-  elsif($STATE->lookupValue('MODE') ne $mode){
-    Error(":misdefined:".$LaTeXML::CURRENT_TOKEN->getCSName." Can't end mode $mode: Was in mode ".$STATE->lookupValue('MODE')."!!"); }
+  if((! $STATE->isValueBound('MODE',0)) # Last stack frame was NOT a mode switch!?!?!
+     || ($STATE->lookupValue('MODE') ne $mode)){ # Or was a mode switch to a different mode
+    Error(":unexpected:".Stringify($LaTeXML::CURRENT_TOKEN)." Attempt to end mode $mode; "
+	  .$self->currentFrameMessage); }
   $self->popStackFrame;		# Effectively egroup.
  return; }
 
