@@ -1250,7 +1250,8 @@ sub processNode {
     $doc->addNodes($fork,['ltx:MathBranch',{},
 			  ['ltx:Math',
 			   {map(($_=>$math->getAttribute($_)),
-				qw(mode tex content-tex text imagesrc imagewidth imageheight))},
+				qw(mode tex content-tex text
+				   imagesrc imagewidth imageheight imagedepth))},
 			   $self->translateNodeLinebreaks($doc,$xmath,$style)]]);
  }}
 
