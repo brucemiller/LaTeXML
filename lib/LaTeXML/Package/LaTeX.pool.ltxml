@@ -137,7 +137,7 @@ sub onlyPreamble {
 # it can be processed specially, if needed.  These are the magic
 # '\begin{env}', '\end{env}' control sequences created by DefEnvironment.
 
-AssignValue(current_environment=>'document','global');
+AssignValue(current_environment=>'','global');
 DefMacro('\@currenvir',sub { Explode(LookupValue('current_environment')); });
 DefMacro('\begin{}',sub { 
   my($gullet,$env)=@_;
