@@ -171,10 +171,17 @@ sub digestBibTeXFile {
      $state->getStomach->getGullet->inputConfigfile($name); #  Load configuration for this source, if any.
 
      my $tex = $bib->toTeX;
+
+     my $stomach=$state->getStomach;
+     my @stuff=();
      $state->getStomach->getGullet->openMouth(LaTeXML::Mouth->new($tex),0);
-     my $line = $self->finishDigestion;
+     while($stomach->getGullet->getMouth->hasMoreInput){
+       push(@stuff,$stomach->digestNextBody); }
+     my $list = LaTeXML::List->new(@stuff);
+
+#     my $list = $self->finishDigestion;
      NoteEnd("Digesting bibliography $file");
-     $line; });
+     $list; });
 }
 
 sub finishDigestion {
