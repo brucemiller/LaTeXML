@@ -1,6 +1,7 @@
 # -*- CPERL -*-
 #  /====================================================================\
 # | elsart_support.sty for LaTeXML                                       |
+# | support for elsart and elsarticle classes.                           |
 # | Adapted from texscan --stub --base=article.cls elsart.cls            |
 #  >====================================================================<
 # | Released to public domain.                                           |
@@ -8,6 +9,7 @@
 # | http://dlmf.nist.gov/LaTeXML/                                        |
 # | This code was derived from work by                                   |
 # |   the arXMLiv group; http://arxmliv.kwarc.org/                       |
+# | and enhnacements for elsarticle by Lee Worden                        |
 #  \====================================================================/
 package LaTeXML::Package::Pool;
 use strict;
@@ -42,6 +44,7 @@ DefMacro('\thanksref{}',Tokens());
 
 DefConstructor('\corauth[]{}', "^ <ltx:contact role='corresondent'>#2</ltx:contact>",
 	       mode=>'text');
+DefMacro('\corref{}',Tokens());
 DefMacro('\corauthref{}',Tokens());
 
 # Is this significantly different?
