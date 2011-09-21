@@ -1209,7 +1209,8 @@ sub AddToMacro {
   if(! defined $defn || ! $defn->isExpandable){
     Error(":unexpected:".ToString($cs)." ".ToString($cs)." is not an expandable control sequence"); }
   else {
-    DefMacroI($cs,undef,Tokens($defn->getExpansion->unlist,map($_->unlist,@tokens))); }}
+    DefMacroI($cs,undef,Tokens($defn->getExpansion->unlist,
+			       map($_->unlist,map( (ref $_ ? $_ : TokenizeInternal($_)), @tokens)))); }}
 
 #======================================================================
 our $inputdefinitions_options={options=>1, withoptions=>1, handleoptions=>1,
