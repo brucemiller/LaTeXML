@@ -48,9 +48,9 @@ DefMacro('\scantokens {}',sub {
 #======================================================================
 # 3.3 Environmental enquiries
 
-our @ETEX_VERSION=(qw(1 0));
+our @ETEX_VERSION=(qw(2 .2));
 DefMacro('\eTeXrevision',sub { Explode($ETEX_VERSION[1]); });
-DefMacro('\eTeXversion', sub { Explode($ETEX_VERSION[0]); });
+DefRegister('\eTeXversion'=> Number($ETEX_VERSION[0]));
 
 # \currentgrouplevel
 DefRegister('\currentgrouplevel',Number(0),
@@ -67,7 +67,7 @@ DefMacro('\ifcsname CSName', sub {
 	 isConditional=>1);
 
 # \ifdefined <token>
-DefMacro('\ifcsname Token', sub {
+DefMacro('\ifdefined Token', sub {
   my($gullet,$token)=@_;
   ifHandler($gullet, defined LookupMeaning($token)); },
 	 isConditional=>1);
