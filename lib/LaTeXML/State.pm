@@ -302,6 +302,7 @@ sub popDaemonFrame {
 #======================================================================
 # Set one of the definition prefixes global, etc (only global matters!)
 sub setPrefix     { $_[0]->{prefixes}{$_[1]} = 1; }
+sub getPrefix     { $_[0]->{prefixes}{$_[1]}; }
 sub clearPrefixes { $_[0]->{prefixes} = {}; }
 
 #======================================================================
