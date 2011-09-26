@@ -239,7 +239,8 @@ sub readXToken {
     elsif($cc == CC_COMMENT){
       return $token if $toplevel;
       push(@{$$self{pending_comments}},$token); } # What to do with comments???
-    elsif(defined($defn=$STATE->lookupDefinition($token)) && $defn->isExpandable){
+    elsif(defined($defn=$STATE->lookupDefinition($token)) && $defn->isExpandable
+	  && ($toplevel || !$defn->isProtected)){ # is this the right logic here? don't expand unless digesting?
       $self->unread($defn->invoke($self)); } # Expand and push back the result (if any) and continue
     else {
       return $token; }		# just return it
