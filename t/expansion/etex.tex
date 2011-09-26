@@ -1,0 +1,56 @@
+\documentclass{article}
+\begin{document}
+\section{Version}
+Running eTeX version \the\eTeXversion\eTeXrevision.
+
+\section{Old style}
+\def\baz{BAZ!}
+baz \expandafter\ifx\csname baz\endcsname\relax IS \else is NOT \fi relax;
+baz \ifx\baz\undefined IS equal \else is NOT equal \fi undefined;
+baz \ifdefined\baz IS \else is NOT \fi defined.
+
+foo \expandafter\ifx\csname foo\endcsname\relax IS \else is NOT \fi relax;
+foo \ifx\foo\undefined IS equal \else is NOT equal \fi undefined;
+foo \ifdefined\foo IS \else is NOT \fi defined.
+
+\section{New style}
+\def\ebaz{BAZ!}
+ebaz \ifcsname ebaz\endcsname IS \else is NOT \fi bound;
+ebaz \ifx\ebaz\undefined IS equal \else is NOT equal \fi undefined;
+ebaz \ifdefined\ebaz IS \else is NOT \fi defined.
+
+efoo \ifcsname efoo\endcsname IS \else is NOT \fi bound;
+efoo \ifx\efoo\undefined IS equal \else is NOT equal \fi undefined;
+efoo \ifdefined\efoo IS \else is NOT \fi defined.
+
+\section{Expansion}
+Regular form:
+\def\When{Now}%
+\edef\Expanded{Was expanded \When}%
+\def\When{Later}%
+Got \Expanded.
+
+With noexpand inserted:
+\def\When{Now}%
+\edef\Expanded{Was expanded \noexpand\When}%
+\def\When{Later}%
+Got \Expanded.
+
+Using the new protected primitive:
+\protected\def\eWhen{Now}%
+\edef\Expanded{Was expanded \eWhen}%
+\protected\def\eWhen{Later}%
+Got \Expanded.
+
+\section{Tokens}
+\detokenize{This_and^that}.
+
+\catcode`*=\active
+\def*{STAR}
+A Shooting *.
+
+\def\Stuff{\unexpanded{A Falling *}.}
+\Stuff
+\def*{from grace}
+\Stuff
+\end{document}

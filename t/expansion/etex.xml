@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section refnum="1" xml:id="S1">
+    <title><tag>1 </tag>Version</title>
+    <para xml:id="S1.p1">
+      <p>Running eTeX version 2.2.</p>
+    </para>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag>2 </tag>Old style</title>
+    <para xml:id="S2.p1">
+      <p>baz is NOT relax;
+baz is NOT equal undefined;
+baz IS defined.</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>foo IS relax;
+foo is NOT equal undefined;
+foo IS defined.</p>
+    </para>
+  </section>
+  <section refnum="3" xml:id="S3">
+    <title><tag>3 </tag>New style</title>
+    <para xml:id="S3.p1">
+      <p>ebaz IS bound;
+ebaz is NOT equal undefined;
+ebaz IS defined.</p>
+    </para>
+    <para xml:id="S3.p2">
+      <p>efoo is NOT bound;
+efoo IS equal undefined;
+efoo is NOT defined.</p>
+    </para>
+  </section>
+  <section refnum="4" xml:id="S4">
+    <title><tag>4 </tag>Expansion</title>
+    <para xml:id="S4.p1">
+      <p>Regular form:
+Got Was expanded Now.</p>
+    </para>
+    <para xml:id="S4.p2">
+      <p>With noexpand inserted:
+Got Was expanded Later.</p>
+    </para>
+    <para xml:id="S4.p3">
+      <p>Using the new protected primitive:
+Got Was expanded Later.</p>
+    </para>
+  </section>
+  <section refnum="5" xml:id="S5">
+    <title><tag>5 </tag>Tokens</title>
+    <para xml:id="S5.p1">
+      <p>This˙and^that.</p>
+    </para>
+    <para xml:id="S5.p2">
+      <p>A Shooting STAR.</p>
+    </para>
+    <para xml:id="S5.p3">
+      <p>A Falling STAR.
+A Falling from grace.</p>
+    </para>
+  </section>
+</document>
