@@ -1,0 +1,146 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  eTeX                                                               | #
+# | enhanced TeX enhancements Implementation for LaTeXML                | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+# See http://tex.loria.fr/moteurs/etex_ref.html
+# Section 3. The new features
+
+#======================================================================
+# 3.1 Additional control over expansion
+# \protected associates with the next defn
+# (note that it isn't actually used anywhere).
+DefPrimitiveI('\protected',undef,sub {
+  $STATE->setPrefix('protected'); return; }, isPrefix=>1);
+
+# \detokenize
+DefMacro('\detokenize{}', sub { Explode(UnTeX($_[1])); });
+
+# \unexpanded
+# This is obviously not right, but... how?
+# Should \noexpand be stuffed throughout?
+# or is something related to \protected useable?
+DefMacro('\unexpanded {}','#1');
+
+#======================================================================
+# 3.2. Provision for re-scanning already read text
+
+# \readline
+# Since we haven't implemented \read ... ?!
+DefMacro('\read Number SkipKeyword:to Token',sub {
+  my($gullet,$fh,$token)=@_;
+  DefMacroI($token,undef,Tokens()); });
+
+DefMacro('\scantokens {}',sub {
+  LaTeXML::Mouth->new(UnTeX($_[1]))->readTokens; });
+
+#======================================================================
+# 3.3 Environmental enquiries
+
+our $ETEX_VERSION=(qw(1 0));
+DefMacro('\eTeXrevision',sub { Explode($ETEX_VERSION[1]); })
+DefMacro('\eTeXversion', sub { Explode($ETEX_VERSION[0]); })
+
+# \currentgrouplevel
+DefRegister('\currentgrouplevel',Number(0),
+            readonly=>1,
+	    getter=>{ Number($_[0]->getBoxingLevel); }); # ?
+
+# \currentgrouptype returns group types from 0..16 ; but what IS a "group type"?
+DefRegister('\currentgrouptype',Number(0), readonly=>1);
+
+# \ifcsname stuff \endcsname
+DefMacro('\ifcsname CSNAME', sub {
+  my($gullet,$token)=@_;
+  ifHandler($gullet, defined LookupMeaning($token)); },
+	 isConditional=>1);
+
+# \ifdefined <token>
+DefMacro('\ifcsname Token', sub {
+  my($gullet,$token)=@_;
+  ifHandler($gullet, defined LookupMeaning($token)); },
+	 isConditional=>1);
+
+# ???
+DefRegister('\lastnodetype',Number(0));
+
+#======================================================================
+# 3.4 Generalization of the \mark concept: a class of \marks
+# but since we don't manage Pages...
+
+DefPrimitive('\marks Number {}',undef);
+DefMacroI('\topmarks Number',        undef, Tokens());
+DefMacroI('\firstmarks Number',      undef, Tokens());
+DefMacroI('\botmarks Number',        undef, Tokens());
+DefMacroI('\splitfirstmarks Number', undef, Tokens());
+DefMacroI('\splitbotmarks Number',   undef, Tokens());
+
+#======================================================================
+# 3.5 Bi-directional typesetting: the TeX--XeT primitives
+
+# Should these simply ouput some unicode direction changers,
+# [Things like:
+#  202A;LEFT-TO-RIGHT EMBEDDING;Cf;0;LRE;;;;;N;;;;;
+#  202B;RIGHT-TO-LEFT EMBEDDING;Cf;0;RLE;;;;;N;;;;;
+#  202C;POP DIRECTIONAL FORMATTING;Cf;0;PDF;;;;;N;;;;;
+#  202D;LEFT-TO-RIGHT OVERRIDE;Cf;0;LRO;;;;;N;;;;;
+#  202E;RIGHT-TO-LEFT OVERRIDE;Cf;0;RLO;;;;;N;;;;;
+# ]
+# or do we need to do some more intelligent tracking of modes
+# and directionality?
+# Presumably we can't rely on the material itself being directional.
+
+# By leaving this 0, we're saying "Don't use these features"!
+DefRegister('\TeXXeTstate'=>Number(0));
+
+DefMacroI('\beginL',undef,'');
+DefMacroI('\beginR',undef,'');
+DefMacroI('\endL',undef,'');
+DefMacroI('\endR',undef,'');
+
+DefRegister('\predisplaydirection'=>Number(0)); # ???
+
+#======================================================================
+# 3.6 Additional debugging features
+DefRegister('\interactionmode'=>Number(0));
+
+# Should show all open groups & their type.
+DefPrimitive('\showgroups',undef);
+
+# \showtokens <generaltext>
+# NOTE Debugging aids are currently IGNORED!
+DefPrimitive('\showtokens {}',undef);
+
+DefRegister('\tracingassigns'=>Number(0)); # ???
+DefRegister('\tracinggroups'=>Number(0));
+DefRegister('\tracingifs'=>Number(0)); # ???
+DefRegister('\tracingscantokens'=>Number(0));
+
+#======================================================================
+# 3.7 Miscellaneous primitives
+
+# \everyeof
+# NOTE: These tokens are NOT used anywhere (yet?)
+DefRegister('\everyeof',Tokens()); }
+
+# NOTE REMOVE defn from TeX.pool.ltxml.
+# \middle
+DefConstructor('\middle Token ',"<ltx:XMWrap style='stretchy'>#1</ltx:XMWrap>",
+	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
+
+# This really wants a slightly more formalized definition of conditionals,
+# so that we can NOT the test!
+# \unless
+# How to do this...
+# Can I set a one-shot NEGATE that evaluates the if and flips it's sense?

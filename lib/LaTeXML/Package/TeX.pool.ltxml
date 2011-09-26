@@ -447,7 +447,7 @@ DefMacro('\meaning Token',sub {
   my $meaning = LookupMeaning($tok);
   Explode(defined $meaning ? $meaning : 'undefined'); });
 
-DefMacroI('\csname',undef,sub {
+DefParameterType('CSName', sub {
   my($gullet)=@_;
   my($token,@toks)=();
   while(($token = $gullet->readXToken(0)) && ($token->getString ne '\endcsname')){
@@ -459,7 +459,10 @@ DefMacroI('\csname',undef,sub {
 	Error(":undefined:".Stringify($token)." The token ".Stringify($token)
 	      ." is not defined");}}
     push(@toks,$token); }
-  $token = T_CS("\\".ToString(Tokens(@toks)));
+  T_CS("\\".ToString(Tokens(@toks))); });
+
+DefMacro('\csname CSNAME',sub {
+  my($gullet,$token)=@_;
   Let($token, T_CS('\relax')) unless defined LookupMeaning($token);
   $token;  });
 
@@ -4024,8 +4027,6 @@ sub addDelimiterRole {
   $document->setAttribute($node,role=>$wrapper_role) if $node && $wrapper_role; }
 
 # Defined in e-Tex and other places.
-DefConstructor('\middle Token ',"<ltx:XMWrap style='stretchy'>#1</ltx:XMWrap>",
-	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
 DefConstructor('\bigl Token',"<ltx:XMWrap size='big'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); });
 DefConstructor('\bigm Token',"<ltx:XMWrap size='big'>#1</ltx:XMWrap>",
@@ -4645,5 +4646,6 @@ sub andSplit {
   SplitTokens($cs,$tokens,T_CS('\and')); }
 
 #**********************************************************************
-
+LoadPool('eTeX'); # unless.... ?
+#**********************************************************************
 1;
