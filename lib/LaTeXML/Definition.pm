@@ -73,10 +73,12 @@ sub new {
     Fatal(":misdefined:".Stringify($cs)." expansion has unbalanced {}: ".ToString($expansion)) if $level;  }
   bless {cs=>$cs, parameters=>$parameters, expansion=>$expansion,
 	 locator=>"defined ".$STATE->getStomach->getGullet->getMouth->getLocator,
+	 isProtected=>$STATE->getPrefix('protected'),
 	 %traits}, $class; }
 
 sub isExpandable  { 1; }
 sub isConditional { $_[0]->{isConditional}; }
+sub isProtected  { $_[0]->{isProtected}; }
 
 sub getExpansion {
   my($self)=@_;
