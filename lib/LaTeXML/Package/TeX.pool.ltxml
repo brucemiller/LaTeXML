@@ -461,7 +461,7 @@ DefParameterType('CSName', sub {
     push(@toks,$token); }
   T_CS("\\".ToString(Tokens(@toks))); });
 
-DefMacro('\csname CSNAME',sub {
+DefMacro('\csname CSName',sub {
   my($gullet,$token)=@_;
   Let($token, T_CS('\relax')) unless defined LookupMeaning($token);
   $token;  });

@@ -48,20 +48,20 @@ DefMacro('\scantokens {}',sub {
 #======================================================================
 # 3.3 Environmental enquiries
 
-our $ETEX_VERSION=(qw(1 0));
-DefMacro('\eTeXrevision',sub { Explode($ETEX_VERSION[1]); })
-DefMacro('\eTeXversion', sub { Explode($ETEX_VERSION[0]); })
+our @ETEX_VERSION=(qw(1 0));
+DefMacro('\eTeXrevision',sub { Explode($ETEX_VERSION[1]); });
+DefMacro('\eTeXversion', sub { Explode($ETEX_VERSION[0]); });
 
 # \currentgrouplevel
 DefRegister('\currentgrouplevel',Number(0),
             readonly=>1,
-	    getter=>{ Number($_[0]->getBoxingLevel); }); # ?
+	    getter=>sub { Number($_[0]->getBoxingLevel); }); # ?
 
 # \currentgrouptype returns group types from 0..16 ; but what IS a "group type"?
 DefRegister('\currentgrouptype',Number(0), readonly=>1);
 
 # \ifcsname stuff \endcsname
-DefMacro('\ifcsname CSNAME', sub {
+DefMacro('\ifcsname CSName', sub {
   my($gullet,$token)=@_;
   ifHandler($gullet, defined LookupMeaning($token)); },
 	 isConditional=>1);
@@ -132,7 +132,7 @@ DefRegister('\tracingscantokens'=>Number(0));
 
 # \everyeof
 # NOTE: These tokens are NOT used anywhere (yet?)
-DefRegister('\everyeof',Tokens()); }
+DefRegister('\everyeof',Tokens());
 
 # NOTE REMOVE defn from TeX.pool.ltxml.
 # \middle
