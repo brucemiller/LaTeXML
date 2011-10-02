@@ -87,6 +87,7 @@ if($doxhtml){
 	  dependencies=>["$DOCDIR/sty/latexmldoc.sty.ltxml", "$MANDIR/release.tex",
 			 "$MANDIR/schema.tex","$MANDIR/pods"],
 	  postoptions=>["--split","--splitnaming=labelrelative",
+			"--sourcedir=$MANDIR",
 			"--urlstyle=server","--css=../latexmldoc.css",
 			($validate ?():("--novalidate")),
 			"--icon=../favicon.ico"],
