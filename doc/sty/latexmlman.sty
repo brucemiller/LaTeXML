@@ -108,23 +108,32 @@
 \newenvironment{elementdescription}{\begin{description}}{\end{description}}%
 \newenvironment{patterndescription}{\begin{description}}{\end{description}}%
 
-\newcommand{\typename}[1]{{\perlfont #1}}
+%\newcommand{\typename}[1]{{\perlfont #1}}
+\newcommand{\typename}[1]{\textit{#1}}
 
 \newenvironment{schemamodule}[1]{%
   \section{Module {\perlfont #1}}\label{schema.module.#1}
    \raggedright
   \begin{moduledescription}}{\end{moduledescription}}
 
+\def\cleanhypername#1{\@cleanhypername#1:\end}
+\def\@cleanhypername#1:#2\end{\ifx.#2.#1\else#1..\@cleanhypername#2\end\fi}
 
 % \elementdef{name}{doc}{body}
 \newcommand{\elementdef}[3]{
-  \item[\textit{Element }\hypertarget{schema.element.#1}{{\bfseries\schemafont #1}}\index{#1@{\schemafont #1}}] \hspace{1em} #2
+  \item[\textit{Element }%
+        \hypertarget{\cleanhypername{schema.element.#1}}{{\bfseries\schemafont #1}}%
+        \index{#1@{\schemafont #1}!element}%
+       ] \hspace{1em} #2
     \ifx.#3.\else\begin{elementdescription}#3\end{elementdescription}\fi
 }
 
 % \attrdef{name}{doc}{content}
 \newcommand{\attrdef}[3]{
-  \item[\textit{Attribute }{\bfseries\schemafont #1}] =\ #3\par\noindent #2
+  \item[\textit{Attribute }%
+        {\bfseries\schemafont #1}%
+        \index{#1@{\schemafont #1}!attribute}%
+        ] =\ #3\par\noindent #2
 }
 
 \newif\if@elpattern\@elpatternfalse
@@ -137,35 +146,36 @@
 
 % \patterndef{name}{doc}{body}
 \newcommand{\patterndef}[3]{
-   \item[\textit{Pattern }\hypertarget{schema.pattern.#1}{{\bfseries\patternfont #1}}%
-         \test@elpattern{#1}\if@elpattern\else\index{#1@{\patternfont #1}}\fi] \hspace{1em} #2
+   \item[\textit{Pattern }%
+         \hypertarget{schema.pattern.#1}{{\bfseries\patternfont #1}}%
+         \test@elpattern{#1}\if@elpattern\else
+             \index{#1@{\patternfont #1}!schema pattern}\fi
+        ] \hspace{1em} #2
     \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
 }
 
 % \patternadd{name}{doc}{body}
 \newcommand{\patternadd}[3]{
   \item[\textit{Add to }{\bfseries\patternfont #1}] \hspace{1em} #2
+%%  \item[\textit{Add to }%
+%%    \@ifundefined{defined.schema.pattern.#1}{\hypertarget{schema.pattern.#1}{{\bfseries\patternfont #1}}}{{\bfseries\patternfont #1}}
+%%    ]  \hspace{1em} #2
+    \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
+}
+
+\newcommand{\patterndefadd}[3]{
+  \item[\textit{Add to }%
+       \hypertarget{schema.pattern.#1}{{\bfseries\patternfont #1}}%
+       ] \hspace{1em} #2
     \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
 }
 
 \newcommand{\moduleref}[1]{\htmlref{{\perlfont #1}}{schema.module.#1}}
 \newcommand{\patternref}[1]{\hyperlink{schema.pattern.#1}{{\patternfont #1}}}
-\newcommand{\elementref}[1]{\hyperlink{schema.element.#1}{{\schemafont #1}}}
+\newcommand{\elementref}[1]{\hyperlink{\cleanhypername{schema.element.#1}}{{\schemafont #1}}}
 
 %======================================================================
 \definecolor{linkblue}{cmyk}{1.0,0.2,0.0,0.50}%
 \usepackage[colorlinks=true, linkcolor=linkblue, citecolor=linkblue, urlcolor=blue,
             plainpages=false, pdfpagelabels]{hyperref}
-
-\def\URL{\@ifnextchar[{\@URL}{\@@URL}}%]
-% \def\@@URL{\begingroup\Url}
-% %%\def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\texttt{##1}}}\Url}
-% \def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\Url{##1}}}\Url}
-
-%\DeclareUrlCommand{\@@URL}{}
-\def\@@URL{\begingroup\Url}
-\def\@URL[#1]{#1\@URL@foot}
-\let\orig@Url@FormatString\Url@FormatString%
-%\DeclareUrlCommand{\@URL@foot}{\def\Url@FormatString{\footnote{\orig@Url@FormatString}}}%
-\def\@URL@foot{\begingroup\def\Url@FormatString{\footnote{\orig@Url@FormatString}}\Url}%
 %======================================================================
