@@ -24,6 +24,8 @@ DefMacro('\hypersetup{}','');
 DefMacro('\pdfcatalog{}','');
 DefRegister('\pdfcompresslevel',Number(0));
 
+RawTeX('\newif\ifHy@pdfstring\Hy@pdfstringfalse');
+
 # \href{url}{text}
 DefConstructor('\href Semiverbatim  Semiverbatim',
 	       "<ltx:ref href='#href'>#2</ltx:ref>",
