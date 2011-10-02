@@ -53,4 +53,38 @@ A Shooting *.
 \Stuff
 \def*{from grace}
 \Stuff
+
+\section{Unless}
+\newcount\one\one=1\relax
+\newcount\two\two=2\relax
+\newcount\many\many=99\relax
+
+\newif\ifalwaystrue\alwaystruetrue
+\newif\ifalwaysfalse\alwaysfalsefalse
+
+\ifnum\one>\two 1 greather than 2 \else not 1 greater than 2\fi.
+\ifnum\many>\two many greater than 2 \else not many greater than 2\fi.
+
+True \ifalwaystrue is always true \else should never be false\fi.
+False \ifalwaysfalse should never be true \else is always false\fi.
+
+\ifodd\one one is odd\else one is not odd\fi.
+\ifodd\two two is odd\else two is not odd\fi.
+
+one is \ifcase\one zero \or one \or two \or three \else many\fi.
+two is \ifcase\two zero \or one\or two\or three \else many\fi.
+many is \ifcase\many zero \or one\or two\or three \else many\fi.
+
+
+INVERT \unless\ifnum\one>\two 1 greater than 2 \else not 1 greater than 2\fi.
+INVERT \unless\ifnum\many>\two many greater than 2 \else not many greater than 2\fi.
+
+INVERT \unless\ifodd\one one is odd\else one is not odd\fi.
+INVERT \unless\ifodd\two two is odd\else two is not odd\fi.
+
+INVERT True \unless\ifalwaystrue is always true \else should never be false\fi.
+INVERT False \unless\ifalwaysfalse should never be true \else is always false\fi.
+
+% You cannot use \unless before \ifcase!
+% You cannot use \unless before a macro (even if it expands to \if...)
 \end{document}
