@@ -61,16 +61,10 @@ DefRegister('\currentgrouplevel',Number(0),
 DefRegister('\currentgrouptype',Number(0), readonly=>1);
 
 # \ifcsname stuff \endcsname
-DefMacro('\ifcsname CSName', sub {
-  my($gullet,$token)=@_;
-  ifHandler($gullet, defined LookupMeaning($token)); },
-	 isConditional=>1);
+DefConditional('\ifcsname CSName', sub { defined LookupMeaning($_[1]); });
 
 # \ifdefined <token>
-DefMacro('\ifdefined Token', sub {
-  my($gullet,$token)=@_;
-  ifHandler($gullet, defined LookupMeaning($token)); },
-	 isConditional=>1);
+DefConditional('\ifdefined Token', sub { defined LookupMeaning($_[1]); });
 
 # ???
 DefRegister('\lastnodetype',Number(0));
@@ -139,8 +133,16 @@ DefRegister('\everyeof',Tokens());
 DefConstructor('\middle Token ',"<ltx:XMWrap style='stretchy'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
 
-# This really wants a slightly more formalized definition of conditionals,
-# so that we can NOT the test!
-# \unless
-# How to do this...
-# Can I set a one-shot NEGATE that evaluates the if and flips it's sense?
+# \unless someif
+DefConditional('\unless Token',sub {
+ my($gullet,$if)=@_;
+ my($defn,$test);
+ if( ($defn=LookupMeaning($if)) && $defn->isConditional && ($test=$defn->getTest)){
+   # Invert the if's test!
+   ! &$test($gullet,$defn->readArguments($gullet)); }
+ else {
+   Error(":unexpected:".Stringify($if)." \\unless should not be followed by ".Stringify($if)); }});
+
+#======================================================================
+1;
+

@@ -51,8 +51,7 @@ Let(T_CS('\magnification'),T_CS('\@undefined'));
 # Basic \documentclass & \documentstyle
 
 #AssignValue('2.09_COMPATIBILITY'=>0);
-DefMacroI('\if@compatibility',undef,sub { ifHandler($_[0],LookupValue('2.09_COMPATIBILITY')); },
-	 isConditional=>1);
+DefConditionalI('\if@compatibility',undef,sub { LookupValue('2.09_COMPATIBILITY'); });
 DefMacroI('\@compatibilitytrue','');
 DefMacroI('\@compatibilityfalse','');
 
@@ -1289,11 +1288,10 @@ DefConstructor('\@equationgroup@open@row SkipSpaces DigestedBody',
 
 # ========================================
 # Some special kinds of rows...
-DefMacroI('\if@in@firstcolumn',undef, sub {
+DefConditionalI('\if@in@firstcolumn',undef, sub {
 	   my $x = LookupValue('Alignment');
 	   $x = ($x ? $x->currentColumnNumber : 9);
-	   ifHandler($_[0],$x < 2); },
-	 isConditional=>1);
+	   $x < 2; });
 # A bit more defensiveness, since people abuse eqnarray so badly.
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',

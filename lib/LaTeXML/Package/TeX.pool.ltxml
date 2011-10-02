@@ -271,110 +271,35 @@ DefParameterType('DigestedBody', sub {
 # See The TeXBook, Ch. 20, Definitions (also called Macros) pp. 212--215
 #**********************************************************************
 
-#======================================================================
-# Conditionals
-#   Expand enough to determine true/false, then maybe skip
-#   record a flag somewhere so that \else or \fi is recognized
-#   (otherwise, they should signal an error)
-
-# Skipping for conditionals
-#   0 : skip to \fi
-#  -1 : skip to \else, if any, or \fi
-#   n : skip to n-th \or, if any, or \else, if any, or \fi.
-sub skipConditionalBody {
-  my($gullet,$nskips)=@_;
-  my $level=1;
-  my $n_ors = 0;
-  my $start = $gullet->getLocator;
-  while(my $t= $gullet->readToken){
-    if(defined(my $defn = LookupDefinition($t))){
-      if($defn->isExpandable && $defn->isConditional){
-	$level++; }
-      elsif(Equals($t,T_CS('\fi')) && (!--$level)){
-	fiHandler($gullet); return; }
-      elsif($level > 1){	# Ignore nested \else,\or
-      }
-      elsif(Equals($t,T_CS('\or')) && (++$n_ors == $nskips)){
-	return; }
-      elsif(Equals($t,T_CS('\else')) && $nskips){
-	my $curr=LookupValue('current_if_level');
-	AssignValue('if_level_'.$curr.'_elses'=>1,'global');
-	return; }}}
-  Fatal(":expected:\\fi Missing \\fi or \\else, conditional fell off end (starting at $start)"); }
-
-# NOTE: See Definition setting current_if_level before conditionals!
-
-sub ifHandler   { 
-  my($gullet,$boolean)=@_;
-  my ($curr,$level) = (LookupValue('current_if_level'),LookupValue('if_level'));
-  AssignValue(if_level=>$curr, 'global');
-  AssignValue('if_level_'.$curr.'_elses'=>0,'global');
-  skipConditionalBody($gullet,-1) unless $boolean; return; }
-
-sub elseHandler { 
-  my($gullet)=@_;
-  my ($curr,$level) = (LookupValue('current_if_level'),LookupValue('if_level'));
-  if(!$curr){
-    Error(":unexpected:\\else  Didn't expect an \\else since we seem not to be in an \\if");
-    return; }
-  elsif(LookupValue('if_level_'.$curr.'_elses'=>1,'global')){
-    Error(":unexpected:\\else Extra \\else or \\or");
-    return; }
-  elsif($curr > $level){
-    (T_CS('\relax'),T_CS('\else')); }
-  else {
-    skipConditionalBody($gullet,0); return; }}
-
-sub fiHandler {
-  my($gullet)=@_;
-  my ($curr,$level) = (LookupValue('current_if_level'),LookupValue('if_level'));
-  if(!$curr){
-    Error(":unexpected:\\fi  Didn't expect an \\fi here since we seem not to be in an \\fi");
-    return; }
-  elsif($curr > $level){
-    (T_CS('\relax'),T_CS('\fi')); }
-  else {
-    AssignValue(current_if_level=>$curr-1, 'global'); 
-    AssignValue(if_level=>$curr-1, 'global'); 
-    return; }}
 
 #======================================================================
 # Should complain if we aren't actually evaluating an \if
-DefMacroI('\else',undef, \&elseHandler);
-DefMacroI('\or',  undef, \&elseHandler);
-DefMacroI('\fi',  undef, \&fiHandler);
+DefMacroI('\else',undef, \&LaTeXML::Conditional::elseHandler);
+DefMacroI('\or',  undef, \&LaTeXML::Conditional::elseHandler);
+DefMacroI('\fi',  undef, \&LaTeXML::Conditional::fiHandler);
 
 sub compare {
   my($a,$rel,$b)=@_;
+  $a = $a->valueOf if ref $a;
+  $b = $b->valueOf if ref $b;
   if   ($rel->equals(T_OTHER('<')) || $rel->equals(T_CS('\@@<'))){ $a < $b; }
   elsif($rel->equals(T_OTHER('='))                              ){ $a == $b; }
   elsif($rel->equals(T_OTHER('>')) || $rel->equals(T_CS('\@@>'))){ $a > $b; }
   else { Error(":expected:<relationaltoken> Expected a relational token but got ".Stringify($rel)." in comparison conditional"); }}
 
-DefMacro('\ifnum Number Token Number', 
-	      sub { ifHandler($_[0],compare($_[1]->valueOf,$_[2],$_[3]->valueOf)); },
-	      isConditional=>1);
-DefMacro('\ifdim Dimension Token Dimension',
-	      sub { ifHandler($_[0],compare($_[1]->valueOf,$_[2],$_[3]->valueOf)); },
-	      isConditional=>1);
-DefMacro('\ifodd Number',
-	      sub { ifHandler($_[0],$_[1]->valueOf % 2); },
-	     isConditional=>1);
-
+DefConditional('\ifnum Number Token Number',      sub { compare($_[1],$_[2],$_[3]); });
+DefConditional('\ifdim Dimension Token Dimension',sub { compare($_[1],$_[2],$_[3]); });
+DefConditional('\ifodd Number', sub { $_[1]->valueOf % 2; });
 
 # NOTE: We don't KNOW if we're in vertical, horizontal or inner mode!!!!!!!
-DefMacroI('\ifvmode', undef, sub { ifHandler($_[0],0); }, isConditional=>1);
-DefMacroI('\ifhmode', undef, sub { ifHandler($_[0],0); }, isConditional=>1);
-DefMacroI('\ifinner', undef, sub { ifHandler($_[0],0); }, isConditional=>1);
+DefConditionalI('\ifvmode', undef, sub { 0; });
+DefConditionalI('\ifhmode', undef, sub { 0; });
+DefConditionalI('\ifinner', undef, sub { 0; });
 
-DefMacroI('\ifmmode',undef, sub { ifHandler($_[0],LookupValue('IN_MATH')); }, isConditional=>1);
+DefConditionalI('\ifmmode',undef, sub { LookupValue('IN_MATH'); });
 
-DefMacro('\if XToken XToken',
-	      sub { ifHandler($_[0],$_[1]->getCharcode == $_[2]->getCharcode); },
-	      isConditional=>1);
-DefMacro('\ifcat XToken XToken', 
-	      sub { ifHandler($_[0],$_[1]->getCatcode  == $_[2]->getCatcode); },
-	      isConditional=>1);
+DefConditional('\if XToken XToken',    sub { $_[1]->getCharcode == $_[2]->getCharcode; });
+DefConditional('\ifcat XToken XToken', sub { $_[1]->getCatcode  == $_[2]->getCatcode; });
 
 # !! ????
 # Probably should be promoted/exported somewhere...
@@ -392,10 +317,7 @@ sub xEquals {
     return 1; }
   return undef; }
 
-DefMacro('\ifx Token Token', sub {
-  my($gullet,$token1,$token2)=@_;
-  ifHandler($gullet, xEquals($token1,$token2)); },
-	      isConditional=>1);
+DefConditional('\ifx Token Token', sub { xEquals($_[1],$_[2]); });
 
 # Kinda rough: We don't really keep track of modes as carefully as TeX does.
 # We'll assume that a box is horizontal if there's anything at all,
@@ -409,23 +331,23 @@ sub classify_box {
   else {
     'hbox'; }}
 
-DefMacro('\ifvoid Number', sub { ifHandler($_[0],!classify_box($_[1]));}, isConditional=>1);
-DefMacro('\ifhbox Number', sub { ifHandler($_[0],classify_box($_[1]) eq 'hbox');}, isConditional=>1);
-DefMacro('\ifvbox Number', sub { ifHandler($_[0],classify_box($_[1]) eq 'vbox');}, isConditional=>1);
+DefConditional('\ifvoid Number', sub { !classify_box($_[1]); });
+DefConditional('\ifhbox Number', sub { classify_box($_[1]) eq 'hbox';});
+DefConditional('\ifvbox Number', sub { classify_box($_[1]) eq 'vbox';});
 
 # Implementing this assumes we've got some notion of file numbers!!!
-DefMacroI('\ifeof',  undef,sub { ifHandler($_[0],0); }, isConditional=>1);
-DefMacroI('\iftrue', undef,sub { ifHandler($_[0],1); }, isConditional=>1);
-DefMacroI('\iffalse',undef,sub { ifHandler($_[0],0); }, isConditional=>1);
+DefConditionalI('\ifeof',  undef,sub { 0; });
+DefConditionalI('\iftrue', undef,sub { 1; });
+DefConditionalI('\iffalse',undef,sub { 0; });
 
-DefMacro('\ifcase Number', sub {
-  my($gullet,$num)=@_;
-  AssignValue(if_level=>LookupValue('current_if_level'), 'global');
-  $num = $num->valueOf;
-  if($num > 0){ 
-    skipConditionalBody($gullet,$num); }
-  return; },
-  isConditional=>1);
+# SPECIAL CASE
+DefConditional('\ifcase Number', undef,
+  skipper=>sub {
+    my($gullet,$num)=@_;
+    $num = $num->valueOf;
+    if($num > 0){ 
+      LaTeXML::Conditional::skipConditionalBody($gullet,$num); }
+    return; });
 
 #======================================================================
 
@@ -1785,7 +1707,7 @@ DefMacro('\@multicolumn {Number}  AlignmentTemplate {}', sub {
    $tokens->unlist,
    ($column ? afterCellUnlist($$column{after}) : ()) ); });
 
-DefMacroI('\if@in@alignment', undef,sub { ifHandler($_[0],LookupValue('Alignment')); }, isConditional=>1);
+DefConditionalI('\if@in@alignment', undef,sub { LookupValue('Alignment'); });
 
 sub alignmentBindings {
   my($template,$mode)=@_;
@@ -2979,10 +2901,8 @@ RawTeX('\newbox\voidb@x');
 
 DefMacro('\newif DefToken',sub {
   my($ignore,$cs)=@_;
-  my $name = ToString($cs); $name =~ s/^\\if//;
-  DefMacroI($cs,undef, sub { ifHandler($_[0],LookupValue('Boolean:'.$name)); }, isConditional=>1);
-  DefPrimitiveI(T_CS('\\'.$name.'true'),undef, sub { AssignValue('Boolean:'.$name => 1); });
-  DefPrimitiveI(T_CS('\\'.$name.'false'),undef,sub { AssignValue('Boolean:'.$name => 0); });  });
+  DefConditionalI($cs,undef); 
+  return; });
 
 # See the section Registers & Parameters, above for setting default values.
 #======================================================================
