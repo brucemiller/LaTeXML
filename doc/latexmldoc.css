@@ -114,9 +114,10 @@ h1, h2, h3,
   border:none; 
 }
 
-
 dl.description.moduledescription dt,
 dl.description.elementdescription dt,
 dl.description.patterndescription dt
  { margin-right:0.5em; float:left;
    font-weight:normal; }
+
+dl.description dd dl.description { clear:both; }
