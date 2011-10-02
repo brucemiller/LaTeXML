@@ -681,11 +681,15 @@ different stages of processing and in different levels of complexity.
 Depending on what you are trying to achieve, some approaches may be easier
 than others: Recall Larry Wall's adage ``There's more than one way to do it.''
 
+By far, the easiest way to customize the style of the output is by modifying the CSS,
+see \ref{customization.latexmlpost.css}, so that is the recommended way
+when it applies.
+
 The basic conversion from \TeX\ markup to \XML\ is done by
-\ltxcmd{latexml}, and obviously affected by the mapping between the \TeX\ markup
-and the \XML\ markup is controlled by macros, primitives and, of course,
-constructors.  That mapping is determined by the \LaTeXML-specific implementations
-of the \TeX\ packages involved, what we call `bindings'.
+\ltxcmd{latexml}, and is obviously affected by the mapping between the \TeX\ markup
+and the \XML\ markup.  This mapping is defined by macros, primitives and, of course,
+constructors;  The mapping that is in force at any time is determined by the
+\LaTeXML-specific implementations of the \TeX\ packages involved, what we call `bindings'.
 Consequently, you can customize the conversion by modifying the
 bindings used by \ltxcmd{latexml}.
 
@@ -1504,6 +1508,63 @@ the presentation style:
 
 % Some 
 %%%======================================================================
+\chapter{Localization}\label{localization}
+In this chapter, a few issues relating to various national or cultural styles,
+languages or text encodings, which we'll refer to collectively as `localization', are breifly discussed.
+
+\section{Numbering}\label{localization.numbering}
+Generally when titles and captions are formatted or when equations are numbered
+and when they are referred to in a cross reference or table of contents,
+text consisting of some combination of the raw title or caption text,
+a reference number and a type name (eg.~`Chapter') or symbol (eg.~\S) is composed and used.
+The exact compositions that is used at each level can depend on language, culture,
+the subject matter as well as both journal and individual style preferences.
+\LaTeX\ has evolved to accommodate many of these styles and
+\LaTeXML\ attempts to follow that lead, while preserve its options
+(the demands of extensively hyper-linked  online material sometimes seems
+to demand more options and flexibility than traditional print formatting).
+
+For example, the various macros \cs{chaptername}, \cs{partname}, \cs{refname}, etc.
+are respected and used.  Likewise, the various counters and formatters such
+as \cs{theequation} are supported.
+
+\LaTeX's mechanism for formatting caption tags, \cs{fnum@figure} and \cs{fnum@table}, is extended
+to cover all cases; thus if you define \cs{fnum@\textit{type}},
+ (where \textit{type} is \texttt{chapter}, \texttt{section}, \texttt{subsection}, etc.)
+it will be used to format the reference number and/or type name for instances of that \textit{type}.
+The macro \cs{fnum@toc@\textit{type}} is used when formatting numbers for tables of contents.
+
+Alternatively, you can define a macro \cs{format@title@\textit{type}}  that will be used format the whole
+title including reference number and type as desired; it takes a single argument, the title text.
+The macro \cs{format@toctitle@\textit{type}} is used for the formatting a (typically) short form use in tables of contents.
+
+
+\section{Input Encodings}\label{localization.inputencodings}
+\LaTeXML\ supports the standard \LaTeX\ mechanism for handling
+non-ASCII encodings of the input \TeX\ sources: using the \code{inputenc} package.
+The \LaTeXML\ binding of \code{inputenc} loads the encoding definition (generally with extension \code{def})
+directly from the \LaTeX\ distribution (which are generally well-enough behaved to be
+easily processed).  These encoding definitions make the upper 128 code points (of 8 bit)
+active and define \TeX\ macros to handle them.
+
+Using the commandline option \code{--inputencoding=utf8} to \ltxcmd{latexml} allows
+processing of sources encoded as utf8, without any special packages loaded.
+[future work will make \LaTeXML\ compatible with xetex]
+
+\section{Output Encodings}\label{localization.outputencodings}
+At some level, as far as \TeX\ is concerned, what you type ends up pointing into a font
+that causes some blob of ink to be printed. This mechanism is used to print
+a unique mathematical operator, say subset of and not equals.  It is also used
+to print greek when you seemed to have been typing ASCII!
+
+So, we must, as well. At the stage when character tokens are digested to create boxes
+in the current font, a font encoding table (a FontMap) is consulted to map the token's text (viewed as an
+index into the table) to Unicode.  The declaration \code{DeclareFontMap} is used to associate
+a FontMap with an encoding name, or font. (The text within constructor's xml pattern is used without font conversion).
+
+\section{Babel}\label{localization.babel}
+
+%%%======================================================================
 \chapter{ToDo}\label{todo}
 Lots\ldots!
 \begin{itemize}
@@ -1531,8 +1592,8 @@ for providing the motivation and opportunity to pursue this.
 
 Thanks to the arXMLiv project, in particular Michael Kohlhase and Heinrich Stamerjohanns,
 for providing a rich testbed and testing framework to exercise the system.
-Additionally, thanks to Ioan Sucan, Deyan Ginev
-and Catalin David for testing help and for implementing additional packages.
+Additionally, thanks to Ioan Sucan, Deyan Ginev,
+Catalin David and Silviu Oprea for testing help and for implementing additional packages.
 
 %%%======================================================================
 \appendix
