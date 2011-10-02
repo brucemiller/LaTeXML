@@ -22,7 +22,9 @@ use Text::Balanced;
 use base qw(Exporter);
 our @EXPORT = (qw(&DefExpandable
 		  &DefMacro &DefMacroI
-		  &DefPrimitive  &DefPrimitiveI &DefRegister &DefRegisterI
+		  &DefConditional &DefConditionalI
+		  &DefPrimitive  &DefPrimitiveI
+		  &DefRegister &DefRegisterI
 		  &DefConstructor &DefConstructorI
 		  &dualize_arglist
 		  &DefMath &DefMathI &DefEnvironment &DefEnvironmentI
@@ -439,7 +441,7 @@ sub GenerateID {
 }}
 
 #======================================================================
-# Readers for reading various data types
+#
 #======================================================================
 
 sub Expand            { $STATE->getStomach->getGullet->expandTokens(@_); }
@@ -451,6 +453,11 @@ sub Invocation        {
   else {
     Fatal(":undefined:".Stringify($token)." Cannot invoke ".Stringify($token)."; it is undefined");
     Tokens(); }}
+
+sub RawTeX {
+  my($text)=@_;
+  Digest(TokenizeInternal($text));
+  return; }
 
 #======================================================================
 # Non-exported support for defining forms.
@@ -471,7 +478,6 @@ sub forbidMath {
   Warn(":unexpected:$cs $cs should not appear in math mode") if LookupValue('IN_MATH');
   return; }
 
-
 #**********************************************************************
 # Definitions
 #**********************************************************************
@@ -484,7 +490,7 @@ sub forbidMath {
 # substituted for any #1,...), or a sub which returns a list of tokens (or just return;).
 # Those tokens, if any, will be reinserted into the input.
 # There are no options to these definitions.
-our $expandable_options = {isConditional=>1, scope=>1, locked=>1};
+our $expandable_options = {scope=>1, locked=>1};
 sub DefExpandable {
   my($proto,$expansion,%options)=@_;
   Warn(":misdefined:DefExpandable DefExpandable ($proto) is deprecated; use DefMacro");
@@ -492,7 +498,7 @@ sub DefExpandable {
 
 # Define a Macro: Essentially an alias for DefExpandable
 # For convenience, the $expansion can be a string which will be tokenized.
-our $macro_options = {isConditional=>1, scope=>1, locked=>1};
+our $macro_options = {scope=>1, locked=>1};
 sub DefMacro {
   my($proto,$expansion,%options)=@_;
   CheckOptions("DefMacro ($proto)",$macro_options,%options);
@@ -507,9 +513,42 @@ sub DefMacroI {
   AssignValue(ToString($cs).":locked"=>1) if $options{locked};
   return; }
 
-sub RawTeX {
-  my($text)=@_;
-  Digest(TokenizeInternal($text));
+#======================================================================
+# Defining Conditional Control Sequences.
+#======================================================================
+# Define a conditional control sequence. Its processing takes place in
+# the Gullet.  The test is applied to the arguments (if any),
+# which determines which branch is executed.
+# If the test is undefined, the conditional is a "user defined" one;
+# Two additional primitives are defined \footrue and \foofalse;
+# the test is then determined by the most recently called of those.
+
+# If you supply a skipper instead of a test, it is also applied to the arguments
+# and should skip to the right place in the following \or, \else, \fi.
+# This is ONLY used for \ifcase.
+our $conditional_options = {scope=>1, locked=>1, skipper=>1};
+sub DefConditional {
+  my($proto,$test,%options)=@_;
+  CheckOptions("DefConditional ($proto)",$conditional_options,%options);
+  DefConditionalI(parsePrototype($proto),$test,%options); }
+
+sub DefConditionalI {
+  my($cs,$paramlist,$test,%options)=@_;
+  $cs = coerceCS($cs);
+  if((! defined $test) && (! defined $options{skipper})){
+    # define a "user defined" conditional, like with \newif
+    if(ToString($cs) =~ /^\\if(.*)$/){
+      my $name = $1;
+      $test = sub { LookupValue('Boolean:'.$name); };
+      DefPrimitiveI(T_CS('\\'.$name.'true'),undef, sub { AssignValue('Boolean:'.$name => 1); });
+      DefPrimitiveI(T_CS('\\'.$name.'false'),undef,sub { AssignValue('Boolean:'.$name => 0); }); }
+    else {
+      Error(":misdefined:".Stringify($cs)." The conditional ".Stringify($cs).
+	    " is being defined but doesn't start with \\if"); }}
+
+  $STATE->installDefinition(LaTeXML::Conditional->new($cs,$paramlist,$test,%options),
+			    $options{scope});
+  AssignValue(ToString($cs).":locked"=>1) if $options{locked};
   return; }
 
 #======================================================================
@@ -1655,9 +1694,6 @@ expanded during macro expansion time (in the  L<LaTeXML::Gullet>).  If a C<$stri
 tokenized at definition time, and any macro arguments will be substituted for parameter
 indicators (eg #1) at expansion time; the result is used as the expansion of
 the control sequence. 
-The only option, other than C<scope>, is C<isConditional> which should be true,
-for conditional control sequences (TeX uses these to keep track of conditional
-nesting when skipping to \else or \fi).
 
 If defined by C<$code>, the form is C<CODE($gullet,@args)> and it
 must return a list of L<LaTeXML::Token>'s.
@@ -1668,6 +1704,31 @@ X<DefMacroI>
 Internal form of C<DefMacro> where the control sequence and parameter list
 have already been parsed; useful for definitions from within code.
 Also, slightly more efficient for macros with no arguments (use C<undef> for
+C<$paramlist>).
+
+=back
+
+=head3 Macros
+
+=over
+
+=item C<< DefConditional($prototype,$test,%options); >>
+
+X<DefConditional>
+Defines a conditional for C<$prototype>; a control sequence that is
+processed during macro expansion time (in the  L<LaTeXML::Gullet>).
+A conditional corresponds to a TeX C<\if>.
+It evaluates C<$test>, which should be CODE that is applied to the arguments, if any.
+Depending on whether the result of that evaluation returns a true or false value
+(in the usual Perl sense), the result of the expansion is either the
+first or else code following, in the usual TeX sense.
+
+=item C<< DefConditionalI($cs,$paramlist,$test,%options); >>
+
+X<DefConditionalI>
+Internal form of C<DefConditional> where the control sequence and parameter list
+have already been parsed; useful for definitions from within code.
+Also, slightly more efficient for conditinal with no arguments (use C<undef> for
 C<$paramlist>).
 
 =back
