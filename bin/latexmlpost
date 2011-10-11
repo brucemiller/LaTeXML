@@ -106,7 +106,8 @@ GetOptions("verbose+"              =>\$verbosity,
 	   "nocontentmathml|nocmml"      => sub { removeMathFormat('cmml'); },
 	   "noopenmath|noom"             => sub { removeMathFormat('om'); },
 	   "parallelmath!"               => \$parallelmath,
-	   "keepXMath!"                  =>\$keepXMath,
+	   "keepXMath"                   => sub { addMathFormat('XMath'); },
+	   "nokeepXMath"                 => sub { removeMathFormat('XMath'); },
 	   # For graphics: vaguely similar issues, but more limited.
 	   # includegraphics images (eg. ps) can be converted to webimages (eg.png)
 	   # picture/pstricks images can be converted to png or possibly svg.
@@ -181,9 +182,8 @@ elsif($format eq 'html'){
     $stylesheet = "LaTeXML-html.xsl";
     unshift(@css,"core.css") if $defaultcss; }}
 elsif($format eq 'html5'){
-  Error("Default html5 stylesheet does not support --mathimages or parallel math markup (yet)")
-    if (!defined $stylesheet) && ($mathimages || $parallelmath || (scalar(@math_formats) > 1));
-  # We'll ONLY do pMML ???
+  # In principle, should only have pMML and possibly MathImages (for altimg);
+  # but I guess we can allow people to try...
   unshift(@math_formats,'pmml') 
     unless grep($_ eq 'pmml',@math_formats) || $removed_math_formats{pmml};
   $svg        = 1 unless defined $svg;
@@ -193,9 +193,8 @@ elsif($format eq 'html5'){
     $stylesheet = "LaTeXML-html5.xsl";
     unshift(@css,"core.css") if $defaultcss; }}
 elsif($format eq 'xhtml'){
-  Error("Default xhtml stylesheet does not support --mathimages")
-    if (!defined $stylesheet) && $mathimages;
   # Add pMML FIRST, unless already there, or was disabled.
+  # note that MathImages can supply altimg attributes
   unshift(@math_formats,'pmml') 
     unless grep($_ eq 'pmml',@math_formats) || $removed_math_formats{pmml};
   # Add cMML NEXT if parallel was requested and pMML is present, but no secondary format was requested.
@@ -215,10 +214,9 @@ elsif($format eq 'xml'){}
 else {
   Error("Unrecognized target format: $format"); }
 
-Error("Parallel math markup needs at least two formats")
-  if $parallelmath && (scalar(@math_formats) < 2);
-#Error("Parallel math markup can only be based on MathML") 
-#  if $parallelmath && ($math_formats[0] !~ /^(cmml|pmml)$/);
+## hmmm... at least with MathML, we'll (now) get the TeX format added for free..
+## Error("Parallel math markup needs at least two formats")
+##  if $parallelmath && (scalar(@math_formats) < 2);
 
 if((!defined $destination) && ($mathimages || $dographics || $picimages)){
   Error("Must supply --destination unless all auxilliary file writing is disabled"
@@ -280,9 +278,6 @@ if(!$prescan){
 					     ($navtoc ? (navigation_toc=>$navtoc):()),
 					     %OPTIONS)); }
 
-  if($mathimages){
-    require 'LaTeXML/Post/MathImages.pm';
-    push(@procs,LaTeXML::Post::MathImages->new(magnification=>$mathimagemag,%OPTIONS)); }
   if($picimages){
     require 'LaTeXML/Post/PictureImages.pm';
     push(@procs,LaTeXML::Post::PictureImages->new(%OPTIONS)); }
@@ -298,10 +293,14 @@ if(!$prescan){
     require 'LaTeXML/Post/SVG.pm';
     push(@procs,LaTeXML::Post::SVG->new(%OPTIONS)); }
   if(@math_formats){
-    $keepXMath  = 0 unless defined $keepXMath;
     my @mprocs=();
+    # If XMath is not first, it must be at END!  Or... ???
     foreach my $fmt (@math_formats){
-      if($fmt eq 'pmml'){
+      if($fmt eq 'XMath'){
+	$keepXMath = 1;
+	require 'LaTeXML/Post/XMath.pm';
+	push(@mprocs,LaTeXML::Post::XMath->new(%OPTIONS)); }
+      elsif($fmt eq 'pmml'){
 	require 'LaTeXML/Post/MathML.pm';
 	push(@mprocs,LaTeXML::Post::MathML::Presentation->new(
 		    (defined $linelength ? (linelength=>$linelength):()),
@@ -313,10 +312,10 @@ if(!$prescan){
 	push(@mprocs,LaTeXML::Post::MathML::Content->new(%OPTIONS)); }
       elsif($fmt eq 'om'){
 	require 'LaTeXML/Post/OpenMath.pm';
-	push(@mprocs,LaTeXML::Post::OpenMath->new(%OPTIONS)); }}
+	push(@mprocs,LaTeXML::Post::OpenMath->new(%OPTIONS)); }
+    }
+    $keepXMath  = 0 unless defined $keepXMath;
     if($parallelmath){
-#      require 'LaTeXML/Post/MathML.pm';
-#      push(@procs,LaTeXML::Post::MathML::Parallel->new(math_processors=>[@mprocs],%OPTIONS)); }
       my $main = shift(@mprocs);
       $main->setParallel(@mprocs);
       push(@procs,$main); }
@@ -328,6 +327,11 @@ if(!$prescan){
   if(!$keepXMath){
     require 'LaTeXML/Post/PurgeXMath.pm';
     push(@procs,LaTeXML::Post::PurgeXMath->new(%OPTIONS)); }
+  # Done AFTER other math formats, so that it can add attributes in appropriate places
+  # (eg. MathML's altimg).
+  if($mathimages){
+    require 'LaTeXML/Post/MathImages.pm';
+    push(@procs,LaTeXML::Post::MathImages->new(magnification=>$mathimagemag,%OPTIONS)); }
 
   if($stylesheet){
     require 'LaTeXML/Post/XSLT.pm'; 
