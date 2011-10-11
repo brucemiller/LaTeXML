@@ -60,6 +60,7 @@ lib/LaTeXML/Post/Split.pm
 lib/LaTeXML/Post/SVG.pm
 lib/LaTeXML/Post/Writer.pm
 lib/LaTeXML/Post/XSLT.pm
+lib/LaTeXML/Post/XMath.pm
 #==================================================
 # Common Modules
 #==================================================
@@ -421,6 +422,7 @@ t/alignment/mathmix.xml
 t/alignment/listing.dvi
 t/alignment/listing.tex
 t/alignment/listing.xml
+t/alignment/any.sty.ltxml
 t/alignment/longtable.dvi
 t/alignment/longtable.tex
 t/alignment/longtable.xml
@@ -693,12 +695,18 @@ t/parse/terms.tex
 t/parse/terms.xml
 t/post/simplemath-post.xml
 t/post/simplemath.xml
+t/structure/abstract.dvi
+t/structure/abstract.tex
+t/structure/abstract.xml
 t/structure/article.dvi
 t/structure/article.tex
 t/structure/article.xml
 t/structure/authors.dvi
 t/structure/authors.tex
 t/structure/authors.xml
+t/structure/badabstract.dvi
+t/structure/badabstract.tex
+t/structure/badabstract.xml
 t/structure/beforeafter.dvi
 t/structure/beforeafter.tex
 t/structure/beforeafter.xml
@@ -720,6 +728,9 @@ t/structure/report.xml
 t/structure/sec.dvi
 t/structure/sec.tex
 t/structure/sec.xml
+t/structure/svabstract.dvi
+t/structure/svabstract.tex
+t/structure/svabstract.xml
 t/theorem/amstheorem.dvi
 t/theorem/amstheorem.tex
 t/theorem/amstheorem.xml
