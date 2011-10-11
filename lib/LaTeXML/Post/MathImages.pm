@@ -34,6 +34,19 @@ sub extractTeX {
   $mode = 'DISPLAY' if $tex=~ s/^\s*\\displaystyle\s+//; # Strip leading displaystyle
   ($tex =~ /^\s*$/ ? undef : "\\begin$mode $tex\\end$mode"); }
 
+our $MML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";
+sub setTeXImage {
+  my($self,$doc,$node,$path,$width,$height,$depth)=@_;
+  $self->SUPER::setTeXImage($doc,$node,$path,$width,$height,$depth);
+  # IF the ltx:Math node has a m:math child, add image info to it, too. (MML3)
+#  if($mml = $node->findnode('m:math',$node)){
+  if(my $mml = $doc->findnode("child::*[local-name() = 'math' and namespace-uri() = '$MML_NAMESPACE']",$node)){
+    $mml->setAttribute('altimg',$path);
+    $mml->setAttribute('altimg-width',$width);
+    $mml->setAttribute('altimg-height',$height);
+    $mml->setAttribute('altimg-valign',-$depth) if defined $depth; }} # Note the sign!!
+
+
 # Definitions needed for processing inline & display math images
 sub preamble {
   my($self,$doc)=@_;
