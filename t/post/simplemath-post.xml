@@ -4,7 +4,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:m="http://www.w3.org/1998/Math/MathML">
   <title>Testing Simple Math Parsing</title>
   <para xml:id="p1">
-    <p>Inline math <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="ID" font="italic">a</XMTok><XMTok role="ID" font="italic">b</XMTok></XMApp></XMath><m:math display="inline"><m:mrow><m:mi>a</m:mi><m:mo>+</m:mo><m:mi>b</m:mi></m:mrow></m:math></Math>.</p>
+    <p>Inline math <Math mode="inline" tex="a+b" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="ID" font="italic">a</XMTok><XMTok role="ID" font="italic">b</XMTok></XMApp></XMath><m:math alttext="a+b" display="inline"><m:mrow><m:mi>a</m:mi><m:mo>+</m:mo><m:mi>b</m:mi></m:mrow></m:math></Math>.</p>
   </para>
   <para xml:id="p2">
     <equation>
@@ -17,7 +17,7 @@
             <XMTok meaning="123" role="NUMBER">123</XMTok>
           </XMApp>
         </XMath>
-        <m:math display="block">
+        <m:math alttext="a+b+123" display="block">
           <m:mrow>
             <m:mi>a</m:mi>
             <m:mo>+</m:mo>
@@ -41,7 +41,7 @@
             </XMApp>
           </XMApp>
         </XMath>
-        <m:math display="block">
+        <m:math alttext="a+b+f(123)" display="block">
           <m:mrow>
             <m:mi>a</m:mi>
             <m:mo>+</m:mo>
@@ -80,7 +80,7 @@
             </XMApp>
           </XMApp>
         </XMath>
-        <m:math display="block">
+        <m:math alttext="f_{D}f(a+b)" display="block">
           <m:mrow>
             <m:msub>
               <m:mi>f</m:mi>
@@ -119,7 +119,7 @@
             </XMApp>
           </XMApp>
         </XMath>
-        <m:math display="block">
+        <m:math alttext="f_{1}(a+b)" display="block">
           <m:mrow>
             <m:msub>
               <m:mi>f</m:mi>
@@ -149,7 +149,7 @@
             <XMTok role="ID" font="italic">a</XMTok>
           </XMApp>
         </XMath>
-        <m:math display="block">
+        <m:math alttext="\hat{f}a" display="block">
           <m:mrow>
             <m:mover accent="true">
               <m:mi>f</m:mi>
@@ -181,7 +181,7 @@
               <XMTok meaning="123" role="NUMBER">123</XMTok>
             </XMApp>
           </XMath>
-          <m:math display="block">
+          <m:math alttext="a(x)+b(x)+123" display="block">
             <m:mrow>
               <m:mrow>
                 <m:mi>a</m:mi>
