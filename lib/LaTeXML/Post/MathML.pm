@@ -1186,14 +1186,21 @@ DefMathML('Apply:?:continued-fraction', sub {
 sub translateParallel {
   my($self,$doc,$xmath,$style,$embedding)=@_;
   $doc->addNamespace($mmlURI,'m');
+  # Get the TeX, FIRST
+  my $mathnode=$xmath->parentNode;
+  my $tex = isElementNode($mathnode) && $mathnode->getAttribute('tex');
+  # Now, assemble the translations
+  my @annot = map( ['m:annotation-xml',{encoding=>$_->getEncodingName},
+		    $_->translateNode($doc,$xmath,$style,'m:annotation-xml')],
+		   @{$$self{math_processors}});
+  # And, a TeX encoding, if any
+  push(@annot,['m:annotation',{encoding=>'application/x-tex'}, $tex]) if defined $tex;
   my @trans = ['m:semantics',{},
 	       $self->translateNode($doc,$xmath,$style,'m:semantics'),
-	       map( ['m:annotation-xml',{encoding=>$_->getEncodingName},
-		     $_->translateNode($doc,$xmath,$style,'m:annotation-xml')],
-		    @{$$self{math_processors}}) ];
+	       @annot ];
   # Wrap unless already embedding within MathML.
   ($embedding =~ /^m:/ ? @trans 
-   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},@trans]); }
+   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline'), alttext=>$tex},@trans]); }
 
 #================================================================================
 # Presentation MathML
@@ -1210,7 +1217,8 @@ sub translateNode {
   my $m = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
   # Wrap unless already embedding within MathML.
   ($embedding =~ /^m:/ ? @trans 
-   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},$m]); }
+   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline'),
+		alttext=>$xmath->parentNode->getAttribute('tex') },$m]); }
 
 sub getEncodingName { 'MathML-Presentation'; }
 
@@ -1265,7 +1273,8 @@ sub translateNodeLinebreaks {
   my $linelength = $$self{linelength} || 80;
   my $breaker = LaTeXML::Util::MathMLLinebreaker->new();
 
-  ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},
+  ['m:math',{display=>($style eq 'display' ? 'block' : 'inline'),
+	     alttext=>$xmath->parentNode->getAttribute('tex') },
    $breaker->fitToWidth($xmath,$mml,$linelength,1)]; }
 
 #================================================================================
@@ -1280,30 +1289,9 @@ sub translateNode {
   my @trans = $self->cmml_top($xmath);
   # Wrap unless already embedding within MathML.
   ($embedding =~ /^m:/ ? @trans 
-   : ['m:math',{},@trans]); }
+   : ['m:math',{alttext=>$xmath->parentNode->getAttribute('tex')},@trans]); }
 
 sub getEncodingName { 'MathML-Content'; }
-
-#================================================================================
-# Parallel MathML
-package LaTeXML::Post::MathML::Parallel;
-use strict;
-use base qw(LaTeXML::Post::MathML);
-
-sub translateNode {
-  my($self,$doc,$xmath,$style,$embedding)=@_;
-  my($main_proc,@annotation_procs)=@{$$self{math_processors}};
-  $doc->addNamespace($mmlURI,'m');
-  my @trans = ['m:semantics',{},
-	       $main_proc->translateNode($doc,$xmath,$style,'m:semantics'),
-	       map( ['m:annotation-xml',{encoding=>$_->getEncodingName},
-		     $_->translateNode($doc,$xmath,$style,'m:annotation-xml')],
-		    @annotation_procs) ];
-  # Wrap unless already embedding within MathML.
-  ($embedding =~ /^m:/ ? @trans 
-   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline')},@trans]); }
-
-sub getEncodingName { 'MathML-Parallel'; }
 
 #================================================================================
 
