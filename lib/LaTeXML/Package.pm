@@ -1011,11 +1011,19 @@ sub FindFile {
     Warn(":obsolete:raw FindFile $file option raw is obsolete; it is not needed"); }
   CheckOptions("FindFile ($file)",$findfile_options,%options);
   $file .= ".$options{type}" if $options{type};
+  # If we REALLY want to rely on k-path-search, we could just push $PATHS onto TEXINPUTS
+  # and ONLY use kpsewhich...? would that be faster or better in any way?
   my $paths    = LookupValue('SEARCHPATHS');
-  (        !$options{noltxml} && !$options{type} && pathname_find_x("$file.tex.ltxml",paths=>$paths,installation_subdir=>'Package'))
-    || (   !$options{notex}   && !$options{type} && (pathname_find_x("$file.tex",paths=>$paths) || pathname_kpathsearch("$file.tex")))
-      || ( !$options{noltxml}                    && pathname_find_x("$file.ltxml",paths=>$paths,installation_subdir=>'Package'))
-	||(!$options{notex}                      && (pathname_find_x("$file",paths=>$paths) || pathname_kpathsearch($file)));
+  (        !$options{noltxml} && !$options{type}
+	   && ( pathname_find_x("$file.tex.ltxml",paths=>$paths,installation_subdir=>'Package')
+		|| pathname_kpathsearch("$file.tex.ltxml") ))
+    || (   !$options{notex}   && !$options{type}
+	   && ( pathname_find_x("$file.tex",paths=>$paths) || pathname_kpathsearch("$file.tex") ))
+      || ( !$options{noltxml}
+	   && ( pathname_find_x("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
+		|| pathname_kpathsearch("$file.ltxml") ))
+	||(!$options{notex}
+	   && ( pathname_find_x("$file",paths=>$paths) || pathname_kpathsearch($file) ));
  }
 
 sub pathname_kpathsearch {
