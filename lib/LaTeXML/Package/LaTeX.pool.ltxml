@@ -3706,6 +3706,12 @@ RawTeX(<<'EOTeX');
 \newif\if@reversemargin \@reversemarginfalse
 \newif\if@mparswitch    \@mparswitchfalse
 \newcount\col@number    \@ne
+\newread\@inputcheck
+\newwrite\@unused
+\newwrite\@mainaux
+\newwrite\@partaux
+\newcount\@clubpenalty
+\@clubpenalty \clubpenalty
 \newif\if@filesw \@fileswtrue
 \newif\if@partsw \@partswfalse
 \def\@tempswafalse{\let\if@tempswa\iffalse}
