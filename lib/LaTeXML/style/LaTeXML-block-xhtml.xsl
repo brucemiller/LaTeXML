@@ -28,25 +28,25 @@
 
   <!-- no class here, since ltx:p it is generated behind the scenes (?)-->
   <xsl:template match="ltx:p" xml:space="preserve">
-    <p style="{f:positioning(.)}" class="{f:classes(.)}"><xsl:apply-templates/></p>
+    <p style="{f:positioning(.)}" class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></p>
   </xsl:template>
 
   <xsl:template match="ltx:quote" xml:space="preserve">
-    <blockquote class="{f:classes(.)}">
+    <blockquote class="{f:classes(.)}"><xsl:call-template name="add_id"/>
       <xsl:apply-templates/>
     </blockquote>
   </xsl:template>
 
   <xsl:template match="ltx:block" xml:space="preserve">
-    <div class="{f:classes(.)}"><xsl:apply-templates/></div>
+    <div class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></div>
   </xsl:template>
 
   <xsl:template match="ltx:listingblock" xml:space="preserve">
-    <div class="{concat('listing ',f:classes(.))}"><xsl:apply-templates/></div>
+    <div class="{concat('listing ',f:classes(.))}"><xsl:call-template name="add_id"/><xsl:apply-templates/></div>
   </xsl:template>
 
   <xsl:template match="ltx:listingblock/ltx:tabular" xml:space="preserve">
-    <table class="{f:classes(.)}">
+    <table class="{f:classes(.)}"><xsl:call-template name="add_id"/>
       <xsl:apply-templates/>
     </table>
   </xsl:template>
@@ -57,7 +57,7 @@
 
   <!-- Need to handle attributes! -->
   <xsl:template match="ltx:inline-block" xml:space="preserve">
-    <span class="{f:classes(.)}"><xsl:apply-templates/></span>
+    <span class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></span>
   </xsl:template>
 
   <!--<xsl:template match="ltx:verbatim" xml:space="preserve">-->
@@ -67,13 +67,13 @@
 	<pre class="{concat(f:classes(.),
 		    f:if(@font,concat(' ',@font),''),
 		    f:if(@size,concat(' ',@size),''))}"
-	     style="{f:if(@color,concat('color:',@color),'')}"><xsl:apply-templates/></pre>
+	     style="{f:if(@color,concat('color:',@color),'')}"><xsl:call-template name="add_id"/><xsl:apply-templates/></pre>
       </xsl:when>
       <xsl:otherwise>
 	<code class="{concat(f:classes(.),
 		    f:if(@font,concat(' ',@font),''),
 		    f:if(@size,concat(' ',@size),''))}"
-	     style="{f:if(@color,concat('color:',@color),'')}"><xsl:apply-templates/></code>
+	     style="{f:if(@color,concat('color:',@color),'')}"><xsl:call-template name="add_id"/><xsl:apply-templates/></code>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -458,6 +458,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
   <xsl:template match="ltx:graphics">
     <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}" class="{f:classes(.)}"
 	 alt="{f:if(../ltx:figure/ltx:caption,../ltx:figure/ltx:caption/text(),@description)}">
+      <xsl:call-template name="add_id"/>
       <xsl:if test="@imagedepth">
 	<xsl:attribute name='style'>
 	  <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px;')"/>

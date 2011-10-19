@@ -32,12 +32,6 @@
     <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8"/>
   </xsl:template>
 
-  <xsl:template name="add_id">
-    <xsl:if test="@fragid">
-      <xsl:attribute name="id"><xsl:value-of select="@fragid"/></xsl:attribute>
-    </xsl:if>
-  </xsl:template>
-
   <xsl:template match="/">
     <html xmlns     = "http://www.w3.org/1999/xhtml"
 	  xmlns:m   = "http://www.w3.org/1998/Math/MathML"

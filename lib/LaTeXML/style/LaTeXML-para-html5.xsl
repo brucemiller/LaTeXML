@@ -30,7 +30,7 @@
 
   <!-- Need to handle attributes! -->
   <xsl:template match="ltx:inline-para" xml:space="preserve">
-    <span class="{f:classes(.)}"><xsl:apply-templates/></span>
+    <span class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></span>
   </xsl:template>
 
 <!-- ======================================================================
@@ -76,6 +76,7 @@
 
 <xsl:template match="ltx:listing/ltx:tabular" xml:space="preserve">
   <table class="{f:classes(.)}">
+    <xsl:call-template name="add_id"/>
     <xsl:apply-templates/>
   </table>
 </xsl:template>
@@ -85,6 +86,7 @@
 		    f:if(@font,concat(' ',@font),''),
 		    f:if(@size,concat(' ',@size),''))}"
 	     style="{f:if(@color,concat('color:',@color),'')}">
+    <xsl:call-template name="add_id"/>
     <xsl:apply-templates/>
   </figcaption>
 </xsl:template>

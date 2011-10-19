@@ -27,30 +27,32 @@
 
 <xsl:template match="ltx:tabular" xml:space="preserve">
   <table class="{f:classes(.)}">
+    <xsl:call-template name="add_id"/>
     <xsl:apply-templates/>
   </table>
 </xsl:template>
 
 <xsl:template match="ltx:thead" xml:space="preserve">
-  <thead class="{f:classes(.)}"><xsl:apply-templates/></thead>
+  <thead class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></thead>
 </xsl:template>
 
 <xsl:template match="ltx:tbody" xml:space="preserve">
-  <tbody class="{f:classes(.)}"><xsl:apply-templates/></tbody>
+  <tbody class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></tbody>
 </xsl:template>
 
 <xsl:template match="ltx:tfoot" xml:space="preserve">
-  <tfoot class="{f:classes(.)}"><xsl:apply-templates/></tfoot>
+  <tfoot class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></tfoot>
 </xsl:template>
 
 <xsl:template match="ltx:tr" xml:space="preserve">
-  <tr class="{f:classes(.)}"><xsl:apply-templates/></tr>
+  <tr class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></tr>
 </xsl:template>
 
 <xsl:template match="ltx:td">
   <xsl:text>
 </xsl:text>
   <xsl:element name="{f:if(@thead,'th','td')}">
+    <xsl:call-template name="add_id"/>
     <xsl:if test="@colspan">
       <xsl:attribute name='colspan'><xsl:value-of select='@colspan'/></xsl:attribute>
     </xsl:if>

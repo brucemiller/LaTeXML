@@ -21,6 +21,20 @@
     extension-element-prefixes="func f"
     exclude-result-prefixes = "ltx f func string">
 
+  <!-- Copy ID info from latexml elements to generated element.
+       Prefer the page-unique fragid attribute,
+       but if none, and there's an xml:id, use that instead -->
+  <xsl:template name="add_id">
+    <xsl:choose>
+      <xsl:when test="@fragid">
+	<xsl:attribute name="id"><xsl:value-of select="@fragid"/></xsl:attribute>
+      </xsl:when>
+      <xsl:when test="@xml:id">
+	<xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:when>
+    </xsl:choose>
+  </xsl:template>
+
 <!-- Usage:  <element class='{f:classes(.)}'>...
      Adds space separated classes based on the current element's 
      local-name and class attribute (if any). -->

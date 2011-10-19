@@ -31,12 +31,6 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   </xsl:template>
 
-  <xsl:template name="add_id">
-    <xsl:if test="@fragid">
-      <xsl:attribute name="id"><xsl:value-of select="@fragid"/></xsl:attribute>
-    </xsl:if>
-  </xsl:template>
-
   <xsl:template match="/">
     <html>
       <xsl:call-template name="head"/>

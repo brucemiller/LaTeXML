@@ -28,7 +28,7 @@
   <!-- NOTE: bibentry (and all it's components) are converted by postprocessing. -->
 
   <xsl:template match="ltx:biblist" xml:space="preserve">
-    <ul class="{f:classes(.)}">
+    <ul class="{f:classes(.)}"><xsl:call-template name="add_id"/>
       <xsl:apply-templates/>
     </ul>
   </xsl:template>
@@ -46,7 +46,7 @@
   <xsl:template match="ltx:bibtag"/>
 
   <xsl:template match="ltx:bibblock" xml:space="preserve">
-    <div class="bibblock">
+    <div class="bibblock"><xsl:call-template name="add_id"/>
       <xsl:apply-templates/>
     </div>
   </xsl:template>
