@@ -297,28 +297,29 @@ sub make_bibcite {
 sub generateURL {
   my($self,$doc,$id)=@_;
   my($object,$location);
-  if(($object = $$self{db}->lookup("ID:".$id))
-     && ($location = $object->getValue('location'))){
-    my $doclocation = $self->siteRelativePathname($doc->getDestination);
-    my $pathdir = pathname_directory($doclocation);
-    my $url = pathname_relative(($location =~ m|^/| ? $location : '/'.$location),
-				($pathdir  =~ m|^/| ? $pathdir  : '/'.$pathdir));
-    my $format = $$self{format} || 'xml';
-    my $urlstyle = $$self{urlstyle}||'file';
-    if($urlstyle eq 'server'){
-      $url =~ s/(^|\/)index.\Q$format\E$/$1/; } # Remove trailing index.$format
-    elsif($urlstyle eq 'negotiated'){
-      $url =~ s/\.\Q$format\E$//; # Remove trailing $format
-      $url =~ s/(^|\/)index$/$1/; # AND trailing index
-    }
-    $url = '.' unless $url;
-#    $url .= '/' if ($url ne '.') && ($url =~ /\/$/);
-    if(my $fragid = $object->getValue('fragid')){
-      $url = '' if ($url eq '.') or ($location eq $doclocation);
-      $url .= '#'.$fragid; }
-    elsif($location eq $doclocation){
-      $url = ''; }
-    $url; }
+  if($object = $$self{db}->lookup("ID:".$id)){
+    if($location = $object->getValue('location')){
+      my $doclocation = $self->siteRelativePathname($doc->getDestination);
+      my $pathdir = pathname_directory($doclocation);
+      my $url = pathname_relative(($location =~ m|^/| ? $location : '/'.$location),
+				  ($pathdir  =~ m|^/| ? $pathdir  : '/'.$pathdir));
+      my $format = $$self{format} || 'xml';
+      my $urlstyle = $$self{urlstyle}||'file';
+      if($urlstyle eq 'server'){
+	$url =~ s/(^|\/)index.\Q$format\E$/$1/; } # Remove trailing index.$format
+      elsif($urlstyle eq 'negotiated'){
+	$url =~ s/\.\Q$format\E$//; # Remove trailing $format
+	$url =~ s/(^|\/)index$/$1/; # AND trailing index
+      }
+      $url = '.' unless $url;
+      if(my $fragid = $object->getValue('fragid')){
+	$url = '' if ($url eq '.') or ($location eq $doclocation);
+	$url .= '#'.$fragid; }
+      elsif($location eq $doclocation){
+	$url = ''; }
+      $url; }
+    else {
+      $self->note_missing('Location for ID',$id); }}
   else {
     $self->note_missing('ID',$id); }}
 
