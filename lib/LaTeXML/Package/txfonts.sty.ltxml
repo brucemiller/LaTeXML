@@ -182,7 +182,7 @@ DefMath('\nbacksimeq',           "\x{224C}\x{0338}", role=>'RELOP');
 DefMath('\nBumpeq',              "\x{224E}\x{0338}", role=>'RELOP');
 DefMath('\nbumpeq',              "\x{224F}\x{0338}", role=>'RELOP');
 DefMath('\Nearrow',              "\x{21D7}",         role=>'ARROW');
-DefMath('\nequiv',               "\x{2262}",         meaning=>'not-identical-to', role=>'RELOP');
+DefMath('\nequiv',               "\x{2262}",         meaning=>'not-equivalent-to', role=>'RELOP');
 DefMath('\ngg',                  "\x{226B}\x{0338}", role=>'RELOP');
 DefMath('\ngtrapprox',           "\x{2A86}\x{0338}",
 	meaning=>'not-greater-than-nor-approximately-equals', role=>'RELOP');
@@ -239,7 +239,7 @@ DefMath('\nsuccsim',             "\x{227F}\x{0338}", role=>'RELOP',
 DefMath('\nSupset',              "\x{22D1}\x{0338}", role=>'RELOP',
 	meaning=>'not-double-superset-of');
 DefMath('\nthickapprox',         "\x{2249}",         role=>'RELOP',
-	meaning=>'not-almost-equals');
+	meaning=>'not-approximately-equals');
 DefMath('\ntwoheadleftarrow',    "\x{2B34}",         role=>'RELOP');
 DefMath('\ntwoheadrightarrow',   "\x{2900}",         role=>'RELOP');
 # DefMath('\nvparallel',         "\x{}",             role=>'RELOP');
@@ -271,7 +271,7 @@ DefMath('\varparallel',          "\x{2AFD}",         role=>'RELOP');
 # DefMath('\VvDash',             "\x{}",             role=>'RELOP');
 
 # Not in the table?
-DefMath('\napprox',              "\x{2249}",         meaning=>'not-almost-equals', role=>'RELOP');
+DefMath('\napprox',              "\x{2249}",         meaning=>'not-approximately-equals', role=>'RELOP');
 DefMath('\nsubset',              "\x{2284}",         meaning=>'not-subset-of', role=>'RELOP');
 DefMath('\nsupset',              "\x{2285}",         meaning=>'not-superset-of', role=>'RELOP');
 
