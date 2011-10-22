@@ -48,7 +48,6 @@ sub new {
   $self->registerHandler('ltx:ref'           => \&ref_handler);
   $self->registerHandler('ltx:bibref'        => \&bibref_handler);
 
-  $self->registerHandler('ltx:XMath'         => \&XMath_handler);
   $self; }
 
 sub registerHandler {
@@ -213,10 +212,13 @@ sub anchor_handler {
 
 sub ref_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
+  my $id = $node->getAttribute('xml:id');
   if(my $label = $node->getAttribute('labelref')){ # Only record refs of labels
     if( ($node->getAttribute('class')||'') !~ /\bcitedby\b/){ # and don't count citedby referencees either
       my $entry = $$self{db}->register($label);
-      $entry->noteAssociation(referrers=>$parent_id); }}}
+      $entry->noteAssociation(referrers=>$parent_id); }}
+  # Usually, a ref won't YET have content; but if it does, we should scan it.
+  $self->default_handler($doc,$node,$tag,$parent_id); }
 
 sub bibref_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
@@ -225,10 +227,13 @@ sub bibref_handler {
     foreach my $bibkey (split(',',$keys)){
       if($bibkey){
 	my $entry = $$self{db}->register("BIBLABEL:$bibkey");
-	$entry->noteAssociation(referrers=>$parent_id); }}}}
+	$entry->noteAssociation(referrers=>$parent_id); }}}
+  # Usually, a bibref will have, at most, some ltx:bibphrase's; should be scanned.
+  $self->default_handler($doc,$node,$tag,$parent_id); }
 
 # Note that index entries get stored in simple form; just the terms & location.
 # They will be turned into a tree, sorted, possibly permuted, whatever, by MakeIndex.
+# [the only content of indexmark should be un-marked up(?) don't recurse]
 sub indexmark_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   # Get the actual phrases, and any see_also phrases (if any)
@@ -278,12 +283,11 @@ sub bibentry_handler {
 ## No, let's not scan the content of the bibentry
 ## until it gets formatted and re-scanned by MakeBibliography.
 ##  $self->scanChildren($doc,$node,$id || $parent_id); 
+
+## HOWEVER; this ultimately requires formatting the bibliography twice (for complex sites).
+## This needs to be reworked!
 }
 
-# Do nothing (particularly, DO NOT note ids/idrefs!)
-# Actually, what I want to do is avoid recursion!!!
-sub XMath_handler {
-}
 
 # ================================================================================
 1;
