@@ -532,6 +532,27 @@ sub realizeXMNode {
   else {
     $node; }}
 
+# Generate, add and register an xml:id for $node.
+# Unless it already has an id, the created id will
+# be "structured" relative to it's parent using $prefix
+sub generateNodeID {
+  my($self,$node,$prefix)=@_;
+  my $id = $node->getAttribute('xml:id');
+  return $id if $id;
+  # Find the closest parent with an ID
+  my ($parent,$pid,$n) = ($node->parentNode,undef,undef);
+  while($parent && !( $pid = $parent->getAttribute('xml:id'))){
+    $parent = $parent->parentNode; }
+  # Now find the next unused id relative to the parent id, as "prefix<number>"
+  $pid .= '.' if $pid;
+  for($n=1;  $$self{idcache}{$id = $pid.$prefix.$n}; $n++){}
+  $node->setAttribute('xml:id'=>$id);
+  $$self{idcache}{$id} = $node;
+  # If we've already been scanned, and have fragid's, create one here, too.
+  if(my $fragid = $parent && $parent->getAttribute('fragid')){
+    $node->setAttribute(fragid=>$fragid.'.'.$prefix.$n); }
+  $id; }
+
 #======================================================================
 # adjust_latexml_doctype($doc,"Foo","Bar") =>
 # <!DOCTYPE document PUBLIC "-//NIST LaTeXML//LaTeXML article + Foo + Bar"
