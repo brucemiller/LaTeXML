@@ -186,20 +186,19 @@ sub sortSymbols {
 # Need some smarts about what packages to use!!!
 sub formatSymbols {
   my($symbols)=@_;
+  my $ucnames = readUnicodeNames();
   print "\\documentclass{article}\n";
-  print "\\usepackage{latexsym}\n";
-#  print "\\usepackage{mathptm}\n";
   print "\\usepackage{supertabular}\n";
-  print "\\usepackage{amsmath}\n";
-  print "\\usepackage{cmbright}\n";
-  print "\\usepackage{txfonts}\n";
-  print "\\usepackage{upgreek}\n";
+  print "\\usepackage{pdflscape}\n";
+  print "\\usepackage{$FindBin::RealBin/symbolscan}\n";
   ##
   print "\\advance\\oddsidemargin-2cm\\relax\n";
   print "\\begin{document}\n";
-  print "{\\scriptsize\n";
-  print " \\tablehead{Macro & Example & Role & Meaning & Unicode & Packages\\\\ \\hline}\n";
-  print "\\begin{supertabular}{llllll}\n";
+  print "\\begin{landscape}\n";
+#  print "{\\scriptsize\n";
+#  print "{\\small\n";
+  print " \\tablehead{Macro & Example & Role & Meaning & Unicode & Unicode Name & Packages\\\\ \\hline}\n";
+  print "\\begin{supertabular}{lllllll}\n";
   foreach my $entry (@$symbols){
     my $cs      = $$entry{cs};
     my $role    = $$entry{role};
@@ -210,13 +209,22 @@ sub formatSymbols {
     my $invocation = ($nargs ? join("",$cs,map("{".chr(ord('a')+$_-1)."}",1..$nargs)) : $cs);
     my $presentation = (defined $$entry{presentation})&&($$entry{presentation}!~/(\\|\#|\^)/)
 			? $$entry{presentation} : '';
+    my $ucname = '';
     $presentation =~ s/(\#|\^)/\\$1/g;
     $presentation =~ s/([^\000-\177])/'\\&\#'.sprintf('%04x',(ord($1))).';'/eg;
+    if($presentation =~ /^(.)$/){ # Single chars
+      $ucname = $$ucnames{lc(sprintf('%04x',ord($1)))}; }
+    elsif($presentation =~ /^\\&\\#([0-9a-fA-F]+);$/){ # &#xxxx;
+      $ucname = $$ucnames{lc($1)}; }
+    elsif($presentation =~ /^\\&\\#([0-9a-fA-F]+);\\&\\#0338;$/){ # &#xxxx;&#0338;
+      $ucname = 'not('.$$ucnames{lc($1)}.')'; }
 
     my $package = $$entry{package};
-    print "\\verb#$cs # & \$$invocation\$ & $role & $meaning & $presentation & \\verb#$package # \\\\\n";
+#    print "\\verb#$cs # & \$$invocation\$ & $role & $meaning & $presentation & $ucname  & \\verb#$package #\\\\\n";
+    print "{\\scriptsize \\verb#$cs #} & \$$invocation\$ & {\\scriptsize $role} & {\\scriptsize $meaning} & {\\scriptsize $presentation} & {\\scriptsize $ucname}  & {\\scriptsize \\verb#$package #}\\\\\n";
   }
-  print "\\end{supertabular}}\n";
+  print "\\end{supertabular}\n";#}\n";
+  print "\\end{landscape}\n";
   print "\\end{document}\n"; 
 }
 
@@ -503,6 +511,20 @@ BEGIN {
 
   %split_stopwords = map(($_=>1), qw(and or than of by as to very much));
 }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Read in UnicodeData.txt
+
+# Could use more of the data?
+sub readUnicodeNames {
+  my $unicodefile = '/usr/share/perl5/unicore/UnicodeData.txt';
+  open(UC,$unicodefile) or die "Couldn't read $unicodefile: $!";
+  my $names={};
+  while(<UC>){
+    my($code,$name,$category,$combining,$bidi,$decomp,$decimal,$digit,$numeric,
+       $mirrored,$oldname,$comment,$uppercase,$lowercase,$titlecase)=split(';',$_);
+    $$names{lc($code)} = $name; }
+  $names; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
