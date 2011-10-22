@@ -942,7 +942,12 @@ DefMathML('Apply:METARELOP:?',     \&pmml_infix);
 # Top level relations
 DefMathML('Apply:?:formulae',sub { 
   my($op,@elements)=@_;
-  pmml_punctuate($op->getAttribute('separators'),map(pmml($_),@elements)); });
+  pmml_punctuate($op->getAttribute('separators'),map(pmml($_),@elements)); },
+  sub { 
+	my($op,@elements)=@_;
+	['m:apply',{},['m:csymbol', {cd=>'ambiguous', name=>'formulae-sequence'}],map(cmml($_),@elements)];
+  });
+
 # TRICKY: How should this get converted to cmml ???
 # DefMathML('Apply:?:multirelation',
 # 	  sub { 
@@ -979,7 +984,7 @@ DefMathML('Apply:?:multirelation',
 	      my $b   = shift(@elements);
 	      push(@relations,['m:apply',{},cmml($rel),$a,cmml_shared($b)]);
 	      $a = cmml_share($b); }
-	    (scalar(@relations) > 1 ? ['m:and',{},@relations] : $relations[0]); }
+	    (scalar(@relations) > 1 ? ['m:apply',{},['m:and',{}],@relations] : $relations[0]); }
 	  );
 
 #======================================================================
