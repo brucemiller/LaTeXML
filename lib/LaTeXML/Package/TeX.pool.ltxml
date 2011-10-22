@@ -3587,11 +3587,14 @@ DefMathI('\sqsupseteq',undef,"\x{2292}", role=>'RELOP', meaning=>'square-origina
 DefMathI('\ni',        undef,"\x{220B}", role=>'RELOP', meaning=>'contains');
 DefMathI('\dashv',     undef,"\x{22A3}", role=>'METARELOP', meaning=>'does-not-prove');
 
-DefMathI('\equiv',     undef,"\x{2261}", role=>'RELOP', meaning=>'identical-to');
+# I have the impression think that "identical" is a stronger notion than "equivalence"
+# Note that the unicode here is called "Identical To",
+# and that the notion of "equivalent to" usually involves the tilde operator.
+DefMathI('\equiv',     undef,"\x{2261}", role=>'RELOP', meaning=>'equivalant-to');
 DefMathI('\sim',       undef,"\x{223C}", role=>'RELOP', meaning=>'similar-to');
 DefMathI('\simeq',     undef,"\x{2243}", role=>'RELOP', meaning=>'similar-to-or-equals');
 DefMathI('\asymp',     undef,"\x{224D}", role=>'RELOP', meaning=>'asymptotically-equals');
-DefMathI('\approx',    undef,"\x{2248}", role=>'RELOP', meaning=>'almost-equals');
+DefMathI('\approx',    undef,"\x{2248}", role=>'RELOP', meaning=>'approximately-equals');
 DefMathI('\cong',      undef,"\x{2245}", role=>'RELOP', meaning=>'approximately-equals');
 DefMathI('\neq',       undef,"\x{2260}", role=>'RELOP', meaning=>'not-equals');
 DefMathI('\doteq',     undef,"\x{2250}", role=>'RELOP', meaning=>'approaches-limit');
