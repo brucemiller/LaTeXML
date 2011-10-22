@@ -100,7 +100,7 @@ sub fitToWidth {
   # Apply the best layout
   my $best = $$layouts[-1];
   # Is there a case where $best is so bad we shouldn't even apply it?
-  applyLayout($best);
+  applyLayout_rec($best);
   # If nobody has yet eaten the punctuation, add it back on.
   if($LaTeXML::MathMLLineBreaker::PUNCT){
     $mml = ['m:mrow',{},$mml,$LaTeXML::MathMLLineBreaker::PUNCT]; }
@@ -108,6 +108,47 @@ sub fitToWidth {
   Warn("Got width $$best{width} > $width") if $$best{width} > $width+1;
   $mml; }
 
+sub bestFitToWidth {
+  my($self,$math,$mml,$width,$displaystyle)=@_;
+  # Check for end punctuation; Remove it, if found.
+  my @n;
+  local $LaTeXML::MathMLLineBreaker::MATH = $math;
+  # Extract math without trailing punctuation (if any).
+  if((nodeName($mml) eq 'm:mrow') && (scalar(@n=nodeChildren($mml))==2)
+     && (nodeName($n[1]) eq 'm:mo') && (textContent($n[1]) =~ /^[\.\,\;]$/)){
+    $mml = $n[0]; }
+
+  # Compute the possible layouts
+  print STDERR "Starting layout of $mml\n" if $DEBUG;
+  my $layouts = layout($mml,$width,0,$displaystyle,0,1);
+  if($DEBUG){
+    print STDERR "Got ".scalar(@$layouts)." layouts:\n";
+    map(showLayout($_),@$layouts); }
+  my $best = $$layouts[-1];
+  Warn("Got width $$best{width} > $width") if $$best{width} > $width+1;
+
+  # Return the best layout
+  $best; }
+
+sub applyLayout {
+  my($self,$mml,$layout)=@_;
+  my @n;
+  # Extract trailing punctuation which might be placed during layout
+  local $LaTeXML::MathMLLineBreaker::PUNCT = undef;
+  if((nodeName($mml) eq 'm:mrow') && (scalar(@n=nodeChildren($mml))==2)
+     && (nodeName($n[1]) eq 'm:mo') && (textContent($n[1]) =~ /^[\.\,\;]$/)){
+    $mml = $n[0];
+    $LaTeXML::MathMLLineBreaker::PUNCT = $n[1]; }
+
+  # Is there a case where $best is so bad we shouldn't even apply it?
+  applyLayout_rec($layout);
+  # If nobody has yet eaten the punctuation, add it back on.
+  if($LaTeXML::MathMLLineBreaker::PUNCT){
+    $mml = ['m:mrow',{},$mml,$LaTeXML::MathMLLineBreaker::PUNCT]; }
+
+  $mml; }
+
+# (only called during layout; not applying layout)
 sub Warn {
   my($message)=@_;
   my $p = $LaTeXML::MathMLLineBreaker::MATH;
@@ -131,7 +172,7 @@ sub Warn {
 # MathML spec doesn't give any way of saying that!
 # So, currently, we've got code in asRow that forbids a break within anything
 # but the _LAST_ item within a line.
-sub applyLayout {
+sub applyLayout_rec {
   my($layout)=@_;
   return unless $$layout{hasbreak};
   # Do children first, so if there is punctuation & last child breaks, it can take up the punct.
@@ -139,9 +180,9 @@ sub applyLayout {
     my @children_layout = @{$$layout{children}};
     my $lastchild = pop(@children_layout);
     { local $LaTeXML::MathMLLineBreaker::PUNCT = undef; # Hide from all but last child
-      map(applyLayout($_), @children_layout); }
+      map(applyLayout_rec($_), @children_layout); }
     # Now, do last child; Maybe it will absorb the punctuation!
-    applyLayout($lastchild); }
+    applyLayout_rec($lastchild); }
   # Now break up the current level.
   if(my $breakset = $$layout{breakset}){
 #    print "Applying ".layoutDescriptor($layout)."\n";
@@ -186,9 +227,9 @@ sub applyLayout {
 
 # This would use <mspace> with linebreak attribute to break a row.
 # Unfortunately, Mozillae ignore this attribute...
-sub XXXXapplyLayout {
+sub XXXXapplyLayout_rec {
   my($layout)=@_;
-  map(applyLayout($_), @{$$layout{children}} ) if $$layout{children};
+  map(applyLayout_rec($_), @{$$layout{children}} ) if $$layout{children};
   if(my $breakset = $$layout{breakset}){
     my $node = $$layout{node};
     my @children = nodeChildren($node);
