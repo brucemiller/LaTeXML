@@ -457,8 +457,8 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 
   <xsl:template match="ltx:graphics">
     <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}" class="{f:classes(.)}"
-	 alt="{f:if(../ltx:figure/ltx:caption,../ltx:figure/ltx:caption/text(),@description)}">
-      <xsl:call-template name="add_id"/>
+	 alt="{f:if(../ltx:figure/ltx:caption,../ltx:figure/ltx:caption/text(),@description)}"
+	 ><xsl:call-template name="add_id"/>
       <xsl:if test="@imagedepth">
 	<xsl:attribute name='style'>
 	  <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px;')"/>

@@ -58,24 +58,21 @@
   <xsl:template match="ltx:date"/>
 
   <xsl:template match="ltx:abstract" xml:space="preserve">
-    <div class='{f:classes(.)}'>
-      <xsl:call-template name="add_id"/>
+    <div class='{f:classes(.)}'><xsl:call-template name="add_id"/>
       <xsl:if test="@name"><h6><xsl:apply-templates select="@name"/><xsl:text>.</xsl:text></h6></xsl:if>
       <xsl:apply-templates/>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:acknowledgements">
-    <div class='{f:classes(.)}'>
-      <xsl:call-template name="add_id"/>
+    <div class='{f:classes(.)}'><xsl:call-template name="add_id"/>
       <xsl:if test="@name"><h6><xsl:apply-templates select="@name"/><xsl:text>.</xsl:text></h6></xsl:if>
       <xsl:apply-templates/>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:keywords" xml:space="preserve">
-    <div class='{f:classes(.)}'>
-      <xsl:call-template name="add_id"/>
+    <div class='{f:classes(.)}'><xsl:call-template name="add_id"/>
       <xsl:if test="@name"><h6><xsl:apply-templates select="@name"/><xsl:text>:</xsl:text></h6></xsl:if>
       <xsl:apply-templates/>
     </div>
@@ -84,8 +81,7 @@
   <xsl:template match="ltx:classification">
     <xsl:text>
     </xsl:text>
-    <div class='{f:classes(.)}'>
-      <xsl:call-template name="add_id"/>
+    <div class='{f:classes(.)}'><xsl:call-template name="add_id"/>
       <i><xsl:choose>
 	<xsl:when test='@scheme'><xsl:value-of select='@scheme'/></xsl:when>
 	<xsl:when test='@name'><xsl:value-of select='@name'/></xsl:when>
@@ -206,8 +202,7 @@
 	<xsl:otherwise><xsl:value-of select="$title_level"/></xsl:otherwise>
       </xsl:choose>
     </xsl:param>
-    <xsl:element name="{concat('h',$use_level)}">
-      <xsl:call-template name="add_id"/>
+    <xsl:element name="{concat('h',$use_level)}"><xsl:call-template name="add_id"/>
       <xsl:attribute name="class">
 	<xsl:value-of select="concat(f:classes(.),
 			      ' ',concat(local-name(..),'-title'),
@@ -235,8 +230,7 @@
        ====================================================================== -->
 
   <xsl:template match="ltx:indexlist">
-    <ul class="{f:classes(.)}">
-      <xsl:call-template name="add_id"/>
+    <ul class="{f:classes(.)}"><xsl:call-template name="add_id"/>
       <xsl:apply-templates/>
     </ul>
   </xsl:template>

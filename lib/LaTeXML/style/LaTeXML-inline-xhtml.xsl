@@ -28,8 +28,8 @@
 <xsl:template match="ltx:text">
  <span style="{f:positioning(.)}" class="{concat(f:classes(.),
 					 f:if(@font,concat(' ',@font),''),
-					 f:if(@size,concat(' ',@size),''))}">
-   <xsl:call-template name="add_id"/>
+					 f:if(@size,concat(' ',@size),''))}"
+       ><xsl:call-template name="add_id"/>
    <xsl:apply-templates/>
  </span>
 </xsl:template>
@@ -81,8 +81,8 @@
 
 <!-- normally hidden -->
 <xsl:template match="ltx:note">
-  <span class="{concat(f:classes(.),' ',@role)}">
-    <xsl:call-template name="add_id"/>
+  <span class="{concat(f:classes(.),' ',@role)}"
+	><xsl:call-template name="add_id"/>
     <xsl:call-template name="note-mark"/>
     <span class="{concat(local-name(.),'_content_outer')}">
       <span class="{concat(local-name(.),'_content')}">

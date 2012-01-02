@@ -26,8 +26,7 @@
      ====================================================================== -->
 
 <xsl:template match="ltx:tabular" xml:space="preserve">
-  <table class="{f:classes(.)}">
-    <xsl:call-template name="add_id"/>
+  <table class="{f:classes(.)}"><xsl:call-template name="add_id"/>
     <xsl:apply-templates/>
   </table>
 </xsl:template>
@@ -51,8 +50,7 @@
 <xsl:template match="ltx:td">
   <xsl:text>
 </xsl:text>
-  <xsl:element name="{f:if(@thead,'th','td')}">
-    <xsl:call-template name="add_id"/>
+  <xsl:element name="{f:if(@thead,'th','td')}"><xsl:call-template name="add_id"/>
     <xsl:if test="@colspan">
       <xsl:attribute name='colspan'><xsl:value-of select='@colspan'/></xsl:attribute>
     </xsl:if>

@@ -23,8 +23,8 @@
 
   <xsl:template match="ltx:Math[@imagesrc]">
     <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}"
-	 alt="{@tex}" class='math'>
-      <xsl:call-template name="add_id"/>
+	 alt="{@tex}" class='math'
+	 ><xsl:call-template name="add_id"/>
       <xsl:if test="@imagedepth">
 	<xsl:attribute name='style'>
 	  <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px;')"/>
