@@ -350,8 +350,14 @@ DefConditional('\ifcase Number', undef,
     return; });
 
 #======================================================================
+# This makes \relax disappear completely after digestion
+# (which seems most TeX like).
+DefPrimitive('\relax',sub { (); });
+## However, this keeps a box, so it can appear in UnTeX
+### DefPrimitive('\relax',undef);
+## But if you do that, you've got to watch out since it usually
+## shouldn't be a box; See the isRelax code in handleScripts, below
 
-DefPrimitive('\relax',undef);
 DefMacro('\number Number',       sub { Explode($_[1]->valueOf); });
 # define it here (only approxmiately), since it's already useful.
 Let(T_CS('\protect'),T_CS('\relax'));
@@ -2358,6 +2364,15 @@ sub isEmpty {
       return 1; }}
   return 0; }
     
+# odd...
+# # If we don't make \relax disappear, we'll sometimes need to test for it.
+# # Or, alternatively, introduce a notion of isBox such that \relax is NOT one!
+# sub isRelax {
+#   my($box)=@_;
+#   my $ref = ref $box;
+#   $box && (($ref eq 'LaTeXML::Box') || ($ref eq 'LaTeXML::MathBox'))
+#     && Equals(T_CS('\relax'),$box->revert); }
+
 # my $is=
 #   (!$box
 #    || ($ref eq 'LaTeXML::Comment')
@@ -2400,6 +2415,7 @@ sub scriptHandler {
     my @stuff=();
     while(my $tok = $gullet->readXToken(0)){
       @stuff = $stomach->invokeToken($tok);
+###      while(@stuff && isRelax($stuff[0])){ shift(@stuff); }
       last if @stuff; }
     Fatal(":expected:{ Missing { in sub/super-script argument") unless @stuff;
     my $script = shift(@stuff);	# ONLY this box is the script!
@@ -4432,9 +4448,10 @@ sub addNewChildLate {
   my($document,$node,$tag)=@_;
   my ($nsuri,$localname) = (undef,$tag);
   ($nsuri,$localname)= $document->getModel->decodeQName($tag);
+  # Note that (currently), any afterOpen/afterClose are NOT run on this node!!!
   my $newnode = 
     ($nsuri ? $node->addNewChild($nsuri,$localname)
-     : $node->appendChild($document->createElement($localname)));
+     : $node->appendChild($document->getDocument->createElement($localname)));
   # Copy essentials to new node.
   if(my $font = $node->getAttribute('_font')){
     $newnode->setAttribute(_font=>$font); }
