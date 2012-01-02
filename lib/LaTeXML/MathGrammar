@@ -525,12 +525,14 @@ addEasyArgs :
 				   map(@$_,@{$item[4]}),$item[5]); }
 
 # A function (or other) argument would normally be a simple expression,
-# but often relations or arrows appear, so allow those as well.
+# but often relations (esp. Statistics) or arrows appear, so allow those as well.
 Argument : Expression extendArgument[$item[1]]
 
+# recognize some longer form "arguments"; things that may look like relations.
 extendArgument :
 	  /^\Z/ { $arg[0]; } # short circuit
-	| relop Expression { NewFormula($arg[0],$item[1],$item[2]); }
+	| relopExpr(s) extendArgument[NewFormula($arg[0],map(@$_,@{$item[1]}))]
+        | METARELOP Formula extendArgument[Apply($item[1],$arg[0],$item[2])]
 	| { $arg[0]; }
 
 # makeComposition[$thing,$comp]; Given something that presumably is a function,
