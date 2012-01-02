@@ -7,6 +7,7 @@ BEGIN { plan tests => 1; }
 
 use LaTeXML::Post;
 use LaTeXML::Post::MathML;
+use LaTeXML::Post::XMath;
 
 # For each test $name there should be $name.xml and $name-post.xml
 # (the latter from a previous `good' run of 
@@ -25,7 +26,9 @@ dotest('t/post/simplemath');
 sub dotest{
   my($name)=@_;
 
-  my @procs = (LaTeXML::Post::MathML::Presentation->new(verbosity=>-1));
+  my $xmath = LaTeXML::Post::XMath->new(verbosity=>-1);
+  $xmath->setParallel(LaTeXML::Post::MathML::Presentation->new(verbosity=>-1));
+  my @procs = (	$xmath );
 
   return ok(0,1,"Couldn't instanciate LaTeXML::Post") unless @procs;
 
