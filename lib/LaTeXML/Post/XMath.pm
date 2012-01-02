@@ -33,57 +33,27 @@
 package LaTeXML::Post::XMath;
 use strict;
 use LaTeXML::Common::XML;
-use base qw(LaTeXML::Post);
+use base qw(LaTeXML::Post::MathProcessor);
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Top level
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-sub process {
-  my($self,$doc)=@_;
-  if(my @maths = $self->find_math_nodes($doc)){
-    $self->Progress($doc,"Converting ".scalar(@maths)." formulae");
-    foreach my $math (@maths){
-      $self->processNode($doc,$math); }}
-  $doc; }
 
-sub setParallel {
-  my($self,@moreprocessors)=@_;
-  $$self{parallel}=1;
-  $$self{math_processors} = [@moreprocessors]; }
-
-sub find_math_nodes {  $_[1]->findnodes('//ltx:Math'); }
-
-# $self->processNode($doc,$mathnode) is the top-level conversion
-# It converts the XMath within $mathnode, and adds it to the $mathnode,
-sub processNode {
-  my($self,$doc,$math)=@_;
-  my $mode = $math->getAttribute('mode')||'inline';
-  my $xmath = $doc->findnode('ltx:XMath',$math);
-  my $style = ($mode eq 'display' ? 'display' : 'text');
-  if($$self{parallel}){
-    $doc->addNodes($math,$self->translateParallel($doc,$xmath,$style,'ltx:Math')); }
+sub convertNode {
+  my($self,$doc,$xmath,$style)=@_;
+  # if we're changing id's, clone with the change
+  if(my $idsuffix = $self->IDSuffix){
+    $self->clone_with_suffix($xmath,$idsuffix); }
   else {
-    # Do nothing; the XMath is already where it belongs.
-  }}
+    $xmath; }}
 
-# Translate the XMath node keeping the XMath node as the "primary" in parallel
-sub translateParallel {
-  my($self,$doc,$xmath,$style,$embedding)=@_;
-  # Simply return the translations from other processors to be added the ltx:Math.
-  map($_->translateNode($doc,$xmath,$style,'m:annotation-xml'),
-		   @{$$self{math_processors}}); }
-
-# This one is called when XMath is secondary representation
-sub translateNode {
-  my($self,$doc,$xmath,$style,$embedding)=@_;
-  # Unlink the ltx:XMath from it's parent ltx:Math
-  $xmath->parentNode->removeChild($xmath);
-  # And remove the record of ID's (they'll be remade, below).
-  $doc->removeNodes($xmath);
-  # Finally, return it to be inserted somewhere under the primary representation
-  $xmath; }
+sub combineParallel {
+  my($self,$doc,$math,$primary,@secondaries)=@_;
+  # Just return the converted nodes to be added to the ltx:Math
+  ($primary, map( $$_[1], @secondaries)); }
 
 sub getEncodingName { 'application/x-latexml'; }
+sub rawIDSuffix { '.xm'; }
 
 #================================================================================
 

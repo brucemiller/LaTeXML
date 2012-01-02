@@ -24,7 +24,7 @@
 package LaTeXML::Post::MathML;
 use strict;
 use LaTeXML::Common::XML;
-use base qw(LaTeXML::Post);
+use base qw(LaTeXML::Post::MathProcessor);
 
 our $mmlURI = "http://www.w3.org/1998/Math/MathML";
 
@@ -35,44 +35,32 @@ our $mmlURI = "http://www.w3.org/1998/Math/MathML";
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Top level
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-sub process {
-  my($self,$doc)=@_;
-  if(my @maths = $self->find_math_nodes($doc)){
-    $self->Progress($doc,"Converting ".scalar(@maths)." formulae");
-#    $doc->addNamespace($mmlURI,'m');
-    foreach my $math (@maths){
-      $self->processNode($doc,$math); }
-    $doc->adjust_latexml_doctype('MathML'); } # Add MathML if LaTeXML dtd.
-  $doc; }
+sub preprocess {
+  my($self,$doc,@nodes)=@_;
+  $doc->adjust_latexml_doctype('MathML');  # Add MathML if LaTeXML dtd.
+  $doc->addNamespace($mmlURI,'m'); }
 
-sub setParallel {
-  my($self,@moreprocessors)=@_;
-  $$self{parallel}=1;
-  $$self{math_processors} = [@moreprocessors]; }
+# Works for pmml, cmml
+sub outerWrapper {
+  my($self,$doc,$node,@conversion)=@_;
+  my $mode = $node->getAttribute('mode')||'inline';
+  ['m:math',{display=>($mode eq 'display' ? 'block' : 'inline'),
+	     alttext=>$node->getAttribute('tex') },
+   @conversion]; }
 
-# This might decline a suffix if we're the primary parallel format?
-sub IDSuffix { $_[0]->rawIDSuffix; }
-  
-sub find_math_nodes {  $_[1]->findnodes('//ltx:Math'); }
 
-sub getQName {
-  $LaTeXML::Post::DOCUMENT->getQName(@_); }
+# This works for either pmml or cmml.
+sub combineParallel {
+  my($self,$doc,$math,$primary,@secondaries)=@_;
+  my $tex = isElementNode($math) && $math->getAttribute('tex');
+  (['m:semantics',{},
+    $primary,
+    map( ['m:annotation-xml',{encoding=>$$_[0]->getEncodingName},$$_[1]], @secondaries),
+    (defined $tex ? (['m:annotation',{encoding=>'application/x-tex'}, $tex]) : ()) ]); }
 
-# $self->processNode($doc,$mathnode) is the top-level conversion
-# It converts the XMath within $mathnode, and adds it to the $mathnode,
-sub processNode {
-  my($self,$doc,$math)=@_;
-  my $mode = $math->getAttribute('mode')||'inline';
-  my $xmath = $doc->findnode('ltx:XMath',$math);
-  my $style = ($mode eq 'display' ? 'display' : 'text');
-  local $LaTeXML::Post::MathML::BASEID = $math->getAttribute('xml:id');
-  local $LaTeXML::Post::MathML::GENIDCTR = 0;
-  if($$self{parallel}){
-    $doc->addNodes($math,$self->translateParallel($doc,$xmath,$style,'ltx:Math')); }
-  else {
-    $doc->addNodes($math,$self->translateNode($doc,$xmath,$style,'ltx:Math')); }}
+# $self->convertNode($doc,$node);
+# will be handled by specific Presentation or Content MathML converters; See at END.
 
-  
 # $self->translateNode($doc,$XMath,$style,$embedding)
 # returns the translation of the XMath node (but doesn't insert it)
 # $style will be either 'display' or 'text' (if relevant),
@@ -81,6 +69,9 @@ sub processNode {
 # Eg. for parallel markup.
 
 # See END for presentation, content and parallel versions.
+
+sub getQName {
+  $LaTeXML::Post::DOCUMENT->getQName(@_); }
 
 # Hook for subclasses to annotate the transformation.
 sub augmentNode {
@@ -216,7 +207,6 @@ our %sizes=(tiny=>'small',script=>'small',footnote=>'small',small=>'small',
 
 sub pmml_top {
   my($self,$node,$style)=@_;
-  local $LaTeXML::MathML::PROCESSOR = $self;
   # These bindings reflect the style, font, size & color that we are displaying in.
   # Ie. if you want to draw in that size & color, you'll get it automatically.
   local $LaTeXML::MathML::STYLE = $style;
@@ -256,13 +246,13 @@ sub pmml {
   # Do the core conversion.
   my $result = (getQName($node) eq 'ltx:XMRef'
 		? pmml(realize($node))
-		: $LaTeXML::MathML::PROCESSOR->augmentNode($node,pmml_internal($node)));
+		: $LaTeXML::Post::MATHPROCESSOR->augmentNode($node,pmml_internal($node)));
   # Handle generic things: open/close delimiters, punctuation
   $result = pmml_parenthesize($result,$o,$c) if $o || $c;
   $result = ['m:mrow',{},$result,pmml_mo($p)] if $p;
   # map any ID here, as well, BUT, since we follow split/scan, use the fragid, not xml:id!
   if(my $id = $node->getAttribute('fragid')){
-    $$result[1]{'xml:id'}=$id.$LaTeXML::MathML::PROCESSOR->IDSuffix; }
+    $$result[1]{'xml:id'}=$id.$LaTeXML::Post::MATHPROCESSOR->IDSuffix; }
   $result; }
 
 our $NBSP = pack('U',0xA0);
@@ -476,13 +466,16 @@ sub stylizeContent {
   # For each mathvariant, and for each of those 5 groups, there is a linear mapping,
   # EXCEPT for chars defined before Plain 1, which already exist in lower blocks.
   my $mapping;
+  # Get desired mapping strategy
+  my $plane1= $$LaTeXML::Post::MATHPROCESSOR{plane1};
+  my $plane1hack= $$LaTeXML::Post::MATHPROCESSOR{hackplane1};
   if($variant
-     && ($LaTeXML::MathML::PLANE1 || $LaTeXML::MathML::PLANE1HACK)
-     && ($mapping = ($LaTeXML::MathML::PLANE1HACK ? $plane1hack{$variant} : $plane1map{$variant}))){
+     && ($plane1 || $plane1hack)
+     && ($mapping = ($LaTeXML::plane1hack ? $plane1hack{$variant} : $plane1map{$variant}))){
     my @c = map($$mapping{$_}, split(//,$text));
     if(! grep(! defined $_, @c)){ # Only if ALL chars in the token could be mapped... ?????
       $text = join('',@c);
-      $variant = ($LaTeXML::MathML::PLANE1HACK && ($variant =~ /^bold/) ? 'bold' : undef);  }}
+      $variant = ($plane1hack && ($variant =~ /^bold/) ? 'bold' : undef);  }}
   ($text,$variant,$size && $sizes{$size},$color); }
 
 # These are the strings that should be known as fences in a normal operator dictionary.
@@ -661,7 +654,6 @@ sub pmml_text_aux {
 
 sub cmml_top {
   my($self,$node)=@_;
-  local $LaTeXML::MathML::PROCESSOR = $self;
   local $LaTeXML::MathML::STYLE = 'text';
   local $LaTeXML::MathML::FONT  = find_inherited_attribute($node,'font');
 #  $LaTeXML::MathML::FONT = undef unless $mathvariants{$LaTeXML::MathML::FONT}; # Make sure it's a sane font
@@ -674,7 +666,7 @@ sub cmml {
   my $result = cmml_internal($node);
   # map any ID here, as well, BUT, since we follow split/scan, use the fragid, not xml:id!
   if(my $id = $node->getAttribute('fragid')){
-    $$result[1]{'xml:id'}=$id.$LaTeXML::MathML::PROCESSOR->IDSuffix; }
+    $$result[1]{'xml:id'}=$id.$LaTeXML::Post::MATHPROCESSOR->IDSuffix; }
   $result; }
 
 sub cmml_internal {
@@ -684,7 +676,7 @@ sub cmml_internal {
   my $tag = getQName($node);
   if($tag eq 'ltx:XMath'){
     my($item,@rest)=  element_nodes($node);
-    print STDERR "Warning! got extra nodes for content!\n" if @rest;
+    print STDERR "Warning: Got extra nodes for content!\n  ".$node->toString."\n" if @rest;
     cmml($item); }
   elsif($tag eq 'ltx:XMDual'){
     my($content,$presentation) = element_nodes($node);
@@ -745,7 +737,7 @@ sub cmml_shared {
 # Given an XMath node, convert to cmml share form
 sub cmml_share {
   my($node)=@_;
-  ['m:share',{href=>'#'.$node->getAttribute('fragid').$LaTeXML::MathML::PROCESSOR->IDSuffix}]; }
+  ['m:share',{href=>'#'.$node->getAttribute('fragid').$LaTeXML::Post::MATHPROCESSOR->IDSuffix}]; }
 
 sub cmml_or_compose {
   my($operators,@args)=@_;
@@ -1230,43 +1222,16 @@ DefMathML('Apply:?:continued-fraction', sub {
 # Specific converters for Presentation, Content, or Parallel.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# This works for either pmml or cmml.
-sub translateParallel {
-  my($self,$doc,$xmath,$style,$embedding)=@_;
-  $doc->addNamespace($mmlURI,'m');
-  # Get the TeX, FIRST
-  my $mathnode=$xmath->parentNode;
-  my $tex = isElementNode($mathnode) && $mathnode->getAttribute('tex');
-  # Now, assemble the translations
-  my @annot = map( ['m:annotation-xml',{encoding=>$_->getEncodingName},
-		    $_->translateNode($doc,$xmath,$style,'m:annotation-xml')],
-		   @{$$self{math_processors}});
-  # And, a TeX encoding, if any
-  push(@annot,['m:annotation',{encoding=>'application/x-tex'}, $tex]) if defined $tex;
-  my @trans = ['m:semantics',{},
-	       $self->translateNode($doc,$xmath,$style,'m:semantics'),
-	       @annot ];
-  # Wrap unless already embedding within MathML.
-  ($embedding =~ /^m:/ ? @trans 
-   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline'), alttext=>$tex},@trans]); }
-
 #================================================================================
 # Presentation MathML
 package LaTeXML::Post::MathML::Presentation;
 use strict;
 use base qw(LaTeXML::Post::MathML);
 
-sub translateNode {
-  my($self,$doc,$xmath,$style,$embedding)=@_;
-  $doc->addNamespace($mmlURI,'m');
-  local $LaTeXML::MathML::PLANE1= $$self{plane1};
-  local $LaTeXML::MathML::PLANE1HACK= $$self{hackplane1};
+sub convertNode {
+  my($self,$doc,$xmath,$style)=@_;
   my @trans = $self->pmml_top($xmath,$style);
-  my $m = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
-  # Wrap unless already embedding within MathML.
-  ($embedding =~ /^m:/ ? @trans 
-   : ['m:math',{display=>($style eq 'display' ? 'block' : 'inline'),
-		alttext=>$xmath->parentNode->getAttribute('tex') },$m]); }
+  (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]); }
 
 sub getEncodingName { 'MathML-Presentation'; }
 sub rawIDSuffix { '.pmml'; }
@@ -1279,58 +1244,41 @@ use strict;
 use base qw(LaTeXML::Post::MathML::Presentation);
 use LaTeXML::Util::MathMLLinebreaker;
 
-sub getEncodingName { 'MathML-Presentation'; }
+sub process {
+  my($self,$doc)=@_;
+  if(my @maths = $self->find_math_nodes($doc)){
+    # Rewrap every displayed ltx:Math in an ltx:MathFork (if it isn't ALREADY in a MathFork).
+    # This is so that we can preserve the "more semantic" non-linebroken form as the main branch.
+    foreach my $math (@maths){
+      my $mode = $math->getAttribute('mode')||'inline';
+      next unless $mode eq 'display'; # Not display mode?
+      next if $doc->findnodes('ancestor::ltx:MathBranch',$math); # Already in a branch?
+      # next if $math isn't really so wide ..
+      $self->createMathFork($doc,$math); }}
+  # Now, go ahead and process the math (there's more!)
+  $self->SUPER::process($doc); }
 
-sub processNode {
+# We really need a consistent approach to this!!!
+sub createMathFork {
   my($self,$doc,$math)=@_;
-  my $mode = $math->getAttribute('mode')||'inline';
-  my $xmath = $doc->findnode('ltx:XMath',$math);
-  my $style = ($mode eq 'display' ? 'display' : 'text');
+  $doc->addNodes($math->parentNode,['ltx:MathFork',{}]); # Create an ltx:MathFork node
+  my $newfork=$math->parentNode->lastChild;
+  $math->parentNode->insertBefore($newfork,$math); # Move it to correct position (where $math was)
+  $newfork->appendChild($math);			   # Now move $math node into it.
+  $doc->addNodes($newfork,['ltx:MathBranch',{linebreakme=>1},$self->clone_with_suffix($math,'.fork1')]); }
 
-  # If this is already in a MathBranch, it's safe to line-break (w/o loss of semantics/structure).
-  # But since we may be in some tabular situation, we don't really know what length to break to!!!
-  if($doc->findnodes('ancestor::ltx:MathBranch',$math)){
-    $doc->addNodes($math,$self->translateNodeLinebreaks($doc,$xmath,$style)); }
-  # If it's otherwise in a MathFork, it's the main branch.
-  # Or, if it's an unmolested inline math,
-  # Just do a straight conversion to pmml
-  elsif($doc->findnodes('ancestor::ltx:MathFork',$math)
-	|| ($mode eq 'inline')){
-    $doc->addNodes($math,$self->translateNode($doc,$xmath,$style,'ltx:Math')); }
-  # Finally, for a display, we'll want to REPLACE the math by a fork,
-  # so that the main branch will be straightforward mathml (ie. non-line-broken)
-  # But, this complication should only be done IFF there are actual linebreaks introduced!
-  elsif(my $broken = $self->translateNodeLinebreaks($doc,$xmath,$style, 1)){
-    $doc->addNodes($math->parentNode,['ltx:MathFork',{}]);
-    my $fork=$math->parentNode->lastChild;
-    $math->parentNode->insertBefore($fork,$math);
-    $fork->appendChild($math);
-    $doc->addNodes($math,$self->translateNode($doc,$xmath,$style,'ltx:Math')); # Normal, unbroken pmml!
-    $doc->addNodes($fork,['ltx:MathBranch',{},
-			  ['ltx:Math',
-			   # Note that (normally) MathImages won't have been applied yet...but in case
-			   {map(($_=>$math->getAttribute($_)),
-				qw(mode tex content-tex text
-				   imagesrc imagewidth imageheight imagedepth))},
-			   $broken]]); }
+sub convertNode {
+  my($self,$doc,$xmath,$style)=@_;
+  my $pmml = $self->SUPER::convertNode($doc,$xmath,$style);
+  if(($style eq 'display') && $xmath->parentNode->parentNode->getAttribute('linebreakme')){
+    $xmath->parentNode->parentNode->removeAttribute('linebreakme');
+    my $linelength = $$self{linelength} || 80;
+    my $breaker = LaTeXML::Util::MathMLLinebreaker->new();
+    my $layout = $breaker->bestFitToWidth($xmath,$pmml,$linelength,1);
+    # Really only needs to linebreak if $$layout{hasbreak} !!
+    $breaker->applyLayout($pmml,$layout); }
   else {
-    $doc->addNodes($math,$self->translateNode($doc,$xmath,$style,'ltx:Math')); }
- }
-
-sub translateNodeLinebreaks {
-  my($self,$doc,$xmath,$style,$butonlyifbroken)=@_;
-  $doc->addNamespace($mmlURI,'m');
-  local $LaTeXML::MathML::PLANE1= $$self{plane1};
-  local $LaTeXML::MathML::PLANE1HACK= $$self{hackplane1};
-  my @trans = $self->pmml_top($xmath,$style);
-  my $mml = (scalar(@trans)> 1 ? ['m:mrow',{},@trans] : $trans[0]);
-  my $linelength = $$self{linelength} || 80;
-  my $breaker = LaTeXML::Util::MathMLLinebreaker->new();
-  my $layout = $breaker->bestFitToWidth($xmath,$mml,$linelength,1);
-  if($layout && ($butonlyifbroken ? $$layout{hasbreak} : 1)){
-    ['m:math',{display=>($style eq 'display' ? 'block' : 'inline'),
-	       alttext=>$xmath->parentNode->getAttribute('tex') },
-     $breaker->applyLayout($mml,$layout)]; }}
+    $pmml; }}
 
 #================================================================================
 # Content MathML
@@ -1338,13 +1286,9 @@ package LaTeXML::Post::MathML::Content;
 use strict;
 use base qw(LaTeXML::Post::MathML);
 
-sub translateNode {
-  my($self,$doc,$xmath,$style,$embedding)=@_;
-  $doc->addNamespace($mmlURI,'m');
-  my @trans = $self->cmml_top($xmath);
-  # Wrap unless already embedding within MathML.
-  ($embedding =~ /^m:/ ? @trans 
-   : ['m:math',{alttext=>$xmath->parentNode->getAttribute('tex')},@trans]); }
+sub convertNode {
+  my($self,$doc,$xmath,$style)=@_;
+  $self->cmml_top($xmath); }
 
 sub getEncodingName { 'MathML-Content'; }
 sub rawIDSuffix { '.cmml'; }

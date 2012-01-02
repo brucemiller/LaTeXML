@@ -25,62 +25,37 @@
 package LaTeXML::Post::OpenMath;
 use strict;
 use LaTeXML::Common::XML;
-use base qw(LaTeXML::Post);
+use base qw(LaTeXML::Post::MathProcessor);
 
 our $omURI = "http://www.openmath.org/OpenMath";
 
-sub process {
-  my($self,$doc)=@_;
-  if(my @maths = $self->find_math_nodes($doc)){
-    $self->Progress($doc,"Converting ".scalar(@maths)." formulae");
-#    $doc->addNamespace($omURI,'om');
-    foreach my $math (@maths){
-      $self->processNode($doc,$math); }
-    $doc->adjust_latexml_doctype('OpenMath'); } # Add OpenMath if LaTeXML dtd.
-  $doc; }
+sub preprocess {
+  my($self,$doc,@nodes)=@_;
+  $doc->adjust_latexml_doctype('OpenMath');  # Add OpenMath if LaTeXML dtd.
+  $doc->addNamespace($omURI,'om'); }
 
-sub setParallel {
-  my($self,@moreprocessors)=@_;
-  $$self{parallel}=1;
-  $$self{math_processors} = [@moreprocessors]; }
+sub outerWrapper {
+  my($self,$doc,$node,@conversion)=@_;
+  ['om:OMOBJ',{},@conversion]; }
 
+sub convertNode {
+  my($self,$doc,$xmath,$style)=@_;
+  Expr($xmath); }
 
-sub find_math_nodes { $_[1]->findnodes('//ltx:Math'); }
+sub combineParallel {
+  my($self,$doc,$math,$primary,@secondaries)=@_;
+  my $tex = isElementNode($math) && $math->getAttribute('tex');
+  (['om:OMATTR',{},
+    map( (['om:OMS',{cd=>"Alternate", name=>$$_[0]->getEncodingName}], ['om:OMFOREIGN',{},$$_[1]]),
+	 @secondaries),
+    ($tex ? (['om:OMS',{cd=>'Alternate', name=>'TeX'}],['om:OMFOREIGN',{},$tex]) : ()),
+    $primary ]); }
 
 sub getQName {
   $LaTeXML::Post::DOCUMENT->getQName(@_); }
 
-# $self->processNode($doc,$mathnode) is the top-level conversion
-# It converts the XMath within $mathnode, and adds it to the $mathnode,
-sub processNode {
-  my($self,$doc,$math)=@_;
-  my $mode = $math->getAttribute('mode')||'inline';
-  my $xmath = $doc->findnode('ltx:XMath',$math);
-  my $style = ($mode eq 'display' ? 'display' : 'text');
-  if($$self{parallel}){
-    $doc->addNodes($math,$self->translateParallel($doc,$xmath,$style,'ltx:Math')); }
-  else {
-    $doc->addNodes($math,$self->translateNode($doc,$xmath,$style,'ltx:Math')); }}
-
-sub translateNode {
-  my($self,$doc,$xmath,$style,$embedding)=@_;
-  $doc->addNamespace($omURI,'om');
-  my @trans = Expr($xmath);
-  # Wrap unless already embedding within MathML.
-  ($embedding =~ /^om:/ ? @trans : ['om:OMOBJ',{},@trans]); }
-
 sub getEncodingName { 'OpenMath'; }
-
-sub translateParallel {
-  my($self,$doc,$xmath,$style,$embedding)=@_;
-  $doc->addNamespace($omURI,'om');
-  my @trans = ['om:OMATTR',{},
-	       map( (['om:OMS',{cd=>"Alternate", name=>$_->getEncodingName}],
-		     ['om:OMFOREIGN',{},$_->translateNode($doc,$xmath,$style,'om:OMATTR')]),
-		    @{$$self{math_processors}}),
-	       $self->translateNode($doc,$xmath,$style,'om:OMATTR') ];
-  # Wrap unless already embedding within MathML.
-  ($embedding =~ /^om:/ ? @trans : ['om:OMOBJ',{},@trans]); }
+sub rawIDSuffix { '.om'; }
 
 # ================================================================================
 our $OMTable={};
@@ -89,23 +64,27 @@ sub DefOpenMath {
   my($key,$sub) =@_;
   $$OMTable{$key} = $sub; }
 
+sub Expr {
+  my($node)=@_;
+  my $result = Expr_aux($node);
+  # map any ID here, as well, BUT, since we follow split/scan, use the fragid, not xml:id!
+  if(my $id = $node->getAttribute('fragid')){
+    $$result[1]{'xml:id'}=$id.$LaTeXML::Post::MATHPROCESSOR->IDSuffix; }
+  $result; }
+
 # Is it clear that we should just getAttribute('role'),
 # instead of the getOperatorRole like in MML?
-sub Expr {
+sub Expr_aux {
   my($node)=@_;
   return OMError("Missing Subexpression") unless $node;
   my $tag = getQName($node);
-  if($tag eq 'ltx:XMath'){
+  if(($tag eq 'ltx:XMath') || ($tag eq 'ltx:XMWrap')){
     my($item,@rest)=  element_nodes($node);
-    print STDERR "Warning! got extra nodes for content!\n" if @rest;
+    print STDERR "Warning: got extra nodes for content!\n  ".$node->toString."\n" if @rest;
     Expr($item); }
   elsif($tag eq 'ltx:XMDual'){
     my($content,$presentation) = element_nodes($node);
     Expr($content); }
-  elsif($tag eq 'ltx:XMWrap'){
-    # Note... Error?
-##    Row(grep($_,map(Expr($_),element_nodes($node)))); 
-    (); }
   elsif($tag eq 'ltx:XMApp'){
     my($op,@args) = element_nodes($node);
     return OMError("Missing Operator") unless $op;

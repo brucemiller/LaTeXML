@@ -29,9 +29,12 @@ sub getNamespace            { $_[0]->{namespace} || "http://dlmf.nist.gov/LaTeXM
 
 #======================================================================
 # abstract:
-# sub process($doc) => $doc,...
+sub process {
+  my($self,$doc)=@_;
+  $self->Error("This post-processor does not implement ->process(\$doc);!");
+  $doc; }
 
-
+#======================================================================
 sub ProcessChain {
   my($doc,@postprocessors)=@_;
   my @docs = ($doc);
@@ -99,10 +102,178 @@ sub generateResourcePathname {
   my $name = $prefix . ++$n;
   $doc->cacheStore($counter,$n); 
   pathname_make(dir=>$subdir, name=>$name, type=>$type); }
-#======================================================================
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+package LaTeXML::Post::MathProcessor;
+use strict;
+use base qw(LaTeXML::Post);
+use LaTeXML::Common::XML;
 
-#**********************************************************************
+# This is an abstract class; A complete MathProcessor will need to define:
+#    $self->convertNode($doc,$xmath,$style)
+#        to generate the converted math node
+#    $self->combineParallel($doc,$math,$primary,@secondaries)
+#        to combine the $primary (the result of $self's conversion of $math)
+#        with the results of other math processors to create the
+#        parallel markup appropriate for this processor's markup.
+#    $self->getEncodingName returns a mime type to describe the markup type
+#    $self->rawIDSuffix returns a short string to append to id's for nodes
+#        using this markup.
+
+# Top level processing finds and converts all math nodes.
+# Invokes preprocess on each before doing the conversion in case
+# analysis is needed.
+sub process {
+  my($self,$doc)=@_;
+  if(my @maths = $self->find_math_nodes($doc)){
+    $self->Progress($doc,"Converting ".scalar(@maths)." formulae");
+
+###    # Testing: Force IDs on all xmath nodes!
+###    map($self->forceID($doc,$_),@maths);
+
+    $self->preprocess($doc,@maths);
+    if($$self{parallel}){
+      foreach my $proc (@{$$self{secondary_processors}}){
+	$proc->preprocess($doc,@maths); }}
+    foreach my $math (@maths){
+      # If parent is MathBranch, which branch number is it?
+      # (note: the MathBranch will be in a ltx:MathFork, with a ltx:Math being 1st child)
+      my @preceding = $doc->findnodes("parent::ltx:MathBranch/preceding-sibling::*",$math);
+      local $LaTeXML::Post::MathProcessor::FORK = scalar(@preceding);
+      $self->processNode($doc,$math); }}
+  $doc; }
+
+# Make THIS MathProcessor the primary branch (of whatever parallel markup it supports),
+# and make all of the @moreprocessors be secondary ones.
+sub setParallel {
+  my($self,@moreprocessors)=@_;
+  $$self{parallel}=1;
+  map($$_{is_secondary}=1, @moreprocessors); # Mark the others as secondary
+  $$self{secondary_processors} = [@moreprocessors]; }
+
+# sub forceID {
+#   my($self,$doc,$math)=@_;
+#   # Find the closest parent with an ID
+#   my ($node,$id) = ($math,undef);
+#   while($node && !( $id = $node->getAttribute('xml:id'))){
+#     $node = $node->parentNode; }
+#   # In case we've already been scanned, we should use the fragid as base, rather than id
+#   local $LaTeXML::Post::IDBASE = $id;
+#   local $LaTeXML::Post::FRAGIDBASE=$node->getAttribute('fragid');
+#   local $LaTeXML::Post::IDCTR=0;
+#   # Skip the XMath node!!!
+#   map(forceID_aux($doc,$_), element_nodes($math->firstChild)); }
+
+# sub forceID_aux {
+#   my($doc,$node)=@_;
+#   if(! $node->getAttribute('xml:id')){
+#     my $id;
+#     while($$doc{idcache}{$id = $LaTeXML::Post::IDBASE . '.xm'. (++$LaTeXML::Post::IDCTR)}){}
+#     $node->setAttribute('xml:id'=>$id);
+#     $node->setAttribute('fragid'=>$LaTeXML::Post::FRAGIDBASE . '.xm'.$LaTeXML::Post::IDCTR)
+#       if $LaTeXML::Post::FRAGIDBASE;
+#     $$doc{idcache}{$id}=$node; }
+#   map(forceID_aux($doc,$_), element_nodes($node)); }
+
+sub find_math_nodes {  $_[1]->findnodes('//ltx:Math'); }
+
+# Optional; if you want to do anything before translation
+sub preprocess {
+  my($self,$doc,@nodes)=@_;
+}
+
+# $self->processNode($doc,$mathnode) is the top-level conversion
+# It converts the XMath within $mathnode, and adds it to the $mathnode,
+# This invokes $self->convertNode($doc,$xmath,$style) to get the conversion.
+sub processNode {
+  my($self,$doc,$math)=@_;
+  my $mode = $math->getAttribute('mode')||'inline';
+  my $xmath = $doc->findnode('ltx:XMath',$math);
+  my $style = ($mode eq 'display' ? 'display' : 'text');
+  local $LaTeXML::Post::MATHPROCESSOR = $self;
+  my @markup=();
+  if($$self{parallel}){
+    # THIS should probably should
+    # 1. collect the conversions,
+    # 2. apply outerWrapper (when namespaces differ from primary)
+    # 3. invoke combineParallel
+    my $primary = $self->convertNode($doc,$xmath,$style);
+    my $nsprefix = ( (ref $primary eq 'ARRAY') && ($$primary[0]=~/^(\w*):/) && $1) || 'ltx';
+    my @secondaries = ();
+    foreach my $proc (@{$$self{secondary_processors}}){
+      local $LaTeXML::Post::MATHPROCESSOR = $proc;
+      my $secondary = $proc->convertNode($doc,$xmath,$style);
+      if(! ( (ref $secondary eq 'ARRAY') && ($$secondary[0]=~/^(\w*):/) && ($1 eq $nsprefix) )){
+	$secondary = $proc->outerWrapper($doc,$math,$secondary); }
+      push(@secondaries, [$proc,$secondary]); }
+    @markup = $self->combineParallel($doc,$math, $primary,@secondaries); }
+  else {
+    @markup = ($self->convertNode($doc,$xmath,$style)); }
+  # we now REMOVE the ltx:XMath from the ltx:Math
+  # (if there's an XMath PostProcessing module, it will add it back, with appropriate id's
+  $doc->removeNodes($xmath);
+  # Then, we add all the conversion results to ltx:Math
+  $doc->addNodes($math, $self->outerWrapper($doc,$math, @markup)); }
+
+# NOTE: Sort out how parallel & outerWrapper should work.
+# It probably ought to be that if the conversion is being embedded in
+# something from another namespace, it needs the wrapper.
+# ie. when mixing parallel markups, NOT just at the top level, although certainly there too.
+#
+# This probably should be doing the m:math or om:OMA wrapper?
+sub outerWrapper {
+  my($self,$doc,$mathnode,@conversions)=@_;
+  @conversions; }
+
+# This should proably be from the core of the current ->processNode
+# $style is either display or inline
+sub convertNode {
+  my($self,$doc,$node,$style)=@_;
+  $self->Error("Conversion has not been defined for this MathProcessor"); }
+
+# This should be implemented by potential Primaries
+# Maybe the caller of this should check the namespaces, and call wrapper if needed?
+sub combineParallel {
+  my($self,$doc,$mathnode, $primary, @secondaries)=@_;
+  $self->Error("Combining Parallel markup has not been defined for this MathProcessor"); }
+
+# When converting an XMath node (with an id) to some other format,
+# we will generate an id for the new node.
+# This method returns a suffix to be added to the XMath id.
+# The suffix comes from:
+#  * When the node is in the n-th MathBranch of a MathFork, it gets ".fork<n>"
+#  * When the format is not the primary format, it gets a suffix based on type (eg. ".pmml")
+sub IDSuffix {
+  my($self)=@_;
+####  ($LaTeXML::Post::MathProcessor::FORK ? ".fork".$LaTeXML::Post::MathProcessor::FORK : '') .
+     ($$self{is_secondary} ? $_[0]->rawIDSuffix : ''); }
+  
+sub rawIDSuffix { ''; }
+
+# Something like this needs to be general purpose....
+#
+# Clone a node, BUT if $idmapper is supplied,
+# it is a function($node,$id) to generate an replacement id.
+# Special purpose cloning; to append $suffix to id and fragid
+sub clone_with_suffix {
+  my($self,$node,$idsuffix)=@_;
+  my $copy = $node->cloneNode(1);
+  my $context = XML::LibXML::XPathContext->new();
+  # Find all id's defined in the copy and change the id.
+  my %idmap=();
+  foreach my $n ($context->findnodes('.//*[@xml:id]',$copy)){
+    my $id = $n->getAttribute('xml:id');
+    $n->setAttribute('xml:id'=> ( $idmap{$id}=$id.$idsuffix ));
+    if(my $fragid = $n->getAttribute('fragid')){
+      $n->setAttribute(fragid=>$fragid.$idsuffix); }}
+  # Now, replace all REFERENCES to those modified ids.
+  foreach my $n ($context->findnodes('.//*[@idref]',$copy)){
+    if(my $id = $idmap{$n->getAttribute('idref')}){
+      $n->setAttribute(idref=>$id); }} # use id or fragid?
+  $copy; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 package LaTeXML::Post::Document;
 use strict;
 use LaTeXML::Common::XML;
@@ -517,6 +688,11 @@ sub addNavigation {
 
 #======================================================================
 # Support for ID's
+
+sub recordID {
+  my($self,$id,$node)=@_;
+  # make an issue if already there?
+  $$self{idcache}{$id}=$node; }
 
 sub findNodeByID {
   my($self,$id)=@_;

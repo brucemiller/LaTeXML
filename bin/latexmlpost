@@ -294,19 +294,25 @@ if(!$prescan){
     push(@procs,LaTeXML::Post::SVG->new(%OPTIONS)); }
   if(@math_formats){
     my @mprocs=();
-    # If XMath is not first, it must be at END!  Or... ???
+###    # If XMath is not first, it must be at END!  Or... ???
     foreach my $fmt (@math_formats){
       if($fmt eq 'XMath'){
-	$keepXMath = 1;
+###	$keepXMath = 1;
 	require 'LaTeXML/Post/XMath.pm';
 	push(@mprocs,LaTeXML::Post::XMath->new(%OPTIONS)); }
       elsif($fmt eq 'pmml'){
 	require 'LaTeXML/Post/MathML.pm';
-	push(@mprocs,LaTeXML::Post::MathML::Presentation->new(
-		    (defined $linelength ? (linelength=>$linelength):()),
+	if(defined $linelength){
+	  push(@mprocs,LaTeXML::Post::MathML::PresentationLineBreak->new(
+                    linelength=>$linelength,
                     ($plane1 ? (plane1=>1):()),
                     ($hackplane1 ? (hackplane1=>1):()),
                     %OPTIONS)); }
+	else {
+	  push(@mprocs,LaTeXML::Post::MathML::Presentation->new(
+                    ($plane1 ? (plane1=>1):()),
+                    ($hackplane1 ? (hackplane1=>1):()),
+                    %OPTIONS)); }}
       elsif($fmt eq 'cmml'){
 	require 'LaTeXML/Post/MathML.pm';
 	push(@mprocs,LaTeXML::Post::MathML::Content->new(%OPTIONS)); }
@@ -314,7 +320,8 @@ if(!$prescan){
 	require 'LaTeXML/Post/OpenMath.pm';
 	push(@mprocs,LaTeXML::Post::OpenMath->new(%OPTIONS)); }
     }
-    $keepXMath  = 0 unless defined $keepXMath;
+###    $keepXMath  = 0 unless defined $keepXMath;
+### OR is $parallelmath ALWAYS on whenever there's more than one math processor?
     if($parallelmath){
       my $main = shift(@mprocs);
       $main->setParallel(@mprocs);
@@ -322,11 +329,11 @@ if(!$prescan){
     else {
       push(@procs,@mprocs); }}
   else {
-    $keepXMath  = 1 unless defined $keepXMath;
+###    $keepXMath  = 1 unless defined $keepXMath;
   }
-  if(!$keepXMath){
-    require 'LaTeXML/Post/PurgeXMath.pm';
-    push(@procs,LaTeXML::Post::PurgeXMath->new(%OPTIONS)); }
+###  if(!$keepXMath){
+###    require 'LaTeXML/Post/PurgeXMath.pm';
+###    push(@procs,LaTeXML::Post::PurgeXMath->new(%OPTIONS)); }
   # Done AFTER other math formats, so that it can add attributes in appropriate places
   # (eg. MathML's altimg).
   if($mathimages){
