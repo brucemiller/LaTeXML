@@ -132,8 +132,9 @@ sub install_TeXStyles {
   if(! $TEXMF){
     if(system("kpsewhich --expand-var='\$TEXMFLOCAL'")==0){ # can run kpsewhich?
       $TEXMF = `kpsewhich --expand-var='\$TEXMFLOCAL'`; 
-      # Strip the quotes (windows? or spaces in pathnames?)
-      # The pathnames won't combine right, but we DO need to wrap quotes around all completed paths!!
+      # Strip the quotes (they appear in windows, when spaces in pathnames(?))
+      # These quotes inhibit pasting pathnames togheter,
+      # but we DO need to wrap quotes around all completed paths!!
       chomp($TEXMF); $TEXMF =~ s/^'//; $TEXMF=~ s/'$//; }}
   if(! $TEXMF){
     warn "Warning: no TeX installation found.\n", 
@@ -147,19 +148,23 @@ sub install_TeXStyles {
   # The installation directory of TeX may well have spaces which screws up Make.
   # we need to wrap any pathname that includes TEXMF with quotes in case of embedded spaces
   # The quotes apparently don't hurt, when they completely enclose the path.
+  # ACTUALLY, (apparently) we must ONLY use double quotes to wrap with.
+  # (at least in the stuff that gets evaluated at a shell(like) level)
+  # It seems that single quotes cause some other oddness in windows(????)
+  # Note the dance below with -w shift; this is to keep from nesting quotes!
   $MORE_MAKERULES .= <<'InstallTeXStyles';
 
 pure_install ::
-	$(NOECHO) $(MKPATH) '$(DESTINSTALLTEXMFDIR)'
+	$(NOECHO) $(MKPATH) "$(DESTINSTALLTEXMFDIR)"
 	$(NOECHO) $(MOD_INSTALL) \
-		read '$(INSTALLTEXMFDIR)/.packlist' \
-		write '$(DESTINSTALLTEXMFDIR)/.packlist' \
-		'$(INST_TEXMFDIR)' '$(DESTINSTALLTEXMFDIR)'
-	- perl -e "exit(1) unless -w '$(INSTALLTEXMFDIR)'" && mktexlsr
+		read "$(INSTALLTEXMFDIR)/.packlist" \
+		write "$(DESTINSTALLTEXMFDIR)/.packlist" \
+		"$(INST_TEXMFDIR)" "$(DESTINSTALLTEXMFDIR)"
+	- perl -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr
 
 uninstall ::
-	$(NOECHO) $(UNINSTALL) '$(INSTALLTEXMFDIR)/.packlist'
-	- perl -e "exit(1) unless -w '$(INSTALLTEXMFDIR)'" && mktexlsr
+	$(NOECHO) $(UNINSTALL) "$(INSTALLTEXMFDIR)/.packlist"
+	- perl -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr
 
 InstallTeXStyles
 }
