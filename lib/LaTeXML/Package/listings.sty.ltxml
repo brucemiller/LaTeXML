@@ -54,10 +54,12 @@ DefMacro('\lstinline OptionalKeyVals:LST', sub {
   my($gullet,$keyvals)=@_;
   my $mouth = $gullet->getMouth;
   my ($init,$body);
+  # get opening delim from gullet, before cattable swap,
+  # in case token was already peeked for the optional args!
+  $init = $gullet->readToken;
+  my $close = (Equals($init,T_BEGIN) ? T_END : $init);
   { local $STATE = $EMPTY_CATTABLE;
-    $init = $gullet->readToken;	# from gullet, in case it was peeked for the optional args!
-    $init = T_OTHER('}') if Equals($init,T_OTHER('{')); # Not T_BEGIN or T_END
-    $body = $mouth->readTokens($init); }
+    $body = $mouth->readTokens($close); } # till same char (ignoring catcode!!)
   $STATE->getStomach->bgroup; 
   lstActivate($keyvals);
   my @expansion = lstProcessInline(ToString($body));
@@ -314,7 +316,7 @@ sub lstSetClassWords {
   # First delete existing words
   my $wordslist =  LookupValue('LST_WORDS');
   foreach my $word (keys %$wordslist){
-    delete $$wordslist{$word}{class} if $$wordslist{$word}{class} eq $class; }
+    delete $$wordslist{$word}{class} if ($$wordslist{$word}{class}||'') eq $class; }
   lstAddClassWords($class,$words,$prefix); }
 
 sub lstAddClassWords {
