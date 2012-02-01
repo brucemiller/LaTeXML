@@ -25,13 +25,19 @@ use LaTeXML::Util::KeyVal;
 # This may eventually need some schema support...
 
 #======================================================================
+# Note that listings.sty uses a couple of textcomp characters
+# (\textquotesingle, \textasciigrave)
+# when the upquote option is used.
+# However, we haven't mapped those to anything useful, anyway...
 our %lst_charmapping=('#'=>T_CS('\#'),'$'=>T_CS('\textdollar'),'&'=>T_CS('\&'),
-		      "'"=>T_CS('\textquotesingle'),
+		      ## "'"=>T_CS('\textquotesingle'),
 		      "'"=>Tokens(T_CS('\char'),T_OTHER('3'),T_OTHER('9')),
 		      '*'=>T_CS('\textasteriskcentered'),
 		      # ??		  '-'=>$-$ ??
 		      '<'=>T_CS('\textless'),'>'=>T_CS('\textgreater'),'\\'=>T_CS('\textbackslash'),
-		      '^'=>T_CS('\textasciicircum'),'_'=>T_CS('\textunderscore'),'`'=>T_CS('\textasciigrave'),
+		      '^'=>T_CS('\textasciicircum'),'_'=>T_CS('\textunderscore'),
+		      ### '`'=>T_CS('\textasciigrave'),
+		      '`'=>T_OTHER(UTF(0x60)),
 		      '{'=>T_CS('\textbraceleft'),'}'=>T_CS('\textbraceright'),'%'=>T_CS('\%'),
 		      '|'=>T_CS('\textbar'),
 		      '~'=>T_CS('\textasciitilde'),
