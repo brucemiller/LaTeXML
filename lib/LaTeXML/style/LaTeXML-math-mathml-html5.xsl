@@ -25,6 +25,10 @@
 
   <!-- Copy MathML, as is -->
   <xsl:template match="*[namespace-uri() = 'http://www.w3.org/1998/Math/MathML']">
+    <!-- A note on namespaces: Use
+	 * name() for the prefixed name (see LaTeXML-xhtml for reqd xmlns:m declaration)
+	 * local-name() gets the unprefixed name, but with xmlns on EACH node.
+	 If you omit the namespace= on xsl:element, you get the un-namespaced name (eg.html5)-->
     <xsl:element name="{local-name()}">
       <xsl:for-each select="@*">
 	<xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>

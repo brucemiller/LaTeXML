@@ -33,9 +33,12 @@
   </xsl:template>
 
   <xsl:template match="/">
-    <html xmlns     = "http://www.w3.org/1999/xhtml"
+  <!-- This version generates MathML & SVG with an xmlns namespace declaration on EACH node;
+       If you want to declare and use namespace prefixes (m & svg, resp), add this here
 	  xmlns:m   = "http://www.w3.org/1998/Math/MathML"
-	  xmlns:svg = "http://www.w3.org/2000/svg">
+	  xmlns:svg = "http://www.w3.org/2000/svg"
+       and change local-name() to name() in LaTeXML-math-mathml & LaTeXML-picture-svg. -->
+    <html xmlns     = "http://www.w3.org/1999/xhtml">
       <xsl:call-template name="head"/>
       <xsl:call-template name="body"/><xsl:text>
     </xsl:text>
