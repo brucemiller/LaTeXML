@@ -9,10 +9,10 @@
     <p>Test Letters A and B (False) : False.</p>
   </para>
   <para xml:id="p3">
-    <p>TestA and B (True) : True .</p>
+    <p>Test Macros testA and testB (True) : True .</p>
   </para>
   <para xml:id="p4">
-    <p>TestA and C (False) : False.</p>
+    <p>Test Macros testA and testC (False) : False.</p>
   </para>
   <para xml:id="p5">
     <p>Nested (True False)
@@ -30,5 +30,14 @@ True False.</p>
   </para>
   <para xml:id="p8">
     <p>ifx does NOT expand conditional tokens (fooFalse): fooFalse.</p>
+  </para>
+  <para xml:id="p9">
+    <p>else is NOT expandable while expanding the test clause
+OK OK :
+OK OK.</p>
+  </para>
+  <para xml:id="p10">
+    <p>OK :
+OK</p>
   </para>
 </document>

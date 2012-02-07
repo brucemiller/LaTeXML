@@ -8,9 +8,9 @@ Test Letters A and A (True) : \ifx AA True \else False\fi.
 
 Test Letters A and B (False) : \ifx AB True \else False\fi.
 
-TestA and B (True) : \ifx\testA\testB True \else False\fi.
+Test Macros testA and testB (True) : \ifx\testA\testB True \else False\fi.
 
-TestA and C (False) : \ifx\testA\testC True \else False\fi.
+Test Macros testA and testC (False) : \ifx\testA\testC True \else False\fi.
 
 Nested (True False)
 \ifx\testA\testB True \ifx\testA\testC True \else False\fi \else False \ifx\testA\testC True \else False\fi\fi.
@@ -28,4 +28,14 @@ Test let else (True False);
 
 ifx does NOT expand conditional tokens (fooFalse): \ifx\iftrue\testA True\else\testB False\fi.
 
+else is NOT expandable while expanding the test clause
+\newcount\c\c=1
+OK OK :
+\ifnum\c>2\else OK \fi
+\ifodd18\else OK\fi.
+
+\def\oneorten{1\ifodd\c\else 0\fi}
+OK :
+\c=1\relax\ifnum\oneorten>5\else OK \fi
+\c=2\relax\ifnum\oneorten>5\else NOT OK\fi
 \end{document}
