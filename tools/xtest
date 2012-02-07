@@ -12,7 +12,7 @@ use Pod::Usage;
 our $htmldest='/local/www/site/htdocs/latexmltest';
 our $testdir="$FindBin::RealBin/../t";
 our $bindir ="$FindBin::RealBin/../blib/script";
-
+our @TYPES=("html","xhtml","html5");
 
 #**********************************************************************
 # Parse command line
@@ -51,23 +51,24 @@ print STDERR "Looking at directory $testdir/$dir\n" if $verbosity >= 0;
   foreach my $test (@tests){
     my $srcxml = "$testdir/$dir/$test.xml";
     my $srcdvi = "$testdir/$dir/$test.dvi";
-    my $dstxml = "$htmldest/$dir/$test.xhtml";
     my $dstdvi = "$htmldest/$dir/$test.dvi";
-    if($force || (! -f $dstxml) || ((-M $srcxml) < (-M $dstxml))){
-      print STDERR "Converting test case $dir/$test\n" if $verbosity >= 0;
-      system("$bindir/latexmlpost",
-	     "--novalidate",
-	     "--dest=$dstxml",
-	     $srcxml)
-	== 0 or die "Couldn't transform test case $testdir/$dir/$test: $!"; }
+    my @links = ("<a href='$dir/$test.dvi'>dvi</a>");
     if($force || (! -f $dstdvi) || ((-M $srcdvi) < (-M $dstdvi))){
       print STDERR "Copying $dir/$test.dvi to dest\n" if $verbosity >= 0;
       system('cp',$srcdvi,$dstdvi)
 	== 0 or die "Couldn't copy $testdir/$dir/$test.dvi to $htmldest/$dir: $!"; }
-    $html .= "<li>$test : <a href='$dir/$test.dvi'>dvi</a> <a href='$dir/$test.xhtml'>xhtml</a>.</li>\n";
-  }
-  $html .= "</ul>\n";
-}
+    foreach my $type (@TYPES){
+      my $dstxml = "$htmldest/$dir/$test.$type";
+      push(@links,"<a href='$dir/$test.$type'>$type</a>");
+      if($force || (! -f $dstxml) || ((-M $srcxml) < (-M $dstxml))){
+	print STDERR "Converting test case $dir/$test ($type)\n" if $verbosity >= 0;
+	system("$bindir/latexmlpost",
+	       "--novalidate",
+	       "--dest=$dstxml",
+	       $srcxml)
+	  == 0 or die "Couldn't transform test case $testdir/$dir/$test: $!"; }}
+    $html .= "<li>$test : ".join(', ',@links).".</li>\n";  }
+  $html .= "</ul>\n"; }
 
 $html .= "</body>\n";
 
