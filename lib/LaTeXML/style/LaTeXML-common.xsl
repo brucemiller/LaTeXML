@@ -35,7 +35,7 @@
   <xsl:param name="node"/>
   <xsl:choose>
     <xsl:when test="$node/@class">
-      <func:result><xsl:value-of select="concat(local-name($node),' ',@class)"/></func:result>
+      <func:result><xsl:value-of select="concat(local-name($node),' ',$node/@class)"/></func:result>
     </xsl:when>
     <xsl:otherwise>
       <func:result><xsl:value-of select="local-name($node)"/></func:result>
