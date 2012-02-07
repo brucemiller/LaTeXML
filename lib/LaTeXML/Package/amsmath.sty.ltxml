@@ -128,12 +128,15 @@ sub amsalignBindings {
 #======================================================================
 # Section 3.3 Split equations without alignment
 
-# Multiline is for single equations, but split on multiple lines, using \\ to separate lines.
+# Multiline is for SINGLE equations,
+# but split on multiple lines, using \\ to separate lines. (there are no &)
 # Justifies the 1st line left, last line right, and middle ones centered.
 # Very useful when you are trying to fit a long equation into a known space,
 # but preserving the alignment seems less useful in the vaguer XML context,
 # particularly since there's no real alignment of columns that convey symmetry.
 # So... For now, we'll just turn into a single equation, ignoring the line breaks.
+# There is at most a single equation number, so MathFork isn't strictly required
+# here, but could be useful...
 DefEnvironment('{multline}',
 	       "<ltx:equation refnum='#refnum' frefnum='#frefnum' xml:id='#id'>"
 	       . "<ltx:Math mode='display'>"
@@ -155,10 +158,12 @@ DefEnvironment('{multline*}',
 #======================================================================
 # Section 3.4 Split equations with alignment
 
-# split is used within other math environments to provide line breaks and alignment.
+# split is for SINGLE equations,
+# split is used WITHIN other math environments to provide line breaks and alignment.
 # Since it's already within math, the MathFork branching doesn't work here.
 # Should we use a math alignment stucture?
-# [in which case it isn't clear how to get the high-level presentation vs. semantic]
+# [in which case it is XMDual sufficient to capture the high-level
+# presentation vs. semantic?]
 # Or just turn the markup into XMHint's; effectively ignoring them.
 # The latter, for now.
 DefEnvironment('{split}',
@@ -173,13 +178,17 @@ DefEnvironment('{split}',
 
 #======================================================================
 # Section 3.5 Equation groups without alignment
-
+# gather is for several equations, one per line, separated by \\ (& is not used)
+# Why isn't this simply a direct equationgroup?
+# but note that \intertext IS allowed....
+# [or see dlmf code for equationgroup (but with optional implicit alignment)]
 # NOTE: Does this need provision to deal with metadata?
 DefConstructor('\@@amsgather SkipSpaces DigestedBody',
 	       sub {
 		 my($document,$body,%props)=@_;
-		 processAMSGatherRows($document,constructAlignment($document,$body,
-								 class=>'gather')); },
+		 processAMSGatherRows($document,
+				      constructAlignment($document,$body,
+					      attributes=>{class=>'gather'})); },
 	       beforeDigest=>sub { $_[0]->bgroup; });
 DefPrimitive('\end@amsgather',sub{ $_[0]->egroup; });
 
@@ -234,8 +243,9 @@ DefMacro('\csname endgather*\endcsname',
 DefConstructor('\@@amsalign SkipSpaces DigestedBody',
 	       sub {
 		 my($document,$body,%props)=@_;
-		 processAMSAlignRows($document,constructAlignment($document,$body,
-								 class=>'align')); },
+		 processAMSAlignRows($document,
+			     constructAlignment($document,$body,
+						attributes=>{class=>'align'})); },
 	       beforeDigest=>sub { $_[0]->bgroup; });
 DefPrimitive('\end@amsalign',sub{ $_[0]->egroup; });
 
