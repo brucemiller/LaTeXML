@@ -39,15 +39,7 @@ DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 # Exposing internal functionality of LaTeXML to the LaTeX document.
 #======================================================================
 
-#DefConstructor('\lxAddClass{}',"^ class='#1'");
-DefConstructor('\lxAddClass{}', sub {
-  my($document,$class)=@_;
-  $class = ToString($class);
-  if($class ne ''){
-    if(my $node = $document->getElement){
-      my $oldclass = $node->getAttribute('class');
-      $node->setAttribute(class=>($oldclass ? "$oldclass $class" : $class)); }}
-  return; });
+Let(T_CS('\lxAddClass'),T_CS('\@ADDCLASS'));
 
 #======================================================================
 # \LXMID{id}{math}  Associate the identifier id with the given math expression.
