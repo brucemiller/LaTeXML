@@ -19,6 +19,7 @@ use POSIX;
 use LaTeXML::Util::Pathname;
 use File::Temp qw(tempdir);
 use File::Path;
+use FindBin;
 use base qw(LaTeXML::Post);
 
 #======================================================================
@@ -194,7 +195,8 @@ sub process {
     close(TEX);
 
     # === Run LaTeX on the file.
-    my $texinputs = ".:".join(':',$doc->getSearchPaths) .":".($ENV{TEXINPUTS} ||'');
+    my $texinputs = ".:".join(':',$doc->getSearchPaths,"$FindBin::RealBin/../lib/LaTeXML/texmf/")
+      .":".($ENV{TEXINPUTS} ||'');
     my $command = "cd $workdir ; TEXINPUTS=$texinputs $LATEXCMD $jobname > $jobname.output";
     my $err = system($command);
 
