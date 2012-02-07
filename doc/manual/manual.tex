@@ -7,7 +7,8 @@
 % Should the additional keywords be indexed?
 \lstdefinestyle{shell}{language=bash,escapechar=@,basicstyle=\ttfamily\small,%
    morekeywords={latexml,latexmlpost,latexmlmath},
-   moredelim=[is][\itshape]{\{}{\}}}
+%   moredelim=[is][\itshape]{\{}{\}}}
+   moredelim=[is][\itshape]{\%}{\%}}
 % Can (should?) I make $ prefix give \itshape ?
 \lstdefinestyle{latexml}{basicstyle=\small\ttfamily,language=Perl,%
    morekeywords={CC_ESCAPE,CC_BEGIN,CC_END,CC_MATH,CC_ALIGN,CC_EOL,CC_PARAM,CC_SUPER,%
@@ -32,6 +33,7 @@
      MergeFont,%
      CheckOptions},
 }
+\lstdefinestyle{xml}{language=xml,escapechar=@}%
 \newcommand{\shellcode}{\lstinline[style=shell]}
 \newcommand{\ltxcode}{\lstinline[style=latexml]}
 \input{release.tex}
@@ -46,6 +48,8 @@
 \tableofcontents
 \listoffigures
 \mainmatter
+%%%======================================================================
+% \part{Basics}
 %%%======================================================================
 \chapter{Introduction}\label{intro}
 For many, \LaTeX\ is the prefered format for document authoring, particularly those
@@ -199,7 +203,7 @@ specified using the \cmd{--preload} option.
 The number and detail of progress and debugging messages printed
 during processing can be controlled using
 \begin{lstlisting}[style=shell]
---verbose {or} --quiet
+--verbose %or% --quiet
 \end{lstlisting}
 They can  be repeated to get even more or fewer details.
 
@@ -213,7 +217,7 @@ This option can be repeated.
 Whenever multiple sources are being used (including multiple bibliographies),
 the option
 \begin{lstlisting}[style=shell]
---documentid={id}
+--documentid=%id%
 \end{lstlisting}
 should be used to provide a unique ID for the document root element.
 This ID is used as the base for id's of the child-elements within the document,
@@ -262,7 +266,7 @@ a document-specific binding file \shellcode|{doc}.latexml| will
 be loaded, if present;
 the option
 \begin{lstlisting}[style=shell]
---preload={binding}
+--preload=%binding%
 \end{lstlisting}
 will load the binding file \shellcode|{binding}.ltxml|.
 The \shellcode|--preload| option can be repeated;
@@ -280,7 +284,7 @@ In the simplest situation, you have a single \TeX\ source document
 from which you want to generate a single output document.
 The command
 \begin{lstlisting}[style=shell]
-latexmlpost {options} --destination={doc}.xhtml {doc}
+latexmlpost %options% --destination=%doc%.xhtml %doc%
 \end{lstlisting}
 or similarly with \shellcode|--destination={doc}.html|,
 will carry out a set of appropriate transformations in sequence:
@@ -332,7 +336,7 @@ depending on how the terms have been written.
 \paragraph{Bibliography}
 Bibilographic data from BibTeX can be provided with the option
 \begin{lstlisting}[style=shell]
---bibliography={bibfile}.xml
+--bibliography=%bibfile%.xml
 \end{lstlisting}
 The bibliography would have typically been produced by running
 \begin{lstlisting}[style=shell]
@@ -366,46 +370,45 @@ Specific conversions of the mathematics can be requested
 using the options
 \begin{lstlisting}[style=shell]
 --mathimages                   # converts math to png images,
---presentationmathml {or} --pmml # creates Presentation \MathML
---contentmathml {or} --cmml      # creates Content \MathML
---openmath {or} --om             # creates \OpenMath
+--presentationmathml %or% --pmml # creates Presentation \MathML
+--contentmathml %or% --cmml      # creates Content \MathML
+--openmath %or% --om             # creates \OpenMath
+--keepXMath                      # preserves \LaTeXML's XMath
 \end{lstlisting}
 (Each of these options can also be negated if needed, eg.~\code{--nomathimages})
 It must be pointed out that the Content \MathML\ and \OpenMath\
 conversions are currently rather experimental.
 
-More than one of these conversions can be requested, and
-each will be included in the output document.
-However, the option
-\begin{lstlisting}[style=shell]
---parallelmath
-\end{lstlisting}
-can be used to generate parallel \MathML\ markup, provided the first
-conversion is either \code{--pmml} or \code{--cmml}.
+If more than one of these conversions are requested,
+parallel math markup will be generated with the first format
+being the primary one, and the additional ones added as secondary formats.
+The secondary format is incorporated using whatever means
+the primary format uses; eg. \MathML\ combines formats using
+\texttt{m:semantics} and \texttt{m:annotation-xml}.
 
 \paragraph[Graphics]{Graphics processing}
 Conversion of graphics (eg.~from the \code{graphic(s|x)} packages' 
 \verb|\includegraphics|) can be enabled or disabled
 using
 \begin{lstlisting}[style=shell]
---graphicsimages {or} --nographicsimages
+--graphicsimages %or% --nographicsimages
 \end{lstlisting}
 Similarly, the conversion of \code{picture} environments can be controlled with
 \begin{lstlisting}[style=shell]
---pictureimages {or} --nopictureimages
+--pictureimages %or% --nopictureimages
 \end{lstlisting}
 An experimental capability for converting the latter to \textsc{SVG} can be
 controlled by
 \begin{lstlisting}[style=shell]
---svg {or} --nosvg
+--svg %or% --nosvg
 \end{lstlisting}
 
 \paragraph{Stylesheet}
 If you wish to provide your own \XSLT\  or
 \CSS\ stylesheets, the options 
 \begin{lstlisting}[style=shell]
---stylesheet={stylesheet}.xsl
---css={stylesheet}.css
+--stylesheet=%stylesheet%.xsl
+--css=%stylesheet%.css
 \end{lstlisting}
  can be used.  The \code{--css} option can be repeated to include multiple stylesheets;
 for example, the distribution provides several in addition to the \code{core.css} stylesheet
@@ -426,7 +429,7 @@ For larger documents, it is often desirable to break the
 result into several interlinked pages. This split,
 carried out before scanning, is requested by 
 \begin{lstlisting}[style=shell]
---splitat={level}
+--splitat=%level%
 \end{lstlisting}
 where \textit{level} is one of \texttt{chapter},
 \texttt{section}, \texttt{subsection}, or \texttt{subsubsection}.
@@ -448,7 +451,7 @@ level of splitting.
 Additionally, the index and bibliography can be split
 into separate pages according to the initial letter of entries by using the options
 \begin{lstlisting}[style=shell]
---splitindex  {and} --splitbibliography
+--splitindex  %and% --splitbibliography
 \end{lstlisting}
 
 %%%----------------------------------------------------------------------
@@ -467,7 +470,7 @@ and a composite index and bibliography.
  \item[Scanning] Secondly, all \XML\ files must be split and scanned using
   the command
   \begin{lstlisting}[style=shell]
-   latexmlpost --prescan --dbfile={DB} --dest={i}.xhtml {i}
+   latexmlpost --prescan --dbfile=%DB% --dest=%i%.xhtml %i%
   \end{lstlisting}
   where \varfile{DB} names a file in which to store the scanned data.
   Other conversions, including writing the output file, are skipped in this prescanning step.
@@ -475,7 +478,7 @@ and a composite index and bibliography.
  \item[Pagination] Finally, all \XML\ files are cross-referenced and converted into
    the final format using the command
    \begin{lstlisting}[style=shell]
-     latexmlpost --noscan --dbfile={DB} --dest={i}.xhtml {i}
+     latexmlpost --noscan --dbfile=%DB% --dest=%i%.xhtml %i%
    \end{lstlisting}
    which skips the unnecessary scanning step.
 \end{description}
@@ -486,11 +489,18 @@ For cases where you'd just like to convert a single formula to, say, \MathML,
 and don't mind the overhead, we've combined the pre- and post-processing into
 a single, handy, command \ltxcmd{latexmlmath}.  For example,
 \begin{lstlisting}[style=shell]
-  latexmlmath --pmml=- \frac\{b\pm\sqrt\{b^2-4ac\}\}\{2a\}
+  latexmlmath --pmml=- \\frac{b\\pm\\sqrt{b^2-4ac}}{2a}
 \end{lstlisting}
 will print the \MathML\ to standard output.  
 To convert the formula to a \texttt{png} image, say \texttt{quad.png},
 use the option \code{--mathimage=quad.png}.
+
+Note that this involves putting \TeX\ code on the command line.
+You've got to `slashify' your code in whatever way is necessary
+so that after your shell is finished with it, the string that
+is passed to \ltxcmd{latexmlmath} sees is normal \TeX.  In the
+example above, in most unix-like shells, we only needed to
+double-up the backslashes.
 
 %%%======================================================================
 \chapter{Architecture}\label{architecture}
@@ -673,6 +683,8 @@ Postprocessing filter modules are generally applied in the following order:
 \end{description}
 See \ref{customization.latexmlpost} for how to customize the postprocessing.
 
+%%%======================================================================
+% \part{Intermediate}
 %%%======================================================================
 \chapter{Customization}\label{customization}
 The processsing of the \LaTeX\ document, its  conversion into \XML\ and ultimately
@@ -1284,11 +1296,11 @@ To best take advantage of this capability so as to design
   others are transformed to something more generic, such as \elementref{note}.
   In the latter case, a class attribute is often used to distinguish.
   For example, a \verb|\footnote| generates
-\begin{lstlisting}[language=xml]
+\begin{lstlisting}[style=xml]
   <note class='footnote'>...
 \end{lstlisting}
   whereas an \verb|\endnote| generates
-\begin{lstlisting}[language=xml]
+\begin{lstlisting}[style=xml]
   <note class='endnote'>...
 \end{lstlisting}
 \item The provided \XSLT\ stylesheets transform \LaTeXML's schema to \XHTML,
@@ -1506,7 +1518,8 @@ the presentation style:
   \verb|\atop|, and the presentation of binomial coefficients.
 \end{description}
 
-% Some 
+%%%======================================================================
+% \part{Advanced Topics}
 %%%======================================================================
 \chapter{Localization}\label{localization}
 In this chapter, a few issues relating to various national or cultural styles,
@@ -1554,15 +1567,184 @@ processing of sources encoded as utf8, without any special packages loaded.
 \section{Output Encodings}\label{localization.outputencodings}
 At some level, as far as \TeX\ is concerned, what you type ends up pointing into a font
 that causes some blob of ink to be printed. This mechanism is used to print
-a unique mathematical operator, say subset of and not equals.  It is also used
+a unique mathematical operator, say `subset of and not equals'.  It is also used
 to print greek when you seemed to have been typing ASCII!
 
-So, we must, as well. At the stage when character tokens are digested to create boxes
-in the current font, a font encoding table (a FontMap) is consulted to map the token's text (viewed as an
+So, we must accomodate that mechanism, as well.
+At the stage when character tokens are digested to create boxes in the current font,
+a font encoding table (a FontMap) is consulted to map the token's text (viewed as an
 index into the table) to Unicode.  The declaration \code{DeclareFontMap} is used to associate
-a FontMap with an encoding name, or font. (The text within constructor's xml pattern is used without font conversion).
+a FontMap with an encoding name, or font.
+
+Note that this mapping is only used for text originating from the source
+document; The text within Constructor's \XML\ pattern is used \emph{without} any such font conversion.
 
 \section{Babel}\label{localization.babel}
+The \code{babel} package for supporting multiple languages by redefining various
+internal bits of text to replace, eg. ``Chapter'' by ``Kapital'' and by
+defining various shorthand mechanisms to make it easy to type the extra
+non-latin characters and glyphs used by those languages.  Each supported
+language or dialect has a module which is loaded to provide the needed definitions.
+
+To the extent: that \LaTeXML's input and output encoding handling is sufficient;
+that its processing of raw \TeX\ is good enough; and that it proceeds
+through the appropriate \LaTeX\ internals, \LaTeXML\ should be able to
+support \code{babel} and arbitrary languages by reading in the raw \TeX\
+implementation of the language module from the \TeX\ distribution itself.
+
+At least, that is the strategy that we use.
+
+%%%======================================================================
+\chapter{Alignments}\label{alignments}
+There are several situations where \TeX\ stacks or aligns a number of objects into
+a one or two dimensional grids.  In most cases, these are built upon
+low-level primitives, like \verb|\halign|, and so share characteristics:
+using \&  to separate alignment columns;
+either \verb|\\| or \verb|\cr| to separate rows.
+Yet, there are many different markup patterns and environments
+used for quite different purposes from tabular text to math arrays
+to composing symbols and so it is worth recognizing the intended semantics in each case,
+while still processing them as \TeX\ would.
+
+In this chapter, we will describe some of the special complications
+presented by alignments and the strategies used to infer and
+represent the appropriate semantic structures, particularly for math.
+
+\section{\TeX\ Alignments}\label{texalignments}
+\textbf{NOTE} This section needs to be written.
+
+Many utilities for setting up and processing alignments are defined in \code{TeX.pool}
+with support from the module \code{LaTeXML::Util::Alignment}.
+Typically, one binds a set of control sequences specially for the
+alignment environment or structure encountered, particularly for
+\& and \verb|\\|. An alignment object is created which records information
+about each row and cell that was processed, such as width, alignment, span, etc.
+Then the alignment is converted to XML by specifying what tag wraps the
+entire alignment, each row and each cell.
+
+The content of aligments is being expanded before the column and row
+markers are recognized; this allows more flexibility in defining markup
+since row and column markers can be hidden in macros, but it also
+means that simple means, such as delimited parameter lists, to parse
+the structure won't work.
+
+\section{Tabular Header Heuristics}
+
+\emph{To be written}
+
+\section{Math Forks}\label{mathfork}
+Although parsing and recognizing the intended structure, let alone meaning,
+of mathematical expressions from the presentational markup is non-trivial,
+going the other way to convert content into presentation
+is usually relatively straightforward, given some formatting conventions.
+The most common exception is usually a fine-grained correspondence
+associating a small content oriented expression with its presentation
+such that both are easily encapsulated within the same mathematical expression.
+Semantic markup defined using \code{DefMath} uses the \elementref{XMDual} element
+for that purpose.
+
+A more challenging situation arises when mathematical subexpressions
+are aligned across several distinct equations.
+Not only is the scale larger, but the alignment crosses the boundary
+between the mathematics and the document itself; moreover,
+there are often interspersed equation numbers
+(which are distinctly document,  \emph{not} mathematical, elements),
+or even textual insertions (such as amsmath's \verb|\intertext|).
+
+These alignment structures are often very carefully authored;
+and while they are difficult for automatic understanding,
+they can be quite useful for the human reader.
+We thus wish to preserve them and consequently need a structure that can represent 
+on the one hand a grid of math fragments,
+and on the other hand, a sequence of equations.
+The two forms are interconnected, with the equations generally
+being (the parse of) concatenations of sequences of adjacent
+cells or rows.
+
+The following \XML\ is used to represent these structures:
+\begin{lstlisting}[style=xml]
+<ltx:equationgroup>
+  <ltx:equation>
+    <ltx:MathFork>
+      <ltx:Math>@\textit{logical math here}@</ltx:Math>
+      <ltx:MathBranch>
+        <ltx:td><ltx:Math>@\textit{cell math}@</ltx:Math></ltx:td>@\ldots@
+        @\emph{or}@
+        <ltx:tr><ltx:td><ltx:Math>@\ldots@
+      </ltx:MathBranch>
+    </ltx:MathFork>
+  </ltx:equation>
+  <ltx:text>@\textit{inter-text}@</ltx:text>
+  @\ldots@
+</ltx:equationgroup>
+\end{lstlisting}
+Typically, the contents of the \elementref{MathBranch} will be a sequence
+of \elementref{td}, each containing an \elementref{Math}, or
+of \elementref{tr}, each containing sequence of such \elementref{td}.
+This structure can thus represent both \code{eqnarray} where a logical
+equation consists of one or more complete rows, as well as
+AMS' \code{aligned} where equations consist of pairs of columns.
+The \XSLT\ transformation that converts to end formats recognizes
+which case and lays out appropriately.
+
+In most cases, the material that will yield a \elementref{MathFork}
+is given as a set of partial math expressions representing rows and/or columnns;
+these must be concatenated (and parsed) to form the composite logical expression.
+
+Any ID's within the expressions (and references to them) must be modified
+to avoid duplicate ids.  Moreover, a useful application associates the
+displayed tokens from the aligned presentation of the \elementref{MathBranch}
+with the presumably semantic tokens in the logcal content of the main branch
+of the \elementref{MathFork}.  Thus, we desire that the IDs in the two
+branches to have a known relationship; in particular, those in the branch
+should have \code{.fork1} appended.
+
+
+\section{eqnarray}\label{eqnarray}
+From \LaTeXML's point of view, desiring to construct well-structured mathematics,
+an \code{eqnarray} is an awkward object.
+It is formatted as a 3 column, multi-row alignment, with equation
+numbering potentially on each row.
+Each row might represent an equation, but if the 1st column is empty
+and the 2nd contains a relation, that row may be a continuation of the
+equation in the previous row.  If both of the first two columns are empty,
+the row may be a continuation of the RHS of equation in the previous row.
+Of course, in a given invocation, there can be multiple continuations,
+of either or both kind.
+
+And this ignores the fact that \code{eqnarray} is a common subject of markup abuse.
+Often one or two columns are always left empty.
+
+The strategy used for \code{eqnarray} is process the material as
+an alignment in math mode and convert initially to the following \XML\ structure:
+\begin{lstlisting}[style=xml]
+<ltx:equationgroup>
+  <ltx:equation>
+    <ltx:_Capture_>
+      <ltx:Math><ltx:XMath>@\textit{column math here}@</ltx:XMath></ltx:Math>
+    </ltx:_Capture_>
+    @\ldots@
+  </ltx:equation>
+  @\ldots@
+</ltx:equationgroup>
+\end{lstlisting}
+The results are then studied to recognize the patterns of empty columns
+so that the rows can be regrouped into logical equations.  \elementref{MathFork}
+structures are used to contain those logical equations while preserving
+the layout in the \elementref{MathBranch}.
+
+\textbf{NOTE} We need to deal better with the cases that have more
+rows numbered that we would like.
+
+\section{AMS Alignments}\label{amsalign}
+The AMS math packages define a number of useful math alignment structures.
+These have been well thought out and designed with particular logical
+structures in mind, as well as the layout. Thus these environments are
+less often abused than is \code{eqnarray}.  In this section, we list
+the environments, their expected use case and describe the strategy used
+for converting them.
+
+\emph{To be done}
 
 %%%======================================================================
 \chapter{ToDo}\label{todo}
@@ -1650,6 +1832,7 @@ Bindings for the following classes and packages are supplied with the distributi
 %%%======================================================================
 \chapter[Postprocessing Modules]{Postprocessing Module Documentation}\label{postmodules}
 \input{pods/LaTeXML_Post}
+\input{pods/LaTeXML_Post_MathML}
 
 %%%======================================================================
 \chapter[Schema]{\LaTeXML\ Schema}\label{schema}
