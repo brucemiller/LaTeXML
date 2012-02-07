@@ -328,7 +328,9 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
     <xsl:param name="ncolumns"/>
     <xsl:choose>
       <xsl:when test="ltx:MathFork/ltx:MathBranch[1]/ltx:tr" xml:space="preserve">
-	<tr class="{concat('baseline ',f:classes(.))}"><xsl:call-template name="add_id"/>
+	<tr class="{concat('baseline ',f:classes(.),' ',
+		   f:classes(ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]))}"
+	    ><xsl:call-template name="add_id"/>
 	  <xsl:call-template name="eq-left"/>
 	  <xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td"
 			       mode="aligned"/>
