@@ -58,7 +58,9 @@ my @modules = (
 		  LaTeXML::Util::KeyVal
 		),
 		  # Postprocessing
-	       qw(LaTeXML::Post),
+	       qw(LaTeXML::Post
+		  LaTeXML::Post::MathML
+		),
 	      );
 
 if(! -d $GENDIR){
