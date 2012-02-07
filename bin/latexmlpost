@@ -23,8 +23,8 @@ my($sourcedir,$destination)=(undef,undef);
 my($format,$is_html,$urlstyle) = (undef,undef,'server');
 my($numbersections)=(1);
 my($stylesheet,$defaultcss,$icon,@css)=(undef,1);
-my($parallelmath,$mathimages,$mathimagemag)=(undef,undef,1.75);
-my($linelength,$keepXMath,$plane1,$hackplane1)=(undef,undef,undef,undef);
+my($mathimages,$mathimagemag)=(undef,1.75);
+my($linelength,$plane1,$hackplane1)=(undef,undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
 my @graphicsmaps=();
 my($split,$splitat,$splitpath,$splitnaming)=(undef,'section',undef,'id');
@@ -42,6 +42,8 @@ my %splitpaths =
    subsection=>"//ltx:chapter | //ltx:section | //ltx:subsection | $splitback",
    subsubsection=>"//ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | $splitback");
 
+# Obsolete...
+my $parallelmath;
 
 # Get the command line arguments.
 GetOptions("verbose+"              =>\$verbosity,
@@ -135,6 +137,10 @@ $sourcedir   = $sourcedir   && pathname_canonical($sourcedir);
 $destination = $destination && pathname_canonical($destination);
 $sitedir     = $sitedir     && pathname_canonical($sitedir);
 
+if(defined $parallelmath){
+  warn "The --parallelmath option is obsolete; Parallel markup will be generated"
+    . " whenever you specify more than one math format."; }
+
 # Check for appropriate combination of split, scan, prescan, dbfile, crossref
 if($split && !defined $destination){
   Error("Must supply --destination when using --split"); }
@@ -171,7 +177,7 @@ if($navtoc){
 if(!defined $format){}
 elsif($format eq 'html'){
   Error("Default html stylesheet only supports math images, not ".join(', ',@math_formats))
-    if (!defined $stylesheet) && ($parallelmath || scalar(@math_formats));
+    if (!defined $stylesheet) && scalar(@math_formats);
   Error("Default html stylesheet does not support --svg") if $svg;
 
   $mathimages = 1 unless defined $mathimages;
@@ -197,13 +203,6 @@ elsif($format eq 'xhtml'){
   # note that MathImages can supply altimg attributes
   unshift(@math_formats,'pmml') 
     unless grep($_ eq 'pmml',@math_formats) || $removed_math_formats{pmml};
-  # Add cMML NEXT if parallel was requested and pMML is present, but no secondary format was requested.
-  push(@math_formats,'cmml') 
-    if $parallelmath &&  grep($_ eq 'pmml',@math_formats) && scalar(@math_formats)==1;
-  # use parallel markup if there are multiple formats requested.
-  $parallelmath = 1 if (!defined $parallelmath) && (scalar(@math_formats)>1);
-  Error("Default xhtml stylesheet only supports OpenMath in parallel with MathML")
-    if (!defined $stylesheet) && !$parallelmath && grep($_ eq 'om',@math_formats);
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
   $is_html = 0;
@@ -213,10 +212,6 @@ elsif($format eq 'xhtml'){
 elsif($format eq 'xml'){}
 else {
   Error("Unrecognized target format: $format"); }
-
-## hmmm... at least with MathML, we'll (now) get the TeX format added for free..
-## Error("Parallel math markup needs at least two formats")
-##  if $parallelmath && (scalar(@math_formats) < 2);
 
 if((!defined $destination) && ($mathimages || $dographics || $picimages)){
   Error("Must supply --destination unless all auxilliary file writing is disabled"
@@ -297,7 +292,6 @@ if(!$prescan){
 ###    # If XMath is not first, it must be at END!  Or... ???
     foreach my $fmt (@math_formats){
       if($fmt eq 'XMath'){
-###	$keepXMath = 1;
 	require 'LaTeXML/Post/XMath.pm';
 	push(@mprocs,LaTeXML::Post::XMath->new(%OPTIONS)); }
       elsif($fmt eq 'pmml'){
@@ -320,20 +314,9 @@ if(!$prescan){
 	require 'LaTeXML/Post/OpenMath.pm';
 	push(@mprocs,LaTeXML::Post::OpenMath->new(%OPTIONS)); }
     }
-###    $keepXMath  = 0 unless defined $keepXMath;
-### OR is $parallelmath ALWAYS on whenever there's more than one math processor?
-    if($parallelmath){
-      my $main = shift(@mprocs);
-      $main->setParallel(@mprocs);
-      push(@procs,$main); }
-    else {
-      push(@procs,@mprocs); }}
-  else {
-###    $keepXMath  = 1 unless defined $keepXMath;
-  }
-###  if(!$keepXMath){
-###    require 'LaTeXML/Post/PurgeXMath.pm';
-###    push(@procs,LaTeXML::Post::PurgeXMath->new(%OPTIONS)); }
+    my $main = shift(@mprocs);
+    $main->setParallel(@mprocs);
+    push(@procs,$main); }
   # Done AFTER other math formats, so that it can add attributes in appropriate places
   # (eg. MathML's altimg).
   if($mathimages){
@@ -478,9 +461,6 @@ latexmlpost [options] I<xmlfile>
  --openmath              converts math to OpenMath
  --noopenmath            disables the above (default)
  --om                    alias for --openmath
- --parallelmath          requests parallel math markup for MathML
-                         (default when multiple math formats)
- --noparallelmath        disables the above
  --keepXMath             preserves the intermediate XMath
                          representation (default is to remove)
  --graphicimages         converts graphics to images (default)
@@ -773,25 +753,12 @@ Requests or disables conversion of math to OpenMath.
 Conversion is disabled by default.
 B<Note> that this conversion is only partially implemented.
 
-=item C<--parallelmath>, C<--noparallelmath>
-
-Requests or disables parallel math markup.
-Parallel markup is the default for xhtml formats when multiple math
-formats are requested.
-
-This method uses the MathML C<semantics> element with additional formats
-appearing as C<annotation>'s.
-The first math format requested must be either Presentation or Content MathML;
-additional formats may be MathML or OpenMath.
-
-If this option is disabled and multiple formats are requested, the
-representations are simply stored as separate children of the C<Math> element.
-
 =item C<--keepXMath>
 
 By default, when any of the MathML or OpenMath conversions
 are used, the intermediate math representation will be removed;
-this option preserves it.
+this option preserves it; it will be used as secondary parallel
+markup, when it follows the options for other math representations.
 
 =back
 
