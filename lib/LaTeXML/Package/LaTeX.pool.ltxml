@@ -1330,6 +1330,7 @@ sub eqnarrayBindings {
   my $alignment = LaTeXML::Util::Alignment
     ->new(openContainer =>sub{ my %attr = RefStepID('@equationgroup');
 			       $attr{'xml:id'}=$attr{id}; delete $attr{id};
+			       $attr{class}='eqnarray';
 			       $_[0]->openElement('ltx:equationgroup',%attr,@_[1..$#_]); },
 	  closeContainer=>sub{ $_[0]->closeElement('ltx:equationgroup'); },
 	  openRow       =>sub{ $_[0]->openElement('ltx:equation',@_[1..$#_]); },
@@ -1349,8 +1350,9 @@ sub eqnarrayBindings {
 DefConstructor('\@@eqnarray SkipSpaces DigestedBody',
 	       sub {
 		 my($document,$body,%props)=@_;
-		 eqnarrayRegroupEquations($document,constructAlignment($document,$body,
-								      class=>'eqnarray')); },
+		 eqnarrayRegroupEquations($document,
+				  constructAlignment($document,$body,
+					    attributes=>{class=>'eqnarray'})); },
 	       beforeDigest=>sub { $_[0]->bgroup; });
 DefPrimitiveI('\end@eqnarray',undef, sub{ $_[0]->egroup; });
 
@@ -1369,7 +1371,8 @@ DefPrimitiveI('\end@eqnarray',undef, sub{ $_[0]->egroup; });
 
 sub eqnarrayRegroupEquations {
   my($document,$equationgroup)=@_;
-  # Scan the "equations" to see what pattern of columns are present.
+  # Scan the "equations" (rows) within the $equationgroup
+  # to see what pattern of columns are present.
   my @rows = ();
   foreach my $rownode ($document->getChildElements($equationgroup)){
     my @cells = $document->getChildElements($rownode); # The _Capture_'s representing each column.
@@ -1384,10 +1387,12 @@ sub eqnarrayRegroupEquations {
   my $nR = scalar(grep($$_{R}, @rows));
 
   # NOTE: A common (mis-)use of eqnarray seems to be to have all the 1st or last 2 columns empty.
-  # This amounts to simply a bunch of left aligned equations.
+  # This is effectively an ams gather environment; a bunch of equations, 1 per line.
   # However, if some of these start with a relation,
   # presumably it's a single equation. (?)
   # [Another heuristic might be the presence of \left. or \right.?]
+  # It could even be the case that this eqnarray ties into a preceding one,
+  # with an implied \intertext ?
   my $t;
   if($nL && !$nM && !$nR){	# All LHS!
     if(grep( ($t=$$_{cols}[0])&&($t=$document->getFirstChildElement($t))&& (($t->getAttribute('role') || '') eq 'RELOP'),
@@ -1443,10 +1448,12 @@ sub eqnarrayRegroupEquations {
   # Now rearrange things appropriately.
   foreach my $eqset (@eqs){
     my @subeqs = @$eqset;
-    if(scalar(@subeqs) > 1){    # Combine equations with multiple rows
-      eqnarrayJoinRows($document,$equationgroup,@$eqset); }
-    else {			# Else fixup columns of single-row equations
-      equationgroupJoinCols($document,3,$subeqs[0]); }}
+###    if(scalar(@subeqs) > 1){    # Combine equations with multiple rows
+      eqnarrayJoinRows($document,$equationgroup,@$eqset); 
+###}
+###    else {			# Else fixup columns of single-row equations
+###      equationgroupJoinCols($document,3,$subeqs[0]); }
+}
 }
 
 # ========================================
@@ -1482,6 +1489,8 @@ sub eqnarrayJoinRows {
     $eq->unbindNode;
     my $tr = addNewChildLate($document,$branch,'ltx:tr');
     foreach my $cell ($document->getChildElements($eq)){
+      $tr->setAttribute(class=>'lefteqn')
+	if ($cell->getAttribute('colspan')||'0') == 3;
       addColumnToMathFork($document,$main,$tr,$cell); }}
 }
 
@@ -1510,9 +1519,11 @@ sub equationgroupFlattenCols {
 # ========================================
 # Support for above.
 
-# Add a MathFork to the given equation,
-# returning the new nodes for the XMath in the main branch,
-# and the 1st alternate branch.
+# Add a MathFork structure:
+# <MathFork><Math><XMath/></Math> <MathBranch/></MathFork>
+# to the given equation,
+# returning the new nodes: <Math> and <MathBranch>
+# (as $main and $branch)
 sub addMathFork {
   my($document,$equation)=@_;
   my $fork  = addNewChildLate($document,$equation,'ltx:MathFork');
@@ -1522,16 +1533,49 @@ sub addMathFork {
   my $branch= addNewChildLate($document,$fork,'ltx:MathBranch');
   ($main,$branch); }
 
-# Add a td (table column) to $branch in a MathFork,
-# and also to the main branch.
+# Add a new ltx:td (table column) to $inbranch
+#(a place within a ltx:MathBranch in a ltx:MathFork),
+# moving the ltx:Math from $cell (a _Capture_) into that new ltx:td
+# and append a CLONE of the contents of the cell's ltx:Math
+# to the XMath of $main (the ltx:Math in the main part of the fork)
 sub addColumnToMathFork {
-  my($document,$main,$branch,$cell)=@_;
-  my $td = addNewChildLate($document,$branch,'ltx:td');
+  my($document,$main,$inbranch,$cell)=@_;
+  my $td = addNewChildLate($document,$inbranch,'ltx:td');
   if(my $align = $cell->getAttribute('align')){
     $td->setAttribute(align=>$align); }
   if(my $colspan = $cell->getAttribute('colspan')){
     $td->setAttribute(colspan=>$colspan); }
-  addToMathFork($document,$main,$td,$cell); }
+
+  $cell->unbindNode;
+  if(my $math  = $document->getFirstChildElement($cell)){
+    if(my $xmath = $document->getFirstChildElement($math)){
+#####      my $copy = cloneMath($document,$cell);
+      my $xcopy = cloneMath($document,$xmath);
+      # Now, we can add the contents of the cell to the main branch
+#####      foreach my $item ($document->getChildElements($xmath)){
+      foreach my $item ($document->getChildElements($xcopy)){
+	$document->getFirstChildElement($main)->appendChild($item); }
+      # And we need to add the tex!!
+      # Since each cell was captured in its own Math, it has a valid chunk of tex.
+      # We just need to paste them together appropriately.
+      if(my $x_tex = $math->getAttribute('tex')){
+	my $x_ctex = $math->getAttribute('content-tex') || $x_tex; 
+	my $tex = $main->getAttribute('tex') || '';
+	my $ctex =$main->getAttribute('content-tex') || $tex;
+	$tex = join(' ',grep($_,map((s/^\s*\\displaystyle\s*//&&$_)||$_,$tex,$x_tex)));
+	$ctex = join(' ',grep($_,$ctex,$x_ctex));
+	$ctex =~ s/\\displaystyle\s*//g;   # strip all \displaystyle
+	$main->setAttribute(tex=>'\displaystyle '.$tex);
+	$main->setAttribute('content-tex'=>$ctex) unless $ctex eq $tex; }
+      # and the modified copy to the alternative branch.
+      # $branch->appendChild($copy->firstChild);
+### WHOA, why are we putting a clone of the copy which has been cloneMath'd
+### Shouldn't we be putting the actual math from the $cell into the td?
+### IE. without changing it's id's? (the clone should get new id's!)
+#####      append_nodes_clone($td,$document->getFirstChildElement($copy));
+      append_nodes_clone($td,$math);
+    }
+  }}
 
 # Here's the really nasty part.
 # The content of each cell can end up in the main branch of MathFork
@@ -1551,8 +1595,11 @@ sub cloneMath {
   # Find all id's defined in the copy and change the id.
   foreach my $node ($document->findnodes('.//*[@xml:id]',$copy)){
     my $id = $node->getAttribute('xml:id');
-    # Trust document to bump the id to a unique one!
-    my $newid = $document->modifyID($id);
+##    # Trust document to bump the id to a unique one!
+###    my $newid = $document->modifyID($id);
+###ZZZZZZ    my $newid = $id.".fork1";
+    my $newid = $id.".mf";	# cloned math is in MAIN branch!
+    # .mf or .sem (semantic) or ... ????
     $document->recordID($newid,$node);
     $node->setAttribute('xml:id'=>$newid);
     $idmap{$id}=$newid; }
@@ -1561,33 +1608,6 @@ sub cloneMath {
     my $id = $node->getAttribute('idref');
     $node->setAttribute(idref=>$idmap{$id}) if $idmap{$id}; }
   $copy; }
-
-sub addToMathFork {
-  my($document,$main,$branch,$cell)=@_;
-  $cell->unbindNode;
-  if(my $math  = $document->getFirstChildElement($cell)){
-    if(my $xmath = $document->getFirstChildElement($math)){
-      my $copy = cloneMath($document,$cell);
-      # Now, we can add the contents of the cell to the main branch
-      foreach my $item ($document->getChildElements($xmath)){
-	$document->getFirstChildElement($main)->appendChild($item); }
-      # And we need to add the tex!!
-      # Since each cell was captured in its own Math, it has a valid chunk of tex.
-      # We just need to paste them together appropriately.
-      if(my $x_tex = $math->getAttribute('tex')){
-	my $x_ctex = $math->getAttribute('content-tex') || $x_tex; 
-	my $tex = $main->getAttribute('tex') || '';
-	my $ctex =$main->getAttribute('content-tex') || $tex;
-	$tex = join(' ',grep($_,map((s/^\s*\\displaystyle\s*//&&$_)||$_,$tex,$x_tex)));
-	$ctex = join(' ',grep($_,$ctex,$x_ctex));
-	$ctex =~ s/\\displaystyle\s*//g;   # strip all \displaystyle
-	$main->setAttribute(tex=>'\displaystyle '.$tex);
-	$main->setAttribute('content-tex'=>$ctex) unless $ctex eq $tex; }
-      # and the modified copy to the alternative branch.
-      # $branch->appendChild($copy->firstChild);
-      append_nodes_clone($branch,$document->getFirstChildElement($copy));
-    }
-  }}
 
 # Style Parameters
 #  \abovedisplayskip \abovedisplayshortskip, \jot are in TeX.pool
