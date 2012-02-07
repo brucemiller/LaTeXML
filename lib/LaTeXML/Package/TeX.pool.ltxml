@@ -4543,10 +4543,14 @@ sub aligningEnvironment {
 
 sub addClass {
   my($node,$class)=@_;
-  if($node->hasAttribute('class')){
-    $node->setAttribute(class=>$node->getAttribute('class').' '.$class); }
-  else {
-    $node->setAttribute(class=>$class); }}
+  if($node && $class){
+    if($node->hasAttribute('class')){
+      $node->setAttribute(class=>$node->getAttribute('class').' '.$class); }
+    else {
+      $node->setAttribute(class=>$class); }}}
+
+DefConstructor('\@ADDCLASS{}',sub {
+  addClass($_[0]->getElement,ToString($_[1])); });
 
 sub setAlignOrClass {
   my($document,$node,$align,$class)=@_;
