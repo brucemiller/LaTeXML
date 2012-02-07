@@ -138,17 +138,16 @@ sub isConditional { 1; }
 
 sub getTest { $_[0]->{test}; }
 
+sub invoke {
+  my($self,$gullet)=@_;
+  # Keep a stack of the conditionals we are processing.
+  $STATE->unshiftValue(if_stack=>{token=>$LaTeXML::CURRENT_TOKEN,parsing=>1,elses=>0});
+
+  $self->doInvocation($gullet,$self->readArguments($gullet)); }
+
 sub doInvocation {
   my($self,$gullet,@args)=@_;
-##  my $level = ($STATE->lookupValue('current_if_level') || 0)+1;
-##  $STATE->assignValue(current_if_level=>$level, 'global');
-##  $STATE->assignValue(if_level=>$level, 'global');
-##  $STATE->assignValue('if_level_'.$level.'_elses'=>0,'global');
-
-  my $level = ($STATE->lookupValue('if_level') || 0)+1;
-  $STATE->assignValue(if_level=>$level, 'global');
-  $STATE->assignValue('if_level_'.$level.'_elses'=>0,'global');
-
+  $STATE->lookupValue('if_stack')->[0]->{parsing}=0; # Now, we're done parsing the Test part.
   # The usual case
   if(my $test = $self->getTest){
     ifHandler($gullet, &$test($gullet,@args)); }
@@ -173,17 +172,14 @@ sub skipConditionalBody {
       if($defn->isExpandable && $defn->isConditional){
 	$level++; }
       elsif(Equals($t,T_CS('\fi')) && (!--$level)){
-	fiHandler($gullet); return; }
+	fiHandler($gullet); return; } # Note, fiHandler called from here.
       elsif($level > 1){	# Ignore nested \else,\or
       }
       elsif(Equals($t,T_CS('\or')) && (++$n_ors == $nskips)){
 	return; }
       elsif(Equals($t,T_CS('\else')) && $nskips){
-##	my $curr=$STATE->lookupValue('current_if_level');
-##	$STATE->assignValue('if_level_'.$curr.'_elses'=>1,'global');
-	my $level=$STATE->lookupValue('if_level');
-	$STATE->assignValue('if_level_'.$level.'_elses'=>1,'global');
-
+	# No need to actually call elseHandler, but note that we've seen an \else!
+	$STATE->lookupValue('if_stack')->[0]->{elses}=1;
 	return; }}}
   Fatal(":expected:\\fi Missing \\fi or \\else, conditional fell off end (starting at $start)"); }
 
@@ -193,47 +189,18 @@ sub ifHandler   {
 
 # These next two should NOT be called by Conditionals,
 # but they complete the set of conditional operations.
-# sub elseHandler { 
-#   my($gullet)=@_;
-#   my ($curr,$level) = ($STATE->lookupValue('current_if_level'),$STATE->lookupValue('if_level'));
-#   if(!$curr){
-#     Error(":unexpected:".Stringify($LaTeXML::CURRENT_TOKEN)
-# 	  ." Didn't expect a ".Stringify($LaTeXML::CURRENT_TOKEN)
-# 	  ." since we seem not to be in a conditional");
-#     return; }
-#   elsif($STATE->lookupValue('if_level_'.$curr.'_elses')){
-#     Error(":unexpected:".Stringify($LaTeXML::CURRENT_TOKEN)
-# 	  ." Extra ".Stringify($LaTeXML::CURRENT_TOKEN));
-#     return; }
-#   elsif($curr > $level){
-#     (T_CS('\relax'),T_CS('\else')); }
-#   else {
-#     skipConditionalBody($gullet,0); return; }}
-
-# sub fiHandler {
-#   my($gullet)=@_;
-#   my ($curr,$level) = ($STATE->lookupValue('current_if_level'),$STATE->lookupValue('if_level'));
-#   if(!$curr){
-#     Error(":unexpected:".Stringify($LaTeXML::CURRENT_TOKEN)
-# 	  ." Didn't expect a ".Stringify($LaTeXML::CURRENT_TOKEN)
-# 	  ." since we seem not to be in a conditional");
-#     return; }
-#   elsif($curr > $level){
-#     (T_CS('\relax'),T_CS('\fi')); }
-#   else {
-#     $STATE->assignValue(current_if_level=>$curr-1, 'global');
-#     $STATE->assignValue(if_level=>$curr-1, 'global');
-#     return; }}
-
+# (See TeX.pool for how to bind to \else, \if...)
 sub elseHandler { 
   my($gullet)=@_;
-  my $level = $STATE->lookupValue('if_level');
-  if(!$level){
+  my $stack =$STATE->lookupValue('if_stack');
+  if(!($stack && $$stack[0])){ # No if stack entry ?
     Error(":unexpected:".Stringify($LaTeXML::CURRENT_TOKEN)
 	  ." Didn't expect a ".Stringify($LaTeXML::CURRENT_TOKEN)
 	  ." since we seem not to be in a conditional");
     return; }
-  elsif($STATE->lookupValue('if_level_'.$level.'_elses')){
+  elsif($$stack[0]{parsing}){	# Defer expanding the \else if we're still parsing the test
+    (T_CS('\relax'),$LaTeXML::CURRENT_TOKEN); }
+  elsif($$stack[0]{elses}){	# Already seen an \else's at this level?
     Error(":unexpected:".Stringify($LaTeXML::CURRENT_TOKEN)
 	  ." Extra ".Stringify($LaTeXML::CURRENT_TOKEN));
     return; }
@@ -242,14 +209,16 @@ sub elseHandler {
 
 sub fiHandler {
   my($gullet)=@_;
-  my $level = $STATE->lookupValue('if_level');
-  if(!$level){
+  my $stack=$STATE->lookupValue('if_stack');
+  if(!($stack && $$stack[0])){ # No if stack entry ?
     Error(":unexpected:".Stringify($LaTeXML::CURRENT_TOKEN)
 	  ." Didn't expect a ".Stringify($LaTeXML::CURRENT_TOKEN)
 	  ." since we seem not to be in a conditional");
     return; }
-  else {
-    $STATE->assignValue(if_level=>$level-1, 'global');
+  elsif($$stack[0]{parsing}){	# Defer expanding the \else if we're still parsing the test
+    (T_CS('\relax'),$LaTeXML::CURRENT_TOKEN); }
+  else {			# "expand" by removing the stack entry for this level
+    $STATE->shiftValue('if_stack');
     return; }}
 
 #**********************************************************************
