@@ -168,7 +168,7 @@ sub shiftValue {
   my($self,$key)=@_;
   my $vtable = $$self{table}{value};
   assign_internal($self,'value',$key,[],'global') unless $$vtable{$key}[0];
-  shift(@{$$vtable{value}{$key}[0]}); }
+  shift(@{$$vtable{$key}[0]}); }
 
 sub lookupStackedValues { 
   my $stack = $_[0]->{table}{value}{$_[1]};
