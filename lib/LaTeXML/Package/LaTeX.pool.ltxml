@@ -250,7 +250,7 @@ DefConstructorI('\LaTeXe', undef,'LaTeX2e');
 DefMacroI('\fmtname',      undef,'LaTeXML');
 DefMacroI('\fmtversion',   undef, 'XXXX/XX/XX');
 
-DefMacroI('\today', undef, sub { Explode(today()); });
+DefMacroI('\today', undef, sub { ExplodeText(today()); });
 
 DefConstructor('\emph{}', "<ltx:emph>#1</ltx:emph>", mode=>'text');
 
@@ -2005,9 +2005,9 @@ DefPrimitive('\@addtoreset{}{}',sub {
     DefMacroI(T_CS("\\\@$ctr\@ID"),undef,"0",scope=>'global'); }
   return; });
 
-DefMacro('\value{}',         sub { Explode(CounterValue($_[1])->valueOf);});
-DefMacro('\@arabic{Number}', sub { Explode(ToString($_[1]->valueOf)); });
-DefMacro('\arabic{}',        sub { Explode(CounterValue($_[1])->valueOf); });
+DefMacro('\value{}',         sub { ExplodeText(CounterValue($_[1])->valueOf);});
+DefMacro('\@arabic{Number}', sub { ExplodeText(ToString($_[1]->valueOf)); });
+DefMacro('\arabic{}',        sub { ExplodeText(CounterValue($_[1])->valueOf); });
 DefMacro('\@roman{Number}',  sub { roman(ToString($_[1]->valueOf)); });
 DefMacro('\roman{}',         sub { roman(CounterValue($_[1])->valueOf); });
 DefMacro('\@Roman{Number}',  sub { Roman(ToString($_[1]->valueOf)); });

@@ -198,7 +198,7 @@ RawTeX('\newif\ifCUPmtlplainloaded');
 RawTeX('\newif\iffirstta');
 DefMacro('\sevensize','\small');
 DefMacro('\plate','');
-DefMacro('\hexnumber{}', sub { Explode(sprintf('%x',ToString($_[1]))); });
+DefMacro('\hexnumber{}', sub { ExplodeText(sprintf('%x',ToString($_[1]))); });
 DefMacro('\mathch{}{}', '\ensuremath{#2}');
 
 Let(T_CS('\@internalcite'),T_CS('\cite'));

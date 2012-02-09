@@ -26,7 +26,7 @@ sub toString { $_[0]->[0]; }
 sub ptValue     { int($_[0]->[0]/655.36)/100; }
 
 sub unlist   { $_[0]; }
-sub revert   { Explode($_[0]->toString); }
+sub revert   { ExplodeText($_[0]->toString); }
 
 sub smaller  { ($_[0]->valueOf < $_[1]->valueOf)?$_[0]:$_[1]; }
 sub larger   { ($_[0]->valueOf > $_[1]->valueOf)?$_[0]:$_[1]; }
@@ -175,7 +175,7 @@ sub toString {
 
 sub revert {
   my($self)=@_;
-  map( (Explode($_),T_SPACE,Revert($$self{$_})), keys %{$self}); }
+  map( (ExplodeText($_),T_SPACE,Revert($$self{$_})), keys %{$self}); }
 
 #**********************************************************************
 

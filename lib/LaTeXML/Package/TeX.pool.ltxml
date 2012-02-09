@@ -365,7 +365,7 @@ Let(T_CS('\protect'),T_CS('\relax'));
 #======================================================================
 
 DefMacro('\romannumeral Number', sub { roman($_[1]->valueOf); });
-DefMacro('\string Token ',        sub { Explode($_[1]->getString); });
+DefMacro('\string Token ',        sub { ExplodeText($_[1]->getString); });
 DefMacroI('\jobname',undef,Tokens()); # Set to the filename by initialization
 
 DefMacroI('\fontname', undef,sub { Explode("fontname not implemented"); });
@@ -373,7 +373,7 @@ DefMacroI('\fontname', undef,sub { Explode("fontname not implemented"); });
 DefMacro('\meaning Token',sub {
   my($gullet,$tok)=@_;
   my $meaning = LookupMeaning($tok);
-  Explode(defined $meaning ? $meaning : 'undefined'); });
+  ExplodeText(defined $meaning ? $meaning : 'undefined'); });
 
 DefParameterType('CSName', sub {
   my($gullet)=@_;
@@ -427,7 +427,7 @@ DefMacro('\the Register',sub {
     my $cs = ToString($defn->getCS);
     Error(":unexpected:\\the$cs You can't use $cs after \\the"); return (); }
   my $value = $defn->valueOf(@args);
-  my @tokens = ($type eq 'Tokens' ? ($value ? $value->unlist :()) : Explode(ToString($value)));
+  my @tokens = ($type eq 'Tokens' ? ($value ? $value->unlist :()) : ExplodeText(ToString($value)));
   if($LaTeXML::NOEXPAND_THE){	# See \the for the sense in this.
     $gullet->neutralizeTokens(@tokens); }
   else {
