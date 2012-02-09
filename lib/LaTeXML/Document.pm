@@ -336,8 +336,7 @@ sub closeNode_internal {
   my $closeto = $node->parentNode; # Grab now in case afterClose screws the structure.
   my $n = $self->closeText_internal; # Close any open text node.
   while($n->nodeType == XML_ELEMENT_NODE){
-    if(my $post= $$self{model}->getTagProperty($n,'afterClose')){
-      map(&$_($self,$n,$LaTeXML::BOX),@$post); }
+    map(&$_($self,$n,$LaTeXML::BOX),$$self{model}->getTagPropertyList($n,'afterClose'));
     last if $$node eq $$n;	# NOTE: This equality test is questionable
     $n = $n->parentNode; }
   print STDERR "Closing ".Stringify($node)." => ".Stringify($closeto)."\n" if $LaTeXML::Document::DEBUG;
@@ -587,8 +586,7 @@ sub openElement {
   $self->setNodeBox($node, $LaTeXML::BOX);
   print STDERR "Inserting ".Stringify($node)." into ".Stringify($point)."\n" if $LaTeXML::Document::DEBUG;
   $$self{node} = $node;
-  if(defined(my $post=$$self{model}->getTagProperty($node,'afterOpen'))){
-    map( &$_($self,$node,$LaTeXML::BOX), @$post); }
+  map( &$_($self,$node,$LaTeXML::BOX),$$self{model}->getTagPropertyList($node,'afterOpen'));
   $$self{node}; }
 
 sub closeElement {
