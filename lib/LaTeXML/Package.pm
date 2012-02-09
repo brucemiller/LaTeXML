@@ -199,9 +199,9 @@ sub roman_aux {
   $s; }
 
 # Convert the number to lower case roman numerals, returning a list of LaTeXML::Token
-sub roman { Explode(roman_aux(@_)); }
+sub roman { ExplodeText(roman_aux(@_)); }
 # Convert the number to upper case roman numerals, returning a list of LaTeXML::Token
-sub Roman { Explode(uc(roman_aux(@_))); }
+sub Roman { ExplodeText(uc(roman_aux(@_))); }
 
 #======================================================================
 # Cleaners
@@ -427,16 +427,21 @@ sub ResetCounter {
 sub GenerateID {
   my($document,$node,$whatsit,$prefix)=@_;
   if(!$node->hasAttribute('xml:id')){
-    my $parent =  $document->findnode('ancestor::*[@xml:id][1]',$node)
+    my $ancestor =  $document->findnode('ancestor::*[@xml:id][1]',$node)
       || $document->getDocument->documentElement;
-    my $ctrkey = '_ID_counter_'.$prefix;
-    my $ctr = ($parent && $parent->getAttribute($ctrkey)) || 0;
-## Old versions don't like this!!!
-##    my $parent_id = $parent && $parent->getAttribute('xml:id');
-    my $parent_id = $parent && $parent->getAttributeNS("http://www.w3.org/XML/1998/namespace",'id');
+    ## Old versions don't like $ancestor->getAttribute('xml:id');
+    my $ancestor_id = $ancestor && $ancestor->getAttributeNS("http://www.w3.org/XML/1998/namespace",'id');
+    # If we've got no $ancestor_id, then we've got no $ancestor (no document yet!),
+    # or $ancestor IS the root element (but without an id);
+    # If we also have no $prefix, we'll end up with an illegal id (just digits)!!!
+    # We'll use "id" for an id prefix; this will work whether or not we have an $ancestor.
+    $prefix = 'id' unless $prefix || $ancestor_id;
 
-    my $id = ($parent_id ? $parent_id."." : '').$prefix. (++$ctr);
-    $parent->setAttribute($ctrkey=>$ctr) if $parent;
+    my $ctrkey = '_ID_counter_'.(defined $prefix ? $prefix.'_' : '');
+    my $ctr = ($ancestor && $ancestor->getAttribute($ctrkey)) || 0;
+
+    my $id = ($ancestor_id ? $ancestor_id."." : '').(defined $prefix ? $prefix : '').(++$ctr);
+    $ancestor->setAttribute($ctrkey=>$ctr) if $ancestor;
     $document->setAttribute($node,'xml:id'=>$id);
 }}
 
@@ -941,25 +946,22 @@ sub DefEnvironmentI {
 #======================================================================
 
 # Specify the properties of a Node tag.
-our $tag_options = {autoOpen=>1, autoClose=>1, afterOpen=>1, afterClose=>1};
-
+our $tag_options = {autoOpen=>1, autoClose=>1, afterOpen=>1, afterClose=>1,
+		    'afterOpen:early'=>1, 'afterClose:early'=>1,
+		    'afterOpen:late'=>1, 'afterClose:late'=>1};
+our $tag_prepend_options={'afterOpen:early'=>1, 'afterClose:early'=>1};
+our $tag_append_options={'afterOpen'=>1, 'afterClose'=>1,
+			 'afterOpen:late'=>1, 'afterClose:late'=>1};
 sub Tag {
   my($tag,%properties)=@_;
   CheckOptions("Tag ($tag)",$tag_options,%properties);
   my $model = $STATE->getModel;
-  $model->setTagProperty($tag,autoOpen=>$properties{autoOpen})
-    if $properties{autoOpen};
-  $model->setTagProperty($tag,autoClose=>$properties{autoClose})
-    if $properties{autoClose};
-  # ADD after daemons to any already present.
-  $model->setTagProperty($tag,
-	 afterOpen=>flatten($model->getTagProperty($tag,'afterOpen'),
-			    $properties{afterOpen}))
-    if $properties{afterOpen};
-  $model->setTagProperty($tag,
-         afterClose=>flatten($model->getTagProperty($tag,'afterClose'),
-			     $properties{afterClose}))
-    if $properties{afterClose};
+  foreach my $key (keys %properties){
+    my $new = $properties{$key};
+    my $old = $model->getTagProperty($tag,$key);
+    if(   $$tag_prepend_options{$key}){ $new=flatten($new,$old); }
+    elsif($$tag_append_options{$key}){  $new=flatten($old,$new); }
+    $model->setTagProperty($tag,$key=>$new); }
   return; }
 
 sub DocType {
@@ -2269,7 +2271,7 @@ The calling pattern makes it appropriate for use in Tag, as in
 
 If C<$node> doesn't already have an xml:id set, it computes an
 appropriate id by concatenating the xml:id of the closest
-ancestor with an id (if any), the prefix and a unique counter.
+ancestor with an id (if any), the prefix (if any) and a unique counter.
 
 =back
 
@@ -2284,8 +2286,30 @@ Document Model is used to control exactly how those fragments are assembled.
 
 X<Tag>
 Declares properties of elements with the name C<$tag>.
+Note that C<Tag> can set or add properties to any element from any binding file,
+unlike the properties set on control by  C<DefPrimtive>, C<DefConstructor>, etc..
+And, since the properties are recorded in the current Model, they are not
+subject to TeX grouping; once set, they remain in effect until changed
+or the end of the document.
 
-The recognized properties are:
+The C<$tag> can be specified in one of three forms:
+
+   prefix:name matches a specific name in a specific namespace
+   prefix:*    matches any tag in the specific namespace;
+   *           matches any tag in any namespace.
+
+There are two kinds of properties:
+
+=over
+
+=item Scalar properties
+
+For scalar properties, only a single value is returned for a given element.
+When the property is looked up, each of the above forms is considered
+(the specific element name, the namespace, and all elements);
+the first defined value is returned.
+
+The recognized scalar properties are:
 
 =over
 
@@ -2303,7 +2327,33 @@ if needed to close an ancestor node, or insert
 an element into an ancestor.
 This property can help match the more  SGML-like LaTeX to XML.
 
-=item afterOpen=>CODE($document,$box)
+=back
+
+=item Code properties
+
+These properties provide a bit of code to be run at the times
+of certain events associated with an element.  I<All> the code bits
+that match a given element will be run, and since they can be added by
+any binding file, and be specified in a random orders,
+a little bit of extra control is desirable.
+
+Firstly, any I<early> codes are run (eg C<afterOpen:early>), then
+any normal codes (without modifier) are run, and finally
+any I<late> codes are run (eg. C<afterOpen:late>).
+
+Within I<each> of those groups, the codes assigned for an element's specific
+name are run first, then those assigned for its package and finally the generic one (C<*>);
+that is, the most specific codes are run first.
+
+When code properties are accumulated by C<Tag> for normal or late events,
+the code is appended to the end of the current list (if there were any previous codes added);
+for early event, the code is prepended.
+
+The recognized code properties are:
+
+=over
+
+=item afterOpen=>CODE($document,$box), afterOpen:early=>CODE($document,$box), afterOpen:late=>CODE($document,$box)
 
 Provides CODE to be run whenever a node with this $tag
 is opened.  It is called with the document being constructed,
@@ -2312,11 +2362,13 @@ It is called after the node has been created, and after
 any initial attributes due to the constructor (passed to openElement)
 are added.
 
-=item afterClose=>CODE($document,$box)
+=item afterClose=>CODE($document,$box), afterClose:early=>CODE($document,$box), afterClose:late=>CODE($document,$box)
 
 Provides CODE to be run whenever a node with this $tag
 is closed.  It is called with the document being constructed,
 and the initiating digested object as arguments.
+
+=back
 
 =back
 
