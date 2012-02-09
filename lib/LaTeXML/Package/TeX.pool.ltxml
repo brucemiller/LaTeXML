@@ -984,8 +984,8 @@ DefPrimitive('\@@@fontencoding{}',sub {
     MergeFont(encoding=>$encoding); }
   return; });
 
-DefMacroI('\f@encoding',undef,sub { Explode(LookupValue('font')->getEncoding); });
-DefMacroI('\cf@encoding',undef,sub { Explode(LookupValue('font')->getEncoding); });
+DefMacroI('\f@encoding',undef,sub { ExplodeText(LookupValue('font')->getEncoding); });
+DefMacroI('\cf@encoding',undef,sub { ExplodeText(LookupValue('font')->getEncoding); });
 
 # Used for SemiVerbatim text
 DeclareFontMap('ASCII',
