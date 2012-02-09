@@ -39,7 +39,7 @@ our  @EXPORT = (
 		   &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
 		   &T_CR
 		   &Token &Tokens
-		   &Tokenize &TokenizeInternal &Explode &UnTeX
+		   &Tokenize &TokenizeInternal &Explode &ExplodeText &UnTeX
 		   &StartSemiverbatim &EndSemiverbatim),
 	       # Number & Dimension constructors
 		qw( &Number &Float &Dimension &MuDimension &Glue &MuGlue &Pair &PairList),
@@ -161,6 +161,14 @@ sub Tokens {
 sub Explode {
   my($string)=@_;
   (defined $string ? map(($_ eq ' ' ? T_SPACE() : T_OTHER($_)),split('',$string)) : ()); }
+
+# Similar to Explode, but convert letters to catcode LETTER
+# Hopefully, this is essentially correct WITHOUT resorting to catcode lookup?
+sub ExplodeText {
+  my($string)=@_;
+  (defined $string
+   ? map(($_ eq ' ' ? T_SPACE() : (/[a-zA-Z]/ ? T_LETTER($_) : T_OTHER($_))),split('',$string))
+   : ()); }
 
 # Reverts an object into TeX code, as a Tokens list, that would create it.
 # Note that this is not necessarily the original TeX.
@@ -408,6 +416,13 @@ returning a L<LaTeXML::Tokens>.
 =item C<< @tokens = Explode($string); >>
 
 Returns a list of the tokens corresponding to the characters in C<$string>.
+All tokens have catcode CC_OTHER, except for spaces which have catcode CC_SPACE.
+
+=item C<< @tokens = ExplodeText($string); >>
+
+Returns a list of the tokens corresponding to the characters in C<$string>.
+All (roman) letters have catcode CC_LETTER, all others have catcode CC_OTHER,
+except for spaces which have catcode CC_SPACE.
 
 =item C<< $tokens = Revert($object); >>
 
