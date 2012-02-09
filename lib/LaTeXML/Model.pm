@@ -270,8 +270,37 @@ sub setTagProperty {
 sub getTagProperty {
   my($self,$tag,$prop)=@_;
   $tag = $self->getNodeQName($tag) if ref $tag; # In case tag is a node.
-  $$self{tagprop}{$tag}{$prop}; }
+####  $$self{tagprop}{$tag}{$prop}; }
+  my($p,$n)=$self->decodeQName($tag);
+  my $v;
+  (defined ($v=$$self{tagprop}{$tag}{$prop}) ? $v
+   : (defined $p && defined ($v=$$self{tagprop}{$p.":*"}{$prop}) ? $v
+      : (defined ($v=$$self{tagprop}{"*"}{$prop}) ? $v
+	 : undef))); }
 
+sub getTagPropertyList {
+  my($self,$tag,$prop)=@_;
+  $tag = $self->getNodeQName($tag) if ref $tag; # In case tag is a node.
+  my($p,$n)=(undef,$tag);
+  if($tag =~ /^([^:]+):(.+)$/){
+    ($p,$n)=($1,$2); }
+  my $prop0 = $prop.':early';
+  my $prop1 = $prop.':late';
+  my $taghash = $$self{tagprop}{$tag};
+  my $nshash = (defined $p) && $$self{tagprop}{$p.":*"};
+  my $allhash = $$self{tagprop}{"*"};
+  my $v;
+  (
+   ($taghash && defined ($v=$$taghash{$prop0}) ? @$v : ()),
+   ($nshash  && defined ($v=$$nshash{$prop0}) ? @$v : ()),
+   ($allhash && defined ($v=$$allhash{$prop0}) ? @$v : ()),
+   ($taghash && defined ($v=$$taghash{$prop}) ? @$v : ()),
+   ($nshash  && defined ($v=$$nshash{$prop}) ? @$v : ()),
+   ($allhash && defined ($v=$$allhash{$prop}) ? @$v : ()),
+   ($taghash && defined ($v=$$taghash{$prop1}) ? @$v : ()),
+   ($nshash  && defined ($v=$$nshash{$prop1}) ? @$v : ()),
+   ($allhash && defined ($v=$$allhash{$prop1}) ? @$v : ()),
+  ); }
 
 #**********************************************************************
 # Document Structure Queries
