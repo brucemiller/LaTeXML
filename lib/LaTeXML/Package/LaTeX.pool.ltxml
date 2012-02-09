@@ -1475,13 +1475,13 @@ sub eqnarrayJoinRows {
     $id     = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
     $refnum = $eq->getAttribute('refnum') if $eq->hasAttribute('refnum');
     $frefnum = $eq->getAttribute('frefnum') if $eq->hasAttribute('frefnum');
-    $idctr  = $eq->getAttribute('_ID_counter_m') if $eq->hasAttribute('_ID_counter_m');
+    $idctr  = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_');
   }
   $equation->setAttribute(labels=>$labels) if $labels;
   $equation->setAttribute('xml:id'=>$id) if $id;
   $equation->setAttribute(refnum=>$refnum) if $refnum;
   $equation->setAttribute(frefnum=>$frefnum) if $frefnum;
-  $equation->setAttribute('_ID_counter_m'=>$idctr) if $idctr;
+  $equation->setAttribute('_ID_counter_m_'=>$idctr) if $idctr;
 
   # Scan equations to see which ones likely are continuations of previous
   my($main,$branch)=addMathFork($document,$equation);
