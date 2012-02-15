@@ -119,11 +119,13 @@ moreFormulae :
           /^\Z/ { $arg[0];}   # short circuit!
 	| (endPunct Formula { [$item[1],$item[2]]; })(s)
 	            { NewFormulae($arg[0],map(@$_,@{$item[1]})); }
-        | METARELOP Formula 	  { Apply($item[1],$arg[0],$item[2]); }
+##        | METARELOP Formula 	  { Apply($item[1],$arg[0],$item[2]); }
+	| metarelopFormula(s)     { NewFormula($arg[0],map(@$_,@{$item[1]})); }
 	| { $arg[0]; }
 
 # Punctuation that ends a formula
 endPunct : PUNCT | PERIOD
+
 
 Formula : Expression extendFormula[$item[1]]
 
@@ -174,6 +176,9 @@ punctExpr : PUNCT Expression			{ [$item[1],$item[2]]; }
 relopExpr : relop Expression			{ [$item[1],$item[2]]; }
 	  | relop /^\Z/				{ [$item[1], Absent()]; }
 
+metarelopFormula :
+            METARELOP Formula			{ [$item[1],$item[2]]; }
+	  | METARELOP /^\Z/			{ [$item[1], Absent()]; }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # `Modifier' formula, things like $<0$, that might follow another formula or text.
 # Absent() is a placeholder for the missing thing... (?)
@@ -422,6 +427,12 @@ factorOpen :
           { Apply($item[4],$item[5]); }
 	# read expression too? match subcases.
         | Expression factorOpenExpr[$arg[0],$item[1]]
+	# Empty OPEN CLOSE ?
+	| balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1])]
+	# Singlet containing an operator ? 
+        | AnyOp balancedClose[$arg[0]]
+	           addScripts[Fence($arg[0],$item[1],$item[2])]
+
 
 # factorOpenExpr[$open,$expr];  Try to recognize various things that start
 #   this way. Need some extra productions for sets (w/possible middle '|' )
@@ -430,7 +441,10 @@ factorOpenExpr :
 	# 2nd expression; some kind of pair, interval, set, whatever
          (PUNCT Expression { [$item[1],$item[2]]; })(s)  CLOSE
 		  addScripts[Fence($arg[0],$arg[1],map(@$_,@{$item[1]}),$item[2])]
-	# parenthesized expression.
+	# only 2 things and 2nd one is an op?; some kind of group???
+        | PUNCT AnyOp balancedClose[$arg[0]]
+	           addScripts[Fence($arg[0],$arg[1],$item[2],$item[3])]
+ 	# parenthesized expression.
 	| balancedClose[$arg[0]] addScripts[Fence($arg[0],$arg[1],$item[1])]
 
 # ================================================================================
@@ -626,7 +640,9 @@ addOpDecoration :
 # Note we disallow < or > if we're parsing the contents of a bra or ket!
 relop	: 
 	  { ($forbidLRAngle ? 1 : undef); } /RELOP:(less|greater)-than:\d+/ <commit> <reject>
-	| RELOP | ARROW
+#	| RELOP | ARROW
+        | RELOP addOpDecoration[$item[1]]
+	| ARROW addOpDecoration[$item[1]]
 
 # Check out whether diffop should be treated as bigop or operator
 # It depends on the binding 
@@ -696,6 +712,7 @@ ARROW		: /ARROW:\S*:\d+/		{ Lookup($item[1]); }
 ADDOP		: /ADDOP:\S*:\d+/		{ Lookup($item[1]); }
 MULOP		: /MULOP:\S*:\d+/		{ Lookup($item[1]); }
 BINOP		: /BINOP:\S*:\d+/		{ Lookup($item[1]); }
+PREFIX		: /PREFIX:\S*:\d+/		{ Lookup($item[1]); }
 POSTFIX		: /POSTFIX:\S*:\d+/		{ Lookup($item[1]); }
 FUNCTION        : /FUNCTION:\S*:\d+/		{ Lookup($item[1]); }
 OPFUNCTION      : /OPFUNCTION:\S*:\d+/		{ Lookup($item[1]); }
