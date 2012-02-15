@@ -522,11 +522,11 @@ sub openMathText_internal {
     my($nmatched, $newstring, %attr) = &{$$ligature{matcher}}($self,@sibs);
     if($nmatched){
 ##      print STDERR "Matched $nmatched => \"$newstring\"\n";
-      my @boxes = ($self->getNodeBox($node));
+#      my @boxes = ($self->getNodeBox($node));
       $node->firstChild->setData($newstring);
       for(my $i=0; $i<$nmatched-1; $i++){
 	my $remove = $node->previousSibling;
-	unshift(@boxes,$self->getNodeBox($remove));
+#	unshift(@boxes,$self->getNodeBox($remove));
 	$node->parentNode->removeChild($remove); }
 ## This fragment replaces the node's box by the composite boxes it replaces
 ## HOWEVER, this gets things out of sync because parent lists of boxes still
