@@ -89,7 +89,7 @@ sub is_strings {
   my($strings1,$strings2,$name)=@_;
   my $max = $#$strings1 > $#$strings2 ? $#$strings1 : $#$strings2;
   my $ok = 1;
-  for(my $i = 0; $i < $max; $i++){
+  for(my $i = 0; $i <= $max; $i++){
     my $string1 = $$strings1[$i];
     my $string2 = $$strings2[$i];
     if(defined $string1){
