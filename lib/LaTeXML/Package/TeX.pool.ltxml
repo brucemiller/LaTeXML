@@ -3656,19 +3656,22 @@ our %NOTS = ('='=>"\x{2260}", '<'=> "\x{226E}", '>'=>"\x{226F}",
 DefMathLigature(sub { my($document,@nodes)=@_;
 		      my ($n1,$n2,$op)=($nodes[$#nodes-1],$nodes[$#nodes]);
 		      my $c;
-		      if(defined $n1
+		      if(scalar(@nodes)> 1
 			 && (($document->getModel->getNodeQName($n1) eq 'ltx:XMTok')
 			     && ($n1->textContent eq 'not'))
 			 && (($document->getModel->getNodeQName($n2) eq 'ltx:XMTok')
-			     &&  $NOTS{$c=$n2->textContent})){
+###			     &&  $NOTS{$c=$n2->textContent})){
+			    )){
+			my $c2 = $n2->textContent;
+			my $cc = (defined $NOTS{$c2} ? $NOTS{$c2}
+				  : $c2."\x{0338}"); # Use combining slash
 			my $m = $n2->getAttribute('meaning');
-			my $n = $n2->getAttribute('name') || $c;
+			my $n = $n2->getAttribute('name') || $c2;
 			my $r = $n2->getAttribute('role');
-			(2,  $NOTS{$c}, 
-###			 ($m ? (meaning=>"not-$m"):(name=>"not-$n"))); }});
+			(2,  $cc,
 			 ($m ? (meaning=>"not-$m"):()),
 			 ($n ? (name=>"not-$n") :()),
-			 ($r ? (role=>$r):()),
+			 ($r ? (role=>$r):()), # Assume same relation?
 			); }});
 
 #----------------------------------------------------------------------
