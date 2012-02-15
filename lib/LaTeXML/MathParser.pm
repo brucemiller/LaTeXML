@@ -607,7 +607,7 @@ sub p_getValue {
   elsif(ref $node eq 'ARRAY'){
     my($op,$attr,@args)=@$node;
     if(@args){
-      join('',map(p_getValue($_),@args)); }
+      join('',grep(defined $_,map(p_getValue($_),@args))); }
     else {
       $$node[1]{name}; }}
   else {			# ????
@@ -781,11 +781,13 @@ sub Fence {
   my $c = p_getValue($close);
   my $n = int((scalar(@stuff)-2+1)/2);
   my @p= map(p_getValue(@stuff[2*$_]), 1..$n-1);
-  my $op = ($n==1
-	    ?  $enclose1{$o.'@'.$c}
-	    : ($n==2 
-	      ? ($enclose2{$o.'@'.$p[0].'@'.$c} || 'list')
-	       : ($encloseN{$o.'@'.$p[0].'@'.$c} || 'list')));
+  my $op = ($n==0
+	    ? undef
+	    : ($n==1
+	       ?  $enclose1{$o.'@'.$c}
+	       : ($n==2 
+		  ? ($enclose2{$o.'@'.$p[0].'@'.$c} || 'list')
+		  : ($encloseN{$o.'@'.$p[0].'@'.$c} || 'list'))));
   # When we're parsing XMWrap, we shouldn't try so hard to infer a meaning (it'll usually be wrong)
   $op = undef unless $LaTeXML::MathParser::STRICT;
   if(($n==1) && (!defined $op)){ # Simple case.
