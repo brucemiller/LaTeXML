@@ -37,8 +37,11 @@
 	<xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
       </xsl:for-each>
       <xsl:choose>
-	<xsl:when test="local-name()='annotation-xml'">
-	  <!-- switch to blind-copy if annotation-xml -->
+	<!-- If annotation-xml in a DIFFERENT namespace, do blind copy
+	     (staying in this template for mathml in annotation avoids extra ns declarations 
+	     in old libxslt) -->
+        <xsl:when test="local-name()='annotation-xml'                              
+                        and not(namespace-uri(child::*) = 'http://www.w3.org/1998/Math/MathML')">
 	  <xsl:apply-templates mode='blind-copy'/>
 	</xsl:when>
 	<xsl:otherwise>
