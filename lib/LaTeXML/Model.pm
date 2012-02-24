@@ -365,7 +365,6 @@ sub canHaveAttribute {
   return 0 if $tag eq '#Document';
   return 0 if $tag eq '#ProcessingInstruction';
   return 0 if $tag eq '#DTD';
-  return 1 if $attrib eq 'xml:id';
   return 1 if $$self{permissive};
   $$self{tagprop}{$tag}{attributes}{$attrib}; }
 
