@@ -102,9 +102,9 @@ DefMacro('\cd@adjacent{}{}{}','{#2}{#1}{#3}');
 
 # This isn't really having the desired effect when transformed to MathML and
 # displayed in Firefox.... have I got it right; has Firefox???
-DefMath('\leftarrowfill@',  "\x{2190}", role=>'ARROW', style=>'stretchy'); # , size=>'Bigg');
-DefMath('\rightarrowfill@', "\x{2192}", role=>'ARROW', style=>'stretchy'); # , size=>'Bigg');
-DefMath('\wideequals@',     "=",        role=>'ARROW', style=>'stretchy'); # , size=>'Bigg');
+DefMath('\leftarrowfill@',  "\x{2190}", role=>'ARROW', size=>'stretchy');
+DefMath('\rightarrowfill@', "\x{2192}", role=>'ARROW', size=>'stretchy');
+DefMath('\wideequals@',     "=",        role=>'ARROW', size=>'stretchy');
 
 
 DefRegister('\minCDarrowwidth'=>Dimension('2.5pc'));
