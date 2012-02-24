@@ -17,30 +17,34 @@ DefMath('\lambdabar',"\x{03BB}\x{0304}");
 DefConstructor('\mathbb{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'blackboard'});
 DefMacro('\Bbb{}','\mathbb{#1}');
 
-DefConstructor('\biglb Token',"<ltx:XMWrap style='big'>#1</ltx:XMWrap>",
+# NOTE: The following markup creates open & close delimiters in bold and various big sizes.
+# These constructors DO create Tokens with the appropriate series & size font attributes;
+# However, the way delimiters are stored in the parsed math representation (as attributes)
+# loses that font information, so that these tokens will appear as normal delimiters in the mathml.
+DefConstructor('\biglb Token',"<ltx:XMWrap>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); },
-	       font=>{series=>'bold'});
-DefConstructor('\bigrb Token',"<ltx:XMWrap style='big'>#1</ltx:XMWrap>",
+	       font=>{size=>'big', series=>'bold',forcebold=>1}, bounded=>1);
+DefConstructor('\bigrb Token',"<ltx:XMWrap>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); },
-	       font=>{series=>'bold'});
-DefConstructor('\Biglb Token',"<ltx:XMWrap style='Big'>#1</ltx:XMWrap>",
+	       font=>{size=>'big', series=>'bold',forcebold=>1}, bounded=>1);
+DefConstructor('\Biglb Token',"<ltx:XMWrap>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); },
-	       font=>{series=>'bold'});
-DefConstructor('\Bigrb Token',"<ltx:XMWrap style='Big'>#1</ltx:XMWrap>",
+	       font=>{size=>'Big', series=>'bold',forcebold=>1}, bounded=>1);
+DefConstructor('\Bigrb Token',"<ltx:XMWrap>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); },
-	       font=>{series=>'bold'});
-DefConstructor('\bigglb Token',"<ltx:XMWrap style='bigg'>#1</ltx:XMWrap>",
+	       font=>{size=>'Big', series=>'bold',forcebold=>1}, bounded=>1);
+DefConstructor('\bigglb Token',"<ltx:XMWrap>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); },
-	       font=>{series=>'bold'});
-DefConstructor('\biggrb Token',"<ltx:XMWrap style='bigg'>#1</ltx:XMWrap>",
+	       font=>{size=>'bigg', series=>'bold',forcebold=>1}, bounded=>1);
+DefConstructor('\biggrb Token',"<ltx:XMWrap>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); },
-	       font=>{series=>'bold'});
-DefConstructor('\Bigglb Token',"<ltx:XMWrap style='Bigg'>#1</ltx:XMWrap>",
+	       font=>{size=>'bigg', series=>'bold',forcebold=>1}, bounded=>1);
+DefConstructor('\Bigglb Token',"<ltx:XMWrap>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); },
-	       font=>{series=>'bold'});
-DefConstructor('\Biggrb Token',"<ltx:XMWrap style='Bigg'>#1</ltx:XMWrap>",
+	       font=>{size=>'Bigg', series=>'bold',forcebold=>1}, bounded=>1);
+DefConstructor('\Biggrb Token',"<ltx:XMWrap>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); },
-	       font=>{series=>'bold'});
+	       font=>{size=>'Bigg', series=>'bold',forcebold=>1}, bounded=>1);
 
 DefMath('\gtrsim',             "\x{2273}", role=>'RELOP',
 	meaning=>'greater-than-or-equivalent-to');
