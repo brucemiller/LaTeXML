@@ -1623,7 +1623,7 @@ DefRegister('\mathindent' =>Dimension(0));
 # Underlying support in TeX.pool.ltxml
 DefConstructor('\frac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='divide' role='MULOP' style='#style'/>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' fracstyle='#fracstyle'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
@@ -2997,7 +2997,7 @@ DefRegister('\fboxsep',  Dimension(0));
 # Afterwards, if we were in math mode, and the content is math, we'll convert the whole thing
 # to a framed math object.
 DefConstructor('\fbox{}',
-	       "?#mathframe(<ltx:XMApp><ltx:XMTok role='FRAME' style='box'/>#inner</ltx:XMApp>)"
+	       "?#mathframe(<ltx:XMWrap enclose='box'>#inner</ltx:XMWrap>)"
 	       .          "(<ltx:text framed='rectangle' _noautoclose='1'>#1</ltx:text>)",
 #	       mode=>'text'
 	       beforeDigest=>sub {
@@ -3015,7 +3015,7 @@ DefConstructor('\fbox{}',
 		return; });
 
 DefConstructor('\framebox[Dimension][]{}',
-	       "?#mathframe(<ltx:XMApp><ltx:XMTok role='FRAME' style='box'/>#inner</ltx:XMApp>)"
+	       "?#mathframe(<ltx:XMWrap enclose='box'/>#inner</ltx:XMWrap>)"
 	       .  "(<ltx:text ?#1(width='#1') ?#align(align='#align') framed='rectangle' _noautoclose='1'>#3</ltx:text>)",
 #	       mode=>'text',
 	       beforeDigest=>sub {
