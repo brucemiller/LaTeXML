@@ -568,6 +568,7 @@
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
+  enclose CDATA #IMPLIED
   argopen CDATA #IMPLIED
   argclose CDATA #IMPLIED
   separators CDATA #IMPLIED
@@ -577,12 +578,12 @@
   name CDATA #IMPLIED
   meaning CDATA #IMPLIED
   omcd CDATA #IMPLIED
-  style CDATA #IMPLIED
   font CDATA #IMPLIED
   size CDATA #IMPLIED
   color CDATA #IMPLIED
   scriptpos CDATA #IMPLIED
-  thickness CDATA #IMPLIED>
+  thickness CDATA #IMPLIED
+  fracstyle (display|text|inline) #IMPLIED>
 
 <!ELEMENT ns1:XMApp (ns1:XMApp|ns1:XMTok|ns1:XMRef|ns1:XMHint|ns1:XMArg
                      |ns1:XMWrap|ns1:XMDual|ns1:XMText|ns1:XMArray)*>
@@ -592,6 +593,7 @@
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
+  enclose CDATA #IMPLIED
   argopen CDATA #IMPLIED
   argclose CDATA #IMPLIED
   separators CDATA #IMPLIED
@@ -614,6 +616,7 @@
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
+  enclose CDATA #IMPLIED
   argopen CDATA #IMPLIED
   argclose CDATA #IMPLIED
   separators CDATA #IMPLIED
@@ -628,6 +631,7 @@
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
+  enclose CDATA #IMPLIED
   argopen CDATA #IMPLIED
   argclose CDATA #IMPLIED
   separators CDATA #IMPLIED
@@ -649,6 +653,7 @@
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
+  enclose CDATA #IMPLIED
   argopen CDATA #IMPLIED
   argclose CDATA #IMPLIED
   separators CDATA #IMPLIED
@@ -665,6 +670,7 @@
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
+  enclose CDATA #IMPLIED
   argopen CDATA #IMPLIED
   argclose CDATA #IMPLIED
   separators CDATA #IMPLIED
@@ -684,6 +690,7 @@
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
+  enclose CDATA #IMPLIED
   argopen CDATA #IMPLIED
   argclose CDATA #IMPLIED
   separators CDATA #IMPLIED
@@ -700,6 +707,7 @@
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
+  enclose CDATA #IMPLIED
   argopen CDATA #IMPLIED
   argclose CDATA #IMPLIED
   separators CDATA #IMPLIED
@@ -715,6 +723,7 @@
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
+  enclose CDATA #IMPLIED
   argopen CDATA #IMPLIED
   argclose CDATA #IMPLIED
   separators CDATA #IMPLIED

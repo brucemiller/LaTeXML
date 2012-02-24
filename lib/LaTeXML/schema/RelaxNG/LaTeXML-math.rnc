@@ -68,6 +68,10 @@ XMath.attributes =
   ## an close delimiter to enclose the object;
   attribute close { text }?,
 
+  ## an enclose style to enclose the object
+  ## with legitimate values being those of MathML's menclose notations;
+  attribute enclose { text }?,
+
   ## an open delimiter to enclose the argument list,
   ## when this token is applied to arguments with \elementref{XMApp}.
   attribute argopen { text }?,
@@ -122,13 +126,10 @@ XMTok_attributes =
   ## The OpenMath CD for which \attr{meaning} is a symbol.
   attribute omcd { text }?,
 
-  ## Various random styling information. NOTE This needs to be made consistent.
-  attribute style { text }?,
-
-  ## The font, size a used for the symbol.
+  ## The font used for the symbol.
   attribute font { text }?,
 
-  ## The size for the symbol, not presumed to be meaningful(?)
+  ## The size for the symbol, not presumed to be semantic.
   attribute size { text }?,
 
   ## The color (CSS format) for the symbol, not presumed to be meaningful(?)
@@ -143,8 +144,17 @@ XMTok_attributes =
   ## NOTE: Clarify where this appears: token, base, script operator, apply?
   attribute scriptpos { text }?,
 
-  ## NOTE: How is this used?
-  attribute thickness { text }?
+  ## A thickness used for drawing any lines which are part of presenting the token,
+  ## such as the fraction line for the fraction operator.
+  attribute thickness { text }?,
+
+  ## The fraction style used for displaying the application of this token
+  ## when it represents some sort of fraction or stack of expressions
+  ## (note that this applies to binomials or other stacks of expressions as well as fractions).
+  ## Values of \texttt{display} or \texttt{text} correspond to \TeX's
+  ## displaystyle or textstyle, while \texttt{inline} indicates the
+  ## stack should be arranged horizontally (the layout may depend on the operator).
+  attribute fracstyle { ( "display" | "text" | "inline" ) }?
 
 ## Content model for \elementref{XMTok}.
 XMTok_model = text*

@@ -103,6 +103,12 @@ the content of the \elementref{XMath} element.</a:documentation>
       </attribute>
     </optional>
     <optional>
+      <attribute name="enclose">
+        <a:documentation>an enclose style to enclose the object
+with legitimate values being those of MathML's menclose notations;</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
       <attribute name="argopen">
         <a:documentation>an open delimiter to enclose the argument list,
 when this token is applied to arguments with \elementref{XMApp}.</a:documentation>
@@ -181,18 +187,13 @@ such as the OpenMath name.</a:documentation>
       </attribute>
     </optional>
     <optional>
-      <attribute name="style">
-        <a:documentation>Various random styling information. NOTE This needs to be made consistent.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
       <attribute name="font">
-        <a:documentation>The font, size a used for the symbol.</a:documentation>
+        <a:documentation>The font used for the symbol.</a:documentation>
       </attribute>
     </optional>
     <optional>
       <attribute name="size">
-        <a:documentation>The size for the symbol, not presumed to be meaningful(?)</a:documentation>
+        <a:documentation>The size for the symbol, not presumed to be semantic.</a:documentation>
       </attribute>
     </optional>
     <optional>
@@ -213,7 +214,23 @@ NOTE: Clarify where this appears: token, base, script operator, apply?</a:docume
     </optional>
     <optional>
       <attribute name="thickness">
-        <a:documentation>NOTE: How is this used?</a:documentation>
+        <a:documentation>A thickness used for drawing any lines which are part of presenting the token,
+such as the fraction line for the fraction operator.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="fracstyle">
+        <a:documentation>The fraction style used for displaying the application of this token
+when it represents some sort of fraction or stack of expressions
+(note that this applies to binomials or other stacks of expressions as well as fractions).
+Values of \texttt{display} or \texttt{text} correspond to \TeX's
+displaystyle or textstyle, while \texttt{inline} indicates the
+stack should be arranged horizontally (the layout may depend on the operator).</a:documentation>
+        <choice>
+          <value>display</value>
+          <value>text</value>
+          <value>inline</value>
+        </choice>
       </attribute>
     </optional>
   </define>
