@@ -174,6 +174,9 @@ sub parse {
 }
 
 our %TAG_FEEDBACK=('ltx:XMArg'=>'a','ltx:XMWrap'=>'w');
+# These attributes on an XMArg or XMWrap will be copied to parsed content
+our @preserve_xmwrap_attributes = (qw(role xml:id open close enclose punctuation));
+
 # Recursively parse a node with some internal structure
 # by first parsing any structured children, then it's content.
 sub parse_rec {
@@ -196,9 +199,7 @@ sub parse_rec {
      $result = [element_nodes($node)]->[0]; }
     else {			# Replace the whole node for XMArg, XMWrap; preserve some attributes
       NoteProgress($TAG_FEEDBACK{$tag}||'.') if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1;
-      $result = Annotate($result,
-			 role=>$node->getAttribute('role'),
-			 'xml:id'=>$node->getAttribute('xml:id'));
+      $result = Annotate($result,map( ($_=>$node->getAttribute($_)), @preserve_xmwrap_attributes));
       $result = XML_replaceNode($result,$node); }
     $result; }
   else {
@@ -849,7 +850,7 @@ sub ApplyNary {
     if(((p_getTokenMeaning($op1)||'__undef_meaning__') eq $opname)
        && ((p_getValue($op1) || '__undef_content__') eq $opcontent)
        && !grep($_ ,map((p_getAttribute($op,$_)||'<none>') ne (p_getAttribute($op1,$_)||'<none>'),
-			qw(style)))) { # Check ops are used in similar way
+			qw(fracstyle)))) { # Check ops are used in similar way
       push(@args,@args1); }
     else {
       push(@args,$arg1); }}
