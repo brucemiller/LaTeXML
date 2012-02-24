@@ -206,7 +206,7 @@ DefEnvironment('{document}', sub {
   my $id = ToString($props{id});
   my $body = $props{body};
   if(my $docel = $document->findnode('/ltx:document')){ # Already (auto) created?
-    $docel->setAttribute('xml:id'=>$id) if $id;
+    $document->setAttribute($docel,'xml:id'=>$id) if $id;
     $document->absorb($body); }
   else {
     $document->insertElement('ltx:document',$body,'xml:id'=>$id); }},
@@ -1459,7 +1459,10 @@ sub eqnarrayRegroupEquations {
 # ========================================
 # Tools for rearranging equations in equationgroups
 
-# Given a set of rows to be collected into a single equation,
+# For an eqnarray, given an ltx:equationgroup containing several ltx:equations (rows),
+# @equations is a subsequence of those equations which we think represents a logical equation.
+# We will rearrange those equations into 
+# to be collected into a single equation,
 # create the equation w/appropriate attributes, and
 # collect the math fragments into a MathFork structure.
 sub eqnarrayJoinRows {
