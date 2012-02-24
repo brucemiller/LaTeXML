@@ -426,7 +426,7 @@ sub ResetCounter {
 # It generates an id of the form <parentid>.<prefix><number>
 sub GenerateID {
   my($document,$node,$whatsit,$prefix)=@_;
-  if(!$node->hasAttribute('xml:id')){
+  if(!$node->hasAttribute('xml:id') && $document->getModel->canHaveAttribute($node,'xml:id')){
     my $ancestor =  $document->findnode('ancestor::*[@xml:id][1]',$node)
       || $document->getDocument->documentElement;
     ## Old versions don't like $ancestor->getAttribute('xml:id');
