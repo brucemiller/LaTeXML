@@ -56,6 +56,8 @@ sub getProperty {
     undef; }}
 
 sub getProperties { (); }
+sub setProperty   { }
+sub setProperties { }
 
 #**********************************************************************
 # LaTeXML::MathBox
