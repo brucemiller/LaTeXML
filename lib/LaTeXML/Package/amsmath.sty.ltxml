@@ -716,8 +716,12 @@ DefConstructor('\cfrac{}{}',
 	       . "<ltx:XMArg>#1</ltx:XMArg>"
 	       . "<ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	       properties=>sub{ (cfracstyle=>LookupValue('CFRACSTYLE')); },
-	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
+	       beforeDigest=>sub {
+		 $_[0]->bgroup;
+		 AssignValue(mathstyle=>'text'); },
+	       afterDigest=>sub {
+		 $_[0]->egroup;
+		 $_[1]->setProperties(cfracstyle=>LookupValue('CFRACSTYLE')); });
 
 AssignValue(CFRACSTYLE=>'display');
 # This should get incorporated into any \cfrac's that are constructed in scope.
