@@ -48,8 +48,11 @@ use strict;
 #######################################################################
 our $DEBUG = 0;
 our $NOBREAK = 99999999;  # penalty=$NOBREAK means don't break at all.
-our $POORBREAK_FACTOR= 10;	  # to make breaks less desirable.
+our $POORBREAK_FACTOR= 20;	  # to make breaks less desirable.
 our $BADBREAK_FACTOR = 100;	  # to make breaks much less desirable.
+#our $PENALTY_OK    = 10;
+our $PENALTY_OK    = 5;
+our $PENALTY_LIMIT = 1000;	  # worst penalty we'll tolerate; prune anything above.
 our $CONVERSION_FACTOR = 2;	  # to make breaks at converted ops less desirable
 
 # TODO: Integrate default operator dictionary, and recognize attributes
@@ -57,10 +60,13 @@ our $CONVERSION_FACTOR = 2;	  # to make breaks at converted ops less desirable
 # TODO: mult ops, but less desirable
 sub UTF { pack('U',$_[0]); }
 
-our  %BREAKOPS = map(($_=>1),
-		     # Various addops
-		     "+","-",UTF(0xB1),"\x{2213}", # pm, mp
-		     );
+our  %BREAKBEFOREOPS = map(($_=>1),
+			   # Various addops
+			   "+","-",UTF(0xB1),"\x{2213}", # pm, mp
+			  );
+our  %BREAKAFTEROPS = map(($_=>1),
+			  ",",
+			 );
 our  %RELATIONOPS = map(($_=>1),
 		     # Various relops
 		     "=", "<",">", "\x{2264}","\x{2265}","\x{2260}","\x{226A}",
@@ -120,13 +126,43 @@ sub bestFitToWidth {
 
   # Compute the possible layouts
   print STDERR "Starting layout of $mml\n" if $DEBUG;
-  my $layouts = layout($mml,$width,0,$displaystyle,0,1);
-  if($DEBUG){
-    print STDERR "Got ".scalar(@$layouts)." layouts:\n";
-    map(showLayout($_),@$layouts); }
-  my $best = $$layouts[-1];
-  Warn("Got width $$best{width} > $width") if $$best{width} > $width+1;
+  my @layouts = @{ layout($mml,$width,0,$displaystyle,0,1) };
 
+  # Add a penalty for larger overall area.
+  my($maxarea,$minarea) = (0,999999999);
+  map( $$_{area}=$$_{width}*($$_{depth}+$$_{height}), @layouts);
+  map($maxarea = max($maxarea,$$_{area}),@layouts);
+  map($minarea = min($minarea,$$_{area}),@layouts);
+  map( $$_{penalty} *= (1+($$_{area} -$minarea)/($maxarea-$minarea)), @layouts) if $maxarea > $minarea;
+
+  if($DEBUG){
+    print STDERR "Got ".scalar(@layouts)." layouts:\n";
+    map(showLayout($_),@layouts); }
+
+  # Depending on the pruning algorithm & parameters used,
+  # we may have layouts above $width, and some below $width may have really bad breaks.
+
+  # If the widest layout is less than target width,
+  # it should have lowest penalty --maybe even unbroken-- so use it.
+  my $best = $layouts[-1];
+  return $best if $$best{width} < $width; 
+
+  # If the lowest penalty layout that fits has a not-very-bad penalty, let's go with it.
+  my @fit = sort { $$a{penalty} <=> $$b{penalty} } grep($$_{width}<$width, @layouts);
+  if(@fit && ($fit[0]->{penalty} < $PENALTY_OK)){
+    return $fit[0]; }
+
+  # Otherwise, let's try to weight the over-width against the penalty.
+  # How to weight over-width against penalty?
+  # Since "Nice breaks" end up with a penalty of just "a few"
+  # and a handfull of ems is not too bad either.
+  # let's just try weighting them nominally equally.... let's try
+  my $weight=2;
+  my @sorted = sort { ($weight*$$a{penalty} + $$a{width}) <=> ($weight*$$b{penalty}+$$b{width}) }
+    @layouts;
+  $best = $sorted[0];
+
+  Warn("Got width $$best{width} > $width") if $$best{width} > $width+1;
   # Return the best layout
   $best; }
 
@@ -184,10 +220,10 @@ sub applyLayout_rec {
     # Now, do last child; Maybe it will absorb the punctuation!
     applyLayout_rec($lastchild); }
   # Now break up the current level.
+  my $node = $$layout{node};
+  my @children = nodeChildren($node);
   if(my $breakset = $$layout{breakset}){
 #    print "Applying ".layoutDescriptor($layout)."\n";
-    my $node = $$layout{node};
-    my @children = nodeChildren($node);
     # If this is a fenced row, we've got to manually fixup the fence size!
     if(nodeName($node) eq 'm:mrow'){
       if((nodeName($children[0]) eq 'm:mo')
@@ -201,7 +237,6 @@ sub applyLayout_rec {
     # Replace any "converted" leading operators (ie. invisible times => \times)
     foreach my $row (@rows[1..$#rows]){
       my $op = $$row[0];
-# print STDERR "  Split at ".textContent($op)."\n";
       my $newop;
       if((nodeName($op) eq 'm:mo') && ($newop=$CONVERTOPS{textContent($op)})){
 	splice(@$op,2,scalar(@$op)-2, $newop); }}
@@ -223,7 +258,19 @@ sub applyLayout_rec {
 	       ["m:mtr",{},["m:mtd",{}, @firstrow]],
 	       map( ["m:mtr",{},
 		     ["m:mtd",{}, ["m:mspace",{width=>$$layout{indentation}."em"}],@$_]],@rows)]));
-  }}
+  }
+  # HACK: If this is an mfenced whose single mrow child was linebroken,
+  # we'll want to replace the fences with explicit mo with symmetric=false.
+  # Otherwise, the alignment to "baseline 1" creates a HUGE empty space on top!
+  elsif((nodeName($node) eq 'm:mfenced')
+	&& (nodeName($children[0]) eq 'm:mrow')
+	&& $$layout{children} && (@{$$layout{children}} == 1) && $$layout{children}[0]{breakset}){
+    # (or could remove the mfenced & reuse the redundant m:row???)
+    my $open = getAttribute($node,'open');
+    my $close = getAttribute($node,'close');
+    splice(@$node,0,2,'m:mrow',{},['m:mo',{symmetric=>'false'},$open]);
+    push(@$node,['m:mo',{symmetric=>'false'},$close]); }
+}
 
 # This would use <mspace> with linebreak attribute to break a row.
 # Unfortunately, Mozillae ignore this attribute...
@@ -379,7 +426,6 @@ sub layout {
   # Sort & prune the layouts
   my @layouts = prunesort($target,@$layouts);
   my $pruned = scalar(@layouts);
-
   print STDERR "",('  ' x $level),"$name: $nlayouts layouts"
     .($pruned < $nlayouts ? " pruned to $pruned":"")
       ." ".layoutDescriptor($$layouts[0])
@@ -387,14 +433,26 @@ sub layout {
       ."\n" if $DEBUG > 1;
   [@layouts]; }
 
+# Note that this sorts first by width, then penalty.
+# It prunes layouts wider than the target width (or now, twice it?)
+# and those with higher penalty than preceding layout (w/narrower or equal width)
+# BUT, it AT LEAST returns the shortest layout, no matter how bad the penalty!
+# meaning that a much better layout, particularly if it exceeds the target, will be pruned!
 sub prunesort {
   my($target,@layouts)=@_;
   @layouts = sort { ($$a{width} <=> $$b{width}) || ($$a{penalty} <=> $$b{penalty}) } @layouts; 
   my @goodlayouts= ( shift(@layouts) ); # always include at least the shortest/best
+  my $pp =$goodlayouts[0]->{penalty};
+  my $p;
+
+  # Cut out any layouts whose penalty is too bad.
+  # (Hopefully the one we've already pulled off isn't that bad!?!?!)
+  @layouts = grep($$_{penalty} < $PENALTY_LIMIT, @layouts);
+  my $cutoff = 2*$target+5;	# ?
   foreach my $layout (@layouts){
-    if(($$layout{width} < $target) # If not too wide
-       && ($goodlayouts[$#goodlayouts]->{penalty} > $$layout{penalty})){ # not worse than prev
-      push(@goodlayouts,$layout); }}
+    if(($$layout{width} < $cutoff) # If not too wide
+       && ($pp > ($p=$$layout{penalty}))){ # not worse than prev
+      push(@goodlayouts,$layout); $pp=$p; }}
   @goodlayouts; }
 
 #######################################################################
@@ -416,34 +474,43 @@ sub asRow {
 
   # Multiple children, possibly with breaks
   # Get the set of layouts for each child
-##  my @child_layouts = map(layout($_,$target,$level+1,$displaystyle,$scriptlevel,$demerits),
   my @child_layouts = map(layout($_,$target,$level+1,$displaystyle,$scriptlevel,$demerits+1),
 			  @children);
 
   # Now, we need all possible break points within the row itself.
   my @breaks = ();
-  my ($lhs_pos,$lhs_width);
+  my $lhs_pos;
+  my $normal_indentation = 2;
+  my $next_indentation = 0;
   if($demerits < $NOBREAK){
+    my $pass_indent=2*$normal_indentation;		# minimum width to pass next indentation
+    my $running=$child_layouts[0]->[-1]{width};
     for(my $i=1; $i<$n-1; $i++){
       my $child = $children[$i];
       my $content = (nodeName($child) eq 'm:mo') && textContent($child);
       if(!$content){}
       elsif($RELATIONOPS{$content}){
-	push(@breaks, [$i,$content,$demerits]); 
+	push(@breaks, [$i,$content,$demerits]) if $running > $pass_indent;
 	if(! defined $lhs_pos){
-	  $lhs_pos = $i;
-	  $lhs_width = sum(map($$_[-1]{width}, @child_layouts[0..$i-1]));
-	  $lhs_pos = 0 if $lhs_width > $target/4; }}
-      elsif($BREAKOPS{$content}){
+	  if($running < $target/4){
+	    $lhs_pos = $i; $next_indentation = $running; }
+	  else {
+	    $lhs_pos = 0; $next_indentation = $normal_indentation; }}}
+      elsif($BREAKBEFOREOPS{$content}){
 	$lhs_pos = 0;
-	push(@breaks, [$i,$content,$demerits]); }
+	$next_indentation = $normal_indentation;
+	push(@breaks, [$i,$content,$demerits]) if $running > $pass_indent; }
+      elsif($BREAKAFTEROPS{$content}){
+	$lhs_pos = 0;
+	$next_indentation = 0;
+	push(@breaks, [$i+1,$content,$demerits]); }
       elsif($CONVERTOPS{$content}){
 	$lhs_pos = 0;
-##	push(@breaks, [$i,$content,$demerits*$CONVERSION_FACTOR]); }
-	push(@breaks, [$i,$content,$demerits+$CONVERSION_FACTOR]); }
+	$next_indentation = $normal_indentation;
+	push(@breaks, [$i,$content,$demerits+$CONVERSION_FACTOR]) if $running > $pass_indent; }
+      $running +=  $child_layouts[$i]->[-1]{width};
     }}
-  my $indentation = ($lhs_pos ? $lhs_width : 2);
-
+  my $indentation = $next_indentation;
   # Form the set of all choices from the breaks.
   my @breaksets = choices(@breaks);
 
@@ -516,7 +583,7 @@ BREAKSET:  foreach my $breakset (reverse @breaksets){ # prunes better reversed?
 	push(@layouts, { node=>$node,type=>$type,
 			 penalty=>$penalty,
 			 width=>$width, height=>$height, depth=>$depth,
-			 area=>$width*($depth+$height),
+##			 area=>$width*($depth+$height),
 			 indentation=>$indentation, rowheight=>$rowheight, lhs_pos=>$lhs_pos,
 			 (scalar(@$breakset) ? (breakset=>$breakset):()),
 			 hasbreak=>scalar(@$breakset)||scalar(grep($$_{hasbreak},@$children_layout)),
@@ -526,10 +593,11 @@ BREAKSET:  foreach my $breakset (reverse @breaksets){ # prunes better reversed?
 ##  @layouts = prunesort($target,@layouts);
 
   ## Add a penalty for smallest area (?)
-  my($maxarea,$minarea) = (0,999999999);
-  map($maxarea = max($maxarea,$$_{area}),@layouts);
-  map($minarea = min($minarea,$$_{area}),@layouts);
-  map( $$_{penalty} *= (1+($$_{area} -$minarea)/$maxarea), @layouts) if $maxarea > $minarea;
+## TRY PUTTING THIS AT TOP LEVEL
+##  my($maxarea,$minarea) = (0,999999999);
+##  map($maxarea = max($maxarea,$$_{area}),@layouts);
+##  map($minarea = min($minarea,$$_{area}),@layouts);
+##  map( $$_{penalty} *= (1+($$_{area} -$minarea)/$maxarea), @layouts) if $maxarea > $minarea;
   @layouts = prunesort($target,@layouts);
 
 ##  print STDERR "",("  " x $level), $type," pruned $pruned\n" if $pruned && ($DEBUG>1);
@@ -582,10 +650,11 @@ our @SIZE=(1.0, 0.71, 0.71*0.71,0.71*0.71*0.71);
 sub simpleSize {
   my($node,$target,$level,$displaystyle,$scriptlevel,$demerits)=@_;
   my $content = textContent($node);
-  $scriptlevel = min(0,max($scriptlevel,3));
+  $scriptlevel = min(0,max($scriptlevel + ($displaystyle?1:0),3));
+  my $len = length($content);
+  my $size = $SIZE[$scriptlevel];
   [ { node=>$node, type=>nodeName($node), penalty=>0,
-      width   => length($content)*$SIZE[$scriptlevel],
-      height  => $SIZE[$scriptlevel],
+      width=> $len*$size, height=> $size,
       depth=> 0} ]; }
 
 sub layout_mi     { simpleSize(@_); }
