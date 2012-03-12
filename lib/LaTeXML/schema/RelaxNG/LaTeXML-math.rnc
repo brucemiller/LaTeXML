@@ -154,7 +154,7 @@ XMTok_attributes =
   ## Values of \texttt{display} or \texttt{text} correspond to \TeX's
   ## displaystyle or textstyle, while \texttt{inline} indicates the
   ## stack should be arranged horizontally (the layout may depend on the operator).
-  attribute fracstyle { ( "display" | "text" | "inline" ) }?
+  attribute fracstyle { ( "display" | "text" | "script" | "scriptscript" | "inline" ) }?
 
 ## Content model for \elementref{XMTok}.
 XMTok_model = text*
