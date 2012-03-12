@@ -127,20 +127,38 @@ sub process {
   my($self,$doc)=@_;
   if(my @maths = $self->find_math_nodes($doc)){
     $self->Progress($doc,"Converting ".scalar(@maths)." formulae");
-
-###    # Testing: Force IDs on all xmath nodes!
-###    map($self->forceID($doc,$_),@maths);
-
+    local $LaTeXML::Post::MATHPROCESSOR = $self;
     $self->preprocess($doc,@maths);
     if($$self{parallel}){
       foreach my $proc (@{$$self{secondary_processors}}){
+	local $LaTeXML::Post::MATHPROCESSOR = $proc;
 	$proc->preprocess($doc,@maths); }}
-    foreach my $math (@maths){
+    # Re-Fetch the math nodes, in case preprocessing has messed them up.
+    @maths = $self->find_math_nodes($doc);
+
+##    foreach my $math (@maths){
+    ## Do in reverse, since (in LaTeXML) we allow math nested within text within math.
+    ## So, we want to converted any nested expressions first, so they get carried along
+    ## with the outer ones.
+    foreach my $math (reverse(@maths)){
       # If parent is MathBranch, which branch number is it?
       # (note: the MathBranch will be in a ltx:MathFork, with a ltx:Math being 1st child)
       my @preceding = $doc->findnodes("parent::ltx:MathBranch/preceding-sibling::*",$math);
       local $LaTeXML::Post::MathProcessor::FORK = scalar(@preceding);
       $self->processNode($doc,$math); }}
+
+  # Experimentally, cross reference ??? (or clearer name?)
+  if($$self{parallel}){
+    # There could be various strategies when there are more than 2 parallel conversions,
+    # eg a cycle or something....
+    # Here, we simply take the first two processors that know how to addCrossref
+    # and connect their nodes to each other.
+    my ($proc1,$proc2,@ignore)
+      = grep($_->can('addCrossref'),  $self,@{$$self{secondary_processors}});
+    if($proc1 && $proc2){
+      $proc1->addCrossrefs($doc,$proc2);
+      $proc2->addCrossrefs($doc,$proc1); }}
+
   $doc; }
 
 # Make THIS MathProcessor the primary branch (of whatever parallel markup it supports),
@@ -150,30 +168,6 @@ sub setParallel {
   $$self{parallel}=1;
   map($$_{is_secondary}=1, @moreprocessors); # Mark the others as secondary
   $$self{secondary_processors} = [@moreprocessors]; }
-
-# sub forceID {
-#   my($self,$doc,$math)=@_;
-#   # Find the closest parent with an ID
-#   my ($node,$id) = ($math,undef);
-#   while($node && !( $id = $node->getAttribute('xml:id'))){
-#     $node = $node->parentNode; }
-#   # In case we've already been scanned, we should use the fragid as base, rather than id
-#   local $LaTeXML::Post::IDBASE = $id;
-#   local $LaTeXML::Post::FRAGIDBASE=$node->getAttribute('fragid');
-#   local $LaTeXML::Post::IDCTR=0;
-#   # Skip the XMath node!!!
-#   map(forceID_aux($doc,$_), element_nodes($math->firstChild)); }
-
-# sub forceID_aux {
-#   my($doc,$node)=@_;
-#   if(! $node->getAttribute('xml:id')){
-#     my $id;
-#     while($$doc{idcache}{$id = $LaTeXML::Post::IDBASE . '.xm'. (++$LaTeXML::Post::IDCTR)}){}
-#     $node->setAttribute('xml:id'=>$id);
-#     $node->setAttribute('fragid'=>$LaTeXML::Post::FRAGIDBASE . '.xm'.$LaTeXML::Post::IDCTR)
-#       if $LaTeXML::Post::FRAGIDBASE;
-#     $$doc{idcache}{$id}=$node; }
-#   map(forceID_aux($doc,$_), element_nodes($node)); }
 
 sub find_math_nodes {  $_[1]->findnodes('//ltx:Math'); }
 
@@ -189,6 +183,7 @@ sub processNode {
   my($self,$doc,$math)=@_;
   my $mode = $math->getAttribute('mode')||'inline';
   my $xmath = $doc->findnode('ltx:XMath',$math);
+  return unless $xmath;		# Nothing to convert if there's no XMath ... !
   my $style = ($mode eq 'display' ? 'display' : 'text');
   local $LaTeXML::Post::MATHPROCESSOR = $self;
   my @markup=();
@@ -203,7 +198,7 @@ sub processNode {
     foreach my $proc (@{$$self{secondary_processors}}){
       local $LaTeXML::Post::MATHPROCESSOR = $proc;
       my $secondary = $proc->convertNode($doc,$xmath,$style);
-      if(! ( (ref $secondary eq 'ARRAY') && ($$secondary[0]=~/^(\w*):/) && ($1 eq $nsprefix) )){
+      if((ref $secondary eq 'ARRAY') && ($$secondary[0]=~/^(\w*):/) && ($1 ne $nsprefix)){
 	$secondary = $proc->outerWrapper($doc,$math,$secondary); }
       push(@secondaries, [$proc,$secondary]); }
     @markup = $self->combineParallel($doc,$math, $primary,@secondaries); }
@@ -250,27 +245,33 @@ sub IDSuffix {
   
 sub rawIDSuffix { ''; }
 
-# Something like this needs to be general purpose....
-#
-# Clone a node, BUT if $idmapper is supplied,
-# it is a function($node,$id) to generate an replacement id.
-# Special purpose cloning; to append $suffix to id and fragid
-sub clone_with_suffix {
-  my($self,$node,$idsuffix)=@_;
-  my $copy = $node->cloneNode(1);
-  my $context = XML::LibXML::XPathContext->new();
-  # Find all id's defined in the copy and change the id.
-  my %idmap=();
-  foreach my $n ($context->findnodes('.//*[@xml:id]',$copy)){
-    my $id = $n->getAttribute('xml:id');
-    $n->setAttribute('xml:id'=> ( $idmap{$id}=$id.$idsuffix ));
-    if(my $fragid = $n->getAttribute('fragid')){
-      $n->setAttribute(fragid=>$fragid.$idsuffix); }}
-  # Now, replace all REFERENCES to those modified ids.
-  foreach my $n ($context->findnodes('.//*[@idref]',$copy)){
-    if(my $id = $idmap{$n->getAttribute('idref')}){
-      $n->setAttribute(idref=>$id); }} # use id or fragid?
-  $copy; }
+# This should note the use of the given id (if any),
+# and return an id for the new converted node
+sub convertID {
+  my($self, $id)=@_;
+  if(defined $id){
+    my $previous_ids = $$self{convertedIDs}{$id};
+    my $suffix='';
+    if($previous_ids){
+      $suffix = chr(ord('a')-1+scalar(@$previous_ids)); }
+    else {
+      $previous_ids = []; }
+    my $converted_id = $id . $LaTeXML::Post::MATHPROCESSOR->IDSuffix . $suffix;
+    $$self{convertedIDs}{$id} = [@$previous_ids,$converted_id];
+    $converted_id; }}
+
+# Add backref linkages (eg. xref) onto the nodes that $self created (converted from XMath)
+# to reference those that $otherprocessor created.
+sub addCrossrefs {
+  my($self,$doc,$otherprocessor)=@_;
+  my $selfs_map = $$self{convertedIDs};
+  my $others_map = $$otherprocessor{convertedIDs};
+  foreach my $xid (keys %$selfs_map){ # For each XMath id that $self converted
+    if(my $other_ids = $$others_map{$xid}){ # Did $other also convert those ids?
+      if(my $xref_id = $other_ids && $$other_ids[0]){ # get (first) id $other created from $xid.
+	foreach my $id (@{$$selfs_map{$xid}}){ # look at each node $self created from $xid
+	  if(my $node=$doc->findNodeByID($id)){ # If we find a node,
+	    $self->addCrossref($node,$xref_id); }}}}}} # add a crossref from it to $others's node
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -331,6 +332,7 @@ sub new {
   my $self = bless {%data}, $class; 
   $$self{idcache} = {};
   foreach my $node ($self->findnodes("//*[\@xml:id]")){
+###print STDERR "INIT $$self{destination} ID=".$node->getAttribute('xml:id')."\n";
     $$self{idcache}{$node->getAttribute('xml:id')} = $node; }
   # Possibly disable permanent cache?
   $$self{cache} = {} if $data{nocache};
@@ -503,13 +505,14 @@ sub addNodes {
 	  if($key eq 'xml:id'){	# Ignore duplicated IDs!!!
 	    if(!defined $$self{idcache}{$value}){
 	      $$self{idcache}{$value} = $new;
-	      $new->setAttribute($key, $value); }}
+###print STDERR "REGISTER[a] $$self{destination} ID=".$value."\n";
+	      $new->setAttribute($key, $value); }
+	    else { print STDERR "Duplicated[a]  $$self{destination} id $value\n"; }}
 	  elsif($attrprefix && ($attrprefix ne 'xml')){
 	    my $attrnsuri = $attrprefix && $$self{namespaces}{$attrprefix};
-	    $new->setAttributeNS($attrnsuri,$attrname, $$attributes{$key}); }
+	    $new->setAttributeNS($attrnsuri,$key, $$attributes{$key}); }
 	  else {
-	    $new->setAttribute($key, $$attributes{$key}); }
-	}}
+	    $new->setAttribute($key, $$attributes{$key}); }}}
       $self->addNodes($new,@children); }
     elsif((ref $child) =~ /^XML::LibXML::/){
       my $type = $child->nodeType;
@@ -521,11 +524,16 @@ sub addNodes {
 	    my $key = $attr->nodeName;
 	    if($key eq 'xml:id'){
 	      my $value = $attr->getValue;
-	      if(!defined $$self{idcache}{$value}){
+	      my $old;
+	      if((!defined ($old=$$self{idcache}{$value})) # if xml:id is new
+		 || $old->isSameNode($child)){		   # OR it's really this node...(replace)
+###print STDERR "REGISTER[b] $$self{destination} ID=".$value."\n";
 		$$self{idcache}{$value} = $new;
-		$new->setAttribute($key, $value); }}
+		$new->setAttribute($key, $value); }
+	      else {
+		print STDERR "Duplicated[b] $$self{destination} id $value\n"; }}
 	    elsif(my $ns = $attr->namespaceURI){
-	      $new->setAttributeNS($ns,$attr->localname,$attr->getValue); }
+	      $new->setAttributeNS($ns,$attr->name,$attr->getValue); }
 	    else {
 	      $new->setAttribute( $attr->localname,$attr->getValue); }}
 	}
@@ -544,9 +552,10 @@ sub addNodes {
 sub removeNodes {
   my($self,@nodes)=@_;
   foreach my $node (@nodes){
-    foreach my $idd ($self->findnodes("//*[\@xml:id]",$node)){
+    foreach my $idd ($self->findnodes("descendant-or-self::*[\@xml:id]",$node)){
       my $id = $idd->getAttribute('xml:id');
-      if(($$self{idcache}{$id}||'') eq $idd){
+      if($$self{idcache}{$id}){
+###print STDERR "DELETE $$self{destination} ID=".$id."\n";
 	delete $$self{idcache}{$id}; }}
     $node->unlinkNode; }}
 
@@ -572,8 +581,49 @@ sub prependNodes {
   $self->addNodes($node,@nodes);	 # Now, add the new nodes.
   map($node->appendChild($_),@save); } # Put these back.
 
-our @MonthNames=(qw( January February March April May June
-		     July August September October November December));
+# Clone a node, but adjusting it so that it has unique id's.
+# $document->cloneNode($node) or ->cloneNode($node,$idsuffix)
+# This clones the node and adjusts any xml:id's within it to be unique.
+# Any idref's to those ids will be changed to the new id values.
+# If $idsuffix is supplied, the ids will have that suffix appended to the ids.
+# Then each $id is checked to see whether it is unique; If needed,
+# one or more letters are appended, until a new id is found.
+my @letters = (qw(a b c d e f g h i j k l m n o p q r s t u v w x y z));
+sub cloneNode {
+  my($self,$node,$idsuffix)=@_;
+  return $node unless ref $node;
+  my $copy = $node->cloneNode(1);
+  # Find all id's defined in the copy and change the id.
+  my %idmap=();
+  foreach my $n ($self->findnodes('descendant-or-self::*[@xml:id]',$copy)){
+    my $id = $n->getAttribute('xml:id');
+    my $suffix = (defined $idsuffix ? $idsuffix : '');
+    if($$self{idcache}{$id.$suffix}){ # new id already in use?
+      FOUND:{
+	  foreach my $l (@letters){
+	    if(! $$self{idcache}{$id.$suffix.$l}){
+	      $suffix .= $l; last FOUND; }}
+	  foreach my $l1 (@letters){
+	    foreach my $l2 (@letters){
+	      if(! $$self{idcache}{$id.$suffix.$l1.$l2}){
+		$suffix .= $l1.$l2; last FOUND; }}}}}
+    my $newid = $id.$suffix;
+    if($$self{idcache}{$newid}){ # id already in use.
+      print STDERR "Exhausted id suffixes in cloneNode at id=$id\n"; }
+    else {
+      $idmap{$id}=$newid;
+      $$self{idcache}{$newid}=$n;
+      $n->setAttribute('xml:id'=>$newid);
+      if(my $fragid = $n->getAttribute('fragid')){ # GACK!!
+	$n->setAttribute(fragid=>$fragid.$suffix); }}}
+  # Now, replace all REFERENCES to those modified ids.
+  foreach my $n ($self->findnodes('descendant-or-self::*[@idref]',$copy)){
+    if(my $id = $idmap{$n->getAttribute('idref')}){
+      $n->setAttribute(idref=>$id); }} # use id or fragid?
+  $copy; }
+
+#======================================================================
+
 sub newDocument {
   my($self,$root,%options)=@_;
   my $xmldoc = XML::LibXML::Document->new("1.0","UTF-8");
@@ -621,6 +671,8 @@ sub newDocument {
   # Finally, return the new document.
   $doc; }
 
+our @MonthNames=(qw( January February March April May June
+		     July August September October November December));
 sub addDate {
   my($self,$fromdoc)=@_;
   if(!$self->findnodes('ltx:date',$self->getDocumentElement)){
@@ -692,6 +744,7 @@ sub addNavigation {
 sub recordID {
   my($self,$id,$node)=@_;
   # make an issue if already there?
+###print STDERR "REGISTER $$self{destination} ID=".$id."\n";
   $$self{idcache}{$id}=$node; }
 
 sub findNodeByID {
@@ -701,10 +754,10 @@ sub findNodeByID {
 sub realizeXMNode {
   my($self,$node)=@_;
   if($self->getQName($node) eq 'ltx:XMRef'){
-    my $realnode = $self->findNodeByID($node->getAttribute('idref'));
-    return $self->Error("Cannot find a node with xml:id=".$node->getAttribute('idref'))
-      unless $realnode;
-    $realnode; }
+    if(my $realnode = $self->findNodeByID($node->getAttribute('idref'))){
+      $realnode; }
+    else {
+      $self->Error("Cannot find a node with xml:id=".$node->getAttribute('idref')); }}
   else {
     $node; }}
 
