@@ -9,7 +9,7 @@
         <Math mode="display" tex="abc\over def" xml:id="S1.Ex1.m1" text="(a * b * c) / (d * e * f)">
           <XMath>
             <XMApp>
-              <XMTok meaning="divide" role="MULOP"/>
+              <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
               <XMApp>
                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -35,7 +35,7 @@
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMApp>
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -61,7 +61,7 @@
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMApp>
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -87,7 +87,7 @@
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMApp>
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -113,7 +113,7 @@
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMApp>
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>

@@ -178,7 +178,7 @@
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMApp>
-                <XMTok role="STACKED" style="display"/>
+                <XMTok fracstyle="display" role="STACKED"/>
                 <XMTok role="ID" font="italic">b</XMTok>
                 <XMTok role="ID" font="italic">c</XMTok>
               </XMApp>
@@ -194,7 +194,7 @@
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMApp open="[" close="]">
-                <XMTok role="STACKED" style="display"/>
+                <XMTok fracstyle="display" role="STACKED"/>
                 <XMTok role="ID" font="italic">b</XMTok>
                 <XMTok role="ID" font="italic">c</XMTok>
               </XMApp>
@@ -212,7 +212,7 @@
         <Math mode="display" tex="\left({a\over b}\right)" xml:id="S5.Ex12.m1" text="a / b">
           <XMath>
             <XMApp open="(" close=")">
-              <XMTok meaning="divide" role="MULOP" style="display"/>
+              <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -223,7 +223,7 @@
         <Math mode="display" tex="\left[{a\over b}\right]" xml:id="S5.Ex13.m1" text="a / b">
           <XMath>
             <XMApp open="[" close="]">
-              <XMTok meaning="divide" role="MULOP" style="display"/>
+              <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -234,7 +234,7 @@
         <Math mode="display" tex="\left[{a\over b}\right]" xml:id="S5.Ex14.m1" text="a / b">
           <XMath>
             <XMApp open="[" close="]">
-              <XMTok meaning="divide" role="MULOP" style="display"/>
+              <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -247,7 +247,7 @@
             <XMApp>
               <XMTok meaning="set" role="FENCED" argclose="}" argopen="{"/>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
@@ -261,7 +261,7 @@
             <XMApp>
               <XMTok meaning="set" role="FENCED" argclose="}" argopen="{"/>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
@@ -275,7 +275,7 @@
             <XMApp>
               <XMTok meaning="floor" role="FENCED" argclose="⌋" argopen="⌊"/>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
@@ -289,7 +289,7 @@
             <XMApp>
               <XMTok meaning="ceiling" role="FENCED" argclose="⌉" argopen="⌈"/>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
@@ -301,7 +301,7 @@
         <Math mode="display" tex="\left&lt;{a\over b}\right&gt;" xml:id="S5.Ex19.m1" text="a / b">
           <XMath>
             <XMApp open="⟨" close="⟩">
-              <XMTok meaning="divide" role="MULOP" style="display"/>
+              <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -312,7 +312,7 @@
         <Math mode="display" tex="\left\langle{a\over b}\right\rangle" xml:id="S5.Ex20.m1" text="a / b">
           <XMath>
             <XMApp open="⟨" close="⟩">
-              <XMTok meaning="divide" role="MULOP" style="display"/>
+              <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -325,7 +325,7 @@
             <XMApp>
               <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
@@ -339,7 +339,7 @@
             <XMApp>
               <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
@@ -353,7 +353,7 @@
             <XMApp>
               <XMTok meaning="norm" role="FENCED" argclose="∥" argopen="∥"/>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
@@ -367,7 +367,7 @@
             <XMApp>
               <XMTok meaning="norm" role="FENCED" argclose="∥" argopen="∥"/>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
@@ -379,7 +379,7 @@
         <Math mode="display" tex="\left\uparrow{a\over b}\right\downarrow" xml:id="S5.Ex25.m1" text="a / b">
           <XMath>
             <XMApp open="↑" close="↓">
-              <XMTok meaning="divide" role="MULOP" style="display"/>
+              <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -390,7 +390,7 @@
         <Math mode="display" tex="\left\Uparrow{a\over b}\right\Downarrow" xml:id="S5.Ex26.m1" text="a / b">
           <XMath>
             <XMApp open="⇑" close="⇓">
-              <XMTok meaning="divide" role="MULOP" style="display"/>
+              <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -401,7 +401,7 @@
         <Math mode="display" tex="\left\updownarrow{a\over b}\right\Updownarrow" xml:id="S5.Ex27.m1" text="a / b">
           <XMath>
             <XMApp open="↕" close="⇕">
-              <XMTok meaning="divide" role="MULOP" style="display"/>
+              <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
             </XMApp>
@@ -417,7 +417,7 @@
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMApp open="⟨" close="⟩">
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMTok role="ID" font="italic">b</XMTok>
                 <XMTok role="ID" font="italic">c</XMTok>
               </XMApp>
@@ -434,12 +434,12 @@
             <XMApp>
               <XMTok role="MULOP">/</XMTok>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">b</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok meaning="divide" role="MULOP" style="display"/>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
                 <XMTok role="ID" font="italic">c</XMTok>
                 <XMTok role="ID" font="italic">d</XMTok>
               </XMApp>

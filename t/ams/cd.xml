@@ -57,7 +57,7 @@
             <XMRow>
               <XMCell align="center">
                 <XMApp>
-                  <XMTok meaning="divide" role="MULOP" style="inline">/</XMTok>
+                  <XMTok fracstyle="inline" meaning="divide" role="MULOP">/</XMTok>
                   <XMApp open="(" close=")">
                     <XMTok meaning="tensor-product" name="otimes" role="MULOP">⊗</XMTok>
                     <XMTok role="UNKNOWN" font="italic">S</XMTok>
@@ -71,7 +71,7 @@
               </XMCell>
               <XMCell align="center">
                 <XMApp>
-                  <XMTok meaning="divide" role="MULOP" style="inline">/</XMTok>
+                  <XMTok fracstyle="inline" meaning="divide" role="MULOP">/</XMTok>
                   <XMApp open="(" close=")">
                     <XMTok meaning="tensor-product" name="otimes" role="MULOP">⊗</XMTok>
                     <XMTok role="UNKNOWN" font="italic">Z</XMTok>
