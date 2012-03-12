@@ -66,7 +66,8 @@ our @EXPORT = (
   		   decodeFromUTF8),
 	       @XML::LibXML::EXPORT,
 	       # Possibly (later) export these utility functions
-	       qw(&element_nodes &text_in_node &new_node &append_nodes &append_nodes_clone &clear_node &maybe_clone 
+	       qw(&element_nodes &text_in_node &new_node
+		  &append_nodes &append_nodes_clone &clear_node &maybe_clone
 		  &valid_attributes &copy_attributes &rename_attribute &remove_attr
 		  &get_attr &isTextNode &isElementNode
 		  &CA_KEEP &CA_OVERWRITE &CA_MERGE &CA_EXCEPT)
@@ -148,7 +149,7 @@ sub append_nodes_clone {
 	    my $value = $attr->getValue;
 	    $new->setAttribute($key, $value); }
 	  elsif(my $ns = $attr->namespaceURI){
-	    $new->setAttributeNS($ns,$attr->localname,$attr->getValue); }
+	    $new->setAttributeNS($ns,$attr->name,$attr->getValue); }
 	  else {
 	    $new->setAttribute( $attr->localname,$attr->getValue); }}
       }
