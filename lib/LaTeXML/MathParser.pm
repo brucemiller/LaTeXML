@@ -269,7 +269,7 @@ sub XML_addNodes {
 	      $new->setAttribute($key, $value); }#}
 	  elsif($attrprefix && ($attrprefix ne 'xml')){
 	    my $attrnsuri = $attrprefix && $LaTeXML::MathParser::DOCUMENT->getModel->getNamespace($attrprefix);
-	    $new->setAttributeNS($attrnsuri,$attrname, $$attributes{$key}); }
+	    $new->setAttributeNS($attrnsuri,$key, $$attributes{$key}); }
 	  else {
 	    $new->setAttribute($key, $$attributes{$key}); }
 	}}
@@ -288,7 +288,7 @@ sub XML_addNodes {
 #		$$self{idcache}{$value} = $new;
 		$new->setAttribute($key, $value); }#}
 	    elsif(my $ns = $attr->namespaceURI){
-	      $new->setAttributeNS($ns,$attr->localname,$attr->getValue); }
+	      $new->setAttributeNS($ns,$attr->name,$attr->getValue); }
 	    else {
 	      $new->setAttribute( $attr->localname,$attr->getValue); }}
 	}
