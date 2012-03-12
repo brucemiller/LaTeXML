@@ -1468,7 +1468,7 @@ sub eqnarrayRegroupEquations {
 sub eqnarrayJoinRows {
   my($document,$equationgroup,@equations)=@_;
   # Make a new equation, with a single MathFork container
-  my $equation = addNewChildLate($document,$equationgroup,'ltx:equation');
+  my $equation = $document->openElementAt($equationgroup,'ltx:equation');
   $equationgroup->insertBefore($equation,$equations[0]); # Move to correct position.
   # move labels, id, refnum to new equation
   my($labels,$id,$refnum,$frefnum,$idctr);
@@ -1490,11 +1490,13 @@ sub eqnarrayJoinRows {
   my($main,$branch)=addMathFork($document,$equation);
   foreach my $eq (@equations){
     $eq->unbindNode;
-    my $tr = addNewChildLate($document,$branch,'ltx:tr');
+    my $tr = $document->openElementAt($branch,'ltx:tr');
     foreach my $cell ($document->getChildElements($eq)){
       $tr->setAttribute(class=>'lefteqn')
 	if ($cell->getAttribute('colspan')||'0') == 3;
-      addColumnToMathFork($document,$main,$tr,$cell); }}
+      addColumnToMathFork($document,$main,$tr,$cell); }
+    $document->closeElementAt($tr); }
+  $document->closeElementAt($equation);
 }
 
 # Given an equation generated in an equationgroup, 
@@ -1529,11 +1531,11 @@ sub equationgroupFlattenCols {
 # (as $main and $branch)
 sub addMathFork {
   my($document,$equation)=@_;
-  my $fork  = addNewChildLate($document,$equation,'ltx:MathFork');
-  my $main  = addNewChildLate($document,$fork,'ltx:Math');
+  my $fork  = $document->openElementAt($equation,'ltx:MathFork');
+  my $main  = $document->openElementAt($fork,'ltx:Math');
   GenerateID($document,$main,undef,'m');
-  my $xmath = addNewChildLate($document,$main,'ltx:XMath');
-  my $branch= addNewChildLate($document,$fork,'ltx:MathBranch');
+  my $xmath = $document->openElementAt($main,'ltx:XMath');
+  my $branch= $document->openElementAt($fork,'ltx:MathBranch');
   ($main,$branch); }
 
 # Add a new ltx:td (table column) to $inbranch
@@ -1543,7 +1545,7 @@ sub addMathFork {
 # to the XMath of $main (the ltx:Math in the main part of the fork)
 sub addColumnToMathFork {
   my($document,$main,$inbranch,$cell)=@_;
-  my $td = addNewChildLate($document,$inbranch,'ltx:td');
+  my $td = $document->openElementAt($inbranch,'ltx:td');
   if(my $align = $cell->getAttribute('align')){
     $td->setAttribute(align=>$align); }
   if(my $colspan = $cell->getAttribute('colspan')){
@@ -1577,8 +1579,9 @@ sub addColumnToMathFork {
 ### IE. without changing it's id's? (the clone should get new id's!)
 #####      append_nodes_clone($td,$document->getFirstChildElement($copy));
       append_nodes_clone($td,$math);
-    }
-  }}
+    }}
+  $document->closeElementAt($td);
+}
 
 # Here's the really nasty part.
 # The content of each cell can end up in the main branch of MathFork
