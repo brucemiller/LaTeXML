@@ -95,7 +95,8 @@ sub gentoc {
   if(my $entry = $$self{db}->lookup("ID:$id")){
     my @kids = ();
     if((!defined $localto) || ( ($entry->getValue('location')||'') eq $localto) ){
-      @kids = map($self->gentoc($_,$types,$localto,$selfid), @{ $entry->getValue('children')||[]}); }
+      @kids = map($self->gentoc($_,$types,$localto,$selfid),
+		  @{ $entry->getValue('children')||[]}); }
     my $type = $entry->getValue('type');
     if($$types{$type}){
       (['ltx:tocentry',(defined $selfid && ($selfid eq $id) ? {class=>'self'} : {}),
@@ -261,13 +262,13 @@ sub make_bibcite {
       @stuff = @preformatted; $show=''; }
     while($show){
       if($show =~ s/^authors?//i){
-	push(@stuff,@{$$datum{authors}}); }
+	push(@stuff,map($doc->cloneNode($_),@{$$datum{authors}})); }
       elsif($show =~ s/^fullauthors?//i){
-	push(@stuff,@{$$datum{fullauthors}}); }
+	push(@stuff,map($doc->cloneNode($_),@{$$datum{fullauthors}})); }
       elsif($show =~ s/^title//i){
-	push(@stuff,@{$$datum{title}}); }
+	push(@stuff,map($doc->cloneNode($_),@{$$datum{title}})); }
       elsif($show =~ s/^refnum//i){
-	push(@stuff,@{$$datum{refnum}}); }
+	push(@stuff,map($doc->cloneNode($_),@{$$datum{refnum}})); }
       elsif($show =~ s/^phrase(\d)//i){
 	push(@stuff,$phrases[$1-1]->childNodes) if $phrases[$1-1]; }
       elsif($show =~ s/^year//i){
@@ -388,23 +389,25 @@ sub generateRef_aux {
       my @frefnum  = $doc->trimChildNodes($entry->getValue('frefnum') || $entry->getValue('refnum'));
       if(@frefnum){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'reftag'},@frefnum]); }}
+	push(@stuff, ['ltx:text',{class=>'reftag'},map($doc->cloneNode($_),@frefnum)]); }}
     elsif($show =~ s/^refnum(\.?\s*)//){
       if(my @refnum = $doc->trimChildNodes($entry->getValue('refnum'))){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'reftag'},@refnum]); }}
+	push(@stuff, ['ltx:text',{class=>'reftag'},map($doc->cloneNode($_),@refnum)]); }}
     elsif($show =~ s/^toctitle//){
       my $title = $self->fillInTitle($doc,$entry->getValue('toctitle')||$entry->getValue('title')
 				     || $entry->getValue('toccaption'));
       if($title){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'reftitle'},$doc->trimChildNodes($title)]); }}
+	push(@stuff, ['ltx:text',{class=>'reftitle'},
+		      map($doc->cloneNode($_),$doc->trimChildNodes($title))]); }}
 
     elsif($show =~ s/^title//){
       my $title= $self->fillInTitle($doc,$entry->getValue('title') || $entry->getValue('toccaption')); # !!!
       if($title){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'reftitle'},$doc->trimChildNodes($title)]); }}
+	push(@stuff, ['ltx:text',{class=>'reftitle'},
+		      map($doc->cloneNode($_),$doc->trimChildNodes($title))]); }}
     elsif($show =~ s/^(.)//){
       push(@stuff, $1); }}
   ($OK ? @stuff : ()); }
