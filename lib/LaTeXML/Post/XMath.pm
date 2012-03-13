@@ -43,7 +43,7 @@ sub convertNode {
   my($self,$doc,$xmath,$style)=@_;
   # if we're changing id's, clone with the change
   if(my $idsuffix = $self->IDSuffix){
-    $self->clone_with_suffix($xmath,$idsuffix); }
+    $doc->cloneNode($xmath,$idsuffix); }
   else {
     $xmath; }}
 
