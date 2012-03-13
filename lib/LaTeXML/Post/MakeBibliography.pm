@@ -130,7 +130,6 @@ sub getBibEntries {
       @names =$doc->findnodes('ltx:bib-name[@role="editor"]',$bibentry) unless @names;
       if(my $n = $doc->findnode('ltx:bib-key',$bibentry)){
 	$sortnames = $names = $n->textContent; }
-###      elsif(my @names = $doc->findnodes('ltx:bib-name[@role="author"] | ltx:bib-name[@role="editor"]',$bibentry)){
       elsif(scalar(@names)){
 	$sortnames = join(' ',map(getNameText($doc,$_),@names));
 	my @ns = map($_ && $_->textContent, map($doc->findnodes('ltx:surname',$_), @names));
@@ -207,6 +206,9 @@ sub makeBibliographyList {
 sub getQName {
   $LaTeXML::Post::MakeBibliography::DOCUMENT->getQName(@_); }
 
+sub Clone {
+  map((ref $_ ? $LaTeXML::Post::MakeBibliography::DOCUMENT->cloneNode($_) :$_), @_); }
+
 # ================================================================================
 sub formatBibEntry {
   my($self,$doc,$entry)=@_;
@@ -220,9 +222,6 @@ sub formatBibEntry {
   local $LaTeXML::Post::MakeBibliography::SUFFIX = $$entry{suffix};
   my $number = ++$LaTeXML::Post::MakeBibliography::NUMBER;
 
-  # NOTE: $id may have already been associated with the bibentry
-  # Break the association so it associates with the bibitem
-  delete $$doc{idcache}{$id};
   warn "\nNo formatting specification for bibentry of type $type" unless @blockspecs;
 
   #------------------------------
@@ -235,21 +234,24 @@ sub formatBibEntry {
   @names = $doc->findnodes('ltx:bib-name[@role="editor"]/ltx:surname',$bibentry) unless @names;
   if(@names > 2){
     push(@tags,['ltx:bibtag',{role=>'authors', class=>'bib-author'},
-		$names[0]->childNodes,['ltx:emph',{},' et al.']]);
+		Clone($names[0]->childNodes),['ltx:emph',{},' et al.']]);
     my @fnames=();
     foreach my $n (@names[0..$#names-1]){
       push(@fnames,$n->childNodes,', '); }
-    push(@tags,['ltx:bibtag',{role=>'fullauthors',class=>'bib-author'},@fnames,'and ',$names[-1]->childNodes]); }
+    push(@tags,['ltx:bibtag',{role=>'fullauthors',class=>'bib-author'},
+		Clone(@fnames),'and ',Clone($names[-1]->childNodes)]); }
   elsif(@names > 1){
     push(@tags,['ltx:bibtag',{role=>'authors',class=>'bib-author'},
-		$names[0]->childNodes,' and ',$names[1]->childNodes]); }
+		Clone($names[0]->childNodes),' and ',Clone($names[1]->childNodes)]); }
   elsif(@names){
-    push(@tags,['ltx:bibtag',{role=>'authors',class=>'bib-author'},$names[0]->childNodes]); }
+    push(@tags,['ltx:bibtag',{role=>'authors',class=>'bib-author'},
+		Clone($names[0]->childNodes)]); }
 
   # Put a key tag, to use in place of authors if needed (esp for software, websites, etc)
   my $keytag;
   if($keytag = $doc->findnode('ltx:bib-key',$bibentry)){
-    push(@tags,['ltx:bibtag',{role=>'key',class=>'bib-key'},$keytag->childNodes]); }
+    push(@tags,['ltx:bibtag',{role=>'key',class=>'bib-key'},
+		Clone($keytag->childNodes)]); }
 
   my @year=();
   if(my $date = $doc->findnode('ltx:bib-date[@role="publication"]',$bibentry)){
@@ -257,16 +259,19 @@ sub formatBibEntry {
     if(my $datetext = $date->textContent){
       if($datetext=~/^(\d\d\d\d)/){ # Extract 4 digit year, if any
 	@year = ($1); }}
-    push(@tags,['ltx:bibtag',{role=>'year',class=>'bib-year'},@year,($$entry{suffix} ||'')]); }
+    push(@tags,['ltx:bibtag',{role=>'year',class=>'bib-year'},
+		Clone(@year),($$entry{suffix} ||'')]); }
 
   # Store a type tag, to use in place of year, if needed (esp for software, ...)
   my $typetag;
   if($typetag = $doc->findnode('ltx:bib-type',$bibentry)){
-    push(@tags,['ltx:bibtag',{role=>'bibtype',class=>'bib-type'},$typetag->childNodes]); }
+    push(@tags,['ltx:bibtag',{role=>'bibtype',class=>'bib-type'},
+		Clone($typetag->childNodes)]); }
 
   # put in the title
   if(my $title = $doc->findnode('ltx:bib-title',$bibentry)){
-    push(@tags,['ltx:bibtag',{role=>'title',class=>'bib-title'},$title->childNodes]); }
+    push(@tags,['ltx:bibtag',{role=>'title',class=>'bib-title'},
+		Clone($title->childNodes)]); }
 
   # And finally, the refnum; we need to know the desired citation style!
   # This is screwy!!!
@@ -285,7 +290,8 @@ sub formatBibEntry {
       @rfnames = $keytag->childNodes; }
     my @rfyear  = (@year  ? (@year,($$entry{suffix} ||''))  : ($typetag ? $typetag->childNodes : ()));
 
-    push(@tags,['ltx:bibtag',{role=>'refnum',class=>'bib-author-year'},@rfnames,' (',@rfyear,')']); }
+    push(@tags,['ltx:bibtag',{role=>'refnum',class=>'bib-author-year'},
+		Clone(@rfnames),' (',Clone(@rfyear),')']); }
 
   #------------------------------
   # Format the data in blocks, with the first being bib-label, rest bibblock.
@@ -299,8 +305,7 @@ sub formatBibEntry {
       next unless ($xpath eq 'true') || ($negated ? !@nodes : @nodes);
       push(@x,$punct) if $punct && @x;
       push(@x,$pre) if $pre;
-####      push(@x,&$op(map($_->cloneNode(1),@nodes))) if $op;
-      push(@x,['ltx:text',{class=>$class}, &$op(map($_->cloneNode(1),@nodes))]) if $op;
+      push(@x,['ltx:text',{class=>$class}, &$op(Clone(@nodes))]) if $op;
       push(@x,$post) if $post; }
     push(@blocks,['ltx:bibblock',{'xml:space'=>'preserve'},@x]) if @x;
   }
