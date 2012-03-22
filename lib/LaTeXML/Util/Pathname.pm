@@ -38,7 +38,7 @@ our @EXPORT = qw( &pathname_find &pathname_findall
 		  &pathname_timestamp
 		  &pathname_concat
 		  &pathname_relative &pathname_absolute
-		  &pathname_is_absolute 
+		  &pathname_is_absolute &pathname_is_url
 		  &pathname_cwd &pathname_mkdir &pathname_copy);
 
 # NOTE: For absolute pathnames, the directory component starts with
@@ -132,6 +132,10 @@ sub pathname_relative {
 sub pathname_absolute {
   my($pathname,$base)=@_;
   File::Spec->rel2abs(pathname_canonical($pathname),$base && pathname_canonical($base)); }
+
+sub pathname_is_url {
+  my($pathname)=@_;
+  $pathname && $pathname =~ /^(https|http|ftp):/; } # Other protocols?
 
 #======================================================================
 # Actual file system operations.
@@ -316,6 +320,10 @@ the directory C<$dir> and filename C<$file>.
 =item C<< $boole = pathname_is_absolute($path); >>
 
 Returns whether the pathname C<$path> appears to be an absolute pathname.
+
+=item C<< $boole = pathname_is_url($path); >>
+
+Returns whether the pathname C<$path> appears to be a url, rather than local file.
 
 =item C<< $path = pathname_relative($path,$base); >>
 
