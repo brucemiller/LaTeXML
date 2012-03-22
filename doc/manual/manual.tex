@@ -286,7 +286,9 @@ The command
 \begin{lstlisting}[style=shell]
 latexmlpost %options% --destination=%doc%.xhtml %doc%
 \end{lstlisting}
-or similarly with \shellcode|--destination={doc}.html|,
+or similarly with
+\shellcode|--destination=%doc%.html| or
+\shellcode|--destination=%doc%.html5|,
 will carry out a set of appropriate transformations in sequence:
 \begin{itemize}
   \item scanning of labels and ids;
@@ -299,13 +301,17 @@ will carry out a set of appropriate transformations in sequence:
 The output format affects the defaults for each step and is determined
 by the file extension of \code{--destination}, or by the option
 \begin{lstlisting}[style=shell]
---format=(xhtml|html|xml)
+--format=(xhtml|html|html5|xml)
 \end{lstlisting}
+which overrides the extension used in the destination. The recognized formats are:
 \begin{description}
  \item[html] both math and graphics are converted to png images;
     the stylesheet \code{LaTeXML-html.xslt} is used.
  \item[xhtml] math is converted to Presentation \MathML, other graphics are converted to images;
     the stylesheet \code{LaTeXML-xhtml.xslt}  is used.
+ \item[html5] math is converted to Presentation \MathML, other graphics are converted to images;
+    the stylesheet \code{LaTeXML-html5.xslt} is used.
+    (Note that the extension \code{.html5} is not commonly recognized by web servers)
  \item[xml] no math, graphics or \XSLT\ conversion is carried out.
 \end{description}
 Of course, all of these conversions can be controlled or overridden
@@ -403,16 +409,22 @@ controlled by
 --svg %or% --nosvg
 \end{lstlisting}
 
-\paragraph{Stylesheet}
-If you wish to provide your own \XSLT\  or
-\CSS\ stylesheets, the options 
+\paragraph{Stylesheets and Javascript}
+If you wish to provide your own \XSLT\,
+\CSS\ stylesheets or javascript programs, the options 
 \begin{lstlisting}[style=shell]
 --stylesheet=%stylesheet%.xsl
 --css=%stylesheet%.css
+--nodefaultcss
+--javascript=%program%.js
 \end{lstlisting}
- can be used.  The \code{--css} option can be repeated to include multiple stylesheets;
-for example, the distribution provides several in addition to the \code{core.css} stylesheet
-which is included by default.
+can be used.  The \code{--css} and  \code{--javascript} options provide \CSS\ stylesheets
+and javascript programs respectively; they can be repeated to include multiple files.
+In both cases, if a local file is referenced, it will be copied to the
+destination directory, but otherwise urls are accepted.
+
+The distribution provides several stylesheets in addition to \code{core.css} stylesheet
+(which is included by default unless \code{--nodefaultcss} is used).
 \begin{description}
 \item[\code{navbar-left.css}] Places a navigation bar on the left.
 \item[\code{navbar-right.css}] Places a navigation bar on the left.
@@ -420,8 +432,18 @@ which is included by default.
 \item[\code{amsart.css}] A style appropriate for many journal articles.
 \end{description}
 
-To develop such stylesheets, a knowledge
-of the \LaTeXML\ document type is necessary; See Appendix \ref{schema}.
+For example, to convert your document to HTML5 with MathML,
+but use \URL[MathJax]{http://www.mathjax.org} for browsers that don't natively support MathML,
+you might use:
+\begin{lstlisting}[style=shell]
+latexmlpost --format=html5 \
+   --javascript='http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=MML_HTMLorMML.js' \
+   --destination=%somewhere/doc%.html %doc%
+\end{lstlisting}
+
+See \ref{customization.latexmlpost.css} for more information on developing your own stylesheets.
+To develop \CSS\ and \XSLT\ stylesheets, 
+a knowledge of the \LaTeXML\ document type is also necessary; see  Appendix \ref{schema}.
 
 %%%----------------------------------------------------------------------
 \section[Splitting]{Splitting the Output}\label{usage.multiple}\index{latexmlpost!basic usage!split pages}
