@@ -22,6 +22,7 @@
     extension-element-prefixes="string f">
 
 <xsl:param name="CSS"></xsl:param>
+<xsl:param name="JAVASCRIPT"></xsl:param>
 <xsl:param name="ICON"></xsl:param>
 
 <!--  ======================================================================
@@ -67,6 +68,12 @@
       <xsl:for-each select="string:split($CSS,'|')"><xsl:text>
     </xsl:text>
 	<link rel='stylesheet' type="text/css" href="{text()}"/>
+      </xsl:for-each>
+    </xsl:if>
+    <xsl:if test='$JAVASCRIPT'>
+      <xsl:for-each select="string:split($JAVASCRIPT,'|')"><xsl:text>
+    </xsl:text>
+	<script src="{text()}" type="text/javascript"/>
       </xsl:for-each>
     </xsl:if>
     <xsl:if test="//ltx:indexphrase"><xsl:text>

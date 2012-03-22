@@ -48,13 +48,14 @@ sub process {
   # Set up the Stylesheet parameters; making pathname parameters relative to document
   my %params = %{$$self{parameters}};
   my $dir = $doc->getDestinationDirectory;
-  if(my $css = $params{CSS}){
-    $params{CSS} = '"'.join('|',map(pathname_relative($_,$dir),@$css)) .'"'; }
-  if(my $icon = $params{ICON}){
-    $params{ICON} = '"'. pathname_relative($icon,$dir) . '"'; }
-
+  if(my $css = $params{CSS})      { $params{CSS} = pathnameParameter($dir,@$css); }
+  if(my $js = $params{JAVASCRIPT}){ $params{JAVASCRIPT} = pathnameParameter($dir,@$js); }
+  if(my $icon = $params{ICON})    { $params{ICON} = pathnameParameter($dir,$icon); }
   $doc->new($$self{stylesheet}->transform($doc->getDocument,  %params)); }
 
+sub pathnameParameter {
+  my($dir,@paths)=@_;
+  '"'.join('|',map((pathname_is_url($_) ? $_ : pathname_relative($_,$dir)),@paths)) .'"'; }
 # ================================================================================
 1;
 

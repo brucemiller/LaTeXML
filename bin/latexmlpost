@@ -22,7 +22,7 @@ my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
 my($sourcedir,$destination)=(undef,undef);
 my($format,$is_html,$urlstyle) = (undef,undef,'server');
 my($numbersections)=(1);
-my($stylesheet,$defaultcss,$icon,@css)=(undef,1);
+my($stylesheet,$defaultcss,$icon,@css,@javascript)=(undef,1);
 my($mathimages,$mathimagemag)=(undef,1.75);
 my($linelength,$plane1,$hackplane1)=(undef,undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
@@ -64,8 +64,9 @@ GetOptions("verbose+"              =>\$verbosity,
 	   "numbersections!"       =>\$numbersections,
 	   # Some general XSLT/CSS options.
 	   "stylesheet=s"          =>\$stylesheet,
-	   "css=s"                 =>\@css,
 	   "defaultcss!"           =>\$defaultcss,
+	   "css=s"                 =>\@css,
+	   "javascript=s"          =>\@javascript,
 	   "icon=s"                 =>\$icon,
 	   # Options for broader document set processing
 	   "split!"                =>\$split,
@@ -325,11 +326,14 @@ if(!$prescan){
 
   if($stylesheet){
     require 'LaTeXML/Post/XSLT.pm'; 
-    # Copy various kinds of resources, css, icon (eventually javascript...)
+    # Copy various kinds of resources, css, javascript, icon (others?)
     my $parameters={};
     my @searchpaths = $DOCUMENT->getSearchPaths;
     foreach my $css (@css){
-      if(my $csssource = pathname_find($css, types=>['css'],paths=>[@searchpaths],
+      if(pathname_is_url($css)){ # external url ? no need to copy
+	print STDERR "Using CSS=$css\n" if $verbosity > 0;
+	push(@{$$parameters{CSS}}, $css); }
+      elsif(my $csssource = pathname_find($css, types=>['css'],paths=>[@searchpaths],
 				       installation_subdir=>'style')){
 	print STDERR "Using CSS=$csssource\n" if $verbosity > 0;
 	my $cssdest = pathname_absolute($css,pathname_directory($destination));
@@ -338,7 +342,21 @@ if(!$prescan){
 	pathname_copy($csssource,$cssdest);
 	push(@{$$parameters{CSS}}, $cssdest); }
       else {
-	warn "Couldn't find CSS $css in paths ".join(',',@searchpaths)."\n"; }}
+	warn "Couldn't find CSS file $css in paths ".join(',',@searchpaths)."\n"; }}
+    foreach my $js (@javascript){
+      if(pathname_is_url($js)){ # external url ? no need to copy
+	print STDERR "Using JAVASCRIPT=$js\n" if $verbosity > 0;
+	push(@{$$parameters{JAVASCRIPT}}, $js); }
+      elsif(my $jssource = pathname_find($js, types=>['js'],paths=>[@searchpaths],
+				       installation_subdir=>'style')){
+	print STDERR "Using JAVASCRIPT=$jssource\n" if $verbosity > 0;
+	my $jsdest = pathname_absolute($js,pathname_directory($destination));
+	$jsdest .= '.js' unless $jsdest =~ /\.js$/;
+	warn "Javascript source $jssource is same as destination!" if $jssource eq $jsdest;
+	pathname_copy($jssource,$jsdest);
+	push(@{$$parameters{JAVASCRIPT}}, $jsdest); }
+      else {
+	warn "Couldn't find Javascript file $js in paths ".join(',',@searchpaths)."\n"; }}
     if($icon){
       if(my $iconsrc = pathname_find($icon,paths=>[$DOCUMENT->getSearchPaths])){
 	print STDERR "Using icon=$iconsrc\n" if $verbosity > 0;
@@ -414,6 +432,8 @@ latexmlpost [options] I<xmlfile>
  --css=cssfile           adds a css stylesheet to html/html5/xhtml
                          (can be repeated)
  --nodefaultcss          disables the default css stylesheet
+ --javscript=jsfile      adds a link to a javascript file into
+                         html/html5/xhtml (can be repeated)
  --split                 requests splitting each document
  --nosplit               disables the above (default)
  --splitat               specifies level to split the document
@@ -554,8 +574,10 @@ format (html, html5 or xhtml) will be used.
 
 Adds I<cssfile> as a css stylesheet to be used in the transformed html/html5/xhtml.
 Multiple stylesheets can be used; they are included in the html in the
-order given, following the default C<core.css>
-(but see C<--nodefaultcss>). Some stylesheets included in the distribution are
+order given, following the default C<core.css> (unless C<--nodefaultcss>).
+The stylesheet is copied to the destination directory, unless it is an absolute url.
+
+Some stylesheets included in the distribution are
   --css=navbar-left   Puts a navigation bar on the left.
                       (default omits navbar)
   --css=navbar-right  Puts a navigation bar on the left.
@@ -565,6 +587,12 @@ order given, following the default C<core.css>
 =item C<--nodefaultcss>
 
 Disables the inclusion of the default C<core.css> stylesheet.
+
+=item C<--javascript>=I<jsfile>
+
+Includes a link to the javascript file I<jsfile>, to be used in the transformed html/html5/xhtml.
+Multiple javascript files can be included; they are linked in the html in the order given.
+The javascript file is copied to the destination directory, unless it is an absolute url.
 
 =item C<--icon>=I<iconfile>
 
