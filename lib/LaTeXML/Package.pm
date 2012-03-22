@@ -1341,7 +1341,8 @@ sub RequirePackage {
   if(InputDefinitions($package,type=>$options{type} || 'sty', handleoptions=>1,%options) ){}
   else {
     $STATE->noteStatus(missing=>$package.'.'.($options{type} || 'sty'));
-    Error(":missing_file:$package Cannot find package $package"
+    Error(":missing_file:$package Cannot find "
+	  .($options{type} ? "file $package.$options{type} " : "package $package ")
 	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]"); }
   return; }
 
