@@ -342,7 +342,8 @@ if(!$prescan){
 	pathname_copy($csssource,$cssdest);
 	push(@{$$parameters{CSS}}, $cssdest); }
       else {
-	warn "Couldn't find CSS file $css in paths ".join(',',@searchpaths)."\n"; }}
+	warn "Couldn't find CSS file $css in paths ".join(',',@searchpaths)."\n";
+	push(@{$$parameters{CSS}}, $css); }} # but still put the link in!
     foreach my $js (@javascript){
       if(pathname_is_url($js)){ # external url ? no need to copy
 	print STDERR "Using JAVASCRIPT=$js\n" if $verbosity > 0;
@@ -356,7 +357,8 @@ if(!$prescan){
 	pathname_copy($jssource,$jsdest);
 	push(@{$$parameters{JAVASCRIPT}}, $jsdest); }
       else {
-	warn "Couldn't find Javascript file $js in paths ".join(',',@searchpaths)."\n"; }}
+	warn "Couldn't find Javascript file $js in paths ".join(',',@searchpaths)."\n";
+	push(@{$$parameters{JAVASCRIPT}}, $js); }} # but still put the link in!
     if($icon){
       if(my $iconsrc = pathname_find($icon,paths=>[$DOCUMENT->getSearchPaths])){
 	print STDERR "Using icon=$iconsrc\n" if $verbosity > 0;
@@ -364,7 +366,8 @@ if(!$prescan){
 	pathname_copy($iconsrc,$icondest);
 	$$parameters{ICON}=$icondest;  }
       else {
-	warn "Couldn't find ICON $icon in paths ".join(',',@searchpaths)."\n"; }}
+	warn "Couldn't find ICON $icon in paths ".join(',',@searchpaths)."\n";
+	$$parameters{ICON}=$icon;  }}
     push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,parameters=>$parameters, %OPTIONS)); }
 
   push(@procs,LaTeXML::Post::Writer->new(format=>$format,omit_doctype=>$omit_doctype,is_html=>$is_html,%OPTIONS));
