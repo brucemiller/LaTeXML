@@ -98,6 +98,15 @@ instructions regarding SVN.
 Thus, please consult \ref{install.osnotes}, first,
 for platform-specific releases and instructions.
 
+As a rule of thumb, any `recent' version of any prerequisite software will
+work with \LaTeXML, something released within the last few years;
+Perl should be at least version 5.8.
+Of course for security reasons, you should update all software on your system
+regularly to install patches and fix any bugs.
+When maintaining your system using a platform specific software
+updating tool, such as \texttt{yum}, \texttt{apt} or \texttt{port},
+you should regularly use the appropriate `update' command.
+
 \subsection{General Installation Procedures}\label{install.general}
 The following sections outline the general procedures for installing
 \LaTeXML\ and the supporting libraries and modules that it needs.
@@ -106,18 +115,19 @@ The following sections outline the general procedures for installing
 \begin{itemize}
 \item If \texttt{libxml2} and \texttt{libxslt} are are not already installed:\\
   Follow the instructions at \href{http://www.xmlsoft.org}{XMLSoft} to
-  download and install \texttt{libxml2} and \texttt{libxslt}.
+  download and install the most recent versions of \texttt{libxml2} and \texttt{libxslt}.
 \item If the Perl modules \texttt{Parse::RecDesent}, \texttt{XML::LibXML}
  and \texttt{XML::LibXSLT} are not already installed:\\
  Use CPAN to install the required perl modules (typically as root):
 \begin{lstlisting}[style=shell]
    perl -MCPAN -e shell
-   cpan> install Parse::RecDescent, XML::LibXML, XML::LibXSLT, DB_File
+   cpan> install DB_File, Parse::RecDescent
+   cpan> install XML::LibXML, XML::LibXSLT
    cpan> quit
 \end{lstlisting}
 \item If \texttt{ImageMagick} and its Perl binding are not already installed:\\
   Follow the instructions at \href{http://www.imagemagick.org/}{ImageMagick}
-  to download and install ImageMagick being sure to enable
+  to download and install the latest version of ImageMagick being sure to enable
   and build the Perl binding along with it.
 \end{itemize}
 
@@ -196,13 +206,13 @@ For Fedora and recent RedHat-based Enterprise distributions
 % \end{lstlisting}
 
 \paragraph{Installing from Source or SVN}
-The prerequisites can be installed by running this command as root: 
+The prerequisites can be installed (or updated) by running this command as root: 
 \begin{lstlisting}[style=shell]
 yum install perl-Parse-RecDescent \
     perl-XML-LibXML perl-XML-LibXSLT \
     ImageMagick ImageMagick-perl
 \end{lstlisting}
-Afterwards, you may use the general procedure to
+Afterwards, you may use the general procedure for
 \ref{install.source} or \ref{install.svn}.
 
 \subsubsection[Older Enterprise systems]{Older Enterprise-style RPM-based systems (RedHat, Centos)}\label{install.enterprise}
@@ -242,7 +252,7 @@ it should be installable using
 This will automatically include any needed dependencies.
 
 \paragraph{Installing from Source or SVN}
-The prerequisites can be installed by running this command as root: 
+The prerequisites can be installed (or updated) by running this command as root: 
 \begin{lstlisting}[style=shell]
    sudo apt-get install   \
       libparse-recdescent-perl \
@@ -250,7 +260,7 @@ The prerequisites can be installed by running this command as root:
       libxslt1.1 libxml-libxslt-perl  \
       imagemagick perlmagick
 \end{lstlisting}
-Afterwards, you may use the general procedure to
+Afterwards, you may use the general procedure for
 \ref{install.source} or \ref{install.svn}.
 
 %Some \href{http://rhaptos.org/devblog/reedstrm/latexml}{notes} on installation on Debian
@@ -281,7 +291,7 @@ The prerequisites can be installed by running this command as root:
       p5-xml-libxml p5-xml-libxslt  \
       p5-parse-recdescent p5-perlmagick
 \end{lstlisting}
-Afterwards, you may use the general procedure to
+Afterwards, you may use the general procedure for
 \ref{install.source} or \ref{install.svn}.
 
 \emph{Note} there have been issues reported regarding \verb|DB_File|
@@ -291,31 +301,31 @@ that is, you must run \verb|sudo port install perl +db|
 (possibly after uninstalling perl first?).
 
 \subsubsection{Windows}\label{install.windows}
-\paragraph{Installing prebuilt}
-There is currently no prebuilt \LaTeXML\ for Windows.
+There is currently no prebuilt \LaTeXML\ for Windows,
+but it does run under \href{http://strawberryperl.com}{Strawberry Perl}
+which comes with some of our prerequisites pre-installed,
+and provides other needed commands (\texttt{perl}, \texttt{cpan}, \texttt{dmake}).
+You may install \LaTeXML\ either by \ref{install.windows.source}
+or \ref{install.windows.svn} after \ref{install.windows.prerequisites}.
 
-\paragraph{Installing prerequisites}
-LaTeXML runs under \href{http://strawberryperl.com}{Strawberry Perl}.
-You may install it using either the released source or SVN repository
-after installing the prerequisites as follows:
+\paragraph{Installing prerequisites}\label{install.windows.prerequisites}\\
 \begin{itemize}
-\item Follow the instructions at 
-  \href{http://strawberryperl.com}{Strawberry Perl}
-   to download and install the perl environment\\
-  (This provides \texttt{perl} and \texttt{cpan} commands from the command prompt
-   and a handy \texttt{dmake} command to substitute for the Unix \texttt{make}.) 
-\item Install \texttt{Parse::RecDescent} by typing the following in the Command Prompt
+\item If you don't have Strawberry Perl already installed:\\
+   Follow the instructions at \href{http://strawberryperl.com}{Strawberry Perl}
+   to download and install the latest version of Strawberry Perl\\
+\item If you don't have Ghostscript already installed:\\
+   Follow the instructions at \href{http://sourceforge.net/projects/ghostscript/}{Ghostscript}
+   to download and install the latest version of Ghostscript program
+   (needed by Image::Magick)
+\item If you don't have Imagemagick already installed:\\
+   Follow the instructions at
+   \href{http://www.imagemagick.org/script/binary-releases.php#windows}{Image Magick}
+   to download and install the latest ImageMagick binary.
+\item Install the \texttt{Parse::RecDescent} Perl module by typing the following in the command prompt
 \begin{lstlisting}[style=shell]
   cpan -i Parse::RecDescent
 \end{lstlisting}
-\item Follow the instructions at
-   \href{http://sourceforge.net/projects/ghostscript/}{Ghostscript}
-   to download and Install the Ghostscript program
-   (needed by Image::Magick)
-\item Follow the instructions at
-   \href{http://www.imagemagick.org/script/binary-releases.php}{Image Magick}
-   to download and install the ImageMagick library binary (or from source, if preferred)
-\item Install Image::Magick using the command
+\item Install the \texttt{Image::Magick} Perl module using the command
 \begin{lstlisting}[style=shell]
   cpan -i Image::Magick
 \end{lstlisting}
@@ -329,9 +339,10 @@ proceed to force the install
 \end{lstlisting}
 \end{itemize}
 
-\paragraph{Installing from Source}
-Installation using the released source follows the general procedure,
-but using the \texttt{dmake} command provided by Strawberry Perl:
+\paragraph{Installing from Source}\label{install.windows.source}\\
+After \ref{install.windows.prerequisites},
+you my install the released source of \LaTeXML,
+by following the general procedure but using Strawberry Perl's \texttt{dmake} command:
 \begin{itemize}
 \item Download \CurrentTarball\\
 \item Unpack and build \LaTeXML:
@@ -345,14 +356,14 @@ but using the \texttt{dmake} command provided by Strawberry Perl:
 \end{lstlisting}
 \end{itemize}
 
-\paragraph{Installing from SVN}
-You may install a very current version from SVN
+\paragraph{Installing from SVN}\label{install.windows.svn}\\
+Alternatively, after \ref{install.windows.prerequisites},
+you may install a very current version of \LaTeXML\ from SVN:
 \begin{itemize}
 \item If you don't already have an SVN client,
    follow the instructions at \href{http://tortoisesvn.net/}{TortoiseSVN}
-   to download and install one.
-   \item Fetch \LaTeXML\ from the repository:
-\item Checkout a fresh copy of \LaTeXML:
+   to download and install the most recent version.
+\item Fetch \LaTeXML\ from the repository and build:
 \begin{lstlisting}[style=shell]
  svn co https://svn.mathweb.org/repos/LaTeXML
  cd LaTeXML
@@ -379,7 +390,9 @@ and rebuild your copy by using the following
 % future, depending on user interest --- and assistance!
 
 \subsection{Prerequisites}\label{prerequisites}
-The following list gives an overview of the Perl modules required by LaTeXML.
+The following list gives an overview of the Perl modules required by LaTeXML;
+As a general rule, \LaTeXML\ will run with any version released within
+the last several years.
 % %3A%3A for :: ???
 \begin{description}
 \item[\href{http://search.cpan.org/search?query=Parse::RecDescent&mode=module}{Parse::RecDescent}]
