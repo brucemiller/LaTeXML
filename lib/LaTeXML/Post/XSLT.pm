@@ -55,8 +55,7 @@ sub process {
 
 sub pathnameParameter {
   my($dir,@paths)=@_;
-  '"'.join('|',map((pathname_is_url($_) ? $_
-		    : (pathname_is_absolute($_) ? pathname_relative($_,$dir) : $_)),@paths)) .'"'; }
+  '"'.join('|',map(pathname_relative($_,$dir),@paths)) .'"'; }
 # ================================================================================
 1;
 
