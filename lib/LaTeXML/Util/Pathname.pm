@@ -47,6 +47,7 @@ our @EXPORT = qw( &pathname_find &pathname_findall
 # Ioan Sucan suggests switching this to '\\' for windows, but notes
 # that it works as it is, so we'll leave it (for now).
 our $SEP = '/';
+our $PROTOCOL_RE = '(https|http|ftp):';
 
 #======================================================================
 # pathname_make(dir=>dir, name=>name, type=>type);
@@ -84,9 +85,15 @@ sub pathname_split {
 use Carp;
 sub pathname_canonical {
   my($pathname)=@_;
+  # Don't call pathname_is_absolute, etc, here, cause THEY call US!
 confess "Undefined pathname!" unless defined $pathname;
 #  File::Spec->canonpath($pathname); }
   $pathname =~ s|^~|$ENV{HOME}|;
+  # We CAN canonicalize urls, but we need to be careful about the // before host!
+  my $urlprefix= undef;
+  if($pathname =~ s|^($PROTOCOL_RE//[^/]*)/|/|){
+    $urlprefix = $1; }
+
   if($pathname =~ m|//+/|){
     Carp::cluck "Recursive pathname? : $pathname\n"; }
 ##  $pathname =~ s|//+|/|g;
@@ -94,7 +101,7 @@ confess "Undefined pathname!" unless defined $pathname;
   # Collapse any foo/.. patterns, but not ../..
   while($pathname =~ s|/(?!\.\./)[^/]+/\.\.(/\|$)|$1|){}
   $pathname =~ s|^\./||;
-  $pathname; }
+  (defined $urlprefix ? $urlprefix . $pathname : $pathname);  }
 
 # Convenient extractors;
 sub pathname_directory { 
@@ -123,19 +130,29 @@ sub pathname_is_absolute {
   my($pathname)=@_;
   $pathname && File::Spec->file_name_is_absolute(pathname_canonical($pathname)); }
 
+sub pathname_is_url {
+  my($pathname)=@_;
+  $pathname && $pathname =~ /^$PROTOCOL_RE/; } # Other protocols?
+
 # pathname_relative($pathname,$base) => $relativepathname
-# Return $pathname as a pathname relative to $base.
+# If $pathname is an absolute, non-URL pathname,
+# return the pathname relative to $base,
+# else just return its canonical form.
+# Actually, if it's a url and $base is also url, to SAME host! & protocol... 
+# we _could_ make relative...
 sub pathname_relative {
   my($pathname,$base)=@_;
-  File::Spec->abs2rel(pathname_canonical($pathname),pathname_canonical($base)); }
+  $pathname = pathname_canonical($pathname);
+  ($base && pathname_is_absolute($pathname) && !pathname_is_url($pathname)
+   ? File::Spec->abs2rel($pathname,pathname_canonical($base))
+   : $pathname); }
 
 sub pathname_absolute {
   my($pathname,$base)=@_;
-  File::Spec->rel2abs(pathname_canonical($pathname),$base && pathname_canonical($base)); }
-
-sub pathname_is_url {
-  my($pathname)=@_;
-  $pathname && $pathname =~ /^(https|http|ftp):/; } # Other protocols?
+  $pathname = pathname_canonical($pathname);
+  ($base && !pathname_is_absolute($pathname) && !pathname_is_url($pathname)
+   ? File::Spec->rel2abs($pathname,pathname_canonical($base))
+   : $pathname); }
 
 #======================================================================
 # Actual file system operations.
@@ -327,7 +344,9 @@ Returns whether the pathname C<$path> appears to be a url, rather than local fil
 
 =item C<< $path = pathname_relative($path,$base); >>
 
-Returns the path to file C<$path> relative to the directory C<$base>.
+If C<$path> is an absolute, non-URL pathname,
+returns the pathname relative to the directory C<$base>,
+otherwise simply returns the canonical form of C<$path>.
 
 =item C<< $path = pathname_absolute($path,$base); >>
 
@@ -386,7 +405,7 @@ The type C<*> matches any extension.
 =item C<< @paths = pathname_findall($name,%options); >>
 
 Like C<pathname_find>,
-but returns all matching paths that exist.
+but returns I<all> matching (absolute) paths that exist.
 
 =back
 
