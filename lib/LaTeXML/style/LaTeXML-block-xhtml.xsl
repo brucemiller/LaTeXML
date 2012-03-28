@@ -458,14 +458,27 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
        ====================================================================== -->
 
   <xsl:template match="ltx:graphics">
-    <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}" class="{f:classes(.)}"
-	 alt="{f:if(../ltx:figure/ltx:caption,../ltx:figure/ltx:caption/text(),@description)}"
-	 ><xsl:call-template name="add_id"/>
+    <img src="{@imagesrc}" class="{f:classes(.)}">
+      <xsl:call-template name="add_id"/>
+      <xsl:if test="@imagewidth">
+	<xsl:attribute name='width'><xsl:value-of select="@imagewidth"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="@imageheight">
+	<xsl:attribute name='height'><xsl:value-of select="@imageheight"/></xsl:attribute>
+      </xsl:if>
       <xsl:if test="@imagedepth">
 	<xsl:attribute name='style'>
 	  <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px;')"/>
 	</xsl:attribute>
       </xsl:if>
+      <xsl:choose>
+	<xsl:when test="../ltx:figure/ltx:caption">
+	  <xsl:attribute name='alt'><xsl:value-of select="../ltx:figure/ltx:caption/text()"/></xsl:attribute>
+	</xsl:when>
+	<xsl:when test="@description">
+	  <xsl:attribute name='alt'><xsl:value-of select="@description"/></xsl:attribute>
+	</xsl:when>
+      </xsl:choose>
     </img>
   </xsl:template>
 
