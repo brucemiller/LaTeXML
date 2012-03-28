@@ -38,7 +38,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:block" xml:space="preserve">
-    <div class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></div>
+    <div style="{f:positioning(.)}" class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></div>
   </xsl:template>
 
   <xsl:template match="ltx:listingblock" xml:space="preserve">
@@ -57,7 +57,7 @@
 
   <!-- Need to handle attributes! -->
   <xsl:template match="ltx:inline-block" xml:space="preserve">
-    <span class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></span>
+    <span style="{f:positioning(.)}"  class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></span>
   </xsl:template>
 
   <!--<xsl:template match="ltx:verbatim" xml:space="preserve">-->
