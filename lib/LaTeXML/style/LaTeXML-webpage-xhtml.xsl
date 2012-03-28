@@ -37,13 +37,19 @@
   </xsl:text>
   <head><xsl:text>
     </xsl:text>
-    <xsl:if test="*/ltx:title">
-      <title>
-	<xsl:apply-templates select="*/ltx:title" mode="visible-text"/>
-	<xsl:for-each select="//ltx:navigation/ltx:ref[@class='up']"
-		      > &#x2023; <xsl:value-of select="@title"/></xsl:for-each>
-      </title>
-    </xsl:if>
+    <xsl:choose>
+      <xsl:when test="*/ltx:title">
+	<title>
+	  <xsl:apply-templates select="*/ltx:title" mode="visible-text"/>
+	  <xsl:for-each select="//ltx:navigation/ltx:ref[@class='up']"
+			> &#x2023; <xsl:value-of select="@title"/></xsl:for-each>
+	</title>
+      </xsl:when>
+      <!-- must have a title for validity! -->
+      <xsl:otherwise>
+	<title></title>
+      </xsl:otherwise>
+    </xsl:choose>
     <xsl:text>
     </xsl:text>
     <xsl:call-template name="metatype"/>
