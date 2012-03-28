@@ -91,16 +91,6 @@ In postprocessing, these values are carried to the \attr{class} attribute,
 and can thus be effected by CSS.</a:documentation>
       </attribute>
     </optional>
-    <optional>
-      <attribute name="framed">
-        <a:documentation>the kind of frame or outline for the text.</a:documentation>
-        <choice>
-          <value>rectangle</value>
-          <value>underline</value>
-          <text/>
-        </choice>
-      </attribute>
-    </optional>
   </define>
   <define name="text_model">
     <a:documentation>Content model for \elementref{text}.</a:documentation>

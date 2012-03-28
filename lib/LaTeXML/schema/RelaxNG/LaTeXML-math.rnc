@@ -89,6 +89,12 @@ XMath.attributes =
   ## trailing (presumably non-semantic) punctuation.
   attribute punctuation { text }?,
 
+  ## leading (presumably non-semantic) space.
+  attribute lspace { text }?,
+
+  ## trailing (presumably non-semantic) space.
+  attribute rspace { text }?,
+
   ## an annotation placed by the parser when it suspects this token may be used as a function.
   attribute possibleFunction { text }?
 

@@ -134,6 +134,16 @@ the last character is repeated if there aren't enough.</a:documentation>
       </attribute>
     </optional>
     <optional>
+      <attribute name="lspace">
+        <a:documentation>leading (presumably non-semantic) space.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="rspace">
+        <a:documentation>trailing (presumably non-semantic) space.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
       <attribute name="possibleFunction">
         <a:documentation>an annotation placed by the parser when it suspects this token may be used as a function.</a:documentation>
       </attribute>

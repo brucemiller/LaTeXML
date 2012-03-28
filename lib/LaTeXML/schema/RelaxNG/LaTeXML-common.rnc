@@ -131,7 +131,11 @@ Positionable.attributes =
   attribute vattach { "top" | "middle" | "bottom" }?,
 
   ## the horizontal floating placement parameter that determines where the object is displayed.
-  attribute float { ( "right" | "left" | text) }?
+  attribute float { ( "right" | "left" | text) }?,
+
+  ## the kind of frame or outline for the box.
+  attribute framed { "rectangle" | "underline" | text }?
+
 
 ## Attributes for elements that may be converted to image form
 ## during postprocessing, such as math, graphics, pictures, etc.

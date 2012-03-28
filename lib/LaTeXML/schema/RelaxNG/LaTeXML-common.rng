@@ -198,6 +198,16 @@ that can be sized or shifted.</a:documentation>
         </choice>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="framed">
+        <a:documentation>the kind of frame or outline for the box.</a:documentation>
+        <choice>
+          <value>rectangle</value>
+          <value>underline</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
   </define>
   <define name="Imageable.attributes">
     <a:documentation>Attributes for elements that may be converted to image form

@@ -58,10 +58,7 @@ text_attributes =
   ## the color to use; any CSS compatible color specification.
   ## In postprocessing, these values are carried to the \attr{class} attribute,
   ## and can thus be effected by CSS.
-  attribute color { text }?,
-
-  ## the kind of frame or outline for the text.
-  attribute framed { "rectangle" | "underline" | text }?
+  attribute color { text }?
 
 ## Content model for \elementref{text}.
 text_model = Inline.model
