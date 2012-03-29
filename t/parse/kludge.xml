@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="amsfonts"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <para xml:id="p1">
+    <equation xml:id="S0.Ex1">
+      <Math mode="display" tex="a+(b^{{1^{{2^{3}}}}}+(c^{{2^{3}}}+(d^{3}+" xml:id="S0.Ex1.m1">
+        <XMath>
+          <XMWrap>
+            <XMTok role="ERROR" font="italic">a</XMTok>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMWrap>
+              <XMTok role="OPEN">(</XMTok>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    <XMTok meaning="3" role="NUMBER">3</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    <XMTok meaning="3" role="NUMBER">3</XMTok>
+                  </XMApp>
+                </XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMWrap>
+                  <XMTok role="OPEN">(</XMTok>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                    <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                    <XMTok meaning="3" role="NUMBER">3</XMTok>
+                  </XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                </XMWrap>
+              </XMWrap>
+            </XMWrap>
+          </XMWrap>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p2">
+    <equation xml:id="S0.Ex2">
+      <Math mode="display" tex="a+b^{1})+c^{{1^{2}}})+d^{{1^{{2^{3}}}}})" xml:id="S0.Ex2.m1">
+        <XMath>
+          <XMWrap>
+            <XMWrap>
+              <XMWrap>
+                <XMTok role="ERROR" font="italic">a</XMTok>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMTok role="CLOSE">)</XMTok>
+            </XMWrap>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok role="UNKNOWN" font="italic">d</XMTok>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok meaning="1" role="NUMBER">1</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
+                  <XMTok meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+            <XMTok role="CLOSE">)</XMTok>
+          </XMWrap>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p3">
+    <equation xml:id="S0.Ex3">
+      <Math mode="display" tex="(a+b)^{3}" xml:id="S0.Ex3.m1">
+        <XMath>
+          <XMWrap>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok role="ERROR" font="italic">b</XMTok>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+              <XMTok meaning="3" role="NUMBER">3</XMTok>
+            </XMApp>
+          </XMWrap>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p4">
+    <equation xml:id="S0.Ex4">
+      <Math mode="display" tex="a+(b+(c+d)^{2}+e)^{3}+(f+(g+h)^{2}+i)^{3}" xml:id="S0.Ex4.m1">
+        <XMath>
+          <XMWrap>
+            <XMTok role="ERROR" font="italic">a</XMTok>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMWrap>
+                    <XMTok role="OPEN">(</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                    <XMTok role="CLOSE">)</XMTok>
+                  </XMWrap>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+              <XMTok meaning="3" role="NUMBER">3</XMTok>
+            </XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMWrap>
+                    <XMTok role="OPEN">(</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">g</XMTok>
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">h</XMTok>
+                    <XMTok role="CLOSE">)</XMTok>
+                  </XMWrap>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+              <XMTok meaning="3" role="NUMBER">3</XMTok>
+            </XMApp>
+          </XMWrap>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p5">
+    <equation xml:id="S0.Ex5">
+      <Math mode="display" tex="a+\mathbb{P}(\eta(x)\to 1)=\sum _{{N=0}}^{\infty}\sum _{{j=0}}^{N}\mathbb{P}(N_{x}=N\mathrm{and}\frac{j-1}{N}&lt;T_{x}\leq\frac{j}{N})\bar{C}(y^{\circ}(x),T_{x})" xml:id="S0.Ex5.m1">
+        <XMath>
+          <XMWrap>
+            <XMTok role="ERROR" font="italic">a</XMTok>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok role="UNKNOWN" font="blackboard">P</XMTok>
+            <XMWrap>
+              <XMTok role="OPEN">(</XMTok>
+              <XMTok name="eta" role="UNKNOWN" font="italic">η</XMTok>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMTok role="UNKNOWN" font="italic">x</XMTok>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+              <XMTok name="to" role="ARROW">→</XMTok>
+              <XMTok meaning="1" role="NUMBER">1</XMTok>
+              <XMTok role="CLOSE">)</XMTok>
+            </XMWrap>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
+            <XMApp scriptpos="mid">
+              <XMTok role="SUPERSCRIPTOP" scriptpos="mid2"/>
+              <XMApp scriptpos="mid">
+                <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
+                <XMTok meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">N</XMTok>
+                  <XMTok meaning="0" role="NUMBER">0</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
+            </XMApp>
+            <XMApp scriptpos="mid">
+              <XMTok role="SUPERSCRIPTOP" scriptpos="mid2"/>
+              <XMApp scriptpos="mid">
+                <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
+                <XMTok meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">j</XMTok>
+                  <XMTok meaning="0" role="NUMBER">0</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMTok role="UNKNOWN" font="italic">N</XMTok>
+            </XMApp>
+            <XMTok role="UNKNOWN" font="blackboard">P</XMTok>
+            <XMWrap>
+              <XMTok role="OPEN">(</XMTok>
+              <XMApp>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                <XMTok role="UNKNOWN" font="italic">N</XMTok>
+                <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              </XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMTok role="UNKNOWN" font="italic">N</XMTok>
+              <XMTok role="UNKNOWN">and</XMTok>
+              <XMApp>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
+                <XMApp>
+                  <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">j</XMTok>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
+                </XMApp>
+                <XMTok role="UNKNOWN" font="italic">N</XMTok>
+              </XMApp>
+              <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+              <XMApp>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                <XMTok role="UNKNOWN" font="italic">T</XMTok>
+                <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              </XMApp>
+              <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
+              <XMApp>
+                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
+                <XMTok role="UNKNOWN" font="italic">j</XMTok>
+                <XMTok role="UNKNOWN" font="italic">N</XMTok>
+              </XMApp>
+              <XMTok role="CLOSE">)</XMTok>
+            </XMWrap>
+            <XMApp>
+              <XMTok name="bar" role="OVERACCENT">¯</XMTok>
+              <XMTok role="UNKNOWN" font="italic">C</XMTok>
+            </XMApp>
+            <XMWrap>
+              <XMTok role="OPEN">(</XMTok>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                <XMTok role="UNKNOWN" font="italic">y</XMTok>
+                <XMTok meaning="compose" name="circ" role="MULOP">∘</XMTok>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMTok role="UNKNOWN" font="italic">x</XMTok>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                <XMTok role="UNKNOWN" font="italic">T</XMTok>
+                <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              </XMApp>
+              <XMTok role="CLOSE">)</XMTok>
+            </XMWrap>
+          </XMWrap>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+</document>

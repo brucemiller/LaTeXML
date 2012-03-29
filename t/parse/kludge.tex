@@ -1,0 +1,19 @@
+\documentclass{article}
+% NOTE These formula are EXPECTED to not parse!
+% We're testing the fallback "Kludge" parser!
+\usepackage{amsfonts}
+\begin{document}
+\[ \ROLE{ERROR}{a} + (b^{1^{2^3}}  +  (c^{2^3}  + (d^3  +  \]
+
+\[ \ROLE{ERROR}{a} +  b^1) +  c^{1^2}) + d^{1^{2^3}})  \]
+
+\[ (a  + \ROLE{ERROR}{b})^3 \]
+
+\[ \ROLE{ERROR}{a} + (b + (c+d)^2+e)^3 + (f + (g+h)^2+i)^3
+\]
+
+\[\ROLE{ERROR}{a} +
+ \mathbb P(\eta(x) \to 1) = \sum_{N=0}^\infty \sum_{j=0}^N \mathbb P(N_x=N \mathrm{ and } \frac{j-1}N<T_x\leq\frac{j}N) \bar C(y^\circ(x), T_x)
+\]
+
+\end{document}
