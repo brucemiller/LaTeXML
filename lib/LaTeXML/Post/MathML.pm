@@ -521,17 +521,25 @@ our %fences=('('=>1,')'=>1, '['=>1, ']'=>1, '{'=>1, '}'=>1, "\x{201C}"=>1,"\x{20
 	     "\x{230A}"=>1, "\x{230B}"=>1, "\x{2308}"=>1,"\x{2309}"=>1);
 
 
+sub pmml_mpadded {
+  my($item,$rspace)=@_;
+  ($rspace
+   ? ['m:mpadded', {width=>($rspace=~/^-/ ? $rspace : '+'.$rspace)}, $item]
+   : $item); }
+
 # Generally, $item in the following ought to be a string.
 sub pmml_mi {
   my($item,%attr)=@_;
   my($text,%mmlattr)=stylizeContent($item,1,%attr);
-  ['m:mi', {%mmlattr}, $text]; }
+  pmml_mpadded( ['m:mi', {%mmlattr}, $text],
+		(ref $item) && $item->getAttribute('rspace')); }
 
 # Really, the same issues as with mi.
 sub pmml_mn {
   my($item,%attr)=@_;
   my($text,%mmlattr)=stylizeContent($item,0,%attr);
-  ['m:mn', {%mmlattr}, $text]; }
+  pmml_mpadded( ['m:mn', {%mmlattr}, $text],
+		(ref $item) && $item->getAttribute('rspace')); }
 
 # Note that $item should be either a string, or at most, an XMTok
 sub pmml_mo {
@@ -542,15 +550,16 @@ sub pmml_mo {
   my $lspace  = $role && ($role eq 'MODIFIEROP') && 'mediummathspace';
   my $rspace  = $role && ($role eq 'MODIFIEROP') && 'mediummathspace';
   my $pos   = (ref $item && $item->getAttribute('scriptpos')) || 'post';
-  ['m:mo',{%mmlattr,
-	   ($isfence && !$fences{$text} ? (fence=>'true'):()),
-	   ($lspace  ? (lspace=>$lspace):()),
-	   ($rspace  ? (rspace=>$rspace):()),
-	   # If an operator has specifically located it's scripts,
-	   # don't let mathml move them.
-	   (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
-	    ? (movablelimits=>'false'):())},
-   $text]; }
+  pmml_mpadded( ['m:mo',{%mmlattr,
+			 ($isfence && !$fences{$text} ? (fence=>'true'):()),
+			 ($lspace  ? (lspace=>$lspace):()),
+			 ($rspace  ? (rspace=>$rspace):()),
+			 # If an operator has specifically located it's scripts,
+			 # don't let mathml move them.
+			 (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
+			  ? (movablelimits=>'false'):())},
+		 $text],
+		(ref $item) && $item->getAttribute('rspace')); }
 
 # Since we're keeping track of display style, under/over vs. sub/super
 # We've got to override MathML's desire to do it for us.
