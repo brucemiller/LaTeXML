@@ -11,6 +11,8 @@ use LaTeXML::Util::Pathname;
 
 use File::Spec;
 use LaTeXML::Post;
+use LaTeXML::Post::Scan;
+use LaTeXML::Post::CrossRef;
 #use LaTeXML::Post::Writer;
 use LaTeXML::Util::ObjectDB;
 
@@ -142,6 +144,14 @@ $pmml = '-' unless (defined $mathimage || defined $pmml || defined $cmml || defi
 
 our %OPTIONS = (verbosity=>$verbosity||0);
 
+
+# I wonder if this stuff even will be needed,
+# once fragid is sorted out?
+my $DB = LaTeXML::Util::ObjectDB->new(%OPTIONS);
+($doc) = LaTeXML::Post::ProcessChain($doc,
+     LaTeXML::Post::Scan->new(db=>$DB,%OPTIONS),
+     LaTeXML::Post::CrossRef->new(db=>$DB,%OPTIONS));
+
 if($mathimage){
   if($mathimage eq '-'){
     die "I dont really want to write the image to STDOUT, sorry!"; }
@@ -153,6 +163,7 @@ if($mathimage){
 			    imagename=>$mathimage, imagetype=>$imagetype,
 			    %OPTIONS));
 }
+
 
 if($pmml){
   require 'LaTeXML/Post/MathML.pm';
