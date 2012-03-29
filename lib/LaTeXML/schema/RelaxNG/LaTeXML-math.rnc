@@ -217,7 +217,7 @@ XMDual_model = XMath.class, XMath.class
 #======================================================================
 
 XMHint =
-## Various spacing items, generally ignored in parsing.
+## Various layout hints, usually spacing, generally ignored in parsing.
 ## The attributes are a subset of those for \elementref{XMTok}.
 element XMHint { XMHint_attributes, XMHint_model }
 
@@ -226,9 +226,15 @@ XMHint_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
+  
+  ## The name of the kind of hint.
   attribute name { text }?,
-  attribute meaning { text }?,
-  attribute style { text }?
+
+  ## The width of the space, if any.
+  attribute width { text }?,
+
+  ## The height of the space, if any.
+  attribute height { text }?
 
 ## Content model for \elementref{XMHint}.
 XMHint_model = empty

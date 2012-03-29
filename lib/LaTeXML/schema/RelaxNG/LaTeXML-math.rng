@@ -318,7 +318,7 @@ and \elementref{XMRef} is used in the presentation branch</a:documentation>
   <!-- ====================================================================== -->
   <define name="XMHint">
     <element name="XMHint">
-      <a:documentation>Various spacing items, generally ignored in parsing.
+      <a:documentation>Various layout hints, usually spacing, generally ignored in parsing.
 The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
       <ref name="XMHint_attributes"/>
       <ref name="XMHint_model"/>
@@ -330,13 +330,19 @@ The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
     <ref name="XMath.attributes"/>
     <ref name="ID.attributes"/>
     <optional>
-      <attribute name="name"/>
+      <attribute name="name">
+        <a:documentation>The name of the kind of hint.</a:documentation>
+      </attribute>
     </optional>
     <optional>
-      <attribute name="meaning"/>
+      <attribute name="width">
+        <a:documentation>The width of the space, if any.</a:documentation>
+      </attribute>
     </optional>
     <optional>
-      <attribute name="style"/>
+      <attribute name="height">
+        <a:documentation>The height of the space, if any.</a:documentation>
+      </attribute>
     </optional>
   </define>
   <define name="XMHint_model">
