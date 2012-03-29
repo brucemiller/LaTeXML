@@ -181,7 +181,7 @@ Let(T_CS('\@typeset@protect'),T_CS('\relax'));
 #======================================================================
 # In math, \\ is just a formatting hint, unless within an array, cases, .. environment.
 DefConstructor("\\\\ OptionalMatch:* [Glue]",
-	       "?#isMath(<ltx:XMHint name='\\'/>)(<ltx:break/>)",
+	       "?#isMath(<ltx:XMHint name='newline'/>)(<ltx:break/>)",
 	       reversion=>Tokens(T_CS("\\\\"),T_CR));
 
 #**********************************************************************

@@ -3043,24 +3043,28 @@ RawTeX(' \def\loop#1\repeat{\def\body{#1}\iterate}
          \def\iterate{\body \let\next=\iterate \else\let\next=\relax\fi \next}
          \let\repeat=\fi ');
 
-DefConstructorI('\enskip',  undef,"?#isMath(<ltx:XMHint name='enskip'/>)(\x{2000})",
-	       properties=>{isSpace=>1}); # EN QUAD
-DefConstructorI('\enspace', undef,"?#isMath(<ltx:XMHint name='enskip'/>)(\x{2000})",
-	      properties=>{isSpace=>1}); # EN QUAD
-DefConstructorI('\quad',   undef,"?#isMath(<ltx:XMHint name='quad'/>)(\x{2001})",
-	      properties=>{isSpace=>1}); # EM QUAD
-DefConstructorI('\qquad',  undef,"?#isMath(<ltx:XMHint name='qquad'/>)(\x{2001}\x{2001})",
-	      properties=>{isSpace=>1}); # EM QUAD
+DefConstructorI('\enskip',  undef,
+		"?#isMath(<ltx:XMHint name='enskip' width='#width'/>)(\x{2000})",
+		properties=>{isSpace=>1, width=>sub{ Dimension('0.5em'); }});
+DefConstructorI('\enspace', undef,
+		"?#isMath(<ltx:XMHint name='enskip' width='#width'/>)(\x{2000})",
+		properties=>{isSpace=>1, width=>sub{ Dimension('0.5em'); }});
+DefConstructorI('\quad',   undef,
+		"?#isMath(<ltx:XMHint name='quad' width='#width'/>)(\x{2001})",
+		properties=>{isSpace=>1, width=>sub{ Dimension('1em'); }});
+# Conceivably should be treated as punctuation! (but maybe even \quad should !?!)
+DefConstructorI('\qquad',  undef,
+		"?#isMath(<ltx:XMHint name='qquad' width='#width'/>)(\x{2001}\x{2001})",
+		properties=>{isSpace=>1, width=>sub{ Dimension('2em'); }});
+DefConstructorI('\thinspace',   undef,
+		"?#isMath(<ltx:XMHint name='thinspace' width='#width'/>)( )",
+		properties=>{isSpace=>1, width=>sub{ Dimension('0.16667em'); }});
+DefConstructorI('\negthinspace',undef,
+		"?#isMath(<ltx:XMHint name='negthinspace' width='#width'/>)()",
+		properties=>{isSpace=>1, width=>sub{ Dimension('-0.16667em'); }});
 
-DefConstructorI('\thinspace',   undef,"?#isMath(<ltx:XMHint name='thinspace'/>)( )",
+DefConstructor('\hglue Glue', "?#isMath(<ltx:XMHint name='hglue' width='#1'/>)(\x{2001})",
 	      properties=>{isSpace=>1});
-DefConstructorI('\negthinspace',undef,"?#isMath(<ltx:XMHint name='negthinspace'/>)()",
-	      properties=>{isSpace=>1});
-DefConstructorI('\thickspace',  undef,"?#isMath(<ltx:XMHint name='thickspace'/>)( )",
-	      properties=>{isSpace=>1});
-
-DefConstructor('\hglue Glue', "?#isMath(<ltx:XMHint name='#1'/>)(\x{2001})",
-	      properties=>{isSpace=>1}); # EM QUAD
 DefPrimitive('\vglue Glue', undef);
 DefPrimitiveI('\topglue',         undef,undef);
 DefPrimitiveI('\nointerlineskip', undef,undef);
@@ -3076,12 +3080,13 @@ DefMacroI('\bigskip', undef,  '\vskip\bigskipamount');
 DefPrimitiveI('\break',     undef,undef);
 DefPrimitiveI('\nobreak',   undef,undef);
 DefPrimitiveI('\allowbreak',undef,undef);
-DefConstructorI("~",  undef,"?#isMath(<ltx:XMHint name='nobreakspace'/>)(".UTF(0xA0).")",
-	      properties=>{isSpace=>1}); # NO-BREAK SPACE
-DefMacroI('\nobreakspace',undef,'\ifmmode\math@nobreakspace\else\text@nobreakspace\fi');
+DefMacroI('\nobreakspace',undef, '\ifmmode\math@nobreakspace\else\text@nobreakspace\fi');
+
 DefPrimitiveI('\text@nobreakspace',undef,UTF(0xA0));
-DefConstructorI('\math@nobreakspace',undef,"<ltx:XMHint name='nobreakspace'/>",
-		properties=>{isSpace=>1}); # NO-BREAK SPACE
+DefConstructorI('\math@nobreakspace',undef,
+		"<ltx:XMHint name='nobreakspace' width='#width'/>",
+		properties=>{isSpace=>1, width=>sub{ Dimension('1em'); }}); # NO-BREAK SPACE
+DefMacro("~",'\nobreakspace{}');
 
 DefMacroI('\slash',undef,'/');
 DefPrimitiveI('\filbreak',undef,undef);
@@ -3385,20 +3390,25 @@ Let(T_CS('\bye'),T_CS('\end'));
 
 Let(T_CS('\sp'),T_SUPER);
 Let(T_CS('\sb'),T_SUB);
-DefConstructorI('\,',undef,"?#isMath(<ltx:XMHint name='thinspace'/>)(\x{2009})",
-	      properties=>{isSpace=>1}); # THIN SPACE
-DefConstructorI('\!',undef,"?#isMath(<ltx:XMHint name='negthinspace'/>)()",
-	       properties=>{isSpace=>1});
-DefConstructorI('\>',undef,"?#isMath(<ltx:XMHint name='\>'/>)()",
-	      properties=>{isSpace=>1});	# ??
-DefConstructorI('\;',undef,"?#isMath(<ltx:XMHint name='thickspace'/>)(\x{2004})",
-	      properties=>{isSpace=>1}); # THREE-PER-EM SPACE
-DefConstructorI('\:',undef,"?#isMath(<ltx:XMHint name='medspace'/>)(\x{2005})",
-	      properties=>{isSpace=>1});  # FOUR-PER-EM SPACE
-DefConstructorI('\ ',undef,"?#isMath(<ltx:XMHint name='medspace'/>)(".UTF(0xA0).")",
-	      properties=>{isSpace=>1}); # EN SPACE
-DefConstructorI('\	',undef,"?#isMath(<ltx:XMHint name='medspace'/>)(".UTF(0xA0).")", # TAB!!!
-	      properties=>{isSpace=>1}); # EN SPACE
+DefConstructorI('\,',undef,
+		"?#isMath(<ltx:XMHint name='thinspace' width='#width'/>)(\x{2009})",
+		properties=>{isSpace=>1, width=>sub{ LookupValue('\thinmuskip'); }});
+DefConstructorI('\!',undef,
+		"?#isMath(<ltx:XMHint name='negthinspace' width='#width'/>)()",
+		properties=>{isSpace=>1, width=>sub{ LookupValue('\thinmuskip')->negate; }});
+DefConstructorI('\>',undef,
+		"?#isMath(<ltx:XMHint name='medspace' width='#width'/>)()",
+		properties=>{isSpace=>1, width=>sub{ LookupValue('\medmuskip'); }});
+DefConstructorI('\;',undef,
+		"?#isMath(<ltx:XMHint name='thickspace' width='#width'/>)(\x{2004})",
+		properties=>{isSpace=>1, width=>sub{ LookupValue('\thickmuskip'); }});
+Let(T_CS('\:'),T_CS('\>'));
+DefConstructorI('\ ',undef,
+		"?#isMath(<ltx:XMHint name='medspace' width='#width'/>)(".UTF(0xA0).")",
+		properties=>{isSpace=>1, width=>sub{ Dimension('1em'); }});
+DefConstructorI('\	',undef, # Tab!!
+		"?#isMath(<ltx:XMHint name='medspace' width='#width'/>)(".UTF(0xA0).")",
+		properties=>{isSpace=>1, width=>sub{ Dimension('1em'); }});
 DefConstructorI('\/',undef,"?#isMath(<ltx:XMHint name='italiccorr'/>)()",
 	      properties=>{isSpace=>1});
 

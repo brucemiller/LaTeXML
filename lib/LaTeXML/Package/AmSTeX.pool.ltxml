@@ -215,7 +215,7 @@ Let(T_CS('\sssize'),T_CS('\scriptscriptstyle'));
 
 DefMath('\and', '\&', role=>'ADDOP', meaning=>'and');
 DefConstructor("\\\\",
-	       "?#isMath(<ltx:XMHint name='\\'/>)(<ltx:break/>)",
+	       "?#isMath(<ltx:XMHint name='newline'/>)(<ltx:break/>)",
 	       reversion=>Tokens(T_CS("\\\\"),T_CR));
 
 # This is an analog to \align's template, but hopefully we can just ignore it???

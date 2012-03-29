@@ -536,12 +536,27 @@ DefConstructor('\@@smallmatrix DigestedBody',
 # \negmedspace
 # \negthickspace
 # I think only these are new
-DefConstructor('\medspace',"?#isMath(<ltx:XMHint name='medspace'/>)(\x{2005})");  # FOUR-PER-EM SPACE
-DefConstructor('\negthinspace',"?#isMath(<ltx:XMHint name='negthinspace'/>)()");
-DefConstructor('\negmedspace',"?#isMath(<ltx:XMHint name='negmedspace'/>)()");
-DefConstructor('\negthickspace',"?#isMath(<ltx:XMHint name='negthickspace'/>)()");
 
-DefConstructor('\mspace{MuDimension}',"<ltx:XMHint name='#1'/>");
+DefConstructorI('\thinspace',undef,
+		"?#isMath(<ltx:XMHint name='thinspace' width='#width'/>)(\x{2009})",
+		properties=>{isSpace=>1, width=>sub{ LookupValue('\thinmuskip'); }});
+DefConstructorI('\negthinspace',undef,
+		"?#isMath(<ltx:XMHint name='negthinspace' width='#width'/>)()",
+		properties=>{isSpace=>1, width=>sub{ LookupValue('\thinmuskip')->negate; }});
+DefConstructorI('\medspace',undef,
+		"?#isMath(<ltx:XMHint name='medspace' width='#width'/>)()",
+		properties=>{isSpace=>1, width=>sub{ LookupValue('\medmuskip'); }});
+DefConstructorI('\negmedspace',undef,
+		"?#isMath(<ltx:XMHint name='negmedspace' width='#width'/>)()",
+		properties=>{isSpace=>1, width=>sub{ LookupValue('\medmuskip')->negate; }});
+DefConstructorI('\thickspace',undef,
+		"?#isMath(<ltx:XMHint name='thickspace' width='#width'/>)(\x{2004})",
+		properties=>{isSpace=>1, width=>sub{ LookupValue('\thickmuskip'); }});
+DefConstructorI('\negthickspace',undef,
+		"?#isMath(<ltx:XMHint name='negthickspace' width='#width'/>)(\x{2004})",
+		properties=>{isSpace=>1, width=>sub{ LookupValue('\thickmuskip')->negate; }});
+
+DefConstructor('\mspace{MuDimension}',"<ltx:XMHint name='mspace' width='#1'/>");
 
 #======================================================================
 # Section 4.3 Dots
