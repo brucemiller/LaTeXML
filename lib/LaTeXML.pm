@@ -117,7 +117,7 @@ sub digestFile {
        push(@stuff,$stomach->digestNextBody); }
 
      push(@stuff,$self->loadPostamble($options{postamble})) if $options{postamble};
-#     my $list = $self->finishDigestion;
+     $self->finishDigestion;
      my $list = LaTeXML::List->new(@stuff);
      NoteEnd("Digesting $file");
      $list; });
@@ -140,7 +140,7 @@ sub digestString {
 
      push(@stuff,$self->loadPostamble($options{postamble})) if $options{postamble};
 
-     # my $list = $self->finishDigestion;
+     $self->finishDigestion;
      my $list = LaTeXML::List->new(@stuff);
      NoteEnd("Digesting string");
      $list; });
@@ -179,7 +179,7 @@ sub digestBibTeXFile {
        push(@stuff,$stomach->digestNextBody); }
      my $list = LaTeXML::List->new(@stuff);
 
-#     my $list = $self->finishDigestion;
+     $self->finishDigestion;
      NoteEnd("Digesting bibliography $file");
      $list; });
 }
@@ -187,12 +187,10 @@ sub digestBibTeXFile {
 sub finishDigestion {
   my($self)=@_;
   my $state = $$self{state};
-  my $stomach  = $state->getStomach; # The current Stomach;
-  my $list = LaTeXML::List->new($stomach->digestNextBody);
   if(my $env = $state->lookupValue('current_environment')){
     Error(":expected:\\end{$env} Input ended while environment $env was open"); } 
-  $stomach->getGullet->flush;
-  $list; }
+  $state->getStomach->getGullet->flush;
+}
 
 sub loadPreamble {
   my($self,$preamble)=@_;
