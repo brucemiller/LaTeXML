@@ -81,9 +81,12 @@ DefConstructor('\reflectbox{}', sub {
       $node->setAttribute(options=>$options); }}},
 	       mode=>'text');
 
-DefConstructor('\graphicspath Semiverbatim',"<?latexml graphicspath='#1'?>",
-	       afterDigest=>sub {
-		 UnshiftValue(GRAPHICSPATHS=>pathname_absolute(pathname_canonical(ToString($_[1]->getArg(1))))); });
+DefConstructor('\graphicspath DirectoryList', sub {
+  my($document,$paths)=@_;
+  foreach my $dir ($paths->getValues){
+    my $path = pathname_absolute(pathname_canonical(ToString($dir)));
+    print STDERR "GOT PATH: ".$path."\n";
+    $document->insertPI('latexml',graphicspath=>$path); }});
 
 # Basically, we're transforming the graphics options into graphicx format.
 DefMacro('\includegraphics OptionalMatch:* [][] Semiverbatim',
