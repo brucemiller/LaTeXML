@@ -25,6 +25,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Array;
 no warnings 'redefine';
 
 # LaTeX has a very particular notion of "Undefined",
@@ -38,6 +39,25 @@ sub isUndefined {
   my $meaning = LookupMeaning($cs);
   !(defined $meaning) || ($meaning eq $cs) || ($meaning eq LookupMeaning(T_CS('\relax'))); }
 
+
+# A LaTeX style directory List
+DefParameterType('DirectoryList', sub {
+  my($gullet)=@_;
+  if($gullet->ifNext(T_BEGIN)){
+    $gullet->readToken;
+    my @dirs=();
+    while($gullet->ifNext(T_BEGIN)){
+      # Should these be Semiverbatim ??
+      push(@dirs,$gullet->readArg); }
+    if($gullet->ifNext(T_END)){
+      $gullet->readToken; }
+    else {
+      Error(":missing:} A closing } was supposed to be here"); }
+    LaTeXML::Array->new(open=>T_BEGIN,close=>T_END,itemopen=>T_BEGIN,itemclose=>T_END,
+			type=>'Semiverbatim',
+			values=>[@dirs]); }
+  else {
+    Error(":missing:DirectoryList A DirectoryList was supposed to be here"); }});
 
 DefMacro('\@ifundefined{}{}{}',sub {
   my($gullet,$name,$if,$else)=@_;
