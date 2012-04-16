@@ -106,19 +106,17 @@
     <equation xml:id="S0.Ex3">
       <Math mode="display" tex="(a+b)^{3}" xml:id="S0.Ex3.m1">
         <XMath>
-          <XMWrap>
-            <XMApp>
-              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-              <XMWrap>
-                <XMTok role="OPEN">(</XMTok>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                <XMTok role="ERROR" font="italic">b</XMTok>
-                <XMTok role="CLOSE">)</XMTok>
-              </XMWrap>
-              <XMTok meaning="3" role="NUMBER">3</XMTok>
-            </XMApp>
-          </XMWrap>
+          <XMApp>
+            <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+            <XMWrap>
+              <XMTok role="OPEN">(</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="ERROR" font="italic">b</XMTok>
+              <XMTok role="CLOSE">)</XMTok>
+            </XMWrap>
+            <XMTok meaning="3" role="NUMBER">3</XMTok>
+          </XMApp>
         </XMath>
       </Math>
     </equation>
