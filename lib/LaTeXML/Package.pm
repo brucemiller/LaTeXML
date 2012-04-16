@@ -565,8 +565,10 @@ sub DefConditionalI {
 #    isPrefix  : 1 for things like \global, \long, etc.
 #    registerType : for parameters (but needs to be worked into DefParameter, below).
 
-our $primitive_options = {isPrefix=>1,scope=>1, mode=>1, font=>1, requireMath=>1,
-			  forbidMath=>1,beforeDigest=>1, afterDigest=>1, bounded=>1, locked=>1};
+our $primitive_options = {isPrefix=>1,scope=>1, mode=>1, font=>1, 
+			  requireMath=>1, forbidMath=>1,
+			  beforeDigest=>1, afterDigest=>1,
+			  bounded=>1, locked=>1, alias=>1};
 sub DefPrimitive {
   my($proto,$replacement,%options)=@_;
   CheckOptions("DefPrimitive ($proto)",$primitive_options,%options);
@@ -576,7 +578,8 @@ sub DefPrimitiveI {
   my($cs,$paramlist,$replacement,%options)=@_;
 #####  $replacement = sub { (); } unless defined $replacement;
   my $string = $replacement;
-  $replacement = sub { Box($string,undef,undef,Invocation($cs,@_[1..$#_])); } unless ref $replacement;
+  $replacement = sub { Box($string,undef,undef,Invocation($options{alias}||$cs,@_[1..$#_])); }
+    unless ref $replacement;
   $cs = coerceCS($cs);
   my $mode = $options{mode};
   my $bounded = $options{bounded};
