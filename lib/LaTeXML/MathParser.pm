@@ -344,7 +344,9 @@ sub parse_kludge {
     elsif($role eq 'CLOSE'){		# Close the current row
       my $row = shift(@stack);		# get the current list of items
       push(@$row,$pair) if $pair;	# Put the close (if any) into it
-      $row = [ ['ltx:XMWrap',{}, $self->parse_kludgeScripts_rec(@$row)], 'FENCED']; # handle scripts
+      my @kludged =  $self->parse_kludgeScripts_rec(@$row);  # handle scripts
+      # wrap, if needed.
+      $row = [ (scalar(@kludged) > 1 ? ['ltx:XMWrap',{}, @kludged] : $kludged[0]), 'FENCED'];
       push(@{$stack[0]}, $row); } # and put this constructed row at end of containing row.
     else {
       push(@{$stack[0]}, $pair); }} # Otherwise, just put this item into current row.
