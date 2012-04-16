@@ -91,7 +91,14 @@ sub readKeyVals {
 	my $typedef = $LaTeXML::Parameters::PARAMETER_TABLE{$type};
 	StartSemiverbatim if $typedef && $$typedef{semiverbatim};
 
-	($value,$delim)=$gullet->readUntil($T_COMMA,$close);
+	## ($value,$delim)=$gullet->readUntil($T_COMMA,$close);
+	# This is the core of $gullet->readUntil, but preserves braces needed by rare key types
+	my($tok,@toks)=();
+	while((!defined ($delim=$gullet->readMatch($T_COMMA,$close)))
+	     && (defined ($tok=$gullet->readToken()))){ # Copy next token to args
+	  push(@toks,$tok,
+	       ($tok->getCatcode == CC_BEGIN ? ($gullet->readBalanced->unlist,T_END) : ())); }
+	$value = Tokens(@toks);
 	if(($type eq 'Plain') || ($typedef && $$typedef{undigested})){}	# Fine as is.
 	elsif($type eq 'Semiverbatim'){ # Needs neutralization
 	  $value = $value->neutralize; }
