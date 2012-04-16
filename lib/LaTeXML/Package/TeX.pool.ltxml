@@ -16,6 +16,7 @@ use LaTeXML::Package;
 use Unicode::Normalize;
 use LaTeXML::Util::Alignment;
 use LaTeXML::Util::KeyVal;
+use LaTeXML::Array;
 use LaTeXML::Util::Pathname;
 no warnings 'redefine';
 
@@ -265,6 +266,23 @@ DefParameterType('DigestedBody', sub {
 # How to capture these ?
 ## DefParameterType('Length', sub {
 ##   my($gullet,$unit)=@_;
+
+# A comma separated List;
+# You can also write CommaList:Dimension to read a list of dimensions
+# [Note that this should act like Semiverbatim if the supplied type does! Ugh]
+DefParameterType('CommaList', sub {
+  my($gullet,$type)=@_;
+  my$typedef = $type && LaTeXML::Parameters::parseParameters(ToString($type),"CommaList");
+  if($gullet->ifNext(T_BEGIN)){
+    $gullet->readToken;
+    my @items=();
+    my($item,$delim);
+    while((($item,$delim)=$gullet->readUntil(T_END,T_OTHER(','))) && defined $item){
+      if($typedef){
+	($item) = $typedef->reparseArgument($gullet,$item); }
+      push(@items,$item);
+      last if Equals($delim,T_END); }
+    LaTeXML::Array->new(open=>T_BEGIN,close=>T_END,type=>$type,values=>[@items]); }});
 
 #**********************************************************************
 # Expandable Primitives
@@ -3082,10 +3100,11 @@ DefPrimitiveI('\nobreak',   undef,undef);
 DefPrimitiveI('\allowbreak',undef,undef);
 DefMacroI('\nobreakspace',undef, '\ifmmode\math@nobreakspace\else\text@nobreakspace\fi');
 
-DefPrimitiveI('\text@nobreakspace',undef,UTF(0xA0));
+DefPrimitiveI('\text@nobreakspace',undef,UTF(0xA0), alias=>'~');
 DefConstructorI('\math@nobreakspace',undef,
 		"<ltx:XMHint name='nobreakspace' width='#width'/>",
-		properties=>{isSpace=>1, width=>sub{ Dimension('1em'); }}); # NO-BREAK SPACE
+		properties=>{isSpace=>1, width=>sub{ Dimension('1em'); }},
+		alias=>'~');
 DefMacro("~",'\nobreakspace{}');
 
 DefMacroI('\slash',undef,'/');
