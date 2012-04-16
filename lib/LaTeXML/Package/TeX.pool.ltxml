@@ -388,10 +388,65 @@ DefMacroI('\jobname',undef,Tokens()); # Set to the filename by initialization
 
 DefMacroI('\fontname', undef,sub { Explode("fontname not implemented"); });
 
+# DefMacro('\meaning Token',sub {
+#   my($gullet,$tok)=@_;
+#   my $meaning = LookupMeaning($tok);
+#   ExplodeText(defined $meaning ? $meaning : 'undefined'); });
+
+our @CATCODE_MEANING=("the escape character",     "begin-group character",
+		      "end-group character",      "math shift character",
+		      "alignment tab character",  "end-of-line character",
+		      "macro parameter character","superscript character",
+		      "subscript character",      "ignored character",
+		      "space character",          "the letter",
+		      "the character",            "active character",
+		      "comment character",        "invalid character");
+
+# Not sure about this yet...
 DefMacro('\meaning Token',sub {
   my($gullet,$tok)=@_;
-  my $meaning = LookupMeaning($tok);
-  ExplodeText(defined $meaning ? $meaning : 'undefined'); });
+  my $meaning = 'undefined';
+  if(my $definition = (Equals($tok, T_ALIGN) ? $tok : LookupMeaning($tok))){
+    my $type = ref $definition;
+    $type =~ s/^LaTeXML:://;
+
+    #LaTeXML::Expandable and LaTeXML::Constructor = macro [What?!?!?!?!]
+    #LaTeXML::Primitive and LaTeXML::Token = letter/character [Um... No...]
+    # I don't understand what this is about
+    if (lc($type)=~/primitive/) {
+      $definition = $definition->getCS;
+      $type = ref $definition;
+      $type =~ s/^LaTeXML:://; }
+    if (lc($type)=~/con(ditional|structor)/) {
+      $definition = $definition->getCS;
+      $type = ref $definition;
+      $type =~ s/^LaTeXML:://; }
+
+    if (lc($type)=~/token/) {
+      my $cc = $definition->getCatcode;
+      my $char = $definition->getString;
+      $meaning = ($CATCODE_MEANING[$cc]||'') . ' '. $char; }
+    elsif (lc($type)=~/expandable/) {
+      my $expansion = $definition->getExpansion;
+      my $ltxps = $$definition{parameters};
+      my @params;
+      my $argcount=0;
+      if (defined $ltxps) {
+        @params = $ltxps->getParameters;
+        $argcount = $ltxps->getNumArgs;
+      }
+      my @specparts = map {my $sp = $_->{spec}; $sp=~s/^(\w+)://; $sp;} @params;
+      my $arg=1;
+      foreach (@specparts) {
+        last if ($arg>$argcount);
+        $_.="#$arg";
+        $arg++;}
+      my $spec = join("",@specparts);
+      $spec=~s/\{\}//g;
+      $spec=~s/Token//g;
+      $meaning="macro:".ToString($spec)."->".ToString($expansion);
+    }}
+  Explode('undefined'); });
 
 DefParameterType('CSName', sub {
   my($gullet)=@_;
