@@ -300,7 +300,7 @@ sub generateURL {
   my($object,$location);
   if($object = $$self{db}->lookup("ID:".$id)){
     if($location = $object->getValue('location')){
-      my $doclocation = $self->siteRelativePathname($doc->getDestination);
+      my $doclocation = $doc->siteRelativeDestination;
       my $pathdir = pathname_directory($doclocation);
       my $url = pathname_relative(($location =~ m|^/| ? $location : '/'.$location),
 				  ($pathdir  =~ m|^/| ? $pathdir  : '/'.$pathdir));
