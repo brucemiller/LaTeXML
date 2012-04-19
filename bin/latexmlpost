@@ -239,8 +239,9 @@ our %DOC_OPTIONS = (validate=>$validate,
 		    destination=>$destination,
 		    # Is this the right default?
 		    siteDirectory=>(defined $sitedir ? $sitedir
-				    : (defined $dbfile ? pathname_directory($dbfile)
-				       : ".")) );
+				    : (defined $destination ? pathname_directory($destination)
+				       : (defined $dbfile ? pathname_directory($dbfile)
+					  : "."))) );
 
 if(defined $dbfile && !-f $dbfile){
   if(my $dbdir = pathname_directory($dbfile)){
