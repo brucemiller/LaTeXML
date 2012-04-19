@@ -196,21 +196,29 @@ sub transformGraphic {
     my ($cached,$width,$height)=($1,$2,$3);
     if((!defined $reldest) || ($cached eq $reldest)){
       my $dest =  pathname_make(dir=>$doc->getDestinationDirectory,name=>$cached);
-#      if(-f $dest && (-M $source >= -M $dest)){
       if(pathname_timestamp($source) <= pathname_timestamp($dest)){
 	$self->ProgressDetailed($doc,">> Reuse $cached @ $width x $height");
 	return ($cached,$width,$height); }}}
-  $reldest = $self->generateResourcePathname($doc,$node,$source,$type) unless $reldest;
-  my $dest = $doc->checkDestination($reldest);
-  $self->ProgressDetailed($doc,"Destination $dest");
-  # Trivial scaling case: Use original image with different width & height.
+  # Trivial scaling case: Use original image with (at most) different width & height.
   my ($image,$width,$height);
   if($$self{trivial_scaling} && ($type eq $srctype) && !grep(!($_->[0]=~/^scale/),@$transform)){
+    # With a simple scaling transformation we can preserve path & file-names
+    # But only if we can mimic the relative path in the site directory.
+    $reldest = $doc->siteRelativeResource($source) unless defined $reldest;
+    # If that failed, generate a pseudo random filename.
+    $reldest = $self->generateResourcePathname($doc,$node,$source,$type) unless defined $reldest;
+    # OK, hopefuly we've got something now.
+    my $dest = $doc->checkDestination($reldest);
+    $self->ProgressDetailed($doc,"Destination $dest");
     ($width,$height)=$self->trivial_scaling($doc,$source,$transform);
     return unless $width && $height;
     pathname_copy($source, $dest) or warn("Couldn't copy $source to $dest: $!");
     $self->ProgressDetailed($doc,">> Copied to $reldest for $width x $height"); }
   else {
+    # With a complex transformation, we really needs a new name (well, don't we?)
+    $reldest = $self->generateResourcePathname($doc,$node,$source,$type) unless $reldest;
+    my $dest = $doc->checkDestination($reldest);
+    $self->ProgressDetailed($doc,"Destination $dest");
     ($image,$width,$height) =$self->complex_transform($doc,$source,$transform, %properties);
     return unless $image && $width && $height;
     $self->ProgressDetailed($doc,">> Writing to $dest ");
