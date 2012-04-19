@@ -66,8 +66,7 @@ sub process {
   if(! defined $id){
     $id = "Document";
     if(my $preventry = $$self{db}->lookup("ID:$id")){
-      if(my $dest = $doc->getDestination){
-	my $loc = $self->siteRelativePathname($dest);
+      if(my $loc = $doc->siteRelativeDestination){
 	my $prevloc = $preventry->getValue('location');
 	if((defined $prevloc) && ($loc ne $prevloc)){
 	  $self->Warn($doc,"Using default ID=\"$id\", "
@@ -133,7 +132,7 @@ sub default_handler {
   my $id = $node->getAttribute('xml:id');
   if($id){
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, labels=>$self->noteLabels($node),
-			 location=>$self->siteRelativePathname($doc->getDestination),
+			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id));
     $self->addAsChild($id,$parent_id);  }
   $self->scanChildren($doc,$node,$id || $parent_id); }
@@ -151,7 +150,7 @@ sub section_handler {
       $title = $title->cloneNode(1);
       map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$title)); }
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
-			 location=>$self->siteRelativePathname($doc->getDestination),
+			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
 			 frefnum=>$node->getAttribute('frefnum'),
@@ -177,7 +176,7 @@ sub captioned_handler {
       $caption = $caption->cloneNode(1);
       map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$caption)); }
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
-			 location=>$self->siteRelativePathname($doc->getDestination),
+			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
 			 frefnum=>$node->getAttribute('frefnum'),
@@ -190,7 +189,7 @@ sub labelled_handler {
   my $id = $node->getAttribute('xml:id');
   if($id){
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
-			 location=>$self->siteRelativePathname($doc->getDestination),
+			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
 			 frefnum=>$node->getAttribute('frefnum')); 
@@ -202,7 +201,7 @@ sub anchor_handler {
   my $id = $node->getAttribute('xml:id');
   if($id){
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
-			 location=>$self->siteRelativePathname($doc->getDestination),
+			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 title=>$node->cloneNode(1)->childNodes, # document fragment?
 			 refnum=>$node->getAttribute('refnum'),
@@ -261,7 +260,7 @@ sub bibitem_handler {
     if(my $key = $node->getAttribute('key')){
       $$self{db}->register("BIBLABEL:$key",id=>$id); }
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,
-			 location=>$self->siteRelativePathname($doc->getDestination),
+			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid      =>$self->inPageID($doc,$id),
 			 authors     =>$doc->findnode('ltx:bibtag[@role="authors"]',$node),
 			 fullauthors =>$doc->findnode('ltx:bibtag[@role="fullauthors"]',$node),
