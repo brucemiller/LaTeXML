@@ -22,7 +22,6 @@ sub new {
   $$self{verbosity} = 0 unless defined $$self{verbosity};
   $$self{resourceDirectory} = $options{resourceDirectory};
   $$self{resourcePrefix}    = $options{resourcePrefix};
-  $$self{siteDirectory}     = $options{siteDirectory};
   $self; }
 
 sub getNamespace            { $_[0]->{namespace} || "http://dlmf.nist.gov/LaTeXML"; }
@@ -74,14 +73,6 @@ sub ProgressDetailed {
   my($self,$doc,$msg)=@_;
   my $dest= $doc && $doc->getDestination;
   print STDERR "".(ref $self).($dest ? "[".$dest."]" : '').": $msg\n" if $$self{verbosity}>1; }
-
-#======================================================================
-# Return a pathname relative to the site base directory
-sub siteRelativePathname {
-  my($self,$pathname)=@_;
-  (defined $pathname ? pathname_relative($pathname, $$self{siteDirectory}) : undef); }
-
-sub getSiteDirectory { $_[0]->{siteDirectory}; }
 
 #======================================================================
 # Some postprocessors will want to create a bunch of "resource"s,
@@ -288,6 +279,7 @@ our $XPATH = LaTeXML::Common::XML::XPath->new(ltx=>$NSURI);
 # Useful options:
 #   destination = the ultimate destination file for this document to be written.
 #   destinationDirectory = the directory it will be stored in (derived from $destination)
+#   siteDirectory = the root directory of where the entire site will be contained
 #   namespaces = a hash of namespace prefix => namespace uri
 #   namespaceURIs = reverse hash of above.
 #   nocache = a boolean, disables storing of permanent LaTeXML.cache
@@ -303,6 +295,15 @@ sub new {
   if((defined $options{destination}) && (!defined $options{destinationDirectory})){
     my($vol,$dir,$name)=File::Spec->splitpath($data{destination});
     $data{destinationDirectory} = $dir || '.'; }
+  # Check consistency of siteDirectory (providing there's a destinationDirectory)
+  if($data{destinationDirectory}){
+    if($data{siteDirectory}){
+      (bless {},$class)->Error("The destination directory ($data{destinationDirectory})"
+		   ." must be within the siteDirectory ($data{siteDirectory})")
+	unless pathname_is_contained($data{destinationDirectory},$data{siteDirectory}); }
+    else {
+      $data{siteDirectory} = $data{destinationDirectory}; }}
+
   $data{document}=$xmldoc;
   $data{namespaces}={ltx=>$NSURI} unless $data{namespaces};
   $data{namespaceURIs}={$NSURI=>'ltx'} unless $data{namespaceURIs};
@@ -375,6 +376,35 @@ sub getSourceDirectory      { $_[0]->{sourceDirectory} || '.'; }
 sub getSearchPaths          { @{$_[0]->{searchpaths}}; }
 sub getDestination          { $_[0]->{destination}; }
 sub getDestinationDirectory { $_[0]->{destinationDirectory}; }
+sub getSiteDirectory        { $_[0]->{siteDirectory}; }
+
+# Given an absolute pathname in the document destination directory,
+# return the corresponding pathname relative to the site directory (they maybe different!).
+sub siteRelativePathname {
+  my($self,$pathname)=@_;
+  (defined $pathname ? pathname_relative($pathname, $$self{siteDirectory}) : undef); }
+
+sub siteRelativeDestination {
+  my($self)=@_;
+  (defined $$self{destination}
+   ? pathname_relative($$self{destination},$$self{siteDirectory})
+   : undef); }
+
+# Given an absolute pathname to some Resource in the document source directory (eg. an image),
+# return the corresponding pathname relative to the site directory(!)
+# (presumably that resource file will be copied to the corresponding place in the destination.)
+# The idea is that it should have the same relative path from the target file
+# as it did to the source file.
+# Returns undef if such a path cannot be constructed, such as when the resource
+# is not contained within a directory that corresponds to the site directory.
+sub siteRelativeResource {
+  my($self,$pathname)=@_;
+  # source file relative to the document's source
+  my $relsrc = pathname_relative($pathname, $$self{sourceDirectory});
+  # absolute path where that file ought to go in the destination directory.
+  my $dest = pathname_absolute($relsrc,$$self{destinationDirectory});
+  # Now check whether it is relative to the site, and return the relative path, if so.
+  pathname_is_contained($dest,$$self{siteDirectory}); }
 
 sub getParentDocument { $_[0]->{parentDocument}; }
 sub getAncestorDocument { 
