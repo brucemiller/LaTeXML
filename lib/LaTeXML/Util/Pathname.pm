@@ -38,7 +38,7 @@ our @EXPORT = qw( &pathname_find &pathname_findall
 		  &pathname_timestamp
 		  &pathname_concat
 		  &pathname_relative &pathname_absolute
-		  &pathname_is_absolute &pathname_is_url
+		  &pathname_is_absolute &pathname_is_url &pathname_is_contained
 		  &pathname_cwd &pathname_mkdir &pathname_copy);
 
 # NOTE: For absolute pathnames, the directory component starts with
@@ -133,6 +133,17 @@ sub pathname_is_absolute {
 sub pathname_is_url {
   my($pathname)=@_;
   $pathname && $pathname =~ /^$PROTOCOL_RE/; } # Other protocols?
+
+# Check whether $pathname is contained in (ie. underneath) $base
+# Returns the relative pathname if it is underneath; undef otherwise.
+sub pathname_is_contained {
+  my($pathname,$base)=@_;
+  # after assuring that both paths are absolute,
+  # get $pathname relative to $base
+  my $rel = pathname_canonical(pathname_relative(pathname_absolute($pathname),
+						 pathname_absolute($base)));
+  # If the relative pathname starts with "../" that it apparently is NOT underneath base!
+  ($rel =~ m|^\.\./| ? undef : $rel); }
 
 # pathname_relative($pathname,$base) => $relativepathname
 # If $pathname is an absolute, non-URL pathname,
@@ -341,6 +352,11 @@ Returns whether the pathname C<$path> appears to be an absolute pathname.
 =item C<< $boole = pathname_is_url($path); >>
 
 Returns whether the pathname C<$path> appears to be a url, rather than local file.
+
+=item C<< $rel = pathname_is_contained($path,$base); >>
+
+Checks whether C<$path> is underneath the directory C<$base>; if so
+it returns the pathname C<$path> relative to C<$base>; otherwise returns undef.
 
 =item C<< $path = pathname_relative($path,$base); >>
 
