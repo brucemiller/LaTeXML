@@ -134,9 +134,14 @@ if($xmlfile ne '-'){
 # Sanity check and Completion of options.
 #======================================================================
 
-$sourcedir   = $sourcedir   && pathname_canonical($sourcedir);
-$destination = $destination && pathname_canonical($destination);
-$sitedir     = $sitedir     && pathname_canonical($sitedir);
+#$sourcedir   = $sourcedir   && pathname_canonical($sourcedir);
+#$destination = $destination && pathname_canonical($destination);
+#$sitedir     = $sitedir     && pathname_canonical($sitedir);
+
+$sourcedir   = $sourcedir   && pathname_absolute($sourcedir,pathname_cwd());
+$destination = $destination && pathname_absolute($destination,pathname_cwd());
+$sitedir     = $sitedir     && pathname_absolute($sitedir,pathname_cwd());
+$dbfile      = $dbfile      && pathname_absolute($dbfile,pathname_cwd());
 
 if(defined $parallelmath){
   warn "The --parallelmath option is obsolete; Parallel markup will be generated"
@@ -225,10 +230,17 @@ if((!defined $destination) && ($mathimages || $dographics || $picimages)){
 binmode(STDERR,":utf8");
 #binmode(STDOUT,":utf8");
 print STDERR "$identity\n" if $verbosity > 0;
-our %OPTIONS = (verbosity=>$verbosity||0,
-	       siteDirectory=>(defined $sitedir ? $sitedir
-			       : (defined $dbfile ? pathname_directory($dbfile)
-				  : ".")));
+
+# Default options/parameters for each post processor
+our %OPTIONS = (verbosity=>$verbosity||0);
+# Default options/parameters for document
+our %DOC_OPTIONS = (validate=>$validate,
+		    sourceDirectory=>$sourcedir,
+		    destination=>$destination,
+		    # Is this the right default?
+		    siteDirectory=>(defined $sitedir ? $sitedir
+				    : (defined $dbfile ? pathname_directory($dbfile)
+				       : ".")) );
 
 if(defined $dbfile && !-f $dbfile){
   if(my $dbdir = pathname_directory($dbfile)){
@@ -237,13 +249,9 @@ my $DB = LaTeXML::Util::ObjectDB->new(dbfile=>$dbfile,%OPTIONS);
 
 # Create the Source Document
 my $DOCUMENT= ($xmlfile eq '-'
-	       ? LaTeXML::Post::Document->newFromSTDIN(validate=>$validate,
-						       sourceDirectory=>$sourcedir,
-						       destination=>$destination)
-	       : LaTeXML::Post::Document->newFromFile($xmlfile,
-						      validate=>$validate,
-						      sourceDirectory=>$sourcedir,
-						      destination=>$destination));
+	       ? LaTeXML::Post::Document->newFromSTDIN(%DOC_OPTIONS)
+	       : LaTeXML::Post::Document->newFromFile($xmlfile,%DOC_OPTIONS));
+
 # Create the processors:
 my @procs = ();
 if($split){
