@@ -752,8 +752,12 @@ sub cmml_unparsed {
 # Or csymbol if there's some kind of "defining" attribute?
 sub cmml_ci {
   my($item)=@_;
-  my $content = (ref $item ?  $item->textContent : $item);
-  ['m:ci',{},$content]; }
+  if(my $meaning = (ref $item) && $item->getAttribute('meaning')){
+    my $cd = $item->getAttribute('cd') || 'latexml';
+    ['m:csymbol',{cd=>$cd},$meaning]; }
+  else {
+    my $content = (ref $item ?  $item->textContent : $item);
+    ['m:ci',{},$content]; }}
 
 # Experimental; for an XMApp with role=ID, we treat it as a ci
 # or ultimately as csymbol, if it had defining attributes,
