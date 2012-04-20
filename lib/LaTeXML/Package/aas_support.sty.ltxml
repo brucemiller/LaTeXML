@@ -516,14 +516,27 @@ DefConstructor('\aas@@fstack{}',
 	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }},
 	       mode=>'math', bounded=>1);
 DefMacro('\aas@fstack{}','\ensuremath{\aas@@fstack{#1}}');
-DefMacro('\fd',   '\aas@fstack{d}');
-DefMacro('\fh',   '\aas@fstack{h}');
-DefMacro('\fm',   '\aas@fstack{m}');
-DefMacro('\fs',   '\aas@fstack{s}');
-DefMacro('\fdg',  '\aas@fstack{\circ}');
-DefMacro('\farcm','\aas@fstack{\prime}');
-DefMacro('\farcs','\aas@fstack{\prime\prime}');
-DefMacro('\fp',   '\aas@fstack{p}');
+
+# This setup fails to get (eg) \fd to be the UnTeX of the \XMDual!
+# (need to work on getting that right...)
+DefMacro('\fd',   '\ensuremath{\@fd}');
+DefMacro('\fh',   '\ensuremath{\@fh}');
+DefMacro('\fm',   '\ensuremath{\@fm}');
+DefMacro('\fs',   '\ensuremath{\@fs}');
+DefMacro('\fdg',  '\ensuremath{\@fdg}');
+DefMacro('\farcm','\ensuremath{\@farcm}');
+DefMacro('\farcs','\ensuremath{\@farcs}');
+DefMacro('\fp',   '\ensuremath{\@fp}');
+
+DefMath('\@fd',   '\aas@@fstack{d}',      role=>'ID', meaning=>'day', alias=>'\fd');
+DefMath('\@fh',   '\aas@@fstack{h}',      role=>'ID', meaning=>'hour', alias=>'\fh');
+DefMath('\@fm',   '\aas@@fstack{m}',      role=>'ID', meaning=>'minute', alias=>'\fm');
+DefMath('\@fs',   '\aas@@fstack{s}',      role=>'ID', meaning=>'second', alias=>'\fs');
+DefMath('\@fdg',  '\aas@@fstack{\circ}',  role=>'ID', meaning=>'degree', alias=>'\fdg');
+DefMath('\@farcm','\aas@@fstack{\prime}', role=>'ID', meaning=>'arcminute', alias=>'\farcm');
+DefMath('\@farcs','\aas@@fstack{\prime\prime}', role=>'ID', meaning=>'arcsecond', alias=>'\farcs');
+DefMath('\@fp',   '\aas@@fstack{p}');
+
 
 DefMacro('\onehalf','\ifmmode\case{1}{2}\else\text@onehalf\fi');
 DefPrimitiveI('\text@onehalf',  undef,UTF(0xBD));
