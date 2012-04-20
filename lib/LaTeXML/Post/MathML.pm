@@ -744,7 +744,7 @@ sub cmml_unparsed {
   ['m:cerror',{},
    ['m:csymbol',{cd=>'ambiguous',name=>'fragments'}],
 ###   map(cmml($_),@nodes)]; }
-   map( ((getNodeQName($_) eq 'XMTok')&&(($_->getAttribute('role')||'UNKNOWN') eq 'UNKNOWN')
+   map( ((getQName($_) eq 'ltx:XMTok')&&(($_->getAttribute('role')||'UNKNOWN') eq 'UNKNOWN')
 	 ? ['m:csymbol',{cd=>'unknown'},$_->textContent]
 	 : cmml($_)),
 	@nodes)]; }
