@@ -262,13 +262,13 @@ sub make_bibcite {
       @stuff = @preformatted; $show=''; }
     while($show){
       if($show =~ s/^authors?//i){
-	push(@stuff,map($doc->cloneNode($_),@{$$datum{authors}})); }
+	push(@stuff,$doc->cloneNodes(@{$$datum{authors}})); }
       elsif($show =~ s/^fullauthors?//i){
-	push(@stuff,map($doc->cloneNode($_),@{$$datum{fullauthors}})); }
+	push(@stuff,$doc->cloneNodes(@{$$datum{fullauthors}})); }
       elsif($show =~ s/^title//i){
-	push(@stuff,map($doc->cloneNode($_),@{$$datum{title}})); }
+	push(@stuff,$doc->cloneNodes(@{$$datum{title}})); }
       elsif($show =~ s/^refnum//i){
-	push(@stuff,map($doc->cloneNode($_),@{$$datum{refnum}})); }
+	push(@stuff,$doc->cloneNodes(@{$$datum{refnum}})); }
       elsif($show =~ s/^phrase(\d)//i){
 	push(@stuff,$phrases[$1-1]->childNodes) if $phrases[$1-1]; }
       elsif($show =~ s/^year//i){
@@ -389,25 +389,25 @@ sub generateRef_aux {
       my @frefnum  = $doc->trimChildNodes($entry->getValue('frefnum') || $entry->getValue('refnum'));
       if(@frefnum){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'reftag'},map($doc->cloneNode($_),@frefnum)]); }}
+	push(@stuff, ['ltx:text',{class=>'reftag'},$doc->cloneNodes(@frefnum)]); }}
     elsif($show =~ s/^refnum(\.?\s*)//){
       if(my @refnum = $doc->trimChildNodes($entry->getValue('refnum'))){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'reftag'},map($doc->cloneNode($_),@refnum)]); }}
+	push(@stuff, ['ltx:text',{class=>'reftag'},$doc->cloneNodes(@refnum)]); }}
     elsif($show =~ s/^toctitle//){
       my $title = $self->fillInTitle($doc,$entry->getValue('toctitle')||$entry->getValue('title')
 				     || $entry->getValue('toccaption'));
       if($title){
 	$OK = 1;
 	push(@stuff, ['ltx:text',{class=>'reftitle'},
-		      map($doc->cloneNode($_),$doc->trimChildNodes($title))]); }}
+		      $doc->cloneNodes($doc->trimChildNodes($title))]); }}
 
     elsif($show =~ s/^title//){
       my $title= $self->fillInTitle($doc,$entry->getValue('title') || $entry->getValue('toccaption')); # !!!
       if($title){
 	$OK = 1;
 	push(@stuff, ['ltx:text',{class=>'reftitle'},
-		      map($doc->cloneNode($_),$doc->trimChildNodes($title))]); }}
+		      $doc->cloneNodes($doc->trimChildNodes($title))]); }}
     elsif($show =~ s/^(.)//){
       push(@stuff, $1); }}
   ($OK ? @stuff : ()); }

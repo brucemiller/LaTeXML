@@ -25,12 +25,31 @@ sub new {
   $$self{scanner}  = $options{scanner};
   $self; }
 
+# Abstract class:
 # Needs sub process {...
 
-# Given that the subclass has decided to break up the collected content
-# into portions (presumably by Initials?), we'll fill in the
-# main document (at $root) with the first subcollection, and create new documents for the rest.
-# $collections{initial}=>construction data.
+# This class creates a document from data "collected" from other documents,
+# possibly directly (such as a bibliography)
+# or indirectly (such as index data pulled from the ObjectDB).
+# Well.... It would be clearer if it did.
+# it actually "fills in" an element with collected data.
+# AND THEN, possibly, splits it into pages based on some letter or initial.
+# Actually, the instanciable class will do the splitting.
+# This class just has some common methods that help support doing that!
+
+# Given that the subclass has broken up the collected content into portions
+# (presumably by Initials?), we'll 
+#  (1) fill in the main document (at $root) with the first subcollection,
+#  and (2) create new documents for the rest.
+#
+# The data provided is a hash where the key is the initial
+#  and the value is the XML data  (either LibXML data, or array form).
+#    $collections{initial}=>XML
+#
+# NOTE: This would also be cleaner if we knew which documents were
+# going to be created and created them first before creating the XML
+# to go into them, this would let the new subdocuments deal with cloning etc.
+# probably resulting in less id morphing?!?! Probably not so critical anyway...
 sub makeSubCollectionDocuments {
   my($self,$doc,$root,%collections)=@_;
   my @docs = ();

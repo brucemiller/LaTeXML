@@ -196,18 +196,11 @@ sub getNameText {
 
 sub makeBibliographyList {
   my($self,$doc,$initial,$entries)=@_;
-  local $LaTeXML::Post::MakeBibliography::DOCUMENT = $doc;
   my $id = $doc->getDocumentElement->getAttribute('xml:id') || 'bib';
   $id .= ".L1";
   $id .= ".$initial" if $initial;
   ['ltx:biblist',{'xml:id'=>$id},
    map($self->formatBibEntry($doc,$$entries{$_}), sort keys %$entries)]; }
-
-sub getQName {
-  $LaTeXML::Post::MakeBibliography::DOCUMENT->getQName(@_); }
-
-sub Clone {
-  map((ref $_ ? $LaTeXML::Post::MakeBibliography::DOCUMENT->cloneNode($_) :$_), @_); }
 
 # ================================================================================
 sub formatBibEntry {
@@ -218,7 +211,6 @@ sub formatBibEntry {
   my $type = $bibentry->getAttribute('type');
   my @blockspecs = @{ $FMT_SPEC{$type} || [] };
 
-  local $LaTeXML::Post::MakeBibliography::DOCUMENT = $doc;
   local $LaTeXML::Post::MakeBibliography::SUFFIX = $$entry{suffix};
   my $number = ++$LaTeXML::Post::MakeBibliography::NUMBER;
 
@@ -234,24 +226,26 @@ sub formatBibEntry {
   @names = $doc->findnodes('ltx:bib-name[@role="editor"]/ltx:surname',$bibentry) unless @names;
   if(@names > 2){
     push(@tags,['ltx:bibtag',{role=>'authors', class=>'bib-author'},
-		Clone($names[0]->childNodes),['ltx:emph',{},' et al.']]);
+		$doc->cloneNodes($names[0]->childNodes),['ltx:emph',{},' et al.']]);
     my @fnames=();
     foreach my $n (@names[0..$#names-1]){
       push(@fnames,$n->childNodes,', '); }
     push(@tags,['ltx:bibtag',{role=>'fullauthors',class=>'bib-author'},
-		Clone(@fnames),'and ',Clone($names[-1]->childNodes)]); }
+		$doc->cloneNodes(@fnames),
+		' and ',$doc->cloneNodes($names[-1]->childNodes)]); }
   elsif(@names > 1){
     push(@tags,['ltx:bibtag',{role=>'authors',class=>'bib-author'},
-		Clone($names[0]->childNodes),' and ',Clone($names[1]->childNodes)]); }
+		$doc->cloneNodes($names[0]->childNodes),
+		' and ',$doc->cloneNodes($names[1]->childNodes)]); }
   elsif(@names){
     push(@tags,['ltx:bibtag',{role=>'authors',class=>'bib-author'},
-		Clone($names[0]->childNodes)]); }
+		$doc->cloneNodes($names[0]->childNodes)]); }
 
   # Put a key tag, to use in place of authors if needed (esp for software, websites, etc)
   my $keytag;
   if($keytag = $doc->findnode('ltx:bib-key',$bibentry)){
     push(@tags,['ltx:bibtag',{role=>'key',class=>'bib-key'},
-		Clone($keytag->childNodes)]); }
+		$doc->cloneNodes($keytag->childNodes)]); }
 
   my @year=();
   if(my $date = $doc->findnode('ltx:bib-date[@role="publication"]',$bibentry)){
@@ -260,18 +254,18 @@ sub formatBibEntry {
       if($datetext=~/^(\d\d\d\d)/){ # Extract 4 digit year, if any
 	@year = ($1); }}
     push(@tags,['ltx:bibtag',{role=>'year',class=>'bib-year'},
-		Clone(@year),($$entry{suffix} ||'')]); }
+		$doc->cloneNodes(@year),($$entry{suffix} ||'')]); }
 
   # Store a type tag, to use in place of year, if needed (esp for software, ...)
   my $typetag;
   if($typetag = $doc->findnode('ltx:bib-type',$bibentry)){
     push(@tags,['ltx:bibtag',{role=>'bibtype',class=>'bib-type'},
-		Clone($typetag->childNodes)]); }
+		$doc->cloneNodes($typetag->childNodes)]); }
 
   # put in the title
   if(my $title = $doc->findnode('ltx:bib-title',$bibentry)){
     push(@tags,['ltx:bibtag',{role=>'title',class=>'bib-title'},
-		Clone($title->childNodes)]); }
+		$doc->cloneNodes($title->childNodes)]); }
 
   # And finally, the refnum; we need to know the desired citation style!
   # This is screwy!!!
@@ -288,10 +282,10 @@ sub formatBibEntry {
       @rfnames = do_editorsA(@editors); }
     else {
       @rfnames = $keytag->childNodes; }
-    my @rfyear  = (@year  ? (@year,($$entry{suffix} ||''))  : ($typetag ? $typetag->childNodes : ()));
-
+    my @rfyear  = (@year  ? (@year,($$entry{suffix} ||''))
+		   : ($typetag ? $typetag->childNodes : ()));
     push(@tags,['ltx:bibtag',{role=>'refnum',class=>'bib-author-year'},
-		Clone(@rfnames),' (',Clone(@rfyear),')']); }
+		$doc->cloneNodes(@rfnames),' (',$doc->cloneNodes(@rfyear),')']); }
 
   #------------------------------
   # Format the data in blocks, with the first being bib-label, rest bibblock.
@@ -305,7 +299,7 @@ sub formatBibEntry {
       next unless ($xpath eq 'true') || ($negated ? !@nodes : @nodes);
       push(@x,$punct) if $punct && @x;
       push(@x,$pre) if $pre;
-      push(@x,['ltx:text',{class=>$class}, &$op(Clone(@nodes))]) if $op;
+      push(@x,['ltx:text',{class=>$class}, &$op($doc->cloneNodes(@nodes))]) if $op;
       push(@x,$post) if $post; }
     push(@blocks,['ltx:bibblock',{'xml:space'=>'preserve'},@x]) if @x;
   }
@@ -328,13 +322,13 @@ sub do_any  { @_; }
 sub do_name {
   my($node)=@_;
   # NOTE: This should be a formatting option; use initials or full first names.
-  my $first = $LaTeXML::Post::MakeBibliography::DOCUMENT->findnode('ltx:givenname',$node);
+  my $first = $LaTeXML::Post::DOCUMENT->findnode('ltx:givenname',$node);
   if($first){			# && use initials
     $first = join('',map( (/\.$/ ? "$_ " : (/^(.)/ ? "$1. " : '')),
 			  split(/\s/,$first->textContent))); }
   else {
     $first = (); }
-  my $sur = $LaTeXML::Post::MakeBibliography::DOCUMENT->findnode('ltx:surname',$node);
+  my $sur = $LaTeXML::Post::DOCUMENT->findnode('ltx:surname',$node);
 # Why, oh Why do we need the _extra_ cloneNode ???
   ( $first,$sur->cloneNode(1)->childNodes); }
 
@@ -389,23 +383,24 @@ our $LINKS;
 sub do_links {
   my(@nodes)=@_;
   my @links=();
-
+  my $doc = $LaTeXML::Post::DOCUMENT;
   foreach my $node (@nodes){
     my $scheme = $node->getAttribute('scheme') || '';
     my $href   = $node->getAttribute('href');
-    my $tag = getQName($node);
+    my $tag = $doc->getQName($node);
     if(($tag eq 'ltx:bib-identifier') || ($tag eq 'ltx:bib-review')){
       if($href){
 	push(@links,['ltx:ref',{href=>$href, class=>"$scheme externallink"},
-		     map($_->cloneNode(1),$node->childNodes)]); }
+		     $doc->cloneNodes($node->childNodes)]); }
       else {
 	push(@links,['ltx:text',{class=>"$scheme externallink"},
-		     map($_->cloneNode(1),$node->childNodes)]); }}
+		     $doc->cloneNodes($node->childNodes)]); }}
     elsif($tag eq 'ltx:bib-links'){
-      push(@links,['ltx:text',{class=>"externallink"},map($_->cloneNode(1),$node->childNodes)]); }
+      push(@links,['ltx:text',{class=>"externallink"},
+		   $doc->cloneNodes($node->childNodes)]); }
     elsif($tag eq 'ltx:bib-url'         ){
       push(@links,['ltx:ref',{href=>$href, class=>'externallink'},
-		   map($_->cloneNode(1),$node->childNodes)]); }}
+		   $doc->cloneNodes($node->childNodes)]); }}
 
   @links = map((",\n",$_),@links); # non-string join()
   @links[1..$#links]; }

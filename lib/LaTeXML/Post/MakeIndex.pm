@@ -121,8 +121,7 @@ sub add_rec {
 					   subtrees=>{},referrers=>{}, parent=>$tree}; 
       $$allkeys{$fullkey}={id=>$id,
 			   phrases=>[($$tree{key} ? @{$$allkeys{$$tree{key}}{phrases}}:())," ",
-				     map($doc->cloneNode($_),$doc->trimChildNodes($phrase))
-				    ]};
+				     $doc->cloneNodes($doc->trimChildNodes($phrase)) ]};
       }
     add_rec($doc,$allkeys,$allphrases,$subtree,$entry,@phrases); }
   else {
