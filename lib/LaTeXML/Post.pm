@@ -390,22 +390,6 @@ sub siteRelativeDestination {
    ? pathname_relative($$self{destination},$$self{siteDirectory})
    : undef); }
 
-# Given an absolute pathname to some Resource in the document source directory (eg. an image),
-# return the corresponding pathname relative to the site directory(!)
-# (presumably that resource file will be copied to the corresponding place in the destination.)
-# The idea is that it should have the same relative path from the target file
-# as it did to the source file.
-# Returns undef if such a path cannot be constructed, such as when the resource
-# is not contained within a directory that corresponds to the site directory.
-sub siteRelativeResource {
-  my($self,$pathname)=@_;
-  # source file relative to the document's source
-  my $relsrc = pathname_relative($pathname, $$self{sourceDirectory});
-  # absolute path where that file ought to go in the destination directory.
-  my $dest = pathname_absolute($relsrc,$$self{destinationDirectory});
-  # Now check whether it is relative to the site, and return the relative path, if so.
-  pathname_is_contained($dest,$$self{siteDirectory}); }
-
 sub getParentDocument { $_[0]->{parentDocument}; }
 sub getAncestorDocument { 
   my($self)=@_;
@@ -651,6 +635,10 @@ sub cloneNode {
     if(my $id = $idmap{$n->getAttribute('idref')}){
       $n->setAttribute(idref=>$id); }} # use id or fragid?
   $copy; }
+
+sub cloneNodes {
+  my($self,@nodes)=@_;
+  map($self->cloneNode($_),@nodes); }
 
 #======================================================================
 
