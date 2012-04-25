@@ -424,6 +424,9 @@ sub ResetCounter {
 # It is suitable for use in Tag afterOpen as
 #  Tag('ltx:para',afterOpen=>sub { GenerateID(@_,'p'); });
 # It generates an id of the form <parentid>.<prefix><number>
+# The parent node (the one with ID=<parentid>) also maintains a counter
+# stored in an attribute _ID_counter_<prefix> recording the last used
+# <number> for <prefix> amongst its descendents.
 sub GenerateID {
   my($document,$node,$whatsit,$prefix)=@_;
   if(!$node->hasAttribute('xml:id') && $document->getModel->canHaveAttribute($node,'xml:id')){
