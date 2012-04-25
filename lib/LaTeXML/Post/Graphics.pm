@@ -204,11 +204,17 @@ sub transformGraphic {
   if($$self{trivial_scaling} && ($type eq $srctype) && !grep(!($_->[0]=~/^scale/),@$transform)){
     # With a simple scaling transformation we can preserve path & file-names
     # But only if we can mimic the relative path in the site directory.
-    $reldest = $doc->siteRelativeResource($source) unless defined $reldest;
-    # If that failed, generate a pseudo random filename.
-    $reldest = $self->generateResourcePathname($doc,$node,$source,$type) unless defined $reldest;
-    # OK, hopefuly we've got something now.
-    my $dest = $doc->checkDestination($reldest);
+    # Get image source file relative to the document's source file
+    $reldest = pathname_relative($source, $doc->getSourceDirectory);
+    # and it's (eventual) absolute path in the destination directory
+    # assuming it had the same relative path from the destination file.
+    my $dest = pathname_absolute($reldest,$doc->getDestinationDirectory);
+    # Now IFF that is a valid relative path WITHIN the site directory, we'll use it.
+    # Otherwise, we'd better fall back to a generated name.
+    if(! pathname_is_contained($dest,$doc->getSiteDirectory)){
+      $reldest = $self->generateResourcePathname($doc,$node,$source,$type);
+      $dest = $doc->checkDestination($reldest); }
+
     $self->ProgressDetailed($doc,"Destination $dest");
     ($width,$height)=$self->trivial_scaling($doc,$source,$transform);
     return unless $width && $height;
