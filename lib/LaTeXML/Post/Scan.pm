@@ -127,6 +127,15 @@ sub noteLabels {
 	$$self{db}->register($label,id=>$id); }
       [@labels]; }}}
 
+# Clean up a node before insertion into database.
+sub cleanNode {
+  my($self,$doc,$node)=@_;
+  return undef unless $node;
+  my $cleaned = $node->cloneNode(1);
+  # Remove indexmark (anything else ?)
+  map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$cleaned));
+  $cleaned; }
+
 sub default_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
@@ -141,25 +150,15 @@ sub section_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if($id){
-    my $toctitle = $doc->findnode('ltx:toctitle',$node);
-    if($toctitle){
-      $toctitle = $toctitle->cloneNode(1);
-      map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$toctitle)); }
-    my $title = $doc->findnode('ltx:title',$node);
-    if($title){
-      $title = $title->cloneNode(1);
-      map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$title)); }
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
 			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
 			 frefnum=>$node->getAttribute('frefnum'),
-			 title=>$title, toctitle=>$toctitle, children=>[],
+			 title=>$self->cleanNode($doc,$doc->findnode('ltx:title',$node)),
+			 toctitle=>$self->cleanNode($doc,$doc->findnode('ltx:toctitle',$node)),
+			 children=>[],
 			 stub=>$node->getAttribute('stub'));
-    # if(my $p = $parent_id && $$self{db}->lookup("ID:$parent_id")){
-    #   if(my $sib = $p->getValue('children')){
-    # 	if(! grep($_ eq $id,@$sib)){
-    # 	  push(@$sib,$id); }}}
     $self->addAsChild($id,$parent_id);  }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
@@ -167,20 +166,15 @@ sub captioned_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if($id){
-    my $toccaption = $doc->findnode('descendant::ltx:toccaption',$node);
-    if($toccaption){
-      $toccaption = $toccaption->cloneNode(1);
-      map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$toccaption)); }
-    my $caption = $doc->findnode('descendant::ltx:caption',$node);
-    if($caption){
-      $caption = $caption->cloneNode(1);
-      map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$caption)); }
     $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
 			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
 			 frefnum=>$node->getAttribute('frefnum'),
-			 caption=>$caption, toccaption=>$toccaption);
+			 caption=>$self->cleanNode($doc,
+					   $doc->findnode('descendant::ltx:caption',$node)),
+			 toccaption=>$self->cleanNode($doc,
+					   $doc->findnode('descendant::ltx:toccaption',$node)));
     $self->addAsChild($id,$parent_id);  }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
