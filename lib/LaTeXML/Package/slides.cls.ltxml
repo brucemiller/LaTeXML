@@ -1,0 +1,168 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  slides                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use strict;
+use LaTeXML::Package;
+package LaTeXML::Package::Pool;
+
+#**********************************************************************
+# Option handling
+foreach my $option (qw(letterpaper legalpaper executivepaper a4paper a5paper b5paper
+		       landscape clock
+		       final draft titlepage notitlepage onecolumn twocolumn
+		       leqno fleqn)){
+  DeclareOption($option,undef); }
+ProcessOptions();
+
+#**********************************************************************
+# Document structure.
+RelaxNGSchema("LaTeXML");
+
+DefConditional('\if@bw');
+DefConditional('\if@clock');
+DefConditional('\if@makingslides');
+DefConditional('\if@onlynotesw');
+DefConditional('\if@onlyslidesw');
+DefConditional('\if@titlepage');
+DefConditional('\if@visible');
+DefMacroI('\ifourteenpt',  undef,'13.82');
+DefMacroI('\iseventeenpt', undef,'16.59');
+DefMacroI('\itwentypt',    undef,'19.907');
+DefMacroI('\itwentyfourpt',undef,'23.89');
+DefMacroI('\itwentyninept',undef,'28.66');
+DefMacroI('\ithirtyfourpt',undef,'34.4');
+DefMacroI('\ifortyonept',  undef,'41.28');
+# ???
+DefMacro('\newifg Token','\newif#1');
+DefConditional('\ifG@slidesw');
+#DefConditional('\ifG@123');
+# \@ifG,
+
+# redefns
+# \@@overline, \@frac, \@xoverline,
+# \@xsqrt, \@xunderline, \@xysqrt, \@xyunderline,
+
+# \@bphantom, \@hbphantom, \@vbphantom,
+# \@smashboxa, \@smashboxb, \@smashboxc,
+# \@hvsmash,
+
+Let(T_CS('\@topfil'),T_CS('\vfil'));
+Let(T_CS('\@botfil'),T_CS('\vfil'));
+
+# \@ggobtoend, \@gobbletoend,
+# \@mainsize, \@makefntext,
+# \@mathbox, \@mmodetest,
+# \@setfontsize@parms,
+# \@setlimits,
+# \@sl@ccdr,
+# \@sl@getargs,
+
+DefConstructor('\addtime Number','<ltx:note>add time #1</ltx:note>');
+DefConstructor('\settime Number','<ltx:note>set time #1</ltx:note>');
+
+# Hmm... should be saving the color and restoring upon visible.
+# or better yet, should be an alpha channel in font!!!
+# CSS3 has an opacity property (0--1)
+DefPrimitiveI('\invisible',undef, undef, font=>{opacity=>0}); # ?
+DefPrimitiveI('\visible',undef, undef, font=>{opacity=>1}); # ?
+
+DefPrimitive('\showfont',sub {
+ my $font = LookupValue('font');
+ print STDERR "\nFONT IS: ".Stringify($font)."\n"; 
+return;});
+
+
+RequirePackage('color');	# ?
+# \@color, \@colorlist, \last@color,
+DefMacro('\blackandwhite','');
+DefMacro('\colors{}','');	# ?
+DefMacro('\colorslides{}','');
+
+DefMacroI('\setupcounters',undef,'');
+
+DefMacroI('\ps@headings',undef,'');
+DefMacroI('\ps@note',undef,'');
+DefMacroI('\ps@overlay',undef,'');
+DefMacroI('\ps@slide',undef,'');
+# \@doglnotelist, \@doglslidelist, \@donotelist, \@doslidelist,
+# \@extraslide,
+
+#**********************************************************************
+# The core sectioning commands are defined in LaTeX.pm
+# but the counter setup, etc, depends on article
+NewCounter('slide',        'document',     idprefix=>'s', nested=>['overlay']);
+NewCounter('overlay',      'slide',        idprefix=>'o');
+NewCounter('note',         'document',     idprefix=>'n');
+
+DefMacro('\theslide',        '\arabic{slide}');
+DefMacro('\thenote',         '\arabic{note}');
+DefMacro('\theoverlay',      '\theslide.\arabic{overlay}');
+
+NewCounter('equation', 'document', idprefix=>'E');
+DefMacro('\theequation', '\arabic{equation}');
+
+NewCounter('@itemizei',   'document',   idprefix=>'I');
+NewCounter('@itemizeii',  '@itemizei',  idprefix=>'I');
+NewCounter('@itemizeiii', '@itemizeii', idprefix=>'I');
+NewCounter('@itemizeiv',  '@itemizeiii',idprefix=>'I');
+NewCounter('@itemizev',   '@itemizeiv', idprefix=>'I');
+NewCounter('@itemizevi',  '@itemizev',  idprefix=>'I');
+
+NewCounter('enumi',  '@itemizei',   idprefix=>'i');
+NewCounter('enumii', '@itemizeii',  idprefix=>'i');
+NewCounter('enumiii','@itemizeiii', idprefix=>'i');
+NewCounter('enumiv', '@itemizeiv',  idprefix=>'i');
+# A couple of more levels, since we use these for ID's!
+NewCounter('enumv',  '@itemizev',   idprefix=>'i');
+NewCounter('enumvi', '@itemizevi',  idprefix=>'i');
+
+DefMacro('\theenumi',           '\arabic{enumi}');
+DefMacro('\theenumii',          '\alph{enumii}');
+DefMacro('\theenumiii',         '\roman{enumiii}');
+DefMacro('\theenumiv',          '\Alph{enumiv}');
+
+#**********************************************************************
+
+AssignValue(DOSLIDES=>1,'global');
+AssignValue(DONOTES=>1,'global');
+
+DefPrimitiveI('\onlynotes',undef,sub {
+  AssignValue(DONOTES=>1,'global');
+  AssignValue(DOSLIDES=>0,'global'); });
+
+DefPrimitiveI('\onlyslides',undef,sub {
+  AssignValue(DONOTES=>0,'global');
+  AssignValue(DOSLIDES=>1,'global'); });
+
+DefEnvironment('{slide}',
+	       "<ltx:slide xml:id='#id' refnum='#refnum' frefnum='#frefnum'>"
+	       .   "#body"
+	       ."</ltx:slide>",
+	       properties=> sub { (doslide=>sub{ LookupValue('DOSLIDES'); },
+				   RefStepCounter('slide')) });
+
+DefEnvironment('{overlay}',
+	       "<ltx:slide xml:id='#id' refnum='#refnum' frefnum='#frefnum'>"
+	       .   "#body"
+	       ."</ltx:slide>",
+	       properties=> sub { (doslide=>sub{ LookupValue('DOSLIDES'); },
+				   RefStepCounter('overlay')) });
+
+DefEnvironment('{note}',
+	       "<ltx:note xml:id='#id' refnum='#refnum' frefnum='#frefnum'>"
+	       .   "#body"
+	       ."</ltx:note>",
+	       properties=> sub { (doslide=>sub{ LookupValue('DONOTES'); },
+				   RefStepCounter('note')) });
+
+#**********************************************************************
+1;
