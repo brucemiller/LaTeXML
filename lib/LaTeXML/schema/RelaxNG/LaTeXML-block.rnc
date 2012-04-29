@@ -182,15 +182,8 @@ element verbatim { verbatim_attributes, verbatim_model }
 verbatim_attributes =
   Common.attributes,
   ID.attributes,
-  ## the font to use; generally typewriter.
-  attribute font { text }?,
-
-  ## Indicates the text size to use. (See \elementref{text})
-  attribute size { "Huge" | "huge" | "LARGE" | "Large" | "large" | "normal"
-                 | "small" | "footnote" | "tiny" | text }?,
-
-  ## the color to use; any CSS compatible color specification.
-  attribute color { text }?
+  Fontable.attributes,
+  Colorable.attributes
 
 ## Content model for \elementref{verbatim}.
 verbatim_model = Inline.model

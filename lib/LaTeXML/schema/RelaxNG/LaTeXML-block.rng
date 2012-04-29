@@ -289,33 +289,8 @@ typesets its contents as a block.</a:documentation>
     <a:documentation>Attributes for \elementref{verbatim}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="ID.attributes"/>
-    <optional>
-      <attribute name="font">
-        <a:documentation>the font to use; generally typewriter.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="size">
-        <a:documentation>Indicates the text size to use. (See \elementref{text})</a:documentation>
-        <choice>
-          <value>Huge</value>
-          <value>huge</value>
-          <value>LARGE</value>
-          <value>Large</value>
-          <value>large</value>
-          <value>normal</value>
-          <value>small</value>
-          <value>footnote</value>
-          <value>tiny</value>
-          <text/>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="color">
-        <a:documentation>the color to use; any CSS compatible color specification.</a:documentation>
-      </attribute>
-    </optional>
+    <ref name="Fontable.attributes"/>
+    <ref name="Colorable.attributes"/>
   </define>
   <define name="verbatim_model">
     <a:documentation>Content model for \elementref{verbatim}.</a:documentation>

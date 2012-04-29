@@ -244,31 +244,8 @@ Or, should caption be used for theorem and proof?</a:documentation>
   <define name="caption_attributes">
     <a:documentation>Attributes for \elementref{caption}.</a:documentation>
     <ref name="Common.attributes"/>
-    <optional>
-      <attribute name="font"/>
-    </optional>
-    <optional>
-      <attribute name="size">
-        <a:documentation>Indicates the text size to use. (See \elementref{text})</a:documentation>
-        <choice>
-          <value>Huge</value>
-          <value>huge</value>
-          <value>LARGE</value>
-          <value>Large</value>
-          <value>large</value>
-          <value>normal</value>
-          <value>small</value>
-          <value>footnote</value>
-          <value>tiny</value>
-          <text/>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="color">
-        <a:documentation>the color to use; any CSS compatible color specification.</a:documentation>
-      </attribute>
-    </optional>
+    <ref name="Fontable.attributes"/>
+    <ref name="Colorable.attributes"/>
   </define>
   <define name="caption_model">
     <a:documentation>Content model for \elementref{caption},

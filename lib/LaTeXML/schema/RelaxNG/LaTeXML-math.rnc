@@ -121,6 +121,8 @@ XMTok_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
+  Fontable.attributes,
+  Colorable.attributes,
 
   ## The name of the token, typically the control sequence that created it.
   attribute name { text }?,
@@ -131,15 +133,6 @@ XMTok_attributes =
 
   ## The OpenMath CD for which \attr{meaning} is a symbol.
   attribute omcd { text }?,
-
-  ## The font used for the symbol.
-  attribute font { text }?,
-
-  ## The size for the symbol, not presumed to be semantic.
-  attribute size { text }?,
-
-  ## The color (CSS format) for the symbol, not presumed to be meaningful(?)
-  attribute color { text }?,
 
   ## An encoding of the position of this token as a sub/superscript, used
   ## to handle aligned and nested scripts, both pre and post.

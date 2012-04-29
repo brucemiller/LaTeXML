@@ -31,6 +31,7 @@
       <ref name="section"/>
       <ref name="chapter"/>
       <ref name="part"/>
+      <ref name="slide"/>
     </choice>
   </define>
   <define name="document_attributes">
@@ -67,6 +68,7 @@
     <choice>
       <ref name="Para.model"/>
       <ref name="chapter"/>
+      <ref name="slide"/>
     </choice>
   </define>
   <define name="part_attributes">
@@ -99,6 +101,7 @@
       <ref name="subsubsection"/>
       <ref name="subsection"/>
       <ref name="section"/>
+      <ref name="slide"/>
     </choice>
   </define>
   <define name="chapter_attributes">
@@ -130,6 +133,7 @@
       <ref name="paragraph"/>
       <ref name="subsubsection"/>
       <ref name="subsection"/>
+      <ref name="slide"/>
     </choice>
   </define>
   <define name="section_attributes">
@@ -154,12 +158,13 @@
     </element>
   </define>
   <define name="subsection.body.class">
-    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <a:documentation>The content allowable as the main body of a subsection.</a:documentation>
     <choice>
       <ref name="Para.model"/>
       <ref name="subparagraph"/>
       <ref name="paragraph"/>
       <ref name="subsubsection"/>
+      <ref name="slide"/>
     </choice>
   </define>
   <define name="subsection_attributes">
@@ -184,11 +189,12 @@
     </element>
   </define>
   <define name="subsubsection.body.class">
-    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <a:documentation>The content allowable as the main body of a subsubsection.</a:documentation>
     <choice>
       <ref name="Para.model"/>
       <ref name="subparagraph"/>
       <ref name="paragraph"/>
+      <ref name="slide"/>
     </choice>
   </define>
   <define name="subsubsection_attributes">
@@ -214,10 +220,11 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
     </element>
   </define>
   <define name="paragraph.body.class">
-    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
+    <a:documentation>The content allowable as the main body of a paragraph.</a:documentation>
     <choice>
       <ref name="Para.model"/>
       <ref name="subparagraph"/>
+      <ref name="slide"/>
     </choice>
   </define>
   <define name="paragraph_attributes">
@@ -242,8 +249,11 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
     </element>
   </define>
   <define name="subparagraph.body.class">
-    <a:documentation>The content allowable as the main body of a chapter.</a:documentation>
-    <ref name="Para.model"/>
+    <a:documentation>The content allowable as the main body of a subparagraph.</a:documentation>
+    <choice>
+      <ref name="Para.model"/>
+      <ref name="slide"/>
+    </choice>
   </define>
   <define name="subparagraph_attributes">
     <a:documentation>Attributes for \elementref{subparagraph}.</a:documentation>
@@ -256,6 +266,31 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
     </zeroOrMore>
     <zeroOrMore>
       <ref name="subparagraph.body.class"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="slide">
+    <element name="slide">
+      <a:documentation>A Subparagraph within a document.</a:documentation>
+      <ref name="slide_attributes"/>
+      <ref name="slide_model"/>
+    </element>
+  </define>
+  <define name="slide.body.class">
+    <a:documentation>The content allowable as the main body of a slide.</a:documentation>
+    <ref name="Para.model"/>
+  </define>
+  <define name="slide_attributes">
+    <a:documentation>Attributes for \elementref{slide}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <define name="slide_model">
+    <a:documentation>Content model for \elementref{slide}.</a:documentation>
+    <zeroOrMore>
+      <ref name="SectionalFrontMatter.class"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="slide.body.class"/>
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
@@ -275,6 +310,7 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
       <ref name="subsubsection"/>
       <ref name="subsection"/>
       <ref name="section"/>
+      <ref name="slide"/>
     </choice>
   </define>
   <define name="appendix_attributes">
@@ -429,33 +465,8 @@ arbitrary text, in addition to the expected \elementref{ref}'s.</a:documentation
   <define name="title_attributes">
     <a:documentation>Attributes for \elementref{title}.</a:documentation>
     <ref name="Common.attributes"/>
-    <optional>
-      <attribute name="font">
-        <a:documentation>The font prefered for the title.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="size">
-        <a:documentation>Indicates the text size to use. (See \elementref{text})</a:documentation>
-        <choice>
-          <value>Huge</value>
-          <value>huge</value>
-          <value>LARGE</value>
-          <value>Large</value>
-          <value>large</value>
-          <value>normal</value>
-          <value>small</value>
-          <value>footnote</value>
-          <value>tiny</value>
-          <text/>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="color">
-        <a:documentation>the color to use; any CSS compatible color specification.</a:documentation>
-      </attribute>
-    </optional>
+    <ref name="Fontable.attributes"/>
+    <ref name="Colorable.attributes"/>
   </define>
   <define name="title_model">
     <a:documentation>Content model for \elementref{title},
@@ -862,6 +873,12 @@ Could also use a navigation name text or something?</a:documentation>
     <a:documentation>Attributes shared by all sectional elements</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+    <optional>
+      <attribute name="rdf-prefixes">
+        <a:documentation>Stores RDFa prefixes as space separated pairs \verb|prefix:url|;
+this should only appear at the root element.</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="FrontMatter.attributes">
     <a:documentation>Attributes for other elements that can be used in frontmatter.</a:documentation>

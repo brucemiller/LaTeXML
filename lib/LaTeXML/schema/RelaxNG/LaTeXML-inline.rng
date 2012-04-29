@@ -32,6 +32,7 @@ and can appear in inline and block contexts.</a:documentation>
     <choice>
       <ref name="note"/>
       <ref name="indexmark"/>
+      <ref name="rdf"/>
       <ref name="ERROR"/>
     </choice>
   </define>
@@ -48,49 +49,8 @@ Attributes cover a variety of styling and position shifting properties.</a:docum
     <a:documentation>Attributes for \elementref{text}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Positionable.attributes"/>
-    <optional>
-      <attribute name="font">
-        <a:documentation>Indicates the font to use. It consists of a space separated sequence
-of values representing the
-family (\texttt{serif}, \texttt{sansserif}, \texttt{math}, \texttt{typewriter},
-    \texttt{caligraphic}, \texttt{fraktur}, \texttt{script}, \ldots),
-series (\texttt{medium}, \texttt{bold}, \ldots),
-and shape (\texttt{upright}, \texttt{italic}, \texttt{slanted}, \texttt{smallcaps}, \ldots).
-Only the values differing from the current context are given.
-Each component is open-ended, for extensibility; it is thus unclear
-whether unknown values specify family, series or shape.
-In postprocessing, these values are carried to the \attr{class} attribute,
-and can thus be effected by CSS.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="size">
-        <a:documentation>Indicates the text size to use. The values are modeled after the
-more abstract \LaTeX\ font size switches, rather than point-sizes.
-The values are open-ended for extensibility;
-In postprocessing, these values are carried to the \attr{class} attribute,
-and can thus be effected by CSS.</a:documentation>
-        <choice>
-          <value>Huge</value>
-          <value>huge</value>
-          <value>LARGE</value>
-          <value>Large</value>
-          <value>large</value>
-          <value>normal</value>
-          <value>small</value>
-          <value>footnote</value>
-          <value>tiny</value>
-          <text/>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="color">
-        <a:documentation>the color to use; any CSS compatible color specification.
-In postprocessing, these values are carried to the \attr{class} attribute,
-and can thus be effected by CSS.</a:documentation>
-      </attribute>
-    </optional>
+    <ref name="Fontable.attributes"/>
+    <ref name="Colorable.attributes"/>
   </define>
   <define name="text_model">
     <a:documentation>Content model for \elementref{text}.</a:documentation>
@@ -429,6 +389,53 @@ used to crossreference.</a:documentation>
   <define name="indexsee_model">
     <a:documentation>Content model for \elementref{indexsee}.</a:documentation>
     <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="rdf">
+    <element name="rdf">
+      <a:documentation>A container for RDF annotations.
+(See document structure for rdf-prefixes attribute)</a:documentation>
+      <ref name="rdf_attributes"/>
+      <ref name="rdf_model"/>
+    </element>
+  </define>
+  <define name="rdf_attributes">
+    <a:documentation>Attributes for \elementref{rdf}</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="property">
+        <a:documentation>indicates the RDFa property.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="content">
+        <a:documentation>indicates the RDFa content.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="rel">
+        <a:documentation>indicates the RDFa relation.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="resource">
+        <a:documentation>indicates the RDFa relation.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="datatype">
+        <a:documentation>indicates the RDFa content datatype.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="about">
+        <a:documentation>indicates the RDFa about.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="rdf_model">
+    <a:documentation>Content model for \elementref{rdf}</a:documentation>
+    <ref name="Flow.model"/>
   </define>
 </grammar>
 <!-- ====================================================================== -->

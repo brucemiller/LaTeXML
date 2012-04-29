@@ -180,6 +180,8 @@ the last character is repeated if there aren't enough.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="XMath.attributes"/>
     <ref name="ID.attributes"/>
+    <ref name="Fontable.attributes"/>
+    <ref name="Colorable.attributes"/>
     <optional>
       <attribute name="name">
         <a:documentation>The name of the token, typically the control sequence that created it.</a:documentation>
@@ -194,21 +196,6 @@ such as the OpenMath name.</a:documentation>
     <optional>
       <attribute name="omcd">
         <a:documentation>The OpenMath CD for which \attr{meaning} is a symbol.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="font">
-        <a:documentation>The font used for the symbol.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="size">
-        <a:documentation>The size for the symbol, not presumed to be semantic.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="color">
-        <a:documentation>The color (CSS format) for the symbol, not presumed to be meaningful(?)</a:documentation>
       </attribute>
     </optional>
     <optional>

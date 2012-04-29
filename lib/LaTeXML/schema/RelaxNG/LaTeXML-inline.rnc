@@ -20,7 +20,7 @@ Inline.class |=
 
 ## Additionally, it defines these meta elements. These are generally hidden,
 ## and can appear in inline and block contexts.
-Meta.class   |= note |  indexmark | ERROR
+Meta.class   |= note |  indexmark | rdf | ERROR
 
 #======================================================================
 
@@ -33,32 +33,8 @@ element text { text_attributes, text_model }
 text_attributes = 
   Common.attributes,
   Positionable.attributes,
-
-  ## Indicates the font to use. It consists of a space separated sequence
-  ## of values representing the
-  ## family (\texttt{serif}, \texttt{sansserif}, \texttt{math}, \texttt{typewriter},
-  ##     \texttt{caligraphic}, \texttt{fraktur}, \texttt{script}, \ldots),
-  ## series (\texttt{medium}, \texttt{bold}, \ldots),
-  ## and shape (\texttt{upright}, \texttt{italic}, \texttt{slanted}, \texttt{smallcaps}, \ldots).
-  ## Only the values differing from the current context are given.
-  ## Each component is open-ended, for extensibility; it is thus unclear
-  ## whether unknown values specify family, series or shape.
-  ## In postprocessing, these values are carried to the \attr{class} attribute,
-  ## and can thus be effected by CSS.
-  attribute font { text }?,
-
-  ## Indicates the text size to use. The values are modeled after the
-  ## more abstract \LaTeX\ font size switches, rather than point-sizes.
-  ## The values are open-ended for extensibility;
-  ## In postprocessing, these values are carried to the \attr{class} attribute,
-  ## and can thus be effected by CSS.
-  attribute size { "Huge" | "huge" | "LARGE" | "Large" | "large" | "normal"
-                 | "small" | "footnote" | "tiny" | text }?,
-
-  ## the color to use; any CSS compatible color specification.
-  ## In postprocessing, these values are carried to the \attr{class} attribute,
-  ## and can thus be effected by CSS.
-  attribute color { text }?
+  Fontable.attributes,
+  Colorable.attributes
 
 ## Content model for \elementref{text}.
 text_model = Inline.model
@@ -303,5 +279,37 @@ indexsee_attributes =
 
 ## Content model for \elementref{indexsee}.
 indexsee_model = Inline.model
+
+#======================================================================
+
+rdf =
+## A container for RDF annotations.
+## (See document structure for rdf-prefixes attribute)
+element rdf { rdf_attributes, rdf_model }
+
+## Attributes for \elementref{rdf}
+rdf_attributes =
+  Common.attributes,
+
+  ## indicates the RDFa property.
+  attribute property { text }?,
+
+  ## indicates the RDFa content.
+  attribute content { text }?,
+
+  ## indicates the RDFa relation.
+  attribute rel { text }?,
+
+  ## indicates the RDFa relation.
+  attribute resource { text }?,
+
+  ## indicates the RDFa content datatype.
+  attribute datatype { text }?,
+
+  ## indicates the RDFa about.
+  attribute about { text }?
+
+## Content model for \elementref{rdf}
+rdf_model = Flow.model
 
 #======================================================================
