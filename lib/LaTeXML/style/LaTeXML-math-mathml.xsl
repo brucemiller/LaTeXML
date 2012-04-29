@@ -22,7 +22,33 @@
     exclude-result-prefixes = "ltx">
 
   <xsl:template match="ltx:Math">
-    <xsl:apply-templates select="m:math"/>
+    <xsl:choose>
+      <xsl:when test="m:math">
+	<xsl:apply-templates select="m:math"/>
+      </xsl:when>
+      <xsl:when test="@imagesrc">
+	<img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}" alt="{@tex}">
+	  <xsl:call-template name="add_id"/>
+	  <xsl:call-template name="add_attributes">
+	    <xsl:with-param name="extra_classes" select="math"/>
+	    <xsl:with-param name="extra_style">
+	      <xsl:if test="@imagedepth">
+		<xsl:value-of select="concat('vertical-align:-',@imagedepth,'px')"/>
+	      </xsl:if>
+	    </xsl:with-param>
+	  </xsl:call-template>
+	</img>
+      </xsl:when>
+      <xsl:otherwise>
+	<span>
+	  <xsl:call-template name="add_id"/>
+	  <xsl:call-template name="add_attributes">
+	    <xsl:with-param name="extra_classes" select="math"/>
+	  </xsl:call-template>	
+	  <xsl:value-of select="@tex"/>
+	</span>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
     <!-- A note on namespaces: In <xlt:element name="{???}", use

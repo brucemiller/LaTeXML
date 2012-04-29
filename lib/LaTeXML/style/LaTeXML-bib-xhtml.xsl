@@ -27,26 +27,33 @@
 
   <!-- NOTE: bibentry (and all it's components) are converted by postprocessing. -->
 
-  <xsl:template match="ltx:biblist" xml:space="preserve">
-    <ul class="{f:classes(.)}"><xsl:call-template name="add_id"/>
+  <xsl:template match="ltx:biblist">
+    <ul>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
     </ul>
   </xsl:template>
 
-  <xsl:template match="ltx:bibitem" xml:space="preserve">
-    <li class="{f:classes(.)}"><xsl:call-template name="add_id"/>
+  <xsl:template match="ltx:bibitem">
+    <li>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
     </li>
   </xsl:template>
 
   <xsl:template match="ltx:bibitem/ltx:bibtag[@role='refnum']">
-    <span class="{f:classes(.)}"><xsl:value-of select="@open"/><xsl:apply-templates/><xsl:value-of select="@close"/></span>
+    <span><xsl:call-template name="add_id"/><xsl:call-template name="add_attributes"
+      /><xsl:value-of select="@open"/><xsl:apply-templates/><xsl:value-of select="@close"/></span>
   </xsl:template>
 
   <xsl:template match="ltx:bibtag"/>
 
-  <xsl:template match="ltx:bibblock" xml:space="preserve">
-    <div class="bibblock"><xsl:call-template name="add_id"/>
+  <xsl:template match="ltx:bibblock">
+    <div>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
     </div>
   </xsl:template>

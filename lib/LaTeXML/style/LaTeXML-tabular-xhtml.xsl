@@ -21,67 +21,84 @@
     extension-element-prefixes="f"
     exclude-result-prefixes = "ltx f">
 
-<!-- ======================================================================
-     Tabulars
-     ====================================================================== -->
+  <!-- ======================================================================
+       Tabulars
+       ====================================================================== -->
 
-<xsl:template match="ltx:tabular" xml:space="preserve">
-  <table class="{f:classes(.)}"><xsl:call-template name="add_id"/>
-    <xsl:apply-templates/>
-  </table>
-</xsl:template>
+  <xsl:template match="ltx:tabular">
+    <table>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates/>
+    </table>
+  </xsl:template>
 
-<xsl:template match="ltx:thead" xml:space="preserve">
-  <thead class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></thead>
-</xsl:template>
+  <xsl:template match="ltx:thead">
+    <thead>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates/>
+    </thead>
+  </xsl:template>
 
-<xsl:template match="ltx:tbody" xml:space="preserve">
-  <tbody class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></tbody>
-</xsl:template>
+  <xsl:template match="ltx:tbody">
+    <tbody>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates/>
+    </tbody>
+  </xsl:template>
 
-<xsl:template match="ltx:tfoot" xml:space="preserve">
-  <tfoot class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></tfoot>
-</xsl:template>
+  <xsl:template match="ltx:tfoot">
+    <tfoot>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates/>
+    </tfoot>
+  </xsl:template>
 
-<xsl:template match="ltx:tr" xml:space="preserve">
-  <tr class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></tr>
-</xsl:template>
+  <xsl:template match="ltx:tr">
+    <tr>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates/>
+    </tr>
+  </xsl:template>
 
-<xsl:template match="ltx:td">
-  <xsl:text>
-</xsl:text>
-  <xsl:element name="{f:if(@thead,'th','td')}"><xsl:call-template name="add_id"/>
-    <xsl:if test="@colspan">
-      <xsl:attribute name='colspan'><xsl:value-of select='@colspan'/></xsl:attribute>
-    </xsl:if>
-    <xsl:if test="@rowspan">
-      <xsl:attribute name='rowspan'><xsl:value-of select='@rowspan'/></xsl:attribute>
-    </xsl:if>
-    <xsl:choose>
-      <xsl:when test="starts-with(@align,'char:')">
-        <xsl:attribute name='align'>char</xsl:attribute>    
-        <xsl:attribute name='char'><xsl:value-of select="substring-after(@align,'char:')"/></xsl:attribute>
-      </xsl:when>
-      <xsl:when test="@align">
-        <xsl:attribute name='align'><xsl:value-of select='@align'/></xsl:attribute>
-      </xsl:when>
-    </xsl:choose>
-    <xsl:choose>
-      <xsl:when test="@border">
-        <xsl:attribute name='class'><xsl:value-of select="concat(f:classes(.),' ',@border)"/></xsl:attribute>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:attribute name='class'><xsl:value-of select="f:classes(.)"/></xsl:attribute>
-      </xsl:otherwise>
-    </xsl:choose>
-    <xsl:choose>
-      <xsl:when test="@width">
-	<xsl:attribute name='width'><xsl:value-of select="@width"/></xsl:attribute>
-      </xsl:when>
-    </xsl:choose>
-    <xsl:apply-templates/>
-  </xsl:element>
-</xsl:template>
-
+  <xsl:template match="ltx:td">
+    <xsl:text>
+    </xsl:text>
+    <xsl:element name="{f:if(@thead,'th','td')}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes">
+	<xsl:with-param name="extra_classes">
+	  <xsl:if test="@border"><xsl:value-of select="@border"/></xsl:if>
+	</xsl:with-param>
+      </xsl:call-template>
+      <xsl:if test="@colspan">
+	<xsl:attribute name='colspan'><xsl:value-of select='@colspan'/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="@rowspan">
+	<xsl:attribute name='rowspan'><xsl:value-of select='@rowspan'/></xsl:attribute>
+      </xsl:if>
+      <xsl:choose>
+	<xsl:when test="starts-with(@align,'char:')">
+	  <xsl:attribute name='align'>char</xsl:attribute>
+	  <xsl:attribute name='char'>
+	    <xsl:value-of select="substring-after(@align,'char:')"/>
+	  </xsl:attribute>
+	</xsl:when>
+	<xsl:when test="@align">
+	  <xsl:attribute name='align'><xsl:value-of select='@align'/></xsl:attribute>
+	</xsl:when>
+      </xsl:choose>
+      <xsl:choose>
+	<xsl:when test="@width">
+	  <xsl:attribute name='width'><xsl:value-of select="@width"/></xsl:attribute>
+	</xsl:when>
+      </xsl:choose>
+      <xsl:apply-templates/>
+    </xsl:element>
+  </xsl:template>
 
 </xsl:stylesheet>

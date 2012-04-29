@@ -22,14 +22,16 @@
   <xsl:template match="ltx:Math"/>
 
   <xsl:template match="ltx:Math[@imagesrc]">
-    <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}"
-	 alt="{@tex}" class='math'
-	 ><xsl:call-template name="add_id"/>
-      <xsl:if test="@imagedepth">
-	<xsl:attribute name='style'>
-	  <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px;')"/>
-	</xsl:attribute>
-      </xsl:if>
+    <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}" alt="{@tex}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes">
+	<xsl:with-param name="extra_classes" select="math"/>
+	<xsl:with-param name="extra_style">
+	  <xsl:if test="@imagedepth">
+	    <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px')"/>
+	  </xsl:if>
+	</xsl:with-param>
+      </xsl:call-template>
     </img>
   </xsl:template>
 

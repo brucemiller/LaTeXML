@@ -22,13 +22,20 @@
 
   <xsl:template match="ltx:picture"/>
   <xsl:template match="ltx:picture[@imagesrc]">
-    <img src="{@imagesrc}" width="{@imagewidth}" height="{@imageheight}"
-	 alt="{@tex}" class="{f:classes(.)}"
-	 ><xsl:call-template name="add_id"/>
-      <xsl:if test="@imagedepth">
-	<xsl:attribute name='style'>
-	  <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px;')"/>
-	</xsl:attribute>
+    <img src="{@imagesrc}" alt="{@tex}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes">
+	<xsl:with-param name="extra_style">
+	  <xsl:if test="@imagedepth">
+	    <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px')"/>
+	  </xsl:if>
+	</xsl:with-param>
+      </xsl:call-template>
+      <xsl:if test="@imagewidth">
+	<xsl:attribute name='width'><xsl:value-of select="@imagewidth"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="@imageheight">
+	<xsl:attribute name='height'><xsl:value-of select="@imageheight"/></xsl:attribute>
       </xsl:if>
     </img>
   </xsl:template>

@@ -214,7 +214,7 @@
 <xsl:template match="ltx:toclist" mode="short">
   <xsl:text>
   </xsl:text>
- <div class="shorttoc"><xsl:text>
+<div class="shorttoc"><xsl:text>
  &#x2666; </xsl:text><xsl:apply-templates mode="short"/>
   </div>
 </xsl:template>
@@ -248,7 +248,11 @@
 <xsl:template match="ltx:tocentry">
   <xsl:text>
   </xsl:text>
-  <li class="{f:classes(.)}"><xsl:call-template name='add_id'/><xsl:apply-templates/></li>
+  <li>
+    <xsl:call-template name='add_id'/>
+    <xsl:call-template name='add_attributes'/>
+    <xsl:apply-templates/>
+  </li>
 </xsl:template>
 
 <xsl:template match="ltx:tocentry" mode="short">

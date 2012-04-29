@@ -26,51 +26,87 @@
      ====================================================================== -->
 
 <xsl:template match="ltx:text">
- <span style="{f:positioning(.)}" class="{concat(f:classes(.),
-					 f:if(@font,concat(' ',@font),''),
-					 f:if(@size,concat(' ',@size),''))}"
-       ><xsl:call-template name="add_id"/>
+ <span>
+   <xsl:call-template name="add_id"/>
+   <xsl:call-template name="add_attributes"/>
    <xsl:apply-templates/>
  </span>
 </xsl:template>
 
 <xsl:template match="ltx:emph">
-  <em class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></em>
+  <em>
+    <xsl:call-template name="add_id"/>
+    <xsl:call-template name="add_attributes"/>
+    <xsl:apply-templates/>
+  </em>
 </xsl:template>
 
 <xsl:template match="ltx:acronym">
-  <acronym class='{f:classes(.)}' title="{@name}"><xsl:call-template name="add_id"/><xsl:apply-templates/></acronym>
+  <acronym title="{@name}">
+    <xsl:call-template name="add_id"/>
+    <xsl:call-template name="add_attributes"/>
+    <xsl:apply-templates/>
+  </acronym>
 </xsl:template>
 
 
 <!-- This should either get some sort of style w/width,height & background,
-     or, at most, only be an hr if it's wide & short -->
+     or, at most, only be an hr if it's wide & short
+     However, we try to recognize a mere "strut".-->
 <xsl:template match="ltx:rule">
-  <span style="{concat(f:positioning(.),'background:black; ')}" class="{f:classes(.)}">&#xA0;</span>
+  <span>
+    <xsl:call-template name="add_id"/>
+    <xsl:call-template name="add_attributes">
+      <xsl:with-param name="extra_style" select="'background:black'"/>
+    </xsl:call-template>
+    <xsl:if test="string(@width)!='0.0pt'">&#xA0;</xsl:if>
+  </span>
 </xsl:template>
 
 <xsl:template match="ltx:ref">
   <xsl:choose>
     <xsl:when test="not(@href) or @href=''">
-      <span class="{concat(f:classes(.),' here')}"><xsl:call-template name="add_id"/><xsl:apply-templates/></span>
+      <span>
+	<xsl:call-template name="add_id"/>
+	<xsl:call-template name="add_attributes">
+	  <xsl:with-param name="extra_classes" select="'here'"/>
+	</xsl:call-template>
+	<xsl:apply-templates/>
+      </span>
     </xsl:when>
     <xsl:otherwise>
-      <a href="{@href}" title="{@title}" class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></a>
+      <a href="{@href}" title="{@title}">
+	<xsl:call-template name="add_id"/>
+	<xsl:call-template name="add_attributes"/>
+	<xsl:apply-templates/>
+      </a>
     </xsl:otherwise>
   </xsl:choose>    
 </xsl:template>
 
 <!-- can't nest-->
 <xsl:template match="ltx:ref//ltx:ref">
-  <span class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></span>
+  <span>
+    <xsl:call-template name="add_id"/>
+    <xsl:call-template name="add_attributes"/>
+    <xsl:apply-templates/>
+  </span>
 </xsl:template>
 
 <xsl:template match="ltx:anchor">
-  <a name="{@xml:id}" class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></a>
+  <a name="{@xml:id}">
+    <xsl:call-template name="add_id"/>
+    <xsl:call-template name="add_attributes"/>
+    <xsl:apply-templates/>
+  </a>
 </xsl:template>
 
 <xsl:template match="ltx:cite">
-  <cite class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></cite>
+  <cite>
+    <xsl:call-template name="add_id"/>
+    <xsl:call-template name="add_attributes"/>
+    <xsl:apply-templates/>
+  </cite>
 </xsl:template>
 
 <!-- ltx:bibref not handled, since it is translated to ref in crossref module -->
@@ -81,8 +117,11 @@
 
 <!-- normally hidden -->
 <xsl:template match="ltx:note">
-  <span class="{concat(f:classes(.),' ',@role)}"
-	><xsl:call-template name="add_id"/>
+  <span>
+    <xsl:call-template name="add_id"/>
+    <xsl:call-template name="add_attributes">
+      <xsl:with-param name="extra_classes" select="@role"/>
+    </xsl:call-template>
     <xsl:call-template name="note-mark"/>
     <span class="{concat(local-name(.),'_content_outer')}">
       <span class="{concat(local-name(.),'_content')}">
@@ -106,14 +145,22 @@
 </xsl:template>
 
 <xsl:template match="ltx:ERROR">
-  <span class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></span>
+  <span>
+    <xsl:call-template name="add_id"/>
+    <xsl:call-template name="add_attributes"/>
+    <xsl:apply-templates/>
+  </span>
 </xsl:template>
 
 <!-- invisible -->
 <xsl:template match="ltx:indexmark"/>
 
 <xsl:template match="ltx:indexphrase">
-  <span class="{f:classes(.)}"><xsl:call-template name="add_id"/><xsl:apply-templates/></span>
+  <span>
+    <xsl:call-template name="add_id"/>
+    <xsl:call-template name="add_attributes"/>
+    <xsl:apply-templates/>
+  </span>
 </xsl:template>
 
 </xsl:stylesheet>
