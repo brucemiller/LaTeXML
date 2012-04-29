@@ -130,7 +130,7 @@ DefRegister('\everyeof',Tokens());
 
 # NOTE REMOVE defn from TeX.pool.ltxml.
 # \middle
-DefConstructor('\middle Token ',"<ltx:XMWrap size='stretchy'>#1</ltx:XMWrap>",
+DefConstructor('\middle Token ',"<ltx:XMWrap fontsize='stretchy'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
 
 # \unless someif

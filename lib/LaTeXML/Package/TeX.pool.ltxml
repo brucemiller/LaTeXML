@@ -4052,39 +4052,39 @@ sub addDelimiterRole {
   $document->setAttribute($node,role=>$wrapper_role) if $node && $wrapper_role; }
 
 # Defined in e-Tex and other places.
-DefConstructor('\bigl Token',"<ltx:XMWrap size='big'>#1</ltx:XMWrap>",
+DefConstructor('\bigl Token',"<ltx:XMWrap fontsize='big'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); });
-DefConstructor('\bigm Token',"<ltx:XMWrap size='big'>#1</ltx:XMWrap>",
+DefConstructor('\bigm Token',"<ltx:XMWrap fontsize='big'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
-DefConstructor('\bigr Token',"<ltx:XMWrap size='big'>#1</ltx:XMWrap>",
+DefConstructor('\bigr Token',"<ltx:XMWrap fontsize='big'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); });
-DefConstructor('\Bigl Token',"<ltx:XMWrap size='Big'>#1</ltx:XMWrap>",
+DefConstructor('\Bigl Token',"<ltx:XMWrap fontsize='Big'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); });
-DefConstructor('\Bigm Token',"<ltx:XMWrap size='Big'>#1</ltx:XMWrap>",
+DefConstructor('\Bigm Token',"<ltx:XMWrap fontsize='Big'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
-DefConstructor('\Bigr Token',"<ltx:XMWrap size='Big'>#1</ltx:XMWrap>",
+DefConstructor('\Bigr Token',"<ltx:XMWrap fontsize='Big'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); });
-DefConstructor('\biggl Token',"<ltx:XMWrap size='bigg'>#1</ltx:XMWrap>",
+DefConstructor('\biggl Token',"<ltx:XMWrap fontsize='bigg'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); });
-DefConstructor('\biggm Token',"<ltx:XMWrap size='bigg'>#1</ltx:XMWrap>",
+DefConstructor('\biggm Token',"<ltx:XMWrap fontsize='bigg'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
-DefConstructor('\biggr Token',"<ltx:XMWrap size='bigg'>#1</ltx:XMWrap>",
+DefConstructor('\biggr Token',"<ltx:XMWrap fontsize='bigg'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); });
-DefConstructor('\Biggl Token',"<ltx:XMWrap size='Bigg'>#1</ltx:XMWrap>",
+DefConstructor('\Biggl Token',"<ltx:XMWrap fontsize='Bigg'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'OPEN'); });
-DefConstructor('\Biggm Token',"<ltx:XMWrap size='Bigg'>#1</ltx:XMWrap>",
+DefConstructor('\Biggm Token',"<ltx:XMWrap fontsize='Bigg'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
-DefConstructor('\Biggr Token',"<ltx:XMWrap size='Bigg'>#1</ltx:XMWrap>",
+DefConstructor('\Biggr Token',"<ltx:XMWrap fontsize='Bigg'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0],'CLOSE'); });
 
 # ?
-DefConstructor('\big Token',"<ltx:XMWrap size='big'>#1</ltx:XMWrap>",
+DefConstructor('\big Token',"<ltx:XMWrap fontsize='big'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0]); });
-DefConstructor('\Big Token',"<ltx:XMWrap size='Big'>#1</ltx:XMWrap>",
+DefConstructor('\Big Token',"<ltx:XMWrap fontsize='Big'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0]); });
-DefConstructor('\bigg Token',"<ltx:XMWrap size='bigg'>#1</ltx:XMWrap>",
+DefConstructor('\bigg Token',"<ltx:XMWrap fontsize='bigg'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0]); });
-DefConstructor('\Bigg Token',"<ltx:XMWrap size='Bigg'>#1</ltx:XMWrap>",
+DefConstructor('\Bigg Token',"<ltx:XMWrap fontsize='Bigg'>#1</ltx:XMWrap>",
 	       afterConstruct=>sub { addDelimiterRole($_[0]); });
 
 Let(T_CS('\vert'),T_OTHER('|'));
