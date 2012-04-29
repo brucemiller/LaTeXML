@@ -217,10 +217,13 @@ sub pmml_top {
   # These bindings reflect the style, font, size & color that we are displaying in.
   # Ie. if you want to draw in that size & color, you'll get it automatically.
   local $LaTeXML::MathML::STYLE = $style;
-  local $LaTeXML::MathML::FONT  = find_inherited_attribute($node,'font');
-  $LaTeXML::MathML::FONT = undef if $LaTeXML::MathML::FONT && !$mathvariants{$LaTeXML::MathML::FONT}; # Make sure it's a sane font
-  local $LaTeXML::MathML::SIZE  = find_inherited_attribute($node,'size');
-  local $LaTeXML::MathML::COLOR = find_inherited_attribute($node,'color');
+  local $LaTeXML::MathML::FONT    = find_inherited_attribute($node,'font');
+  $LaTeXML::MathML::FONT = undef
+    if $LaTeXML::MathML::FONT && !$mathvariants{$LaTeXML::MathML::FONT}; # verify sane font
+  local $LaTeXML::MathML::SIZE    = find_inherited_attribute($node,'fontsize');
+  local $LaTeXML::MathML::COLOR   = find_inherited_attribute($node,'color');
+  local $LaTeXML::MathML::BGCOLOR = find_inherited_attribute($node,'backgroundcolor');
+  local $LaTeXML::MathML::OPACITY = find_inherited_attribute($node,'opacity');
   pmml($node); }
 
 sub find_inherited_attribute {
@@ -468,9 +471,16 @@ our %plane1hack = (script=>$plane1map{script},  'bold-script'=>$plane1map{script
 sub stylizeContent {
   my($item,$mihack,%attr)=@_;
   my $iselement = (ref $item) eq 'XML::LibXML::Element';
-  my $font  = ($iselement ? $item->getAttribute('font') : $attr{font}) || $LaTeXML::MathML::FONT;
-  my $size  = ($iselement ? $item->getAttribute('size') : $attr{size}) || $LaTeXML::MathML::SIZE;
-  my $color = ($iselement ? $item->getAttribute('color') : $attr{color}) || $LaTeXML::MathML::COLOR;
+  my $font  = ($iselement ? $item->getAttribute('font') : $attr{font})
+    || $LaTeXML::MathML::FONT;
+  my $size  = ($iselement ? $item->getAttribute('fontsize') : $attr{fontsize})
+    || $LaTeXML::MathML::SIZE;
+  my $color = ($iselement ? $item->getAttribute('color') : $attr{color})
+    || $LaTeXML::MathML::COLOR;
+  my $bgcolor = ($iselement ? $item->getAttribute('backgroundcolor') : $attr{backgroundcolor})
+    || $LaTeXML::MathML::BGCOLOR;
+  my $opacity = ($iselement ? $item->getAttribute('opacity') : $attr{opacity})
+    || $LaTeXML::MathML::OPACITY;
   my $text  = (ref $item  ?  $item->textContent : $item);
   my $variant = ($font ? $mathvariants{$font} : '');
   my $stretchy = $size && ($size eq 'stretchy'); # sort-of a size... (but only for operators?)
@@ -510,6 +520,8 @@ sub stylizeContent {
    ($variant  ? (mathvariant=>$variant):()),
    ($size     ? (mathsize=>$sizes{$size})  :()),
    ($color    ? (mathcolor=>$color):()),
+   ($bgcolor  ? (mathbackground=>$bgcolor):()),
+   ($opacity  ? (style=>"opacity:$opacity"):()), # ???
    ($stretchy ? (stretchy=>'true'):())   ); }
 
 
@@ -667,9 +679,11 @@ sub pmml_text_aux {
   elsif($type == XML_DOCUMENT_FRAG_NODE){
     map(pmml_text_aux($_,%attr), $node->childNodes); }
   elsif($type == XML_ELEMENT_NODE){
-    if(my $font  = $node->getAttribute('font')){  $attr{font} = $font; }
-    if(my $size  = $node->getAttribute('size')){  $attr{size} = $size; }
-    if(my $color = $node->getAttribute('color')){ $attr{color} = $color; }
+    if(my $font    = $node->getAttribute('font'))           { $attr{font} = $font; }
+    if(my $size    = $node->getAttribute('fontsize'))       { $attr{fontsize} = $size; }
+    if(my $color   = $node->getAttribute('color'))          { $attr{color} = $color; }
+    if(my $bgcolor = $node->getAttribute('backgroundcolor')){ $attr{backgroundcolor} = $bgcolor; }
+    if(my $opacity = $node->getAttribute('opacity'))        { $attr{opacity} = $opacity; }
     my $tag = getQName($node);
     if($tag eq 'ltx:Math'){
       my $xmath = $LaTeXML::Post::DOCUMENT->findnode('ltx:XMath',$node);
@@ -689,8 +703,10 @@ sub cmml_top {
   local $LaTeXML::MathML::STYLE = 'text';
   local $LaTeXML::MathML::FONT  = find_inherited_attribute($node,'font');
 #  $LaTeXML::MathML::FONT = undef unless $mathvariants{$LaTeXML::MathML::FONT}; # Make sure it's a sane font
-  local $LaTeXML::MathML::SIZE  = find_inherited_attribute($node,'size');
-  local $LaTeXML::MathML::COLOR = find_inherited_attribute($node,'color');
+  local $LaTeXML::MathML::SIZE    = find_inherited_attribute($node,'fontsize');
+  local $LaTeXML::MathML::COLOR   = find_inherited_attribute($node,'color');
+  local $LaTeXML::MathML::BGCOLOR = find_inherited_attribute($node,'backgroundcolor');
+  local $LaTeXML::MathML::OPACITY = find_inherited_attribute($node,'opacity');
   cmml($node); }
 
 sub cmml {
