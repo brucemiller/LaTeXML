@@ -53,6 +53,7 @@ print STDERR "Looking at directory $testdir/$dir\n" if $verbosity >= 0;
     my $srcdvi = "$testdir/$dir/$test.dvi";
     my $dstdvi = "$htmldest/$dir/$test.dvi";
     my @links = ("<a href='$dir/$test.dvi'>dvi</a>");
+    my $usesdtd = system('grep','--quiet','DOCTYPE',$srcxml)==0;
     if($force || (! -f $dstdvi) || ((-M $srcdvi) < (-M $dstdvi))){
       print STDERR "Copying $dir/$test.dvi to dest\n" if $verbosity >= 0;
       system('cp',$srcdvi,$dstdvi)
@@ -61,9 +62,10 @@ print STDERR "Looking at directory $testdir/$dir\n" if $verbosity >= 0;
       my $dstxml = "$htmldest/$dir/$test.$type";
       push(@links,"<a href='$dir/$test.$type'>$type</a>");
       if($force || (! -f $dstxml) || ((-M $srcxml) < (-M $dstxml))){
-	print STDERR "Converting test case $dir/$test ($type)\n" if $verbosity >= 0;
+	print STDERR "Converting test case $dir/$test ($type)".($usesdtd?" [dtd]":"")."\n"
+	  if $verbosity >= 0;
 	system("$bindir/latexmlpost",
-	       "--novalidate",
+	       ($usesdtd ? ("--novalidate"):()),
 	       "--dest=$dstxml",
 	       $srcxml)
 	  == 0 or die "Couldn't transform test case $testdir/$dir/$test: $!"; }}
