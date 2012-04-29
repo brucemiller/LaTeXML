@@ -15,7 +15,7 @@ DefConstructor('\KVsimple OptionalKeyVals:foo',
 # Testing more complex use of keys;
 #   individual attributes are obtained from specific keys.
 DefConstructor('\KVcomplex OptionalKeyVals:foo', 
-	       "<ltx:graphics graphic='none' width='&KeyVal(#1,width)' height='&KeyVal(#1,height)'/>");
+	       "<ltx:graphics graphic='none' imagewidth='&KeyVal(#1,width)' imageheight='&KeyVal(#1,height)'/>");
 
 
 # Testing use in an environment.
