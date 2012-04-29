@@ -771,7 +771,7 @@ DefMacroI('\abstractname',undef, 'Abstract');
 
 # Or perhaps not....
 # There's a title and other stuff in here, but how could we guess?
-# Well, there's likely to be a sequence of <p><text font="xx" size="yy">...</text></p>
+# Well, there's likely to be a sequence of <p><text font="xx" fontsize="yy">...</text></p>
 # Presumably the earlier, larger one is title, rest are authors/affiliations...
 # Particularly, if they start with a pseudo superscript or other "marker", they're probably affil!
 # For now, we just give an info message
@@ -3003,9 +3003,10 @@ DefConstructor('\mbox {}',
  	       beforeDigest=>sub { reenterTextMode(); });
 
 our %makebox_alignment=(l=>'left',r=>'right',s=>'justified');
-DefConstructor('\makebox[Dimension][]{}',
+DefMacro('\makebox','\@ifnextchar(\pic@makebox\@makebox');
+DefConstructor('\@makebox[Dimension][]{}',
 	       "<ltx:text ?#1(width='#1') ?#align(align='#align') _noautoclose='1'>#3</ltx:text>",
-	       mode=>'text', bounded=>1,
+	       mode=>'text', bounded=>1, alias=>'\makebox',
  	       beforeDigest=>sub { reenterTextMode(); },
 	       properties=>sub{ ($_[2] ? (align=>$makebox_alignment{ToString($_[2])}) : ()); });
 DefRegister('\fboxrule', Dimension(0));
@@ -3027,7 +3028,8 @@ DefRegister('\fboxsep',  Dimension(0));
 # if the contents are a single child that can handle the framing.
 
 DefMacro('\fbox{}','\@@framebox{}{}{#1}');
-DefMacro('\framebox[Dimension][]{}','\@@framebox{#1}{#2}{#3}');
+DefMacro('\framebox','\@ifnextchar(\pic@framebox\@framebox');
+DefMacro('\@framebox[Dimension][]{}','\@@framebox{#1}{#2}{#3}');
 DefConstructor('\@@framebox{}{}{}',
 	       "?#mathframe(<ltx:XMWrap enclose='box'/>#inner</ltx:XMWrap>)"
 	       .  "(<ltx:text ?#1(width='#1') ?#align(align='#align') framed='rectangle' _noautoclose='1'>#3</ltx:text>)",
@@ -3066,7 +3068,9 @@ DefConstructor('\@@framebox{}{}{}',
 DefPrimitive('\newsavebox DefToken',sub { AssignValue('box'.ToString($_[1]), LaTeXML::List->new()); });
 DefPrimitive('\sbox DefToken{}',sub {
    AssignValue('box'.ToString($_[1]), Digest($_[2])); return;});
-DefPrimitive('\savebox DefToken[][]{}',sub {
+
+DefMacro('\savebox{}','\@ifnextchar({\pic@savebox#1}{\@savebox#1}');
+DefPrimitive('\@savebox DefToken[][]{}',sub {
    AssignValue('box'.ToString($_[1]), Digest($_[4])); return;});
 
 DefMacroI('\begin{lrbox}',LaTeXML::Parameters::parseParameters('{Token}','\begin{lrbox}'),
@@ -3225,30 +3229,31 @@ sub picProperties {
 # the code
 DefMacroI('\qbeziermax',undef,'500');
 # Careful; some of these have meanings outside of picture!
-DefPrimitive('\vector Pair {Float}',
-	     sub { Error(":unexpected:\\vector cannot appear outside of picture environment"); });
-DefPrimitive('\circle OptionalMatch:* {Float}',
-	     sub { Error(":unexpected:\circle cannot appear outside of picture environment"); });
-DefPrimitive('\oval [Float] Pair []',
-	     sub { Error(":unexpected:\\oval cannot appear outside of picture environment"); });
-DefMacro('\qbezier[0]','\bezier{#1}');
-DefPrimitive('\bezier {Number} Pair Pair Pair',
-	     sub { Error(":unexpected:\\qbezier cannot appear outside of picture environment"); });
-DefPrimitive('\dashbox {Float} Pair [] {}',
-	     sub { Error(":unexpected:\\dashbox cannot appear outside of picture environment"); });
-DefPrimitive('\frame{}',
-	     sub { Error(":unexpected:\\frame cannot appear outside of picture environment"); });
+#DefPrimitive('\vector Pair {Float}',
+#	     sub { Error(":unexpected:\\vector cannot appear outside of picture environment"); });
+#DefPrimitive('\circle OptionalMatch:* {Float}',
+#	     sub { Error(":unexpected:\circle cannot appear outside of picture environment"); });
+#DefPrimitive('\oval [Float] Pair []',
+#	     sub { Error(":unexpected:\\oval cannot appear outside of picture environment"); });
+#DefMacro('\qbezier[0]','\bezier{#1}');
+#DefPrimitive('\bezier {Number} Pair Pair Pair',
+#	     sub { Error(":unexpected:\\qbezier cannot appear outside of picture environment"); });
+#DefPrimitive('\dashbox {Float} Pair [] {}',
+#	     sub { Error(":unexpected:\\dashbox cannot appear outside of picture environment"); });
+#DefPrimitive('\frame{}',
+#	     sub { Error(":unexpected:\\frame cannot appear outside of picture environment"); });
 sub before_picture {
-  Let(T_CS('\line'),     T_CS('\pic@line'));
-  Let(T_CS('\vector'),   T_CS('\pic@vector'));
-  Let(T_CS('\circle'),   T_CS('\pic@circle'));
-  Let(T_CS('\oval'),     T_CS('\pic@oval'));
-  Let(T_CS('\qbezier'),  T_CS('\pic@qbezier'));
-  Let(T_CS('\makebox'),  T_CS('\pic@makebox'));
-  Let(T_CS('\framebox'), T_CS('\pic@framebox'));
-  Let(T_CS('\raisebox'), T_CS('\pic@raisebox'));
-  Let(T_CS('\dashbox'),  T_CS('\pic@dashbox'));
-  Let(T_CS('\frame'),    T_CS('\pic@frame'));
+#  Let(T_CS('\line'),     T_CS('\pic@line')); # Only pic?
+#  Let(T_CS('\vector'),   T_CS('\pic@vector')); # Only pic
+#  Let(T_CS('\circle'),   T_CS('\pic@circle')); # ???
+#  Let(T_CS('\oval'),     T_CS('\pic@oval'));   # Only pic
+#  Let(T_CS('\qbezier'),  T_CS('\pic@qbezier')); # Only pic
+#  Let(T_CS('\makebox'),  T_CS('\pic@makebox')); # CHECK for (
+#  Let(T_CS('\savebox'),  T_CS('\pic@savebox')); # CHECK for (
+#  Let(T_CS('\framebox'), T_CS('\pic@framebox')); # CHECK for (
+  Let(T_CS('\raisebox'), T_CS('\pic@raisebox')); # ? needs special treatment within picture
+#  Let(T_CS('\dashbox'),  T_CS('\pic@dashbox'));	 # Only pic
+#  Let(T_CS('\frame'),    T_CS('\pic@frame'));	 # ?
 }
 
 sub after_picture {}
@@ -3285,18 +3290,21 @@ DefConstructor('\put Pair {}',
 	       properties=>sub { pos=>'translate('.ptValue(picScale($_[1])).')'; },
 	       mode=>'text');
 
-DefConstructor('\pic@line Pair:Number {Float}',
+#DefConstructor('\pic@line Pair:Number {Float}',
+DefConstructor('\line Pair:Number {Float}',
 	       "<ltx:line points='#points' stroke-width='#thick'/>",
 	       alias=>'\line',
 	       properties=>sub { picProperties(points=>'0,0 '.slopeToPicCoord($_[1],$_[2])->ptValue()); });
 
-DefConstructor('\pic@vector Pair:Number {Float}',
+#DefConstructor('\pic@vector Pair:Number {Float}',
+DefConstructor('\vector Pair:Number {Float}',
 	       "<ltx:line points='#points' stroke-width='#thick' terminators='->'"
 	       . " arrowlength='#arrowlength'/>",
 	       alias=>'\vector',
 	       properties=>sub { picProperties(points=>'0,0 '.slopeToPicCoord($_[1],$_[2])->ptValue()); });
 
-DefConstructor('\pic@circle OptionalMatch:* {Float}',
+#DefConstructor('\pic@circle OptionalMatch:* {Float}',
+DefConstructor('\circle OptionalMatch:* {Float}',
 	       "<ltx:circle x='0' y='0' r='&ptValue(#radius)' fill='#fill' stroke='#stroke'"
 	       .  " stroke-width='#thick'/>",
 	       alias=>'\circle',
@@ -3307,7 +3315,8 @@ DefConstructor('\pic@circle OptionalMatch:* {Float}',
 		 picProperties(radius=>$dia->multiply(0.5),
 			       ($filled ? 'stroke' : 'fill')=>'none'); });
 
-DefConstructor('\pic@oval [Float] Pair []',
+##DefConstructor('\pic@oval [Float] Pair []',
+DefConstructor('\oval [Float] Pair []',
 	       "<ltx:rect %&PairAttr(#pos,x,y) %&PairAttr(#size,width,height) rx='&ptValue(#radius)'"
 	       . "  fill='none' part='#3' stroke-width='#thick'/>",
 	       alias=>'\oval',
@@ -3321,7 +3330,8 @@ DefConstructor('\pic@oval [Float] Pair []',
 		 $r=$r->smaller($halfsize->getY->absolute);
 		 picProperties(size=>$size, pos=>$pos, radius=>$r); });
 
-DefConstructor('\pic@qbezier [Number] Pair Pair Pair',
+##DefConstructor('\pic@qbezier [Number] Pair Pair Pair',
+DefConstructor('\qbezier [Number] Pair Pair Pair',
                "<ltx:bezier ?#1(displayedpoints='#1') points='&ptValue(#pt)' stroke-width='#thick' />",
 	       alias=>'\qbezier',
 	       properties=>sub {
@@ -3331,6 +3341,10 @@ DefConstructor('\pic@makebox Pair []{}',
 	       "<ltx:g %&PairAttr(#size,width,height) pos='#2'>#3</ltx:g>",
 	       alias=>'\makebox',
 	       properties=>sub { picProperties(size=>picScale($_[1])); });
+
+DefMacro('\pic@savebox DefToken Pair []{}','\pic@@savebox{#1}{\pic@makebox #2[#3]{#4}}');
+DefPrimitive('\pic@@savebox DefToken {}',sub {
+   AssignValue('box'.ToString($_[1]), Digest($_[2])); return; });
 
 DefConstructor('\pic@raisebox{Dimension}[Dimension][Dimension]{}',
 	       "<ltx:g y='#1'>#4</ltx:g>",
@@ -3342,14 +3356,16 @@ DefConstructor('\pic@framebox Pair []{}',
 	       alias=>'\framebox',
 	       properties=>sub { picProperties(size=>picScale($_[1])); });
 
-DefConstructor('\pic@dashbox {Float} Pair [] {}',
+#DefConstructor('\pic@dashbox {Float} Pair [] {}',
+DefConstructor('\dashbox {Float} Pair [] {}',
 	       "<ltx:rect x='0' y='0' %&PairAttr(#size,width,height)"
 	       . " stroke-width='#thick' stroke-dasharray='&ptValue(#dash)' fill='none'/>".
 	       "<ltx:g %&PairAttr(#size,width,height) pos='#3'> #4 </ltx:g>",
 	       alias=>'\dashbox',
 	       properties=>sub { picProperties(dash=>picScale($_[1]),size=>picScale($_[2])); });
 
-DefConstructor('\pic@frame{}',
+#DefConstructor('\pic@frame{}',
+DefConstructor('\frame{}',
 	       "<ltx:g framed='true' stroke-width='#thick'>#1</ltx:g>",
 	       alias=>'\frame',
 	       properties=>sub { picProperties(); });
