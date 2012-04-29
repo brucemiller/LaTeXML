@@ -15,12 +15,14 @@ use strict;
 use LaTeXML::Global;
 use base qw(LaTeXML::Object);
 
-our $DEFFAMILY = 'serif';
-our $DEFSERIES = 'medium';
-our $DEFSHAPE  = 'upright';
-our $DEFSIZE   = 'normal';
-our $DEFCOLOR  = 'black';
-our $DEFENCODING= 'OT1';
+our $DEFFAMILY     = 'serif';
+our $DEFSERIES     = 'medium';
+our $DEFSHAPE      = 'upright';
+our $DEFSIZE       = 'normal';
+our $DEFCOLOR      = 'black';
+our $DEFBACKGROUND = 'white';
+our $DEFOPACITY    = '1';
+our $DEFENCODING   = 'OT1';
 
 # NOTE:  Would it make sense to allow compnents to be `inherit' ??
 
@@ -31,29 +33,36 @@ sub new {
   my $shape  = $options{shape};
   my $size   = $options{size};
   my $color  = $options{color};
+  my $bg     = $options{background};
+  my $opacity= $options{opacity};
   my $encoding= $options{encoding};
-  $class->new_internal($family,$series,$shape,$size,$color,$encoding); }
+  $class->new_internal($family,$series,$shape,$size,$color,$bg,$opacity,$encoding); }
 
 sub new_internal {
   my($class,@components)=@_;
   bless [@components],$class; }
 
-sub default { $_[0]->new_internal($DEFFAMILY, $DEFSERIES, $DEFSHAPE,$DEFSIZE, $DEFCOLOR, $DEFENCODING); }
-
+sub default { $_[0]->new_internal($DEFFAMILY, $DEFSERIES, $DEFSHAPE,$DEFSIZE,
+				  $DEFCOLOR,$DEFBACKGROUND,$DEFOPACITY,
+				  $DEFENCODING); }
 # Accessors
-sub getFamily { $_[0]->[0]; }
-sub getSeries { $_[0]->[1]; }
-sub getShape  { $_[0]->[2]; }
-sub getSize   { $_[0]->[3]; }
-sub getColor  { $_[0]->[4]; }
-sub getEncoding { $_[0]->[5]; }
+sub getFamily      { $_[0]->[0]; }
+sub getSeries      { $_[0]->[1]; }
+sub getShape       { $_[0]->[2]; }
+sub getSize        { $_[0]->[3]; }
+sub getColor       { $_[0]->[4]; }
+sub getBackground  { $_[0]->[5]; }
+sub getOpacity     { $_[0]->[6]; }
+sub getEncoding    { $_[0]->[7]; }
 
-sub toString { "Font[".join(',',map($_ || '*', @{$_[0]}))."]"; }
+sub toString { "Font[".join(',',map( (defined $_ ? $_ : '*'), @{$_[0]}))."]"; }
 sub stringify{ $_[0]->toString; }
 
 sub equals {
   my($self,$other)=@_;
-  (defined $other) && ((ref $self) eq (ref $other)) && (join('|',map($_||'*',@$self)) eq join('|',map($_||'*',@$other))); }
+  (defined $other) && ((ref $self) eq (ref $other))
+    && (join('|',map( (defined $_ ? $_ : '*'),@$self))
+	eq join('|',map((defined $_ ? $_ : '*'),@$other))); }
 
 sub match {
   my($self,$other)=@_;
@@ -65,25 +74,28 @@ sub match {
   while(@comp){
     my $c  = shift @comp;
     my $oc = shift @ocomp;
-    return 0 if $c && $oc && ($c ne $oc); }
+    return 0 if (defined $c) && (defined $oc) && ($c ne $oc); }
   return 1; }
 
 sub makeConcrete {
   my($self,$concrete)=@_;
-  my($family,$series,$shape,$size,$color,$encoding)=@$self;  
-  my($ofamily,$oseries,$oshape,$osize,$ocolor,$oencoding)=@$concrete;
+  my($family,$series,$shape,$size,$color,$bg,$opacity,$encoding)=@$self;  
+  my($ofamily,$oseries,$oshape,$osize,$ocolor,$obg,$oopacity,$oencoding)=@$concrete;
   (ref $self)->new_internal($family||$ofamily,$series||$oseries,$shape||$oshape,$size||$osize,
-			    $color||$ocolor,$encoding||$oencoding); }
+			    $color||$ocolor,$bg||$obg, (defined $opacity ? $opacity : $oopacity),
+			    $encoding||$oencoding); }
 
 sub merge {
   my($self,%options)=@_;
-  my $family = $options{family} || $$self[0];
-  my $series = $options{series} || $$self[1];
-  my $shape  = $options{shape}  || $$self[2];
-  my $size   = $options{size}   || $$self[3];
-  my $color  = $options{color}  || $$self[4];
-  my $encoding= $options{encoding}  || $$self[5];
-  (ref $self)->new_internal($family,$series,$shape,$size,$color,$encoding); }
+  my $family  = (defined $options{family}     ? $options{family}     : $$self[0]);
+  my $series  = (defined $options{series}     ? $options{series}     : $$self[1]);
+  my $shape   = (defined $options{shape}      ? $options{shape}      : $$self[2]);
+  my $size    = (defined $options{size}       ? $options{size}       : $$self[3]);
+  my $color   = (defined $options{color}      ? $options{color}      : $$self[4]);
+  my $bg      = (defined $options{background} ? $options{background} : $$self[5]);
+  my $opacity = (defined $options{opacity}    ? $options{opacity}    : $$self[6]);
+  my $encoding= (defined $options{encoding}   ? $options{encoding}   : $$self[7]);
+  (ref $self)->new_internal($family,$series,$shape,$size,$color,$bg,$opacity,$encoding); }
 
 # Really only applies to Math Fonts, but that should be handled elsewhere; We punt here.
 sub specialize {
@@ -92,36 +104,45 @@ sub specialize {
 
 # Return a hash of the differences in font, size and color
 # [does encoding play a role here?]
+# Note that this returns a hash of Fontable.attributes & Colorable.attributes,
+# NOT the font keywords!!!
 sub relativeTo {
   my($self,$other)=@_;
-  my($family,$series,$shape,$size,$color,$encoding)=@$self;  
-  my($ofamily,$oseries,$oshape,$osize,$ocolor,$oencoding)=@$other;
+  my($family,$series,$shape,$size,$color,$bg,$opacity,$encoding)=@$self;  
+  my($ofamily,$oseries,$oshape,$osize,$ocolor,$obg,$oopacity,$oencoding)=@$other;
   $family  = 'serif' if $family  && ($family eq 'math');
   $ofamily = 'serif' if $ofamily && ($ofamily eq 'math');
-  my @diffs=(($family && (!$ofamily || ($family ne $ofamily)) ? $family : ''),
-	     ($series && (!$oseries || ($series ne $oseries)) ? $series : ''),
-	     ($shape  && (!$oshape  || ($shape  ne $oshape))  ? $shape : ''));
-  my $fdiff=join(' ',grep($_, @diffs)); 
-  my $sdiff=($size   && (!$osize   || ($size   ne $osize))   ? $size : '');
-  my $cdiff=($color  && (!$ocolor  || ($color  ne $ocolor))  ? $color : '');
+  my @diffs=((defined $family && (!defined $ofamily || ($family ne $ofamily)) ? $family : undef),
+	     (defined $series && (!defined $oseries || ($series ne $oseries)) ? $series : undef),
+	     (defined $shape  && (!defined $oshape  || ($shape  ne $oshape))  ? $shape  : undef));
+  @diffs = grep(defined $_, @diffs);
+  my $fdiff=(@diffs ? join(' ',@diffs) : undef);
+  my $sdiff=(defined $size   && (!defined $osize   || ($size   ne $osize))     ? $size : undef);
+  my $cdiff=(defined $color  && (!defined $ocolor  || ($color  ne $ocolor))    ? $color : undef);
+  my $bdiff=(defined $bg     && (!defined $obg     || ($bg  ne $obg))          ? $bg : undef);
+  my $odiff=(defined $opacity&& (!defined $oopacity|| ($opacity ne $oopacity)) ? $opacity : undef);
 ##  my $ediff=($encoding && (!$oencoding || ($encoding ne $oencoding)) ? $encoding : '');
-  ( ($fdiff ? (font=>$fdiff):()),
-    ($sdiff ? (size=>$sdiff):()),
-    ($cdiff ? (color=>$cdiff):()),
+  ( (defined $fdiff ? (font=>$fdiff):()),
+    (defined $sdiff ? (fontsize=>$sdiff):()),
+    (defined $cdiff ? (color=>$cdiff):()),
+    (defined $bdiff ? (backgroundcolor=>$bdiff):()),
+    (defined $odiff ? (opacity=>$odiff):()),
 ##    ($ediff ? (encoding=>$ediff):()),
   ); }
 
 sub distance {
   my($self,$other)=@_;
-  my($family,$series,$shape,$size,$color,$encoding)=@$self;  
-  my($ofamily,$oseries,$oshape,$osize,$ocolor,$oencoding)=@$other;
+  my($family,$series,$shape,$size,$color,$bg,$opacity,$encoding)=@$self;  
+  my($ofamily,$oseries,$oshape,$osize,$ocolor,$obg,$oopacity,$oencoding)=@$other;
   $family  = 'serif' if $family  && ($family eq 'math');
   $ofamily = 'serif' if $ofamily && ($ofamily eq 'math');
-  ($family && (!$ofamily || ($family ne $ofamily)) ? 1 : 0)
-    + ($series && (!$oseries || ($series ne $oseries)) ? 1 : 0)
-      + ($shape  && (!$oshape  || ($shape  ne $oshape))  ? 1 : 0)
-	+ ($size   && (!$osize   || ($size   ne $osize))   ? 1 : 0)
-	  + ($color  && (!$ocolor  || ($color  ne $ocolor))  ? 1 : 0)
+  (    defined $family  && (!defined $ofamily  || ($family  ne $ofamily))  ? 1 : 0)
+    + (defined $series  && (!defined $oseries  || ($series  ne $oseries))  ? 1 : 0)
+    + (defined $shape   && (!defined $oshape   || ($shape   ne $oshape))   ? 1 : 0)
+    + (defined $size    && (!defined $osize    || ($size    ne $osize))    ? 1 : 0)
+    + (defined $color   && (!defined $ocolor   || ($color   ne $ocolor))   ? 1 : 0)
+    + (defined $bg      && (!defined $obg      || ($bg      ne $obg))      ? 1 : 0)
+    + (defined $opacity && (!defined $oopacity || ($opacity ne $oopacity)) ? 1 : 0)
 ##	    + ($encoding  && (!$oencoding  || ($encoding  ne $oencoding))  ? 1 : 0)
 ; }
 
@@ -169,48 +190,59 @@ use strict;
 use LaTeXML::Global;
 use base qw(LaTeXML::Font);
 
-our $DEFFAMILY = 'serif';
-our $DEFSERIES = 'medium';
-our $DEFSHAPE  = 'upright';
-our $DEFSIZE   = 'normal';
-our $DEFCOLOR  = 'black';
+our $DEFFAMILY     = 'serif';
+our $DEFSERIES     = 'medium';
+our $DEFSHAPE      = 'upright';
+our $DEFSIZE       = 'normal';
+our $DEFCOLOR      = 'black';
+our $DEFBACKGROUND = 'white';
+our $DEFOPACITY    = '1';
 
 sub new { 
   my($class,%options)=@_;
-#  my $family = $options{family} || 'math';
-  my $family = $options{family};
-  my $series = $options{series};
-  my $shape  = $options{shape};
-  my $size   = $options{size};
-  my $color  = $options{color};
-  my $encoding= $options{encoding};
-  my $forcebold  = $options{forcebold} || 0;
-  my $forceshape = $options{forceshape} || 0;
-  $class->new_internal($family,$series,$shape,$size,$color,$encoding,$forcebold,$forceshape); }
+  my $family     = $options{family};
+  my $series     = $options{series};
+  my $shape      = $options{shape};
+  my $size       = $options{size};
+  my $color      = $options{color};
+  my $bg         = $options{background};
+  my $opacity    = $options{opacity};
+  my $encoding   = $options{encoding};
+##  my $forcebold  = $options{forcebold} || 0;
+##  my $forceshape = $options{forceshape} || 0;
+  my $forcebold  = $options{forcebold};
+  my $forceshape = $options{forceshape};
+  $class->new_internal($family,$series,$shape,$size,
+		       $color,$bg,$opacity,
+		       $encoding,$forcebold,$forceshape); }
 
-sub default { $_[0]->new_internal('math', $DEFSERIES, 'italic',$DEFSIZE, $DEFCOLOR,undef,0,undef); }
+sub default { $_[0]->new_internal('math', $DEFSERIES, 'italic',$DEFSIZE,
+				  $DEFCOLOR,$DEFBACKGROUND,$DEFOPACITY,
+##				  undef,0,undef); }
+				  undef,undef,undef); }
 
 sub isSticky {
   $_[0]->[0] && ($_[0]->[0] =~ /^(serif|sansserif|typewriter)$/); }
 
 sub merge {
   my($self,%options)=@_;
-  my $family = $options{family} || $$self[0];
-  my $series = $options{series} || $$self[1];
-  my $shape  = $options{shape}  || $$self[2];
-  my $size   = $options{size}   || $$self[3];
-  my $color  = $options{color}  || $$self[4];
-  my $encoding= $options{encoding} || $$self[5];
-  my $forcebold  = $options{forcebold} || $$self[6];
-  my $forceshape  = $options{forceshape} || $$self[7];
+  my $family     = (defined $options{family}     ? $options{family}     : $$self[0]);
+  my $series     = (defined $options{series}     ? $options{series}     : $$self[1]);
+  my $shape      = (defined $options{shape}      ? $options{shape}      : $$self[2]);
+  my $size       = (defined $options{size}       ? $options{size}       : $$self[3]);
+  my $color      = (defined $options{color}      ? $options{color}      : $$self[4]);
+  my $bg         = (defined $options{background} ? $options{background} : $$self[5]);
+  my $opacity    = (defined $options{opacity}    ? $options{opacity}    : $$self[6]);
+  my $encoding   = (defined $options{encoding}   ? $options{encoding}   : $$self[7]);
+  my $forcebold  = (defined $options{forcebold}  ? $options{forcebold}  : $$self[8]);
+  my $forceshape = (defined $options{forceshape} ? $options{forceshape} : $$self[9]);
   # In math, setting any one of these, resets the others to default.
-#  $family = $DEFFAMILY if $family && !$options{family} && ($options{series} || $options{shape});
-#  $series = $DEFSERIES if $series && !$options{series} && ($options{family} || $options{shape});
-#  $shape  = $DEFSHAPE  if $shape  && !$options{shape}  && ($options{family} || $options{series});
   $family = $DEFFAMILY if !$options{family} && ($options{series} || $options{shape});
   $series = $DEFSERIES if !$options{series} && ($options{family} || $options{shape});
   $shape  = $DEFSHAPE  if !$options{shape}  && ($options{family} || $options{series});
-  (ref $self)->new_internal($family,$series,$shape,$size,$color,$encoding,$forcebold,$forceshape); }
+  (ref $self)->new_internal($family,$series,$shape,$size,
+			    $color,$bg,$opacity,
+			    $encoding,$forcebold,$forceshape); }
 
 # Instanciate the font for a particular class of symbols.
 # NOTE: This works in `normal' latex, but probably needs some tunability.
@@ -223,9 +255,7 @@ sub merge {
 sub specialize {
   my($self,$string)=@_;
   return $self unless defined $string;
-  my($family,$series,$shape,$size,$color,$encoding,$forcebold,$forceshape)=@$self;
-print STDERR "Specialized font ".ToString($self)." for $string " if $LaTeXML::Font::DEBUG;
-
+  my($family,$series,$shape,$size,$color,$bg,$opacity,$encoding,$forcebold,$forceshape)=@$self;
   $series = 'bold' if $forcebold;
   if(($string =~ /^\p{Latin}$/) && ($string =~ /^\p{L}$/)){	# Latin Letter
     print STDERR "Letter"  if $LaTeXML::Font::DEBUG;
@@ -253,10 +283,9 @@ print STDERR "Specialized font ".ToString($self)." for $string " if $LaTeXML::Fo
     if($forcebold){ $series = 'bold';}
     elsif($series && ($series ne $DEFSERIES)){ $series = $DEFSERIES; }}
 
-my $f=  (ref $self)->new_internal($family,$series,$shape,$size,$color,$forcebold,$forceshape); 
-print STDERR " => ".ToString($f)."\n" if $LaTeXML::Font::DEBUG;
-$f;
-}
+  (ref $self)->new_internal($family,$series,$shape,$size,
+			    $color,$bg,$opacity,
+			    $encoding,$forcebold,$forceshape); }
 
 #**********************************************************************
 1;
