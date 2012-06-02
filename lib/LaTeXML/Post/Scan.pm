@@ -207,7 +207,8 @@ sub ref_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if(my $label = $node->getAttribute('labelref')){ # Only record refs of labels
-    if( ($node->getAttribute('class')||'') !~ /\bcitedby\b/){ # and don't count citedby referencees either
+    if( !$doc->findnodes('ancestor::ltx:tocentry',$node) # Dont count refs from TOC
+	&&(($node->getAttribute('class')||'') !~ /\bcitedby\b/)){ # or citedby referencees
       my $entry = $$self{db}->register($label);
       $entry->noteAssociation(referrers=>$parent_id); }}
   # Usually, a ref won't YET have content; but if it does, we should scan it.
