@@ -2273,7 +2273,7 @@ X<GenerateID>
 Generates an ID for nodes during the construction phase, useful
 for cases where the counter based scheme is inappropriate.
 The calling pattern makes it appropriate for use in Tag, as in
-   Tag('ltx:para',sub { GenerateID(@_,'p'); })
+   Tag('ltx:para',afterClose=>sub { GenerateID(@_,'p'); })
 
 If C<$node> doesn't already have an xml:id set, it computes an
 appropriate id by concatenating the xml:id of the closest
