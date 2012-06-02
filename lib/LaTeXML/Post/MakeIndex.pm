@@ -60,16 +60,8 @@ sub build_tree {
     my $tree = {subtrees=>{},referrers=>{}, id=>$id, parent=>undef};
     foreach my $key (@keys){
       my $entry = $$self{db}->lookup($key);
-      # my $phrases = $entry->getValue('phrases');
-      # my $xml = $doc->getDocument->adoptNode($phrases);
-      # my @phrases = $doc->findnodes('ltx:indexphrase',$xml);
-      # if(!scalar(@phrases)){
-      # 	$self->Warn($doc,"Missing phrases in indexmark: $key");
-      # 	next; }
-
       my $phrases = $entry->getValue('phrases');
       my @phrases = @$phrases;
-      map($doc->getDocument->adoptNode($_), @phrases);
       if(!scalar(@phrases)){
 	$self->Warn($doc,"Missing phrases in indexmark: $key");
 	next; }
@@ -126,7 +118,6 @@ sub add_rec {
     add_rec($doc,$allkeys,$allphrases,$subtree,$entry,@phrases); }
   else {
     if(my $seealso = $entry->getValue('see_also')){
-      map($doc->getDocument->adoptNode($_), @$seealso) if $seealso;
       $$tree{see_also} = $seealso; }
     if(my $refs = $entry->getValue('referrers')){
       map($$tree{referrers}{$_}=$$refs{$_}, keys %$refs); }}}

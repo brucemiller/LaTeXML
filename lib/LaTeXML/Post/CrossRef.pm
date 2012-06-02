@@ -433,7 +433,6 @@ sub generateTitle {
 sub fillInTitle {
   my($self,$doc,$title)=@_;
   return unless $title;
-  $doc->getDocument->adoptNode($title);
   # Fill in any nested ref's!
   foreach my $ref ($doc->findnodes('descendant::ltx:ref[@idref or @labelref]',$title)){
     next if $ref->textContent;
