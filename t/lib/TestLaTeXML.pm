@@ -67,10 +67,18 @@ sub is_xmlcontent {
   if(!defined $xmldom){
     do_fail($name,"The XML DOM was undefined for $name"); }
   else {
-    eval { $domstring = $xmldom->toString(1); };
+###    eval { $domstring = $xmldom->toString(1); };
+####    eval { $domstring = $xmldom->toStringC14N(0); };
+    # We want the DOM to be BOTH indented AND canonical!!
+    eval { my $string = $xmldom->toString(1);
+	   my $parser = XML::LibXML->new();
+	   $parser->validation(0);
+	   #	 $parser->keep_blanks(0);	# This allows formatting the output.
+	   $parser->keep_blanks(1);
+	   $domstring = $parser->parse_string($string)->toStringC14N(0); };
     return do_fail($name,"Couldn't convert dom to string: ".@!) unless $domstring;
     { local $Test::Builder::Level =  $Test::Builder::Level+1;
-      is_filecontent([split('\n',$domstring)],$path,$name); }}}
+      is_xmlfilecontent([split('\n',$domstring)],$path,$name); }}}
 
 sub is_filecontent {
   my($strings,$path,$name)=@_;
@@ -84,6 +92,18 @@ sub is_filecontent {
     close(IN);
     { local $Test::Builder::Level =  $Test::Builder::Level+1;
       is_strings($strings,[@lines],$name); }}}
+
+sub is_xmlfilecontent {
+  my($strings,$path,$name)=@_;
+  my($domstring);
+  eval { my $parser = XML::LibXML->new();
+	 $parser->validation(0);
+#	 $parser->keep_blanks(0);	# This allows formatting the output.
+	 $parser->keep_blanks(1);
+	 $domstring = $parser->parse_file($path)->toStringC14N(0); };
+  return do_fail($name,"Could not open $path") unless $domstring;
+  { local $Test::Builder::Level =  $Test::Builder::Level+1;
+    is_strings($strings,[split('\n',$domstring)],$name); }}
 
 sub is_strings {
   my($strings1,$strings2,$name)=@_;

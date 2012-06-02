@@ -123,7 +123,12 @@ sub compare_xml {
 
 sub stringifyDom {
   my($dom)=@_;
-  my $string = $dom->toString(2);
+###  my $string = $dom->toString(2);
+  my $string = $dom->toString(1);
+  my $parser = XML::LibXML->new();
+  $parser->validation(0);
+  $parser->keep_blanks(1);
+  $string = $parser->parse_string($string)->toStringC14N(0);
   [grep(/\S/,split("\n",$string))]; }
 
 sub gen_xml {
