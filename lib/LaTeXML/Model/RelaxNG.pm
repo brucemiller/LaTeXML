@@ -166,14 +166,27 @@ our %RNGNSMAP = ("http://relaxng.org/ns/structure/1.0"=>'rng',
 
 local @LaTeXML::Model::RelaxNG::PATHS=();
 
+sub readSchemaModule {
+  my($self,$modulename)=@_;
+  my $schemadoc;
+  # Try to load, in case it's found via catalogs...
+  eval { $schemadoc =  $XMLPARSER->parseFile($modulename); };
+  # 
+  if(!$schemadoc){
+    if(my $path = findSchema($modulename)){
+      #  Hopefully, just a file, not a URL?
+      $schemadoc = $XMLPARSER->parseFile($path); }
+    else {
+    Error(":missing_file:$modulename Couldn't find RelaxNG schema module $modulename"); }}
+  $schemadoc; }
+
 sub scanExternal {
   my($self,$name,$inherit_ns)=@_;
   my $mod = $name; $mod =~ s/\.rn(g|c)$//;
-  if(my $path = findSchema($name)){
-    #  Hopefully, just a file, not a URL?
+  if(my $schemadoc = $self->readSchemaModule($name)){
     local @LaTeXML::Model::RelaxNG::PATHS
-      = (pathname_directory($path),@LaTeXML::Model::RelaxNG::PATHS);
-    my $node = $XMLPARSER->parseFile($path)->documentElement;
+      = (pathname_directory($schemadoc->URI),@LaTeXML::Model::RelaxNG::PATHS);
+    my $node = $schemadoc->documentElement;
     # Fetch any additional namespaces
     foreach my $ns ($node->getNamespaces){
 	my($prefix,$uri)=($ns->getLocalName,$ns->getData);
@@ -181,7 +194,6 @@ sub scanExternal {
 	$$self{model}->registerDocumentNamespace($prefix,$uri); }
     (['module',$mod,$self->scanPattern($node,$inherit_ns)]); }
   else {
-    Error(":missing_file:$name Couldn't find RelaxNG schema $name"); 
     (); }}
 
 sub getRelaxOp {
@@ -281,12 +293,12 @@ sub scanGrammarContent {
       map($self->scanGrammarContent($_,$ns), @children); }
     elsif($relaxop eq 'rng:include'){
       my $name = $node->getAttribute('href');
-      if(my $path = findSchema($name)){
+      if(my $schemadoc = $self->readSchemaModule($name)){
 	local @LaTeXML::Model::RelaxNG::PATHS
-	  = (pathname_directory($path),@LaTeXML::Model::RelaxNG::PATHS);
-	#  Hopefully, just a file, not a URL?
-	my $doc = $XMLPARSER->parseFile($path)->documentElement;
+	  = (pathname_directory($schemadoc->URI),@LaTeXML::Model::RelaxNG::PATHS);
 	my @patterns;
+	#  Hopefully, just a file, not a URL?
+	my $doc = $schemadoc->documentElement;
 	# Ignore the grammar level, if any, since we do NOT establish a binding with include
 	if(getRelaxOp($doc) eq 'rng:grammar'){
 	  my $ns = $doc->getAttribute('ns') || $inherit_ns; # Possibly bind new namespace
@@ -302,7 +314,6 @@ sub scanGrammarContent {
 	else {
 	  (['module',$mod,@patterns]); }}
       else {
-	Error(":missing_file:$name Couldn't find RelaxNG schema $name"); 
 	(); }}}
   else {
     (); }}
