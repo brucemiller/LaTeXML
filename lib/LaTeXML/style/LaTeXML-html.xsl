@@ -38,16 +38,15 @@
     </html>
   </xsl:template>
 
-<xsl:include href="LaTeXML-common.xsl"/>
-<xsl:include href="LaTeXML-inline-html.xsl"/>
-<xsl:include href="LaTeXML-block-html.xsl"/>
-<xsl:include href="LaTeXML-para-html.xsl"/>
-<xsl:include href="LaTeXML-math-image.xsl"/>
-<xsl:include href="LaTeXML-tabular-html.xsl"/>
-<xsl:include href="LaTeXML-picture-image.xsl"/>
-<xsl:include href="LaTeXML-structure-html.xsl"/>
-<xsl:include href="LaTeXML-bib-html.xsl"/>
-
-<xsl:include href="LaTeXML-webpage-html.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-common.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-inline-html.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-block-html.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-para-html.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-math-image.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-tabular-html.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-picture-image.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-structure-html.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-bib-html.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-webpage-html.xsl"/>
 
 </xsl:stylesheet>

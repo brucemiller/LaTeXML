@@ -45,16 +45,15 @@
     </html>
   </xsl:template>
 
-<xsl:include href="LaTeXML-common.xsl"/>
-<xsl:include href="LaTeXML-inline-xhtml.xsl"/>
-<xsl:include href="LaTeXML-block-xhtml.xsl"/>
-<xsl:include href="LaTeXML-para-xhtml.xsl"/>
-<xsl:include href="LaTeXML-math-mathml.xsl"/>
-<xsl:include href="LaTeXML-tabular-xhtml.xsl"/>
-<xsl:include href="LaTeXML-picture-svg.xsl"/>
-<xsl:include href="LaTeXML-structure-xhtml.xsl"/>
-<xsl:include href="LaTeXML-bib-xhtml.xsl"/>
-
-<xsl:include href="LaTeXML-webpage-xhtml.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-common.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-inline-xhtml.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-block-xhtml.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-para-xhtml.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-math-mathml.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-tabular-xhtml.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-picture-svg.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-structure-xhtml.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-bib-xhtml.xsl"/>
+<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-webpage-xhtml.xsl"/>
 
 </xsl:stylesheet>
