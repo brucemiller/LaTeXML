@@ -35,6 +35,7 @@ package LaTeXML::Common::XML;
 use strict;
 use XML::LibXML qw(:all);
 use XML::LibXML::XPathContext;
+use LaTeXML::Util::Pathname;
 use Encode;
 
 use base qw(Exporter);
@@ -67,10 +68,11 @@ our @EXPORT = (
 	       @XML::LibXML::EXPORT,
 	       # Possibly (later) export these utility functions
 	       qw(&element_nodes &text_in_node &new_node
-		  &append_nodes &append_nodes_clone &clear_node &maybe_clone
+		  &append_nodes &clear_node &maybe_clone
 		  &valid_attributes &copy_attributes &rename_attribute &remove_attr
 		  &get_attr &isTextNode &isElementNode
-		  &CA_KEEP &CA_OVERWRITE &CA_MERGE &CA_EXCEPT)
+		  &CA_KEEP &CA_OVERWRITE &CA_MERGE &CA_EXCEPT
+		  &initialize_catalogs)
 	      );
 
 # attribute copying modes
@@ -131,35 +133,6 @@ sub append_nodes {
       $node->appendText($child); }}
   $node; }
 
-# In this case, @children are already XML::LibXML nodes,
-# we want to append them to $node, but using the namespace structure already existing.
-# [This didn't seem necessary but apparently a change in XML::LibXML 1.70 caused
-# extra namespaces with prefix "default" showing up (_again_!!!)]
-sub append_nodes_clone {
-  my($node,@children)=@_;
-  foreach my $child (@children){
-    my $type = $child->nodeType;
-    if($type == XML_ELEMENT_NODE){
-      my $new = $node->addNewChild($child->namespaceURI,$child->localname);
-      foreach my $attr ($child->attributes){
-	my $atype = $attr->nodeType;
-	if($atype == XML_ATTRIBUTE_NODE){
-	  my $key = $attr->nodeName;
-	  if($key eq 'xml:id'){
-	    my $value = $attr->getValue;
-	    $new->setAttribute($key, $value); }
-	  elsif(my $ns = $attr->namespaceURI){
-	    $new->setAttributeNS($ns,$attr->name,$attr->getValue); }
-	  else {
-	    $new->setAttribute( $attr->localname,$attr->getValue); }}
-      }
-      append_nodes_clone($new, $child->childNodes); }
-    elsif($type == XML_DOCUMENT_FRAG_NODE){
-      append_nodes_clone($node,$child->childNodes); }
-    elsif($type == XML_TEXT_NODE){
-      $node->appendTextNode($child->textContent); }}
-  $node; }
-
 sub clear_node {
   my($node)=@_;
   map($node->removeChild($_), 
@@ -209,6 +182,17 @@ sub remove_attr {
 sub get_attr {
     my ($node, @attr) = @_;
     map($node->getAttribute($_), @attr); }
+
+# NOTE: This really should be part of some top-level 'common' initialization
+# and probably should accommodate catalogs being given as configuration options!
+our $catalogs_initialized=0;
+sub initialize_catalogs {
+  return if $catalogs_initialized;
+  $catalogs_initialized = 1;
+#      pathname_findall('catalog',installation_subdir=>'schema'));
+  foreach my $catalog (pathname_findall('LaTeXML.catalog',installation_subdir=>'.')){
+    XML::LibXML->load_catalog($catalog); }
+}
 
 ######################################################################
 # PATCH Section
@@ -296,6 +280,7 @@ sub new {
 
 sub parseFile {
   my($self,$file)=@_;
+  LaTeXML::Common::XML::initialize_catalogs();
   $$self{parser}->parse_file($file); }
 
 sub parseString {
@@ -362,6 +347,7 @@ use XML::LibXSLT;
 
 sub new {
   my($class,$stylesheet)=@_;
+  LaTeXML::Common::XML::initialize_catalogs();
   if(!ref $stylesheet){
     $stylesheet = LaTeXML::Common::XML::Parser->new()->parseFile($stylesheet); }
   if(ref $stylesheet eq 'XML::LibXML::Document'){
@@ -371,6 +357,22 @@ sub new {
 sub transform {
   my($self,$document,%params)=@_;
   $$self{stylesheet}->transform($document,%params); }
+
+######################################################################
+package LaTeXML::Common::XML::RelaxNG;
+use XML::LibXML;
+
+sub new {
+  my($class,$schema)=@_;
+  LaTeXML::Common::XML::initialize_catalogs();
+  if(!ref $schema){
+    $schema = XML::LibXML::RelaxNG->new(location=>$schema); }
+  bless {schema=>$schema},$class; }
+
+sub validate {
+  my($self,$document)=@_;
+  $$self{schema}->validate($document); }
+
 
 #**********************************************************************
 1;
