@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE catalog PUBLIC "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN"
+       "http://www.oasis-open.org/committees/entity/release/1.0/catalog.dtd">
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+  <public publicId="-//NIST LaTeXML//LaTeXML article"
+          uri="dtd/LaTeXML.dtd"/>
+
+  <!-- This is so a plain request for the schema "LaTeXML.rng" gets found -->
+  <uri name="LaTeXML.rng"           uri="schema/RelaxNG/LaTeXML.rng"/>
+
+  <!-- This allows schema (both the built-in one and user extensions) to include
+       LaTeXML's schema modules by using the urn form, such as
+       urn:x-LaTeXML:schemas:LaTeXML-common.rng -->
+  <rewriteURI uriStartString="urn:x-LaTeXML:schemas:" rewritePrefix="schema/RelaxNG/"/>
+
+  <!-- This allows XSLT Stylesheets (both the built-in one and user extensions) to include
+       LaTeXML's stylesheet modules by using the urn form, such as
+       urn:x-LaTeXML:stylesheets:LaTeXML-common.rng -->
+  <rewriteURI uriStartString="urn:x-LaTeXML:stylesheets:" rewritePrefix="style/"/>
+
+</catalog>
