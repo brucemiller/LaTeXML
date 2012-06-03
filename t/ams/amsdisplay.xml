@@ -5,7 +5,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
-      <Math mode="display" tex="a=b" xml:id="S0.Ex1.m1" text="a = b">
+      <Math mode="display" xml:id="S0.Ex1.m1" tex="a=b" text="a = b">
         <XMath>
           <XMApp>
             <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -16,7 +16,7 @@
       </Math>
     </equation>
     <equation frefnum="(1)" refnum="1" xml:id="S0.E1">
-      <Math mode="display" tex="a=b" xml:id="S0.E1.m1" text="a = b">
+      <Math mode="display" xml:id="S0.E1.m1" tex="a=b" text="a = b">
         <XMath>
           <XMApp>
             <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -27,7 +27,7 @@
       </Math>
     </equation>
     <equation frefnum="(2)" refnum="2" xml:id="S0.E2" labels="LABEL:xx">
-      <Math mode="display" tex="\begin{split} a&amp;=b+c-c\\&#10;&amp;\quad+e-f\\&#10;&amp;=g+h\\&#10;&amp;=i\end{split}" xml:id="S0.E2.m1" text="a = (((b + c) - c) + e) - f = g + h = i">
+      <Math mode="display" xml:id="S0.E2.m1" tex="\begin{split} a&amp;=b+c-c\\&#10;&amp;\quad+e-f\\&#10;&amp;=g+h\\&#10;&amp;=i\end{split}" text="a = (((b + c) - c) + e) - f = g + h = i">
         <XMath>
           <XMApp>
             <XMTok meaning="multirelation"/>
@@ -63,7 +63,7 @@
       </Math>
     </equation>
     <equation frefnum="(3)" refnum="3" xml:id="S0.E3">
-      <Math mode="display" tex="a+b+c+d+e+f\\&#10;+i+j+k+l+m+n" xml:id="S0.E3.m1" text="a + b + c + d + e + f + i + j + k + l + m + n">
+      <Math mode="display" xml:id="S0.E3.m1" tex="a+b+c+d+e+f\\&#10;+i+j+k+l+m+n" text="a + b + c + d + e + f + i + j + k + l + m + n">
         <XMath>
           <XMApp>
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -85,7 +85,7 @@
     </equation>
     <equationgroup class="gather" xml:id="S0.EGx1">
       <equation frefnum="(4)" refnum="4" xml:id="S0.E4">
-        <Math mode="inline" tex="\displaystyle a_{1}=b_{1}+c_{1}" xml:id="S0.E4.m1" text="a _ 1 = b _ 1 + c _ 1">
+        <Math mode="inline" xml:id="S0.E4.m1" tex="\displaystyle a_{1}=b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -112,7 +112,7 @@
         </Math>
       </equation>
       <equation frefnum="(5)" refnum="5" xml:id="S0.E5">
-        <Math mode="inline" tex="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" xml:id="S0.E5.m1" text="a _ 2 = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
+        <Math mode="inline" xml:id="S0.E5.m1" tex="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" text="a _ 2 = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -158,7 +158,7 @@
     <equationgroup class="align" xml:id="S0.EGx2">
       <equation frefnum="(6)" refnum="6" xml:id="S0.E6">
         <MathFork>
-          <Math xml:id="S0.E6.m3" tex="\displaystyle a_{1} =b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1">
+          <Math xml:id="S0.E6.m3" tex="\displaystyle a_{1}=b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -185,7 +185,7 @@
           </Math>
           <MathBranch>
             <td align="right">
-              <Math mode="inline" tex="\displaystyle a_{1}" xml:id="S0.E6.m1" text="a _ 1">
+              <Math mode="inline" xml:id="S0.E6.m1" tex="\displaystyle a_{1}" text="a _ 1">
                 <XMath>
                   <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
@@ -196,7 +196,7 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{1}+c_{1}" xml:id="S0.E6.m2" text="absent = b _ 1 + c _ 1">
+              <Math mode="inline" xml:id="S0.E6.m2" tex="\displaystyle=b_{1}+c_{1}" text="absent = b _ 1 + c _ 1">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -223,7 +223,7 @@
       </equation>
       <equation frefnum="(7)" refnum="7" xml:id="S0.E7">
         <MathFork>
-          <Math xml:id="S0.E7.m3" tex="\displaystyle a_{2} =b_{2}+c_{2}-d_{2}+e_{2}" text="a _ 2 = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
+          <Math xml:id="S0.E7.m3" tex="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" text="a _ 2 = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -266,7 +266,7 @@
           </Math>
           <MathBranch>
             <td align="right">
-              <Math mode="inline" tex="\displaystyle a_{2}" xml:id="S0.E7.m1" text="a _ 2">
+              <Math mode="inline" xml:id="S0.E7.m1" tex="\displaystyle a_{2}" text="a _ 2">
                 <XMath>
                   <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
@@ -277,7 +277,7 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{2}+c_{2}-d_{2}+e_{2}" xml:id="S0.E7.m2" text="absent = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
+              <Math mode="inline" xml:id="S0.E7.m2" tex="\displaystyle=b_{2}+c_{2}-d_{2}+e_{2}" text="absent = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -322,7 +322,7 @@
     <equationgroup class="align" xml:id="S0.EGx3">
       <equation frefnum="(8)" refnum="8" xml:id="S0.E8">
         <MathFork>
-          <Math xml:id="S0.E8.m5" tex="\displaystyle a_{{11}} =b_{{11}}" text="a _ 11 = b _ 11">
+          <Math xml:id="S0.E8.m5" tex="\displaystyle a_{{11}}=b_{{11}}" text="a _ 11 = b _ 11">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -341,7 +341,7 @@
           </Math>
           <MathBranch>
             <td align="right">
-              <Math mode="inline" tex="\displaystyle a_{{11}}" xml:id="S0.E8.m1" text="a _ 11">
+              <Math mode="inline" xml:id="S0.E8.m1" tex="\displaystyle a_{{11}}" text="a _ 11">
                 <XMath>
                   <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
@@ -352,7 +352,7 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{11}}" xml:id="S0.E8.m2" text="absent = b _ 11">
+              <Math mode="inline" xml:id="S0.E8.m2" tex="\displaystyle=b_{{11}}" text="absent = b _ 11">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -369,7 +369,7 @@
           </MathBranch>
         </MathFork>
         <MathFork>
-          <Math xml:id="S0.E8.m6" tex="\displaystyle a_{{12}} =b_{{12}}" text="a _ 12 = b _ 12">
+          <Math xml:id="S0.E8.m6" tex="\displaystyle a_{{12}}=b_{{12}}" text="a _ 12 = b _ 12">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -388,7 +388,7 @@
           </Math>
           <MathBranch>
             <td align="right">
-              <Math mode="inline" tex="\displaystyle a_{{12}}" xml:id="S0.E8.m3" text="a _ 12">
+              <Math mode="inline" xml:id="S0.E8.m3" tex="\displaystyle a_{{12}}" text="a _ 12">
                 <XMath>
                   <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
@@ -399,7 +399,7 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{12}}" xml:id="S0.E8.m4" text="absent = b _ 12">
+              <Math mode="inline" xml:id="S0.E8.m4" tex="\displaystyle=b_{{12}}" text="absent = b _ 12">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -418,7 +418,7 @@
       </equation>
       <equation frefnum="(9)" refnum="9" xml:id="S0.E9">
         <MathFork>
-          <Math xml:id="S0.E9.m5" tex="\displaystyle a_{{21}} =b_{{21}}" text="a _ 21 = b _ 21">
+          <Math xml:id="S0.E9.m5" tex="\displaystyle a_{{21}}=b_{{21}}" text="a _ 21 = b _ 21">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -437,7 +437,7 @@
           </Math>
           <MathBranch>
             <td align="right">
-              <Math mode="inline" tex="\displaystyle a_{{21}}" xml:id="S0.E9.m1" text="a _ 21">
+              <Math mode="inline" xml:id="S0.E9.m1" tex="\displaystyle a_{{21}}" text="a _ 21">
                 <XMath>
                   <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
@@ -448,7 +448,7 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{21}}" xml:id="S0.E9.m2" text="absent = b _ 21">
+              <Math mode="inline" xml:id="S0.E9.m2" tex="\displaystyle=b_{{21}}" text="absent = b _ 21">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -465,7 +465,7 @@
           </MathBranch>
         </MathFork>
         <MathFork>
-          <Math xml:id="S0.E9.m6" tex="\displaystyle a_{{22}} =b_{{22}}+c_{{22}}" text="a _ 22 = b _ 22 + c _ 22">
+          <Math xml:id="S0.E9.m6" tex="\displaystyle a_{{22}}=b_{{22}}+c_{{22}}" text="a _ 22 = b _ 22 + c _ 22">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -492,7 +492,7 @@
           </Math>
           <MathBranch>
             <td align="right">
-              <Math mode="inline" tex="\displaystyle a_{{22}}" xml:id="S0.E9.m3" text="a _ 22">
+              <Math mode="inline" xml:id="S0.E9.m3" tex="\displaystyle a_{{22}}" text="a _ 22">
                 <XMath>
                   <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
@@ -503,7 +503,7 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{22}}+c_{{22}}" xml:id="S0.E9.m4" text="absent = b _ 22 + c _ 22">
+              <Math mode="inline" xml:id="S0.E9.m4" tex="\displaystyle=b_{{22}}+c_{{22}}" text="absent = b _ 22 + c _ 22">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -532,7 +532,7 @@
     <equationgroup class="align" xml:id="S0.EGx4">
       <equation frefnum="(11)" refnum="11" xml:id="S0.E11">
         <MathFork>
-          <Math xml:id="S0.E11.m5" tex="\displaystyle a_{{11}} =b_{{11}}" text="a _ 11 = b _ 11">
+          <Math xml:id="S0.E11.m5" tex="\displaystyle a_{{11}}=b_{{11}}" text="a _ 11 = b _ 11">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -551,7 +551,7 @@
           </Math>
           <MathBranch>
             <td align="right">
-              <Math mode="inline" tex="\displaystyle a_{{11}}" xml:id="S0.E11.m1" text="a _ 11">
+              <Math mode="inline" xml:id="S0.E11.m1" tex="\displaystyle a_{{11}}" text="a _ 11">
                 <XMath>
                   <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
@@ -562,7 +562,7 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{11}}" xml:id="S0.E11.m2" text="absent = b _ 11">
+              <Math mode="inline" xml:id="S0.E11.m2" tex="\displaystyle=b_{{11}}" text="absent = b _ 11">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -579,7 +579,7 @@
           </MathBranch>
         </MathFork>
         <MathFork>
-          <Math xml:id="S0.E11.m6" tex="\displaystyle a_{{12}} =b_{{12}}" text="a _ 12 = b _ 12">
+          <Math xml:id="S0.E11.m6" tex="\displaystyle a_{{12}}=b_{{12}}" text="a _ 12 = b _ 12">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -598,7 +598,7 @@
           </Math>
           <MathBranch>
             <td align="right">
-              <Math mode="inline" tex="\displaystyle a_{{12}}" xml:id="S0.E11.m3" text="a _ 12">
+              <Math mode="inline" xml:id="S0.E11.m3" tex="\displaystyle a_{{12}}" text="a _ 12">
                 <XMath>
                   <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
@@ -609,7 +609,7 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{12}}" xml:id="S0.E11.m4" text="absent = b _ 12">
+              <Math mode="inline" xml:id="S0.E11.m4" tex="\displaystyle=b_{{12}}" text="absent = b _ 12">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -628,7 +628,7 @@
       </equation>
       <equation frefnum="(12)" refnum="12" xml:id="S0.E12">
         <MathFork>
-          <Math xml:id="S0.E12.m5" tex="\displaystyle a_{{21}} =b_{{21}}" text="a _ 21 = b _ 21">
+          <Math xml:id="S0.E12.m5" tex="\displaystyle a_{{21}}=b_{{21}}" text="a _ 21 = b _ 21">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -647,7 +647,7 @@
           </Math>
           <MathBranch>
             <td align="right">
-              <Math mode="inline" tex="\displaystyle a_{{21}}" xml:id="S0.E12.m1" text="a _ 21">
+              <Math mode="inline" xml:id="S0.E12.m1" tex="\displaystyle a_{{21}}" text="a _ 21">
                 <XMath>
                   <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
@@ -658,7 +658,7 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{21}}" xml:id="S0.E12.m2" text="absent = b _ 21">
+              <Math mode="inline" xml:id="S0.E12.m2" tex="\displaystyle=b_{{21}}" text="absent = b _ 21">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -675,7 +675,7 @@
           </MathBranch>
         </MathFork>
         <MathFork>
-          <Math xml:id="S0.E12.m6" tex="\displaystyle a_{{22}} =b_{{22}}+c_{{22}}" text="a _ 22 = b _ 22 + c _ 22">
+          <Math xml:id="S0.E12.m6" tex="\displaystyle a_{{22}}=b_{{22}}+c_{{22}}" text="a _ 22 = b _ 22 + c _ 22">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -702,7 +702,7 @@
           </Math>
           <MathBranch>
             <td align="right">
-              <Math mode="inline" tex="\displaystyle a_{{22}}" xml:id="S0.E12.m3" text="a _ 22">
+              <Math mode="inline" xml:id="S0.E12.m3" tex="\displaystyle a_{{22}}" text="a _ 22">
                 <XMath>
                   <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
@@ -713,7 +713,7 @@
               </Math>
             </td>
             <td align="left">
-              <Math mode="inline" tex="\displaystyle=b_{{22}}+c_{{22}}" xml:id="S0.E12.m4" text="absent = b _ 22 + c _ 22">
+              <Math mode="inline" xml:id="S0.E12.m4" tex="\displaystyle=b_{{22}}+c_{{22}}" text="absent = b _ 22 + c _ 22">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
