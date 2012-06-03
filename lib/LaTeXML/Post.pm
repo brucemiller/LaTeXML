@@ -417,9 +417,6 @@ sub checkDestination {
 #======================================================================
 sub validate {
   my($self)=@_;
-  # First, load the LaTeXML catalog in case it's needed...
-  map(XML::LibXML->load_catalog($_),
-      pathname_findall('catalog',installation_subdir=>'schema'));
   # Check for a RelaxNGSchema PI
   my $schema;
   foreach my $pi (@{$$self{processingInstructions}}){
@@ -429,10 +426,10 @@ sub validate {
     $schema .= ".rng" unless $schema =~ /\.rng$/;
 #    print STDERR "Validating using schema $schema\n";
     my $rng;
-    eval { $rng = XML::LibXML::RelaxNG->new(location=>$schema); };
+    eval { $rng = LaTeXML::Common::XML::RelaxNG->new($schema); };
     if($@){			# Failed to load schema from catalog
       my $schemapath = pathname_find($schema,paths=>[$self->getSearchPaths]);
-      eval { $rng = XML::LibXML::RelaxNG->new(location=>$schemapath); };
+      eval { $rng = LaTeXML::Common::XML::RelaxNG->new($schemapath); };
     }
     die "Failed to load RelaxNG schema $schema:\n$@" unless $rng;
     eval { $rng->validate($$self{document}); };
