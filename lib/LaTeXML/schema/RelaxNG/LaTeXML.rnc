@@ -15,16 +15,16 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 namespace svg = "http://www.w3.org/2000/svg"
 namespace xlink = "http://www.w3.org/1999/xlink"
 
-include "LaTeXML-common.rnc"
-include "LaTeXML-inline.rnc"
-include "LaTeXML-block.rnc"
-include "LaTeXML-para.rnc"
-include "LaTeXML-math.rnc"
+include "urn:x-LaTeXML:schemas:LaTeXML-common.rnc"
+include "urn:x-LaTeXML:schemas:LaTeXML-inline.rnc"
+include "urn:x-LaTeXML:schemas:LaTeXML-block.rnc"
+include "urn:x-LaTeXML:schemas:LaTeXML-para.rnc"
+include "urn:x-LaTeXML:schemas:LaTeXML-math.rnc"
 
-include "LaTeXML-tabular.rnc"
-include "LaTeXML-picture.rnc"
-include "LaTeXML-structure.rnc"
-include "LaTeXML-bib.rnc"
+include "urn:x-LaTeXML:schemas:LaTeXML-tabular.rnc"
+include "urn:x-LaTeXML:schemas:LaTeXML-picture.rnc"
+include "urn:x-LaTeXML:schemas:LaTeXML-structure.rnc"
+include "urn:x-LaTeXML:schemas:LaTeXML-bib.rnc"
 
 ## Combined model for inline content.
 Inline.model = (text | Inline.class | Misc.class | Meta.class)*
