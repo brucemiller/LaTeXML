@@ -186,9 +186,9 @@ DefEnvironment('{split}',
 DefConstructor('\@@amsgather SkipSpaces DigestedBody',
 	       sub {
 		 my($document,$body,%props)=@_;
-		 processAMSGatherRows($document,
-				      constructAlignment($document,$body,
-					      attributes=>{class=>'gather'})); },
+		 rearrangeAMSGather($document,
+				     constructAlignment($document,$body,
+							attributes=>{class=>'gather'})); },
 	       beforeDigest=>sub { $_[0]->bgroup; });
 DefPrimitive('\end@amsgather',sub{ $_[0]->egroup; });
 
@@ -199,13 +199,14 @@ DefPrimitive('\@amsgather@bindings', sub {
   amsalignBindings(LaTeXML::AlignmentTemplate->new(columns=>[$col]));
 });
 
-# Each equation row (except intertext) consists of pairs (LHS, =RHS); group accordingly.
-# Since each column is a single equation, we'll skip the MathFork stuff,
+# Each equation row (except intertext) consists of single equation.
+# Since each equation is single column, w/ no alignment, we'll skip the MathFork stuff,
 # and just pull the math content up past the _Capture_
-sub processAMSGatherRows {
+#[maybe we could have avoided creating the capture in the first place?]
+sub rearrangeAMSGather {
   my($document,$equationgroup)=@_;
-  foreach my $equation ($document->getChildElements($equationgroup)){
-    my @cells = $document->getChildElements($equation);
+  foreach my $equation ($document->findnodes('ltx:equation',$equationgroup)){
+    my @cells = $document->findnodes('ltx:_Capture_',$equation);
     my @cell1cont = $document->getChildElements($cells[0]);
     # Check if this equation is really an intertext
     if((scalar(@cells)==1) && (scalar(@cell1cont)==1)
@@ -214,7 +215,7 @@ sub processAMSGatherRows {
     elsif((scalar(@cells)==1) && (scalar(@cell1cont)==0)){ # Empty row? Remove it!
       $equationgroup->removeChild($equation); }
     else {
-      equationgroupFlattenCols($document,$equation); }}}
+      map($document->unwrapNodes($_),$document->getChildElements($equation)); }}}
 
 # Note that some people use align or gather inside equation, which seems to "work"
 # So, we'll treat align as aligned in such cases.
@@ -243,9 +244,9 @@ DefMacro('\csname endgather*\endcsname',
 DefConstructor('\@@amsalign SkipSpaces DigestedBody',
 	       sub {
 		 my($document,$body,%props)=@_;
-		 processAMSAlignRows($document,
-			     constructAlignment($document,$body,
-						attributes=>{class=>'align'})); },
+		 rearrangeAMSAlign($document,
+				    constructAlignment($document,$body,
+						       attributes=>{class=>'align'})); },
 	       beforeDigest=>sub { $_[0]->bgroup; });
 DefPrimitive('\end@amsalign',sub{ $_[0]->egroup; });
 
@@ -259,11 +260,10 @@ DefPrimitive('\@amsalign@bindings', sub {
 });
 
 # Each equation row (except intertext) consists of pairs (LHS, =RHS); group accordingly.
-sub processAMSAlignRows {
+sub rearrangeAMSAlign {
   my($document,$equationgroup)=@_;
-  foreach my $equation ($document->getChildElements($equationgroup)){
-    my @cells = $document->getChildElements($equation);
-    shift(@cells) if $document->getNodeQName($cells[0]) eq 'ltx:metadata';
+  foreach my $equation ($document->findnodes('ltx:equation',$equationgroup)){
+    my @cells = $document->findnodes('ltx:_Capture_',$equation);
     my @cell1cont = $document->getChildElements($cells[0]);
     # Check if this equation is really an intertext
     if((scalar(@cells)==1) && (scalar(@cell1cont)==1)
@@ -333,7 +333,7 @@ DefMacro('\endxxalignat',
 	 '\@finish@alignment\end@amsalign');
 
 #======================================================================
-# Section 3.7. Alignmnet building blocks
+# Section 3.7. Alignment building blocks
 #    gathered, aligned alignedat
 # These are intended to be used within math environments, but do they have the same
 # `semanitic' intent as far as separating equations?
@@ -368,9 +368,6 @@ DefMacro('\endaligned',   '\@finish@alignment\@end@amsaligned');
 DefMacro('\alignedat{}[]','\@@amsaligned\@start@alignment');
 DefMacro('\endalignedat', '\@finish@alignment\@end@amsaligned');
 
-# NOTE: If this is the only child of an equation, it would seem better
-# to rewrite the thing into an equationgroup/equation/MathFork construct!
-# Besides, the MathML alignment (at least in firefox), pretty much sucks.
 DefPrimitive('\@end@amsaligned',sub{ $_[0]->egroup; });
 DefConstructor('\@@amsaligned DigestedBody',
 	       sub { my($document,$body,%props)=@_;
@@ -387,6 +384,49 @@ DefConstructor('\@@amsaligned DigestedBody',
 				 },
 	       reversion=>'\begin{aligned}#1\end{aligned}');
 
+# If an aligned is the only child of an equation,
+# it seems better to rewrite the thing into an equationgroup/equation/MathFork construct!
+Tag('ltx:equation',afterClose=>\&rearrangeLoneAMSAligned);
+sub rearrangeLoneAMSAligned {
+  my($document,$equation)=@_;
+  # Test whether this is a lone aligned within the equation.
+  my($math,@more) = $document->findnodes('ltx:Math',$equation);
+  if($math && !scalar(@more)){
+    my($array,@morenodes) = $document->getChildElements($document->getFirstChildElement($math));
+    if($array && !scalar(@morenodes) && ($document->getNodeQName($array) eq 'ltx:XMArray')
+       && (($array->getAttribute('name')||'') eq 'aligned')){
+      $math->unbindNode;
+      my $equationgroup = $document->renameNode($equation,'ltx:equationgroup');
+      foreach my $mtr ($document->findnodes('ltx:XMRow',$array)){
+	# new equation for each row (??? Or should it be each pair of columns?)
+	my $eqn = $document->openElementAt($equationgroup,'ltx:equation');
+	$document->setAttribute($eqn,
+			'xml:id'=>$document->modifyID($equation->getAttribute('xml:id')."X"));
+	my @mtds = $document->findnodes('ltx:XMCell',$mtr);
+	while(@mtds){
+	  my($math,$branch)=openMathFork($document,$eqn);
+	  my @cells;
+	  foreach (0,1){	# Add the lhs & rhs, separately.
+	    my $cell = shift(@mtds);
+	    my $td = $document->openElementAt($branch,'ltx:td',
+					      align=>$cell->getAttribute('align'));
+	    if(my $stuff = $cell->firstChild){
+	      push(@cells,$stuff);
+	      my $math  = $document->openElementAt($td,'ltx:Math',
+					   _box=>MathWhatsit(Digest(T_CS('\displaystyle')),
+							     $document->getNodeBox($stuff)));
+	      my $xmath = $document->openElementAt($math,'ltx:XMath');
+	      { local $LaTeXML::Document::ID_SUFFIX = '.mf';
+		$document->appendClone($xmath,$stuff->childNodes); }
+	      $document->closeElementAt($xmath);
+	      $document->closeElementAt($math); }
+	    $document->closeElementAt($td); }
+	  # Finally, move the contents of the cells into the main branch!!!
+	  map($math->firstChild->appendChild($_),map($_->childNodes,@cells));
+	  # and synthesize a box from the lhs & rhs.
+	  $document->setNodeBox($math,MathWhatsit(map($document->getNodeBox($_),@cells)));
+	  closeMathFork($document,$eqn,$math,$branch);
+      }}}}}
 
 DefMacro('\cases',   '\@@cases\@start@alignment');
 DefMacro('\endcases', '\@finish@alignment\@end@cases');

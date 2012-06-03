@@ -1315,8 +1315,7 @@ DefConditionalI('\if@in@firstcolumn',undef, sub {
 # A bit more defensiveness, since people abuse eqnarray so badly.
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
-###	 '\if@in@firstcolumn\multicolumn{3}{l}{$\displaystyle #1$\mbox{}}\else\rlap{$\displaystyle #1$}\fi');
-	 '\if@in@firstcolumn\multicolumn{3}{l}{\@@BEGININLINEMATH \displaystyle #1\@@ENDINLINEMATH\mbox{}}'
+	 '\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{lefteqn}\@@BEGININLINEMATH \displaystyle #1\@@ENDINLINEMATH\mbox{}}'
 	 .'\else\rlap{\@@BEGININLINEMATH\displaystyle #1\@@ENDINLINEMATH}\fi');
 # \intertext (in amsmath)
 
@@ -1370,9 +1369,9 @@ sub eqnarrayBindings {
 DefConstructor('\@@eqnarray SkipSpaces DigestedBody',
 	       sub {
 		 my($document,$body,%props)=@_;
-		 eqnarrayRegroupEquations($document,
-				  constructAlignment($document,$body,
-					    attributes=>{class=>'eqnarray'})); },
+		 rearrangeEqnarray($document,
+				    constructAlignment($document,$body,
+						       attributes=>{class=>'eqnarray'})); },
 	       beforeDigest=>sub { $_[0]->bgroup; });
 DefPrimitiveI('\end@eqnarray',undef, sub{ $_[0]->egroup; });
 
@@ -1389,13 +1388,13 @@ DefPrimitiveI('\end@eqnarray',undef, sub{ $_[0]->egroup; });
 # However, if more than 1 such row has refnums, we probably don't want to combine.
 # NOTE: intertext are not (yet) handled here; Can they appear?
 
-sub eqnarrayRegroupEquations {
+sub rearrangeEqnarray {
   my($document,$equationgroup)=@_;
   # Scan the "equations" (rows) within the $equationgroup
   # to see what pattern of columns are present.
   my @rows = ();
-  foreach my $rownode ($document->getChildElements($equationgroup)){
-    my @cells = $document->getChildElements($rownode); # The _Capture_'s representing each column.
+  foreach my $rownode ($document->findnodes('ltx:equation',$equationgroup)){
+    my @cells = $document->findnodes('ltx:_Capture_',$rownode); # representing each column.
     push(@rows,{node=>$rownode, cols=>[@cells],
 		L=>($cells[0] && $cells[0]->hasChildNodes),
 		M=>($cells[1] && $cells[1]->hasChildNodes),
@@ -1417,16 +1416,18 @@ sub eqnarrayRegroupEquations {
   if($nL && !$nM && !$nR){	# All LHS!
     if(grep( ($t=$$_{cols}[0])&&($t=$document->getFirstChildElement($t))&& (($t->getAttribute('role') || '') eq 'RELOP'),
 	     @rows)){
-      eqnarrayJoinRows($document,$equationgroup,map($$_{node},@rows)); }
+      equationgroupJoinRows($document,$equationgroup,map($$_{node},@rows)); }
     else {
+      # Really, these shouldn't even end up with MathFork!
       foreach my $row (@rows){
 	equationgroupJoinCols($document,3,$$row{node}); }}
     return; }
   if($nR && !$nM && !$nL){	# All RHS!
     if(grep( ($t=$$_{cols}[2])&&($t=$document->getFirstChildElement($t))&&(($t->getAttribute('role') || '') eq 'RELOP'),
 	     @rows)){
-      eqnarrayJoinRows($document,$equationgroup,map($$_{node},@rows)); }
+      equationgroupJoinRows($document,$equationgroup,map($$_{node},@rows)); }
     else {
+      # Really, these shouldn't even end up with MathFork!
       foreach my $row (@rows){
 	equationgroupJoinCols($document,3,$$row{node}); }}
     return; }
@@ -1467,173 +1468,8 @@ sub eqnarrayRegroupEquations {
     if (scalar(@rows) > 1) && $oddness;
   # Now rearrange things appropriately.
   foreach my $eqset (@eqs){
-    my @subeqs = @$eqset;
-###    if(scalar(@subeqs) > 1){    # Combine equations with multiple rows
-      eqnarrayJoinRows($document,$equationgroup,@$eqset); 
-###}
-###    else {			# Else fixup columns of single-row equations
-###      equationgroupJoinCols($document,3,$subeqs[0]); }
+    equationgroupJoinRows($document,$equationgroup,@$eqset); }
 }
-}
-
-# ========================================
-# Tools for rearranging equations in equationgroups
-
-# For an eqnarray, given an ltx:equationgroup containing several ltx:equations (rows),
-# @equations is a subsequence of those equations which we think represents a logical equation.
-# We will rearrange those equations into 
-# to be collected into a single equation,
-# create the equation w/appropriate attributes, and
-# collect the math fragments into a MathFork structure.
-sub eqnarrayJoinRows {
-  my($document,$equationgroup,@equations)=@_;
-  # Make a new equation, with a single MathFork container
-  my $equation = $document->openElementAt($equationgroup,'ltx:equation');
-  $equationgroup->insertBefore($equation,$equations[0]); # Move to correct position.
-  # move labels, id, refnum to new equation
-  my($labels,$id,$refnum,$frefnum,$idctr);
-  foreach my $eq (@equations){
-    if(my $l = $eq->getAttribute('labels')){
-      $labels = ($labels ? "$labels $l" : $l); }
-    $id     = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
-    $refnum = $eq->getAttribute('refnum') if $eq->hasAttribute('refnum');
-    $frefnum = $eq->getAttribute('frefnum') if $eq->hasAttribute('frefnum');
-    $idctr  = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_');
-  }
-  $equation->setAttribute(labels=>$labels) if $labels;
-  $equation->setAttribute('xml:id'=>$id) if $id;
-  $equation->setAttribute(refnum=>$refnum) if $refnum;
-  $equation->setAttribute(frefnum=>$frefnum) if $frefnum;
-  $equation->setAttribute('_ID_counter_m_'=>$idctr) if $idctr;
-
-  # Scan equations to see which ones likely are continuations of previous
-  my($main,$branch)=addMathFork($document,$equation);
-  foreach my $eq (@equations){
-    $eq->unbindNode;
-    my $tr = $document->openElementAt($branch,'ltx:tr');
-    foreach my $cell ($document->getChildElements($eq)){
-      $tr->setAttribute(class=>'lefteqn')
-	if ($cell->getAttribute('colspan')||'0') == 3;
-      addColumnToMathFork($document,$main,$tr,$cell); }
-    $document->closeElementAt($tr); }
-  $document->closeElementAt($equation);
-}
-
-# Given an equation generated in an equationgroup, 
-# collect each $ncols columns into a MathFork structure,
-# with the formatted portion being the columns.
-sub equationgroupJoinCols {
-  my($document,$ncols,$equation)=@_;
-  my ($col,$main,$branch)=(0,undef,undef);
-  foreach my $cell ($document->getChildElements($equation)){
-    next unless $document->getNodeQName($cell) =~ /(.*?:)?_Capture_$/;
-    if(($col++ % $ncols) == 0){	# Create new MathFork every $ncols cells.
-      ($main,$branch)=addMathFork($document,$equation); }
-    addColumnToMathFork($document,$main,$branch,$cell); }}
-
-# Use this where you don't want any MathFork stuff.
-# It just pulls the contents out of the _Capture_.
-sub equationgroupFlattenCols {
-  my($document,$equation)=@_;
-  my @cells = $document->getChildElements($equation);
-  foreach my $cell (@cells){
-    foreach my $c ($document->getChildElements($cell)){
-      $equation->insertBefore($c,$cell);
-    $cell->unbindNode; }}}
-
-# ========================================
-# Support for above.
-
-# Add a MathFork structure:
-# <MathFork><Math><XMath/></Math> <MathBranch/></MathFork>
-# to the given equation,
-# returning the new nodes: <Math> and <MathBranch>
-# (as $main and $branch)
-sub addMathFork {
-  my($document,$equation)=@_;
-  my $fork  = $document->openElementAt($equation,'ltx:MathFork');
-  my $main  = $document->openElementAt($fork,'ltx:Math');
-  GenerateID($document,$main,undef,'m');
-  my $xmath = $document->openElementAt($main,'ltx:XMath');
-  my $branch= $document->openElementAt($fork,'ltx:MathBranch');
-  ($main,$branch); }
-
-# Add a new ltx:td (table column) to $inbranch
-#(a place within a ltx:MathBranch in a ltx:MathFork),
-# moving the ltx:Math from $cell (a _Capture_) into that new ltx:td
-# and append a CLONE of the contents of the cell's ltx:Math
-# to the XMath of $main (the ltx:Math in the main part of the fork)
-sub addColumnToMathFork {
-  my($document,$main,$inbranch,$cell)=@_;
-  my $td = $document->openElementAt($inbranch,'ltx:td');
-  if(my $align = $cell->getAttribute('align')){
-    $td->setAttribute(align=>$align); }
-  if(my $colspan = $cell->getAttribute('colspan')){
-    $td->setAttribute(colspan=>$colspan); }
-
-  $cell->unbindNode;
-  if(my $math  = $document->getFirstChildElement($cell)){
-    if(my $xmath = $document->getFirstChildElement($math)){
-#####      my $copy = cloneMath($document,$cell);
-      my $xcopy = cloneMath($document,$xmath);
-      # Now, we can add the contents of the cell to the main branch
-#####      foreach my $item ($document->getChildElements($xmath)){
-      foreach my $item ($document->getChildElements($xcopy)){
-	$document->getFirstChildElement($main)->appendChild($item); }
-      # And we need to add the tex!!
-      # Since each cell was captured in its own Math, it has a valid chunk of tex.
-      # We just need to paste them together appropriately.
-      if(my $x_tex = $math->getAttribute('tex')){
-	my $x_ctex = $math->getAttribute('content-tex') || $x_tex; 
-	my $tex = $main->getAttribute('tex') || '';
-	my $ctex =$main->getAttribute('content-tex') || $tex;
-	$tex = join(' ',grep($_,map((s/^\s*\\displaystyle\s*//&&$_)||$_,$tex,$x_tex)));
-	$ctex = join(' ',grep($_,$ctex,$x_ctex));
-	$ctex =~ s/\\displaystyle\s*//g;   # strip all \displaystyle
-	$main->setAttribute(tex=>'\displaystyle '.$tex);
-	$main->setAttribute('content-tex'=>$ctex) unless $ctex eq $tex; }
-      # and the modified copy to the alternative branch.
-      # $branch->appendChild($copy->firstChild);
-### WHOA, why are we putting a clone of the copy which has been cloneMath'd
-### Shouldn't we be putting the actual math from the $cell into the td?
-### IE. without changing it's id's? (the clone should get new id's!)
-#####      append_nodes_clone($td,$document->getFirstChildElement($copy));
-      append_nodes_clone($td,$math);
-    }}
-  $document->closeElementAt($td);
-}
-
-# Here's the really nasty part.
-# The content of each cell can end up in the main branch of MathFork
-# and in the td's tucked into the MathBranch. Thus, any id's in the math,
-# (especially from XMDual/XMArg+XMRef constructs) will be duplicated!
-# So, we have to clone the node, and patch up those ids, and refs to them.
-# Worse, if any id's are referenced externally, they presumably should
-# point to the main MathFork branch!!
-#
-# Given a _Capture_ node $cell containing math, put it's contents
-# into $xcontent (an XMath in the main branch of the MathFork),
-# AND add a cloned td to $row (in a MathBranc of the MathFork).
-sub cloneMath {
-  my($document,$math)=@_;
-  my $copy = $math->cloneNode(1);
-  my %idmap=();
-  # Find all id's defined in the copy and change the id.
-  foreach my $node ($document->findnodes('.//*[@xml:id]',$copy)){
-    my $id = $node->getAttribute('xml:id');
-##    # Trust document to bump the id to a unique one!
-###    my $newid = $document->modifyID($id);
-###ZZZZZZ    my $newid = $id.".fork1";
-    my $newid = $id.".mf";	# cloned math is in MAIN branch!
-    # .mf or .sem (semantic) or ... ????
-    $document->recordID($newid,$node);
-    $node->setAttribute('xml:id'=>$newid);
-    $idmap{$id}=$newid; }
-  # Now, replace all references to those modified ids.
-  foreach my $node ($document->findnodes('.//*[@idref]',$copy)){
-    my $id = $node->getAttribute('idref');
-    $node->setAttribute(idref=>$idmap{$id}) if $idmap{$id}; }
-  $copy; }
 
 # Style Parameters
 #  \abovedisplayskip \abovedisplayshortskip, \jot are in TeX.pool
