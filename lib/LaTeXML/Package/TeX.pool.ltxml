@@ -2328,11 +2328,10 @@ sub add_body_TeX {
       $LaTeXML::DUAL_BRANCH = 'content';
       my $ctex = UnTeX($body);
       $document->setAttribute($node,tex=>$tex);
-      $document->setAttribute($node,'content-tex'=>$ctex) if $ctex ne $tex;
-    }
+      $document->setAttribute($node,'content-tex'=>$ctex) if $ctex ne $tex;  }
     $thing->setProperty('_added_body_tex',1); }}
 
-Tag('ltx:Math',   afterOpen=>\&add_body_TeX);
+Tag('ltx:Math',  afterClose=>\&add_body_TeX);
 Tag('ltx:Math',  afterClose=>\&cleanup_Math);
 
 sub cleanup_Math {
@@ -2345,21 +2344,171 @@ sub cleanup_Math {
       return unless $document->getModel->getNodeQName($mnode) eq 'ltx:XMText';
     }}
   # Replace Math/XMath/XMText/* by *
-  replace_node($mathnode,
-	       map($_->childNodes,map($_->childNodes,$mathnode->childNodes))); }
+  $document->replaceNode($mathnode,
+			 map($_->childNodes,map($_->childNodes,$mathnode->childNodes))); }
 
-sub replace_node {
-  my($oldnode,@newnodes)=@_;
-  my $parent = $oldnode->parentNode;
-  if(!@newnodes){
-    $parent->removeChild($oldnode); }
-  else {
-    my $new = shift(@newnodes);
-    $parent->replaceChild($new,$oldnode);
-    foreach my $n (@newnodes){
-      $parent->insertAfter($n,$new);
-      $new = $n; }}}
+#======================================================================
+# Support for MathFork.
+# A MathFork supports document-level alignment of math,
+# by collecting equations in an equationgroup. Each equation can contain
+# one or more MathFork structures which separate the semantically meaningful
+# equation (if possible), along with a collection of rows and/or columns for alignment.
+# The structure looks like
+#    <MathFork>
+#        <Math><XMath>...</XMath></Math>
+#        <MathBranch>..</MathBranch>
+#    </MathFork>
+# The initial, "main", Math will contain a complete formula (hopefully).
+# The MathBranch will typically contain one or more <tr>, each of which
+# contains one or more <td>, each of which contains a <Math> representing
+# a cell of the aligned structure.
 
+# openMathFork($document,$equation) will add a MathFork structure
+# to the given $equation, and return ($main, $branch)
+# where $main is the initial <ltx:Math> and $branch is the <ltx:MathBranch>.
+# You'll probably want to be adding Stuff to one or both.
+sub openMathFork {
+  my($document,$equation)=@_;
+  my $fork  = $document->openElementAt($equation,'ltx:MathFork');
+  my $main  = $document->openElementAt($fork,'ltx:Math', _box=>MathWhatsit()); # Start EMPTY!
+  my $xmath = $document->openElementAt($main,'ltx:XMath');
+  my $branch= $document->openElementAt($fork,'ltx:MathBranch');
+  ($main,$branch); }
+
+# Close the appropriate elements of an ltx:MathFork created with openMathFork.
+sub closeMathFork {
+  my($document,$equation,$main,$branch)=@_;
+  # Now, close them all.
+  $document->closeElementAt($branch);
+  $document->closeElementAt($document->getFirstChildElement($main));
+  $document->closeElementAt($main);
+  $document->closeElementAt($main->parentNode); }
+
+# Create an inline math Whatsit from a list of MathBoxes, MathLists or Whatsits.
+# Note that we unwrap @hidden@bgroup's (!) and normalize \displaystyle (!)
+# This is primarily useful for synthesizing the Box for a newly created ltx:Math
+# that is synthesized from other math content within a ltx:MathFork.
+sub MathWhatsit {
+  my(@items)=@_;
+  my $hbgd = LookupDefinition(T_CS('\@hidden@bgroup'));
+  @items = map( ((ref $_ eq 'LaTeXML::Whatsit') && ($_->getDefinition eq $hbgd)
+		 ? $_->getBody->unlist : ($_)),
+		map($_->unlist,grep($_,@items)));
+  my @styles = grep(UnTeX($_) eq '\displaystyle',@items);
+  if(@styles){
+    @items = ($styles[0], grep(UnTeX($_) ne '\displaystyle',@items)); }
+  LaTeXML::Whatsit->new(LookupDefinition(T_CS('\@@BEGININLINEMATH')),[],
+			body=>LaTeXML::MathList->new(@items),
+			trailer=>T_CS('\@@ENDINLINEMATH'),
+			# locator=>$gullet->getLocator, font=>$script->getFont,level=>$level
+			isMath=>1); }
+
+# Add a new table column (ltx:td) into the ltx:MathBranch of a ltx:MathFork.
+# The insertion point will be at $inbranch, which probably should be an ltx:tr
+# created in the ltx:MathBranch using:
+#    $document->openElementAt($branch,'ltx:tr');
+# This moves the math from within $cell (an ltx:_Capture_) into the ltx:td,
+# and also arranges for that math content to be appended (cloned) into $main
+sub addColumnToMathFork {
+  my($document,$main,$inbranch,$cell)=@_;
+  my $td = $document->openElementAt($inbranch,'ltx:td');
+  if(my $align = $cell->getAttribute('align')){
+    $td->setAttribute(align=>$align); }
+  if(my $colspan = $cell->getAttribute('colspan')){
+    $td->setAttribute(colspan=>$colspan); }
+  if(my $math  = $document->getFirstChildElement($cell)){
+    if(my $xmath = $document->getFirstChildElement($math)){
+      # We MOVE the ltx:Math from the _Capture_ ($cell)
+      $td->appendChild($math);
+      # But we CLONE the contents of it's ltx:XMath onto the end of
+      # the main ltx:Math/ltx:XMath (under $main), modifying id's along the way.
+      { local $LaTeXML::Document::ID_SUFFIX = '.mf';
+	$document->appendClone($document->getFirstChildElement($main),
+			       $document->getChildElements($xmath)); }
+      # Add the boxes from this cell to the previously collected ones in the main branch.
+      $document->setNodeBox($main,MathWhatsit($document->getNodeBox($main)->getBody,
+					      $document->getNodeBox($math)->getBody));
+    }}
+  # We can now remove the _Capture_ (and anything still in it?)
+  $cell->unbindNode;
+  $document->closeElementAt($td); }
+
+#======================================================================
+# Higher level support for equationgroups
+# equationgroups hold a collection of equations
+# each of which will likely have MathFork within that separates
+# the complete semantic expression from a collection of rows & column cells.
+# The latter are used to present an aligned set of equations;
+# the former hopefully will be useful for the math....?
+#
+# Typically, there will be some sort of alignment macros, using &
+# that will be set up to INITIALLY build an arrangement like:
+#  <equationgroup>
+#     <equation><_Capture>cellmath</_Capture>...</equation>
+# that is, an <equation> for each row.
+# Afterwards, we can analyze the cells and determine how the cells and/or rows
+# will be divided up into "real" equations, and insert some MathFork's to reflect.
+
+# For example, the <equationgroup> represents a whole eqnarray,
+# and (initially, at least) the rows are represented as <equation>'s.
+# Some analysis hopefully allows us to recognize
+
+# Given an ltx:equationgroup containing several ltx:equations (rows),
+# equationgroupJoinRows combines one or more of those rows into a
+# semantically meaningful equation and sets up the appropriate MathForks within.
+# This is typically useful for eqnarray.
+sub equationgroupJoinRows {
+  my($document,$equationgroup,@equations)=@_;
+  # Make a new equation, with a single MathFork container
+  my $equation = $document->openElementAt($equationgroup,'ltx:equation');
+  $equationgroup->insertBefore($equation,$equations[0]); # Move to correct position.
+  # move labels, id, refnum to new equation
+  my($labels,$id,$refnum,$frefnum,$idctr);
+  foreach my $eq (@equations){
+    if(my $l = $eq->getAttribute('labels')){
+      $labels = ($labels ? "$labels $l" : $l); }
+    $id     = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
+    $refnum = $eq->getAttribute('refnum') if $eq->hasAttribute('refnum');
+    $frefnum = $eq->getAttribute('frefnum') if $eq->hasAttribute('frefnum');
+    $idctr  = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_'); }
+
+  $equation->setAttribute(labels=>$labels) if $labels;
+  $equation->setAttribute('xml:id'=>$id) if $id;
+  $equation->setAttribute(refnum=>$refnum) if $refnum;
+  $equation->setAttribute(frefnum=>$frefnum) if $frefnum;
+  $equation->setAttribute('_ID_counter_m_'=>$idctr) if $idctr;
+
+  # Scan equations to see which ones likely are continuations of previous
+  my($main,$branch)=openMathFork($document,$equation);
+  foreach my $eq (@equations){
+    $eq->unbindNode;
+    my $tr = $document->openElementAt($branch,'ltx:tr');
+###    my @cells = $document->getChildElements($eq);
+    my @cells = $document->findnodes('ltx:_Capture_',$eq);
+    $tr->setAttribute(class=>'lefteqn')
+      if ($cells[0]->getAttribute('class')||'') =~ /\blefteqn\b/;
+    foreach my $cell (@cells){
+      addColumnToMathFork($document,$main,$tr,$cell); }
+    $document->closeElementAt($tr); }
+  closeMathFork($document,$equation,$main,$branch);
+  $document->closeElementAt($equation); }
+
+# Given an equation generated in an equationgroup, 
+# collect each $ncols columns into a MathFork structure,
+# with the formatted portion being the columns.
+sub equationgroupJoinCols {
+  my($document,$ncols,$equation)=@_;
+  my ($col,$main,$branch)=(0,undef,undef);
+###  foreach my $cell ($document->getChildElements($equation)){
+  foreach my $cell ($document->findnodes('ltx:_Capture_',$equation)){
+    next unless $document->getNodeQName($cell) =~ /(.*?:)?_Capture_$/;
+    if(($col++ % $ncols) == 0){	# Create new MathFork every $ncols cells.
+      closeMathFork($document,$equation,$main,$branch) if $main;
+      ($main,$branch)=openMathFork($document,$equation); }
+    addColumnToMathFork($document,$main,$branch,$cell); }
+  closeMathFork($document,$equation,$main,$branch) if $main; }
+
+#======================================================================
 Let(T_CS('\vcenter'), T_CS('\vbox'));
 
 # \eqno & \leqno are really bizzare.
@@ -4610,9 +4759,10 @@ DefConstructor('\@ADDCLASS{}',sub {
 sub setAlignOrClass {
   my($document,$node,$align,$class)=@_;
   my $model = $document->getModel;
-  if($model->canHaveAttribute($model->getNodeQName($node),'align')){
+  my $qname = $model->getNodeQName($node);
+  if($model->canHaveAttribute($qname,'align')){
     $node->setAttribute(align=>$align); }
-  else {
+  elsif($model->canHaveAttribute($qname,'class')){
     addClass($node,$class); }}
 
 #======================================================================
