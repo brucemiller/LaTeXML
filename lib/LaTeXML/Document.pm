@@ -788,9 +788,6 @@ sub openElementAt {
 # Basically, this just runs any afterClose operations.
 sub closeElementAt {
   my($self,$node)=@_;
-#####  if(!$node->getAttribute('_closed')){
-#####    map(&$_($self,$node,$LaTeXML::BOX),$$self{model}->getTagPropertyList($node,'afterClose'));
-#####    $node->setAttribute('_closed'=>1); } # Secret marker, if already closed
   $self->afterClose($node); }
 
 sub afterOpen {
@@ -893,7 +890,7 @@ sub wrapNodes {
     $new= $parent->addNewChild($ns,$tag); }
   else {
     $new = $parent->appendChild($$self{document}->createElement($tag)); }
-##  $self->afterOpen($new);
+  $self->afterOpen($new);
   $parent->replaceChild($new,$nodes[0]);
   if(my $font = $self->getNodeFont($parent)){
     $self->setNodeFont($new,$font); }
@@ -901,7 +898,7 @@ sub wrapNodes {
   $self->setNodeBox($new, $box); }
   foreach my $node (@nodes){
     $new->appendChild($node); }
-##  $self->afterClose($new);
+  $self->afterClose($new);
   $new; }
 
 # Unwrap the children of $node, by replacing $node by its children.
@@ -942,11 +939,14 @@ sub renameNode {
   foreach my $attr ($node->attributes){
     my $attname = $attr->getName;
     $new->setAttribute($attname, $node->getAttribute($attname)); }
-##  $self->afterOpen($new);
   # AND move all content from $node to $newnode
   foreach my $child ($node->childNodes){
     $new->appendChild($child); }
-##  $self->afterClose($new);
+  ## THEN call afterOpen... ?
+  # It would normally be called before children added,
+  # but how can we know if we're duplicated auto-added stuff?
+  $self->afterOpen($new);
+  $self->afterClose($new);
   # Finally, remove the old node
   $parent->removeChild($node);
   $new; }
@@ -1225,6 +1225,16 @@ at the current insertion point, up to and including C<$node>.
 Afterwards, the parent of C<$node> will be the current insertion point.
 It condenses the tree to avoid redundant font switching elements.
 
+=item C<< $document->afterOpen($node); >>
+
+Carries out any afterOpen operations that have been recorded (using C<Tag>)
+for the element name of C<$node>.
+
+=item C<< $document->afterClose($node); >>
+
+Carries out any afterClose operations that have been recorded (using C<Tag>)
+for the element name of C<$node>.
+
 =back
 
 =head2 Document Modification
@@ -1326,6 +1336,12 @@ Unwrap the children of C<$node>, by replacing C<$node> by its children.
 =item C<< $node = $document->replaceNode($node,@nodes); >>
 
 Replace C<$node> by C<@nodes>; presumably they are some sort of descendant nodes.
+
+=item C<< $node = $document->renameNode($node,$newname); >>
+
+Rename C<$node> to the tagname C<$newname>; equivalently replace C<$node> by
+a new node with name C<$newname> and copy the attributes and contents.
+It is assumed that C<$newname> can contain those attributes and contents.
 
 =back
 
