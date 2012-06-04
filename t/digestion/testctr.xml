@@ -54,7 +54,7 @@ Now (Foo,Bar)[25,0] is (25,0)</p>
       <p>Alph [F] = F</p>
     </para>
     <para xml:id="S3.p6">
-      <p>fnsymbol [<Math mode="inline" tex="\|" xml:id="S3.p6.m1" text="parallel-to"><XMath><XMTok meaning="parallel-to" name="||" role="VERTBAR">∥</XMTok></XMath></Math>] = ∥</p>
+      <p>fnsymbol [<Math mode="inline" xml:id="S3.p6.m1" tex="\|" text="parallel-to"><XMath><XMTok meaning="parallel-to" name="||" role="VERTBAR">∥</XMTok></XMath></Math>] = ∥</p>
     </para>
     <para xml:id="S3.p7">
       <p>How far will TeX go?
@@ -115,10 +115,15 @@ Now HFuzz is 2.0pt.</p>
         <p>Dimen: 1pt = 1.0pt</p>
       </para>
       <para xml:id="S4.SS2.p13">
-        <p>8 points = 8.0pt</p>
+        <p>8 pt = 8.0pt</p>
       </para>
       <para xml:id="S4.SS2.p14">
-        <p>15 points = 15.0pt</p>
+        <p>15 pt = 15.0pt</p>
+      </para>
+      <para xml:id="S4.SS2.p15">
+        <p>Catcodes?
+
+15.0 POINTS = 15.0 POINTS</p>
       </para>
     </subsection>
     <subsection refnum="4.3" xml:id="S4.SS3">
@@ -136,7 +141,12 @@ Now HFuzz is 2.0pt.</p>
         <p>Skip: 2pt plus 3fill = 2.0pt plus 3fill</p>
       </para>
       <para xml:id="S4.SS3.p5">
-        <p>0.1 plus 3fill = 0.1pt plus 3fill</p>
+        <p>0.1pt plus 3fill = 0.1pt plus 3fill</p>
+      </para>
+      <para xml:id="S4.SS3.p6">
+        <p>Catcodes?
+
+1.0 POINTS  PLUS 3.0 POINTS = 1.0 POINTS   PLUS  3.0 POINTS</p>
       </para>
     </subsection>
     <subsection refnum="4.4" xml:id="S4.SS4">

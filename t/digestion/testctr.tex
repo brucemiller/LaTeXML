@@ -106,10 +106,14 @@ Dimen: 1pt = \the\dseven
 Dimen: 1pt = \the\dimen7
 
 \dseven'10pt\relax
-8 points = \the\dimen7
+8 pt = \the\dimen7
 
 \dseven"Fpt\relax
-15 points = \the\dimen7
+15 pt = \the\dimen7
+
+Catcodes?
+{\catcode`\p=12\catcode`\t=12\gdef\undim#1pt{#1 POINTS}}
+15.0 POINTS = \expandafter\undim\the\dimen7
 
 \subsection{Glue}
 \skip7 = 1pt plus 3pt\relax
@@ -125,7 +129,13 @@ Dimen: 1pt = \the\dimen7
 Skip: 2pt plus 3fill = \the\skip7
 
 \skip8 = .1pt plus 3fill\relax
-0.1 plus 3fill = \the\skip8
+0.1pt plus 3fill = \the\skip8
+
+Catcodes?
+\skip7 = 1pt plus 3pt\relax
+{\catcode`\p=12\catcode`\l=12\catcode`\u=12\catcode`\s=12\catcode`\t=12%
+\gdef\oongoo#1pt#2plus#3pt{#1 POINTS #2 PLUS #3 POINTS}}
+1.0 POINTS  PLUS 3.0 POINTS = \expandafter\oongoo\the\skip7
 
 \subsection{Undefined?}
 
