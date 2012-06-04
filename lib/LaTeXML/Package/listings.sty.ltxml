@@ -1020,8 +1020,8 @@ sub lstProcessPush {
 sub lstProcessStartLine {
   my $numpos =  ((lstGetNumber('stepnumber') == 0) ? 'none' : lstGetLiteral('numbers'));
   $LaTeXML::linestart = scalar(@LaTeXML::lsttokens); # Remember where line started, for potential truncation
-  lstProcessPush(Invocation(T_CS('\@lst@startline'),
-			    ($numpos eq 'left') && lstDoNumber($LaTeXML::listing=~/^\s*?\n/s))); 
+  lstProcessPush(T_CS('\@lst@startline'),
+		 T_BEGIN,($numpos eq 'left') ? lstDoNumber($LaTeXML::listing=~/^\s*?\n/s):(),T_END);
 }
 
 sub lstProcessEndLine {
@@ -1030,8 +1030,8 @@ sub lstProcessEndLine {
   else {
     $LaTeXML::emptyfrom = undef; }
   my $numpos =  ((lstGetNumber('stepnumber') == 0) ? 'none' : lstGetLiteral('numbers'));
-  lstProcessPush(Invocation(T_CS('\@lst@endline'),
-			    ($numpos eq 'right')&& lstDoNumber())); }
+  lstProcessPush(T_CS('\@lst@endline'),
+		 T_BEGIN,($numpos eq 'right') ? lstDoNumber() : (), T_END); }
 
 sub lstProcess_internal {
   my($end_re)=@_;
@@ -1151,23 +1151,23 @@ sub lstClassProperty {
   my $class = $classname && LookupValue('LST_CLASSES')->{$classname};
   ($class && ($$class{$property} ? $$class{$property} : lstClassProperty($$class{class},$property))); }
 
-DefConstructor('\@lst@startline[]',
-	       "<ltx:tr>?#1(<ltx:td class='linenumber'>#1</ltx:td>)<ltx:td><ltx:text class='lstline'>");
-DefConstructor('\@lst@endline[]',
-	       "</ltx:text></ltx:td>?#1(<ltx:td class='linenumber'>#1</ltx:td>)</ltx:tr>");
+DefConstructor('\@lst@startline{}',
+	       "<ltx:tr>#1<ltx:td><ltx:text class='lstline'>");
+DefConstructor('\@lst@endline{}',
+	       "</ltx:text></ltx:td>#1</ltx:tr>");
 DefConstructor('\@lst@visible@space', "\x{2423}");
-
+DefConstructor('\@lst@linenumber{}',
+	       "<ltx:td class='linenumber'>#1</ltx:td>");
 sub lstDoNumber {
   my($isempty)=@_;
   if( (LookupValue('LISTINGS_NEEDS_NUMBER')
        || ((($LaTeXML::linenum-1) % lstGetNumber('stepnumber')) == 0))
       && (lstGetBoolean('numberblanklines') || !$isempty) ){
     AssignValue('LISTINGS_NEEDS_NUMBER'=>0);
-    # extra braces since optional args get one set stripped.
-    Tokens(T_BEGIN,T_BEGIN,lstGetTokens('numberstyle')->unlist,T_CS('\thelstnumber'),T_END,T_END); }
+    Invocation(T_CS('\@lst@linenumber'),
+	       Tokens(T_BEGIN,lstGetTokens('numberstyle')->unlist,T_CS('\thelstnumber'),T_END)); }
  else {
-   T_SPACE; }}
-#    (T_BEGIN,lstGetTokens('numberstyle')->unlist,T_CS("~"),T_END,T_CS("~")); }}
+   Invocation(T_CS('\@lst@linenumber'),Tokens()); }}
 
 #======================================================================
 # Initialize the various parameters...
