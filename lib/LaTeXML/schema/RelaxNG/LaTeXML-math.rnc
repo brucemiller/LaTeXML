@@ -63,6 +63,7 @@ XMath.attributes =
   attribute role { text }?,
 
   ## an open delimiter to enclose the object;
+  ## commonly used on an \elementref{XMApp} to fence a subexpression.
   attribute open { text }?,
 
   ## an close delimiter to enclose the object;
@@ -73,15 +74,19 @@ XMath.attributes =
   attribute enclose { text }?,
 
   ## an open delimiter to enclose the argument list,
-  ## when this token is applied to arguments with \elementref{XMApp}.
+  ## when this object is applied to arguments with \elementref{XMApp}.
+  ## This attribute would typically be present on an \elementref{XMTok}
+  ## being applied (\elementref{XMApp}) to arguments.
+  ## The \attr{open} and \attr{close} would enclose the token,
+  ## while \attr{argopen} and \attr{argclose} would enclose the arguments.
   attribute argopen { text }?,
 
   ## a close delimiter to enclose the argument list,
-  ## when this token is applied to arguments with \elementref{XMApp}.
+  ## when this object is applied to arguments with \elementref{XMApp}.
   attribute argclose { text }?,
 
   ## characters to separate arguments,
-  ## when this token is applied to arguments with \elementref{XMApp}.
+  ## when this object is applied to arguments with \elementref{XMApp}.
   ## Can be multiple characters for different argument positions;
   ## the last character is repeated if there aren't enough.
   attribute separators { text }?,

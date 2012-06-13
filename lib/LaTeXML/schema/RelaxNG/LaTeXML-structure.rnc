@@ -500,7 +500,8 @@ Sectional.attributes =
   Common.attributes,
   Labelled.attributes,
 
-  ## Stores RDFa prefixes as space separated pairs \verb|prefix:url|;
+  ## Stores RDFa prefixes as space separated pairs,
+  ## with the pairs being prefix and url separated by a colon;
   ## this should only appear at the root element.
   attribute rdf-prefixes { text }?
 

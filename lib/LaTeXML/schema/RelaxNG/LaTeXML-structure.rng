@@ -875,7 +875,8 @@ Could also use a navigation name text or something?</a:documentation>
     <ref name="Labelled.attributes"/>
     <optional>
       <attribute name="rdf-prefixes">
-        <a:documentation>Stores RDFa prefixes as space separated pairs \verb|prefix:url|;
+        <a:documentation>Stores RDFa prefixes as space separated pairs,
+with the pairs being prefix and url separated by a colon;
 this should only appear at the root element.</a:documentation>
       </attribute>
     </optional>

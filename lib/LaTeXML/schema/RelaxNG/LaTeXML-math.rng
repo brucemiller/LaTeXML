@@ -94,7 +94,8 @@ the content of the \elementref{XMath} element.</a:documentation>
     </optional>
     <optional>
       <attribute name="open">
-        <a:documentation>an open delimiter to enclose the object;</a:documentation>
+        <a:documentation>an open delimiter to enclose the object;
+commonly used on an \elementref{XMApp} to fence a subexpression.</a:documentation>
       </attribute>
     </optional>
     <optional>
@@ -111,19 +112,23 @@ with legitimate values being those of MathML's menclose notations;</a:documentat
     <optional>
       <attribute name="argopen">
         <a:documentation>an open delimiter to enclose the argument list,
-when this token is applied to arguments with \elementref{XMApp}.</a:documentation>
+when this object is applied to arguments with \elementref{XMApp}.
+This attribute would typically be present on an \elementref{XMTok}
+being applied (\elementref{XMApp}) to arguments.
+The \attr{open} and \attr{close} would enclose the token,
+while \attr{argopen} and \attr{argclose} would enclose the arguments.</a:documentation>
       </attribute>
     </optional>
     <optional>
       <attribute name="argclose">
         <a:documentation>a close delimiter to enclose the argument list,
-when this token is applied to arguments with \elementref{XMApp}.</a:documentation>
+when this object is applied to arguments with \elementref{XMApp}.</a:documentation>
       </attribute>
     </optional>
     <optional>
       <attribute name="separators">
         <a:documentation>characters to separate arguments,
-when this token is applied to arguments with \elementref{XMApp}.
+when this object is applied to arguments with \elementref{XMApp}.
 Can be multiple characters for different argument positions;
 the last character is repeated if there aren't enough.</a:documentation>
       </attribute>
