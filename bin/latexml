@@ -50,6 +50,7 @@ my $source = $ARGV[0];
 #**********************************************************************
 # Set up the processing.
 print STDERR "$identity\n" unless $verbosity < 0;
+print STDERR "processing started ".localtime()."\n" unless $verbosity < 0;
 
 @paths = map(pathname_canonical($_),@paths);
 if(my @baddirs = grep(! -d $_, @paths)){
@@ -98,6 +99,7 @@ if($digested){
 	$serialized = $dom->toString(1);
     }}
 print STDERR "\nConversion complete: ".$latexml->getStatusMessage.".\n";
+print STDERR "processing finished ".localtime()."\n" unless $verbosity < 0;
 
 if($destination){
 #  open(OUT,">:utf8",$destination) or die "Couldn't open output file $destination: $!"; }
