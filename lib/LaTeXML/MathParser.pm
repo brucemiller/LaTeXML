@@ -871,8 +871,8 @@ sub LeftRec {
   else {
     $arg1; }}
 
-# Like apply($op,$arg1,$arg2), but if $op is same as the operator in $arg1 is the same,
-# then combine as nary.
+# Like apply($op,$arg1,$arg2), but if $op is 'same' as the operator in $arg1,
+# then combine as an nary apply of $op to $arg1's arguments and $arg2.
 sub ApplyNary {
   my($op,$arg1,$arg2)=@_;
   my $opname    = p_getTokenMeaning($op) ||'__undef_meaning__';
@@ -880,10 +880,13 @@ sub ApplyNary {
   my @args = ();
   if(p_getQName($arg1) eq 'ltx:XMApp'){
     my($op1,@args1)=p_element_nodes($arg1);
-    if(((p_getTokenMeaning($op1)||'__undef_meaning__') eq $opname)
+    if(((p_getTokenMeaning($op1)||'__undef_meaning__') eq $opname) # Same operator?
        && ((p_getValue($op1) || '__undef_content__') eq $opcontent)
-       && !grep($_ ,map((p_getAttribute($op,$_)||'<none>') ne (p_getAttribute($op1,$_)||'<none>'),
-			qw(fracstyle)))) { # Check ops are used in similar way
+       # Check that ops are used in same way.
+       && !grep((p_getAttribute($op,$_)||'<none>') ne (p_getAttribute($op1,$_)||'<none>'),
+		qw(fracstyle))	# Check ops are used in similar way
+       # Check that arg1 isn't wrapped, fenced or enclosed in some restrictive way
+       && !grep(p_getAttribute($arg1,$_), qw(open close enclose)) ) {
       push(@args,@args1); }
     else {
       push(@args,$arg1); }}
