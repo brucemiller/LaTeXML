@@ -2871,7 +2871,7 @@ DefMacro('\fbox{}','\@@framebox{}{}{#1}');
 DefMacro('\framebox','\@ifnextchar(\pic@framebox\@framebox');
 DefMacro('\@framebox[Dimension][]{}','\@@framebox{#1}{#2}{#3}');
 DefConstructor('\@@framebox{}{}{}',
-	       "?#mathframe(<ltx:XMWrap enclose='box'/>#inner</ltx:XMWrap>)"
+	       "?#mathframe(<ltx:XMWrap enclose='box'>#inner</ltx:XMWrap>)"
 	       .  "(<ltx:text ?#1(width='#1') ?#align(align='#align') framed='rectangle' _noautoclose='1'>#3</ltx:text>)",
 #	       mode=>'text',
 	       beforeDigest=>sub {
