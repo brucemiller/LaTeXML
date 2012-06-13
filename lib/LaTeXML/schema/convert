@@ -5,7 +5,7 @@ cd RelaxNG
 
 for name in LaTeXML; do
   echo "Converting $name.rnc to $name.rng"
-  trang -C ../LaTeXML.catalog $name.rnc $name.rng
+  trang -C ../../LaTeXML.catalog $name.rnc $name.rng
 
   # Trang can't convert the schema to dtd mainly because we're gradually
   # combining the defines for models.
