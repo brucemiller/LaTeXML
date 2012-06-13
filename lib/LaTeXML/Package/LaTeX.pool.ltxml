@@ -163,11 +163,15 @@ DefMacro('\begin{}',sub {
   my $name = $env && ToString($env);
   if(LookupDefinition(T_CS("\\begin{$name}"))){
     T_CS("\\begin{$name}"); } # Magic cs!
-  elsif(isUndefined($name)){
-    Error(":unexpected:$name Environment $name is undefined");
-    (T_CS('\begingroup')); }
   else {
-    (T_CS('\begingroup'),T_CS("\\$name")); }});
+    my $token = T_CS("\\$name");
+    if(isUndefined($name)){
+      my $undef = '{'.$name.'}';
+      $STATE->noteStatus(undefined=>$undef);
+      Error(":undefined:".$undef." The environment ".$undef." is not defined.");
+      $STATE->installDefinition(LaTeXML::Constructor->new($token,undef,
+					  sub { LaTeXML::Stomach::makeError($_[0],'undefined',$undef);})); }
+    (T_CS('\begingroup'),$token); }});
 
 DefMacro('\end{}',  sub { 
   my($gullet,$env)=@_;
