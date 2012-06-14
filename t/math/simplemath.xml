@@ -4,11 +4,11 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <title>Testing Simple Math Parsing</title>
   <para xml:id="p1">
-    <p>Inline math <Math mode="inline" tex="a+b" xml:id="p1.m1" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="ID" font="italic">a</XMTok><XMTok role="ID" font="italic">b</XMTok></XMApp></XMath></Math>.</p>
+    <p>Inline math <Math mode="inline" xml:id="p1.m1" tex="a+b" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="ID" font="italic">a</XMTok><XMTok role="ID" font="italic">b</XMTok></XMApp></XMath></Math>.</p>
   </para>
   <para xml:id="p2">
     <equation xml:id="S0.Ex1">
-      <Math mode="display" tex="a+b+123" xml:id="S0.Ex1.m1" text="a + b + 123">
+      <Math mode="display" xml:id="S0.Ex1.m1" tex="a+b+123" text="a + b + 123">
         <XMath>
           <XMApp>
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -20,7 +20,7 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex2">
-      <Math mode="display" tex="a+b+f(123)" xml:id="S0.Ex2.m1" text="a + b + f@(123)">
+      <Math mode="display" xml:id="S0.Ex2.m1" tex="a+b+f(123)" text="a + b + f@(123)">
         <XMath>
           <XMApp>
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -37,7 +37,7 @@
   </para>
   <para xml:id="p3">
     <equation xml:id="S0.Ex3">
-      <Math mode="display" tex="f_{D}f(a+b)" xml:id="S0.Ex3.m1" text="f _ D * f@(a + b)">
+      <Math mode="display" xml:id="S0.Ex3.m1" tex="f_{D}f(a+b)" text="f _ D * f@(a + b)">
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -59,7 +59,7 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex4">
-      <Math mode="display" tex="f_{1}(a+b)" xml:id="S0.Ex4.m1" text="f _ 1 * (a + b)">
+      <Math mode="display" xml:id="S0.Ex4.m1" tex="f_{1}(a+b)" text="f _ 1 * (a + b)">
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -78,12 +78,12 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex5">
-      <Math mode="display" tex="\hat{f}a" xml:id="S0.Ex5.m1" text="hat@(f) * a">
+      <Math mode="display" xml:id="S0.Ex5.m1" tex="\hat{f}a" text="hat@(f) * a">
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
             <XMApp role="ID">
-              <XMTok name="hat" role="OVERACCENT">⌃</XMTok>
+              <XMTok name="hat" role="OVERACCENT">^</XMTok>
               <XMTok role="FUNCTION" font="italic">f</XMTok>
             </XMApp>
             <XMTok role="ID" font="italic">a</XMTok>
@@ -96,7 +96,7 @@
     <title><tag>1 </tag>Restricted</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex6">
-        <Math mode="display" tex="a(x)+b(x)+123" xml:id="S1.Ex6.m1" text="a@(x) + b@(x) + 123">
+        <Math mode="display" xml:id="S1.Ex6.m1" tex="a(x)+b(x)+123" text="a@(x) + b@(x) + 123">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
