@@ -1080,10 +1080,24 @@ DeclareFontMap('ASCII',
     'p',        'q',        'r',        's',          't',        'u',       'v',        'w',
     'x',        'y',        'z',        "{",          "|",        "}",       "~",        undef]);
 
+# Note that several entries are used for accents, and in practice will actually
+# be used in something like an m:mover; thus they needn't (shouldn't?) be "small"
+# There are also some questions about which choices are best
+# grave & acute accents (entry 0x12 & 0x13) (often typed using 0x60 & 0x27)
+#   are probably best using U+60(grave accent) & U+B4(acute accent)
+#   but could be U+2035 (reversed prime) & U+2032 (prime).  (particularly for math?)
+#   [we do use these for \prime, however!]
+#   or U+02CB (modifier letter grave accent) & U+02CA (modifier letter acute accent)
+# Similarly, hat & tilde (entries 0x5E & 0x7E)
+#   typed using ^ 0x5E circumflex accent) & ~ 0x7E  tilde
+#   are probably best just sticking with U+5E & U+7E
+#   but could be U+02C6 (modifier letter circumflex accent) U+02DC (small tilde)
+# [Note that generally we're using codepoints characterized as "modifier letter"
+# only when no other spacing point is available.]
 DeclareFontMap('OT1',
    ["\x{0393}", "\x{0394}", "\x{0398}", "\x{039B}",  "\x{039E}", "\x{03A0}", "\x{03A3}", "\x{03A5}",
     "\x{03A6}", "\x{03A8}", "\x{03A9}", "\x{FB00}",  "\x{FB01}", "\x{FB02}", "\x{FB03}", "\x{FB04}",
-    "\x{0131}",  "\x{0237}", UTF(0x60),  UTF(0xB4),   UTF(0xA0)."\x{030C}",     "\x{02D8}", UTF(0xAF),  "\x{02DA}",
+    "\x{0131}",  "\x{0237}", UTF(0x60),  UTF(0xB4),  "\x{02C7}", "\x{02D8}", UTF(0xAF),  "\x{02DA}",
     UTF(0xB8),   UTF(0xDF),  UTF(0xE6), "\x{0153}",   UTF(0xF8),  UTF(0xC6), "\x{152}",   UTF(0xD8),
     UTF(0xA0)."\x{0335}", '!', "\x{201D}", '#',          '$',        '%',       '&',        "\x{2019}",
     '(',        ')',        '*',        '+',          ',',        '-',       '.',        '/',
@@ -1096,12 +1110,12 @@ DeclareFontMap('OT1',
     "\x{2018}", 'a',        'b',        'c',          'd',        'e',       'f',        'g',
     'h',        'i',        'j',        'k',          'l',        'm',       'n',        'o',
     'p',        'q',        'r',        's',          't',        'u',       'v',        'w',
-    'x',        'y',        'z',        "\x{2013}",   "\x{2014}", "\x{02DD}", "\x{02DC}", UTF(0xA8) ]);
+    'x',        'y',        'z',        "\x{2013}",   "\x{2014}", "\x{02DD}", UTF(0x7E), UTF(0xA8) ]);
 
 DeclareFontMap('OT1',
    ["\x{0393}", "\x{0394}", "\x{0398}", "\x{039B}",  "\x{039E}", "\x{03A0}", "\x{03A3}", "\x{03A5}",
     "\x{03A6}", "\x{03A8}", "\x{03A9}", "\x{2191}",  "\x{2193}", "'",         UTF(0xA1),  UTF(0xBF),
-    "\x{0131}",  "\x{0237}", UTF(0x60),  UTF(0xB4),   UTF(0xA0)."\x{030C}",     "\x{02D8}", UTF(0xAF),  "\x{02DA}",
+    "\x{0131}",  "\x{0237}", UTF(0x60),  UTF(0xB4),  "\x{02C7}", "\x{02D8}",  UTF(0xAF), "\x{02DA}",
     UTF(0xB8),   UTF(0xDF),  UTF(0xE6), "\x{0153}",   UTF(0xF8),  UTF(0xC6), "\x{152}",   UTF(0xD8),
     "\x{2423}", '!',        "\"",       '#',          '$',        '%',       '&',        "'",
     '(',        ')',        '*',        '+',          ',',        '-',       '.',        '/',
@@ -1150,7 +1164,7 @@ DeclareFontMap('OML',
     # p          q           r           s             t           u          v           w
     'p',        'q',        'r',        's',          't',        'u',       'v',        'w',
     # x          y           z           dotless i    dotless j    weier-p    arrow acc.  inv.breve
-    'x',        'y',        'z',        "\x{0131}",   "j",       "\x{2118}", UTF(0xA0)."\x{1DFE}",UTF(0xA0)."\x{0311}" ]);
+    'x',        'y',        'z',        "\x{0131}",   "j",       "\x{2118}", "\x{2192}",UTF(0xA0)."\x{0311}" ]);
 DeclareFontMap('OMS',
    [#minus       dot         times       ast          divide      diamond    plus-minus   minus-plus
     "-",        "\x{22C5}",  UTF(0xD7), "\x{2217}",   UTF(0xF7), "\x{22C4}", UTF(0xB1),  "\x{2213}",
@@ -1204,7 +1218,7 @@ DeclareFontMap('OMX',
     "\x{222E}", "\x{222E}", "\x{2299}", "\x{2299}",   "\x{2295}", "\x{2295}", "\x{2297}", "\x{2297}",
     "\x{2211}", "\x{220F}", "\x{222B}", "\x{22C3}",   "\x{22C2}", "\x{228C}", "\x{2227}", "\x{2228}",
     "\x{2211}", "\x{220F}", "\x{222B}", "\x{22C3}",   "\x{22C2}", "\x{228C}", "\x{2227}", "\x{2228}",
-    "\x{2210}", "\x{2210}",  UTF(0x5E),  UTF(0x5E),  UTF(0x5E),   "\x{02DC}", "\x{02DC}", "\x{02DC}",
+    "\x{2210}", "\x{2210}",  UTF(0x5E),  UTF(0x5E),  UTF(0x5E),   UTF(0x7E),  UTF(0x7E),  UTF(0x7E),
     "[",        "]",        "\x{230A}", "\x{230B}",   "\x{2308}", "\x{2309}", "{",        "}",
     #                                                              [missing rad frags]     double arrow ext.
     "\x{23B7}", "\x{23B7}", "\x{23B7}", "\x{23B7}",   "\x{23B7}",  undef,      undef,      undef,
@@ -1259,6 +1273,16 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
 		  reversion=>$csname) if $glyph;
   $STATE->installDefinition(LaTeXML::CharDef->new($newcs,$value, $internalcs));
   return; });
+
+DefConstructor('\mathaccent Number Digested',
+	       "<ltx:XMApp><ltx:XMTok role='OVERACCENT'>#glyph</ltx:XMTok><ltx:XMWrap>#2</ltx:XMWrap></ltx:XMApp>",
+	       afterDigest=>sub {
+		 my($stomach,$whatsit)=@_;
+		 my $n = $whatsit->getArg(1)->valueOf;
+		 my($role,$glyph) = decodeMathChar($n);
+		 $whatsit->setProperty(glyph=>$glyph) if $glyph;
+		 $whatsit->setProperty(font=>LookupValue('font')->specialize($glyph)) if $glyph;
+		 return; });
 
 # <box> = \box <8bit> | \copy <8bit> | \lastbox | \vsplit <8bit> to <dimen>
 #   | \hbox <box specification>{<horizontal mode material>}
@@ -2250,12 +2274,9 @@ DefPrimitive('\unhcopy Number',sub {
 DefMacro('\vspace{}','\vskip#1\relax');
 # \indent, \noindent, \par; see above.
 
-# \accent Number ????
-DefMacro('\accent Number',Tokens());	       # How should these be translated? Depends on font??
 DefMacro('\discretionary{}{}{}','#3'); # No hyphenation here!
 DefPrimitiveI('\-', undef,undef);
 DefPrimitive('\setlanguage Number',undef);
-
 
 #======================================================================
 # Math mode stuff
@@ -3559,14 +3580,14 @@ our %accents
      '\"' => ["\x{0308}",UTF(0xA8)], # COMBINING DIAERESIS & DIAERESIS
      '\~' => ["\x{0303}","~"],	      # COMBINING TILDE
      '\=' => ["\x{0304}",UTF(0xAF)], # COMBINING MACRON & MACRON
-     '\.' => ["\x{0307}",UTF(0xB7)], # COMBINING DOT ABOVE & MIDDLE DOT (?)
+     '\.' => ["\x{0307}","\x{02D9}"], # COMBINING DOT ABOVE & DOT ABOVE
      '\u' => ["\x{0306}","\x{02D8}"], # COMBINING BREVE & BREVE
      '\v' => ["\x{030C}","\x{02C7}"], # COMBINING CARON & CARON
      '\@ringaccent' => ["\x{030A}","o"], # COMBINING RING ABOVE & non-combining
      '\r' => ["\x{030A}","o"], # COMBINING RING ABOVE & non-combining
      '\H' => ["\x{030B}","\x{02DD}"], # COMBINING DOUBLE ACUTE ACCENT & non-combining
      '\c' => ["\x{0327}",UTF(0xB8)], # COMBINING CEDILLA & CEDILLA
-     '\d' => ["\x{0323}",UTF(0xB7)], # COMBINING DOT BELOW & MIDDLE DOT (?)
+     '\d' => ["\x{0323}",'.'], # COMBINING DOT BELOW & DOT (?)
      '\b' => ["\x{0331}",UTF(0xAF)], # COMBINING MACRON BELOW  & MACRON
      '\t' => ["\x{0361}","-"],	# COMBINING DOUBLE INVERTED BREVE & ???? What????
      # this one's actually defined in mathscinet.sty, but just stick it here!
@@ -3575,33 +3596,80 @@ our %accents
      #		'\bar'=>"\x{0304}", # COMBINING MACRON or is this the longer overbar?
 		);
 
+# Create a box applying an accent to a letter
+sub applyAccent {
+  my($stomach,$letter,$combiningchar,$standalonechar,$reversion)=@_;
+  $letter = Expand($letter);
+  my @letters = map(($_ eq '\i' ? 'i': ($_ eq '\j' ? 'j' : $_)),
+		    map(ToString($_), ($letter ? $letter->unlist : ())));
+  if(!scalar(@letters) || ((scalar(@letters)==1) && ($letters[0] eq '\ '))){
+    Box($standalonechar,undef,undef,$reversion); }
+  else { # Put the accent AFTER the first char(?)
+    Box(NFC($letters[0].$combiningchar.join('',@letters[1..$#letters])),undef,undef,$reversion); }}
+
 # Defines an accent command using a combining char that follows the
 # 1st char of the argument.  In cases where there is no argument, $standalonechar is used.
-sub DefAccentZZZ {
-  my ($accent, $combiningchar, $standalonechar) = @_;
-  DefConstructor($accent."{}", sub {
-    my($document,$letter,%props)=@_;
-    if(my @letters = map(($_ eq '\i' ? 'i':$_),map(ToString($_),($letter ? $letter->unlist : ())))){
-      # Put the accent AFTER the first char(?)
-      $document->openText(NFC($letters[0].$combiningchar.join('',@letters[1..$#letters])),
-			  $letter->getFont);}
-    else {			# Empty argument???
-       $document->openText($standalonechar,$props{font}); }} ); }
-
 sub DefAccent {
   my ($accent, $combiningchar, $standalonechar) = @_;
   DefPrimitive($accent."{}", sub {
     my($stomach,$letter)=@_;
-    $letter = Expand($letter);
-    my @letters = map(($_ eq '\i' ? 'i': ($_ eq '\j' ? 'j' : $_)), map(ToString($_), ($letter ? $letter->unlist : ())));
-    if(!scalar(@letters) || ((scalar(@letters)==1) && ($letters[0] eq '\ '))){
-      Box($standalonechar,undef,undef,Invocation($accent,$letter)); }
-    else { # Put the accent AFTER the first char(?)
-      Box(NFC($letters[0].$combiningchar.join('',@letters[1..$#letters])),undef,undef,
-	  Invocation($accent,$letter)); }} ); }
+    applyAccent($stomach,$letter,$combiningchar, $standalonechar, Invocation($accent,$letter)); });
+}
 
 foreach my $accent (keys %accents) {
   DefAccent($accent, @{$accents{$accent}}); }
+
+# This will fail if there really are "assignments" after the number!
+DefPrimitive('\accent Number {}',sub {
+  my($stomach,$num,$letter)=@_;
+  my $n = $num->valueOf;
+  my $fam   = 0;		# ?
+  my $fontinfo = LookupValue('fontinfo_'.$fam.'_text');
+  my $acc = ($fontinfo && $$fontinfo{encoding} ? FontDecode($n,$$fontinfo{encoding}) : chr($n));
+  my $reversion = Invocation(T_CS('\accent'),$num,$letter);
+  # Reverse lookup of the non-spacing accent char
+  my($entry) = $acc && grep($acc eq $$_[1], values %accents);
+  if($entry){
+    applyAccent($stomach,$letter,@$entry,$reversion); }
+  else {
+    Warn(":unexpected:accent$n Accent $n not recognized");
+    Box(ToString($letter),undef,undef,$reversion); }});
+
+DefConstructor('\mathchar Number',
+	       "?#glyph(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)",
+	       afterDigest=>sub {
+		 my($stomach,$whatsit)=@_;
+		 my $n = $whatsit->getArg(1)->valueOf;
+		 my($role,$glyph) = decodeMathChar($n);
+		 $whatsit->setProperty(glyph=>$glyph) if $glyph;
+		 $whatsit->setProperty(role=>$role) if defined $role; 
+		 $whatsit->setProperty(font=>LookupValue('font')->specialize($glyph)) if $glyph;
+		 return; });
+
+# Almost like a register, but different...
+DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
+  my($stomach,$newcs,$value)=@_;
+  my $csname = $newcs->getCSName;
+  my($role, $glyph) = decodeMathChar($value->valueOf);
+  my $internalcs = $glyph && T_CS('\@mathchardef@'.$csname);
+  DefConstructorI($internalcs,undef,"<ltx:XMTok role='#role'>#glyph</ltx:XMTok>",
+		  properties=>{role=>$role,glyph=>$glyph,
+			       font=>sub{ LookupValue('font')->specialize($glyph); }},
+		  reversion=>$csname) if $glyph;
+  $STATE->installDefinition(LaTeXML::CharDef->new($newcs,$value, $internalcs));
+  return; });
+
+DefConstructor('\mathaccent Number Digested',
+	       "<ltx:XMApp><ltx:XMTok role='OVERACCENT'>#glyph</ltx:XMTok><ltx:XMWrap>#2</ltx:XMWrap></ltx:XMApp>",
+	       afterDigest=>sub {
+		 my($stomach,$whatsit)=@_;
+		 my $n = $whatsit->getArg(1)->valueOf;
+		 my($role,$glyph) = decodeMathChar($n);
+		 $whatsit->setProperty(glyph=>$glyph) if $glyph;
+		 $whatsit->setProperty(font=>LookupValue('font')->specialize($glyph)) if $glyph;
+		 return; });
+
+
 
 #======================================================================
 # TeX Book, Appendix B. p. 357
@@ -4044,8 +4112,8 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 # LaTeX; Table 3.11. Math Mode Accents, p.50.
 # Are these all TeX (or LaTeX)?
 
-DefMath('\hat Digested',       "\x{2303}", operator_role=>'OVERACCENT');
-DefMath('\check Digested',     "\x{2713}", operator_role=>'OVERACCENT'); # CHECK MARK
+DefMath('\hat Digested',       UTF(0x5E),  operator_role=>'OVERACCENT');
+DefMath('\check Digested',     "\x{02C7}", operator_role=>'OVERACCENT'); # CARON
 DefMath('\breve Digested',     "\x{02D8}", operator_role=>'OVERACCENT'); # BREVE
 DefMath('\acute Digested',     UTF(0xB4),  operator_role=>'OVERACCENT'); # ACUTE ACCENT
 DefMath('\grave Digested',     UTF(0x60),  operator_role=>'OVERACCENT'); # GRAVE ACCENT
