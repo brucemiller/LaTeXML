@@ -15,7 +15,7 @@ use strict;
 use LaTeXML::Package;
 
 DeclareFontMap('TS1',[
-    "\x{2035}","\x{2032}",UTF(0x5E), "\x{02DC}",UTF(0xA8), "\x{02DD}","\x{02DA}","\x{02C7}",
+    UTF(0x60), UTF(0xB4), UTF(0x5E), UTF(0x7E), UTF(0xA8), "\x{02DD}","\x{02DA}","\x{02C7}",
     "\x{02D8}",UTF(0xAF), "\x{02D9}",UTF(0xB8), "\x{02DB}","\x{201A}",undef,     undef,
     undef,     undef,     "\"",      undef,     undef,     "\x{2013}","\x{2014}",undef,
     "\x{2190}","\x{2192}",UTF(0xA0)."\x{0311}",UTF(0xA0)."\x{0311}",UTF(0xA0)."\x{0311}",UTF(0xA0)."\x{0311}",  undef,     undef,
