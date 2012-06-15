@@ -3636,42 +3636,6 @@ DefPrimitive('\accent Number {}',sub {
     Warn(":unexpected:accent$n Accent $n not recognized");
     Box(ToString($letter),undef,undef,$reversion); }});
 
-DefConstructor('\mathchar Number',
-	       "?#glyph(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)",
-	       afterDigest=>sub {
-		 my($stomach,$whatsit)=@_;
-		 my $n = $whatsit->getArg(1)->valueOf;
-		 my($role,$glyph) = decodeMathChar($n);
-		 $whatsit->setProperty(glyph=>$glyph) if $glyph;
-		 $whatsit->setProperty(role=>$role) if defined $role; 
-		 $whatsit->setProperty(font=>LookupValue('font')->specialize($glyph)) if $glyph;
-		 return; });
-
-# Almost like a register, but different...
-DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
-  my($stomach,$newcs,$value)=@_;
-  my $csname = $newcs->getCSName;
-  my($role, $glyph) = decodeMathChar($value->valueOf);
-  my $internalcs = $glyph && T_CS('\@mathchardef@'.$csname);
-  DefConstructorI($internalcs,undef,"<ltx:XMTok role='#role'>#glyph</ltx:XMTok>",
-		  properties=>{role=>$role,glyph=>$glyph,
-			       font=>sub{ LookupValue('font')->specialize($glyph); }},
-		  reversion=>$csname) if $glyph;
-  $STATE->installDefinition(LaTeXML::CharDef->new($newcs,$value, $internalcs));
-  return; });
-
-DefConstructor('\mathaccent Number Digested',
-	       "<ltx:XMApp><ltx:XMTok role='OVERACCENT'>#glyph</ltx:XMTok><ltx:XMWrap>#2</ltx:XMWrap></ltx:XMApp>",
-	       afterDigest=>sub {
-		 my($stomach,$whatsit)=@_;
-		 my $n = $whatsit->getArg(1)->valueOf;
-		 my($role,$glyph) = decodeMathChar($n);
-		 $whatsit->setProperty(glyph=>$glyph) if $glyph;
-		 $whatsit->setProperty(font=>LookupValue('font')->specialize($glyph)) if $glyph;
-		 return; });
-
-
-
 #======================================================================
 # TeX Book, Appendix B. p. 357
 
