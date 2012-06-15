@@ -383,7 +383,7 @@ Let(T_CS('\protect'),T_CS('\relax'));
 #======================================================================
 
 DefMacro('\romannumeral Number', sub { roman($_[1]->valueOf); });
-DefMacro('\string Token ',        sub { ExplodeText($_[1]->getString); });
+DefMacro('\string Token',        sub { ExplodeText($_[1]->getString); });
 DefMacroI('\jobname',undef,Tokens()); # Set to the filename by initialization
 
 DefMacroI('\fontname', undef,sub { Explode("fontname not implemented"); });
@@ -3417,16 +3417,17 @@ AssignValue(frontmatter=>{},'global');
 # \@add@frontmatter{tag}[attributes]{content}
 DefPrimitive('\@add@frontmatter {} OptionalKeyVals {}', sub {
   my($stomach,$tag,$keys,$tokens)=@_;
-  $tag = ToString($tag);
-  my $attr = ($keys ? {$keys->beDigested($stomach)->getHash} : undef);
-
-  my $frontmatter = LookupValue('frontmatter');
+  # Digest this as if we're already in the document body!
   my $inpreamble = LookupValue('inPreamble');
+  AssignValue(inPreamble=>0);
   # Be careful since the contents may also want to add frontmatter
   # (which should be inside or after this one!)
-  my $entry = [$tag,$attr,'to-be-filled-in'];
-  push(@{$$frontmatter{$tag}},$entry);
-  AssignValue(inPreamble=>0);
+  # So, we append this entry before digesting
+  $tag = ToString($tag);
+  my $entry = [$tag,undef,'to-be-filled-in'];
+  push(@{ LookupValue('frontmatter')->{$tag}},$entry);
+  if($keys){
+    $$entry[1] = {$keys->beDigested($stomach)->getHash}; }
   $$entry[2] = Digest(Tokens(T_BEGIN,$tokens,T_END));
   AssignValue(inPreamble=>$inpreamble);
   return; });
