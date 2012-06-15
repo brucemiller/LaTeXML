@@ -9,8 +9,7 @@ use LaTeXML::Util::Pathname;
 
 #**********************************************************************
 # Parse command line
-
-my $identity = "latexml (LaTeXML version $LaTeXML::VERSION)";
+my $identity = "$FindBin::Script (LaTeXML version $LaTeXML::VERSION)";
 my($verbosity,$strict,$comments,$noparse,$includestyles)=(0,0,1,0,0);
 my ($format,$destination,$help,$showversion)=('xml','');
 my ($preamble,$postamble)=(undef,undef);
@@ -54,7 +53,7 @@ print STDERR "processing started ".localtime()."\n" unless $verbosity < 0;
 
 @paths = map(pathname_canonical($_),@paths);
 if(my @baddirs = grep(! -d $_, @paths)){
-  warn "$identity: these path directories do not exist: ".join(', ',@baddirs)."\n"; }
+  warn "These path directories do not exist: ".join(', ',@baddirs)."\n"; }
 
 my $latexml= LaTeXML->new(preload=>[@preload], searchpaths=>[grep(-d $_,reverse(@paths))], graphicspaths=>['.'],
 			  verbosity=>$verbosity, strict=>$strict,

@@ -15,7 +15,7 @@ use LaTeXML::Util::ObjectDB;
 #======================================================================
 # Parse command line.
 #======================================================================
-my $identity = "latexmlpost (LaTeXML version $LaTeXML::VERSION)";
+my $identity = "$FindBin::Script (LaTeXML version $LaTeXML::VERSION)";
 
 # undef => unspecified; 0 = NO, 1 = YES
 my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
@@ -229,7 +229,8 @@ if((!defined $destination) && ($mathimages || $dographics || $picimages)){
 
 binmode(STDERR,":utf8");
 #binmode(STDOUT,":utf8");
-print STDERR "$identity\n" if $verbosity > 0;
+print STDERR "$identity\n" unless $verbosity < 0;
+print STDERR "processing started ".localtime()."\n" unless $verbosity < 0;
 
 # Default options/parameters for each post processor
 our %OPTIONS = (verbosity=>$verbosity||0);
@@ -336,7 +337,7 @@ if(!$prescan){
   if($stylesheet){
     require 'LaTeXML/Post/XSLT.pm'; 
     # Copy various kinds of resources, css, javascript, icon (others?)
-    my $parameters={};
+    my $parameters={LATEXML_VERSION=>"'$LaTeXML::VERSION'"};
     my @searchpaths = $DOCUMENT->getSearchPaths;
     foreach my $css (@css){
       if(pathname_is_url($css)){ # external url ? no need to copy
@@ -386,6 +387,8 @@ if(!$prescan){
 # that initialize the thing by reading several files (the rest of the command line).
 LaTeXML::Post::ProcessChain($DOCUMENT,@procs);
 $DB->finish;
+print STDERR "processing finished ".localtime()."\n" unless $verbosity < 0;
+
 #======================================================================
 # helpers
 #======================================================================
