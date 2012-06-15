@@ -51,6 +51,7 @@
     </xsl:choose>
     <xsl:text>
     </xsl:text>
+    <xsl:call-template name="LaTeXML_identifier"/>
     <xsl:call-template name="metatype"/>
     <xsl:if test="/*/ltx:navigation/ltx:ref[@class='start']"><xsl:text>
     </xsl:text>
