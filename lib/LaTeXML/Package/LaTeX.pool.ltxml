@@ -207,6 +207,8 @@ Let(T_CS('\@typeset@protect'),T_CS('\relax'));
 DefConstructor("\\\\ OptionalMatch:* [Glue]",
 	       "?#isMath(<ltx:XMHint name='newline'/>)(<ltx:break/>)",
 	       reversion=>Tokens(T_CS("\\\\"),T_CR));
+Let(T_CS('\@normalcr'),T_CS("\\\\"));
+PushValue(TEXT_MODE_BINDINGS=>[T_CS("\\\\"), T_CS('\@normalcr')]);
 
 #**********************************************************************
 # C.2. The Structure of the Document
@@ -2318,7 +2320,7 @@ sub beginBibliography {
   # But also, if there are multiple bibliographies, 
   my $bibid = LookupValue('bibliography_ID'); # previous bibliographic ID?
   if($bibid){
-    if($bibid =~ /(.*?bib)(\w)$/){ $bibid = $1.chr(ord($2)+1); }
+    if(($bibid =~ /(.*?bib\w*?)(\w)$/) && (lc($2) ne 'z')){ $bibid = $1.chr(ord($2)+1); }
     else { $bibid .= 'a'; }}
   elsif(my $docid = ToString(Expand(T_CS('\thedocument@ID')))){
     $bibid = $docid.".bib"; }
@@ -2746,7 +2748,7 @@ DefPrimitive('\typein[]{}',undef);
 DefPrimitive('\linebreak[]',undef);
 DefPrimitive('\nolinebreak[]',undef);
 # \\ already defined
-DefPrimitiveI('\newline',undef, "\n");
+DefMacroI('\newline',undef, "\\\\\\relax");
 DefPrimitiveI('\-',undef, undef);	# We don't do hyphenation.
 # \hyphenation in TeX.pool
 

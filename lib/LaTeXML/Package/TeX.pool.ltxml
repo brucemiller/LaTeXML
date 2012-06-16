@@ -1358,11 +1358,11 @@ DefParameterType('VBoxContents',sub {
 # This re-binds a number of important control sequences to their default text binding.
 # This is useful within common boxing or footnote macros that can appear within
 # alignments or special environments that have redefined many of these.
+PushValue(TEXT_MODE_BINDINGS=>[T_MATH,T_CS('\@dollar@in@textmode')]);
+PushValue(TEXT_MODE_BINDINGS=>[T_CS('\centerline'),T_CS('\relax')]);
+
 sub reenterTextMode {
-  Let(T_MATH,T_CS('\@dollar@in@textmode'));
-  Let(T_CS('\centerline'),T_CS('\relax'));
-  Let(T_CS("\\\\"), T_CS('\default@cr'));
-}
+  map( Let($$_[0],$$_[1]), @{ LookupValue('TEXT_MODE_BINDINGS') }); }
 
 sub REF { $_[0] && $_[0]->{$_[1]}; }
 
