@@ -133,9 +133,14 @@ DefMacroI('\keywordsname',undef,'Key words and phrases');
 DefMacro('\keywords{}',
 	 '\@add@frontmatter{ltx:keywords}[name={\keywordsname}]{#1}');
 
-DefMacroI('\subjclassname',undef,'\textup{1991} Mathematics Subject Classification');
-DefMacro('\subjclass[Default:1991]{}',
-	 '\@add@frontmatter{ltx:classification}[scheme={#1 Mathematics Subject Classification},'
+# Non-standard but makes it easier to create bindings for variations on AMS classes;
+# just redefine this macro
+DefMacroI('\@subjclassyear',undef,'1991');
+
+DefMacroI('\subjclassname',undef,'\textup{\@subjclassyear} Mathematics Subject Classification');
+DefMacro('\subjclass[Default:\@subjclassyear]{}',
+	 '\ifx.#1.\else\xdef\@subjclassyear{#1}\fi'
+	 .'\@add@frontmatter{ltx:classification}[scheme={#1 Mathematics Subject Classification},'
 	 .                       'name={\subjclassname}]{#2}');
 
 DefMacro('\copyrightinfo{}{}',
