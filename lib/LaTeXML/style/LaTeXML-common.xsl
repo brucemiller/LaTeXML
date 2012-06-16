@@ -16,8 +16,8 @@
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
     xmlns:string= "http://exslt.org/strings"
-    xmlns:func  = "http://exslt.org/functions"
     xmlns:date  = "http://exslt.org/dates-and-times"
+    xmlns:func  = "http://exslt.org/functions"
     xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
     extension-element-prefixes="func f"
     exclude-result-prefixes = "ltx f func string">
@@ -155,36 +155,6 @@
       </xsl:attribute>
     </xsl:if>
   </xsl:template>
-
-<!--
-  <xsl:template name="add_style">
-    <xsl:param name="extra_style" select="''"/>
-    <xsl:if test="@float or @width or @height or @pad-width or @pad-height or @xoffset or @yoffset
-		  or @color or @backgroundcolor or @opacity or @framed or @aligned or @vattach
-		  or @imagedepth or boolean($extra_style)">
-      <xsl:attribute name="style">
-	<xsl:value-of
-	    select="concat(f:if(@float,     concat('float:',@float,';'),''),
-		           f:if(@width,     concat('width:',@width,';'),''),
-			   f:if(@height,    concat('height:',@height,';'),''),
-			   f:if(@depth,     concat('vertical-align:',@depth,';'),''),
-			   f:if(@pad-width, concat('height:',@pad-width,';'),''),
-			   f:if(@pad-height,concat('height:',@pad-height,';'),''),
-			   f:if(@xoffset,   concat('position:relative; left:',@xoffset,';'),''),
-		           f:if(@yoffset,   concat('position:relative; bottom:',@yoffset,';'),''),
-		           f:if(@color,     concat('color:',@color,';'),''),
-			   f:if(@backgroundcolor,concat('background-color:',@backgroundcolor,';'),''),
-		           f:if(@opacity,   concat('opacity:',@opacity,';'),''),
-			   f:if(@framed = 'rectangle','border:1px solid black;',''),
-			   f:if(@framed = 'underline','text-decoration:underline;',''),
-			   f:if(@align,     concat('text-align:',@align,';'),''),
-			   f:if(@vattach,   concat('vertical-align:',@vattach,';'),''),
-			   f:if($extra_style,concat($extra_style,';'),'')
-			 )"/>
-      </xsl:attribute>
-    </xsl:if>
-  </xsl:template>
--->
 
 </xsl:stylesheet>
 
