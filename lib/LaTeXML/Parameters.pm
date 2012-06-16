@@ -83,7 +83,7 @@ sub parseParameters {
     elsif($p =~ s/^(\[([^\]]*)\])\s*//){ # Ditto for Optional
       my($spec,$inner_spec)=($1,$2);
       if($inner_spec =~ /^Default:(.*)$/){
-	push(@params,newParameter('Optional',$spec,extra=>[Tokenize($1),undef]));}
+	push(@params,newParameter('Optional',$spec,extra=>[TokenizeInternal($1),undef]));}
       elsif($inner_spec){
 	push(@params,newParameter('Optional',$spec,extra=>[undef,parseParameters($inner_spec,$for)]));}
       else {
