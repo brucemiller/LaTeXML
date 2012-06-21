@@ -672,8 +672,16 @@ sub modifyID {
     my $badid = $id;
     if(! $LaTeXML::Document::ID_SUFFIX
        || $$self{idstore}{$id = $badid.$LaTeXML::Document::ID_SUFFIX}){
-      foreach my $post (ord('a')..ord('z')){ # And if THIS fails!?!??!
-	last unless $$self{idstore}{$id = $badid.chr($post)}; }}}
+      foreach my $s1 (ord('a')..ord('z')){
+	return $id unless $$self{idstore}{$id = $badid.chr($s1)}; }
+      foreach my $s1 (ord('a')..ord('z')){
+	foreach my $s2 (ord('a')..ord('z')){
+	  return $id unless $$self{idstore}{$id = $badid.chr($s1).chr($s2)}; }}
+      foreach my $s1 (ord('a')..ord('z')){
+	foreach my $s2 (ord('a')..ord('z')){
+	  foreach my $s3 (ord('a')..ord('z')){
+	    return $id unless $$self{idstore}{$id = $badid.chr($s1).chr($s2).chr($s3)}; }}}
+      Warn(":unexpected:id_overflow Automatic incrementing of ID counters failed $badid => $id");}}
   $id; }
 
 sub lookupID {
