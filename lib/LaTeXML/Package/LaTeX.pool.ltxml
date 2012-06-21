@@ -3696,7 +3696,7 @@ DefMacro('\wlog{}', Tokens());
 #**********************************************************************
 # Semi-Undocumented stuff
 #**********************************************************************
-DefMacro('\@ifnextchar Token {}{}', sub {
+DefMacro('\@ifnextchar DefToken {}{}', sub {
   my($gullet,$token,$if,$else)=@_;
   my $next = $gullet->readNonSpace;
   # NOTE: Not actually substituting, but collapsing ## pairs!!!!
