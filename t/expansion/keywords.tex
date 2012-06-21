@@ -1,0 +1,77 @@
+\documentclass{article}
+\title{Keywords: Expanded; Ignore Catcodes}
+
+\begin{document}
+\def\mytrue{true}%
+\def\myp{p}%
+\def\myt{t}%
+{\catcode`\t=12\relax\xdef\myppp{pt}}%
+\def\myi{i}%
+\def\myn{n}%
+\def\myzero{0}%
+\def\myone{1}%
+\def\mytwo{2}%
+\def\mythree{3}%
+\def\myfour{4}%
+\def\myat{at}
+\def\myby{by}
+\def\myto{to}
+\def\myplus{plus}
+\def\myminus{minus}
+\def\myfil{fil}
+\def\myfill{fill}
+\def\myfilll{filll}
+\def\myscaled{scaled}
+\def\myspread{spread}
+
+\section{Arithmetic}
+\newcount\TXTcnt
+\newcount\MCRcnt
+\TXTcnt=2\relax\advance\TXTcnt by 4\multiply\TXTcnt by 2\relax
+\MCRcnt=\mytwo\relax\advance\MCRcnt\myby \myfour\multiply\MCRcnt\myby\mytwo\relax
+\the\TXTcnt = \the\MCRcnt
+
+\divide\TXTcnt by 3\relax
+\divide\MCRcnt\myby\mythree\relax
+\the\TXTcnt = \the\MCRcnt
+
+\section{Dimensions}
+\newdimen\TXTdim%
+\newdimen\MCRdim%
+
+
+\TXTdim=1pt\relax%
+\MCRdim=\myone\myp\myt%
+\the\TXTdim = \the\MCRdim
+
+\TXTdim=1in\relax
+\MCRdim=\myone\myi\myn%
+\the\TXTdim = \the\MCRdim
+
+\TXTdim=1truein\relax
+\MCRdim=\myone\mytrue\myi\myn%
+\the\TXTdim = \the\MCRdim
+\section{Glue}
+\newskip\TXTskip
+\newskip\MCRskip
+\TXTskip=1pt plus 1pt minus 1pt
+\MCRskip=\myone\myppp\myplus\myone\myppp\myminus\myone\myppp
+\the\TXTskip = \the\MCRskip
+
+\TXTskip=1pt plus 1fill minus 1fil
+\MCRskip=\myone\myppp\myplus\myone\myfill\myminus\myone\myfil
+\the\TXTskip = \the\MCRskip
+
+\section{Boxes}
+\newbox\TXTbox
+\newbox\MCRbox
+
+\setbox\TXTbox\hbox to 10pt{Hello}%
+\setbox\MCRbox\hbox\myto\myone\myzero\myp\myt{Hello}%
+\the\wd\TXTbox = \the\wd\MCRbox
+
+\setbox\TXTbox\hbox spread 2pt{Hello}%
+\setbox\MCRbox\hbox\myspread\mytwo\myp\myt{Hello}%
+\the\wd\TXTbox = \the\wd\MCRbox
+\end{document}
+
