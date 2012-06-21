@@ -1412,7 +1412,7 @@ DefConstructor('\vtop BoxSpecification VBoxContents',
 DefParameterType('RuleSpecification',sub {
   my($gullet)=@_;
   my %spec = ();
-  while(my $key = $gullet->readXKeyword('width','height','depth')){
+  while(my $key = $gullet->readKeyword('width','height','depth')){
     $spec{$key} = $gullet->readDimension; }
   LaTeXML::BoxDimensions->new(%spec); },
 		 optional=>1, undigested=>1);
