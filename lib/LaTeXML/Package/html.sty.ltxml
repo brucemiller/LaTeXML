@@ -82,7 +82,7 @@ DefMacro('\strikeout{}','#1');
 DefMacro('\htmlurl Semiverbatim','\url{#1}');
 
 DefMacro('\HTMLset{}{}','');
-DefMacro('\htmlinfo','');
+DefMacro('\htmlinfo OptionalMatch:*','');
 # Not implemented!
 #**********************************************************************
 1;
