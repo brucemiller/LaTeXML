@@ -39,8 +39,6 @@ Let('\UrlRight','\@empty');
 # Have this expand into \@Url w/ the declared cmd as arg, so it gets reflected in XML.
 DefMacro('\DeclareUrlCommand{}{}','\def#1{\begingroup #2\@Url#1}');
 
-our $EMPTY_CATTABLE=LaTeXML::State->new(catcodes=>'none');
-
 # This is an extended version of \Url that takes an extra token as 1st arg.
 # That token is the cs that invoked it, so that it can be reflected in the generated XML,
 # as well as used to generate the reversion.
