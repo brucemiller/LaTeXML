@@ -32,6 +32,11 @@ our @primitive_catcode = (1,1,1,1,
 			  1,0,1,0,
 			  0,0,0,0,
 			  0,1);
+our @executable_catcode= (0,1,1,1,
+			  1,0,0,1,
+			  1,0,0,0,
+			  0,1,0,0,
+			  1,0);
 
 my @standardchar=("\\",'{','}','$',
                     '&',"\n",'#','^', 
@@ -66,6 +71,8 @@ sub getString  { $_[0]->[0]; }
 sub getCharcode{ ($_[0]->[1] == CC_CS ? 256 : ord($_[0]->[0])); }
 # Return the catcode of the token.
 sub getCatcode { $_[0]->[1]; }
+
+sub isExecutable { $executable_catcode[$_[0]->[1]]; }
 
 # Defined so a Token or Tokens can be used interchangeably.
 sub unlist { ($_[0]); }
