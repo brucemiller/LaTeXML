@@ -961,23 +961,46 @@ DefPrimitive('\parshape SkipMatch:= Number',sub {
 #            readonly=>1,
 #	     getter=>{ Number($stomach->getGullet->getMouth????? ->lineno); });
 
-# \skewchar ???
-
 DefRegister('\badness',Number(0), readonly=>1);
 
 # <codename> = \catcode | \mathcode | \lccode | \uccode | \sfcode | \delcode
 
 DefRegister('\catcode Number',Number(0),
-	     getter=>sub { my $cc = LookupCatcode(chr($_[0]->valueOf));
-			   $cc = CC_OTHER unless defined $cc;
-			   Number($cc); },
+	     getter=>sub { my $code = LookupCatcode(chr($_[0]->valueOf));
+			   Number(defined $code ? $code : CC_OTHER); },
 	     setter=>sub { AssignCatcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
+# # Only used for active math characters, so far
+DefRegister('\mathcode Number',Number(0),
+	     getter=>sub { my $code = $STATE->lookupMathcode(chr($_[0]->valueOf));
+			   Number(defined $code ? $code : 0); },
+	     setter=>sub { $STATE->assignMathcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
+# Not used anywhere (yet)
+DefRegister('\sfcode Number',Number(0),
+	     getter=>sub { my $code = $STATE->lookupSFcode(chr($_[0]->valueOf));
+			   Number(defined $code ? $code : 0); },
+	     setter=>sub { $STATE->assignSFcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
+DefRegister('\lccode Number',Number(0),
+	     getter=>sub { my $code = $STATE->lookupLCcode(chr($_[0]->valueOf));
+			   Number(defined $code ? $code : 0); },
+	     setter=>sub { $STATE->assignLCcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
+DefRegister('\uccode Number',Number(0),
+	     getter=>sub { my $code = $STATE->lookupUCcode(chr($_[0]->valueOf));
+			   Number(defined $code ? $code : 0); },
+	     setter=>sub { $STATE->assignUCcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
+# Not used anywhere (yet)
+DefRegister('\delcode Number',Number(0),
+	     getter=>sub { my $code = $STATE->lookupDelcode(chr($_[0]->valueOf));
+			   Number(defined $code ? $code : 0); },
+	     setter=>sub { $STATE->assignDelcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
+
+# Remember, we're assigning a NUMBER (codepoint) to a CHARACTER!
+foreach my $letter (ord('A')..ord('Z')){
+  $STATE->assignLCcode(chr($letter),$letter+0x20,'global');
+  $STATE->assignUCcode(chr($letter),$letter,'global');
+  $STATE->assignLCcode(chr($letter+0x20),$letter+0x20,'global');
+  $STATE->assignUCcode(chr($letter+0x20),$letter,'global'); }
+
 # Stub definitions ???
-DefRegister('\mathcode Number',Number(0));
-DefRegister('\sfcode Number',Number(0));
-DefRegister('\lccode Number',Number(0));
-DefRegister('\uccode Number',Number(0));
-DefRegister('\delcode Number',Number(0));
 DefRegister('\hyphenchar{}',Number(ord('-')));
 DefRegister('\skewchar{}',Number(0)); # no idea what the default is here
 
@@ -1497,34 +1520,25 @@ DefPrimitive('\aftergroup Token', sub { PushValue(afterGroup=>$_[1]); });
 
 # upper & lower case, actually expand (?)
 # \uppercase<general text>, \lowercase<general text>
-# and we REALLY should be using lccode & uccode
+sub ucToken {
+  my($token)=@_;
+  my $code = $STATE->lookupUCcode($token->getString);
+  ((defined $code) && ($code !=0) ? Token(chr($code),$token->getCatcode) : $token); }
+
+sub lcToken {
+  my($token)=@_;
+  my $code = $STATE->lookupLCcode($token->getString);
+  ((defined $code) && ($code!=0) ? Token(chr($code),$token->getCatcode) : $token); }
+
 DefMacro('\uppercase',sub {
   my($gullet)=@_;
-  my $t= $gullet->readXToken(0);
-  my @tokens = ();
-  if(Equals($t,T_BEGIN)){
-    my $level=1;
-    while($level && ($t=$gullet->readXToken(0))){
-      if(Equals($t,T_BEGIN)){ $level++; }
-      elsif(Equals($t,T_END)){ $level--; }
-      push(@tokens,$t) if $level; }}
-  else {
-    push(@tokens,$t); }
-  map( ($_->getCatcode == CC_LETTER ? T_LETTER(uc($_->getString)):$_), @tokens); });
+  my $t= $gullet->readToken(0);
+  (Equals($t,T_BEGIN) ? map(ucToken($_),$gullet->readBalanced->unlist) : ucToken($t)); });
 
 DefMacro('\lowercase',sub {
   my($gullet)=@_;
-  my $t= $gullet->readXToken(0);
-  my @tokens = ();
-  if(Equals($t,T_BEGIN)){
-    my $level=1;
-    while($level && ($t=$gullet->readXToken(0))){
-      if(Equals($t,T_BEGIN)){ $level++; }
-      elsif(Equals($t,T_END)){ $level--; }
-      push(@tokens,$t) if $level; }}
-  else {
-    push(@tokens,$t); }
-  map( ($_->getCatcode == CC_LETTER ? T_LETTER(lc($_->getString)):$_), @tokens); });
+  my $t= $gullet->readToken(0);
+  (Equals($t,T_BEGIN) ? map(lcToken($_),$gullet->readBalanced->unlist) : lcToken($t)); });
 
 DefPrimitive('\message{}',sub {
   my($stomach,$stuff)=@_;
@@ -2271,7 +2285,7 @@ DefPrimitive('\unhcopy Number',sub {
 # \vrule
 # \valign ???
 
-DefMacro('\vspace{}','\vskip#1\relax');
+DefMacro('\vspace{}','\vskip#2\relax');
 # \indent, \noindent, \par; see above.
 
 DefMacro('\discretionary{}{}{}','#3'); # No hyphenation here!
@@ -2431,17 +2445,19 @@ sub MathWhatsit {
 #    $document->openElementAt($branch,'ltx:tr');
 # This moves the math from within $cell (an ltx:_Capture_) into the ltx:td,
 # and also arranges for that math content to be appended (cloned) into $main
-sub addColumnToMathFork {
+sub XXXXXaddColumnToMathFork {
   my($document,$main,$inbranch,$cell)=@_;
   my $td = $document->openElementAt($inbranch,'ltx:td');
   if(my $align = $cell->getAttribute('align')){
     $td->setAttribute(align=>$align); }
   if(my $colspan = $cell->getAttribute('colspan')){
     $td->setAttribute(colspan=>$colspan); }
-  if(my $math  = $document->getFirstChildElement($cell)){
-    if(my $xmath = $document->getFirstChildElement($math)){
+  my $captured =  $document->getFirstChildElement($cell);
+  # Usually, an ltx:Math element will be the complete content of the _Capture_ (cell)
+  if($document->getNodeQName($captured) eq 'ltx:Math'){
+    if(my $xmath = $document->getFirstChildElement($captured)){
       # We MOVE the ltx:Math from the _Capture_ ($cell)
-      $td->appendChild($math);
+      $td->appendChild($captured);
       # But we CLONE the contents of it's ltx:XMath onto the end of
       # the main ltx:Math/ltx:XMath (under $main), modifying id's along the way.
       { local $LaTeXML::Document::ID_SUFFIX = '.mf';
@@ -2449,7 +2465,59 @@ sub addColumnToMathFork {
 			       $document->getChildElements($xmath)); }
       # Add the boxes from this cell to the previously collected ones in the main branch.
       $document->setNodeBox($main,MathWhatsit($document->getNodeBox($main)->getBody,
-					      $document->getNodeBox($math)->getBody));
+					      $document->getNodeBox($captured)->getBody));
+    }}
+  # But rarely, it could be text or mixed... Punt?
+
+
+    
+  # We can now remove the _Capture_ (and anything still in it?)
+  $cell->unbindNode;
+  $document->closeElementAt($td); }
+
+
+sub addColumnToMathFork {
+  my($document,$main,$inbranch,$cell)=@_;
+  my $td = $document->openElementAt($inbranch,'ltx:td');
+  if(my $align = $cell->getAttribute('align')){
+    $td->setAttribute(align=>$align); }
+  if(my $colspan = $cell->getAttribute('colspan')){
+    $td->setAttribute(colspan=>$colspan); }
+  # Usually, we will have captured a single ltx:Math node, but occasionally text?
+  foreach my $node ($cell->childNodes){
+    # We MOVE the node from the _Capture_ ($cell) to the td
+    $td->appendChild($node);
+    # Usually, an ltx:Math element will be the complete content of the _Capture_ (cell)
+    my $type = $document->getNodeQName($node);
+    if($type eq 'ltx:Math'){
+      if(my $xmath = $document->getFirstChildElement($node)){
+	# But we CLONE the contents of it's ltx:XMath onto the end of
+	# the main ltx:Math/ltx:XMath (under $main), modifying id's along the way.
+	{ local $LaTeXML::Document::ID_SUFFIX = '.mf';
+	  $document->appendClone($document->getFirstChildElement($main),
+				 $document->getChildElements($xmath)); }
+	# Add the boxes from this cell to the previously collected ones in the main branch.
+	$document->setNodeBox($main,MathWhatsit($document->getNodeBox($main)->getBody,
+						$document->getNodeBox($node)->getBody));
+      }}
+    elsif($type eq 'ltx:text'){
+      next if $node->textContent eq '';
+      my $string = $node->textContent;
+      my $txt = $document->openElementAt($document->getFirstChildElement($main),'ltx:XMText');
+      $document->appendClone($txt,$node);
+      $document->setNodeBox($main,MathWhatsit($document->getNodeBox($main)->getBody,
+					      $document->getNodeBox($node)));
+      $document->closeElementAt($txt); }
+    elsif($type eq '#PCDATA'){
+      my $string = $node->textContent;
+      next if $string eq '';
+      my $txt = $document->openElementAt($document->getFirstChildElement($main),'ltx:XMText');
+      $txt->appendText($string);
+      $document->setNodeBox($main,MathWhatsit($document->getNodeBox($main)->getBody,
+					      Box($string)));
+      $document->closeElementAt($txt); }
+    else {
+      Warn(":unexpected:$type Don't know how to synthesize equation with $type in column");
     }}
   # We can now remove the _Capture_ (and anything still in it?)
   $cell->unbindNode;
@@ -2733,13 +2801,12 @@ DefConstructor('\@SUBSCRIPT{}{}',
 		  : Revert($base)); },
 	       properties=>{scriptpos=>sub{ "post".$_[0]->getBoxingLevel; }});
 
-# This only becomes active in math mode.
-AssignCatcode('math:\''=>1, 'global');
 DefMacroI('\'',undef,sub{
   my($gullet)=@_;
   my $n = 1;
   while($gullet->ifNext(T_OTHER('\''))){ $gullet->readToken; $n++; };
-  (T_SUPER,T_BEGIN,map(T_CS('\prime'), 1..$n),T_END); });
+  (T_SUPER,T_BEGIN,map(T_CS('\prime'), 1..$n),T_END); },
+	 mathactive=>1);	# Only in math!
 
 #======================================================================
 # \choose & friends, also need special argument handling
@@ -2948,8 +3015,6 @@ DefConstructorI('&', undef,sub { Error(":unexpected:& Stray alignment \"&\""); }
 #======================================================================
 # \dospecials ??
 
-# Set up the mathcode table
-
 # Normally, the content branch contains the pure structure and meaning of a construct,
 # and the presentation is generated from lower level TeX macros that only concern
 # themselves with how to display the object.
@@ -2986,19 +3051,17 @@ DefMathI('|',undef,'|', role=>'VERTBAR');
 #DefMath(':',';', role=>'METARELOP', name=>'colon'); # Seems like good default role
 
 # It seems that "MathLigature" should be adapted to make this sort of thing easy!
-AssignCatcode('math::'=>1, 'global');
 DefMacroI(':',undef,sub{
   my($gullet)=@_;
   if($gullet->ifNext(T_OTHER('='))){
     $gullet->readToken;
     T_CS('\@colonequal'); }
   else {
-    T_CS('\@colon'); }});
+    T_CS('\@colon'); }},
+	 mathactive=>1);	# Only in math!
 DefMathI('\@colon',     undef,':', role=>'METARELOP', name=>'colon',reversion=>':'); # Seems like good default role
 DefMathI('\@colonequal',undef,':=', role=>'RELOP', meaning=>'assign',reversion=>':=');
 
-AssignCatcode('math:<'=>1, 'global');
-AssignCatcode('math:>'=>1, 'global');
 DefMacroI('<',undef,sub{
   my($gullet)=@_;
   if($gullet->ifNext(T_OTHER('<'))){
@@ -3006,7 +3069,8 @@ DefMacroI('<',undef,sub{
     T_CS('\ll'); }
   # leq ? hmmmm
   else {
-    T_CS('\@@<'); }});
+    T_CS('\@@<'); }},
+	 mathactive=>1);	# Only in math!
 
 DefMacroI('>',undef,sub{
   my($gullet)=@_;
@@ -3017,7 +3081,8 @@ DefMacroI('>',undef,sub{
     $gullet->readToken;
     T_CS('\geq'); }
   else {
-    T_CS('\@@>'); }});
+    T_CS('\@@>'); }},
+	 mathactive=>1);	# Only in math!
 
 DefMathI('\@@>',undef, '>', role=>'RELOP', meaning=>'greater-than', name=>'', reversion=>'>');
 DefMathI('\@@<',undef, '<', role=>'RELOP', meaning=>'less-than',    name=>'', reversion=>'<');
@@ -4561,7 +4626,7 @@ DefLigature("/\x{2019}\x{2019}/\x{201D}/", fontTest=>sub { ($_[0]->getFamily ne 
 
 DefPrimitiveI('\TeX', undef,'TeX');
 DefPrimitiveI('\i',   undef,"\x{0131}");	# LATIN SMALL LETTER DOTLESS I
-DefPrimitiveI('\j',   undef,"j");	# Apparently, no Unicode equivalent...
+DefPrimitiveI('\j',   undef,"\x{0237}");
 
 DefConstructor('\buildrel Until:\over {}',
 	       "<ltx:XMApp role='RELOP'>"
@@ -4794,9 +4859,9 @@ sub setAlignOrClass {
   my($document,$node,$align,$class)=@_;
   my $model = $document->getModel;
   my $qname = $model->getNodeQName($node);
-  if($model->canHaveAttribute($qname,'align')){
+  if($align && $model->canHaveAttribute($qname,'align')){
     $node->setAttribute(align=>$align); }
-  elsif($model->canHaveAttribute($qname,'class')){
+  elsif($class && $model->canHaveAttribute($qname,'class')){
     addClass($node,$class); }}
 
 #======================================================================
