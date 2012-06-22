@@ -140,7 +140,6 @@ sub UnshiftValue { $STATE->unshiftValue(@_);  return; }
 sub ShiftValue   { $STATE->shiftValue(@_); }
 sub LookupCatcode{ $STATE->lookupCatcode(@_); }
 sub AssignCatcode{ $STATE->assignCatcode(@_); return; }
-
 sub LookupMeaning      { $STATE->lookupMeaning(@_); }
 sub LookupDefinition   { $STATE->lookupDefinition(@_); }
 sub InstallDefinition  { $STATE->installDefinition(@_); }
@@ -506,7 +505,7 @@ sub DefExpandable {
 
 # Define a Macro: Essentially an alias for DefExpandable
 # For convenience, the $expansion can be a string which will be tokenized.
-our $macro_options = {scope=>1, locked=>1};
+our $macro_options = {scope=>1, locked=>1, mathactive=>1};
 sub DefMacro {
   my($proto,$expansion,%options)=@_;
   CheckOptions("DefMacro ($proto)",$macro_options,%options);
@@ -515,6 +514,8 @@ sub DefMacro {
 sub DefMacroI {
   my($cs,$paramlist,$expansion,%options)=@_;
   if(!defined $expansion){ $expansion = Tokens(); }
+  if((length($cs) == 1) && $options{mathactive}){
+    $STATE->assignMathcode($cs=>0x8000, $options{scope}); }
   $cs = coerceCS($cs);
   $STATE->installDefinition(LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options),
 			    $options{scope});
@@ -800,7 +801,8 @@ sub DefMathI {
 	       scope=>$options{scope});
   # If single character, Make the character active in math.
   if(length($csname) == 1){
-    AssignCatcode('math:'.$csname=>1, $options{scope}); }
+#    AssignCatcode('math:'.$csname=>1, $options{scope}); }
+    $STATE->assignMathcode($csname=>0x8000, $options{scope}); }
 
   # If the presentation is complex, and involves arguments,
   # we will create an XMDual to separate content & presentation.
