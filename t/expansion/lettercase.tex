@@ -1,0 +1,27 @@
+\documentclass{article}
+\begin{document}
+\def\lettera{a}
+\def\letterA{A}
+\uccode`\(=`\[\lccode`\[=`\(
+\uccode`\)=`\]\lccode`\]=`\)
+\begin{tabular}{ll}
+        & ABCDEFGHIJKLMNOPQRSTUVWXYZ \\
+\TeX    & \lowercase{ABCDEFGHIJKLMNOPQRSTUVWXYZ} \\
+\LaTeX  & \MakeLowercase{ABCDEFGHIJKLMNOPQRSTUVWXYZ} \\\hline
+        & abcdefghijklmnopqrstuvwxyz \\
+\TeX    & \uppercase{abcdefghijklmnopqrstuvwxyz} \\
+\LaTeX  & \MakeUppercase{abcdefghijklmnopqrstuvwxyz} \\\hline
+        & \i\j\ae\oe\lettera \\
+\TeX    & \uppercase{\i\j\ae\oe\lettera} \\
+\LaTeX  & \MakeUppercase{\i\j\ae\oe\lettera} \\\hline
+        & \AE\OE\letterA \\
+\TeX    & \lowercase{\AE\OE\letterA} \\
+\LaTeX  & \MakeLowercase{\AE\OE\letterA} \\\hline
+        & [FOO] \\
+\TeX    & \lowercase{[FOO]} \\
+\LaTeX  & \MakeLowercase{[FOO]} \\\hline
+        & (foo) \\
+\TeX    & \uppercase{(foo)} \\
+\LaTeX  & \MakeUppercase{(foo)} \\
+\end{tabular}
+\end{document}
