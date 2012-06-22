@@ -139,7 +139,7 @@ sub StartSemiverbatim() {
   $LaTeXML::STATE->assignValue(MODE=>'text'); # only text mode makes sense here... BUT is this shorthand safe???
   $LaTeXML::STATE->assignValue(IN_MATH=>0);
   map($LaTeXML::STATE->assignCatcode($_=>CC_OTHER,'local'),@{$LaTeXML::STATE->lookupValue('SPECIALS')});
-  $LaTeXML::STATE->assignCatcode('math:\''=>0,'local');
+  $LaTeXML::STATE->assignMathcode('\''=>0x8000,'local');
   $LaTeXML::STATE->assignValue(font=>$LaTeXML::STATE->lookupValue('font')->merge(encoding=>'ASCII'), 'local'); # try to stay as ASCII as possible
   return; }
 
