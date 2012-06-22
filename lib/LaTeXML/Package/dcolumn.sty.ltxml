@@ -29,7 +29,7 @@ DefMacro('\DC@{}{}{}',sub {
   my($gullet,$delim,$todelim,$ndec)=@_;
   $delim=ToString($delim);
   if($delim ne ToString($todelim)){
-    AssignCatcode('math:$delim'=>1);
+    $STATE->assignMathcode($delim=>0x8000);
     DefMacroI(T_CS($delim),undef,'\ROLE{PERIOD}{'.UnTeX($todelim).'}');
   }
   if(LookupValue('IN_MATH') || $gullet->ifNext(T_MATH)){ # Not really good enough, but...
