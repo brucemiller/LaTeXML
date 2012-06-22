@@ -113,7 +113,6 @@ sub invokeToken {
   pop(@token_stack);
   @result; }
 
-
 sub makeError {
   my($document,$type,$content)=@_;
   my $savenode = undef;
@@ -129,7 +128,11 @@ our @forbidden_cc = (1,0,0,0, 0,0,1,0, 0,1,0,0, 0,0,0,1, 0,1);
 sub invokeToken_internal {
   my($self,$token)=@_;
   local $LaTeXML::CURRENT_TOKEN = $token;
-  my $meaning = $STATE->lookupMeaning($token);
+  my $meaning = ( ($STATE->lookupValue('IN_MATH')
+		   && (($STATE->lookupMathcode($token->getString)||0) == 0x8000))
+		  || $token->isExecutable
+		  ? $STATE->lookupMeaning_internal($token)
+		  : $token );
   if(! defined $meaning){		# Supposedly executable token, but no definition!
     my $cs = $token->getCSName;
     $STATE->noteStatus(undefined=>$cs);
@@ -138,15 +141,23 @@ sub invokeToken_internal {
 							sub { makeError($_[0],'undefined',$cs);}));
     $self->invokeToken($token); }
   elsif($meaning->isaDefinition){
-    if($token->equals(T_CS('\par') && $STATE->lookupValue('inPreamble') )){
-      return (); }
-    my @boxes = $meaning->invoke($self);
-    my @err = grep( (! ref $_) || (! $_->isaBox), @boxes);
-    Fatal(":misdefined:".ToString($token)." Execution yielded non boxes: "
-	  .join(',',map(Stringify($_),grep( (! ref $_) || (! $_->isaBox), @boxes))))
-      if grep( (! ref $_) || (! $_->isaBox), @boxes);
-    $STATE->clearPrefixes unless $meaning->isPrefix; # Clear prefixes unless we just set one.
-    @boxes; }
+    # A math-active character will (typically) be a macro,
+    # but it isn't expanded in the gullet, but later when digesting, in math mode (? I think)
+    if($meaning->isExpandable){
+      my $gullet = $$self{gullet};
+      my($replacement, @more) = $meaning->invoke($$self{gullet});
+      $gullet->unread(@more) if @more;
+      $self->invokeToken($replacement); } # recurse!!
+    else {			# Otherwise, a normal primitive or constructor
+      if($token->equals(T_CS('\par') && $STATE->lookupValue('inPreamble') )){
+	return (); }
+      my @boxes = $meaning->invoke($self);
+      my @err = grep( (! ref $_) || (! $_->isaBox), @boxes);
+      Fatal(":misdefined:".ToString($token)." Execution yielded non boxes: "
+	    .join(',',map(Stringify($_),grep( (! ref $_) || (! $_->isaBox), @boxes))))
+	if grep( (! ref $_) || (! $_->isaBox), @boxes);
+      $STATE->clearPrefixes unless $meaning->isPrefix; # Clear prefixes unless we just set one.
+      @boxes; }}
   elsif($meaning->isaToken) {
     my $cc = $meaning->getCatcode;
     $STATE->clearPrefixes; # prefixes shouldn't apply here.
