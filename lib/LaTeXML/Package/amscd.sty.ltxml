@@ -33,7 +33,7 @@ DefConstructor('\@@CD DigestedBody',
 	        $_[0]->bgroup;
 	        alignmentBindings(MatrixTemplate()); 
 		Let(T_CS("\\\\"),   T_CS('\@alignment@newline@noskip'));
-		AssignCatcode('math:@'=>1);
+		$STATE->assignMathcode('@'=>0x8000);
 		Let(T_CS('@'),T_CS('\cd@')); },
 	       reversion=>'\begin{matrix}#1\end{matrix}');
 
