@@ -103,10 +103,10 @@ my %x=();
 foreach my $acc (@greek_accents){
   my $rhs = $$LGRMAP[$p++];
   next unless $acc;
-  my $lhs = join('',map(($_ eq '~' ? '!' : $$LGRMAP[ord($_)]), split(//,$acc)));
+  my $lhs = join('',map($$LGRMAP[ord($_)], split(//,$acc)));
   $x{$lhs}=$rhs;
   if($acc =~ /(.)(.)([a-zA-Z])(.*)/){
-    my $lhsx = join('',map(($_ eq '~' ? '!' : $$LGRMAP[ord($_)]),split(//,"$2$1$3$4")));
+    my $lhsx = join('',map($$LGRMAP[ord($_)],split(//,"$2$1$3$4")));
     $x{$lhsx}=$rhs; }
 }
 
