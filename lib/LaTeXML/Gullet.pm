@@ -330,7 +330,7 @@ sub readKeyword {
     my @tomatch=split('',uc($keyword));
     my @matched=();
     my $tok;
-    while(@tomatch && defined ($tok=$self->readXToken) && push(@matched,$tok) 
+    while(@tomatch && defined ($tok=$self->readXToken(0)) && push(@matched,$tok) 
 	  && (uc($tok->getString) eq $tomatch[0])){ 
       shift(@tomatch); }
     return $keyword unless @tomatch;	# All matched!!!
