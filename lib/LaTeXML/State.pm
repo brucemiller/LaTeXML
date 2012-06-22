@@ -101,6 +101,11 @@ sub new {
   $$self{table}{value}{SPECIALS}=[['^','_','@','~','&','$','#','%',"'"]];
   if($options{catcodes} eq 'style'){
     $$self{table}{catcode}{'@'} = [CC_LETTER]; }
+  $$self{table}{mathcode} = {};
+  $$self{table}{sfcode} = {};
+  $$self{table}{lccode} = {};
+  $$self{table}{uccode} = {};
+  $$self{table}{delcode}= {};
   $self; }
 
 sub assign_internal {
@@ -186,10 +191,20 @@ sub isValueBound {
 sub lookupCatcode { $_[0]->{table}{catcode}{$_[1]}[0]; }
 sub assignCatcode { assign_internal($_[0],'catcode',$_[1], $_[2],$_[3]); }
 
+# The following rarely used.
+sub lookupMathcode { $_[0]->{table}{mathcode}{$_[1]}[0]; }
+sub assignMathcode { assign_internal($_[0],'mathcode',$_[1], $_[2],$_[3]); }
+sub lookupSFcode   { $_[0]->{table}{sfcode}{$_[1]}[0]; }
+sub assignSFcode   { assign_internal($_[0],'sfcode',$_[1], $_[2],$_[3]); }
+sub lookupLCcode   { $_[0]->{table}{lccode}{$_[1]}[0]; }
+sub assignLCcode   { assign_internal($_[0],'lccode',$_[1], $_[2],$_[3]); }
+sub lookupUCcode   { $_[0]->{table}{uccode}{$_[1]}[0]; }
+sub assignUCcode   { assign_internal($_[0],'uccode',$_[1], $_[2],$_[3]); }
+sub lookupDelcode  { $_[0]->{table}{delcode}{$_[1]}[0]; }
+sub assignDelcode  { assign_internal($_[0],'delcode',$_[1], $_[2],$_[3]); }
+
 #======================================================================
 # Specialized versions of lookup & assign for dealing with definitions
-
-our @executable_cc= (0,1,1,1, 1,0,0,1, 1,0,0,0, 0,1,0,0, 1,0);
 
 # Get the `Meaning' of a token.  For a control sequence or otherwise active token,
 # this may give the definition object or a regular token (if it was \let), or undef.
@@ -197,15 +212,11 @@ our @executable_cc= (0,1,1,1, 1,0,0,1, 1,0,0,0, 0,1,0,0, 1,0);
 sub lookupMeaning {
   my($self,$token)=@_;
   # NOTE: Inlined token accessors!!!
-  my $cs = $$token[0];
-  my $cc = $$token[1];
-  my $table = $$self{table};
-  # Should there be a separate subtable for catcode:math ?
-  if($executable_cc[$cc]
-     || ($$table{value}{IN_MATH}[0] && $$table{catcode}{'math:'.$cs}[0])){
-    $$table{meaning}{$token->getCSName}[0]; }
-  else {
-    $token; }}
+  ($token->isExecutable ? $$self{table}{meaning}{$token->getCSName}[0] : $token); }
+
+sub lookupMeaning_internal {
+  my($self,$token)=@_;
+  $$self{table}{meaning}{$token->getCSName}[0]; }
 
 sub assignMeaning {
   my($self,$token,$definition,$scope)=@_;
