@@ -840,6 +840,10 @@ DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
 
 });
 
+# Not sure what this should be...
+DefPrimitiveI('\nullfont',undef,undef,font=>{family=>'none',shape=>'upright',
+					     series=>'medium',size=>0});
+
 DefRegister('\count Number' => Number(0));
 DefRegister('\dimen Number' => Dimension(0));
 DefRegister('\skip Number'  => Glue(0));
