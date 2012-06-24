@@ -22,11 +22,7 @@ no warnings 'redefine';
 
 RegisterNamespace(ltx=>"http://dlmf.nist.gov/LaTeXML");
 RegisterNamespace(svg=>"http://www.w3.org/2000/svg");
-RegisterNamespace(xev=>"http://www.w3.org/2001/xml-events");
-RegisterNamespace(xlink=>"http://www.w3.org/1999/xlink");
-
- 
-# Not yet used, but let's stake out the ground
+# Not directly used, but let's stake out the ground
 RegisterNamespace(m=>"http://www.w3.org/1998/Math/MathML");
 
 DefMacroI("\\\@empty",undef,Tokens());
