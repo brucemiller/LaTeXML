@@ -33,6 +33,7 @@ my %navtocstyles=(context=>1,normal=>1,none=>1);
 my($prescan,$dbfile,$scan,$crossref,$sitedir)=(undef,undef,1,1,undef);
 my($index,$permutedindex,$splitindex)=(1,undef,undef);
 my($splitbibliography,@bibliographies)=(undef);
+my($timestamp)=(undef);
 my @math_formats =();
 my %removed_math_formats=();
 my $splitback= "//ltx:bibliography | //ltx:appendix | //ltx:index";
@@ -64,6 +65,7 @@ GetOptions("verbose+"              =>\$verbosity,
 	   "numbersections!"       =>\$numbersections,
 	   # Some general XSLT/CSS options.
 	   "stylesheet=s"          =>\$stylesheet,
+	   "timestamp=s"           =>\$timestamp,
 	   "defaultcss!"           =>\$defaultcss,
 	   "css=s"                 =>\@css,
 	   "javascript=s"          =>\@javascript,
@@ -378,6 +380,10 @@ if(!$prescan){
       else {
 	warn "Couldn't find ICON $icon in paths ".join(',',@searchpaths)."\n";
 	$$parameters{ICON}=$icon;  }}
+    if(! defined $timestamp){
+      $timestamp = localtime(); }
+    if($timestamp){
+      $$parameters{TIMESTAMP}="'".$timestamp."'"; }
     push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,parameters=>$parameters, %OPTIONS)); }
 
   push(@procs,LaTeXML::Post::Writer->new(format=>$format,omit_doctype=>$omit_doctype,is_html=>$is_html,%OPTIONS));
@@ -613,6 +619,13 @@ The javascript file is copied to the destination directory, unless it is an abso
 
 Copies I<iconfile> to the destination directory and sets up the linkage in
 the transformed html/html5/xhtml to use that as the "favicon".
+
+=item C<--timestamp>=I<timestamp>
+
+Provides a timestamp (typically a time and date) to be embedded in
+the comments by the stock XSLT stylesheets.
+If you don't supply a timestamp, the current time and date will be used.
+(You can use C<--timestamp=0> to omit the timestamp).
 
 =back
 
