@@ -1064,10 +1064,11 @@ sub InputFile {
   my ($dir,$name,$type) = pathname_split($request);
   my $file = $name; $file .= '.'.$type if $type;
   my $altpath;
-  # Firstly, check if we are going to OVERRIDE the requested file with a style file.
+  # Firstly, check if we are going to OVERRIDE the requested raw .tex file
+  # with a latexml binding to a style file.
   if((! $dir) && (!$type || ($type eq 'tex')) # No specific directory, but apparently to a raw tex file.
      && (LookupValue('inPreamble') || !FindFile($file)) # AND, in preamble so it SHOULD be style file, OR also if we can't find the raw file.
-     && ($altpath=FindFile($name,type=>'sty'))){	# AND there IS such a style file
+     && ($altpath=FindFile($name,type=>'sty', notex=>1))){	# AND there IS such a style file
     Info(":override Overriding input of $request with $altpath");
     RequirePackage($name); }	# Then override, and just assume we'll find $name as a package style file!
   elsif(LookupValue('INTERPRETING_DEFINITIONS')){
