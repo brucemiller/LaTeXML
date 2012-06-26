@@ -160,12 +160,15 @@ sub invokeToken_internal {
       @boxes; }}
   elsif($meaning->isaToken) {
     my $cc = $meaning->getCatcode;
+    my $font = $STATE->lookupValue('font');
     $STATE->clearPrefixes; # prefixes shouldn't apply here.
-    if($cc == CC_SPACE){
+    if($font->getFamily eq 'nullfont'){
+	(); }
+    elsif($cc == CC_SPACE){
       if(($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble') )){ 
 	(); }
       else {
-	Box($meaning->getString, $STATE->lookupValue('font'),$$self{gullet}->getLocator,$meaning); }}
+	Box($meaning->getString, $font,$$self{gullet}->getLocator,$meaning); }}
     elsif($cc == CC_COMMENT){
       LaTeXML::Comment->new($meaning->getString); }
     elsif($forbidden_cc[$cc]){
