@@ -41,7 +41,8 @@ sub process {
 # but don't want those already containing SVG.
 # sub find_svg_nodes { $_[1]->findnodes('//ltx:picture[not(svg:svg)]'); }
 # However, we may not have svg as a registered namespace, so...
-sub find_svg_nodes { $_[1]->findnodes("//ltx:picture[not(local-name()='svg' and namespace-uri()='$svgURI')]"); }
+sub find_svg_nodes {
+    $_[1]->findnodes("//ltx:picture[child::*[not(local-name()='svg' and namespace-uri()='$svgURI')]]"); }
 
 sub getQName {
   $LaTeXML::Post::SVG::DOCUMENT->getQName(@_); }
