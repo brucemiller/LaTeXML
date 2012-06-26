@@ -47,7 +47,8 @@ my %splitpaths =
 my $parallelmath;
 
 # Get the command line arguments.
-GetOptions("verbose+"              =>\$verbosity,
+GetOptions("quiet"     => sub { $verbosity--; },
+	   "verbose"   => sub { $verbosity++; },
 	   "VERSION"      =>\$showversion,
 	   "help|?"       =>\$help,
 	   # Source Options
@@ -340,7 +341,7 @@ if(!$prescan){
     require 'LaTeXML/Post/XSLT.pm'; 
     # Copy various kinds of resources, css, javascript, icon (others?)
     my $parameters={LATEXML_VERSION=>"'$LaTeXML::VERSION'"};
-    my @searchpaths = $DOCUMENT->getSearchPaths;
+    my @searchpaths = ('.',$DOCUMENT->getSearchPaths);
     foreach my $css (@css){
       if(pathname_is_url($css)){ # external url ? no need to copy
 	print STDERR "Using CSS=$css\n" if $verbosity > 0;
