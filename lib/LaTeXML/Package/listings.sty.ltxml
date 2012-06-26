@@ -24,6 +24,11 @@ use LaTeXML::Util::KeyVal;
 # Wouldn't you want to see the pretty print, but cut&paste the plain code?
 # This may eventually need some schema support...
 
+# NOTE: The MoreSelectCharTable parameter for languages styles is
+# NOT yet implemented; this has an impact on
+#  HTML, XML comments & CDATA sections not recognized.
+#  Perl, Visual Basic, Java, tcl; something (comments?) is not recognized, but what?
+
 #======================================================================
 # Note that listings.sty uses a couple of textcomp characters
 # (\textquotesingle, \textasciigrave)
@@ -239,10 +244,8 @@ sub lstActivate {
 	$val = LookupValue('KEYVAL@LST@'.$key.'@default') unless $val;
 	# Done for effect.
 	Digest(Tokens($cs,($val ? $val->unlist : Tokens()) ,T_CS('\end'))); }
-#      else {
-	AssignValue('LST@'.$key=>$val); 
-#}
-}}}
+      AssignValue('LST@'.$key=>$val);
+    }}}
 
 #----------------------------------------------------------------------
 # Various helpers for dealing with the arguments to options.
@@ -272,7 +275,7 @@ sub lstDeslash {
 sub lstRegexp {
   my($chars)=@_;
   if(my $string = lstDeslash($_[0])){
-    $string =~ s/([\!\@\#\$\%\^\&\*\(\)\_\-\+\{\}\[\]\\\<\>\?\/])/\\$1/g;  # Put back for Perl.
+    $string =~ s/([\!\@\#\$\%\^\&\*\(\)\_\-\+\{\}\[\]\\\<\>\?\/\|])/\\$1/g;  # Put back for Perl.
     $string; }}
 
 #----------------------------------------------------------------------
@@ -559,12 +562,12 @@ DefKeyVal('LST','delim','');
 DefMacro('\lst@@delim OptionalMatch:* OptionalMatch:* [] [] Until:\end', sub {
 	   # clear delimiters, first ???
   lstAddDelimiter('delimiter',$_[3],$_[4],$_[5],
-		  ($_[1] ? (recurse=>1):()),
+		  ($_[1] ? (recursive=>1):()),
 		  ($_[2] ? (cummulative=>1):())); });
 DefKeyVal('LST','moredelim','');
 DefMacro('\lst@@moredelim OptionalMatch:* OptionalMatch:* [] [] Until:\end', sub {
   lstAddDelimiter('delimiter',$_[3],$_[4],$_[5],
-		  ($_[1] ? (recurse=>1):()),
+		  ($_[1] ? (recursive=>1):()),
 		  ($_[2] ? (cummulative=>1):())); });
 
 #======================================================================
@@ -893,7 +896,7 @@ DefKeyVal('LST','otherkeywords',''); # NOTE: Not yet handled
 DefKeyVal('LST','tag','');
 DefMacro('\lst@@tag OptionalMatch:* OptionalMatch:* [] Until:\end', sub {
   lstAddDelimiter('delimiter',$_[3],'tagstyle',$_[4],
-		  ($_[1] ? (recurse=>1):()),
+		  ($_[1] ? (recursive=>1):()),
 		  ($_[2] ? (cummulative=>1):())); });
 
 # Strings
@@ -973,7 +976,7 @@ sub lstProcess {
 
   local $LaTeXML::DELIM_RE  = join('|',map($$delimiters{$_}{open}, sort keys %$delimiters));
   local $LaTeXML::ESCAPE_RE  = join('|',map($$delimiters{$_}{open},
-					    grep($$delimiters{$_}{escape}, sort keys %$delimiters)));
+					    grep($$delimiters{$_}{escape},sort keys %$delimiters)));
   local $LaTeXML::QUOTED_RE  = undef;
   local $LaTeXML::SPACE = (lstGetBoolean('showspaces') ? T_CS('\@lst@visible@space') : T_CS("~"));
   local $LaTeXML::CASE_SENSITIVE = lstGetBoolean('sensitive');
