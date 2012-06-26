@@ -272,6 +272,7 @@ sub openText {
   return if $text=~/^\s+$/ && 
     (($t == XML_DOCUMENT_NODE) # Ignore initial whitespace
      || (($t == XML_ELEMENT_NODE) && !$$self{model}->canContain($node,'#PCDATA')));
+  return if $font->getFamily eq 'nullfont';
   print STDERR "Insert text \"$text\" /".Stringify($font)." at ".Stringify($node)."\n"
     if $LaTeXML::Document::DEBUG;
 

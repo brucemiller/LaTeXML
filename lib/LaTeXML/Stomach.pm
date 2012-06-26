@@ -162,9 +162,7 @@ sub invokeToken_internal {
     my $cc = $meaning->getCatcode;
     my $font = $STATE->lookupValue('font');
     $STATE->clearPrefixes; # prefixes shouldn't apply here.
-    if($font->getFamily eq 'nullfont'){
-	(); }
-    elsif($cc == CC_SPACE){
+    if($cc == CC_SPACE){
       if(($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble') )){ 
 	(); }
       else {
