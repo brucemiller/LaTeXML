@@ -22,6 +22,7 @@ no warnings 'redefine';
 
 RegisterNamespace(ltx=>"http://dlmf.nist.gov/LaTeXML");
 RegisterNamespace(svg=>"http://www.w3.org/2000/svg");
+RegisterNamespace(xlink=>"http://www.w3.org/1999/xlink"); # Needed for SVG
 # Not directly used, but let's stake out the ground
 RegisterNamespace(m=>"http://www.w3.org/1998/Math/MathML");
 
@@ -841,8 +842,7 @@ DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
 });
 
 # Not sure what this should be...
-DefPrimitiveI('\nullfont',undef,undef,font=>{family=>'none',shape=>'upright',
-					     series=>'medium',size=>0});
+DefPrimitiveI('\nullfont',undef,undef,font=>{family=>'nullfont'});
 
 DefRegister('\count Number' => Number(0));
 DefRegister('\dimen Number' => Dimension(0));
