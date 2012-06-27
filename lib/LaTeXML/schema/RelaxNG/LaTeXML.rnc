@@ -12,9 +12,9 @@
 
 
 default namespace = "http://dlmf.nist.gov/LaTeXML"
-namespace svg = "http://www.w3.org/2000/svg"
-namespace m   = "http://www.w3.org/1998/Math/MathML"
-
+namespace m     = "http://www.w3.org/1998/Math/MathML"
+namespace svg   = "http://www.w3.org/2000/svg"
+namespace xlink = "http://www.w3.org/1999/xlink"
 include "urn:x-LaTeXML:schemas:LaTeXML-common.rnc"
 include "urn:x-LaTeXML:schemas:LaTeXML-inline.rnc"
 include "urn:x-LaTeXML:schemas:LaTeXML-block.rnc"
