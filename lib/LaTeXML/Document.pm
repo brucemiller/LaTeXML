@@ -126,18 +126,24 @@ sub finalize_rec {
   my $model = $$self{model};
   my $qname = $model->getNodeQName($node);
   my $declared_font = $LaTeXML::FONT;
+  my $desired_font = $LaTeXML::FONT;
+  my %pending_declaration=();
   if(my $font_attr = $node->getAttribute('_font')){
-    if($model->canHaveAttribute($qname,'font') 
-       && ($node->hasChildNodes || $node->getAttribute('_force_font'))){
-      my $font = $$self{node_fonts}{$font_attr};
-      if(my %fontdecl = $font->relativeTo($LaTeXML::FONT)){
-	foreach my $attr (keys %fontdecl){
-	  $node->setAttribute($attr=>$fontdecl{$attr}) if $model->canHaveAttribute($qname,$attr); }
-	$declared_font = $font; }}}
+    $desired_font = $$self{node_fonts}{$font_attr};
+    %pending_declaration = $desired_font->relativeTo($LaTeXML::FONT);
+    if($model->canHaveAttribute($qname,'font')
+       && ($node->hasChildNodes || $node->getAttribute('_force_font'))
+       && scalar(keys %pending_declaration)) {
+      foreach my $attr (keys %pending_declaration){
+	$node->setAttribute($attr=>$pending_declaration{$attr})
+	  if $model->canHaveAttribute($qname,$attr); }
+      $declared_font = $desired_font;
+      %pending_declaration=(); }}
 
   local $LaTeXML::FONT = $declared_font;
   foreach my $child ($node->childNodes){
-    if($child->nodeType == XML_ELEMENT_NODE){
+    my $type = $child->nodeType;
+    if($type == XML_ELEMENT_NODE){
       $self->finalize_rec($child);
       # Also check if child is  $FONT_ELEMENT_NAME  AND has no attributes
       # AND providing $node can contain that child's content, we'll collapse it.
@@ -145,6 +151,18 @@ sub finalize_rec {
 	my @grandchildren = $child->childNodes;
 	if( ! grep( ! $model->canContain($qname,$model->getNodeQName($_)), @grandchildren)){
 	  $self->replaceNode($child,@grandchildren); }}
+    }
+    # On the other hand, if the font declaration has NOT been effected,
+    # We'll need to put an extra wrapper around the text!
+    elsif($type == XML_TEXT_NODE){
+      if($model->canContain($qname,$FONT_ELEMENT_NAME)
+	 && scalar(keys %pending_declaration)){
+	# Too late to do wrapNodes?
+	my $text = $self->wrapNodes($FONT_ELEMENT_NAME,$child);
+	foreach my $attr (keys %pending_declaration){
+	  $text->setAttribute($attr=>$pending_declaration{$attr}); }
+	$self->finalize_rec($text); # Now have to clean up the new node!
+      }
     }}
   # Attributes that begin with (the semi-legal) "_" are for Bookkeeping.
   # Remove them now.
