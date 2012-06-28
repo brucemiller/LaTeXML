@@ -3196,14 +3196,20 @@ DefConstructor('\frame{}',
 
 our %alignments = (l=>'left',c=>'center',r=>'right');
 # Not sure that ltx:p is the best to use here, but ... (see also \vbox, \vtop)
-DefConstructor('\shortstack[]{}',
+DefConstructor('\@shortstack@cr',
+	       "</ltx:p><ltx:p>",
+	       reversion=>Tokens(T_CS("\\\\"),T_CR),
+	       beforeDigest=>sub { $_[0]->egroup; },
+	       afterDigest=>sub { $_[0]->bgroup; });
+
+DefConstructor('\shortstack[]{}  OptionalMatch:* [Dimension]',
 	       "<ltx:inline-block align='#align'><ltx:p>#2</ltx:p></ltx:inline-block>",
 	       bounded=>1,
 	       beforeDigest=>sub{ reenterTextMode();
 				  # then RE-RE-define this one!!!
-				  DefConstructor("\\\\ OptionalMatch:* [Dimension]",
-						 "</ltx:p><ltx:p>",
-						 reversion=>Tokens(T_CS("\\\\"),T_CR)); },
+				  Let(T_CS("\\\\"),T_CS('\@shortstack@cr'));
+				  $_[0]->bgroup; },
+	       afterDigest=>sub {  $_[0]->egroup; },
 	       properties=>{ align=>sub { ($_[1] ? $alignments{ToString($_[0])} : undef); }},
 	       mode=>'text');
 
