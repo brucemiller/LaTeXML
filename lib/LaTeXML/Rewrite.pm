@@ -332,9 +332,6 @@ sub domToXPath_rec {
 	push(@predicates,domToXPath_seq($document,'child',@children)); }
       else {
 	Fatal(":misdefined:<rewrite> Cannot generate XPath for mixed content on ".$node->toString); }}
-###    if($document->getModel->canHaveAttribute($qname,'font')){
-###      if(my $font = $node->getAttribute('_font')){
-###	push(@predicates,"\@_font and match-font('".$font."',\@_font)"); }}
     if($document->getModel->canHaveAttribute($qname,'font')){
       if(my $font = $node->getAttribute('_font')){
 	my $pred = LaTeXML::Font::font_match_xpaths($font);
