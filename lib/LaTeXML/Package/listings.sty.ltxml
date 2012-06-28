@@ -83,7 +83,7 @@ sub lstProcessInline {
 	     lstProcess('inline',@_)); }
 
 DefConstructor('\@listings@inline Semiverbatim {}',
-	       "<ltx:text class='listing #1'>#2</ltx:text>",
+	       "<ltx:text class='#1'>#2</ltx:text>",
 	       reversion=>'\lstinline#1#2#3#2'); # ??????
 
 # Not a regular environment, since we're going to read the body verbatim!
@@ -200,10 +200,10 @@ DefConstructor('\@@listings@inblock Semiverbatim {}',
 # Because of the peculiar timing of the evaluation of keywords and body,
 # this is a bit hard to get at.
 sub listingsSemantics {
-  my @items = ();
+  my @items = ('ltx_lstlisting');
   if(my $lang = ToString(LookupValue('LST@language'))){
     $lang = "$2_$1" if $lang =~ /^\[([^\]]*)\](.*)$/;
-    push(@items, "language_$lang"); }
+    push(@items, "ltx_lst_language_$lang"); }
 
   Tokens( (@items ? Explode(join(' ',@items)) : ())); }
 
@@ -990,7 +990,7 @@ sub lstProcess {
   # Better would be to treat the whole string.
   # then gobble lines etc, can probably work...
   local $LaTeXML::linenum = $line0;
-  local $LaTeXML::colnum = 0;
+  local $LaTeXML::colnum  = 0;
   local $LaTeXML::listing = $text;
   local $LaTeXML::mode    = $mode;
   local $LaTeXML::linestart=undef;
@@ -1133,7 +1133,10 @@ sub lstProcess_internal {
   }}
 
 DefConstructor('\@listingKeyword {}{}', 
-	       "?#1(<ltx:text class='lst#1'>#2</ltx:text>)(#2)");
+	       "?#class(<ltx:text class='ltx_lst_#class'>#2</ltx:text>)(#2)",
+	       properties=>{ class=>sub { my $c = ToString($_[1]);
+					  $c =~ s/s$//;
+					  $c; }});
 
 sub lstClassBegin {
   my($classname)=@_;
@@ -1155,12 +1158,12 @@ sub lstClassProperty {
   ($class && ($$class{$property} ? $$class{$property} : lstClassProperty($$class{class},$property))); }
 
 DefConstructor('\@lst@startline{}',
-	       "<ltx:tr>#1<ltx:td><ltx:text class='lstline'>");
+	       "<ltx:tr>#1<ltx:td><ltx:text class='ltx_lst_line'>");
 DefConstructor('\@lst@endline{}',
 	       "</ltx:text></ltx:td>#1</ltx:tr>");
 DefConstructor('\@lst@visible@space', "\x{2423}");
 DefConstructor('\@lst@linenumber{}',
-	       "<ltx:td class='linenumber'>#1</ltx:td>");
+	       "<ltx:td class='ltx_lst_linenum'>#1</ltx:td>");
 sub lstDoNumber {
   my($isempty)=@_;
   if( (LookupValue('LISTINGS_NEEDS_NUMBER')
