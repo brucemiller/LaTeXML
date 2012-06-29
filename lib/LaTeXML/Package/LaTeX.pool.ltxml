@@ -645,6 +645,20 @@ Let(T_CS('\AtEndOfClass'),T_CS('\AtEndOfPackage'));
 DefMacro('\AtBeginDvi {}', Tokens());
 
 #======================================================================
+# Somewhat related I/O stuff
+DefMacro('\filename@parse{}',sub {
+ my($gullet,$pathname)=@_;
+ my($dir,$name,$ext)=pathname_split(ToString(Expand($pathname)));
+ $dir .= '/' if $dir;
+ DefMacroI('\filename@area',undef,Tokens(Explode($dir)));
+ DefMacroI('\filename@base',undef,Tokens(Explode($name)));
+ DefMacroI('\filename@ext', undef,($ext ? Tokens(Explode($ext)) : T_CS('\relax'))); });
+
+DefMacroI('\@filelist',undef,Tokens());
+DefMacro('\@addtofilelist{}',sub {
+  DefMacroI('\@filelist',undef,
+	    Tokens(Expand(T_CS('\@filelist'),T_OTHER(','),$_[1]->unlist))); });
+#======================================================================
 # C.5.3 Page Styles
 #======================================================================
 # Ignored
