@@ -46,10 +46,15 @@ sub process {
   $self->fill_in_refs($doc);
   $self->fill_in_bibrefs($doc);
   if(($$self{verbosity} >= 0) && (keys %LaTeXML::Post::CrossRef::MISSING)){
+    my $mentioned_tempid = 0;
     my @msgs=();
     foreach my $type (sort keys %LaTeXML::Post::CrossRef::MISSING){
-      push(@msgs,$type.": ".join(', ',sort keys %{$LaTeXML::Post::CrossRef::MISSING{$type}}));}
-    $self->Warn($doc,"Missing keys:\n  ".join(";\n  ",@msgs)); }
+      my @items = keys %{$LaTeXML::Post::CrossRef::MISSING{$type}};
+      $mentioned_tempid ||= grep($_ eq 'TEMPORARY_DOCUMENT_ID',@items);
+      push(@msgs,$type.": ".join(', ',@items));}
+    $self->Warn($doc,"Missing items:\n  ".join(";\n  ",@msgs)
+		.($mentioned_tempid ? "\n [Note TEMPORARY_DOCUMENT_ID is a stand-in ID for the main document.]":"")
+	       ); }
   $self->ProgressDetailed($doc,"done cross-references");
   $doc; }
 
@@ -167,7 +172,7 @@ sub fill_in_refs {
 	  $show =~ s/^type//; 	# Since author may have put explicit \S\ref... in! 
 	}
 	else {
-	  $self->note_missing('Label',$label);
+	  $self->note_missing('Target for Label',$label);
 	  if(!$ref->textContent){
 	    $doc->addNodes($ref,$label);  # Just to reassure (?) readers.
 	    $ref->setAttribute(broken=>1); }
@@ -211,7 +216,7 @@ sub make_bibcite {
   if($show && ($show eq 'none') && !@preformatted){
     $show = 'refnum'; }
   if(!$show){
-    $self->Warn($doc,"No show in bibref ".join(', ',@keys)); 
+    map($self->note_missing("bibref 'show' parameter",$_),@keys);
     $show = 'refnum'; }
 
   my $sep  = $bibref->getAttribute('separator') || ',';
@@ -249,7 +254,7 @@ sub make_bibcite {
 			     href=>$self->generateURL($doc,$id),
 			     ($title ? (title=>$title->textContent):())}}); }}}
     else {
-      $self->note_missing('Citation',$key); }}
+      $self->note_missing('Entry for citation',$key); }}
   my $checkdups = ($show =~ /author/i) && ($show =~ /(year|number)/i);
   my @refs=();
   my $saveshow = $show;
@@ -320,9 +325,9 @@ sub generateURL {
 	$url = ''; }
       $url; }
     else {
-      $self->note_missing('Location for ID',$id); }}
+      $self->note_missing('File location for ID',$id); }}
   else {
-    $self->note_missing('ID',$id); }}
+    $self->note_missing('DB Entry for ID',$id); }}
 
 our $NBSP = pack('U',0xA0);
 # Generate the contents of a <ltx:ref> of the given id.
@@ -347,7 +352,7 @@ sub generateRef {
   if(@stuff){
     @stuff; }
   else {
-    $self->Warn($doc,"failed to generate good ref text for $reqid");
+    $self->note_missing('Usable title for ID',$reqid);
     ("?"); }}
 
 # Check if the proposed content of a <ltx:ref> is "Good Enough"
