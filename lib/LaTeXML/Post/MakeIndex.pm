@@ -177,22 +177,14 @@ sub makeIndexEntry {
       # until we find an actual entry.
       my $key = $see->getAttribute('key');
       my $phr = $see->textContent; $phr =~ s/^\s*//; $phr =~ s/\.\s*$//;
-      my $t = $tree;
-      my $entry;
       # See also terms can't use the sort_as@present_as formula, tho they sometimes need to.
       # If we didn't find the see-as term, look to see if the text matches some other entry we've seen.
-      while($t && !$entry){
-	my $pre = $$t{key} ? $$t{key}."." : '';
-	foreach my $k ($key,keys %{$$allphrases{$phr}}){
-	  last if $entry = $$allkeys{ $pre.$k}; }
-	$t = $$t{parent}; }
+      my $entry = $self->seealsoSearch($doc,$allkeys,$allphrases,$tree,$key,$phr);
+
+      if(!$entry && ($phr =~ s/,\s*/ /g)){ # Try again after stripping commas?
+	$entry = $self->seealsoSearch($doc,$allkeys,$allphrases,$tree,$key,$phr); }
       if(!$entry && ($phr =~ s/(\w+)s\b/$1/g)){ # Try again after stripping "plurals" (!!!!)
-	$t=$tree;
-	while($t && !$entry){
-	  my $pre = $$t{key} ? $$t{key}."." : '';
-	  foreach my $k ($key,keys %{$$allphrases{$phr}}){
-	    last if $entry = $$allkeys{ $pre.$k}; }
-	  $t = $$t{parent}; }}
+	$entry = $self->seealsoSearch($doc,$allkeys,$allphrases,$tree,$key,$phr); }
       if($entry){
 	push(@links,['ltx:ref',{idref=>$$entry{id}},$see->childNodes]) unless $saw{$$entry{id}};
 	$saw{$$entry{id}} = 1; }
@@ -207,6 +199,17 @@ sub makeIndexEntry {
    ['ltx:indexphrase',{},$doc->trimChildNodes($$tree{phrase})],
    (@links ? (['ltx:indexrefs',{},@links]):()),
    $self->makeIndexList($doc,$allkeys,$allphrases,$tree)]; }
+
+sub seealsoSearch {
+  my($self,$doc,$allkeys,$allphrases,$tree,$key,$phr)=@_;
+  my $t = $tree;
+  my $entry;
+  while($t && !$entry){
+    my $pre = $$t{key} ? $$t{key}."." : '';
+    foreach my $k ($key,keys %{$$allphrases{$phr}}){
+      last if $entry = $$allkeys{ $pre.$k}; }
+    $t = $$t{parent}; }
+  $entry; }
 
 # Given that sorted styles gives bold, italic, normal,
 # let's just do the first.
