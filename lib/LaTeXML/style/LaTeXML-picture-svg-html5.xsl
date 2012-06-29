@@ -16,7 +16,6 @@
     version     = "1.0"
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns:m     = "http://www.w3.org/1998/Math/MathML"
     xmlns:svg   = "http://www.w3.org/2000/svg"
     exclude-result-prefixes = "ltx svg">
   

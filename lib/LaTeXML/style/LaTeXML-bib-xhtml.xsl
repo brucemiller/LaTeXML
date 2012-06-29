@@ -17,9 +17,7 @@
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
     xmlns       = "http://www.w3.org/1999/xhtml"
-    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
-    extension-element-prefixes="f"
-    exclude-result-prefixes = "ltx f">
+    exclude-result-prefixes = "ltx">
 
   <!-- ======================================================================
        Bibliography (AFTER conversion to presentation; ie only bibitem's)

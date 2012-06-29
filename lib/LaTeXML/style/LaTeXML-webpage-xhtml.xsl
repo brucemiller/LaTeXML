@@ -22,9 +22,10 @@
     exclude-result-prefixes = "ltx f"
     extension-element-prefixes="string f">
 
-<xsl:param name="CSS"></xsl:param>
-<xsl:param name="JAVASCRIPT"></xsl:param>
-<xsl:param name="ICON"></xsl:param>
+  <xsl:param name="CSS"></xsl:param>
+  <xsl:param name="JAVASCRIPT"></xsl:param>
+  <xsl:param name="ICON"></xsl:param>
+  <xsl:param name="TIMESTAMP"></xsl:param>
 
 <!--  ======================================================================
       The Page
@@ -163,35 +164,45 @@
 </xsl:template>
 
 <xsl:template name="header">
-  <xsl:if test="//ltx:navigation/ltx:ref">
-    <xsl:text>
-    </xsl:text>
-    <div class='header'>
-      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='up']"/>
-      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='previous']"/>
-      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='next']"/>
-      <xsl:text>
-      </xsl:text>
-    </div>
-  </xsl:if>
+  <xsl:text>
+  </xsl:text>
+  <div class='header'>
+    <xsl:if test="//ltx:navigation/ltx:ref">
+      <div class="navbar">
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='up']"/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='previous']"/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='next']"/>
+	<xsl:text>
+	</xsl:text>
+      </div>
+    </xsl:if>
+  </div>
 </xsl:template>
 
 <xsl:template name="footer">
-  <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1] | //ltx:navigation/ltx:ref">
-    <xsl:text>
-    </xsl:text>
-    <div class='footer'>
-      <xsl:value-of select='//ltx:date/node()'/>
-      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='previous']"/>
-      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='next']"/>
+  <div class='footer'>
+    <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1] | //ltx:navigation/ltx:ref">
       <xsl:text>
       </xsl:text>
-    </div>
-  </xsl:if>
+      <div class="navbar">
+	<xsl:value-of select='//ltx:date/node()'/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='previous']"/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='next']"/>
+	<xsl:text>
+	</xsl:text>
+      </div>
+    </xsl:if>
+    <xsl:call-template name="LaTeXML-logo"/>
+  </div>
 </xsl:template>
 
 <xsl:template match="ltx:navigation"/>
 
+  <xsl:template name="LaTeXML-logo">
+    <div class='LaTeXML-logo'>Generated
+    <xsl:if test="$TIMESTAMP"> on <xsl:value-of select="$TIMESTAMP"/></xsl:if>
+    by <a href="http://dlmf.nist.gov/LaTeXML/">LaTeXML <img src="{f:LaTeXML-icon()}"/></a></div>
+  </xsl:template>
 <!--  ======================================================================
       Tables of Contents.
       ====================================================================== -->

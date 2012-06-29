@@ -16,9 +16,7 @@
     version   = "1.0"
     xmlns:xsl = "http://www.w3.org/1999/XSL/Transform"
     xmlns:ltx = "http://dlmf.nist.gov/LaTeXML"
-    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
-    extension-element-prefixes="f"
-    exclude-result-prefixes="ltx f">
+    exclude-result-prefixes="ltx">
 
   <xsl:template match="ltx:picture"/>
   <xsl:template match="ltx:picture[@imagesrc]">

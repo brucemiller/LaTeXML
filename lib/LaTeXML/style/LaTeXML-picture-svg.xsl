@@ -15,12 +15,7 @@
 <xsl:stylesheet
     version     = "1.0"
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns       = "http://www.w3.org/1999/xhtml"
-    xmlns:m     = "http://www.w3.org/1998/Math/MathML"
-    xmlns:svg   = "http://www.w3.org/2000/svg"
-    xmlns:xlink = "http://www.w3.org/1999/xlink"
-    exclude-result-prefixes = "ltx">
+    xmlns:svg   = "http://www.w3.org/2000/svg">
   
   <!-- Copy SVG, as is ???? -->
   <xsl:template match="*[namespace-uri() = 'http://www.w3.org/2000/svg']">

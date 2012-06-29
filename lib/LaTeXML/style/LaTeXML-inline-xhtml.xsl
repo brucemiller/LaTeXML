@@ -17,9 +17,7 @@
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
     xmlns       = "http://www.w3.org/1999/xhtml"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns:func  = "http://exslt.org/functions"
-    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
-    exclude-result-prefixes = "ltx func f">
+    exclude-result-prefixes = "ltx">
 
 <!-- ======================================================================
      Visible inline elements

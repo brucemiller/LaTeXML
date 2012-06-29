@@ -17,17 +17,18 @@
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
     xmlns       = "http://www.w3.org/1999/xhtml"
+    exclude-result-prefixes = "ltx">
+<!--
     xmlns:m     = "http://www.w3.org/1998/Math/MathML"
     xmlns:svg   = "http://www.w3.org/2000/svg"
-    exclude-result-prefixes = "ltx">
-
+-->
   <xsl:output method="xml"
 	      doctype-public = "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN"
 	      doctype-system = "http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd"
 	      media-type     = 'application/xhtml+xml'
 	      encoding       = 'utf-8'
 	      indent         = "yes"/>
-<!--	      doctype-system = "http://www.w3.org/TR/MathML2/dtd/xhtml-math11-f.dtd"  -->
+
   <xsl:template name="metatype">
     <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8"/>
   </xsl:template>
