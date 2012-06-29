@@ -650,9 +650,9 @@ DefMacro('\filename@parse{}',sub {
  my($gullet,$pathname)=@_;
  my($dir,$name,$ext)=pathname_split(ToString(Expand($pathname)));
  $dir .= '/' if $dir;
- DefMacroI('\filename@area',undef,Tokens(Explode($dir)));
- DefMacroI('\filename@base',undef,Tokens(Explode($name)));
- DefMacroI('\filename@ext', undef,($ext ? Tokens(Explode($ext)) : T_CS('\relax'))); });
+ DefMacroI('\filename@area',undef,Tokens(ExplodeText($dir)));
+ DefMacroI('\filename@base',undef,Tokens(ExplodeText($name)));
+ DefMacroI('\filename@ext', undef,($ext ? Tokens(ExplodeText($ext)) : T_CS('\relax'))); });
 
 DefMacroI('\@filelist',undef,Tokens());
 DefMacro('\@addtofilelist{}',sub {
