@@ -1324,7 +1324,14 @@ sub InputDefinitions {
       loadLTXML($file); }		# Perl module.
     else {
       loadTeXDefinitions($file); }
-
+    # IF we're running latex mode, add this file to the list.
+    # Should we be pretending to load the regular .sty files?
+    if(LookupDefinition(T_CS('\@filelist'))){
+	my($a,$b,$e)=($fdir,$fname,$ftype);
+	($a,$b,$e)=pathname_split(pathname_concat($a,$b)) if $e eq 'ltxml'; # Fake it???
+	my @p = Expand(T_CS('\@filelist'))->unlist;
+	my @n = Explode($e ? $b.'.'.$e : $b);
+	DefMacroI('\@filelist',undef,(@p ? Tokens(@p,T_OTHER(','),@n) : Tokens(@n))); }
     if($options{handleoptions}){
       Digest(T_CS("\\$name.$astype-hook"));
       DefMacroI('\@currname',undef,Tokens(Explode($prevname))) if $prevname;
