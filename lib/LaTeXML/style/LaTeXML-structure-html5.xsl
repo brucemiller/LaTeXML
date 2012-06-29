@@ -150,14 +150,17 @@
 
 
   <xsl:template match="ltx:title">
-    <hgroup>
-      <h1>
-	<xsl:call-template name="add_id"/>
-	<xsl:call-template name="add_attributes"/>
-	<xsl:apply-templates/>
-      </h1>
-      <xsl:apply-templates select="../ltx:subtitle"/>
-    </hgroup>
+    <!-- Skip title, if there's a titlepage! -->
+    <xsl:if test="not(parent::*/child::ltx:titlepage)">    
+      <hgroup>
+	<h1>
+	  <xsl:call-template name="add_id"/>
+	  <xsl:call-template name="add_attributes"/>
+	  <xsl:apply-templates/>
+	</h1>
+	<xsl:apply-templates select="../ltx:subtitle"/>
+      </hgroup>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="ltx:subtitle">

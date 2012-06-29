@@ -148,9 +148,12 @@
   </xsl:param>
 
   <xsl:template match="ltx:document/ltx:title">
-    <xsl:call-template name="maketitle">
-      <xsl:with-param name="title_level" select="$document_level"/>
-    </xsl:call-template>
+    <!-- Skip title, if there's a titlepage! -->
+    <xsl:if test="not(parent::*/child::ltx:titlepage)">    
+      <xsl:call-template name="maketitle">
+	<xsl:with-param name="title_level" select="$document_level"/>
+      </xsl:call-template>
+    </xsl:if>
   </xsl:template>
 
   <xsl:param name="part_level">
