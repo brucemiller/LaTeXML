@@ -485,7 +485,9 @@ DefMacroI('\splitbotmark',   undef, Tokens());
 
 DefMacro('\input TeXFileName',sub { InputFile($_[1]); });
 
-DefMacroI('\endinput',undef,sub { $_[0]->closeMouth(1); return; });
+# Note that TeX doesn't actually close the mouth;
+# it just flushes it so that it will close the next time it's read!
+DefMacroI('\endinput',undef,sub { $_[0]->flushMouth; return; });
 
 # \the<internal quantity>
 DefMacro('\the Register',sub {

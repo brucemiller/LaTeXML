@@ -131,6 +131,14 @@ sub mouthIsOpen {
   ($$self{mouth} eq $mouth)
     || grep($_ && ($$_[0] eq $mouth), @{$$self{mouthstack}}); }
 
+# This flushes a mouth so that it will be automatically closed, next time it's read
+# Corresponds (I think) to TeX's \endinput
+sub flushMouth {
+  my($self)=@_;
+  $$self{mouth}->finish;;	# but not close!
+  $$self{pushback}=[];	# And don't read anytyhing more from it.
+  $$self{autoclose}=1; }
+
 # Obscure, but the only way I can think of to End!! (see \bye or \end{document})
 # Flush all sources (close all pending mouth's)
 sub flush {
