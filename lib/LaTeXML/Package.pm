@@ -1312,6 +1312,8 @@ sub InputDefinitions {
       # Note which packages are pretending to be classes.
       PushValue('@masquerading@as@class',$name) if $options{as_class};
       DefMacroI(T_CS("\\$name.$astype-hook"),undef,$options{after} || '');
+      DefMacroI(T_CS('\opt@'.$name.'.'.$astype),undef,
+		Tokens(Explode(join(',',@{LookupValue('opt@'.$name.".".$astype)}))));
     }
 
 ###    $options{raw}=1;		# since we're taking the decision away from gullet!
@@ -1324,18 +1326,16 @@ sub InputDefinitions {
       loadLTXML($file); }		# Perl module.
     else {
       loadTeXDefinitions($file); }
-    # IF we're running latex mode, add this file to the list.
-    # Should we be pretending to load the regular .sty files?
-    if(LookupDefinition(T_CS('\@filelist'))){
-	my($a,$b,$e)=($fdir,$fname,$ftype);
-	($a,$b,$e)=pathname_split(pathname_concat($a,$b)) if $e eq 'ltxml'; # Fake it???
-	my @p = Expand(T_CS('\@filelist'))->unlist;
-	my @n = Explode($e ? $b.'.'.$e : $b);
-	DefMacroI('\@filelist',undef,(@p ? Tokens(@p,T_OTHER(','),@n) : Tokens(@n))); }
     if($options{handleoptions}){
       Digest(T_CS("\\$name.$astype-hook"));
       DefMacroI('\@currname',undef,Tokens(Explode($prevname))) if $prevname;
       DefMacroI('\@currext',undef,Tokens(Explode($prevext))) if $prevext;
+      # Add an appropriately faked entry into \@filelist
+      my($a,$b,$e)=($fdir,$fname,$ftype); # If ftype is ltxml, reparse to get sty/cls!
+      ($a,$b,$e)=pathname_split(pathname_concat($a,$b)) if $e eq 'ltxml'; # Fake it???
+      my @p = Expand(T_CS('\@filelist'))->unlist;
+      my @n = Explode($e ? $b.'.'.$e : $b);
+      DefMacroI('\@filelist',undef,(@p ? Tokens(@p,T_OTHER(','),@n) : Tokens(@n)));
       resetOptions(); }  # And reset options afterwards, too.
     $file; }}
 
