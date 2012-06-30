@@ -3519,6 +3519,19 @@ DefMacro('\MakeLowercase{}',sub {
 DefMacroI('\@ehc', undef, "I can't help");
 
 DefMacro('\@gobble{}',Tokens());
+DefMacro('\@gobbletwo{}{}',Tokens());
+DefMacro('\@gobblefour{}{}{}{}',Tokens());
+DefMacro('\@firstoftwo{}{}',sub { $_[1]; });
+DefMacro('\@secondoftwo{}{}',sub { $_[2]; });
+DefMacro('\@thirdofthree{}{}{}',sub { $_[3]; });
+DefMacro('\@expandtwoargs{}{}{}',sub {
+  ($_[1]->unlist,Expand($_[2])->unlist,Expand($_[3])->unlist); });
+
+RawTeX('{\catcode`\^^M=13 \gdef\obeycr{\catcode`\^^M13 \def^^M{\\\relax}%
+    \@gobblecr}%
+{\catcode`\^^M=13 \gdef\@gobblecr{\@ifnextchar
+\@gobble\ignorespaces}}
+\gdef\restorecr{\catcode`\^^M5 }}');
 
 sub make_message {
   my(@args)=@_;
@@ -3634,8 +3647,6 @@ RawTeX(<<'EOTeX');
 \def\@tempswafalse{\let\if@tempswa\iffalse}
 \def\@tempswatrue{\let\if@tempswa\iftrue}
 \let\if@tempswa\iffalse
-\long\def\@firstoftwo#1#2{#1}
-\long\def\@secondoftwo#1#2{#2}
 \newcount\@tempcnta
 \newcount\@tempcntb
 \newif\if@tempswa
