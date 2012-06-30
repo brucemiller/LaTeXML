@@ -458,7 +458,7 @@ DefMacroI('\contentsname',  undef, 'Contents');
 DefConstructorI('\tableofcontents', undef,
 		"<ltx:TOC role='contents' select='#select' name='#name'/>",
 		properties=>sub {
-		  my $td = CounterValue('tocdepth')->valueOf + 2;
+		  my $td = CounterValue('tocdepth')->valueOf + 1;
 		  my @s = (qw(ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
 			    ltx:paragraph ltx:subparagraph));
 		  $td = $#s if $#s < $td;
