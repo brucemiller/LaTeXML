@@ -36,4 +36,15 @@ RequirePackage('graphicx');
 RequirePackage('pifont');
 RequirePackage('natbib');
 
+# Redefine these, since in elsarticle, they two get optional arguments
+# (not even sure what the intended effect is)
+DefEnvironment('{enumerate}[]',
+	       "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
+	       properties=>sub { beginItemize('enumerate'); },
+	       locked=>1, mode=>'text');
+DefEnvironment('{itemize}[]',
+	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
+	       properties=>sub { beginItemize('itemize'); },
+	       locked=>1, mode=>'text');
+
 1;
