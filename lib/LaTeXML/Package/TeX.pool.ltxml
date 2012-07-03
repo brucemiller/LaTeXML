@@ -2280,9 +2280,11 @@ DefPrimitive('\unhbox Number',sub {
   my $box = 'box'.$_[1]->valueOf;
   my $stuff = LookupValue($box); 
   AssignValue($box,undef);
-  ($stuff); });
+  (defined $stuff ? $stuff->unlist : ()); });
 DefPrimitive('\unhcopy Number',sub {
-  (LookupValue('box'.$_[1]->valueOf)); });
+  my $box = 'box'.$_[1]->valueOf;
+  my $stuff = LookupValue($box); 
+  (defined $stuff ? $stuff->unlist : ()); });
 
 # \vrule
 # \valign ???
