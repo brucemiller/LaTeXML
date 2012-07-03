@@ -6,34 +6,34 @@
   <section refnum="1" xml:id="S1">
     <title><tag>1 </tag>Basic URLS</title>
     <para xml:id="S1.p1">
-      <p>Basic url: <ref class="url" href="http://example.com/~user"><text font="typewriter">http://example.com/~user</text></ref> or <ref class="url" href="http://example.com/~user"><text font="typewriter">http://example.com/~user</text></ref>.</p>
+      <p>Basic url: <ref class="ltx_url" href="http://example.com/~user"><text font="typewriter">http://example.com/~user</text></ref> or <ref class="ltx_url" href="http://example.com/~user"><text font="typewriter">http://example.com/~user</text></ref>.</p>
     </para>
     <para xml:id="S1.p2">
-      <p>And even: <ref class="url" href="http://example.com/~user"><text font="typewriter">http://example.com/\~{}user</text></ref> or <ref class="url" href="http://example.com/~user"><text font="typewriter">http://example.com/\~{}user</text></ref>.</p>
+      <p>And even: <ref class="ltx_url" href="http://example.com/~user"><text font="typewriter">http://example.com/\~{}user</text></ref> or <ref class="ltx_url" href="http://example.com/~user"><text font="typewriter">http://example.com/\~{}user</text></ref>.</p>
     </para>
     <para xml:id="S1.p3">
-      <p>Path url: <ref class="path" href="/foo/bar/baz"><text font="typewriter">/foo/bar/baz</text></ref> or <ref class="path" href="/foo/bar/baz"><text font="typewriter">/foo/bar/baz</text></ref></p>
+      <p>Path url: <ref class="ltx_path" href="/foo/bar/baz"><text font="typewriter">/foo/bar/baz</text></ref> or <ref class="ltx_path" href="/foo/bar/baz"><text font="typewriter">/foo/bar/baz</text></ref></p>
     </para>
     <para xml:id="S1.p4">
-      <p>Verbatimness <ref class="path" href="C:\foo\bar\baz"><text font="typewriter">C:\foo\bar\baz</text></ref> or <ref class="path" href="C:\foo\bar\baz"><text font="typewriter">C:\foo\bar\baz</text></ref></p>
+      <p>Verbatimness <ref class="ltx_path" href="C:\foo\bar\baz"><text font="typewriter">C:\foo\bar\baz</text></ref> or <ref class="ltx_path" href="C:\foo\bar\baz"><text font="typewriter">C:\foo\bar\baz</text></ref></p>
     </para>
   </section>
   <section refnum="2" xml:id="S2">
     <title><tag>2 </tag>Styles</title>
     <para xml:id="S2.p1">
-      <p>Email: <ref class="email" href="myself%node@gateway.net"><text font="sansserif">myself%node@gateway.net</text></ref> or  <ref class="email" href="myself%node@gateway.net"><text font="sansserif">myself%node@gateway.net</text></ref>.</p>
+      <p>Email: <ref class="ltx_email" href="myself%node@gateway.net"><text font="sansserif">myself%node@gateway.net</text></ref> or  <ref class="ltx_email" href="myself%node@gateway.net"><text font="sansserif">myself%node@gateway.net</text></ref>.</p>
     </para>
   </section>
   <section refnum="3" xml:id="S3">
     <title><tag>3 </tag>Defined urls</title>
     <para xml:id="S3.p1">
-      <p>Myself: <ref class="url" href="myself%node@gateway.net"><text font="typewriter">myself%node@gateway.net</text></ref> or <ref class="email" href="myself%node@gateway.net"><text font="sansserif">myself%node@gateway.net</text></ref>.</p>
+      <p>Myself: <ref class="ltx_url" href="myself%node@gateway.net"><text font="typewriter">myself%node@gateway.net</text></ref> or <ref class="ltx_email" href="myself%node@gateway.net"><text font="sansserif">myself%node@gateway.net</text></ref>.</p>
     </para>
   </section>
   <section refnum="4" xml:id="S4">
     <title><tag>4 </tag>Bracketting</title>
     <para xml:id="S4.p1">
-      <p>Fancy url: <ref class="fancyurl" href="http://example.com/~user"><text font="typewriter">&lt;url: http://example.com/~user&gt;</text></ref> or <ref class="fancyurl" href="http://example.com/~user"><text font="typewriter">&lt;url: http://example.com/~user&gt;</text></ref>.</p>
+      <p>Fancy url: <ref class="ltx_fancyurl" href="http://example.com/~user"><text font="typewriter">&lt;url: http://example.com/~user&gt;</text></ref> or <ref class="ltx_fancyurl" href="http://example.com/~user"><text font="typewriter">&lt;url: http://example.com/~user&gt;</text></ref>.</p>
     </para>
   </section>
 </document>
