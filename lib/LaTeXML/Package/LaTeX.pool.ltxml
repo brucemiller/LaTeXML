@@ -3730,6 +3730,11 @@ DefMacro('\@ifstar {}{}', sub {
   else {
     (LaTeXML::Expandable::substituteTokens($else),$next); }});
 
+DefMacro('\@testopt{}{}',sub {
+  my($gullet,$cmd,$option)=@_;
+  ($gullet->ifNext(T_OTHER('[')) ? $cmd->unlist
+   : ($cmd->unlist,T_OTHER('['),$option->unlist,T_OTHER(']'))); });
+
 # maybe this is easiest just to punt.
 RawTeX('\def\in@#1#2{%
  \def\in@@##1#1##2##3\in@@{%
