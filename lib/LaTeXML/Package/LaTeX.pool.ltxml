@@ -859,21 +859,21 @@ DefConstructorI('\raggedleft',  undef,
 
 DefConstructorI('\@add@centering',  undef,
 		sub { if(my $node = LookupValue('ALIGNING_NODE')){
-		  map(setAlignOrClass($_[0],$_,'center','centering'),$_[0]->getChildElements($node)); }});
+		  map(setAlignOrClass($_[0],$_,'center','ltx_centering'),$_[0]->getChildElements($node)); }});
 # Note that \raggedright is different from flushright!
 DefConstructorI('\@add@raggedright', undef,
 		sub { if(my $node = LookupValue('ALIGNING_NODE')){
-		  map(setAlignOrClass($_[0],$_,undef,'raggedright'),$_[0]->getChildElements($node)); }});
+		  map(setAlignOrClass($_[0],$_,undef,'ltx_raggedright'),$_[0]->getChildElements($node)); }});
 DefConstructorI('\@add@raggedleft',  undef,
 		sub { if(my $node = LookupValue('ALIGNING_NODE')){
-		  map(setAlignOrClass($_[0],$_,undef,'raggedleft'),$_[0]->getChildElements($node)); }});
+		  map(setAlignOrClass($_[0],$_,undef,'ltx_raggedleft'),$_[0]->getChildElements($node)); }});
 
 DefConstructorI('\@add@flushright', undef,
 		sub { if(my $node = LookupValue('ALIGNING_NODE')){
-		  map(setAlignOrClass($_[0],$_,'right','flushright'),$_[0]->getChildElements($node)); }});
+		  map(setAlignOrClass($_[0],$_,'right','ltx_flushright'),$_[0]->getChildElements($node)); }});
 DefConstructorI('\@add@flushleft',  undef,
 		sub { if(my $node = LookupValue('ALIGNING_NODE')){
-		  map(setAlignOrClass($_[0],$_,'left','flushleft'),$_[0]->getChildElements($node)); }});
+		  map(setAlignOrClass($_[0],$_,'left','ltx_flushleft'),$_[0]->getChildElements($node)); }});
 
 #======================================================================-
 # C.6.1 Quotations and Verse
@@ -890,7 +890,7 @@ DefEnvironment('{quotation}',
 	       mode=>'text');
 # NOTE: Handling of \\ within these environments?
 DefEnvironment('{verse}',
-	       '<ltx:quote class="verse">#body</ltx:quote>',
+	       '<ltx:quote class="ltx_verse">#body</ltx:quote>',
 	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))},
 	       mode=>'text');
 
@@ -1317,7 +1317,7 @@ DefConditionalI('\if@in@firstcolumn',undef, sub {
 # A bit more defensiveness, since people abuse eqnarray so badly.
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
-	 '\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{lefteqn}\@@BEGININLINEMATH \displaystyle #1\@@ENDINLINEMATH\mbox{}}'
+	 '\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{ltx_lefteqn}\@@BEGININLINEMATH \displaystyle #1\@@ENDINLINEMATH\mbox{}}'
 	 .'\else\rlap{\@@BEGININLINEMATH\displaystyle #1\@@ENDINLINEMATH}\fi');
 # \intertext (in amsmath)
 
@@ -1351,7 +1351,7 @@ sub eqnarrayBindings {
   my $alignment = LaTeXML::Util::Alignment
     ->new(openContainer =>sub{ my %attr = RefStepID('@equationgroup');
 			       $attr{'xml:id'}=$attr{id}; delete $attr{id};
-			       $attr{class}='eqnarray';
+			       $attr{class}='ltx_eqnarray';
 			       $_[0]->openElement('ltx:equationgroup',%attr,@_[1..$#_]); },
 	  closeContainer=>sub{ $_[0]->closeElement('ltx:equationgroup'); },
 	  openRow       =>sub{ $_[0]->openElement('ltx:equation',@_[1..$#_]); },
@@ -1373,7 +1373,7 @@ DefConstructor('\@@eqnarray SkipSpaces DigestedBody',
 		 my($document,$body,%props)=@_;
 		 rearrangeEqnarray($document,
 				    constructAlignment($document,$body,
-						       attributes=>{class=>'eqnarray'})); },
+						       attributes=>{class=>'ltx_eqnarray'})); },
 	       beforeDigest=>sub { $_[0]->bgroup; });
 DefPrimitiveI('\end@eqnarray',undef, sub{ $_[0]->egroup; });
 
@@ -1831,7 +1831,7 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 		      frefnum=>Digest($frefnum),
 		      title=>$title,
 		      titlefont=>$title->getFont,
-		      class=>CleanIndexKey($thmset)  ); },
+		      class=>'ltx_'.CleanIndexKey($thmset)  ); },
 		 scope => 'global');
 });
 
@@ -1942,7 +1942,7 @@ sub RescueCaptionCounters {
     $whatsit->setProperty(id=>$id); }
   return; }
 
-DefConstructor('\@@generic@caption[]{}',"<ltx:text class='caption'>#2</ltx:text>",
+DefConstructor('\@@generic@caption[]{}',"<ltx:text class='ltx_caption'>#2</ltx:text>",
 	       beforeDigest=>sub{ Error(':unexpected \caption outside any known float'); });
 
 # Note that even without \caption, we'd probably like to have xml:id.

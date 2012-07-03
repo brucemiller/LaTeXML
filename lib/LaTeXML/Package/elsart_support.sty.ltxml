@@ -226,7 +226,7 @@ DefMacro('\thealgorithm','\arabic{algorithm}');
 DefMacro('\algorithmname','Algorithm');
 
 DefEnvironment('{algorithm}',
-	       "<ltx:float refnum='#refnum' frefnum='#frefnum' xml:id='#id' class='algorithm'>"
+	       "<ltx:float refnum='#refnum' frefnum='#frefnum' xml:id='#id' class='ltx_algorithm'>"
 	       . "#body"
 	       ."</ltx:float>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'algorithm'); },
@@ -249,7 +249,7 @@ DefMacro('\conttablecaption', '\caption{continued}');
 DefEnvironment('{subbibitems}','#body');
 
 DefMacro('\cv',Tokens());
-DefEnvironment('{cv*}',"<ltx:section class='cv'><ltx:title>Curriculum Vitae</ltx:title>#body</ltx:section>");
+DefEnvironment('{cv*}',"<ltx:section class='ltx_cv'><ltx:title>Curriculum Vitae</ltx:title>#body</ltx:section>");
 
 #======================================================================
 # shorthands.

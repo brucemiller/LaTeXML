@@ -80,7 +80,7 @@ DefMacro('\@ams@intertext{}',
 #	 '\@alignment@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@alignment@newline');
 	 '\@ams@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@ams@newline');
 DefConstructor('\@@ams@intertext{}',
-	       "<ltx:p class='intertext'>#1</ltx:p>", mode=>'text',properties=>{isIntertext=>1});
+	       "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode=>'text',properties=>{isIntertext=>1});
 
 DefMacroI('\@ams@newline', undef, sub {
   my($gullet)=@_;
@@ -174,7 +174,7 @@ DefEnvironment('{split}',
 		 DefConstructor("\\\\","<ltx:XMHint name='newline'/>",
 				reversion=>Tokens(T_CS("\\\\"),T_CR)); 
 		 DefConstructor('\intertext{}',
-				"<ltx:p class='intertext'>#1</ltx:p>", mode=>'text'); });
+				"<ltx:p class='ltx_intertext'>#1</ltx:p>", mode=>'text'); });
 
 #======================================================================
 # Section 3.5 Equation groups without alignment
@@ -188,7 +188,7 @@ DefConstructor('\@@amsgather SkipSpaces DigestedBody',
 		 my($document,$body,%props)=@_;
 		 rearrangeAMSGather($document,
 				     constructAlignment($document,$body,
-							attributes=>{class=>'gather'})); },
+							attributes=>{class=>'ltx_gather'})); },
 	       beforeDigest=>sub { $_[0]->bgroup; });
 DefPrimitive('\end@amsgather',sub{ $_[0]->egroup; });
 
@@ -246,7 +246,7 @@ DefConstructor('\@@amsalign SkipSpaces DigestedBody',
 		 my($document,$body,%props)=@_;
 		 rearrangeAMSAlign($document,
 				    constructAlignment($document,$body,
-						       attributes=>{class=>'align'})); },
+						       attributes=>{class=>'ltx_align'})); },
 	       beforeDigest=>sub { $_[0]->bgroup; });
 DefPrimitive('\end@amsalign',sub{ $_[0]->egroup; });
 
@@ -452,7 +452,7 @@ DefMacro('\displaybreak[]','');	# Ignorable
 # Section 3.10 Interrupting a display
 
 # default when not used inside an appropriate alignment.
-DefConstructor('\intertext{}', "<ltx:p class='intertext'>#1</ltx:p>", mode=>'text');
+DefConstructor('\intertext{}', "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode=>'text');
 
 #======================================================================
 # Section 3.11 Equation numbering
@@ -644,7 +644,7 @@ DefConstructor('\boxed@text{}',sub {
   my($document,$body,%props)=@_;
   my @new = insertBlock($document,$body);
   foreach my $node (@new){
-    addClass($node,'framed'); }},
+    $node->addAttribute(framed=>'rectangle'); }}, # if allowed??
 	       bounded=>1,
 	       beforeDigest=>sub {
 		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });

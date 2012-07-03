@@ -14,6 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
+# Note that this binding is really insufficient
 #**********************************************************************
 DefMacro('\acsfont{}','#1');
 DefMacro('\acffont{}','#1');
@@ -25,7 +26,7 @@ DefMacro('\acl{}','\@ACRO@{#1}{\acffont{\@AC@long{#1}}}');
 DefMacro('\acf{}','\@ACRO@{#1}{\acffont{\@AC@long{#1}}\acfsfont{(\@AC@short{#1})}}');
 
 
-DefEnvironment('{acronym}',"<ltx:definition class='acronyms'>#body</ltx:definition>",
+DefEnvironment('{acronym}',"<ltx:definition class='ltx_acronyms'>#body</ltx:definition>",
 	      beforeDigest=>sub { DefMacro('\acro{}[]{}', 
 					   '\acrodef{#1}[#2]{#3}\item[\acs{#1}]\acl{#1} '); });
 

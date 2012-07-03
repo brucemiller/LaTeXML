@@ -74,7 +74,7 @@ DefMacro('\Url', sub {
 DefConstructor('\@@Url Undigested {}{} Semiverbatim {}',
 	       "<ltx:ref href='#href' class='#class'>#5</ltx:ref>",
 	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[4])),
-				  class=>sub { my $c=ToString($_[1]); $c =~ s/^\\//; $c; } ); },
+				  class=>sub { my $c=ToString($_[1]); $c =~ s/^\\//; 'ltx_'.$c; } ); },
 	      reversion=>'#1#2#4#3');
 
 # These are the expansions of \DeclareUrlCommand

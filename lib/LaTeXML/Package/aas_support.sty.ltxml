@@ -138,14 +138,14 @@ NewCounter('plate');
 DefMacroI('\platename',undef,'Plate');
 
 DefEnvironment('{plate}[]',
-	       "<ltx:float refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1') class='plate'>"
+	       "<ltx:float refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1') class='ltx_plate'>"
 	       . "#body"
 	       ."</ltx:float>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'plate'); },
 	       afterDigest=>sub { RescueCaptionCounters('plate',$_[1]); });
 
 DefEnvironment('{plate*}[]',
-	       "<ltx:float refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1') class='plate'>"
+	       "<ltx:float refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1') class='ltx_plate'>"
 	       . "#body"
 	       ."</ltx:float>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'plate'); },
@@ -164,7 +164,7 @@ Let(T_CS('\acknowledgments'),T_CS('\acknowledgements'));
 
 # Ultimately, this would get some more explicit semantic markup, but..
 # \facility{facilityID}
-DefConstructor('\facility{}',"<ltx:text class='facility'>#1</ltx:text>");
+DefConstructor('\facility{}',"<ltx:text class='ltx_ast_facility'>#1</ltx:text>");
 
 #======================================================================
 # 2.11 Appendices
@@ -431,10 +431,10 @@ DefMacro('\tablecomments{}','Note. -- #1');
 # \objectname[catalogid]{text}
 # \dataset[catalogid]{text}
 DefConstructor('\objectname OptionalSemiverbatim Semiverbatim',
-	       "<ltx:text class='objectname'>#1 (catalog #2)</ltx:text>");
+	       "<ltx:text class='ltx_ast_objectname'>#1 (catalog #2)</ltx:text>");
 Let(T_CS('\object'),T_CS('\objectname')); # ???
 DefConstructor('\dataset OptionalSemiverbatim Semiverbatim',
-	       "<ltx:text class='dataset'>#1 (catalog #2)</ltx:text>");
+	       "<ltx:text class='ltx_ast_dataset'>#1 (catalog #2)</ltx:text>");
 
 #======================================================================
 # 2.17.2 Ionic Species and Chemical Bonds

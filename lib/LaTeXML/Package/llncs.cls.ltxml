@@ -165,7 +165,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
 		   (  %ctr,
 		      title=>$title,
 		      titlefont=>$title->getFont,
-		      class=>CleanIndexKey($thmset)  ); },
+		      class=>'ltx_'.CleanIndexKey($thmset)  ); },
 		 scope => 'global');
 });
 

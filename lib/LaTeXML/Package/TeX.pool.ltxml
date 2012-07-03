@@ -2577,7 +2577,7 @@ sub equationgroupJoinRows {
     my $tr = $document->openElementAt($branch,'ltx:tr');
 ###    my @cells = $document->getChildElements($eq);
     my @cells = $document->findnodes('ltx:_Capture_',$eq);
-    $tr->setAttribute(class=>'lefteqn')
+    $tr->setAttribute(class=>'ltx_lefteqn')
       if ($cells[0]->getAttribute('class')||'') =~ /\blefteqn\b/;
     foreach my $cell (@cells){
       addColumnToMathFork($document,$main,$tr,$cell); }
@@ -3424,9 +3424,9 @@ DefConstructor('\centerline{}',sub {
 sub alignLine {
   my($document,$line,$alignment)=@_;
   if($document->isOpenable('ltx:p')){
-    $document->insertElement('ltx:p',$line,class=>$alignment); }
+    $document->insertElement('ltx:p',$line,class=>'ltx_'.$alignment); }
   elsif($document->isOpenable('ltx:text')){
-    $document->insertElement('ltx:text',$line,class=>$alignment);
+    $document->insertElement('ltx:text',$line,class=>'ltx_'.$alignment);
     $document->insertElement('ltx:break');  }
   else {
     $document->absorb($line); }}
@@ -4737,7 +4737,7 @@ DefConstructor('\@XMRef{}',"<ltx:XMRef idref='#1'/>",
 		else {
 		   $whatsit->getDefinition->invocation($id); }});
 
-DefConstructor('\@ERROR{}{}', "<ltx:ERROR class='#1'>#2</ltx:ERROR>");
+DefConstructor('\@ERROR{}{}', "<ltx:ERROR class='ltx_#1'>#2</ltx:ERROR>");
 
 #**********************************************************************
 DefConstructorI('\WildCard', undef,"<_WildCard_/>");
@@ -4854,7 +4854,7 @@ sub addClass {
     else {
       $node->setAttribute(class=>$class); }}}
 
-DefConstructor('\@ADDCLASS{}',sub {
+DefConstructor('\@ADDCLASS Semiverbatim',sub {
   addClass($_[0]->getElement,ToString($_[1])); });
 
 sub setAlignOrClass {

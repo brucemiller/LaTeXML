@@ -69,7 +69,7 @@ DefEnvironment('{biblist}',"<ltx:biblist>#body</ltx:biblist>");
 # Other Defns (presumably from textcmds?)
 
 DefConstructor('\MR{}',
-	       "<ltx:ref href='#href' class='mr'>MathReviews</ltx:ref>",
+	       "<ltx:ref href='#href' class='ltx_mr'>MathReviews</ltx:ref>",
 	       properties=>sub{
 		 my $mr = ToString($_[1]);
 		 # Patch up old-style MathReviews numbers

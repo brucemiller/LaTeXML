@@ -143,7 +143,7 @@ Let(T_CS('\endtoc'),T_CS('\relax'));
 NewCounter('theorem', 'document', idprefix => "Thm");
 
 DefConstructor('\proclaim{} Until:\endproclaim',
-	       "<ltx:theorem class='proclaim' xml:id='#id' refnum='#refnum'>"
+	       "<ltx:theorem class='ltx_proclaim' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title>#1</ltx:title>"
 	       .  "#2"
 	       ."</ltx:theorem>",
@@ -164,7 +164,7 @@ DefMacro('\definitionfont','\rm');
 # Is there nothing about \definitionname (& \remarkname, \examplename, etc?)
 DefMacroI('\definitionname',undef,'Definition');
 DefConstructor('\definition Undigested DigestUntil:\enddefinition',
-	       "<ltx:theorem class='definition' xml:id='#id' refnum='#refnum'>"
+	       "<ltx:theorem class='ltx_definition' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#2"
 	       ."</ltx:theorem>",
@@ -178,7 +178,7 @@ Let(T_CS('\enddefinition'),T_CS('\relax'));
 DefMacro('\remarkfont','\rm');
 DefMacroI('\remarkname',undef,'Remark');
 DefConstructor('\remark Undigested DigestUntil:\endremark',
-	       "<ltx:theorem class='remark' xml:id='#id' refnum='#refnum'>"
+	       "<ltx:theorem class='ltx_remark' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#2"
 	       ."</ltx:theorem>",
@@ -189,7 +189,7 @@ DefConstructor('\remark Undigested DigestUntil:\endremark',
 Let(T_CS('\endremark'),T_CS('\relax'));
 
 DefConstructor('\example Undigested DigestUntil:\endexample',
-	       "<ltx:theorem class='example' xml:id='#id' refnum='#refnum'>"
+	       "<ltx:theorem class='ltx_example' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#2"
 	       ."</ltx:theorem>",
@@ -202,7 +202,7 @@ Let(T_CS('\endexample'),T_CS('\relax'));
 
 DefMacroI('\demonstrationname',undef,'Demonstration');
 DefConstructor('\demo Undigested DigestUntil:\enddemo',
-	       "<ltx:theorem class='demonstration' xml:id='#id' refnum='#refnum'>"
+	       "<ltx:theorem class='ltx_demonstration' xml:id='#id' refnum='#refnum'>"
 	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       .  "#2"
 	       ."</ltx:theorem>",
@@ -378,7 +378,8 @@ sub ppunbox {
 sub commaunbox {
   ppunbox(',','\space',$_[0],undef); }
 
-DefConstructor('\@bibitem@field{}{}', "<ltx:text class='#1' _noautoclose='1'>#2</ltx:text>");
+DefConstructor('\@bibitem@field{}{}', "<ltx:text class='#class' _noautoclose='1'>#2</ltx:text>",
+	      property=>{ class=>sub { 'ltx_'.ToString($_[1]); }});
 DefConstructor('\@bibitem@tag{}', "<ltx:bibtag role='refnum'>#1</ltx:bibtag>");
 
 DefMacro('\@bibfield{} XUntil:\@end@bibfield', sub {

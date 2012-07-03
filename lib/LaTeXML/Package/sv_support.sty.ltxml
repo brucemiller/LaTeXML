@@ -203,7 +203,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
 		   (  %ctr,
 		      title=>$title,
 		      titlefont=>$title->getFont,
-		      class=>CleanIndexKey($thmset)  ); },
+		      class=>'ltx_'.CleanIndexKey($thmset)  ); },
 		 scope => 'global');
 });
 
@@ -248,7 +248,7 @@ EOTeX
 DefEnvironment('{theopargself*}','#body'); # ?
 DefEnvironment('{theopargself}','#body');  # ?
 
-DefEnvironment('{translation}{}',"<ltx:quote class='translation' lang='#1'>#body</ltx:quote>");
+DefEnvironment('{translation}{}',"<ltx:quote class='ltx_translation' lang='#1'>#body</ltx:quote>");
 
 #======================================================================
 DefConstructor('\qed',

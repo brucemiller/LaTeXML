@@ -307,7 +307,7 @@ DefPrimitiveI('\bbbz',  undef,"\x{2124}");
 # Astronomical objects
 
 DefConstructor('\object Semiverbatim',
-	       "<ltx:text class='objectname'>#1</ltx:text>");
+	       "<ltx:text class='ltx_ast_objectname'>#1</ltx:text>");
 DefMacro('\listofobjects','');
 DefMacro('\listobjectname','List of Objects');
 
