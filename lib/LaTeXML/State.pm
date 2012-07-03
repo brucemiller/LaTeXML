@@ -148,7 +148,9 @@ sub getModel   { $_[0]->{model}; }
 #======================================================================
 
 # Lookup & assign a general Value
-sub lookupValue { $_[0]->{table}{value}{$_[1]}[0]; }
+# [Note that the more direct $_[0]->{table}{value}{$_[1]}[0]; works, but creates entries
+# this could concievably cause space issues, but timing doesn't show improvements this way]
+sub lookupValue { my $e=$_[0]->{table}{value}{$_[1]}; $e && $$e[0]; }
 sub assignValue { assign_internal($_[0],'value',$_[1], $_[2],$_[3]); }
 
 sub pushValue {
@@ -188,19 +190,19 @@ sub isValueBound {
 
 #======================================================================
 # Lookup & assign a character's Catcode
-sub lookupCatcode { $_[0]->{table}{catcode}{$_[1]}[0]; }
+sub lookupCatcode { my $e=$_[0]->{table}{catcode}{$_[1]}; $e && $$e[0]; }
 sub assignCatcode { assign_internal($_[0],'catcode',$_[1], $_[2],$_[3]); }
 
 # The following rarely used.
-sub lookupMathcode { $_[0]->{table}{mathcode}{$_[1]}[0]; }
+sub lookupMathcode { my $e=$_[0]->{table}{mathcode}{$_[1]}; $e && $$e[0]; }
 sub assignMathcode { assign_internal($_[0],'mathcode',$_[1], $_[2],$_[3]); }
-sub lookupSFcode   { $_[0]->{table}{sfcode}{$_[1]}[0]; }
+sub lookupSFcode   { my $e=$_[0]->{table}{sfcode}{$_[1]}; $e && $$e[0]; }
 sub assignSFcode   { assign_internal($_[0],'sfcode',$_[1], $_[2],$_[3]); }
-sub lookupLCcode   { $_[0]->{table}{lccode}{$_[1]}[0]; }
+sub lookupLCcode   { my $e=$_[0]->{table}{lccode}{$_[1]}; $e && $$e[0]; }
 sub assignLCcode   { assign_internal($_[0],'lccode',$_[1], $_[2],$_[3]); }
-sub lookupUCcode   { $_[0]->{table}{uccode}{$_[1]}[0]; }
+sub lookupUCcode   { my $e=$_[0]->{table}{uccode}{$_[1]}; $e && $$e[0]; }
 sub assignUCcode   { assign_internal($_[0],'uccode',$_[1], $_[2],$_[3]); }
-sub lookupDelcode  { $_[0]->{table}{delcode}{$_[1]}[0]; }
+sub lookupDelcode  { my $e=$_[0]->{table}{delcode}{$_[1]}; $e && $$e[0]; }
 sub assignDelcode  { assign_internal($_[0],'delcode',$_[1], $_[2],$_[3]); }
 
 #======================================================================
@@ -212,11 +214,14 @@ sub assignDelcode  { assign_internal($_[0],'delcode',$_[1], $_[2],$_[3]); }
 sub lookupMeaning {
   my($self,$token)=@_;
   # NOTE: Inlined token accessors!!!
-  ($token->isExecutable ? $$self{table}{meaning}{$token->getCSName}[0] : $token); }
+  if($token->isExecutable){
+    my $e=$$self{table}{meaning}{$token->getCSName}; $e && $$e[0]; }
+  else { $token; }}
 
 sub lookupMeaning_internal {
   my($self,$token)=@_;
-  $$self{table}{meaning}{$token->getCSName}[0]; }
+  my $e=$$self{table}{meaning}{$token->getCSName};
+  $e && $$e[0]; }
 
 sub assignMeaning {
   my($self,$token,$definition,$scope)=@_;
@@ -238,17 +243,6 @@ sub installDefinition {
       if(($s eq "Anonymous String") || ($s =~ /\.(tex|bib)$/)){
 	Info(":override:$cs Ignoring redefinition of $cs in $s\n");
 	return; }}}
-  # Or if we're inhibitting all redefinitons, quietly ignore the redefinition
-###  if($self->lookupValue('INHIBIT_REDEFINITIONS') && $$self{table}{meaning}{$cs}[0]){
-  my $defn;
-  # # NOTE that this really isn't quite the right level of inhibit.
-  # # Some cs are intended to be modified; others are probably permmissible too ....
-  # if($self->lookupValue('INSIDE_STYLE') && ($self->lookupValue('INCLUDE_STYLES') eq 'tentative')
-  #    && ($defn=$self->{table}{meaning}{$cs}[0]) && $defn->isaDefinition){
-  #   if(! $self->lookupValue('INHIBIT_REDEFINITIONS_WARNED')){
-  #     $self->assignValue(INHIBIT_REDEFINITIONS_WARNED=>1,'global');
-  #     Info(":override:all Ignoring redefinitions $cs ..."); }
-  #   return; }
   assign_internal($self,'meaning',$cs => $definition, $scope); }
 
 #======================================================================
@@ -292,7 +286,6 @@ sub pushDaemonFrame {
 sub daemon_copy {
   my($ob)=@_;
   if(ref $ob eq 'HASH'){
-###    { map( ($_ => daemon_copy($$ob{$_})), keys %$ob) }; }
     my %hash = map( ($_ => daemon_copy($$ob{$_})), keys %$ob);
     \%hash; }
   elsif(ref $ob eq 'ARRAY'){
