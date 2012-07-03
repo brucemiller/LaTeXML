@@ -352,9 +352,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
     <xsl:param name="ncolumns"/>
     <xsl:choose>
       <xsl:when test="ltx:MathFork/ltx:MathBranch[1]/ltx:tr">
-	<!-- What class information were we obtaining from the tr???
-	     class="{concat('baseline ',f:classes(.),' ',
-		   f:classes(ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]))}" -->
+	<!-- What class information were we obtaining from the tr??? -->
 	<tr>
 	  <xsl:call-template name="add_id"/>
 	  <xsl:call-template name="add_attributes">
