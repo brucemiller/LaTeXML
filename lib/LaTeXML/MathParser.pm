@@ -477,7 +477,7 @@ sub failureReport {
     if(! $LaTeXML::MathParser::WARNED){
       $LaTeXML::MathParser::WARNED=1;
       my $box = $document->getNodeBox($LaTeXML::MathParser::XNODE);
-      $loc = "In formula \"".ToString($box)." from ".$box->getLocator."\n"; }
+      $loc = "In formula \"".ToString($box)." from ".($box->getLocator||"[??]")."\n"; }
     $unparsed =~ s/^\s*//;
     my @rest=split(/ /,$unparsed);
     my $pos = scalar(@nodes) - scalar(@rest);
