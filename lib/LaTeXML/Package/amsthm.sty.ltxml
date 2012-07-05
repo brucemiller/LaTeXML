@@ -126,8 +126,9 @@ if(LookupValue('2.09_COMPATIBILITY')){
 #  \def\rom{\textup}
 
   # Strangely, we need to undefine these... ?
-  Let(T_CS('\proof'),T_CS('\relax'));
-  Let(T_CS('\endproof'),T_CS('\relax'));
+  # [well, don't even let them to \relax, then!]
+##  Let(T_CS('\proof'),T_CS('\relax'));
+##  Let(T_CS('\endproof'),T_CS('\relax'));
   # {pf} & {pf&} env's are already defined in ams_support
 }
 else {
