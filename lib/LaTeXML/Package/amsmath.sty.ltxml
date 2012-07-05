@@ -408,6 +408,7 @@ sub rearrangeLoneAMSAligned {
 	  my @cells;
 	  foreach (0,1){	# Add the lhs & rhs, separately.
 	    my $cell = shift(@mtds);
+	    next unless $cell;	# alignment not in pairs? Maybe we shouldn't even get this far?
 	    my $td = $document->openElementAt($branch,'ltx:td',
 					      align=>$cell->getAttribute('align'));
 	    if(my $stuff = $cell->firstChild){
