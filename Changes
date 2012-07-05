@@ -1,3 +1,22 @@
+0.8.0 !!!!!
+
+0.7.9xx 2012-06-02
+     - MathFork updates
+     - use LaTeXML.catalog more consistently;
+       define URN's for RelaxNG modules and XSLT modules
+     -
+
+0.7.9xx 2011-06-01
+     - various changes and small completions to LaTeX that help to
+       process raw TeX style & definition files from the LaTeX distribution.
+     - Support LaTeX's input encoding mechanism by finding, reading and 
+       implementing the encoding definitions
+     - Support LaTeX's fontencoding mechanism and TeX's \char, etal,
+       by implementing FontMap's that map input codepoints to unicode.
+       Also read in font encoding definitions from the LaTeX distribution
+     - Support babel by implementing core support and reading individual
+       language definitions from the LaTeX distribution.
+
 0.7.x 2011-03-16
      - Bindings for floatfig, floatflt, JHEP,JHEP2,JHEP3
      - improved model, attributes and conversion for floating objects
@@ -37,9 +56,10 @@
      - avoid introducing doubled slashes in pathnames, so that (eventually) might
        use the TeX standard interpretation that treats them as recursive wildcard.
        (that is, expandable directories)
-     - Localization; remove assumed names & symbols from formatting titles, sections, etc.
+     - INCOMPATIBLE: Localization; remove assumed names & symbols from formatting titles, sections, etc.
        Let style files determine prefixes or formatting of reference numbers.
        Put these within the ltx:title (eg.) and wrapped in ltx:tag.
+       This is incompatible as different attributes are used, and ltx:tag is used to contain the reference number.
      - more flexible TOC creation, support for list-of-figures and similar.
      - Fuller support for seealso, heuristics to try to connect the terms to actual entries.
      - Safer encode/decode of objects being stored in the ObjectDB.
