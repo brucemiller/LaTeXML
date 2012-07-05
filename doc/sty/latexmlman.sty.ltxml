@@ -45,7 +45,10 @@ DefConstructor('\pod{}', "<ltx:ref href='#href' labelref='#ref'>#1</ltx:ref>",
 		   my $url = "http://search.cpan.org/search?query=$name&mode=module";
 		   $_[1]->setProperty(href=>$url); }});
 
+#======================================================================
+DefEnvironment('{advanced}',"<ltx:paragraph class='advanced'>#body</ltx:paragraph>");
 
+#======================================================================
 DefEnvironment('{moduledescription}',
 	       "<ltx:description  xml:id='#id' class='moduledescription'>#body</ltx:description>",
 	       properties=>sub { beginItemize('description'); });

@@ -122,6 +122,14 @@ we'll try to put `programming' oriented material (Perl, \TeX) in a typewriter fo
 \texttt{like this}; \XML\ material will be put in a sans-serif face
 \textsf{like this}.
 
+\begin{advanced}
+In the interests of at least attempting to describe everything,
+there will be a lot of material that will not make much sense until
+you have dabbled quite a bit in \LaTeXML's internals.
+Such `advanced' or dangerous material will be presented like this paragraph
+to make it easier to skip over.
+\end{advanced}
+
 %%%======================================================================
 \chapter{Using \LaTeXML}\label{usage}
 The main commands provided by the \LaTeXML\ system are
@@ -186,6 +194,7 @@ If the source file has an explicit extension of \texttt{.bib},
 or if the \cmd{--bibtex} option is used, the source will be
 treated as a \BibTeX\ database.
 
+\begin{advanced}
 Note that the timing is different than with \BibTeX\ and \LaTeX.
 Normally, \BibTeX\ simply selects and formats a subset of the
 bibliographic entries according to the \texttt{.aux} file;
@@ -198,6 +207,7 @@ One implication is that latexml does not know about packages
 included in the main document; if the bibliography uses
 macros defined in such packages, the packages must be explicitly
 specified using the \cmd{--preload} option.
+\end{advanced}
 
 \paragraph{Useful Options}
 The number and detail of progress and debugging messages printed

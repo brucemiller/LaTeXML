@@ -166,7 +166,7 @@ Anonymous checkout is available using the command:
 \end{lstlisting}
 After checkout, the installation is similar to \ref{install.source}:
 \begin{lstlisting}[style=shell]
-   cd LaTeXML
+   cd LaTeXML/trunk
    perl Makefile.PL
    make
    make test
@@ -217,6 +217,13 @@ yum install perl-Parse-RecDescent \
 \end{lstlisting}
 Afterwards, you may use the general procedure for
 \ref{install.source} or \ref{install.svn}.
+Note that if the command to make the Makefile fails with
+``Can't locate ExtUtils/MakeMaker.pm\ldots'' or warns that Test::Simple is missing,
+you will need to install them as follows:
+\begin{lstlisting}[style=shell]
+yum install perl-ExtUtils-MakeMaker perl-Test-Simple
+\end{lstlisting}
+
 
 \subsubsection[Older Enterprise systems]{Older Enterprise-style RPM-based systems (RedHat, Centos)}\label{install.enterprise}
 For older Red Hat Enterprise Linux 5 and derivatives (Centos, Scientific Linux),

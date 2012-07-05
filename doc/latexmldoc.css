@@ -122,3 +122,19 @@ dl.description.patterndescription dt
    font-weight:normal; }
 
 dl.description dd dl.description { clear:both; }
+
+.advanced:before {
+    position:absolute;
+    color:red;
+    font-size:150%;
+    content:"!!" }
+
+/*
+.advanced {
+   border: 3px double #B0B0B0; }
+*/
+.advanced .para {
+   margin-left:2em;
+   margin-right:2em; 
+   border: 1px solid #FF0000;
+}

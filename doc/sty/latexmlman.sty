@@ -63,6 +63,14 @@
 }
 \usepackage{graphicx}
 
+%======================================================================
+% Containers for advanced material, examples, ...
+
+% Sort of a "double bend" thing?
+\newenvironment{advanced}{\textcolor{red}{\large !!}}{}
+
+%======================================================================
+% Phrase-level markup semantic or otherwise
 
 \def\perlfont{\ttfamily}
 \def\shellfont{\ttfamily}
@@ -90,6 +98,7 @@
      \href{http://search.cpan.org/search?query=#1&mode=module}{{\perlfont #1}}%
   \fi\fi\fi\fi}}
 
+
 \newcommand{\ltxcmd}[1]{\htmlref{{\latexfont #1}}{#1}}
 \newcommand{\ltxpod}[1]{\htmlref{{\perlfont #1}}{LaTeXML::#1}}
 
@@ -101,6 +110,7 @@
 
 \newcommand{\varfile}[2][]{{\shellfont \textit{#2}\if.#1.\else.#1\fi}}
 \newcommand{\cs}[1]{{\latexfont $\backslash$#1}}
+
 %======================================================================
 % For generated documentation of Schema.
 
