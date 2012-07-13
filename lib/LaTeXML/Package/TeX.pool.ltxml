@@ -2701,29 +2701,43 @@ sub isEmpty {
 # ##print STDERR "Box ".Stringify($box)." is empty: ".($is ? "yes":"no")."\n";
 #   $is;
 # }
-  
+
 sub scriptHandler {
   my($stomach,$op)=@_;
   my $gullet = $stomach->getGullet;
   $gullet->skipSpaces;
   my $style = LookupValue('mathstyle'); # Bump the math style smaller.
+  my @putback = ();
+  my $nscripts=0;
   if(defined $style){
-    my $cs = '\@@POST'.$op;
-    # Check if preceding box, if any, is empty {}
-    my $prev = $LaTeXML::LIST[$#LaTeXML::LIST];
-    while($prev && (ref $prev eq 'LaTeXML::Whatsit') && $prev->getProperty('isSpace')){
-      pop(@LaTeXML::LIST);
-      $prev = $LaTeXML::LIST[$#LaTeXML::LIST]; }
-    if(! $prev){		# No box at all?
-      $cs = '\@@FLOATING'.$op; }
-    elsif(isEmpty($prev)){	# Or empty (remove it)
-      pop(@LaTeXML::LIST);
-      $cs = '\@@FLOATING'.$op; }
-    elsif((ref $prev eq 'LaTeXML::Whatsit') # Or previous sub/supscript.
-	  && (($prev->getDefinition eq $STATE->lookupMeaning(T_CS('\@@FLOATINGSUPERSCRIPT')))
-	      || ($prev->getDefinition eq $STATE->lookupMeaning(T_CS('\@@FLOATINGSUBSCRIPT'))))){
-      $cs = '\@@FLOATING'.$op; }
-
+    my $cs = '\@@FLOATING'.$op;
+    # Check preceding boxes to determine possible attachment (floating vs post),
+    # and whether there are conflicting preceding scripts, which is an error
+    # Note that this analysis has to be done now (or sometime like it) before grouping lists go away;
+    # Parsing is too late!
+    while(my $prev = pop(@LaTeXML::LIST)){
+      if((ref $prev eq 'LaTeXML::Whatsit') && $prev->getProperty('isSpace')){
+	unshift(@putback,$prev); # put back? assuming it will add rspace to previous???
+	next; }
+      elsif(isEmpty($prev)){	# If empty, the script floats, can't conflict, but don't put back
+	last; }
+      elsif((ref $prev eq 'LaTeXML::Whatsit') # Or previous sub/supscript. (careful w/alias in getCSName!)
+	    && ($prev->getDefinition->getCS->getCSName =~ /^\\@@(FLOATING|POST)(SUBSCRIPT|SUPERSCRIPT)$/)){
+	my($pos,$pop)=($1,$2);
+	unshift(@putback,$prev);
+	if($pop eq $op){	# Whoops, duplicated; better use FLOATING
+	  Error("Double ".lc($pop));
+	  $cs = '\@@FLOATING'.$op;
+	  last; }
+	else {
+	  $cs = '\@@POST'.$op; } # Else, is OK (so far) assume POST (or same as previous?)
+	last if ++$nscripts > 1; }
+      else {
+	# We found something "normal", so assume we'll attach to it, and we're done.
+	unshift(@putback,$prev);
+	$cs = '\@@POST'.$op;
+	last; }}
+    push(@LaTeXML::LIST,@putback);
 
     AssignValue(mathstyle=>$scriptstylemap{$style});
     # Now, get following boxes
