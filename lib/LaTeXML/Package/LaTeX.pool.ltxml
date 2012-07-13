@@ -3260,24 +3260,6 @@ Tag('ltx:g', afterClose=> sub {
 #======================================================================
 # Text styles.
 
-# What about \f@family, etc....?
-# These are not allowed in math.
-DefPrimitiveI('\mdseries', undef, undef,  forbidMath=>1, font=>{series=>'medium'});
-DefPrimitiveI('\bfseries', undef, undef,  forbidMath=>1, font=>{series=>'bold'});
-
-DefPrimitiveI('\rmfamily', undef, undef,  forbidMath=>1, font=>{family=>'serif'});
-DefPrimitiveI('\sffamily', undef, undef,  forbidMath=>1, font=>{family=>'sansserif'});
-DefPrimitiveI('\ttfamily', undef, undef,  forbidMath=>1, font=>{family=>'typewriter'});
-
-DefPrimitiveI('\upshape',  undef, undef, forbidMath=>1, font=>{shape=>'upright'});
-DefPrimitiveI('\itshape',  undef, undef, forbidMath=>1, font=>{shape=>'italic'});
-DefPrimitiveI('\slshape',  undef, undef, forbidMath=>1, font=>{shape=>'slanted'});
-DefPrimitiveI('\scshape',  undef, undef, forbidMath=>1, font=>{shape=>'smallcaps'});
-
-DefPrimitiveI('\normalfont',    undef, undef, font=>{family=>'serif', series=>'medium', shape=>'upright'});
-DefPrimitiveI('\verbatim@font', undef, undef, font=>{family=>'typewriter', series=>'medium', shape=>'upright'});
-Let(T_CS('\reset@font'),T_CS('\normalfont'));
-
 DefMacroI('\rmdefault',undef,'cmr');
 DefMacroI('\sfdefault',undef,'cmss');
 DefMacroI('\ttdefault',undef,'cmtt');
@@ -3295,50 +3277,59 @@ DefMacroI('\shapedefault',undef,'\updefault');
 Let(T_CS('\mediumseries'),T_CS('\mdseries'));
 Let(T_CS('\normalshape'),T_CS('\upshape'));
 
-# These should be looking up from the TeX tables!
-DefConstructor('\fontfamily{}','',
-	       afterDigest=>sub { 
-		 my $family = ToString($_[1]->getArg(1));
-		 if(my $fam = lookupFontFamily($family)){ MergeFont(%$fam); }
-		 else { Info(":unexpected:$family Unrecognized font family."); }});
-DefConstructor('\fontseries{}','',
-	       afterDigest=>sub { 
-		 my $series = ToString($_[1]->getArg(1));
-		 if(my $ser = lookupFontSeries($series)){ MergeFont(%$ser); }
-		 else { Info(":unexpected:$series Unrecognized font series."); }});
-DefConstructor('\fontshape{}','',
-	       afterDigest=>sub { 
-		 my $shape = ToString($_[1]->getArg(1));
-		 if(my $sh = lookupFontShape($shape)){ MergeFont(%$sh); }
-		 else { Info(":unexpected:$shape Unrecognized font shape."); }});
+# ? DefMacro('\f@encoding','cm');
+DefMacro('\f@family','cm');
+DefMacro('\f@series','');
+DefMacro('\f@shape','');
 
-DefMacroI('\selectfont',    undef, Tokens());
+# These do NOT immediately effect the font!
+DefMacro('\fontfamily{}','\edef\f@family{#1}');
+DefMacro('\fontseries{}','\edef\f@series{#1}');
+DefMacro('\fontshape{}','\edef\f@shape{#1}');
+
+# For fonts not allowed in math!!!
+DefPrimitive('\not@math@alphabet@@ {}',sub {
+  if($STATE->lookupValue('IN_MATH')){
+    my $c = ToString($_[1]);
+    Warn(":unexpected:$c Command $c invalid in math mode"); }
+  return; });
+
+# These DO immediately effect the font!
+DefMacroI('\mdseries',undef,'\not@math@alphabet@@\mddefault\fontseries{\mddefault}\selectfont');
+DefMacroI('\bfseries',undef,'\not@math@alphabet@@\bfdefault\fontseries{\bfdefault}\selectfont');
+
+DefMacroI('\rmfamily',undef,'\not@math@alphabet@@\rmdefault\fontfamily{\rmdefault}\selectfont');
+DefMacroI('\sffamily',undef,'\not@math@alphabet@@\sfdefault\fontfamily{\sfdefault}\selectfont');
+DefMacroI('\ttfamily',undef,'\not@math@alphabet@@\ttdefault\fontfamily{\ttdefault}\selectfont');
+
+DefMacroI('\upshape',undef,'\not@math@alphabet@@\updefault\fontshape{\updefault}\selectfont');
+DefMacroI('\itshape',undef,'\not@math@alphabet@@\itdefault\fontshape{\itdefault}\selectfont');
+DefMacroI('\slshape',undef,'\not@math@alphabet@@\sldefault\fontshape{\sldefault}\selectfont');
+DefMacroI('\scshape',undef,'\not@math@alphabet@@\scdefault\fontshape{\scdefault}\selectfont');
+
+DefMacroI('\normalfont',undef,
+	  '\fontfamily{\rmdefault}\fontseries{\mddefault}\fontshape{\updefault}\selectfont');
+DefMacroI('\verbatim@font',undef,
+	  '\fontfamily{\ttdefault}\fontseries{\mddefault}\fontshape{\updefault}\selectfont');
+
+Let(T_CS('\reset@font'),T_CS('\normalfont'));
+
+DefPrimitive('\selectfont',sub { 
+  my $family = ToString(Expand(T_CS('\f@family')));
+  my $series = ToString(Expand(T_CS('\f@series')));
+  my $shape  = ToString(Expand(T_CS('\f@shape')));
+  if(my $sh = lookupFontFamily($family)){ MergeFont(%$sh); }
+  else { Info(":unexpected:$family Unrecognized font family $family."); }
+  if(my $sh = lookupFontSeries($series)){ MergeFont(%$sh); }
+  else { Info(":unexpected:$series Unrecognized font series $series."); }
+  if(my $sh = lookupFontShape($shape)){ MergeFont(%$sh); }
+  else { Info(":unexpected:$shape Unrecognized font shape $shape."); }
+});
+
 DefMacro('\usefont{}{}{}{}{}',
 	 '\fontencoding{#1}\fontfamily{#2}\fontseries{#3}\fontshape{#4}\selectfont');
  
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
-# DefConstructor('\textmd{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-# 	       bounded=>1, font=>{series=>'medium'});
-# DefConstructor('\textbf{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-# 	       bounded=>1, font=>{series=>'bold'});
-# DefConstructor('\textrm{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-# 	       bounded=>1, font=>{family=>'serif'});
-# DefConstructor('\textsf{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-# 	       bounded=>1, font=>{family=>'sansserif'});
-# DefConstructor('\texttt{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-# 	       bounded=>1, font=>{family=>'typewriter'});
-
-# DefConstructor('\textup{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-# 	       bounded=>1, font=>{shape=>'upright'});
-# DefConstructor('\textit{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-# 	       bounded=>1, font=>{shape=>'italic'});
-# DefConstructor('\textsl{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-# 	       bounded=>1, font=>{shape=>'slanted'});
-# DefConstructor('\textsc{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-# 	       bounded=>1, font=>{shape=>'smallcaps'});
-# DefConstructor('\textnormal{}', "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode=>'text',
-# 	       bounded=>1, font=>{family=>'serif',series=>'medium',shape=>'upright'});
-
 DefConstructor('\textmd@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
 	       bounded=>1, font=>{series=>'medium'},alias=>'\textmd');
 DefConstructor('\textbf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
