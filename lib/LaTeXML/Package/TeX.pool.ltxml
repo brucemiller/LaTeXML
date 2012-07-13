@@ -1324,9 +1324,13 @@ DefPrimitive('\setbox Number SkipMatch:=', sub {
   if(my $token =  LookupValue('afterAssignment')) {
     AssignValue('afterAssignment'=>undef,'global');
     AssignValue('BeforeNextBox'=>$token); }
+  # Save global flag, since we're digesting to get the box content, which resets the flag!
+  # Should afterDigest be responsible for resetting flags?
+  my $scope = $STATE->getPrefix('global') && 'global';
+  $STATE->clearPrefixes;	# before invoke, below; we've saved the only relevant one (global)
   my ($stuff,@rest) = $stomach->invokeToken($stomach->getGullet->readXToken(1));
-  AssignValue('box'.$_[1]->valueOf => $stuff);
-  @rest;});
+  AssignValue('box'.$_[1]->valueOf => $stuff, $scope);
+  @rest; });
 
 DefPrimitive('\box Number', sub {
   my $box = 'box'.$_[1]->valueOf;
@@ -2278,7 +2282,7 @@ DefConstructor('\raise Dimension MoveableBox',
 # \unhbox<8bit>, \unhcopy<8bit>
 DefPrimitive('\unhbox Number',sub {
   my $box = 'box'.$_[1]->valueOf;
-  my $stuff = LookupValue($box); 
+  my $stuff = LookupValue($box);
   AssignValue($box,undef);
   (defined $stuff ? $stuff->unlist : ()); });
 DefPrimitive('\unhcopy Number',sub {
