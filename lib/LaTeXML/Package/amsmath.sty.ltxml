@@ -701,19 +701,19 @@ DefConstructor('\underset{}{}',
 
 DefConstructor('\tfrac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='divide' role='MULOP' fracstyle='#fracstyle'/>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeTFrac, afterDigest =>\&afterTFrac);
 DefConstructor('\dfrac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='divide' role='MULOP' fracstyle='#fracstyle'/>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeDFrac, afterDigest =>\&afterDFrac);
 DefConstructor('\ifrac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='divide' role='MULOP' fracstyle='inline'/>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='inline'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
@@ -721,20 +721,20 @@ DefConstructor('\ifrac{}{}',
 # Section 4.11.2 The \binom, \dbinom, and \tbinom commands
 DefConstructor('\binom{}{}',
 	       "<ltx:XMApp open='(' close=')'>"
-	       . "<ltx:XMTok meaning='binomial' role='STACKED' fracstyle='#fracstyle'/>"
+	       . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
 
 DefConstructor('\tbinom{}{}',
 	       "<ltx:XMApp open='(' close=')'>"
-	       . "<ltx:XMTok meaning='binomial' role='STACKED' fracstyle='#fracstyle'/>"
+	       . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeTFrac, afterDigest =>\&afterTFrac);
 DefConstructor('\dbinom{}{}',
 	       "<ltx:XMApp open='(' close=')'>"
-	       . "<ltx:XMTok meaning='binomial' role='STACKED' fracstyle='#fracstyle'/>"
+	       . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeDFrac, afterDigest =>\&afterDFrac);
@@ -743,7 +743,7 @@ DefConstructor('\dbinom{}{}',
 DefConstructor('\genfrac{}{}{Dimension}{}{}{}',
 	       "<ltx:XMApp open='#open' close='#close'>"
 	       . "<ltx:XMTok ?&IsZero(#3)(role='STACKED')(role='MULOP' meaning='divide')"
-	       .           " thickness='#3' fracstyle='?#4(#4)(#fracstyle)'/>"
+	       .           " thickness='#3' mathstyle='?#4(#4)(#mathstyle)'/>"
 	       . "<ltx:XMArg>#5</ltx:XMArg>"
 	       . "<ltx:XMArg>#6</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -757,7 +757,7 @@ DefConstructor('\genfrac{}{}{Dimension}{}{}{}',
 				  $close = $$entry{char}; }
 				$whatsit->setProperties(open=>$open,
 							close=>$close,
-							fracstyle=>($style eq 'display'
+							mathstyle=>($style eq 'display'
 								    ? $style : 'text')); });
 
 #======================================================================
@@ -768,7 +768,7 @@ DefConstructor('\genfrac{}{}{Dimension}{}{}{}',
 # I've left it to a special case in conversion to pmml.
 DefConstructor('\cfrac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok name='cfrac' fracstyle='#cfracstyle' meaning='continued-fraction'/>"
+	       . "<ltx:XMTok name='cfrac' mathstyle='#mathstyle' meaning='continued-fraction'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg>"
 	       . "<ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -777,7 +777,7 @@ DefConstructor('\cfrac{}{}',
 		 AssignValue(mathstyle=>'text'); },
 	       afterDigest=>sub {
 		 $_[0]->egroup;
-		 $_[1]->setProperties(cfracstyle=>LookupValue('CFRACSTYLE')); });
+		 $_[1]->setProperties(mathstyle=>LookupValue('CFRACSTYLE')); });
 
 AssignValue(CFRACSTYLE=>'display');
 # This should get incorporated into any \cfrac's that are constructed in scope.
@@ -898,10 +898,14 @@ DefConstructor('\sideset{}{}{}', sub {
 #======================================================================
 # Section 7.4 Multiple integral signs
 
-DefMath('\iint', "\x{222C}", meaning=>'double-integral', role=>'INTOP'); # DOUBLE INTEGRAL
-DefMath('\iiint',"\x{222D}", meaning=>'triple-integral', role=>'INTOP'); # TRIPLE INTEGRAL
-DefMath('\iiiint',"\x{2A0C}", meaning=>'quadruple-integral', role=>'INTOP');
-DefMath('\idotsint',"\x{222B}\x{22EF}\x{222B}", meaning=>'multiple-integral', role=>'INTOP');
+DefMath('\iint', "\x{222C}", meaning=>'double-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\iiint',"\x{222D}", meaning=>'triple-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\iiiint',"\x{2A0C}", meaning=>'quadruple-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\idotsint',"\x{222B}\x{22EF}\x{222B}", meaning=>'multiple-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 
 DefMacro('\MultiIntegral{}',sub {
   my($gullet,$n)=@_;

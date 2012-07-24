@@ -43,74 +43,109 @@ DefMath('\circledtimes',    "\x{2297}");
 
 #================================================================================
 # See LaTeX Symbol list, Table 28.
-DefMath('\fint',     "\x{2A0F}", meaning=>'integral', role=>'INTOP');
-DefMath('\fintop',     "\x{2A0F}", meaning=>'integral', role=>'INTOP', scriptpos=>'mid');
-DefMath('\idotsint', "\x{222B}\x{22EF}\x{222B}", meaning=>'multiple-integral', role=>'INTOP');
-DefMath('\idotsintop', "\x{222B}\x{22EF}\x{222B}", meaning=>'multiple-integral', role=>'INTOP', scriptpos=>'mid');
-DefMath('\iint',     "\x{222C}", meaning=>'double-integral', role=>'INTOP');
-DefMath('\iintop',   "\x{222C}", meaning=>'double-integral', role=>'INTOP', scriptpos=>'mid');
-DefMath('\iiint',    "\x{222D}", meaning=>'triple-integral', role=>'INTOP');
-DefMath('\iiintop',  "\x{222D}", meaning=>'triple-integral', role=>'INTOP', scriptpos=>'mid');
-DefMath('\iiiint',   "\x{2A0C}", meaning=>'quadruple-integral', role=>'INTOP');
-DefMath('\iiiintop', "\x{2A0C}", meaning=>'quadruple-integral', role=>'INTOP', scriptpos=>'mid');
+DefMath('\fint',     "\x{2A0F}", meaning=>'integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\fintop',     "\x{2A0F}", meaning=>'integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\idotsint', "\x{222B}\x{22EF}\x{222B}", meaning=>'multiple-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\idotsintop', "\x{222B}\x{22EF}\x{222B}", meaning=>'multiple-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\iint',     "\x{222C}", meaning=>'double-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\iintop',   "\x{222C}", meaning=>'double-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\iiint',    "\x{222D}", meaning=>'triple-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\iiintop',  "\x{222D}", meaning=>'triple-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\iiiint',   "\x{2A0C}", meaning=>'quadruple-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\iiiintop', "\x{2A0C}", meaning=>'quadruple-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 
 # Following made with combining clockwise or counter clockwise overlay
 DefMath('\oiiintclockwise',        "\x{222D}\x{20D9}",
-	meaning=>'triple-clockwise-contour-integral',role=>'INTOP');
+	meaning=>'triple-clockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 DefMath('\oiiintclockwiseop',        "\x{222D}\x{20D9}",
-	meaning=>'triple-clockwise-contour-integral',role=>'INTOP', scriptpos=>'mid');
+	meaning=>'triple-clockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 DefMath('\varoiiintclockwise',     "\x{222D}\x{20D9}",
-	meaning=>'triple-clockwise-contour-integral',role=>'INTOP');
+	meaning=>'triple-clockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 DefMath('\varoiiintclockwiseop',     "\x{222D}\x{20D9}",
-	meaning=>'triple-clockwise-contour-integral',role=>'INTOP', scriptpos=>'mid');
+	meaning=>'triple-clockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 DefMath('\oiiintctrclockwise',     "\x{222D}\x{20DA}",
-	meaning=>'triple-counterclockwise-contour-integral',role=>'INTOP');
+	meaning=>'triple-counterclockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 DefMath('\oiiintctrclockwiseop',     "\x{222D}\x{20DA}",
-	meaning=>'triple-counterclockwise-contour-integral',role=>'INTOP', scriptpos=>'mid');
+	meaning=>'triple-counterclockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 DefMath('\varoiiintctrclockwise',  "\x{222D}\x{20DA}",
-	meaning=>'triple-counterclockwise-contour-integral',role=>'INTOP');
+	meaning=>'triple-counterclockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 DefMath('\varoiiintctrclockwiseop',  "\x{222D}\x{20DA}",
-	meaning=>'triple-counterclockwise-contour-integral',role=>'INTOP', scriptpos=>'mid');
+	meaning=>'triple-counterclockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 
 DefMath('\oiiint',                 "\x{2230}",
-	meaning=>'triple-contour-integral', role=>'INTOP');
+	meaning=>'triple-contour-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 DefMath('\oiiintop',                 "\x{2230}",
-	meaning=>'triple-contour-integral', role=>'INTOP', scriptpos=>'mid');
+	meaning=>'triple-contour-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 DefMath('\oiintclockwise',         "\x{222C}\x{20D9}",
-	meaning=>'double-clockwise-contour-integral',role=>'INTOP');
+	meaning=>'double-clockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 DefMath('\oiintclockwiseop',         "\x{222C}\x{20D9}",
-	meaning=>'double-clockwise-contour-integral',role=>'INTOP', scriptpos=>'mid');
+	meaning=>'double-clockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 DefMath('\varoiintclockwise',      "\x{222C}\x{20D9}",
-	meaning=>'double-clockwise-contour-integral',role=>'INTOP');
+	meaning=>'double-clockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 DefMath('\varoiintclockwiseop',      "\x{222C}\x{20D9}",
-	meaning=>'double-clockwise-contour-integral',role=>'INTOP', scriptpos=>'mid');
+	meaning=>'double-clockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 DefMath('\oiintctrclockwise',      "\x{222C}\x{20DA}",
-	meaning=>'double-counterclockwise-contour-integral',role=>'INTOP');
+	meaning=>'double-counterclockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 DefMath('\oiintctrclockwiseop',      "\x{222C}\x{20DA}",
-	meaning=>'double-counterclockwise-contour-integral',role=>'INTOP', scriptpos=>'mid');
+	meaning=>'double-counterclockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 DefMath('\varoiintctrclockwise',   "\x{222C}\x{20DA}",
-	meaning=>'double-counterclockwise-contour-integral',role=>'INTOP');
+	meaning=>'double-counterclockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 DefMath('\varoiintctrclockwiseop',   "\x{222C}\x{20DA}",
-	meaning=>'double-counterclockwise-contour-integral',role=>'INTOP', scriptpos=>'mid');
+	meaning=>'double-counterclockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 
-DefMath('\oiint',                "\x{222F}", meaning=>'double-contour-integral', role=>'INTOP');
+DefMath('\oiint',                "\x{222F}", meaning=>'double-contour-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 DefMath('\oiintop',              "\x{222F}", meaning=>'double-contour-integral', role=>'INTOP',
-	scriptpos=>'mid');
-DefMath('\ointclockwise',        "\x{2232}", meaning=>'clockwise-contour-integral', role=>'INTOP');
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\ointclockwise',        "\x{2232}", meaning=>'clockwise-contour-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 DefMath('\ointclockwiseop',      "\x{2232}", meaning=>'clockwise-contour-integral', role=>'INTOP',
-	scriptpos=>'mid');
-DefMath('\ointctrclockwise',     "\x{2233}", meaning=>'counter-clockwise-contour-integral', role=>'INTOP');
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\ointctrclockwise',     "\x{2233}", meaning=>'counter-clockwise-contour-integral',
+	role=>'INTOP', mathstyle=>\&doVariablesizeOp);
 DefMath('\ointctrclockwiseop',   "\x{2233}", meaning=>'counter-clockwise-contour-integral', role=>'INTOP',
-	scriptpos=>'mid');
-DefMath('\varointclockwise',     "\x{2232}", meaning=>'clockwise-contour-integral', role=>'INTOP');
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\varointclockwise',     "\x{2232}", meaning=>'clockwise-contour-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
 DefMath('\varointclockwiseop',   "\x{2232}", meaning=>'clockwise-contour-integral', role=>'INTOP',
-	scriptpos=>'mid');
-DefMath('\varointctrclockwise',  "\x{2233}", meaning=>'counter-clockwise-contour-integral', role=>'INTOP');
-DefMath('\varointctrclockwiseop',"\x{2233}", meaning=>'counter-clockwise-contour-integral', role=>'INTOP',
-	scriptpos=>'mid');
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\varointctrclockwise',  "\x{2233}", meaning=>'counter-clockwise-contour-integral',
+	role=>'INTOP', mathstyle=>\&doVariablesizeOp);
+DefMath('\varointctrclockwiseop',"\x{2233}", meaning=>'counter-clockwise-contour-integral',
+	role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 # \sqiiint
 # \sqiint
-DefMath('\sqint',              "\x{2A16}",role=>'INTOP', meaning=>'square-contour-integral');
+DefMath('\sqint',              "\x{2A16}",role=>'INTOP', meaning=>'square-contour-integral',
+	mathstyle=>\&doVariablesizeOp);
 # \varprod
 
 

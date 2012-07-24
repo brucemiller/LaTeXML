@@ -456,7 +456,7 @@ DefPrimitiveI('\tbond',undef,"\x{2261}");
 DefMacro('\case{}{}','\ensuremath{\text@frac{#1}{#2}}');
 DefConstructor('\text@frac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='divide' role='MULOP' fracstyle='#fracstyle'/>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeTFrac, afterDigest =>\&afterTFrac);

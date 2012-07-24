@@ -243,7 +243,7 @@ Let(T_CS('\underarrow'),T_CS('\underrightarrow'));
 
 DefConstructor('\frac{}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='divide' role='MULOP' fracstyle='#fracstyle'/>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
 	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 #	       beforeDigest=>\&beforeFrac, afterDigest =>\&afterFrac);
@@ -341,12 +341,12 @@ DefMacro('\rcfrac', '\bgroup\@cfracstyle{r}\advance\cfraccount@ 1\let\\\@cfrac')
 
 DefConstructorI('\@cfrac',undef,
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='continued-fraction' fracstyle='#fracstyle' role='MULOP'/>"
+	       . "<ltx:XMTok meaning='continued-fraction' mathstyle='#mathstyle' role='MULOP'/>"
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 		afterDigest=>\&chooseArgHandler,
-		properties=>sub{ (fracstyle=>LookupValue('CFRACSTYLE')); },
+		properties=>sub{ (mathstyle=>LookupValue('CFRACSTYLE')); },
 	       reversion=>sub {
 		 my($whatsit)=@_;
 		 (T_CS('\cfrac'),

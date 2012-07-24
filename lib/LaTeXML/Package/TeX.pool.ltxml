@@ -2835,19 +2835,19 @@ DefMacroI('\'',undef,sub{
 
 # After digesting the \choose (or whatever), grab the previous and following material
 # and store as args in the whatsit.
-our %fracstylemap=(display=>'text', text=>'script',
+our %mathstylemap=(display=>'text', text=>'script',
 		   script=>'scriptscript', scriptscript=>'scriptscript');
 sub chooseArgHandler {
   my($stomach,$whatsit)=@_;
   my $style = LookupValue('mathstyle');
-  AssignValue(mathstyle=>$fracstylemap{$style}); # Bump the style smaller.
+  AssignValue(mathstyle=>$mathstylemap{$style}); # Bump the style smaller.
   # Unfortunately, the way we've done it, it's too late for the numerator!!!
   my @top = $stomach->regurgitate;
   my @bot = $stomach->digestNextBody();
   my $closing = pop(@bot);	# We'll leave whatever closed the list (endmath, endgroup...)
   $whatsit->setProperty(top=>LaTeXML::MathList->new(@top));
   $whatsit->setProperty(bottom=>LaTeXML::MathList->new(@bot));
-  $whatsit->setProperty(fracstyle=>$style);
+  $whatsit->setProperty(mathstyle=>$style);
 
   AssignValue(mathstyle=>$style);
   $closing; }			# leave the closing bit
@@ -2855,10 +2855,10 @@ sub chooseArgHandler {
 # Support here: Used by LaTeX, amsmath, but also amstex
 sub beforeFrac {
   $_[0]->bgroup;
-  AssignValue(mathstyle=>$fracstylemap{LookupValue('mathstyle')}); }
+  AssignValue(mathstyle=>$mathstylemap{LookupValue('mathstyle')}); }
 sub afterFrac  {
   $_[0]->egroup;
-  $_[1]->setProperty(fracstyle=>LookupValue('mathstyle')); }
+  $_[1]->setProperty(mathstyle=>LookupValue('mathstyle')); }
 
 # Needed by amsmath (at least)
 sub beforeTFrac { $_[0]->bgroup; AssignValue(mathstyle=>'text');
@@ -2876,7 +2876,7 @@ sub afterDFrac  { afterFrac(@_); $_[0]->egroup; }
 # No, because constructor doesn't know there are 2 extra args!!
 DefConstructorI('\choose',undef,
 	       "<ltx:XMApp open='(' close=')'>"
-	       . "<ltx:XMTok meaning='binomial' role='STACKED' fracstyle='#fracstyle'/>"
+	       . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -2888,7 +2888,7 @@ DefConstructorI('\choose',undef,
 		  Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\brace',undef,
 	       "<ltx:XMApp open='{' close='}'>"
-	       . "<ltx:XMTok role='STACKED' fracstyle='#fracstyle'/>" # what meaning?
+	       . "<ltx:XMTok role='STACKED' mathstyle='#mathstyle'/>" # what meaning?
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -2900,7 +2900,7 @@ DefConstructorI('\brace',undef,
 		  Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\brack',undef,
 	       "<ltx:XMApp open='[' close=']'>"
-	       . "<ltx:XMTok role='STACKED' fracstyle='#fracstyle'/>" # what meaning?
+	       . "<ltx:XMTok role='STACKED' mathstyle='#mathstyle'/>" # what meaning?
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -2912,7 +2912,7 @@ DefConstructorI('\brack',undef,
 		  Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\over',undef,
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok meaning='divide' fracstyle='#fracstyle' role='MULOP'/>"
+	       . "<ltx:XMTok meaning='divide' mathstyle='#mathstyle' role='MULOP'/>"
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -2924,7 +2924,7 @@ DefConstructorI('\over',undef,
 		  Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\atop',undef,
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok role='STACKED' fracstyle='#fracstyle'/>"
+	       . "<ltx:XMTok role='STACKED' mathstyle='#mathstyle'/>"
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -2936,7 +2936,7 @@ DefConstructorI('\atop',undef,
 		  Revert($whatsit->getProperty('bottom'))); });
 DefConstructor('\overwithdelims Token Token',
 	       "<ltx:XMApp open='#1' close='#2'>"
-	       . "<ltx:XMTok meaning='divide' fracstyle='#fracstyle' role='MULOP'/>"
+	       . "<ltx:XMTok meaning='divide' mathstyle='#mathstyle' role='MULOP'/>"
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -2949,7 +2949,7 @@ DefConstructor('\overwithdelims Token Token',
 # But, wonder what the _meaning_ is!
 DefConstructor('\atopwithdelims Token Token',
 	       "<ltx:XMApp open='#1' close='#2'>"
-	       . "<ltx:XMTok role='STACKED' fracstyle='#fracstyle'/>"
+	       . "<ltx:XMTok role='STACKED' mathstyle='#mathstyle'/>"
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -2967,7 +2967,7 @@ sub IsZero {
 DefConstructor('\above Dimension',
 	       "<ltx:XMApp>"
 	       . "<ltx:XMTok ?&IsZero(#1)(role='STACKED')(role='MULOP' meaning='divide')"
-	       .           " fracstyle='#fracstyle' thickness='#1'/>"
+	       .           " mathstyle='#mathstyle' thickness='#1'/>"
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -2981,7 +2981,7 @@ DefConstructor('\above Dimension',
 DefConstructor('\abovewithdelims Token Token Dimension',
 	       "<ltx:XMApp open='#1' close='#2'>"
 	       . "<ltx:XMTok ?&IsZero(#3)(role='STACKED')(role='MULOP' meaning='divide')"
-	       .           " fracstyle='#fracstyle' thickness='#3'/>"
+	       .           " mathstyle='#mathstyle' thickness='#3'/>"
 	       . "<ltx:XMArg>#top</ltx:XMArg>"
 	       . "<ltx:XMArg>#bottom</ltx:XMArg>"
 	       ."</ltx:XMApp>",
@@ -3061,7 +3061,7 @@ DefMathI('=',undef,'=', role=>'RELOP', meaning=>'equals');
 DefMathI('+',undef,'+', role=>'ADDOP', meaning=>'plus');
 DefMathI('-',undef,'-', role=>'ADDOP', meaning=>'minus');
 DefMathI('*',undef,'*', role=>'MULOP', meaning=>'times');
-DefMathI('/',undef,'/', role=>'MULOP', meaning=>'divide', fracstyle=>'inline');
+DefMathI('/',undef,'/', role=>'MULOP', meaning=>'divide', mathstyle=>'inline');
 DefMathI('!',undef,'!', role=>'POSTFIX', meaning=>'factorial');
 DefMathI(',',undef,',', role=>'PUNCT');
 DefMathI('.',undef,'.', role=>'PERIOD');
@@ -3854,27 +3854,42 @@ DefMathI('\spadesuit',undef,"\x{2660}");
 
 #----------------------------------------------------------------------
 DefMath('\smallint',"\x{222B}", meaning=>'integral', role=>'INTOP', 
-	font=>{size=>'small'}, scriptpos=>\&doScriptpos); # INTEGRAL
+	font=>{size=>'small'}, scriptpos=>\&doScriptpos, mathstyle=>'text'); # INTEGRAL
 
 #----------------------------------------------------------------------
 # Actually LaTeX; Table 3.8. Variable-sized Symbols, p.44.
 #----------------------------------------------------------------------
 sub doScriptpos { (LookupValue('mathstyle') eq 'display' ? 'mid' : 'post'); }
+sub doVariablesizeOp { (LookupValue('mathstyle') eq 'display' ? 'display' : undef); }
 
-DefMathI('\sum',      undef,"\x{2211}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'sum');
-DefMathI('\prod',     undef,"\x{220F}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'product');
-DefMathI('\coprod',   undef,"\x{2210}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'coproduct');
-DefMathI('\int',      undef,"\x{222B}", role=>'INTOP',	                          meaning=>'integral');
-DefMathI('\oint',     undef,"\x{222E}", role=>'INTOP',	                          meaning=>'contour-integral');
-DefMathI('\bigcap',   undef,"\x{22C2}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'intersection');
-DefMathI('\bigcup',   undef,"\x{22C3}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'union');
-DefMathI('\bigsqcup', undef,"\x{2294}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'square-union');
-DefMathI('\bigvee',   undef,"\x{22C1}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'or');
-DefMathI('\bigwedge', undef,"\x{22C0}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'and');
-DefMathI('\bigodot',  undef,"\x{2299}", role=>'SUMOP',	scriptpos=>\&doScriptpos); #meaning=> ?
-DefMathI('\bigotimes',undef,"\x{2297}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'tensor-product');
-DefMathI('\bigoplus', undef,"\x{2295}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'direct-sum');
-DefMathI('\biguplus', undef,"\x{228C}", role=>'SUMOP',	scriptpos=>\&doScriptpos, meaning=>'symmetric-difference');
+DefMathI('\sum',      undef,"\x{2211}", role=>'SUMOP',
+	 scriptpos=>\&doScriptpos, meaning=>'sum', mathstyle=>\&doVariablesizeOp);
+DefMathI('\prod',     undef,"\x{220F}", role=>'SUMOP',
+	 scriptpos=>\&doScriptpos, meaning=>'product', mathstyle=>\&doVariablesizeOp);
+DefMathI('\coprod',   undef,"\x{2210}", role=>'SUMOP',
+	 scriptpos=>\&doScriptpos, meaning=>'coproduct', mathstyle=>\&doVariablesizeOp);
+DefMathI('\int',      undef,"\x{222B}", role=>'INTOP',
+	 meaning=>'integral',, mathstyle=>\&doVariablesizeOp);
+DefMathI('\oint',     undef,"\x{222E}", role=>'INTOP',
+	 meaning=>'contour-integral', mathstyle=>\&doVariablesizeOp);
+DefMathI('\bigcap',   undef,"\x{22C2}", role=>'SUMOP',
+	 scriptpos=>\&doScriptpos, meaning=>'intersection', mathstyle=>\&doVariablesizeOp);
+DefMathI('\bigcup',   undef,"\x{22C3}", role=>'SUMOP',
+	 scriptpos=>\&doScriptpos, meaning=>'union', mathstyle=>\&doVariablesizeOp);
+DefMathI('\bigsqcup', undef,"\x{2294}", role=>'SUMOP',
+	 scriptpos=>\&doScriptpos, meaning=>'square-union', mathstyle=>\&doVariablesizeOp);
+DefMathI('\bigvee',   undef,"\x{22C1}", role=>'SUMOP',
+	 scriptpos=>\&doScriptpos, meaning=>'or', mathstyle=>\&doVariablesizeOp);
+DefMathI('\bigwedge', undef,"\x{22C0}", role=>'SUMOP',
+	 scriptpos=>\&doScriptpos, meaning=>'and', mathstyle=>\&doVariablesizeOp);
+DefMathI('\bigodot',  undef,"\x{2299}", role=>'SUMOP',
+	 scriptpos=>\&doScriptpos, mathstyle=>\&doVariablesizeOp); #meaning=> ?
+DefMathI('\bigotimes',undef,"\x{2297}", role=>'SUMOP',
+	 scriptpos=>\&doScriptpos, meaning=>'tensor-product', mathstyle=>\&doVariablesizeOp);
+DefMathI('\bigoplus', undef,"\x{2295}", role=>'SUMOP',
+	 scriptpos=>\&doScriptpos, meaning=>'direct-sum', mathstyle=>\&doVariablesizeOp);
+DefMathI('\biguplus', undef,"\x{228C}", role=>'SUMOP',
+	 scriptpos=>\&doScriptpos, meaning=>'symmetric-difference', mathstyle=>\&doVariablesizeOp);
 
 DefConstructorI('\limits', undef,sub {
    my $node = $_[0]->getElement;
