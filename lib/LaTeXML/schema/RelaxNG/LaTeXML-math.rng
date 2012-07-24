@@ -221,9 +221,9 @@ such as the fraction line for the fraction operator.</a:documentation>
       </attribute>
     </optional>
     <optional>
-      <attribute name="fracstyle">
-        <a:documentation>The fraction style used for displaying the application of this token
-when it represents some sort of fraction or stack of expressions
+      <attribute name="mathstyle">
+        <a:documentation>The math style used for displaying the application of this token
+when it represents some sort of fraction, variable-sized operator or stack of expressions
 (note that this applies to binomials or other stacks of expressions as well as fractions).
 Values of \texttt{display} or \texttt{text} correspond to \TeX's
 displaystyle or textstyle, while \texttt{inline} indicates the
@@ -480,24 +480,36 @@ branch of an \elementref{XMDual} to refer to the arguments present in the conten
     <ref name="XMath.attributes"/>
     <ref name="ID.attributes"/>
     <optional>
-      <attribute name="name"/>
+      <attribute name="name">
+        <a:documentation>The name of the object, typically the control sequence that created it.</a:documentation>
+      </attribute>
     </optional>
     <optional>
-      <attribute name="meaning"/>
+      <attribute name="meaning">
+        <a:documentation>A more semantic name corresponding to the intended meaning of the object,
+such as the OpenMath name.</a:documentation>
+      </attribute>
     </optional>
     <optional>
-      <attribute name="style"/>
+      <attribute name="omcd">
+        <a:documentation>The OpenMath CD for which \attr{meaning} is a symbol.</a:documentation>
+      </attribute>
     </optional>
     <optional>
       <attribute name="vattach">
+        <a:documentation>which row's baseline aligns with the container's baseline.</a:documentation>
         <choice>
           <value>top</value>
+          <value>middle</value>
           <value>bottom</value>
         </choice>
       </attribute>
     </optional>
     <optional>
-      <attribute name="width"/>
+      <attribute name="width">
+        <a:documentation>the desired width of the array.</a:documentation>
+        <ref name="Length.type"/>
+      </attribute>
     </optional>
   </define>
   <define name="XMArray_model">
@@ -542,7 +554,7 @@ branch of an \elementref{XMDual} to refer to the arguments present in the conten
       </attribute>
     </optional>
     <optional>
-      <attribute name="rowpan">
+      <attribute name="rowspan">
         <a:documentation>indicates how many rows this cell spans or covers.</a:documentation>
         <data type="nonNegativeInteger"/>
       </attribute>

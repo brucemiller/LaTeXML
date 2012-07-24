@@ -152,13 +152,13 @@ XMTok_attributes =
   ## such as the fraction line for the fraction operator.
   attribute thickness { text }?,
 
-  ## The fraction style used for displaying the application of this token
-  ## when it represents some sort of fraction or stack of expressions
+  ## The math style used for displaying the application of this token
+  ## when it represents some sort of fraction, variable-sized operator or stack of expressions
   ## (note that this applies to binomials or other stacks of expressions as well as fractions).
   ## Values of \texttt{display} or \texttt{text} correspond to \TeX's
   ## displaystyle or textstyle, while \texttt{inline} indicates the
   ## stack should be arranged horizontally (the layout may depend on the operator).
-  attribute fracstyle { ( "display" | "text" | "script" | "scriptscript" | "inline" ) }?
+  attribute mathstyle { ( "display" | "text" | "script" | "scriptscript" | "inline" ) }?
 
 ## Content model for \elementref{XMTok}.
 XMTok_model = text*
@@ -340,11 +340,23 @@ XMArray_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
+
+  ## The name of the object, typically the control sequence that created it.
   attribute name { text }?,
+
+  ## A more semantic name corresponding to the intended meaning of the object,
+  ## such as the OpenMath name.
   attribute meaning { text }?,
-  attribute style { text }?,
-  attribute vattach { "top" | "bottom" }?,
-  attribute width { text }?
+
+  ## The OpenMath CD for which \attr{meaning} is a symbol.
+  attribute omcd { text }?,
+
+  ## which row's baseline aligns with the container's baseline.
+  attribute vattach { "top" | "middle" | "bottom" }?,
+
+  ## the desired width of the array.
+  attribute width { Length.type }?
+
 
 ## Content model for \elementref{XMArray}.
 XMArray_model = XMRow*
@@ -374,7 +386,7 @@ XMCell_attributes =
   attribute colspan { xsd:nonNegativeInteger }?,
 
   ## indicates how many rows this cell spans or covers.
-  attribute rowpan { xsd:nonNegativeInteger }?,
+  attribute rowspan { xsd:nonNegativeInteger }?,
 
 # This would have been clearer, but messes up conversion to dtd
 #  attribute align { "left" | "right" | "center" | "justify" | text }?,
