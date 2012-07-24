@@ -74,6 +74,18 @@ our  %RELATIONOPS = map(($_=>1),
 		     );
 our  %CONVERTOPS = ("\x{2062}"=>UTF(0xD7), # Invisible (discretionary) times
 		   );
+our %FENCEOPS = map(($_=>1),
+		    "(",")","[","]","{","}","|","||","|||",
+		    "\x{2018}","\x{2019}","\x{201C}","\x{201D}","\x{2016}","\x{2016}","\x{2308}",
+		    "\x{2309}","\x{230A}","\x{230B}","\x{2772}","\x{2773}","\x{27E6}","\x{27E7}",
+		    "\x{27E8}","\x{27E9}","\x{27EA}","\x{27EB}","\x{27EC}","\x{27ED}","\x{27EE}",
+		    "\x{27EF}","\x{2980}","\x{2980}","\x{2983}","\x{2984}","\x{2985}","\x{2986}",
+		    "\x{2987}","\x{2988}","\x{2989}","\x{298A}","\x{298B}","\x{298C}","\x{298D}",
+		    "\x{298E}","\x{298F}","\x{2990}","\x{2991}","\x{2992}","\x{2993}","\x{2994}",
+		    "\x{2995}","\x{2996}","\x{2997}","\x{2998}","\x{29FC}","\x{29FD}");
+our %SEPARATOROPS = map(($_=>1), ",",";",".","\x{2063}");
+
+
 binmode(STDOUT,":utf8") if $DEBUG;
 
 #######################################################################
@@ -91,13 +103,13 @@ sub fitToWidth {
   my @n;
   local $LaTeXML::MathMLLineBreaker::MATH = $math;
   local $LaTeXML::MathMLLineBreaker::PUNCT = undef;
-  if((nodeName($mml) eq 'm:mrow') && (scalar(@n=nodeChildren($mml))==2)
-     && (nodeName($n[1]) eq 'm:mo') && (textContent($n[1]) =~ /^[\.\,\;]$/)){
+  if((nodeName($mml) eq 'm:mrow') && (scalar(@n=nodeChildren($mml))==2) && isSeparator($n[1])){
     $mml = $n[0];
     $LaTeXML::MathMLLineBreaker::PUNCT = $n[1]; }
 
   # Compute the possible layouts
   print STDERR "Starting layout of $mml\n" if $DEBUG;
+###  print STDERR "Starting layout of ".showNode($mml)."\n" if $DEBUG;
   my $layouts = layout($mml,$width,0,$displaystyle,0,1);
   if($DEBUG){
     print STDERR "Got ".scalar(@$layouts)." layouts:\n";
@@ -120,12 +132,12 @@ sub bestFitToWidth {
   my @n;
   local $LaTeXML::MathMLLineBreaker::MATH = $math;
   # Extract math without trailing punctuation (if any).
-  if((nodeName($mml) eq 'm:mrow') && (scalar(@n=nodeChildren($mml))==2)
-     && (nodeName($n[1]) eq 'm:mo') && (textContent($n[1]) =~ /^[\.\,\;]$/)){
+  if((nodeName($mml) eq 'm:mrow') && (scalar(@n=nodeChildren($mml))==2) && isSeparator($n[1])){
     $mml = $n[0]; }
 
   # Compute the possible layouts
   print STDERR "Starting layout of $mml\n" if $DEBUG;
+###  print STDERR "Starting layout of ".showNode($mml)."\n" if $DEBUG;
   my @layouts = @{ layout($mml,$width,0,$displaystyle,0,1) };
 
   # Add a penalty for larger overall area.
@@ -171,8 +183,7 @@ sub applyLayout {
   my @n;
   # Extract trailing punctuation which might be placed during layout
   local $LaTeXML::MathMLLineBreaker::PUNCT = undef;
-  if((nodeName($mml) eq 'm:mrow') && (scalar(@n=nodeChildren($mml))==2)
-     && (nodeName($n[1]) eq 'm:mo') && (textContent($n[1]) =~ /^[\.\,\;]$/)){
+  if((nodeName($mml) eq 'm:mrow') && (scalar(@n=nodeChildren($mml))==2) && isSeparator($n[1])){
     $mml = $n[0];
     $LaTeXML::MathMLLineBreaker::PUNCT = $n[1]; }
 
@@ -226,12 +237,12 @@ sub applyLayout_rec {
 #    print "Applying ".layoutDescriptor($layout)."\n";
     # If this is a fenced row, we've got to manually fixup the fence size!
     if(nodeName($node) eq 'm:mrow'){
-      if((nodeName($children[0]) eq 'm:mo')
-	 && (textContent($children[0]) =~ /[\(\)\[\]\{\}]/)){
-	$children[0][1]{mathsize}=$$layout{rowheight}."em"; }
-      if((nodeName($children[$#children]) eq 'm:mo')
-	 && (textContent($children[$#children]) =~ /[\(\)\[\]\{\}]/)){
-	$children[$#children][1]{mathsize}=$$layout{rowheight}."em"; }
+      if(isFence($children[0])){
+	## $children[0][1]{mathsize}=$$layout{rowheight}."em"; 
+	$children[0][1]{symmetric}='false'; }
+      if(isFence($children[$#children])){
+	## $children[$#children][1]{mathsize}=$$layout{rowheight}."em";
+	$children[$#children][1]{symmetric}='false'; }
     }
     my @rows = split_row($breakset,@children);
     # Replace any "converted" leading operators (ie. invisible times => \times)
@@ -259,6 +270,13 @@ sub applyLayout_rec {
 	       map( ["m:mtr",{},
 		     ["m:mtd",{}, ["m:mspace",{width=>$$layout{indentation}."em"}],@$_]],@rows)]));
   }
+  # If this is a row, and there are breaks underneath, adjust any fences!
+  elsif((nodeName($node) eq 'm:mrow') && $$layout{hasbreak}){
+    if(isFence($children[0])){
+      $children[0][1]{symmetric}='false'; }
+    if(isFence($children[$#children])){
+      $children[$#children][1]{symmetric}='false'; }
+    }
   # HACK: If this is an mfenced whose single mrow child was linebroken,
   # we'll want to replace the fences with explicit mo with symmetric=false.
   # Otherwise, the alignment to "baseline 1" creates a HUGE empty space on top!
@@ -314,6 +332,18 @@ sub textContent {
 
 sub min { (!defined $_[0] ? $_[1] : (!defined $_[1] ? $_[0] : ($_[0] < $_[1] ? $_[0] : $_[1]))); }
 sub max { (!defined $_[0] ? $_[1] : (!defined $_[1] ? $_[0] : ($_[0] > $_[1] ? $_[0] : $_[1]))); }
+
+sub isFence {
+  my($node)=@_;
+  my($tag,$attr,@children)=@$node;
+  my $t = $$attr{fence}||'';
+  ($tag eq 'm:mo') && (($t eq 'true') || (($t ne 'false') && $FENCEOPS{join('',@children)})); }
+
+sub isSeparator {
+  my($node)=@_;
+  my($tag,$attr,@children)=@$node;
+  my $t = $$attr{separator}||'';
+  ($tag eq 'm:mo') && (($t eq 'true') || (($t ne 'false') && $SEPARATOROPS{join('',@children)})); }
 
 sub describeLayouts {
   my($self,$layouts)=@_;
@@ -461,12 +491,27 @@ sub prunesort {
 #######################################################################
 # Here, of course, is where the Interesting stuff will happen.
 
+sub showNode {
+  my($node)=@_;
+  if(ref $node){
+    my($e,$a,@c)=@$node;
+    join(' ',"<$e",map("$_=$$a{$_}",keys %$a)).">".join('',map(showNode($_),@c))."</$e>"; }
+  else {
+    "$node"; }}
+
 sub asRow {
   my($node,$target,$level,$displaystyle,$scriptlevel,$demerits)=@_;
   my $type = nodeName($node);
   my @children = nodeChildren($node);
   if(grep( ref $_ ne 'ARRAY', @children)){
     die "ROW has non-element: ".nodeName($node); }
+  # fences will be handled separately
+  my($open,$close);
+  if(@children && isFence($children[0])){
+    $open = shift(@children); }
+  if(@children && isFence($children[$#children])){
+    $close = pop(@children); }
+
   my $n = scalar(@children);
   if(!$n){
     return [ { node=>$node, type=>$type,
@@ -532,17 +577,22 @@ sub asRow {
   my $pruned=0;
 BREAKSET:  foreach my $breakset (reverse @breaksets){ # prunes better reversed?
     # Since we only allow to break the last child in a row,
+    # (otherwise we can't arrange the layout with an mtable????
+    # presumably because we don't have distinct left & right vertical alignment??)
+    # [But this could still work if break was immediately after the child???]    
     # form subset of children's layouts
     # Namely, take only last (unbroken?) layout for all but last child in each row
+    # Unfortunately, this CAN end up giving no layouts at all
     my @filtered_child_layouts=();
     foreach my $xline (split_row($breakset,@child_layouts)){
       my @xline_children_layouts = @$xline;
       while(@xline_children_layouts){
 	my $xchild_layouts = shift(@xline_children_layouts);
 	if(@xline_children_layouts){ # More children?
+	  
 	  my @x = @$xchild_layouts;
 	  my $last = $x[$#x];
-	  next BREAKSET if $$last{hasbreak};
+	  next BREAKSET if $$last{hasbreak} && (scalar(@breaksets)==1);
 	  push(@filtered_child_layouts,[$last]); } # take last
 	else {
 	  push(@filtered_child_layouts,$xchild_layouts); }}}
@@ -598,6 +648,7 @@ BREAKSET:  foreach my $breakset (reverse @breaksets){ # prunes better reversed?
 ##  map($maxarea = max($maxarea,$$_{area}),@layouts);
 ##  map($minarea = min($minarea,$$_{area}),@layouts);
 ##  map( $$_{penalty} *= (1+($$_{area} -$minarea)/$maxarea), @layouts) if $maxarea > $minarea;
+
   @layouts = prunesort($target,@layouts);
 
 ##  print STDERR "",("  " x $level), $type," pruned $pruned\n" if $pruned && ($DEBUG>1);
