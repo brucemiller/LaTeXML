@@ -236,23 +236,33 @@ sub IDSuffix {
   
 sub rawIDSuffix { ''; }
 
-# This should note the use of the given id (if any),
-# and return an id for the new converted node
-sub convertID {
-  my($self, $id)=@_;
-  if(defined $id){
-    my $previous_ids = $$self{convertedIDs}{$id};
-    my $suffix='';
-    if($previous_ids){
-      $suffix = chr(ord('a')-1+scalar(@$previous_ids)); }
-    else {
-      $previous_ids = []; }
-    my $converted_id = $id . $LaTeXML::Post::MATHPROCESSOR->IDSuffix . $suffix;
-    $$self{convertedIDs}{$id} = [@$previous_ids,$converted_id];
-    $converted_id; }}
+# Given an array-represented XML $node, add an id attribute to the node
+# and all children w/o id's (stopping when id encountered).
+# The id will be derived from $sourceid using the appropriate IDSuffix,
+# and bumping the id counter to avoid conflicts with any other node derived
+# from that same source id.
+# Moreover, the new ids will be recorded as having been generated from $sourceid,
+# so that cross-referencing in parallel markup can be effected.
+sub associateID {
+  my($self,$node,$sourceid)=@_;
+  return $node unless $sourceid;
+  my $uniq='';
+  if(my $previous_ids = $$self{convertedIDs}{$sourceid}){
+    my $n=scalar(@$previous_ids); # Recode $n as base 26
+    while($n>0){
+      $uniq = chr(ord('a')+ (($n-1) % 26)).$uniq;
+      $n = int(($n-1)/26); }}
+  my $id = $sourceid . $uniq . $self->IDSuffix;
+  push(@{$$self{convertedIDs}{$sourceid}},$id);
+  $$node[1]{'xml:id'}=$id;
+  map((ref $_) && !$$_[1]{'xml:id'} && $self->associateID($_,$sourceid),@$node[2..$#$node]);
+  $node; }
 
 # Add backref linkages (eg. xref) onto the nodes that $self created (converted from XMath)
 # to reference those that $otherprocessor created.
+# NOTE: Subclass MUST define addCrossref($node,$xref_id) to add the
+# id of the "Other Interesting Node" to the (array represented) xml $node
+# in whatever fashion the markup for that processor uses.
 sub addCrossrefs {
   my($self,$doc,$otherprocessor)=@_;
   my $selfs_map = $$self{convertedIDs};
@@ -481,8 +491,13 @@ sub getQName {
   elsif(my $prefix = $$self{namespaceURIs}{$nsuri}){
     $prefix.":".$node->localname; }
   else {
-    warn "Missing namespace prefix for $nsuri";
-    $node->localname; }}
+    # Hasn't got one; we'll create a prefix for internal use.
+    my $prefix = "_ns".(1+scalar(grep(/^_ns\d+$/,keys %{$$self{namespaces}})));
+    # Register it, but Don't add it to the document!!! (or xpath, for that matter)
+    $$self{namespaces}{$prefix}=$nsuri;
+    $$self{namespaceURIs}{$nsuri}=$prefix;
+    warn "Missing namespace prefix for $nsuri; using $prefix internally";
+    $prefix.":".$node->localname; }}
 #======================================================================
 # ADD nodes to $node in the document $self.
 # This takes a convenient recursive reprsentation for xml:
