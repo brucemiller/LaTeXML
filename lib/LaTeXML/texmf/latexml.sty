@@ -50,7 +50,7 @@
 % \lxMathDef{cmd}[nargs][optional]{expansion}[semanticprops]
 \providecommand{\lxMathDef}{\lx@mathdef}
 \def\lx@mathdef#1{%
-  \@ifnextchar[{\lx@mathdef@a{#1}}{\lx@mathdef@a{#1}[]}}
+  \@ifnextchar[{\lx@mathdef@a{#1}}{\lx@mathdef@a{#1}[0]}}
 \def\lx@mathdef@a#1[#2]{%
   \@ifnextchar[{\lx@mathdef@opt{#1}[#2]}{\lx@mathdef@noopt{#1}[#2]}}
 \def\lx@mathdef@opt#1[#2][#3]#4{%
@@ -61,15 +61,25 @@
   \@ifnextchar[{\lx@@skipopt}{}}
 \def\lx@@skipopt[#1]{}
 
+% Are we supposed to define \lxMathDef or \lxDefMath?
+% [the latter's in the binding!]
+% \lxDefMath{\cs}[nargs][optargs]{presentation}[declarations]
+\providecommand{\lxDefMath}{\lx@defmath}
+\def\lx@defmath#1{%
+  \@ifnextchar[{\lx@defmath@a{#1}}{\lx@defmath@a{#1}[0]}}
+\def\lx@defmath@a#1[#2]{%
+  \@ifnextchar[{\lx@defmath@opt{#1}[#2]}{\lx@defmath@noopt{#1}[#2]}}
+\def\lx@defmath@opt#1[#2][#3]#4{%
+  \providecommand{#1}[#2][#3]{#4}%
+  \@ifnextchar[{\lx@@skipopt}{}}
+\def\lx@defmath@noopt#1[#2]#3{%
+  \providecommand{#1}[#2]{#3}%
+  \@ifnextchar[{\lx@@skipopt}{}}
+
 % \lxDeclare[declarations]{match}
 \newcommand{\lxDeclare}[2][]{}%
-% \LxDeclRef{label}
+% \lxDeclRef{label}
 \newcommand{\lxRefDeclaration}[1]{}%
-% \LxMathDef{\cs}[nargs][optargs]{presentation}[declarations]
-\def\lxDefMath#1{\@ifnextchar[{\LxDefMath@}{\LxDefMath@[]}}%
-\def\lxDefMath@[#1]{\@ifnextchar[{\LxDefMath@@}{\LxDefMath@@[]}}%
-\def\lxDefMath@@[#1]#2{\@ifnextchar[{\LxDefMath@@@}{}}%
-\def\lxDefMath@@@[#1]{}%
 
 % NOTE: It would be good to incorporate Scoping into this macro.
 % As defined, it obeys TeX's usual grouping scope.
