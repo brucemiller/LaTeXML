@@ -537,7 +537,11 @@ sub textrec {
       my $name = ((getQName($op) eq 'ltx:XMTok') && getTokenMeaning($op)) || 'unknown';
       my $role  =  $op->getAttribute('role') || 'Unknown';
       my ($bp,$string);
-      if($bp = $IS_INFIX{$role}){
+      if(($role =~ /^(SUB|SUPER)SCRIPTOP$/) && (($op->getAttribute('scriptpos')||'') =~ /^pre\d+$/)){
+	  # Note that this will likely get parenthesized due to high bp
+	$bp=5000;
+	$string = textrec($op)." ".textrec($args[1])." ".textrec($args[0]); }
+      elsif($bp = $IS_INFIX{$role}){
 	# Format as infix.
 	$string = (scalar(@args) == 1 # unless a single arg; then prefix.
 		   ? textrec($op) .' '.textrec($args[0],$bp,$name)
@@ -884,7 +888,7 @@ sub ApplyNary {
        && ((p_getValue($op1) || '__undef_content__') eq $opcontent)
        # Check that ops are used in same way.
        && !grep((p_getAttribute($op,$_)||'<none>') ne (p_getAttribute($op1,$_)||'<none>'),
-		qw(fracstyle))	# Check ops are used in similar way
+		qw(mathstyle))	# Check ops are used in similar way
        # Check that arg1 isn't wrapped, fenced or enclosed in some restrictive way
        && !grep(p_getAttribute($arg1,$_), qw(open close enclose)) ) {
       push(@args,@args1); }
