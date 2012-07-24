@@ -599,8 +599,9 @@ our %months =( # Standard abbreviations (usually would appear in raw form of mon
 	      jan=>"1", feb=>"2", mar=>"3", apr=>"4",  may=>"5",  jun=>"6",
 	      jul=>"7", aug=>"8", sep=>"9", oct=>"10", nov=>"11", dec=>"12",
 	      # English month names, perhaps in expanded form of month field
-	      january=>"1", February=>"2", march=>"3", april=>"4",  may=>"5",  june=>"6",
+	      january=>"1", february=>"2", march=>"3", april=>"4",  may=>"5",  june=>"6",
 	      july=>"7",    august=>"8",   september=>"9", october=>"10", november=>"11", december=>"12");
+# Is there any sane way of looking up month names from other languages; maybe something from babel?
 
 DefMacro('\bib@field@default@year {}', sub {
   if(currentBibEntryField('date')){
