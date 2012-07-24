@@ -6,10 +6,10 @@
     <title><tag>1 </tag>Testing Over</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
-        <Math mode="display" tex="abc\over def" xml:id="S1.Ex1.m1" text="(a * b * c) / (d * e * f)">
+        <Math mode="display" xml:id="S1.Ex1.m1" tex="abc\over def" text="(a * b * c) / (d * e * f)">
           <XMath>
             <XMApp>
-              <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
+              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
               <XMApp>
                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -29,13 +29,13 @@
     </para>
     <para xml:id="S1.p2">
       <equation xml:id="S1.Ex2">
-        <Math mode="display" tex="a{bc\over de}f" xml:id="S1.Ex2.m1" text="a * ((b * c) / (d * e)) * f">
+        <Math mode="display" xml:id="S1.Ex2.m1" tex="a{bc\over de}f" text="a * ((b * c) / (d * e)) * f">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
+                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
                 <XMApp>
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -55,13 +55,13 @@
     </para>
     <para xml:id="S1.p3">
       <equation xml:id="S1.Ex3">
-        <Math mode="display" tex="a{bc\over de}f" xml:id="S1.Ex3.m1" text="a * ((b * c) / (d * e)) * f">
+        <Math mode="display" xml:id="S1.Ex3.m1" tex="a{bc\over de}f" text="a * ((b * c) / (d * e)) * f">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
+                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
                 <XMApp>
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -81,13 +81,13 @@
     </para>
     <para xml:id="S1.p4">
       <equation xml:id="S1.Ex4">
-        <Math mode="display" tex="a{bc\over de}f" xml:id="S1.Ex4.m1" text="a * ((b * c) / (d * e)) * f">
+        <Math mode="display" xml:id="S1.Ex4.m1" tex="a{bc\over de}f" text="a * ((b * c) / (d * e)) * f">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
+                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
                 <XMApp>
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>
@@ -107,13 +107,13 @@
     </para>
     <para xml:id="S1.p5">
       <equation xml:id="S1.Ex5">
-        <Math mode="display" tex="a{bc\over de}f" xml:id="S1.Ex5.m1" text="a * ((b * c) / (d * e)) * f">
+        <Math mode="display" xml:id="S1.Ex5.m1" tex="a{bc\over de}f" text="a * ((b * c) / (d * e)) * f">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMApp>
-                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
+                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
                 <XMApp>
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok role="UNKNOWN" font="italic">b</XMTok>

@@ -5,7 +5,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
-      <Math mode="display" tex="a+(b^{{1^{{2^{3}}}}}+(c^{{2^{3}}}+(d^{3}+" xml:id="S0.Ex1.m1">
+      <Math mode="display" xml:id="S0.Ex1.m1" tex="a+(b^{{1^{{2^{3}}}}}+(c^{{2^{3}}}+(d^{3}+">
         <XMath>
           <XMWrap>
             <XMTok role="ERROR" font="italic">a</XMTok>
@@ -56,7 +56,7 @@
   </para>
   <para xml:id="p2">
     <equation xml:id="S0.Ex2">
-      <Math mode="display" tex="a+b^{1})+c^{{1^{2}}})+d^{{1^{{2^{3}}}}})" xml:id="S0.Ex2.m1">
+      <Math mode="display" xml:id="S0.Ex2.m1" tex="a+b^{1})+c^{{1^{2}}})+d^{{1^{{2^{3}}}}})">
         <XMath>
           <XMWrap>
             <XMWrap>
@@ -104,7 +104,7 @@
   </para>
   <para xml:id="p3">
     <equation xml:id="S0.Ex3">
-      <Math mode="display" tex="(a+b)^{3}" xml:id="S0.Ex3.m1">
+      <Math mode="display" xml:id="S0.Ex3.m1" tex="(a+b)^{3}">
         <XMath>
           <XMApp>
             <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
@@ -123,7 +123,7 @@
   </para>
   <para xml:id="p4">
     <equation xml:id="S0.Ex4">
-      <Math mode="display" tex="a+(b+(c+d)^{2}+e)^{3}+(f+(g+h)^{2}+i)^{3}" xml:id="S0.Ex4.m1">
+      <Math mode="display" xml:id="S0.Ex4.m1" tex="a+(b+(c+d)^{2}+e)^{3}+(f+(g+h)^{2}+i)^{3}">
         <XMath>
           <XMWrap>
             <XMTok role="ERROR" font="italic">a</XMTok>
@@ -182,7 +182,7 @@
   </para>
   <para xml:id="p5">
     <equation xml:id="S0.Ex5">
-      <Math mode="display" tex="a+\mathbb{P}(\eta(x)\to 1)=\sum _{{N=0}}^{\infty}\sum _{{j=0}}^{N}\mathbb{P}(N_{x}=N\mathrm{and}\frac{j-1}{N}&lt;T_{x}\leq\frac{j}{N})\bar{C}(y^{\circ}(x),T_{x})" xml:id="S0.Ex5.m1">
+      <Math mode="display" xml:id="S0.Ex5.m1" tex="a+\mathbb{P}(\eta(x)\to 1)=\sum _{{N=0}}^{\infty}\sum _{{j=0}}^{N}\mathbb{P}(N_{x}=N\mathrm{and}\frac{j-1}{N}&lt;T_{x}\leq\frac{j}{N})\bar{C}(y^{\circ}(x),T_{x})">
         <XMath>
           <XMWrap>
             <XMTok role="ERROR" font="italic">a</XMTok>
@@ -205,7 +205,7 @@
               <XMTok role="SUPERSCRIPTOP" scriptpos="mid2"/>
               <XMApp scriptpos="mid">
                 <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
-                <XMTok meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
+                <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                 <XMApp>
                   <XMTok meaning="equals" role="RELOP">=</XMTok>
                   <XMTok role="UNKNOWN" font="italic">N</XMTok>
@@ -218,7 +218,7 @@
               <XMTok role="SUPERSCRIPTOP" scriptpos="mid2"/>
               <XMApp scriptpos="mid">
                 <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
-                <XMTok meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
+                <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                 <XMApp>
                   <XMTok meaning="equals" role="RELOP">=</XMTok>
                   <XMTok role="UNKNOWN" font="italic">j</XMTok>
@@ -239,7 +239,7 @@
               <XMTok role="UNKNOWN" font="italic">N</XMTok>
               <XMTok role="UNKNOWN">and</XMTok>
               <XMApp>
-                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
+                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
                 <XMApp>
                   <XMTok meaning="minus" role="ADDOP">-</XMTok>
                   <XMTok role="UNKNOWN" font="italic">j</XMTok>
@@ -255,7 +255,7 @@
               </XMApp>
               <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
               <XMApp>
-                <XMTok fracstyle="display" meaning="divide" role="MULOP"/>
+                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
                 <XMTok role="UNKNOWN" font="italic">j</XMTok>
                 <XMTok role="UNKNOWN" font="italic">N</XMTok>
               </XMApp>
