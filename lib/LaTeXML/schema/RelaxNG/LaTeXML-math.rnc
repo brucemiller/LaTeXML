@@ -85,10 +85,13 @@ XMath.attributes =
   ## when this object is applied to arguments with \elementref{XMApp}.
   attribute argclose { text }?,
 
-  ## characters to separate arguments,
+  ## character sequences used to separate arguments,
   ## when this object is applied to arguments with \elementref{XMApp}.
-  ## Can be multiple characters for different argument positions;
-  ## the last character is repeated if there aren't enough.
+  ## The character sequences are separated by a single space;
+  ## use a non-breaking space or similar if you want space separated arguments.
+  ## There can be multiple character sequences for different argument positions:
+  ## the first separates the first two arguements, the second separates the second and third;
+  ## the last sequence is repeated if there aren't enough.
   attribute separators { text }?,
 
   ## trailing (presumably non-semantic) punctuation.
