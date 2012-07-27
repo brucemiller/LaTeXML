@@ -204,7 +204,7 @@ sub parse_rec {
       $result = XML_replaceNode($result,$node); }
     $result; }
   else {
-    $self->parse_kludge($node);
+    $self->parse_kludge($node,$document);
     if($tag eq 'ltx:XMath'){
       NoteProgress('[F'.++$$self{n_parsed}.']'); }
     elsif($tag eq 'ltx:XMArg'){
@@ -222,24 +222,47 @@ sub parse_children {
     elsif($tag eq 'ltx:XMWrap'){
       local $LaTeXML::MathParser::STRICT=0;
       $self->parse_rec($child,'Anything',$document); }
-    elsif($tag =~ /^ltx:(XMApp|XMDual|XMArray|XMRow|XMCell)$/){
+    elsif($tag =~ /^ltx:(XMApp|XMArray|XMRow|XMCell)$/){
       $self->parse_children($child,$document); }
+    elsif($tag eq 'ltx:XMDual'){
+      my($semantic,$presentation) = element_nodes($child);
+      $self->parse_children($semantic,$document);
+      $self->parse_kludge($presentation,$document); }
 }}
 
+our $HINT_PUNCT_THRESHOLD = 10.0; # \quad or bigger becomes punctuation ?
+###our $HINT_PUNCT_THRESHOLD = 100000.0; # \quad or bigger becomes punctuation ?
 # Move any spacing XMHints to the previous node's rspace (other alternatives exist!)
 # and them remove them from the stream.
 sub translate_hints {
   my($self,$document,$node)=@_;
   my @children = element_nodes($node);
   my $prev = undef;
-  foreach my $c (element_nodes($node)){
-    if(getQName($c) eq 'ltx:XMHint'){
-      if($prev){
-	my $width = $c->getAttribute('width');
-	$prev->setAttribute(rspace=>$width) if $width; }
-      $node->removeChild($c); }
-    else {
-      $prev = $c; }}}
+  while(@children){
+    my $c = shift(@children);
+    if(getQName($c) eq 'ltx:XMHint'){ # Is this a Hint node?
+      if(my $width = $c->getAttribute('width')){ # Is it a spacing hint?
+	# Get the pts (combining w/any following spacing hints)
+	my $pts = ($width=~/^([\d\.\+\-]+)pt$/ ? $1 : 0);
+	while(@children && (getQName($children[0]) eq 'ltx:XMHint') # Combine w/ more?
+	      && ($width = $c->getAttribute('width'))){
+	  $pts += $1 if $width=~/^([\d\.\+\-]+)pt$/;
+	  $node->removeChild(shift(@children)); } # and remove the extra hints
+	# A wide space, between Stuff, is likely acting like punctuation, so convert it
+	if($prev && scalar(@children) && ($pts >= $HINT_PUNCT_THRESHOLD)){
+	  $c = $document->renameNode($c,'ltx:XMTok');
+	  $c->setAttribute(role=>'PUNCT');  # convert to punctuation!
+	  $c->appendText( "\x{2001}" x int($pts/10)); } # fill with quads?
+	else {
+	  $prev->setAttribute(rspace=>$pts.'pt') if $prev; # else copy to previous, if any
+	  $node->removeChild($c); } # and remove it (what else?)
+	$prev = undef; }
+      else {			# Non-spacing hint?
+	$prev = undef; # probably means there's no previous node to add spacing to?
+	$node->removeChild($c); }} # we'll just ignore it (what else?)
+    else {			   # Normal node?
+      $prev = $c; }		# just note it to possibly add spacing
+  }}
 
 #======================================================================
 # Candidates for Common::XML ?
@@ -330,7 +353,8 @@ sub XML_addNodes {
 # NOTE: we should be able to optionally switch this off.
 # Especially, when we want to try alternative parse strategies.
 sub parse_kludge {
-  my($self,$mathnode)=@_;
+  my($self,$mathnode,$document)=@_;
+  $self->translate_hints($document,$mathnode);
   my @nodes = element_nodes($mathnode);
   # the 1st array in stack accumlates the nodes within the current fenced row.
   # When there's only a single array, it's single entry will be the complete row.
@@ -758,7 +782,7 @@ sub extract_separators {
   if(@stuff){
     push(@args,shift(@stuff));
     while(@stuff){
-      $punct .= p_getValue(shift(@stuff));
+      $punct .= ($punct ? ' ':''). p_getValue(shift(@stuff)); # Delimited by SINGLE SPACE!
       push(@args,shift(@stuff)); }}
   ($punct,@args); }
 
