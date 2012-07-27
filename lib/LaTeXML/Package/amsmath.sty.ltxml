@@ -840,9 +840,9 @@ DefConstructor('\substack{}',
 							     "</ltx:XMArg><ltx:XMArg>",
 							     reversion=>Tokens(T_CS("\\\\"),T_CR));
 					      Let(T_CS('\cr'),T_CS("\\\\")); });
-DefEnvironment('{subarray}[]',
+DefEnvironment('{subarray}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok name='list' alignment='#1'/>"
+	       . "<ltx:XMTok name='list' role='STACKED' class='align#1'/>"
 	       . "<ltx:XMArg>#body</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",
