@@ -4,10 +4,10 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
-      <Math mode="display" tex="f_{a},f^{a},f_{a}^{a},f^{a}_{a}" xml:id="S0.Ex1.m1" text="list@(f _ a, f ^ a, (f _ a) ^ a, (f ^ a) _ a)">
+      <Math mode="display" xml:id="S0.Ex1.m1" tex="f_{a},f^{a},f_{a}^{a},f^{a}_{a}" text="list@(f _ a, f ^ a, (f _ a) ^ a, (f ^ a) _ a)">
         <XMath>
           <XMApp>
-            <XMTok meaning="list" role="FENCED" separators=",,,"/>
+            <XMTok meaning="list" role="FENCED" separators=", , ,"/>
             <XMApp>
               <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
               <XMTok role="UNKNOWN" font="italic">f</XMTok>
@@ -42,6 +42,6 @@
     </equation>
   </para>
   <para xml:id="p2">
-    <p><Math mode="inline" tex="{}_{a}" xml:id="p2.m1" text="_a"><XMath><XMApp role="FLOATSUBSCRIPT" scriptpos="2"><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math>,  <Math mode="inline" tex="{}^{a}" xml:id="p2.m2" text="^a"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="2"><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
+    <p><Math mode="inline" xml:id="p2.m1" tex="{}_{a}" text="_a"><XMath><XMApp role="FLOATSUBSCRIPT" scriptpos="2"><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math>,  <Math mode="inline" xml:id="p2.m2" tex="{}^{a}" text="^a"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="2"><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
   </para>
 </document>

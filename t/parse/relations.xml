@@ -8,7 +8,7 @@
     <title><tag>1 </tag>Grouping in multi-relations</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
-        <Math mode="display" tex="a=b=c=d=e" xml:id="S1.Ex1.m1" text="a = b = c = d = e">
+        <Math mode="display" xml:id="S1.Ex1.m1" tex="a=b=c=d=e" text="a = b = c = d = e">
           <XMath>
             <XMApp>
               <XMTok meaning="multirelation"/>
@@ -26,7 +26,7 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex2">
-        <Math mode="display" tex="a=b,c=d" xml:id="S1.Ex2.m1" text="formulae@(a = b, c = d)">
+        <Math mode="display" xml:id="S1.Ex2.m1" tex="a=b,c=d" text="formulae@(a = b, c = d)">
           <XMath>
             <XMApp>
               <XMTok meaning="formulae" separators=","/>
@@ -45,13 +45,13 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex3">
-        <Math mode="display" tex="a=b,c,d,e" xml:id="S1.Ex3.m1" text="a = list@(b, c, d, e)">
+        <Math mode="display" xml:id="S1.Ex3.m1" tex="a=b,c,d,e" text="a = list@(b, c, d, e)">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMApp>
-                <XMTok meaning="list" role="FENCED" separators=",,,"/>
+                <XMTok meaning="list" role="FENCED" separators=", , ,"/>
                 <XMTok role="ID" font="italic">b</XMTok>
                 <XMTok role="ID" font="italic">c</XMTok>
                 <XMTok role="ID" font="italic">d</XMTok>
@@ -62,7 +62,7 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex4">
-        <Math mode="display" tex="a=b,c,d=e" xml:id="S1.Ex4.m1" text="formulae@(a = list@(b, c), d = e)">
+        <Math mode="display" xml:id="S1.Ex4.m1" tex="a=b,c,d=e" text="formulae@(a = list@(b, c), d = e)">
           <XMath>
             <XMApp>
               <XMTok meaning="formulae" separators=","/>
@@ -85,7 +85,7 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex5">
-        <Math mode="display" tex="a=b&gt;c\leq d=e" xml:id="S1.Ex5.m1" text="a = b &gt; c less= d = e">
+        <Math mode="display" xml:id="S1.Ex5.m1" tex="a=b&gt;c\leq d=e" text="a = b &gt; c less= d = e">
           <XMath>
             <XMApp>
               <XMTok meaning="multirelation"/>
@@ -107,7 +107,7 @@
       <title>But period is somewhat different!</title>
       <para xml:id="S1.SS0.SSS0.P1.p1">
         <equation xml:id="S1.Ex6">
-          <Math mode="display" tex="a=b,c.d=e" xml:id="S1.Ex6.m1" text="formulae@(a = list@(b, c), d = e)">
+          <Math mode="display" xml:id="S1.Ex6.m1" tex="a=b,c.d=e" text="formulae@(a = list@(b, c), d = e)">
             <XMath>
               <XMApp>
                 <XMTok meaning="formulae" separators="."/>
@@ -130,7 +130,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex7">
-          <Math mode="display" tex="a=b.c,d=e" xml:id="S1.Ex7.m1" text="formulae@(a = b, list@(c, d) = e)">
+          <Math mode="display" xml:id="S1.Ex7.m1" tex="a=b.c,d=e" text="formulae@(a = b, list@(c, d) = e)">
             <XMath>
               <XMApp>
                 <XMTok meaning="formulae" separators="."/>
@@ -159,7 +159,7 @@
     <title><tag>2 </tag>Arrows as meta-relation</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex8">
-        <Math mode="display" tex="a=b\rightarrow c\leq d=e" xml:id="S2.Ex8.m1" text="a = b rightarrow c less= d = e">
+        <Math mode="display" xml:id="S2.Ex8.m1" tex="a=b\rightarrow c\leq d=e" text="a = b rightarrow c less= d = e">
           <XMath>
             <XMApp>
               <XMTok meaning="multirelation"/>
@@ -177,7 +177,7 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex9">
-        <Math mode="display" tex="a=b,c\rightarrow d=e" xml:id="S2.Ex9.m1" text="formulae@(a = b, c rightarrow d = e)">
+        <Math mode="display" xml:id="S2.Ex9.m1" tex="a=b,c\rightarrow d=e" text="formulae@(a = b, c rightarrow d = e)">
           <XMath>
             <XMApp>
               <XMTok meaning="formulae" separators=","/>
@@ -199,7 +199,7 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex10">
-        <Math mode="display" tex="a=b\leftrightarrow c\leq d=e" xml:id="S2.Ex10.m1" text="a = b leftrightarrow c less= d = e">
+        <Math mode="display" xml:id="S2.Ex10.m1" tex="a=b\leftrightarrow c\leq d=e" text="a = b leftrightarrow c less= d = e">
           <XMath>
             <XMApp>
               <XMTok name="leftrightarrow" role="METARELOP">↔</XMTok>
@@ -221,7 +221,7 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex11">
-        <Math mode="display" tex="a=b,c\leftrightarrow d=e" xml:id="S2.Ex11.m1" text="a = list@(b, c) leftrightarrow d = e">
+        <Math mode="display" xml:id="S2.Ex11.m1" tex="a=b,c\leftrightarrow d=e" text="a = list@(b, c) leftrightarrow d = e">
           <XMath>
             <XMApp>
               <XMTok name="leftrightarrow" role="METARELOP">↔</XMTok>
@@ -249,7 +249,7 @@
     <title><tag>3 </tag>Other Meta relations</title>
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex12">
-        <Math mode="display" tex="a(&lt;e)" xml:id="S3.Ex12.m1" text="annotated@(a, absent less e)">
+        <Math mode="display" xml:id="S3.Ex12.m1" tex="a(&lt;e)" text="annotated@(a, absent less e)">
           <XMath>
             <XMApp>
               <XMTok meaning="annotated"/>
@@ -264,7 +264,7 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex13">
-        <Math mode="display" tex="a;(&lt;e)" xml:id="S3.Ex13.m1" text="annotated@(a, absent less e)">
+        <Math mode="display" xml:id="S3.Ex13.m1" tex="a;(&lt;e)" text="annotated@(a, absent less e)">
           <XMath>
             <XMApp>
               <XMTok meaning="annotated"/>
@@ -279,7 +279,7 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex14">
-        <Math mode="display" tex="a=b+c+d(&lt;e)" xml:id="S3.Ex14.m1" text="a = annotated@(b + c + d, absent less e)">
+        <Math mode="display" xml:id="S3.Ex14.m1" tex="a=b+c+d(&lt;e)" text="a = annotated@(b + c + d, absent less e)">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -303,7 +303,7 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex15">
-        <Math mode="display" tex="a=b+c+d\mod e" xml:id="S3.Ex15.m1" text="a = modulo@(b + c + d, e)">
+        <Math mode="display" xml:id="S3.Ex15.m1" tex="a=b+c+d\mod e" text="a = modulo@(b + c + d, e)">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
