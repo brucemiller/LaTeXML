@@ -281,13 +281,20 @@ sub pmml {
     $result; }}
 
 # Wrap the $result using the fencing, etc, attributes from $node
+# You know, there really could be some questions of ordering here.... Sigh!
 sub pmml_dowrap {
   my($node,$result)=@_;
   my $o = $node->getAttribute('open');
   my $c = $node->getAttribute('close');
   my $e = $node->getAttribute('enclose');
   my $p = $node->getAttribute('punctuation');
+  my $l = $node->getAttribute('lspace');
+  my $r = $node->getAttribute('rspace');
   # Handle generic things: open/close delimiters, punctuation
+  if( !((ref $result) && ($$result[0] eq 'm:mo')) # mo will already have gotten spacing!
+      && ($r || $l)){
+    $result = ['m:mpadded', { ($l ? (lspace=>$l):()),
+			      ($r ? (width=>($r=~/^-/ ? $r : '+'.$r)):())}, $result]; }
   $result = pmml_parenthesize($result,$o,$c) if $o || $c;
   $result = ['m:menclose',{notation=>$e},$result] if $e;
   $result = ['m:mrow',{},$result,pmml_mo($p)] if $p;
@@ -412,9 +419,9 @@ sub pmml_punctuate {
   if(@items){
     push(@arglist,shift(@items));
     while(@items){
-      $separators =~ s/^(.)//;
+      $separators =~ s/^(.*?)( |$)//; # delimited by SINGLE SPACE!!
       $lastsep = $1 if $1;
-      push(@arglist,pmml_mo($lastsep),shift(@items)); }}
+      push(@arglist,pmml_mo($lastsep,role=>'PUNCT'),shift(@items)); }}
   pmml_row(@arglist); }
 
 
@@ -551,26 +558,19 @@ our %fences=('('=>1,')'=>1, '['=>1, ']'=>1, '{'=>1, '}'=>1, "\x{201C}"=>1,"\x{20
 	     "\x{27E8}"=>1,"\x{27E9}"=>1, # angle brackets (prefered)
 	     "\x{230A}"=>1, "\x{230B}"=>1, "\x{2308}"=>1,"\x{2309}"=>1);
 
-
-sub pmml_mpadded {
-  my($item,$rspace)=@_;
-  ($rspace
-   ? ['m:mpadded', {width=>($rspace=~/^-/ ? $rspace : '+'.$rspace)}, $item]
-   : $item); }
+our %punctuation=(','=>1,';'=>1,"\x{2063}"=>1);
 
 # Generally, $item in the following ought to be a string.
 sub pmml_mi {
   my($item,%attr)=@_;
   my($text,%mmlattr)=stylizeContent($item,1,%attr);
-  pmml_mpadded( ['m:mi', {%mmlattr}, $text],
-		(ref $item) && $item->getAttribute('rspace')); }
+  ['m:mi', {%mmlattr}, $text]; }
 
 # Really, the same issues as with mi.
 sub pmml_mn {
   my($item,%attr)=@_;
   my($text,%mmlattr)=stylizeContent($item,0,%attr);
-  pmml_mpadded( ['m:mn', {%mmlattr}, $text],
-		(ref $item) && $item->getAttribute('rspace')); }
+  ['m:mn', {%mmlattr}, $text]; }
 
 # Note that $item should be either a string, or at most, an XMTok
 sub pmml_mo {
@@ -578,19 +578,20 @@ sub pmml_mo {
   my($text,%mmlattr)=stylizeContent($item,0,%attr);
   my $role  = (ref $item ? $item->getAttribute('role') : $attr{role});
   my $isfence = $role && ($role =~/^(OPEN|CLOSE)$/);
+  my $ispunct = $role && ($role eq 'PUNCT');
   my $lspace  = $role && ($role eq 'MODIFIEROP') && 'mediummathspace';
   my $rspace  = $role && ($role eq 'MODIFIEROP') && 'mediummathspace';
   my $pos   = (ref $item && $item->getAttribute('scriptpos')) || 'post';
-  pmml_mpadded( ['m:mo',{%mmlattr,
-			 ($isfence && !$fences{$text} ? (fence=>'true'):()),
-			 ($lspace  ? (lspace=>$lspace):()),
-			 ($rspace  ? (rspace=>$rspace):()),
-			 # If an operator has specifically located it's scripts,
-			 # don't let mathml move them.
-			 (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
-			  ? (movablelimits=>'false'):())},
-		 $text],
-		(ref $item) && $item->getAttribute('rspace')); }
+  ['m:mo',{%mmlattr,
+	   ($isfence && !$fences{$text} ? (fence=>'true'):()),
+	   ($ispunct && !$punctuation{$text} ? (separator=>'true'):()),
+	   ($lspace  ? (lspace=>$lspace):()), # is this handled twice?
+	   ($rspace  ? (rspace=>$rspace):()),
+	   # If an operator has specifically located it's scripts,
+	   # don't let mathml move them.
+	   (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
+	    ? (movablelimits=>'false'):())},
+   $text]; }
 
 sub pmml_bigop {
   my($op)=@_;
@@ -1282,7 +1283,12 @@ DefMathML('Apply:FENCED:?',sub {
 # way TeX does!
 DefMathML('Apply:STACKED:?', sub {
   my($op,$over,$under)=@_;
-  my $stack = ['m:mtable',{rowspacing=>"0.2ex", columnspacing=>"0.4em"},
+  my $c = $op->getAttribute('class');
+  my $align = $c && ($c eq 'alignl' ? 'left'
+		     : ($c eq 'alignc' ? 'center'
+			: ($c eq 'alignl' ? 'right' : undef)));
+  my $stack = ['m:mtable',{rowspacing=>"0.2ex", columnspacing=>"0.4em",
+			   ($align ? (columnalign=>$align):())},
 	       ['m:mtr',{},['m:mtd',{},pmml($over)]],
 	       ['m:mtr',{},['m:mtd',{},pmml($under)]]];
   if($LaTeXML::MathML::STYLE =~/^(text|script)$/){
