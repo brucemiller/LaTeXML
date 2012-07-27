@@ -20,7 +20,9 @@ use LaTeXML::Package;
 
 DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}',sub{
   my($stomach,$star,$cs,$text)=@_;
-  DefMathI($cs,undef,$text,scriptpos=>($star ? 'mid':'post')); });
+  DefMathI($cs,undef,$text,scriptpos=>($star ? 'mid':'post'),
+	   role=>'OPFUNCTION',	# or FUNCTION or TRIGFUNCTION or.. ?  but Something!
+	   font=>{family=>'serif'}); });
 
 # See p.18
 # New functions (most are already in TeX)
