@@ -1300,7 +1300,7 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
   return; });
 
 DefConstructor('\mathaccent Number Digested',
-	       "<ltx:XMApp><ltx:XMTok role='OVERACCENT'>#glyph</ltx:XMTok><ltx:XMWrap>#2</ltx:XMWrap></ltx:XMApp>",
+	       "<ltx:XMApp><ltx:XMTok role='OVERACCENT'>#glyph</ltx:XMTok><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
 	       afterDigest=>sub {
 		 my($stomach,$whatsit)=@_;
 		 my $n = $whatsit->getArg(1)->valueOf;
@@ -4639,6 +4639,8 @@ DefMathI('\*',undef,"\x{2062}", role=>'MULOP', name=>'', meaning=>'times'); # IN
 
 # These 3 should have some `name' assigned ... but what???
 
+# Is XMWrap the right thing to wrap with (instead of XMArg)?
+# We can't really assume that the stuff inside is sensible math.
 # NOTE that \mathord and \mathbin aren't really right here.
 # We need a finer granularity than TeX does: an ORD could be several things,
 # a BIN could be a MULOP or ADDOP.
@@ -4675,8 +4677,8 @@ DefPrimitiveI('\j',   undef,"\x{0237}");
 DefConstructor('\buildrel Until:\over {}',
 	       "<ltx:XMApp role='RELOP'>"
 	       .  "<ltx:XMTok role='SUPERSCRIPTOP'/>"
-	       .  "<ltx:XMWrap scriptpos='#scriptpos'>#2</ltx:XMWrap>"
-	       .  "<ltx:XMWrap>#1</ltx:XMWrap>"
+	       .  "<ltx:XMArg scriptpos='#scriptpos'>#2</ltx:XMArg>"
+	       .  "<ltx:XMArg>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }});
 
