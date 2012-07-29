@@ -77,21 +77,21 @@ DefConstructor('\cd@stack{}{}{}', sub {
     if($over->unlist){
       $document->openElement('ltx:XMApp'); # Role?
       $document->insertElement('ltx:XMTok',undef,role=>'SUPERSCRIPTOP', scriptpos=>$scriptpos);
-      $document->insertElement('ltx:XMWrap',$op);
-      $document->insertElement('ltx:XMWrap',$over);
+      $document->insertElement('ltx:XMArg',$op);
+      $document->insertElement('ltx:XMArg',$over);
       $document->closeElement('ltx:XMApp'); }
     else {
-      $document->insertElement('ltx:XMWrap',$op); }
-    $document->insertElement('ltx:XMWrap',$under);
+      $document->insertElement('ltx:XMArg',$op); }
+    $document->insertElement('ltx:XMArg',$under);
     $document->closeElement('ltx:XMApp'); }
   elsif($over->unlist){
     $document->openElement('ltx:XMApp'); # Role?
     $document->insertElement('ltx:XMTok',undef,role=>'SUPERSCRIPTOP', scriptpos=>$scriptpos);
-    $document->insertElement('ltx:XMWrap',$op);
-    $document->insertElement('ltx:XMWrap',$over);
+    $document->insertElement('ltx:XMArg',$op);
+    $document->insertElement('ltx:XMArg',$over);
     $document->closeElement('ltx:XMApp'); }
   else {
-    $document->insertElement('ltx:XMWrap',$op); }},
+    $document->insertElement('ltx:XMArg',$op); }},
 	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }});
 
 # \cd@adj{}{}{}
