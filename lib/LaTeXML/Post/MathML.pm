@@ -579,13 +579,15 @@ sub pmml_mo {
   my $role  = (ref $item ? $item->getAttribute('role') : $attr{role});
   my $isfence = $role && ($role =~/^(OPEN|CLOSE)$/);
   my $ispunct = $role && ($role eq 'PUNCT');
-  my $lspace  = $role && ($role eq 'MODIFIEROP') && 'mediummathspace';
-  my $rspace  = $role && ($role eq 'MODIFIEROP') && 'mediummathspace';
+  my $lspace  = ((ref $item) && $item->getAttribute('lspace'))
+    ||         ($role && ($role eq 'MODIFIEROP') && 'mediummathspace');
+  my $rspace  = ((ref $item) && $item->getAttribute('rspace'))
+    ||         ($role && ($role eq 'MODIFIEROP') && 'mediummathspace');
   my $pos   = (ref $item && $item->getAttribute('scriptpos')) || 'post';
   ['m:mo',{%mmlattr,
 	   ($isfence && !$fences{$text} ? (fence=>'true'):()),
 	   ($ispunct && !$punctuation{$text} ? (separator=>'true'):()),
-	   ($lspace  ? (lspace=>$lspace):()), # is this handled twice?
+	   ($lspace  ? (lspace=>$lspace):()),
 	   ($rspace  ? (rspace=>$rspace):()),
 	   # If an operator has specifically located it's scripts,
 	   # don't let mathml move them.
