@@ -1511,8 +1511,8 @@ DefConstructor('\frac{}{}',
 DefConstructor('\stackrel{}{}',
 	       "<ltx:XMApp role='RELOP'>"
 	       .  "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
-	       .  "<ltx:XMWrap>#2</ltx:XMWrap>"
-	       .  "<ltx:XMWrap>#1</ltx:XMWrap>"
+	       .  "<ltx:XMArg>#2</ltx:XMArg>"
+	       .  "<ltx:XMArg>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }}
 );
@@ -2869,7 +2869,7 @@ DefMacro('\fbox{}','\@@framebox{}{}{#1}');
 DefMacro('\framebox','\@ifnextchar(\pic@framebox\@framebox');
 DefMacro('\@framebox[Dimension][]{}','\@@framebox{#1}{#2}{#3}');
 DefConstructor('\@@framebox{}{}{}',
-	       "?#mathframe(<ltx:XMWrap enclose='box'>#inner</ltx:XMWrap>)"
+	       "?#mathframe(<ltx:XMArg enclose='box'>#inner</ltx:XMArg>)"
 	       .  "(<ltx:text ?#1(width='#1') ?#align(align='#align') framed='rectangle' _noautoclose='1'>#3</ltx:text>)",
 #	       mode=>'text',
 	       beforeDigest=>sub {
