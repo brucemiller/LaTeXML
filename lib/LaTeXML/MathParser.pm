@@ -222,13 +222,16 @@ sub parse_children {
     elsif($tag eq 'ltx:XMWrap'){
       local $LaTeXML::MathParser::STRICT=0;
       $self->parse_rec($child,'Anything',$document); }
+### A nice evolution would be to use the Kludge parser for
+### the presentation form in XMDual
+### This would avoid silly "parses" of non-semantic stuff; eg assuming times between tokens!
+### However, it needs some experimentation to match DLMF's enhancements
+####      $self->parse_children($child,$document);
+####      $self->parse_kludge($child,$document); }
     elsif($tag =~ /^ltx:(XMApp|XMArray|XMRow|XMCell)$/){
       $self->parse_children($child,$document); }
     elsif($tag eq 'ltx:XMDual'){
-      my($semantic,$presentation) = element_nodes($child);
-      $self->parse_children($semantic,$document);
-      $self->parse_kludge($presentation,$document); }
-}}
+      $self->parse_children($child,$document); }}}
 
 our $HINT_PUNCT_THRESHOLD = 10.0; # \quad or bigger becomes punctuation ?
 ###our $HINT_PUNCT_THRESHOLD = 100000.0; # \quad or bigger becomes punctuation ?
@@ -243,18 +246,21 @@ sub translate_hints {
     if(getQName($c) eq 'ltx:XMHint'){ # Is this a Hint node?
       if(my $width = $c->getAttribute('width')){ # Is it a spacing hint?
 	# Get the pts (combining w/any following spacing hints)
-	my $pts = ($width=~/^([\d\.\+\-]+)pt$/ ? $1 : 0);
+	my $pts = ($width=~/^([\d\.\+\-]+)pt(\s+plus\s+[\d\.]+pt)?(\s+minus\s+[\d\.]+pt)?$/? $1 : 0);
 	while(@children && (getQName($children[0]) eq 'ltx:XMHint') # Combine w/ more?
 	      && ($width = $c->getAttribute('width'))){
-	  $pts += $1 if $width=~/^([\d\.\+\-]+)pt$/;
+	  $pts += $1 if $width=~/^([\d\.\+\-]+)pt(\s+plus\s+[\d\.]+pt)?(\s+minus\s+[\d\.]+pt)?$/;
 	  $node->removeChild(shift(@children)); } # and remove the extra hints
 	# A wide space, between Stuff, is likely acting like punctuation, so convert it
-	if($prev && scalar(@children) && ($pts >= $HINT_PUNCT_THRESHOLD)){
+	if($prev && (($prev->getAttribute('role')||'') ne 'PUNCT')
+	   && scalar(@children) && ($pts >= $HINT_PUNCT_THRESHOLD)){
 	  $c = $document->renameNode($c,'ltx:XMTok');
+	  $c->removeAttribute('width');
+	  $c->removeAttribute('height');   # ?
 	  $c->setAttribute(role=>'PUNCT');  # convert to punctuation!
 	  $c->appendText( "\x{2001}" x int($pts/10)); } # fill with quads?
 	else {
-	  $prev->setAttribute(rspace=>$pts.'pt') if $prev; # else copy to previous, if any
+	  $prev->setAttribute(rspace=>$pts.'pt') if $pts && $prev; # else copy to previous, if any
 	  $node->removeChild($c); } # and remove it (what else?)
 	$prev = undef; }
       else {			# Non-spacing hint?
@@ -377,7 +383,11 @@ sub parse_kludge {
 
   # If we got to here, remove the nodes and replace them by the kludged structure.
   map($mathnode->removeChild($_),@nodes);
-  XML_addNodes($mathnode,$stack[0][0][0]); }
+###  XML_addNodes($mathnode,$stack[0][0][0]); }
+  my $kludge = $stack[0][0][0];
+  XML_addNodes($mathnode,
+	       (ref $kludge eq 'ARRAY') && ($$kludge[0] eq 'ltx:XMWrap')
+	       ? @$kludge[2..$#$kludge] : ($kludge)); }
 
 sub parse_kludgeScripts_rec {
   my($self,$a,$b,@more)=@_;
@@ -392,6 +402,62 @@ sub parse_kludgeScripts_rec {
     $self->parse_kludgeScripts_rec([NewScript($$a[0],$$b[0]),''],@more); }
   else {
     ($$a[0],$self->parse_kludgeScripts_rec($b,@more)); }}
+
+# sub parse_kludge {
+#   my($self,$mathnode,$document)=@_;
+#   $self->translate_hints($document,$mathnode);
+#   my @nodes = element_nodes($mathnode);
+#   map($mathnode->removeChild($_),@nodes);
+#   my @result=();
+#   while(@nodes){
+#     @nodes = $self->parse_kludge_rec(@nodes);
+#     push(@result,shift(@nodes)); }
+#   XML_addNodes($mathnode,@result); }
+
+# # Kludge Parse the next thing, and then add any following scripts to it.
+# sub parse_kludge_rec {
+#   my($self,@more)=@_;
+#   my($item,$open,$close,$seps,$arg);
+#   ($item,@more) = $self->parse_kludge_reca(@more);
+#   while(@more && (($self->getGrammaticalRole($more[0])||'') =~ /^POST(SUB|SUPER)SCRIPT$/)){
+#     $item = NewScript($item,shift(@more)); }
+#   if(@more && (($self->getGrammaticalRole($more[0])||'') eq 'APPLYOP')){
+#     shift(@more);
+#     if(@more && (($self->getGrammaticalRole($more[0])||'') eq 'OPEN')){
+#       ($open,$close,$seps,$arg,@more)=$self->parse_kludge_fence(@more);
+#       $item = Apply(Annotate($item,argopen=>$open, argclose=>$close, separators=>$seps),@$arg); }
+#     else {
+#       ($arg,@more)=$self->parse_kludge_rec(@more);
+#       $item = Apply($item,$arg); }}
+#   ($item,@more); }
+
+# sub parse_kludge_reca {
+#   my($self,$next,@more)=@_;
+#   my $role = $self->getGrammaticalRole($next);
+#   if($role =~ /^FLOAT(SUB|SUPER)SCRIPT$/){
+#     my($base,@rest) = $self->parse_kludge_rec(@more);
+#     (NewScript($base,$next),@rest); }
+#   elsif($role eq 'OPEN'){
+#     my($open,$close,$seps,$list,@more)=$self->parse_kludge_fence($next,@more);
+#     (Apply(Annotate(New(undef,undef,role=>'FENCED'),
+# 		    argopen=>$open, argclose=>$close, separators=>$seps),@$list), @more); }
+#   else {
+#     ($next,@more); }}
+
+# sub parse_kludge_fence {
+#   my($self,$next,@more)=@_;
+#   my($open,$close,$punct,$r,$item,@list)=($next,undef,'',undef);
+#   while(@more){
+#     my @i=();
+#     while(@more && (($r=($self->getGrammaticalRole($more[0])||'')) !~ /^(CLOSE|PUNCT)$/)){
+#       ($item,@more)=$self->parse_kludge_rec(@more);
+#       push(@i,$item); }
+#     push(@list,(scalar(@i > 1) ? ['ltx:XMWrap',{},@i] : $i[0]));
+#     if($r eq 'CLOSE'){
+#       $close=shift(@more); last; }
+#     else {
+#       $punct .= ($punct ? ' ':''). p_getValue(shift(@more)); }} # Delimited by SINGLE SPACE!
+#   ($open,$close,$punct,[@list],@more); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Low-level Parser: parse a single expression
