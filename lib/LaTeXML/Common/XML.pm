@@ -340,6 +340,10 @@ sub findnodes {
   my($self,$xpath,$node)=@_;
   $$self{context}->findnodes($xpath,$node); }
 
+sub findvalue {
+  my($self,$xpath,$node)=@_;
+  $$self{context}->findvalue($xpath,$node); }
+
 
 ######################################################################
 package LaTeXML::Common::XML::XSLT;
