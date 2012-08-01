@@ -624,7 +624,7 @@ sub readGlue {
     my($r1,$f1,$r2,$f2);
     ($r1,$f1) = $self->readRubber if $self->readKeyword('plus');
     ($r2,$f2)  = $self->readRubber if $self->readKeyword('minus');
-    Glue($d->valueOf*$s,$r1,$f1,$r2,$f2); }}
+    Glue($d->valueOf,$r1,$f1,$r2,$f2); }}
 
 our %FILLS = (fil=>1,fill=>2,filll=>3);
 sub readRubber {
@@ -672,7 +672,7 @@ sub readMuGlue {
     my($r1,$f1,$r2,$f2);
     ($r1,$f1) = $self->readRubber(1) if $self->readKeyword('plus');
     ($r2,$f2)  = $self->readRubber(1) if $self->readKeyword('minus');
-    MuGlue($d->valueOf*$s,$r1,$f1,$r2,$f2); }}
+    MuGlue($d->valueOf,$r1,$f1,$r2,$f2); }}
 
 # Return a muglue value or undef.
 sub readInternalMuGlue { $_[0]->readRegisterValue('MuGlue'); }
