@@ -82,8 +82,8 @@ use LaTeXML::Global;
 use base qw(LaTeXML::Dimension);
 
 # A mu is 1/18th of an em in the current math font.
-# Sigh.... I'll just take it as 2/3pt
-sub toString { LaTeXML::Float::format($_[0]->[0]/65536 * 0.66).'mu'; }
+# 1 mu = 1em/18 = 10pt/18 = 5/9 pt; 1pt = 9/5mu = 1.8mu
+sub toString { LaTeXML::Float::format($_[0]->[0]/65536 * 1.8).'mu'; }
 
 sub stringify { "MuDimension[".$_[0]->[0]."]"; }
 #**********************************************************************
@@ -150,12 +150,13 @@ package LaTeXML::MuGlue;
 use LaTeXML::Global;
 use base qw(LaTeXML::Glue);
 
+# 1 mu = 1em/18 = 10pt/18 = 5/9 pt; 1pt = 9/5mu = 1.8mu
 sub toString { 
   my($self)=@_;
   my ($sp,$plus,$pfill,$minus,$mfill)=@$self;
-  my $string = LaTeXML::Float::format($sp/65536 * 0.66)."mu";
-  $string .= ' plus '. ($pfill ? $plus .$FILL[$pfill] : LaTeXML::Float::format($plus/65536 * 0.66) .'mu') if $plus != 0;
-  $string .= ' minus '.($mfill ? $minus.$FILL[$mfill] : LaTeXML::Float::format($minus/65536 * 0.66).'mu') if $minus != 0;
+  my $string = LaTeXML::Float::format($sp/65536 * 1.8)."mu";
+  $string .= ' plus '. ($pfill ? $plus .$FILL[$pfill] : LaTeXML::Float::format($plus/65536 * 1.8) .'mu') if $plus != 0;
+  $string .= ' minus '.($mfill ? $minus.$FILL[$mfill] : LaTeXML::Float::format($minus/65536 * 1.8).'mu') if $minus != 0;
   $string; }
 
 sub stringify { "MuGlue[".join(',',@{$_[0]})."]"; }
