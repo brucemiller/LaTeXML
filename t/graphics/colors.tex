@@ -1,0 +1,84 @@
+\documentclass{article}
+\usepackage{color}
+\begin{document}
+
+\section{Predefined colors}
+{\color{black} Black} vs. \textcolor{black}{Black}.
+
+{\color{white} White} vs. \textcolor{white}{White}.
+
+{\color{red} Red} vs. \textcolor{red}{Red}.
+
+{\color{green} Green} vs. \textcolor{green}{Green}.
+
+{\color{blue} Blue} vs. \textcolor{blue}{Blue}.
+
+{\color{cyan} Cyan} vs. \textcolor{cyan}{Cyan}.
+
+{\color{magenta} Magenta} vs. \textcolor{magenta}{Magenta}.
+
+{\color{yellow} Yellow} vs. \textcolor{yellow}{Yellow}.
+
+
+
+\section{RGB colors}
+\definecolor{rgbred}{rgb}{1.0,0.0,0.0}
+{\color[rgb]{1.0,0.0,0.0} Red}
+vs. \textcolor[rgb]{1.0,0.0,0.0}{Red}
+vs. \textcolor{rgbred}{Red}.
+
+\section{CMYK colors}
+\definecolor{cmykcyan}{cmyk}{1.0,0.0,0.0,0.0}
+{\color[cmyk]{1.0,0.0,0.0,0.0} Cyan}
+vs. \textcolor[cmyk]{1.0,0.0,0.0,0.0}{Cyan}
+vs. \textcolor{cmykcyan}{Cyan}
+
+\definecolor{cmykblack}{cmyk}{0.0,0.0,0.0,1.0}
+{\color[cmyk]{0.0,0.0,0.0,1.0} Black}
+vs.\textcolor[cmyk]{0.0,0.0,0.0,1.0}{Black}
+vs.\textcolor{cmykblack}{Black}
+
+\section{Gray colors}
+\definecolor{grayblack}{gray}{0.0}
+{\color[gray]{0.0} Black}
+vs. \textcolor[gray]{0.0}{Black}
+vs. \textcolor{grayblack}{Black}
+
+\definecolor{gray}{gray}{0.5}
+{\color[gray]{0.5} Gray}
+vs. \textcolor[gray]{0.5}{Gray}
+vs. \textcolor{gray}{Gray}
+
+\definecolor{light}{gray}{0.9}
+{\color[gray]{0.9} Light}
+vs. \textcolor[gray]{0.9}{Light}
+vs. \textcolor{light}{Light}
+
+
+\section{Boxes}
+
+\colorbox{gray}{\textcolor{light}{Light within Gray}}
+
+vs. \colorbox[gray]{0.5}{\textcolor{light}{Light within Gray}}
+
+\fcolorbox{blue}{red}{\textcolor{green}{Green in Red surrounded by Blue}}
+
+\fcolorbox[cmyk]{0,1,0,0}{1,0,0,0}{\textcolor[cmyk]{0,0,1,0}{Yellow in Cyan surrounded by Magenta}}
+
+{\color{blue}{\framebox{\colorbox{red}{\textcolor{green}{Green in Red surrounded by Blue}}}}}
+\section{Math}
+\[ \textcolor{red}{R} + \textcolor{green}{G} + \textcolor{blue}{B} \]
+
+\[ \colorbox{red}{R} + \colorbox{green}{G} + \colorbox{blue}{B} \]
+
+\[ \fcolorbox{green}{blue}{\textcolor{red}{R}} + \fcolorbox{blue}{red}{\textcolor{green}{G}} + \fcolorbox{red}{green}{\textcolor{blue}{B}} \]
+
+\end{document}
+\section{Named colors}
+\definecolor{myjunglegreen}{named}{JungleGreen}
+{\color[named}{JungleGreen} JungleGreen}
+vs. \textcolor[named}{JungleGreen}{JungleGreen}
+vs. \textcolor{myjunglegreen}{JungleGreen}
+
+\end{document}
+
