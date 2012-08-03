@@ -605,28 +605,44 @@ sub closeNode_internal {
   # If we're closing a node that can take font switches and it contains
   # a single FONT_ELEMENT_NAME node; pull it up.
   my $np = $node->parentNode;
+  my $model = $$self{model};
   if(($$closeto eq $$np)	# node is Still in tree!
      && (scalar(@c=$node->childNodes) == 1) # with single child
-     && ($$self{model}->getNodeQName($c[0]) eq $FONT_ELEMENT_NAME)
-     && $$self{model}->canHaveAttribute($node,'font')){
+     && ($model->getNodeQName($c[0]) eq $FONT_ELEMENT_NAME)
+     # AND, $node can have all the attributes that the child has (but at least 'font')
+     && !grep( !$model->canHaveAttribute($node,$_),
+	       'font',grep(/^[^_]/,map($_->nodeName,$c[0]->attributes)))){
     my $c = $c[0];
     $self->setNodeFont($node,$self->getNodeFont($c));
     $node->removeChild($c);
     foreach my $gc ($c->childNodes){
       $node->appendChild($gc); }
+    # Merge the attributes from the child onto $node
     foreach my $attr ($c->attributes()){
       if($attr->nodeType == XML_ATTRIBUTE_NODE){
 	my $key = $attr->nodeName;
 	my $val = $attr->getValue;
+	# Special case attributes
 	if($key eq 'xml:id'){	# Use the replacement id
 	  if(!$node->hasAttribute($key)){
 	    $self->recordID($val,$node);
 	    $node->setAttribute($key, $val); }}
-	elsif($key eq 'class'){
+	elsif($key eq 'class'){	# combine $class
 	  if(my $class = $node->getAttribute($key)){
 	    $node->setAttribute($key,$class.' '.$val); }
 	  else {
 	    $node->setAttribute($key,$class); }}
+	# xoffset, yoffset, pad-width, pad-height should sum up, if present on both.
+	elsif($key =~ /^(xoffset|yoffset|pad-height|pad-width)$/){
+	    if(my $val2 = $node->getAttribute($key)){
+		my $v1 = $val =~/^([\+\-\d\.]*)pt$/ && $1;
+		my $v2 = $val2=~/^([\+\-\d\.]*)pt$/ && $1;
+		$node->setAttribute($key=>($v1+$v2).'pt'); }
+	    else {
+		$node->setAttribute($key=>$val); }}
+	# Remaining attributes should prefer the inner (child's) values, if any
+	# (font, size, color, framed)
+	# (width,height, depth, align, vattach, float)
 	elsif(my $ns = $attr->namespaceURI){
 	  $node->setAttributeNS($ns,$attr->name,$val); }
 	else {
