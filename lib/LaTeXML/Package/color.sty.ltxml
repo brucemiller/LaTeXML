@@ -30,34 +30,20 @@ foreach my $option (qw(dvips xdvi oztex dvipsnames)){
 		return; }); }
 
 #======================================================================
-# Most of this should use the color properties in fonts (See LaTeXML::Font)
-# but hasn't been done yet.
-# model=rgb, cmyk, gray or named
-# spec = <number>,<number>,<number> for rgb
-#        <number>,<number>,<number>,<number> for cmyk
-#        <number> for gray
-#        colorname for named
-# \definecolor{name}{model}{spec}
+# are there default named colors that we should be loading?
 
-# NOTE: color names not present in SVG:
-# Dandelion, Apricot, Peach, Mellon, ...
-# see:
-# http://tex.loria.fr/graph-pack/grf/grf.pdf
-# http://www.december.com/html/spec/colorsvg.html
+DefPrimitive('\definecolor{}{}{}', sub {
+  my($stomach,$name,$model,$color)=@_;
+  AssignValue('color_'.ToString($name) => getColor($model,$color)); });
 
-#DefPrimitive('\definecolor{}{}{}', sub {
-#  AssignValue('color_'.ToString($_[1]), ConvertColor(ToString($_[2]),ToString(Expand($_[3]))));
-#  return; });
-DefConstructor('\definecolor{}{}{}', "",
-		afterDigest=>sub {
-		  my($name,$model,$color)=map(ToString($_),$_[1]->getArgs(1,2,3));
-		  AssignValue('color_'.$name,ConvertColor($model,$color)); });
 # I don't think this is quite right, but...
-DefConstructor('\DefineNamedColor{}{}{}{}', "",
-		afterDigest=>sub {
-		  my($dmodel,$name,$model,$color)=map(ToString($_),$_[1]->getArgs(1,2,3,4));
-		  AssignValue('color_'.$name,ConvertColor($model,$color)); });
+# [I think we need do do something like "named_color_".$name
+#  and corresponding changes to getColor, as well?
+DefPrimitive('\DefineNamedColor{}{}{}{}', sub {
+ my($stomach,$dmodel,$name,$model,$color)=@_;
+ AssignValue('color_'.ToString($name),getColor($model,$color)); });
 
+# change this to something like ConvertColor... Oh, already have that?
 sub getColor {
   my($model,$spec) = @_;
   $model = ToString($model);
@@ -71,60 +57,34 @@ sub getColor {
   else {
     $spec; }}
 
-# NOTE: Why are these defined as macros, rather than primitives?
+# \color{name} or \color[model]{spec}
+DefPrimitive('\color[]{}', sub {
+  my($stomach,$model,$spec)=@_;
+  my $color = getColor($model, $spec);
+  AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
+  MergeFont(color=>$color);
+  Box(undef,undef,undef,Invocation(T_CS('\color'),@_[1..$#_])); });
 
-# \color{name}
-# DefMacro('\color[]{}', sub {
-# 	   my $color = getColor($_[1], $_[2]);
-# 	   AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
-# 	   MergeFont(color=>$color);
-# 	   return; });
+#\pagecolor{name} or \pagecolor[model]{spec}
+DefPrimitive('\pagecolor[]{}', sub {
+  my($stomach,$model,$spec)=@_;
+  MergeFont(background=>getColor($model, $spec));
+  Box(undef,undef,undef,Invocation(T_CS('\pagecolor'),@_[1..$#_])); });
 
-DefConstructor('\color[]{}', "",
-	       afterDigest=>sub {
-		 my($model,$spec)=$_[1]->getArgs;
-		 my $color = getColor($model, $spec);
-		 AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
-		 MergeFont(color=>$color);
-		 return; });
+# NOTE: the color in effect at \begin{document} will be returned by \normalcolor
+# Do other font properties act this way?
+DefPrimitive('\normalcolor', sub {
+  my $color = (LookupValue('preambleTextcolor') || 'black');
+  MergeFont(color=>$color); });
 
-DefMacro('\normalcolor', sub {
-	   my $color = (LookupValue('preambleTextcolor') || 'black');
-	   MergeFont(color=>$color);
-	   return; });
+#\textcolor{name}{text} or \textcolor[model]{spec}{text}
+DefMacro('\textcolor[]{}{}', '{\color[#1]{#2}#3}');
 
-#\textcolor{name}{text}
-#\textcolor[model]{spec}{text}
-DefMacro('\textcolor[]{}{}', sub { 
-	   my ($ignore, $model, $spec, $text) = @_;
-	   my @equiv = (T_BEGIN, T_CS('\color'));
-	   push(@equiv, T_OTHER('['), $model->unlist, T_OTHER(']')) if $model;
-	   push(@equiv, T_BEGIN, $spec->unlist, T_END, $text->unlist, T_END);
-	   @equiv; });
+#\colorbox{name}{text} or \colorbox[model]{spec}{text}
+DefMacro('\colorbox[]{}{}', '{\pagecolor[#1]{#2}#3}');
 
-#\pagecolor{name}
-#\pagecolor[model]{spec}
-DefMacro('\pagecolor[]{}', sub {
-	   AssignValue('pagecolor', getColor($_[1], $_[2]));
-	   return; });
-
-
-# NOTE: textstyle does not enclose the next 2 tags; also, assigned values are not visible unless
-# defined as global
-
-#\colorbox{name}{text}
-#\colorbox[model]{spec}{text}
-DefConstructor('\colorbox[]{}{}',"<ltx:text backgroundcolor='#bcolor'>#3</ltx:text>",
-	       properties=>{ bcolor=>sub { getColor($_[1],$_[2]); }},
-	       mode=>'text');
-
-#\fcolorbox{name}{text}
-#\fcolorbox[model]{spec}{text}
-DefConstructor('\fcolorbox[]{}{}{}',
-	       "<ltx:text framed='yes' framecolor='#fcolor' backgroundcolor='#bcolor'>#4</ltx:text>",
-	       properties=>{ bcolor=>sub { getColor($_[1],$_[2]); },
-			     fcolor=>sub { getColor($_[1],$_[3]); }},
-	       mode=>'text');
+#\fcolorbox{name}{text} or \fcolorbox[model]{spec}{text}
+DefMacro('\fcolorbox[]{}{}{}','{\color[#1]{#2}\framebox{\pagecolor[#1]{#3}#4}}');
 
 #********************************************************************************
 ProcessOptions();
