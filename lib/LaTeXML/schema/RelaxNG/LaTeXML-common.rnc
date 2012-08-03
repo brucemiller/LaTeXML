@@ -175,8 +175,10 @@ Positionable.attributes =
   attribute float { ( "right" | "left" | text) }?,
 
   ## the kind of frame or outline for the box.
-  attribute framed { "rectangle" | "underline" | text }?
+  attribute framed { "rectangle" | "underline" | text }?,
 
+  ## the color of the frame or outlie for the box.
+  attribute framecolor { text }?
 
 ## Attributes for elements that may be converted to image form
 ## during postprocessing, such as math, graphics, pictures, etc.

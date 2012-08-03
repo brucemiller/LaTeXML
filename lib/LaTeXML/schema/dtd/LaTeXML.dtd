@@ -20,6 +20,7 @@
   vattach (top|middle|bottom) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
+  framecolor CDATA #IMPLIED
   font CDATA #IMPLIED
   fontsize CDATA #IMPLIED
   color CDATA #IMPLIED
@@ -61,7 +62,8 @@
   align (left|center|right|justified) #IMPLIED
   vattach (top|middle|bottom) #IMPLIED
   float CDATA #IMPLIED
-  framed CDATA #IMPLIED>
+  framed CDATA #IMPLIED
+  framecolor CDATA #IMPLIED>
 
 <!ELEMENT ns1:ref (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                    |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
@@ -204,7 +206,8 @@
   align (left|center|right|justified) #IMPLIED
   vattach (top|middle|bottom) #IMPLIED
   float CDATA #IMPLIED
-  framed CDATA #IMPLIED>
+  framed CDATA #IMPLIED
+  framecolor CDATA #IMPLIED>
 
 <!ELEMENT ns1:constraint (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                           |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref
@@ -280,7 +283,8 @@
   align (left|center|right|justified) #IMPLIED
   vattach (top|middle|bottom) #IMPLIED
   float CDATA #IMPLIED
-  framed CDATA #IMPLIED>
+  framed CDATA #IMPLIED
+  framecolor CDATA #IMPLIED>
 
 <!ELEMENT ns1:listingblock ((ns1:p|ns1:equation|ns1:equationgroup|ns1:quote|ns1:block|ns1:listingblock|ns1:itemize|ns1:enumerate|ns1:description|ns1:inline-block|ns1:verbatim|ns1:break|ns1:graphics|ns1:inline-para|ns1:tabular|ns1:picture|ns1:note|ns1:indexmark|ns1:rdf|ns1:ERROR)*)*>
 <!ATTLIST ns1:listingblock
@@ -317,7 +321,8 @@
   align (left|center|right|justified) #IMPLIED
   vattach (top|middle|bottom) #IMPLIED
   float CDATA #IMPLIED
-  framed CDATA #IMPLIED>
+  framed CDATA #IMPLIED
+  framecolor CDATA #IMPLIED>
 
 <!ELEMENT ns1:verbatim (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                         |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
@@ -418,7 +423,8 @@
   align (left|center|right|justified) #IMPLIED
   vattach (top|middle|bottom) #IMPLIED
   float CDATA #IMPLIED
-  framed CDATA #IMPLIED>
+  framed CDATA #IMPLIED
+  framecolor CDATA #IMPLIED>
 
 <!ELEMENT ns1:theorem (ns1:title?,
                        (ns1:para|ns1:theorem|ns1:proof|ns1:figure
@@ -472,6 +478,7 @@
   vattach (top|middle|bottom) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
+  framecolor CDATA #IMPLIED
   placement CDATA #IMPLIED>
 
 <!ELEMENT ns1:table ((ns1:table
@@ -500,6 +507,7 @@
   vattach (top|middle|bottom) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
+  framecolor CDATA #IMPLIED
   placement CDATA #IMPLIED>
 
 <!ELEMENT ns1:float ((ns1:float
@@ -528,6 +536,7 @@
   vattach (top|middle|bottom) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
+  framecolor CDATA #IMPLIED
   placement CDATA #IMPLIED>
 
 <!ELEMENT ns1:listing ((ns1:p|ns1:equation|ns1:equationgroup|ns1:quote
@@ -555,6 +564,7 @@
   vattach (top|middle|bottom) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
+  framecolor CDATA #IMPLIED
   placement CDATA #IMPLIED>
 
 <!ELEMENT ns1:caption (#PCDATA|ns1:tag|ns1:text|ns1:emph|ns1:acronym
