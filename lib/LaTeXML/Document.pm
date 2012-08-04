@@ -543,13 +543,12 @@ sub openMathText_internal {
   foreach my $ligature ($STATE->getModel->getMathLigatures){
     my($nmatched, $newstring, %attr) = &{$$ligature{matcher}}($self,@sibs);
     if($nmatched){
-##      print STDERR "Matched $nmatched => \"$newstring\"\n";
       my @boxes = ($self->getNodeBox($node));
       $node->firstChild->setData($newstring);
       for(my $i=0; $i<$nmatched-1; $i++){
 	my $remove = $node->previousSibling;
 	unshift(@boxes,$self->getNodeBox($remove));
-	$node->parentNode->removeChild($remove); }
+	$self->removeNode($remove); }
 ## This fragment replaces the node's box by the composite boxes it replaces
 ## HOWEVER, this gets things out of sync because parent lists of boxes still
 ## have the old ones.  Unless we could recursively replace all of them, we'd better skip it(??)
@@ -591,9 +590,7 @@ sub closeNode_internal {
   my $closeto = $node->parentNode; # Grab now in case afterClose screws the structure.
   my $n = $self->closeText_internal; # Close any open text node.
   while($n->nodeType == XML_ELEMENT_NODE){
-#    map(&$_($self,$n,$LaTeXML::BOX),$$self{model}->getTagPropertyList($n,'afterClose'));
     $self->closeElementAt($n);
-###    last if $$node eq $$n;	# NOTE: This equality test is questionable
     last if $node->isSameNode($n);	# NOTE: This equality test is questionable
     $n = $n->parentNode; }
   print STDERR "Closing ".Stringify($node)." => ".Stringify($closeto)."\n" if $LaTeXML::Document::DEBUG;
@@ -614,7 +611,7 @@ sub closeNode_internal {
 	       'font',grep(/^[^_]/,map($_->nodeName,$c[0]->attributes)))){
     my $c = $c[0];
     $self->setNodeFont($node,$self->getNodeFont($c));
-    $node->removeChild($c);
+    $self->removeNode($c);
     foreach my $gc ($c->childNodes){
       $node->appendChild($gc); }
     # Merge the attributes from the child onto $node
@@ -741,7 +738,7 @@ sub getNodeBox {
 
 sub setNodeFont {
   my($self,$node,$font)=@_;
-#  my $fontid = "$font";
+  return unless ref $font;	# ?
   my $fontid = $font->toString;
   $$self{node_fonts}{$fontid} = $font;
   if($node->nodeType == XML_ELEMENT_NODE){
@@ -755,6 +752,24 @@ sub getNodeFont {
   (($t == XML_ELEMENT_NODE) && $$self{node_fonts}{$node->getAttribute('_font')})
     || LaTeXML::Font->default(); }
 
+
+# Remove a node from the document (from it's parent)
+sub removeNode {
+  my($self,$node)=@_;
+  if($node->nodeType == XML_ELEMENT_NODE){ # If an element, do ID bookkeeping.
+    if(my $id = $node->getAttribute('xml:id')){
+      $self->unRecordID($id); }
+    map($self->removeNode_aux($_), $node->childNodes); }
+  $node->parentNode->removeChild($node);
+###  $node->unbindNode;		# for cleanup, and also to assure removed if there's no children!
+  $node; }
+
+sub removeNode_aux {
+  my($self,$node)=@_;
+  if($node->nodeType == XML_ELEMENT_NODE){ # If an element, do ID bookkeeping.
+    if(my $id = $node->getAttribute('xml:id')){
+      $self->unRecordID($id); }
+    map($self->removeNode_aux($_), $node->childNodes); }}
 
 #**********************************************************************
 # Inserting new nodes at random points into the document,
@@ -958,7 +973,7 @@ sub replaceNode {
     if($c0){ $parent->insertAfter($c1,$c0); }
     else   { $parent->replaceChild($c1,$node); }
     $c0=$c1; }
-  $node->unbindNode;		# for cleanup, and also to assure removed if there's no children!
+  $self->removeNode($node);
   $node; }
 
 # initially since $node->setNodeName was broken in XML::LibXML 1.58
@@ -991,11 +1006,55 @@ sub renameNode {
   $self->afterOpen($new);
   $self->afterClose($new);
   # Finally, remove the old node
-  $parent->removeChild($node);
+  $self->removeNode($node);
   $new; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Finally, another set of surgery methods
+# These take an array representation of the XML Tree to append
+#   [tagname,{attributes..}, children]
+# THESE SHOULD BE PART OF A COMMON BASE CLASS; DUPLICATED IN Post::Document 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+sub replaceTree {
+  my($self,$new,$old)=@_;
+  my $parent = $old->parentNode;
+  my @following = ();		# Collect the matching and following nodes
+  while(my $sib = $parent->lastChild){
+    last if $$sib == $$old;
+    $parent->removeChild($sib);	# We're putting these back, in a moment!
+##    last if $$sib == $$old;
+    unshift(@following,$sib); }
+  $self->removeNode($old);
+  $self->appendTree($parent,$new);
+  my $inserted = $parent->lastChild;
+  map($parent->appendChild($_),@following); # No need for clone
+  $inserted; }
+
+sub appendTree {
+  my($self,$node,@data)=@_;
+  foreach my $child (@data){
+    if(ref $child eq 'ARRAY'){
+      my($tag,$attributes,@children)=@$child;
+      my $new = $self->openElementAt($node,$tag,($attributes ? %$attributes:()));
+      $self->appendTree($new,@children); }
+    elsif((ref $child) =~ /^XML::LibXML::/){
+      my $type = $child->nodeType;
+      if($type == XML_ELEMENT_NODE){
+	my $tag = $self->getNodeQName($child);
+	my %attributes = map($_->nodeType == XML_ATTRIBUTE_NODE ? ($_->nodeName=>$_->getValue):(),
+			     $child->attributes);
+	my $new = $self->openElementAt($node,$tag,%attributes);
+	$self->appendTree($new, $child->childNodes); }
+      elsif($type == XML_DOCUMENT_FRAG_NODE){
+	$self->appendTree($node,$child->childNodes); }
+      elsif($type == XML_TEXT_NODE){
+	$node->appendTextNode($child->textContent); }
+    }
+    elsif(ref $child){
+      warn "Dont know how to add $child to $node; ignoring"; }
+    elsif(defined $child){
+      $node->appendTextNode($child); }}}
 
 #**********************************************************************
 1;
