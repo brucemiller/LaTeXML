@@ -58,11 +58,20 @@
   <xsl:template match="*[namespace-uri() = 'http://www.w3.org/1998/Math/MathML']">
     <xsl:element name="{local-name()}">
       <xsl:for-each select="@*">
-	<xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
+	<xsl:choose>
+	  <xsl:when test="local-name() = 'id'">
+	    <xsl:attribute name="id"><xsl:value-of select="."/></xsl:attribute>
+	  </xsl:when>
+	  <xsl:otherwise>
+	    <xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
+	  </xsl:otherwise>
+	</xsl:choose>
       </xsl:for-each>
       <xsl:choose>
-	<xsl:when test="local-name()='annotation-xml'">
-	  <!-- switch to blind-copy if annotation-xml -->
+	<!-- If annotation-xml in a DIFFERENT namespace, do blind copy
+	     (staying in this template for mathml in annotation avoids extra ns declarations) -->
+        <xsl:when test="local-name()='annotation-xml'                              
+                        and not(namespace-uri(child::*) = 'http://www.w3.org/1998/Math/MathML')">
 	  <xsl:apply-templates mode='blind-copy'/>
 	</xsl:when>
 	<xsl:otherwise>
@@ -74,7 +83,11 @@
 
   <!-- This copies WHATEVER, in WHATEVER namespace (eg. OpenMath, or....)
        I'm thinking that using local-name(), here, is best,
-       to avoid namespace prefixes altogether -->
+       to avoid namespace prefixes altogether.
+       Note that namespaced attributes will still be preserved.
+       INCLUDING xml:id; not sure if html5 really accepts that,
+       but it doesn't really accept arbitrary annotations, anyway.
+  -->
   <xsl:template match="*" mode='blind-copy'>
     <xsl:element name="{local-name()}" namespace="{namespace-uri()}">
       <xsl:for-each select="@*">

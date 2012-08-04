@@ -58,7 +58,14 @@
   <xsl:template match="*[namespace-uri() = 'http://www.w3.org/1998/Math/MathML']">
     <xsl:element name="{local-name()}" namespace='http://www.w3.org/1998/Math/MathML'>
       <xsl:for-each select="@*">
-	<xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
+	<xsl:choose>
+	  <xsl:when test="local-name() = 'id'">
+	    <xsl:attribute name="id"><xsl:value-of select="."/></xsl:attribute>
+	  </xsl:when>
+	  <xsl:otherwise>
+	    <xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
+	  </xsl:otherwise>
+	</xsl:choose>
       </xsl:for-each>
       <xsl:choose>
 	<!-- If annotation-xml in a DIFFERENT namespace, do blind copy
