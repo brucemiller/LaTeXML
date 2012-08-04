@@ -42,20 +42,27 @@ sub preprocess {
 
 # Works for pmml, cmml
 sub outerWrapper {
-  my($self,$doc,$node,@conversion)=@_;
-  my $mode = $node->getAttribute('mode')||'inline';
-  ['m:math',{display=>($mode eq 'display' ? 'block' : 'inline'),
-	     alttext=>$node->getAttribute('tex') },
-   @conversion]; }
-
+  my($self,$doc,$math,$xmath,@conversion)=@_;
+  my $mode = $math->getAttribute('mode')||'inline';
+  my $wrapped = ['m:math',{display=>($mode eq 'display' ? 'block' : 'inline'),
+			   alttext=>$math->getAttribute('tex') },
+		 @conversion];
+  if(my $id = $xmath->getAttribute('fragid')){
+    $wrapped = $self->associateID($wrapped,$id); }
+  ($wrapped); }
 
 # This works for either pmml or cmml.
 sub combineParallel {
-  my($self,$doc,$math,$primary,@secondaries)=@_;
+  my($self,$doc,$math,$xmath,$primary,@secondaries)=@_;
   my $tex = isElementNode($math) && $math->getAttribute('tex');
-  (['m:semantics',{},
-    $primary,
-    map( ['m:annotation-xml',{encoding=>$$_[0]->getEncodingName},$$_[1]], @secondaries),
+  my $id = $xmath->getAttribute('fragid');
+  my @wsecondaries = ();
+  foreach my $pair (@secondaries){
+    my($proc,$secondary)=@$pair;
+    my $wrapped = ['m:annotation-xml',{encoding=>$proc->getEncodingName}, $secondary];
+    $wrapped = $proc->associateID($wrapped,$id) if $id;
+    push(@wsecondaries,$wrapped); }
+  (['m:semantics',{}, $primary, @wsecondaries,
     (defined $tex ? (['m:annotation',{encoding=>'application/x-tex'}, $tex]) : ()) ]); }
 
 # $self->convertNode($doc,$node);
@@ -228,7 +235,7 @@ sub pmml_top {
   local $LaTeXML::MathML::COLOR   = find_inherited_attribute($node,'color');
   local $LaTeXML::MathML::BGCOLOR = find_inherited_attribute($node,'backgroundcolor');
   local $LaTeXML::MathML::OPACITY = find_inherited_attribute($node,'opacity');
-  pmml($node); }
+  map(pmml($_),element_nodes($node)); }
 
 sub find_inherited_attribute {
   my($node,$attribute)=@_;
@@ -760,7 +767,13 @@ sub cmml_top {
   local $LaTeXML::MathML::COLOR   = find_inherited_attribute($node,'color');
   local $LaTeXML::MathML::BGCOLOR = find_inherited_attribute($node,'backgroundcolor');
   local $LaTeXML::MathML::OPACITY = find_inherited_attribute($node,'opacity');
-  cmml($node); }
+
+  my($item,@rest)=  element_nodes($node);
+  if(@rest){			# Unparsed ???
+    cmml_unparsed($item,@rest); }
+  else {
+    cmml($item); }}
+##  cmml($node); }
 
 sub cmml {
   my($node)=@_;
@@ -774,13 +787,14 @@ sub cmml_internal {
   return ['m:merror',{},['m:mtext',{},"Missing Subexpression"]] unless $node;
   $node = realize($node) if getQName($node) eq 'ltx:XMRef';
   my $tag = getQName($node);
-  if($tag eq 'ltx:XMath'){
-    my($item,@rest)=  element_nodes($node);
-    if(@rest){			# Unparsed ???
-      cmml_unparsed($item,@rest); }
-    else {
-      cmml($item); }}
-  elsif($tag eq 'ltx:XMDual'){
+  # if($tag eq 'ltx:XMath'){
+  #   my($item,@rest)=  element_nodes($node);
+  #   if(@rest){			# Unparsed ???
+  #     cmml_unparsed($item,@rest); }
+  #   else {
+  #     cmml($item); }}
+  # els
+  if($tag eq 'ltx:XMDual'){
     my($content,$presentation) = element_nodes($node);
     my $id = $node->getAttribute('xml:id');
     local $LaTeXML::MathML::SOURCEID = $id || $LaTeXML::MathML::SOURCEID_LOCK 
@@ -1435,7 +1449,7 @@ sub preprocess {
       $doc->replaceNode($math,['ltx:MathFork',{},$math,
 			       ['ltx:MathBranch',{},
 				['ltx:Math',{'xml:id'=>$bid},
-				 $self->outerWrapper($doc,$math,
+				 $self->outerWrapper($doc,$math,$xmath,
 						     $breaker->applyLayout($pmml,$layout))]]]);
       # Might as well cache the converted pmml?
       # [But note that applyLayout MODIFIED the orignal $pmml, so it's got linebreaks!]

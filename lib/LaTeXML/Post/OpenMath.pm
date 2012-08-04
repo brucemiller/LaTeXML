@@ -35,19 +35,31 @@ sub preprocess {
   $doc->addNamespace($omURI,'om'); }
 
 sub outerWrapper {
-  my($self,$doc,$node,@conversion)=@_;
-  ['om:OMOBJ',{},@conversion]; }
+  my($self,$doc,$math,$xmath,@conversion)=@_;
+  my $wrapped = ['om:OMOBJ',{},@conversion];
+  if(my $id = $xmath->getAttribute('fragid')){
+    $wrapped = $self->associateID($wrapped,$id); }
+  ($wrapped); }
 
 sub convertNode {
   my($self,$doc,$xmath,$style)=@_;
-  Expr($xmath); }
+  my($item,@rest)=  element_nodes($xmath);
+  if(@rest){			# Unparsed ???
+    print STDERR "Warning: got extra nodes for content!\n  ".$xmath->toString."\n" if @rest; }
+  Expr($item); }
 
 sub combineParallel {
-  my($self,$doc,$math,$primary,@secondaries)=@_;
+  my($self,$doc,$math,$xmath,$primary,@secondaries)=@_;
   my $tex = isElementNode($math) && $math->getAttribute('tex');
-  (['om:OMATTR',{},
-    map( (['om:OMS',{cd=>"Alternate", name=>$$_[0]->getEncodingName}], ['om:OMFOREIGN',{},$$_[1]]),
-	 @secondaries),
+  my $id = $xmath->getAttribute('fragid');
+  # secondaries should already have been wrapped with m:annotaiton by innerWrapper
+  my @attr = ();
+  foreach my $pair (@secondaries){
+    my($proc,$secondary)=@$pair;
+    my $wrapped = ['om:OMFOREIGN',{},$secondary];
+    $wrapped = $proc->associateID($wrapped,$id) if $id;
+    push(@attr, ['om:OMS',{cd=>"Alternate", name=>$proc->getEncodingName}],$wrapped); }
+  (['om:OMATTR',{}, @attr,
     ($tex ? (['om:OMS',{cd=>'Alternate', name=>'TeX'}],['om:OMFOREIGN',{},$tex]) : ()),
     $primary ]); }
 

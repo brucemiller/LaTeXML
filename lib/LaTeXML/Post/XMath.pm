@@ -41,14 +41,16 @@ use base qw(LaTeXML::Post::MathProcessor);
 
 sub convertNode {
   my($self,$doc,$xmath,$style)=@_;
-  # if we're changing id's, clone with the change
-  if(my $idsuffix = $self->IDSuffix){
-    $doc->cloneNode($xmath,$idsuffix); }
+  my $idsuffix = $self->IDSuffix;
+  if($idsuffix){
+    ['ltx:XMath',{},map($doc->cloneNode($_,$idsuffix), element_nodes($xmath))]; }
   else {
+    # If no idsuffix, we're actually just PRESERVING the xmath,
+    # so we shouldn't need any cloning or id munging (!?!?!?!)
     $xmath; }}
 
 sub combineParallel {
-  my($self,$doc,$math,$primary,@secondaries)=@_;
+  my($self,$doc,$math,$xmath,$primary,@secondaries)=@_;
   # Just return the converted nodes to be added to the ltx:Math
   ($primary, map( $$_[1], @secondaries)); }
 
