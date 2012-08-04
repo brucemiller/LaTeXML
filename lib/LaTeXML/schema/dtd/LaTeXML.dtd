@@ -611,7 +611,8 @@
                      |ns1:XMWrap|ns1:XMDual|ns1:XMText|ns1:XMArray)*>
 <!ATTLIST ns1:XMath
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  xml:id ID #IMPLIED>
 
 <!ELEMENT ns1:XMTok (#PCDATA)*>
 <!ATTLIST ns1:XMTok

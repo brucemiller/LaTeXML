@@ -113,7 +113,7 @@ XMath =
 element XMath { XMath_attributes, XMath_model }
 
 ## Attributes for \elementref{XMath}.
-XMath_attributes = Common.attributes
+XMath_attributes = Common.attributes, ID.attributes
 
 ## Content model for \elementref{XMath}.
 XMath_model = XMath.class*
