@@ -403,8 +403,6 @@ sub invoke {
 
   # Call any 'After' code.
   my @post = $self->executeAfterDigest($stomach,$whatsit);
-  if(my $id = $props{id}){
-    $STATE->assignValue('xref:'.$id=>$whatsit,'global'); }
   if(my $cap = $$self{captureBody}){
     $whatsit->setBody(@post,$stomach->digestNextBody((ref $cap ? $cap : undef))); @post=(); }
   (@pre,$whatsit,@post); }
@@ -525,8 +523,6 @@ use Text::Balanced;
 sub parse_conditional {
   s/^\?//;			# Remove leading "?"
   my $bool =  'ToString('.translate_value().')';
-##  if(s/^\((.*?)\)(\((.*?)\))?//s){
-##    ($bool,$1,$3); }
   if(my $if = Text::Balanced::extract_bracketed($_,'()')){
     $if =~ s/^\(//;    $if =~ s/\)$//;
     my $else = Text::Balanced::extract_bracketed($_,'()');
