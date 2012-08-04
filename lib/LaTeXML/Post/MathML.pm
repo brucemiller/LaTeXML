@@ -773,7 +773,6 @@ sub cmml_top {
     cmml_unparsed($item,@rest); }
   else {
     cmml($item); }}
-##  cmml($node); }
 
 sub cmml {
   my($node)=@_;
@@ -787,13 +786,6 @@ sub cmml_internal {
   return ['m:merror',{},['m:mtext',{},"Missing Subexpression"]] unless $node;
   $node = realize($node) if getQName($node) eq 'ltx:XMRef';
   my $tag = getQName($node);
-  # if($tag eq 'ltx:XMath'){
-  #   my($item,@rest)=  element_nodes($node);
-  #   if(@rest){			# Unparsed ???
-  #     cmml_unparsed($item,@rest); }
-  #   else {
-  #     cmml($item); }}
-  # els
   if($tag eq 'ltx:XMDual'){
     my($content,$presentation) = element_nodes($node);
     my $id = $node->getAttribute('xml:id');
