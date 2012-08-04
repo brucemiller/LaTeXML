@@ -4767,19 +4767,41 @@ DefMathI('\@APPLYFUNCTION', undef, "\x{2061}", reversion=>'', name=>'', role=>'A
 DefMathI('\@INVISIBLETIMES',undef, "\x{2062}", reversion=>'', name=>'', meaning=>'times', role=>'MULOP');
 DefMathI('\@INVISIBLECOMMA',undef, "\x{2063}", reversion=>'', name=>'', role=>'PUNCT');
 
-# Would be nice to make the ID argument optional, but since these can appear in
-# optional arguments to other macros, we'll end up nesting [] !!
-DefConstructor('\@XMArg{}{}',"<ltx:XMArg ?#1(xml:id='#1')>#2</ltx:XMArg>", reversion=>'#2',
-	       properties=>sub{ (id=>ToString($_[1])); },
-	       bounded=>1, beforeDigest=>sub { AssignValue(mathstyle=>'text') });
-DefConstructor('\@XMRef{}',"<ltx:XMRef idref='#1'/>",
-	       reversion=>sub{ 
-		 my($whatsit)=@_;
-		 my $id = $_[0]->getArg(1);
-		 if(my $reversion = LookupValue('xref:'.ToString($id))){
-		   Revert($reversion); }
-		else {
-		   $whatsit->getDefinition->invocation($id); }});
+# These are used (primarily?) within XMDual
+# The XMDual represents both a content & presentation representation of some
+# possibly exotic structure; what is sometimes called "Transfix notation",
+# or just a somewhat complex presentation that corresponds (often) to a simpler
+# applicative content structure.
+# Invoking such a mathematical object to "arguments" requires that both the
+# content & presentation branches contain those arguments.
+# XMDual (see DefMath's support) places the actual arguments in the content branch,
+# wrapped in an XMArg, with a temporary identifier (xmkey);
+# The presentation branch gets an XMRef with the same identifier.
+# When the material is actually absorbed & turned into XML, the XMArg will get
+# an id assigned, and the XMRef will get an idref refering to that id.
+# Through this connect, later processing can generate the appropriate presentation
+# form of the argument, when needed.
+DefConstructor('\@XMArg{}{}',"<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>", reversion=>'#2',
+	       bounded=>1, beforeDigest=>sub { AssignValue(mathstyle=>'text') },
+	      afterDigest=>sub {
+		AssignValue('xref:'.ToString($_[1]->getArg(1))=>$_[1], 'global'); });
+DefConstructor('\@XMRef{}',"<ltx:XMRef _xmkey='#1'/>",
+	        reversion=>sub{ 
+		  Revert(LookupValue('xref:'.ToString($_[1]))); });
+Tag('ltx:XMArg','afterOpen:late'=>sub {
+  my($document,$node)=@_;
+  if(my $key = $node->getAttribute('_xmkey')){
+    GenerateID($document,$node,undef,'xm'); # Generate id if none already.
+    my $id = $node->getAttribute('xml:id');
+    AssignValue('xmkey:'.$key=>$id,'global'); }});
+Tag('ltx:XMRef','afterOpen:late'=>sub {
+  my($document,$node)=@_;
+  if(my $key = $node->getAttribute('_xmkey')){
+    if(! $node->getAttribute('idref')){ # If not already set (somehow?)
+      my $id = LookupValue('xmkey:'.$key);
+      Warn(":expected:idref Expected id for XMRef from XMArg with key $key; found none") unless $id;
+      $node->setAttribute(idref=>$id) if $id; }}});
+
 
 DefConstructor('\@ERROR{}{}', "<ltx:ERROR class='ltx_#1'>#2</ltx:ERROR>");
 
