@@ -111,12 +111,12 @@
             <XMath>
               <XMApp>
                 <XMTok meaning="times" role="MULOP">×</XMTok>
-                <XMApp open="(" close=")">
+                <XMApp close=")" open="(">
                   <XMTok meaning="times" role="MULOP">×</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
                 </XMApp>
-                <XMApp open="(" close=")">
+                <XMApp close=")" open="(">
                   <XMTok meaning="times" role="MULOP">×</XMTok>
                   <XMTok role="ID" font="italic">c</XMTok>
                   <XMTok role="ID" font="italic">d</XMTok>
@@ -128,14 +128,14 @@
         <equation xml:id="S1.Ex7">
           <Math mode="display" xml:id="S1.Ex7.m1" tex="((a\times b)\times(c\times d))" text="a * b * c * d">
             <XMath>
-              <XMApp open="(" close=")">
+              <XMApp close=")" open="(">
                 <XMTok meaning="times" role="MULOP">×</XMTok>
-                <XMApp open="(" close=")">
+                <XMApp close=")" open="(">
                   <XMTok meaning="times" role="MULOP">×</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
                 </XMApp>
-                <XMApp open="(" close=")">
+                <XMApp close=")" open="(">
                   <XMTok meaning="times" role="MULOP">×</XMTok>
                   <XMTok role="ID" font="italic">c</XMTok>
                   <XMTok role="ID" font="italic">d</XMTok>
@@ -191,7 +191,7 @@
       </para>
       <para xml:id="S1.SS0.SSS0.P1.p3">
         <equation xml:id="S1.Ex11">
-          <Math mode="display" xml:id="S1.Ex11.m1" tex="a\times\@@framebox{}{}{$b\times c$}" text="a * b * c">
+          <Math mode="display" xml:id="S1.Ex11.m1" tex="a\times\framebox{}{}{$b\times c$}" text="a * b * c">
             <XMath>
               <XMApp>
                 <XMTok meaning="times" role="MULOP">×</XMTok>
@@ -267,7 +267,7 @@
         <Math mode="display" xml:id="S3.Ex14.m1" tex="|a|" text="absolute-value@(a)">
           <XMath>
             <XMApp>
-              <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
               <XMTok role="ID" font="italic">a</XMTok>
             </XMApp>
           </XMath>
@@ -277,7 +277,7 @@
         <Math mode="display" xml:id="S3.Ex15.m1" tex="||a||" text="norm@(a)">
           <XMath>
             <XMApp>
-              <XMTok meaning="norm" role="FENCED" argclose="||" argopen="||"/>
+              <XMTok argclose="||" argopen="||" meaning="norm" role="FENCED"/>
               <XMTok role="ID" font="italic">a</XMTok>
             </XMApp>
           </XMath>
@@ -289,7 +289,7 @@
             <XMApp>
               <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
               <XMApp>
-                <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+                <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
                 <XMTok role="ID" font="italic">a</XMTok>
               </XMApp>
               <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
@@ -301,7 +301,7 @@
         <Math mode="display" xml:id="S3.Ex17.m1" tex="|a+b|" text="absolute-value@(a + b)">
           <XMath>
             <XMApp>
-              <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
               <XMApp>
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -315,12 +315,12 @@
         <Math mode="display" xml:id="S3.Ex18.m1" tex="|a-|b||" text="absolute-value@(a - absolute-value@(b))">
           <XMath>
             <XMApp>
-              <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
               <XMApp>
                 <XMTok meaning="minus" role="ADDOP">-</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
                 <XMApp>
-                  <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+                  <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
                   <XMTok role="ID" font="italic">b</XMTok>
                 </XMApp>
               </XMApp>
@@ -337,15 +337,15 @@
         <Math mode="display" xml:id="S4.Ex19.m1" tex="||a|-|b||" text="absolute-value@(absolute-value@(a) - absolute-value@(b))">
           <XMath>
             <XMApp>
-              <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
               <XMApp>
                 <XMTok meaning="minus" role="ADDOP">-</XMTok>
                 <XMApp>
-                  <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+                  <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
                   <XMTok role="ID" font="italic">a</XMTok>
                 </XMApp>
                 <XMApp>
-                  <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+                  <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
                   <XMTok role="ID" font="italic">b</XMTok>
                 </XMApp>
               </XMApp>
@@ -357,11 +357,11 @@
         <Math mode="display" xml:id="S4.Ex20.m1" tex="||a|-b|" text="absolute-value@(absolute-value@(a) - b)">
           <XMath>
             <XMApp>
-              <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+              <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
               <XMApp>
                 <XMTok meaning="minus" role="ADDOP">-</XMTok>
                 <XMApp>
-                  <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+                  <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
                   <XMTok role="ID" font="italic">a</XMTok>
                 </XMApp>
                 <XMTok role="ID" font="italic">b</XMTok>
@@ -378,7 +378,7 @@
               <XMApp>
                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
                 <XMApp>
-                  <XMTok meaning="absolute-value" role="FENCED" argclose="|" argopen="|"/>
+                  <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
                   <XMTok role="ID" font="italic">a</XMTok>
                 </XMApp>
                 <XMTok role="ID" font="italic">b</XMTok>
