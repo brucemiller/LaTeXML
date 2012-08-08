@@ -2873,6 +2873,7 @@ DefConstructor('\@@framebox{}{}{}',
 	       .  "(<ltx:text ?#1(width='#1') ?#align(align='#align')"
 	       .    " framed='rectangle' framecolor='#framecolor'"
 	       .    " _noautoclose='1'>#3</ltx:text>)",
+	       alias=>'\framebox',
 #	       mode=>'text',
 	       beforeDigest=>sub {
 		 my($stomach)=@_;
