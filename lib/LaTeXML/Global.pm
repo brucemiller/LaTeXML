@@ -210,8 +210,10 @@ sub Box {
   $font = $LaTeXML::Global::STATE->lookupValue('font') unless defined $font;
   $locator = $LaTeXML::Global::STATE->getStomach->getGullet->getLocator unless defined $locator;
   $tokens  = T_OTHER($string) if $string && !defined $tokens;
-  if($LaTeXML::Global::STATE->lookupValue('IN_MATH')){
-    LaTeXML::MathBox->new($string,$font->specialize($string),$locator,$tokens); }
+  my $state = $LaTeXML::Global::STATE;
+  if($state->lookupValue('IN_MATH')){
+    my $attr = (defined $string) && $state->lookupValue('math_token_attributes_'.$string);
+    LaTeXML::MathBox->new($string,$font->specialize($string),$locator,$tokens,$attr); }
   else {
     LaTeXML::Box->new($string, $font, $locator,$tokens); }}
 
