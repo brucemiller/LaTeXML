@@ -539,29 +539,58 @@ sub openMathText_internal {
   my $font = $self->getNodeFont($node);
   $node->appendText($string);
 ##print STDERR "Trying Math Ligatures at \"$string\"\n";
+  $self->applyMathLigatures($node);
+  $node;}
+
+# Old strategy: apply ligatures until ANY one succeeds,
+# then return, assuming "all done" (!)
+sub XXXapplyMathLigatures {
+  my($self,$node)=@_;
+  my @ligatures = $STATE->getModel->getMathLigatures;
+  foreach my $ligature (@ligatures){
+    last if $self->applyMathLigature($node,$ligature); } # Hmm.. last? Or restart matches?
+  }
+
+# New stategy (but inefficient): apply ligatures until one succeeds,
+# then remove it, and repeat until ALL (remaining) fail.
+sub applyMathLigatures {
+  my($self,$node)=@_;
+  my @ligatures = $STATE->getModel->getMathLigatures;
+  while(@ligatures){
+    my $matched=0;
+    foreach my $ligature (@ligatures){
+      if($self->applyMathLigature($node,$ligature)){
+	@ligatures = grep($_ ne $ligature,@ligatures);
+	$matched=1;
+	last; }}
+    return unless $matched; }}
+
+# Apply ligature operation to $node, presumed the last insertion into it's parent(?)
+sub applyMathLigature {
+  my($self,$node,$ligature)=@_;
   my @sibs = $node->parentNode->childNodes;
-  foreach my $ligature ($STATE->getModel->getMathLigatures){
-    my($nmatched, $newstring, %attr) = &{$$ligature{matcher}}($self,@sibs);
-    if($nmatched){
-      my @boxes = ($self->getNodeBox($node));
-      $node->firstChild->setData($newstring);
-      for(my $i=0; $i<$nmatched-1; $i++){
-	my $remove = $node->previousSibling;
-	unshift(@boxes,$self->getNodeBox($remove));
-	$self->removeNode($remove); }
+  my($nmatched, $newstring, %attr) = &{$$ligature{matcher}}($self,@sibs);
+  if($nmatched){
+    my @boxes = ($self->getNodeBox($node));
+    $node->firstChild->setData($newstring);
+    for(my $i=0; $i<$nmatched-1; $i++){
+      my $remove = $node->previousSibling;
+      unshift(@boxes,$self->getNodeBox($remove));
+      $self->removeNode($remove); }
 ## This fragment replaces the node's box by the composite boxes it replaces
 ## HOWEVER, this gets things out of sync because parent lists of boxes still
 ## have the old ones.  Unless we could recursively replace all of them, we'd better skip it(??)
-      if(scalar(@boxes) > 1){
-	$self->setNodeBox($node,LaTeXML::MathList->new(@boxes)); }
-      foreach my $key (keys %attr){
-	my $value = $attr{$key};
-	if(defined $value){
-	  $node->setAttribute($key=>$value); }
-	else {
-	  $node->removeAttribute($key); }}
-      last; }}			# Hmm.. last? Or restart matches?
-  $node;}
+    if(scalar(@boxes) > 1){
+      $self->setNodeBox($node,LaTeXML::MathList->new(@boxes)); }
+    foreach my $key (keys %attr){
+      my $value = $attr{$key};
+      if(defined $value){
+	$node->setAttribute($key=>$value); }
+      else {
+	$node->removeAttribute($key); }}
+    return 1; }
+  else {
+    undef; }}
 
 # Closing a text node is a good time to apply regexps (aka. Ligatures)
 sub closeText_internal {
