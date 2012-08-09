@@ -715,6 +715,9 @@ our $math_options = {name=>1, meaning=>1, omcd=>1, reversion=>1, alias=>1,
 		     mathstyle=>1, font=>1,
 		     scriptpos=>1,operator_scriptpos=>1,
 		     beforeDigest=>1, afterDigest=>1, scope=>1, nogroup=>1,locked=>1};
+our $simpletoken_options={name=>1, meaning=>1, omcd=>1, role=>1, mathstyle=>1,
+			  font=>1, scriptpos=>1, scope=>1, locked=>1};
+
 our $XMID=0;
 sub next_id {
 ##  "LXID".$XMID++; }
@@ -801,8 +804,14 @@ sub DefMathI {
 	       scope=>$options{scope});
   # If single character, Make the character active in math.
   if(length($csname) == 1){
-#    AssignCatcode('math:'.$csname=>1, $options{scope}); }
-    $STATE->assignMathcode($csname=>0x8000, $options{scope}); }
+####    $STATE->assignMathcode($csname=>0x8000, $options{scope}); }
+    # No, do NOT make mathactive; screws up things like babel french, or... ?
+    # EXPERIMENT: store XMTok attributes for if this char ends up a Math Token.
+    # But only some DefMath options make sense!
+    my $rw_options = {name=>1, meaning=>1, omcd=>1, role=>1, mathstyle=>1}; # (well, mathstyle?)
+    CheckOptions("DefMath reimplemented as DefRewrite ($csname)",$rw_options,%options);
+    AssignValue('math_token_attributes_'.$csname=>{%options}, 'global');
+    return; }
 
   # If the presentation is complex, and involves arguments,
   # we will create an XMDual to separate content & presentation.
@@ -848,6 +857,27 @@ sub DefMathI {
 		  ($options{reorder}? @{$options{reorder}} : (1..$nargs))))
 	  ."</ltx:XMApp>"),
       %common), $options{scope}); }
+  # EXPERIMENT: Introduce an intermediate case for simple symbols
+  # Define a primitive that will create a MathBox with the appropriate set of XMTok attributes.
+  elsif(($nargs==0) && ! grep(!$$simpletoken_options{$_}, keys %options)){
+    my $string = ToString($presentation);
+    my %attributes = %options;
+    my $reqfont = $attributes{font} || {};
+    delete $attributes{locked};
+    delete $attributes{font};
+    $attributes{name} = $name if (defined $name) && !(defined $options{name});
+    $STATE->installDefinition(LaTeXML::Primitive->new($cs,undef,sub {
+      my($stomach)=@_;
+      my $locator = $stomach->getGullet->getLocator;
+      my $font = LookupValue('font')->merge(%$reqfont)->specialize($string);
+      my $attr=();
+      foreach my $key (keys %attributes){
+	my $value = $attributes{$key};
+	if(ref $value eq 'CODE'){
+	  $$attr{$key} = &$value(); }
+	else {
+	  $$attr{$key} = $value; }}
+      LaTeXML::MathBox->new($string,$font,$locator,$cs,$attr); }));  }
   else {
     # do we need to do anything about digesting the presentation?
     # do we need to 
@@ -1490,7 +1520,7 @@ sub DefRewrite {
 
 sub DefMathRewrite {
   my(@specs)=@_;
-  CheckOptions("DefRewrite",$rewrite_options,@specs);
+  CheckOptions("DefMathRewrite",$rewrite_options,@specs);
   $STATE->getModel->addRewriteRule('math',@specs); 
   return; }
 
@@ -1501,11 +1531,11 @@ sub DefLigature {
   $STATE->getModel->addLigature($regexp,%options);
   return; }
 
-#our $math_ligature_options = {fontTest=>1, nodeText=>1, attributes=>1};
+our $math_ligature_options = {};
 sub DefMathLigature {
-  my($matcher)=@_;
-#  CheckOptions("DefMathLigature",$math_ligature_options,%options);
-  $STATE->getModel->addMathLigature($matcher);
+  my($matcher,%options)=@_;
+  CheckOptions("DefMathLigature",$math_ligature_options,%options);
+  $STATE->getModel->addMathLigature($matcher,%options);
   return; }
 #**********************************************************************
 1;
