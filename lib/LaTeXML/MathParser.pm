@@ -246,11 +246,10 @@ sub translate_hints {
     if(getQName($c) eq 'ltx:XMHint'){ # Is this a Hint node?
       if(my $width = $c->getAttribute('width')){ # Is it a spacing hint?
 	# Get the pts (combining w/any following spacing hints)
-	my $pts = ($width=~/^([\d\.\+\-]+)pt(\s+plus\s+[\d\.]+pt)?(\s+minus\s+[\d\.]+pt)?$/? $1 : 0);
+	my $pts = getXMHintSpacing($width);
 	while(@children && (getQName($children[0]) eq 'ltx:XMHint') # Combine w/ more?
 	      && ($width = $c->getAttribute('width'))){
-	  $pts += $1 if $width=~/^([\d\.\+\-]+)pt(\s+plus\s+[\d\.]+pt)?(\s+minus\s+[\d\.]+pt)?$/;
-###	  $node->removeChild(shift(@children)); } # and remove the extra hints
+	  $pts += getXMHintSpacing($width);
 	  $document->removeNode(shift(@children)); } # and remove the extra hints
 	# A wide space, between Stuff, is likely acting like punctuation, so convert it
 	if($prev && (($prev->getAttribute('role')||'') ne 'PUNCT')
@@ -261,17 +260,28 @@ sub translate_hints {
 	  $c->setAttribute(role=>'PUNCT');  # convert to punctuation!
 	  $c->appendText( "\x{2001}" x int($pts/10)); } # fill with quads?
 	else {
-	  $prev->setAttribute(rspace=>$pts.'pt') if $pts && $prev; # else copy to previous, if any
-###	  $node->removeChild($c); } # and remove it (what else?)
-	  $document->removeNode($c); } # and remove it (what else?)
+	  if($pts){
+	    if($prev){		# Else add rspace to previous item
+	      $prev->setAttribute(rspace=>$pts.'pt'); }
+### This should be enabled, but think some more about the contexts (eg split in t/ams/amsdisplay)
+###	    elsif(scalar(@children)){ # or maybe lspace to next??
+###	      $children[0]->setAttribute(rspace=>$pts.'pt'); }
+	  }
+	  $document->removeNode($c); } # at any rate, remove it now
 	$prev = undef; }
       else {			# Non-spacing hint?
 	$prev = undef; # probably means there's no previous node to add spacing to?
-###	$node->removeChild($c); }} # we'll just ignore it (what else?)
 	$document->removeNode($c); }} # we'll just ignore it (what else?)
     else {			   # Normal node?
       $prev = $c; }		# just note it to possibly add spacing
   }}
+
+# Given a width attribute on an XMHint, return the pts, if any
+sub getXMHintSpacing {
+  my($width)=@_;
+  if($width=~/^([\d\.\+\-]+)(pt|mu)(\s+plus\s+[\d\.]+pt)?(\s+minus\s+[\d\.]+pt)?$/){
+    ($2 eq 'mu' ? $1/1.8 : $1); }
+  else { 0; }}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Low-Level hack parsing when "real" parsing fails;
