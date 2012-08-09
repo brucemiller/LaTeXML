@@ -33,25 +33,31 @@ foreach my $option (qw(dvips xdvi oztex dvipsnames)){
 # are there default named colors that we should be loading?
 
 DefPrimitive('\definecolor{}{}{}', sub {
-  my($stomach,$name,$model,$color)=@_;
-  AssignValue('color_'.ToString($name) => getColor($model,$color)); });
+  my($stomach,$name,$model,$spec)=@_;
+  ($model,$spec)=map(Expand($_), $model,$spec);
+  AssignValue('color_'.ToString($name) => getColor($model,$spec)); 
+  Box(undef,undef,undef,Invocation(T_CS('\definecolor'),$name,$model,$spec)); });
 
 # I don't think this is quite right, but...
 # [I think we need do do something like "named_color_".$name
 #  and corresponding changes to getColor, as well?
 DefPrimitive('\DefineNamedColor{}{}{}{}', sub {
- my($stomach,$dmodel,$name,$model,$color)=@_;
- AssignValue('color_'.ToString($name),getColor($model,$color)); });
+ my($stomach,$dmodel,$name,$model,$spec)=@_;
+ ($dmodel,$model,$spec)=map(Expand($_), $dmodel,$model,$spec);
+ AssignValue('named_color_'.ToString($name),getColor($model,$spec));
+  Box(undef,undef,undef,Invocation(T_CS('\DefineNamedColor'),$dmodel,$name,$model,$spec)); });
 
 # change this to something like ConvertColor... Oh, already have that?
 sub getColor {
   my($model,$spec) = @_;
   $model = ToString($model);
   $spec = ToString($spec);
-  if(!$model || ($model eq 'named')){
+  if(!$model){
     while(my $c = LookupValue('color_'.$spec)){
       $spec = $c; }
     $spec; }
+  elsif($model eq 'named'){
+    LookupValue('named_color_'.$spec); }
   elsif($model){
     ConvertColor(ToString($model), $spec); }
   else {
@@ -60,31 +66,48 @@ sub getColor {
 # \color{name} or \color[model]{spec}
 DefPrimitive('\color[]{}', sub {
   my($stomach,$model,$spec)=@_;
+  ($model,$spec)=map(ToString(Expand($_)), $model,$spec);
   my $color = getColor($model, $spec);
   AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
   MergeFont(color=>$color);
-  Box(undef,undef,undef,Invocation(T_CS('\color'),@_[1..$#_])); });
+  Box(undef,undef,undef,Invocation(T_CS('\color'),$model,$spec)); });
 
 #\pagecolor{name} or \pagecolor[model]{spec}
 DefPrimitive('\pagecolor[]{}', sub {
   my($stomach,$model,$spec)=@_;
+  ($model,$spec)=map(ToString(Expand($_)), $model,$spec);
   MergeFont(background=>getColor($model, $spec));
-  Box(undef,undef,undef,Invocation(T_CS('\pagecolor'),@_[1..$#_])); });
+  Box(undef,undef,undef,Invocation(T_CS('\pagecolor'),$model,$spec)); });
 
 # NOTE: the color in effect at \begin{document} will be returned by \normalcolor
 # Do other font properties act this way?
 DefPrimitive('\normalcolor', sub {
   my $color = (LookupValue('preambleTextcolor') || 'black');
-  MergeFont(color=>$color); });
+  MergeFont(color=>$color);
+  Box(undef,undef,undef,T_CS('\normalcolor')); });
 
 #\textcolor{name}{text} or \textcolor[model]{spec}{text}
-DefMacro('\textcolor[]{}{}', '{\color[#1]{#2}#3}');
+DefMacro('\textcolor[]{}{}', '{\ifx.#1.\color{#2}\else\color[#1]{#2}\fi#3}');
 
 #\colorbox{name}{text} or \colorbox[model]{spec}{text}
-DefMacro('\colorbox[]{}{}', '{\pagecolor[#1]{#2}#3}');
+DefMacro('\colorbox[]{}{}', '{\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}\fi#3}');
 
 #\fcolorbox{name}{text} or \fcolorbox[model]{spec}{text}
-DefMacro('\fcolorbox[]{}{}{}','{\color[#1]{#2}\framebox{\pagecolor[#1]{#3}#4}}');
+# Could implement as macro, but framebox has different spacing
+#DefMacro('\fcolorbox[]{}{}{}',
+#	 '{\ifx.#1.\color{#2}\framebox{\pagecolor{#3}#4}'
+#	 .'\else\color[#1]{#2}\framebox{\pagecolor[#1]{#3}#4}\fi}');
+
+DefConstructor('\fcolorbox[]{}{} Undigested',
+	       "<ltx:text framed='rectangle' framecolor='#framecolor'"
+	       .    " _noautoclose='1'>#text</ltx:text>",
+	       bounded=>1, mode=>'text',
+	       afterDigest=>sub {
+		 my($stomach,$whatsit)=@_;
+		 my($model,$fspec,$bspec,$text)=$whatsit->getArgs;
+		 $whatsit->setProperty(framecolor=>getColor($model, $fspec));
+		 MergeFont(background=>getColor($model, $bspec));
+		 $whatsit->setProperty(text=>Digest($text)); });
 
 #********************************************************************************
 ProcessOptions();
