@@ -228,7 +228,7 @@
 -->
 <!--    <xsl:param name="ncolumns" select="f:countcolumns(ltx:equation[1])"/>-->
     <xsl:param name="ncolumns" select="f:maxcolumns(ltx:equation | ltx:equationgroup/ltx:equation)"/>
-    <table><xsl:call-template name="add_attributes"/><!-- but not id -->
+    <table><xsl:call-template name="add_id"/><xsl:call-template name="add_attributes"/><!-- but not id ??????? -->
       <xsl:text>
       </xsl:text>
       <xsl:apply-templates select="." mode="aligned">
@@ -247,7 +247,7 @@
 Currently we assume the content will be placed in a single tr/td. -->
   <xsl:template name="equation-aligned">
     <xsl:param name="ncolumns" select="f:countcolumns(.)"/>
-    <table><xsl:call-template name="add_attributes"/><!-- but not id -->
+    <table><xsl:call-template name="add_id"/><xsl:call-template name="add_attributes"/><!-- but not id ????-->
       <xsl:text>
       </xsl:text>
       <xsl:apply-templates select="." mode="aligned">
