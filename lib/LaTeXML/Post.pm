@@ -39,6 +39,7 @@ sub ProcessChain {
   my @docs = ($doc);
   foreach my $processor (@postprocessors){
     local $LaTeXML::Post::PROCESSOR = $processor;
+    $processor->ProgressDetailed($doc,"starting...");
     my $t0 = [Time::HiRes::gettimeofday];
     my @newdocs = ();
     foreach my $doc (@docs){
@@ -49,7 +50,7 @@ sub ProcessChain {
 ## not portable enough...
 ##    my $mem =  `ps -p $$ -o size=`; chomp($mem);
 ##    $processor->Progress($doc,sprintf(" %.2f sec; $mem KB",$elapsed));
-    $processor->Progress($doc,sprintf(" %.2f sec",$elapsed));
+    $processor->Progress($doc,"done ".sprintf(" %.2f sec",$elapsed));
   }
   @docs; }
 
