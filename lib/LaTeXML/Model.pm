@@ -426,8 +426,8 @@ sub getLigatures {
   @{$$self{ligatures}}; }
 
 sub addMathLigature {
-  my($self,$matcher)=@_;
-  unshift(@{$$self{mathligatures}}, { matcher=>$matcher}); }
+  my($self,$matcher,%options)=@_;
+  unshift(@{$$self{mathligatures}}, { matcher=>$matcher,%options}); }
 
 sub getMathLigatures {
   my($self)=@_;
