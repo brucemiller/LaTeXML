@@ -22,15 +22,17 @@ use Algorithm::Diff;
 
 #======================================================================
 my $identity = "maketests (LaTeXML version $LaTeXML::VERSION)";
-my ($doxml,$dodvi,$docompare)=();
+my ($doxml,$dopdf,$docompare)=();
 my ($verbosity,$help,$showversion)=(0);
-GetOptions("xml!" => \$doxml,
-	   "dvi!" => \$dodvi,
-	   "compare!"=>\$docompare,
-	   "quiet"     => sub { $verbosity--; },
-	   "verbose"   => sub { $verbosity++; },
-	   "VERSION"   => \$showversion,
-	   "help"      => \$help,
+GetOptions("xml!"     => \$doxml,
+	   "pdf!"     => \$dopdf,
+	   "compare!" =>\$docompare,
+	   "quiet"    => sub { $verbosity--; },
+	   "verbose"  => sub { $verbosity++; },
+	   "VERSION"  => \$showversion,
+	   "help"     => \$help,
+	   "dvi"      => \$help,	# Obsolete!
+	   "nodvi"    => \$help,
 	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
 if($showversion){ print STDERR "$identity\n"; exit(1); }
@@ -44,15 +46,16 @@ my $source = $ARGV[0];
 # or compare option
 # What about if $ARG is a directory? Do all tests in that directory? 
 foreach my $src_file (@ARGV){
+  $src_file =~ s/(\.pdf|\.dvi|\.xml)$//;
   $src_file .= ".tex" unless $src_file =~ /\.tex$/;
   if(! -f $src_file){
     die "There seems to be no test case $src_file"; }
   my($dir,$name,$ext)=pathname_split($src_file);
   my $xml_file = pathname_concat($dir,"$name.xml");
-  my $dvi_file = pathname_concat($dir,"$name.dvi");
+  my $pdf_file = pathname_concat($dir,"$name.pdf");
   my $src_time = pathname_timestamp($src_file);
   my $xml_time = pathname_timestamp($xml_file);
-  my $dvi_time = pathname_timestamp($dvi_file);
+  my $pdf_time = pathname_timestamp($pdf_file);
   if($docompare){
     compare_xml($dir,$name);  }
   else {
@@ -61,11 +64,11 @@ foreach my $src_file (@ARGV){
       gen_xml($dir,$name); }
     elsif(! defined $doxml){
       print STDERR "Test case $xml_file seems uptodate\n"; }
-    # Possibly remake dvi
-    if( (defined $dodvi ? $dodvi : !(-f $xml_file) || ($src_time > $dvi_time))){
-      gen_dvi($dir,$name); }
-    elsif(! defined $dodvi){
-      print STDERR "Test case $dvi_file seems uptodate\n"; }
+    # Possibly remake pdf
+    if( (defined $dopdf ? $dopdf : !(-f $xml_file) || ($src_time > $pdf_time))){
+      gen_pdf($dir,$name); }
+    elsif(! defined $dopdf){
+      print STDERR "Test case $pdf_file seems uptodate\n"; }
   }
 }
 #======================================================================
@@ -141,7 +144,7 @@ sub gen_xml {
     or die "Failed to create $file.xml: $!"
   }
 
-sub gen_dvi {
+sub gen_pdf {
   my($dir,$name)=@_;
   my $cwd = pathname_cwd();
   chdir($dir) if $dir;
@@ -149,21 +152,21 @@ sub gen_dvi {
   opendir(DIR,".") or die "Cannot read directory $dir: $!";
   my @files_before = readdir(DIR);
   closedir(DIR);
-  my $program = 'tex';
+  my $program = 'pdftex';
   open(IN,"$name.tex") or die "Cannot scanTeX file $name.tex: $!";
   while(<IN>){ 
-    $program = 'latex' if /documentclass/; }
+    $program = 'pdflatex' if /documentclass/; }
   close(IN);
-  $ENV{TEXINPUTS} = "$FindBin::RealBin/../texmf/::".($ENV{TEXINPUTS}||'');
+  $ENV{TEXINPUTS} = "$FindBin::RealBin/../lib/LaTeXML/texmf/::".($ENV{TEXINPUTS}||'');
   system($program,$name) == 0 or die "Couldn't run $program $name: $!";
   system($program,$name) == 0 or die "Couldn't run $program $name: $!";
 
-  # Now delete an new files except $name.dvi
+  # Now delete an new files except $name.pdf
   opendir(DIR,".") or die "Cannot read directory $dir: $!";
   my @files_now = readdir(DIR);
   closedir(DIR);
   foreach my $f (@files_now){
-    if(($f ne "$name.dvi") && !grep($f eq $_, @files_before)){
+    if(($f ne "$name.pdf") && !grep($f eq $_, @files_before)){
       unlink($f); }}
   chdir($cwd) if $dir;
 }
@@ -228,7 +231,7 @@ Each test case, say I<case>, within a test set consists of 3 files:
 
    case.tex   The source TeX file
    case.xml   The expected XML output from latexml
-   case.dvi   The result of running latex; This file is
+   case.pdf   The result of running pdflatex; This file is
        only for understanding the effect of the TeX markup.
 
 [The driver program and all three files for each testcase
@@ -297,16 +300,16 @@ presumably the new version is better.  Or sometimes, you
 wish to improve the test by making it more comprehensive.
 
 In such cases, the test case(s) will need to be updated by
-regenerating the expected xml, and the dvi if the tex changed.
+regenerating the expected xml, and the pdf if the tex changed.
 Simply run
 
    maketests set/case ...
 
 Multiple testcases can be given on the command line to be updated.
 
-To force regeneration of the dvi, use:
+To force regeneration of the pdf, use:
 
-   maketests --dvi set/case ...
+   maketests --pdf set/case ...
 
 Remember to commit any changed files.
 
@@ -319,7 +322,7 @@ Then run
 
    maketests set/newcase ...
 
-to create the required I<set/newtest.xml> and I<set/newcase.dvi>
+to create the required I<set/newtest.xml> and I<set/newcase.pdf>
 files. Multiple testcases can be added at once.
 
 Remember to add all three files to the SVN repository.

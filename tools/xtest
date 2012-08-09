@@ -2,7 +2,7 @@
 #======================================================================
 # xtest:
 #    convert all test cases to xhtml
-#    generate a page of links to ease visual comparison of dvi to xml.
+#    generate a page of links to ease visual comparison of pdf to xml.
 #======================================================================
 use strict;
 use FindBin;
@@ -36,11 +36,30 @@ closedir(DIR);
 if(! -d $htmldest){
   mkdir($htmldest) or die "Couldn't create destination directory $htmldest: $!"; }
 
-our $html = "<html>\n<head><title>LaTeXML Tests</title></head>\n<body>\n<h1>LaTeXML Tests</h1>\n";
+our $html = <<EOHead;
+<html>
+<head><title>LaTeXML Tests</title>
+<style>
+th { font-weight:bold; }
+.testgroup { text-align:left; font-size:120%; font-style:italic; }
+.testcase { padding-left:2em; font-weight:bold; }
+.pdf { text-align:center; }
+.xml { text-align:center; }
+
+</style>
+</head>
+<body>\n<h1>LaTeXML Tests</h1>
+<table>
+<tr><th class='testcase'>Testcase</th>
+    <th class='pdf'>PDF</th>
+    <th class='xml'>LaTeXML</th>
+    <th colspan='3'>Generated</th></tr>
+EOHead
+
 foreach my $dir (@testsets){
-print STDERR "Looking at directory $testdir/$dir\n" if $verbosity >= 0;
+  print STDERR "Looking at directory $testdir/$dir\n" if $verbosity >= 0;
   opendir(DIR,"$testdir/$dir") or die "Couldn't read test directory $testdir/$dir: $!";
-  my @tests =  sort grep(-f "$testdir/$dir/$_.xml", map(s/\.dvi$// && $_, grep(/\.dvi$/, readdir(DIR))));
+  my @tests =  sort grep(-f "$testdir/$dir/$_.xml", map(s/\.pdf$// && $_, grep(/\.pdf$/, readdir(DIR))));
   closedir(DIR);
 
   next unless @tests;
@@ -49,20 +68,22 @@ print STDERR "Looking at directory $testdir/$dir\n" if $verbosity >= 0;
     print STDERR "Creating $htmldest/$dir\n" if $verbosity >= 0;
     mkdir("$htmldest/$dir") or die "Couldn't create destination directory $htmldest: $!"; }
 
-  $html .= "<h2>$dir</h2>\n<ul>\n";
+  $html .= "<tr><th colspan='5' class='testgroup'>$dir</th></tr>\n";
+
   foreach my $test (@tests){
     my $srcxml = "$testdir/$dir/$test.xml";
-    my $srcdvi = "$testdir/$dir/$test.dvi";
-    my $dstdvi = "$htmldest/$dir/$test.dvi";
-    my @links = ("<a href='$dir/$test.dvi'>dvi</a>");
+    my $srcpdf = "$testdir/$dir/$test.pdf";
+    my $dstpdf = "$htmldest/$dir/$test.pdf";
+    my @links = ("<td class='pdf'><a href='$dir/$test.pdf'>pdf</a></td>",
+		 "<td class='xml'><a href='$dir/$test.xml'>xml</a></td>");
     my $usesdtd = system('grep','--quiet','DOCTYPE',$srcxml)==0;
-    if($force || (! -f $dstdvi) || ((-M $srcdvi) < (-M $dstdvi))){
-      print STDERR "Copying $dir/$test.dvi to dest\n" if $verbosity >= 0;
-      system('cp',$srcdvi,$dstdvi)
-	== 0 or die "Couldn't copy $testdir/$dir/$test.dvi to $htmldest/$dir: $!"; }
+    if($force || (! -f $dstpdf) || ((-M $srcpdf) < (-M $dstpdf))){
+      print STDERR "Copying $dir/$test.pdf to dest\n" if $verbosity >= 0;
+      system('cp',$srcpdf,$dstpdf)
+	== 0 or die "Couldn't copy $testdir/$dir/$test.pdf to $htmldest/$dir: $!"; }
     foreach my $type (@TYPES){
       my $dstxml = "$htmldest/$dir/$test.$type";
-      push(@links,"<a href='$dir/$test.$type'>$type</a>");
+      push(@links,"<td class='$type'><a href='$dir/$test.$type'>$type</a></td>");
       if($force || (! -f $dstxml) || ((-M $srcxml) < (-M $dstxml))){
 	print STDERR "Converting test case $dir/$test ($type)".($usesdtd?" [dtd]":"")."\n"
 	  if $verbosity >= 0;
@@ -75,9 +96,9 @@ print STDERR "Looking at directory $testdir/$dir\n" if $verbosity >= 0;
 		   : ())),
 	       $srcxml)
 	  == 0 or die "Couldn't transform test case $testdir/$dir/$test: $!"; }}
-    $html .= "<li>$test : ".join(', ',@links).".</li>\n";  }
-  $html .= "</ul>\n"; }
-
+    $html .= "<tr><td class='testcase'>$test</td> ".join('',@links).".</tr>\n";  }
+}
+$html .= "</table>\n";
 $html .= "</body>\n";
 
 open(DIR,">$htmldest/index.html") or die "Couldn't create $htmldest/index.html: $!";
