@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
-<?latexml package="color"?>
+<?latexml options="dvipsnames" package="color"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <section refnum="1" xml:id="S1">
@@ -83,15 +83,12 @@ vs. <text color="#E6E6E6">Light</text></p>
     <para xml:id="S5.p4">
       <p><text framecolor="#FF00FF" framed="rectangle" color="#FFFF00" backgroundcolor="#00FFFF">Yellow in Cyan surrounded by Magenta</text></p>
     </para>
-    <para xml:id="S5.p5">
-      <p><text framecolor="blue" framed="rectangle" color="green" backgroundcolor="red">Green in Red surrounded by Blue</text></p>
-    </para>
   </section>
   <section refnum="6" xml:id="S6">
     <title><tag>6 </tag>Math</title>
     <para xml:id="S6.p1">
       <equation xml:id="S6.Ex1">
-        <Math mode="display" xml:id="S6.Ex1.m1" tex="{\color[]{red}R}+{\color[]{green}G}+{\color[]{blue}B}" text="R + G + B">
+        <Math mode="display" xml:id="S6.Ex1.m1" tex="{\color{red}R}+{\color{green}G}+{\color{blue}B}" text="R + G + B">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -105,7 +102,7 @@ vs. <text color="#E6E6E6">Light</text></p>
     </para>
     <para xml:id="S6.p2">
       <equation xml:id="S6.Ex2">
-        <Math mode="display" xml:id="S6.Ex2.m1" tex="{\pagecolor[]{red}R}+{\pagecolor[]{green}G}+{\pagecolor[]{blue}B}" text="R + G + B">
+        <Math mode="display" xml:id="S6.Ex2.m1" tex="{\pagecolor{red}R}+{\pagecolor{green}G}+{\pagecolor{blue}B}" text="R + G + B">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -119,7 +116,7 @@ vs. <text color="#E6E6E6">Light</text></p>
     </para>
     <para xml:id="S6.p3">
       <equation xml:id="S6.Ex3">
-        <Math mode="display" xml:id="S6.Ex3.m1" tex="{\color[]{green}\@@framebox{}{}{\pagecolor[]{blue}{\color[]{red}R}}}+{\color[]{blue}\@@framebox{}{}{\pagecolor[]{red}{\color[]{green}G}}}+{\color[]{red}\@@framebox{}{}{\pagecolor[]{green}{\color[]{blue}B}}}" text="[R] + [G] + [B]">
+        <Math mode="display" xml:id="S6.Ex3.m1" tex="\fcolorbox{green}{blue}{\textcolor{red}{R}}+\fcolorbox{blue}{red}{\textcolor{green}{G}}+\fcolorbox{red}{green}{\textcolor{blue}{B}}" text="[R] + [G] + [B]">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -136,6 +133,496 @@ vs. <text color="#E6E6E6">Light</text></p>
           </XMath>
         </Math>
       </equation>
+    </para>
+  </section>
+  <section refnum="7" xml:id="S7">
+    <title><tag>7 </tag>Named colors (DVIPS)</title>
+    <para xml:id="S7.p1">
+      <p><text color="#03FF7A">JungleGreen</text>
+vs. <text color="#03FF7A">JungleGreen</text>
+vs. <text color="#03FF7A">JungleGreen</text></p>
+    </para>
+    <para xml:id="S7.p2">
+      <tabular>
+        <tbody>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#D9FF4F">GreenYellow</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#D9FF4F">GreenYellow</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FFFF00">Yellow</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FFFF00">Yellow</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#FFE629">Goldenrod</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#FFE629">Goldenrod</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FFB529">Dandelion</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FFB529">Dandelion</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#FFAD7A">Apricot</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#FFAD7A">Apricot</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FF804D">Peach</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FF804D">Peach</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#FF8A80">Melon</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#FF8A80">Melon</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FF9400">YellowOrange</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FF9400">YellowOrange</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#FF6321">Orange</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#FF6321">Orange</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FF7D00">BurntOrange</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FF7D00">BurntOrange</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#C23000">Bittersweet</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#C23000">Bittersweet</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FF3B21">RedOrange</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FF3B21">RedOrange</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#A61916">Mahogany</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#A61916">Mahogany</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#AD1737">Maroon</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#AD1737">Maroon</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#B8140B">BrickRed</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#B8140B">BrickRed</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FF0000">Red</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FF0000">Red</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#FF0080">OrangeRed</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#FF0080">OrangeRed</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FF00DE">RubineRed</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FF00DE">RubineRed</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#FF0A9C">WildStrawberry</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#FF0A9C">WildStrawberry</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FF789E">Salmon</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FF789E">Salmon</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#FF5EFF">CarnationPink</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#FF5EFF">CarnationPink</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FF00FF">Magenta</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FF00FF">Magenta</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#FF30FF">VioletRed</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#FF30FF">VioletRed</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FF2EFF">Rhodamine</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FF2EFF">Rhodamine</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#A519FA">Mulberry</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#A519FA">Mulberry</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#9D11A8">RedViolet</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#9D11A8">RedViolet</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#7C15EB">Fuchsia</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#7C15EB">Fuchsia</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FF85FF">Lavender</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FF85FF">Lavender</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#E069FF">Thistle</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#E069FF">Thistle</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#AD5CFF">Orchid</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#AD5CFF">Orchid</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#9933CC">DarkOrchid</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#9933CC">DarkOrchid</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#8C24FF">Purple</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#8C24FF">Purple</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#8000FF">Plum</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#8000FF">Plum</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#361FFF">Violet</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#361FFF">Violet</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#4019FF">RoyalPurple</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#4019FF">RoyalPurple</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#2216F5">BlueViolet</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#2216F5">BlueViolet</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#6E73FF">Periwinkle</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#6E73FF">Periwinkle</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#616EC4">CadetBlue</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#616EC4">CadetBlue</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#59DEFF">CornflowerBlue</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#59DEFF">CornflowerBlue</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#037E91">MidnightBlue</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#037E91">MidnightBlue</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#0F75FF">NavyBlue</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#0F75FF">NavyBlue</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#0080FF">RoyalBlue</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#0080FF">RoyalBlue</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#0000FF">Blue</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#0000FF">Blue</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#0FE3FF">Cerulean</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#0FE3FF">Cerulean</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#00FFFF">Cyan</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#00FFFF">Cyan</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#0AFFFF">ProcessBlue</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#0AFFFF">ProcessBlue</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#61FFE0">SkyBlue</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#61FFE0">SkyBlue</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#26FFCC">Turquoise</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#26FFCC">Turquoise</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#23FAA5">TealBlue</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#23FAA5">TealBlue</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#2EFFB3">Aquamarine</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#2EFFB3">Aquamarine</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#26FFAB">BlueGreen</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#26FFAB">BlueGreen</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#00FF80">Emerald</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#00FF80">Emerald</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#03FF7A">JungleGreen</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#03FF7A">JungleGreen</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#4FFF80">SeaGreen</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#4FFF80">SeaGreen</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#00FF00">Green</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#00FF00">Green</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#14E01B">ForestGreen</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#14E01B">ForestGreen</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#0FBF4E">PineGreen</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#0FBF4E">PineGreen</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#80FF00">LimeGreen</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#80FF00">LimeGreen</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#8FFF42">YellowGreen</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#8FFF42">YellowGreen</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#BDFF3D">SpringGreen</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#BDFF3D">SpringGreen</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#379908">OliveGreen</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#379908">OliveGreen</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#8C2700">RawSienna</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#8C2700">RawSienna</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#4D0D00">Sepia</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#4D0D00">Sepia</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#661300">Brown</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#661300">Brown</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#DB9470">Tan</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#DB9470">Tan</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#808080">Gray</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#808080">Gray</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="left" thead="true">
+              <text color="#000000">Black</text>
+            </td>
+            <td align="left" border="r">
+              <text backgroundcolor="#000000">Black</text>
+            </td>
+            <td align="left" thead="true">
+              <text color="#FFFFFF">White</text>
+            </td>
+            <td align="left">
+              <text backgroundcolor="#FFFFFF">White</text>
+            </td>
+          </tr>
+        </tbody>
+      </tabular>
     </para>
   </section>
 </document>
