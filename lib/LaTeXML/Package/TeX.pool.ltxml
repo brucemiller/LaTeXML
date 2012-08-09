@@ -2588,7 +2588,6 @@ sub equationgroupJoinRows {
   foreach my $eq (@equations){
     $eq->unbindNode;
     my $tr = $document->openElementAt($branch,'ltx:tr');
-###    my @cells = $document->getChildElements($eq);
     my @cells = $document->findnodes('ltx:_Capture_',$eq);
     $tr->setAttribute(class=>'ltx_lefteqn')
       if ($cells[0]->getAttribute('class')||'') =~ /\blefteqn\b/;
@@ -2604,7 +2603,6 @@ sub equationgroupJoinRows {
 sub equationgroupJoinCols {
   my($document,$ncols,$equation)=@_;
   my ($col,$main,$branch)=(0,undef,undef);
-###  foreach my $cell ($document->getChildElements($equation)){
   foreach my $cell ($document->findnodes('ltx:_Capture_',$equation)){
     next unless $document->getNodeQName($cell) =~ /(.*?:)?_Capture_$/;
     if(($col++ % $ncols) == 0){	# Create new MathFork every $ncols cells.
@@ -4236,9 +4234,9 @@ DefConstructorI('\}',undef,
 	       "?#isMath(<ltx:XMTok font='#font' role='CLOSE'>}</ltx:XMTok>)(})",
 	       properties=>{font=>sub{ LookupValue('font')->specialize("}");}}); # Since not DefMath!
 Let(T_CS('\lbrace'),T_CS('\{'));
-Let(T_CS('\lbrack'),T_CS('['));
+Let(T_CS('\lbrack'),T_OTHER('['));
 Let(T_CS('\rbrace'),T_CS('\}'));
-Let(T_CS('\rbrack'),T_CS(']'));
+Let(T_CS('\rbrack'),T_OTHER(']'));
 DefMathI('\lceil',    undef,"\x{2308}", role=>'OPEN');	# LEFT CEILING
 DefMathI('\rceil',    undef,"\x{2309}", role=>'CLOSE'); # RIGHT CEILING
 DefMathI('\lfloor',   undef,"\x{230A}", role=>'OPEN');	# LEFT FLOOR
@@ -4287,6 +4285,12 @@ our %DELIMITER_MAP =
    '\updownarrow'=>{char=>"\x{2195}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'updownarrow'}, # ??
    '\Updownarrow'=>{char=>"\x{21D5}", lrole=>'OPEN',    rrole=>'CLOSE', name=>'Updownarrow'}, # ??
    );
+
+# With new treatment of Simple Symbols as just MathBox's with assigned attributes,
+# we're not getting whatsits, and so we're not looking them up the same way!!!
+# TEMPORARILY (?) hack the Delimiter map
+foreach my $entry (values %DELIMITER_MAP){
+  $DELIMITER_MAP{$$entry{char}}=$entry; }
 
 sub lookup_delimiter {
   $DELIMITER_MAP{$_[0]}; }
