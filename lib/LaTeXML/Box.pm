@@ -67,11 +67,17 @@ use strict;
 use LaTeXML::Global;
 use base qw(LaTeXML::Box);
 
+sub new {
+  my($class,$string,$font,$locator,$tokens,$attributes)=@_;
+  bless [$string,$font,$locator,$tokens,$attributes],$class; }
+
 sub isMath { 1; }		# MathBoxes are math mode.
 
 sub beAbsorbed {
   my $string = $_[0][0];
-  ((defined $string) && ($string ne '') ? $_[1]->insertMathToken($_[0][0],font=>$_[0][1]) : undef); }
+  ((defined $string) && ($string ne '')
+   ? $_[1]->insertMathToken($_[0][0],font=>$_[0][1], ($_[0][4]? %{$_[0][4]} : ()))
+   : undef); }
 
 #**********************************************************************
 # LaTeXML::Comment
