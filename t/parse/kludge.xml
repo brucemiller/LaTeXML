@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
+<?latexml package="latexml"?>
 <?latexml package="amsfonts"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
@@ -100,15 +101,15 @@
   </para>
   <para xml:id="p3">
     <equation xml:id="S0.Ex3">
-      <Math mode="display" xml:id="S0.Ex3.m1" tex="(a+b)^{3}">
+      <Math mode="display" xml:id="S0.Ex3.m1" tex="(a+E)^{3}">
         <XMath>
           <XMApp>
             <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
             <XMWrap>
               <XMTok role="OPEN">(</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="ERROR" font="italic">a</XMTok>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="ERROR" font="italic">b</XMTok>
+              <XMTok role="UNKNOWN" font="italic">E</XMTok>
               <XMTok role="CLOSE">)</XMTok>
             </XMWrap>
             <XMTok meaning="3" role="NUMBER">3</XMTok>
