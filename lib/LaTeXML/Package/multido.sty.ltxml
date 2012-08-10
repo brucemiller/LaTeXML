@@ -16,10 +16,47 @@ use LaTeXML::Package;
 ###########################################################################
 ## 
 ###########################################################################
-DefMacro('\multido{}{Number}{}',sub {
-  my($gullet,$variables,$repetitions,$actions)=@_;
-  my @vars=();
-  my @expansion=();
+DefRegister('\multido@count'=>Number(0));
+DefRegister('\multidocount'=>Number(0));
+DefRegister('\multido@stuff'=>Tokens());
+
+DefMacro('\multido',  '\multido@{}{\begingroup}{\endgroup}');
+DefMacro('\mmultido', '\multido@{\multido@stepvar}{\begingroup}{\endgroup}');
+DefMacro('\Multido',  '\multido@{}{}{}');
+DefMacro('\MMultido', '\multido@{\multido@stepvar}{}{}');
+
+DefMacro('\multido@{}{}{}{}{}{}',
+	 '#2'
+	 .'\multido@count=#5\relax'
+	 .'\ifnum\multido@count=\z@\else\multido@@{#1}{#4}{#6}\fi'
+	 .'#3'
+	 .'\ignorespaces');
+
+# Simplified...
+DefMacro('\multido@@{}{}{}',
+	 '\multido@@initvars@@{#2}'
+	 .'\ifnum\multido@count<\z@\multido@count=-\multido@count\fi'
+	 .' \multidocount=1\relax'
+	 .'#1'
+	 .'\multido@stuff{#3}'
+	 .'\multido@loop');
+DefMacro('\multido@loop',
+	 '\the\multido@stuff'
+	 .'\ifnum\multidocount<\multido@count'
+	 . '\advance\multidocount\@ne'
+	 .  '\multido@stepvar'
+	 .  '\expandafter\multido@loop'
+	 .'\fi');
+DefMacro('\multidostop','\multidocount=\multido@count');
+
+# Annoyances with variables:
+#   Dimensions are always printed in scaled points (sp)
+#   Number are fixed point (and print that way!)
+# concievably variables can be redefined in middle of loop?
+DefMacro('\multido@@initvars@@{}',sub {
+  my($gullet,$variables)=@_;
+  my @inits=();
+  my @steps=();
   $gullet->openMouth($variables,1);
   while(my $var = $gullet->readToken){
     $var->getCSName =~ /^\\(d|n|i|r)/i;
@@ -28,29 +65,51 @@ DefMacro('\multido{}{Number}{}',sub {
     $gullet->readKeyword("=")
       or Error(":expected:= Missing = in multido variables");
     my($init,$step);
-    if   ($type eq 'd'){ $init = $gullet->readDimension; }
-    elsif($type eq 'n'){ $init = $gullet->readNumber; }
-    elsif($type eq 'i'){ $init = $gullet->readNumber; }
-    elsif($type eq 'r'){ $init = $gullet->readFloat; }
+    if   ($type eq 'd'){ $init = Tokens(Explode($gullet->readDimension->valueOf."sp")); }
+    elsif($type eq 'n'){ $init = Tokens($gullet->readFloat->revert); }
+    elsif($type eq 'i'){ $init = Tokens($gullet->readNumber->revert); }
+    elsif($type eq 'r'){ $init = Tokens($gullet->readFloat->revert); }
+    push(@inits,T_CS('\def'),$var,T_BEGIN,$init,T_END);
     $gullet->readKeyword("+")
       or Error(":expected:+ Missing + in multido variables");
     if   ($type eq 'd'){ $step = $gullet->readDimension; }
-    elsif($type eq 'n'){ $step = $gullet->readNumber; }
+    elsif($type eq 'n'){ $step = $gullet->readFloat; }
     elsif($type eq 'i'){ $step = $gullet->readNumber; }
     elsif($type eq 'r'){ $step = $gullet->readFloat; }
-    push(@expansion,T_CS('\def'),$var,T_BEGIN,Revert($init),T_END);
-    push(@vars,[$var,$init,$step]);
-    last unless $gullet->readKeyword(",");
-  }
+    $step = $step->negate if LookupValue('\multido@count')->valueOf < 0;
+    push(@steps,T_CS('\multido@step@'.$type),$var,T_BEGIN,$step->revert,T_END);
+    last unless $gullet->readKeyword(",");  }
   $gullet->closeMouth;
-  # Now, accumulate $repetitions copies of $actions
-  # with @vars set appropriately.
-  my $n = $repetitions->valueOf;
-  for(my $i=0; $i<$n; $i++){
-    push(@expansion, $actions->unlist);
-    foreach my $entry (@vars){
-      $$entry[1] = $$entry[1]->add($$entry[2]);
-      push(@expansion,T_CS('\def'),$$entry[0],T_BEGIN,Revert($$entry[1]),T_END); }}
-  @expansion; });
+  DefMacroI('\multido@stepvar',undef,Tokens(@steps));
+  # Return the tokens to initialize the vars
+  @inits; });
 
+DefMacro('\multido@step@d DefToken {Dimension}',sub {
+  my($gullet,$v,$step)=@_;
+  my $value = Dimension(ToString(Expand($v)))->add($step);
+  DefMacroI($v,undef,Tokens(Explode($value->valueOf.'sp'))); });
+DefMacro('\multido@step@i DefToken {Number}',sub {
+  my($gullet,$v,$step)=@_;
+  my $value = Number(ToString(Expand($v)))->add($step);
+  DefMacroI($v,undef,Tokens(Explode($value->valueOf))); });
+DefMacro('\multido@step@r DefToken {Float}',sub {
+  my($gullet,$v,$step)=@_;
+  my $value = Float(ToString(Expand($v)))->add($step);
+  DefMacroI($v,undef,Tokens(Explode($value->valueOf))); });
+# Note: n _should_ be fixed point!
+# DefMacro('\multido@step@n DefToken {Float}',sub {
+#   my($gullet,$v,$step)=@_;
+#   my $value = Float(ToString(Expand($v)))->add($step);
+#   DefMacroI($v,undef,Tokens(Explode($value->valueOf))); });
+DefMacro('\multido@step@n DefToken {}','\fpAdd{#1}{#2}{#1}');
+
+# Should evolve these to work in fixed point (particularly, the formatting?)
+DefMacro('\fpAdd {Float} {Float} DefToken',sub {
+  my($gullet,$a,$b,$token)=@_;
+  my $value = $a->add($b);
+  DefMacroI($token,undef,Tokens(Explode($value->valueOf))); });
+DefMacro('\fpSub {Float} {Float} DefToken',sub {
+  my($gullet,$a,$b,$token)=@_;
+  my $value = $a->subtract($b);
+  DefMacroI($token,undef,Tokens(Explode($value->valueOf))); });
 1;
