@@ -3529,6 +3529,14 @@ RawTeX('{\catcode`\^^M=13 \gdef\obeycr{\catcode`\^^M13 \def^^M{\\\relax}%
 {\catcode`\^^M=13 \gdef\@gobblecr{\@ifnextchar
 \@gobble\ignorespaces}}
 \gdef\restorecr{\catcode`\^^M5 }}');
+RawTeX('\begingroup
+  \catcode`P=12
+  \catcode`T=12
+  \lowercase{
+    \def\x{\def\rem@pt##1.##2PT{##1\ifnum##2>\z@.##2\fi}}}
+  \expandafter\endgroup\x
+\def\strip@pt{\expandafter\rem@pt\the}
+\def\strip@prefix#1>{}');
 
 sub make_message {
   my(@args)=@_;
