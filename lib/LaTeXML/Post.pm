@@ -398,7 +398,7 @@ sub newFromSTDIN {
   my $string;
   { local $/ = undef; $string = <>; }
   $options{sourceDirectory} = '.' unless $options{sourceDirectory};
-  my $doc = $class->new(LaTeXML::Common::XML::Parser()->parseString($string),%options);
+  my $doc = $class->new(LaTeXML::Common::XML::Parser->new()->parseString($string),%options);
   $doc->validate if $$doc{validate};
   $doc; }
 
