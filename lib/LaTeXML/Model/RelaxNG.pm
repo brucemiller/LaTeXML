@@ -166,24 +166,11 @@ our %RNGNSMAP = ("http://relaxng.org/ns/structure/1.0"=>'rng',
 
 local @LaTeXML::Model::RelaxNG::PATHS=();
 
-sub readSchemaModule {
-  my($self,$modulename)=@_;
-  my $schemadoc;
-  # Try to load, in case it's found via catalogs...
-  eval { $schemadoc =  $XMLPARSER->parseFile($modulename); };
-  # 
-  if(!$schemadoc){
-    if(my $path = findSchema($modulename)){
-      #  Hopefully, just a file, not a URL?
-      $schemadoc = $XMLPARSER->parseFile($path); }
-    else {
-    Error(":missing_file:$modulename Couldn't find RelaxNG schema module $modulename"); }}
-  $schemadoc; }
-
 sub scanExternal {
   my($self,$name,$inherit_ns)=@_;
   my $mod = $name; $mod =~ s/\.rn(g|c)$//;
-  if(my $schemadoc = $self->readSchemaModule($name)){
+  my $paths = [@LaTeXML::Model::RelaxNG::PATHS,@{$STATE->lookupValue('SEARCHPATHS')}];
+  if(my $schemadoc = LaTeXML::Common::XML::RelaxNG->new($name,searchpaths=>$paths)){
     local @LaTeXML::Model::RelaxNG::PATHS
       = (pathname_directory($schemadoc->URI),@LaTeXML::Model::RelaxNG::PATHS);
     my $node = $schemadoc->documentElement;
@@ -202,13 +189,6 @@ sub getRelaxOp {
   my $ns = $node->namespaceURI;
   my $prefix = $ns && $RNGNSMAP{$ns};
   ($prefix ? $prefix : "{$ns}").":".$node->localname; }
-
-sub findSchema {
-  my($name)=@_;
-  pathname_find($name, paths=>[@LaTeXML::Model::RelaxNG::PATHS,
-			       @{$STATE->lookupValue('SEARCHPATHS')}],
-		types=>['rng'],	# Eventually, rnc?
-		installation_subdir=>'schema/RelaxNG'); }
 
 our $GRAMMAR=0;
 
@@ -293,7 +273,8 @@ sub scanGrammarContent {
       map($self->scanGrammarContent($_,$ns), @children); }
     elsif($relaxop eq 'rng:include'){
       my $name = $node->getAttribute('href');
-      if(my $schemadoc = $self->readSchemaModule($name)){
+      my $paths = [@LaTeXML::Model::RelaxNG::PATHS,@{$STATE->lookupValue('SEARCHPATHS')}];
+      if(my $schemadoc = LaTeXML::Common::XML::RelaxNG->new($name,searchpaths=>$paths)){
 	local @LaTeXML::Model::RelaxNG::PATHS
 	  = (pathname_directory($schemadoc->URI),@LaTeXML::Model::RelaxNG::PATHS);
 	my @patterns;
