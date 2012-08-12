@@ -189,10 +189,8 @@ our $catalogs_initialized=0;
 sub initialize_catalogs {
   return if $catalogs_initialized;
   $catalogs_initialized = 1;
-#      pathname_findall('catalog',installation_subdir=>'schema'));
   foreach my $catalog (pathname_findall('LaTeXML.catalog',installation_subdir=>'.')){
-    XML::LibXML->load_catalog($catalog); }
-}
+    XML::LibXML->load_catalog($catalog); }}
 
 ######################################################################
 # PATCH Section
@@ -365,17 +363,54 @@ sub transform {
 ######################################################################
 package LaTeXML::Common::XML::RelaxNG;
 use XML::LibXML;
+use LaTeXML::Util::Pathname;
 
+# Note: XML::LibXML::RelaxNG->new(...) takes
+#  location=>$filename_or_url;
+#  string=>$schemastring
+#  DOM=>$doc
+
+# options: nocatalogs, searchpaths
+
+# Create a Wrapper for a RelaxNG,
+# containing the XML document representing the schema
+# defering converting it to an actual RelaxNG object.
 sub new {
-  my($class,$schema)=@_;
+  my($class,$name,%options)=@_;
   LaTeXML::Common::XML::initialize_catalogs();
-  if(!ref $schema){
-    $schema = XML::LibXML::RelaxNG->new(location=>$schema); }
-  bless {schema=>$schema},$class; }
+  my $xmlparser = LaTeXML::Common::XML::Parser->new();
+  my $schemadoc;
+  $name .= ".rng" unless $name =~ /\.rng$/;
+  # First, try to load directly, in case it's found via libxml's catalogs...
+  # But be careful calling C library; its failures are harder to trap w/eval
+  if(! $options{nocatalogs}){
+    eval {
+      no warnings 'all';
+      local $SIG{'__DIE__'};
+      $schemadoc =  $xmlparser->parseFile($name); };   }
+  if(!$schemadoc){
+    if(my $path = pathname_find($name, paths=>$options{searchpaths}||['.'],
+				types=>['rng'],	# Eventually, rnc?
+				installation_subdir=>'schema/RelaxNG')){
+      #  Hopefully, just a file, not a URL?
+      $schemadoc = $xmlparser->parseFile($path); }
+    else {
+###      Error(":missing_file:$name Couldn't find RelaxNG schema module $name");
+      return undef;		# ???
+    }}
+  bless {schemadoc=>$schemadoc},$class; }
 
 sub validate {
   my($self,$document)=@_;
+  # Lazy conversion of the Schema's XML doc into an actual RelaxNG object.
+  if(!$$self{schema} && $$self{schemadoc}){
+    $$self{schema} = XML::LibXML::RelaxNG->new(DOM=>$$self{schemadoc}); }
   $$self{schema}->validate($document); }
+
+# This returns the root element of the XML document representing the schema!
+sub documentElement { $_[0]->{schemadoc}->documentElement; }
+
+sub URI {  $_[0]->{schemadoc}->URI; }
 
 
 #**********************************************************************
