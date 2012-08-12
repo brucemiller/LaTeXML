@@ -150,12 +150,7 @@ sub EndSemiverbatim() {  $LaTeXML::STATE->popFrame; }
 
 # Return a LaTeXML::Tokens made from the arguments (tokens)
 sub Tokens {
-  my(@tokens)=@_;
-  # Flatten any Tokens to Token's
-  @tokens = map( ( (((ref $_)||'') eq 'LaTeXML::Tokens') ? $_->unlist : $_), @tokens);
-  # And complain about any remaining Non-Token's
-  map( ((ref $_) && $_->isaToken)|| Fatal(":misdefined:<unknown> Expected Token, got ".Stringify($_)), @tokens);
-  LaTeXML::Tokens->new(@tokens); }
+  LaTeXML::Tokens->new(@_); }
 
 # Explode a string into a list of tokens w/catcode OTHER (except space).
 sub Explode {

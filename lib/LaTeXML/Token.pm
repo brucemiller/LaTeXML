@@ -145,7 +145,14 @@ use base qw(LaTeXML::Object);
 
 sub new {
   my($class,@tokens)=@_;
-  bless [@tokens],$class; }
+  my @filtered=();
+  while(@tokens){		# Flatten Tokens, check Token's
+    my $t = shift(@tokens);
+    my $ref = ref $t;
+    if($ref eq 'LaTeXML::Token'){ push(@filtered,$t); }
+    elsif($ref eq 'LaTeXML::Tokens'){ unshift(@tokens,@$t); } # Opencoded $t->unlist
+    else { Fatal(":misdefined:<unknown> Expected Token, got ".Stringify($t)); }}
+  bless [@filtered],$class; }
 
 # Return a list of the tokens making up this Tokens
 sub unlist { @{$_[0]}; }
