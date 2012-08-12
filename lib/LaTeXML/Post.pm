@@ -456,14 +456,7 @@ sub validate {
     if($pi =~ /^\s*RelaxNGSchema\s*=\s*([\"\'])(.*?)\1\s*$/){
       $schema = $2; }}
   if($schema){			# Validate using rng
-    $schema .= ".rng" unless $schema =~ /\.rng$/;
-#    print STDERR "Validating using schema $schema\n";
-    my $rng;
-    eval { $rng = LaTeXML::Common::XML::RelaxNG->new($schema); };
-    if($@){			# Failed to load schema from catalog
-      my $schemapath = pathname_find($schema,paths=>[$self->getSearchPaths]);
-      eval { $rng = LaTeXML::Common::XML::RelaxNG->new($schemapath); };
-    }
+    my $rng = LaTeXML::Common::XML::RelaxNG->new($schema,searchpaths=>[$self->getSearchPaths]);
     die "Failed to load RelaxNG schema $schema:\n$@" unless $rng;
     eval { $rng->validate($$self{document}); };
     if($@){
@@ -471,7 +464,6 @@ sub validate {
       die "Error during RelaxNG validation  (".$schema."):\n".$@
 	."\nEither fix the source document, or use the --novalidate option\n"; }}
   elsif(my $decldtd = $$self{document}->internalSubset){ # Else look for DTD Declaration
-#    print STDERR "Validating using DTD ".$decldtd->publicId." at ".$decldtd->systemId."\n";
     my $dtd = XML::LibXML::Dtd->new($decldtd->publicId,$decldtd->systemId);
     if(!$dtd){
       die "Failed to load DTD ".$decldtd->publicId." at ".$decldtd->systemId; }
