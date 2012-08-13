@@ -690,16 +690,24 @@ sub setAttribute {
   my($self,$node,$key,$value)=@_;
   $value = ToString($value) if ref $value;
   if((defined $value) && ($value ne '')){ # Skip if `empty'; but 0 is OK!
-    $value = $self->recordID($value,$node) if $key eq 'xml:id'; # If this is an ID attribute
-    my($ns,$name)=$$self{model}->decodeQName($key);
-    if($ns){
-      my $prefix = $$self{model}->getDocumentNamespacePrefix($ns,1);
-      if(! $node->lookupNamespacePrefix($ns)){	# namespace not already declared?!?!?!
-	$self->getDocument->documentElement->setNamespace($ns,$prefix,0); }
-      my $qname = ($prefix && $prefix ne '#default' ? "$prefix:$name" : $name);
-      $node->setAttributeNS($ns,$qname=>$value); }
+    if($key eq 'xml:id'){		  # If it's an ID attribute
+      $value = $self->recordID($value,$node); # Do id book keeping
+      $node->setAttributeNS($LaTeXML::Common::XML::XML_NS,'id',$value); } # and bypass all ns stuff
+    elsif($key !~ /:/){		# No colon; no namespace (the common case!)
+      $node->setAttribute($key=>$value); }
     else {
-      $node->setAttribute($name=>$value); }}}
+      my($ns,$name)=$$self{model}->decodeQName($key);
+      if($ns){					       # If namespaced attribute (must have prefix!)
+	my $prefix = $node->lookupNamespacePrefix($ns);	# namespace already declared?
+	if(!$prefix){					# if namespace not already declared
+	  $prefix = $$self{model}->getDocumentNamespacePrefix($ns,1); # get the prefix to use
+	  $self->getDocument->documentElement->setNamespace($ns,$prefix,0); } # and declare it
+	if($prefix eq '#default'){
+	  Warn(":unexpected:#default shouldn't have namespaced attributes in default namespace $ns");
+	  $prefix=''; }
+	$node->setAttributeNS($ns,"$prefix:$name"=>$value); }
+      else {
+	$node->setAttribute($name=>$value); }}}} # redundant case...
 
 #**********************************************************************
 # Association of nodes and ids (xml:id)
