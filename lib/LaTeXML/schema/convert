@@ -40,7 +40,7 @@ for name in LaTeXML; do
   echo "Precompiling $name.rng schema to $name.model"
 #  perl -I ~/latexml/lib/ -MLaTeXML \
   perl -I ../../.. -MLaTeXML \
-       -e 'LaTeXML->new()->withState(sub{ $_[0]->getModel->compileSchema; });' \
+       -e 'LaTeXML->new()->withState(sub{ $_[0]->getModel->compileSchema; print STDERR $_[0]->getStatusMessage;});' \
        > ../$name.model
 
 done
