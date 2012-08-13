@@ -93,7 +93,7 @@ sub addAsChild {
   my($self,$id,$parent_id)=@_;
   # Find the ancestor that maintains a children list
   while(my $parent = $parent_id && $$self{db}->lookup("ID:$parent_id")){
-    if(my $siblings = $parent->getValue('children')){
+    if($parent->hasValue('children')){
       $parent->pushNew('children',$id);
       last; }
     else {
