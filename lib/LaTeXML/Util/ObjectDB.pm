@@ -201,6 +201,10 @@ sub getAttributes {
 
 # Get/Set a value (column) in the DBRow entry, noting whether it modifies the entry.
 # Note that XML data is stored in it's serialized form, prefixed by "XML::".
+sub hasValue {
+  my($self,$attr)=@_;
+  exists $$self{$attr}; }
+
 sub getValue {
   my($self,$attr)=@_;
   decodeValue($$self{$attr}); }
