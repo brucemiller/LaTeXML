@@ -223,18 +223,24 @@ sub unlist  { ($_[0]); }
 
 sub revert {
   my($self)=@_;
-  my $defn = $self->getDefinition;
-  my $spec = $defn->getReversionSpec;
-  if((defined $spec) && (ref $spec eq 'CODE')){
-    return &$spec($self,$self->getArgs); }
+  # WARNING: Forbidden knowledge?
+  # But how else to cache this stuff (which is a big performance boost)
+  if(my $saved = ($LaTeXML::DUAL_BRANCH
+		  ? $$self{dual_reversion}{$LaTeXML::DUAL_BRANCH}
+		  : $$self{reversion})) {
+    $saved->unlist; }
   else {
+    my $defn = $self->getDefinition;
+    my $spec = $defn->getReversionSpec;
     my @tokens = ();
-    if(defined $spec){
-      @tokens=LaTeXML::Expandable::substituteTokens($spec,map(Tokens(Revert($_)),$self->getArgs))
-	if $spec ne '';
-    }
+    if((defined $spec) && (ref $spec eq 'CODE')){ # If handled by CODE, call it
+      @tokens = &$spec($self,$self->getArgs); }
     else {
-      my $alias = $defn->getAlias;
+      if(defined $spec){
+	@tokens=LaTeXML::Expandable::substituteTokens($spec,map(Tokens(Revert($_)),$self->getArgs))
+	  if $spec ne ''; }
+      else {
+	my $alias = $defn->getAlias;
       if(defined $alias){
 	push(@tokens, T_CS($alias)) if $alias ne ''; }
       else {
@@ -244,7 +250,12 @@ sub revert {
     if(defined (my $body = $self->getBody)){
       push(@tokens, Revert($body));
       if(defined (my $trailer = $self->getTrailer)){
-	push(@tokens, Revert($trailer)); }}
+	push(@tokens, Revert($trailer)); }}}
+    # Now cache it, in case it's needed again
+    if($LaTeXML::DUAL_BRANCH){
+      $$self{dual_reversion}{$LaTeXML::DUAL_BRANCH}=Tokens(@tokens); }
+    else {
+      $$self{reversion}=Tokens(@tokens); }
     @tokens; }}
 
 sub toString { ToString(Tokens($_[0]->revert)); } # What else??
