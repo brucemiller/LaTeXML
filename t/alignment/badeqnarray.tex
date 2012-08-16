@@ -1,0 +1,36 @@
+\documentclass{article}
+\begin{document}
+\paragraph{Normal Usage}
+\begin{eqnarray*}
+a&=&b+c\\
+d&=&e+f+g\\
+\end{eqnarray*}
+\paragraph{gather alternative (single column misuse)}
+\begin{eqnarray*}
+a=b+c&&\\
+d=e+f+g&&\\
+\end{eqnarray*}
+\begin{eqnarray*}
+&a=b+c&\\
+&d=e+f+g&\\
+\end{eqnarray*}
+\begin{eqnarray*}
+&&a=b+c\\
+&&d=e+f+g\\
+\end{eqnarray*}
+\paragraph{Awkward continuations}
+\begin{eqnarray*}
+a=b+c&&\\
+=e+f+g&&\\
+\end{eqnarray*}
+\begin{eqnarray*}
+&a=b+c&\\
+&=e+f+g&\\
+\end{eqnarray*}
+\begin{eqnarray*}
+&&a=b+c\\
+&&=e+f+g\\
+\end{eqnarray*}
+
+
+\end{document}
