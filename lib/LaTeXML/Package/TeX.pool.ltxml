@@ -2398,12 +2398,18 @@ sub cleanup_Math {
   $document->replaceNode($mathnode,
 			 map($_->childNodes,map($_->childNodes,$mathnode->childNodes))); }
 
-#======================================================================
+#**********************************************************************
 # Support for MathFork.
+#**********************************************************************
+# [Note: this block of code seems like it belongs somewhere else]
 # A MathFork supports document-level alignment of math,
-# by collecting equations in an equationgroup. Each equation can contain
+# by collecting equations into an equationgroup. Each equation can contain
 # one or more MathFork structures which separate the semantically meaningful
-# equation (if possible), along with a collection of rows and/or columns for alignment.
+# equation (if possible) from the collection of rows and/or column fragments
+# for alignment. The goal is to be able to present the aligned structure
+# composed of various mathematical fragments in a grid, and yet still represent
+# the (presumably) meaningful complete formula.
+#
 # The structure looks like
 #    <MathFork>
 #        <Math><XMath>...</XMath></Math>
@@ -2414,10 +2420,14 @@ sub cleanup_Math {
 # contains one or more <td>, each of which contains a <Math> representing
 # a cell of the aligned structure.
 
+#======================================================================
 # openMathFork($document,$equation) will add a MathFork structure
 # to the given $equation, and return ($main, $branch)
 # where $main is the initial <ltx:Math> and $branch is the <ltx:MathBranch>.
-# You'll probably want to be adding Stuff to one or both.
+# You'll probably want to be adding Stuff to one or both of $main & $branch.
+# Most typically, you'll be finding math fragments that you've found in the
+# current content of $equation and adding them into both $main & $branch
+# using addColumnToMathFork.
 sub openMathFork {
   my($document,$equation)=@_;
   my $fork  = $document->openElementAt($equation,'ltx:MathFork');
@@ -2454,43 +2464,18 @@ sub MathWhatsit {
 			# locator=>$gullet->getLocator, font=>$script->getFont,level=>$level
 			isMath=>1); }
 
+#======================================================================
 # Add a new table column (ltx:td) into the ltx:MathBranch of a ltx:MathFork.
-# The insertion point will be at $inbranch, which probably should be an ltx:tr
-# created in the ltx:MathBranch using:
-#    $document->openElementAt($branch,'ltx:tr');
-# This moves the math from within $cell (an ltx:_Capture_) into the ltx:td,
-# and also arranges for that math content to be appended (cloned) into $main
-sub XXXXXaddColumnToMathFork {
-  my($document,$main,$inbranch,$cell)=@_;
-  my $td = $document->openElementAt($inbranch,'ltx:td');
-  if(my $align = $cell->getAttribute('align')){
-    $td->setAttribute(align=>$align); }
-  if(my $colspan = $cell->getAttribute('colspan')){
-    $td->setAttribute(colspan=>$colspan); }
-  my $captured =  $document->getFirstChildElement($cell);
-  # Usually, an ltx:Math element will be the complete content of the _Capture_ (cell)
-  if($document->getNodeQName($captured) eq 'ltx:Math'){
-    if(my $xmath = $document->getFirstChildElement($captured)){
-      # We MOVE the ltx:Math from the _Capture_ ($cell)
-      $td->appendChild($captured);
-      # But we CLONE the contents of it's ltx:XMath onto the end of
-      # the main ltx:Math/ltx:XMath (under $main), modifying id's along the way.
-      { local $LaTeXML::Document::ID_SUFFIX = '.mf';
-	$document->appendClone($document->getFirstChildElement($main),
-			       $document->getChildElements($xmath)); }
-      # Add the boxes from this cell to the previously collected ones in the main branch.
-      $document->setNodeBox($main,MathWhatsit($document->getNodeBox($main)->getBody,
-					      $document->getNodeBox($captured)->getBody));
-    }}
-  # But rarely, it could be text or mixed... Punt?
-
-
-    
-  # We can now remove the _Capture_ (and anything still in it?)
-  $cell->unbindNode;
-  $document->closeElementAt($td); }
-
-
+# The insertion point will be at $inbranch, presumably an ltx:tr
+# [created in the ltx:MathBranch using: $document->openElementAt($branch,'ltx:tr'); ]
+# The content of $cell (an ltx:_Capture_) is typically a single ltx:Math.
+# (but occasionally mixed math & ltx:text; some cases may need more semantic analysis?)
+# The content of $cell will be MOVED into the new column (ltx:td), (w/ ID's intact)
+# and CLONED (w/modified ID's) onto the end of the first child of the main branch, $main,
+# of the ltx:MathFork [A Math Whatsit is also synthesized for the main branch, for TeX, etc!).
+# Thus, the collection of rows/columns fragments represents  the alignment,
+# while the main branch synthesizes the (presumed) semantic whole.
+# The now-empty $cell is then removed from its parent & the document.
 sub addColumnToMathFork {
   my($document,$main,$inbranch,$cell)=@_;
   my $td = $document->openElementAt($inbranch,'ltx:td');
@@ -2515,6 +2500,8 @@ sub addColumnToMathFork {
 	$document->setNodeBox($main,MathWhatsit($document->getNodeBox($main)->getBody,
 						$document->getNodeBox($node)->getBody));
       }}
+    # The next two cases are unusual (slightly unexpected?),
+    # typically coming from abused eqnarrays?  May need more analysis preceding the MathFork'ing!
     elsif($type eq 'ltx:text'){
       next if $node->textContent eq '';
       my $string = $node->textContent;
@@ -2558,10 +2545,11 @@ sub addColumnToMathFork {
 # and (initially, at least) the rows are represented as <equation>'s.
 # Some analysis hopefully allows us to recognize
 
-# Given an ltx:equationgroup containing several ltx:equations (rows),
+# Given an ltx:equationgroup containing several ltx:equations (representing rows),
 # equationgroupJoinRows combines one or more of those rows into a
 # semantically meaningful equation and sets up the appropriate MathForks within.
-# This is typically useful for eqnarray.
+# This is typically useful for eqnarray, after you have analyzed
+# which subsequences of ltx:equations actually correspond to single semantic equations.
 sub equationgroupJoinRows {
   my($document,$equationgroup,@equations)=@_;
   # Make a new equation, with a single MathFork container
@@ -2600,6 +2588,8 @@ sub equationgroupJoinRows {
 # Given an equation generated in an equationgroup, 
 # collect each $ncols columns into a MathFork structure,
 # with the formatted portion being the columns.
+# This is typically useful for AMS's align structures,
+# which contain several columns, each pair of which represent a semantic equation.
 sub equationgroupJoinCols {
   my($document,$ncols,$equation)=@_;
   my ($col,$main,$branch)=(0,undef,undef);
@@ -2611,7 +2601,8 @@ sub equationgroupJoinCols {
     addColumnToMathFork($document,$main,$branch,$cell); }
   closeMathFork($document,$equation,$main,$branch) if $main; }
 
-#======================================================================
+#**********************************************************************
+
 Let(T_CS('\vcenter'), T_CS('\vbox'));
 
 # \eqno & \leqno are really bizzare.
