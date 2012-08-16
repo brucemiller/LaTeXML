@@ -38,7 +38,7 @@ sub generateMessage {
   push(@lines,$docloc) if $docloc;
   @lines = grep($_,@lines, @extra);
   chomp(@lines);
-  join("\n",@lines); }
+  join("\n",@lines,''); }
 
 sub Locator {
   my($object)=@_;
