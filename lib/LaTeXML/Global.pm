@@ -263,7 +263,7 @@ sub Error {
     Fatal($msg); }
   else {
     $LaTeXML::Global::STATE->noteStatus('error');
-    print STDERR LaTeXML::Error::generateMessage("Error",$msg,1,"Continuing... Expect trouble.\n")
+    print STDERR LaTeXML::Error::generateMessage("Error",$msg,1,"Continuing... Expect trouble.")
       unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -2; }
   if(($LaTeXML::Global::STATE->getStatus('error')||0) > $MAXERRORS){
     Fatal(":too_many:$MAXERRORS Too many errors!"); }
