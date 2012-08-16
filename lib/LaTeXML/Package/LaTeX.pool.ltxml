@@ -1387,9 +1387,14 @@ DefPrimitiveI('\end@eqnarray',undef, sub{ $_[0]->egroup; });
 # When the 1st column is empty, the row is assumed to continue the previous equation (if any!)
 # When the 2nd column is also empty, it presumably continues the previous RHS.
 # We'll combine these cases into a single equation, but remember the alignment structure.
-# However, if more than 1 such row has refnums, we probably don't want to combine.
-# NOTE: intertext are not (yet) handled here; Can they appear?
-
+# However, if more than 1 such row has refnums, we probably don't want to combine;
+# But we really need to find a better way of representing the information!
+# Note that there are common misuses of eqnarray;
+# One type tries to get the equivalent of amsmath's gather environment by
+# using a single column for the equations; the equations are right, centered or
+# left aligned, depending on which column was used.
+# Can we detect continuations, and can we distinguish continuations of equations vs. RHS?
+# Probably a similar misuse where only 2 columns are used?
 sub rearrangeEqnarray {
   my($document,$equationgroup)=@_;
   # Scan the "equations" (rows) within the $equationgroup
@@ -1407,33 +1412,34 @@ sub rearrangeEqnarray {
   my $nM = scalar(grep($$_{M}, @rows));
   my $nR = scalar(grep($$_{R}, @rows));
 
-  # NOTE: A common (mis-)use of eqnarray seems to be to have all the 1st or last 2 columns empty.
-  # This is effectively an ams gather environment; a bunch of equations, 1 per line.
-  # However, if some of these start with a relation,
-  # presumably it's a single equation. (?)
-  # [Another heuristic might be the presence of \left. or \right.?]
-  # It could even be the case that this eqnarray ties into a preceding one,
-  # with an implied \intertext ?
-  my $t;
-  if($nL && !$nM && !$nR){	# All LHS!
-    if(grep( ($t=$$_{cols}[0])&&($t=$document->getFirstChildElement($t))&& (($t->getAttribute('role') || '') eq 'RELOP'),
+  # Only a single column was used.  Remove the empty ones.
+  # A heuristic: if any rows begin with a relation, there are probably continuations,
+  # but maybe we don't want to try to distinguish the kinds?
+  if( ($nL && !$nM && !$nR) 	# All left column
+      || (!$nL && $nM && !$nR)	# All center column
+      || (!$nL && !$nM && $nR)){	# All right column
+    # We REALLY should remove the empty columns entirely!
+    my $keepcol = ($nL ? 0 : ($nM ? 1 : 2));
+    # REMOVE empty columns!
+    foreach my $c (2,1,0){
+      next if $c == $keepcol;
+      foreach my $row (@rows){
+	$document->removeNode($$row{cols}[$c]);
+	splice(@{$$row{cols}},$c,1); }}
+    # If (some) columns begin with a relation, presumably a single equation?
+    # Or maybe we should only connect those to previous row?
+    my $t;
+    if(grep( ($t=$$_{cols}[0]) && ($t=$document->getFirstChildElement($t))
+	     && (($t->getAttribute('role') || '') eq 'RELOP'),
 	     @rows)){
       equationgroupJoinRows($document,$equationgroup,map($$_{node},@rows)); }
     else {
       # Really, these shouldn't even end up with MathFork!
       foreach my $row (@rows){
-	equationgroupJoinCols($document,3,$$row{node}); }}
+	equationgroupJoinCols($document,1,$$row{node}); }}
     return; }
-  if($nR && !$nM && !$nL){	# All RHS!
-    if(grep( ($t=$$_{cols}[2])&&($t=$document->getFirstChildElement($t))&&(($t->getAttribute('role') || '') eq 'RELOP'),
-	     @rows)){
-      equationgroupJoinRows($document,$equationgroup,map($$_{node},@rows)); }
-    else {
-      # Really, these shouldn't even end up with MathFork!
-      foreach my $row (@rows){
-	equationgroupJoinCols($document,3,$$row{node}); }}
-    return; }
-
+  # What about case where only TWO columns get used? Worth analyzing?
+  # Remaining case is when all 3 columns are used.
   my @eqs = ();
   my $numbered=0;
   my $oddness=0;
