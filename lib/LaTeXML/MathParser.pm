@@ -740,6 +740,7 @@ sub Annotate {
   foreach my $attr (keys %attributes){
     my $value = p_getValue($attributes{$attr});
     $attrib{$attr} = $value if defined $value; }
+  # Hmm.... maybe we need to merge some things, open close?
   if(keys %attrib){		# Any attributes to assign?
     # If we've gotten a real XML node, convert to array representation
     # We do NOT want to modify any of the original XML!!!!
@@ -748,6 +749,10 @@ sub Annotate {
 	       { map( (getQName($_)=>$_->getValue),
 		      grep($_->nodeType == XML_ATTRIBUTE_NODE, $node->attributes)) },
 	       $node->childNodes]; }
+    foreach my $k (qw(open argopen)){
+	$attrib{$k}=$attrib{$k}.$$node[1]{$k} if $attrib{$k} && $$node[1]{$k}; }
+    foreach my $k (qw(close argclose)){
+	$attrib{$k}=$$node[1]{$k}.$attrib{$k} if $attrib{$k} && $$node[1]{$k}; }
     map($$node[1]{$_}=$attrib{$_}, keys %attrib); } # Now add them.
   $node; }
 
