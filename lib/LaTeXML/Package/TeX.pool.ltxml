@@ -1706,10 +1706,19 @@ DefConstructorI('\@alignment@span@marker',undef,'',reversion=>'\span',
 	      properties=>{alignmentSkippable=>1});
 DefConstructorI('\omit',undef,'',properties=>{alignmentSkippable=>1});
 
-DefMacroI('\@alignment@cr',undef,
-	  '\@close@inner@column\@close@column\@close@row'
-	  .'\@alignment@cr@marker'
-	  .'\@open@row\@open@column\@open@inner@column');
+DefMacroI('\@alignment@cr',undef,sub {
+  my($gullet)=@_;
+  my $t = $gullet->readXToken(1);
+  $gullet->unread($t);
+  # SPECIAL CASE for endings of \halign (& friends).
+  # We need the appropriate ending, to close the row/col/etc, but only see a }!!
+  if(Equals($t,T_END) || Equals($t,T_CS('\egroup'))){ # Ending an \halign?
+    (T_CS('\@finish@alignment')); }
+  else {
+    (T_CS('\@close@inner@column'),T_CS('\@close@column'),T_CS('\@close@row'),
+     T_CS('\@alignment@cr@marker'),
+     T_CS('\@open@row'),T_CS('\@open@column'),T_CS('\@open@inner@column'));  }});
+
 DefConstructorI('\@alignment@cr@marker',undef,'',reversion=>'\cr');
 DefConstructorI('\default@cr',undef, "\n"); # Default binding.
 Let(T_CS('\cr'),  T_CS('\default@cr'));
@@ -2070,51 +2079,39 @@ sub afterCellUnlist {
 
 #----------------------------------------------------------------------
 # \halign, See Chap.22
-
-DefPrimitive('\halign BoxSpecification', sub {
-  my($stomach,$spec,$contents)=@_;
-  my $gullet=$stomach->getGullet;
-  my $t = $gullet->readNonSpace;
-  Error(":expected:\\bgroup Missing \\halign box") unless Equals($t,T_BEGIN);
-
-  $stomach->bgroup; 
-  Let(T_ALIGN,      T_CS('\undefined'));	# KEEP these from being expanded here!!!
-  Let(T_CS('\span'),T_CS('\undefined'));
-  Let(T_CS('\omit'),T_CS('\undefined'));
-  Let(T_CS('\cr'),  T_CS('\default@cr'));
-  Let(T_CS('\crcr'),T_CS('\default@cr'));
-  Let(T_CS("\\\\"), T_CS('\default@cr'));
-  # Read the template up till something equivalent to \cr
-  my @template = ();
-  # Only expand certain things; See TeX book p.238
-  while(($t=$gullet->readToken(0)) && !Equals($t,T_CS('\cr'))){
-    if($t->equals(T_CS('\tabskip'))){ # Read the tabskip assignment
-      $gullet->readKeyword('=');
-      my $value = $gullet->readGlue; } # Discard! In principle, should store in template!
-    elsif($t->equals(T_CS('\span'))){ # ex-span-ded next token.
-      $gullet->unread($gullet->readXToken(0)); }
+DefConstructor('\halign BoxSpecification', sub {
+  my($document,$spec,$template,$body,%props)=@_;
+  constructAlignment($document,$body,attributes=>{width=>$$spec{to},
+						  'pad-width'=>$$spec{spread}}); },
+  reversion=>'\halign #1{#2\cr#3}',
+  bounded=>1,
+  afterDigest=>sub {
+    my($stomach,$whatsit)=@_;
+    my $gullet=$stomach->getGullet;
+    my $t = $gullet->readNonSpace;
+    Error(":expected:\\bgroup Missing \\halign box") unless Equals($t,T_BEGIN);
+    # Read the template up till something equivalent to \cr
+    my @template = ();
+    # Only expand certain things; See TeX book p.238
+    while(($t=$gullet->readToken(0)) && !Equals($t,T_CS('\cr'))){
+      if($t->equals(T_CS('\tabskip'))){ # Read the tabskip assignment
+	$gullet->readKeyword('=');
+	my $value = $gullet->readGlue; } # Discard! In principle, should store in template!
+      elsif($t->equals(T_CS('\span'))){ # ex-span-ded next token.
+	$gullet->unread($gullet->readXToken(0)); }
     else {
       push(@template,$t); }}
-
-  # Read the rest until balanced }
-  my @tokens = ();
-  my $level=1;
-  while($level && ($t=$gullet->readXToken(0))){
-    if(Equals($t,T_BEGIN)){ $level++; }
-    elsif(Equals($t,T_END)){ $level--; }
-    push(@tokens,$t) if $level; }
-  $stomach->egroup; 
-
-  my $ismath     = $STATE->lookupValue('IN_MATH');
-  my $b=1;			# true if we're before a # in current column
-  my @pre=();
-  my @post=();
-  my @cols=();
-  my @nonreps=();
-  foreach my $t (@template, T_ALIGN){ # put & at end, to save column!
-    if($t->equals(T_PARAM)){
-      $b=0; }
-    elsif($t->equals(T_ALIGN)){
+    # Convert the template
+    my $ismath     = $STATE->lookupValue('IN_MATH');
+    my $b=1;			# true if we're before a # in current column
+    my @pre=();
+    my @post=();
+    my @cols=();
+    my @nonreps=();
+    foreach my $t (@template, T_ALIGN){ # put & at end, to save column!
+      if($t->equals(T_PARAM)){
+	$b=0; }
+      elsif($t->equals(T_ALIGN)){
       if($b){ @nonreps=@cols; @cols=(); } # A & while we're before a column means Repeated columns
       else {				  # Finished column spec; add it
 	# Try some magic for math, so we can create a valid math matrix (maybe!)
@@ -2125,25 +2122,31 @@ DefPrimitive('\halign BoxSpecification', sub {
 	push(@cols,{before=>Tokens(stripDupMath(beforeCellUnlist(Tokens(@pre)))),
 		    after =>Tokens(stripDupMath(afterCellUnlist(Tokens(@post))))});
 	@pre=@post=(); $b=1; }}
-    elsif($b){
-      push(@pre,$t) unless !@pre && $t->equals(T_SPACE); }
-    else {
-      push(@post,$t) unless !@post && $t->equals(T_SPACE); }}
+      elsif($b){
+	push(@pre,$t) unless !@pre && $t->equals(T_SPACE); }
+      else {
+	push(@post,$t) unless !@post && $t->equals(T_SPACE); }}
 
-  my $template = LaTeXML::AlignmentTemplate->new((@nonreps ?
-						  (columns=>[@nonreps],repeated=>[@cols])
-						  :(columns=>[@cols])));
-#  print STDERR "Template = ".Stringify(Tokens(@template))."\n => ".$template->show."\n";
+    my $template = LaTeXML::AlignmentTemplate->new((@nonreps ?
+						    (columns=>[@nonreps],repeated=>[@cols])
+						    :(columns=>[@cols])));
+    #  print STDERR "Template = ".Stringify(Tokens(@template))."\n => ".$template->show."\n";
+    # Now read & digest the body.
+    # Note that the body MUST end with a \cr, and that we've made Special Arrangments
+    # with \alignment@cr to recognize the end of the \halign
+    # and sneak a \@finish@alignment in!!!!!
+    # (otherwise none of the row/column/alignment constructors know when to end, as written)
+    alignmentBindings($template);
+    $stomach->bgroup; 		# This will be closed by the \halign's closing }
+    $gullet->unread(T_CS('\@start@alignment'));
+    $whatsit->setBody($stomach->digestNextBody, undef); # extra undef as dummy "trailer"
+});
 
-  $stomach->bgroup;
-  alignmentBindings($template);
-  my @boxes = Digest(Invocation(T_CS('\@halign'),
-				$spec,Tokens(@template),
-				Tokens(T_CS('\@start@alignment'),
-				       @tokens,
-				       T_CS('\@finish@alignment'))));
-  $stomach->egroup; 
-  @boxes; });
+DefMacroI('\@start@alignment',undef,
+	  '\@open@alignment\@open@row\@open@column\@open@inner@column');
+DefMacroI('\@finish@alignment',undef,
+	  '\@close@inner@column\@close@column\@close@row\@close@alignment');
+
 
 # Cleanup the pre & post tokens for halign columns in math mode.
 # If a pair of $..$ enclose stuff that is "OK" in math mode, we don't need the $.
@@ -2455,6 +2458,10 @@ sub MathWhatsit {
   @items = map( ((ref $_ eq 'LaTeXML::Whatsit') && ($_->getDefinition eq $hbgd)
 		 ? $_->getBody->unlist : ($_)),
 		map($_->unlist,grep($_,@items)));
+  my $locator=undef;
+  foreach my $i (@items){
+    last if $locator;
+    $locator = $i->getLocator; }
   my @styles = grep(UnTeX($_) eq '\displaystyle',@items);
   if(@styles){
     @items = ($styles[0], grep(UnTeX($_) ne '\displaystyle',@items)); }
@@ -2462,7 +2469,7 @@ sub MathWhatsit {
 			body=>LaTeXML::MathList->new(@items),
 			trailer=>T_CS('\@@ENDINLINEMATH'),
 			# locator=>$gullet->getLocator, font=>$script->getFont,level=>$level
-			isMath=>1); }
+			locator=>$locator, isMath=>1); }
 
 #======================================================================
 # Add a new table column (ltx:td) into the ltx:MathBranch of a ltx:MathFork.
@@ -2497,8 +2504,10 @@ sub addColumnToMathFork {
 	  $document->appendClone($document->getFirstChildElement($main),
 				 $document->getChildElements($xmath)); }
 	# Add the boxes from this cell to the previously collected ones in the main branch.
-	$document->setNodeBox($main,MathWhatsit($document->getNodeBox($main)->getBody,
-						$document->getNodeBox($node)->getBody));
+	my $box = MathWhatsit($document->getNodeBox($main)->getBody,
+			      $document->getNodeBox($node)->getBody);
+	$document->setNodeBox($main,$box);
+	$document->setNodeBox($main->firstChild,$box); # And also to the XMath element!
       }}
     # The next two cases are unusual (slightly unexpected?),
     # typically coming from abused eqnarrays?  May need more analysis preceding the MathFork'ing!
@@ -2507,16 +2516,18 @@ sub addColumnToMathFork {
       my $string = $node->textContent;
       my $txt = $document->openElementAt($document->getFirstChildElement($main),'ltx:XMText');
       $document->appendClone($txt,$node);
-      $document->setNodeBox($main,MathWhatsit($document->getNodeBox($main)->getBody,
-					      $document->getNodeBox($node)));
+      my $box = MathWhatsit($document->getNodeBox($main)->getBody,$document->getNodeBox($node));
+      $document->setNodeBox($main,$box);
+      $document->setNodeBox($main->firstChild,$box); # And also to the XMath element!
       $document->closeElementAt($txt); }
     elsif($type eq '#PCDATA'){
       my $string = $node->textContent;
       next if $string eq '';
       my $txt = $document->openElementAt($document->getFirstChildElement($main),'ltx:XMText');
       $txt->appendText($string);
-      $document->setNodeBox($main,MathWhatsit($document->getNodeBox($main)->getBody,
-					      Box($string)));
+      my $box = MathWhatsit($document->getNodeBox($main)->getBody,Box($string));
+      $document->setNodeBox($main,$box);
+      $document->setNodeBox($main->firstChild,$box); # And also to the XMath element!
       $document->closeElementAt($txt); }
     else {
       Warn(":unexpected:$type Don't know how to synthesize equation with $type in column");
