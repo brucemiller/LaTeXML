@@ -838,6 +838,7 @@ sub openElementAt {
   my $newnode;
   my $font = $attributes{_font}||$attributes{font};
   my $box  = $attributes{_box};
+  $box = $$self{node_boxes}{$box} if $box && !ref $box; # may already be the string key
   # If this will be the document root node, things are slightly more involved.
   if($point->nodeType == XML_DOCUMENT_NODE){ # First node! (?)
     $$self{model}->addSchemaDeclaration($self,$tag);
