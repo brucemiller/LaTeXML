@@ -26,11 +26,13 @@ no warnings 'redefine';
 foreach my $option (qw(T2A T2B T2C X2 LCY OT2)){
   DeclareOption($option, sub { 
 		  setupCyrillic(); 
-		  loadFontEncoding(); }); }
+		  loadFontEncoding();
+		  return; }); }
 
 # Anything else doesn't really matter....
 DeclareOption(undef, sub {
-		loadFontEncoding(); });
+		loadFontEncoding();
+		return; });
 
 # WELL... Actually, some "encodings" map the normal 7bit (or 8)
 # apparently ASCII input characters to a completely different font.
