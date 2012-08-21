@@ -184,6 +184,9 @@ sub font_match_xpaths {
   join(' and ','@_font',
        map("contains(\@_font,'$_')",@frags)); }
 
+# Presumably a text font is "sticky", if used in math?
+sub isSticky { 1; }
+
 #**********************************************************************
 package LaTeXML::MathFont;
 use strict;
