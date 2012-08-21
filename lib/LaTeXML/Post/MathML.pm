@@ -37,6 +37,9 @@ our $mmlURI = "http://www.w3.org/1998/Math/MathML";
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub preprocess {
   my($self,$doc,@nodes)=@_;
+  # Set up rational, modern, defaults.
+  $$self{hackplane1} = 0 unless $$self{hackplane1};
+  $$self{plane1} = 1 if $$self{hackplane1} || !defined $$self{plane1};
   $doc->adjust_latexml_doctype('MathML');  # Add MathML if LaTeXML dtd.
   $doc->addNamespace($mmlURI,'m'); }
 
