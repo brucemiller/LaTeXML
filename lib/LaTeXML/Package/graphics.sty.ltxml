@@ -61,7 +61,7 @@ DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension}{
       $node->setAttribute(options=>$options); }}},
 	       mode=>'text');
 
-DefConstructor('\rotatebox{Number}{}', sub {
+DefConstructor('\rotatebox{Float}{}', sub {
   my($document,$angle,$box)=@_;
   my @new = insertBlock($document,$box);
   foreach my $node (@new){
