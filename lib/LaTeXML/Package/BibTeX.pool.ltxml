@@ -313,6 +313,10 @@ DefMacro('\bib@@title{}{}{}', sub {
       $recap .= $1; $wb=1; }}
   Invocation(T_CS('\bib@@field'),$tag,undef,Tokenize($recap)); });
 
+# I'd thought booktitle were treated like title, but I think I was mistaken.
+#DefMacro('\bib@@booktitle{}{}', '\bib@@title{booktitle}{#1}{#2}');
+DefMacro('\bib@@booktitle{}{}', '\bib@@field{#1}{#2}');
+
 #======================================================================
 # Default field handlers
 
@@ -374,8 +378,7 @@ DefMacro('\bib@entry@conference@alias','inproceedings');
 DefMacro('\bib@entry@inbook@prepare', sub {
 	   copyCrossrefFields(qw(author editor title chapter pages publisher)); });
 DefMacro('\bib@field@inbook@booktitle',
-###	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-title}');
-	 '\bib@addto@related{book}{host}\bib@@title{booktitle}{ltx:bib-title}');
+	 '\bib@addto@related{book}{host}\bib@@booktitle{ltx:bib-title}');
 DefMacro('\bib@field@inbook@editor',
 	 '\bib@addto@related{book}{host}\bib@@names{editor}');
 DefMacro('\bib@field@inbook@publisher',
@@ -402,8 +405,7 @@ DefMacro('\bib@entry@incollection@prepare', sub {
 	   copyCrossrefFields(qw(author title booktitle publisher)); });
 
 DefMacro('\bib@field@incollection@booktitle',
-##	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-title}');
-	 '\bib@addto@related{book}{host}\bib@@title{booktitle}{ltx:bib-title}');
+	 '\bib@addto@related{book}{host}\bib@@booktitle{ltx:bib-title}');
 DefMacro('\bib@field@incollection@editor',
 	 '\bib@addto@related{book}{host}\bib@@names{editor}');
 DefMacro('\bib@field@incollection@publisher',
@@ -430,8 +432,7 @@ DefMacro('\bib@entry@inproceedings@prepare', sub {
 	   copyCrossrefFields(qw(author title booktitle publisher)); });
 
 DefMacro('\bib@field@inproceedings@booktitle',
-##	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-title}');
-	 '\bib@addto@related{proceedings}{host}\bib@@title{booktitle}{ltx:bib-title}');
+	 '\bib@addto@related{proceedings}{host}\bib@@booktitle{ltx:bib-title}');
 DefMacro('\bib@field@inproceedings@editor',
 	 '\bib@addto@related{proceedings}{host}\bib@@names{editor}');
 DefMacro('\bib@field@inproceedings@number',
@@ -548,7 +549,6 @@ DefMacro('\bib@field@default@translator',
 
 # title : the title of the work.
 DefMacro('\bib@field@default@title',
-##	 '\bib@@field{ltx:bib-title}');
 	 '\bib@@title{title}{ltx:bib-title}');
 
 DefMacro('\bib@field@default@subtitle',
