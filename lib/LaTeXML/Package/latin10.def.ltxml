@@ -17,10 +17,9 @@ use LaTeXML::Package;
 #**********************************************************************
 # Predefine, then load standard file.
 
-# "comma below" accent, defined in latin10.def as ugly ooalign
+# PRE-define "comma below" accent, defined in latin10.def as ugly ooalign
 DefAccent('\textcommabelow',"\x{0326}",",");
-AssignValue('latin10.def_loaded'=>undef,'global');
-# Now, read in the REAL latin10!!
+# Now, read the rest from the REAL latin10!!
 InputDefinitions('latin10',type=>'def',noltxml=>1)
   || Warn(":missing:latin10.def Couldn't find latin10 input encoding definition latin10.def");
 
