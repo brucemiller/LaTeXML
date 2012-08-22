@@ -51,9 +51,9 @@ sub input {
     return; }
   my($dir,$name,$type)=pathname_split($path);
   if($type eq 'ltxml'){		# Perl module.
-    return if $STATE->lookupValue($name.'.'.$type.'_loaded');
+    # Don't load if either the file already was loaded, OR the raw TeX file has been loaded.
+    return if $STATE->lookupValue($name.'.'.$type.'_loaded')|| $STATE->lookupValue($name.'_loaded');
     $STATE->assignValue($name.'.'.$type.'_loaded'=>1,'global');
-    $STATE->assignValue($name.'_loaded'=>1,'global');
     $self->openMouth(LaTeXML::PerlMouth->new($path),0);
     my $pmouth = $$self{mouth};
     do $path; 
@@ -61,7 +61,9 @@ sub input {
     $self->closeMouth if $pmouth eq $$self{mouth}; # Close immediately, unless recursive input
   }
   elsif(($type ne 'tex') && ($path =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/)){ # (attempt to) interpret a style file.
-    return if $STATE->lookupValue($name.'.'.$type.'_loaded');
+    # Don't load if either the file already was loaded, OR the ltxml binding has been loaded.
+    return if $STATE->lookupValue($name.'.'.$type.'_loaded')
+    || $STATE->lookupValue($name.'.'.$type.'.ltxml_loaded');
     if(! ($options{raw} || $STATE->lookupValue('INCLUDE_STYLES')
 	 || ($path =~ /(\.ldf|enc\.def)$/) )){
       Warn(":unexpected:$path Ignoring style file $path");

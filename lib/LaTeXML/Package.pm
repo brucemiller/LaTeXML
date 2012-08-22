@@ -1139,10 +1139,12 @@ sub InputFile {
 # Do we have the option of file_contents?
 sub loadLTXML {
   my($pathname)=@_;
+  # Note: $type will typically be ltxml and $name will include the .sty, .cls or whatever.
   my($dir,$name,$type)=pathname_split($pathname);
-  return if LookupValue($name.'.'.$type.'_loaded');
+  # Don't load if either the file already was loaded, OR the raw TeX file has been loaded.
+  return if LookupValue($name.'.'.$type.'_loaded') || LookupValue($name.'_loaded');
+  # Note that the ltxml version (only!) of this was loaded.
   AssignValue($name.'.'.$type.'_loaded'=>1,'global');
-  AssignValue($name.'_loaded'=>1,'global');
   my $stomach = $STATE->getStomach;
   my $gullet = $stomach->getGullet;
 
@@ -1161,6 +1163,11 @@ sub loadLTXML {
 sub loadTeXDefinitions {
   my($pathname)=@_;
   my($dir,$name,$type)=pathname_split($pathname);
+  # Don't load if we've already loaded it before.
+  # Note that we'll still load it if we've already loaded only the ltxml version
+  # since someone's presumably asking _explicitly_ for the raw TeX version.
+  # It's probably even the ltxml version is asking for it!!
+  # Of course, now it will be marked and wont get reloaded!
   return if LookupValue($name.'.'.$type.'_loaded');
   AssignValue($name.'.'.$type.'_loaded'=>1,'global');
 
