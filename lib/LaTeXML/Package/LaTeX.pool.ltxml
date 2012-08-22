@@ -622,7 +622,9 @@ DefMacro('\@ifpackageloaded','\@ifl@aded\@pkgextension');
 DefMacro('\@ifclassloaded','\@ifl@aded\@clsextension');
 DefMacro('\@ifl@aded{}{}',sub {
   my($gullet,$ext,$name)=@_;
-  if(LookupValue(ToString(Expand($name)).'.'.ToString(Expand($ext)).'_loaded')){
+  my $path = ToString(Expand($name)).'.'.ToString(Expand($ext));
+  # If EITHER the raw TeX or ltxml version of this file was loaded.
+  if(LookupValue($path.'_loaded') || LookupValue($path.'.ltxml_loaded')){
     T_CS('\@firstoftwo'); }
   else {
     T_CS('\@secondoftwo'); }});
