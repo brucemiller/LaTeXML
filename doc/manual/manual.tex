@@ -7,9 +7,7 @@
 % Should the additional keywords be indexed?
 \lstdefinestyle{shell}{language=bash,escapechar=@,basicstyle=\ttfamily\small,%
    morekeywords={latexml,latexmlpost,latexmlmath},
-%   moredelim=[is][\itshape]{\{}{\}}}
    moredelim=[is][\itshape]{\%}{\%}}
-% Can (should?) I make $ prefix give \itshape ?
 \lstdefinestyle{latexml}{basicstyle=\small\ttfamily,language=Perl,%
    morekeywords={CC_ESCAPE,CC_BEGIN,CC_END,CC_MATH,CC_ALIGN,CC_EOL,CC_PARAM,CC_SUPER,%
      CC_SUB,CC_IGNORE,CC_SPACE,CC_LETTER,CC_OTHER,CC_ACTIVE,CC_COMMENT,CC_INVALID,CC_CS,CC_NOTEXPANDED,%
@@ -177,7 +175,7 @@ for converting individual formula into various formats.
 \section[Conversion]{Basic \XML\ Conversion}\label{usage.conversion}\index{latexml!basic usage}
 The command
 \begin{lstlisting}[style=shell]
-latexml {options} --destination={doc}.xml {doc}
+latexml {options} --destination=%doc%.xml %doc%
 \end{lstlisting}
 converts the \TeX\ document \texttt{doc.tex},
 or standard input if \texttt{-} is used in place of the filename, to \XML.
@@ -272,13 +270,13 @@ An \verb|\include| directive (and related ones) search only for
 a \texttt{.tex} file, which is processed and digested as usual.
 
 There are two mechanisms for customization:
-a document-specific binding file \shellcode|{doc}.latexml| will
+a document-specific binding file \shellcode|%doc%.latexml| will
 be loaded, if present;
 the option
 \begin{lstlisting}[style=shell]
 --preload=%binding%
 \end{lstlisting}
-will load the binding file \shellcode|{binding}.ltxml|.
+will load the binding file \shellcode|%binding%.ltxml|.
 The \shellcode|--preload| option can be repeated;
 both kinds of preload are loaded before document processing,
 and are processed in order.
@@ -386,10 +384,10 @@ Specific conversions of the mathematics can be requested
 using the options
 \begin{lstlisting}[style=shell]
 --mathimages                   # converts math to png images,
---presentationmathml %or% --pmml # creates Presentation \MathML
---contentmathml %or% --cmml      # creates Content \MathML
---openmath %or% --om             # creates \OpenMath
---keepXMath                      # preserves \LaTeXML's XMath
+--presentationmathml %or% --pmml # creates Presentation @\MathML@
+--contentmathml %or% --cmml      # creates Content @\MathML@
+--openmath %or% --om             # creates @\OpenMath@
+--keepXMath                      # preserves @\LaTeXML@'s XMath
 \end{lstlisting}
 (Each of these options can also be negated if needed, eg.~\code{--nomathimages})
 It must be pointed out that the Content \MathML\ and \OpenMath\
@@ -1665,33 +1663,29 @@ the structure won't work.
 \emph{To be written}
 
 \section{Math Forks}\label{mathfork}
-Although parsing and recognizing the intended structure, let alone meaning,
-of mathematical expressions from the presentational markup is non-trivial,
-going the other way to convert content into presentation
-is usually relatively straightforward, given some formatting conventions.
-The most common exception is usually a fine-grained correspondence
-associating a small content oriented expression with its presentation
-such that both are easily encapsulated within the same mathematical expression.
-Semantic markup defined using \code{DefMath} uses the \elementref{XMDual} element
-for that purpose.
+There are several constructs for aligning mathematics in \LaTeX, and common
+packages. Here we are concerned with the large scale alignments where
+one or more equations are displayed in a grid,
+such as \code{eqnarray}, in standard \LaTeX,
+and a suite of constructs of the amsmath packages.
+The arrangements are worth preserving as they often convey important information to the
+reader by the grouping, or by drawing attention to similarities or differences
+in the formula.   At the same time, the individual fragments within the grid
+cells often have little `meaning' on their own:
+it is subsequences of these fragments that represent the logical
+mathematical objects or formula.  Thus, we would also like to
+recognize those sequences and synthesize complete formula
+for use in content-oriented services.
+We therefore have to devise an \XML\ structure to represent this duality,
+as well as developing strategies for inferring and rearranging
+the mathematics as it was authored into the desired form.
 
-A more challenging situation arises when mathematical subexpressions
-are aligned across several distinct equations.
-Not only is the scale larger, but the alignment crosses the boundary
-between the mathematics and the document itself; moreover,
-there are often interspersed equation numbers
-(which are distinctly document,  \emph{not} mathematical, elements),
-or even textual insertions (such as amsmath's \verb|\intertext|).
-
-These alignment structures are often very carefully authored;
-and while they are difficult for automatic understanding,
-they can be quite useful for the human reader.
-We thus wish to preserve them and consequently need a structure that can represent 
-on the one hand a grid of math fragments,
-and on the other hand, a sequence of equations.
-The two forms are interconnected, with the equations generally
-being (the parse of) concatenations of sequences of adjacent
-cells or rows.
+The needed structure shares some characteristics with \elementref{XMDual},
+\emph{which needs to be described},
+but needs to resided at the document level, containing several,
+possibly numbered, equations each of which provide two views.
+Additional objects, such as textual insertions (such as amsmath's \verb|\intertext|),
+must also be accomodated.
 
 The following \XML\ is used to represent these structures:
 \begin{lstlisting}[style=xml]
@@ -1707,7 +1701,7 @@ The following \XML\ is used to represent these structures:
     </ltx:MathFork>
   </ltx:equation>
   <ltx:text>@\textit{inter-text}@</ltx:text>
-  @\ldots@
+  @\ldots \textit{more text or equations}@
 </ltx:equationgroup>
 \end{lstlisting}
 Typically, the contents of the \elementref{MathBranch} will be a sequence
@@ -1733,19 +1727,16 @@ should have \code{.fork1} appended.
 
 
 \section{eqnarray}\label{eqnarray}
-From \LaTeXML's point of view, desiring to construct well-structured mathematics,
-an \code{eqnarray} is an awkward object.
-It is formatted as a 3 column, multi-row alignment, with equation
-numbering potentially on each row.
-Each row might represent an equation, but if the 1st column is empty
-and the 2nd contains a relation, that row may be a continuation of the
-equation in the previous row.  If both of the first two columns are empty,
-the row may be a continuation of the RHS of equation in the previous row.
-Of course, in a given invocation, there can be multiple continuations,
-of either or both kind.
-
-And this ignores the fact that \code{eqnarray} is a common subject of markup abuse.
-Often one or two columns are always left empty.
+The \code{eqnarray} environment seems intended to represent one or more
+equations, but each equation can be continued with additional right-hand-sides
+(by omitting the 1st column), or the RHS itself can be continued on multiple
+lines by omitting the 1st two columns on a row.
+With our goal of constructing well-structured mathematics, this gives us
+a fun little puzzle to sort out. 
+However, being essentially the only structure for aligning mathematical
+stuff in standard \LaTeX, \code{eqnarray} tended to be stretched
+into various other use cases; aligning numbered equations with bits of text on the side,
+for example.  We therefore have some work to do to guess what the intent is.
 
 The strategy used for \code{eqnarray} is process the material as
 an alignment in math mode and convert initially to the following \XML\ structure:
@@ -1777,6 +1768,44 @@ the environments, their expected use case and describe the strategy used
 for converting them.
 
 \emph{To be done}
+Describe alternates for \code{equation} and things inside equations;
+Describe single vs multiple logical equations.
+(and started variants)
+
+This list outlines the \emph{intended} use of the AMS alignment environments
+The following constructs are intended as top-level environments, used like \code{equation}.
+
+Several of the constructs are used in place of a top-level \code{equation}
+and represent one or more logical equations.  The following describes
+the intended usage, as a guide to understanding the implementation code (or its limitations!)
+\begin{itemize}
+\item \code{align},\code{flalign},\code{alignat},\code{xalignat}:
+  Each row may be numbered; has even number of columns;
+  Each pair of columns, aligned right then left, represents a logical equation;
+  Note that the documentation suggests that annotative text can be added
+  by putting \verb|\text{}| in a column followed by an empty column.  
+\item \code{gather}:
+  Each row is a single centered column representing an equation.
+\item \code{multline}:
+  This environment represents a single equation broken to multiple lines;
+  the lines are aligned left, center (repeated) and finally, right.
+  \emph{alignment not yet implemented}
+\end{itemize}
+The following environments are used \emph{within} an equation (or similar)
+environment and thus do not generate \elementref{MathFork} structures.
+Moreover, except for \code{aligned}, their semantic intent is less clear.
+The preservation of the alignment have not yet been implemented;
+they; presumably would yeiled an \elementref{XMDual}.
+\begin{itemize}
+\item \code{split}
+\item \code{gathered}
+\item \code{aligned},\code{alignedat}
+\end{itemize}
+Note that the case of a single equation containing a single \code{aligned}
+is transformed into and treated equivalently to a top-level \code{align}.
+
+%% \section{DLMF Alignments}
+%% I'll just mention \code{equationmix},\code{equationgroup}.
 
 %%%======================================================================
 \chapter{ToDo}\label{todo}
