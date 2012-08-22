@@ -452,8 +452,8 @@ If you're lucky, all that should be needed to convert
 a \TeX\ file, \textit{mydoc}\texttt{.tex} to XML, and
 then to XHTML+MathML would be:
 \begin{lstlisting}[style=shell]
-   latexml --dest=\textit{mydoc}.xml \textit{mydoc}
-   latexmlpost -dest=\textit{somewhere/mydoc}.xhtml \textit{mydoc}.xml
+   latexml --dest=%mydoc%.xml %mydoc%
+   latexmlpost -dest=%somewhere/mydoc%.xhtml %mydoc%.xml
 \end{lstlisting}
 This will carry out a default transformation into XHTML+MathML.  If you
 give the destination extension with html, it will generate HTML+images.
