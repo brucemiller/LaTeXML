@@ -174,9 +174,6 @@ sub parse {
 }
 
 our %TAG_FEEDBACK=('ltx:XMArg'=>'a','ltx:XMWrap'=>'w');
-# These attributes on an XMArg or XMWrap will be copied to parsed content
-our @preserve_xmwrap_attributes = (qw(role xml:id open close enclose punctuation));
-
 # Recursively parse a node with some internal structure
 # by first parsing any structured children, then it's content.
 sub parse_rec {
@@ -200,7 +197,10 @@ sub parse_rec {
      $result = [element_nodes($node)]->[0]; }
     else {			# Replace the whole node for XMArg, XMWrap; preserve some attributes
       NoteProgress($TAG_FEEDBACK{$tag}||'.') if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1;
-      $result = Annotate($result,map( ($_=>$node->getAttribute($_)), @preserve_xmwrap_attributes));
+      # Copy all attributes (Annotate will sort out)
+      $result = Annotate($result,
+			 map( (getQName($_)=>$_->getValue),
+			      grep($_->nodeType == XML_ATTRIBUTE_NODE, $node->attributes)));
       $result = $document->replaceTree($result,$node); }
     $result; }
   else {
@@ -749,10 +749,25 @@ sub Annotate {
 	       { map( (getQName($_)=>$_->getValue),
 		      grep($_->nodeType == XML_ATTRIBUTE_NODE, $node->attributes)) },
 	       $node->childNodes]; }
+    my $model =  $LaTeXML::MathParser::DOCUMENT->getModel;
+    my $qname = $$node[0];
+    # Remove any attributes that aren't allowed!!!
+    foreach my $k (keys %attrib){
+      delete $attrib{$k} unless $k=~/^_/ || $model->canHaveAttribute($qname,$k); }
+    # Special treatment for some attributes:
+    # Combine opens & closes
     foreach my $k (qw(open argopen)){
 	$attrib{$k}=$attrib{$k}.$$node[1]{$k} if $attrib{$k} && $$node[1]{$k}; }
     foreach my $k (qw(close argclose)){
 	$attrib{$k}=$$node[1]{$k}.$attrib{$k} if $attrib{$k} && $$node[1]{$k}; }
+    # Make sure font is "Appropriate", if we're creating a new token
+    if($attrib{_font} && ($qname eq 'ltx:XMTok')){
+      my $content = join('',@$node[2..$#$node]);
+      if((! defined $content) || ($content eq '')){
+	delete $attrib{_font}; } # No font needed
+      elsif(my $font = $LaTeXML::MathParser::DOCUMENT->decodeFont($attrib{_font})){
+	delete $attrib{_font};
+	$attrib{font} = $font->specialize($content); }}
     map($$node[1]{$_}=$attrib{$_}, keys %attrib); } # Now add them.
   $node; }
 
