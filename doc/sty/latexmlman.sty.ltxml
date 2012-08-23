@@ -6,10 +6,9 @@ package LaTeXML::Package::Pool;
 use LaTeXML::Package;
 
 Let('\orig@maketitle','\maketitle'); # Save!!!
-# Load the raw style file, to get most of the definitions, as is.
-AssignValue('latexmlman.sty_loaded'=>undef);
 
 UnshiftValue(SEARCHPATHS=>'sty');
+# Load the raw style file, to get most of the definitions, as is.
 InputDefinitions('latexmlman',type=>'sty',noltxml=>1);
 
 Let('\maketitle','\orig@maketitle'); # Restore!!!
