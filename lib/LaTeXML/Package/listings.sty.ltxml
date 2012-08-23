@@ -474,14 +474,23 @@ DefMacro('\lst@@style Until:\end', sub {
 sub lstActivateLanguage {
   my($language,$dialect)=@_;
   $language = uc(ToString($language)); $language =~ s/\s+//g;
+  my($values,$name);
   if($language){
-    $dialect = LookupValue('LSTDD@'.$language) unless $dialect && $dialect->unlist;
-    my $name = 'LST@LANGUAGE@'.$language;
-    if($dialect && $dialect->unlist){
-      $dialect  = uc(ToString($dialect)); $dialect =~ s/\s+//g;
-      $name .= '$'.$dialect; }
-    if(my $values = LookupValue($name)){
+    while(1){
+      # Construct the language$dialect that we're trying to find.
+      my $d = ($dialect && $dialect->unlist ? $dialect : LookupValue('LSTDD@'.$language));
+      $name = 'LST@LANGUAGE@'.$language;
+      if($d && $d->unlist){
+	$d  = uc(ToString($d)); $d =~ s/\s+//g;
+	$name .= '$'.$d; }
+      # language definition is loaded!
+      last if $values = LookupValue($name);
+      # try to load next configuration file; fail if no more configs.
+      last unless readNextConfigFile(); }
+    # Found a definition, activate it.
+    if($values){
       lstActivate($values); }
+    # Else failed to find one.
     else {
       Warn("expected:$name No listings language $language found"); }}}
 
@@ -828,7 +837,8 @@ DefPrimitive('\@lstdefinelanguage []{}[]{} SkipSpaces RequiredKeyVals:LST []',su
     $dialect  = uc(ToString($dialect)); $dialect =~ s/\s+//g;
     $name .= '$'.$dialect; }
   AssignValue($name
-	      => LaTeXML::KeyVals->new('LST','[',']',(@base ? (language=>Tokens(@base)):()), $keyvals->getPairs)); });
+	      => LaTeXML::KeyVals->new('LST','[',']',(@base ? (language=>Tokens(@base)):()), $keyvals->getPairs),
+	     'global'); });
 
 # Seems to use <language>$<dialect> as the naming scheme.
 DefPrimitive('\lstalias []{} []{}',sub {
@@ -1231,18 +1241,25 @@ sub readRawConfigFile {
       next if $token->equals(T_SPACE);
       $stomach->invokeToken($token); }
     $gullet->closeMouth if $mouth eq $gullet->getMouth; # may already close from \endinput!
-    AssignValue('INCLUDE_COMMENTS'=>$cmts); }
+    AssignValue('INCLUDE_COMMENTS'=>$cmts); 
+    $path; }
   else {
-    Info("expected:$file Couldn't find config file $file"); }}
+#    Info("expected:$file Couldn't find config file $file"); 
+    undef; }}
 
+sub readNextConfigFile {
+  while(my $file = ShiftValue('LST_LANGUAGE_FILES')){
+    return $file if readRawConfigFile($file); }}
+  
 # Finally, we want to load the definitions from the configurations...
 # Actually, we should just load .cfg
 # and the extra files should be loaded as needed, but...
 sub lstLoadConfiguration {
   readRawConfigFile("listings.cfg");
   # And NOW read in the language definitions.
-  foreach my $file (lstSplit(Digest(T_CS('\lstlanguagefiles')))){
-    readRawConfigFile($file); }}
+##  foreach my $file (lstSplit(Digest(T_CS('\lstlanguagefiles')))){
+##    readRawConfigFile($file); }}
+  AssignValue(LST_LANGUAGE_FILES=>[lstSplit(Digest(T_CS('\lstlanguagefiles')))],'global'); }
 
 lstLoadConfiguration();
 
