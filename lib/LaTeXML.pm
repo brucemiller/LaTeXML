@@ -207,8 +207,7 @@ sub convertDocument {
 	 $document->insertPI('latexml',searchpaths=>join(',',@$paths)); }}
      foreach my $preload (@{$$self{preload}}){
        next if $preload=~/\.pool$/;
-       $preload =~ s/^\[([^\]]*)\]//;
-       my $options = $1;
+       my $options = ($preload =~ s/^\[([^\]]*)\]//) && $1;
        $preload =~ s/\.sty$//;
        $document->insertPI('latexml',package=>$preload,($options ? (options=>$options):())); }
      $document->absorb($digested);
