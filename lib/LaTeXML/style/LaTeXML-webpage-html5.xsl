@@ -166,11 +166,13 @@
     <xsl:text>
     </xsl:text>
     <header class='header'>
-      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='up']"/>
-      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='previous']"/>
-      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='next']"/>
-      <xsl:text>
-      </xsl:text>
+      <div>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='up']"/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='previous']"/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='next']"/>
+	<xsl:text>
+	</xsl:text>
+      </div>
     </header>
   </xsl:if>
 </xsl:template>
@@ -180,11 +182,14 @@
     <xsl:text>
     </xsl:text>
     <footer class='footer'>
-      <xsl:value-of select='//ltx:date/node()'/>
-      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='previous']"/>
-      <xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='next']"/>
-      <xsl:text>
-      </xsl:text>
+      <div>
+	<xsl:value-of select='//ltx:date/node()'/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='previous']"/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='next']"/>
+	<xsl:text>
+	</xsl:text>
+      </div>
+      <xsl:call-template name="LaTeXML-logo"/>
     </footer>
   </xsl:if>
 </xsl:template>

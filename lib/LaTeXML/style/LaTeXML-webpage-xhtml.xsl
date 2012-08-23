@@ -168,7 +168,7 @@
   </xsl:text>
   <div class='header'>
     <xsl:if test="//ltx:navigation/ltx:ref">
-      <div class="navbar">
+      <div>			<!--some class? -->
 	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='up']"/>
 	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='previous']"/>
 	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='next']"/>
@@ -184,7 +184,7 @@
     <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1] | //ltx:navigation/ltx:ref">
       <xsl:text>
       </xsl:text>
-      <div class="navbar">
+      <div>			<!--some class? -->
 	<xsl:value-of select='//ltx:date/node()'/>
 	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='previous']"/>
 	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@class='next']"/>
