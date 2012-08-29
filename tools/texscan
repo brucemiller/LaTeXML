@@ -514,7 +514,7 @@ sub scan {
       print STDERR "WARN: Couldn't find LaTeXML implementation for $pkg\n"; return undef; }
     if($pkg =~ /(.*)\.sty$/)   {  LaTeXML::Package::RequirePackage($1); }
     elsif($pkg =~ /(.*)\.cls$/){  LaTeXML::Package::LoadClass($1); }
-    else                       {  $gullet->input($loadpath); }}
+    else                       {  LaTeXML::Package::InputDefinitions($loadpath); }}
 
   print "Scanning defined symbols\n"  if $::VERBOSITY >= 1;
   my $table = $LaTeXML::STATE->{table}{meaning};

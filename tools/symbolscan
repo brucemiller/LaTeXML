@@ -116,7 +116,7 @@ sub loadPackages {
       print STDERR "WARN: Couldn't find LaTeXML implementation for $pkg\n"; return undef; }
     if($pkg =~ /(.*)\.sty$/)   {  LaTeXML::Package::RequirePackage($1); }
     elsif($pkg =~ /(.*)\.cls$/){  LaTeXML::Package::LoadClass($1); }
-    else                       {  $gullet->input($loadpath); }}
+    else                       {  LaTeXML::Package::InputDefinitions($loadpath); }}
 
   # And, digest in case there is any pending plain TeX.
   $stomach->digestNextBody;
