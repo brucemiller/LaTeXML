@@ -61,8 +61,7 @@ DefParameterType('DirectoryList', sub {
 
 DefMacro('\@ifundefined{}{}{}',sub {
   my($gullet,$name,$if,$else)=@_;
-  (isUndefined($name) ? $if->unlist : $else->unlist); });
-
+  (isUndefined(Expand($name)) ? $if->unlist : $else->unlist); });
 
 # Apparently LaTeX does NOT define \magnification,
 # and babel uses that to determine whether we're runing LaTeX!!!
