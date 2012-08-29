@@ -3903,7 +3903,8 @@ DefConstructorI('\limits', undef,sub {
    $_[0]->setAttribute($_[0]->getLastChildElement($node)||$node,scriptpos=>'mid'); });
 DefConstructorI('\nolimits',undef,sub {
    my $node = $_[0]->getElement;
-   $_[0]->setAttribute($_[0]->getLastChildElement($node)||$node,scriptpos=>'post'); });
+   $node = $_[0]->getLastChildElement($node)||$node;
+   $node->removeAttribute('scriptpos'); }); # default is 'post', so we can just remove the attrib.
 
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.4. Binary Operation Symbols, p.42
