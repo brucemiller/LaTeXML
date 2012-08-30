@@ -28,6 +28,8 @@ use LaTeXML::Util::Pathname;
 use LaTeXML::Array;
 no warnings 'redefine';
 
+LoadPool('TeX');
+
 # LaTeX has a very particular notion of "Undefined",
 # so let's get that squared away at the outset
 # Naturally, it uses \csname to check, which ends up DEFINING the possibly undefined macro as \relax.
