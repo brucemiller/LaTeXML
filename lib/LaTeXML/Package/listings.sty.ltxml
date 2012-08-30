@@ -486,7 +486,9 @@ sub lstActivateLanguage {
       # language definition is loaded!
       last if $values = LookupValue($name);
       # try to load next configuration file; fail if no more configs.
-      last unless readNextConfigFile(); }
+      if(my $file = ShiftValue('LST_LANGUAGE_FILES')){
+	InputDefinitions($file); }
+      else { last; }}
     # Found a definition, activate it.
     if($values){
       lstActivate($values); }
@@ -1223,43 +1225,18 @@ RawTeX(<<'EoTeX');
 EoTeX
 
 #======================================================================
-# Something like this ought to be built in?
-sub readRawConfigFile {
-  my($file)=@_;
-  my $path = FindFile($file);
-  $path = `kpsewhich $file` unless $path;
-  chomp($path);
-  if($path){
-    my $stomach = $STATE->getStomach;
-    my $gullet = $stomach->getGullet;
-    my $cmts = LookupValue('INCLUDE_COMMENTS');
-    AssignValue('INCLUDE_COMMENTS'=>0);
-    $gullet->openMouth(LaTeXML::StyleMouth->new($path),1);
-    my $mouth = $gullet->getMouth;
-    my $token;
-    while($token = $gullet->readXToken(0)){
-      next if $token->equals(T_SPACE);
-      $stomach->invokeToken($token); }
-    $gullet->closeMouth if $mouth eq $gullet->getMouth; # may already close from \endinput!
-    AssignValue('INCLUDE_COMMENTS'=>$cmts); 
-    $path; }
-  else {
-#    Info("expected:$file Couldn't find config file $file"); 
-    undef; }}
-
-sub readNextConfigFile {
-  while(my $file = ShiftValue('LST_LANGUAGE_FILES')){
-    return $file if readRawConfigFile($file); }}
-  
 # Finally, we want to load the definitions from the configurations...
 # Actually, we should just load .cfg
 # and the extra files should be loaded as needed, but...
 sub lstLoadConfiguration {
-  readRawConfigFile("listings.cfg");
-  # And NOW read in the language definitions.
-##  foreach my $file (lstSplit(Digest(T_CS('\lstlanguagefiles')))){
-##    readRawConfigFile($file); }}
-  AssignValue(LST_LANGUAGE_FILES=>[lstSplit(Digest(T_CS('\lstlanguagefiles')))],'global'); }
+  InputDefinitions("listings",type=>'cfg');
+  AssignValue(LST_LANGUAGE_FILES=>[lstSplit(Digest(T_CS('\lstlanguagefiles')))],'global');
+  # Now, if you want to read in all definitions immediately, you could do this (Daemon?)
+  # otherwise, they'll be read in whenever missing languages are used.
+##  while(my $file = ShiftValue('LST_LANGUAGE_FILES')){
+##    InputDefinitions($file); }
+}
+
 
 lstLoadConfiguration();
 
