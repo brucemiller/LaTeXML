@@ -2496,7 +2496,17 @@ sub addColumnToMathFork {
   # Usually, we will have captured a single ltx:Math node, but occasionally text?
   foreach my $node ($cell->childNodes){
     # We MOVE the node from the _Capture_ ($cell) to the td
-    $td->appendChild($node);
+    #    $td->appendChild($node);
+    ### No, there's some segfault issue in libxml unless we clone the node!?!?!?!
+    #    $td->appendChild($node->cloneNode(1));
+    ### BUT, do in stages, since we need to remake the id associations in the document!
+    my $copy = $node->cloneNode(1);
+    $td->appendChild($copy);
+    # remake id associations AFTER inserting back into the document! (whew!!!)
+    foreach my $n ($document->findnodes('descendant-or-self::*[@xml:id]',$copy)){
+      my $id = $n->getAttribute('xml:id');
+      $document->unRecordID($id);
+      $document->recordID($id,$n); }
     # Usually, an ltx:Math element will be the complete content of the _Capture_ (cell)
     my $type = $document->getNodeQName($node);
     if($type eq 'ltx:Math'){
