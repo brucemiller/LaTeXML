@@ -279,7 +279,10 @@ DefParameterType('CommaList', sub {
 	($item) = $typedef->reparseArgument($gullet,$item); }
       push(@items,$item);
       last if Equals($delim,T_END); }
-    LaTeXML::Array->new(open=>T_BEGIN,close=>T_END,type=>$type,values=>[@items]); }});
+    LaTeXML::Array->new(open=>T_BEGIN,close=>T_END,type=>$type,values=>[@items]); }
+  else { # If no brace, just read one item or token, but still make Array!
+    my($item)=($typedef ? $typedef->readArguments($gullet,"CommaList") : ($gullet->readToken));
+    LaTeXML::Array->new(type=>$type,values=>[$item]); }});
 
 #**********************************************************************
 # Expandable Primitives
