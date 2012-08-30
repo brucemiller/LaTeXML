@@ -900,11 +900,11 @@ DefEnvironment('{verse}',
 #======================================================================
 Tag('ltx:item', autoClose=>1);
 DefConstructor('\item[]',
-	       "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
+	       "<ltx:item>?&defined(#1)(<ltx:tag>#1</ltx:tag>)");
 DefConstructor('\subitem[]',
-	       "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
+	       "<ltx:item>?&defined(#1)(<ltx:tag>#1</ltx:tag>)");
 DefConstructor('\subsubitem[]',
-	       "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
+	       "<ltx:item>?&defined(#1)(<ltx:tag>#1</ltx:tag>)");
 
 AssignValue(itemlevel=>0,'global');
 
@@ -967,13 +967,13 @@ sub setEnumerationStyle {
   return; }
 
 DefConstructor('\itemize@item[]',
-	       "<ltx:item xml:id='#id'>?#1(<ltx:tag>#1</ltx:tag>)",
+	       "<ltx:item xml:id='#id'>?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
 	       properties=>sub{ RefStepItemCounter(); });
 DefConstructor('\enumerate@item[]',
-	       "<ltx:item xml:id='#id' refnum='#refnum'>?#1(<ltx:tag>#1</ltx:tag>)",
+	       "<ltx:item xml:id='#id' refnum='#refnum'>?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
 	       properties=>sub{ RefStepItemCounter(); });
 DefConstructor('\description@item[]',
-	       "<ltx:item xml:id='#id'>?#1(<ltx:tag>#1</ltx:tag>)",
+	       "<ltx:item xml:id='#id'>?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
 	       properties=>sub{ RefStepItemCounter(); });
   
 DefEnvironment('{itemize}',
@@ -1007,7 +1007,7 @@ DefEnvironment('{list}{}{}',
 	       properties=>sub { beginItemize('list'); });
 
 DefConstructor('\list@item[]',
-	       "<ltx:item xml:id='#id'>?#1(<ltx:tag>#1</ltx:tag>)",
+	       "<ltx:item xml:id='#id'>?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
 	       properties=>sub{ RefStepItemCounter(); });
 
 DefEnvironment('{trivlist}',
