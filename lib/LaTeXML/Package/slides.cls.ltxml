@@ -14,6 +14,7 @@ use strict;
 use LaTeXML::Package;
 package LaTeXML::Package::Pool;
 
+LoadPool('LaTeX');
 #**********************************************************************
 # Option handling
 foreach my $option (qw(letterpaper legalpaper executivepaper a4paper a5paper b5paper
