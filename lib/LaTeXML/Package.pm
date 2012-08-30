@@ -1379,7 +1379,8 @@ sub InputDefinitions {
       # Add an appropriately faked entry into \@filelist
       my($a,$b,$e)=($fdir,$fname,$ftype); # If ftype is ltxml, reparse to get sty/cls!
       ($a,$b,$e)=pathname_split(pathname_concat($a,$b)) if $e eq 'ltxml'; # Fake it???
-      my @p = Expand(T_CS('\@filelist'))->unlist;
+      my @p = (LookupDefinition(T_CS('\@filelist'))
+	       ? Expand(T_CS('\@filelist'))->unlist : ());	       
       my @n = Explode($e ? $b.'.'.$e : $b);
       DefMacroI('\@filelist',undef,(@p ? Tokens(@p,T_OTHER(','),@n) : Tokens(@n)));
       resetOptions(); }  # And reset options afterwards, too.
