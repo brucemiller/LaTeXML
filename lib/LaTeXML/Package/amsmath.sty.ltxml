@@ -400,8 +400,8 @@ sub rearrangeLoneAMSAligned {
       foreach my $mtr ($document->findnodes('ltx:XMRow',$array)){
 	# new equation for each row (??? Or should it be each pair of columns?)
 	my $eqn = $document->openElementAt($equationgroup,'ltx:equation');
-	$document->setAttribute($eqn,
-			'xml:id'=>$document->modifyID($equation->getAttribute('xml:id')."X"));
+	if(my $id = $equation->getAttribute('xml:id')){
+	   $document->setAttribute($eqn,'xml:id'=>$document->modifyID($id."X")); }
 	my @mtds = $document->findnodes('ltx:XMCell',$mtr);
 	while(@mtds){
 	  my($math,$branch)=openMathFork($document,$eqn);
