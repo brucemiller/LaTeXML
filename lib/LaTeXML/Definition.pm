@@ -487,7 +487,7 @@ sub translate_constructor {
       $code .= "\$document->closeElement('$tag');\n" if s|^/||; # Empty element.
       Fatal(":misdefined:$LaTeXML::ConstructorCompiler::Name Missing \">\" in constructor template at \"$_\"") unless s|^>||; }
     # Close tag: </name>
-    elsif(s|^\s*</$QNAME_RE\s*>||so){
+    elsif(s|^</$QNAME_RE\s*>||so){
       $code .= "\$document->closeElement('$1');\n"; }
     # Substitutable value: argument, property...
     elsif(/^$VALUE_RE/o){ 
