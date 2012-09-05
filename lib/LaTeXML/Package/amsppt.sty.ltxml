@@ -240,7 +240,7 @@ DefMacro('\linespacing Number','');
 DefMacro('\endquotes','');	# ?
 
 NewCounter('footnote');
-DefMacroI('\thefootnote',undef,'\arabic{footnote}');
+DefMacro('\thefootnote', sub { ExplodeText(ToString(LookupValue('\c@footnote')->valueOf)); });
 
 # same as LaTeX (but LaTeX.pool NOT included for amsppt!!!)
 DefConstructor('\footnote[]{}',
@@ -317,20 +317,30 @@ DefMacro('\keyformat{}','#1');
 DefMacro('\refbreaks','');
 DefMacro('\defaultreftexts','');
 
-DefMacro('\ref','\@auto@Refs\begingroup\@bibitem\@bibfield{?}');
+DefMacro('\ref','\@auto@Refs\begingroup\@bibitem\@bibfield{random}');
 DefMacro('\endref','\@end@bibfield\@fill@bibitem\@end@bibitem\endgroup');
+
+# \moreref is sorta like starting a bibitem within a bibitem
+DefMacro('\moreref',
+	 '\@end@bibfield\@fill@bibitem\@end@bibblock\endgroup'
+	 .'\begingroup\@bibblock\@bibfield{moreref}nonempty\@end@bibfield\@bibfield{random}');
+
+
 DefConstructor('\@bibitem',    "<ltx:bibitem xml:id='#id'>",
 	      properties=>sub { RefStepID('@bibitem'); });
-DefConstructor('\@end@bibitem', "</ltx:bibitem>"); 
+DefConstructor('\@end@bibitem', "</ltx:bibitem>");
+DefConstructor('\@bibblock',    "<ltx:bibblock>");
+DefConstructor('\@end@bibblock',"</ltx:bibblock>");
 
 DefMacro('\@fill@bibitem', sub {
   my @body=();
-  push(@body,Invocation(T_CS('\@bibitem@tag'),
-			LookupValue('amsbibitem@key') || LookupValue('amsbibitem@refnum') || T_CS('\the@bibitem')));
+  if(! LookupValue('amsbibitem@moreref')){
+    push(@body,Invocation(T_CS('\@bibitem@tag'),
+			  LookupValue('amsbibitem@key')
+			  || LookupValue('amsbibitem@refnum') || T_CS('\the@bibitem'))); }
   my $ed;
   if(!LookupValue('amsbibitem@authors') && ($ed=LookupValue('amsbibitem@editors'))){
     AssignValue('amsbibitem@authors'=>Tokens($ed->unlist,Tokenize('\space(\edtext)'))); }
-#  push(@body,commaunbox('moreref'));
   push(@body,ppunbox(undef,undef,'authors'));
   if(LookupValue('amsbibitem@book')){ # Case 1: Book, etc
     push(@body,commaunbox('book'),commaunbox('bookinfo'),
@@ -342,7 +352,7 @@ DefMacro('\@fill@bibitem', sub {
   else {			# Case 2, paper in book
     push(@body, commaunbox('paper'),commaunbox('paperinfo'));
     if(LookupValue('amsbibitem@inbook')){
-      push(@body,commaunbox('book'),
+      push(@body,commaunbox('inbook'),
 	   ppunbox(undef,'\space(','proceedingsinfo',')'),
 	   ppunbox(undef,'\space(','editors',', \edtext)'),
 	   commaunbox('bookinfo'),
@@ -350,13 +360,16 @@ DefMacro('\@fill@bibitem', sub {
 	   commaunbox('publisher'), commaunbox('publisheraddr'),
 	   commaunbox('year'),
 	   ppunbox(',','\space\pagestext~', 'pages')); }
-    else {			# Case 3, paper in journal
+    elsif(! LookupValue('amsbibitem@random')){ # Case 3, paper in journal
       push(@body,commaunbox('journal'),
 	   ppunbox(undef,'\space','volume'),
 	   ppunbox(undef,'\space(','year',')'),
 	   ppunbox(',','\space\issuetext~','issue'),
 	   commaunbox('publisher'),commaunbox('publisheraddr'),
-	   commaunbox('pages'));  }}
+	   commaunbox('pages'));  }
+    else {			# Leftover Case: random text
+      push(@body,commaunbox('random')); }
+  }
     push(@body,commaunbox('finalinfo'),
 	 ppunbox(undef,'\space(','note',')'),
 	 T_OTHER('.'),
@@ -379,7 +392,7 @@ sub commaunbox {
   ppunbox(',','\space',$_[0],undef); }
 
 DefConstructor('\@bibitem@field{}{}', "<ltx:text class='#class' _noautoclose='1'>#2</ltx:text>",
-	      property=>{ class=>sub { 'ltx_'.ToString($_[1]); }});
+	      properties=>{ class=>sub { 'ltx_'.ToString($_[1]); }});
 DefConstructor('\@bibitem@tag{}', "<ltx:bibtag role='refnum'>#1</ltx:bibtag>");
 
 DefMacro('\@bibfield{} XUntil:\@end@bibfield', sub {
@@ -431,7 +444,7 @@ DefMacro('\MR',        '\@end@bibfield\@bibfield{mathreview}MR ');
 DefMacro('\AMSPPS',    '\@end@bibfield\@bibfield{ams-preprint}AMS-PPS ');
 DefMacro('\CMP',       '\@end@bibfield\@bibfield{CMP}CMP ');
 
-# \moreref, \transl ????
+# \transl ????
 #======================================================================
 DefPrimitiveI('\smc', undef,undef,  font=>{shape=>'smallcaps'});
 
