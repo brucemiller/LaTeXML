@@ -487,7 +487,7 @@ sub lstActivateLanguage {
       last if $values = LookupValue($name);
       # try to load next configuration file; fail if no more configs.
       if(my $file = ShiftValue('LST_LANGUAGE_FILES')){
-	InputDefinitions($file); }
+	InputDefinitions($file,noerror=>1); } # Note: OK if some definition files missing!
       else { last; }}
     # Found a definition, activate it.
     if($values){
@@ -1234,7 +1234,7 @@ sub lstLoadConfiguration {
   # Now, if you want to read in all definitions immediately, you could do this (Daemon?)
   # otherwise, they'll be read in whenever missing languages are used.
 ##  while(my $file = ShiftValue('LST_LANGUAGE_FILES')){
-##    InputDefinitions($file); }
+##    InputDefinitions($file,noerror=>1); }
 }
 
 
