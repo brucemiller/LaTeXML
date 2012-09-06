@@ -285,6 +285,22 @@ DefParameterType('CommaList', sub {
     LaTeXML::Array->new(type=>$type,values=>[$item]); }});
 
 #**********************************************************************
+# LaTeX has a very particular notion of "Undefined",
+# so let's get that squared away at the outset; it's useful for TeX, too!
+# Naturally, it uses \csname to check, which ends up DEFINING the possibly undefined macro as \relax.
+# So, basically, undefined is whether something is \relax or not!
+# And it presumably has the side-effect of defining it as \relax as well!
+sub isUndefined {
+  my($name)=@_;
+  my $cs = T_CS('\\'.ToString($name));
+  my $meaning = LookupMeaning($cs);
+  !(defined $meaning) || ($meaning eq $cs) || ($meaning eq LookupMeaning(T_CS('\relax'))); }
+
+DefMacro('\@ifundefined{}{}{}',sub {
+  my($gullet,$name,$if,$else)=@_;
+  (isUndefined(Expand($name)) ? $if->unlist : $else->unlist); });
+
+#**********************************************************************
 # Expandable Primitives
 # See The TeXBook, Ch. 20, Definitions (also called Macros) pp. 212--215
 #**********************************************************************
@@ -486,7 +502,7 @@ DefMacroI('\botmark',        undef, Tokens());
 DefMacroI('\splitfirstmark', undef, Tokens());
 DefMacroI('\splitbotmark',   undef, Tokens());
 
-DefMacro('\input TeXFileName',sub { InputFile($_[1]); });
+DefMacro('\input TeXFileName',sub { Input($_[1]); });
 
 # Note that TeX doesn't actually close the mouth;
 # it just flushes it so that it will close the next time it's read!
@@ -2306,7 +2322,7 @@ DefPrimitive('\unhcopy Number',sub {
 # \vrule
 # \valign ???
 
-DefMacro('\vspace{}','\vskip#2\relax');
+DefMacro('\vspace{}','\vskip#1\relax');
 # \indent, \noindent, \par; see above.
 
 DefMacro('\discretionary{}{}{}','#3'); # No hyphenation here!
@@ -3618,22 +3634,19 @@ DefConstructorI('\proclaim', parseDefParameters('\proclaim',Tokenize('#1. #2\par
 # \fnum@@{type} calls \fnum@<type>, if defined, else composes using \@@fnum@@{type}
 DefMacro('\fnum@@{}','\@ifundefined{fnum@#1}{\@@fnum@@{#1}}{\csname fnum@#1\endcsname}');
 # \fnum@toc@{type} calls \fnum@toc@<type>, if defined, else composes using \@@fnum@@{type}
-####DefMacro('\fnum@toc@@{}','\@ifundefined{fnum@toc@#1}{\@currentlabel}{\csname fnum@toc@#1\endcsname}');
 DefMacro('\fnum@toc@@{}','\@ifundefined{fnum@toc@#1}{\csname the#1\endcsname}{\csname fnum@toc@#1\endcsname}');
 
 # An abbreviated form seems potentially useful... (ie. \chapter@abbr
 
-# \@@fnum{type}
-# Print the type name (eg \chaptername) and \@currentlabel, separated by a space (if both present)
-DefMacro('\@@fnum@@ {}', sub {
+DefPrimitive('\@@fnum@@ {}', sub {
   my($gullet,$type)=@_;
   my $cs = T_CS('\\'.ToString($type).'name');
-  my @name = (LookupDefinition($cs) ? Expand($cs)->unlist : ());
-##  my @num  = Expand(T_CS('\@currentlabel'));
-  my @num  = Expand(T_CS('\the'.ToString($type)));
+  my @name = (LookupDefinition($cs) ? Digest($cs)->unlist : ());
+  my @num  = Digest(T_CS('\the'.ToString($type)))->unlist;
+  my $letter = @name && $name[$#name]->can('getString') && $name[$#name]->getString;
   (  @name,
-     (scalar(@name) && scalar(@num) && ($name[$#name]->getCatcode == CC_LETTER)
-      ? (T_CS('\text@nobreakspace')) : ()),
+     (scalar(@name) && scalar(@num) && ($letter=~/\w/)
+      ? (Digest(T_CS('\text@nobreakspace'))) : ()),
      @num ); });
 
 #======================================================================
