@@ -30,18 +30,6 @@ no warnings 'redefine';
 
 LoadPool('TeX');
 
-# LaTeX has a very particular notion of "Undefined",
-# so let's get that squared away at the outset
-# Naturally, it uses \csname to check, which ends up DEFINING the possibly undefined macro as \relax.
-# So, basically, undefined is whether something is \relax or not!
-# And it presumably has the side-effect of defining it as \relax as well!
-sub isUndefined {
-  my($name)=@_;
-  my $cs = T_CS('\\'.ToString($name));
-  my $meaning = LookupMeaning($cs);
-  !(defined $meaning) || ($meaning eq $cs) || ($meaning eq LookupMeaning(T_CS('\relax'))); }
-
-
 # A LaTeX style directory List
 DefParameterType('DirectoryList', sub {
   my($gullet)=@_;
@@ -60,10 +48,6 @@ DefParameterType('DirectoryList', sub {
 			values=>[@dirs]); }
   else {
     Error(":missing:DirectoryList A DirectoryList was supposed to be here"); }});
-
-DefMacro('\@ifundefined{}{}{}',sub {
-  my($gullet,$name,$if,$else)=@_;
-  (isUndefined(Expand($name)) ? $if->unlist : $else->unlist); });
 
 # Apparently LaTeX does NOT define \magnification,
 # and babel uses that to determine whether we're runing LaTeX!!!
@@ -420,17 +404,13 @@ DefMacro('\format@title@{}{}',
 DefMacro('\format@toctitle@{}{}',
 	 '{\@ifundefined{format@toctitle@#1}{\@@compose@title{\fnum@toc@@{#1}}{#2}}{\csname format@toctitle@#1\endcsname{#2}}}');
 
-DefMacro('\@@compose@title{}{}', sub {
-#	   '\ifx.#1.\else\@tag{#1 }\fi#2');
-  my @tag = Expand($_[1])->unlist;
-  ( (@tag ? (T_CS('\@tag'),T_BEGIN,@tag,T_SPACE,T_END) : ()), $_[2]->unlist); });
+DefMacro('\@@compose@title{}{}', '\@@tag{#1}#2');
+DefConstructor('\@tag{}',"?#1(<ltx:tag>#1</ltx:tag>)()");
+DefConstructor('\@@tag{}',"?#1(<ltx:tag>#1 </ltx:tag>)()");
 
 ## NOTE that a 3rd form seems desirable: an concise form that cannot rely on context for the type.
 ## This would be useful for the titles in links; thus can be plain (unicode) text.
-## However, I hate setting up even more machinery & options and dragging yet another form around.... 
-
-DefConstructor('\@tag{}',"?#1(<ltx:tag>#1</ltx:tag>)()");
-
+## However, I hate setting up even more machinery & options and dragging yet another form around....
 # \@@section{type}{id}{refnum}{formattedrefnum}{toctitle}{title}
 DefConstructor('\\@@section{}{}{}{}{}{}',sub {
   my($document,$type,$id,$refnum,$frefnum,$toctitle,$title,%props)=@_;
@@ -771,6 +751,11 @@ DefEnvironment('{abstract}','',
 		 DefMacroI('\maybe@end@abstract',undef,Tokens());
 		 return; },
 	       locked=>1, mode=>'text');
+# If we get a plain \abstract, instead of an environment, look for \abstract{the abstract}
+DefMacro('\abstract',sub {
+  my($gullet)=@_;
+  ($gullet->ifNext(T_BEGIN) ? T_CS('\abstract@onearg') : T_CS('\begin{abstract}')); });
+DefMacro('\abstract@onearg{}','\begin{abstract}#1\end{abstract}');
 
 DefMacroI('\maybe@end@abstract',undef, '\endabstract');
 
@@ -1822,13 +1807,13 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 		 afterDigestBegin=>sub { Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
 		 properties => sub {
 		   my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) :());
-		   my $frefnum = Expand(Tokens(($swap
-						? ( ($flag ? ():(T_CS('\the'.$counter))),
-						    (!$flag && $type ? (T_SPACE):()),
-						    ($type ? ($type->unlist):()) )
-						: ( ($type ? ($type->unlist):()),
-						    (!$flag && $type ? (T_SPACE):()),
-						    ($flag ? ():(T_CS('\the'.$counter))) ))));
+		   my $frefnum = Tokens(($swap
+					 ? ( ($flag ? ():(T_CS('\the'.$counter))),
+					     (!$flag && $type ? (T_SPACE):()),
+					     ($type ? ($type->unlist):()) )
+					 : ( ($type ? ($type->unlist):()),
+					     (!$flag && $type ? (T_SPACE):()),
+					     ($flag ? ():(T_CS('\the'.$counter))) )));
 		   my $title = Digest(Tokens(T_BEGIN,T_CS('\the'),T_CS('\thm@headfont'),
 					     T_CS('\@tag'),T_BEGIN,$frefnum->unlist,T_END,
 					     ($type && $_[1] ? (T_SPACE,T_OTHER('(')):()),
@@ -1920,8 +1905,8 @@ DefMacro('\fnsymbol{}',       sub { T_OTHER($fnsymbols[CounterValue($_[1])->valu
 ## I'd rather not define these, since the \fnum@@ defn is better....
 DefMacroI('\fnum@figure',undef,'\figurename\nobreakspace\thefigure');
 DefMacroI('\fnum@table', undef,'\tablename\nobreakspace\thetable');
-DefMacro('\format@title@figure{}','\@tag{\fnum@figure: }#1');
-DefMacro('\format@title@table{}','\@tag{\fnum@table: }#1');
+DefMacro('\format@title@figure{}','\@@tag{\fnum@figure:}#1');
+DefMacro('\format@title@table{}','\@@tag{\fnum@table:}#1');
 
 DefMacro('\caption',
 	 '\@ifundefined{@captype}{\@@generic@caption}{\expandafter\@caption\expandafter{\@captype}}');
@@ -2506,7 +2491,7 @@ DefConstructor('\nocite Semiverbatim', '');
 Let(T_CS('\@@input'),T_CS('\input'));	# Save TeX's version.
 # LaTeX's \input is a bit different...
 DefMacroI('\input',undef,'\@ifnextchar\bgroup\@iinput\@@input');
-DefPrimitive('\@iinput {}', sub { InputFile(Expand($_[1])); });
+DefPrimitive('\@iinput {}', sub { Input(Expand($_[1])); });
 
 # Note that even excluded files SHOULD have the effects of their inclusion
 # simulated by having read the corresponding aux file;
@@ -2516,7 +2501,7 @@ DefPrimitive('\include{}',sub {
   $path = ToString($path);
   my $table = LookupValue('including@only');
   if(!$table || $$table{$path}){
-    InputFile($path); }
+    Input($path); }
   return; });
 
 # [note, this will load name.tex, if it exists, else name]
@@ -3204,7 +3189,7 @@ DefConstructor('\pic@raisebox{Dimension}[Dimension][Dimension]{}',
 
 DefConstructor('\pic@framebox Pair []{}',
 	       "<ltx:rect x='0' y='0' %&PairAttr(#size,width,height) stroke-width='#thick' fill='none'/>"
-	       . "<ltx:g %&PairAttr(#size,width,height) pos='#2'> #3 </ltx:g>",
+	       . "<ltx:g %&PairAttr(#size,width,height) pos='#2'>#3</ltx:g>",
 	       alias=>'\framebox',
 	       properties=>sub { picProperties(size=>picScale($_[1])); });
 
@@ -3212,7 +3197,7 @@ DefConstructor('\pic@framebox Pair []{}',
 DefConstructor('\dashbox {Float} Pair [] {}',
 	       "<ltx:rect x='0' y='0' %&PairAttr(#size,width,height)"
 	       . " stroke-width='#thick' stroke-dasharray='&ptValue(#dash)' fill='none'/>".
-	       "<ltx:g %&PairAttr(#size,width,height) pos='#3'> #4 </ltx:g>",
+	       "<ltx:g %&PairAttr(#size,width,height) pos='#3'>#4</ltx:g>",
 	       alias=>'\dashbox',
 	       properties=>sub { picProperties(dash=>picScale($_[1]),size=>picScale($_[2])); });
 
@@ -3366,16 +3351,17 @@ DefConstructor('\textsc@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mod
 DefConstructor('\textnormal@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode=>'text',
 	       bounded=>1, font=>{family=>'serif',series=>'medium',shape=>'upright'},alias=>'\textnormal');
 
-DefMacro('\textmd{}',     '\ifmmode\textmd@math{#1}\else{\mdseries #1}\fi');
-DefMacro('\textbf{}',     '\ifmmode\textbf@math{#1}\else{\bfseries #1}\fi');
-DefMacro('\textrm{}',     '\ifmmode\textrm@math{#1}\else{\rmfamily #1}\fi');
-DefMacro('\textsf{}',     '\ifmmode\textsf@math{#1}\else{\sffamily #1}\fi');
-DefMacro('\texttt{}',     '\ifmmode\texttt@math{#1}\else{\ttfamily #1}\fi');
-DefMacro('\textup{}',     '\ifmmode\textup@math{#1}\else{\upshape #1}\fi');
-DefMacro('\textit{}',     '\ifmmode\textit@math{#1}\else{\itshape #1}\fi');
-DefMacro('\textsl{}',     '\ifmmode\textsl@math{#1}\else{\slshape #1}\fi');
-DefMacro('\textsc{}',     '\ifmmode\textsc@math{#1}\else{\scshape #1}\fi');
-DefMacro('\textnormal{}', '\ifmmode\textnormal@math{#1}\else{\normalfont #1}\fi');
+# These really should be robust! which is a source of expand timing issues!
+DefMacro('\textmd{}',     '\protect\ifmmode\textmd@math{#1}\else{\mdseries #1}\fi');
+DefMacro('\textbf{}',     '\protect\ifmmode\textbf@math{#1}\else{\bfseries #1}\fi');
+DefMacro('\textrm{}',     '\protect\ifmmode\textrm@math{#1}\else{\rmfamily #1}\fi');
+DefMacro('\textsf{}',     '\protect\ifmmode\textsf@math{#1}\else{\sffamily #1}\fi');
+DefMacro('\texttt{}',     '\protect\ifmmode\texttt@math{#1}\else{\ttfamily #1}\fi');
+DefMacro('\textup{}',     '\protect\ifmmode\textup@math{#1}\else{\upshape #1}\fi');
+DefMacro('\textit{}',     '\protect\ifmmode\textit@math{#1}\else{\itshape #1}\fi');
+DefMacro('\textsl{}',     '\protect\ifmmode\textsl@math{#1}\else{\slshape #1}\fi');
+DefMacro('\textsc{}',     '\protect\ifmmode\textsc@math{#1}\else{\scshape #1}\fi');
+DefMacro('\textnormal{}', '\protect\ifmmode\textnormal@math{#1}\else{\normalfont #1}\fi');
 
 DefPrimitive('\DeclareTextFontCommand{}{}', sub {
   my($stomach,$cmd,$font)=@_;
@@ -3763,7 +3749,7 @@ DefMacro('\IfFileExists{}{}{}', sub{
 DefMacro('\InputIfFileExists{}{}{}', sub{
   my($gullet,$file,$if,$else)=@_;
   if(FindFile($file)){
-    InputFile($file);
+    Input($file);
     $if->unlist; }
   else { $else->unlist; }});
 
