@@ -24,81 +24,6 @@ sub new {
 	}, $class; }
 
 #**********************************************************************
-# Hmm, we should record in the output which files were included/required/etc.
-# This is for the benefit of anything wanting to interpret the Math/TeX ???
-# In which case, *.tex files that are included should probably be ignored
-# (they're output will already be incorporated),
-# But *.sty, *.cls etc, (or the *.pm equivalents) should be noted.
-# However, if things are included via some other `package', presumably
-# that package will be responsible for loading those extra pacakges, so
-# they should be ignored too, right?
-
-# HMM: the packageLoaded check only makes sense for style files, and
-# is probably only important for latexml implementations?
-sub input {
-  my($self,$file,$types,%options)=@_;
-  $file = ToString($file) if ref $file;
-  # Try to find a Package implementing $file.
-  $file = $1 if $file =~ /^\{(.*)\}$/; # just in case
-  my $filecontents = $STATE->lookupValue($file.'_contents');
-  my $path = ($filecontents ? $file
-	      : pathname_find($file,paths=>$STATE->lookupValue('SEARCHPATHS'),
-			      types=>$types, installation_subdir=>'Package'));
-  if(! $path) {
-    $STATE->noteStatus(missing=>$file);
-    Error(":missing_file:$file Cannot find file $file of type ".join(', ',@{$types||[]})
-	  ." in paths ".join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); 
-    return; }
-  my($dir,$name,$type)=pathname_split($path);
-  if($type eq 'ltxml'){		# Perl module.
-    # Don't load if either the file already was loaded, OR the raw TeX file has been loaded.
-    return if $STATE->lookupValue($name.'.'.$type.'_loaded')|| $STATE->lookupValue($name.'_loaded');
-    $STATE->assignValue($name.'.'.$type.'_loaded'=>1,'global');
-    $self->openMouth(LaTeXML::PerlMouth->new($path),0);
-    my $pmouth = $$self{mouth};
-    do $path; 
-    Fatal(":perl:die Package $file had an error:\n  $@") if $@; 
-    $self->closeMouth if $pmouth eq $$self{mouth}; # Close immediately, unless recursive input
-  }
-  elsif(($type ne 'tex') && ($path =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/)){ # (attempt to) interpret a style file.
-    # Don't load if either the file already was loaded, OR the ltxml binding has been loaded.
-    return if $STATE->lookupValue($name.'.'.$type.'_loaded')
-    || $STATE->lookupValue($name.'.'.$type.'.ltxml_loaded');
-    if(! ($options{raw} || $STATE->lookupValue('INCLUDE_STYLES')
-	 || ($path =~ /(\.ldf|enc\.def)$/) )){
-      Warn(":unexpected:$path Ignoring style file $path");
-      return; }
-    $STATE->assignValue($name.'.'.$type.'_loaded'=>1,'global');
-    if($filecontents){
-      $self->openMouth(LaTeXML::StyleStringMouth->new($path,$filecontents), 0);  }
-    else {
-      $self->openMouth(LaTeXML::StyleMouth->new($path), 0);  }}
-  else {			# Else read as an included file.
-    # If there is a file-specific declaration file (name.latexml), load it first!
-    my $file = $path;
-    $file =~ s/\.tex//;
-    local $LaTeXML::INHIBIT_LOAD=0;
-    $self->inputConfigfile($file); #  Load configuration for this source, if any.
-    # NOW load the input --- UNLESS INHIBITTED!!!
-    if(!$LaTeXML::INHIBIT_LOAD){
-      if($filecontents){
-	$self->openMouth(LaTeXML::Mouth->new($filecontents) ,0); }
-      else {
-	$self->openMouth(LaTeXML::FileMouth->new($path) ,0); }}
-  }}
-
-sub inputConfigfile {
-  my($self,$file)=@_;
-  if(my $conf = pathname_find("$file.latexml",
-			      paths=>$STATE->lookupValue('SEARCHPATHS'))){
-    $self->openMouth(LaTeXML::PerlMouth->new($conf),0);
-    my $pmouth = $$self{mouth};
-    do $conf; 
-    Fatal(":perl:die Configuration file $conf had an error:\n  $@") if $@; 
-    $self->closeMouth if $pmouth eq $$self{mouth}; # Close immediately, unless rec. input
-  }}
-
-#**********************************************************************
 # Start reading tokens from a new Mouth.
 # This pushes the mouth as the current source that $gullet->readToken (etc) will read from.
 # Once this Mouth has been exhausted, readToken, etc, will return undef,
@@ -123,7 +48,8 @@ sub closeMouth {
     ($$self{mouth},$$self{pushback},$$self{autoclose}) = @{ shift(@{$$self{mouthstack}}) }; }
   else {
     $$self{pushback}=[];
-    $$self{mouth}=Tokens(); 
+##    $$self{mouth}=Tokens(); 
+    $$self{mouth}=LaTeXML::Mouth->new(); 
     $$self{autoclose}=1; }}
 
 sub getMouth { $_[0]->{mouth}; }
@@ -149,9 +75,39 @@ sub flush {
   foreach my $entry (@{$$self{mouthstack}}){
     $entry->[0]->finish; }
   $$self{pushback}=[];
-  $$self{mouth}=Tokens();
+##  $$self{mouth}=Tokens();
+    $$self{mouth}=LaTeXML::Mouth->new(); 
   $$self{autoclose}=1;
   $$self{mouthstack}=[]; }
+
+# Do something, while reading stuff from a specific Mouth.
+# This reads ONLY from that mouth (or any mouth openned by code in that source),
+# and the mouth should end up empty afterwards, and only be closed here.
+sub readingFromMouth {
+  my($self,$mouth,$closure)=@_;
+  $self->openMouth($mouth,1); # only allow mouth to be explicitly closed here.
+  my($result,@result);
+  if(wantarray){
+    @result = &$closure($self); }
+  else {
+    $result = &$closure($self); }
+  # $mouth must still be open, with (at worst) empty autoclosable mouths in front of it
+  while(1){
+    if($$self{mouth} eq $mouth){
+      $self->closeMouth(1); last; }
+    elsif(! @{$$self{mouthstack}}){
+      Error(":expected:$mouth Expected to be able to close ".Stringify($mouth)
+	    ." but it has already been closed."); }
+    elsif(!$$self{autoclose} || @{$$self{pushback}} || $$self{mouth}->hasMoreInput){
+      my $next = Stringify($self->readToken);
+      Error(":expected:$mouth Expected to be able to close ".Stringify($mouth)
+	    . "but ".Stringify($$self{mouth})." is still open"
+	    .($next ? "with input remaining $next":'')); 
+      $$self{mouth}->finish;
+      $self->closeMouth(1); }	# ?? if we continue?
+    else {
+      $self->closeMouth; }}
+  (wantarray ? @result : $result); }
 
 # User feedback for where something (error?) occurred.
 sub getLocator {
@@ -182,17 +138,6 @@ sub show_pushback {
   (@pb ? "\n  To be read again ".ToString(Tokens(@pb)) : ''); }
 
 #**********************************************************************
-# Return $tokens with all tokens expanded
-sub expandTokens {
-  my($self,$tokens)=@_;
-  return () unless $tokens;
-  $self->openMouth((ref $tokens eq 'LaTeXML::Token' ? Tokens($tokens) : $tokens->clone),1);
-  my @expanded=();
-  while(defined(my $t=$self->readXToken(0))){
-    push(@expanded,$t);}
-  $self->closeMouth;
-  Tokens(@expanded); }
-
 # Not really 100% sure how this is supposed to work
 # See TeX Ch 20, p216 regarding noexpand, \edef with token list registers, etc.
 # Solution: Duplicate param tokens, stick NOTEXPANDED infront of expandable tokens.
@@ -708,15 +653,6 @@ to TeX's rules.
 =head2 Managing Input
 
 =over 4
-
-=item C<< $gullet->input($file,$types,%options); >>
-
-Input the file named C<$file>; Searches for matching files in the
-current C<searchpath> with an extension being one of  C<$types> (an array
-of strings). If the found file has a perl extension (pm, ltxml, or latexml), 
-it will be executed (loaded).  If the found file has a TeX extension
-(tex, sty, cls) it will be opened and latexml will prepare to read
-from it.
 
 =item C<< $gullet->openMouth($mouth, $noautoclose); >>
 
