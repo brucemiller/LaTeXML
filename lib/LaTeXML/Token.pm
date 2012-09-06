@@ -76,8 +76,6 @@ sub isExecutable { $executable_catcode[$_[0]->[1]]; }
 
 # Defined so a Token or Tokens can be used interchangeably.
 sub unlist { ($_[0]); }
-sub getLocator { ''; }
-sub getSource  { ''; }
 
 our @NEUTRALIZABLE=(0,0,0,1,
 		    1,0,1,1,
@@ -191,32 +189,6 @@ sub beDigested {
 sub neutralize {
   Tokens(map($_->neutralize,$_[0]->unlist)); }
 
-#======================================================================
-# The following implements the Mouth API, so that a Token list can
-# act as a pre-tokenized source of tokens.
-
-sub finish {}
-sub hasMoreInput {
-  my($self)=@_;
-  scalar(@$self); }
-
-sub readToken {
-  my($self)=@_;
-  return unless @$self;
-  shift(@$self); }
-
-sub readTokens {
-  my($self,$until)=@_;
-  my @tokens=();
-  while(defined(my $token = $self->readToken())){
-    last if $until and $token->getString eq $until->getString;
-    push(@tokens,$token); }
-  while(@tokens && $tokens[$#tokens]->getCatcode == CC_SPACE){ # Remove trailing space
-    pop(@tokens); }
-  Tokens(@tokens); }
-
-sub getLocator { ''; }
-sub getSource  { ''; }
 #**********************************************************************
 1;
 
@@ -296,10 +268,6 @@ The following methods are specific to C<LaTeXML::Tokens>.
 
 Return a shallow copy of the $tokens.  This is useful before reading from a C<LaTeXML::Tokens>.
 
-=item C<< $token = $tokens->readToken; >>
-
-Returns (and remove) the next token from $tokens.  This is part of the public API of L<LaTeXML::Mouth>
-so that a C<LaTeXML::Tokens> can serve as a L<LaTeXML::Mouth>.
 
 =back
 
