@@ -287,11 +287,8 @@ sub ReadAlignmentTemplate {
 
 sub parseAlignmentTemplate {
   my($spec)=@_;
-  my $gullet = $STATE->getStomach->getGullet;
-  $gullet->openMouth(LaTeXML::Mouth->new("{".$spec."}"),1);
-  my $template = ReadAlignmentTemplate($gullet);
-  $gullet->closeMouth(1);
-  $template; }
+  $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Mouth->new("{".$spec."}"), sub {
+     ReadAlignmentTemplate($_[0]); }); }
 
 sub MatrixTemplate {
   LaTeXML::AlignmentTemplate->new(repeated=>[{before=>Tokens(T_CS('\hfil')),
