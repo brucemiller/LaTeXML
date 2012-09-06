@@ -1,5 +1,24 @@
 0.8.0 !!!!!
 
+0.7.9xx 2012-08-01
+     - some slight efficiency improvements
+       (reports Deyan Ginev, Joe Corneli)
+     - fixed bug in Post reading from STDIN (thanks Josh Bialkowski)
+     - various robustness
+     
+0.7.9xx 2012-07-01
+     - more consistent handling of math spacing;
+       treat \quad and wider as punctuation
+     - better support for adding ID to all elements
+     - parallel math markup will establish node-to-node cross-referencing
+       Particularly pmml+cmml uses id & xref to connect related pmml & cmml nodes.
+     - generate MathML mrow instead of mfenced.
+     - experimentally, do NOT define non-control sequences as mathactive
+       (in order to assign XMTok attributes), but store such properties separately.
+     - Have MathBox store the XMTok properties of simple symbols;
+       create Primitives for simple symbols, rather than Constructors.
+     - switched comparison files from dvi to pdf; more portable
+
 0.7.9xx 2012-06-02
      - MathFork updates
      - use LaTeXML.catalog more consistently;
