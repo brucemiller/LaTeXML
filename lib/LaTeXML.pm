@@ -110,7 +110,7 @@ sub digestFile {
 							Tokens(Explode($name))));
      # Reverse order, since last opened is first read!
      $self->loadPostamble($options{postamble}) if $options{postamble};
-     $state->getStomach->getGullet->input($pathname);
+     LaTeXML::Package::InputContent($pathname);
      $self->loadPreamble($options{preamble}) if $options{preamble};
 
      my $list = $self->finishDigestion;
@@ -157,8 +157,8 @@ sub digestBibTeXFile {
 							Tokens(Explode($name))));
      # This is handled by the gullet for TeX files, but we're doing a batch of string processing first.
      # Nevertheless, we'd like access to state & variables during that string processing.
-     $state->getStomach->getGullet->inputConfigfile($name); #  Load configuration for this source, if any.
-
+     if(my $conf = pathname_find("$name.latexml", paths=>LookupValue('SEARCHPATHS'))){
+       loadLTXML($conf); }
      my $tex = $bib->toTeX;
      $state->getStomach->getGullet->openMouth(LaTeXML::Mouth->new($tex),0);
      my $list = $self->finishDigestion;
@@ -182,17 +182,15 @@ sub loadPreamble {
   my($self,$preamble)=@_;
   my $gullet  = $$self{state}->getStomach->getGullet;
   if($preamble eq 'standard_preamble.tex'){
-     $gullet->openMouth(LaTeXML::Mouth->new('\documentclass{article}\begin{document}'),0); }
-  else {
-     $gullet->input($preamble); }}
+    $preamble = 'literal:\documentclass{article}\begin{document}'; }
+  LaTeXML::Package::InputContent($preamble); }
 
 sub loadPostamble {
   my($self,$postamble)=@_;
   my $gullet  = $$self{state}->getStomach->getGullet;
   if($postamble eq 'standard_postamble.tex'){
-     $gullet->openMouth(LaTeXML::Mouth->new('\end{document}'),0); }
-  else {
-     $gullet->input($postamble); }}
+    $postamble = 'literal:\end{document}'; }
+  LaTeXML::Package::InputContent($postamble); }
 
 sub convertDocument {
   my($self,$digested)=@_;
