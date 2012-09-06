@@ -31,7 +31,7 @@ our @EXPORT = (qw(&DefExpandable
 		  &convertLaTeXArgs),
 
 	       # Class, Package and File loading.
-	       qw(&InputFile &InputDefinitions &RequirePackage &LoadClass &LoadPool &FindFile
+	       qw(&Input &InputContent &InputDefinitions &RequirePackage &LoadClass &LoadPool &FindFile
 		  &DeclareOption &PassOptions &ProcessOptions &ExecuteOptions
 		  &AddToMacro &AtBeginDocument &AtEndDocument),
 
@@ -361,7 +361,7 @@ sub StepCounter {
   if(my $nested = LookupValue("\\cl\@$ctr")){
     foreach my $c ($nested->unlist){
       ResetCounter(ToString($c)); }}
-  Expand(T_CS("\\the$ctr")); }
+  DigestIf(T_CS("\\the$ctr")); }
 
 # HOW can we retract this?
 sub RefStepCounter {
@@ -371,14 +371,15 @@ sub RefStepCounter {
 	    scope=>'global');
   my $iddef = LookupDefinition(T_CS("\\the$ctr\@ID"));
   my $has_id = $iddef && ((!defined $iddef->getParameters) || ($iddef->getParameters->getNumArgs == 0));
-  my $idtokens = $has_id && Expand(T_CS("\\the$ctr\@ID"));
-  DefMacroI(T_CS('\@currentlabel'),undef,$refnumtokens,scope=>'global');
-  DefMacroI(T_CS('\@currentID'),   undef,$idtokens,scope=>'global') if $has_id;
+
+  DefMacroI(T_CS('\@currentlabel'),undef,T_CS("\\the$ctr"),scope=>'global');
+  DefMacroI(T_CS('\@currentID'),   undef,T_CS("\\the$ctr\@ID"),scope=>'global') if $has_id;
+
 ###  my $id      = $has_id && ToString(Digest($idtokens));
+#  my $id      = $has_id && ToString(DigestLiteral($idtokens));
+  my $id      = $has_id && ToString(DigestLiteral(T_CS("\\the$ctr\@ID")));
 
-  my $id      = $has_id && ToString(DigestLiteral($idtokens));
-
-  my $refnum  = ToString(Digest($refnumtokens));
+  my $refnum  = ToString(Digest(T_CS("\\the$ctr")));
   my $frefnum = ToString(Digest(Invocation(T_CS('\fnum@@'),$ctr)));
   # Any scopes activated for previous value of this counter (& any nested counters) must be removed.
   # This may also include scopes activated for \label
@@ -401,13 +402,12 @@ sub deactivateCounterScope {
 sub RefStepID {
   my($ctr)=@_;
   my $unctr = "UN$ctr";
-  my $refnumtokens = StepCounter($unctr);
+  StepCounter($unctr);
   DefMacroI(T_CS("\\\@$ctr\@ID"),undef,
 	    Tokens(T_OTHER('x'),Explode(LookupValue('\c@'.$unctr)->valueOf)),
 	    scope=>'global');
-  my $idtokens = Expand(T_CS("\\the$ctr\@ID"));
-  DefMacroI(T_CS('\@currentID'),undef,$idtokens);
-  (id=>ToString(Digest($idtokens))); }
+  DefMacroI(T_CS('\@currentID'),undef,T_CS("\\the$ctr\@ID"));
+  (id=>ToString(Digest(T_CS("\\the$ctr\@ID")))); }
 
 sub ResetCounter {
   my($ctr)=@_;
@@ -451,7 +451,17 @@ sub GenerateID {
 #
 #======================================================================
 
-sub Expand            { $STATE->getStomach->getGullet->expandTokens(@_); }
+# Return $tokens with all tokens expanded
+sub Expand {
+  my(@tokens)=@_;
+  return () unless @tokens;
+  $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Mouth->new(),sub {
+    my($gullet)=@_;
+    $gullet->unread(@tokens);
+    my @expanded=();
+    while(defined(my $t=$gullet->readXToken(0))){
+      push(@expanded,$t);}
+    Tokens(@expanded); }); }
 
 sub Invocation        {
   my($token,@args)=@_;
@@ -463,7 +473,20 @@ sub Invocation        {
 
 sub RawTeX {
   my($text)=@_;
-  Digest(TokenizeInternal($text));
+  # It could be as simple as this, except if catcodes get changed, it's too late!!!
+  #  Digest(TokenizeInternal($text));
+  my $stomach = $STATE->getStomach;
+  my $savedcc = $STATE->lookupCatcode('@');
+  $STATE->assignCatcode('@'=>CC_LETTER);
+
+  $stomach->getGullet->readingFromMouth(LaTeXML::Mouth->new($text), sub {
+    my($gullet)=@_;
+    my $token;
+    while($token = $gullet->readXToken(0)){
+      next if $token->equals(T_SPACE);
+      $stomach->invokeToken($token); }});
+
+  $STATE->assignCatcode('@'=>$savedcc);
   return; }
 
 #======================================================================
@@ -1050,6 +1073,17 @@ sub pathname_is_raw {
   my($pathname)=@_;
   ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/); }
 
+sub pathname_is_literaldata {
+  my($pathname)=@_;
+  $pathname =~ /^literal:/; }
+
+sub pathname_is_specialprotocol {
+  my($pathname)=@_;
+  $pathname =~ /^(literal|https|http|ftp):/; }
+
+# Perhaps this should evolve to cover stored filecontents
+# But to do that, maybe we need string (& url) resources, as well.
+# but actually, we'd still want to know what filename the data is pretending to be!
 our $findfile_options = {type=>1, notex=>1, noltxml=>1};
 sub FindFile {
   my ($file,%options)=@_;
@@ -1058,7 +1092,12 @@ sub FindFile {
     delete $options{raw};
     Warn(":obsolete:raw FindFile $file option raw is obsolete; it is not needed"); }
   CheckOptions("FindFile ($file)",$findfile_options,%options);
+  if(pathname_is_literaldata($file)){	# If literal protocol return immediately (unless notex!)
+    return ($options{notex} ? undef : $file); }
+  elsif(pathname_is_specialprotocol($file)){ # If a known special protocol return immediately
+    return $file; }
   $file .= ".$options{type}" if $options{type};
+
   # If we REALLY want to rely on k-path-search, we could just push $PATHS onto TEXINPUTS
   # and ONLY use kpsewhich...? would that be faster or better in any way?
   my $paths    = LookupValue('SEARCHPATHS');
@@ -1074,146 +1113,152 @@ sub FindFile {
 	   && ( pathname_find_x("$file",paths=>$paths) || pathname_kpathsearch($file) ));
  }
 
+sub pathname_is_nasty {
+  my($pathname)=@_;
+  $pathname =~ /[^\w\-_\+\=\/\\\.~]/; }
+
 sub pathname_kpathsearch {
   my($path)=@_;
+  # Note; unless we want to write a "Safe" version of backtick,
+  # we need to sanitize the pathname!
+  # Of course, we're searching /texmf/ which has a somewhat portable|clean set of names...
+  return undef if pathname_is_nasty($path);
   my $kpsewhich = $ENV{LATEXML_KPSEWHICH} || 'kpsewhich';
   my $found = `$kpsewhich $path`; 
+
   chomp($found); 
   $found; }
 
+# Note that this looks for cached filecontents, too!
 sub pathname_find_x {
   my($path,%options)=@_;
   if(LookupValue($path.'_contents')){
     return $path; }
   pathname_find($path,%options); }
 
-# This needs to evolve into a useful interface.
-# Perhaps need to expose a lower level as well: OpenMouth ?
-# So far, we're expecting that the file likely contains content,
-# but if in latex, and in preamble it actually better be a style file
-# (and we'll even try to find a .sty instead of .tex?)
-# In TeX, if there's no file by that name, we may also try for a style file.
-# 
-our $inputfile_options={};
-sub InputFile {
+our $inputcontent_options={noerror=>1};
+sub InputContent {
+  my($request,%options)=@_;
+  CheckOptions("InputContent ($request)",$inputcontent_options,%options);
+  if(my $path = FindFile($request,noltxml=>1)){
+    loadTeXContent($path); }
+  elsif(!$options{noerror}){
+    Error(":missing_file:$request Cannot find file $request"
+	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]"); }
+}
+
+
+# This is essentially the \input equivalent;
+# we are most likely expecting to get actual content,
+# (possibly with definitions included, as well)
+# but might actually be getting pure definitions,
+# (like a proper style file)
+# in which case we may really want to load a latexml binding.
+# Note that generic style files (non-latex) often have a .tex extension.
+# But we may have implemented a .sty.ltxml, so we override the .tex.
+# Is this actually safe, or should we be explicilty providing .tex.ltxml ?
+
+our $input_options={};
+sub Input {
   my($request,%options)=@_;
   $request = ToString($request);
-  CheckOptions("InputFile ($request)",$inputfile_options,%options);
-  # HEURISTIC! First check if equivalent style file, but only IFF we are in preamble
-  my ($dir,$name,$type) = pathname_split($request);
-  my $file = $name; $file .= '.'.$type if $type;
-  my $altpath;
-  # Firstly, check if we are going to OVERRIDE the requested raw .tex file
-  # with a latexml binding to a style file.
-  if((! $dir) && (!$type || ($type eq 'tex')) # No specific directory, but apparently to a raw tex file.
-     && (LookupValue('inPreamble') || !FindFile($file)) # AND, in preamble so it SHOULD be style file, OR also if we can't find the raw file.
-     && ($altpath=FindFile($name,type=>'sty', notex=>1))){	# AND there IS such a style file
-    Info(":override Overriding input of $request with $altpath");
-    RequirePackage($name); }	# Then override, and just assume we'll find $name as a package style file!
-  elsif(LookupValue('INTERPRETING_DEFINITIONS')){
+  CheckOptions("Input ($request)",$input_options,%options);
+  # HEURISTIC! First check if equivalent style file, but only under very specific circumstances
+  if(pathname_is_literaldata($request)){
+    my ($dir,$name,$type) = pathname_split($request);
+    my $file = $name; $file .= '.'.$type if $type;
+    my $path;
+    # Firstly, check if we are going to OVERRIDE the requested raw .tex file
+    # with a latexml binding to a style file.
+    if((! $dir) && (!$type || ($type eq 'tex')) # No SPECIFIC directory, but a raw tex file.
+       # AND, in preamble; SHOULD be style file, OR also if we can't find the raw file.
+       && (LookupValue('inPreamble') || !FindFile($file))
+       && ($path=FindFile($name,type=>'sty', notex=>1))){ # AND there IS such a style file
+      Info(":override Overriding input of $request with $path");
+      RequirePackage($name); 	# Then override, assuming we'll find $name as a package file!
+      return; }}
+  # Next special case: If we were currently reading a "known" style or binding file,
+  # then this file, even if .tex, must also be definitions rather than content.!!(?)
+  if(LookupValue('INTERPRETING_DEFINITIONS')){
     InputDefinitions($request)
       || Error(":missing_file:$request Cannot find file $request in paths "
 	       .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
-  elsif(my $path = FindFile($request)){			# Else if the requested file was found, we'll input it
-    # note that this may _STILL_ end up reading $path.ltxml if there is one.
-    $STATE->getStomach->getGullet->input($path); }
-  else {			# Otherwise, the file seems to be missing.
+  elsif(my $path = FindFile($request)){ # Found something plausible..
+    my $type = (pathname_is_literaldata($path) ? 'tex' : pathname_type($path));
+
+    # Should we be doing anything about options in the next 2 cases?..... I kinda think not, but?
+    if($type eq 'ltxml'){		      # it's a LaTeXML binding.
+      loadLTXML($path); }
+    # Else some sort of "known" definitions type file, but not simply 'tex'
+    elsif(($type ne 'tex') && (pathname_is_raw($path))){
+      loadTeXDefinitions($path); }
+    else {
+      loadTeXContent($path); }}
+  else {			# Couldn't find anything?
     $STATE->noteStatus(missing=>$request);
     Error(":missing_file:$request Cannot find file $request in paths "
 	  .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
   return; }
 
-# InputFile should end up something like this...
-# sub InputFile {
-#   my($pathname)=@_;
-#   my($dir,$name,$type)=pathname_split($pathname);
-#   if($type eq 'ltxml'){
-#     loadLTXML($pathname); }		# Perl module.
-#    elsif(($type ne 'tex') && ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/)){ # (attempt to) interpret a style file.  
-#      loadTeXDefinitions($pathname); }
-#   else {
-#     loadTeXContent($pathname); }}
-
-# LOW-LEVEL input processing
-#  if($type eq 'ltxml'){		# Perl module.
-# Do we have the option of file_contents?
 sub loadLTXML {
   my($pathname)=@_;
   # Note: $type will typically be ltxml and $name will include the .sty, .cls or whatever.
+  # Note: we're NOT expecting (allowing?) either literal nor remote data objects here.
+  if(pathname_is_specialprotocol($pathname)){
+    Error(":missing_file:$pathname You cannot load a LaTeXML binding using this protocol");
+    return; }
   my($dir,$name,$type)=pathname_split($pathname);
   # Don't load if either the file already was loaded, OR the raw TeX file has been loaded.
   return if LookupValue($name.'.'.$type.'_loaded') || LookupValue($name.'_loaded');
   # Note that the ltxml version (only!) of this was loaded.
   AssignValue($name.'.'.$type.'_loaded'=>1,'global');
-  my $stomach = $STATE->getStomach;
-  my $gullet = $stomach->getGullet;
+  $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::PerlMouth->new($pathname), sub {
+    do $pathname; 
+    Fatal(":perl:die File $pathname had an error:\n  $@") if $@;
+    # If we've opened anything, we should read it in completely.
+    # But we'll assume that anything opened has already been processed by loadTeXDefinitions.
+    }); }
 
-  $gullet->openMouth(LaTeXML::PerlMouth->new($pathname),0);
-  # ARE we going to assume that anything loaded by the ltxml is going to be definitions?
-  # and so will be forced to read through, immediately?
-  # Do we have (or NEED?) a way to enforce this?
-  my $pmouth = $$gullet{mouth};
-  do $pathname; 
-  Fatal(":perl:die File $pathname had an error:\n  $@") if $@; 
-  $gullet->closeMouth if $pmouth eq $$gullet{mouth}; # Close immediately, unless recursive input
-}
-
-#   elsif(($type ne 'tex') && ($path =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/)){ # (attempt to) interpret a style file.
-# Note: the CALLER will decide if we're going to try to read raw tex.
 sub loadTeXDefinitions {
   my($pathname)=@_;
-  my($dir,$name,$type)=pathname_split($pathname);
-  # Don't load if we've already loaded it before.
-  # Note that we'll still load it if we've already loaded only the ltxml version
-  # since someone's presumably asking _explicitly_ for the raw TeX version.
-  # It's probably even the ltxml version is asking for it!!
-  # Of course, now it will be marked and wont get reloaded!
-  return if LookupValue($name.'.'.$type.'_loaded');
-  AssignValue($name.'.'.$type.'_loaded'=>1,'global');
+  if(!pathname_is_literaldata($pathname)){ # We can't analyze literal data's pathnames!
+    my($dir,$name,$type)=pathname_split($pathname);
+    # Don't load if we've already loaded it before.
+    # Note that we'll still load it if we've already loaded only the ltxml version
+    # since someone's presumably asking _explicitly_ for the raw TeX version.
+    # It's probably even the ltxml version is asking for it!!
+    # Of course, now it will be marked and wont get reloaded!
+    return if LookupValue($name.'.'.$type.'_loaded');
+    AssignValue($name.'.'.$type.'_loaded'=>1,'global'); }
 
   my $stomach = $STATE->getStomach;
-  my $gullet = $stomach->getGullet;
-  my $filecontents = LookupValue($pathname.'_contents');
-  my $mouth = ($filecontents
-	       ? LaTeXML::StyleStringMouth->new($pathname,$filecontents)
-	       : LaTeXML::StyleMouth->new($pathname));
-  $gullet->openMouth($mouth,1);
-  # And NOW process the input!!!!
-###  my $cmts = LookupValue('INCLUDE_COMMENTS');
-###  AssignValue('INCLUDE_COMMENTS'=>0);
   my $interpreting = LookupValue('INTERPRETING_DEFINITIONS');
   AssignValue('INTERPRETING_DEFINITIONS'=>1);
-  my $token;
-  while($gullet->mouthIsOpen($mouth)
-	&& ($token = $gullet->readXToken(0))){
-    next if $token->equals(T_SPACE);
-    $stomach->invokeToken($token); }
-  # Note that Mouths like this will often have been closed by \endinput
-  if($gullet->mouthIsOpen($mouth)){
-      if($mouth ne $gullet->getMouth){
-	  Error(":unexpected:mouth We expected to be able to close ".Stringify($mouth)
-		." but ".Stringify($gullet->getMouth)." is still open."); }
-      else {
-	  $gullet->closeMouth; }}
-###  AssignValue('INCLUDE_COMMENTS'=>$cmts);
+  $stomach->getGullet->readingFromMouth(
+         LaTeXML::Mouth->create($pathname,
+				fordefinitions=>1,notes=>1,
+				content=>LookupValue($pathname.'_contents')),
+                  sub {
+    my($gullet)=@_;
+    my $token;
+    while($token = $gullet->readXToken(0)){
+      next if $token->equals(T_SPACE);
+      $stomach->invokeToken($token); }});
   AssignValue('INTERPRETING_DEFINITIONS'=>$interpreting);
 }
 
-# This is a stand-in for code that needs to be evolved.
 sub loadTeXContent {
   my($pathname)=@_;
+  my $gullet = $STATE->getStomach->getGullet;
+
   # If there is a file-specific declaration file (name.latexml), load it first!
   my $file = $pathname;
   $file =~ s/\.tex//;
-  local $LaTeXML::INHIBIT_LOAD=0; # What's all this about?????
-###  $self->inputConfigfile($file); #  Load configuration for this source, if any.
-  # NOW load the input --- UNLESS INHIBITTED!!!
-  if(!$LaTeXML::INHIBIT_LOAD){
-    if(my $filecontents = LookupValue($pathname.'_contents')){
-      $STATE->getStomach->getGullet->openMouth(LaTeXML::Mouth->new($filecontents) ,0); }
-    else {
-      $STATE->getStomach->getGullet->openMouth(LaTeXML::FileMouth->new($pathname) ,0); }}
-}
+  if(my $conf = !pathname_is_literaldata($pathname)
+     && pathname_find("$file.latexml", paths=>LookupValue('SEARCHPATHS'))){
+    loadLTXML($conf); }
+  $gullet->openMouth(LaTeXML::Mouth->create($pathname,notes=>1,
+					    content=>LookupValue($pathname.'_contents')) ,0); }
 
 #======================================================================
 # Option Handling for Packages and Classes
@@ -1317,16 +1362,11 @@ sub AddToMacro {
 
 #======================================================================
 our $inputdefinitions_options={options=>1, withoptions=>1, handleoptions=>1,
-			       type=>1, as_class=>1, noltxml=>1, notex=>1, after=>1};
+			       type=>1, as_class=>1, noltxml=>1, notex=>1, noerror=>1, after=>1};
 #   options=>[options...]
 #   withoptions=>boolean : pass options from calling class/package
 #   after=>code or tokens or string as $name.$type-hook macro. (executed after the package is loaded)
 # Returns the path that was loaded, or undef, if none found.
-
-# NOTE: there's NO warning message if it's not found!?!?!?!?!?
-# Maybe this is not the right level?
-# Maybe this should be RequirePackage (with all the handleoptions garbage)
-# and a simpler InputDefinitions should be used for the other types of \input ???
 sub InputDefinitions {
   my($name,%options)=@_;
   $name = ToString($name) if ref $name;
@@ -1348,8 +1388,9 @@ sub InputDefinitions {
   if(my $file = FindFile($name, type=>$options{type}, notex=>$options{notex}, noltxml=>$options{noltxml})){
     if($options{handleoptions}){
       # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
-      if($options{withoptions} && $prevname){
-	PassOptions($name,$astype,@{LookupValue('opt@'.$prevname.".".$prevext)}); }
+      if(my $passoptions= $options{withoptions} && $prevname
+	 && LookupValue('opt@'.$prevname.".".$prevext)){
+	PassOptions($name,$astype,@$passoptions); }
       DefMacroI('\@currname',undef,Tokens(Explode($name)));
       DefMacroI('\@currext',undef,Tokens(Explode($astype)));
       # reset options (Note reset & pass were in opposite order in LoadClass ????)
@@ -1361,11 +1402,6 @@ sub InputDefinitions {
       DefMacroI(T_CS('\opt@'.$name.'.'.$astype),undef,
 		Tokens(Explode(join(',',@{LookupValue('opt@'.$name.".".$astype)}))));
     }
-
-###    $options{raw}=1;		# since we're taking the decision away from gullet!
-###    my $gullet = $STATE->getStomach->getGullet;
-###    $gullet->input($file,undef,%options); 
-
 
     my($fdir,$fname,$ftype)=pathname_split($file);
     if($ftype eq 'ltxml'){
@@ -1384,7 +1420,10 @@ sub InputDefinitions {
       my @n = Explode($e ? $b.'.'.$e : $b);
       DefMacroI('\@filelist',undef,(@p ? Tokens(@p,T_OTHER(','),@n) : Tokens(@n)));
       resetOptions(); }  # And reset options afterwards, too.
-    $file; }}
+    $file; }
+  elsif(!$options{noerror}){
+    Error(":missing_file:$name Cannot find file $name"
+	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]"); }}
 
 our $require_options = {options=>1, withoptions=>1, type=>1, as_class=>1, noltxml=>1, notex=>1, raw=>1, after=>1};
 # This (& FindFile) needs to evolve a bit to support reading raw .sty (.def, etc) files from
@@ -1400,7 +1439,10 @@ sub RequirePackage {
   CheckOptions("RequirePackage ($package)",$require_options,%options);
   # We'll usually disallow raw TeX, unless the option explicitly given, or globally set. 
   $options{notex} = 1 if !defined $options{notex}  && !LookupValue('INCLUDE_STYLES');
-  if(InputDefinitions($package,type=>$options{type} || 'sty', handleoptions=>1,%options) ){}
+  if(InputDefinitions($package,type=>$options{type} || 'sty', handleoptions=>1,
+		      # Pass classes options if we have NONE!
+		      withoptions=>!($options{options} && @{$options{options}}),
+		      %options) ){}
   else {
     $STATE->noteStatus(missing=>$package.'.'.($options{type} || 'sty'));
     Error(":missing_file:$package Cannot find "
@@ -1764,12 +1806,32 @@ and will be deactivated when the section ends.
 X<DefMacro>
 Defines the macro expansion for C<$prototype>; a macro control sequence that is
 expanded during macro expansion time (in the  L<LaTeXML::Gullet>).  If a C<$string> is supplied, it will be
-tokenized at definition time, and any macro arguments will be substituted for parameter
+tokenized at definition time. Any macro arguments will be substituted for parameter
 indicators (eg #1) at expansion time; the result is used as the expansion of
 the control sequence. 
 
 If defined by C<$code>, the form is C<CODE($gullet,@args)> and it
 must return a list of L<LaTeXML::Token>'s.
+
+
+DefMacro options are
+
+=over
+
+=item scope=>$scope
+
+See L</"Control of Scoping">.
+
+=item locked=>boolean
+
+Whether this definition is locked out of changes in the TeX sources.
+
+=back
+
+Examples:
+
+  DefMacro('\thefootnote','\arabic{footnote}');
+  DefMacro('\today',sub { ExplodeText(today()); });
 
 =item C<< DefMacroI($cs,$paramlist,$string | $tokens | $code,%options); >>
 
@@ -1781,7 +1843,7 @@ C<$paramlist>).
 
 =back
 
-=head3 Macros
+=head3 Conditionals
 
 =over
 
@@ -1795,6 +1857,24 @@ It evaluates C<$test>, which should be CODE that is applied to the arguments, if
 Depending on whether the result of that evaluation returns a true or false value
 (in the usual Perl sense), the result of the expansion is either the
 first or else code following, in the usual TeX sense.
+
+DefConditional options are
+
+=over
+
+=item scope=>$scope
+
+See L</"Control of Scoping">.
+
+=item locked=>boolean
+
+Whether this definition is locked out of changes in the TeX sources.
+
+=back
+
+Example:
+
+  DefConditional('\ifmmode',sub { LookupValue('IN_MATH'); });
 
 =item C<< DefConditionalI($cs,$paramlist,$test,%options); >>
 
@@ -1871,12 +1951,20 @@ It can thus change the State and/or add to the digested output.
 
 See L</"Control of Scoping">.
 
+=item locked=>boolean
+
+Whether this definition is locked out of changes in the TeX sources.
+
 =item C<< isPrefix=>1 >>
 
 Indicates whether this is a prefix type of command;
 This is only used for the special TeX assignment prefixes, like C<\global>.
 
 =back
+
+Example:
+
+   DefPrimitive('\begingroup',sub { $_[0]->begingroup; });
 
 =item C<< DefPrimitiveI($cs,$paramlist,CODE($stomach,@args),%options); >>
 
@@ -1902,6 +1990,7 @@ Options are
 specifies if it is not allowed to change this value.
 
 =item C<getter>=>CODE(@args)
+
 =item C<setter>=>CODE($value,@args)
 
 By default the value is stored in the State's Value table under a name concatenating the 
@@ -1909,6 +1998,10 @@ control sequence and argument values.  These options allow other means of fetchi
 storing the value.
 
 =back
+
+Example:
+
+  DefRegister('\pretolerance',Number(100));
 
 =item C<< DefRegisterI($cs,$paramlist,$value,%options); >>
 
@@ -2107,12 +2200,17 @@ This direly needs documentation!
 Specifies the font to be used for when creating this object.
 See L</"MergeFont(%style);">.
 
-=item scriptpos=>boolean
+=item mathstyle=(display|text|inline)
 
-Controls whether any sub and super-scripts will be stacked over or under this
-object, or whether they will appear in the usual position.
+Controls whether the this object will be presented in a specific
+mathstyle, or according to the current setting of C<mathstyle>.
 
-WRONG: Redocument this!
+=item scriptpos=>(mid|post)
+
+Controls the positioning of any sub and super-scripts relative to this object;
+whether they be stacked over or under it, or whether they will appear in the usual position.
+TeX.pool defines a function C<doScriptpos()> which is useful for operators
+like C<\sum> in that it sets to C<mid> position when in displaystyle, otherwise C<post>.
 
 =item operator_role=>grammatical_role
 
@@ -2126,6 +2224,10 @@ in the content branch.
 
 Normally, these commands are digested with an implicit grouping around them,
 so that changes to fonts, etc, are local.  Providing C<<noggroup=>1>> inhibits this.
+
+Example:
+
+  DefMath('\infty',"\x{221E}", role=>'ID', meaning=>'infinity');
 
 =back
 
@@ -2160,11 +2262,158 @@ Additionally, C<afterDigestBegin> is effectively an C<afterDigest>
 for the C<\begin{env}> control sequence.
 
 
+Example:
+
+  DefConstructor('\emph{}', "<ltx:emph>#1</ltx:emph", mode=>'text');
+
 =item C<< DefEnvironmentI($name,$paramlist,$replacement,%options); >>
 
 X<DefEnvironmentI>
 Internal form of C<DefEnvironment> where the control sequence and parameter list
 have already been parsed; useful for definitions from within code.
+
+=back
+
+=head2 Inputing Content and Definitions
+
+=over
+
+=item C<< FindFile($name,%options); >>
+
+X<FindFile>
+Find an appropriate file with the given C<$name> in the current directories
+in C<SEARCHPATHS>.
+If a file ending with C<.ltxml> is found, it will be preferred.
+
+Note that if the C<$name> starts with a recognized I<protocol>
+(currently one of C<(literal|http|https|ftp)>) followed by a colon,
+the name is returned, as is, and no search for files is carried out.
+
+The options are:
+
+=over
+
+=item type=>type
+
+specifies the file type.  If not set, it will search for
+both C<$name.tex> and C<$name>.
+
+=item noltxml=>1
+
+inhibits searching for the LaTeXML binding for the file
+(ie. C<$name.$type.ltxml>
+
+=item notex=>1
+
+inhibits searching for raw tex version of the file.
+That is, it will I<only> search for the LaTeXML binding.
+
+=back
+
+=item C<< InputContent($request,%options); >>
+
+X<InputContent>
+C<InputContent> is used for cases when the file (or data)
+is plain TeX material that is expected to contribute content
+to the document (as opposed to pure definitions).
+A Mouth is opened onto the file, and subsequent reading
+and/or digestion will pull Tokens from that Mouth until it is
+exhausted, or closed.
+
+In some circumstances it may be useful to provide a string containing
+the TeX material explicitly, rather than referencing a file.
+In this case, the C<literal> pseudo-protocal may be used:
+
+  InputContent('literal:\textit{Hey}');
+
+If a file named C<$request.latexml> exists, it will be read
+in as if it were a latexml binding file (ie. perl), before processing.
+This can be used for adhoc customization of the conversion of specific files,
+without modifying the source, or creating more elaborate bindings.
+
+The only option to C<InputContent> is:
+
+=over
+
+=item noerror=>boolean
+
+Inhibits signalling an error if no appropriate file is found.
+
+=back
+
+=item C<< Input($request); >>
+
+X<Input>
+C<Input> is analogous to LaTeX's C<\input>, and is used in
+cases where it isn't completely clear whether content or definitions
+is expected.  Once a file is found, the approach specified
+by L<InputContent> or L<InputDefinitions> is used, depending on
+which type of file is found.
+
+=item C<< InputDefinitions($request,%options); >>
+
+X<InputDefinitions>
+C<InputDefinitions> is used for loading I<definitions>,
+ie. various macros, settings, etc, rather than document content;
+it can be used to load LaTeXML's binding files, or for
+reading in raw TeX definitions or style files.
+It reads and processes the material completely before
+returning, even in the case of TeX definitions.
+This procedure optionally supports the conventions used
+for standard LaTeX packages and classes (see L<RequirePackage> and L<LoadClass>).
+
+Options for C<InputDefinitions> are:
+
+=over
+
+=item type=>$type
+
+the file type to search for.
+
+=item noltxml=>boolean
+
+inhibits searching for a LaTeXML binding; only raw TeX files will be sought and loaded.
+
+=item notex=>boolean
+
+inhibits searching for raw TeX files, only a LaTeXML binding will be sought and loaded.
+
+=item noerror=>boolean
+
+inhibits reporting an error if no appropriate file is found.
+
+
+=back
+
+The following options are primarily useful when C<InputDefinitions>
+is supporting standard LaTeX package and class loading.
+
+=over
+
+=item withoptions=boolean
+
+indicates whether to pass in any options from the calling class or package.
+
+=item handleoptions=boolean
+
+indicates whether options processing should be handled.
+
+=item options=>[...]
+
+specifies a list of options to be passed
+(possibly in addition to any provided by the calling class or package).
+
+=item after
+
+provides code or tokens to be processed by a C<$name.$type-hook> macro.
+
+=item as_class
+
+fishy option that indicates that this definitions file should
+be treated as if it were defining a class; typically shows up
+in latex compatibility mode, or AMSTeX.
+
+=back
 
 =back
 
@@ -2181,49 +2430,44 @@ The options are:
 
 =over
 
-=item C<< type=>type >> specifies the file type (default C<sty>.
+=item type=>type
 
-=item C<< options=>[...] >> specifies a list of package options.
+specifies the file type (default C<sty>.
 
-=item C<< noltxml=>1 >> inhibits searching for the LaTeXML binding for the file
-(ie. C<$name.$type.ltxml>
+=item options=>[...]
 
-=item C<< notex=>1 >> inhibits searching for raw tex version of the file.
+specifies a list of package options.
+
+=item noltxml=>1
+
+inhibits searching for the LaTeXML binding for the file (ie. C<$name.$type.ltxml>
+
+=item notex=>1
+
+inhibits searching for raw tex version of the file.
 That is, it will I<only> search for the LaTeXML binding.
 
 =back
 
 =item C<< LoadClass($class,%options); >>
 
+X<LoadClass>
 Finds and loads a class definition (usually C<*.cls.ltxml>).
 The only option is
 
 =over
 
-=item C<< options=>[...] >> specifies a list of class options.
+=item options=>[...] 
+
+specifies a list of class options.
 
 =back
 
-=item C<< FindFile($name,%options); >>
+=item C<< LoadPool($pool,%options); >>
 
-X<FindFile>
-Find an appropriate file with the given C<$name> in the current directories
-in C<SEARCHPATHS>.
-If a file ending with C<.ltxml> is found, it will be preferred.
-The options are:
-
-=over
-
-=item C<< type=>type >> specifies the file type.  If not set, it will search for
-both C<$name.tex> and C<$name>.
-
-=item C<< noltxml=>1 >> inhibits searching for the LaTeXML binding for the file
-(ie. C<$name.$type.ltxml>
-
-=item C<< notex=>1 >> inhibits searching for raw tex version of the file.
-That is, it will I<only> search for the LaTeXML binding.
-
-=back
+X<LoadPool>
+Loads a I<pool> file, one of the top-level definition files,
+such as TeX, LaTeX or AMSTeX.
 
 =item C<< DeclareOption($option,$code); >>
 
