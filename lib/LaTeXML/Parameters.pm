@@ -201,13 +201,12 @@ sub readArgumentsAndDigest {
 sub reparseArgument {
   my($self,$gullet,$tokens)=@_;
   if(defined $tokens){
-    $gullet->openMouth($tokens,1);
-    my @values = $self->readArguments($gullet);
-    $gullet->skipSpaces;
-    if(my $junk =$gullet->readToken){
-      Error(":unexpected:".Stringify($junk)." Left over stuff in argument for ".Stringify($self).":".Stringify($junk)); }
-    $gullet->closeMouth;
-    @values; }
+    $gullet->readingFromMouth(LaTeXML::Mouth->new(),sub { # start with empty mouth
+       my($gullet)=@_;
+       $gullet->unread($tokens); # but put back tokens to be read
+       my @values = $self->readArguments($gullet);
+       $gullet->skipSpaces;
+       @values; }); }
   else {
     (); }}
 
