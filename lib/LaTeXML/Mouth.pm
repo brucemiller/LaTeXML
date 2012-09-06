@@ -20,6 +20,21 @@ use LaTeXML::Global;
 use LaTeXML::Token;
 use base qw(LaTeXML::Object);
 
+# Factory method;
+# Create an appropriate Mouth
+# options are quiet, atletter, content
+sub create {
+  my($class,$source,%options)=@_;
+  my $type;
+  if($options{content})      { $type = 'cached'; }
+  elsif(!defined $source)    { $type = 'empty'; }
+  elsif($source =~ /^(\w+):/){ $type = $1; }
+  else                       { $type = 'file'; }
+  my $newclass = "LaTeXML::Mouth::$type";
+  if(! $newclass->can('new')){	# not already defined somewhere?
+    require "LaTeXML/Mouth/$type.pm"; }
+  $newclass->new($source,%options); }
+
 sub new {
   my($class,$string)=@_;
   my $self =  bless {source=>"Anonymous String"}, $class;
@@ -39,6 +54,14 @@ sub initialize {
   $$self{colno}=0;
   $$self{chars}=[];
   $$self{nchars}=0;
+  if($$self{notes}){
+    $$self{note_message} = "Processing $$self{source}";
+    NoteBegin($$self{note_message}); }
+  if($$self{fordefinitions}){
+    $$self{saved_at_cc} = $STATE->lookupCatcode('@');
+    $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
+    $STATE->assignCatcode('@'=>CC_LETTER);
+    $STATE->assignValue(INCLUDE_COMMENTS=>0); }
 }
 
 sub finish {
@@ -48,6 +71,11 @@ sub finish {
   $$self{colno}=0;
   $$self{chars}=[];
   $$self{nchars}=0;
+  if($$self{fordefinitions}){
+    $STATE->assignCatcode('@'=> $$self{saved_at_cc});
+    $STATE->assignValue(INCLUDE_COMMENTS=>$$self{SAVED_INCLUDE_COMMENTS}); }
+  if($$self{notes}){
+    NoteEnd($$self{note_message}); }
 }
 
 # This is (hopefully) a platform independent way of splitting a string
@@ -289,9 +317,11 @@ use Encode;
 sub new {
   my($class,$pathname)=@_;
   my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+#  $$self{fordefinitions}=1;
+  $$self{notes}=1;
   $self->openFile($pathname);
   $self->initialize;
-  NoteBegin("Processing $$self{source}");
+#  NoteBegin("Processing $$self{source}");
   $self;  }
 
 sub openFile {
@@ -309,7 +339,8 @@ sub finish {
   $self->SUPER::finish;
   if($$self{IN}){
     close( \*{$$self{IN}}); $$self{IN}=undef; }
-  NoteEnd("Processing $$self{source}");}
+#  NoteEnd("Processing $$self{source}");
+}
 
 sub hasMoreInput {
   my($self)=@_;
@@ -351,27 +382,24 @@ sub stringify {
 # LaTeXML::StyleMixin
 #    Mixin for Mouth's that serve as source for style/package/class/whatever
 #**********************************************************************
-package LaTeXML::StyleMixin;
-use strict;
-use LaTeXML::Global;
+# package LaTeXML::StyleMixin;
+# use strict;
+# use LaTeXML::Global;
 
-sub postInitialize {
-  my($self)=@_;
-  NoteBegin("Style $$self{source}");
-  $$self{saved_at_cc} = $STATE->lookupCatcode('@');
-  $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
-  $$self{SAVED_INSIDE_STYLE} = $STATE->lookupValue('INSIDE_STYLE');
-  $STATE->assignCatcode('@'=>CC_LETTER);
-  $STATE->assignValue(INCLUDE_COMMENTS=>0);
-  $STATE->assignValue(INSIDE_STYLE=>1);
-  $self;  }
+# sub postInitialize {
+#   my($self)=@_;
+#   NoteBegin("Style $$self{source}");
+#   $$self{saved_at_cc} = $STATE->lookupCatcode('@');
+#   $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
+#   $STATE->assignCatcode('@'=>CC_LETTER);
+#   $STATE->assignValue(INCLUDE_COMMENTS=>0);
+#   $self;  }
 
-sub preFinish {
-  my($self)=@_;
-  $STATE->assignCatcode('@'=> $$self{saved_at_cc});
-  $STATE->assignValue(INCLUDE_COMMENTS=>$$self{SAVED_INCLUDE_COMMENTS});
-  $STATE->assignValue(INSIDE_STYLE=>$$self{SAVED_INSIDE_STYLE});
-  NoteEnd("Style $$self{source}"); }
+# sub preFinish {
+#   my($self)=@_;
+#   $STATE->assignCatcode('@'=> $$self{saved_at_cc});
+#   $STATE->assignValue(INCLUDE_COMMENTS=>$$self{SAVED_INCLUDE_COMMENTS});
+#   NoteEnd("Style $$self{source}"); }
 
 #**********************************************************************
 # LaTeXML::StyleMouth
@@ -382,19 +410,22 @@ package LaTeXML::StyleMouth;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::Util::Pathname;
-use base qw(LaTeXML::FileMouth LaTeXML::StyleMixin);
+##use base qw(LaTeXML::FileMouth LaTeXML::StyleMixin);
+use base qw(LaTeXML::FileMouth);
 
 sub new {
   my($class,$pathname)=@_;
   my $self = bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+  $$self{fordefinitions}=1;
+  $$self{notes}=1;
   $self->openFile($pathname);
   $self->initialize;
-  $self->postInitialize;
+#  $self->postInitialize;
   $self;  }
 
-sub finish {
-  my($self)=@_;
-  $self->preFinish; $self->SUPER::finish; }
+# sub finish {
+#   my($self)=@_;
+#   $self->preFinish; $self->SUPER::finish; }
 #**********************************************************************
 # LaTeXML::StyleMouth
 #    Read TeX Tokens from a style file.
@@ -403,19 +434,64 @@ sub finish {
 package LaTeXML::StyleStringMouth;
 use strict;
 use LaTeXML::Global;
-use base qw(LaTeXML::Mouth LaTeXML::StyleMixin);
+#use base qw(LaTeXML::Mouth LaTeXML::StyleMixin);
+use base qw(LaTeXML::Mouth);
 
 sub new {
   my($class,$pathname,$string)=@_;
   my $self = bless {source=>$pathname}, $class;
+  $$self{fordefinitions}=1;
+  $$self{notes}=1;
   $self->openString($string);
   $self->initialize;
-  $self->postInitialize;
+#  $self->postInitialize;
   $self;  }
 
-sub finish {
-  my($self)=@_;
-  $self->preFinish; $self->SUPER::finish; }
+# sub finish {
+#   my($self)=@_;
+#   $self->preFinish; $self->SUPER::finish; }
+
+#**********************************************************************
+package LaTeXML::Mouth::literal;
+use base qw(LaTeXML::Mouth);
+
+sub new {
+  my($class,$data,%options)=@_;
+  $data =~ s/^literal://;
+  my $self =  bless {source=>"Anonymous String"}, $class;
+  $$self{fordefinitions}=1 if $options{fordefinitions};
+  $$self{notes}=1          if $options{notes};
+  $self->openString($data);
+  $self->initialize;
+  $self; }
+
+#**********************************************************************
+package LaTeXML::Mouth::cached;
+use base qw(LaTeXML::Mouth);
+use LaTeXML::Util::Pathname;
+
+sub new {
+  my($class,$pathname,%options)=@_;
+  my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+  $$self{fordefinitions}=1 if $options{fordefinitions};
+  $$self{notes}=1          if $options{notes};
+  $self->openString($options{content});
+  $self->initialize;
+  $self; }
+
+#**********************************************************************
+package LaTeXML::Mouth::file;
+use base qw(LaTeXML::FileMouth);
+use LaTeXML::Util::Pathname;
+
+sub new {
+  my($class,$pathname,%options)=@_;
+  my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+  $$self{fordefinitions}=1 if $options{fordefinitions};
+  $$self{notes}=1          if $options{notes};
+  $self->openFile($pathname);
+  $self->initialize;
+  $self; }
 
 #**********************************************************************
 # A fake mouth provides a hook for getting the Locator of anything
