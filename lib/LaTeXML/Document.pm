@@ -109,6 +109,68 @@ sub getNodeQName {
   my($self,$node)=@_;
   $$self{model}->getNodeQName($node); }
 
+#**********************************************************************
+# This is a diagnostic tool that MIGHT help locate XML::LibXML bugs;
+# It simply walks through the document tree. Use it before and after
+# places where some sort of data corruption might have taken place.
+sub doctest {
+  my($self,$when,$severe)=@_;
+  local $LaTeXML::NNODES=0;
+  print STDERR "\nSTART DOC TEST $when....." .($severe ? "\n":'');
+  if(my $root = $self->getDocument->documentElement){
+    $self->doctest_rec(undef,$root,$severe); }
+  print STDERR  "...(".$LaTeXML::NNODES." nodes)....DONE\n"; }
+
+sub doctest_rec {
+  my($self,$parent,$node,$severe)=@_;
+  print STDERR "  NODE $$node [" if $severe; # BEFORE checking nodeType!
+  print STDERR "d" if $severe;
+  if(!$node->ownerDocument->isSameNode($self->getDocument)){ print STDERR "!" if $severe; }
+  print STDERR "p" if $severe;
+  if($parent && !$node->parentNode->isSameNode($parent)){ print STDERR "!" if $severe; }
+  print STDERR "t" if $severe;
+  my $type = $node->nodeType;
+  print STDERR "] " if $severe;
+  if($type == XML_ELEMENT_NODE){
+    print STDERR "ELEMENT "
+      .join(' ',"<".$$self{model}->getNodeQName($node),
+	    map($_->nodeName.'="'.$_->getValue.'"', $node->attributes)).">\n"
+	      if $severe;
+    $self->doctest_children($node,$severe); }
+  elsif($type == XML_ATTRIBUTE_NODE){
+    print STDERR "ATTRIBUTE ".$node->nodeName."=>".$node->getValue."\n" if $severe; }
+  elsif($type == XML_TEXT_NODE){
+    print STDERR "TEXT ".$node->textContent."\n" if $severe; }
+  elsif($type == XML_CDATA_SECTION_NODE){
+    print STDERR "CDATA ".$node->textContent."\n" if $severe; }
+#  elsif($type == XML_ENTITY_REF_NODE){}
+#  elsif($type == XML_ENTITY_NODE){}
+  elsif($type == XML_PI_NODE){
+    print STDERR "PI ".$node->localname." ".$node->getData."\n" if $severe; }
+  elsif($type == XML_COMMENT_NODE){
+    print STDERR "COMMENT ".$node->textContent."\n" if $severe; }
+#  elsif($type == XML_DOCUMENT_NODE){}
+#  elsif($type == XML_DOCUMENT_TYPE_NODE){
+  elsif($type == XML_DOCUMENT_FRAG_NODE){
+    print STDERR "DOCUMENT_FRAG \n" if $severe;
+    $self->doctest_children($node,$severe); }
+#  elsif($type == XML_NOTATION_NODE){}
+#  elsif($type == XML_HTML_DOCUMENT_NODE){}
+#  elsif($type == XML_DTD_NODE){}
+  else {
+      print STDERR "OTHER $type\n" if $severe; }
+}
+
+sub doctest_children {
+  my($self,$node,$severe)=@_;
+  print STDERR "[fc" if $severe;
+  my $c = $node->firstChild;
+  while($c){
+    print STDERR "]\n" if $severe;
+    $self->doctest_rec($node,$c,$severe);
+    print STDERR "[nc" if $severe;
+    $c = $c->nextSibling; }
+  print STDERR "]done\n" if $severe; }
 
 #**********************************************************************
 # This should be called before returning the final XML::LibXML::Document to the
@@ -620,7 +682,7 @@ sub closeNode_internal {
   my $n = $self->closeText_internal; # Close any open text node.
   while($n->nodeType == XML_ELEMENT_NODE){
     $self->closeElementAt($n);
-    last if $node->isSameNode($n);	# NOTE: This equality test is questionable
+    last if $node->isSameNode($n);
     $n = $n->parentNode; }
   print STDERR "Closing ".Stringify($node)." => ".Stringify($closeto)."\n" if $LaTeXML::Document::DEBUG;
 
@@ -731,6 +793,19 @@ sub recordID {
 sub unRecordID {
   my($self,$id)=@_;
   delete $$self{idstore}{$id}; }
+
+# These are used to record or unrecord, in bulk, all the ids within a node (tree).
+sub recordNodeIDs {
+  my($self,$node)=@_;
+  foreach my $idnode ($self->findnodes('descendent-or-self::*[@xml:id]',$node)){
+    if(my $id = $idnode->getAttribute('xml:id')){
+      $self->recordID($id,$idnode); }}}
+
+sub unRecordNodeIDs {
+  my($self,$node)=@_;
+  foreach my $idnode ($self->findnodes('descendant-or-self::*[@xml:id]',$node)){
+    if(my $id = $idnode->getAttribute('xml:id')){
+      $self->unRecordID($id); }}}
 
 # Get a new, related, but unique id
 # Sneaky option: try $LaTeXML::Document::ID_SUFFIX as a suffix for id, first.
@@ -1062,9 +1137,8 @@ sub replaceTree {
   my $parent = $old->parentNode;
   my @following = ();		# Collect the matching and following nodes
   while(my $sib = $parent->lastChild){
-    last if $$sib == $$old;
+    last if $sib->isSameNode($old);
     $parent->removeChild($sib);	# We're putting these back, in a moment!
-##    last if $$sib == $$old;
     unshift(@following,$sib); }
   $self->removeNode($old);
   $self->appendTree($parent,$new);
