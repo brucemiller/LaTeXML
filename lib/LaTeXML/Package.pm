@@ -1136,11 +1136,11 @@ sub pathname_find_x {
     return $path; }
   pathname_find($path,%options); }
 
-our $inputcontent_options={noerror=>1};
+our $inputcontent_options={noerror=>1, type=>1};
 sub InputContent {
   my($request,%options)=@_;
   CheckOptions("InputContent ($request)",$inputcontent_options,%options);
-  if(my $path = FindFile($request,noltxml=>1)){
+  if(my $path = FindFile($request,type=>$options{type}, noltxml=>1)){
     loadTeXContent($path); }
   elsif(!$options{noerror}){
     Error(":missing_file:$request Cannot find file $request"
