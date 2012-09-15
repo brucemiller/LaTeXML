@@ -58,12 +58,10 @@ sub parseMath {
   my($self,$document,%options)=@_;
   local $LaTeXML::MathParser::DOCUMENT = $document;
   $self->clear;			# Not reentrant!
-  $$self{idcache}={};
-  foreach my $node ($document->findnodes("//*[\@xml:id]")){
-    $$self{idcache}{$node->getAttribute('xml:id')} = $node; }
-
   if(my @math =  $document->findnodes('descendant-or-self::ltx:XMath[not(ancestor::ltx:XMath)]')){
     NoteBegin("Math Parsing"); NoteProgress(scalar(@math)." formulae ...");
+#### SEGFAULT TEST
+####    $document->doctest("before parse",1);
     foreach my $math (@math){
       $self->parse($math,$document); }
 
@@ -78,7 +76,11 @@ sub parseMath {
       NoteProgress("Possibly used as functions?\n  "
 		   .join(', ',map("'$_' ($$self{maybe_functions}{$_}/$$self{unknowns}{$_} usages)",
 				  sort @funcs))."\n"); }
+#### SEGFAULT TEST
+####    $document->doctest("IN scope",1);
     NoteEnd("Math Parsing");  }
+#### SEGFAULT TEST
+####    $document->doctest("OUT of scope",1);
   $document; }
 
 sub getQName {
@@ -187,12 +189,16 @@ sub parse_rec {
   my $tag  = getQName($node);
   if(my $requested_rule = $node->getAttribute('rule')){
     $rule = $requested_rule; }
-  $self->translate_hints($document,$node);
+#### SEGFAULT TEST (uncomment next line)
+####  $self->translate_hints($document,$node);
   if(my $result= $self->parse_single($node,$document,$rule)){
     $$self{passed}{$tag}++;
    if($tag eq 'ltx:XMath'){	# Replace the content of XMath with parsed result
      NoteProgress('['.++$$self{n_parsed}.']');
-     map($document->removeNode($_),element_nodes($node));
+#### SEGFAULT TEST (Uncomment next line & comment out following 2)
+####     map($document->removeNode($_),element_nodes($node));
+     map($document->unRecordNodeIDs($_),element_nodes($node));
+     $node->removeChildNodes;
      $document->appendTree($node,$result);
      $result = [element_nodes($node)]->[0]; }
     else {			# Replace the whole node for XMArg, XMWrap; preserve some attributes
@@ -237,6 +243,9 @@ our $HINT_PUNCT_THRESHOLD = 10.0; # \quad or bigger becomes punctuation ?
 ###our $HINT_PUNCT_THRESHOLD = 100000.0; # \quad or bigger becomes punctuation ?
 # Move any spacing XMHints to the previous node's rspace (other alternatives exist!)
 # and them remove them from the stream.
+#### SEGFAULT TEST
+#### This sub somehow irritates XML::LibXML
+#### filter_hints is gentler!
 sub translate_hints {
   my($self,$document,$node)=@_;
   my @children = element_nodes($node);
@@ -276,6 +285,43 @@ sub translate_hints {
       $prev = $c; }		# just note it to possibly add spacing
   }}
 
+sub filter_hints {
+  my($self,$document,@nodes)=@_;
+  my @filtered=();
+  my $prev = undef;
+  while(@nodes){
+    my $c = shift(@nodes);
+    if(getQName($c) eq 'ltx:XMHint'){ # Is this a Hint node?
+      if(my $width = $c->getAttribute('width')){ # Is it a spacing hint?
+	# Get the pts (combining w/any following spacing hints)
+	my $pts = getXMHintSpacing($width);
+	while(@nodes && (getQName($nodes[0]) eq 'ltx:XMHint') # Combine w/ more?
+	      && ($width = $c->getAttribute('width'))){
+	  $pts += getXMHintSpacing($width);
+	  shift(@nodes); }	# and remove the extra hints
+	# A wide space, between Stuff, is likely acting like punctuation, so convert it
+	if($prev && (($prev->getAttribute('role')||'') ne 'PUNCT')
+	   && scalar(@nodes) && ($pts >= $HINT_PUNCT_THRESHOLD)){
+####	  $c = $document->renameNode($c,'ltx:XMTok');
+	  $c = $c->cloneNode(1); $c->setNodeName('XMTok');
+	  $c->removeAttribute('width');
+	  $c->removeAttribute('height');   # ?
+	  $c->setAttribute(role=>'PUNCT');  # convert to punctuation!
+	  $c->appendText( "\x{2001}" x int($pts/10));  # fill with quads?
+	  push(@filtered,$c); }
+	else {
+	  if($pts){
+	    if($prev){		# Else add rspace to previous item
+	      $prev->setAttribute(rspace=>$pts.'pt'); }
+### This should be enabled, but think some more about the contexts (eg split in t/ams/amsdisplay)
+###	    elsif(scalar(@nodes)){ # or maybe lspace to next??
+###	      $nodes[0]->setAttribute(rspace=>$pts.'pt'); }
+	  }}}
+      $prev=undef; } # at any rate, remove it now
+    else {			   # Normal node? keep it
+      push(@filtered,$c); $prev=$c; }}
+  @filtered; }
+
 # Given a width attribute on an XMHint, return the pts, if any
 sub getXMHintSpacing {
   my($width)=@_;
@@ -295,8 +341,10 @@ sub getXMHintSpacing {
 # Especially, when we want to try alternative parse strategies.
 sub parse_kludge {
   my($self,$mathnode,$document)=@_;
-  $self->translate_hints($document,$mathnode);
-  my @nodes = element_nodes($mathnode);
+#### SEGFAULT TEST (Uncomment next line)
+##  $self->translate_hints($document,$mathnode);
+  my @nodes = $self->filter_hints($document,element_nodes($mathnode));
+
   # the 1st array in stack accumlates the nodes within the current fenced row.
   # When there's only a single array, it's single entry will be the complete row.
   my @stack=([],[]);
@@ -317,7 +365,10 @@ sub parse_kludge {
       push(@{$stack[0]}, $pair); }} # Otherwise, just put this item into current row.
 
   # If we got to here, remove the nodes and replace them by the kludged structure.
-  map($document->removeNode($_),@nodes);
+#### SEGFAULT TEST (uncomment out next line & comment the following 2)
+####  map($document->removeNode($_),@nodes);
+  map($document->unRecordNodeIDs($_),element_nodes($mathnode));
+  $mathnode->removeChildNodes;
   my $kludge = $stack[0][0][0];
   $document->appendTree($mathnode,
 	       (ref $kludge eq 'ARRAY') && ($$kludge[0] eq 'ltx:XMWrap')
@@ -399,7 +450,7 @@ sub parse_kludgeScripts_rec {
 # Convert to textual form for processing by MathGrammar
 sub parse_single {
   my($self,$mathnode,$document,$rule)=@_;
-  my @nodes = element_nodes($mathnode);
+  my @nodes = $self->filter_hints($document,element_nodes($mathnode));
 
   my($punct,$result,$unparsed);
   # Extract trailing punctuation, if rule allows it.
@@ -481,7 +532,7 @@ sub getGrammaticalRole {
   my $rnode = $node;
   if($tag eq 'ltx:XMRef'){
     if(my $id = $node->getAttribute('id')){
-      $rnode = $$self{idcache}{$id};
+      $rnode = $LaTeXML::MathParser::DOCUMENT->lookupID($id);
       $tag = getQName($rnode); }}
   my $role = $rnode->getAttribute('role');
   if(!defined $role){
