@@ -24,7 +24,7 @@ our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
 		     &NewFormulae &NewFormula &NewList
 		     &ApplyDelimited &NewScript &DecorateOperator
 		     &LeftRec
-		     &Arg &Problem &MaybeFunction
+		     &Arg &MaybeFunction
 		     &SawNotation &IsNotationAllowed
 		     &isMatchingClose &Fence));
 our %EXPORT_TAGS = (constructors
@@ -33,7 +33,7 @@ our %EXPORT_TAGS = (constructors
 			   &NewFormulae &NewFormula &NewList
 			   &ApplyDelimited &NewScript &DecorateOperator
 			   &LeftRec
-			   &Arg &Problem &MaybeFunction
+			   &Arg &MaybeFunction
 			   &SawNotation &IsNotationAllowed
 			   &isMatchingClose &Fence)]);
 our $nsURI = "http://dlmf.nist.gov/LaTeXML";
@@ -41,7 +41,7 @@ our $nsXML = "http://www.w3.org/XML/1998/namespace";
 #our $DEFAULT_FONT = LaTeXML::MathFont->default();
 our $DEFAULT_FONT = LaTeXML::MathFont->new(family=>'serif', series=>'medium',
 					   shape=>'upright', size=>'normal',
-					   color=>'black');
+					   color=>'black', background=>'white',opacity=>1);
 
 # ================================================================================
 sub new {
@@ -106,8 +106,7 @@ sub token_prettyname {
     my $desc = join(' ',values %attr);
     $name .= "{$desc}" if $desc; }
   else {
-    $name = 'Unknown';
-    Warn(":parse  What is this: \"".Stringify($node)."\"?"); }
+    $name = Stringify($node); }	# what else ????
   $name; }
 
 sub note_unknown {
@@ -171,7 +170,7 @@ sub parse {
       if(scalar(@n)==1){
 	$p = $n[0]; }
       else {
-	Fatal(":internal:Mystery: XMath node has DOCUMENT_FRAGMENT for parent!"); }}
+	Fatal('malformed','<XMath>',$xnode,"XMath node has DOCUMENT_FRAGMENT for parent!"); }}
     $p->setAttribute('text',text_form($result)); }
 }
 
@@ -544,6 +543,9 @@ sub getGrammaticalRole {
   $self->note_unknown($rnode) if ($role eq 'UNKNOWN') && $LaTeXML::MathParser::STRICT;
   $role; }
 
+# How many tokens before & after the failure point to report in the Warning message.
+our $FAILURE_PRETOKENS = 3;
+our $FAILURE_POSTTOKENS= 1;
 sub failureReport {
   my($self,$document,$mathnode,$rule,$unparsed,@nodes)=@_;
   if($LaTeXML::MathParser::STRICT || (($STATE->lookupValue('VERBOSITY')||0)>1)){
@@ -552,17 +554,30 @@ sub failureReport {
     if(! $LaTeXML::MathParser::WARNED){
       $LaTeXML::MathParser::WARNED=1;
       my $box = $document->getNodeBox($LaTeXML::MathParser::XNODE);
-      $loc = "In formula \"".ToString($box)." from ".($box->getLocator||"[??]")."\n"; }
+      $loc = "In \"".ToString($box)."\""; }
     $unparsed =~ s/^\s*//;
     my @rest=split(/ /,$unparsed);
     my $pos = scalar(@nodes) - scalar(@rest);
     # Break up the input at the point where the parse failed.
-    my $parsed  = join(' ',map(node_string($_,$document),@nodes[0..$pos-1]));
-    my $toparse = join(' ',map(node_string($_,$document),@nodes[$pos..$#nodes]));
+    my $parsed        = join(' ',map(node_string($_,$document),@nodes[0..$pos-1]));
+    my $toparse       = join(' ',map(node_string($_,$document),@nodes[$pos..$#nodes]));
+    my $parsefail
+      = join('.',map($self->getGrammaticalRole($_),
+		     @nodes[($pos-$FAILURE_PRETOKENS >= 0
+			     ? $pos-$FAILURE_PRETOKENS : 0) .. $pos-1]))
+	.">"
+	  . join('.',map($self->getGrammaticalRole($_),
+			 @nodes[$pos .. ($pos+$FAILURE_POSTTOKENS-1 < $#nodes
+					 ? $pos+$FAILURE_POSTTOKENS-1 : $#nodes)]));
     my $lexeme = node_location($nodes[$pos] || $nodes[$pos-1] || $mathnode);
-    Warn(":parse:$rule ".$loc."  MathParser failed to match rule $rule for "
-	 .getQName($mathnode)." at pos. $pos in $lexeme at\n   "
-	 . ($parsed ? $parsed."   \n".(' ' x (length($parsed)-2)) : '')."> ".$toparse);
+    my $indent = length($parsed)-2; $indent = 8 if $indent > 8;
+    Warn('not_parsed',$parsefail,$mathnode,
+	 "MathParser failed to match rule '$rule'",
+	 ($loc ? ($loc):()),
+	 ($parsed
+	  ? ($parsed, (' ' x $indent)."> ".$toparse)
+	  : ("> ".$toparse)));
+###	 .getQName($mathnode)." at pos. $pos in $lexeme at\n   "
     }}
 
 # used for debugging & failure reporting.
@@ -1043,7 +1058,6 @@ sub IsNotationAllowed {
   ($LaTeXML::MathParser::DISALLOWED_NOTATIONS{$notation} ? undef : 1); }
 
 # ================================================================================
-sub Problem { Warn(":parse MATH Problem? ",@_); }
 
 # Note that an UNKNOWN token may have been used as a function.
 # For simplicity in the grammar, we accept a token that has sub|super scripts applied.
@@ -1160,11 +1174,6 @@ else just return the first.
 
 Given an expr followed by repeated (op expr), compose the left recursive tree.
 For example C<a + b + c - d> would give C<(- (+ a b c) d)>>
-
-
-=item C<< Problem($text); >>
-
-Warn of a potential math parsing problem.
 
 =item C<< MaybeFunction($token); >>
 

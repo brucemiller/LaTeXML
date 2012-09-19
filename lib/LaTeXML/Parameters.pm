@@ -93,7 +93,7 @@ sub parseParameters {
       my @extra = map(TokenizeInternal($_),split('\|',$extra||''));
       push(@params,newParameter($type,$spec,extra=>[@extra])); }
     else {
-      Fatal(":misdefined:".Stringify($for)." Unrecognized parameter specification at \"$proto\""); }}
+      Fatal('misdefined',$for,undef,"Unrecognized parameter specification at \"$proto\""); }}
   (@params ? LaTeXML::Parameters->new(@params) : undef); }
 
 # Create a parameter reading object for a specific type.
@@ -118,7 +118,7 @@ sub newParameter {
     else {
       my $reader = checkReaderFunction("Read$type");
       $descriptor = { reader=>$reader} if $reader; }}
-  Fatal(":misdefined:<unknown> Unrecognized parameter type in \"$spec\"") unless $descriptor;
+  Fatal('misdefined',$type,undef,"Unrecognized parameter type in \"$spec\"") unless $descriptor;
   LaTeXML::Parameter->new($spec,type=>$type, %{$descriptor},%options); }
 
 # Check whether a reader function is accessible within LaTeXML::Package::Pool
@@ -172,10 +172,9 @@ sub readArguments {
 #    my $value = &{$$parameter{reader}}($gullet,@{$$parameter{extra}||[]});
     my $value = $parameter->read($gullet);
     if((!defined $value) && !$$parameter{optional}){
-      my $tok = $gullet->readToken;
-      Error(":expected:".Stringify($parameter)." Missing argument ".Stringify($parameter)." for ".Stringify($fordefn)
-	    .($tok ? "; next is ".Stringify($tok) : " input is empty"));
-      $gullet->unread($tok) if $tok; }
+      Error('expected',$parameter,$gullet,
+	    "Missing argument ".ToString($parameter)." for ".ToString($fordefn),
+	    $gullet->showUnexpected); }
     push(@args,$value) unless $$parameter{novalue}; }
   @args; }
 
@@ -187,10 +186,9 @@ sub readArgumentsAndDigest {
 #    my $value = &{$$parameter{reader}}($gullet,@{$$parameter{extra}||[]});
     my $value = $parameter->read($gullet);
     if((!defined $value) && !$$parameter{optional}){
-      my $tok = $gullet->readToken;
-      Error(":expected:".Stringify($parameter)." Missing argument ".Stringify($parameter)." for ".Stringify($fordefn)
-	    .($tok ? "; next is ".Stringify($tok) : " input is empty"));
-      $gullet->unread($tok) if $tok; }
+      Error('expected',$parameter,$stomach,
+	    "Missing argument ".Stringify($parameter)." for ".Stringify($fordefn),
+	    $gullet->showUnexpected); }
     if(!$$parameter{novalue}){
       StartSemiverbatim() if $$parameter{semiverbatim}; # Corner case?
       $value = $value->beDigested($stomach) if (ref $value) && !$$parameter{undigested};

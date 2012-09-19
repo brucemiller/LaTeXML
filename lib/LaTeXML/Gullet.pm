@@ -42,7 +42,7 @@ sub closeMouth {
   my($self,$forced)=@_;
   if(!$forced && (@{$$self{pushback}} || $$self{mouth}->hasMoreInput)){
     my $next = Stringify($self->readToken);
-    Error(":unexpected:$next Closing mouth with input remaining: $next"); }
+    Error('unexpected',$next,$self,"Closing mouth with input remaining '$next'"); }
   $$self{mouth}->finish;
   if(@{$$self{mouthstack}}){
     ($$self{mouth},$$self{pushback},$$self{autoclose}) = @{ shift(@{$$self{mouthstack}}) }; }
@@ -50,6 +50,7 @@ sub closeMouth {
     $$self{pushback}=[];
 ##    $$self{mouth}=Tokens(); 
     $$self{mouth}=LaTeXML::Mouth->new(); 
+####    $$self{mouth}=undef;
     $$self{autoclose}=1; }}
 
 sub getMouth { $_[0]->{mouth}; }
@@ -77,6 +78,7 @@ sub flush {
   $$self{pushback}=[];
 ##  $$self{mouth}=Tokens();
     $$self{mouth}=LaTeXML::Mouth->new(); 
+####    $$self{mouth}=undef;
   $$self{autoclose}=1;
   $$self{mouthstack}=[]; }
 
@@ -96,13 +98,12 @@ sub readingFromMouth {
     if($$self{mouth} eq $mouth){
       $self->closeMouth(1); last; }
     elsif(! @{$$self{mouthstack}}){
-      Error(":expected:$mouth Expected to be able to close ".Stringify($mouth)
-	    ." but it has already been closed."); }
+      Error('unexpected','<closed>',$self,"Mouth is unexpectedly already closed",
+	    "Reading from ".Stringify($mouth).", but it has already been closed."); }
     elsif(!$$self{autoclose} || @{$$self{pushback}} || $$self{mouth}->hasMoreInput){
       my $next = Stringify($self->readToken);
-      Error(":expected:$mouth Expected to be able to close ".Stringify($mouth)
-	    . "but ".Stringify($$self{mouth})." is still open"
-	    .($next ? "with input remaining $next":'')); 
+      Error('unexpected',$next,$self,"Unexpected input remaining: '$next'",
+	    "Finished reading from ".Stringify($mouth).", but it still has input.");
       $$self{mouth}->finish;
       $self->closeMouth(1); }	# ?? if we continue?
     else {
@@ -130,6 +131,25 @@ sub getSource {
       $source = $$frame[0]->getSource;
       last if $source; }}
   $source; }
+
+sub getSourceMouth {
+  my($self)=@_;
+  my $mouth = $$self{mouth};
+  my $source = defined $mouth && $mouth->getSource;
+  if(!$source || ($source eq "Anonymous String")){
+    foreach my $frame ( @{$$self{mouthstack}} ){
+      $mouth = $$frame[0];
+      $source = $mouth->getSource;
+      last if $source && $source ne "Anonymous String"; }}
+  $mouth; }
+
+# Handy message generator when we didn't get something expected.
+sub showUnexpected {
+  my($self)=@_;
+  my $token = $self->readToken;
+  my $message = ($token ? "Next token is ".Stringify($token) : "Input is empty");
+  $self->unread($token);
+  $message; }
 
 sub show_pushback {
   my($pb)=@_;
@@ -434,9 +454,9 @@ sub readNumber {
   if   (defined (my $n = $self->readNormalInteger    )){ ($s < 0 ? $n->negate : $n); }
   elsif(defined (   $n = $self->readInternalDimension)){ Number($s * $n->valueOf); }
   elsif(defined (   $n = $self->readInternalGlue     )){ Number($s * $n->valueOf); }
-  else{ my $t = $self->readToken;
-	$self->unread($t);
-	Warn(":expected:<number> Missing number, treated as zero at ".ToString($t));        Number(0); }}
+  else {
+    Warn('expected','<number>',$self,"Missing number, treated as zero");
+    Number(0); }}
 
 # <normal integer> = <internal integer> | <integer constant>
 #   | '<octal constant><one optional space> | "<hexadecimal constant><one optional space>
@@ -498,10 +518,12 @@ sub readDimension {
   elsif(defined (   $d = $self->readFactor)           ){ 
     my $unit = $self->readUnit;
     if(!defined $unit){
-      Warn(":expected:<unit> Illegal unit of measure (pt inserted).");
+      Warn('expected','<unit>',$self,"Illegal unit of measure (pt inserted).");
       $unit = 65536; }
     Dimension($s * $d * $unit); }
-  else{ Warn(":expected:<number> Missing number, treated as zero.");        Dimension(0); }}
+  else {
+    Warn('expected','<number>',$self,"Missing number, treated as zero.");
+    Dimension(0); }}
 
 # <unit of measure> = <optional spaces><internal unit>
 #     | <optional true><physical unit><one optional space>
@@ -539,11 +561,13 @@ sub readMuDimension {
   if   (defined (my $m = $self->readFactor        )){
     my $munit = $self->readMuUnit;
     if(!defined $munit){
-      Warn(":expected:<unit> Illegal unit of measure (mu inserted).");
+      Warn('expected','<unit>',$self,"Illegal unit of measure (mu inserted).");
       $munit = $STATE->convertUnit('mu'); }
     MuDimension($s * $m * $munit); }
   elsif(defined (   $m = $self->readInternalMuGlue)){ MuDimension($s * $m->valueOf); }
-  else{ Warn(":expected:<mudimen> Expecting mudimen; assuming 0 ");       MuDimension(0); }}
+  else{ 
+    Warn('expected','<mudimen>',$self,"Expecting mudimen; assuming 0");
+    MuDimension(0); }}
 
 sub readMuUnit {
   my($self)=@_;
@@ -566,7 +590,8 @@ sub readGlue {
   else{
     my $d = $self->readDimension;
     if(!$d){
-      Warn(":expected:<number> Missing number, treated as zero."); return Glue(0); }
+      Warn('expected','<number>',$self,"Missing number, treated as zero.");
+      return Glue(0); }
     $d = $d->negate if $s < 0;
     my($r1,$f1,$r2,$f2);
     ($r1,$f1) = $self->readRubber if $self->readKeyword('plus');
@@ -586,13 +611,13 @@ sub readRubber {
   elsif($mu){
     my $u = $self->readMuUnit;
     if(!defined $u){
-      Warn(":expected:<unit> Illegal unit of measure (mu inserted).");
+      Warn('expected','<unit>',$self,"Illegal unit of measure (mu inserted).");
       $u = $STATE->convertUnit('mu'); }
     ($s*$f*$u,0); }
   else {
     my $u = $self->readUnit;
     if(!defined $u){
-      Warn(":expected:<unit> Illegal unit of measure (pt inserted).");
+      Warn('expected','<unit>',$self,"Illegal unit of measure (pt inserted).");
       $u = 65536; }
     ($s*$f*$u,0); }}
 
@@ -614,7 +639,8 @@ sub readMuGlue {
   else{
     my $d = $self->readMuDimension;
     if(!$d){
-      Warn(":expected:<number> Missing number, treated as zero."); return MuGlue(0); }
+      Warn('expected','<number>',$self,"Missing number, treated as zero.");
+      return MuGlue(0); }
     $d = $d->negate if $s < 0;
     my($r1,$f1,$r2,$f2);
     ($r1,$f1) = $self->readRubber(1) if $self->readKeyword('plus');

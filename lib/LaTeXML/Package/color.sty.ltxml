@@ -24,10 +24,7 @@ foreach my $option (qw(monochrome debugshow dvipdf dvipdfm dvipdfmx pdftex xetex
 
 # options that want the dvipsnam definitions
 foreach my $option (qw(dvips xdvi oztex dvipsnames)){
-  DeclareOption($option,sub {
-		  InputDefinitions('dvipsnam',type=>'def')
-		    || Warn(":unexpected:missing:dvipsnam Couldn't find dvipsnam.def color definitions"); 
-		return; }); }
+  DeclareOption($option,sub { InputDefinitions('dvipsnam',type=>'def'); return; }); }
 
 #======================================================================
 # are there default named colors that we should be loading?

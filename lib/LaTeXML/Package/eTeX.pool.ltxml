@@ -141,7 +141,7 @@ DefConditional('\unless Token',sub {
    # Invert the if's test!
    ! &$test($gullet,$defn->readArguments($gullet)); }
  else {
-   Error(":unexpected:".Stringify($if)." \\unless should not be followed by ".Stringify($if)); }});
+   Error('unexpected',$if,"\\unless should not be followed by ".Stringify($if)); }});
 
 #======================================================================
 1;

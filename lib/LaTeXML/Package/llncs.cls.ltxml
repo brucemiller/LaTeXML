@@ -141,7 +141,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
 		 beforeDigest=>sub {
 		   my $stylecmd = T_CS('\th@'.$style);
 		   if (!LookupDefinition($stylecmd)) {
-		     Warn(":unexpected:".ToString($stylecmd)." Unknown theoremstyle '$style'");
+		     Warn('unexpected',$style,$_[0],"Unknown theoremstyle '$style'");
 		     $stylecmd = T_CS('\th@plain'); }
 		   Digest(Tokens($stylecmd)); },
  		 afterDigestBegin=>sub { Digest($bodyfont); },

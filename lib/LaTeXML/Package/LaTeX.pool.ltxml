@@ -42,12 +42,12 @@ DefParameterType('DirectoryList', sub {
     if($gullet->ifNext(T_END)){
       $gullet->readToken; }
     else {
-      Error(":missing:} A closing } was supposed to be here"); }
+      Error('expected','}',$gullet,"A closing } was supposed to be here"); }
     LaTeXML::Array->new(open=>T_BEGIN,close=>T_END,itemopen=>T_BEGIN,itemclose=>T_END,
 			type=>'Semiverbatim',
 			values=>[@dirs]); }
   else {
-    Error(":missing:DirectoryList A DirectoryList was supposed to be here"); }});
+    Error('expected','DirectoryList',$gullet,"A DirectoryList was supposed to be here"); }});
 
 # Apparently LaTeX does NOT define \magnification,
 # and babel uses that to determine whether we're runing LaTeX!!!
@@ -78,29 +78,31 @@ DefPrimitiveI('\warn@unusedclassoptions',undef,sub {
   my $name = ToString(Digest(T_CS('\@currname')));
   my $type = ToString(Digest(T_CS('\@currext')));
   foreach my $option (@{LookupValue('@unusedoptionlist')}){
-    Info(":unexpected:<option>:$option Unexpected option $option passed to $name.$type"); }
+    Info('unexpected',$option,$_[0],"Unexpected option '$option' passed to $name.$type"); }
   AssignValue('@unusedoptionlist',[]); });
 
 DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1') oldstyle='true'?>",
   beforeDigest=>sub {
-    Info(":unexpected:\\documentstyle LaTeX 2.09 Compatibility mode");
+    Info('unexpected','\documentstyle',$_[0],"Entering LaTeX 2.09 Compatibility mode");
     AssignValue('2.09_COMPATIBILITY'=>1,'global'); },
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
     my $class   = ToString($whatsit->getArg(2));
     my $options = $whatsit->getArg(1);
     $options = [ ($options ? split(/,\s*/, ToString($options)) : ()) ];
-    # Watch out; compatibility mode in principle wants a .sty, not a .cls!!! But, we'll try .cls first, anyway
-    if(my $classfile = FindFile($class, type=>'cls')){
-      LoadClass($class, options=>$options, after=>Tokens(T_CS('\compat@loadpackages'))); }
-    elsif(my $stylefile = FindFile($class, type=>'sty')){
+    # Watch out; In principle, compatibility mode wants a .sty, not a .cls!!!
+    # But, we'd prefer .cls, since we'll have better bindings.
+    # So, if we do NOT find a class file, but DO find style file, load the style file
+    if(my $stylefile = !FindFile($class, type=>'cls',notex=>1) && FindFile($class, type=>'sty')){
       LoadClass('article'); # Just to be safe, but w/o options ?
-      # Load the package, but note that we're pretending it's a class (to some extent!)
-      RequirePackage($class, options=>$options, as_class=>1, after=>Tokens(T_CS('\compat@loadpackages'))); }
+      # Load the package (with options); note: we're pretending it's a class (to some extent!)
+      RequirePackage($class, options=>$options, as_class=>1,
+		     after=>Tokens(T_CS('\compat@loadpackages'))); }
+    # Otherwise, try to load the class file (falling back to article, if necessary)
     else {
-      Warn(":missing_file:$class.cls.ltxml No LaTeXML implementation of class $class found, using article");
-      LoadClass('article', options=>$options, after=>Tokens(T_CS('\compat@loadpackages'))); }
+      LoadClass($class, options=>$options, notex=>1, options=>$options,
+		after=>Tokens(T_CS('\compat@loadpackages'))); }
     return;});
 
 DefPrimitiveI('\compat@loadpackages',undef,sub {
@@ -110,11 +112,13 @@ DefPrimitiveI('\compat@loadpackages',undef,sub {
     if(FindFile($option,type=>'sty')){
       RequirePackage($option); }
     else {
-      Info(":unexpected:<option>:$option Unexpected option $option passed to $name.$type"); }}
+      Info('unexpected',$option,$_[0],"Unexpected option '$option' passed to $name.$type"); }}
   AssignValue('@unusedoptionlist',[]); });
 
 sub onlyPreamble {
-  Error(":unexpected The current command can only appear in the preamble")
+  my($cs)=@_;
+  Error('unexpected',$cs,$STATE->getStomach,
+	"The current command '".ToString($cs)."' can only appear in the preamble")
     unless LookupValue("inPreamble"); 
   return; }
 #**********************************************************************
@@ -153,7 +157,7 @@ DefMacro('\begin{}',sub {
     if(isUndefined($name)){
       my $undef = '{'.$name.'}';
       $STATE->noteStatus(undefined=>$undef);
-      Error(":undefined:".$undef." The environment ".$undef." is not defined.");
+      Error('undefined',$undef,$gullet,"The environment ".$undef." is not defined.");
       $STATE->installDefinition(LaTeXML::Constructor->new($token,undef,
 					  sub { LaTeXML::Stomach::makeError($_[0],'undefined',$undef);})); }
     (T_CS('\begingroup'),$token); }});
@@ -495,7 +499,7 @@ DefMacro('\@pkgextension','sty');
 
 DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim',
 	       "<?latexml package='#2' ?#1(options='#1')?>",
-	       beforeDigest=>\&onlyPreamble,
+	       beforeDigest=>sub { onlyPreamble('\usepackage'); },
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
 				  my $packages=$whatsit->getArg(2);
@@ -505,7 +509,7 @@ DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim',
 				  return});
 DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
 	       "<?latexml package='#2' ?#1(options='#1')?>",
-	       beforeDigest=>\&onlyPreamble,
+	       beforeDigest=>sub { onlyPreamble('\RequirePackage'); },
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
 				  my $packages=$whatsit->getArg(2);
@@ -515,12 +519,13 @@ DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
 				  return});
 DefConstructor('\LoadClass OptionalSemiverbatim Semiverbatim []',
 	       "<?latexml class='#2' ?#1(options='#1')?>",
-	       beforeDigest=>\&onlyPreamble,
+	       beforeDigest=>sub { onlyPreamble('\LoadClass');},
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $options=$whatsit->getArg(1);
 				  my $class=$whatsit->getArg(2);
 				  $options = [($options ? split(/,\s*/,(ToString($options))) :())];
-				  LoadClass(ToString($class), options=>$options); });
+				  LoadClass(ToString($class), options=>$options);
+				  return; });
 
 # Related internal macros for package definition
 # Internals used in Packages
@@ -556,17 +561,19 @@ DefPrimitive('\PassOptionsToClass{}{}', sub {
 
 DefConstructor('\RequirePackageWithOptions Semiverbatim []',
 	       "<?latexml package='#1'?>",
-	       beforeDigest=>\&onlyPreamble,
+	       beforeDigest=>sub { onlyPreamble('\RequirePackage'); },
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $package=$whatsit->getArg(1);
-				  RequirePackage(ToString($package), withoptions=>1); });
+				  RequirePackage(ToString($package), withoptions=>1);
+				  return; });
 
 DefConstructor('\LoadClassWithOptions Semiverbatim []',
 	       "<?latexml class='#1'?>",
-	       beforeDigest=>\&onlyPreamble,
+	       beforeDigest=>sub { onlyPreamble('\LoadClassWithOptions'); },
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
 				  my $class=$whatsit->getArg(1);
-				  LoadClass(ToString($class), withoptions=>1); });
+				  LoadClass(ToString($class), withoptions=>1);
+				  return; });
 
 DefMacroI('\CurrentOption',undef,Tokens());
 
@@ -582,7 +589,7 @@ DefPrimitiveI('\@unknownoptionerror',undef, sub {
   if(my $option = ToString(Digest(T_CS('\CurrentOption')))){
     my $name = ToString(Digest(T_CS('\@currname')));
     my $type = ToString(Digest(T_CS('\@currext')));
-    Info(":unexpected:<option>:$option Unexpected option $option passed to $name.$type"); }
+    Info('unexpected',$option,$_[0],"Unexpected option '$option' passed to $name.$type"); }
   return; });
 
 DefPrimitive('\ExecuteOptions{}', sub{
@@ -787,7 +794,8 @@ DefEnvironment('{titlepage}','<ltx:titlepage>#body',
 	      beforeDigest=>sub { Let(T_CS('\centering'),T_CS('\relax'));
 				  DefEnvironment('{abstract}',
 						 '<ltx:abstract>#body</ltx:abstract>');
-				  Info(":unexpected:titlepage Frontmatter will not be well-structured");
+				  Info('unexpected','titlepage',$_[0],
+				       "When using titlepage, Frontmatter will not be well-structured");
 				return; },
 	       beforeDigestEnd=>sub { Digest(T_CS('\maybe@end@title')); },
 	       locked=>1, mode=>'text');
@@ -1460,7 +1468,8 @@ sub rearrangeEqnarray {
       push(@{$eqs[$#eqs]},$$row{node}); }
   }
 
-  Warn(":unexpected:<eqnarray> Unrecognized equation patterns ($oddness) in eqnarray")
+  Warn('unexpected','eqnarray',$equationgroup,
+       "Unrecognized equation patterns ($oddness) in eqnarray")
     if (scalar(@rows) > 1) && $oddness;
   # Now rearrange things appropriately.
   foreach my $eqset (@eqs){
@@ -1557,7 +1566,8 @@ DefMacro('\@tabacckludge {}','\csname\string#1\endcsname');
 DefPrimitive('\newcommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
   my $key = "defined:".Stringify($cs);
-  Error(":unexpected:\\newcommand ".Stringify($cs)." is already defined") if LookupValue($key);
+  Error('ignore',$cs,$stomach,
+	"Ignoring redefinition (\\newcommand) of '".Stringify($cs)."'") if LookupValue($key);
   AssignValue($key=>1);		# only if defined by \newcommand, not \def!
   DefMacroI($cs,convertLaTeXArgs($nargs,$opt),$body); });
 
@@ -1587,7 +1597,7 @@ DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [][]{}', sub {
 # and we really want to create unicode, we just ignore this stuff (but warn).
 sub ignoredDefinition {
   my($stomach,$command,$cs)=@_;
-#  Warn(":unexpected:".ToString($cs)." ignoring ".ToString($command)." definition of ".ToString($cs)); 
+#  Warn('ignore',$cs,$stomach,"ignoring ".ToString($command)." definition of ".ToString($cs)); 
   return; }
 
 #------------------------------------------------------------
@@ -1742,7 +1752,9 @@ DefPrimitive('\TextSymbolUnavailable{}',undef);
 DefPrimitive('\newenvironment OptionalMatch:* {}[][]{}{}', sub {
   my($stomach,$star,$name,$nargs,$opt,$begin,$end)=@_;
   $name = ToString($name);
-  Error(":unexpected:\\newenvironment Environment $name is already defined") if LookupDefinition(T_CS("\\$name"));
+  Error('ingore',$name,$stomach,
+	"Ignoring redefinition (\\newenvironment) of Environment '$name'")
+    if LookupDefinition(T_CS("\\$name"));
   DefMacroI(T_CS("\\$name"), convertLaTeXArgs($nargs,$opt),$begin);
   DefMacroI(T_CS("\\end$name"),undef,$end); });
 
@@ -1801,7 +1813,7 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 		 beforeDigest=>sub {
 		   my $stylecmd = T_CS('\th@'.$style);
 		   if (!LookupDefinition($stylecmd)) {
-		     Warn(":unexpected:".ToString($stylecmd)." Unknown theoremstyle '$style'");
+		     Warn('unexpected',$style,$_[0],"Unknown theoremstyle '$style'");
 		     $stylecmd = T_CS('\th@plain'); }
 		   Digest(Tokens($stylecmd)); },
 		 afterDigestBegin=>sub { Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
@@ -1937,7 +1949,9 @@ sub RescueCaptionCounters {
   return; }
 
 DefConstructor('\@@generic@caption[]{}',"<ltx:text class='ltx_caption'>#2</ltx:text>",
-	       beforeDigest=>sub{ Error(':unexpected \caption outside any known float'); });
+	       beforeDigest=>sub{
+		 Error('unexpected','\caption',$_[0],
+		       "Use of \\caption outside any known float"); });
 
 # Note that even without \caption, we'd probably like to have xml:id.
 Tag('ltx:figure',afterClose=>sub { GenerateID(@_,'fig'); });
@@ -2781,7 +2795,7 @@ DefPrimitive('\@check@length DefToken',sub {
   my($stomach,$cs)=@_;
   my $defn = LookupDefinition($cs);
   if(!$defn || !$defn->isRegister){
-    Warn(":undefined:".ToString($cs)." is not a length; defining it now");
+    Warn('undefined',$cs,$stomach,"'".ToString($cs)."' is not a length; defining it now");
     DefRegisterI($cs,undef,Dimension(0)); }
   return; });
 
@@ -3007,7 +3021,8 @@ sub ReadPair {
   my $itemreader;
   if(!$itemtype){ $itemreader=\&ReadFloat; }
   else { $itemreader = ResolveReader($itemtype); }
-  if(!$itemreader){ Error(":misdefined:<unknown> Cannot find reader for Pair items from $itemtype"); }
+  if(!$itemreader){
+    Error('misdefined',$itemtype,$gullet,"Can't find reader for Pair items from '$itemtype'"); }
   $gullet->skipSpaces;
   if($gullet->ifNext(T_OTHER('('))){
     $gullet->readToken;  $gullet->skipSpaces;
@@ -3065,20 +3080,6 @@ sub picProperties {
 #----------------------------------------------------------------------
 # the code
 DefMacroI('\qbeziermax',undef,'500');
-# Careful; some of these have meanings outside of picture!
-#DefPrimitive('\vector Pair {Float}',
-#	     sub { Error(":unexpected:\\vector cannot appear outside of picture environment"); });
-#DefPrimitive('\circle OptionalMatch:* {Float}',
-#	     sub { Error(":unexpected:\circle cannot appear outside of picture environment"); });
-#DefPrimitive('\oval [Float] Pair []',
-#	     sub { Error(":unexpected:\\oval cannot appear outside of picture environment"); });
-#DefMacro('\qbezier[0]','\bezier{#1}');
-#DefPrimitive('\bezier {Number} Pair Pair Pair',
-#	     sub { Error(":unexpected:\\qbezier cannot appear outside of picture environment"); });
-#DefPrimitive('\dashbox {Float} Pair [] {}',
-#	     sub { Error(":unexpected:\\dashbox cannot appear outside of picture environment"); });
-#DefPrimitive('\frame{}',
-#	     sub { Error(":unexpected:\\frame cannot appear outside of picture environment"); });
 sub before_picture {
 #  Let(T_CS('\line'),     T_CS('\pic@line')); # Only pic?
 #  Let(T_CS('\vector'),   T_CS('\pic@vector')); # Only pic
@@ -3290,7 +3291,7 @@ DefMacro('\fontshape{}','\edef\f@shape{#1}');
 DefPrimitive('\not@math@alphabet@@ {}',sub {
   if($STATE->lookupValue('IN_MATH')){
     my $c = ToString($_[1]);
-    Warn(":unexpected:$c Command $c invalid in math mode"); }
+    Warn('unexpected',$c,$_[0],"Command $c invalid in math mode"); }
   return; });
 
 # These DO immediately effect the font!
@@ -3318,11 +3319,11 @@ DefPrimitive('\selectfont',sub {
   my $series = ToString(Expand(T_CS('\f@series')));
   my $shape  = ToString(Expand(T_CS('\f@shape')));
   if(my $sh = lookupFontFamily($family)){ MergeFont(%$sh); }
-  else { Info(":unexpected:$family Unrecognized font family $family."); }
+  else { Info('unexpected',$family,$_[0],"Unrecognized font family '$family'."); }
   if(my $sh = lookupFontSeries($series)){ MergeFont(%$sh); }
-  else { Info(":unexpected:$series Unrecognized font series $series."); }
+  else { Info('unexpected',$series,$_[0],"Unrecognized font series '$series'."); }
   if(my $sh = lookupFontShape($shape)){ MergeFont(%$sh); }
-  else { Info(":unexpected:$shape Unrecognized font shape $shape."); }
+  else { Info('unexpected',$shape,$_[0],"Unrecognized font shape '$shape'."); }
 });
 
 DefMacro('\usefont{}{}{}{}{}',
@@ -3375,7 +3376,7 @@ DefPrimitive('\mathversion{}',sub {
     AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>1), 'local'); }
   elsif($version eq 'normal'){ 
     AssignValue(mathfont=>LookupValue('mathfont')->merge(forcebold=>0), 'local'); }
-  else { Error(":unexpected:$version Unknown math verison \"$version\""); }});
+  else { Error('unexpected',$version,$stomach,"Unknown math verison '$version'"); }});
 
 DefMacro('\newfont{}{}', '\font#1=#2\relax');
 
@@ -3534,20 +3535,19 @@ RawTeX('\begingroup
 \def\strip@prefix#1>{}');
 
 sub make_message {
-  my(@args)=@_;
-  $STATE->getStomach->bgroup;
+  my($cmd,@args)=@_;
+  my $stomach =   $STATE->getStomach;
+  $stomach->bgroup;
   Let(T_CS('\protect'),T_CS('\string'));
-  my $message = ":latex ".join("\n",map(ToString(Expand($_)),@args));
-  $STATE->getStomach->egroup;
-  $message; }
+  my $message = join("\n",map(ToString(Expand($_)),@args));
+  $stomach->egroup;
+  ('latex',$cmd,$stomach,$message); }
 
-DefPrimitive('\@onlypreamble{}',\&onlyPreamble); # Don't bother enforcing this.
+DefPrimitive('\@onlypreamble{}',sub { onlyPreamble('\@onlypreamble');}); # Don't bother enforcing this.
 
-DefMacro('\GenericError{}{}{}{}', sub{ Fatal(make_message($_[2],$_[3],$_[4])); });
-DefMacro('\GenericWarning{}{}',   sub{ Warn(make_message($_[2],$_[3])); });
-DefMacro('\GenericInfo{}{}',  sub{
-  print STDERR "Info".make_message($_[1],$_[2])."\n" unless LookupValue('VERBOSITY') < 0;
-  return; });
+DefMacro('\GenericError{}{}{}{}', sub{ Fatal(make_message('\GenericError',$_[2],$_[3],$_[4])); });
+DefMacro('\GenericWarning{}{}',   sub{ Warn(make_message('\GenericWarning',$_[2],$_[3])); });
+DefMacro('\GenericInfo{}{}',      sub{ Info(make_message('\GenericInfo',$_[1],$_[2])); });
 
 Let(T_CS('\MessageBreak'),T_CS('\relax'));
 DefMacro('\PackageError{}{}{}',

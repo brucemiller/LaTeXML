@@ -47,7 +47,7 @@ sub loadSchema {
   my $name;
 
   if(!$$self{schemadata}){
-    Warn(":model No Schema Model declared...assuming LaTeXML!");
+    Warn('expected','<model>',undef,"No Schema Model has been declared; assuming LaTeXML");
     # article ??? or what ? undef gives problems!
     $self->setRelaxNGSchema("LaTeXML");
     $self->registerNamespace(ltx=>$LTX_NAMESPACE);
@@ -101,7 +101,7 @@ sub compileSchema {
 
 sub loadCompiledSchema {
   my($self,$file)=@_;
-  open(MODEL,$file) or Fatal(":missing_file:$file Couldn't read Compiled Model $file");
+  open(MODEL,$file) or Fatal('I/O',$file,undef,"Cannot open Compiled Model $file for reading",$!);
   my $line;
   while($line = <MODEL>){
     if($line =~ /^([^\{]+)\{(.*?)\}\((.*?)\)$/){
@@ -112,7 +112,7 @@ sub loadCompiledSchema {
       my($prefix,$namespace)=($1,$2);
       $self->registerDocumentNamespace($prefix,$namespace); }
     else {
-      Fatal(":internal:$file Compiled model $file is malformatted at \"$line\""); }
+      Fatal('internal',$file,undef,"Compiled model '$file' is malformatted at \"$line\""); }
   }}
 
 
@@ -154,7 +154,9 @@ sub getNamespacePrefix {
     my $codeprefix = $$self{code_namespace_prefixes}{$namespace};
     if((! defined $codeprefix) && !$probe){
       $self->registerNamespace($codeprefix = "namespace".(++$NAMESPACE_ERROR), $namespace);
-      Warn(":model No prefix registered for namespace $namespace (using $codeprefix)"); }
+      Warn('malformed',$namespace,undef,
+	   "No prefix has been registered for namespace '$namespace' (in code)",
+	   "Using '$codeprefix' instead"); }
     $codeprefix; }}
 
 sub getNamespace {
@@ -163,7 +165,9 @@ sub getNamespace {
   if((! defined $ns) && !$probe){
     $self->registerNamespace($codeprefix,
 			     $ns = "http://example.com/namespace".(++$NAMESPACE_ERROR));
-    Error(":model No namespace registered for prefix $codeprefix (using $ns)"); }
+    Error('malformed',$codeprefix,undef,
+	  "No namespace has been registered for prefix '$codeprefix' (in code)",
+	  "Using '$ns' isntead"); }
   $ns; }
 
 sub registerDocumentNamespace {
@@ -189,7 +193,9 @@ sub getDocumentNamespacePrefix {
       || $$self{document_namespace_prefixes}{$namespace};
     if((! defined $docprefix) && !$probe){
       $self->registerDocumentNamespace($docprefix = "namespace".(++$NAMESPACE_ERROR), $namespace);
-      Warn(":model No document prefix registered for namespace $namespace (using $docprefix)"); }
+      Warn('malformed',$namespace,undef,
+	   "No prefix has been registered for namespace '$namespace' (in document)",
+	   "Using '$docprefix' instead"); }
     (($docprefix||'#default') eq '#default' ? '' : $docprefix); }}
 
 sub getDocumentNamespace {
@@ -200,7 +206,9 @@ sub getDocumentNamespace {
   if(($docprefix ne '#default') && (! defined $ns) && !$probe){
     $self->registerDocumentNamespace($docprefix,
 				     $ns = "http://example.com/namespace".(++$NAMESPACE_ERROR));
-    Error(":model No namespace registered for document prefix $docprefix (using $ns)"); }
+    Error('malformed',$docprefix,undef,
+	  "No namespace has been registered for prefix '$docprefix' (in document)",
+	  "Using '$ns' instead"); }
   $ns; }
 
 # Given a Qualified name, possibly prefixed with a namespace prefix,
@@ -211,9 +219,7 @@ sub decodeQName {
   if($codetag =~ /^([^:]+):(.+)$/){
     my($prefix,$localname)=($1,$2);
     return (undef, $codetag) if $prefix eq 'xml';
-    my $ns = $$self{code_namespaces}{$1};
-    Error(":model No namespace has been registered for the prefix \"$prefix\"") unless $ns;
-    ($ns, $localname); }
+    ($self->getNamespace($prefix), $localname); }
   else {
     (undef, $codetag); }}
 
@@ -240,11 +246,10 @@ sub getNodeQName {
     '#DTD'; }
   # Need others?
   elsif(($type != XML_ELEMENT_NODE) && ($type != XML_ATTRIBUTE_NODE)){
-    Fatal(":malformed Cannot get Qualified Name for node ".Stringify($node)); }
+    Fatal('misdefined','<caller>',undef,
+	  "Should not ask for Qualified Name for node ".Stringify($node)); }
   elsif(my $ns = $node->namespaceURI){
-    my $prefix = $$self{code_namespace_prefixes}{$ns};
-    Error(":model No prefix has been registered for the namespace \"$ns\"") unless $prefix;
-    $prefix.":".$node->localname; }
+    $self->getNamespacePrefix($ns) .":". $node->localname; }
   else {
     $node->localname; }}
 
@@ -419,7 +424,8 @@ sub addLigature {
   my($self,$regexp,%options)=@_;
   my $code =  "sub { \$_[0] =~ s${regexp}g; }";
   my $fcn = eval $code;
-  Error(":misdefined:<ligature> Failed to compile regexp pattern \"$regexp\" into \"$code\": $!") if $@;
+  Error('misdefined',$regexp,undef,
+	"Failed to compile regexp pattern '$regexp' into \"$code\"",$!) if $@;
   unshift(@{$$self{ligatures}}, { regexp=>$regexp, code=>$fcn, %options}); }
 
 sub getLigatures {

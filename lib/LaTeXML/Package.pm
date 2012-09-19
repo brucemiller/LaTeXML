@@ -108,7 +108,8 @@ sub parsePrototype {
   elsif($proto =~ s/^(.)//){ # Match an active char
     ($cs) = TokenizeInternal($1)->unlist; }
   else {
-    Fatal(":misdefined:$proto Definition prototype doesn't have proper control sequence: \"$proto\""); }
+    Fatal('misdefined',$proto,$STATE->getStomach,
+	  "Definition prototype doesn't have proper control sequence: \"$proto\""); }
   $proto =~ s/^\s*//;
   ($cs, parseParameters($proto,$cs)); }
 
@@ -325,7 +326,8 @@ sub CounterValue {
   $ctr = ToString($ctr) if ref $ctr;
   my $value = LookupValue('\c@'.$ctr);
   if(!$value){
-    Warn(":expected:<counter> Counter $ctr was not defined; assuming 0");
+    Warn('undefined',$ctr,$STATE->getStomach,
+	 "Counter '$ctr' was not defined; assuming 0");
     $value = Number(0); }
   $value; }
 
@@ -468,7 +470,8 @@ sub Invocation        {
   if(my $defn = LookupDefinition((ref $token ? $token : T_CS($token)))){
     Tokens($defn->invocation(@args)); }
   else {
-    Fatal(":undefined:".Stringify($token)." Cannot invoke ".Stringify($token)."; it is undefined");
+    Fatal('undefined',$token,undef,
+	  "Can't invoke ".Stringify($token)."; it is undefined");
     Tokens(); }}
 
 sub RawTeX {
@@ -495,17 +498,20 @@ sub RawTeX {
 sub CheckOptions {
   my($operation,$allowed,%options)=@_;
   my @badops = grep(!$$allowed{$_}, keys %options);
-  Error(":misdefined:$operation $operation does not accept options:".join(', ',@badops)) if @badops;
+  Error('misdefined',$operation,$STATE->getStomach,
+	"$operation does not accept options:".join(', ',@badops)) if @badops;
 }
 
 sub requireMath {
   my $cs = ToString($_[0]);
-  Warn(":unexpected:$cs $cs should only appear in math mode") unless LookupValue('IN_MATH');
+  Warn('unexpected',$cs,$STATE->getStomach,
+       "$cs should only appear in math mode") unless LookupValue('IN_MATH');
   return; }
 
 sub forbidMath {
   my $cs = ToString($_[0]);
-  Warn(":unexpected:$cs $cs should not appear in math mode") if LookupValue('IN_MATH');
+  Warn('unexpected',$cs,$STATE->getStomach,
+       "$cs should not appear in math mode") if LookupValue('IN_MATH');
   return; }
 
 #**********************************************************************
@@ -523,7 +529,8 @@ sub forbidMath {
 our $expandable_options = {scope=>1, locked=>1};
 sub DefExpandable {
   my($proto,$expansion,%options)=@_;
-  Warn(":misdefined:DefExpandable DefExpandable ($proto) is deprecated; use DefMacro");
+  Warn('deprecated','DefExpandable',$STATE->getStomach,
+       "DefExpandable ($proto) is deprecated; use DefMacro");
   DefMacro($proto,$expansion,%options); }
 
 # Define a Macro: Essentially an alias for DefExpandable
@@ -575,8 +582,8 @@ sub DefConditionalI {
       DefPrimitiveI(T_CS('\\'.$name.'true'),undef, sub { AssignValue('Boolean:'.$name => 1); });
       DefPrimitiveI(T_CS('\\'.$name.'false'),undef,sub { AssignValue('Boolean:'.$name => 0); }); }
     else {
-      Error(":misdefined:".Stringify($cs)." The conditional ".Stringify($cs).
-	    " is being defined but doesn't start with \\if"); }}
+      Error('misdefined',$cs,$STATE->getStomach,
+	    "The conditional ".Stringify($cs)." is being defined but doesn't start with \\if"); }}
 
   $STATE->installDefinition(LaTeXML::Conditional->new($cs,$paramlist,$test,%options),
 			    $options{scope});
@@ -649,7 +656,8 @@ sub DefRegisterI {
   my $setter = $options{setter} 
     || ($options{readonly}
 	? sub { my($value,@args)=@_; 
-		Error(":unexpected:$name Cannot assign to register $name"); return; }
+		Error('unexpected',$name,$STATE->getStomach,
+		      "Can't assign to register $name"); return; }
 	: sub { my($value,@args)=@_; 
 		AssignValue(join('',$name,map(ToString($_),@args)) => $value); });
   # Not really right to set the value!
@@ -973,7 +981,9 @@ sub DefEnvironmentI {
 				   beforeDigest =>flatten($options{beforeDigestEnd}),
 				   afterDigest=>flatten($options{afterDigest},
 							sub { my $env = LookupValue('current_environment');
-							      Error(":unexpected:\\end{$name} Cannot close environment $name; current are "
+							      Error('unexpected',"\\end{$name}",$_[0],
+								    "Can't close environment $name",
+								    "Current are "
 								    .join(', ',$STATE->lookupStackedValues('current_environment')))
 								unless $env && $name eq $env; 
 							    return; },
@@ -1069,17 +1079,20 @@ sub RegisterDocumentNamespace {
 # Ah, but what about \InputFileIfExists type stuff...
 # should we assume a raw type can be processed if being read from within a raw type????
 # yeah, that sounds about right...
+our %definition_name = (sty=>'package',cls=>'class',clo=>'class options',
+			 'cnf'=>'configuration','cfg'=>'configuration',
+			 'ldf'=>'language definitions','def'=>'definitions','dfu'=>'definitions');
 sub pathname_is_raw {
   my($pathname)=@_;
   ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/); }
 
 sub pathname_is_literaldata {
   my($pathname)=@_;
-  $pathname =~ /^literal:/; }
+  ($pathname =~ /^(literal):/) && $1; }
 
 sub pathname_is_specialprotocol {
   my($pathname)=@_;
-  $pathname =~ /^(literal|https|http|ftp):/; }
+  ($pathname =~ /^(literal|https|http|ftp):/) && $1; }
 
 # Perhaps this should evolve to cover stored filecontents
 # But to do that, maybe we need string (& url) resources, as well.
@@ -1090,7 +1103,8 @@ sub FindFile {
   $file = ToString($file);
   if($options{raw}){
     delete $options{raw};
-    Warn(":obsolete:raw FindFile $file option raw is obsolete; it is not needed"); }
+    Warn('deprecated','raw',$STATE->getStomach->getGullet,
+	 "FindFile option raw is deprecated; it is not needed"); }
   CheckOptions("FindFile ($file)",$findfile_options,%options);
   if(pathname_is_literaldata($file)){	# If literal protocol return immediately (unless notex!)
     return ($options{notex} ? undef : $file); }
@@ -1136,6 +1150,13 @@ sub pathname_find_x {
     return $path; }
   pathname_find($path,%options); }
 
+sub maybeReportSearchPaths {
+  if(LookupValue('SEARCHPATHS_REPORTED')){ 
+    (); }
+  else {
+    AssignValue('SEARCHPATHS_REPORTED'=>1,'global');
+    ("search paths are ".join(', ',@{LookupValue('SEARCHPATHS')})); }}
+
 our $inputcontent_options={noerror=>1, type=>1};
 sub InputContent {
   my($request,%options)=@_;
@@ -1143,8 +1164,9 @@ sub InputContent {
   if(my $path = FindFile($request,type=>$options{type}, noltxml=>1)){
     loadTeXContent($path); }
   elsif(!$options{noerror}){
-    Error(":missing_file:$request Cannot find file $request"
-	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]"); }
+    Error('missing_file',$request,$STATE->getStomach->getGullet,
+	  "Can't find TeX file $request",
+	  maybeReportSearchPaths()); }
 }
 
 
@@ -1174,15 +1196,14 @@ sub Input {
        # AND, in preamble; SHOULD be style file, OR also if we can't find the raw file.
        && (LookupValue('inPreamble') || !FindFile($file))
        && ($path=FindFile($name,type=>'sty', notex=>1))){ # AND there IS such a style file
-      Info(":override Overriding input of $request with $path");
+      Info('ignore',$request,$STATE->getStomach->getGullet,
+	   "Ignoring input of tex $request, using package $name instead");
       RequirePackage($name); 	# Then override, assuming we'll find $name as a package file!
       return; }}
   # Next special case: If we were currently reading a "known" style or binding file,
   # then this file, even if .tex, must also be definitions rather than content.!!(?)
   if(LookupValue('INTERPRETING_DEFINITIONS')){
-    InputDefinitions($request)
-      || Error(":missing_file:$request Cannot find file $request in paths "
-	       .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
+    InputDefinitions($request); }
   elsif(my $path = FindFile($request)){ # Found something plausible..
     my $type = (pathname_is_literaldata($path) ? 'tex' : pathname_type($path));
 
@@ -1196,16 +1217,18 @@ sub Input {
       loadTeXContent($path); }}
   else {			# Couldn't find anything?
     $STATE->noteStatus(missing=>$request);
-    Error(":missing_file:$request Cannot find file $request in paths "
-	  .join(', ',@{$STATE->lookupValue('SEARCHPATHS')})); }
+    Error('missing_file',$request,$STATE->getStomach->getGullet,
+	  "Can't find TeX file $request",
+	  maybeReportSearchPaths()); }
   return; }
 
 sub loadLTXML {
   my($pathname)=@_;
   # Note: $type will typically be ltxml and $name will include the .sty, .cls or whatever.
   # Note: we're NOT expecting (allowing?) either literal nor remote data objects here.
-  if(pathname_is_specialprotocol($pathname)){
-    Error(":missing_file:$pathname You cannot load a LaTeXML binding using this protocol");
+  if(my $p=pathname_is_specialprotocol($pathname)){
+    Error('misdefined','loadLTXML',$STATE->getStomach->getGullet,
+	  "You can't load LaTeXML binding using protocol $p");
     return; }
   my($dir,$name,$type)=pathname_split($pathname);
   # Don't load if either the file already was loaded, OR the raw TeX file has been loaded.
@@ -1214,7 +1237,8 @@ sub loadLTXML {
   AssignValue($name.'.'.$type.'_loaded'=>1,'global');
   $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::PerlMouth->new($pathname), sub {
     do $pathname; 
-    Fatal(":perl:die File $pathname had an error:\n  $@") if $@;
+    Fatal('die',$pathname,$STATE->getStomach->getGullet,
+	  "File $pathname had an error:\n  $@") if $@;
     # If we've opened anything, we should read it in completely.
     # But we'll assume that anything opened has already been processed by loadTeXDefinitions.
     }); }
@@ -1234,7 +1258,7 @@ sub loadTeXDefinitions {
   my $stomach = $STATE->getStomach;
   my $interpreting = LookupValue('INTERPRETING_DEFINITIONS');
   AssignValue('INTERPRETING_DEFINITIONS'=>1);
-  $stomach->getGullet->readingFromMouth(
+ $stomach->getGullet->readingFromMouth(
          LaTeXML::Mouth->create($pathname,
 				fordefinitions=>1,notes=>1,
 				content=>LookupValue($pathname.'_contents')),
@@ -1339,8 +1363,9 @@ sub ExecuteOptions {
       Digest($cs); }
     else {
       $unhandled{$option}=1; }}
-  Warn(":unexpected:<option> Unrecognized options passed to ExecuteOptions: ".join(', ',sort keys %unhandled))
-    if keys %unhandled; 
+  foreach my $option (keys %unhandled){
+    Info('unexpected',$option,$STATE->getStomach->getGullet,
+	 "Unexpected options passed to ExecuteOptions '$option'"); }
   return; }
 
 sub resetOptions {
@@ -1355,7 +1380,8 @@ sub AddToMacro {
   # Needs error checking!
   my $defn = LookupDefinition($cs);
   if(! defined $defn || ! $defn->isExpandable){
-    Error(":unexpected:".ToString($cs)." ".ToString($cs)." is not an expandable control sequence"); }
+    Error('unexpected',$cs,$STATE->getStomach->getGullet,
+	  ToString($cs)." is not an expandable control sequence"); }
   else {
     DefMacroI($cs,undef,Tokens($defn->getExpansion->unlist,
 			       map($_->unlist,map( (ref $_ ? $_ : TokenizeInternal($_)), @tokens)))); }}
@@ -1422,8 +1448,14 @@ sub InputDefinitions {
       resetOptions(); }  # And reset options afterwards, too.
     $file; }
   elsif(!$options{noerror}){
-    Error(":missing_file:$name Cannot find file $name"
-	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]"); }}
+    $STATE->noteStatus(missing=>$name.($options{type} ? '.'.$options{type} :''));
+    Error('missing_file',$name,$STATE->getStomach->getGullet,
+	  "Can't find "
+	  .($options{notex} ? "binding for ":"")
+	  .(($options{type} && $definition_name{$options{type}})||'definitions').' '
+	  .$name,
+	  maybeReportSearchPaths());
+ }}
 
 our $require_options = {options=>1, withoptions=>1, type=>1, as_class=>1, noltxml=>1, notex=>1, raw=>1, after=>1};
 # This (& FindFile) needs to evolve a bit to support reading raw .sty (.def, etc) files from
@@ -1435,45 +1467,47 @@ sub RequirePackage {
   $package = ToString($package) if ref $package;
   if($options{raw}){
     delete $options{raw}; $options{notex}=0;
-    Warn(":obsolete:raw RequirePackage $package option raw is obsolete; it is not needed"); }
+    Warn('deprecated','raw',$STATE->getStomach->getGullet,
+	 "RequirePackage option raw is obsolete; it is not needed"); }
   CheckOptions("RequirePackage ($package)",$require_options,%options);
   # We'll usually disallow raw TeX, unless the option explicitly given, or globally set. 
   $options{notex} = 1 if !defined $options{notex}  && !LookupValue('INCLUDE_STYLES');
-  if(InputDefinitions($package,type=>$options{type} || 'sty', handleoptions=>1,
-		      # Pass classes options if we have NONE!
-		      withoptions=>!($options{options} && @{$options{options}}),
-		      %options) ){}
-  else {
-    $STATE->noteStatus(missing=>$package.'.'.($options{type} || 'sty'));
-    Error(":missing_file:$package Cannot find "
-	  .($options{type} ? "file $package.$options{type} " : "package $package ")
-	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]"); }
-  return; }
+  InputDefinitions($package,type=>$options{type} || 'sty', handleoptions=>1,
+		   # Pass classes options if we have NONE!
+		   withoptions=>!($options{options} && @{$options{options}}),
+		   %options); }
 
 our $loadclass_options = {options=>1, withoptions=>1, after=>1};
 sub LoadClass {
   my($class,%options)=@_;
   $class = ToString($class) if ref $class;
   CheckOptions("LoadClass ($class)",$loadclass_options,%options);
-  if(InputDefinitions($class,type=>'cls', notex=>1, handleoptions=>1, %options)){}
+  # Note that we'll handle errors specifically for this case.
+  if(my $success=InputDefinitions($class,type=>'cls', notex=>1, handleoptions=>1, noerror=>1,
+				  %options)){
+    $success; }
   else {
     $STATE->noteStatus(missing=>$class.'.cls');
-    Warn(":missing_file:$class.cls.ltxml  No LaTeXML implementation of $class.cls found, using article"
-	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]");
-    if(InputDefinitions('article',type=>'cls',%options)){}
+    Warn('missing_file',$class,$STATE->getStomach->getGullet,
+	 "Can't find binding for class $class (using article)",
+	 maybeReportSearchPaths());
+    if(my $success=InputDefinitions('article',type=>'cls',noerror=>1, %options)){
+      $success; }
     else {
-      Fatal(":missing_file:article.cls.ltxml Installation error Cannot find either article.cls.ltxml!"
-	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]"); }}
-  return; }
+      Fatal('missing_file','article.cls.ltxml',$STATE->getStomach->getGullet,
+	    "Can't find binding for class article (installation error)");
+      return; }}}
 
 sub LoadPool {
   my($pool)=@_;
   $pool = ToString($pool) if ref $pool;
-  if(InputDefinitions($pool,type=>'pool', notex=>1)){}
+  if(my $success=InputDefinitions($pool,type=>'pool', notex=>1, noerror=>1)){
+    $success; }
   else {
-    Fatal(":missing_file:$pool.pool.ltxml Installation error: Cannot find $pool.pool module!"
-	 ."[paths=".join(', ',@{LookupValue('SEARCHPATHS')})."]"); }
-  return; }
+    Fatal('missing_file',"$pool.pool.ltxml",$STATE->getStomach->getGullet,
+	  "Can't find binding for pool $pool (installation error)",
+	  maybeReportSearchPaths());
+    return; }}
 
 sub AtBeginDocument {
   my(@operations)=@_;
@@ -2425,7 +2459,7 @@ in latex compatibility mode, or AMSTeX.
 
 X<RequirePackage>
 Finds and loads a package implementation (usually C<*.sty.ltxml>, unless C<raw> is specified)
-for the required C<$package>.
+for the required C<$package>.  It returns the pathname of the loaded package.
 The options are:
 
 =over
@@ -2453,6 +2487,7 @@ That is, it will I<only> search for the LaTeXML binding.
 
 X<LoadClass>
 Finds and loads a class definition (usually C<*.cls.ltxml>).
+It returns the pathname of the loaded class.
 The only option is
 
 =over
@@ -2468,6 +2503,7 @@ specifies a list of class options.
 X<LoadPool>
 Loads a I<pool> file, one of the top-level definition files,
 such as TeX, LaTeX or AMSTeX.
+It returns the pathname of the loaded file.
 
 =item C<< DeclareOption($option,$code); >>
 

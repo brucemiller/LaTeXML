@@ -37,7 +37,7 @@ sub create {
 
 sub new {
   my($class,$string)=@_;
-  my $self =  bless {source=>"Anonymous String"}, $class;
+  my $self =  bless {source=>"Anonymous String",shortsource=>"String"}, $class;
   $self->openString($string);
   $self->initialize;
   $self; }
@@ -132,10 +132,12 @@ sub stringify {
 
 #**********************************************************************
 sub getLocator {
-  my($self,$long)=@_;
+  my($self,$length)=@_;
   my($l,$c)=($$self{lineno},$$self{colno});
-  my $msg =  "at $$self{source}; line $l col $c";
-  if($long && (defined $l || defined $c)){
+  if($length && ($length < 0)){
+    "at $$self{shortsource}; line $l col $c"; }
+  elsif($length && (defined $l || defined $c)){
+    my $msg =  "at $$self{source}; line $l col $c";
     my $chars=$$self{chars};
     if(my $n = $$self{nchars}){
       $c=$n-1 if $c >=$n;
@@ -145,7 +147,8 @@ sub getLocator {
       my $p1 = ($c0 <= $cm ? join('',@$chars[$c0..$cm]) : ''); chomp($p1);
       my $p2 = ($c  <= $cn ? join('',@$chars[$c..$cn])  : ''); chomp($p2);
       $msg .="\n  ".$p1."\n  ".(' ' x ($c-$c0)).'^'.' '.$p2; }}
-  $msg; }
+  else {
+    "at $$self{source}; line $l col $c"; }}
 
 sub getSource {
   my($self)=@_;
@@ -241,7 +244,7 @@ sub readToken {
 
       # Sneak a comment out, every so often.
       if((($$self{lineno} % 25)==0) && $STATE->lookupValue('INCLUDE_COMMENTS')){
-	return T_COMMENT("**** $$self{source} Line $$self{lineno} ****"); }
+	return T_COMMENT("**** $$self{shortsource} Line $$self{lineno} ****"); }
     }
     # ==== Extract next token from line.
     my($ch,$cc)=$self->getNextChar;
@@ -283,7 +286,8 @@ sub readRawLines {
     else {
       $line = $self->getNextLine; 
       if(!defined $line){
-	Error(":expected:$endline Fell off end trying to match a lines to \"$endline\" from ".Stringify($self));
+	Error('expected',$endline,$self,
+	      "Fell off end trying to match a lines to '$endline'");
 	last; }
       $line =~ s/\s*$/\n/s if defined $line;	# Is this right? 
       $$self{lineno}++;
@@ -316,7 +320,9 @@ use Encode;
 
 sub new {
   my($class,$pathname)=@_;
-  my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+#  my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+  my($dir,$name,$ext)=pathname_split($pathname);
+  my $self =  bless {source=>$pathname,shortsource=>"$name.$ext"}, $class;
 #  $$self{fordefinitions}=1;
   $$self{notes}=1;
   $self->openFile($pathname);
@@ -327,9 +333,9 @@ sub new {
 sub openFile {
   my($self,$pathname)=@_;
   local *IN;
-  if(! -r $pathname){ Fatal(":missing_file:$pathname Input file is not readable."); }
-  elsif((!-z $pathname) && (-B $pathname)){Fatal(":missing_file:$pathname Input file appears to be binary."); }
-  open(IN,$pathname) || Fatal(":missing_file:$pathname Can't read: ",$!);
+  if(! -r $pathname){ Fatal('I/O',$pathname,$self,"File $pathname is not readable."); }
+  elsif((!-z $pathname) && (-B $pathname)){Fatal('I/O',$pathname,$self,"Input file $pathname appears to be binary."); }
+  open(IN,$pathname) || Fatal('I/O',$pathname,$self,"Can't open $pathname for reading",$!);
   $$self{IN} = *IN;
   $$self{buffer}=[];
 }
@@ -367,7 +373,7 @@ sub getNextLine {
       # I _think_ that for TeX's behaviour we actually should turn such un-decodeable chars in to space(?).
       $line = decode($encoding, $line, Encode::FB_DEFAULT);
       if($line =~ s/\x{FFFD}/ /g){	# Just remove the replacement chars, and warn (or Info?)
-	Info(":unexpected input isn't valid under encoding $encoding"); }}}
+	Info('misdefined',$encoding,$self,"input isn't valid under encoding $encoding"); }}}
   $line .= "\r"; # put line ending back!
 
   if(!($$self{lineno} % 25)){
@@ -415,7 +421,9 @@ use base qw(LaTeXML::FileMouth);
 
 sub new {
   my($class,$pathname)=@_;
-  my $self = bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+##  my $self = bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+  my($dir,$name,$ext)=pathname_split($pathname);
+  my $self =  bless {source=>$pathname,shortsource=>"$name.$ext"}, $class;
   $$self{fordefinitions}=1;
   $$self{notes}=1;
   $self->openFile($pathname);
@@ -439,7 +447,9 @@ use base qw(LaTeXML::Mouth);
 
 sub new {
   my($class,$pathname,$string)=@_;
-  my $self = bless {source=>$pathname}, $class;
+##  my $self = bless {source=>$pathname}, $class;
+  my($dir,$name,$ext)=pathname_split($pathname);
+  my $self =  bless {source=>$pathname,shortsource=>"$name.$ext"}, $class;
   $$self{fordefinitions}=1;
   $$self{notes}=1;
   $self->openString($string);
@@ -458,7 +468,7 @@ use base qw(LaTeXML::Mouth);
 sub new {
   my($class,$data,%options)=@_;
   $data =~ s/^literal://;
-  my $self =  bless {source=>"Anonymous String"}, $class;
+  my $self =  bless {source=>"Anonymous String",shortsource=>"String"}, $class;
   $$self{fordefinitions}=1 if $options{fordefinitions};
   $$self{notes}=1          if $options{notes};
   $self->openString($data);
@@ -472,7 +482,9 @@ use LaTeXML::Util::Pathname;
 
 sub new {
   my($class,$pathname,%options)=@_;
-  my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+#  my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+  my($dir,$name,$ext)=pathname_split($pathname);
+  my $self =  bless {source=>$pathname,shortsource=>"$name.$ext"}, $class;
   $$self{fordefinitions}=1 if $options{fordefinitions};
   $$self{notes}=1          if $options{notes};
   $self->openString($options{content});
@@ -486,7 +498,9 @@ use LaTeXML::Util::Pathname;
 
 sub new {
   my($class,$pathname,%options)=@_;
-  my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+#  my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
+  my($dir,$name,$ext)=pathname_split($pathname);
+  my $self =  bless {source=>$pathname,shortsource=>"$name.$ext"}, $class;
   $$self{fordefinitions}=1 if $options{fordefinitions};
   $$self{notes}=1          if $options{notes};
   $self->openFile($pathname);
@@ -503,8 +517,10 @@ use LaTeXML::Util::Pathname;
 
 sub new {
   my($class,$pathname)=@_;
-  my $shortpath=pathname_relative($pathname,pathname_cwd);
-  my $self = bless {source=>(length($pathname) < length($shortpath) ? $pathname : $shortpath)},$class;
+##  my $shortpath=pathname_relative($pathname,pathname_cwd);
+##  my $self = bless {source=>(length($pathname) < length($shortpath) ? $pathname : $shortpath)},$class;
+  my($dir,$name,$ext)=pathname_split($pathname);
+  my $self =  bless {source=>$pathname,shortsource=>"$name.$ext"}, $class;
   NoteBegin("Loading $$self{source}");
   $self; }
 
@@ -514,13 +530,14 @@ sub finish {
 
 # Evolve to figure out if this gets dynamic location!
 sub getLocator {
-  my($self)=@_;
+  my($self,$length)=@_;
   my $path = $$self{source};
+  my $loc = ($length && $length < 0 ? $$self{shortsource} :  $$self{source});
   my $frame=2;
   my($pkg,$file,$line);
   while(($pkg,$file,$line) = caller($frame++)){
     last if $file eq $path; }
-  $path.($line ? " line $line":''); }
+  $loc.($line ? " line $line":''); }
 
 sub getSource {
   my($self)=@_;

@@ -268,7 +268,7 @@ sub setCitationStyle {
     elsif($key eq 'yysep'){      AssignValue(CITE_YY_SEPARATOR=>$value); }
     elsif($key eq 'notesep'){    AssignValue(CITE_NOTE_SEPARATOR=>$value); }
     else {
-      Warn(":unexpected:$key Unexpected $key=$value while setting Citation Style"); }}
+      Warn('unexpected',$key,undef,"Unexpected Citation Style keyword '$key'"); }}
   return; }
 
 DefPrimitive('\setcitestyle RequiredKeyVals:natbib', sub {

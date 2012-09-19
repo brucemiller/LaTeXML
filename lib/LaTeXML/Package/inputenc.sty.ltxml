@@ -33,7 +33,8 @@ DefPrimitive('\DeclareInputText {} {}', sub {
 DefMacro('\IeC{}','#1');
 
 DefMacroI('\@inpenc@undefined',undef,sub {
-  Error("Keyboard character used is undefined in inputencoding ".LookupValue('INPUT_ENCODING')); });
+  Error('unexpected','<char>',$_[0],
+	"Keyboard character used is undefined in inputencoding ".LookupValue('INPUT_ENCODING')); });
 
 DefPrimitive('\inputencoding{}', sub { SetInputEncoding(ToString(Digest($_[1]))); });
 
@@ -52,8 +53,7 @@ sub SetInputEncoding {
   AssignValue(PERL_INPUT_ENCODING=>undef); # Disable the perl-level decoding, if any.
 
   # Then load TeX's input encoding definitions.
-  InputDefinitions($encoding,type=>'def')
-    || Warn(":missing:$encoding.def Couldn't find $encoding input encoding definition $encoding.def");
+  InputDefinitions($encoding,type=>'def');
   AssignValue(INPUT_ENCODING=>$encoding);
   return; }
 

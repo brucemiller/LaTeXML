@@ -19,30 +19,69 @@ use LaTeXML::Global;
 #**********************************************************************
 
 # Synthesize an error message describing what happened, and where.
+# NOTE: Possibly $long should be descrete levels
+# including a level requesting full stack trace?
+
 sub generateMessage {
-  my($type,$message,$long,@extra)=@_;
-  my @lines=("\n".$type.($message =~ /^:/ ? '' : ": ").$message);
+  my($errorcode,$where,$message,$long,@extra)=@_;
+  my $docloc;
+
+  # Generate location information; basic and for stack trace.
+  # If we've been given an object $where, where the error occurred, use it.
+  my $wheretype = ref $where;
+  if($wheretype && ($wheretype =~/^XML::LibXML/)){
+    my $box = $LaTeXML::DOCUMENT->getNodeBox($where);
+    $docloc = Locator($box) if $box; }
+  elsif($wheretype && $where->can('getLocator')){
+    $docloc=$where->getLocator; }
+  elsif(defined $where){
+    $docloc=$where; }
+  # Otherwise, try to guess where the error came from!
+  elsif($LaTeXML::DOCUMENT){ # During construction?
+    my $node = $LaTeXML::DOCUMENT->getNode;
+    my $box  = $LaTeXML::DOCUMENT->getNodeBox($node);
+    $docloc = Locator($box) if $box; }
+  if(!$docloc && $LaTeXML::BOX){ # In constructor?
+    $docloc = Locator($LaTeXML::BOX); }
+  if(!$docloc && $STATE->getStomach){
+    my $gullet = $STATE->getStomach->getGullet;
+    # NOTE: Problems here.
+    # (1) With obsoleting Tokens as a Mouth, we can get pointless "Anonymous String" locators!
+    # (2) If gullet is the source, we probably want to include next token, etc or 
+    $docloc = $gullet->getLocator(); }
+
+  # $message and each of @extra should be single lines
+  ($message,@extra) = grep($_ ne '',map(split("\n",$_),$message,@extra));
+  my @lines=($errorcode.' '.$message,
+	     $docloc,
+	     @extra
+	     );
+
+  # Now add a certain amount of stack trace and/or context info.
   $long = 0 if $STATE->lookupValue('VERBOSITY') < -1;
   $long ++  if $STATE->lookupValue('VERBOSITY') > +1;
+
+  # FIRST line of stack trace information ought to look at the $where
+  if(!$long){}
+  elsif($wheretype =~ /^XML::LibXML/){
+    push(@lines,"Node is ".Stringify($where)); }
+    ## Hmm... if we're being verbose or level is high, we might do this:
+    ### "Currently in ".$doc->getInsertionContext); }
+  elsif($wheretype =~ 'LaTeXML::Gullet'){
+    push(@lines,$where->showUnexpected); } # Or better?
+
   my $nstack =  ($long > 1 ? undef : ($long ? 4 : 1));
   if(my @objects = objectStack($nstack)){
     my $top = shift(@objects);
-    push(@lines,"In ".trim(Stringify($top)).' '.Stringify(Locator($top)));
+    push(@lines,"In ".trim(ToString($top)).' '.ToString(Locator($top)));
     push(@objects,'...') if @objects && defined $nstack;
-    push(@lines,join('',map(' <= '.trim(Stringify($_)),@objects))) if @objects; }
-  my $docloc;
-  if(my $stomach = $STATE->getStomach){
-    $docloc = $stomach->getGullet->getLocator($long); }
-  if(!$docloc && $LaTeXML::BOX){ # In constructor?
-    $docloc = Locator($LaTeXML::BOX); }
-  push(@lines,$docloc) if $docloc;
-  @lines = grep($_,@lines, @extra);
-  chomp(@lines);
-  join("\n",@lines,''); }
+    push(@lines,join('',map(' <= '.trim(ToString($_)),@objects))) if @objects; }
+
+  "\n".join("\n\t",@lines)."\n"; }
 
 sub Locator {
   my($object)=@_;
-  ($object->can('getLocator') ? $object->getLocator :  "???"); }
+  ($object && $object->can('getLocator') ? $object->getLocator :  "???"); }
 
 sub callerInfo {
   my($frame)=@_;
@@ -118,7 +157,7 @@ sub stacktrace {
   while(my %info = caller_info($frame++)){
     next if $info{sub} =~ /^LaTeXML::Error/;
     $info{call} = '' if $info{sub} =~ /^LaTeXML::Error::Error/;
-    $trace .= "  $info{call} @ $info{file} line $info{line}\n"; }
+    $trace .= "\t$info{call} @ $info{file} line $info{line}\n"; }
   $trace; }
 
 

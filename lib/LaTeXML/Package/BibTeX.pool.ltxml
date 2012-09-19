@@ -298,14 +298,14 @@ DefMacro('\bib@@title{}{}{}', sub {
     elsif($title =~ /^\{/){
       my $t = extract_bracketed($title,'{}');
       if(!defined $t){
-	Error(":expected:} Expected balancing } in bibliographic title");
+	Error('expected','}',$gullet,"Expected balancing } in bibliographic title");
 	$title =~ s/^\{//; }
       else {
 	$recap .= $t; $wb=0; }}
     elsif($title =~ /^\$/){
       my $t = extract_delimited($title,'$');
       if(!defined $t){
-	Error(":expected:\$ Expected balancing \$ in bibliographic title");
+	Error('expected','$',$gullet,"Expected balancing \$ in bibliographic title");
 	$title =~ s/^\$//; }
       else {
 	$recap .= $t; $wb=0; }}
@@ -869,7 +869,8 @@ sub processBibNameList {
       else {
 	push(@phrase,$word); }}
     if(!scalar(@phrase)){
-      Warn("Empty name in bibliographic name list for ".currentBibKey());
+      Warn('expected',"<bibname>",undef,
+	   "Empty name in bibliographic name list for ".currentBibKey());
       next; }
     push(@phrases,[@phrase]) if @phrase;
 
@@ -913,7 +914,8 @@ sub splitWords {
     elsif($string =~ /^\{/){
       my $t = extract_bracketed($string,'{}');
       if(!defined $t){
-	Error(":expected:} Expected balancing } in bibliographic phrases");
+	Error('expected','}',$STATE->getStomach->getGullet,
+	      "Expected balancing } in bibliographic phrases");
 	$string =~ s/^\{//; }
       else {
 	$word .= $t; }}

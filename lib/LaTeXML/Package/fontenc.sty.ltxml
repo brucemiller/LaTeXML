@@ -98,9 +98,7 @@ ProcessOptions();
 sub loadFontEncoding {
   my $encoding = ToString(Digest(T_CS('\CurrentOption')));
   my $encfile = lc($encoding)."enc";
-  InputDefinitions($encfile,type=>'def')
-    || Warn(":missing:$encfile.def Couldn't find $encfile input encoding definition $encfile.def");
-
+  InputDefinitions($encfile,type=>'def');
   if(LoadFontMap($encoding)){
     MergeFont(encoding=>$encoding); }
 }

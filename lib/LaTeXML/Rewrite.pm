@@ -33,14 +33,14 @@ sub rewrite {
       foreach my $label (split(/ /,$labels)){
 	$$self{labels}{$label}=$id; }}
     else {
-      Warn(":malformed Node has labels \"$labels\" but no xml:id ".Stringify($node)); }}
+      Error('malformed','label',$node,"Node has labels but no xml:id"); }}
     $self->applyClause($document,$node,0,$self->clauses); }
 
 sub getLabelID {
   my($self,$label)=@_;
   if(my $id = $$self{labels}{LaTeXML::Package::CleanLabel($label)}){ $id; }
   else {
-    Error(":malformed:<rewrite> No id for label $label in Rewrite");
+    Error('misdefined','<rewrite>',undef,"No id for label $label in Rewrite");
     undef; }}
 
 # Rewrite spec as input
@@ -162,7 +162,7 @@ sub applyClause {
       if(&$pattern($string)){
 	$text->setData($string); }}}
   else {
-    Error(":malformed:<rewrite> Unknown directive \"$op\" in Compiled Rewrite spec"); }
+    Error('misdefined','<rewrite>',undef,"Unknown directive '$op' in Compiled Rewrite spec"); }
 }
 
 #**********************************************************************
@@ -189,7 +189,8 @@ sub compileClause {
     elsif($pattern =~ /^(.*):(.*)$/){
       $pattern=["descendant-or-self::*[local-name()='$1' and \@refnum='$2']",1]; }
     else {
-      Error(":malformed:<rewrite> Unrecognized scope pattern in Rewrite clause: \"$pattern\"; Ignoring it."); 
+      Error('misdefined','<rewrite>',undef,
+	    "Unrecognized scope pattern in Rewrite clause: \"$pattern\"; Ignoring it."); 
       $op='ignore'; $pattern=[]; }}
   elsif($op eq 'xpath'){
     $op='select'; $pattern=[$pattern,1]; }
@@ -219,7 +220,8 @@ sub compile_match {
   elsif($pattern->isaBox){
     $self->compile_match1($document,$pattern); }
   else {
-    Error(":malformed:<rewrite> Don't know what to do with match=>\"".Stringify($pattern)."\""); }}
+    Error('misdefined','<rewrite>',undef,
+	  "Don't know what to do with match=>\"".Stringify($pattern)."\""); }}
 
 sub compile_match1 {
   my($self,$document,$patternbox)=@_;
@@ -285,7 +287,8 @@ sub compile_regexp {
   my($self,$pattern)=@_;
   my $code =  "sub { \$_[0] =~ s${pattern}g; }";
   my $fcn = eval $code;
-  Error(":malformed:<rewrite> Failed to compile regexp pattern \"$pattern\" into \"$code\": $!") if $@;
+  Error('misdefined','<rewrite>',undef,
+	"Failed to compile regexp pattern \"$pattern\" into \"$code\": $!") if $@;
   $fcn; }
 
 #**********************************************************************
@@ -331,7 +334,8 @@ sub domToXPath_rec {
       elsif(! grep($_->nodeType != XML_ELEMENT_NODE,@children)){
 	push(@predicates,domToXPath_seq($document,'child',@children)); }
       else {
-	Fatal(":misdefined:<rewrite> Cannot generate XPath for mixed content on ".$node->toString); }}
+	Fatal('misdefined','<rewrite>',$node,
+	      "Can't generate XPath for mixed content"); }}
     if($document->getModel->canHaveAttribute($qname,'font')){
       if(my $font = $node->getAttribute('_font')){
 	my $pred = LaTeXML::Font::font_match_xpaths($font);

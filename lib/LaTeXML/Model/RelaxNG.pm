@@ -252,7 +252,7 @@ sub scanPattern {
     elsif($relaxop =~ /^rnga:documentation$/){
       (['doc',undef,$node->textContent]); }
     else {
-      Warn(":model Didn't expect $relaxop in RelaxNG Schema (scanPattern)");
+      Warn('misdefined',$relaxop,undef,"Didn't expect '$relaxop' in RelaxNG Schema (scanPattern)");
       (); }}
   else {
     (); }}
@@ -305,11 +305,13 @@ sub scanNameClass {
   if($relaxop eq 'rng:name'){
     ($$self{model}->encodeQName($ns,$node->textContent)); }
   elsif($relaxop eq 'rng:anyName'){
-    warn "RelaxNG: treating ".$node->toString." as ANY"
+    Warn('misdefined',$relaxop,undef,"Can't handle RelaxNG operation '$relaxop'",
+	 "Treating ".ToString($node)." as ANY")
       if $node->hasChildNodes;
     ('ANY'); }
   elsif($relaxop eq 'rng:nsName'){
-    warn "RelaxNG: treating ".$node->toString." as ANY";
+    Warn('misdefined',$relaxop,undef,"Can't handle RelaxNG operation '$relaxop'",
+	 "Treating ".ToString($node)." as ANY");
     # NOTE: We _could_ conceivably use a namespace predicate,
     # but Model has to be extended to support it!
     ('ANY'); }
@@ -319,8 +321,9 @@ sub scanNameClass {
       map($names{$_}=1, $self->scanNameClass($choice,$ns)); }
     ($names{ANY} ? ('ANY') : keys %names); }
   else {
-    die "Expected a name element (rng:name|rng:anyName|rng:nsName|rng:choice), got "
-      .$node->nodeName; }}
+    my $op = $node->nodeName;
+    Fatal('misdefined',$op,undef,
+	  "Expected a RelaxNG name element (rng:name|rng:anyName|rng:nsName|rng:choice), got '$op'"); }}
 
 #======================================================================
 # Simplify

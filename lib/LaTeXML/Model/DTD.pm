@@ -86,7 +86,7 @@ sub loadSchema {
 	  my @content = map($model->recodeDocumentQName($_),split(/ /,$content));
 	  $model->setTagProperty($tag,'model',{ map(($_ => 1), @content)});
 	}}
-      else { Warn(":model Warning: got \"$decl\" from DTD");}
+      else { Warn('misdefined',$decl,undef,"Can't process DTD declaration '$decl'");}
     }
     elsif($node->nodeType() == XML_ATTRIBUTE_DECL){
       if($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-9-]+)\s+([a-zA-Z0-9-]+)\s+(.*)>$/){
@@ -126,11 +126,13 @@ sub readDTD {
       NoteProgress(" from $dtdfile ");
       $dtd = XML::LibXML::Dtd->new($$self{public_id},$dtdfile);
       NoteProgress(" from $dtdfile ") if $dtd;
-      Error(":model Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed")
+      Error('misdefined',$$self{system_id},undef,
+	    "Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed")
 	unless $dtd;
       }
     else {
-      Error(":missing_file:$$self{system_id} Couldn't find DTD \"$$self{public_id}\" \"$$self{system_id}\" failed"); }}
+      Error('missing_file',$$self{system_id},undef,
+	    "Can't find DTD \"$$self{public_id}\" \"$$self{system_id}\""); }}
   $dtd; }
 
 #**********************************************************************

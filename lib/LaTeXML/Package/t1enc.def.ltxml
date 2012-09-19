@@ -20,8 +20,7 @@ use LaTeXML::Package;
 # Predefine Ogonek, it's defined in t1enc.def as ugly ooalign
 DefAccent('\k',"\x{0328}","\x{02DB}");
 # Now read the rest from the REAL t1enc.
-InputDefinitions('t1enc',type=>'def',noltxml=>1)
-    || Warn(":missing:t1enc.def Couldn't find t1enc font encoding definition t1enc.def");
+InputDefinitions('t1enc',type=>'def',noltxml=>1);
 
 #**********************************************************************
 

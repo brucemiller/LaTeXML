@@ -61,8 +61,9 @@ sub newFromFile {
   bless $self,$class;
   my $paths = $STATE->lookupValue('SEARCHPATHS');
   my $file = pathname_find($bibname,types=>['bib'],paths=>$paths);
-  Fatal(":missing_file:$file Couldn't find file $bibname in ".join(', ',@$paths)) unless $file;
-  open(BIB,$file) or Fatal(":missing_file:$file Couldn't open: $!");
+  Fatal('missing_file',$bibname,undef,"Can't find BibTeX file $bibname",
+	"SEACHPATHS is ".join(', ',@$paths)) unless $file;
+  open(BIB,$file) or Fatal('I/O',$file,undef,"Can't open BibTeX $file for reading",$!);
   $$self{file} = $bibname;
   $$self{lines} = [<BIB>];
   $$self{line} = shift(@{$$self{lines}}) || '';
@@ -205,7 +206,7 @@ sub parseMatch {
   if($$self{line}=~ s/^([\Q$delims\E])//){
     $1; }
   else {
-    Error(":expected:$delims Expected one of ".join(' ',split(//,$delims)));
+    Error('expected',$delims,undef,"Expected one of ".join(' ',split(//,$delims)));
     undef; }}
 
 # A string is delimited with balanced {}, or ""
@@ -223,7 +224,8 @@ sub parseString {
     while((! defined($string = extract_bracketed($$self{line},'{}'))) && $self->extendLine){} # extend till balanced
   }
   else {
-    Error(":expected:string Expected a string delimited by \"..\", (..) or {..}"); }
+    Error('expected','<delimitedstring>',undef,
+	  "Expected a string delimited by \"..\", (..) or {..}"); }
   $string =~ s/^.//;		# Remove the delimiters.
   $string =~ s/.$//;
   $string =~ s/^\s+//;		# and trim
@@ -238,7 +240,8 @@ sub extendLine {
     $$self{lineno} ++; 
     1; }
   else {
-    Error(":unexpected:EOF Input ended while parsing string");
+    Error('unexpected','<EOF>',undef,
+	  "Input ended while parsing string");
     undef; }}
 
 # value : simple_value ( HASH simple_value)*
@@ -253,11 +256,13 @@ sub parseValue {
     elsif(my $name = $self->parseFieldName){
       my $macro = ($name =~ /^\d+$/ ? $name : $$self{macros}{$name});
       if(!defined $macro){
-	Error(":unexpected:$name The macro $name is not defined");
+	Error('unexpected',$name,undef,
+	      "The BibTeX macro '$name' is not defined");
 	$macro=$name; }		# Default error handling is leave the text in?
       $value .= $macro; }
     else {
-      Error(":expected:value a value"); }
+      Error('expected','<value>',undef,
+	    "Expected a BibTeX value"); }
     $self->skipWhite;
   } while ($$self{line} =~ s/^#//);
   $value; }

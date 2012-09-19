@@ -62,16 +62,16 @@ use base qw(LaTeXML::Definition);
 sub new {
   my($class,$cs,$parameters,$expansion,%traits)=@_;
   $expansion = Tokens($expansion) if ref $expansion eq 'LaTeXML::Token';
-#  Fatal(":misdefined:".Stringify($cs)." expansion is neither Tokens nor CODE: $expansion.")
-#    unless (ref $expansion) =~ /^(LaTeXML::Tokens|CODE)$/;
+  my $source = $STATE->getStomach->getGullet->getMouth;
   if(ref $expansion eq 'LaTeXML::Tokens'){
     my $level=0;
     foreach my $t ($expansion->unlist){
       $level++ if $t->equals(T_BEGIN);
       $level-- if $t->equals(T_END); }
-    Fatal(":misdefined:".Stringify($cs)." expansion has unbalanced {}: ".ToString($expansion)) if $level;  }
+    Fatal('misdefined',$cs,$source,"Expansion of '".ToString($cs)."' has unbalanced {}",
+	  "Expansion is ".ToString($expansion)) if $level;  }
   bless {cs=>$cs, parameters=>$parameters, expansion=>$expansion,
-	 locator=>"defined ".$STATE->getStomach->getGullet->getMouth->getLocator,
+	 locator=>"from ".$source->getLocator(-1),
 	 isProtected=>$STATE->getPrefix('protected'),
 	 %traits}, $class; }
 
@@ -128,10 +128,11 @@ use base qw(LaTeXML::Expandable);
 
 sub new {
   my($class,$cs,$parameters,$test,%traits)=@_;
-  Fatal(":misdefined:".Stringify($cs)." conditional has neither a test nor a skipper.")
+  my $source = $STATE->getStomach->getGullet->getMouth;
+  Fatal('misdefined',$cs,$source,"Conditional '".ToString($cs)."' has neither a test nor a skipper.")
     unless $test or $traits{skipper};
   bless {cs=>$cs, parameters=>$parameters, test=>$test,
-	 locator=>"defined ".$STATE->getStomach->getGullet->getMouth->getLocator,
+	 locator=>"from ".$source->getLocator(-1),
 	 %traits}, $class; }
 
 sub isConditional { 1; }
@@ -181,7 +182,8 @@ sub skipConditionalBody {
 	# No need to actually call elseHandler, but note that we've seen an \else!
 	$STATE->lookupValue('if_stack')->[0]->{elses}=1;
 	return; }}}
-  Fatal(":expected:\\fi Missing \\fi or \\else, conditional fell off end (starting at $start)"); }
+  Fatal('expected','\fi',$gullet,"Missing \\fi or \\else, conditional fell off end",
+	"Conditional started at $start"); }
 
 sub ifHandler   { 
   my($gullet,$boolean)=@_;
@@ -194,15 +196,14 @@ sub elseHandler {
   my($gullet)=@_;
   my $stack =$STATE->lookupValue('if_stack');
   if(!($stack && $$stack[0])){ # No if stack entry ?
-    Error(":unexpected:".Stringify($LaTeXML::CURRENT_TOKEN)
-	  ." Didn't expect a ".Stringify($LaTeXML::CURRENT_TOKEN)
+    Error('unexpected',$LaTeXML::CURRENT_TOKEN,$gullet,
+	  "Didn't expect a ".Stringify($LaTeXML::CURRENT_TOKEN)
 	  ." since we seem not to be in a conditional");
     return; }
   elsif($$stack[0]{parsing}){	# Defer expanding the \else if we're still parsing the test
     (T_CS('\relax'),$LaTeXML::CURRENT_TOKEN); }
   elsif($$stack[0]{elses}){	# Already seen an \else's at this level?
-    Error(":unexpected:".Stringify($LaTeXML::CURRENT_TOKEN)
-	  ." Extra ".Stringify($LaTeXML::CURRENT_TOKEN));
+    Error('unexpected',$LaTeXML::CURRENT_TOKEN,$gullet,"Extra ".Stringify($LaTeXML::CURRENT_TOKEN));
     return; }
   else {
     skipConditionalBody($gullet,0); return; }}
@@ -211,8 +212,8 @@ sub fiHandler {
   my($gullet)=@_;
   my $stack=$STATE->lookupValue('if_stack');
   if(!($stack && $$stack[0])){ # No if stack entry ?
-    Error(":unexpected:".Stringify($LaTeXML::CURRENT_TOKEN)
-	  ." Didn't expect a ".Stringify($LaTeXML::CURRENT_TOKEN)
+    Error('unexpected',$LaTeXML::CURRENT_TOKEN,$gullet,
+	  "Didn't expect a ".Stringify($LaTeXML::CURRENT_TOKEN)
 	  ." since we seem not to be in a conditional");
     return; }
   elsif($$stack[0]{parsing}){	# Defer expanding the \else if we're still parsing the test
@@ -234,10 +235,13 @@ use base qw(LaTeXML::Definition);
 sub new {
   my($class,$cs,$parameters,$replacement,%traits)=@_;
   # Could conceivably have $replacement being a List or Box?
-  Fatal(":misdefined:".Stringify($cs)."  Primitive replacement is not CODE: $replacement.")
+  my $source = $STATE->getStomach->getGullet->getMouth;
+  Fatal('misdefined',$cs,$source,"Primitive replacement for '".ToString($cs)."' is not CODE",
+	"Replacement is $replacement")
     unless ref $replacement eq 'CODE';
   bless {cs=>$cs, parameters=>$parameters, replacement=>$replacement,
-	 locator=>"defined ".$STATE->getStomach->getGullet->getMouth->getLocator, %traits}, $class; }
+	 locator=>"from ".$source->getLocator(-1),
+	 %traits}, $class; }
 
 sub isPrefix      { $_[0]->{isPrefix}; }
 
@@ -282,7 +286,8 @@ sub new {
   my($class,$cs,$parameters,$type,$getter,$setter ,%traits)=@_;
   bless {cs=>$cs, parameters=>$parameters,
 	 registerType=>$type, getter => $getter, setter => $setter,
-	 locator=>"defined ".$STATE->getStomach->getGullet->getMouth->getLocator, %traits}, $class; }
+	 locator=>"from ".$STATE->getStomach->getGullet->getMouth->getLocator(-1),
+	 %traits}, $class; }
 
 sub isPrefix    { 0; }
 sub isRegister { $_[0]->{registerType}; }
@@ -326,10 +331,11 @@ sub new {
   bless {cs=>$cs, parameters=>undef,
 	 value=>$value, internalcs=>$internalcs,
 	 registerType=>'Number', readonly=>1,
-	 locator=>"defined ".$STATE->getStomach->getGullet->getMouth->getLocator, %traits}, $class; }
+	 locator=>"from ".$STATE->getStomach->getGullet->getMouth->getLocator(-1),
+	 %traits}, $class; }
 
 sub valueOf  { $_[0]->{value}; }
-sub setValue { Error(":unexpected:".$_[0]->getCSName." Cannot assign to chardef ".$_[0]->getCSName); return; }
+sub setValue { Error('unexpected',$_[0],undef,"Can't assign to chardef ".$_[0]->getCSName); return; }
 sub invoke   { 
   my($self,$stomach)=@_;
   if(my $cs = $$self{internalcs}){
@@ -356,10 +362,13 @@ use base qw(LaTeXML::Primitive);
 #    properties : a hash of default values for properties to store in the Whatsit.
 sub new {
   my($class,$cs,$parameters,$replacement,%traits)=@_;
-  Fatal(":misdefined:".Stringify($cs)." Constructor replacement is not a string or CODE: $replacement")
+  my $source = $STATE->getStomach->getGullet->getMouth;
+  Fatal('misdefined',$cs,$source,
+	"Constructor replacement for '".ToString($cs)."' is not a string or CODE",
+	"Replacement is $replacement")
     unless (defined $replacement) && (!(ref $replacement) || (ref $replacement eq 'CODE'));
   bless {cs=>$cs, parameters=>$parameters, replacement=>$replacement,
-	 locator=>"defined ".$STATE->getStomach->getGullet->getMouth->getLocator, %traits,
+	 locator=>"from ".$source->getLocator(-1), %traits,
 #	 nargs =>(defined $traits{nargs} ? $traits{nargs}
 #		  : ($parameters ? scalar(grep(! $_->getNoValue, $parameters->getParameters))
 #		     : 0))}, $class; }
@@ -412,8 +421,7 @@ sub doAbsorbtion {
   # First, compile the constructor pattern, if needed.
   my $replacement = $$self{replacement};
   if(!ref $replacement){
-    $$self{replacement} = $replacement
-      = LaTeXML::ConstructorCompiler::compileConstructor($replacement,$self->getCS,$$self{nargs}); }
+    $$self{replacement} = $replacement = LaTeXML::ConstructorCompiler::compileConstructor($self); }
   # Now do the absorbtion.
   if(my $pre = $$self{beforeConstruct}){
     map(&$_($document,$whatsit), @$pre); }
@@ -437,15 +445,19 @@ our $TEXT_RE  = "(.[^\\#<\\?\\)\\&\\,]*)";
 
 our $GEN=0;
 sub compileConstructor {
-  my($constructor,$cs,$nargs)=@_;
-  return sub {} unless $constructor;
+  my($constructor)=@_;
+  my $replacement = $$constructor{replacement};
+  return sub {} unless $replacement;
+  my $cs   = $constructor->getCS;
   my $name = $cs->getCSName;
-  local $LaTeXML::ConstructorCompiler::NAME = $name;
-  local $LaTeXML::ConstructorCompiler::NARGS = $nargs;
+  my $nargs = $$constructor{nargs};
+  local $LaTeXML::Constructor::CONSTRUCTOR = $constructor;
+  local $LaTeXML::Constructor::NAME = $name;
+  local $LaTeXML::Constructor::NARGS = $nargs;
   $name =~ s/\W//g;
   $name = "constructor_".$name.'_'.$GEN++;
-  my $floats = ($constructor =~ s/^\^\s*//);	# Grab float marker.
-  my $body = translate_constructor($constructor,$floats);
+  my $floats = ($replacement =~ s/^\^\s*//);	# Grab float marker.
+  my $body = translate_constructor($replacement,$floats);
   # Compile the constructor pattern into an anonymous sub that will construct the requested XML.
   my $code =
     " sub $name {\n"
@@ -456,10 +468,12 @@ sub compileConstructor {
 	. $body
 	  . ($floats ? "\$document->setNode(\$savenode) if defined \$savenode;\n" : '')
 	    . "}\n" ;
-###print STDERR "Compilation of \"$constructor\" => \n$code\n";
+###print STDERR "Compilation of \"$replacement\" => \n$code\n";
 
   eval $code;
-  Fatal(":misdefined:$name Compilation of \"$constructor\" => \n$code\nFailed; $@") if $@; 
+  Fatal('misdefined',$name,$constructor,
+	"Compilation of constructor code for '$name' failed",
+	"\"$replacement\" => $code",$@) if $@;
   \&$name; }
 
 sub translate_constructor {
@@ -475,7 +489,8 @@ sub translate_constructor {
     elsif(s|^\s*<\?$QNAME_RE||so){
       my($pi,$av) = ($1, translate_avpairs());
       $code .= "\$document->insertPI('$pi'".($av? ", $av" : '').");\n";
-      Fatal(":misdefined:$LaTeXML::ConstructorCompiler::Name Missing \"?>\" in constructor template at \"$_\"") unless s|^\s*\?>||; }
+      Fatal('misdefined',$LaTeXML::Constructor::NAME,$LaTeXML::Constructor::CONSTRUCTOR,
+	    "Missing \"?>\" in constructor template at \"$_\"") unless s|^\s*\?>||; }
     # Open tag: <name a=v ...> or .../> (for empty element)
     elsif(s|^\s*<$QNAME_RE||so){
       my($tag,$av) = ($1,translate_avpairs());
@@ -485,7 +500,8 @@ sub translate_constructor {
 	$float = undef; }
       $code .= "\$document->openElement('$tag'".($av? ", $av" : '').");\n";
       $code .= "\$document->closeElement('$tag');\n" if s|^/||; # Empty element.
-      Fatal(":misdefined:$LaTeXML::ConstructorCompiler::Name Missing \">\" in constructor template at \"$_\"") unless s|^>||; }
+      Fatal('misdefined',$LaTeXML::Constructor::NAME,$LaTeXML::Constructor::CONSTRUCTOR,
+	    "Missing \">\" in constructor template at \"$_\"") unless s|^>||; }
     # Close tag: </name>
     elsif(s|^</$QNAME_RE\s*>||so){
       $code .= "\$document->closeElement('$1');\n"; }
@@ -529,7 +545,8 @@ sub parse_conditional {
     $else =~ s/^\(// if $else;    $else =~ s/\)$// if $else;
     ($bool,$if,$else); }
   else {
-    Fatal(":misdefined:$LaTeXML::ConstructorCompiler::Name Unbalanced conditional in constructor template \"$_\""); }}
+    Fatal('misdefined',$LaTeXML::Constructor::NAME,$LaTeXML::Constructor::CONSTRUCTOR,
+	  "Unbalanced conditional in constructor template \"$_\""); }}
 
 # Parse a substitutable value from the constructor (in $_)
 # Recognizes the #1, #prop, and also &function(args,...)
@@ -542,14 +559,16 @@ sub translate_value {
       if(/^\s*([\'\"])/){ push(@args,translate_string()); }
       else              { push(@args,translate_value()); }
       last unless s/^\s*\,\s*//; }
-    Error(":expected:) Missing ')' in &$fcn(...) in constructor pattern for $LaTeXML::ConstructorCompiler::NAME")
+    Error('misdefined',$LaTeXML::Constructor::NAME,$LaTeXML::Constructor::CONSTRUCTOR,
+	  "Missing ')' in &$fcn(...) in constructor pattern for $LaTeXML::Constructor::NAME")
       unless s/\)//;
     $value = "$fcn(".join(',',@args).")"; }
   elsif(s/^\#(\d+)//     ){	# Recognize an explicit #1 for whatsit args
     my $n = $1;
-    if(($n < 1) || ($n > $LaTeXML::ConstructorCompiler::NARGS)){
-      Error(":unexpected:#$n Illegal argument number $n in constructor for "
-	    ."$LaTeXML::ConstructorCompiler::NAME which takes $LaTeXML::ConstructorCompiler::NARGS args");
+    if(($n < 1) || ($n > $LaTeXML::Constructor::NARGS)){
+      Error('misdefined',$LaTeXML::Constructor::NAME,$LaTeXML::Constructor::CONSTRUCTOR,
+	    "Illegal argument number $n in constructor for "
+	    ."$LaTeXML::Constructor::NAME which takes $LaTeXML::Constructor::NARGS args");
       $value = "\"Missing\""; }
     else {
       $value = "\$arg$n" }}

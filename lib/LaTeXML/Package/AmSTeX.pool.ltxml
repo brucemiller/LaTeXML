@@ -36,7 +36,8 @@ DefPrimitive('\define SkipSpaces Token UntilBrace {}', sub {
   my($stomach,$cs,$params,$body)=@_;
   $params = parseDefParameters($cs,$params); # in TeX.pool
   my $key = "defined:".Stringify($cs);
-  Error(":unexpected:\\define ".Stringify($cs)." is already defined") if LookupValue($key);
+  Error('ignore',$cs,$stomach,
+	"Ignoring redefinition (\\define) of '".Stringify($cs)."'") if LookupValue($key);
   AssignValue($key=>1);		# only if defined by \define (or \newcommand!)??? Or ANY \def ???
   DefMacroI($cs,$params,$body);
   return; });
@@ -66,13 +67,9 @@ DefConstructor('\documentstyle  Semiverbatim',
   afterDigest=>sub {
     my($stomach,$whatsit)=@_;
     my $style   = ToString($whatsit->getArg(1));
-    my $stylefile = FindFile($style, type=>'sty');
-    if($stylefile && $stylefile =~/\.sty\.ltxml$/){
-      # Load the package, but note that we're pretending it's a class (to some extent!)
-      RequirePackage($style, as_class=>1); }
-    else {
-      Warn(":missing_file:$style.sty.ltxml No LaTeXML implementation of ams class $style found, using amsppt");
-      RequirePackage('amsppt'); }
+    # Load the package, but note that we're pretending it's a class (to some extent!)
+    RequirePackage($style, type=>'sty', notex=>1, as_class=>1)
+      || RequirePackage('amsppt');
     return;});
 
 DefMacro('\NoPageNumbers','');

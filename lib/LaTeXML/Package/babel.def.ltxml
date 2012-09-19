@@ -23,16 +23,6 @@ no warnings 'redefine';
 # MORE USER COMMANDS!!!!
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# (what about language attribute, or dialect, or... )
-#PushValue(SEARCHPATHS=>'/usr/share/texmf/tex/generic/babel');
-
-sub loadBabelLDF {
-  my($language)=@_;
-  InputDefinitions($language,type=>'ldf')
-    || Warn(":unexpected:$language Couldn't find babel language definition $language.ldf");
-  return; }
-
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Implementation
 
 
@@ -96,7 +86,7 @@ DefMacro('\addto DefToken {}',sub {
   my $defn = LookupDefinition($cs);
   $defn = undef if $defn && $defn eq LookupDefinition(T_CS('\relax')); # ?
   if($defn && !$defn->isExpandable){
-    Warn(":unexpected:".ToString($cs)." expected an expandable token, got ".ToString($cs));
+    Warn('unexpected',$cs,$gullet,"expected an expandable token, got '".ToString($cs)."'");
     $defn = undef; }
   DefMacroI($cs,undef,($defn ? Tokens($defn->getExpansion->unlist,$tokens->unlist) : $tokens)); });
 

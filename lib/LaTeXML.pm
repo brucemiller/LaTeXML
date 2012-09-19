@@ -99,7 +99,8 @@ sub digestFile {
      $self->initializeState('TeX.pool', @{$$self{preload} || []}) unless $options{noinitialize};
 
      my $pathname = pathname_find($file,types=>['tex','']);
-     Fatal(":missing_file:$file Cannot find TeX file $file") unless $pathname;
+     Fatal('missing_file',$file,undef,"Can't find TeX file $file",
+	   "SEARCHPATHS is ".join(', ',@{LookupValue('SEARCHPATHS')})) unless $pathname;
      my($dir,$name,$ext)=pathname_split($pathname);
      $state->assignValue(SOURCEFILE=>$pathname);
      $state->assignValue(SOURCEDIRECTORY=>$dir);
@@ -147,7 +148,7 @@ sub digestBibTeXFile {
      $self->initializeState('TeX.pool','LaTeX.pool', 'BibTeX.pool', @{$$self{preload} || []})
        unless $options{noinitialize};
      my $pathname = pathname_find($file,types=>['bib','']);
-     Fatal(":missing_file:$file Cannot find TeX file $file") unless $pathname;
+     Fatal('missing_file',$file,undef,"Can't find BibTeX file $file") unless $pathname;
      my $bib = LaTeXML::Bib->newFromFile($file);
      my($dir,$name,$ext)=pathname_split($pathname);
      $state->unshiftValue(SEARCHPATHS=>$dir) unless grep($_ eq $dir, @{$state->lookupValue('SEARCHPATHS')});
@@ -174,8 +175,8 @@ sub finishDigestion {
   while($stomach->getGullet->getMouth->hasMoreInput){
       push(@stuff,$stomach->digestNextBody); }
   if(my $env = $state->lookupValue('current_environment')){
-    Error(":expected:\\end{$env} Input ended while environment $env was open"); } 
-  $state->getStomach->getGullet->flush;
+    Error('expected',"\\end{$env}",$stomach,"Input ended while environment $env was open"); } 
+  $stomach->getGullet->flush;
   LaTeXML::List->new(@stuff); }
 
 sub loadPreamble {
@@ -198,6 +199,7 @@ sub convertDocument {
      my($state)=@_;
      my $model    = $state->getModel;   # The document model.
      my $document  = LaTeXML::Document->new($model);
+     local $LaTeXML::DOCUMENT = $document;
      NoteBegin("Building");
      $model->loadSchema(); # If needed?
      if(my $paths = $state->lookupValue('SEARCHPATHS')){
@@ -225,9 +227,10 @@ sub withState {
   my($self,$closure)=@_;
   local $STATE    = $$self{state};
   # And, set fancy error handler for ANY die!
-  local $SIG{__DIE__}  = sub { LaTeXML::Error::Fatal(join('',":perl:die ",@_)); };
-  local $SIG{INT}      = sub { LaTeXML::Error::Fatal(join('',":perl:interrupt ",@_)); }; # ??
-  local $SIG{__WARN__} = sub { LaTeXML::Error::Warn(join('',":perl:warn ",@_)); };
+  # Could be useful to distill the more common messages so they provide useful build statistics?
+  local $SIG{__DIE__}  = sub { LaTeXML::Global::Fatal('perl','die',undef,"Perl died",@_); };
+  local $SIG{INT}      = sub { LaTeXML::Global::Fatal('perl','interrupt',undef,"LaTeXML was interrupted",@_); };
+  local $SIG{__WARN__} = sub { LaTeXML::Global::Warn('perl','warn',undef,"Perl warning",@_); };
   local $LaTeXML::DUAL_BRANCH= '';
 
   &$closure($STATE); }
@@ -247,26 +250,12 @@ sub initializeState {
       if($handleoptions){
 	$options = [split(/,/,$options)]; }
       else {
-	Warn(":unexpected:options Attempting to pass options [$options] to $preload.$type"
-	   ."which is not a style or class file"); }}
+	Warn('unexpected','options',
+	     "Attempting to pass options to $preload.$type (not style or class)",
+	     "The options were  [$options]"); }}
     LaTeXML::Package::InputDefinitions($preload,type=>$type,
-				       handleoptions=>$handleoptions, options=>$options)
-      || Fatal(":missing_file:$preload.$type Couldn't find $preload.$type to preload"); }
-
-  # NOTE: This is seemingly a result of a not-quite-right
-  # processing model.  Opening a new mouth to tokenize & digest
-  # the bibtex material lets the macros do the right-thing as far as
-  # catcodes, etc.
-  # HOWEVER, it goes in at the FRONT of the line; pending preloads
-  # may not get finished.
-  # Probably the right solution is to immediately process included, interpreted, style files?
-  my @pending = ();
-  while($gullet->getMouth->hasMoreInput){
-    push(@pending,$stomach->digestNextBody); }
-  @pending = map($_->unlist,@pending);
-  if(@pending){
-    Warn(":unexpected:<boxes> Got boxes from preloaded modules: ".join(Stringify($_),@pending));}
-}
+				       handleoptions=>$handleoptions, options=>$options); 
+  }}
 
 sub writeDOM {
   my($self,$dom,$name)=@_;

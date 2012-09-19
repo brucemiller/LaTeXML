@@ -1914,7 +1914,7 @@ originated; sometimes it is only realized later on that some problem
 has occurred, such as a missing brace. Moreover, whereas error messages
 from \TeX\ may be safely assumed to indicate errors with the source
 document, with \LaTeXML\ they may also indicate \LaTeXML's inability
-to figure out what you wanted, or simply bugs in \LaTeXML, itself.
+to figure out what you wanted, or simply bugs in \LaTeXML\ or the librarys it uses.
 
 \begin{description}
 \item[Warnings] are generally
@@ -1935,9 +1935,26 @@ have been encountered.
 Warning and Error messages are slightly structured to allow
 unattended processing of documents to classify the degree
 of success in processing. A typical message satisfies the following regular expression:
-\begin{verbatim}
-  (Warning|Error|Fatal)(:\S*)\s+(.*)
-\end{verbatim}
+\begin{lstlisting}[escapechar=@,basicstyle=\ttfamily\small]
+  @severity@:@category@:@object@ @summary@  
+      @source locator@
+      @description@
+      @\ldots@
+      @stack trace@
+\end{lstlisting}
+the second and following lines are indented using a tab.
+\begin{description}
+\item[\textit{severity}] One of \texttt{Info}, \texttt{Warn}, \texttt{Error} or \texttt{Fatal},
+  indicating the severity of the problem;
+\item[\textit{category}] classifies the error or warning into an open-ended set
+   of categories  indicating whether something was \texttt{expected}, or \texttt{undefined};
+\item[\textit{object}] indicates the offending object; what filename was missing,
+  or which token was undefined;
+\item[\textit{summary}] gives a brief readable summary of the condition;
+\item[\textit{source locator}] indicates where in the source document the error occurred;
+\item[\textit{description}] gives one or more lines of more detailed information;
+\item[\textit{stack trace}] optionally gives a brief or long trace of the current execution stack.
+\end{description}
 The type is followed by one or more keywords separated by colons,
 then a space, and a human readable error message.
 Generally, this line is followed by one or more lines describing
@@ -1954,37 +1971,38 @@ The following errors are generally due to malformed \TeX\ input,
 incomplete \LaTeXML\ bindings, or bindings that
 do not properly account for the way \TeX, or the macros, are actually used.
 \begin{description}
-\item[\texttt{undefined}]: \textit{arg} indicates the undefined control sequence.
-\item[\texttt{expected}]: \textit{arg} was expected in the input but missing.
- The expected thing will likely either be a control sequence or something like
- \verb|<variable>| to indicate that a variable was expected.
+\item[\texttt{undefined}]: The operation indicated by \textit{arg},
+  typically a control sequence or other operation, is undefined.
+\item[\texttt{ignore}]: Indicates that \textit{arg} is being ignored;
+ typically it is a duplicated definition, or a definition of something that cannot be redefined.
+\item[\texttt{expected}]: A particular token, or other type of data object,
+   indicated by \textit{arg}, was expected in the input but was missing.
 \item[\texttt{unexpected}]: \textit{arg} was not expected to appear in the input.
+\item[\texttt{not\_parsed}]: A mathematical formula could not be successfully parsed.
 \item[\texttt{missing\_file}]: the file \textit{arg} could not be found.
-  Also used when the file is otherwise not readable or processable.
 \item[\texttt{latex}]: An error or message generated from \LaTeX\ code.
-\item[\texttt{parse}]: An issue parsing the mathematics.
+  and the corresponding \LaTeXML\ code should be updated.
+\item[\texttt{too\_many\_errors}]: Too many non-fatal errors were encountered,
+  causing a Fatal error and program termination.
 \end{description}
 
 The following errors are more likely to be due to programming errors in the
 \LaTeXML\ core, or in binding files, or in the document model.
 \begin{description}
-\item[\texttt{perl}]: A perl-level error or warning,not specifically recognized
- by LaTeXML, was encountered.
-The second keyword will typically \texttt{die}, \texttt{interrupt} or \texttt{warn}.
-\item[\texttt{malformed}]: some sort of malformed XML problem.
-\item[\texttt{model}]: some sort of problem with the document model or schema.
-\item[\texttt{misdefined}]: Some sort of error in the definition of \textit{arg}.
+\item[\texttt{misdefined}]: The operation indicated by \textit{arg},
+   typically a control sequence or other operation,
+   has not been defined properly.
+\item[\texttt{deprecated}]: Indicates that \textit{arg} is a deprecated usage.
+\item[\texttt{malformed}]: The document is malformed, or will be made so
+  by insert \textit{arg} into it.
+\item[\texttt{I/O}]: some problem with input/output of the file \textit{arg},
+  such as it not being readable. The exact error is reported in the additional details.
+\item[\texttt{perl}]: A perl-level error or warning, not specifically recognized
+  by LaTeXML, was encountered.
+  \textit{arg} will typically \texttt{die}, \texttt{interrupt} or \texttt{warn}.
 \item[\texttt{internal}]: Something unexpected happened; most likey an
-internal coding error within \LaTeXML.
-\item[\texttt{too\_many}]: Too many error were encountered.
+  internal coding error within \LaTeXML.
 \end{description}
-
-
-Should there be an additional level that identifies the processing stage?
-Eg.~ mouth, gullet, stomach, intestine, \ldots ?
-That might semi-automatically distinguish expected, unexpected, malformed?
-Or does it?
-
 
 %%%======================================================================
 \backmatter
