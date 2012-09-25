@@ -1617,7 +1617,8 @@ DefPrimitive('\DeclareTextCommand DefToken {}[][]{}', sub {
 	      '\expandafter\ifx\csname\cf@encoding\string'.$css.'\endcsname\relax\csname?\string'.$css.'\endcsname'
 	      .'\else\csname\cf@encoding\string'.$css.'\endcsname\fi'); }
   my $ecs = T_CS('\\'.$encoding.$css);
-  DefMacroI($ecs, convertLaTeXArgs($nargs,$opt), $expansion); });
+  DefMacroI($ecs, convertLaTeXArgs($nargs,$opt), $expansion); 
+  return; });
 
 DefMacro('\DeclareTextCommandDefault DefToken','\DeclareTextCommand{#1}{?}');
 
@@ -1631,7 +1632,8 @@ DefPrimitive('\ProvideTextCommand DefToken {}[][]{}', sub {
 	      .'\else\csname\cf@encoding\string'.$css.'\endcsname\fi'); }
   my $ecs = T_CS('\\'.$encoding.$css);
   if(! LookupDefinition($ecs)){	# If not already defined...
-    DefMacroI($ecs, convertLaTeXArgs($nargs,$opt), $expansion); }});
+    DefMacroI($ecs, convertLaTeXArgs($nargs,$opt), $expansion); }
+  return; });
 
 DefMacro('\ProvideTextCommandDefault DefToken','\ProvideTextCommand{#1}{?}');
 
@@ -1647,7 +1649,8 @@ DefPrimitive('\DeclareTextSymbol DefToken {}{Number}',sub {
 	      '\expandafter\ifx\csname\cf@encoding\string'.$css.'\endcsname\relax\csname?\string'.$css.'\endcsname'
 	      .'\else\csname\cf@encoding\string'.$css.'\endcsname\fi'); }
   my $ecs = T_CS('\\'.$encoding.$css);
-  DefPrimitiveI($ecs,undef, FontDecode($code,$encoding)); });
+  DefPrimitiveI($ecs,undef, FontDecode($code,$encoding)); 
+  return; });
 
 # hmmm... what needs doing here; basically it means use this encoding as the default for the symbol
 DefMacro('\DeclareTextSymbolDefault DefToken {}',''); # '\DeclareTextSymbol{#1}{?}');
