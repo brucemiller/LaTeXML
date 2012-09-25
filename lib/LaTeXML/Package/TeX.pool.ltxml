@@ -59,6 +59,10 @@ DefParameterType('XToken',     sub{$_[0]->readXToken; });
 # Read a number
 DefParameterType('Number',     sub{$_[0]->readNumber; });
 
+# Read a floating point number
+DefParameterType('Float',      sub{$_[0]->readFloat; });
+#sub ReadFloat { $_[0]->skipSpaces; ($_[0]->readFloat || Float(0)); }
+
 # Read a dimension
 DefParameterType('Dimension',  sub{$_[0]->readDimension; });
 
@@ -167,6 +171,25 @@ DefParameterType('TeXFileName', sub {
     push(@tokens,$token); }
   $gullet->unread($token) unless ($cc == CC_SPACE) || ($cc ==CC_EOL) || ($cc == CC_COMMENT);
   Tokens(@tokens); });
+
+# A LaTeX style directory List
+DefParameterType('DirectoryList', sub {
+  my($gullet)=@_;
+  if($gullet->ifNext(T_BEGIN)){
+    $gullet->readToken;
+    my @dirs=();
+    while($gullet->ifNext(T_BEGIN)){
+      # Should these be Semiverbatim ??
+      push(@dirs,$gullet->readArg); }
+    if($gullet->ifNext(T_END)){
+      $gullet->readToken; }
+    else {
+      Error('expected','}',$gullet,"A closing } was supposed to be here"); }
+    LaTeXML::Array->new(open=>T_BEGIN,close=>T_END,itemopen=>T_BEGIN,itemclose=>T_END,
+			type=>'Semiverbatim',
+			values=>[@dirs]); }
+  else {
+    Error('expected','DirectoryList',$gullet,"A DirectoryList was supposed to be here"); }});
 
 # This reads a Box as needed by \raise, \lower, \moveleft, \moveright.
 # Hopefully there are no issues with the box being digested
