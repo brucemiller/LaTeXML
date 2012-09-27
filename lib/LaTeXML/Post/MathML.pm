@@ -835,7 +835,9 @@ sub cmml_ci {
     my $cd = $item->getAttribute('omcd') || 'latexml';
     ['m:csymbol',{cd=>$cd},$meaning]; }
   else {
-    my $content = (ref $item ?  $item->textContent : $item);
+    my($content,%mmlattr)=stylizeContent($item,1);
+    if(my $mv = $mmlattr{mathvariant}){
+      $content = $mv."-".$content; }
     ['m:ci',{},$content]; }}
 
 # Experimental; for an XMApp with role=ID, we treat it as a ci
