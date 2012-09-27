@@ -262,7 +262,7 @@ my @procs = ();
 if($split){
   require 'LaTeXML/Post/Split.pm';
   push(@procs,LaTeXML::Post::Split->new(split_xpath=>$splitpath,splitnaming=>$splitnaming,
-					%OPTIONS)); }
+					db=>$DB, %OPTIONS)); }
 
 ##require 'LaTeXML/Post/Scan.pm';
 our $scanner = ($scan || $DB) && LaTeXML::Post::Scan->new(db=>$DB,%OPTIONS);
@@ -323,10 +323,16 @@ if(!$prescan){
                     %OPTIONS)); }}
       elsif($fmt eq 'cmml'){
 	require 'LaTeXML/Post/MathML.pm';
-	push(@mprocs,LaTeXML::Post::MathML::Content->new(%OPTIONS)); }
+	push(@mprocs,LaTeXML::Post::MathML::Content->new(
+		    (defined $plane1 ? (plane1=>$plane1):(plane1=>1)),
+                    ($hackplane1 ? (hackplane1=>1):()),
+                    %OPTIONS)); }
       elsif($fmt eq 'om'){
 	require 'LaTeXML/Post/OpenMath.pm';
-	push(@mprocs,LaTeXML::Post::OpenMath->new(%OPTIONS)); }
+	push(@mprocs,LaTeXML::Post::OpenMath->new(
+		    (defined $plane1 ? (plane1=>$plane1):(plane1=>1)),
+                    ($hackplane1 ? (hackplane1=>1):()),
+                    %OPTIONS)); }
     }
     my $main = shift(@mprocs);
     $main->setParallel(@mprocs);
