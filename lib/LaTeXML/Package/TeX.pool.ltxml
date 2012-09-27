@@ -61,7 +61,7 @@ DefParameterType('Number',     sub{$_[0]->readNumber; });
 
 # Read a floating point number
 DefParameterType('Float',      sub{$_[0]->readFloat; });
-#sub ReadFloat { $_[0]->skipSpaces; ($_[0]->readFloat || Float(0)); }
+sub ReadFloat { $_[0]->skipSpaces; ($_[0]->readFloat || Float(0)); }
 
 # Read a dimension
 DefParameterType('Dimension',  sub{$_[0]->readDimension; });
