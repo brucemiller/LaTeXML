@@ -25,12 +25,15 @@
 package LaTeXML::Post::OpenMath;
 use strict;
 use LaTeXML::Common::XML;
+use LaTeXML::Post::MathML;
 use base qw(LaTeXML::Post::MathProcessor);
 
 our $omURI = "http://www.openmath.org/OpenMath";
 
 sub preprocess {
   my($self,$doc,@nodes)=@_;
+  $$self{hackplane1} = 0 unless $$self{hackplane1};
+  $$self{plane1} = 1 if $$self{hackplane1} || !defined $$self{plane1};
   $doc->adjust_latexml_doctype('OpenMath');  # Add OpenMath if LaTeXML dtd.
   $doc->addNamespace($omURI,'om'); }
 
@@ -138,7 +141,9 @@ DefOpenMath('Token:?:?',    sub {
     my $cd = $token->getAttribute('omcd') || 'latexml';
     ['om:OMS',{name=>$meaning, cd=>$cd}]; }
   else {
-    my $name = $token->getAttribute('name') || $token->textContent;
+    my($name,%mmlattr)=LaTeXML::Post::MathML::stylizeContent($token,1);
+    if(my $mv = $mmlattr{mathvariant}){
+      $name = $mv."-".$name; }
     ['om:OMV',{name=>$name}]; }});
 
 # NOTE: Presence of '.' distinguishes float from int !?!?
