@@ -320,7 +320,10 @@ sub isUndefined {
   my($name)=@_;
   my $cs = T_CS('\\'.ToString($name));
   my $meaning = LookupMeaning($cs);
-  !(defined $meaning) || ($meaning eq $cs) || ($meaning eq LookupMeaning(T_CS('\relax'))); }
+  my $undef = !(defined $meaning) || ($meaning eq $cs) 
+    || ($meaning eq LookupMeaning(T_CS('\relax')));
+  Let($cs, T_CS('\relax')) if $undef; # Yuck, but traditional!
+  $undef; }
 
 DefMacro('\@ifundefined{}{}{}',sub {
   my($gullet,$name,$if,$else)=@_;
