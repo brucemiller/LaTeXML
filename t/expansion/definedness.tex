@@ -1,0 +1,56 @@
+\documentclass{article}
+\begin{document}
+\makeatletter
+
+foo \ifdefined\foo IS \else is NOT \fi defined,
+it \ifcsname foo\endcsname IS \else is NOT \fi cs-defined,
+it \ifx\foo\relax IS \else is NOT \fi relax,
+and it \@ifundefined{foo}{is NOT}{IS} @defined.
+
+After @ifundefined, however,
+foo \ifdefined\foo IS \else is NOT \fi defined,
+it \ifcsname foo\endcsname IS \else is NOT \fi cs-defined,
+it \ifx\foo\relax IS \else is NOT \fi relax,
+but it \@ifundefined{foo}{is still NOT}{IS} @defined.
+
+baz \ifdefined\baz IS \else is NOT \fi defined,
+it \ifcsname baz\endcsname IS \else is NOT \fi cs-defined,
+and it \ifx\baz\relax IS \else is NOT \fi relax.
+Now,
+baz \ifdefined\baz IS \else is still NOT \fi defined,
+it \ifcsname baz\endcsname IS \else is still NOT \fi cs-defined,
+and it \ifx\baz\relax IS \else is still NOT \fi relax.
+
+
+baz \ifdefined\baz IS \else is NOT \fi defined,
+it \ifcsname baz\endcsname IS \else is NOT \fi cs-defined,
+and it \ifx\baz\relax IS \else is NOT \fi relax.
+However, after ifx csname concoction
+[\expandafter\ifx\csname baz\endcsname\relax is \else is not \fi],
+baz \ifdefined\baz IS \else is NOT \fi defined,
+it \ifcsname baz\endcsname IS \else is NOT \fi cs-defined,
+and it \ifx\baz\relax IS \else is NOT \fi relax.
+
+
+Let zonk to relax.
+\let\zonk\relax
+zonk \ifdefined\zonk IS \else is NOT \fi defined,
+it \ifcsname zonk\endcsname IS \else is NOT \fi cs-defined,
+it \ifx\zonk\relax IS \else is NOT \fi relax,
+and it \@ifundefined{zonk}{is NOT}{IS} @defined.
+
+Let zoob to a undefined token.
+\let\zoob\zelda
+zoob \ifdefined\zoob IS \else is NOT \fi defined,
+it \ifcsname zoob\endcsname IS \else is NOT \fi cs-defined,
+it \ifx\zoob\relax IS \else is NOT \fi relax,
+and it \@ifundefined{zoob}{is NOT}{IS} @defined.
+
+Let zook to a plain letter.
+\let\zook=a
+zook \ifdefined\zook IS \else is NOT \fi defined,
+it \ifcsname zook\endcsname IS \else is NOT \fi cs-defined,
+it \ifx\zook\relax IS \else is NOT \fi relax,
+and it \@ifundefined{zook}{is NOT}{IS} @defined.
+
+\end{document}

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <para xml:id="p1">
+    <p>foo is NOT defined,
+it is NOT cs-defined,
+it is NOT relax,
+and it is NOT @defined.</p>
+  </para>
+  <para xml:id="p2">
+    <p>After @ifundefined, however,
+foo IS defined,
+it IS cs-defined,
+it IS relax,
+but it is still NOT @defined.</p>
+  </para>
+  <para xml:id="p3">
+    <p>baz is NOT defined,
+it is NOT cs-defined,
+and it is NOT relax.
+Now,
+baz is still NOT defined,
+it is still NOT cs-defined,
+and it is still NOT relax.</p>
+  </para>
+  <para xml:id="p4">
+    <p>baz is NOT defined,
+it is NOT cs-defined,
+and it is NOT relax.
+However, after ifx csname concoction
+[is ],
+baz IS defined,
+it IS cs-defined,
+and it IS relax.</p>
+  </para>
+  <para xml:id="p5">
+    <p>Let zonk to relax.
+zonk IS defined,
+it IS cs-defined,
+it IS relax,
+and it is NOT @defined.</p>
+  </para>
+  <para xml:id="p6">
+    <p>Let zoob to a undefined token.
+zoob is NOT defined,
+it is NOT cs-defined,
+it is NOT relax,
+and it is NOT @defined.</p>
+  </para>
+  <para xml:id="p7">
+    <p>Let zook to a plain letter.
+
+zook IS defined,
+it IS cs-defined,
+it is NOT relax,
+and it IS @defined.</p>
+  </para>
+</document>
