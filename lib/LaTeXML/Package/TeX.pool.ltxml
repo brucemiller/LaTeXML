@@ -3234,6 +3234,31 @@ DefMathLigature(sub { my($document,@nodes)=@_;
 		      if(($n > 1) && ($number =~ /\d/)){
 			($n, $string, meaning=>$number, role=>'NUMBER'); }});
 
+# This needs to be applied AFTER numbers have been resolved!
+# If we have a non-negative integer (no signs, decimals,...)
+# followed by a fraction dividing two non-negative integers,
+# Figure it's a mixed fraction --- ADDING the fraction to the number, not multiplying!
+ DefRewrite(select=>['descendant-or-self::ltx:XMTok[@role="NUMBER" and translate(@meaning,"0123456789","")=""]'
+ 		    . '[ following-sibling::*[1][self::ltx:XMApp]'
+ 		    .   ' [child::*[1][self::ltx:XMTok[@meaning="divide"]]]'
+ 		    .   ' [child::*[2]['
+		    .      'self::ltx:XMTok[@role="NUMBER" and translate(@meaning,"0123456789","")=""]'
+		    .   'or self::ltx:XMArg[count(child::*)=1]/ltx:XMTok[@role="NUMBER" and translate(@meaning,"0123456789","")=""]'
+		    .     ']]'
+ 		    .   ' [child::*[3]['
+		    .      'self::ltx:XMTok[@role="NUMBER" and translate(@meaning,"0123456789","")=""]'
+		    .   'or self::ltx:XMArg[count(child::*)=1]/ltx:XMTok[@role="NUMBER" and translate(@meaning,"0123456789","")=""]'
+		    .     ']]'
+ 		    .  ']',
+ 		    2],
+	  replace=>sub { my($document,$number,$frac)=@_;
+			 my $box = $document->getNodeBox($number);
+			 $document->openElement('ltx:XMApp', _box=>$box);
+			 $document->insertMathToken("\x{2064}", # Invisible Plus!
+						    meaning=>'plus',role=>"ADDOP", _box=>$box);
+			 $document->getNode->appendChild($number);
+			 $document->getNode->appendChild($frac);
+			 $document->closeElement('ltx:XMApp'); });
 
 #======================================================================
 # TeX Book, Appendix B, p. 345
