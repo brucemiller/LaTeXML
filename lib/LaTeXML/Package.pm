@@ -1595,7 +1595,7 @@ sub LoadFontMap {
 # Defining Rewrite rules that act on the DOM
 
 our $rewrite_options = {label=>1,scope=>1, xpath=>1, match=>1,
-			 attributes=>1, replace=>1, regexp=>1};
+			 attributes=>1, replace=>1, regexp=>1, select=>1};
 sub DefRewrite {
   my(@specs)=@_;
   CheckOptions("DefRewrite",$rewrite_options,@specs);
