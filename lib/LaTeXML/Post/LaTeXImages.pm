@@ -174,10 +174,8 @@ sub process {
   $self->Progress($doc,"Found $nuniq unique tex strings (of $ntotal); "
 		  .scalar(@pending)." to generate");
   if(@pending){			# if any images need processing
-##    my $workdir=pathname_concat($TMP,"LaTeXML$$");
-##    pathname_mkdir($workdir) or 
-##      return $self->Error($doc,"Couldn't create LaTeXImages working dir $workdir: $!");
-    my $workdir=tempdir("LaTeXMLXXXXXX", CLEANUP=>0);
+    # Create working directory; note TMPDIR attempts to put it in standard place (like /tmp/)
+    my $workdir=tempdir("LaTeXMLXXXXXX", CLEANUP=>0, TMPDIR=>1);
     my $preserve_tmpdir = 0;
 
     # === Generate the LaTeX file.
