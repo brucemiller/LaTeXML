@@ -175,6 +175,7 @@ sub process {
 		  .scalar(@pending)." to generate");
   if(@pending){			# if any images need processing
     # Create working directory; note TMPDIR attempts to put it in standard place (like /tmp/)
+    File::Temp->safe_level(File::Temp::HIGH);
     my $workdir=tempdir("LaTeXMLXXXXXX", CLEANUP=>0, TMPDIR=>1);
     my $preserve_tmpdir = 0;
 
