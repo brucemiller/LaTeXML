@@ -297,9 +297,10 @@ sub insertMathToken {
   my($self,$string,%attributes)=@_;
   $attributes{role}='UNKNOWN' unless $attributes{role};
   my $node = $self->openElement($MATH_TOKEN_NAME, %attributes);
-  my $font = $attributes{font} || $LaTeXML::BOX->getFont;
+  my $box = $attributes{_box}   || $LaTeXML::BOX;
+  my $font = $attributes{font} || $box->getFont;
   $self->setNodeFont($node,$font);
-  $self->setNodeBox($node,$LaTeXML::BOX);
+  $self->setNodeBox($node,$box);
   $self->openMathText_internal($string);
   $self->closeNode_internal($node);  # Should be safe.
   $node; }
@@ -395,9 +396,9 @@ sub openElement {
   NoteProgress('.') if ($$self{progress}++ % 25)==0;
   print STDERR "Open element $qname at ".Stringify($$self{node})."\n" if $LaTeXML::Document::DEBUG;
   my $point = $self->find_insertion_point($qname);
+  $attributes{_box} = $LaTeXML::BOX unless $attributes{_box};
   my $newnode = $self->openElementAt($point,$qname,
-				     _font=>$attributes{font}||$LaTeXML::BOX->getFont,
-				     _box=>$LaTeXML::BOX,
+				     _font=>$attributes{font}||$attributes{_box}->getFont,
 				     %attributes);
   $$self{node} = $newnode; }
 
@@ -880,11 +881,12 @@ sub decodeFont {
 # Remove a node from the document (from it's parent)
 sub removeNode {
   my($self,$node)=@_;
-  if($node->nodeType == XML_ELEMENT_NODE){ # If an element, do ID bookkeeping.
-    if(my $id = $node->getAttribute('xml:id')){
-      $self->unRecordID($id); }
-    map($self->removeNode_aux($_), $node->childNodes); }
-  $node->parentNode->removeChild($node);
+  if($node){
+    if($node->nodeType == XML_ELEMENT_NODE){ # If an element, do ID bookkeeping.
+      if(my $id = $node->getAttribute('xml:id')){
+	$self->unRecordID($id); }
+      map($self->removeNode_aux($_), $node->childNodes); }
+    $node->parentNode->removeChild($node); }
 ###  $node->unbindNode;		# for cleanup, and also to assure removed if there's no children!
   $node; }
 
