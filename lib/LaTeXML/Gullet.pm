@@ -113,7 +113,10 @@ sub readingFromMouth {
 # User feedback for where something (error?) occurred.
 sub getLocator {
   my($self,$long)=@_;
-  my $loc = (defined $$self{mouth} ? $$self{mouth}->getLocator($long) : '');
+  my $mouth = $$self{mouth};
+  if((defined $mouth) && (($$mouth{source}||'') eq 'Anonymous String') && @{$$self{mouthstack}}){
+    $mouth = $$self{mouthstack}[0][0]; } # ?!?!?!?!
+  my $loc = (defined $mouth ? $mouth->getLocator($long) : '');
   if(!$loc || $long){
     $loc .= show_pushback($$self{pushback}) if $long;
     foreach my $frame ( @{$$self{mouthstack}} ){
