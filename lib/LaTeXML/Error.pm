@@ -43,7 +43,7 @@ sub generateMessage {
     $docloc = Locator($box) if $box; }
   if(!$docloc && $LaTeXML::BOX){ # In constructor?
     $docloc = Locator($LaTeXML::BOX); }
-  if(!$docloc && $STATE->getStomach){
+  if(!$docloc && $STATE && $STATE->getStomach){
     my $gullet = $STATE->getStomach->getGullet;
     # NOTE: Problems here.
     # (1) With obsoleting Tokens as a Mouth, we can get pointless "Anonymous String" locators!
@@ -53,13 +53,12 @@ sub generateMessage {
   # $message and each of @extra should be single lines
   ($message,@extra) = grep($_ ne '',map(split("\n",$_),$message,@extra));
   my @lines=($errorcode.' '.$message,
-	     $docloc,
-	     @extra
-	     );
+	     ($docloc ? ($docloc):()),
+	     @extra);
 
   # Now add a certain amount of stack trace and/or context info.
-  $long = 0 if $STATE->lookupValue('VERBOSITY') < -1;
-  $long ++  if $STATE->lookupValue('VERBOSITY') > +1;
+  $long = 0 if $STATE && $STATE->lookupValue('VERBOSITY') < -1;
+  $long ++  if $STATE && $STATE->lookupValue('VERBOSITY') > +1;
 
   # FIRST line of stack trace information ought to look at the $where
   if(!$long){}
