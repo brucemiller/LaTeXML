@@ -93,7 +93,7 @@ element MathFork { MathFork_attributes, MathFork_model }
 MathFork_attributes = Common.attributes
 
 ## Content model for \elementref{MathFork}.
-MathFork_model = Math, MathBranch*
+MathFork_model = (Math|\text), MathBranch*
 
 #======================================================================
 

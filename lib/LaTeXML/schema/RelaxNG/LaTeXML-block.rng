@@ -154,7 +154,10 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
   </define>
   <define name="MathFork_model">
     <a:documentation>Content model for \elementref{MathFork}.</a:documentation>
-    <ref name="Math"/>
+    <choice>
+      <ref name="Math"/>
+      <ref name="text"/>
+    </choice>
     <zeroOrMore>
       <ref name="MathBranch"/>
     </zeroOrMore>

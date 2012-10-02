@@ -241,7 +241,7 @@
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED>
 
-<!ELEMENT ns1:MathFork (ns1:Math,ns1:MathBranch*)>
+<!ELEMENT ns1:MathFork ((ns1:Math|ns1:text),ns1:MathBranch*)>
 <!ATTLIST ns1:MathFork
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED>
