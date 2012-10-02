@@ -72,13 +72,6 @@ sub convertFile {
   return unless $digested;
   $self->convertDocument($digested); }
 
-sub convertString {
-  my($self,$string)=@_;
-  my $digested = $self->digestString($string);
-  return unless $digested;
-  $self->convertDocument($digested); }
-
-
 sub getStatusMessage {
   my($self)=@_;
   $$self{state}->getStatusMessage; }
@@ -87,83 +80,50 @@ sub getStatusMessage {
 # Mid-level API.
 
 # options are currently being evolved to accomodate the Daemon:
+#    mode  : the processing mode, ie the pool to preload: TeX or BibTeX
 #    noinitialize : if defined, it does not initialize State.
 #    preamble = names a tex file (or standard_preamble.tex)
 #    postamble = names a tex file (or standard_postamble.tex)
+
+our %MODE_EXTENSION = (TeX=>'tex', LaTeX=>'tex', AmSTeX=>'tex', BibTeX=>'bib');
 sub digestFile {
-  my($self,$file,%options)=@_;
-  $file =~ s/\.tex$//;
+  my($self,$request,%options)=@_;
+  my($dir,$name,$ext);
+  my $mode = $options{mode} || 'TeX';
+  if(LaTeXML::Package::pathname_is_literaldata($request)){
+    $dir = undef; $ext = $MODE_EXTENSION{$mode};
+    $name = "Anonymous String"; }
+  else {
+    $request =~ s/\.\Q$MODE_EXTENSION{$mode}\E$//;
+    if(my $pathname = pathname_find($request,types=>[$MODE_EXTENSION{$mode},''])){
+      $request = $pathname;
+      ($dir,$name,$ext)=pathname_split($request);  }
+    else {
+      Fatal('missing_file',$request,undef,"Can't find $mode file $request"); }}
   $self->withState(sub {
      my($state)=@_;
-     NoteBegin("Digesting $file");
-     $self->initializeState('TeX.pool', @{$$self{preload} || []}) unless $options{noinitialize};
-
-     my $pathname = pathname_find($file,types=>['tex','']);
-     Fatal('missing_file',$file,undef,"Can't find TeX file $file",
-	   "SEARCHPATHS is ".join(', ',@{LookupValue('SEARCHPATHS')})) unless $pathname;
-     my($dir,$name,$ext)=pathname_split($pathname);
-     $state->assignValue(SOURCEFILE=>$pathname);
-     $state->assignValue(SOURCEDIRECTORY=>$dir);
-     $state->unshiftValue(SEARCHPATHS=>$dir) unless grep($_ eq $dir, @{$state->lookupValue('SEARCHPATHS')});
-     $state->unshiftValue(GRAPHICSPATHS=>$dir) unless grep($_ eq $dir, @{$state->lookupValue('GRAPHICSPATHS')});
+     NoteBegin("Digesting $mode $name");
+     $self->initializeState($mode.".pool", @{$$self{preload} || []}) unless $options{noinitialize};
+     $state->assignValue(SOURCEFILE=>$request)  if defined $dir;
+     $state->assignValue(SOURCEDIRECTORY=>$dir) if defined $dir;
+     $state->unshiftValue(SEARCHPATHS=>$dir)
+       if defined $dir && !grep($_ eq $dir, @{$state->lookupValue('SEARCHPATHS')});
+     $state->unshiftValue(GRAPHICSPATHS=>$dir)
+       if defined $dir && !grep($_ eq $dir, @{$state->lookupValue('GRAPHICSPATHS')});
 
      $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,
 							Tokens(Explode($name))));
      # Reverse order, since last opened is first read!
      $self->loadPostamble($options{postamble}) if $options{postamble};
-     LaTeXML::Package::InputContent($pathname);
+     LaTeXML::Package::InputContent($request);
      $self->loadPreamble($options{preamble}) if $options{preamble};
 
+     # Now for the Hacky part for BibTeX!!!
+     if($mode eq 'BibTeX'){
+       my $bib = LaTeXML::Bib->newFromGullet($name,$state->getStomach->getGullet);
+       LaTeXML::Package::InputContent("literal:".$bib->toTeX); }
      my $list = $self->finishDigestion;
-     NoteEnd("Digesting $file");
-     $list; });
-}
-
-sub digestString {
-  my($self,$string, %options)=@_;
-  $self->withState(sub {
-     my($state)=@_;
-     NoteBegin("Digesting string");
-     $self->initializeState('TeX.pool', @{$$self{preload} || []})  unless $options{noinitialize};
-
-     # Reverse order, since last opened is first read!
-     $self->loadPostamble($options{postamble}) if $options{postamble};
-     $state->getStomach->getGullet->openMouth(LaTeXML::Mouth->new($string),0);
-     $self->loadPreamble($options{preamble}) if $options{preamble};
-
-     my $list = $self->finishDigestion;
-     NoteEnd("Digesting string");
-     $list; });
-}
-
-# pre/postamble ????
-
-sub digestBibTeXFile {
-  my($self,$file, %options)=@_;
-  $file =~ s/\.bib$//;
-  $self->withState(sub {
-     my($state)=@_;
-     NoteBegin("Digesting bibliography $file");
-     # NOTE: This is set up to do BibTeX for LaTeX (not other flavors, if any)
-     $self->initializeState('TeX.pool','LaTeX.pool', 'BibTeX.pool', @{$$self{preload} || []})
-       unless $options{noinitialize};
-     my $pathname = pathname_find($file,types=>['bib','']);
-     Fatal('missing_file',$file,undef,"Can't find BibTeX file $file") unless $pathname;
-     my $bib = LaTeXML::Bib->newFromFile($file);
-     my($dir,$name,$ext)=pathname_split($pathname);
-     $state->unshiftValue(SEARCHPATHS=>$dir) unless grep($_ eq $dir, @{$state->lookupValue('SEARCHPATHS')});
-     $state->unshiftValue(GRAPHICSPATHS=>$dir) unless grep($_ eq $dir, @{$state->lookupValue('GRAPHICSPATHS')});
-
-     $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,
-							Tokens(Explode($name))));
-     # This is handled by the gullet for TeX files, but we're doing a batch of string processing first.
-     # Nevertheless, we'd like access to state & variables during that string processing.
-     if(my $conf = pathname_find("$name.latexml", paths=>LookupValue('SEARCHPATHS'))){
-       loadLTXML($conf); }
-     my $tex = $bib->toTeX;
-     $state->getStomach->getGullet->openMouth(LaTeXML::Mouth->new($tex),0);
-     my $list = $self->finishDigestion;
-     NoteEnd("Digesting bibliography $file");
+     NoteEnd("Digesting $mode $name");
      $list; });
 }
 
@@ -320,8 +280,7 @@ resulting L<XML::LibXML::Document>.
 
 =item C<< $doc = $latexml->convertString($string); >>
 
-Digests C<$string>, presumably containing TeX markup, converts it to XML
-and returns the L<XML::LibXML::Document>.
+B<OBSOLETE> Use C<$latexml->convertFile("literal:$string");> instead.
 
 =item C<< $latexml->writeDOM($doc,$name); >>
 
@@ -333,8 +292,7 @@ Reads the TeX file C<$file>, and digests it returning the L<LaTeXML::Box> repres
 
 =item C<< $box = $latexml->digestString($string); >>
 
-Digests C<$string>, which presumably contains TeX markup,
-returning the L<LaTeXML::Box> representation.
+B<OBSOLETE> Use C<$latexml->digestFile("literal:$string");> instead.
 
 =item C<< $doc = $latexml->convertDocument($digested); >>
 
