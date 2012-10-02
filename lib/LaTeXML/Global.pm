@@ -242,13 +242,15 @@ sub NoteEnd {
 
 sub Fatal { 
   my($category,$object,$where,$message,@details)=@_;
+  my $state = $LaTeXML::Global::STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   if(!$LaTeXML::Error::InHandler && defined($^S)){
-    $LaTeXML::Global::STATE->noteStatus('fatal');
+    $state && $state->noteStatus('fatal');
     $message
       = LaTeXML::Error::generateMessage("Fatal:".$category.":".ToString($object),$where,$message,1,
 					# ?!?!?!?!?!
 					# or just verbosity code >>>1 ???
-					($LaTeXML::Global::STATE->lookupValue('VERBOSITY') > 0
+					($state && $state->lookupValue('VERBOSITY') > 0
 					 ? ("Stack Trace:",LaTeXML::Error::stacktrace()):()),
 					@details);
   }
@@ -267,14 +269,16 @@ our $MAXERRORS=100;
 sub Error {
   my($category,$object,$where,$message,@details)=@_;
   my($msg)=@_;
+  my $state = $LaTeXML::Global::STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   if($LaTeXML::Global::STATE->lookupValue('STRICT')){
     Fatal($category,$object,$where,$message,@details); }
   else {
     $LaTeXML::Global::STATE->noteStatus('error');
     print STDERR LaTeXML::Error::generateMessage("Error:".$category.":".ToString($object),
 						 $where,$message,1,@details)
-      unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -2; }
-  if(($LaTeXML::Global::STATE->getStatus('error')||0) > $MAXERRORS){
+      unless $verbosity < -2; }
+  if(!$state || ($state->getStatus('error')||0) > $MAXERRORS){
     Fatal('too_many_errors',$MAXERRORS,$where,"Too many errors (> $MAXERRORS)!"); }
   return; }
 
@@ -282,10 +286,12 @@ sub Error {
 sub Warn {
   my($category,$object,$where,$message,@details)=@_;
   my($msg)=@_;
-  $LaTeXML::Global::STATE->noteStatus('warning');
+  my $state = $LaTeXML::Global::STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+  $state && $state->noteStatus('warning');
   print STDERR LaTeXML::Error::generateMessage("Warning:".$category.":".ToString($object),
 					       $where,$message,0, @details)
-    unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < -1; 
+    unless $verbosity < -1; 
   return; }
 
 # Informational message; results likely unaffected
@@ -293,10 +299,12 @@ sub Warn {
 sub Info {
   my($category,$object,$where,$message,@details)=@_;
   my($msg)=@_;
-  $LaTeXML::Global::STATE->noteStatus('info');
+  my $state = $LaTeXML::Global::STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+  $state && $state->noteStatus('info');
   print STDERR LaTeXML::Error::generateMessage("Info:".$category.":".ToString($object),
 					       $where,$message,0, @details)
-    unless $LaTeXML::Global::STATE->lookupValue('VERBOSITY') < 0;
+    unless $verbosity < 0;
   return; }
 
 #**********************************************************************
