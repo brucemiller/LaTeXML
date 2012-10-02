@@ -739,26 +739,46 @@ DefConstructor('\dbinom{}{}',
 	       ."</ltx:XMApp>",
 	       beforeDigest=>\&beforeDFrac, afterDigest =>\&afterDFrac);
 
+# Annoying defaults!
+DefMacro('\genfrac{}{}{}{}{}{}',
+	 '\if @#3@'
+	 .   '\if.#4.\@@genfrac{#1}{#2}{#5}{#6}\else\@@genfrac{#1}{#2}{#5}{#6}[#4]\fi'
+	 .'\else'
+	 .   '\if.#4.\@@genfrac{#1}{#2}[#3]{#5}{#6}\else\@@genfrac{#1}{#2}[#3]{#5}{#6}[#4]\fi'
+	 .'\fi');
+
 # Section 4.11.3 The \genfrac command
-DefConstructor('\genfrac{}{}{Dimension}{}{}{}',
+DefConstructor('\@@genfrac{}{}[Dimension]{}{}[Number]',
 	       "<ltx:XMApp open='#open' close='#close'>"
-	       . "<ltx:XMTok ?&IsZero(#3)(role='STACKED')(role='MULOP' meaning='divide')"
-	       .           " thickness='#3' mathstyle='?#4(#4)(#mathstyle)'/>"
+	       . "<ltx:XMTok role='#role' ?#meaning(meaning='#meaning')()"
+	       .           " ?#thickness(thickness='#thickness')() mathstyle='#mathstyle'/>"
+	       . "<ltx:XMArg>#4</ltx:XMArg>"
 	       . "<ltx:XMArg>#5</ltx:XMArg>"
-	       . "<ltx:XMArg>#6</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	      afterDigest=>sub{ my($stomach,$whatsit)=@_;
-				my $open  = ToString($whatsit->getArg(1));
-				my $close = ToString($whatsit->getArg(2));
-				my $style = LookupValue('mathstyle');
-				if(my $entry = LaTeXML::Package::Pool::lookup_delimiter($open)){
-				  $open = $$entry{char}; }
-				if(my $entry = LaTeXML::Package::Pool::lookup_delimiter($close)){
-				  $close = $$entry{char}; }
-				$whatsit->setProperties(open=>$open,
-							close=>$close,
-							mathstyle=>($style eq 'display'
-								    ? $style : 'text')); });
+	       reversion=>'\genfrac{#1}{#2}{#3}{#6}{#4}{#5}',
+	       alias=>'\genfrac',
+	      afterDigest=>sub{
+		my($stomach,$whatsit)=@_;
+		my($open,$close,$thickness,$num,$denom,$stylecode)=$whatsit->getArgs;
+		$open  = ToString($open); $close = ToString($close);
+		if(my $entry = LaTeXML::Package::Pool::lookup_delimiter($open)){
+		  $open = $$entry{char}; }
+		if(my $entry = LaTeXML::Package::Pool::lookup_delimiter($close)){
+		  $close = $$entry{char}; }
+		my $role = ($thickness && ($thickness->valueOf == 0) ? 'STACKED' : 'MULOP');
+		my $meaning = ($role eq 'MULOP' ? 'divide' : undef);
+		$stylecode = $stylecode->valueOf if defined $stylecode;
+		my $mathstyle = (!defined $stylecode ? LookupValue('mathstyle')
+				 : ($stylecode == 0 ? 'display'
+				    : ($stylecode == 1 ? 'text'
+				       : ($stylecode == 2 ? 'script'
+					  : 'scriptscript'))));
+		$whatsit->setProperties(open=>$open,
+					close=>$close,
+					role=>$role,
+					meaning=>$meaning,
+					thickness=>$thickness,
+					mathstyle=>$mathstyle); });
 
 #======================================================================
 # Section 4.12 Continued fractions
