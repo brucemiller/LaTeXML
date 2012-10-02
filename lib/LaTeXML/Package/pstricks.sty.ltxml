@@ -436,12 +436,22 @@ sub DefSimplePSConstructor {
 ## PS Tricks environment
 ####################################################################################
 
-DefEnvironment('{pspicture} OptionalMatch:* [Float] PSCoord PSCoord',
-	       "<ltx:picture baseline='#2' ?#1(clip='true')"
+DefEnvironment('{pspicture} [Float] PSCoord PSCoord',
+	       "<ltx:picture baseline='#1'"
 	       . " %&SimplePairAttr(#c1,width,height)> #body </ltx:picture>",
 	       afterDigestBegin=> sub {
 		 my($stomach,$whatsit)=@_;
-		 my($c0, $c1) = ($whatsit->getArg(3), $whatsit->getArg(4));
+		 my($c0, $c1) = ($whatsit->getArg(2), $whatsit->getArg(3));
+		 $whatsit->setProperty(c1=>$c1 ? Pair($c1->getX->subtract($c0->getX),
+						      $c1->getY->subtract($c0->getY)) : $c0);
+		 Let(T_CS('\par'),T_CS('\relax'));
+		 return; });
+DefEnvironment('{pspicture*} [Float] PSCoord PSCoord',
+	       "<ltx:picture baseline='#1' clip='true'"
+	       . " %&SimplePairAttr(#c1,width,height)> #body </ltx:picture>",
+	       afterDigestBegin=> sub {
+		 my($stomach,$whatsit)=@_;
+		 my($c0, $c1) = ($whatsit->getArg(2), $whatsit->getArg(3));
 		 $whatsit->setProperty(c1=>$c1 ? Pair($c1->getX->subtract($c0->getX),
 						      $c1->getY->subtract($c0->getY)) : $c0);
 		 Let(T_CS('\par'),T_CS('\relax'));
