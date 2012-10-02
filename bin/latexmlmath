@@ -90,6 +90,7 @@ else {
   $tex = '\[ '.$tex.' \]'; }
 
 my $texdoc = <<EODoc;
+literal:
 \\documentclass{article}
 \\begin{document}
 \\newcounter{equation}
@@ -119,7 +120,7 @@ my $latexml= LaTeXML->new(preload=>['LaTeX.pool',@preload], searchpaths=>[@paths
 			  documentid=>$documentid,
 			  nomathparse=>$noparse);
 
-my $digested = $latexml->digestString($texdoc);
+my $digested = $latexml->digestFile($texdoc);
 
 # NASTY Hack: to disable cleanup_Math
 # cleanup_Math is useful within "real" documents, to recognize & simplify non-math
