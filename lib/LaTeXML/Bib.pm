@@ -82,6 +82,23 @@ sub newFromString {
   $$self{lineno} = 1;
   $self; }
 
+# Read all available lines from available Mouth's in the Gullet.
+sub newFromGullet {
+  my($class,$name,$gullet)=@_;
+  my $self = {source=>$name, preamble=>[], entries=>[], macros=>{%default_macros}};
+  bless $self,$class;
+
+  my @lines = ();
+  while($gullet->getMouth->hasMoreInput){
+    push(@lines,$gullet->getMouth->readRawLines());
+    $gullet->closeMouth; }
+
+  $$self{file} = $name;
+  $$self{lines} = [@lines];
+  $$self{line} = shift(@{$$self{lines}});
+  $$self{lineno} = 1;
+  $self; }
+
 sub toTeX {
   my($self)=@_;
   $self->parseTopLevel unless $$self{parsed};
