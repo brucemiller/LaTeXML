@@ -2497,7 +2497,10 @@ sub closeMathFork {
   $document->closeElementAt($branch);
   $document->closeElementAt($document->getFirstChildElement($main));
   $document->closeElementAt($main);
-  $document->closeElementAt($main->parentNode); }
+#  $document->closeElementAt($main->parentNode); }
+  # More defensive? Sometimes we end up with a DocumentFragment as parent of $main????!?!?!?!
+  my @mfs = $document->findnodes('ltx:MathFork',$equation);
+  $document->closeElementAt(@mfs[$#mfs]); }
 
 # Create an inline math Whatsit from a list of MathBoxes, MathLists or Whatsits.
 # Note that we unwrap @hidden@bgroup's (!) and normalize \displaystyle (!)
