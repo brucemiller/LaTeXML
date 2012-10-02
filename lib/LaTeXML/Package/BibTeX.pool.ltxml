@@ -16,6 +16,7 @@ use LaTeXML::Package;
 use LaTeXML::Util::KeyVal;
 use Text::Balanced qw(extract_bracketed extract_delimited);
 
+LoadPool('LaTeX');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Design Notes
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
