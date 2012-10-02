@@ -1,0 +1,38 @@
+\documentclass{article}
+\usepackage{amsmath}
+\begin{document}
+\[ \frac{a}{b} \genfrac{(}{)}{}{}{a}{b} \]
+
+\[ \genfrac{(}{)}{0pt}{}{a}{b}
+   \genfrac{(}{)}{1pt}{}{a}{b}
+   \genfrac{(}{)}{2pt}{}{a}{b} \]
+
+\newdimen\mythick\mythick=1pt\relax
+\[ \genfrac{(}{)}{\mythick}{}{a}{b}
+   \genfrac{(}{)}{2\mythick}{}{a}{b}
+   \genfrac{(}{)}{3\mythick}{}{a}{b} \]
+
+
+\[ \genfrac{(}{)}{}{}{a}{b} 
+   \genfrac{(}{)}{}{0}{a}{b}
+   \genfrac{(}{)}{}{1}{a}{b} 
+   \genfrac{(}{)}{}{2}{a}{b} 
+   \genfrac{(}{)}{}{3}{a}{b}  \]
+
+\newcount\mystyle\mystyle=0\relax
+\[ \genfrac{(}{)}{}{\mystyle}{a}{b}
+  \advance\mystyle1  \genfrac{(}{)}{}{\mystyle}{a}{b}
+  \advance\mystyle1  \genfrac{(}{)}{}{\mystyle}{a}{b}
+  \advance\mystyle1  \genfrac{(}{)}{}{\mystyle}{a}{b}
+ \]
+
+
+\mythick=0pt\relax
+\mystyle=3\relax
+\[ \genfrac{(}{)}{\mythick}{\mystyle}{a}{b}
+  \advance\mythick1pt\relax\advance\mystyle-1\relax\genfrac{(}{)}{\mythick}{\mystyle}{a}{b}
+  \advance\mythick1pt\relax\advance\mystyle-1\relax\genfrac{(}{)}{\mythick}{\mystyle}{a}{b}
+  \advance\mythick1pt\relax\advance\mystyle-1\relax\genfrac{(}{)}{\mythick}{\mystyle}{a}{b}
+ \]
+
+\end{document}
