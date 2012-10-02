@@ -286,15 +286,16 @@ sub readRawLines {
     else {
       $line = $self->getNextLine; 
       if(!defined $line){
-	Error('expected',$endline,$self,
-	      "Fell off end trying to match a lines to '$endline'");
+	if(defined $endline){
+	  Error('expected',$endline,$self,
+		"Fell off end trying to match a lines to '$endline'"); }
 	last; }
       $line =~ s/\s*$/\n/s if defined $line;	# Is this right? 
       $$self{lineno}++;
       $$self{chars}=[]; $$self{nchars}=0;  $$self{colno}=0; }
-    if($exact && ($line eq $endline)){ 
+    if($exact && (defined $endline) && ($line eq $endline)){ 
       last; }
-    elsif(!$exact && ($line =~ /^(.*?)\Q$endline\E(.*)$/)){
+    elsif(!$exact && (defined $endline) && ($line =~ /^(.*?)\Q$endline\E(.*)$/)){
       my($pre,$post)=($1,$2);
       push(@lines,$pre."\n") if $pre;
       # Replace the \n with a \r in the line rest, since it will be tokenized
