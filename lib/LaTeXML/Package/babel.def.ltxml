@@ -217,7 +217,7 @@ DefPrimitive('\initiate@active@char DefToken',sub {
   my($stomach,$token)=@_;
   my $char = ToString($token);
   return if LookupDefinition(T_CS('\active@char'.$char));
-#  print STDERR "INITIATING $char"." at ".$_[0]->getGullet->getLocator."\n";
+#  print STDERR "INITIATING $char (catcode ".$token->getCatcode.") at ".$_[0]->getGullet->getLocator."\n";
   my $user = ToString(Expand(T_CS('\user@group')));
 ###???
 #### AssignCatcode($char,CC_ACTIVE);
@@ -240,6 +240,10 @@ DefPrimitive('\initiate@active@char DefToken',sub {
 		.  '\bbl@afterfi\csname user@active\string'.$char.'\endcsname'
 		.'\fi}\fi'); }
     else {
+      $stomach->bgroup;
+      AssignCatcode($char,CC_ACTIVE);
+      DefMacroI($char,undef,T_CS('\active@char'.$char),scope=>'global');
+      $stomach->egroup;
       AtBeginDocument(sub { AssignCatcode($char,CC_ACTIVE); });
       PushValue('SPECIALS',$char);
       DefMacroI('\normal@char'.$char,undef, T_OTHER($char)); }}
