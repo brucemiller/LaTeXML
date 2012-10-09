@@ -2897,10 +2897,21 @@ DefConstructor('\@SUBSCRIPT{}{}',
 
 DefMacroI('\'',undef,sub{
   my($gullet)=@_;
-  my $n = 1;
-  while($gullet->ifNext(T_OTHER('\''))){ $gullet->readToken; $n++; };
-  (T_SUPER,T_BEGIN,map(T_CS('\prime'), 1..$n),T_END); },
+  my @sup = (T_CS('\prime'));
+  # Collect up all ', convering to \prime
+  while($gullet->ifNext(T_OTHER('\''))){
+    $gullet->readToken; 
+    push(@sup,T_CS('\prime')); }
+  # Combine with any following superscript!
+  # However, this is semantically screwed up!
+  # We really need to set up separate superscripts, but at same level!
+  if($gullet->ifNext(T_SUPER)){
+    $gullet->readToken; 
+    push(@sup,$gullet->readArg->unlist); }
+  (T_SUPER,T_BEGIN,@sup,T_END); },
 	 mathactive=>1);	# Only in math!
+
+
 
 #======================================================================
 # \choose & friends, also need special argument handling
