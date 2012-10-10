@@ -146,7 +146,8 @@ sub invokeToken_internal {
     $STATE->noteStatus(undefined=>$cs);
     Error('undefined',$token,$self,"The token ".Stringify($token)." is not defined.");
     $STATE->installDefinition(LaTeXML::Constructor->new($token,undef,
-							sub { makeError($_[0],'undefined',$cs);}));
+					sub { makeError($_[0],'undefined',$cs);}),
+			      'global');
     $self->invokeToken($token); }
   elsif($meaning->isaDefinition){
     # A math-active character will (typically) be a macro,
