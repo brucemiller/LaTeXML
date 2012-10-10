@@ -28,6 +28,7 @@ use LaTeXML::Util::Transform;
 use LaTeXML::Util::Geometry;
 use LaTeXML::Util::KeyVal;
 
+RequirePackage('color');	# Should be xcolor!
 ##############################################################
 ##  Parameter type definitions
 ##############################################################
@@ -886,5 +887,22 @@ DefPSConstructor('\pscustom', '{}', "<ltx:g> #2 </ltx:g>",
 DefMacro('\SpecialCoor', '');
 DefMacro('\NormalCoor',  '');
 DefMacro('\PSTricksOff', '');
+
+
+##########################################################################################
+# Some macros for colors
+RawTeX('
+\renewcommand*\black{\color{black}}
+\renewcommand*\darkgray{\color{darkgray}}
+\renewcommand*\gray{\color{gray}}
+\renewcommand*\lightgray{\color{lightgray}}
+\renewcommand*\white{\color{white}}
+\renewcommand*\blue{\color{blue}}
+\renewcommand*\red{\color{red}}
+\renewcommand*\green{\color{green}}
+\renewcommand*\yellow{\color{yellow}}
+\renewcommand*\magenta{\color{magenta}}
+\renewcommand*\cyan{\color{cyan}}
+');
 
 1;
