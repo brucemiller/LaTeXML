@@ -28,6 +28,7 @@
 
   <!-- no class here, since ltx:p it is generated behind the scenes (?)-->
   <xsl:template match="ltx:p">
+    <xsl:text>&#x0A;</xsl:text>
     <p>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
@@ -36,49 +37,60 @@
   </xsl:template>
 
   <xsl:template match="ltx:quote">
+    <xsl:text>&#x0A;</xsl:text>
     <blockquote>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </blockquote>
   </xsl:template>
 
   <xsl:template match="ltx:block">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:listingblock">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
 	<xsl:with-param name="extra_classes" select="'listing'"/>
       </xsl:call-template>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:listingblock/ltx:tabular">
+    <xsl:text>&#x0A;</xsl:text>
     <table>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </table>
   </xsl:template>
 
   <xsl:template match="ltx:break">
+    <xsl:text>&#x0A;</xsl:text>
     <br><xsl:call-template name="add_attributes"/></br>
   </xsl:template>
 
   <!-- Need to handle attributes! -->
   <xsl:template match="ltx:inline-block">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
   </xsl:template>
 
@@ -159,6 +171,7 @@
        Unaligned templates -->
 
   <xsl:template name="equationgroup-unaligned">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
@@ -166,11 +179,13 @@
       <xsl:apply-templates select="ltx:equationgroup | ltx:equation | ltx:p"/>
       <xsl:if test="@refnum and not(descendant::ltx:equation[@refnum]) and $eqnopos='right'"><xsl:apply-templates select="@refnum"/></xsl:if>
       <xsl:apply-templates select="ltx:constraint[not(@hidden='true')]"/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
     <xsl:apply-templates select="ltx:metadata" mode="meta"/>
   </xsl:template>
 
   <xsl:template name="equation-unaligned">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
@@ -179,6 +194,7 @@
   	  ><xsl:apply-templates select="ltx:Math | ltx:MathFork | ltx:text"/></span>
       <xsl:if test="@refnum and $eqnopos='right'"><xsl:apply-templates select="@refnum"/></xsl:if>
       <xsl:apply-templates select="ltx:constraint[not(@hidden='true')]"/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
     <xsl:apply-templates select="ltx:metadata" mode="meta"/>
   </xsl:template>
@@ -228,14 +244,14 @@
 -->
 <!--    <xsl:param name="ncolumns" select="f:countcolumns(ltx:equation[1])"/>-->
     <xsl:param name="ncolumns" select="f:maxcolumns(ltx:equation | ltx:equationgroup/ltx:equation)"/>
-    <table><xsl:call-template name="add_id"/><xsl:call-template name="add_attributes"/><!-- but not id ??????? -->
-      <xsl:text>
-      </xsl:text>
+    <xsl:text>&#x0A;</xsl:text>
+    <table><xsl:call-template name="add_attributes"/>
+    <!-- but not id ??????? it should be handled on the <tr>! <xsl:call-template name="add_id"/>-->
+      <xsl:text>&#x0A;</xsl:text>
       <xsl:apply-templates select="." mode="aligned">
 	<xsl:with-param name="ncolumns" select="$ncolumns"/>
       </xsl:apply-templates>
-      <xsl:text>
-      </xsl:text>
+      <xsl:text>&#x0A;</xsl:text>
     </table>
   </xsl:template>
 
@@ -247,14 +263,14 @@
 Currently we assume the content will be placed in a single tr/td. -->
   <xsl:template name="equation-aligned">
     <xsl:param name="ncolumns" select="f:countcolumns(.)"/>
-    <table><xsl:call-template name="add_id"/><xsl:call-template name="add_attributes"/><!-- but not id ????-->
-      <xsl:text>
-      </xsl:text>
+    <xsl:text>&#x0A;</xsl:text>
+    <table><xsl:call-template name="add_attributes"/>
+    <!-- but not id ???? it should be handled on the tr <xsl:call-template name="add_id"/>-->
+      <xsl:text>&#x0A;</xsl:text>
       <xsl:apply-templates select="." mode="aligned">
 	<xsl:with-param name="ncolumns" select="$ncolumns"/>
       </xsl:apply-templates>
-      <xsl:text>
-      </xsl:text>
+      <xsl:text>&#x0A;</xsl:text>
     </table>
   </xsl:template>
 
@@ -280,6 +296,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 | ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equation[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
 | ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equation[ltx:constraint or ltx:metadata]
 				)"/>
+	  <xsl:text>&#x0A;</xsl:text>
 	  <td rowspan="{$nrows}" class="{concat('middle ',$side)}">
 	    <xsl:apply-templates select="ancestor-or-self::ltx:equationgroup[position()=1]/@refnum"/>
 	  </td>
@@ -299,6 +316,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 				[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
 				| ancestor-or-self::ltx:equation[position()=1][@refnum][ltx:constraint or ltx:metadata]
 				)"/>
+	  <xsl:text>&#x0A;</xsl:text>
 	  <td rowspan="{$nrows}" class="{concat('middle ',$side)}">
 	    <xsl:apply-templates select="ancestor-or-self::ltx:equation[position()=1]/@refnum"/>
 	  </td>
@@ -311,11 +329,17 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
     <xsl:call-template name="eqnumtd">			       <!--Place left number, if any-->
       <xsl:with-param name='side' select="'left'"/>
     </xsl:call-template>
-    <xsl:if test="$eqpos != 'left'"><td class="eqpad"/></xsl:if><!-- column for centering -->
+    <xsl:if test="$eqpos != 'left'">
+      <xsl:text>&#x0A;</xsl:text>
+      <td class="eqpad"/>
+    </xsl:if><!-- column for centering -->
   </xsl:template>
 
   <xsl:template name="eq-right">
-    <xsl:if test="$eqpos != 'right'"><td class="eqpad"/></xsl:if> <!-- Column for centering-->
+    <xsl:if test="$eqpos != 'right'">
+      <xsl:text>&#x0A;</xsl:text>
+      <td class="eqpad"/>
+    </xsl:if> <!-- Column for centering-->
     <xsl:call-template name="eqnumtd">
       <xsl:with-param name='side' select="'right'"/>
     </xsl:call-template>
@@ -328,6 +352,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
   <!-- for intertext type entries -->
   <xsl:template match="ltx:p" mode="aligned">
     <xsl:param name="ncolumns"/>
+    <xsl:text>&#x0A;</xsl:text>
     <tr class="baseline">
       <td class="left"
 	  colspan="{1+$ncolumns+f:if($eqpos!='left',1,0)+f:if($eqpos!='right',1,0)}"
@@ -353,6 +378,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
     <xsl:choose>
       <xsl:when test="ltx:MathFork/ltx:MathBranch[1]/ltx:tr">
 	<!-- What class information were we obtaining from the tr??? -->
+	<xsl:text>&#x0A;</xsl:text>
 	<tr>
 	  <xsl:call-template name="add_id"/>
 	  <xsl:call-template name="add_attributes">
@@ -365,6 +391,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 	  <xsl:call-template name="eq-right"/>
 	</tr>
 	<xsl:for-each select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[position() &gt; 1]">
+	  <xsl:text>&#x0A;</xsl:text>
 	  <tr>
 	    <xsl:call-template name="add_id"/><!-- or ? -->
 	    <xsl:call-template name="add_attributes">
@@ -379,6 +406,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
       </xsl:when>
 
       <xsl:when test="ltx:MathFork/ltx:MathBranch[1]">
+	<xsl:text>&#x0A;</xsl:text>
 	<tr>
 	  <xsl:call-template name="add_id"/><!-- or ? -->
 	  <xsl:call-template name="add_attributes">
@@ -392,12 +420,14 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
       </xsl:when>
 
       <xsl:otherwise>
+	<xsl:text>&#x0A;</xsl:text>
 	<tr>
 	  <xsl:call-template name="add_id"/><!-- or ? -->
 	  <xsl:call-template name="add_attributes">
 	    <xsl:with-param name="extra_classes" select="'baseline'"/>
 	  </xsl:call-template>
 	  <xsl:call-template name="eq-left"/>
+	  <xsl:text>&#x0A;</xsl:text>
 	  <td  class="{$eqpos}" colspan="{$ncolumns}"><xsl:apply-templates select="ltx:Math | ltx:text"/></td>
 	  <xsl:call-template name="eq-right"/>
 	</tr>
@@ -409,7 +439,8 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
   </xsl:template>
 
   <!-- NOTE: This is pretty wacky.  Maybe we should move the text inside the equation? -->
-  <xsl:template match="ltx:td" mode="aligned" xml:space='default'>
+  <xsl:template match="ltx:td" mode="aligned">
+    <xsl:text>&#x0A;</xsl:text>
     <td colspan="{f:if(@colspan,@colspan,1)}">
       <xsl:call-template name="add_attributes">
 	<xsl:with-param name="extra_classes" select="@align"/>
@@ -424,7 +455,8 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
       /></xsl:if></td>
   </xsl:template>
 
-  <xsl:template match="ltx:Math" mode="aligned" xml:space='default'>
+  <xsl:template match="ltx:Math" mode="aligned">
+    <xsl:text>&#x0A;</xsl:text>
     <td>
       <xsl:call-template name="add_attributes">
 	<xsl:with-param name="extra_classes" select="'center'"/>
@@ -439,6 +471,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
   <xsl:template name="equation-meta-aligned">
     <xsl:param name="ncolumns"/>
     <xsl:if test="ltx:constraint[not(@hidden='true')] or ltx:metadata">
+      <xsl:text>&#x0A;</xsl:text>
       <tr>
 	<td class='right' colspan="{1+$ncolumns
 				   +f:if($eqpos != 'left',1,0)+f:if($eqpos != 'right',1,0)}">
@@ -449,7 +482,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="ltx:constraint" xml:space='default'>
+  <xsl:template match="ltx:constraint">
     <span>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
@@ -465,30 +498,37 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
        ====================================================================== -->
 
   <xsl:template match="ltx:itemize">
+    <xsl:text>&#x0A;</xsl:text>
     <ul>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </ul>
   </xsl:template>
 
   <xsl:template match="ltx:enumerate">
+    <xsl:text>&#x0A;</xsl:text>
     <ol>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </ol>
   </xsl:template>
 
   <xsl:template match="ltx:description">
+    <xsl:text>&#x0A;</xsl:text>
     <dl>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates mode='description'/>
+      <xsl:text>&#x0A;</xsl:text>
     </dl>
   </xsl:template>
 
   <xsl:template match="ltx:item">
+    <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>
       <xsl:when test="child::ltx:tag">
 	<li>
@@ -510,11 +550,13 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
   </xsl:template>
 
   <xsl:template match="ltx:item" mode="description">
+    <xsl:text>&#x0A;</xsl:text>
     <dt>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="ltx:tag"/>
     </dt>
+    <xsl:text>&#x0A;</xsl:text>
     <dd>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="*[local-name() != 'tag']"/>
