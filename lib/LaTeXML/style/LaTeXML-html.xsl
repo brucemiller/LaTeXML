@@ -35,6 +35,7 @@
     <html>
       <xsl:call-template name="head"/>
       <xsl:call-template name="body"/>
+      <xsl:text>&#x0A;</xsl:text>
     </html>
   </xsl:template>
 
