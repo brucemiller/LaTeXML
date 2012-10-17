@@ -26,38 +26,47 @@
        ====================================================================== -->
 
   <xsl:template match="ltx:tabular">
+    <xsl:text>&#x0A;</xsl:text>
     <table>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </table>
   </xsl:template>
 
   <xsl:template match="ltx:thead">
+    <xsl:text>&#x0A;</xsl:text>
     <thead>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </thead>
   </xsl:template>
 
   <xsl:template match="ltx:tbody">
+    <xsl:text>&#x0A;</xsl:text>
     <tbody>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </tbody>
   </xsl:template>
 
   <xsl:template match="ltx:tfoot">
+    <xsl:text>&#x0A;</xsl:text>
     <tfoot>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </tfoot>
   </xsl:template>
 
   <xsl:template match="ltx:tr">
+    <xsl:text>&#x0A;</xsl:text>
     <tr>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
@@ -66,8 +75,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:td">
-    <xsl:text>
-    </xsl:text>
+    <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="{f:if(@thead,'th','td')}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
