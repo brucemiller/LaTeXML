@@ -41,8 +41,8 @@
        and change local-name() to name() in LaTeXML-math-mathml & LaTeXML-picture-svg. -->
     <html xmlns     = "http://www.w3.org/1999/xhtml">
       <xsl:call-template name="head"/>
-      <xsl:call-template name="body"/><xsl:text>
-    </xsl:text>
+      <xsl:call-template name="body"/>
+      <xsl:text>&#x0A;</xsl:text>
     </html>
   </xsl:template>
 
