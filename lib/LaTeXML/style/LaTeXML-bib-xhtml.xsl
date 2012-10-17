@@ -26,14 +26,17 @@
   <!-- NOTE: bibentry (and all it's components) are converted by postprocessing. -->
 
   <xsl:template match="ltx:biblist">
+    <xsl:text>&#x0A;</xsl:text>
     <ul>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </ul>
   </xsl:template>
 
   <xsl:template match="ltx:bibitem">
+    <xsl:text>&#x0A;</xsl:text>
     <li>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
@@ -49,10 +52,12 @@
   <xsl:template match="ltx:bibtag"/>
 
   <xsl:template match="ltx:bibblock">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
   </xsl:template>
 
