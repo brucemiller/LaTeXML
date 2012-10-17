@@ -26,60 +26,70 @@
 		       | ltx:section | ltx:subsection | ltx:subsubsection
 		       | ltx:paragraph | ltx:subparagraph
 		       | ltx:bibliography | ltx:appendix | ltx:index">
+    <xsl:text>&#x0A;</xsl:text>
     <section>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </section>
   </xsl:template>
 
   <xsl:template match="ltx:creator[@role='author']">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
 	<xsl:with-param name="extra_classes" select="@role"/>
       </xsl:call-template>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:personname">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:contact[@role='address']">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
 	<xsl:with-param name="extra_classes" select="@role"/>
       </xsl:call-template>
-
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:contact[@role='email']">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
 	<xsl:with-param name="extra_classes" select="@role"/>
       </xsl:call-template>
       <a href="{concat('mailto:',text())}"><xsl:apply-templates/></a>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:contact[@role='dedicatory']">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
 	<xsl:with-param name="extra_classes" select="@role"/>
       </xsl:call-template>
-
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
   </xsl:template>
 
@@ -87,41 +97,49 @@
   <xsl:template match="ltx:date"/>
 
   <xsl:template match="ltx:abstract">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:if test="@name">
+	<xsl:text>&#x0A;</xsl:text>
 	<h6><xsl:apply-templates select="@name"/><xsl:text>.</xsl:text></h6>
       </xsl:if>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:acknowledgements">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:if test="@name">
+	<xsl:text>&#x0A;</xsl:text>
 	<h6><xsl:apply-templates select="@name"/><xsl:text>.</xsl:text></h6>
       </xsl:if>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:keywords">
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:if test="@name">
+	<xsl:text>&#x0A;</xsl:text>
 	<h6><xsl:apply-templates select="@name"/><xsl:text>:</xsl:text></h6>
       </xsl:if>
       <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
     </div>
   </xsl:template>
 
   <xsl:template match="ltx:classification">
-    <xsl:text>
-    </xsl:text>
+    <xsl:text>&#x0A;</xsl:text>
     <div>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
@@ -129,7 +147,9 @@
 	<xsl:when test='@scheme'><xsl:value-of select='@scheme'/></xsl:when>
 	<xsl:when test='@name'><xsl:value-of select='@name'/></xsl:when>
       </xsl:choose>: </i>
-    <xsl:apply-templates/></div>
+      <xsl:apply-templates/>
+      <xsl:text>&#x0A;</xsl:text>
+    </div>
   </xsl:template>
 
   <!--  ======================================================================
@@ -152,6 +172,7 @@
   <xsl:template match="ltx:title">
     <!-- Skip title, if there's a titlepage! -->
     <xsl:if test="not(parent::*/child::ltx:titlepage)">    
+      <xsl:text>&#x0A;</xsl:text>
       <hgroup>
 	<h1>
 	  <xsl:call-template name="add_id"/>
@@ -159,11 +180,13 @@
 	  <xsl:apply-templates/>
 	</h1>
 	<xsl:apply-templates select="../ltx:subtitle"/>
+	<xsl:text>&#x0A;</xsl:text>
       </hgroup>
     </xsl:if>
   </xsl:template>
 
   <xsl:template match="ltx:subtitle">
+    <xsl:text>&#x0A;</xsl:text>
     <h2>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
@@ -178,6 +201,7 @@
        ====================================================================== -->
 
   <xsl:template match="ltx:indexlist">
+    <xsl:text>&#x0A;</xsl:text>
     <ul>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
@@ -186,6 +210,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:indexentry">
+    <xsl:text>&#x0A;</xsl:text>
     <li>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
