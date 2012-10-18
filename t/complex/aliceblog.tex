@@ -1,0 +1,73 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{lxRDFa}
+\usepackage{url}
+\usepackage{graphicx}
+\title{Alice's Blog}
+\author{Alice}
+\begin{document}
+\lxRDF{about=\ref{blog:photos},property={http://creativecommons.org/ns#license},resource=\ref{license}}
+\lxRDF{property={foaf:neighbor},resource={#fredblog}}
+
+\maketitle
+\section{Sidebar}\label{sidebar}
+
+\lxRDFa{typeof={foaf:Person},resource={#me}}
+\lxRDFAnnotate{property={foaf:name}}{Alice Birpemswick},\\
+Email: \URL[alice@example.com\lxRDFa{property={foaf:mbox}}]{mailto:alice@example.com},\\
+Phone: \URL[+1 617.555.7332\lxRDFa{property={foaf:phone}}]{tel:+1-617-555-7332}.
+
+My Buddies:
+\begin{itemize}
+\item \lxRDFa{property={foaf:knows},typeof={foaf:Person}}
+ \URL[\lxRDFAnnotate{property={foaf:name}}{Bob}\lxRDFa{property={foaf:homepage}}]{http://example.com/bob/}
+\item \lxRDFa{property={foaf:knows},typeof={foaf:Person}}
+ \URL[\lxRDFAnnotate{property={foaf:name}}{Eve}\lxRDFa{property={foaf:homepage}}]{http://example.com/eve/}
+\item \lxRDFa{property={foaf:knows},typeof={foaf:Person}}
+ \URL[\lxRDFAnnotate{property={foaf:name}}{Manu}\lxRDFa{property={foaf:homepage}}]{http://example.com/manu/}
+\end{itemize}
+
+\section{Blog Content}\label{blog}
+
+\paragraph{The Trouble with Bob\lxRDFa{property={dcterms:title}}}\label{blog:trouble}
+\lxRDFa{resource={/alice/posts/trouble_with_bob},typeof={schema:BlogPosting}}
+Date: \lxRDFAnnotate{property={http://purl.org/dc/terms/created},content={2011-09-10}}{10$^{th}$ of September, 2011}.\\
+\lxRDFAnnotate{property={dcterms:creator schema:creator}}{Alice}.
+
+
+The trouble with Bob is that he takes much better photos than I do.
+\lxRDFa{property={schema:articleBody}}
+
+% \includegraphics{sunset.jpg}
+% \lxRDFa{resource={http://examplecom/bob/photos/sunset.jpg}}
+% \lxRDFAnnotate{property={dcterms:title}}{Beautiful Sunset}
+% by
+% \lxRDFAnnotate{property={dcterms:creator}}{Bob}.
+
+\paragraph{Jo's Barbeque\lxRDFa{property={dcterms:title}}}\label{blog:josbbq}
+\lxRDFa{resource={/alice/posts/jos_barbeque},typeof={schema:BlogPosting}}
+
+Date: \lxRDFAnnotate{property={dcterms:created},content={2011-09-14}}%
+  {14$^{th}$ of September, 2011}.\\
+
+\lxRDFAnnotate{property={dcterms:creator}}{Eve}.
+
+\ldots\lxRDFa{property={schema:articleBody}}
+
+\paragraph{I will post my photos nevertheless\ldots\lxRDFa{property={dcterms:title}}}\label{blog:photos}
+\lxRDFa{resource={/alice/posts/my_photos},typeof={schema:BlogPosting}}
+
+Date: \lxRDFAnnotate{property={dcterms:created},content={2011-09-15}}%
+  {15$^{th}$ of September, 2011}.\\
+
+\lxRDFAnnotate{property={dcterms:creator},resource={#me}}{Alice}.
+
+\ldots\lxRDFa{property={schema:articleBody}}
+
+\section{License}\label{license}
+All content on this site is licensed under
+\URL[a Creative Commons License\lxRDFa{property={http://creativecommons.org/ns#license}}]{
+http://http://creativecommons.org/licenses/by/3.0/}.
+\copyright\ Alice Birpemswick.
+
+\end{document}

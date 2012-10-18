@@ -321,6 +321,7 @@ lib/LaTeXML/Package/llncs.cls.ltxml
 lib/LaTeXML/Package/longtable.sty.ltxml
 lib/LaTeXML/Package/lscape.sty.ltxml
 lib/LaTeXML/Package/luximono.sty.ltxml
+lib/LaTeXML/Package/lxRDFa.sty.ltxml
 lib/LaTeXML/Package/makeidx.sty.ltxml
 lib/LaTeXML/Package/mathpazo.sty.ltxml
 lib/LaTeXML/Package/mathpple.sty.ltxml
@@ -385,9 +386,10 @@ lib/LaTeXML/Package/amsb.fontmap.ltxml
 lib/LaTeXML/Package/ot4.fontmap.ltxml
 lib/LaTeXML/Package/utf8.def.ltxml
 #==================================================
-# TeX package
+# TeX packages
 #==================================================
 lib/LaTeXML/texmf/latexml.sty
+lib/LaTeXML/texmf/lxRDFa.sty
 #==================================================
 # Test Suite.
 #==================================================
@@ -472,6 +474,9 @@ t/babel/greek.xml
 t/babel/page545.pdf
 t/babel/page545.tex
 t/babel/page545.xml
+t/complex/aliceblog.pdf
+t/complex/aliceblog.tex
+t/complex/aliceblog.xml
 t/complex/xii.dtd
 t/complex/xii.pdf
 t/complex/xii.latexml
