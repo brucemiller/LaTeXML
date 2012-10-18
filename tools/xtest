@@ -73,14 +73,11 @@ foreach my $dir (@testsets){
   foreach my $test (@tests){
     my $srcxml = "$testdir/$dir/$test.xml";
     my $srcpdf = "$testdir/$dir/$test.pdf";
-    my $dstpdf = "$htmldest/$dir/$test.pdf";
     my @links = ("<td class='pdf'><a href='$dir/$test.pdf'>pdf</a></td>",
 		 "<td class='xml'><a href='$dir/$test.xml'>xml</a></td>");
     my $usesdtd = system('grep','--quiet','DOCTYPE',$srcxml)==0;
-    if($force || (! -f $dstpdf) || ((-M $srcpdf) < (-M $dstpdf))){
-      print STDERR "Copying $dir/$test.pdf to dest\n" if $verbosity >= 0;
-      system('cp',$srcpdf,$dstpdf)
-	== 0 or die "Couldn't copy $testdir/$dir/$test.pdf to $htmldest/$dir: $!"; }
+    copy($srcxml,"$htmldest/$dir/$test.xml");
+    copy($srcpdf,"$htmldest/$dir/$test.pdf");
     foreach my $type (@TYPES){
       my $dstxml = "$htmldest/$dir/$test.$type";
       push(@links,"<td class='$type'><a href='$dir/$test.$type'>$type</a></td>");
@@ -104,3 +101,9 @@ $html .= "</body>\n";
 open(DIR,">$htmldest/index.html") or die "Couldn't create $htmldest/index.html: $!";
 print DIR $html;
 close(DIR);
+
+sub copy {
+  my($src,$dst)=@_;
+  if($force || (! -f $dst) || ((-M $src) < (-M $dst))){
+      print STDERR "Copying $src to $dst\n" if $verbosity >= 0;
+      system('cp',$src,$dst) == 0 or die "Couldn't copy $src to $dst: $!"; }}
