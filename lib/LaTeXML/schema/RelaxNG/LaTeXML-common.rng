@@ -75,6 +75,7 @@ for more convenience in using CSS.]</a:documentation>
         <data type="NMTOKENS"/>
       </attribute>
     </optional>
+    <ref name="RDF.attributes"/>
   </define>
   <define name="ID.attributes">
     <a:documentation>Attributes for elements that can be cross-referenced
@@ -313,6 +314,102 @@ should be shifted down relative to the baseline of neighboring material.</a:docu
     <optional>
       <attribute name="description">
         <a:documentation>a description of the image</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="RDF.attributes">
+    <a:documentation>Attributes for RDFa (Resource Description Framework),
+following RDFa Core 1.1 \url{http://www.w3.org/TR/rdfa-syntax/}.
+The following descriptions give a short overview of the usage of the attributes,
+but see the specification for the complete details, which are sometimes complex.</a:documentation>
+    <optional>
+      <attribute name="vocab">
+        <a:documentation>indicates the default vocabulary
+(generally should be managed by LaTeXML and only appear on root node)</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="prefix">
+        <a:documentation>specifies a mapping between CURIE prefixes and IRI (URI).
+(generally should be managed by LaTeXML and only appear on root node)</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="about">
+        <a:documentation>indicates the subject for predicates appearing on the same or descendant nodes.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="aboutlabelref">
+        <a:documentation>gives the label for the document element that serves as the subject;
+it will be converted to \attr{aboutidref} and \attr{about} during post-processing.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="aboutidref">
+        <a:documentation>gives the id for the document element that serves as the subject;
+it will be converted to \attr{about} during post-processing.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="resource">
+        <a:documentation>indicates the subject for predicates appearing on descendant nodes,
+and also indicates the object for predicates
+when \attr{property} appears on the same node,
+or when \attr{rel} or \attr{rev} appears on an ancestor.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="resourcelabelref">
+        <a:documentation>gives the label for the document element that serves as the resource object;
+it will be converted to \attr{resourceidref} and \attr{resource} during post-processing.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="resourceidref">
+        <a:documentation>gives the id for the document element that serves as the resource object;
+it will be converted to \attr{resource} during post-processing.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="property">
+        <a:documentation>indicates the predicate and
+asserts that the subject is related by that predicate to the object.
+The subject is determined by one of \attr{about} on same node,
+\attr{resource} or \attr{typeof} on an ancestor node, or by the document root.
+The object is determined by one of \attr{resource}, \attr{href}, \attr{content}
+or \attr{typeof} on the same node, or by the text content of the node.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="rel">
+        <a:documentation>indicates the predicate exactly as \attr{property} except that it can
+assert multiple RDF triples where the objects are the nearest descendent \attr{resource}s.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="rev">
+        <a:documentation>indicates the predicate exactly as \attr{rel} except that it indicates
+the reverse relationship (with subject and object swapped).</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="typeof">
+        <a:documentation>indicates the type of the \attr{resource} and thus implicitly asserts a relation
+that the object has the given type.
+Additionally, if no \attr{resource} was given on the same node,
+indicates an anonymous subject and or object exactly as \attr{resource}</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="datatype">
+        <a:documentation>indicates the datatype of the target resource;</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="content">
+        <a:documentation>indicates the content of the property to be used as the object,
+to be used instead of the content of the element itself;</a:documentation>
       </attribute>
     </optional>
   </define>

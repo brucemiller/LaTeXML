@@ -402,36 +402,6 @@ used to crossreference.</a:documentation>
   <define name="rdf_attributes">
     <a:documentation>Attributes for \elementref{rdf}</a:documentation>
     <ref name="Common.attributes"/>
-    <optional>
-      <attribute name="property">
-        <a:documentation>indicates the RDFa property.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="content">
-        <a:documentation>indicates the RDFa content.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="rel">
-        <a:documentation>indicates the RDFa relation.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="resource">
-        <a:documentation>indicates the RDFa relation.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="datatype">
-        <a:documentation>indicates the RDFa content datatype.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="about">
-        <a:documentation>indicates the RDFa about.</a:documentation>
-      </attribute>
-    </optional>
   </define>
   <define name="rdf_model">
     <a:documentation>Content model for \elementref{rdf}</a:documentation>

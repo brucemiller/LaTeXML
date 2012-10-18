@@ -9,6 +9,20 @@
 <!ATTLIST ns1:text
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
   depth CDATA #IMPLIED
@@ -35,7 +49,21 @@
                     |ns1:ERROR)*>
 <!ATTLIST ns1:emph
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:acronym (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                        |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
@@ -46,12 +74,40 @@
 <!ATTLIST ns1:acronym
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   name CDATA #IMPLIED>
 
 <!ELEMENT ns1:rule EMPTY>
 <!ATTLIST ns1:rule
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
   depth CDATA #IMPLIED
@@ -73,6 +129,20 @@
 <!ATTLIST ns1:ref
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   idref IDREF #IMPLIED
   labelref CDATA #IMPLIED
   href CDATA #IMPLIED
@@ -88,6 +158,20 @@
 <!ATTLIST ns1:anchor
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED>
 
 <!ELEMENT ns1:cite (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
@@ -98,12 +182,40 @@
                     |ns1:ERROR)*>
 <!ATTLIST ns1:cite
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bibref (ns1:bibrefphrase)*>
 <!ATTLIST ns1:bibref
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   idref IDREF #IMPLIED
   bibrefs CDATA #IMPLIED
   show CDATA #IMPLIED
@@ -118,7 +230,21 @@
                             |ns1:note|ns1:indexmark|ns1:rdf|ns1:ERROR)*>
 <!ATTLIST ns1:bibrefphrase
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:note (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                     |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
@@ -131,18 +257,60 @@
 <!ATTLIST ns1:note
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   mark CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ns1:ERROR (#PCDATA)*>
 <!ATTLIST ns1:ERROR
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:indexmark (ns1:indexphrase*,ns1:indexsee*)>
 <!ATTLIST ns1:indexmark
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   see_also CDATA #IMPLIED
   style CDATA #IMPLIED>
 
@@ -155,6 +323,20 @@
 <!ATTLIST ns1:indexphrase
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   key CDATA #IMPLIED>
 
 <!ELEMENT ns1:indexsee (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
@@ -166,6 +348,20 @@
 <!ATTLIST ns1:indexsee
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   key CDATA #IMPLIED
   name CDATA #IMPLIED>
 
@@ -180,12 +376,20 @@
 <!ATTLIST ns1:rdf
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
-  property CDATA #IMPLIED
-  content CDATA #IMPLIED
-  rel CDATA #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
   resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  about CDATA #IMPLIED>
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:p (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                  |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
@@ -195,6 +399,20 @@
 <!ATTLIST ns1:p
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
@@ -225,6 +443,20 @@
 <!ATTLIST ns1:equation
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -236,6 +468,20 @@
 <!ATTLIST ns1:equationgroup
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -244,12 +490,40 @@
 <!ELEMENT ns1:MathFork ((ns1:Math|ns1:text),ns1:MathBranch*)>
 <!ATTLIST ns1:MathFork
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:MathBranch (ns1:Math|ns1:tr|ns1:td)*>
 <!ATTLIST ns1:MathBranch
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   format CDATA #IMPLIED>
 
 <!ELEMENT ns1:quote (ns1:p|ns1:equation|ns1:equationgroup|ns1:quote
@@ -261,6 +535,20 @@
 <!ATTLIST ns1:quote
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED>
 
 <!ELEMENT ns1:block (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
@@ -272,6 +560,20 @@
 <!ATTLIST ns1:block
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
@@ -290,6 +592,20 @@
 <!ATTLIST ns1:listingblock
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -298,7 +614,21 @@
 <!ELEMENT ns1:break EMPTY>
 <!ATTLIST ns1:break
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:inline-block (ns1:p|ns1:equation|ns1:equationgroup
                             |ns1:quote|ns1:block|ns1:listingblock
@@ -310,6 +640,20 @@
 <!ATTLIST ns1:inline-block
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
@@ -333,6 +677,20 @@
 <!ATTLIST ns1:verbatim
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   font CDATA #IMPLIED
   fontsize CDATA #IMPLIED
@@ -344,18 +702,60 @@
 <!ATTLIST ns1:itemize
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED>
 
 <!ELEMENT ns1:enumerate (ns1:item)*>
 <!ATTLIST ns1:enumerate
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED>
 
 <!ELEMENT ns1:description (ns1:item)*>
 <!ATTLIST ns1:description
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED>
 
 <!ELEMENT ns1:item (ns1:tag?,
@@ -365,6 +765,20 @@
 <!ATTLIST ns1:item
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -378,6 +792,20 @@
 <!ATTLIST ns1:tag
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED>
 
@@ -385,6 +813,20 @@
 <!ATTLIST ns1:graphics
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   imagesrc CDATA #IMPLIED
   imagewidth CDATA #IMPLIED
@@ -404,6 +846,20 @@
 <!ATTLIST ns1:para
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED>
 
 <!ELEMENT ns1:inline-para (ns1:para|ns1:theorem|ns1:proof|ns1:figure
@@ -413,6 +869,20 @@
 <!ATTLIST ns1:inline-para
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
   depth CDATA #IMPLIED
@@ -434,6 +904,20 @@
 <!ATTLIST ns1:theorem
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -447,6 +931,20 @@
 <!ATTLIST ns1:proof
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -463,6 +961,20 @@
 <!ATTLIST ns1:figure
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -492,6 +1004,20 @@
 <!ATTLIST ns1:table
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -521,6 +1047,20 @@
 <!ATTLIST ns1:float
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -549,6 +1089,20 @@
 <!ATTLIST ns1:listing
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -576,6 +1130,20 @@
 <!ATTLIST ns1:caption
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   font CDATA #IMPLIED
   fontsize CDATA #IMPLIED
   color CDATA #IMPLIED
@@ -590,12 +1158,40 @@
                           |ns1:indexmark|ns1:rdf|ns1:ERROR|ns1:tag)*>
 <!ATTLIST ns1:toccaption
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:Math (ns1:XMath)*>
 <!ATTLIST ns1:Math
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   imagesrc CDATA #IMPLIED
   imagewidth CDATA #IMPLIED
   imageheight CDATA #IMPLIED
@@ -612,12 +1208,40 @@
 <!ATTLIST ns1:XMath
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED>
 
 <!ELEMENT ns1:XMTok (#PCDATA)*>
 <!ATTLIST ns1:XMTok
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -647,6 +1271,20 @@
 <!ATTLIST ns1:XMApp
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -672,6 +1310,20 @@
 <!ATTLIST ns1:XMDual
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -689,6 +1341,20 @@
 <!ATTLIST ns1:XMHint
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -713,6 +1379,20 @@
 <!ATTLIST ns1:XMText
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -732,6 +1412,20 @@
 <!ATTLIST ns1:XMWrap
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -754,6 +1448,20 @@
 <!ATTLIST ns1:XMArg
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -773,6 +1481,20 @@
 <!ATTLIST ns1:XMRef
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -791,6 +1513,20 @@
 <!ATTLIST ns1:XMArray
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -812,13 +1548,41 @@
 <!ELEMENT ns1:XMRow (ns1:XMCell)*>
 <!ATTLIST ns1:XMRow
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:XMCell (ns1:XMApp|ns1:XMTok|ns1:XMRef|ns1:XMHint|ns1:XMArg
                       |ns1:XMWrap|ns1:XMDual|ns1:XMText|ns1:XMArray)*>
 <!ATTLIST ns1:XMCell
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   colspan CDATA #IMPLIED
   rowspan CDATA #IMPLIED
   align CDATA #IMPLIED
@@ -830,28 +1594,98 @@
 <!ATTLIST ns1:tabular
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   vattach (top|middle|bottom) #IMPLIED
   width CDATA #IMPLIED>
 
 <!ELEMENT ns1:thead (ns1:tr)*>
 <!ATTLIST ns1:thead
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:tfoot (ns1:tr)*>
 <!ATTLIST ns1:tfoot
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:tbody (ns1:tr)*>
 <!ATTLIST ns1:tbody
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:tr (ns1:td)*>
 <!ATTLIST ns1:tr
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:td (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                   |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math|ns1:p
@@ -864,6 +1698,20 @@
 <!ATTLIST ns1:td
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   colspan CDATA #IMPLIED
   rowspan CDATA #IMPLIED
   align CDATA #IMPLIED
@@ -883,6 +1731,20 @@
 <!ATTLIST ns1:picture
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
@@ -931,6 +1793,20 @@
 <!ATTLIST ns1:g
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -966,6 +1842,20 @@
 <!ATTLIST ns1:rect
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -994,6 +1884,20 @@
 <!ATTLIST ns1:line
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1022,6 +1926,20 @@
 <!ATTLIST ns1:polygon
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1050,6 +1968,20 @@
 <!ATTLIST ns1:wedge
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1078,6 +2010,20 @@
 <!ATTLIST ns1:arc
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1106,6 +2052,20 @@
 <!ATTLIST ns1:circle
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1134,6 +2094,20 @@
 <!ATTLIST ns1:ellipse
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1162,6 +2136,20 @@
 <!ATTLIST ns1:path
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1190,6 +2178,20 @@
 <!ATTLIST ns1:bezier
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1218,6 +2220,20 @@
 <!ATTLIST ns1:curve
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1246,6 +2262,20 @@
 <!ATTLIST ns1:parabola
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1274,6 +2304,20 @@
 <!ATTLIST ns1:dots
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1302,6 +2346,20 @@
 <!ATTLIST ns1:grid
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1330,6 +2388,20 @@
 <!ATTLIST ns1:clip
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1366,6 +2438,20 @@
 <!ATTLIST ns1:clippath
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -1415,6 +2501,20 @@
 <!ATTLIST ns1:document
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1431,6 +2531,20 @@
 <!ATTLIST ns1:part
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1451,6 +2565,20 @@
 <!ATTLIST ns1:chapter
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1470,6 +2598,20 @@
 <!ATTLIST ns1:section
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1488,6 +2630,20 @@
 <!ATTLIST ns1:subsection
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1506,6 +2662,20 @@
 <!ATTLIST ns1:subsubsection
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1522,6 +2692,20 @@
 <!ATTLIST ns1:paragraph
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1537,6 +2721,20 @@
 <!ATTLIST ns1:subparagraph
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1548,6 +2746,20 @@
 <!ATTLIST ns1:slide
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1568,6 +2780,20 @@
 <!ATTLIST ns1:appendix
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1586,6 +2812,20 @@
 <!ATTLIST ns1:bibliography
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1602,6 +2842,20 @@
 <!ATTLIST ns1:index
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1612,6 +2866,20 @@
 <!ATTLIST ns1:indexlist
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED>
 
 <!ELEMENT ns1:indexentry (ns1:indexphrase,ns1:indexrefs?,
@@ -1619,6 +2887,20 @@
 <!ATTLIST ns1:indexentry
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED>
 
 <!ELEMENT ns1:indexrefs (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
@@ -1629,7 +2911,21 @@
                          |ns1:rdf|ns1:ERROR)*>
 <!ATTLIST ns1:indexrefs
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:title (#PCDATA|ns1:tag|ns1:text|ns1:emph|ns1:acronym
                      |ns1:rule|ns1:anchor|ns1:ref|ns1:cite|ns1:bibref
@@ -1640,6 +2936,20 @@
 <!ATTLIST ns1:title
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   font CDATA #IMPLIED
   fontsize CDATA #IMPLIED
   color CDATA #IMPLIED
@@ -1654,7 +2964,21 @@
                         |ns1:ERROR|ns1:tag)*>
 <!ATTLIST ns1:toctitle
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:subtitle (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                         |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
@@ -1664,7 +2988,21 @@
                         |ns1:ERROR)*>
 <!ATTLIST ns1:subtitle
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:creator (ns1:personname|ns1:contact|ns1:inline-block
                        |ns1:verbatim|ns1:break|ns1:graphics
@@ -1672,6 +3010,20 @@
 <!ATTLIST ns1:creator
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   name CDATA #IMPLIED
   role CDATA #IMPLIED>
 
@@ -1683,7 +3035,21 @@
                           |ns1:indexmark|ns1:rdf|ns1:ERROR)*>
 <!ATTLIST ns1:personname
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:contact (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                        |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
@@ -1694,6 +3060,20 @@
 <!ATTLIST ns1:contact
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   name CDATA #IMPLIED
   role CDATA #IMPLIED>
 
@@ -1706,6 +3086,20 @@
 <!ATTLIST ns1:date
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   name CDATA #IMPLIED
   role CDATA #IMPLIED>
 
@@ -1718,6 +3112,20 @@
 <!ATTLIST ns1:abstract
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   name CDATA #IMPLIED>
 
 <!ELEMENT ns1:acknowledgements (#PCDATA|ns1:text|ns1:emph|ns1:acronym
@@ -1730,6 +3138,20 @@
 <!ATTLIST ns1:acknowledgements
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   name CDATA #IMPLIED>
 
 <!ELEMENT ns1:keywords (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
@@ -1741,6 +3163,20 @@
 <!ATTLIST ns1:keywords
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   name CDATA #IMPLIED>
 
 <!ELEMENT ns1:classification (#PCDATA|ns1:text|ns1:emph|ns1:acronym
@@ -1753,6 +3189,20 @@
 <!ATTLIST ns1:classification
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   name CDATA #IMPLIED
   scheme CDATA #IMPLIED>
 
@@ -1766,6 +3216,20 @@
 <!ATTLIST ns1:titlepage
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
@@ -1776,6 +3240,20 @@
 <!ATTLIST ns1:TOC
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   name CDATA #IMPLIED
   role CDATA #IMPLIED
   select CDATA #IMPLIED
@@ -1784,27 +3262,97 @@
 <!ELEMENT ns1:toclist (ns1:tocentry)*>
 <!ATTLIST ns1:toclist
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:tocentry (ns1:ref|ns1:toclist)*>
 <!ATTLIST ns1:tocentry
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:navigation (ns1:ref|ns1:TOC)*>
 <!ATTLIST ns1:navigation
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:biblist (ns1:bibentry|ns1:bibitem)*>
 <!ATTLIST ns1:biblist
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bibitem (ns1:bibtag*,ns1:bibblock*)>
 <!ATTLIST ns1:bibitem
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   key CDATA #IMPLIED>
 
@@ -1842,6 +3390,20 @@
 <!ATTLIST ns1:bibentry
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   xml:id ID #IMPLIED
   key CDATA #REQUIRED
   type CDATA #REQUIRED>
@@ -1850,6 +3412,20 @@
 <!ATTLIST ns1:bib-name
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ns1:surname (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
@@ -1887,7 +3463,21 @@
                          |ns1:rdf|ns1:ERROR)*>
 <!ATTLIST ns1:bib-title
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-subtitle (#PCDATA|ns1:text|ns1:emph|ns1:acronym
                             |ns1:rule|ns1:anchor|ns1:ref|ns1:cite
@@ -1897,7 +3487,21 @@
                             |ns1:note|ns1:indexmark|ns1:rdf|ns1:ERROR)*>
 <!ATTLIST ns1:bib-subtitle
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-key (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                        |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
@@ -1907,7 +3511,21 @@
                        |ns1:ERROR)*>
 <!ATTLIST ns1:bib-key
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-type (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                         |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
@@ -1917,7 +3535,21 @@
                         |ns1:ERROR)*>
 <!ATTLIST ns1:bib-type
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-date (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                         |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
@@ -1928,6 +3560,20 @@
 <!ATTLIST ns1:bib-date
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-publisher (#PCDATA|ns1:text|ns1:emph|ns1:acronym
@@ -1939,7 +3585,21 @@
                              |ns1:ERROR)*>
 <!ATTLIST ns1:bib-publisher
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-organization (#PCDATA|ns1:text|ns1:emph|ns1:acronym
                                 |ns1:rule|ns1:anchor|ns1:ref|ns1:cite
@@ -1950,7 +3610,21 @@
                                 |ns1:ERROR)*>
 <!ATTLIST ns1:bib-organization
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-place (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                          |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref
@@ -1960,7 +3634,21 @@
                          |ns1:rdf|ns1:ERROR)*>
 <!ATTLIST ns1:bib-place
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-related (ns1:bib-name|ns1:bib-title|ns1:bib-subtitle
                            |ns1:bib-key|ns1:bib-type|ns1:bib-date
@@ -1973,6 +3661,20 @@
 <!ATTLIST ns1:bib-related
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   type CDATA #IMPLIED
   role CDATA #IMPLIED
   bibrefs CDATA #IMPLIED>
@@ -1986,6 +3688,20 @@
 <!ATTLIST ns1:bib-part
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-edition (#PCDATA|ns1:text|ns1:emph|ns1:acronym
@@ -1996,7 +3712,21 @@
                            |ns1:note|ns1:indexmark|ns1:rdf|ns1:ERROR)*>
 <!ATTLIST ns1:bib-edition
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-status (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                           |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref
@@ -2006,7 +3736,21 @@
                           |ns1:indexmark|ns1:rdf|ns1:ERROR)*>
 <!ATTLIST ns1:bib-status
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-identifier (#PCDATA|ns1:text|ns1:emph|ns1:acronym
                               |ns1:rule|ns1:anchor|ns1:ref|ns1:cite
@@ -2018,6 +3762,20 @@
 <!ATTLIST ns1:bib-identifier
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   scheme CDATA #IMPLIED
   id CDATA #IMPLIED
   href CDATA #IMPLIED>
@@ -2031,6 +3789,20 @@
 <!ATTLIST ns1:bib-review
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   scheme CDATA #IMPLIED
   id CDATA #IMPLIED
   href CDATA #IMPLIED>
@@ -2043,7 +3815,21 @@
                          |ns1:rdf|ns1:ERROR)*>
 <!ATTLIST ns1:bib-links
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-language (#PCDATA|ns1:text|ns1:emph|ns1:acronym
                             |ns1:rule|ns1:anchor|ns1:ref|ns1:cite
@@ -2053,7 +3839,21 @@
                             |ns1:note|ns1:indexmark|ns1:rdf|ns1:ERROR)*>
 <!ATTLIST ns1:bib-language
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED>
+  class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-url (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
                        |ns1:anchor|ns1:ref|ns1:cite|ns1:bibref|ns1:Math
@@ -2064,6 +3864,20 @@
 <!ATTLIST ns1:bib-url
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   href CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-extract (#PCDATA|ns1:text|ns1:emph|ns1:acronym
@@ -2075,6 +3889,20 @@
 <!ATTLIST ns1:bib-extract
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-note (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
@@ -2086,6 +3914,20 @@
 <!ATTLIST ns1:bib-note
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ns1:bib-data (#PCDATA|ns1:text|ns1:emph|ns1:acronym|ns1:rule
@@ -2097,5 +3939,19 @@
 <!ATTLIST ns1:bib-data
   xmlns:ns1 CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
   role CDATA #IMPLIED
   type CDATA #IMPLIED>
