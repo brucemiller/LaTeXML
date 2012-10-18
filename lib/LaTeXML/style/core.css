@@ -5,12 +5,14 @@
 /* Header & footer */
 /*.header:before { content:url(latexml.png); }*/
 .header,.footer   { font-size:80%; }
-.header .previous,
-.footer .previous { float:left; }
-.header .up,
+.header *[rel~="prev"],
+.footer *[rel~="prev"] { float:left; }
+.header *[rel~="up"],
 .footer           { display:block; text-align:center; }
-.header .next,
-.footer .next     { float:right; }
+.header *[rel~="next"],
+.footer *[rel~="next"] { float:right; }
+.header .ref,
+.footer .ref      { margin:0 1em; }
 .header li { padding:0.1em 0.2em 0.1em 1em;}
 
 /* Main content */
@@ -38,6 +40,7 @@ h6:after { content:" "; }
 h6 + div.para,
 h6 + p { display:inline; }
 
+.date        { text-align:center; font-size: 100%; font-family:sans-serif; }
 .subtitle    { text-align:center; font-size: 120%; font-family:sans-serif;
 	       padding-left:0.2em; margin-left:-0.5em; }
 .author      { text-align:center; font-family:sans-serif; }
