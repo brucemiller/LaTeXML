@@ -187,7 +187,8 @@ sub finalize {
   my($self)=@_;
   if(my $root = $self->getDocument->documentElement){
     local $LaTeXML::FONT = $self->getNodeFont($root);
-    $self->finalize_rec($root); }
+    $self->finalize_rec($root); 
+    set_RDFa_prefixes($self->getDocument,$STATE->lookupValue('RDFa_prefixes'));  }
   $$self{document}; }
 
 sub finalize_rec {
