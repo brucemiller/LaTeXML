@@ -172,6 +172,7 @@
 	<xsl:with-param name="title_level" select="$document_level"/>
       </xsl:call-template>
       <xsl:apply-templates select="../ltx:date" mode="intitle"/>
+      <xsl:text>&#x0A;</xsl:text>
     </xsl:if>
   </xsl:template>
 

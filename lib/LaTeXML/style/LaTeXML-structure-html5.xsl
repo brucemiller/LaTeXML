@@ -93,9 +93,6 @@
     </div>
   </xsl:template>
 
-  <!-- put in footer -->
-  <xsl:template match="ltx:date"/>
-
   <xsl:template match="ltx:abstract">
     <xsl:text>&#x0A;</xsl:text>
     <div>
@@ -180,6 +177,7 @@
 	  <xsl:apply-templates/>
 	</h1>
 	<xsl:apply-templates select="../ltx:subtitle"/>
+	<xsl:apply-templates select="../ltx:date" mode="intitle"/>
 	<xsl:text>&#x0A;</xsl:text>
       </hgroup>
     </xsl:if>
@@ -195,6 +193,17 @@
   </xsl:template>
 
   <xsl:template match="ltx:toctitle"/>
+
+  <xsl:template match="ltx:date"/>
+
+  <xsl:template match="ltx:date" mode="intitle">
+    <xsl:text>&#x0A;</xsl:text>
+    <div>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="//ltx:document/ltx:date/node()"/>
+    </div>
+  </xsl:template>
 
   <!-- ======================================================================
        Indices
