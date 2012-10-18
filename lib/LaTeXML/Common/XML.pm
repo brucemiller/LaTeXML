@@ -42,8 +42,7 @@ use base qw(Exporter);
 our @EXPORT = (
 	       # Export just these symbols from XML::LibXML
 	       # Possibly (if/when we abstract away from XML::LibXML), we should be selective?
-  	       qw(
-  		   XML_ELEMENT_NODE
+  	       qw( XML_ELEMENT_NODE
   		   XML_ATTRIBUTE_NODE
   		   XML_TEXT_NODE
   		   XML_CDATA_SECTION_NODE
@@ -64,13 +63,14 @@ our @EXPORT = (
   		   XML_XINCLUDE_END
   		   XML_XINCLUDE_START
   		   encodeToUTF8
-  		   decodeFromUTF8),
+  		   decodeFromUTF8  ),
 	       @XML::LibXML::EXPORT,
 	       # Possibly (later) export these utility functions
 	       qw(&element_nodes &text_in_node &new_node
 		  &append_nodes &clear_node &maybe_clone
 		  &valid_attributes &copy_attributes &rename_attribute &remove_attr
 		  &get_attr &isTextNode &isElementNode
+                  &set_RDFa_prefixes
 		  &CA_KEEP &CA_OVERWRITE &CA_MERGE &CA_EXCEPT
 		  &initialize_catalogs)
 	      );
@@ -191,6 +191,47 @@ sub initialize_catalogs {
   $catalogs_initialized = 1;
   foreach my $catalog (pathname_findall('LaTeXML.catalog',installation_subdir=>'.')){
     XML::LibXML->load_catalog($catalog); }}
+
+#======================================================================
+# Odd place for this utility, but it is needed in both conversion & post
+# ALSO needs error reporting capability.
+
+our @RDF_TERM_ATTRIBUTES = (qw(property typeof rel rev));
+our %NON_RDF_PREFIXES = map( ($_=>1), qw(http https ftp));
+sub set_RDFa_prefixes {
+  my($document,$map)=@_;
+  my $root = $document->documentElement;
+  my %prefixes = ();
+  my %localmap = map( ($_=>$$map{$_}), keys %$map);
+  if(my $prefixes = $root->getAttribute('prefix')){
+    my @x = split(/\s/,$prefixes);
+    while(@x){
+      my($prefix,$uri)=(shift(@x),shift(@x));
+      $prefixes{$prefix}=1;
+      if(!$localmap{$prefix}){
+	$localmap{$prefix} = $uri; }
+      elsif($localmap{$prefix} ne $uri){
+	warn "Clash of RDFa prefix '$prefix' ('$uri' vs '$localmap{$prefix}'); "
+	  . "Skipping RDFa prefix management";
+	return; }}}
+  if(my @n = $document->findnodes('descendant::*[@prefix]')){
+    if((scalar(@n) > 1) || !$root->isSameNode($n[0])){
+	warn "RDFa attribute 'prefix' on non-root node; "
+	  . "Skipping RDFa prefix management";
+	return; }}
+  if(my @n = $document->findnodes('descendant::*[@vocab]')){
+    warn "RDFa attribute 'vocab' on non-root node; "
+      . "Skipping RDFa prefix management";
+    return; }
+  my $xpath = 'descendant::*['.join(' or ',map('@'.$_,@RDF_TERM_ATTRIBUTES)).']';
+  foreach my $node ($document->findnodes($xpath)){
+    foreach my $k (@RDF_TERM_ATTRIBUTES){
+      if(my $v = $node->getAttribute($k)){
+	foreach my $term (split(/\s/,$v)){
+	  if(($term =~ /^(\w+):/) && !$NON_RDF_PREFIXES{$1}){
+	    $prefixes{$1}=1; }}}}}
+  if(my $prefixes = join(' ',map( ($_,$localmap{$_}), keys %prefixes))){
+    $root->setAttribute(prefix=>$prefixes); }}
 
 ######################################################################
 # PATCH Section
