@@ -848,8 +848,8 @@ sub trimChildNodes {
 #======================================================================
 
 sub addNavigation {
-  my($self,$direction,$id)=@_;
-  my $ref = ['ltx:ref',{idref=>$id,class=>$direction,show=>'fulltitle'}];
+  my($self,$relation,$id)=@_;
+  my $ref = ['ltx:ref',{idref=>$id,rel=>$relation,show=>'fulltitle'}];
   if(my $nav = $self->findnode('//ltx:navigation')){
     $self->addNodes($nav,$ref); }
   else {
