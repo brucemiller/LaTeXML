@@ -140,7 +140,8 @@ sub default_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if($id){
-    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id, labels=>$self->noteLabels($node),
+    $$self{db}->register("ID:$id", id=>$id, type=>$tag, parent=>$parent_id,
+			 labels=>$self->noteLabels($node),
 			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id));
     $self->addAsChild($id,$parent_id);  }
@@ -150,8 +151,10 @@ sub section_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if($id){
-    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
+    $$self{db}->register("ID:$id", id=>$id, type=>$tag, parent=>$parent_id,
+			 labels=>$self->noteLabels($node),
 			 location=>$doc->siteRelativeDestination,
+			 primary=>1,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
 			 frefnum=>$node->getAttribute('frefnum'),
@@ -159,14 +162,15 @@ sub section_handler {
 			 toctitle=>$self->cleanNode($doc,$doc->findnode('ltx:toctitle',$node)),
 			 children=>[],
 			 stub=>$node->getAttribute('stub'));
-    $self->addAsChild($id,$parent_id);  }
+    $self->addAsChild($id,$parent_id); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
 sub captioned_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if($id){
-    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
+    $$self{db}->register("ID:$id", id=>$id, type=>$tag, parent=>$parent_id,
+			 labels=>$self->noteLabels($node),
 			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
@@ -182,7 +186,8 @@ sub labelled_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if($id){
-    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
+    $$self{db}->register("ID:$id", id=>$id, type=>$tag, parent=>$parent_id,
+			 labels=>$self->noteLabels($node),
 			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
@@ -194,7 +199,8 @@ sub anchor_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if($id){
-    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,labels=>$self->noteLabels($node),
+    $$self{db}->register("ID:$id", id=>$id, type=>$tag, parent=>$parent_id,
+			 labels=>$self->noteLabels($node),
 			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 title=>$node->cloneNode(1)->childNodes, # document fragment?
@@ -254,7 +260,7 @@ sub bibitem_handler {
   if($id){
     if(my $key = $node->getAttribute('key')){
       $$self{db}->register("BIBLABEL:$key",id=>$id); }
-    $$self{db}->register("ID:$id", type=>$tag, parent=>$parent_id,
+    $$self{db}->register("ID:$id", id=>$id, type=>$tag, parent=>$parent_id,
 			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid      =>$self->inPageID($doc,$id),
 			 authors     =>$doc->findnode('ltx:bibtag[@role="authors"]',$node),
