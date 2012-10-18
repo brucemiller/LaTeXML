@@ -50,13 +50,16 @@ sub process {
     push(@docs,$self->processPages($doc,@{$$tree{children}}));
 
     $self->copyNavigation($tree);
-    # Add navigation to the sequence.
-    if(!$$self{no_navigation}){
-      my $rootid = $doc->getDocumentElement->getAttribute('xml:id');
-      $doc->addNavigation(start=>$rootid) if $rootid;
-      for(my $i=0; $i<$#docs; $i++){
-	$docs[$i]->addNavigation(next=>$docs[$i+1]->getDocumentElement->getAttribute('xml:id'));
-	$docs[$i+1]->addNavigation(previous=>$docs[$i]->getDocumentElement->getAttribute('xml:id')); }}
+    ### Disable this for now; We can deduce these relations in CrossRef.
+    ## Add navigation to the sequence.
+    # if(!$$self{no_navigation}){
+    #   my $rootid = $doc->getDocumentElement->getAttribute('xml:id');
+    #   $doc->addNavigation(start=>$rootid) if $rootid;
+    #   for(my $i=0; $i<$#docs; $i++){
+    # 	my $nextid = $docs[$i+1]->getDocumentElement->getAttribute('xml:id');
+    # 	my $previd = $docs[$i]->getDocumentElement->getAttribute('xml:id');
+    # 	$docs[$i]->addNavigation(next=>$nextid);
+    # 	$docs[$i+1]->addNavigation(previous=>$previd); }}
   }
   @docs; }
 
@@ -127,8 +130,6 @@ sub processPages {
       my $subdoc = $doc->newDocument($page,destination=>$$entry{name},
 				     parentDocument=>$doc,parent_id=>$$entry{upid});
       $$entry{document}=$subdoc;
-##      $subdoc->addNavigation(start=>$rootid) if $rootid;
-##      $subdoc->addNavigation(up=>$$entry{upid});
       push(@docs,$subdoc,@childdocs); }
     # Finally, add the toc to reflect the consecutive, removed nodes, and add back the remainder
     $doc->addNodes($parent,['ltx:TOC',{},['ltx:toclist',{},@toc]])
@@ -152,8 +153,8 @@ sub copyNavigation {
     if(! $childdoc->findnode("descendant::ltx:navigation")){
       $childdoc->addNodes($childdoc->getDocumentElement,$nav); } # cloning, as needed...
     $self->copyNavigation($child,$rootid); # now, recurse
-    $childdoc->addNavigation(start=>$rootid) if $rootid;
-    $childdoc->addNavigation(up=>$$entry{id});
+####    $childdoc->addNavigation(start=>$rootid) if $rootid;
+####    $childdoc->addNavigation(up=>$$entry{id});
  }}
 
 our $COUNTER=0;
