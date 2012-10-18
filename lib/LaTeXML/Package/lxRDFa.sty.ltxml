@@ -1,0 +1,192 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  lxRDFa                                                             | #
+# | LaTeXML support for RDFa                                            | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+use LaTeXML::Util::KeyVal;
+
+#======================================================================
+# Context
+# The default "initial context" for XML+RDFa specifies some default
+# terms and prefixes, but no default vocabulary.
+# Ought to have a default for @vocab, but settable?
+# can we detect use of simple "term"s in attributes so we know whether we need @vocab?
+# Ought to have a default set of prefixes from RDFa Core,
+# but allow prefixes to be added.
+# Probably ought to scan rdf attributes for all uses of prefixes,
+# and include them in @prefix
+# The following prefixes are listed in http://www.w3.org/2011/rdfa-context/rdfa-1.1
+our %rdf_prefixes = ("cc"     => "http://creativecommons.org/ns#",
+		     "ctag"   => "http://commontag.org/ns#",
+		     "dc"     => "http://purl.org/dc/terms/",
+		     "dcterms"=> "http://purl.org/dc/terms/",
+		     "ical"   => "http://www.w3.org/2002/12/cal/icaltzd#",
+		     "foaf"   => "http://xmlns.com/foaf/0.1/",
+		     "gr"     => "http://purl.org/goodrelations/v1#",
+		     "grddl"  => "http://www.w3.org/2003/g/data-view#",
+		     "ma"     => "http://www.w3.org/ns/ma-ont#",
+		     "og"     => "http://ogp.me/ns#",
+		     "owl"    => "http://www.w3.org/2002/07/owl#",
+		     "rdf"    => "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+		     "rdfa"   => "http://www.w3.org/ns/rdfa#",
+		     "rdfs"   => "http://www.w3.org/2000/01/rdf-schema#",
+		     "rev"    => "http://purl.org/stuff/rev#",
+		     "rif"    => "http://www.w3.org/2007/rif#",
+		     "rr"     => "http://www.w3.org/ns/r2rml#",
+		     "schema" => "http://schema.org/",
+		     "sioc"   => "http://rdfs.org/sioc/ns#",
+		     "skos"   => "http://www.w3.org/2004/02/skos/core#",
+		     "skosxl" => "http://www.w3.org/2008/05/skos-xl#",
+		     "v"      => "http://rdf.data-vocabulary.org/#",
+		     "vcard"  => "http://www.w3.org/2006/vcard/ns#",
+		     "void"   => "http://rdfs.org/ns/void#",
+		     "xhv"    => "http://www.w3.org/1999/xhtml/vocab#",
+		     "xml"    => "http://www.w3.org/XML/1998/namespace",
+		     "xsd"    => "http://www.w3.org/2001/XMLSchema#",
+		     "wdr"    => "http://www.w3.org/2007/05/powder#",
+		     "wdrs"   => "http://www.w3.org/2007/05/powder-s#",
+		    );
+
+AssignValue(RDFa_prefixes=>{},'global') unless LookupValue('RDFa_prefixes');
+
+foreach my $p (keys %rdf_prefixes){
+#  AssignValue('RDFa_prefix_'.$p=>$rdf_prefixes{$p},'global'); }
+  LookupValue('RDFa_prefixes')->{$p}=$rdf_prefixes{$p}; }
+
+# \lxRDFaPrefix{prefix}{initialurl}
+# If prefix is empty, this defines the vocabulary(?)
+DefPrimitive('\lxRDFaPrefix{}{}',  sub {
+  my($stomach,$prefix,$url)=@_;
+  $prefix = ToString(Expand($prefix));
+  $url = ToString(Expand($url));
+##  AssignValue(($prefix ? 'RDFa_prefix_'.$prefix : 'RDFa_vocabulary')=>$url,'global'); });
+  if($prefix){
+    LookupValue('RDFa_prefixes')->{$prefix}=$url; }
+  else {
+    AssignValue('RDFa_vocabulary'=>$url,'global'); }
+  return; });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Keywords for RDF Attributes
+
+#======================================================================
+# about: Establishes the subject for predicates appearing on the current element or descendants.
+#   about can be SafeCURIE, CURIE or IRI;
+#   Or, if the keyword is of the form \ref{label} or #id,
+#   it actually sets the aboutlabelref or aboutidref attribute (resp).
+#   These will be resolved back to a IRI for about during postprocessing.
+#   Note, however, that otherwise, the about need not be an explicit reference
+#   to a part of the document; it can be 'vitual'.
+DefKeyVal('RDFa',about       =>'Semiverbatim');
+#======================================================================
+# resource: Specifies the object of the a @property on the same element,
+#   AND specifies the subject for any predicates on descendant elements (chaining)
+#   resource can be SafeCURIE, CURIE or IRI;
+#   Or, if \ref{label} or #id, specifies resourcelabelref or resourceidref attribute.
+DefKeyVal('RDFa',resource    =>'Semiverbatim');
+#======================================================================
+# typeof : if @resource is on the same element, it forms a new triple indicating the type
+#   Otherwise, it creates an anonymous resource (blank node or bnode) with that type
+#   typeof can be a space separated list of: Term, CURIE or Abs. IRI
+DefKeyVal('RDFa',typeof      =>'Semiverbatim'); # space sep list of: Term, CURIE or Abs. IRI
+#======================================================================
+# property: specifies predicate(s) and asserts that the current subject is related to object
+#   * subject is @about on same element, or @resource/@typeof on ancestor, or document root;
+#   * object is @resource, @href, @content, @typeof on same element, or the text content
+#   resource can be a space separated list of: Term, CURIE or Abs. IRI.
+DefKeyVal('RDFa',property    =>'Semiverbatim');
+#======================================================================
+# rel : Exactly the same as @property, except that
+#   * can form multiple triples,
+#   * the objects being nearest @resource,@href on same or descendent
+#   rel can be a space separated list of: Term, CURIE or Abs. IRI.
+DefKeyVal('RDFa',rel         =>'Semiverbatim');
+#======================================================================
+# rev : Exactly the same as @rel, except that subject & object are reversed.
+#   rev can be a space separated list of: Term, CURIE or Abs. IRI
+DefKeyVal('RDFa',rev         =>'Semiverbatim');
+#======================================================================
+# content: specifies the object as a plain string in place of the element's content().
+DefKeyVal('RDFa',content     =>'Semiverbatim'); # CDATA
+#======================================================================
+# datatype: specifies the datatype of the content/content()
+DefKeyVal('RDFa',datatype    =>'Semiverbatim'); # Term, CURIE or Abs. IRI
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# href : specifies the object of a predicate.
+#   It is similar to @resource but does not chain to indicate subject
+#   @labelref, @idref and @href, and thus <ltx:ref>, can thus participate
+#   in RDFa by indicating the object of a predicate.
+#======================================================================
+# src : also indicates the object of a predicate
+#    @src doesn't appear directly in LaTeXML's schema,
+#    but <ltx:graphics @source> does, and is mapped to <img src..> in html.
+#    Should @source then act as an object?
+#======================================================================
+
+# Decipher the RDF Keywords into a hash of RDF attributes,
+# accounting for \ref{label} or #id in the about and resource keywords
+sub RDFAttributes {
+  my($keyvals)=@_;
+  my $hash = KeyVals($keyvals);
+  my $x;
+  foreach my $key (qw(about resource)){
+    if(($x = $$hash{$key}) && (ref $x eq 'LaTeXML::Whatsit')
+       && ($x->getDefinition->getCSName eq '\ref')){
+      $$hash{$key.'labelref'}=CleanLabel($x->getArg(2));
+      delete $$hash{$key}; }
+    elsif(($x=ToString($$hash{$key})) && ($x =~ /^#(.+)$/)){
+      $$hash{$key.'idref'}=ToString($1);
+      delete $$hash{$key}; }}
+  $hash; }
+
+# It ought to be wrong to put resource (or resourceXXref) attributes on an ltx:ref...
+
+#======================================================================
+# Adding RDF Attributes to arbitrary LaTeXML Markup.
+
+# Add attributes to the current node
+# \lxRDFa{keywordpairs}
+DefConstructor('\lxRDFa [Semiverbatim] RequiredKeyVals:RDFa',sub {
+  my($doc,$xpath,$kv)=@_;
+  my($save,$node);
+  if($xpath){
+    $save = $doc->getNode;
+    $node=$doc->findnode(ToString($xpath), $save); }
+  else {
+    $save = $doc->floatToAttribute('property'); # pic arbitrary rdf attribute
+    $node = $doc->getElement; }
+  my $attr = RDFAttributes($kv);
+  foreach my $k (keys %$attr){
+    $doc->setAttribute($node,$k=>ToString($$attr{$k})); }
+  $doc->setNode($save); });
+
+#======================================================================
+# Create an (invisible) metadata container, with the given RDF attributes.
+# \lxRDF{keyvals}
+DefConstructor('\lxRDF RequiredKeyVals:RDFa', "^<ltx:rdf %&RDFAttributes(#1)/>");
+
+
+# Create a visible text object, with the given RDF attributes
+# \lxRDFAnnotate{keyvals}{text}
+DefConstructor('\lxRDFAnnotate RequiredKeyVals:RDFa {}', "<ltx:text %&RDFAttributes(#1)>#2</ltx:text>");
+
+#======================================================================
+# Other shorthands might be useful, like
+#  DefMacro('\lxRDFResource[]{}{}','\@lxRDF{about={#1},predicate={#2},resource={#3}}');
+#  DefMacro('\lxRDFProperty[]{}{}','\@lxRDF{about={#1},predicate={#2},content={#3}}');
+# or maybe leave to other applications, till I get some feedback ?
+
+# Another useful thing might be the ability to attribute
+#    the current node, the previous node, the parent node...?
+#======================================================================
+1;
