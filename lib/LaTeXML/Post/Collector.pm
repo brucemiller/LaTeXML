@@ -68,10 +68,11 @@ sub makeSubCollectionDocuments {
     my $subdoc = ($i == 0 ? $doc
 		  : $doc->newDocument([$roottag,{'xml:id'=>$ids[$i][0]}],
 				      parentDocument=>$doc,
+				      parent_id=>$rootid,
 				      destination=>$self->getPageName($doc,$ids[$i][1])));
     push(@docs,$subdoc);
     $subdoc->addNodes($subdoc->findnode('//'.$roottag),
-		      ['ltx:title',{},@titlestuff,' ',$ids[$i][1]],
+		      ['ltx:title',{},@titlestuff,($i == 0 ? () : (' ',$ids[$i][1]))],
 		      ['ltx:TOC',{format=>'veryshort'},
 		       ['ltx:toclist',{},
 			map(($_ == $i
@@ -82,8 +83,9 @@ sub makeSubCollectionDocuments {
 			    0..$#ids)]],
 		      $collections{$ids[$i][1]});
     if($i > 0){
-      $docs[$i  ]->addNavigation(previous=>$ids[$i-1][0]);
-      $docs[$i-1]->addNavigation(next    =>$ids[$i  ][0]); }}
+####      $docs[$i  ]->addNavigation(previous=>$ids[$i-1][0]);
+####      $docs[$i-1]->addNavigation(next    =>$ids[$i  ][0]);
+ }}
   @docs; }
 
 sub rescan {
