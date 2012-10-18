@@ -308,7 +308,7 @@ sub formatBibEntry {
   push(@citedby,['ltx:bibref',{bibrefs=>join(',',sort keys %{$$entry{bibreferrers}}),
 			       show=>'refnum', class=>'citedby'}])
     if $$entry{bibreferrers};
-  push(@blocks,['ltx:bibblock',{class=>'bib-cited'},"Cited by: ",$doc->conjoin(', ',@citedby),'.']) if @citedby;
+  push(@blocks,['ltx:bibblock',{class=>'bib-cited'},"Cited by: ",$doc->conjoin(",\n",@citedby),'.']) if @citedby;
 
   ['ltx:bibitem',{'xml:id'=>$id, key=>$key, type=>$type,class=>"bib-$type"},
    @tags,
