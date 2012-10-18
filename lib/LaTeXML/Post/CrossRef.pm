@@ -41,9 +41,11 @@ sub process {
       $doc->addNodes($nav,$toc); }
     else {
       $doc->addNodes($doc->getDocumentElement,['ltx:navigation',{},$toc]); }}
+  $self->fill_in_relations($doc);
   $self->fill_in_tocs($doc);
   $self->fill_in_frags($doc);
   $self->fill_in_refs($doc);
+  $self->fill_in_RDFa_refs($doc);
   $self->fill_in_bibrefs($doc);
   if(($$self{verbosity} >= 0) && (keys %LaTeXML::Post::CrossRef::MISSING)){
     my $mentioned_tempid = 0;
@@ -62,6 +64,117 @@ sub note_missing {
   my($self,$type,$key)=@_;
   $LaTeXML::Post::CrossRef::MISSING{$type}{$key}++; }
 
+sub fill_in_relations {
+  my($self,$doc)=@_;
+  my $db = $$self{db};
+  if(my $id = $doc->getDocumentElement->getAttribute('xml:id')){
+    if(my $entry = $db->lookup("ID:".$id)){
+      # First, add the basic relations
+      my $x;
+      # Should we have many up's or up, upup, upupup..?
+      my $xentry= $entry;
+      my $rel = 'up';
+      while(($x = $xentry->getValue('parent')) && ($xentry = $db->lookup("ID:".$x))){
+	if($xentry->getValue('title')){ # it's interesting if it has a title (INCONSISTENT!!!)
+	  print STDERR "LINKING $id $rel=>".$xentry->getValue('id')."\n";
+	  $doc->addNavigation($rel=>$xentry->getValue('id')); 
+	  $rel .= 'up'; }}
+      if($xentry){
+	print STDERR "LINKING $id start=>".$xentry->getValue('pageid')."\n";
+	$doc->addNavigation(start=>$xentry->getValue('pageid')); }
+      if(my $prev = $self->findPreviousPage($entry)){ # previous page
+	print STDERR "LINKING $id prev=>".$prev->getValue('pageid')."\n";
+	$doc->addNavigation(prev=>$prev->getValue('pageid')); }
+      if(my $next =  $self->findNextPage($entry)){
+	print STDERR "LINKING $id next=>".$next->getValue('pageid')."\n";
+	$doc->addNavigation(next=>$next->getValue('pageid')); }
+
+      # Now, dig around for other interesting related documents
+      # Use the types themselves as relations for any parents, uncles, etc !?!?!
+      $xentry=$entry;
+      while($xentry = $self->getParentPage($xentry)){
+	# any siblings of (grand)parent are "interesting" structural elements
+	# OR, even more interesting: the index, bibliography related to current page!
+	foreach my $sib ($self->getChildPages($xentry)){
+	  my $sib_id = $sib->getValue('pageid');
+	  next if $sib_id eq $id;
+	  if($sib->getValue('primary')){	     # If a primary page
+	    # Use the element name (w/o prefix) as the relation !!!!
+	    my $rel = $sib->getValue('type'); $rel =~ s/^(\w+)://;
+	    print STDERR "LINKING $id $rel=>$sib_id\n";
+	    $doc->addNavigation($rel=>$sib_id); }
+	  else {		# Else, consider it as some sort of sidebar.
+	    print STDERR "LINKING $id sidebar=>$sib_id\n";
+	    $doc->addNavigation('sidebar'=>$sib_id); }}}
+      # Look at (only?) 1st level of pages below this one.
+      foreach my $child ($self->getChildPages($entry)){
+	my $child_id = $child->getValue('pageid');
+	if($child->getValue('primary')){	     # If a primary page
+	  # Use the element name (w/o prefix) as the relation !!!!
+	  my $rel = $child->getValue('type'); $rel =~ s/^(\w+)://;
+	  print STDERR "LINKING $id $rel=>$child_id\n";
+	  $doc->addNavigation($rel=>$child_id); }
+	else {		# Else, consider it as some sort of sidebar.
+	  print STDERR "LINKING $id sidebar=>$child_id\n";
+	  $doc->addNavigation('sidebar'=>$child_id); }}
+    }}}
+
+sub findPreviousPage {
+  my($self,$entry)=@_;
+  my $page = $entry->getValue('pageid');
+  # Look at parent's entry, and get the list of our siblings
+  if(my $pentry = $self->getParentPage($entry)){
+    my @sibs = $self->getChildPages($pentry);
+    while(@sibs && $sibs[$#sibs]->getValue('pageid') ne $page){ # peel off following sibs
+      pop(@sibs); }
+    return unless @sibs && $sibs[$#sibs]->getValue('pageid') eq $page; # Broken database?
+    pop(@sibs);			# Now skip our own entry ($id)
+    @sibs = grep($_->getValue('primary'),@sibs);
+    # If there IS a preceding sibling, find it's rightmost descendant
+    while(@sibs){
+      $pentry = $sibs[$#sibs]; 
+      @sibs = grep($_->getValue('primary'), $self->getChildPages($pentry)); }
+    $pentry; }}	# Return deepest page found
+
+sub findNextPage {
+  my($self,$entry)=@_;
+  # Return first child page, if any
+  my @ch = grep($_->getValue('primary'),$self->getChildPages($entry));
+  return $ch[0] if @ch;
+  my $page = $entry->getValue('pageid');
+  # Look at parent's entry, and get the list of siblings
+  while($entry = $self->getParentPage($entry)){
+    my @sibs = $self->getChildPages($entry);
+    while(@sibs && $sibs[0]->getValue('pageid') ne $page){ # peel off preceding sibs, till found,
+      shift(@sibs); }
+    return unless @sibs && ($sibs[0]->getValue('pageid') eq $page); # Broken database?
+    shift(@sibs);			# remove our own entry ($id)
+    @sibs = grep($_->getValue('primary'),@sibs); # Skip uninteresting pages
+    return $sibs[0] if @sibs;
+    $page = $entry->getValue('pageid'); }}
+
+sub getParentPage {
+  my($self,$entry)=@_;
+  my $x;
+  ($x = $entry->getValue('pageid')) && ($x = $$self{db}->lookup("ID:".$x))
+    && ($x= $x->getValue('parent')) && ($x = $$self{db}->lookup("ID:".$x))
+      && ($x= $x->getValue('pageid')) && ($x = $$self{db}->lookup("ID:".$x))
+	&& $x; }
+
+# Assuming this entry is for a page, find the closest descendants that are (distinct) pages
+sub getChildPages {
+  my($self,$entry)=@_;
+  my $page = $entry->getValue('pageid');
+  my @p=();
+  foreach my $ch (@{$entry->getValue('children')||[]}){
+    if(my $e = $$self{db}->lookup("ID:".$ch)){
+      if(my $p=$e->getValue('pageid')){ # if valid page
+	push(@p,($p ne $page ? ($e) : $self->getChildPages($e))); }}}
+  @p; }
+
+# this is probably the same as "Interesting" for the above relations.
+# To make it more extensible, it really should be integrated into the database?
+# Eg. "sectional" things might mark their entries specially?
 our $normaltoctypes = {map( ($_=>1), qw(ltx:document ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
 				      ltx:paragraph ltx:subparagraph ltx:index ltx:bibliography ltx:appendix))};
 
@@ -192,6 +305,34 @@ sub fill_in_refs {
     }}
   $self->ProgressDetailed($doc,"Filled in $n refs"); }
 
+# similar sorta thing for RDF about & resource labels & ids
+sub fill_in_RDFa_refs {
+  my($self,$doc)=@_;
+  my $db = $$self{db};
+  $self->ProgressDetailed($doc,"Filling in RDFa refs");
+  my $n=0;
+  foreach my $key (qw(about resource)){
+    foreach my $ref ($doc->findnodes('descendant::*[@'.$key.'idref or @'.$key.'labelref]')){
+      my $id = $ref->getAttribute($key.'idref');
+      if(!$id){
+	if(my $label = $ref->getAttribute($key.'labelref')){
+	  my $entry;
+	  if(($entry = $db->lookup($label)) && ($id=$entry->getValue('id'))){
+	  }
+	  else {
+	    $self->note_missing("Target for $key Label",$label);
+	  }}}
+      if($id){
+	$n++;
+	if(!$ref->getAttribute($key)){
+	  if($db->lookup("ID:".$id)){ # RDF "id" need not be real, valid, ids!!!
+	    if(my $url = $self->generateURL($doc,$id)){
+	      $ref->setAttribute($key=>$url); }}
+	  else {
+	    $ref->setAttribute($key=>'#'.$id); }}
+      }}}
+  set_RDFa_prefixes($doc->getDocument, {}); # what prefixes??
+  $self->ProgressDetailed($doc,"Filled in $n RDFa refs"); }
 
 # Needs to evolve into the combined stuff that we had in DLMF.
 # (eg. concise author/year combinations for multiple bibrefs)
