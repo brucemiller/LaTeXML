@@ -32,13 +32,11 @@
       --> by LaTeXML<!--
       --><xsl:if test="$LATEXML_VERSION"> (version <xsl:value-of select="$LATEXML_VERSION"/>)</xsl:if><!--
       --> http://dlmf.nist.gov/LaTeXML/.</xsl:comment>
-      <xsl:text>
-      </xsl:text>
+      <xsl:text>&#x0A;</xsl:text>
     </xsl:if>
     <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1]">
       <xsl:comment>Document created on <xsl:value-of select='//ltx:date/node()'/>.</xsl:comment>
-      <xsl:text>
-      </xsl:text>
+      <xsl:text>&#x0A;</xsl:text>
     </xsl:if>
   </xsl:template>
 
@@ -64,6 +62,7 @@
     <xsl:call-template name="add_style">
       <xsl:with-param name="extra_style" select="string($extra_style)"/>
     </xsl:call-template>
+    <xsl:call-template name="add_RDFa"/>
   </xsl:template>
 
 
@@ -139,20 +138,6 @@
     </func:result>
   </func:function>
 
-<!--
-  <xsl:template name="add_classes">
-    <xsl:param name="extra_classes" select="''"/>
-      <xsl:attribute name="class">
-	<xsl:value-of
-	    select="concat(local-name(.),
-		           f:if(@class,concat(' ',@class),''),
-			   f:if(@font,concat(' ',@font),''),
-			   f:if(@fontsize,concat(' ',@fontsize),''),
-			   f:if($extra_classes,concat(' ',$extra_classes),'')
-			 )"/>
-      </xsl:attribute>
-  </xsl:template>
--->
 
   <!-- template add_style adds a css style attribute to the current html element
        according to attributes of the context node.
@@ -229,65 +214,41 @@
     </func:result>
   </func:function>
 
-<!--
-  <xsl:template name="add_style">
-    <xsl:param name="extra_style" select="''"/>
-    <xsl:if test="@float or @width or @height or @pad-width or @pad-height or @xoffset or @yoffset
-		  or @color or @backgroundcolor or @opacity or @framed or @align or @vattach
-		  or @imagedepth or boolean($extra_style)">
-      <xsl:attribute name="style">
-	<xsl:if test="@float">
-	  <xsl:value-of select="concat('float:',@float,';')"/>
-	</xsl:if>
-	<xsl:if test="@width">
-	  <xsl:value-of select="concat('width:',@width,';')"/>
-	</xsl:if>
-	<xsl:if test="@height">
-	  <xsl:value-of select="concat('height:',@height,';')"/>
-	</xsl:if>
-	<xsl:if test="@depth">
-	  <xsl:value-of select="concat('vertical-align:',@depth,';')"/>
-	</xsl:if>
-	<xsl:if test="@pad-width">
-	  <xsl:value-of select="concat('height:',@pad-width,';')"/>
-	</xsl:if>
-	<xsl:if test="@pad-height">
-	  <xsl:value-of select="concat('height:',@pad-height,';')"/>
-	</xsl:if>
-	<xsl:if test="@xoffset">
-	  <xsl:value-of select="concat('position:relative; left:',@xoffset,';')"/>
-	</xsl:if>
-	<xsl:if test="@yoffset">
-	  <xsl:value-of select="concat('position:relative; bottom:',@yoffset,';')"/>
-	</xsl:if>
-	<xsl:if test="@color">
-	  <xsl:value-of select="concat('color:',@color,';')"/>
-	</xsl:if>
-	<xsl:if test="@backgroundcolor">
-	  <xsl:value-of select="concat('background-color:',@backgroundcolor,';')"/>
-	</xsl:if>
-	<xsl:if test="@opacity">
-	  <xsl:value-of select="concat('opacity:',@opacity,';')"/>
-	</xsl:if>
-	<xsl:if test="@framed='rectangle'">
-	  <xsl:value-of select="'border:1px solid black;'"/>
-	</xsl:if>
-	<xsl:if test="@framed='underline'">
-	  <xsl:value-of select="'text-decoration:underline;'"/>
-	</xsl:if>
-	<xsl:if test="@align">
-	  <xsl:value-of select="concat('text-align:',@align,';')"/>
-	</xsl:if>
-	<xsl:if test="@vattach">
-	  <xsl:value-of select="concat('vertical-align:',@vattach,';')"/>
-	</xsl:if>
-	<xsl:if test="$extra_style">
-	  <xsl:value-of select="$extra_style"/>
-	</xsl:if>
-      </xsl:attribute>
+  <xsl:template name="add_RDFa">
+    <xsl:if test="@vocab">
+      <xsl:attribute name="vocab"><xsl:value-of select="@vocab"/></xsl:attribute>
+    </xsl:if>
+    <xsl:if test="@prefix">
+      <xsl:attribute name="prefix"><xsl:value-of select="@prefix"/></xsl:attribute>
+    </xsl:if>
+    <xsl:if test="@about">
+      <xsl:attribute name="about"><xsl:value-of select="@about"/></xsl:attribute>
+    </xsl:if>
+    <xsl:if test="@resource">
+      <xsl:attribute name="resource"><xsl:value-of select="@resource"/></xsl:attribute>
+    </xsl:if>
+    <xsl:if test="@property">
+      <xsl:attribute name="property"><xsl:value-of select="@property"/></xsl:attribute>
+    </xsl:if>
+    <xsl:if test="@rel">
+      <xsl:attribute name="rel"><xsl:value-of select="@rel"/></xsl:attribute>
+    </xsl:if>
+    <xsl:if test="@rel">
+      <xsl:attribute name="rel"><xsl:value-of select="@rel"/></xsl:attribute>
+    </xsl:if>
+    <xsl:if test="@rev">
+      <xsl:attribute name="rev"><xsl:value-of select="@rev"/></xsl:attribute>
+    </xsl:if>
+    <xsl:if test="@typeof">
+      <xsl:attribute name="typeof"><xsl:value-of select="@typeof"/></xsl:attribute>
+    </xsl:if>
+    <xsl:if test="@datatype">
+      <xsl:attribute name="datatype"><xsl:value-of select="@datatype"/></xsl:attribute>
+    </xsl:if>
+    <xsl:if test="@content">
+      <xsl:attribute name="content"><xsl:value-of select="@content"/></xsl:attribute>
     </xsl:if>
   </xsl:template>
--->
 
   <func:function name="f:LaTeXML-icon">
     <func:result>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAUCAYAAABSx2cSAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9wGEBQiL2E9pB4AAAAddEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAA21JREFUOMt9lM1LK2cUh39vJo6TGr2mTnX8uCY1antp1IrChRq8UEuhKHdzqUhLFoJLV4UguJCLBKr4F9guXBQXYkFaXNVtQRFvJIb4kY9xaogTIU41auLMmzdvF1YLF+tveeA5D4fDOYLH42lTFEU3TTNrWVYYAGw2WzOAPgB/AzDxP7F7PJ5vfD5fZSwWm+vu7n7ucDjM1dXVrwkhmWQy+T2eiHB1ddVRX1//ZmJi4oOTk5NXkiQNOauqPjo9Pf3ZMIx3T8H26enpPsMw8Pv6OsLvwuBlho5PPtUHBgZSiUQCT2Z/f38zEAhwh0vmzZ2fcdgreLXyXCPAMAAEg0G8ffv2UdbmdDrN0dFRDH3xEpl4DChR8CvD+eXQ0McAsLCwAACPNrATQlwjIyNQFAUXl5eIRqPcbrfXiaL4w9TU1K0sy78Gg8GLR+3ZbJZzzsuMMb69vc1DoVC5tbW1XFNTwwOBAJ+fn/9xZmam+jE70XU9ryhK9X3h/Pwcy8vLWFpa4k1NTaS/v78oCMI453zlfdhmGMZvAFAul3mxWERdXR3GxsYwPj5OWlpaeLFYdAD4FoDyvt2madpPpmmCUopkMnm3fEGAy+WCLMtEkiRwzr8yTbMRACYnJ/+Dj46OdnK53EG5XCa6rgMAGGO4vb2FIAgQRRGMsWfNzc2j0WjUIcsyZmdn7yShUKiUTqfrvV7vq3ujZVk4Pj7G2dkZMpkMd7vdRJblvsPDwz8FQdAWFxfvzGtra0TTtG3DMNDW1oZ/DwOCICAej0PTNOJ2u3mhUHDkcrmXvb29lQ97vrm54aVSKXNwcIBIJMJVVSUulwvFYhGqqqK9vR2NjY3IZDJgjH0oCILtYeZsNovLy8uznZ0daJpGfD4fKKWIxWIwDANerxdVVVWglIIxlrIsiz6YV1ZWIElSAQB6enrQ1dUFSZIwNzeHQqEAQggSiQTZ3d3VI5HIH3t7e1QUxQ5K6S8CAPj9/s9VVZ3Y2tpCbW0tCCEIh8P8+voaDQ0NZGNjA6lUqnJwcNAZDAbD8Xh8XNf17wgh5AWADUJIbUVFxa7f78/abLY3qqqSdDoNxlieMRYbHh7u7OzsrKOUlsLhsH1zc/Mvcv8UAMButzNRFBVK6WtKaQWAFIAtABder7cyn88/y+fzLyzL6uOcr/8DGmSkFuD9nqgAAAAASUVORK5CYII=</func:result></func:function>
