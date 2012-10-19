@@ -1416,7 +1416,12 @@ sub InputDefinitions {
       # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
       if(my $passoptions= $options{withoptions} && $prevname
 	 && LookupValue('opt@'.$prevname.".".$prevext)){
-	PassOptions($name,$astype,@$passoptions); }
+	# Only pass those class options that are declared by the package!
+	my @declaredoptions = @{LookupValue('@declaredoptions')};
+	my @topass = ();
+	foreach my $op (@$passoptions){
+	  push(@topass,$op) if grep($op eq $_, @declaredoptions); }
+	PassOptions($name,$astype,@topass) if @topass; }
       DefMacroI('\@currname',undef,Tokens(Explode($name)));
       DefMacroI('\@currext',undef,Tokens(Explode($astype)));
       # reset options (Note reset & pass were in opposite order in LoadClass ????)
