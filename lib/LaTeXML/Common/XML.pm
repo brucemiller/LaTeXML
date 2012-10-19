@@ -207,6 +207,7 @@ sub set_RDFa_prefixes {
     my @x = split(/\s/,$prefixes);
     while(@x){
       my($prefix,$uri)=(shift(@x),shift(@x));
+      $prefix=~ s/:$//;
       $prefixes{$prefix}=1;
       if(!$localmap{$prefix}){
 	$localmap{$prefix} = $uri; }
@@ -230,7 +231,7 @@ sub set_RDFa_prefixes {
 	foreach my $term (split(/\s/,$v)){
 	  if(($term =~ /^(\w+):/) && !$NON_RDF_PREFIXES{$1}){
 	    $prefixes{$1}=1; }}}}}
-  if(my $prefixes = join(' ',map( ($_,$localmap{$_}), keys %prefixes))){
+  if(my $prefixes = join(' ',map( $_.": ".$localmap{$_}, keys %prefixes))){
     $root->setAttribute(prefix=>$prefixes); }}
 
 ######################################################################
