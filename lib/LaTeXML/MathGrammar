@@ -74,10 +74,11 @@ AnythingAny :
 	| METARELOP Formula		  { Apply($item[1],Absent(),$item[2]); }
 	| AnyOp (PUNCT(?) AnyOp {[$item[1]->[0]||InvisibleComma(), $item[2]]})(s)
 	    			          { NewList($item[1],map(@$_,@{$item[2]})); }
-        | FLOATSUPERSCRIPT FLOATSUBSCRIPT  { NewScript(NewScript(Absent(),$item[1]),$item[2]); }
-        | FLOATSUBSCRIPT FLOATSUPERSCRIPT  { NewScript(NewScript(Absent(),$item[1]),$item[2]); }
-        | FLOATSUPERSCRIPT  { NewScript(Absent(),$item[1]); }
-        | FLOATSUBSCRIPT    { NewScript(Absent(),$item[1]); }
+        | FLOATSUPERSCRIPT FLOATSUBSCRIPT { NewScript(NewScript(Absent(),$item[1]),$item[2]); }
+        | FLOATSUBSCRIPT FLOATSUPERSCRIPT { NewScript(NewScript(Absent(),$item[1]),$item[2]); }
+        | FLOATSUPERSCRIPT  		  { NewScript(Absent(),$item[1]); }
+        | FLOATSUBSCRIPT    		  { NewScript(Absent(),$item[1]); }
+ 	| AnyOp Expression                { Apply($item[1],Absent(),$item[2]);}
 					  
 # a top level rule for sub and superscripts that can accept all sorts of junk.
 Subscript : <rulevar: local $MaxAbsDepth = $LaTeXML::MathParser::MAX_ABS_DEPTH>
