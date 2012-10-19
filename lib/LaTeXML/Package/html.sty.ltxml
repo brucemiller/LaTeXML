@@ -74,7 +74,15 @@ DefConstructorI(T_CS("\\begin{htmlonly}"),undef,'', reversion=>'',
 				my @lines = $stomach->getGullet->getMouth->readRawLines($end,0);
 				NoteProgress("[Skip htmlonly (".scalar(@lines)."lines)]"); }]);
 DefMacro('\html{}','');
-DefEnvironment('{latexonly}','#body'); # Include this (?)
+# I assume we should go ahead and try to include this material?
+DefEnvironment('{latexonly}','#body');
+# If we get a plain \latexonly, instead of an environment,
+# look for \latexonly{some material}
+DefMacro('\latexonly',sub {
+  my($gullet)=@_;
+  ($gullet->ifNext(T_BEGIN) ? T_CS('\latexonly@onearg') : T_CS('\begin{latexonly}')); });
+DefMacro('\latexonly@onearg{}','#1');
+
 DefMacro('\latex{}','#1');
 DefMacro('\latexhtml{}{}','#1');
 
