@@ -76,17 +76,13 @@ sub fill_in_relations {
       my $rel = 'up';
       while(($x = $xentry->getValue('parent')) && ($xentry = $db->lookup("ID:".$x))){
 	if($xentry->getValue('title')){ # it's interesting if it has a title (INCONSISTENT!!!)
-	  print STDERR "LINKING $id $rel=>".$xentry->getValue('id')."\n";
 	  $doc->addNavigation($rel=>$xentry->getValue('id')); 
 	  $rel .= 'up'; }}
       if($xentry){
-	print STDERR "LINKING $id start=>".$xentry->getValue('pageid')."\n";
 	$doc->addNavigation(start=>$xentry->getValue('pageid')); }
       if(my $prev = $self->findPreviousPage($entry)){ # previous page
-	print STDERR "LINKING $id prev=>".$prev->getValue('pageid')."\n";
 	$doc->addNavigation(prev=>$prev->getValue('pageid')); }
       if(my $next =  $self->findNextPage($entry)){
-	print STDERR "LINKING $id next=>".$next->getValue('pageid')."\n";
 	$doc->addNavigation(next=>$next->getValue('pageid')); }
 
       # Now, dig around for other interesting related documents
@@ -101,10 +97,8 @@ sub fill_in_relations {
 	  if($sib->getValue('primary')){	     # If a primary page
 	    # Use the element name (w/o prefix) as the relation !!!!
 	    my $rel = $sib->getValue('type'); $rel =~ s/^(\w+)://;
-	    print STDERR "LINKING $id $rel=>$sib_id\n";
 	    $doc->addNavigation($rel=>$sib_id); }
 	  else {		# Else, consider it as some sort of sidebar.
-	    print STDERR "LINKING $id sidebar=>$sib_id\n";
 	    $doc->addNavigation('sidebar'=>$sib_id); }}}
       # Look at (only?) 1st level of pages below this one.
       foreach my $child ($self->getChildPages($entry)){
@@ -112,10 +106,8 @@ sub fill_in_relations {
 	if($child->getValue('primary')){	     # If a primary page
 	  # Use the element name (w/o prefix) as the relation !!!!
 	  my $rel = $child->getValue('type'); $rel =~ s/^(\w+)://;
-	  print STDERR "LINKING $id $rel=>$child_id\n";
 	  $doc->addNavigation($rel=>$child_id); }
 	else {		# Else, consider it as some sort of sidebar.
-	  print STDERR "LINKING $id sidebar=>$child_id\n";
 	  $doc->addNavigation('sidebar'=>$child_id); }}
     }}}
 
