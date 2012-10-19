@@ -3171,8 +3171,14 @@ DefMacroI('<',undef,sub{
   my($gullet)=@_;
   if($gullet->ifNext(T_OTHER('<'))){
     $gullet->readToken;
-    T_CS('\ll'); }
-  # leq ? hmmmm
+    if($gullet->ifNext(T_OTHER('<'))){
+      $gullet->readToken;
+      T_CS('\@lll'); }
+    else {
+      T_CS('\ll'); }}
+  elsif($gullet->ifNext(T_OTHER('='))){
+    $gullet->readToken;
+    T_CS('\leq'); }
   else {
     T_CS('\@@<'); }},
 	 mathactive=>1);	# Only in math!
@@ -3181,7 +3187,11 @@ DefMacroI('>',undef,sub{
   my($gullet)=@_;
   if($gullet->ifNext(T_OTHER('>'))){
     $gullet->readToken;
-    T_CS('\gg'); }
+    if($gullet->ifNext(T_OTHER('>'))){
+      $gullet->readToken;
+      T_CS('\@@ggg'); }
+    else {
+      T_CS('\gg'); }}
   elsif($gullet->ifNext(T_OTHER('='))){
     $gullet->readToken;
     T_CS('\geq'); }
@@ -3191,6 +3201,9 @@ DefMacroI('>',undef,sub{
 
 DefMathI('\@@>',undef, '>', role=>'RELOP', meaning=>'greater-than', name=>'', reversion=>'>');
 DefMathI('\@@<',undef, '<', role=>'RELOP', meaning=>'less-than',    name=>'', reversion=>'<');
+# Normally defined in amssymb, but we need them here.
+DefMath('\@@lll',"\x{22D8}", role=>'RELOP',meaning=>'very-much-less-than');
+DefMath('\@@ggg',"\x{22D9}", role=>'RELOP',meaning=>'very-much-greater-than');
 
 #======================================================================
 # Combine letters, when the fonts are right. (sorta related to mathcode)
