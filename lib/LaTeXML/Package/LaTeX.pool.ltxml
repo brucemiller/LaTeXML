@@ -2286,6 +2286,13 @@ DefConstructor('\label Semiverbatim',  sub {
 		   $_[0]->endMode('text'); }
 		 return; });
 
+# If a node has been labeled, but still  hasn't yet got an id by afterClose:late,
+# we'd better generate an id for it.
+Tag('ltx:*','afterClose:late'=>sub{
+  my($document,$node)=@_;
+  if($node->hasAttribute('labels') && !($node->hasAttribute('xml:id'))){
+    GenerateID($document,$node); }});
+
 # These will get filled in during postprocessing.
 # * is added to accommodate hyperref
 DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label'/>",
