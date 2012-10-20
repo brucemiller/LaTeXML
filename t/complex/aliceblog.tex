@@ -6,7 +6,7 @@
 \title{Alice's Blog}
 \author{Alice}
 \begin{document}
-\lxRDF{about=\ref{blog:photos},property={http://creativecommons.org/ns#license},resource=\ref{license}}
+\lxRDF{about=\ref{blog:photos},property={cc:license},resource=\ref{license}}
 \lxRDF{property={foaf:neighbor},resource={#fredblog}}
 
 \maketitle
@@ -31,23 +31,23 @@ My Buddies:
 
 \paragraph{The Trouble with Bob\lxRDFa{property={dcterms:title}}}\label{blog:trouble}
 \lxRDFa{resource={/alice/posts/trouble_with_bob},typeof={schema:BlogPosting}}
-Date: \lxRDFAnnotate{property={http://purl.org/dc/terms/created},content={2011-09-10}}{10$^{th}$ of September, 2011}.\\
+Date: \lxRDFAnnotate{property={dcterms:created},datatype={xsd:date},content={2011-09-10}}{10$^{th}$ of September, 2011}.\\
 \lxRDFAnnotate{property={dcterms:creator schema:creator}}{Alice}.
 
 
 The trouble with Bob is that he takes much better photos than I do.
 \lxRDFa{property={schema:articleBody}}
 
-% \includegraphics{sunset.jpg}
-% \lxRDFa{resource={http://examplecom/bob/photos/sunset.jpg}}
-% \lxRDFAnnotate{property={dcterms:title}}{Beautiful Sunset}
-% by
-% \lxRDFAnnotate{property={dcterms:creator}}{Bob}.
+\includegraphics{sunset.jpg}
+\lxRDFa{resource={http://examplecom/bob/photos/sunset.jpg}}
+\lxRDFAnnotate{property={dcterms:title}}{Beautiful Sunset}
+by
+\lxRDFAnnotate{property={dcterms:creator}}{Bob}.
 
 \paragraph{Jo's Barbeque\lxRDFa{property={dcterms:title}}}\label{blog:josbbq}
 \lxRDFa{resource={/alice/posts/jos_barbeque},typeof={schema:BlogPosting}}
 
-Date: \lxRDFAnnotate{property={dcterms:created},content={2011-09-14}}%
+Date: \lxRDFAnnotate{property={dcterms:created},datatype={xsd:date},content={2011-09-14}}%
   {14$^{th}$ of September, 2011}.\\
 
 \lxRDFAnnotate{property={dcterms:creator}}{Eve}.
@@ -57,7 +57,7 @@ Date: \lxRDFAnnotate{property={dcterms:created},content={2011-09-14}}%
 \paragraph{I will post my photos nevertheless\ldots\lxRDFa{property={dcterms:title}}}\label{blog:photos}
 \lxRDFa{resource={/alice/posts/my_photos},typeof={schema:BlogPosting}}
 
-Date: \lxRDFAnnotate{property={dcterms:created},content={2011-09-15}}%
+Date: \lxRDFAnnotate{property={dcterms:created},datatype={xsd:date},content={2011-09-15}}%
   {15$^{th}$ of September, 2011}.\\
 
 \lxRDFAnnotate{property={dcterms:creator},resource={#me}}{Alice}.
@@ -66,7 +66,7 @@ Date: \lxRDFAnnotate{property={dcterms:created},content={2011-09-15}}%
 
 \section{License}\label{license}
 All content on this site is licensed under
-\URL[a Creative Commons License\lxRDFa{property={http://creativecommons.org/ns#license}}]{
+\URL[a Creative Commons License\lxRDFa{property={cc:license}}]{
 http://http://creativecommons.org/licenses/by/3.0/}.
 \copyright\ Alice Birpemswick.
 
