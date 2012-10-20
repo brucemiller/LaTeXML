@@ -196,7 +196,7 @@ sub initialize_catalogs {
 # Odd place for this utility, but it is needed in both conversion & post
 # ALSO needs error reporting capability.
 
-our @RDF_TERM_ATTRIBUTES = (qw(property typeof rel rev));
+our @RDF_TERM_ATTRIBUTES = (qw(about resource property typeof rel rev datatype));
 our %NON_RDF_PREFIXES = map( ($_=>1), qw(http https ftp));
 sub set_RDFa_prefixes {
   my($document,$map)=@_;
@@ -230,7 +230,7 @@ sub set_RDFa_prefixes {
       if(my $v = $node->getAttribute($k)){
 	foreach my $term (split(/\s/,$v)){
 	  if(($term =~ /^(\w+):/) && !$NON_RDF_PREFIXES{$1}){
-	    $prefixes{$1}=1; }}}}}
+	    $prefixes{$1}=1 if $localmap{$1}; }}}}} # A prefix is a prefix IFF there is a mapping!!
   if(my $prefixes = join(' ',map( $_.": ".$localmap{$_}, keys %prefixes))){
     $root->setAttribute(prefix=>$prefixes); }}
 
