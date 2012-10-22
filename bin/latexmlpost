@@ -22,7 +22,7 @@ my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
 my($sourcedir,$destination)=(undef,undef);
 my($format,$is_html,$urlstyle) = (undef,undef,'server');
 my($numbersections)=(1);
-my($stylesheet,$defaultcss,$icon,@css,@javascript)=(undef,1);
+my($stylesheet,$defaultcss,$icon,@css,@javascript,@xsltparameters)=(undef,1);
 my($mathimages,$mathimagemag)=(undef,1.75);
 my($linelength,$plane1,$hackplane1)=(undef,undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
@@ -70,7 +70,8 @@ GetOptions("quiet"     => sub { $verbosity--; },
 	   "defaultcss!"           =>\$defaultcss,
 	   "css=s"                 =>\@css,
 	   "javascript=s"          =>\@javascript,
-	   "icon=s"                 =>\$icon,
+	   "icon=s"                =>\$icon,
+	   "xsltparameter=s"       =>\@xsltparameters,
 	   # Options for broader document set processing
 	   "split!"                =>\$split,
 	   "splitat=s"             =>sub { $splitat=$_[1]; $split=1 unless defined $split;},
@@ -391,6 +392,12 @@ if(!$prescan){
       $timestamp = localtime(); }
     if($timestamp){
       $$parameters{TIMESTAMP}="'".$timestamp."'"; }
+    # Now add in the explicitly given XSLT parameters
+    foreach my $parm (@xsltparameters){
+      if($parm =~ /^\s*(\w+)\s*:\s*(.*)$/){
+	$$parameters{$1}="'".$2."'"; }
+      else {
+	warn "xsltparameter not in recognized format: 'name:value' got: '$parm'\n"; }}
     push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,parameters=>$parameters, %OPTIONS)); }
 
   push(@procs,LaTeXML::Post::Writer->new(format=>$format,omit_doctype=>$omit_doctype,is_html=>$is_html,%OPTIONS));
@@ -462,6 +469,7 @@ latexmlpost [options] I<xmlfile>
  --nodefaultcss          disables the default css stylesheet
  --javscript=jsfile      adds a link to a javascript file into
                          html/html5/xhtml (can be repeated)
+ --xsltparameter=name:value passes parameters to the XSLT stylesheet.
  --split                 requests splitting each document
  --nosplit               disables the above (default)
  --splitat               specifies level to split the document
@@ -633,6 +641,11 @@ Provides a timestamp (typically a time and date) to be embedded in
 the comments by the stock XSLT stylesheets.
 If you don't supply a timestamp, the current time and date will be used.
 (You can use C<--timestamp=0> to omit the timestamp).
+
+=item C<--xsltparameter>=I<name>:I<value>
+
+Passes parameters to the XSLT stylesheet.
+See the manual or the stylesheet itself for available parameters.
 
 =back
 
