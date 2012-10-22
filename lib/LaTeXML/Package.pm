@@ -59,11 +59,12 @@ our @EXPORT = (qw(&DefExpandable
 	       # Access to State
 	       qw(&LookupValue &AssignValue
 		  &PushValue &PopValue &UnshiftValue &ShiftValue
+		  &LookupMapping &AssignMapping &LookupMappingKeys
 		  &LookupCatcode &AssignCatcode
 		  &LookupMeaning &LookupDefinition &InstallDefinition),
 
 	       # Random low-level token or string operations.
-	       qw(&CleanLabel &CleanIndexKey &CleanBibKey &CleanURL
+	       qw(&CleanID &CleanLabel &CleanIndexKey &CleanBibKey &CleanURL
 		  &UTF
 		  &roman &Roman),
 	       # Math & font state.
@@ -139,6 +140,9 @@ sub PushValue    { $STATE->pushValue(@_);  return; }
 sub PopValue     { $STATE->popValue(@_); }
 sub UnshiftValue { $STATE->unshiftValue(@_);  return; }
 sub ShiftValue   { $STATE->shiftValue(@_); }
+sub LookupMapping{ $STATE->lookupMapping(@_); }
+sub AssignMapping{ $STATE->assignMapping(@_); }
+sub LookupMappingKeys { $STATE->lookupMappingKeys(@_); }
 sub LookupCatcode{ $STATE->lookupCatcode(@_); }
 sub AssignCatcode{ $STATE->assignCatcode(@_); return; }
 sub LookupMeaning      { $STATE->lookupMeaning(@_); }
@@ -206,18 +210,26 @@ sub Roman { ExplodeText(uc(roman_aux(@_))); }
 #======================================================================
 # Cleaners
 #======================================================================
-# Gradually rethink all these and clarify.
-#  Are they intended to be valid ID's (or fragment ids?)
+
+sub CleanID {
+  my($key)=@_;
+  $key = ToString($key);
+  $key =~ s/^\s+//s; $key =~ s/\s+$//s; # Trim leading/trailing, in any case
+  $key =~ s/\s//sg;
+  $key =~ s/:/../g;		# No colons!
+  $key; }
 
 sub CleanLabel {
   my($label,$prefix)=@_;
   my $key = ToString($label);
-  $key =~ s/\s+/_/g;
+  $key =~ s/^\s+//s; $key =~ s/\s+$//s; # Trim leading/trailing, in any case
+  $key =~ s/\s+/_/sg;
   ($prefix||"LABEL").":".$key; }
 
 sub CleanIndexKey {
   my($key)=@_;
   $key = ToString($key);
+  $key =~ s/^\s+//s; $key =~ s/\s+$//s; # Trim leading/trailing, in any case
   # We don't want accented chars (do we?) but we need to decompose the accents!
   $key = NFD($key); 
   $key =~ s/[^a-zA-Z0-9]//g;
@@ -226,16 +238,17 @@ sub CleanIndexKey {
 ##  $key =~ tr|A-Z|a-z|;
   $key; }
 
-# used as id.
 sub CleanBibKey {
   my($key)=@_;
-  $key = lc(ToString($key));
-  $key =~ s/\s//g;
+  $key = lc(ToString($key));		# Case insensitive
+  $key =~ s/^\s+//s; $key =~ s/\s+$//s; # Trim leading/trailing, in any case
+  $key =~ s/\s//sg;
   $key; }
 
 sub CleanURL {
   my($url)=@_;
   $url = ToString($url);
+  $url =~ s/^\s+//s; $url =~ s/\s+$//s; # Trim leading/trailing, in any case
   $url =~ s/\\~{}/~/g;
   $url; }
 
@@ -2995,16 +3008,45 @@ therefor also be scoped).  The recognized configuration parameters are:
 =item C<< PushValue($type,$name,@values); >>
 
 X<PushValue>
-This is like C<AssignValue>, but pushes values onto 
-the end of the value, which should be a LIST reference.
-Scoping is not handled here (yet?), it simply pushes the value
-onto the last binding of C<$name>.
+This function, along with the next three are like C<AssignValue>,
+but maintain a global list of values.
+C<PushValue> pushes the provided values onto the end of a list.
+The data stored for C<$name> is global and must be a LIST reference; it is created if needed.
 
 =item C<< UnshiftValue($type,$name,@values); >>
 
 X<UnshiftValue>
-Similar to  C<PushValue>, but pushes a value onto 
-the front of the values, which should be a LIST reference.
+Similar to  C<PushValue>, but pushes a value onto the front of the list.
+The data stored for C<$name> is global and must be a LIST reference; it is created if needed.
+
+=item C<< PopValue($type,$name); >>
+
+X<PopValue>
+Removes and returns the value on the end of the list named by C<$name>.
+The data stored for C<$name> is global and must be a LIST reference.
+Returns C<undef> if there is no data in the list.
+
+=item C<< ShiftValue($type,$name); >>
+
+X<ShiftValue>
+Removes and returns the first value in the list named by C<$name>.
+The data stored for C<$name> is global and must be a LIST reference.
+Returns C<undef> if there is no data in the list.
+
+=item C<< LookupMapping($type,$name,$key); >>
+
+X<LookupMapping>
+This function maintains a hash association named by C<$name>.
+It returns the value associated with C<$key> within that mapping.
+The data stored for C<$name> is global and must be a HASH reference.
+Returns C<undef> if there is no data associated with C<$key> in the mapping,
+or the mapping is not (yet) defined.
+
+=item C<< AssignMapping($type,$name,$key,$value); >>
+
+X<AssignMapping>
+This function associates C<$value> with C<$key> within the mapping named by C<$name>.
+The data stored for C<$name> is global and must be a HASH reference; it is created if needed.
 
 =item C<< $value = LookupCatcode($char); >>
 
@@ -3082,10 +3124,15 @@ like C<typewriter>.
 
 =over
 
+=item C<< CleanID($id); }
+
+X<CleanID>
+Cleans an C<$id> of disallowed characters, trimming space.
+
 =item C<< CleanLabel($label,$prefix); >>
 
 X<CleanLabel>
-Cleans a C<$label> of disallowed characters,
+Cleans a C<$label> of disallowed characters, trimming space,
 prepending C<$prefix> (or C<LABEL>, if none given).
 
 =item C<< CleanIndexKey($key); >>
