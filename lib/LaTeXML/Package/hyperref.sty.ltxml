@@ -16,9 +16,90 @@ use LaTeXML::Package;
 
 RequirePackage('url');
 
+foreach my $option (# General Options
+		    qw(draft final debug verbose implicit hypertexnames naturalnames
+		       a4paper a5paper b5paper letterpaper legalpaper executivepaper setpagesizes),
+		    # Configuration Options
+		    qw(raiselinks breaklinks pageanchor plainpages nesting),
+		    # Backend Drivers
+		    qw(dvipdfm dvipdfmx dvips dvipsone dviwindo hypertex latex2html
+		       nativepdf pdfmark pdftex ps2pdf tex4ht textures vtex vtexpdfmark xetex),
+		    # Extension Options
+		    qw(extension hyperfigures backref pagebackref hyperindex
+		       pageanchors plainpages hyperfootnotes encap linktocpage
+		       breaklinks colorlinks linkcolor anchorcolor citecolor filecolor
+		       menucolor pagecolor urlcolor frenchlinks),
+		    # PDF-specific display options
+		    qw(bookmarks bookmarksopen bookmarksopenlevel bookmarksnumbered bookmarstype
+		       CJKbookmarks pdfhighlight citebordercolor filebordercolor linkbordercolor
+		       menubordercolor pagebordercolor urlbordercolor runbordercolor pdfborder),
+		    # PDF display and information options
+		    qw(baseurl pdfpagemode pdfview pdfstartpage pdfstartview pdfpagescrop
+		       pdfcenterwindow pdfdirection pdfdisplaydoctitle pdfduplex pdffitwindow
+		       pdfmenubar pdfnewwindow pdfnonfullscreenpagemode pdfnumcopies
+		       pdfpagelayout pdfpagelabels pdfpagetransition pdfpicktrackbypdfsize
+		       pdfprintarea pdfprintclip pdfprintpagerange pdfprintscaling pdftoolbar
+		       pdfviewarea pdfviewclip pdfprintpagerange pdfprintscaling
+		       pdftoolbar pdfviewarea pdfviewclip pdfwindowui unicode),
+		    # PDF display and information options that provide interesting Metadata
+		    qw(pdftitle pdfauthor pdfsubject pdfcreator pdfproducer pdfkeywords pdflang)
+		   ){
+  DeclareOption($option,undef); }
+
 # \hypersetup{keyvals} configures various parameters,
 # I think none matter much to latexml, but we do need to at least ignore it.
 DefMacro('\hypersetup{}','');
+
+# for each pdf keyword, provide [property,(content|resource),datatype]
+our %pdfkey_property = (
+			baseurl          =>'', # xmp:BaseURL ??
+			pdfauthor        =>['dcterms:creator','content'],
+			pdfkeywords      =>['dcterms:subject','content'], # & pdf:Keywords
+			pdflang          =>['dcterms:language','content'],
+			pdfproducer      =>'', # pdf:Producer & xmp:CreatorTool
+			pdfsubject       =>['dcterms:subject','content'],
+			pdftitle         =>['dcterms:title','content'],
+			# Include hyperxmp's keywords, as well.
+			pdfauthortitle   =>'', # photoshop:AuthorsPosition
+			pdfcaptionwriter =>'', # photoshop:CaptionWriter !?!?!?
+			pdfcopyright     =>['dcterms:rights','content'], # & xmpRights:Marked
+			pdflicenseurl    =>['cc:licence','resource'], # xmpRights:WebStatement
+			pdfmetalang      =>'', # dcterms:language ??
+			);
+# date=>dcterms:date xmp:CreateDate xmp:ModifyDate xmp:MetadataDate ?
+# document identifier => xmlMM:DocumentID
+# file format => dcterms:format
+# LaTeX file name => dcterms:source
+
+
+# Digest & store the properties for generating RDFa
+# This can appear anywhere in the doc, including preamble.
+# Note also that the last value for any given key replaces previous ones! (eg.ONE author entry)
+DefPrimitive('\hypersetup RequiredKeyVals',sub {
+  my($stomach,$kv)=@_;
+  my $inpreamble = LookupValue('inPreamble');
+  AssignValue(inPreamble=>0);
+  my @pairs = $kv->getPairs;
+  while(@pairs){
+    my($key,$value)=(shift(@pairs),shift(@pairs));
+    AssignMapping('PDF.RDFa_properties',$key,Digest($value)); }
+  AssignValue(inPreamble=>$inpreamble);
+  return; });
+
+PushValue('@at@end@document',T_CS('\@add@PDF@RDFa@triples'));
+
+DefConstructor('\@add@PDF@RDFa@triples',sub{
+  my($document,$property,$content)=@_;
+  if(my $root = $document->getDocument->documentElement){
+    foreach my $key (LookupMappingKeys('PDF.RDFa_properties')){
+      if(my $entry = ($pdfkey_property{$key})){
+	my($property,$object,$datatype)=@$entry;
+	my $value = LookupMapping('PDF.RDFa_properties',$key);
+	my $node = $document->openElementAt($root,'ltx:rdf',
+					    property=>$property,$object=>$value,
+					    ($datatype ? (datatype=>$datatype):()));
+	$node->setAttribute(about=>''); # should we do this?, (it normally gets omitted!)
+	$document->closeElementAt($node); }}}});
 
 # Need some work here!?!?
 DefMacro('\pdfcatalog{}','');
@@ -39,19 +120,15 @@ DefPrimitive('\hyperbaseurl Semiverbatim',sub { AssignValue(BASE_URL=>ToString($
 
 # \hyperimage{url}
 # ?
-sub cleanID {
-  my($string)=@_;
-  $string =~ s/:/../g;
-  $string; }
 
 # \hyperdef{category}{name}{text}
 DefConstructor('\hyperdef Semiverbatim Semiverbatim Semiverbatim',
 	       "<ltx:anchor xml:id='#id'>#3</ltx:anchor>",
-	       properties=>sub { (id=>cleanID(ToString($_[1]).'.'.ToString($_[2]))); } );
+	       properties=>sub { (id=>CleanID(ToString($_[1]).'.'.ToString($_[2]))); } );
 DefConstructor('\hyperref Semiverbatim Semiverbatim Semiverbatim Semiverbatim',
 	       "<ltx:ref href='#href'>#4</ltx:ref>",
 	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[1])
-						 .'#'.cleanID(ToString($_[2]).'.'.ToString($_[3])))); } );
+						 .'#'.CleanID(ToString($_[2]).'.'.ToString($_[3])))); } );
 
 DefConstructor('\htmlref Semiverbatim  Semiverbatim',
 	       "<ltx:ref labelref='#label'>#1</ltx:ref>",
@@ -60,10 +137,11 @@ DefConstructor('\htmlref Semiverbatim  Semiverbatim',
 # \hyperlink{name}{text}
 # \hypertarget{name}{text}
 DefConstructor('\hyperlink Semiverbatim {}',
-	       "<ltx:ref idref='#1'>#2</ltx:ref>");
+	       "<ltx:ref idref='#1'>#2</ltx:ref>",
+	      properties=>sub { (id=>CleanID($_[1])); );
 DefConstructor('\hypertarget Semiverbatim {}',
 	       "<ltx:anchor xml:id='#id'>#2</ltx:anchor>",
-	      properties=>sub { (id=>cleanID(ToString($_[1]))); });
+	      properties=>sub { (id=>CleanID(ToString($_[1]))); });
 
 # Hmm...
 DefMacro('\autoref Semiverbatim','\ref{#1}');
@@ -74,4 +152,17 @@ DefMacro('\autoref Semiverbatim','\ref{#1}');
 
 # \pdfstringdef{macroname}{texstring}
 # ???
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# hyperref uses KeyVals for options!
+# until we come up with a nice, clean formal scheme, just hack through...
+
+#### ProcessOptions();
+# This doesn't really quite work, since when \usepackage digests the options, spaces go away!
+if(my $options = LookupValue('opt@hyperref.sty')){
+  foreach my $option (@ $options){
+    if(my($key,$value)= $option =~ /^(.*?)\s*=\s*(.*?)$/){
+      AssignMapping('PDF.RDFa_properties',$key,$value); }}}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
