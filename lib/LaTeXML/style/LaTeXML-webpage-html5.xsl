@@ -69,8 +69,8 @@
 	      title="{normalize-space(.//ltx:navigation/ltx:ref[@rel='next']/@title)}"/>
       </xsl:if>
       -->
-      <xsl:apply-templates select="/*/ltx:navigation/ltx:ref" mode="inhead"/>
-      <xsl:apply-templates select="/*/ltx:creator" mode="inhead"/>
+      <xsl:apply-templates select="/*/ltx:navigation/ltx:ref[@href]" mode="inhead"/>
+      <xsl:apply-templates select="/*/ltx:creator[@href]" mode="inhead"/>
       <xsl:if test='$ICON'>
 	<link rel="shortcut icon" href="{$ICON}" type="image/x-icon"/>
       </xsl:if>
