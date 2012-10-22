@@ -153,6 +153,7 @@ sub getModel   { $_[0]->{model}; }
 sub lookupValue { my $e=$_[0]->{table}{value}{$_[1]}; $e && $$e[0]; }
 sub assignValue { assign_internal($_[0],'value',$_[1], $_[2],$_[3]); }
 
+# manage a (global) list of values
 sub pushValue {
   my($self,$key,@values)=@_;
   my $vtable = $$self{table}{value};
@@ -176,6 +177,25 @@ sub shiftValue {
   my $vtable = $$self{table}{value};
   assign_internal($self,'value',$key,[],'global') unless $$vtable{$key}[0];
   shift(@{$$vtable{$key}[0]}); }
+
+# manage a (global) hash of values
+sub lookupMapping {
+  my($self,$map,$key)=@_;
+  my $vtable = $$self{table}{value};
+  my $mapping = $$vtable{$map}[0];
+  ($mapping ? $$mapping{$key} : undef); }
+
+sub assignMapping {
+  my($self,$map,$key,$value)=@_;
+  my $vtable = $$self{table}{value};
+  assign_internal($self,'value',$map,{},'global') unless $$vtable{$map}[0];
+  $$vtable{$map}[0]{$key}=$value; }
+
+sub lookupMappingKeys {
+  my($self,$map)=@_;
+  my $vtable = $$self{table}{value};
+  my $mapping = $$vtable{$map}[0];
+  ($mapping ? %$mapping : ()); }
 
 sub lookupStackedValues { 
   my $stack = $_[0]->{table}{value}{$_[1]};
