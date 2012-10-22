@@ -40,6 +40,7 @@
 	  xmlns:svg = "http://www.w3.org/2000/svg"
        and change local-name() to name() in LaTeXML-math-mathml & LaTeXML-picture-svg. -->
     <html xmlns     = "http://www.w3.org/1999/xhtml">
+      <xsl:call-template name="add_RDFa_prefix"/>
       <xsl:call-template name="head"/>
       <xsl:call-template name="body"/>
       <xsl:text>&#x0A;</xsl:text>
