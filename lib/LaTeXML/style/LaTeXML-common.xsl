@@ -15,6 +15,7 @@
     version     = "1.0"
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
+    xmlns:exsl  = "http://exslt.org/common"
     xmlns:string= "http://exslt.org/strings"
     xmlns:date  = "http://exslt.org/dates-and-times"
     xmlns:func  = "http://exslt.org/functions"
@@ -24,6 +25,7 @@
 
   <xsl:param name="LATEXML_VERSION"></xsl:param>
   <xsl:param name="TIMESTAMP"></xsl:param>
+  <xsl:param name="RDFA_VERSION"></xsl:param>
 
   <xsl:template name="LaTeXML_identifier">
     <xsl:if test="$LATEXML_VERSION or $TIMESTAMP">
@@ -215,12 +217,14 @@
   </func:function>
 
   <xsl:template name="add_RDFa">
+    <!-- perhaps we want to disallow these being spread around?
     <xsl:if test="@vocab">
       <xsl:attribute name="vocab"><xsl:value-of select="@vocab"/></xsl:attribute>
     </xsl:if>
     <xsl:if test="@prefix">
       <xsl:attribute name="prefix"><xsl:value-of select="@prefix"/></xsl:attribute>
     </xsl:if>
+    -->
     <xsl:if test="@about">
       <xsl:attribute name="about"><xsl:value-of select="@about"/></xsl:attribute>
     </xsl:if>
@@ -248,6 +252,55 @@
     <xsl:if test="@content">
       <xsl:attribute name="content"><xsl:value-of select="@content"/></xsl:attribute>
     </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="add_RDFa_prefix">
+    <xsl:if test='/*/@prefix'>
+      <xsl:attribute name='prefix'><xsl:value-of select='/*/@prefix'/></xsl:attribute>
+      <xsl:if test="$RDFA_VERSION = '1.0'">
+	<xsl:attribute name="version">XHTML+RDFa 1.0</xsl:attribute>
+	<xsl:call-template name="add_RDFa1.0_namespaces">
+	  <xsl:with-param name="prefix" select="normalize-space(/*/@prefix)"/>
+	</xsl:call-template>
+      </xsl:if>
+    </xsl:if>
+  </xsl:template>
+
+  <!-- This converts the RDFa 1.1 prefix attribute into RDFa 1.0 namespace declarations
+       It "SHOULD NOT" be used -->
+  <xsl:template name="add_RDFa1.0_namespaces">
+    <xsl:param name="prefix"/>
+    <xsl:if test="$prefix != ''">
+      <!-- peal off 1st "prefix: url" pair, and add as namespace declaration. -->
+      <xsl:call-template name="add_namespace">
+	<xsl:with-param name="prefix" select="substring-before($prefix,':')"/>
+	<xsl:with-param name="url">
+	  <xsl:choose>
+	    <xsl:when test="substring-before(substring-after($prefix,' '),' ')">
+	      <xsl:value-of select="substring-before(substring-after($prefix,' '),' ')"/>	    
+	    </xsl:when>
+	    <xsl:otherwise>
+	      <xsl:value-of select="substring-after($prefix,' ')"/>
+	    </xsl:otherwise>
+	  </xsl:choose>
+	</xsl:with-param>
+      </xsl:call-template>
+      <!-- Recurse on any remaining pairs -->
+      <xsl:call-template name="add_RDFa1.0_namespaces">
+	<xsl:with-param name="prefix" select="substring-after(substring-after($prefix,' '),' ')"/>
+      </xsl:call-template>
+    </xsl:if>
+  </xsl:template>
+
+  <!-- obscure trickiness to add an xmlns:prefix=url without
+       introducing the namespace xmlns, extra dummy qnames with prefix, and so on.-->
+  <xsl:template name="add_namespace">
+    <xsl:param name="prefix"/>
+    <xsl:param name="url"/>
+    <xsl:variable name="dummy">
+      <dummy><xsl:attribute name="{concat($prefix,':dummy')}" namespace="{$url}"/></dummy>
+    </xsl:variable>
+    <xsl:copy-of select="exsl:node-set($dummy)/*/namespace::*"/>
   </xsl:template>
 
   <func:function name="f:LaTeXML-icon">
