@@ -24,7 +24,8 @@ DefConditional('\iflatexml', sub { 1; });
 DefMacro('\lxDocumentID{}','\def\thedocument@ID{#1}');
 
 # From latexml.sty
-DefConstructor('\URL[] Semiverbatim',"<ltx:ref href='#2'>?#1(#1)(#2)</ltx:ref>");
+DefConstructor('\URL[] Semiverbatim',"<ltx:ref href='#href'>?#1(#1)(#href)</ltx:ref>",
+	      properties=>sub { (href=>CleanURL($_[2])); });
 DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
 DefMacro('\SGML',    '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
 DefMacro('\HTML',    '\URL[\texttt{HTML}]{http://www.w3.org/html/}');
