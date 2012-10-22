@@ -17,61 +17,15 @@ use LaTeXML::Util::KeyVal;
 
 #======================================================================
 # Context
-# The default "initial context" for XML+RDFa specifies some default
-# terms and prefixes, but no default vocabulary.
-# Ought to have a default for @vocab, but settable?
-# can we detect use of simple "term"s in attributes so we know whether we need @vocab?
-# Ought to have a default set of prefixes from RDFa Core,
-# but allow prefixes to be added.
-# Probably ought to scan rdf attributes for all uses of prefixes,
-# and include them in @prefix
-# The following prefixes are listed in http://www.w3.org/2011/rdfa-context/rdfa-1.1
-our %rdf_prefixes = ("cc"     => "http://creativecommons.org/ns#",
-		     "ctag"   => "http://commontag.org/ns#",
-		     "dc"     => "http://purl.org/dc/terms/",
-		     "dcterms"=> "http://purl.org/dc/terms/",
-		     "ical"   => "http://www.w3.org/2002/12/cal/icaltzd#",
-		     "foaf"   => "http://xmlns.com/foaf/0.1/",
-		     "gr"     => "http://purl.org/goodrelations/v1#",
-		     "grddl"  => "http://www.w3.org/2003/g/data-view#",
-		     "ma"     => "http://www.w3.org/ns/ma-ont#",
-		     "og"     => "http://ogp.me/ns#",
-		     "owl"    => "http://www.w3.org/2002/07/owl#",
-		     "rdf"    => "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-		     "rdfa"   => "http://www.w3.org/ns/rdfa#",
-		     "rdfs"   => "http://www.w3.org/2000/01/rdf-schema#",
-		     "rev"    => "http://purl.org/stuff/rev#",
-		     "rif"    => "http://www.w3.org/2007/rif#",
-		     "rr"     => "http://www.w3.org/ns/r2rml#",
-		     "schema" => "http://schema.org/",
-		     "sioc"   => "http://rdfs.org/sioc/ns#",
-		     "skos"   => "http://www.w3.org/2004/02/skos/core#",
-		     "skosxl" => "http://www.w3.org/2008/05/skos-xl#",
-		     "v"      => "http://rdf.data-vocabulary.org/#",
-		     "vcard"  => "http://www.w3.org/2006/vcard/ns#",
-		     "void"   => "http://rdfs.org/ns/void#",
-		     "xhv"    => "http://www.w3.org/1999/xhtml/vocab#",
-		     "xml"    => "http://www.w3.org/XML/1998/namespace",
-		     "xsd"    => "http://www.w3.org/2001/XMLSchema#",
-		     "wdr"    => "http://www.w3.org/2007/05/powder#",
-		     "wdrs"   => "http://www.w3.org/2007/05/powder-s#",
-		    );
-
-AssignValue(RDFa_prefixes=>{},'global') unless LookupValue('RDFa_prefixes');
-
-foreach my $p (keys %rdf_prefixes){
-#  AssignValue('RDFa_prefix_'.$p=>$rdf_prefixes{$p},'global'); }
-  LookupValue('RDFa_prefixes')->{$p}=$rdf_prefixes{$p}; }
 
 # \lxRDFaPrefix{prefix}{initialurl}
 # If prefix is empty, this defines the vocabulary(?)
 DefPrimitive('\lxRDFaPrefix{}{}',  sub {
   my($stomach,$prefix,$url)=@_;
   $prefix = ToString(Expand($prefix));
-  $url = ToString(Expand($url));
-##  AssignValue(($prefix ? 'RDFa_prefix_'.$prefix : 'RDFa_vocabulary')=>$url,'global'); });
+  $url = CleanURL(ToString(Expand($url)));
   if($prefix){
-    LookupValue('RDFa_prefixes')->{$prefix}=$url; }
+    AssignMapping('RDFa_prefixes',$prefix=>$url); }
   else {
     AssignValue('RDFa_vocabulary'=>$url,'global'); }
   return; });
@@ -145,8 +99,10 @@ sub RDFAttributes {
       $$hash{$key.'labelref'}=CleanLabel($x->getArg(2));
       delete $$hash{$key}; }
     elsif(($x=ToString($$hash{$key})) && ($x =~ /^#(.+)$/)){
-      $$hash{$key.'idref'}=ToString($1);
-      delete $$hash{$key}; }}
+      $$hash{$key.'idref'}=CleanID($1);
+      delete $$hash{$key}; }
+    else {
+      $$hash{$key}=CleanURL($$hash{$key}); }} # at least clean it.
   $hash; }
 
 # It ought to be wrong to put resource (or resourceXXref) attributes on an ltx:ref...
