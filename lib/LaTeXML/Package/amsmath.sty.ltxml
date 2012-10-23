@@ -877,38 +877,44 @@ DefEnvironment('{subarray}{}',
 # NOTE that there can be at most one subscript in each of the pre & post, ditto for superscript.
 # Thus, our representation is: sideset(presub,presup,postsub,postsup,object)
 # Note, also, that this is quite ugly, but since it is a rather peculiar special case.... ?
-
-# try by nesting...
 DefConstructor('\sideset{}{}{}', sub {
   my($document,$pre,$post,$base,%props)=@_;
   my @scripts = (undef,undef,undef,undef);
+
+  # Just to be "safe", scan for any NON scripts in the pre-scripts
+  # They work with \sideset, although it isn't clear what they should mean.
+  # we'll just insert them in front of the whole mess.
+  foreach my $script ($pre->unlist){
+    if(! IsScript($script)){
+      Warn('expected','<sub/supserscript>',$document,
+	   "Expected a sub/superscript in the prescripts of \\sideset","Got ".Stringify($script));
+      $document->insertElement('ltx:XMWrap',$script); }} # Stick it in front!
 
   my $node = $document->insertElement('ltx:XMArg',$base);
   my $ch   = $document->getFirstChildElement($node);
   my ($opx,$ignore)
     = ($ch && $ch->getAttribute('scriptpos')||'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my $level = $props{level}||0;
-  my $x  = 'pre';
+  my $x = 'pre';
   foreach my $group ($pre,$post){ # Best order?
     foreach my $script ($group->unlist){
-      my $y;
-      if((ref $script eq 'LaTeXML::Whatsit')
-	 && (( ($script->getDefinition eq
-		$STATE->lookupMeaning(T_CS('\@@FLOATINGSUPERSCRIPT')))
-	       && ($y='SUPER'))
-	     || (($script->getDefinition eq
-		  $STATE->lookupMeaning(T_CS('\@@FLOATINGSUBSCRIPT')))
-		&& ($y='SUB')))){
+      # If it's a script, handle it (non-scripts dealt with above & below)
+      if(my $y = IsScript($script)){
 	my $new = $document->openElement('ltx:XMApp');
-	$document->insertElement('ltx:XMTok',undef,
-				 role=>$y.'SCRIPTOP',scriptpos=>"$x$level");
+	$document->insertElement('ltx:XMTok',undef,role=>$y.'OP',scriptpos=>"$x$level");
 	$new->appendChild($node);
 	$document->insertElement('ltx:XMWrap',$script->getArg(1));
 	$document->closeElement('ltx:XMApp');
-	$node = $new; }
-      else { warn("Non sub/superscript in \\sideset: ".Stringify($script)); }}
+	$node = $new; }}
     $x = 'post'; }
   $document->setAttribute($node,scriptpos=>$opx) if $opx;
+
+  # Do the same scan for any garbage in the post-scripts
+  foreach my $script ($post->unlist){
+    if(! IsScript($script)){
+      Warn('expected','<sub/supserscript>',$document,
+	   "Expected a sub/superscript in the postscripts of \\sideset","Got ".Stringify($script));
+      $document->insertElement('ltx:XMWrap',$script); }} # Append, afterwards
 });
 
 #======================================================================
