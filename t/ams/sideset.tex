@@ -1,0 +1,13 @@
+\documentclass{article}
+\usepackage{amsmath}
+\begin{document}
+\[ \sideset{}{'}\sum_{i=1}^\infty S_i \]
+\[  \sideset{}{}{\sum} x\]
+\[  \sideset{_a^b}{_c^d}{\sum} x\]
+\[  \sideset{^a_b}{^c_d}{\sum} x\]
+% Cannot use multiple sub/supers!
+%\[  \sideset{_a^b_c^d}{_e^f_g^h}{\sum} \]
+%\[  \sideset{_a_c}{_e}{\sum} \]
+% Note that this `works'
+\[  \sideset{u}{_ev}{\sum} x\]
+\end{document}
