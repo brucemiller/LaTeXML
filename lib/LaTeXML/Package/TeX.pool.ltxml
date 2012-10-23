@@ -285,7 +285,7 @@ DefParameterType('Digested', sub {
     @list = $STATE->getStomach->invokeToken($token); }
   # In most (all?) cases, we're really looking for a single Whatsit here...
   @list = grep(ref $_ ne 'LaTeXML::Comment', @list);
-#  while(scalar(@list) && isEmpty($list[0])){
+#  while(scalar(@list) && IsEmpty($list[0])){
 #    shift(@list); }
   (scalar(@list) == 1 ? $list[0] 
    : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); },
@@ -360,7 +360,7 @@ DefParameterType('CommaList', sub {
 # Naturally, it uses \csname to check, which ends up DEFINING the possibly undefined macro as \relax.
 # So, basically, undefined is whether something is \relax or not!
 # And it presumably has the side-effect of defining it as \relax as well!
-sub isUndefined {
+sub IsUndefined {
   my($name)=@_;
   my $cs = T_CS('\\'.ToString($name));
   my $meaning = LookupMeaning($cs);
@@ -371,7 +371,7 @@ sub isUndefined {
 
 DefMacro('\@ifundefined{}{}{}',sub {
   my($gullet,$name,$if,$else)=@_;
-  (isUndefined(Expand($name)) ? $if->unlist : $else->unlist); });
+  (IsUndefined(Expand($name)) ? $if->unlist : $else->unlist); });
 
 #**********************************************************************
 # Expandable Primitives
@@ -1677,7 +1677,7 @@ DefPrimitiveI('\unkern',   undef,undef);
 DefPrimitiveI('\unskip',   undef, sub {
   my($stomach)=@_;
   my $box;
-  while(($box = $LaTeXML::LIST[$#LaTeXML::LIST]) && isEmpty($box)){
+  while(($box = $LaTeXML::LIST[$#LaTeXML::LIST]) && IsEmpty($box)){
     pop(@LaTeXML::LIST); }
   return; });
 
@@ -2034,7 +2034,7 @@ DefPrimitive('\@open@column SkipSpaces DigestedBody', sub {
       push(@saveleft,shift(@boxes)); }
     elsif($boxes[0]->getProperty('isSpace')){
       shift(@boxes); }
-    elsif(isEmpty($boxes[0])){
+    elsif(IsEmpty($boxes[0])){
       push(@saveleft,shift(@boxes)); }
     else {
       last; }}
@@ -2052,7 +2052,7 @@ DefPrimitive('\@open@column SkipSpaces DigestedBody', sub {
       unshift(@saveright,pop(@boxes)); }
     elsif($boxes[$#boxes]->getProperty('isSpace')){
       pop(@boxes);}
-    elsif(isEmpty($boxes[$#boxes])){
+    elsif(IsEmpty($boxes[$#boxes])){
       unshift(@saveright,pop(@boxes));}
     else {
       last; }}
@@ -2133,7 +2133,7 @@ DefPrimitiveI('\@@eat@space',undef,sub {
 		 if($box->getProperty('alignmentSkippable')
 		       || $box->getProperty('isFill')){
 		   push(@save,pop(@LaTeXML::LIST)); }
-		 elsif(isEmpty($box)){
+		 elsif(IsEmpty($box)){
 		   pop(@LaTeXML::LIST); }
 		 else {
 		   last; }}
@@ -2782,7 +2782,7 @@ our %scriptstylemap=(display=>'script', text=>'script',
 		     script=>'scriptscript', scriptscript=>'scriptscript');
 
 # Note that this is also being used by alignment.
-sub isEmpty {
+sub IsEmpty {
   my($box)=@_;
   my $ref = ref $box;
   if(! $box ){ return 1; }
@@ -2791,11 +2791,11 @@ sub isEmpty {
     my $s = $box->getString;
     return (!defined $s) || ($s =~ /^\s*$/); }
   elsif(($ref eq 'LaTeXML::List') || ($ref eq 'LaTeXML::MathList')){
-    return ! grep(! isEmpty($_), $box->unlist); }
+    return ! grep(! IsEmpty($_), $box->unlist); }
   elsif($ref eq 'LaTeXML::Whatsit'){
     return 1 if $box->getProperty('isSpace'); # A space-like Whatsit
     if(($box->getDefinition eq $STATE->lookupMeaning(T_BEGIN))
-       && !grep(!isEmpty($_), $box->getBody->unlist)){
+       && !grep(!IsEmpty($_), $box->getBody->unlist)){
       return 1; }}
   return 0; }
     
@@ -2815,11 +2815,19 @@ sub isEmpty {
 #    || (($ref =~ /^LaTeXML::(Math)?Box$/) && ($box->getString =~ /^\s*$/)) # Space plain box
 #    || (($ref eq 'LaTeXML::Whatsit') # Whatsit with nothing in it.
 #        && ($box->getDefinition eq $STATE->lookupMeaning(T_BEGIN))
-#        && !grep(!isEmpty($_), $box->getBody->unlist))); 
+#        && !grep(!IsEmpty($_), $box->getBody->unlist))); 
 
 # ##print STDERR "Box ".Stringify($box)." is empty: ".($is ? "yes":"no")."\n";
 #   $is;
 # }
+
+# Remember a "safe" way to test a script Whatsit.
+# Returns (SUBSCRIPT|SUPERSCRIPT)
+sub IsScript {
+  my($object)=@_;
+  if((ref $object eq 'LaTeXML::Whatsit') # careful w/alias in getCSName!
+     && ($object->getDefinition->getCS->getCSName =~ /^\\@@(FLOATING|POST)(SUBSCRIPT|SUPERSCRIPT)$/)){
+    $2; }}
 
 sub scriptHandler {
   my($stomach,$op)=@_;
@@ -2838,11 +2846,9 @@ sub scriptHandler {
       if((ref $prev eq 'LaTeXML::Whatsit') && $prev->getProperty('isSpace')){
 	unshift(@putback,$prev); # put back? assuming it will add rspace to previous???
 	next; }
-      elsif(isEmpty($prev)){	# If empty, the script floats, can't conflict, but don't put back
+      elsif(IsEmpty($prev)){	# If empty, the script floats, can't conflict, but don't put back
 	last; }
-      elsif((ref $prev eq 'LaTeXML::Whatsit') # Or previous sub/supscript. (careful w/alias in getCSName!)
-	    && ($prev->getDefinition->getCS->getCSName =~ /^\\@@(FLOATING|POST)(SUBSCRIPT|SUPERSCRIPT)$/)){
-	my($pos,$pop)=($1,$2);
+      elsif(my $pop = IsScript($prev)){
 	unshift(@putback,$prev);
 	if($pop eq $op){	# Whoops, duplicated; better use FLOATING
 	  Error('unexpected',"double-".lc($pop),$stomach,"Double ".lc($pop));
@@ -2876,7 +2882,7 @@ sub scriptHandler {
 				  font=>$script->getFont,isMath=>1,
 				  level=>$level))
 #      if ToString($script) ne '{}';    # ONLY If Script is not empty!!!
-      unless isEmpty($script);
+      unless IsEmpty($script);
     AssignValue(mathstyle=>$style); # revert
     @stuff; }
   else {			# Non math use of _ ??
