@@ -135,7 +135,7 @@ DefMacro('\begin{}',sub {
     T_CS("\\begin{$name}"); } # Magic cs!
   else {
     my $token = T_CS("\\$name");
-    if(isUndefined($name)){
+    if(IsUndefined($name)){
       my $undef = '{'.$name.'}';
       $STATE->noteStatus(undefined=>$undef);
       Error('undefined',$undef,$gullet,"The environment ".$undef." is not defined.");
