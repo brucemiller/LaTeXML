@@ -138,10 +138,10 @@ DefConstructor('\htmlref Semiverbatim  Semiverbatim',
 # \hypertarget{name}{text}
 DefConstructor('\hyperlink Semiverbatim {}',
 	       "<ltx:ref idref='#1'>#2</ltx:ref>",
-	      properties=>sub { (id=>CleanID($_[1])); );
+	       properties=>sub { (id=>CleanID($_[1])); });
 DefConstructor('\hypertarget Semiverbatim {}',
 	       "<ltx:anchor xml:id='#id'>#2</ltx:anchor>",
-	      properties=>sub { (id=>CleanID(ToString($_[1]))); });
+	       properties=>sub { (id=>CleanID(ToString($_[1]))); });
 
 # Hmm...
 DefMacro('\autoref Semiverbatim','\ref{#1}');
