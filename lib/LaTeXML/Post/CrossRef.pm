@@ -78,7 +78,7 @@ sub fill_in_relations {
 	if($xentry->getValue('title')){ # it's interesting if it has a title (INCONSISTENT!!!)
 	  $doc->addNavigation($rel=>$xentry->getValue('id')); 
 	  $rel .= 'up'; }}
-      if($xentry){
+      if($xentry && ($id ne $xentry->getValue('pageid'))){
 	$doc->addNavigation(start=>$xentry->getValue('pageid')); }
       if(my $prev = $self->findPreviousPage($entry)){ # previous page
 	$doc->addNavigation(prev=>$prev->getValue('pageid')); }
