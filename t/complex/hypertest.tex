@@ -1,0 +1,29 @@
+\documentclass{article}
+% Note: hyperref will signal error if hyperxmp's keywords are used, w/o loading hyperxmp!
+% Note also that older hyperxmp has fewer new options!
+\usepackage{hyperxmp}
+\usepackage[draft,pdftitle={Test Hyperref Metadata},backref]{hyperref}
+\title{Test Hyperref Metadata}
+\author{A..~Author}
+\hypersetup{
+  pdfauthor={An Author},
+  pdfkeywords={test,hyperref},
+%  pdflang={English},
+  pdfproducer={pdfLaTeX or LaTeXML},
+  pdfsubject={Testing LaTeXML's processing of hyperref metadata},
+}
+
+\begin{document}
+
+\maketitle
+\section{Intentionally Left Blank}
+Nothing left to say, really.
+
+
+
+\hypersetup{
+  pdfcopyright={Not subject to copyright},
+  pdflicenseurl={http://creativecommons.org/licenses/by/3.0/},
+}
+
+\end{document}
