@@ -75,6 +75,12 @@ for more convenience in using CSS.]</a:documentation>
         <data type="NMTOKENS"/>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="cssstyle">
+        <a:documentation>CSS styling rules.
+These will only be effective when the target system supports CSS.</a:documentation>
+      </attribute>
+    </optional>
     <ref name="RDF.attributes"/>
   </define>
   <define name="ID.attributes">

@@ -64,6 +64,10 @@ Common.attributes =
   ## for more convenience in using CSS.]
   attribute class { xsd:NMTOKENS }?,
 
+  ## CSS styling rules.
+  ## These will only be effective when the target system supports CSS.
+  attribute cssstyle { text }?,
+
   RDF.attributes
 
 ## Attributes for elements that can be cross-referenced
