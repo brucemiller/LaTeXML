@@ -210,6 +210,9 @@
 	<xsl:if test="$node/@vattach">
 	  <xsl:value-of select="concat('vertical-align:',$node/@vattach,';')"/>
 	</xsl:if>
+	<xsl:if test="$node/@cssstyle">
+	  <xsl:value-of select="concat($node/@cssstyle,';')"/>
+	</xsl:if>
 	<xsl:if test="$extra_style">
 	  <xsl:value-of select="$extra_style"/>
 	</xsl:if>
