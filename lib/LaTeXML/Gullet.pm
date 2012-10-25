@@ -114,8 +114,10 @@ sub readingFromMouth {
 sub getLocator {
   my($self,$long)=@_;
   my $mouth = $$self{mouth};
-  if((defined $mouth) && (($$mouth{source}||'') eq 'Anonymous String') && @{$$self{mouthstack}}){
-    $mouth = $$self{mouthstack}[0][0]; } # ?!?!?!?!
+  my $i=0;
+  if((defined $mouth) && (($$mouth{source}||'') eq 'Anonymous String')
+     && ($i < scalar(@{$$self{mouthstack}}))){
+    $mouth = $$self{mouthstack}[$i++][0]; }
   my $loc = (defined $mouth ? $mouth->getLocator($long) : '');
   if(!$loc || $long){
     $loc .= show_pushback($$self{pushback}) if $long;
