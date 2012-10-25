@@ -922,6 +922,14 @@ DefMathML('Apply:UNDERACCENT:?', sub {
   my($accent,$base)=@_;
   ['m:munder',{accent=>'true'}, pmml($base),pmml_scriptsize($accent)]; });
 
+DefMathML('Apply:ENCLOSE:?', sub {
+  my($op,$base)=@_;
+  my $enclosure= $op->getAttribute('enclose');
+  my $color = $op->getAttribute('color');
+ ['m:menclose',{notation=>$enclosure,mathcolor=>$color},
+  ($color ? ['m:mstyle',{mathcolor=>$LaTeXML::MathML::COLOR||'black'}, pmml($base)]
+   : pmml($base))]; });
+
 #======================================================================
 # Basic Content elements:
 #   apply, interval, inverse, sep, condition, declare, lambda, compose, ident,
