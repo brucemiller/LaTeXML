@@ -15,7 +15,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## The inline module defines basic inline elements used throughout 
 Inline.class |= 
-    \text | emph | acronym | rule
+    \text | emph | del | sub | sup | acronym | rule
   | anchor | ref | cite | bibref
 
 ## Additionally, it defines these meta elements. These are generally hidden,
@@ -46,10 +46,53 @@ emph =
 element emph { emph_attributes, emph_model }
 
 ## Attributes for \elementref{emph}.
-emph_attributes =  Common.attributes
+emph_attributes =
+  Common.attributes,
+  Fontable.attributes,
+  Colorable.attributes
+
 
 ## Content model for \elementref{emph}.
 emph_model = Inline.model
+
+#======================================================================
+
+del =
+## Deleted text.
+element del { del_attributes, del_model }
+
+## Attributes for \elementref{del}.
+del_attributes =
+  Common.attributes,
+  Fontable.attributes,
+  Colorable.attributes
+
+## Content model for \elementref{del}.
+del_model = Inline.model
+
+#======================================================================
+
+sub =
+## Textual subscript text.
+element sub { sub_attributes, sub_model }
+
+## Attributes for \elementref{sub}.
+sub_attributes =  Common.attributes
+
+## Content model for \elementref{sub}.
+sub_model = (text | Inline.class),(text | Inline.class)
+
+#======================================================================
+
+sup =
+## Textual superscript text.
+element sup { sup_attributes, sup_model }
+
+## Attributes for \elementref{sup}.
+sup_attributes =  Common.attributes
+
+## Content model for \elementref{sup}.
+sup_model = (text | Inline.class),(text | Inline.class)
 
 #======================================================================
 

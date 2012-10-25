@@ -18,6 +18,9 @@
     <choice>
       <ref name="text"/>
       <ref name="emph"/>
+      <ref name="del"/>
+      <ref name="sub"/>
+      <ref name="sup"/>
       <ref name="acronym"/>
       <ref name="rule"/>
       <ref name="anchor"/>
@@ -67,10 +70,76 @@ Attributes cover a variety of styling and position shifting properties.</a:docum
   <define name="emph_attributes">
     <a:documentation>Attributes for \elementref{emph}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="Fontable.attributes"/>
+    <ref name="Colorable.attributes"/>
   </define>
   <define name="emph_model">
     <a:documentation>Content model for \elementref{emph}.</a:documentation>
     <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="del">
+    <element name="del">
+      <a:documentation>Deleted text.</a:documentation>
+      <ref name="del_attributes"/>
+      <ref name="del_model"/>
+    </element>
+  </define>
+  <define name="del_attributes">
+    <a:documentation>Attributes for \elementref{del}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Fontable.attributes"/>
+    <ref name="Colorable.attributes"/>
+  </define>
+  <define name="del_model">
+    <a:documentation>Content model for \elementref{del}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="sub">
+    <element name="sub">
+      <a:documentation>Textual subscript text.</a:documentation>
+      <ref name="sub_attributes"/>
+      <ref name="sub_model"/>
+    </element>
+  </define>
+  <define name="sub_attributes">
+    <a:documentation>Attributes for \elementref{sub}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="sub_model">
+    <a:documentation>Content model for \elementref{sub}.</a:documentation>
+    <choice>
+      <text/>
+      <ref name="Inline.class"/>
+    </choice>
+    <choice>
+      <text/>
+      <ref name="Inline.class"/>
+    </choice>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="sup">
+    <element name="sup">
+      <a:documentation>Textual superscript text.</a:documentation>
+      <ref name="sup_attributes"/>
+      <ref name="sup_model"/>
+    </element>
+  </define>
+  <define name="sup_attributes">
+    <a:documentation>Attributes for \elementref{sup}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="sup_model">
+    <a:documentation>Content model for \elementref{sup}.</a:documentation>
+    <choice>
+      <text/>
+      <ref name="Inline.class"/>
+    </choice>
+    <choice>
+      <text/>
+      <ref name="Inline.class"/>
+    </choice>
   </define>
   <!-- ====================================================================== -->
   <define name="acronym">
