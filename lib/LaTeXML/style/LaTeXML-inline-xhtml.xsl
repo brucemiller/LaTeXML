@@ -39,6 +39,30 @@
     </em>
   </xsl:template>
 
+  <xsl:template match="ltx:del">
+    <del>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates/>
+    </del>
+  </xsl:template>
+
+  <xsl:template match="ltx:sub">
+    <sub>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates/>
+    </sub>
+  </xsl:template>
+
+  <xsl:template match="ltx:sup">
+    <sup>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates/>
+    </sup>
+  </xsl:template>
+
   <xsl:template match="ltx:acronym">
     <acronym title="{@name}">
       <xsl:call-template name="add_id"/>
