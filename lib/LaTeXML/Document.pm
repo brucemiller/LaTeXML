@@ -310,7 +310,7 @@ sub insertMathToken {
   my $font = $attributes{font} || $box->getFont;
   $self->setNodeFont($node,$font);
   $self->setNodeBox($node,$box);
-  $self->openMathText_internal($string);
+  $self->openMathText_internal($string) if defined $string;
   $self->closeNode_internal($node);  # Should be safe.
   $node; }
 
