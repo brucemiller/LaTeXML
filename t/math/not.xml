@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexsym"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <section refnum="1" xml:id="S1">
+    <title><tag>1 </tag>Known Negations</title>
+    <para xml:id="S1.p1">
+      <equation xml:id="S1.Ex1">
+        <Math mode="display" xml:id="S1.Ex1.m1" tex="\not=,\not&lt;,\not\leq,\not\ll,\not\prec,\not\preceq,\not\subset,\not\subseteq,\not\sqsubseteq,\not\lhd,\not\unlhd,\not\asymp" text="list@(not-equals, not-less-than, not-less-than-or-equals, not-much-less-than, not-precedes, not-precedes-or-equals, not-subset-of, not-subset-of-or-equals, not-square-image-of-or-equals, not-subgroup-of, not-subgroup-of-or-equals, not-asymptotically-equals)">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="list" role="FENCED" separators=", , , , , , , , , , ,"/>
+              <XMTok meaning="not-equals" name="not-=" role="RELOP">≠</XMTok>
+              <XMTok meaning="not-less-than" name="not-&lt;" role="RELOP">≮</XMTok>
+              <XMTok meaning="not-less-than-or-equals" name="not-leq" role="RELOP">≰</XMTok>
+              <XMTok meaning="not-much-less-than" name="not-ll" role="RELOP">≪̸</XMTok>
+              <XMTok meaning="not-precedes" name="not-prec" role="RELOP">⊀</XMTok>
+              <XMTok meaning="not-precedes-or-equals" name="not-preceq" role="RELOP">⋠</XMTok>
+              <XMTok meaning="not-subset-of" name="not-subset" role="RELOP">⊄</XMTok>
+              <XMTok meaning="not-subset-of-or-equals" name="not-subseteq" role="RELOP">⊈</XMTok>
+              <XMTok meaning="not-square-image-of-or-equals" name="not-sqsubseteq" role="RELOP">⋢</XMTok>
+              <XMTok meaning="not-subgroup-of" name="not-lhd" role="ADDOP">⋪</XMTok>
+              <XMTok meaning="not-subgroup-of-or-equals" name="not-unlhd" role="ADDOP">⋬</XMTok>
+              <XMTok meaning="not-asymptotically-equals" name="not-asymp" role="RELOP">≭</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation xml:id="S1.Ex2">
+        <Math mode="display" xml:id="S1.Ex2.m1" tex="\not\equiv,\not&gt;,\not\geq,\not\gg,\not\succ,\not\succeq,\not\supset,\not\supseteq,\not\sqsupseteq,\not\rhd,\not\unrhd,\not\approx," text="list@(not-equivalent-to, not-greater-than, not-greater-than-or-equals, not-much-greater-than, not-succeeds, not-succeeds-or-equals, not-superset-of, not-superset-of-or-equals, not-square-original-of-or-equals, not-contains-as-subgroup, not-contains-as-subgroup-or-equals, not-approximately-equals)">
+          <XMath>
+            <XMApp punctuation=",">
+              <XMTok meaning="list" role="FENCED" separators=", , , , , , , , , , ,"/>
+              <XMTok meaning="not-equivalent-to" name="not-equiv" role="RELOP">≢</XMTok>
+              <XMTok meaning="not-greater-than" name="not-&gt;" role="RELOP">≯</XMTok>
+              <XMTok meaning="not-greater-than-or-equals" name="not-geq" role="RELOP">≱</XMTok>
+              <XMTok meaning="not-much-greater-than" name="not-gg" role="RELOP">≫̸</XMTok>
+              <XMTok meaning="not-succeeds" name="not-succ" role="RELOP">⊁</XMTok>
+              <XMTok meaning="not-succeeds-or-equals" name="not-succeq" role="RELOP">⋡</XMTok>
+              <XMTok meaning="not-superset-of" name="not-supset" role="RELOP">⊅</XMTok>
+              <XMTok meaning="not-superset-of-or-equals" name="not-supseteq" role="RELOP">⊉</XMTok>
+              <XMTok meaning="not-square-original-of-or-equals" name="not-sqsupseteq" role="RELOP">⋣</XMTok>
+              <XMTok meaning="not-contains-as-subgroup" name="not-rhd" role="ADDOP">⋫</XMTok>
+              <XMTok meaning="not-contains-as-subgroup-or-equals" name="not-unrhd" role="ADDOP">⋭</XMTok>
+              <XMTok meaning="not-approximately-equals" name="not-approx" role="RELOP">≉</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag>2 </tag>Unknown Negations of Characters</title>
+    <para xml:id="S2.p1">
+      <equation xml:id="S2.Ex3">
+        <Math mode="display" xml:id="S2.Ex3.m1" tex="\not a,\not\alpha" text="list@(not-a, not-alpha)">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="list" role="FENCED" separators=","/>
+              <XMTok name="not-a" role="UNKNOWN" font="italic">a̸</XMTok>
+              <XMTok name="not-alpha" role="UNKNOWN" font="italic">α̸</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+    <para xml:id="S2.p2">
+      <equation xml:id="S2.Ex4">
+        <Math mode="display" xml:id="S2.Ex4.m1" tex="\not+,\not 4">
+          <XMath>
+            <XMTok meaning="not-plus" name="not-+" role="ADDOP">+̸</XMTok>
+            <XMTok role="PUNCT">,</XMTok>
+            <XMTok meaning="not-4" name="not-4" role="NUMBER">4̸</XMTok>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section refnum="3" xml:id="S3">
+    <title><tag>3 </tag>Random Negations</title>
+    <para xml:id="S3.p1">
+      <equation xml:id="S3.Ex5">
+        <Math mode="display" xml:id="S3.Ex5.m1" tex="\not\sin" text="not@(sine)">
+          <XMath>
+            <XMApp>
+              <XMTok enclose="updiagonalstrike" meaning="not" role="ENCLOSE"/>
+              <XMTok meaning="sine" role="TRIGFUNCTION">sin</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation xml:id="S3.Ex6">
+        <Math mode="display" xml:id="S3.Ex6.m1" tex="\not\operatorname{R}" text="not@(R)">
+          <XMath>
+            <XMApp>
+              <XMTok enclose="updiagonalstrike" meaning="not" role="ENCLOSE"/>
+              <XMTok role="OPERATOR" scriptpos="post">R</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation xml:id="S3.Ex7">
+        <Math mode="display" xml:id="S3.Ex7.m1" tex="\not\sqrt{x}" text="not@(square-root@(x))">
+          <XMath>
+            <XMApp>
+              <XMTok enclose="updiagonalstrike" meaning="not" role="ENCLOSE"/>
+              <XMApp>
+                <XMTok meaning="square-root"/>
+                <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation xml:id="S3.Ex8">
+        <Math mode="display" xml:id="S3.Ex8.m1" tex="\not\frac{1}{2}" text="not@(1 / 2)">
+          <XMath>
+            <XMApp>
+              <XMTok enclose="updiagonalstrike" meaning="not" role="ENCLOSE"/>
+              <XMApp>
+                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                <XMTok meaning="1" role="NUMBER">1</XMTok>
+                <XMTok meaning="2" role="NUMBER">2</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section refnum="4" xml:id="S4">
+    <title><tag>4 </tag>Falling off the End</title>
+    <para xml:id="S4.p1">
+      <equation xml:id="S4.Ex9">
+        <Math mode="display" xml:id="S4.Ex9.m1" tex="a/bc\not">
+          <XMath>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
+            <XMTok role="UNKNOWN" font="italic">b</XMTok>
+            <XMTok role="UNKNOWN" font="italic">c</XMTok>
+            <XMTok meaning="not" role="PREFIX">／</XMTok>
+          </XMath>
+        </Math>
+      </equation>
+      <equation xml:id="S4.Ex10">
+        <Math mode="display" xml:id="S4.Ex10.m1" tex="\frac{a\not}{b}" text="[a／] / b">
+          <XMath>
+            <XMApp>
+              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+              <XMArg>
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok meaning="not" role="PREFIX">／</XMTok>
+              </XMArg>
+              <XMTok role="UNKNOWN" font="italic">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+</document>
