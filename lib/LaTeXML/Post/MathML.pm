@@ -916,10 +916,23 @@ DefMathML('Hint:?:?', sub { undef; }, sub { undef; }); # Should Disappear!
 # args are (accent,base)
 DefMathML('Apply:OVERACCENT:?', sub {
   my($accent,$base)=@_;
+  if(getQName($base) eq 'ltx:XMApp'){
+    my($xaccent,$xbase) = element_nodes($base);
+    if((getQName($xaccent) eq 'ltx:XMTok')
+       && ($xaccent->getAttribute('role') eq 'UNDERACCENT')){
+      return ['m:munderover',{accent=>'true'},
+	      pmml($xbase),pmml_scriptsize($xaccent),pmml_scriptsize($accent)]; }}
   ['m:mover',{accent=>'true'}, pmml($base),pmml_scriptsize($accent)]; });
 
 DefMathML('Apply:UNDERACCENT:?', sub {
   my($accent,$base)=@_;
+  if(getQName($base) eq 'ltx:XMApp'){
+    my($xaccent,$xbase) = element_nodes($base);
+    if((getQName($xaccent) eq 'ltx:XMTok')
+       && ($xaccent->getAttribute('role') eq 'OVERACCENT')){
+      return ['m:munderover',{accent=>'true'},
+	      pmml($xbase),pmml_scriptsize($accent),pmml_scriptsize($xaccent)]; }}
+
   ['m:munder',{accent=>'true'}, pmml($base),pmml_scriptsize($accent)]; });
 
 DefMathML('Apply:ENCLOSE:?', sub {
