@@ -4163,8 +4163,6 @@ DefMathI('\smile',     undef,"\x{2323}", role=>'RELOP');   # SMILE
 DefMathI('\frown',     undef,"\x{2322}", role=>'RELOP');   # FROWN
 DefMathI('\propto',    undef,"\x{221D}", role=>'RELOP', meaning=>'proportional-to');
 
-DefMathI('\not',undef,"not", role=>'PREFIX', meaning=>'not');
-
 # TeX defines these as alternate names...
 Let(T_CS('\le'),T_CS('\leq'));
 Let(T_CS('\ge'),T_CS('\geq'));
@@ -4173,8 +4171,9 @@ Let(T_CS('\ne'),T_CS('\neq'));
 # potentially imply slightly different meanings???  Leave them out for now..
 
 #----------------------------------------------------------------------
+# Not;  (Is fullwidth solidus appropriate for when \not appears in isolation?)
+DefMathI('\not',undef,"\x{FF0F}", role=>'PREFIX', meaning=>'not');
 # Match negations of many operators
-
 our %NOTS = ('='=>"\x{2260}", '<'=> "\x{226E}", '>'=>"\x{226F}",
 	     "\x{2208}"=>"\x{2209}", #\in=>\notin
 	     "\x{2264}"=>"\x{2270}", "\x{2265}"=>"\x{2271}", # Less eq, greater eq.
@@ -4190,26 +4189,32 @@ our %NOTS = ('='=>"\x{2260}", '<'=> "\x{226E}", '>'=>"\x{226F}",
 	     "\x{2203}"=>"\x{2204}",			     # Exists
 	     );
 
-DefMathLigature(sub { my($document,@nodes)=@_;
-		      my ($n1,$n2,$op)=($nodes[$#nodes-1],$nodes[$#nodes]);
-		      my $c;
-		      if(scalar(@nodes)> 1
-			 && (($document->getModel->getNodeQName($n1) eq 'ltx:XMTok')
-			     && ($n1->textContent eq 'not'))
-			 && (($document->getModel->getNodeQName($n2) eq 'ltx:XMTok')
-###			     &&  $NOTS{$c=$n2->textContent})){
-			    )){
-			my $c2 = $n2->textContent;
-			my $cc = (defined $NOTS{$c2} ? $NOTS{$c2}
-				  : $c2."\x{0338}"); # Use combining slash
-			my $m = $n2->getAttribute('meaning');
-			my $n = $n2->getAttribute('name') || $c2;
-			my $r = $n2->getAttribute('role');
-			(2,  $cc,
-			 ($m ? (meaning=>"not-$m"):()),
-			 ($n ? (name=>"not-$n") :()),
-			 ($r ? (role=>$r):()), # Assume same relation?
-			); }});
+# For a \not operator that is followed by anything, concoct an appropriate not or cancelation.
+DefRewrite(select=>["descendant-or-self::ltx:XMTok[text()='\x{FF0F}' and \@meaning='not']"
+		    ."[ following-sibling::*]",2],
+		    replace=>sub {
+		      my($doc,$not,$thing)=@_;
+		      my $text = ($doc->getModel->getNodeQName($thing) eq 'ltx:XMTok')
+			&& $thing->textContent;
+
+		      if((! defined $text) || (length($text) != 1)){ # Not simple char token.
+			my $box = $doc->getNodeBox($not);
+			$doc->openElement('ltx:XMApp',_box=>$box); # Wrap with a cancel op
+			$doc->insertMathToken(undef,role=>'ENCLOSE', enclose=>'updiagonalstrike',
+					      meaning=>'not',_box=>$box);
+			$doc->getNode->appendChild($thing);
+			$doc->closeElement('ltx:XMApp'); }
+		      else {
+			# For simple tokens, we'll modify the relevant content & attributes
+			$thing->removeChildNodes;
+			my $new = defined $NOTS{$text} ? $NOTS{$text} : $text."\x{0338}";
+			$thing->appendText($new);
+			if(my $meaning = $thing->getAttribute('meaning')){
+			  $thing->setAttribute(meaning=>"not-$meaning"); }
+			if(my $name = $thing->getAttribute('name') || $text){
+			  $thing->setAttribute(name=>"not-$name"); }
+			# and put the node back in
+			$doc->getNode->appendChild($thing); }});
 
 #----------------------------------------------------------------------
 # \joinrel
