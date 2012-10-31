@@ -11,7 +11,7 @@
     <personname>Alice</personname>
   </creator>
   <rdf aboutlabelref="LABEL:blog:photos" property="cc:license" resourcelabelref="LABEL:license"/>
-  <rdf property="foaf:neighbor" resourceidref="fredblog"/>
+  <rdf about="." property="foaf:neighbor" resourceidref="fredblog"/>
   <section refnum="1" xml:id="S1" labels="LABEL:sidebar" typeof="foaf:Person" resourceidref="me">
     <title><tag>1 </tag>Sidebar</title>
     <para xml:id="S1.p1">

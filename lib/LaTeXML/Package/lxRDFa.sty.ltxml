@@ -19,6 +19,9 @@ use LaTeXML::Util::KeyVal;
 # Context
 
 # \lxRDFaPrefix{prefix}{initialurl}
+# Associates a prefix with the given (partial) URI
+# for use in RDFa Compact URI's.
+# These associations are global, not attached to the current node.
 # If prefix is empty, this defines the vocabulary(?)
 DefPrimitive('\lxRDFaPrefix{}{}',  sub {
   my($stomach,$prefix,$url)=@_;
@@ -91,6 +94,7 @@ DefKeyVal('RDFa',datatype    =>'Semiverbatim'); # Term, CURIE or Abs. IRI
 # accounting for \ref{label} or #id in the about and resource keywords
 sub RDFAttributes {
   my($keyvals)=@_;
+  $keyvals = $keyvals->beDigested($STATE->getStomach);
   my $hash = KeyVals($keyvals);
   my $x;
   foreach my $key (qw(about resource)){
@@ -107,11 +111,30 @@ sub RDFAttributes {
 
 # It ought to be wrong to put resource (or resourceXXref) attributes on an ltx:ref...
 
+# Given the RDF Keywords, and content (if any) check/complete the RDF triple
+# Presumably an anonymous subject or object isn't sufficient?
+sub RDFTriple {
+  my($keyvals,$content)=@_;
+  my $attr = RDFAttributes($keyvals);
+  if(! ($$attr{about} || $$attr{aboutlabelref} || $$attr{aboutidref}) ){
+    $$attr{about} = '.'; }	# Silently make the triple about the entire document
+  if(! ($$attr{property} || $$attr{rel} || $$attr{rev}) ){
+    Warn('expected','property',$keyvals,
+	 "Expected 'property' or 'rel' or 'rev' in RDF attributes"); }
+  if(! ($$attr{content} || $$attr{resource} || $$attr{resourcelabelref} || $$attr{resourceidref}
+	|| ($content && scalar($content->unlist))) ){
+    Warn('expected','resource',$keyvals,
+	 "Expected 'resource' or 'content' in RDF attributes"); }
+  $attr; }
+
 #======================================================================
 # Adding RDF Attributes to arbitrary LaTeXML Markup.
 
-# Add attributes to the current node
-# \lxRDFa{keywordpairs}
+# \lxRDFa{keywordpairs} "RDF attributes"
+#    Add any RDF attributes to the _current_ node.
+# You are responsible for how the attributes relate to those
+# in both parent and children nodes, such as establishing
+# of default subject or objects, chaining and so forth.
 DefConstructor('\lxRDFa [Semiverbatim] RequiredKeyVals:RDFa',sub {
   my($doc,$xpath,$kv)=@_;
   my($save,$node);
@@ -127,14 +150,42 @@ DefConstructor('\lxRDFa [Semiverbatim] RequiredKeyVals:RDFa',sub {
   $doc->setNode($save); });
 
 #======================================================================
+# \lxRDF{keyvals}[content]  "Add RDF triple"
+# Add an RDF triple to the document.
 # Create an (invisible) metadata container, with the given RDF attributes.
-# \lxRDF{keyvals}
-DefConstructor('\lxRDF RequiredKeyVals:RDFa', "^<ltx:rdf %&RDFAttributes(#1)/>");
+# This can appear anywhere in the document, including in the preamble.
 
+# This version of \lxRDF is for use in the preamble.
+# It is complicated because \@add@frontmatter provides us no way to
+# do the extra processing of the RDF Keywords.
+DefPrimitive('\lxRDF@preamble[]RequiredKeyVals:RDFa', sub {
+  my($stomach,$content,$kv)=@_;
+  my $attr=RDFTriple($kv);	# require complete triple, here.
+  Digest(Tokens(T_CS('\@add@frontmatter'),
+		T_BEGIN,T_OTHER('ltx:rdf'),T_END,
+		T_OTHER('['),
+		map( (T_OTHER($_),T_OTHER('='),T_OTHER(ToString($$attr{$_})),T_OTHER(',')), keys %$attr),
+		T_OTHER(']'),
+		T_BEGIN,($content ? $content->unlist : ()),T_END)); });
 
-# Create a visible text object, with the given RDF attributes
-# \lxRDFAnnotate{keyvals}{text}
-DefConstructor('\lxRDFAnnotate RequiredKeyVals:RDFa {}', "<ltx:text %&RDFAttributes(#1)>#2</ltx:text>");
+# This version of \lxRDF is for use in the document body.
+DefConstructor('\lxRDF@body[] RequiredKeyVals:RDFa',
+	       "^<ltx:rdf %&RDFTriple(#2,#1)>#1</ltx:rdf>",
+	       alias=>'\lxRDF');
+
+# Start with \lxRDF bound to the preamble form, which saves the rdf as frontmatter
+Let(T_CS('\lxRDF'),T_CS('\lxRDF@preamble'));
+# When the document's begun, switch to the inline version.
+PushValue('@at@begin@document', (T_CS('\let'),T_CS('\lxRDF'),T_CS('\lxRDF@body')));
+
+#======================================================================
+# \lxRDFAnnotate{keyvals}{text}  "Add RDF Annotated text"
+# Create a visible text node, with the given RDF attributes.
+# This node inherits whatever RDF context exists at that point,
+# such as the current subject, chaining or whatever.
+# Thus, you may want to give an explicit about.
+DefConstructor('\lxRDFAnnotate RequiredKeyVals:RDFa {}',
+	       "<ltx:text %&RDFAttributes(#1,#2)>#2</ltx:text>");
 
 #======================================================================
 # Other shorthands might be useful, like
