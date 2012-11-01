@@ -534,9 +534,10 @@ DefMacro('\meaning Token',sub {
       my $spec = join("",@specparts);
       $spec=~s/\{\}//g;
       $spec=~s/Token//g;
-      $meaning="macro:".ToString($spec)."->".ToString($expansion);
-    }}
-  Explode('undefined'); });
+      $meaning="macro:".ToString($spec)."->".ToString($expansion); }
+    Explode($meaning); }
+  else {
+    Explode('undefined'); }});
 
 DefParameterType('CSName', sub {
   my($gullet)=@_;
