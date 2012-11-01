@@ -201,6 +201,10 @@ sub elseHandler {
 	  ." since we seem not to be in a conditional");
     return; }
   elsif($$stack[0]{parsing}){	# Defer expanding the \else if we're still parsing the test
+
+    # But if we've hit the \else, let's not keep bouncing around!??!?!!?
+    # THIS SEEMS RISKY!!!
+    $$stack[0]{parsing}=0;
     (T_CS('\relax'),$LaTeXML::CURRENT_TOKEN); }
   elsif($$stack[0]{elses}){	# Already seen an \else's at this level?
     Error('unexpected',$LaTeXML::CURRENT_TOKEN,$gullet,"Extra ".Stringify($LaTeXML::CURRENT_TOKEN));
