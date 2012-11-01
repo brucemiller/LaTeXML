@@ -115,7 +115,7 @@ sub getLocator {
   my($self,$long)=@_;
   my $mouth = $$self{mouth};
   my $i=0;
-  if((defined $mouth) && (($$mouth{source}||'') eq 'Anonymous String')
+  while((defined $mouth) && (($$mouth{source}||'') eq 'Anonymous String')
      && ($i < scalar(@{$$self{mouthstack}}))){
     $mouth = $$self{mouthstack}[$i++][0]; }
   my $loc = (defined $mouth ? $mouth->getLocator($long) : '');
