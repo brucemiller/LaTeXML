@@ -4,6 +4,7 @@
 #======================================================================
 use ExtUtils::MakeMaker;
 use strict;
+use FindBin;
 
 #======================================================================
 # Use "perl Makefile.PL <options>"
@@ -29,12 +30,13 @@ our @EXCLUSIONS=();
 our $MORE_MACROS = {};
 our $MORE_MAKERULES='';
 
+record_revision();
 compile_MathGrammar();
 compile_XSLTs();
 install_TeXStyles();
 
 WriteMakefile(NAME => 'LaTeXML',
-	      VERSION_FROM => 'lib/LaTeXML.pm',
+	      VERSION_FROM => 'lib/LaTeXML/Version.in',
 	      AUTHOR => 'Bruce Miller <bruce.miller@nist.gov>',
 	      ABSTRACT => "transforms TeX and LaTeX into XML",
 	      PREREQ_PM => { 
@@ -75,11 +77,50 @@ sub MY::postamble {
 #**********************************************************************
 
 #======================================================================
+# Record the current (svn) repository revision number
+sub record_revision {
+  # Don't copy the Version template to the installation; it's not needed
+  push(@EXCLUSIONS,'blib/lib/LaTeXML/Version.in');
+  # This should be the top-level directory, so it's revision should represent the whole project
+  $$MORE_MACROS{REVISION_BASE} = $FindBin::RealBin;
+  # This is where the REVISION gets stored (along with VERSION, etc)
+  $$MORE_MACROS{REVISION_FILE} = '$(INST_LIBDIR)/LaTeXML/Version.pm';
+  # Get the current revision
+  # This should be done SAFELY; and work even if svnversion isn't available (esp, windows, mac...)
+  # (When it isn't there's an error, but REVISION ends up "" ... exactly right, I think?)
+  $$MORE_MACROS{REVISION} = '`svnversion $(REVISION_BASE)`';
+  # Extract the previously recorded revision from the revision file (awkward)
+  $$MORE_MACROS{OLD_REVISION}
+    = '`$(PERLRUN) -ne \'chomp;if(s/.*?REVISION\\s*=\\s*\\"// && s/\\".*//){print;}\' < $(REVISION_FILE)`';
+  # Substitute the revision into the revision template
+  $$MORE_MACROS{RECORD_REVISION} = '$(PERLRUN) -pe "s@__REVISION__@$(REVISION)@" ';
+
+  # Have concerns about the $(noecho), but otherwise, it's annoying!
+  # it prints _every_ time you make, even if it doesn't update!
+
+  $MORE_MAKERULES .= <<'RecordRevision';
+
+# Record the svn revision in the Version module, for more informative diagnostics
+pure_all :: $(REVISION_FILE) update_revision
+
+# Always set version if version module template is newer
+$(REVISION_FILE): lib/LaTeXML/Version.in
+	$(RECORD_REVISION) lib/LaTeXML/Version.in > $(REVISION_FILE)
+
+# update version if stored revision if not current
+update_revision:
+	- $(NOECHO) test $(REVISION) = $(OLD_REVISION) \
+	|| $(RECORD_REVISION) lib/LaTeXML/Version.in > $(REVISION_FILE)
+
+RecordRevision
+}
+#======================================================================
 # We'll compile the RecDescent grammar during make; don't need to install grammar.
 sub compile_MathGrammar {
   push(@EXCLUSIONS,'blib/lib/LaTeXML/MathGrammar');
   $MORE_MAKERULES .= <<'MakeGrammar';
 
+# Precompile the (Recursive Descent) MathGrammar
 pure_all :: $(INST_LIBDIR)/LaTeXML/MathGrammar.pm
 
 $(INST_LIBDIR)/LaTeXML/MathGrammar.pm: lib/LaTeXML/MathGrammar
@@ -111,6 +152,7 @@ sub compile_XSLTs {
     my $html = $xhtml; $html =~ s/-xhtml.xsl$/-html.xsl/;
     $MORE_MAKERULES .= <<"MakeXSLT";
 
+# Convert the generic $xhtml stylesheet for use with plain html.
 pure_all :: \$(INST_LIBDIR)/LaTeXML/style/$html
 
 \$(INST_LIBDIR)/$styledir/$html: lib/$styledir/$xhtml
@@ -154,17 +196,18 @@ sub install_TeXStyles {
   # Note the dance below with -w shift; this is to keep from nesting quotes!
   $MORE_MAKERULES .= <<'InstallTeXStyles';
 
+# Install LaTeXML's LaTeX style files into the standard texmf location
 pure_install ::
 	$(NOECHO) $(MKPATH) "$(DESTINSTALLTEXMFDIR)"
 	$(NOECHO) $(MOD_INSTALL) \
 		read "$(INSTALLTEXMFDIR)/.packlist" \
 		write "$(DESTINSTALLTEXMFDIR)/.packlist" \
 		"$(INST_TEXMFDIR)" "$(DESTINSTALLTEXMFDIR)"
-	- perl -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr
+	- $(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr
 
 uninstall ::
 	$(NOECHO) $(UNINSTALL) "$(INSTALLTEXMFDIR)/.packlist"
-	- perl -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr
+	- $(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr
 
 InstallTeXStyles
 }
