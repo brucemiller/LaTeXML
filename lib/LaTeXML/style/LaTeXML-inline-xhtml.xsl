@@ -31,6 +31,19 @@
     </span>
   </xsl:template>
 
+  <!-- Special case: all OTHER attributes have to be outside the "hidden"
+       in order to take effect (eg. background color, etc).
+       Note that "contains" is NOT the right test for @class....-->
+  <xsl:template match="ltx:text[contains(@class,'ltx_phantom')]">
+    <span>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <span style="visibility:hidden">
+	<xsl:apply-templates/>
+      </span>
+    </span>
+  </xsl:template>
+
   <xsl:template match="ltx:emph">
     <em>
       <xsl:call-template name="add_id"/>
@@ -79,7 +92,14 @@
     <span>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
-	<xsl:with-param name="extra_style" select="'background:black'"/>
+	<xsl:with-param name="extra_style">
+	  <xsl:choose>
+	    <xsl:when test="@color">
+	      <xsl:value-of select="concat('background:',@color)"/>
+	    </xsl:when>
+	    <xsl:otherwise>background:black</xsl:otherwise>
+	  </xsl:choose>
+	</xsl:with-param>
       </xsl:call-template>
       <xsl:if test="string(@width)!='0.0pt'">&#xA0;</xsl:if>
     </span>
