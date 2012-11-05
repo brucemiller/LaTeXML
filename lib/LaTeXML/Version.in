@@ -1,0 +1,25 @@
+# /=====================================================================\ #
+# |  Version                                                            | #
+# | Record LaTeXML Version, Revision...                                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Version;
+use strict;
+
+use vars qw($VERSION $REVISION $IDENTITY);
+$VERSION  = "0.7.9alpha";
+# The following should be filled in by make
+$REVISION = "__REVISION__";
+
+$IDENTITY = "LaTeXML version $VERSION". ($REVISION ? "; revision $REVISION":'');
+
+1;
+
+
