@@ -12,13 +12,16 @@
 
 package LaTeXML::Version;
 use strict;
+use FindBin;
 
-use vars qw($VERSION $REVISION $IDENTITY);
+use vars qw($VERSION $REVISION $FULLVERSION $IDENTITY);
 $VERSION  = "0.7.9alpha";
 # The following should be filled in by make
 $REVISION = "__REVISION__";
 
-$IDENTITY = "LaTeXML version $VERSION". ($REVISION ? "; revision $REVISION":'');
+$FULLVERSION = "LaTeXML version $VERSION". ($REVISION ? "; revision $REVISION":'');
+
+$IDENTITY = "$FindBin::Script ($FULLVERSION)";
 
 1;
 
