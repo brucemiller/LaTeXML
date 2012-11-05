@@ -6,12 +6,10 @@ use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use LaTeXML::Common::XML;
 use Text::Wrap;
+use LaTeXML::Version;
 
 #**********************************************************************
 # Parse command line
-my $VERSION = '0.0.1';
-#my $identity = "latexmlfind (LaTeXML version $LaTeXML::VERSION)";
-my $identity = "latexmlfind ($VERSION)";
 my($verbosity)=(0);
 my ($help,$showversion,$SKELETON)=(0,0,0);
 my (@symbols,@unknowns,@posfuncs,@labels,@refnums);
@@ -25,16 +23,18 @@ GetOptions("symbol=s"           => \@symbols,,
 	   "verbose"   => sub { $verbosity++; },
 	   "VERSION"   => \$showversion,
 	   "help"      => \$help,
-	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
-pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
-if($showversion){ print STDERR "$identity\n"; exit(1); }
-pod2usage(-message=>"$identity\nMissing input TeX file", 
+	  ) or pod2usage(-message => $LaTeXML::Version::IDENTITY,
+			 -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$LaTeXML::Version::IDENTITY, -exitval=>1, -verbose=>2, -output=>\*STDOUT)
+  if $help;
+if($showversion){ print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
+pod2usage(-message=>"$LaTeXML::Version::IDENTITY\nMissing input TeX file", 
 	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
 my $source = $ARGV[0];
 
 #**********************************************************************
 # Do the processing.
-print STDERR "$identity\n" unless $verbosity < 0;
+print STDERR "$LaTeXML::Version::IDENTITY\n" unless $verbosity < 0;
 binmode(STDOUT,":utf8");	# Make sure output can handle UTF8
 
 my $DOC = LaTeXML::Common::XML::Parser->new()->parseFile($source);

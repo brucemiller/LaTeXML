@@ -5,6 +5,7 @@ use lib "$FindBin::RealBin/../lib";
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use LaTeXML;
+use LaTeXML::Version;
 use LaTeXML::Util::Pathname;
 
 # latexmlpost
@@ -19,7 +20,6 @@ use LaTeXML::Util::ObjectDB;
 #**********************************************************************
 # Parse command line
 
-my $identity = "latexmlmath (LaTeXML version $LaTeXML::VERSION)";
 my($verbosity,$strict,$noparse,$includestyles)=(-1,0,0,0);
 my ($destination,$help,$showversion)=('','');
 my ($documentid);
@@ -54,14 +54,16 @@ GetOptions(
 	   "debug=s"   => sub { eval "\$LaTeXML::$_[1]::DEBUG=1; "; },
 	   "documentid=s" => \$documentid,
 	   "help"      => \$help,
-	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
-pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
-if($showversion){ print STDERR "$identity\n"; exit(1); }
-pod2usage(-message=>"$identity\nMissing input TeX file", 
+	  ) or pod2usage(-message => $LaTeXML::Version::IDENTITY,
+			 -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$LaTeXML::Version::IDENTITY, -exitval=>1, -verbose=>2, -output=>\*STDOUT)
+  if $help;
+if($showversion){ print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
+pod2usage(-message=>"$LaTeXML::Version::IDENTITY\nMissing input TeX file", 
 	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
 
 binmode(STDERR,":utf8");
-print STDERR "$identity\n" unless $verbosity < 0;
+print STDERR "$LaTeXML::Version::IDENTITY\n" unless $verbosity < 0;
 
 #======================================================================
 # TeX Source
@@ -112,7 +114,7 @@ EODoc
 #======================================================================
 @paths = map(pathname_canonical($_),@paths);
 if(my @baddirs = grep(! -d $_, @paths)){
-  warn "$identity: these path directories do not exist: ".join(', ',@baddirs)."\n"; }
+  warn "$LaTeXML::Version::IDENTITY: these path directories do not exist: ".join(', ',@baddirs)."\n"; }
 
 my $latexml= LaTeXML->new(preload=>['LaTeX.pool',@preload], searchpaths=>[@paths],
 			  verbosity=>$verbosity, strict=>$strict,

@@ -5,11 +5,11 @@ use lib "$FindBin::RealBin/../lib";
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use LaTeXML;
+use LaTeXML::Version;
 use LaTeXML::Util::Pathname;
 
 #**********************************************************************
 # Parse command line
-my $identity = "$FindBin::Script (LaTeXML version $LaTeXML::VERSION)";
 my($verbosity,$strict,$comments,$noparse,$includestyles)=(0,0,1,0,0);
 my ($format,$destination,$help,$showversion)=('xml','');
 my ($preamble,$postamble)=(undef,undef);
@@ -39,16 +39,18 @@ GetOptions("destination=s" => \$destination,
 	   "debug=s"   => sub { eval "\$LaTeXML::$_[1]::DEBUG=1; "; },
 	   "documentid=s" => \$documentid,
 	   "help"      => \$help,
-	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
-pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
-if($showversion){ print STDERR "$identity\n"; exit(1); }
-pod2usage(-message=>"$identity\nMissing input TeX file", 
+	  ) or pod2usage(-message => $LaTeXML::Version::IDENTITY,
+			 -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$LaTeXML::Version::IDENTITY, -exitval=>1, -verbose=>2, -output=>\*STDOUT)
+  if $help;
+if($showversion){ print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
+pod2usage(-message=>"$LaTeXML::Version::IDENTITY\nMissing input TeX file", 
 	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
 my $source = $ARGV[0];
 
 #**********************************************************************
 # Set up the processing.
-print STDERR "$identity\n" unless $verbosity < 0;
+print STDERR "$LaTeXML::Version::IDENTITY\n" unless $verbosity < 0;
 print STDERR "processing started ".localtime()."\n" unless $verbosity < 0;
 
 @paths = map(pathname_canonical($_),@paths);

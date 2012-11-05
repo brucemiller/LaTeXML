@@ -6,6 +6,7 @@ use File::Spec;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use LaTeXML;
+use LaTeXML::Version;
 use LaTeXML::Post;
 use LaTeXML::Post::Writer;
 use LaTeXML::Post::Scan;
@@ -15,8 +16,6 @@ use LaTeXML::Util::ObjectDB;
 #======================================================================
 # Parse command line.
 #======================================================================
-my $identity = "$FindBin::Script (LaTeXML version $LaTeXML::VERSION)";
-
 # undef => unspecified; 0 = NO, 1 = YES
 my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
 my($sourcedir,$destination)=(undef,undef);
@@ -123,9 +122,10 @@ GetOptions("quiet"     => sub { $verbosity--; },
 	   "svg!"          =>\$svg,
 	   "pictureimages!"=>\$picimages,
 
-	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
-pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
-if($showversion){ print STDERR "$identity\n"; exit(1); }
+	  ) or pod2usage(-message => $LaTeXML::Version::IDENTITY,
+			 -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$LaTeXML::Version::IDENTITY, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+if($showversion){ print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
 
 # Get the requested XML file
 Error("Missing input xmlfile") unless @ARGV;
@@ -233,7 +233,7 @@ if((!defined $destination) && ($mathimages || $dographics || $picimages)){
 
 binmode(STDERR,":utf8");
 #binmode(STDOUT,":utf8");
-print STDERR "$identity\n" unless $verbosity < 0;
+print STDERR "$LaTeXML::Version::IDENTITY\n" unless $verbosity < 0;
 print STDERR "processing started ".localtime()."\n" unless $verbosity < 0;
 
 # Default options/parameters for each post processor
@@ -414,7 +414,7 @@ print STDERR "processing finished ".localtime()."\n" unless $verbosity < 0;
 #======================================================================
 sub Error {
   my($message)=@_;
-#  pod2usage(-message=>"$identity\n$message",-exitval=>1, -verbose=>0,-output=>\*STDERR); 
+#  pod2usage(-message=>"$LaTeXML::Version::IDENTITY\n$message",-exitval=>1, -verbose=>0,-output=>\*STDERR); 
   die "ERROR: $message\nUse the --help option for complete details\n";
 }
 
