@@ -116,7 +116,10 @@ rule =
 element rule { rule_attributes, rule_model }
 
 ## Attributes for \elementref{rule}.
-rule_attributes = Common.attributes, Positionable.attributes
+rule_attributes =
+  Common.attributes,
+  Positionable.attributes,
+  Colorable.attributes
 
 ## Content model for \elementref{rule}.
 rule_model = empty
