@@ -744,7 +744,7 @@ sub closeNode_internal {
 	  if(my $class = $node->getAttribute($key)){
 	    $node->setAttribute($key,$class.' '.$val); }
 	  else {
-	    $node->setAttribute($key,$class); }}
+	    $node->setAttribute($key,$val); }}
 	# xoffset, yoffset, pad-width, pad-height should sum up, if present on both.
 	elsif($key =~ /^(xoffset|yoffset|pad-height|pad-width)$/){
 	    if(my $val2 = $node->getAttribute($key)){
