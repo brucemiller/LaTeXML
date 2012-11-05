@@ -23,13 +23,14 @@ use LaTeXML::MathParser;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Bib;
 use LaTeXML::Package;
+use LaTeXML::Version;
 use Encode;
 our @ISA = (qw(LaTeXML::Object));
 
 #use LaTeXML::Document;
 
 use vars qw($VERSION);
-$VERSION = "0.7.9alpha";
+$VERSION = $LaTeXML::Version::VERSION; # for backward compatibility
 
 #**********************************************************************
 
