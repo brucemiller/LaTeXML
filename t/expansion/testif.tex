@@ -1,5 +1,6 @@
 \documentclass{article}
 \begin{document}
+\section{Testing various objects with ifx}
 \def\testA{foo}
 \def\testB{foo}
 \def\testC{bar}
@@ -29,6 +30,8 @@ Test let else (True False);
 ifx does NOT expand conditional tokens (fooFalse): \ifx\iftrue\testA True\else\testB False\fi.
 
 else is NOT expandable while expanding the test clause
+
+\section{Testing numerics}
 \newcount\c\c=1
 OK OK :
 \ifnum\c>2\else OK \fi
@@ -38,4 +41,64 @@ OK OK :
 OK :
 \c=1\relax\ifnum\oneorten>5\else OK \fi
 \c=2\relax\ifnum\oneorten>5\else NOT OK\fi
+
+
+\section{Testing if}
+Test plain if, as well;
+
+Test a and a \if aa True\else False\fi
+
+Test A and a \if Aa True\else False\fi
+
+Test f and testA \if f\testA True\else False\fi
+
+Test f and testC \if f\testC True\else False\fi
+
+Test b and testC \if f\testC True\else False\fi
+
+Test testc and b  \if f\testC True\else False\fi
+
+\c=1\relax Test 1 and oneorten [c=1]  \if 1\oneorten True\else False\fi
+
+\c=2\relax Test 1 and oneorten [c=2]  \if 1\oneorten True\else False\fi
+
+\section{Testing if in test clause}
+\def\testifx{T\ifx\testA\testB T\else F\fi}
+
+Test ifx testA testB \testifx
+
+Test if on testifx \if\testifx True\else False\fi
+
+Test ifx on testifx \if\testifx True\else False\fi
+
+\def\nottestifx{T\ifx\testA\testB F\else T\fi}
+
+Test not ifx testA testB \nottestifx
+
+Test if on nottestifx \if\nottestifx True\else False\fi
+
+Test ifx on nottestifx \ifx\nottestifx True\else False\fi
+
+
+\def\a{a}%
+ \let\b=\a
+ \def\check{T\ifx\a\b F\else T\fi}
+
+ % Test the check value:
+ \check\\
+
+ % Test it used in \if:
+ if-check is: \if\check true\else false\fi
+
+
+\def\innerif{\if\clause X\else Y\fi}
+
+True: \def\clause{TT}\if X\innerif True\else False\fi
+
+False: \def\clause{TF}\if X\innerif True\else False\fi
+
+False: \def\clause{TT}\if Y\innerif True\else False\fi
+
+True: \def\clause{TF}\if Y\innerif True\else False\fi
+
 \end{document}

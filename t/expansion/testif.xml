@@ -2,42 +2,119 @@
 <?latexml class="article"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <para xml:id="p1">
-    <p>Test Letters A and A (True) :  True .</p>
-  </para>
-  <para xml:id="p2">
-    <p>Test Letters A and B (False) : False.</p>
-  </para>
-  <para xml:id="p3">
-    <p>Test Macros testA and testB (True) : True .</p>
-  </para>
-  <para xml:id="p4">
-    <p>Test Macros testA and testC (False) : False.</p>
-  </para>
-  <para xml:id="p5">
-    <p>Nested (True False)
+  <section refnum="1" xml:id="S1">
+    <title><tag>1 </tag>Testing various objects with ifx</title>
+    <para xml:id="S1.p1">
+      <p>Test Letters A and A (True) :  True .</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>Test Letters A and B (False) : False.</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>Test Macros testA and testB (True) : True .</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>Test Macros testA and testC (False) : False.</p>
+    </para>
+    <para xml:id="S1.p5">
+      <p>Nested (True False)
 True False.
 Nested (False True)
 False True .</p>
-  </para>
-  <para xml:id="p6">
-    <p>Test let fi (True False);
+    </para>
+    <para xml:id="S1.p6">
+      <p>Test let fi (True False);
 True False.</p>
-  </para>
-  <para xml:id="p7">
-    <p>Test let else (True False);
+    </para>
+    <para xml:id="S1.p7">
+      <p>Test let else (True False);
 True False.</p>
-  </para>
-  <para xml:id="p8">
-    <p>ifx does NOT expand conditional tokens (fooFalse): fooFalse.</p>
-  </para>
-  <para xml:id="p9">
-    <p>else is NOT expandable while expanding the test clause
-OK OK :
+    </para>
+    <para xml:id="S1.p8">
+      <p>ifx does NOT expand conditional tokens (fooFalse): fooFalse.</p>
+    </para>
+    <para xml:id="S1.p9">
+      <p>else is NOT expandable while expanding the test clause</p>
+    </para>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag>2 </tag>Testing numerics</title>
+    <para xml:id="S2.p1">
+      <p>OK OK :
 OK OK.</p>
-  </para>
-  <para xml:id="p10">
-    <p>OK :
+    </para>
+    <para xml:id="S2.p2">
+      <p>OK :
 OK</p>
-  </para>
+    </para>
+  </section>
+  <section refnum="3" xml:id="S3">
+    <title><tag>3 </tag>Testing if</title>
+    <para xml:id="S3.p1">
+      <p>Test plain if, as well;</p>
+    </para>
+    <para xml:id="S3.p2">
+      <p>Test a and a  True</p>
+    </para>
+    <para xml:id="S3.p3">
+      <p>Test A and a False</p>
+    </para>
+    <para xml:id="S3.p4">
+      <p>Test f and testA ooTrue</p>
+    </para>
+    <para xml:id="S3.p5">
+      <p>Test f and testC False</p>
+    </para>
+    <para xml:id="S3.p6">
+      <p>Test b and testC False</p>
+    </para>
+    <para xml:id="S3.p7">
+      <p>Test testc and b  False</p>
+    </para>
+    <para xml:id="S3.p8">
+      <p>Test 1 and oneorten [c=1]  True</p>
+    </para>
+    <para xml:id="S3.p9">
+      <p>Test 1 and oneorten [c=2]  0True</p>
+    </para>
+  </section>
+  <section refnum="4" xml:id="S4">
+    <title><tag>4 </tag>Testing if in test clause</title>
+    <para xml:id="S4.p1">
+      <p>Test ifx testA testB TT</p>
+    </para>
+    <para xml:id="S4.p2">
+      <p>Test if on testifx True</p>
+    </para>
+    <para xml:id="S4.p3">
+      <p>Test ifx on testifx True</p>
+    </para>
+    <para xml:id="S4.p4">
+      <p>Test not ifx testA testB TF</p>
+    </para>
+    <para xml:id="S4.p5">
+      <p>Test if on nottestifx False</p>
+    </para>
+    <para xml:id="S4.p6">
+      <p>Test ifx on nottestifx False</p>
+    </para>
+    <para xml:id="S4.p7">
+      <p>TF<break/></p>
+    </para>
+    <para xml:id="S4.p8">
+      <p>if-check is: false</p>
+    </para>
+    <para xml:id="S4.p9">
+      <p>True: True</p>
+    </para>
+    <para xml:id="S4.p10">
+      <p>False: False</p>
+    </para>
+    <para xml:id="S4.p11">
+      <p>False: False</p>
+    </para>
+    <para xml:id="S4.p12">
+      <p>True: True</p>
+    </para>
+  </section>
 </document>
