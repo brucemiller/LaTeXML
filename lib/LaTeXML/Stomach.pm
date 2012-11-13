@@ -120,6 +120,8 @@ sub invokeToken {
 	  "Excessive recursion(?): ",
 	  "Tokens on stack: ".join(', ',map(ToString($_),@token_stack))); }
   my @result = $self->invokeToken_internal($token);
+  if(my($x)=grep(!$_->isaBox,@result)){
+    Fatal('misdefined',$x,$self,"Expected a Box|List|Whatsit, but got '".Stringify($x)."'"); }
   pop(@token_stack);
   @result; }
 
@@ -224,7 +226,10 @@ sub pushStackFrame {
 sub popStackFrame {
   my($self,$nobox)=@_;
   if(my $beforeafter=$STATE->lookupValue('beforeAfterGroup')){
-    push(@LaTeXML::LIST,map($_->beDigested($self), @$beforeafter)); }
+    my @result = map($_->beDigested($self), @$beforeafter);
+      if(my($x)=grep(!$_->isaBox,@result)){
+	Fatal('misdefined',$x,$self,"Expected a Box|List|Whatsit, but got '".Stringify($x)."'"); }
+    push(@LaTeXML::LIST,@result); }
   my $after = $STATE->lookupValue('afterGroup');
   $STATE->popFrame;
   pop(@{$$self{boxing}}) unless $nobox; # For begingroup/endgroup
