@@ -139,17 +139,19 @@ sub isConditional { 1; }
 
 sub getTest { $_[0]->{test}; }
 
+# Note that although conditionals are Expandable,
+# they do NOT defined as macros, so they don't need to handle doInvocation,
+
 sub invoke {
   my($self,$gullet)=@_;
   # Keep a stack of the conditionals we are processing.
-  $STATE->unshiftValue(if_stack=>{token=>$LaTeXML::CURRENT_TOKEN,parsing=>1,elses=>0});
+  local $LaTeXML::IFFRAME= {token=>$LaTeXML::CURRENT_TOKEN, start=>$gullet->getLocator,
+			   parsing=>1, elses=>0};
+  $STATE->unshiftValue(if_stack=>$LaTeXML::IFFRAME);
 
-  $self->doInvocation($gullet,$self->readArguments($gullet)); }
+  my @args = $self->readArguments($gullet);
+  $$LaTeXML::IFFRAME{parsing}=0; # Now, we're done parsing the Test clause.
 
-sub doInvocation {
-  my($self,$gullet,@args)=@_;
-  $STATE->lookupValue('if_stack')->[0]->{parsing}=0; # Now, we're done parsing the Test part.
-  # The usual case
   if(my $test = $self->getTest){
     ifHandler($gullet, &$test($gullet,@args)); }
   # If there's no test, it must be the Special Case, \ifcase
@@ -163,6 +165,22 @@ sub doInvocation {
 #   0 : skip to \fi
 #  -1 : skip to \else, if any, or \fi
 #   n : skip to n-th \or, if any, or \else, if any, or \fi.
+
+# NOTE that there are 2 kinds of "nested" ifs.
+#  \if's inside the body of either the true or false branch
+# are easily skipped by tracking a level of if nesting and skipping over the
+# same number of \fi as you find \if.
+#  \if's that get expanded while evaluating the test clause itself
+# are considerably trickier. There's a frame on the if-stack for this \if
+# that's above the one we're currently processing; typically the \else & \fi
+# may still remain, but we need to either evaluate them a normal
+# if we're continuing to follow the true branch, or skip oever them if
+# we're trying to find the \else for the false branch.
+# The danger is mistaking the \else that's associated with the test clause's \if
+# and taking it for the \else that we're skipping to!
+# Canonical example:
+#   \if\ifx AA XY junk \else blah \fi True \else False \fi
+# The inner \ifx should expand to "XY junk", since A==A
 sub skipConditionalBody {
   my($gullet,$nskips)=@_;
   my $level=1;
@@ -170,15 +188,21 @@ sub skipConditionalBody {
   my $start = $gullet->getLocator;
   while(my $t= $gullet->readToken){
     if(defined(my $defn = $STATE->lookupDefinition($t))){
-      if($defn->isExpandable && $defn->isConditional){
+      if($defn->isExpandable && $defn->isConditional){ # Found a new \ifxx (in body)
 	$level++; }
-      elsif(Equals($t,T_CS('\fi')) && (!--$level)){
-	fiHandler($gullet); return; } # Note, fiHandler called from here.
-      elsif($level > 1){	# Ignore nested \else,\or
+      elsif(Equals($t,T_CS('\fi'))){ #  Found a \fi
+	# But is it for a condition nested in the test clause?
+	if($STATE->lookupValue('if_stack')->[0] ne $LaTeXML::IFFRAME){
+	  $STATE->shiftValue('if_stack'); } # then DO pop that conditional's frame; it's DONE!
+	elsif(!--$level){		    # If no more nesting, we're done.
+	  fiHandler($gullet); return; }} # Note, fiHandler called from here.
+      elsif($level > 1){	# Ignore \else,\or nested in the body.
       }
       elsif(Equals($t,T_CS('\or')) && (++$n_ors == $nskips)){
 	return; }
-      elsif(Equals($t,T_CS('\else')) && $nskips){
+      elsif(Equals($t,T_CS('\else')) && $nskips # Found \else and we're looking for one?
+	    # Make sure this \else is NOT for a nested \if that is part of the test clause!
+	    && ($STATE->lookupValue('if_stack')->[0] eq $LaTeXML::IFFRAME)){
 	# No need to actually call elseHandler, but note that we've seen an \else!
 	$STATE->lookupValue('if_stack')->[0]->{elses}=1;
 	return; }}}
@@ -201,15 +225,12 @@ sub elseHandler {
 	  ." since we seem not to be in a conditional");
     return; }
   elsif($$stack[0]{parsing}){	# Defer expanding the \else if we're still parsing the test
-
-    # But if we've hit the \else, let's not keep bouncing around!??!?!!?
-    # THIS SEEMS RISKY!!!
-    $$stack[0]{parsing}=0;
     (T_CS('\relax'),$LaTeXML::CURRENT_TOKEN); }
   elsif($$stack[0]{elses}){	# Already seen an \else's at this level?
     Error('unexpected',$LaTeXML::CURRENT_TOKEN,$gullet,"Extra ".Stringify($LaTeXML::CURRENT_TOKEN));
     return; }
   else {
+    local $LaTeXML::IFFRAME = $stack->[0];
     skipConditionalBody($gullet,0); return; }}
 
 sub fiHandler {
@@ -223,7 +244,7 @@ sub fiHandler {
   elsif($$stack[0]{parsing}){	# Defer expanding the \else if we're still parsing the test
     (T_CS('\relax'),$LaTeXML::CURRENT_TOKEN); }
   else {			# "expand" by removing the stack entry for this level
-    $STATE->shiftValue('if_stack');
+    $STATE->shiftValue('if_stack'); # Done with this frame
     return; }}
 
 #**********************************************************************
