@@ -60,7 +60,7 @@ DefPrimitive('\@longtable@bindings AlignmentTemplate',sub { longtableBindings($_
 
 sub longtableBindings {
   my($template)=@_;
-  alignmentBindings($template,'text'); 
+  tabularBindings($template,'text'); 
   Let(T_CS('\endfirsthead'), T_CS('\@longtable@endfirsthead'));
   Let(T_CS('\endhead'),      T_CS('\@longtable@endhead'));
   Let(T_CS('\endfoot'),      T_CS('\@longtable@endfoot'));
