@@ -46,6 +46,11 @@ my @standardchar=("\\",'{','}','$',
 our @CC_NAME=qw(Escape Begin End Math Align EOL Parameter Superscript Subscript
 		Ignore Space Letter Other Active Comment Invalid
 		ControlSequence NotExpanded);
+our @PRIMITIVE_NAME=('Escape','Begin','End','Math',
+		     'Align','EOL','Parameter','Superscript',
+		     'Subscript',undef,'Space',undef,
+		     undef,undef,undef,undef,
+		     undef,'NotExpanded');
 our @CC_SHORT_NAME = qw(T_ESCAPE T_BEGIN T_END T_MATH
 			T_ALIGN T_EOL T_PARAM T_SUPER
 			T_SUB T_IGNORE T_SPACE T_LETTER
@@ -62,8 +67,12 @@ sub isaToken { 1; }
 # stored under; It's the same for various `different' BEGIN tokens, eg.
 sub getCSName {
   my($token)=@_;
-  my $cc = $$token[1];
-  ($primitive_catcode[$cc] ? $CC_NAME[$cc] : $$token[0]); }
+  $PRIMITIVE_NAME[$$token[1]] || $$token[0]; }
+
+# Get the CSName only if the catcode is executable!
+sub getExecutableName {
+  my($cs,$cc)=@{$_[0]};
+  $executable_catcode[$cc] && ($PRIMITIVE_NAME[$cc] || $cs); }
 
 # Return the string or character part of the token
 sub getString  { $_[0]->[0]; }
@@ -111,6 +120,8 @@ sub beDigested {
 # Compare two tokens; They are equal if they both have same catcode,
 # and either the catcode is one of the primitive ones, or thier strings
 # are equal.
+# NOTE: That another popular equality checks whether the "meaning" (defn) are the same.
+# That is NOT done here; see Equals(x,y).
 sub equals {
   my($a,$b)=@_;
   (defined $b
@@ -141,16 +152,16 @@ use strict;
 use LaTeXML::Global;
 use base qw(LaTeXML::Object);
 
+# Form a Tokens list of Token's
+# Flatten the arguments Token's and Tokens's into plain Token's
+# .... Efficiently! since this seems to be called MANY times.
 sub new {
   my($class,@tokens)=@_;
-  my @filtered=();
-  while(@tokens){		# Flatten Tokens, check Token's
-    my $t = shift(@tokens);
-    my $ref = ref $t;
-    if($ref eq 'LaTeXML::Token'){ push(@filtered,$t); }
-    elsif($ref eq 'LaTeXML::Tokens'){ unshift(@tokens,@$t); } # Opencoded $t->unlist
-    else { Fatal('misdefined',(ref $t),undef,"Expected a Token, got ".Stringify($t)); }}
-  bless [@filtered],$class; }
+  my $r;
+  bless [map( (($r=ref $_) eq 'LaTeXML::Token' ? $_
+  	       : ($r eq 'LaTeXML::Tokens' ? @$_
+  		  : Fatal('misdefined',$r,undef,"Expected a Token, got ".Stringify($_)))),
+  	      @tokens)], $class; }
 
 # Return a list of the tokens making up this Tokens
 sub unlist { @{$_[0]}; }
