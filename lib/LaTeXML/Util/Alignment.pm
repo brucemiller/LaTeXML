@@ -116,6 +116,10 @@ sub currentColumnNumber {
   my($self)=@_;
   $$self{current_column}; }
 
+sub currentRowNumber {
+  my($self)=@_;
+  scalar(@{$$self{rows}}); }
+
 sub currentColumn {
   my($self)=@_;
   $$self{current_row}->column($$self{current_column}); }
@@ -123,6 +127,15 @@ sub currentColumn {
 sub getColumn {
   my($self,$n)=@_;
   $$self{current_row}->column($n); }
+
+# Ugh... these take boxes; adding before/after columns takes tokens!
+sub addBeforeRow {
+  my($self,@boxes)=@_;
+  $$self{current_row}{before} = [@{ $$self{current_row}{before} || []},@boxes]; }
+
+sub addAfterRow {
+  my($self,@boxes)=@_;
+  $$self{current_row}{after} = [@{ $$self{current_row}{after} || []},@boxes]; }
 
 # sub missingColumns {
 #   my($self)=@_;
@@ -206,19 +219,17 @@ sub beAbsorbed {
 
   # We _should_ attach boxes to the alignment and rows,
   # but (ATM) we've only got sensible boxes for the cells.
-#  $document->openElement($$self{containerElement},%attributes);
   &{$$self{openContainer}}($document,%attributes);
   foreach my $row (@{$$self{rows}}){
-#    $document->openElement($$self{rowElement},
-#			   'xml:id'=>$$row{id},refnum=>$$row{refnum});
     &{$$self{openRow}}($document,'xml:id'=>$$row{id},refnum=>$$row{refnum},frefnum=>$$row{frefnum});
+    if(my $before = $$row{before}){
+      map($document->absorb($_),@$before); }
     foreach my $cell (@{$$row{columns}}){
       next if $$cell{skipped};
       # Normalize the border attribute
       my $border = join(' ',sort(map(split(/ */,$_),$$cell{border}||'')));
       $border =~ s/(.) \1/$1$1/g;
       my $empty = !$$cell{boxes} || !scalar($$cell{boxes}->unlist);
-#      $$cell{cell} = $document->openElement($$self{colElement},
       $$cell{cell} = &{$$self{openColumn}}($document,
 					    align=>$$cell{align}, width=>$$cell{width},
 					    (($$cell{span}||1) != 1 ? (colspan=>$$cell{span}) : ()),
@@ -231,11 +242,10 @@ sub beAbsorbed {
 	$document->absorb($$cell{boxes});
 	$document->closeElement('ltx:XMArg') if $ismath;
       }
-#      $document->closeElement($$self{colElement}); }
       &{$$self{closeColumn}}($document); }
-#    $document->closeElement($$self{rowElement}); }
+    if(my $after = $$row{after}){
+      map($document->absorb($_),@$after); }
     &{$$self{closeRow}}($document); }
-#  $document->closeElement($$self{containerElement});
   &{$$self{closeContainer}}($document);
 }
 
@@ -324,19 +334,21 @@ sub setRepeating {
   my($self)=@_; 
   $$self{repeating}=1; }
 
-sub addBefore {
+# These add material before & after the current column
+sub addBeforeColumn {
   my($self,@tokens)=@_;
   push(@{$$self{save_before}},@tokens); }
 
-sub addAfter {
+sub addAfterColumn {
   my($self,@tokens)=@_;
   $$self{current_column}{after} = Tokens(@{ $$self{current_column}{after}},@tokens); }
 
-sub addBetween {
+# Or between this column & next...
+sub addBetweenColumn {
   my($self,@tokens)=@_;
   my @cols = @{$$self{columns}};
-  if($$self{current_column}){ $self->addAfter(@tokens); }
-  else                      { $self->addBefore(@tokens); }}
+  if($$self{current_column}){ $self->addAfterColumn(@tokens); }
+  else                      { $self->addBeforeColumn(@tokens); }}
 
 sub addColumn {
   my($self,%properties)=@_;
