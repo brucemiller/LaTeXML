@@ -53,6 +53,9 @@ our @EXPORT = (qw(&DefExpandable
 	       # Font encoding
 	       qw(&DeclareFontMap &FontDecode &LoadFontMap),
 
+	       # Color
+	       qw(&DefColor &DefColorModel &LookupColor),
+
 	       # Support for structured/argument readers
 	       qw(&ReadParameters &DefParameterType  &DefColumnType),
 
@@ -308,13 +311,12 @@ sub NewCounter {
   DefRegisterI(T_CS("\\c\@$unctr"),undef,Number(0));
   AssignValue("\\c\@$unctr"=>Number(0),'global');
   AssignValue("\\cl\@$unctr"=>Tokens(),'global') unless LookupValue("\\cl\@$unctr");
+  my $x;
   AssignValue("\\cl\@$within" =>
-	      Tokens(T_CS($ctr),T_CS($unctr),
-		     (LookupValue("\\cl\@$within") ? LookupValue("\\cl\@$within")->unlist :())),
+	      Tokens(T_CS($ctr),T_CS($unctr),(($x=LookupValue("\\cl\@$within")) ? $x->unlist :())),
 	      'global') if $within;
   AssignValue("\\cl\@UN$within" =>
-	      Tokens(T_CS($unctr),
-		     (LookupValue("\\cl\@UN$within") ? LookupValue("\\cl\@UN$within")->unlist :())),
+	      Tokens(T_CS($unctr),(($x=LookupValue("\\cl\@UN$within")) ? $x->unlist :())),
 	      'global') if $within;
   AssignValue('nested_counters_'.$ctr =>$options{nested}) if $options{nested};
   DefMacroI(T_CS("\\the$ctr"),undef,"\\arabic{$ctr}",scope=>'global');
@@ -1390,6 +1392,8 @@ sub resetOptions {
 
 sub AddToMacro {
   my($cs,@tokens)=@_;
+  $cs = T_CS($cs) unless ref $cs;
+  @tokens = map( (ref $_ ? $_ : TokenizeInternal($_)), @tokens);
   # Needs error checking!
   my $defn = LookupDefinition($cs);
   if(! defined $defn || ! $defn->isExpandable){
@@ -1608,6 +1612,37 @@ sub LoadFontMap {
     else {
       AssignValue($encoding.'_fontmap_failed_to_load'=>1,'global'); }}
   $map; }
+
+#======================================================================
+# Color
+sub LookupColor {
+  my($name)=@_;
+  if(my $color = LookupValue('color_'.$name)){
+    return $color; }
+  else {
+    Error('undefined',$name,$STATE->getStomach,"color '$name' is undefined...");
+    Black; }}
+
+sub DefColor {
+  my($name,$color,$scope)=@_;
+#print STDERR "DEFINE ".ToString($name)." => ".join(',',@$color)."\n";
+  my($model,@spec)=@$color;
+  $scope = 'global' if LookupValue('Boolean:globalcolors');
+  AssignValue('color_'.$name=>$color,$scope);
+  # We could store these pieces separately,or in a list for above,
+  # so that extract could use them more reasonably?
+  # This is perhaps too xcolor specific?
+  DefMacroI('\\\\color@'.$name,undef,
+	    '\relax\relax{'.join(' ',$model,@spec).'}{'.$model.'}{'.join(',',@spec).'}',
+	   scope=>$scope); }
+
+# Need 3 things for Derived Models:
+#   derivedfrom  : the core model that this model is "derived from"
+#   convertto    : code to convert to the (a) core model
+#   convertfrom  : code to convert from the core model
+sub DefColorModel {
+  my($model,$coremodel,$tocore,$fromcore)=@_;
+  AssignValue('derived_color_model_'.$model=>[$coremodel,$tocore,$fromcore],'global'); }
 
 #======================================================================
 # Defining Rewrite rules that act on the DOM
@@ -3117,6 +3152,28 @@ Finds and loads the font map for the encoding named C<$encoding>, if it hasn't b
 loaded before.  It looks for C<encoding.fontmap.ltxml>, which would typically define
 the font map using C<DeclareFontMap>, possibly including extra maps for families
 like C<typewriter>.
+
+=back
+
+=head2 Color
+
+=over
+
+=item C<< $color=LookupColor($name); >>
+
+Lookup the color object associated with C<$name>.
+
+=item C<< DefColor($name,$color,$scope); >>
+
+Associates the C<$name> with the given C<$color> (a color object),
+with the given scoping.
+
+=item C<< DefColorModel($model,$coremodel,$tocore,$fromcore); >>
+
+Defines a color model C<$model> that is derived from the core color
+model C<$coremodel>.  The two functions C<$tocore> and C<$fromcore>
+convert a color object in that model to the core model, or from the core model
+to the derived model.  Core models are rgb, cmy, cmyk, hsb and gray.
 
 =back
 
