@@ -61,7 +61,7 @@ use base qw(LaTeXML::Definition);
 
 sub new {
   my($class,$cs,$parameters,$expansion,%traits)=@_;
-  $expansion = TokensI($expansion) if ref $expansion eq 'LaTeXML::Token';
+  $expansion = Tokens($expansion) if ref $expansion eq 'LaTeXML::Token';
   my $source = $STATE->getStomach->getGullet->getMouth;
   if(ref $expansion eq 'LaTeXML::Tokens'){
     my $level=0;
@@ -99,7 +99,7 @@ sub doInvocation {
 		      map($_ && (($r=ref $_) && ($r eq 'LaTeXML::Tokens')
 				 ? $_
 				 : ($r && ($r eq 'LaTeXML::Token')
-				    ? TokensI($_)
+				    ? Tokens($_)
 				    : Tokens(Revert($_)))),
 			  @args))); }
 
