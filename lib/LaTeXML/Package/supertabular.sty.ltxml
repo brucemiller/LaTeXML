@@ -18,7 +18,7 @@ use LaTeXML::Util::Alignment;
 # Environment \begin{supertabular}{pattern} ... \end{supertabular}
 DefMacro('\supertabular{}',
 	 '\@supertabular@topcaption'
-	 .'\@alignment@bindings{#1}[text]\@@supertabular{#1}\@start@alignment'
+	 .'\@tabular@bindings{#1}[text]\@@supertabular{#1}\@start@alignment'
 	 .'\@supertabular@head');
 DefMacro('\endsupertabular',
 	 '\@supertabular@tail'
@@ -36,7 +36,7 @@ DefConstructor('\@@supertabular Undigested DigestedBody',
 # Environment \begin{supertabular*}{width}{pattern} ... \end{supertabular*}
 DefMacro('\csname supertabular*\endcsname{Dimension}{}',
 	 '\@supertabular@topcaption'
-	 .'\@alignment@bindings{#1}[text]\@@supertabular@{#1}{#2}\@start@alignment'
+	 .'\@tabular@bindings{#1}[text]\@@supertabular@{#1}{#2}\@start@alignment'
 	 .'\@supertabular@head');
 DefMacro('\csname endsupertabular*\endcsname',
 	 '\@supertabular@tail'
@@ -59,7 +59,7 @@ DefConstructor('\@@supertabular@ {Dimension} Undigested DigestedBody',
 # Environment \begin{mpsupertabular}{pattern} ... \end{mpsupertabular}
 DefMacro('\mpsupertabular{}',
 	 '\@supertabular@topcaption'
-	 .'\@alignment@bindings{#1}[text]\@@supertabular{#1}\@start@alignment'
+	 .'\@tabular@bindings{#1}[text]\@@supertabular{#1}\@start@alignment'
 	 .'\@supertabular@head');
 DefMacro('\endmpsupertabular',
 	 '\@supertabular@tail'
@@ -69,7 +69,7 @@ DefMacro('\endmpsupertabular',
 # Environment \begin{mpsupertabular*}{width}{pattern} ... \end{mpsupertabular*}
 DefMacro('\csname mpsupertabular*\endcsname{Dimension}{}',
 	 '\@supertabular@topcaption'
-	 .'\@alignment@bindings{#1}[text]\@@supertabular@{#1}{#2}\@start@alignment'
+	 .'\@tabular@bindings{#1}[text]\@@supertabular@{#1}{#2}\@start@alignment'
 	 .'\@supertabular@head');
 DefMacro('\csname mpendsupertabular*\endcsname',
 	 '\@supertabular@tail'
