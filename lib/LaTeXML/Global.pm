@@ -25,32 +25,35 @@ use LaTeXML::Common::XML;
 use Time::HiRes;
 
 use base qw(Exporter);
-our  @EXPORT = ( 
-	       # Global STATE; This gets bound by LaTeXML.pm
-	       qw( *STATE),
-	       # Catcode constants
-	       qw( CC_ESCAPE  CC_BEGIN  CC_END     CC_MATH
-		   CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
-		   CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
-		   CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
-		   CC_CS      CC_NOTEXPANDED ),
-	       # Token constructors
-	       qw( &T_BEGIN &T_END &T_MATH &T_ALIGN &T_PARAM &T_SUB &T_SUPER &T_SPACE 
-		   &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
-		   &T_CR
-		   &Token &Tokens
-		   &Tokenize &TokenizeInternal &Explode &ExplodeText &UnTeX
-		   &StartSemiverbatim &EndSemiverbatim),
-	       # Number & Dimension constructors
+our  @EXPORT = (# Global STATE; This gets bound by LaTeXML.pm
+		qw( *STATE),
+		# Catcode constants
+		qw( CC_ESCAPE  CC_BEGIN  CC_END     CC_MATH
+		    CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
+		    CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
+		    CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
+		    CC_CS      CC_NOTEXPANDED ),
+		# Token constructors
+		qw( &T_BEGIN &T_END &T_MATH &T_ALIGN &T_PARAM &T_SUB &T_SUPER &T_SPACE 
+		    &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
+		    &T_CR
+		    &Token &Tokens
+		    &Tokenize &TokenizeInternal &Explode &ExplodeText &UnTeX
+		    &StartSemiverbatim &EndSemiverbatim),
+		# Number & Dimension constructors
 		qw( &Number &Float &Dimension &MuDimension &Glue &MuGlue &Pair &PairList),
-	       # Box constructor
+		# Box constructor
 		qw( &Box ),
-	       # Error & Progress reporting
-	       qw( &NoteProgress &NoteBegin &NoteEnd &Fatal &Error &Warn &Info),
-	       # And some generics
-	       qw(&Stringify &ToString &Revert &Equals),
-	       # And, anything exported from LaTeXML::Common::XML
-	       @LaTeXML::Common::XML::EXPORT
+		# Fonts
+		qw( &Color &Black &White),
+		# Error & Progress reporting
+		qw( &NoteProgress &NoteBegin &NoteEnd &Fatal &Error &Warn &Info),
+		# And some generics
+		qw(&Stringify &ToString &Revert &Equals),
+		# And some really simple useful stuff.
+		qw(&min &max),
+		# And, anything exported from LaTeXML::Common::XML
+		@LaTeXML::Common::XML::EXPORT
 );
 
 #======================================================================
@@ -219,6 +222,20 @@ sub Box {
 # we need to know whether we were in math BEFORE digesting the boxes!
 #   ( $ismath ? LaTeXML::MathList->new(@boxes) : LaTeXML::List->new(@boxes)); }
 
+#======================================================================
+# Colors
+sub Color {
+  my($model,@components)=@_;
+  # Beware of clumsy invention of $class; see LaTeXML::Color
+  my $class = 'LaTeXML::Color::'.$model;
+  $class = 'LaTeXML::Color::DerivedColor' unless $class->can('isCore');
+  bless [$model,@components],$class; }
+
+our $CONSTANT_BLACK = bless ['rgb',0,0,0],'LaTeXML::Color::rgb';
+our $CONSTANT_WHITE = bless ['rgb',1,1,1],'LaTeXML::Color::rgb';
+sub Black () { $CONSTANT_BLACK; }
+sub White () { $CONSTANT_WHITE; }
+
 #**********************************************************************
 # Error & Progress reporting.
 
@@ -339,7 +356,8 @@ sub Stringify {
 
 sub ToString {
   my($object)=@_;
-  (defined $object ? (((ref $object) && !$NOBLESS{ref $object}) ? $object->toString : "$object"):''); }
+  my $r;
+  (defined $object ? (($r=ref $object) && !$NOBLESS{$r} ? $object->toString : "$object"):''); }
 
 # Just how deep of an equality test should this be?
 sub Equals {
@@ -358,8 +376,9 @@ sub Equals {
     return $defa && $defb && ($defa eq $defb); }
   return 0; }
 
-#    && ( ((ref $a) && (ref $b) && ((ref $a) eq (ref $b)) && !$NOBLESS{ref $a})
-#	 ? $a->equals($b) : ($a eq $b)); }
+#**********************************************************************
+sub min { ($_[0] < $_[1] ? $_[0] : $_[1]); }
+sub max { ($_[0] > $_[1] ? $_[0] : $_[1]); }
 
 #**********************************************************************
 1;
