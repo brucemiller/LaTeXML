@@ -20,6 +20,7 @@ use LaTeXML::Gullet;
 use LaTeXML::Box;
 use LaTeXML::Mouth;
 use LaTeXML::Font;
+use LaTeXML::Color;
 use LaTeXML::Definition;
 use base qw(LaTeXML::Object);
 
@@ -120,6 +121,8 @@ sub invokeToken {
 	  "Excessive recursion(?): ",
 	  "Tokens on stack: ".join(', ',map(ToString($_),@token_stack))); }
   my @result = $self->invokeToken_internal($token);
+  if((scalar(@result)==1) && (! defined $result[0])){
+    @result=(); }		# Just paper over the obvious thing.
   if(my($x)=grep(!$_->isaBox,@result)){
     Fatal('misdefined',$x,$self,"Expected a Box|List|Whatsit, but got '".Stringify($x)."'"); }
   pop(@token_stack);
@@ -165,10 +168,12 @@ sub invokeToken_internal {
       if($token->equals(T_CS('\par') && $STATE->lookupValue('inPreamble') )){
 	return (); }
       my @boxes = $meaning->invoke($self);
+      if((scalar(@boxes)==1) && (! defined $boxes[0])){
+	@boxes=(); }		# Just paper over the obvious thing.
       my @err = grep( (! ref $_) || (! $_->isaBox), @boxes);
       Fatal('misdefined',$token,$self,
 	    "Execution yielded non boxes",
-	    "Returned ".join(',',map(Stringify($_),grep( (! ref $_) || (! $_->isaBox), @boxes))))
+	    "Returned ".join(',',map("'".Stringify($_)."'",grep( (! ref $_) || (! $_->isaBox), @boxes))))
 	if grep( (! ref $_) || (! $_->isaBox), @boxes);
       $STATE->clearPrefixes unless $meaning->isPrefix; # Clear prefixes unless we just set one.
       @boxes; }}
