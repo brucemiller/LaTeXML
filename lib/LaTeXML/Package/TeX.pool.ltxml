@@ -1543,7 +1543,9 @@ DefParameterType('RuleSpecification',sub {
 		 optional=>1, undigested=>1);
 
 DefConstructor('\vrule RuleSpecification',
-	       "?#isVerticalRule()(<ltx:rule height='&REF(#1,height)' depth='&REF(#1,depth)' width='&REF(#1,width)'/>)",
+	       "?#isVerticalRule()"
+	       ."(<ltx:rule height='&REF(#1,height)' depth='&REF(#1,depth)'"
+	       .          " width='&REF(#1,width)' color='#color'/>)",
 	       afterDigest=>sub {
 		 my($stomach,$whatsit)=@_;
 		 my $dims=$whatsit->getArg(1);
@@ -1553,10 +1555,15 @@ DefConstructor('\vrule RuleSpecification',
 		   if(((!defined $h) && (!defined $w)) ||($h > 20) || ($h > 3*$w)){
 		     # This isXxxxRule property is to determine if it is used for separating rules within alignments
 		     $whatsit->setProperty(isVerticalRule=>1)}}
+		 if(my $color = LookupValue('font')->getColor){
+		   if($color ne 'black'){
+		     $whatsit->setProperty(color=>$color); }}
 		 return; });
 
 DefConstructor('\hrule RuleSpecification',
-	       "?#isHorizontalRule()(<ltx:rule height='&REF(#1,height)' depth='&REF(#1,depth)' width='&REF(#1,width)'/>)",
+	       "?#isHorizontalRule()"
+	       ."(<ltx:rule height='&REF(#1,height)' depth='&REF(#1,depth)'"
+	       .          " width='&REF(#1,width)' color='#color'/>)",
 #	       properties=>{isHorizontalRule=>1});
 	       afterDigest=>sub {
 		 my($stomach,$whatsit)=@_;
@@ -1568,6 +1575,9 @@ DefConstructor('\hrule RuleSpecification',
 		     # This isXxxxRule property is to determine if it is used for separating rules within alignments
 		     $alignment->addLine('t');
 		     $whatsit->setProperty(isHorizontalRule=>1)}}
+		 if(my $color = LookupValue('font')->getColor){
+		   if($color ne 'black'){
+		     $whatsit->setProperty(color=>$color); }}
 		 return; });
 
 #======================================================================
@@ -1745,7 +1755,7 @@ Tag('ltx:td',        afterClose=>\&trimNodeWhitespace);
 # Primitive column types;
 # This is really LaTeX, but the mechanisms are used behind-the-scenes here, too.
 DefColumnType('|',sub {
-  $LaTeXML::BUILD_TEMPLATE->addBetween(T_CS('\vrule')); return; });
+  $LaTeXML::BUILD_TEMPLATE->addBetweenColumn(T_CS('\vrule')); return; });
 DefColumnType('l',sub {
   $LaTeXML::BUILD_TEMPLATE->addColumn(after=>Tokens(T_CS('\hfil'))); return; });
 DefColumnType('c',sub {
@@ -1775,7 +1785,7 @@ DefColumnType('*{Number}{}', sub {
 
 DefColumnType('@{}',sub {
   my($gullet,$filler)=@_;
-  $LaTeXML::BUILD_TEMPLATE->addBetween($filler->unlist);  return; });
+  $LaTeXML::BUILD_TEMPLATE->addBetweenColumn($filler->unlist);  return; });
 
 #----------------------------------------------------------------------
 DefMacroI('\@start@alignment',undef,
@@ -1991,11 +2001,25 @@ DefConstructor('\@open@alignment SkipSpaces DigestedBody',
 
 #----------------------------------------------------------------------
 # Row; The content is stuffed into the Alignment, so we don't construct anything here.
-DefPrimitive('\default@close@row',sub { $_[0]->egroup;} );
-DefConstructor('\default@open@row SkipSpaces DigestedBody',
+##DefMacroI('\default@close@row',undef,'\@row@after\@@default@close@row');
+##DefMacroI('\default@open@row',undef,'\@@default@open@row\@row@before');
+DefMacroI('\default@close@row',undef,'\@@default@close@row');
+DefMacroI('\default@open@row',undef,'\@@default@open@row');
+DefMacroI('\@row@before',undef,'');
+DefMacroI('\@row@after',undef,'');
+
+DefPrimitive('\@@default@close@row',sub {
+	       LookupValue('Alignment')->addAfterRow(Digest(T_CS('\@row@after')));
+	       $_[0]->egroup;} );
+DefConstructor('\@@default@open@row SkipSpaces DigestedBody',
 	       "",
 	       reversion=>'#1',
-	       beforeDigest=>sub { $_[0]->bgroup; LookupValue('Alignment')->newRow; return;});
+	       beforeDigest=>sub {
+		 $_[0]->bgroup; 
+		 my $alignment = LookupValue('Alignment');
+		 $alignment->newRow;
+		 $alignment->addBeforeRow(Digest(T_CS('\@row@before')));
+		 return;});
 
 #----------------------------------------------------------------------
 # Column
@@ -2007,8 +2031,13 @@ DefConstructor('\default@open@row SkipSpaces DigestedBody',
 DefPrimitiveI('\@tabular@begin@heading', undef,sub { AssignValue(IN_TABULAR_HEAD=>1,'global'); });
 DefPrimitiveI('\@tabular@end@heading',   undef,sub { AssignValue(IN_TABULAR_HEAD=>0,'global'); });
 
-DefPrimitiveI('\@close@column',  undef,sub { $_[0]->egroup;} );
-DefPrimitive('\@open@column SkipSpaces DigestedBody', sub {
+DefMacroI('\@close@column', undef,'\@column@after\@@close@column');
+DefMacroI('\@open@column',  undef,'\@@open@column\@column@before');
+DefMacroI('\@column@before',undef,'');
+DefMacroI('\@column@after', undef,'');
+
+DefPrimitiveI('\@@close@column',  undef,sub { $_[0]->egroup;} );
+DefPrimitive('\@@open@column SkipSpaces DigestedBody', sub {
   my($stomach,$boxes)=@_;
   my $alignment = LookupValue('Alignment');
   my $n0 = LookupValue('alignmentStartColumn')+1;
@@ -2085,16 +2114,16 @@ PushValue(ALIGNMENT_LINE_COMMANDS=>T_CS('\hline'));
 PushValue(ALIGNMENT_LINE_COMMANDS=>T_CS('\cline'));
 PushValue(ALIGNMENT_LINE_COMMANDS=>T_CS('\label'));
 
-DefMacroI('\@close@inner@column', undef,sub {
-	   (T_CS('\@@eat@space'),
-	    T_CS('\@inner@column@after'),
-	    T_CS('\@@close@inner@column')); });
+DefMacroI('\@open@inner@column', undef,'\@@open@inner@column\@inner@column@before');
+DefMacroI('\@close@inner@column',undef,'\@@eat@space\@inner@column@after\@@close@inner@column');
+
+DefMacroI('\@inner@column@before',undef,'');
 DefMacroI('\@inner@column@after',undef,sub {
   my $alignment = LookupValue('Alignment');
   ($alignment ? afterCellUnlist($alignment->currentColumn->{after}) : ()); });
 
 DefPrimitiveI('\@@close@inner@column', undef,sub { $_[0]->egroup; });
-DefPrimitiveI('\@open@inner@column',   undef,sub {
+DefPrimitiveI('\@@open@inner@column',   undef,sub {
   my($stomach)=@_;
   my $colspec =  LookupValue('Alignment')->nextColumn;
   $stomach->bgroup;
@@ -4576,11 +4605,15 @@ DefMacro('\mathpalette{}{}',
 	 '\mathchoice{#1\displaystyle{#2}}{#1\textstyle{#2}}'
 	 .'{#1\scriptstyle{#2}}{#1\scriptscriptstyle{#2}}');
   
-DefConstructor('\phantom{}',"?#isMath(<ltx:XMHint name='phantom'/>)()",
+DefConstructor('\phantom{}',
+	       "?#isMath(<ltx:XMHint name='phantom'/>)"
+	       ."(<ltx:text class='ltx_phantom'>#1</ltx:text>)", # !?!?!?!
 	      properties=>{isSpace=>1});
-DefConstructor('\hphantom{}',"?#isMath(<ltx:XMHint name='hphantom'/>)()",
+DefConstructor('\hphantom{}',"?#isMath(<ltx:XMHint name='hphantom'/>)"
+	       ."(<ltx:text class='ltx_phantom'>#1</ltx:text>)", # !?!?!?!
 	      properties=>{isSpace=>1});
-DefConstructor('\vphantom{}',"?#isMath(<ltx:XMHint name='vphantom'/>)()",
+DefConstructor('\vphantom{}',"?#isMath(<ltx:XMHint name='vphantom'/>)"
+	       ."(<ltx:text class='ltx_phantom'>#1</ltx:text>)", # !?!?!?!
 	      properties=>{isSpace=>1});
 DefConstructor('\mathstrut',"?#isMath(<ltx:XMHint name='mathstrut'/>)()",
 	      properties=>{isSpace=>1});
@@ -4865,6 +4898,12 @@ DefConstructor('\buildrel Until:\over {}',
 RelaxNGSchema("LaTeXML");
 Tag('ltx:section', autoClose=>1);
 Tag('ltx:document', autoClose=>1, autoOpen=>1);
+Tag('ltx:document', afterOpen=>sub { 
+  my($document,$root)=@_;
+  if(my $font = $document->getNodeFont($root)){
+    if(my $bg = $font->getBackground){
+      if($bg ne 'white'){
+	$document->setAttribute($root,backgroundcolor=>$bg); }}}});
 
 # No, \documentclass isn't really a primitive -- It's not even TeX!
 # But we define a number of stubs here that will automatically load
