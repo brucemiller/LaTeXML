@@ -32,8 +32,8 @@ sub new {
   my $series = $options{series};
   my $shape  = $options{shape};
   my $size   = $options{size};
-  my $color  = $options{color};
-  my $bg     = $options{background};
+  my $color  = $options{color};      $color = $color->toHex if ref $color;
+  my $bg     = $options{background}; $bg    = $bg->toHex if ref $bg;
   my $opacity= $options{opacity};
   my $encoding= $options{encoding};
   $class->new_internal($family,$series,$shape,$size,$color,$bg,$opacity,$encoding); }
@@ -95,6 +95,8 @@ sub merge {
   my $bg      = (defined $options{background} ? $options{background} : $$self[5]);
   my $opacity = (defined $options{opacity}    ? $options{opacity}    : $$self[6]);
   my $encoding= (defined $options{encoding}   ? $options{encoding}   : $$self[7]);
+  $color = $color->toHex if ref $color;
+  $bg    = $bg->toHex if ref $bg;
   (ref $self)->new_internal($family,$series,$shape,$size,$color,$bg,$opacity,$encoding); }
 
 # Really only applies to Math Fonts, but that should be handled elsewhere; We punt here.
@@ -207,8 +209,8 @@ sub new {
   my $series     = $options{series};
   my $shape      = $options{shape};
   my $size       = $options{size};
-  my $color      = $options{color};
-  my $bg         = $options{background};
+  my $color      = $options{color};       $color = $color->toHex if ref $color;
+  my $bg         = $options{background};  $bg    = $bg->toHex if ref $bg;
   my $opacity    = $options{opacity};
   my $encoding   = $options{encoding};
 ##  my $forcebold  = $options{forcebold} || 0;
@@ -239,6 +241,8 @@ sub merge {
   my $encoding   = (defined $options{encoding}   ? $options{encoding}   : $$self[7]);
   my $forcebold  = (defined $options{forcebold}  ? $options{forcebold}  : $$self[8]);
   my $forceshape = (defined $options{forceshape} ? $options{forceshape} : $$self[9]);
+  $color = $color->toHex if ref $color;
+  $bg    = $bg->toHex if ref $bg;
   # In math, setting any one of these, resets the others to default.
   $family = $DEFFAMILY if !$options{family} && ($options{series} || $options{shape});
   $series = $DEFSERIES if !$options{series} && ($options{family} || $options{shape});
