@@ -13,7 +13,7 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
-use LaTeXML::Util::Color;
+
 #======================================================================
 # Ignorable options (mostly drivers)
 foreach my $option (qw(monochrome debugshow dvipdf dvipdfm dvipdfmx pdftex xetex
@@ -27,44 +27,48 @@ foreach my $option (qw(dvips xdvi oztex dvipsnames)){
   DeclareOption($option,sub { InputDefinitions('dvipsnam',type=>'def'); return; }); }
 
 #======================================================================
+# change this to something like ConvertColor... Oh, already have that?
+sub ParseColor {
+  my($model,$spec) = @_;
+  $model = ToString($model) if ref $model;
+  $spec  = ToString($spec)  if ref $spec;
+  $spec =~ s/^\s+//;  $spec =~ s/\s+$//; $spec = $1 if $spec =~ /^\{\s*(.*?)\s*\}$/; # Trim
+  my $color;
+  if(!$model){
+    LookupColor($spec); }
+  elsif($model eq 'named'){
+    LookupColor('named_'.$spec); }
+  elsif($model){
+    Color($model,($spec =~ /,/ ? split(/\s*,\s*/,$spec) : split(/\s+/,$spec)))->toCore;}
+  else {
+    Error('unexpected',$spec,$STATE->getStomach,
+	  "Don't understand '$spec' as a color");
+    Black; }}
+
+#======================================================================
 # are there default named colors that we should be loading?
 
 DefPrimitive('\definecolor{}{}{}', sub {
   my($stomach,$name,$model,$spec)=@_;
-  ($model,$spec)=map(Expand($_), $model,$spec);
-  AssignValue('color_'.ToString($name) => getColor($model,$spec)); 
+  ($name,$model,$spec)=map($_&&Expand($_),$name,$model,$spec);
+  DefColor(ToString($name),ParseColor($model,$spec));
   Box(undef,undef,undef,Invocation(T_CS('\definecolor'),$name,$model,$spec)); });
 
 # I don't think this is quite right, but...
 # [I think we need do do something like "named_color_".$name
 #  and corresponding changes to getColor, as well?
+# What are we supposed to do with $dmodel???
 DefPrimitive('\DefineNamedColor{}{}{}{}', sub {
  my($stomach,$dmodel,$name,$model,$spec)=@_;
- ($dmodel,$model,$spec)=map(Expand($_), $dmodel,$model,$spec);
- AssignValue('named_color_'.ToString($name),getColor($model,$spec));
+  ($dmodel,$name,$model,$spec)=map($_&&Expand($_),$dmodel,$name,$model,$spec);
+  DefColor('named_'.ToString($name),ParseColor($model,$spec));
   Box(undef,undef,undef,Invocation(T_CS('\DefineNamedColor'),$dmodel,$name,$model,$spec)); });
-
-# change this to something like ConvertColor... Oh, already have that?
-sub getColor {
-  my($model,$spec) = @_;
-  $model = ToString($model);
-  $spec = ToString($spec);
-  if(!$model){
-    while(my $c = LookupValue('color_'.$spec)){
-      $spec = $c; }
-    $spec; }
-  elsif($model eq 'named'){
-    LookupValue('named_color_'.$spec); }
-  elsif($model){
-    ConvertColor(ToString($model), $spec); }
-  else {
-    $spec; }}
 
 # \color{name} or \color[model]{spec}
 DefPrimitive('\color[]{}', sub {
   my($stomach,$model,$spec)=@_;
-  ($model,$spec)=map(ToString(Expand($_)), $model,$spec);
-  my $color = getColor($model, $spec);
+  ($model,$spec)=map($_&&Expand($_),$model,$spec);
+  my $color = ParseColor($model, $spec);
   AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
   MergeFont(color=>$color);
   Box(undef,undef,undef,Invocation(T_CS('\color'),$model,$spec)); });
@@ -72,14 +76,15 @@ DefPrimitive('\color[]{}', sub {
 #\pagecolor{name} or \pagecolor[model]{spec}
 DefPrimitive('\pagecolor[]{}', sub {
   my($stomach,$model,$spec)=@_;
-  ($model,$spec)=map(ToString(Expand($_)), $model,$spec);
-  MergeFont(background=>getColor($model, $spec));
+  ($model,$spec)=map($_&&Expand($_),$model,$spec);
+  my $color = ParseColor($model, $spec);
+  MergeFont(background=>$color);
   Box(undef,undef,undef,Invocation(T_CS('\pagecolor'),$model,$spec)); });
 
 # NOTE: the color in effect at \begin{document} will be returned by \normalcolor
 # Do other font properties act this way?
 DefPrimitive('\normalcolor', sub {
-  my $color = (LookupValue('preambleTextcolor') || 'black');
+  my $color = (LookupValue('preambleTextcolor') || Black());
   MergeFont(color=>$color);
   Box(undef,undef,undef,T_CS('\normalcolor')); });
 
@@ -102,10 +107,22 @@ DefConstructor('\fcolorbox[]{}{} Undigested',
 	       afterDigest=>sub {
 		 my($stomach,$whatsit)=@_;
 		 my($model,$fspec,$bspec,$text)=$whatsit->getArgs;
-		 $whatsit->setProperty(framecolor=>getColor($model, $fspec));
-		 MergeFont(background=>getColor($model, $bspec));
+		 $whatsit->setProperty(framecolor=>ParseColor($model, $fspec)->toHex);
+		 MergeFont(background=>ParseColor($model, $bspec));
 		 $whatsit->setProperty(text=>Digest($text)); });
 
+#********************************************************************************
+# Default defined colors
+RawTeX(<<'EOTeX');
+\definecolor{black}{rgb}{0,0,0}
+\definecolor{white}{rgb}{1,1,1}
+\definecolor{red}{rgb}{1,0,0}
+\definecolor{green}{rgb}{0,1,0}
+\definecolor{blue}{rgb}{0,0,1}
+\definecolor{cyan}{cmyk}{1,0,0,0}
+\definecolor{magenta}{cmyk}{0,1,0,0}
+\definecolor{yellow}{cmyk}{0,0,1,0}
+EOTeX
 #********************************************************************************
 ProcessOptions();
 1;
