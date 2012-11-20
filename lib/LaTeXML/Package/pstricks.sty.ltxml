@@ -23,7 +23,6 @@
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
-use LaTeXML::Util::Color;
 use LaTeXML::Util::Transform;
 use LaTeXML::Util::Geometry;
 use LaTeXML::Util::KeyVal;
@@ -285,7 +284,7 @@ sub setGraphParams {
 	AssignValue('\psyunit', $value);
 	AssignValue('\psrunit', $value); }
       elsif ($key =~ /color/) {
-	AssignValue('\ps'.$key, LookupValue('pscolor_'.$strval) || $strval); }
+	AssignValue('\ps'.$key, LookupColor($strval)->toHex); }
       else {
 	AssignValue('\ps'.$key, $KeyAsValue{$key} ? $value : $strval); }}
   }}
@@ -462,14 +461,10 @@ DefEnvironment('{pspicture*} [Float] PSCoord PSCoord',
 ## 2 Color
 ##########################################################################################
 
-DefMacro('\newgray{}{}',sub {
-  AssignValue('pscolor_'.ToString($_[1]), ConvertColor('gray', ToString($_[2]))); });
-DefMacro('\newrgbcolor{}{}', sub {
-  AssignValue('pscolor_'.ToString($_[1]), ConvertColor('rgb', ToString($_[2]))); });
-DefMacro('\newhsbcolor{}{}', sub {
-  AssignValue('pscolor_'.ToString($_[1]), ConvertColor('hsb', ToString($_[2]))); });
-DefMacro('\newcmykcolor{}{}', sub {
-  AssignValue('pscolor_'.ToString($_[1]), ConvertColor('cmyk', ToString($_[2]))); });
+DefMacro('\newgray{}{}',      '\definecolor{#1}{gray}{#2}');
+DefMacro('\newrgbcolor{}{}',  '\definecolor{#1}{rgb}{#2}');
+DefMacro('\newhsbcolor{}{}',  '\definecolor{#1}{hsb}{#2}');
+DefMacro('\newcmykcolor{}{}', '\definecolor{#1}{cmyk}{#2}');
 
 ##########################################################################################
 ## 3 Setting graphics Parameters
