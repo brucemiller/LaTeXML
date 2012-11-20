@@ -1,0 +1,66 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  texvc                                                              | #
+# | LaTeXML Bindings for simulating texvc                               | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# MediaWiki installations, like Wikipedia, often use texvc to convert
+# latex-like math to images. It acts as a filter and/or wrapper
+# that then calls latex to process some(?) of it's markup.
+# The markup that texvc accepts doesn't seem to correspond to a specific list
+# of standard TeX/LaTeX packages, but seems to consist of whatever the author
+# found useful. See
+#    http://meta.wikimedia.org/wiki/TeX
+# for a listing of the commands it recognizes.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# This texvc.sty.ltxml package will attempt to cover the markup that texvc
+# recognizes --- there is no regular LaTeX texvc.sty, that I am aware of.
+
+RequirePackage('amsmath');
+RequirePackage('amssymb');
+RequirePackage('cancel');
+
+DefMathI('\sgn',    undef,"sgn", role=>'OPFUNCTION',  meaning=>'sign');
+
+# \and seems to give "and", but LaTeX normally defines this for
+# separating authors in frontmatter!?!?
+
+#======================================================================
+# Uppercase Greek (the ones not already defined in TeX)
+DefMathI('\Alpha',     undef,"\x{0391}");
+DefMathI('\Beta',      undef,"\x{0392}");
+#DefMathI('\Gamma',     undef,"\x{0393}");
+#DefMathI('\Delta',     undef,"\x{0394}");
+DefMathI('\Epsilon'  , undef,"\x{0395}");
+DefMathI('\Zeta',      undef,"\x{0396}");
+DefMathI('\Eta',       undef,"\x{0397}");
+#DefMathI('\Theta',     undef,"\x{0398}");
+DefMathI('\Iota',      undef,"\x{0399}");
+DefMathI('\Kappa',     undef,"\x{039A}");
+#DefMathI('\Lambda',    undef,"\x{039B}");
+DefMathI('\Mu',        undef,"\x{039C}");
+DefMathI('\Nu',        undef,"\x{039D}");
+#DefMathI('\Xi',        undef,"\x{039E}");
+DefMathI('\Omicron',   undef,"\x{039F}");
+
+#DefMathI('\Pi',        undef,"\x{03A0}");
+DefMathI('\Rho',       undef,"\x{03A1}");
+#DefMathI('\Sigma',     undef,"\x{03A3}");
+DefMathI('\Tau',       undef,"\x{03A4}");
+#DefMathI('\Upsilon',   undef,"\x{03A5}");
+#DefMathI('\Phi',       undef,"\x{03D5}");
+DefMathI('\Chi',       undef,"\x{03A7}");
+#DefMathI('\Psi',       undef,"\x{03A8}");
+#DefMathI('\Omega',     undef,"\x{03A9}");
+
+#======================================================================
+1;
