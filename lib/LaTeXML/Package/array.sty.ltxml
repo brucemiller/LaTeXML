@@ -12,8 +12,8 @@
 # \=========================================================ooo==U==ooo=/ #
 use LaTeXML::Package;
 
-DefColumnType('>{}',sub { $LaTeXML::BUILD_TEMPLATE->addBefore($_[1]->unlist); return; });
-DefColumnType('<{}',sub { $LaTeXML::BUILD_TEMPLATE->addAfter($_[1]->unlist); return; });
+DefColumnType('>{}',sub { $LaTeXML::BUILD_TEMPLATE->addBeforeColumn($_[1]->unlist); return; });
+DefColumnType('<{}',sub { $LaTeXML::BUILD_TEMPLATE->addAfterColumn($_[1]->unlist); return; });
 
 # This is the same as p
 # but really needs to specify vertical alignment as centered
