@@ -233,9 +233,8 @@ sub assignDelcode  { assign_internal($_[0],'delcode',$_[1], $_[2],$_[3]); }
 # Otherwise, the token itself is returned.
 sub lookupMeaning {
   my($self,$token)=@_;
-  # NOTE: Inlined token accessors!!!
-  if($token->isExecutable){
-    my $e=$$self{table}{meaning}{$token->getCSName}; $e && $$e[0]; }
+  if(my $cs = $token->getExecutableName){
+    my $e=$$self{table}{meaning}{$cs}; $e && $$e[0]; }
   else { $token; }}
 
 sub lookupMeaning_internal {
@@ -249,8 +248,10 @@ sub assignMeaning {
 
 sub lookupDefinition {
   my($self,$token)=@_;
-  my $defn = $self->lookupMeaning($token);
-  (defined $defn && $defn->isaDefinition ? $defn : undef); }
+  my $x;
+  (($x=$token->getExecutableName) && ($x=$$self{table}{meaning}{$x}) && ($x=$$x[0])
+   && $x->isaDefinition
+   ? $x : undef); }
 
 # And a shorthand for installing definitions
 sub installDefinition {
