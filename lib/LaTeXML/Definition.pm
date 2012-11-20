@@ -61,7 +61,7 @@ use base qw(LaTeXML::Definition);
 
 sub new {
   my($class,$cs,$parameters,$expansion,%traits)=@_;
-  $expansion = Tokens($expansion) if ref $expansion eq 'LaTeXML::Token';
+  $expansion = TokensI($expansion) if ref $expansion eq 'LaTeXML::Token';
   my $source = $STATE->getStomach->getGullet->getMouth;
   if(ref $expansion eq 'LaTeXML::Tokens'){
     my $level=0;
@@ -92,20 +92,30 @@ sub invoke {
 sub doInvocation {
   my($self,$gullet,@args)=@_;
   my $expansion = $self->getExpansion;
+  my $r;
   (ref $expansion eq 'CODE' 
    ? &$expansion($gullet,@args)
-   : substituteTokens($expansion,map($_ && Tokens(Revert($_)),@args))); }
+   : substituteTokens($expansion,
+		      map($_ && (($r=ref $_) && ($r eq 'LaTeXML::Tokens')
+				 ? $_
+				 : ($r && ($r eq 'LaTeXML::Token')
+				    ? TokensI($_)
+				    : Tokens(Revert($_)))),
+			  @args))); }
 
+# NOTE: Assumes $tokens is a Tokens list of Token's and each arg either undef or also Tokens
+# Using inline accessors on those assumptions
 sub substituteTokens {
   my($tokens,@args)=@_;
-  my @in = $tokens->unlist;
+  my @in = @{$tokens};		# ->unlist
   my @result=();
   while(@in){
     my $token;
-    if(($token=shift(@in))->getCatcode != CC_PARAM){ # Non '#'; copy it
+    if(($token=shift(@in))->[1] != CC_PARAM){ # Non '#'; copy it
       push(@result,$token); }
-    elsif(($token=shift(@in))->getCatcode != CC_PARAM){ # Not multiple '#'; read arg.
-      push(@result,@{$args[ord($token->getString)-ord('0')-1]||[]}); }
+    elsif(($token=shift(@in))->[1] != CC_PARAM){ # Not multiple '#'; read arg.
+      if(my $arg = $args[ord($token->[0])-ord('0')-1]){
+	push(@result,@$arg); }}	# ->unlist, assuming it's a Tokens() !!!
     else {		# Duplicated '#', copy 2nd '#'
       push(@result,$token); }}
   @result; }
@@ -186,11 +196,13 @@ sub skipConditionalBody {
   my $level=1;
   my $n_ors = 0;
   my $start = $gullet->getLocator;
+  my($fi,$or,$ls);		# defns of \fi,\or,\else (once we've looked them up)
   while(my $t= $gullet->readToken){
+    # The only Interesting tokens are bound to defns (defined OR \let!!!)
     if(defined(my $defn = $STATE->lookupDefinition($t))){
-      if($defn->isExpandable && $defn->isConditional){ # Found a new \ifxx (in body)
+      if($defn->isConditional){ # Found a new \ifxx (in body)
 	$level++; }
-      elsif(Equals($t,T_CS('\fi'))){ #  Found a \fi
+      elsif($defn eq ($fi||($fi=$STATE->lookupDefinition(T_CS('\fi'))))){ #  Found a \fi
 	# But is it for a condition nested in the test clause?
 	if($STATE->lookupValue('if_stack')->[0] ne $LaTeXML::IFFRAME){
 	  $STATE->shiftValue('if_stack'); } # then DO pop that conditional's frame; it's DONE!
@@ -198,9 +210,10 @@ sub skipConditionalBody {
 	  fiHandler($gullet); return; }} # Note, fiHandler called from here.
       elsif($level > 1){	# Ignore \else,\or nested in the body.
       }
-      elsif(Equals($t,T_CS('\or')) && (++$n_ors == $nskips)){
+      elsif(($defn eq ($or||($or=$STATE->lookupDefinition(T_CS('\or'))))) && (++$n_ors == $nskips)){
 	return; }
-      elsif(Equals($t,T_CS('\else')) && $nskips # Found \else and we're looking for one?
+      elsif(($defn eq ($ls||($ls=$STATE->lookupDefinition(T_CS('\else'))))) && $nskips
+	    # Found \else and we're looking for one?
 	    # Make sure this \else is NOT for a nested \if that is part of the test clause!
 	    && ($STATE->lookupValue('if_stack')->[0] eq $LaTeXML::IFFRAME)){
 	# No need to actually call elseHandler, but note that we've seen an \else!
