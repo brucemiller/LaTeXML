@@ -478,7 +478,7 @@ DefRegister('\mathindent'   => Dimension(0));
 DefMacro('\@clsextension','cls');
 DefMacro('\@pkgextension','sty');
 
-DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim',
+DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
 	       "<?latexml package='#2' ?#1(options='#1')?>",
 	       beforeDigest=>sub { onlyPreamble('\usepackage'); },
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
@@ -630,7 +630,7 @@ DefMacro('\filename@parse{}',sub {
 DefMacroI('\@filelist',undef,Tokens());
 DefMacro('\@addtofilelist{}',sub {
   DefMacroI('\@filelist',undef,
-	    Tokens(Expand(T_CS('\@filelist'),T_OTHER(','),$_[1]->unlist))); });
+	    Expand(T_CS('\@filelist'),T_OTHER(','),$_[1]->unlist)); });
 #======================================================================
 # C.5.3 Page Styles
 #======================================================================
@@ -2169,11 +2169,29 @@ DefPrimitiveI('\@tabbing@bindings',undef, sub {
 # attributes to all cells.  For HTML, CSS will be necessary to display them.
 # [We'll ignore HTML's frame, rules and colgroup mechanisms.]
 
+sub tabularBindings {
+  my($template,$mode)=@_;
+  alignmentBindings($template,$mode);
+  AddToMacro('\@row@before',   '\@tabular@row@before');
+  AddToMacro('\@row@after',    '\@tabular@row@after');
+  AddToMacro('\@column@before','\@tabular@column@before');
+  AddToMacro('\@column@after', '\@tabular@column@after'); }
+
+DefPrimitive('\@tabular@bindings AlignmentTemplate []',sub {
+  my($stomach,$template,$mode)=@_;
+  tabularBindings($template,$mode);
+  return; });
+
+DefMacroI('\@tabular@row@before',undef,'');
+DefMacroI('\@tabular@row@after',undef,'');
+DefMacroI('\@tabular@column@before',undef,'');
+DefMacroI('\@tabular@column@after',undef,'');
+
 # The Core alignment support is in LaTeXML::Util::Alignment and in TeX.ltxml
-DefMacro('\tabular[]{}',  '\@alignment@bindings{#2}[text]\@@tabular[#1]{#2}\@start@alignment');
+DefMacro('\tabular[]{}',  '\@tabular@bindings{#2}[text]\@@tabular[#1]{#2}\@start@alignment');
 DefMacroI('\endtabular',undef,    '\@finish@alignment\@end@tabular');
 DefPrimitiveI('\@end@tabular',undef, sub{ $_[0]->egroup; });
-# Note that the pattern will already have been interpreted by \@alignment@bindings,
+# Note that the pattern will already have been interpreted by \@tabular@bindings,
 # so make it Undigested here!
 
 sub translateAttachment {
@@ -2190,7 +2208,7 @@ DefConstructor('\@@tabular[] Undigested DigestedBody',
 	       beforeDigest=>sub { $_[0]->bgroup; },
 	       mode=>'text');
 DefMacro('\csname tabular*\endcsname{Dimension}[]{}',
-	 '\@alignment@bindings{#3}[text]\@@tabular@{#1}[#2]{#3}\@start@alignment');
+	 '\@tabular@bindings{#3}[text]\@@tabular@{#1}[#2]{#3}\@start@alignment');
 DefMacro('\csname endtabular*\endcsname',
 	 '\@finish@alignment\@end@tabular@');
 DefConstructor('\@@tabular@{Dimension}[] Undigested DigestedBody',
@@ -3688,6 +3706,9 @@ RawTeX(<<'EOTeX');
        \expandafter\@fornoop \else
       #4\relax\expandafter\@tforloop\fi#2\@@#3{#4}}
 \long\def\@break@tfor#1\@@#2#3{\fi\fi}
+\def\remove@to@nnil#1\@nnil{}
+\def\remove@angles#1>{\set@simple@size@args}
+\def\remove@star#1*{#1}
 EOTeX
 
 DefMacroI('\@height',undef,'height');
