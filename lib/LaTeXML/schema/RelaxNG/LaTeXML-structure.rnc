@@ -259,7 +259,8 @@ element title { title_attributes, title_model }
 title_attributes =
   Common.attributes,
   Fontable.attributes,
-  Colorable.attributes
+  Colorable.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{title},
 ## basically Inline.model with tag included (normally, but not necessarily, tag would come first).
@@ -499,6 +500,7 @@ navigation_model = ( ref | TOC )*
 Sectional.attributes =
   Common.attributes,
   Labelled.attributes,
+  Backgroundable.attributes,
 
   ## Stores RDFa prefixes as space separated pairs,
   ## with the pairs being prefix and url separated by a colon;

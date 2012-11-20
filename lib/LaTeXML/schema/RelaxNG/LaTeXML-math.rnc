@@ -40,6 +40,7 @@ Math_attributes =
   Common.attributes,
   Imageable.attributes,
   ID.attributes,
+  Backgroundable.attributes,
 
   ## display or inline mode.
   attribute mode { "display" | "inline" }?,
@@ -131,6 +132,7 @@ XMTok_attributes =
   ID.attributes,
   Fontable.attributes,
   Colorable.attributes,
+  Backgroundable.attributes,
 
   ## The name of the token, typically the control sequence that created it.
   attribute name { text }?,
@@ -180,6 +182,7 @@ XMApp_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
+  Backgroundable.attributes,
 
   ## The name of the token, typically the control sequence that created it.
   attribute name { text }?,

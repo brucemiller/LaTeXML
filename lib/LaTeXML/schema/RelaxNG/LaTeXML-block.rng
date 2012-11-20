@@ -55,6 +55,7 @@ in both inline and block contexts.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="ID.attributes"/>
     <ref name="Positionable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="p_model">
     <a:documentation>Content model for \elementref{p}.</a:documentation>
@@ -75,6 +76,7 @@ in both inline and block contexts.</a:documentation>
         <data type="boolean"/>
       </attribute>
     </optional>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="constraint_model">
     <a:documentation>Content model for \elementref{constraint}.</a:documentation>
@@ -96,6 +98,7 @@ the processor will lift such elements out of math, when possible</a:documentatio
     <a:documentation>Attributes for \elementref{equation}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="equation_model">
     <a:documentation>Content model for \elementref{equation}.</a:documentation>
@@ -122,6 +125,7 @@ the processor will lift such elements out of math, when possible</a:documentatio
     <a:documentation>Attributes for \elementref{equationgroup}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="equationgroup_model">
     <a:documentation>Content model for \elementref{equationgroup}.</a:documentation>
@@ -199,6 +203,7 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
     <a:documentation>Attributes for \elementref{quote}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="ID.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="quote_model">
     <a:documentation>Content model for \elementref{quote}.</a:documentation>
@@ -221,6 +226,7 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
     <ref name="Common.attributes"/>
     <ref name="ID.attributes"/>
     <ref name="Positionable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="block_model">
     <a:documentation>Content model for \elementref{block}.</a:documentation>
@@ -238,6 +244,7 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
     <a:documentation>Attributes for \elementref{listingblock}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="listingblock_model">
     <a:documentation>Content model for \elementref{listingblock}.</a:documentation>
@@ -275,6 +282,7 @@ typesets its contents as a block.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="ID.attributes"/>
     <ref name="Positionable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="inline-block_model">
     <a:documentation>Content model for \elementref{inline-block}.</a:documentation>
@@ -294,6 +302,7 @@ typesets its contents as a block.</a:documentation>
     <ref name="ID.attributes"/>
     <ref name="Fontable.attributes"/>
     <ref name="Colorable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="verbatim_model">
     <a:documentation>Content model for \elementref{verbatim}.</a:documentation>
@@ -311,6 +320,7 @@ typesets its contents as a block.</a:documentation>
     <a:documentation>Attributes for \elementref{itemize}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="ID.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="itemize_model">
     <a:documentation>Content model for \elementref{itemize}.</a:documentation>
@@ -330,6 +340,7 @@ typesets its contents as a block.</a:documentation>
     <a:documentation>Attributes for \elementref{enumerate}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="ID.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="enumerate_model">
     <a:documentation>Content model for \elementref{enumerate}.</a:documentation>
@@ -350,6 +361,7 @@ which represents the term being described in each \elementref{item}.</a:document
     <a:documentation>Attributes for \elementref{description}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="ID.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="description_model">
     <a:documentation>Content model for \elementref{description}.</a:documentation>
@@ -369,6 +381,7 @@ which represents the term being described in each \elementref{item}.</a:document
     <a:documentation>Attributes for \elementref{item}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="item_model">
     <a:documentation>Content model for \elementref{item}.</a:documentation>
@@ -388,6 +401,7 @@ which represents the term being described in each \elementref{item}.</a:document
   <define name="tag_attributes">
     <a:documentation>Attributes for \elementref{tag}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="Backgroundable.attributes"/>
     <optional>
       <attribute name="open">
         <a:documentation>specifies an open delimiters used to display the tag.</a:documentation>

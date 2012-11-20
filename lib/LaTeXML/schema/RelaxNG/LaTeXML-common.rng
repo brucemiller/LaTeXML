@@ -169,7 +169,7 @@ and can thus be effected by CSS.</a:documentation>
     </optional>
   </define>
   <define name="Colorable.attributes">
-    <a:documentation>Attributes for elements that can be colored.</a:documentation>
+    <a:documentation>Attributes for elements that draw something, text or otherwise, that can be colored.</a:documentation>
     <optional>
       <attribute name="color">
         <a:documentation>the color to use (for foreground material); any CSS compatible color specification.
@@ -178,17 +178,21 @@ and can thus be effected by CSS.</a:documentation>
       </attribute>
     </optional>
     <optional>
+      <attribute name="opacity">
+        <a:documentation>the opacity of foreground material; a number between 0 and 1.</a:documentation>
+        <data type="float"/>
+      </attribute>
+    </optional>
+  </define>
+  <define name="Backgroundable.attributes">
+    <a:documentation>Attributes for elements that take up space and make sense to have a background color.
+This is independent of the colors of any things that it may draw.</a:documentation>
+    <optional>
       <attribute name="backgroundcolor">
         <a:documentation>the color to use for the background of the element; any CSS compatible color specification.
 In postprocessing, these values are carried to the \attr{class} attribute,
 and can thus be effected by CSS; the background will presumably
 correspond to a bounding rectangle, but is determined by the CSS rendering engine.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="opacity">
-        <a:documentation>the opacity of foreground material; a number between 0 and 1.</a:documentation>
-        <data type="float"/>
       </attribute>
     </optional>
   </define>

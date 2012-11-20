@@ -32,7 +32,11 @@ p =
 element p { p_attributes, p_model }
 
 ## Attributes for \elementref{p}.
-p_attributes = Common.attributes, ID.attributes, Positionable.attributes
+p_attributes =
+  Common.attributes,
+  ID.attributes,
+  Positionable.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{p}.
 p_model = Inline.model
@@ -45,7 +49,8 @@ element constraint { constraint_attributes, constraint_model }
 
 ## Attributes for \elementref{constraint}.
 constraint_attributes =
-  attribute hidden { xsd:boolean }?
+  attribute hidden { xsd:boolean }?,
+  Backgroundable.attributes
 
 ## Content model for \elementref{constraint}.
 constraint_model = Inline.model
@@ -61,7 +66,10 @@ equation =
 element equation { equation_attributes, equation_model }
 
 ## Attributes for \elementref{equation}.
-equation_attributes =  Common.attributes, Labelled.attributes
+equation_attributes =
+  Common.attributes,
+  Labelled.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{equation}.
 equation_model = (Math | MathFork  | \text | tabular | Meta.class | EquationMeta.class)* 
@@ -73,7 +81,10 @@ equationgroup =
 element equationgroup { equationgroup_attributes, equationgroup_model }
 
 ## Attributes for \elementref{equationgroup}.
-equationgroup_attributes = Common.attributes, Labelled.attributes
+equationgroup_attributes =
+  Common.attributes,
+  Labelled.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{equationgroup}.
 equationgroup_model = (equationgroup | equation | p | Meta.class | EquationMeta.class)*
@@ -116,7 +127,10 @@ quote =
 element quote { quote_attributes, quote_model }
 
 ## Attributes for \elementref{quote}.
-quote_attributes = Common.attributes, ID.attributes
+quote_attributes =
+  Common.attributes,
+  ID.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{quote}.
 quote_model = Block.model
@@ -130,7 +144,11 @@ block =
 element block { block_attributes, block_model }
 
 ## Attributes for \elementref{block}.
-block_attributes = Common.attributes, ID.attributes, Positionable.attributes
+block_attributes =
+  Common.attributes,
+  ID.attributes,
+  Positionable.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{block}.
 block_model = Inline.model
@@ -142,7 +160,10 @@ listingblock =
 element listingblock { listingblock_attributes, listingblock_model }
 
 ## Attributes for \elementref{listingblock}.
-listingblock_attributes = Common.attributes, Labelled.attributes
+listingblock_attributes =
+  Common.attributes,
+  Labelled.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{listingblock}.
 listingblock_model = Block.model*
@@ -167,7 +188,11 @@ inline-block =
 element inline-block { inline-block_attributes, inline-block_model }
 
 ## Attributes for \elementref{inline-block}.
-inline-block_attributes = Common.attributes, ID.attributes, Positionable.attributes
+inline-block_attributes =
+  Common.attributes,
+  ID.attributes,
+  Positionable.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{inline-block}.
 inline-block_model = Block.model
@@ -183,7 +208,8 @@ verbatim_attributes =
   Common.attributes,
   ID.attributes,
   Fontable.attributes,
-  Colorable.attributes
+  Colorable.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{verbatim}.
 verbatim_model = Inline.model
@@ -194,10 +220,11 @@ itemize =
 ## An itemized list.
 element itemize { itemize_attributes, itemize_model }
 
-
-
 ## Attributes for \elementref{itemize}.
-itemize_attributes = Common.attributes, ID.attributes
+itemize_attributes =
+  Common.attributes,
+  ID.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{itemize}.
 itemize_model = item*
@@ -209,7 +236,10 @@ enumerate =
 element enumerate { enumerate_attributes, enumerate_model }
 
 ## Attributes for \elementref{enumerate}.
-enumerate_attributes = Common.attributes, ID.attributes
+enumerate_attributes =
+  Common.attributes,
+  ID.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{enumerate}.
 enumerate_model = item*
@@ -222,7 +252,10 @@ description =
 element description { description_attributes, description_model }
 
 ## Attributes for \elementref{description}.
-description_attributes = Common.attributes, ID.attributes
+description_attributes =
+  Common.attributes,
+  ID.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{description}.
 description_model = item*
@@ -234,7 +267,10 @@ item =
 element item { item_attributes, item_model }
 
 ## Attributes for \elementref{item}.
-item_attributes = Common.attributes, Labelled.attributes
+item_attributes =
+  Common.attributes,
+  Labelled.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{item}.
 item_model =   tag?, Para.model
@@ -248,6 +284,7 @@ element tag { tag_attributes, tag_model }
 ## Attributes for \elementref{tag}.
 tag_attributes =
   Common.attributes,
+  Backgroundable.attributes,
 
   ## specifies an open delimiters used to display the tag.
   attribute open { text }?,

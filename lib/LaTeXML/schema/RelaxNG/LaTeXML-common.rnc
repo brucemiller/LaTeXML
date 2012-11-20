@@ -128,22 +128,24 @@ Fontable.attributes =
   attribute fontsize { "Huge" | "huge" | "LARGE" | "Large" | "large" | "normal"
                       | "small" | "footnote" | "tiny" | text }?
 
-## Attributes for elements that can be colored.
+## Attributes for elements that draw something, text or otherwise, that can be colored.
 Colorable.attributes =
   ## the color to use (for foreground material); any CSS compatible color specification.
   ## In postprocessing, these values are carried to the \attr{class} attribute,
   ## and can thus be effected by CSS.
   attribute color { text }?,
 
+  ## the opacity of foreground material; a number between 0 and 1.
+  attribute opacity { xsd:float }?
+
+## Attributes for elements that take up space and make sense to have a background color.
+## This is independent of the colors of any things that it may draw.
+Backgroundable.attributes =
   ## the color to use for the background of the element; any CSS compatible color specification.
   ## In postprocessing, these values are carried to the \attr{class} attribute,
   ## and can thus be effected by CSS; the background will presumably
   ## correspond to a bounding rectangle, but is determined by the CSS rendering engine.
-  attribute backgroundcolor { text }?,
-
-  ## the opacity of foreground material; a number between 0 and 1.
-  attribute opacity { xsd:float }?
-
+  attribute backgroundcolor { text }?
 
 ## Attributes shared by low-level, generic inline and block elements
 ## that can be sized or shifted.

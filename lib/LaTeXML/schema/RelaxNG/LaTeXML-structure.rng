@@ -467,6 +467,7 @@ arbitrary text, in addition to the expected \elementref{ref}'s.</a:documentation
     <ref name="Common.attributes"/>
     <ref name="Fontable.attributes"/>
     <ref name="Colorable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="title_model">
     <a:documentation>Content model for \elementref{title},
@@ -873,6 +874,7 @@ Could also use a navigation name text or something?</a:documentation>
     <a:documentation>Attributes shared by all sectional elements</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+    <ref name="Backgroundable.attributes"/>
     <optional>
       <attribute name="rdf-prefixes">
         <a:documentation>Stores RDFa prefixes as space separated pairs,

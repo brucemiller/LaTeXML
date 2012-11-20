@@ -29,8 +29,10 @@ para =
 element para { para_attributes, para_model }
 
 ## Attributes for \elementref{para}.
-para_attributes = Common.attributes, ID.attributes
-
+para_attributes =
+  Common.attributes,
+  ID.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{para}.
 para_model = Block.model
@@ -43,7 +45,10 @@ inline-para =
 element inline-para { inline-para_attributes, inline-para_model }
 
 ## Attributes for \elementref{inline-para}.
-inline-para_attributes = Common.attributes, Positionable.attributes
+inline-para_attributes =
+  Common.attributes,
+  Positionable.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{inline-para}.
 inline-para_model = Para.model
@@ -56,7 +61,10 @@ theorem =
 element theorem { theorem_attributes, theorem_model }
 
 ## Attributes for \elementref{theorem}.
-theorem_attributes = Common.attributes, Labelled.attributes
+theorem_attributes =
+  Common.attributes,
+  Labelled.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{theorem}.
 theorem_model = title?, Para.model
@@ -69,7 +77,10 @@ proof =
 element proof { proof_attributes, proof_model }
 
 ## Attributes for \elementref{proof}.
-proof_attributes = Common.attributes, Labelled.attributes
+proof_attributes =
+  Common.attributes,
+  Labelled.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{proof}.
 proof_model = title?, Para.model
@@ -93,6 +104,7 @@ figure_attributes =
   Common.attributes,
   Labelled.attributes,
   Positionable.attributes,
+  Backgroundable.attributes,
 
   ## the vertical floating placement parameter that determines where the object is displayed.
   attribute placement { text }?
@@ -111,6 +123,7 @@ table_attributes =
   Common.attributes,
   Labelled.attributes,
   Positionable.attributes,
+  Backgroundable.attributes,
 
   ## the vertical floating placement parameter that determines where the object is displayed.
   attribute placement { text }?
@@ -129,6 +142,7 @@ float_attributes =
   Common.attributes,
   Labelled.attributes,
   Positionable.attributes,
+  Backgroundable.attributes,
 
   ## the vertical floating placement parameter that determines where the object is displayed.
   attribute placement { text }?
@@ -147,6 +161,7 @@ listing_attributes =
   Common.attributes,
   Labelled.attributes,
   Positionable.attributes,
+  Backgroundable.attributes,
 
   ## the floating placement parameter that determines where the object is displayed.
   attribute placement { text }?
@@ -164,7 +179,8 @@ element caption { caption_attributes, caption_model }
 caption_attributes = 
   Common.attributes,
   Fontable.attributes,
-  Colorable.attributes
+  Colorable.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{caption},
 ## basically Inline.model with tag included (normally, but not necessarily, tag would come first).

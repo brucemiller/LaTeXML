@@ -54,6 +54,7 @@ the content of the \elementref{XMath} element.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Imageable.attributes"/>
     <ref name="ID.attributes"/>
+    <ref name="Backgroundable.attributes"/>
     <optional>
       <attribute name="mode">
         <a:documentation>display or inline mode.</a:documentation>
@@ -191,6 +192,7 @@ the last sequence is repeated if there aren't enough.</a:documentation>
     <ref name="ID.attributes"/>
     <ref name="Fontable.attributes"/>
     <ref name="Colorable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
     <optional>
       <attribute name="name">
         <a:documentation>The name of the token, typically the control sequence that created it.</a:documentation>
@@ -263,6 +265,7 @@ The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="XMath.attributes"/>
     <ref name="ID.attributes"/>
+    <ref name="Backgroundable.attributes"/>
     <optional>
       <attribute name="name">
         <a:documentation>The name of the token, typically the control sequence that created it.</a:documentation>

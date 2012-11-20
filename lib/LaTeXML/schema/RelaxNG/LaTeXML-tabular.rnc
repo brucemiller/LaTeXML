@@ -26,6 +26,7 @@ element tabular { tabular_attributes, tabular_model }
 ## Attributes for \elementref{tabular}.
 tabular_attributes = 
   Common.attributes,
+  Backgroundable.attributes,
 
   ## which row's baseline aligns with the container's baseline.
   attribute vattach { "top" | "middle" | "bottom" }?,
@@ -43,7 +44,9 @@ thead =
 element thead { thead_attributes, thead_model }
 
 ## Attributes for \elementref{thead}.
-thead_attributes = Common.attributes
+thead_attributes =
+  Common.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{thead}.
 thead_model = tr*
@@ -55,7 +58,9 @@ tfoot =
 element tfoot { tfoot_attributes, tfoot_model }
 
 ## Attributes for \elementref{tfoot}.
-tfoot_attributes = Common.attributes
+tfoot_attributes =
+  Common.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{tfoot}.
 tfoot_model = tr*
@@ -67,7 +72,9 @@ tbody =
 element tbody { tbody_attributes, tbody_model }
 
 ## Attributes for \elementref{tbody}.
-tbody_attributes = Common.attributes
+tbody_attributes =
+  Common.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{tbody}.
 tbody_model = tr*
@@ -79,7 +86,9 @@ tr =
 element tr { tr_attributes, tr_model }
 
 ## Attributes for \elementref{tr}.
-tr_attributes = Common.attributes
+tr_attributes =
+  Common.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{tr}.
 tr_model = td*
@@ -94,6 +103,7 @@ element td { td_attributes, td_model }
 td_attributes = 
 
   Common.attributes,
+  Backgroundable.attributes,
 
   ## indicates how many columns this cell spans or covers.
   attribute colspan { xsd:nonNegativeInteger }?,

@@ -42,6 +42,7 @@ in both inline and block contexts.</a:documentation>
     <a:documentation>Attributes for \elementref{para}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="ID.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="para_model">
     <a:documentation>Content model for \elementref{para}.</a:documentation>
@@ -60,6 +61,7 @@ typesets its contents as para.</a:documentation>
     <a:documentation>Attributes for \elementref{inline-para}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Positionable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="inline-para_model">
     <a:documentation>Content model for \elementref{inline-para}.</a:documentation>
@@ -78,6 +80,7 @@ different kinds of theorem.</a:documentation>
     <a:documentation>Attributes for \elementref{theorem}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="theorem_model">
     <a:documentation>Content model for \elementref{theorem}.</a:documentation>
@@ -99,6 +102,7 @@ different kinds of proof.</a:documentation>
     <a:documentation>Attributes for \elementref{proof}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="proof_model">
     <a:documentation>Content model for \elementref{proof}.</a:documentation>
@@ -131,6 +135,7 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
     <ref name="Positionable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
     <optional>
       <attribute name="placement">
         <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
@@ -160,6 +165,7 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
     <ref name="Positionable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
     <optional>
       <attribute name="placement">
         <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
@@ -189,6 +195,7 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
     <ref name="Positionable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
     <optional>
       <attribute name="placement">
         <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
@@ -218,6 +225,7 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
     <ref name="Positionable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
     <optional>
       <attribute name="placement">
         <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
@@ -246,6 +254,7 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Fontable.attributes"/>
     <ref name="Colorable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
   </define>
   <define name="caption_model">
     <a:documentation>Content model for \elementref{caption},
