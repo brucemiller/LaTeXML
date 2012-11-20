@@ -6,28 +6,28 @@
   <section refnum="1" xml:id="S1">
     <title><tag>1 </tag>Predefined colors</title>
     <para xml:id="S1.p1">
-      <p>Black vs. Black.</p>
+      <p><text color="#000000">Black</text> vs. <text color="#000000">Black</text>.</p>
     </para>
     <para xml:id="S1.p2">
-      <p><text color="white">White</text> vs. <text color="white">White</text>.</p>
+      <p><text color="#FFFFFF">White</text> vs. <text color="#FFFFFF">White</text>.</p>
     </para>
     <para xml:id="S1.p3">
-      <p><text color="red">Red</text> vs. <text color="red">Red</text>.</p>
+      <p><text color="#FF0000">Red</text> vs. <text color="#FF0000">Red</text>.</p>
     </para>
     <para xml:id="S1.p4">
-      <p><text color="green">Green</text> vs. <text color="green">Green</text>.</p>
+      <p><text color="#00FF00">Green</text> vs. <text color="#00FF00">Green</text>.</p>
     </para>
     <para xml:id="S1.p5">
-      <p><text color="blue">Blue</text> vs. <text color="blue">Blue</text>.</p>
+      <p><text color="#0000FF">Blue</text> vs. <text color="#0000FF">Blue</text>.</p>
     </para>
     <para xml:id="S1.p6">
-      <p><text color="cyan">Cyan</text> vs. <text color="cyan">Cyan</text>.</p>
+      <p><text color="#00FFFF">Cyan</text> vs. <text color="#00FFFF">Cyan</text>.</p>
     </para>
     <para xml:id="S1.p7">
-      <p><text color="magenta">Magenta</text> vs. <text color="magenta">Magenta</text>.</p>
+      <p><text color="#FF00FF">Magenta</text> vs. <text color="#FF00FF">Magenta</text>.</p>
     </para>
     <para xml:id="S1.p8">
-      <p><text color="yellow">Yellow</text> vs. <text color="yellow">Yellow</text>.</p>
+      <p><text color="#FFFF00">Yellow</text> vs. <text color="#FFFF00">Yellow</text>.</p>
     </para>
   </section>
   <section refnum="2" xml:id="S2">
@@ -78,7 +78,7 @@ vs. <text color="#E6E6E6">Light</text></p>
       <p>vs. <text color="#E6E6E6" backgroundcolor="#808080">Light within Gray</text></p>
     </para>
     <para xml:id="S5.p3">
-      <p><text framecolor="blue" framed="rectangle" color="green" backgroundcolor="red">Green in Red surrounded by Blue</text></p>
+      <p><text framecolor="#0000FF" framed="rectangle" color="#00FF00" backgroundcolor="#FF0000">Green in Red surrounded by Blue</text></p>
     </para>
     <para xml:id="S5.p4">
       <p><text framecolor="#FF00FF" framed="rectangle" color="#FFFF00" backgroundcolor="#00FFFF">Yellow in Cyan surrounded by Magenta</text></p>
@@ -92,9 +92,9 @@ vs. <text color="#E6E6E6">Light</text></p>
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" color="red" font="italic">R</XMTok>
-              <XMTok role="UNKNOWN" color="green" font="italic">G</XMTok>
-              <XMTok role="UNKNOWN" color="blue" font="italic">B</XMTok>
+              <XMTok role="UNKNOWN" color="#FF0000" font="italic">R</XMTok>
+              <XMTok role="UNKNOWN" color="#00FF00" font="italic">G</XMTok>
+              <XMTok role="UNKNOWN" color="#0000FF" font="italic">B</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -106,9 +106,9 @@ vs. <text color="#E6E6E6">Light</text></p>
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" backgroundcolor="red" font="italic">R</XMTok>
-              <XMTok role="UNKNOWN" backgroundcolor="green" font="italic">G</XMTok>
-              <XMTok role="UNKNOWN" backgroundcolor="blue" font="italic">B</XMTok>
+              <XMTok role="UNKNOWN" backgroundcolor="#FF0000" font="italic">R</XMTok>
+              <XMTok role="UNKNOWN" backgroundcolor="#00FF00" font="italic">G</XMTok>
+              <XMTok role="UNKNOWN" backgroundcolor="#0000FF" font="italic">B</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -121,13 +121,13 @@ vs. <text color="#E6E6E6">Light</text></p>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMText>
-                <text framecolor="green" framed="rectangle" color="red" backgroundcolor="blue">R</text>
+                <text framecolor="#00FF00" framed="rectangle" color="#FF0000" backgroundcolor="#0000FF">R</text>
               </XMText>
               <XMText>
-                <text framecolor="blue" framed="rectangle" color="green" backgroundcolor="red">G</text>
+                <text framecolor="#0000FF" framed="rectangle" color="#00FF00" backgroundcolor="#FF0000">G</text>
               </XMText>
               <XMText>
-                <text framecolor="red" framed="rectangle" color="blue" backgroundcolor="green">B</text>
+                <text framecolor="#FF0000" framed="rectangle" color="#0000FF" backgroundcolor="#00FF00">B</text>
               </XMText>
             </XMApp>
           </XMath>
@@ -217,10 +217,10 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
           </tr>
           <tr>
             <td align="left" thead="true">
-              <text color="#C23000">Bittersweet</text>
+              <text color="#C20300">Bittersweet</text>
             </td>
             <td align="left" border="r">
-              <text backgroundcolor="#C23000">Bittersweet</text>
+              <text backgroundcolor="#C20300">Bittersweet</text>
             </td>
             <td align="left" thead="true">
               <text color="#FF3B21">RedOrange</text>
@@ -231,24 +231,24 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
           </tr>
           <tr>
             <td align="left" thead="true">
-              <text color="#A61916">Mahogany</text>
+              <text color="#A60000">Mahogany</text>
             </td>
             <td align="left" border="r">
-              <text backgroundcolor="#A61916">Mahogany</text>
+              <text backgroundcolor="#A60000">Mahogany</text>
             </td>
             <td align="left" thead="true">
-              <text color="#AD1737">Maroon</text>
+              <text color="#AD0000">Maroon</text>
             </td>
             <td align="left">
-              <text backgroundcolor="#AD1737">Maroon</text>
+              <text backgroundcolor="#AD0000">Maroon</text>
             </td>
           </tr>
           <tr>
             <td align="left" thead="true">
-              <text color="#B8140B">BrickRed</text>
+              <text color="#B80000">BrickRed</text>
             </td>
             <td align="left" border="r">
-              <text backgroundcolor="#B8140B">BrickRed</text>
+              <text backgroundcolor="#B80000">BrickRed</text>
             </td>
             <td align="left" thead="true">
               <text color="#FF0000">Red</text>
@@ -315,24 +315,24 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
           </tr>
           <tr>
             <td align="left" thead="true">
-              <text color="#A519FA">Mulberry</text>
+              <text color="#A314FA">Mulberry</text>
             </td>
             <td align="left" border="r">
-              <text backgroundcolor="#A519FA">Mulberry</text>
+              <text backgroundcolor="#A314FA">Mulberry</text>
             </td>
             <td align="left" thead="true">
-              <text color="#9D11A8">RedViolet</text>
+              <text color="#9600A8">RedViolet</text>
             </td>
             <td align="left">
-              <text backgroundcolor="#9D11A8">RedViolet</text>
+              <text backgroundcolor="#9600A8">RedViolet</text>
             </td>
           </tr>
           <tr>
             <td align="left" thead="true">
-              <text color="#7C15EB">Fuchsia</text>
+              <text color="#7303EB">Fuchsia</text>
             </td>
             <td align="left" border="r">
-              <text backgroundcolor="#7C15EB">Fuchsia</text>
+              <text backgroundcolor="#7303EB">Fuchsia</text>
             </td>
             <td align="left" thead="true">
               <text color="#FF85FF">Lavender</text>
@@ -391,10 +391,10 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
               <text backgroundcolor="#4019FF">RoyalPurple</text>
             </td>
             <td align="left" thead="true">
-              <text color="#2216F5">BlueViolet</text>
+              <text color="#190DF5">BlueViolet</text>
             </td>
             <td align="left">
-              <text backgroundcolor="#2216F5">BlueViolet</text>
+              <text backgroundcolor="#190DF5">BlueViolet</text>
             </td>
           </tr>
           <tr>
@@ -419,10 +419,10 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
               <text backgroundcolor="#59DEFF">CornflowerBlue</text>
             </td>
             <td align="left" thead="true">
-              <text color="#037E91">MidnightBlue</text>
+              <text color="#007091">MidnightBlue</text>
             </td>
             <td align="left">
-              <text backgroundcolor="#037E91">MidnightBlue</text>
+              <text backgroundcolor="#007091">MidnightBlue</text>
             </td>
           </tr>
           <tr>
@@ -483,10 +483,10 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
           </tr>
           <tr>
             <td align="left" thead="true">
-              <text color="#23FAA5">TealBlue</text>
+              <text color="#1FFAA3">TealBlue</text>
             </td>
             <td align="left" border="r">
-              <text backgroundcolor="#23FAA5">TealBlue</text>
+              <text backgroundcolor="#1FFAA3">TealBlue</text>
             </td>
             <td align="left" thead="true">
               <text color="#2EFFB3">Aquamarine</text>
@@ -531,18 +531,18 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
               <text backgroundcolor="#00FF00">Green</text>
             </td>
             <td align="left" thead="true">
-              <text color="#14E01B">ForestGreen</text>
+              <text color="#00E000">ForestGreen</text>
             </td>
             <td align="left">
-              <text backgroundcolor="#14E01B">ForestGreen</text>
+              <text backgroundcolor="#00E000">ForestGreen</text>
             </td>
           </tr>
           <tr>
             <td align="left" thead="true">
-              <text color="#0FBF4E">PineGreen</text>
+              <text color="#00BF29">PineGreen</text>
             </td>
             <td align="left" border="r">
-              <text backgroundcolor="#0FBF4E">PineGreen</text>
+              <text backgroundcolor="#00BF29">PineGreen</text>
             </td>
             <td align="left" thead="true">
               <text color="#80FF00">LimeGreen</text>
@@ -567,30 +567,30 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
           </tr>
           <tr>
             <td align="left" thead="true">
-              <text color="#379908">OliveGreen</text>
+              <text color="#009900">OliveGreen</text>
             </td>
             <td align="left" border="r">
-              <text backgroundcolor="#379908">OliveGreen</text>
+              <text backgroundcolor="#009900">OliveGreen</text>
             </td>
             <td align="left" thead="true">
-              <text color="#8C2700">RawSienna</text>
+              <text color="#8C0000">RawSienna</text>
             </td>
             <td align="left">
-              <text backgroundcolor="#8C2700">RawSienna</text>
+              <text backgroundcolor="#8C0000">RawSienna</text>
             </td>
           </tr>
           <tr>
             <td align="left" thead="true">
-              <text color="#4D0D00">Sepia</text>
+              <text color="#4D0000">Sepia</text>
             </td>
             <td align="left" border="r">
-              <text backgroundcolor="#4D0D00">Sepia</text>
+              <text backgroundcolor="#4D0000">Sepia</text>
             </td>
             <td align="left" thead="true">
-              <text color="#661300">Brown</text>
+              <text color="#660000">Brown</text>
             </td>
             <td align="left">
-              <text backgroundcolor="#661300">Brown</text>
+              <text backgroundcolor="#660000">Brown</text>
             </td>
           </tr>
           <tr>
